@@ -2,180 +2,146 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0E29EB64DD
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jul 2023 00:14:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D597EB64DD
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jul 2023 01:30:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230089AbjGYAOS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Jul 2023 20:14:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55184 "EHLO
+        id S229746AbjGYBaC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Jul 2023 21:30:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47964 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229789AbjGYAOR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2023 20:14:17 -0400
-Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D170E70
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2023 17:14:16 -0700 (PDT)
-Received: by mail-pg1-x52c.google.com with SMTP id 41be03b00d2f7-55ba5fae2e6so3515474a12.0
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2023 17:14:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=telus.net; s=google; t=1690244056; x=1690848856;
-        h=thread-index:content-language:content-transfer-encoding
-         :mime-version:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=HXCdkgf7SAEt55PoPjve0NuVJWNgzHzNEzNEpVtcDy8=;
-        b=Xkk3+DitHCobWhmL7FgLnVUVf+4ri2nDizSxVAnxlAGu/beEIriveW3rHd1jvntGbY
-         J6qSmU7ajAB0k+tAIjHg+ted4HDVD9PELirtHsGs+6VATp0NIitVzDGbxiIlyXUR32rA
-         pbSnND1wq6RHJ95U11bcGlGqLBT9CX5SUtPJ9vHoJPVqXSv+CW0MCDSKUHclVBsrjHxZ
-         XrbovZpLF2RNQ0yiG2pNZ2R3XhsoAQXIQpVP2Sk5diL1F0Kw21urZK9sB8/W6vD06J6j
-         ZbB+Zw+40yK9GW+d0c8MszAb5ofiHShklduaEB9eKBnLY4MDeTSn8ZFChYz0gK4K0UR3
-         PU7w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690244056; x=1690848856;
-        h=thread-index:content-language:content-transfer-encoding
-         :mime-version:message-id:date:subject:cc:to:from:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=HXCdkgf7SAEt55PoPjve0NuVJWNgzHzNEzNEpVtcDy8=;
-        b=KNpUxOEZf0Lso5NXhntTd5/mGIDOfm+TwCbF3bDF8NyowzuwU1SVf5PFHN/0iIBFQ4
-         6Kcvf/t6fDkxtaUxStfNqoFPiyW9Bk6nz8a7ZGboEajyiDvdaEHq3jhagabnhFSw3SmC
-         XKL7hu110Fpjr9wWkiFwYcrukFYr9pyOA8Np5rpe19yXDmIR54ZmydWUGM0XzApS1KgZ
-         OGfkfZuImcAQOXPx0hdioh6RV8/Ql/mpQWihMtb3obwf7E1QEK4oeCKnu3Vpi4SJCXos
-         XuNCJAmLGBEb7dmzUQutgicgvtR0DacfoifcGPiDz6dcKQiDAJDHICALlJirljqjYfPk
-         WadA==
-X-Gm-Message-State: ABy/qLYjWSKP1OB2N9HBgAnuQuvYkKfV0l1DoXSC8tQuDvqRzwlmXNzc
-        s31bcmVXUelqwlUhEHbH4XnE1w==
-X-Google-Smtp-Source: APBJJlEVptL23R2j0SrhkJJL3rtIDwu1LW19+FYgUbd2ZdMFguGVo/Qo3MaIHr1ySrkVH8bgVJYPMw==
-X-Received: by 2002:a17:90a:2a4b:b0:267:f2b4:8ac4 with SMTP id d11-20020a17090a2a4b00b00267f2b48ac4mr9094176pjg.31.1690244055778;
-        Mon, 24 Jul 2023 17:14:15 -0700 (PDT)
-Received: from DougS18 (s66-183-142-209.bc.hsia.telus.net. [66.183.142.209])
-        by smtp.gmail.com with ESMTPSA id g1-20020a17090a828100b0025c2c398d33sm6955023pjn.39.2023.07.24.17.14.14
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 24 Jul 2023 17:14:15 -0700 (PDT)
-From:   "Doug Smythies" <dsmythies@telus.net>
-To:     "'Thomas Gleixner'" <tglx@linutronix.de>,
-        <linux-pm@vger.kernel.org>,
-        "'the arch/x86 maintainers'" <x86@kernel.org>,
-        "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc:     "Doug Smythies" <dsmythies@telus.net>, <yang.jie@linux.intel.com>,
-        <linux-kernel@vger.kernel.org>,
-        "'Eric Dumazet'" <edumazet@google.com>,
-        "'Paul E. McKenney'" <paulmck@kernel.org>,
-        "'Viresh Kumar'" <viresh.kumar@linaro.org>
-Subject: [PATCH] x86/aperfmperf: Make stale CPU frequency response within limits.
-Date:   Mon, 24 Jul 2023 17:14:18 -0700
-Message-ID: <006901d9be8c$f4439930$dccacb90$@telus.net>
+        with ESMTP id S229608AbjGYBaB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2023 21:30:01 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 529F0170E;
+        Mon, 24 Jul 2023 18:30:00 -0700 (PDT)
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36P1R3M9024405;
+        Tue, 25 Jul 2023 01:29:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type; s=qcppdkim1;
+ bh=Ik3HKh+Kru5gM57JiciWemSCJFTdi1XMiHqM9Rjrv5g=;
+ b=BjNf1NvxaCq0scz5iAtd2C4fkQxFz/Ij8TAnks33HW8aDMTrdm4cEbRL7ilnwJacAfTU
+ EC2CPcbB/v5H3tmbIAi5P4pPBfLH75YBP+BwPcdhsniCUsClcNW9aJnIyDakfNyaKK3R
+ gJWbYlnMsLIl8hyEyOEmgg6vEVdWlKlM10ss0QK6r7wy4R576NxN6JxcWjrhp9YuNzx5
+ xFuMsXEp6ZScXxZpxKmJopCSBFoQx5ruk5j3SC0q73UNaAY6VVm+fMAOLqRS3dIjg3LJ
+ 7jGXl337rsX3dJTkVvQX0pppC/aX6dgasQHweCMy4njhXYFB8biqeA60GcpZ9Ul7a+g6 Jg== 
+Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3s1qasst3b-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 25 Jul 2023 01:29:55 +0000
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+        by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 36P1TsSR020192
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 25 Jul 2023 01:29:54 GMT
+Received: from hu-mdtipton-lv.qualcomm.com (10.49.16.6) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.30; Mon, 24 Jul 2023 18:29:54 -0700
+From:   Mike Tipton <quic_mdtipton@quicinc.com>
+To:     <djakov@kernel.org>, <gregkh@linuxfoundation.org>,
+        <rafael@kernel.org>
+CC:     <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <quic_okukatla@quicinc.com>, <quic_viveka@quicinc.com>,
+        Mike Tipton <quic_mdtipton@quicinc.com>
+Subject: [PATCH 1/3] debugfs: Add write support to debugfs_create_str()
+Date:   Mon, 24 Jul 2023 18:28:57 -0700
+Message-ID: <20230725012859.18474-2-quic_mdtipton@quicinc.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20230725012859.18474-1-quic_mdtipton@quicinc.com>
+References: <20230725012859.18474-1-quic_mdtipton@quicinc.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Outlook 16.0
-Content-Language: en-ca
-Thread-Index: Adm+i9OXa49HoOhhSw21FXVBGCqHEA==
+Content-Type: text/plain
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: 1hVtMj2GUYVL2vPs0yLNVPjjYOq6T_PD
+X-Proofpoint-GUID: 1hVtMj2GUYVL2vPs0yLNVPjjYOq6T_PD
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
+ definitions=2023-07-24_18,2023-07-24_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 phishscore=0
+ impostorscore=0 mlxscore=0 mlxlogscore=671 adultscore=0 priorityscore=1501
+ clxscore=1015 spamscore=0 suspectscore=0 bulkscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2306200000
+ definitions=main-2307250010
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently, when the CPU frequency is stale the nominal clock frequency
-is returned by calls to arch_freq_get_on_cpu(). Some users are
-confused by the high reported frequency when their system is idle
-and/or it is above a reduced maximum they set.
+Implementation taken from original patch series that added
+debugfs_create_str() [0]. Write support was present in the initial patch
+revisions, but was later removed due to lack of users. We have a user
+now, so reintroduce it.
 
-This patch will return the policy minimum as the stale frequency reply
-from arch_freq_get_on_cpu().
+[0] https://lore.kernel.org/all/YF3Hv5zXb%2F6lauzs@hirez.programming.kicks-ass.net/
 
-Reported-by: Yang Jie <yang.jie@linux.intel.com>
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=217597
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
+Signed-off-by: Mike Tipton <quic_mdtipton@quicinc.com>
 ---
- arch/x86/kernel/cpu/aperfmperf.c | 13 +++++--------
- drivers/cpufreq/cpufreq.c        | 18 ++++++++++++++++++
- include/linux/cpufreq.h          |  5 +++++
- 3 files changed, 28 insertions(+), 8 deletions(-)
+ fs/debugfs/file.c | 48 +++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 46 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/aperfmperf.c b/arch/x86/kernel/cpu/aperfmperf.c
-index fdbb5f07448f..44cc96864d94 100644
---- a/arch/x86/kernel/cpu/aperfmperf.c
-+++ b/arch/x86/kernel/cpu/aperfmperf.c
-@@ -418,9 +418,10 @@ unsigned int arch_freq_get_on_cpu(int cpu)
- 	unsigned long last;
- 	u64 acnt, mcnt;
- 
--	if (!cpu_feature_enabled(X86_FEATURE_APERFMPERF))
--		goto fallback;
--
-+	if (!cpu_feature_enabled(X86_FEATURE_APERFMPERF)){
-+		freq = cpufreq_quick_get(cpu);
-+		return freq ? freq : cpufreq_quick_get_min(cpu);
-+	}
- 	do {
- 		seq = raw_read_seqcount_begin(&s->seq);
- 		last = s->last_update;
-@@ -433,13 +434,9 @@ unsigned int arch_freq_get_on_cpu(int cpu)
- 	 * which covers idle and NOHZ full CPUs.
- 	 */
- 	if (!mcnt || (jiffies - last) > MAX_SAMPLE_AGE)
--		goto fallback;
-+		return cpufreq_quick_get_min(cpu);
- 
- 	return div64_u64((cpu_khz * acnt), mcnt);
--
--fallback:
--	freq = cpufreq_quick_get(cpu);
--	return freq ? freq : cpu_khz;
- }
- 
- static int __init bp_init_aperfmperf(void)
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 50bbc969ffe5..a0b24f61a5b0 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1796,6 +1796,24 @@ unsigned int cpufreq_quick_get_max(unsigned int cpu)
- }
- EXPORT_SYMBOL(cpufreq_quick_get_max);
- 
-+/**
-+ * cpufreq_quick_get_min - return the min frequency for a given CPU
-+ * @cpu: CPU number
-+ */
-+unsigned int cpufreq_quick_get_min(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-+	unsigned int ret_freq = 0;
-+
-+	if (policy) {
-+		ret_freq = policy->min;
-+		cpufreq_cpu_put(policy);
-+	}
-+
-+	return ret_freq;
-+}
-+EXPORT_SYMBOL(cpufreq_quick_get_min);
-+
- /**
-  * cpufreq_get_hw_max_freq - get the max hardware frequency of the CPU
-  * @cpu: CPU number
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 172ff51c1b2a..c74dcb5f9263 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -220,6 +220,7 @@ static inline bool policy_is_shared(struct cpufreq_policy *policy)
- unsigned int cpufreq_get(unsigned int cpu);
- unsigned int cpufreq_quick_get(unsigned int cpu);
- unsigned int cpufreq_quick_get_max(unsigned int cpu);
-+unsigned int cpufreq_quick_get_min(unsigned int cpu);
- unsigned int cpufreq_get_hw_max_freq(unsigned int cpu);
- void disable_cpufreq(void);
- 
-@@ -250,6 +251,10 @@ static inline unsigned int cpufreq_quick_get_max(unsigned int cpu)
+diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
+index b7711888dd17..87b3753aa4b1 100644
+--- a/fs/debugfs/file.c
++++ b/fs/debugfs/file.c
+@@ -904,8 +904,52 @@ EXPORT_SYMBOL_GPL(debugfs_create_str);
+ static ssize_t debugfs_write_file_str(struct file *file, const char __user *user_buf,
+ 				      size_t count, loff_t *ppos)
  {
- 	return 0;
+-	/* This is really only for read-only strings */
+-	return -EINVAL;
++	struct dentry *dentry = F_DENTRY(file);
++	char *old, *new = NULL;
++	int pos = *ppos;
++	int r;
++
++	r = debugfs_file_get(dentry);
++	if (unlikely(r))
++		return r;
++
++	old = *(char **)file->private_data;
++
++	/* only allow strict concatenation */
++	r = -EINVAL;
++	if (pos && pos != strlen(old))
++		goto error;
++
++	r = -E2BIG;
++	if (pos + count + 1 > PAGE_SIZE)
++		goto error;
++
++	r = -ENOMEM;
++	new = kmalloc(pos + count + 1, GFP_KERNEL);
++	if (!new)
++		goto error;
++
++	if (pos)
++		memcpy(new, old, pos);
++
++	r = -EFAULT;
++	if (copy_from_user(new + pos, user_buf, count))
++		goto error;
++
++	new[pos + count] = '\0';
++	strim(new);
++
++	rcu_assign_pointer(*(char **)file->private_data, new);
++	synchronize_rcu();
++	kfree(old);
++
++	debugfs_file_put(dentry);
++	return count;
++
++error:
++	kfree(new);
++	debugfs_file_put(dentry);
++	return r;
  }
-+static inline unsigned int cpufreq_quick_get_min(unsigned int cpu)
-+{
-+	return 0;
-+}
- static inline unsigned int cpufreq_get_hw_max_freq(unsigned int cpu)
- {
- 	return 0;
+ 
+ static const struct file_operations fops_str = {
 -- 
-2.25.1
-
+2.17.1
 
