@@ -2,108 +2,116 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 696BCC0015E
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Jul 2023 19:55:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FE77C00528
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Jul 2023 23:31:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232358AbjGZTze (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Jul 2023 15:55:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44498 "EHLO
+        id S230151AbjGZXbq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Jul 2023 19:31:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232421AbjGZTzX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2023 15:55:23 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2F502691;
-        Wed, 26 Jul 2023 12:55:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=XyTW0Ej/ctvX5mhAYSsUtLai+EJ8srqN7zialJMkLmE=; b=hM1wJiCXTM2z10qaH70Y3td19Q
-        RcNkzv2osxtg8g5vj9sDJvWhn20I2tyHdnfNRVCieOfO++Y9Q3cl6+xO7wjUeov18fOZuZlG+hbPi
-        HUDwSYX/Nlfs1QoXzUQehGHWijgiU7cp3U79zFxvgoVlpDsyGPAVt9iOYENQ8E8R5m7zRPHoMFiF4
-        2ZCQVJm86wwBgM+/ZGkpklArFaA1/clBOci/PfKeaZ+ldYZjK2AbJ+Nk0Xdxb+TDkrL1/+XoWsVXa
-        ujTRXxt/hpfEFtfai3OXujo2NVSNvmdOm/34N4u2U50WMJAYFE8mlQjPbUeqxEX36eEWrTdxEevL9
-        xAj7AhOg==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qOkan-005ynS-0H;
-        Wed, 26 Jul 2023 19:54:41 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        with ESMTP id S229645AbjGZXbp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2023 19:31:45 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8EEE12704;
+        Wed, 26 Jul 2023 16:31:44 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 465A730056F;
-        Wed, 26 Jul 2023 21:54:39 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 0952E201BD673; Wed, 26 Jul 2023 12:25:12 +0200 (CEST)
-Date:   Wed, 26 Jul 2023 12:25:12 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Waiman Long <longman@redhat.com>
-Cc:     Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-        Jacob Pan <jacob.jun.pan@linux.intel.com>,
-        Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-        x86@kernel.org, linux-pm@vger.kernel.org,
-        Robin Jarry <rjarry@redhat.com>, Joe Mario <jmario@redhat.com>,
-        Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH v5 4/4] intel_idle: Add ibrs_off module parameter to
- force disable IBRS
-Message-ID: <20230726102512.GD3802077@hirez.programming.kicks-ass.net>
-References: <20230710194857.2898284-1-longman@redhat.com>
- <20230710194857.2898284-5-longman@redhat.com>
- <f5f25279-bbb5-e040-aeaa-dd3d8686c670@redhat.com>
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 228B561CDB;
+        Wed, 26 Jul 2023 23:31:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD987C433C7;
+        Wed, 26 Jul 2023 23:31:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1690414303;
+        bh=r7QYHW3VKvt2WtGg9gadUOAfwlfHNf+lUew4M0VWzWI=;
+        h=From:To:Cc:Subject:Date:From;
+        b=FigZcKcQPrGdBwQ9/L3i6PvgDhZ3jNe5Mw1YIWYsG0dTKG8E6LYsAy771371B2OfD
+         DdId4YZkV7bvFGCfq0m7+VBBDGditUnRGUnwfe5jBd09q7vb7vpxc8hXP1MBkRl7Ke
+         ta1gWNaSi3dsRutqCYI4bwQZn99HVRXmQUGeuP3oMa+pAtZxHdO4Viobu1cF1Bhvbk
+         ELIRKd9CPw52H7ZNeM4bGi32fpmfe2dj4c5fmRep88RMmAcwSkMv28YPU5/b1JAFWG
+         QLnYnjAXbm5Yz1t2WezhagAogiEJyGYRLUHAuV3hY17Aka1DZ4E0vs6KYRpR9hETET
+         a8Is0LCZwn/9Q==
+Received: (nullmailer pid 3811250 invoked by uid 1000);
+        Wed, 26 Jul 2023 23:31:41 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>,
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Broadcom internal kernel review list 
+        <bcm-kernel-feedback-list@broadcom.com>
+Cc:     =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        linux-pm@vger.kernel.org, linux-mips@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v2] soc: bcm: Explicitly include correct DT includes
+Date:   Wed, 26 Jul 2023 17:31:29 -0600
+Message-Id: <20230726233130.3811017-1-robh@kernel.org>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f5f25279-bbb5-e040-aeaa-dd3d8686c670@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jul 25, 2023 at 04:45:49PM -0400, Waiman Long wrote:
-> On 7/10/23 15:48, Waiman Long wrote:
-> > Commit bf5835bcdb96 ("intel_idle: Disable IBRS during long idle")
-> > disables IBRS when the cstate is 6 or lower. However, there are
-> > some use cases where a customer may want to use max_cstate=1 to
-> > lower latency. Such use cases will suffer from the performance
-> > degradation caused by the enabling of IBRS in the sibling idle thread.
-> > Add a "ibrs_off" module parameter to force disable IBRS and the
-> > CPUIDLE_FLAG_IRQ_ENABLE flag if set.
-> > 
-> > In the case of a Skylake server with max_cstate=1, this new ibrs_off
-> > option will likely increase the IRQ response latency as IRQ will now
-> > be disabled.
-> > 
-> > When running SPECjbb2015 with cstates set to C1 on a Skylake system.
-> > 
-> > First test when the kernel is booted with: "intel_idle.ibrs_off"
-> >    max-jOPS = 117828, critical-jOPS = 66047
-> > 
-> > Then retest when the kernel is booted without the "intel_idle.ibrs_off"
-> > added.
-> >    max-jOPS = 116408, critical-jOPS = 58958
-> > 
-> > That means booting with "intel_idle.ibrs_off" improves performance by:
-> >    max-jOPS:   1.2%, which could be considered noise range.
-> >    critical-jOPS: 12%, which is definitely a solid improvement.
-> > 
-> > The admin-guide/pm/intel_idle.rst file is updated to add a description
-> > about the new "ibrs_off" module parameter.
-> > 
-> > Signed-off-by: Waiman Long <longman@redhat.com>
-> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >   Documentation/admin-guide/pm/intel_idle.rst | 17 ++++++++++++++++-
-> >   drivers/idle/intel_idle.c                   | 11 ++++++++++-
-> >   2 files changed, 26 insertions(+), 2 deletions(-)
-> 
-> Ping! Is there further suggested changes for this patch series or is it good
-> enough to be merged?
+The DT of_device.h and of_platform.h date back to the separate
+of_platform_bus_type before it was merged into the regular platform bus.
+As part of that merge prepping Arm DT support 13 years ago, they
+"temporarily" include each other. They also include platform_device.h
+and of.h. As a result, there's a pretty much random mix of those include
+files used throughout the tree. In order to detangle these headers and
+replace the implicit includes with struct declarations, users need to
+explicitly include the correct includes.
 
-I suppose I'll go stick it in x86/core unless someone objects.
+Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+v2:
+ - Fix typo in commit msg
+ - Add raspberrypi-power.c
+---
+ drivers/soc/bcm/bcm63xx/bcm-pmb.c       | 1 -
+ drivers/soc/bcm/bcm63xx/bcm63xx-power.c | 1 -
+ drivers/soc/bcm/raspberrypi-power.c     | 2 +-
+ 3 files changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/soc/bcm/bcm63xx/bcm-pmb.c b/drivers/soc/bcm/bcm63xx/bcm-pmb.c
+index 9407cac47fdb..a72ba26ecf9d 100644
+--- a/drivers/soc/bcm/bcm63xx/bcm-pmb.c
++++ b/drivers/soc/bcm/bcm63xx/bcm-pmb.c
+@@ -8,7 +8,6 @@
+ #include <linux/io.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+-#include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_domain.h>
+ #include <linux/reset/bcm63xx_pmb.h>
+diff --git a/drivers/soc/bcm/bcm63xx/bcm63xx-power.c b/drivers/soc/bcm/bcm63xx/bcm63xx-power.c
+index aa72e13d5d0e..98b0c2430dbc 100644
+--- a/drivers/soc/bcm/bcm63xx/bcm63xx-power.c
++++ b/drivers/soc/bcm/bcm63xx/bcm63xx-power.c
+@@ -14,7 +14,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_domain.h>
+ #include <linux/of.h>
+-#include <linux/of_device.h>
+ 
+ struct bcm63xx_power_dev {
+ 	struct generic_pm_domain genpd;
+diff --git a/drivers/soc/bcm/raspberrypi-power.c b/drivers/soc/bcm/raspberrypi-power.c
+index 58175af982a0..06196ebfe03b 100644
+--- a/drivers/soc/bcm/raspberrypi-power.c
++++ b/drivers/soc/bcm/raspberrypi-power.c
+@@ -7,7 +7,7 @@
+  */
+ 
+ #include <linux/module.h>
+-#include <linux/of_platform.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_domain.h>
+ #include <dt-bindings/power/raspberrypi-power.h>
+-- 
+2.40.1
+
