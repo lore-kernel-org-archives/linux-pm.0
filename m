@@ -2,114 +2,108 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7D9DC41513
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Jul 2023 19:17:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 696BCC0015E
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Jul 2023 19:55:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231396AbjGZTR3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Jul 2023 15:17:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57686 "EHLO
+        id S232358AbjGZTze (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Jul 2023 15:55:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44498 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230143AbjGZTR3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2023 15:17:29 -0400
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B1011FF0;
-        Wed, 26 Jul 2023 12:17:28 -0700 (PDT)
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 36QJHBgL036759;
-        Wed, 26 Jul 2023 14:17:11 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1690399032;
-        bh=30OZa93bnPYjdB9Z7EidvFI/Njos2YOm2OYVk4nEI7c=;
-        h=Date:From:To:CC:Subject:References:In-Reply-To;
-        b=YZ/rlcEvVA9x5o4LeNzlCg0iFYBPJaFJsdk4+todPcTAog36yFDh2djn2CQHi/TsK
-         f141/Rn+Gox1JZYZynp5Z2digCZC0DWtjTvVCjJNDCLv2okaJ8ZYi1mnMHszLRYivx
-         nlRYyey7Ewzk8X4tjNSfDi48IYZtaZMU/odJLRB4=
-Received: from DLEE100.ent.ti.com (dlee100.ent.ti.com [157.170.170.30])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 36QJHBua111636
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 26 Jul 2023 14:17:11 -0500
-Received: from DLEE109.ent.ti.com (157.170.170.41) by DLEE100.ent.ti.com
- (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Wed, 26
- Jul 2023 14:17:11 -0500
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Wed, 26 Jul 2023 14:17:11 -0500
-Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 36QJHBJx010864;
-        Wed, 26 Jul 2023 14:17:11 -0500
-Date:   Wed, 26 Jul 2023 14:17:11 -0500
-From:   Nishanth Menon <nm@ti.com>
-To:     Rob Herring <robh@kernel.org>
-CC:     Tony Lindgren <tony@atomide.com>,
-        =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Vibhore Vardhan <vibhore@ti.com>, Dhruva Gole <d-gole@ti.com>,
-        <linux-omap@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH 5/5] dt-bindings: cpufreq: Convert ti-cpufreq.txt to yaml
- binding
-Message-ID: <20230726191711.nsrs6n3zbubzad7j@maternal>
-References: <20230724153911.1376830-1-nm@ti.com>
- <20230724153911.1376830-6-nm@ti.com>
- <20230726171436.GA1609063-robh@kernel.org>
+        with ESMTP id S232421AbjGZTzX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2023 15:55:23 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2F502691;
+        Wed, 26 Jul 2023 12:55:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=XyTW0Ej/ctvX5mhAYSsUtLai+EJ8srqN7zialJMkLmE=; b=hM1wJiCXTM2z10qaH70Y3td19Q
+        RcNkzv2osxtg8g5vj9sDJvWhn20I2tyHdnfNRVCieOfO++Y9Q3cl6+xO7wjUeov18fOZuZlG+hbPi
+        HUDwSYX/Nlfs1QoXzUQehGHWijgiU7cp3U79zFxvgoVlpDsyGPAVt9iOYENQ8E8R5m7zRPHoMFiF4
+        2ZCQVJm86wwBgM+/ZGkpklArFaA1/clBOci/PfKeaZ+ldYZjK2AbJ+Nk0Xdxb+TDkrL1/+XoWsVXa
+        ujTRXxt/hpfEFtfai3OXujo2NVSNvmdOm/34N4u2U50WMJAYFE8mlQjPbUeqxEX36eEWrTdxEevL9
+        xAj7AhOg==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qOkan-005ynS-0H;
+        Wed, 26 Jul 2023 19:54:41 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 465A730056F;
+        Wed, 26 Jul 2023 21:54:39 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 0952E201BD673; Wed, 26 Jul 2023 12:25:12 +0200 (CEST)
+Date:   Wed, 26 Jul 2023 12:25:12 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Waiman Long <longman@redhat.com>
+Cc:     Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Josh Poimboeuf <jpoimboe@kernel.org>,
+        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+        Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+        x86@kernel.org, linux-pm@vger.kernel.org,
+        Robin Jarry <rjarry@redhat.com>, Joe Mario <jmario@redhat.com>,
+        Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH v5 4/4] intel_idle: Add ibrs_off module parameter to
+ force disable IBRS
+Message-ID: <20230726102512.GD3802077@hirez.programming.kicks-ass.net>
+References: <20230710194857.2898284-1-longman@redhat.com>
+ <20230710194857.2898284-5-longman@redhat.com>
+ <f5f25279-bbb5-e040-aeaa-dd3d8686c670@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230726171436.GA1609063-robh@kernel.org>
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+In-Reply-To: <f5f25279-bbb5-e040-aeaa-dd3d8686c670@redhat.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11:14-20230726, Rob Herring wrote:
-> > diff --git a/Documentation/devicetree/bindings/opp/opp-v2-ti-cpu.yaml b/Documentation/devicetree/bindings/opp/opp-v2-ti-cpu.yaml
-> > new file mode 100644
-> > index 000000000000..758f6da619a8
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/opp/opp-v2-ti-cpu.yaml
+On Tue, Jul 25, 2023 at 04:45:49PM -0400, Waiman Long wrote:
+> On 7/10/23 15:48, Waiman Long wrote:
+> > Commit bf5835bcdb96 ("intel_idle: Disable IBRS during long idle")
+> > disables IBRS when the cstate is 6 or lower. However, there are
+> > some use cases where a customer may want to use max_cstate=1 to
+> > lower latency. Such use cases will suffer from the performance
+> > degradation caused by the enabling of IBRS in the sibling idle thread.
+> > Add a "ibrs_off" module parameter to force disable IBRS and the
+> > CPUIDLE_FLAG_IRQ_ENABLE flag if set.
+> > 
+> > In the case of a Skylake server with max_cstate=1, this new ibrs_off
+> > option will likely increase the IRQ response latency as IRQ will now
+> > be disabled.
+> > 
+> > When running SPECjbb2015 with cstates set to C1 on a Skylake system.
+> > 
+> > First test when the kernel is booted with: "intel_idle.ibrs_off"
+> >    max-jOPS = 117828, critical-jOPS = 66047
+> > 
+> > Then retest when the kernel is booted without the "intel_idle.ibrs_off"
+> > added.
+> >    max-jOPS = 116408, critical-jOPS = 58958
+> > 
+> > That means booting with "intel_idle.ibrs_off" improves performance by:
+> >    max-jOPS:   1.2%, which could be considered noise range.
+> >    critical-jOPS: 12%, which is definitely a solid improvement.
+> > 
+> > The admin-guide/pm/intel_idle.rst file is updated to add a description
+> > about the new "ibrs_off" module parameter.
+> > 
+> > Signed-off-by: Waiman Long <longman@redhat.com>
+> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >   Documentation/admin-guide/pm/intel_idle.rst | 17 ++++++++++++++++-
+> >   drivers/idle/intel_idle.c                   | 11 ++++++++++-
+> >   2 files changed, 26 insertions(+), 2 deletions(-)
 > 
-> Filename matching the compatible.
+> Ping! Is there further suggested changes for this patch series or is it good
+> enough to be merged?
 
-operating-points-v2-ti-cpu.yaml, OK
-
-> 
-> > @@ -0,0 +1,88 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/opp/opp-v2-ti-cpu.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: TI CPU OPP
-> > +
-> > +description: |
-> 
-> Don't need '|'.
-
-OK
-
-> 
-[..]
-
-> > +
-> > +examples:
-> > +  - |
-> > +    cpu0_opp_table: opp-table {
-> 
-> Drop unused labels
-
-Uggh.. yep, thanks.
-
-[...]
-
--- 
-Regards,
-Nishanth Menon
-Key (0xDDB5849D1736249D) / Fingerprint: F8A2 8693 54EB 8232 17A3  1A34 DDB5 849D 1736 249D
+I suppose I'll go stick it in x86/core unless someone objects.
