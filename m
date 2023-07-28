@@ -2,150 +2,106 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79707C0015E
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Jul 2023 10:02:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C057EC41513
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Jul 2023 10:15:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235511AbjG1KCx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Jul 2023 06:02:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36700 "EHLO
+        id S235726AbjG1KPL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Jul 2023 06:15:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45718 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235380AbjG1KC3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2023 06:02:29 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5F91423B;
-        Fri, 28 Jul 2023 03:01:59 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 5ad84d9e2afdf0c6; Fri, 28 Jul 2023 12:01:58 +0200
-Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
-   discourages use of this host) smtp.mailfrom=rjwysocki.net 
-   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
-   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id C2326661E37;
-        Fri, 28 Jul 2023 12:01:57 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Anna-Maria Behnsen <anna-maria@linutronix.de>,
-        Frederic Weisbecker <frederic@kernel.org>,
-        Kajetan Puchalski <kajetan.puchalski@arm.com>
-Subject: [PATCH v2 1/3] cpuidle: teo: Update idle duration estimate when choosing shallower state
-Date:   Fri, 28 Jul 2023 11:58:45 +0200
-Message-ID: <13326870.uLZWGnKmhe@kreacher>
-In-Reply-To: <5707588.DvuYhMxLoT@kreacher>
-References: <5707588.DvuYhMxLoT@kreacher>
+        with ESMTP id S235730AbjG1KPD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2023 06:15:03 -0400
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31AE73A8C;
+        Fri, 28 Jul 2023 03:14:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1690539299; x=1722075299;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=2Y1RwJe5SvO00BHqB2fl57z6OWd7GWBq/2G+78g04Ys=;
+  b=F1M0ZmpUkd2xMNJRLbIELPAE62kW3P7FHj0LZPmL6XmnTbd5PVBgjnrs
+   r2cHx+H70/epDefndGtjVPeHc7UWP1kix+2q6ZQktSuCRcTxAs2HoCGki
+   xmAywaIHl80zLDQH5GUHcHmO05pCw7JzxZWeVN5cy9ewaMV9XYHqgawKA
+   P85hnYsZqn5S6c+2Qz59P2zcQZrisj+LOF0LvzSJEPzpHhgitjdhbQ70r
+   zCyNWQdB1Q68yiT4tqAdpi1HKnIRxSwgrkmRgdSPkSaKngH7y//zd9A8F
+   S3oOsd3x4z0vuMhhyLOWon1z7ir1SOX0IAf+2LXOyTWg5pxphtdMnnuKL
+   Q==;
+X-IronPort-AV: E=Sophos;i="6.01,237,1684825200"; 
+   d="asc'?scan'208";a="163711690"
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+  by esa6.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 28 Jul 2023 03:14:57 -0700
+Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 28 Jul 2023 03:14:52 -0700
+Received: from wendy (10.10.115.15) by chn-vm-ex04.mchp-main.com
+ (10.10.85.152) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.21 via Frontend
+ Transport; Fri, 28 Jul 2023 03:14:49 -0700
+Date:   Fri, 28 Jul 2023 11:14:14 +0100
+From:   Conor Dooley <conor.dooley@microchip.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+CC:     =?utf-8?B?6ZmI5Y2O5omN?= <chenhuacai@loongson.cn>,
+        <loongson-kernel@lists.loongnix.cn>, Arnd Bergmann <arnd@arndb.de>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Jianmin Lv <lvjianmin@loongson.cn>,
+        <wanghongliang@loongson.cn>, Liu Peibao <liupeibao@loongson.cn>,
+        Yinbo Zhu <zhuyinbo@loongson.cn>, Liu Yun <liuyun@loongson.cn>
+Subject: Re: [PATCH v5 0/2] soc: loongson2_pm: add power management support
+Message-ID: <20230728-overview-suitor-b54b5f27389f@wendy>
+References: <20230728074944.26746-1-zhuyinbo@loongson.cn>
+ <74a37e9d.9a24.1899b9bea85.Coremail.chenhuacai@loongson.cn>
+ <1c8b12b4-79c3-5018-c7df-946fe690e8c8@linaro.org>
+ <20230728-pessimism-exclaim-de0dd7f4bb64@wendy>
+ <7986a634-63b2-28d6-5f17-7b982ae56bcf@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrieeigddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtoheprghnnhgrqdhmrghrihgrsehlihhnuhhtrhhonhhigidruggvpdhrtghpthhtohepfhhrvggu
- vghrihgtsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehkrghjvghtrghnrdhpuhgthhgrlhhskhhisegrrhhmrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="zsU3D00B1ldVVR3H"
+Content-Disposition: inline
+In-Reply-To: <7986a634-63b2-28d6-5f17-7b982ae56bcf@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+--zsU3D00B1ldVVR3H
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The TEO governor takes CPU utilization into account by refining idle state
-selection when the utilization is above a certain threshold.  This is done by
-choosing an idle state shallower than the previously selected one.
+On Fri, Jul 28, 2023 at 11:45:48AM +0200, Krzysztof Kozlowski wrote:
+> On 28/07/2023 11:18, Conor Dooley wrote:
+> > On Fri, Jul 28, 2023 at 10:36:42AM +0200, Krzysztof Kozlowski wrote:
 
-However, when doing this, the idle duration estimate needs to be
-adjusted so as to prevent the scheduler tick from being stopped when the
-candidate idle state is shallow, which may lead to excessive energy
-usage if the CPU is not woken up quickly enough going forward.
-Moreover, if the scheduler tick has been stopped already and the new
-idle duration estimate is too small, the replacement candidate state
-cannot be used.
+> >> Are we intended person/entities to receive your Reviewed-by tag?
+> >=20
+> > It's okay, you only got a "Reviewd-by" tag ;)
+>=20
+> I guess so, especially that this disclaimer should be useless. But on
+> the other hand, do I want to deal with it if once Loongson sends me
+> Cease-and-desist letter for something? Why even thinking about this
+> should be my problem? Why should I even consider this topic: is it
+> harmless or is there any risk?
 
-Modify the relevant code to take the above observations into account.
+Oh for sure complain. My corp email is not in the CC, but it arrived in
+my inbox there...
+I was just noting that the tag was not correctly provided in the first
+place.
 
-Fixes: 9ce0f7c4bc64 ("cpuidle: teo: Introduce util-awareness")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+--zsU3D00B1ldVVR3H
+Content-Type: application/pgp-signature; name="signature.asc"
 
-v1 -> v2:
-   * Rework the code handling the special case when the CPU is utilized and
-     there are only 2 idle states (drop the loop, avoid using state 0 when
-     the tick has been stopped already and it is too shallow, check if
-     state 1 is not disabled when about to use it, set low idle duration
-     estimate).
-   * Changelog edits.
+-----BEGIN PGP SIGNATURE-----
 
----
- drivers/cpuidle/governors/teo.c |   43 ++++++++++++++++++++++++++++++----------
- 1 file changed, 33 insertions(+), 10 deletions(-)
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZMOU9gAKCRB4tDGHoIJi
+0kJGAP4pIpuIY7agqW8Bqh7t11MHx+nP+lWKCwDBB4GVve76mgEA9NdSi8m8r//J
+pOXLWY0SEHeXTFqjSWKy3zue4Y5l0gA=
+=LrWr
+-----END PGP SIGNATURE-----
 
-Index: linux-pm/drivers/cpuidle/governors/teo.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/teo.c
-+++ linux-pm/drivers/cpuidle/governors/teo.c
-@@ -397,13 +397,26 @@ static int teo_select(struct cpuidle_dri
- 	 * the shallowest non-polling state and exit.
- 	 */
- 	if (drv->state_count < 3 && cpu_data->utilized) {
--		for (i = 0; i < drv->state_count; ++i) {
--			if (!dev->states_usage[i].disable &&
--			    !(drv->states[i].flags & CPUIDLE_FLAG_POLLING)) {
--				idx = i;
--				goto end;
--			}
--		}
-+		/* The CPU is utilized, so assume a short idle duration. */
-+		duration_ns = teo_middle_of_bin(0, drv);
-+		/*
-+		 * If state 0 is enabled and it is not a polling one, select it
-+		 * right away unless the scheduler tick has been stopped, in
-+		 * which case care needs to be taken to leave the CPU in a
-+		 * deep enough state in case it is not woken up any time soon
-+		 * after all.
-+		 */
-+		if (!idx && !(drv->states[0].flags & CPUIDLE_FLAG_POLLING) &&
-+		    teo_time_ok(duration_ns))
-+			goto end;
-+
-+		/*
-+		 * Assume that state 1 is not a polling one and select it
-+		 * unless it is disabled, in which case state 0 must be used
-+		 * no matter what.
-+		 */
-+		idx = dev->states_usage[1].disable ? 0 : 1;
-+		goto end;
- 	}
- 
- 	/*
-@@ -539,10 +552,20 @@ static int teo_select(struct cpuidle_dri
- 
- 	/*
- 	 * If the CPU is being utilized over the threshold, choose a shallower
--	 * non-polling state to improve latency
-+	 * non-polling state to improve latency, unless the scheduler tick has
-+	 * been stopped already and the shallower state's target residency is
-+	 * not sufficiently large.
- 	 */
--	if (cpu_data->utilized)
--		idx = teo_find_shallower_state(drv, dev, idx, duration_ns, true);
-+	if (cpu_data->utilized) {
-+		s64 span_ns;
-+
-+		i = teo_find_shallower_state(drv, dev, idx, duration_ns, true);
-+		span_ns = teo_middle_of_bin(i, drv);
-+		if (teo_time_ok(span_ns)) {
-+			idx = i;
-+			duration_ns = span_ns;
-+		}
-+	}
- 
- end:
- 	/*
-
-
-
+--zsU3D00B1ldVVR3H--
