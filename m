@@ -2,96 +2,137 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03FE7EB64DD
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Jul 2023 07:00:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 595EAC001DE
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Jul 2023 07:50:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232761AbjG1HAW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Jul 2023 03:00:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36068 "EHLO
+        id S234451AbjG1HuC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Jul 2023 03:50:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37448 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233532AbjG1HAU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2023 03:00:20 -0400
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E25D935A5;
-        Fri, 28 Jul 2023 00:00:13 -0700 (PDT)
-Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-563f8e8a53dso1053905a12.3;
-        Fri, 28 Jul 2023 00:00:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1690527613; x=1691132413;
-        h=content-transfer-encoding:in-reply-to:references:cc:to:from
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=csffeR+oPJ4r1BFCRv18Ji1lYkr66TeUyNN6VXBOA5k=;
-        b=bRLx7EBYf2U/nH8+u7oRWuawRuAyUzkXbwowllN+/5tlGx22+wcqAfwqnLf6zyOJFT
-         aEB0LmSqIHbOI5lh5OaOyP58iVFGwoGiC6u9jCaxhKwNA7EkkrdrSPHJzOBeYRKgGvQQ
-         rR99TNGh+oqu74wFG70rdejgZdL98JInkuARS3eKs5FvfZVY+PcS3W8q/HR+6C2j35Yh
-         6Xi59KPlnLgmlc1xc8yfkn7TgINdqoqTShBzyKWD5evH6gLgsM9qDw8JYoxyq5SAeYqP
-         ZxNLgPQqQq7mGC0dmx10/LJnQT8/7Cv7WEBpSsZN9hv8o8pI8q4zXG5PHI9A/esxIIfx
-         et+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690527613; x=1691132413;
-        h=content-transfer-encoding:in-reply-to:references:cc:to:from
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=csffeR+oPJ4r1BFCRv18Ji1lYkr66TeUyNN6VXBOA5k=;
-        b=ikIboOfaDS42FCJ/JZ1pyyhyazNF+nWv6CaLA6f5Si8apSDNh2XN5I0wNVtEYbzsZ1
-         iwgfvwUZvES6mIoo63jw7yOCsoYzB9CaOakyvRIkfcAd6/7t6u1H9U9D3TxuFFy6KhAp
-         vw72o946Gt2gukWn27v2V8WBSe4sEB6yOI7rRMQJSziXgoYNf6L1w0yqIgl+hyKwtWfh
-         EajF8Dl22eK96rFk1WWyZfxPO3oxtl2jB8cGVMIGP8z4FVv3nVgjqPBFZ1V2weswQCcS
-         hBLwORlq9k5SDmg1M7skhYw9eAO2m2LOGGtkf36Kv6E4csnEL6mrd8Ky/4bqBnucuSQJ
-         VXKw==
-X-Gm-Message-State: ABy/qLYIx2RzwlvLGfHQICn2XYDn8YiRCVGC06BsMXBLlsf1gwxckODO
-        GU2E2UA/ry0UeKKnRdASfIE=
-X-Google-Smtp-Source: APBJJlHQFId3j9XY4axmj92fg1mRTYT3ZW0i6+fQ9XtygsZgZwiS7I1U8crPutn4LhBlrp3d2H13DA==
-X-Received: by 2002:a17:90a:bf0a:b0:268:5558:de4c with SMTP id c10-20020a17090abf0a00b002685558de4cmr803408pjs.38.1690527613159;
-        Fri, 28 Jul 2023 00:00:13 -0700 (PDT)
-Received: from [192.168.0.104] ([103.131.18.64])
-        by smtp.gmail.com with ESMTPSA id fw3-20020a17090b128300b00262ca945cecsm3642658pjb.54.2023.07.28.00.00.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 28 Jul 2023 00:00:12 -0700 (PDT)
-Message-ID: <849bdcfb-b70f-5212-58f7-71e2da25c5ed@gmail.com>
-Date:   Fri, 28 Jul 2023 14:00:05 +0700
+        with ESMTP id S234445AbjG1HuA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2023 03:50:00 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D7A8B30E0;
+        Fri, 28 Jul 2023 00:49:58 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.201])
+        by gateway (Coremail) with SMTP id _____8Dx6eokc8NkijsLAA--.22411S3;
+        Fri, 28 Jul 2023 15:49:56 +0800 (CST)
+Received: from localhost.localdomain (unknown [10.20.42.201])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8Dx4eQbc8NkiQA+AA--.34001S3;
+        Fri, 28 Jul 2023 15:49:53 +0800 (CST)
+From:   Yinbo Zhu <zhuyinbo@loongson.cn>
+To:     Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Jianmin Lv <lvjianmin@loongson.cn>, wanghongliang@loongson.cn,
+        Liu Peibao <liupeibao@loongson.cn>,
+        loongson-kernel@lists.loongnix.cn,
+        Yinbo Zhu <zhuyinbo@loongson.cn>, Liu Yun <liuyun@loongson.cn>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v5 1/2] soc: dt-bindings: add loongson-2 pm
+Date:   Fri, 28 Jul 2023 15:49:43 +0800
+Message-Id: <20230728074944.26746-2-zhuyinbo@loongson.cn>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20230728074944.26746-1-zhuyinbo@loongson.cn>
+References: <20230728074944.26746-1-zhuyinbo@loongson.cn>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: Fwd: XPS 17 9730 runs significantly warmer on Kernel 6.5-rc3
- compared to Kernel 6.4.3
-Content-Language: en-US
-From:   Bagas Sanjaya <bagasdotme@gmail.com>
-To:     Amit Daniel Kachhap <amit.kachhap@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Goran <goran.brkuljan@gmail.com>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Regressions <regressions@lists.linux.dev>,
-        Linux Power Management <linux-pm@vger.kernel.org>
-References: <4aaf1d3d-2ab7-2d3a-f597-a1741bf699d6@gmail.com>
- <ZMMaYLcc5G4KSVyf@debian.me>
-In-Reply-To: <ZMMaYLcc5G4KSVyf@debian.me>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8Dx4eQbc8NkiQA+AA--.34001S3
+X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
+X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
+        ZEXasCq-sGcSsGvfJ3UbIjqfuFe4nvWSU5nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2Kfnx
+        nUUI43ZEXa7xR_UUUUUUUUU==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 7/28/23 08:31, Bagas Sanjaya wrote:
-> Oops, I accidentally duped this. My email client was stuck sending it
-> (but got delivered anyway), thus:
-> 
-> #regzbot dup-of: https://lore.kernel.org/regressions/107f05b8-0104-501c-130c-4f89f3f8a628@gmail.com/
-> 
+Add the Loongson-2 SoC Power Management Controller binding with DT
+schema format using json-schema.
 
-And to clean regzbot up:
+Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ .../soc/loongson/loongson,ls2k-pmc.yaml       | 52 +++++++++++++++++++
+ MAINTAINERS                                   |  6 +++
+ 2 files changed, 58 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
 
-#regzbot invalid: accidental duplicate
-
-Please ignore this thread, and instead follow up the original
-forwarded report at [1].
-
-Sorry for inconvenience.
-
-[1]: https://lore.kernel.org/lkml/107f05b8-0104-501c-130c-4f89f3f8a628@gmail.com/
-
+diff --git a/Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml b/Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
+new file mode 100644
+index 000000000000..da2dcfeebf12
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
+@@ -0,0 +1,52 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/soc/loongson/loongson,ls2k-pmc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Loongson-2 Power Manager controller
++
++maintainers:
++  - Yinbo Zhu <zhuyinbo@loongson.cn>
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - loongson,ls2k0500-pmc
++          - loongson,ls2k1000-pmc
++      - const: syscon
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  loongson,suspend-address:
++    $ref: /schemas/types.yaml#/definitions/uint64
++    description:
++      The "loongson,suspend-address" is a deep sleep state (Suspend To
++      RAM) firmware entry address which was jumped from kernel and it's
++      value was dependent on specific platform firmware code. In
++      addition, the PM need according to it to indicate that current
++      SoC whether support Suspend To RAM.
++
++required:
++  - compatible
++  - reg
++  - interrupts
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++
++    power-management@1fe27000 {
++        compatible = "loongson,ls2k1000-pmc", "syscon";
++        reg = <0x1fe27000 0x58>;
++        interrupt-parent = <&liointc1>;
++        interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
++        loongson,suspend-address = <0x0 0x1c000500>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 7a91f14cad2e..bcd05f1fa5c1 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -12190,6 +12190,12 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/hwinfo/loongson,ls2k-chipid.yaml
+ F:	drivers/soc/loongson/loongson2_guts.c
+ 
++LOONGSON-2 SOC SERIES PM DRIVER
++M:	Yinbo Zhu <zhuyinbo@loongson.cn>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
++
+ LOONGSON-2 SOC SERIES PINCTRL DRIVER
+ M:	zhanghongchen <zhanghongchen@loongson.cn>
+ M:	Yinbo Zhu <zhuyinbo@loongson.cn>
 -- 
-An old man doll... just what I always wanted! - Clara
+2.20.1
 
