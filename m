@@ -2,122 +2,101 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3543FC001DF
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Jul 2023 18:09:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69382C001DC
+	for <linux-pm@archiver.kernel.org>; Sun, 30 Jul 2023 19:44:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229749AbjG3SJA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 30 Jul 2023 14:09:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57710 "EHLO
+        id S229763AbjG3ToX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 30 Jul 2023 15:44:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46648 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229510AbjG3SJA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jul 2023 14:09:00 -0400
-Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D2751FDB
-        for <linux-pm@vger.kernel.org>; Sun, 30 Jul 2023 11:08:40 -0700 (PDT)
-Received: by mail-ed1-x530.google.com with SMTP id 4fb4d7f45d1cf-51e2a6a3768so5297429a12.0
-        for <linux-pm@vger.kernel.org>; Sun, 30 Jul 2023 11:08:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1690740518; x=1691345318;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=rfPh0rQxcpXl603MOWrHPrRTfxrFlYqNDM8hmhIpN5I=;
-        b=JCezjIrSBcfhqzNXY9YsythVWHzvD8ErnLuKBP6QBwscMfItqs+U0r2Yc7X3hFjL7i
-         t1BN+Dcmj/ijSuSnvlAl/kr2iRJ7I1VICgLgwWB76duYYFQvudb/IPD5c8jGXAop5/Ub
-         asQ+959WHRTScFop01Z5XWFwYRVWliJFjKVhGFVQF68LHCtYD2qOa5162XTrZEmLURoV
-         vbdtqHFkTwMj1zccO7uqbKXbk5FzDGo+yvI7TaDIh8qvyVg2Ob9AWu73mMFwT3JD9krL
-         4r1tq5yjzi8PRMOifyXyyc3fe7+GyYEp+2y+aIW1Mji0uub1FfKHONlVX+TAWel/Ov7R
-         u+jQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690740518; x=1691345318;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=rfPh0rQxcpXl603MOWrHPrRTfxrFlYqNDM8hmhIpN5I=;
-        b=g0dPHhDexBrW+R17MnRFWtnghQh7A77wJGyp79AJEoFRaixkMkb8aBxTZXCOr5mIet
-         VaQWtM5V+x2DFwDc/l8N8Y13wKoyg+3rZK/UsReldpzPq95k3FiWUi++nwKFfWYM2iyo
-         iYSGSNtPV+BkbQf3eos0H8evpA1bsnTZx+Pvh8Pq4NISRO1aw/ot3WEWRH73em6+WMBu
-         DpWU7cx5Tdyeklk5le6eytcqKbHAdtYbqo7DGujmguRC6MJayrBYJbG7p8+dbdv/iG6H
-         qpMfgilqQer3Cjm/sgJ0u1NdCkSR9KrTepmPUpx6QUNpxpoSOL3qlWdrD0FScSDptTRN
-         DHRg==
-X-Gm-Message-State: ABy/qLZM/xyrwLR805EWWs7npkXgsy+HRG7/YXFpjRpUCmYssHNIeTXs
-        ndd/zEGKmX1V6s3AodQIbmgAhQ==
-X-Google-Smtp-Source: APBJJlHxY/MaR0paiPXpydEunRqNiPLIODON0sih2jzqQjy0Kg/zC761MpbUD5tSRmqd1DnrIEd86A==
-X-Received: by 2002:a17:906:3294:b0:99b:cd2a:641 with SMTP id 20-20020a170906329400b0099bcd2a0641mr5097665ejw.23.1690740518078;
-        Sun, 30 Jul 2023 11:08:38 -0700 (PDT)
-Received: from [192.168.1.20] ([178.197.222.183])
-        by smtp.gmail.com with ESMTPSA id f23-20020a170906495700b0098748422178sm4951807ejt.56.2023.07.30.11.08.36
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 30 Jul 2023 11:08:37 -0700 (PDT)
-Message-ID: <1078561c-d9f9-0678-0417-412a0beda6e3@linaro.org>
-Date:   Sun, 30 Jul 2023 20:08:35 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.1
-Subject: Re: [PATCH v2 1/3] dt-bindings: power: supply: maxim,max17040: update
- properties
-Content-Language: en-US
+        with ESMTP id S230197AbjG3ToN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jul 2023 15:44:13 -0400
+Received: from mgamail.intel.com (unknown [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 174E6170D;
+        Sun, 30 Jul 2023 12:43:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1690746233; x=1722282233;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=OJcPVZGJsNDtlNBUMYQUs217ooQQcJO9vUAsDUDHiUw=;
+  b=KiHk8sd88gv1A2Uciko8K9SeIAU6NuP+Jb+dHUeCEyFOZSddn/Z9YiHI
+   RwslPZ9OgHE1EVDuVKsCy6ZTU/iI+ddeVx1GC16MMBeXzOsTuFTcNeBcx
+   YcvtRnCKOJBsxs1LY0Njt7VqcOaGxL7F2QiWnEaExJqGWjcCwWq2gVlEr
+   8umgV6hKcFFJh11vB0mQdYC8PHBaHf/yqi/XodCoxEVhWGeePkq8ANrnI
+   M2K7698wgrLrQ2D9124SIvU7FeMwCpuguPMtoeyYvYqO2y/wBbAnOdgc0
+   5wcpzSSDBw+mZkJMuQLjuE9CRdhY6GiltgKpykSqSUH7akmruw7zS7c92
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10787"; a="366351076"
+X-IronPort-AV: E=Sophos;i="6.01,242,1684825200"; 
+   d="scan'208";a="366351076"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jul 2023 12:43:48 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10787"; a="841968895"
+X-IronPort-AV: E=Sophos;i="6.01,242,1684825200"; 
+   d="scan'208";a="841968895"
+Received: from lkp-server02.sh.intel.com (HELO 953e8cd98f7d) ([10.239.97.151])
+  by fmsmga002.fm.intel.com with ESMTP; 30 Jul 2023 12:43:45 -0700
+Received: from kbuild by 953e8cd98f7d with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1qQCKO-0004kv-0r;
+        Sun, 30 Jul 2023 19:43:44 +0000
+Date:   Mon, 31 Jul 2023 03:43:24 +0800
+From:   kernel test robot <lkp@intel.com>
 To:     Svyatoslav Ryhel <clamor95@gmail.com>,
         Iskren Chernev <me@iskren.info>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
         Marek Szyprowski <m.szyprowski@samsung.com>,
         Matheus Castello <matheus@castello.eng.br>,
         Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20230730172648.71578-1-clamor95@gmail.com>
- <20230730172648.71578-2-clamor95@gmail.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230730172648.71578-2-clamor95@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Cc:     oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 3/3] power: max17040: get thermal data from adc if
+ available
+Message-ID: <202307310308.FDG6br3Y-lkp@intel.com>
+References: <20230730172648.71578-4-clamor95@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230730172648.71578-4-clamor95@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 30/07/2023 19:26, Svyatoslav Ryhel wrote:
-> Add status and temperature properties.
-> 
-> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> ---
->  .../bindings/power/supply/maxim,max17040.yaml | 31 +++++++++++++++++++
->  1 file changed, 31 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml
-> index 2627cd3eed83..4bccf25a111c 100644
-> --- a/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml
-> +++ b/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml
-> @@ -55,6 +55,14 @@ properties:
->    interrupts:
->      maxItems: 1
->  
-> +  io-channels:
-> +    items:
-> +      - description: battery temperature
-> +
-> +  io-channel-names:
-> +    items:
-> +      - const: temp
-> +
->    wakeup-source:
->      type: boolean
->      description: |
-> @@ -95,3 +103,26 @@ examples:
->          wakeup-source;
->        };
->      };
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/irq.h>
-> +    i2c0 {
+Hi Svyatoslav,
 
-Just i2c
+kernel test robot noticed the following build errors:
 
-With above:
+[auto build test ERROR on krzk-dt/for-next]
+[also build test ERROR on linus/master v6.5-rc3 next-20230728]
+[cannot apply to sre-power-supply/for-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+url:    https://github.com/intel-lab-lkp/linux/commits/Svyatoslav-Ryhel/dt-bindings-power-supply-maxim-max17040-update-properties/20230731-012920
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux-dt.git for-next
+patch link:    https://lore.kernel.org/r/20230730172648.71578-4-clamor95%40gmail.com
+patch subject: [PATCH v2 3/3] power: max17040: get thermal data from adc if available
+config: x86_64-buildonly-randconfig-r001-20230731 (https://download.01.org/0day-ci/archive/20230731/202307310308.FDG6br3Y-lkp@intel.com/config)
+compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
+reproduce: (https://download.01.org/0day-ci/archive/20230731/202307310308.FDG6br3Y-lkp@intel.com/reproduce)
 
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202307310308.FDG6br3Y-lkp@intel.com/
 
-Best regards,
-Krzysztof
+All errors (new ones prefixed by >>):
 
+   ld: vmlinux.o: in function `max17040_get_property':
+>> max17040_battery.c:(.text+0x1cb3dd0): undefined reference to `iio_read_channel_processed_scale'
+   ld: vmlinux.o: in function `max17040_probe':
+>> max17040_battery.c:(.text+0x1cb40f5): undefined reference to `devm_iio_channel_get'
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
