@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D264BC04FE2
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Jul 2023 07:36:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BF92C04E69
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Jul 2023 07:37:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230016AbjGaHg4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Jul 2023 03:36:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44540 "EHLO
+        id S230357AbjGaHg6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Jul 2023 03:36:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44546 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230172AbjGaHgp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jul 2023 03:36:45 -0400
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68E7B12A;
-        Mon, 31 Jul 2023 00:36:44 -0700 (PDT)
-Received: by mail-lf1-x12e.google.com with SMTP id 2adb3069b0e04-4fb7373dd35so6717179e87.1;
-        Mon, 31 Jul 2023 00:36:44 -0700 (PDT)
+        with ESMTP id S229813AbjGaHgt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jul 2023 03:36:49 -0400
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A259EE;
+        Mon, 31 Jul 2023 00:36:48 -0700 (PDT)
+Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-4fe0e34f498so6319506e87.2;
+        Mon, 31 Jul 2023 00:36:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1690789003; x=1691393803;
+        d=gmail.com; s=20221208; t=1690789006; x=1691393806;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ceNIGOPbsyHjJmTOQVPb/Eaqj2M4+lsBZ1EpEQosohQ=;
-        b=DJ/sDPnzy3nCJlSj7g4OH8HbDEsuOk4b9KqLMo9yBq+CovS27mK9oR9qNWdrDczEPu
-         ygntwmf3IlgUCzaE9DJOjSuJg4oGyCpPC14Scc1yCdoO6xTlbP731f3XJrm1dGhkcT1m
-         GJ8zgBfZBbV8Lb8LZd1srCF/dhs4PJmXIpQPS0YGcpTW6+vaYnSE4Mj9hEd6dfjAHrVg
-         TaXIX5I/pWdRk5KFexNYIg8XPHDC7/guX19mvITnbvbMyEMMM4Hk4VoB1Poo1WzQi//A
-         wkle7jx8kJCzMht6G5Z67g7dWU0+RZ74txzTlKjLQ4+Kj8KadW5gQXHwCaVGEorZ2JJp
-         hf9Q==
+        bh=6j0RW75STEI+5ZneQ+EaoJsYheY8+d1jwea7sk4EPgA=;
+        b=T/MFohopS/BeXcEOIKcI+cKbio9xHJw754uW1T4iafV4Cpc+VMjI32RZqanKyS0c3u
+         ClVlopqABlN0fqoAfTJQ1PEq2enBvzqMS1t65L3ynFlWX6m7Sq2zHmP0XKqYL/rEtfw8
+         DgZV22HlJaGMpLTaP9J+NixAUS71c+zIIQZ6o/8q/Cfdw1jPi1TAusj14G50cQHwGxcE
+         C8NgkGO3B1UUKEMSgrPrL4wLGz43APbpoLnUIKnSbs4Uz0eVw5CU91pz7c5JnFMscf6B
+         5ZUrxnGap4NaiA5LuXs+0koOCjymRdigu1CsB4Kg/AHFVaSpftWmMQ504YBe4WpnuuiU
+         sHOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690789003; x=1691393803;
+        d=1e100.net; s=20221208; t=1690789006; x=1691393806;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=ceNIGOPbsyHjJmTOQVPb/Eaqj2M4+lsBZ1EpEQosohQ=;
-        b=jY/UtDpcPrp3lEneIsKpUzgrJMfOtGfr0W4HdG9VFIdrCYn1eXDAZyQWvaW/9mXMeZ
-         S/OqstEvBX2uW5CjpJd8uj3LJv40qxsuAcKkuR1SEeXzgcLKS+XCd58jRsyYEvf41ErC
-         tfc17Qxe9jc7qI/HMcLjyxW21KqfvMxRuK9xMsIf1XP29I64kP6UhOP3PSeTsR5HIMR2
-         dwWrpPB0IEWfpuCyh3PtrOuEd4FUxjVXQvGQTKfPfiesGF1TQCfPRafPyMfpAZav6Zoc
-         13S8aakasW5V6pPupboxxKQS45+AeUUNO45s9yAI8XRaVF2pyTT4l6vL+1HHNnt6w9LU
-         quPg==
-X-Gm-Message-State: ABy/qLanaTYsX4dySgn2jdCOuEFRz3mMTCCv7uzrdt9PrMy9wBFOQrb+
-        8xIzeVAP3rcf1AyUrXR26Uy+ckZ+lRjSUw==
-X-Google-Smtp-Source: APBJJlFSW5teG7KWE/dA9664HNl+BXct0TqfLL4YJ/zeZnT0eUMedaMT6ZsUxJRmsygtYh+dTp/N4A==
-X-Received: by 2002:a05:6512:2391:b0:4fb:c9e1:5286 with SMTP id c17-20020a056512239100b004fbc9e15286mr4097169lfv.7.1690789002457;
-        Mon, 31 Jul 2023 00:36:42 -0700 (PDT)
+        bh=6j0RW75STEI+5ZneQ+EaoJsYheY8+d1jwea7sk4EPgA=;
+        b=b5RX22qso+PF+kbtNK7KlW/f2wIj+2J978XV8Dx4+2rMgkNrl759oDU2PU8fi6LXWq
+         0J3Qx/Rgjrxl58hFeMuh0/BcYhEHh7zSYtqE/Zn9V/RfNsxKRtdgeTAd+Ob9zpW8B14J
+         KAG55c9uUuUjYXuTN2dYA4W7QlF/HbrcGuR+ROXpOoP2rtpgfmveBP3f3FxrwjTGP4mn
+         M+H09ri9zywRLyonz6yE0ogLUpLflkjTbRV+qgdtTS51JytJUsy0sTxeoiIYFPkePZQc
+         XmMGEfkahK1MURX5/Ur7gy+BQMGctJ/qCty3Xofze6C/dmM1la9yW6uUC+QcPl0MxHlx
+         ztmA==
+X-Gm-Message-State: ABy/qLYlF1wuJsX3yM6eXYJL+ADu6dL99Nr1sCpBVeiqIVA+y/ufK6Mn
+        OAzMP0PIOlhsYe6rQXtHtW1Pfs6rdvmI8A==
+X-Google-Smtp-Source: APBJJlEjVuG3rpNknzE+EPZVjnZ7ZAzAmvi4ufDOCu979EnSfo/KhZ/P7n7O1xJ0r5fu+kF5CV21Yw==
+X-Received: by 2002:ac2:5df3:0:b0:4fb:89b3:3373 with SMTP id z19-20020ac25df3000000b004fb89b33373mr4822337lfq.43.1690789006542;
+        Mon, 31 Jul 2023 00:36:46 -0700 (PDT)
 Received: from xeon.. ([188.163.112.48])
-        by smtp.gmail.com with ESMTPSA id m14-20020a056512014e00b004fe3229e584sm586898lfo.270.2023.07.31.00.36.41
+        by smtp.gmail.com with ESMTPSA id m14-20020a056512014e00b004fe3229e584sm586898lfo.270.2023.07.31.00.36.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Jul 2023 00:36:42 -0700 (PDT)
+        Mon, 31 Jul 2023 00:36:46 -0700 (PDT)
 From:   Svyatoslav Ryhel <clamor95@gmail.com>
 To:     Iskren Chernev <me@iskren.info>,
         Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
@@ -67,9 +67,9 @@ To:     Iskren Chernev <me@iskren.info>,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-samsung-soc@vger.kernel.org
-Subject: [PATCH v3 1/4] dt-bindings: power: supply: maxim,max17040: update properties
-Date:   Mon, 31 Jul 2023 10:36:10 +0300
-Message-Id: <20230731073613.10394-2-clamor95@gmail.com>
+Subject: [PATCH v3 4/4] ARM: configs: s5pv210_defconfig: enable IIO required by MAX17040
+Date:   Mon, 31 Jul 2023 10:36:13 +0300
+Message-Id: <20230731073613.10394-5-clamor95@gmail.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230731073613.10394-1-clamor95@gmail.com>
 References: <20230731073613.10394-1-clamor95@gmail.com>
@@ -79,60 +79,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add status and temperature properties.
+After adding support for passing temperature data from thermal sensor
+to MAX17040 it got dependency on CONFIG_IIO. From all defconfigs
+using MAX17040 only s5pv210_defconfig did not have IIO already enabled
+so let's enable it to avoid regression.
 
 Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- .../bindings/power/supply/maxim,max17040.yaml | 31 +++++++++++++++++++
- 1 file changed, 31 insertions(+)
+ arch/arm/configs/s5pv210_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml
-index 2627cd3eed83..377cbb2c2c1f 100644
---- a/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml
-@@ -55,6 +55,14 @@ properties:
-   interrupts:
-     maxItems: 1
- 
-+  io-channels:
-+    items:
-+      - description: battery temperature
-+
-+  io-channel-names:
-+    items:
-+      - const: temp
-+
-   wakeup-source:
-     type: boolean
-     description: |
-@@ -95,3 +103,26 @@ examples:
-         wakeup-source;
-       };
-     };
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    i2c {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      fuel-gauge@36 {
-+        compatible = "maxim,max17043";
-+        reg = <0x36>;
-+
-+        interrupt-parent = <&gpio>;
-+        interrupts = <144 IRQ_TYPE_EDGE_FALLING>;
-+
-+        monitored-battery = <&battery>;
-+        power-supplies = <&charger>;
-+
-+        io-channels = <&adc 8>;
-+        io-channel-names = "temp";
-+
-+        maxim,alert-low-soc-level = <10>;
-+        wakeup-source;
-+      };
-+    };
+diff --git a/arch/arm/configs/s5pv210_defconfig b/arch/arm/configs/s5pv210_defconfig
+index 4c1e480b5bbd..24070ee3d43e 100644
+--- a/arch/arm/configs/s5pv210_defconfig
++++ b/arch/arm/configs/s5pv210_defconfig
+@@ -97,6 +97,7 @@ CONFIG_MMC_SDHCI_S3C_DMA=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_MAX8998=m
+ CONFIG_DMADEVICES=y
++CONFIG_IIO=y
+ CONFIG_PWM=y
+ CONFIG_PWM_SAMSUNG=y
+ CONFIG_PHY_SAMSUNG_USB2=m
 -- 
 2.39.2
 
