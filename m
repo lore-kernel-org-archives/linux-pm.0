@@ -2,114 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DDE3C001E0
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Aug 2023 11:48:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEE48C001E0
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Aug 2023 11:52:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232302AbjHALsa convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Aug 2023 07:48:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44338 "EHLO
+        id S232940AbjHALwA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Aug 2023 07:52:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46038 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233826AbjHALsR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2023 07:48:17 -0400
-Received: from mail-oo1-f49.google.com (mail-oo1-f49.google.com [209.85.161.49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 668361736
-        for <linux-pm@vger.kernel.org>; Tue,  1 Aug 2023 04:48:14 -0700 (PDT)
-Received: by mail-oo1-f49.google.com with SMTP id 006d021491bc7-56ca74ee539so331528eaf.1
-        for <linux-pm@vger.kernel.org>; Tue, 01 Aug 2023 04:48:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690890493; x=1691495293;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=IlLFsbqGdBRpv2hm45cTLpIEjUicm92z7JrPneLl8rs=;
-        b=WoTkAT+68XGFEwNEXe6cwW+o6yb/2LC0i3Et6tRdSLenS6RRyGLodIzQARlzd5wdjl
-         ougu7AACQ0y89473NaK6gIP84Am1km1G6Kkj8hInwhzMaktYV+jZWdrGmyYZzuFS/pRs
-         q3mB5LHQcC9XDv2BRzCJ/el0FkP7Z4HTa6YMYlWcZbHfg5xKKOjoONWQ8MeP62dAEU7b
-         Nn5DZChgWXXCHoKOLejCb1gJvMXhhbMpgSJtzi2f2hgaNhY7JdQg/LTOnTDdF1ev6hJw
-         uYn1ZOGWdOreRzAg/eeriovfWk6rOXn+SB5xuwY01XVeRpDJ1Hh5Ab07SFg+sgq5jSlx
-         5/Xw==
-X-Gm-Message-State: ABy/qLbQJAJN6r1AAyIYRTWAr8C2air3E5km7M8+yZQmahESYnyX9v4r
-        PoLSIR+5TDgBgPcUXRQg3ALYE7cjFIovYbC/SSU=
-X-Google-Smtp-Source: APBJJlFJov5CS24uvPs33yU6/5v/GZT2UeLKsWMchm9h3ZbX/a4N2YmGfePO9CHGNOWK/QWIm1l9hvBAIK9Xmk+0NHI=
-X-Received: by 2002:a4a:e251:0:b0:566:951e:140c with SMTP id
- c17-20020a4ae251000000b00566951e140cmr6352476oot.1.1690890493570; Tue, 01 Aug
- 2023 04:48:13 -0700 (PDT)
+        with ESMTP id S230087AbjHALv7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2023 07:51:59 -0400
+Received: from mail.cothiafon.pl (mail.cothiafon.pl [217.61.106.23])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EDFCC7
+        for <linux-pm@vger.kernel.org>; Tue,  1 Aug 2023 04:51:59 -0700 (PDT)
+Received: by mail.cothiafon.pl (Postfix, from userid 1002)
+        id 313AB83634; Mon, 31 Jul 2023 10:36:06 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=cothiafon.pl; s=mail;
+        t=1690792587; bh=dwoca0X6C9VXklO/zRgFQCPapTk5LFz4tKaENdvy6Po=;
+        h=Date:From:To:Subject:From;
+        b=njX/0liAO8fKnYbdjYKQ0Hblhvf1aXMjbfuK7yajHN/TTQDKNTbW9Yx5Uj/WoSFE2
+         K1yCCyUn76awA9vClj8Fi7DU987fGqpqL+zjbfR21HOfrl+vA2lKTBSGaPL69Zn9RE
+         V8TODTekmhjBtVWXwfLXwVBwpPLiZyt/BQKlvXuVfXbQsB2Whnfg+5WiNzbv49yoin
+         MD6YNGDuk0c2kmoeZkfK7AzxCHFL1k+x7UiFVkthwAzhkHnCT3gJafSLntC70FYC1R
+         cMOrXkq7GwszqQqWRy9M9jnth1R6Y7K1goAEgH45vQqlGmvbVpN4mBIX0cpxZfV1r7
+         zCJQB/dDS1q9g==
+Received: by mail.cothiafon.pl for <linux-pm@vger.kernel.org>; Mon, 31 Jul 2023 08:35:48 GMT
+Message-ID: <20230731095940-0.1.28.omvn.0.83nn84lhph@cothiafon.pl>
+Date:   Mon, 31 Jul 2023 08:35:48 GMT
+From:   =?UTF-8?Q? "Rados=C5=82aw_Grabowski" ?= 
+        <radoslaw.grabowski@cothiafon.pl>
+To:     <linux-pm@vger.kernel.org>
+Subject: W sprawie samochodu
+X-Mailer: mail.cothiafon.pl
 MIME-Version: 1.0
-References: <bcce80ed-f2ef-a92f-f7b5-0b14f498d653@linuxfoundation.org>
-In-Reply-To: <bcce80ed-f2ef-a92f-f7b5-0b14f498d653@linuxfoundation.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 1 Aug 2023 13:48:02 +0200
-Message-ID: <CAJZ5v0jrf+3xNz9Dt+b6JY5EJTWR1_46yETZ=R0gaVPuKm8SNw@mail.gmail.com>
-Subject: Re: [GIT PULL] cpupower update for Linux 6.6-rc1
-To:     Shuah Khan <skhan@linuxfoundation.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>, trenn@suse.com,
-        trenn@suse.de, linux-pm@vger.kernel.org, shuah <shuah@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Shuah,
+Dzie=C5=84 dobry,
 
-On Mon, Jul 31, 2023 at 10:42 PM Shuah Khan <skhan@linuxfoundation.org> wrote:
->
-> Hi Rafael,
->
-> Please pull the following cpupower update for Linux 6.6-rc1.
->
-> This cpupower update for Linux 6.6-rc1 consists of 2 fixes and
-> enhancements to add support for amd-pstate active mode driver,
-> amd_pstate mode change, EPP value change, turbo-boost support,
-> and is_valid_path API.
->
-> diff is attached.
+chcieliby=C5=9Bmy zapewni=C4=87 Pa=C5=84stwu kompleksowe rozwi=C4=85zania=
+, je=C5=9Bli chodzi o system monitoringu GPS.
 
-Pulled and added to the linux-next branch in linux-pm.git, thanks!
+Precyzyjne monitorowanie pojazd=C3=B3w na mapach cyfrowych, =C5=9Bledzeni=
+e ich parametr=C3=B3w eksploatacyjnych w czasie rzeczywistym oraz kontrol=
+a paliwa to kluczowe funkcjonalno=C5=9Bci naszego systemu.=20
+
+Organizowanie pracy pracownik=C3=B3w jest dzi=C4=99ki temu prostsze i bar=
+dziej efektywne, a oszcz=C4=99dno=C5=9Bci i optymalizacja w zakresie pono=
+szonych koszt=C3=B3w, maj=C4=85 dla ka=C5=BCdego przedsi=C4=99biorcy ogro=
+mne znaczenie.
+
+Dopasujemy nasz=C4=85 ofert=C4=99 do Pa=C5=84stwa oczekiwa=C5=84 i potrze=
+b organizacji. Czy mogliby=C5=9Bmy porozmawia=C4=87 o naszej propozycji?
 
 
-> ----------------------------------------------------------------
-> The following changes since commit 06c2afb862f9da8dc5efa4b6076a0e48c3fbaaa5:
->
->    Linux 6.5-rc1 (2023-07-09 13:53:13 -0700)
->
-> are available in the Git repository at:
->
->    git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux tags/linux-cpupower-6.6-rc1
->
-> for you to fetch changes up to 99481d2195bfd13a663904e6014887abf46b57c7:
->
->    cpupower: Fix cpuidle_set to accept only numeric values for idle-set operation. (2023-07-18 16:07:08 -0600)
->
-> ----------------------------------------------------------------
-> linux-cpupower-6.6-rc1
->
-> This cpupower update for Linux 6.6-rc1 consists of 2 fixes and
-> enhancements to add support for amd-pstate active mode driver,
-> amd_pstate mode change, EPP value change, turbo-boost support,
-> and is_valid_path API.
->
-> ----------------------------------------------------------------
-> Ben Hutchings (1):
->        cpupower: Bump soname version
->
-> Likhitha Korrapati (1):
->        cpupower: Fix cpuidle_set to accept only numeric values for idle-set operation.
->
-> Wyes Karny (5):
->        cpupower: Recognise amd-pstate active mode driver
->        cpupower: Add is_valid_path API
->        cpupower: Add EPP value change support
->        cpupower: Add support for amd_pstate mode change
->        cpupower: Add turbo-boost support in cpupower
->
->   tools/power/cpupower/Makefile                |  2 +-
->   tools/power/cpupower/lib/cpupower.c          |  7 +++
->   tools/power/cpupower/lib/cpupower_intern.h   |  1 +
->   tools/power/cpupower/utils/cpuidle-set.c     | 16 +++----
->   tools/power/cpupower/utils/cpupower-set.c    | 65 +++++++++++++++++++++++++++-
->   tools/power/cpupower/utils/helpers/helpers.h | 11 +++++
->   tools/power/cpupower/utils/helpers/misc.c    | 57 +++++++++++++++++++++++-
->   7 files changed, 146 insertions(+), 13 deletions(-)
-> ----------------------------------------------------------------
+Pozdrawiam
+Rados=C5=82aw Grabowski
