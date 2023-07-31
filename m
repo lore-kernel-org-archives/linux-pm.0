@@ -2,168 +2,102 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE60BC07E8A
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Jul 2023 07:36:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AE92C001DC
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Jul 2023 08:03:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230285AbjGaHg5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Jul 2023 03:36:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44544 "EHLO
+        id S231862AbjGaID0 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Jul 2023 04:03:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56254 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231280AbjGaHgs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jul 2023 03:36:48 -0400
-Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E0FF11B;
-        Mon, 31 Jul 2023 00:36:47 -0700 (PDT)
-Received: by mail-lf1-x135.google.com with SMTP id 2adb3069b0e04-4fe28f92d8eso2078000e87.1;
-        Mon, 31 Jul 2023 00:36:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1690789005; x=1691393805;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UDXgSylBUJtlqgXKl+eFyzEmuuOxDLbY4Ry7v67coaU=;
-        b=M+YmC08CYkEd/jALSE78ke/tk19xg7gETYrI9RtT46ASu0nDcTimuCNCo4EEtrz6ov
-         5D8N2FpMJGBgFJpLZiRXgpSGMWDDgHLA3whI3hP4xZOBs/41HeeuN75/hdABoiCkKR/x
-         ZAWGLeEp1XhiphGT2d57V3xw+M8ju0IMnoPT2GS14Upj9BIdgIMx8xzcvULpMHBQPImS
-         wr3XXNhu3XkeS1loHJGEa0LVgTLe8QWJ6zHFjs0srBHlL4O/N2pVYN86lJoMrRDeY9Mr
-         wXdjJokRabzgMz2UNV6GXyxN85LVMnK3jc2l2KmuiTpKmKeLBNqf3M6ym+km8ZucXBUy
-         HPRA==
+        with ESMTP id S231709AbjGaIC7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jul 2023 04:02:59 -0400
+Received: from mail-oo1-f42.google.com (mail-oo1-f42.google.com [209.85.161.42])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78AD519AA;
+        Mon, 31 Jul 2023 01:02:10 -0700 (PDT)
+Received: by mail-oo1-f42.google.com with SMTP id 006d021491bc7-563393b63dbso351109eaf.1;
+        Mon, 31 Jul 2023 01:02:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690789005; x=1691393805;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1690790529; x=1691395329;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=UDXgSylBUJtlqgXKl+eFyzEmuuOxDLbY4Ry7v67coaU=;
-        b=I4QIoLOP9lN03ivUaRVQBFQr+AGufk8rPkl7UBZa2coWDpKK9CXzdXpuF/kUmFdeen
-         o4zBDczotplCBguHLywWxPONw9lhKQZBRk8EW1RRIkp1r2oiCeH66vVBqg2e4+LdL80G
-         C5Y+sxO3YdZaHNgLYEcjQlwGa5WmP9tTutkRy1sC/V5v1Kbhlylt7+oeldMxNBsQ9Vym
-         g7QqOOPnLsBYyueNRQIqac+/4dbqIjGtv3tgaDXKHKf8eMTAcQe9mOxz1gQ8tNIsNXGo
-         4r6qT7aU1YLnG54j9isTWOx+1HgQNUdzr12L/o3z6Hrxwyz53lFJ4qmpjWTmNoBu4dJU
-         lB/Q==
-X-Gm-Message-State: ABy/qLYyheoHQ9wJeba1Hng6GtXJx5dpio7pd56ctYGmYdOBNB81Od/Q
-        k/s/WUXl7KohpPtbzPOQ3rg=
-X-Google-Smtp-Source: APBJJlG3HmFleE3nV4W8kYWqWAYTO2n8ueJdfAwma97u5u1Bpv71uvSAJyJ8zFFcx6Oz4HEXNl4+9w==
-X-Received: by 2002:ac2:58c8:0:b0:4f9:596d:c803 with SMTP id u8-20020ac258c8000000b004f9596dc803mr4878541lfo.53.1690789005107;
-        Mon, 31 Jul 2023 00:36:45 -0700 (PDT)
-Received: from xeon.. ([188.163.112.48])
-        by smtp.gmail.com with ESMTPSA id m14-20020a056512014e00b004fe3229e584sm586898lfo.270.2023.07.31.00.36.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Jul 2023 00:36:44 -0700 (PDT)
-From:   Svyatoslav Ryhel <clamor95@gmail.com>
-To:     Iskren Chernev <me@iskren.info>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Matheus Castello <matheus@castello.eng.br>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Svyatoslav Ryhel <clamor95@gmail.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Stefan Hansson <newbie13xd@gmail.com>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org
-Subject: [PATCH v3 3/4] power: max17040: get thermal data from adc if available
-Date:   Mon, 31 Jul 2023 10:36:12 +0300
-Message-Id: <20230731073613.10394-4-clamor95@gmail.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230731073613.10394-1-clamor95@gmail.com>
-References: <20230731073613.10394-1-clamor95@gmail.com>
+        bh=6ijbOYA9unDh372iyvw22tAArTIXT8/U4ztbnRWjXnA=;
+        b=Ygf1goRKuwnV/NaliCTWuqQZrUGuZ0YBOPyyFMb6bwaQiXGmHkRKQC6HGvSWYWaZ1n
+         BUYmZOtld1Fn+6/ySpLnR8nnWJnQ20Zv67g8kiOxhj8PX/7ueYWv/jcmkytISg0fGy1G
+         uxQudERHGLhXdjfSUkIS/VGpFZYir7tAzqYRtI6Z+ZZfIkNN8Ewf+YwqHdmq8ZJdVkXt
+         kbEWAw05IcHjnVElrEnguwR5ck6iLkDGmQa75bz3CoLOlGHuhnk6Dz10qytnW7s9gNnB
+         SHYKy13iJ/pmSMz/5/zWIkMDRLS6CZsFh3JuyD409HQMtliWZwVnG0PrxnGKeEWZFAXe
+         siZA==
+X-Gm-Message-State: ABy/qLYzN2btVjKwACCTLw3isZf/P2WevZmy2iZ3aQd3tKen7jmYt35R
+        +zLAlX9rqTRDRR3TzDNOzHjD8EXUm/9c+vvfIZn/pHcL
+X-Google-Smtp-Source: APBJJlG08Y08q8b9Lus5H0I1QRM2uR+ONK5q2Tr3OahnDyQZblTVplve571AQciGqfURZjIuNz5AjF6ECfGFtSIvx6M=
+X-Received: by 2002:a4a:a585:0:b0:56c:484a:923d with SMTP id
+ d5-20020a4aa585000000b0056c484a923dmr4497847oom.1.1690790529118; Mon, 31 Jul
+ 2023 01:02:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230728145515.990749537@infradead.org> <20230728145808.835742568@infradead.org>
+ <CAJZ5v0gNqEuqvV0RtrXiDDGtvKB2hronLwAU8jnmuGppKmyDxA@mail.gmail.com> <20230729084417.GB3945851@hirez.programming.kicks-ass.net>
+In-Reply-To: <20230729084417.GB3945851@hirez.programming.kicks-ass.net>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 31 Jul 2023 10:01:53 +0200
+Message-ID: <CAJZ5v0iVKRY5-YvQmMbZ3+eZNHJgXt=CoYedNueAJyT9+Ld5Dg@mail.gmail.com>
+Subject: Re: [RFC][PATCH 1/3] cpuidle: Inject tick boundary state
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>, anna-maria@linutronix.de,
+        tglx@linutronix.de, frederic@kernel.org, gautham.shenoy@amd.com,
+        linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org,
+        linux-pm@vger.kernel.org, mingo@redhat.com, juri.lelli@redhat.com,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+        bristot@redhat.com, vschneid@redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since fuel gauge does not support thermal monitoring,
-some vendors may couple this fuel gauge with thermal/adc
-sensor to monitor battery cell exact temperature.
+On Sat, Jul 29, 2023 at 10:44 AM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> On Fri, Jul 28, 2023 at 05:36:55PM +0200, Rafael J. Wysocki wrote:
+> > On Fri, Jul 28, 2023 at 5:01 PM Peter Zijlstra <peterz@infradead.org> wrote:
+> > >
+> > > In order to facilitate governors that track history in idle-state
+> > > buckets (TEO) making a useful decision about NOHZ, make sure we have a
+> > > bucket that counts tick-and-longer.
+> > >
+> > > In order to be inclusive of the tick itself -- after all, if we do not
+> > > disable NOHZ we'll sleep for a full tick, the actual boundary should
+> > > be just short of a full tick.
+> > >
+> > > IOW, when registering the idle-states, add one that is always
+> > > disabled, just to have a bucket.
+> >
+> > This extra bucket can be created in the governor itself, can't it?
+>
+> I couldn't find a nice spot for the governor to add idle-states.
 
-Add this feature by adding optional iio thermal channel.
+Well, I've thought this through and recalled a couple of things and my
+conclusion is that the decision whether or not to stop the tick really
+depends on the idle state choice.
 
-Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
----
- drivers/power/supply/Kconfig            |  2 +-
- drivers/power/supply/max17040_battery.c | 21 +++++++++++++++++++++
- 2 files changed, 22 insertions(+), 1 deletion(-)
+There are three cases:
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index c78be9f322e6..32600609865b 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -374,7 +374,7 @@ config AXP288_FUEL_GAUGE
- 
- config BATTERY_MAX17040
- 	tristate "Maxim MAX17040/17041/17043 family Fuel Gauge"
--	depends on I2C
-+	depends on I2C && IIO
- 	select REGMAP_I2C
- 	help
- 	  Driver supports Maxim fuel-gauge systems for lithium-ion (Li+)
-diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index 3301e8a4b16c..54db20637c87 100644
---- a/drivers/power/supply/max17040_battery.c
-+++ b/drivers/power/supply/max17040_battery.c
-@@ -18,6 +18,7 @@
- #include <linux/of_device.h>
- #include <linux/regmap.h>
- #include <linux/slab.h>
-+#include <linux/iio/consumer.h>
- 
- #define MAX17040_VCELL	0x02
- #define MAX17040_SOC	0x04
-@@ -142,6 +143,7 @@ struct max17040_chip {
- 	struct delayed_work		work;
- 	struct power_supply		*battery;
- 	struct chip_data		data;
-+	struct iio_channel		*channel_temp;
- 
- 	/* battery capacity */
- 	int soc;
-@@ -404,6 +406,13 @@ static int max17040_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_STATUS:
- 		power_supply_get_property_from_supplier(psy, psp, val);
- 		break;
-+	case POWER_SUPPLY_PROP_TEMP:
-+		if (!chip->channel_temp)
-+			return -ENODATA;
-+
-+		iio_read_channel_processed_scale(chip->channel_temp,
-+						 &val->intval, 10);
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -424,6 +433,7 @@ static enum power_supply_property max17040_battery_props[] = {
- 	POWER_SUPPLY_PROP_CAPACITY,
- 	POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN,
- 	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_TEMP,
- };
- 
- static const struct power_supply_desc max17040_battery_desc = {
-@@ -469,6 +479,17 @@ static int max17040_probe(struct i2c_client *client)
- 	i2c_set_clientdata(client, chip);
- 	psy_cfg.drv_data = chip;
- 
-+	/* Switch to devm_iio_channel_get_optional when available  */
-+	chip->channel_temp = devm_iio_channel_get(&client->dev, "temp");
-+	if (IS_ERR(chip->channel_temp)) {
-+		ret = PTR_ERR(chip->channel_temp);
-+		if (ret != -ENODEV)
-+			return dev_err_probe(&client->dev, PTR_ERR(chip->channel_temp),
-+					     "failed to get temp\n");
-+		else
-+			chip->channel_temp = NULL;
-+	}
-+
- 	chip->battery = devm_power_supply_register(&client->dev,
- 				&max17040_battery_desc, &psy_cfg);
- 	if (IS_ERR(chip->battery)) {
--- 
-2.39.2
+1. The selected idle state is shallow (that is, its target residency
+is below the tick period length), but it is not the deepest one.
+2. The selected idle state is shallow, but it is the deepest one (or
+at least the deepest enabled one).
+3. The selected idle state is deep (that is, its target residency is
+above the tick length period).
 
+In case 1, the tick should not be stopped so as to prevent the CPU
+from spending too much time in a suboptimal idle state.
+
+In case 3, the tick needs to be stopped, because otherwise the target
+residency of the selected state would not be met.
+
+Case 2 is somewhat a mixed bag, but generally speaking stopping the
+tick doesn't hurt if the selected idle state is the deepest one,
+because in that case the governor kind of expects a significant exit
+latency anyway.  If it is not the deepest one (which is disabled),
+it's better to let the tick tick.
