@@ -2,61 +2,106 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEE48C001E0
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Aug 2023 11:52:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF25FC0015E
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Aug 2023 11:55:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232940AbjHALwA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Aug 2023 07:52:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46038 "EHLO
+        id S229965AbjHALzm convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Aug 2023 07:55:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47652 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230087AbjHALv7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2023 07:51:59 -0400
-Received: from mail.cothiafon.pl (mail.cothiafon.pl [217.61.106.23])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EDFCC7
-        for <linux-pm@vger.kernel.org>; Tue,  1 Aug 2023 04:51:59 -0700 (PDT)
-Received: by mail.cothiafon.pl (Postfix, from userid 1002)
-        id 313AB83634; Mon, 31 Jul 2023 10:36:06 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=cothiafon.pl; s=mail;
-        t=1690792587; bh=dwoca0X6C9VXklO/zRgFQCPapTk5LFz4tKaENdvy6Po=;
-        h=Date:From:To:Subject:From;
-        b=njX/0liAO8fKnYbdjYKQ0Hblhvf1aXMjbfuK7yajHN/TTQDKNTbW9Yx5Uj/WoSFE2
-         K1yCCyUn76awA9vClj8Fi7DU987fGqpqL+zjbfR21HOfrl+vA2lKTBSGaPL69Zn9RE
-         V8TODTekmhjBtVWXwfLXwVBwpPLiZyt/BQKlvXuVfXbQsB2Whnfg+5WiNzbv49yoin
-         MD6YNGDuk0c2kmoeZkfK7AzxCHFL1k+x7UiFVkthwAzhkHnCT3gJafSLntC70FYC1R
-         cMOrXkq7GwszqQqWRy9M9jnth1R6Y7K1goAEgH45vQqlGmvbVpN4mBIX0cpxZfV1r7
-         zCJQB/dDS1q9g==
-Received: by mail.cothiafon.pl for <linux-pm@vger.kernel.org>; Mon, 31 Jul 2023 08:35:48 GMT
-Message-ID: <20230731095940-0.1.28.omvn.0.83nn84lhph@cothiafon.pl>
-Date:   Mon, 31 Jul 2023 08:35:48 GMT
-From:   =?UTF-8?Q? "Rados=C5=82aw_Grabowski" ?= 
-        <radoslaw.grabowski@cothiafon.pl>
-To:     <linux-pm@vger.kernel.org>
-Subject: W sprawie samochodu
-X-Mailer: mail.cothiafon.pl
+        with ESMTP id S230064AbjHALzk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2023 07:55:40 -0400
+Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com [209.85.210.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9594C1722
+        for <linux-pm@vger.kernel.org>; Tue,  1 Aug 2023 04:55:39 -0700 (PDT)
+Received: by mail-ot1-f54.google.com with SMTP id 46e09a7af769-6b9da57da6bso624928a34.0
+        for <linux-pm@vger.kernel.org>; Tue, 01 Aug 2023 04:55:39 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690890939; x=1691495739;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=q36cQ7O+IuvRjOd/yqqUldTL07zW4xXdids3DoWR2G8=;
+        b=LxGYJPcPQFujXBmBuVqMbMCt+2BHDalHGwNsWppKIs/7wJQoAMGRwooP3wzUt96qEv
+         +epQUFu4Ih+cdlZOnehZfSu84pcIw/+kwjEJ9i98EOoRemXLMg5/Q2+GIq95NcDa6Fdb
+         UnsLB+CDZr6AuBQ/40Y6vD4WYGGVuEtwOFzMyCyUuvJ86sJTk8+dvUGoKxiV+jNheHYa
+         PnAEDJF/dz8AeSUOkZ2CqZjQ7iOnHGAY52HQnZyu8N9duXlUqoa3F+j3oiqW+NBsD8YY
+         Gya1DcTgSR7aCT++KIPF5kB/sNnh3YYfd1T2uaRWJhYMqwUefASB9QMTBtlgIdnw4RjA
+         GGMw==
+X-Gm-Message-State: ABy/qLbgf73jRK07EsQu2Oe32GkVLOOJQRAZQ0DIfo8RNZDvmW19EXcf
+        tDpkVSNG3cHcVqasJZ4uhChfJe2NQewan8SIzylTolOq
+X-Google-Smtp-Source: APBJJlGAQ/9kUy4ht9MfeGKl7N+3cTuQrwBvfDj0fA+EN9rXqZjrFq0ey9CZYUwcql4Pe91HrYp3Fe7PqeRACG4dUyk=
+X-Received: by 2002:a05:6870:c226:b0:1bb:4e18:f0b1 with SMTP id
+ z38-20020a056870c22600b001bb4e18f0b1mr9059376oae.1.1690890938774; Tue, 01 Aug
+ 2023 04:55:38 -0700 (PDT)
 MIME-Version: 1.0
+References: <20230407024759.2320858-1-xiongxin@kylinos.cn> <CAJZ5v0juDz6=P23NJ11mNCVBCjp_p3qNRFo0i8YqFBPUW9tkQQ@mail.gmail.com>
+ <6a712fb99c97d24bffb602cc99dcd69e6fe41d74.camel@linux.intel.com>
+In-Reply-To: <6a712fb99c97d24bffb602cc99dcd69e6fe41d74.camel@linux.intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 1 Aug 2023 13:55:27 +0200
+Message-ID: <CAJZ5v0hbchynpDvW4sP-r3uC1sH6f25xGtoB8D0o+GYshou1eQ@mail.gmail.com>
+Subject: Re: [v2] powercap: intel_rapl: Optimize rp->domains memory allocation
+To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>,
+        xiongxin <xiongxin@kylinos.cn>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>, rui.zhang@intel.com,
+        linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dzie=C5=84 dobry,
+On Thu, May 25, 2023 at 1:16 AM srinivas pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+>
+> On Wed, 2023-05-24 at 18:40 +0200, Rafael J. Wysocki wrote:
+> > On Fri, Apr 7, 2023 at 4:48 AM xiongxin <xiongxin@kylinos.cn> wrote:
+> > >
+> > > In the memory allocation of rp->domains in rapl_detect_domains(),
+> > > there
+> > > is an additional memory of struct rapl_domain allocated, optimize
+> > > the
+> > > code here to save sizeof(struct rapl_domain) bytes of memory.
+> > >
+> > > Test in Intel NUC (i5-1135G7).
+> > >
+> > > Signed-off-by: xiongxin <xiongxin@kylinos.cn>
+> > > Tested-by: xiongxin <xiongxin@kylinos.cn>
+> > > ---
+> > >
+> > > v2: The extra memory will never be used, so can directly remove
+> > > '+1'.
+> > >
+> > >  drivers/powercap/intel_rapl_common.c | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > >
+> > > diff --git a/drivers/powercap/intel_rapl_common.c
+> > > b/drivers/powercap/intel_rapl_common.c
+> > > index 8970c7b80884..a766d6e43c34 100644
+> > > --- a/drivers/powercap/intel_rapl_common.c
+> > > +++ b/drivers/powercap/intel_rapl_common.c
+> > > @@ -1319,7 +1319,7 @@ static int rapl_detect_domains(struct
+> > > rapl_package *rp, int cpu)
+> > >         }
+> > >         pr_debug("found %d domains on %s\n", rp->nr_domains, rp-
+> > > >name);
+> > >
+> > > -       rp->domains = kcalloc(rp->nr_domains + 1, sizeof(struct
+> > > rapl_domain),
+> > > +       rp->domains = kcalloc(rp->nr_domains, sizeof(struct
+> > > rapl_domain),
+> > >                               GFP_KERNEL);
+> > >         if (!rp->domains)
+> > >                 return -ENOMEM;
+> > > --
+> >
+> > Srinivas, is this OK, or does it miss anything?
+> Looks good.
+>
+> Reviewed-by: Srinivas Pandruvada<srinivas.pandruvada@linux.intel.com>
 
-chcieliby=C5=9Bmy zapewni=C4=87 Pa=C5=84stwu kompleksowe rozwi=C4=85zania=
-, je=C5=9Bli chodzi o system monitoringu GPS.
+Thanks!
 
-Precyzyjne monitorowanie pojazd=C3=B3w na mapach cyfrowych, =C5=9Bledzeni=
-e ich parametr=C3=B3w eksploatacyjnych w czasie rzeczywistym oraz kontrol=
-a paliwa to kluczowe funkcjonalno=C5=9Bci naszego systemu.=20
-
-Organizowanie pracy pracownik=C3=B3w jest dzi=C4=99ki temu prostsze i bar=
-dziej efektywne, a oszcz=C4=99dno=C5=9Bci i optymalizacja w zakresie pono=
-szonych koszt=C3=B3w, maj=C4=85 dla ka=C5=BCdego przedsi=C4=99biorcy ogro=
-mne znaczenie.
-
-Dopasujemy nasz=C4=85 ofert=C4=99 do Pa=C5=84stwa oczekiwa=C5=84 i potrze=
-b organizacji. Czy mogliby=C5=9Bmy porozmawia=C4=87 o naszej propozycji?
-
-
-Pozdrawiam
-Rados=C5=82aw Grabowski
+So queued up as 6.6 material, thanks!
