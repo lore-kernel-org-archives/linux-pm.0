@@ -2,114 +2,151 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FF45EB64DD
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Aug 2023 09:50:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFE6BC001DF
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Aug 2023 11:00:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233744AbjHAJuT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Aug 2023 05:50:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51084 "EHLO
+        id S234215AbjHALAf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Aug 2023 07:00:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40518 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233431AbjHAJuD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2023 05:50:03 -0400
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE54F2130
-        for <linux-pm@vger.kernel.org>; Tue,  1 Aug 2023 02:49:35 -0700 (PDT)
-Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-98dfb3f9af6so864554766b.2
-        for <linux-pm@vger.kernel.org>; Tue, 01 Aug 2023 02:49:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1690883374; x=1691488174;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=j8Aw/q2325QhvfRmv9aBcluZMD54mucilqUf7AAqeNY=;
-        b=6MjFQXPW/mZ+3XWbBfRbNcNoy53tZnxETpLjJSAtIpKe+cSorJsstEpg6WVvdiTiW8
-         2+iibuAEVZiriSShY+nTrlnWMKhu1f/fdG6tkwuzKbU1/6QyPGUBNUZa2A9kwdRah/Dg
-         MCX75gah/0Rt2Q3c/xyfE4SasPNuDRZ0vWpaHg+5BJiD8Uk85Xw4AK49GN3gt3Pb5Pjl
-         ib3mbA5Gz+vlCz6/8FRUj/lOd8snqoFRXSKE2lDgG17YuUq/huNyk8kcpmWwupjkk6aw
-         ZC/2Vt28Qnau8yZQKUX8MedyNlM5Gt7F8mfiXBh5S6HeOELAc4zNlnnhvLZN2bl603rw
-         54IQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690883374; x=1691488174;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=j8Aw/q2325QhvfRmv9aBcluZMD54mucilqUf7AAqeNY=;
-        b=QUnagjC5MWcPt5/ZWwpcc60zLK5aZMpYDicLAz0jMEmOumV3MpqjhNJsLCt3v8MbhQ
-         v+mWajxpQSBE0IuVpPmOHgXEXQwDOZkBTsijhHdT6xMclH9nPVy0KteZoE9I+u5MkZXm
-         sq4quj4/2bKSLk3CnMgdsNSjnmfDtOrI4CmGoeerOaMxibskWPYmzlMkO5XnF+0mT5Uc
-         /FkdGaJT/eFNNhYu9qXoGHo29yOVdzkm0kj/prPgCAz8d3Mhocbws5vWbSH5bbKXMMOw
-         vS9O4/MpNWTHx3jPKfyjC+z1sVK72xKvLnhJtyEQt1ttkXHWNMlJvjjk4aT94Z0oU0hO
-         jiHQ==
-X-Gm-Message-State: ABy/qLZMlaoWyVLrbFfqFdWP5ws4a9pdOLBcfOdwQkIaIys5qGLhAps2
-        mALkoBmkYTVS1Botjpdbfna1cQ==
-X-Google-Smtp-Source: APBJJlGR0qLEiBW7LmZ6eMsyXyJJRH6PCqS7Js03DEAtTFa4qoOwaLAeE+I8AFK1mnaZSUFh4z4FeA==
-X-Received: by 2002:a17:907:2716:b0:98d:1f6a:fd47 with SMTP id w22-20020a170907271600b0098d1f6afd47mr2045278ejk.76.1690883374092;
-        Tue, 01 Aug 2023 02:49:34 -0700 (PDT)
-Received: from google.com (64.227.90.34.bc.googleusercontent.com. [34.90.227.64])
-        by smtp.gmail.com with ESMTPSA id j10-20020a170906410a00b0098951bb4dc3sm7349407ejk.184.2023.08.01.02.49.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Aug 2023 02:49:33 -0700 (PDT)
-Date:   Tue, 1 Aug 2023 09:49:30 +0000
-From:   Quentin Perret <qperret@google.com>
-To:     David Dai <davidai@google.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Masami Hiramatsu <mhiramat@google.com>,
-        Will Deacon <will@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Marc Zyngier <maz@kernel.org>,
-        Oliver Upton <oliver.upton@linux.dev>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Pavan Kondeti <quic_pkondeti@quicinc.com>,
-        Gupta Pankaj <pankaj.gupta@amd.com>,
-        Mel Gorman <mgorman@suse.de>, kernel-team@android.com,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 2/2] cpufreq: add virtual-cpufreq driver
-Message-ID: <ZMjVKn1MwA2Avm7r@google.com>
-References: <20230731174613.4133167-1-davidai@google.com>
- <20230731174613.4133167-3-davidai@google.com>
- <ZMjUMk5xXzahXjno@google.com>
+        with ESMTP id S234233AbjHALAH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2023 07:00:07 -0400
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 675545B91;
+        Tue,  1 Aug 2023 03:54:51 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1690887236; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=aAT1gmpYcoMWWL66IjQC0kMJ2YgmRmX/z+QHnQPdM9usmzWv3BMdMKNqfffpdSMpe2
+    X5+uylcHSa/sWOPxMoDiIh7ctMyWvVA2NrMNqmVx4l9DAk63X93VFSN4n+Eke+5WCSPL
+    APILRndDrhKEZZ64eYAIikxB0bsmoSFiG59U+nFyhfsJKqwDZc4yVZRD6985h8WEVvo4
+    60itvMrvdiL1h+fuq9UKhk14eLaanxiOajO4gA4fQrCD6KbRYQY7B8eh9a6uZ7cldwcB
+    sasxH6Jis2llu4NuoospbHo1YBeA/MIhT34f4pU2eAEg9vcU07KSWzZxZHROMmZLCHcn
+    wemg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1690887236;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
+    From:Subject:Sender;
+    bh=qdtofX9rV/JabxOSUq7lzbOdfyHanm5MJ6uMGz3vtho=;
+    b=CAd/JrKD0OV4YhJSBstyLz7bM9tqLgPAG68VmuAtlFL2NmO2OlSQIel/WJLRVJFI0I
+    pSiVCRhxLCP9fd1Rv54lNAP0kwHClrJ/AD+xJhS1zGRgbMhol77dicVX1nomi+dBaLu0
+    dgIo4zcDn6hFSHs4GNcIfxlgARhzbbfWnz4gYhtn/1mW9E8KWIRnBXAEdfuVCtIo5SFN
+    2IXrqHb2KlloYBIfMRULFVvdny8FZjzVhIwqgjHwqe+CRiJPaS1Ie6DaYsY2WS/Q30f5
+    6YsziMfod9Tg+hj6m6P1+HMMP4rDG3jclwNPC9APmCRagMYAuLXPvuYi/FPLsqRczWRJ
+    z50g==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1690887236;
+    s=strato-dkim-0002; d=gerhold.net;
+    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
+    From:Subject:Sender;
+    bh=qdtofX9rV/JabxOSUq7lzbOdfyHanm5MJ6uMGz3vtho=;
+    b=fD9ZyExGq8EC+DerHWU60ByTVFgHkclD+ih/ph9KhGBQSx45CU/Z+vr6IyuFhvU2xg
+    Wrm8LWHIsj8CFk7Y0+YkWVpQ4TkSC7MQjNxSzVG8Y7LfMJCdW6yVUedJAoK6wt4w2DRS
+    2rD7aOR+E75r2VO80LFyidSg3tuFxRw2f886j7cl7xD3fJz4jiLSpQUg414Em7oTUfFE
+    ujF3aUgfscmxd8DJh009323bdixj28rYcHgVG4GHFyFUjQC84hOCuqEpZuhp53lHkjPJ
+    mTKZekUal0Ag/ofCM0s9u5IjQsn8wQA0SYzd3P9tJYKm2mDhTjYsO32S0oOuEtnGZ97D
+    2lMA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1690887235;
+    s=strato-dkim-0003; d=gerhold.net;
+    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
+    From:Subject:Sender;
+    bh=qdtofX9rV/JabxOSUq7lzbOdfyHanm5MJ6uMGz3vtho=;
+    b=oUr5y0ARyOTGFGaAUODubKciTgdGIK9FoaP6DMy3CLqVK2g/c09mVlIHQbEpaFmeV3
+    xaJIFH1Ag8Sxvm4zDfBw==
+X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u261EJF5OxJD4paA8p+L1A=="
+Received: from gerhold.net
+    by smtp.strato.de (RZmta 49.6.6 DYNA|AUTH)
+    with ESMTPSA id k61817z71ArtNj7
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+        (Client did not present a certificate);
+    Tue, 1 Aug 2023 12:53:55 +0200 (CEST)
+Date:   Tue, 1 Aug 2023 12:53:48 +0200
+From:   Stephan Gerhold <stephan@gerhold.net>
+To:     Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Marijn Suijten <marijn.suijten@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
+Subject: Re: [PATCH v2 01/10] interconnect: qcom: icc-rpm: Add AB/IB
+ calculations coefficients
+Message-ID: <ZMjkPLqBiWW8CpAU@gerhold.net>
+References: <20230726-topic-icc_coeff-v2-0-8c91c6c76076@linaro.org>
+ <20230726-topic-icc_coeff-v2-1-8c91c6c76076@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ZMjUMk5xXzahXjno@google.com>
+In-Reply-To: <20230726-topic-icc_coeff-v2-1-8c91c6c76076@linaro.org>
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tuesday 01 Aug 2023 at 09:45:22 (+0000), Quentin Perret wrote:
-> Hi David,
+On Mon, Jul 31, 2023 at 12:52:17PM +0200, Konrad Dybcio wrote:
+> Presumably due to the hardware being so complex, some nodes (or busses)
+> have different (usually higher) requirements for bandwidth than what
+> the usual calculations would suggest.
 > 
-> On Monday 31 Jul 2023 at 10:46:09 (-0700), David Dai wrote:
-> > +static unsigned int virt_cpufreq_set_perf(struct cpufreq_policy *policy)
-> > +{
-> > +	struct virt_cpufreq_drv_data *data = policy->driver_data;
-> > +	/*
-> > +	 * Use cached frequency to avoid rounding to freq table entries
-> > +	 * and undo 25% frequency boost applied by schedutil.
-> > +	 */
+> Looking at the available downstream files, it seems like AB values are
+> adjusted per-bus and IB values are adjusted per-node.
+> With that in mind, introduce percentage-based coefficient struct members
+> and use them in the calculations.
 > 
-> The VMM would be a better place for this scaling I think, the driver
-> can't/shouldn't make assumptions about the governor it is running with
-> given that this is a guest userspace decision essentially.
+> One thing to note is that the IB coefficient is inverse (100/ib_percent)
+> which feels a bit backwards, but it's necessary for precision..
 > 
-> IIRC the fast_switch() path is only used by schedutil, so one could
-> probably make a case to scale things there, but it'd be inconsistent
-> with the "slow" switch case, and would create a fragile dependency, so
-> it's probably not worth pursuing.
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+> ---
+>  drivers/interconnect/qcom/icc-rpm.c | 14 +++++++++++---
+>  drivers/interconnect/qcom/icc-rpm.h |  6 ++++++
+>  2 files changed, 17 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+> index 2c16917ba1fd..a837d20af79e 100644
+> --- a/drivers/interconnect/qcom/icc-rpm.c
+> +++ b/drivers/interconnect/qcom/icc-rpm.c
+> @@ -298,7 +298,8 @@ static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+>   */
+>  static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_rate)
+>  {
+> -	u64 agg_avg_rate, agg_rate;
+> +	struct qcom_icc_provider *qp = to_qcom_provider(provider);
+> +	u64 agg_avg_rate, agg_peak_rate, agg_rate;
+>  	struct qcom_icc_node *qn;
+>  	struct icc_node *node;
+>  	int i;
+> @@ -315,8 +316,15 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_r
+>  			else
+>  				agg_avg_rate = qn->sum_avg[i];
+>  
+> -			agg_rate = max_t(u64, agg_avg_rate, qn->max_peak[i]);
+> -			do_div(agg_rate, qn->buswidth);
+> +			if (qp->ab_coeff)
+> +				agg_avg_rate = mult_frac(qp->ab_coeff, agg_avg_rate, 100);
 
-Alternatively we could make the schedutil margin configurable via the
-cmdline or something along those lines, so we can set it to 0 in the
-guest and avoid the issue entirely.
+agg_avg_rate * (qp->ab_coeff / 100) would feel more logical to me (even
+if it should be the same), i.e.
 
-Some partners have been asking for this IIRC , so I suspect there would
-be interest from other parties.
+	agg_avg_rate = mult_frac(agg_avg_rate, qp->ab_coeff, 100);
+
+Not sure why you swapped them.
+
+> +
+> +			if (qp->ib_coeff)
+> +				agg_peak_rate = mult_frac(100, qn->max_peak[i], qp->ib_coeff);
+
+	agg_peak_rate = mult_frac(qn->max_peak[i], 100, qp->ib_coeff);
+
+Anyway, looks like you need to avoid mult_frac anyway for ARM32 compat :/
+
+arm-none-eabi-ld: drivers/interconnect/qcom/icc-rpm.o: in function `qcom_icc_calc_rate':
+drivers/interconnect/qcom/icc-rpm.c:310: undefined reference to `__aeabi_uldivmod'
+arm-none-eabi-ld: drivers/interconnect/qcom/icc-rpm.c:312: undefined reference to `__aeabi_uldivmod'
 
 Thanks,
-Quentin
+Stephan
