@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCB56C04E69
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Aug 2023 12:38:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90CE3C05051
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Aug 2023 12:38:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234539AbjHBMib (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Aug 2023 08:38:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58432 "EHLO
+        id S234511AbjHBMid (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Aug 2023 08:38:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234516AbjHBMiW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 08:38:22 -0400
-Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B82D2708
-        for <linux-pm@vger.kernel.org>; Wed,  2 Aug 2023 05:38:20 -0700 (PDT)
-Received: by mail-lj1-x230.google.com with SMTP id 38308e7fff4ca-2b9c907bc68so95678421fa.2
-        for <linux-pm@vger.kernel.org>; Wed, 02 Aug 2023 05:38:20 -0700 (PDT)
+        with ESMTP id S234532AbjHBMib (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 08:38:31 -0400
+Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8612D2728
+        for <linux-pm@vger.kernel.org>; Wed,  2 Aug 2023 05:38:24 -0700 (PDT)
+Received: by mail-lj1-x235.google.com with SMTP id 38308e7fff4ca-2b9c0391749so108823451fa.0
+        for <linux-pm@vger.kernel.org>; Wed, 02 Aug 2023 05:38:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1690979899; x=1691584699;
+        d=linaro.org; s=google; t=1690979902; x=1691584702;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=z/arHXwGDpg0PaLjq3SVx/1vOD3CQunADkBlXywyjWc=;
-        b=pzjM00rclJ3O6oMZD6Vt6W+n1moVRi5fOb2JrgpCj8wKpTq4/z6+RtGZEJvxRXBtZV
-         WndP5sU5ASyp3G7zpmVg160TH7sMgywghbM7AA0LejUZIJxH0ddd2J6md27Jjr+Z2whu
-         rK2ZKj46vxytOk853vjyuAEJRubLDfTTimGagp6St25tx9awbuMupq6n//43oG4a7Vaf
-         z75+e1M/CHOF3jNdO4bQ6PnrGeIE2OZBu9MGnLUHr58UGXwtPTLNQUYlRP99ps8KSEfg
-         C4Ao2mTaasEFK5MMVn//gdktkxTHXEXNzocbeJe4jJRNO9ep1WdFKjaduBY1Mwy3NqQM
-         GMtQ==
+        bh=J0k/pmOWggE7rHb1KKVeAkxMrbAdPhTb3/4uDSb6oAQ=;
+        b=VVMXCqIcDtviZBMpyusrrVX0Gk2RfhGKdstCzFixPZem2XyYdQpnmKHrv9VEoHyE1s
+         RcNpJGlgBPJfL64iE5kVgtRxxePIIzwUgzh8D1nkhH0wk9wTrxj11120jLT1rHtfIxO3
+         6uWOgYEOWgFJzn7Wa7JjueV+m3yNYrcUw1OMjEvJEmYQtAXebZcAxB9b9Uhu9EE02bfa
+         Iwpmo21kffwu6vxEcAtWZ/nPvWz1if+DbEqZiFmu4VsmTDtNIX7TC0DJbXkpigEXePHB
+         vXWqAMCzlh4exr0Ukl1CfD5b2/I+HX2yV+wyu2jMS7XcZftl+yKTSwzUm1P3RYZmNAVl
+         h6kA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690979899; x=1691584699;
+        d=1e100.net; s=20221208; t=1690979902; x=1691584702;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=z/arHXwGDpg0PaLjq3SVx/1vOD3CQunADkBlXywyjWc=;
-        b=HGvlCsRSihsJ3vbCWUNj6IvYTSZt6leLawWG8Ze/9UMcq1u72B88IJXxmjzSCfhTr6
-         s8i+IG2wJYE9n2daQDQf9CHvzFipfn5n5xdH/0oCwGwA0OCEI3w+qEoQHuWX9YXqjU2g
-         3Gi7Dlr2hbWtmUKS3D80xjhtmBg0L2rliuh6M9k4vpSRP5bHRfv5aCBrETplBDgVsRGz
-         um2q9bSs99DwFpSygmFVb7Ee5DuUwqjgHvbNlhgQ+R1fXtqP7WDTIkmsJuteU+IngZ4c
-         6FaowWybIkuCo/jcCaCmsSlLrCinokafaEKPhBuFJvToAuDZG6i6DVrAn/5iMxEEUmyV
-         Oe0Q==
-X-Gm-Message-State: ABy/qLa9hDIx60eysVy3pP5YZ3oBKixI31sCusmjvzFkY+7sHy9+X7b6
-        F7t1eUbhn0vKUa5rTbr6HCZvLw==
-X-Google-Smtp-Source: APBJJlEIw9eIfqcPtLZzNmEUFCp9vj9/HnXINY+FrqvSgVQvrQnVQDh/HFfTYafJpEBnYcmADWIIvg==
-X-Received: by 2002:a2e:980c:0:b0:2b9:b41a:aa66 with SMTP id a12-20020a2e980c000000b002b9b41aaa66mr5429905ljj.20.1690979898810;
-        Wed, 02 Aug 2023 05:38:18 -0700 (PDT)
+        bh=J0k/pmOWggE7rHb1KKVeAkxMrbAdPhTb3/4uDSb6oAQ=;
+        b=BLNVEQUuDNFFf0GiQK6cfHaedyS7u5hbt5W0MkTddGb8TmwTLM8t/Y5vzDVdKjOXtB
+         W8VNMRO1CAmKFsuPf6Gl3sMwqlev8i+k4wmKNRjybORiZ4qEEbghdVvEz9mVYrovw7wX
+         +qwG2nGKZ4+BlvkzBW9qo0vwQgQQPS0IdULY93rgbd1RZIl0gg390x/OgMn9ME+1cv9Q
+         sILo/+QljPfW5MGvK3kJT8/XsFtBT+5zQX60BN5cC//D8rfZh4Xpzd7yf67n5Os0Qdjr
+         8fb/4cwwmr63TI21pvuGWwVmZ+NSY7TOClad4rzPA6KtdwONXGVoS6vexaRsTZdNUjAm
+         EKEA==
+X-Gm-Message-State: ABy/qLb2iK7vjbt6pjju68vbZky7r2i7ZLOXP1td1q8GNM8eB4rtHXey
+        DAneGkYr0dQTK6IdyQwkCLet3w==
+X-Google-Smtp-Source: APBJJlFymK4gx83JlQ/7ZLOwj+f448Iiw1IlWXaF3vbVeat86egI1ikaBtt4lfpl7zkBlfDSvu2Tsw==
+X-Received: by 2002:a2e:8708:0:b0:2b6:cb0d:56ae with SMTP id m8-20020a2e8708000000b002b6cb0d56aemr3937562lji.11.1690979902725;
+        Wed, 02 Aug 2023 05:38:22 -0700 (PDT)
 Received: from [192.168.1.101] (abyk53.neoplus.adsl.tpnet.pl. [83.9.30.53])
-        by smtp.gmail.com with ESMTPSA id h8-20020a2e9ec8000000b002b9e5fe86dasm1897050ljk.81.2023.08.02.05.38.16
+        by smtp.gmail.com with ESMTPSA id h8-20020a2e9ec8000000b002b9e5fe86dasm1897050ljk.81.2023.08.02.05.38.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 02 Aug 2023 05:38:18 -0700 (PDT)
+        Wed, 02 Aug 2023 05:38:22 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Wed, 02 Aug 2023 14:37:42 +0200
-Subject: [PATCH v13 02/10] MAINTAINERS: Add entry for Qualcomm
- CPRv3/v4/Hardened driver
+Date:   Wed, 02 Aug 2023 14:37:44 +0200
+Subject: [PATCH v13 04/10] dt-bindings: soc: qcom: cpr3: Add bindings for
+ CPR3 driver
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230217-topic-cpr3h-v13-2-d01cff1c54cf@linaro.org>
+Message-Id: <20230217-topic-cpr3h-v13-4-d01cff1c54cf@linaro.org>
 References: <20230217-topic-cpr3h-v13-0-d01cff1c54cf@linaro.org>
 In-Reply-To: <20230217-topic-cpr3h-v13-0-d01cff1c54cf@linaro.org>
 To:     AngeloGioacchino Del Regno 
@@ -82,11 +82,11 @@ Cc:     Robert Marko <robimarko@gmail.com>, linux-kernel@vger.kernel.org,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1690979891; l=984;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1690979891; l=10403;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=2YiA3nGNcsVPCq1IwlTdMAqStD1lE3rx04PXJ5i83As=;
- b=/aE9/NxMNY3o+ds1NwBS03mBqZjAuS1DKfNpv8RGPTcD4ywBrlNoAWFXhqTRhVaZtzCiJY7vE
- My7YAfaWacCDkCONSmD6pJ4K1kNF+ar5KWeXMz0/H/aKp3zvAJxU7E8
+ bh=wdBcqGvszmkHXwmoQhrphFUNpHpKfl/pRt7Xmz8EHDY=;
+ b=3VYnq+rToMRMSb3IGiWdZvaKmLvLxBRb5rF4QjGWFUVhgkg5ji8m/AERMIypSrSyw0V9WGdsu
+ gN7wL5hK0GkD+Emo8m6JED8kagKAjYef2BjOdHshj+7hQZSpDNoy7Aw
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
@@ -95,33 +95,313 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 
-Add maintainers entry for the Qualcomm CPR3/CPR4/CPRh driver.
+Add the bindings for the CPR3 driver to the documentation.
 
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-[Konrad: rebase, update AGdR's email]
+[Konrad: Make binding check pass; update AGdR's email]
 Tested-by: Jeffrey Hugo <quic_jhugo@quicinc.com>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- MAINTAINERS | 6 ++++++
- 1 file changed, 6 insertions(+)
+ .../devicetree/bindings/soc/qcom/qcom,cpr3.yaml    | 291 +++++++++++++++++++++
+ 1 file changed, 291 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 1089ef3319f2..a7514261b157 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -17621,6 +17621,12 @@ S:	Maintained
- F:	Documentation/devicetree/bindings/power/avs/qcom,cpr.yaml
- F:	drivers/genpd/qcom/cpr.c
- 
-+QUALCOMM CORE POWER REDUCTION v3/v4/Hardened AVS DRIVER
-+M:	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
-+F:	drivers/soc/qcom/cpr3.c
+diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
+new file mode 100644
+index 000000000000..d797abc5d5fe
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
+@@ -0,0 +1,291 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/soc/qcom/qcom,cpr3.yaml#"
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- QUALCOMM CPUFREQ DRIVER MSM8996/APQ8096
- M:	Ilia Lin <ilia.lin@kernel.org>
- L:	linux-pm@vger.kernel.org
++title: Qualcomm Core Power Reduction v3/v4/Hardened (CPR3, CPR4, CPRh)
++
++description:
++  CPR (Core Power Reduction) is a technology to reduce core power of a CPU
++  (or another device). Each OPP of a device corresponds to a "corner" that
++  has a range of valid voltages for a particular frequency.
++  The CPR monitors dynamic factors such as temperature, etc. and suggests
++  or (in the CPR-hardened case) applies voltage adjustments to save power
++  and meet silicon characteristic requirements for a given chip unit.
++
++maintainers:
++  - AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
++
++properties:
++  compatible:
++    oneOf:
++      - description: CPRv3 controller
++        items:
++          - const: qcom,cpr3
++      - description: CPRv4 controller
++        items:
++          - const: qcom,cpr4
++      - description: CPRv4-Hardened controller
++        items:
++          - enum:
++              - qcom,msm8998-cprh
++              - qcom,sdm630-cprh
++          - const: qcom,cprh
++
++  reg:
++    items:
++      - description: Register space of the CPR controller0
++      - description: Register space of the CPR controller1
++
++  interrupts:
++    maxItems: 1
++
++  clocks:
++    items:
++      - description: CPR reference clock
++
++  vdd-supply:
++    description: Autonomous Phase Control (APC) or other power supply
++
++  '#power-domain-cells':
++    const: 1
++
++  qcom,acc:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: phandle to syscon for writing ACC settings
++
++  nvmem-cells:
++    description: Cells containing the fuse corners and revision data
++    maxItems: 32
++
++  nvmem-cell-names:
++    maxItems: 32
++
++  operating-points-v2: true
++
++  power-domains:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - operating-points-v2
++  - "#power-domain-cells"
++  - nvmem-cells
++  - nvmem-cell-names
++
++additionalProperties: false
++
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,msm8998-cprh
++    then:
++      properties:
++        nvmem-cell-names:
++          items:
++            - const: cpr_speed_bin
++            - const: cpr_fuse_revision
++            - const: cpr0_quotient1
++            - const: cpr0_quotient2
++            - const: cpr0_quotient3
++            - const: cpr0_quotient4
++            - const: cpr0_quotient_offset2
++            - const: cpr0_quotient_offset3
++            - const: cpr0_quotient_offset4
++            - const: cpr0_init_voltage1
++            - const: cpr0_init_voltage2
++            - const: cpr0_init_voltage3
++            - const: cpr0_init_voltage4
++            - const: cpr0_ring_osc1
++            - const: cpr0_ring_osc2
++            - const: cpr0_ring_osc3
++            - const: cpr0_ring_osc4
++            - const: cpr1_quotient1
++            - const: cpr1_quotient2
++            - const: cpr1_quotient3
++            - const: cpr1_quotient4
++            - const: cpr1_quotient_offset2
++            - const: cpr1_quotient_offset3
++            - const: cpr1_quotient_offset4
++            - const: cpr1_init_voltage1
++            - const: cpr1_init_voltage2
++            - const: cpr1_init_voltage3
++            - const: cpr1_init_voltage4
++            - const: cpr1_ring_osc1
++            - const: cpr1_ring_osc2
++            - const: cpr1_ring_osc3
++            - const: cpr1_ring_osc4
++
++examples:
++  - |
++    #include <dt-bindings/clock/qcom,gcc-msm8998.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++
++    cpus {
++        #address-cells = <2>;
++        #size-cells = <0>;
++
++        cpu@0 {
++            compatible = "qcom,kryo280";
++            device_type = "cpu";
++            reg = <0x0 0x0>;
++            operating-points-v2 = <&cpu0_opp_table>;
++            power-domains = <&apc_cprh 0>;
++            power-domain-names = "cprh";
++        };
++
++        cpu@100 {
++            compatible = "qcom,kryo280";
++            device_type = "cpu";
++            reg = <0x0 0x100>;
++            operating-points-v2 = <&cpu4_opp_table>;
++            power-domains = <&apc_cprh 1>;
++            power-domain-names = "cprh";
++        };
++    };
++
++    cpu0_opp_table: opp-table-cpu0 {
++        compatible = "operating-points-v2";
++        opp-shared;
++
++        opp-1843200000 {
++            opp-hz = /bits/ 64 <1843200000>;
++            required-opps = <&cprh_opp3>;
++        };
++
++        opp-1094400000 {
++            opp-hz = /bits/ 64 <1094400000>;
++            required-opps = <&cprh_opp2>;
++        };
++
++        opp-300000000 {
++            opp-hz = /bits/ 64 <300000000>;
++            required-opps = <&cprh_opp1>;
++        };
++    };
++
++    cpu4_opp_table: opp-table-cpu4 {
++        compatible = "operating-points-v2";
++        opp-shared;
++
++        opp-2208000000 {
++            opp-hz = /bits/ 64 <2208000000>;
++            required-opps = <&cprh_opp3>;
++        };
++
++        opp-1113600000 {
++            opp-hz = /bits/ 64 <1113600000>;
++            required-opps = <&cprh_opp2>;
++        };
++
++        opp-300000000 {
++            opp-hz = /bits/ 64 <300000000>;
++            required-opps = <&cprh_opp1>;
++        };
++    };
++
++    cprh_opp_table: opp-table-cprh {
++        compatible = "operating-points-v2-qcom-level";
++
++        cprh_opp1: opp-1 {
++            opp-level = <1>;
++            qcom,opp-fuse-level = <1>;
++            qcom,opp-cloop-vadj = <0>;
++            qcom,opp-oloop-vadj = <0>;
++        };
++
++        cprh_opp2: opp-2 {
++            opp-level = <2>;
++            qcom,opp-fuse-level = <2>;
++            qcom,opp-cloop-vadj = <0>;
++            qcom,opp-oloop-vadj = <0>;
++        };
++
++        cprh_opp3: opp-3 {
++            opp-level = <3>;
++            qcom,opp-fuse-level = <2 3>;
++            qcom,opp-cloop-vadj = <0>;
++            qcom,opp-oloop-vadj = <0>;
++        };
++    };
++
++    apc_cprh: power-controller@179c8000 {
++        compatible = "qcom,msm8998-cprh", "qcom,cprh";
++        reg = <0x0179c8000 0x4000>, <0x0179c4000 0x4000>;
++        clocks = <&gcc GCC_HMSS_RBCPR_CLK>;
++
++        operating-points-v2 = <&cprh_opp_table>;
++        #power-domain-cells = <1>;
++
++        nvmem-cells = <&cpr_efuse_speedbin>,
++                      <&cpr_fuse_revision>,
++                      <&cpr_quot0_pwrcl>,
++                      <&cpr_quot1_pwrcl>,
++                      <&cpr_quot2_pwrcl>,
++                      <&cpr_quot3_pwrcl>,
++                      <&cpr_quot_offset1_pwrcl>,
++                      <&cpr_quot_offset2_pwrcl>,
++                      <&cpr_quot_offset3_pwrcl>,
++                      <&cpr_init_voltage0_pwrcl>,
++                      <&cpr_init_voltage1_pwrcl>,
++                      <&cpr_init_voltage2_pwrcl>,
++                      <&cpr_init_voltage3_pwrcl>,
++                      <&cpr_ro_sel0_pwrcl>,
++                      <&cpr_ro_sel1_pwrcl>,
++                      <&cpr_ro_sel2_pwrcl>,
++                      <&cpr_ro_sel3_pwrcl>,
++                      <&cpr_quot0_perfcl>,
++                      <&cpr_quot1_perfcl>,
++                      <&cpr_quot2_perfcl>,
++                      <&cpr_quot3_perfcl>,
++                      <&cpr_quot_offset1_perfcl>,
++                      <&cpr_quot_offset2_perfcl>,
++                      <&cpr_quot_offset3_perfcl>,
++                      <&cpr_init_voltage0_perfcl>,
++                      <&cpr_init_voltage1_perfcl>,
++                      <&cpr_init_voltage2_perfcl>,
++                      <&cpr_init_voltage3_perfcl>,
++                      <&cpr_ro_sel0_perfcl>,
++                      <&cpr_ro_sel1_perfcl>,
++                      <&cpr_ro_sel2_perfcl>,
++                      <&cpr_ro_sel3_perfcl>;
++        nvmem-cell-names = "cpr_speed_bin",
++                           "cpr_fuse_revision",
++                           "cpr0_quotient1",
++                           "cpr0_quotient2",
++                           "cpr0_quotient3",
++                           "cpr0_quotient4",
++                           "cpr0_quotient_offset2",
++                           "cpr0_quotient_offset3",
++                           "cpr0_quotient_offset4",
++                           "cpr0_init_voltage1",
++                           "cpr0_init_voltage2",
++                           "cpr0_init_voltage3",
++                           "cpr0_init_voltage4",
++                           "cpr0_ring_osc1",
++                           "cpr0_ring_osc2",
++                           "cpr0_ring_osc3",
++                           "cpr0_ring_osc4",
++                           "cpr1_quotient1",
++                           "cpr1_quotient2",
++                           "cpr1_quotient3",
++                           "cpr1_quotient4",
++                           "cpr1_quotient_offset2",
++                           "cpr1_quotient_offset3",
++                           "cpr1_quotient_offset4",
++                           "cpr1_init_voltage1",
++                           "cpr1_init_voltage2",
++                           "cpr1_init_voltage3",
++                           "cpr1_init_voltage4",
++                           "cpr1_ring_osc1",
++                           "cpr1_ring_osc2",
++                           "cpr1_ring_osc3",
++                           "cpr1_ring_osc4";
++    };
++...
 
 -- 
 2.41.0
