@@ -2,121 +2,173 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 398BFC001DF
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Aug 2023 13:23:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E15FC001E0
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Aug 2023 13:31:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230392AbjHBNXw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Aug 2023 09:23:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56492 "EHLO
+        id S231743AbjHBNba (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Aug 2023 09:31:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230239AbjHBNXv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 09:23:51 -0400
+        with ESMTP id S231612AbjHBNb3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 09:31:29 -0400
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD961E9;
-        Wed,  2 Aug 2023 06:23:50 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70F8A1BF9;
+        Wed,  2 Aug 2023 06:31:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Transfer-Encoding:
-        Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-        Sender:Reply-To:Content-ID:Content-Description;
-        bh=kiCDXAgTv56WYg1u5yZBu8q/sciM0XlEJzovVFtAEUo=; b=DwemZ3dYdMloL6ab7QPNiSDZ7P
-        MgIxcaw/gnuaPQa7g6BTTsuswnKLvqlzgbhurubUCSDIOhjAMccbX85q8e9Kz7du5bnboTZrOXf6S
-        xLs4K90ZwwFuqbSSqvgRgr75jckcJcTeqwfiljvlsq9Zo2efe/+I2gHAs5Nv87RjrXnmPm+f8UyOC
-        gA003mGHfjFymmBFWeBEBgcciOS4EEEqEUoRGl3PiK1JODggQ4oe2TCTlgQBSWx3IG58WnbLNnse3
-        x3pHR/XFKShWXblN3QGjx+6YZJTs8PKk6U97wjNwKsz7Y0sKrNqjzMYdI0p9E43U2Ms3KDNcvDhvy
-        tQr4SEOA==;
+        d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
+        Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
+        Content-ID:Content-Description:In-Reply-To;
+        bh=/jk8cjAzNp5umM9o/8ZP9pvl8gboqgF2w9reMo9nXqk=; b=rP7UMCWAI6sRygyJ9fEfu2wtlg
+        +1g4wOf8fa5r/s/Y6W9qw52cgpojG2KcQPpmfY/7P78768ajegVsRX48aFbqVG20QhnxuvYG9SJ0S
+        uZf/6cSOgfQCWCQ3N0CZloMXdrKLxmAYwO2Al3+k0mRJtPGI5NTnUYBW0RttPTn663iDq5P1yoKUU
+        0fogOAMmncYeQNU6LEeoJTCWMIMFp215RTWiG2ItW1PFQxTMOwVLppVf7dFkw2qEnMh2PX5iW+OQS
+        D3qujBk2eh30GOHf0epVr1bMReR4azwigRCde6XkGsqHHf5bz0lfxd+grG8x3iIuJi7O2/PuE6Q8c
+        Ory2eoGA==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
         by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1qRBp3-00FBPw-Lv; Wed, 02 Aug 2023 13:23:29 +0000
+        id 1qRBwZ-00FBnW-JB; Wed, 02 Aug 2023 13:31:15 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 6079430007E;
-        Wed,  2 Aug 2023 15:23:28 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 4BCFA2107C44A; Wed,  2 Aug 2023 15:23:28 +0200 (CEST)
-Date:   Wed, 2 Aug 2023 15:23:28 +0200
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 173A03006E2;
+        Wed,  2 Aug 2023 15:31:15 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
+        id EF6922066B201; Wed,  2 Aug 2023 15:31:14 +0200 (CEST)
+Message-ID: <20230802132925.618923837@infradead.org>
+User-Agent: quilt/0.66
+Date:   Wed, 02 Aug 2023 15:24:33 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     anna-maria@linutronix.de, tglx@linutronix.de, frederic@kernel.org,
-        gautham.shenoy@amd.com, linux-kernel@vger.kernel.org,
+To:     anna-maria@linutronix.de, rafael@kernel.org, tglx@linutronix.de,
+        frederic@kernel.org, gautham.shenoy@amd.com
+Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org,
         daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
         mingo@redhat.com, juri.lelli@redhat.com,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
         rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-        bristot@redhat.com, vschneid@redhat.com
-Subject: Re: [RFC][PATCH 1/3] cpuidle: Inject tick boundary state
-Message-ID: <20230802132328.GA214207@hirez.programming.kicks-ass.net>
-References: <20230728145808.835742568@infradead.org>
- <CAJZ5v0gNqEuqvV0RtrXiDDGtvKB2hronLwAU8jnmuGppKmyDxA@mail.gmail.com>
- <20230729084417.GB3945851@hirez.programming.kicks-ass.net>
- <CAJZ5v0iVKRY5-YvQmMbZ3+eZNHJgXt=CoYedNueAJyT9+Ld5Dg@mail.gmail.com>
- <20230731090935.GB29590@hirez.programming.kicks-ass.net>
- <CAJZ5v0jh5oozZm7OvN9j1iHtzYQzPMOJ=Nt0HaJKYyJ218Cezw@mail.gmail.com>
- <20230731113850.GE29590@hirez.programming.kicks-ass.net>
- <CAJZ5v0h+KC+uMiOE4m4Dp4=iHMkekutk+B+cwb0de8Fvswv6jA@mail.gmail.com>
- <20230802103426.GB210177@hirez.programming.kicks-ass.net>
- <CAJZ5v0gMrUBqtWfuN4DJwXYY5kM+kikWHiep=p-8Jz3yEO0hfQ@mail.gmail.com>
+        bristot@redhat.com, vschneid@redhat.com, kajetan.puchalski@arm.com
+Subject: [RFC][PATCH v2 2/5] cpuidle: Inject tick boundary state
+References: <20230802132431.254614419@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0gMrUBqtWfuN4DJwXYY5kM+kikWHiep=p-8Jz3yEO0hfQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Aug 02, 2023 at 02:44:33PM +0200, Rafael J. Wysocki wrote:
-> On Wed, Aug 2, 2023 at 12:34 PM Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> > On Mon, Jul 31, 2023 at 06:55:35PM +0200, Rafael J. Wysocki wrote:
-> >
-> > > > In that case you cannot tell the difference between I'm good to use this
-> > > > state and I'm good to disable the tick and still use this state.
-> > >
-> > > No, you don't, but is it really worth the fuss?
-> >
-> > My somewhat aged IVB-EP sits around 25 us for restarting the tick.
-> >
-> > Depending on the C state, that is a significant chunk of exit latency,
-> > and depending on how often you do the whole NOHZ dance, this can add up
-> > to significant lost runtime too.
-> >
-> > And these are all machines that have a usable TSC, these numbers all go
-> > up significantly when you somehow end up on the HPET or similar wreckage.
-> >
-> > Stopping the tick is slightly more expensive, but in the same order, I
-> > get around 30 us on the IVB, vs 25 for restarting it. Reprogramming the
-> > timer (LAPIC/TSC-DEADLINE) is the main chunk of it I suspect.
-> >
-> > So over-all that's 55 us extra latency for the full idle path, which can
-> > definitely hurt.
-> >
-> > So yeah, I would say this is all worth it.
-> 
-> I agree that, in general, it is good to avoid stopping the tick when
-> it is not necessary to stop it.
-> 
-> > My ADL is somewhat better, but also much higher clocked, and gets around
-> > 10 us for a big core and 16 us for a little core for restarting the
-> > tick.
-> 
-> But my overall point is different.
-> 
-> An additional bin would possibly help if the deepest state has been
-> selected and its target residency is below the tick, and the closest
-> timer (other than the tick) is beyond the tick.  So how much of a
-> difference would be made by making this particular case more accurate?
+In order to facilitate governors that track history in idle-state
+buckets (TEO) making a useful decision about NOHZ, make sure we have a
+bucket that counts tick-and-longer.
 
-Many of the server parts have a deepest idle state around 600us, distros
-have HZ=250. So every idle 600us < x < 4000us would unnecessarily
-disable the tick.
+In order to be inclusive of the tick itself -- after all, if we do not
+disable NOHZ we'll sleep for a full tick, the actual boundary should
+be just short of a full tick.
 
-How often this happens is of course workload dependent, but if unlucky
-it could be a lot. It also adds the above mentioned latency to the idle
-state, which for those parts is a significant chunk of the exit latency
-extra.
+IOW, when registering the idle-states, add one that is always
+disabled, just to have a bucket.
 
-The fix is 'trivial', why not do it?
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+---
+ drivers/cpuidle/cpuidle.h |    2 +
+ drivers/cpuidle/driver.c  |   48 +++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/cpuidle.h   |    2 -
+ 3 files changed, 50 insertions(+), 2 deletions(-)
 
-Anyway, let me post my latest hackery :-)
+--- a/drivers/cpuidle/cpuidle.h
++++ b/drivers/cpuidle/cpuidle.h
+@@ -72,4 +72,6 @@ static inline void cpuidle_coupled_unreg
+ }
+ #endif
+ 
++#define SHORT_TICK_NSEC (TICK_NSEC - TICK_NSEC/32)
++
+ #endif /* __DRIVER_CPUIDLE_H */
+--- a/drivers/cpuidle/driver.c
++++ b/drivers/cpuidle/driver.c
+@@ -147,13 +147,37 @@ static void cpuidle_setup_broadcast_time
+ 		tick_broadcast_disable();
+ }
+ 
++static int tick_enter(struct cpuidle_device *dev,
++		      struct cpuidle_driver *drv,
++		      int index)
++{
++	return -ENODEV;
++}
++
++static void __cpuidle_state_init_tick(struct cpuidle_state *s)
++{
++	strcpy(s->name, "TICK");
++	strcpy(s->desc, "(no-op)");
++
++	s->target_residency_ns = SHORT_TICK_NSEC;
++	s->target_residency = div_u64(SHORT_TICK_NSEC, NSEC_PER_USEC);
++
++	s->exit_latency_ns = 0;
++	s->exit_latency = 0;
++
++	s->flags |= CPUIDLE_FLAG_UNUSABLE;
++
++	s->enter = tick_enter;
++	s->enter_s2idle = tick_enter;
++}
++
+ /**
+  * __cpuidle_driver_init - initialize the driver's internal data
+  * @drv: a valid pointer to a struct cpuidle_driver
+  */
+ static void __cpuidle_driver_init(struct cpuidle_driver *drv)
+ {
+-	int i;
++	int tick = 0, i;
+ 
+ 	/*
+ 	 * Use all possible CPUs as the default, because if the kernel boots
+@@ -163,6 +187,9 @@ static void __cpuidle_driver_init(struct
+ 	if (!drv->cpumask)
+ 		drv->cpumask = (struct cpumask *)cpu_possible_mask;
+ 
++	if (WARN_ON_ONCE(drv->state_count >= CPUIDLE_STATE_MAX-2))
++		tick = 1;
++
+ 	for (i = 0; i < drv->state_count; i++) {
+ 		struct cpuidle_state *s = &drv->states[i];
+ 
+@@ -192,6 +219,25 @@ static void __cpuidle_driver_init(struct
+ 			s->exit_latency_ns =  0;
+ 		else
+ 			s->exit_latency = div_u64(s->exit_latency_ns, NSEC_PER_USEC);
++
++		if (!tick && s->target_residency_ns >= SHORT_TICK_NSEC) {
++			tick = 1;
++
++			if (s->target_residency_ns == SHORT_TICK_NSEC)
++				continue;
++
++			memmove(&drv->states[i+1], &drv->states[i],
++				sizeof(struct cpuidle_state) * (CPUIDLE_STATE_MAX - i - 1));
++			__cpuidle_state_init_tick(s);
++			drv->state_count++;
++			i++;
++		}
++	}
++
++	if (!tick) {
++		struct cpuidle_state *s = &drv->states[i];
++		__cpuidle_state_init_tick(s);
++		drv->state_count++;
+ 	}
+ }
+ 
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -16,7 +16,7 @@
+ #include <linux/hrtimer.h>
+ #include <linux/context_tracking.h>
+ 
+-#define CPUIDLE_STATE_MAX	10
++#define CPUIDLE_STATE_MAX	16
+ #define CPUIDLE_NAME_LEN	16
+ #define CPUIDLE_DESC_LEN	32
+ 
+
+
