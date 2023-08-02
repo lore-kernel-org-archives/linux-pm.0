@@ -2,43 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B79D2C04A6A
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Aug 2023 13:31:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51CF5C04FE0
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Aug 2023 13:31:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233127AbjHBNbi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Aug 2023 09:31:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59590 "EHLO
+        id S234164AbjHBNbj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Aug 2023 09:31:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59606 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233772AbjHBNbe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 09:31:34 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97402269A;
-        Wed,  2 Aug 2023 06:31:32 -0700 (PDT)
+        with ESMTP id S234161AbjHBNbf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 09:31:35 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D86302698;
+        Wed,  2 Aug 2023 06:31:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
+        d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=eQsShqCZQhSRZELiV+wvARE7XUysNmI7Pn/FkVFS3UY=; b=CoKaaQvwg2eF7NA5/aiaXSbUSO
-        NKjRN2+A9m+yrIzlnelbVshYusq0wWHEJjIfqOmc2tEHNYIyC3pFm+zlhPbFKFi5aDDI6j5bNAYHl
-        Xo6lGXsqowLKdsPT9y0eWuX9IwL3ppBs+zRNi5rpFJDe9+ZmJftsDpEHfLyaL8tUvu84bDkoWshP2
-        cFxLMrucsBCZWPIBecpJM7evZxCMfgK2ivTEQo5eFLWUAnviBmdijWpZZzw3iTKIlJ6CM/eSQ1GiF
-        4InJSRVopZBFp8pMJPyCZDxdhm9KupCLJIcqPpAz3K+V8uzGQBXu1J5kCVMS135vXTCrH0Hwim2tC
-        OALx8RAA==;
+        bh=FEv2iT5iG0jeFDcJt9mW5bYGJa6fvQIcftXsRiIKsDM=; b=OJeHWtCn/qCA8UDeTUprU4JcoE
+        77B5rES8YJQG+Q34u94zXR/7WTH2Or1bRj2FBQDgfqyoVbbhzgSlM58+STeDCDdBKRDhygd1kseue
+        CZmWUYiCbUxqCXDdVvTAD+m4In1W14yavTbJ/LOI8YuWgbV6XlFA0xDIfjfKpZ3Dxdtv19mss6loJ
+        rRfiEacR0MiXzF5PPxbZcZ6dd8IHuh8Wz8s6n8CA2TXE3+BorgkSgKhIEEyOEO3leo4VBS6/hKCJ+
+        9PGvGM7SgNwVSXAGA3lcMmmvP64s3JDMdBMzXPLpXRggMhrWL8KyTOyuHAUGThBTh0GonGYJgAuwO
+        DjZ5gJrw==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qRBwZ-00Fxf9-1s;
-        Wed, 02 Aug 2023 13:31:16 +0000
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1qRBwa-00FBnY-5G; Wed, 02 Aug 2023 13:31:16 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 1942E300768;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 56827300DCF;
         Wed,  2 Aug 2023 15:31:15 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 00BDA2107D7E7; Wed,  2 Aug 2023 15:31:14 +0200 (CEST)
-Message-ID: <20230802132925.686745535@infradead.org>
+        id 0788F2107D7EA; Wed,  2 Aug 2023 15:31:15 +0200 (CEST)
+Message-ID: <20230802132925.824393002@infradead.org>
 User-Agent: quilt/0.66
-Date:   Wed, 02 Aug 2023 15:24:34 +0200
+Date:   Wed, 02 Aug 2023 15:24:36 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     anna-maria@linutronix.de, rafael@kernel.org, tglx@linutronix.de,
         frederic@kernel.org, gautham.shenoy@amd.com
@@ -48,7 +47,7 @@ Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
         rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
         bristot@redhat.com, vschneid@redhat.com, kajetan.puchalski@arm.com
-Subject: [RFC][PATCH v2 3/5] cpuidle/teo: Simplify a little
+Subject: [RFC][PATCH v2 5/5] cpuidle,teo: Improve state selection
 References: <20230802132431.254614419@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -56,75 +55,42 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Remove some of the early exit cases that rely on state_count, since we
-have the additional tick state. Declutters some of the next patches, can
-possibly be re-instated later if desired.
+When selecting a state, stop when history tells us 66% of recent idles
+were at or below our current state.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- drivers/cpuidle/governors/teo.c |   31 +------------------------------
- 1 file changed, 1 insertion(+), 30 deletions(-)
+ drivers/cpuidle/governors/teo.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
 --- a/drivers/cpuidle/governors/teo.c
 +++ b/drivers/cpuidle/governors/teo.c
-@@ -187,7 +187,6 @@ struct teo_bin {
-  * @next_recent_idx: Index of the next @recent_idx entry to update.
-  * @recent_idx: Indices of bins corresponding to recent "intercepts".
-  * @util_threshold: Threshold above which the CPU is considered utilized
-- * @utilized: Whether the last sleep on the CPU happened while utilized
-  */
- struct teo_cpu {
- 	s64 time_span_ns;
-@@ -197,7 +196,6 @@ struct teo_cpu {
- 	int next_recent_idx;
- 	int recent_idx[NR_RECENT];
- 	unsigned long util_threshold;
--	bool utilized;
- };
+@@ -361,6 +361,7 @@ static int teo_select(struct cpuidle_dri
+ 	unsigned int recent_sum = 0;
+ 	unsigned int idx_hit_sum = 0;
+ 	unsigned int hit_sum = 0;
++	unsigned int thresh_sum = 0;
+ 	int constraint_idx = 0;
+ 	int idx0 = 0, idx = -1;
+ 	bool alt_intercepts, alt_recent;
+@@ -376,6 +377,8 @@ static int teo_select(struct cpuidle_dri
  
- static DEFINE_PER_CPU(struct teo_cpu, teo_cpus);
-@@ -379,33 +377,6 @@ static int teo_select(struct cpuidle_dri
- 	duration_ns = tick_nohz_get_sleep_length(&delta_tick);
- 	cpu_data->sleep_length_ns = duration_ns;
+ 	duration_ns = tick_ns = tick_get_sleep_length(false);
  
--	/* Check if there is any choice in the first place. */
--	if (drv->state_count < 2) {
--		idx = 0;
--		goto end;
--	}
--	if (!dev->states_usage[0].disable) {
--		idx = 0;
--		if (drv->states[1].target_residency_ns > duration_ns)
--			goto end;
--	}
--
--	cpu_data->utilized = teo_cpu_is_utilized(dev->cpu, cpu_data);
--	/*
--	 * If the CPU is being utilized over the threshold and there are only 2
--	 * states to choose from, the metrics need not be considered, so choose
--	 * the shallowest non-polling state and exit.
--	 */
--	if (drv->state_count < 3 && cpu_data->utilized) {
--		for (i = 0; i < drv->state_count; ++i) {
--			if (!dev->states_usage[i].disable &&
--			    !(drv->states[i].flags & CPUIDLE_FLAG_POLLING)) {
--				idx = i;
--				goto end;
--			}
--		}
--	}
--
++	thresh_sum = 2 * cpu_data->total / 3; /* 66% */
++
  	/*
  	 * Find the deepest idle state whose target residency does not exceed
  	 * the current sleep length and the deepest idle state not deeper than
-@@ -541,7 +512,7 @@ static int teo_select(struct cpuidle_dri
- 	 * If the CPU is being utilized over the threshold, choose a shallower
- 	 * non-polling state to improve latency
- 	 */
--	if (cpu_data->utilized)
-+	if (teo_cpu_is_utilized(dev->cpu, cpu_data))
- 		idx = teo_find_shallower_state(drv, dev, idx, duration_ns, true);
+@@ -406,6 +409,9 @@ static int teo_select(struct cpuidle_dri
+ 		if (s->target_residency_ns > duration_ns)
+ 			break;
  
- end:
++		if (intercept_sum + hit_sum > thresh_sum)
++			break;
++
+ 		if (s->target_residency_ns == SHORT_TICK_NSEC) {
+ 			/*
+ 			 * We hit the tick state, see if it makes sense to
 
 
