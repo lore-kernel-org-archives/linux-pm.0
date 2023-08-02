@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4AFEC001E0
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Aug 2023 13:31:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B79D2C04A6A
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Aug 2023 13:31:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234051AbjHBNbf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Aug 2023 09:31:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59580 "EHLO
+        id S233127AbjHBNbi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Aug 2023 09:31:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59590 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233444AbjHBNbc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 09:31:32 -0400
+        with ESMTP id S233772AbjHBNbe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 09:31:34 -0400
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B25D1BFD;
-        Wed,  2 Aug 2023 06:31:31 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97402269A;
+        Wed,  2 Aug 2023 06:31:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=JAEdkNYRa3AXqsFdc832avh6PD2FjtrGNGx2xJmd/wI=; b=fU6G3YXwQ34Cb1/wQwfYvcumtt
-        LdxhBQ2iLVc8CMCboG1kI/Le/16V4MPrdeVKmPfbuURe5qbMWj5RjiOyNU+Nq4b8NQetB6dPC/SVx
-        0X/DZFYsbtW4wMTqAdyzw/kYkZpsK5CgMufWNDUJJgcUSYP7tdpOLysCSaq6mBykBA+mtFdznhE1U
-        eYmf+IZ5Tjg5P2CQdVYTBGWwf9qDFsVZtjZ9rHW4cDBosVOdTLhEebk5G0ceo9nIDkSUXOSr9ixQ1
-        tJhwIjp4FFEyr8Y0BxmXi07xsYgMy/mVdfLiYz8L2Htb4dQxwMFUTu6VUQ4Zrq2K7ChqThiWnJ0gE
-        ZhsV3++Q==;
+        bh=eQsShqCZQhSRZELiV+wvARE7XUysNmI7Pn/FkVFS3UY=; b=CoKaaQvwg2eF7NA5/aiaXSbUSO
+        NKjRN2+A9m+yrIzlnelbVshYusq0wWHEJjIfqOmc2tEHNYIyC3pFm+zlhPbFKFi5aDDI6j5bNAYHl
+        Xo6lGXsqowLKdsPT9y0eWuX9IwL3ppBs+zRNi5rpFJDe9+ZmJftsDpEHfLyaL8tUvu84bDkoWshP2
+        cFxLMrucsBCZWPIBecpJM7evZxCMfgK2ivTEQo5eFLWUAnviBmdijWpZZzw3iTKIlJ6CM/eSQ1GiF
+        4InJSRVopZBFp8pMJPyCZDxdhm9KupCLJIcqPpAz3K+V8uzGQBXu1J5kCVMS135vXTCrH0Hwim2tC
+        OALx8RAA==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
         by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qRBwZ-00FxfC-21;
-        Wed, 02 Aug 2023 13:31:17 +0000
+        id 1qRBwZ-00Fxf9-1s;
+        Wed, 02 Aug 2023 13:31:16 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 12B0A300301;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 1942E300768;
         Wed,  2 Aug 2023 15:31:15 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id ECE022107D7E6; Wed,  2 Aug 2023 15:31:14 +0200 (CEST)
-Message-ID: <20230802132925.549643116@infradead.org>
+        id 00BDA2107D7E7; Wed,  2 Aug 2023 15:31:14 +0200 (CEST)
+Message-ID: <20230802132925.686745535@infradead.org>
 User-Agent: quilt/0.66
-Date:   Wed, 02 Aug 2023 15:24:32 +0200
+Date:   Wed, 02 Aug 2023 15:24:34 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     anna-maria@linutronix.de, rafael@kernel.org, tglx@linutronix.de,
         frederic@kernel.org, gautham.shenoy@amd.com
@@ -48,7 +48,7 @@ Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
         rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
         bristot@redhat.com, vschneid@redhat.com, kajetan.puchalski@arm.com
-Subject: [RFC][PATCH v2 1/5] tick/nohz: Introduce tick_get_sleep_length()
+Subject: [RFC][PATCH v2 3/5] cpuidle/teo: Simplify a little
 References: <20230802132431.254614419@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -56,100 +56,75 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a variant of tick_nohz_get_sleep_length() that conditionally does
-the NOHZ part.
-
-tick_get_sleep_length(false) returns the delta_next return value of
-tick_nohz_get_sleep_length(), while tick_get_sleep_length(true)
-returns the regular return of tick_nohz_get_sleep_length().
-
-This allows eliding tick_nohz_next_event() -- which is going to be
-expensive with timer-pull.
+Remove some of the early exit cases that rely on state_count, since we
+have the additional tick state. Declutters some of the next patches, can
+possibly be re-instated later if desired.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- include/linux/tick.h     |    5 +++++
- kernel/time/tick-sched.c |   35 +++++++++++++++++++++++------------
- 2 files changed, 28 insertions(+), 12 deletions(-)
+ drivers/cpuidle/governors/teo.c |   31 +------------------------------
+ 1 file changed, 1 insertion(+), 30 deletions(-)
 
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -136,6 +136,7 @@ extern void tick_nohz_irq_exit(void);
- extern bool tick_nohz_idle_got_tick(void);
- extern ktime_t tick_nohz_get_next_hrtimer(void);
- extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
-+extern ktime_t tick_get_sleep_length(bool nohz);
- extern unsigned long tick_nohz_get_idle_calls(void);
- extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
- extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
-@@ -168,6 +169,10 @@ static inline ktime_t tick_nohz_get_slee
- 	*delta_next = TICK_NSEC;
- 	return *delta_next;
- }
-+static inline ktime_t tick_get_sleep_length(bool nohz)
-+{
-+	return TICK_NSEC;
-+}
- static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
- static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+--- a/drivers/cpuidle/governors/teo.c
++++ b/drivers/cpuidle/governors/teo.c
+@@ -187,7 +187,6 @@ struct teo_bin {
+  * @next_recent_idx: Index of the next @recent_idx entry to update.
+  * @recent_idx: Indices of bins corresponding to recent "intercepts".
+  * @util_threshold: Threshold above which the CPU is considered utilized
+- * @utilized: Whether the last sleep on the CPU happened while utilized
+  */
+ struct teo_cpu {
+ 	s64 time_span_ns;
+@@ -197,7 +196,6 @@ struct teo_cpu {
+ 	int next_recent_idx;
+ 	int recent_idx[NR_RECENT];
+ 	unsigned long util_threshold;
+-	bool utilized;
+ };
  
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -1218,17 +1218,7 @@ ktime_t tick_nohz_get_next_hrtimer(void)
- 	return __this_cpu_read(tick_cpu_device.evtdev)->next_event;
- }
+ static DEFINE_PER_CPU(struct teo_cpu, teo_cpus);
+@@ -379,33 +377,6 @@ static int teo_select(struct cpuidle_dri
+ 	duration_ns = tick_nohz_get_sleep_length(&delta_tick);
+ 	cpu_data->sleep_length_ns = duration_ns;
  
--/**
-- * tick_nohz_get_sleep_length - return the expected length of the current sleep
-- * @delta_next: duration until the next event if the tick cannot be stopped
-- *
-- * Called from power state control code with interrupts disabled.
-- *
-- * The return value of this function and/or the value returned by it through the
-- * @delta_next pointer can be negative which must be taken into account by its
-- * callers.
-- */
--ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
-+static ktime_t __tick_nohz_get_sleep_length(ktime_t *delta_next, bool nohz)
- {
- 	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
- 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
-@@ -1244,7 +1234,7 @@ ktime_t tick_nohz_get_sleep_length(ktime
+-	/* Check if there is any choice in the first place. */
+-	if (drv->state_count < 2) {
+-		idx = 0;
+-		goto end;
+-	}
+-	if (!dev->states_usage[0].disable) {
+-		idx = 0;
+-		if (drv->states[1].target_residency_ns > duration_ns)
+-			goto end;
+-	}
+-
+-	cpu_data->utilized = teo_cpu_is_utilized(dev->cpu, cpu_data);
+-	/*
+-	 * If the CPU is being utilized over the threshold and there are only 2
+-	 * states to choose from, the metrics need not be considered, so choose
+-	 * the shallowest non-polling state and exit.
+-	 */
+-	if (drv->state_count < 3 && cpu_data->utilized) {
+-		for (i = 0; i < drv->state_count; ++i) {
+-			if (!dev->states_usage[i].disable &&
+-			    !(drv->states[i].flags & CPUIDLE_FLAG_POLLING)) {
+-				idx = i;
+-				goto end;
+-			}
+-		}
+-	}
+-
+ 	/*
+ 	 * Find the deepest idle state whose target residency does not exceed
+ 	 * the current sleep length and the deepest idle state not deeper than
+@@ -541,7 +512,7 @@ static int teo_select(struct cpuidle_dri
+ 	 * If the CPU is being utilized over the threshold, choose a shallower
+ 	 * non-polling state to improve latency
+ 	 */
+-	if (cpu_data->utilized)
++	if (teo_cpu_is_utilized(dev->cpu, cpu_data))
+ 		idx = teo_find_shallower_state(drv, dev, idx, duration_ns, true);
  
- 	*delta_next = ktime_sub(dev->next_event, now);
- 
--	if (!can_stop_idle_tick(cpu, ts))
-+	if (!nohz || !can_stop_idle_tick(cpu, ts))
- 		return *delta_next;
- 
- 	next_event = tick_nohz_next_event(ts, cpu);
-@@ -1262,6 +1252,27 @@ ktime_t tick_nohz_get_sleep_length(ktime
- }
- 
- /**
-+ * tick_nohz_get_sleep_length - return the expected length of the current sleep
-+ * @delta_next: duration until the next event if the tick cannot be stopped
-+ *
-+ * Called from power state control code with interrupts disabled.
-+ *
-+ * The return value of this function and/or the value returned by it through the
-+ * @delta_next pointer can be negative which must be taken into account by its
-+ * callers.
-+ */
-+ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
-+{
-+	return __tick_nohz_get_sleep_length(delta_next, true);
-+}
-+
-+ktime_t tick_get_sleep_length(bool nohz)
-+{
-+	ktime_t delta;
-+	return __tick_nohz_get_sleep_length(&delta, nohz);
-+}
-+
-+/**
-  * tick_nohz_get_idle_calls_cpu - return the current idle calls counter value
-  * for a particular CPU.
-  *
+ end:
 
 
