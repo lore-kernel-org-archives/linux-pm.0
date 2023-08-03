@@ -2,106 +2,139 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9EADC001E0
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Aug 2023 06:01:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CD61C04A6A
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Aug 2023 06:37:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232341AbjHCGBx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Aug 2023 02:01:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34874 "EHLO
+        id S233343AbjHCGha (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Aug 2023 02:37:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46882 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232288AbjHCGBw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Aug 2023 02:01:52 -0400
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63DDDE6F;
-        Wed,  2 Aug 2023 23:01:51 -0700 (PDT)
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 37361bNw091891;
-        Thu, 3 Aug 2023 01:01:37 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1691042497;
-        bh=Eq3fAhTV5YV3oUQ6BBvL8m3xQDKMmG4eYt87dBmZskM=;
-        h=Date:From:To:CC:Subject:References:In-Reply-To;
-        b=BWBOQzbfwI/tP0jfhhO+BFyd+4h3QYnjnlbRx082FdlcvxnfNJnTNvhj1TwcqXeiQ
-         r0YHV+DLzADY5MvQm0iOGl294vyO/AFnoXdB0tuTgkz5JQUM+7B9VO/wYQSfy0CB6T
-         nIV6YIWuRVQos+ubIn83Xt8/x4N45YSSEe6FAv70=
-Received: from DLEE101.ent.ti.com (dlee101.ent.ti.com [157.170.170.31])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 37361bsj002604
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Thu, 3 Aug 2023 01:01:37 -0500
-Received: from DLEE101.ent.ti.com (157.170.170.31) by DLEE101.ent.ti.com
- (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 3
- Aug 2023 01:01:37 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE101.ent.ti.com
- (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Thu, 3 Aug 2023 01:01:37 -0500
-Received: from localhost (ileaxei01-snat2.itg.ti.com [10.180.69.6])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 37361a3o015863;
-        Thu, 3 Aug 2023 01:01:36 -0500
-Date:   Thu, 3 Aug 2023 11:31:35 +0530
-From:   Dhruva Gole <d-gole@ti.com>
-To:     Nishanth Menon <nm@ti.com>
-CC:     Rob Herring <robh+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
+        with ESMTP id S233351AbjHCGh1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Aug 2023 02:37:27 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 67B0330E3;
+        Wed,  2 Aug 2023 23:37:23 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.201])
+        by gateway (Coremail) with SMTP id _____8CxfOoiS8tkFoYPAA--.9019S3;
+        Thu, 03 Aug 2023 14:37:22 +0800 (CST)
+Received: from localhost.localdomain (unknown [10.20.42.201])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxF80aS8tkMsZGAA--.49295S3;
+        Thu, 03 Aug 2023 14:37:20 +0800 (CST)
+From:   Yinbo Zhu <zhuyinbo@loongson.cn>
+To:     Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Tony Lindgren <tony@atomide.com>,
-        =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Vibhore Vardhan <vibhore@ti.com>, <linux-omap@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH V2 2/2] dt-bindings: cpufreq: Convert ti-cpufreq to json
- schema
-Message-ID: <20230803060135.cichqctmjhajt2hq@dhruva>
-References: <20230801233341.1416552-1-nm@ti.com>
- <20230801233341.1416552-3-nm@ti.com>
+        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        soc@kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Jianmin Lv <lvjianmin@loongson.cn>, wanghongliang@loongson.cn,
+        Liu Peibao <liupeibao@loongson.cn>,
+        loongson-kernel@lists.loongnix.cn,
+        Yinbo Zhu <zhuyinbo@loongson.cn>, loongarch@lists.linux.dev,
+        Liu Yun <liuyun@loongson.cn>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v6 1/2] soc: dt-bindings: add loongson-2 pm
+Date:   Thu,  3 Aug 2023 14:37:02 +0800
+Message-Id: <20230803063703.5659-2-zhuyinbo@loongson.cn>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20230803063703.5659-1-zhuyinbo@loongson.cn>
+References: <20230803063703.5659-1-zhuyinbo@loongson.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20230801233341.1416552-3-nm@ti.com>
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8CxF80aS8tkMsZGAA--.49295S3
+X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
+X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
+        ZEXasCq-sGcSsGvfJ3UbIjqfuFe4nvWSU5nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2Kfnx
+        nUUI43ZEXa7xR_UUUUUUUUU==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Aug 01, 2023 at 18:33:41 -0500, Nishanth Menon wrote:
-> Move the ti-cpufreq binding over to opp and convert convert the free
+Add the Loongson-2 SoC Power Management Controller binding with DT
+schema format using json-schema.
 
-Minor nitpik, maybe can be fixed while applying the patch. Checkpatch caught this,
-Possible repeated word: 'convert'
+Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ .../soc/loongson/loongson,ls2k-pmc.yaml       | 52 +++++++++++++++++++
+ MAINTAINERS                                   |  6 +++
+ 2 files changed, 58 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
 
-> text binding to json-schema.
-> 
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> ---
-
-Otherwise, LGTM
-
-Reviewed-by: Dhruva Gole <d-gole@ti.com>
-
-> Changes since V1:
-> - Fixup $subject of the patch to indicate json schema rather than yaml.
-> - Change filename to matchup with binding compatible
-> - Dropped un-used labels
-> - Dropped "|" in "description"
-> 
-> V1: https://lore.kernel.org/all/20230724153911.1376830-6-nm@ti.com/
-> 
-> Side note: cleanups in dt is picked up on Tony's tree:
-> https://lore.kernel.org/all/20230731062551.GH5194@atomide.com/
-> 
->  .../bindings/cpufreq/ti-cpufreq.txt           | 132 ------------------
->  .../opp/operating-points-v2-ti-cpu.yaml       |  88 ++++++++++++
->  2 files changed, 88 insertions(+), 132 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
->  create mode 100644 Documentation/devicetree/bindings/opp/operating-points-v2-ti-cpu.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
-> deleted file mode 100644
-[..snip..]
-
+diff --git a/Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml b/Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
+new file mode 100644
+index 000000000000..da2dcfeebf12
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
+@@ -0,0 +1,52 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/soc/loongson/loongson,ls2k-pmc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Loongson-2 Power Manager controller
++
++maintainers:
++  - Yinbo Zhu <zhuyinbo@loongson.cn>
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - loongson,ls2k0500-pmc
++          - loongson,ls2k1000-pmc
++      - const: syscon
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  loongson,suspend-address:
++    $ref: /schemas/types.yaml#/definitions/uint64
++    description:
++      The "loongson,suspend-address" is a deep sleep state (Suspend To
++      RAM) firmware entry address which was jumped from kernel and it's
++      value was dependent on specific platform firmware code. In
++      addition, the PM need according to it to indicate that current
++      SoC whether support Suspend To RAM.
++
++required:
++  - compatible
++  - reg
++  - interrupts
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++
++    power-management@1fe27000 {
++        compatible = "loongson,ls2k1000-pmc", "syscon";
++        reg = <0x1fe27000 0x58>;
++        interrupt-parent = <&liointc1>;
++        interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
++        loongson,suspend-address = <0x0 0x1c000500>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1089ef3319f2..608a00473498 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -12365,6 +12365,12 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/hwinfo/loongson,ls2k-chipid.yaml
+ F:	drivers/soc/loongson/loongson2_guts.c
+ 
++LOONGSON-2 SOC SERIES PM DRIVER
++M:	Yinbo Zhu <zhuyinbo@loongson.cn>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
++
+ LOONGSON-2 SOC SERIES PINCTRL DRIVER
+ M:	zhanghongchen <zhanghongchen@loongson.cn>
+ M:	Yinbo Zhu <zhuyinbo@loongson.cn>
 -- 
-Best regards,
-Dhruva Gole <d-gole@ti.com>
+2.20.1
+
