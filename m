@@ -2,73 +2,80 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D8FEC00528
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Aug 2023 00:25:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A8D9C001DF
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Aug 2023 01:24:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232097AbjHCAZv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Aug 2023 20:25:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34374 "EHLO
+        id S232274AbjHCBYi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Aug 2023 21:24:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52248 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232080AbjHCAZt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 20:25:49 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B924330E5;
-        Wed,  2 Aug 2023 17:25:46 -0700 (PDT)
-Received: from mercury (unknown [185.254.75.45])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 86E076607088;
-        Thu,  3 Aug 2023 01:25:44 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1691022344;
-        bh=a4ZVvuCVIjytPB9Xa+qzo7sw1T+PCxguID4EgDUegNc=;
-        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-        b=TBzsdyAyY3G7T6+EIiTdwsFEZTdDyNw4SVfJtM2s3k8U++fOslAEWn85/D+bpwYGO
-         gWFrrtb5ZlUrKHvvbfdh4sOLysGJvs46nvfvWtEEmkkSpGmmr/nZO9lKTlzoHh1gU+
-         HXIHnIugq7CnENJt6+iyV+rLPU8QsMFMadtoX6WRNlujlUknepn7NE8ef0um5xTd2F
-         eclPf6A/j03ajNsHwGfYJhGD2C9Ij8cHsN0aGMgdRe8Rj+BVmvec2e9YQ5TSG5z1d2
-         rUvNO6nfqj5qkH0p7Sf6IjkGAB7KYTuj/ZU+W4Gh5sw05IEuNKLkTXokjSXwEQfegN
-         zglmcfFxRJ/9A==
-Received: by mercury (Postfix, from userid 1000)
-        id 712791060927; Thu,  3 Aug 2023 02:25:42 +0200 (CEST)
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Caleb Connolly <caleb.connolly@linaro.org>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-In-Reply-To: <20230802-pmi8998-charger-fixes-v1-0-a8f1e8b84c1e@linaro.org>
-References: <20230802-pmi8998-charger-fixes-v1-0-a8f1e8b84c1e@linaro.org>
-Subject: Re: [PATCH 0/2] power: supply: qcom_pmi8998_charger fixes
-Message-Id: <169102234245.232087.1076719973314019851.b4-ty@collabora.com>
-Date:   Thu, 03 Aug 2023 02:25:42 +0200
+        with ESMTP id S231269AbjHCBYh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2023 21:24:37 -0400
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E5FA30E4
+        for <linux-pm@vger.kernel.org>; Wed,  2 Aug 2023 18:24:12 -0700 (PDT)
+Received: from dggpemm500016.china.huawei.com (unknown [172.30.72.54])
+        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RGWLf6ctvzrS7V;
+        Thu,  3 Aug 2023 09:23:06 +0800 (CST)
+Received: from huawei.com (10.90.53.73) by dggpemm500016.china.huawei.com
+ (7.185.36.25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Thu, 3 Aug
+ 2023 09:24:10 +0800
+From:   Chen Jiahao <chenjiahao16@huawei.com>
+To:     <rafael@kernel.org>, <daniel.lezcano@linaro.org>,
+        <amitk@kernel.org>, <rui.zhang@intel.com>,
+        <matthias.bgg@gmail.com>,
+        <angelogioacchino.delregno@collabora.com>,
+        <aouledameur@baylibre.com>, <void0red@hust.edu.cn>,
+        <robh@kernel.org>, <daniel@makrotopia.org>,
+        <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>
+CC:     <chenjiahao16@huawei.com>
+Subject: [PATCH -next] thermal/drivers/mediatek: Remove repeating warn msg after devm_thermal_add_hwmon_sysfs()
+Date:   Thu, 3 Aug 2023 09:23:41 +0800
+Message-ID: <20230803012341.2388831-1-chenjiahao16@huawei.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.12.2
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.90.53.73]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ dggpemm500016.china.huawei.com (7.185.36.25)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Referring to commit 8416ecfb32923 ("thermal/hwmon: Add error
+information printing for devm_thermal_add_hwmon_sysfs()"),
+return value has already been checked if ret != 0 in
+devm_thermal_add_hwmon_sysfs(). Error handling has also been
+performed in this case, including print warning message for
+debugging.
 
-On Wed, 02 Aug 2023 15:49:27 +0100, Caleb Connolly wrote:
-> Drop the useless CHARGE_CONTROL_LIMIT_* properties and
-> fix incorrect status reporting on some devices when the
-> battery is full.
-> 
+Removing dev_warn() following devm_thermal_add_hwmon_sysfs()
+to clean up redundant warning message.
 
-Applied, thanks!
+Signed-off-by: Chen Jiahao <chenjiahao16@huawei.com>
+---
+ drivers/thermal/mediatek/auxadc_thermal.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-[1/2] power: supply: qcom_pmi8998_charger: remove CHARGE_CONTROL_LIMIT_* props
-      commit: f57f5838c044d1554b71186d3d277619eab58d31
-[2/2] power: supply: qcom_pmi8998_charger: fix charger status
-      commit: 7e6311f04b41174ccc738d37dcb4b93cd4de98b0
-
-Best regards,
+diff --git a/drivers/thermal/mediatek/auxadc_thermal.c b/drivers/thermal/mediatek/auxadc_thermal.c
+index c537aed71017..7f8450c66646 100644
+--- a/drivers/thermal/mediatek/auxadc_thermal.c
++++ b/drivers/thermal/mediatek/auxadc_thermal.c
+@@ -1289,9 +1289,7 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 	if (IS_ERR(tzdev))
+ 		return PTR_ERR(tzdev);
+ 
+-	ret = devm_thermal_add_hwmon_sysfs(&pdev->dev, tzdev);
+-	if (ret)
+-		dev_warn(&pdev->dev, "error in thermal_add_hwmon_sysfs");
++	devm_thermal_add_hwmon_sysfs(&pdev->dev, tzdev);
+ 
+ 	return 0;
+ }
 -- 
-Sebastian Reichel <sebastian.reichel@collabora.com>
+2.34.1
 
