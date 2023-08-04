@@ -2,83 +2,129 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACB76C00528
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Aug 2023 20:48:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1630BC04A6A
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Aug 2023 21:26:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229483AbjHDUso (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Aug 2023 16:48:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53396 "EHLO
+        id S230111AbjHDV0J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Aug 2023 17:26:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44022 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229618AbjHDUsn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Aug 2023 16:48:43 -0400
-Received: from mail-oa1-f43.google.com (mail-oa1-f43.google.com [209.85.160.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8452C4C2F;
-        Fri,  4 Aug 2023 13:48:42 -0700 (PDT)
-Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-1a2dd615ddcso368078fac.0;
-        Fri, 04 Aug 2023 13:48:42 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691182121; x=1691786921;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=dbQ+WITNP3Wm+BUgw20KhrHawBzvFk2I60KIA8i0d6Q=;
-        b=JAoVJnq9V1PnRMvHx7M/GcEW2qPObzK5xwBh+mR3DQ9kqtMABdYPRFvpgefJj8b4rT
-         3XlDdHFmyU4Jt8SqIXOB3IaEKGexZo7dX2G871mpsISi2hBIFiu3bL3WdcdR0wToUVmF
-         IEyDliahmzH9v/qUDD8XVBs7l44jREeRg9GihkABYPQi+jFkLYimDGd/8OTV9QRnum2Z
-         N89r3kQxCL38IwKfPOaUGfsBIBZMPuLcaVPZJ7XtQSRnjvE0Fl+Toyg5BUVhGStWowMU
-         Z7WOduQCn6h5c+9fiaxwgKtypbbAL2zKe0rGKfXmeNf630QR99xaaHASl+uPed0YIazi
-         4dNQ==
-X-Gm-Message-State: ABy/qLZ8zjJHaxzmf1Wp08QjQITFXwkVlL1JLKmLVC9uGUXMtdHY5scN
-        cjzSJewe61UGF0emmvc10ae14h85bd+yBpXT6MCDgunGkpM=
-X-Google-Smtp-Source: APBJJlGaqee6qfyhmG6Kq15SpnAEy7PdOGVHTYIV5X9OMUutQBpVH1idaYJSAYsFjfVHlrmMEfgxYrpIuFCcoA/MR/c=
-X-Received: by 2002:a05:6870:658a:b0:1bb:b9d1:37fe with SMTP id
- fp10-20020a056870658a00b001bbb9d137femr19671059oab.2.1691182121664; Fri, 04
- Aug 2023 13:48:41 -0700 (PDT)
+        with ESMTP id S229471AbjHDV0I (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Aug 2023 17:26:08 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B63A7B1;
+        Fri,  4 Aug 2023 14:26:06 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 89dbf995bddbbc18; Fri, 4 Aug 2023 23:26:04 +0200
+Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
+   discourages use of this host) smtp.mailfrom=rjwysocki.net 
+   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
+   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 1C7DB661680;
+        Fri,  4 Aug 2023 23:26:04 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Michal Wilczynski <michal.wilczynski@intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v4 10/10] thermal: core: Eliminate code duplication from acpi_thermal_notify()
+Date:   Fri, 04 Aug 2023 23:25:56 +0200
+Message-ID: <3600617.R56niFO833@kreacher>
+In-Reply-To: <4878513.31r3eYUQgx@kreacher>
+References: <13318886.uLZWGnKmhe@kreacher> <4878513.31r3eYUQgx@kreacher>
 MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 4 Aug 2023 22:48:30 +0200
-Message-ID: <CAJZ5v0jz05KdjX51tAbLMUCnLVF_CUhadUt1VVrk7KD-ngrPDg@mail.gmail.com>
-Subject: [GIT PULL] Power management fix for v6.5-rc5
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrkeeggdduheekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghp
+ thhtohepmhhitghhrghlrdifihhltgiihihnshhkihesihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Please pull from the tag
+Move the acpi_bus_generate_netlink_event() invocation into
+acpi_thermal_trips_update() which allows the code duplication in
+acpi_thermal_notify() to be cleaned up, but for this purpose the
+event value needs to be passed to acpi_thermal_trips_update() and
+from there to acpi_thermal_adjust_thermal_zone() which has to
+determine the flag value for __acpi_thermal_trips_update() by
+itself.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-6.5-rc5
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/thermal.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-with top-most commit 16e95a62eed18864aecac404f1e4eed764c363f2
+Index: linux-pm/drivers/acpi/thermal.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/thermal.c
++++ linux-pm/drivers/acpi/thermal.c
+@@ -421,9 +421,11 @@ static void acpi_thermal_adjust_thermal_
+ 					     unsigned long data)
+ {
+ 	struct acpi_thermal *tz = thermal_zone_device_priv(thermal);
++	int flag = data == ACPI_THERMAL_NOTIFY_THRESHOLDS ?
++				ACPI_TRIPS_THRESHOLDS : ACPI_TRIPS_DEVICES;
+ 	int i;
+ 
+-	__acpi_thermal_trips_update(tz, data);
++	__acpi_thermal_trips_update(tz, flag);
+ 
+ 	if (tz->trips.passive.valid)
+ 		acpi_thermal_update_trip_temp(tz, &tz->trips.passive,
+@@ -450,8 +452,10 @@ static void acpi_queue_thermal_check(str
+ 		queue_work(acpi_thermal_pm_queue, &tz->thermal_check_work);
+ }
+ 
+-static void acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
++static void acpi_thermal_trips_update(struct acpi_thermal *tz, u32 event)
+ {
++	struct acpi_device *adev = tz->device;
++
+ 	/*
+ 	 * Use thermal_zone_device_adjust() to carry out the trip points
+ 	 * update, so as to protect thermal_get_trend() from getting stale
+@@ -459,8 +463,10 @@ static void acpi_thermal_trips_update(st
+ 	 * invoked from acpi_thermal_check_fn() from producing inconsistent
+ 	 * results.
+ 	 */
+-	thermal_zone_device_adjust(tz->thermal_zone, flag);
++	thermal_zone_device_adjust(tz->thermal_zone, event);
+ 	acpi_queue_thermal_check(tz);
++	acpi_bus_generate_netlink_event(adev->pnp.device_class,
++					dev_name(&adev->dev), event, 0);
+ }
+ 
+ static int acpi_thermal_get_trip_points(struct acpi_thermal *tz)
+@@ -824,14 +830,8 @@ static void acpi_thermal_notify(acpi_han
+ 		acpi_queue_thermal_check(tz);
+ 		break;
+ 	case ACPI_THERMAL_NOTIFY_THRESHOLDS:
+-		acpi_thermal_trips_update(tz, ACPI_TRIPS_THRESHOLDS);
+-		acpi_bus_generate_netlink_event(device->pnp.device_class,
+-						dev_name(&device->dev), event, 0);
+-		break;
+ 	case ACPI_THERMAL_NOTIFY_DEVICES:
+-		acpi_thermal_trips_update(tz, ACPI_TRIPS_DEVICES);
+-		acpi_bus_generate_netlink_event(device->pnp.device_class,
+-						dev_name(&device->dev), event, 0);
++		acpi_thermal_trips_update(tz, event);
+ 		break;
+ 	default:
+ 		acpi_handle_debug(device->handle, "Unsupported event [0x%x]\n",
 
- powercap: intel_rapl: Fix a sparse warning in TPMI interface
-
-on top of commit 5d0c230f1de8c7515b6567d9afba1f196fb4e2f4
-
- Linux 6.5-rc4
-
-to receive a power management fix for 6.5-rc5.
-
-This fixes a sparse warning triggered by the TPMI interface recently
-added to the Intel RAPL power capping driver (Zhang Rui).
-
-Thanks!
 
 
----------------
-
-Zhang Rui (1):
-      powercap: intel_rapl: Fix a sparse warning in TPMI interface
-
----------------
-
- drivers/powercap/intel_rapl_common.c               | 14 +++----
- drivers/powercap/intel_rapl_msr.c                  | 49 +++++++++++-----------
- drivers/powercap/intel_rapl_tpmi.c                 | 17 ++++----
- .../intel/int340x_thermal/processor_thermal_rapl.c | 16 +++----
- include/linux/intel_rapl.h                         | 14 +++++--
- 5 files changed, 58 insertions(+), 52 deletions(-)
