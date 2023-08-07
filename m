@@ -2,92 +2,159 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 021B6C001B0
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Aug 2023 19:40:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FEF9C001DB
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 16:15:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231201AbjHKTko (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Aug 2023 15:40:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43270 "EHLO
+        id S229756AbjHGQP1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Aug 2023 12:15:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51198 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235584AbjHKTko (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2023 15:40:44 -0400
-Received: from mail-qk1-x72c.google.com (mail-qk1-x72c.google.com [IPv6:2607:f8b0:4864:20::72c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3D5B30E6;
-        Fri, 11 Aug 2023 12:40:43 -0700 (PDT)
-Received: by mail-qk1-x72c.google.com with SMTP id af79cd13be357-76cd8dab98fso172346885a.3;
-        Fri, 11 Aug 2023 12:40:43 -0700 (PDT)
+        with ESMTP id S229590AbjHGQP0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 12:15:26 -0400
+Received: from mail-qv1-xf2a.google.com (mail-qv1-xf2a.google.com [IPv6:2607:f8b0:4864:20::f2a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF75410C0
+        for <linux-pm@vger.kernel.org>; Mon,  7 Aug 2023 09:15:24 -0700 (PDT)
+Received: by mail-qv1-xf2a.google.com with SMTP id 6a1803df08f44-63c70dc7ed2so33279746d6.0
+        for <linux-pm@vger.kernel.org>; Mon, 07 Aug 2023 09:15:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1691782842; x=1692387642;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=K8XAdlCauzuqTqX7DL7uCr2jVWlrna5hii1a8kj15JE=;
-        b=i6oD9bghJDTu1zIQIV4UtUAx1+dPDP6CDrtzU9vghK3CiuknavQ6GqZJhbsOQVSMI2
-         OV8W/NB2Z2SY+Jkf8lUEOxUjQIqmbxHu6jquYhiyp/0M2+yG8f/qDgaq2CbO2dLVp1dq
-         +7/kqN0uTWYkwyjAuNnr6AuOtZG/vR6lP0L427ToteS19YuwsytmuMdebanfvGRNNOx5
-         3p6DSoODvzu+GeZZd+si7+4RKOumeXVfqkLQLG8yaIArCBk+UWiLylcKWRB56HRCX/vX
-         82k9L25AmzIFT5jInmSyANwga3Ke6p4QgJraLbfmT7IY/+7D/ca0rZ788xZWoQBtKi2z
-         bVyw==
+        d=google.com; s=20221208; t=1691424924; x=1692029724;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gBYooyeWK7k6BJIomcF3V8ANL7Caa0RySBNuNDEDGk4=;
+        b=11qzlmUGwi0zoRhNVQFSGqPgVXSOIJlZMoVTzN/0j2NyBTwaXma4OX4foNKLkGHP7g
+         3B4DH3ZF6ElSFg1Lhf87haPAfS47HG8RcaFqw1hyyjvEDbALyQWCk1rBUJXMy9MQsIWo
+         ii5L5aHrwJZzI9Os1QENa5TaKl8xbv2aMuwYs+yZZvYAO+attk7a/hvYeGbFlbbLtmLi
+         rGqWeIvJRND85m+PZR0ZfeKPDGb/MSfH804crSTP/Uh7BnaqW13tNQY6r0HOmz0HvDY1
+         QHA8nsojx80q7pDbPgWtjVSAm8L1KkBt+r5WtjjKY2y03dR66rfOAHR7fl+51/xRIpYi
+         p2Uw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691782842; x=1692387642;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=K8XAdlCauzuqTqX7DL7uCr2jVWlrna5hii1a8kj15JE=;
-        b=Wrvpk0Y/j23ESVsqJn6MHvNY3GDYEebQTAl2LHSGbThaxtVDMn1nOFlPX5w1EktesT
-         Vwo0akzYrblHAkPb86MpPpq08/JQuOOIR6Dsk5hisH98otgxt6IwL8TPKndWNktLqVgs
-         Jg6JInolMI/+bZ8ByqxtAkGhdfgdfARlCMxXp1E0PzermtKdJFjDEH3BKFiH/2DS1cyZ
-         FVxpJ0xVbgSkBv/+dhW6mJECn8pnAGLNRMHx3QKn19a+1WZoHbgYudzww5a2G3M/tAR+
-         eZIZUgydD7ShWj6sy/H88exH/6vW+2SuCvEICC1XJJ2RymDNwfelYm/TjHwGn6DAXMxe
-         6tZg==
-X-Gm-Message-State: AOJu0Yzu9vMp00iJbvY+ZVG/xrPsu1n+VSVse+/BjYSRj2utnswQVPbg
-        pSq/DIB/iI2+njvgHZTnmqbOuiZLPRx0rg==
-X-Google-Smtp-Source: AGHT+IEd6FKDf2LUftPdhsoDiwuk7hY3RyxprWEjQIOiy+tECLHywU9E044swelPCq0F+bD0scVt7w==
-X-Received: by 2002:a05:620a:24c:b0:767:4016:29f3 with SMTP id q12-20020a05620a024c00b00767401629f3mr2941226qkn.58.1691782842614;
-        Fri, 11 Aug 2023 12:40:42 -0700 (PDT)
-Received: from localhost.localdomain ([92.85.190.61])
-        by smtp.gmail.com with ESMTPSA id j1-20020ac84f81000000b003ef2db16e72sm1375329qtw.94.2023.08.11.12.40.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Aug 2023 12:40:42 -0700 (PDT)
-From:   Andrei Coardos <aboutphysycs@gmail.com>
-To:     linux-kernel@vger.kernel.org, linux-sunxi@lists.linux.dev,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc:     samuel@sholland.org, jernej.skrabec@gmail.com, wens@csie.org,
-        rui.zhang@intel.com, amitk@kernel.org, daniel.lezcano@linaro.org,
-        rafael@kernel.org, tiny.windzz@gmail.com, anarsoul@gmail.com,
-        alex@shruggie.ro, Andrei Coardos <aboutphysycs@gmail.com>
-Subject: [PATCH] thermal: sun8i_thermal: remove unneeded call to platform_set_drvdata()
-Date:   Fri, 11 Aug 2023 22:40:32 +0300
-Message-Id: <20230811194032.4240-1-aboutphysycs@gmail.com>
-X-Mailer: git-send-email 2.34.1
+        d=1e100.net; s=20221208; t=1691424924; x=1692029724;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=gBYooyeWK7k6BJIomcF3V8ANL7Caa0RySBNuNDEDGk4=;
+        b=MEWgEAGBQoEJnDC2QHIjVte8nkI/7tbWGlNj++TqZ5+M9sqfGCC/USTrEjXPrEaHRL
+         nHk/eEnqN1HlfSfCo/507rxLbsCGqYkyDkOB7d009HSGC2NK6T/qbQdm+U+z21DkmCUf
+         mGNndt3DzIocYbrUVi5Uv++7z1f2Wbi1G8sYrMG48X9XT/sBTedN3EXvp42g5at0OKel
+         lUbB5srb7ilCynJYzQCdfGcOOuUwFJJmbHazozD8qKFYr29eOn1NEzuq+4JL5RBaMOQY
+         isML4gbSIp6aHsIbBEiBLLmJs4nrQhG0iukeEH7d6Z/KUwgGztkqMP01SMP9uXeIKEGD
+         fE8g==
+X-Gm-Message-State: AOJu0YyyLSSbz7vatdfb0CQ2DgBjuDgwiOnEL3logAprk+/+l+o6n8Wx
+        ROv4tSgdyEmMUBXFM2vGS1Yx00bXbmzcdon8FrPbIQ==
+X-Google-Smtp-Source: AGHT+IGJsPnES8PM+XJgKXF3Z501OznIjg6TcJH0IghWcT/mqUa+UKk+1ETVfctEFGNE2xojsO29Lyk8Zq0nbmlOhFA=
+X-Received: by 2002:a05:6214:3018:b0:63d:1aed:72ee with SMTP id
+ ke24-20020a056214301800b0063d1aed72eemr10531003qvb.64.1691424923690; Mon, 07
+ Aug 2023 09:15:23 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <c7f1bf9b-b183-bf6e-1cbb-d43f72494083@gmail.com>
+ <2023080743-amendable-moonlit-15b7@gregkh> <CAFqe=zJ9uRTVG=jny2PzUrrFGW2E_mZrGKF-3YMRkjzMUdu_7A@mail.gmail.com>
+In-Reply-To: <CAFqe=zJ9uRTVG=jny2PzUrrFGW2E_mZrGKF-3YMRkjzMUdu_7A@mail.gmail.com>
+From:   Nick Desaulniers <ndesaulniers@google.com>
+Date:   Mon, 7 Aug 2023 09:15:12 -0700
+Message-ID: <CAKwvOd=gJO93_eqUcR6VD8n+eqxL7-aG5D7AnAgG1ki1N1ms0g@mail.gmail.com>
+Subject: Re: Fwd: CFI violation when reading amd_pstate/status
+To:     =?UTF-8?Q?Jannik_Gl=C3=BCckert?= <jannik.glueckert@gmail.com>,
+        Bagas Sanjaya <bagasdotme@gmail.com>
+Cc:     Huang Rui <ray.huang@amd.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux LLVM Build Support <llvm@lists.linux.dev>,
+        Sami Tolvanen <samitolvanen@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This function call was found to be unnecessary as there is no equivalent
-platform_get_drvdata() call to access the private data of the driver. Also,
-the private data is defined in this driver, so there is no risk of it being
-accessed outside of this driver file.
+On Sun, Aug 6, 2023 at 11:21=E2=80=AFPM Jannik Gl=C3=BCckert
+<jannik.glueckert@gmail.com> wrote:
+>
+> Hi Greg,
+>
+> our kernel uses the Fedora config and has a homeopathic patchset on
+> top of upstream - see
+> https://gitweb.gentoo.org/proj/linux-patches.git/tree/?h=3D6.4 except
+> the 50** patches.
+> Namely we don't touch cpufreq or pm.
+>
+> > Comm: cat Tainted: P
+>
+> I am not using any out of tree modules, the kernel switches to
+> Tainted: P on the first CFI violation.
 
-Signed-off-by: Andrei Coardos <aboutphysycs@gmail.com>
----
- drivers/thermal/sun8i_thermal.c | 2 --
- 1 file changed, 2 deletions(-)
+Thanks for the report.
+Let's track this in
+https://github.com/ClangBuiltLinux/linux/issues/1901
+(You can use the MAINTAINERS file to see issue trackers via the `B:`
+symbol used by various parts of the tree).
 
-diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
-index 195f3c5d0b38..61a2f287ac90 100644
---- a/drivers/thermal/sun8i_thermal.c
-+++ b/drivers/thermal/sun8i_thermal.c
-@@ -489,8 +489,6 @@ static int sun8i_ths_probe(struct platform_device *pdev)
- 	if (!tmdev->chip)
- 		return -EINVAL;
- 
--	platform_set_drvdata(pdev, tmdev);
--
- 	ret = sun8i_ths_resource_init(tmdev);
- 	if (ret)
- 		return ret;
--- 
-2.34.1
+>
+> Regards
+> Jannik
+>
+> Am Mo., 7. Aug. 2023 um 08:03 Uhr schrieb Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org>:
+> >
+> > On Mon, Aug 07, 2023 at 06:55:49AM +0700, Bagas Sanjaya wrote:
+> > > Hi,
+> > >
+> > > I notice a bug report on Bugzilla [1]. Quoting from it:
+> > >
+> > > > On kernel 6.4.7, with amd_pstate=3Dactive, with a Ryzen 7700X
+> > > > I get a Clang CFI violation when reading /sys/devices/system/cpu/am=
+d_pstate/status
+> > > >
+> > > > This is reproduceable with every read, I have only tried with amd_p=
+state=3Dactive
+> > > >
+> > > > With the following CFI and Clang configs, Clang 16.0.6
+> > > > CONFIG_CFI_CLANG=3Dy
+> > > > CONFIG_CFI_PERMISSIVE=3Dy
+> > > > CONFIG_LTO_CLANG=3Dy
+> > > > CONFIG_LTO_CLANG_THIN=3Dy
+> > > >
+> > > > Below is the full call trace, let me know if you need a trace with =
+debug info.
+> > > >
+> > > > [ 4947.849350] CFI failure at dev_attr_show+0x24/0x60 (target: show=
+_status+0x0/0x70; expected type: 0x8651b1de)
+> > > > [ 4947.849358] WARNING: CPU: 2 PID: 16519 at dev_attr_show+0x24/0x6=
+0
+> > > > [ 4947.849360] Modules linked in: binfmt_misc nf_conntrack_netbios_=
+ns nf_conntrack_broadcast wireguard curve25519_x86_64 libcurve25519_generic=
+ ip6_udp_tunnel udp_tunnel snd_seq_dummy snd_hrtimer snd_seq rfcomm joydev =
+uhid xt_CHECKSUM xt_MASQUERADE xt_conntrack ipt_REJECT nf_nat_tftp nf_connt=
+rack_tftp nft_fib_inet nft_fib_ipv6 nft_fib_ipv4 nft_fib nft_reject_inet nf=
+_reject_ipv6 nf_reject_ipv4 nft_reject nft_ct nft_chain_nat bridge 8021q mr=
+p garp stp llc nf_tables ebtable_nat ebtable_broute ip6table_nat ip6table_m=
+angle ip6table_raw ip6table_security iptable_nat nf_nat nf_conntrack nf_def=
+rag_ipv6 nf_defrag_ipv4 iptable_mangle iptable_raw iptable_security ip_set =
+nfnetlink ebtable_filter ebtables ip6table_filter ip6_tables iptable_filter=
+ ip_tables bnep vfat fat amdgpu snd_hda_codec_realtek snd_hda_codec_generic=
+ snd_hda_codec_hdmi snd_hda_intel mt7921e vfio_pci intel_rapl_msr mt7921_co=
+mmon intel_rapl_common mt76_connac_lib edac_mce_amd vfio_pci_core mt76 vfio=
+_iommu_type1 vfio kvm_amd iommufd iommu_v2 snd_usb_audio
+> > > > [ 4947.849379]  snd_intel_dspcfg gpu_sched snd_intel_sdw_acpi mac80=
+211 drm_suballoc_helper snd_usbmidi_lib i2c_algo_bit drm_ttm_helper snd_hda=
+_codec btusb ttm btrtl libarc4 btmtk snd_hda_core snd_rawmidi kvm snd_seq_d=
+evice drm_display_helper btintel snd_hwdep mc btbcm irqbypass cfg80211 cec =
+snd_pcm asus_nb_wmi bluetooth eeepc_wmi snd_timer asus_wmi drm_kms_helper l=
+edtrig_audio sparse_keymap snd gpio_amdpt platform_profile gpio_generic drm=
+_buddy rfkill soundcore rapl i2c_piix4 wmi_bmof pcspkr k10temp lm92 nct6775=
+_core hwmon_vid fuse loop dm_crypt crct10dif_pclmul polyval_clmulni polyval=
+_generic ghash_clmulni_intel nvme sp5100_tco ccp r8169 nvme_core nvme_commo=
+n video wmi sunrpc
+> > > > [ 4947.849398] CPU: 2 PID: 16519 Comm: cat Tainted: P              =
+     6.4.7-gentoo-dist-hardened #1
+> >
+> > Can't do much about this kernel, we don't know what's really in it,
+> > sorry.
+> >
+> > greg k-h
 
+
+
+--=20
+Thanks,
+~Nick Desaulniers
