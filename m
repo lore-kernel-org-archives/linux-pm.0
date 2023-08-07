@@ -2,92 +2,69 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2D4DC04A94
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 18:21:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E55FC001B0
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 19:25:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231592AbjHGSVQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Aug 2023 14:21:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53388 "EHLO
+        id S229700AbjHGTZN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Aug 2023 15:25:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231222AbjHGSVG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 14:21:06 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4665010FF;
-        Mon,  7 Aug 2023 11:21:03 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id ece2375058cdbf73; Mon, 7 Aug 2023 20:21:01 +0200
-Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
-   discourages use of this host) smtp.mailfrom=rjwysocki.net 
-   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
-   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
-Received: from kreacher.localnet (unknown [195.136.19.94])
+        with ESMTP id S229473AbjHGTZM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 15:25:12 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AA4E1715;
+        Mon,  7 Aug 2023 12:25:11 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id DE75E6625B2;
-        Mon,  7 Aug 2023 20:21:00 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Michal Wilczynski <michal.wilczynski@intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v5 01/11] thermal: core: Do not handle trip points with invalid temperature
-Date:   Mon, 07 Aug 2023 20:01:24 +0200
-Message-ID: <4824219.GXAFRqVoOG@kreacher>
-In-Reply-To: <4503814.LvFx2qVVIh@kreacher>
-References: <13318886.uLZWGnKmhe@kreacher> <4503814.LvFx2qVVIh@kreacher>
+        by dfw.source.kernel.org (Postfix) with ESMTPS id D1C4262189;
+        Mon,  7 Aug 2023 19:25:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E4C3C433C8;
+        Mon,  7 Aug 2023 19:25:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1691436310;
+        bh=HBhmn9HKnS8/O4AzZaFEuYjZPHI6Gi65ywDrGFhu+O0=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=iSgi+eNKKTdMVpyW4QT8CWFt2D/ck3D8JFsVcpRQZt8qC3K8iW0GNCQ74ZjKY3T1x
+         RXHFscGL/uKRCEYjTWZAIS8fOSWf7o3y8HJgai22AzGjxiPMVyOpfd7F/b0NcRD1DP
+         Y81MHqQ/P+pWUDVfZ/VRfbQSmf3so9ouxkxbnj73Ra0LZdZtG6OzzRAwtreCoIk2MJ
+         24kI+jifaiY98fTAlm4iRCFGDM/V23pCUMCBi8RT5oWkSNVMkMwcPDAfbgi0pB6qcg
+         ubCVJkTca1I6BDmxeBqCoCLxOm2hRMnmqerH3nGEXqRfboWZ92AwjHsfs9tdm8VDUN
+         NfDqeClA+N67w==
+Date:   Mon, 7 Aug 2023 12:25:08 -0700
+From:   Jakub Kicinski <kuba@kernel.org>
+To:     Claudiu Beznea <claudiu.beznea@tuxon.dev>
+Cc:     nicolas.ferre@microchip.com, conor.dooley@microchip.com,
+        davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
+        lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz,
+        tiwai@suse.com, maz@kernel.org, srinivas.kandagatla@linaro.org,
+        thierry.reding@gmail.com, u.kleine-koenig@pengutronix.de,
+        sre@kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
+        alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MAINTAINERS: update Claudiu Beznea's email address
+Message-ID: <20230807122508.403c1972@kernel.org>
+In-Reply-To: <20230804050007.235799-1-claudiu.beznea@tuxon.dev>
+References: <20230804050007.235799-1-claudiu.beznea@tuxon.dev>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrledtgdduudejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgepvdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghp
- thhtohepmhhitghhrghlrdifihhltgiihihnshhkihesihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri,  4 Aug 2023 08:00:07 +0300 Claudiu Beznea wrote:
+> Update MAINTAINERS entries with a valid email address as the Microchip
+> one is no longer valid.
+> 
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+> Signed-off-by: Claudiu Beznea <claudiu.beznea@tuxon.dev>
 
-Trip points with temperature set to THERMAL_TEMP_INVALID are as good as
-disabled, so make handle_thermal_trip() ignore them.
+Thanks for updating the email!
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
-
-v4 -> v5: ACK from Daniel.
-
-v3 -> v4: No changes.
-
-v2 -> v3: No changes.
-
-v1 -> v2: No changes.
-
----
- drivers/thermal/thermal_core.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/thermal/thermal_core.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -348,7 +348,8 @@ static void handle_thermal_trip(struct t
- 	struct thermal_trip trip;
- 
- 	/* Ignore disabled trip points */
--	if (test_bit(trip_id, &tz->trips_disabled))
-+	if (test_bit(trip_id, &tz->trips_disabled) ||
-+	    trip.temperature == THERMAL_TEMP_INVALID)
- 		return;
- 
- 	__thermal_zone_get_trip(tz, trip_id, &trip);
-
-
-
+A bit of a cross-tree change. Is there anyone in particular that you'd
+expect to apply it? If nobody speaks up we can pick it up in networking
+and send to Linus on Thu.
