@@ -2,21 +2,21 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AC76C001DE
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 18:21:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CE83C41513
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 18:21:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231477AbjHGSVM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Aug 2023 14:21:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53350 "EHLO
+        id S231499AbjHGSVN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Aug 2023 14:21:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53390 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230502AbjHGSVB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 14:21:01 -0400
+        with ESMTP id S231235AbjHGSVG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 14:21:06 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E1E58F;
-        Mon,  7 Aug 2023 11:20:59 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1043171C;
+        Mon,  7 Aug 2023 11:21:03 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id dd494a809452f723; Mon, 7 Aug 2023 20:20:58 +0200
+ id 69f15debb3a63eb4; Mon, 7 Aug 2023 20:21:02 +0200
 Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
    discourages use of this host) smtp.mailfrom=rjwysocki.net 
    (client-ip=195.136.19.94; helo=[195.136.19.94]; 
@@ -25,8 +25,8 @@ Received: from kreacher.localnet (unknown [195.136.19.94])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id B2A3A6625B2;
-        Mon,  7 Aug 2023 20:20:57 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id A11856625B2;
+        Mon,  7 Aug 2023 20:21:01 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
@@ -35,161 +35,50 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Michal Wilczynski <michal.wilczynski@intel.com>,
         Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v5 05/11] ACPI: thermal: Carry out trip point updates under zone lock
-Date:   Mon, 07 Aug 2023 20:08:26 +0200
-Message-ID: <2236767.iZASKD2KPV@kreacher>
-In-Reply-To: <4503814.LvFx2qVVIh@kreacher>
-References: <13318886.uLZWGnKmhe@kreacher> <4503814.LvFx2qVVIh@kreacher>
+Subject: [PATCH v5 00/11] ACPI: thermal: Use trip point table to register thermal zones
+Date:   Mon, 07 Aug 2023 19:59:21 +0200
+Message-ID: <4503814.LvFx2qVVIh@kreacher>
+In-Reply-To: <13318886.uLZWGnKmhe@kreacher>
+References: <13318886.uLZWGnKmhe@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrledtgdduudejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghp
- thhtohepmhhitghhrghlrdifihhltgiihihnshhkihesihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrledtgdduudejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepfeduudeutdeugfelffduieegiedtueefledvjeegffdttefhhffhtefhleejgfetnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhes
+ vhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehmihgthhgrlhdrfihilhgtiiihnhhskhhisehinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Everyone,
 
-There is a race condition between acpi_thermal_trips_update() and
-acpi_thermal_check_fn(), because the trip points may get updated while
-the latter is running which in theory may lead to inconsistent results.
-For example, if two trips are updated together, using the temperature
-value of one of them from before the update and the temperature value
-of the other one from after the update may not lead to the expected
-outcome.
+This is the 5th iteration of the $subject patch series and its original
+description below is still applicable
 
-Moreover, if thermal_get_trend() runs when a trip points update is in
-progress, it may end up using stale trip point temperatures.
+On Tuesday, July 18, 2023 8:01:20 PM CEST Rafael J. Wysocki wrote:
+>
+> This patch series makes the ACPI thermal driver register thermal zones
+> with the help of thermal_zone_device_register_with_trips(), so it
+> doesn't need to use the thermal zone callbacks related to trip points
+> any more (and they are dropped in the last patch).
+>
+> The approach presented here is quite radically different from the
+> previous attempts, as it doesn't really rearrange the driver's
+> internal data structures, but adds the trip table support on top of
+> them.  For this purpose, it uses an additional field in struct thermal_trip
 
-To address this, make acpi_thermal_trips_update() call
-thermal_zone_device_adjust() to carry out the trip points update and
-provide a new  acpi_thermal_adjust_thermal_zone() wrapper around
-__acpi_thermal_trips_update() as the callback function for the latter.
+This update follows the suggestion from here:
 
-While at it, change the acpi_thermal_trips_update() return data type
-to void as that function always returns 0 anyway.
+https://lore.kernel.org/linux-acpi/4bfabfce-574b-ed52-2956-d0d2b9502e60@linaro.org/
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+and so it drops one patch and adds two new patches (one of them merely
+rearranging the ACPI thermal drivers data structures to allow the
+subsequent patches to be more straightforward).
 
-v4 -> v5: No changes.
-
-v3 -> v4:
-   * Rework to use thermal_zone_device_adjust() and the .update() callback
-     instead of using the (exported) zone lock directly.
-   * Call acpi_queue_thermal_check() from acpi_thermal_trips_update() which
-     allows code duplication in acpi_thermal_notify() to be reduced.
-
-v2 -> v3: No changes.
-
-v1 -> v2:
-   * Hold the thermal zone lock instead of thermal_check_lock around trip
-     point updates (this also helps to protect thermal_get_trend() from using
-     stale trip temperatures).
-   * Add a comment documenting the purpose of the locking.
-   * Make acpi_thermal_trips_update() void.
-
----
- drivers/acpi/thermal.c |   41 ++++++++++++++++++++++++++++-------------
- 1 file changed, 28 insertions(+), 13 deletions(-)
-
-Index: linux-pm/drivers/acpi/thermal.c
-===================================================================
---- linux-pm.orig/drivers/acpi/thermal.c
-+++ linux-pm/drivers/acpi/thermal.c
-@@ -185,7 +185,7 @@ static int acpi_thermal_get_polling_freq
- 	return 0;
- }
- 
--static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
-+static void __acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
- {
- 	acpi_status status;
- 	unsigned long long tmp;
-@@ -393,17 +393,39 @@ static int acpi_thermal_trips_update(str
- 			ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "device");
- 		}
- 	}
-+}
- 
--	return 0;
-+static void acpi_thermal_adjust_thermal_zone(struct thermal_zone_device *thermal,
-+					     unsigned long data)
-+{
-+	__acpi_thermal_trips_update(thermal_zone_device_priv(thermal), data);
-+}
-+
-+static void acpi_queue_thermal_check(struct acpi_thermal *tz)
-+{
-+	if (!work_pending(&tz->thermal_check_work))
-+		queue_work(acpi_thermal_pm_queue, &tz->thermal_check_work);
-+}
-+
-+static void acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
-+{
-+	/*
-+	 * Use thermal_zone_device_adjust() to carry out the trip points
-+	 * update, so as to protect thermal_get_trend() from getting stale
-+	 * trip point temperatures and to prevent thermal_zone_device_update()
-+	 * invoked from acpi_thermal_check_fn() from producing inconsistent
-+	 * results.
-+	 */
-+	thermal_zone_device_adjust(tz->thermal_zone, flag);
-+	acpi_queue_thermal_check(tz);
- }
- 
- static int acpi_thermal_get_trip_points(struct acpi_thermal *tz)
- {
--	int i, ret = acpi_thermal_trips_update(tz, ACPI_TRIPS_INIT);
- 	bool valid;
-+	int i;
- 
--	if (ret)
--		return ret;
-+	__acpi_thermal_trips_update(tz, ACPI_TRIPS_INIT);
- 
- 	valid = tz->trips.critical.valid |
- 		tz->trips.hot.valid |
-@@ -710,6 +732,7 @@ static struct thermal_zone_device_ops ac
- 	.get_trend = thermal_get_trend,
- 	.hot = acpi_thermal_zone_device_hot,
- 	.critical = acpi_thermal_zone_device_critical,
-+	.update = acpi_thermal_adjust_thermal_zone,
- };
- 
- static int acpi_thermal_zone_sysfs_add(struct acpi_thermal *tz)
-@@ -810,12 +833,6 @@ static void acpi_thermal_unregister_ther
-                                  Driver Interface
-    -------------------------------------------------------------------------- */
- 
--static void acpi_queue_thermal_check(struct acpi_thermal *tz)
--{
--	if (!work_pending(&tz->thermal_check_work))
--		queue_work(acpi_thermal_pm_queue, &tz->thermal_check_work);
--}
--
- static void acpi_thermal_notify(acpi_handle handle, u32 event, void *data)
- {
- 	struct acpi_device *device = data;
-@@ -830,13 +847,11 @@ static void acpi_thermal_notify(acpi_han
- 		break;
- 	case ACPI_THERMAL_NOTIFY_THRESHOLDS:
- 		acpi_thermal_trips_update(tz, ACPI_TRIPS_THRESHOLDS);
--		acpi_queue_thermal_check(tz);
- 		acpi_bus_generate_netlink_event(device->pnp.device_class,
- 						dev_name(&device->dev), event, 0);
- 		break;
- 	case ACPI_THERMAL_NOTIFY_DEVICES:
- 		acpi_thermal_trips_update(tz, ACPI_TRIPS_DEVICES);
--		acpi_queue_thermal_check(tz);
- 		acpi_bus_generate_netlink_event(device->pnp.device_class,
- 						dev_name(&device->dev), event, 0);
- 		break;
+Thanks!
 
 
 
