@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AF3AC001DF
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 11:34:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D881EB64DD
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 11:34:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232925AbjHGLeP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Aug 2023 07:34:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41316 "EHLO
+        id S232990AbjHGLe1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Aug 2023 07:34:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40944 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233316AbjHGLde (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 07:33:34 -0400
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5905B4C3B
-        for <linux-pm@vger.kernel.org>; Mon,  7 Aug 2023 04:31:12 -0700 (PDT)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-3fe5c0e587eso8281445e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 07 Aug 2023 04:31:12 -0700 (PDT)
+        with ESMTP id S233348AbjHGLdh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 07:33:37 -0400
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5864D525D
+        for <linux-pm@vger.kernel.org>; Mon,  7 Aug 2023 04:31:17 -0700 (PDT)
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-31783d02093so3876728f8f.0
+        for <linux-pm@vger.kernel.org>; Mon, 07 Aug 2023 04:31:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691407787; x=1692012587;
+        d=linaro.org; s=google; t=1691407509; x=1692012309;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=2yG847+ykANyrrRuOFOgUHlifio1mpwNPWStZ5ZsUlY=;
-        b=BaO7SpJKv1jDCZvrxi47UrPgRjKOD1RmEA5ftd1m1zmHe0gV4C+bk7yIUsI98W6BzS
-         55WzdvGGCvOtueyb9YwFEOr5ZL8MdRkIDGMM2QZb8wIGpKKDXwRaUPSslFUkVAKoD9We
-         +r5MmONLSVZOuvZu9hJy5BlT4zY4xTi5F1DYHrrkP/YeTofw4ZvHL47imnoH1u8v2dJa
-         YNETI0ySclIuryJ9WmY3b+vQr1II88Wt5+4zejrcpJ3OMfft1nATxN0y6K8d2JkekXw2
-         hc6vPMiGzrilbNrVkx7hjvPHX63Ajomg62r+WpB6amQI9Z7lZOTdXdIQq1KbM0kBOMVL
-         g82w==
+        bh=JmKgbF75SppH/Nt4NtFgEsnrqh7a9v81WiBucQ7ae8E=;
+        b=nIevyibAozWaGB4C9czRN/LjurbUuQPVCZe6w4q4oGjfzg+0qceylElM66uk+ewfIB
+         NPxS8LlhxWDrxNYBnJBIqkVO5VT+RWvCCDxyHEu++QJon5tY7rlIsOTY2XbZ1MC9EP1u
+         TN6ct1rkB0BNLgsLDAU9vAJsSqWu4oe61BFkg8L5vcKujARIC0/9mof0CS3nxdH6hZHF
+         snnjikSPd6+PLmnYlxAgCSetXxCVm3aNiUNgdI45wB457QbbZ9Y4Y2b15IUIMmcuap1L
+         Wr0ZNEtGL5k4OoAGbbJkEQjs3dMTvHwQq1fRa02Ss1tPzpwEW08CypdOz+92lbw+QLOF
+         C/tg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691407787; x=1692012587;
+        d=1e100.net; s=20221208; t=1691407509; x=1692012309;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2yG847+ykANyrrRuOFOgUHlifio1mpwNPWStZ5ZsUlY=;
-        b=dnsGQL2m/Ll3NDnIefeMnpjLLvFfufMh1A4lqEx1n0cMPrJOj7ggjnWnfs4QRxxTF/
-         JJBM4gFg/fO0qy6ocZ9mJhQ5zPPbCILlmOwcM+Ok6Qcbcz0wuMc076Uy7NxQe2eDzlWX
-         P+A4N15D8a3MtHM988T2CMvUEHEy7D8qEwNlVtHQ/6jTUVmhxA+78wpbOlsszDetO9Ws
-         eA8U8vbNVtm4Tk0/SntKwuM/NtSeOyC+TPIqq7TscVNNn7xgtu3wYUuf5mm+CnZ5XzgR
-         veccmlLbwAop56oCST1s+bj4wWtEQztsIKk6QtSbxqZl4Lfo+K2TZO5k0GCYmUnXY9XW
-         FZZg==
-X-Gm-Message-State: AOJu0YwnX2GvKd4tctE4w7pzRU9PiVj3Wz5D1HD3OIzXCY0eI1RzGuC5
-        sKhvb+Ipz4coLsRhHkCkUEFgjvujPTg9RNarGmY=
-X-Google-Smtp-Source: AGHT+IE931aONdpzSikETzjGEE2Uo9weVSJZlo9N1M9Pmrb143I2wh0bzp6eN+8C49HMcUZmE6ni2Q==
-X-Received: by 2002:a05:600c:208:b0:3fe:ad3:b066 with SMTP id 8-20020a05600c020800b003fe0ad3b066mr7051996wmi.41.1691407787574;
-        Mon, 07 Aug 2023 04:29:47 -0700 (PDT)
+        bh=JmKgbF75SppH/Nt4NtFgEsnrqh7a9v81WiBucQ7ae8E=;
+        b=eL4BwB9BkzvSAiALtq+YhrBbyCIs2KQaosbq9bohKBvGg/eLVZKg8XYBx0SqMKUFC2
+         niZf1UpGlI9jc3aXCJej6qTVvjYgXoS1Wo0U68lReRC25ur8Y8rhOodbZ7TX2w62Aw1A
+         Lgw0mZmKDK8P5ZAIZpent/7p2n4N0/ogdTovProtvlQBa+vKcxM7WvwjOgKXMhNxreNE
+         +X9/gHfFmmQQblr0VQa1zvKgfICJSddTZoXigQvheZXL5sVZl5eOAXy27iAWHZFP4bTF
+         pSuSe4h5CeAiGXcr1yjH27GAsisbtGDTwNSvbhafGrl7V0x5S3pkthnHVsN6iZqbSDOV
+         Axkw==
+X-Gm-Message-State: AOJu0Yyx/vNV7CkbKtSWpzxbSjZllHivI3XYVjHg/MUnubxgLFc4S2eN
+        Un5RCEAOlHmVV6cT0iLlS1/iUw==
+X-Google-Smtp-Source: AGHT+IEPpzkc/DAbzHkYSpjysVSVkw7nXi/fDtwrWGbOxDvNtoJbO2SLShFhqkvMhuro04eef8dq9A==
+X-Received: by 2002:a5d:4e0f:0:b0:317:6513:da7e with SMTP id p15-20020a5d4e0f000000b003176513da7emr6712284wrt.36.1691407509399;
+        Mon, 07 Aug 2023 04:25:09 -0700 (PDT)
 Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.googlemail.com with ESMTPSA id p17-20020a7bcc91000000b003fe2696ccfcsm10402137wma.23.2023.08.07.04.29.46
+        by smtp.googlemail.com with ESMTPSA id g11-20020adff3cb000000b00317731a6e07sm8695427wrp.62.2023.08.07.04.25.08
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 07 Aug 2023 04:29:47 -0700 (PDT)
-Message-ID: <f47b7e17-7ec6-4c19-9db1-c1a2e1ad66b6@linaro.org>
-Date:   Mon, 7 Aug 2023 13:29:46 +0200
+        Mon, 07 Aug 2023 04:25:08 -0700 (PDT)
+Message-ID: <570761cf-960b-0905-ad06-ec18bd75936d@linaro.org>
+Date:   Mon, 7 Aug 2023 13:25:08 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.11.0
-Subject: Re: [PATCH v4 04/10] thermal: core: Add
- thermal_zone_update_trip_temp() helper routine
+Subject: Re: [PATCH v4 01/10] thermal: core: Do not handle trip points with
+ invalid temperature
 Content-Language: en-US
 To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Linux ACPI <linux-acpi@vger.kernel.org>
@@ -65,111 +65,51 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 References: <13318886.uLZWGnKmhe@kreacher> <4878513.31r3eYUQgx@kreacher>
- <1967710.PYKUYFuaPT@kreacher>
+ <4850902.GXAFRqVoOG@kreacher>
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <1967710.PYKUYFuaPT@kreacher>
+In-Reply-To: <4850902.GXAFRqVoOG@kreacher>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 04/08/2023 23:05, Rafael J. Wysocki wrote:
+On 04/08/2023 23:00, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Introduce a helper routine called thermal_zone_update_trip_temp() that
-> can be used to update a trip point's temperature with the help of a
-> pointer to local data associated with that trip point provided by
-> the thermal driver that created it.
+> Trip points with temperature set to THERMAL_TEMP_INVALID are as good as
+> disabled, so make handle_thermal_trip() ignore them.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
 > ---
 > 
-> New patch in v4.
+> v3 -> v4: No changes.
+> 
+> v2 -> v3: No changes.
+> 
+> v1 -> v2: No changes.
 > 
 > ---
->   drivers/thermal/thermal_trip.c |   37 +++++++++++++++++++++++++++++++++++++
->   include/linux/thermal.h        |    4 ++++
->   2 files changed, 41 insertions(+)
+>   drivers/thermal/thermal_core.c |    3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> Index: linux-pm/drivers/thermal/thermal_trip.c
+> Index: linux-pm/drivers/thermal/thermal_core.c
 > ===================================================================
-> --- linux-pm.orig/drivers/thermal/thermal_trip.c
-> +++ linux-pm/drivers/thermal/thermal_trip.c
-> @@ -180,3 +180,40 @@ int thermal_zone_set_trip(struct thermal
+> --- linux-pm.orig/drivers/thermal/thermal_core.c
+> +++ linux-pm/drivers/thermal/thermal_core.c
+> @@ -348,7 +348,8 @@ static void handle_thermal_trip(struct t
+>   	struct thermal_trip trip;
 >   
->   	return 0;
->   }
-> +
-> +/**
-> + * thermal_zone_update_trip_temp - Update the trip point temperature.
-> + * @tz: Thermal zone.
-> + * @trip_priv: Trip tag.
-> + * @temp: New trip temperature.
-> + *
-> + * This only works for thermal zones using trip tables and its caller must
-> + * ensure that the zone lock is held before using it.
-> + *
-> + * @trip_priv is expected to be the value that has been stored by the driver
-> + * in the struct thermal_trip representing the trip point in question, so it
-> + * can be matched against the value of the priv field in that structure.
-> + *
-> + * If @trip_priv does not match any trip point in the trip table of @tz,
-> + * nothing happens.
-> + */
-> +void thermal_zone_update_trip_temp(struct thermal_zone_device *tz,
-> +				   void *trip_priv, int temperature)
-> +{
-> +	int i;
-> +
-> +	lockdep_assert_held(&tz->lock);
-> +
-> +	if (!tz->trips || !trip_priv)
-> +		return;
-> +
-> +	for (i = 0; i < tz->num_trips; i++) {
-> +		struct thermal_trip *trip = &tz->trips[i];
-> +
-> +		if (trip->priv == trip_priv) {
-> +			trip->temperature = temperature;
-> +			return;
-> +		}
-> +	}
-> +}
-> +EXPORT_SYMBOL_GPL(thermal_zone_update_trip_temp);
-
-This function would imply the comparator is always trip->priv but if we 
-want another comparison eg. trip->priv->id, that won't be possible.
-
-Actually, I think you can reuse an existing function with a simple 
-change, for_each_thermal_trip() located in thermal_core.h.
-
-The changes would be renaming it without the '__' prefix and moving it 
-in include/linux/thermal.h.
-
-Then the comparison function and the temperature change can be an ACPI 
-driver specific callback passed as parameter to for_each_thermal_zone
-
-
-
-> Index: linux-pm/include/linux/thermal.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/thermal.h
-> +++ linux-pm/include/linux/thermal.h
-> @@ -286,9 +286,13 @@ int __thermal_zone_get_trip(struct therm
->   			    struct thermal_trip *trip);
->   int thermal_zone_get_trip(struct thermal_zone_device *tz, int trip_id,
->   			  struct thermal_trip *trip);
-> +void thermal_zone_update_trip_temp(struct thermal_zone_device *tz,
-> +				   void *trip_priv, int temperature);
+>   	/* Ignore disabled trip points */
+> -	if (test_bit(trip_id, &tz->trips_disabled))
+> +	if (test_bit(trip_id, &tz->trips_disabled) ||
+> +	    trip.temperature == THERMAL_TEMP_INVALID)
+>   		return;
 >   
->   int thermal_zone_set_trip(struct thermal_zone_device *tz, int trip_id,
->   			  const struct thermal_trip *trip);
-> +void thermal_zone_update_trip_temp(struct thermal_zone_device *tz,
-> +				   void *trip_priv, int temperature);
->   
->   int thermal_zone_get_num_trips(struct thermal_zone_device *tz);
->   
+>   	__thermal_zone_get_trip(tz, trip_id, &trip);
 > 
 > 
 > 
