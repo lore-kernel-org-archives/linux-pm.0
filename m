@@ -2,140 +2,123 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6D65C41513
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 13:51:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F35CC001B0
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 14:04:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234463AbjHGNvt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Aug 2023 09:51:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39872 "EHLO
+        id S231508AbjHGOEv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Aug 2023 10:04:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229843AbjHGNvs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 09:51:48 -0400
-Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13FFC10DC
-        for <linux-pm@vger.kernel.org>; Mon,  7 Aug 2023 06:51:47 -0700 (PDT)
-Received: by mail-ed1-x52c.google.com with SMTP id 4fb4d7f45d1cf-51e28cac164so11809052a12.1
-        for <linux-pm@vger.kernel.org>; Mon, 07 Aug 2023 06:51:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691416305; x=1692021105;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=5U7uXQPqJdJRTybbD7UWkq4hcpTzTPPBe48JRQK60d8=;
-        b=siUwPP6TAI6SSnVRXaqAXAkU8Y+9KQFZNj8SGOBskXBIh5sKvzKy5gY3yyHBWgiERn
-         bhmarSHyd6YFmvOXWtq7r29XxO6ht/vgMpJSHrL8LpRBWtOblDd1S2qDnQBiMvbYE0ig
-         1m0no4m00eF9Cs8ietNs0mpAFHuFT8/OUqmSZgq10I0uJMOqax04L67CiRZK5pHAk+gT
-         pDLWYzbvzWdq/b5se479A9NNUxiZxS2MM3+bApIBYpjn/K3kF0smFqXVoJLP5ta97b/Y
-         z4//rrJqg3X35F14zrNDD7PWe3JNaHiEp3ezuFaSKEP7UQoLbUVonTYJmzsRLbPxKLfp
-         ojPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691416305; x=1692021105;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=5U7uXQPqJdJRTybbD7UWkq4hcpTzTPPBe48JRQK60d8=;
-        b=HY3P02ch+Uk1yDZyFcRP4fHYEvRUZlr9pmHa6O1uyP6yneeqzZfcqyLFJ53l123N8Y
-         InK58VL9MHzaEHf8y8jYSI3sttv51QoNTZPggr48dY51KYTqg6XWr+mmLRSlysLCNJN2
-         mqrL8q7sdJMJsy2XRwojaNAzzqEDIYib0EoQF4+NaOw9ZgZkV7yFsoHjBZ12TYiCHXeA
-         FMpdeJ4jpGHQnprvTtgTDu/E/3uGrDc/Uux6px8jOa5Ae5mwOKwEsvkwvReNDf5gfq7F
-         BvgDx8wX9ki4Rj7qLvQweBbudrRq3dnuiCeDyRX9ASd7YwFSRBgwVFGzlptazqpJ3oe+
-         LndQ==
-X-Gm-Message-State: AOJu0Yyj+p1nmxvBpYm0+TiUhUiDYdpMFmG6obj5LZW+SlJzhLwmV9LL
-        t5W61L4PTiQJOcaisZwHS+d3Ag==
-X-Google-Smtp-Source: AGHT+IFHT60GM0SzX9TXq5wlvNhwlntdej2m89q9MKu3133qU0DChWx1leGNQ8gUg3hl1tGkiS5DKQ==
-X-Received: by 2002:a05:6402:51d2:b0:521:ef0f:8ef9 with SMTP id r18-20020a05640251d200b00521ef0f8ef9mr8152852edd.19.1691416305604;
-        Mon, 07 Aug 2023 06:51:45 -0700 (PDT)
-Received: from [192.168.1.20] ([178.197.222.113])
-        by smtp.gmail.com with ESMTPSA id e26-20020a50ec9a000000b0051873c201a0sm5195571edr.26.2023.08.07.06.51.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 07 Aug 2023 06:51:45 -0700 (PDT)
-Message-ID: <af8893b8-0556-e355-abe9-aba99c7a839a@linaro.org>
-Date:   Mon, 7 Aug 2023 15:51:43 +0200
+        with ESMTP id S233205AbjHGOC4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 10:02:56 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id ABF6844B2;
+        Mon,  7 Aug 2023 07:01:17 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 65EA1D75;
+        Mon,  7 Aug 2023 07:01:57 -0700 (PDT)
+Received: from e126311.manchester.arm.com (unknown [172.31.20.19])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E58743F64C;
+        Mon,  7 Aug 2023 07:01:12 -0700 (PDT)
+Date:   Mon, 7 Aug 2023 15:00:59 +0100
+From:   Kajetan Puchalski <kajetan.puchalski@arm.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Anna-Maria Behnsen <anna-maria@linutronix.de>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [RFT][PATCH v2 0/3] cpuidle: teo: Do not check timers
+ unconditionally every time
+Message-ID: <ZND5CL6Kl9RnDdhL@e126311.manchester.arm.com>
+References: <5712331.DvuYhMxLoT@kreacher>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH v3 4/4] ARM: configs: s5pv210_defconfig: enable IIO
- required by MAX17040
-Content-Language: en-US
-To:     Andi Shyti <andi.shyti@kernel.org>
-Cc:     Svyatoslav Ryhel <clamor95@gmail.com>,
-        Iskren Chernev <me@iskren.info>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Matheus Castello <matheus@castello.eng.br>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Stefan Hansson <newbie13xd@gmail.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org
-References: <20230731073613.10394-1-clamor95@gmail.com>
- <20230731073613.10394-5-clamor95@gmail.com>
- <20230805224211.qquexvseq24hxcju@intel.intel>
- <16047849-1001-4d6f-4995-0fdfc065cded@linaro.org>
- <20230807085543.3tfzpsa2joolay3r@intel.intel>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230807085543.3tfzpsa2joolay3r@intel.intel>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5712331.DvuYhMxLoT@kreacher>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 07/08/2023 10:55, Andi Shyti wrote:
-> Hi,
+Hi Rafael,
+
+On Thu, Aug 03, 2023 at 10:57:04PM +0200, Rafael J. Wysocki wrote:
+> Hi Folks,
 > 
-> On Sun, Aug 06, 2023 at 10:29:04AM +0200, Krzysztof Kozlowski wrote:
->> On 06/08/2023 00:42, Andi Shyti wrote:
->>> Hi Svyatoslav,
->>>
->>> On Mon, Jul 31, 2023 at 10:36:13AM +0300, Svyatoslav Ryhel wrote:
->>>> After adding support for passing temperature data from thermal sensor
->>>> to MAX17040 it got dependency on CONFIG_IIO. From all defconfigs
->>>> using MAX17040 only s5pv210_defconfig did not have IIO already enabled
->>>> so let's enable it to avoid regression.
->>>>
->>>> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
->>>> ---
->>>>  arch/arm/configs/s5pv210_defconfig | 1 +
->>>>  1 file changed, 1 insertion(+)
->>>>
->>>> diff --git a/arch/arm/configs/s5pv210_defconfig b/arch/arm/configs/s5pv210_defconfig
->>>> index 4c1e480b5bbd..24070ee3d43e 100644
->>>> --- a/arch/arm/configs/s5pv210_defconfig
->>>> +++ b/arch/arm/configs/s5pv210_defconfig
->>>> @@ -97,6 +97,7 @@ CONFIG_MMC_SDHCI_S3C_DMA=y
->>>>  CONFIG_RTC_CLASS=y
->>>>  CONFIG_RTC_DRV_MAX8998=m
->>>>  CONFIG_DMADEVICES=y
->>>> +CONFIG_IIO=y
->>>>  CONFIG_PWM=y
->>>>  CONFIG_PWM_SAMSUNG=y
->>>>  CONFIG_PHY_SAMSUNG_USB2=m
->>>
->>> Should this patch be squashed to the previous patch? I think you
->>> break bisectability for this board if you enable iio only here.
->>
->> The defconfig change matters less - distros don't use them - so this
->> points to the fact that patchset affected the users. All existing users
->> of max17040 drivers, who do not enable IIO, will have their setups broken.
+> This is the second iteration of:
 > 
-> That's why I'm suggesting to squash this patch with the previous.
-
-It would not solve much. All existing users will be still broken.
-
+> https://lore.kernel.org/linux-pm/4511619.LvFx2qVVIh@kreacher/
 > 
-> Anyway, up to you... except of this note everything looks fine in
-> the series.
+> with an additional patch.
+> 
+> There are some small modifications of patch [1/3] and the new
+> patch causes governor statistics to play a role in deciding whether
+> or not to stop the scheduler tick.
+> 
+> Testing would be much appreciated!
+> 
+> Thanks!
+> 
 
-I would actually prefer not to depend on IIO, but this would require
-stubs for missing IIO functions.
+My test results including the v2 are below.
 
-Best regards,
-Krzysztof
+1. Geekbench 6
 
++---------------------------+---------------+-----------------+-------------------+----------------------+
+|          metric           |      teo      |     teo_tick    |    teo_tick_rfc   |    teo_tick_rfc_v2   |
++---------------------------+---------------+-----------------+-------------------+----------------------+
+|      multicore_score      | 3320.9 (0.0%) | 3303.3 (-0.53%) |  3293.6 (-0.82%)  |   3302.3 (-0.56%)    |
+|           score           | 1415.7 (0.0%) | 1417.7 (0.14%)  |  1423.4 (0.54%)   |    1425.8 (0.71%)    |
+|      CPU_total_power      | 2421.3 (0.0%) | 2429.3 (0.33%)  |  2442.2 (0.86%)   |    2461.9 (1.67%)    |
+|  latency (AsyncTask #1)   | 49.41μ (0.0%) | 51.07μ (3.36%)  |   50.1μ (1.4%)    |    50.76μ (2.73%)    |
+| latency (labs.geekbench6) | 65.63μ (0.0%) | 77.47μ (18.03%) | 55.82μ (-14.95%)  |    66.12μ (0.75%)    |
+| latency (surfaceflinger)  | 39.46μ (0.0%) | 36.94μ (-6.39%) |  35.79μ (-9.28%)  |    40.36μ (2.3%)     |
++---------------------------+---------------+-----------------+-------------------+----------------------+
+
++----------------------+-------------+------------+
+|         tag          |    type     | count_perc |
++----------------------+-------------+------------+
+|         teo          |  too deep   |   2.034    |
+|       teo_tick       |  too deep   |    2.16    |
+|     teo_tick_rfc     |  too deep   |   2.071    |
+|    teo_tick_rfc_v2   |  too deep   |   2.548    |
+|         teo          | too shallow |   15.791   |
+|       teo_tick       | too shallow |   20.881   |
+|     teo_tick_rfc     | too shallow |   20.337   |
+|    teo_tick_rfc_v2   | too shallow |   19.886   |
++----------------------+-------------+------------+
+
+
+2. JetNews
+
++-----------------+---------------+----------------+-----------------+-----------------+
+|     metric      |      teo      |    teo_tick    |  teo_tick_rfc   | teo_tick_rfc_v2 |
++-----------------+---------------+----------------+-----------------+-----------------+
+|       fps       |  86.2 (0.0%)  |  86.4 (0.16%)  |  86.0 (-0.28%)  |  86.6 (0.41%)   |
+|    janks_pc     |  0.8 (0.0%)   |  0.8 (-0.66%)  |  0.8 (-1.37%)   |  0.7 (-11.37%)  |
+| CPU_total_power | 185.2 (0.0%)  | 178.2 (-3.76%) |  182.2 (-1.6%)  | 169.4 (-8.53%)  | <- very interesting
++-----------------+---------------+----------------+-----------------+-----------------+
+
++----------------------+-------------+--------------------+
+|         tag          |    type     |     count_perc     |
++----------------------+-------------+--------------------+
+|         teo          |  too deep   |       0.992        |
+|       teo_tick       |  too deep   |       0.945        |
+|     teo_tick_rfc     |  too deep   |       1.035        |
+|    teo_tick_rfc_v2   |  too deep   |       1.127        |
+|         teo          | too shallow |       17.085       |
+|       teo_tick       | too shallow |       15.236       |
+|     teo_tick_rfc     | too shallow |       15.379       |
+|    teo_tick_rfc_v2   | too shallow |       15.34        |
++----------------------+-------------+--------------------+
+
+All in all looks pretty good. Unfortunately there's a slightly larger
+percentage of too deep sleeps with the v2 (which is probably where the
+increase in GB6 power usage comes from) but the lower jank percentage +
+substantially lower power usage for the UI workload are very promising.
+
+Since we don't care about GB6 power usage as much as UI power usage, I'd
+say that the patchset looks good :)
+
+Tested-by: Kajetan Puchalski <kajetan.puchalski@arm.com>
