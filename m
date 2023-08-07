@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD42EC001DB
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 13:24:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01618C001B0
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Aug 2023 13:24:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234044AbjHGNYk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Aug 2023 09:24:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35730 "EHLO
+        id S233992AbjHGNYn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Aug 2023 09:24:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36208 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234100AbjHGNX7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 09:23:59 -0400
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE9B3E5D
-        for <linux-pm@vger.kernel.org>; Mon,  7 Aug 2023 06:23:12 -0700 (PDT)
-Received: from dggpemm500003.china.huawei.com (unknown [172.30.72.56])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RKH371PSyzNmrW;
-        Mon,  7 Aug 2023 21:19:15 +0800 (CST)
+        with ESMTP id S234057AbjHGNYC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2023 09:24:02 -0400
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F75326B9
+        for <linux-pm@vger.kernel.org>; Mon,  7 Aug 2023 06:23:14 -0700 (PDT)
+Received: from dggpemm500005.china.huawei.com (unknown [172.30.72.53])
+        by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4RKH5q0tsSz1KCHX;
+        Mon,  7 Aug 2023 21:21:35 +0800 (CST)
 Received: from dggpemm500007.china.huawei.com (7.185.36.183) by
- dggpemm500003.china.huawei.com (7.185.36.56) with Microsoft SMTP Server
+ dggpemm500005.china.huawei.com (7.185.36.74) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
  15.1.2507.27; Mon, 7 Aug 2023 21:22:43 +0800
 Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
  (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Mon, 7 Aug
- 2023 21:22:42 +0800
+ 2023 21:22:43 +0800
 From:   Yang Yingliang <yangyingliang@huawei.com>
 To:     <linux-pm@vger.kernel.org>
 CC:     <sre@kernel.org>, <yangyingliang@huawei.com>
-Subject: [PATCH -next 3/5] power: reset: xgene-reboot: use builtin_platform_driver() to simplify code
-Date:   Mon, 7 Aug 2023 21:19:49 +0800
-Message-ID: <20230807131951.3443880-4-yangyingliang@huawei.com>
+Subject: [PATCH -next 5/5] power: reset: syscon-poweroff: use builtin_platform_driver() to simplify code
+Date:   Mon, 7 Aug 2023 21:19:51 +0800
+Message-ID: <20230807131951.3443880-6-yangyingliang@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20230807131951.3443880-1-yangyingliang@huawei.com>
 References: <20230807131951.3443880-1-yangyingliang@huawei.com>
@@ -45,29 +45,29 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The xgene_reboot_init() doesn't do anything special, so it can use the
+The syscon_poweroff_register() doesn't do anything special, so it can use the
 builtin_platform_driver() macro to eliminate boilerplate code.
 
 Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 ---
- drivers/power/reset/xgene-reboot.c | 7 +------
+ drivers/power/reset/syscon-poweroff.c | 7 +------
  1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
-index 3260bd93158e..c2e5a99940d3 100644
---- a/drivers/power/reset/xgene-reboot.c
-+++ b/drivers/power/reset/xgene-reboot.c
-@@ -87,9 +87,4 @@ static struct platform_driver xgene_reboot_driver = {
- 		.of_match_table = xgene_reboot_of_match,
+diff --git a/drivers/power/reset/syscon-poweroff.c b/drivers/power/reset/syscon-poweroff.c
+index 430d440d55c6..270f289239a5 100644
+--- a/drivers/power/reset/syscon-poweroff.c
++++ b/drivers/power/reset/syscon-poweroff.c
+@@ -93,9 +93,4 @@ static struct platform_driver syscon_poweroff_driver = {
+ 		.of_match_table = syscon_poweroff_of_match,
  	},
  };
 -
--static int __init xgene_reboot_init(void)
+-static int __init syscon_poweroff_register(void)
 -{
--	return platform_driver_register(&xgene_reboot_driver);
+-	return platform_driver_register(&syscon_poweroff_driver);
 -}
--device_initcall(xgene_reboot_init);
-+builtin_platform_driver(xgene_reboot_driver);
+-device_initcall(syscon_poweroff_register);
++builtin_platform_driver(syscon_poweroff_driver);
 -- 
 2.25.1
 
