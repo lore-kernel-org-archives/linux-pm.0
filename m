@@ -2,156 +2,253 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E94EBC04A6A
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 19:11:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58237C001B0
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 19:20:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231851AbjHHTLr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 15:11:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58666 "EHLO
+        id S231384AbjHHTUa convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 15:20:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234429AbjHHTLb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 15:11:31 -0400
-Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB0E7E1A18
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 09:33:12 -0700 (PDT)
-Received: by mail-ed1-x52c.google.com with SMTP id 4fb4d7f45d1cf-522bd411679so7618782a12.0
-        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 09:33:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691512365; x=1692117165;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=CCSujwELynCWj7HlDSXXF4+s6C7wX8tgmYY0fFjd99g=;
-        b=cM4hCnL1Fh2eDhxR8LA1mg2ONwADP3Kvl++bI7+LBUvUwcK4AdRv/U0WTduW1k3WF5
-         wPOiAQsCdkRNusWIU2ii4zo8rj0IHxdxtgUgXR5XqVk2QkA+aonMBy+9MFeYcfN2DV+e
-         1+Sbpr0mJNUiMdxoOxmv0WYbY0xmxfz7znGPrdX5WYaCWhqyRwj55IUrdrB+TeRy++4x
-         W5omliz1YAUVmLiuKIyceoJS4hLficc80mqr+JJnkUlHGmCHPKeKYBt7HfbfOmzTIwd1
-         A1UiqQTcvgJ46r4fKvJB60FY0Yk4x5n3rbbtTwdKWg+WXcgqcp5BVnHjVWFGVpPed/0K
-         VENw==
+        with ESMTP id S232478AbjHHTUI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 15:20:08 -0400
+Received: from mail-oi1-f169.google.com (mail-oi1-f169.google.com [209.85.167.169])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9D1445F41;
+        Tue,  8 Aug 2023 09:44:16 -0700 (PDT)
+Received: by mail-oi1-f169.google.com with SMTP id 5614622812f47-3a751bd3372so678596b6e.0;
+        Tue, 08 Aug 2023 09:44:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691512365; x=1692117165;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1691513038; x=1692117838;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=CCSujwELynCWj7HlDSXXF4+s6C7wX8tgmYY0fFjd99g=;
-        b=K2L0FZQrwGepo+6Gu5gb969J4GrN3odew70hEnx92+Gd9Z9oZpVmH9PNG6s1DRofyv
-         xKXtgYj6MsBAOk6TQeiGBlm4V6wEPVFxnCpUeRXQE5gnFOR0PjUu1ZGrvGVA/NQHZNQ4
-         i95wVwwZGhX6BCEDrEsSJBrhsOTZkYmEZO231VlVyS+PAC/tGSemCrCpM2QozvKtVXXP
-         H2C81mhvAv1LWvmfRaGfJLZA5Qw/f1WRR8H/dpoS1LOyZEDZ850nX9DgjcbeomRxFWQe
-         dSQiiKBQKXb1qeUMdjkbo1M5Gj/e1rJ/gqLhyie8cDShfU7dNQSuKZuZJrWc16hxa5qK
-         hE7Q==
-X-Gm-Message-State: AOJu0Yy7VM0E5Rh2csc2oHQ40Ogny2mAsTHhLKP8fszYZv8LwA/gzV1u
-        74mlp7uEZvd3j3VuXrFhIVpPj/uKp2779/2JrXM=
-X-Google-Smtp-Source: AGHT+IFn1hMW+EgRiv2I2+i74hLXUGlC6o94339U3IKqB9j27xcUBW7jI7TpyAbL5OCB6CRzA0e3dQ==
-X-Received: by 2002:a05:6512:2348:b0:4fb:94fd:6465 with SMTP id p8-20020a056512234800b004fb94fd6465mr9652271lfu.15.1691495020747;
-        Tue, 08 Aug 2023 04:43:40 -0700 (PDT)
-Received: from [192.168.1.101] (abxi185.neoplus.adsl.tpnet.pl. [83.9.2.185])
-        by smtp.gmail.com with ESMTPSA id j20-20020ac253b4000000b004fbdba4b075sm1861679lfh.57.2023.08.08.04.43.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Aug 2023 04:43:40 -0700 (PDT)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 08 Aug 2023 13:43:35 +0200
-Subject: [PATCH v3 04/10] interconnect: qcom: icc-rpm: Check for
- node-specific rate coefficients
+        bh=c7fJlZqm7SkL8DNK44l2eawprG/x5eTjs6OofI30rbg=;
+        b=Sn2q+VtCrP+bW3KNjMoMmt4G2r6bBaDP4NWL40tZNZxjNVt7Sy4WkGtwpp6fnE3ErH
+         RYdOSJdTjlDJe5FbBGjx0/SQIVYxXdDRczcK6BW2LQ1qP4drey/saQ9If/4G5Q1McXL7
+         mB2E5y/8j7O7BwEzJC7CLFhZ73oHjbgb2RIC1eMBHUfil+rNVxSLensVTcqIBGRYxT94
+         FnonEgRSPN34BlpVO2PQyhpHpAYb0UlTVoU96jjDAx++dbITSnd7c+eVpu1sloPlhtWa
+         KRBSJSR8IgXHBCvoa2zyt0lF1aNZQsRWStzc7SzZ5I8iVN92oMOuRBKB5Z9h5vkLe9qf
+         2/tg==
+X-Gm-Message-State: AOJu0YyGTzvkYJz/ET1R6+3uL0JQMiPC2dKQWozn08r38Ej0EH9+W3ta
+        SU5SyzBw1jXDgNcoXOsBvpve9yLzV/bpI0XtYsNkV0jF
+X-Google-Smtp-Source: AGHT+IFP2RLwXNB86i9yjvF4iWGgJA1+zfLkLjE3JrAyQhuMst/saVIe9OyEzX/Ag/dc4w4ADX/Vo+2RYmxh/hifuMc=
+X-Received: by 2002:a05:6808:150a:b0:394:25b9:db19 with SMTP id
+ u10-20020a056808150a00b0039425b9db19mr296085oiw.2.1691513038157; Tue, 08 Aug
+ 2023 09:43:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230726-topic-icc_coeff-v3-4-dee684d6cdd2@linaro.org>
-References: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
-In-Reply-To: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691495013; l=2718;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=V3/dsciTVIDrck+uRJI5qEMHITJaBEaelfYfVi/Pbmk=;
- b=HzD0DwK1CveDCoCgBnvGmh7+X1ivvay4l7unb30p+mPYrxkVVbvissbWZwoX5Pypq/qvJ59A/
- 2ftrhv03XzzAe0Vr0MkSGOjDXXchkt5u8Xwlk2Sm2i6KwTywyuIt62V
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+References: <5712331.DvuYhMxLoT@kreacher> <CAJZ5v0jTG-oqV+misnP-=W5aq0S9X631kW9EhKNEn1VJQqwL2g@mail.gmail.com>
+ <002201d9ca0c$27606f70$76214e50$@telus.net>
+In-Reply-To: <002201d9ca0c$27606f70$76214e50$@telus.net>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 8 Aug 2023 18:43:45 +0200
+Message-ID: <CAJZ5v0gYsH9EKgCO_LESuvd0dcOJLgPrWeN=6V-bY4gq-w1oyA@mail.gmail.com>
+Subject: Re: [RFT][PATCH v2 0/3] cpuidle: teo: Do not check timers
+ unconditionally every time
+To:     Doug Smythies <dsmythies@telus.net>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Anna-Maria Behnsen <anna-maria@linutronix.de>,
+        Kajetan Puchalski <kajetan.puchalski@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some nodes may have different coefficients than the general values for
-bus they're attached to. Check for that and use them if present. See
-[1], [2] for reference.
+On Tue, Aug 8, 2023 at 5:22 PM Doug Smythies <dsmythies@telus.net> wrote:
+>
+> On 2023.08.03 14:33 Rafael wrote:
+> > On Thu, Aug 3, 2023 at 11:12 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >>
+> >> Hi Folks,
+> >>
+> >> This is the second iteration of:
+> >>
+> >> https://lore.kernel.org/linux-pm/4511619.LvFx2qVVIh@kreacher/
+> >>
+> >> with an additional patch.
+> >>
+> >> There are some small modifications of patch [1/3] and the new
+> >> patch causes governor statistics to play a role in deciding whether
+> >> or not to stop the scheduler tick.
+> >>
+> >> Testing would be much appreciated!
+> >
+> > For convenience, this series is now available in the following git branch:
+> >
+> > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+> > pm-cpuidle-teo
+>
+> Hi Rafael,
+>
+> Thank you for the git branch link.
+>
+> I did some testing:
+>
+> Disclaimer: I used areas of focus derived
+> from the original teo-util work last fall,
+> and did not check if they were still the best
+> places to look for issues.
+>
+> CPU: Intel(R) Core(TM) i5-10600K CPU @ 4.10GHz
+> HWP: enabled
+> CPU frequency scaling driver: intel_pstate
+> CPU frequency scaling governor: performance
+> Kernel 1: 6.5-rc4 (1000 Hz tick rate)
+> Kernel 2: kernel 1 + this patch series (called "rjw")
+> System is extremely idle, other than the test work.
+>
+> All tests were done with all idle governors:
+> menu, teo, ladder, rjw.
+>
+> Test 1: 2 core ping pong sweep:
+>
+> Pass a token between 2 CPUs on 2 different cores.
+> Do a variable amount of work at each stop.
+>
+> Purpose: To utilize the shallowest idle states
+> and observe the transition from using more of 1
+> idle state to another.
+>
+> Results:
+>
+> teo and rjw track fairly well, with
+> rjw reducing its use of idle state 0 before
+> teo as the work packet increases. The menu governor
+> does best overall, but performs worse over a greater
+> range of token loop times.
+>
+> Details (power and idle stats; times):
+> http://smythies.com/~doug/linux/idle/teo-util2/ping-sweep/2-1/perf/
+> http://smythies.com/~doug/linux/idle/teo-util2/ping-sweep/2-1/2-core-ping-pong-sweep.png
+>
+> Test 2: 6 core ping pong sweep:
+>
+> Pass a token between 6 CPUs on 6 different cores.
+> Do a variable amount of work at each stop.
+>
+> Purpose: To utilize the midrange idle states
+> and observe the transitions from between use of
+> idle states.
+>
+> Results: There is some instability in the results
+> in the early stages.
+> For unknown reasons, the rjw governor sometimes works
+> slower and at lower power. The condition is not 100%
+> repeatable.
+>
+> Overall teo completed the test fastest (54.9 minutes)
+> Followed by menu (56.2 minutes), then rjw (56.7 minutes),
+> then ladder (58.4 minutes). teo is faster throughout the
+> latter stages of the test, but at the cost of more power.
+> The differences seem to be in the transition from idle
+> state 1 to idle state 2 usage.
+>
+> Details (power and idle stats; times):
+> http://smythies.com/~doug/linux/idle/teo-util2/ping-sweep/6-2/perf/
+> http://smythies.com/~doug/linux/idle/teo-util2/ping-sweep/6-2/6-core-ping-pong-sweep.png
+> http://smythies.com/~doug/linux/idle/teo-util2/ping-sweep/6-2/6-core-ping-pong-sweep-detail-a.png
+> http://smythies.com/~doug/linux/idle/teo-util2/ping-sweep/6-2/6-core-ping-pong-sweep-detail-b.png
+> http://smythies.com/~doug/linux/idle/teo-util2/ping-sweep/6-2/6-core-ping-pong-sweep-diffs.png
+>
+> a re-run power and idle stats, showing inconsistent behaviour.
+> teo and rjw only, and no timing data:
+> http://smythies.com/~doug/linux/idle/teo-util2/ping-sweep/6-1/perf/
+>
+> Test 3: sleeping ebizzy - 128 threads.
+>
+> Purpose: This test has given interesting results in the past.
+> The test varies the sleep interval between record lookups.
+> The result is varying usage of idle states.
+>
+> Results: It can be difficult to see any differences in
+> the overall timing graph, but a graph of differences
+> is revealing. teo outperforms rjw in the longer intervals
+> region of the test, at the cost of more power.
+>
+> Details: (power and idle stats; times):
+> http://smythies.com/~doug/linux/idle/teo-util2/ebizzy/perf/
+> http://smythies.com/~doug/linux/idle/teo-util2/ebizzy/ebizzy-128-perf.png
+> http://smythies.com/~doug/linux/idle/teo-util2/ebizzy/ebizzy-128-perf-diffs.png
+>
+> Test 4: 2 X 2 pair token passing. Dwell test. Fast:
+>
+> Purpose: Dwell under one set of conditions. Observe
+> noise and/or any bi-stability.
+>
+> Results (reference time is menu):
+> rjw: 3.0723 usecs/loop average. +3.15%
+> teo: 2.9917 usecs/loop average. +0.44%
+> menu: 2.97845 usecs/loop average. Reference
+> ladder: 4.077375 usecs/loop average. +36.9%
+>
+> Powers are all similar, with ladder a bit lower.
+>
+> Details: (power and idle stats; times):
+> http://smythies.com/~doug/linux/idle/teo-util2/many-0-400000000-2/perf/
+> http://smythies.com/~doug/linux/idle/teo-util2/many-0-400000000-2/times.txt
+>
+> Test 5: 2 X 2 pair token passing. Dwell test. Medium:
+>
+> Purpose: Dwell under one set of conditions. Observe
+> noise and/or any bi-stability.
+>
+> Results (reference time is menu):
+> rjw: 11.3406 usecs/loop average. -0.69%
+> teo: 11.36765 usecs/loop average. -0.45%
+> menu: 11.41905 usecs/loop average. reference
+> ladder: 11.9535 usecs/loop average. +4.68%
+>
+> Powers are all similar.
+>
+> Details:
+> http://smythies.com/~doug/linux/idle/teo-util2/many-3000-100000000-2/perf/
+> http://smythies.com/~doug/linux/idle/teo-util2/many-3000-100000000-2/times.txt
+>
+> Test 6: 2 X 2 pair token passing. Dwell test. Slow:
+>
+> Purpose: Dwell under one set of conditions. Observe
+> noise and/or any bi-stability.
+>
+> Results (reference time is menu):
+> rjw: 2591.70 usecs/loop average. +0.26%
+> teo: 2566.34 usecs/loop average. -0.72%
+> menu: 2585.00 usecs/loop average. reference
+> ladder: 2635.36 usecs/loop average. +1.95%
+>
+> Powers are all similar, with ladder a bit lower.
+> Due to the strong temperature to power use curve,
+> a much longer dwell test would need to be run to
+> be sure to get to steady state power usage.
+>
+> Details:
+> http://smythies.com/~doug/linux/idle/teo-util2/many-1000000-342000-2/perf/
+> http://smythies.com/~doug/linux/idle/teo-util2/many-1000000-342000-2/times.txt
+>
+> Test 7: 500 low load threads.
+>
+> Purpose: This test has given interesting results
+> in the past.
+>
+> 500 threads at approximately 10 hertz work/sleep frequency
+> and about 0.0163 load per thread, 8.15 total.
+> CPUs about 32% idle.
+>
+> Results:
+> rjw executed 0.01% faster than teo.
+> rjw used 5% less energy than teo.
+>
+> Details:
+> http://smythies.com/~doug/linux/idle/teo-util2/waiter/perf/
+> http://smythies.com/~doug/linux/idle/teo-util2/waiter/times.txt
 
-[1] https://github.com/sonyxperiadev/kernel/commit/7456d9779af9ad6bb9c7ee6f33d5c5a8d3648e24
-[2] https://github.com/artem/android_kernel_sony_msm8996/commit/bf7a8985dcaf0eab5bc2562d2d6775e7e29c0f30
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
----
- drivers/interconnect/qcom/icc-rpm.c | 14 ++++++++++----
- drivers/interconnect/qcom/icc-rpm.h |  5 +++++
- 2 files changed, 15 insertions(+), 4 deletions(-)
+Thanks a lot for doing this work, much appreciated!
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index 1d3af4e9ead8..9c40314e03b5 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -300,14 +300,14 @@ static u64 qcom_icc_calc_rate(struct qcom_icc_provider *qp, struct qcom_icc_node
- 	else
- 		agg_avg_rate = qn->sum_avg[ctx];
- 
--	if (qp->ab_coeff) {
--		agg_avg_rate = agg_avg_rate * qp->ab_coeff;
-+	if (qn->ab_coeff) {
-+		agg_avg_rate = agg_avg_rate * qn->ab_coeff;
- 		agg_avg_rate = div_u64(agg_avg_rate, 100);
- 	}
- 
--	if (qp->ib_coeff) {
-+	if (qn->ib_coeff) {
- 		agg_peak_rate = qn->max_peak[ctx] * 100;
--		agg_peak_rate = div_u64(qn->max_peak[ctx], qp->ib_coeff);
-+		agg_peak_rate = div_u64(qn->max_peak[ctx], qn->ib_coeff);
- 	} else {
- 		agg_peak_rate = qn->max_peak[ctx];
- 	}
-@@ -563,6 +563,12 @@ int qnoc_probe(struct platform_device *pdev)
- 	for (i = 0; i < num_nodes; i++) {
- 		size_t j;
- 
-+		if (!qnodes[i]->ab_coeff)
-+			qnodes[i]->ab_coeff = qp->ab_coeff;
-+
-+		if (!qnodes[i]->ib_coeff)
-+			qnodes[i]->ib_coeff = qp->ib_coeff;
-+
- 		node = icc_node_create(qnodes[i]->id);
- 		if (IS_ERR(node)) {
- 			ret = PTR_ERR(node);
-diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
-index f9ef16f570be..4abf99ce2690 100644
---- a/drivers/interconnect/qcom/icc-rpm.h
-+++ b/drivers/interconnect/qcom/icc-rpm.h
-@@ -103,6 +103,9 @@ struct qcom_icc_qos {
-  * @mas_rpm_id:	RPM id for devices that are bus masters
-  * @slv_rpm_id:	RPM id for devices that are bus slaves
-  * @qos: NoC QoS setting parameters
-+ * @ab_coeff: a percentage-based coefficient for compensating the AB calculations
-+ * @ib_coeff: an inverse-percentage-based coefficient for compensating the IB calculations
-+ * @bus_clk_rate: a pointer to an array containing bus clock rates in Hz
-  */
- struct qcom_icc_node {
- 	unsigned char *name;
-@@ -117,6 +120,8 @@ struct qcom_icc_node {
- 	int mas_rpm_id;
- 	int slv_rpm_id;
- 	struct qcom_icc_qos qos;
-+	u16 ab_coeff;
-+	u16 ib_coeff;
- 	u32 bus_clk_rate[QCOM_SMD_RPM_STATE_NUM];
- };
- 
+> Conclusions: Overall, I am not seeing a compelling reason to
+> proceed with this patch set.
 
--- 
-2.41.0
-
+On the other hand, if there is a separate compelling reason to do
+that, it doesn't appear to lead to a major regression.
