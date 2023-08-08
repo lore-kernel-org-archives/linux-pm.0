@@ -2,173 +2,134 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E23B9C001B0
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:17:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EA5AC41513
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:21:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232010AbjHHQQd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 12:16:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37678 "EHLO
+        id S230155AbjHHQUw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 12:20:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232317AbjHHQOk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:14:40 -0400
-Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com [209.85.167.46])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F7433C20
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 08:40:50 -0700 (PDT)
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-4fe0eb0ca75so9153260e87.2
-        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 08:40:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691509188; x=1692113988;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=NiT0zdP9RcVMfv6FtcplHy2nGhazgGSIvo5WbDUA63E=;
-        b=aW4wnRrEKAac8FGJWJfmIpyRCZdfxLwNObMsmwLm0k3HayVnTmvcMY2d6iG0ka0eus
-         bYQ8uDBHKC77NZLga5BPXCH+cNwUVwh1LhJ0a7h8rTd1Gny4B5cwDEm/+tDJ1Ob4Vz/u
-         y5POA0ipfax3QBoQOnYuxZR20vVEsMcwYzqC8nExv9e6qz0mbyF2zL8ix1X+6216yV4U
-         26P247tz9pLcP/Ja47xCsEZ9Gaptjfm7bexRECjmptsXW2bI9QMVoHw+qNl6gb3y7Sxa
-         vwR+2sShxWcLhaVchZ0nCPQhjslX62YqlsLnTp2iwEaH7GMWl0cC1AkS9MFGSaj4KX9O
-         nuIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691509188; x=1692113988;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=NiT0zdP9RcVMfv6FtcplHy2nGhazgGSIvo5WbDUA63E=;
-        b=ZotbLFXXgWEjrYLyO6FV82Qyw78A+BK11Kh3rBcCxPvO6e0nulnfChvr3UKv+H/Pl+
-         XHaNQ8BRl7XFBhNg91tHn0oZvkZNSL7s6Btneh81b2IfD5EyrjzU1hMA6rA1VehNzP9M
-         IvHfp9xkPKM4i+5ZauL3aOwVYbaH6iIVwpcYXRVuIgmUQaP11KZoWRgwADDIhHjKD8Zf
-         Pu/f1OM5hRXqjLChdIUXx76a/HM6Iibi4IMQBM1ra+O2FnkQ6NzUrp2qK1Jh1SP1WL/h
-         P3qUk24+vNiXPKnXuGcIOYcHjCBwu8ozGKzcwWkdat1ZJlhcSB5FMTBOwIRMACxczRSz
-         YpnA==
-X-Gm-Message-State: AOJu0YybrhCmmUom28iiPVg0u0o9Eb/sSiDFkqnyHLTO5YMdanJH7Nb1
-        xq6g/g7hB5r1ssATstoZ4p/7waBNV2g+SomAUMk=
-X-Google-Smtp-Source: AGHT+IF7FsNW05tchzFLg08e24E0C6uLzAZLbxhdVKl8LRAWeyHXHm2QOMKSVvO0FNrWGNxEl3ClCQ==
-X-Received: by 2002:ac2:4e88:0:b0:4fe:ecd:494f with SMTP id o8-20020ac24e88000000b004fe0ecd494fmr6969822lfr.33.1691495018085;
-        Tue, 08 Aug 2023 04:43:38 -0700 (PDT)
-Received: from [192.168.1.101] (abxi185.neoplus.adsl.tpnet.pl. [83.9.2.185])
-        by smtp.gmail.com with ESMTPSA id j20-20020ac253b4000000b004fbdba4b075sm1861679lfh.57.2023.08.08.04.43.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Aug 2023 04:43:37 -0700 (PDT)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 08 Aug 2023 13:43:33 +0200
-Subject: [PATCH v3 02/10] interconnect: qcom: icc-rpm: Separate out clock
- rate calulcations
+        with ESMTP id S231229AbjHHQT3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:19:29 -0400
+Received: from NAM04-MW2-obe.outbound.protection.outlook.com (mail-mw2nam04on2070.outbound.protection.outlook.com [40.107.101.70])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59CEF900E;
+        Tue,  8 Aug 2023 08:48:57 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=jJZh0sAxNNQT2xSe9z2Z4pxhf3JBVInAWHuHYhhaVoaxh/5NPM5xZrEtW0kIVZwaW7dkuowD1a8PA2fw79oeuYF6YGXfqG/2tx6xbU02LzMqxIahi65sV3JP4bYpwgZWBJY5ab7QRwTNdR8CQhyF2PR7r3ZsS/2iGRL7gKg3iUAZ/659FvL+QT3igjd5h5xWriZvyIekCWPXpA9VIABe6S+VtCJG66aFG/llUxA7sOIQnc4+lmUh6a6jHZ8F4Qw6M3O3eRHZbXprItE7Y1jtihhPy8dlD4bo4A17iP3GASsI3oduoe8HiWi1wL73vEhYBISaPlYXl7IlKvRFvf0Jvw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=esVSysetGhzh6t5ORSQSSD6Oz46VS/5ZRsXchN81E0w=;
+ b=ZtiW7nPpIeJ1tTeUF/fFg1LQ35lPiSY1mitqay5vtkynRC/dHmMITZU0ReCLHntCtlx4SPJ55ne6WmjsleY1WgSM37qZr6KbfJnNays/3hWM7pn/BdsXssm6nvdC8Qqpo4ZQfkzhw179ZpiMIwbH3TfXG/h7WlPhVKQ7lnTKJNu/lelFycKJVM2vkVSYrttaotor0Buv6tMNHh2E13cZvaNXBx38g7RN2PHvJadIENP1xvXpp18Y9SkGYncPGIqMqjVPlnCjYuhcoAukrJ6c3pKUKtSuzxGE/GoxiRcDe8gIzeinLgy2Wswq+cuyfrvLhJSV44fFMGCE+E7vL0F3dA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=esVSysetGhzh6t5ORSQSSD6Oz46VS/5ZRsXchN81E0w=;
+ b=xqCQuWvyoG19yc6iCvifNAFK1NXDzqMwGq9GmrGBr/jTFhlWoHmvigs7Bu7+ygEwoHxZAXV5pP6DmVmVQChs1uBkjdrhpKF7u7nOUyrbo4ad9qk6KXdq3XG+FaU6rOjgrzf1xa+vXDBjoWRA0CzlayXqq9mAXF1htiRD69hhc4E=
+Received: from MW4PR04CA0344.namprd04.prod.outlook.com (2603:10b6:303:8a::19)
+ by DM3PR12MB9325.namprd12.prod.outlook.com (2603:10b6:0:46::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6652.27; Tue, 8 Aug
+ 2023 08:12:37 +0000
+Received: from MWH0EPF000971E9.namprd02.prod.outlook.com
+ (2603:10b6:303:8a:cafe::9a) by MW4PR04CA0344.outlook.office365.com
+ (2603:10b6:303:8a::19) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6652.27 via Frontend
+ Transport; Tue, 8 Aug 2023 08:12:37 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ MWH0EPF000971E9.mail.protection.outlook.com (10.167.243.71) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.6652.19 via Frontend Transport; Tue, 8 Aug 2023 08:12:37 +0000
+Received: from jasmine-meng.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Tue, 8 Aug
+ 2023 03:11:35 -0500
+From:   Meng Li <li.meng@amd.com>
+To:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Huang Rui <ray.huang@amd.com>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <x86@kernel.org>, <linux-acpi@vger.kernel.org>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        <linux-kselftest@vger.kernel.org>,
+        "Nathan Fontenot" <nathan.fontenot@amd.com>,
+        Deepak Sharma <deepak.sharma@amd.com>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        Shimmer Huang <shimmer.huang@amd.com>,
+        "Perry Yuan" <Perry.Yuan@amd.com>,
+        Xiaojian Du <Xiaojian.Du@amd.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Borislav Petkov <bp@alien8.de>, Meng Li <li.meng@amd.com>
+Subject: [PATCH V1 6/6] Documentation: introduce AMD Pstate Preferrd Core mode kernel command line options
+Date:   Tue, 8 Aug 2023 16:10:01 +0800
+Message-ID: <20230808081001.2215240-7-li.meng@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230808081001.2215240-1-li.meng@amd.com>
+References: <20230808081001.2215240-1-li.meng@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230726-topic-icc_coeff-v3-2-dee684d6cdd2@linaro.org>
-References: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
-In-Reply-To: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691495013; l=2930;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=s1ZE4XHCfs1j0oOrUS6GpKQLQgPUfnNi7YQdZMNs0uA=;
- b=BNLRtVUx+or/VTf6c67Fn8JQREAUM7KBMxBUw0bidTpwWnVF2uG46h/vQ7rWTJJxXrCyqlcrL
- IOWQVTe2E5gCEsjBZnt/i0WfG9lrZKz3P7zP5BydAdzwZBurxpKPb6a
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MWH0EPF000971E9:EE_|DM3PR12MB9325:EE_
+X-MS-Office365-Filtering-Correlation-Id: 71c336c2-ae13-403f-0fa0-08db97e73a3b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: bGGRQABzEAOEQ5DAoStKk2a3nrUY92wyQ+Zvh+Gm88Flku/3tClT7AGEDWckV9FeTswTKN2nNPsEixVKbbVZwdM1p2pOpt2LauezIwoFCzHl8HjPhO5PcUIIvmh829wHGazwNncgGI/Ry4s0eZP/6GmDwhmGW+MZ5TrGtUEhgwAkbTcjnGEDWAZyI15XRe2vWxSzMX7CLfFWUHtVK+NnpWEQlZ3s9NCwHKddD0MQXiUtH8qvtauXSU/4dc0te/dXzGz4x72HkfojZM5J39dxHXfHEcndLw7C1BJNL6K5gYcwomWfVtR7smcyab75LPAelDInjWJY5giKnp1pAHNVjLsurJTZBwVxVAUDsNBFLhpK/WXHmPOAegbUzhWy6+ck6Hp0S3KCGLFqBXXfyCs7Bv22t+5sRqbKZUvoHbsw6T3VJjf33PbR1MU9AenktGt0RNSDuXRRCRZiaJYd32/wrGf/Zf8zTcCIn9dodU7lmR3DsRSHE9DXX2o+qTWetevTngxnZTsTZe5P15fZmLYwcuZHI3KfAm44SgSI4P54xYdYhe5/tyrLPvszMu6Ezz6F3L30t8wNBfmdW9H0tWhabRSuK1QdFfEIc3n9Rym1XkySITyBdg2NpYxkumzwddKtnqM1cchGMIfQtOuFkKUe8qW40Ta9cOx/Ox3HHnbM8JIYYW9pgyntB8C6CU9+acAVsyV5jSkLfJCPzPU2f4aHVpABIpB6lO9FKG23WVUbbXx2jv8eSBY4iAfQ9lDlcz1M5tFzUkTZj+B4oMLDwsNGnoqo0p8PoTj8XBiLyvougqFowkjrbZ69/rD65bFCSzplB62VHaA0IZRpGMezZpplJ0IcHgP7QHm2W7mUfMqbcxBpGKs4pYvP7uM3cUU3eYYO
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(136003)(39860400002)(396003)(346002)(376002)(82310400008)(1800799003)(186006)(90021799007)(451199021)(90011799007)(46966006)(40470700004)(36840700001)(2616005)(7696005)(1076003)(26005)(36756003)(16526019)(336012)(6666004)(82740400003)(478600001)(81166007)(356005)(110136005)(54906003)(70586007)(70206006)(6636002)(4326008)(41300700001)(426003)(316002)(8936002)(8676002)(5660300002)(40460700003)(4744005)(2906002)(36860700001)(83380400001)(47076005)(86362001)(40480700001)(36900700001)(14943795004);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Aug 2023 08:12:37.1527
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 71c336c2-ae13-403f-0fa0-08db97e73a3b
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: MWH0EPF000971E9.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM3PR12MB9325
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In preparation for also setting per-node clock rates, separate out the
-logic that computes it.
+AMD Pstate driver support enable/disable Preferred core.
+Default disabled on platforms supporting AMD Preferred Core.
+Enable AMD Pstate Preferred Core with
+"amd_prefcore=enable" added to the kernel command line.
 
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Signed-off-by: Meng Li <li.meng@amd.com>
 ---
- drivers/interconnect/qcom/icc-rpm.c | 53 +++++++++++++++++++++----------------
- 1 file changed, 30 insertions(+), 23 deletions(-)
+ Documentation/admin-guide/kernel-parameters.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index 8b02aa8aa96a..8c1bfd65d774 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -291,6 +291,32 @@ static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
- 	return 0;
- }
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 2de235d52fac..bc92e178431b 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -363,6 +363,11 @@
+ 			  selects a performance level in this range and appropriate
+ 			  to the current workload.
  
-+static u64 qcom_icc_calc_rate(struct qcom_icc_provider *qp, struct qcom_icc_node *qn, int ctx)
-+{
-+	u64 agg_avg_rate, agg_peak_rate, agg_rate;
++	amd_prefcore=
++			[X86]
++			enable
++			  Enable AMD Pstate Preferred Core.
 +
-+	if (qn->channels)
-+		agg_avg_rate = div_u64(qn->sum_avg[ctx], qn->channels);
-+	else
-+		agg_avg_rate = qn->sum_avg[ctx];
-+
-+	if (qp->ab_coeff) {
-+		agg_avg_rate = agg_avg_rate * qp->ab_coeff;
-+		agg_avg_rate = div_u64(agg_avg_rate, 100);
-+	}
-+
-+	if (qp->ib_coeff) {
-+		agg_peak_rate = qn->max_peak[ctx] * 100;
-+		agg_peak_rate = div_u64(qn->max_peak[ctx], qp->ib_coeff);
-+	} else {
-+		agg_peak_rate = qn->max_peak[ctx];
-+	}
-+
-+	agg_rate = max_t(u64, agg_avg_rate, agg_peak_rate);
-+
-+	return div_u64(agg_rate, qn->buswidth);
-+}
-+
- /**
-  * qcom_icc_bus_aggregate - calculate bus clock rates by traversing all nodes
-  * @provider: generic interconnect provider
-@@ -299,10 +325,9 @@ static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
- static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_rate)
- {
- 	struct qcom_icc_provider *qp = to_qcom_provider(provider);
--	u64 agg_avg_rate, agg_peak_rate, agg_rate;
- 	struct qcom_icc_node *qn;
- 	struct icc_node *node;
--	int i;
-+	int ctx;
- 
- 	/*
- 	 * Iterate nodes on the provider, aggregate bandwidth requests for
-@@ -310,27 +335,9 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_r
- 	 */
- 	list_for_each_entry(node, &provider->nodes, node_list) {
- 		qn = node->data;
--		for (i = 0; i < QCOM_SMD_RPM_STATE_NUM; i++) {
--			if (qn->channels)
--				agg_avg_rate = div_u64(qn->sum_avg[i], qn->channels);
--			else
--				agg_avg_rate = qn->sum_avg[i];
--
--			if (qp->ab_coeff) {
--				agg_avg_rate = agg_avg_rate * qp->ab_coeff;
--				agg_avg_rate = div_u64(agg_avg_rate, 100);
--			}
--
--			if (qp->ib_coeff) {
--				agg_peak_rate = qn->max_peak[i] * 100;
--				agg_peak_rate = div_u64(qn->max_peak[i], qp->ib_coeff);
--			} else {
--				agg_peak_rate = qn->max_peak[i];
--			}
--
--			agg_rate = max_t(u64, agg_avg_rate, agg_peak_rate);
--
--			agg_clk_rate[i] = max_t(u64, agg_clk_rate[i], agg_rate);
-+		for (ctx = 0; ctx < QCOM_SMD_RPM_STATE_NUM; ctx++) {
-+			agg_clk_rate[ctx] = max_t(u64, agg_clk_rate[ctx],
-+						  qcom_icc_calc_rate(qp, qn, ctx));
- 		}
- 	}
- }
-
+ 	amijoy.map=	[HW,JOY] Amiga joystick support
+ 			Map of devices attached to JOY0DAT and JOY1DAT
+ 			Format: <a>,<b>
 -- 
-2.41.0
+2.34.1
 
