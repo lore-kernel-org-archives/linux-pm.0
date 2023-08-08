@@ -2,99 +2,166 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C4D7C001B0
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:23:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1AECC04FDF
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:24:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229488AbjHHQWh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 12:22:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38864 "EHLO
+        id S230051AbjHHQYN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 12:24:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59498 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232507AbjHHQUb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:20:31 -0400
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 557BB93D7;
-        Tue,  8 Aug 2023 08:49:05 -0700 (PDT)
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 378Dn4Sc092506;
-        Tue, 8 Aug 2023 08:49:04 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1691502544;
-        bh=/diXiEy5Rar3GP8DL1v0Kz97W27qEYMY8d8jEN9wuNI=;
-        h=Date:From:To:CC:Subject:References:In-Reply-To;
-        b=xQc13KDzs4rY/5Yh0KhwxXxbTGu21K+p5MPQfIpXeULdCoaHjZ3C7H+tWKqs+R0a/
-         mPYU2n776xTrRr9yuKjigGyTYSX2EeQK6t5eKP/GEMnTRBnX7fDvB3OHKaI15O1I7h
-         kAGsMc6e+6/GT6gmAtQpO08ULv0a/IqbxsVx8T3Y=
-Received: from DLEE109.ent.ti.com (dlee109.ent.ti.com [157.170.170.41])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 378Dn4Jp003971
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 8 Aug 2023 08:49:04 -0500
-Received: from DLEE100.ent.ti.com (157.170.170.30) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 8
- Aug 2023 08:49:04 -0500
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DLEE100.ent.ti.com
- (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 8 Aug 2023 08:49:03 -0500
-Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 378Dn31e046024;
-        Tue, 8 Aug 2023 08:49:03 -0500
-Date:   Tue, 8 Aug 2023 08:49:03 -0500
-From:   Nishanth Menon <nm@ti.com>
-To:     Dhruva Gole <d-gole@ti.com>
-CC:     Tero Kristo <kristo@kernel.org>,
-        Santosh Shilimkar <ssantosh@kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-omap@vger.kernel.org>,
-        "Kevin Hilman" <khilman@baylibre.com>, Vignesh R <vigneshr@ti.com>,
-        Georgi Vlaev <g-vlaev@ti.com>
-Subject: Re: [PATCH V7 2/4] firmware: ti_sci: Add support for querying the
- firmware caps
-Message-ID: <20230808134903.vqrq7wxsgg5id4dj@crewmate>
-References: <20230804115037.754994-1-d-gole@ti.com>
- <20230804115037.754994-3-d-gole@ti.com>
+        with ESMTP id S230020AbjHHQWx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:22:53 -0400
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06D0EA267
+        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 08:49:32 -0700 (PDT)
+Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-52164adea19so7553010a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 08:49:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1691509766; x=1692114566;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=7eF8Rl4Nrv0n3qIaC6c+71IiCQoHSuRD0COK5QFMyP0=;
+        b=T0GYNFvcjJsftapjuQvUPg/qzkH3vO85/M6mYNcCrzODpSJvvlBUlq/QHO4DE3J9tE
+         A72nElFG5IbPkHh0Ofg3zYY/icRkVUonJGHv71wH4tVS9cIQS42foEPzvZ0hz6F8YBJt
+         isaW9ZbjgYTbk8YpBnV6IGASRKs9bhxBXE23y7jP4LvCx4rEFzDzJrxqEIyy+quYEwtY
+         PvXr7dn/uO8O1favLg8QnLN51P+Crj8ipjSjbo6lIALHtd0AvYRhlyTJtJ9HBlB52N50
+         jvh3tgmQ+b/PgzpyiRaq5XZoKB2VCny1dnmpfF1IVWmd+qDJiXIgGNlDGTbALHT1gjo0
+         xEmg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691509766; x=1692114566;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=7eF8Rl4Nrv0n3qIaC6c+71IiCQoHSuRD0COK5QFMyP0=;
+        b=bPg0sLQTk8DenZqkV5HHbLNRznUAEUt3405H7muxV8oMLGIKnKqlwi9jkywOJo/iIo
+         kGxq76/Mn2CdqztgISicx0CN9tTWMMKd7tqbbIK5rSLqq+QnuXjDlGtnI/DQ4fjkvGfw
+         4P2mDBMBGt70S8Hj/r+z3g7WSHeyODaOVC/XMgBVn2VbooWdQ3++8jCZRivkX5TLkBEl
+         FQt8ULRmj5f/rkszMKhQcGssjVhDZZ70OiJDGMoIuHp2LqOrqT3VyyLYLbNh0FOjn1zl
+         vHvGTF45VRORQRc6hunSQEZizf9F8nmV+jhjOluekWjIYTPWh6eIJVeQHLdfiz2YCzOV
+         2Hxg==
+X-Gm-Message-State: AOJu0YxZRbkyA+goJ8W9znjbtE4uyO2VDWy0gnvR6qwnXC1NB/hLYGiX
+        mAuYaJvgxRatWFln6Nu6/yDFF8tVcDMbNuj9rME=
+X-Google-Smtp-Source: AGHT+IEyDsRs/Zlk81B70tQzJ2VvCAwqqLNOe/n6dbEVxMV8oUWml9e5yDCmumsusfydc9mP+oYysw==
+X-Received: by 2002:a05:6512:1103:b0:4fe:279b:8a02 with SMTP id l3-20020a056512110300b004fe279b8a02mr9262600lfg.67.1691495019651;
+        Tue, 08 Aug 2023 04:43:39 -0700 (PDT)
+Received: from [192.168.1.101] (abxi185.neoplus.adsl.tpnet.pl. [83.9.2.185])
+        by smtp.gmail.com with ESMTPSA id j20-20020ac253b4000000b004fbdba4b075sm1861679lfh.57.2023.08.08.04.43.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Aug 2023 04:43:38 -0700 (PDT)
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Date:   Tue, 08 Aug 2023 13:43:34 +0200
+Subject: [PATCH v3 03/10] interconnect: qcom: icc-rpm: Let nodes drive
+ their own bus clock
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20230804115037.754994-3-d-gole@ti.com>
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230726-topic-icc_coeff-v3-3-dee684d6cdd2@linaro.org>
+References: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+In-Reply-To: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@linaro.org>
+X-Mailer: b4 0.12.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691495013; l=3111;
+ i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
+ bh=8JDjpAr7N9o+Ldc42lWfgA5mVZfE1TEXPiQOh91fLVQ=;
+ b=YVAatYh7xnAWvBz8CbkBbjpEVXXX/ocZeGoh4gETy6ScPffEddtOjrccwL7B7bBTyuuFZ4fhm
+ mJZhqrcP3X9CGIZcoGsq1+Yz4R+eRQNJc8oAC2ZeWOd3m7gnL20DT0x
+X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
+ pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 17:20-20230804, Dhruva Gole wrote:
-> From: Georgi Vlaev <g-vlaev@ti.com>
-> 
-[...]
+If this hardware couldn't get messier, some nodes are supposed to drive
+their own bus clock.. Presumably to connect to some intermediate
+interface between the node itself and the bus it's (supposed to be)
+connected to.
 
-> +	/*
-> +	 * fw_caps 1st bit is used to check Generic capability. Other than
-> +	 * that the 1:4 bits are used for various LPM capabilities.
-> +	 * The API is buggy on SYSFW 9.00 and below, on some devices.
-> +	 * Hence, to avoid any sort of bugs arising due to garbage values
-> +	 * Let's allow the fw_caps to be set to whatever the firmware
-> +	 * says only on devices listed under has_lpm. These devices should
-> +	 * have lpm features tested and implemented in the firmware
-> +	 * and only then should they be added to has_lpm struct.
-> +	 * Otherwise, set the value to 1 that is the default.
-> +	 */
-> +	if (fw_caps && soc_device_match(has_lpm))
-> +		*fw_caps = resp->fw_caps;
-> +	else
-> +		*fw_caps = resp->fw_caps & MSG_FLAG_CAPS_GENERIC;
+Expand the node struct with the necessary data and hook up the
+allocations & calculations.
 
-Fix your firmware please. drop the has_lpm stuff.. that is what caps is
-for.
+Note that the node-specific AB/IB coefficients contribute (by design)
+to both the node-level and the bus-level aggregation.
 
-As part of ti_sci_setup_ops you get info where you can check ABI version
-where this is valid and which is not, ti_sci_msg_cmd_query_fw_caps can
-be populated based on that check. That is the reason info is passed to
-setup_ops and why we have ABI IDs in the first place.
+Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+---
+ drivers/interconnect/qcom/icc-rpm.c | 27 +++++++++++++++++++++++++++
+ drivers/interconnect/qcom/icc-rpm.h |  3 +++
+ 2 files changed, 30 insertions(+)
 
-[...]
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 8c1bfd65d774..1d3af4e9ead8 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -414,6 +414,33 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 		qp->bus_clk_rate[QCOM_SMD_RPM_SLEEP_STATE] = sleep_rate;
+ 	}
+ 
++	/* Handle the node-specific clock */
++	if (!src_qn->bus_clk_desc)
++		return 0;
++
++	active_rate = qcom_icc_calc_rate(qp, src_qn, QCOM_SMD_RPM_ACTIVE_STATE);
++	sleep_rate = qcom_icc_calc_rate(qp, src_qn, QCOM_SMD_RPM_SLEEP_STATE);
++
++	if (active_rate != src_qn->bus_clk_rate[QCOM_SMD_RPM_ACTIVE_STATE]) {
++		ret = qcom_icc_rpm_set_bus_rate(src_qn->bus_clk_desc, QCOM_SMD_RPM_ACTIVE_STATE,
++						active_rate);
++		if (ret)
++			return ret;
++
++		/* Cache the rate after we've successfully committed it to RPM */
++		src_qn->bus_clk_rate[QCOM_SMD_RPM_ACTIVE_STATE] = active_rate;
++	}
++
++	if (sleep_rate != src_qn->bus_clk_rate[QCOM_SMD_RPM_SLEEP_STATE]) {
++		ret = qcom_icc_rpm_set_bus_rate(src_qn->bus_clk_desc, QCOM_SMD_RPM_SLEEP_STATE,
++						sleep_rate);
++		if (ret)
++			return ret;
++
++		/* Cache the rate after we've successfully committed it to RPM */
++		src_qn->bus_clk_rate[QCOM_SMD_RPM_SLEEP_STATE] = sleep_rate;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
+index 5e7d6a4fd2f3..f9ef16f570be 100644
+--- a/drivers/interconnect/qcom/icc-rpm.h
++++ b/drivers/interconnect/qcom/icc-rpm.h
+@@ -97,6 +97,7 @@ struct qcom_icc_qos {
+  * @num_links: the total number of @links
+  * @channels: number of channels at this node (e.g. DDR channels)
+  * @buswidth: width of the interconnect between a node and the bus (bytes)
++ * @bus_clk_desc: a pointer to a rpm_clk_resource description of bus clocks
+  * @sum_avg: current sum aggregate value of all avg bw requests
+  * @max_peak: current max aggregate value of all peak bw requests
+  * @mas_rpm_id:	RPM id for devices that are bus masters
+@@ -110,11 +111,13 @@ struct qcom_icc_node {
+ 	u16 num_links;
+ 	u16 channels;
+ 	u16 buswidth;
++	const struct rpm_clk_resource *bus_clk_desc;
+ 	u64 sum_avg[QCOM_SMD_RPM_STATE_NUM];
+ 	u64 max_peak[QCOM_SMD_RPM_STATE_NUM];
+ 	int mas_rpm_id;
+ 	int slv_rpm_id;
+ 	struct qcom_icc_qos qos;
++	u32 bus_clk_rate[QCOM_SMD_RPM_STATE_NUM];
+ };
+ 
+ struct qcom_icc_desc {
 
 -- 
-Regards,
-Nishanth Menon
-Key (0xDDB5849D1736249D) / Fingerprint: F8A2 8693 54EB 8232 17A3  1A34 DDB5 849D 1736 249D
+2.41.0
+
