@@ -2,102 +2,123 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25174C41513
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 17:33:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4CA7C04FE1
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 17:42:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231501AbjHHRdr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 13:33:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42248 "EHLO
+        id S232306AbjHHRma (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 13:42:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56038 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234785AbjHHRct (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 13:32:49 -0400
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87A5DF9A3
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 09:14:18 -0700 (PDT)
-Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-99bf3f59905so853895866b.3
-        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 09:14:18 -0700 (PDT)
+        with ESMTP id S234817AbjHHRlw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 13:41:52 -0400
+Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33AFF23B46
+        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 09:18:32 -0700 (PDT)
+Received: by mail-ej1-x62e.google.com with SMTP id a640c23a62f3a-986d8332f50so809084166b.0
+        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 09:18:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=tuxon.dev; s=google; t=1691511245; x=1692116045;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
+        d=linaro.org; s=google; t=1691511458; x=1692116258;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=VA7k4XuYhqMiq1aimPn7yYHaKH+IPXSpGngvmVHTGB4=;
-        b=Ocrt+7ZW9WknfQ1WZZ3LY17HY6T3ur3vH7tG/zJv00T5xrI8ByGPaT2v0K1Q6RiIMD
-         LiMimlDuL/D4KbV1gc9F6Lv6MSK6EVVYX3IJZraelOPoD1hyD+Kk2ZKb6YAXJB0a5rV7
-         F396z01R+N3Qs5D2MUrEN5L7UAlRrGIBKunCEzqOcMcCDg5n/WhnSmrUjfATIKcHl6rx
-         2CjVen7vEWoOLk7bERkY5sAvUyX3Fscr4i+WEvJjgm5T+7obGqNT/TkeGLyB8H7/qzvB
-         xc/4wHinV2JK5pDxr7/OgF6zGo1tWv105vZpY25IeQAA7LxUNVSo6IaNnMdVTJ/Fif7Z
-         wshg==
+        bh=ybSaKnH3U1PUxa94j8TvSQvCpscNikWjtLAxZuswTqA=;
+        b=G9DMJ7PQfZIHZEL6tKAAlox8l+YcuBVl2LvLOeerxJoH9qIS3tnpmU8v64pNs15ZYR
+         68/S74gQLe7LXsCErNhcGmxy/m4BS1dYCgqEG4GLHw/HErsR5VX676Bo/ulPdrDc0lot
+         Q1CNXo7c+dyXeZ5sXgW2MK/YaRGCpr2+vbGDD13znMlYvT2zsl1vb0ANUOLHQSrLABnT
+         BDfqflYj7UFKiHB9RIJnH7C8qoNGT6LedyV2vHvxsrS8YuGoNQUw2c05XYiR9VNKkuvX
+         APkilcTwWvGszLQ0+HV7TkhyVd264ReNah1J6tFGCg2ssXS3wx7PlxKmLb5f/7EP3ril
+         KCbg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691511245; x=1692116045;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
+        d=1e100.net; s=20221208; t=1691511458; x=1692116258;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=VA7k4XuYhqMiq1aimPn7yYHaKH+IPXSpGngvmVHTGB4=;
-        b=e4ytleu4uBLORBSu3ap9jfoGPFWLnya854RBr1LcJmg+hzVvmfYLqiAv/Wbm/oyufz
-         r1b8vInDWiSez6u3reNQ9u7o07F2PlZhqGW5sbT/vnw3ZC3bYrAIVVHfXwv5xmhJbCr8
-         dA5Tn8Bq8Gp1vG8LJjyAoEbjcYIkMmBx6kd3Oxr8tsP6NZvhkFKrzvk8o94zXdtjm6kD
-         PZ3M4oBFmRn+chLVap4GXfjV+Cr8Rl9LSo1lmGiXLwVi8Gak+PZmIMjlRFio0f5bFwBp
-         6A3uixBAx3ulNJUJGuxw0jTNMWmE2h5HT5/TUoJ0srhuIgQdx/JpqPv/8SeNeT38Wk5W
-         1wxQ==
-X-Gm-Message-State: AOJu0YxUgirblhOLY44NuZoICdr8TlPJpcvdSZ5esUfujtdvJpervXAq
-        NdpCr+TIe8GqeR24P1ebU382l0bOVMVa+UWwWxfTjRjX
-X-Google-Smtp-Source: AGHT+IGI3NvWLARIAIJ806WzFo1Gu4YYpyDDo+Y24Lhf1uUKTQCBoWPTHY8UkO7PvmeembXLpAFOxg==
-X-Received: by 2002:a17:906:2081:b0:993:e752:1a70 with SMTP id 1-20020a170906208100b00993e7521a70mr11879972ejq.19.1691472062881;
-        Mon, 07 Aug 2023 22:21:02 -0700 (PDT)
-Received: from [10.0.2.15] ([82.78.167.79])
-        by smtp.gmail.com with ESMTPSA id k18-20020a17090666d200b00992f2befcbcsm6125952ejp.180.2023.08.07.22.21.01
+        bh=ybSaKnH3U1PUxa94j8TvSQvCpscNikWjtLAxZuswTqA=;
+        b=M03KC8Zcw1EQFTcwlbbCEct7HBwcwZeGdXfjPMmI6QkpOaadtiQ2TNsrfW2mKOo0Zm
+         T9o0OwcMn2EaMUCgo16dp58ZAdM0e2Juc8LoysmoKhMm+AWsF3Gjs7dLtLXzpiTvvWsf
+         /AcKKILwF0WlcuFHR60gQpCFrDGTkZruy3kVMOqSkj1dLLzs53gDyuXpYacKcqUcCcfR
+         bfsnCii5nfd/J3H2Kyrlm0kFtnrWCqYniZWsG27+sFajdO+QTgOts5CIeDv9p7Jl0stg
+         O/o1njBWYJZj/n4+vWmIsEiicSJ6SKs7shAm3XL/8jaSQDBa2YrwcikVxoJt0GwmouqD
+         Z5Xw==
+X-Gm-Message-State: AOJu0YzF4uhvGuylpedvVoATauEir8JyC3m7WonnnV/WuiCJd6A5b00a
+        EyYB98bDid7XzuM6Fm2WvMqvuA==
+X-Google-Smtp-Source: AGHT+IHy3b88rrWSRN1JLxN3DzDvkBHUqN01Uo4RsZimAWEYCJuL9axBSLSlB1r3TamXnnz8rJDfuA==
+X-Received: by 2002:a17:906:1091:b0:99b:ca24:ce33 with SMTP id u17-20020a170906109100b0099bca24ce33mr61823eju.31.1691511457715;
+        Tue, 08 Aug 2023 09:17:37 -0700 (PDT)
+Received: from [192.168.1.20] ([178.197.222.113])
+        by smtp.gmail.com with ESMTPSA id p4-20020a170906614400b00984822540c9sm6920839ejl.96.2023.08.08.09.17.35
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 07 Aug 2023 22:21:02 -0700 (PDT)
-Message-ID: <745d818d-fbfe-da02-b98d-bd7b2c5059ed@tuxon.dev>
-Date:   Tue, 8 Aug 2023 08:21:00 +0300
+        Tue, 08 Aug 2023 09:17:37 -0700 (PDT)
+Message-ID: <921291bc-f1ac-bcec-718b-f3674668a715@linaro.org>
+Date:   Tue, 8 Aug 2023 18:17:34 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH] MAINTAINERS: update Claudiu Beznea's email address
-To:     Jakub Kicinski <kuba@kernel.org>
-Cc:     nicolas.ferre@microchip.com, conor.dooley@microchip.com,
-        davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
-        lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz,
-        tiwai@suse.com, maz@kernel.org, srinivas.kandagatla@linaro.org,
-        thierry.reding@gmail.com, u.kleine-koenig@pengutronix.de,
-        sre@kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
-        alsa-devel@alsa-project.org, netdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20230804050007.235799-1-claudiu.beznea@tuxon.dev>
- <20230807122508.403c1972@kernel.org>
+ Thunderbird/102.14.0
+Subject: Re: [PATCH v13 03/10] dt-bindings: opp: v2-qcom-level: Document CPR3
+ open/closed loop volt adjustment
 Content-Language: en-US
-From:   claudiu beznea <claudiu.beznea@tuxon.dev>
-In-Reply-To: <20230807122508.403c1972@kernel.org>
+To:     Konrad Dybcio <konrad.dybcio@linaro.org>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Niklas Cassel <nks@flawful.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Robert Marko <robimarko@gmail.com>, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, Jeffrey Hugo <quic_jhugo@quicinc.com>,
+        Marijn Suijten <marijn.suijten@somainline.org>
+References: <20230217-topic-cpr3h-v13-0-d01cff1c54cf@linaro.org>
+ <20230217-topic-cpr3h-v13-3-d01cff1c54cf@linaro.org>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230217-topic-cpr3h-v13-3-d01cff1c54cf@linaro.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 07.08.2023 22:25, Jakub Kicinski wrote:
-> On Fri,  4 Aug 2023 08:00:07 +0300 Claudiu Beznea wrote:
->> Update MAINTAINERS entries with a valid email address as the Microchip
->> one is no longer valid.
->>
->> Acked-by: Conor Dooley <conor.dooley@microchip.com>
->> Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
->> Signed-off-by: Claudiu Beznea <claudiu.beznea@tuxon.dev>
+On 02/08/2023 14:37, Konrad Dybcio wrote:
+> CPR3 and newer can be fed per-OPP voltage adjustment values for both
+> open- and closed-loop paths to make better decisions about settling
+> on the final voltage offset target. Document these properties.
 > 
-> Thanks for updating the email!
+> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+> Tested-by: Jeffrey Hugo <quic_jhugo@quicinc.com>
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+> ---
+>  .../devicetree/bindings/opp/opp-v2-qcom-level.yaml         | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
 > 
-> A bit of a cross-tree change. Is there anyone in particular that you'd
-> expect to apply it?
+> diff --git a/Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml b/Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml
+> index a30ef93213c0..b203ea01b17a 100644
+> --- a/Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml
+> +++ b/Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml
+> @@ -34,6 +34,20 @@ patternProperties:
+>          minItems: 1
+>          maxItems: 2
+>  
+> +      qcom,opp-cloop-vadj:
+> +        description: |
+> +          An array of per-thread values representing the closed-loop
+> +          voltage adjustment value associated with this OPP node.
+> +        $ref: /schemas/types.yaml#/definitions/int32-array
 
-No.
+I assume negative values are accepted on purpose.
 
-> If nobody speaks up we can pick it up in networking
-> and send to Linus on Thu.
+Adding these to example would be useful. Anyway:
 
-That would be good.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-Thank you,
-Claudiu Beznea
+Best regards,
+Krzysztof
+
