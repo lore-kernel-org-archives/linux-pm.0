@@ -2,166 +2,119 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1AECC04FDF
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:24:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73FEAC04A6A
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:32:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230051AbjHHQYN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 12:24:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59498 "EHLO
+        id S231464AbjHHQcS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 12:32:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36000 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230020AbjHHQWx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:22:53 -0400
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06D0EA267
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 08:49:32 -0700 (PDT)
-Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-52164adea19so7553010a12.1
-        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 08:49:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691509766; x=1692114566;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=7eF8Rl4Nrv0n3qIaC6c+71IiCQoHSuRD0COK5QFMyP0=;
-        b=T0GYNFvcjJsftapjuQvUPg/qzkH3vO85/M6mYNcCrzODpSJvvlBUlq/QHO4DE3J9tE
-         A72nElFG5IbPkHh0Ofg3zYY/icRkVUonJGHv71wH4tVS9cIQS42foEPzvZ0hz6F8YBJt
-         isaW9ZbjgYTbk8YpBnV6IGASRKs9bhxBXE23y7jP4LvCx4rEFzDzJrxqEIyy+quYEwtY
-         PvXr7dn/uO8O1favLg8QnLN51P+Crj8ipjSjbo6lIALHtd0AvYRhlyTJtJ9HBlB52N50
-         jvh3tgmQ+b/PgzpyiRaq5XZoKB2VCny1dnmpfF1IVWmd+qDJiXIgGNlDGTbALHT1gjo0
-         xEmg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691509766; x=1692114566;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=7eF8Rl4Nrv0n3qIaC6c+71IiCQoHSuRD0COK5QFMyP0=;
-        b=bPg0sLQTk8DenZqkV5HHbLNRznUAEUt3405H7muxV8oMLGIKnKqlwi9jkywOJo/iIo
-         kGxq76/Mn2CdqztgISicx0CN9tTWMMKd7tqbbIK5rSLqq+QnuXjDlGtnI/DQ4fjkvGfw
-         4P2mDBMBGt70S8Hj/r+z3g7WSHeyODaOVC/XMgBVn2VbooWdQ3++8jCZRivkX5TLkBEl
-         FQt8ULRmj5f/rkszMKhQcGssjVhDZZ70OiJDGMoIuHp2LqOrqT3VyyLYLbNh0FOjn1zl
-         vHvGTF45VRORQRc6hunSQEZizf9F8nmV+jhjOluekWjIYTPWh6eIJVeQHLdfiz2YCzOV
-         2Hxg==
-X-Gm-Message-State: AOJu0YxZRbkyA+goJ8W9znjbtE4uyO2VDWy0gnvR6qwnXC1NB/hLYGiX
-        mAuYaJvgxRatWFln6Nu6/yDFF8tVcDMbNuj9rME=
-X-Google-Smtp-Source: AGHT+IEyDsRs/Zlk81B70tQzJ2VvCAwqqLNOe/n6dbEVxMV8oUWml9e5yDCmumsusfydc9mP+oYysw==
-X-Received: by 2002:a05:6512:1103:b0:4fe:279b:8a02 with SMTP id l3-20020a056512110300b004fe279b8a02mr9262600lfg.67.1691495019651;
-        Tue, 08 Aug 2023 04:43:39 -0700 (PDT)
-Received: from [192.168.1.101] (abxi185.neoplus.adsl.tpnet.pl. [83.9.2.185])
-        by smtp.gmail.com with ESMTPSA id j20-20020ac253b4000000b004fbdba4b075sm1861679lfh.57.2023.08.08.04.43.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Aug 2023 04:43:38 -0700 (PDT)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 08 Aug 2023 13:43:34 +0200
-Subject: [PATCH v3 03/10] interconnect: qcom: icc-rpm: Let nodes drive
- their own bus clock
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230726-topic-icc_coeff-v3-3-dee684d6cdd2@linaro.org>
-References: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
-In-Reply-To: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691495013; l=3111;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=8JDjpAr7N9o+Ldc42lWfgA5mVZfE1TEXPiQOh91fLVQ=;
- b=YVAatYh7xnAWvBz8CbkBbjpEVXXX/ocZeGoh4gETy6ScPffEddtOjrccwL7B7bBTyuuFZ4fhm
- mJZhqrcP3X9CGIZcoGsq1+Yz4R+eRQNJc8oAC2ZeWOd3m7gnL20DT0x
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+        with ESMTP id S232917AbjHHQbA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:31:00 -0400
+Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BBB231394F;
+        Tue,  8 Aug 2023 08:51:39 -0700 (PDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailout.west.internal (Postfix) with ESMTP id 92B0432007F1;
+        Tue,  8 Aug 2023 10:55:22 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Tue, 08 Aug 2023 10:55:23 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:content-type:date:date:from:from:in-reply-to
+        :in-reply-to:message-id:mime-version:references:reply-to:sender
+        :subject:subject:to:to; s=fm3; t=1691506522; x=1691592922; bh=qM
+        9p1VvgDQ68BCFOyyrSFNt07dndXA3zR/iN+rXNXdE=; b=EGvnh+3YW6raxmHExk
+        l+oplb/Rkv4u8bnBVVIcjFu0rID8pDt3FBe2kyXloio02v/T9zaVNJxY2sBnlsK8
+        GFxVzE08v6CIZ9RZ0MUZ8vP/vAztFKNM8pGkWBPTZGQeLuEkvolxOfuVQZGlqy9b
+        WTBQfgJqeofF2qeCRrcXdCmPiuAcc3jcQJbssNnsx8ifl3hlXSLqpkoXiF/PE/Wp
+        /LiSQXnH4YSxWIRLN5HhfgJJijd19hloeFviZklGXKvo4/nxaPUz3rV5d5NFlaTI
+        3i91aP7VkQdDAwDRORO0bBpNCwrV2OZZFiUL/Ph+/QswHuVbXcWEh6Q2Uu863IlJ
+        HNgQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm3; t=1691506522; x=1691592922; bh=qM9p1VvgDQ68B
+        CFOyyrSFNt07dndXA3zR/iN+rXNXdE=; b=iiAxVSVeGknxHB2f4jAZeQExin81r
+        4FSRXd4RztPI9LtZbwVufhsvY8z34Hw5Cgq9LQEiaU+B9NGk+6u6Z8UVQGjIO+cp
+        YIMpPs6nfMl+NLnIiTnDnwZRihb40DmaA47cg0HJZBBunIlhh0v1tk7cI4ktMhfB
+        zeotgq0FTeTfgnZeT/wwWi7JMKVv62ozjPpftlpmE1aizCi0DXK7V3ZNqi8xXHel
+        WRNbaHePp4CmPNIWkWT7TVCtq+PsSWArSISk/Nwz8d/8tDXyAq/yeUzgKYr2j/Jk
+        RKKwMflAoXoX5/qaxulswaz2c/pXyXKGjz2/l0qQtRrjwM53xed4VPYrg==
+X-ME-Sender: <xms:WFfSZFn8QXJQBZxWujkpLrCDAvk8i7qOs4jyV1N-xjOY16_67vtKFg>
+    <xme:WFfSZA2E0gb7XUYmwJuW4BGgfSzZMpyd3OoA967QQBGTRN4iajSjU_h7NYlxZhryO
+    dtbRANsvnI0bY-76kM>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrledvgdekudcutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
+    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
+    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
+    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
+    hnugesrghrnhgusgdruggv
+X-ME-Proxy: <xmx:WFfSZLo_ogOFHX6UVKrYjJM2u8mal53AaC42v-l3zX-woAB6nYHNaA>
+    <xmx:WFfSZFmqsaEYE3OM4ZAiuW-lYv4KcxeEgU2YkrdEZibHMa-25xC2Gw>
+    <xmx:WFfSZD1CAeyZjgxeehOdtm1TwIDclaDKbNgPzZdnVWSFucjQnqg6pQ>
+    <xmx:WlfSZBOhyzm43yCApWoWXfPZxu-tKzrSHCK0a3Tgrn40b4obY5epqw>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id 9C683B60089; Tue,  8 Aug 2023 10:55:20 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-624-g7714e4406d-fm-20230801.001-g7714e440
+Mime-Version: 1.0
+Message-Id: <8e6dce33-980a-4e63-9a8b-b681e3f9bf83@app.fastmail.com>
+In-Reply-To: <CAPDyKFo7p=aEWWrW2OGbhN1tFjHanpqjLApzCMipdPSzE+NknQ@mail.gmail.com>
+References: <20230803063703.5659-1-zhuyinbo@loongson.cn>
+ <20230803063703.5659-3-zhuyinbo@loongson.cn>
+ <4fef9725-7aea-43fb-b8ef-d20a4c6d9a68@app.fastmail.com>
+ <CAPDyKFo7p=aEWWrW2OGbhN1tFjHanpqjLApzCMipdPSzE+NknQ@mail.gmail.com>
+Date:   Tue, 08 Aug 2023 16:55:00 +0200
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Ulf Hansson" <ulf.hansson@linaro.org>
+Cc:     "Yinbo Zhu" <zhuyinbo@loongson.cn>,
+        "Rob Herring" <robh+dt@kernel.org>,
+        "Krzysztof Kozlowski" <krzysztof.kozlowski+dt@linaro.org>,
+        "Conor Dooley" <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        soc@kernel.org, "Jianmin Lv" <lvjianmin@loongson.cn>,
+        wanghongliang@loongson.cn, "Liu Peibao" <liupeibao@loongson.cn>,
+        loongson-kernel@lists.loongnix.cn, loongarch@lists.linux.dev,
+        "Liu Yun" <liuyun@loongson.cn>
+Subject: Re: [PATCH v6 2/2] soc: loongson2_pm: add power management support
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-If this hardware couldn't get messier, some nodes are supposed to drive
-their own bus clock.. Presumably to connect to some intermediate
-interface between the node itself and the bus it's (supposed to be)
-connected to.
+On Tue, Aug 8, 2023, at 16:42, Ulf Hansson wrote:
+> On Thu, 3 Aug 2023 at 09:03, Arnd Bergmann <arnd@arndb.de> wrote:
+>>
+>> On Thu, Aug 3, 2023, at 08:37, Yinbo Zhu wrote:
+>> > The Loongson-2's power management controller was ACPI, supports ACPI
+>> > S2Idle (Suspend To Idle), ACPI S3 (Suspend To RAM), ACPI S4 (Suspend To
+>> > Disk), ACPI S5 (Soft Shutdown) and supports multiple wake-up methods
+>> > (USB, GMAC, PWRBTN, etc.). This driver was to add power management
+>> > controller support that base on dts for Loongson-2 series SoCs.
+>> >
+>> > Co-developed-by: Liu Yun <liuyun@loongson.cn>
+>> > Signed-off-by: Liu Yun <liuyun@loongson.cn>
+>> > Co-developed-by: Liu Peibao <liupeibao@loongson.cn>
+>> > Signed-off-by: Liu Peibao <liupeibao@loongson.cn>
+>> > Cc: soc@kernel.org
+>> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
+>> > Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+>>
+>> I'm still waiting for Ulf to take a look here to see whether
+>> this should be in drivers/genpd instead, but he might still
+>> be on vacation.
+>
+> I don't think this belongs in drivers/genpd/ as it's not a genpd
+> provider. Besides that, no further comments from me at this point.
 
-Expand the node struct with the necessary data and hook up the
-allocations & calculations.
+Ok, thanks!
 
-Note that the node-specific AB/IB coefficients contribute (by design)
-to both the node-level and the bus-level aggregation.
+Let's try to finish discussing the suspend-address question
+and merge it through the soc tree once that is resolved then.
 
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
----
- drivers/interconnect/qcom/icc-rpm.c | 27 +++++++++++++++++++++++++++
- drivers/interconnect/qcom/icc-rpm.h |  3 +++
- 2 files changed, 30 insertions(+)
-
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index 8c1bfd65d774..1d3af4e9ead8 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -414,6 +414,33 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- 		qp->bus_clk_rate[QCOM_SMD_RPM_SLEEP_STATE] = sleep_rate;
- 	}
- 
-+	/* Handle the node-specific clock */
-+	if (!src_qn->bus_clk_desc)
-+		return 0;
-+
-+	active_rate = qcom_icc_calc_rate(qp, src_qn, QCOM_SMD_RPM_ACTIVE_STATE);
-+	sleep_rate = qcom_icc_calc_rate(qp, src_qn, QCOM_SMD_RPM_SLEEP_STATE);
-+
-+	if (active_rate != src_qn->bus_clk_rate[QCOM_SMD_RPM_ACTIVE_STATE]) {
-+		ret = qcom_icc_rpm_set_bus_rate(src_qn->bus_clk_desc, QCOM_SMD_RPM_ACTIVE_STATE,
-+						active_rate);
-+		if (ret)
-+			return ret;
-+
-+		/* Cache the rate after we've successfully committed it to RPM */
-+		src_qn->bus_clk_rate[QCOM_SMD_RPM_ACTIVE_STATE] = active_rate;
-+	}
-+
-+	if (sleep_rate != src_qn->bus_clk_rate[QCOM_SMD_RPM_SLEEP_STATE]) {
-+		ret = qcom_icc_rpm_set_bus_rate(src_qn->bus_clk_desc, QCOM_SMD_RPM_SLEEP_STATE,
-+						sleep_rate);
-+		if (ret)
-+			return ret;
-+
-+		/* Cache the rate after we've successfully committed it to RPM */
-+		src_qn->bus_clk_rate[QCOM_SMD_RPM_SLEEP_STATE] = sleep_rate;
-+	}
-+
- 	return 0;
- }
- 
-diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
-index 5e7d6a4fd2f3..f9ef16f570be 100644
---- a/drivers/interconnect/qcom/icc-rpm.h
-+++ b/drivers/interconnect/qcom/icc-rpm.h
-@@ -97,6 +97,7 @@ struct qcom_icc_qos {
-  * @num_links: the total number of @links
-  * @channels: number of channels at this node (e.g. DDR channels)
-  * @buswidth: width of the interconnect between a node and the bus (bytes)
-+ * @bus_clk_desc: a pointer to a rpm_clk_resource description of bus clocks
-  * @sum_avg: current sum aggregate value of all avg bw requests
-  * @max_peak: current max aggregate value of all peak bw requests
-  * @mas_rpm_id:	RPM id for devices that are bus masters
-@@ -110,11 +111,13 @@ struct qcom_icc_node {
- 	u16 num_links;
- 	u16 channels;
- 	u16 buswidth;
-+	const struct rpm_clk_resource *bus_clk_desc;
- 	u64 sum_avg[QCOM_SMD_RPM_STATE_NUM];
- 	u64 max_peak[QCOM_SMD_RPM_STATE_NUM];
- 	int mas_rpm_id;
- 	int slv_rpm_id;
- 	struct qcom_icc_qos qos;
-+	u32 bus_clk_rate[QCOM_SMD_RPM_STATE_NUM];
- };
- 
- struct qcom_icc_desc {
-
--- 
-2.41.0
-
+     Arnd
