@@ -2,144 +2,120 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8FC4C001DB
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:41:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BAA5C04FE1
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:52:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233244AbjHHQlc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 12:41:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41132 "EHLO
+        id S231858AbjHHQw1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 12:52:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38998 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232439AbjHHQkl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:40:41 -0400
-Received: from mail-ot1-x336.google.com (mail-ot1-x336.google.com [IPv6:2607:f8b0:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A25B63A4EE
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 08:54:43 -0700 (PDT)
-Received: by mail-ot1-x336.google.com with SMTP id 46e09a7af769-6bcac140aaaso4523053a34.2
-        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 08:54:43 -0700 (PDT)
+        with ESMTP id S232902AbjHHQvu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:51:50 -0400
+Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3AF154C14B
+        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 08:58:04 -0700 (PDT)
+Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-99c10ba30afso1460473466b.1
+        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 08:58:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691510070; x=1692114870;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kVUMGFTGmIMs9gxfcxcS/lMOKLXcrXhxKdcNy5Sb/7k=;
-        b=WQ4pE5FnmzVQjye3xLE3JL+yOo6Ug6M4LCOtu2zdp6OaIYA8agsznYIgKSC2lJs4IE
-         3cTw2aMB6mL6So1uYmtyvGovPugiVmRaNVJGdGF8ihRcmt9zyA7TIm3zFICAYG5i3hEB
-         yh/ERHnvJKb2hXfYSyY3f63ic40kAvE7CGpW/AK7e/49Bp2TZgkkNYPiXHjDPrUhdwF9
-         63Z/hhEY+hmcZkhAepFlTTyHX1/Auxb4b+XLDw+MK3lYZDDp5Mlr05r/CWFsNwgE/0/S
-         zzo4F1dONQ3/+jQN0iRy+zmw/ELXeA2ufyGHh+ar+uO/7ghyC25n3NECxK2MBKm14r0Q
-         2ZGw==
+        d=linaro.org; s=google; t=1691510267; x=1692115067;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=gc7oZvOcJDkiBa4MtO2BaU3uRCE2+ug+vLU72IFcWhs=;
+        b=wcUO5V/AwoenJB8WC23DIRzNWQLilMM2OeXfrGWych6OwUQeYRgYtZsCquFE6xgGp7
+         /d4G0aZsYVk+XcLPE5fJs76RgwwKb8dH+kPqnb+aegRvNIDN5M8xdusVRJiV+u4Gp2h/
+         7Y4rVrrL1AQJPU50AJO2ZPsli6pCDhkh1Y0O3nHaoEwKfxgbcKlxCht6VqwNwAzrAIr/
+         fWGv6mx1idtDBsVVWGUaczobAOig7qrICs+OUwrTjbVSd48JXeSQA7viDWNGWXsWgUoh
+         ZPdGRIceHZbyw5mTbG4D0hEpMg37BrEX6jj0SvQFlkbdwGj+/c2Y3xNrurNJAFuu4qd+
+         5e0Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691510070; x=1692114870;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1691510267; x=1692115067;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=kVUMGFTGmIMs9gxfcxcS/lMOKLXcrXhxKdcNy5Sb/7k=;
-        b=hEQum+R0z/M3O0v2B3fUwa+R7OK1qAnSYDX/QujVNFqqY5yyxbvIr7Cfa61Lcj/2pj
-         yfi2Rb6dJAIZyJKqiQghg8jOY40euTGCNjj+yrqm4B7rqJFU2QUiP+X5ntEdzbAybD47
-         xRBiAjfvEb6IahJhRxZ3YsViCTIIjA7lcRzuHreg12DpEQ9Kx2P4Tg9CXkGWu5UGeuK3
-         uPvSkCYgXMwIyTDgZ8K9cZobsSQapCoVfSpLg73D3zKyPJaDn5pPdcW5QSBr1gLMWZJV
-         j8vpx+pdmWRYsjM2d5bnJj8/i04xUhAq5WXCdALn58MHJcmJrCzgpTtrp3fcxPNbE1xB
-         BmSA==
-X-Gm-Message-State: AOJu0YwQxlqe6/OkXqLQIc0/llFtCH8XYV5Mr7/JSF6RriZp8IiUSbc+
-        mc5UsNgosUcL1/3lM3uk2ikcOHc9hvT0BFVcevAqf0fwMGBarSH0wI0=
-X-Google-Smtp-Source: AGHT+IFi15UXHlOjBafsncghPZ+CygvrFkHgT7nBLzL88m86kzLUpO8Z8UvMrvXkkHrJrBoiNDOqbizpom1bnSTUbwg=
-X-Received: by 2002:a05:6902:30d:b0:d43:9eae:52b8 with SMTP id
- b13-20020a056902030d00b00d439eae52b8mr9684261ybs.10.1691504305098; Tue, 08
- Aug 2023 07:18:25 -0700 (PDT)
+        bh=gc7oZvOcJDkiBa4MtO2BaU3uRCE2+ug+vLU72IFcWhs=;
+        b=ljQLBWcGRX/J6juv9zE12pGHc3DY8W0wFCwkURdbtPM5F1EQEjAwsQO0JagOTdUyU5
+         ZhwAlaumTVJCfXYDKm58gtZw13YEAJrqXoX5ZcB7k1h4Hrgv5A/XFVTqSXJQMinuHc+F
+         /51HYDmd0JPkQ1uiO+PZ0BebBCyY0gZAOQLuMCF+1KFIswLVnWnY22r1Rv+1SqIbXf5n
+         Tkp+9awDDQq97Qx1gu1SXO2z/KpqaR0RTnYmWDYmxSAySb5ep3l2DthAPgBF9F9h2quP
+         srB2Z0hYLmWrRdnUC7jVXvb63U2SDqC9OqojeRGVFE+NQ4dF52DSaJC51Tf/w5KMlB2M
+         cpBQ==
+X-Gm-Message-State: AOJu0Ywaeke+5bM/1Yx17ukKbgiHO0xwZQf62Eanx17rsYgK4wiPM1mR
+        zzu2Mu3S6rzVydoQZbFgQFsWxGGxJoAjfOmTUO0=
+X-Google-Smtp-Source: AGHT+IGIViV1UeCd6ELmCSkLWBe6UBi27tTfxw7uswsQ8FS8N7MqPD6g+EmoJwhsZKgDL3YjzXYphA==
+X-Received: by 2002:a05:6512:159c:b0:4fe:8be:6065 with SMTP id bp28-20020a056512159c00b004fe08be6065mr3416540lfb.5.1691495023110;
+        Tue, 08 Aug 2023 04:43:43 -0700 (PDT)
+Received: from [192.168.1.101] (abxi185.neoplus.adsl.tpnet.pl. [83.9.2.185])
+        by smtp.gmail.com with ESMTPSA id j20-20020ac253b4000000b004fbdba4b075sm1861679lfh.57.2023.08.08.04.43.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Aug 2023 04:43:42 -0700 (PDT)
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Date:   Tue, 08 Aug 2023 13:43:37 +0200
+Subject: [PATCH v3 06/10] interconnect: qcom: qcm2290: Set AB coefficients
 MIME-Version: 1.0
-References: <20230703085555.30285-1-quic_mkshah@quicinc.com>
-In-Reply-To: <20230703085555.30285-1-quic_mkshah@quicinc.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Tue, 8 Aug 2023 16:17:48 +0200
-Message-ID: <CAPDyKFrp6WQYW7uKwPLrWROEiXHCjHd6Y1O9yitZ6fJE7EO7bg@mail.gmail.com>
-Subject: Re: [RESEND v4 0/3] Use PSCI OS initiated mode for sc7280
-To:     andersson@kernel.org, rafael@kernel.org
-Cc:     Maulik Shah <quic_mkshah@quicinc.com>, dianders@chromium.org,
-        swboyd@chromium.org, wingers@google.com, daniel.lezcano@linaro.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, sudeep.holla@arm.com,
-        jwerner@chromium.org, quic_lsrao@quicinc.com,
-        quic_rjendra@quicinc.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230726-topic-icc_coeff-v3-6-dee684d6cdd2@linaro.org>
+References: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+In-Reply-To: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@linaro.org>
+X-Mailer: b4 0.12.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691495013; l=1336;
+ i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
+ bh=gKAcxl1xTWi9i07xf8cB7oRhF8MPHDTJc+D4hon02Tw=;
+ b=/bhzfzY1MtFGMTp+JULsYOGnTOJIwGJE49F01H2p/MlyJ9JEx0rnCkANXo4at1X8Tkomohnvh
+ OqvdFmQjUgZBW8klOIAOfgdxaBhjsxg6abuLyt5iCorjdgBVtxRUJaA
+X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
+ pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Bjorn, Rafael,
+Some buses need additional manual adjustments atop the usual
+calculations. Fill in the missing coefficients.
 
-On Mon, 3 Jul 2023 at 10:56, Maulik Shah <quic_mkshah@quicinc.com> wrote:
->
-> This is resend of v4 with patch1 and patch2 Cced to stable kernel.
->
-> Changes in v4:
-> - Add missing s-o-b line and reviewed by in patch 1
-> - Address ulf's comments for error handling in patch 2
+Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+---
+ drivers/interconnect/qcom/qcm2290.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-This has been ready to be queued for quite a while and I have been
-nagging you about it too. Sorry about that. :-)
+diff --git a/drivers/interconnect/qcom/qcm2290.c b/drivers/interconnect/qcom/qcm2290.c
+index 52a6eb32e832..42fa01c66e73 100644
+--- a/drivers/interconnect/qcom/qcm2290.c
++++ b/drivers/interconnect/qcom/qcm2290.c
+@@ -1201,6 +1201,7 @@ static const struct qcom_icc_desc qcm2290_bimc = {
+ 	.regmap_cfg = &qcm2290_bimc_regmap_config,
+ 	/* M_REG_BASE() in vendor msm_bus_bimc_adhoc driver */
+ 	.qos_offset = 0x8000,
++	.ab_coeff = 153,
+ };
+ 
+ static struct qcom_icc_node * const qcm2290_cnoc_nodes[] = {
+@@ -1327,6 +1328,7 @@ static const struct qcom_icc_desc qcm2290_mmnrt_virt = {
+ 	.bus_clk_desc = &mmaxi_0_clk,
+ 	.regmap_cfg = &qcm2290_snoc_regmap_config,
+ 	.qos_offset = 0x15000,
++	.ab_coeff = 142,
+ };
+ 
+ static struct qcom_icc_node * const qcm2290_mmrt_virt_nodes[] = {
+@@ -1342,6 +1344,7 @@ static const struct qcom_icc_desc qcm2290_mmrt_virt = {
+ 	.bus_clk_desc = &mmaxi_1_clk,
+ 	.regmap_cfg = &qcm2290_snoc_regmap_config,
+ 	.qos_offset = 0x15000,
++	.ab_coeff = 139,
+ };
+ 
+ static const struct of_device_id qcm2290_noc_of_match[] = {
 
-To help out, I have queued up patch 1 and patch 2 for fixes, through
-my new genpd tree [1].
+-- 
+2.41.0
 
-Bj=C3=B6rn, please pick patch3 for v6.6.
-
-Kind regards
-Uffe
-
-[1]
-git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git fixes
-
->
-> Changes in v3:
-> - Add new change to provide helper function dt_idle_pd_remove_topology()
-> - Address ulf's comments for error handling
-> - Add reviewed by ulf for devicetree change
->
-> Changes in v2:
-> - Add new change to Move enabling OSI mode after power domains creation
-> - Fix compatible string to domains-idle-states for cluster idle state.
-> - Update cover letter with some more details on OSI and PC mode
->   comparision
->
-> The dependency [2] is now merged in trustedfirmware project.
->
-> Stats comparision between OSI and PC mode are captured at [3] with
-> usecase
-> details, where during multiple CPUs online the residency in cluster idle
-> state is better with OSI and also inline with single CPU mode. In PC
-> mode
-> with multiple CPUs cluster idle state residency is dropping compare to
-> single CPU mode.
->
-> Recording of this meeting is also available at [4].
->
-> This change adds power-domains for cpuidle states to use PSCI OS
-> initiated mode for sc7280.
->
-> This change depends on external project changes [1] & [2] which are
-> under review/discussion to add PSCI os-initiated support in Arm Trusted
-> Firmware.
->
-> I can update here once the dependency are in and change is ready to
-> merge.
->
-> [1] https://review.trustedfirmware.org/q/topic:psci-osi
-> [2] https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/19487
-> [3] https://www.trustedfirmware.org/docs/PSCI-OS-initiated.pdf
-> [4] https://www.trustedfirmware.org/meetings/tf-a-technical-forum
->
-> Maulik Shah (3):
->   cpuidle: dt_idle_genpd: Add helper function to remove genpd topology
->   cpuidle: psci: Move enabling OSI mode after power domains creation
->   arm64: dts: qcom: sc7280: Add power-domains for cpuidle states
->
->  arch/arm64/boot/dts/qcom/sc7280.dtsi  | 98 ++++++++++++++++++++-------
->  drivers/cpuidle/cpuidle-psci-domain.c | 39 ++++-------
->  drivers/cpuidle/dt_idle_genpd.c       | 24 +++++++
->  drivers/cpuidle/dt_idle_genpd.h       |  7 ++
->  4 files changed, 117 insertions(+), 51 deletions(-)
->
-> --
-> 2.17.1
->
