@@ -2,140 +2,116 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC630C001B0
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 18:37:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA3F9C001B0
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 18:56:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229642AbjHHShN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 14:37:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51676 "EHLO
+        id S232883AbjHHS4H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 14:56:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45430 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230518AbjHHSgx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 14:36:53 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53E75C3BD0
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 10:58:48 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id DF45262982
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 17:58:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 540A4C433CA
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 17:58:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1691517527;
-        bh=4aUfVsdfQc1CQvlKkyGFnW8cmCnp7nCmItC6CEI9a74=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=KMsm7WZ2FRFwWwwqR4/P7PkqJ64Uc4Z/xJw/O9kgLr46Gt8ocxaA2xiXa1dPyChtW
-         nF0dOyMQbx1c5r2Zk/DjVCHg7JAXb4P9Op60z+BBsXNRBklhuvVpzMK0K6U3fCq69O
-         ZPCtgVm7WtWeMRISdQtMrL+UfDb2iehqtGWpWULMv00dJod/VBU3hO911xJ1yDknpg
-         UT3Xu4ZicmZGYLXL31gLeyC45z8TvjdCykvTI0bG3e3xVlgrAkg/CkxFoEGrp3gewN
-         stMj0Dky+lAKIVG2m2lAF2h/Q3+bWDnAnY1MtEN+Q7r1nzgelR3xNzzJ9jWnJgUl8p
-         afyn0BQ6g5gZQ==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id 42016C53BD3; Tue,  8 Aug 2023 17:58:47 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 215800] amd-pstate does not allow to set arbitrary maximum CPU
- frequency above 2200MHz for a desktop Zen 3 CPU
-Date:   Tue, 08 Aug 2023 17:58:46 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: aros@gmx.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-215800-137361-ILCxiNGCdP@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-215800-137361@https.bugzilla.kernel.org/>
-References: <bug-215800-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        with ESMTP id S232936AbjHHSzm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 14:55:42 -0400
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C9F96D2AB
+        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 10:14:03 -0700 (PDT)
+Received: by mail-ed1-x533.google.com with SMTP id 4fb4d7f45d1cf-5231f439968so6149010a12.0
+        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 10:14:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1691514842; x=1692119642;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=4FqN2Sq9j6IVseScqHZxUGnTrukPTjl33EKA90GBaFU=;
+        b=k3IpoE/wi9QNbbNu3wYkKHOg6Il+3yv1qZeWYTorIhov8h2f8Pko9rs7jt4UCVWOd+
+         r8Hp+VC73ZYkNpWbRs7TiWudhNUClInOK6Cqm/x4NSfNaHzPBIZLdteaWxBYaOGkfBlJ
+         oFb9RdhyfTW8MWsaiO01En0tGXbKOu/sxllb9BENoUpQxXQIu/2sj9QPE0yFAF0TNgYl
+         J43xIxJeh8n80S9DGM+VGEedrsCGzOmRt66bzxbgrUj9/byWQWlkWnSPlt+StAAFILGk
+         6xxMFQbtbZQggilBrqE9uWi3OAxmhwUCHrCjCTjSZ4l0uPZWRxA8B2KuCSvtv28BVGcu
+         6KxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691514842; x=1692119642;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=4FqN2Sq9j6IVseScqHZxUGnTrukPTjl33EKA90GBaFU=;
+        b=FKf9t9GI7d+t3hgKpE6e/F+5H26NqIKsznhcicLlPm/ceu3WI2UC4i3KBfkrOsuS7k
+         8jwKPNGOvg0bfvgqMkPG1geBe0PUEi58L9QUzh5Re1SznMiUzMuXIDjZ/FVKIKYxxJZN
+         WVScv+yQWBTgxLrg3uIMNVcEQ2hqyI0SSW0Stf2MhAORNWgtGbrjxVQFQRlBYVQtJ+zQ
+         Xsq/Rdjmff4H06hbT6sTA0QDbP9icFb+15zg6Yy7lssH6RhSIxqKJG9SrKYutD9wcSz1
+         XhCJFA5bv5JJnEhCDZnewHnQB8ynEblDeDSRFoG4yc20q46Tz7+59ysWAGWB8MqHmcK5
+         zOdw==
+X-Gm-Message-State: AOJu0YzaLz9+Tt17WqCwUiPkqgvwDNPGa8GPmUiNoTMXeEPmoiR2nGOa
+        HbuJDMfLFQTF/lXat3//RultJxnzBixwCdBJsrc=
+X-Google-Smtp-Source: AGHT+IFjkaP4oTfJ0Ri8v7HT5s6bsxs5Tqj1AvIF9Kb+lyIVxIbcmy/tMf8ddbWT77OvdXJajWXRUA==
+X-Received: by 2002:a05:6512:1598:b0:4fb:8bea:f5f6 with SMTP id bp24-20020a056512159800b004fb8beaf5f6mr10188044lfb.34.1691495024243;
+        Tue, 08 Aug 2023 04:43:44 -0700 (PDT)
+Received: from [192.168.1.101] (abxi185.neoplus.adsl.tpnet.pl. [83.9.2.185])
+        by smtp.gmail.com with ESMTPSA id j20-20020ac253b4000000b004fbdba4b075sm1861679lfh.57.2023.08.08.04.43.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Aug 2023 04:43:43 -0700 (PDT)
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Date:   Tue, 08 Aug 2023 13:43:38 +0200
+Subject: [PATCH v3 07/10] interconnect: qcom: qcm2290: Update EBI channel
+ configuration
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230726-topic-icc_coeff-v3-7-dee684d6cdd2@linaro.org>
+References: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+In-Reply-To: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@linaro.org>
+X-Mailer: b4 0.12.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691495013; l=1320;
+ i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
+ bh=+JCeGo0Q7sjfDzWjkGg+7ykqgtb42uWuVVMLb5STXRI=;
+ b=kP/Ep84xH1Hu5VyTi/X5EdDQntTJIZBSHWF06vlxwCDpZi0bIpkqQ5Da38SWKULLxX6Ar2wu5
+ ZB0IYGCkYwDBC4GBGBIEMmpmnalm/DCz4COpfhANKRfGNaIkAba4j/2
+X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
+ pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D215800
+QCM2290 can support two memory configurations: single-channel, 32-bit
+wide LPDDR3 @ up to 933MHz (bus clock) or dual-channel, 16-bit wide
+LPDDR4X @ up to 1804 MHz. The interconnect driver in its current form
+seems to gravitate towards the first one, however there are no LPDDR3-
+equipped boards upstream and we still don't have a great way to discern
+the DDR generations on the kernel side.
 
---- Comment #31 from Artem S. Tashkinov (aros@gmx.com) ---
-Created attachment 304797
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D304797&action=3Dedit
-Power Options Processor Power Management in Windows.png
+To make DDR scaling possible on the only currently-supported 2290
+board, stick with the LPDDR4X config by default. The side effect on any
+potential LPDDR3 board would be that the requested bus clock rate is
+too high (but still capped to the firmware-configured FMAX).
 
-(In reply to Mario Limonciello (AMD) from comment #30)
-> > It's a little bit confusing though, as in Windows I can perfectly set
-> minimum
-> > and maximum CPU frequencies and I totally expected this driver to actua=
-lly
-> > allow that.
->=20
-> I suppose I'm confused as well.  Windows should be using EPP as well, and
-> various software constructs like the power slider will be changing that b=
-ias.
->=20
-> Maybe you can better explain exactly what you do in Windows and exactly w=
-hat
-> is happening.
+Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+---
+ drivers/interconnect/qcom/qcm2290.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-In Windows I'm free to set minimum and maximum CPU clock speeds to my likin=
-g.
+diff --git a/drivers/interconnect/qcom/qcm2290.c b/drivers/interconnect/qcom/qcm2290.c
+index 42fa01c66e73..3bd7ad67c569 100644
+--- a/drivers/interconnect/qcom/qcm2290.c
++++ b/drivers/interconnect/qcom/qcm2290.c
+@@ -678,7 +678,8 @@ static struct qcom_icc_node mas_gfx3d = {
+ static struct qcom_icc_node slv_ebi1 = {
+ 	.name = "slv_ebi1",
+ 	.id = QCM2290_SLAVE_EBI1,
+-	.buswidth = 8,
++	.buswidth = 4,
++	.channels = 2,
+ 	.mas_rpm_id = -1,
+ 	.slv_rpm_id = 0,
+ };
 
-Why is it necessary?
+-- 
+2.41.0
 
-1) For instance you want to do benchmarking at certain clock speeds which a=
-re
-not known to be hitting TDP/TTP/temperature limits, thus they show the true
-potential of your CPU.
-
-2) For instance you want to make you CPU run cooler with a very precise
-control.
-
->=20
-> > Lastly the documentation mentions:
-> energy_performance_available_preferences,
-> > the file that I don't have.
->=20
-> Eh?  Didn't your above comment show this:
->=20
-> /sys/devices/system/cpu/cpufreq/policy0 $ grep -r .=20
-> energy_performance_available_preferences:default performance
-> balance_performance balance_power power=20
->=20
-> > Lastly there's no boost configuration support which is available both f=
-or
-> > acpi-cpufreq and Intel's native CPPC driver.
->=20
-> Something seems quite wrong if you're not getting boost support.
-> It registers for boost, see
-> https://github.com/torvalds/linux/blob/v6.4/drivers/cpufreq/amd-pstate.
-> c#L1121
-
-Will recheck in 6.4.x soon.
-
->=20
-> > It's worse than acpi-cpufreq from seemingly any PoV. Maybe there are so=
-me
-> > advantages for APUs but on my desktop I only see major disadvantages
->=20
-> I /suspect/ what you'll want to do is change the scaling_governor from
-> 'powersave' to 'performance' for your desktop use case.
-
-These two options are very coarse vs. being simply able to set maximum clock
-speeds.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
