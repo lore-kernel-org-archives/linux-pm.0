@@ -2,93 +2,163 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8223FC001B0
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:08:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0E06C001DB
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:15:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231814AbjHHQIe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 12:08:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40082 "EHLO
+        id S232202AbjHHQO5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 12:14:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57592 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229491AbjHHQGu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:06:50 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FA8172AB;
-        Tue,  8 Aug 2023 08:45:55 -0700 (PDT)
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 378AFccE010043;
-        Tue, 8 Aug 2023 11:25:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-transfer-encoding;
- s=qcppdkim1; bh=u3HXPtQ5KaYyQ0asw28vxjJ1QX+J/JkvsuRQkSzfVxg=;
- b=GY3IFXFGsSQV7hkJfZiGOmuKi+HuYQuTJh1aJBSoKgjho3il9aVJkwYEe4IUu28m8zvT
- 5QZ9qv+KtAsdBKrwJur/x9SqGjnNLAzuuWYO6FsBdHCi69DgjUE1r6ihoUJ5Buf+WHk2
- EtzETFN88woM6v1CZSIIgnrb9eQiH6IToT8HqGBPCuZF2HhOu6586BK5ED9BwlNLP/s+
- R0vijk/UVOMKm0BR2cnJPG1c2Qdqevi7v/hljOgCvtVK7mwq8219ujbFESiULkUfSTpv
- qzaVWHhYiCOz3IMTXUc9FyEdARy3Clh4OzOSwUMciY7s14obCKA92xkt4eXpHj95JG8F Zg== 
-Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3saxbbtm7d-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 08 Aug 2023 11:25:31 +0000
-Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-        by APBLRPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 378BPRgu023077;
-        Tue, 8 Aug 2023 11:25:27 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 3s9fgkb0tr-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 08 Aug 2023 11:25:27 +0000
-Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 378BPRgl023071;
-        Tue, 8 Aug 2023 11:25:27 GMT
-Received: from hu-maiyas-hyd.qualcomm.com (hu-atulpant-hyd.qualcomm.com [10.213.109.143])
-        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 378BPQDJ023070
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 08 Aug 2023 11:25:27 +0000
-Received: by hu-maiyas-hyd.qualcomm.com (Postfix, from userid 3869597)
-        id 5958220F76; Tue,  8 Aug 2023 16:55:26 +0530 (+0530)
-From:   Atul Pant <quic_atulpant@quicinc.com>
-To:     rafael@kernel.org, daniel.lezcano@linaro.org, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-        bristot@redhat.com, vschneid@redhat.com
-Cc:     Atul Pant <quic_atulpant@quicinc.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, quic_ashayj@quicinc.com,
-        quic_rgottimu@quicinc.com, quic_shashim@quicinc.com
-Subject: Prevent RT-throttling for idle-injection threads
-Date:   Tue,  8 Aug 2023 16:55:23 +0530
-Message-Id: <20230808112523.2788452-1-quic_atulpant@quicinc.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S232176AbjHHQNZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:13:25 -0400
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFBDC212C
+        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 08:47:33 -0700 (PDT)
+Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-1bc73a2b0easo13116675ad.0
+        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 08:47:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1691509653; x=1692114453;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=hpGMNxDDvo9T1v6v+RkICvblRXd4nkGe288y9gyoNGg=;
+        b=OMoT8gYdXBR3P4DHHf7l6UARjohyP+3i/vkEzNYanul6tF0OZaGlNGS9BdAY/cAbzn
+         4xvtrYw0LV2JAP6ZCJkx0zuRV30d36+WYSqU8SltQ/dSfonAX4/ia7Y6dE+G5cfZZra/
+         TMMxycTPwpTtNCTaIF0XqF15MYB3RH5KWO0ere+cQg7qJ67BybLnWDUyQKIsFoo7gvly
+         y+XdSNXfCZe06dHIGF/DpMrkP9XGig+7IRxzDfWyv6UCXyZfeyBnBS5Nh8hP01ToMF5K
+         2l6NUX4h1LUr4AnOjiqphHr0oIev9CW5o3EsfKKhhFaPt4nxNVkAbc0a4hS6dvtP9FQ1
+         uHIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691509653; x=1692114453;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=hpGMNxDDvo9T1v6v+RkICvblRXd4nkGe288y9gyoNGg=;
+        b=At9MhtUF1SNUNjZ+elP63nNJVr86hlrfwusxIfx1S7OZ0WsgGkKwnGcNTV3vauYkRo
+         BPV1Fv2cxwCJn2BxS2Kw/5ogDYlmYtu0feibL7v8Qq+G3DhkbNTIWtztc2E/zZtTSXCq
+         jbI2s4np5aMFmBk366Z2OAUm8Yu1+bBX5yMzyXQIQBOgSW90S86GX6dTf8+k7JumWaFQ
+         shwFzNkzePq2uJFzjCprHYF5vkwFyzrGu7sl2qR4dJmy1Boe7uM/nlgwnOnoXTymkNrj
+         u6JDuUjhzwv/rjZsDqU1YHW6jeWD5BCCLhzh6jkQoS8JmtUPJBCsXdSqobX5xne/p6n7
+         f0hA==
+X-Gm-Message-State: AOJu0YwxYdqM7fufrcmoOOCHlSaxsG+eLJhXve39xrhjoh/UgTDNEM3d
+        UPkFqXFwlq1r5MEVY4/MZYqvUEgUKZUlPInhsUMZBL155cHfagR2
+X-Google-Smtp-Source: AGHT+IEQ0B+zFHwu6lwq9ShhqNgqoAUPtqEjQdph6xX3V3JEjoRX0Qpcb7z9XgUddzrDP+CIGW7eIVIsmdM1+EjIYR4=
+X-Received: by 2002:a25:df82:0:b0:d47:4ed4:43eb with SMTP id
+ w124-20020a25df82000000b00d474ed443ebmr10840010ybg.63.1691505778468; Tue, 08
+ Aug 2023 07:42:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: aUYgilCuChag0pinbOGjaSfk7kdsi_NH
-X-Proofpoint-GUID: aUYgilCuChag0pinbOGjaSfk7kdsi_NH
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-08-08_09,2023-08-08_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=913 bulkscore=0
- spamscore=0 clxscore=1011 impostorscore=0 malwarescore=0 phishscore=0
- priorityscore=1501 adultscore=0 suspectscore=0 mlxscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2308080101
+References: <20230803063703.5659-1-zhuyinbo@loongson.cn> <20230803063703.5659-3-zhuyinbo@loongson.cn>
+ <4fef9725-7aea-43fb-b8ef-d20a4c6d9a68@app.fastmail.com>
+In-Reply-To: <4fef9725-7aea-43fb-b8ef-d20a4c6d9a68@app.fastmail.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Tue, 8 Aug 2023 16:42:22 +0200
+Message-ID: <CAPDyKFo7p=aEWWrW2OGbhN1tFjHanpqjLApzCMipdPSzE+NknQ@mail.gmail.com>
+Subject: Re: [PATCH v6 2/2] soc: loongson2_pm: add power management support
+To:     Arnd Bergmann <arnd@arndb.de>
+Cc:     Yinbo Zhu <zhuyinbo@loongson.cn>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        soc@kernel.org, Jianmin Lv <lvjianmin@loongson.cn>,
+        wanghongliang@loongson.cn, Liu Peibao <liupeibao@loongson.cn>,
+        loongson-kernel@lists.loongnix.cn, loongarch@lists.linux.dev,
+        Liu Yun <liuyun@loongson.cn>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all,
-We are trying to implement a solution for thermal mitigation by using idle injection on CPUs. However we face some limitations with the current idle-inject framework.
-As per our need, we want to start injecting idle cycles on a CPU for indefinite time (until the temperature/power of the CPU falls below a threshold). This will help
-to keep the hot CPUs in the sleep state until we see improvement in temperature/power. If we set the idle duration to a large value or have an idle-injection ratio of 100%,
-then the idle-inject RT thread suffers from RT throttling. This results in the CPU exiting from the sleep state and consuming some power.
+On Thu, 3 Aug 2023 at 09:03, Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> On Thu, Aug 3, 2023, at 08:37, Yinbo Zhu wrote:
+> > The Loongson-2's power management controller was ACPI, supports ACPI
+> > S2Idle (Suspend To Idle), ACPI S3 (Suspend To RAM), ACPI S4 (Suspend To
+> > Disk), ACPI S5 (Soft Shutdown) and supports multiple wake-up methods
+> > (USB, GMAC, PWRBTN, etc.). This driver was to add power management
+> > controller support that base on dts for Loongson-2 series SoCs.
+> >
+> > Co-developed-by: Liu Yun <liuyun@loongson.cn>
+> > Signed-off-by: Liu Yun <liuyun@loongson.cn>
+> > Co-developed-by: Liu Peibao <liupeibao@loongson.cn>
+> > Signed-off-by: Liu Peibao <liupeibao@loongson.cn>
+> > Cc: soc@kernel.org
+> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> > Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+>
+> I'm still waiting for Ulf to take a look here to see whether
+> this should be in drivers/genpd instead, but he might still
+> be on vacation.
 
-The above situation can be avoided, if we can prevent RT throttling on the injected CPU. With the currently available sysctl parameters, sched_rt_runtime_us and sched_rt_period_us,
-we can prevent RT throttling by either setting sched_rt_runtime_us equal to sched_rt_period_us or, setting sched_rt_runtime_us to -1. Since these parameters are system wide,
-so it will affect the RT tasks on non idle-injected CPUs as well. To overcome this, will it be feasible to have these two parameters on a per CPU basis? This will allow to selectively
-disable RT throttling on idle-injected CPUs.
+I don't think this belongs in drivers/genpd/ as it's not a genpd
+provider. Besides that, no further comments from me at this point.
 
+Kind regards
+Uffe
 
-Thanks & Regards
-Atul
+>
+> A few minor comments from me in the meantime:
+>
+> > +#define loongson2_pm_readw(reg)              readw(loongson2_pm.base + reg)
+> > +#define loongson2_pm_readl(reg)              readl(loongson2_pm.base + reg)
+> > +#define loongson2_pm_writew(val, reg)        writew(val, loongson2_pm.base +
+> > reg)
+> > +#define loongson2_pm_writel(val, reg)        writel(val, loongson2_pm.base +
+> > reg)
+>
+> I would prefer these to be 'static inline' functions rather than
+> macros, or you can just open-code them, as each macro is only
+> used once at the moment.
+>
+> > +static irqreturn_t loongson2_pm_irq_handler(int irq, void *dev_id)
+> > +{
+> > +     u16 status = loongson2_pm_readw(LOONGSON2_PM1_STS_REG);
+> > +
+> > +     if (!loongson2_pm.suspended && (status & LOONGSON2_PM1_PWRBTN_STS)) {
+> > +             pr_info("Power Button pressed...\n");
+>
+> The message is probably more appropriate as a pr_debug() than
+> pr_info().
+>
+> > +static int __maybe_unused loongson2_pm_suspend(struct device *dev)
+> > +{
+> > +     loongson2_pm.suspended = true;
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +static int __maybe_unused loongson2_pm_resume(struct device *dev)
+> > +{
+> > +     loongson2_pm.suspended = false;
+> > +
+> > +     return 0;
+> > +}
+> > +static SIMPLE_DEV_PM_OPS(loongson2_pm_ops, loongson2_pm_suspend,
+> > loongson2_pm_resume);
+>
+> Please change this to DEFINE_SIMPLE_DEV_PM_OPS() and remove the
+> __maybe_unused, this is what all drivers should have these days.
+>
+> > +
+> > +static int loongson2_pm_probe(struct platform_device *pdev)
+> > +{
+> > +     int irq, retval;
+> > +     u64 suspend_addr;
+> > +     struct device *dev = &pdev->dev;
+> > +
+> > +     loongson2_pm.base = devm_platform_ioremap_resource(pdev, 0);
+> > +     if (IS_ERR(loongson2_pm.base))
+> > +             return PTR_ERR(loongson2_pm.base);
+> > +
+> > +     irq = platform_get_irq(pdev, 0);
+> > +     if (irq < 0)
+> > +             return irq;
+> > +
+> > +     if (!device_property_read_u64(dev, "loongson,suspend-address",
+> > &suspend_addr))
+> > +             loongson_sysconf.suspend_addr = (u64)phys_to_virt(suspend_addr);
+> > +     else
+>
+> Having a custom "loongson,suspend-address" property here feels wrong
+> to me. Can't this be moved into the "regs" property that holds
+> the other mmio registers?
+>
+>     Arnd
