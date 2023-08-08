@@ -2,154 +2,170 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1EE5C001B0
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 17:47:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08566C001B0
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 17:49:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231764AbjHHRrO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 13:47:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42334 "EHLO
+        id S234994AbjHHRtq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 13:49:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36774 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230355AbjHHRpx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 13:45:53 -0400
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B26CAD14A
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 09:20:51 -0700 (PDT)
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-3fe4cdb727cso39163225e9.0
-        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 09:20:51 -0700 (PDT)
+        with ESMTP id S233894AbjHHRtK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 13:49:10 -0400
+Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E163B0E34
+        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 09:21:52 -0700 (PDT)
+Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-99c10ba30afso696166b.1
+        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 09:21:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691511621; x=1692116421;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=nuIvq2h/BPP3D5cIRCobslq+P4j3Ukg7i7rEMjlM13A=;
-        b=VK+97OZsOlMh0gtAleSSv2OK+2/K/V+DlFAn/Yx0ld69fT4vzXMxWZxDvPgiYdO3/H
-         EYKIV8bhAStmQFNUrnKvWCFrIhkUyD5fG4tg93rpR5eZX0uUdekdlbacngUm1HgkOvee
-         j3xGX7TGEu0Ox+5ABsqHbYHW9VJj+B+tZI4YagADW9za223aZWbfC5E8/rzcE1BaReKx
-         GwKRPJ0cfKZLaRU5YkaltQpQQOlgE9CrrOBphU0Nbk6ZvnKYK8TbbQscoGaWvFohQTIe
-         z5Kdqtu78jFYphosDhqCLF7HLsZ/ADIjFEr94dXSROjKm/3SyelmMuE0GYrZCAlkpoD8
-         EtMg==
+        d=linaro.org; s=google; t=1691511683; x=1692116483;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=9dpheXJF+49EUivNSUbko8L8HswCx+ro843IAYVBLSQ=;
+        b=OaY72B9rUlvrBkRbBbpQCAvKzGug406iADhVhpiCKMqzUirGE9Dq3s9v+d/umGI9X1
+         /AOFq6kq/vo1VbenPlg7w+bbWNA/U9LW0swtPLW4Ezo7+mIVii9S4KgY6YZ2uo7VX+Ti
+         80hI/ZlFQU5lCul1tvy1Hir1YaSpemsE3qOaRVEQ/tCruSr8D8JioPdEtKLKKggEH3vL
+         ReSZj8SF1JGyH3+3YxQyJDOwe4C298Y7sqDqL4BeJ0SM79XrvLPx5D2NwDCCjXwEzLa0
+         hI+HoAHeMP+1EKCf1VzZYSot78qIHfvAi5FgHAtcx1Fp6xzgG6lXA4QjfpdqVsz6eq0U
+         n9zw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691511621; x=1692116421;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=nuIvq2h/BPP3D5cIRCobslq+P4j3Ukg7i7rEMjlM13A=;
-        b=KY9lilZG0WhYAM9EJa51sGkKVIY71wrq3+1zrCl2N5ZemqkRLg7U9VkYT7Hagkeswx
-         vYPjR5V4BoaICjyy+yX3wlgEV9QaOTnBaPXhqCctBw2azy1RtJO34GyRGRPmFIPf18ka
-         FvV5iQIuBEA9cURqnWMKpvD7HNCVDdCnTf0Kn1vp0+KPMZ5+ihLepQwjMrLn8ln1gAxr
-         KU3BDcsbJhdmkmedzoLz+0MXAxQQ3Qle59rHiOcI7qCYwIzLtaLyqLkD3ZpdmSS8pNRz
-         QSDTchSrWV/Wgq2yHekybD/DL8R5zAIk9bG1gRbyjoK53tcHXk9OIUwEIBMZngufk9Mk
-         Psew==
-X-Gm-Message-State: AOJu0YyWWZ6LoP7sQorDdGHZIeyJerHTRpgktIe/G8Dk7PFUOMBOu7Ar
-        D1V4fPXfGy7i4CuIICGur7rUfQ==
-X-Google-Smtp-Source: AGHT+IGG6cx4NxloHY9qu9bkpwF/v/G7D1G7UI779iSRivcmdLz5bmQnplAjeu12YJonXRuef1UCvA==
-X-Received: by 2002:a5d:4574:0:b0:317:ef17:2351 with SMTP id a20-20020a5d4574000000b00317ef172351mr3658176wrc.65.1691511621014;
-        Tue, 08 Aug 2023 09:20:21 -0700 (PDT)
-Received: from [192.168.1.20] ([178.197.222.113])
-        by smtp.gmail.com with ESMTPSA id a5-20020a5d4565000000b0030647449730sm14050046wrc.74.2023.08.08.09.20.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 08 Aug 2023 09:20:20 -0700 (PDT)
-Message-ID: <41d46805-c5a1-6c0d-6b5f-caf499d10d4a@linaro.org>
-Date:   Tue, 8 Aug 2023 18:20:18 +0200
+        d=1e100.net; s=20221208; t=1691511683; x=1692116483;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=9dpheXJF+49EUivNSUbko8L8HswCx+ro843IAYVBLSQ=;
+        b=da0Aw33ttWZFHxmCXyiZgQatZI2/EUpfZurzf9GATG8j2Bt6L1z0R1pFlyxbucdrSO
+         S/ukhiWRwP1n+GyF+LVGsUQL45hT4zfn1xnTuCZHkTbEHoSrCo5lLLPvb2IWFCafCxYm
+         oLET33k44BcxzwfBFWuqh5CC6vIc40qGjBJmvRhYUC0Lf+7jtmgTKJrOSrPkYHpnKvay
+         6e5bFjicYq9Up7IPbXv0eHT9imJOV/oN27gjNJawQjSmaW9LcW7Qc7diYplja7NsQPKH
+         nyuhW/e9dfLNNC14vFrhPIHO19VvWzA2sWO9KC4sfStbIUu517ZscGlp8exQqOqJjJYJ
+         nSVg==
+X-Gm-Message-State: AOJu0YxRFVx4v0Pa5XdcvJ1faFlKKunptAl9yo8gLIgVfK+XsHXKNCZJ
+        zDJohYJluzW2Uel5zDajwdlGDpcAKjJNDWK1S48=
+X-Google-Smtp-Source: AGHT+IEsAOGBsxEiddk78huJfUk6LcIJdX0Toz/a1q/qoB84+jrC9oYDaCQ2Jq95OeojWd2RtLCAOA==
+X-Received: by 2002:a05:6512:3051:b0:4f4:7a5:e800 with SMTP id b17-20020a056512305100b004f407a5e800mr3468887lfb.10.1691495016756;
+        Tue, 08 Aug 2023 04:43:36 -0700 (PDT)
+Received: from [192.168.1.101] (abxi185.neoplus.adsl.tpnet.pl. [83.9.2.185])
+        by smtp.gmail.com with ESMTPSA id j20-20020ac253b4000000b004fbdba4b075sm1861679lfh.57.2023.08.08.04.43.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Aug 2023 04:43:36 -0700 (PDT)
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Date:   Tue, 08 Aug 2023 13:43:32 +0200
+Subject: [PATCH v3 01/10] interconnect: qcom: icc-rpm: Add AB/IB
+ calculations coefficients
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH v13 04/10] dt-bindings: soc: qcom: cpr3: Add bindings for
- CPR3 driver
-Content-Language: en-US
-To:     Konrad Dybcio <konrad.dybcio@linaro.org>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Niklas Cassel <nks@flawful.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Robert Marko <robimarko@gmail.com>, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, Jeffrey Hugo <quic_jhugo@quicinc.com>,
-        Marijn Suijten <marijn.suijten@somainline.org>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-References: <20230217-topic-cpr3h-v13-0-d01cff1c54cf@linaro.org>
- <20230217-topic-cpr3h-v13-4-d01cff1c54cf@linaro.org>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230217-topic-cpr3h-v13-4-d01cff1c54cf@linaro.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20230726-topic-icc_coeff-v3-1-dee684d6cdd2@linaro.org>
+References: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+In-Reply-To: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@linaro.org>
+X-Mailer: b4 0.12.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691495013; l=3362;
+ i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
+ bh=PtHTjiWgQBO5SjMZ6oomj/9k2KcOHpsmAcBX0YEWtv0=;
+ b=mKs8Vh24BaouL9/kklS4fc/ZntNALxrPg1h5q7n5dx/NyCkJoJi2Uy1djpoUO53f1Y5PJW0Zt
+ Y5TKpai734mDuUv/Hi1sEC8msgfry+G4zOspXXksOcjoM/muknRRlv4
+X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
+ pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 02/08/2023 14:37, Konrad Dybcio wrote:
-> From: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-> 
-> Add the bindings for the CPR3 driver to the documentation.
-> 
-> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-> [Konrad: Make binding check pass; update AGdR's email]
-> Tested-by: Jeffrey Hugo <quic_jhugo@quicinc.com>
-> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-> ---
->  .../devicetree/bindings/soc/qcom/qcom,cpr3.yaml    | 291 +++++++++++++++++++++
->  1 file changed, 291 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
-> new file mode 100644
-> index 000000000000..d797abc5d5fe
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
-> @@ -0,0 +1,291 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: "http://devicetree.org/schemas/soc/qcom/qcom,cpr3.yaml#"
+Presumably due to the hardware being so complex, some nodes (or busses)
+have different (usually higher) requirements for bandwidth than what
+the usual calculations would suggest.
 
-Drop quotes.
+Looking at the available downstream files, it seems like AB values are
+adjusted per-bus and IB values are adjusted per-node.
+With that in mind, introduce percentage-based coefficient struct members
+and use them in the calculations.
 
-It does not look like you tested the bindings, at least after quick
-look. Please run `make dt_binding_check` (see
-Documentation/devicetree/bindings/writing-schema.rst for instructions).
-Maybe you need to update your dtschema and yamllint.
+One thing to note is that the IB coefficient is inverse (100/ib_percent)
+which feels a bit backwards, but it's necessary for precision..
 
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Qualcomm Core Power Reduction v3/v4/Hardened (CPR3, CPR4, CPRh)
-> +
-> +description:
-> +  CPR (Core Power Reduction) is a technology to reduce core power of a CPU
-> +  (or another device). Each OPP of a device corresponds to a "corner" that
-> +  has a range of valid voltages for a particular frequency.
-> +  The CPR monitors dynamic factors such as temperature, etc. and suggests
-> +  or (in the CPR-hardened case) applies voltage adjustments to save power
-> +  and meet silicon characteristic requirements for a given chip unit.
-> +
-> +maintainers:
-> +  - AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-> +
-> +properties:
-> +  compatible:
-> +    oneOf:
-> +      - description: CPRv3 controller
+Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+---
+ drivers/interconnect/qcom/icc-rpm.c | 18 +++++++++++++++---
+ drivers/interconnect/qcom/icc-rpm.h |  6 ++++++
+ 2 files changed, 21 insertions(+), 3 deletions(-)
 
-Nit, since you are going to resend, then: Drop description, it's the
-same as compatible.
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 2c16917ba1fd..8b02aa8aa96a 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -298,7 +298,8 @@ static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+  */
+ static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_rate)
+ {
+-	u64 agg_avg_rate, agg_rate;
++	struct qcom_icc_provider *qp = to_qcom_provider(provider);
++	u64 agg_avg_rate, agg_peak_rate, agg_rate;
+ 	struct qcom_icc_node *qn;
+ 	struct icc_node *node;
+ 	int i;
+@@ -315,8 +316,19 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_r
+ 			else
+ 				agg_avg_rate = qn->sum_avg[i];
+ 
+-			agg_rate = max_t(u64, agg_avg_rate, qn->max_peak[i]);
+-			do_div(agg_rate, qn->buswidth);
++			if (qp->ab_coeff) {
++				agg_avg_rate = agg_avg_rate * qp->ab_coeff;
++				agg_avg_rate = div_u64(agg_avg_rate, 100);
++			}
++
++			if (qp->ib_coeff) {
++				agg_peak_rate = qn->max_peak[i] * 100;
++				agg_peak_rate = div_u64(qn->max_peak[i], qp->ib_coeff);
++			} else {
++				agg_peak_rate = qn->max_peak[i];
++			}
++
++			agg_rate = max_t(u64, agg_avg_rate, agg_peak_rate);
+ 
+ 			agg_clk_rate[i] = max_t(u64, agg_clk_rate[i], agg_rate);
+ 		}
+diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
+index eed3451af3e6..5e7d6a4fd2f3 100644
+--- a/drivers/interconnect/qcom/icc-rpm.h
++++ b/drivers/interconnect/qcom/icc-rpm.h
+@@ -44,6 +44,8 @@ struct rpm_clk_resource {
+  * @type: the ICC provider type
+  * @regmap: regmap for QoS registers read/write access
+  * @qos_offset: offset to QoS registers
++ * @ab_coeff: a percentage-based coefficient for compensating the AB calculations
++ * @ib_coeff: an inverse-percentage-based coefficient for compensating the IB calculations
+  * @bus_clk_rate: bus clock rate in Hz
+  * @bus_clk_desc: a pointer to a rpm_clk_resource description of bus clocks
+  * @bus_clk: a pointer to a HLOS-owned bus clock
+@@ -57,6 +59,8 @@ struct qcom_icc_provider {
+ 	enum qcom_icc_type type;
+ 	struct regmap *regmap;
+ 	unsigned int qos_offset;
++	u16 ab_coeff;
++	u16 ib_coeff;
+ 	u32 bus_clk_rate[QCOM_SMD_RPM_STATE_NUM];
+ 	const struct rpm_clk_resource *bus_clk_desc;
+ 	struct clk *bus_clk;
+@@ -123,6 +127,8 @@ struct qcom_icc_desc {
+ 	enum qcom_icc_type type;
+ 	const struct regmap_config *regmap_cfg;
+ 	unsigned int qos_offset;
++	u16 ab_coeff;
++	u16 ib_coeff;
+ };
+ 
+ /* Valid for all bus types */
 
-> +        items:
-> +          - const: qcom,cpr3
-> +      - description: CPRv4 controller
-
-Ditto
-
-
-Best regards,
-Krzysztof
+-- 
+2.41.0
 
