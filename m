@@ -2,116 +2,374 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA3F9C001B0
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 18:56:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2BECC41513
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 18:57:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232883AbjHHS4H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 14:56:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45430 "EHLO
+        id S232713AbjHHS5f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 14:57:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39558 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232936AbjHHSzm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 14:55:42 -0400
-Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C9F96D2AB
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 10:14:03 -0700 (PDT)
-Received: by mail-ed1-x533.google.com with SMTP id 4fb4d7f45d1cf-5231f439968so6149010a12.0
-        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 10:14:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691514842; x=1692119642;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=4FqN2Sq9j6IVseScqHZxUGnTrukPTjl33EKA90GBaFU=;
-        b=k3IpoE/wi9QNbbNu3wYkKHOg6Il+3yv1qZeWYTorIhov8h2f8Pko9rs7jt4UCVWOd+
-         r8Hp+VC73ZYkNpWbRs7TiWudhNUClInOK6Cqm/x4NSfNaHzPBIZLdteaWxBYaOGkfBlJ
-         oFb9RdhyfTW8MWsaiO01En0tGXbKOu/sxllb9BENoUpQxXQIu/2sj9QPE0yFAF0TNgYl
-         J43xIxJeh8n80S9DGM+VGEedrsCGzOmRt66bzxbgrUj9/byWQWlkWnSPlt+StAAFILGk
-         6xxMFQbtbZQggilBrqE9uWi3OAxmhwUCHrCjCTjSZ4l0uPZWRxA8B2KuCSvtv28BVGcu
-         6KxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691514842; x=1692119642;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=4FqN2Sq9j6IVseScqHZxUGnTrukPTjl33EKA90GBaFU=;
-        b=FKf9t9GI7d+t3hgKpE6e/F+5H26NqIKsznhcicLlPm/ceu3WI2UC4i3KBfkrOsuS7k
-         8jwKPNGOvg0bfvgqMkPG1geBe0PUEi58L9QUzh5Re1SznMiUzMuXIDjZ/FVKIKYxxJZN
-         WVScv+yQWBTgxLrg3uIMNVcEQ2hqyI0SSW0Stf2MhAORNWgtGbrjxVQFQRlBYVQtJ+zQ
-         Xsq/Rdjmff4H06hbT6sTA0QDbP9icFb+15zg6Yy7lssH6RhSIxqKJG9SrKYutD9wcSz1
-         XhCJFA5bv5JJnEhCDZnewHnQB8ynEblDeDSRFoG4yc20q46Tz7+59ysWAGWB8MqHmcK5
-         zOdw==
-X-Gm-Message-State: AOJu0YzaLz9+Tt17WqCwUiPkqgvwDNPGa8GPmUiNoTMXeEPmoiR2nGOa
-        HbuJDMfLFQTF/lXat3//RultJxnzBixwCdBJsrc=
-X-Google-Smtp-Source: AGHT+IFjkaP4oTfJ0Ri8v7HT5s6bsxs5Tqj1AvIF9Kb+lyIVxIbcmy/tMf8ddbWT77OvdXJajWXRUA==
-X-Received: by 2002:a05:6512:1598:b0:4fb:8bea:f5f6 with SMTP id bp24-20020a056512159800b004fb8beaf5f6mr10188044lfb.34.1691495024243;
-        Tue, 08 Aug 2023 04:43:44 -0700 (PDT)
-Received: from [192.168.1.101] (abxi185.neoplus.adsl.tpnet.pl. [83.9.2.185])
-        by smtp.gmail.com with ESMTPSA id j20-20020ac253b4000000b004fbdba4b075sm1861679lfh.57.2023.08.08.04.43.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Aug 2023 04:43:43 -0700 (PDT)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 08 Aug 2023 13:43:38 +0200
-Subject: [PATCH v3 07/10] interconnect: qcom: qcm2290: Update EBI channel
- configuration
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230726-topic-icc_coeff-v3-7-dee684d6cdd2@linaro.org>
-References: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
-In-Reply-To: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691495013; l=1320;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=+JCeGo0Q7sjfDzWjkGg+7ykqgtb42uWuVVMLb5STXRI=;
- b=kP/Ep84xH1Hu5VyTi/X5EdDQntTJIZBSHWF06vlxwCDpZi0bIpkqQ5Da38SWKULLxX6Ar2wu5
- ZB0IYGCkYwDBC4GBGBIEMmpmnalm/DCz4COpfhANKRfGNaIkAba4j/2
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+        with ESMTP id S234881AbjHHS5L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 14:57:11 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84F361D3FC;
+        Tue,  8 Aug 2023 10:17:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1691515025; x=1723051025;
+  h=date:from:to:cc:subject:message-id;
+  bh=AWGeMYbuVJ5L7BwJCINBSuxOF6O8n3VbHXGNs71prNw=;
+  b=iVJeYLAZYCL9q6NWfYdPoYnfMggPm4bjjkms9XWh/9KKl8ViZpF4CAJw
+   8B5zWH1Ht3AZpiotmgrulegQszb18rz1dxon6p7c7QYXQ7PNQWzSaXB1/
+   MPL6/C3kCt5UuQZV+ZzZ+YeCdc8F+Q9noOqXF3OBYu0G0S6QyF33XRUWH
+   pK9CY5kNoffzonxJUriYnFd+hK08JEaYjYPuYGOEHOGqnMCWYpj9ek/aJ
+   569UAKIz1U7DKJVBmUZ607B77aAWOHJDP5xinVn2ckjMKsfi/iAc/71nD
+   eUf3VoLdycAHl+AoSq6JKzzSinMOKofBFSCVN9sfXo8PgDvn94hrojn2t
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="360828587"
+X-IronPort-AV: E=Sophos;i="6.01,263,1684825200"; 
+   d="scan'208";a="360828587"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Aug 2023 00:00:51 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="708137515"
+X-IronPort-AV: E=Sophos;i="6.01,263,1684825200"; 
+   d="scan'208";a="708137515"
+Received: from lkp-server01.sh.intel.com (HELO d1ccc7e87e8f) ([10.239.97.150])
+  by orsmga006.jf.intel.com with ESMTP; 08 Aug 2023 00:00:49 -0700
+Received: from kbuild by d1ccc7e87e8f with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1qTGi1-0005As-0G;
+        Tue, 08 Aug 2023 07:00:49 +0000
+Date:   Tue, 08 Aug 2023 15:00:46 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-acpi@vger.kernel.org, devel@acpica.org,
+        linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD REGRESSION
+ a478d3007320f8bee5a50522f8ac32a25ec5fc6b
+Message-ID: <202308081535.FxeVihIZ-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-QCM2290 can support two memory configurations: single-channel, 32-bit
-wide LPDDR3 @ up to 933MHz (bus clock) or dual-channel, 16-bit wide
-LPDDR4X @ up to 1804 MHz. The interconnect driver in its current form
-seems to gravitate towards the first one, however there are no LPDDR3-
-equipped boards upstream and we still don't have a great way to discern
-the DDR generations on the kernel side.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: a478d3007320f8bee5a50522f8ac32a25ec5fc6b  Merge branch 'acpi-thermal-next' into bleeding-edge
 
-To make DDR scaling possible on the only currently-supported 2290
-board, stick with the LPDDR4X config by default. The side effect on any
-potential LPDDR3 board would be that the requested bus clock rate is
-too high (but still capped to the firmware-configured FMAX).
+Error/Warning reports:
 
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
----
- drivers/interconnect/qcom/qcm2290.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+https://lore.kernel.org/oe-kbuild-all/202308020253.WHEHp60K-lkp@intel.com
+https://lore.kernel.org/oe-kbuild-all/202308080324.vk0Xzw11-lkp@intel.com
+https://lore.kernel.org/oe-kbuild-all/202308080433.zTgDF79n-lkp@intel.com
 
-diff --git a/drivers/interconnect/qcom/qcm2290.c b/drivers/interconnect/qcom/qcm2290.c
-index 42fa01c66e73..3bd7ad67c569 100644
---- a/drivers/interconnect/qcom/qcm2290.c
-+++ b/drivers/interconnect/qcom/qcm2290.c
-@@ -678,7 +678,8 @@ static struct qcom_icc_node mas_gfx3d = {
- static struct qcom_icc_node slv_ebi1 = {
- 	.name = "slv_ebi1",
- 	.id = QCM2290_SLAVE_EBI1,
--	.buswidth = 8,
-+	.buswidth = 4,
-+	.channels = 2,
- 	.mas_rpm_id = -1,
- 	.slv_rpm_id = 0,
- };
+Error/Warning: (recently discovered and may have been fixed)
+
+drivers/acpi/thermal.c:1000:40: error: passing argument 3 of 'acpi_dev_remove_notify_handler' from incompatible pointer type [-Werror=incompatible-pointer-types]
+drivers/acpi/thermal.c:1007:40: error: passing argument 3 of 'acpi_dev_remove_notify_handler' from incompatible pointer type [-Werror=incompatible-pointer-types]
+drivers/acpi/thermal.c:1019:32: warning: variable 'result' set but not used [-Wunused-but-set-variable]
+drivers/acpi/thermal.c:810:22: error: redefinition of 'device'
+drivers/acpi/thermal.c:810:29: error: 'device' redeclared as different kind of symbol
+drivers/acpi/thermal.c:810:31: error: use of undeclared identifier 'data'
+drivers/acpi/thermal.c:810:38: error: 'data' undeclared (first use in this function)
+drivers/acpi/thermal.c:810:38: error: 'data' undeclared (first use in this function); did you mean '_data'?
+drivers/acpi/thermal.c:817:29: error: 'device' redeclared as different kind of symbol
+drivers/acpi/thermal.c:817:38: error: 'data' undeclared (first use in this function)
+drivers/acpi/thermal.c:975:50: error: passing argument 3 of 'acpi_dev_install_notify_handler' from incompatible pointer type [-Werror=incompatible-pointer-types]
+drivers/acpi/thermal.c:975:8: error: incompatible function pointer types passing 'void (struct acpi_device *, u32)' (aka 'void (struct acpi_device *, unsigned int)') to parameter of type 'acpi_notify_handler' (aka 'void (*)(void *, unsigned int, void *)') [-Wincompatible-function-pointer-types]
+drivers/acpi/thermal.c:982:50: error: passing argument 3 of 'acpi_dev_install_notify_handler' from incompatible pointer type [-Werror=incompatible-pointer-types]
+
+Error/Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+|-- arm64-allyesconfig
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- arm64-defconfig
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- i386-allyesconfig
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- i386-buildonly-randconfig-r006-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|-- i386-debian-10.3
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- i386-defconfig
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- i386-randconfig-i001-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|-- i386-randconfig-i002-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|-- i386-randconfig-i003-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|-- i386-randconfig-i005-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- i386-randconfig-i006-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|-- loongarch-allmodconfig
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- loongarch-allyesconfig
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- loongarch-defconfig
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- x86_64-allyesconfig
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- x86_64-defconfig
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- x86_64-kexec
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- x86_64-randconfig-r004-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- x86_64-randconfig-x012-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- x86_64-randconfig-x013-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- x86_64-randconfig-x014-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+|-- x86_64-randconfig-x015-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+|-- x86_64-randconfig-x016-20230807
+|   |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+|   |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+|   |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+|   `-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+`-- x86_64-rhel-8.3
+    |-- drivers-acpi-thermal.c:error:data-undeclared-(first-use-in-this-function)
+    |-- drivers-acpi-thermal.c:error:device-redeclared-as-different-kind-of-symbol
+    |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_install_notify_handler-from-incompatible-pointer-type
+    |-- drivers-acpi-thermal.c:error:passing-argument-of-acpi_dev_remove_notify_handler-from-incompatible-pointer-type
+    `-- drivers-acpi-thermal.c:warning:variable-result-set-but-not-used
+clang_recent_errors
+|-- i386-randconfig-i011-20230807
+|   |-- drivers-acpi-thermal.c:error:incompatible-function-pointer-types-passing-void-(struct-acpi_device-u32)-(aka-void-(struct-acpi_device-unsigned-int)-)-to-parameter-of-type-acpi_notify_handler-(aka-void-
+|   |-- drivers-acpi-thermal.c:error:redefinition-of-device
+|   `-- drivers-acpi-thermal.c:error:use-of-undeclared-identifier-data
+|-- i386-randconfig-i012-20230807
+|   |-- drivers-acpi-thermal.c:error:incompatible-function-pointer-types-passing-void-(struct-acpi_device-u32)-(aka-void-(struct-acpi_device-unsigned-int)-)-to-parameter-of-type-acpi_notify_handler-(aka-void-
+|   |-- drivers-acpi-thermal.c:error:redefinition-of-device
+|   `-- drivers-acpi-thermal.c:error:use-of-undeclared-identifier-data
+|-- i386-randconfig-i013-20230807
+|   |-- drivers-acpi-thermal.c:error:incompatible-function-pointer-types-passing-void-(struct-acpi_device-u32)-(aka-void-(struct-acpi_device-unsigned-int)-)-to-parameter-of-type-acpi_notify_handler-(aka-void-
+|   |-- drivers-acpi-thermal.c:error:redefinition-of-device
+|   `-- drivers-acpi-thermal.c:error:use-of-undeclared-identifier-data
+|-- i386-randconfig-i014-20230807
+|   |-- drivers-acpi-thermal.c:error:incompatible-function-pointer-types-passing-void-(struct-acpi_device-u32)-(aka-void-(struct-acpi_device-unsigned-int)-)-to-parameter-of-type-acpi_notify_handler-(aka-void-
+|   |-- drivers-acpi-thermal.c:error:redefinition-of-device
+|   `-- drivers-acpi-thermal.c:error:use-of-undeclared-identifier-data
+|-- i386-randconfig-i015-20230807
+|   |-- drivers-acpi-thermal.c:error:incompatible-function-pointer-types-passing-void-(struct-acpi_device-u32)-(aka-void-(struct-acpi_device-unsigned-int)-)-to-parameter-of-type-acpi_notify_handler-(aka-void-
+|   |-- drivers-acpi-thermal.c:error:redefinition-of-device
+|   `-- drivers-acpi-thermal.c:error:use-of-undeclared-identifier-data
+|-- i386-randconfig-i016-20230807
+|   |-- drivers-acpi-thermal.c:error:incompatible-function-pointer-types-passing-void-(struct-acpi_device-u32)-(aka-void-(struct-acpi_device-unsigned-int)-)-to-parameter-of-type-acpi_notify_handler-(aka-void-
+|   |-- drivers-acpi-thermal.c:error:redefinition-of-device
+|   `-- drivers-acpi-thermal.c:error:use-of-undeclared-identifier-data
+|-- x86_64-randconfig-x001-20230807
+|   |-- drivers-acpi-thermal.c:error:incompatible-function-pointer-types-passing-void-(struct-acpi_device-u32)-(aka-void-(struct-acpi_device-unsigned-int)-)-to-parameter-of-type-acpi_notify_handler-(aka-void-
+|   |-- drivers-acpi-thermal.c:error:redefinition-of-device
+|   `-- drivers-acpi-thermal.c:error:use-of-undeclared-identifier-data
+|-- x86_64-randconfig-x002-20230807
+|   |-- drivers-acpi-thermal.c:error:incompatible-function-pointer-types-passing-void-(struct-acpi_device-u32)-(aka-void-(struct-acpi_device-unsigned-int)-)-to-parameter-of-type-acpi_notify_handler-(aka-void-
+|   |-- drivers-acpi-thermal.c:error:redefinition-of-device
+|   `-- drivers-acpi-thermal.c:error:use-of-undeclared-identifier-data
+`-- x86_64-randconfig-x003-20230807
+    |-- drivers-acpi-thermal.c:error:incompatible-function-pointer-types-passing-void-(struct-acpi_device-u32)-(aka-void-(struct-acpi_device-unsigned-int)-)-to-parameter-of-type-acpi_notify_handler-(aka-void-
+    |-- drivers-acpi-thermal.c:error:redefinition-of-device
+    `-- drivers-acpi-thermal.c:error:use-of-undeclared-identifier-data
+
+elapsed time: 723m
+
+configs tested: 106
+configs skipped: 5
+
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r001-20230807   gcc  
+alpha                randconfig-r016-20230807   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                  randconfig-r043-20230807   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                  randconfig-r046-20230807   gcc  
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+arm64                randconfig-r021-20230807   clang
+arm64                randconfig-r032-20230807   gcc  
+csky                                defconfig   gcc  
+csky                 randconfig-r013-20230807   gcc  
+hexagon              randconfig-r012-20230807   clang
+hexagon              randconfig-r041-20230807   clang
+hexagon              randconfig-r045-20230807   clang
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-r004-20230807   gcc  
+i386         buildonly-randconfig-r005-20230807   gcc  
+i386         buildonly-randconfig-r006-20230807   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                 randconfig-i001-20230807   gcc  
+i386                 randconfig-i002-20230807   gcc  
+i386                 randconfig-i003-20230807   gcc  
+i386                 randconfig-i004-20230807   gcc  
+i386                 randconfig-i005-20230807   gcc  
+i386                 randconfig-i006-20230807   gcc  
+i386                 randconfig-i011-20230807   clang
+i386                 randconfig-i012-20230807   clang
+i386                 randconfig-i013-20230807   clang
+i386                 randconfig-i014-20230807   clang
+i386                 randconfig-i015-20230807   clang
+i386                 randconfig-i016-20230807   clang
+i386                 randconfig-r002-20230807   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+m68k                             allmodconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                 randconfig-r023-20230807   gcc  
+mips                 randconfig-r035-20230807   clang
+nios2                               defconfig   gcc  
+nios2                randconfig-r003-20230807   gcc  
+openrisc             randconfig-r024-20230807   gcc  
+openrisc             randconfig-r033-20230807   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r042-20230807   clang
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r011-20230807   clang
+s390                 randconfig-r044-20230807   clang
+sh                               allmodconfig   gcc  
+sh                   randconfig-r022-20230807   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                randconfig-r036-20230807   gcc  
+sparc64              randconfig-r025-20230807   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   clang
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                   randconfig-r006-20230807   clang
+um                   randconfig-r014-20230807   gcc  
+um                   randconfig-r015-20230807   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-r001-20230807   gcc  
+x86_64       buildonly-randconfig-r002-20230807   gcc  
+x86_64       buildonly-randconfig-r003-20230807   gcc  
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64               randconfig-r004-20230807   gcc  
+x86_64               randconfig-x001-20230807   clang
+x86_64               randconfig-x002-20230807   clang
+x86_64               randconfig-x003-20230807   clang
+x86_64               randconfig-x004-20230807   clang
+x86_64               randconfig-x005-20230807   clang
+x86_64               randconfig-x006-20230807   clang
+x86_64               randconfig-x011-20230807   gcc  
+x86_64               randconfig-x012-20230807   gcc  
+x86_64               randconfig-x013-20230807   gcc  
+x86_64               randconfig-x014-20230807   gcc  
+x86_64               randconfig-x015-20230807   gcc  
+x86_64               randconfig-x016-20230807   gcc  
+x86_64                          rhel-8.3-rust   clang
+x86_64                               rhel-8.3   gcc  
+xtensa               randconfig-r026-20230807   gcc  
 
 -- 
-2.41.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
