@@ -2,163 +2,173 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0E06C001DB
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:15:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E23B9C001B0
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 16:17:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232202AbjHHQO5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 12:14:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57592 "EHLO
+        id S232010AbjHHQQd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 12:16:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37678 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232176AbjHHQNZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:13:25 -0400
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFBDC212C
-        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 08:47:33 -0700 (PDT)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-1bc73a2b0easo13116675ad.0
-        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 08:47:33 -0700 (PDT)
+        with ESMTP id S232317AbjHHQOk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 12:14:40 -0400
+Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com [209.85.167.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F7433C20
+        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 08:40:50 -0700 (PDT)
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-4fe0eb0ca75so9153260e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 08:40:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691509653; x=1692114453;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=hpGMNxDDvo9T1v6v+RkICvblRXd4nkGe288y9gyoNGg=;
-        b=OMoT8gYdXBR3P4DHHf7l6UARjohyP+3i/vkEzNYanul6tF0OZaGlNGS9BdAY/cAbzn
-         4xvtrYw0LV2JAP6ZCJkx0zuRV30d36+WYSqU8SltQ/dSfonAX4/ia7Y6dE+G5cfZZra/
-         TMMxycTPwpTtNCTaIF0XqF15MYB3RH5KWO0ere+cQg7qJ67BybLnWDUyQKIsFoo7gvly
-         y+XdSNXfCZe06dHIGF/DpMrkP9XGig+7IRxzDfWyv6UCXyZfeyBnBS5Nh8hP01ToMF5K
-         2l6NUX4h1LUr4AnOjiqphHr0oIev9CW5o3EsfKKhhFaPt4nxNVkAbc0a4hS6dvtP9FQ1
-         uHIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691509653; x=1692114453;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=linaro.org; s=google; t=1691509188; x=1692113988;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=hpGMNxDDvo9T1v6v+RkICvblRXd4nkGe288y9gyoNGg=;
-        b=At9MhtUF1SNUNjZ+elP63nNJVr86hlrfwusxIfx1S7OZ0WsgGkKwnGcNTV3vauYkRo
-         BPV1Fv2cxwCJn2BxS2Kw/5ogDYlmYtu0feibL7v8Qq+G3DhkbNTIWtztc2E/zZtTSXCq
-         jbI2s4np5aMFmBk366Z2OAUm8Yu1+bBX5yMzyXQIQBOgSW90S86GX6dTf8+k7JumWaFQ
-         shwFzNkzePq2uJFzjCprHYF5vkwFyzrGu7sl2qR4dJmy1Boe7uM/nlgwnOnoXTymkNrj
-         u6JDuUjhzwv/rjZsDqU1YHW6jeWD5BCCLhzh6jkQoS8JmtUPJBCsXdSqobX5xne/p6n7
-         f0hA==
-X-Gm-Message-State: AOJu0YwxYdqM7fufrcmoOOCHlSaxsG+eLJhXve39xrhjoh/UgTDNEM3d
-        UPkFqXFwlq1r5MEVY4/MZYqvUEgUKZUlPInhsUMZBL155cHfagR2
-X-Google-Smtp-Source: AGHT+IEQ0B+zFHwu6lwq9ShhqNgqoAUPtqEjQdph6xX3V3JEjoRX0Qpcb7z9XgUddzrDP+CIGW7eIVIsmdM1+EjIYR4=
-X-Received: by 2002:a25:df82:0:b0:d47:4ed4:43eb with SMTP id
- w124-20020a25df82000000b00d474ed443ebmr10840010ybg.63.1691505778468; Tue, 08
- Aug 2023 07:42:58 -0700 (PDT)
+        bh=NiT0zdP9RcVMfv6FtcplHy2nGhazgGSIvo5WbDUA63E=;
+        b=aW4wnRrEKAac8FGJWJfmIpyRCZdfxLwNObMsmwLm0k3HayVnTmvcMY2d6iG0ka0eus
+         bYQ8uDBHKC77NZLga5BPXCH+cNwUVwh1LhJ0a7h8rTd1Gny4B5cwDEm/+tDJ1Ob4Vz/u
+         y5POA0ipfax3QBoQOnYuxZR20vVEsMcwYzqC8nExv9e6qz0mbyF2zL8ix1X+6216yV4U
+         26P247tz9pLcP/Ja47xCsEZ9Gaptjfm7bexRECjmptsXW2bI9QMVoHw+qNl6gb3y7Sxa
+         vwR+2sShxWcLhaVchZ0nCPQhjslX62YqlsLnTp2iwEaH7GMWl0cC1AkS9MFGSaj4KX9O
+         nuIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691509188; x=1692113988;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=NiT0zdP9RcVMfv6FtcplHy2nGhazgGSIvo5WbDUA63E=;
+        b=ZotbLFXXgWEjrYLyO6FV82Qyw78A+BK11Kh3rBcCxPvO6e0nulnfChvr3UKv+H/Pl+
+         XHaNQ8BRl7XFBhNg91tHn0oZvkZNSL7s6Btneh81b2IfD5EyrjzU1hMA6rA1VehNzP9M
+         IvHfp9xkPKM4i+5ZauL3aOwVYbaH6iIVwpcYXRVuIgmUQaP11KZoWRgwADDIhHjKD8Zf
+         Pu/f1OM5hRXqjLChdIUXx76a/HM6Iibi4IMQBM1ra+O2FnkQ6NzUrp2qK1Jh1SP1WL/h
+         P3qUk24+vNiXPKnXuGcIOYcHjCBwu8ozGKzcwWkdat1ZJlhcSB5FMTBOwIRMACxczRSz
+         YpnA==
+X-Gm-Message-State: AOJu0YybrhCmmUom28iiPVg0u0o9Eb/sSiDFkqnyHLTO5YMdanJH7Nb1
+        xq6g/g7hB5r1ssATstoZ4p/7waBNV2g+SomAUMk=
+X-Google-Smtp-Source: AGHT+IF7FsNW05tchzFLg08e24E0C6uLzAZLbxhdVKl8LRAWeyHXHm2QOMKSVvO0FNrWGNxEl3ClCQ==
+X-Received: by 2002:ac2:4e88:0:b0:4fe:ecd:494f with SMTP id o8-20020ac24e88000000b004fe0ecd494fmr6969822lfr.33.1691495018085;
+        Tue, 08 Aug 2023 04:43:38 -0700 (PDT)
+Received: from [192.168.1.101] (abxi185.neoplus.adsl.tpnet.pl. [83.9.2.185])
+        by smtp.gmail.com with ESMTPSA id j20-20020ac253b4000000b004fbdba4b075sm1861679lfh.57.2023.08.08.04.43.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Aug 2023 04:43:37 -0700 (PDT)
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Date:   Tue, 08 Aug 2023 13:43:33 +0200
+Subject: [PATCH v3 02/10] interconnect: qcom: icc-rpm: Separate out clock
+ rate calulcations
 MIME-Version: 1.0
-References: <20230803063703.5659-1-zhuyinbo@loongson.cn> <20230803063703.5659-3-zhuyinbo@loongson.cn>
- <4fef9725-7aea-43fb-b8ef-d20a4c6d9a68@app.fastmail.com>
-In-Reply-To: <4fef9725-7aea-43fb-b8ef-d20a4c6d9a68@app.fastmail.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Tue, 8 Aug 2023 16:42:22 +0200
-Message-ID: <CAPDyKFo7p=aEWWrW2OGbhN1tFjHanpqjLApzCMipdPSzE+NknQ@mail.gmail.com>
-Subject: Re: [PATCH v6 2/2] soc: loongson2_pm: add power management support
-To:     Arnd Bergmann <arnd@arndb.de>
-Cc:     Yinbo Zhu <zhuyinbo@loongson.cn>, Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        soc@kernel.org, Jianmin Lv <lvjianmin@loongson.cn>,
-        wanghongliang@loongson.cn, Liu Peibao <liupeibao@loongson.cn>,
-        loongson-kernel@lists.loongnix.cn, loongarch@lists.linux.dev,
-        Liu Yun <liuyun@loongson.cn>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230726-topic-icc_coeff-v3-2-dee684d6cdd2@linaro.org>
+References: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+In-Reply-To: <20230726-topic-icc_coeff-v3-0-dee684d6cdd2@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@linaro.org>
+X-Mailer: b4 0.12.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691495013; l=2930;
+ i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
+ bh=s1ZE4XHCfs1j0oOrUS6GpKQLQgPUfnNi7YQdZMNs0uA=;
+ b=BNLRtVUx+or/VTf6c67Fn8JQREAUM7KBMxBUw0bidTpwWnVF2uG46h/vQ7rWTJJxXrCyqlcrL
+ IOWQVTe2E5gCEsjBZnt/i0WfG9lrZKz3P7zP5BydAdzwZBurxpKPb6a
+X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
+ pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 3 Aug 2023 at 09:03, Arnd Bergmann <arnd@arndb.de> wrote:
->
-> On Thu, Aug 3, 2023, at 08:37, Yinbo Zhu wrote:
-> > The Loongson-2's power management controller was ACPI, supports ACPI
-> > S2Idle (Suspend To Idle), ACPI S3 (Suspend To RAM), ACPI S4 (Suspend To
-> > Disk), ACPI S5 (Soft Shutdown) and supports multiple wake-up methods
-> > (USB, GMAC, PWRBTN, etc.). This driver was to add power management
-> > controller support that base on dts for Loongson-2 series SoCs.
-> >
-> > Co-developed-by: Liu Yun <liuyun@loongson.cn>
-> > Signed-off-by: Liu Yun <liuyun@loongson.cn>
-> > Co-developed-by: Liu Peibao <liupeibao@loongson.cn>
-> > Signed-off-by: Liu Peibao <liupeibao@loongson.cn>
-> > Cc: soc@kernel.org
-> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> > Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
->
-> I'm still waiting for Ulf to take a look here to see whether
-> this should be in drivers/genpd instead, but he might still
-> be on vacation.
+In preparation for also setting per-node clock rates, separate out the
+logic that computes it.
 
-I don't think this belongs in drivers/genpd/ as it's not a genpd
-provider. Besides that, no further comments from me at this point.
+Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+---
+ drivers/interconnect/qcom/icc-rpm.c | 53 +++++++++++++++++++++----------------
+ 1 file changed, 30 insertions(+), 23 deletions(-)
 
-Kind regards
-Uffe
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 8b02aa8aa96a..8c1bfd65d774 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -291,6 +291,32 @@ static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+ 	return 0;
+ }
+ 
++static u64 qcom_icc_calc_rate(struct qcom_icc_provider *qp, struct qcom_icc_node *qn, int ctx)
++{
++	u64 agg_avg_rate, agg_peak_rate, agg_rate;
++
++	if (qn->channels)
++		agg_avg_rate = div_u64(qn->sum_avg[ctx], qn->channels);
++	else
++		agg_avg_rate = qn->sum_avg[ctx];
++
++	if (qp->ab_coeff) {
++		agg_avg_rate = agg_avg_rate * qp->ab_coeff;
++		agg_avg_rate = div_u64(agg_avg_rate, 100);
++	}
++
++	if (qp->ib_coeff) {
++		agg_peak_rate = qn->max_peak[ctx] * 100;
++		agg_peak_rate = div_u64(qn->max_peak[ctx], qp->ib_coeff);
++	} else {
++		agg_peak_rate = qn->max_peak[ctx];
++	}
++
++	agg_rate = max_t(u64, agg_avg_rate, agg_peak_rate);
++
++	return div_u64(agg_rate, qn->buswidth);
++}
++
+ /**
+  * qcom_icc_bus_aggregate - calculate bus clock rates by traversing all nodes
+  * @provider: generic interconnect provider
+@@ -299,10 +325,9 @@ static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+ static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_rate)
+ {
+ 	struct qcom_icc_provider *qp = to_qcom_provider(provider);
+-	u64 agg_avg_rate, agg_peak_rate, agg_rate;
+ 	struct qcom_icc_node *qn;
+ 	struct icc_node *node;
+-	int i;
++	int ctx;
+ 
+ 	/*
+ 	 * Iterate nodes on the provider, aggregate bandwidth requests for
+@@ -310,27 +335,9 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_r
+ 	 */
+ 	list_for_each_entry(node, &provider->nodes, node_list) {
+ 		qn = node->data;
+-		for (i = 0; i < QCOM_SMD_RPM_STATE_NUM; i++) {
+-			if (qn->channels)
+-				agg_avg_rate = div_u64(qn->sum_avg[i], qn->channels);
+-			else
+-				agg_avg_rate = qn->sum_avg[i];
+-
+-			if (qp->ab_coeff) {
+-				agg_avg_rate = agg_avg_rate * qp->ab_coeff;
+-				agg_avg_rate = div_u64(agg_avg_rate, 100);
+-			}
+-
+-			if (qp->ib_coeff) {
+-				agg_peak_rate = qn->max_peak[i] * 100;
+-				agg_peak_rate = div_u64(qn->max_peak[i], qp->ib_coeff);
+-			} else {
+-				agg_peak_rate = qn->max_peak[i];
+-			}
+-
+-			agg_rate = max_t(u64, agg_avg_rate, agg_peak_rate);
+-
+-			agg_clk_rate[i] = max_t(u64, agg_clk_rate[i], agg_rate);
++		for (ctx = 0; ctx < QCOM_SMD_RPM_STATE_NUM; ctx++) {
++			agg_clk_rate[ctx] = max_t(u64, agg_clk_rate[ctx],
++						  qcom_icc_calc_rate(qp, qn, ctx));
+ 		}
+ 	}
+ }
 
->
-> A few minor comments from me in the meantime:
->
-> > +#define loongson2_pm_readw(reg)              readw(loongson2_pm.base + reg)
-> > +#define loongson2_pm_readl(reg)              readl(loongson2_pm.base + reg)
-> > +#define loongson2_pm_writew(val, reg)        writew(val, loongson2_pm.base +
-> > reg)
-> > +#define loongson2_pm_writel(val, reg)        writel(val, loongson2_pm.base +
-> > reg)
->
-> I would prefer these to be 'static inline' functions rather than
-> macros, or you can just open-code them, as each macro is only
-> used once at the moment.
->
-> > +static irqreturn_t loongson2_pm_irq_handler(int irq, void *dev_id)
-> > +{
-> > +     u16 status = loongson2_pm_readw(LOONGSON2_PM1_STS_REG);
-> > +
-> > +     if (!loongson2_pm.suspended && (status & LOONGSON2_PM1_PWRBTN_STS)) {
-> > +             pr_info("Power Button pressed...\n");
->
-> The message is probably more appropriate as a pr_debug() than
-> pr_info().
->
-> > +static int __maybe_unused loongson2_pm_suspend(struct device *dev)
-> > +{
-> > +     loongson2_pm.suspended = true;
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static int __maybe_unused loongson2_pm_resume(struct device *dev)
-> > +{
-> > +     loongson2_pm.suspended = false;
-> > +
-> > +     return 0;
-> > +}
-> > +static SIMPLE_DEV_PM_OPS(loongson2_pm_ops, loongson2_pm_suspend,
-> > loongson2_pm_resume);
->
-> Please change this to DEFINE_SIMPLE_DEV_PM_OPS() and remove the
-> __maybe_unused, this is what all drivers should have these days.
->
-> > +
-> > +static int loongson2_pm_probe(struct platform_device *pdev)
-> > +{
-> > +     int irq, retval;
-> > +     u64 suspend_addr;
-> > +     struct device *dev = &pdev->dev;
-> > +
-> > +     loongson2_pm.base = devm_platform_ioremap_resource(pdev, 0);
-> > +     if (IS_ERR(loongson2_pm.base))
-> > +             return PTR_ERR(loongson2_pm.base);
-> > +
-> > +     irq = platform_get_irq(pdev, 0);
-> > +     if (irq < 0)
-> > +             return irq;
-> > +
-> > +     if (!device_property_read_u64(dev, "loongson,suspend-address",
-> > &suspend_addr))
-> > +             loongson_sysconf.suspend_addr = (u64)phys_to_virt(suspend_addr);
-> > +     else
->
-> Having a custom "loongson,suspend-address" property here feels wrong
-> to me. Can't this be moved into the "regs" property that holds
-> the other mmio registers?
->
->     Arnd
+-- 
+2.41.0
+
