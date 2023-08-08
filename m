@@ -2,112 +2,102 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6B79C04FDF
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 17:30:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25174C41513
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Aug 2023 17:33:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234625AbjHHRa1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Aug 2023 13:30:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36234 "EHLO
+        id S231501AbjHHRdr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Aug 2023 13:33:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42248 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234626AbjHHR3x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 13:29:53 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB67421786;
-        Tue,  8 Aug 2023 09:12:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=1E5Xb4mTlI5my7Fl2wybf8Wnwo2X+ZiGlfBansiZhhQ=; b=ZAtwYPsfE60mHVpJIFk/gIvr7O
-        6vk8MaE6gPTwSXVl1PAaO4fggnI4YkMO2nNDjnLcdbbAXPRxrfM3+ib2XVBnWsAwFMgNSNtmxKA9N
-        eC0WGKACsplVzoflNfcZ7dDrBun0Os47F4uZm3Yjuya8MEQ5bTbqFu192EO5wrOdw3swWmx+isshi
-        N4dwURI0WMArg/qvkPlZBZyvQINv99TKUjplBNA24zvJQ6ZxEggsS1yhOEHcRN2Kg2VBgo68tCd3S
-        Z1XPDBkjxhHIVYvSdpLD+0TcLFi7Np3pQwLRc1yzkzPAAaCp2SqoYhJZk04uZeHz1YCXkGjgPUqc+
-        Vtp85m6A==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1qTIfr-00GZEv-1b; Tue, 08 Aug 2023 09:06:43 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id DF7C730003A;
-        Tue,  8 Aug 2023 11:06:41 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id C73062028B118; Tue,  8 Aug 2023 11:06:41 +0200 (CEST)
-Date:   Tue, 8 Aug 2023 11:06:41 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Meng Li <li.meng@amd.com>
-Cc:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Huang Rui <ray.huang@amd.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, x86@kernel.org,
-        linux-acpi@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>,
-        linux-kselftest@vger.kernel.org,
-        Nathan Fontenot <nathan.fontenot@amd.com>,
-        Deepak Sharma <deepak.sharma@amd.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Shimmer Huang <shimmer.huang@amd.com>,
-        Perry Yuan <Perry.Yuan@amd.com>,
-        Xiaojian Du <Xiaojian.Du@amd.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH V1 2/6] cpufreq: amd-pstate: Enable AMD Pstate Preferred
- Core Supporting.
-Message-ID: <20230808090641.GV212435@hirez.programming.kicks-ass.net>
-References: <20230808081001.2215240-1-li.meng@amd.com>
- <20230808081001.2215240-3-li.meng@amd.com>
+        with ESMTP id S234785AbjHHRct (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2023 13:32:49 -0400
+Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87A5DF9A3
+        for <linux-pm@vger.kernel.org>; Tue,  8 Aug 2023 09:14:18 -0700 (PDT)
+Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-99bf3f59905so853895866b.3
+        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2023 09:14:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=tuxon.dev; s=google; t=1691511245; x=1692116045;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=VA7k4XuYhqMiq1aimPn7yYHaKH+IPXSpGngvmVHTGB4=;
+        b=Ocrt+7ZW9WknfQ1WZZ3LY17HY6T3ur3vH7tG/zJv00T5xrI8ByGPaT2v0K1Q6RiIMD
+         LiMimlDuL/D4KbV1gc9F6Lv6MSK6EVVYX3IJZraelOPoD1hyD+Kk2ZKb6YAXJB0a5rV7
+         F396z01R+N3Qs5D2MUrEN5L7UAlRrGIBKunCEzqOcMcCDg5n/WhnSmrUjfATIKcHl6rx
+         2CjVen7vEWoOLk7bERkY5sAvUyX3Fscr4i+WEvJjgm5T+7obGqNT/TkeGLyB8H7/qzvB
+         xc/4wHinV2JK5pDxr7/OgF6zGo1tWv105vZpY25IeQAA7LxUNVSo6IaNnMdVTJ/Fif7Z
+         wshg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691511245; x=1692116045;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=VA7k4XuYhqMiq1aimPn7yYHaKH+IPXSpGngvmVHTGB4=;
+        b=e4ytleu4uBLORBSu3ap9jfoGPFWLnya854RBr1LcJmg+hzVvmfYLqiAv/Wbm/oyufz
+         r1b8vInDWiSez6u3reNQ9u7o07F2PlZhqGW5sbT/vnw3ZC3bYrAIVVHfXwv5xmhJbCr8
+         dA5Tn8Bq8Gp1vG8LJjyAoEbjcYIkMmBx6kd3Oxr8tsP6NZvhkFKrzvk8o94zXdtjm6kD
+         PZ3M4oBFmRn+chLVap4GXfjV+Cr8Rl9LSo1lmGiXLwVi8Gak+PZmIMjlRFio0f5bFwBp
+         6A3uixBAx3ulNJUJGuxw0jTNMWmE2h5HT5/TUoJ0srhuIgQdx/JpqPv/8SeNeT38Wk5W
+         1wxQ==
+X-Gm-Message-State: AOJu0YxUgirblhOLY44NuZoICdr8TlPJpcvdSZ5esUfujtdvJpervXAq
+        NdpCr+TIe8GqeR24P1ebU382l0bOVMVa+UWwWxfTjRjX
+X-Google-Smtp-Source: AGHT+IGI3NvWLARIAIJ806WzFo1Gu4YYpyDDo+Y24Lhf1uUKTQCBoWPTHY8UkO7PvmeembXLpAFOxg==
+X-Received: by 2002:a17:906:2081:b0:993:e752:1a70 with SMTP id 1-20020a170906208100b00993e7521a70mr11879972ejq.19.1691472062881;
+        Mon, 07 Aug 2023 22:21:02 -0700 (PDT)
+Received: from [10.0.2.15] ([82.78.167.79])
+        by smtp.gmail.com with ESMTPSA id k18-20020a17090666d200b00992f2befcbcsm6125952ejp.180.2023.08.07.22.21.01
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 07 Aug 2023 22:21:02 -0700 (PDT)
+Message-ID: <745d818d-fbfe-da02-b98d-bd7b2c5059ed@tuxon.dev>
+Date:   Tue, 8 Aug 2023 08:21:00 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230808081001.2215240-3-li.meng@amd.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH] MAINTAINERS: update Claudiu Beznea's email address
+To:     Jakub Kicinski <kuba@kernel.org>
+Cc:     nicolas.ferre@microchip.com, conor.dooley@microchip.com,
+        davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
+        lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz,
+        tiwai@suse.com, maz@kernel.org, srinivas.kandagatla@linaro.org,
+        thierry.reding@gmail.com, u.kleine-koenig@pengutronix.de,
+        sre@kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
+        alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20230804050007.235799-1-claudiu.beznea@tuxon.dev>
+ <20230807122508.403c1972@kernel.org>
+Content-Language: en-US
+From:   claudiu beznea <claudiu.beznea@tuxon.dev>
+In-Reply-To: <20230807122508.403c1972@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Aug 08, 2023 at 04:09:57PM +0800, Meng Li wrote:
 
-> +static int amd_pstate_get_highest_perf(int cpu, u64 *highest_perf)
-> +{
-> +       int ret;
-> +
-> +       if (boot_cpu_has(X86_FEATURE_CPPC)) {
-> +               u64 cap1;
-> +
-> +               ret = rdmsrl_safe_on_cpu(cpu, MSR_AMD_CPPC_CAP1, &cap1);
-> +               if (ret)
-> +                       return ret;
-> +               WRITE_ONCE(*highest_perf, AMD_CPPC_HIGHEST_PERF(cap1));
-> +       } else {
-> +               ret = cppc_get_highest_perf(cpu, highest_perf);
-> +       }
-> +
-> +       return (ret);
-> +}
-> +
-> +static void amd_pstate_init_prefcore(void)
-> +{
-> +	int cpu, ret;
-> +	u64 highest_perf;
-> +
-> +	if (no_prefcore)
-> +		return;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		ret = amd_pstate_get_highest_perf(cpu, &highest_perf);
-> +		if (ret)
-> +			break;
 
-So what is the intended behaviour when online != possible ?
+On 07.08.2023 22:25, Jakub Kicinski wrote:
+> On Fri,  4 Aug 2023 08:00:07 +0300 Claudiu Beznea wrote:
+>> Update MAINTAINERS entries with a valid email address as the Microchip
+>> one is no longer valid.
+>>
+>> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+>> Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+>> Signed-off-by: Claudiu Beznea <claudiu.beznea@tuxon.dev>
+> 
+> Thanks for updating the email!
+> 
+> A bit of a cross-tree change. Is there anyone in particular that you'd
+> expect to apply it?
 
-> +		sched_set_itmt_core_prio(highest_perf, cpu);
-> +	}
-> +
-> +	/*
-> +	 * This code can be run during CPU online under the
-> +	 * CPU hotplug locks, so sched_set_amd_prefcore_support()
-> +	 * cannot be called from here.  Queue up a work item
-> +	 * to invoke it.
-> +	 */
-> +	schedule_work(&sched_prefcore_work);
-> +}
+No.
+
+> If nobody speaks up we can pick it up in networking
+> and send to Linus on Thu.
+
+That would be good.
+
+Thank you,
+Claudiu Beznea
