@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DFF7C41513
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Aug 2023 17:39:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02E87C04A94
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Aug 2023 17:39:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232524AbjHIRjc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Aug 2023 13:39:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59418 "EHLO
+        id S232628AbjHIRjd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Aug 2023 13:39:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59422 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229829AbjHIRjb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Aug 2023 13:39:31 -0400
+        with ESMTP id S232505AbjHIRjc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Aug 2023 13:39:32 -0400
 Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36F48E71;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5D3310D2;
         Wed,  9 Aug 2023 10:39:31 -0700 (PDT)
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 379HdCZw058014;
-        Wed, 9 Aug 2023 12:39:12 -0500
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 379HdKLe058037;
+        Wed, 9 Aug 2023 12:39:20 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1691602752;
-        bh=DW02Hdws2cTgi1idHFvVaz8VmWVCgengNghKzecN+S8=;
-        h=From:To:Subject:Date;
-        b=RaA5ZPuttkZ2kC8EEl8F6MlIGEEMvA1BPGRR6RB/IC5y+kC5lu2IWgn8psRWTb+hE
-         rdjMi/AMKD9WO5/L2JqA+Iv0g5LITo5enI/xFAmGk/M8/XyWzxw1Fja0F3MbYrEJQK
-         bySdT/g6mqrA7QApovmKBn0d/EW1cFir5M15fIpQ=
-Received: from DLEE102.ent.ti.com (dlee102.ent.ti.com [157.170.170.32])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 379HdCFM097117
+        s=ti-com-17Q1; t=1691602760;
+        bh=UIYntFequHuzIo6Glfr820/gXNIQMMks+9Ss5XA5YU0=;
+        h=From:To:Subject:Date:In-Reply-To:References;
+        b=ds87j5vfrjxggSFQ0JzvJbRiN5NljSaNC6fnIrKTe3VkfohVvsxESHDH769YrEcYU
+         iKjOQ2apJhb5HXkCcQgBd1+U8UuZTh44lxFUdwrBVMwNBF3FiUrLT7vgG8VxeznDv5
+         YwoX82NrCGrdd5ASicKFZUeBEE47gUyWESHaYNT4=
+Received: from DFLE110.ent.ti.com (dfle110.ent.ti.com [10.64.6.31])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 379HdKHs082190
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 9 Aug 2023 12:39:12 -0500
-Received: from DLEE111.ent.ti.com (157.170.170.22) by DLEE102.ent.ti.com
- (157.170.170.32) with Microsoft SMTP Server (version=TLS1_2,
+        Wed, 9 Aug 2023 12:39:20 -0500
+Received: from DFLE108.ent.ti.com (10.64.6.29) by DFLE110.ent.ti.com
+ (10.64.6.31) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Wed, 9
- Aug 2023 12:39:10 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE111.ent.ti.com
- (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
+ Aug 2023 12:39:20 -0500
+Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE108.ent.ti.com
+ (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Wed, 9 Aug 2023 12:39:10 -0500
+ Frontend Transport; Wed, 9 Aug 2023 12:39:20 -0500
 Received: from TI.dhcp.ti.com (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 379Hd6ga077353;
-        Wed, 9 Aug 2023 12:39:06 -0500
+        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 379Hd6gc077353;
+        Wed, 9 Aug 2023 12:39:15 -0500
 From:   Apurva Nandan <a-nandan@ti.com>
 To:     Apurva Nandan <a-nandan@ti.com>, Nishanth Menon <nm@ti.com>,
         Vignesh Raghavendra <vigneshr@ti.com>,
@@ -54,10 +54,12 @@ To:     Apurva Nandan <a-nandan@ti.com>, Nishanth Menon <nm@ti.com>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-pm@vger.kernel.org>, Udit Kumar <u-kumar1@ti.com>,
         Keerthy J <j-keerthy@ti.com>
-Subject: [PATCH 0/3] Add support for thermal mitigation for K3 J7200 SoC
-Date:   Wed, 9 Aug 2023 23:09:02 +0530
-Message-ID: <20230809173905.1844132-1-a-nandan@ti.com>
+Subject: [PATCH 2/3] arm64: dts: ti: k3-j7200: Add the supported frequencies for A72
+Date:   Wed, 9 Aug 2023 23:09:04 +0530
+Message-ID: <20230809173905.1844132-3-a-nandan@ti.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230809173905.1844132-1-a-nandan@ti.com>
+References: <20230809173905.1844132-1-a-nandan@ti.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -66,22 +68,63 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for thermal mitigation using the CPUFREQ for K3 J7200 SoC.
-K3 J7200 SoC supports Dynamic Frequency Scaling(DFS) for A72 & this can
-be used to drop the cpu frequency using cpufreq to produce a cooling
-effect in the SoC.
+From: Keerthy <j-keerthy@ti.com>
 
-Keerthy (3):
-  thermal: k3_j72xx_bandgap: Add cooling device support
-  arm64: dts: ti: k3-j7200: Add the supported frequencies for A72
-  arm64: dts: ti: k3-j7200-thermal: Add cooling maps and cpu_alert trip
-    at 75C
+Add 750M, 1G, 1.5G & 2G as the supported frequencies for A72.
+This enables support for Dynamic Frequency Scaling(DFS)
 
- arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi |  14 +++
- arch/arm64/boot/dts/ti/k3-j7200.dtsi         |  28 +++++
- drivers/thermal/k3_j72xx_bandgap.c           | 121 +++++++++++++++++++
- 3 files changed, 163 insertions(+)
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+Signed-off-by: Apurva Nandan <a-nandan@ti.com>
+---
+ arch/arm64/boot/dts/ti/k3-j7200.dtsi | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
+diff --git a/arch/arm64/boot/dts/ti/k3-j7200.dtsi b/arch/arm64/boot/dts/ti/k3-j7200.dtsi
+index ef73e6d7e858..7222c453096f 100644
+--- a/arch/arm64/boot/dts/ti/k3-j7200.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-j7200.dtsi
+@@ -48,6 +48,10 @@ cpu0: cpu@0 {
+ 			d-cache-line-size = <64>;
+ 			d-cache-sets = <256>;
+ 			next-level-cache = <&L2_0>;
++			clocks = <&k3_clks 202 2>;
++			clock-names = "cpu";
++			operating-points-v2 = <&cpu0_opp_table>;
++			#cooling-cells = <2>; /* min followed by max */
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -62,6 +66,30 @@ cpu1: cpu@1 {
+ 			d-cache-line-size = <64>;
+ 			d-cache-sets = <256>;
+ 			next-level-cache = <&L2_0>;
++			clocks = <&k3_clks 203 0>;
++			clock-names = "cpu";
++			operating-points-v2 = <&cpu0_opp_table>;
++			#cooling-cells = <2>; /* min followed by max */
++		};
++	};
++
++	cpu0_opp_table: opp-table {
++		compatible = "operating-points-v2";
++
++		opp4-2000000000 {
++			opp-hz = /bits/ 64 <2000000000>;
++		};
++
++		opp3-1500000000 {
++			opp-hz = /bits/ 64 <1500000000>;
++		};
++
++		opp2-1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++		};
++
++		opp1-750000000 {
++			opp-hz = /bits/ 64 <750000000>;
+ 		};
+ 	};
+ 
 -- 
 2.34.1
 
