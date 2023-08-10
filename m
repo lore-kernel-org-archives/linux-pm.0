@@ -2,94 +2,130 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C120C41513
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Aug 2023 18:55:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07F31C001E0
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Aug 2023 19:14:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235539AbjHJSzx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Aug 2023 14:55:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33374 "EHLO
+        id S235499AbjHJTOO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Aug 2023 15:14:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34202 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234751AbjHJSzw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2023 14:55:52 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C792926A6;
-        Thu, 10 Aug 2023 11:55:51 -0700 (PDT)
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37AEa5lj027034;
-        Thu, 10 Aug 2023 18:55:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=date : from : to :
- cc : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=qcppdkim1; bh=0tvQRhrdWb6wzmsaExAY1CRBg2q30015lhUCm1C7fvs=;
- b=cDsiRw8UgmcoFt5i3bTiM5B/bQyMpNLToehp4M8SVVJqWkiPa7JP1KT5SSTYnSD9my2P
- nvg3y/D4absrG5ppRiHxgGOzVqZoogytsTyZvPeZwkrVzcaSLiG26cJtLo3RIJk5uh0V
- qu6s7vFNueQeoT37f6fEPEDHK0GZXm0aPXuHaaYLigRQtbOuAHXUCMhdZKOtU/a2DgH7
- yC6++wugcTzx4GuAdjqqUiB6wDU3ZhfSEuW3Mr7ZPhKV05HL+aJ2ayBet277ejCe8jHP
- dZUWx69tBLKwyF/7sbstQtdPNB/dUAObAYd7vJ8xboYZ7KnXX9JoeNvZJtjgLcOyba0M 8Q== 
-Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3scr39j10n-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 10 Aug 2023 18:55:29 +0000
-Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-        by NASANPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 37AItSOZ017625
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 10 Aug 2023 18:55:28 GMT
-Received: from quicinc.com (10.80.80.8) by nasanex01b.na.qualcomm.com
- (10.46.141.250) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.30; Thu, 10 Aug
- 2023 11:55:27 -0700
-Date:   Thu, 10 Aug 2023 11:55:26 -0700
-From:   Guru Das Srinagesh <quic_gurus@quicinc.com>
-To:     Masahiro Yamada <masahiroy@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        "Nicolas Schier" <nicolas@fjasle.eu>,
-        Kees Cook <keescook@chromium.org>,
-        "Bjorn Andersson" <andersson@kernel.org>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, Will Deacon <will@kernel.org>,
-        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-        <quic_pkondeti@quicinc.com>, <u.kleine-koenig@pengutronix.de>
-CC:     <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-arm-msm@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v2 0/1] Add add-maintainer.py script
-Message-ID: <20230810185526.GC31860@quicinc.com>
-References: <cover.1691049436.git.quic_gurus@quicinc.com>
+        with ESMTP id S235835AbjHJTON (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2023 15:14:13 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1538270F;
+        Thu, 10 Aug 2023 12:14:12 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7829766716;
+        Thu, 10 Aug 2023 19:14:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D7ABC433C7;
+        Thu, 10 Aug 2023 19:14:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1691694851;
+        bh=kqCd67KWHHOLReJvm60zqqKL8Zb5KIbe0uvLTrSIOZs=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=EKiS+ULIakQrrpijPFaaf0WBEim2QoRzv+C220roUF0VfjlU17zCdMn2SzsEhU6FP
+         SRtpPfGcARWlvKncZkOLSN2YI/UMmKBldJtxyKl4PMIwfYhSUbNw0Ka2/iv0UdoJV3
+         6nuYDDlVc1aMF7JMomgxsXiGeENAXSM5Qy45kkgmWIoEJjYbcd7KlLacAdqRD4aa6d
+         w3cgON9vVn+sS3nuEAK7s4vFIHDt82UaFvXB0Sai71E3bzB172dULGdRIA1CbNyWm6
+         0nLYTOgQKs4HZFo9KLXNcRXw13T/htD5/445A8BuoSNxvtP+OOilpXdP4LXEH/ZfFK
+         t7xoqjuIrGKXw==
+Date:   Thu, 10 Aug 2023 20:14:04 +0100
+From:   Conor Dooley <conor@kernel.org>
+To:     Alexander Stein <alexander.stein@ew.tq-group.com>
+Cc:     Philipp Zabel <p.zabel@pengutronix.de>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/6] dt-bindings: trivial-devices: Remove national,lm75
+Message-ID: <20230810-prissy-nibble-9f7747bdb64e@spud>
+References: <20230810144451.1459985-1-alexander.stein@ew.tq-group.com>
+ <20230810144451.1459985-2-alexander.stein@ew.tq-group.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="kIdsuo58jt+pjDVs"
 Content-Disposition: inline
-In-Reply-To: <cover.1691049436.git.quic_gurus@quicinc.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: Eg4y66M8neM8Q4wg0N1zc16QfWy2Liy2
-X-Proofpoint-ORIG-GUID: Eg4y66M8neM8Q4wg0N1zc16QfWy2Liy2
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-08-10_14,2023-08-10_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0
- lowpriorityscore=0 malwarescore=0 suspectscore=0 spamscore=0 phishscore=0
- adultscore=0 mlxlogscore=405 clxscore=1015 mlxscore=0 impostorscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2308100163
+In-Reply-To: <20230810144451.1459985-2-alexander.stein@ew.tq-group.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Aug 03 2023 01:23, Guru Das Srinagesh wrote:
-> When pushing patches to upstream, the `get_maintainer.pl` script is used to
-> determine whom to send the patches to. Instead of having to manually process
-> the output of the script, add a wrapper script to do that for you.
-> 
-> The add-maintainer.py script adds maintainers (and mailing lists) to a patch,
-> editing it in-place.
 
-Could I request reviews from the other maintainers as well, please? Just to see
-if I should continue working on this script or if the `b4` tool obviates the
-need for such a script.
+--kIdsuo58jt+pjDVs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thank you.
+On Thu, Aug 10, 2023 at 04:44:46PM +0200, Alexander Stein wrote:
+> Starting with commit 3e37c9d48f7a ("dt-bindings: hwmon: Convert lm75
+> bindings to yaml") 'national,lm75' has it's own dedicated (YAML) binding.
+> If kept in this file device specific properties as 'vs-supply' are
+> considered excessive. Remove compatible here so it can be checked with
+> more specific binding.
+> arch/arm/boot/dts/nxp/imx/imx6q-mba6a.dtb: sensor@48: 'vs-supply' does not
+> match any of the regexes: 'pinctrl-[0-9]+'
+>   From schema: Documentation/devicetree/bindings/trivial-devices.yaml
+>=20
+> Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
 
-Guru Das.
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Thanks,
+Conor.
+
+> ---
+>  Documentation/devicetree/bindings/trivial-devices.yaml | 2 --
+>  1 file changed, 2 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/trivial-devices.yaml b/Doc=
+umentation/devicetree/bindings/trivial-devices.yaml
+> index 40bc475ee7e1..e30335d4e504 100644
+> --- a/Documentation/devicetree/bindings/trivial-devices.yaml
+> +++ b/Documentation/devicetree/bindings/trivial-devices.yaml
+> @@ -295,8 +295,6 @@ properties:
+>            - miramems,da311
+>              # Temperature sensor with integrated fan control
+>            - national,lm63
+> -            # I2C TEMP SENSOR
+> -          - national,lm75
+>              # Serial Interface ACPI-Compatible Microprocessor System Har=
+dware Monitor
+>            - national,lm80
+>              # Serial Interface ACPI-Compatible Microprocessor System Har=
+dware Monitor
+> --=20
+> 2.34.1
+>=20
+
+--kIdsuo58jt+pjDVs
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZNU2/AAKCRB4tDGHoIJi
+0lwWAQDrilXexeGOevcNPNlmm6AD15crdC32Z29BDRztUy33MQD/V1hjWuJ7t9ek
+NCcwFrHAYB6J63OH6XLI1MraklBLBAw=
+=4Iva
+-----END PGP SIGNATURE-----
+
+--kIdsuo58jt+pjDVs--
