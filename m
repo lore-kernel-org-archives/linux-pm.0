@@ -2,171 +2,108 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44B17C04A6A
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Aug 2023 19:17:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E285FC001B0
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Aug 2023 19:22:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236363AbjHJTR5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Aug 2023 15:17:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49508 "EHLO
+        id S235161AbjHJTWn convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Aug 2023 15:22:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60456 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235315AbjHJTRu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2023 15:17:50 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 966712717;
-        Thu, 10 Aug 2023 12:17:49 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 00465989895b177a; Thu, 10 Aug 2023 21:17:48 +0200
-Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
-   discourages use of this host) smtp.mailfrom=rjwysocki.net 
-   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
-   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id A98FB662742;
-        Thu, 10 Aug 2023 21:17:47 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH v1 2/7] thermal: intel: intel_soc_dts_iosf: Untangle update_trip_temp()
-Date:   Thu, 10 Aug 2023 21:11:26 +0200
-Message-ID: <2306583.ElGaqSPkdT@kreacher>
-In-Reply-To: <5713357.DvuYhMxLoT@kreacher>
-References: <5713357.DvuYhMxLoT@kreacher>
+        with ESMTP id S234417AbjHJTWn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2023 15:22:43 -0400
+Received: from mail-oo1-f49.google.com (mail-oo1-f49.google.com [209.85.161.49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD8CC10D;
+        Thu, 10 Aug 2023 12:22:42 -0700 (PDT)
+Received: by mail-oo1-f49.google.com with SMTP id 006d021491bc7-563393b63dbso208803eaf.1;
+        Thu, 10 Aug 2023 12:22:42 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691695362; x=1692300162;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=V3f/l0R5xil5slGV+XOGNMmiW0lc9Xb/pv7UJWmkgUk=;
+        b=jABmPlD+vi2hrLdlLukMK9zt4ZcEgEJY0CI9gLfeIigscq4x7RoroCvb26aawcinSK
+         AdILQCQWgtVJ9nlX+uhad+U5rsF1nc38Ou/HSnmtO8tXR5Uz/A8PktXr/Jku9ZYeDDxy
+         cqZ9TKKzvP58uox65U328btDMy6mQlSDQO+6iLgBtXjd4R4u1xVF0a46HFfeqyMpZXri
+         gDOCDSe8GP5mMyHQ01oBH/+nq92ALUepyj6DNaynkSmAms5/PgIWxJ1jC9Hh7Te4HFWf
+         suwXjM/K0tkNQ2pA6EFtLzUnNrIImb1/+EOoD3+aAQFaaNObq1Y/DYD6Dxtgrh1RqWqF
+         fsEQ==
+X-Gm-Message-State: AOJu0YwnMBmRVaQFmMyXRs6NyhwBydgyXhSc9qAxPAZIAIKpqPxct+2Y
+        ZpfzV0aZ7TAMshnUsfelGQG5AqFImg+FEvXJo3A=
+X-Google-Smtp-Source: AGHT+IEvqJu69Bm43e9mId2dDkkqRV44o/TlZVy0V8pb/AjZqGTu5tVmVcnXmUBNuRkccMD9B0lc+UIjjAiLGvDZZ/U=
+X-Received: by 2002:a4a:d689:0:b0:56c:484a:923d with SMTP id
+ i9-20020a4ad689000000b0056c484a923dmr2814522oot.1.1691695362058; Thu, 10 Aug
+ 2023 12:22:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <1691581193-8416-1-git-send-email-mihai.carabas@oracle.com> <1691581193-8416-2-git-send-email-mihai.carabas@oracle.com>
+In-Reply-To: <1691581193-8416-2-git-send-email-mihai.carabas@oracle.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 10 Aug 2023 21:22:30 +0200
+Message-ID: <CAJZ5v0gK2dGPYEMKaKayUGuXpGns-w3V7RBpJwYc3=h-JLDdNg@mail.gmail.com>
+Subject: Re: [PATCH 1/7] cpuidle-haltpoll: Make boot_option_idle_override
+ check X86 specific
+To:     Mihai Carabas <mihai.carabas@oracle.com>
+Cc:     Joao Martins <joao.m.martins@oracle.com>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Wanpeng Li <wanpengli@tencent.com>,
+        Vitaly Kuznetsov <vkuznets@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Petr Mladek <pmladek@suse.com>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Sami Tolvanen <samitolvanen@google.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Juerg Haefliger <juerg.haefliger@canonical.com>,
+        =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Ankur Arora <ankur.a.arora@oracle.com>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        kvm@vger.kernel.org, linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrleeigddufeegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdp
- rhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Aug 9, 2023 at 2:52 PM Mihai Carabas <mihai.carabas@oracle.com> wrote:
+>
+> From: Joao Martins <joao.m.martins@oracle.com>
+>
+> In the pursuit of letting it build on ARM let's not include what is x86
+> specific.
+>
+> Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
+> Signed-off-by: Mihai Carabas <mihai.carabas@oracle.com>
+> ---
+>  drivers/cpuidle/cpuidle-haltpoll.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
+> index e66df22f9695..0ca3c8422eb6 100644
+> --- a/drivers/cpuidle/cpuidle-haltpoll.c
+> +++ b/drivers/cpuidle/cpuidle-haltpoll.c
+> @@ -104,9 +104,11 @@ static int __init haltpoll_init(void)
+>         int ret;
+>         struct cpuidle_driver *drv = &haltpoll_driver;
+>
+> +#ifdef CONFIG_X86
+>         /* Do not load haltpoll if idle= is passed */
+>         if (boot_option_idle_override != IDLE_NO_OVERRIDE)
+>                 return -ENODEV;
+> +#endif
 
-Function update_trip_temp() is currently used for the initialization
-of trip points as well as for changing trip point temperatures in
-sys_set_trip_temp().
+I'm sure that adding this #ifdef to the function body is avoidable.
 
-This is quite confusing and passing the value of dts->trip_types[trip]
-to it so that it can store that value in the same memory location is
-not particularly useful, because it only is necessary to set the
-trip point type once, at the initialization time.
-
-For this reason, drop the last argument from update_trip_temp() and
-introduce configure_trip() calling the former internally for the
-initial configuration of trip points.
-
-Modify the majority of update_trip_temp() callers to use
-configure_trip() instead of it.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/thermal/intel/intel_soc_dts_iosf.c |   37 ++++++++++++++++++-----------
- 1 file changed, 24 insertions(+), 13 deletions(-)
-
-Index: linux-pm/drivers/thermal/intel/intel_soc_dts_iosf.c
-===================================================================
---- linux-pm.orig/drivers/thermal/intel/intel_soc_dts_iosf.c
-+++ linux-pm/drivers/thermal/intel/intel_soc_dts_iosf.c
-@@ -67,8 +67,7 @@ static int sys_get_trip_temp(struct ther
- }
- 
- static int update_trip_temp(struct intel_soc_dts_sensor_entry *dts,
--			    int thres_index, int temp,
--			    enum thermal_trip_type trip_type)
-+			    int thres_index, int temp)
- {
- 	int status;
- 	u32 temp_out;
-@@ -142,8 +141,6 @@ static int update_trip_temp(struct intel
- 	if (status)
- 		goto err_restore_te_out;
- 
--	dts->trip_types[thres_index] = trip_type;
--
- 	return 0;
- err_restore_te_out:
- 	iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
-@@ -159,6 +156,21 @@ err_restore_ptps:
- 	return status;
- }
- 
-+static int configure_trip(struct intel_soc_dts_sensor_entry *dts,
-+			  int thres_index, enum thermal_trip_type trip_type,
-+			  int temp)
-+{
-+	int ret;
-+
-+	ret = update_trip_temp(dts, thres_index, temp);
-+	if (ret)
-+		return ret;
-+
-+	dts->trip_types[thres_index] = trip_type;
-+
-+	return 0;
-+}
-+
- static int sys_set_trip_temp(struct thermal_zone_device *tzd, int trip,
- 			     int temp)
- {
-@@ -170,8 +182,7 @@ static int sys_set_trip_temp(struct ther
- 		return -EINVAL;
- 
- 	mutex_lock(&sensors->dts_update_lock);
--	status = update_trip_temp(dts, trip, temp,
--				  dts->trip_types[trip]);
-+	status = update_trip_temp(dts, trip, temp);
- 	mutex_unlock(&sensors->dts_update_lock);
- 
- 	return status;
-@@ -317,7 +328,7 @@ int intel_soc_dts_iosf_add_read_only_cri
- 
- 		j = find_first_zero_bit(&mask, SOC_MAX_DTS_TRIPS);
- 		if (j < SOC_MAX_DTS_TRIPS)
--			return update_trip_temp(entry, j, temp, THERMAL_TRIP_CRITICAL);
-+			return configure_trip(entry, j, THERMAL_TRIP_CRITICAL, temp);
- 	}
- 
- 	return -EINVAL;
-@@ -395,13 +406,13 @@ struct intel_soc_dts_sensors *intel_soc_
- 	}
- 
- 	for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i) {
--		ret = update_trip_temp(&sensors->soc_dts[i], 0, 0,
--				       THERMAL_TRIP_PASSIVE);
-+		ret = configure_trip(&sensors->soc_dts[i], 0,
-+				     THERMAL_TRIP_PASSIVE, 0);
- 		if (ret)
- 			goto err_remove_zone;
- 
--		ret = update_trip_temp(&sensors->soc_dts[i], 1, 0,
--				       THERMAL_TRIP_PASSIVE);
-+		ret = configure_trip(&sensors->soc_dts[i], 1,
-+				     THERMAL_TRIP_PASSIVE, 0);
- 		if (ret)
- 			goto err_remove_zone;
- 	}
-@@ -422,8 +433,8 @@ void intel_soc_dts_iosf_exit(struct inte
- 	int i;
- 
- 	for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i) {
--		update_trip_temp(&sensors->soc_dts[i], 0, 0, 0);
--		update_trip_temp(&sensors->soc_dts[i], 1, 0, 0);
-+		configure_trip(&sensors->soc_dts[i], 0, 0, 0);
-+		configure_trip(&sensors->soc_dts[i], 1, 0, 0);
- 		remove_dts_thermal_zone(&sensors->soc_dts[i]);
- 	}
- 	kfree(sensors);
-
-
-
+>         if (!kvm_para_available() || !haltpoll_want())
+>                 return -ENODEV;
+> --
