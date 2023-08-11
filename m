@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A9DAC001DE
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Aug 2023 13:04:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC880C04A94
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Aug 2023 13:04:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235221AbjHKNEU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Aug 2023 09:04:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56562 "EHLO
+        id S233953AbjHKNEd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Aug 2023 09:04:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42208 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235579AbjHKNET (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2023 09:04:19 -0400
-Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5906119
-        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 06:04:18 -0700 (PDT)
-Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-4fe44955decso2283672e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 06:04:18 -0700 (PDT)
+        with ESMTP id S235853AbjHKNEX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2023 09:04:23 -0400
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30C4130D2
+        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 06:04:22 -0700 (PDT)
+Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-4fe94dde7d7so1410703e87.3
+        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 06:04:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691759057; x=1692363857;
+        d=linaro.org; s=google; t=1691759061; x=1692363861;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=K2gqpaEPctpbBWhVHiUrRTuW6FgZPxJ4z9NtL8e2FcE=;
-        b=o68STLi5YnClwGi+FDrzztvPnSVtmYLtQ6pgwaetu1EcDSKzwB4vLEwSSX3YFyjjFE
-         Tv3ZpaVufpWLT739uwyG2VgowVcY5KB7lb+64AQkr0A+jP/l8mbrP3b6XC7TwDf6GWUC
-         Us89j4+BduJPIdQfABPXLfdIVYexEWecDlZ8X6z1JkDu+WXeIzBBxKrDmjFitW6Aj3n1
-         HY/LgTMKxy5Mu9shKr6nz79zS6SgLd6Ff6P8TGKaoSyA2dngSCbHheEO7j/eJ/z0yvLb
-         eCi4V0s/cvrSGQEcTEGYDqG5L2Svv/GXQq3YyQW7MFotI7F0uOlLtaK8NjXA9fbvSN6i
-         FTlg==
+        bh=nzUrj2LkXobJFg5OuLlMFJ3XH/1Psa0W4FGun30sHA4=;
+        b=BvaTql7c9EdKSCM3K5FY7onS4s80o2E2hC1HnTjhCcbGSJS5iOxcRknR6e6y9MQhP8
+         xcA21HVjoJQMvSt1XhTdRwjsvNgQ+NMLYTKfaQDLKOLG5oC3LX4/WpiAQhSiyQc/gP4O
+         M2dvUnXg+4NPbaDUSv7wJ9BzSnHrselWP81UZctxY9q+r0LAep0I3c30ydvq0+kaDiuj
+         bmQs24Ovv+2D2s8a+AAWywHN3LjjSO5zdt0qv/eGHEPwyJYL4n1NSSPcdQW/cYY1bceI
+         785wCShvd1cGxeMcOLiCKLYCTaoXARJOxd9HlXYyGnDTJsp2iiiJ0fHR0SRa/1kUiEsO
+         AixQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691759057; x=1692363857;
+        d=1e100.net; s=20221208; t=1691759061; x=1692363861;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=K2gqpaEPctpbBWhVHiUrRTuW6FgZPxJ4z9NtL8e2FcE=;
-        b=D6Lf/rsmjUvtsJBHI0LPcMJf6ITvEXNWCrGmt4DZSR1/K5ph/Y8boMcpKvlEr0icU3
-         C7LKxlqOqn/VyvaC9h7wXf81RCIS6Z7FCQV3C1vOb838WB6aoH0QUwPmHT3awtQNijLu
-         ySlMDMgFbSXELBwl0iLhzPsJ8cx5YPJUXpll5i03lATZst62zCf8NV5R+NsiLMyiMR4v
-         4Nr5j7NYR699llG+blRHU3Wq/cdQzQD5VEfoLXE6gFb3j3+JEFyVt4tsggsOZR1XwZyR
-         sNtK7u2L6MNxDBajcpnZtH3gZZqE6+Bz7tO8ioMWngSGScAV0M7JgFSUS6Kfjdm9CCco
-         XXRw==
-X-Gm-Message-State: AOJu0Yy05y8vzNew6afGC+f7qCptPe7ijl7alSEwIiBclru+oOw/JywH
-        tEEiMBhoyLVZlRg+ZpTF0xU7fQ==
-X-Google-Smtp-Source: AGHT+IGlHLki2wPRwNC0S1hcBJlL7LSMUZmB189Jk8dxCiyyzdByiDBO8oYZN2QpBg6KmHMgMIXl1Q==
-X-Received: by 2002:a05:6512:3192:b0:4fe:8be:6065 with SMTP id i18-20020a056512319200b004fe08be6065mr888268lfe.5.1691759057244;
-        Fri, 11 Aug 2023 06:04:17 -0700 (PDT)
+        bh=nzUrj2LkXobJFg5OuLlMFJ3XH/1Psa0W4FGun30sHA4=;
+        b=IC/HNW6Sxm8KREPXGpshw9NZXmY8ISyZwcalz4bBtfcLst3qB8dMTzbA76taHdafI/
+         uDYmnqVSLqqIJC32fCvxmp7HdFitlGHm/L583iLmEFXkcP48Qt5/5UvJLlToXgqkh2JK
+         BK/DPhZro7juboh+jTCR48cpkDIPKxGNuCqkqBaESuXCMS53cAyI7btbOHtptXfI+w7q
+         B6fWzAMldFAUbyS2l/FY8d4r632ECSEGz/s9MkZ2+aYbLnI6aTr45mdf8ATE44jGYvdE
+         +18FW7dkBZ7mlEuYElXlmuAYQ60dVGQDSCiykrKd1J2sKTlZM6l47PturipmQnzKVEDe
+         /7wA==
+X-Gm-Message-State: AOJu0YxQ4goQQwA4wNOdP6aviU2gLZpPHMlWqRygb95vF49j2a6USRBW
+        nJUu48pBj3LXAuusdXW2MlKKZA==
+X-Google-Smtp-Source: AGHT+IGeUqlyEyypBaj4HAvJV8SB4dQiU3SzGrekTnnouY2G8nplcTcC9/eXoHh4xn9phlenMm4ZSA==
+X-Received: by 2002:ac2:4896:0:b0:4fb:bef0:948e with SMTP id x22-20020ac24896000000b004fbbef0948emr1226728lfc.5.1691759061245;
+        Fri, 11 Aug 2023 06:04:21 -0700 (PDT)
 Received: from [192.168.1.101] (abyj188.neoplus.adsl.tpnet.pl. [83.9.29.188])
-        by smtp.gmail.com with ESMTPSA id v20-20020a197414000000b004fe15a2f0f6sm722491lfe.62.2023.08.11.06.04.15
+        by smtp.gmail.com with ESMTPSA id v20-20020a197414000000b004fe15a2f0f6sm722491lfe.62.2023.08.11.06.04.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Aug 2023 06:04:16 -0700 (PDT)
+        Fri, 11 Aug 2023 06:04:20 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Fri, 11 Aug 2023 15:04:09 +0200
-Subject: [PATCH 02/11] interconnect: qcom: sc7180: Set ACV enable_mask
+Date:   Fri, 11 Aug 2023 15:04:11 +0200
+Subject: [PATCH 04/11] interconnect: qcom: sc8180x: Set ACV enable_mask
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230811-topic-acv-v1-2-a85b6e94f46d@linaro.org>
+Message-Id: <20230811-topic-acv-v1-4-a85b6e94f46d@linaro.org>
 References: <20230811-topic-acv-v1-0-a85b6e94f46d@linaro.org>
 In-Reply-To: <20230811-topic-acv-v1-0-a85b6e94f46d@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -76,11 +76,11 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691759050; l=752;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691759050; l=724;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=FoXftCPZOnzoFkkp8/g7uY07NVaDU78+4cdDrOJ/6So=;
- b=7uA72fqFsQLe4C4tlsc/TLIQQ9+YX3kz/nyuqNuBBnp7B2KxBsCjz+gPhrcZhPcSzTnvUDPGS
- mQlRRZ/twc9BzJLoZtthkAgUZGrcAOWNJUbtZmueLHUKg4rqEKO1Q6X
+ bh=j/9WH0FZIh4+IrqqeD1fDhbVxzmI74+9b2EBikA59zQ=;
+ b=JIXkRs0NCNgDgcCKM2tbMRPQZ/rKf/4k2NNTEAmqPAuY9c1jxCF7GtQBMWhtIEQQ3Os2zihZU
+ cvu4JVNFE9WBBv3R4BCZXxfbQnvlTT0reeWWBtuwTP6WAuSui5I+xv/
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
@@ -89,24 +89,24 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 ACV expects an enable_mask corresponding to the APPS RSC, fill it in.
 
-Fixes: 2d1f95ab9feb ("interconnect: qcom: Add SC7180 interconnect provider driver")
+Fixes: 9c8c6bac1ae8 ("interconnect: qcom: Add SC8180x providers")
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/interconnect/qcom/sc7180.c | 1 +
+ drivers/interconnect/qcom/sc8180x.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/interconnect/qcom/sc7180.c b/drivers/interconnect/qcom/sc7180.c
-index d94ab9b39f3d..013b6840d59d 100644
---- a/drivers/interconnect/qcom/sc7180.c
-+++ b/drivers/interconnect/qcom/sc7180.c
-@@ -1238,6 +1238,7 @@ static struct qcom_icc_node xs_sys_tcu_cfg = {
+diff --git a/drivers/interconnect/qcom/sc8180x.c b/drivers/interconnect/qcom/sc8180x.c
+index 0fb4898dabcf..7d92ef960e7d 100644
+--- a/drivers/interconnect/qcom/sc8180x.c
++++ b/drivers/interconnect/qcom/sc8180x.c
+@@ -1345,6 +1345,7 @@ static struct qcom_icc_node slv_qup_core_2 = {
  
  static struct qcom_icc_bcm bcm_acv = {
  	.name = "ACV",
 +	.enable_mask = ACV_RSC_APPS,
- 	.keepalive = false,
  	.num_nodes = 1,
- 	.nodes = { &ebi },
+ 	.nodes = { &slv_ebi }
+ };
 
 -- 
 2.41.0
