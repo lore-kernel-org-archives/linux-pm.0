@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 648DDC04FDF
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Aug 2023 12:15:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F8D5C04E69
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Aug 2023 12:15:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235244AbjHKMPf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Aug 2023 08:15:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49552 "EHLO
+        id S235640AbjHKMPi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Aug 2023 08:15:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49590 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234776AbjHKMPe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2023 08:15:34 -0400
-Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 797B02D57
-        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 05:15:30 -0700 (PDT)
-Received: by mail-lj1-x231.google.com with SMTP id 38308e7fff4ca-2ba1e9b1fa9so29507271fa.3
-        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 05:15:30 -0700 (PDT)
+        with ESMTP id S235581AbjHKMPh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2023 08:15:37 -0400
+Received: from mail-lj1-x233.google.com (mail-lj1-x233.google.com [IPv6:2a00:1450:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AC712722
+        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 05:15:34 -0700 (PDT)
+Received: by mail-lj1-x233.google.com with SMTP id 38308e7fff4ca-2b9c0391749so30897231fa.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 05:15:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691756129; x=1692360929;
+        d=linaro.org; s=google; t=1691756132; x=1692360932;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=J1qD1Qcc4QtscSjqDVTgfZE/Hl25y6DZb50+3ddB7E0=;
-        b=quI/FI+MKAGuap6Kk8P6ltON5zoVcuZFX9pxk6mfBM1NY1jkewSBGhsuN7hF7knqZm
-         h4b8YGNzfMiTBLXEMX8ZhKosoQEB+SjuwPehl5+XXXwBo/GfjTvhs6GXJyl9jFTYgtJu
-         45YSK079o0WIAoXuultj2cPfUXqXOQo1GMK/vAnEfD/8D2AS8UyXpavBrBwtSBpIb+b+
-         sj0G0EHaawQ1UyM6jJL/p3/YiUX16GNVMv1SNO4HqvnT++sTbAz9omkuvr64ec2qN+JY
-         0LPQ0VPF/kHltqN3iO10Cibh94rU0hgKWQBZfP2zNLCiJtYwI3ugSVAvLEzx7Wj4eKIt
-         MgZA==
+        bh=vIu2YRZ5QiNzH8baQ1wiIUnbzSYxk1PukW9Yv+YuM1c=;
+        b=aZYVvrgJ4y/5Z2zqiUxLpGqIXFrARAEvBQCT1wLt6cDN6zLoJiK6n7ndxbMgsNHFlL
+         x2uq/5zohdLDOdoinJoWhB5LNEJ1K14grAxA7R6lk53R8XDxfr5PAduobOngeLZyTzin
+         ASrVgTBcN3zZOquyhZkelQAXttM7s8dAqRe2j2yTe9pGIor12o2NBvwFJQoFau/k1cBS
+         8bbMP9ik8yK+lYmeU7Uffbav9g9AoaY6isT6D4335WZIVv24pOzDPVhL8CbbnyvCXyXZ
+         r5nXs6vkPkBkJkq5sn+yVlpQinDt7e8r14At7NkXDpZCm8Fli/LLSnHEtfM+N5a9uGZS
+         zgUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691756129; x=1692360929;
+        d=1e100.net; s=20221208; t=1691756132; x=1692360932;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=J1qD1Qcc4QtscSjqDVTgfZE/Hl25y6DZb50+3ddB7E0=;
-        b=Sa9hh14ZXF000up8p6NBu1ijGyUKzu7KhgXK5SX4ugpWDh1LTjG4GREFIt7kaneQ+2
-         Iqe4Lnkkt3Vd94LX22Xhd6OeUCER8wzYjcNn3SNUJTmFWJXQMz89CJRuGYSr9W2IxWfE
-         lDo//J0fLuOGPkHdFXbl1tkXEx/88P7G0BGz8fiDa0GMp4TwXk+ObWj7xwvboElrMDH8
-         DMNnGafAHSOlZqmuE8HKv5W9bmXN08EpOegII5jgi0BcNrt0BDfyw4uHA6elVkPO5YQV
-         xqWnBkGbkr1ILmRvIPrYzU0m2huR92BMsgz8JZlQGpOzPsCzsApxJvw1xh64WbxpKnjO
-         gLBg==
-X-Gm-Message-State: AOJu0Yy2v0npjEttptH/rSANsip48Hn2cxq7OGZcFwRWdsaU/MAzSpF4
-        CW0fX8aFB6eejYVfpbIORuNuqw==
-X-Google-Smtp-Source: AGHT+IF5ckwC25EHekY8yDqE0sD7DhmYiPdWFy7ZuQx2NHi1U8uAJ/T27522WKNt0XD5Ao31KiHK9A==
-X-Received: by 2002:a2e:7d05:0:b0:2b5:68ad:291f with SMTP id y5-20020a2e7d05000000b002b568ad291fmr1420687ljc.19.1691756128618;
-        Fri, 11 Aug 2023 05:15:28 -0700 (PDT)
+        bh=vIu2YRZ5QiNzH8baQ1wiIUnbzSYxk1PukW9Yv+YuM1c=;
+        b=bwicxufgMm6G0iIbXWlkFq++aweRDB9MV2Mf9/wRPXPjZlTo0BO/iBNKnbYof0bzI5
+         zv1b36v+XjAZflsRHb/cvqCPgVY3HbGiP23O4Xzxw76jjxTuKGtVhKxfdWneXkYBQ4N6
+         8aMp5eCKu02qH8rrac9LcoriuNgfD5lIwsWYCiWy4L3MV8+JrNQJ26e8cgP1hFwEp8eg
+         o8/JJ934Nfpl98Tgae/rqTyaxlpSJZXwAOtQ3ZYkvxOQqzOZfa8rvjDxzOv+qSK1Mxa8
+         4gisueEKIW8QRlL9lGabV30BYLwjlOGNWYP4RpBvWKjLb5FZtawE3PWIKda8ujR2TbFy
+         zOHA==
+X-Gm-Message-State: AOJu0YwbeapBmYPZpG4ZNlNsjXsJS0Luehqon+2C/TgOAAyBd4E2vqjc
+        Qg0/rkZq1dKa+g17TSr0tZY1HQ==
+X-Google-Smtp-Source: AGHT+IFUXIjNEsuOxEZ1AUUn6eSFtAWSq9bWI8PbArDHRenmldDMMJ+wmnsTiCmDzH9js3EfzweYpQ==
+X-Received: by 2002:a2e:9015:0:b0:2b9:36d5:729c with SMTP id h21-20020a2e9015000000b002b936d5729cmr1538062ljg.47.1691756132579;
+        Fri, 11 Aug 2023 05:15:32 -0700 (PDT)
 Received: from [192.168.1.101] (abyj188.neoplus.adsl.tpnet.pl. [83.9.29.188])
-        by smtp.gmail.com with ESMTPSA id m12-20020a2e870c000000b002b9ec22d9fasm848487lji.29.2023.08.11.05.15.27
+        by smtp.gmail.com with ESMTPSA id m12-20020a2e870c000000b002b9ec22d9fasm848487lji.29.2023.08.11.05.15.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Aug 2023 05:15:28 -0700 (PDT)
+        Fri, 11 Aug 2023 05:15:32 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Fri, 11 Aug 2023 14:15:13 +0200
-Subject: [PATCH 02/20] interconnect: qcom: sdm670: Retire DEFINE_QNODE
+Date:   Fri, 11 Aug 2023 14:15:16 +0200
+Subject: [PATCH 05/20] interconnect: qcom: sdx65: Retire DEFINE_QNODE
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230811-topic-icc_retire_macrosd-v1-2-c03aaeffc769@linaro.org>
+Message-Id: <20230811-topic-icc_retire_macrosd-v1-5-c03aaeffc769@linaro.org>
 References: <20230811-topic-icc_retire_macrosd-v1-0-c03aaeffc769@linaro.org>
 In-Reply-To: <20230811-topic-icc_retire_macrosd-v1-0-c03aaeffc769@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -66,11 +66,11 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691756123; l=34748;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691756124; l=20861;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=Lb3w/FbbuUtMN7ePa5mlX6FPPcFQ2I6VkZQ10fFhA/4=;
- b=jerO4lsNt44O1xAshelcMp5NNkqnLmXQSzcccxjkTyy4oz3CAH57gqKdAEGqe8RzOJSGaElWg
- W7TUyz/3hUSDdLcHaKx52FtnTGrRbnrdWyBB81fDEaQMKSmabvz49ZS
+ bh=c/GlOG0NiFmOAgq/x9Z8HHva47IUgXmSxXxn8NzKaaM=;
+ b=pbkq6R9zFJ690+aCaVjafP0tyBXrRAXEq2XYaFaW5NcNwR7OAD6KkJbIVtpStQZFRp4Yu7DIY
+ BbgoLMdc5PyAerq1axnzK6orDHMZgNSAs3zvnHDP/LbcPy5SQt+s34b
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
@@ -81,1164 +81,662 @@ The struct definition macros are hard to read and comapre, expand them.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/interconnect/qcom/sdm670.c | 1145 ++++++++++++++++++++++++++++++++----
- 1 file changed, 1029 insertions(+), 116 deletions(-)
+ drivers/interconnect/qcom/sdx65.c | 643 ++++++++++++++++++++++++++++++++++----
+ 1 file changed, 588 insertions(+), 55 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/sdm670.c b/drivers/interconnect/qcom/sdm670.c
-index 29128a9b63ae..bf6468c83362 100644
---- a/drivers/interconnect/qcom/sdm670.c
-+++ b/drivers/interconnect/qcom/sdm670.c
-@@ -15,122 +15,1035 @@
+diff --git a/drivers/interconnect/qcom/sdx65.c b/drivers/interconnect/qcom/sdx65.c
+index f42392d505dd..6ebfd835c714 100644
+--- a/drivers/interconnect/qcom/sdx65.c
++++ b/drivers/interconnect/qcom/sdx65.c
+@@ -15,61 +15,594 @@
  #include "icc-rpmh.h"
- #include "sdm670.h"
+ #include "sdx65.h"
  
--DEFINE_QNODE(qhm_a1noc_cfg, SDM670_MASTER_A1NOC_CFG, 1, 4, SDM670_SLAVE_SERVICE_A1NOC);
--DEFINE_QNODE(qhm_qup1, SDM670_MASTER_BLSP_1, 1, 4, SDM670_SLAVE_A1NOC_SNOC);
--DEFINE_QNODE(qhm_tsif, SDM670_MASTER_TSIF, 1, 4, SDM670_SLAVE_A1NOC_SNOC);
--DEFINE_QNODE(xm_emmc, SDM670_MASTER_EMMC, 1, 8, SDM670_SLAVE_A1NOC_SNOC);
--DEFINE_QNODE(xm_sdc2, SDM670_MASTER_SDCC_2, 1, 8, SDM670_SLAVE_A1NOC_SNOC);
--DEFINE_QNODE(xm_sdc4, SDM670_MASTER_SDCC_4, 1, 8, SDM670_SLAVE_A1NOC_SNOC);
--DEFINE_QNODE(xm_ufs_mem, SDM670_MASTER_UFS_MEM, 1, 8, SDM670_SLAVE_A1NOC_SNOC);
--DEFINE_QNODE(qhm_a2noc_cfg, SDM670_MASTER_A2NOC_CFG, 1, 4, SDM670_SLAVE_SERVICE_A2NOC);
--DEFINE_QNODE(qhm_qdss_bam, SDM670_MASTER_QDSS_BAM, 1, 4, SDM670_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(qhm_qup2, SDM670_MASTER_BLSP_2, 1, 4, SDM670_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(qnm_cnoc, SDM670_MASTER_CNOC_A2NOC, 1, 8, SDM670_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(qxm_crypto, SDM670_MASTER_CRYPTO_CORE_0, 1, 8, SDM670_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(qxm_ipa, SDM670_MASTER_IPA, 1, 8, SDM670_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(xm_qdss_etr, SDM670_MASTER_QDSS_ETR, 1, 8, SDM670_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(xm_usb3_0, SDM670_MASTER_USB3, 1, 8, SDM670_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(qxm_camnoc_hf0_uncomp, SDM670_MASTER_CAMNOC_HF0_UNCOMP, 1, 32, SDM670_SLAVE_CAMNOC_UNCOMP);
--DEFINE_QNODE(qxm_camnoc_hf1_uncomp, SDM670_MASTER_CAMNOC_HF1_UNCOMP, 1, 32, SDM670_SLAVE_CAMNOC_UNCOMP);
--DEFINE_QNODE(qxm_camnoc_sf_uncomp, SDM670_MASTER_CAMNOC_SF_UNCOMP, 1, 32, SDM670_SLAVE_CAMNOC_UNCOMP);
--DEFINE_QNODE(qhm_spdm, SDM670_MASTER_SPDM, 1, 4, SDM670_SLAVE_CNOC_A2NOC);
--DEFINE_QNODE(qnm_snoc, SDM670_MASTER_SNOC_CNOC, 1, 8, SDM670_SLAVE_TLMM_SOUTH, SDM670_SLAVE_CAMERA_CFG, SDM670_SLAVE_SDCC_4, SDM670_SLAVE_SDCC_2, SDM670_SLAVE_CNOC_MNOC_CFG, SDM670_SLAVE_UFS_MEM_CFG, SDM670_SLAVE_GLM, SDM670_SLAVE_PDM, SDM670_SLAVE_A2NOC_CFG, SDM670_SLAVE_QDSS_CFG, SDM670_SLAVE_DISPLAY_CFG, SDM670_SLAVE_TCSR, SDM670_SLAVE_DCC_CFG, SDM670_SLAVE_CNOC_DDRSS, SDM670_SLAVE_SNOC_CFG, SDM670_SLAVE_SOUTH_PHY_CFG, SDM670_SLAVE_GRAPHICS_3D_CFG, SDM670_SLAVE_VENUS_CFG, SDM670_SLAVE_TSIF, SDM670_SLAVE_CDSP_CFG, SDM670_SLAVE_AOP, SDM670_SLAVE_BLSP_2, SDM670_SLAVE_SERVICE_CNOC, SDM670_SLAVE_USB3, SDM670_SLAVE_IPA_CFG, SDM670_SLAVE_RBCPR_CX_CFG, SDM670_SLAVE_A1NOC_CFG, SDM670_SLAVE_AOSS, SDM670_SLAVE_PRNG, SDM670_SLAVE_VSENSE_CTRL_CFG, SDM670_SLAVE_EMMC_CFG, SDM670_SLAVE_BLSP_1, SDM670_SLAVE_SPDM_WRAPPER, SDM670_SLAVE_CRYPTO_0_CFG, SDM670_SLAVE_PIMEM_CFG, SDM670_SLAVE_TLMM_NORTH, SDM670_SLAVE_CLK_CTL, SDM670_SLAVE_IMEM_CFG);
--DEFINE_QNODE(qhm_cnoc, SDM670_MASTER_CNOC_DC_NOC, 1, 4, SDM670_SLAVE_MEM_NOC_CFG, SDM670_SLAVE_LLCC_CFG);
--DEFINE_QNODE(acm_l3, SDM670_MASTER_AMPSS_M0, 1, 16, SDM670_SLAVE_SERVICE_GNOC, SDM670_SLAVE_GNOC_SNOC, SDM670_SLAVE_GNOC_MEM_NOC);
--DEFINE_QNODE(pm_gnoc_cfg, SDM670_MASTER_GNOC_CFG, 1, 4, SDM670_SLAVE_SERVICE_GNOC);
--DEFINE_QNODE(llcc_mc, SDM670_MASTER_LLCC, 2, 4, SDM670_SLAVE_EBI_CH0);
--DEFINE_QNODE(acm_tcu, SDM670_MASTER_TCU_0, 1, 8, SDM670_SLAVE_MEM_NOC_GNOC, SDM670_SLAVE_LLCC, SDM670_SLAVE_MEM_NOC_SNOC);
--DEFINE_QNODE(qhm_memnoc_cfg, SDM670_MASTER_MEM_NOC_CFG, 1, 4, SDM670_SLAVE_SERVICE_MEM_NOC, SDM670_SLAVE_MSS_PROC_MS_MPU_CFG);
--DEFINE_QNODE(qnm_apps, SDM670_MASTER_GNOC_MEM_NOC, 2, 32, SDM670_SLAVE_LLCC);
--DEFINE_QNODE(qnm_mnoc_hf, SDM670_MASTER_MNOC_HF_MEM_NOC, 2, 32, SDM670_SLAVE_LLCC);
--DEFINE_QNODE(qnm_mnoc_sf, SDM670_MASTER_MNOC_SF_MEM_NOC, 1, 32, SDM670_SLAVE_MEM_NOC_GNOC, SDM670_SLAVE_LLCC, SDM670_SLAVE_MEM_NOC_SNOC);
--DEFINE_QNODE(qnm_snoc_gc, SDM670_MASTER_SNOC_GC_MEM_NOC, 1, 8, SDM670_SLAVE_LLCC);
--DEFINE_QNODE(qnm_snoc_sf, SDM670_MASTER_SNOC_SF_MEM_NOC, 1, 16, SDM670_SLAVE_MEM_NOC_GNOC, SDM670_SLAVE_LLCC);
--DEFINE_QNODE(qxm_gpu, SDM670_MASTER_GRAPHICS_3D, 2, 32, SDM670_SLAVE_MEM_NOC_GNOC, SDM670_SLAVE_LLCC, SDM670_SLAVE_MEM_NOC_SNOC);
--DEFINE_QNODE(qhm_mnoc_cfg, SDM670_MASTER_CNOC_MNOC_CFG, 1, 4, SDM670_SLAVE_SERVICE_MNOC);
--DEFINE_QNODE(qxm_camnoc_hf0, SDM670_MASTER_CAMNOC_HF0, 1, 32, SDM670_SLAVE_MNOC_HF_MEM_NOC);
--DEFINE_QNODE(qxm_camnoc_hf1, SDM670_MASTER_CAMNOC_HF1, 1, 32, SDM670_SLAVE_MNOC_HF_MEM_NOC);
--DEFINE_QNODE(qxm_camnoc_sf, SDM670_MASTER_CAMNOC_SF, 1, 32, SDM670_SLAVE_MNOC_SF_MEM_NOC);
--DEFINE_QNODE(qxm_mdp0, SDM670_MASTER_MDP_PORT0, 1, 32, SDM670_SLAVE_MNOC_HF_MEM_NOC);
--DEFINE_QNODE(qxm_mdp1, SDM670_MASTER_MDP_PORT1, 1, 32, SDM670_SLAVE_MNOC_HF_MEM_NOC);
--DEFINE_QNODE(qxm_rot, SDM670_MASTER_ROTATOR, 1, 32, SDM670_SLAVE_MNOC_SF_MEM_NOC);
--DEFINE_QNODE(qxm_venus0, SDM670_MASTER_VIDEO_P0, 1, 32, SDM670_SLAVE_MNOC_SF_MEM_NOC);
--DEFINE_QNODE(qxm_venus1, SDM670_MASTER_VIDEO_P1, 1, 32, SDM670_SLAVE_MNOC_SF_MEM_NOC);
--DEFINE_QNODE(qxm_venus_arm9, SDM670_MASTER_VIDEO_PROC, 1, 8, SDM670_SLAVE_MNOC_SF_MEM_NOC);
--DEFINE_QNODE(qhm_snoc_cfg, SDM670_MASTER_SNOC_CFG, 1, 4, SDM670_SLAVE_SERVICE_SNOC);
--DEFINE_QNODE(qnm_aggre1_noc, SDM670_MASTER_A1NOC_SNOC, 1, 16, SDM670_SLAVE_PIMEM, SDM670_SLAVE_SNOC_MEM_NOC_SF, SDM670_SLAVE_OCIMEM, SDM670_SLAVE_APPSS, SDM670_SLAVE_SNOC_CNOC, SDM670_SLAVE_QDSS_STM);
--DEFINE_QNODE(qnm_aggre2_noc, SDM670_MASTER_A2NOC_SNOC, 1, 16, SDM670_SLAVE_PIMEM, SDM670_SLAVE_SNOC_MEM_NOC_SF, SDM670_SLAVE_OCIMEM, SDM670_SLAVE_APPSS, SDM670_SLAVE_SNOC_CNOC, SDM670_SLAVE_TCU, SDM670_SLAVE_QDSS_STM);
--DEFINE_QNODE(qnm_gladiator_sodv, SDM670_MASTER_GNOC_SNOC, 1, 8, SDM670_SLAVE_PIMEM, SDM670_SLAVE_OCIMEM, SDM670_SLAVE_APPSS, SDM670_SLAVE_SNOC_CNOC, SDM670_SLAVE_TCU, SDM670_SLAVE_QDSS_STM);
--DEFINE_QNODE(qnm_memnoc, SDM670_MASTER_MEM_NOC_SNOC, 1, 8, SDM670_SLAVE_OCIMEM, SDM670_SLAVE_APPSS, SDM670_SLAVE_PIMEM, SDM670_SLAVE_SNOC_CNOC, SDM670_SLAVE_QDSS_STM);
--DEFINE_QNODE(qxm_pimem, SDM670_MASTER_PIMEM, 1, 8, SDM670_SLAVE_OCIMEM, SDM670_SLAVE_SNOC_MEM_NOC_GC);
--DEFINE_QNODE(xm_gic, SDM670_MASTER_GIC, 1, 8, SDM670_SLAVE_OCIMEM, SDM670_SLAVE_SNOC_MEM_NOC_GC);
--DEFINE_QNODE(qns_a1noc_snoc, SDM670_SLAVE_A1NOC_SNOC, 1, 16, SDM670_MASTER_A1NOC_SNOC);
--DEFINE_QNODE(srvc_aggre1_noc, SDM670_SLAVE_SERVICE_A1NOC, 1, 4);
--DEFINE_QNODE(qns_a2noc_snoc, SDM670_SLAVE_A2NOC_SNOC, 1, 16, SDM670_MASTER_A2NOC_SNOC);
--DEFINE_QNODE(srvc_aggre2_noc, SDM670_SLAVE_SERVICE_A2NOC, 1, 4);
--DEFINE_QNODE(qns_camnoc_uncomp, SDM670_SLAVE_CAMNOC_UNCOMP, 1, 32);
--DEFINE_QNODE(qhs_a1_noc_cfg, SDM670_SLAVE_A1NOC_CFG, 1, 4, SDM670_MASTER_A1NOC_CFG);
--DEFINE_QNODE(qhs_a2_noc_cfg, SDM670_SLAVE_A2NOC_CFG, 1, 4, SDM670_MASTER_A2NOC_CFG);
--DEFINE_QNODE(qhs_aop, SDM670_SLAVE_AOP, 1, 4);
--DEFINE_QNODE(qhs_aoss, SDM670_SLAVE_AOSS, 1, 4);
--DEFINE_QNODE(qhs_camera_cfg, SDM670_SLAVE_CAMERA_CFG, 1, 4);
--DEFINE_QNODE(qhs_clk_ctl, SDM670_SLAVE_CLK_CTL, 1, 4);
--DEFINE_QNODE(qhs_compute_dsp_cfg, SDM670_SLAVE_CDSP_CFG, 1, 4);
--DEFINE_QNODE(qhs_cpr_cx, SDM670_SLAVE_RBCPR_CX_CFG, 1, 4);
--DEFINE_QNODE(qhs_crypto0_cfg, SDM670_SLAVE_CRYPTO_0_CFG, 1, 4);
--DEFINE_QNODE(qhs_dcc_cfg, SDM670_SLAVE_DCC_CFG, 1, 4, SDM670_MASTER_CNOC_DC_NOC);
--DEFINE_QNODE(qhs_ddrss_cfg, SDM670_SLAVE_CNOC_DDRSS, 1, 4);
--DEFINE_QNODE(qhs_display_cfg, SDM670_SLAVE_DISPLAY_CFG, 1, 4);
--DEFINE_QNODE(qhs_emmc_cfg, SDM670_SLAVE_EMMC_CFG, 1, 4);
--DEFINE_QNODE(qhs_glm, SDM670_SLAVE_GLM, 1, 4);
--DEFINE_QNODE(qhs_gpuss_cfg, SDM670_SLAVE_GRAPHICS_3D_CFG, 1, 8);
--DEFINE_QNODE(qhs_imem_cfg, SDM670_SLAVE_IMEM_CFG, 1, 4);
--DEFINE_QNODE(qhs_ipa, SDM670_SLAVE_IPA_CFG, 1, 4);
--DEFINE_QNODE(qhs_mnoc_cfg, SDM670_SLAVE_CNOC_MNOC_CFG, 1, 4, SDM670_MASTER_CNOC_MNOC_CFG);
--DEFINE_QNODE(qhs_pdm, SDM670_SLAVE_PDM, 1, 4);
--DEFINE_QNODE(qhs_phy_refgen_south, SDM670_SLAVE_SOUTH_PHY_CFG, 1, 4);
--DEFINE_QNODE(qhs_pimem_cfg, SDM670_SLAVE_PIMEM_CFG, 1, 4);
--DEFINE_QNODE(qhs_prng, SDM670_SLAVE_PRNG, 1, 4);
--DEFINE_QNODE(qhs_qdss_cfg, SDM670_SLAVE_QDSS_CFG, 1, 4);
--DEFINE_QNODE(qhs_qupv3_north, SDM670_SLAVE_BLSP_2, 1, 4);
--DEFINE_QNODE(qhs_qupv3_south, SDM670_SLAVE_BLSP_1, 1, 4);
--DEFINE_QNODE(qhs_sdc2, SDM670_SLAVE_SDCC_2, 1, 4);
--DEFINE_QNODE(qhs_sdc4, SDM670_SLAVE_SDCC_4, 1, 4);
--DEFINE_QNODE(qhs_snoc_cfg, SDM670_SLAVE_SNOC_CFG, 1, 4, SDM670_MASTER_SNOC_CFG);
--DEFINE_QNODE(qhs_spdm, SDM670_SLAVE_SPDM_WRAPPER, 1, 4);
--DEFINE_QNODE(qhs_tcsr, SDM670_SLAVE_TCSR, 1, 4);
--DEFINE_QNODE(qhs_tlmm_north, SDM670_SLAVE_TLMM_NORTH, 1, 4);
--DEFINE_QNODE(qhs_tlmm_south, SDM670_SLAVE_TLMM_SOUTH, 1, 4);
--DEFINE_QNODE(qhs_tsif, SDM670_SLAVE_TSIF, 1, 4);
--DEFINE_QNODE(qhs_ufs_mem_cfg, SDM670_SLAVE_UFS_MEM_CFG, 1, 4);
--DEFINE_QNODE(qhs_usb3_0, SDM670_SLAVE_USB3, 1, 4);
--DEFINE_QNODE(qhs_venus_cfg, SDM670_SLAVE_VENUS_CFG, 1, 4);
--DEFINE_QNODE(qhs_vsense_ctrl_cfg, SDM670_SLAVE_VSENSE_CTRL_CFG, 1, 4);
--DEFINE_QNODE(qns_cnoc_a2noc, SDM670_SLAVE_CNOC_A2NOC, 1, 8, SDM670_MASTER_CNOC_A2NOC);
--DEFINE_QNODE(srvc_cnoc, SDM670_SLAVE_SERVICE_CNOC, 1, 4);
--DEFINE_QNODE(qhs_llcc, SDM670_SLAVE_LLCC_CFG, 1, 4);
--DEFINE_QNODE(qhs_memnoc, SDM670_SLAVE_MEM_NOC_CFG, 1, 4, SDM670_MASTER_MEM_NOC_CFG);
--DEFINE_QNODE(qns_gladiator_sodv, SDM670_SLAVE_GNOC_SNOC, 1, 8, SDM670_MASTER_GNOC_SNOC);
--DEFINE_QNODE(qns_gnoc_memnoc, SDM670_SLAVE_GNOC_MEM_NOC, 2, 32, SDM670_MASTER_GNOC_MEM_NOC);
--DEFINE_QNODE(srvc_gnoc, SDM670_SLAVE_SERVICE_GNOC, 1, 4);
--DEFINE_QNODE(ebi, SDM670_SLAVE_EBI_CH0, 2, 4);
--DEFINE_QNODE(qhs_mdsp_ms_mpu_cfg, SDM670_SLAVE_MSS_PROC_MS_MPU_CFG, 1, 4);
--DEFINE_QNODE(qns_apps_io, SDM670_SLAVE_MEM_NOC_GNOC, 1, 32);
--DEFINE_QNODE(qns_llcc, SDM670_SLAVE_LLCC, 2, 16, SDM670_MASTER_LLCC);
--DEFINE_QNODE(qns_memnoc_snoc, SDM670_SLAVE_MEM_NOC_SNOC, 1, 8, SDM670_MASTER_MEM_NOC_SNOC);
--DEFINE_QNODE(srvc_memnoc, SDM670_SLAVE_SERVICE_MEM_NOC, 1, 4);
--DEFINE_QNODE(qns2_mem_noc, SDM670_SLAVE_MNOC_SF_MEM_NOC, 1, 32, SDM670_MASTER_MNOC_SF_MEM_NOC);
--DEFINE_QNODE(qns_mem_noc_hf, SDM670_SLAVE_MNOC_HF_MEM_NOC, 2, 32, SDM670_MASTER_MNOC_HF_MEM_NOC);
--DEFINE_QNODE(srvc_mnoc, SDM670_SLAVE_SERVICE_MNOC, 1, 4);
--DEFINE_QNODE(qhs_apss, SDM670_SLAVE_APPSS, 1, 8);
--DEFINE_QNODE(qns_cnoc, SDM670_SLAVE_SNOC_CNOC, 1, 8, SDM670_MASTER_SNOC_CNOC);
--DEFINE_QNODE(qns_memnoc_gc, SDM670_SLAVE_SNOC_MEM_NOC_GC, 1, 8, SDM670_MASTER_SNOC_GC_MEM_NOC);
--DEFINE_QNODE(qns_memnoc_sf, SDM670_SLAVE_SNOC_MEM_NOC_SF, 1, 16, SDM670_MASTER_SNOC_SF_MEM_NOC);
--DEFINE_QNODE(qxs_imem, SDM670_SLAVE_OCIMEM, 1, 8);
--DEFINE_QNODE(qxs_pimem, SDM670_SLAVE_PIMEM, 1, 8);
--DEFINE_QNODE(srvc_snoc, SDM670_SLAVE_SERVICE_SNOC, 1, 4);
--DEFINE_QNODE(xs_qdss_stm, SDM670_SLAVE_QDSS_STM, 1, 4);
--DEFINE_QNODE(xs_sys_tcu_cfg, SDM670_SLAVE_TCU, 1, 8);
-+static struct qcom_icc_node qhm_a1noc_cfg = {
-+	.name = "qhm_a1noc_cfg",
-+	.id = SDM670_MASTER_A1NOC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_SERVICE_A1NOC },
-+};
-+
-+static struct qcom_icc_node qhm_qup1 = {
-+	.name = "qhm_qup1",
-+	.id = SDM670_MASTER_BLSP_1,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A1NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node qhm_tsif = {
-+	.name = "qhm_tsif",
-+	.id = SDM670_MASTER_TSIF,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A1NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node xm_emmc = {
-+	.name = "xm_emmc",
-+	.id = SDM670_MASTER_EMMC,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A1NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node xm_sdc2 = {
-+	.name = "xm_sdc2",
-+	.id = SDM670_MASTER_SDCC_2,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A1NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node xm_sdc4 = {
-+	.name = "xm_sdc4",
-+	.id = SDM670_MASTER_SDCC_4,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A1NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node xm_ufs_mem = {
-+	.name = "xm_ufs_mem",
-+	.id = SDM670_MASTER_UFS_MEM,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A1NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node qhm_a2noc_cfg = {
-+	.name = "qhm_a2noc_cfg",
-+	.id = SDM670_MASTER_A2NOC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_SERVICE_A2NOC },
-+};
-+
-+static struct qcom_icc_node qhm_qdss_bam = {
-+	.name = "qhm_qdss_bam",
-+	.id = SDM670_MASTER_QDSS_BAM,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A2NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node qhm_qup2 = {
-+	.name = "qhm_qup2",
-+	.id = SDM670_MASTER_BLSP_2,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A2NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node qnm_cnoc = {
-+	.name = "qnm_cnoc",
-+	.id = SDM670_MASTER_CNOC_A2NOC,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A2NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node qxm_crypto = {
-+	.name = "qxm_crypto",
-+	.id = SDM670_MASTER_CRYPTO_CORE_0,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A2NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node qxm_ipa = {
-+	.name = "qxm_ipa",
-+	.id = SDM670_MASTER_IPA,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A2NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node xm_qdss_etr = {
-+	.name = "xm_qdss_etr",
-+	.id = SDM670_MASTER_QDSS_ETR,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A2NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node xm_usb3_0 = {
-+	.name = "xm_usb3_0",
-+	.id = SDM670_MASTER_USB3,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_A2NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node qxm_camnoc_hf0_uncomp = {
-+	.name = "qxm_camnoc_hf0_uncomp",
-+	.id = SDM670_MASTER_CAMNOC_HF0_UNCOMP,
-+	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_CAMNOC_UNCOMP },
-+};
-+
-+static struct qcom_icc_node qxm_camnoc_hf1_uncomp = {
-+	.name = "qxm_camnoc_hf1_uncomp",
-+	.id = SDM670_MASTER_CAMNOC_HF1_UNCOMP,
-+	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_CAMNOC_UNCOMP },
-+};
-+
-+static struct qcom_icc_node qxm_camnoc_sf_uncomp = {
-+	.name = "qxm_camnoc_sf_uncomp",
-+	.id = SDM670_MASTER_CAMNOC_SF_UNCOMP,
-+	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_CAMNOC_UNCOMP },
-+};
-+
-+static struct qcom_icc_node qhm_spdm = {
-+	.name = "qhm_spdm",
-+	.id = SDM670_MASTER_SPDM,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_CNOC_A2NOC },
-+};
-+
-+static struct qcom_icc_node qnm_snoc = {
-+	.name = "qnm_snoc",
-+	.id = SDM670_MASTER_SNOC_CNOC,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 38,
-+	.links = { SDM670_SLAVE_TLMM_SOUTH,
-+		   SDM670_SLAVE_CAMERA_CFG,
-+		   SDM670_SLAVE_SDCC_4,
-+		   SDM670_SLAVE_SDCC_2,
-+		   SDM670_SLAVE_CNOC_MNOC_CFG,
-+		   SDM670_SLAVE_UFS_MEM_CFG,
-+		   SDM670_SLAVE_GLM,
-+		   SDM670_SLAVE_PDM,
-+		   SDM670_SLAVE_A2NOC_CFG,
-+		   SDM670_SLAVE_QDSS_CFG,
-+		   SDM670_SLAVE_DISPLAY_CFG,
-+		   SDM670_SLAVE_TCSR,
-+		   SDM670_SLAVE_DCC_CFG,
-+		   SDM670_SLAVE_CNOC_DDRSS,
-+		   SDM670_SLAVE_SNOC_CFG,
-+		   SDM670_SLAVE_SOUTH_PHY_CFG,
-+		   SDM670_SLAVE_GRAPHICS_3D_CFG,
-+		   SDM670_SLAVE_VENUS_CFG,
-+		   SDM670_SLAVE_TSIF,
-+		   SDM670_SLAVE_CDSP_CFG,
-+		   SDM670_SLAVE_AOP,
-+		   SDM670_SLAVE_BLSP_2,
-+		   SDM670_SLAVE_SERVICE_CNOC,
-+		   SDM670_SLAVE_USB3,
-+		   SDM670_SLAVE_IPA_CFG,
-+		   SDM670_SLAVE_RBCPR_CX_CFG,
-+		   SDM670_SLAVE_A1NOC_CFG,
-+		   SDM670_SLAVE_AOSS,
-+		   SDM670_SLAVE_PRNG,
-+		   SDM670_SLAVE_VSENSE_CTRL_CFG,
-+		   SDM670_SLAVE_EMMC_CFG,
-+		   SDM670_SLAVE_BLSP_1,
-+		   SDM670_SLAVE_SPDM_WRAPPER,
-+		   SDM670_SLAVE_CRYPTO_0_CFG,
-+		   SDM670_SLAVE_PIMEM_CFG,
-+		   SDM670_SLAVE_TLMM_NORTH,
-+		   SDM670_SLAVE_CLK_CTL,
-+		   SDM670_SLAVE_IMEM_CFG
-+	},
-+};
-+
-+static struct qcom_icc_node qhm_cnoc = {
-+	.name = "qhm_cnoc",
-+	.id = SDM670_MASTER_CNOC_DC_NOC,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 2,
-+	.links = { SDM670_SLAVE_MEM_NOC_CFG,
-+		   SDM670_SLAVE_LLCC_CFG
-+	},
-+};
-+
-+static struct qcom_icc_node acm_l3 = {
-+	.name = "acm_l3",
-+	.id = SDM670_MASTER_AMPSS_M0,
-+	.channels = 1,
-+	.buswidth = 16,
-+	.num_links = 3,
-+	.links = { SDM670_SLAVE_SERVICE_GNOC,
-+		   SDM670_SLAVE_GNOC_SNOC,
-+		   SDM670_SLAVE_GNOC_MEM_NOC
-+	},
-+};
-+
-+static struct qcom_icc_node pm_gnoc_cfg = {
-+	.name = "pm_gnoc_cfg",
-+	.id = SDM670_MASTER_GNOC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_SERVICE_GNOC },
-+};
-+
+-DEFINE_QNODE(llcc_mc, SDX65_MASTER_LLCC, 1, 4, SDX65_SLAVE_EBI1);
+-DEFINE_QNODE(acm_tcu, SDX65_MASTER_TCU_0, 1, 8, SDX65_SLAVE_LLCC, SDX65_SLAVE_MEM_NOC_SNOC, SDX65_SLAVE_MEM_NOC_PCIE_SNOC);
+-DEFINE_QNODE(qnm_snoc_gc, SDX65_MASTER_SNOC_GC_MEM_NOC, 1, 16, SDX65_SLAVE_LLCC);
+-DEFINE_QNODE(xm_apps_rdwr, SDX65_MASTER_APPSS_PROC, 1, 16, SDX65_SLAVE_LLCC, SDX65_SLAVE_MEM_NOC_SNOC, SDX65_SLAVE_MEM_NOC_PCIE_SNOC);
+-DEFINE_QNODE(qhm_audio, SDX65_MASTER_AUDIO, 1, 4, SDX65_SLAVE_ANOC_SNOC);
+-DEFINE_QNODE(qhm_blsp1, SDX65_MASTER_BLSP_1, 1, 4, SDX65_SLAVE_ANOC_SNOC);
+-DEFINE_QNODE(qhm_qdss_bam, SDX65_MASTER_QDSS_BAM, 1, 4, SDX65_SLAVE_AOSS, SDX65_SLAVE_AUDIO, SDX65_SLAVE_BLSP_1, SDX65_SLAVE_CLK_CTL, SDX65_SLAVE_CRYPTO_0_CFG, SDX65_SLAVE_CNOC_DDRSS, SDX65_SLAVE_ECC_CFG, SDX65_SLAVE_IMEM_CFG, SDX65_SLAVE_IPA_CFG, SDX65_SLAVE_CNOC_MSS, SDX65_SLAVE_PCIE_PARF, SDX65_SLAVE_PDM, SDX65_SLAVE_PRNG, SDX65_SLAVE_QDSS_CFG, SDX65_SLAVE_QPIC, SDX65_SLAVE_SDCC_1, SDX65_SLAVE_SNOC_CFG, SDX65_SLAVE_SPMI_FETCHER, SDX65_SLAVE_SPMI_VGI_COEX, SDX65_SLAVE_TCSR, SDX65_SLAVE_TLMM, SDX65_SLAVE_USB3, SDX65_SLAVE_USB3_PHY_CFG, SDX65_SLAVE_SNOC_MEM_NOC_GC, SDX65_SLAVE_IMEM, SDX65_SLAVE_TCU);
+-DEFINE_QNODE(qhm_qpic, SDX65_MASTER_QPIC, 1, 4, SDX65_SLAVE_AOSS, SDX65_SLAVE_AUDIO, SDX65_SLAVE_IPA_CFG, SDX65_SLAVE_ANOC_SNOC);
+-DEFINE_QNODE(qhm_snoc_cfg, SDX65_MASTER_SNOC_CFG, 1, 4, SDX65_SLAVE_SERVICE_SNOC);
+-DEFINE_QNODE(qhm_spmi_fetcher1, SDX65_MASTER_SPMI_FETCHER, 1, 4, SDX65_SLAVE_AOSS, SDX65_SLAVE_ANOC_SNOC);
+-DEFINE_QNODE(qnm_aggre_noc, SDX65_MASTER_ANOC_SNOC, 1, 8, SDX65_SLAVE_AOSS, SDX65_SLAVE_APPSS, SDX65_SLAVE_AUDIO, SDX65_SLAVE_BLSP_1, SDX65_SLAVE_CLK_CTL, SDX65_SLAVE_CRYPTO_0_CFG, SDX65_SLAVE_CNOC_DDRSS, SDX65_SLAVE_ECC_CFG, SDX65_SLAVE_IMEM_CFG, SDX65_SLAVE_IPA_CFG, SDX65_SLAVE_CNOC_MSS, SDX65_SLAVE_PCIE_PARF, SDX65_SLAVE_PDM, SDX65_SLAVE_PRNG, SDX65_SLAVE_QDSS_CFG, SDX65_SLAVE_QPIC, SDX65_SLAVE_SDCC_1, SDX65_SLAVE_SNOC_CFG, SDX65_SLAVE_SPMI_FETCHER, SDX65_SLAVE_SPMI_VGI_COEX, SDX65_SLAVE_TCSR, SDX65_SLAVE_TLMM, SDX65_SLAVE_USB3, SDX65_SLAVE_USB3_PHY_CFG, SDX65_SLAVE_SNOC_MEM_NOC_GC, SDX65_SLAVE_IMEM, SDX65_SLAVE_PCIE_0, SDX65_SLAVE_QDSS_STM, SDX65_SLAVE_TCU);
+-DEFINE_QNODE(qnm_ipa, SDX65_MASTER_IPA, 1, 8, SDX65_SLAVE_AOSS, SDX65_SLAVE_AUDIO, SDX65_SLAVE_BLSP_1, SDX65_SLAVE_CLK_CTL, SDX65_SLAVE_CRYPTO_0_CFG, SDX65_SLAVE_CNOC_DDRSS, SDX65_SLAVE_ECC_CFG, SDX65_SLAVE_IMEM_CFG, SDX65_SLAVE_IPA_CFG, SDX65_SLAVE_CNOC_MSS, SDX65_SLAVE_PCIE_PARF, SDX65_SLAVE_PDM, SDX65_SLAVE_PRNG, SDX65_SLAVE_QDSS_CFG, SDX65_SLAVE_QPIC, SDX65_SLAVE_SDCC_1, SDX65_SLAVE_SNOC_CFG, SDX65_SLAVE_SPMI_FETCHER, SDX65_SLAVE_TCSR, SDX65_SLAVE_TLMM, SDX65_SLAVE_USB3, SDX65_SLAVE_USB3_PHY_CFG, SDX65_SLAVE_SNOC_MEM_NOC_GC, SDX65_SLAVE_IMEM, SDX65_SLAVE_PCIE_0, SDX65_SLAVE_QDSS_STM);
+-DEFINE_QNODE(qnm_memnoc, SDX65_MASTER_MEM_NOC_SNOC, 1, 8, SDX65_SLAVE_AOSS, SDX65_SLAVE_APPSS, SDX65_SLAVE_AUDIO, SDX65_SLAVE_BLSP_1, SDX65_SLAVE_CLK_CTL, SDX65_SLAVE_CRYPTO_0_CFG, SDX65_SLAVE_CNOC_DDRSS, SDX65_SLAVE_ECC_CFG, SDX65_SLAVE_IMEM_CFG, SDX65_SLAVE_IPA_CFG, SDX65_SLAVE_CNOC_MSS, SDX65_SLAVE_PCIE_PARF, SDX65_SLAVE_PDM, SDX65_SLAVE_PRNG, SDX65_SLAVE_QDSS_CFG, SDX65_SLAVE_QPIC, SDX65_SLAVE_SDCC_1, SDX65_SLAVE_SNOC_CFG, SDX65_SLAVE_SPMI_FETCHER, SDX65_SLAVE_SPMI_VGI_COEX, SDX65_SLAVE_TCSR, SDX65_SLAVE_TLMM, SDX65_SLAVE_USB3, SDX65_SLAVE_USB3_PHY_CFG, SDX65_SLAVE_IMEM, SDX65_SLAVE_QDSS_STM, SDX65_SLAVE_TCU);
+-DEFINE_QNODE(qnm_memnoc_pcie, SDX65_MASTER_MEM_NOC_PCIE_SNOC, 1, 8, SDX65_SLAVE_PCIE_0);
+-DEFINE_QNODE(qxm_crypto, SDX65_MASTER_CRYPTO, 1, 8, SDX65_SLAVE_AOSS, SDX65_SLAVE_ANOC_SNOC);
+-DEFINE_QNODE(xm_ipa2pcie_slv, SDX65_MASTER_IPA_PCIE, 1, 8, SDX65_SLAVE_PCIE_0);
+-DEFINE_QNODE(xm_pcie, SDX65_MASTER_PCIE_0, 1, 8, SDX65_SLAVE_ANOC_SNOC);
+-DEFINE_QNODE(xm_qdss_etr, SDX65_MASTER_QDSS_ETR, 1, 8, SDX65_SLAVE_AOSS, SDX65_SLAVE_AUDIO, SDX65_SLAVE_BLSP_1, SDX65_SLAVE_CLK_CTL, SDX65_SLAVE_CRYPTO_0_CFG, SDX65_SLAVE_CNOC_DDRSS, SDX65_SLAVE_ECC_CFG, SDX65_SLAVE_IMEM_CFG, SDX65_SLAVE_IPA_CFG, SDX65_SLAVE_CNOC_MSS, SDX65_SLAVE_PCIE_PARF, SDX65_SLAVE_PDM, SDX65_SLAVE_PRNG, SDX65_SLAVE_QDSS_CFG, SDX65_SLAVE_QPIC, SDX65_SLAVE_SDCC_1, SDX65_SLAVE_SNOC_CFG, SDX65_SLAVE_SPMI_FETCHER, SDX65_SLAVE_SPMI_VGI_COEX, SDX65_SLAVE_TCSR, SDX65_SLAVE_TLMM, SDX65_SLAVE_USB3, SDX65_SLAVE_USB3_PHY_CFG, SDX65_SLAVE_SNOC_MEM_NOC_GC, SDX65_SLAVE_IMEM, SDX65_SLAVE_TCU);
+-DEFINE_QNODE(xm_sdc1, SDX65_MASTER_SDCC_1, 1, 8, SDX65_SLAVE_AOSS, SDX65_SLAVE_AUDIO, SDX65_SLAVE_IPA_CFG, SDX65_SLAVE_ANOC_SNOC);
+-DEFINE_QNODE(xm_usb3, SDX65_MASTER_USB3, 1, 8, SDX65_SLAVE_ANOC_SNOC);
+-DEFINE_QNODE(ebi, SDX65_SLAVE_EBI1, 1, 4);
+-DEFINE_QNODE(qns_llcc, SDX65_SLAVE_LLCC, 1, 16, SDX65_MASTER_LLCC);
+-DEFINE_QNODE(qns_memnoc_snoc, SDX65_SLAVE_MEM_NOC_SNOC, 1, 8, SDX65_MASTER_MEM_NOC_SNOC);
+-DEFINE_QNODE(qns_sys_pcie, SDX65_SLAVE_MEM_NOC_PCIE_SNOC, 1, 8, SDX65_MASTER_MEM_NOC_PCIE_SNOC);
+-DEFINE_QNODE(qhs_aoss, SDX65_SLAVE_AOSS, 1, 4);
+-DEFINE_QNODE(qhs_apss, SDX65_SLAVE_APPSS, 1, 4);
+-DEFINE_QNODE(qhs_audio, SDX65_SLAVE_AUDIO, 1, 4);
+-DEFINE_QNODE(qhs_blsp1, SDX65_SLAVE_BLSP_1, 1, 4);
+-DEFINE_QNODE(qhs_clk_ctl, SDX65_SLAVE_CLK_CTL, 1, 4);
+-DEFINE_QNODE(qhs_crypto0_cfg, SDX65_SLAVE_CRYPTO_0_CFG, 1, 4);
+-DEFINE_QNODE(qhs_ddrss_cfg, SDX65_SLAVE_CNOC_DDRSS, 1, 4);
+-DEFINE_QNODE(qhs_ecc_cfg, SDX65_SLAVE_ECC_CFG, 1, 4);
+-DEFINE_QNODE(qhs_imem_cfg, SDX65_SLAVE_IMEM_CFG, 1, 4);
+-DEFINE_QNODE(qhs_ipa, SDX65_SLAVE_IPA_CFG, 1, 4);
+-DEFINE_QNODE(qhs_mss_cfg, SDX65_SLAVE_CNOC_MSS, 1, 4);
+-DEFINE_QNODE(qhs_pcie_parf, SDX65_SLAVE_PCIE_PARF, 1, 4);
+-DEFINE_QNODE(qhs_pdm, SDX65_SLAVE_PDM, 1, 4);
+-DEFINE_QNODE(qhs_prng, SDX65_SLAVE_PRNG, 1, 4);
+-DEFINE_QNODE(qhs_qdss_cfg, SDX65_SLAVE_QDSS_CFG, 1, 4);
+-DEFINE_QNODE(qhs_qpic, SDX65_SLAVE_QPIC, 1, 4);
+-DEFINE_QNODE(qhs_sdc1, SDX65_SLAVE_SDCC_1, 1, 4);
+-DEFINE_QNODE(qhs_snoc_cfg, SDX65_SLAVE_SNOC_CFG, 1, 4, SDX65_MASTER_SNOC_CFG);
+-DEFINE_QNODE(qhs_spmi_fetcher, SDX65_SLAVE_SPMI_FETCHER, 1, 4);
+-DEFINE_QNODE(qhs_spmi_vgi_coex, SDX65_SLAVE_SPMI_VGI_COEX, 1, 4);
+-DEFINE_QNODE(qhs_tcsr, SDX65_SLAVE_TCSR, 1, 4);
+-DEFINE_QNODE(qhs_tlmm, SDX65_SLAVE_TLMM, 1, 4);
+-DEFINE_QNODE(qhs_usb3, SDX65_SLAVE_USB3, 1, 4);
+-DEFINE_QNODE(qhs_usb3_phy, SDX65_SLAVE_USB3_PHY_CFG, 1, 4);
+-DEFINE_QNODE(qns_aggre_noc, SDX65_SLAVE_ANOC_SNOC, 1, 8, SDX65_MASTER_ANOC_SNOC);
+-DEFINE_QNODE(qns_snoc_memnoc, SDX65_SLAVE_SNOC_MEM_NOC_GC, 1, 16, SDX65_MASTER_SNOC_GC_MEM_NOC);
+-DEFINE_QNODE(qxs_imem, SDX65_SLAVE_IMEM, 1, 8);
+-DEFINE_QNODE(srvc_snoc, SDX65_SLAVE_SERVICE_SNOC, 1, 4);
+-DEFINE_QNODE(xs_pcie, SDX65_SLAVE_PCIE_0, 1, 8);
+-DEFINE_QNODE(xs_qdss_stm, SDX65_SLAVE_QDSS_STM, 1, 4);
+-DEFINE_QNODE(xs_sys_tcu_cfg, SDX65_SLAVE_TCU, 1, 8);
 +static struct qcom_icc_node llcc_mc = {
 +	.name = "llcc_mc",
-+	.id = SDM670_MASTER_LLCC,
-+	.channels = 2,
++	.id = SDX65_MASTER_LLCC,
++	.channels = 1,
 +	.buswidth = 4,
 +	.num_links = 1,
-+	.links = { SDM670_SLAVE_EBI_CH0 },
++	.links = { SDX65_SLAVE_EBI1 },
 +};
 +
 +static struct qcom_icc_node acm_tcu = {
 +	.name = "acm_tcu",
-+	.id = SDM670_MASTER_TCU_0,
++	.id = SDX65_MASTER_TCU_0,
 +	.channels = 1,
 +	.buswidth = 8,
 +	.num_links = 3,
-+	.links = { SDM670_SLAVE_MEM_NOC_GNOC,
-+		   SDM670_SLAVE_LLCC,
-+		   SDM670_SLAVE_MEM_NOC_SNOC
-+	},
-+};
-+
-+static struct qcom_icc_node qhm_memnoc_cfg = {
-+	.name = "qhm_memnoc_cfg",
-+	.id = SDM670_MASTER_MEM_NOC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 2,
-+	.links = { SDM670_SLAVE_SERVICE_MEM_NOC,
-+		   SDM670_SLAVE_MSS_PROC_MS_MPU_CFG
-+	},
-+};
-+
-+static struct qcom_icc_node qnm_apps = {
-+	.name = "qnm_apps",
-+	.id = SDM670_MASTER_GNOC_MEM_NOC,
-+	.channels = 2,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_LLCC },
-+};
-+
-+static struct qcom_icc_node qnm_mnoc_hf = {
-+	.name = "qnm_mnoc_hf",
-+	.id = SDM670_MASTER_MNOC_HF_MEM_NOC,
-+	.channels = 2,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_LLCC },
-+};
-+
-+static struct qcom_icc_node qnm_mnoc_sf = {
-+	.name = "qnm_mnoc_sf",
-+	.id = SDM670_MASTER_MNOC_SF_MEM_NOC,
-+	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 3,
-+	.links = { SDM670_SLAVE_MEM_NOC_GNOC,
-+		   SDM670_SLAVE_LLCC,
-+		   SDM670_SLAVE_MEM_NOC_SNOC
++	.links = { SDX65_SLAVE_LLCC,
++		   SDX65_SLAVE_MEM_NOC_SNOC,
++		   SDX65_SLAVE_MEM_NOC_PCIE_SNOC
 +	},
 +};
 +
 +static struct qcom_icc_node qnm_snoc_gc = {
 +	.name = "qnm_snoc_gc",
-+	.id = SDM670_MASTER_SNOC_GC_MEM_NOC,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_LLCC },
-+};
-+
-+static struct qcom_icc_node qnm_snoc_sf = {
-+	.name = "qnm_snoc_sf",
-+	.id = SDM670_MASTER_SNOC_SF_MEM_NOC,
++	.id = SDX65_MASTER_SNOC_GC_MEM_NOC,
 +	.channels = 1,
 +	.buswidth = 16,
-+	.num_links = 2,
-+	.links = { SDM670_SLAVE_MEM_NOC_GNOC,
-+		   SDM670_SLAVE_LLCC
-+	},
++	.num_links = 1,
++	.links = { SDX65_SLAVE_LLCC },
 +};
 +
-+static struct qcom_icc_node qxm_gpu = {
-+	.name = "qxm_gpu",
-+	.id = SDM670_MASTER_GRAPHICS_3D,
-+	.channels = 2,
-+	.buswidth = 32,
++static struct qcom_icc_node xm_apps_rdwr = {
++	.name = "xm_apps_rdwr",
++	.id = SDX65_MASTER_APPSS_PROC,
++	.channels = 1,
++	.buswidth = 16,
 +	.num_links = 3,
-+	.links = { SDM670_SLAVE_MEM_NOC_GNOC,
-+		   SDM670_SLAVE_LLCC,
-+		   SDM670_SLAVE_MEM_NOC_SNOC
++	.links = { SDX65_SLAVE_LLCC,
++		   SDX65_SLAVE_MEM_NOC_SNOC,
++		   SDX65_SLAVE_MEM_NOC_PCIE_SNOC
 +	},
 +};
 +
-+static struct qcom_icc_node qhm_mnoc_cfg = {
-+	.name = "qhm_mnoc_cfg",
-+	.id = SDM670_MASTER_CNOC_MNOC_CFG,
++static struct qcom_icc_node qhm_audio = {
++	.name = "qhm_audio",
++	.id = SDX65_MASTER_AUDIO,
 +	.channels = 1,
 +	.buswidth = 4,
 +	.num_links = 1,
-+	.links = { SDM670_SLAVE_SERVICE_MNOC },
++	.links = { SDX65_SLAVE_ANOC_SNOC },
 +};
 +
-+static struct qcom_icc_node qxm_camnoc_hf0 = {
-+	.name = "qxm_camnoc_hf0",
-+	.id = SDM670_MASTER_CAMNOC_HF0,
++static struct qcom_icc_node qhm_blsp1 = {
++	.name = "qhm_blsp1",
++	.id = SDX65_MASTER_BLSP_1,
 +	.channels = 1,
-+	.buswidth = 32,
++	.buswidth = 4,
 +	.num_links = 1,
-+	.links = { SDM670_SLAVE_MNOC_HF_MEM_NOC },
++	.links = { SDX65_SLAVE_ANOC_SNOC },
 +};
 +
-+static struct qcom_icc_node qxm_camnoc_hf1 = {
-+	.name = "qxm_camnoc_hf1",
-+	.id = SDM670_MASTER_CAMNOC_HF1,
++static struct qcom_icc_node qhm_qdss_bam = {
++	.name = "qhm_qdss_bam",
++	.id = SDX65_MASTER_QDSS_BAM,
 +	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_MNOC_HF_MEM_NOC },
++	.buswidth = 4,
++	.num_links = 26,
++	.links = { SDX65_SLAVE_AOSS,
++		   SDX65_SLAVE_AUDIO,
++		   SDX65_SLAVE_BLSP_1,
++		   SDX65_SLAVE_CLK_CTL,
++		   SDX65_SLAVE_CRYPTO_0_CFG,
++		   SDX65_SLAVE_CNOC_DDRSS,
++		   SDX65_SLAVE_ECC_CFG,
++		   SDX65_SLAVE_IMEM_CFG,
++		   SDX65_SLAVE_IPA_CFG,
++		   SDX65_SLAVE_CNOC_MSS,
++		   SDX65_SLAVE_PCIE_PARF,
++		   SDX65_SLAVE_PDM,
++		   SDX65_SLAVE_PRNG,
++		   SDX65_SLAVE_QDSS_CFG,
++		   SDX65_SLAVE_QPIC,
++		   SDX65_SLAVE_SDCC_1,
++		   SDX65_SLAVE_SNOC_CFG,
++		   SDX65_SLAVE_SPMI_FETCHER,
++		   SDX65_SLAVE_SPMI_VGI_COEX,
++		   SDX65_SLAVE_TCSR,
++		   SDX65_SLAVE_TLMM,
++		   SDX65_SLAVE_USB3,
++		   SDX65_SLAVE_USB3_PHY_CFG,
++		   SDX65_SLAVE_SNOC_MEM_NOC_GC,
++		   SDX65_SLAVE_IMEM,
++		   SDX65_SLAVE_TCU
++	},
 +};
 +
-+static struct qcom_icc_node qxm_camnoc_sf = {
-+	.name = "qxm_camnoc_sf",
-+	.id = SDM670_MASTER_CAMNOC_SF,
++static struct qcom_icc_node qhm_qpic = {
++	.name = "qhm_qpic",
++	.id = SDX65_MASTER_QPIC,
 +	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_MNOC_SF_MEM_NOC },
-+};
-+
-+static struct qcom_icc_node qxm_mdp0 = {
-+	.name = "qxm_mdp0",
-+	.id = SDM670_MASTER_MDP_PORT0,
-+	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_MNOC_HF_MEM_NOC },
-+};
-+
-+static struct qcom_icc_node qxm_mdp1 = {
-+	.name = "qxm_mdp1",
-+	.id = SDM670_MASTER_MDP_PORT1,
-+	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_MNOC_HF_MEM_NOC },
-+};
-+
-+static struct qcom_icc_node qxm_rot = {
-+	.name = "qxm_rot",
-+	.id = SDM670_MASTER_ROTATOR,
-+	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_MNOC_SF_MEM_NOC },
-+};
-+
-+static struct qcom_icc_node qxm_venus0 = {
-+	.name = "qxm_venus0",
-+	.id = SDM670_MASTER_VIDEO_P0,
-+	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_MNOC_SF_MEM_NOC },
-+};
-+
-+static struct qcom_icc_node qxm_venus1 = {
-+	.name = "qxm_venus1",
-+	.id = SDM670_MASTER_VIDEO_P1,
-+	.channels = 1,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_MNOC_SF_MEM_NOC },
-+};
-+
-+static struct qcom_icc_node qxm_venus_arm9 = {
-+	.name = "qxm_venus_arm9",
-+	.id = SDM670_MASTER_VIDEO_PROC,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_SLAVE_MNOC_SF_MEM_NOC },
++	.buswidth = 4,
++	.num_links = 4,
++	.links = { SDX65_SLAVE_AOSS,
++		   SDX65_SLAVE_AUDIO,
++		   SDX65_SLAVE_IPA_CFG,
++		   SDX65_SLAVE_ANOC_SNOC
++	},
 +};
 +
 +static struct qcom_icc_node qhm_snoc_cfg = {
 +	.name = "qhm_snoc_cfg",
-+	.id = SDM670_MASTER_SNOC_CFG,
++	.id = SDX65_MASTER_SNOC_CFG,
 +	.channels = 1,
 +	.buswidth = 4,
 +	.num_links = 1,
-+	.links = { SDM670_SLAVE_SERVICE_SNOC },
++	.links = { SDX65_SLAVE_SERVICE_SNOC },
 +};
 +
-+static struct qcom_icc_node qnm_aggre1_noc = {
-+	.name = "qnm_aggre1_noc",
-+	.id = SDM670_MASTER_A1NOC_SNOC,
++static struct qcom_icc_node qhm_spmi_fetcher1 = {
++	.name = "qhm_spmi_fetcher1",
++	.id = SDX65_MASTER_SPMI_FETCHER,
 +	.channels = 1,
-+	.buswidth = 16,
-+	.num_links = 6,
-+	.links = { SDM670_SLAVE_PIMEM,
-+		   SDM670_SLAVE_SNOC_MEM_NOC_SF,
-+		   SDM670_SLAVE_OCIMEM,
-+		   SDM670_SLAVE_APPSS,
-+		   SDM670_SLAVE_SNOC_CNOC,
-+		   SDM670_SLAVE_QDSS_STM
++	.buswidth = 4,
++	.num_links = 2,
++	.links = { SDX65_SLAVE_AOSS,
++		   SDX65_SLAVE_ANOC_SNOC
 +	},
 +};
 +
-+static struct qcom_icc_node qnm_aggre2_noc = {
-+	.name = "qnm_aggre2_noc",
-+	.id = SDM670_MASTER_A2NOC_SNOC,
-+	.channels = 1,
-+	.buswidth = 16,
-+	.num_links = 7,
-+	.links = { SDM670_SLAVE_PIMEM,
-+		   SDM670_SLAVE_SNOC_MEM_NOC_SF,
-+		   SDM670_SLAVE_OCIMEM,
-+		   SDM670_SLAVE_APPSS,
-+		   SDM670_SLAVE_SNOC_CNOC,
-+		   SDM670_SLAVE_TCU,
-+		   SDM670_SLAVE_QDSS_STM
-+	},
-+};
-+
-+static struct qcom_icc_node qnm_gladiator_sodv = {
-+	.name = "qnm_gladiator_sodv",
-+	.id = SDM670_MASTER_GNOC_SNOC,
++static struct qcom_icc_node qnm_aggre_noc = {
++	.name = "qnm_aggre_noc",
++	.id = SDX65_MASTER_ANOC_SNOC,
 +	.channels = 1,
 +	.buswidth = 8,
-+	.num_links = 6,
-+	.links = { SDM670_SLAVE_PIMEM,
-+		   SDM670_SLAVE_OCIMEM,
-+		   SDM670_SLAVE_APPSS,
-+		   SDM670_SLAVE_SNOC_CNOC,
-+		   SDM670_SLAVE_TCU,
-+		   SDM670_SLAVE_QDSS_STM
++	.num_links = 29,
++	.links = { SDX65_SLAVE_AOSS,
++		   SDX65_SLAVE_APPSS,
++		   SDX65_SLAVE_AUDIO,
++		   SDX65_SLAVE_BLSP_1,
++		   SDX65_SLAVE_CLK_CTL,
++		   SDX65_SLAVE_CRYPTO_0_CFG,
++		   SDX65_SLAVE_CNOC_DDRSS,
++		   SDX65_SLAVE_ECC_CFG,
++		   SDX65_SLAVE_IMEM_CFG,
++		   SDX65_SLAVE_IPA_CFG,
++		   SDX65_SLAVE_CNOC_MSS,
++		   SDX65_SLAVE_PCIE_PARF,
++		   SDX65_SLAVE_PDM,
++		   SDX65_SLAVE_PRNG,
++		   SDX65_SLAVE_QDSS_CFG,
++		   SDX65_SLAVE_QPIC,
++		   SDX65_SLAVE_SDCC_1,
++		   SDX65_SLAVE_SNOC_CFG,
++		   SDX65_SLAVE_SPMI_FETCHER,
++		   SDX65_SLAVE_SPMI_VGI_COEX,
++		   SDX65_SLAVE_TCSR,
++		   SDX65_SLAVE_TLMM,
++		   SDX65_SLAVE_USB3,
++		   SDX65_SLAVE_USB3_PHY_CFG,
++		   SDX65_SLAVE_SNOC_MEM_NOC_GC,
++		   SDX65_SLAVE_IMEM,
++		   SDX65_SLAVE_PCIE_0,
++		   SDX65_SLAVE_QDSS_STM,
++		   SDX65_SLAVE_TCU
++	},
++};
++
++static struct qcom_icc_node qnm_ipa = {
++	.name = "qnm_ipa",
++	.id = SDX65_MASTER_IPA,
++	.channels = 1,
++	.buswidth = 8,
++	.num_links = 26,
++	.links = { SDX65_SLAVE_AOSS,
++		   SDX65_SLAVE_AUDIO,
++		   SDX65_SLAVE_BLSP_1,
++		   SDX65_SLAVE_CLK_CTL,
++		   SDX65_SLAVE_CRYPTO_0_CFG,
++		   SDX65_SLAVE_CNOC_DDRSS,
++		   SDX65_SLAVE_ECC_CFG,
++		   SDX65_SLAVE_IMEM_CFG,
++		   SDX65_SLAVE_IPA_CFG,
++		   SDX65_SLAVE_CNOC_MSS,
++		   SDX65_SLAVE_PCIE_PARF,
++		   SDX65_SLAVE_PDM,
++		   SDX65_SLAVE_PRNG,
++		   SDX65_SLAVE_QDSS_CFG,
++		   SDX65_SLAVE_QPIC,
++		   SDX65_SLAVE_SDCC_1,
++		   SDX65_SLAVE_SNOC_CFG,
++		   SDX65_SLAVE_SPMI_FETCHER,
++		   SDX65_SLAVE_TCSR,
++		   SDX65_SLAVE_TLMM,
++		   SDX65_SLAVE_USB3,
++		   SDX65_SLAVE_USB3_PHY_CFG,
++		   SDX65_SLAVE_SNOC_MEM_NOC_GC,
++		   SDX65_SLAVE_IMEM,
++		   SDX65_SLAVE_PCIE_0,
++		   SDX65_SLAVE_QDSS_STM
 +	},
 +};
 +
 +static struct qcom_icc_node qnm_memnoc = {
 +	.name = "qnm_memnoc",
-+	.id = SDM670_MASTER_MEM_NOC_SNOC,
++	.id = SDX65_MASTER_MEM_NOC_SNOC,
 +	.channels = 1,
 +	.buswidth = 8,
-+	.num_links = 5,
-+	.links = { SDM670_SLAVE_OCIMEM,
-+		   SDM670_SLAVE_APPSS,
-+		   SDM670_SLAVE_PIMEM,
-+		   SDM670_SLAVE_SNOC_CNOC,
-+		   SDM670_SLAVE_QDSS_STM
++	.num_links = 27,
++	.links = { SDX65_SLAVE_AOSS,
++		   SDX65_SLAVE_APPSS,
++		   SDX65_SLAVE_AUDIO,
++		   SDX65_SLAVE_BLSP_1,
++		   SDX65_SLAVE_CLK_CTL,
++		   SDX65_SLAVE_CRYPTO_0_CFG,
++		   SDX65_SLAVE_CNOC_DDRSS,
++		   SDX65_SLAVE_ECC_CFG,
++		   SDX65_SLAVE_IMEM_CFG,
++		   SDX65_SLAVE_IPA_CFG,
++		   SDX65_SLAVE_CNOC_MSS,
++		   SDX65_SLAVE_PCIE_PARF,
++		   SDX65_SLAVE_PDM,
++		   SDX65_SLAVE_PRNG,
++		   SDX65_SLAVE_QDSS_CFG,
++		   SDX65_SLAVE_QPIC,
++		   SDX65_SLAVE_SDCC_1,
++		   SDX65_SLAVE_SNOC_CFG,
++		   SDX65_SLAVE_SPMI_FETCHER,
++		   SDX65_SLAVE_SPMI_VGI_COEX,
++		   SDX65_SLAVE_TCSR,
++		   SDX65_SLAVE_TLMM,
++		   SDX65_SLAVE_USB3,
++		   SDX65_SLAVE_USB3_PHY_CFG,
++		   SDX65_SLAVE_IMEM,
++		   SDX65_SLAVE_QDSS_STM,
++		   SDX65_SLAVE_TCU
 +	},
 +};
 +
-+static struct qcom_icc_node qxm_pimem = {
-+	.name = "qxm_pimem",
-+	.id = SDM670_MASTER_PIMEM,
++static struct qcom_icc_node qnm_memnoc_pcie = {
++	.name = "qnm_memnoc_pcie",
++	.id = SDX65_MASTER_MEM_NOC_PCIE_SNOC,
++	.channels = 1,
++	.buswidth = 8,
++	.num_links = 1,
++	.links = { SDX65_SLAVE_PCIE_0 },
++};
++
++static struct qcom_icc_node qxm_crypto = {
++	.name = "qxm_crypto",
++	.id = SDX65_MASTER_CRYPTO,
 +	.channels = 1,
 +	.buswidth = 8,
 +	.num_links = 2,
-+	.links = { SDM670_SLAVE_OCIMEM,
-+		   SDM670_SLAVE_SNOC_MEM_NOC_GC
++	.links = { SDX65_SLAVE_AOSS,
++		   SDX65_SLAVE_ANOC_SNOC
 +	},
 +};
 +
-+static struct qcom_icc_node xm_gic = {
-+	.name = "xm_gic",
-+	.id = SDM670_MASTER_GIC,
++static struct qcom_icc_node xm_ipa2pcie_slv = {
++	.name = "xm_ipa2pcie_slv",
++	.id = SDX65_MASTER_IPA_PCIE,
 +	.channels = 1,
 +	.buswidth = 8,
-+	.num_links = 2,
-+	.links = { SDM670_SLAVE_OCIMEM,
-+		   SDM670_SLAVE_SNOC_MEM_NOC_GC
++	.num_links = 1,
++	.links = { SDX65_SLAVE_PCIE_0 },
++};
++
++static struct qcom_icc_node xm_pcie = {
++	.name = "xm_pcie",
++	.id = SDX65_MASTER_PCIE_0,
++	.channels = 1,
++	.buswidth = 8,
++	.num_links = 1,
++	.links = { SDX65_SLAVE_ANOC_SNOC },
++};
++
++static struct qcom_icc_node xm_qdss_etr = {
++	.name = "xm_qdss_etr",
++	.id = SDX65_MASTER_QDSS_ETR,
++	.channels = 1,
++	.buswidth = 8,
++	.num_links = 26,
++	.links = { SDX65_SLAVE_AOSS,
++		   SDX65_SLAVE_AUDIO,
++		   SDX65_SLAVE_BLSP_1,
++		   SDX65_SLAVE_CLK_CTL,
++		   SDX65_SLAVE_CRYPTO_0_CFG,
++		   SDX65_SLAVE_CNOC_DDRSS,
++		   SDX65_SLAVE_ECC_CFG,
++		   SDX65_SLAVE_IMEM_CFG,
++		   SDX65_SLAVE_IPA_CFG,
++		   SDX65_SLAVE_CNOC_MSS,
++		   SDX65_SLAVE_PCIE_PARF,
++		   SDX65_SLAVE_PDM,
++		   SDX65_SLAVE_PRNG,
++		   SDX65_SLAVE_QDSS_CFG,
++		   SDX65_SLAVE_QPIC,
++		   SDX65_SLAVE_SDCC_1,
++		   SDX65_SLAVE_SNOC_CFG,
++		   SDX65_SLAVE_SPMI_FETCHER,
++		   SDX65_SLAVE_SPMI_VGI_COEX,
++		   SDX65_SLAVE_TCSR,
++		   SDX65_SLAVE_TLMM,
++		   SDX65_SLAVE_USB3,
++		   SDX65_SLAVE_USB3_PHY_CFG,
++		   SDX65_SLAVE_SNOC_MEM_NOC_GC,
++		   SDX65_SLAVE_IMEM,
++		   SDX65_SLAVE_TCU
 +	},
 +};
 +
-+static struct qcom_icc_node qns_a1noc_snoc = {
-+	.name = "qns_a1noc_snoc",
-+	.id = SDM670_SLAVE_A1NOC_SNOC,
-+	.channels = 1,
-+	.buswidth = 16,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_A1NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node srvc_aggre1_noc = {
-+	.name = "srvc_aggre1_noc",
-+	.id = SDM670_SLAVE_SERVICE_A1NOC,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qns_a2noc_snoc = {
-+	.name = "qns_a2noc_snoc",
-+	.id = SDM670_SLAVE_A2NOC_SNOC,
-+	.channels = 1,
-+	.buswidth = 16,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_A2NOC_SNOC },
-+};
-+
-+static struct qcom_icc_node srvc_aggre2_noc = {
-+	.name = "srvc_aggre2_noc",
-+	.id = SDM670_SLAVE_SERVICE_A2NOC,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qns_camnoc_uncomp = {
-+	.name = "qns_camnoc_uncomp",
-+	.id = SDM670_SLAVE_CAMNOC_UNCOMP,
-+	.channels = 1,
-+	.buswidth = 32,
-+};
-+
-+static struct qcom_icc_node qhs_a1_noc_cfg = {
-+	.name = "qhs_a1_noc_cfg",
-+	.id = SDM670_SLAVE_A1NOC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_A1NOC_CFG },
-+};
-+
-+static struct qcom_icc_node qhs_a2_noc_cfg = {
-+	.name = "qhs_a2_noc_cfg",
-+	.id = SDM670_SLAVE_A2NOC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_A2NOC_CFG },
-+};
-+
-+static struct qcom_icc_node qhs_aop = {
-+	.name = "qhs_aop",
-+	.id = SDM670_SLAVE_AOP,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_aoss = {
-+	.name = "qhs_aoss",
-+	.id = SDM670_SLAVE_AOSS,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_camera_cfg = {
-+	.name = "qhs_camera_cfg",
-+	.id = SDM670_SLAVE_CAMERA_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_clk_ctl = {
-+	.name = "qhs_clk_ctl",
-+	.id = SDM670_SLAVE_CLK_CTL,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_compute_dsp_cfg = {
-+	.name = "qhs_compute_dsp_cfg",
-+	.id = SDM670_SLAVE_CDSP_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_cpr_cx = {
-+	.name = "qhs_cpr_cx",
-+	.id = SDM670_SLAVE_RBCPR_CX_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_crypto0_cfg = {
-+	.name = "qhs_crypto0_cfg",
-+	.id = SDM670_SLAVE_CRYPTO_0_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_dcc_cfg = {
-+	.name = "qhs_dcc_cfg",
-+	.id = SDM670_SLAVE_DCC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_CNOC_DC_NOC },
-+};
-+
-+static struct qcom_icc_node qhs_ddrss_cfg = {
-+	.name = "qhs_ddrss_cfg",
-+	.id = SDM670_SLAVE_CNOC_DDRSS,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_display_cfg = {
-+	.name = "qhs_display_cfg",
-+	.id = SDM670_SLAVE_DISPLAY_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_emmc_cfg = {
-+	.name = "qhs_emmc_cfg",
-+	.id = SDM670_SLAVE_EMMC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_glm = {
-+	.name = "qhs_glm",
-+	.id = SDM670_SLAVE_GLM,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_gpuss_cfg = {
-+	.name = "qhs_gpuss_cfg",
-+	.id = SDM670_SLAVE_GRAPHICS_3D_CFG,
++static struct qcom_icc_node xm_sdc1 = {
++	.name = "xm_sdc1",
++	.id = SDX65_MASTER_SDCC_1,
 +	.channels = 1,
 +	.buswidth = 8,
++	.num_links = 4,
++	.links = { SDX65_SLAVE_AOSS,
++		   SDX65_SLAVE_AUDIO,
++		   SDX65_SLAVE_IPA_CFG,
++		   SDX65_SLAVE_ANOC_SNOC
++	},
 +};
 +
-+static struct qcom_icc_node qhs_imem_cfg = {
-+	.name = "qhs_imem_cfg",
-+	.id = SDM670_SLAVE_IMEM_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_ipa = {
-+	.name = "qhs_ipa",
-+	.id = SDM670_SLAVE_IPA_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_mnoc_cfg = {
-+	.name = "qhs_mnoc_cfg",
-+	.id = SDM670_SLAVE_CNOC_MNOC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_CNOC_MNOC_CFG },
-+};
-+
-+static struct qcom_icc_node qhs_pdm = {
-+	.name = "qhs_pdm",
-+	.id = SDM670_SLAVE_PDM,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_phy_refgen_south = {
-+	.name = "qhs_phy_refgen_south",
-+	.id = SDM670_SLAVE_SOUTH_PHY_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_pimem_cfg = {
-+	.name = "qhs_pimem_cfg",
-+	.id = SDM670_SLAVE_PIMEM_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_prng = {
-+	.name = "qhs_prng",
-+	.id = SDM670_SLAVE_PRNG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_qdss_cfg = {
-+	.name = "qhs_qdss_cfg",
-+	.id = SDM670_SLAVE_QDSS_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_qupv3_north = {
-+	.name = "qhs_qupv3_north",
-+	.id = SDM670_SLAVE_BLSP_2,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_qupv3_south = {
-+	.name = "qhs_qupv3_south",
-+	.id = SDM670_SLAVE_BLSP_1,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_sdc2 = {
-+	.name = "qhs_sdc2",
-+	.id = SDM670_SLAVE_SDCC_2,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_sdc4 = {
-+	.name = "qhs_sdc4",
-+	.id = SDM670_SLAVE_SDCC_4,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_snoc_cfg = {
-+	.name = "qhs_snoc_cfg",
-+	.id = SDM670_SLAVE_SNOC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_SNOC_CFG },
-+};
-+
-+static struct qcom_icc_node qhs_spdm = {
-+	.name = "qhs_spdm",
-+	.id = SDM670_SLAVE_SPDM_WRAPPER,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_tcsr = {
-+	.name = "qhs_tcsr",
-+	.id = SDM670_SLAVE_TCSR,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_tlmm_north = {
-+	.name = "qhs_tlmm_north",
-+	.id = SDM670_SLAVE_TLMM_NORTH,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_tlmm_south = {
-+	.name = "qhs_tlmm_south",
-+	.id = SDM670_SLAVE_TLMM_SOUTH,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_tsif = {
-+	.name = "qhs_tsif",
-+	.id = SDM670_SLAVE_TSIF,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_ufs_mem_cfg = {
-+	.name = "qhs_ufs_mem_cfg",
-+	.id = SDM670_SLAVE_UFS_MEM_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_usb3_0 = {
-+	.name = "qhs_usb3_0",
-+	.id = SDM670_SLAVE_USB3,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_venus_cfg = {
-+	.name = "qhs_venus_cfg",
-+	.id = SDM670_SLAVE_VENUS_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_vsense_ctrl_cfg = {
-+	.name = "qhs_vsense_ctrl_cfg",
-+	.id = SDM670_SLAVE_VSENSE_CTRL_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qns_cnoc_a2noc = {
-+	.name = "qns_cnoc_a2noc",
-+	.id = SDM670_SLAVE_CNOC_A2NOC,
++static struct qcom_icc_node xm_usb3 = {
++	.name = "xm_usb3",
++	.id = SDX65_MASTER_USB3,
 +	.channels = 1,
 +	.buswidth = 8,
 +	.num_links = 1,
-+	.links = { SDM670_MASTER_CNOC_A2NOC },
-+};
-+
-+static struct qcom_icc_node srvc_cnoc = {
-+	.name = "srvc_cnoc",
-+	.id = SDM670_SLAVE_SERVICE_CNOC,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_llcc = {
-+	.name = "qhs_llcc",
-+	.id = SDM670_SLAVE_LLCC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_memnoc = {
-+	.name = "qhs_memnoc",
-+	.id = SDM670_SLAVE_MEM_NOC_CFG,
-+	.channels = 1,
-+	.buswidth = 4,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_MEM_NOC_CFG },
-+};
-+
-+static struct qcom_icc_node qns_gladiator_sodv = {
-+	.name = "qns_gladiator_sodv",
-+	.id = SDM670_SLAVE_GNOC_SNOC,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_GNOC_SNOC },
-+};
-+
-+static struct qcom_icc_node qns_gnoc_memnoc = {
-+	.name = "qns_gnoc_memnoc",
-+	.id = SDM670_SLAVE_GNOC_MEM_NOC,
-+	.channels = 2,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_GNOC_MEM_NOC },
-+};
-+
-+static struct qcom_icc_node srvc_gnoc = {
-+	.name = "srvc_gnoc",
-+	.id = SDM670_SLAVE_SERVICE_GNOC,
-+	.channels = 1,
-+	.buswidth = 4,
++	.links = { SDX65_SLAVE_ANOC_SNOC },
 +};
 +
 +static struct qcom_icc_node ebi = {
 +	.name = "ebi",
-+	.id = SDM670_SLAVE_EBI_CH0,
-+	.channels = 2,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qhs_mdsp_ms_mpu_cfg = {
-+	.name = "qhs_mdsp_ms_mpu_cfg",
-+	.id = SDM670_SLAVE_MSS_PROC_MS_MPU_CFG,
++	.id = SDX65_SLAVE_EBI1,
 +	.channels = 1,
 +	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qns_apps_io = {
-+	.name = "qns_apps_io",
-+	.id = SDM670_SLAVE_MEM_NOC_GNOC,
-+	.channels = 1,
-+	.buswidth = 32,
 +};
 +
 +static struct qcom_icc_node qns_llcc = {
 +	.name = "qns_llcc",
-+	.id = SDM670_SLAVE_LLCC,
-+	.channels = 2,
++	.id = SDX65_SLAVE_LLCC,
++	.channels = 1,
 +	.buswidth = 16,
 +	.num_links = 1,
-+	.links = { SDM670_MASTER_LLCC },
++	.links = { SDX65_MASTER_LLCC },
 +};
 +
 +static struct qcom_icc_node qns_memnoc_snoc = {
 +	.name = "qns_memnoc_snoc",
-+	.id = SDM670_SLAVE_MEM_NOC_SNOC,
++	.id = SDX65_SLAVE_MEM_NOC_SNOC,
 +	.channels = 1,
 +	.buswidth = 8,
 +	.num_links = 1,
-+	.links = { SDM670_MASTER_MEM_NOC_SNOC },
++	.links = { SDX65_MASTER_MEM_NOC_SNOC },
 +};
 +
-+static struct qcom_icc_node srvc_memnoc = {
-+	.name = "srvc_memnoc",
-+	.id = SDM670_SLAVE_SERVICE_MEM_NOC,
++static struct qcom_icc_node qns_sys_pcie = {
++	.name = "qns_sys_pcie",
++	.id = SDX65_SLAVE_MEM_NOC_PCIE_SNOC,
 +	.channels = 1,
-+	.buswidth = 4,
-+};
-+
-+static struct qcom_icc_node qns2_mem_noc = {
-+	.name = "qns2_mem_noc",
-+	.id = SDM670_SLAVE_MNOC_SF_MEM_NOC,
-+	.channels = 1,
-+	.buswidth = 32,
++	.buswidth = 8,
 +	.num_links = 1,
-+	.links = { SDM670_MASTER_MNOC_SF_MEM_NOC },
++	.links = { SDX65_MASTER_MEM_NOC_PCIE_SNOC },
 +};
 +
-+static struct qcom_icc_node qns_mem_noc_hf = {
-+	.name = "qns_mem_noc_hf",
-+	.id = SDM670_SLAVE_MNOC_HF_MEM_NOC,
-+	.channels = 2,
-+	.buswidth = 32,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_MNOC_HF_MEM_NOC },
-+};
-+
-+static struct qcom_icc_node srvc_mnoc = {
-+	.name = "srvc_mnoc",
-+	.id = SDM670_SLAVE_SERVICE_MNOC,
++static struct qcom_icc_node qhs_aoss = {
++	.name = "qhs_aoss",
++	.id = SDX65_SLAVE_AOSS,
 +	.channels = 1,
 +	.buswidth = 4,
 +};
 +
 +static struct qcom_icc_node qhs_apss = {
 +	.name = "qhs_apss",
-+	.id = SDM670_SLAVE_APPSS,
++	.id = SDX65_SLAVE_APPSS,
 +	.channels = 1,
-+	.buswidth = 8,
++	.buswidth = 4,
 +};
 +
-+static struct qcom_icc_node qns_cnoc = {
-+	.name = "qns_cnoc",
-+	.id = SDM670_SLAVE_SNOC_CNOC,
++static struct qcom_icc_node qhs_audio = {
++	.name = "qhs_audio",
++	.id = SDX65_SLAVE_AUDIO,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_blsp1 = {
++	.name = "qhs_blsp1",
++	.id = SDX65_SLAVE_BLSP_1,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_clk_ctl = {
++	.name = "qhs_clk_ctl",
++	.id = SDX65_SLAVE_CLK_CTL,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_crypto0_cfg = {
++	.name = "qhs_crypto0_cfg",
++	.id = SDX65_SLAVE_CRYPTO_0_CFG,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_ddrss_cfg = {
++	.name = "qhs_ddrss_cfg",
++	.id = SDX65_SLAVE_CNOC_DDRSS,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_ecc_cfg = {
++	.name = "qhs_ecc_cfg",
++	.id = SDX65_SLAVE_ECC_CFG,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_imem_cfg = {
++	.name = "qhs_imem_cfg",
++	.id = SDX65_SLAVE_IMEM_CFG,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_ipa = {
++	.name = "qhs_ipa",
++	.id = SDX65_SLAVE_IPA_CFG,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_mss_cfg = {
++	.name = "qhs_mss_cfg",
++	.id = SDX65_SLAVE_CNOC_MSS,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_pcie_parf = {
++	.name = "qhs_pcie_parf",
++	.id = SDX65_SLAVE_PCIE_PARF,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_pdm = {
++	.name = "qhs_pdm",
++	.id = SDX65_SLAVE_PDM,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_prng = {
++	.name = "qhs_prng",
++	.id = SDX65_SLAVE_PRNG,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_qdss_cfg = {
++	.name = "qhs_qdss_cfg",
++	.id = SDX65_SLAVE_QDSS_CFG,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_qpic = {
++	.name = "qhs_qpic",
++	.id = SDX65_SLAVE_QPIC,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_sdc1 = {
++	.name = "qhs_sdc1",
++	.id = SDX65_SLAVE_SDCC_1,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_snoc_cfg = {
++	.name = "qhs_snoc_cfg",
++	.id = SDX65_SLAVE_SNOC_CFG,
++	.channels = 1,
++	.buswidth = 4,
++	.num_links = 1,
++	.links = { SDX65_MASTER_SNOC_CFG },
++};
++
++static struct qcom_icc_node qhs_spmi_fetcher = {
++	.name = "qhs_spmi_fetcher",
++	.id = SDX65_SLAVE_SPMI_FETCHER,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_spmi_vgi_coex = {
++	.name = "qhs_spmi_vgi_coex",
++	.id = SDX65_SLAVE_SPMI_VGI_COEX,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_tcsr = {
++	.name = "qhs_tcsr",
++	.id = SDX65_SLAVE_TCSR,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_tlmm = {
++	.name = "qhs_tlmm",
++	.id = SDX65_SLAVE_TLMM,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_usb3 = {
++	.name = "qhs_usb3",
++	.id = SDX65_SLAVE_USB3,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qhs_usb3_phy = {
++	.name = "qhs_usb3_phy",
++	.id = SDX65_SLAVE_USB3_PHY_CFG,
++	.channels = 1,
++	.buswidth = 4,
++};
++
++static struct qcom_icc_node qns_aggre_noc = {
++	.name = "qns_aggre_noc",
++	.id = SDX65_SLAVE_ANOC_SNOC,
 +	.channels = 1,
 +	.buswidth = 8,
 +	.num_links = 1,
-+	.links = { SDM670_MASTER_SNOC_CNOC },
++	.links = { SDX65_MASTER_ANOC_SNOC },
 +};
 +
-+static struct qcom_icc_node qns_memnoc_gc = {
-+	.name = "qns_memnoc_gc",
-+	.id = SDM670_SLAVE_SNOC_MEM_NOC_GC,
-+	.channels = 1,
-+	.buswidth = 8,
-+	.num_links = 1,
-+	.links = { SDM670_MASTER_SNOC_GC_MEM_NOC },
-+};
-+
-+static struct qcom_icc_node qns_memnoc_sf = {
-+	.name = "qns_memnoc_sf",
-+	.id = SDM670_SLAVE_SNOC_MEM_NOC_SF,
++static struct qcom_icc_node qns_snoc_memnoc = {
++	.name = "qns_snoc_memnoc",
++	.id = SDX65_SLAVE_SNOC_MEM_NOC_GC,
 +	.channels = 1,
 +	.buswidth = 16,
 +	.num_links = 1,
-+	.links = { SDM670_MASTER_SNOC_SF_MEM_NOC },
++	.links = { SDX65_MASTER_SNOC_GC_MEM_NOC },
 +};
 +
 +static struct qcom_icc_node qxs_imem = {
 +	.name = "qxs_imem",
-+	.id = SDM670_SLAVE_OCIMEM,
-+	.channels = 1,
-+	.buswidth = 8,
-+};
-+
-+static struct qcom_icc_node qxs_pimem = {
-+	.name = "qxs_pimem",
-+	.id = SDM670_SLAVE_PIMEM,
++	.id = SDX65_SLAVE_IMEM,
 +	.channels = 1,
 +	.buswidth = 8,
 +};
 +
 +static struct qcom_icc_node srvc_snoc = {
 +	.name = "srvc_snoc",
-+	.id = SDM670_SLAVE_SERVICE_SNOC,
++	.id = SDX65_SLAVE_SERVICE_SNOC,
 +	.channels = 1,
 +	.buswidth = 4,
 +};
 +
++static struct qcom_icc_node xs_pcie = {
++	.name = "xs_pcie",
++	.id = SDX65_SLAVE_PCIE_0,
++	.channels = 1,
++	.buswidth = 8,
++};
++
 +static struct qcom_icc_node xs_qdss_stm = {
 +	.name = "xs_qdss_stm",
-+	.id = SDM670_SLAVE_QDSS_STM,
++	.id = SDX65_SLAVE_QDSS_STM,
 +	.channels = 1,
 +	.buswidth = 4,
 +};
 +
 +static struct qcom_icc_node xs_sys_tcu_cfg = {
 +	.name = "xs_sys_tcu_cfg",
-+	.id = SDM670_SLAVE_TCU,
++	.id = SDX65_SLAVE_TCU,
 +	.channels = 1,
 +	.buswidth = 8,
 +};
  
- DEFINE_QBCM(bcm_acv, "ACV", false, &ebi);
+ DEFINE_QBCM(bcm_ce0, "CE0", false, &qxm_crypto);
  DEFINE_QBCM(bcm_mc0, "MC0", true, &ebi);
 
 -- 
