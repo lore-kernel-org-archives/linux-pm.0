@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ED4DC001B0
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Aug 2023 23:21:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10109C41513
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Aug 2023 23:21:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236838AbjHKXVS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Aug 2023 19:21:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35728 "EHLO
+        id S237156AbjHKXVa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Aug 2023 19:21:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38868 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236369AbjHKXVK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2023 19:21:10 -0400
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BA1610F5
-        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 16:21:02 -0700 (PDT)
-Received: by mail-lf1-x132.google.com with SMTP id 2adb3069b0e04-4fe934c4decso2881747e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 16:21:02 -0700 (PDT)
+        with ESMTP id S234105AbjHKXVO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2023 19:21:14 -0400
+Received: from mail-lj1-x232.google.com (mail-lj1-x232.google.com [IPv6:2a00:1450:4864:20::232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE5F0271E
+        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 16:21:06 -0700 (PDT)
+Received: by mail-lj1-x232.google.com with SMTP id 38308e7fff4ca-2b9b5ee9c5aso39415031fa.1
+        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 16:21:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691796060; x=1692400860;
+        d=linaro.org; s=google; t=1691796065; x=1692400865;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Fful+AxqmYE+dU51mD7qo91bPYNQGIlD4NDWqh9Wado=;
-        b=zEN/dmxjk6WqxCZfEyPuk+E+1AHENtigLNQKFOK8pw76nqbV/3bd2zqroiYyT/JcoL
-         Q4J2XfveHk4SAfT4YzVKVZ9YajlGk6wEGztrI73bTks6aBSC2LKoEi0m8oK17ZUPicOo
-         +wPgjk3nu+wQiwIUhhWNJJj2nZQOXTig5vKX/BUrVtszPi8SuswEePx/lz2fSiUuTk7C
-         yDWil8UB4m5Lq7sVAT9einuEicBOlLFs0J8/v6w502Gs++xihHrT5eXmQi8dakuyPvhQ
-         xLJr7JPVjmh6BBzhIuSJr2NvdHTr1Z1+Yq0Dk/b1VakXlDpxzI18CsBdmEDiAYnFAO/x
-         O0aw==
+        bh=PBBULFtJIjgzV/+g1Yu/If4645jApYjaOUQ0btSC4wU=;
+        b=vur3vEuf52fGLsfAkey6kX5hfQPrucgPzj/BwKr2+6dhKfwAKcrbM4g9FYqZN4E8mO
+         xBtvNLUpH2EsRcmhjS5IhrbUkrFslKNf0+UE74r2A4QugBcNYNPky2k7Cf6O47Ea+Mdb
+         fIfO7s9X8VuNRxhUidnmT686J7DR+tM73dWrHUkU711ae6n+tqaR9P6zGjeFJp6mk2Tn
+         SQSA1sWvYuI8ZZZUF3j+jwWDZdjGyk1K33rO98NiA6cUeScqZscKH6yCt86nvqd+DqJq
+         +0D1O3v78NkeOTXAAp8a7eGL3EroGOIRz0h79Plc04qlho2GQTDgNWtrZEPCbygB8sSl
+         lkDg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691796060; x=1692400860;
+        d=1e100.net; s=20221208; t=1691796065; x=1692400865;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Fful+AxqmYE+dU51mD7qo91bPYNQGIlD4NDWqh9Wado=;
-        b=NmVCcoWIz19ToXzuXuHES5TX5+2jIlRhjg31PHEB0es9HdDQM4ZoUjqUU4t2BMcxi+
-         Krz53TBn97oGxPmDLHKeR/X6/9qHY8nnkc8fWxLhNLaTYlzTQ8ECeL2ld26k4dbAa/99
-         5hsVAtaDOx9yTqN+g7BgZG0AUryb1DtBhMouX5WqUAwgjrGQafumr0w+Cd0BPvkJPA1S
-         H/1QqjaCBMvvN4eauRXptR0m6EDOXQuuJfa83aF7s7/RfQDaI0tOXTiFhU5IicLr5lk6
-         jbRC6H0BA9PUcNbcBc8RuoGD3CpFNdGRFEcwAk0fXbs/vdUFHEADyDwvsT+xWewo2xYp
-         6Spg==
-X-Gm-Message-State: AOJu0YyCMvSwZNrRFkw5Vb92m+RcbALhtXOtsQ7Hx60r+AjdY31TNKTX
-        kiDfCiD8sLxeGoJKP1jk9qaWLg==
-X-Google-Smtp-Source: AGHT+IF/MUIzcPuIpnek1arfxqbX3Znj3Lx+fIc1W3XyR0SdLjtUCMk07FdUjQlLRrngYOji6hwHeg==
-X-Received: by 2002:a2e:a0c7:0:b0:2b6:ddab:506a with SMTP id f7-20020a2ea0c7000000b002b6ddab506amr2632989ljm.34.1691796060763;
-        Fri, 11 Aug 2023 16:21:00 -0700 (PDT)
+        bh=PBBULFtJIjgzV/+g1Yu/If4645jApYjaOUQ0btSC4wU=;
+        b=KqqGmxnTKmK17ZbXkw4nmVzZh4Lj320lKTiCUQ7OQzcVtBxO19eqw4azJOkGdHry5Q
+         TDUz569ucd9xY60fQr2AXUJ28QKyuCYkAQTxNtgSjg9Icfv5akSXjq0VWsglhieAygzV
+         l5o1jnzpnDkgbIdzNoSPlmVqN7aCVRmlSI9F0Ob86WEajvoW2ax54AyXutEeNScDCu8R
+         G4KpfN8OG29sXaLGV9IjU6c7bp7mvyQuMN4dlRKXufg2YoZYmNCBBUHXlqzgmtcbVRz/
+         0t8OxWrF1iCdbmOjCQ3X8tdpgHIoHbGzikdEPVfdXCI15P4Q/ZVtFjU6D41asRFQeENg
+         trOA==
+X-Gm-Message-State: AOJu0YxaI3SKAU4VtkOKIlVZRc2El64F96uQRk3hhCmty58F7SMHR4Vx
+        oANM7TkLbuh6x7YaWA4Xqpv5uw==
+X-Google-Smtp-Source: AGHT+IEQou8mJyo7LJd/8CwRbykiQlMKhGx1Lsj9PqAwtw2VanBnf6UsUZ8yWm0rkg/k9zVMS8boVw==
+X-Received: by 2002:a05:651c:1028:b0:2b9:44c5:ac15 with SMTP id w8-20020a05651c102800b002b944c5ac15mr2629419ljm.41.1691796065072;
+        Fri, 11 Aug 2023 16:21:05 -0700 (PDT)
 Received: from [192.168.1.101] (abyj188.neoplus.adsl.tpnet.pl. [83.9.29.188])
-        by smtp.gmail.com with ESMTPSA id z26-20020a2e965a000000b002b9ea00a7bbsm1038210ljh.60.2023.08.11.16.20.59
+        by smtp.gmail.com with ESMTPSA id z26-20020a2e965a000000b002b9ea00a7bbsm1038210ljh.60.2023.08.11.16.21.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Aug 2023 16:21:00 -0700 (PDT)
+        Fri, 11 Aug 2023 16:21:04 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Sat, 12 Aug 2023 01:20:51 +0200
-Subject: [PATCH v2 08/11] interconnect: qcom: sm6350: Set ACV enable_mask
+Date:   Sat, 12 Aug 2023 01:20:54 +0200
+Subject: [PATCH v2 11/11] interconnect: qcom: sm8350: Set ACV enable_mask
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230811-topic-acv-v2-8-765ad70e539a@linaro.org>
+Message-Id: <20230811-topic-acv-v2-11-765ad70e539a@linaro.org>
 References: <20230811-topic-acv-v2-0-765ad70e539a@linaro.org>
 In-Reply-To: <20230811-topic-acv-v2-0-765ad70e539a@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -77,11 +77,11 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691796047; l=732;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1691796047; l=751;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=vlX1nbp+aVK3sQxSDZm3JHUvgDXlVwAH8CqmMnwo5g0=;
- b=HUCeIdx+9xx9PdHE9y4UjVk06D8q+CADG8I2BuT8V2Dx4ZRE45FoUwk/iZS9WijxKbXGGbirX
- 4yvXc/9J7eoBheq3uIRkjUcIXSQzZrG3lFrA+C+nUwyDy3iyz7cQuyB
+ bh=425YgmglD3uyovRsDcuV0bL7ZpvbcYQFx116oPIXrh8=;
+ b=3vEJuPI9guDuDBDJY/ontSaw+6V+T+G12Jajt4Q/zEbhR1P3zYADYE7LzizsWynSIFr0FFXDC
+ oB1F/gDvkGKCA3yKWhZnwSsZRAM6YKSCQLJpKS6BA6/wmYUIl/KGcSE
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
@@ -90,17 +90,17 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 ACV expects an enable_mask corresponding to the APPS RSC, fill it in.
 
-Fixes: 6a6eff73a954 ("interconnect: qcom: Add SM6350 driver support")
+Fixes: d26a56674497 ("interconnect: qcom: Add SM8350 interconnect provider driver")
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/interconnect/qcom/sm6350.c | 1 +
+ drivers/interconnect/qcom/sm8350.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/interconnect/qcom/sm6350.c b/drivers/interconnect/qcom/sm6350.c
-index 49aed492e9b8..f41d7e19ba26 100644
---- a/drivers/interconnect/qcom/sm6350.c
-+++ b/drivers/interconnect/qcom/sm6350.c
-@@ -1164,6 +1164,7 @@ static struct qcom_icc_node xs_sys_tcu_cfg = {
+diff --git a/drivers/interconnect/qcom/sm8350.c b/drivers/interconnect/qcom/sm8350.c
+index bdf75839e6d1..562322d4fc3c 100644
+--- a/drivers/interconnect/qcom/sm8350.c
++++ b/drivers/interconnect/qcom/sm8350.c
+@@ -1356,6 +1356,7 @@ static struct qcom_icc_node qns_mem_noc_sf_disp = {
  
  static struct qcom_icc_bcm bcm_acv = {
  	.name = "ACV",
