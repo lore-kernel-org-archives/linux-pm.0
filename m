@@ -2,112 +2,113 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E703C04FE1
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Aug 2023 13:05:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F72FC0015E
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Aug 2023 14:01:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235397AbjHKNFG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Aug 2023 09:05:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49660 "EHLO
+        id S229815AbjHKOBA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Aug 2023 10:01:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48242 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236124AbjHKNEo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2023 09:04:44 -0400
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 989E130E3
-        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 06:04:35 -0700 (PDT)
-Received: by mail-lf1-x133.google.com with SMTP id 2adb3069b0e04-4fe3b86cec1so3020952e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2023 06:04:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1691759074; x=1692363874;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=rSJuIpZoyaCZteiOEQ+bhjiLYz9YMkE1DlPauAqnlJc=;
-        b=NVvPfntlukoh2QUA5g8tBdXvKChJ2A8uQwXz1YVo/e7+suobTGp6qyOkcmYK2oZZn3
-         C9v76CaX6/zhQnFKA32ImPtlLGR/Ci/wQAld2RcoZLvmkx64aD/6TAH0vHgKtRe8ZqiQ
-         iQNuxvUoflNaOnyy7UcZHC375j0TAeI2eI5csA4uRZlpwHwMVkUX2XfrSNFfNU1s8lC2
-         +x8dcDjWy7wuY88G75+B4EoKdebwRbFbNhS+DNY1n4oNjQSNcB2WkocgXkZFs2N9JWnP
-         GaMij9ED8vz8hi1Are3hbG3kSJTI1CGqnd3C2IZ2UmzeVr+JbUxG/QMSU2cUaY4Xyefs
-         hMjg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691759074; x=1692363874;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=rSJuIpZoyaCZteiOEQ+bhjiLYz9YMkE1DlPauAqnlJc=;
-        b=Lcs07A30qTHOYfckSv+xg/BJLlu1W/5dP1iugnLNJdWyq1NqmErlAF5Z4Jd2D2cabr
-         VPCRmMd6NqGTqHcAQRXtuLVP1woouGVwR1Nny1JYfrzRtbuCvjmKfLvFGHPVggUwvuru
-         CBCKlogv+aAbgAiITJPQClxWCsTbhfG4mrL4To8HEgci9VlQcIxPym+t312Uvhmm/IAu
-         GG8kpFBrLOuTe35YJWYPSLQEhyrinfJ6C9abYSVMTYJaKsNq4Pp5OPFWIX++rgAHvamX
-         43NmoBZFibGtRCTx2A6IWlPh2klFjl9WvbRxIjUNboIIwpbGOUkm0BZSGoy05VTxCYnL
-         VFqg==
-X-Gm-Message-State: AOJu0Yxvkt5nfi9f9fkaFNW8We9YaZQ2bswpevpYTgr9adWVr8JFPvlO
-        Uet4IVW1RQ4TeCqzoiccw4SeFg==
-X-Google-Smtp-Source: AGHT+IEjInuMQmk5V/KjNg7pZOc0B9XnSVQWmNuulyGuH3hAXCuDSfNpjmr2ACAaqjlNStLsyvDg7g==
-X-Received: by 2002:a05:6512:304a:b0:4fd:fc36:68a2 with SMTP id b10-20020a056512304a00b004fdfc3668a2mr2094051lfb.1.1691759073960;
-        Fri, 11 Aug 2023 06:04:33 -0700 (PDT)
-Received: from [192.168.1.101] (abyj188.neoplus.adsl.tpnet.pl. [83.9.29.188])
-        by smtp.gmail.com with ESMTPSA id v20-20020a197414000000b004fe15a2f0f6sm722491lfe.62.2023.08.11.06.04.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Aug 2023 06:04:33 -0700 (PDT)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Fri, 11 Aug 2023 15:04:17 +0200
-Subject: [PATCH 10/11] interconnect: qcom: sm8250: Set ACV enable_mask
-MIME-Version: 1.0
+        with ESMTP id S229535AbjHKOBA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2023 10:01:00 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4B33D7;
+        Fri, 11 Aug 2023 07:00:59 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 78B7F631B1;
+        Fri, 11 Aug 2023 14:00:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C24B3C433C7;
+        Fri, 11 Aug 2023 14:00:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1691762458;
+        bh=C4cXeWQX/r0IzEoOEZ08WLIpkcXhN7kt7P6JcA2SsfA=;
+        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+        b=rjOirqlUfvyMrYGK2PVWBJ5zUsGe2FKOjHY1dp1jcP9Za9VNrHnzeLPV7j1s1GKa1
+         pnp1TVUnexW5wXbSCI3Uk3aG2vO8T4NzWCjTg3lJK8GOE2Ino+Ns0Y/bKJM3NavB2d
+         3iUhkptkfGP3N80QGn989MfZaaFKYrBXKHxS/3AgluHVulS8sMU19qP0/juWN2eCCY
+         DRFczAh/0LRrjffN/6Wp78U0yrotycsm4dPQ5UJL878xSXCDzRFY+d6EZFHZXMjbS9
+         cuExJx9o92mxn5k/NIJeQDrfDBE/26mqajanE/DM4vYlIGsPLyiz2hHJqA/dR5sOLK
+         H24h7Nxq2gFqQ==
+Received: (nullmailer pid 3322998 invoked by uid 1000);
+        Fri, 11 Aug 2023 14:00:55 -0000
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230811-topic-acv-v1-10-a85b6e94f46d@linaro.org>
-References: <20230811-topic-acv-v1-0-a85b6e94f46d@linaro.org>
-In-Reply-To: <20230811-topic-acv-v1-0-a85b6e94f46d@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Melody Olvera <quic_molvera@quicinc.com>,
-        Odelu Kukatla <okukatla@codeaurora.org>,
-        Richard Acayan <mailingradian@gmail.com>,
-        David Dai <daidavid1@codeaurora.org>,
-        Rob Herring <robh@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Luca Weiss <luca.weiss@fairphone.com>,
-        Sibi Sankar <sibis@codeaurora.org>,
-        Jonathan Marek <jonathan@marek.ca>,
-        Vinod Koul <vkoul@kernel.org>
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1691759050; l=753;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=kGjEAPVOoDaeRtsYH+fP8I1dp0NkUEZT0h8XOrWCYVA=;
- b=Ycy6izGPP5tobMelR/fzV82DWFa0msx/eOiLPCi99Li1eePJ24g7By5rYXJV7sSiobhFB5Oda
- ZbfHPZwB1zzB+vSXwKpPU41r800LthHV/HBfZXvDYB9L84ZpS/BKbNs
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+From:   Rob Herring <robh@kernel.org>
+To:     Alexander Stein <alexander.stein@ew.tq-group.com>
+Cc:     Daniel Vetter <daniel@ffwll.ch>, dri-devel@lists.freedesktop.org,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        linux-arm-kernel@lists.infradead.org,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        "David S . Miller" <davem@davemloft.net>,
+        Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org,
+        Zhang Rui <rui.zhang@intel.com>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        David Airlie <airlied@gmail.com>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Fabio Estevam <festevam@gmail.com>,
+        Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org,
+        Rob Herring <robh+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        netdev@vger.kernel.org, NXP Linux Team <linux-imx@nxp.com>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>
+In-Reply-To: <20230810144451.1459985-3-alexander.stein@ew.tq-group.com>
+References: <20230810144451.1459985-1-alexander.stein@ew.tq-group.com>
+ <20230810144451.1459985-3-alexander.stein@ew.tq-group.com>
+Message-Id: <169176235704.3319932.12605780111430379869.robh@kernel.org>
+Subject: Re: [PATCH 2/6] dt-bindings: imx-thermal: Add
+ #thermal-sensor-cells property
+Date:   Fri, 11 Aug 2023 08:00:55 -0600
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-ACV expects an enable_mask corresponding to the APPS RSC, fill it in.
 
-Fixes: 6df5b349491e ("interconnect: qcom: Add SM8250 interconnect provider driver")
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
----
- drivers/interconnect/qcom/sm8250.c | 1 +
- 1 file changed, 1 insertion(+)
+On Thu, 10 Aug 2023 16:44:47 +0200, Alexander Stein wrote:
+> This property is defined in thermal-sensor.yaml. Reference this file and
+> constraint '#thermal-sensor-cells' to 0 for imx-thermal.
+> Fixes the warning:
+> arch/arm/boot/dts/nxp/imx/imx6q-mba6a.dtb: tempmon:
+>  '#thermal-sensor-cells' does not match any of the regexes: 'pinctrl-[0-9]+'
+>  From schema: Documentation/devicetree/bindings/thermal/imx-thermal.yaml
+> 
+> Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
+> ---
+>  Documentation/devicetree/bindings/thermal/imx-thermal.yaml | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
 
-diff --git a/drivers/interconnect/qcom/sm8250.c b/drivers/interconnect/qcom/sm8250.c
-index d4a4ecef11f0..19d5ecbb5a48 100644
---- a/drivers/interconnect/qcom/sm8250.c
-+++ b/drivers/interconnect/qcom/sm8250.c
-@@ -1397,6 +1397,7 @@ static struct qcom_icc_node qup2_core_slave = {
- 
- static struct qcom_icc_bcm bcm_acv = {
- 	.name = "ACV",
-+	.enable_mask = ACV_RSC_APPS,
- 	.keepalive = false,
- 	.num_nodes = 1,
- 	.nodes = { &ebi },
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
--- 
-2.41.0
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/thermal/imx-thermal.example.dtb: tempmon: '#thermal-sensor-cells' is a required property
+	from schema $id: http://devicetree.org/schemas/thermal/imx-thermal.yaml#
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20230810144451.1459985-3-alexander.stein@ew.tq-group.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
