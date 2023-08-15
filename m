@@ -2,189 +2,138 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98010C001B0
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Aug 2023 06:20:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27312C001B0
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Aug 2023 06:58:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234955AbjHOGUB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Aug 2023 02:20:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39680 "EHLO
+        id S234257AbjHOG53 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Aug 2023 02:57:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35562 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235066AbjHOGTW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Aug 2023 02:19:22 -0400
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2087.outbound.protection.outlook.com [40.107.220.87])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51EDC2D42;
-        Mon, 14 Aug 2023 23:17:38 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=cwbS2qY1le5pxV+06Ofjn+5LOoqb1/kBf9GJVEXq/mLto+Y0/i5kSwivfxTTu5QUiHNwDP9u5cILIYHd2aD8qhXXzStF/eFBIbiIAvcyTTSXYBciPv1CWdJrbvKVp7EyFiGzB85nLXnt3AluVFSBYad0jXome67x4OEpa7b6HGaENNyOmaaQe9TTBnUXyJT2m6VM2Lk8E+ylVO2oJQ8Bc+ozEvu+gAQ2u/y8Z7aDycQdqFSCZH4HbbYYXIwmqB5xLFBrhpNNhh9htppKxH+fHpVnV3+vpGy5ikyq4PNL9Lh5TOaaeKFZ3n5u+ICoROZNQZ5798QwdqItKehDf+mdHw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UatvUdnAHKDm3NQ3MVcDdoeY7zuTYCcF2McOkq3aFNQ=;
- b=QRwcroT9IMFWNxEIcUcX6UT5m3WtExObUtsbYVllsFV5NMY9lkM4muWK62pcagqUpbUMyg3n0IqgPwhPp6AVRqnXTOkRwNd2x7fjKuTv1zXAZnoRTF28XtqlA4ztbCUgPfD5HCfj9JsLF4sgQdZCcx2lQ5q7cC3F3lMl2DSErnHHxjL70NdXIRb+v1tAOCs2leaTjpECVdv0x2TrFAKGATrMyf1OJokHu+mtBGmta4uuVEcUMtxtGFRLTyUD5pbN77HyXB/WlasojjRiBMxQKwQXOLSk6cyGIlpCWX7QCCYlEmyuF4TpC7UGnmckD4BRkSgfVBINqejG6+Odw8avIQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UatvUdnAHKDm3NQ3MVcDdoeY7zuTYCcF2McOkq3aFNQ=;
- b=pSSn3YUckvG4Tb99X0V6xppmeeuIltFlybJOUnwGqa54gM5pRVCpluxwlf6mSUP03Ezez1dxpA4U0fx5ft7YZneaMKVi+ITAnoeUtfYeTHOrtFtbnNbtTHXJ6WWuDJZ5AqusV3MMaFewDqGUGzkZ262aw61hC7Ti/FJHFL5jVvo=
-Received: from MW4P223CA0004.NAMP223.PROD.OUTLOOK.COM (2603:10b6:303:80::9) by
- CH2PR12MB4103.namprd12.prod.outlook.com (2603:10b6:610:7e::17) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6678.26; Tue, 15 Aug 2023 06:17:33 +0000
-Received: from CO1PEPF000044F9.namprd21.prod.outlook.com
- (2603:10b6:303:80:cafe::a4) by MW4P223CA0004.outlook.office365.com
- (2603:10b6:303:80::9) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6652.33 via Frontend
- Transport; Tue, 15 Aug 2023 06:17:32 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- CO1PEPF000044F9.mail.protection.outlook.com (10.167.241.199) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6723.3 via Frontend Transport; Tue, 15 Aug 2023 06:17:32 +0000
-Received: from jasmine-meng.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Tue, 15 Aug
- 2023 01:17:22 -0500
-From:   Meng Li <li.meng@amd.com>
-To:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Huang Rui <ray.huang@amd.com>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <x86@kernel.org>, <linux-acpi@vger.kernel.org>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        <linux-kselftest@vger.kernel.org>,
-        "Nathan Fontenot" <nathan.fontenot@amd.com>,
-        Deepak Sharma <deepak.sharma@amd.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Shimmer Huang <shimmer.huang@amd.com>,
-        "Perry Yuan" <Perry.Yuan@amd.com>,
-        Xiaojian Du <Xiaojian.Du@amd.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Borislav Petkov <bp@alien8.de>, Meng Li <li.meng@amd.com>
-Subject: [PATCH V2 6/7] Documentation: amd-pstate: introduce AMD Pstate Preferred Core
-Date:   Tue, 15 Aug 2023 14:15:45 +0800
-Message-ID: <20230815061546.3556083-7-li.meng@amd.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230815061546.3556083-1-li.meng@amd.com>
-References: <20230815061546.3556083-1-li.meng@amd.com>
+        with ESMTP id S235295AbjHOG5C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Aug 2023 02:57:02 -0400
+Received: from mail-oo1-xc2c.google.com (mail-oo1-xc2c.google.com [IPv6:2607:f8b0:4864:20::c2c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28C2C10C0;
+        Mon, 14 Aug 2023 23:57:01 -0700 (PDT)
+Received: by mail-oo1-xc2c.google.com with SMTP id 006d021491bc7-56c711a889dso3592589eaf.0;
+        Mon, 14 Aug 2023 23:57:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1692082620; x=1692687420;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gUF7+zEwFhnnxO0YUzrV1ZAOv1FqyPAGYAalPW9tUBE=;
+        b=IIiMuHsVnAlCIxFfXYA2IZ3IwE5c9M3UboDhuUYimh7CaDhdCMr0CscYJSTEb8n3rS
+         249+hMUP8she9bC3BXRxvgFlxKrpWOyzxEDi6S9EnkmO/ZuexFH1un2cHVO7lG1rfIFJ
+         lWxhMG5PPIkPlsIpoPW11d5+ZiaGhps7X0CHwvAjt6LAzT2um3A++OwpcjKdwNjs1VnZ
+         hzYpFOvh1R+5NCYs6iN4lpZ68C+pIjjSVX+HsfxGCRL2xPeuvyjni+IFS02KwQ3VI3s0
+         wUCuhUr0LJwjm3VLng7WXF/nUYZeudxEzh7vt+pCqLmQLZq1VxsNjom4m/xPXcX1tTGY
+         8Rjg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692082620; x=1692687420;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=gUF7+zEwFhnnxO0YUzrV1ZAOv1FqyPAGYAalPW9tUBE=;
+        b=OErGh9uomnbaAoZcQ6Cmt2z3eXv7YkU0Lv758phHaxmfswR7vzxnmm8a3eL0qf2Se5
+         f71IEzksiQwIvlB23eOye6N6uaAbaqP7Y5s3er2tcNM1WfAaEXgc9RYkn8hTneCYcG6n
+         4VFWqJTvZPYOILRAOPCOWWGpeL/5z8eXt/e89IYxWt9nqDJl7l8+A5RBGwXrNzpKgNUo
+         a1j6BlxtvZqPxI3ZN4HTbcI/u4bD3MExosV2sXkzeM+3kzvwfLUrwzy1DYGxNgSXI0S8
+         yjTREAWuGN56+c3BW2t1nRby4ZeEdzYKdH4MDveIaMfWsepdJgtwEx/faQIaN5hjtcuv
+         niJQ==
+X-Gm-Message-State: AOJu0YwpnB+qRb8I86XtHOvdjh59WJfdzeaysbDDEctbi6cWAZ1rSdj/
+        ALN0ChjVotMTLx/RGAXaDah0FsuEFPobU+NwnZA=
+X-Google-Smtp-Source: AGHT+IF9wHpQbz6RjsFYq8asdD4gmXQL8tAld3WVXDlp4tr4KWfme3FVlS7l/mjFiuvLMcN8VLs04uIMXrcfGkSNZyA=
+X-Received: by 2002:a05:6871:28e:b0:1b0:3ffc:97e9 with SMTP id
+ i14-20020a056871028e00b001b03ffc97e9mr13997249oae.0.1692082620445; Mon, 14
+ Aug 2023 23:57:00 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CO1PEPF000044F9:EE_|CH2PR12MB4103:EE_
-X-MS-Office365-Filtering-Correlation-Id: a918cc8e-b72e-43a6-d2e9-08db9d574fc2
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 7oYhXr0457ow6ofVQ5sTjl7cbcQw7n0zgXmKH/1oG74PQWkzEiqptSzx52KXWlJ7EkryHJrrM7rEjslgXLWE6bTyxdWdvM8Jp7g2T6DOUJT61zqocXiVKjHFTRVbuj/wM4GGn3lBudDpKClQ0aXYfnU9UYjWW+EuM3FZyvwIiYFVeuCUDlbnZ9G2Cqi+HkUVcoQo8mhNIVGDQqDqU9VPFOgLeBBCxW7m5j5GguGIJIc5+pLxceI1J0riYFgnWNoIfqqRHiQ5j+XYwF3EdUD/MXVf1g9S/SVjzlvmJ+nRG3vHKp3IBpi7oOb8G2q1wKdUvrgF3P2BSy2MY0e2qDcja1DKmdx7aR8HijeWFV8otTnrAAvyMajfATxA887+UQjIwrLYjnUxWhVnUWeq7kmERpUEBk4u6wh47ZYYQfVZLVp8PBnvEOKgr6xmJ9zw4hxDsCSo0FJpsRnCfqLT5Ljg3bjSqetx2TP6yAkvUQy4MLPxYQ8HCD1CRI4ThLRn5FU9SHgh2qHSt9cj2HItYR1AVp9pDjrRMCflsD7xO294ZFVQQTCg6tq+7WO3ApYhcLRo6I1aIYrVs7xJlZGtlC/8ejv9DwHPDaw2ZBiu7B3wg5g2aHZTZP1Idz5geKEJ8iYvbomRI+EOztw2sqYf+C0fnctNG61JlQ7pabFfhOjZtOvJjYQKnEYS23+nKT2lsAfDTHv9zsRo3Hi00RlE+N210NZzwL/yr317eypmoNmNeH7WyiT1hdPjXX8mqF7KvaZELwPMiRyCK/JY8wTVuZz5Nw==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(39860400002)(136003)(346002)(376002)(396003)(1800799006)(186006)(82310400008)(451199021)(40470700004)(46966006)(36840700001)(40480700001)(40460700003)(356005)(478600001)(81166007)(82740400003)(8676002)(6666004)(8936002)(4326008)(110136005)(70206006)(41300700001)(316002)(6636002)(54906003)(70586007)(36860700001)(83380400001)(47076005)(7696005)(2616005)(1076003)(26005)(426003)(336012)(16526019)(86362001)(2906002)(5660300002)(36756003)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Aug 2023 06:17:32.7378
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: a918cc8e-b72e-43a6-d2e9-08db9d574fc2
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: CO1PEPF000044F9.namprd21.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR12MB4103
+References: <20230807062345.490-1-xuewen.yan@unisoc.com>
+In-Reply-To: <20230807062345.490-1-xuewen.yan@unisoc.com>
+From:   Xuewen Yan <xuewen.yan94@gmail.com>
+Date:   Tue, 15 Aug 2023 14:56:49 +0800
+Message-ID: <CAB8ipk9wJ-VDHrLMgEoVcdquWptkLnXZ15xFvugC8+WXOf6_Og@mail.gmail.com>
+Subject: Re: [PATCH] PM: QOS: Always use "kstrtos32_from_user()" in cpu_latency_qos_write()
+To:     Xuewen Yan <xuewen.yan@unisoc.com>
+Cc:     rafael@kernel.org, pavel@ucw.cz, len.brown@intel.com,
+        qyousef@layalina.io, guohua.yan@unisoc.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Introduce AMD Pstate Preferred Core.
+Hi rafael
 
-check preferred core state:
-$ cat /sys/devices/system/cpu/amd-pstate/prefcore_state
+What do you think of this patch=EF=BC=9F
 
-Signed-off-by: Meng Li <li.meng@amd.com>
----
- Documentation/admin-guide/pm/amd-pstate.rst | 54 +++++++++++++++++++++
- 1 file changed, 54 insertions(+)
+ # echo 500 > /dev/cpu_dma_latency
+[T4893] write: qos value=3D170930229
+[T4893] write: count value=3D4
 
-diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
-index 1cf40f69278c..ef2b69935311 100644
---- a/Documentation/admin-guide/pm/amd-pstate.rst
-+++ b/Documentation/admin-guide/pm/amd-pstate.rst
-@@ -353,6 +353,48 @@ is activated.  In this mode, driver requests minimum and maximum performance
- level and the platform autonomously selects a performance level in this range
- and appropriate to the current workload.
- 
-+AMD Pstate Preferred Core
-+=================================
-+
-+The core frequency is subjected to the process variation in semiconductors.
-+Not all cores are able to reach the maximum frequency respecting the
-+infrastructure limits. Consequently, AMD has redefined the concept of
-+maximum frequency of a part. This means that a fraction of cores can reach
-+maximum frequency. To find the best process scheduling policy for a given
-+scenario, OS needs to know the core ordering informed by the platform through
-+highest performance capability register of the CPPC interface.
-+
-+``AMD Pstate Preferred Core`` enable the scheduler to favor scheduling on cores
-+can be get a higher frequency with lower voltage under preferred core.
-+And it has the ability to dynamically change the preferred core based on the
-+workload and platform conditions and accounting for thermals and aging.
-+
-+The priority metric will be initialized by the AMD Pstate driver. The AMD Pstate
-+driver will also determine whether or not ``AMD Pstate Preferred Core`` is
-+supported by the platform.
-+
-+AMD Pstate driver will provide an initial core ordering when the system boots.
-+The platform uses the CPPC interfaces to communicate the core ranking to the
-+operating system and scheduler to make sure that OS is choosing the cores
-+with highest performance firstly for scheduling the process. When AMD Pstate
-+driver receives a message with the highest performance change, it will
-+update the core ranking and set the cpu's priority.
-+
-+AMD Preferred Core Switch
-+=================================
-+Kernel Parameters
-+-----------------
-+
-+``AMD Pstate Preferred Core`` has two states: enable and disable.
-+Enable/disable states can be chosen by different kernel parameters.
-+Default enable ``AMD Pstate Preferred Core``.
-+
-+``amd_prefcore=disable``
-+
-+If ``amd_prefcore=disable`` is passed to kernel command line option
-+then disable ``AMD Pstate Preferred Core`` if platform can support
-+the Preferred Core feature.
-+
- User Space Interface in ``sysfs`` - General
- ===========================================
- 
-@@ -385,6 +427,18 @@ control its functionality at the system level.  They are located in the
-         to the operation mode represented by that string - or to be
-         unregistered in the "disable" case.
- 
-+``prefcore``
-+	Preferred Core state of the driver: "enabled" or "disabled".
-+
-+	"enabled"
-+		Enable the AMD Preferred Core.
-+
-+	"disabled"
-+		Disable the AMD Preferred Core
-+
-+
-+        This attribute is read-only to check the state of Preferred Core.
-+
- ``cpupower`` tool support for ``amd-pstate``
- ===============================================
- 
--- 
-2.34.1
+the value is 170930229 is because it's hex is 0x0A303035,  It is
+exactly the "500\0"
 
+ # echo 200> /dev/cpu_dma_latency
+[T4893] write: qos value=3D170930226
+[T4893] write: count value=3D4
+
+the value is 170930226 is because it's hex is 0x0A303032,  It is
+exactly the "200\0"
+
+Thanks!
+
+On Mon, Aug 7, 2023 at 3:17=E2=80=AFPM Xuewen Yan <xuewen.yan@unisoc.com> w=
+rote:
+>
+> In cpu_latency_qos_write, there is a judgment on whether the count
+> value is equal to sizeof(s32). This means that when user write 100~999,
+> it would get error value because it would call the "copy_from_user()"
+> instead of "kstrtos32".
+> Just like:
+>
+>  # echo 500 > /dev/cpu_dma_latency
+> [T4893] write: qos value=3D170930229
+> [T4893] write: count value=3D4
+>
+> [T4893] write: qos value=3D170930226
+> [T4893] write: count value=3D4
+>
+> To prevent this happening, delete the "copy_from_user()" and
+> always use "kstrtos32_from_user()".
+>
+> Signed-off-by: Xuewen Yan <xuewen.yan@unisoc.com>
+> ---
+>  kernel/power/qos.c | 14 ++++----------
+>  1 file changed, 4 insertions(+), 10 deletions(-)
+>
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index 782d3b41c1f3..21a2f873e921 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -379,17 +379,11 @@ static ssize_t cpu_latency_qos_write(struct file *f=
+ilp, const char __user *buf,
+>                                      size_t count, loff_t *f_pos)
+>  {
+>         s32 value;
+> +       int ret;
+>
+> -       if (count =3D=3D sizeof(s32)) {
+> -               if (copy_from_user(&value, buf, sizeof(s32)))
+> -                       return -EFAULT;
+> -       } else {
+> -               int ret;
+> -
+> -               ret =3D kstrtos32_from_user(buf, count, 16, &value);
+> -               if (ret)
+> -                       return ret;
+> -       }
+> +       ret =3D kstrtos32_from_user(buf, count, 16, &value);
+> +       if (ret)
+> +               return ret;
+>
+>         cpu_latency_qos_update_request(filp->private_data, value);
+>
+> --
+> 2.25.1
+>
