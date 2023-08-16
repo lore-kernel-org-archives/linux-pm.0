@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C027C0729B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAF27C07E8D
 	for <linux-pm@archiver.kernel.org>; Wed, 16 Aug 2023 14:58:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343883AbjHPO6E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Aug 2023 10:58:04 -0400
+        id S1343887AbjHPO6F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Aug 2023 10:58:05 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52318 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343853AbjHPO5x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 10:57:53 -0400
-Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A75EA26A1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:51 -0700 (PDT)
-Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-99bccc9ec02so927298966b.2
-        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:51 -0700 (PDT)
+        with ESMTP id S1343875AbjHPO6B (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 10:58:01 -0400
+Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40A6F10E9
+        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:58:00 -0700 (PDT)
+Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-2b9b9f0387dso98566991fa.0
+        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:58:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692197870; x=1692802670;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=IIQG2DiKif0iuRguAVDSpo28maNi/+e2Wh3y0OW3ETY=;
-        b=JAhXsXlZCZLyqm3g9Os4EymAcm/sNnLBrHr70bHU7WReDU2kCeo0ccKEFZX0vwjhQ3
-         rGhFhsrvJq/vHmUVDVyQA/uPp/5TaDE2Qz9uiIeHUQtsNf2uhIuzW/dpWMigsZudI9Vg
-         7Q0XBVSpTKxeJsSv4TyhWzbMtlrXJDAp2+La2MAXl47nSgotZCbKk9/FbRhyNySTAXGl
-         k2tycdhlQxKSGw6Arx90ZQjj6SecxT1pqpQ1G21UI1jdfQGacClDoGlcks2F3YNJjQjo
-         eB1xSpS4s0YNSYLpCU+NnVcJ+XHCouCwJMm1AUqOMZ1gGdcwKwfilrk0n6BNpHhpjBm9
-         WBWQ==
+        d=linaro.org; s=google; t=1692197878; x=1692802678;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=k/Dhb70OK4hEGD5pj/9T1Ud8kYLrafnZW6YW0Jaj+4w=;
+        b=GSbRu6Lwj5436wM5tdbSf4MtNpZI4hlWLLvF5zhtg/sFo3YPqZSp8zfOtrPqi7NVkT
+         EwSs4eqa+yKmSXx2DMbI+oKfNOQmsHTC1PzrKUdtp/fa3fAujrBKtVzD3BVrYdqpMsDV
+         a3V19ukrZcDgVPhcn1cUW03TQDW+qRvoDqIDNkfXjHKvFu+g5Mf8Zr6RjuePfn76naXd
+         To0IWQlFVBiENzPqkOzq27GHVbbMFUCo0/HSrAMeOvHmLWJbnan7m1MPaOOVY1MmcYfC
+         FAOKwxeCrNQAMgrsToZvO4xSTI/p3VRNFlShTCj7LFULu5gDpj6eBBGOKyM/0oZQdf2p
+         efzA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692197870; x=1692802670;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=IIQG2DiKif0iuRguAVDSpo28maNi/+e2Wh3y0OW3ETY=;
-        b=juYbsUJvg1vpRBDABw36vzjtac2Z5hTmohmQP8olzk5WZv7pq4V7FNKs6272SPLLbP
-         UP10ipMFLhBe4TzAyvb/aXMIdSEEubRAF5dI/+T2bqo4ppgE2fqJ7DSbE/rZbbaoPYqA
-         T6TEE7hD7HQ7iV6MVIaBeVbL1bB3MY9ZoDWL4DBiWGzAbpNoVtHAo7vNoVuMQVnXtS0o
-         2iP4wqied8gsFmZ/Kb4s1fjntW7QWdoY0ATj6F7Wtda3ShVgLJXr/h4/isptCLz2gD0a
-         7VFiuwCdh+k4FfrpcjY2TgDEnHumJb7zJSps5PQsYz6TWvqrnnnUmre+4H8HR05VMJ5Q
-         F5xg==
-X-Gm-Message-State: AOJu0YzUwJimzvi9DqNn9sfZrwWnjEebxuBo8VZ/VB+OiDp9oTzlLr+4
-        F2OjL1io9iV1/Z1ArvJ4S3dKoA==
-X-Google-Smtp-Source: AGHT+IFcKm59rZ2xvqc5dn0ecwLhmzoC3eXfnItV2uaIIwaTEUFAFOMvqtp735pgK7t/8GXSTTWHsg==
-X-Received: by 2002:a17:906:3287:b0:99b:f534:9bb6 with SMTP id 7-20020a170906328700b0099bf5349bb6mr1550926ejw.9.1692197869878;
-        Wed, 16 Aug 2023 07:57:49 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1692197878; x=1692802678;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=k/Dhb70OK4hEGD5pj/9T1Ud8kYLrafnZW6YW0Jaj+4w=;
+        b=cRys15BonMGt+yZJWnX/vqsrZ6vJXAnhjPTZtuAVtq5gMoRJNOfV76IAvR4daKmlKq
+         mhjl8KBo3/CQHPltrRAWn32wpTdZ5cVuvTZm/HZ/KONYlGKL4zA4G2Bno1VEVFBhfZr6
+         UZrJedy+DCwcMpdaHIuzOJ29oV+R9tFAFKIiPTsqrwCefxnqe6k6SLBFmaCZIFeuJHiU
+         Zr9e6Z5ynkzMDFV8CeZJWV5xnqwF5d0coDRKmrRs05apBS2azcF6Gw2FqDRm+PApwPVr
+         GR4FEmADrgBGoI7aRPnpOsbU12RDfDjZSpnyw6L/NUMXGBwRsqxxl+irYTeZGdtsjMLq
+         vfpQ==
+X-Gm-Message-State: AOJu0Yzw94Bw6TZAbmJhrFsxcHYbu0TtxBFVDCxwMWy2WAJAuO747tWY
+        7ypX0M3YYfHaNp3yziWYrSzHIw==
+X-Google-Smtp-Source: AGHT+IEnM9PXE7B4AuNAxxSv1zZwFLpPB1WCSVeswBWNfAQ+cCEVR/xjs/m5wCSsEtxdn+/Sml1Eew==
+X-Received: by 2002:a2e:b04d:0:b0:2b6:e6cc:9057 with SMTP id d13-20020a2eb04d000000b002b6e6cc9057mr1719538ljl.51.1692197878654;
+        Wed, 16 Aug 2023 07:57:58 -0700 (PDT)
 Received: from hackbox.lan ([84.232.191.92])
-        by smtp.gmail.com with ESMTPSA id f16-20020a170906561000b00992076f4a01sm8610403ejq.190.2023.08.16.07.57.48
+        by smtp.gmail.com with ESMTPSA id f16-20020a170906561000b00992076f4a01sm8610403ejq.190.2023.08.16.07.57.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Aug 2023 07:57:49 -0700 (PDT)
+        Wed, 16 Aug 2023 07:57:58 -0700 (PDT)
 From:   Abel Vesa <abel.vesa@linaro.org>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
@@ -62,53 +63,54 @@ To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Taniya Das <tdas@qti.qualcomm.com>
 Cc:     linux-pm@vger.kernel.org,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm@vger.kernel.org
-Subject: [PATCH v2 0/6] PM: domains: Add control for switching back and forth to HW control
-Date:   Wed, 16 Aug 2023 17:57:35 +0300
-Message-Id: <20230816145741.1472721-1-abel.vesa@linaro.org>
+        linux-arm-msm@vger.kernel.org,
+        Jagadeesh Kona <quic_jkona@quicinc.com>
+Subject: [PATCH v2 5/6] clk: qcom: videocc-sm8550: Use HW_CTRL_TRIGGER instead of HW_CTRL for GDSC
+Date:   Wed, 16 Aug 2023 17:57:40 +0300
+Message-Id: <20230816145741.1472721-6-abel.vesa@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230816145741.1472721-1-abel.vesa@linaro.org>
+References: <20230816145741.1472721-1-abel.vesa@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The v1 (and the back story) can be found here:
-https://lore.kernel.org/all/20230628105652.1670316-1-abel.vesa@linaro.org/
+From: Jagadeesh Kona <quic_jkona@quicinc.com>
 
-Changes since v1:
- * patch for printing domain HW-managed mode in the summary
- * patch that adds one consumer (venus)
- * patch for gdsc with new (different) flag
- * patch for videocc GDSC provider to update flags
+HW_CTRL moves the GDSC to HW control mode as part of GDSC enable itself.
+Use HW_CTRL_TRIGGER flag instead of HW_CTRL flag for video GDSC's to
+switch the GDSC to HW/SW control modes only when consumer requested to
+switch GDSC mode using dev_pm_genpd_set_hwmode.
 
-Abel Vesa (1):
-  PM: domains: Add the domain HW-managed mode to the summary
+Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
+---
+ drivers/clk/qcom/videocc-sm8550.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Jagadeesh Kona (4):
-  clk: qcom: gdsc: Add set and get hwmode callbacks to switch GDSC mode
-  clk: qcom: Use HW_CTRL_TRIGGER flag to switch video GDSC to HW mode
-  clk: qcom: videocc-sm8550: Use HW_CTRL_TRIGGER instead of HW_CTRL for
-    GDSC
-  venus: pm_helpers: Use dev_pm_genpd_set_hwmode to switch GDSC mode
-
-Ulf Hansson (1):
-  PM: domains: Allow devices attached to genpd to be managed by HW
-
- drivers/base/power/domain.c                   | 84 ++++++++++++++++++-
- drivers/clk/qcom/gdsc.c                       | 32 +++++++
- drivers/clk/qcom/gdsc.h                       |  1 +
- drivers/clk/qcom/videocc-sc7180.c             |  2 +-
- drivers/clk/qcom/videocc-sc7280.c             |  2 +-
- drivers/clk/qcom/videocc-sdm845.c             |  4 +-
- drivers/clk/qcom/videocc-sm8250.c             |  4 +-
- drivers/clk/qcom/videocc-sm8550.c             |  4 +-
- drivers/media/platform/qcom/venus/core.c      |  4 +
- drivers/media/platform/qcom/venus/core.h      |  1 +
- .../media/platform/qcom/venus/pm_helpers.c    | 47 +++++------
- include/linux/pm_domain.h                     | 17 ++++
- 12 files changed, 165 insertions(+), 37 deletions(-)
-
+diff --git a/drivers/clk/qcom/videocc-sm8550.c b/drivers/clk/qcom/videocc-sm8550.c
+index 3bb136ec31b1..504b2ef264eb 100644
+--- a/drivers/clk/qcom/videocc-sm8550.c
++++ b/drivers/clk/qcom/videocc-sm8550.c
+@@ -324,7 +324,7 @@ static struct gdsc video_cc_mvs0_gdsc = {
+ 	},
+ 	.pwrsts = PWRSTS_OFF_ON,
+ 	.parent = &video_cc_mvs0c_gdsc.pd,
+-	.flags = POLL_CFG_GDSCR | RETAIN_FF_ENABLE | HW_CTRL,
++	.flags = POLL_CFG_GDSCR | RETAIN_FF_ENABLE | HW_CTRL_TRIGGER,
+ };
+ 
+ static struct gdsc video_cc_mvs1c_gdsc = {
+@@ -349,7 +349,7 @@ static struct gdsc video_cc_mvs1_gdsc = {
+ 	},
+ 	.pwrsts = PWRSTS_OFF_ON,
+ 	.parent = &video_cc_mvs1c_gdsc.pd,
+-	.flags = POLL_CFG_GDSCR | RETAIN_FF_ENABLE | HW_CTRL,
++	.flags = POLL_CFG_GDSCR | RETAIN_FF_ENABLE | HW_CTRL_TRIGGER,
+ };
+ 
+ static struct clk_regmap *video_cc_sm8550_clocks[] = {
 -- 
 2.34.1
 
