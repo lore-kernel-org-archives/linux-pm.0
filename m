@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C562FC04A6A
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E80F0C04FDF
 	for <linux-pm@archiver.kernel.org>; Wed, 16 Aug 2023 14:58:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343874AbjHPO6E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Aug 2023 10:58:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35986 "EHLO
+        id S1343863AbjHPO6D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Aug 2023 10:58:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52318 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343855AbjHPO5y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 10:57:54 -0400
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 425DF10FF
-        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:53 -0700 (PDT)
-Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-2b703a0453fso100999111fa.3
-        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:53 -0700 (PDT)
+        with ESMTP id S1343874AbjHPO6A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 10:58:00 -0400
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7168326A1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:58 -0700 (PDT)
+Received: by mail-ed1-x529.google.com with SMTP id 4fb4d7f45d1cf-522bd411679so8719710a12.0
+        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692197871; x=1692802671;
+        d=linaro.org; s=google; t=1692197877; x=1692802677;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=YJy2R3P3tqw0+ESpB2MxKyE27+v98SJ0NGWR6OuPHME=;
-        b=FFsAYIPCoql6xswQkEnqKEFXrppTVmLHlVv+VfbtsYgPHJnIYrdSYD/SO/BJtXlhoc
-         wA+1z0Brl33kk5FQvjYbND1wQ9fwAOxMrJcAS/WU+uQbVZKjJAdVzCUgsZxc2x9n8hVI
-         2oRgIb+O1tc2w9KWRgn9oFyAPlavnDtio0/TDhWCwUS4OyFK/4yKNIPxxarXiu1Jjb2/
-         m96rlqO+sA7eQA1/eN8AuAWyiBevnw2+iwyXtjCTYASC+t9q7ywMhKt2tsedaY7JQkgU
-         LXYANfX8hbUBSw+25eazY8KL4TfCrYl4y4goqFdAyoQMNmgfsLU3UXOsZlKIsiTQLiND
-         cR4A==
+        bh=Nhu7qUgFNvKeZH+hR8i6J/UgYY5l7kY9GQdBaFblVZw=;
+        b=mOxuAMzpiZk7uOwBll137LwsChgoZ2GjH1Kz1quS893yrKUKEmt3QRDzzsr1DtDllu
+         GK9EK4qH/ZfmB45mo6VPDf4HdDl3MxbgDLzn0mzx+rsMTDVjQ4pKmNYto+GM8pphhzbp
+         4kAgHN2gRLkG20GzxJPrshQv5tXB0kW+nBbI5p3lItSQccAZbIMhnCo+yEOrQqhfgVP1
+         XGGNaZu34SoSybNQQL+vE397aCFnhAFTKrAE9qsSw96m3hEXPDUv8QIp2LhqKhgrT89B
+         k3kx/s35hbSRbsjPZu3hAj1GiKY1k7wM7KaR6Gxih6oTECwkDJGyOa4vA8+e4tlDnKnG
+         vmgA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692197871; x=1692802671;
+        d=1e100.net; s=20221208; t=1692197877; x=1692802677;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=YJy2R3P3tqw0+ESpB2MxKyE27+v98SJ0NGWR6OuPHME=;
-        b=Y5qngxgAfJ8D+JctyzvcvpeM1VbfGRThOKS02LE3Ui41lT0QpJC1i+iinaqXH9L1Lw
-         78I8PB1vnWJCdGpO9JNgAXrIXz60y6k7SrbEME56PlruWziM4BRp0cMIsBF8YYSyFFnY
-         AKhKX1b3YoCCzMMipfdmcgbYCWqltiTXPvPDB8HfEWyeuyhExil5uNptQ+165akmxiiI
-         UWMtraI7JgFxbPrjq68xn0Hcf52WBdIg9aERRf725lAssjs8UDELr2SchxDr1AN+WupE
-         E+AKt1Gn/nfacLhSYG1EIXsBHEHbhuohJ/h1Um+NtUyLcsAVjFJKprtTsmS7caZs1Zi6
-         2JVQ==
-X-Gm-Message-State: AOJu0YzpJDYlPO9hNmQaL13X4rhya00dru+EB7nndTLEE7VVKcrGCzTu
-        FZNAdr0AXPfAZyZl0vr04NcXMA==
-X-Google-Smtp-Source: AGHT+IFPyEEjR3aBCl4jPyvfEu16V/bunE3zATtqhYdZEh6WtyuA71IJB08RCkr8xn8X4letoC9xUw==
-X-Received: by 2002:a2e:86c2:0:b0:2b9:acad:b4b2 with SMTP id n2-20020a2e86c2000000b002b9acadb4b2mr1707919ljj.6.1692197871439;
-        Wed, 16 Aug 2023 07:57:51 -0700 (PDT)
+        bh=Nhu7qUgFNvKeZH+hR8i6J/UgYY5l7kY9GQdBaFblVZw=;
+        b=Ci/7IHCdGe+cg6GQlNf9fIg+kS4KvP65j1X/US9CTUNEfkDGEPSouZyC317ashosIZ
+         ahoIucaXcwKj4ceQztwxYUxZK6No14l80KKTOmoXMlrh/EXWRorruoyJrsPO9lXDsZY+
+         EXyMugPgwNxyEx90kJ8KF1zOAv2xQmEc4KNv5fzp8X98vruMval0DmWrl3Mjzu9vO4WR
+         X+Qua4eoEqKagYT7NrWfKaGwIsVaOhBDgt0htNCB7eb2QqKpA5M4zXw/inTeuyffSrRx
+         +GR5Zo80HrZS4xhx02afKmiAV9LNzgIyAa004bEFW9cvU0IbSo34m23ydf9KzX+eNI4e
+         kEiA==
+X-Gm-Message-State: AOJu0YyJyo4KvRNO6hVKY/o/D9ayOe/l0tJNRyU/Mwm+p+C8uS4lEf7h
+        66dzaj9t/BgWrNzsnOGxluriTg==
+X-Google-Smtp-Source: AGHT+IGhs6XfomhxZw6A/2i2NDiM6M0F+XDb/B8g19gpmZWAxwq278z9yA/vfMZHnjbJfq9v05jfKQ==
+X-Received: by 2002:a17:906:8454:b0:987:5761:2868 with SMTP id e20-20020a170906845400b0098757612868mr1358210ejy.11.1692197876989;
+        Wed, 16 Aug 2023 07:57:56 -0700 (PDT)
 Received: from hackbox.lan ([84.232.191.92])
-        by smtp.gmail.com with ESMTPSA id f16-20020a170906561000b00992076f4a01sm8610403ejq.190.2023.08.16.07.57.49
+        by smtp.gmail.com with ESMTPSA id f16-20020a170906561000b00992076f4a01sm8610403ejq.190.2023.08.16.07.57.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Aug 2023 07:57:51 -0700 (PDT)
+        Wed, 16 Aug 2023 07:57:56 -0700 (PDT)
 From:   Abel Vesa <abel.vesa@linaro.org>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
@@ -63,10 +63,11 @@ To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Taniya Das <tdas@qti.qualcomm.com>
 Cc:     linux-pm@vger.kernel.org,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm@vger.kernel.org
-Subject: [PATCH v2 1/6] PM: domains: Allow devices attached to genpd to be managed by HW
-Date:   Wed, 16 Aug 2023 17:57:36 +0300
-Message-Id: <20230816145741.1472721-2-abel.vesa@linaro.org>
+        linux-arm-msm@vger.kernel.org,
+        Jagadeesh Kona <quic_jkona@quicinc.com>
+Subject: [PATCH v2 4/6] clk: qcom: Use HW_CTRL_TRIGGER flag to switch video GDSC to HW mode
+Date:   Wed, 16 Aug 2023 17:57:39 +0300
+Message-Id: <20230816145741.1472721-5-abel.vesa@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230816145741.1472721-1-abel.vesa@linaro.org>
 References: <20230816145741.1472721-1-abel.vesa@linaro.org>
@@ -76,167 +77,95 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Ulf Hansson <ulf.hansson@linaro.org>
+From: Jagadeesh Kona <quic_jkona@quicinc.com>
 
-Some power-domains may be capable of relying on the HW to control the power
-for a device that's hooked up to it. Typically, for these kinds of
-configurations the device doesn't really need to be attached to a PM domain
-(genpd), from Linux point of view. However, in some cases the behaviour of
-the power-domain and its device can be changed in runtime.
+The current HW_CTRL flag switches the video GDSC to HW control mode as
+part of GDSC enable itself, instead of that use HW_CTRL_TRIGGER flag to
+give consumer drivers more control and switch the GDSC mode as and when
+required.
 
-To allow a consumer driver to change the behaviour of the PM domain for its
-device, let's provide a new function, dev_pm_genpd_set_hwmode(). Moreover,
-let's add a corresponding optional genpd callback, ->set_hwmode_dev(),
-which the genpd provider should implement if it can support switching
-between HW controlled mode and SW controlled mode. Similarly, add the
-dev_pm_genpd_get_hwmode() to allow consumers to read the current mode and
-its corresponding optional genpd callback, ->get_hwmode_dev(), which the
-genpd provider can also implement for reading back the mode from the
-hardware.
+HW_CTRL_TRIGGER flag allows consumer drivers to switch the video GDSC to
+HW/SW control modes at runtime using dev_pm_genpd_set_hwmode API.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
 Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
 ---
+ drivers/clk/qcom/videocc-sc7180.c | 2 +-
+ drivers/clk/qcom/videocc-sc7280.c | 2 +-
+ drivers/clk/qcom/videocc-sdm845.c | 4 ++--
+ drivers/clk/qcom/videocc-sm8250.c | 4 ++--
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-Changes since v1:
- * reword the commit message to mention the dev_pm_genpd_get_hwmode
- * add the get_hwmode_dev callback to the generic_pm_domain
- * call the genpd provider implementation of the get_hwmode_dev from the
-   generic API
-
- drivers/base/power/domain.c | 69 +++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   | 17 +++++++++
- 2 files changed, 86 insertions(+)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 5cb2023581d4..dfb4f1de540d 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -541,6 +541,75 @@ void dev_pm_genpd_synced_poweroff(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(dev_pm_genpd_synced_poweroff);
- 
-+/**
-+ * dev_pm_genpd_set_hwmode - Set the HW mode for the device and its PM domain.
-+ *
-+ * @dev: Device for which the HW-mode should be changed.
-+ * @enable: Value to set or unset the HW-mode.
-+ *
-+ * Some PM domains can rely on HW signals to control the power for a device. To
-+ * allow a consumer driver to switch the behaviour for its device in runtime,
-+ * which may be beneficial from a latency or energy point of view, this function
-+ * may be called.
-+ *
-+ * It is assumed that the users guarantee that the genpd wouldn't be detached
-+ * while this routine is getting called.
-+ *
-+ * Returns 0 on success and negative error values on failures.
-+ */
-+int dev_pm_genpd_set_hwmode(struct device *dev, bool enable)
-+{
-+	struct generic_pm_domain *genpd;
-+	int ret = 0;
-+
-+	genpd = dev_to_genpd_safe(dev);
-+	if (!genpd)
-+		return -ENODEV;
-+
-+	if (!genpd->set_hwmode_dev)
-+		return -EOPNOTSUPP;
-+
-+	genpd_lock(genpd);
-+
-+	if (dev_gpd_data(dev)->hw_mode == enable)
-+		goto out;
-+
-+	ret = genpd->set_hwmode_dev(genpd, dev, enable);
-+	if (!ret)
-+		dev_gpd_data(dev)->hw_mode = enable;
-+
-+out:
-+	genpd_unlock(genpd);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_set_hwmode);
-+
-+/**
-+ * dev_pm_genpd_get_hwmode - Get the HW mode setting for the device.
-+ *
-+ * @dev: Device for which the current HW-mode setting should be fetched.
-+ *
-+ * This helper function allows consumer drivers to fetch the current HW mode
-+ * setting of its the device.
-+ *
-+ * It is assumed that the users guarantee that the genpd wouldn't be detached
-+ * while this routine is getting called.
-+ */
-+bool dev_pm_genpd_get_hwmode(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	genpd = dev_to_genpd_safe(dev);
-+	if (!genpd)
-+		return false;
-+
-+	if (genpd->get_hwmode_dev)
-+		return genpd->get_hwmode_dev(genpd, dev);
-+
-+	return dev_gpd_data(dev)->hw_mode;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_get_hwmode);
-+
- static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- {
- 	unsigned int state_idx = genpd->state_idx;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index f776fb93eaa0..36d308ba40b0 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -146,6 +146,10 @@ struct generic_pm_domain {
- 	int (*set_performance_state)(struct generic_pm_domain *genpd,
- 				     unsigned int state);
- 	struct gpd_dev_ops dev_ops;
-+	int (*set_hwmode_dev)(struct generic_pm_domain *domain,
-+			      struct device *dev, bool enable);
-+	bool (*get_hwmode_dev)(struct generic_pm_domain *domain,
-+			      struct device *dev);
- 	int (*attach_dev)(struct generic_pm_domain *domain,
- 			  struct device *dev);
- 	void (*detach_dev)(struct generic_pm_domain *domain,
-@@ -208,6 +212,7 @@ struct generic_pm_domain_data {
- 	unsigned int performance_state;
- 	unsigned int default_pstate;
- 	unsigned int rpm_pstate;
-+	bool hw_mode;
- 	void *data;
+diff --git a/drivers/clk/qcom/videocc-sc7180.c b/drivers/clk/qcom/videocc-sc7180.c
+index 5b9b54f616b8..51439f7ba70c 100644
+--- a/drivers/clk/qcom/videocc-sc7180.c
++++ b/drivers/clk/qcom/videocc-sc7180.c
+@@ -166,7 +166,7 @@ static struct gdsc vcodec0_gdsc = {
+ 	.pd = {
+ 		.name = "vcodec0_gdsc",
+ 	},
+-	.flags = HW_CTRL,
++	.flags = HW_CTRL_TRIGGER,
+ 	.pwrsts = PWRSTS_OFF_ON,
  };
  
-@@ -237,6 +242,8 @@ int dev_pm_genpd_remove_notifier(struct device *dev);
- void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
- ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev);
- void dev_pm_genpd_synced_poweroff(struct device *dev);
-+int dev_pm_genpd_set_hwmode(struct device *dev, bool enable);
-+bool dev_pm_genpd_get_hwmode(struct device *dev);
+diff --git a/drivers/clk/qcom/videocc-sc7280.c b/drivers/clk/qcom/videocc-sc7280.c
+index 615695d82319..3d07b1e95986 100644
+--- a/drivers/clk/qcom/videocc-sc7280.c
++++ b/drivers/clk/qcom/videocc-sc7280.c
+@@ -236,7 +236,7 @@ static struct gdsc mvs0_gdsc = {
+ 		.name = "mvs0_gdsc",
+ 	},
+ 	.pwrsts = PWRSTS_OFF_ON,
+-	.flags = HW_CTRL | RETAIN_FF_ENABLE,
++	.flags = HW_CTRL_TRIGGER | RETAIN_FF_ENABLE,
+ };
  
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -305,6 +312,16 @@ static inline ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev)
- static inline void dev_pm_genpd_synced_poweroff(struct device *dev)
- { }
+ static struct gdsc mvsc_gdsc = {
+diff --git a/drivers/clk/qcom/videocc-sdm845.c b/drivers/clk/qcom/videocc-sdm845.c
+index c77a4dd5d39c..dad011c48973 100644
+--- a/drivers/clk/qcom/videocc-sdm845.c
++++ b/drivers/clk/qcom/videocc-sdm845.c
+@@ -260,7 +260,7 @@ static struct gdsc vcodec0_gdsc = {
+ 	},
+ 	.cxcs = (unsigned int []){ 0x890, 0x930 },
+ 	.cxc_count = 2,
+-	.flags = HW_CTRL | POLL_CFG_GDSCR,
++	.flags = HW_CTRL_TRIGGER | POLL_CFG_GDSCR,
+ 	.pwrsts = PWRSTS_OFF_ON,
+ };
  
-+static inline int dev_pm_genpd_set_hwmode(struct device *dev, bool enable)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline bool dev_pm_genpd_get_hwmode(struct device *dev)
-+{
-+	return false;
-+}
-+
- #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
- #endif
+@@ -271,7 +271,7 @@ static struct gdsc vcodec1_gdsc = {
+ 	},
+ 	.cxcs = (unsigned int []){ 0x8d0, 0x950 },
+ 	.cxc_count = 2,
+-	.flags = HW_CTRL | POLL_CFG_GDSCR,
++	.flags = HW_CTRL_TRIGGER | POLL_CFG_GDSCR,
+ 	.pwrsts = PWRSTS_OFF_ON,
+ };
+ 
+diff --git a/drivers/clk/qcom/videocc-sm8250.c b/drivers/clk/qcom/videocc-sm8250.c
+index ad46c4014a40..c1b73d852f1c 100644
+--- a/drivers/clk/qcom/videocc-sm8250.c
++++ b/drivers/clk/qcom/videocc-sm8250.c
+@@ -293,7 +293,7 @@ static struct gdsc mvs0_gdsc = {
+ 	.pd = {
+ 		.name = "mvs0_gdsc",
+ 	},
+-	.flags = HW_CTRL,
++	.flags = HW_CTRL_TRIGGER,
+ 	.pwrsts = PWRSTS_OFF_ON,
+ };
+ 
+@@ -302,7 +302,7 @@ static struct gdsc mvs1_gdsc = {
+ 	.pd = {
+ 		.name = "mvs1_gdsc",
+ 	},
+-	.flags = HW_CTRL,
++	.flags = HW_CTRL_TRIGGER,
+ 	.pwrsts = PWRSTS_OFF_ON,
+ };
+ 
 -- 
 2.34.1
 
