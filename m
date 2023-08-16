@@ -2,53 +2,52 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16B44C04FE1
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C027C0729B
 	for <linux-pm@archiver.kernel.org>; Wed, 16 Aug 2023 14:58:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343868AbjHPO6F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Aug 2023 10:58:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35986 "EHLO
+        id S1343883AbjHPO6E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Aug 2023 10:58:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52318 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343858AbjHPO54 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 10:57:56 -0400
-Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC75D26A1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:54 -0700 (PDT)
-Received: by mail-ej1-x631.google.com with SMTP id a640c23a62f3a-99bcfe28909so858328266b.3
-        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:54 -0700 (PDT)
+        with ESMTP id S1343853AbjHPO5x (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 10:57:53 -0400
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A75EA26A1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:51 -0700 (PDT)
+Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-99bccc9ec02so927298966b.2
+        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692197873; x=1692802673;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=NixeQd6xSh2tNtmaq0jX+6ZW5LoNEOMcfMMtSKt75tk=;
-        b=zf9tyl2LU6fms9X82BBE7C363LwuI0IzArByzcDFgH2ufio5w440Ni5mnXJE4r2/En
-         mciSs6MjfoLdydInooORM+EhD+yi03jABlm83Ev/bQn70VFOpQJ5pOEfnvGUG+xx+1EI
-         v2/hM/Kk+BzU7wCT29AJhn0kHDuXcrOCiMYEP+fcOmY9cLHxwyfN9ILV4vx2f6NpkCmk
-         SeT/QbfT9hgJg/F8Dz7IKCqo+wZ2Hw/cIuce3VCXnaFyzalyvS7pucejADssfdsaKQzg
-         fyclrtAV3shpb9CLihP86CcDVPxd3bQpBB3FECUaF7a64UxoChMrV5485G5UdXWY0jNJ
-         C6Qw==
+        d=linaro.org; s=google; t=1692197870; x=1692802670;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=IIQG2DiKif0iuRguAVDSpo28maNi/+e2Wh3y0OW3ETY=;
+        b=JAhXsXlZCZLyqm3g9Os4EymAcm/sNnLBrHr70bHU7WReDU2kCeo0ccKEFZX0vwjhQ3
+         rGhFhsrvJq/vHmUVDVyQA/uPp/5TaDE2Qz9uiIeHUQtsNf2uhIuzW/dpWMigsZudI9Vg
+         7Q0XBVSpTKxeJsSv4TyhWzbMtlrXJDAp2+La2MAXl47nSgotZCbKk9/FbRhyNySTAXGl
+         k2tycdhlQxKSGw6Arx90ZQjj6SecxT1pqpQ1G21UI1jdfQGacClDoGlcks2F3YNJjQjo
+         eB1xSpS4s0YNSYLpCU+NnVcJ+XHCouCwJMm1AUqOMZ1gGdcwKwfilrk0n6BNpHhpjBm9
+         WBWQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692197873; x=1692802673;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=NixeQd6xSh2tNtmaq0jX+6ZW5LoNEOMcfMMtSKt75tk=;
-        b=jR7QgsfmV9JzZQ86nCfLwnPqgG84dn88pkp5VW0IAZD/L0o7+pZkIleNRnrq+/ezWB
-         q1eLEqVUPieibcqEZ3XcVQiEU8t5d1+2GN7Js/vihhO2hLfNbyl9/2qqJkUbOPYu4MKq
-         SN78v2CnNHfdRZt0/NFufzcg/EMXn+HMymlvlmtCrVVmLPFFonSeBFfID2f7lNGSsgqv
-         4pzLnnzTkMHOOS3zTiu/BdJHxew3irKFjnNkvb6cZXaPhDjKNk46vrAmbHZ9zlbhL6rV
-         u8C66mwbw0LDIaDSM+3UFCYrnBPzX/sEf7/50LZvV1oooDp2H+lG9I2lxZqPb5DkQn9J
-         8GFw==
-X-Gm-Message-State: AOJu0YxO8GRluDQsQ2pVT+jfE4lAL4DwBEx0/NczPEb5djEFjnzuDhjy
-        pZncNFV2bfksoxV6u6kzcycz7g==
-X-Google-Smtp-Source: AGHT+IF0TqtXQdQBhempOuNMHQX9hq0+jdnohXAHrMPJL782fdIa1+n/q85sPoWG2TLxxQ4IRpEhHA==
-X-Received: by 2002:a17:906:1da1:b0:99c:ca27:c447 with SMTP id u1-20020a1709061da100b0099cca27c447mr1450120ejh.43.1692197873154;
-        Wed, 16 Aug 2023 07:57:53 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1692197870; x=1692802670;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=IIQG2DiKif0iuRguAVDSpo28maNi/+e2Wh3y0OW3ETY=;
+        b=juYbsUJvg1vpRBDABw36vzjtac2Z5hTmohmQP8olzk5WZv7pq4V7FNKs6272SPLLbP
+         UP10ipMFLhBe4TzAyvb/aXMIdSEEubRAF5dI/+T2bqo4ppgE2fqJ7DSbE/rZbbaoPYqA
+         T6TEE7hD7HQ7iV6MVIaBeVbL1bB3MY9ZoDWL4DBiWGzAbpNoVtHAo7vNoVuMQVnXtS0o
+         2iP4wqied8gsFmZ/Kb4s1fjntW7QWdoY0ATj6F7Wtda3ShVgLJXr/h4/isptCLz2gD0a
+         7VFiuwCdh+k4FfrpcjY2TgDEnHumJb7zJSps5PQsYz6TWvqrnnnUmre+4H8HR05VMJ5Q
+         F5xg==
+X-Gm-Message-State: AOJu0YzUwJimzvi9DqNn9sfZrwWnjEebxuBo8VZ/VB+OiDp9oTzlLr+4
+        F2OjL1io9iV1/Z1ArvJ4S3dKoA==
+X-Google-Smtp-Source: AGHT+IFcKm59rZ2xvqc5dn0ecwLhmzoC3eXfnItV2uaIIwaTEUFAFOMvqtp735pgK7t/8GXSTTWHsg==
+X-Received: by 2002:a17:906:3287:b0:99b:f534:9bb6 with SMTP id 7-20020a170906328700b0099bf5349bb6mr1550926ejw.9.1692197869878;
+        Wed, 16 Aug 2023 07:57:49 -0700 (PDT)
 Received: from hackbox.lan ([84.232.191.92])
-        by smtp.gmail.com with ESMTPSA id f16-20020a170906561000b00992076f4a01sm8610403ejq.190.2023.08.16.07.57.51
+        by smtp.gmail.com with ESMTPSA id f16-20020a170906561000b00992076f4a01sm8610403ejq.190.2023.08.16.07.57.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Aug 2023 07:57:52 -0700 (PDT)
+        Wed, 16 Aug 2023 07:57:49 -0700 (PDT)
 From:   Abel Vesa <abel.vesa@linaro.org>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
@@ -63,68 +62,53 @@ To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Taniya Das <tdas@qti.qualcomm.com>
 Cc:     linux-pm@vger.kernel.org,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm@vger.kernel.org, Taniya Das <quic_tdas@quicinc.com>
-Subject: [PATCH v2 2/6] PM: domains: Add the domain HW-managed mode to the summary
-Date:   Wed, 16 Aug 2023 17:57:37 +0300
-Message-Id: <20230816145741.1472721-3-abel.vesa@linaro.org>
+        linux-arm-msm@vger.kernel.org
+Subject: [PATCH v2 0/6] PM: domains: Add control for switching back and forth to HW control
+Date:   Wed, 16 Aug 2023 17:57:35 +0300
+Message-Id: <20230816145741.1472721-1-abel.vesa@linaro.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230816145741.1472721-1-abel.vesa@linaro.org>
-References: <20230816145741.1472721-1-abel.vesa@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that domains support being managed by the HW, lets add that
-information to the genpd summary.
+The v1 (and the back story) can be found here:
+https://lore.kernel.org/all/20230628105652.1670316-1-abel.vesa@linaro.org/
 
-Suggested-by: Taniya Das <quic_tdas@quicinc.com>
-Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
----
- drivers/base/power/domain.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+Changes since v1:
+ * patch for printing domain HW-managed mode in the summary
+ * patch that adds one consumer (venus)
+ * patch for gdsc with new (different) flag
+ * patch for videocc GDSC provider to update flags
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index dfb4f1de540d..053b7b510825 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -3171,6 +3171,15 @@ static void rtpm_status_str(struct seq_file *s, struct device *dev)
- 	seq_printf(s, "%-25s  ", p);
- }
- 
-+static void mode_status_str(struct seq_file *s, struct device *dev)
-+{
-+	struct generic_pm_domain_data *gpd_data;
-+
-+	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
-+
-+	seq_printf(s, "%20s", gpd_data->hw_mode ? "HW_Mode" : "SW_Mode");
-+}
-+
- static void perf_status_str(struct seq_file *s, struct device *dev)
- {
- 	struct generic_pm_domain_data *gpd_data;
-@@ -3229,6 +3238,7 @@ static int genpd_summary_one(struct seq_file *s,
- 		seq_printf(s, "\n    %-50s  ", kobj_path);
- 		rtpm_status_str(s, pm_data->dev);
- 		perf_status_str(s, pm_data->dev);
-+		mode_status_str(s, pm_data->dev);
- 		kfree(kobj_path);
- 	}
- 
-@@ -3245,8 +3255,9 @@ static int summary_show(struct seq_file *s, void *data)
- 	int ret = 0;
- 
- 	seq_puts(s, "domain                          status          children                           performance\n");
--	seq_puts(s, "    /device                                             runtime status\n");
--	seq_puts(s, "----------------------------------------------------------------------------------------------\n");
-+	seq_puts(s, "    /device                                             runtime status                           mode\n");
-+	seq_puts(s, "------------------------------------------------------------------------------------------------------------\n");
-+
- 
- 	ret = mutex_lock_interruptible(&gpd_list_lock);
- 	if (ret)
+Abel Vesa (1):
+  PM: domains: Add the domain HW-managed mode to the summary
+
+Jagadeesh Kona (4):
+  clk: qcom: gdsc: Add set and get hwmode callbacks to switch GDSC mode
+  clk: qcom: Use HW_CTRL_TRIGGER flag to switch video GDSC to HW mode
+  clk: qcom: videocc-sm8550: Use HW_CTRL_TRIGGER instead of HW_CTRL for
+    GDSC
+  venus: pm_helpers: Use dev_pm_genpd_set_hwmode to switch GDSC mode
+
+Ulf Hansson (1):
+  PM: domains: Allow devices attached to genpd to be managed by HW
+
+ drivers/base/power/domain.c                   | 84 ++++++++++++++++++-
+ drivers/clk/qcom/gdsc.c                       | 32 +++++++
+ drivers/clk/qcom/gdsc.h                       |  1 +
+ drivers/clk/qcom/videocc-sc7180.c             |  2 +-
+ drivers/clk/qcom/videocc-sc7280.c             |  2 +-
+ drivers/clk/qcom/videocc-sdm845.c             |  4 +-
+ drivers/clk/qcom/videocc-sm8250.c             |  4 +-
+ drivers/clk/qcom/videocc-sm8550.c             |  4 +-
+ drivers/media/platform/qcom/venus/core.c      |  4 +
+ drivers/media/platform/qcom/venus/core.h      |  1 +
+ .../media/platform/qcom/venus/pm_helpers.c    | 47 +++++------
+ include/linux/pm_domain.h                     | 17 ++++
+ 12 files changed, 165 insertions(+), 37 deletions(-)
+
 -- 
 2.34.1
 
