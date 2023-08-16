@@ -2,175 +2,170 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01D63C04A6A
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Aug 2023 13:09:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DC93C001E0
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Aug 2023 14:58:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244731AbjHPNJV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Aug 2023 09:09:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36590 "EHLO
+        id S1343847AbjHPO6C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Aug 2023 10:58:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35994 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244495AbjHPNIr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 09:08:47 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0439126BB;
-        Wed, 16 Aug 2023 06:08:46 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 011AED75;
-        Wed, 16 Aug 2023 06:09:27 -0700 (PDT)
-Received: from [192.168.178.38] (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 208113F6C4;
-        Wed, 16 Aug 2023 06:08:42 -0700 (PDT)
-Message-ID: <2b54b79f-5313-497d-55ae-1ffa1f4c6bf5@arm.com>
-Date:   Wed, 16 Aug 2023 15:08:32 +0200
+        with ESMTP id S1343869AbjHPO56 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 10:57:58 -0400
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1369269F
+        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:56 -0700 (PDT)
+Received: by mail-ej1-x630.google.com with SMTP id a640c23a62f3a-99c3d3c3db9so895553166b.3
+        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2023 07:57:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1692197875; x=1692802675;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XjO3mOShHLsaoichf6Eqrpw4fl2ak09M8zdPJ2UrN58=;
+        b=eVFXG3FOuxdBG0DUvsQ/fx0N9sbRyGntltW2m8fanZFtHRRS/+J7MW0lJRj+JZnZ9P
+         42VhD+xzI2yWmp6osTMu7+OBy5BKT/ZiRgyBftEpkq595uyxPe1FQ/Utq2Z1pAQ5MzQ6
+         JnetWf0n3X04I1jffKKdIlejwMJ+fy/ppupLBXroALy2UPVz4tuLFCkSju739mTSdfoH
+         EwsoXupBaMgeuqlCo7DgbndYIOdoa34j86lV1Hwi4LWR7nIC4It5HcztTs1XK+FiBSfm
+         MixoAz8H1SZcxB+2EqaoblBljSRxZXyJebGpx1FODo0LDseXrE35QesOM6Ai5++J51Fb
+         y6Xw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692197875; x=1692802675;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XjO3mOShHLsaoichf6Eqrpw4fl2ak09M8zdPJ2UrN58=;
+        b=f5fPmmYyPYdxy3mJBLhcuyDJZjNcQPuhEhK8VLnpirf+k3iW9uN2ZvUg7F87ms0PEa
+         A4eHHHO7NuBssYUWEac7lOwCuKSt4Pt836fjkorDkKo3rHCiIjiSh6nC0r60ke+xleCo
+         YT06Q/laGXjgQgE2cGF1IVPeFDROUheWrSDHFTur6hORy8djqIosU8233Gm/fCciX+Mg
+         5Lu8to/ze6rS4rxEzBxndqGJvM7jtmx5ppKIh9mInSxtYrd9uH34ozM2ZVHCkYzNmXD2
+         WTwEv/UtpyixmqPggKJoUDSDk73SMfRS9GGO0zFJOOkRAyIdibAuN64Rk9ldkwfMDkLq
+         dBeA==
+X-Gm-Message-State: AOJu0YxwOJGKjq0q+fefwNmKa8RuBXyKAaiWGZPfNk9b0NR+zFkkPMLY
+        sHxqufrp+hzErpOVDZPgBzqv5A==
+X-Google-Smtp-Source: AGHT+IF8MjEinSQc37AIBbhkjkpbQm6kdgm/BOcGL/QhmwijZIBxjx0GVrO25dLrHE0cYi2xeBizuw==
+X-Received: by 2002:a17:907:74c:b0:99c:fb44:d4b6 with SMTP id xc12-20020a170907074c00b0099cfb44d4b6mr1762255ejb.62.1692197875274;
+        Wed, 16 Aug 2023 07:57:55 -0700 (PDT)
+Received: from hackbox.lan ([84.232.191.92])
+        by smtp.gmail.com with ESMTPSA id f16-20020a170906561000b00992076f4a01sm8610403ejq.190.2023.08.16.07.57.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 16 Aug 2023 07:57:54 -0700 (PDT)
+From:   Abel Vesa <abel.vesa@linaro.org>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Mike Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Taniya Das <tdas@qti.qualcomm.com>
+Cc:     linux-pm@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-arm-msm@vger.kernel.org,
+        Jagadeesh Kona <quic_jkona@quicinc.com>
+Subject: [PATCH v2 3/6] clk: qcom: gdsc: Add set and get hwmode callbacks to switch GDSC mode
+Date:   Wed, 16 Aug 2023 17:57:38 +0300
+Message-Id: <20230816145741.1472721-4-abel.vesa@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230816145741.1472721-1-abel.vesa@linaro.org>
+References: <20230816145741.1472721-1-abel.vesa@linaro.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v3 12/12] Documentation: EM: Update with runtime
- modification design
-Content-Language: en-US
-To:     Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, rafael@kernel.org
-Cc:     rui.zhang@intel.com, amit.kucheria@verdurent.com,
-        amit.kachhap@gmail.com, daniel.lezcano@linaro.org,
-        viresh.kumar@linaro.org, len.brown@intel.com, pavel@ucw.cz,
-        Pierre.Gondois@arm.com, ionela.voinescu@arm.com,
-        mhiramat@kernel.org
-References: <20230721155022.2339982-1-lukasz.luba@arm.com>
- <20230721155022.2339982-13-lukasz.luba@arm.com>
-From:   Dietmar Eggemann <dietmar.eggemann@arm.com>
-In-Reply-To: <20230721155022.2339982-13-lukasz.luba@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21/07/2023 17:50, Lukasz Luba wrote:
-> Add a new section 'Design' which covers the information about Energy
-> Model. It contains the design decisions, describes models and how they
-> reflect the reality. Add description of the basic const. EM. Change the
+From: Jagadeesh Kona <quic_jkona@quicinc.com>
 
-Nit pick: Can we just use one tag for this EM? I would propose
-'default'. So code and doc are aligned.
+Add support for set and get hwmode callbacks to switch the GDSC between
+SW and HW modes. Currently, the GDSC is moved to HW control mode
+using HW_CTRL flag and if this flag is present, GDSC is moved to HW
+mode as part of GDSC enable itself. The intention is to keep the
+HW_CTRL flag functionality as is, since many older chipsets still use
+this flag.
 
-> other section IDs. Add documentation bit for the new feature which
-> allows o modify the EM in runtime.
-> 
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
-> ---
->  Documentation/power/energy-model.rst | 150 +++++++++++++++++++++++++--
->  1 file changed, 140 insertions(+), 10 deletions(-)
-> 
-> diff --git a/Documentation/power/energy-model.rst b/Documentation/power/energy-model.rst
-> index ef341be2882b..01d4d806a123 100644
-> --- a/Documentation/power/energy-model.rst
-> +++ b/Documentation/power/energy-model.rst
-> @@ -72,16 +72,70 @@ required to have the same micro-architecture. CPUs in different performance
->  domains can have different micro-architectures.
->  
->  
-> -2. Core APIs
-> +2. Design
-> +-----------------
-> +
-> +2.1 Basic EM
-> +^^^^^^^^^^^^
-> +
-> +The basic EM is built around constant power information for each performance
-> +state, which is accessible in: 'dev->em_pd->default_table->state'. This model
-> +can be derived based on power measurements of the device e.g. CPU while
-> +running some benchmark. The benchmark might be integer heavy or floating point
-> +computation with a data set fitting into the CPU cache or registers. Bare in
-> +mind that this model might not cover all possible workloads running on CPUs.
-> +Thus, please run a few different benchmarks and verify with some real
-> +workloads your power model values. The power variation due to the workload
-> +instruction mix and data set is not modeled. The static power, which can
-> +change during runtime due to variation of SOC temperature, is not modeled in
-> +this basic EM.
+Introduce a new HW_CTRL_TRIGGER flag to switch the GDSC back and forth
+between HW/SW modes dynamically at runtime. If HW_CTRL_TRIGGER flag is
+present, register set_hwmode_dev callback to switch the GDSC mode which
+can be invoked from consumer drivers using dev_pm_genpd_set_hwmode
+function. Unlike HW_CTRL flag, HW_CTRL_TRIGGER won't move the GDSC to HW
+control mode as part of GDSC enable itself, GDSC will be moved to HW
+control mode only when consumer driver explicity calls
+dev_pm_genpd_set_hwmode to switch to HW mode. Also add the
+dev_pm_genpd_get_hwmode to allow the consumers to read the actual
+HW/SW mode from hardware.
 
-s/in this basic EM/either
+Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
+Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+---
+ drivers/clk/qcom/gdsc.c | 32 ++++++++++++++++++++++++++++++++
+ drivers/clk/qcom/gdsc.h |  1 +
+ 2 files changed, 33 insertions(+)
 
-> +
-> +2.2 Runtime modifiable EM
-> +^^^^^^^^^^^^^^^^^^^^^^^^^
-> +
-> +To better reflect power variation due to static power (leakage) the EM
-> +supports runtime modifications of the power values. The mechanism relies on
-> +RCU to free the modifiable EM perf_state table memory. Its user, the task
-> +scheduler, also uses RCU to access this memory. The EM framework is
-> +responsible for allocating the new memory for the modifiable EM perf_state
-> +table. The old memory is freed automatically using RCU callback mechanism.
-> +This design decision is made based on task scheduler using that data and
-> +to prevent wrong usage of kernel modules if they would be responsible for the
-> +memory management.
-> +
-> +There are two structures with the performance state tables in the EM:
-> +a) dev->em_pd->default_table
-> +b) dev->em_pd->runtime_table
-> +They both point to the same memory location via:
-> +'em_perf_table::state' pointer, until the first modification of the values
-> +This should save memory on platforms which would never modify the EM. When
-> +the first modification is made the 'default_table' (a) contains the old
-> +EM which was created during the setup. The modified EM is available in the
-> +'runtime_table' (b).
-> +
-> +Only EAS uses the 'runtime_table' and benefits from the updates to the
-> +EM values. Other sub-systems (thermal, powercap) use the 'default_table' (a)
-> +since they don't need such optimization.
-
-The interested user immediately ask WHY here. Maybe skip this last part
-of the sentence in case you don't want to provide the WHY here.
-
-> +The drivers which want to modify the EM values are protected from concurrent
-
-Does it have to be a driver?
-
-> +access using a mutex. Therefore, the drivers must use sleeping context when
-> +they want to modify the EM. The runtime modifiable EM might also be used for
-> +better reflecting real workload scenarios, e.g. when they pop-up on the screen
-
-I would describe this a little bit more generic. The current description
-seems to be linked to Android foreground processes.
-
-> +and will run for longer period, such as: games, video recoding or playing,
-> +video calls, etc. It is up to the platform engineers to experiment and choose
-> +the right approach for their device.
-
-Maybe you can say here that with the runtime modifiable EM we switch
-from a 'single and during the entire runtime static EM' (system
-property) design to a 'single EM which can be changed during runtime
-according e.g. to the workload' (system and workload property) design.
-
-[...]
-
-> +3.4 Runtime modifications
-> +^^^^^^^^^^^^^^^^^^^^^^^^^
-> +
-> +Drivers willing to modify the EM at runtime should use the following API::
-> +
->  
-> +  int em_dev_update_perf_domain(struct device *dev,
-> +			struct em_data_callback *cb, void *priv);
->  
-> -2.4 Description details of this API
-> +Drivers must provide a callback .update_power() returning power value for each
-> +performance state. The callback function provided by the driver is free
-> +to fetch data from any relevant location (DT, firmware, ...) or sensor.
-> +The .update_power() callback is called by the EM for each performance state to
-> +provide new power value. In the Section 4.2 there is an example driver
-> +which shows simple implementation of this mechanism. The callback can be
-> +declared with EM_UPDATE_CB() macro. The caller of that callback also passes
-> +a private void pointer back to the driver which tries to update EM.
-> +It is useful and helps to maintain the consistent context for all performance
-> +state calls for a given EM.
-> +The artificial EM also supports runtime modifications. For this type of EM
-> +there is a need to provide one more callback: .get_cost(). The .get_cost()
-> +returns the cost value for each performance state, which better reflects the
-> +efficiency of the CPUs which use artificial EM. Those two callbacks:
-> +.update_power() and get .get_cost() can be declared with one macro
-> +EM_ADV_UPDATE_CB() and then passed to the em_dev_update_perf_domain().
-
-Can't find EM_ADV_UPDATE_CB().
-
-[...]
+diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
+index 5358e28122ab..3e4a721f1605 100644
+--- a/drivers/clk/qcom/gdsc.c
++++ b/drivers/clk/qcom/gdsc.c
+@@ -363,6 +363,34 @@ static int gdsc_disable(struct generic_pm_domain *domain)
+ 	return 0;
+ }
+ 
++static int gdsc_set_mode(struct generic_pm_domain *domain, struct device *dev, bool mode)
++{
++	struct gdsc *sc = domain_to_gdsc(domain);
++
++	if (sc->rsupply && !regulator_is_enabled(sc->rsupply)) {
++		pr_err("Cannot set mode while parent is disabled\n");
++		return -EIO;
++	}
++
++	return gdsc_hwctrl(sc, mode);
++}
++
++static bool gdsc_get_mode(struct generic_pm_domain *domain, struct device *dev)
++{
++	struct gdsc *sc = domain_to_gdsc(domain);
++	u32 val;
++	int ret;
++
++	ret = regmap_read(sc->regmap, sc->gdscr, &val);
++	if (ret)
++		return ret;
++
++	if (val & HW_CONTROL_MASK)
++		return true;
++
++	return false;
++}
++
+ static int gdsc_init(struct gdsc *sc)
+ {
+ 	u32 mask, val;
+@@ -451,6 +479,10 @@ static int gdsc_init(struct gdsc *sc)
+ 		sc->pd.power_off = gdsc_disable;
+ 	if (!sc->pd.power_on)
+ 		sc->pd.power_on = gdsc_enable;
++	if (sc->flags & HW_CTRL_TRIGGER) {
++		sc->pd.set_hwmode_dev = gdsc_set_mode;
++		sc->pd.get_hwmode_dev = gdsc_get_mode;
++	}
+ 
+ 	ret = pm_genpd_init(&sc->pd, NULL, !on);
+ 	if (ret)
+diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
+index 803512688336..1e2779b823d1 100644
+--- a/drivers/clk/qcom/gdsc.h
++++ b/drivers/clk/qcom/gdsc.h
+@@ -67,6 +67,7 @@ struct gdsc {
+ #define ALWAYS_ON	BIT(6)
+ #define RETAIN_FF_ENABLE	BIT(7)
+ #define NO_RET_PERIPH	BIT(8)
++#define HW_CTRL_TRIGGER	BIT(9)
+ 	struct reset_controller_dev	*rcdev;
+ 	unsigned int			*resets;
+ 	unsigned int			reset_count;
+-- 
+2.34.1
 
