@@ -2,108 +2,104 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 599FDC2FC0F
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Aug 2023 23:06:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B0F8C41513
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Aug 2023 01:35:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347109AbjHPXGL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Aug 2023 19:06:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37068 "EHLO
+        id S236211AbjHQBfV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Aug 2023 21:35:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54548 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347146AbjHPXFo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 19:05:44 -0400
-Received: from mail-yw1-x1136.google.com (mail-yw1-x1136.google.com [IPv6:2607:f8b0:4864:20::1136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25B232D44;
-        Wed, 16 Aug 2023 16:05:23 -0700 (PDT)
-Received: by mail-yw1-x1136.google.com with SMTP id 00721157ae682-58d41109351so5152267b3.1;
-        Wed, 16 Aug 2023 16:05:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1692227122; x=1692831922;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=LGkWlW25TONP4qMhpLPr+s5h1/xjs6PgPavj7GKvPiE=;
-        b=n0sDaWW8ORrKMNcCJW1egFbGJVjEoseeDVqV8Zwk5sE8OkoGMD6H3jgd6BC2dn3QOx
-         GGYaSIJSRAd4gZkSFzwlxY5ngSHVqCFN+zFyyU3sIh9wWVWQfBJRHxmLO6L945Yac5N9
-         XgFeeXOpRYubxOiclswyOJyD1KQ0b/bDlnGKGVCzGBXrgut+pPfAcvMhhgVdz4tOJIBc
-         YkR3VqZ1cfD+zsr76STSUx1JxqQfbRnlcq4krzENz1B8d4u2lCKFxX85feKPiX2rs4WU
-         VBzFC0r88mazZhayP1m953TqXm/0Qjm1OZ5l038X+BHGSGj15IbIYIahjzjNVGcOhh60
-         o1gQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692227122; x=1692831922;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=LGkWlW25TONP4qMhpLPr+s5h1/xjs6PgPavj7GKvPiE=;
-        b=cquhs7Sqi5lXlg/4L6jUF5lvc5H8FvwJ+wBu4GfnEqCBCI4xWL2D6SJVokFDgxVCr6
-         HVHqpoE36K2IR+l4mUP6GsxNHlaoIKsA3eFdlb/f1W01tVObeXVG73UA5i/7tL3GCUm7
-         F0N8ypl5euD7AYC2pruekllJb9EDuqa1PhNmvaKLJgdVR86xsLPnzX4irGQI00a/8KAw
-         irAEYGQYm6A3ED+i2OsYbkQ5II/0PD7axBMYinQkGpxbKyfU7y1brKEYZyhj4UWfJNeg
-         xg7/QVMHqY7p7f2MfYMf8WGpsFDGjF7GBoQPe/aQ/Zu+WcUaFnrjnXngElb6odbwPRAS
-         ciEA==
-X-Gm-Message-State: AOJu0Yw8J+zmDi+SMmzYQVCw6Gn1RzreQC6FER+M4MvilWzbayzodzVr
-        n7HTFsk2VcHLxPWF1plu+mk=
-X-Google-Smtp-Source: AGHT+IEHY0RoqLLSldQEEIjnh5LaHzkWRPagaKWXcQy4TkEXei5OlrHbCjoX2qHB6LXROqJtazzrzQ==
-X-Received: by 2002:a0d:eb94:0:b0:577:3cd0:3728 with SMTP id u142-20020a0deb94000000b005773cd03728mr1240736ywe.14.1692227122254;
-        Wed, 16 Aug 2023 16:05:22 -0700 (PDT)
-Received: from localhost ([2607:fea8:529e:7800::5ee])
-        by smtp.gmail.com with ESMTPSA id i64-20020a0df843000000b005704c4d3579sm4286085ywf.40.2023.08.16.16.05.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Aug 2023 16:05:21 -0700 (PDT)
-From:   Richard Acayan <mailingradian@gmail.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
+        with ESMTP id S1347557AbjHQBfQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2023 21:35:16 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 18556271E;
+        Wed, 16 Aug 2023 18:35:12 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.201])
+        by gateway (Coremail) with SMTP id _____8AxTetPed1kfFQZAA--.46769S3;
+        Thu, 17 Aug 2023 09:35:11 +0800 (CST)
+Received: from [10.20.42.201] (unknown [10.20.42.201])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8AxTSNOed1kgmVcAA--.11513S3;
+        Thu, 17 Aug 2023 09:35:10 +0800 (CST)
+Subject: Re: [PATCH v15 1/2] thermal: loongson-2: add thermal management
+ support
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Sibi Sankar <quic_sibis@quicinc.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Cc:     Richard Acayan <mailingradian@gmail.com>
-Subject: [PATCH v2 2/3] dt-bindings: cpufreq: cpufreq-qcom-hw: add SDM670 compatible
-Date:   Wed, 16 Aug 2023 19:04:16 -0400
-Message-ID: <20230816230412.76862-8-mailingradian@gmail.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230816230412.76862-6-mailingradian@gmail.com>
-References: <20230816230412.76862-6-mailingradian@gmail.com>
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     Jianmin Lv <lvjianmin@loongson.cn>, wanghongliang@loongson.cn,
+        Liu Peibao <liupeibao@loongson.cn>,
+        loongson-kernel@lists.loongnix.cn,
+        zhanghongchen <zhanghongchen@loongson.cn>, zhuyinbo@loongson.cn
+References: <20230620012944.28877-1-zhuyinbo@loongson.cn>
+ <da3e6348-33e0-aaa9-8f86-4b1ba1504551@linaro.org>
+From:   Yinbo Zhu <zhuyinbo@loongson.cn>
+Message-ID: <4486a43d-131c-0dcb-d2e5-1f4659a873c0@loongson.cn>
+Date:   Thu, 17 Aug 2023 09:35:10 +0800
+User-Agent: Mozilla/5.0 (X11; Linux loongarch64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
+In-Reply-To: <da3e6348-33e0-aaa9-8f86-4b1ba1504551@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8AxTSNOed1kgmVcAA--.11513S3
+X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
+X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
+        ZEXasCq-sGcSsGvfJ3UbIjqfuFe4nvWSU5nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2Kfnx
+        nUUI43ZEXa7xR_UUUUUUUUU==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The bindings for Qualcomm CPU frequency have a compatible for each SoC.
-Add the compatible for SDM670.
 
-Fixes: 0c665213d126 ("arm64: dts: qcom: sdm670: add cpu frequency scaling")
-Signed-off-by: Richard Acayan <mailingradian@gmail.com>
----
- Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-index a6b3bb8fdf33..3ce288c5e591 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-@@ -23,6 +23,7 @@ properties:
-           - enum:
-               - qcom,qcm2290-cpufreq-hw
-               - qcom,sc7180-cpufreq-hw
-+              - qcom,sdm670-cpufreq-hw
-               - qcom,sdm845-cpufreq-hw
-               - qcom,sm6115-cpufreq-hw
-               - qcom,sm6350-cpufreq-hw
-@@ -125,6 +126,7 @@ allOf:
-               - qcom,qdu1000-cpufreq-epss
-               - qcom,sc7180-cpufreq-hw
-               - qcom,sc8280xp-cpufreq-epss
-+              - qcom,sdm670-cpufreq-hw
-               - qcom,sdm845-cpufreq-hw
-               - qcom,sm6115-cpufreq-hw
-               - qcom,sm6350-cpufreq-hw
--- 
-2.41.0
+在 2023/8/16 下午8:46, Daniel Lezcano 写道:
+> On 20/06/2023 03:29, Yinbo Zhu wrote:
+>> This patch adds the support for Loongson-2 thermal sensor controller,
+>> which can support maximum four sensor selectors that corresponding to 
+>> four
+>> sets of thermal control registers and one set of sampling register. The
+>> sensor selector can selector a speific thermal sensor as temperature 
+>> input.
+>> The sampling register is used to obtain the temperature in real time, the
+>> control register GATE field is used to set the threshold of high or low
+>> temperature, when the input temperature is higher than the high 
+>> temperature
+>> threshold or lower than the low temperature threshold, an interrupt will
+>> occur.
+>>
+>> Signed-off-by: zhanghongchen <zhanghongchen@loongson.cn>
+>> Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+>> ---
+> 
+> [ ... ]
+> 
+>> +    if (devm_thermal_add_hwmon_sysfs(dev, tzd))
+>> +        dev_warn(dev, "Failed to add hwmon sysfs attributes\n");
+> 
+> [ ... ]
+> 
+> This has been factored out by adding a message directly in 
+> devm_thermal_add_hwmon_sysfs(), so the test is not needed here neither 
+> the message.
+
+
+okay, I got it, I will remove the message.
+
+> 
+> However, these changes have been long enough on the mailing list and the 
+> result looks nice.
+> 
+> I can pick this patch and you provide a small patch on top. Or you send 
+> a V16 with this change. It is your call.
+
+
+okay, I will send v16.
+
+Thanks,
+Yinbo.
 
