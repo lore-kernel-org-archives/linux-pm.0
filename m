@@ -2,78 +2,179 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7304EC05052
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Aug 2023 07:11:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AA05C05052
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Aug 2023 08:34:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237838AbjHRHKl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Aug 2023 03:10:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56650 "EHLO
+        id S1358622AbjHRIdm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Aug 2023 04:33:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53666 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1358130AbjHRHK3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Aug 2023 03:10:29 -0400
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 056E230D1
-        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 00:10:27 -0700 (PDT)
-Received: from kwepemi500019.china.huawei.com (unknown [172.30.72.55])
-        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RRtGD6NH1ztRtk;
-        Fri, 18 Aug 2023 15:06:44 +0800 (CST)
-Received: from huawei.com (10.175.112.208) by kwepemi500019.china.huawei.com
- (7.221.188.117) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Fri, 18 Aug
- 2023 15:10:22 +0800
-From:   Zhang Zekun <zhangzekun11@huawei.com>
-To:     <nm@ti.com>, <kristo@kernel.org>, <ssantosh@kernel.org>,
-        <ulf.hansson@linaro.org>, <linux-pm@vger.kernel.org>
-CC:     <zhangzekun11@huawei.com>
-Subject: [PATCH] soc: ti: Use for_each_node_with_property() simplify code logic
-Date:   Fri, 18 Aug 2023 15:01:49 +0800
-Message-ID: <20230818070149.23103-1-zhangzekun11@huawei.com>
-X-Mailer: git-send-email 2.17.1
+        with ESMTP id S1358618AbjHRIdL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Aug 2023 04:33:11 -0400
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39CF43A98
+        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 01:33:09 -0700 (PDT)
+Received: by mail-wr1-x430.google.com with SMTP id ffacd0b85a97d-307d58b3efbso601576f8f.0
+        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 01:33:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1692347588; x=1692952388;
+        h=content-transfer-encoding:in-reply-to:organization:autocrypt:from
+         :references:cc:to:content-language:subject:reply-to:user-agent
+         :mime-version:date:message-id:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=aAz6pPcjIbO7M4ErEDvnkCbBFuK+dTm4MKz0WfT12Qs=;
+        b=amB46zDznbpEv1hhlz48yf5hFt7WQdjgYkARDnoetEA99O9D9QPGbvMN7+vEKaGNTO
+         +WugWo4I9yj93YW58+z4AqnXJo17cKs0Xsz03PDNNtkIAYPi1yIt5xcrGNVQgsWC5VVH
+         uKO2HvxVIXIOQZ1PrA8/bnYIP5nojUHHoxVj2xzk9jTQE+Qo5EGvOLGG/UW7j+4FRXpk
+         mKDk3tS2UlDbwzsu/aLQJ2zfcaGWHieo7sjiVjkVKtqqAb0IBOxrCtLv8XVclsL+JnJN
+         LhPXD9WpHLCg1S24nGSF9/abRYIj3ugGRHp4KuKguIw0+SRLaBDueWSjmqkHp4rZE23g
+         Tv+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692347588; x=1692952388;
+        h=content-transfer-encoding:in-reply-to:organization:autocrypt:from
+         :references:cc:to:content-language:subject:reply-to:user-agent
+         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=aAz6pPcjIbO7M4ErEDvnkCbBFuK+dTm4MKz0WfT12Qs=;
+        b=Wxg70oe2hXRXPwwfZLYH88nCYRUcwrlDeMN0sf75EfB2/vDYycL80xJ45lATdGfQIw
+         C9fdl2juN4EbsRvz28X8+AwkVs2/KC2I6nUq9gtoQ4AVGcawsmfwf2BwkMHU3tRhUxBD
+         PMaXjCi2GYBWmqTKjPt1udabMuRakNjrdWdihohpw36ZuaNDxmJ5OZg/0DCAGJ0IbeF3
+         LXwmbprm1425icmkDvUynxk9o3z8ct5Z/yDZkLd35veBRZ/IJzI7B4BnWZ4pNBO9LVy8
+         rrVhSqQj/GQNkkrkwqflhxjGmJKY6ltMoX/1D4jwIk/rIPF6DCtJBokrTrDDMa2AA/20
+         Pvhw==
+X-Gm-Message-State: AOJu0Yzj3+305ZATOi4m1LreCImxWuRjUq/8fHf9xRCw0nEdCTeDlEI1
+        8HXey5M3n6F9Fv6WQPKsOt9OEA==
+X-Google-Smtp-Source: AGHT+IEiysdNKHU6e1jOHJwdYmSc6cMKD0VVl3kI/OX+UGpo9rGHWR5q03uk569XonrYyZgxg48H3w==
+X-Received: by 2002:a05:6000:18d:b0:314:1f1e:3a85 with SMTP id p13-20020a056000018d00b003141f1e3a85mr1475664wrx.61.1692347587538;
+        Fri, 18 Aug 2023 01:33:07 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:982:cbb0:b9f6:39b9:fff4:e741? ([2a01:e0a:982:cbb0:b9f6:39b9:fff4:e741])
+        by smtp.gmail.com with ESMTPSA id o15-20020adfeacf000000b003197e3520ddsm1959033wrn.109.2023.08.18.01.33.06
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 18 Aug 2023 01:33:06 -0700 (PDT)
+Message-ID: <077c330d-5b86-4797-b69d-0ad02f49978f@linaro.org>
+Date:   Fri, 18 Aug 2023 10:33:03 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.112.208]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemi500019.china.huawei.com (7.221.188.117)
-X-CFilter-Loop: Reflected
+User-Agent: Mozilla Thunderbird
+Reply-To: neil.armstrong@linaro.org
+Subject: Re: [PATCH v2 0/1] Add add-maintainer.py script
+Content-Language: en-US, fr
+To:     Guru Das Srinagesh <quic_gurus@quicinc.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     Masahiro Yamada <masahiroy@kernel.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Nicolas Schier <nicolas@fjasle.eu>,
+        Kees Cook <keescook@chromium.org>,
+        Bjorn Andersson <andersson@kernel.org>, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, Will Deacon <will@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        quic_pkondeti@quicinc.com, u.kleine-koenig@pengutronix.de,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+References: <cover.1691049436.git.quic_gurus@quicinc.com>
+ <20230810185526.GC31860@quicinc.com>
+ <4d94d0fd-72d4-0196-3a30-3e1efb9f5aca@linaro.org>
+ <20230816171538.GB26279@quicinc.com>
+From:   Neil Armstrong <neil.armstrong@linaro.org>
+Autocrypt: addr=neil.armstrong@linaro.org; keydata=
+ xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
+ GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
+ BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
+ qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
+ 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
+ AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
+ OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
+ Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
+ YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
+ GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
+ UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
+ GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
+ yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
+ QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
+ SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
+ 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
+ Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
+ oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
+ M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
+ 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
+ KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
+ 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
+ QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
+Organization: Linaro Developer Services
+In-Reply-To: <20230816171538.GB26279@quicinc.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Introduct for_each_node_with_property() to iterate through the
-nodes, this can simplify the code logic a bit, no functional
-change here.
+On 16/08/2023 19:15, Guru Das Srinagesh wrote:
+> Thanks for the comments, Krzysztof.
+> 
+> On Aug 15 2023 23:06, Krzysztof Kozlowski wrote:
+>> On 10/08/2023 20:55, Guru Das Srinagesh wrote:
+>>> On Aug 03 2023 01:23, Guru Das Srinagesh wrote:
+>>>> When pushing patches to upstream, the `get_maintainer.pl` script is used to
+>>>> determine whom to send the patches to. Instead of having to manually process
+>>>> the output of the script, add a wrapper script to do that for you.
+>>>>
+>>>> The add-maintainer.py script adds maintainers (and mailing lists) to a patch,
+>>>> editing it in-place.
+>>>
+>>> Could I request reviews from the other maintainers as well, please? Just to see
+>>> if I should continue working on this script or if the `b4` tool obviates the
+>>> need for such a script.
+>>
+>> I send a bit of patches but I use very simple workflow. It is really
+>> simple, so simple, that I was always surprised how people can make their
+>> life difficult with some complicated process to send patches... and then
+>> obviously skip some maintainers, because of that process.
+> 
+> Exactly - this script aims to solve precisely that problem. It fills the gap
+> between running `get_maintainers.pl` and having to manually edit its output to
+> add "To: " and "Cc: " and somehow incorporate it in the body of the patch(es).
+> 
+> With this script, the workflow would be as simple as:
+> 
+>    1. Generate patches using `git format-patch`
+>    2. Run `add-maintainer.py` on the above patches
+>    3. `git send-email` the patches.
+> 
+> That's it - no need to manually work with email addresses.
+>    
+>> I almost always feed git send-email with addresses from
+>> scripts/get_maintainers.pl. This tool would not bring any benefits to my
+>> simple workflow.
+> 
+> In the light of the 3-step workflow I've envisioned above, could you please
+> elaborate why not? If anything, it will only save a developer's time.
+> 
+>> For newcomers, OTOH, I would either recommend simple workflow or just
+>> use b4. Why? Because if you cannot use git-send-email, then it means
+>> your email setup will make your life difficult and adding maintainers to
+>> existing patch won't help you.
+> 
+> You've mentioned a "simple workflow" many times - could you please share more
+> details on the steps you follow in your workflow for sending patches?
+> 
+>> This tool depends on the command line and shell interface of
+>> scripts/get_maintainers.pl which is another reason why it might not be a
+>> good idea.
+> 
+> Could you please elaborate on why depending on the output of
+> `get_maintainer.pl` is a bad idea? It's what everyone uses, no?
 
-Signed-off-by: Zhang Zekun <zhangzekun11@huawei.com>
----
- drivers/genpd/ti/ti_sci_pm_domains.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+My opinion is that it would be a better idea to add a new output mode
+to scripts/get_maintainer.pl than adding another script on top of it.
 
-diff --git a/drivers/genpd/ti/ti_sci_pm_domains.c b/drivers/genpd/ti/ti_sci_pm_domains.c
-index a33ec7eaf23d..34645104fe45 100644
---- a/drivers/genpd/ti/ti_sci_pm_domains.c
-+++ b/drivers/genpd/ti/ti_sci_pm_domains.c
-@@ -119,7 +119,7 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct ti_sci_genpd_provider *pd_provider;
- 	struct ti_sci_pm_domain *pd;
--	struct device_node *np = NULL;
-+	struct device_node *np;
- 	struct of_phandle_args args;
- 	int ret;
- 	u32 max_id = 0;
-@@ -138,11 +138,7 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
- 	INIT_LIST_HEAD(&pd_provider->pd_list);
- 
- 	/* Find highest device ID used for power domains */
--	while (1) {
--		np = of_find_node_with_property(np, "power-domains");
--		if (!np)
--			break;
--
-+	for_each_node_with_property(np, "power-domains") {
- 		index = 0;
- 
- 		while (1) {
--- 
-2.17.1
+Or document somewhere how to use get_maintainer.pl with git-format-patch
+without any additional scripts.
+
+Neil
+
+> 
+> Thank you.
+> 
+> Guru Das.
 
