@@ -2,64 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AA05C05052
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Aug 2023 08:34:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9518DC7112B
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Aug 2023 08:44:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1358622AbjHRIdm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Aug 2023 04:33:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53666 "EHLO
+        id S1358513AbjHRIoA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Aug 2023 04:44:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1358618AbjHRIdL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Aug 2023 04:33:11 -0400
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39CF43A98
-        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 01:33:09 -0700 (PDT)
-Received: by mail-wr1-x430.google.com with SMTP id ffacd0b85a97d-307d58b3efbso601576f8f.0
-        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 01:33:09 -0700 (PDT)
+        with ESMTP id S1358713AbjHRInk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Aug 2023 04:43:40 -0400
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DA703ABB
+        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 01:43:36 -0700 (PDT)
+Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-4ff8cf11b90so960691e87.1
+        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 01:43:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692347588; x=1692952388;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt:from
-         :references:cc:to:content-language:subject:reply-to:user-agent
-         :mime-version:date:message-id:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=aAz6pPcjIbO7M4ErEDvnkCbBFuK+dTm4MKz0WfT12Qs=;
-        b=amB46zDznbpEv1hhlz48yf5hFt7WQdjgYkARDnoetEA99O9D9QPGbvMN7+vEKaGNTO
-         +WugWo4I9yj93YW58+z4AqnXJo17cKs0Xsz03PDNNtkIAYPi1yIt5xcrGNVQgsWC5VVH
-         uKO2HvxVIXIOQZ1PrA8/bnYIP5nojUHHoxVj2xzk9jTQE+Qo5EGvOLGG/UW7j+4FRXpk
-         mKDk3tS2UlDbwzsu/aLQJ2zfcaGWHieo7sjiVjkVKtqqAb0IBOxrCtLv8XVclsL+JnJN
-         LhPXD9WpHLCg1S24nGSF9/abRYIj3ugGRHp4KuKguIw0+SRLaBDueWSjmqkHp4rZE23g
-         Tv+w==
+        d=linaro.org; s=google; t=1692348214; x=1692953014;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=pZRVjP108x+rTr243Ys5IG0z60fpovntpqPusD6Tea0=;
+        b=f9gpAHr79wue2A4A8FhUN39Eld/pbkXaaRmdUOUc58dSFwm0nMrkzkD9iHka0adjkx
+         q2X0aJj9Gj/V8jATscJRSCj+kZKzdoo7udXW82xn+DpzCCnocR9KmRXl2T1g1ZmxSA1B
+         Ix7Dd3I48Jk9BYyqo6FmUM0whM7AaQCvb28MRn74OdzNkOFKRnPrXtoZHPZ1T5egPtkl
+         jReyFGRcobmfK7JzGyqs3q1t24asVXM0KPtHTv4m9V9TjcegWoJFF34syO3oIiwhFxm6
+         CY+xtuzltxJCvRatj6KOyqXq0+NgWsRvpHaQucgj8FvcHEQlA1jTkWzk0QJBMeOmcE2K
+         d46A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692347588; x=1692952388;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt:from
-         :references:cc:to:content-language:subject:reply-to:user-agent
-         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=aAz6pPcjIbO7M4ErEDvnkCbBFuK+dTm4MKz0WfT12Qs=;
-        b=Wxg70oe2hXRXPwwfZLYH88nCYRUcwrlDeMN0sf75EfB2/vDYycL80xJ45lATdGfQIw
-         C9fdl2juN4EbsRvz28X8+AwkVs2/KC2I6nUq9gtoQ4AVGcawsmfwf2BwkMHU3tRhUxBD
-         PMaXjCi2GYBWmqTKjPt1udabMuRakNjrdWdihohpw36ZuaNDxmJ5OZg/0DCAGJ0IbeF3
-         LXwmbprm1425icmkDvUynxk9o3z8ct5Z/yDZkLd35veBRZ/IJzI7B4BnWZ4pNBO9LVy8
-         rrVhSqQj/GQNkkrkwqflhxjGmJKY6ltMoX/1D4jwIk/rIPF6DCtJBokrTrDDMa2AA/20
-         Pvhw==
-X-Gm-Message-State: AOJu0Yzj3+305ZATOi4m1LreCImxWuRjUq/8fHf9xRCw0nEdCTeDlEI1
-        8HXey5M3n6F9Fv6WQPKsOt9OEA==
-X-Google-Smtp-Source: AGHT+IEiysdNKHU6e1jOHJwdYmSc6cMKD0VVl3kI/OX+UGpo9rGHWR5q03uk569XonrYyZgxg48H3w==
-X-Received: by 2002:a05:6000:18d:b0:314:1f1e:3a85 with SMTP id p13-20020a056000018d00b003141f1e3a85mr1475664wrx.61.1692347587538;
-        Fri, 18 Aug 2023 01:33:07 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:982:cbb0:b9f6:39b9:fff4:e741? ([2a01:e0a:982:cbb0:b9f6:39b9:fff4:e741])
-        by smtp.gmail.com with ESMTPSA id o15-20020adfeacf000000b003197e3520ddsm1959033wrn.109.2023.08.18.01.33.06
+        d=1e100.net; s=20221208; t=1692348214; x=1692953014;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=pZRVjP108x+rTr243Ys5IG0z60fpovntpqPusD6Tea0=;
+        b=Ww3pbNdXxhNWWlt69lJKROo+4zGUlgYJsEFblT1h6e9xRt/KVRSgAyqyTTVOffY+jZ
+         zLpgF1v1nUVWHfWktbGBXysk6ZwbTrfaWg2KmN14ZRws2GiQTj1v38V5UxpWVEje0kKz
+         mwKAHMjomCb9JY4g5GhIFHDI9jHj3cwiLsRC5+AfaCwzvQYZKCfeWxlSS9uwPRZKXVsx
+         hoEVSrF+04Sc+0OD5ia8TBXQ7lGrKekI5G7t+mbOzQ8W0n5hDMrJSr/MiC97P+kyNxR5
+         T2a1RFxb4fgJ3VspebMQ3fE/rhxEr6zTOfoFOj/o5OVj2MkWobsKxeCj0MByF1jCxBVj
+         yxYw==
+X-Gm-Message-State: AOJu0YyMnKMZMBcgpQSlIcU5cr8WZNDwUKt5xkC+WQH3Y+iWHiWDlzuN
+        gG6SnE6RI6wfFztsxo2wQFIgyw==
+X-Google-Smtp-Source: AGHT+IF6ntKUJ2GHg1KNpDfnUqxnYmyCYICvCAZzypBZYOp69VCs6hqmt5KRSPpLD/BKeoB3vX8w8w==
+X-Received: by 2002:a05:6512:31c6:b0:4fb:9105:58b0 with SMTP id j6-20020a05651231c600b004fb910558b0mr1480301lfe.20.1692348214162;
+        Fri, 18 Aug 2023 01:43:34 -0700 (PDT)
+Received: from [192.168.0.22] ([77.252.47.198])
+        by smtp.gmail.com with ESMTPSA id g25-20020aa7d1d9000000b0052996528b81sm104966edp.45.2023.08.18.01.43.32
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 18 Aug 2023 01:33:06 -0700 (PDT)
-Message-ID: <077c330d-5b86-4797-b69d-0ad02f49978f@linaro.org>
-Date:   Fri, 18 Aug 2023 10:33:03 +0200
+        Fri, 18 Aug 2023 01:43:33 -0700 (PDT)
+Message-ID: <6fb1176f-90f1-7a65-3ab5-f6447418c51e@linaro.org>
+Date:   Fri, 18 Aug 2023 10:43:31 +0200
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Reply-To: neil.armstrong@linaro.org
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
 Subject: Re: [PATCH v2 0/1] Add add-maintainer.py script
-Content-Language: en-US, fr
-To:     Guru Das Srinagesh <quic_gurus@quicinc.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Guru Das Srinagesh <quic_gurus@quicinc.com>
 Cc:     Masahiro Yamada <masahiroy@kernel.org>,
         Nick Desaulniers <ndesaulniers@google.com>,
         Andrew Morton <akpm@linux-foundation.org>,
@@ -76,34 +72,10 @@ References: <cover.1691049436.git.quic_gurus@quicinc.com>
  <20230810185526.GC31860@quicinc.com>
  <4d94d0fd-72d4-0196-3a30-3e1efb9f5aca@linaro.org>
  <20230816171538.GB26279@quicinc.com>
-From:   Neil Armstrong <neil.armstrong@linaro.org>
-Autocrypt: addr=neil.armstrong@linaro.org; keydata=
- xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
- GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
- BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
- qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
- 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
- AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
- OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
- Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
- YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
- GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
- UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
- GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
- yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
- QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
- SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
- 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
- Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
- oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
- M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
- 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
- KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
- 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
- QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
-Organization: Linaro Developer Services
+Content-Language: en-US
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 In-Reply-To: <20230816171538.GB26279@quicinc.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -134,21 +106,37 @@ On 16/08/2023 19:15, Guru Das Srinagesh wrote:
 > Exactly - this script aims to solve precisely that problem. It fills the gap
 > between running `get_maintainers.pl` and having to manually edit its output to
 > add "To: " and "Cc: " and somehow incorporate it in the body of the patch(es).
+
+Why would anyone need to manually update it? Just some simple bash
+function or git send-email identity.
+
 > 
 > With this script, the workflow would be as simple as:
 > 
->    1. Generate patches using `git format-patch`
->    2. Run `add-maintainer.py` on the above patches
->    3. `git send-email` the patches.
+>   1. Generate patches using `git format-patch`
+>   2. Run `add-maintainer.py` on the above patches
+>   3. `git send-email` the patches.
+
+So one more unnecessary step (2). I don't think it is easier than my
+workflow.
+
+I just do only 1 and 3 and that's it. The simplest way ever.
+
 > 
 > That's it - no need to manually work with email addresses.
->    
+
+No one suggested it...
+
+>   
 >> I almost always feed git send-email with addresses from
 >> scripts/get_maintainers.pl. This tool would not bring any benefits to my
 >> simple workflow.
 > 
 > In the light of the 3-step workflow I've envisioned above, could you please
 > elaborate why not? If anything, it will only save a developer's time.
+
+Because of unnecessary step 2? One more tool to remember to run?
+
 > 
 >> For newcomers, OTOH, I would either recommend simple workflow or just
 >> use b4. Why? Because if you cannot use git-send-email, then it means
@@ -157,6 +145,13 @@ On 16/08/2023 19:15, Guru Das Srinagesh wrote:
 > 
 > You've mentioned a "simple workflow" many times - could you please share more
 > details on the steps you follow in your workflow for sending patches?
+
+I shared it on LKML few times already (and Rob's git send-email identity
+is also on LKML), so one more time:
+
+https://github.com/krzk/tools/blob/master/linux/.bash_aliases_linux#L91
+
+
 > 
 >> This tool depends on the command line and shell interface of
 >> scripts/get_maintainers.pl which is another reason why it might not be a
@@ -165,16 +160,8 @@ On 16/08/2023 19:15, Guru Das Srinagesh wrote:
 > Could you please elaborate on why depending on the output of
 > `get_maintainer.pl` is a bad idea? It's what everyone uses, no?
 
-My opinion is that it would be a better idea to add a new output mode
-to scripts/get_maintainer.pl than adding another script on top of it.
+No, because if interface changes you need to update two tools.
 
-Or document somewhere how to use get_maintainer.pl with git-format-patch
-without any additional scripts.
-
-Neil
-
-> 
-> Thank you.
-> 
-> Guru Das.
+Best regards,
+Krzysztof
 
