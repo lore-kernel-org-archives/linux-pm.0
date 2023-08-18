@@ -2,50 +2,112 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A2C0C7113D
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Aug 2023 09:02:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FBE9C001DE
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Aug 2023 09:11:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1358864AbjHRJBv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Aug 2023 05:01:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45544 "EHLO
+        id S1358956AbjHRJK4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Aug 2023 05:10:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40512 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1358900AbjHRJBb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Aug 2023 05:01:31 -0400
-X-Greylist: delayed 1474 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 18 Aug 2023 02:00:58 PDT
-Received: from mail.leachkin.pl (mail.leachkin.pl [217.61.97.203])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D0AC3C32
-        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 02:00:58 -0700 (PDT)
-Received: by mail.leachkin.pl (Postfix, from userid 1001)
-        id 9BB368441B; Fri, 18 Aug 2023 09:16:13 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leachkin.pl; s=mail;
-        t=1692346587; bh=elHzctRz/z3PfTIhGYJKd0TeBTmca98Y+JNgX4gfsPI=;
-        h=Date:From:To:Subject:From;
-        b=Q7ngzbbd2KmEK4xdxjv+8rKXF56QQLMH/ok8mME13OXsqrOsrNJ2U56oSgWjpYqvw
-         mikmP0p0j4oUXE7olPNeRe+5y7/NI/H8MTxy+9QZMzui9bWgi7GKSnxwvELTXq1PSe
-         u+ntItb7KPsAvooS8hI7rJOc+n06wlef7llwHdI237TYmXLNb/G6dbr/7fU0YJeeFA
-         /nhOnVZ+x13LzhZeOsq2H6TlMDIh5TJjv1qH0qoBhuvR+LZ5Pff57bMfXig9EqQruY
-         w2j3DQLSRFkJxOrCgCXVILhULyxF4gl2HtCESVLEwU+IQp1yO5OqYIX6V+EwURVj1t
-         t7U1xxT+hwOlQ==
-Received: by mail.leachkin.pl for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 08:15:51 GMT
-Message-ID: <20230818074501-0.1.4u.cu14.0.70xk7j95gf@leachkin.pl>
-Date:   Fri, 18 Aug 2023 08:15:51 GMT
-From:   "Jakub Lemczak" <jakub.lemczak@leachkin.pl>
-To:     <linux-pm@vger.kernel.org>
-Subject: =?UTF-8?Q?Pytanie_o_samoch=C3=B3d?=
-X-Mailer: mail.leachkin.pl
+        with ESMTP id S1358961AbjHRJKl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Aug 2023 05:10:41 -0400
+Received: from mail-yb1-xb29.google.com (mail-yb1-xb29.google.com [IPv6:2607:f8b0:4864:20::b29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66F7530E6
+        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 02:10:39 -0700 (PDT)
+Received: by mail-yb1-xb29.google.com with SMTP id 3f1490d57ef6-d7225259f52so734513276.0
+        for <linux-pm@vger.kernel.org>; Fri, 18 Aug 2023 02:10:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1692349838; x=1692954638;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=kVu/aeTA+55HR39FC0HYYhqcrjVArFZelI78cd0qrGw=;
+        b=AoHzgcMuoqLJASg65gXIsk1fhSlU9Ers8x8PXjcFqU8zvMg4pJezjgmP1h4zhhvAIW
+         riKkRGIBVVWmxi2mzm9r8943kEuc+7RrXmFRHUpmeGpQqc3C3KVJqm+OzFbuJmzg6EYo
+         7/kxfmwtlxfYQ6ezUv5KJXjYbJISzIhhRisYZfvWB4PCKY/AZMiY3l4YtDqw7IFsO9YR
+         FothCZW1LZDGsPITD3/Imf7+eJkD26h9t0d68/Kg75QFgHOEC2VjflSAL+8WbdTjLGyR
+         YZOEIh62a7N0Soab1RTiQ00/8PJtEhrDOcN3aQTd3INYZ1ZW8f3/FMDTHExqLAvNwhvl
+         V2nA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692349838; x=1692954638;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=kVu/aeTA+55HR39FC0HYYhqcrjVArFZelI78cd0qrGw=;
+        b=QAxZ9WvTcMIXwso4WNFEre560NHbkjzATyqhtx+Bqa+jOwYu3nL0HHLrcYwxUnxh4c
+         ee78UmTAKJu0UzqgiobnhD4nEpk++N9RktSXKvzhFVd8ZfqVoGbjjOVrVh1dA7yIOYX/
+         GYa0rCgH3kGFiPashG8RVEw2znR5pD26/THSdhOo9uryspNezTXvWWEIGQE0myNIY3Hv
+         PDnnJBO56nkR0/7jQ4J07eyrF/9f6owciNekY7TUn3IkEnuHyk2vpNq3IOABdt7aCine
+         X8zgvEElz0P7SwtSgaPnjsovJgAgpCq4Ga7yimvgHQWNKobTkqw7n3+SSLYxnLffyswJ
+         LiSg==
+X-Gm-Message-State: AOJu0YzFf8rtdOjzG9LmAgDnJwt2hz4KAUg5VDrRLmwLunDQX8+005bZ
+        dRss/7YTclaVa8Em11YVSg1K9QKw/ecRueEhloFJnQ==
+X-Google-Smtp-Source: AGHT+IFvKL90uy8b8Tk8GOqFI3dUEmc7l5zSklXm+O1HQNrueZGc8Nuj/Y/o56+fyc/vhKd4goKBjW0vg3fbuhSWJ50=
+X-Received: by 2002:a25:dccc:0:b0:d4d:d260:44bf with SMTP id
+ y195-20020a25dccc000000b00d4dd26044bfmr2075531ybe.59.1692349838558; Fri, 18
+ Aug 2023 02:10:38 -0700 (PDT)
 MIME-Version: 1.0
+References: <20230818070149.23103-1-zhangzekun11@huawei.com>
+In-Reply-To: <20230818070149.23103-1-zhangzekun11@huawei.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Fri, 18 Aug 2023 11:10:02 +0200
+Message-ID: <CAPDyKFrL86MdfUwYm9UWy4AZtWBq0j_6sP8rimF7fwEXh0XtRw@mail.gmail.com>
+Subject: Re: [PATCH] soc: ti: Use for_each_node_with_property() simplify code logic
+To:     Zhang Zekun <zhangzekun11@huawei.com>
+Cc:     nm@ti.com, kristo@kernel.org, ssantosh@kernel.org,
+        linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dzie=C5=84 dobry,
+On Fri, 18 Aug 2023 at 09:10, Zhang Zekun <zhangzekun11@huawei.com> wrote:
+>
+> Introduct for_each_node_with_property() to iterate through the
+> nodes, this can simplify the code logic a bit, no functional
+> change here.
 
-Czy interesuje Pa=C5=84stwa rozwi=C4=85zanie umo=C5=BCliwiaj=C4=85ce moni=
-torowanie samochod=C3=B3w firmowych oraz optymalizacj=C4=99 koszt=C3=B3w =
-ich utrzymania?=20
+I would prefer if we can start using the prefix "genpd: ti*" for the
+commit message header.
 
+>
+> Signed-off-by: Zhang Zekun <zhangzekun11@huawei.com>
 
-Pozdrawiam,
-Jakub Lemczak
+This looks good to me and I can pick it up, but awaiting and ack from
+the soc maintainers too.
+
+Kind regards
+Uffe
+
+> ---
+>  drivers/genpd/ti/ti_sci_pm_domains.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/genpd/ti/ti_sci_pm_domains.c b/drivers/genpd/ti/ti_sci_pm_domains.c
+> index a33ec7eaf23d..34645104fe45 100644
+> --- a/drivers/genpd/ti/ti_sci_pm_domains.c
+> +++ b/drivers/genpd/ti/ti_sci_pm_domains.c
+> @@ -119,7 +119,7 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
+>         struct device *dev = &pdev->dev;
+>         struct ti_sci_genpd_provider *pd_provider;
+>         struct ti_sci_pm_domain *pd;
+> -       struct device_node *np = NULL;
+> +       struct device_node *np;
+>         struct of_phandle_args args;
+>         int ret;
+>         u32 max_id = 0;
+> @@ -138,11 +138,7 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
+>         INIT_LIST_HEAD(&pd_provider->pd_list);
+>
+>         /* Find highest device ID used for power domains */
+> -       while (1) {
+> -               np = of_find_node_with_property(np, "power-domains");
+> -               if (!np)
+> -                       break;
+> -
+> +       for_each_node_with_property(np, "power-domains") {
+>                 index = 0;
+>
+>                 while (1) {
+> --
+> 2.17.1
+>
