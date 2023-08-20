@@ -2,98 +2,162 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C475EE4996
-	for <linux-pm@archiver.kernel.org>; Sun, 20 Aug 2023 20:43:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A00CEEE49A4
+	for <linux-pm@archiver.kernel.org>; Sun, 20 Aug 2023 21:08:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231730AbjHTUnG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 20 Aug 2023 16:43:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50870 "EHLO
+        id S231837AbjHTVIU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 20 Aug 2023 17:08:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41504 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230083AbjHTUnG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 20 Aug 2023 16:43:06 -0400
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 519DE498658;
-        Sat, 19 Aug 2023 12:41:40 -0700 (PDT)
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-3fbd33a57b6so18552715e9.2;
-        Sat, 19 Aug 2023 12:41:40 -0700 (PDT)
+        with ESMTP id S231586AbjHTVIS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 20 Aug 2023 17:08:18 -0400
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 507CB49C4
+        for <linux-pm@vger.kernel.org>; Sun, 20 Aug 2023 14:08:07 -0700 (PDT)
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-3feef504ccbso5037135e9.2
+        for <linux-pm@vger.kernel.org>; Sun, 20 Aug 2023 14:08:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1692474098; x=1693078898;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=cxwXDLwCxXc0IZzNcXrKUDIbLtmIiz7rl3av1/ZQkfI=;
-        b=L+7FCmhyjm4vrGBGtPC7uYg2qvmrc3Qra9iNdxwPnjf99G0/38+PX3r/oE2syTX/yU
-         uEWg9pu3cj+NYOyI4nzbf2bK+/AH9Fv+PvIqm5t9hYc6O5h49LOZUfq4xvLJFyg1AN0k
-         KkR1SnY6yGSbdFJTxbkDOu2+eUWmK/BkWiK2Ix65I6d7xSYGK0cX/IRKueeUDTqDu42p
-         anYdtgTPBRbNQuIyCnt8kOcIp+RY7AD3bGPGqeFKJNruMf5QV6ILWa5NAMOkhXjDGpui
-         cV93gtgkznHOfAcRCnm0YvkMvTGLklj4lzL5PaUpJV2bNg1SgHthMMNht+v56bPI3JCH
-         Hg+w==
+        d=layalina-io.20221208.gappssmtp.com; s=20221208; t=1692565686; x=1693170486;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FvS6i5MmlM83okIt3hu6QZE/yTaGAFd1OJzWlOJdeII=;
+        b=eUJdEfU+wCh7GbOSrOcgXSU+omBihmSIkylrFWG+wpsvLidpTcilplQelHH1voLoO7
+         3fypW+Xof0JkFMUwbwJPZBcBbhasRAZIHXFoD6eHqTREGlT9HPDtVEpIG1XzUrJR07gA
+         KqrDzd/ZhelmjWYKeYPF7d7FYr9JD8kkaOQIFd3+2GxGt2kfaso/vGEWk0lwMNpI/Fgy
+         XIHKOBXpGWXDg6wU6AEqLvkTabTxbnjl5nTTAZbABRiR432mhjRpryHfra/Z6OcU76cF
+         6CyjNjBHbzzDcjjSIZC2Vn1Jlqrz7nf6Ry6HPF1rgcBbx/hB0s4Q/9pe2x8wfOIIT25N
+         YYlQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692474098; x=1693078898;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=cxwXDLwCxXc0IZzNcXrKUDIbLtmIiz7rl3av1/ZQkfI=;
-        b=TscHU5wpR8f6nI6Quk+toxJeB7blmXJjwvkN7ibe889GMNrdErtPIJSpj/i1rB+KC3
-         ktneSmOL6D4NHbpSpSzF0+Wy1lDhz6FxrmnoPGsxbOh/uMlJaB6dDgBdDr7/WGxMx8+j
-         Z2u9WCfdRKWwol0cdfefZ22Dq8QKrRTD+6Sy0znDT7ieqLc4DzmoDZuAB8oxonEYpEfA
-         LkPJertbmydGAGqlv+pHo+pmpRCOtH7fbUWqVrFx4i+3hH4hj02iJW2Wwh5724clNvGd
-         HAzPouCSQJr0cElhYicrUz/0cpCaIOvPIaecnTwlskyXEWULAy89QXrfMMPogTg7jYfB
-         N2tA==
-X-Gm-Message-State: AOJu0YwXPxsqPGcA9o0zIYvvgyffSWeygg+AVU9FKQ3Hs3EMAqwboTYd
-        LpWSjW1VFBY+gBcCMftyEUk=
-X-Google-Smtp-Source: AGHT+IFI8HXRbhVf2FXZB3T50ohz6ewZ3PYNQWqGFthESfjR1NXsNeZjeKxg6136eI3tCzGMrjHnaw==
-X-Received: by 2002:a1c:7303:0:b0:3fb:f0ef:4669 with SMTP id d3-20020a1c7303000000b003fbf0ef4669mr1882065wmb.17.1692474098300;
-        Sat, 19 Aug 2023 12:41:38 -0700 (PDT)
-Received: from ?IPV6:2a01:cb15:b7:2500:add8:daa6:d03:e00b? ([2a01:cb15:b7:2500:add8:daa6:d03:e00b])
-        by smtp.gmail.com with ESMTPSA id n24-20020a7bc5d8000000b003fba92fad35sm10489223wmk.26.2023.08.19.12.41.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 19 Aug 2023 12:41:37 -0700 (PDT)
-Message-ID: <c7d1eced-d77b-aca7-1422-6eefaf704f3e@gmail.com>
-Date:   Sat, 19 Aug 2023 21:41:36 +0200
+        d=1e100.net; s=20221208; t=1692565686; x=1693170486;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=FvS6i5MmlM83okIt3hu6QZE/yTaGAFd1OJzWlOJdeII=;
+        b=idLkoQRgeju7owkv9MLfDMG1YWCiNW2SpNA0qRrhek4cVWFXPilX+Q7Y3LiPMQV+1W
+         yetIDQNjDOPcWc5Of7UZ5Jal8zeocYSB7+PtoB6yhgT08dV0VYNHrKwZRS4CDD7dMMGs
+         v0z1UZ+N8/7JyGmHXIjxNcV3XUbLcjPrTXoABsEDNiluHuLxcfMDJDCCKRAOP3fD3JrC
+         iTChSAtTddTMG9nqTzYZp1LJTzIaCdBp72kx6Q4DL3EwEU5kpVG/dpj9IW4qEriY9OBP
+         +oNmVOOcjhf+srTGmVk8u7vlXl4VejTEprowBeSx1xZ7cKEDY8AhzFDx3ncLScVrgRKw
+         Oqxw==
+X-Gm-Message-State: AOJu0YwPjPqXHgYls5fAh3L2cpalaabsgMqWp/ezd850Y1pWGtOHlI5c
+        axnfpFn0WdzSfT48wTl8i1TmXA==
+X-Google-Smtp-Source: AGHT+IEjvAnle4Qh/tgCe9Abtc/2UPfgazY/8no6cp5UNC4rcPBG4Ofv/HaNWmre2NOn8zi6Sbi0Kg==
+X-Received: by 2002:adf:cf02:0:b0:317:6b0d:1b1 with SMTP id o2-20020adfcf02000000b003176b0d01b1mr3791525wrj.4.1692565685830;
+        Sun, 20 Aug 2023 14:08:05 -0700 (PDT)
+Received: from airbuntu.. (host109-151-228-137.range109-151.btcentralplus.com. [109.151.228.137])
+        by smtp.gmail.com with ESMTPSA id j6-20020adfea46000000b003197a4b0f68sm10336800wrn.7.2023.08.20.14.08.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 20 Aug 2023 14:08:05 -0700 (PDT)
+From:   Qais Yousef <qyousef@layalina.io>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Qais Yousef <qyousef@layalina.io>
+Subject: [PATCH 3/4] sched: cpufreq: Move apply_dvfs_headroom() to sched.h
+Date:   Sun, 20 Aug 2023 22:06:39 +0100
+Message-Id: <20230820210640.585311-4-qyousef@layalina.io>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230820210640.585311-1-qyousef@layalina.io>
+References: <20230820210640.585311-1-qyousef@layalina.io>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH] intel_idle: Add RaptorLake support
-Content-Language: en-US, fr-FR
-To:     "Zhang, Rui" <rui.zhang@intel.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>,
-        "noltari@gmail.com" <noltari@gmail.com>,
-        "lenb@kernel.org" <lenb@kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc:     "Bityutskiy, Artem" <artem.bityutskiy@intel.com>
-References: <20230119070205.90047-1-noltari@gmail.com>
- <c79904e98b86b68c87add286aa1487b3f81712b6.camel@intel.com>
-From:   Guillaume Martres <smarter3@gmail.com>
-In-Reply-To: <c79904e98b86b68c87add286aa1487b3f81712b6.camel@intel.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 1/19/23 17:13, Zhang, Rui wrote:
-> On Thu, 2023-01-19 at 08:02 +0100, Álvaro Fernández Rojas wrote:
->> This patch adds RaptorLake support to the intel_idle driver.
->>
->> Since RaptorLake and AlderLake C-state are characteristics the same,
->> we use
->> AlderLake C-states tables for RaptorLake as well.
-> 
-> RPL and ADL have same cstates and use the same mwait hints, but the
-> latency of each c-state are still different on different platforms.
-> So we can not just duplicate the ADL table on RPL.
-> 
-> There is an effort ongoing that measures the latency of each
-> cstate on the RPL platforms. And based on the measurement result, we
-> can decide if a new custom table is needed or we can just copy the
-> previous platform. Hopefully we will have a patch in a couple of weeks.
+This function relies on updating util signal appropriately to give
+a headroom to grow. This is more of a scheduler functionality than
+cpufreq. Move it to sched.h where all the other util handling code
+belongs.
 
-Hi, I just stumbled upon this patch series as I was wondering about the
-lack of support for Raptor Lake in intel_idle. Your last message from
-January mentions a future patch, is it available anywhere or is this
-still future work?
+Signed-off-by: Qais Yousef (Google) <qyousef@layalina.io>
+---
+ include/linux/sched/cpufreq.h | 30 ------------------------------
+ kernel/sched/sched.h          | 24 ++++++++++++++++++++++++
+ 2 files changed, 24 insertions(+), 30 deletions(-)
 
-Thank you,
-Guillaume
+diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+index f0069b354ac8..d01755d3142f 100644
+--- a/include/linux/sched/cpufreq.h
++++ b/include/linux/sched/cpufreq.h
+@@ -28,36 +28,6 @@ static inline unsigned long map_util_freq(unsigned long util,
+ {
+ 	return freq * util / cap;
+ }
+-
+-/*
+- * DVFS decision are made at discrete points. If CPU stays busy, the util will
+- * continue to grow, which means it could need to run at a higher frequency
+- * before the next decision point was reached. IOW, we can't follow the util as
+- * it grows immediately, but there's a delay before we issue a request to go to
+- * higher frequency. The headroom caters for this delay so the system continues
+- * to run at adequate performance point.
+- *
+- * This function provides enough headroom to provide adequate performance
+- * assuming the CPU continues to be busy.
+- *
+- * At the moment it is a constant multiplication with 1.25.
+- *
+- * TODO: The headroom should be a function of the delay. 25% is too high
+- * especially on powerful systems. For example, if the delay is 500us, it makes
+- * more sense to give a small headroom as the next decision point is not far
+- * away and will follow the util if it continues to rise. On the other hand if
+- * the delay is 10ms, then we need a bigger headroom so the CPU won't struggle
+- * at a lower frequency if it never goes to idle until then.
+- */
+-static inline unsigned long apply_dvfs_headroom(unsigned long util)
+-{
+-	return util + (util >> 2);
+-}
+-#else
+-static inline unsigned long apply_dvfs_headroom(unsigned long util)
+-{
+-	return util;
+-}
+ #endif /* CONFIG_CPU_FREQ */
+ 
+ #endif /* _LINUX_SCHED_CPUFREQ_H */
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 3a01b7a2bf66..56eeb5b05b50 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -2997,6 +2997,30 @@ enum cpu_util_type {
+ unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
+ 				 enum cpu_util_type type,
+ 				 struct task_struct *p);
++/*
++ * DVFS decision are made at discrete points. If CPU stays busy, the util will
++ * continue to grow, which means it could need to run at a higher frequency
++ * before the next decision point was reached. IOW, we can't follow the util as
++ * it grows immediately, but there's a delay before we issue a request to go to
++ * higher frequency. The headroom caters for this delay so the system continues
++ * to run at adequate performance point.
++ *
++ * This function provides enough headroom to provide adequate performance
++ * assuming the CPU continues to be busy.
++ *
++ * At the moment it is a constant multiplication with 1.25.
++ *
++ * TODO: The headroom should be a function of the delay. 25% is too high
++ * especially on powerful systems. For example, if the delay is 500us, it makes
++ * more sense to give a small headroom as the next decision point is not far
++ * away and will follow the util if it continues to rise. On the other hand if
++ * the delay is 10ms, then we need a bigger headroom so the CPU won't struggle
++ * at a lower frequency if it never goes to idle until then.
++ */
++static inline unsigned long apply_dvfs_headroom(unsigned long util)
++{
++	return util + (util >> 2);
++}
+ 
+ /*
+  * Verify the fitness of task @p to run on @cpu taking into account the
+-- 
+2.34.1
+
