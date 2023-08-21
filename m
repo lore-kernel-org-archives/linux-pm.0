@@ -2,123 +2,249 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32910EE49A6
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Aug 2023 11:31:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF744EE49AA
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Aug 2023 11:35:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232557AbjHULbB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Aug 2023 07:31:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39594 "EHLO
+        id S232842AbjHULf4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Aug 2023 07:35:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51396 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231774AbjHULbA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2023 07:31:00 -0400
-X-Greylist: delayed 2615 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 21 Aug 2023 04:30:52 PDT
-Received: from mail.kapsi.fi (mail.kapsi.fi [IPv6:2001:67c:1be8::25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B6A7118;
-        Mon, 21 Aug 2023 04:30:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=kapsi.fi;
-        s=20161220; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
-        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
-        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=Ous1oN9CqolOB1bkwGJLUiDZKO4d3gQIesYeEOsNOUI=; b=h2G2rNzQe1nSmA9SHdIazGnxMG
-        3NB73LdIpo+IQ/AN7YRPmTX1er8EXGSMxssQTmFN1vQQkZIuWJa3uWBIwliB5EtcUPbhNOvQvhL2t
-        vV1LE4HPVhE3rMLm6D/W45KzdSjJEemCtHeSeeDW27bu8zinP2fd6zODPMsE2valCQ+L21r2Vvt8e
-        NmfG9fBHVItJzRJ1O4M/CCcPaWxK9BMM97QLlY2H4ZMsA0PzA348EnIUMRNDfQDHm36O9NWiBE3TL
-        9Vr/I9LwT2c8mabNXvZ24V91BdsjcWJNFHKbGT7T/z9AW5c4FcxhAlzHh0s9ITG7g7RKjc1FRObxZ
-        iRjI4f6A==;
-Received: from 91-158-25-70.elisa-laajakaista.fi ([91.158.25.70] helo=[192.168.1.10])
-        by mail.kapsi.fi with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.96)
-        (envelope-from <cyndis@kapsi.fi>)
-        id 1qY1pq-007HdP-2Y;
-        Mon, 21 Aug 2023 13:08:34 +0300
-Message-ID: <7c342b0c-9657-ffd1-6fad-ef6433ddc793@kapsi.fi>
-Date:   Mon, 21 Aug 2023 13:08:34 +0300
+        with ESMTP id S232736AbjHULfw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2023 07:35:52 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E894EDF;
+        Mon, 21 Aug 2023 04:35:49 -0700 (PDT)
+Received: from [IPV6:2405:201:0:21ea:73f6:2283:f432:3936] (unknown [IPv6:2405:201:0:21ea:73f6:2283:f432:3936])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: shreeya)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id C187466071B1;
+        Mon, 21 Aug 2023 12:35:41 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1692617748;
+        bh=RUeyD6fiUTInSG+vr6OnkVhCqjVHmBcaBXTucCoGaj0=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=U6OUHJ+E5Ae2IEp9b3Ecss5bZQRKbOxHTaX/XHV/gkgTguh7jOZ7nppyIBGZT0Vt1
+         GT/DzB3uwT0FdClmA1JIZ2TmQN7H9qrGza911OVNMCi7YQ/0bWL5dVKzCJhECtcdBk
+         jZBskPu3HKlHlHePWozlCECyGOdf8tv6k8/5eU5OUzNhLRCvu+VvLwD5qDKbPIE1Gr
+         ZioyPEqL624HIWq7YdSw0fwJPHu6dpj3jjJHITNEcWgKQqdX3pZOVpcp1a1WlMgfIt
+         eL56iTviF7vKgE9YXIqA41ZjPAF9kr0U5ZtRzXCQ7OZ/6HR2pOy0UtLBe9OzBtOEQp
+         Lf6b4BRtaCxhg==
+Message-ID: <97b06c78-da3c-d8ab-ca72-ff37b9976f2a@collabora.com>
+Date:   Mon, 21 Aug 2023 17:05:37 +0530
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH] thermal: tegra-bpmp: Check if BPMP supports trip points
+ Thunderbird/102.13.0
+Subject: Re: [PATCH 5.17 127/298] driver core: Fix wait_for_device_probe() &
+ deferred_probe_timeout interaction
 Content-Language: en-US
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Jon Hunter <jonathanh@nvidia.com>,
-        Thierry Reding <thierry.reding@gmail.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-References: <20221129153914.2699041-1-cyndis@kapsi.fi>
- <Y9KTrO+WqJJwuEDf@orome> <a08355e1-c393-2b2e-4a44-360e08607bb9@linaro.org>
- <Y9KfcSwYt7utbcg5@orome> <e716eda4-edfc-5946-4e6f-42aab5f73b0f@linaro.org>
- <d7435a96-3480-280e-d996-73fea690c373@nvidia.com>
- <2c37a786-0ae5-273e-f82b-4f9c82663053@linaro.org>
-From:   Mikko Perttunen <cyndis@kapsi.fi>
-In-Reply-To: <2c37a786-0ae5-273e-f82b-4f9c82663053@linaro.org>
+To:     Saravana Kannan <saravanak@google.com>
+Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        stable@vger.kernel.org, John Stultz <jstultz@google.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Naresh Kamboju <naresh.kamboju@linaro.org>,
+        Basil Eljuse <Basil.Eljuse@arm.com>,
+        Ferry Toth <fntoth@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+        Anders Roxell <anders.roxell@linaro.org>,
+        linux-pm@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>,
+        Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Sasha Levin <sashal@kernel.org>, linux-kernel@vger.kernel.org,
+        "gustavo.padovan@collabora.com" <gustavo.padovan@collabora.com>,
+        =?UTF-8?Q?Ricardo_Ca=c3=b1uelo_Navarro?= 
+        <ricardo.canuelo@collabora.com>,
+        Guillaume Charles Tucker <guillaume.tucker@collabora.com>,
+        usama.anjum@collabora.com, kernelci@lists.linux.dev
+References: <20220613094924.913340374@linuxfoundation.org>
+ <20220613094928.793712131@linuxfoundation.org>
+ <6283c4b1-2513-207d-4ed6-fdabf3f3880e@collabora.com>
+ <2023081619-slapping-congrats-8e85@gregkh>
+ <471bf84d-9d58-befc-8224-359a62e29786@collabora.com>
+ <CAGETcx-NVoN7b8XCV09ouof81XxZk4wtGhEcqcFAt6Gs=JWKdw@mail.gmail.com>
+ <d8f8ddf6-8063-fb3a-7dad-4064a47c5fe8@collabora.com>
+ <CAGETcx-DUm417mM-Nmyqj-e_rKUw69m=rTe5R6_Vxd_rsKMmGg@mail.gmail.com>
+From:   Shreeya Patel <shreeya.patel@collabora.com>
+In-Reply-To: <CAGETcx-DUm417mM-Nmyqj-e_rKUw69m=rTe5R6_Vxd_rsKMmGg@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 91.158.25.70
-X-SA-Exim-Mail-From: cyndis@kapsi.fi
-X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 4/3/23 13:26, Daniel Lezcano wrote:
-> On 03/04/2023 12:22, Jon Hunter wrote:
->> Hi Daniel,
+
+On 19/08/23 01:49, Saravana Kannan wrote:
+> On Thu, Aug 17, 2023 at 4:13 PM Shreeya Patel
+> <shreeya.patel@collabora.com> wrote:
+>> Hi Geert, Saravana,
 >>
->> On 26/01/2023 16:07, Daniel Lezcano wrote:
->>> On 26/01/2023 16:42, Thierry Reding wrote:
->>>> On Thu, Jan 26, 2023 at 04:08:03PM +0100, Daniel Lezcano wrote:
->>>>>
->>>>> Hi Thierry,
->>>>>
->>>>> On 26/01/2023 15:52, Thierry Reding wrote:
->>>>>> On Tue, Nov 29, 2022 at 05:39:14PM +0200, Mikko Perttunen wrote:
->>>>>>> From: Mikko Perttunen <mperttunen@nvidia.com>
->>>>>>>
->>>>>>> Check if BPMP supports thermal trip points, and if not,
->>>>>>> do not expose the .set_trips callback to the thermal core
->>>>>>> framework. This can happen in virtualized environments
->>>>>>> where asynchronous communication with VM BPMP drivers is not
->>>>>>> available.
->>>>>>>
->>>>>>> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
->>>>>>> ---
->>>>>>>    drivers/thermal/tegra/tegra-bpmp-thermal.c | 52 
->>>>>>> +++++++++++++++++++++-
->>>>>>>    1 file changed, 51 insertions(+), 1 deletion(-)
->>>>>>
->>>>>> Applied, thanks.
->>>>>
->>>>> I prefer you provide an Acked-by and I take the thermal related 
->>>>> patches.
->>>>> Especially in this period where we are reworking the framework with 
->>>>> the
->>>>> thermal trip points ;)
+>> On 18/08/23 00:03, Saravana Kannan wrote:
+>>> On Thu, Aug 17, 2023 at 4:37 AM Shreeya Patel
+>>> <shreeya.patel@collabora.com> wrote:
+>>>> Hi Greg,
 >>>>
->>>> Sorry, my bad. I misread this as belonging to drivers/firmware/tegra
->>>> which goes in via ARM SoC.
->>>
->>> No worries ;)
->>>
->>>> I'll drop this from the Tegra tree. Feel free
->>>> to pick this up:
->>>
->>> Ok, thanks
->>>
->>>> Acked-by: Thierry Reding <treding@nvidia.com>
+>>>> On 16/08/23 20:33, Greg Kroah-Hartman wrote:
+>>>>> On Wed, Aug 16, 2023 at 03:09:27PM +0530, Shreeya Patel wrote:
+>>>>>> On 13/06/22 15:40, Greg Kroah-Hartman wrote:
+>>>>>>> From: Saravana Kannan<saravanak@google.com>
+>>>>>>>
+>>>>>>> [ Upstream commit 5ee76c256e928455212ab759c51d198fedbe7523 ]
+>>>>>>>
+>>>>>>> Mounting NFS rootfs was timing out when deferred_probe_timeout was
+>>>>>>> non-zero [1].  This was because ip_auto_config() initcall times out
+>>>>>>> waiting for the network interfaces to show up when
+>>>>>>> deferred_probe_timeout was non-zero. While ip_auto_config() calls
+>>>>>>> wait_for_device_probe() to make sure any currently running deferred
+>>>>>>> probe work or asynchronous probe finishes, that wasn't sufficient to
+>>>>>>> account for devices being deferred until deferred_probe_timeout.
+>>>>>>>
+>>>>>>> Commit 35a672363ab3 ("driver core: Ensure wait_for_device_probe() waits
+>>>>>>> until the deferred_probe_timeout fires") tried to fix that by making
+>>>>>>> sure wait_for_device_probe() waits for deferred_probe_timeout to expire
+>>>>>>> before returning.
+>>>>>>>
+>>>>>>> However, if wait_for_device_probe() is called from the kernel_init()
+>>>>>>> context:
+>>>>>>>
+>>>>>>> - Before deferred_probe_initcall() [2], it causes the boot process to
+>>>>>>>       hang due to a deadlock.
+>>>>>>>
+>>>>>>> - After deferred_probe_initcall() [3], it blocks kernel_init() from
+>>>>>>>       continuing till deferred_probe_timeout expires and beats the point of
+>>>>>>>       deferred_probe_timeout that's trying to wait for userspace to load
+>>>>>>>       modules.
+>>>>>>>
+>>>>>>> Neither of this is good. So revert the changes to
+>>>>>>> wait_for_device_probe().
+>>>>>>>
+>>>>>>> [1] -https://lore.kernel.org/lkml/TYAPR01MB45443DF63B9EF29054F7C41FD8C60@TYAPR01MB4544.jpnprd01.prod.outlook.com/
+>>>>>>> [2] -https://lore.kernel.org/lkml/YowHNo4sBjr9ijZr@dev-arch.thelio-3990X/
+>>>>>>> [3] -https://lore.kernel.org/lkml/Yo3WvGnNk3LvLb7R@linutronix.de/
+>>>>>> Hi Saravana, Greg,
+>>>>>>
+>>>>>>
+>>>>>> KernelCI found this patch causes the baseline.bootrr.deferred-probe-empty test to fail on r8a77960-ulcb,
+>>>>>> see the following details for more information.
+>>>>>>
+>>>>>> KernelCI dashboard link:
+>>>>>> https://linux.kernelci.org/test/plan/id/64d2a6be8c1a8435e535b264/
+>>>>>>
+>>>>>> Error messages from the logs :-
+>>>>>>
+>>>>>> + UUID=11236495_1.5.2.4.5
+>>>>>> + set +x
+>>>>>> + export 'PATH=/opt/bootrr/libexec/bootrr/helpers:/lava-11236495/1/../bin:/sbin:/usr/sbin:/bin:/usr/bin'
+>>>>>> + cd /opt/bootrr/libexec/bootrr
+>>>>>> + sh helpers/bootrr-auto
+>>>>>> e6800000.ethernet
+>>>>>> e6700000.dma-controller
+>>>>>> e7300000.dma-controller
+>>>>>> e7310000.dma-controller
+>>>>>> ec700000.dma-controller
+>>>>>> ec720000.dma-controller
+>>>>>> fea20000.vsp
+>>>>>> feb00000.display
+>>>>>> fea28000.vsp
+>>>>>> fea30000.vsp
+>>>>>> fe9a0000.vsp
+>>>>>> fe9af000.fcp
+>>>>>> fea27000.fcp
+>>>>>> fea2f000.fcp
+>>>>>> fea37000.fcp
+>>>>>> sound
+>>>>>> ee100000.mmc
+>>>>>> ee140000.mmc
+>>>>>> ec500000.sound
+>>>>>> /lava-11236495/1/../bin/lava-test-case
+>>>>>> <8>[   17.476741] <LAVA_SIGNAL_TESTCASE TEST_CASE_ID=deferred-probe-empty RESULT=fail>
+>>>>>>
+>>>>>> Test case failing :-
+>>>>>> Baseline Bootrr deferred-probe-empty test -https://github.com/kernelci/bootrr/blob/main/helpers/bootrr-generic-tests
+>>>>>>
+>>>>>> Regression Reproduced :-
+>>>>>>
+>>>>>> Lava job after reverting the commit 5ee76c256e92
+>>>>>> https://lava.collabora.dev/scheduler/job/11292890
+>>>>>>
+>>>>>>
+>>>>>> Bisection report from KernelCI can be found at the bottom of the email.
+>>>>>>
+>>>>>> Thanks,
+>>>>>> Shreeya Patel
+>>>>>>
+>>>>>> #regzbot introduced: 5ee76c256e92
+>>>>>> #regzbot title: KernelCI: Multiple devices deferring on r8a77960-ulcb
+>>>>>>
+>>>>>> ---------------------------------------------------------------------------------------------------------------------------------------------------
+>>>>>>
+>>>>>> * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **
+>>>>>> * If you do send a fix, please include this trailer: *
+>>>>>> * Reported-by: "kernelci.org bot" <bot@...> *
+>>>>>> * *
+>>>>>> * Hope this helps! *
+>>>>>> * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+>>>>>>
+>>>>>> stable-rc/linux-5.10.y bisection: baseline.bootrr.deferred-probe-empty on
+>>>>>> r8a77960-ulcb
+>>>>> You are testing 5.10.y, yet the subject says 5.17?
+>>>>>
+>>>>> Which is it here?
+>>>> Sorry, I accidentally used the lore link for 5.17 while reporting this
+>>>> issue,
+>>>> but this test does fail on all the stable releases from 5.10 onwards.
+>>>>
+>>>> stable 5.15 :-
+>>>> https://linux.kernelci.org/test/case/id/64dd156a5ac58d0cf335b1ea/
+>>>> mainline :-
+>>>> https://linux.kernelci.org/test/case/id/64dc13d55cb51357a135b209/
+>>>>
+>>> Shreeya, can you try the patch Geert suggested and let us know if it
+>>> helps? If not, then I can try to take a closer look.
+>> I tried to test the kernel with 9be4cbd09da8 but it didn't change the
+>> result.
+>> https://lava.collabora.dev/scheduler/job/11311615
 >>
->>
->> I don't see this one in -next. Are you able to pick this one up now?
-> 
-> Before going in -next, it will go through bleeding-edge then -next, 
-> logically tomorrow.
-> 
-> 
+>> Also, I am not sure if this can change things but just FYI, KernelCI
+>> adds some kernel parameters when running these tests and one of the
+>> parameter is deferred_probe_timeout=60.
+> Ah this is good to know.
+>
+>> You can check this in the definition details given in the Lava job. I
+>> also tried to remove this parameter and rerun the test but again I got
+>> the same result.
+> How long does the test wait after boot before checking for the
+> deferred devices list?
+>
 
-Hi, still not seeing this in -next.
+AFAIK, script for running the tests is immediately ran after the boot 
+process is complete so there is no wait time.
 
-Cheers,
-Mikko
+>> I will try to add 9be4cbd09da8 to mainline kernel and see what results I
+>> get.
+> Now I'm confused. What do you mean by mainline? Are you saying the tip
+> of tree of Linus's tree is also hitting this issue?
+
+
+KernelCI runs tests on different kernel branches and trees, we also have 
+this same test running on mainline tree.
+Following is the link to the dashboard for it and as you can see, it 
+does fail there too.
+
+
+https://linux.kernelci.org/test/case/id/64dc13d55cb51357a135b209/
+
+
+> -Saravana
+>
