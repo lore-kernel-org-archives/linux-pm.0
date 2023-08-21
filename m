@@ -2,88 +2,89 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3BFEEE49A5
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Aug 2023 17:14:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C973EE4993
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Aug 2023 17:15:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237029AbjHUROp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Aug 2023 13:14:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50528 "EHLO
+        id S237031AbjHURPR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Aug 2023 13:15:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45926 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234823AbjHUROp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2023 13:14:45 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E87DEE;
-        Mon, 21 Aug 2023 10:14:44 -0700 (PDT)
+        with ESMTP id S234823AbjHURPQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2023 13:15:16 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56F19CC;
+        Mon, 21 Aug 2023 10:15:15 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 96A9D64048;
-        Mon, 21 Aug 2023 17:14:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4524C433C8;
-        Mon, 21 Aug 2023 17:14:40 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id E897462D54;
+        Mon, 21 Aug 2023 17:15:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32B5EC433C7;
+        Mon, 21 Aug 2023 17:15:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1692638083;
-        bh=MH0wQLIkGLHxG2U7ZihHzC9EFeKAg1wwbkNonW9+XmQ=;
+        s=k20201202; t=1692638114;
+        bh=moX1NDNRIw8jZEhzXh/VvYgaJynBFa9IjTOZmpRM6FI=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=JlLRBRlXU3TpIsrE1LNM4eOtfxC+6aFHGYBH060E6Qw4p3+SZfOLXGNYYik8y2DWR
-         oI6LJ8ANM5iIvFhjpKnWrII6XRSSJN1G70BkaqgWhl9U1D15Kgt6oDUIDMF5suE2vl
-         /tVHdi67TSjo+yLa5BL53T+JWWyIEgsOHKYl3U4qSDp2e6JhjUqJVQgCrEIok1T0LT
-         Jrl6o2rF9Mq3eYWQRr4v45EMGMTrXS0XfLcGVlqve59tAi+e0l1aqUnLhcH5iK20EE
-         ZnerxQ9HY7A0CPw6ryh604PXvajLCmPMz8FRUzMZAD1mKWwveFBymOBTkxINkYhOOp
-         HPPDVM//gRGYA==
-Received: (nullmailer pid 1978426 invoked by uid 1000);
-        Mon, 21 Aug 2023 17:14:39 -0000
-Date:   Mon, 21 Aug 2023 12:14:39 -0500
+        b=q5rju92Kh4lU1L6z7wg4kSVd4xT8r5IdF27ap5RgXT+Wmwqn0nrXtUDMvXoUV2Nki
+         VQ77gyf8z+mOXIpJrmDz/JLWHR0WmGyzsGyMx9T8bBZv824ueq3mz8Q66PwZ3LQZ6B
+         gIw7B449eeVOthZaIIXXULOK4PWSlsc8SUJbuBRrNZM1klN9hmgXFJc4M+izI4sN82
+         6d0O8vPFRKUxhbnQDDqNd7xGVoulVygoTeWMuu62k0vU0RiQIOlqdvIaWD+4o5Eghs
+         fG+jH8Xrdf5M4vUO6nJlGaW/9ayMH8OHSGdeNscOFgcba7ZXUS9tP2sN20+81u3iyv
+         EoOFuyKK3VpMQ==
+Received: (nullmailer pid 1979228 invoked by uid 1000);
+        Mon, 21 Aug 2023 17:15:11 -0000
+Date:   Mon, 21 Aug 2023 12:15:11 -0500
 From:   Rob Herring <robh@kernel.org>
 To:     Alexander Stein <alexander.stein@ew.tq-group.com>
-Cc:     Eric Dumazet <edumazet@google.com>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Fabio Estevam <festevam@gmail.com>, linux-pm@vger.kernel.org,
-        David Airlie <airlied@gmail.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Philipp Zabel <p.zabel@pengutronix.de>,
-        devicetree@vger.kernel.org, netdev@vger.kernel.org,
-        Paolo Abeni <pabeni@redhat.com>,
-        linux-arm-kernel@lists.infradead.org,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
         Daniel Vetter <daniel@ffwll.ch>,
+        Eric Dumazet <edumazet@google.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        David Airlie <airlied@gmail.com>,
+        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+        Shawn Guo <shawnguo@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        linux-arm-kernel@lists.infradead.org,
+        Fabio Estevam <festevam@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Conor Dooley <conor+dt@kernel.org>,
         Jakub Kicinski <kuba@kernel.org>,
-        "David S . Miller" <davem@davemloft.net>,
-        dri-devel@lists.freedesktop.org,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 4/6] dt-bindings: net: microchip: Allow nvmem-cell usage
-Message-ID: <169263807888.1978386.16316859459152478945.robh@kernel.org>
+        Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
+        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
+        "David S . Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 5/6] dt-bindings: timer: add imx7d compatible
+Message-ID: <169263811048.1979170.9429510140636771779.robh@kernel.org>
 References: <20230810144451.1459985-1-alexander.stein@ew.tq-group.com>
- <20230810144451.1459985-5-alexander.stein@ew.tq-group.com>
+ <20230810144451.1459985-6-alexander.stein@ew.tq-group.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230810144451.1459985-5-alexander.stein@ew.tq-group.com>
+In-Reply-To: <20230810144451.1459985-6-alexander.stein@ew.tq-group.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
-On Thu, 10 Aug 2023 16:44:49 +0200, Alexander Stein wrote:
-> MAC address can be provided by a nvmem-cell, thus allow referencing a
-> source for the address. Fixes the warning:
-> arch/arm/boot/dts/nxp/imx/imx6q-mba6a.dtb: ethernet@1: 'nvmem-cell-names',
->  'nvmem-cells' do not match any of the regexes: 'pinctrl-[0-9]+'
->  From schema: Documentation/devicetree/bindings/net/microchip,lan95xx.yaml
+On Thu, 10 Aug 2023 16:44:50 +0200, Alexander Stein wrote:
+> Currently the dtbs_check for imx6ul generates warnings like this:
+> 
+> ['fsl,imx7d-gpt', 'fsl,imx6sx-gpt'] is too long
+> 
+> The driver has no special handling for fsl,imx7d-gpt, so fsl,imx6sx-gpt is
+> used. Therefore make imx7d GPT compatible to the imx6sx one to fix the
+> warning.
 > 
 > Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
 > ---
->  Documentation/devicetree/bindings/net/microchip,lan95xx.yaml | 2 ++
->  1 file changed, 2 insertions(+)
+>  Documentation/devicetree/bindings/timer/fsl,imxgpt.yaml | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
 
 Reviewed-by: Rob Herring <robh@kernel.org>
