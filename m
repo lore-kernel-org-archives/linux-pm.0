@@ -2,99 +2,86 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B313DEE4993
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Aug 2023 09:14:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 769FBEE4996
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Aug 2023 10:34:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232318AbjHUJOD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Aug 2023 05:14:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46878 "EHLO
+        id S234775AbjHUKe1 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Aug 2023 06:34:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56306 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231462AbjHUJOD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2023 05:14:03 -0400
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D16FABA;
-        Mon, 21 Aug 2023 02:14:01 -0700 (PDT)
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 37L9DcS5033097;
-        Mon, 21 Aug 2023 04:13:38 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1692609218;
-        bh=SnCsL4h5uCaxDzBAtrbLL9f+OdeHH2vaZmmRPxVlWuA=;
-        h=Date:From:To:CC:Subject:References:In-Reply-To;
-        b=T4Ycjre+5utlMGC5gX+NPibTYFadn2mw+kp8V6ZwAylz4u7xQY1dm2nmwkVCAjFhs
-         GF5WeQdRn5+4LmQDNSBXc6+X8TZggkgHrR74/PeLkGgLqEyani3RimBDTFn3KT6RTJ
-         LVQcugLnomffBFQ25iHOL+4Cped6g2B57uv2zWy8=
-Received: from DLEE102.ent.ti.com (dlee102.ent.ti.com [157.170.170.32])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 37L9Dc7G037411
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 21 Aug 2023 04:13:38 -0500
-Received: from DLEE103.ent.ti.com (157.170.170.33) by DLEE102.ent.ti.com
- (157.170.170.32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 21
- Aug 2023 04:13:38 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE103.ent.ti.com
- (157.170.170.33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Mon, 21 Aug 2023 04:13:38 -0500
-Received: from localhost (ileaxei01-snat2.itg.ti.com [10.180.69.6])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 37L9DbbU000737;
-        Mon, 21 Aug 2023 04:13:37 -0500
-Date:   Mon, 21 Aug 2023 14:43:36 +0530
-From:   Dhruva Gole <d-gole@ti.com>
-To:     Liao Chang <liaochang1@huawei.com>
-CC:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpufreq: stats: Improve the performance of
- cpufreq_stats_create_table()
-Message-ID: <20230821091336.w4wcbvuarzxrvlkk@dhruva>
-References: <20230818095000.937633-1-liaochang1@huawei.com>
+        with ESMTP id S234765AbjHUKeX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2023 06:34:23 -0400
+Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com [209.85.210.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 820C7E3;
+        Mon, 21 Aug 2023 03:34:22 -0700 (PDT)
+Received: by mail-ot1-f54.google.com with SMTP id 46e09a7af769-6b9cd6876bbso914066a34.1;
+        Mon, 21 Aug 2023 03:34:22 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692614062; x=1693218862;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Re72V6BeZKtZ/a9D1veoORPiF+NDDFb8xZ/o+5KvXIM=;
+        b=BxHqzrH0LQF6PABG0VrXpzwdL43C0Z+l04Q+Z3/hCtmVnm70JllBSishTfliH9jNZH
+         FSBvHX4BVKi6a1nEfvDrAMDAEo326g34lM73FGLTlBEI2yJylRjdcnLc73ytx8HlUQOl
+         rusTP9hd8+uqQPDbEQMwyop6O5cBVZP7v4bY2pEtGP9VmkSM++IdEaI7lHNUiaZZsndF
+         SKsVRgfCEt/TrtzjeVXY6u+JVeYffvU6mRvo0h5v7kOoirKJM2EZGoVzOex224n0Z1xv
+         p3g0Jr3eR0Y4ltlki5GeNMB6fj/dmPjOoD6bPM4ZXHfFErcdnv5oqTwCYlzrFKjuE1tN
+         HA8Q==
+X-Gm-Message-State: AOJu0YxFruZABK2uUPMIVBpVAxJXFyXh0cH12e8Zm3l1CDvTM4sGD4zD
+        OKG/CKPsukcoUvfa0N56KXbH4naD/kNNmV2QqOw=
+X-Google-Smtp-Source: AGHT+IEl8uJHZjylgJUYx/CkJvCBSBek95QEaUoSD0JiPf8+JDXWvz8jz9v3PmcUNRBF3ruNKHSF4hVq5so0j5VruNU=
+X-Received: by 2002:a4a:e741:0:b0:56e:94ed:c098 with SMTP id
+ n1-20020a4ae741000000b0056e94edc098mr5753921oov.0.1692614061699; Mon, 21 Aug
+ 2023 03:34:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20230818095000.937633-1-liaochang1@huawei.com>
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+References: <20230820210640.585311-1-qyousef@layalina.io>
+In-Reply-To: <20230820210640.585311-1-qyousef@layalina.io>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 21 Aug 2023 12:34:06 +0200
+Message-ID: <CAJZ5v0jjwKr0py8H34-8ZRS8xS455YUuew8GxBex13uRq7LBPQ@mail.gmail.com>
+Subject: Re: [PATCH 0/4] Fix dvfs_headroom escaping uclamp constraints
+To:     Qais Yousef <qyousef@layalina.io>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Lukasz Luba <lukasz.luba@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Aug 18, 2023 at 09:50:00 +0000, Liao Chang wrote:
-> In the worst case, the freq_table of policy data is not sorted and
-> contains duplicate frequencies, this means that it needs to iterate
-> through the entire freq_table of policy to ensure each frequency is
-> unique in the freq_table of stats data, this has a time complexity of
-> O(N^2), where N is the number of frequencies in the freq_table of
-> policy.
-> 
-> However, if the policy.freq_table is already sorted and contains no
-> duplicate frequencices, it can reduce the time complexity of creating
+On Sun, Aug 20, 2023 at 11:08 PM Qais Yousef <qyousef@layalina.io> wrote:
+>
+> DVFS headroom, or map_util_perf(), is applied after uclamp restrictions are
+> applied in effective_cpu_util(). This will lead to two problems for uclamp:
+>
+>         1. If util < uclamp_min, we'll run faster than uclamp_min. For example
+>            util = 50, uclamp_min = 100. map_util_perf() = 125 instead of 100.
+>
+>         2. If util > uclamp_max, we'll run faster than uclamp_max. For example
+>            util = 900, uclamp_max = 800, map_util_perf() = 1000.
+>
+> First patch rename the function to apply_dvfs_headroom() to reflect what it
+> really does. It is not really mapping util, but provides some headroom for the
+> util to grow. Provide a documentation for the function too.
+>
+> Second patch is the actual fix.
+>
+> Third patch moves apply_dvfs_headroom() to sched.h as there are no longer
+> users outside the scheduler.
+>
+> Fourth patch is an RFC to redefine what the headroom means for RT, DL and IRQ
+> pressures.
+>
+> Thanks!
 
-s/frequencices/frequencies?
+For the first 3 patches in the series
 
-> stats.freq_table to O(N), the 'freq_table_sorted' field of policy data
-> can be used to indicate whether the policy.freq_table is sorted.
-> 
-> Signed-off-by: Liao Chang <liaochang1@huawei.com>
-> ---
->  drivers/cpufreq/cpufreq_stats.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index 55c7ffd37d1c..fcb74050711a 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -243,7 +243,8 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
->  
->  	/* Find valid-unique entries */
->  	cpufreq_for_each_valid_entry(pos, policy->freq_table)
-> -		if (freq_table_get_index(stats, pos->frequency) == -1)
-> +		if ((policy->freq_table_sorted != CPUFREQ_TABLE_UNSORTED) ||
-
-[...]
-
-Otherwise looks okay to me,
-
-Reviewed-by: Dhruva Gole <d-gole@ti.com>
-
--- 
-Best regards,
-Dhruva Gole <d-gole@ti.com>
+Acked-by: Rafael J. Wysocki <rafael@kernel.org>
