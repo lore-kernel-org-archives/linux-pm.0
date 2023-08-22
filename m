@@ -2,70 +2,68 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5038EE49AE
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Aug 2023 18:02:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37965EE49B2
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Aug 2023 18:02:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229599AbjHVSCl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S229633AbjHVSCl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 22 Aug 2023 14:02:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52478 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229632AbjHVSCf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2023 14:02:35 -0400
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA6A91A5;
-        Tue, 22 Aug 2023 11:02:29 -0700 (PDT)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-68a40d8557eso1809934b3a.1;
-        Tue, 22 Aug 2023 11:02:29 -0700 (PDT)
+        with ESMTP id S229658AbjHVSCg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2023 14:02:36 -0400
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B9D0CD7;
+        Tue, 22 Aug 2023 11:02:34 -0700 (PDT)
+Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-1bc0d39b52cso31428515ad.2;
+        Tue, 22 Aug 2023 11:02:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1692727349; x=1693332149;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=cv12IOdait6ymjaYszXMAGuiT9Jd+UPhC/JiVaEEqfY=;
-        b=fcG17FQQRsQANikmQNoBQ1b7CbblUulB4/6CIZfIMksNwrQGmSCfc0GXvHR7o8+9Dp
-         p8jr0/i0v+5w05s6LQ0GWwaeda0mq5QxIikM+xfhTVKS8ai/dTUVUz8Rps0UBH2E7ufe
-         EfFVcu+XqMNN97alHgi152v9eAWYG/GGMXe4N6VvZtxxFsbnWBFQb+DsZD+IwsoB+Ha9
-         bYmbK1OTUSfbwpB6PsTHPWoeYEwPjA49parPWOAJI4BvKvNdz0Xk0fz+596EGPIcVcVO
-         NplcmJdlB/CEzcPqlc/Vmg1/97IXuO1mWmJKpo0Zb5G/KDvcN5Q/1dJ7KW7N46IdQWih
-         PmaA==
+        d=gmail.com; s=20221208; t=1692727353; x=1693332153;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=WHzqSThmy913fuGKpn4uXf/XGbug/XgU3SVaHteOTFw=;
+        b=WPZoI+C/3/TAgQYvvcQN3m8uDX7PrfAY02kIgdL0Oz9khOGf+e8dzjXhTDYiVuc9Bk
+         DUaUbyZ1NO3qataURGw8oCNtmXl5E9xzTCYEa8GS6krPVvd9IgMBN1dUteEHAWOV74pd
+         Me89kMXmtLHqKx7okwKC3CWYKkUIA/gRf/diLBrvf7Q7AHME/4vDRy99D2eKMuA/r+bS
+         9HYEbFHW7hu/1+TiAvjKZOp+TUQPGZnMAgbSRGaT4HI59DfoGKIvmWuYUqZpMxJBoaii
+         6EY4fesEl1gdxAe7MZvh6USiVcO9QnZVbyZxsTMDg+DqOLSAeWfOTbp0atTPWyptegbg
+         5XVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692727349; x=1693332149;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=cv12IOdait6ymjaYszXMAGuiT9Jd+UPhC/JiVaEEqfY=;
-        b=XcteJ6UpYLotwziAntGXo0wtmqg57Ak0S8r/4PmOBZB26AbWQIkDPt/YtuNUF+H/le
-         QvY8261hURfvDppWK71b0y4VashrWqU1+OSWigeT52YhOk2hHoRA2uX6CUfeoUmeye24
-         o+Py3+gA7Y6sdjWiA7eOnAwBHJUNl3dA5NYmtlshFb9vvqWjPy5LzuMGurSwzrt03KVM
-         A7T9debXlt346/mu+4Bk06qL/G8WHpPSyKKOlzPpJCE6vuqbU7YOxtg4zfSx1FMD4P3Z
-         kAb8fi3G7R85VeUg/prRxEPpAZJD9OFupCTWJ3yvAaBtpMdWS4YIgwD5SwNXtXqmwUp5
-         e7BQ==
-X-Gm-Message-State: AOJu0YwrOIqE9GfVDjOQ08Ql5EGIQCBAPJv9V0V5XYhicqA3vKnZlUaF
-        BcANq/pDyJb41myfoNYQ/xw=
-X-Google-Smtp-Source: AGHT+IHivdlTA5i8F2mOxuTTgQNpG6QN0iSZpJjTDEPGyc+27OY/9g3vLdDskpUqLo68wCNoUTn3kg==
-X-Received: by 2002:a05:6a00:17aa:b0:68b:a137:373d with SMTP id s42-20020a056a0017aa00b0068ba137373dmr2036907pfg.17.1692727349165;
-        Tue, 22 Aug 2023 11:02:29 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1692727353; x=1693332153;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=WHzqSThmy913fuGKpn4uXf/XGbug/XgU3SVaHteOTFw=;
+        b=EuGwcHLN+sillOtvhj9O1J028iPKCFSRW3Yayj5uKNdUnFjiBcn4Ojt0vy+lCP3TS1
+         FW03VOr9hqMJcEZXobzT/Wqfe91OhRLCc8c5q8rLVCfZjfTZbLksSgUed/swsRAaV3yH
+         tw5hMYcmj/eTi1buO0IBvYtauw8byWSnYTvJF/ZfU4lbyMbVlwy+0pMtPjHcGn9I08BZ
+         8DiZOJPWEciiIreKTf0HZzqKK7kJON0L0vN1BgJb7uEVIs4vjGuQepiPnLR2usN2Wa7U
+         cIMuobFXkFbaAnH0aObRcIxW+fA+IFsQ+PnHCL9JLxB2p3LfC5OkgsZCx6fOkKTXURtY
+         gyVw==
+X-Gm-Message-State: AOJu0YxaHm2iRaAZ3MSg/SAbW7XwUvtyoJHBJ5Q5IJH3daYrY5jHjrfm
+        bdZnyi+b2FjQEkicFKeXn6afaOlC+V8=
+X-Google-Smtp-Source: AGHT+IHJD1eQ/G8YKK/mS9Iz26wqBwKUfs1uHyXTORe1dqpKt/R9XL71xbqqG0PZqx/D0SSK0BXcMg==
+X-Received: by 2002:a17:902:a414:b0:1bd:b8c8:98f8 with SMTP id p20-20020a170902a41400b001bdb8c898f8mr6778141plq.4.1692727353437;
+        Tue, 22 Aug 2023 11:02:33 -0700 (PDT)
 Received: from localhost ([2a00:79e1:abd:4a00:6c80:7c10:75a0:44f4])
-        by smtp.gmail.com with ESMTPSA id z25-20020aa785d9000000b0068783a2dfdasm3320769pfn.104.2023.08.22.11.02.28
+        by smtp.gmail.com with ESMTPSA id t7-20020a170902e84700b001b898595be7sm9347196plg.291.2023.08.22.11.02.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Aug 2023 11:02:28 -0700 (PDT)
+        Tue, 22 Aug 2023 11:02:32 -0700 (PDT)
 From:   Rob Clark <robdclark@gmail.com>
 To:     dri-devel@lists.freedesktop.org
 Cc:     linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
         Rob Clark <robdclark@chromium.org>,
-        Akhil P Oommen <quic_akhilpo@quicinc.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Douglas Anderson <dianders@chromium.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        linux-kernel@vger.kernel.org (open list),
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
         linux-pm@vger.kernel.org (open list:DEVICE FREQUENCY (DEVFREQ)),
-        Marijn Suijten <marijn.suijten@somainline.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Sean Paul <sean@poorly.run>
-Subject: [PATCH v5 00/11] drm/msm+PM+icc: Make job_run() reclaim-safe
-Date:   Tue, 22 Aug 2023 11:01:47 -0700
-Message-ID: <20230822180208.95556-1-robdclark@gmail.com>
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH v5 02/11] PM / devfreq: Teach lockdep about locking order
+Date:   Tue, 22 Aug 2023 11:01:49 -0700
+Message-ID: <20230822180208.95556-3-robdclark@gmail.com>
 X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230822180208.95556-1-robdclark@gmail.com>
+References: <20230822180208.95556-1-robdclark@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -74,70 +72,37 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rob Clark <robdclark@chromium.org>
 
-Inspired by https://lore.kernel.org/dri-devel/20200604081224.863494-10-daniel.vetter@ffwll.ch/
-it seemed like a good idea to get rid of memory allocation in job_run()
-fence signaling path, and use lockdep annotations to yell at us about
-anything that could deadlock against shrinker/reclaim.  Anything that
-can trigger reclaim, or block on any other thread that has triggered
-reclaim, can block the GPU shrinker from releasing memory if it is
-waiting the job to complete, causing deadlock.
+This will make it easier to catch places doing allocations that can
+trigger reclaim under devfreq->lock.
 
-The first two patches decouple allocation from devfreq->lock, and teach
-lockdep that devfreq->lock can be acquired in paths that the shrinker
-indirectly depends on.
+Because devfreq->lock is held over various devfreq_dev_profile
+callbacks, there might be some fallout if those callbacks do allocations
+that can trigger reclaim, but I've looked through the various callback
+implementations and don't see anything obvious.  If it does trigger any
+lockdep splats, those should be fixed.
 
-The next three patches do the same for PM QoS.  And the next two do a
-similar thing for interconnect.
+Signed-off-by: Rob Clark <robdclark@chromium.org>
+---
+ drivers/devfreq/devfreq.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-And then finally the last two patches enable the lockdep fence-
-signalling annotations.
-
-
-v2: Switch from embedding hw_fence in submit/job object to preallocating
-    the hw_fence.  Rework "fenced unpin" locking to drop obj lock from
-    fence signaling path (ie. the part that was still WIP in the first
-    iteration of the patchset).  Adds the final patch to enable fence
-    signaling annotations now that job_run() and job_free() are safe.
-    The PM devfreq/QoS and interconnect patches are unchanged.
-
-v3: Mostly unchanged, but series is much smaller now that drm changes
-    have landed, mostly consisting of the remaining devfreq/qos/
-    interconnect fixes.
-
-v4: Re-work PM / QoS patch based on Rafael's suggestion
-
-v5: Add a couple more drm/msm patches for issues I found as making
-    my way to the bottom of the rabbit hole.  In particular, I had
-    to move power enable earlier, before enqueing to the scheduler,
-    rather than after the scheduler waits for in-fences, which means
-    we could be powering up slightly earlier than needed.  If runpm
-    had a separate prepare + enable similar to the clk framework, we
-    wouldn't need this.
-
-Rob Clark (11):
-  PM / devfreq: Drop unneed locking to appease lockdep
-  PM / devfreq: Teach lockdep about locking order
-  PM / QoS: Fix constraints alloc vs reclaim locking
-  PM / QoS: Decouple request alloc from dev_pm_qos_mtx
-  PM / QoS: Teach lockdep about dev_pm_qos_mtx locking order
-  interconnect: Fix locking for runpm vs reclaim
-  interconnect: Teach lockdep about icc_bw_lock order
-  drm/msm/a6xx: Remove GMU lock from runpm paths
-  drm/msm: Move runpm enable in submit path
-  drm/sched: Add (optional) fence signaling annotation
-  drm/msm: Enable fence signalling annotations
-
- drivers/base/power/qos.c               | 98 +++++++++++++++++++-------
- drivers/devfreq/devfreq.c              | 52 +++++++-------
- drivers/gpu/drm/msm/adreno/a6xx_gpu.c  | 15 +---
- drivers/gpu/drm/msm/msm_gem_submit.c   |  2 +
- drivers/gpu/drm/msm/msm_gpu.c          |  2 -
- drivers/gpu/drm/msm/msm_ringbuffer.c   |  1 +
- drivers/gpu/drm/scheduler/sched_main.c |  9 +++
- drivers/interconnect/core.c            | 18 ++++-
- include/drm/gpu_scheduler.h            |  2 +
- 9 files changed, 130 insertions(+), 69 deletions(-)
-
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index e5558ec68ce8..81add6064406 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -817,6 +817,12 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	}
+ 
+ 	mutex_init(&devfreq->lock);
++
++	/* Teach lockdep about lock ordering wrt. shrinker: */
++	fs_reclaim_acquire(GFP_KERNEL);
++	might_lock(&devfreq->lock);
++	fs_reclaim_release(GFP_KERNEL);
++
+ 	devfreq->dev.parent = dev;
+ 	devfreq->dev.class = devfreq_class;
+ 	devfreq->dev.release = devfreq_dev_release;
 -- 
 2.41.0
 
