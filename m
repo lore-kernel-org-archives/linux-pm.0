@@ -2,81 +2,113 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C528EE4996
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Aug 2023 11:33:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 411E6EE4996
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Aug 2023 11:48:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234038AbjHVLds (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Aug 2023 07:33:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60042 "EHLO
+        id S231320AbjHVLsZ convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Aug 2023 07:48:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234968AbjHVLdr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2023 07:33:47 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 646F1E4F;
-        Tue, 22 Aug 2023 04:33:26 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 7FD4665291;
-        Tue, 22 Aug 2023 11:31:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50EDFC433C8;
-        Tue, 22 Aug 2023 11:31:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1692703912;
-        bh=a3FKI5fLWw6BMBXM2pVAbx96bPD8OCs7OUQB2nqubdc=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=oVfzJYXQP6luoOZKSlrGfn0HaDGWydhomAmU3svbyp3PtAhFvcE7c3uqgktj87Zww
-         4ppWLWULdFxpz/IdTNvxP7AxhPMDmKSHCkdE9uv6l0E1sb4/cR9YZUBmF5Jdh18b8N
-         iZPBKiNIubPjAIBVXvtBrFxEesu+ev+RGJ0yso08=
-Date:   Tue, 22 Aug 2023 13:31:49 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Pavel Machek <pavel@denx.de>
-Cc:     Sasha Levin <sashal@kernel.org>, linux-kernel@vger.kernel.org,
-        stable@vger.kernel.org, Ahmad Fatoum <a.fatoum@pengutronix.de>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        rafael@kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH AUTOSEL 6.4 18/54] thermal: core: constify params in
- thermal_zone_device_register
-Message-ID: <2023082232-anaerobic-smashing-42d3@gregkh>
-References: <20230813154934.1067569-1-sashal@kernel.org>
- <20230813154934.1067569-18-sashal@kernel.org>
- <ZOSRPJxpVfCiyUWb@duo.ucw.cz>
+        with ESMTP id S233277AbjHVLsZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2023 07:48:25 -0400
+Received: from mail-ot1-x331.google.com (mail-ot1-x331.google.com [IPv6:2607:f8b0:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98F5DCF4;
+        Tue, 22 Aug 2023 04:47:57 -0700 (PDT)
+Received: by mail-ot1-x331.google.com with SMTP id 46e09a7af769-6b9cd6876bbso1150850a34.1;
+        Tue, 22 Aug 2023 04:47:57 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692704775; x=1693309575;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=g7u+tVATkyR9TopllPsPyWrgo7wbCnZAY5KeZRAKErs=;
+        b=fYBYZF+QBKTET8EU18hXhSHDRpACK/Y8laQ6cBMrjQJM7ZX/Sxo5heR8pp1HeQjIPT
+         HpVPuOrVo71kmj8lkfQu/cuXr4dhSUTWfNrcJyKKI6CHnm60xqpCxteh9i38Ejd1Yg+H
+         +kceec33utg8Nmc3zRsxmokDhKWR8V4iyHuq4Upks3nN8UhmQ8pfPDbIhMl8LxNM1O1d
+         pjgQ4koSJO7wVPGd5OYlzhRL8aQ4QsOwhVYJF8uzKJPAvEDERtcgicfR7kMCmJsInOYj
+         2+lXFPErfVxpTBUoaWgJW8W4R40aMUcZNRY/34Nyv2PZhL3efv3gUSPDkjd6/OWe1bxs
+         OgRg==
+X-Gm-Message-State: AOJu0YwtFGWspBTTWD0f/ZVEzwMbt3tQDqIIVOuvH1znNxHKSG5X4/GI
+        Nl4jYx3qoCkzLL8JIQcq45WLzFtYVc6iB5e5eplVB/8z
+X-Google-Smtp-Source: AGHT+IGWlZQ4G1HOEeubKL8xUdbNvbEszjfcNSDx8X+wo9LdrzY6RcILaZiAHAqd/iGYHo1AJ8ZpLt926DA/Tq/N9tY=
+X-Received: by 2002:a4a:e741:0:b0:56e:94ed:c098 with SMTP id
+ n1-20020a4ae741000000b0056e94edc098mr8769210oov.0.1692704775454; Tue, 22 Aug
+ 2023 04:46:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZOSRPJxpVfCiyUWb@duo.ucw.cz>
+References: <001d01d9d3a7$71736f50$545a4df0$@telus.net>
+In-Reply-To: <001d01d9d3a7$71736f50$545a4df0$@telus.net>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 22 Aug 2023 13:46:04 +0200
+Message-ID: <CAJZ5v0g=TEY0+dL9AGh1cYNnwQ=L6G8CRxXVD0AyWsaK5aDsdA@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq: intel_pstate: set stale CPU frequency to minimum
+To:     Doug Smythies <dsmythies@telus.net>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Len Brown <lenb@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>, yang.jie@linux.intel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Aug 22, 2023 at 12:43:08PM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > [ Upstream commit 80ddce5f2dbd0e83eadc9f9d373439180d599fe5 ]
-> > 
-> > Since commit 3d439b1a2ad3 ("thermal/core: Alloc-copy-free the thermal zone
-> > parameters structure"), thermal_zone_device_register() allocates a copy
-> > of the tzp argument and callers need not explicitly manage its lifetime.
-> > 
-> > This means the function no longer cares about the parameter being
-> > mutable, so constify it.
-> > 
-> > No functional change.
-> 
-> Not a bugfix, should not be in stable.
-> 
-> 3d439b1a2ad3 ("thermal/core: Alloc-copy-free the thermal zone
-> parameters structure") is not in 6.1, so this is not correct patch for
-> 6.1.
-> 
-> Why was this selected for AUTOSEL? Can you make sure patches marked
-> "No functional change." are not selected in future?
+On Sun, Aug 20, 2023 at 10:46 PM Doug Smythies <dsmythies@telus.net> wrote:
+>
+> The intel_pstate CPU frequency scaling driver does not
+> use policy->cur and it is 0.
+> When the CPU frequency is outdated arch_freq_get_on_cpu()
+> will default to the nominal clock frequency when its call to
+> cpufreq_quick_getpolicy_cur returns the never updated 0.
+> Thus, the listed frequency might be outside of currently
+> set limits. Some users are complaining about the high
+> reported frequency, albeit stale, when their system is
+> idle and/or it is above the reduced maximum they have set.
+>
+> This patch will maintain policy_cur for the intel_pstate
+> driver at the current minimum CPU frequency.
+>
+> Reported-by: Yang Jie <yang.jie@linux.intel.com>
+> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=217597
+> Signed-off-by: Doug Smythies <dsmythies@telus.net>
+> ---
+>
+> v1 -> v2:
+>    * v1 was a completely different approach, programming around
+>      the issue rather than fixing it at the source.
+>      reference:
+>      https://patchwork.kernel.org/project/linux-pm/patch/006901d9be8c$f4439930$dccacb90$@telus.net/
+>    * v2 does not fix an issue with the intel_cpufreq CPU scaling
+>      driver (A.K.A. the intel_pstate driver in passive mode) and
+>      the schedutil CPU frequency scaling governor when HWP is enabled
+>      where limit changes are not reflected in the stale listed frequencies.
+>      A fix for that will be some future patch.
+>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 8ca2bce4341a..08284dee583a 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2609,6 +2609,11 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>                         intel_pstate_clear_update_util_hook(policy->cpu);
+>                 intel_pstate_hwp_set(policy->cpu);
+>         }
+> +       /* policy current is never updated with the intel_pstate driver
+> +        * but it is used as a stale frequency value. So, keep it within
+> +        * limits.
+> +        */
+> +       policy->cur = policy->min;
+>
+>         mutex_unlock(&intel_pstate_limits_lock);
+>
+> --
 
-No, because sometimes they are needed in later patches.  And marking
-things const is good :)
+Applied as 6.6 material, with some mailer-induced white space damage
+fixed and the new comment adjusted to the kernel coding style.
 
-thanks,
-
-greg k-h
+Thanks!
