@@ -2,65 +2,65 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C0C3EE49B4
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Aug 2023 18:02:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E713EE49B7
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Aug 2023 18:02:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229659AbjHVSCl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Aug 2023 14:02:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52506 "EHLO
+        id S229674AbjHVSCm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Aug 2023 14:02:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229650AbjHVSCg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2023 14:02:36 -0400
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 418ABCD0;
-        Tue, 22 Aug 2023 11:02:32 -0700 (PDT)
-Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-68a3082c771so2075968b3a.0;
-        Tue, 22 Aug 2023 11:02:32 -0700 (PDT)
+        with ESMTP id S229693AbjHVSCi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2023 14:02:38 -0400
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6777F185;
+        Tue, 22 Aug 2023 11:02:36 -0700 (PDT)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-26d63b608d4so1902404a91.2;
+        Tue, 22 Aug 2023 11:02:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1692727352; x=1693332152;
+        d=gmail.com; s=20221208; t=1692727356; x=1693332156;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=azXqC48nCq3Nd2xmDDFqonleBrNUa9rXdZ8wwR7mDDQ=;
-        b=if6/5taqc1FNbZsDP8pI9S2/mtp1Y7aF5kjheNse6mUvsSWWTLW4zulXZ4Hvq+wgi+
-         K91HxaCNvqpATqUG0jkqo69nwqSPiCV+Er2WCaqOC7lE4R4ORoa68Qulh00du9xw2naH
-         lLqlJq0S27EVqmpKExTEd4BG0T8x1YmCCFUVMnS5YELocP/iCLrYfUJ19cJ2+rMlp1BA
-         O9u1KR/2rSCfMCVlW7nrOiFuMacQCtBv13dBOvRmemC/am+3zxNE/B20dcIaQZpv5Rcv
-         tTIsL4ZVJ0Ko6LfZeV6yH216r1zpwjnzI1eoPLWmXjt+bu0QrYxDFPSZ9ZB/aTfLCOcD
-         BBuQ==
+        bh=jwi88nXkWgcM9/OEm1nLYgH6sllE6KibtJsTy1TkfRY=;
+        b=EG7ioNIUIceTPWyCUvSdDcnxfTj11NqrOW3xhYTfkYwJeISXyeQAe8qhaUeVGhVC33
+         YInKNYGuzwqKylb23Id2fHc1EPI5GkHMBGZVNiiRrOaFM2inyQVotYc88yB0+ap5oteZ
+         ptoJaasGdzceRe9xgY0as2WIHBcbq5sHJ28cxQPpSUM9Nx94Lt86TyIO0a/iqQqKbsvV
+         0S1hll/g6wPR4QafMBuY3Zkluaf/CmLiCjfHMPMkiN5EgvL99GYELAUPgznmSs/62Vz7
+         MEXK1KDX83QEqQSsL5W/re7Dlon2s6xwTWtGdXR92ZOLcX2szBCkNrLxrjwcTiQca89R
+         4k1A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692727352; x=1693332152;
+        d=1e100.net; s=20221208; t=1692727356; x=1693332156;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=azXqC48nCq3Nd2xmDDFqonleBrNUa9rXdZ8wwR7mDDQ=;
-        b=ZzNBOPYcsiMuEFJvFiR1mQ3XxLe7yAD1wZ1IZ91Mt5HKULajCTbNy6/q7ctbHdhNcQ
-         OGiYTi6Mxbt7iYBD9ZznLtESTzdhSlc3Xdz2RHivLFKHreMvw+EElUPxHsNXfaYxnbm4
-         QVSXaq5mGtu28dz0DEkqAgNRsLC7A22RkAzBUk1eF+laNnxicyvFKNWxC0zfb3iajb4p
-         1YRfUU3zI+gOd1cDhbXJ3FuTWV2zrxhC+xt068Y9ir3mMvby6jfiYMbIaBrsyKwp9ciu
-         LeWOSQH1KJ2lEtdQRbf7bY55v5DGqyIQNUQEdxPsYWM5PMWh/PObD7S4d25FVHh9ji2H
-         zyvQ==
-X-Gm-Message-State: AOJu0Yz1g5mpQwIraOf5nEcs6rB9yJh6RjJWLcMM5S8H6QM8wCgUjvYu
-        YLyGzmL24CQhD+zQ4EnwaOswbJ36eJg=
-X-Google-Smtp-Source: AGHT+IGeE/wafAzcwEKsQQB5cpdsHKFZPRpzlFbFqvKUP8JwsoYsYg0yKDFpDf74uA73Y++c0bwV1g==
-X-Received: by 2002:a05:6a20:8e29:b0:148:3a48:1eff with SMTP id y41-20020a056a208e2900b001483a481effmr13569143pzj.23.1692727351392;
-        Tue, 22 Aug 2023 11:02:31 -0700 (PDT)
+        bh=jwi88nXkWgcM9/OEm1nLYgH6sllE6KibtJsTy1TkfRY=;
+        b=hzpDgQ+uzenzt5jZGYJMzrFcJP02EHS3D6xxQj5qNIaHaM/nevkX7Wd3/PAdmxLm2d
+         sZ7f7ACUQRuDQgRsO6fu+H1SDB7RRxZ6kT6wYAqLGqU6tOgy+u73A2I4w+ny7wS43ygA
+         ESjLm9dsPuIeIhYfAiEuv103uJU6A7ksBEyIZC/5+bwOwTeIbrljFYt57GsVQFq1zBMS
+         IE8Z42AQbL7eS1y6WsWumt++igY87eWbPtpDZlQNxeiJokN4Wvokq6oPx5GUXSMQVQAG
+         fIc/BnKuH7aL1eLxJbLY4Rsj7KdxxUc/vzTGa2fLKX2erTAsbGQKUe8PPuPVtMZcmJz7
+         HdJQ==
+X-Gm-Message-State: AOJu0Yy6hpH3e2pEhBYy8BVjNf4zKdQ0Lvk+K5wZozzdWrlGv7s0DTK6
+        AYRZJRnyhmtzpkAuXYAU+PM=
+X-Google-Smtp-Source: AGHT+IHW2p3YcWjF+o1eUimt4hk+4aWpf0Seb42+6ZeecRRQBEykeMw+z/Rs5eTQFK9r2A62SzogVw==
+X-Received: by 2002:a17:90b:4c81:b0:26b:219f:3399 with SMTP id my1-20020a17090b4c8100b0026b219f3399mr6286786pjb.35.1692727355656;
+        Tue, 22 Aug 2023 11:02:35 -0700 (PDT)
 Received: from localhost ([2a00:79e1:abd:4a00:6c80:7c10:75a0:44f4])
-        by smtp.gmail.com with ESMTPSA id q23-20020a637517000000b00563c1aa277asm8329462pgc.6.2023.08.22.11.02.30
+        by smtp.gmail.com with ESMTPSA id n10-20020a17090a670a00b0025c1cfdb93esm8183747pjj.13.2023.08.22.11.02.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Aug 2023 11:02:30 -0700 (PDT)
+        Tue, 22 Aug 2023 11:02:35 -0700 (PDT)
 From:   Rob Clark <robdclark@gmail.com>
 To:     dri-devel@lists.freedesktop.org
 Cc:     linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
         Rob Clark <robdclark@chromium.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        linux-pm@vger.kernel.org (open list:DEVICE FREQUENCY (DEVFREQ)),
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v5 01/11] PM / devfreq: Drop unneed locking to appease lockdep
-Date:   Tue, 22 Aug 2023 11:01:48 -0700
-Message-ID: <20230822180208.95556-2-robdclark@gmail.com>
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-pm@vger.kernel.org (open list:HIBERNATION (aka Software Suspend,
+        aka swsusp)), linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH v5 03/11] PM / QoS: Fix constraints alloc vs reclaim locking
+Date:   Tue, 22 Aug 2023 11:01:50 -0700
+Message-ID: <20230822180208.95556-4-robdclark@gmail.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230822180208.95556-1-robdclark@gmail.com>
 References: <20230822180208.95556-1-robdclark@gmail.com>
@@ -72,23 +72,32 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rob Clark <robdclark@chromium.org>
 
-In the process of adding lockdep annotation for GPU job_run() path to
-catch potential deadlocks against the shrinker/reclaim path, I turned
-up this lockdep splat:
+In the process of adding lockdep annotation for drm GPU scheduler's
+job_run() to detect potential deadlock against shrinker/reclaim, I hit
+this lockdep splat:
 
    ======================================================
    WARNING: possible circular locking dependency detected
-   6.2.0-rc8-debug+ #556 Not tainted
+   6.2.0-rc8-debug+ #558 Tainted: G        W
    ------------------------------------------------------
-   ring0/123 is trying to acquire lock:
-   ffffff8087219078 (&devfreq->lock){+.+.}-{3:3}, at: devfreq_monitor_resume+0x3c/0xf0
+   ring0/125 is trying to acquire lock:
+   ffffffd6d6ce0f28 (dev_pm_qos_mtx){+.+.}-{3:3}, at: dev_pm_qos_update_request+0x38/0x68
 
    but task is already holding lock:
-   ffffffd6f64e57e8 (dma_fence_map){++++}-{0:0}, at: msm_job_run+0x68/0x150
+   ffffff8087239208 (&gpu->active_lock){+.+.}-{3:3}, at: msm_gpu_submit+0xec/0x178
 
    which lock already depends on the new lock.
 
    the existing dependency chain (in reverse order) is:
+
+   -> #4 (&gpu->active_lock){+.+.}-{3:3}:
+          __mutex_lock+0xcc/0x3c8
+          mutex_lock_nested+0x30/0x44
+          msm_gpu_submit+0xec/0x178
+          msm_job_run+0x78/0x150
+          drm_sched_main+0x290/0x370
+          kthread+0xf0/0x100
+          ret_from_fork+0x10/0x20
 
    -> #3 (dma_fence_map){++++}-{0:0}:
           __dma_fence_might_wait+0x74/0xc0
@@ -118,63 +127,27 @@ up this lockdep splat:
           fs_reclaim_acquire+0x54/0xa8
           slab_pre_alloc_hook.constprop.0+0x40/0x25c
           __kmem_cache_alloc_node+0x60/0x1cc
-          __kmalloc_node_track_caller+0xb8/0xe0
-          kstrdup+0x70/0x90
-          kstrdup_const+0x38/0x48
-          kvasprintf_const+0x48/0xbc
-          kobject_set_name_vargs+0x40/0xb0
-          dev_set_name+0x64/0x8c
-          devfreq_add_device+0x31c/0x55c
-          devm_devfreq_add_device+0x6c/0xb8
-          msm_devfreq_init+0xa8/0x16c
-          msm_gpu_init+0x38c/0x570
-          adreno_gpu_init+0x1b4/0x2b4
-          a6xx_gpu_init+0x15c/0x3e4
-          adreno_bind+0x218/0x254
-          component_bind_all+0x114/0x1ec
-          msm_drm_bind+0x2b8/0x608
-          try_to_bring_up_aggregate_device+0x88/0x1a4
-          __component_add+0xec/0x13c
-          component_add+0x1c/0x28
-          dsi_dev_attach+0x28/0x34
-          dsi_host_attach+0xdc/0x124
-          mipi_dsi_attach+0x30/0x44
-          devm_mipi_dsi_attach+0x2c/0x70
-          ti_sn_bridge_probe+0x298/0x2c4
-          auxiliary_bus_probe+0x7c/0x94
-          really_probe+0x158/0x290
-          __driver_probe_device+0xc8/0xe0
-          driver_probe_device+0x44/0x100
-          __device_attach_driver+0x64/0xdc
-          bus_for_each_drv+0xa0/0xc8
-          __device_attach+0xd8/0x168
-          device_initial_probe+0x1c/0x28
-          bus_probe_device+0x38/0xa0
-          deferred_probe_work_func+0xc8/0xe0
-          process_one_work+0x2d8/0x478
-          process_scheduled_works+0x4c/0x50
-          worker_thread+0x218/0x274
-          kthread+0xf0/0x100
+          kmalloc_trace+0x50/0xa8
+          dev_pm_qos_constraints_allocate+0x38/0x100
+          __dev_pm_qos_add_request+0xb0/0x1e8
+          dev_pm_qos_add_request+0x58/0x80
+          dev_pm_qos_expose_latency_limit+0x60/0x13c
+          register_cpu+0x12c/0x130
+          topology_init+0xac/0xbc
+          do_one_initcall+0x104/0x2bc
+          kernel_init_freeable+0x344/0x34c
+          kernel_init+0x30/0x134
           ret_from_fork+0x10/0x20
 
-   -> #0 (&devfreq->lock){+.+.}-{3:3}:
+   -> #0 (dev_pm_qos_mtx){+.+.}-{3:3}:
           __lock_acquire+0xe00/0x1060
           lock_acquire+0x1e0/0x2f8
           __mutex_lock+0xcc/0x3c8
           mutex_lock_nested+0x30/0x44
-          devfreq_monitor_resume+0x3c/0xf0
-          devfreq_simple_ondemand_handler+0x54/0x7c
-          devfreq_resume_device+0xa4/0xe8
-          msm_devfreq_resume+0x78/0xa8
-          a6xx_pm_resume+0x110/0x234
-          adreno_runtime_resume+0x2c/0x38
-          pm_generic_runtime_resume+0x30/0x44
-          __rpm_callback+0x15c/0x174
-          rpm_callback+0x78/0x7c
-          rpm_resume+0x318/0x524
-          __pm_runtime_resume+0x78/0xbc
-          pm_runtime_get_sync.isra.0+0x14/0x20
-          msm_gpu_submit+0x58/0x178
+          dev_pm_qos_update_request+0x38/0x68
+          msm_devfreq_boost+0x40/0x70
+          msm_devfreq_active+0xc0/0xf0
+          msm_gpu_submit+0x10c/0x178
           msm_job_run+0x78/0x150
           drm_sched_main+0x290/0x370
           kthread+0xf0/0x100
@@ -183,25 +156,26 @@ up this lockdep splat:
    other info that might help us debug this:
 
    Chain exists of:
-     &devfreq->lock --> mmu_notifier_invalidate_range_start --> dma_fence_map
+     dev_pm_qos_mtx --> dma_fence_map --> &gpu->active_lock
 
     Possible unsafe locking scenario:
 
           CPU0                    CPU1
           ----                    ----
-     lock(dma_fence_map);
-                                  lock(mmu_notifier_invalidate_range_start);
+     lock(&gpu->active_lock);
                                   lock(dma_fence_map);
-     lock(&devfreq->lock);
+                                  lock(&gpu->active_lock);
+     lock(dev_pm_qos_mtx);
 
     *** DEADLOCK ***
 
-   2 locks held by ring0/123:
-    #0: ffffff8087201170 (&gpu->lock){+.+.}-{3:3}, at: msm_job_run+0x64/0x150
-    #1: ffffffd6f64e57e8 (dma_fence_map){++++}-{0:0}, at: msm_job_run+0x68/0x150
+   3 locks held by ring0/123:
+    #0: ffffff8087251170 (&gpu->lock){+.+.}-{3:3}, at: msm_job_run+0x64/0x150
+    #1: ffffffd00b0e57e8 (dma_fence_map){++++}-{0:0}, at: msm_job_run+0x68/0x150
+    #2: ffffff8087251208 (&gpu->active_lock){+.+.}-{3:3}, at: msm_gpu_submit+0xec/0x178
 
    stack backtrace:
-   CPU: 6 PID: 123 Comm: ring0 Not tainted 6.2.0-rc8-debug+ #556
+   CPU: 6 PID: 123 Comm: ring0 Not tainted 6.2.0-rc8-debug+ #559
    Hardware name: Google Lazor (rev1 - 2) with LTE (DT)
    Call trace:
     dump_backtrace.part.0+0xb4/0xf8
@@ -214,176 +188,186 @@ up this lockdep splat:
     lock_acquire+0x1e0/0x2f8
     __mutex_lock+0xcc/0x3c8
     mutex_lock_nested+0x30/0x44
-    devfreq_monitor_resume+0x3c/0xf0
-    devfreq_simple_ondemand_handler+0x54/0x7c
-    devfreq_resume_device+0xa4/0xe8
-    msm_devfreq_resume+0x78/0xa8
-    a6xx_pm_resume+0x110/0x234
-    adreno_runtime_resume+0x2c/0x38
-    pm_generic_runtime_resume+0x30/0x44
-    __rpm_callback+0x15c/0x174
-    rpm_callback+0x78/0x7c
-    rpm_resume+0x318/0x524
-    __pm_runtime_resume+0x78/0xbc
-    pm_runtime_get_sync.isra.0+0x14/0x20
-    msm_gpu_submit+0x58/0x178
+    dev_pm_qos_update_request+0x38/0x68
+    msm_devfreq_boost+0x40/0x70
+    msm_devfreq_active+0xc0/0xf0
+    msm_gpu_submit+0x10c/0x178
     msm_job_run+0x78/0x150
     drm_sched_main+0x290/0x370
     kthread+0xf0/0x100
     ret_from_fork+0x10/0x20
 
-The issue is that we cannot be holding any lock while doing memory
-allocations that is also needed in the job_run (and in the case of
-devfreq, this means runpm_resume()) because lockdep sees this as a
-potential dependency.
+The issue is that dev_pm_qos_mtx is held in the runpm suspend/resume (or
+freq change) path, but it is also held across allocations that could
+recurse into shrinker.
 
-Fortunately there is really no reason to hold the devfreq lock when
-we are creating the devfreq device, as it is not yet visible to any
-other task.  The only reason it was needed was for a lockdep assert
-in devfreq_get_freq_range().  Instead, split this up into an internal
-fxn that is used in the devfreq_add_device() (where the lock is not
-required).
+Solve this by changing dev_pm_qos_constraints_allocate() into a function
+that can be called unconditionally before the device qos object is
+needed and before aquiring dev_pm_qos_mtx.  This way the allocations can
+be done without holding the mutex.  In the case that we raced with
+another thread to allocate the qos object, detect this *after* acquiring
+the dev_pm_qos_mtx and simply free the redundant allocations.
 
+Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
 Signed-off-by: Rob Clark <robdclark@chromium.org>
 ---
- drivers/devfreq/devfreq.c | 46 ++++++++++++++++++---------------------
- 1 file changed, 21 insertions(+), 25 deletions(-)
+ drivers/base/power/qos.c | 76 +++++++++++++++++++++++++++++-----------
+ 1 file changed, 56 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index e36cbb920ec8..e5558ec68ce8 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -111,23 +111,13 @@ static unsigned long find_available_max_freq(struct devfreq *devfreq)
- 	return max_freq;
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index 8e93167f1783..7e95760d16dc 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -185,27 +185,33 @@ static int apply_constraint(struct dev_pm_qos_request *req,
  }
  
--/**
-- * devfreq_get_freq_range() - Get the current freq range
-- * @devfreq:	the devfreq instance
-- * @min_freq:	the min frequency
-- * @max_freq:	the max frequency
-- *
-- * This takes into consideration all constraints.
-- */
--void devfreq_get_freq_range(struct devfreq *devfreq,
--			    unsigned long *min_freq,
--			    unsigned long *max_freq)
-+static void __get_freq_range(struct devfreq *devfreq,
-+			     unsigned long *min_freq,
-+			     unsigned long *max_freq)
+ /*
+- * dev_pm_qos_constraints_allocate
++ * dev_pm_qos_constraints_allocate: Allocate and initializes qos constraints
+  * @dev: device to allocate data for
+  *
+- * Called at the first call to add_request, for constraint data allocation
+- * Must be called with the dev_pm_qos_mtx mutex held
++ * Called to allocate constraints before dev_pm_qos_mtx mutex is held.  Should
++ * be matched with a call to dev_pm_qos_constraints_set() once dev_pm_qos_mtx
++ * is held.
+  */
+-static int dev_pm_qos_constraints_allocate(struct device *dev)
++static struct dev_pm_qos *dev_pm_qos_constraints_allocate(struct device *dev)
  {
- 	unsigned long *freq_table = devfreq->freq_table;
- 	s32 qos_min_freq, qos_max_freq;
+ 	struct dev_pm_qos *qos;
+ 	struct pm_qos_constraints *c;
+ 	struct blocking_notifier_head *n;
  
--	lockdep_assert_held(&devfreq->lock);
--
- 	/*
- 	 * Initialize minimum/maximum frequency from freq table.
- 	 * The devfreq drivers can initialize this in either ascending or
-@@ -158,6 +148,23 @@ void devfreq_get_freq_range(struct devfreq *devfreq,
- 	if (*min_freq > *max_freq)
- 		*min_freq = *max_freq;
- }
+-	qos = kzalloc(sizeof(*qos), GFP_KERNEL);
++	/*
++	 * If constraints are already allocated, we can skip speculatively
++	 * allocating a new one, as we don't have to work about qos transitioning
++	 * from non-null to null.  The constraints are only freed on device
++	 * removal.
++	 */
++	if (dev->power.qos)
++		return NULL;
 +
-+/**
-+ * devfreq_get_freq_range() - Get the current freq range
-+ * @devfreq:	the devfreq instance
-+ * @min_freq:	the min frequency
-+ * @max_freq:	the max frequency
-+ *
-+ * This takes into consideration all constraints.
-+ */
-+void devfreq_get_freq_range(struct devfreq *devfreq,
-+			    unsigned long *min_freq,
-+			    unsigned long *max_freq)
-+{
-+	lockdep_assert_held(&devfreq->lock);
-+
-+	__get_freq_range(devfreq, min_freq, max_freq);
++	qos = kzalloc(sizeof(*qos) + 3 * sizeof(*n), GFP_KERNEL);
+ 	if (!qos)
+-		return -ENOMEM;
++		return NULL;
+ 
+-	n = kzalloc(3 * sizeof(*n), GFP_KERNEL);
+-	if (!n) {
+-		kfree(qos);
+-		return -ENOMEM;
+-	}
++	n = (struct blocking_notifier_head *)(qos + 1);
+ 
+ 	c = &qos->resume_latency;
+ 	plist_head_init(&c->list);
+@@ -227,11 +233,29 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+ 
+ 	INIT_LIST_HEAD(&qos->flags.list);
+ 
++	return qos;
 +}
- EXPORT_SYMBOL(devfreq_get_freq_range);
- 
- /**
-@@ -810,7 +817,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	}
- 
- 	mutex_init(&devfreq->lock);
--	mutex_lock(&devfreq->lock);
- 	devfreq->dev.parent = dev;
- 	devfreq->dev.class = devfreq_class;
- 	devfreq->dev.release = devfreq_dev_release;
-@@ -823,17 +829,14 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	if (devfreq->profile->timer < 0
- 		|| devfreq->profile->timer >= DEVFREQ_TIMER_NUM) {
--		mutex_unlock(&devfreq->lock);
- 		err = -EINVAL;
- 		goto err_dev;
- 	}
- 
- 	if (!devfreq->profile->max_state || !devfreq->profile->freq_table) {
--		mutex_unlock(&devfreq->lock);
- 		err = set_freq_table(devfreq);
- 		if (err < 0)
- 			goto err_dev;
--		mutex_lock(&devfreq->lock);
- 	} else {
- 		devfreq->freq_table = devfreq->profile->freq_table;
- 		devfreq->max_state = devfreq->profile->max_state;
-@@ -841,19 +844,17 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
- 	if (!devfreq->scaling_min_freq) {
--		mutex_unlock(&devfreq->lock);
- 		err = -EINVAL;
- 		goto err_dev;
- 	}
- 
- 	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
- 	if (!devfreq->scaling_max_freq) {
--		mutex_unlock(&devfreq->lock);
- 		err = -EINVAL;
- 		goto err_dev;
- 	}
- 
--	devfreq_get_freq_range(devfreq, &min_freq, &max_freq);
-+	__get_freq_range(devfreq, &min_freq, &max_freq);
- 
- 	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
- 	devfreq->opp_table = dev_pm_opp_get_opp_table(dev);
-@@ -865,7 +866,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	dev_set_name(&devfreq->dev, "%s", dev_name(dev));
- 	err = device_register(&devfreq->dev);
- 	if (err) {
--		mutex_unlock(&devfreq->lock);
- 		put_device(&devfreq->dev);
- 		goto err_out;
- 	}
-@@ -876,7 +876,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 				    devfreq->max_state),
- 			GFP_KERNEL);
- 	if (!devfreq->stats.trans_table) {
--		mutex_unlock(&devfreq->lock);
- 		err = -ENOMEM;
- 		goto err_devfreq;
- 	}
-@@ -886,7 +885,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 			sizeof(*devfreq->stats.time_in_state),
- 			GFP_KERNEL);
- 	if (!devfreq->stats.time_in_state) {
--		mutex_unlock(&devfreq->lock);
- 		err = -ENOMEM;
- 		goto err_devfreq;
- 	}
-@@ -896,8 +894,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	srcu_init_notifier_head(&devfreq->transition_notifier_list);
- 
--	mutex_unlock(&devfreq->lock);
++
++/*
++ * dev_pm_qos_constraints_set: Ensure dev->power.qos is set
++ *
++ * If dev->power.qos is already set, free the newly allocated qos constraints.
++ * Otherwise set dev->power.qos.  Must be called with dev_pm_qos_mtx held.
++ *
++ * This split unsynchronized allocation and synchronized set moves allocation
++ * out from under dev_pm_qos_mtx, so that lockdep does does not get angry about
++ * drivers which use dev_pm_qos in paths related to shrinker/reclaim.
++ */
++static void dev_pm_qos_constraints_set(struct device *dev, struct dev_pm_qos *qos)
++{
++	if (dev->power.qos) {
++		kfree(qos);
++		return;
++	}
++
+ 	spin_lock_irq(&dev->power.lock);
+ 	dev->power.qos = qos;
+ 	spin_unlock_irq(&dev->power.lock);
 -
- 	err = dev_pm_qos_add_request(dev, &devfreq->user_min_freq_req,
- 				     DEV_PM_QOS_MIN_FREQUENCY, 0);
- 	if (err < 0)
+-	return 0;
+ }
+ 
+ static void __dev_pm_qos_hide_latency_limit(struct device *dev);
+@@ -309,7 +333,6 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
+ 	dev->power.qos = ERR_PTR(-ENODEV);
+ 	spin_unlock_irq(&dev->power.lock);
+ 
+-	kfree(qos->resume_latency.notifiers);
+ 	kfree(qos);
+ 
+  out:
+@@ -341,7 +364,7 @@ static int __dev_pm_qos_add_request(struct device *dev,
+ 	if (IS_ERR(dev->power.qos))
+ 		ret = -ENODEV;
+ 	else if (!dev->power.qos)
+-		ret = dev_pm_qos_constraints_allocate(dev);
++		ret = -ENOMEM;
+ 
+ 	trace_dev_pm_qos_add_request(dev_name(dev), type, value);
+ 	if (ret)
+@@ -388,9 +411,11 @@ static int __dev_pm_qos_add_request(struct device *dev,
+ int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+ 			   enum dev_pm_qos_req_type type, s32 value)
+ {
++	struct dev_pm_qos *qos = dev_pm_qos_constraints_allocate(dev);
+ 	int ret;
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
++	dev_pm_qos_constraints_set(dev, qos);
+ 	ret = __dev_pm_qos_add_request(dev, req, type, value);
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ 	return ret;
+@@ -535,14 +560,15 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
+ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
+ 			    enum dev_pm_qos_req_type type)
+ {
++	struct dev_pm_qos *qos = dev_pm_qos_constraints_allocate(dev);
+ 	int ret = 0;
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
++	dev_pm_qos_constraints_set(dev, qos);
++
+ 	if (IS_ERR(dev->power.qos))
+ 		ret = -ENODEV;
+-	else if (!dev->power.qos)
+-		ret = dev_pm_qos_constraints_allocate(dev);
+ 
+ 	if (ret)
+ 		goto unlock;
+@@ -903,12 +929,22 @@ s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev)
+  */
+ int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
+ {
+-	int ret;
++	struct dev_pm_qos *qos = dev_pm_qos_constraints_allocate(dev);
++	int ret = 0;
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	if (IS_ERR_OR_NULL(dev->power.qos)
+-	    || !dev->power.qos->latency_tolerance_req) {
++	dev_pm_qos_constraints_set(dev, qos);
++
++	if (IS_ERR(dev->power.qos))
++		ret = -ENODEV;
++	else if (!dev->power.qos)
++		ret = -ENOMEM;
++
++	if (ret)
++		goto out;
++
++	if (!dev->power.qos->latency_tolerance_req) {
+ 		struct dev_pm_qos_request *req;
+ 
+ 		if (val < 0) {
 -- 
 2.41.0
 
