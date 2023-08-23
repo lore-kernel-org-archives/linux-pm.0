@@ -2,96 +2,85 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B208CEE4993
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Aug 2023 09:00:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEA6DEE49A0
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Aug 2023 09:05:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234907AbjHWJAC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Aug 2023 05:00:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46482 "EHLO
+        id S234936AbjHWJFb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 23 Aug 2023 05:05:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39312 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235201AbjHWI6D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2023 04:58:03 -0400
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5AF9199A;
-        Wed, 23 Aug 2023 01:54:46 -0700 (PDT)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-3fbd33a57b6so50166345e9.2;
-        Wed, 23 Aug 2023 01:54:46 -0700 (PDT)
+        with ESMTP id S235357AbjHWI7v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2023 04:59:51 -0400
+Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85D871BF4
+        for <linux-pm@vger.kernel.org>; Wed, 23 Aug 2023 01:56:04 -0700 (PDT)
+Received: by mail-ej1-x634.google.com with SMTP id a640c23a62f3a-99c3d3c3db9so712266966b.3
+        for <linux-pm@vger.kernel.org>; Wed, 23 Aug 2023 01:56:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1692780885; x=1693385685;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7u0D1vKsgp+LzrkxafeIdw43ha9lu5raeDJAVDWxoo8=;
-        b=Z2yj4F8BQq9pyniw85upgEcGXlayZJKLK+004DFTVY2Vz9d0/0limFZk1jnqgu4JCN
-         Ga0oWg3ZVgAbJX7csPr/f3pfjZ8rfDoS9NwVaB7lSCcRDi4iFmyXUxxJXdvGkSERL/MN
-         kIz4BGrosZvFJcGpzZIaX0KpMEi6NPhq5/n7R6C/dY9knzV/24wWHe9EymDIuYkVe88J
-         DkSYRpFA9gAYutf9t9UryrFmx3h4PlsvhBpS6eOxfrpbzZ5GCEEFJgIUBlyOD90jJaSh
-         Fx4+I4GIF1mbs1ZkQNaw6UFTa2+KIXzWiwFZLpZFJTxakgEfUAUwiPHZZYdxDgPvWVfJ
-         r9gg==
+        d=linaro.org; s=google; t=1692780963; x=1693385763;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=YqlRnGn91OunZJYlfRXxcxuSNxkSRF2lhtC/uoZUWdY=;
+        b=NPGJWXuFHTLs3hVd8xiCycCq5eiBtcaCRR0IylUW3tigJMYQz4c3rM3KmPo9E0agZI
+         +1l0XB8sVDKotqmLDoqPRDyvq5+gTBKe1NhaIlx0pvczPklsabqpPb99fjQegXZnyyYq
+         QsuutC1YSO++KQudYR+xSm6xiaC1srkle9BwA3DVRTfxvt3q/+s3wWXM57ogq2RSYM78
+         KS2+WHdUsjboOIVDr4D+hq+npZSrapKnQtl2U47+Bcy8/dj7L1R45IE9z5XcnXmTMiw9
+         VVVTOZLjK4Idr+Jibf2thaOz+Bu5atyQqCo3YyfMovoxLs0BrxQF/xVQCCOhCNQ7Gr4N
+         7X3A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692780885; x=1693385685;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=7u0D1vKsgp+LzrkxafeIdw43ha9lu5raeDJAVDWxoo8=;
-        b=CF/I8Bg2eNh0YadJslUtelnC9H3lh8VYoASY7qTMrRzAb8NXvgv2GdhfxmhGmC+pmy
-         KT62ZfXb6UDn6hWDfL3w6McedngFimhBKrBloJV9rWVnTU5IjQyPHlyJRWz5DE8ldGhG
-         +fr3l/fF3CjfwrsRYItezaTOISKD9oXqByIDL4HOhkVO/URFesKTW316u6Rg/kASUUHt
-         Tic156xlpxx9vPCteKZkflho0U8sNxxHSxQ2eM5p7Bq3ryvtkBNrJWma0sVA5Xz1wxbj
-         fpK9/l4ffQmABvo690yzI59rV3vdjEJw6p5hzorMRAL95x/+wziCVnALt7vg5z6LSh3S
-         FSig==
-X-Gm-Message-State: AOJu0YyO+OOfCUSKUr7VZFXczpDJaYs0fTOCNRTZcGaoXq+NRkIvdT7E
-        nGjYCtVqnzOEHpG3AhE158uqj2G++ogNWw==
-X-Google-Smtp-Source: AGHT+IFckMV0KrXEfSTJ1ulVw/BczcqOeoFhAmPSo5PmBS3fcUbgwtBwB1XAAK/hCvbIilAlZVkZkQ==
-X-Received: by 2002:a7b:c459:0:b0:3fe:16d3:7d60 with SMTP id l25-20020a7bc459000000b003fe16d37d60mr9280946wmi.9.1692780884696;
-        Wed, 23 Aug 2023 01:54:44 -0700 (PDT)
-Received: from gba-Precision-5530.kat.ac.za ([196.24.39.242])
-        by smtp.gmail.com with ESMTPSA id o10-20020a1c750a000000b003fed78b03b4sm16265420wmc.20.2023.08.23.01.54.42
+        d=1e100.net; s=20221208; t=1692780963; x=1693385763;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=YqlRnGn91OunZJYlfRXxcxuSNxkSRF2lhtC/uoZUWdY=;
+        b=g4EBwFmKxwyxw89yT4uYqEPKmW5Ca5TEqiwcNR5KqzFVfyon5aUFQcznRgkphccvwR
+         0DjC7F5q8uNH69PRdxR2G1qDmnjc3dVm8pbR3C+dINR1GFzqRTTmMF7z1oC/Lgwm7WZC
+         044dCgWsY/m7zQHKt3oIQRXLOC/oJjoNtu1H9q9428BNK0FTohVH/lerzKGusjYAAKVv
+         vhk8PoEDaxoXIcOwNJpRQh5WZOeW+A3imigLDQ29st3tIYQKdGsz8DzXdM3coYmACMcf
+         a4Hc/XjsLvEC0WOPHbPL//vb8E9uP9T7elKwLfaPkVouab+nOT/IgpglAvOPCGK6plKU
+         Rglw==
+X-Gm-Message-State: AOJu0YwKMnxHqti8DusBve1GZco6hKII/+do0lvpGO74cohQtsV248aU
+        g3cCtGJM+AHlRYG2AnNm7gaBUw==
+X-Google-Smtp-Source: AGHT+IH5ON0hBjZilGsUTjY604t0NGm/QEhcyl3p/yRnfW98/az7hiraLeTiA9xdATV4s5kQ8wPbPA==
+X-Received: by 2002:a17:907:7635:b0:9a1:d915:d8dd with SMTP id jy21-20020a170907763500b009a1d915d8ddmr1032848ejc.10.1692780963486;
+        Wed, 23 Aug 2023 01:56:03 -0700 (PDT)
+Received: from krzk-bin.. ([77.252.47.198])
+        by smtp.gmail.com with ESMTPSA id r25-20020a170906a21900b00992f309cfe8sm9528251ejy.178.2023.08.23.01.56.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Aug 2023 01:54:44 -0700 (PDT)
-From:   Grant B Adams <nemith592@gmail.com>
-Cc:     linux-omap@vger.kernel.org, tony@atomide.com,
-        Grant B Adams <nemith592@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>, Bin Liu <b-liu@ti.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-usb@vger.kernel.org
-Subject: [PATCH v2 1/2] power: supply: Fix tps65217-charger vs vbus irq conflict
-Date:   Wed, 23 Aug 2023 10:54:29 +0200
-Message-Id: <20230823085430.6610-2-nemith592@gmail.com>
+        Wed, 23 Aug 2023 01:56:03 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH] power: reset: use capital "OR" for multiple licenses in SPDX
+Date:   Wed, 23 Aug 2023 10:56:01 +0200
+Message-Id: <20230823085601.116562-1-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230823085430.6610-1-nemith592@gmail.com>
-References: <20230823085430.6610-1-nemith592@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enabling the tps65217-charger driver/module causes an interrupt conflict
-with the vbus driver resulting in a probe failure.
-The conflict is resolved by changing both driver's threaded interrupt
-request function from IRQF_ONESHOT to IRQF_SHARED.
+Documentation/process/license-rules.rst and checkpatch expect the SPDX
+identifier syntax for multiple licenses to use capital "OR".  Correct it
+to keep consistent format and avoid copy-paste issues.
 
-Signed-off-by: Grant B Adams <nemith592@gmail.com>
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- drivers/power/supply/tps65217_charger.c | 2 +-
+ drivers/power/reset/pwr-mlxbf.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/tps65217_charger.c b/drivers/power/supply/tps65217_charger.c
-index a4bc9f2a10bc..6f68becdbfd0 100644
---- a/drivers/power/supply/tps65217_charger.c
-+++ b/drivers/power/supply/tps65217_charger.c
-@@ -238,7 +238,7 @@ static int tps65217_charger_probe(struct platform_device *pdev)
- 	for (i = 0; i < NUM_CHARGER_IRQS; i++) {
- 		ret = devm_request_threaded_irq(&pdev->dev, irq[i], NULL,
- 						tps65217_charger_irq,
--						IRQF_ONESHOT, "tps65217-charger",
-+						IRQF_SHARED, "tps65217-charger",
- 						charger);
- 		if (ret) {
- 			dev_err(charger->dev,
+diff --git a/drivers/power/reset/pwr-mlxbf.c b/drivers/power/reset/pwr-mlxbf.c
+index 12dedf841a44..de35d24bb7ef 100644
+--- a/drivers/power/reset/pwr-mlxbf.c
++++ b/drivers/power/reset/pwr-mlxbf.c
+@@ -1,4 +1,4 @@
+-// SPDX-License-Identifier: GPL-2.0-only or BSD-3-Clause
++// SPDX-License-Identifier: GPL-2.0-only OR BSD-3-Clause
+ 
+ /*
+  *  Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES.
 -- 
 2.34.1
 
