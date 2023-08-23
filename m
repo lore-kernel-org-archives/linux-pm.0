@@ -2,117 +2,97 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24D76EE49AF
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Aug 2023 08:08:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54999EE49AE
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Aug 2023 08:25:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233741AbjHWIIh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Aug 2023 04:08:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45186 "EHLO
+        id S234118AbjHWIZG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 23 Aug 2023 04:25:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41838 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233843AbjHWIHj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2023 04:07:39 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFECFCD0;
-        Wed, 23 Aug 2023 01:07:36 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 614606169A;
-        Wed, 23 Aug 2023 08:07:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B40C4C433C9;
-        Wed, 23 Aug 2023 08:07:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1692778055;
-        bh=DKUQM41foKKTMLclFZMHgMlMQ0+CfODASqrhcrxiLiI=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=BUi5xHQMkD9wnMF3HYgny1D6ePPp0QYGCYJUAY0oBlMh6TOilSPip8ly62ehruXSZ
-         4JVR/5iqGCK4epW9hY/kWoQYPr7fS4cai8T7I92LHPIvm6I0tX1zcMAF8OEogT0mjQ
-         usVMxItxedLpST1dG7KNLATFlGNNiwThsYd9EVxtMpKWB1TMXw5k0RFgO6Y/oMgJfB
-         ZFqkGShwGhKi0KIlfys9Iyt94+dEdPuuhCgPqX2QuZ/h4vYItGFLeG98XCIZKPIITm
-         6NmE6ZJJ3nnXx/4rZ+ZMyEaqfOrkD3VLIYh0GQfnUXFzTAnYEyy+8Vc6tMj7i/DMZT
-         /W6HgPrSclgTQ==
-Date:   Wed, 23 Aug 2023 13:37:18 +0530
-From:   Manivannan Sadhasivam <mani@kernel.org>
-To:     Neil Armstrong <neil.armstrong@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: qcom-hw: add a 4th frequency
- domain
-Message-ID: <20230823080718.GJ3737@thinkpad>
-References: <20230821-topic-sm8x50-upstream-cpufreq-4-domains-v1-0-2d4d9fc828d8@linaro.org>
- <20230821-topic-sm8x50-upstream-cpufreq-4-domains-v1-1-2d4d9fc828d8@linaro.org>
+        with ESMTP id S234852AbjHWIWC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2023 04:22:02 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4A5310C2;
+        Wed, 23 Aug 2023 01:19:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1692778743; x=1724314743;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=8VGHBXydLPE3MC5NdTIE4LrW+tQQYjYZljdXLkryB8A=;
+  b=mCu63mKdPSh9bKPBLcF641b5NHq3BhfySnilE/XDQ7wHh1YiwEIG/lOc
+   aZZQGkY4ZT7UVddy/qRigoedDZRHnhjJqBvOK7gYqwJmgOocfjf30oWw2
+   ueOCa+YBo7Vc1LlzkiCE6P2VGkkXzif7erlQS9CSKaExrgqObRNYO/EHx
+   tTILizUFvtzj9yuBidf0C/EkEgLtrCyv8Wwv23DSVNroP+pJdUb20yRxU
+   esx1my/oKuqiOVdmbf8aB2smaoO/C5N7gEJNtoauCccY5ofyOv+zAARQl
+   4AWCXnG6VoDOcT2npd56+OHD5XC4oxVabkYRGYDYkr+3RYiaj00Yhjo0W
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10810"; a="372990795"
+X-IronPort-AV: E=Sophos;i="6.01,195,1684825200"; 
+   d="scan'208";a="372990795"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Aug 2023 01:19:03 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10810"; a="1067390623"
+X-IronPort-AV: E=Sophos;i="6.01,195,1684825200"; 
+   d="scan'208";a="1067390623"
+Received: from chenyu-dev.sh.intel.com ([10.239.62.164])
+  by fmsmga005.fm.intel.com with ESMTP; 23 Aug 2023 01:19:01 -0700
+From:   Chen Yu <yu.c.chen@intel.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Chenzhou Feng <chenzhoux.feng@intel.com>,
+        Chen Yu <yu.c.chen@intel.com>,
+        syzbot+38d04642cea49f3a3d2e@syzkaller.appspotmail.com
+Subject: [PATCH] PM: hibernate: Fix the exclusive get block device in test_resume mode
+Date:   Thu, 24 Aug 2023 00:13:29 +0800
+Message-Id: <20230823161329.7348-1-yu.c.chen@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230821-topic-sm8x50-upstream-cpufreq-4-domains-v1-1-2d4d9fc828d8@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Aug 21, 2023 at 09:39:13AM +0200, Neil Armstrong wrote:
-> On new platforms, a 4th frequency domain is used, document it.
-> 
-> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+commit 5904de0d735b ("PM: hibernate: Do not get block device exclusively
+in test_resume mode") fixes a hibernation issue under test_resume mode.
+That commit is supposed to open the block device in non-exclusive mode
+when in test_resume. However the code did the opposite, which is against
+its description.
 
-Acked-by: Manivannan Sadhasivam <mani@kernel.org>
+Fix this by really disabling exclusive mode under test_resume.
 
-- Mani
+Reported-by: syzbot+38d04642cea49f3a3d2e@syzkaller.appspotmail.com
+Closes: https://lore.kernel.org/lkml/000000000000761f5f0603324129@google.com/
+Fixes: 5904de0d735b ("PM: hibernate: Do not get block device exclusively in test_resume mode")
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ kernel/power/swap.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> ---
->  Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-> index a6b3bb8fdf33..c1d225fcf2d5 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-> @@ -49,6 +49,7 @@ properties:
->        - description: Frequency domain 0 register region
->        - description: Frequency domain 1 register region
->        - description: Frequency domain 2 register region
-> +      - description: Frequency domain 3 register region
->  
->    reg-names:
->      minItems: 1
-> @@ -56,6 +57,7 @@ properties:
->        - const: freq-domain0
->        - const: freq-domain1
->        - const: freq-domain2
-> +      - const: freq-domain3
->  
->    clocks:
->      items:
-> @@ -69,7 +71,7 @@ properties:
->  
->    interrupts:
->      minItems: 1
-> -    maxItems: 3
-> +    maxItems: 4
->  
->    interrupt-names:
->      minItems: 1
-> @@ -77,6 +79,7 @@ properties:
->        - const: dcvsh-irq-0
->        - const: dcvsh-irq-1
->        - const: dcvsh-irq-2
-> +      - const: dcvsh-irq-3
->  
->    '#freq-domain-cells':
->      const: 1
-> 
-> -- 
-> 2.34.1
-> 
-
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index f6ebcd00c410..c12b34dd529c 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -1518,7 +1518,7 @@ static void *swsusp_holder;
+ 
+ int swsusp_check(bool snapshot_test)
+ {
+-	void *holder = snapshot_test ? &swsusp_holder : NULL;
++	void *holder = snapshot_test ? NULL : &swsusp_holder;
+ 	int error;
+ 
+ 	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device, BLK_OPEN_READ,
+@@ -1573,7 +1573,7 @@ void swsusp_close(bool snapshot_test)
+ 		return;
+ 	}
+ 
+-	blkdev_put(hib_resume_bdev, snapshot_test ? &swsusp_holder : NULL);
++	blkdev_put(hib_resume_bdev, snapshot_test ? NULL : &swsusp_holder);
+ }
+ 
+ /**
 -- 
-மணிவண்ணன் சதாசிவம்
+2.25.1
+
