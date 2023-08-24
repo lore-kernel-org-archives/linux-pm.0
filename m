@@ -2,69 +2,75 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4957DC83003
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EF23C88CB9
 	for <linux-pm@archiver.kernel.org>; Thu, 24 Aug 2023 13:14:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240629AbjHXNOS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S240506AbjHXNOS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 24 Aug 2023 09:14:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47490 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47626 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240152AbjHXNNu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2023 09:13:50 -0400
+        with ESMTP id S240643AbjHXNNx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2023 09:13:53 -0400
 Received: from luna.linkmauve.fr (82-65-109-163.subs.proxad.net [82.65.109.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF2D4198B;
-        Thu, 24 Aug 2023 06:13:48 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A71A19A6;
+        Thu, 24 Aug 2023 06:13:51 -0700 (PDT)
 Received: by luna.linkmauve.fr (Postfix, from userid 1000)
-        id 7F3AF8CC656; Thu, 24 Aug 2023 15:13:47 +0200 (CEST)
+        id 484888CC65B; Thu, 24 Aug 2023 15:13:50 +0200 (CEST)
 From:   Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
-Cc:     Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>,
-        Alexandre Courbot <acourbot@nvidia.com>,
+Cc:     Alexandre Courbot <acourbot@nvidia.com>,
+        Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>,
         azkali <a.ffcc7@gmail.com>, CTCaer <ctcaer@gmail.com>,
         Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/3] Add charger support for the Nintendo Switch
-Date:   Thu, 24 Aug 2023 15:13:28 +0200
-Message-ID: <20230824131342.206784-1-linkmauve@linkmauve.fr>
+Subject: [PATCH v2 2/3] power: supply: bq24190_charger: Support bq24193
+Date:   Thu, 24 Aug 2023 15:13:30 +0200
+Message-ID: <20230824131342.206784-3-linkmauve@linkmauve.fr>
 X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20230824112741.201353-1-linkmauve@linkmauve.fr>
+In-Reply-To: <20230824131342.206784-1-linkmauve@linkmauve.fr>
 References: <20230824112741.201353-1-linkmauve@linkmauve.fr>
+ <20230824131342.206784-1-linkmauve@linkmauve.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-These aren’t my patches, but are required in order to charge this
-console.  I have tested them on a downstream 6.0 kernel[0] and they seem
-to work properly.
+From: Alexandre Courbot <acourbot@nvidia.com>
 
-This is the first part of a bunch of upstreaming I’m going to do for the
-various drivers required to support this console in mainline.
+This charger is working with the driver as-is, so enable it to be probed.
 
-[0] https://gitlab.azka.li/l4t-community/kernel/mainline/linux/-/commits/icosa-v6.0
+It is used in the Nintendo Switch for instance.
 
-Changes since v1:
-- Split the dt-bindings change into its own patch.
-- Add a message to the second patch.
-- Add my own SoB.
-- Remove a left-over dev_info().
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+Signed-off-by: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+---
+ drivers/power/supply/bq24190_charger.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Alexandre Courbot (2):
-  power: supply: bq24190_charger: Support bq24193
-  power: supply: bq24190_charger: Export current regulator
-
-Emmanuel Gil Peyrot (1):
-  dt-bindings: power: supply: bq24190: Add ti,bq24193
-
- .../bindings/power/supply/bq24190.yaml        |  1 +
- drivers/power/supply/bq24190_charger.c        | 84 +++++++++++++++++++
- 2 files changed, 85 insertions(+)
-
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index ef8235848f56..a56122b39687 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -2018,6 +2018,7 @@ static const struct dev_pm_ops bq24190_pm_ops = {
+ static const struct i2c_device_id bq24190_i2c_ids[] = {
+ 	{ "bq24190" },
+ 	{ "bq24192" },
++	{ "bq24193" },
+ 	{ "bq24192i" },
+ 	{ "bq24196" },
+ 	{ },
+@@ -2027,6 +2028,7 @@ MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
+ static const struct of_device_id bq24190_of_match[] = {
+ 	{ .compatible = "ti,bq24190", },
+ 	{ .compatible = "ti,bq24192", },
++	{ .compatible = "ti,bq24193", },
+ 	{ .compatible = "ti,bq24192i", },
+ 	{ .compatible = "ti,bq24196", },
+ 	{ },
 -- 
 2.42.0
 
