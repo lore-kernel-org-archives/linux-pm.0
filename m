@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65275EE49BA
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B290BEE49BE
 	for <linux-pm@archiver.kernel.org>; Thu, 24 Aug 2023 02:15:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239253AbjHXCOr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Aug 2023 22:14:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50548 "EHLO
+        id S239261AbjHXCOP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 23 Aug 2023 22:14:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49084 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239328AbjHXCOh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2023 22:14:37 -0400
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2086.outbound.protection.outlook.com [40.107.220.86])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4255F10C4;
-        Wed, 23 Aug 2023 19:14:35 -0700 (PDT)
+        with ESMTP id S239253AbjHXCNx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2023 22:13:53 -0400
+Received: from NAM04-DM6-obe.outbound.protection.outlook.com (mail-dm6nam04on2044.outbound.protection.outlook.com [40.107.102.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35EED10C7;
+        Wed, 23 Aug 2023 19:13:50 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=FPMt50tdeBB9RvG2l8FYNp904E/S/ik+CJ8yYAj59dZIBEqB1KyLZTm6dPqDNi30OFU5XX+K/jGBbLM5Swi6numdPQ4zJQL/feUjV9CSz/SK56udUQ5LnsSrpbb8U/zqRx/zFqp6gqQoQRqzb14oNHakM3vSy+hyakyPEm/7OlTPfc9vLJKnJDdkFFNTEc33qCLc3YtCU23QcnWIlk+UGb6nIHqznZlboYaGNmV/8hKWXsLFtSy78TjSn1uILs7JFazZxUvCXF0/3szRJ9R0Bkj5/o7+ITx7FggGPwXpwIh1ncR+NWTUcyIoyR4DQNxst/k75/PnoxZdG6H9bb1MGg==
+ b=nmx+pzGfRs/sPJiZSOkd8D1Ldiq0cbqc3GuFFczIlPQFdS6iCXoHvjsTm2y6+GHvX0TX11mxASx7Od0KtMaT9oCsr8C7hTHmTCoiFV9mBglkNFOB7oAf20X7qK8cr4UhuwIXvF49dKin+s6kIf6ejKXutLyVE6NMWWRMGdTkwnKoCXFNzs1wmq4iUaTUZKv7JmUBkowUOuE5QrRszFE2NaQ0ZMWEuhb8sCJoa3fTXjeL6SwQlicGfnWSJuvkQx5LF+p9HbYnshzspoFUHpZ7O2xILFGwE15y9DkgEaLWDmBduJYGCGKNhilpw/f6mGIOWPaG3Z0sc8iwGstd6Tt1tw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=R+RQepWEpY82uXKfwKZoS1l72EUVb6pDIlmqk6YuNWs=;
- b=BZwFwx3tJUf5gwJGTQJp7t8hxQYXLaozc3/clUFlOi2pJ9C5hoN1wqETObHGfmd67RenhgMvOMeuMRvySbl8h9Ik0u0EjE25SB2cOoQtofSN5iAJ7rzCYbfJwVVpPmnDWXwEr/CU0NSDldAVfE7DS21VaueqPSbVFmZegYHqd2QoGTHtrcXCOG5pQ/OR/g8yfaXU9C+15JNG0UuG15OeGDiGV9qXhkWE9auY9+TDOGCtaL4kcNIbLGh+TuE7Rh3pDNZxGuLjxH96VdLfpcaLMlzDcoe5KLKDpqaTcSpF0RdQ2POATsyelKzq3nXyF5e1EClinE2iJOpAr98ywFqNbQ==
+ bh=s5XHJjSCZ5YeTz9FecQcX2Vdwn39+14+sxK11fuW7As=;
+ b=DhiaEbu0zPmsuHLstlhpRNPM9HkcqYqA7hRwDrSOE0XEvJ7gRohug9nD7ZvlZ8egsyM9L+VquUPwOubMNG1O2HcMTCy8CI1buviawD7yBAKff4CTZU/xLu5mDTJv0Jh52xJU94oVhjXWBKS00mDgUlDRo9p9b0NS+ob+ht24Nq130fjaIh/xSYyzAoJ3C4n9QBxQHCPNs65RL1s3OCxMnG0wCnGewVrMtofLZRohiuBncdsWGRN96Da34gQop83FP6KBK9ubjskqENICXj/yE3Dct01HSdCFJualIYvmhBAxu1SdXycagdfP3W7W/CIfNlsJ841zL8sQkh/pG6sUsQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=R+RQepWEpY82uXKfwKZoS1l72EUVb6pDIlmqk6YuNWs=;
- b=4NmNSHIAsLAJxA5uf1QmGHGyu12H/MhopCMO1ssyLMDoLhFF64CG3I0bTBfghTrvvnz1nU3DSKT26TvLD0kPunsCae55Gqzxf3cmr15dzC+COADpP1SNCwc/7p2vx9ybVtAw1Pl5Fh1OkvueqIWZdHAQPCZzm4H3SC6eapJH6GM=
-Received: from CH0PR03CA0450.namprd03.prod.outlook.com (2603:10b6:610:10e::28)
- by CH3PR12MB8972.namprd12.prod.outlook.com (2603:10b6:610:169::11) with
+ bh=s5XHJjSCZ5YeTz9FecQcX2Vdwn39+14+sxK11fuW7As=;
+ b=alK/rN4Z6S/YYh/OxILbaDejlCawz3BKiTrlEhNKKIJYpMoCVr438exF7zaPlVjMp+8/2ZKxKHgorXFaS3UtaTE9wVEeMrBBjNv//KvUyGrjc1oTVQra5qFwEo7l/4x758QccnKPTlUhyD5PB7Kn/Su4ahX7S+Z0lC8BSIOQ024=
+Received: from CY8PR12CA0043.namprd12.prod.outlook.com (2603:10b6:930:49::25)
+ by MW6PR12MB9017.namprd12.prod.outlook.com (2603:10b6:303:23b::6) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6699.24; Thu, 24 Aug
- 2023 02:14:31 +0000
-Received: from CY4PEPF0000EDD3.namprd03.prod.outlook.com
- (2603:10b6:610:10e:cafe::59) by CH0PR03CA0450.outlook.office365.com
- (2603:10b6:610:10e::28) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6699.26; Thu, 24 Aug
+ 2023 02:13:46 +0000
+Received: from CY4PEPF0000EDD7.namprd03.prod.outlook.com
+ (2603:10b6:930:49:cafe::f) by CY8PR12CA0043.outlook.office365.com
+ (2603:10b6:930:49::25) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6699.27 via Frontend
- Transport; Thu, 24 Aug 2023 02:14:31 +0000
+ Transport; Thu, 24 Aug 2023 02:13:46 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -46,13 +46,13 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- CY4PEPF0000EDD3.mail.protection.outlook.com (10.167.241.207) with Microsoft
+ CY4PEPF0000EDD7.mail.protection.outlook.com (10.167.241.211) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6699.15 via Frontend Transport; Thu, 24 Aug 2023 02:14:31 +0000
+ 15.20.6699.15 via Frontend Transport; Thu, 24 Aug 2023 02:13:45 +0000
 Received: from jasmine-meng.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Wed, 23 Aug
- 2023 21:14:24 -0500
+ 2023 21:13:39 -0500
 From:   Meng Li <li.meng@amd.com>
 To:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Huang Rui <ray.huang@amd.com>
@@ -69,12 +69,10 @@ CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Xiaojian Du <Xiaojian.Du@amd.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Borislav Petkov <bp@alien8.de>, Meng Li <li.meng@amd.com>
-Subject: [PATCH V3 5/7] cpufreq: amd-pstate: Update AMD Pstate Preferred Core ranking dynamically
-Date:   Thu, 24 Aug 2023 10:12:47 +0800
-Message-ID: <20230824021249.271946-6-li.meng@amd.com>
+Subject: [PATCH V3 0/7] AMD Pstate Preferred Core
+Date:   Thu, 24 Aug 2023 10:12:42 +0800
+Message-ID: <20230824021249.271946-1-li.meng@amd.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230824021249.271946-1-li.meng@amd.com>
-References: <20230824021249.271946-1-li.meng@amd.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -83,121 +81,107 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY4PEPF0000EDD3:EE_|CH3PR12MB8972:EE_
-X-MS-Office365-Filtering-Correlation-Id: a687b481-ba68-4022-bf3e-08dba447da3b
+X-MS-TrafficTypeDiagnostic: CY4PEPF0000EDD7:EE_|MW6PR12MB9017:EE_
+X-MS-Office365-Filtering-Correlation-Id: c1512306-96e2-44e0-1a52-08dba447bf22
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: GpbpN2MK9Ib5u8PU8ydkysNGBE3vPmwXgenA5qXd86007XxQ2Pf8O87mO15Yn8XGSU8GQ9Osldh06x5J0lG0lsW12aMAHPcYNnieK8PntD+hTaNI+mAmVMGK5FWlN0BiZZGZ+h+XO4wYi0NYWcc2eVQ5e9/1S+sCCS0a0dLsLD8IY63LKZHfy3LRzci/deeFB+D3Rna4ByWzMDoze9EnAeMfWbC/Oaw72VbuLIxyT3UjABhmCDCNaYHjB5n12LcV5PHR1bQ2dsPYJPrMwXo/tuNtSjS4uAEg0j0HdvJZ3X7VLcNGsLcH8tOT7Ye631xXle2zb/UQ9q0FTixnan5fl/1VGE55zW2nVGBXMMOzix7WHL8hs42UCjK/VYffEPKqBJCSn35J3D7+wAoWWsHLUVXdDogtYqhOZBzF/LaBvs+L/B5yU6JYnqJPX505/oNBsovOe4oL3ejPEpyf936mRsP0uUwQolYsy2/eCQiKuIn7LL0HNnA/r/DT8Eh32ogQZAnCbMc+4dXPPHjNSDvNErGY1riISrYEov+I5IygU/kZ38F87Kbfq4FshVyaQBXndStbeIg6xSwTwKw0j92Vv6JEpXdnttAiF7t9aFbTZPOdOZYqgMfNnMV+KjhUZlqDfBt9TCJ0bL8SQilPapXojnRv9+xygz7CxvUj89MXtz6/0LlYq/AU1BsZltGEfTdlHAX2l2VNaJrfP+SSdX6a8ifDf3wDugR7rAvWIlOU8DuXKw0eKbwIdg4y/gcRJhsKsjjOBQuCrI/z0dUZfDWNjg==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(396003)(39860400002)(136003)(346002)(376002)(1800799009)(186009)(451199024)(82310400011)(36840700001)(40470700004)(46966006)(54906003)(70586007)(316002)(70206006)(110136005)(6636002)(8676002)(8936002)(2616005)(4326008)(41300700001)(36756003)(40460700003)(1076003)(356005)(82740400003)(81166007)(478600001)(6666004)(15650500001)(40480700001)(83380400001)(2906002)(47076005)(7696005)(36860700001)(86362001)(426003)(336012)(5660300002)(16526019)(26005)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: zyxTLY2SlPAo+TOnRJ0f7/iK2RzAN9E2In5BomEjNQrzClv2rZAxn6MfkqgHADVKWluZhc024hkQFlQFJsTjbobNR8eOs+W0q6FhwZ5YlVwrSRIUkjaQcvnDe4IfJGKVrXpsXOBhu5zDHUq9t6zGtE7c6mRVc202D9gZi553ROOcU9TYTE9q4DdOsZcEuZVjYcj15t1Fgw0RnuHqUHlotQ1V2t8c6k+ZY/b9PX08cDh0AYlYhYzbCYMceECPxWODetM61LF2TGPG3pGDtG63HiwBHBT87ToGXN2q+/v5okCqsYtZ0E5KYXMHIMNBp7SikKgsOZqit9PH+eW1/QmmjCj/Jdkd/XlXVNQPZHAEV7j8PvD3yd13u2jBKdf76PSUaNVjyvQ5t2IeRoNAFnF9PA0jzy4YWhQhpowD/WSK83+cvd3k1qc+E1Y41B4Y2f0kWCeBl69BlF0R99UV80KQYqAKqC2eWkjli8ilNEgD1BPv46IhaVbo6avOPKRstgILNLpCzJLvNQC5VVnHjyS3SQmiuhpASzLqi1yd0qeu5Y/tOqUiinHWsalBd4NUaGBCzx9ctBbot9zQfbsU0hGcFEJaAyH0SHu+FALrPItJWiCKCaaR3bz4a4hXk3p7hX3fySjBqLlFBOjQcbvb3TnPkfARePydCJPHEMJWZccMbKudWkhxvNX5URpFG5N6qaNz1cyWLB3SD3LthSIdPoFNhWkVY4wY37eXW7KGjef+7yoyLxs5A0miZWWEAXUju57gQHfXYF8VzEwKZBxv+3vaNw==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(39860400002)(376002)(396003)(346002)(136003)(186009)(451199024)(1800799009)(82310400011)(40470700004)(46966006)(36840700001)(2616005)(7696005)(316002)(6636002)(8676002)(8936002)(4326008)(40480700001)(70586007)(110136005)(54906003)(70206006)(41300700001)(1076003)(26005)(16526019)(336012)(426003)(5660300002)(6666004)(478600001)(83380400001)(47076005)(40460700003)(36860700001)(36756003)(86362001)(2906002)(356005)(82740400003)(81166007)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Aug 2023 02:14:31.2789
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Aug 2023 02:13:45.8279
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: a687b481-ba68-4022-bf3e-08dba447da3b
+X-MS-Exchange-CrossTenant-Network-Message-Id: c1512306-96e2-44e0-1a52-08dba447bf22
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: CY4PEPF0000EDD3.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: CY4PEPF0000EDD7.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB8972
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR12MB9017
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Preferred core rankings can be changed dynamically by the
-platform based on the workload and platform conditions and
+Hi all:
+
+The core frequency is subjected to the process variation in semiconductors.
+Not all cores are able to reach the maximum frequency respecting the
+infrastructure limits. Consequently, AMD has redefined the concept of
+maximum frequency of a part. This means that a fraction of cores can reach
+maximum frequency. To find the best process scheduling policy for a given
+scenario, OS needs to know the core ordering informed by the platform through
+highest performance capability register of the CPPC interface.
+
+Earlier implementations of AMD Pstate Preferred Core only support a static
+core ranking and targeted performance. Now it has the ability to dynamically
+change the preferred core based on the workload and platform conditions and
 accounting for thermals and aging.
-When this occurs, cpu priority need to be set.
 
-Signed-off-by: Meng Li <li.meng@amd.com>
----
- drivers/cpufreq/amd-pstate.c | 32 ++++++++++++++++++++++++++++++++
- include/linux/amd-pstate.h   |  1 +
- 2 files changed, 33 insertions(+)
+AMD Pstate driver utilizes the functions and data structures provided by
+the ITMT architecture to enable the scheduler to favor scheduling on cores
+which can be get a higher frequency with lower voltage.
+We call it AMD Pstate Preferrred Core.
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index d02305675f66..8a8e4ecb1b5c 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -315,6 +315,7 @@ static int pstate_init_perf(struct amd_cpudata *cpudata)
- 	WRITE_ONCE(cpudata->nominal_perf, AMD_CPPC_NOMINAL_PERF(cap1));
- 	WRITE_ONCE(cpudata->lowest_nonlinear_perf, AMD_CPPC_LOWNONLIN_PERF(cap1));
- 	WRITE_ONCE(cpudata->lowest_perf, AMD_CPPC_LOWEST_PERF(cap1));
-+	WRITE_ONCE(cpudata->prefcore_highest_perf, AMD_CPPC_HIGHEST_PERF(cap1));
- 
- 	return 0;
- }
-@@ -336,6 +337,7 @@ static int cppc_init_perf(struct amd_cpudata *cpudata)
- 	WRITE_ONCE(cpudata->lowest_nonlinear_perf,
- 		   cppc_perf.lowest_nonlinear_perf);
- 	WRITE_ONCE(cpudata->lowest_perf, cppc_perf.lowest_perf);
-+	WRITE_ONCE(cpudata->prefcore_highest_perf, cppc_perf.highest_perf);
- 
- 	if (cppc_state == AMD_PSTATE_ACTIVE)
- 		return 0;
-@@ -744,6 +746,34 @@ static void amd_pstate_init_prefcore(void)
- 	schedule_work(&sched_prefcore_work);
- }
- 
-+static void amd_pstate_update_highest_perf(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy;
-+	struct amd_cpudata *cpudata;
-+	u32 prev_high = 0, cur_high = 0;
-+	u64 highest_perf;
-+	int ret;
-+
-+	if (!prefcore)
-+		return;
-+
-+	ret = amd_pstate_get_highest_perf(cpu, &highest_perf);
-+	if (ret)
-+		return;
-+
-+	policy = cpufreq_cpu_get(cpu);
-+	cpudata = policy->driver_data;
-+	cur_high = highest_perf;
-+	prev_high = READ_ONCE(cpudata->prefcore_highest_perf);
-+
-+	if (prev_high != cur_high) {
-+		WRITE_ONCE(cpudata->prefcore_highest_perf, cur_high);
-+		sched_set_itmt_core_prio(cur_high, cpu);
-+	}
-+
-+	cpufreq_cpu_put(policy);
-+}
-+
- static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
- {
- 	int min_freq, max_freq, nominal_freq, lowest_nonlinear_freq, ret;
-@@ -1468,6 +1498,7 @@ static struct cpufreq_driver amd_pstate_driver = {
- 	.suspend	= amd_pstate_cpu_suspend,
- 	.resume		= amd_pstate_cpu_resume,
- 	.set_boost	= amd_pstate_set_boost,
-+	.update_highest_perf	= amd_pstate_update_highest_perf,
- 	.name		= "amd-pstate",
- 	.attr		= amd_pstate_attr,
- };
-@@ -1482,6 +1513,7 @@ static struct cpufreq_driver amd_pstate_epp_driver = {
- 	.online		= amd_pstate_epp_cpu_online,
- 	.suspend	= amd_pstate_epp_suspend,
- 	.resume		= amd_pstate_epp_resume,
-+	.update_highest_perf	= amd_pstate_update_highest_perf,
- 	.name		= "amd-pstate-epp",
- 	.attr		= amd_pstate_epp_attr,
- };
-diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
-index 446394f84606..fa86bc953d3e 100644
---- a/include/linux/amd-pstate.h
-+++ b/include/linux/amd-pstate.h
-@@ -70,6 +70,7 @@ struct amd_cpudata {
- 	u32	nominal_perf;
- 	u32	lowest_nonlinear_perf;
- 	u32	lowest_perf;
-+	u32     prefcore_highest_perf;
- 
- 	u32	max_freq;
- 	u32	min_freq;
+Here sched_set_itmt_core_prio() is called to set priorities and
+sched_set_itmt_support() is called to enable ITMT feature.
+AMD Pstate driver uses the highest performance value to indicate
+the priority of CPU. The higher value has a higher priority.
+
+AMD Pstate driver will provide an initial core ordering at boot time.
+It relies on the CPPC interface to communicate the core ranking to the
+operating system and scheduler to make sure that OS is choosing the cores
+with highest performance firstly for scheduling the process. When AMD Pstate
+driver receives a message with the highest performance change, it will
+update the core ranking.
+
+Changes form V2->V3:
+- x86:
+- - Modify kconfig and description.
+- cpufreq: amd-pstate: 
+- - Add Co-developed-by tag in commit message.
+- cpufreq:
+- - Modify commit message.
+- Documentation: amd-pstate:
+- - Modify inappropriate descriptions.
+
+Changes form V1->V2:
+- acpi: cppc:
+- - Add reference link.
+- cpufreq:
+- - Moidfy link error.
+- cpufreq: amd-pstate: 
+- - Init the priorities of all online CPUs
+- - Use a single variable to represent the status of Preferred Core.
+- Documentation:
+- - Default enabled preferred core.
+- Documentation: amd-pstate: 
+- - Modify inappropriate descriptions.
+- - Default enabled preferred core.
+- - Use a single variable to represent the status of Preferred Core.
+
+Meng Li (7):
+  x86: Drop CPU_SUP_INTEL from SCHED_MC_PRIO for the expansion.
+  acpi: cppc: Add get the highest performance cppc control
+  cpufreq: amd-pstate: Enable AMD Pstate Preferred Core Supporting.
+  cpufreq: Add a notification message that the highest perf has changed
+  cpufreq: amd-pstate: Update AMD Pstate Preferred Core ranking
+    dynamically
+  Documentation: amd-pstate: introduce AMD Pstate Preferred Core
+  Documentation: introduce AMD Pstate Preferrd Core mode kernel command
+    line options
+
+ .../admin-guide/kernel-parameters.txt         |   5 +
+ Documentation/admin-guide/pm/amd-pstate.rst   |  53 ++++++
+ arch/x86/Kconfig                              |   5 +-
+ drivers/acpi/cppc_acpi.c                      |  13 ++
+ drivers/acpi/processor_driver.c               |   6 +
+ drivers/cpufreq/amd-pstate.c                  | 152 ++++++++++++++++--
+ drivers/cpufreq/cpufreq.c                     |  13 ++
+ include/acpi/cppc_acpi.h                      |   5 +
+ include/linux/amd-pstate.h                    |   1 +
+ include/linux/cpufreq.h                       |   4 +
+ 10 files changed, 239 insertions(+), 18 deletions(-)
+
 -- 
 2.34.1
 
