@@ -2,85 +2,77 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A476C71145
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Aug 2023 12:17:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 827AEC6FA8F
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Aug 2023 12:19:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239431AbjHXMQa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Aug 2023 08:16:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59502 "EHLO
+        id S238517AbjHXMTM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Aug 2023 08:19:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59988 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241310AbjHXMQE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2023 08:16:04 -0400
-Received: from luna.linkmauve.fr (82-65-109-163.subs.proxad.net [82.65.109.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D699170F;
-        Thu, 24 Aug 2023 05:16:02 -0700 (PDT)
-Received: by luna.linkmauve.fr (Postfix, from userid 1000)
-        id 0E4388CC509; Thu, 24 Aug 2023 13:27:56 +0200 (CEST)
-From:   Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
-Cc:     Alexandre Courbot <acourbot@nvidia.com>,
-        azkali <a.ffcc7@gmail.com>, CTCaer <ctcaer@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] power: supply: bq24190: Support bq24193
-Date:   Thu, 24 Aug 2023 13:27:34 +0200
-Message-ID: <20230824112741.201353-2-linkmauve@linkmauve.fr>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20230824112741.201353-1-linkmauve@linkmauve.fr>
-References: <20230824112741.201353-1-linkmauve@linkmauve.fr>
+        with ESMTP id S241367AbjHXMSs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2023 08:18:48 -0400
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43CF019B4;
+        Thu, 24 Aug 2023 05:18:46 -0700 (PDT)
+Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-2690803a368so1125767a91.1;
+        Thu, 24 Aug 2023 05:18:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1692879526; x=1693484326;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=AlrwwqTITMhKtvHsPQuVmQL/Kh4vzSe7uyS+aD745jU=;
+        b=koMPnyXn6Igj4hcEbLjqmvUXvWdPF22PQ1eOUIB/NDEaftA4pNLvYDLE8iv3qr5PRU
+         uBFIuKQcGMWwQEzGTrfTcAmnRq7N9m3x07niU3KimvJDZx4vQy4LL3ZIaotq5YX3L1KQ
+         1eiy96mitwWkxnWr94pnXWjKujPLAxX9qwtiIyfGehMbsrvdD+FnU3n2VMyYRfHa1AAU
+         CwD5LgkQrpo0bcRYc5Y9ySArIN1woeaU9kD1DmduHGrvXgktq1PLtEtvSshk2E4X/PeA
+         7BGwWz5q9LvJALDdZ11pP7YquIDNKo7q52A/+8O3cHg7n6PcksfRsz5UtszS53Zoor1q
+         1IYQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692879526; x=1693484326;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=AlrwwqTITMhKtvHsPQuVmQL/Kh4vzSe7uyS+aD745jU=;
+        b=IYXoYd9k75qSjJJ5QeEGkPpDhdMg2rbJQUUt1Jw2/OItAoesZSaJmMRiW9bg+RS2Tr
+         b/WFnST512E+xOaPjrPshrubAd8fjSHkjL+ifUFetojfiYLQNrwIVJPX+6j73jfMj9dr
+         7Q9BTlKpxii52M0d+6LJutc1d5xXPjdAgbihXKWAlsKFxeDMNV3BZPcWe3fHRiCQqPK3
+         WGJifcqx5RPezHfXogOvteTnGy7/tKPUyyOwIKgAyQqMC2Zt0YoKd8sz7rdIHgVH+vhZ
+         rKBBBTvxvxe+3tqAAN9K5A2bb84aiTH3vlavBUSfdX5NKoJdCBTD4xR4bc+4c8WhFj/y
+         X9/w==
+X-Gm-Message-State: AOJu0YzqnsnwpsDMikMa0TrirMX/Dqnuj8rFZWvetLAdjdICMoRnHinW
+        2DQG07pecmB0uIPeIkPfrl9/NUWS9gHjotE8wqK+Z6l2
+X-Google-Smtp-Source: AGHT+IEAoiKfYXAZ/wDNtwk7GNCrx6ELbsv4RClO7gblygmbcag2A2VLQgTJ9cLSOHt3L1H4LymrOeJ7i/vQNkmXYpg=
+X-Received: by 2002:a17:90a:6e4b:b0:269:34a6:d4ca with SMTP id
+ s11-20020a17090a6e4b00b0026934a6d4camr14130881pjm.0.1692879525718; Thu, 24
+ Aug 2023 05:18:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+References: <20230824112705.451411-1-festevam@gmail.com> <a2a613ce-be6e-6bd9-774d-9e3ed994f45e@linaro.org>
+In-Reply-To: <a2a613ce-be6e-6bd9-774d-9e3ed994f45e@linaro.org>
+From:   Fabio Estevam <festevam@gmail.com>
+Date:   Thu, 24 Aug 2023 09:18:34 -0300
+Message-ID: <CAOMZO5D=kzVMEeHqEBj2uos=BLDhKbOE7SZNL4kvpdVaMZkDww@mail.gmail.com>
+Subject: Re: [PATCH v2] thermal: imx8mm: Allow reboot after critical temperature
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     linux-pm@vger.kernel.org, rafael@kernel.org, amitk@kernel.org,
+        rui.zhang@intel.com, linux-kernel@vger.kernel.org,
+        Fabio Estevam <festevam@denx.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Alexandre Courbot <acourbot@nvidia.com>
+Hi Daniel,
 
-This charger is working with the driver as-is, so enable it to be probed.
+On Thu, Aug 24, 2023 at 8:57=E2=80=AFAM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
 
-It is used in the Nintendo Switch for instance.
+> Is it possible to set the .critical ops at init time instead and get rid
+> of the thermal_zone_device_critical(tz) call ?
 
-Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
----
- Documentation/devicetree/bindings/power/supply/bq24190.yaml | 1 +
- drivers/power/supply/bq24190_charger.c                      | 2 ++
- 2 files changed, 3 insertions(+)
+Yes, I have just tested your suggestion and it works.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.yaml b/Documentation/devicetree/bindings/power/supply/bq24190.yaml
-index d3ebc9de8c0b..92a28d3c3070 100644
---- a/Documentation/devicetree/bindings/power/supply/bq24190.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/bq24190.yaml
-@@ -18,6 +18,7 @@ properties:
-     enum:
-       - ti,bq24190
-       - ti,bq24192
-+      - ti,bq24193
-       - ti,bq24192i
-       - ti,bq24196
- 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index ef8235848f56..a56122b39687 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -2018,6 +2018,7 @@ static const struct dev_pm_ops bq24190_pm_ops = {
- static const struct i2c_device_id bq24190_i2c_ids[] = {
- 	{ "bq24190" },
- 	{ "bq24192" },
-+	{ "bq24193" },
- 	{ "bq24192i" },
- 	{ "bq24196" },
- 	{ },
-@@ -2027,6 +2028,7 @@ MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
- static const struct of_device_id bq24190_of_match[] = {
- 	{ .compatible = "ti,bq24190", },
- 	{ .compatible = "ti,bq24192", },
-+	{ .compatible = "ti,bq24193", },
- 	{ .compatible = "ti,bq24192i", },
- 	{ .compatible = "ti,bq24196", },
- 	{ },
--- 
-2.42.0
+It also looks better :-)
 
+I will send a v3, thanks.
