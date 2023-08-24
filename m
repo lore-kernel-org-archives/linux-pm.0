@@ -2,74 +2,158 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13FBAC3DA6F
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Aug 2023 12:02:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AA02C7113B
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Aug 2023 12:07:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239062AbjHXMBs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Aug 2023 08:01:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59418 "EHLO
+        id S237027AbjHXMGk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Aug 2023 08:06:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57862 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241266AbjHXMBo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2023 08:01:44 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 738EF198B;
-        Thu, 24 Aug 2023 05:01:42 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 0916E6182F;
-        Thu, 24 Aug 2023 12:01:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2091EC433C7;
-        Thu, 24 Aug 2023 12:01:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1692878499;
-        bh=bJY9G1iFXdRtnbG9KMtyME+7lESXhupRpB5L5sFYIcg=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=nvzeQveNVO/Kpi/8aK2eol92jbHsdRiL4Nz5AsdYc4vydGd8oWj8FiUtWPZi4useN
-         Hjon0hVwcf2iZ/OKBV+0+/qCvm5OHubsENVjtGUv3OWIhJcgO8Hv+lllOPmH6tDWXg
-         ZNFQyEJ3pJbmyWUD63NfiRIuxrDO0F+rZJ2X3xKI=
-Date:   Thu, 24 Aug 2023 14:00:57 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Georgi Djakov <djakov@kernel.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] interconnect changes for 6.6
-Message-ID: <2023082449-perish-padded-cd05@gregkh>
-References: <20230824094633.866043-1-djakov@kernel.org>
+        with ESMTP id S232918AbjHXMGI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2023 08:06:08 -0400
+X-Greylist: delayed 880 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 24 Aug 2023 05:06:02 PDT
+Received: from luna.linkmauve.fr (82-65-109-163.subs.proxad.net [82.65.109.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5513198D;
+        Thu, 24 Aug 2023 05:06:02 -0700 (PDT)
+Received: by luna.linkmauve.fr (Postfix, from userid 1000)
+        id DC99D8CC50D; Thu, 24 Aug 2023 13:27:57 +0200 (CEST)
+From:   Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Cc:     Alexandre Courbot <acourbot@nvidia.com>,
+        azkali <a.ffcc7@gmail.com>, CTCaer <ctcaer@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] power: supply: bq24190_charger: Export current regulator
+Date:   Thu, 24 Aug 2023 13:27:35 +0200
+Message-ID: <20230824112741.201353-3-linkmauve@linkmauve.fr>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20230824112741.201353-1-linkmauve@linkmauve.fr>
+References: <20230824112741.201353-1-linkmauve@linkmauve.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230824094633.866043-1-djakov@kernel.org>
+Content-Transfer-Encoding: 8bit
+To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Aug 24, 2023 at 12:46:33PM +0300, Georgi Djakov wrote:
-> Hello Greg,
-> 
-> This is the pull request with interconnect updates for the 6.6-rc1 merge
-> window. In contains a mix of core and driver changes as usual. This time
-> it might look a bit bigger as lines of code, but 97.5% of these are related
-> to expanding some macros in drivers and bring no functional change. There
-> are also a few patches that touch qcom clock drivers and these are in
-> immutable branch that is pulled also by the qcom tree. It contains also a
-> debugfs patch that you acked recently. The complete summary and details
-> are in the signed tag.
-> 
-> All patches have been in linux-next during last few days. Please pull into
-> char-misc-next when possible.
-> 
-> Thanks,
-> Georgi
-> 
-> The following changes since commit 2ccdd1b13c591d306f0401d98dedc4bdcd02b421:
-> 
->   Linux 6.5-rc6 (2023-08-13 11:29:55 -0700)
-> 
-> are available in the Git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git tags/icc-6.6-rc1
+From: Alexandre Courbot <acourbot@nvidia.com>
 
-Now pulled and pushed out, thanks.
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+---
+ drivers/power/supply/bq24190_charger.c | 84 ++++++++++++++++++++++++++
+ 1 file changed, 84 insertions(+)
 
-greg k-h
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index a56122b39687..8c026e86aeb3 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -530,6 +530,81 @@ static int bq24190_set_otg_vbus(struct bq24190_dev_info *bdi, bool enable)
+ }
+ 
+ #ifdef CONFIG_REGULATOR
++static int bq24190_set_charging_current(struct regulator_dev *dev,
++			int min_uA, int max_uA)
++{
++	struct bq24190_dev_info *bdi = rdev_get_drvdata(dev);
++	u8 ss_reg;
++	int in_current_limit;
++	int ret = 0;
++
++	dev_info(bdi->dev, "Setting charging current %d mA\n", max_uA/1000);
++
++	ret = bq24190_read(bdi, BQ24190_REG_SS, &ss_reg);
++	if (ret < 0)
++		goto error;
++
++	if (max_uA == 0 && ss_reg != 0)
++		return ret;
++
++	if (!(ss_reg & BQ24190_REG_SS_VBUS_STAT_MASK))
++		in_current_limit = 500;
++	else
++		in_current_limit = max_uA / 1000;
++
++	return bq24190_set_field_val(bdi, BQ24190_REG_ISC,
++			BQ24190_REG_ISC_IINLIM_MASK,
++			BQ24190_REG_ISC_IINLIM_SHIFT,
++			bq24190_isc_iinlim_values,
++			ARRAY_SIZE(bq24190_isc_iinlim_values),
++			in_current_limit);
++error:
++	dev_err(bdi->dev, "Charger enable failed, err = %d\n", ret);
++	return ret;
++}
++
++static const struct regulator_ops bq24190_chrg_ops = {
++	.set_current_limit = bq24190_set_charging_current,
++};
++
++static const struct regulator_desc bq24190_chrg_desc = {
++	.name = "charger",
++	.of_match = "charger",
++	.type = REGULATOR_CURRENT,
++	.owner = THIS_MODULE,
++	.ops = &bq24190_chrg_ops,
++};
++
++static const struct regulator_init_data bq24190_chrg_init_data = {
++	.constraints = {
++		.valid_ops_mask = REGULATOR_CHANGE_STATUS | REGULATOR_CHANGE_CURRENT,
++		.min_uA = 0,
++		.max_uA = 3000000,
++	},
++};
++
++static int bq24190_register_chrg_regulator(struct bq24190_dev_info *bdi)
++{
++	struct bq24190_platform_data *pdata = bdi->dev->platform_data;
++	struct regulator_config cfg = { };
++	struct regulator_dev *reg;
++	int ret = 0;
++
++	cfg.dev = bdi->dev;
++	if (pdata && pdata->regulator_init_data)
++		cfg.init_data = pdata->regulator_init_data;
++	else
++		cfg.init_data = &bq24190_chrg_init_data;
++	cfg.driver_data = bdi;
++	reg = devm_regulator_register(bdi->dev, &bq24190_chrg_desc, &cfg);
++	if (IS_ERR(reg)) {
++		ret = PTR_ERR(reg);
++		dev_err(bdi->dev, "Can't register regulator: %d\n", ret);
++	}
++
++	return ret;
++}
++
+ static int bq24190_vbus_enable(struct regulator_dev *dev)
+ {
+ 	return bq24190_set_otg_vbus(rdev_get_drvdata(dev), true);
+@@ -611,6 +686,11 @@ static int bq24190_register_vbus_regulator(struct bq24190_dev_info *bdi)
+ 	return ret;
+ }
+ #else
++static int bq24190_register_chrg_regulator(struct bq24190_dev_info *bdi)
++{
++	return 0;
++}
++
+ static int bq24190_register_vbus_regulator(struct bq24190_dev_info *bdi)
+ {
+ 	return 0;
+@@ -1879,6 +1959,10 @@ static int bq24190_probe(struct i2c_client *client)
+ 		goto out_charger;
+ 	}
+ 
++	ret = bq24190_register_chrg_regulator(bdi);
++	if (ret < 0)
++		goto out_charger;
++
+ 	ret = bq24190_register_vbus_regulator(bdi);
+ 	if (ret < 0)
+ 		goto out_charger;
+-- 
+2.42.0
+
