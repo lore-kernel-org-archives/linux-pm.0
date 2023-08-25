@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38818C7EE2C
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C41BC88CB2
 	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 11:27:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242054AbjHYL10 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Aug 2023 07:27:26 -0400
+        id S242332AbjHYL11 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Aug 2023 07:27:27 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48714 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242294AbjHYL06 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:26:58 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 57F722102
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:26:54 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-5009969be25so1244367e87.3
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:26:54 -0700 (PDT)
+        with ESMTP id S242770AbjHYL1A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:00 -0400
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 039031FF7
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:26:57 -0700 (PDT)
+Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-4ff882397ecso1177862e87.3
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:26:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692962812; x=1693567612;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=fBY/HtUs9K9shLxFz87/yhgWybEcdjCy9Ovc6VbYJDM=;
-        b=mO8BvDUU1/immKzeAsfPPrAA491wEj/9AIdCzi62+OFRBSSsvECRTHqmGuK0KhGAy0
-         zwCARHJgAxUcbQkRTeKoM7d7nClDP75436sEQoxl4HwtzLyTrBgj6sGseJv9lG2gyWw6
-         hQSBuZ/FUOBUV8f55HO5SbcW4YxGHj+nUPRfSqDOSASVsT3XfRwhGqTvfVDBV0g7p2b+
-         i2m3erXWZS3R1dEkQI0AdrhbiruzPxQNw/txgyht2ORflP39Tnd0I8CPBLDThwjRTb+k
-         s8G/E3xocw6dm8BU7+qVTFCeeShdjq36psItS4gLJvcL1TZJdzS6VURHNbfVZlwfaV58
-         +9dw==
+        d=linaro.org; s=google; t=1692962816; x=1693567616;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Y2TQdtT3qz2vpAW4ejhOrGqY7dksVjSBILvmL3wVcIM=;
+        b=cook8dCIOEfC72pZlPohdnANtElNcqRXK/Sj6beTTedacdXKArpYT8qdVCpmTn808f
+         6krWWGR/5P+3F8sXBbu//NqpKiN8Xddjm3YS2StA9bPamMonXMhpLWJ6F47lXCwxB42h
+         RIOnjp+VLRRcYtNHIQFrCwCfZ6EJAOzNQcuf/rpC1h7uy5gAHQzUwq/3Xf6W/V4Kdfk6
+         M/I1v1G0E8mFcyKGfX8UuGrhW0wtUxKOqKuUqhgCV+7eYcRdP38hG1vnNv9HMFJVUR/f
+         CZgZtxHG72rfp+JotzSGwxYvl6Z0nSFpdxSryNXPofJ2TukmFCCJJoJNudoiumJz7j6Z
+         jpqA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692962812; x=1693567612;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=fBY/HtUs9K9shLxFz87/yhgWybEcdjCy9Ovc6VbYJDM=;
-        b=BdvBcNhMYExSdK4ffz2LzCQrEesFdcPNsMZ0tqtV1w3pWp0p3aL7DkLKVJp/MszUKp
-         dSKWQ7ogTk568APU3Tdwtfc9XvvjP0CAxUYhg60D6zWMt1Tt7SkmI/A0Jv5sHG5OnmL2
-         32C2YBlFg8DsPhPkdBEKsSZkBAmD9R52Mus/t1zQAOnGTqAb7KpfCKmmU0849rZ4vGqr
-         SQNZCcIV+AUPWzECSCVKghdrNc0LkB8TUxsrwFCmzJl50wF1vYQqrl8pMg61WxizOk/5
-         BecuKKxi9ZfSO98ayni12sxWXbxgkZN6gBDcP6ykoDOQBfPa9PTOMth0PFeMlwG6cIcq
-         mPqQ==
-X-Gm-Message-State: AOJu0YxL4KtbOFmQssp4POh9vAlZTczIRdWXu3mBXezBZcChHhOLnkhE
-        xwKDVsXihd6KMoYFCBz/C/3CVw==
-X-Google-Smtp-Source: AGHT+IGGJdkUEbzPSl8I64Rn0u5xOF5sgGb4L+rFAZnxKgpB/IhJ0oB2oEC1OpMXYM9Cz/aMQ88c3w==
-X-Received: by 2002:a05:6512:32cc:b0:4ff:7e1e:b4b4 with SMTP id f12-20020a05651232cc00b004ff7e1eb4b4mr14760796lfg.39.1692962812488;
-        Fri, 25 Aug 2023 04:26:52 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1692962816; x=1693567616;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Y2TQdtT3qz2vpAW4ejhOrGqY7dksVjSBILvmL3wVcIM=;
+        b=bj+mbyFN/EWuRbMXk4R/rT3CNDBrVRvy1HKMvUVJlLAHbvW0Ui/pEAS+2kfc6itWNQ
+         bSO8EryKI0at2hK2bVN7MmHCYrMqMQN3/KrpoBE8TlKUO5sacwA4hICGVqxqpkw+TSsk
+         8171/6GyM9ks0/QpsfFx2xFKdhfRHnkuG+/1VgFMJJXNmA28viRLYlgXizg2ZaG3BPZz
+         rxf8gH/PIsFzdS1NRbG/lwBW9G6SfUBmRb8ps/m8lAmXcUybsobFD/2mnLwWo5u5IYz0
+         VOeRL2qR9C3ZG+UGvgruEeEWCdn0ufUrCz4ke6TE13XWz41w0QpmjEvQq+H6yEK3XcPD
+         4f0w==
+X-Gm-Message-State: AOJu0YxtsBO4FkhaH0fl5ltP3ik4vwSk0ZwyEcW1anLny9Qps8yZYdqB
+        B1F+0AHfkcXmBcVR5XlC6L6WtQ==
+X-Google-Smtp-Source: AGHT+IHMQx4lOZzpnya1byJyjRj+QtAOUhCzJn4PjtWUpUtj2hPvoRUsssQS0fIEtqMyKCazZSRwkg==
+X-Received: by 2002:a05:6512:224e:b0:4fd:c84f:30c9 with SMTP id i14-20020a056512224e00b004fdc84f30c9mr15770842lfu.47.1692962816101;
+        Fri, 25 Aug 2023 04:26:56 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.26.51
+        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.26.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Aug 2023 04:26:52 -0700 (PDT)
+        Fri, 25 Aug 2023 04:26:55 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -58,91 +59,92 @@ Cc:     Nikunj Kela <nkela@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 00/13] arm_scmi/cpufreq: Add generic performance scaling support
-Date:   Fri, 25 Aug 2023 13:26:20 +0200
-Message-Id: <20230825112633.236607-1-ulf.hansson@linaro.org>
+Subject: [PATCH v3 03/13] cpufreq: scmi: Prepare to move OF parsing of domain-id to cpufreq
+Date:   Fri, 25 Aug 2023 13:26:23 +0200
+Message-Id: <20230825112633.236607-4-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230825112633.236607-1-ulf.hansson@linaro.org>
+References: <20230825112633.236607-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+The OF parsing of the clock domain specifier seems to better belong in the
+scmi cpufreq driver, rather than being implemented behind the generic
+->device_domain_id() perf protocol ops.
+
+To prepare to remove the ->device_domain_id() ops, let's implement the OF
+parsing in the scmi cpufreq driver instead.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
 Changes in v3:
-	- Re-based upon the for-next/scmi/updates branch.
-	- Re-ordered some of the patches in the series, to eas review.
-	- Added some new DT doc patches in the series, according to comments.
-	- Fixed other comments, see version history for each patch.
+	- Re-based.
 
-Changes in v2:
-	- Split up the series, to get the basic support in place as the first
-	step. The part that remains is the integration with the OPP library, to
-	allow consumer drivers to change performance level using the OPP lib.
-	- Re-based on top v6.5-rc1.
-	- Other changes will be described for each patch.
+---
+ drivers/cpufreq/scmi-cpufreq.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-The current SCMI performance scaling support is limited to cpufreq. This series
-extends the support, so it can be used for all kind of devices and not only for
-CPUs.
-
-The changes are spread over a couple of different subsystems, although the
-changes that affects the other subsystems than the arm_scmi directory are
-mostly smaller, except for last patch which is in the new genpd directory.
-
-The series is based upon the for-next/scmi/updates branch, but to enable the
-genpd provider in patch 13 (the actual scmi performance domain driver) to be
-placed in the new genpd directory, I have also merged an immutable branch [1],
-which is queued for v6.6.
-
-Note that, I am runing this on the Qemu virt platform with Optee running an SCMI
-server. If you want some more details about my test setup, I can share this with
-you, just let me know.
-
-Looking forward to your feedback!
-
-Kind regards
-Ulf Hansson
-
-[1]
-git.kernel.org/pub/scm/linux/kernel/git/people/ulf.hansson/linux-pm.git genpd_create_dir
-
-
-Ulf Hansson (13):
-  firmware: arm_scmi: Extend perf protocol ops to get number of domains
-  firmware: arm_scmi: Extend perf protocol ops to get information of a
-    domain
-  cpufreq: scmi: Prepare to move OF parsing of domain-id to cpufreq
-  firmware: arm_scmi: Align perf ops to use domain-id as in-parameter
-  firmware: arm_scmi: Drop redundant ->device_domain_id() from perf ops
-  cpufreq: scmi: Avoid one OF parsing in scmi_get_sharing_cpus()
-  cpufreq: scmi: Drop redundant ifdef in scmi_cpufreq_probe()
-  dt-bindings: arm: cpus: Add a power-domain-name for a
-    performance-domain
-  dt-bindings: firmware: arm,scmi: Extend bindings for protocol@13
-  dt-bindings: power: Clarify performance capabilities of power-domains
-  cpufreq: scmi: Add support to parse domain-id using
-    #power-domain-cells
-  PM: domains: Allow genpd providers to manage OPP tables directly by
-    its FW
-  genpd: arm: Add the SCMI performance domain
-
- .../devicetree/bindings/arm/cpus.yaml         |   4 +-
- .../bindings/firmware/arm,scmi.yaml           |  11 +-
- .../bindings/power/power-domain.yaml          |  17 +-
- MAINTAINERS                                   |   1 +
- drivers/base/power/domain.c                   |  11 +-
- drivers/cpufreq/scmi-cpufreq.c                |  55 +++++--
- drivers/firmware/arm_scmi/Kconfig             |  12 ++
- drivers/firmware/arm_scmi/perf.c              |  90 +++++------
- drivers/genpd/Makefile                        |   1 +
- drivers/genpd/arm/Makefile                    |   3 +
- drivers/genpd/arm/scmi_perf_domain.c          | 150 ++++++++++++++++++
- include/linux/pm_domain.h                     |   5 +
- include/linux/scmi_protocol.h                 |  18 ++-
- 13 files changed, 293 insertions(+), 85 deletions(-)
- create mode 100644 drivers/genpd/arm/Makefile
- create mode 100644 drivers/genpd/arm/scmi_perf_domain.c
-
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index f34e6382a4c5..7d05d48c0337 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -70,13 +70,24 @@ static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+ 	return 0;
+ }
+ 
++static int scmi_cpu_domain_id(struct device *cpu_dev)
++{
++	struct of_phandle_args clkspec;
++
++	if (of_parse_phandle_with_args(cpu_dev->of_node, "clocks",
++				       "#clock-cells", 0, &clkspec))
++		return -EINVAL;
++
++	return clkspec.args[0];
++}
++
+ static int
+ scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ {
+ 	int cpu, domain, tdomain;
+ 	struct device *tcpu_dev;
+ 
+-	domain = perf_ops->device_domain_id(cpu_dev);
++	domain = scmi_cpu_domain_id(cpu_dev);
+ 	if (domain < 0)
+ 		return domain;
+ 
+@@ -88,7 +99,7 @@ scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ 		if (!tcpu_dev)
+ 			continue;
+ 
+-		tdomain = perf_ops->device_domain_id(tcpu_dev);
++		tdomain = scmi_cpu_domain_id(tcpu_dev);
+ 		if (tdomain == domain)
+ 			cpumask_set_cpu(cpu, cpumask);
+ 	}
+@@ -104,7 +115,7 @@ scmi_get_cpu_power(struct device *cpu_dev, unsigned long *power,
+ 	unsigned long Hz;
+ 	int ret, domain;
+ 
+-	domain = perf_ops->device_domain_id(cpu_dev);
++	domain = scmi_cpu_domain_id(cpu_dev);
+ 	if (domain < 0)
+ 		return domain;
+ 
+@@ -209,7 +220,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	}
+ 
+ 	priv->cpu_dev = cpu_dev;
+-	priv->domain_id = perf_ops->device_domain_id(cpu_dev);
++	priv->domain_id = scmi_cpu_domain_id(cpu_dev);
+ 
+ 	policy->driver_data = priv;
+ 	policy->freq_table = freq_table;
 -- 
 2.34.1
 
