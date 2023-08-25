@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5620EE49B8
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 11:28:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06C16EE49B9
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 11:28:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243403AbjHYL1c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Aug 2023 07:27:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39100 "EHLO
+        id S243464AbjHYL1d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Aug 2023 07:27:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39346 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238331AbjHYL1M (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:12 -0400
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CF7C212D
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:04 -0700 (PDT)
-Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-4ff8a1746e0so1206540e87.0
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:04 -0700 (PDT)
+        with ESMTP id S243935AbjHYL1T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:19 -0400
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 844692685
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:08 -0700 (PDT)
+Received: by mail-lf1-x132.google.com with SMTP id 2adb3069b0e04-50043cf2e29so1163593e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692962822; x=1693567622;
+        d=linaro.org; s=google; t=1692962827; x=1693567627;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=n+9eN3gR+CUM+pLHEOpqCBIIuUT/RXYCUei4ERSIbPo=;
-        b=hKE4ea2HSPu65yisIIPMz2/1VzWjOx5aJKZQ/fA+myKcvOLqa8Enzsy3DU+cCc7Xpn
-         e49QlnnH4FqM+dlN5rpBjfvSit1bim8BjTpGcNXBji6TSPEwGuogVt0U+728zdBBXgpK
-         hpetPsAGaPS/6eCZAYs2NSx01fG4MrAs2m+/94ACUz+AI/7nH4GKij5AjlFl2vtBz0nX
-         KJyvMrjsVF/zmmaTBoJfbtmER9mYJihrJ8jsOTNNBrJK6E4Prn7t5JmZFeYfhxeuWdLB
-         uSg1O/o49HM+D2YuMWQOWCF563ZESYNXy/H0iDCFRmI830exfV+GYWT02vmqIqqBNhjq
-         KM2Q==
+        bh=BQ10KjgMpqc0TH2RSYB+FyfOupm6xniaP3PuJgrZOCQ=;
+        b=jVyfBenIs3YrwoiLJlhjUlRMpDrrXrPF7WvEihCIDBBSds8an1aikYCb3fyZHGwdTp
+         vER9xRn9sAxxrWIPuCMq2qdGg7xBABZe6PErJkOQ1Y96ORMDi6Gfdt4b9HdQFKNDsUos
+         M6sDkqAnFJnfOwUb7W9Wlf8/AQM/xvbSDHteIQo6JrIRDqHshVNdl++RbnNOPH5e+I/E
+         po0Gpd5yGHNBa+l0s+BIqhAxLxb9ibj01d7rGnLQEx5rX/nYqQwQTSJbAPC6H3kLZWZt
+         vQ/YB/+O7akzgEvUVz54Co/Pc47IQWcV6D0wX3RhMzVb3ZxLNLrwS5v9gwm23nsnpGh3
+         0RTg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692962822; x=1693567622;
+        d=1e100.net; s=20221208; t=1692962827; x=1693567627;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=n+9eN3gR+CUM+pLHEOpqCBIIuUT/RXYCUei4ERSIbPo=;
-        b=Byl5XP4PEy7l7ObFP3GsPPRjqgPeMaUdVodB4KM9cwkIuZQxz3S744ytV4JqcCZVTh
-         UFGw8gZo0lKhI/J7vgS8sMEEvXVj5opeqY6oBtBan5pPQykEv0YkEYuzZT/OlawuH10n
-         fqfT2mGhTEPJNNjk5nxsLR04x/ekV3zXqQuqLZ1E92MkogsBulhG+WXzER0mk61cW901
-         otJoZSnR0pDt7tjUyd9sGKNmjVL/ODMC9kZ7pMLJFC5FrrP4mqFdsR00Sx3qlwFccATO
-         5feGdQbRbhI8prCJjmxNFyZWI11B6XFCy/sWua76V/bN9IDvncz/jgCX6J3sminscxzP
-         CU9A==
-X-Gm-Message-State: AOJu0Yy/dLjufGquu1TdnsEwfDJqtk4Yj+kOE0GGF+bJSHsXErRIH129
-        kdYVAne5yrzch3XBTCrE7dZTWA==
-X-Google-Smtp-Source: AGHT+IF5i2oUbA2HPzMIGWZSMwOu5ZOSjNDNLrf7hF3PpBjfjEY88aNiG8F2kG9BClqhxQrgAJ+FWQ==
-X-Received: by 2002:a05:6512:2347:b0:4ff:8f71:9713 with SMTP id p7-20020a056512234700b004ff8f719713mr15734934lfu.42.1692962822735;
-        Fri, 25 Aug 2023 04:27:02 -0700 (PDT)
+        bh=BQ10KjgMpqc0TH2RSYB+FyfOupm6xniaP3PuJgrZOCQ=;
+        b=VVC9MYzHNAtB9nveWwM2pWAbFJLayQVlAe3YvruREDnzYoSXv7ja+sdiJFFF1RxMUr
+         73/241Cnvf4dP6WpPgdyALgMnDIHzwXIssrZ1Li/Dx0ls2PYocsjJxjpHwDjzB39sIlb
+         mHbnfmZqKUstsI+rK3oP6AidQjdG30pmA9nV0UZ7j/XjESP9NWB6elrVvpa6msEFA6NP
+         3Wyz7TCyPZTmOSDWtRhsz/A1orFkRzEkgxgl+WWgGaCAeIGx0Fj2L0y5+8h1/1kgnopI
+         /iTXR9rHECJlqxC8iWie4ANH5Ww5gZm81iYyG7HcBN1x3wqkwwctSQWxkcymo5UFM8Qc
+         eDvg==
+X-Gm-Message-State: AOJu0Yz6i0tN3QxBURsuyqzVmt1ezKbhquBZUwe6j6IFUzEkKilN7/XJ
+        oeYIshNIs3XAhB+1jKKUA20/4w==
+X-Google-Smtp-Source: AGHT+IHXSuubNrdaloTOGX7P7Udqw4Ibzcy9wqcH/rDCusCFRW5crtQshAf4pXtAAq+Rv4izeqHX2A==
+X-Received: by 2002:ac2:58f6:0:b0:500:95f7:c416 with SMTP id v22-20020ac258f6000000b0050095f7c416mr5282808lfo.7.1692962826738;
+        Fri, 25 Aug 2023 04:27:06 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.27.01
+        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.27.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Aug 2023 04:27:02 -0700 (PDT)
+        Fri, 25 Aug 2023 04:27:06 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -58,14 +58,10 @@ Cc:     Nikunj Kela <nkela@quicinc.com>,
         Prasad Sodagudi <psodagud@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v3 08/13] dt-bindings: arm: cpus: Add a power-domain-name for a performance-domain
-Date:   Fri, 25 Aug 2023 13:26:28 +0200
-Message-Id: <20230825112633.236607-9-ulf.hansson@linaro.org>
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v3 11/13] cpufreq: scmi: Add support to parse domain-id using #power-domain-cells
+Date:   Fri, 25 Aug 2023 13:26:31 +0200
+Message-Id: <20230825112633.236607-12-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230825112633.236607-1-ulf.hansson@linaro.org>
 References: <20230825112633.236607-1-ulf.hansson@linaro.org>
@@ -75,42 +71,57 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When an CPU's performance domain is managed through the SCMI firmware,
-let's enable us describe this as a consumer of a power-domain provider,
-which is the de-facto standard to use for performance domains. In this
-case, let's specify a corresponding power-domain-name, to point out the
-corresponding index for it.
+The performance domain-id can be described in DT using the power-domains
+property or the clock property. The latter is already supported, so let's
+add support for the power-domains too.
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Cc: Conor Dooley <conor+dt@kernel.org>
-Cc: devicetree@vger.kernel.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v3:
-	- New patch.
+	- Move to get the power-domain index from power-domain-names.
 
 ---
- Documentation/devicetree/bindings/arm/cpus.yaml | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/cpufreq/scmi-cpufreq.c | 25 +++++++++++++++++++------
+ 1 file changed, 19 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/cpus.yaml b/Documentation/devicetree/bindings/arm/cpus.yaml
-index 9e6a45eea4e5..d51e6250d6e3 100644
---- a/Documentation/devicetree/bindings/arm/cpus.yaml
-+++ b/Documentation/devicetree/bindings/arm/cpus.yaml
-@@ -305,7 +305,9 @@ properties:
-       power-domains property.
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index 48bd393a1506..08497b84efe1 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -72,13 +72,26 @@ static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
  
-       For PSCI based platforms, the name corresponding to the index of the PSCI
--      PM domain provider, must be "psci".
-+      PM domain provider, must be "psci". For SCMI based platforms, the name
-+      corresponding to the index of an SCMI performance domain provider, must be
-+      "perf".
+ static int scmi_cpu_domain_id(struct device *cpu_dev)
+ {
+-	struct of_phandle_args clkspec;
+-
+-	if (of_parse_phandle_with_args(cpu_dev->of_node, "clocks",
+-				       "#clock-cells", 0, &clkspec))
+-		return -EINVAL;
++	struct device_node *np = cpu_dev->of_node;
++	struct of_phandle_args domain_id;
++	int index;
++
++	if (of_parse_phandle_with_args(np, "clocks", "#clock-cells", 0,
++				       &domain_id)) {
++
++		/* Find the corresponding index for power-domain "perf". */
++		index = of_property_match_string(np, "power-domain-names",
++						 "perf");
++		if (index < 0)
++			return -EINVAL;
++
++		if (of_parse_phandle_with_args(np, "power-domains",
++					       "#power-domain-cells", index,
++					       &domain_id))
++			return -EINVAL;
++	}
  
-   qcom,saw:
-     $ref: /schemas/types.yaml#/definitions/phandle
+-	return clkspec.args[0];
++	return domain_id.args[0];
+ }
+ 
+ static int
 -- 
 2.34.1
 
