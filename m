@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA943EE49A6
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 11:27:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31411EE49B2
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 11:28:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233800AbjHYL10 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Aug 2023 07:27:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48690 "EHLO
+        id S242360AbjHYL12 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Aug 2023 07:27:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55680 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242347AbjHYL06 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:26:58 -0400
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A0AC2106
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:26:55 -0700 (PDT)
-Received: by mail-lf1-x133.google.com with SMTP id 2adb3069b0e04-4ffa6e25ebbso2242586e87.0
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:26:55 -0700 (PDT)
+        with ESMTP id S243103AbjHYL1C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:02 -0400
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 383362110
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:26:59 -0700 (PDT)
+Received: by mail-lf1-x12b.google.com with SMTP id 2adb3069b0e04-500a8b2b73eso746505e87.0
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:26:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692962814; x=1693567614;
+        d=linaro.org; s=google; t=1692962817; x=1693567617;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=zVpWJeH5vl6Yje0ZJiFEtM9UBDqQaysUVErrHYVLQ+o=;
-        b=rugSWusf70vosp9DOB8WylmApboafo7DvVCjni1PwGdMfqtoGVJ5rHmCUpgyrCIyZC
-         aboXUzFvpGVuij+vk0r2vK1GyEfc4g8Bk8JPiJdPyM5s9w43ZGakqw+ih9Uiqe+IWGQZ
-         AnQcD6HFYDeQpmvRCbwFiScvF1rJkzGCwox6cuJFfZXb3gFRjGF+QVDGToG35UoCOh2k
-         DMRtCuHZMfYKSex5kUt+sTNhae5P13JQcoXXL0grN9hyy0DF96P3EbDe5VWHHD/iJBWP
-         7xaF7w0BizSz72oSL5EdR/clG9sOQ4NK11xiNkl+mFT/tiXCt7njez9g87w8+WYlOyhV
-         j60g==
+        bh=iZyavBljZ6bXtEMO1YiWYQRSGsvRcVG1p9MSq1Bupjk=;
+        b=OvylDRGVVO3TdvKJKhoXJim3LUJR/93YBmXecEuCodIYF5tWEawMNzFDaNRE3H4fCg
+         EjjDEvon+OrRMoyRmdrGZdgt5eLqVLG/mP49WEBEGOM01ugChlZgSh6ZMPmCXYwzUAHi
+         Qfn9s9V7v0mqXJqiv18oVngMRPPmV3U3LfGsjwQsABe716Vr1p4TR49O5PSexKkTyVYI
+         6t3GQBBOhqS4ah97cgTTWUtg6EkJhxEp5SkIT/FQQTeSc8F67s3GDy9mdxSc/eStsxV3
+         YXZsVHyiexH6E/55BWUhImJ+bXr8eIPPrQsLIX/uMe8T6nfK4J5U8saAajj0lgEK07CG
+         UUvA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692962814; x=1693567614;
+        d=1e100.net; s=20221208; t=1692962817; x=1693567617;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=zVpWJeH5vl6Yje0ZJiFEtM9UBDqQaysUVErrHYVLQ+o=;
-        b=SguXXPvahikV+azgWOfQ5/L88E+rtKW+KqQd1FaDOqkxiNXF3K9/g8VR9pP5bG9mqS
-         LRUHffitiPmgLJB1IjT6QCTyq88jhmPzhF5CnxfdpQUYfVe4hI12I8ZL32RbSzKSSjY/
-         Sc26lmRL00JtKaOXb0Y0ozrGwqv2BecSaqujQvWNkxTqt9jGro27hlJnyCEljLmtOz1X
-         MNsrW7YMhAoD0IZAVW3d97uf0AecTozJ/iM/J79JN3lrbhmplYxO5LeXZ2mbS+QJbXIw
-         09UvD6qD/67OhbzsOKl+HqPUB5PLz6NWUrVw7Hru9Y7iSvZdMjvJ8wTdz3kc7f5pum2l
-         9qrA==
-X-Gm-Message-State: AOJu0Yyd5q7rYSeoyY7s1WfDHeNDAVCeddZ5fUUND5f9CNodmfogl+Mj
-        EqYMwIbDYKl5+tkP+LHRJRIOdw==
-X-Google-Smtp-Source: AGHT+IFXJid6x5tv979FOkJ2rrKhKWbwIqh79ZM+8kyobJcO4BCSim8pQoc9bWw5tPMhOJ5fp7hmDg==
-X-Received: by 2002:a19:6451:0:b0:4f8:6253:540 with SMTP id b17-20020a196451000000b004f862530540mr6084197lfj.19.1692962813678;
-        Fri, 25 Aug 2023 04:26:53 -0700 (PDT)
+        bh=iZyavBljZ6bXtEMO1YiWYQRSGsvRcVG1p9MSq1Bupjk=;
+        b=ZLWuidSYhLM/KTHOe8btKnDdim8p/vxV2RwJ9P0uEIdPjXTuekNliqO3cNXreVWWis
+         5OoXjMYrxPpniuR+hJ6fz1w5vldsW25FFkEkqJBpTWDUD9+qg66l8LePdGXjJ30h+7He
+         O+gG7nru1eAwjzdiNk7SGxAynqwOeeFgvn9BiO4SNSZNTKTdHdyaDZZTT+YimZw6iEc1
+         ndL+uMgSW8OBZUPZVON1ptI/hCLIAboGbOH8xOfeBE/tYiQTGJbQPd5FETpryzMsjHVb
+         IDUv0m4g6sS9EEet/CxOeBxjfvLhwWO5O4F2fJbnxp3Q2KNu0Evw27kp5BGeKx0+QygZ
+         cwuw==
+X-Gm-Message-State: AOJu0YwjYWfBFdmArLsUcz+00vt0fIj9B3PxWEPYSb71E3quwo9Odsri
+        hfr23nnSHwpECaloCV3tIKYZmg==
+X-Google-Smtp-Source: AGHT+IHvNEcavvFkt9u2gx9F7pKes/Di+z4YnJPqsOPsIz14+K9zThP70V4pc8oatR9pZEda3Auhew==
+X-Received: by 2002:a05:6512:689:b0:4fd:d64f:c0a6 with SMTP id t9-20020a056512068900b004fdd64fc0a6mr15976438lfe.48.1692962817505;
+        Fri, 25 Aug 2023 04:26:57 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.26.52
+        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.26.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Aug 2023 04:26:53 -0700 (PDT)
+        Fri, 25 Aug 2023 04:26:56 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -59,9 +59,9 @@ Cc:     Nikunj Kela <nkela@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 01/13] firmware: arm_scmi: Extend perf protocol ops to get number of domains
-Date:   Fri, 25 Aug 2023 13:26:21 +0200
-Message-Id: <20230825112633.236607-2-ulf.hansson@linaro.org>
+Subject: [PATCH v3 04/13] firmware: arm_scmi: Align perf ops to use domain-id as in-parameter
+Date:   Fri, 25 Aug 2023 13:26:24 +0200
+Message-Id: <20230825112633.236607-5-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230825112633.236607-1-ulf.hansson@linaro.org>
 References: <20230825112633.236607-1-ulf.hansson@linaro.org>
@@ -71,10 +71,16 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Similar to other protocol ops, it's useful for an scmi module driver to get
-the number of supported performance domains, hence let's make this
-available by adding a new perf protocol callback. Note that, a user is
-being added from subsequent changes.
+Most scmi_perf_proto_ops are already using an "u32 domain" as an
+in-parameter to indicate what performance domain we shall operate upon.
+However, some of the ops are using a "struct device *dev", which means that
+an additional OF parsing is needed each time the perf ops gets called, to
+find the corresponding domain-id.
+
+To avoid the above, but also to make the code more consistent, let's
+replace the in-parameter "struct device *dev" with an "u32 domain". Note
+that, this requires us to make some corresponding changes to the scmi
+cpufreq driver, so let's do that too.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
@@ -83,56 +89,153 @@ Changes in v3:
 	- Re-based.
 
 ---
- drivers/firmware/arm_scmi/perf.c | 8 ++++++++
- include/linux/scmi_protocol.h    | 2 ++
- 2 files changed, 10 insertions(+)
+ drivers/cpufreq/scmi-cpufreq.c   | 14 +++++++++-----
+ drivers/firmware/arm_scmi/perf.c | 22 ++++------------------
+ include/linux/scmi_protocol.h    |  6 +++---
+ 3 files changed, 16 insertions(+), 26 deletions(-)
 
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index 7d05d48c0337..125e8a8421fb 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -137,7 +137,7 @@ scmi_get_cpu_power(struct device *cpu_dev, unsigned long *power,
+ 
+ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ {
+-	int ret, nr_opp;
++	int ret, nr_opp, domain;
+ 	unsigned int latency;
+ 	struct device *cpu_dev;
+ 	struct scmi_data *priv;
+@@ -149,6 +149,10 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 		return -ENODEV;
+ 	}
+ 
++	domain = scmi_cpu_domain_id(cpu_dev);
++	if (domain < 0)
++		return domain;
++
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (!priv)
+ 		return -ENOMEM;
+@@ -187,7 +191,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	  */
+ 	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
+ 	if (nr_opp <= 0) {
+-		ret = perf_ops->device_opps_add(ph, cpu_dev);
++		ret = perf_ops->device_opps_add(ph, cpu_dev, domain);
+ 		if (ret) {
+ 			dev_warn(cpu_dev, "failed to add opps to the device\n");
+ 			goto out_free_cpumask;
+@@ -220,7 +224,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	}
+ 
+ 	priv->cpu_dev = cpu_dev;
+-	priv->domain_id = scmi_cpu_domain_id(cpu_dev);
++	priv->domain_id = domain;
+ 
+ 	policy->driver_data = priv;
+ 	policy->freq_table = freq_table;
+@@ -228,14 +232,14 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	/* SCMI allows DVFS request for any domain from any CPU */
+ 	policy->dvfs_possible_from_any_cpu = true;
+ 
+-	latency = perf_ops->transition_latency_get(ph, cpu_dev);
++	latency = perf_ops->transition_latency_get(ph, domain);
+ 	if (!latency)
+ 		latency = CPUFREQ_ETERNAL;
+ 
+ 	policy->cpuinfo.transition_latency = latency;
+ 
+ 	policy->fast_switch_possible =
+-		perf_ops->fast_switch_possible(ph, cpu_dev);
++		perf_ops->fast_switch_possible(ph, domain);
+ 
+ 	return 0;
+ 
 diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
-index c0cd556fbaae..9fb63dd44c20 100644
+index d20bb6b8abfa..092b51cf9596 100644
 --- a/drivers/firmware/arm_scmi/perf.c
 +++ b/drivers/firmware/arm_scmi/perf.c
-@@ -423,6 +423,13 @@ scmi_perf_describe_levels_get(const struct scmi_protocol_handle *ph,
- 	return ret;
+@@ -795,17 +795,13 @@ static int scmi_dev_domain_id(struct device *dev)
  }
  
-+static int scmi_perf_num_domains_get(const struct scmi_protocol_handle *ph)
-+{
-+	struct scmi_perf_info *pi = ph->get_priv(ph);
-+
-+	return pi->num_domains;
-+}
-+
- static int scmi_perf_msg_limits_set(const struct scmi_protocol_handle *ph,
- 				    u32 domain, u32 max_perf, u32 min_perf)
+ static int scmi_dvfs_device_opps_add(const struct scmi_protocol_handle *ph,
+-				     struct device *dev)
++				     struct device *dev, u32 domain)
  {
-@@ -948,6 +955,7 @@ scmi_power_scale_get(const struct scmi_protocol_handle *ph)
+-	int idx, ret, domain;
++	int idx, ret;
+ 	unsigned long freq;
+ 	struct scmi_opp *opp;
+ 	struct perf_dom_info *dom;
+ 
+-	domain = scmi_dev_domain_id(dev);
+-	if (domain < 0)
+-		return -EINVAL;
+-
+ 	dom = scmi_perf_domain_lookup(ph, domain);
+ 	if (IS_ERR(dom))
+ 		return PTR_ERR(dom);
+@@ -838,15 +834,10 @@ static int scmi_dvfs_device_opps_add(const struct scmi_protocol_handle *ph,
+ 
+ static int
+ scmi_dvfs_transition_latency_get(const struct scmi_protocol_handle *ph,
+-				 struct device *dev)
++				 u32 domain)
+ {
+-	int domain;
+ 	struct perf_dom_info *dom;
+ 
+-	domain = scmi_dev_domain_id(dev);
+-	if (domain < 0)
+-		return -EINVAL;
+-
+ 	dom = scmi_perf_domain_lookup(ph, domain);
+ 	if (IS_ERR(dom))
+ 		return PTR_ERR(dom);
+@@ -942,15 +933,10 @@ static int scmi_dvfs_est_power_get(const struct scmi_protocol_handle *ph,
  }
  
- static const struct scmi_perf_proto_ops perf_proto_ops = {
-+	.num_domains_get = scmi_perf_num_domains_get,
- 	.limits_set = scmi_perf_limits_set,
- 	.limits_get = scmi_perf_limits_get,
- 	.level_set = scmi_perf_level_set,
+ static bool scmi_fast_switch_possible(const struct scmi_protocol_handle *ph,
+-				      struct device *dev)
++				      u32 domain)
+ {
+-	int domain;
+ 	struct perf_dom_info *dom;
+ 
+-	domain = scmi_dev_domain_id(dev);
+-	if (domain < 0)
+-		return false;
+-
+ 	dom = scmi_perf_domain_lookup(ph, domain);
+ 	if (IS_ERR(dom))
+ 		return false;
 diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
-index e6fe4f73ffe6..71b39cbbdace 100644
+index 71923ae63b01..bf6b0be1890e 100644
 --- a/include/linux/scmi_protocol.h
 +++ b/include/linux/scmi_protocol.h
-@@ -101,6 +101,7 @@ struct scmi_clk_proto_ops {
-  * struct scmi_perf_proto_ops - represents the various operations provided
-  *	by SCMI Performance Protocol
-  *
-+ * @num_domains_get: gets the number of supported performance domains
-  * @limits_set: sets limits on the performance level of a domain
-  * @limits_get: gets limits on the performance level of a domain
-  * @level_set: sets the performance level of a domain
-@@ -120,6 +121,7 @@ struct scmi_clk_proto_ops {
-  *	or in some other (abstract) scale
-  */
- struct scmi_perf_proto_ops {
-+	int (*num_domains_get)(const struct scmi_protocol_handle *ph);
- 	int (*limits_set)(const struct scmi_protocol_handle *ph, u32 domain,
- 			  u32 max_perf, u32 min_perf);
- 	int (*limits_get)(const struct scmi_protocol_handle *ph, u32 domain,
+@@ -140,9 +140,9 @@ struct scmi_perf_proto_ops {
+ 			 u32 *level, bool poll);
+ 	int (*device_domain_id)(struct device *dev);
+ 	int (*transition_latency_get)(const struct scmi_protocol_handle *ph,
+-				      struct device *dev);
++				      u32 domain);
+ 	int (*device_opps_add)(const struct scmi_protocol_handle *ph,
+-			       struct device *dev);
++			       struct device *dev, u32 domain);
+ 	int (*freq_set)(const struct scmi_protocol_handle *ph, u32 domain,
+ 			unsigned long rate, bool poll);
+ 	int (*freq_get)(const struct scmi_protocol_handle *ph, u32 domain,
+@@ -150,7 +150,7 @@ struct scmi_perf_proto_ops {
+ 	int (*est_power_get)(const struct scmi_protocol_handle *ph, u32 domain,
+ 			     unsigned long *rate, unsigned long *power);
+ 	bool (*fast_switch_possible)(const struct scmi_protocol_handle *ph,
+-				     struct device *dev);
++				     u32 domain);
+ 	enum scmi_power_scale (*power_scale_get)(const struct scmi_protocol_handle *ph);
+ };
+ 
 -- 
 2.34.1
 
