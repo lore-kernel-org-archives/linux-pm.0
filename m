@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DC14EE49BC
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95CAAEE49BB
 	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 11:28:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243573AbjHYL1e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S243528AbjHYL1e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 25 Aug 2023 07:27:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41860 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39310 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244038AbjHYL1V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:21 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5EEC2690
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:09 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-50087d47d4dso1227817e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:09 -0700 (PDT)
+        with ESMTP id S243916AbjHYL1S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:18 -0400
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30B342681
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:07 -0700 (PDT)
+Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-500a398cda5so1242600e87.0
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692962828; x=1693567628;
+        d=linaro.org; s=google; t=1692962825; x=1693567625;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=5gMHV9Yq0P3BvEVk6dHuf/JZOVU8klOINBbvQDcnPB8=;
-        b=XBfMsJVo+PapFD2sRB8gtDtHIfO0aTjlDoCCnTpU5hVZuI1QCmf/ItpnCs3DXv163I
-         FdRlQg8veVVNxvO7NM5YKNpMgX7xQciRAnojlqqMwUg8SZjdK7ita7nDX5yzo6GS/Z1H
-         TokJOKfQf8buuJh0w/l53jKZI3dZ9GauvVPa42Conp9k/XS4vBCQ3zey9Vu1VUqr33mY
-         OR5HF8/JrcLQZ8wojvRKdsN8vTAR33x7y5sakdTUsFltatrk2Bj4MolYAe6YiPlUbTzs
-         7iVJ4yYnd/pnxkmevttRHMvhorpXfMqqwQw88GVWsHN+5pMF2xWfwBtH5GBbhkVNnIQu
-         M99w==
+        bh=lxcpKq58Y0dVZy+8hut+gJq89Cu88bDtADLCXTUFucg=;
+        b=xWcNX43Tu9tRhvZRust1sHusglipxG0/TudWhZhAeLAWJGb53bc1b3mnXfXZ33PaD2
+         h/dgcZ/+5kCG/1wPxvAjiAbRCLyVudSHEEhWhi+PqbX2qQYEFZDon/j4/h5EoDrhk7l5
+         4l0z8lNFTKKyxEnpvgggZKjIucMh89Mln/ur/eOB+01sqXgF691T/wvDfvghQl8AQszJ
+         DI5my/j6re7sEYpVlb3mjO5TGlk3rRh/K5vV3Vyhb4wcPySP1I4hHpihQCThNIPngf69
+         wEwCV8GsSn7YJYwAFqN1i7aMYQwWa+RYwCBlm0Y60WqwHxV+ujJxKHtiVerLygpBQiea
+         6RZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692962828; x=1693567628;
+        d=1e100.net; s=20221208; t=1692962825; x=1693567625;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=5gMHV9Yq0P3BvEVk6dHuf/JZOVU8klOINBbvQDcnPB8=;
-        b=WvYwihr4WP9YoCw3ZohJazyVsDebQwRssujKVk0BgaGPGOkld6deKK5vhxC77eoxpu
-         enp+JA+bwRzZnbQ+ckW6ELZZ5qQsW4o20RUf1XH78kGDrG5FEjQbCRzJu85wZ3LpeMAE
-         2Uvya/NMnOChowmlf/s1IMBO9iJ14q1bgfCm2iYrQJn7iGEo2ZPnvDMF9vBICqu7qNd0
-         DoKtiWMnOgQrC9LJfVn1yA51xLEF2O0fTkctvo6ADATV55ku+2EdPlOUcbYVx3ZD0s1+
-         NGZxncGqFT21j6Q1WOaUiBBezkXryw4FwPgEd5ZubnAMUSf9krraz3BPSVpqb1x0ubHY
-         Blrw==
-X-Gm-Message-State: AOJu0YxLmdnSOrzjkkGYHKcFRmYr4xAM7T2Y8jpN1u++2GGyw/IKOzmy
-        f6tO2bn6UpHkANW9bvUoJCMzZA==
-X-Google-Smtp-Source: AGHT+IEJFrCwxobYD3hH0FUBvo/rxPuCeM334SMKxvVgxWIdPqn1OfprXQwlTPJJuVY16tqmTMUeJg==
-X-Received: by 2002:a05:6512:3e9:b0:4fe:8c07:98eb with SMTP id n9-20020a05651203e900b004fe8c0798ebmr11027207lfq.51.1692962827998;
-        Fri, 25 Aug 2023 04:27:07 -0700 (PDT)
+        bh=lxcpKq58Y0dVZy+8hut+gJq89Cu88bDtADLCXTUFucg=;
+        b=M+D5MdcrJM7i4OwDC5L14X1HNxn55xCfzH9x6LE+IoFtUyMThrWZc8CVp6MEFIpCD+
+         EIJcS4Dh/UvwIqRx2Dyq47SrnkH+Lqriv3jxsYr27Xx2+8Ua9cme+O54HzgNiOm6gjm0
+         yZ31wN2JWKaLTRLPDUgPCybCBmsZOFkoJIkVEPEJe2UtPBH7sZUJrSVeD6lDYag3fIGM
+         RYH9b2FEQhOgWk1hceTbLeIInZ2y7I62heBjcXoB4syNi6Ft88Y94n/Iw3a3WIkxNnlp
+         ODILmn1nOMiRjVJdIHplJXQXcFfLmsGw10pGA0qD8mS+YYEE0HjTDA/L74Z/kG+zhdLg
+         hBOQ==
+X-Gm-Message-State: AOJu0YzUnYvfgmIaOS6Qz6A1cdI/TqGD2wG8QdUFbvXQvUXx514JDB56
+        Ouqcwx/NJm2REN/lhWW0JMI8kA==
+X-Google-Smtp-Source: AGHT+IGC2Vf7sjQDdr5V4QHRIfVkhDfG8KHUs1E6JqOKtM2FEDh4ZHWiW4GAfGWqyxVFmC3dv1Il+A==
+X-Received: by 2002:a05:6512:1081:b0:4fb:8f79:631 with SMTP id j1-20020a056512108100b004fb8f790631mr13843222lfg.46.1692962825383;
+        Fri, 25 Aug 2023 04:27:05 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.27.06
+        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.27.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Aug 2023 04:27:07 -0700 (PDT)
+        Fri, 25 Aug 2023 04:27:04 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -58,10 +58,15 @@ Cc:     Nikunj Kela <nkela@quicinc.com>,
         Prasad Sodagudi <psodagud@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 12/13] PM: domains: Allow genpd providers to manage OPP tables directly by its FW
-Date:   Fri, 25 Aug 2023 13:26:32 +0200
-Message-Id: <20230825112633.236607-13-ulf.hansson@linaro.org>
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org
+Subject: [PATCH v3 10/13] dt-bindings: power: Clarify performance capabilities of power-domains
+Date:   Fri, 25 Aug 2023 13:26:30 +0200
+Message-Id: <20230825112633.236607-11-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230825112633.236607-1-ulf.hansson@linaro.org>
 References: <20230825112633.236607-1-ulf.hansson@linaro.org>
@@ -71,101 +76,72 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In some cases the OPP tables aren't specified in device tree, but rather
-encoded in the FW. To allow a genpd provider to specify them dynamically
-instead, let's add a new genpd flag, GENPD_FLAG_OPP_TABLE_FW.
+The power-domains bindings has in many years been used to describe so
+called performance-domains too. Rather than using a separate binding it has
+been convenient to re-use the power-domain bindings, as in some cases it's
+in fact a combination of the both that would be the best description.
 
+Therefore, let's make it more clear that the power-domains bindings can be
+used to describe a performance-domain too.
+
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+Cc: Conor Dooley <conor+dt@kernel.org>
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v3:
-	- None.
+	- New patch.
 
 ---
- drivers/base/power/domain.c | 11 ++++++-----
- include/linux/pm_domain.h   |  5 +++++
- 2 files changed, 11 insertions(+), 5 deletions(-)
+ .../devicetree/bindings/power/power-domain.yaml | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 5cb2023581d4..c74edf80417f 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -130,6 +130,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
- #define genpd_is_active_wakeup(genpd)	(genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
- #define genpd_is_cpu_domain(genpd)	(genpd->flags & GENPD_FLAG_CPU_DOMAIN)
- #define genpd_is_rpm_always_on(genpd)	(genpd->flags & GENPD_FLAG_RPM_ALWAYS_ON)
-+#define genpd_is_opp_table_fw(genpd)	(genpd->flags & GENPD_FLAG_OPP_TABLE_FW)
+diff --git a/Documentation/devicetree/bindings/power/power-domain.yaml b/Documentation/devicetree/bindings/power/power-domain.yaml
+index d1235e562041..8fdb529d560b 100644
+--- a/Documentation/devicetree/bindings/power/power-domain.yaml
++++ b/Documentation/devicetree/bindings/power/power-domain.yaml
+@@ -13,8 +13,9 @@ maintainers:
  
- static inline bool irq_safe_dev_in_sleep_domain(struct device *dev,
- 		const struct generic_pm_domain *genpd)
-@@ -2328,7 +2329,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
- 	genpd->dev.of_node = np;
+ description: |+
+   System on chip designs are often divided into multiple PM domains that can be
+-  used for power gating of selected IP blocks for power saving by reduced leakage
+-  current.
++  used for power gating of selected IP blocks for power saving by reduced
++  leakage current. Moreover, in some cases the similar PM domains may also be
++  capable of scaling performance for a group of IP blocks.
  
- 	/* Parse genpd OPP table */
--	if (genpd->set_performance_state) {
-+	if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
- 		ret = dev_pm_opp_of_add_table(&genpd->dev);
- 		if (ret)
- 			return dev_err_probe(&genpd->dev, ret, "Failed to add OPP table\n");
-@@ -2343,7 +2344,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+   This device tree binding can be used to bind PM domain consumer devices with
+   their PM domains provided by PM domain providers. A PM domain provider can be
+@@ -25,7 +26,7 @@ description: |+
  
- 	ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
- 	if (ret) {
--		if (genpd->set_performance_state) {
-+		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
- 			dev_pm_opp_put_opp_table(genpd->opp_table);
- 			dev_pm_opp_of_remove_table(&genpd->dev);
- 		}
-@@ -2387,7 +2388,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
- 		genpd->dev.of_node = np;
+ properties:
+   $nodename:
+-    pattern: "^(power-controller|power-domain)([@-].*)?$"
++    pattern: "^(power-controller|power-domain|performance-domain)([@-].*)?$"
  
- 		/* Parse genpd OPP table */
--		if (genpd->set_performance_state) {
-+		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
- 			ret = dev_pm_opp_of_add_table_indexed(&genpd->dev, i);
- 			if (ret) {
- 				dev_err_probe(&genpd->dev, ret,
-@@ -2423,7 +2424,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
- 		genpd->provider = NULL;
- 		genpd->has_provider = false;
+   domain-idle-states:
+     $ref: /schemas/types.yaml#/definitions/phandle-array
+@@ -44,11 +45,11 @@ properties:
  
--		if (genpd->set_performance_state) {
-+		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
- 			dev_pm_opp_put_opp_table(genpd->opp_table);
- 			dev_pm_opp_of_remove_table(&genpd->dev);
- 		}
-@@ -2455,7 +2456,7 @@ void of_genpd_del_provider(struct device_node *np)
- 				if (gpd->provider == &np->fwnode) {
- 					gpd->has_provider = false;
+   operating-points-v2:
+     description:
+-      Phandles to the OPP tables of power domains provided by a power domain
+-      provider. If the provider provides a single power domain only or all
+-      the power domains provided by the provider have identical OPP tables,
+-      then this shall contain a single phandle. Refer to ../opp/opp-v2-base.yaml
+-      for more information.
++      Phandles to the OPP tables of power domains that are capable of scaling
++      performance, provided by a power domain provider. If the provider provides
++      a single power domain only or all the power domains provided by the
++      provider have identical OPP tables, then this shall contain a single
++      phandle. Refer to ../opp/opp-v2-base.yaml for more information.
  
--					if (!gpd->set_performance_state)
-+					if (genpd_is_opp_table_fw(gpd) || !gpd->set_performance_state)
- 						continue;
- 
- 					dev_pm_opp_put_opp_table(gpd->opp_table);
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index f776fb93eaa0..05ad8cefdff1 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -61,6 +61,10 @@
-  * GENPD_FLAG_MIN_RESIDENCY:	Enable the genpd governor to consider its
-  *				components' next wakeup when determining the
-  *				optimal idle state.
-+ *
-+ * GENPD_FLAG_OPP_TABLE_FW:	The genpd provider supports performance states,
-+ *				but its corresponding OPP tables are not
-+ *				described in DT, but are given directly by FW.
-  */
- #define GENPD_FLAG_PM_CLK	 (1U << 0)
- #define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
-@@ -69,6 +73,7 @@
- #define GENPD_FLAG_CPU_DOMAIN	 (1U << 4)
- #define GENPD_FLAG_RPM_ALWAYS_ON (1U << 5)
- #define GENPD_FLAG_MIN_RESIDENCY (1U << 6)
-+#define GENPD_FLAG_OPP_TABLE_FW	 (1U << 7)
- 
- enum gpd_status {
- 	GENPD_STATE_ON = 0,	/* PM domain is on */
+   "#power-domain-cells":
+     description:
 -- 
 2.34.1
 
