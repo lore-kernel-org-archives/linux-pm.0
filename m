@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4201CEE49B5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88742C3DA66
 	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 11:28:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242918AbjHYL13 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Aug 2023 07:27:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55730 "EHLO
+        id S243334AbjHYL1c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Aug 2023 07:27:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39094 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243249AbjHYL1D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:03 -0400
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CB282102
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:00 -0700 (PDT)
-Received: by mail-lf1-x12f.google.com with SMTP id 2adb3069b0e04-4fe1b00fce2so1214288e87.3
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:00 -0700 (PDT)
+        with ESMTP id S243439AbjHYL1K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:10 -0400
+Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B1162108
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:03 -0700 (PDT)
+Received: by mail-lf1-x129.google.com with SMTP id 2adb3069b0e04-5007c8308c3so1248833e87.0
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692962819; x=1693567619;
+        d=linaro.org; s=google; t=1692962821; x=1693567621;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Go52eA8TYeTAK4lIGpo0JK3kGk7oP6d4bfLl8VkdcL0=;
-        b=w/FMHrbeRXkj/FUdm/Sz+jxlAwsdFmqwrOj5OswyiWGkPTsSL5+QquW4AClIQ5+U6i
-         4P1jYsqHDnWMp6afBE/6uba5mOYSkw+v3SaOnbKvvGGuAQiAnV5CZPI0f0F92yfNIoia
-         lDKfEzLa3DZA6J8hsDkxR1h4GUJfYbppL3XdcBfMEQBmzSO8ynyhNnbBAWYOL3uKVTYt
-         budih/LZg5Zoj5RmdbwH/+hz4AOimB6+oUvfdN18gpYDeLdN0/MLhYYmtzxIzHrzZUoh
-         jjiU/HT+AmjvDkAVKOZQ+bFgWBaA7YDBxLMKOElMRItGL6jp9CgdovMrdHGPKmqr5dLF
-         vCaw==
+        bh=ZGDMaEKOG+5X48Gol+AxEGCcHKZ/Xp97A0Ym/9JW7WA=;
+        b=evHyviDBbKrlfh1CbONZfo3Hw+ynOWClrckD28Hb4PQcbXyoltKbeIH4CQbLmR4S6R
+         gfXyfPRSmirFAB54VWIlpJf7lMgQb9zUUyrjoPQOGM42LzYtaUEz8p70IB3y3cHdb35z
+         JtJzJnNoeyesZh6C1XKmiD8VyuRDY7uuAIz0leu5xTiSqhPT2K6Qy6H+tF5yoHzeqCVy
+         Avoxxpxu/R1LWsiFNPBzJGfEvp7kTXz6cUUd7rpoaTFDqMoqknyWMzaoTBrAmjvDgQ0Q
+         mE5IcQatFk8G70HHJisUwSFN+I6u8aAeVOmMIyaYvJNznAYDyvW2qkiFLKRnp0RoDB3x
+         PLVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692962819; x=1693567619;
+        d=1e100.net; s=20221208; t=1692962821; x=1693567621;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Go52eA8TYeTAK4lIGpo0JK3kGk7oP6d4bfLl8VkdcL0=;
-        b=iLvVzWpOYfozuskrPlqifIILmOErFYjnFE0osFkX9sNQose1UeP7aytPzAZxbDA2/S
-         o8+asyUkTFLPTUf9Oub3MdJftyIcx/Ox0qzvTvPUw0R5nVP0VQm09gkB4CanxJcvXqiQ
-         GhBwT+WLYgqi6/RwZVp7FonLdGD6OCc7khHSMW9XyG4iHEWtKSCATyikfosn9Mrhu5vT
-         57hup33Ov9+ncW3WAemjOPZvOhUdoUU3eNsG2e3437A7Ec8ZBzNfvCAgBJ7AzeS+mtXM
-         BMXp83578g9G/AGtR9e6Pp+oyjvj1hHY5oP4D1vlpG0zBx3iiOe+6SgKXZ7oW+OBpKXo
-         MIVQ==
-X-Gm-Message-State: AOJu0YzpbTiB7kuB+tbUykBKg6o/iBH77nn447l3+CIalRrXMDg+4BGp
-        F3j2ijZnESmBh9sK6ynsPbGzxw==
-X-Google-Smtp-Source: AGHT+IExZ0+5DmQV2MQOehaqwy+sXY50Rxg9T+DJ+H5m6XwKLlATgt+8LTXB6lG4JjOInNo0uOtHDw==
-X-Received: by 2002:a19:5f50:0:b0:4fb:99c7:bb60 with SMTP id a16-20020a195f50000000b004fb99c7bb60mr10736785lfj.59.1692962818867;
-        Fri, 25 Aug 2023 04:26:58 -0700 (PDT)
+        bh=ZGDMaEKOG+5X48Gol+AxEGCcHKZ/Xp97A0Ym/9JW7WA=;
+        b=ex3BB3mJHKKuqo2Lx8khBzYwR+kg8OwGGEeG9MfnFJlPJ70rNNizTKItCNEU3RbU38
+         5b0oFIxEe4Q6kxsxP6LIZ3L+O7r/0APQG/BoQNNaNKurcUSJrIXlrmYverqO59uNTznd
+         jGNbNCW9XftjudMAsVTrhxXc+M0NUQ5CZg2WHwaJTuTCWdm4OxwMFwvNKky2X0AEGYbh
+         ZwXP2u+X3sdgCxWh7J4yMOn1mi6DX9M8KD6aEQ9jbMaxehmtmHBcaGwdQIZnbWsdsi8D
+         +MxHZBS0Xns5/Bs79eTLWRGtYhcR0AshIqVXTD8nz9u3n3mXbXEZAiXrhLj9amZXrEV5
+         pJJw==
+X-Gm-Message-State: AOJu0Yy+AYtnpa98W8NM/7YJYNJgVNVYYZSLYSgv8vamF2UiLQqSuxl/
+        6OK1ivxHoOX/mCxKC/AXOao9zg==
+X-Google-Smtp-Source: AGHT+IH6lqqhRCYBDaNaKp91DKemKXN5IdXT7VJPtMsE6HuTPI+lcAdwJlp7Kc2m4jw4UZT1pd3Vkw==
+X-Received: by 2002:a05:6512:ba0:b0:500:882b:e55a with SMTP id b32-20020a0565120ba000b00500882be55amr11312115lfv.45.1692962821456;
+        Fri, 25 Aug 2023 04:27:01 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.26.57
+        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.27.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Aug 2023 04:26:58 -0700 (PDT)
+        Fri, 25 Aug 2023 04:27:01 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -59,9 +59,9 @@ Cc:     Nikunj Kela <nkela@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 05/13] firmware: arm_scmi: Drop redundant ->device_domain_id() from perf ops
-Date:   Fri, 25 Aug 2023 13:26:25 +0200
-Message-Id: <20230825112633.236607-6-ulf.hansson@linaro.org>
+Subject: [PATCH v3 07/13] cpufreq: scmi: Drop redundant ifdef in scmi_cpufreq_probe()
+Date:   Fri, 25 Aug 2023 13:26:27 +0200
+Message-Id: <20230825112633.236607-8-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230825112633.236607-1-ulf.hansson@linaro.org>
 References: <20230825112633.236607-1-ulf.hansson@linaro.org>
@@ -71,8 +71,9 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There are no longer any users of the ->device_domain_id() ops in the
-scmi_perf_proto_ops, therefore let's remove it.
+We have stubs for devm_of_clk_add_hw_provider(), so there should be no need
+to protect this with the '#ifdef CONFIG_COMMON_CLK'. Let's drop it to clean
+up the code a bit.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
@@ -81,61 +82,25 @@ Changes in v3:
 	- None.
 
 ---
- drivers/firmware/arm_scmi/perf.c | 13 -------------
- include/linux/scmi_protocol.h    |  2 --
- 2 files changed, 15 deletions(-)
+ drivers/cpufreq/scmi-cpufreq.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
-index 092b51cf9596..9eb58df9124d 100644
---- a/drivers/firmware/arm_scmi/perf.c
-+++ b/drivers/firmware/arm_scmi/perf.c
-@@ -782,18 +782,6 @@ static void scmi_perf_domain_init_fc(const struct scmi_protocol_handle *ph,
- 	*p_fc = fc;
- }
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index 78f53e388094..48bd393a1506 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -320,11 +320,9 @@ static int scmi_cpufreq_probe(struct scmi_device *sdev)
+ 	if (IS_ERR(perf_ops))
+ 		return PTR_ERR(perf_ops);
  
--/* Device specific ops */
--static int scmi_dev_domain_id(struct device *dev)
--{
--	struct of_phandle_args clkspec;
--
--	if (of_parse_phandle_with_args(dev->of_node, "clocks", "#clock-cells",
--				       0, &clkspec))
--		return -EINVAL;
--
--	return clkspec.args[0];
--}
--
- static int scmi_dvfs_device_opps_add(const struct scmi_protocol_handle *ph,
- 				     struct device *dev, u32 domain)
- {
-@@ -959,7 +947,6 @@ static const struct scmi_perf_proto_ops perf_proto_ops = {
- 	.limits_get = scmi_perf_limits_get,
- 	.level_set = scmi_perf_level_set,
- 	.level_get = scmi_perf_level_get,
--	.device_domain_id = scmi_dev_domain_id,
- 	.transition_latency_get = scmi_dvfs_transition_latency_get,
- 	.device_opps_add = scmi_dvfs_device_opps_add,
- 	.freq_set = scmi_dvfs_freq_set,
-diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
-index bf6b0be1890e..26cda536716a 100644
---- a/include/linux/scmi_protocol.h
-+++ b/include/linux/scmi_protocol.h
-@@ -112,7 +112,6 @@ struct scmi_perf_domain_info {
-  * @limits_get: gets limits on the performance level of a domain
-  * @level_set: sets the performance level of a domain
-  * @level_get: gets the performance level of a domain
-- * @device_domain_id: gets the scmi domain id for a given device
-  * @transition_latency_get: gets the DVFS transition latency for a given device
-  * @device_opps_add: adds all the OPPs for a given device
-  * @freq_set: sets the frequency for a given device using sustained frequency
-@@ -138,7 +137,6 @@ struct scmi_perf_proto_ops {
- 			 u32 level, bool poll);
- 	int (*level_get)(const struct scmi_protocol_handle *ph, u32 domain,
- 			 u32 *level, bool poll);
--	int (*device_domain_id)(struct device *dev);
- 	int (*transition_latency_get)(const struct scmi_protocol_handle *ph,
- 				      u32 domain);
- 	int (*device_opps_add)(const struct scmi_protocol_handle *ph,
+-#ifdef CONFIG_COMMON_CLK
+ 	/* dummy clock provider as needed by OPP if clocks property is used */
+ 	if (of_property_present(dev->of_node, "#clock-cells"))
+ 		devm_of_clk_add_hw_provider(dev, of_clk_hw_simple_get, NULL);
+-#endif
+ 
+ 	ret = cpufreq_register_driver(&scmi_cpufreq_driver);
+ 	if (ret) {
 -- 
 2.34.1
 
