@@ -2,170 +2,134 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91B24C7BC29
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 15:39:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D36AAC001DB
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 16:17:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244068AbjHYPi6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Aug 2023 11:38:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54570 "EHLO
+        id S1343887AbjHYQQ5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Aug 2023 12:16:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45848 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243926AbjHYPid (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 11:38:33 -0400
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B656F26A5
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 08:38:29 -0700 (PDT)
-Received: by mail-lf1-x12b.google.com with SMTP id 2adb3069b0e04-4ff93a7f230so1318467e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 08:38:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692977908; x=1693582708;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ZFgErp58KfdfypCOT3vFx0dQzamUJWU6QtZ8tkYYvkM=;
-        b=u5cpDQmXs6XpHGgASadsyLq5blZls/H8Qkkkdmw41/WtbDxHFFAsCPcwEuWLteML9B
-         r1oIuKJZvqsqsRPUKiG8pzaB52ijvMM9Nh/9YlU6+2DtQvH1HYryJbV6IKguyw2NmtQV
-         j6KOBCA1FHLmegxyllTc5f9Z0o3iXfXC4gVRFOnQk4DUgt0Mr/X+p2+zlHKsZKf+vQkF
-         sEaswXdNdy9CLgUYu/Pvaizh8qqyyc9g1Qyw8n2XPWp1dzstbjvElbfGOBcEc4JRUHvN
-         DWGhDkngRlbFcCrqQxtnrRvf+PaK1nMScgeHddYqLCHk2IAQvgo+6zJQeN5Teo2xju7M
-         /T+Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692977908; x=1693582708;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ZFgErp58KfdfypCOT3vFx0dQzamUJWU6QtZ8tkYYvkM=;
-        b=WkKJbYh6pbXdVBN4OqnpFFwUXoMYua5iBo0BDWSw9NEHTW41WRnfqZA5VLzXGbMLKt
-         afZWNqZBrb/LLh2gdZH2xgtmUrrFKbz/iGQmikGCq6uwW4JDQbF6dpy3gh831+3z6dDb
-         0C4SdwrCfJrUMQeCiqLe2UyDiR3zGGDi4ihZ/lfgOEf30bJ3wtzOIuYwJCB7OoZaX/Yn
-         FElkdQsOHpfUpR4hSKU9Oc7T1s3E4AVPhOPBm8/1pXzZpnL6i5ZtsK9WIQEF3VbwmI6+
-         G2uly4JYrb0eSYaxeCOmDz02Ra8xQnH8H/vfg0yZlgrWZy6imgEZK0kJD7UzMjMeJ5i8
-         I3Fw==
-X-Gm-Message-State: AOJu0YzUgxS8k8u/GFaUcLI4r4exR/t21V/kUS2F0vxR8pNmjBZ3nMbT
-        C2VhJmA1bV3K5YHZSIj/VOUvyQ==
-X-Google-Smtp-Source: AGHT+IFXxsO0inhPEywRrkMW3OYRkGh+GPhn9IzpDF0AeHHchYr9Zt524WleaK1kVijGAxg3TAvhgg==
-X-Received: by 2002:a05:6512:4026:b0:4fb:8938:48ab with SMTP id br38-20020a056512402600b004fb893848abmr7440673lfb.16.1692977907351;
-        Fri, 25 Aug 2023 08:38:27 -0700 (PDT)
-Received: from [192.168.1.101] (abxh59.neoplus.adsl.tpnet.pl. [83.9.1.59])
-        by smtp.gmail.com with ESMTPSA id y17-20020a197511000000b004fe432108absm326002lfe.182.2023.08.25.08.38.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Aug 2023 08:38:27 -0700 (PDT)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Fri, 25 Aug 2023 17:38:23 +0200
-Subject: [PATCH v4 01/10] interconnect: qcom: icc-rpm: Add AB/IB
- calculations coefficients
+        with ESMTP id S245225AbjHYQQ4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 12:16:56 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44DDC1BD2;
+        Fri, 25 Aug 2023 09:16:54 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 8ad44d5f7b6bf935; Fri, 25 Aug 2023 18:16:52 +0200
+Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
+   discourages use of this host) smtp.mailfrom=rjwysocki.net 
+   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
+   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id AED3D662F61;
+        Fri, 25 Aug 2023 18:16:51 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Amit Kucheria <amitk@kernel.org>
+Subject: [PATCH v1] thermal: core: Drop unused .get_trip_*() callbacks
+Date:   Fri, 25 Aug 2023 18:16:51 +0200
+Message-ID: <12270283.O9o76ZdvQC@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230726-topic-icc_coeff-v4-1-c04b60caa467@linaro.org>
-References: <20230726-topic-icc_coeff-v4-0-c04b60caa467@linaro.org>
-In-Reply-To: <20230726-topic-icc_coeff-v4-0-c04b60caa467@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1692977904; l=3362;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=VmCQkFG9XlEBLCy/UyzTZ9FZJie6xQcQFu/3Vn+/5S8=;
- b=z9JwFAn/1a+E13A31tID/phnvyfJsO+q7UKKiJGX9GEhcBpGwnLYXBsfoDCTjbTeyjo4U3TkP
- pPP2CARVWdkBuAbcAYGfYMwNKcCii28WqH4F41JYjuJ+HqVpszo+PQX
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedruddvkedgleejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffffffekgfehheffleetieevfeefvefhleetjedvvdeijeejledvieehueevueffnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthht
+ oheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Presumably due to the hardware being so complex, some nodes (or busses)
-have different (usually higher) requirements for bandwidth than what
-the usual calculations would suggest.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Looking at the available downstream files, it seems like AB values are
-adjusted per-bus and IB values are adjusted per-node.
-With that in mind, introduce percentage-based coefficient struct members
-and use them in the calculations.
+After recent changes in the ACPI thermal driver and in the Intel DTS
+IOSF thermal driver, all thermal zone drivers are expected to use trip
+tables for initialization and none of them should implement
+.get_trip_type(), .get_trip_temp() or .get_trip_hyst() callbacks, so
+drop these callbacks entirely from the core.
 
-One thing to note is that the IB coefficient is inverse (100/ib_percent)
-which feels a bit backwards, but it's necessary for precision..
-
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/interconnect/qcom/icc-rpm.c | 18 +++++++++++++++---
- drivers/interconnect/qcom/icc-rpm.h |  6 ++++++
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ drivers/thermal/thermal_core.c |    2 +-
+ drivers/thermal/thermal_trip.c |   22 +++-------------------
+ include/linux/thermal.h        |    4 ----
+ 3 files changed, 4 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index 2c16917ba1fd..8b02aa8aa96a 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -298,7 +298,8 @@ static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
-  */
- static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_rate)
+Index: linux-pm/include/linux/thermal.h
+===================================================================
+--- linux-pm.orig/include/linux/thermal.h
++++ linux-pm/include/linux/thermal.h
+@@ -76,11 +76,7 @@ struct thermal_zone_device_ops {
+ 	int (*set_trips) (struct thermal_zone_device *, int, int);
+ 	int (*change_mode) (struct thermal_zone_device *,
+ 		enum thermal_device_mode);
+-	int (*get_trip_type) (struct thermal_zone_device *, int,
+-		enum thermal_trip_type *);
+-	int (*get_trip_temp) (struct thermal_zone_device *, int, int *);
+ 	int (*set_trip_temp) (struct thermal_zone_device *, int, int);
+-	int (*get_trip_hyst) (struct thermal_zone_device *, int, int *);
+ 	int (*set_trip_hyst) (struct thermal_zone_device *, int, int);
+ 	int (*get_crit_temp) (struct thermal_zone_device *, int *);
+ 	int (*set_emul_temp) (struct thermal_zone_device *, int);
+Index: linux-pm/drivers/thermal/thermal_trip.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_trip.c
++++ linux-pm/drivers/thermal/thermal_trip.c
+@@ -118,27 +118,11 @@ int __thermal_zone_get_trip(struct therm
  {
--	u64 agg_avg_rate, agg_rate;
-+	struct qcom_icc_provider *qp = to_qcom_provider(provider);
-+	u64 agg_avg_rate, agg_peak_rate, agg_rate;
- 	struct qcom_icc_node *qn;
- 	struct icc_node *node;
- 	int i;
-@@ -315,8 +316,19 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider, u64 *agg_clk_r
- 			else
- 				agg_avg_rate = qn->sum_avg[i];
+ 	int ret;
  
--			agg_rate = max_t(u64, agg_avg_rate, qn->max_peak[i]);
--			do_div(agg_rate, qn->buswidth);
-+			if (qp->ab_coeff) {
-+				agg_avg_rate = agg_avg_rate * qp->ab_coeff;
-+				agg_avg_rate = div_u64(agg_avg_rate, 100);
-+			}
-+
-+			if (qp->ib_coeff) {
-+				agg_peak_rate = qn->max_peak[i] * 100;
-+				agg_peak_rate = div_u64(qn->max_peak[i], qp->ib_coeff);
-+			} else {
-+				agg_peak_rate = qn->max_peak[i];
-+			}
-+
-+			agg_rate = max_t(u64, agg_avg_rate, agg_peak_rate);
+-	if (!tz || trip_id < 0 || trip_id >= tz->num_trips || !trip)
++	if (!tz || !tz->trips || trip_id < 0 || trip_id >= tz->num_trips || !trip)
+ 		return -EINVAL;
  
- 			agg_clk_rate[i] = max_t(u64, agg_clk_rate[i], agg_rate);
- 		}
-diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
-index eed3451af3e6..5e7d6a4fd2f3 100644
---- a/drivers/interconnect/qcom/icc-rpm.h
-+++ b/drivers/interconnect/qcom/icc-rpm.h
-@@ -44,6 +44,8 @@ struct rpm_clk_resource {
-  * @type: the ICC provider type
-  * @regmap: regmap for QoS registers read/write access
-  * @qos_offset: offset to QoS registers
-+ * @ab_coeff: a percentage-based coefficient for compensating the AB calculations
-+ * @ib_coeff: an inverse-percentage-based coefficient for compensating the IB calculations
-  * @bus_clk_rate: bus clock rate in Hz
-  * @bus_clk_desc: a pointer to a rpm_clk_resource description of bus clocks
-  * @bus_clk: a pointer to a HLOS-owned bus clock
-@@ -57,6 +59,8 @@ struct qcom_icc_provider {
- 	enum qcom_icc_type type;
- 	struct regmap *regmap;
- 	unsigned int qos_offset;
-+	u16 ab_coeff;
-+	u16 ib_coeff;
- 	u32 bus_clk_rate[QCOM_SMD_RPM_STATE_NUM];
- 	const struct rpm_clk_resource *bus_clk_desc;
- 	struct clk *bus_clk;
-@@ -123,6 +127,8 @@ struct qcom_icc_desc {
- 	enum qcom_icc_type type;
- 	const struct regmap_config *regmap_cfg;
- 	unsigned int qos_offset;
-+	u16 ab_coeff;
-+	u16 ib_coeff;
- };
+-	if (tz->trips) {
+-		*trip = tz->trips[trip_id];
+-		return 0;
+-	}
+-
+-	if (tz->ops->get_trip_hyst) {
+-		ret = tz->ops->get_trip_hyst(tz, trip_id, &trip->hysteresis);
+-		if (ret)
+-			return ret;
+-	} else {
+-		trip->hysteresis = 0;
+-	}
+-
+-	ret = tz->ops->get_trip_temp(tz, trip_id, &trip->temperature);
+-	if (ret)
+-		return ret;
+-
+-	return tz->ops->get_trip_type(tz, trip_id, &trip->type);
++	*trip = tz->trips[trip_id];
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(__thermal_zone_get_trip);
  
- /* Valid for all bus types */
+Index: linux-pm/drivers/thermal/thermal_core.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -1266,7 +1266,7 @@ thermal_zone_device_register_with_trips(
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	if (num_trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp) && !trips)
++	if (num_trips > 0 && !trips)
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	if (!thermal_class)
 
--- 
-2.42.0
+
 
