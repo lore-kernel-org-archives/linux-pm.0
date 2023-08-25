@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F15AEE49BA
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DC14EE49BC
 	for <linux-pm@archiver.kernel.org>; Fri, 25 Aug 2023 11:28:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243435AbjHYL1d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Aug 2023 07:27:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39174 "EHLO
+        id S243573AbjHYL1e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Aug 2023 07:27:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41860 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243698AbjHYL1O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:14 -0400
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDFCF213D
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:05 -0700 (PDT)
-Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-2bcc14ea414so12219091fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:05 -0700 (PDT)
+        with ESMTP id S244038AbjHYL1V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 07:27:21 -0400
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5EEC2690
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:09 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-50087d47d4dso1227817e87.1
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2023 04:27:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692962824; x=1693567624;
+        d=linaro.org; s=google; t=1692962828; x=1693567628;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=sJUIdrBleNavb554xBa5Uqs5DbW/RJbKX1E/c3YtlHo=;
-        b=Te2EDSPN3CzlisLFnbmuwmZ168JE5ESIkxCnGOa1SVjyyXR1QdFxFhSQLQHxI3wnwz
-         hvFxCVlke3m0ZbkPVXWQcgyz8UTE6mrq2GJsgEeRDsGzxhAnXQZONJuKfF/7/iqGX0w9
-         ZCcp7BrAnctWq3oNgdn6u2hASJQTGLYdiy91XP5jU7y5tSUGWJ94AE/k/fC3Hg9hXXNx
-         Eret5VAwxexxX9vhw583jwy9YjDFi7v1y+lKFdhfJKlMSjUKhqBKMl+n1xsQdlrYoVkr
-         BR+OSlwfiv12yef0l+eAYfkBmbdlbWWlFgknM/YEZU6tRhOfe5ItAQOWsliK4k/ToaIq
-         PiGQ==
+        bh=5gMHV9Yq0P3BvEVk6dHuf/JZOVU8klOINBbvQDcnPB8=;
+        b=XBfMsJVo+PapFD2sRB8gtDtHIfO0aTjlDoCCnTpU5hVZuI1QCmf/ItpnCs3DXv163I
+         FdRlQg8veVVNxvO7NM5YKNpMgX7xQciRAnojlqqMwUg8SZjdK7ita7nDX5yzo6GS/Z1H
+         TokJOKfQf8buuJh0w/l53jKZI3dZ9GauvVPa42Conp9k/XS4vBCQ3zey9Vu1VUqr33mY
+         OR5HF8/JrcLQZ8wojvRKdsN8vTAR33x7y5sakdTUsFltatrk2Bj4MolYAe6YiPlUbTzs
+         7iVJ4yYnd/pnxkmevttRHMvhorpXfMqqwQw88GVWsHN+5pMF2xWfwBtH5GBbhkVNnIQu
+         M99w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692962824; x=1693567624;
+        d=1e100.net; s=20221208; t=1692962828; x=1693567628;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=sJUIdrBleNavb554xBa5Uqs5DbW/RJbKX1E/c3YtlHo=;
-        b=U7WYFJrR0XzHAmvc4+UH6z64VkiFEas0kuQpPkNrvldhCKkpP3ypBlbea2OmX9cCTn
-         a9Osi6DDDOWNJT5sHF5rQ6C8VQt+JpwvV5cA0wcWncn9xi2dAn7SyKKWr+ZpLNjSeiqA
-         h/lgqscLx6t0AbO+1hj0CUJEv5NMXri2JwioyLesyNx9eLE3b14Y8h3luzJr8/4o7Lck
-         tjcyhVyWtB+/V7hqsYczcOUW4o6MXSvKJLsqDCzjjgB7H/Vv+YndPgDWD+m0wDcuCQ2G
-         z+ZYPfQWIo4cUU/4lneQ/D4nZKOv1bMX0yTtCU0rjDZw8Zur/wfp23cp1kh9BdWOtnGA
-         pgZg==
-X-Gm-Message-State: AOJu0YwcF2khuh2Sil/vbONyci2AsA4BZ+qiHq7kOjWtt2voPfT2gRFI
-        AKj5paaoxBrY+bKgBaDHfggGng==
-X-Google-Smtp-Source: AGHT+IGtQIwDm0FOs22Xu5kX2NYDv9FNIfCtezpP92/H+EH9JkerBVaCFjHFflxCHcrTiAB7U+GlCA==
-X-Received: by 2002:ac2:5597:0:b0:500:a397:d4f0 with SMTP id v23-20020ac25597000000b00500a397d4f0mr2038424lfg.31.1692962823992;
-        Fri, 25 Aug 2023 04:27:03 -0700 (PDT)
+        bh=5gMHV9Yq0P3BvEVk6dHuf/JZOVU8klOINBbvQDcnPB8=;
+        b=WvYwihr4WP9YoCw3ZohJazyVsDebQwRssujKVk0BgaGPGOkld6deKK5vhxC77eoxpu
+         enp+JA+bwRzZnbQ+ckW6ELZZ5qQsW4o20RUf1XH78kGDrG5FEjQbCRzJu85wZ3LpeMAE
+         2Uvya/NMnOChowmlf/s1IMBO9iJ14q1bgfCm2iYrQJn7iGEo2ZPnvDMF9vBICqu7qNd0
+         DoKtiWMnOgQrC9LJfVn1yA51xLEF2O0fTkctvo6ADATV55ku+2EdPlOUcbYVx3ZD0s1+
+         NGZxncGqFT21j6Q1WOaUiBBezkXryw4FwPgEd5ZubnAMUSf9krraz3BPSVpqb1x0ubHY
+         Blrw==
+X-Gm-Message-State: AOJu0YxLmdnSOrzjkkGYHKcFRmYr4xAM7T2Y8jpN1u++2GGyw/IKOzmy
+        f6tO2bn6UpHkANW9bvUoJCMzZA==
+X-Google-Smtp-Source: AGHT+IEJFrCwxobYD3hH0FUBvo/rxPuCeM334SMKxvVgxWIdPqn1OfprXQwlTPJJuVY16tqmTMUeJg==
+X-Received: by 2002:a05:6512:3e9:b0:4fe:8c07:98eb with SMTP id n9-20020a05651203e900b004fe8c0798ebmr11027207lfq.51.1692962827998;
+        Fri, 25 Aug 2023 04:27:07 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.27.02
+        by smtp.gmail.com with ESMTPSA id g7-20020ac25387000000b004fb7ac67bbdsm259164lfh.41.2023.08.25.04.27.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Aug 2023 04:27:03 -0700 (PDT)
+        Fri, 25 Aug 2023 04:27:07 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -58,13 +58,10 @@ Cc:     Nikunj Kela <nkela@quicinc.com>,
         Prasad Sodagudi <psodagud@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org
-Subject: [PATCH v3 09/13] dt-bindings: firmware: arm,scmi: Extend bindings for protocol@13
-Date:   Fri, 25 Aug 2023 13:26:29 +0200
-Message-Id: <20230825112633.236607-10-ulf.hansson@linaro.org>
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v3 12/13] PM: domains: Allow genpd providers to manage OPP tables directly by its FW
+Date:   Fri, 25 Aug 2023 13:26:32 +0200
+Message-Id: <20230825112633.236607-13-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230825112633.236607-1-ulf.hansson@linaro.org>
 References: <20230825112633.236607-1-ulf.hansson@linaro.org>
@@ -74,19 +71,10 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The protocol@13 node is describing the performance scaling option for the
-ARM SCMI interface, as a clock provider. This is unnecessary limiting, as
-performance scaling is in many cases not limited to switching a clock's
-frequency.
+In some cases the OPP tables aren't specified in device tree, but rather
+encoded in the FW. To allow a genpd provider to specify them dynamically
+instead, let's add a new genpd flag, GENPD_FLAG_OPP_TABLE_FW.
 
-Therefore, let's extend the binding so the interface can be modelled as a
-generic performance domain too. The common way to describe this, is to use
-the power-domain DT bindings, so let's use that.
-
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Cc: Conor Dooley <conor+dt@kernel.org>
-Cc: devicetree@vger.kernel.org
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
@@ -94,31 +82,90 @@ Changes in v3:
 	- None.
 
 ---
- .../devicetree/bindings/firmware/arm,scmi.yaml        | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/base/power/domain.c | 11 ++++++-----
+ include/linux/pm_domain.h   |  5 +++++
+ 2 files changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/firmware/arm,scmi.yaml b/Documentation/devicetree/bindings/firmware/arm,scmi.yaml
-index b138f3d23df8..563a87dfb31a 100644
---- a/Documentation/devicetree/bindings/firmware/arm,scmi.yaml
-+++ b/Documentation/devicetree/bindings/firmware/arm,scmi.yaml
-@@ -149,8 +149,15 @@ properties:
-       '#clock-cells':
-         const: 1
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 5cb2023581d4..c74edf80417f 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -130,6 +130,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
+ #define genpd_is_active_wakeup(genpd)	(genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
+ #define genpd_is_cpu_domain(genpd)	(genpd->flags & GENPD_FLAG_CPU_DOMAIN)
+ #define genpd_is_rpm_always_on(genpd)	(genpd->flags & GENPD_FLAG_RPM_ALWAYS_ON)
++#define genpd_is_opp_table_fw(genpd)	(genpd->flags & GENPD_FLAG_OPP_TABLE_FW)
  
--    required:
--      - '#clock-cells'
-+      '#power-domain-cells':
-+        const: 1
-+
-+    oneOf:
-+      - required:
-+          - '#clock-cells'
-+
-+      - required:
-+          - '#power-domain-cells'
+ static inline bool irq_safe_dev_in_sleep_domain(struct device *dev,
+ 		const struct generic_pm_domain *genpd)
+@@ -2328,7 +2329,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+ 	genpd->dev.of_node = np;
  
-   protocol@14:
-     $ref: '#/$defs/protocol-node'
+ 	/* Parse genpd OPP table */
+-	if (genpd->set_performance_state) {
++	if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 		ret = dev_pm_opp_of_add_table(&genpd->dev);
+ 		if (ret)
+ 			return dev_err_probe(&genpd->dev, ret, "Failed to add OPP table\n");
+@@ -2343,7 +2344,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+ 
+ 	ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
+ 	if (ret) {
+-		if (genpd->set_performance_state) {
++		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 			dev_pm_opp_put_opp_table(genpd->opp_table);
+ 			dev_pm_opp_of_remove_table(&genpd->dev);
+ 		}
+@@ -2387,7 +2388,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 		genpd->dev.of_node = np;
+ 
+ 		/* Parse genpd OPP table */
+-		if (genpd->set_performance_state) {
++		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 			ret = dev_pm_opp_of_add_table_indexed(&genpd->dev, i);
+ 			if (ret) {
+ 				dev_err_probe(&genpd->dev, ret,
+@@ -2423,7 +2424,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 		genpd->provider = NULL;
+ 		genpd->has_provider = false;
+ 
+-		if (genpd->set_performance_state) {
++		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 			dev_pm_opp_put_opp_table(genpd->opp_table);
+ 			dev_pm_opp_of_remove_table(&genpd->dev);
+ 		}
+@@ -2455,7 +2456,7 @@ void of_genpd_del_provider(struct device_node *np)
+ 				if (gpd->provider == &np->fwnode) {
+ 					gpd->has_provider = false;
+ 
+-					if (!gpd->set_performance_state)
++					if (genpd_is_opp_table_fw(gpd) || !gpd->set_performance_state)
+ 						continue;
+ 
+ 					dev_pm_opp_put_opp_table(gpd->opp_table);
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index f776fb93eaa0..05ad8cefdff1 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -61,6 +61,10 @@
+  * GENPD_FLAG_MIN_RESIDENCY:	Enable the genpd governor to consider its
+  *				components' next wakeup when determining the
+  *				optimal idle state.
++ *
++ * GENPD_FLAG_OPP_TABLE_FW:	The genpd provider supports performance states,
++ *				but its corresponding OPP tables are not
++ *				described in DT, but are given directly by FW.
+  */
+ #define GENPD_FLAG_PM_CLK	 (1U << 0)
+ #define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
+@@ -69,6 +73,7 @@
+ #define GENPD_FLAG_CPU_DOMAIN	 (1U << 4)
+ #define GENPD_FLAG_RPM_ALWAYS_ON (1U << 5)
+ #define GENPD_FLAG_MIN_RESIDENCY (1U << 6)
++#define GENPD_FLAG_OPP_TABLE_FW	 (1U << 7)
+ 
+ enum gpd_status {
+ 	GENPD_STATE_ON = 0,	/* PM domain is on */
 -- 
 2.34.1
 
