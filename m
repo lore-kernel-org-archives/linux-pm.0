@@ -2,153 +2,313 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A34ECC83F18
-	for <linux-pm@archiver.kernel.org>; Sat, 26 Aug 2023 02:30:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B901C83F11
+	for <linux-pm@archiver.kernel.org>; Sat, 26 Aug 2023 08:09:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231747AbjHZC3d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Aug 2023 22:29:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36580 "EHLO
+        id S232048AbjHZIIy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 26 Aug 2023 04:08:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35392 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231722AbjHZC3E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2023 22:29:04 -0400
-Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59B41A8;
-        Fri, 25 Aug 2023 19:29:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:Content-Type:
-        MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=kRz17k12DLtH5ptlx3fiiancvtShyoQwDvuAAOUED4Y=; b=mPm/qZCa7MWW4zdrpIjhXYeIS6
-        8cbIgOvCf/9Y6gIxhhuc7MbOClbX1o3H4gTlXLJmOpOyil1pufLmdD8oxm6VhlxB4x6C/OQmKz1OC
-        9Sg7eN60e8HGn0pn/DtWEZ2zi7uHlJyyQNolWeGdXQEgqn78/62UYsbUB8gsUgOw68YkPTd36+fo0
-        kPzizyM3mKJ55bukbV99w6F1Yx4exn0ELF0EHA2mn4TEClpd2hjjcTiwEbEGv+vsWkEq4IC7ejHjR
-        rO8uE9/3ipL5VpLJjGdd7WJssIdQ5Tj/z+j2E3fQDWI0Qb9TMLDhfRhfBXk5sw2QK4rJI42xn3tDe
-        SBJa1VHw==;
-Received: from viro by zeniv.linux.org.uk with local (Exim 4.96 #2 (Red Hat Linux))
-        id 1qZj2i-0010QB-1S;
-        Sat, 26 Aug 2023 02:28:52 +0000
-Date:   Sat, 26 Aug 2023 03:28:52 +0100
-From:   Al Viro <viro@zeniv.linux.org.uk>
-To:     Jan Kara <jack@suse.cz>
-Cc:     linux-fsdevel@vger.kernel.org, linux-block@vger.kernel.org,
-        Christoph Hellwig <hch@infradead.org>,
-        Alasdair Kergon <agk@redhat.com>,
+        with ESMTP id S232081AbjHZIIW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Aug 2023 04:08:22 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 562E41FF0;
+        Sat, 26 Aug 2023 01:08:19 -0700 (PDT)
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37Q81E2g002453;
+        Sat, 26 Aug 2023 08:07:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding : content-type; s=qcppdkim1;
+ bh=toTSUxSzKHK82dJG3FdjsK0wlkEXyaoeC5l4iBCP/fY=;
+ b=fizWYDkf09KXMVX5fgKhDjRJz+GZx5PqSGFin5xgbucjMstQun3n7XsUYtTrPliUSs5i
+ H5bSlwFjVoLKXZGjkZ16tzOqPGmwE0LoRtdm0Z7vpYhbscwOU7Z5i3lAcibrX0Q+rsmb
+ pXKcqri3/6AGCZY0s8iENO0moXpyiF1KXTDb1MaPDzAaQ2JQg00q5wgX8kVQJDYjhAIu
+ kx+jnEQJN4AwScSABfoQZzTJqE4iiIVjsN5wiEMD6nqLspwiv4tEzU3Kb49ndwQ0gTay
+ 06uvqVgWIQoO6jzReKb//6zt7S2VMUXkPTUYA+KxF47eO7Ex9A84Vov2Y8MHrNjIGoD3 wQ== 
+Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sq907g91x-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Sat, 26 Aug 2023 08:07:53 +0000
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+        by NASANPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 37Q87qI0023779
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Sat, 26 Aug 2023 08:07:52 GMT
+Received: from hu-gurus-sd.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.36; Sat, 26 Aug 2023 01:07:49 -0700
+From:   Guru Das Srinagesh <quic_gurus@quicinc.com>
+To:     Masahiro Yamada <masahiroy@kernel.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
         Andrew Morton <akpm@linux-foundation.org>,
-        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        "Darrick J. Wong" <djwong@kernel.org>,
-        Dave Kleikamp <shaggy@kernel.org>,
-        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
-        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
-        Jack Wang <jinpu.wang@ionos.com>,
-        Jaegeuk Kim <jaegeuk@kernel.org>,
-        jfs-discussion@lists.sourceforge.net,
-        Joern Engel <joern@lazybastard.org>,
-        Joseph Qi <joseph.qi@linux.alibaba.com>,
-        Kent Overstreet <kent.overstreet@gmail.com>,
-        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
-        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
-        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
-        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
-        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-xfs@vger.kernel.org,
-        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
-        Mike Snitzer <snitzer@kernel.org>,
-        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
-        reiserfs-devel@vger.kernel.org,
-        Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Song Liu <song@kernel.org>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
-        Trond Myklebust <trond.myklebust@hammerspace.com>,
-        xen-devel@lists.xenproject.org, Jens Axboe <axboe@kernel.dk>,
-        Christian Brauner <brauner@kernel.org>
-Subject: Re: [PATCH v2 0/29] block: Make blkdev_get_by_*() return handle
-Message-ID: <20230826022852.GO3390869@ZenIV>
-References: <20230810171429.31759-1-jack@suse.cz>
- <20230825015843.GB95084@ZenIV>
- <20230825134756.o3wpq6bogndukn53@quack3>
+        "Nicolas Schier" <nicolas@fjasle.eu>,
+        Konstantin Ryabitsev <konstantin@linuxfoundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        "Bjorn Andersson" <andersson@kernel.org>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, Will Deacon <will@kernel.org>,
+        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+        <quic_pkondeti@quicinc.com>
+CC:     <linux-kernel@vger.kernel.org>, <kernel@quicinc.com>,
+        <workflows@vger.kernel.org>, <tools@linux.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
+        "Guru Das Srinagesh" <quic_gurus@quicinc.com>
+Subject: [PATCH v3 1/1] scripts: Add add-maintainer.py
+Date:   Sat, 26 Aug 2023 01:07:42 -0700
+Message-ID: <141b9fcab2208ace3001df4fc10e3dfd42b9f5d9.1693037031.git.quic_gurus@quicinc.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <cover.1693037031.git.quic_gurus@quicinc.com>
+References: <cover.1693037031.git.quic_gurus@quicinc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230825134756.o3wpq6bogndukn53@quack3>
-Sender: Al Viro <viro@ftp.linux.org.uk>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: FVDnSdgPZtRCDd6m7P3bOpnVoPIOH3MY
+X-Proofpoint-ORIG-GUID: FVDnSdgPZtRCDd6m7P3bOpnVoPIOH3MY
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-08-26_05,2023-08-25_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 suspectscore=0
+ mlxlogscore=999 bulkscore=0 phishscore=0 adultscore=0 spamscore=0
+ mlxscore=0 impostorscore=0 priorityscore=1501 malwarescore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2308260074
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Aug 25, 2023 at 03:47:56PM +0200, Jan Kara wrote:
+This script runs get_maintainer.py on a given patch file (or multiple
+patch files) and adds its output to the patch file in place with the
+appropriate email headers "To: " or "Cc: " as the case may be. These new
+headers are added after the "From: " line in the patch.
 
-> I can see the appeal of not having to introduce the new bdev_handle type
-> and just using struct file which unifies in-kernel and userspace block
-> device opens. But I can see downsides too - the last fput() happening from
-> task work makes me a bit nervous whether it will not break something
-> somewhere with exclusive bdev opens. Getting from struct file to bdev is
-> somewhat harder but I guess a helper like F_BDEV() would solve that just
-> fine.
-> 
-> So besides my last fput() worry about I think this could work and would be
-> probably a bit nicer than what I have. But before going and redoing the whole
-> series let me gather some more feedback so that we don't go back and forth.
-> Christoph, Christian, Jens, any opinion?
+Currently, for a single patch, maintainers and reviewers are added as
+"To: ", mailing lists and all other roles are added as "Cc: ".
 
-Redoing is not an issue - it can be done on top of your series just
-as well.  Async behaviour of fput() might be, but...  need to look
-through the actual users; for a lot of them it's perfectly fine.
+For a series of patches, however, a set-union scheme is employed in
+order to solve the all-too-common problem of ending up sending only
+subsets of a patch series to some lists, which results in important
+pieces of context such as the cover letter (or other patches in the
+series) being dropped from those lists. This scheme is as follows:
 
-FWIW, from a cursory look there appears to be a missing primitive: take
-an opened bdev (or bdev_handle, with your variant, or opened file if we
-go that way eventually) and claim it.
+- Create set-union of all maintainers and reviewers from all patches and
+  use this to do the following per patch:
+  - add only that specific patch's maintainers and reviewers as "To: "
+  - add the other maintainers and reviewers from the other patches as "Cc: "
 
-I mean, look at claim_swapfile() for example:
-                p->bdev = blkdev_get_by_dev(inode->i_rdev,
-                                   FMODE_READ | FMODE_WRITE | FMODE_EXCL, p);
-                if (IS_ERR(p->bdev)) {
-                        error = PTR_ERR(p->bdev);
-                        p->bdev = NULL;
-                        return error;
-                }
-                p->old_block_size = block_size(p->bdev);
-                error = set_blocksize(p->bdev, PAGE_SIZE);
-                if (error < 0)
-                        return error;
-we already have the file opened, and we keep it opened all the way until
-the swapoff(2); here we have noticed that it's a block device and we
-	* open the fucker again (by device number), this time claiming
-it with our swap_info_struct as holder, to be closed at swapoff(2) time
-(just before we close the file)
-	* flip the block size to PAGE_SIZE, to be reverted at swapoff(2)
-time That really looks like it ought to be
-	* take the opened file, see that it's a block device
-	* try to claim it with that holder
-	* on success, flip the block size
-with close_filp() in the swapoff(2) (or failure exit path in swapon(2))
-doing what it would've done for an O_EXCL opened block device.
-The only difference from O_EXCL userland open is that here we would
-end up with holder pointing not to struct file in question, but to our
-swap_info_struct.  It will do the right thing.
+- Create set-union of all mailing lists corresponding to all patches and
+  add this to all patches as "Cc: "
 
-This extra open is entirely due to "well, we need to claim it and the
-primitive that does that happens to be tied to opening"; feels rather
-counter-intuitive.
+- Create set-union of all other roles corresponding to all patches and
+  add this to all patches as "Cc: "
 
-For that matter, we could add an explicit "unclaim" primitive - might
-be easier to follow.  That would add another example where that could
-be used - in blkdev_bszset() we have an opened block device (it's an
-ioctl, after all), we want to change block size and we *really* don't
-want to have that happen under a mounted filesystem.  So if it's not
-opened exclusive, we do a temporary exclusive open of own and act on
-that instead.   Might as well go for a temporary claim...
+Please note that patch files that don't have any "Maintainer"s or
+"Reviewers" explicitly listed in their `get_maintainer.pl` output will
+not have any "To: " entries added to them; developers are expected to
+manually make edits to the added entries in such cases to convert some
+"Cc: " entries to "To: " as desired.
 
-BTW, what happens if two threads call ioctl(fd, BLKBSZSET, &n)
-for the same descriptor that happens to have been opened O_EXCL?
-Without O_EXCL they would've been unable to claim the sucker at the same
-time - the holder we are using is the address of a function argument,
-i.e. something that points to kernel stack of the caller.  Those would
-conflict and we either get set_blocksize() calls fully serialized, or
-one of the callers would eat -EBUSY.  Not so in "opened with O_EXCL"
-case - they can very well overlap and IIRC set_blocksize() does *not*
-expect that kind of crap...  It's all under CAP_SYS_ADMIN, so it's not
-as if it was a meaningful security hole anyway, but it does look fishy.
+The script is quiet by default (only prints errors) and its verbosity
+can be adjusted via an optional parameter.
+
+Signed-off-by: Guru Das Srinagesh <quic_gurus@quicinc.com>
+---
+ MAINTAINERS               |   5 ++
+ scripts/add-maintainer.py | 164 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 169 insertions(+)
+ create mode 100755 scripts/add-maintainer.py
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0903d87b17cb..b670e9733f03 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8721,6 +8721,11 @@ M:	Joe Perches <joe@perches.com>
+ S:	Maintained
+ F:	scripts/get_maintainer.pl
+ 
++ADD MAINTAINER SCRIPT
++M:	Guru Das Srinagesh <quic_gurus@quicinc.com>
++S:	Maintained
++F:	scripts/add-maintainer.py
++
+ GFS2 FILE SYSTEM
+ M:	Bob Peterson <rpeterso@redhat.com>
+ M:	Andreas Gruenbacher <agruenba@redhat.com>
+diff --git a/scripts/add-maintainer.py b/scripts/add-maintainer.py
+new file mode 100755
+index 000000000000..5a5cc9482b06
+--- /dev/null
++++ b/scripts/add-maintainer.py
+@@ -0,0 +1,164 @@
++#! /usr/bin/env python3
++
++import argparse
++import logging
++import os
++import sys
++import subprocess
++import re
++
++def gather_maintainers_of_file(patch_file):
++    all_entities_of_patch = dict()
++
++    # Run get_maintainer.pl on patch file
++    logging.info("GET: Patch: {}".format(os.path.basename(patch_file)))
++    cmd = ['scripts/get_maintainer.pl']
++    cmd.extend([patch_file])
++
++    try:
++        p = subprocess.run(cmd, stdout=subprocess.PIPE, check=True)
++    except:
++        sys.exit(1)
++
++    logging.debug("\n{}".format(p.stdout.decode()))
++
++    entries = p.stdout.decode().splitlines()
++
++    maintainers = []
++    lists = []
++    others = []
++
++    for entry in entries:
++        entity = entry.split('(')[0].strip()
++        if any(role in entry for role in ["maintainer", "reviewer"]):
++            maintainers.append(entity)
++        elif "list" in entry:
++            lists.append(entity)
++        else:
++            others.append(entity)
++
++    all_entities_of_patch["maintainers"] = set(maintainers)
++    all_entities_of_patch["lists"] = set(lists)
++    all_entities_of_patch["others"] = set(others)
++
++    return all_entities_of_patch
++
++def find_pattern_in_lines(pattern, lines):
++    index = 0
++    for line in lines:
++        if re.search(pattern, line):
++            break;
++        index = index + 1
++
++    if index == len(lines):
++        logging.error("Couldn't find pattern {} in patch".format(pattern))
++        sys.exit(1)
++
++    return index
++
++def add_maintainers_to_file(patch_file, entities_per_file, all_entities_union):
++    logging.info("ADD: Patch: {}".format(os.path.basename(patch_file)))
++
++    # For each patch:
++    # - Add all lists from all patches in series as Cc:
++    # - Add all others from all patches in series as Cc:
++    # - Add only maintainers of that patch as To:
++    # - Add maintainers of other patches in series as Cc:
++
++    lists = list(all_entities_union["all_lists"])
++    others = list(all_entities_union["all_others"])
++    file_maintainers = all_entities_union["all_maintainers"].intersection(entities_per_file[os.path.basename(patch_file)].get("maintainers"))
++    other_maintainers = all_entities_union["all_maintainers"].difference(entities_per_file[os.path.basename(patch_file)].get("maintainers"))
++
++    # Specify email headers appropriately
++    cc_lists        = ["Cc: " + l for l in lists]
++    cc_others       = ["Cc: " + o for o in others]
++    to_maintainers  = ["To: " + m for m in file_maintainers]
++    cc_maintainers  = ["Cc: " + om for om in other_maintainers]
++    logging.debug("Cc Lists:\n{}".format('\n'.join(cc_lists)))
++    logging.debug("Cc Others:\n{}".format('\n'.join(cc_others)))
++    logging.debug("Cc Maintainers:\n{}".format('\n'.join(cc_maintainers) or None))
++    logging.debug("To Maintainers:\n{}\n".format('\n'.join(to_maintainers) or None))
++
++    # Edit patch file in place to add maintainers
++    with open(patch_file, "r") as pf:
++        lines = pf.readlines()
++
++    # Get the index of the first "From: <email address>" line in patch
++    from_line = find_pattern_in_lines("^(From: )(.*)<(.*)@(.*)>", lines)
++
++    # Insert our To: and Cc: headers after it.
++    next_line_after_from = from_line + 1
++
++    for l in cc_lists:
++        lines.insert(next_line_after_from, l + "\n")
++    for o in cc_others:
++        lines.insert(next_line_after_from, o + "\n")
++    for om in cc_maintainers:
++        lines.insert(next_line_after_from, om + "\n")
++    for m in to_maintainers:
++        lines.insert(next_line_after_from, m + "\n")
++
++    with open(patch_file, "w") as pf:
++        pf.writelines(lines)
++
++def add_maintainers(patch_files):
++    entities_per_file = dict()
++
++    for patch in patch_files:
++        entities_per_file[os.path.basename(patch)] = gather_maintainers_of_file(patch)
++
++    all_entities_union = {"all_maintainers": set(), "all_lists": set(), "all_others": set()}
++    for patch in patch_files:
++        all_entities_union["all_maintainers"] = all_entities_union["all_maintainers"].union(entities_per_file[os.path.basename(patch)].get("maintainers"))
++        all_entities_union["all_lists"] = all_entities_union["all_lists"].union(entities_per_file[os.path.basename(patch)].get("lists"))
++        all_entities_union["all_others"] = all_entities_union["all_others"].union(entities_per_file[os.path.basename(patch)].get("others"))
++
++    for patch in patch_files:
++        add_maintainers_to_file(patch, entities_per_file, all_entities_union)
++
++    logging.info("Maintainers added to all patch files successfully")
++
++def remove_to_cc_from_header(patch_files):
++    for patch in patch_files:
++        logging.info("UNDO: Patch: {}".format(os.path.basename(patch)))
++        with open(patch, "r") as pf:
++            lines = pf.readlines()
++
++        # Get the index of the first "From: <email address>" line in patch
++        from_line = find_pattern_in_lines("^(From: )(.*)<(.*)@(.*)>", lines)
++
++        # Get the index of the first "Date: " line in patch
++        date_line = find_pattern_in_lines("^(Date: )", lines)
++
++        # Delete everything in between From: and Date:
++        # These are the lines that this script adds - any To: or Cc: anywhere
++        # else in the patch will not be removed.
++        del lines[(from_line + 1):date_line]
++
++        with open(patch, "w") as pf:
++            pf.writelines(lines)
++
++    logging.info("Maintainers removed from all patch files successfully")
++
++def main():
++    parser = argparse.ArgumentParser(description='Add the respective maintainers and mailing lists to patch files')
++    parser.add_argument('patches', nargs='+', help="One or more patch files")
++    parser.add_argument('-v', '--verbosity', choices=['debug', 'info', 'error'], default='error', help="Verbosity level of script output")
++    parser.add_argument('-u', '--undo', action='store_true', help="Remove maintainers added by this script from patch(es)")
++    args = parser.parse_args()
++
++    logging.basicConfig(level=args.verbosity.upper(), format='%(levelname)s: %(message)s')
++
++    for patch in args.patches:
++        if not os.path.isfile(patch):
++            logging.error("File does not exist: {}".format(patch))
++            sys.exit(1)
++
++    if args.undo:
++        remove_to_cc_from_header(args.patches)
++    else:
++        add_maintainers(args.patches)
++
++if __name__ == "__main__":
++    main()
+-- 
+2.41.0
+
