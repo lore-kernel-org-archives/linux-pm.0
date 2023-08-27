@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16200C83F16
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04810C83F11
 	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 23:32:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229577AbjH0XcY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Aug 2023 19:32:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59152 "EHLO
+        id S229506AbjH0XcX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Aug 2023 19:32:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59196 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229576AbjH0XcU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 19:32:20 -0400
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 494C4D9
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:17 -0700 (PDT)
-Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-31c6cd238e0so2287167f8f.0
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:17 -0700 (PDT)
+        with ESMTP id S229591AbjH0XcV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 19:32:21 -0400
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86292BC
+        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:18 -0700 (PDT)
+Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-3fef4b063a7so25449965e9.2
+        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20221208.gappssmtp.com; s=20221208; t=1693179136; x=1693783936;
+        d=layalina-io.20221208.gappssmtp.com; s=20221208; t=1693179137; x=1693783937;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=TUiAZLE25UP5PNu+kEwnlg+iVrOjDSgPGFYS2eQl6Qk=;
-        b=1lYLM9jj8BcntjwJapi8Vs1a7DRwDl9/ZkXfaYc8TeBsAomajDtHaHsi80//pkWlgV
-         3qwsTBk+/7iTUhe2/tsHwUSW1gKFeYCekkOEXRaM/KHZGUVrj79GYKHYlgviAfRdAaSe
-         zPPHu8x0CfqtcSnYpK1+rTe4V8sTjR/euYZ3/LLQC9A4LLpazdkeltIjC//VPTPe3cz/
-         rTdZa+olX7nbsUA+zKk+/JbLOtyb/rm117t3wQqjMZCcMPaFtxrLUvisruFhsGOwNojS
-         Kh2leDDoykJ33nPt1HZkRi/NhKsZjfhOToQ4UWZZ6XLNjdFuflEtIJjQs48C1k0cJ4Xl
-         03Yw==
+        bh=R5bbOUNHimZNEIeEbsqR6Op3Ym6DwMUs69DrKTMvK38=;
+        b=gDEUL0lSGmBoaPWfsdt3TIy8RSGSnjDc+yuy6jOtCoQs3riTpFg5BcpAg/47t5ETzA
+         uBEBzkWGVCP4rmYz+AG5I7SjwiA9c/DKIO8ce/UbRfn8vZWGo0wWUr4yDFlQvTKut4eg
+         lP3wAziUEizy9Jxu8vPPufPekOxYHt2oTwnTa/b4Qo5f7Jk+D7DjlE3YDfTCSoo5AXdC
+         /bPBxjmM79oD0K37l4OWKzrkMmOb4hud30gdwALN7Mz3swQDfSm/SHint0Ps+6zGXIwu
+         bB3ulNvSk/RkB9hOlHnfkdZO3HOppjPSxbrjVi4S7stzgZwp2uuE35P3TZj46EaAIfNo
+         LAFA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693179136; x=1693783936;
+        d=1e100.net; s=20221208; t=1693179137; x=1693783937;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=TUiAZLE25UP5PNu+kEwnlg+iVrOjDSgPGFYS2eQl6Qk=;
-        b=UeAphttamPhMOHNDhcbh6vRbpiF/4LUIDGHOfw7+lO3IFfEDG5DEg7qjkdYflaUVE8
-         pPIekhM59Kqujo+da180RpQS4tPj/dF0hFXxPHT78SvbHNcrUoWiLj7sAf7iHtqlIKlR
-         t15regOOrwfFDyMa2v3WOEdtS8D1odMZYA7nLBjCVtgsYxUAFOnWJdoVAtnIMDoxteKK
-         h4iFDzl9NUu1OKEm4FPoL89NJmTZNXSlfux3yuS1ACG1GlnKE3YhnWbL1rIfuoW2278z
-         sn7js70YvpQWshR7lKQkXAjcvZuqbQdRiQsClbSXSy2Kwz7cCbypSQy9SUcisLMntwbt
-         RmKw==
-X-Gm-Message-State: AOJu0YztMcgIlbyqj13ojI2etSfn+OOVteQptbtHLYm+80c259XzYqQV
-        Pin0uVuq2xCVY17xrPwrFQdHVw==
-X-Google-Smtp-Source: AGHT+IGgPBy9e8n3XpdI/QU8N5OZg9NT4gK9vR0sAWjDjSmuMs1dflKI1vrkQPwpTbVkx8My7SAbQg==
-X-Received: by 2002:adf:f54a:0:b0:317:597f:3aa6 with SMTP id j10-20020adff54a000000b00317597f3aa6mr20505805wrp.18.1693179135312;
-        Sun, 27 Aug 2023 16:32:15 -0700 (PDT)
+        bh=R5bbOUNHimZNEIeEbsqR6Op3Ym6DwMUs69DrKTMvK38=;
+        b=OuSSlxk4EwVbz2Gtl9TUZnx8gjV7BFJ/Zfw+8xx+mucnqDQbtyv8v1J+SDVKgGUtbq
+         3AZhj5T5SPmk0oExDBdH8DW6tcfLccUSAKY0Fscq0JpSdaPj+NVsbdT368jv1+en5/dU
+         XeNd04TMmv7SyQvDz7uk7bDI0ZuVvXEf/ucsNSH3QmZsZqG9Dw7y6Ek94sHFpiQkRFU4
+         sJaHljVIqzOkRogG37j8KPz9boYrorp3mPhdEM29h7BCLZn6gi0uSw1pq0kcQbuB5RA8
+         HijYvr0eDI9J3cvVaj37Cy0YcJjUXz0pUKPuQpd38pL2sfoI9isKsfNRN3j9DigFhOUq
+         XwZQ==
+X-Gm-Message-State: AOJu0YzNd/OD8zNcYalgOgJPqNHgAzHkvGSbXhtBOTr8vmb/4U4432Lg
+        SXCqRAHOlpkziVZdxGEZnMFOtBzA+h65s3MiSwg=
+X-Google-Smtp-Source: AGHT+IHYSiwQ3pMeW83Szi6hCgZxKzkWheiaQklAzkUroyHg+F/5J5GvycGMIWaS2P3qj3to1YJnLQ==
+X-Received: by 2002:a7b:ce11:0:b0:401:c636:8f4c with SMTP id m17-20020a7bce11000000b00401c6368f4cmr2111090wmc.3.1693179136997;
+        Sun, 27 Aug 2023 16:32:16 -0700 (PDT)
 Received: from airbuntu.. (host109-151-228-137.range109-151.btcentralplus.com. [109.151.228.137])
-        by smtp.gmail.com with ESMTPSA id 21-20020a05600c029500b003fe1a96845bsm12220395wmk.2.2023.08.27.16.32.14
+        by smtp.gmail.com with ESMTPSA id 21-20020a05600c029500b003fe1a96845bsm12220395wmk.2.2023.08.27.16.32.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Aug 2023 16:32:14 -0700 (PDT)
+        Sun, 27 Aug 2023 16:32:16 -0700 (PDT)
 From:   Qais Yousef <qyousef@layalina.io>
 To:     Ingo Molnar <mingo@kernel.org>,
         Peter Zijlstra <peterz@infradead.org>,
@@ -59,9 +59,9 @@ To:     Ingo Molnar <mingo@kernel.org>,
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Lukasz Luba <lukasz.luba@arm.com>,
         Qais Yousef <qyousef@layalina.io>
-Subject: [RFC PATCH 1/7] sched/pelt: Add a new function to approximate the future util_avg value
-Date:   Mon, 28 Aug 2023 00:31:57 +0100
-Message-Id: <20230827233203.1315953-2-qyousef@layalina.io>
+Subject: [RFC PATCH 3/7] sched/fair: Remove magic margin in fits_capacity()
+Date:   Mon, 28 Aug 2023 00:31:59 +0100
+Message-Id: <20230827233203.1315953-4-qyousef@layalina.io>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230827233203.1315953-1-qyousef@layalina.io>
 References: <20230827233203.1315953-1-qyousef@layalina.io>
@@ -71,62 +71,65 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Given a util_avg value, the new function will return the future one
-given a runtime delta.
+80% margin is a magic value that has served its purpose for now, but it
+no longer fits the variety of systems exist today. If a system is over
+powered specifically, this 80% will mean we leave a lot of capacity
+unused before we decide to upmigrate on HMP system.
 
-This will be useful in later patches to help replace some magic margins
-with more deterministic behavior.
+The upmigration behavior should rely on the fact that a bad decision
+made will need load balance to kick in to perform misfit migration. And
+I think this is an adequate definition for what to consider as enough
+headroom to consider whether a util fits capacity or not.
+
+Use the new approximate_util_avg() function to predict the util if the
+task continues to run for TICK_US. If the value is not strictly less
+than the capacity, then it must not be placed there, ie considered
+misfit.
 
 Signed-off-by: Qais Yousef (Google) <qyousef@layalina.io>
 ---
- kernel/sched/pelt.c  | 22 +++++++++++++++++++++-
- kernel/sched/sched.h |  3 +++
- 2 files changed, 24 insertions(+), 1 deletion(-)
+ kernel/sched/fair.c | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/sched/pelt.c b/kernel/sched/pelt.c
-index 0f310768260c..50322005a0ae 100644
---- a/kernel/sched/pelt.c
-+++ b/kernel/sched/pelt.c
-@@ -466,4 +466,24 @@ int update_irq_load_avg(struct rq *rq, u64 running)
- 
- 	return ret;
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 0b7445cd5af9..facbf3eb7141 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -109,16 +109,31 @@ int __weak arch_asym_cpu_priority(int cpu)
  }
--#endif
-+#endif /* CONFIG_HAVE_SCHED_AVG_IRQ */
-+
-+/*
-+ * Approximate the new util_avg value assuming an entity has continued to run
-+ * for @delta us.
-+ */
-+unsigned long approximate_util_avg(unsigned long util, u64 delta)
-+{
-+	struct sched_avg sa = {
-+		.util_sum = util * PELT_MIN_DIVIDER,
-+		.util_avg = util,
-+	};
-+
-+	if (unlikely(!delta))
-+		return util;
-+
-+	accumulate_sum(delta, &sa, 0, 0, 1);
-+	___update_load_avg(&sa, 0);
-+
-+	return sa.util_avg;
-+}
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 56eeb5b05b50..5f76b8a75a9f 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -2997,6 +2997,9 @@ enum cpu_util_type {
- unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
- 				 enum cpu_util_type type,
- 				 struct task_struct *p);
-+
-+unsigned long approximate_util_avg(unsigned long util, u64 delta);
-+
+ 
  /*
-  * DVFS decision are made at discrete points. If CPU stays busy, the util will
-  * continue to grow, which means it could need to run at a higher frequency
+- * The margin used when comparing utilization with CPU capacity.
++ * The util will fit the capacity if it has enough headroom to grow within the
++ * next tick - which is when any load balancing activity happens to do the
++ * correction.
+  *
+- * (default: ~20%)
++ * If util stays within the capacity before tick has elapsed, then it should be
++ * fine. If not, then a correction action must happen shortly after it starts
++ * running, hence we treat it as !fit.
++ *
++ * TODO: TICK is not actually accurate enough. balance_interval is the correct
++ * one to use as the next load balance doesn't not happen religiously at tick.
++ * Accessing balance_interval might be tricky and will require some refactoring
++ * first.
+  */
+-#define fits_capacity(cap, max)	((cap) * 1280 < (max) * 1024)
++static inline bool fits_capacity(unsigned long util, unsigned long capacity)
++{
++	return approximate_util_avg(util, TICK_USEC) < capacity;
++}
+ 
+ /*
+  * The margin used when comparing CPU capacities.
+  * is 'cap1' noticeably greater than 'cap2'
+  *
++ * TODO: use approximate_util_avg() to give something more quantifiable based
++ * on time? Like 1ms?
++ *
+  * (default: ~5%)
+  */
+ #define capacity_greater(cap1, cap2) ((cap1) * 1024 > (cap2) * 1078)
 -- 
 2.34.1
 
