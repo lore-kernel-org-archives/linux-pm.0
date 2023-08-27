@@ -2,278 +2,87 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55693CA1015
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 11:51:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA63DC83F12
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 16:45:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230016AbjH0LvV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Aug 2023 07:51:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52332 "EHLO
+        id S229723AbjH0QpG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Aug 2023 12:45:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47994 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230081AbjH0Lu6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 07:50:58 -0400
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2E87CDE
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 04:50:49 -0700 (PDT)
-Received: by mail-lf1-x12b.google.com with SMTP id 2adb3069b0e04-500b3f7f336so1026536e87.1
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 04:50:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693137048; x=1693741848;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=jGL0BWRJKPfl8oger7j3JrfqT3+nXc/9EFQqXlrE5Ig=;
-        b=QPgOAQIumn8IWNtnwbrmxegPRxzIXf/bCEdQVjz85Sy8RmLJeNxcrXpIYkQXFt/Yjr
-         +mhFW4s0tsJg2YoTm+2Xqw+AvUufoA1tRhiPshQicm/MpMD5Kw4L1253Tj6c0Wd2w6mD
-         V2acviL0t9rAehVMpRKEyYt+k7ksI95uEIn9VcmJuVpJFJHPidsm9xji8hpfnishrz9S
-         WAYCu5FacM2pGFrIOXg2DsCIehEWBgSpwd+J8OHlY1kslMHyU8OgGXtBVbXuJAHjfJKv
-         d8wOg1XNp1zcUhPkBGiXQ0I51JhYolLOLrqh00xDEHhGBse+s0f4DfIaDPCOTLxbRBja
-         0dxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693137048; x=1693741848;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=jGL0BWRJKPfl8oger7j3JrfqT3+nXc/9EFQqXlrE5Ig=;
-        b=TqHKeTlXZDi0TepNcTDdne/OTLnXIWxeave8HfMgdJN3JmUywvwqHg9+7643+rP1l3
-         vfaR5Oj0eAqLYO19VjuXxgAJIuTeZhATJ0Uh6SL4n0z3ThDvdEFTtxr1/B7/3E56OBli
-         sNjmsRjXssNSz8KjutoQ7Otlkp7onFpZf6v1XPuYPQDxI64mdXBGi8PgwcsVkYZbbEae
-         NlBZSJJYj/1anISxd5QjuTdO5CJZAnUTeTPyym3Zfk4oMVsDN7a17Djlp43ShF+H51zG
-         C3xI8Xnf7UUIM+lGloGOTOa/Xndi9HDEhMrBVjtntMNqxpPFuIYUYziHsa+2OhJYMEwV
-         b6oQ==
-X-Gm-Message-State: AOJu0YyVOx0u+y26e0LkYoVlzNMI1sEmbamJwaHuZqaAuzwvZWBLYpLF
-        uj2az8B1VGX+SQue+tj2LvfUHw==
-X-Google-Smtp-Source: AGHT+IEL2U8FotRdtR+0JKbrKDc/HrSAwGHsKFfKUOe/JBFKtQwwvTjjHXf8Zt+r+f/AzI4NLQifRA==
-X-Received: by 2002:a05:6512:2256:b0:500:808c:9ee6 with SMTP id i22-20020a056512225600b00500808c9ee6mr15671753lfu.6.1693137048073;
-        Sun, 27 Aug 2023 04:50:48 -0700 (PDT)
-Received: from umbar.unikie.fi ([192.130.178.91])
-        by smtp.gmail.com with ESMTPSA id a8-20020a19f808000000b004ff9f88b86esm1114770lff.308.2023.08.27.04.50.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Aug 2023 04:50:47 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>
-Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-        Christian Marangi <ansuelsmth@gmail.com>,
-        Stephan Gerhold <stephan@gerhold.net>
-Subject: [PATCH v4 16/23] ARM: dts: qcom: apq8064: add L2 cache scaling
-Date:   Sun, 27 Aug 2023 14:50:26 +0300
-Message-Id: <20230827115033.935089-17-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230827115033.935089-1-dmitry.baryshkov@linaro.org>
-References: <20230827115033.935089-1-dmitry.baryshkov@linaro.org>
+        with ESMTP id S229787AbjH0Qo4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 12:44:56 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39E69118;
+        Sun, 27 Aug 2023 09:44:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+        bh=ze7w8GV++/W5Alkw9IxiM745XJDb5+qg93ZRPcqtNVo=; b=tCSirH6E04X/F0h2/B7WH7gwrj
+        Q/sZwgZWJG077o53lA4Hi8G6gF880h09U2tixIT+w3R8X/0Rvv19laHab2vuE6GpDXhGyRmNDX5mG
+        J5AxMq1EDU6ztfFI6jcbtxItCI3tUA5aEDcWidQAZLizXLIun4/rofwxLhL9iV7vjwA2Mom9qutbE
+        ETwn9qQbWZUcKfCRHxnEK35EjOnH4uyHl0udY4VR2K7y/BQ2VAKy8G2wiGPrzMaa6/+AdE4C8cvOr
+        6UpJJXWfof9R2b5HgYRyUfeuzM8Zm7bZMQsZXj75vuttVFmv+vb6vsOHD7rCCRMy/hIoTXzpIRLcs
+        AsdNraVg==;
+Received: from [2601:1c2:980:9ec0::2764]
+        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qaIsV-008G9g-0W;
+        Sun, 27 Aug 2023 16:44:43 +0000
+Message-ID: <6a3ad63d-5b4d-e861-3fec-2e8fa929e156@infradead.org>
+Date:   Sun, 27 Aug 2023 09:44:42 -0700
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH v3 1/1] scripts: Add add-maintainer.py
+Content-Language: en-US
+To:     Guru Das Srinagesh <quic_gurus@quicinc.com>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Nicolas Schier <nicolas@fjasle.eu>,
+        Konstantin Ryabitsev <konstantin@linuxfoundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Bjorn Andersson <andersson@kernel.org>, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, Will Deacon <will@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        quic_pkondeti@quicinc.com
+Cc:     linux-kernel@vger.kernel.org, kernel@quicinc.com,
+        workflows@vger.kernel.org, tools@linux.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+References: <cover.1693037031.git.quic_gurus@quicinc.com>
+ <141b9fcab2208ace3001df4fc10e3dfd42b9f5d9.1693037031.git.quic_gurus@quicinc.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <141b9fcab2208ace3001df4fc10e3dfd42b9f5d9.1693037031.git.quic_gurus@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Populate L2 cache node with clock, supplies and OPP information to
-facilitate scaling L2 frequency.
+Hi,
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
----
- .../dts/qcom/qcom-apq8064-asus-nexus7-flo.dts |   5 +
- .../boot/dts/qcom/qcom-apq8064-cm-qs600.dts   |   5 +
- .../boot/dts/qcom/qcom-apq8064-ifc6410.dts    |   5 +
- .../qcom-apq8064-sony-xperia-lagan-yuga.dts   |   5 +
- arch/arm/boot/dts/qcom/qcom-apq8064.dtsi      | 100 +++++++++++++++++-
- 5 files changed, 119 insertions(+), 1 deletion(-)
+On 8/26/23 01:07, Guru Das Srinagesh wrote:
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 0903d87b17cb..b670e9733f03 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -8721,6 +8721,11 @@ M:	Joe Perches <joe@perches.com>
+>  S:	Maintained
+>  F:	scripts/get_maintainer.pl
+>  
 
-diff --git a/arch/arm/boot/dts/qcom/qcom-apq8064-asus-nexus7-flo.dts b/arch/arm/boot/dts/qcom/qcom-apq8064-asus-nexus7-flo.dts
-index b60761290156..a8f826f0479a 100644
---- a/arch/arm/boot/dts/qcom/qcom-apq8064-asus-nexus7-flo.dts
-+++ b/arch/arm/boot/dts/qcom/qcom-apq8064-asus-nexus7-flo.dts
-@@ -78,6 +78,11 @@ reboot-mode {
- 	};
- };
- 
-+&L2 {
-+	vdd-mem-supply = <&pm8921_l24>;
-+	vdd-dig-supply = <&pm8921_s3>;
-+};
-+
- &dsi0 {
- 	vdda-supply = <&pm8921_l2>;/*VDD_MIPI1 to 4*/
- 	vdd-supply = <&pm8921_l8>;
-diff --git a/arch/arm/boot/dts/qcom/qcom-apq8064-cm-qs600.dts b/arch/arm/boot/dts/qcom/qcom-apq8064-cm-qs600.dts
-index ee071aed9b8d..7372f62fa31d 100644
---- a/arch/arm/boot/dts/qcom/qcom-apq8064-cm-qs600.dts
-+++ b/arch/arm/boot/dts/qcom/qcom-apq8064-cm-qs600.dts
-@@ -35,6 +35,11 @@ v3p3_fixed: regulator-v3p3 {
- 	};
- };
- 
-+&L2 {
-+	vdd-mem-supply = <&pm8921_l24>;
-+	vdd-dig-supply = <&pm8921_s3>;
-+};
-+
- &gsbi1 {
- 	qcom,mode = <GSBI_PROT_I2C>;
- 	status = "okay";
-diff --git a/arch/arm/boot/dts/qcom/qcom-apq8064-ifc6410.dts b/arch/arm/boot/dts/qcom/qcom-apq8064-ifc6410.dts
-index 062c9cf4ec77..ddc69496100a 100644
---- a/arch/arm/boot/dts/qcom/qcom-apq8064-ifc6410.dts
-+++ b/arch/arm/boot/dts/qcom/qcom-apq8064-ifc6410.dts
-@@ -69,6 +69,11 @@ ext_3p3v: regulator-ext-3p3v {
- 	};
- };
- 
-+&L2 {
-+	vdd-mem-supply = <&pm8921_l24>;
-+	vdd-dig-supply = <&pm8921_s3>;
-+};
-+
- &gsbi1 {
- 	qcom,mode = <GSBI_PROT_I2C>;
- 	status = "okay";
-diff --git a/arch/arm/boot/dts/qcom/qcom-apq8064-sony-xperia-lagan-yuga.dts b/arch/arm/boot/dts/qcom/qcom-apq8064-sony-xperia-lagan-yuga.dts
-index 5b911e5f0b55..8e0c12d406f6 100644
---- a/arch/arm/boot/dts/qcom/qcom-apq8064-sony-xperia-lagan-yuga.dts
-+++ b/arch/arm/boot/dts/qcom/qcom-apq8064-sony-xperia-lagan-yuga.dts
-@@ -57,6 +57,11 @@ key-volume-up {
- 	};
- };
- 
-+&L2 {
-+	vdd-mem-supply = <&pm8921_l24>;
-+	vdd-dig-supply = <&pm8921_s3>;
-+};
-+
- &gsbi5 {
- 	qcom,mode = <GSBI_PROT_I2C_UART>;
- 	status = "okay";
-diff --git a/arch/arm/boot/dts/qcom/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom/qcom-apq8064.dtsi
-index a05e64bff07f..21990ca5851a 100644
---- a/arch/arm/boot/dts/qcom/qcom-apq8064.dtsi
-+++ b/arch/arm/boot/dts/qcom/qcom-apq8064.dtsi
-@@ -2,6 +2,7 @@
- /dts-v1/;
- 
- #include <dt-bindings/clock/qcom,gcc-msm8960.h>
-+#include <dt-bindings/clock/qcom,krait-cc.h>
- #include <dt-bindings/clock/qcom,lcc-msm8960.h>
- #include <dt-bindings/reset/qcom,gcc-msm8960.h>
- #include <dt-bindings/clock/qcom,mmcc-msm8960.h>
-@@ -81,9 +82,106 @@ CPU3: cpu@3 {
- 		};
- 
- 		L2: l2-cache {
--			compatible = "cache";
-+			compatible = "qcom,krait-l2-cache", "cache";
- 			cache-level = <2>;
- 			cache-unified;
-+			clocks = <&kraitcc KRAIT_L2>;
-+			#interconnect-cells = <1>;
-+			operating-points-v2 = <&l2_opp_table>;
-+
-+			l2_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-384000000 {
-+					opp-hz = /bits/ 64 <384000000>;
-+					opp-microvolt = <1050000 1050000 1150000>,
-+							<950000 950000 1150000>;
-+				};
-+
-+				opp-432000000 {
-+					opp-hz = /bits/ 64 <432000000>;
-+					opp-microvolt = <1050000 1050000 1150000>,
-+							<1050000 1050000 1150000>;
-+				};
-+
-+				opp-486000000 {
-+					opp-hz = /bits/ 64 <486000000>;
-+					opp-microvolt = <1050000 1050000 1150000>,
-+							<1050000 1050000 1150000>;
-+				};
-+
-+				opp-540000000 {
-+					opp-hz = /bits/ 64 <540000000>;
-+					opp-microvolt = <1050000 1050000 1150000>,
-+							<1050000 1050000 1150000>;
-+				};
-+
-+				opp-594000000 {
-+					opp-hz = /bits/ 64 <594000000>;
-+					opp-microvolt = <1050000 1050000 1150000>,
-+							<1050000 1050000 1150000>;
-+				};
-+
-+				opp-648000000 {
-+					opp-hz = /bits/ 64 <648000000>;
-+					opp-microvolt = <1050000 1050000 1150000>,
-+							<1050000 1050000 1150000>;
-+				};
-+
-+				opp-702000000 {
-+					opp-hz = /bits/ 64 <702000000>;
-+					opp-microvolt = <1150000 1150000 1150000>,
-+							<1150000 1150000 1150000>;
-+				};
-+
-+				opp-756000000 {
-+					opp-hz = /bits/ 64 <756000000>;
-+					opp-microvolt = <1150000 1150000 1150000>,
-+							<1150000 1150000 1150000>;
-+				};
-+
-+				opp-810000000 {
-+					opp-hz = /bits/ 64 <810000000>;
-+					opp-microvolt = <1150000 1150000 1150000>,
-+							<1150000 1150000 1150000>;
-+				};
-+
-+				opp-864000000 {
-+					opp-hz = /bits/ 64 <864000000>;
-+					opp-microvolt = <1150000 1150000 1150000>,
-+							<1150000 1150000 1150000>;
-+				};
-+
-+				opp-918000000 {
-+					opp-hz = /bits/ 64 <918000000>;
-+					opp-microvolt = <1150000 1150000 1150000>,
-+							<1150000 1150000 1150000>;
-+				};
-+
-+				opp-972000000 {
-+					opp-hz = /bits/ 64 <972000000>;
-+					opp-microvolt = <1150000 1150000 1150000>,
-+							<1150000 1150000 1150000>;
-+				};
-+
-+				opp-1026000000 {
-+					opp-hz = /bits/ 64 <1026000000>;
-+					opp-microvolt = <1150000 1150000 1150000>,
-+							<1150000 1150000 1150000>;
-+				};
-+
-+				opp-1080000000 {
-+					opp-hz = /bits/ 64 <1080000000>;
-+					opp-microvolt = <1150000 1150000 1150000>,
-+							<1150000 1150000 1150000>;
-+				};
-+
-+				opp-1134000000 {
-+					opp-hz = /bits/ 64 <1134000000>;
-+					opp-microvolt = <1150000 1150000 1150000>,
-+							<1150000 1150000 1150000>;
-+				};
-+			};
- 		};
- 
- 		idle-states {
+The MAINTAINERS file should be maintained in alphabetical order,
+so this is not in the correct place.
+
+> +ADD MAINTAINER SCRIPT
+> +M:	Guru Das Srinagesh <quic_gurus@quicinc.com>
+> +S:	Maintained
+> +F:	scripts/add-maintainer.py
+> +
+>  GFS2 FILE SYSTEM
+>  M:	Bob Peterson <rpeterso@redhat.com>
+>  M:	Andreas Gruenbacher <agruenba@redhat.com>
+
 -- 
-2.39.2
-
+~Randy
