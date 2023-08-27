@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BCACC83F1B
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 23:32:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0E35C83F11
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 23:33:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229602AbjH0XcZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Aug 2023 19:32:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58732 "EHLO
+        id S229671AbjH0Xc5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Aug 2023 19:32:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58788 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229600AbjH0XcV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 19:32:21 -0400
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F90AC4
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:19 -0700 (PDT)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-401c90ed2ecso5120395e9.0
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:19 -0700 (PDT)
+        with ESMTP id S229608AbjH0XcZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 19:32:25 -0400
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45D1AC4
+        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:22 -0700 (PDT)
+Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-3ff5ddb4329so22023295e9.0
+        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20221208.gappssmtp.com; s=20221208; t=1693179138; x=1693783938;
+        d=layalina-io.20221208.gappssmtp.com; s=20221208; t=1693179141; x=1693783941;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=fFCzoEj222YOvKZmu/QASlOstFmAq8cTeKzq6GBcqv8=;
-        b=oPeuQP9SR40dh1ZhVoOKwREqhU5VDqMV9TCmS1XyyVy4V5Kc+3W1k9m5/q6La7UVCK
-         Why0ApkB6chSrJJ+2Lh8gnceaw6vPkvGh9icr45DvKaz+mQ/ejApMZU4AZgnGcOzfW1g
-         EaXxyT650SX088zB2MEwb2UfI2pzGKgKZju81jl0XGajyaQHsqURXL5abWK5yXtBo38Y
-         CpD1g6GopDdvnirmFPjmJoNqexrA+Eeel7uxylyRxnJJRcUgrDW9oBseuNyxAEOFBZE4
-         fYb6sMXwoW/UCp4DjtDLXcQ7fvtLFLoLzgYjn2n3mpVx2c+8DA/w9eZBIbpSOgcWVZQd
-         KmGg==
+        bh=UaVq8EKAsb338hHMLyS2kCgyppa6AioQRKa23MjmAu8=;
+        b=beCesP5oRdgeyDfWa7pN2BKGX+3PRY1EkZrkG1qhlumaoMEQJag/9ZstjRY3+UsXtY
+         fVWME8tM9i+C3WJko9hSvweJoZo75zgAUzKRZYSk3vXILLPmFz34iuubjP6f4aeCSfhG
+         za305/gB1omBjRxPSVI2DVSpj4D/b6URu0bpwogbUkgk0LHKorwpE/8o01REXhO9i5e7
+         B4w6JqT9wjOqAAuE570oWKsGN57owczWf+GWDG92/uZGdFD0e4FWjKgluuh33w7x/ghl
+         HNFtKJD38gn3McVrwpm9Kkg0Q2JuHlakS3F84gnJOmG4uUdm/JgzmG11XQgNvPNAp8qw
+         Aqcw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693179138; x=1693783938;
+        d=1e100.net; s=20221208; t=1693179141; x=1693783941;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=fFCzoEj222YOvKZmu/QASlOstFmAq8cTeKzq6GBcqv8=;
-        b=Mbwi/cAWIUqhFcFvV5w3z58QNBJF4q7pdO6p19E/IkdrhRNuS1bi1DHg6GmvtD/Zzg
-         O4BWbJWLeWQ+7FWV+G9+eMoqYzbnbnMgg++2iii3yWWxDKHeLv4vf5l9vrxF/vlCotMW
-         XBETOdzOomQByRmEHrSE2FJ4Y3+qw3Xb6cFyi6vdbz7q8Kh6Gxap5WsA7ctqZUWWNml2
-         pb73qorWnsNyXdhqIJ8vnrWS711fJiF/+Q/SPGjefGAqG9eZ+CEhMFjXL4tLxEDFq4Uc
-         nboKjwhyPEXtYCi3wFfkQ8jpPi/ot6PBtE6wfqpVTdDSLYioiUSlOCLjd44MPqQxSgSm
-         NNKw==
-X-Gm-Message-State: AOJu0Yzrzxs52v1lXUOrCVhN+VoJ8n0Zj8SfKMzHPP0K+EOyaw2yPaFf
-        GFm9wpC2ADOswH0R5pHJnmUrgQ==
-X-Google-Smtp-Source: AGHT+IGmJ1ukE6kgXP4BwFh90Slk9aIfq9ysM3sXxR7HHWBVq7U3l502sYX87//+jFgXaGb8io1fSQ==
-X-Received: by 2002:a05:600c:3653:b0:401:b0f2:88cf with SMTP id y19-20020a05600c365300b00401b0f288cfmr6665902wmq.40.1693179137900;
-        Sun, 27 Aug 2023 16:32:17 -0700 (PDT)
+        bh=UaVq8EKAsb338hHMLyS2kCgyppa6AioQRKa23MjmAu8=;
+        b=KatF0ZkqctGtT0p8Gn3PNE51k35clBDr/tK27eP84eSqMEQZCBpr59R9sQIoDQx7YG
+         1pEpFoy5E4x0w9qLF8fxur33mUW+53VKY7gNf9RRtPntsxOfQIQ9kSMjyN2AImayYZbj
+         zLJzo6QXeR+sItBkUDa0c5y5vJ1kqWd9Mv+Zxz8+Da1FpFLZYSZ7w41I9lwQ9aebU5GA
+         V/ju4xhgDrhYncE0WwgeOo3TQvMk8yQ76N6izX4xP2E3RqHDKurGIXlE2frRGZWe0/0o
+         X/mq9EfcgOYMyYi4nqu0rdG0sehp5AA2NGHcLTAKM6aE39oPurIb6B0kTDr9lEapc7F7
+         8vug==
+X-Gm-Message-State: AOJu0Yydc97hDDrD9JYlC5MkwcXEYQFcQMvNKtWoKdmcoSWTjIrKpok6
+        yp3J7NgTZ/pAaiqgyisE0Z1zUg==
+X-Google-Smtp-Source: AGHT+IFTaPp/V0wKasX2zg+Lze06XxfW3j0cBoBXVY39qh55XTNU2EFQ7Qja7L7SH5UCiDOVx2K/ig==
+X-Received: by 2002:a05:600c:3113:b0:3ff:786:e811 with SMTP id g19-20020a05600c311300b003ff0786e811mr11291195wmo.3.1693179140871;
+        Sun, 27 Aug 2023 16:32:20 -0700 (PDT)
 Received: from airbuntu.. (host109-151-228-137.range109-151.btcentralplus.com. [109.151.228.137])
-        by smtp.gmail.com with ESMTPSA id 21-20020a05600c029500b003fe1a96845bsm12220395wmk.2.2023.08.27.16.32.17
+        by smtp.gmail.com with ESMTPSA id 21-20020a05600c029500b003fe1a96845bsm12220395wmk.2.2023.08.27.16.32.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Aug 2023 16:32:17 -0700 (PDT)
+        Sun, 27 Aug 2023 16:32:20 -0700 (PDT)
 From:   Qais Yousef <qyousef@layalina.io>
 To:     Ingo Molnar <mingo@kernel.org>,
         Peter Zijlstra <peterz@infradead.org>,
@@ -59,9 +59,9 @@ To:     Ingo Molnar <mingo@kernel.org>,
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Lukasz Luba <lukasz.luba@arm.com>,
         Qais Yousef <qyousef@layalina.io>
-Subject: [RFC PATCH 4/7] sched: cpufreq: Remove magic 1.25 headroom from apply_dvfs_headroom()
-Date:   Mon, 28 Aug 2023 00:32:00 +0100
-Message-Id: <20230827233203.1315953-5-qyousef@layalina.io>
+Subject: [RFC PATCH 7/7] cpufreq: Change default transition delay to 2ms
+Date:   Mon, 28 Aug 2023 00:32:03 +0100
+Message-Id: <20230827233203.1315953-8-qyousef@layalina.io>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230827233203.1315953-1-qyousef@layalina.io>
 References: <20230827233203.1315953-1-qyousef@layalina.io>
@@ -71,125 +71,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Instead of the magical 1.25 headroom, use the new approximate_util_avg()
-to provide headroom based on the dvfs_update_delay; which is the period
-at which the cpufreq governor will send DVFS updates to the hardware.
+10ms is too high for today's hardware, even low end ones. This default
+end up being used a lot on Arm machines at least. Pine64, mac mini and
+pixel 6 all end up with 10ms rate_limit_us when using schedutil, and
+it's too high for all of them.
 
-Add a new percpu dvfs_update_delay that can be cheaply accessed whenever
-apply_dvfs_headroom() is called. We expect cpufreq governors that rely
-on util to drive its DVFS logic/algorithm to populate these percpu
-variables. schedutil is the only such governor at the moment.
+Change the default to 2ms which should be 'pessimistic' enough for worst
+case scenario, but not too high for platforms with fast DVFS hardware.
 
 Signed-off-by: Qais Yousef (Google) <qyousef@layalina.io>
 ---
- kernel/sched/core.c              |  3 ++-
- kernel/sched/cpufreq_schedutil.c | 10 +++++++++-
- kernel/sched/sched.h             | 25 ++++++++++++++-----------
- 3 files changed, 25 insertions(+), 13 deletions(-)
+ drivers/cpufreq/cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 602e369753a3..f56eb44745a8 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -116,6 +116,7 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_se_tp);
- EXPORT_TRACEPOINT_SYMBOL_GPL(sched_update_nr_running_tp);
- 
- DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
-+DEFINE_PER_CPU_SHARED_ALIGNED(u64, dvfs_update_delay);
- 
- #ifdef CONFIG_SCHED_DEBUG
- /*
-@@ -7439,7 +7440,7 @@ unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
- 	 * frequency will be gracefully reduced with the utilization decay.
- 	 */
- 	if (type == FREQUENCY_UTIL) {
--		util = apply_dvfs_headroom(util_cfs) + cpu_util_rt(rq);
-+		util = apply_dvfs_headroom(util_cfs, cpu) + cpu_util_rt(rq);
- 		util = uclamp_rq_util_with(rq, util, p);
- 	} else {
- 		util = util_cfs + cpu_util_rt(rq);
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 0c7565ac31fb..04aa06846f31 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -519,15 +519,21 @@ rate_limit_us_store(struct gov_attr_set *attr_set, const char *buf, size_t count
- 	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
- 	struct sugov_policy *sg_policy;
- 	unsigned int rate_limit_us;
-+	int cpu;
- 
- 	if (kstrtouint(buf, 10, &rate_limit_us))
- 		return -EINVAL;
- 
- 	tunables->rate_limit_us = rate_limit_us;
- 
--	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook)
-+	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook) {
-+
- 		sg_policy->freq_update_delay_ns = rate_limit_us * NSEC_PER_USEC;
- 
-+		for_each_cpu(cpu, sg_policy->policy->cpus)
-+			per_cpu(dvfs_update_delay, cpu) = rate_limit_us;
-+	}
-+
- 	return count;
- }
- 
-@@ -772,6 +778,8 @@ static int sugov_start(struct cpufreq_policy *policy)
- 		memset(sg_cpu, 0, sizeof(*sg_cpu));
- 		sg_cpu->cpu			= cpu;
- 		sg_cpu->sg_policy		= sg_policy;
-+
-+		per_cpu(dvfs_update_delay, cpu) = sg_policy->tunables->rate_limit_us;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 50bbc969ffe5..d8fc33b7f2d2 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -579,11 +579,11 @@ unsigned int cpufreq_policy_transition_delay_us(struct cpufreq_policy *policy)
+ 		 * for platforms where transition_latency is in milliseconds, it
+ 		 * ends up giving unrealistic values.
+ 		 *
+-		 * Cap the default transition delay to 10 ms, which seems to be
++		 * Cap the default transition delay to 2 ms, which seems to be
+ 		 * a reasonable amount of time after which we should reevaluate
+ 		 * the frequency.
+ 		 */
+-		return min(latency * LATENCY_MULTIPLIER, (unsigned int)10000);
++		return min(latency * LATENCY_MULTIPLIER, (unsigned int)(2*MSEC_PER_SEC));
  	}
  
- 	if (policy_is_shared(policy))
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 2b889ad399de..e06e512af192 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -3001,6 +3001,15 @@ unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
- unsigned long approximate_util_avg(unsigned long util, u64 delta);
- u64 approximate_runtime(unsigned long util);
- 
-+/*
-+ * Any governor that relies on util signal to drive DVFS, must populate these
-+ * percpu dvfs_update_delay variables.
-+ *
-+ * It should describe the rate/delay at which the governor sends DVFS freq
-+ * update to the hardware in us.
-+ */
-+DECLARE_PER_CPU_SHARED_ALIGNED(u64, dvfs_update_delay);
-+
- /*
-  * DVFS decision are made at discrete points. If CPU stays busy, the util will
-  * continue to grow, which means it could need to run at a higher frequency
-@@ -3010,20 +3019,14 @@ u64 approximate_runtime(unsigned long util);
-  * to run at adequate performance point.
-  *
-  * This function provides enough headroom to provide adequate performance
-- * assuming the CPU continues to be busy.
-- *
-- * At the moment it is a constant multiplication with 1.25.
-+ * assuming the CPU continues to be busy. This headroom is based on the
-+ * dvfs_update_delay of the cpufreq governor.
-  *
-- * TODO: The headroom should be a function of the delay. 25% is too high
-- * especially on powerful systems. For example, if the delay is 500us, it makes
-- * more sense to give a small headroom as the next decision point is not far
-- * away and will follow the util if it continues to rise. On the other hand if
-- * the delay is 10ms, then we need a bigger headroom so the CPU won't struggle
-- * at a lower frequency if it never goes to idle until then.
-+ * XXX: Should we provide headroom when the util is decaying?
-  */
--static inline unsigned long apply_dvfs_headroom(unsigned long util)
-+static inline unsigned long apply_dvfs_headroom(unsigned long util, int cpu)
- {
--	return util + (util >> 2);
-+	return approximate_util_avg(util, per_cpu(dvfs_update_delay, cpu));
- }
- 
- /*
+ 	return LATENCY_MULTIPLIER;
 -- 
 2.34.1
 
