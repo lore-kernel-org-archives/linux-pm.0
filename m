@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0D48C83F15
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 23:32:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BCACC83F1B
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 23:32:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229520AbjH0XcX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Aug 2023 19:32:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59134 "EHLO
+        id S229602AbjH0XcZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Aug 2023 19:32:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58732 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229505AbjH0XcT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 19:32:19 -0400
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53B94C4
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:16 -0700 (PDT)
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-3fef34c33d6so25439715e9.3
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:16 -0700 (PDT)
+        with ESMTP id S229600AbjH0XcV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 19:32:21 -0400
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F90AC4
+        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:19 -0700 (PDT)
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-401c90ed2ecso5120395e9.0
+        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 16:32:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20221208.gappssmtp.com; s=20221208; t=1693179134; x=1693783934;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=KRYwxDumU1QUQr20FutMYu1vvOKJwyv4NHJKf4lFQRE=;
-        b=fooMgSie2o/NcQc2lCWcEjp8kS/x8vpzcdL5op7w1qpPUsx1FqGIWhIf78Dp0jBS5O
-         8wgyBxnbZRh40iZoQQB6Lmb0lodJqtBlSrs9caxpzvQ7IVNkVFlteTc7WVes3UwWwzpi
-         jpTOyXpwDXikO0pv5FCYEGnMbcIezlv/jlJ3IP0hiMO5anv6PbJtSP1s06bnExZQwa2w
-         CBxFRrruSeFZgZPKYmJYjkqyV9sxEHmdl5kddGkinVGH8/xsyhiFKYVVFyfgfbxVTMnI
-         Tl+FuiDqbkCrA3h4ZNWfsSnhlj+sm6EWTSROAoILctHQVhWnz5/4hBltw+PqoXEmaxIq
-         wVIQ==
+        d=layalina-io.20221208.gappssmtp.com; s=20221208; t=1693179138; x=1693783938;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fFCzoEj222YOvKZmu/QASlOstFmAq8cTeKzq6GBcqv8=;
+        b=oPeuQP9SR40dh1ZhVoOKwREqhU5VDqMV9TCmS1XyyVy4V5Kc+3W1k9m5/q6La7UVCK
+         Why0ApkB6chSrJJ+2Lh8gnceaw6vPkvGh9icr45DvKaz+mQ/ejApMZU4AZgnGcOzfW1g
+         EaXxyT650SX088zB2MEwb2UfI2pzGKgKZju81jl0XGajyaQHsqURXL5abWK5yXtBo38Y
+         CpD1g6GopDdvnirmFPjmJoNqexrA+Eeel7uxylyRxnJJRcUgrDW9oBseuNyxAEOFBZE4
+         fYb6sMXwoW/UCp4DjtDLXcQ7fvtLFLoLzgYjn2n3mpVx2c+8DA/w9eZBIbpSOgcWVZQd
+         KmGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693179134; x=1693783934;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=KRYwxDumU1QUQr20FutMYu1vvOKJwyv4NHJKf4lFQRE=;
-        b=fccjMCcgfIETUIxiHdBYcQXlcWKSpbGlgYJunxEIsAKsexagxSlemNpPV4IIHWxGu8
-         tP2RYQ0goFdZ8l3mQ9NM+MtGRxXXul2F7n4UTaU01WYMExdZm7RVmrcpL11nN9iW12Kk
-         KoF8p30QUMKsp/ncVrb2lGOUrWbt+0THsoD9GUzGv0tdZkXYnj9g237CelIg7tGGjlJf
-         agTVHkdNMEcejJxe/zxROAJgk0ZLgPZMKe4LLfFI1HI0D2yhrrJrFknZkqYx0hcsZC7v
-         pRhpB00iUXR44fHmFXpbejJAH7GMZ14wlEoCry4GlgE0F5JShfrvrD2H2FxWaO3H4mAk
-         Yy7w==
-X-Gm-Message-State: AOJu0YyiwYlpDXLcXa9oejin1GBQlklhmaVKzKWEaeiuus/bQLTbRrx/
-        CVGFO2d56a83LwwomAd8Y8QLFT7mp6Oqn1Nzfyo=
-X-Google-Smtp-Source: AGHT+IGvcODlaqJPGhRmv2KWxGGl28pU8Edid/cjZkM1Y9+neGvtBrIFUQL2E9o4zVMcnjLyV6ohNQ==
-X-Received: by 2002:a7b:c381:0:b0:3fe:d852:7ff9 with SMTP id s1-20020a7bc381000000b003fed8527ff9mr18021942wmj.5.1693179134372;
-        Sun, 27 Aug 2023 16:32:14 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1693179138; x=1693783938;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=fFCzoEj222YOvKZmu/QASlOstFmAq8cTeKzq6GBcqv8=;
+        b=Mbwi/cAWIUqhFcFvV5w3z58QNBJF4q7pdO6p19E/IkdrhRNuS1bi1DHg6GmvtD/Zzg
+         O4BWbJWLeWQ+7FWV+G9+eMoqYzbnbnMgg++2iii3yWWxDKHeLv4vf5l9vrxF/vlCotMW
+         XBETOdzOomQByRmEHrSE2FJ4Y3+qw3Xb6cFyi6vdbz7q8Kh6Gxap5WsA7ctqZUWWNml2
+         pb73qorWnsNyXdhqIJ8vnrWS711fJiF/+Q/SPGjefGAqG9eZ+CEhMFjXL4tLxEDFq4Uc
+         nboKjwhyPEXtYCi3wFfkQ8jpPi/ot6PBtE6wfqpVTdDSLYioiUSlOCLjd44MPqQxSgSm
+         NNKw==
+X-Gm-Message-State: AOJu0Yzrzxs52v1lXUOrCVhN+VoJ8n0Zj8SfKMzHPP0K+EOyaw2yPaFf
+        GFm9wpC2ADOswH0R5pHJnmUrgQ==
+X-Google-Smtp-Source: AGHT+IGmJ1ukE6kgXP4BwFh90Slk9aIfq9ysM3sXxR7HHWBVq7U3l502sYX87//+jFgXaGb8io1fSQ==
+X-Received: by 2002:a05:600c:3653:b0:401:b0f2:88cf with SMTP id y19-20020a05600c365300b00401b0f288cfmr6665902wmq.40.1693179137900;
+        Sun, 27 Aug 2023 16:32:17 -0700 (PDT)
 Received: from airbuntu.. (host109-151-228-137.range109-151.btcentralplus.com. [109.151.228.137])
-        by smtp.gmail.com with ESMTPSA id 21-20020a05600c029500b003fe1a96845bsm12220395wmk.2.2023.08.27.16.32.13
+        by smtp.gmail.com with ESMTPSA id 21-20020a05600c029500b003fe1a96845bsm12220395wmk.2.2023.08.27.16.32.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Aug 2023 16:32:13 -0700 (PDT)
+        Sun, 27 Aug 2023 16:32:17 -0700 (PDT)
 From:   Qais Yousef <qyousef@layalina.io>
 To:     Ingo Molnar <mingo@kernel.org>,
         Peter Zijlstra <peterz@infradead.org>,
@@ -58,194 +59,137 @@ To:     Ingo Molnar <mingo@kernel.org>,
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Lukasz Luba <lukasz.luba@arm.com>,
         Qais Yousef <qyousef@layalina.io>
-Subject: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
-Date:   Mon, 28 Aug 2023 00:31:56 +0100
-Message-Id: <20230827233203.1315953-1-qyousef@layalina.io>
+Subject: [RFC PATCH 4/7] sched: cpufreq: Remove magic 1.25 headroom from apply_dvfs_headroom()
+Date:   Mon, 28 Aug 2023 00:32:00 +0100
+Message-Id: <20230827233203.1315953-5-qyousef@layalina.io>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230827233203.1315953-1-qyousef@layalina.io>
+References: <20230827233203.1315953-1-qyousef@layalina.io>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since the introduction of EAS and schedutil, we had two magic 0.8 and 1.25
-margins applied in fits_capacity() and apply_dvfs_headroom().
+Instead of the magical 1.25 headroom, use the new approximate_util_avg()
+to provide headroom based on the dvfs_update_delay; which is the period
+at which the cpufreq governor will send DVFS updates to the hardware.
 
-As reported two years ago in
+Add a new percpu dvfs_update_delay that can be cheaply accessed whenever
+apply_dvfs_headroom() is called. We expect cpufreq governors that rely
+on util to drive its DVFS logic/algorithm to populate these percpu
+variables. schedutil is the only such governor at the moment.
 
-	https://lore.kernel.org/lkml/1623855954-6970-1-git-send-email-yt.chang@mediatek.com/
+Signed-off-by: Qais Yousef (Google) <qyousef@layalina.io>
+---
+ kernel/sched/core.c              |  3 ++-
+ kernel/sched/cpufreq_schedutil.c | 10 +++++++++-
+ kernel/sched/sched.h             | 25 ++++++++++++++-----------
+ 3 files changed, 25 insertions(+), 13 deletions(-)
 
-these values are not good fit for all systems and people do feel the need to
-modify them regularly out of tree.
-
-Equally recent discussion in PELT HALFLIFE thread highlighted the need for
-a way to tune system response time to achieve better perf, power and thermal
-characteristic for a given system
-
-	https://lore.kernel.org/lkml/20220829055450.1703092-1-dietmar.eggemann@arm.com/
-
-fits_capacity() and apply_dvfs_headroom() are not a suitable tunables. Attempt
-to use PELF HALFLIFE highlighted that there's room to do better, which I hope
-my proposal helps to achieve that.
-
-This series attempts to address these issues by first removing the magic
-'margins' from those two areas that has proved to be problematic in practice;
-and, at least in Android world, they're being modified out of tree on regular
-basis.
-
-I attempted to tackle the problem by trying to find the answer to the question
-what would really go wrong if we don't have these margins or headrooms?
-
-The simplest answers I found is that for fits_capacity() if we do a bad
-decision, then the task will become misfit and will have to wait for the next
-load balance to move it to the correct CPU. Hence I thought a reasonable
-definition is that fits_capacity() should be a function of tick and the
-headroom should cater for the fact that if a task continues to run without
-sleep, then as long as by the time we hit the tick (load balance) and it still
-fits, then it should not be considered a misfit and should be acceptable to run
-on this CPU.
-
-For the dvfs headroom, the worst can happen is that util grows above
-capacity@OPP before we get a chance to send a request to hardware to modify the
-freq. Which means we should make sure the frequency selection provides
-enough headroom to cater for the fact that if the task continues to run without
-sleep, then the current frequency should provide a capacity@OPP higher than
-util after rate_limit_us of cpufeq transition delay.
-
-To achieve this, we need a new function to help us with predicting, or
-approximate, the util given a delta of runtime. Which is what introduced in
-patches 1 and 2.
-
-Removing these margins doesn't actually fix the problem of being able to tune
-the system response. To do that we introduce a new tunable to schedutil called
-response_time_ms which dictates how long it takes the policy to go from minimum
-to maximum performance point. This value reflects the time it takes PELT to
-grow to the capacity of the CPUs in that policy (which can be different in case
-of HMP). It should be a direct presentation of PELT ramp-up time, hence more
-meaningful from tuning perspective as an absolute value of how long it takes to
-saturate the policy.  It should be much easier for userspace to reason about an
-appropriate number given this absolute value. It can be expanded or shrunk to
-slow or speed up the response time. Ultimately leading to appropriate perf,
-power and thermal trade-off for the system.
-
-In case of slowing the response time, there's inherit limitation that util_avg
-saturates at 1024. Which means the impact of slowing down after a certain
-degree would be to lose the top freqs. I think this limitation can be overcome
-but not sure how yet. Suggestions would be appreciated meanwhile.
-
-To further help tune the system, we introduce PELT HALFLIFE multiplier as
-a boot time parameter. This parameter has an impact on how fast we migrate, so
-should compensate for whoever needed to tune fits_capacity(); and it has great
-impact on default response_time_ms. Particularly it gives a natural faster rise
-time when the system gets busy, AND fall time when the system goes back to
-idle. It is coarse grain response control that can be coupled with finer grain
-control via schedutil's response_time_ms.
-
-I believe (hope) by making the behavior of fits_capacity() and
-apply_dvfs_headroom() more deterministic, and scalable across systems, to be
-a true function of their natural limitations and combined with the new, and
-hopefully sensible, tunable to allow managing the reactiveness of the system to
-achieve what the user/sysadmin perceives as the best perf, power and thermal
-trade-off should address the class of problems at hand hopefully in
-deterministic and sensible/user friendly manner.
-
-I'm not a pelt guru, so help in making sure that approximate_util_avg() and
-approximate_runtime() are reasonable and correct would be appreciated.
-
-The remainder of the patches should hopefully be straightforward. There are
-some pending question that you'll find in various TODOs/XXX that I'd appreciate
-feedback on.
-
-Not tested comprehensively. But booted on Pixel 6 running mainline-ish kernel.
-
-I could see the following as default output for response_time_ms:
-
-	# grep . /sys/devices/system/cpu/cpufreq/policy*/schedutil/*
-	/sys/devices/system/cpu/cpufreq/policy0/schedutil/rate_limit_us:2000
-	/sys/devices/system/cpu/cpufreq/policy0/schedutil/response_time_ms:13
-	/sys/devices/system/cpu/cpufreq/policy4/schedutil/rate_limit_us:2000
-	/sys/devices/system/cpu/cpufreq/policy4/schedutil/response_time_ms:42
-	/sys/devices/system/cpu/cpufreq/policy6/schedutil/rate_limit_us:2000
-	/sys/devices/system/cpu/cpufreq/policy6/schedutil/response_time_ms:176
-
-Note how the little core has a very short saturation time given its small
-capacity in practice. fits_capacity() being defined as a function of TICK_US
-means that 1/3rd of its top performance would be ignored (when EAS is active
-- !overutilized) - which is desirable since a lot of workloads suffer in terms
-of perf by staying for too long on the littles and given our relatively high
-TICK_US values, the earlier move is good.
-
-The biggest policy though has a saturation of 176 which I didn't expect. My
-measurement in the past where that we need at least 200ms with 32ms PELF HF.
-Maybe I have a bug or my old measurements are now invalid for some reason.
-
-When I set PELT HALFLIFE to 16ms I get:
-
-	# grep . /sys/devices/system/cpu/cpufreq/policy*/schedutil/*
-	/sys/devices/system/cpu/cpufreq/policy0/schedutil/rate_limit_us:2000
-	/sys/devices/system/cpu/cpufreq/policy0/schedutil/response_time_ms:7
-	/sys/devices/system/cpu/cpufreq/policy4/schedutil/rate_limit_us:2000
-	/sys/devices/system/cpu/cpufreq/policy4/schedutil/response_time_ms:21
-	/sys/devices/system/cpu/cpufreq/policy6/schedutil/rate_limit_us:2000
-	/sys/devices/system/cpu/cpufreq/policy6/schedutil/response_time_ms:79
-
-and for 8ms:
-
-	# grep . /sys/devices/system/cpu/cpufreq/policy*/schedutil/*
-	/sys/devices/system/cpu/cpufreq/policy0/schedutil/rate_limit_us:2000
-	/sys/devices/system/cpu/cpufreq/policy0/schedutil/response_time_ms:4
-	/sys/devices/system/cpu/cpufreq/policy4/schedutil/rate_limit_us:2000
-	/sys/devices/system/cpu/cpufreq/policy4/schedutil/response_time_ms:10
-	/sys/devices/system/cpu/cpufreq/policy6/schedutil/rate_limit_us:2000
-	/sys/devices/system/cpu/cpufreq/policy6/schedutil/response_time_ms:34
-
-policy6 (big core) numbers aren't halving properly. Something to investigate.
-
-I ran speedometer tests too and I could see the score changes as I make
-response_time_ms faster/slower or modify PELT HF. I could see the freq
-residency also shifts according to my changes where top frequencies get higher
-residencies as I speed it up, or they are never reached/reduced residency when
-I slow it down.
-
-Finally at the end of the series I modify the default cpufreq transition delay
-to be 2ms. I found on several on my Arm based systems I end up with this
-default value, and 10ms is too high nowadays even for a low end system.
-I haven't done a full surveillance to be honest, but 10ms I think is way too
-high for the majority of the systems out there - even 2ms can be a bit high
-for a large class of systems. Suggestions for other values are welcome!
-
-This series is based on the tip/sched/core with the below series applied
-
-	https://lore.kernel.org/lkml/20230820210640.585311-1-qyousef@layalina.io/
-
-Many thanks
-
---
-Qais Yousef
-
-Qais Yousef (6):
-  sched/pelt: Add a new function to approximate the future util_avg
-    value
-  sched/pelt: Add a new function to approximate runtime to reach given
-    util
-  sched/fair: Remove magic margin in fits_capacity()
-  sched: cpufreq: Remove magic 1.25 headroom from apply_dvfs_headroom()
-  sched/schedutil: Add a new tunable to dictate response time
-  cpufreq: Change default transition delay to 2ms
-
-Vincent Donnefort (1):
-  sched/pelt: Introduce PELT multiplier
-
- Documentation/admin-guide/pm/cpufreq.rst | 19 ++++-
- drivers/cpufreq/cpufreq.c                |  4 +-
- kernel/sched/core.c                      |  5 +-
- kernel/sched/cpufreq_schedutil.c         | 80 ++++++++++++++++++++-
- kernel/sched/fair.c                      | 21 +++++-
- kernel/sched/pelt.c                      | 89 ++++++++++++++++++++++++
- kernel/sched/pelt.h                      | 42 +++++++++--
- kernel/sched/sched.h                     | 30 +++++---
- 8 files changed, 265 insertions(+), 25 deletions(-)
-
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 602e369753a3..f56eb44745a8 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -116,6 +116,7 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_se_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_update_nr_running_tp);
+ 
+ DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
++DEFINE_PER_CPU_SHARED_ALIGNED(u64, dvfs_update_delay);
+ 
+ #ifdef CONFIG_SCHED_DEBUG
+ /*
+@@ -7439,7 +7440,7 @@ unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
+ 	 * frequency will be gracefully reduced with the utilization decay.
+ 	 */
+ 	if (type == FREQUENCY_UTIL) {
+-		util = apply_dvfs_headroom(util_cfs) + cpu_util_rt(rq);
++		util = apply_dvfs_headroom(util_cfs, cpu) + cpu_util_rt(rq);
+ 		util = uclamp_rq_util_with(rq, util, p);
+ 	} else {
+ 		util = util_cfs + cpu_util_rt(rq);
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 0c7565ac31fb..04aa06846f31 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -519,15 +519,21 @@ rate_limit_us_store(struct gov_attr_set *attr_set, const char *buf, size_t count
+ 	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
+ 	struct sugov_policy *sg_policy;
+ 	unsigned int rate_limit_us;
++	int cpu;
+ 
+ 	if (kstrtouint(buf, 10, &rate_limit_us))
+ 		return -EINVAL;
+ 
+ 	tunables->rate_limit_us = rate_limit_us;
+ 
+-	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook)
++	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook) {
++
+ 		sg_policy->freq_update_delay_ns = rate_limit_us * NSEC_PER_USEC;
+ 
++		for_each_cpu(cpu, sg_policy->policy->cpus)
++			per_cpu(dvfs_update_delay, cpu) = rate_limit_us;
++	}
++
+ 	return count;
+ }
+ 
+@@ -772,6 +778,8 @@ static int sugov_start(struct cpufreq_policy *policy)
+ 		memset(sg_cpu, 0, sizeof(*sg_cpu));
+ 		sg_cpu->cpu			= cpu;
+ 		sg_cpu->sg_policy		= sg_policy;
++
++		per_cpu(dvfs_update_delay, cpu) = sg_policy->tunables->rate_limit_us;
+ 	}
+ 
+ 	if (policy_is_shared(policy))
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 2b889ad399de..e06e512af192 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -3001,6 +3001,15 @@ unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
+ unsigned long approximate_util_avg(unsigned long util, u64 delta);
+ u64 approximate_runtime(unsigned long util);
+ 
++/*
++ * Any governor that relies on util signal to drive DVFS, must populate these
++ * percpu dvfs_update_delay variables.
++ *
++ * It should describe the rate/delay at which the governor sends DVFS freq
++ * update to the hardware in us.
++ */
++DECLARE_PER_CPU_SHARED_ALIGNED(u64, dvfs_update_delay);
++
+ /*
+  * DVFS decision are made at discrete points. If CPU stays busy, the util will
+  * continue to grow, which means it could need to run at a higher frequency
+@@ -3010,20 +3019,14 @@ u64 approximate_runtime(unsigned long util);
+  * to run at adequate performance point.
+  *
+  * This function provides enough headroom to provide adequate performance
+- * assuming the CPU continues to be busy.
+- *
+- * At the moment it is a constant multiplication with 1.25.
++ * assuming the CPU continues to be busy. This headroom is based on the
++ * dvfs_update_delay of the cpufreq governor.
+  *
+- * TODO: The headroom should be a function of the delay. 25% is too high
+- * especially on powerful systems. For example, if the delay is 500us, it makes
+- * more sense to give a small headroom as the next decision point is not far
+- * away and will follow the util if it continues to rise. On the other hand if
+- * the delay is 10ms, then we need a bigger headroom so the CPU won't struggle
+- * at a lower frequency if it never goes to idle until then.
++ * XXX: Should we provide headroom when the util is decaying?
+  */
+-static inline unsigned long apply_dvfs_headroom(unsigned long util)
++static inline unsigned long apply_dvfs_headroom(unsigned long util, int cpu)
+ {
+-	return util + (util >> 2);
++	return approximate_util_avg(util, per_cpu(dvfs_update_delay, cpu));
+ }
+ 
+ /*
 -- 
 2.34.1
 
