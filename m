@@ -2,97 +2,126 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CFC9C83F10
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 11:41:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9630C83F14
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 11:51:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229761AbjH0Lkz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Aug 2023 07:40:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43802 "EHLO
+        id S229784AbjH0LvL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Aug 2023 07:51:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52206 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229676AbjH0Lkd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 07:40:33 -0400
-Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2266613E
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 04:40:30 -0700 (PDT)
-Received: by mail-ej1-x634.google.com with SMTP id a640c23a62f3a-99c0cb7285fso301568966b.0
-        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 04:40:30 -0700 (PDT)
+        with ESMTP id S230052AbjH0Lu4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 07:50:56 -0400
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83562CDC
+        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 04:50:47 -0700 (PDT)
+Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-4ff93a7f230so2761856e87.1
+        for <linux-pm@vger.kernel.org>; Sun, 27 Aug 2023 04:50:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693136428; x=1693741228;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=r5yXjlx9eXs/s1lbf4NHbswyaJlJiZM8NIf6FC05ww0=;
-        b=NWmpa3ICKJgt/YAFRNQRWMpDVZ8JpJtB6egrzMBKx0soIWIHVZS0r7dFodVnJUVyaB
-         1KiNhGWLrvcerJy2J1X8OSXKleDEUDUVzoOgXU3K7Zl/EW8e6Cv0BXHdmx4PRjyetwAo
-         gajNF/bCh0wtSjv5rt95wI2Xr9U6QOLpmgRIqMrVvXcOS3yGh4yxXy7c57ZvUluzPm6f
-         HbQ8WCEz5bpJuvCqR+dVyIZHXPQkf1KCiCUsMuve/O+8A7YX7TSVx8eYwZ5HKpjdzhvk
-         ffk/v3rrtZnlO4giCzQXt1TZF7Ft9AxlHTJ2e09VhVrKAKXkVd6B3Xdt6n0IjcgbEGZi
-         /FtQ==
+        d=linaro.org; s=google; t=1693137046; x=1693741846;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=6+5JyGg/RVsbvystfdqTjelqQjEsUcHgseGOGd0sd2A=;
+        b=aSTNedRj9jCe9y3t0hQnZaMJKHOiM0JuipUnX25XmiichKI6Tfjv9PE7skbef6vDa+
+         xWwqvtfP2znXpUE2t5x1T4/rxfpUnayLBxI1+aiKgCrwSTxPGH/8SgXxP5DqLW9F0WkT
+         FrBZJk+sDiO66q1XRPkDEJzrFcwSNW5QsxQBKAy+HLC5if2hmeb/zlst432oX0I20Ioi
+         bKqNGSjXccv/c4lTuC1NfTacWyfd0Ezj/DnvBnl9jSQUDu7IOfcdrNtXlQikfpOdMdju
+         PfJ4p0ddG5blYbqPPXo94o67P+4FoSKjKjRleq2WMP8WPOphB5qAwmeSBCbBNXL3yCfR
+         K5Kw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693136428; x=1693741228;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=r5yXjlx9eXs/s1lbf4NHbswyaJlJiZM8NIf6FC05ww0=;
-        b=AYDisp97t4vSBSrM7oF9BTc1FpKYHd3RnXfHhapwavKXvILsgZu5DvfeDm9X0NLaYB
-         jrBu5L47Agmq7Oz/EzaE5Oyx+/xpqWIeVivpn5kg/xai49JB3RuVZzVtTk2cvgpP6Kw0
-         QoVnxjePDdOpOT2zr/iFOAt1QVXk5GjtqIDlpn+ZE2arBnFyk5Yg5yZCQP7BxZIGUm68
-         i5GgK/E5MpSPXclNZI6MsGw2kfK6vBoZRDqcg5lLjHBgYWWkG8xW6f1/dH4XYA6RAETt
-         MTjXPIaCCdCCRzaqeg06RUNoMK5zxO4JIRxxLP2Zl1u2ByXXQ+A3A6N7OfptO1FL0cUa
-         0+kw==
-X-Gm-Message-State: AOJu0Yx0Q4GUmO5wmFAMowh8oU0g6rMMOlKt/wagJNDAC4z0XZE3Ec59
-        APnl0SOPhQGa7AM2XZEF3v9ulw==
-X-Google-Smtp-Source: AGHT+IFJzgqawTOC8x8uvouQh8iok/M1NAVoCFi9ln0CxPQRDAoA3OzEUGucKvKZAn5I4wWukUyZ2Q==
-X-Received: by 2002:a17:906:5354:b0:9a1:fab3:ee37 with SMTP id j20-20020a170906535400b009a1fab3ee37mr7016209ejo.14.1693136428400;
-        Sun, 27 Aug 2023 04:40:28 -0700 (PDT)
-Received: from krzk-bin.. ([77.252.47.225])
-        by smtp.gmail.com with ESMTPSA id e2-20020a17090681c200b00997e99a662bsm3351927ejx.20.2023.08.27.04.40.27
+        d=1e100.net; s=20221208; t=1693137046; x=1693741846;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=6+5JyGg/RVsbvystfdqTjelqQjEsUcHgseGOGd0sd2A=;
+        b=JAkXLS+yWgHqQxOAazVMHcRmrLvL7yVcwRhOLZzU5XFspKdZjNqXlxYWw7qQv8NA6V
+         VGmxMMSK2ys+My0wIRHr3790szWwYCcC/xR453lYkHDlQ1skOXukGWzXjOqFSKp9GvrM
+         QTLpug6/lt4u1usqvsL15v87pdw0Wq4VJrVyleFs+IA2U05Ujg5CWNy80qia6FH7ZL7G
+         4y2ZtFR+fPCIJzawW+8WQOh8+TAOU11m/jdg2tsljuhholU0HUvYEEuLvMhOiClyg7UJ
+         zX3gnZ5+2WLS9MOMcqv3UquhTmZvNULQDGwTn7UHKL8T59FwsoKqn93LenjyxldNrdjs
+         y+IA==
+X-Gm-Message-State: AOJu0YzVCPD2qUxr8PHc+C5OXalcvoHt1RWX4vZgpqlmU/+QDV0MiSM3
+        czdsrgysLLhflN/DxMTinGdWBg==
+X-Google-Smtp-Source: AGHT+IERPpheMJF2+A8ACb1ozqTwHyIWBqnIUx7wppUVgi9tjaJj72nweT2g1EdhwLJ0NbJZJNpCOQ==
+X-Received: by 2002:a05:6512:3d01:b0:500:a6c1:d8e0 with SMTP id d1-20020a0565123d0100b00500a6c1d8e0mr2395379lfv.22.1693137045746;
+        Sun, 27 Aug 2023 04:50:45 -0700 (PDT)
+Received: from umbar.unikie.fi ([192.130.178.91])
+        by smtp.gmail.com with ESMTPSA id a8-20020a19f808000000b004ff9f88b86esm1114770lff.308.2023.08.27.04.50.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Aug 2023 04:40:27 -0700 (PDT)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
+        Sun, 27 Aug 2023 04:50:45 -0700 (PDT)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>,
-        Odelu Kukatla <quic_okukatla@quicinc.com>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH] dt-bindings: interconnect: qcom,rpmh: do not require reg on SDX65 MC virt
-Date:   Sun, 27 Aug 2023 13:40:26 +0200
-Message-Id: <20230827114026.47806-1-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.34.1
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Ilia Lin <ilia.lin@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
+        Christian Marangi <ansuelsmth@gmail.com>,
+        Stephan Gerhold <stephan@gerhold.net>
+Subject: [PATCH v4 13/23] ARM: dts: qcom: apq8064: rename SAW nodes to power-manager
+Date:   Sun, 27 Aug 2023 14:50:23 +0300
+Message-Id: <20230827115033.935089-14-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230827115033.935089-1-dmitry.baryshkov@linaro.org>
+References: <20230827115033.935089-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The MC virt interconnect in SDX65 DTSI does not have reg.  Similarly in
-the downstream DTS, thus assume this is an interconnect without own
-dedicated IO address space.  This fixes dtbs_check warnings like:
+Per the power-domain.yaml, the power-controller node name is reserved
+for power-domain providers. Rename SAW2 nodes to 'power-manager', the
+name which is suggested by qcom,spm.yaml
 
-  qcom-sdx65-mtp.dtb: interconnect-mc-virt: 'reg' is a required property
-
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/boot/dts/qcom/qcom-apq8064.dtsi | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-index a46497af1fd8..74ab080249ff 100644
---- a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-@@ -113,6 +113,7 @@ allOf:
-         properties:
-           compatible:
-             enum:
-+              - qcom,sdx65-mc-virt
-               - qcom,sm8250-qup-virt
-     then:
-       required:
+diff --git a/arch/arm/boot/dts/qcom/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom/qcom-apq8064.dtsi
+index 5b7d2c6f0ce9..2f94d26fc792 100644
+--- a/arch/arm/boot/dts/qcom/qcom-apq8064.dtsi
++++ b/arch/arm/boot/dts/qcom/qcom-apq8064.dtsi
+@@ -365,25 +365,25 @@ acc3: clock-controller@20b8000 {
+ 			#clock-cells = <0>;
+ 		};
+ 
+-		saw0: power-controller@2089000 {
++		saw0: power-manager@2089000 {
+ 			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x02089000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
+ 		};
+ 
+-		saw1: power-controller@2099000 {
++		saw1: power-manager@2099000 {
+ 			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x02099000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
+ 		};
+ 
+-		saw2: power-controller@20a9000 {
++		saw2: power-manager@20a9000 {
+ 			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x020a9000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
+ 		};
+ 
+-		saw3: power-controller@20b9000 {
++		saw3: power-manager@20b9000 {
+ 			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x020b9000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
 -- 
-2.34.1
+2.39.2
 
