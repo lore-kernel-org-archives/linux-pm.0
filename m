@@ -2,186 +2,102 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E53A8C83F29
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 03:29:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01AF3C83F11
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Aug 2023 05:55:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230018AbjH0D2l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 26 Aug 2023 23:28:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58510 "EHLO
+        id S229576AbjH0Fyb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Aug 2023 01:54:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39874 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230073AbjH0D2N (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Aug 2023 23:28:13 -0400
-Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F73CCD
-        for <linux-pm@vger.kernel.org>; Sat, 26 Aug 2023 20:28:10 -0700 (PDT)
-Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-50079d148aeso3261206e87.3
-        for <linux-pm@vger.kernel.org>; Sat, 26 Aug 2023 20:28:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693106888; x=1693711688;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=t4PW5GOr14sKnMrp5iOyHNMKLLl0ISY4Z/HKicgZzoc=;
-        b=f16Ooh6S4gZROEoA9uKf3LLXMe57HTJ3KNIYW828cLk6zG2Kc9y34Lpbmz+3QRMXwd
-         AT61rlkWJyWc+fZjMnjcLXzJnBi97LeQaheoBLALaseEtZt8CqlwLZX4xViIQS/3HrG7
-         arjbpQ73FXtekyWLoJwvZfDdXhsSD4C0kZCCvZ1kOgp14Wwhwd4/AYAZ0Lo+IYM3wvGO
-         MtiOxptgo4qJAJLByiDiReK74wqzfoPHm8C5daVvNrPHSayPosvhoQ1l0mh4j00+oWHt
-         ZcvTT1rNBuDQEeft+HG9yyWn7wzc101DWy9hr9Ce46FQuPhGFVFTlVRAy5+SMURcvyi5
-         H6jQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693106888; x=1693711688;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=t4PW5GOr14sKnMrp5iOyHNMKLLl0ISY4Z/HKicgZzoc=;
-        b=Mq2bjW0aiB/BPOsgULwixdrLRSJzfmqUYJyvPtpEj9TMfIcB+50YrZvyC8G9r4iCUa
-         Uurm4wkBEfMet0ahyaontgo0CIkcFmyX214kt7+CkvUjSmwSkfpTTFjX1wdWK98Mdg1Y
-         ICVLozJCB1Nd9axA271RpUSZvTsEi83LwoXp2jTXTPAZONjRmSFxJ1C4Ps3bHlVpsEvR
-         N6pCi0d0tR3RDQrXeNdyXapZDX9DTGc6tbcpVOL7QEBnVtKeX/F8egMSp3LI2MviD5Eo
-         VAfQTTAIZDrMx3X3K3EecNz3kGVMNpA0JOlZIG6nUgpGOk1I/raZL9oHDp7+9XILjZYb
-         cZqg==
-X-Gm-Message-State: AOJu0YyNLB6UYGjWQlnZmX9soy1cbfofgrKDr4FZ4clr877rm3m8QBMS
-        /+W7ho8cHtrQGxxejfr6yAoM9A==
-X-Google-Smtp-Source: AGHT+IErw0mBCEud+xQcTHHPFAg9BsMuGdvzqgou1vUPSVogP124ojPYPCskD4g6M77Uw5ShhtPnzA==
-X-Received: by 2002:a05:6512:348a:b0:500:953b:d112 with SMTP id v10-20020a056512348a00b00500953bd112mr7013499lfr.27.1693106888434;
-        Sat, 26 Aug 2023 20:28:08 -0700 (PDT)
-Received: from umbar.unikie.fi ([192.130.178.91])
-        by smtp.gmail.com with ESMTPSA id w7-20020ac254a7000000b004fb99da37e3sm955709lfk.220.2023.08.26.20.28.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 26 Aug 2023 20:28:08 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>
-Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-        Christian Marangi <ansuelsmth@gmail.com>,
-        Stephan Gerhold <stephan@gerhold.net>
-Subject: [PATCH v4 5/6] cpufreq: qcom-nvmem: provide separate configuration data for apq8064
-Date:   Sun, 27 Aug 2023 06:28:02 +0300
-Message-Id: <20230827032803.934819-6-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230827032803.934819-1-dmitry.baryshkov@linaro.org>
-References: <20230827032803.934819-1-dmitry.baryshkov@linaro.org>
+        with ESMTP id S229654AbjH0FyH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2023 01:54:07 -0400
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CE6A121;
+        Sat, 26 Aug 2023 22:53:57 -0700 (PDT)
+Received: from leknes.fjasle.eu ([46.142.97.125]) by mrelayeu.kundenserver.de
+ (mreue109 [212.227.15.183]) with ESMTPSA (Nemesis) id
+ 1MUokB-1q9uju3HLV-00QnIT; Sun, 27 Aug 2023 07:52:55 +0200
+Received: by leknes.fjasle.eu (Postfix, from userid 1000)
+        id B485D3E71A; Sun, 27 Aug 2023 07:52:53 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=fjasle.eu; s=mail;
+        t=1693115573; bh=PEBDu2LsYY9cfkceNFyC5Y0UToOR2TEeQSWUUb4j1EY=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=JCf0AfwHTDyJG1qgVCiprdeiykbLHvErIpo0x7UTB/0gmVSCUg1uzVwkcrUDGHUoQ
+         72PMany4IEdzQXz86FVIak/eHwGo/UMjsszLFXnZ2MuPBlYFOkpK8JmZsu3A++zAXw
+         oXXdPN13opbRFW2Z0qoA7PjqiUxkog34/G114yB4=
+Date:   Sun, 27 Aug 2023 07:52:53 +0200
+From:   Nicolas Schier <nicolas@fjasle.eu>
+To:     Guru Das Srinagesh <quic_gurus@quicinc.com>
+Cc:     Masahiro Yamada <masahiroy@kernel.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Bjorn Andersson <andersson@kernel.org>, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, Will Deacon <will@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        quic_pkondeti@quicinc.com, u.kleine-koenig@pengutronix.de,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 1/1] scripts: Add add-maintainer.py
+Message-ID: <ZOrktcX1L6WHmLBi@fjasle.eu>
+References: <cover.1691049436.git.quic_gurus@quicinc.com>
+ <829b08342568735095bbd3f8c44f435f44688018.1691049436.git.quic_gurus@quicinc.com>
+ <ZOYicEP8D7kNGFin@fjasle.eu>
+ <20230824214436.GA22659@quicinc.com>
+ <ZOiUOcMOeYvMzq58@bergen.fjasle.eu>
+ <20230825170001.GB22659@quicinc.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230825170001.GB22659@quicinc.com>
+X-Provags-ID: V03:K1:SHb9/Jr2C2NWaPBXsZy0Asb6ySKk1dxrD8lEMkQnI7Yz5bn3Bws
+ wL9hkEZV66e+uhHiooIZXq4Tnyy/vy+IIljkiMhA5PM8a+heCD9cEm2wwwDbZiUCN6idND/
+ csJbRciSBbi9Qgh7tTo3VJTx1yNtNI7UUnZvNM+zLKXo68/Ry78e2VSL9D4lDWIw4Zj/ich
+ ZmHumxiXlyy67Rxf8Mywg==
+UI-OutboundReport: notjunk:1;M01:P0:pb8TgKev4sc=;b+LNStGfk+7SG1dylUYX4fWyXEd
+ GbmjoydExqsKwip/t1r6MtoRY7AnqFmu9TNDE/nUN/xJLzo1tV6euglY0ZfYbSb4kOFwoFHKh
+ IDOzWdcS9oYgfz5GqC3owEfMVj92Qj+/iFcMSGiJh46P+zl/sXpLbEsFlQ2YNdEJG5hgHX384
+ 43YHVrB//kpPGKhvJsDlLD7UxfbGR+Wi69Fothe6it4KdUSDpS5Uh5GfIk89QIBW6M0RrzhNh
+ vi7d+OXCMIIMzabHWWfKJFGqKN5cvqp3nSlgivMCP5nWHu03gD6jKzdgRSN/Y15bi4NuSy5HQ
+ 12D2C1g5kBem/A8k/F8QYO3qMFlX2lGZycBftGe6pp4Go0YOS7dXDHUW+Rym9iesU5zlwqdQQ
+ Gtk9sKmtvNV69WoQRHmCrdHyVWdE040og8Hjr/TnSRvUY6Y3l93+uhgdj96IkQwsZ2IHp2aJ+
+ I6OJ1azevh+sppDxhvsGTpXIUBa3zKDzdb8WVg1EPqqTNo5ul0Yr04diXMXYI9o6syaLbJ+9B
+ d4AUpB1oZvl/nboFTAPdo0iwyqkkfpKoqnh3ETd5yJC+aQE8Jg+S6j7AEmhSu8+jToES3jfUk
+ iGlRAETOWyIwzqRVj00WpFNnGvfVqb9Al4asIRwXrr8KbbtzQYV/+hrLrYTZmSkdeeU9jzMLP
+ Rs5HpSKn2c+9/dDb3W7u0mhLx6Ot0WFGmE4ERf6T4fmWGxaBB8UgNW1ysdSdn8lQcFt2wKHQx
+ UG9j0htsw9TCJqfGXcbT9Z44xbUAVcmp6XtQMGSwQueKN83/wCNM7tFl0Syhdr8IrYfcs7JB6
+ wRGeDNWUnsokLK7BdKfPWQq9eQ0djKw56yR+HenDPiBMbGRh4vnqmdE8AQ+//gSKOCbJ+wb9d
+ r9dwLWIR7CxYN4g==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-APQ8064 can scale core voltage according to the frequency needs. Rather
-than reusing the A/B format multiplexer, use a simple fuse parsing
-function and configure required regulator.
+On Fri, Aug 25, 2023 at 10:00:01AM -0700 Guru Das Srinagesh wrote:
+> On Aug 25 2023 13:44, Nicolas Schier wrote:
+> > On Thu 24 Aug 2023 14:44:36 GMT, Guru Das Srinagesh wrote:
+> > > > While testing, I thought that adding addresses without filtering-out duplicates
+> > > > was odd; but as git-send-email does the unique filtering, it doesn't matter.
+> > > 
+> > > Since I'm using `set()` in this script, the uniqueness is guaranteed here as
+> > > well - there won't be any duplicates.
+> > 
+> > I thought about patch files that already have 'To/Cc' headers (e.g.  
+> > 'git format-patch --to=... --cc=...' or by running add-maintainer.py 
+> > multiple times for updating the lists of recipients.  The result is a 
+> > patch file with possible duplicated lines; but as written: it does 
+> > matter, effectively.
+> 
+> Sorry, did you mean "does" or "does *not*"?
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
----
- drivers/cpufreq/qcom-cpufreq-nvmem.c | 49 ++++++++++++++++++++++++++--
- 1 file changed, 47 insertions(+), 2 deletions(-)
+I'm sorry, "it doe not matter".
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-index 81c080b854fe..35e2610c9526 100644
---- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-@@ -26,6 +26,7 @@
- #include <linux/platform_device.h>
- #include <linux/pm_domain.h>
- #include <linux/pm_opp.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/slab.h>
- #include <linux/soc/qcom/smem.h>
- 
-@@ -39,6 +40,7 @@ struct qcom_cpufreq_match_data {
- 			   char **pvs_name,
- 			   struct qcom_cpufreq_drv *drv);
- 	const char **genpd_names;
-+	const char * const *regulator_names;
- };
- 
- struct qcom_cpufreq_drv {
-@@ -203,6 +205,34 @@ static int qcom_cpufreq_krait_name_version(struct device *cpu_dev,
- 	return ret;
- }
- 
-+static int qcom_cpufreq_apq8064_name_version(struct device *cpu_dev,
-+					     struct nvmem_cell *speedbin_nvmem,
-+					     char **pvs_name,
-+					     struct qcom_cpufreq_drv *drv)
-+{
-+	int speed = 0, pvs = 0;
-+	u8 *speedbin;
-+	size_t len;
-+	int ret = 0;
-+
-+	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
-+	if (IS_ERR(speedbin))
-+		return PTR_ERR(speedbin);
-+
-+	if (len != 4)
-+		return -EINVAL;
-+
-+	get_krait_bin_format_a(cpu_dev, &speed, &pvs, speedbin);
-+
-+	snprintf(*pvs_name, sizeof("speedXX-pvsXX"), "speed%d-pvs%d",
-+		 speed, pvs);
-+
-+	drv->versions = (1 << speed);
-+
-+	kfree(speedbin);
-+	return ret;
-+}
-+
- static const struct qcom_cpufreq_match_data match_data_kryo = {
- 	.get_version = qcom_cpufreq_kryo_name_version,
- };
-@@ -217,6 +247,16 @@ static const struct qcom_cpufreq_match_data match_data_qcs404 = {
- 	.genpd_names = qcs404_genpd_names,
- };
- 
-+static const char * apq8064_regulator_names[] = {
-+	"vdd-core",
-+	NULL
-+};
-+
-+static const struct qcom_cpufreq_match_data match_data_apq8064 = {
-+	.get_version = qcom_cpufreq_apq8064_name_version,
-+	.regulator_names = apq8064_regulator_names,
-+};
-+
- static int qcom_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct qcom_cpufreq_drv *drv;
-@@ -304,7 +344,12 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
- 			config.virt_devs = NULL;
- 		}
- 
--		if (config.supported_hw || config.genpd_names) {
-+		if (drv->data->regulator_names)
-+			config.regulator_names = drv->data->regulator_names;
-+
-+		if (config.supported_hw ||
-+		    config.genpd_names ||
-+		    config.regulator_names) {
- 			drv->opp_tokens[cpu] = dev_pm_opp_set_config(cpu_dev, &config);
- 			if (drv->opp_tokens[cpu] < 0) {
- 				ret = drv->opp_tokens[cpu];
-@@ -361,7 +406,7 @@ static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
- 	{ .compatible = "qcom,msm8996", .data = &match_data_kryo },
- 	{ .compatible = "qcom,qcs404", .data = &match_data_qcs404 },
- 	{ .compatible = "qcom,ipq8064", .data = &match_data_krait },
--	{ .compatible = "qcom,apq8064", .data = &match_data_krait },
-+	{ .compatible = "qcom,apq8064", .data = &match_data_apq8064 },
- 	{ .compatible = "qcom,msm8974", .data = &match_data_krait },
- 	{ .compatible = "qcom,msm8960", .data = &match_data_krait },
- 	{},
--- 
-2.39.2
+Nicolas
 
+> I'll make sure to test v3 of this script out on patches that have To/Cc already
+> included and also run it multiple times on the same patch (effectively the same
+> thing).
+> 
+> Thank you.
+> 
+> Guru Das.
