@@ -2,164 +2,198 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA6B8C83F12
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 14:08:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64EC1C83F18
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 14:15:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229721AbjH1OID (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 10:08:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51792 "EHLO
+        id S231588AbjH1OOb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 10:14:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60212 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231545AbjH1OHg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 10:07:36 -0400
-Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80770114
-        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 07:07:32 -0700 (PDT)
-Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-68a3cae6d94so2814791b3a.0
-        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 07:07:32 -0700 (PDT)
+        with ESMTP id S231744AbjH1OOW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 10:14:22 -0400
+Received: from mail-oa1-x35.google.com (mail-oa1-x35.google.com [IPv6:2001:4860:4864:20::35])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73695E7;
+        Mon, 28 Aug 2023 07:14:19 -0700 (PDT)
+Received: by mail-oa1-x35.google.com with SMTP id 586e51a60fabf-1d0b00d68c7so120628fac.0;
+        Mon, 28 Aug 2023 07:14:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20221208.gappssmtp.com; s=20221208; t=1693231652; x=1693836452;
-        h=from:to:subject:content-transfer-encoding:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=ve0utH9aRLXgDul2QQzlV5PL5KVO5A7dq2FT7NpTEUo=;
-        b=cQdyZctLxOt1C6AQOCTBCDvLc4dH7qEJD9KQwMZ5VtfpQYcOWpDQTLAVE0ZVlWQs1d
-         AcMSL+ZjP5cn2Oxh8p9x4qtVtAXoQUmCF/fYBSegxIafsUw33pD5Xmzc0QvGJ2lB9OAn
-         qOXlgsjLyhVK9RoO6cHjgf8/5ej6AWPQnVGBu20gN4EoBLmOoRV5UCWKxFUmHKbqgFJi
-         4yhrLTBo/pU4ScNNuIOtyrkZ+WyjOu22pobY5IJsDWwvMAiJBVonXiEiMOjjtMLx4Dxv
-         bViWcXAGqUslXgD2ebDiASGady2ud9ho2QsqGFMn6ZNn+wQP9bblyviRiMKKhWzX7r71
-         5lkA==
+        d=gmail.com; s=20221208; t=1693232058; x=1693836858;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vRGlx8xWsboOHpufKI6wY/4OuATN1MLCGFA2VszRVGU=;
+        b=PqgW8RpvkpLrUQiws7TMN56R66jc6o3nmo1EhWd/EAqbFl19Zl0eJhFGYtW2obS9iC
+         QrHOKjneeHH95LO+3UsDAIvWXYT1W9cImyZ8Jjfhs7kk/U4SxCogptdLEZhmhU3ZOsI2
+         mmXboR1xSz2q7KUEin1lc+aKrq5y8UzwIa6TBvlI2Z9Zu0pBaMrcSUuHnMc9g1WebUU+
+         /3cQAZw9xeHl/4iG/ALzdGZaHFfb9iXvVfP5/BhQ4o4FURnM0RiYw+4RVF4OO1wBYEGW
+         9FRCFr9dnpyHbxL/qG9KKJ++u8n1/TSIxW0itpvp3mZSh+ePjN/HH0giqUWAWC3FJt1Q
+         vUJQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693231652; x=1693836452;
-        h=from:to:subject:content-transfer-encoding:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ve0utH9aRLXgDul2QQzlV5PL5KVO5A7dq2FT7NpTEUo=;
-        b=iyzNFwT4VSlx/WZuS7/y3SDErqwSLiKlsooL7/elMyEKON5OQWPSB1Sz/+mJjo6UtP
-         1Fd3IFbj+mkPCqcEfKrq6aRBk3IEI2OgiDgHLUFtTli2aht1hABLXrgzEtWd+i/U+sGN
-         17JcA8C9FVCLZAZQEcDbyRdOXgMWLF/Cv2D0gG0ZQNc0JECgEjXhI7wRoxsIlXNG4rvy
-         Id8EnFBdqzGLypO2dJ2X0ftao5GcIDn/bl9HVbjFswZgfZ7hMRvZBpWTtI69mGfInZi9
-         ea5RNZ6fpMa6AwULFCWD6we0/J9+xNx+Em5p90cLnWrKk1eRCjOQgDreViuTdGRUzQLg
-         9fcA==
-X-Gm-Message-State: AOJu0YyIbGuKfkJ2AD6RhHUfhk3MQDuVB4HFnQLA4VUDHENuiRgXB8CS
-        PaN5fUzMEJhfsMmCddF6DGEhrzETiyJYmhpUSDk=
-X-Google-Smtp-Source: AGHT+IE0yFC1jRmIt/U+anSIMFO+aJenS0Qx0cBXKjXBhB3WYJppc8dGO7NKOg6lL1pyhLDzLDte7w==
-X-Received: by 2002:a05:6a00:150a:b0:68a:6d1a:b812 with SMTP id q10-20020a056a00150a00b0068a6d1ab812mr22480373pfu.9.1693231651914;
-        Mon, 28 Aug 2023 07:07:31 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([20.171.243.82])
-        by smtp.gmail.com with ESMTPSA id z31-20020a056a001d9f00b00689f3ae4ca8sm6642567pfw.112.2023.08.28.07.07.31
+        d=1e100.net; s=20221208; t=1693232058; x=1693836858;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=vRGlx8xWsboOHpufKI6wY/4OuATN1MLCGFA2VszRVGU=;
+        b=OE+Mo9YUFNGET0XhDQrR6sy5Yu16FoZrLMh/8w0bR+P1OxUZPHsZPiIMZyWwBIuGrt
+         nMQyA0HoWGXTESc1ud7Wcb9xNwr/v2NtdYO+omWpumlHLSEJ7CrAmL4ia7CHagBSvD/g
+         lWbTW8dHqDh+f1K9wet4qAnVtozF4EFZvRn6fSH68oNtDIkuVNdthNUWHzLPixPytt1b
+         LNi7EH+xE2IKa7TDdZ1uuJO1+1tNSaotgr40m0opH/UYedlgkVghDyLklbUr7wlur+sw
+         7GMOZRTzv3za7z2+QKJXziD9qQKPXjIoRlnfORQ2rHSmRnuRpL2mOm0ic1K9iW9TRWU7
+         pi6w==
+X-Gm-Message-State: AOJu0YxEPu2YhD2X7Bedn9dpe7LHplC/w7MSOytGGZPI7kI2CoiqMieN
+        mJZuhmKQpmfrgWNmyVtzvqU=
+X-Google-Smtp-Source: AGHT+IGsJapNBbY7F7ja/6NfrS2C7BeWFYmKBy7J34p3kgFOHor0KWNPutN2xN3Vnr4vEHV//zw0CA==
+X-Received: by 2002:a05:6870:828d:b0:1c8:b870:4e5e with SMTP id q13-20020a056870828d00b001c8b8704e5emr28983262oae.3.1693232058505;
+        Mon, 28 Aug 2023 07:14:18 -0700 (PDT)
+Received: from fabio-Precision-3551.. ([2804:14c:485:4b61:3c37:a69d:a4cd:94fc])
+        by smtp.gmail.com with ESMTPSA id l5-20020a056870e90500b001c4ede43955sm4323892oan.31.2023.08.28.07.14.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Aug 2023 07:07:31 -0700 (PDT)
-Message-ID: <64ecaa23.050a0220.1fa23.a15f@mx.google.com>
-Date:   Mon, 28 Aug 2023 07:07:31 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        Mon, 28 Aug 2023 07:14:18 -0700 (PDT)
+From:   Fabio Estevam <festevam@gmail.com>
+To:     daniel.lezcano@linaro.org
+Cc:     rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
+        linux-pm@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        robh+dt@kernel.org, conor+dt@kernel.org,
+        devicetree@vger.kernel.org, Fabio Estevam <festevam@denx.de>
+Subject: [PATCH v2 3/3] thermal: thermal_core: Allow rebooting after critical temp
+Date:   Mon, 28 Aug 2023 11:13:41 -0300
+Message-Id: <20230828141341.1583591-3-festevam@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230828141341.1583591-1-festevam@gmail.com>
+References: <20230828141341.1583591-1-festevam@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Report-Type: build
-X-Kernelci-Kernel: pm-6.6-rc1-122-g07b618ec9d7a
-Subject: pm/testing build: 8 builds: 0 failed, 8 passed,
- 4 warnings (pm-6.6-rc1-122-g07b618ec9d7a)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 8 builds: 0 failed, 8 passed, 4 warnings (pm-6.6-rc1-122-=
-g07b618ec9d7a)
+From: Fabio Estevam <festevam@denx.de>
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/pm-=
-6.6-rc1-122-g07b618ec9d7a/
+Currently, the default mechanism is to trigger a shutdown after the
+critical temperature is reached.
 
-Tree: pm
-Branch: testing
-Git Describe: pm-6.6-rc1-122-g07b618ec9d7a
-Git Commit: 07b618ec9d7a09b421b8233f594632e379de0308
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 8 unique architectures
+In some embedded cases, such behavior does not suit well, as the board may
+be unattended in the field and rebooting may be a better approach.
 
-Warnings Detected:
+The bootloader may also check the temperature and only allow the boot to
+proceed when the temperature is below a certain threshold.
 
-arc:
+Introduce support for allowing a reboot to be triggered after the
+critical temperature is reached.
 
-arm64:
+If the "critical-action" devicetree property is not found, fall back to
+the shutdown action to preserve the existing default behavior.
 
-arm:
+Tested on a i.MX8MM board with the following devicetree changes:
 
-i386:
+    thermal-zones {
+        cpu-thermal {
+            critical-action = "reboot";
+        };
+    };
 
-mips:
-
-riscv:
-
-sparc:
-    sparc64_defconfig (gcc-10): 4 warnings
-
-x86_64:
-
-
-Warnings summary:
-
-    2    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version genera=
-tion failed, symbol will not be versioned.
-    2    <stdin>:1519:2: warning: #warning syscall clone3 not implemented [=
--Wcpp]
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
-tion mismatches
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
- section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
-on mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----------------------------------------------------------------------------=
------
-sparc64_defconfig (sparc, gcc-10) =E2=80=94 PASS, 0 errors, 4 warnings, 0 s=
-ection mismatches
-
-Warnings:
-    <stdin>:1519:2: warning: #warning syscall clone3 not implemented [-Wcpp]
-    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
-failed, symbol will not be versioned.
-    <stdin>:1519:2: warning: #warning syscall clone3 not implemented [-Wcpp]
-    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
-failed, symbol will not be versioned.
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
-ection mismatches
-
+Signed-off-by: Fabio Estevam <festevam@denx.de>
 ---
-For more info write to <info@kernelci.org>
+Changes since v1:
+- Adapt to handle 'critical-changes' property as string.
+
+ drivers/thermal/thermal_core.c |  8 +++++++-
+ drivers/thermal/thermal_of.c   | 27 +++++++++++++++++++++++++++
+ include/linux/thermal.h        |  6 ++++++
+ 3 files changed, 40 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index a59700593d32..f69e1667acb1 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -320,11 +320,17 @@ void thermal_zone_device_critical(struct thermal_zone_device *tz)
+ 	 * Its a must for forced_emergency_poweroff_work to be scheduled.
+ 	 */
+ 	int poweroff_delay_ms = CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS;
++	void (*hw_protection_action)(const char *reason, int ms_until_forced);
+ 
+ 	dev_emerg(&tz->device, "%s: critical temperature reached, "
+ 		  "shutting down\n", tz->type);
+ 
+-	hw_protection_shutdown("Temperature too high", poweroff_delay_ms);
++	hw_protection_action = hw_protection_shutdown;
++
++	if (tz->action == THERMAL_CRITICAL_ACTION_REBOOT)
++		hw_protection_action = hw_protection_reboot;
++
++	hw_protection_action("Temperature too high", poweroff_delay_ms);
+ }
+ EXPORT_SYMBOL(thermal_zone_device_critical);
+ 
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index 4ca905723429..8bc28cba7406 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -218,6 +218,31 @@ static struct device_node *of_thermal_zone_find(struct device_node *sensor, int
+ 	return tz;
+ }
+ 
++static const char * const critical_actions[] = {
++	[THERMAL_CRITICAL_ACTION_SHUTDOWN]	= "shutdown",
++	[THERMAL_CRITICAL_ACTION_REBOOT]	= "reboot",
++};
++
++static void thermal_of_get_critical_action(struct device_node *np,
++					   enum thermal_action *action)
++{
++	const char *action_string;
++	int i, ret;
++
++	ret = of_property_read_string(np, "critical-action", &action_string);
++	if (ret < 0)
++		goto out_default_action;
++
++	for (i = 0; i < ARRAY_SIZE(critical_actions); i++)
++		if (!strcasecmp(action_string, critical_actions[i])) {
++			*action = i;
++			return;
++		}
++
++out_default_action:
++	*action = THERMAL_CRITICAL_ACTION_SHUTDOWN;
++}
++
+ static int thermal_of_monitor_init(struct device_node *np, int *delay, int *pdelay)
+ {
+ 	int ret;
+@@ -516,6 +541,8 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
+ 		goto out_kfree_trips;
+ 	}
+ 
++	thermal_of_get_critical_action(np, &tz->action);
++
+ 	ret = thermal_zone_device_enable(tz);
+ 	if (ret) {
+ 		pr_err("Failed to enabled thermal zone '%s', id=%d: %d\n",
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index b449a46766f5..08854f640db9 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -34,6 +34,11 @@ struct thermal_cooling_device;
+ struct thermal_instance;
+ struct thermal_attr;
+ 
++enum thermal_action {
++	THERMAL_CRITICAL_ACTION_SHUTDOWN, /* shutdown when crit temperature is reached */
++	THERMAL_CRITICAL_ACTION_REBOOT, /* reboot when crit temperature is reached */
++};
++
+ enum thermal_trend {
+ 	THERMAL_TREND_STABLE, /* temperature is stable */
+ 	THERMAL_TREND_RAISING, /* temperature is raising */
+@@ -187,6 +192,7 @@ struct thermal_zone_device {
+ 	struct list_head node;
+ 	struct delayed_work poll_queue;
+ 	enum thermal_notify_event notify_event;
++	enum thermal_action action;
+ };
+ 
+ /**
+-- 
+2.34.1
+
