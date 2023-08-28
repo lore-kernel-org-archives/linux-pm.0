@@ -2,97 +2,107 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4BB1C83F12
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 19:20:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CB95C83F17
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 19:24:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233511AbjH1TU0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 15:20:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60020 "EHLO
+        id S231610AbjH1TXk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 15:23:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60356 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233372AbjH1TTx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 15:19:53 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65FE4110;
-        Mon, 28 Aug 2023 12:19:49 -0700 (PDT)
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37SIv9eA025996;
-        Mon, 28 Aug 2023 19:19:40 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-type; s=qcppdkim1;
- bh=1BfstuHadOZqC8DUdrVOOTXg+wp2La4fJ6XyltmS9xE=;
- b=Kb4pyZdzqZ6oejbT8wgjxfZMCuSrvQj7QrBn4RhjsnffJVmQtyEc8L/WEowuAawtSorf
- bRTTAMFh7u1j5LU3q533ZWxD4zQ/Impn+gESfyYdl5f2lypM6RueIwSwaYy5m7xu/pFL
- pG+8DfYEj6R9DNcS2JyEn4ph/pIz2PDxmpci4TQ+TvgIUBnVFXuaeEE6UlRC3xJogTjN
- IioktBLBkr0oKTebChtbHbWn5j8ReeftZ2hh0qTZ0Z29fQ8oVoN2E+dWRtpaeiATOkd+
- rGYiVzaw7ly70olU+VwZYUvd3/8zDEECPRf50259tao349lXlJ71ndnYetYNgNJG5nng TA== 
-Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sq73n4rdy-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 28 Aug 2023 19:19:40 +0000
-Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 37SJJTn2003302
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 28 Aug 2023 19:19:29 GMT
-Received: from srichara-linux.qualcomm.com (10.80.80.8) by
- nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.30; Mon, 28 Aug 2023 12:19:09 -0700
-From:   Sricharan Ramabadhran <quic_srichara@quicinc.com>
-To:     <agross@kernel.org>, <andersson@kernel.org>,
-        <konrad.dybcio@linaro.org>, <srinivas.kandagatla@linaro.org>,
-        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
-        <conor+dt@kernel.org>, <thara.gopinath@gmail.com>,
-        <rafael@kernel.org>, <daniel.lezcano@linaro.org>,
-        <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <quic_srichara@quicinc.com>
-Subject: [PATCH 5/7] dt-bindings: nvmem: Add compatible for IPQ5018
-Date:   Tue, 29 Aug 2023 00:48:25 +0530
-Message-ID: <1693250307-8910-6-git-send-email-quic_srichara@quicinc.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
-References: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
+        with ESMTP id S232674AbjH1TXU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 15:23:20 -0400
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8F6418D
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 12:23:15 -0700 (PDT)
+Received: by mail-ej1-x630.google.com with SMTP id a640c23a62f3a-9a2a4a5472dso771027466b.1
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 12:23:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1693250594; x=1693855394;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=quIC8r/2M5bmXpGrl7OPUPyT92RZlgBwJSIBrvkGRqA=;
+        b=Fc1xwtcoWcWIMeccc+reNEx/vm62Yg5YEieBfKF7CUQXBOahorNYEZUqt8ZOCNidTW
+         ak9bHTNDV5tQhMppPNFCxwCnAsbCrCj136cy/+28IX0q3hyB++fSVyPxhdqSsknQRqTN
+         D9z8WoF2lipzcdsxzQHx1f2XSZ9dICd4/z0BBDAk9DoIgmkbPIrzqZRCG8vc4sekqeUm
+         e50+ou392W0Q99Ur2LWbbePwgggd8VAyOJs/94SimjDPabJSWYot79eAK5PdYaV6PiFB
+         5ztadUon+Js17vCEcdbO0nBgmoMA5UA9+Me53vVKfdVRzrmWW++th2g8C0O68f8sWNhW
+         dgXA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693250594; x=1693855394;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=quIC8r/2M5bmXpGrl7OPUPyT92RZlgBwJSIBrvkGRqA=;
+        b=cguzY177Razhv9EVVzJ4ISUdWIZKpj2Jj+//VJSdUrf9Qq4fNmiJEbrnTcgB8zHkVS
+         zrVfHShk/7nyLRWUR6TUgmYY+9lCfYDdx3QJByDS+ZnCaaNfSLSFJBruBG/BAjy1ACcI
+         heQh26QGnJQIsmVBDVe1HcP/CfqW8VozQn2m+5XVe8wphBAxdp3x4PI6wtrJRm/fsPwC
+         o76tAgKxAr9XGRSNl/K5fB6krV6zms+nrwn3DfnIP66prX3ekVzQPW6ePMMTuVKekNO2
+         U6lstTT1Zgnu8hSf+wTjecdEKTUj32Nu3Eq4KEm1IblDcvmbH8K/zsyXHu4Ul3SIDZrp
+         /ifQ==
+X-Gm-Message-State: AOJu0YzQwdN19yPPAtOobmGA81X0/IlMqaUtN9oa1L/S7OYqTx05jEvn
+        RlL/LBu8hG8wnD1bhe4aI8cStA==
+X-Google-Smtp-Source: AGHT+IFoFEPbZK4IGrEqGuM5fFL74+/7U+GcnSltCBLhEp/yPgE2S/IR+dTJBpXle+IFmH2xTRBqOQ==
+X-Received: by 2002:a17:907:78cf:b0:9a5:9f3c:961e with SMTP id kv15-20020a17090778cf00b009a59f3c961emr558768ejc.18.1693250594168;
+        Mon, 28 Aug 2023 12:23:14 -0700 (PDT)
+Received: from [192.168.0.22] ([77.252.47.225])
+        by smtp.gmail.com with ESMTPSA id 17-20020a170906059100b0098e2969ed44sm4934214ejn.45.2023.08.28.12.23.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 28 Aug 2023 12:23:13 -0700 (PDT)
+Message-ID: <1c97c487-bd25-2fb2-4002-105186f3b87c@linaro.org>
+Date:   Mon, 28 Aug 2023 21:23:12 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01c.na.qualcomm.com (10.47.97.35)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: lXP9osgLAh76Um0ouliGQCrCpGyfeG2S
-X-Proofpoint-ORIG-GUID: lXP9osgLAh76Um0ouliGQCrCpGyfeG2S
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-08-28_16,2023-08-28_04,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
- priorityscore=1501 malwarescore=0 suspectscore=0 impostorscore=0
- mlxscore=0 mlxlogscore=931 lowpriorityscore=0 clxscore=1015 phishscore=0
- bulkscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2308280168
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH 5/7] dt-bindings: nvmem: Add compatible for IPQ5018
+Content-Language: en-US
+To:     Sricharan Ramabadhran <quic_srichara@quicinc.com>,
+        agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        srinivas.kandagatla@linaro.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        thara.gopinath@gmail.com, rafael@kernel.org,
+        daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
+ <1693250307-8910-6-git-send-email-quic_srichara@quicinc.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <1693250307-8910-6-git-send-email-quic_srichara@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the QFPROM on IPQ5018.
+On 28/08/2023 21:18, Sricharan Ramabadhran wrote:
+> Document the QFPROM on IPQ5018.
+> 
+> Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
+> ---
 
-Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
+I suggest you to send independent patches from different subsystem in
+their own patchsets. You make it easier for the maintainer, thus help
+yourself as well (usually).
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+
 ---
- Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml b/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml
-index 8740938c32eb..e26621ac1ca7 100644
---- a/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml
-+++ b/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml
-@@ -18,6 +18,7 @@ properties:
-       - enum:
-           - qcom,apq8064-qfprom
-           - qcom,apq8084-qfprom
-+          - qcom,ipq5018-qfprom
-           - qcom,ipq5332-qfprom
-           - qcom,ipq6018-qfprom
-           - qcom,ipq8064-qfprom
--- 
-2.34.1
+This is an automated instruction, just in case, because many review tags
+are being ignored. If you know the process, you can skip it (please do
+not feel offended by me posting it here - no bad intentions intended).
+If you do not know the process, here is a short explanation:
+
+Please add Acked-by/Reviewed-by/Tested-by tags when posting new
+versions, under or above your Signed-off-by tag. Tag is "received", when
+provided in a message replied to you on the mailing list. Tools like b4
+can help here. However, there's no need to repost patches *only* to add
+the tags. The upstream maintainer will do that for tags received on the
+version they apply.
+
+https://elixir.bootlin.com/linux/v6.5-rc3/source/Documentation/process/submitting-patches.rst#L577
+
+Best regards,
+Krzysztof
 
