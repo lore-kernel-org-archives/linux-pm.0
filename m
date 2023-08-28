@@ -2,65 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 600FBC83F22
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 11:43:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4A8FC83F17
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 11:43:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232374AbjH1LnE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 07:43:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35044 "EHLO
+        id S232500AbjH1LnG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 07:43:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56550 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232475AbjH1Lmh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 07:42:37 -0400
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4737E8
-        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 04:42:32 -0700 (PDT)
-Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-5007616b756so4957195e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 04:42:32 -0700 (PDT)
+        with ESMTP id S232502AbjH1Lmo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 07:42:44 -0400
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 392CEC3
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 04:42:41 -0700 (PDT)
+Received: by mail-lf1-x132.google.com with SMTP id 2adb3069b0e04-5007c8308c3so4862137e87.0
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 04:42:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693222951; x=1693827751;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=5pCzQJ0jMTfSwe/0ZOPIiLe+oNZxbdSusdDHoFzoxhs=;
-        b=YOBcoFIwluIOyWGcyM5v2TTEslNHvlBs2ySo/ZiQpwuUeBAY9hKg1qq/9afGOprmZo
-         Gb0eKwzTYugNlmzaVG42yUgv49GjkskQkbxO/OcjagywE3QkPAYrTAHiZVfAj+yL5mem
-         zFZq4XJCAogZCfo4yvY4typkw4xr2L02VE3CBbT7l25J5mh6Dvzkhd0p1OX215Gm7kVP
-         /rQxykWnW5J4l4DbD4rmCQaXfPCQaxTVRfuuAtNOFmZ44F5cCCGEDsmXWqKQU6fGicii
-         u4QOFQL5pav29Gd/g2cteNAvHow0ts3i7fG4AaRIxV90IWjtYxcwltIarXBKDOsvIzp4
-         3tKA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693222951; x=1693827751;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=linaro.org; s=google; t=1693222959; x=1693827759;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=5pCzQJ0jMTfSwe/0ZOPIiLe+oNZxbdSusdDHoFzoxhs=;
-        b=kB+QWFwQ0Q0iy5Fqc0VFeOK0ya6IXmrEEWGac6FafvI3CgVLWhF+oiLzbrusmFKRgN
-         JFnnkcYuat2YPms8KHGqw4jZk/i7kdbKeycWKTuR4F8PMZ5R1Mg4BkmrEUJgvXofM4FE
-         pgC72ilzCc0badQ85/60eioz9lekzJoIiYiVK8a+jcXnAhuyLpAO4EWI6SgDiUUoYJoL
-         sHuhZLhC1vXH5jMfBwMAZ1mCbNi7TpKywKaUUN653OYJ0HAvgYs2JehZFxBrOwUhfhKL
-         F8IloeapYkYvzMo4lz8//3MIw9IaRkQP/X6rCJiDhRzs6xnJXCRLRobV9C4jhjuNlANo
-         A9mA==
-X-Gm-Message-State: AOJu0YwfbthMiY6Errgss9SjjggvfP+uqPOeyFz8txiQUvxAxGhEGEgH
-        qpSg6Rg0JWGeBwivMtUbj7IBxw==
-X-Google-Smtp-Source: AGHT+IF25SbqjUFgSXqqBPdrZjgv2ldQjJ0ND5qCwhHMQA/wtF9QbiCD2x/Ygvw6w/u09fyqxri21g==
-X-Received: by 2002:a05:6512:615:b0:4fb:829b:196e with SMTP id b21-20020a056512061500b004fb829b196emr17131926lfe.2.1693222950578;
-        Mon, 28 Aug 2023 04:42:30 -0700 (PDT)
+        bh=8lczsHPUyJRmspH9y5x62IT1HsVcOeFxIgaLGYJlH4E=;
+        b=C5SjzzzMpbr18uc/DlxwwjMrmmjwVRITRtzuLcH5CIPnEwdSQsiP7YRvrVmootWtP/
+         yimvzQ+RFkjjU6f8R08QPdO4cT7F+W5gtwO+ir/t/nhkvkRbhN9YDQyiOS11hQVtSDBz
+         6+p25zA6urAwJvB0qZrjYbO+0uKstKS5Z1dtY6i6N+/vgj69h/sLkMlA3PAjpFW+/odE
+         CdYx2p6C4ukSjnxOm/eWp6KSAbAV59+kJVxufXcU5PXhbmodgGtvu2RNz2iy+gePnasS
+         DFY8xPPf249l7Fn4LZqWCZ1CZURBsJGePier9a2UmFQ4cXAYQZa5gXIhWcCbyfQdmEaJ
+         A67Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693222959; x=1693827759;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=8lczsHPUyJRmspH9y5x62IT1HsVcOeFxIgaLGYJlH4E=;
+        b=gZ+X/f3o2XYR9Xl6nF6MTTP4aPseWnl76mFOy5r4Nd6uQfZSKT/tQgtB80b3NPbJVY
+         aTiZItcuRVglB1oAwp+QG5LGuqvO8ckEv7OqpZqVYMpiipQ90yXV0CTOIks0fFzDFuWm
+         TOx0gkohIZzTLwYwly4/mdFfBn3sulfagjZoeT/sWKwm1Ky+97cHMx9qYY0mYko20151
+         96aRIE6ChiyG1X8h1d4EFm551UuJkLVShtC1yAUI+6242vQIohPyXsS4mOgOD2o+aik1
+         4HL1i4GyOmZLANznN2bQQSYpK5fNMMt3QAinUVki6MGqNsUCdxbfdpeme21QNDHE8YG1
+         EzPw==
+X-Gm-Message-State: AOJu0YwD/T7uF7DrMTx9v/LZUidtC7NTFG7I5C3hL7EGycNuV52bmFbh
+        b6dQzCIi6WrqdQFgHKZN6IEiVQ==
+X-Google-Smtp-Source: AGHT+IGapV/pJW+FZOV9bNYIUhxqqJgkctTSP8QyEEptY1rT7ZXBDYXqmTIoWOn0ll3RCJCU5z+gZA==
+X-Received: by 2002:a05:6512:615:b0:4fd:d9dd:7a1a with SMTP id b21-20020a056512061500b004fdd9dd7a1amr17484607lfe.31.1693222959556;
+        Mon, 28 Aug 2023 04:42:39 -0700 (PDT)
 Received: from [192.168.1.101] (abyl195.neoplus.adsl.tpnet.pl. [83.9.31.195])
-        by smtp.gmail.com with ESMTPSA id b2-20020ac247e2000000b005009920b6afsm1547799lfp.9.2023.08.28.04.42.28
+        by smtp.gmail.com with ESMTPSA id b2-20020ac247e2000000b005009920b6afsm1547799lfp.9.2023.08.28.04.42.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Aug 2023 04:42:30 -0700 (PDT)
+        Mon, 28 Aug 2023 04:42:39 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Subject: [PATCH v14 0/9] Add support for Core Power Reduction v3, v4 and
- Hardened
-Date:   Mon, 28 Aug 2023 13:42:12 +0200
-Message-Id: <20230217-topic-cpr3h-v14-0-9fd23241493d@linaro.org>
+Date:   Mon, 28 Aug 2023 13:42:17 +0200
+Subject: [PATCH v14 5/9] soc: qcom: cpr-common: Add support for flat fuse
+ adjustment
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIABWI7GQC/33NQWrDMBAF0KsErauiGcl26Sr3KF2MpFEsMJKRU
- tMSfPdOsispXv4/vD831bll7ur9dFONt9xzLRLAvZxUmKlcWOcohUKD1iBM+lrXHHRYm511ZLT
- ok3cTByXCU2ftG5UwiylfyyLl2jjl78ePj0/Jc+7X2n4eLzcw9/r/dTlqo8eJOL6lmGiE85ILt
- fpa20XdpzaAIw7CPSF6F4mGOD5zPOIoHMhFMxgGHqdnbo+4FR4NhJQgDC6kP3zf91/gEGiyfAE
- AAA==
+Message-Id: <20230217-topic-cpr3h-v14-5-9fd23241493d@linaro.org>
+References: <20230217-topic-cpr3h-v14-0-9fd23241493d@linaro.org>
+In-Reply-To: <20230217-topic-cpr3h-v14-0-9fd23241493d@linaro.org>
 To:     AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>,
         Andy Gross <agross@kernel.org>,
@@ -82,236 +80,80 @@ Cc:     Robert Marko <robimarko@gmail.com>, linux-kernel@vger.kernel.org,
         Marijn Suijten <marijn.suijten@somainline.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
         AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+        <angelogioacchino.delregno@somainline.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1693222948; l=8940;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1693222948; l=2102;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=RBcdLtSOaoM0p4yqHckJhMBSmnQ9YdjBvghkm0NcLN0=;
- b=SOvIQsAtAafk2Ok38JUquMTJKKGW14IkPivIlU4NE8PScIiyR+lyuSmqRSnh5KSGDfkZsu2x4
- CDTcRxdsXouDJojTIgP+0uHlvhLFfKA6Ok14YhqCMFbud2JQGBNAwhs
+ bh=r+FZtgyjhOegt/rHxqeMXobV6M/mn9z4gyS+IPOc1vM=;
+ b=U3Xoy4etONfYRJG0PDzYicPXwrijpIZrw7CCHzvb+YFPm0Kg6Ipp3U/krMDpjBkuNNqub+/gX
+ 1ySzgw7dkBGCBLIFqtTScwGbLDDASrIy/h1K4nJCcrj4A1noF4mtXNF
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes in v14:
-- Rebase
-- Drop cpufreq probing block (merged)
-- Pick up tags
-- Drop quotes from CPR3 bindings $id:
-- Drop useless description: under compatible:
-- Link to v13: https://lore.kernel.org/r/20230217-topic-cpr3h-v13-0-d01cff1c54cf@linaro.org
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 
-Changes in v13:
-- blacklist -> blocklist in cpufreq commit message
-- rebase atop drivers/genpd introduction
-- remove quotes in cpr bindings
-- describe reg entries in cpr bindings
-- define the # of power-domains in cpr bindings
-- pick up tags
-- Link to v12: https://lore.kernel.org/r/20230217-topic-cpr3h-v12-0-1a4d050e1e67@linaro.org
+CPR3 makes use of post-calculation flat value adjustments. Add the
+necessary bits to the common functions to support it.
 
-Changes in v12:
-- Add the !independent! patch to block cpufreq-dt from probing on 8998 (it tries
-  to when we attach OPP tables to the CPU nodes)
-- Include all promised changes to the CPR3 driver from v11 (I managed to
-  send the wrong version of that patch last time around..)
-- Partially rewrite debugfs code (to make it work and be cleaner)
-- use FIELD_PREP/GET throughout the driver (managed to squash a bug when
-  exploring that)
-- Fix and finish the removal of cpr_get_ro_factor() by introducing
-  cpr_thread_desc.ro_scaling_factor_common
-- Replace underscores in node names with '-'
-- Fix some formatstring issues that clang apparently doesn't care about
-- Link to v11: https://lore.kernel.org/r/20230217-topic-cpr3h-v11-0-ba22b4daa5d6@linaro.org
-
-Changes in v11:
-
-CPR COMMON:
-- split the commonizing patch, make it actually do what it says on the
-  tin..
-- fix some overflow bugs
-
-CPR3:
-- fix some overflow bugs
-- don't assume "lack of qcom,opp-?loop-vadj" means val=0"
-
-CPR BINDINGS:
-- drop quotes in items
-- drop clock-names (there's just a single one)
-- rewrite the description a bit
-- fix up the example
-- drop bogus minItems
-- "acc-syscon" -> "qcom,acc"
-
-DTS:
-- fix qfprom children so that the bits=<> doesn't overflow reg[size]
-- drop unrelated changes
-- place one reg entry per line
-
-Link to v10: https://lore.kernel.org/r/20230217-topic-cpr3h-v10-0-67aed8fdfa61@linaro.org
-
-Changes in v10:
-- Skip "Let qcom,opp-fuse-level be a 2-long array" (Applied by Viresh)
-- Use b4 (it may be the first time you're receiving this if git send-email
-  omitted you before..)
-- +Cc Robert Marko (expressed interest in previous revisions)
-- Add "Document CPR3 open/closed loop volt adjustment"
-CPR:
-- %hhu -> %u (checkpatch)
-CPR BINDINGS:
-- Drop QCS404 fuse set (it doesn't use this driver, what did I even think..)
-  but leave the allOf:if: block for expansion (sdm660, msm8996, ipqABCD should
-  follow soon..)
-- Drop Rob's R-b (as things changed *again*, please take one more look to make
-  sure you're okay with this file, Rob..)
-
-Link to v9:
-https://lore.kernel.org/linux-arm-msm/20230116093845.72621-1-konrad.dybcio@linaro.org/
-
-Changes in v9:
-- Restore forgotten MAINTAINERS patch (oops)
-CPR:
-- Include the missing header (big oops!)
-- Fix kconfig dependencies
-CPR bindings:
-- Fix cpu reg in example (why didn't dt_binding_check scream at that)
-- Add newlines between nodes in example
-- Change opp table node names to opp-table-cpu[04]
-- Change opp table labels to cpu[04]_opp_table
-- Change CPRh opp subnode names to opp-N from oppN
-- Remove some stray newlines
-- Bring back nvmem-cell-names and add the 8998's set
-- Allow power-domains for VDDCX_AO voting
-- Remove Rob's r-b, there's been quite a bit of changes..
-CPR DT:
-- Send the correct revision of the patch this time around..
-OPP bindings:
-- Add Rob's ack
-
-Link to v8:
-https://lore.kernel.org/linux-arm-msm/20230110175605.1240188-1-konrad.dybcio@linaro.org/
-
-Changes in v8:
-- Overtake this series from AGdR
-- Apply all review comments from v7 except Vladimir's request to
-  not create the include/ header; it will be strictly necessary for
-  OSM-aware cpufreq_hw programming, which this series was more or
-  less created just for..
-- Drop QCS404 dtsi change, account for not breaking backwards compat
-  in [3/5]
-- Add type phandle type reference to acc-syscon in [1/5]
-- Update AGdR's email addresses for maintainer entries
-- Add [2/5] to make dt_binding_check happy
-- Separate the CPRh DT addition from cpufreq_hw addition, sort and
-  properly indent new nodes
-- Drop CPR yaml conversion, that happened in meantime
-- Reorder the patches to make a bit more sense
-- Tested again on MSM8998 Xperia XZ Premium (Maple)
-- I take no responsibility for AGdR's cheeky jokes, only the code!
-
-Link to v7:
-https://lore.kernel.org/lkml/20210901155735.629282-1-angelogioacchino.delregno@somainline.org/
-
-Changes in v7:
-- Rebased on linux-next as of 210901
-- Changed cpr_read_efuse calls to nvmem_cell_read_variable_le_u32,
-  following what was done in commit c77634b9d916
-
-Changes in v6:
-- Fixes from Bjorn's review
-- After a conversation with Viresh, it turned out I was abusing the
-  OPP API to pass the APM and MEM-ACC thresholds to qcom-cpufreq-hw,
-  so now the driver is using the genpd created virtual device and
-  passing drvdata instead to stop the abuse
-- Since the CPR commonization was ignored for more than 6 months,
-  it is now included in the CPRv3/4/h series, as there is no point
-  in commonizing without having this driver
-- Rebased on v5.13
-
-Changes in v5:
-- Fixed getting OPP table when not yet installed by the caller
-  of power domain attachment
-
-Changes in v4:
-- Huge patch series has been split for better reviewability,
-  as suggested by Bjorn
-
-Changes in v3:
-- Fixed YAML doc issues
-- Removed unused variables and redundant if branch
-
-Changes in v2:
-- Implemented dynamic Memory Accelerator corners support, needed
-  by MSM8998
-- Added MSM8998 Silver/Gold parameters
-
-This commit introduces a new driver, based on the one for cpr v1,
-to enable support for the newer Qualcomm Core Power Reduction
-hardware, known downstream as CPR3, CPR4 and CPRh, and support
-for MSM8998 and SDM630 CPU power reduction.
-
-In these new versions of the hardware, support for various new
-features was introduced, including voltage reduction for the GPU,
-security hardening and a new way of controlling CPU DVFS,
-consisting in internal communication between microcontrollers,
-specifically the CPR-Hardened and the Operating State Manager.
-
-The CPR v3, v4 and CPRh are present in a broad range of SoCs,
-from the mid-range to the high end ones including, but not limited
-to, MSM8953/8996/8998, SDM630/636/660/845.
-
-As to clarify, SDM845 does the CPR/SAW/OSM setup in TZ firmware, but
-this is limited to the CPU context; despite GPU CPR support being not
-implemented in this series, it is planned for the future, and some
-SDM845 need the CPR (in the context of GPU CPR) to be configured from
-this driver.
-
-It is also planned to add the CPR data for MSM8996, since this driver
-does support the CPRv4 found on that SoC, but I currently have no time
-to properly test that on a real device, so I prefer getting this big
-implementation merged before adding more things on top.
-
-As for MSM8953, we (read: nobody from SoMainline) have no device with
-this chip: since we are unable to test the cpr data and the entire
-driver on that one, we currently have no plans to do this addition
-in the future. This is left to other nice developers: I'm sure that
-somebody will come up with that, sooner or later
-
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+[Konrad: separate this patch out of a bigger one]
+Tested-by: Jeffrey Hugo <quic_jhugo@quicinc.com>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
-AngeloGioacchino Del Regno (7):
-      MAINTAINERS: Add entry for Qualcomm CPRv3/v4/Hardened driver
-      dt-bindings: soc: qcom: cpr3: Add bindings for CPR3 driver
-      soc: qcom: cpr: Move common functions to new file
-      soc: qcom: cpr-common: Add support for flat fuse adjustment
-      soc: qcom: cpr-common: Add threads support
-      soc: qcom: Add support for Core Power Reduction v3, v4 and Hardened
-      arm64: dts: qcom: msm8998: Configure CPRh
+ drivers/genpd/qcom/cpr-common.c | 9 ++++++---
+ drivers/genpd/qcom/cpr-common.h | 1 +
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-Konrad Dybcio (2):
-      dt-bindings: opp: v2-qcom-level: Document CPR3 open/closed loop volt adjustment
-      soc: qcom: cpr: Use u64 for frequency
+diff --git a/drivers/genpd/qcom/cpr-common.c b/drivers/genpd/qcom/cpr-common.c
+index ea85f6b4bef8..44c681bbbf13 100644
+--- a/drivers/genpd/qcom/cpr-common.c
++++ b/drivers/genpd/qcom/cpr-common.c
+@@ -49,7 +49,7 @@ int cpr_populate_ring_osc_idx(struct device *dev,
+ EXPORT_SYMBOL_GPL(cpr_populate_ring_osc_idx);
+ 
+ static int cpr_read_fuse_uV(int init_v_width, int step_size_uV, int ref_uV,
+-			    int step_volt, const char *init_v_efuse,
++			    int adj, int step_volt, const char *init_v_efuse,
+ 			    struct device *dev)
+ {
+ 	int steps, uV;
+@@ -67,6 +67,9 @@ static int cpr_read_fuse_uV(int init_v_width, int step_size_uV, int ref_uV,
+ 
+ 	uV = ref_uV + steps * step_size_uV;
+ 
++	/* Apply open-loop fixed adjustments to fused values */
++	uV += adj;
++
+ 	return DIV_ROUND_UP(uV, step_volt) * step_volt;
+ }
+ 
+@@ -119,8 +122,8 @@ int cpr_populate_fuse_common(struct device *dev,
+ 
+ 	/* Populate uV */
+ 	uV = cpr_read_fuse_uV(init_v_width, init_v_step,
+-			      fdata->ref_uV, step_volt,
+-			      cpr_fuse->init_voltage, dev);
++			      fdata->ref_uV, fdata->volt_oloop_adjust,
++			      step_volt, cpr_fuse->init_voltage, dev);
+ 	if (uV < 0)
+ 		return uV;
+ 
+diff --git a/drivers/genpd/qcom/cpr-common.h b/drivers/genpd/qcom/cpr-common.h
+index 1f2ebf9394cf..0aa227617d2f 100644
+--- a/drivers/genpd/qcom/cpr-common.h
++++ b/drivers/genpd/qcom/cpr-common.h
+@@ -22,6 +22,7 @@ struct fuse_corner_data {
+ 	int ref_uV;
+ 	int max_uV;
+ 	int min_uV;
++	int volt_oloop_adjust;
+ 	int max_volt_scale;
+ 	int max_quot_scale;
+ 	/* fuse quot */
 
- .../devicetree/bindings/opp/opp-v2-qcom-level.yaml |   14 +
- .../devicetree/bindings/soc/qcom/qcom,cpr3.yaml    |  286 ++
- MAINTAINERS                                        |    6 +
- arch/arm64/boot/dts/qcom/msm8998.dtsi              |  757 ++++++
- drivers/genpd/qcom/Makefile                        |    2 +
- drivers/genpd/qcom/cpr-common.c                    |  362 +++
- drivers/genpd/qcom/cpr-common.h                    |  109 +
- drivers/genpd/qcom/cpr.c                           |  394 +--
- drivers/genpd/qcom/cpr3.c                          | 2855 ++++++++++++++++++++
- drivers/soc/qcom/Kconfig                           |   22 +
- include/soc/qcom/cpr.h                             |   17 +
- 11 files changed, 4456 insertions(+), 368 deletions(-)
----
-base-commit: 6269320850097903b30be8f07a5c61d9f7592393
-change-id: 20230217-topic-cpr3h-de232bfb47ec
-
-Best regards,
 -- 
-Konrad Dybcio <konrad.dybcio@linaro.org>
+2.42.0
 
