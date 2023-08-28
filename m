@@ -2,59 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58CBBC83F12
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 19:26:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57982C83F12
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 19:27:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231166AbjH1TZt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 15:25:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51788 "EHLO
+        id S230285AbjH1TWf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 15:22:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38560 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233369AbjH1TZm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 15:25:42 -0400
-Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23FA9124
-        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 12:25:37 -0700 (PDT)
-Received: by mail-ej1-x629.google.com with SMTP id a640c23a62f3a-99c353a395cso463932566b.2
-        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 12:25:37 -0700 (PDT)
+        with ESMTP id S233479AbjH1TWB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 15:22:01 -0400
+Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F31CB123
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 12:21:30 -0700 (PDT)
+Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-2bcb50e194dso54611381fa.3
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 12:21:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693250735; x=1693855535;
+        d=linaro.org; s=google; t=1693250489; x=1693855289;
         h=content-transfer-encoding:in-reply-to:from:references:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=p/61/Jtw3sjcBqjmdxX+cX6l07WobkcJLL3KuqjFb6A=;
-        b=cm1BP+wtxglWb0HG8Jh2xdEv8ViqJCxfnghG/SjVY+6Tc3SJJdcqL/pgwzymLG0jee
-         Kh9I7URgNJfNk3cawlWuGzI1JY3cwFK3QIUzKDkGfQDJ1Nfbvm7La9Wj/rmCAQzidoQD
-         jghFGZTfYoYSSKUUTsXIWNkSMD44i61l4Z80gTxOeZH0pxwMNciDvSYzcmmerjpjWexr
-         KLjLxOh2cElLOf67UHaS4CbaGfEHLmjmJYb1fn6tlTaBfFJx+3AGzeMzxqWj5S4zUQOi
-         qQGY1z/c5c9nBI65/7xsU5kUqMP9JVpoD1I38kV9oc1D886PvashY2UM0vMkzL9g1xbC
-         8gmw==
+        bh=VZzbv65zk0nJCI2wEgZQMIkT4Jk+tWW8fdhjQacF/i8=;
+        b=ezyYLtjiV6IB77dzakcg8zUem0UnLV8+p6yflQ1dWBwM0QGJfT14u+/bvfas0Qiz15
+         ATTRZfn5Pf6Qy/i9mpn/sRKQZr3MvMMk/F7flVpGEr/WEbnMIHJsw7Q2U3tUFMvPcvwk
+         P3iULzgydfBkPxsLAo4332As2hYvacog3Om0Q+A8sjv0wqewl2jjLmn5IVNRaXO5ji27
+         GslxdByLbeUMAb4QExu1bukqAdRkHLIvzN+/DiT6vltntKLF+4RHLwG3ITMKs73RMaCw
+         xbtQQyWSK4VV54RWpl7rpTqRM50q24b1Xg36IsxefJEDN5q8tAeC6weW+8XfminDeA07
+         UDrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693250735; x=1693855535;
+        d=1e100.net; s=20221208; t=1693250489; x=1693855289;
         h=content-transfer-encoding:in-reply-to:from:references:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=p/61/Jtw3sjcBqjmdxX+cX6l07WobkcJLL3KuqjFb6A=;
-        b=KAd/xIp7d5lo34XAnEgO3O8WssNxr4xN5WJln+QcyQn5UnhgK5YgagXFIT9zRWuae4
-         ZJsL/nKSCRJF5Uq20jKskiI6HyUnAeyI0KKwoNxD7W0ljsbuawAPJXuYDu7EdGIVvi67
-         l42cXlkBY/nJlZA/XQPbSilKFL0S+5qjuTQ40WM3OYl8nFrjtZcO033V4dQjxyXAoT2j
-         X+f3WEL3RZqFmWfmeciVOK+ffQd+JjBL+dDqfopCZWOMEKv/Qn49KAXQs3SOB47pepOq
-         L4MevBWMbTiG77kHXAgxXH3Fst5OqNNhhItqACXTG/XWgFgVhPAhCkArGCfj+IgOgsP/
-         9Sow==
-X-Gm-Message-State: AOJu0YyURJVQB1SxZmCjCqSViQCp7rVnvlWGhKY7oQdWVu0deBKFX13q
-        tyQAClnAWuxKUkDZ3PQDx9mL+Q==
-X-Google-Smtp-Source: AGHT+IGNQJPQLYu2+RCR07QMDcIwBhyAxdTt4ESNCHTrEpvOxyMlIhtB9ugix76vBJP5nyP7/ToHGA==
-X-Received: by 2002:a17:907:2712:b0:9a1:c659:7c5c with SMTP id w18-20020a170907271200b009a1c6597c5cmr13137298ejk.18.1693250735538;
-        Mon, 28 Aug 2023 12:25:35 -0700 (PDT)
+        bh=VZzbv65zk0nJCI2wEgZQMIkT4Jk+tWW8fdhjQacF/i8=;
+        b=LwdMpa2TuxJu0dpeicJtoFZGfr5PwE2gCFmL6IbsJMdt1WZGpb3dl/jWi6ghl8xQT5
+         BK5g2D8Iqa66bhvs0RIkKWztDu6SD4G6syCNjP1BzelKwaf+4cEYu7M3u6dhdxoEes0u
+         Al8/0zTMnmORMGIPR7qPavLWkKS6Ap0wZxp+rDwOuUx74cHXYoNQNk/hBXxe7WqjBRzY
+         j4FItWz7kVCGjnPWp0MYMATJwSfumAL1W1APDa6AY60WUND1glHhaF9ZoaMAZm2clN0g
+         gt1UH+NNASwg08s+lmWVwdZScrS8nph2h9lRV+yETiYybvDN2V/FnFAhcySrS2//TM7W
+         qaPw==
+X-Gm-Message-State: AOJu0YzH36y/DBUkXt4yHgrBws63+hp5/pmYvJ2SJUbFdpi7u8C2ZrJW
+        Bfw3CghF3uFFcNLX1gIz/oW8GA==
+X-Google-Smtp-Source: AGHT+IFaNP+eheNOvTuZqaTRs6ZAxbf1C2zhXDPAqLf7L9co6sWkAkdgnxraz376IEYl3ILwU1pQmg==
+X-Received: by 2002:a2e:b5b9:0:b0:2bc:fa8f:83c4 with SMTP id f25-20020a2eb5b9000000b002bcfa8f83c4mr4908008ljn.39.1693250489124;
+        Mon, 28 Aug 2023 12:21:29 -0700 (PDT)
 Received: from [192.168.0.22] ([77.252.47.225])
-        by smtp.gmail.com with ESMTPSA id uz16-20020a170907119000b0099b6becb107sm5044308ejb.95.2023.08.28.12.25.34
+        by smtp.gmail.com with ESMTPSA id oy25-20020a170907105900b0099364d9f0e6sm4964417ejb.117.2023.08.28.12.21.27
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 28 Aug 2023 12:25:35 -0700 (PDT)
-Message-ID: <75ca0f84-3aa7-aead-fc99-d72e46c6b711@linaro.org>
-Date:   Mon, 28 Aug 2023 21:25:33 +0200
+        Mon, 28 Aug 2023 12:21:28 -0700 (PDT)
+Message-ID: <97501b4f-614c-b3a3-c17f-5699b21e101f@linaro.org>
+Date:   Mon, 28 Aug 2023 21:21:27 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.14.0
-Subject: Re: [PATCH 6/7] arm64: dts: qcom: ipq5018: Add tsens node
+Subject: Re: [PATCH 1/7] dt-bindings: thermal: qcom-tsens: Add ipq5018
+ compatible
 Content-Language: en-US
 To:     Sricharan Ramabadhran <quic_srichara@quicinc.com>,
         agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
@@ -65,9 +66,9 @@ To:     Sricharan Ramabadhran <quic_srichara@quicinc.com>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
 References: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
- <1693250307-8910-7-git-send-email-quic_srichara@quicinc.com>
+ <1693250307-8910-2-git-send-email-quic_srichara@quicinc.com>
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <1693250307-8910-7-git-send-email-quic_srichara@quicinc.com>
+In-Reply-To: <1693250307-8910-2-git-send-email-quic_srichara@quicinc.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -75,43 +76,38 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 On 28/08/2023 21:18, Sricharan Ramabadhran wrote:
-> IPQ5018 has tsens V1.0 IP with 4 sensors.
-> There is no RPM, so tsens has to manually enabled.
-> Adding the tsens and nvmem node.
+> IPQ5018 has tsens v1.0 block with 4 sensors and 1 interrupt.
 > 
 > Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
 > ---
->  arch/arm64/boot/dts/qcom/ipq5018.dtsi | 23 +++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
+>  .../bindings/thermal/qcom-tsens.yaml          | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
 > 
-> diff --git a/arch/arm64/boot/dts/qcom/ipq5018.dtsi b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
-> index 9f13d2dcdfd5..277b3cfc7f72 100644
-> --- a/arch/arm64/boot/dts/qcom/ipq5018.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
-> @@ -93,6 +93,29 @@ soc: soc@0 {
->  		#size-cells = <1>;
->  		ranges = <0 0 0 0xffffffff>;
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> index 27e9e16e6455..2309bb6dce1b 100644
+> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> @@ -42,6 +42,7 @@ properties:
+>                - qcom,msm8956-tsens
+>                - qcom,msm8976-tsens
+>                - qcom,qcs404-tsens
+> +              - qcom,ipq5018-tsens
+
+This does not look like placed in alphanumeric order.
+
+>            - const: qcom,tsens-v1
 >  
-> +		qfprom_nvmem: qfprom_nvmem@a0000 {
-
-Nope. Come on, where do you see such node naming. Please do not send
-code from downstream, but work on upstream sources. Open other most
-recent DTS, take a look how it is done and try to do something similar.
-
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-
-compatible is always the first property. Then reg.
-
-> +			compatible = "qcom,ipq5018-qfprom", "qcom,qfprom";
-> +			reg = <0xa0000 0x1000>;
+>        - description: v2 of TSENS
+> @@ -409,4 +410,22 @@ examples:
+>             #qcom,sensors = <16>;
+>             #thermal-sensor-cells = <1>;
+>      };
 > +
-> +			tsens_calib: calib@248 {
-> +				reg = <0x248 0x10>;
-> +			};
-> +		};
-> +
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    // Example 5 (for any IPQ5018 based SoC-s):
 
+No need for new example for a difference in compatible. Drop it.
 Best regards,
 Krzysztof
 
