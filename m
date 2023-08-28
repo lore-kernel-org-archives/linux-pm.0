@@ -2,60 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D13A6C83F1C
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01B52C83F20
 	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 11:43:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232479AbjH1LnE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 07:43:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56574 "EHLO
+        id S232450AbjH1LnD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 07:43:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35052 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232505AbjH1Lmq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 07:42:46 -0400
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D690710E
-        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 04:42:42 -0700 (PDT)
-Received: by mail-lf1-x132.google.com with SMTP id 2adb3069b0e04-500b0f06136so2668236e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 04:42:42 -0700 (PDT)
+        with ESMTP id S232481AbjH1Lmh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 07:42:37 -0400
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65BD410C
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 04:42:34 -0700 (PDT)
+Received: by mail-lf1-x131.google.com with SMTP id 2adb3069b0e04-50078e52537so4695479e87.1
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 04:42:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693222961; x=1693827761;
+        d=linaro.org; s=google; t=1693222952; x=1693827752;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Ukvy8+Hjdu2oas6MhPznZGI2niV1axKC09nEtbCzbKA=;
-        b=nT3QdztK8oJ/czFZBvHZ8kRRjQkXHbMCaBbwRVgoPsm7kKktXQ2kS/c4whgekPvTW+
-         mcG4kq3OeMa88Bu6tWgYgRdsFhU9aJ3uLpqtcn6zIeAp/BXMDDa0tcEeK/V37LsOwzmc
-         OXPFOdS0Q8xGQUXXVf3jnpufFqU2PBlPjhRxOil37Q9yJmZtGDeBJNMtEYdfMxz8JGg8
-         geKVnIA1R9aStKwOUO0Mo6yqKrioD/FnLRxam3e12WHrEv533qEdwyKhG3c0nH3X5H4+
-         5R1uWt24Pi4kEq2fmTImK52BXthZNBOMN6j6aMa76GoL5b7Ysx0IMyv4NaLhyx2ms9eu
-         /jlw==
+        bh=wlJhEuNYBV5jj7maZ8OCRSRGiSihDfYe9wi2z5KSM2U=;
+        b=ow3iiAW+ZTZtm92AcBkQk7p5et8JJP37pZMwORve0EXtK4t8SrfgXuAnZCHRzASNSq
+         uWvCHi2+ZRs8PBUiathH9SPFonFJk6jTe1ReuYW2ZjnKtYZDnewCtEPE2i/d1/FoRA/n
+         IqZoeq5sg9MMINz3uAwC6n1ktcqYt2qOKKx+Vt1LfUpD1BHcNJrWIiGVjLKEQjAI1HGo
+         Sg0z02NMeb+QTDz9/0jtOY29ShPLiwplS7GXQirUKydHlR2CdYkTpoyfr+Lx02uIVgZp
+         IyTnMerYcPgrMO2UgGM8AS8NXEybwHEbakFTBdSgUYOKAO3nh7KaCeCTOxfS6NXiNUCW
+         12Iw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693222961; x=1693827761;
+        d=1e100.net; s=20221208; t=1693222952; x=1693827752;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Ukvy8+Hjdu2oas6MhPznZGI2niV1axKC09nEtbCzbKA=;
-        b=ZVRMNl9KeLno2YL0/BvQBvSARvmn0+RSfDQPv3k1Z2/dmkUOrK/ghdq/fWCAVUIXGg
-         hEWIllwX7HTHV3Q4JWrHajAhXtPl296OyUKwyvsKs2s4b6k3/l2/sq8Uboby1ghjiu90
-         yejDh+UB9L67NqzqsuPwRPdIU/aINhDQNISCigERfMPn+5A1xwracHZsL5lu0DOpLX4G
-         gSrj6ukqzRPSBl1+uwLakKmOJ2OBl7aO6OGWpOUQCfPjiMMNx2ELZJRblrfyxu1K58sN
-         MYKN0OhnY7OAJtQfKNve7JB0iTDb1xz8LfHyyIGdInOZyMVOUH6vsViwPAVxwuP3AyiS
-         17fg==
-X-Gm-Message-State: AOJu0YzynHNT8Gmj0RI8iYuIJ5SOw+Y1T3SQWxTimMeVMtcdg6oJhX9D
-        boHH12DEvssyejoz/QOWXT5u4Q==
-X-Google-Smtp-Source: AGHT+IFKLQKQjWNIJtzHOeUnY3Z6dmCkBLByyd8W1WfIvfOqs1cMr9niG9gq2D8pRnbp9CNJaJE37Q==
-X-Received: by 2002:a05:6512:12c4:b0:4fb:9712:a717 with SMTP id p4-20020a05651212c400b004fb9712a717mr19822312lfg.13.1693222961157;
-        Mon, 28 Aug 2023 04:42:41 -0700 (PDT)
+        bh=wlJhEuNYBV5jj7maZ8OCRSRGiSihDfYe9wi2z5KSM2U=;
+        b=ishr536/sv4XoKLrI547jUAR8y9QrM9D/0okGwS5kR0tNaa0kDBgGeLELtmER2x/Jm
+         mBWTYs87rNBBzc6bufDc4JcS2QF8pc8hF6evHlLIO8/KPJ3Yyvdnbde7/vSHiwMIJOFC
+         3touQPh81bcY0UpMMtIiPcJV7rAQzL9j8uFIvAtEiEmaZi21Q8OJoEnays+vcKomqL57
+         s0eVuitckcFXL1czPOnKboNxcddhnMqj22zK2TRtNVYQBpXtc+776siU7Bq50IKgDSuc
+         LfHB7zHAKwTa7kRbTULRHU8/Nl0RxdL1FHZxRImVHpo9NkBydOtkgUGmeLrygt03pyNU
+         87wg==
+X-Gm-Message-State: AOJu0Ywbfp6KA0HKbVY6KyJZOCxpQ/Xp17lPRfugc2j+UX2Q9DFLxfTF
+        +rHgR+A6EbGd+Dj2ANpvh6n/xg==
+X-Google-Smtp-Source: AGHT+IFCJzymF5UCLVAjAjDGmR4ygVJL9Sg5F/Ld5CJaFb4o1B80bsk+kDECF+LM6vldy/FCSQlY+Q==
+X-Received: by 2002:a05:6512:3411:b0:4f8:586a:8af6 with SMTP id i17-20020a056512341100b004f8586a8af6mr19883083lfr.4.1693222952551;
+        Mon, 28 Aug 2023 04:42:32 -0700 (PDT)
 Received: from [192.168.1.101] (abyl195.neoplus.adsl.tpnet.pl. [83.9.31.195])
-        by smtp.gmail.com with ESMTPSA id b2-20020ac247e2000000b005009920b6afsm1547799lfp.9.2023.08.28.04.42.39
+        by smtp.gmail.com with ESMTPSA id b2-20020ac247e2000000b005009920b6afsm1547799lfp.9.2023.08.28.04.42.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Aug 2023 04:42:40 -0700 (PDT)
+        Mon, 28 Aug 2023 04:42:32 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Mon, 28 Aug 2023 13:42:18 +0200
-Subject: [PATCH v14 6/9] soc: qcom: cpr: Use u64 for frequency
+Date:   Mon, 28 Aug 2023 13:42:13 +0200
+Subject: [PATCH v14 1/9] MAINTAINERS: Add entry for Qualcomm
+ CPRv3/v4/Hardened driver
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230217-topic-cpr3h-v14-6-9fd23241493d@linaro.org>
+Message-Id: <20230217-topic-cpr3h-v14-1-9fd23241493d@linaro.org>
 References: <20230217-topic-cpr3h-v14-0-9fd23241493d@linaro.org>
 In-Reply-To: <20230217-topic-cpr3h-v14-0-9fd23241493d@linaro.org>
 To:     AngeloGioacchino Del Regno 
@@ -77,155 +78,50 @@ Cc:     Robert Marko <robimarko@gmail.com>, linux-kernel@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-pm@vger.kernel.org, Jeffrey Hugo <quic_jhugo@quicinc.com>,
         Marijn Suijten <marijn.suijten@somainline.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1693222948; l=4796;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1693222948; l=984;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=AILG5ZdRZ9L72zNAwxHpmrn3oVh0Tn/B7cbYES7hZlo=;
- b=cto3m5fc/IX/ZNFBddXCLET5TFzEWruZxsodUJbn6J6EzqUT93zwp15dKKxpTlzuUtlYK09N5
- S6CwoSt4M/mDhamD2JIxsTUG5jVEU+gS4oMx8lVU8XVQ04PuB05C+Uo
+ bh=yngLWB8rmlXy5jjSjZ5Lm9GxiScjZReK/CD/vnxmRY4=;
+ b=KdzZj8d+LpwunRLtMGgSF+OHlCpEot6WiekjhdSnUHsfIxb1gZJSAqI93Lqksed7oiVwl0hU6
+ 3kZHZi44jHbBJRBgraivx/9QhFzeRMfJjPZGcu6PXGDBf+cGoCbvP92
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-32 bits is not enough for over-2.changeGHz frequencies. Move all variables
-that operate on Hz to u64 to avoid overflows.
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Add maintainers entry for the Qualcomm CPR3/CPR4/CPRh driver.
+
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+[Konrad: rebase, update AGdR's email]
 Tested-by: Jeffrey Hugo <quic_jhugo@quicinc.com>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/genpd/qcom/cpr-common.c | 13 +++++++------
- drivers/genpd/qcom/cpr-common.h |  9 ++++-----
- drivers/genpd/qcom/cpr.c        |  8 ++++----
- 3 files changed, 15 insertions(+), 15 deletions(-)
+ MAINTAINERS | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/genpd/qcom/cpr-common.c b/drivers/genpd/qcom/cpr-common.c
-index 44c681bbbf13..3e3a4a61cfde 100644
---- a/drivers/genpd/qcom/cpr-common.c
-+++ b/drivers/genpd/qcom/cpr-common.c
-@@ -218,7 +218,7 @@ unsigned int cpr_get_fuse_corner(struct dev_pm_opp *opp)
- }
- EXPORT_SYMBOL_GPL(cpr_get_fuse_corner);
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 37b9626ee654..0f46306abf37 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -17678,6 +17678,12 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/power/avs/qcom,cpr.yaml
+ F:	drivers/genpd/qcom/cpr.c
  
--unsigned long cpr_get_opp_hz_for_req(struct dev_pm_opp *ref,
-+u64 cpr_get_opp_hz_for_req(struct dev_pm_opp *ref,
- 				     struct device *cpu_dev)
- {
- 	u64 rate = 0;
-@@ -250,7 +250,7 @@ unsigned long cpr_get_opp_hz_for_req(struct dev_pm_opp *ref,
- out_ref:
- 	of_node_put(desc_np);
- 
--	return (unsigned long) rate;
-+	return rate;
- }
- EXPORT_SYMBOL_GPL(cpr_get_opp_hz_for_req);
- 
-@@ -260,7 +260,7 @@ int cpr_calculate_scaling(struct device *dev,
- 			  const struct corner *corner)
- {
- 	u32 quot_diff = 0;
--	unsigned long freq_diff;
-+	u64 freq_diff;
- 	int scaling;
- 	const struct fuse_corner *fuse, *prev_fuse;
- 	int ret;
-@@ -280,8 +280,9 @@ int cpr_calculate_scaling(struct device *dev,
- 	}
- 
- 	freq_diff = fuse->max_freq - prev_fuse->max_freq;
--	freq_diff /= 1000000; /* Convert to MHz */
--	scaling = 1000 * quot_diff / freq_diff;
-+	freq_diff = div_u64(freq_diff, 1000000); /* Convert to MHz */
-+	scaling = 1000 * quot_diff;
-+	do_div(scaling, freq_diff);
- 	return min(scaling, fdata->max_quot_scale);
- }
- EXPORT_SYMBOL_GPL(cpr_calculate_scaling);
-@@ -289,7 +290,7 @@ EXPORT_SYMBOL_GPL(cpr_calculate_scaling);
- int cpr_interpolate(const struct corner *corner, int step_volt,
- 		    const struct fuse_corner_data *fdata)
- {
--	unsigned long f_high, f_low, f_diff;
-+	u64 f_high, f_low, f_diff;
- 	int uV_high, uV_low, uV;
- 	u64 temp, temp_limit;
- 	const struct fuse_corner *fuse, *prev_fuse;
-diff --git a/drivers/genpd/qcom/cpr-common.h b/drivers/genpd/qcom/cpr-common.h
-index 0aa227617d2f..1b2fa344eb09 100644
---- a/drivers/genpd/qcom/cpr-common.h
-+++ b/drivers/genpd/qcom/cpr-common.h
-@@ -42,7 +42,7 @@ struct fuse_corner {
- 	int step_quot;
- 	const struct reg_sequence *accs;
- 	int num_accs;
--	unsigned long max_freq;
-+	u64 max_freq;
- 	u8 ring_osc_idx;
- };
- 
-@@ -54,13 +54,13 @@ struct corner {
- 	int quot_adjust;
- 	u32 save_ctl;
- 	u32 save_irq;
--	unsigned long freq;
-+	u64 freq;
- 	struct fuse_corner *fuse_corner;
- };
- 
- struct corner_data {
- 	unsigned int fuse_corner;
--	unsigned long freq;
-+	u64 freq;
- };
- 
- struct acc_desc {
-@@ -92,8 +92,7 @@ int cpr_populate_fuse_common(struct device *dev,
- int cpr_find_initial_corner(struct device *dev, struct clk *cpu_clk,
- 			    struct corner *corners, int num_corners);
- u32 cpr_get_fuse_corner(struct dev_pm_opp *opp);
--unsigned long cpr_get_opp_hz_for_req(struct dev_pm_opp *ref,
--				     struct device *cpu_dev);
-+u64 cpr_get_opp_hz_for_req(struct dev_pm_opp *ref, struct device *cpu_dev);
- int cpr_calculate_scaling(struct device *dev,
- 			  const char *quot_offset,
- 			  const struct fuse_corner_data *fdata,
-diff --git a/drivers/genpd/qcom/cpr.c b/drivers/genpd/qcom/cpr.c
-index 2cfeefebd24c..bd0ac95e86e7 100644
---- a/drivers/genpd/qcom/cpr.c
-+++ b/drivers/genpd/qcom/cpr.c
-@@ -826,8 +826,8 @@ static int cpr_corner_init(struct cpr_drv *drv)
- 	struct corner_data *cdata;
- 	const struct fuse_corner_data *fdata;
- 	bool apply_scaling;
--	unsigned long freq_diff, freq_diff_mhz;
--	unsigned long freq;
-+	unsigned long freq_diff_mhz;
-+	u64 freq, freq_diff;
- 	int step_volt = regulator_get_linear_step(drv->vdd_apc);
- 	struct dev_pm_opp *opp;
- 
-@@ -866,7 +866,7 @@ static int cpr_corner_init(struct cpr_drv *drv)
- 		cdata[level - 1].freq = freq;
- 
- 		fuse = &drv->fuse_corners[fnum];
--		dev_dbg(drv->dev, "freq: %lu level: %u fuse level: %u\n",
-+		dev_dbg(drv->dev, "freq: %llu level: %u fuse level: %u\n",
- 			freq, dev_pm_opp_get_level(opp) - 1, fnum);
- 		if (freq > fuse->max_freq)
- 			fuse->max_freq = freq;
-@@ -940,7 +940,7 @@ static int cpr_corner_init(struct cpr_drv *drv)
- 
- 		if (apply_scaling) {
- 			freq_diff = fuse->max_freq - corner->freq;
--			freq_diff_mhz = freq_diff / 1000000;
-+			freq_diff_mhz = (u32)div_u64(freq_diff, 1000000);
- 			corner->quot_adjust = scaling * freq_diff_mhz / 1000;
- 
- 			corner->uV = cpr_interpolate(corner, step_volt, fdata);
++QUALCOMM CORE POWER REDUCTION v3/v4/Hardened AVS DRIVER
++M:	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
++S:	Maintained
++F:	Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
++F:	drivers/soc/qcom/cpr3.c
++
+ QUALCOMM CPUFREQ DRIVER MSM8996/APQ8096
+ M:	Ilia Lin <ilia.lin@kernel.org>
+ L:	linux-pm@vger.kernel.org
 
 -- 
 2.42.0
