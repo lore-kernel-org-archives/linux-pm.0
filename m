@@ -2,41 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 848D9C83F12
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 19:19:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4074C83F15
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 19:20:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233346AbjH1TTR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 15:19:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53008 "EHLO
+        id S233352AbjH1TTz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 15:19:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48278 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233352AbjH1TTH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 15:19:07 -0400
+        with ESMTP id S233357AbjH1TTm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 15:19:42 -0400
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F333F102;
-        Mon, 28 Aug 2023 12:19:04 -0700 (PDT)
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37SIX27C013497;
-        Mon, 28 Aug 2023 19:18:55 GMT
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C95A102;
+        Mon, 28 Aug 2023 12:19:40 -0700 (PDT)
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37SJCrux001880;
+        Mon, 28 Aug 2023 19:19:30 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : subject
- : date : message-id : mime-version : content-type; s=qcppdkim1;
- bh=y0vNTutWZ8S8l43kBS8PU3ZGWPuVOeFmL7bZRwx+M9Y=;
- b=jYDZCEVMS/z+9UuehhBpujRE/ilIzL1zRxKwe2LQW8kvUL1GIDQnOSyP+QlCTz8Xb6QR
- rMGFYvPy0jP6X97K/JbY0DfT3sql/K/QJpcCQ9puVJcP1JoxWzQFWMS429NYNzip8rGL
- gE0w/XZjiAcrjX+bNLBdL3LeYNHjSkP8EGAKcqbBny4AgexNpHUVORi+ZGRrujCWeBix
- e6/t46s/U0a3GUbRy6/kDWmC8loloIkdxIS4UXIKq5vh/VwTFB2+o3uAwGqVm0FB6+m4
- Kigcvsj2Iw6Vsl916dxEdSREPDjIVjlEQ7Z6l80A3g0sDTXOi2fZf8l78b8JF+Tbj3Vn Pw== 
-Received: from nalasppmta05.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3srt8s149w-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-type; s=qcppdkim1;
+ bh=h/ijjqmHPE8Fyn8GCLvPxjWfXBnR1PvR0zf7ATuDV2o=;
+ b=mJ+YAVlIm4hbnfo1vseMwHQDpytEZAmN6lB/fd8vKCE6F0MloPC2Eee1hSHzZq3drXot
+ Psy58pyXYYNV13xVMfUovA1r1PFCKs2aHlmv7TwPqhFbt5k3uxRXZLcGorkmjKv1VCRL
+ lVhDc90v3/uFWCivGRfghOFrtuwaLnJYiJ2dKkEZXe6ZAn81vnQ/F2nTEQ48sCU3rzSx
+ vdCRlC+6+CA2PEv24xfWtaBO/CrW7L0+RczTpAkJvszLlVw5QSXeWXxivOrYza3pbpDL
+ jVUVrPePg8CXOrovcAeGhp0IokPuxWP+nHZq4QZQUCGfSe1qOUjFZt3DNPMkG/224/I8 ew== 
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3srvr80t5t-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 28 Aug 2023 19:18:55 +0000
+        Mon, 28 Aug 2023 19:19:29 +0000
 Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 37SJIs9q021088
+        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 37SJJTmx003302
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 28 Aug 2023 19:18:54 GMT
+        Mon, 28 Aug 2023 19:19:29 GMT
 Received: from srichara-linux.qualcomm.com (10.80.80.8) by
  nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.30; Mon, 28 Aug 2023 12:18:46 -0700
+ 15.2.1118.30; Mon, 28 Aug 2023 12:18:55 -0700
 From:   Sricharan Ramabadhran <quic_srichara@quicinc.com>
 To:     <agross@kernel.org>, <andersson@kernel.org>,
         <konrad.dybcio@linaro.org>, <srinivas.kandagatla@linaro.org>,
@@ -46,10 +47,12 @@ To:     <agross@kernel.org>, <andersson@kernel.org>,
         <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <quic_srichara@quicinc.com>
-Subject: [PATCH 0/7] Add support for IPQ5018 tsens
-Date:   Tue, 29 Aug 2023 00:48:20 +0530
-Message-ID: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
+Subject: [PATCH 2/7] thermal/drivers/qcom: Add new feat for soc without rpm
+Date:   Tue, 29 Aug 2023 00:48:22 +0530
+Message-ID: <1693250307-8910-3-git-send-email-quic_srichara@quicinc.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
+References: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.80.80.8]
@@ -57,41 +60,64 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nalasex01c.na.qualcomm.com (10.47.97.35)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: IsXAsK5Mw_zsmpKlX4fBBEbCa2VYkSXR
-X-Proofpoint-GUID: IsXAsK5Mw_zsmpKlX4fBBEbCa2VYkSXR
+X-Proofpoint-GUID: AgHAFsIOKbtt4c6WKE5EGbtSDlLzWqgK
+X-Proofpoint-ORIG-GUID: AgHAFsIOKbtt4c6WKE5EGbtSDlLzWqgK
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
  definitions=2023-08-28_16,2023-08-28_04,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 spamscore=0
- priorityscore=1501 mlxlogscore=682 adultscore=0 impostorscore=0
- lowpriorityscore=0 bulkscore=0 suspectscore=0 malwarescore=0 clxscore=1011
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2308280168
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
+ priorityscore=1501 mlxlogscore=999 spamscore=0 clxscore=1015
+ impostorscore=0 malwarescore=0 lowpriorityscore=0 suspectscore=0
+ mlxscore=0 phishscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2308100000 definitions=main-2308280168
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IPQ5018 has tsens V1.0 IP with 4 sensors and 1 interrupt.
-There is no RPM present in the soc to do tsens early enable.
-Adding support for the same here.
+Some of the tsens IP like the one in IPQ5018 does not have a
+RPM in the soc. Hence the early init to enable tsens would not
+be done. So add a flag for that in feat and skip enable checks.
 
-Sricharan Ramabadhran (7):
-  dt-bindings: thermal: qcom-tsens: Add ipq5018 compatible
-  thermal/drivers/qcom: Add new feat for soc without rpm
-  thermal/drivers/qcom/tsens: Add support for IPQ5018 tsens.
-  thermal/drivers/qcom: Add IPQ5018 compatible.
-  dt-bindings: nvmem: Add compatible for IPQ5018
-  arm64: dts: qcom: ipq5018: Add tsens node
-  arm64: dts: qcom: ipq5018: Add thermal zones
+Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
+---
+ drivers/thermal/qcom/tsens.c | 2 +-
+ drivers/thermal/qcom/tsens.h | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
- .../bindings/nvmem/qcom,qfprom.yaml           |   1 +
- .../bindings/thermal/qcom-tsens.yaml          |  19 +++
- arch/arm64/boot/dts/qcom/ipq5018.dtsi         |  81 ++++++++++++
- drivers/thermal/qcom/tsens-v1.c               | 115 ++++++++++++++++++
- drivers/thermal/qcom/tsens.c                  |   5 +-
- drivers/thermal/qcom/tsens.h                  |   5 +-
- 6 files changed, 224 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 98c356acfe98..f39495b61952 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -974,7 +974,7 @@ int __init init_common(struct tsens_priv *priv)
+ 	ret = regmap_field_read(priv->rf[TSENS_EN], &enabled);
+ 	if (ret)
+ 		goto err_put_device;
+-	if (!enabled) {
++	if (!enabled && !(priv->feat->no_early_init)) {
+ 		dev_err(dev, "%s: device not enabled\n", __func__);
+ 		ret = -ENODEV;
+ 		goto err_put_device;
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index 2805de1c6827..fb73e3dd0de9 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -505,6 +505,8 @@ enum regfield_ids {
+  * @srot_split: does the IP neatly splits the register space into SROT and TM,
+  *              with SROT only being available to secure boot firmware?
+  * @has_watchdog: does this IP support watchdog functionality?
++ * @no_early_init: does this IP reside in a soc that does not have rpm to
++ *                 do pre-init.
+  * @max_sensors: maximum sensors supported by this version of the IP
+  * @trip_min_temp: minimum trip temperature supported by this version of the IP
+  * @trip_max_temp: maximum trip temperature supported by this version of the IP
+@@ -516,6 +518,7 @@ struct tsens_features {
+ 	unsigned int adc:1;
+ 	unsigned int srot_split:1;
+ 	unsigned int has_watchdog:1;
++	unsigned int no_early_init:1;
+ 	unsigned int max_sensors;
+ 	int trip_min_temp;
+ 	int trip_max_temp;
 -- 
 2.34.1
 
