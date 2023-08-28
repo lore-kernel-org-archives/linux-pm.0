@@ -2,148 +2,110 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D01E3C83F1C
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 20:01:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DD5AC83F11
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 20:51:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233553AbjH1UAu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 16:00:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34730 "EHLO
+        id S229787AbjH1UvT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 16:51:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233619AbjH1UAN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 16:00:13 -0400
-Received: from mail-oi1-x229.google.com (mail-oi1-x229.google.com [IPv6:2607:f8b0:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EDBBFCC6;
-        Mon, 28 Aug 2023 12:59:36 -0700 (PDT)
-Received: by mail-oi1-x229.google.com with SMTP id 5614622812f47-3a88b1e18f2so375125b6e.0;
-        Mon, 28 Aug 2023 12:59:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1693252776; x=1693857576;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+uusCkjysh/AWlACw3hz3AZGWKR8hyQooItcfr6OYtE=;
-        b=RwUICWutMxoFD5F9l7TFpPCuX27np4Awc2zvuZHTIS/zXHQ2V2Y0Dovw3AYtCbcrfW
-         ke4Y04GU35bo9y5TmHsIVErEWGDAafOx9E8RdM0vTW4KfdehQHzkkUKod18oV1A3wG85
-         viV4aQK+ZXE3bMOfvWJ0V14b/Gc5qmLYZBPKoW6gP6daRy2vqMWXGfS49SE0wYtjFNAD
-         9uGgvBMAga8pwrNuaAsiDHRDiWdReqDPD+2Hdl88vBz+ZOsySWXSOP2vI8swtOqh1hDl
-         63qEV9yQAtm4qkCshHOCnoCwTW+WhDfbm5VBqDabcJwhIF4BzAqs58EaAUA4mHI2MCqI
-         Lzwg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693252776; x=1693857576;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=+uusCkjysh/AWlACw3hz3AZGWKR8hyQooItcfr6OYtE=;
-        b=NN8oturM82KIWwCAaY7tXm1wN+iSbmXUJZ1qD/3GXpHI13CKOfFMj3H5zPT6sDzw+J
-         rLwu+kmKT6YpjGQszZNiUI5rR+SkPMcTK7Ar5Ok/ls5Czlzp6mghHHetQfuaokk/TEPI
-         NaEf0Osh06Dgxl6KR5vVANhtNSDpmrOBbyTfrAqbetHlRC41Lh3PD1hVHKJKNadRIQ7G
-         mDc1rVptYc+TLHk9QHZrqcz7qdngEgwFdezzyHWBHFXSL9M0nlVmVmvMSedPYKiSStAb
-         z+pivAN1hFq9PRQ2a8NSllrfRj6XULKVO+4RDhMxNiAQqeCEXuAbaAaOqFKT6u8M/wgO
-         VDhQ==
-X-Gm-Message-State: AOJu0YxG449t64BW9TW0N9ccMXSgLkF56jhdGaXtmHNH4uvegYWraqGd
-        quugmTFSc7zdYb1dpJ8VKrY=
-X-Google-Smtp-Source: AGHT+IE4q8i2r5ispwNleag74zJQEZfnsyLE5ldHdxwY+lORwPvmF8qc6REXfqBuoGQ/3kzDShWbdA==
-X-Received: by 2002:a05:6808:1599:b0:3a8:7446:7aba with SMTP id t25-20020a056808159900b003a874467abamr19596256oiw.5.1693252776235;
-        Mon, 28 Aug 2023 12:59:36 -0700 (PDT)
-Received: from fabio-Precision-3551.. ([2804:14c:485:4b61:3c37:a69d:a4cd:94fc])
-        by smtp.gmail.com with ESMTPSA id k24-20020a544698000000b003a9a2362f66sm2254341oic.16.2023.08.28.12.59.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Aug 2023 12:59:35 -0700 (PDT)
-From:   Fabio Estevam <festevam@gmail.com>
-To:     daniel.lezcano@linaro.org
-Cc:     rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
-        linux-pm@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        robh+dt@kernel.org, conor+dt@kernel.org,
-        devicetree@vger.kernel.org, Fabio Estevam <festevam@denx.de>
-Subject: [PATCH v3 2/3] reboot: Introduce hw_protection_reboot()
-Date:   Mon, 28 Aug 2023 16:59:01 -0300
-Message-Id: <20230828195902.1645169-2-festevam@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230828195902.1645169-1-festevam@gmail.com>
-References: <20230828195902.1645169-1-festevam@gmail.com>
+        with ESMTP id S230447AbjH1UvF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 16:51:05 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D6A210E;
+        Mon, 28 Aug 2023 13:51:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+        bh=1VGN/7kaT0gr2v5iLutL5Ek3yl9HftUWq6xZh8Ol+A8=; b=dRPFd5R5dVR+XM6pQ80caayH0S
+        ZATYz4D36SUQTvDeGGScSp0homXaxxyKUjcrn/kx+nkgY3RrawnvbdCgIyiwlysAb9gmlb7DTVqfP
+        xbB8+RJL5Q7VQQfmfxPV6mp1MEjgaXIWIFgMLwFtVYCrc8/VS2yHThj5V//V26t13upeTMD69ichj
+        zW/Gf9sySlZ7hr7FFOiFXRdrV55K91jWAZmzaoDO7FBRLr7oalfAAMxkvep7Kst8Z+6GZMjWzdJEo
+        E55/bntNwunvlhc6C0ZwJujgNllxdmXbR8hKLcOUsWe9mxISNTpNVY7E0Yy8+uMLVY4RlOfa32Kqz
+        rIP/CM8A==;
+Received: from [2601:1c2:980:9ec0::2764]
+        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qajCI-00AGCg-14;
+        Mon, 28 Aug 2023 20:50:54 +0000
+Message-ID: <f510eafd-7561-89d2-5d5c-ae98901c2250@infradead.org>
+Date:   Mon, 28 Aug 2023 13:50:52 -0700
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH 1/5] soc: loongson: loongson_pm2: add dependency for INPUT
+Content-Language: en-US
+To:     Binbin Zhou <zhoubinbin@loongson.cn>,
+        Binbin Zhou <zhoubb.aaron@gmail.com>,
+        Huacai Chen <chenhuacai@loongson.cn>,
+        Yinbo Zhu <zhuyinbo@loongson.cn>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     Huacai Chen <chenhuacai@kernel.org>,
+        loongson-kernel@lists.loongnix.cn, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, Xuerui Wang <kernel@xen0n.name>,
+        loongarch@lists.linux.dev
+References: <cover.1693218539.git.zhoubinbin@loongson.cn>
+ <08447374271c7df6d1543abce69195f1ae09f59c.1693218539.git.zhoubinbin@loongson.cn>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <08447374271c7df6d1543abce69195f1ae09f59c.1693218539.git.zhoubinbin@loongson.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Fabio Estevam <festevam@denx.de>
+Hi--
 
-Introduce hw_protection_reboot() to trigger an emergency reboot.
+On 8/28/23 05:38, Binbin Zhou wrote:
+> Since commit 67694c076bd7 ("soc: loongson2_pm: add power management
+> support"), the Loongson-2K PM driver was added, but it didn't update the
+> Kconfig entry for the INPUT dependency, leading to build errors, so
+> update the Kconfig entry to depend on INPUT.
+> 
+> /opt/crosstool/gcc-13.2.0-nolibc/loongarch64-linux/bin/loongarch64-linux-ld: drivers/soc/loongson/loongson2_pm.o: in function `loongson2_power_button_init':
+> /work/lnx/next/linux-next-20230825/LOONG64/../drivers/soc/loongson/loongson2_pm.c:101:(.text+0x350): undefined reference to `input_allocate_device'
+> /opt/crosstool/gcc-13.2.0-nolibc/loongarch64-linux/bin/loongarch64-linux-ld: /work/lnx/next/linux-next-20230825/LOONG64/../drivers/soc/loongson/loongson2_pm.c:109:(.text+0x3dc): undefined reference to `input_set_capability'
+> /opt/crosstool/gcc-13.2.0-nolibc/loongarch64-linux/bin/loongarch64-linux-ld: /work/lnx/next/linux-next-20230825/LOONG64/../drivers/soc/loongson/loongson2_pm.c:111:(.text+0x3e4): undefined reference to `input_register_device'
+> /opt/crosstool/gcc-13.2.0-nolibc/loongarch64-linux/bin/loongarch64-linux-ld: /work/lnx/next/linux-next-20230825/LOONG64/../drivers/soc/loongson/loongson2_pm.c:125:(.text+0x3fc): undefined reference to `input_free_device'
+> /opt/crosstool/gcc-13.2.0-nolibc/loongarch64-linux/bin/loongarch64-linux-ld: drivers/soc/loongson/loongson2_pm.o: in function `input_report_key':
+> /work/lnx/next/linux-next-20230825/LOONG64/../include/linux/input.h:425:(.text+0x58c): undefined reference to `input_event'
+> /opt/crosstool/gcc-13.2.0-nolibc/loongarch64-linux/bin/loongarch64-linux-ld: drivers/soc/loongson/loongson2_pm.o: in function `input_sync':
+> /work/lnx/next/linux-next-20230825/LOONG64/../include/linux/input.h:450:(.text+0x5a0): undefined reference to `input_event'
+> /opt/crosstool/gcc-13.2.0-nolibc/loongarch64-linux/bin/loongarch64-linux-ld: drivers/soc/loongson/loongson2_pm.o: in function `input_report_key':
+> /work/lnx/next/linux-next-20230825/LOONG64/../include/linux/input.h:425:(.text+0x5b4): undefined reference to `input_event'
+> /opt/crosstool/gcc-13.2.0-nolibc/loongarch64-linux/bin/loongarch64-linux-ld: drivers/soc/loongson/loongson2_pm.o: in function `input_sync':
+> /work/lnx/next/linux-next-20230825/LOONG64/../include/linux/input.h:450:(.text+0x5c8): undefined reference to `input_event'
+> 
+> Reported-by: Randy Dunlap <rdunlap@infradead.org>
+> Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
+> ---
+>  drivers/soc/loongson/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/soc/loongson/Kconfig b/drivers/soc/loongson/Kconfig
+> index 314e13bb3e01..1b57af1e5529 100644
+> --- a/drivers/soc/loongson/Kconfig
+> +++ b/drivers/soc/loongson/Kconfig
+> @@ -20,6 +20,7 @@ config LOONGSON2_GUTS
+>  config LOONGSON2_PM
+>  	bool "Loongson-2 SoC Power Management Controller Driver"
+>  	depends on LOONGARCH && OF
+> +	depends on INPUT
 
-It is a counterpart of hw_protection_shutdown() with the difference
-that it will force a reboot instead of shutdown.
+In the failing .config file, CONFIG_INPUT=m.
+This bool kconfig item is still set/enabled after this patch and the build still fails.
 
-The motivation for doing this is to allow the thermal subystem
-to trigger a reboot when the temperature reaches the critical
-temperature.
+You could use
+	depends on INPUT=y
 
-Signed-off-by: Fabio Estevam <festevam@denx.de>
----
-Changes since v2:
-- None
+if that is appropriate. I dunno.
 
- include/linux/reboot.h |  1 +
- kernel/reboot.c        | 34 ++++++++++++++++++++++++++++++++++
- 2 files changed, 35 insertions(+)
+>  	help
+>  	  The Loongson-2's power management controller was ACPI, supports ACPI
+>  	  S2Idle (Suspend To Idle), ACPI S3 (Suspend To RAM), ACPI S4 (Suspend To
 
-diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index 2b6bb593be5b..4a319bc24f6a 100644
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -174,6 +174,7 @@ void ctrl_alt_del(void);
- 
- extern void orderly_poweroff(bool force);
- extern void orderly_reboot(void);
-+void hw_protection_reboot(const char *reason, int ms_until_forced);
- void hw_protection_shutdown(const char *reason, int ms_until_forced);
- 
- /*
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index 3bba88c7ffc6..05333ae8bc6b 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -952,6 +952,40 @@ static void hw_failure_emergency_poweroff(int poweroff_delay_ms)
- 			      msecs_to_jiffies(poweroff_delay_ms));
- }
- 
-+/**
-+ * hw_protection_reboot - Trigger an emergency system reboot
-+ *
-+ * @reason:		Reason of emergency reboot to be printed.
-+ * @ms_until_forced:	Time to wait for orderly reboot before tiggering a
-+ *			forced reboot. Negative value disables the forced
-+ *			reboot.
-+ *
-+ * Initiate an emergency system reboot in order to protect hardware from
-+ * further damage. Usage examples include a thermal protection.
-+ *
-+ * NOTE: The request is ignored if protection reboot is already pending even
-+ * if the previous request has given a large timeout for forced reboot.
-+ * Can be called from any context.
-+ */
-+void hw_protection_reboot(const char *reason, int ms_until_forced)
-+{
-+	static atomic_t allow_proceed = ATOMIC_INIT(1);
-+
-+	pr_emerg("HARDWARE PROTECTION reboot (%s)\n", reason);
-+
-+	/* Reboot should be initiated only once. */
-+	if (!atomic_dec_and_test(&allow_proceed))
-+		return;
-+
-+	/*
-+	 * Queue a backup emergency reboot in the event of
-+	 * orderly_reboot failure
-+	 */
-+	hw_failure_emergency_poweroff(ms_until_forced);
-+	orderly_reboot();
-+}
-+EXPORT_SYMBOL_GPL(hw_protection_reboot);
-+
- /**
-  * hw_protection_shutdown - Trigger an emergency system poweroff
-  *
 -- 
-2.34.1
-
+~Randy
