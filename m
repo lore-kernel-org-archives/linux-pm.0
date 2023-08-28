@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3C82C83F1C
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 19:20:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 427A9C83F26
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Aug 2023 19:20:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233394AbjH1TT6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 15:19:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48280 "EHLO
+        id S233410AbjH1TUB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 15:20:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48314 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233358AbjH1TTn (ORCPT
+        with ESMTP id S233361AbjH1TTn (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 15:19:43 -0400
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75070114;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABD32120;
         Mon, 28 Aug 2023 12:19:40 -0700 (PDT)
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37SHLOF0028593;
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37SJ12qH007567;
         Mon, 28 Aug 2023 19:19:31 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=fOGmgXl/ickbKb7w6SjmfQviRBopf2X+iPgtWmfyzKg=;
- b=pBiSXFz5VOrCgObOW7tE2UUOFqb7BHFKK6mbf8b0eYEgzMjLpsNtzDZSrn4CdImbTrxn
- ewQeWA1VAd17LjMIupb7ahvLWGtog3YQB6jGKVyRI30xLOde6JFZVA55gzbmJ+ltmRk3
- czHv71biAaRIIa+LY7VpZWjTgAwRzCkm1bO6vbCi4uhKnBOHCEdDRbVoxMouW2iEt3IN
- 9WLV1TWpumby55P+DQkuQPTyElRW5NhR3r4CR5lW7B8QTAVOSv2mA+yD3AU1WZII+lN3
- x5/BSUC+g7b5zi5+KDYU+eS3h1hcBNN8U8+asX9jdg2PqGU2DIgXCu2Cu4maUMxk3ACr Og== 
+ bh=iwBHdSgkTzksPkElbM9VpFckJ2B833jELeGXVSHyQ8o=;
+ b=btG0SOiZNzR1mSGbcDKzRasfehCHb3mQscqb3kiyBYG3VXwwd4n0iv6lZP1e15WkA/5/
+ ymfvpGn3AWKdEeItrbxhZFmFAAlbc4SF7iYVZ1jUEw6pV2ifQwf6j2DVRVfWdDV6OPyb
+ CL2qcAU8mDjEboOQ6x/Y3Ras4TcECyGCn8vSwOK+1Qe0krdhWHqelXoHTzrj46unKvDU
+ 5Vf5dWBnOhRrZ4uwYDOfhtD5BvI05IJSdIj7BSsOEcqtvLfkI5qY3caGUilJypAjlEhl
+ rF+l1KOrfpeVvMct5kCC06UR5TRrxb1xzJYdyRwyC96yWl7qMr3tTl0fr+7ODIFwNquM 5g== 
 Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sq73n4rdx-1
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sq9m8vhw6-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
         Mon, 28 Aug 2023 19:19:30 +0000
 Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 37SJJTn1003302
+        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 37SJJTn3003302
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
         Mon, 28 Aug 2023 19:19:29 GMT
 Received: from srichara-linux.qualcomm.com (10.80.80.8) by
  nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.30; Mon, 28 Aug 2023 12:19:05 -0700
+ 15.2.1118.30; Mon, 28 Aug 2023 12:19:14 -0700
 From:   Sricharan Ramabadhran <quic_srichara@quicinc.com>
 To:     <agross@kernel.org>, <andersson@kernel.org>,
         <konrad.dybcio@linaro.org>, <srinivas.kandagatla@linaro.org>,
@@ -47,9 +47,9 @@ To:     <agross@kernel.org>, <andersson@kernel.org>,
         <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <quic_srichara@quicinc.com>
-Subject: [PATCH 4/7] thermal/drivers/qcom: Add IPQ5018 compatible
-Date:   Tue, 29 Aug 2023 00:48:24 +0530
-Message-ID: <1693250307-8910-5-git-send-email-quic_srichara@quicinc.com>
+Subject: [PATCH 6/7] arm64: dts: qcom: ipq5018: Add tsens node
+Date:   Tue, 29 Aug 2023 00:48:26 +0530
+Message-ID: <1693250307-8910-7-git-send-email-quic_srichara@quicinc.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
 References: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
@@ -60,41 +60,63 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nalasex01c.na.qualcomm.com (10.47.97.35)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: DaYU-U74ncWlsKHiZN2wDvH30kWmGtQ1
-X-Proofpoint-ORIG-GUID: DaYU-U74ncWlsKHiZN2wDvH30kWmGtQ1
+X-Proofpoint-ORIG-GUID: 0LxdwKbXpAmCiu73gdA-bMd7uijvC5TC
+X-Proofpoint-GUID: 0LxdwKbXpAmCiu73gdA-bMd7uijvC5TC
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
  definitions=2023-08-28_16,2023-08-28_04,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
- priorityscore=1501 malwarescore=0 suspectscore=0 impostorscore=0
- mlxscore=0 mlxlogscore=770 lowpriorityscore=0 clxscore=1015 phishscore=0
- bulkscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 phishscore=0
+ bulkscore=0 clxscore=1015 mlxscore=0 adultscore=0 priorityscore=1501
+ impostorscore=0 malwarescore=0 lowpriorityscore=0 mlxlogscore=802
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2308100000 definitions=main-2308280168
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IPQ5018 has tsens V1.0 IP with 4 sensors and 1 interrupt.
+IPQ5018 has tsens V1.0 IP with 4 sensors.
+There is no RPM, so tsens has to manually enabled.
+Adding the tsens and nvmem node.
 
 Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
 ---
- drivers/thermal/qcom/tsens.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm64/boot/dts/qcom/ipq5018.dtsi | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index f39495b61952..a24eb88b3444 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -1101,6 +1101,9 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
+diff --git a/arch/arm64/boot/dts/qcom/ipq5018.dtsi b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
+index 9f13d2dcdfd5..277b3cfc7f72 100644
+--- a/arch/arm64/boot/dts/qcom/ipq5018.dtsi
++++ b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
+@@ -93,6 +93,29 @@ soc: soc@0 {
+ 		#size-cells = <1>;
+ 		ranges = <0 0 0 0xffffffff>;
  
- static const struct of_device_id tsens_table[] = {
- 	{
-+		.compatible = "qcom,ipq5018-tsens",
-+		.data = &data_ipq5018,
-+	}, {
- 		.compatible = "qcom,ipq8064-tsens",
- 		.data = &data_8960,
- 	}, {
++		qfprom_nvmem: qfprom_nvmem@a0000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "qcom,ipq5018-qfprom", "qcom,qfprom";
++			reg = <0xa0000 0x1000>;
++
++			tsens_calib: calib@248 {
++				reg = <0x248 0x10>;
++			};
++		};
++
++		tsens: thermal-sensor@4a9000 {
++			compatible = "qcom,ipq5018-tsens", "qcom,tsens-v1";
++			reg = <0x4a9000 0x1000>, /* TM */
++			      <0x4a8000 0x1000>; /* SORT */
++			nvmem-cells = <&tsens_calib>;
++			nvmem-cell-names = "calib";
++			interrupts = <GIC_SPI 184 IRQ_TYPE_EDGE_RISING>;
++			interrupt-names = "uplow";
++			#qcom,sensors = <5>;
++			#thermal-sensor-cells = <1>;
++		};
++
+ 		tlmm: pinctrl@1000000 {
+ 			compatible = "qcom,ipq5018-tlmm";
+ 			reg = <0x01000000 0x300000>;
 -- 
 2.34.1
 
