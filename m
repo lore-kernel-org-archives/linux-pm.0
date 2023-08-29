@@ -2,114 +2,151 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F3FBC83F14
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 09:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB626C83F14
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 09:24:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230122AbjH2JEO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Aug 2023 05:04:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47960 "EHLO
+        id S232420AbjH2JY3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Aug 2023 05:24:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48724 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234401AbjH2JDt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 05:03:49 -0400
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 812751AA
-        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 02:03:46 -0700 (PDT)
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-68c0d886ea0so2828064b3a.2
-        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 02:03:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693299826; x=1693904626;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ORZiB94/bjq/zwPr1B87oo/KGJsoCMW7VqIJI5SB3aI=;
-        b=uFfiEzXN0A0a2rGrhDxfqXkk8Xtd96BTxJxumJSKxcYnL2WuJkpp5xKIrByXK0nLQ7
-         /kJBnmekbrxYuJ4kBakDaTcM5VBuhcnp1qNqjflhUudi3FlHetF+ed2ZatOuvJbjzjJM
-         K5LrH251uaGUa7N6mYzYZKnvkOFOBX3TKmdG8TJF27oz1GDTMuehJeCzDHYQHtdpXRlM
-         Dj5RHD5tMUaAVyXX7cKdtBdPEzitDJPl2Q1n+GBtvBhnDZd+OolcsfYQdFvt5VhiOUPp
-         wsniCq7Tgk2+8vbre7gVz0Yc4DARe384FymQP+IgJU2Ib0aYFJNeL8zuhBTI9PxlIybh
-         G1lg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693299826; x=1693904626;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ORZiB94/bjq/zwPr1B87oo/KGJsoCMW7VqIJI5SB3aI=;
-        b=hXMwjd/7qvQT5PyMi8liyPpbaLpBf2/ZqtSJvOxHfmht5RPpO4W7azUulBr0bTBYNj
-         5jZIbslLsTERjefLT0edfVgyUZZ+qG12EiVlvGu7HtML35Ri8BU7SjMEstoOPfz3iJLH
-         CsxqJCMyk38uVM1YtWKh0609anCygPa3CWKcJVbUmc20G1F1hti3lRgKcl2APtGSGz/p
-         AXLsWr7iBhMkQVJQTHiujRaeGZqG46/jmvG70HIO1tEkXVS/PyV5BZFjeUCPaGf7r6u0
-         Ld5Jxhp497teUjSziFXynp9OU8zOXTIdc0rju+yn7I/JzcWtH60Wnh6cL/tAKzFRWmiJ
-         uEcw==
-X-Gm-Message-State: AOJu0YxCJjAZMgref6wzjEikL+x+o/bIEtFWzCf0Aaf901u7gTt2qS/O
-        xy9gkWDOXNg6BSBNUK0i97IyJA==
-X-Google-Smtp-Source: AGHT+IGxIYjt92oKdEgN1Tkfh7Y6aYrB5m136ynE5+UkbRi5VNPnmqvDRiUhxAz6JBCEoOZgUqOUGw==
-X-Received: by 2002:a05:6a00:cc1:b0:68a:570f:e36a with SMTP id b1-20020a056a000cc100b0068a570fe36amr29336238pfv.4.1693299826001;
-        Tue, 29 Aug 2023 02:03:46 -0700 (PDT)
-Received: from localhost ([122.172.87.195])
-        by smtp.gmail.com with ESMTPSA id t25-20020aa79399000000b0068be4ce33easm8199639pfe.96.2023.08.29.02.03.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Aug 2023 02:03:45 -0700 (PDT)
-Date:   Tue, 29 Aug 2023 14:33:43 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Sumit Gupta <sumitg@nvidia.com>
-Cc:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        treding@nvidia.com, jonathanh@nvidia.com, bbasu@nvidia.com
-Subject: Re: [Patch v2] cpufreq: tegra194: fix warning due to missing opp_put
-Message-ID: <20230829090343.kyyfsienwo4aiu2p@vireshk-i7>
-References: <20230829084322.30558-1-sumitg@nvidia.com>
+        with ESMTP id S234785AbjH2JYX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 05:24:23 -0400
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18A4C1B6
+        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 02:24:19 -0700 (PDT)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20230829092406euoutp01337127974b630f0d0cc09316b48be0db~-0FSV93FZ1739317393euoutp01V
+        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 09:24:06 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20230829092406euoutp01337127974b630f0d0cc09316b48be0db~-0FSV93FZ1739317393euoutp01V
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1693301046;
+        bh=Yg71emI7rkUdONEcXXwkkssF2zl7EmPpwlLXh4qDTeM=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=bch6VWVrwatFoif+HJy2ySqOXNzxoOhIp/MdTfjgJA024r16aGms8BkL/p94K3kyZ
+         3Y7tjFmzFgq3tmDpeTwEQ/WlQXZNFJMm13ZH0F7PHpQpRuA8isWaN1y9s8X3/ab97H
+         dBRnqH9vtEs5KGi1mFqHvnkzNifvRTZHpOG7nljU=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20230829092405eucas1p1fc83dded4ba331d6d818eff146d8f59c~-0FRdLMgt2328123281eucas1p1f;
+        Tue, 29 Aug 2023 09:24:05 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges2new.samsung.com (EUCPMTA) with SMTP id DD.17.11320.539BDE46; Tue, 29
+        Aug 2023 10:24:05 +0100 (BST)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20230829092405eucas1p14543d527d81e8714594ebb999ab5fc02~-0FQ_bvLQ2331823318eucas1p1q;
+        Tue, 29 Aug 2023 09:24:05 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20230829092405eusmtrp1060d9335f88fe2227d244eed14cf210f~-0FQ9gpQQ3248032480eusmtrp1V;
+        Tue, 29 Aug 2023 09:24:05 +0000 (GMT)
+X-AuditID: cbfec7f4-993ff70000022c38-ee-64edb935cd4d
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 86.D9.10549.439BDE46; Tue, 29
+        Aug 2023 10:24:05 +0100 (BST)
+Received: from AMDC4515.eu.corp.samsungelectronics.net (unknown
+        [106.120.51.28]) by eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20230829092404eusmtip2341d0d647936b47a733e98d3e2a655bb~-0FP-6-gg1072510725eusmtip2i;
+        Tue, 29 Aug 2023 09:24:04 +0000 (GMT)
+From:   Mateusz Majewski <m.majewski2@samsung.com>
+To:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Cc:     Mateusz Majewski <m.majewski2@samsung.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH 01/11] ARM: dts: exynos: enable polling in Exynos 4210
+Date:   Tue, 29 Aug 2023 11:18:39 +0200
+Message-ID: <20230829091853.626011-2-m.majewski2@samsung.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230829091853.626011-1-m.majewski2@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230829084322.30558-1-sumitg@nvidia.com>
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrDKsWRmVeSWpSXmKPExsWy7djP87qmO9+mGNz8rWDxYN42NovD8yss
+        pj58wmbxfct1Jos1e88xWcz7LGsx/8g5Vou+Fw+ZLb5d6WCy2PT4GqvF5V1z2Cw+9x5htJhx
+        fh+TxcRjk5kt1h65y24x98tUZovWvUfYLZ487GNzEPLYOesuu8fiPS+ZPDat6mTzuHNtD5vH
+        5iX1Hn1bVjF6fN4kF8AexWWTkpqTWZZapG+XwJXxuDO04BFHxcOLj9kaGBeydzFyckgImEhc
+        WTuPtYuRi0NIYAWjxJzr16CcL4wSP3euY4FwPjNKTH1yFa5lQvsRNojEckaJVY2f2SGcViaJ
+        53f62UCq2AQMJB68WQaWEBFYzCixdecsJhCHWWAui0TDyp8sIFXCAm4SD168ZO5i5OBgEVCV
+        ePkzDiTMK2ArsXrHMjaIdfISz2/dAVvNKWAnMf18OxNEjaDEyZlPwMYwA9U0b53NDDJfQmA2
+        p8TRDzeZIZpdJPYdus8IYQtLvDq+BeoHGYnTk3tYIOx8iRmb37OA3CAhUCFx96AXhGkt8fEM
+        2GXMApoS63fpQ0QdJY7sLoQw+SRuvBWE2M8nMWnbdGaIMK9ER5sQxGRVieN7JkFdIi3xpOU2
+        E4TtIfHmwEfWCYyKs5B8MgvJJ7MQ1i5gZF7FKJ5aWpybnlpslJdarlecmFtcmpeul5yfu4kR
+        mOBO/zv+ZQfj8lcf9Q4xMnEwHmKU4GBWEuG95PgqRYg3JbGyKrUoP76oNCe1+BCjNAeLkjiv
+        tu3JZCGB9MSS1OzU1ILUIpgsEwenVAOT55fYsuN7jeUF74fMtRDwnCvK3LHvWJPGdkamoMtR
+        +T1vO5+65bu03HCNiNE02fX7c1mQc+yLmn0bhSq/fF2XXaV/plbnp7KoY8z2zVKe5S0xC7K/
+        JNrHT2Hy9i2oW39gf7LrriRh/UybDVujwjVee/2a2Bm0I/6z3Pymt/56W+0+vuv8InGgq8v4
+        b9LdU8+u9u3YniD9qPH+4s4zd96fSsw8Gfpd8DqjlVpnf+RdmTyjM/Z9ZTWGcay89UrymXsu
+        O9w9devJu0d/y05X75h266LqsmcTrR9eiy9bzf5s3s2Loi0bHWayXpmkv2pLUg3Pw+5Jczku
+        bih7kr3iY93+mpgGMa3fBedMXhT4Xf2ixFKckWioxVxUnAgAYdxA9N8DAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrHIsWRmVeSWpSXmKPExsVy+t/xe7qmO9+mGCy4xWjxYN42NovD8yss
+        pj58wmbxfct1Jos1e88xWcz7LGsx/8g5Vou+Fw+ZLb5d6WCy2PT4GqvF5V1z2Cw+9x5htJhx
+        fh+TxcRjk5kt1h65y24x98tUZovWvUfYLZ487GNzEPLYOesuu8fiPS+ZPDat6mTzuHNtD5vH
+        5iX1Hn1bVjF6fN4kF8AepWdTlF9akqqQkV9cYqsUbWhhpGdoaaFnZGKpZ2hsHmtlZKqkb2eT
+        kpqTWZZapG+XoJfxuDO04BFHxcOLj9kaGBeydzFyckgImEhMaD/C1sXIxSEksJRRYlZDKyNE
+        Qlri8JcpUEXCEn+udUEVNTNJrL7ZywqSYBMwkHjwZhk7SEJEYDmjxNV7y1lAHGaB5SwSz9d8
+        YAapEhZwk3jw4iWQzcHBIqAq8fJnHEiYV8BWYvWOZWwQG+Qlnt+6A7aNU8BOYvr5diYQWwio
+        Zs2Ec2wQ9YISJ2c+YQGxmYHqm7fOZp7AKDALSWoWktQCRqZVjCKppcW56bnFhnrFibnFpXnp
+        esn5uZsYgRG57djPzTsY5736qHeIkYmD8RCjBAezkgjvJcdXKUK8KYmVValF+fFFpTmpxYcY
+        TYHOnsgsJZqcD0wJeSXxhmYGpoYmZpYGppZmxkrivJ4FHYlCAumJJanZqakFqUUwfUwcnFIN
+        TAs+e0lIMGtM0XyiW7N2R1uubtOdizsKq9dFbqv1m6eWuW7m7qANfSuXSsZ462qtmFp5Q/u6
+        Rfoq+bvzOxfzK5pprf137ILEhryXb4/lHpb6Mf2PxrXHktl3syb8qLK9tCazwzthZmzEuYkL
+        b/BGHnq6pUysbsavmmmH13839+PQPsObe7x5o/YZ+Tzz2SVVvXzqXisXFsye5lP373Vx0nyF
+        8oc7W7m/f/Qx4hfbKvRWv42BL+Xs9nyLubvPHHm/qXrX1p1VL0TWNzwu6TLJ6J51o3iSh/Lk
+        lbcULLfGGXWfrTifuSOusGrOetunuZ7rfzcyLmCR+/PlRuP+xXd8e45YPkj+zLZZY0qvpqS5
+        f6kSS3FGoqEWc1FxIgDhwqItUQMAAA==
+X-CMS-MailID: 20230829092405eucas1p14543d527d81e8714594ebb999ab5fc02
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20230829092405eucas1p14543d527d81e8714594ebb999ab5fc02
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20230829092405eucas1p14543d527d81e8714594ebb999ab5fc02
+References: <20230829091853.626011-1-m.majewski2@samsung.com>
+        <CGME20230829092405eucas1p14543d527d81e8714594ebb999ab5fc02@eucas1p1.samsung.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 29-08-23, 14:13, Sumit Gupta wrote:
-> Fix the warning due to missing dev_pm_opp_put() call and hence
-> wrong refcount value. This causes below warning message when
-> trying to remove the module.
-> 
->  Call trace:
->   dev_pm_opp_put_opp_table+0x154/0x15c
->   dev_pm_opp_remove_table+0x34/0xa0
->   _dev_pm_opp_cpumask_remove_table+0x7c/0xbc
->   dev_pm_opp_of_cpumask_remove_table+0x10/0x18
->   tegra194_cpufreq_exit+0x24/0x34 [tegra194_cpufreq]
->   cpufreq_remove_dev+0xa8/0xf8
->   subsys_interface_unregister+0x90/0xe8
->   cpufreq_unregister_driver+0x54/0x9c
->   tegra194_cpufreq_remove+0x18/0x2c [tegra194_cpufreq]
->   platform_remove+0x24/0x74
->   device_remove+0x48/0x78
->   device_release_driver_internal+0xc8/0x160
->   driver_detach+0x4c/0x90
->   bus_remove_driver+0x68/0xb8
->   driver_unregister+0x2c/0x58
->   platform_driver_unregister+0x10/0x18
->   tegra194_ccplex_driver_exit+0x14/0x1e0 [tegra194_cpufreq]
->   __arm64_sys_delete_module+0x184/0x270
-> 
-> Fixes: f41e1442ac5b ("cpufreq: tegra194: add OPP support and set bandwidth")
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> ---
->  drivers/cpufreq/tegra194-cpufreq.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/tegra194-cpufreq.c b/drivers/cpufreq/tegra194-cpufreq.c
-> index 88ef5e57ccd0..9d7e1d58f6e5 100644
-> --- a/drivers/cpufreq/tegra194-cpufreq.c
-> +++ b/drivers/cpufreq/tegra194-cpufreq.c
-> @@ -450,6 +450,7 @@ static int tegra_cpufreq_init_cpufreq_table(struct cpufreq_policy *policy,
->  		if (IS_ERR(opp))
->  			continue;
->  
-> +		dev_pm_opp_put(opp);
->  		ret = dev_pm_opp_enable(cpu_dev, pos->frequency * KHZ);
->  		if (ret < 0)
->  			return ret;
+It seems that thermal in Exynos 4210 is broken without this, as it will
+never decrease cooling after increasing it.
 
-Applied. Thanks.
+Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
+---
+ arch/arm/boot/dts/samsung/exynos4210.dtsi | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
+diff --git a/arch/arm/boot/dts/samsung/exynos4210.dtsi b/arch/arm/boot/dts/samsung/exynos4210.dtsi
+index 0e27c3375e2e..aae185b7f91c 100644
+--- a/arch/arm/boot/dts/samsung/exynos4210.dtsi
++++ b/arch/arm/boot/dts/samsung/exynos4210.dtsi
+@@ -391,8 +391,14 @@ &cpu_alert2 {
+ };
+ 
+ &cpu_thermal {
+-	polling-delay-passive = <0>;
+-	polling-delay = <0>;
++	/* Exynos 4210 supports thermal interrupts, but only for the rising threshold.
++	 * This means that polling is not needed for preventing overheating, but only
++	 * for decreasing cooling when possible. Hence we poll with a high delay.
++	 * Ideally, we would disable polling for the first trip point, but this isn't
++	 * really possible without outrageous hacks.
++	 */
++	polling-delay-passive = <5000>;
++	polling-delay = <5000>;
+ };
+ 
+ &gic {
 -- 
-viresh
+2.41.0
+
