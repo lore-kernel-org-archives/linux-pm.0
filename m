@@ -2,52 +2,52 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D878FC83F19
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 09:24:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2052EC83F1E
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 09:25:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234695AbjH2JYa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S234685AbjH2JYa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 29 Aug 2023 05:24:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48658 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48876 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234778AbjH2JYX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 05:24:23 -0400
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3893412F
-        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 02:24:11 -0700 (PDT)
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20230829092410euoutp02922d70c1d722b8cd3e4e3f44d7271687~-0FVfWGsp0626806268euoutp02q
-        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 09:24:10 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20230829092410euoutp02922d70c1d722b8cd3e4e3f44d7271687~-0FVfWGsp0626806268euoutp02q
+        with ESMTP id S234827AbjH2JY1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 05:24:27 -0400
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB7D8CC9
+        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 02:24:20 -0700 (PDT)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20230829092416euoutp01a83722c12bfd99d20b6382f18f073603~-0Fb3bl_I1653716537euoutp018
+        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 09:24:16 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20230829092416euoutp01a83722c12bfd99d20b6382f18f073603~-0Fb3bl_I1653716537euoutp018
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1693301050;
-        bh=P34LvyBd3DIzM/01pFsL6osI5wPMYG7QBHPOp6UyW3s=;
+        s=mail20170921; t=1693301056;
+        bh=PS2hMZWBxoksmfnyC1o735UN6zy7GfxU5G/igjFuprM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=X11MX07hLbBYbNccF7kpbDKdpjaFxkhaRfi7+UAzCFNKfWk4ADgt3iI8piMrF3fna
-         jPU/uCCFaLsXyVIIxjjDtr1dnomc6H/fCaXFasgZ4PwthM9UaCjVSaZCyro2bAh+bG
-         Ren6/o5bimXRrZtrAS5CA3w7uD3ZPXBLcmkvuPfs=
+        b=WNcwJBPbkBMBGGhHtOEQviJPWwgs+WgzxuXo+zBa1gjcgBr+UjGtn68ArVRSfkSVn
+         XL9OI+aaUaYoPUBr+q974cgf16dTNKmpl+GWpqi92sgs5YQKBcBB4c0pD/DghVZg1V
+         z7sG/B/jceWJ+GqgiWj3FRFWjUKfYJlkrjw8h0Q4=
 Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20230829092409eucas1p2eb7888fd7a048f0dc432839b8dc5a7c3~-0FU1W7b73169731697eucas1p2n;
-        Tue, 29 Aug 2023 09:24:09 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges3new.samsung.com (EUCPMTA) with SMTP id 42.7F.37758.939BDE46; Tue, 29
-        Aug 2023 10:24:09 +0100 (BST)
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20230829092416eucas1p19b7bc837fe4d2a02794541a3b5942096~-0FbdBUCI2064620646eucas1p12;
+        Tue, 29 Aug 2023 09:24:16 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+        eusmges3new.samsung.com (EUCPMTA) with SMTP id C8.7F.37758.049BDE46; Tue, 29
+        Aug 2023 10:24:16 +0100 (BST)
 Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20230829092408eucas1p24901bbd192db03b69d774f2c5936f5b3~-0FUU3pn52802128021eucas1p2g;
-        Tue, 29 Aug 2023 09:24:08 +0000 (GMT)
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20230829092415eucas1p1cb4d56f908e7851297b2c4ed59984b2f~-0FbCDVL01818818188eucas1p1t;
+        Tue, 29 Aug 2023 09:24:15 +0000 (GMT)
 Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
         eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20230829092408eusmtrp1c398a84095b24b2ab9461cd879135176~-0FUULXbt3248032480eusmtrp1m;
-        Tue, 29 Aug 2023 09:24:08 +0000 (GMT)
-X-AuditID: cbfec7f5-815ff7000002937e-39-64edb9399b8b
+        20230829092415eusmtrp1c2a7f49105c3a4b65d53d2f1a07e6816~-0FbBYPNH3248032480eusmtrp17;
+        Tue, 29 Aug 2023 09:24:15 +0000 (GMT)
+X-AuditID: cbfec7f5-815ff7000002937e-54-64edb940cb7a
 Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 09.D9.10549.839BDE46; Tue, 29
-        Aug 2023 10:24:08 +0100 (BST)
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 32.E9.10549.F39BDE46; Tue, 29
+        Aug 2023 10:24:15 +0100 (BST)
 Received: from AMDC4515.eu.corp.samsungelectronics.net (unknown
         [106.120.51.28]) by eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20230829092407eusmtip21454f38562007fa2dbc8ea627f7f64ac~-0FTXL5VJ1173411734eusmtip2c;
-        Tue, 29 Aug 2023 09:24:07 +0000 (GMT)
+        20230829092414eusmtip2660964aafb50caa1e630ce78f05556a2~-0FaHHqt10629806298eusmtip2j;
+        Tue, 29 Aug 2023 09:24:14 +0000 (GMT)
 From:   Mateusz Majewski <m.majewski2@samsung.com>
 To:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -65,98 +65,130 @@ Cc:     Mateusz Majewski <m.majewski2@samsung.com>,
         Liam Girdwood <lgirdwood@gmail.com>,
         Mark Brown <broonie@kernel.org>,
         Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 02/11] thermal: exynos: drop id field
-Date:   Tue, 29 Aug 2023 11:18:40 +0200
-Message-ID: <20230829091853.626011-3-m.majewski2@samsung.com>
+Subject: [PATCH 05/11] thermal: exynos: simplify sclk (de)initialization
+Date:   Tue, 29 Aug 2023 11:18:43 +0200
+Message-ID: <20230829091853.626011-6-m.majewski2@samsung.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230829091853.626011-1-m.majewski2@samsung.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrDKsWRmVeSWpSXmKPExsWy7djP87qWO9+mGMycxWPxYN42NovD8yss
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrLKsWRmVeSWpSXmKPExsWy7djPc7oOO9+mGMxcLmrxYN42NovD8yss
         pj58wmbxfct1Jos1e88xWcz7LGsx/8g5Vou+Fw+ZLb5d6WCy2PT4GqvF5V1z2Cw+9x5htJhx
         fh+TxcRjk5kt1h65y24x98tUZovWvUfYLZ487GNzEPLYOesuu8fiPS+ZPDat6mTzuHNtD5vH
-        5iX1Hn1bVjF6fN4kF8AexWWTkpqTWZZapG+XwJVxaOY/5oKj3BXbFvxmbWBczdnFyMkhIWAi
-        ceT7OSYQW0hgBaPEjr/cXYxcQPYXRonre2cwQjifGSW+7u5gh+k4tHgCM0RiOaPErceHodpb
-        mSQmHZAEsdkEDCQevFnGDlIkIrCYUWLrzllMIA6zwFwWiYaVP1lAqoQFTCU2rjwINpZFQFVi
-        9tsvrCA2r4CtxITvu9gg1slLPL91B6yGU8BOYvr5diaIGkGJkzOfgM1hBqpp3job7CQJgdmc
-        EvMuvYNqdpFovPiPGcIWlnh1fAvUDzISpyf3sEDY+RIzNr8HsjmA7AqJuwe9IExriY9nmEFM
-        ZgFNifW79CGKHSXO7PzIBlHBJ3HjrSDEAXwSk7ZNZ4YI80p0tAlBVKtKHN8zCWq9tMSTlttM
-        ECUeEu9b9ScwKs5C8sksJJ/MQli7gJF5FaN4amlxbnpqsXFearlecWJucWleul5yfu4mRmCC
-        O/3v+NcdjCtefdQ7xMjEwXiIUYKDWUmE95LjqxQh3pTEyqrUovz4otKc1OJDjNIcLErivNq2
-        J5OFBNITS1KzU1MLUotgskwcnFINTLYr9fe2WOtNnLnKSP3W6ryQx8GszzSPpLEuDnZd23ri
-        rye74Mnr1XPDV+X9tzFoOxf545NE9X/7Xwsudubee/qY6dajlDuNGc9z2NhWSb46+vIh/565
-        /v3ZMQ37XF4YHF7rodux6aGRd8G2jRz7Jxyqy3XQ+s+VFDLxS+l++4bFUkyCuzuP3AxcVPfw
-        2SKvJ2dsvPdPzTM79+OSk332ZVnWR3eaIwt4r2b+PJkQJmaa8cZFvIhBs04tvWpxnqvgtVhB
-        Rp7TLucFDAIfa5ycL96lcafnQ6etz6oyW6mGHcpuMwsncVgxT+Q/xsHnUhN20ui9V4Cur8vm
-        wC6/A7v3mVWt7fR7HSZxLMtMwn6JEktxRqKhFnNRcSIA+qF7Fd8DAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrPIsWRmVeSWpSXmKPExsVy+t/xe7oWO9+mGDyar27xYN42NovD8yss
+        5iX1Hn1bVjF6fN4kF8AexWWTkpqTWZZapG+XwJVxtOkRW8EGwYqFPx6wNDBO5uti5OCQEDCR
+        OHq4sIuRi0NIYAWjxIepi5khnC+MEt2bj0M5nxklZp45zNLFyAnWcWPbCjaIxHJGiWcnJ4Al
+        hARamSQWnk8FsdkEDCQevFnGDlIkIrCYUWLrzllMIA6zwFwWiYaVP8E6hAU8JJ49WMwEYrMI
+        qEq0X5nPDGLzCthKTLu1kAlinbzE81t32EFsTgE7ienn25kgagQlTs58AjaHGaimeetssFsl
+        BKZzSvxvv8gO0ewicXTuJihbWOLV8S1QtozE6ck9UP/kS8zY/J4FEhoVEncPekGY1hIfzzCD
+        mMwCmhLrd+lDFDtK7Ds/iRWigk/ixltBiAP4JCZtm84MEeaV6GgTgqhWlTi+ZxIzhC0t8aTl
+        NtRPHhIvli1nmcCoOAvJK7OQvDILYe8CRuZVjOKppcW56anFxnmp5XrFibnFpXnpesn5uZsY
+        gSnu9L/jX3cwrnj1Ue8QIxMH4yFGCQ5mJRHeS46vUoR4UxIrq1KL8uOLSnNSiw8xSnOwKInz
+        atueTBYSSE8sSc1OTS1ILYLJMnFwSjUwqdwJ+r3y3zkfj2eXlsw+P1u6dVPEvUuLlhptXVjc
+        s0nn5LtZJw+JSCT+uPNtyr9FlXJ/FkWHfG7UOJ245EfJ7fidq+q/WKicX+WukJ4ltWaF35KV
+        u71yuRm8z/DdrVBUMc6W5UnqWR2TfuL01e3hK/8UXX5u7d1UbNVjfzxowazUS+7L34pEK2gy
+        1btON9y+Mnhq86OPss85o+5ZnTvMmLZ66Srh9D0/X7YfzfA9M6vnomaQpMD5OPGvaxYu+yJ8
+        iDudZdKzs5GizdtnLP/l+3RvUGJl363OgxvF95Q4nkva9S/o+671jG9uVsWoVO99vO8IQ6/E
+        8s3Fzw63Laub7nrh9wMz8+LMR3lHr+izzmlRYinOSDTUYi4qTgQAFLV/FOADAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrPIsWRmVeSWpSXmKPExsVy+t/xe7r2O9+mGDzZambxYN42NovD8yss
         pj58wmbxfct1Jos1e88xWcz7LGsx/8g5Vou+Fw+ZLb5d6WCy2PT4GqvF5V1z2Cw+9x5htJhx
         fh+TxcRjk5kt1h65y24x98tUZovWvUfYLZ487GNzEPLYOesuu8fiPS+ZPDat6mTzuHNtD5vH
         5iX1Hn1bVjF6fN4kF8AepWdTlF9akqqQkV9cYqsUbWhhpGdoaaFnZGKpZ2hsHmtlZKqkb2eT
-        kpqTWZZapG+XoJdxaOY/5oKj3BXbFvxmbWBczdnFyMkhIWAicWjxBGYQW0hgKaPEtXesEHFp
-        icNfprBD2MISf651sXUxcgHVNDNJ7HnVwAKSYBMwkHjwZhk7SEJEYDmjxNV7y1lAHGaB5SwS
-        z9d8ABsrLGAqsXHlQbBRLAKqErPffgFbwStgKzHh+y42iBXyEs9v3QGr4RSwk5h+vp0J4iRb
-        iTUTzrFB1AtKnJz5BGwzM1B989bZzBMYBWYhSc1CklrAyLSKUSS1tDg3PbfYUK84Mbe4NC9d
-        Lzk/dxMjMCa3Hfu5eQfjvFcf9Q4xMnEwHmKU4GBWEuG95PgqRYg3JbGyKrUoP76oNCe1+BCj
-        KdDdE5mlRJPzgUkhryTe0MzA1NDEzNLA1NLMWEmc17OgI1FIID2xJDU7NbUgtQimj4mDU6qB
-        SZ7vYSqP8bt870e/jk3dXatku3P5mfhTdtufBWe1XDtuL7D4UXfVjg3zhCSyivNuLtK1WzH7
-        3jLtN0GJUV7t21bE2R9f7xOa/y2kp0L2kxBXqMwM3yPHTun+sjp9/8jO6nefnOa81NRbyH75
-        lrfg4yzZHdVPXAwOS06/9P3GkkeTb1ZLijn2NNTdfjZtxnrlin4xZmv5Nwe2h8pemJbNn7Pf
-        Lmhlk79KwLKgkPUNk7M6fHmyL8jZdzV//hu8RuTN95wtln8XZEhWxta/YOoR55xdsum2vUDr
-        Xy59i+7X3j/qd1gpTD/3f9708MCcOwoCYtons+tObvr17b/JhcCWy8Hp8w9yffpRcWXR2+vP
-        diixFGckGmoxFxUnAgBNkSLWUgMAAA==
-X-CMS-MailID: 20230829092408eucas1p24901bbd192db03b69d774f2c5936f5b3
+        kpqTWZZapG+XoJdxtOkRW8EGwYqFPx6wNDBO5uti5OSQEDCRuLFtBRuILSSwlFGi4bYURFxa
+        4vCXKewQtrDEn2tdQDVcQDXNTBKvL+9kBkmwCRhIPHizjB0kISKwnFHi6r3lLCAOs8ByFonn
+        az6AVQkLeEg8e7CYCcRmEVCVaL8yHyzOK2ArMe3WQiaIFfISz2/dAVvHKWAnMf18OxPESbYS
+        ayacY4OoF5Q4OfMJC4jNDFTfvHU28wRGgVlIUrOQpBYwMq1iFEktLc5Nzy021CtOzC0uzUvX
+        S87P3cQIjMltx35u3sE479VHvUOMTByMhxglOJiVRHgvOb5KEeJNSaysSi3Kjy8qzUktPsRo
+        CnT3RGYp0eR8YFLIK4k3NDMwNTQxszQwtTQzVhLn9SzoSBQSSE8sSc1OTS1ILYLpY+LglGpg
+        WtXb4xm7cOIaPskfFt/lFn21n6m1qH5VsdP7w19jlKbrlpxZ3zPTb35/imyAeLza/U9Z8z8o
+        rTi5X99NcMq5tSn9PYvNkpNOFe3h6vrKtFFx6ZqdTXsautPdk67MKTh6ZU3UWcbmpy+26/ez
+        dHZ03JL9E3GG753Pni0/9T2mhrx3XzN37eKi47PtpcsrQvTMHfiuebq0/ClN4Dg+3aU0eFFI
+        7nvtIwmrBSrXbVhb4uwf6993ypjnilvibinrhG7RY0Zq7vMv5m5RtprUqVAuV7suTmj7Kiun
+        oCVXNr75deOiYFDJfdnUOUqJJcKvN+eFq+lOzPA9cTJvx82HqyYuET28pM3wyNQLOtNFan0d
+        lFiKMxINtZiLihMBcVqSklIDAAA=
+X-CMS-MailID: 20230829092415eucas1p1cb4d56f908e7851297b2c4ed59984b2f
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20230829092408eucas1p24901bbd192db03b69d774f2c5936f5b3
+X-RootMTR: 20230829092415eucas1p1cb4d56f908e7851297b2c4ed59984b2f
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20230829092408eucas1p24901bbd192db03b69d774f2c5936f5b3
+X-CMS-RootMailID: 20230829092415eucas1p1cb4d56f908e7851297b2c4ed59984b2f
 References: <20230829091853.626011-1-m.majewski2@samsung.com>
-        <CGME20230829092408eucas1p24901bbd192db03b69d774f2c5936f5b3@eucas1p2.samsung.com>
+        <CGME20230829092415eucas1p1cb4d56f908e7851297b2c4ed59984b2f@eucas1p1.samsung.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This field is not used in code, and seems to not have any meaning; in my
-tests, the value was always 0.
+There's no need to enable the clock separately, and this also allows us
+to delegate the deinitialization to devm entirely.
 
 Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 6 ------
- 1 file changed, 6 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 45e5c840d130..70e9c0296ee1 100644
+index 2c5501704911..49e9157c3dc7 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -138,7 +138,6 @@ enum soc_type {
- /**
-  * struct exynos_tmu_data : A structure to hold the private data of the TMU
-  *			    driver
-- * @id: identifier of the one instance of the TMU controller.
-  * @base: base address of the single instance of the TMU controller.
-  * @base_second: base address of the common registers of the TMU controller.
-  * @irq: irq number of the TMU controller.
-@@ -173,7 +172,6 @@ enum soc_type {
-  * @tmu_clear_irqs: SoC specific TMU interrupts clearing method
-  */
- struct exynos_tmu_data {
--	int id;
- 	void __iomem *base;
- 	void __iomem *base_second;
- 	int irq;
-@@ -866,10 +864,6 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 	if (!data || !pdev->dev.of_node)
- 		return -ENODEV;
+@@ -1027,17 +1027,11 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	switch (data->soc) {
+ 	case SOC_ARCH_EXYNOS5433:
+ 	case SOC_ARCH_EXYNOS7:
+-		data->sclk = devm_clk_get(&pdev->dev, "tmu_sclk");
++		data->sclk = devm_clk_get_enabled(&pdev->dev, "tmu_sclk");
+ 		if (IS_ERR(data->sclk)) {
+ 			dev_err(&pdev->dev, "Failed to get sclk\n");
+ 			ret = PTR_ERR(data->sclk);
+ 			goto err_clk_sec;
+-		} else {
+-			ret = clk_prepare_enable(data->sclk);
+-			if (ret) {
+-				dev_err(&pdev->dev, "Failed to enable sclk\n");
+-				goto err_clk_sec;
+-			}
+ 		}
+ 		break;
+ 	default:
+@@ -1055,13 +1049,13 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 		if (ret != -EPROBE_DEFER)
+ 			dev_err(&pdev->dev, "Failed to register sensor: %d\n",
+ 				ret);
+-		goto err_sclk;
++		goto err_clk_sec;
+ 	}
  
--	data->id = of_alias_get_id(pdev->dev.of_node, "tmuctrl");
--	if (data->id < 0)
--		data->id = 0;
--
- 	data->irq = irq_of_parse_and_map(pdev->dev.of_node, 0);
- 	if (data->irq <= 0) {
- 		dev_err(&pdev->dev, "failed to get IRQ\n");
+ 	ret = exynos_tmu_initialize(pdev);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to initialize TMU\n");
+-		goto err_sclk;
++		goto err_clk_sec;
+ 	}
+ 
+ 	ret = devm_request_threaded_irq(
+@@ -1070,14 +1064,12 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 		dev_name(&pdev->dev), data);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
+-		goto err_sclk;
++		goto err_clk_sec;
+ 	}
+ 
+ 	exynos_tmu_control(pdev, true);
+ 	return 0;
+ 
+-err_sclk:
+-	clk_disable_unprepare(data->sclk);
+ err_clk_sec:
+ 	if (!IS_ERR(data->clk_sec))
+ 		clk_unprepare(data->clk_sec);
+@@ -1094,7 +1086,6 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+ 
+ 	exynos_tmu_control(pdev, false);
+ 
+-	clk_disable_unprepare(data->sclk);
+ 	if (!IS_ERR(data->clk_sec))
+ 		clk_unprepare(data->clk_sec);
+ 
 -- 
 2.41.0
 
