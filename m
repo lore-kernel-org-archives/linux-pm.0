@@ -2,70 +2,130 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44059C83F1B
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 01:48:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F73FC71153
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 02:16:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235188AbjH2Brq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 21:47:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54494 "EHLO
+        id S234053AbjH2CP4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 22:15:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36286 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234997AbjH2BrK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 21:47:10 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70B93188;
-        Mon, 28 Aug 2023 18:47:07 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 0732C60B04;
-        Tue, 29 Aug 2023 01:47:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 6E802C433C7;
-        Tue, 29 Aug 2023 01:47:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1693273626;
-        bh=CF0XWUjMeZRG2nr6dMASdIbwU8aN+gpvPo/4vr1ZcVM=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=idYtgb+MqPykyqd6bRvIFc/OWO1wujQKS7805KgPBfxbJKBzW9SZHhGRRinInp83Z
-         KnuNH/6Q2pdyfVpXXEWbVmFGC3gh05JgXHYmJNACPZO8Ja8KmoquJgsrtEekWZteZZ
-         EySPnr3KC/j4/lKSsC9JZm/E2qt7eYl7Ojw5Ojf0GwmYvzSwL8fftcdN3DEk6XWxz2
-         ymp2+UoyzOTAjI0KJG59meUtTL9fP1amK17kVQ5pgkbm68gkQ3Z84E+oTshl4LxgAH
-         bDpq2MBatPLSI85nu+PR/Cb5aepqXsji+c3KjK2VwkNOXh6eWUIQ9zxtVQLDif+YDY
-         CDxwsykHtTCGw==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 56B80C3959E;
-        Tue, 29 Aug 2023 01:47:06 +0000 (UTC)
-Subject: Re: [GIT PULL] Power management updates for v6.6-rc1
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0jLOQhXnfE2z9OjmYOh=7MPtJ8=OSNSVVAoZ7=brRgqvg@mail.gmail.com>
-References: <CAJZ5v0jLOQhXnfE2z9OjmYOh=7MPtJ8=OSNSVVAoZ7=brRgqvg@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0jLOQhXnfE2z9OjmYOh=7MPtJ8=OSNSVVAoZ7=brRgqvg@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-6.6-rc1
-X-PR-Tracked-Commit-Id: 422ec6fe2704593c87c14a8ef296d92f6b368c53
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: ccc5e9817719f59b3dea7b7a168861b4bf0b4ff4
-Message-Id: <169327362635.21367.4335267997841064817.pr-tracker-bot@kernel.org>
-Date:   Tue, 29 Aug 2023 01:47:06 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        with ESMTP id S235419AbjH2CPv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 22:15:51 -0400
+Received: from mail-yw1-x112d.google.com (mail-yw1-x112d.google.com [IPv6:2607:f8b0:4864:20::112d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81614110;
+        Mon, 28 Aug 2023 19:15:45 -0700 (PDT)
+Received: by mail-yw1-x112d.google.com with SMTP id 00721157ae682-58fc4eaa04fso45410467b3.0;
+        Mon, 28 Aug 2023 19:15:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1693275344; x=1693880144;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=97srBsNV6oTrIvKBviaQ5sS5qJluzTDai93bJAqC3xc=;
+        b=CjfX2IRlNx5394bDi7rz+7QpV9VWWGB1DtyK+uN95y5wzfJNWfoGL7aq62qjK8P7I6
+         +gS3KzL6HehcW4vSN+OY69pr3NRCiCJCt04Aj8+w5aPSYqm3wX9nbtYoTJAQ82RIus+i
+         C56wU7U3xCmn7iiuGo6bRV5hidabNFptuXT65RwtEZU+12H03ygGf1jWqiQgyzrlK5bq
+         98wYhrK9g1XxlQIroqqDSX+Sygk0Xjgyzxf74Grl1rOWul3BkR4TV0lKJY3MegRDZSzQ
+         Egeeqm8cWEW0sPwlD6qUPDoanqdq8KnOqbz+G7V1Yn1o+rgzJ/oxFlVBUavbSoxp41ZQ
+         jqHQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693275344; x=1693880144;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=97srBsNV6oTrIvKBviaQ5sS5qJluzTDai93bJAqC3xc=;
+        b=Xboww10xCQFvNDRTEnKArjoiHH97Hu+GUojtLotEutpAWGRdrqtbgI1P8TyZ6iKhsv
+         wgLskYGfFeWcPfKFK8cvNLCtjhVNMtWhUmJopVhg+8OF87bbs4s04aRNXyEKYjDq6Idj
+         GsCSsvYbBaNZfSCmOfAR9pQQSTET0/k77hHwmPsPZbr1ttGJUMUo02P5kZfc+jEpWBf4
+         jLxcBiK0V6EL07o9ScVKC+Ryn1tcGY42rEqV5nISRrfrn2gPEWAbxB4D1ly0sY1W5co+
+         yk9cSUHFYyDRNrpIgUoL5ixxwe+IWLVkL0U53KcfaP/thKPmpWklR+XhY2jI2Y3HBatC
+         e91Q==
+X-Gm-Message-State: AOJu0YxADt+vH0U2ax1OO/T11PItq16cJAIg6Q/XEKvw9OxB0WbyyzLw
+        qTe+NtThuGtreOxX7BsE3lfVk1HaA9QkzRlsZW4=
+X-Google-Smtp-Source: AGHT+IGKUHiiGwHxPNHo2fHKNZYJMJ1G7S9OpNgtuN5xsv5YUPl+cpDee1drXnh3czmUXCFMI7zeKCYkBj0y43qin3g=
+X-Received: by 2002:a0d:f585:0:b0:589:f7ad:7702 with SMTP id
+ e127-20020a0df585000000b00589f7ad7702mr29701494ywf.36.1693275344686; Mon, 28
+ Aug 2023 19:15:44 -0700 (PDT)
+MIME-Version: 1.0
+References: <cover.1693218539.git.zhoubinbin@loongson.cn> <2bec39b1001732de60c1521d78e44a45ff94d6b6.1693218539.git.zhoubinbin@loongson.cn>
+ <18b8b8b8-7f42-8e8c-1bfd-36d04eba7c40@linaro.org>
+In-Reply-To: <18b8b8b8-7f42-8e8c-1bfd-36d04eba7c40@linaro.org>
+From:   Binbin Zhou <zhoubb.aaron@gmail.com>
+Date:   Tue, 29 Aug 2023 10:15:32 +0800
+Message-ID: <CAMpQs4+X+e301CHkrtDQj9A=nTxUFQJPOuqJnPc+ViDcNZBgDQ@mail.gmail.com>
+Subject: Re: [PATCH 4/5] dt-bindings: soc: loongson,ls2k-pmc: Allow
+ syscon-reboot/syscon-poweroff as child
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     Binbin Zhou <zhoubinbin@loongson.cn>,
+        Huacai Chen <chenhuacai@loongson.cn>,
+        Yinbo Zhu <zhuyinbo@loongson.cn>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Huacai Chen <chenhuacai@kernel.org>,
+        loongson-kernel@lists.loongnix.cn, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, Xuerui Wang <kernel@xen0n.name>,
+        loongarch@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Mon, 28 Aug 2023 14:57:53 +0200:
+Hi Krzysztof:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-6.6-rc1
+Thanks for your reply.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/ccc5e9817719f59b3dea7b7a168861b4bf0b4ff4
+On Tue, Aug 29, 2023 at 1:17=E2=80=AFAM Krzysztof Kozlowski
+<krzysztof.kozlowski@linaro.org> wrote:
+>
+> On 28/08/2023 14:38, Binbin Zhou wrote:
+> > The reboot and poweroff features are actually part of the Power
+> > Management Unit system controller, thus allow them as its children,
+> > instead of specifying as separate device nodes with syscon phandle.
+> >
+>
+> >  required:
+> >    - compatible
+> >    - reg
+> > @@ -44,10 +56,25 @@ examples:
+> >    - |
+> >      #include <dt-bindings/interrupt-controller/irq.h>
+> >
+> > -    power-management@1fe27000 {
+> > +    pmc: power-management@1fe27000 {
+>
+> Drop the label.
+OK...
+>
+> >          compatible =3D "loongson,ls2k1000-pmc", "syscon";
+> >          reg =3D <0x1fe27000 0x58>;
+> >          interrupt-parent =3D <&liointc1>;
+> >          interrupts =3D <11 IRQ_TYPE_LEVEL_LOW>;
+> >          loongson,suspend-address =3D <0x0 0x1c000500>;
+> > +
+> > +        syscon-reboot {
+> > +            compatible =3D"syscon-reboot";
+> > +            regmap =3D <&pmc>;
+>
+> No, why? It does not make much sense and is deprecated.
 
-Thank you!
+Oh, sorry, I should have been more careful, I'll delete it.
+>
+> > +            offset =3D <0x30>;
+> > +            mask =3D <0x1>;
+> > +        };
+> > +
+> > +        syscon-poweroff {
+> > +            compatible =3D"syscon-poweroff";
+>
+> Missing space.
+I will fix it.
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Thanks.
+Binbin
+>
+> Best regards,
+> Krzysztof
+>
