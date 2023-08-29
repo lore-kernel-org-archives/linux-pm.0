@@ -2,101 +2,70 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCCC9C83F1F
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 00:24:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DB11C83F17
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 01:48:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234687AbjH2AYA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 20:24:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57350 "EHLO
+        id S235214AbjH2Brn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 21:47:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54482 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234671AbjH2AXu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 20:23:50 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3574F107;
-        Mon, 28 Aug 2023 17:23:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1693268628; x=1724804628;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=hFydJnI+CKQfNJv0VsuN7MM0FGUdBjbAEGTHSs6tld0=;
-  b=E8a9aWy19+Y3URpLBmJ498e2+eR2IBFlyeh46EMRHCdhi/qvDSBUeMle
-   PphoC8Ga7yBlsGGFugF7wwIl3/FBzh7V6Q0mSkeJLgUPnJCMdeaEkp0aA
-   TUVtlsesazbdWFKVAI6vsA4b5zI4Y7L0MHn4jJT46oHRzLLNSKNVC2BLZ
-   oafcYI/PhMjV6kZgCOMkersHtNk1v7526gWFhuSlV1ofyijsjnBjn+yXa
-   PEIInDFtvWT7nDjgCPtnFN2D8r760wSrI46MMSTOF4aab3A8peikf90oA
-   32DbsPvV62Gi6iLE9hxRotmrwJBwCoFaAnoXg8jVRUDlc9BN82eHZ88Bq
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="354754211"
-X-IronPort-AV: E=Sophos;i="6.02,208,1688454000"; 
-   d="scan'208";a="354754211"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Aug 2023 17:23:47 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="731989678"
-X-IronPort-AV: E=Sophos;i="6.02,208,1688454000"; 
-   d="scan'208";a="731989678"
-Received: from spandruv-desk.jf.intel.com ([10.54.75.14])
-  by orsmga007.jf.intel.com with ESMTP; 28 Aug 2023 17:23:47 -0700
-From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v3 0/7] thermal: processor_thermal: Suport workload hint
-Date:   Mon, 28 Aug 2023 17:23:39 -0700
-Message-Id: <20230829002346.2104251-1-srinivas.pandruvada@linux.intel.com>
-X-Mailer: git-send-email 2.40.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S235046AbjH2BrJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 21:47:09 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FB37184;
+        Mon, 28 Aug 2023 18:47:07 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id D34E06168B;
+        Tue, 29 Aug 2023 01:47:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 4554CC433C8;
+        Tue, 29 Aug 2023 01:47:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1693273626;
+        bh=63Eb/9Zv8bMEzGEjklZL29OFlqOR10uunI+LHmGwChE=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=YrJwrOf257XUhQ9IqdBcx6B/fu6HSbZC85cJbOynY3V29XilEugo8B/j2t4q9/D3A
+         CKkoqd0vZmrhzXLgCDbnO6PdMtRkxYJnCkdOAKfY0OdScy9LSFSiDG3kAaU5qgbnuu
+         MjeVgtXTQwLjkOAReihMi7q1ZkOu97HoCxfKalXNjb+C/jbwKg7+ilVucC+Sw49ghr
+         IczbBPZtDa5zTv6GEZWspWf/o2VE8+sDHMBmTSUpokwRfKoaQyZvLacp7Lhu1SO8VY
+         CQ57Bpd62+3Dedh8VhHiQV//UMTbqWEMYSgc6GSEf0ztyZZD8j3dWLK1U8voa5EQE+
+         hyT8283+gWROg==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 28AAAC3274C;
+        Tue, 29 Aug 2023 01:47:06 +0000 (UTC)
+Subject: Re: [GIT PULL] ACPI updates for v6.6-rc1
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0hsVwQ+F1NN5OfY7HG7tPcbcZi_X2SdgWXfF9ExW6r3hg@mail.gmail.com>
+References: <CAJZ5v0hsVwQ+F1NN5OfY7HG7tPcbcZi_X2SdgWXfF9ExW6r3hg@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0hsVwQ+F1NN5OfY7HG7tPcbcZi_X2SdgWXfF9ExW6r3hg@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-6.6-rc1
+X-PR-Tracked-Commit-Id: b483d3b8a54a544ab8854ca6dbb8d99c423b3ba4
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 330235e87410349042468b52baff02af7cb7d331
+Message-Id: <169327362616.21367.15371142110241185329.pr-tracker-bot@kernel.org>
+Date:   Tue, 29 Aug 2023 01:47:06 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for Meteor Lake workload hints. Before adding this support,
-some reorganization and clean up is required.
-First four changes are for clean up and to reorganize code to add
-support for workload hint. The last patch adds a test program as part
-of self tests.
+The pull request you sent on Mon, 28 Aug 2023 14:55:04 +0200:
 
-v3:
-Changes in the commit log
-Rename of files for using WT instead of WLT
-Address comments from Rafael on v2
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-6.6-rc1
 
-v2:
-Changes in comments and commit log
-Self test program is improved to disable workloadtype notification
-on exit
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/330235e87410349042468b52baff02af7cb7d331
 
-Srinivas Pandruvada (7):
-  thermal: int340x: processor_thermal: Move mailbox code to common
-    module
-  thermal: int340x: processor_thermal: Add interrupt configuration
-  thermal: int340x: processor_thermal: Use non MSI interrupts by default
-  thermal/drivers/int340x: Remove PROC_THERMAL_FEATURE_WLT_REQ for
-    Meteor Lake
-  thermal: int340x: processor_thermal: Add workload type hint interface
-  thermal/drivers/int340x: Support workload hint interrupts
-  selftests/thermel/intel: Add test to read workload hint
-
- .../driver-api/thermal/intel_dptf.rst         |  51 ++++
- .../thermal/intel/int340x_thermal/Makefile    |   2 +
- .../processor_thermal_device.c                |  17 +-
- .../processor_thermal_device.h                |  21 +-
- .../processor_thermal_device_pci.c            |  79 ++++--
- .../processor_thermal_device_pci_legacy.c     |   3 +-
- .../int340x_thermal/processor_thermal_mbox.c  | 179 ++++---------
- .../processor_thermal_wt_hint.c               | 252 ++++++++++++++++++
- .../processor_thermal_wt_req.c                | 136 ++++++++++
- tools/testing/selftests/Makefile              |   1 +
- .../thermal/intel/workload_hint/Makefile      |  12 +
- .../intel/workload_hint/workload_hint_test.c  | 157 +++++++++++
- 12 files changed, 752 insertions(+), 158 deletions(-)
- create mode 100644 drivers/thermal/intel/int340x_thermal/processor_thermal_wt_hint.c
- create mode 100644 drivers/thermal/intel/int340x_thermal/processor_thermal_wt_req.c
- create mode 100644 tools/testing/selftests/thermal/intel/workload_hint/Makefile
- create mode 100644 tools/testing/selftests/thermal/intel/workload_hint/workload_hint_test.c
+Thank you!
 
 -- 
-2.40.1
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
