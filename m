@@ -2,97 +2,98 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03A32C83F12
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 18:36:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A009DC71153
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 18:40:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238111AbjH2SgS convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Aug 2023 14:36:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46792 "EHLO
+        id S238178AbjH2SkF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Aug 2023 14:40:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35694 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238143AbjH2Sfz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 14:35:55 -0400
-Received: from mail-oo1-f52.google.com (mail-oo1-f52.google.com [209.85.161.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 71F431B7;
-        Tue, 29 Aug 2023 11:35:49 -0700 (PDT)
-Received: by mail-oo1-f52.google.com with SMTP id 006d021491bc7-573128cd77dso683116eaf.0;
-        Tue, 29 Aug 2023 11:35:49 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693334148; x=1693938948;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=qXN7uMb1bNWccF39QUvfJywcxCvn0uW5/FhwVa/Jikc=;
-        b=FklrWod4MnpyXoEWZwLk5WutxxrTz14IlvXVavrk5J1jd/UD23CgXmymKlOc1qz93T
-         c/GpQQrTLPdM6ZmrGo8mg+nW7jhs7EU1cAoEM/W7TuMX4NuPPf0yxV4RjCMJAeTD8lJm
-         Q0psuMd6wM4mRICDfK6lklSAMlA+xJNrYdIgxS9u7ayfm7+ce7Geu6ppDIR46NKqPIq7
-         1PSsA/4qZXELwa3/gmzQ5ugm2ZjZOJ8gNomiZ+9MkDOguUbuHPHBGIO2pRetHMY1IAFF
-         yLtgdSBdQZbRESOIAy7ikYgyajvE6Jwje1pdVurv5hhvRAD5jCT0S00Lh4K6tVZUJNrK
-         fFsQ==
-X-Gm-Message-State: AOJu0Yxh1fb7cM4WXA24Fff9rk6TIFZJS/2ca7hzci+rmcBSG6J+Oc7e
-        GSONVJmsq+kxxLkFW2kWcFd1o6Mk/3mpdjOdBPo=
-X-Google-Smtp-Source: AGHT+IGJkjFYdVMkWJE7bLv/T9zt3mQmVpmmoHvpmmobH3tVC9gKffbFL5Qaq1xZSTv1zh0+D741nIlTovnU/d2CtVs=
-X-Received: by 2002:a4a:e741:0:b0:56e:94ed:c098 with SMTP id
- n1-20020a4ae741000000b0056e94edc098mr29432056oov.0.1693334148518; Tue, 29 Aug
- 2023 11:35:48 -0700 (PDT)
+        with ESMTP id S237734AbjH2Sj5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 14:39:57 -0400
+X-Greylist: delayed 2344 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 29 Aug 2023 11:39:54 PDT
+Received: from hall.aurel32.net (hall.aurel32.net [IPv6:2001:bc8:30d7:100::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA5FE1A3;
+        Tue, 29 Aug 2023 11:39:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
+        ; s=202004.hall; h=In-Reply-To:Content-Type:MIME-Version:References:
+        Message-ID:Subject:Cc:To:From:Date:Content-Transfer-Encoding:From:Reply-To:
+        Subject:Content-ID:Content-Description:X-Debbugs-Cc;
+        bh=2+jBhh7Rm5fk+KUZId5RowKc48zMaqxcyc5fMnT6rjs=; b=EQMhJaEPh4eZSoIViWn5ncDFVT
+        8SJgW06gpvqJWzlNPCuIla5/zuu3oN/cKoaW0VCwzTdq0JCEQM9TC4nKGzwVe0u9uCglc6ze5jf0G
+        ZUs4odvkJE+PE8qOBa7dyNQM5cPEkzIdJQCrl3MzmGT+hDzRvG/oqi1gGYwHXG1ogURefnAxmmnK8
+        nqj/hmsLxQk7kLAB0iri1CXVYtQf3LJWlG7kmUq+Z20viASkUPcm+IfhNF+gZfg8GIcFZGW9iRm8f
+        wyqGtd1Y5yl7PHH+Jnu/9PuQKKhSnQu2hzlQgcdrNaI3sYI9ZXoD9NtajLn2o5TZkLVDwLolkmeCp
+        bjY/9VQg==;
+Received: from [2a01:e34:ec5d:a741:9a7b:5831:531:65c9] (helo=ohm.rr44.fr)
+        by hall.aurel32.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <aurelien@aurel32.net>)
+        id 1qb31C-00EvrU-1Y; Tue, 29 Aug 2023 20:00:46 +0200
+Received: from aurel32 by ohm.rr44.fr with local (Exim 4.96)
+        (envelope-from <aurelien@aurel32.net>)
+        id 1qb31B-00CxEV-1G;
+        Tue, 29 Aug 2023 20:00:45 +0200
+Date:   Tue, 29 Aug 2023 20:00:45 +0200
+From:   Aurelien Jarno <aurelien@aurel32.net>
+To:     Zhipeng Wang <zhipeng.wang_1@nxp.com>
+Cc:     rafael@kernel.org, viresh.kumar@linaro.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] cpufreq: dt-platdev: Support building cpufreq
+ platdev driver as module
+Message-ID: <ZO4yTQAV9EYA4erZ@aurel32.net>
+Mail-Followup-To: Zhipeng Wang <zhipeng.wang_1@nxp.com>, rafael@kernel.org,
+        viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20230524153417.2738448-1-zhipeng.wang_1@nxp.com>
+ <20230524153417.2738448-2-zhipeng.wang_1@nxp.com>
 MIME-Version: 1.0
-References: <7f3f12a8-fb4e-fa6a-aeb6-5ebcdfddbee0@linuxfoundation.org>
-In-Reply-To: <7f3f12a8-fb4e-fa6a-aeb6-5ebcdfddbee0@linuxfoundation.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 29 Aug 2023 20:35:26 +0200
-Message-ID: <CAJZ5v0jntBdFXpFdC-UFypAPRhnvqMCEK4Ua7Ys7z_=P+HjEFw@mail.gmail.com>
-Subject: Re: [GIT PULL] cpupower update for Linux 6.6-rc2
-To:     Shuah Khan <skhan@linuxfoundation.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>, shuah@kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230524153417.2738448-2-zhipeng.wang_1@nxp.com>
+User-Agent: Mutt/2.2.9 (2022-11-12)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Shuah,
+Hi,
 
-On Tue, Aug 29, 2023 at 12:39 AM Shuah Khan <skhan@linuxfoundation.org> wrote:
->
-> Hi Rafael,
->
-> Please pull the following cpupower update for Linux 6.6-rc2
->
-> This cpupower update for Linux 6.6-rc2 consists of a single fix to
-> add Georgian translation to Makefile LANGUAGES.
->
-> diff is attached.
->
-> thanks,
-> -- Shuah
->
-> ----------------------------------------------------------------
-> The following changes since commit 99481d2195bfd13a663904e6014887abf46b57c7:
->
->    cpupower: Fix cpuidle_set to accept only numeric values for idle-set operation. (2023-07-18 16:07:08 -0600)
->
-> are available in the Git repository at:
->
->    git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux tags/linux-cpupower-6.6-rc2
->
-> for you to fetch changes up to af75504c38960d5331b8c6c83ea9981e26d659e6:
->
->    cpupower: Add Georgian translation to Makefile LANGUAGES (2023-08-17 14:28:16 -0600)
->
-> ----------------------------------------------------------------
-> linux-cpupower-6.6-rc2
->
-> This cpupower update for Linux 6.6-rc2 consists of a single fix to
-> add Georgian translation to Makefile LANGUAGES.
->
-> ----------------------------------------------------------------
-> Shuah Khan (1):
->        cpupower: Add Georgian translation to Makefile LANGUAGES
->
->   tools/power/cpupower/Makefile | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> ----------------------------------------------------------------
+On 2023-05-24 15:34, Zhipeng Wang wrote:
+> Make the cpufreq platdev driver as tristate so that it can be built
+> as loadable module.
+> 
+> Signed-off-by: Zhipeng Wang <zhipeng.wang_1@nxp.com>
+> ---
+>  drivers/cpufreq/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index 2c839bd2b051..dda3a78bfd5c 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -218,7 +218,7 @@ config CPUFREQ_DT
+>  	  If in doubt, say N.
+>  
+>  config CPUFREQ_DT_PLATDEV
+> -	bool
+> +	tristate "Generic DT based cpufreq platdev driver"
+>  	help
+>  	  This adds a generic DT based cpufreq platdev driver for frequency
+>  	  management.  This creates a 'cpufreq-dt' platform device, on the
 
-Pulled, thanks!
+It seems that this new module is missing support for autoloading,
+causing issues with CPUFREQ_DT=m.
+
+Before that change, CPUFREQ_DT_PLATDEV ended up selected as =y. Now,
+CPUFREQ_DT_PLATDEV ends up selected as =m. As it is not autoloaded, it
+means that cpufreq-dt is not working anymore unless manually running
+"modprobe cpufreq-dt-platdev".
+
+Could you therefore please add support for autoloading?
+
+Thanks,
+Aurelien
+
+-- 
+Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+aurelien@aurel32.net                     http://aurel32.net
