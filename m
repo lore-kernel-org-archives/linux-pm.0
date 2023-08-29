@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAF98C6FA8F
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 10:03:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B231C83F17
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 10:08:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233935AbjH2KDL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Aug 2023 06:03:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53938 "EHLO
+        id S232825AbjH2KIB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Aug 2023 06:08:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234941AbjH2KCo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 06:02:44 -0400
-Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9594BCF
-        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 03:02:40 -0700 (PDT)
-Received: by mail-ed1-x52c.google.com with SMTP id 4fb4d7f45d1cf-51e28cac164so10546197a12.1
-        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 03:02:40 -0700 (PDT)
+        with ESMTP id S235064AbjH2KHv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 06:07:51 -0400
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76BC81B7
+        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 03:07:46 -0700 (PDT)
+Received: by mail-ej1-x62d.google.com with SMTP id a640c23a62f3a-986d8332f50so543111366b.0
+        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2023 03:07:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693303359; x=1693908159; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1693303665; x=1693908465;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=xNfc1YCzECSmHdy+J5cr9YqVtcVteK3GsZt2ifwyGH4=;
-        b=P3BpxzUodeNxtHNYzDbhTJ2hrQuMHlwGM139bxjDQIzc5ypgBk9Ib0ZL8ycwytf/sc
-         IrqjeOq/HFUHt7yhB9SL1k08PTb9KV/8R00VZDqcvPnopiGG05RNIAgS2V2BpMcRQnwM
-         XSEUlq5oh9yJa0U7qrgRFhHXx4TtBNm31g+54AXhVAV9vVt+M2WldfFzuCbjaz9Ogv9r
-         WG65py12GrcP6Q8MgIZ3sRMdDZ/ypTFvRUjsXp7DYLsa6owZPacRzBpc4BqSjDHjPFdn
-         6FMEx4RBgdpqN1ygIWtIiTz0Go63Z7W5Iv+aac9GvplK6lhVd1bUc6t2//3ucEl0/okq
-         VUbA==
+        bh=AK8VKMPKX43G8TnDLhp1uNUtjlZXUueKOCa7XLr7nu0=;
+        b=YSgcXrzV8EzGt5SnK8QV9WKK2eCsnGrymS0cstaXZoV3MJzC1pr2WZ5fCKW3Rjtz3r
+         IGcNR9wBwOVelFCbvEaJnFcjOg0XORDrphHkqfyT0HXscgwFyd2sPrp8PxSW8xEDdRiZ
+         ka1etnCgqCDaTOpOWcxg0jlp3wvj5ZN3Qh+2O77GxbXfXPEcb/tVwP53Y+fNsbiuG8B6
+         ePRCj9IrGYQwvg+n4Zz4qacwEFpoMHSkG4WNbym67vYL988ef45acYIJ05irQKNi94nf
+         xK8W7Z1584OcP10l3JjCGgSMNXJx8RN7HWwnCNqj/IFWUPKFHVDTUxr8BHniORfIugN0
+         i1hQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693303359; x=1693908159;
+        d=1e100.net; s=20221208; t=1693303665; x=1693908465;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=xNfc1YCzECSmHdy+J5cr9YqVtcVteK3GsZt2ifwyGH4=;
-        b=HPcptN18/n7tvfK/FXG2KT5tlU5mjEzSA9UANCt/UkASYj3qipMDECcZU9lmDIyk+0
-         M/+OwZT3IFhXr6O5JAhWodXxUEe/tV+0XY+QvRs1R9BOJIyuMirUCTdGUJGk0FMb7jlI
-         8WwwOUVZWliwwuPhfGN7wRC+NqZ9MoHk4242Mr11K9XPCK56Pk7SM+/f7tyERi6UBO8T
-         OBVbdhqg5/gqqJm9EsbJJbDNW/g5tbsouMCCDTzN6ZZbj2Y9lJMkjhJc1wkl8mm0HWDV
-         6uttFcKaO6yegXA5k+0few11mZDhq4FKsuiLjJHGT89Zwi2uVwHpHe+YqpboT4ckX3UZ
-         5JPg==
-X-Gm-Message-State: AOJu0YwRRJcnqoNhOuaXQRiZM7sB5mH2CaLhUBSDJiU0V1oVil/HTjYc
-        xFZUMQcjebnFy2Aa+yO1ekXQCw==
-X-Google-Smtp-Source: AGHT+IFHNtgUX1U+W+lEJ40ltziK5ZFMd1TqeGtv9haM9ughdurndzqlJlcIDfvWInNeikh9GiEWDw==
-X-Received: by 2002:a05:6402:50ca:b0:522:405f:a7 with SMTP id h10-20020a05640250ca00b00522405f00a7mr2475248edb.16.1693303359021;
-        Tue, 29 Aug 2023 03:02:39 -0700 (PDT)
+        bh=AK8VKMPKX43G8TnDLhp1uNUtjlZXUueKOCa7XLr7nu0=;
+        b=E5EAOMR9jv02jVrqfI0ZmuxJbWqbVV4lSBHlG5yt1+tyxHS/jz6j1mHtiGO1+/aHnb
+         iPD+NsH148eMcXSWkTBA6lfyKYOpsN1rUmnmnKqnL17FmSqTkUuIMnrc5DSNJCbBHi9y
+         j+cxw1ijmgHDivXp4wX9L9hz/AbgDG8Z/jmO1tYSbIMs9kTi2Lm2kNRO8WlQISQ7bGJv
+         GO90f/l0ri82GVmG2PxM3vpWa9oZyKp8d9v98CVsCNVOsF4RMPgYYldkgQ8P8DuFxQrq
+         FGVo9pak+zs28rWALhRf6U+uBeaxG4jkOvZVeM4UfmJbhgLvqsQS+LVZzLPAJI+cwaSt
+         /qAA==
+X-Gm-Message-State: AOJu0YyGHzHqnBY/On6dRNlqBwvpbWK/ukwzYA8rwLuke0KmLEFTygNw
+        yFi5b8gQuicWxMqeGAY0oSbJqg==
+X-Google-Smtp-Source: AGHT+IGZZZjXp6j21UbP+1z9NZRDH53mfiuPk9Pm8MPLmROzk+i5V7Dp6uPhDVnIgeesMZcg5P8j1Q==
+X-Received: by 2002:a17:906:20c7:b0:9a1:ecb5:732e with SMTP id c7-20020a17090620c700b009a1ecb5732emr13018241ejc.71.1693303664920;
+        Tue, 29 Aug 2023 03:07:44 -0700 (PDT)
 Received: from [192.168.0.22] ([77.252.47.196])
-        by smtp.gmail.com with ESMTPSA id y21-20020aa7c255000000b005257da6be23sm5460501edo.75.2023.08.29.03.02.37
+        by smtp.gmail.com with ESMTPSA id w24-20020a17090649d800b009930308425csm5761744ejv.31.2023.08.29.03.07.43
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 29 Aug 2023 03:02:38 -0700 (PDT)
-Message-ID: <674ae250-8256-8ffb-01fd-eb2bd6026808@linaro.org>
-Date:   Tue, 29 Aug 2023 12:02:37 +0200
+        Tue, 29 Aug 2023 03:07:44 -0700 (PDT)
+Message-ID: <a0c1d7ab-593d-f693-33aa-c8b7247f5e1d@linaro.org>
+Date:   Tue, 29 Aug 2023 12:07:42 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.14.0
-Subject: Re: [PATCH 08/11] thermal: exynos: stop using the threshold mechanism
- on Exynos 4210
+Subject: Re: [PATCH 11/11] ARM: dts: exynos: disable polling in Odroid
+ XU3-related devices
 Content-Language: en-US
 To:     Mateusz Majewski <m.majewski2@samsung.com>,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
@@ -74,10 +74,10 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         Mark Brown <broonie@kernel.org>,
         Marek Szyprowski <m.szyprowski@samsung.com>
 References: <20230829091853.626011-1-m.majewski2@samsung.com>
- <CGME20230829092421eucas1p1970c3fb42ca622129bf92511893500b1@eucas1p1.samsung.com>
- <20230829091853.626011-9-m.majewski2@samsung.com>
+ <CGME20230829092426eucas1p222c2a1c2013f4eb9ee739f03761e5236@eucas1p2.samsung.com>
+ <20230829091853.626011-12-m.majewski2@samsung.com>
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230829091853.626011-9-m.majewski2@samsung.com>
+In-Reply-To: <20230829091853.626011-12-m.majewski2@samsung.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -85,18 +85,19 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 On 29/08/2023 11:18, Mateusz Majewski wrote:
-> Exynos 4210 supports setting a base threshold value, which is added to
-> all trip points. This might be useful, but is not really necessary in
-> our usecase, so we always set it to 0 to simplify the code a bit.
+> After having switched to dynamic trip points, we no longer have a
+> hardware limit for trip point count and can support as many as we want
+> without polling.
 > 
-> Additionally, this change makes it so that we convert the value to the
-> calibrated one in a slightly different place. This is more correct
-> morally, though it does not make any change when single-point
+> Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
+> ---
+>  .../dts/samsung/exynos5422-odroidxu3-common.dtsi | 16 +++++-----------
+>  1 file changed, 5 insertions(+), 11 deletions(-)
+> 
 
-I don't think code placement is an aspect of morality, yet okay:
-
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-
+This will need to wait for release after driver changes get accepted.
+You sent your patchset just after merge window started, so unfortunately
+this means it will get in 2 releases.
 
 Best regards,
 Krzysztof
