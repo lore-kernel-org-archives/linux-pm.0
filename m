@@ -2,125 +2,90 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37ED7C6FA8F
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 06:01:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D459DC71153
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 06:02:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232463AbjH2GAe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Aug 2023 02:00:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52566 "EHLO
+        id S233204AbjH2GBk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Aug 2023 02:01:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58242 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233204AbjH2GAS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 02:00:18 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B09C8109;
-        Mon, 28 Aug 2023 23:00:15 -0700 (PDT)
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37T3r4pY015322;
-        Tue, 29 Aug 2023 06:00:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
- mime-version : subject : to : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=qcppdkim1;
- bh=NjoQx7of7gZvUoNJcfHCAxqixOcJ5euA5VWBRBwebP0=;
- b=MrDcMwPHQb8VfRd7HTXg1tfqE9ivTb2M7q1X6/RDhTTmIC5KtPfFPoU5b6G23FX5NlpE
- VQZEo1anJscK2TlGEMu98LiSMdiRmqlG+BB2tL16wI/X/HNp1SInZ0Hfb92GV8TUc0Ac
- llK9t+Vf5330WDeutiHvvUsgpcvU/U9AnJPf/KDOrysByjVg2+wk4965ns1rrSdOqz3W
- 4EZpmCSPPR/tVUCTMl/xDJoQwgly2laZsPalAmE6Yi9d1xPBHFk2vShRyj+mNGw/oSYn
- Xh/slr3dYssSMU/ouf/wqlgroZuT6IJml7+tsXCjziBErJ2t4alMBG1eS2IsWPlAN/j5 9A== 
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sruhnsr0j-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 29 Aug 2023 06:00:10 +0000
-Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 37T609hr023075
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 29 Aug 2023 06:00:09 GMT
-Received: from [10.216.63.45] (10.80.80.8) by nalasex01c.na.qualcomm.com
- (10.47.97.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.30; Mon, 28 Aug
- 2023 23:00:04 -0700
-Message-ID: <7abd0b40-a364-b7f2-3057-2b522e5674e1@quicinc.com>
-Date:   Tue, 29 Aug 2023 11:29:59 +0530
+        with ESMTP id S233427AbjH2GBf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 02:01:35 -0400
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9EDFC109
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 23:01:32 -0700 (PDT)
+Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-68a520dba33so3184688b3a.0
+        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2023 23:01:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1693288892; x=1693893692;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=F83pIdbIfqyxlSVPoVkO61UOkBdPPX/hhdITQlFLZs8=;
+        b=bAQ78oRAZxxKygOoQmtftYeRQ/uJT72QE8yPzPbPlj24rb601ykQUwR/9HKE+EKQqY
+         d/1wp9MbuTHXh1Jr1/9Uf3IZR5Bo2NSjfvf7xXJQ0w5X9gvD/q/5rRsNgAoPZ8c2Jb8z
+         kR5v+K/HTItbRbY6oo9LEpX6OcAiQQ5UpS1X2dFqbKDQEff9xc3SeDHiynD8v4JlAgPO
+         1yMf63amwOb33ty6xvbbKzLL4Vu4KR58obCzuDazF6o3V0ZgZT9syQkn5R23w9yk0SI6
+         AbpPWN4+LT5w5csGzWknGypc7d5H1pVFhVLQgvzoVbrFVXCosMm64cH7fOMxECf6/J7W
+         Wkzg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693288892; x=1693893692;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=F83pIdbIfqyxlSVPoVkO61UOkBdPPX/hhdITQlFLZs8=;
+        b=cRXUUrycJ8om+Q1jqAXj1fBiIIv+G5XbtmbFp6LbdfoNIRilVy3Er/VXOVcw2fwIjj
+         6y90whxLyIhVftUcTN7JaBwvHVIGjS46ISCeaMbps4hBc1UMMinPCnDxZ6zbMoJn/ahG
+         73BRNx1CduMujTF4HP/pIoZDey0Cw9t3iklyHOvHAnQezTrfGxJBfYPOFmMppuLZA8TS
+         TKoMdUwR2sI46z7U5N7jgxRLN+FUNqTSe4UNSX4IHWpLYvhkvkzuoCeTwEI6XBeGWLGF
+         7hKwyoiNawJSd+gYmMypQvqqdRLyVHMBVN15qx8qyiWUnwTLAnic+X3CPX27ZbvhdsnA
+         apDQ==
+X-Gm-Message-State: AOJu0YwH352QWJfrJk7OUoj6U71Yz/H/POUEuW/aWJg/+sm2zfUF4e5t
+        TA5xnXhI4YTFeeQr4Vxzl6f1dVJQjTamM/hh/AA=
+X-Google-Smtp-Source: AGHT+IFxjLdXPnUcO5T0rb6t84j5UnABMyWEr+XFgNfQDPDVdv1RMkyRUyDpVLfZeHjBqlxIxWGNHw==
+X-Received: by 2002:a05:6a20:8f09:b0:11d:8a8f:655d with SMTP id b9-20020a056a208f0900b0011d8a8f655dmr39206626pzk.4.1693288892062;
+        Mon, 28 Aug 2023 23:01:32 -0700 (PDT)
+Received: from localhost ([122.172.87.195])
+        by smtp.gmail.com with ESMTPSA id x12-20020a63b34c000000b00565a0e66c79sm7597409pgt.72.2023.08.28.23.01.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 28 Aug 2023 23:01:31 -0700 (PDT)
+Date:   Tue, 29 Aug 2023 11:31:29 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     "Liao, Chang" <liaochang1@huawei.com>
+Cc:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: Fix inconsistency in error messages of
+ cpufreq_resume/suspend()
+Message-ID: <20230829060129.ux7lbf22t225necx@vireshk-i7>
+References: <20230826095201.1137288-1-liaochang1@huawei.com>
+ <20230828070000.ooymfbw3qhs5xl5y@vireshk-i7>
+ <b7be717c-41d8-bbbf-3e97-3799948ab757@huawei.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH 1/7] dt-bindings: thermal: qcom-tsens: Add ipq5018
- compatible
-Content-Language: en-US
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        <agross@kernel.org>, <andersson@kernel.org>,
-        <konrad.dybcio@linaro.org>, <srinivas.kandagatla@linaro.org>,
-        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
-        <conor+dt@kernel.org>, <thara.gopinath@gmail.com>,
-        <rafael@kernel.org>, <daniel.lezcano@linaro.org>,
-        <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-References: <1693250307-8910-1-git-send-email-quic_srichara@quicinc.com>
- <1693250307-8910-2-git-send-email-quic_srichara@quicinc.com>
- <97501b4f-614c-b3a3-c17f-5699b21e101f@linaro.org>
-From:   Sricharan Ramabadhran <quic_srichara@quicinc.com>
-In-Reply-To: <97501b4f-614c-b3a3-c17f-5699b21e101f@linaro.org>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01c.na.qualcomm.com (10.47.97.35)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: 9ZmKMdnUoDcl93d9CrUZiH2lCAhNmuMW
-X-Proofpoint-ORIG-GUID: 9ZmKMdnUoDcl93d9CrUZiH2lCAhNmuMW
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-08-29_03,2023-08-28_04,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- spamscore=0 mlxlogscore=999 suspectscore=0 clxscore=1015 phishscore=0
- impostorscore=0 bulkscore=0 lowpriorityscore=0 adultscore=0 malwarescore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2308290050
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b7be717c-41d8-bbbf-3e97-3799948ab757@huawei.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
-
-On 8/29/2023 12:51 AM, Krzysztof Kozlowski wrote:
-> On 28/08/2023 21:18, Sricharan Ramabadhran wrote:
->> IPQ5018 has tsens v1.0 block with 4 sensors and 1 interrupt.
->>
->> Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
->> ---
->>   .../bindings/thermal/qcom-tsens.yaml          | 19 +++++++++++++++++++
->>   1 file changed, 19 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
->> index 27e9e16e6455..2309bb6dce1b 100644
->> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
->> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
->> @@ -42,6 +42,7 @@ properties:
->>                 - qcom,msm8956-tsens
->>                 - qcom,msm8976-tsens
->>                 - qcom,qcs404-tsens
->> +              - qcom,ipq5018-tsens
+On 28-08-23, 20:31, Liao, Chang wrote:
+> What about printing message like this below when cpufreq_start_governor() fails.
 > 
-> This does not look like placed in alphanumeric order.
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 50bbc969ffe5..b78b509429a6 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1943,16 +1943,16 @@ void cpufreq_resume(void)
 > 
+>                         if (ret)
+> -                               pr_err("%s: Failed to start governor for policy: %p\n",
+> -                                      __func__, policy);
+> +                               pr_err("%s: Failed to start governor for policy%u\n",
 
-  ok, will sort.
+s/policy/CPU%u's policy/ ?
 
->>             - const: qcom,tsens-v1
->>   
->>         - description: v2 of TSENS
->> @@ -409,4 +410,22 @@ examples:
->>              #qcom,sensors = <16>;
->>              #thermal-sensor-cells = <1>;
->>       };
->> +
->> +  - |
->> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
->> +    // Example 5 (for any IPQ5018 based SoC-s):
-> 
-> No need for new example for a difference in compatible. Drop it.
+> +                                      __func__, policy->cpu);
 
-  ok, will drop it.
+Sounds good.
 
-Regards,
-  Sricharan
+-- 
+viresh
