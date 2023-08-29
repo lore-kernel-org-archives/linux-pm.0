@@ -2,81 +2,74 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60A9EC83F12
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 07:04:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA73EC83F12
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 07:06:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231167AbjH2HER (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Aug 2023 03:04:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43936 "EHLO
+        id S232505AbjH2HFx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Aug 2023 03:05:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42966 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229660AbjH2HDz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 03:03:55 -0400
+        with ESMTP id S233686AbjH2HFv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2023 03:05:51 -0400
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13F49DF;
-        Tue, 29 Aug 2023 00:03:52 -0700 (PDT)
-Received: from kwepemd100002.china.huawei.com (unknown [172.30.72.56])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RZdd06tnbzVkJF;
-        Tue, 29 Aug 2023 15:01:24 +0800 (CST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DB7D19A;
+        Tue, 29 Aug 2023 00:05:48 -0700 (PDT)
+Received: from kwepemd100002.china.huawei.com (unknown [172.30.72.57])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RZdgF30PczVkC2;
+        Tue, 29 Aug 2023 15:03:21 +0800 (CST)
 Received: from huawei.com (10.67.174.28) by kwepemd100002.china.huawei.com
  (7.221.188.184) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.1258.23; Tue, 29 Aug
- 2023 15:03:49 +0800
+ 2023 15:05:45 +0800
 From:   Liao Chang <liaochang1@huawei.com>
 To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>
 CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] cpufreq: Avoid printing kernel addresses in cpufreq_resume()
-Date:   Tue, 29 Aug 2023 07:01:50 +0000
-Message-ID: <20230829070150.1217624-1-liaochang1@huawei.com>
+Subject: [PATCH v2] cpufreq: governor: Free dbs_data directly when gov->init() fails
+Date:   Tue, 29 Aug 2023 07:03:46 +0000
+Message-ID: <20230829070346.1217699-1-liaochang1@huawei.com>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Content-Type:   text/plain; charset=US-ASCII
 X-Originating-IP: [10.67.174.28]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
  kwepemd100002.china.huawei.com (7.221.188.184)
 X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pointer value of policy and driver structure are currently printed
-in the error messages of cpufreq_resume(), this is not recommended and
-helpful. In order to be consistent with the error message in
-cpufreq_suspend() and easier to understand, print the name of driver
-strcture and the manage CPU of policy structure individually in the
-error messages of cpufreq_resume().
+Due to the kobject embedded in the dbs_data doest not has a release()
+method yet, it needs to use kfree() to free dbs_data directly when
+governor fails to allocate the tunner field of dbs_data.
 
-Link: https://lore.kernel.org/all/b7be717c-41d8-bbbf-3e97-3799948ab757@huawei.com
 Signed-off-by: Liao Chang <liaochang1@huawei.com>
 ---
- drivers/cpufreq/cpufreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 50bbc969ffe5..26fa99d46684 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1943,16 +1943,16 @@ void cpufreq_resume(void)
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 85da677c43d6..af44ee6a6430 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -439,7 +439,7 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
  
- 	for_each_active_policy(policy) {
- 		if (cpufreq_driver->resume && cpufreq_driver->resume(policy)) {
--			pr_err("%s: Failed to resume driver: %p\n", __func__,
--				policy);
-+			pr_err("%s: Failed to resume driver: %s\n", __func__,
-+				cpufreq_driver->name);
- 		} else if (has_target()) {
- 			down_write(&policy->rwsem);
- 			ret = cpufreq_start_governor(policy);
- 			up_write(&policy->rwsem);
+ 	ret = gov->init(dbs_data);
+ 	if (ret)
+-		goto free_policy_dbs_info;
++		goto free_dbs_data;
  
- 			if (ret)
--				pr_err("%s: Failed to start governor for policy: %p\n",
--				       __func__, policy);
-+				pr_err("%s: Failed to start governor for CPU%u's policy\n",
-+				       __func__, policy->cpu);
- 		}
- 	}
- }
+ 	/*
+ 	 * The sampling interval should not be less than the transition latency
+@@ -474,6 +474,8 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
+ 	if (!have_governor_per_policy())
+ 		gov->gdbs_data = NULL;
+ 	gov->exit(dbs_data);
++
++free_dbs_data:
+ 	kfree(dbs_data);
+ 
+ free_policy_dbs_info:
 -- 
 2.34.1
 
