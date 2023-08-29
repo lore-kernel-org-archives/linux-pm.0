@@ -2,49 +2,49 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1CB8C83F12
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2752C83F17
 	for <linux-pm@archiver.kernel.org>; Tue, 29 Aug 2023 00:24:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231153AbjH2AX5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Aug 2023 20:23:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33786 "EHLO
+        id S234684AbjH2AYA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Aug 2023 20:24:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33772 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234677AbjH2AXx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 20:23:53 -0400
+        with ESMTP id S234674AbjH2AXw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2023 20:23:52 -0400
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8161139;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31DA9107;
         Mon, 28 Aug 2023 17:23:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1693268630; x=1724804630;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=V4zpm3Uykwhw3jplcihLVuPS5HH34Brb05XxjFHpbj8=;
-  b=QF1/WyTMeKq3rCmFdPcnXx8h2455Kr47MEYTuK+GdJ//DsLiLJpfpCeY
-   xLLE3sXUk51e4e0x+HCzlLyL3wOCZc9JKwUtd8X4qpUdvFE1TVA9QPLo0
-   8RypGNQEG8ZXzM5evKDdQTVvcJteIRa0uWAiWI1a3ucQYWYK++FAV/U7e
-   o6mbuV82AvnBvyrYtLCHjc0D6yq+pH+s5j61vofE+95I4PYZv1y7vQona
-   kZERtfPAM98F+O0k4bd5QGlRtsJAHeEuGJwbuCwpj0aVvNV5l/7yNgHCY
-   NFtP2rJYjw8A3Qkz/rOy68E3gpFykiT8jlkIwE85IelEE0bQjS1k3dIxV
+  bh=GvHC1y4lOrtaQ/HgDf+bS4CwG+MFrfnU69GuHDQTE5M=;
+  b=TGDJzakQRO4zCtmQ0dY2oUJF9Kkp/bICS8PcGD5qKXLORAX2tHMbMEc6
+   2fXVJVHLKe6vFN9kA8GLHJqX/pXGRVIqkJQ5WsirdwDMSgIZsGgbQbIkx
+   ufJe2k1cE7IUJmKgV9DlFElxh5dZEwJFLto8IyfhEvAs7UIBWPVH9YJeq
+   s0L/8KdTwngh/7rx0vcVbiv1GQ7QaLjhfkSeosmbRULed4SfECxExKPva
+   5vRfl6AZj2O4CRHilFv/i1OK9QxEfiYS4YxmN5v3BSPdhcJw/A1P/5vhN
+   5ot5FlbYRHu2wWKQK0QUAPBNhR5o6T9VtRZ6D4GAfPV3KNEysysYY3PCh
    g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="354754231"
+X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="354754227"
 X-IronPort-AV: E=Sophos;i="6.02,208,1688454000"; 
-   d="scan'208";a="354754231"
+   d="scan'208";a="354754227"
 Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Aug 2023 17:23:49 -0700
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Aug 2023 17:23:48 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="731989699"
+X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="731989687"
 X-IronPort-AV: E=Sophos;i="6.02,208,1688454000"; 
-   d="scan'208";a="731989699"
+   d="scan'208";a="731989687"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.14])
   by orsmga007.jf.intel.com with ESMTP; 28 Aug 2023 17:23:47 -0700
 From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v3 7/7] selftests/thermel/intel: Add test to read workload hint
-Date:   Mon, 28 Aug 2023 17:23:46 -0700
-Message-Id: <20230829002346.2104251-8-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v3 3/7] thermal: int340x: processor_thermal: Use non MSI interrupts by default
+Date:   Mon, 28 Aug 2023 17:23:42 -0700
+Message-Id: <20230829002346.2104251-4-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230829002346.2104251-1-srinivas.pandruvada@linux.intel.com>
 References: <20230829002346.2104251-1-srinivas.pandruvada@linux.intel.com>
@@ -54,223 +54,91 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some SoCs have in built firmware support to classify current running
-workload and pass to OS for making power management decisions.
+There are issues in using MSI interrupts for processor thermal device.
+The support is not consistent across generations. But the legacy PCI
+interrupts work on all current generations.
 
-This test program waits for notification of workload type change
-and prints. This program can be used to test this feature and also
-allows other user space programs to use as a reference.
+Hence always use legacy PCI interrupts by default, instead of MSI.
+Add a module param to use of MSI, so that MSI can be still used.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
 v3:
-No change
+Address comments from Rafel for:
+replace variable msi_enabled to use_msi
+Add bus mastering for legacy PCI, even if it doesn't make any difference
+Use module param along with pci device msi enabled to use MSI
 
 v2:
-Add a signal handler for interrupting poll and exit
-Also moved inside intel/workload_type_hint foler
-Update Makefile
+Changed msi_enabled to type bool
 
- tools/testing/selftests/Makefile              |   1 +
- .../thermal/intel/workload_hint/Makefile      |  12 ++
- .../intel/workload_hint/workload_hint_test.c  | 157 ++++++++++++++++++
- 3 files changed, 170 insertions(+)
- create mode 100644 tools/testing/selftests/thermal/intel/workload_hint/Makefile
- create mode 100644 tools/testing/selftests/thermal/intel/workload_hint/workload_hint_test.c
+ .../processor_thermal_device_pci.c            | 30 +++++++++++++------
+ 1 file changed, 21 insertions(+), 9 deletions(-)
 
-diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
-index 42806add0114..725ce59e4637 100644
---- a/tools/testing/selftests/Makefile
-+++ b/tools/testing/selftests/Makefile
-@@ -85,6 +85,7 @@ TARGETS += syscall_user_dispatch
- TARGETS += sysctl
- TARGETS += tc-testing
- TARGETS += tdx
-+TARGETS += thermal/intel/workload_hint
- TARGETS += timens
- ifneq (1, $(quicktest))
- TARGETS += timers
-diff --git a/tools/testing/selftests/thermal/intel/workload_hint/Makefile b/tools/testing/selftests/thermal/intel/workload_hint/Makefile
-new file mode 100644
-index 000000000000..37ff3286283b
---- /dev/null
-+++ b/tools/testing/selftests/thermal/intel/workload_hint/Makefile
-@@ -0,0 +1,12 @@
-+# SPDX-License-Identifier: GPL-2.0
-+ifndef CROSS_COMPILE
-+uname_M := $(shell uname -m 2>/dev/null || echo not)
-+ARCH ?= $(shell echo $(uname_M) | sed -e s/i.86/x86/ -e s/x86_64/x86/)
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+index 314a726f35c7..f736688abe9b 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+@@ -15,6 +15,11 @@
+ 
+ #define DRV_NAME "proc_thermal_pci"
+ 
++static bool use_msi;
++module_param(use_msi, bool, 0644);
++MODULE_PARM_DESC(use_msi,
++	"Use PCI MSI based interrupts for processor thermal device.");
 +
-+ifeq ($(ARCH),x86)
-+TEST_GEN_PROGS := workload_hint_test
-+
-+include ../../../lib.mk
-+
-+endif
-+endif
-diff --git a/tools/testing/selftests/thermal/intel/workload_hint/workload_hint_test.c b/tools/testing/selftests/thermal/intel/workload_hint/workload_hint_test.c
-new file mode 100644
-index 000000000000..217c3a641c53
---- /dev/null
-+++ b/tools/testing/selftests/thermal/intel/workload_hint/workload_hint_test.c
-@@ -0,0 +1,157 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#define _GNU_SOURCE
-+
-+#include <stdio.h>
-+#include <string.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <fcntl.h>
-+#include <poll.h>
-+#include <signal.h>
-+
-+#define WORKLOAD_NOTIFICATION_DELAY_ATTRIBUTE "/sys/bus/pci/devices/0000:00:04.0/workload_hint/notification_delay_ms"
-+#define WORKLOAD_ENABLE_ATTRIBUTE "/sys/bus/pci/devices/0000:00:04.0/workload_hint/workload_hint_enable"
-+#define WORKLOAD_TYPE_INDEX_ATTRIBUTE  "/sys/bus/pci/devices/0000:00:04.0/workload_hint/workload_type_index"
-+
-+static const char * const workload_types[] = {
-+	"idle",
-+	"battery_life",
-+	"sustained",
-+	"bursty",
-+	NULL
-+};
-+
-+#define WORKLOAD_TYPE_MAX_INDEX	3
-+
-+void workload_hint_exit(int signum)
-+{
-+	int fd;
-+
-+	/* Disable feature via sysfs knob */
-+
-+	fd = open(WORKLOAD_ENABLE_ATTRIBUTE, O_RDWR);
-+	if (fd < 0) {
-+		perror("Unable to open workload type feature enable file\n");
-+		exit(1);
-+	}
-+
-+	if (write(fd, "0\n", 2) < 0) {
-+		perror("Can' disable workload hints\n");
-+		exit(1);
-+	}
-+
-+	printf("Disabled workload type prediction\n");
-+
-+	close(fd);
-+}
-+
-+int main(int argc, char **argv)
-+{
-+	struct pollfd ufd;
-+	char index_str[4];
-+	int fd, ret, index;
-+	char delay_str[64];
-+	int delay = 0;
-+
-+	printf("Usage: workload_hint_test [notification delay in milli seconds]\n");
-+
-+	if (argc > 1) {
-+		ret = sscanf(argv[1], "%d", &delay);
+ struct proc_thermal_pci {
+ 	struct pci_dev *pdev;
+ 	struct proc_thermal_device *proc_priv;
+@@ -203,6 +208,7 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
+ 	struct proc_thermal_device *proc_priv;
+ 	struct proc_thermal_pci *pci_info;
+ 	int irq_flag = 0, irq, ret;
++	bool msi_irq = false;
+ 
+ 	proc_priv = devm_kzalloc(&pdev->dev, sizeof(*proc_priv), GFP_KERNEL);
+ 	if (!proc_priv)
+@@ -248,16 +254,21 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
+ 		goto err_ret_mmio;
+ 	}
+ 
+-	/* request and enable interrupt */
+-	ret = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_ALL_TYPES);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "Failed to allocate vectors!\n");
+-		goto err_ret_tzone;
+-	}
+-	if (!pdev->msi_enabled && !pdev->msix_enabled)
++	if (use_msi && (pdev->msi_enabled || pdev->msix_enabled)) {
++		/* request and enable interrupt */
++		ret = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_ALL_TYPES);
 +		if (ret < 0) {
-+			printf("Invalid delay\n");
-+			exit(1);
++			dev_err(&pdev->dev, "Failed to allocate vectors!\n");
++			goto err_ret_tzone;
 +		}
 +
-+		printf("Setting notification delay to %d ms\n", delay);
-+		if (delay < 0)
-+			exit(1);
-+
-+		sprintf(delay_str, "%s\n", argv[1]);
-+
-+		sprintf(delay_str, "%s\n", argv[1]);
-+		fd = open(WORKLOAD_NOTIFICATION_DELAY_ATTRIBUTE, O_RDWR);
-+		if (fd < 0) {
-+			perror("Unable to open workload notification delay\n");
-+			exit(1);
-+		}
-+
-+		if (write(fd, delay_str, strlen(delay_str)) < 0) {
-+			perror("Can't set delay\n");
-+			exit(1);
-+		}
-+
-+		close(fd);
++		irq =  pci_irq_vector(pdev, 0);
++		msi_irq = true;
++	} else {
+ 		irq_flag = IRQF_SHARED;
++		irq = pdev->irq;
 +	}
-+
-+	if (signal(SIGINT, workload_hint_exit) == SIG_IGN)
-+		signal(SIGINT, SIG_IGN);
-+	if (signal(SIGHUP, workload_hint_exit) == SIG_IGN)
-+		signal(SIGHUP, SIG_IGN);
-+	if (signal(SIGTERM, workload_hint_exit) == SIG_IGN)
-+		signal(SIGTERM, SIG_IGN);
-+
-+	/* Enable feature via sysfs knob */
-+	fd = open(WORKLOAD_ENABLE_ATTRIBUTE, O_RDWR);
-+	if (fd < 0) {
-+		perror("Unable to open workload type feature enable file\n");
-+		exit(1);
-+	}
-+
-+	if (write(fd, "1\n", 2) < 0) {
-+		perror("Can' enable workload hints\n");
-+		exit(1);
-+	}
-+
-+	close(fd);
-+
-+	printf("Enabled workload type prediction\n");
-+
-+	while (1) {
-+		fd = open(WORKLOAD_TYPE_INDEX_ATTRIBUTE, O_RDONLY);
-+		if (fd < 0) {
-+			perror("Unable to open workload type file\n");
-+			exit(1);
-+		}
-+
-+		if ((lseek(fd, 0L, SEEK_SET)) < 0) {
-+			fprintf(stderr, "Failed to set pointer to beginning\n");
-+			exit(1);
-+		}
-+
-+		if (read(fd, index_str, sizeof(index_str)) < 0) {
-+			fprintf(stderr, "Failed to read from:%s\n",
-+			WORKLOAD_TYPE_INDEX_ATTRIBUTE);
-+			exit(1);
-+		}
-+
-+		ufd.fd = fd;
-+		ufd.events = POLLPRI;
-+
-+		ret = poll(&ufd, 1, -1);
-+		if (ret < 0) {
-+			perror("poll error");
-+			exit(1);
-+		} else if (ret == 0) {
-+			printf("Poll Timeout\n");
-+		} else {
-+			if ((lseek(fd, 0L, SEEK_SET)) < 0) {
-+				fprintf(stderr, "Failed to set pointer to beginning\n");
-+				exit(1);
-+			}
-+
-+			if (read(fd, index_str, sizeof(index_str)) < 0)
-+				exit(0);
-+
-+			ret = sscanf(index_str, "%d", &index);
-+			if (ret < 0)
-+				break;
-+			if (index > WORKLOAD_TYPE_MAX_INDEX)
-+				printf("Invalid workload type index\n");
-+			else
-+				printf("workload type:%s\n", workload_types[index]);
-+		}
-+
-+		close(fd);
-+	}
-+}
+ 
+-	irq =  pci_irq_vector(pdev, 0);
+ 	ret = devm_request_threaded_irq(&pdev->dev, irq,
+ 					proc_thermal_irq_handler, NULL,
+ 					irq_flag, KBUILD_MODNAME, pci_info);
+@@ -273,7 +284,8 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
+ 	return 0;
+ 
+ err_free_vectors:
+-	pci_free_irq_vectors(pdev);
++	if (msi_irq)
++		pci_free_irq_vectors(pdev);
+ err_ret_tzone:
+ 	thermal_zone_device_unregister(pci_info->tzone);
+ err_ret_mmio:
 -- 
 2.40.1
 
