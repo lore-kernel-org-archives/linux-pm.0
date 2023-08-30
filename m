@@ -2,137 +2,127 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DC99C83F1B
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83AF0C83F17
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235597AbjH3Sfc convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:35:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44122 "EHLO
+        id S236845AbjH3Sff (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:35:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45600 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244761AbjH3NzN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 09:55:13 -0400
-Received: from mail-oo1-f53.google.com (mail-oo1-f53.google.com [209.85.161.53])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E97F8E8;
-        Wed, 30 Aug 2023 06:55:10 -0700 (PDT)
-Received: by mail-oo1-f53.google.com with SMTP id 006d021491bc7-5711d5dac14so1321236eaf.0;
-        Wed, 30 Aug 2023 06:55:10 -0700 (PDT)
+        with ESMTP id S243051AbjH3KJf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 06:09:35 -0400
+Received: from mail-lj1-x233.google.com (mail-lj1-x233.google.com [IPv6:2a00:1450:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8747A1B7
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:09:32 -0700 (PDT)
+Received: by mail-lj1-x233.google.com with SMTP id 38308e7fff4ca-2bcfdadd149so65395691fa.0
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:09:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1693390171; x=1693994971; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=bov9xVFMldFAN1KMV9uo+ZahFMBXwvAR+iHvzm1nQ00=;
+        b=PnueSf0z2e/EX8q63FmTtc0XtApmMMrFxe/k9XsT1Hoyzg3rYWkeuUE262OCnlEWc9
+         qQnqqtM29hK6ozHLlpAIwRbajD2REnDRIZc693Juq2dEw77jCztolugQtZuMjQdgl6MR
+         T/7ZhNXGaYmKVx3mNdzlIXWVRaqQnfuD44Iq/AWJXKdUy6aPnUzCFPUPTkwUs0D8neTf
+         BK0EyyNn3h/E2HwS5bDJMbe0b1g7pFPNRUShnQF1sx7O36UFlZ1uBDVdDzqXIcY8xrJq
+         UVW5R7dJSm3SRdwqZMnOWLJkP89HKXb73nexz1N0UJ+JBjUheCmAakzHhpDxweBz1EvH
+         T7PQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693403710; x=1694008510;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=XZv8/1ddCjCFIB4WUHiW7nPhVXBzPUUn+j0xqd454kk=;
-        b=Vtna5FpTuYaCEuzZVcNgHMaezQwHUcFOvevAmukX0h5fkZWKHmIfPFlD5jDcYi1NIF
-         LSLVbgqyI5/LPMRqhgzUu6uRhrpuyo4SxqDgTRUAQDYeJpWT3qf0Tx0wSB1d51NrlUVP
-         TUD+GA9SzE7x7pFAoPYHCgG+blkJHAzy9EWQVyANplDav3S2xpfMZZDFPt7/1wdizfeP
-         VRd0kk8QdXrnL7CI7GKxr6/X3NcUQNAk48vukK5vbzsi1BJu62cI/pLjnonnYwjqhYkp
-         XOY+TCLsTlbuPW4Hgk3rrVsyCq+k2g0VeqqQlhfvDRtaEQ5v6V/GJUZcQC40xIWrhpKH
-         WJMQ==
-X-Gm-Message-State: AOJu0YwUwJ8xGOrl/Anoqj9EGLjuK5Fm1HNCIOS2gCxdq2R0GvKODjtq
-        lTnzCSiROxrud2HNJZiuQ0f6qe+qOxzlliaqVX8=
-X-Google-Smtp-Source: AGHT+IFkOfV/Y+byHhRZ0TCeaZuJhHV1eq6BIDMnfnES1FFM8rzU+/3+pvEiV76Mpklm3B0fccCb50WWmh1nPBGK3xk=
-X-Received: by 2002:a4a:bd8f:0:b0:573:2a32:6567 with SMTP id
- k15-20020a4abd8f000000b005732a326567mr2133213oop.0.1693403710232; Wed, 30 Aug
- 2023 06:55:10 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1693390171; x=1693994971;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=bov9xVFMldFAN1KMV9uo+ZahFMBXwvAR+iHvzm1nQ00=;
+        b=Gm3qDQuScWTVL7QG5rJajtX8H+XJ8sa8cdnqwDxjwkYI9731VHr1UIVvPjygWXmdVz
+         CcWl5brMNwrmgRDOCxTIJWcz3Yy7REVFrArBBWauF6OdDBg1Aff1GjFPUAd1lJ7rRwkQ
+         unXy7mPkunaTiOAOHB7i4wYOrprYe5G9XlolET4HWE3gRuoezm4fwvO0Z4q07gzc/tmB
+         VHmYFYhL1NC76xzRq5FpVupQ/64k/7IbmSOqVkQ/34adJu/Y0Kz7G9BiD89KvhATXFyH
+         3UqICDyXFU3hJpwmi8mNj2Ig6Hon3hqUCoTFqMn4RU6R0vsdUKkl5o0jc6UkZIBENUDa
+         c3GQ==
+X-Gm-Message-State: AOJu0YynjtOlk1hhQ/i+MC3ljFaeT9WKbBf+phQaMwpczSYKdGo+u9do
+        KMLtdk1VF8GnemBzEpuoryVi4Q==
+X-Google-Smtp-Source: AGHT+IFzh2YKw1VLbI+NJF9/S7Tlv0/uw5GKFMiUefjpqmPyjAIxfRbE7r5HxLI/EwYOLAWDtaNcsQ==
+X-Received: by 2002:a2e:7c0d:0:b0:2bc:fc2e:7671 with SMTP id x13-20020a2e7c0d000000b002bcfc2e7671mr1353917ljc.13.1693390170911;
+        Wed, 30 Aug 2023 03:09:30 -0700 (PDT)
+Received: from [192.168.1.101] (abyl195.neoplus.adsl.tpnet.pl. [83.9.31.195])
+        by smtp.gmail.com with ESMTPSA id w16-20020a2e9990000000b002b6d7682050sm2537655lji.89.2023.08.30.03.09.29
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 30 Aug 2023 03:09:30 -0700 (PDT)
+Message-ID: <0ab29903-9861-4736-b827-5dd45b504baa@linaro.org>
+Date:   Wed, 30 Aug 2023 12:09:29 +0200
 MIME-Version: 1.0
-References: <20230829194200.1901988-1-festevam@gmail.com> <CAJZ5v0hZR3WD+wMA6c-Gt86hM5oCRZDcSsYF4SrYTvT2HtQ=fQ@mail.gmail.com>
- <c5d72559-4a97-c865-e51e-855d2bc1edee@linaro.org>
-In-Reply-To: <c5d72559-4a97-c865-e51e-855d2bc1edee@linaro.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 30 Aug 2023 15:54:58 +0200
-Message-ID: <CAJZ5v0gexPEV2M5kfgCEUti=EE+_oR+wUjRboo0Rh=fPfNeDew@mail.gmail.com>
-Subject: Re: [PATCH v5 1/3] dt-bindings: thermal-zones: Document critical-action
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Fabio Estevam <festevam@gmail.com>, daniel.lezcano@linaro.org,
-        amitk@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, robh+dt@kernel.org,
-        conor+dt@kernel.org, devicetree@vger.kernel.org,
-        Fabio Estevam <festevam@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 03/11] arm64: dts: qcom: sc7280: Move qfprom clock to
+ chrome-common
+Content-Language: en-US
+To:     Luca Weiss <luca.weiss@fairphone.com>,
+        cros-qcom-dts-watchers@chromium.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
+ <20230830-fp5-initial-v1-3-5a954519bbad@fairphone.com>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
+ 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
+ izWDgYvmBE8=
+In-Reply-To: <20230830-fp5-initial-v1-3-5a954519bbad@fairphone.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Aug 30, 2023 at 3:07 PM Krzysztof Kozlowski
-<krzysztof.kozlowski@linaro.org> wrote:
->
-> On 30/08/2023 13:37, Rafael J. Wysocki wrote:
-> > On Tue, Aug 29, 2023 at 9:42 PM Fabio Estevam <festevam@gmail.com> wrote:
-> >>
-> >> From: Fabio Estevam <festevam@denx.de>
-> >>
-> >> Document the critical-action property to describe the thermal action
-> >> the OS should perform after the critical temperature is reached.
-> >>
-> >> The possible values are "shutdown" and "reboot".
-> >>
-> >> The motivation for introducing the critical-action property is that
-> >> different systems may need different thermal actions when the critical
-> >> temperature is reached.
-> >>
-> >> For example, a desktop PC may want the OS to trigger a shutdown
-> >> when the critical temperature is reached.
-> >>
-> >> However, in some embedded cases, such behavior does not suit well,
-> >> as the board may be unattended in the field and rebooting may be a
-> >> better approach.
-> >>
-> >> The bootloader may also benefit from this new property as it can check
-> >> the SoC temperature and in case the temperature is above the critical
-> >> point, it can trigger a shutdown or reboot accordingly.
-> >>
-> >> Signed-off-by: Fabio Estevam <festevam@denx.de>
-> >> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> >> ---
-> >> Changes since v4:
-> >> - None.
-> >>
-> >>  .../devicetree/bindings/thermal/thermal-zones.yaml       | 9 +++++++++
-> >>  1 file changed, 9 insertions(+)
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> >> index 4f3acdc4dec0..c2e4d28f885b 100644
-> >> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> >> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> >> @@ -75,6 +75,15 @@ patternProperties:
-> >>            framework and assumes that the thermal sensors in this zone
-> >>            support interrupts.
-> >>
-> >> +      critical-action:
-> >> +        $ref: /schemas/types.yaml#/definitions/string
-> >> +        description:
-> >> +          The action the OS should perform after the critical temperature is reached.
-> >> +
-> >> +        enum:
-> >> +          - shutdown
-> >> +          - reboot
-> >> +
-> >>        thermal-sensors:
-> >>          $ref: /schemas/types.yaml#/definitions/phandle-array
-> >>          maxItems: 1
-> >> --
-> >
-> > I'm wondering if this should be a bool property called
-> > "critical-reboot", say, which when present would mean to carry out a
-> > reboot instead of a shutdown in an emergency.
-> >
-> > As defined above, the "shutdown" value is simply redundant, because
-> > the code will effectively convert any other value to "shutdown"
-> > anyway.
->
-> We covered this at v1. Bool does not allow this property to change in
-> the future, e.g. for a third mode. And how would you change the action
-> to shutdown if default action in the system was reboot?
+On 30.08.2023 11:58, Luca Weiss wrote:
+> On non-ChromeOS boards the clock cannot be touched, so move it in the
+> chrome-common dtsi which is the only place where it's needed.
+> 
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> ---
+If that clock is not registered (e.g. it's in protected-clocks = <>,
+would the _optional handler not handle it just fine?
 
-Well, as a matter of fact, it isn't, so I'm not sure where this is going.
-
-Bool definitely allows the property to be not present, which means
-that the default behavior is intended and this is all about overriding
-a known default behavior.
-
-Anyway, if the maintainers of DT bindings are fine with the current
-definition, I'm not going to block this.  I just wanted to make a note
-that it wasn't looking particularly straightforward to me.
+Konrad
