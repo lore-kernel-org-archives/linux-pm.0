@@ -2,105 +2,94 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDBC3C83F01
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F74FC6FA8F
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237698AbjH3Sgd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:36:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58520 "EHLO
+        id S232053AbjH3Sge (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:36:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34674 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243655AbjH3LW3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 07:22:29 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4D071BB;
-        Wed, 30 Aug 2023 04:22:25 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 3E833629AF;
-        Wed, 30 Aug 2023 11:22:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86231C433C8;
-        Wed, 30 Aug 2023 11:22:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1693394544;
-        bh=sbXwoUnfsg75aRpsvrKxd95gOG3cQb50vpy8i5omPNQ=;
-        h=Date:From:To:Subject:References:In-Reply-To:From;
-        b=pvfhaesJC1Ch/HgOSY0OQ8bedM9JZ68lhIsl8FYsnC2ytRKuMmed7a2oHHzOopY9s
-         tMoMd6fBunXVbAUK1gFrBaslHfjLDS0+tpP5ecEcescsKram5CGN2S/weShHNMP4yh
-         QPDKcFdWaLcuEfC6mwvxqI/CKedUwNWDAvxyRf1X5VUlKBgIfiWUvdaGzovEG+yamw
-         dgIkB9c2kDIaT2Fhc3m6Ztk0BhXTxbaDJGAYJzedpy1Ph1NPilM5mBVFj9WT2dek/k
-         2zTVHtvHzKFcUS5Z2cnYFvpd0BPZUY5IPxWxF4E8pyQejcy7eZuf2mBDQqkvo9ka0f
-         KxK/+pPnT+QDw==
-Date:   Wed, 30 Aug 2023 12:22:17 +0100
-From:   Mark Brown <broonie@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Nicolas Schier <nicolas@fjasle.eu>,
-        Konstantin Ryabitsev <konstantin@linuxfoundation.org>,
-        Kees Cook <keescook@chromium.org>,
-        Bjorn Andersson <andersson@kernel.org>, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, Will Deacon <will@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        quic_pkondeti@quicinc.com, linux-kernel@vger.kernel.org,
-        kernel@quicinc.com, workflows@vger.kernel.org,
-        tools@linux.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 1/1] scripts: Add add-maintainer.py
-Message-ID: <0f7b32e1-1b26-4543-bfec-471641a67416@sirena.org.uk>
-References: <cover.1693037031.git.quic_gurus@quicinc.com>
- <141b9fcab2208ace3001df4fc10e3dfd42b9f5d9.1693037031.git.quic_gurus@quicinc.com>
- <2efba6b3-2399-9deb-d0ce-78f7b5e12f30@linaro.org>
- <20230828175629.GC23466@quicinc.com>
- <78aa33f9-ead8-b128-2a7a-40530a1a3ed0@linaro.org>
- <ZOz4XtX3DFRQpvQY@finisterre.sirena.org.uk>
- <670a87e9-2f0c-ec9e-ebb4-9041c8972ace@linaro.org>
- <20230829231638.GA27843@quicinc.com>
+        with ESMTP id S243037AbjH3KJC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 06:09:02 -0400
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D98D1BB
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:08:58 -0700 (PDT)
+Received: by mail-ej1-x630.google.com with SMTP id a640c23a62f3a-991c786369cso697978966b.1
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:08:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1693390137; x=1693994937; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=a01//fw4C/o1Ax6ZZd2xqsEK3Vj5eisKt7KkBfMjlv4=;
+        b=neNK6eWeGTk61TdEJq6/56WDSi98uvh86dqK2+/Se+2XemxK8T6i+2QPysJ0XyR//Y
+         r+iPr9MTd2uEcnaeLdW/DEk++MaIJ5X+10G2vWY1qFrTvfjWqtOf/VYj7huFjRgOVdmV
+         JChIHuTX5ts/dzjSTUqzvsa6gl5NaaHIb2YOJLint53jUNZBJIu1ds0ukyOxU/VzMJ2m
+         wSJtt5S8ykIiaA3SgFgKcU6h4qz14uKeWHkvy5QNWqq4jlRz2dA9Q3Kuy8qxiK3YFW/V
+         AlFcXtrEFR2k05WdKpC8BEPRVmuG7KczW7ZgmUzFrHcXq3bexSxh8QwEUVRBjiUw+997
+         NFFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693390137; x=1693994937;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=a01//fw4C/o1Ax6ZZd2xqsEK3Vj5eisKt7KkBfMjlv4=;
+        b=kcHisM+HMLl7VJDhZ08DdCX2GlergQ2DZ8TVAM2W5cOzQeXTxOirz1m3IXjnwgU3rv
+         6CztLazqz3U1CzaBXgCGikWhGhS/VOZFBsavZ1rlthJtH6eRbTKztLc3NLHsAAlLoQsZ
+         AH7JDOpX0enZDGIJ+rQXPQ8UwPstatgcGpZYKFnVEkl4iFhemm1b1uCoGev6zkjTCpjI
+         R9csWjBpcwgVVFU0nk+GYxsVWqlmGfRBcuzk4FMsA9SJy8QsnTRSnQgWGtNxmCDdrPLm
+         Fx2kRzMxP/hX2gfxD7+TBeR/ObnrN8SbZ0P0z5J0JkgsHbbeDBLkW+JPhAznErW1FBnz
+         tB7g==
+X-Gm-Message-State: AOJu0Yw7YCl01O4kia50UtPXYTKPrvSuJ4gDKWcAw9aTdrrnqmIwrln+
+        hCv02alKsBYRk3AenpDW6ooxOA==
+X-Google-Smtp-Source: AGHT+IFUObuijfTAqYpf5OFv3XkT14r+q5WT8p2VJy471qW5Z6XW1Gcxtic0L8+1lZWXjo/qcqBvPQ==
+X-Received: by 2002:a17:906:cd1:b0:9a1:e011:1a62 with SMTP id l17-20020a1709060cd100b009a1e0111a62mr1204136ejh.38.1693390137090;
+        Wed, 30 Aug 2023 03:08:57 -0700 (PDT)
+Received: from [192.168.0.22] (77-252-46-238.static.ip.netia.com.pl. [77.252.46.238])
+        by smtp.gmail.com with ESMTPSA id s25-20020a170906bc5900b009a193a5acffsm6951329ejv.121.2023.08.30.03.08.55
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 30 Aug 2023 03:08:56 -0700 (PDT)
+Message-ID: <23d32e4f-ce08-b89a-fc5a-c5ec0cdb6b9e@linaro.org>
+Date:   Wed, 30 Aug 2023 12:08:55 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="KnzHrTA7gjifxdYo"
-Content-Disposition: inline
-In-Reply-To: <20230829231638.GA27843@quicinc.com>
-X-Cookie: Immanuel doesn't pun, he Kant.
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH 07/11] dt-bindings: arm: qcom,ids: Add SoC ID for QCM6490
+Content-Language: en-US
+To:     Luca Weiss <luca.weiss@fairphone.com>,
+        cros-qcom-dts-watchers@chromium.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
+ <20230830-fp5-initial-v1-7-5a954519bbad@fairphone.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230830-fp5-initial-v1-7-5a954519bbad@fairphone.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On 30/08/2023 11:58, Luca Weiss wrote:
+> Add the ID for the Qualcomm QCM6490 SoC.
+> 
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> ---
 
---KnzHrTA7gjifxdYo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-On Tue, Aug 29, 2023 at 04:16:39PM -0700, Guru Das Srinagesh wrote:
+Best regards,
+Krzysztof
 
-> If this script is accepted and gains adoption, maintainers like yourself will
-> only be To-ed in patches that touch files that you're a direct "Maintainer" or
-> "Reviewer" of. For all other patches in the series you'll be in "Cc:". I
-> imagine that this can be very useful regardless of the specifics of your
-> workflow.
-
-Given that b4 solves a lot more problems and is getting quite widely
-adopted it's probably going to be more effective to look at trying to
-get this implemented there.  That might still mean a separate script
-that b4 can hook into, but it's probably important that whatever you do
-can be used easily with b4.
-
---KnzHrTA7gjifxdYo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmTvJmgACgkQJNaLcl1U
-h9BZnQgAhN2il0SqqFg6f1KBrYU6LppQ69MeOtRhzem5cewfBS2Z/bSCt7QkoduX
-428E2n4I/LxLzJ0yR4WzJRSfPCp4yTZtxwBLTt1X0fWdT9+LN5UcFIEXwp7Bk+uW
-XsBPJiS3GhZ5UQZUQp9niH74hsRnGg+x8NrgirLi6MdAKoIJ/xYP3fY9b3TIBikS
-Cgtm6GOjHI7g0u9KgajygrbAHFRyYnttp3pFLtV3K0f7O4rSfgvo4Zs0DqOM7xLg
-0RjTSNaoLE+Si2RAAw5QHH6tH6+LW+HWGSsW+mWbhrOQm17LPniGsqN1WJNvZ1/j
-3wrUxQZzpHq+9xNZK9StKaqbFDB71A==
-=gR69
------END PGP SIGNATURE-----
-
---KnzHrTA7gjifxdYo--
