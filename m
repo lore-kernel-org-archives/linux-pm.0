@@ -2,149 +2,145 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0015AC83F1D
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 443E3C83F01
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237727AbjH3Sgk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:36:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43304 "EHLO
+        id S237770AbjH3Sgl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:36:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48132 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245255AbjH3O6L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 10:58:11 -0400
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11EE8A3
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 07:58:08 -0700 (PDT)
-Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-99bf3f59905so744035066b.3
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 07:58:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1693407486; x=1694012286; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=w/+k6PD4xwGQdkLa4KX0Kf1ry0F1EIye4pGxjvLn9W4=;
-        b=ESRpPzXR49DlUXCPSg0RaftcvM9g5TpkM86KzzSerYQkkiVwBrV6LKpfJ0t99kJZoF
-         JUZCn0u/Lz2qPGz0KD1/fVcpBxWRphRAkcMaeNbzZcViE7SLaPbAoMS8XS6b2edIaNYM
-         eCS0lKopU80mYd9WZ4n6Z5ppt+UTtIKC4CZgI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693407486; x=1694012286;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=w/+k6PD4xwGQdkLa4KX0Kf1ry0F1EIye4pGxjvLn9W4=;
-        b=Jyvc4AEcf9Ml9KwyUDVLb2KMuFPIXZqj0CxWNW9y7PpnkSOpvWriNTem4aMVMjJSbD
-         RzoVBg9yxlfKZKlthj3WJMHMvqUEKv5NitT+0KRf7U53DkuS0PGPz9L/N+pUj562OV2c
-         Sx6NUMDeazFWwFVAdB05XK4/ToMW/tmOizvHI3RYU2X0oepZOpk7YjwGgqqB9M71i8PP
-         a38+xud10XMBJV7Kp41tDAlXgo6YFTNfsy4sSd5UZ1UChmtapNo309GOWyNAoSk26oy/
-         NZgZPgSdo3Ki6yT07JuXPmeVSN3/va1L4f5qeVjwtqKicZ6fOkbLgIksb1no1kckvR5V
-         4CAA==
-X-Gm-Message-State: AOJu0YyB+7mFfmwoRKof5tDJ7mAdpuhy4SjbzSUIS/W6nCNIXX4QIGDs
-        8LlwiFaDa6lgTJtjHSonw17Vu10bu+24uDW9sQXhMvkD
-X-Google-Smtp-Source: AGHT+IF+k3CbidqG/9wuB1VT2b/XuPpQTKOMOKtZk/79wcRlGm3XOfE36mie76gVeLY7hUlnWqcxDw==
-X-Received: by 2002:a17:906:311a:b0:9a5:821e:1655 with SMTP id 26-20020a170906311a00b009a5821e1655mr1756695ejx.71.1693407486613;
-        Wed, 30 Aug 2023 07:58:06 -0700 (PDT)
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com. [209.85.128.49])
-        by smtp.gmail.com with ESMTPSA id ck16-20020a170906c45000b00992b8d56f3asm7270046ejb.105.2023.08.30.07.58.06
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 30 Aug 2023 07:58:06 -0700 (PDT)
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4009fdc224dso78835e9.1
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 07:58:06 -0700 (PDT)
-X-Received: by 2002:a05:600c:520e:b0:3fe:eb42:7ec with SMTP id
- fb14-20020a05600c520e00b003feeb4207ecmr336994wmb.1.1693407486198; Wed, 30 Aug
- 2023 07:58:06 -0700 (PDT)
+        with ESMTP id S1343619AbjH3QRC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 12:17:02 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51E821A4;
+        Wed, 30 Aug 2023 09:16:57 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id c6d608aedefc88a6; Wed, 30 Aug 2023 18:16:55 +0200
+Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
+   discourages use of this host) smtp.mailfrom=rjwysocki.net 
+   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
+   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 4D08866316E;
+        Wed, 30 Aug 2023 18:16:55 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Sebastian Reichel <sre@kernel.org>
+Subject: [PATCH v1 1/4] thermal: core: Clean up headers of thermal zone registration functions
+Date:   Wed, 30 Aug 2023 18:11:38 +0200
+Message-ID: <13345552.uLZWGnKmhe@kreacher>
+In-Reply-To: <1870450.tdWV9SEqCh@kreacher>
+References: <1870450.tdWV9SEqCh@kreacher>
 MIME-Version: 1.0
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
- <20230830-fp5-initial-v1-2-5a954519bbad@fairphone.com> <CAD=FV=WS2hgY=bQjLOs3Fdp8pbZyMsaS-0BpoxPq90Etfi+Xuw@mail.gmail.com>
- <CV5YJVXIL8OT.1ZWW3KVCHPTA5@otso>
-In-Reply-To: <CV5YJVXIL8OT.1ZWW3KVCHPTA5@otso>
-From:   Doug Anderson <dianders@chromium.org>
-Date:   Wed, 30 Aug 2023 07:57:54 -0700
-X-Gmail-Original-Message-ID: <CAD=FV=XhdORH=naTtoc+kCC4A7UdAJKwq=Te6B3qvXNGBwBieg@mail.gmail.com>
-Message-ID: <CAD=FV=XhdORH=naTtoc+kCC4A7UdAJKwq=Te6B3qvXNGBwBieg@mail.gmail.com>
-Subject: Re: [PATCH 02/11] nvmem: qfprom: Mark core clk as optional
-To:     Luca Weiss <luca.weiss@fairphone.com>
-Cc:     cros-qcom-dts-watchers@chromium.org,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudefkedguddtudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhht
+ vghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopegrmhhithhksehkvghrnhgvlhdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Wed, Aug 30, 2023 at 7:43=E2=80=AFAM Luca Weiss <luca.weiss@fairphone.co=
-m> wrote:
->
-> On Wed Aug 30, 2023 at 4:30 PM CEST, Doug Anderson wrote:
-> > Hi,
-> >
-> > On Wed, Aug 30, 2023 at 2:58=E2=80=AFAM Luca Weiss <luca.weiss@fairphon=
-e.com> wrote:
-> > >
-> > > On some platforms like sc7280 on non-ChromeOS devices the core clock
-> > > cannot be touched by Linux so we cannot provide it. Mark it as option=
-al
-> > > as accessing qfprom works without it.
-> > >
-> > > Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-> > > ---
-> > >  drivers/nvmem/qfprom.c | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > Are you actually testing burning fuses from the OS, or are you just
-> > using the nvmem in "read-only" mode? From comments in the bindings, if
-> > you're trying to burn the fuses then the clock is required. If things
-> > are in read-only mode then the clock isn't required.
->
-> Hi Doug,
->
-> I definitely don't plan on burning any fuses on this phone. Not even
-> sure that's allowed by the TZ / boot stack.
->
-> >
-> > When I compare to the driver, it seems like the driver assumes that if
-> > more than one memory region is provided then you must be supporting
-> > burning fuses. The bindings agree that having 4 memory regions
-> > specified means that the nvmem supports burning and 1 memory region
-> > specified means read-only. The extra 3 memory regions in the nvmem are
-> > all about fuse burning, I believe.
-> >
-> > So maybe the right fix here is to just change your dts to specify one
-> > memory region?
->
-> I got feedback from Konrad that this here would be the preferred
-> approach compared to having a different dts for ChromeOS vs non-ChromeOS
-> devices. I don't feel strongly to either, for me it's also okay to
-> remove the extra memory regions and only have the main one used on
-> regular qcom devices.
->
-> Let me know what you think.
+For consistency, add a missing thermal_zone_device_register_with_trips()
+stub for the CONFIG_THERMAL unset case, specify argument names in all of
+the thermal zone registration and unregistration function headers and
+make all of them use white space consistently.
 
-I don't hate the idea of leaving the extra memory regions in the dts.
-They do describe the hardware, after all, even if the main OS can't
-actually access those memory regions. ...though the same could also be
-said about the clock you've removed. Said another way: if you want to
-fully describe the hardware then the dts should have the extra memory
-regions and the clock. If you are OK w/ just describing the hardware
-in the way that the OS has access to then the dts should not have the
-extra memory regions and not have the clock. Does that sound right?
+No intentional functional impact.
 
-If somehow you do end up with something like your patch, though,
-you're still missing a bit. Specifically, you don't want to "enable
-writing" a few lines below if you didn't get the clock, right?
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/thermal.h |   53 +++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 37 insertions(+), 16 deletions(-)
 
--Doug
+Index: linux-pm/include/linux/thermal.h
+===================================================================
+--- linux-pm.orig/include/linux/thermal.h
++++ linux-pm/include/linux/thermal.h
+@@ -300,16 +300,24 @@ int thermal_acpi_critical_trip_temp(stru
+ #endif
+ 
+ #ifdef CONFIG_THERMAL
+-struct thermal_zone_device *thermal_zone_device_register(const char *, int, int,
+-		void *, struct thermal_zone_device_ops *,
+-		const struct thermal_zone_params *, int, int);
+-
+-void thermal_zone_device_unregister(struct thermal_zone_device *);
+-
+-struct thermal_zone_device *
+-thermal_zone_device_register_with_trips(const char *, struct thermal_trip *, int, int,
+-					void *, struct thermal_zone_device_ops *,
+-					const struct thermal_zone_params *, int, int);
++struct thermal_zone_device *thermal_zone_device_register(
++					const char *type,
++					int num_trips, int mask,
++					void *devdata,
++					struct thermal_zone_device_ops *ops,
++					const struct thermal_zone_params *tzp,
++					int passive_delay, int polling_delay);
++
++struct thermal_zone_device *thermal_zone_device_register_with_trips(
++					const char *type,
++					struct thermal_trip *trips,
++					int num_trips, int mask,
++					void *devdata,
++					struct thermal_zone_device_ops *ops,
++					const struct thermal_zone_params *tzp,
++					int passive_delay, int polling_delay);
++
++void thermal_zone_device_unregister(struct thermal_zone_device *tz);
+ 
+ void *thermal_zone_device_priv(struct thermal_zone_device *tzd);
+ const char *thermal_zone_device_type(struct thermal_zone_device *tzd);
+@@ -351,14 +359,27 @@ int thermal_zone_device_disable(struct t
+ void thermal_zone_device_critical(struct thermal_zone_device *tz);
+ #else
+ static inline struct thermal_zone_device *thermal_zone_device_register(
+-	const char *type, int trips, int mask, void *devdata,
+-	struct thermal_zone_device_ops *ops,
+-	const struct thermal_zone_params *tzp,
+-	int passive_delay, int polling_delay)
++					const char *type,
++					int num_trips, int mask,
++					void *devdata,
++					struct thermal_zone_device_ops *ops,
++					const struct thermal_zone_params *tzp,
++					int passive_delay, int polling_delay)
++{ return ERR_PTR(-ENODEV); }
++
++static inline struct thermal_zone_device *thermal_zone_device_register_with_trips(
++					const char *type,
++					struct thermal_trip *trips,
++					int num_trips, int mask,
++					void *devdata,
++					struct thermal_zone_device_ops *ops,
++					const struct thermal_zone_params *tzp,
++					int passive_delay, int polling_delay);
+ { return ERR_PTR(-ENODEV); }
+-static inline void thermal_zone_device_unregister(
+-	struct thermal_zone_device *tz)
++
++static inline void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ { }
++
+ static inline struct thermal_cooling_device *
+ thermal_cooling_device_register(const char *type, void *devdata,
+ 	const struct thermal_cooling_device_ops *ops)
+
+
+
