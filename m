@@ -2,201 +2,113 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C3E0C83F21
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8C2CC83F1A
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237586AbjH3SgY convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:36:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40340 "EHLO
+        id S237653AbjH3Sg0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:36:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45562 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243635AbjH3LSf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 07:18:35 -0400
-Received: from mail-oo1-f42.google.com (mail-oo1-f42.google.com [209.85.161.42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2245F122;
-        Wed, 30 Aug 2023 04:18:33 -0700 (PDT)
-Received: by mail-oo1-f42.google.com with SMTP id 006d021491bc7-573128cd77dso791411eaf.0;
-        Wed, 30 Aug 2023 04:18:33 -0700 (PDT)
+        with ESMTP id S245121AbjH3ObB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 10:31:01 -0400
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 14037194
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 07:30:57 -0700 (PDT)
+Received: by mail-ed1-x52b.google.com with SMTP id 4fb4d7f45d1cf-52713d2c606so7346539a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 07:30:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1693405854; x=1694010654; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5Z1Z9G4G/KVFZhr9R3sGbutXUCNsEgKocPQNRqGJxWY=;
+        b=InT2PRboit3mGRgrtDDf1DpFH+SIx7SEgZLaB5iTnd6aK/mAnN4nP45NYyu8i5Oshq
+         U6Gr93effQIrqRXwd7cf+mxvQDP8foxAflFjuPvsJwumXjmPJIrHBsknb4Q0lew+wMve
+         gBA2EEGvBVb0Sr0XT3bzEBoGj5xpMHaQ0VhTQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693394312; x=1693999112;
+        d=1e100.net; s=20221208; t=1693405854; x=1694010654;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=949eSJ97UUP4EMRebkVt9sELnd9wzsIRRXBTrdPP/Vg=;
-        b=CmQ2Ea+0hvOBla48vcHUJ9P/yZXtJEIkC54+3sE+s+G1FVQp53jQ909oZpxxZINkja
-         SVDTE+hvcs0NLJRJMVLDk70GDDQBDFuBgcb3rzzQcDL+3Tu9zOnmb5Qfj0rIANoxGyT2
-         LnYrB4UC1UBqDazmaWn8DYCwBJ2Ja7a59eaQkvoLOso+9zZk/9laQJWeoKsXUVMR3vw4
-         eTQDAoV7g+ddcFjkCERZnw96ANPpAHz2d18UdF3AXiQdJrQre7fwE33YDR5Bq6dIMQ/p
-         Fna5p/xWuVsnSPsBPnAba0xF4pmRKHosZQzNzFXOuit+ixH8B5jWg0nu8aPRs7kLnHWR
-         cvKg==
-X-Gm-Message-State: AOJu0Yxu0Hhr/KnsTeoD/rkzZrTUzW+qi6Mpj+1ZXlxlOhKje1yMULlf
-        svUDY+F3u/1B7llu8y5AETf2EpUkvDz5fc6TuJo=
-X-Google-Smtp-Source: AGHT+IGjUB4/qLkUwQwSco0OrxTfj8TU6YnCPhpd7Ezyb2ZaEHPMJ8PMYVYYEhDbnkv8MkkTf++Cgn9x/3KVHXzh8b4=
-X-Received: by 2002:a05:6820:1b18:b0:56e:94ed:c098 with SMTP id
- bv24-20020a0568201b1800b0056e94edc098mr1937909oob.0.1693394312326; Wed, 30
- Aug 2023 04:18:32 -0700 (PDT)
+        bh=5Z1Z9G4G/KVFZhr9R3sGbutXUCNsEgKocPQNRqGJxWY=;
+        b=SnQGMP55tnAAEgCCKxlzVcl49bpYU19fStrlQtQqwfHx10HcmO90ECMJ4zsshZIXbh
+         hWwX6ibA3ODwnEkVY5KZqfquefu9QT2GmK4//Dou/+F2fUJZe5vH+XK/8BCfpq78pZm2
+         TL7fFYuMrCdCqhn0VMWeE9tRET698Rtt3wWb0mJhzbtSdn8yv6QmW9cpG7jRZdV/5tCc
+         PjoMWCtW9xhBYhVN7+0ac7QC3+XCTyOs6eyhXTalMWKtFI4WEwP3RS0iqBzE7qGJHb/O
+         hLs5IfNgYmT2tYuR0JwrCzE/Fwl9xUxXykVDYMkxE1x/7GlZIWQW2Xiuum2uYKvINKF1
+         hX1g==
+X-Gm-Message-State: AOJu0Yyw01FNRDJxWKhxBY0DvRogib07K8zVkyLCnfmuhWybRK6cXjqr
+        NmM5DR/Ap7LQUa1Uip961FUoZZwq8VM9g1S4v0xilAaJ
+X-Google-Smtp-Source: AGHT+IEfI12+qTs5/z+GDGkfXxogSbvBwBvgRnVp9uKV7WKUR56BmMCJtngDhGjzfRHyKeraSxVsdw==
+X-Received: by 2002:aa7:d80f:0:b0:52b:ce21:ad12 with SMTP id v15-20020aa7d80f000000b0052bce21ad12mr1745202edq.4.1693405854480;
+        Wed, 30 Aug 2023 07:30:54 -0700 (PDT)
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com. [209.85.128.50])
+        by smtp.gmail.com with ESMTPSA id r9-20020aa7da09000000b005236b47116asm6862435eds.70.2023.08.30.07.30.53
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 30 Aug 2023 07:30:53 -0700 (PDT)
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4005f0a6c2bso74955e9.1
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 07:30:53 -0700 (PDT)
+X-Received: by 2002:a05:600c:4f93:b0:3f4:fb7:48d4 with SMTP id
+ n19-20020a05600c4f9300b003f40fb748d4mr325936wmq.3.1693405853267; Wed, 30 Aug
+ 2023 07:30:53 -0700 (PDT)
 MIME-Version: 1.0
-References: <20230829194200.1901988-1-festevam@gmail.com> <20230829194200.1901988-3-festevam@gmail.com>
-In-Reply-To: <20230829194200.1901988-3-festevam@gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 30 Aug 2023 13:18:19 +0200
-Message-ID: <CAJZ5v0jEmCnxGC5NXnxKo27k4QHib5-JoGnySE_QegRODg2=Rg@mail.gmail.com>
-Subject: Re: [PATCH v5 3/3] thermal: thermal_core: Allow rebooting after
- critical temp
-To:     Fabio Estevam <festevam@gmail.com>
-Cc:     daniel.lezcano@linaro.org, rafael@kernel.org, amitk@kernel.org,
-        rui.zhang@intel.com, linux-pm@vger.kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, robh+dt@kernel.org,
-        conor+dt@kernel.org, devicetree@vger.kernel.org,
-        Fabio Estevam <festevam@denx.de>
+References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com> <20230830-fp5-initial-v1-2-5a954519bbad@fairphone.com>
+In-Reply-To: <20230830-fp5-initial-v1-2-5a954519bbad@fairphone.com>
+From:   Doug Anderson <dianders@chromium.org>
+Date:   Wed, 30 Aug 2023 07:30:41 -0700
+X-Gmail-Original-Message-ID: <CAD=FV=WS2hgY=bQjLOs3Fdp8pbZyMsaS-0BpoxPq90Etfi+Xuw@mail.gmail.com>
+Message-ID: <CAD=FV=WS2hgY=bQjLOs3Fdp8pbZyMsaS-0BpoxPq90Etfi+Xuw@mail.gmail.com>
+Subject: Re: [PATCH 02/11] nvmem: qfprom: Mark core clk as optional
+To:     Luca Weiss <luca.weiss@fairphone.com>
+Cc:     cros-qcom-dts-watchers@chromium.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Aug 29, 2023 at 9:42 PM Fabio Estevam <festevam@gmail.com> wrote:
+Hi,
+
+On Wed, Aug 30, 2023 at 2:58=E2=80=AFAM Luca Weiss <luca.weiss@fairphone.co=
+m> wrote:
 >
-> From: Fabio Estevam <festevam@denx.de>
+> On some platforms like sc7280 on non-ChromeOS devices the core clock
+> cannot be touched by Linux so we cannot provide it. Mark it as optional
+> as accessing qfprom works without it.
 >
-> Currently, the default mechanism is to trigger a shutdown after the
-> critical temperature is reached.
->
-> In some embedded cases, such behavior does not suit well, as the board may
-> be unattended in the field and rebooting may be a better approach.
->
-> The bootloader may also check the temperature and only allow the boot to
-> proceed when the temperature is below a certain threshold.
->
-> Introduce support for allowing a reboot to be triggered after the
-> critical temperature is reached.
->
-> If the "critical-action" devicetree property is not found, fall back to
-> the shutdown action to preserve the existing default behavior.
->
-> Tested on a i.MX8MM board with the following devicetree changes:
->
->         thermal-zones {
->                 cpu-thermal {
->                         critical-action = "reboot";
->                 };
->         };
->
-> Signed-off-by: Fabio Estevam <festevam@denx.de>
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 > ---
-> Changes since v4:
-> - Simplify the logic inside thermal_zone_device_critical(). (Rafael)
-> - Declare THERMAL_CRITICAL_ACTION_SHUTDOWN = 0 so it is clear what happens
-> on non-DT platforms. (Rafael)
->
->  drivers/thermal/thermal_core.c |  6 +++++-
->  drivers/thermal/thermal_of.c   | 27 +++++++++++++++++++++++++++
->  include/linux/thermal.h        |  6 ++++++
->  3 files changed, 38 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index a59700593d32..062114608667 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -320,11 +320,15 @@ void thermal_zone_device_critical(struct thermal_zone_device *tz)
->          * Its a must for forced_emergency_poweroff_work to be scheduled.
->          */
->         int poweroff_delay_ms = CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS;
-> +       static const char *msg = "Temperature too high";
->
->         dev_emerg(&tz->device, "%s: critical temperature reached, "
->                   "shutting down\n", tz->type);
->
-> -       hw_protection_shutdown("Temperature too high", poweroff_delay_ms);
-> +       if (tz->action == THERMAL_CRITICAL_ACTION_REBOOT)
-> +               hw_protection_reboot(msg, poweroff_delay_ms);
-> +       else
-> +               hw_protection_shutdown(msg, poweroff_delay_ms);
->  }
->  EXPORT_SYMBOL(thermal_zone_device_critical);
->
-> diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-> index 4ca905723429..8bc28cba7406 100644
-> --- a/drivers/thermal/thermal_of.c
-> +++ b/drivers/thermal/thermal_of.c
-> @@ -218,6 +218,31 @@ static struct device_node *of_thermal_zone_find(struct device_node *sensor, int
->         return tz;
->  }
->
-> +static const char * const critical_actions[] = {
-> +       [THERMAL_CRITICAL_ACTION_SHUTDOWN]      = "shutdown",
-> +       [THERMAL_CRITICAL_ACTION_REBOOT]        = "reboot",
-> +};
-> +
-> +static void thermal_of_get_critical_action(struct device_node *np,
-> +                                          enum thermal_action *action)
-> +{
-> +       const char *action_string;
-> +       int i, ret;
-> +
-> +       ret = of_property_read_string(np, "critical-action", &action_string);
-> +       if (ret < 0)
-> +               goto out_default_action;
-> +
-> +       for (i = 0; i < ARRAY_SIZE(critical_actions); i++)
-> +               if (!strcasecmp(action_string, critical_actions[i])) {
-> +                       *action = i;
-> +                       return;
-> +               }
+>  drivers/nvmem/qfprom.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-This looks somewhat artificial and is a bit questionable (the index
-variable should arguably start at THERMAL_CRITICAL_ACTION_SHUTDOWN,
-for instance, and the "shutdown" item is redundant).
+Are you actually testing burning fuses from the OS, or are you just
+using the nvmem in "read-only" mode? From comments in the bindings, if
+you're trying to burn the fuses then the clock is required. If things
+are in read-only mode then the clock isn't required.
 
-There are only two values and you want to carry out an emergency
-shutdown anyway if the value is not "reboot".
+When I compare to the driver, it seems like the driver assumes that if
+more than one memory region is provided then you must be supporting
+burning fuses. The bindings agree that having 4 memory regions
+specified means that the nvmem supports burning and 1 memory region
+specified means read-only. The extra 3 memory regions in the nvmem are
+all about fuse burning, I believe.
 
-I would just do
+So maybe the right fix here is to just change your dts to specify one
+memory region?
 
-    if (!strcasecmp(action_string, "reboot")) {
-            *action = THERMAL_CRITICAL_ACTION_REBOOT;
-            return;
-    }
-
-> +
-> +out_default_action:
-> +       *action = THERMAL_CRITICAL_ACTION_SHUTDOWN;
-> +}
-> +
->  static int thermal_of_monitor_init(struct device_node *np, int *delay, int *pdelay)
->  {
->         int ret;
-> @@ -516,6 +541,8 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
->                 goto out_kfree_trips;
->         }
->
-> +       thermal_of_get_critical_action(np, &tz->action);
-> +
->         ret = thermal_zone_device_enable(tz);
->         if (ret) {
->                 pr_err("Failed to enabled thermal zone '%s', id=%d: %d\n",
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index b449a46766f5..b68e5734823d 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -34,6 +34,11 @@ struct thermal_cooling_device;
->  struct thermal_instance;
->  struct thermal_attr;
->
-> +enum thermal_action {
-> +       THERMAL_CRITICAL_ACTION_SHUTDOWN = 0, /* shutdown when crit temperature is reached */
-> +       THERMAL_CRITICAL_ACTION_REBOOT, /* reboot when crit temperature is reached */
-> +};
-> +
->  enum thermal_trend {
->         THERMAL_TREND_STABLE, /* temperature is stable */
->         THERMAL_TREND_RAISING, /* temperature is raising */
-> @@ -187,6 +192,7 @@ struct thermal_zone_device {
->         struct list_head node;
->         struct delayed_work poll_queue;
->         enum thermal_notify_event notify_event;
-> +       enum thermal_action action;
->  };
->
->  /**
-> --
+-Doug
