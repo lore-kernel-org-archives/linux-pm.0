@@ -2,122 +2,140 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8207C83F18
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFB29C83F01
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232186AbjH3Sfi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:35:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45078 "EHLO
+        id S234297AbjH3Sfm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:35:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45058 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242922AbjH3J6x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 05:58:53 -0400
-Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9ED43CC2
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:48 -0700 (PDT)
-Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-52a5c0d949eso4934168a12.0
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:48 -0700 (PDT)
+        with ESMTP id S245306AbjH3PH4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 11:07:56 -0400
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33E02B8
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 08:07:51 -0700 (PDT)
+Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-99c1d03e124so737832066b.2
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 08:07:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1693389527; x=1693994327; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=G8zevXRSNaiKUo9Os5nQfhkBpmvVMqAujkMCK+CVjDY=;
-        b=tZVG3LNBI9JP9Yakvkjv3Z78A6Q2LhTmRA5MbC76asj6/p745rYWXFcmDNWpENgxFK
-         2YhvVC58Nj5qrM0zsDzGSvulNJD9niv2/hgiaK274rZawvZ96PqfiyH5KhNke3jzXV0E
-         lIswS9hJNYtSfj11Z3jk3wqoFN9T4pU4CJ9px6ixcqpzXwmGnWDnyjk/N06UqSzU+/YM
-         8lJJ5xk6RjzMc5by5tGSPzBBbiLtl2Y+dwKlGPSkegWhElUkKHY69VVD9cGS8gXsOill
-         oi8uqqWh6z6+AEMIc6KXlpDsZLpEX1zRx18zzImvIpbrKbO4KtN0FDh4bTzr7PNUVUHj
-         CsrA==
+        d=linux-foundation.org; s=google; t=1693408069; x=1694012869; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=gsv2vy0NbRUitL+DqdxFoOF89HcPlyA0hr/AZRAjcvs=;
+        b=Beflx1uLMM8QWOA/AXulwxMsQBLj2h9RxVihZxZ3QTjSCmhtOscjQD4+pPafLuS46I
+         Ll/ApEsVa39WaHdJlbrTu0Db03gmi5Zs2+INKQcGR6y8PVUrGS4LaFXUyeSGEMiPXq+c
+         0Ml6DCCO9LWtS26HCsjRQM4vvqtEaylnXxfBo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693389527; x=1693994327;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=G8zevXRSNaiKUo9Os5nQfhkBpmvVMqAujkMCK+CVjDY=;
-        b=LSHmN6Yx81ploR8WI2NA+sBZr8WaB7/aBjkBuMlwz7M+ZyXv1uEJqqjcGKpV7fDlCs
-         yBTEdRMKm30uyen8rI6VtbryQ83IOKShTzdnpuo4iMxlL1XE3o8rM2T15MRPE601nm7E
-         1dD1y9QNLWmenoUwLrBgTA5a8cEYYTHczADl+v1WXUcEf2tWHQ+2aQcMkpkvEr//Xtvz
-         9nuSKW1AxX7S0JugbjaW4zdHxteX4wfR2jjQk6NKoe6xKY1kZ1wNChX0CL1LvM/G2UAU
-         3mNOJS8qMlkFolSpbIbkHHikrrA86sAMlwQaTJulRmuEwlTMXLM0Iml7Tl077mp6v7kR
-         qqtw==
-X-Gm-Message-State: AOJu0YxtQDwHM1wbuxEK/GMZ7OC3oguN+c6DgSmsH+a4GPZ3yQXcBTfC
-        c4fnmxKFtGOLj6htjyqpJODFrg==
-X-Google-Smtp-Source: AGHT+IGIItY/qwJX9U0CjB5BG63tTG4RhBnPNl0Zyu8WX4cT11uTgHliy+JPSD26Sm2+/I7M8qxJdQ==
-X-Received: by 2002:a17:907:a07c:b0:9a5:846d:d829 with SMTP id ia28-20020a170907a07c00b009a5846dd829mr1285814ejc.18.1693389527101;
-        Wed, 30 Aug 2023 02:58:47 -0700 (PDT)
-Received: from otso.luca.vpn.lucaweiss.eu (5073ED84.static.ziggozakelijk.nl. [80.115.237.132])
-        by smtp.gmail.com with ESMTPSA id i15-20020a1709064ecf00b009a2202bfce5sm6957130ejv.118.2023.08.30.02.58.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Aug 2023 02:58:46 -0700 (PDT)
-From:   Luca Weiss <luca.weiss@fairphone.com>
-Date:   Wed, 30 Aug 2023 11:58:28 +0200
-Subject: [PATCH 03/11] arm64: dts: qcom: sc7280: Move qfprom clock to
- chrome-common
+        d=1e100.net; s=20221208; t=1693408069; x=1694012869;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=gsv2vy0NbRUitL+DqdxFoOF89HcPlyA0hr/AZRAjcvs=;
+        b=UqYfQzhNxbaps8CxGhNQLu7uxjM4c4gYm7Sypa4CjfO1CmYXr7fmXg+BFoqYoABFSW
+         vYpYDAUzSBLA/xhFjdrlKUsy3C0j/WtejiO/ia88ps7yKi/Y9ZKoYLwV0UAX5VPc49uy
+         S438/DKBS+/Rz1Hb7dTiD1utbHuAcM7+nkKSfpqXPMVAbeRTwX3kkTk1XySRF/Y0sYv+
+         nTlXd+FPqA8rQFhdaw7B/kKgC4W9DVoDE6HHiYXpV74dnv3vQ0trcliY8ICoUul2Bq95
+         aXZz+OC7tzvzC4XTcPcgZYE4tFCnbVtdLGmEem7S8h7qmBPSZwjJIbigjmjRF/dhuiQT
+         QABw==
+X-Gm-Message-State: AOJu0Yw4XV56/CerJLZ39w0GdWPN6Q7WwQfQMoh8TfKQnVZGb6UHPXyv
+        j+xRGp0ZhVmfgKQjw8ZrCQ4PnaemX6V385nMyLgWTeLG
+X-Google-Smtp-Source: AGHT+IFiI94TBMpL8NgY+Ra/ijPrgcnf8/XQohcE7uJ0yEKYYLGo0YxIDp82qW9QRG5DYTe3clMjWA==
+X-Received: by 2002:a17:906:7951:b0:9a1:aa7b:482e with SMTP id l17-20020a170906795100b009a1aa7b482emr2325192ejo.26.1693408069528;
+        Wed, 30 Aug 2023 08:07:49 -0700 (PDT)
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com. [209.85.218.44])
+        by smtp.gmail.com with ESMTPSA id f23-20020a1709067f9700b0098748422178sm7278420ejr.56.2023.08.30.08.07.48
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 30 Aug 2023 08:07:48 -0700 (PDT)
+Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-99c0cb7285fso740249866b.0
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 08:07:48 -0700 (PDT)
+X-Received: by 2002:a17:906:cb:b0:9a2:1ec1:625d with SMTP id
+ 11-20020a17090600cb00b009a21ec1625dmr2019888eji.64.1693408068433; Wed, 30 Aug
+ 2023 08:07:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230830-fp5-initial-v1-3-5a954519bbad@fairphone.com>
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
-In-Reply-To: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
-To:     cros-qcom-dts-watchers@chromium.org,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org, Luca Weiss <luca.weiss@fairphone.com>
-X-Mailer: b4 0.12.3
+References: <20230829213441.310655-1-ulf.hansson@linaro.org>
+ <CAHk-=wg0gc4Cc90OL29Vr5gDtd4mnsKD+TxtoNtQbAryaWHkZQ@mail.gmail.com>
+ <CAHk-=wjLO=Jsdk2prq0piznMMCk+V0_fRaFRHEPuaALpF8J=hw@mail.gmail.com>
+ <96bb0de0-06d9-46f8-b02f-dc924afff13c@app.fastmail.com> <CAHk-=wi5Lh-NG_rvcx3Zyqd2Uhj76G4V73tWCFULhVzOU6e1xg@mail.gmail.com>
+ <CAPDyKFrJH-1uaPCwnWZDPi4MRtOm=N2CHSRyvjXRDbQ1y-oOrw@mail.gmail.com>
+In-Reply-To: <CAPDyKFrJH-1uaPCwnWZDPi4MRtOm=N2CHSRyvjXRDbQ1y-oOrw@mail.gmail.com>
+From:   Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Wed, 30 Aug 2023 08:07:31 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wj1j0HuNWKLEzi74zEr2rGnMLEFZjLvV=rzdqzQPqOzdQ@mail.gmail.com>
+Message-ID: <CAHk-=wj1j0HuNWKLEzi74zEr2rGnMLEFZjLvV=rzdqzQPqOzdQ@mail.gmail.com>
+Subject: Re: [GIT PULL] ARM: SoC/genpd driver updates for v6.6
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+        soc@kernel.org, linux-arm-kernel@lists.infradead.org,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On non-ChromeOS boards the clock cannot be touched, so move it in the
-chrome-common dtsi which is the only place where it's needed.
+On Wed, 30 Aug 2023 at 01:34, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> *) The new subsystem is solely intended for the generic PM domain
+> providers. Other PM domains providers, like the ACPI PM domains for
+> example (drivers/acpi/*), don't really belong here, at least in my
+> opinion. So, maybe "domain" isn't specific enough? Although, if not
+> using "genpd", I have no better suggestion.
 
-Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
----
- arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi | 5 +++++
- arch/arm64/boot/dts/qcom/sc7280.dtsi               | 2 --
- 2 files changed, 5 insertions(+), 2 deletions(-)
+I'm perfectly fine spelling out longer names. "drivers/power/generic"
+would be fine to me too, for example.
 
-diff --git a/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi b/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
-index 8eb30aa226a2..6cfcec1eabd9 100644
---- a/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
-@@ -59,6 +59,11 @@ &pmk8350_pon {
- 	status = "disabled";
- };
- 
-+&qfprom {
-+	clocks = <&gcc GCC_SEC_CTRL_CLK_SRC>;
-+	clock-names = "core";
-+};
-+
- /*
-  * Chrome designs always boot from SPI flash hooked up to the qspi.
-  *
-diff --git a/arch/arm64/boot/dts/qcom/sc7280.dtsi b/arch/arm64/boot/dts/qcom/sc7280.dtsi
-index 98a8d627a348..5c78038369fd 100644
---- a/arch/arm64/boot/dts/qcom/sc7280.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc7280.dtsi
-@@ -897,8 +897,6 @@ qfprom: efuse@784000 {
- 			      <0 0x00780000 0 0xa20>,
- 			      <0 0x00782000 0 0x120>,
- 			      <0 0x00786000 0 0x1fff>;
--			clocks = <&gcc GCC_SEC_CTRL_CLK_SRC>;
--			clock-names = "core";
- 			power-domains = <&rpmhpd SC7280_MX>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
+We can even use names that are longer than 8.3 or - this is heretical
+- the 14 characters of the original Unix filesystem. So it could be
+something even more descriptive.
 
--- 
-2.42.0
+I personally always use tab-completion when doing filenames, so at
+least to me, longer descriptive names that don't all start with the
+same thing are perfectly fine. Others may have more of a typing issue,
+so maybe 'generic' is better than 'generic-power-domain'.
 
+(On that note, exactly *because* I use tab-completion, I hate things like this:
+
+   drivers/scsi/scsi_{common,debug,error,ioctl,...}.c
+
+which is entirely redundant in how it just repeats the "scsi" part
+pointlessly, causes more typing, _and_ then also causes tab-completion
+to not work well. But that's a separate issue).
+
+> I get your point. I was indeed trying to obey the current naming
+> strategy, but I think it's not entirely easy to understand what is
+> prefered.
+
+It's not like we have any hard rules. Most of our naming ends up being
+pretty random, and everybody thinks that *their* TLA is so obvious,
+because they've been using it for ages.
+
+But the "please use common and industry-wide TLA's, write things out
+otherwise" is a good rule both when it comes to docs and to filenames.
+
+And that "industry-wide" is pretty important. Not some kind of "local
+jargon TLA".
+
+We as kernel people hopefully all know what "TLB" or "VM" means, but
+every time somebody sends me something like "x86 SEV" patches, I have
+to remind myself, and that's despite me being fairly intimate with
+x86.
+
+> Please advise me on how to move forward.
+
+Just to not cause pain during the merge window, I think I'll take the
+current trees (eventually - I still have other things pending first),
+but I would like
+
+ (a) a new pull request message that actually spells things out and
+does *not* use 'genpd' as if it was meaningful so that I can at least
+have documentation in the merge window
+
+ (b) a plan to rename that directory to something saner and more descriptive
+
+I don't care deeply about what the exact name in (b) is, but it should
+be real words that make sense in context. Or a very standard
+abbreviations (ie I consider "misc" to be a word, not an abbreviation,
+because I'd rather not see everybody butcher the spelling of it).
+
+                   Linus
