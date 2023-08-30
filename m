@@ -2,131 +2,124 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CAFFC83F1B
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07636C83F18
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233808AbjH3SgW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:36:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48090 "EHLO
+        id S237132AbjH3SgX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:36:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37848 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343615AbjH3QRB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 12:17:01 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12F62A6;
-        Wed, 30 Aug 2023 09:16:54 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 4cc119add8adde6f; Wed, 30 Aug 2023 18:16:53 +0200
-Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
-   discourages use of this host) smtp.mailfrom=rjwysocki.net 
-   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
-   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id CE60766316E;
-        Wed, 30 Aug 2023 18:16:52 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH v1 4/4] thermal: core: Drop thermal_zone_device_register()
-Date:   Wed, 30 Aug 2023 18:16:29 +0200
-Message-ID: <2245654.iZASKD2KPV@kreacher>
-In-Reply-To: <1870450.tdWV9SEqCh@kreacher>
-References: <1870450.tdWV9SEqCh@kreacher>
+        with ESMTP id S243163AbjH3KNz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 06:13:55 -0400
+Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 633A61BB
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:13:52 -0700 (PDT)
+Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-2bcbfb3705dso82110791fa.1
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:13:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1693390430; x=1693995230; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=YdAPmJ+gUCFqNSlanjBx/+9HxsVUQV3sb8g3UYCYJfk=;
+        b=jkV3xeRJlewnXct52aNYJpzjmw4cFDi4p3oTYRvEzt3bXDuNVwla4ZejY9sda/iYdk
+         o1TP9xeNodUiAv/U3LajLR7ClWDryeyTowfrSLhSWd6HgsMZDLWByisxrHU0XEki2izH
+         bsWhPXhQxaEdWKVE2mzT6iIKzFQp1Dk0nnm1pToi1GU6H4MIWURhkz/jCnthcKem2AvL
+         4fiXUdmaVAMmswQ8b8smlj0G5wMzK259KOnOlty1V1Mn4Pr10mAMK2JJn6s/tqJ+G272
+         6EtdBwwRSxUyt9Zw6qE0JBmb1P+Pul8u2b+XHbCclg78uxBinDVfxQwRlxPcY0YLOei7
+         oFDA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693390430; x=1693995230;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=YdAPmJ+gUCFqNSlanjBx/+9HxsVUQV3sb8g3UYCYJfk=;
+        b=OBSvh1Iwm+z/4Unqbd3ambVoqXEpxPdmHQg03NNuL9yS3ai8XxXUpcW2Yk1t1F15Gp
+         wqEXVuuewahYF8LwL1Snfltt37a0tJB/431FWzOJ+jzONDRDFI6CBNFGXODf6Ya1/CPE
+         hfx6omvAIlYUtwnq4yGRnHussWnZvb4t82r0xItWG1+G12h18heRrpx93O5Jo+RzkAp4
+         vABRYuGK1izRGviHCajcHLsLWqFlAa9FBtSOWnNKHzueW+EMxqjA2mK2JPrjTaacpDQa
+         KgAbKP/HcAjZ1pZRu/LC8Lu8+m7SDplYkShAoxLhu3alNpZKArqFrojBPkdNbClqBjKg
+         +Akg==
+X-Gm-Message-State: AOJu0Yx98WlT0Mc64OaxvpiO7h9PG36Ex1e4K1pV/oyLVI95VgRcJUXf
+        ma1EVvBYYoCumKA0N1ltG0v/oA==
+X-Google-Smtp-Source: AGHT+IFJtk5Io3NBnwgkN84+Cks6hSjcbc5Vmyu0QUtojJEiaUDOob7VHlmB1I3uo77civ/lNb4vcw==
+X-Received: by 2002:a05:6512:3eb:b0:4fe:1f27:8856 with SMTP id n11-20020a05651203eb00b004fe1f278856mr1028718lfq.7.1693390430643;
+        Wed, 30 Aug 2023 03:13:50 -0700 (PDT)
+Received: from [192.168.0.22] (77-252-46-238.static.ip.netia.com.pl. [77.252.46.238])
+        by smtp.gmail.com with ESMTPSA id v18-20020aa7cd52000000b0052545dbfdbasm6594172edw.48.2023.08.30.03.13.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 30 Aug 2023 03:13:50 -0700 (PDT)
+Message-ID: <b1c1b06c-7d7a-e4a9-0fb9-9ba1d0cf8346@linaro.org>
+Date:   Wed, 30 Aug 2023 12:13:48 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudefkedguddtudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhht
- vghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopegrmhhithhksehkvghrnhgvlhdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH 10/11] dt-bindings: arm: qcom: Add QCM6490 Fairphone 5
+Content-Language: en-US
+To:     Luca Weiss <luca.weiss@fairphone.com>,
+        cros-qcom-dts-watchers@chromium.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
+ <20230830-fp5-initial-v1-10-5a954519bbad@fairphone.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230830-fp5-initial-v1-10-5a954519bbad@fairphone.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 30/08/2023 11:58, Luca Weiss wrote:
+> Fairphone 5 is a smartphone based on the QCM6490 SoC.
+> 
+> Also allow qcom,board-id and qcom,msm-id for QCM6490 since it's required
+> by the bootloader.
+> 
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> ---
+>  Documentation/devicetree/bindings/arm/qcom.yaml | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+> index adbfaea32343..b09a41812cf0 100644
+> --- a/Documentation/devicetree/bindings/arm/qcom.yaml
+> +++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+> @@ -391,6 +391,11 @@ properties:
+>            - const: qcom,qrb2210
+>            - const: qcom,qcm2290
+>  
+> +      - items:
+> +          - enum:
+> +              - fairphone,fp5
+> +          - const: qcom,qcm6490
 
-There are no more users of thermal_zone_device_register(), so drop it
-from the core.
+You miss update to first list of SoCs for bootloader.
 
-Note that thermal_zone_device_register_with_trips() may be renamed to
-thermal_zone_device_register() in the future, but only after a grace
-period allowing all of the possible work in progress that may be using
-the latter to adjust.
+> +
+>        - description: Qualcomm Technologies, Inc. Distributed Unit 1000 platform
+>          items:
+>            - enum:
+> @@ -1074,6 +1079,7 @@ allOf:
+>                - qcom,msm8994
+>                - qcom,msm8996
+>                - qcom,msm8998
+> +              - qcom,qcm6490
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/thermal/thermal_core.c |   11 -----------
- include/linux/thermal.h        |   17 -----------------
- 2 files changed, 28 deletions(-)
+This is not a legacy SoC (released in 2022). Not allowed.
 
-Index: linux-pm/drivers/thermal/thermal_core.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -1389,17 +1389,6 @@ free_tz:
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_register_with_trips);
- 
--struct thermal_zone_device *thermal_zone_device_register(const char *type, int ntrips, int mask,
--							 void *devdata, struct thermal_zone_device_ops *ops,
--							 const struct thermal_zone_params *tzp, int passive_delay,
--							 int polling_delay)
--{
--	return thermal_zone_device_register_with_trips(type, NULL, ntrips, mask,
--						       devdata, ops, tzp,
--						       passive_delay, polling_delay);
--}
--EXPORT_SYMBOL_GPL(thermal_zone_device_register);
--
- struct thermal_zone_device *thermal_tripless_zone_device_register(
- 					const char *type,
- 					void *devdata,
-Index: linux-pm/include/linux/thermal.h
-===================================================================
---- linux-pm.orig/include/linux/thermal.h
-+++ linux-pm/include/linux/thermal.h
-@@ -300,14 +300,6 @@ int thermal_acpi_critical_trip_temp(stru
- #endif
- 
- #ifdef CONFIG_THERMAL
--struct thermal_zone_device *thermal_zone_device_register(
--					const char *type,
--					int num_trips, int mask,
--					void *devdata,
--					struct thermal_zone_device_ops *ops,
--					const struct thermal_zone_params *tzp,
--					int passive_delay, int polling_delay);
--
- struct thermal_zone_device *thermal_zone_device_register_with_trips(
- 					const char *type,
- 					struct thermal_trip *trips,
-@@ -364,15 +356,6 @@ int thermal_zone_device_enable(struct th
- int thermal_zone_device_disable(struct thermal_zone_device *tz);
- void thermal_zone_device_critical(struct thermal_zone_device *tz);
- #else
--static inline struct thermal_zone_device *thermal_zone_device_register(
--					const char *type,
--					int num_trips, int mask,
--					void *devdata,
--					struct thermal_zone_device_ops *ops,
--					const struct thermal_zone_params *tzp,
--					int passive_delay, int polling_delay)
--{ return ERR_PTR(-ENODEV); }
--
- static inline struct thermal_zone_device *thermal_zone_device_register_with_trips(
- 					const char *type,
- 					struct thermal_trip *trips,
-
-
+Best regards,
+Krzysztof
 
