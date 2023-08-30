@@ -2,162 +2,169 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BC52C83F20
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43EC8C83F1F
 	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231414AbjH3Sgc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:36:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45174 "EHLO
+        id S233700AbjH3Sga (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:36:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48094 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242931AbjH3J6y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 05:58:54 -0400
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com [IPv6:2a00:1450:4864:20::52f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2999CEA
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:49 -0700 (PDT)
-Received: by mail-ed1-x52f.google.com with SMTP id 4fb4d7f45d1cf-52889bc61b6so7077948a12.0
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1693389528; x=1693994328; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=4SsQzTd0CcGfAzL3R0FFK9QV29mUojsRfNBPae88g8g=;
-        b=3ta6vgSsXwkmzI3uHIXBPxgvz+aQDqvKU/wSlAgyCa6Hue0ctHwgySamfODNyhogSz
-         C4mM4SXirs5yj/6Opt5MYnZEbNj5PqTMtIIs1v3QWWW6tVhfRsovsrGi7OcbA02O/jWS
-         OoJJX7bHw5TRXPubti2XPQP9WNsdF/anBGWHfAOowEENRyZse3hmkOBWxGjfz9qUw5n6
-         NoCBzMtMucjvMTBkQY+BLrkk6nP/y67WlHJC0egwyDocoZ2ONe7U3Cx7bDjLRIrJou9i
-         74qacRNoRjZTlU1SJ5HVltLe7+jFJQdQC8WlH5+U902bmH1U2SD1/ql5/KZg95cL0EOS
-         vy+w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693389528; x=1693994328;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=4SsQzTd0CcGfAzL3R0FFK9QV29mUojsRfNBPae88g8g=;
-        b=dPbfN7M4CZfHCv9+GOn0jJX1FZfV5rC/X9aTX2LsATODM9fzhjQmz5PDzKRojDk0/2
-         BiQfODhGs7tvlgcFUxg5SaEyT6MZKg080PvDp4AsLxzGqjysarhTFN1z+c1VHPGE/tPh
-         6BhHGHmRv8V3rzvHEDAoiK40DMbSzOecH6B00TPq+9rjjxeMOtqE+1cHulz8q2wVFKmq
-         lrjTC/HTJYMxm8J9tsoIxlybo64VR3Ygv6VsMU7BFhNVSaOntYhG161chLLMELrt65Ey
-         PV9xriqIJgJm1HhujDZrOrIn7iSnFWMerSBt2rnUGbHxeDjfJ0ZV/I4p85kt4e7W1ISy
-         BHmA==
-X-Gm-Message-State: AOJu0Yxgk9YchUI6vFXiAJpuRzYtj+uTVN9Ct0AGfpAlbP1FdHa9Vik6
-        gPbjZp87tNC4LWMniLqws/Tjyg==
-X-Google-Smtp-Source: AGHT+IHvz39PhmZIwcIdO4tR0KRRtnyNlpxtI0fCwMzAk3lT5hLYxMJ+5ixn1nlE8yBoNrh2IR3eKA==
-X-Received: by 2002:a17:906:ef8c:b0:9a1:b85d:c95a with SMTP id ze12-20020a170906ef8c00b009a1b85dc95amr1190547ejb.62.1693389528268;
-        Wed, 30 Aug 2023 02:58:48 -0700 (PDT)
-Received: from otso.luca.vpn.lucaweiss.eu (5073ED84.static.ziggozakelijk.nl. [80.115.237.132])
-        by smtp.gmail.com with ESMTPSA id i15-20020a1709064ecf00b009a2202bfce5sm6957130ejv.118.2023.08.30.02.58.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Aug 2023 02:58:47 -0700 (PDT)
-From:   Luca Weiss <luca.weiss@fairphone.com>
-Date:   Wed, 30 Aug 2023 11:58:29 +0200
-Subject: [PATCH 04/11] arm64: dts: qcom: pm7250b: make SID configurable
+        with ESMTP id S1343616AbjH3QRB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 12:17:01 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF0CD1A1;
+        Wed, 30 Aug 2023 09:16:55 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 09f20c2cacebe463; Wed, 30 Aug 2023 18:16:54 +0200
+Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
+   discourages use of this host) smtp.mailfrom=rjwysocki.net 
+   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
+   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id A93FA66316E;
+        Wed, 30 Aug 2023 18:16:53 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Sebastian Reichel <sre@kernel.org>
+Subject: [PATCH v1 3/4] thermal: Use thermal_tripless_zone_device_register()
+Date:   Wed, 30 Aug 2023 18:14:57 +0200
+Message-ID: <8272147.T7Z3S40VBb@kreacher>
+In-Reply-To: <1870450.tdWV9SEqCh@kreacher>
+References: <1870450.tdWV9SEqCh@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230830-fp5-initial-v1-4-5a954519bbad@fairphone.com>
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
-In-Reply-To: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
-To:     cros-qcom-dts-watchers@chromium.org,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org, Luca Weiss <luca.weiss@fairphone.com>
-X-Mailer: b4 0.12.3
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudefkedguddtudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhht
+ vghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopegrmhhithhksehkvghrnhgvlhdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Like other Qualcomm PMICs the PM7250B can be used on different addresses
-on the SPMI bus. Use similar defines like the PMK8350 to make this
-possible.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+All of the remaining callers of thermal_zone_device_register()
+can use thermal_tripless_zone_device_register(), so make them
+do so in order to allow the former to be dropped.
+
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- arch/arm64/boot/dts/qcom/pm7250b.dtsi | 23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
+ drivers/power/supply/power_supply_core.c                |    4 ++--
+ drivers/thermal/armada_thermal.c                        |    5 +++--
+ drivers/thermal/dove_thermal.c                          |    4 ++--
+ drivers/thermal/intel/int340x_thermal/int3400_thermal.c |    6 +++---
+ drivers/thermal/kirkwood_thermal.c                      |    4 ++--
+ drivers/thermal/spear_thermal.c                         |    4 ++--
+ 6 files changed, 14 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/pm7250b.dtsi b/arch/arm64/boot/dts/qcom/pm7250b.dtsi
-index e8540c36bd99..3514de536baa 100644
---- a/arch/arm64/boot/dts/qcom/pm7250b.dtsi
-+++ b/arch/arm64/boot/dts/qcom/pm7250b.dtsi
-@@ -7,6 +7,15 @@
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/spmi/spmi.h>
+Index: linux-pm/drivers/power/supply/power_supply_core.c
+===================================================================
+--- linux-pm.orig/drivers/power/supply/power_supply_core.c
++++ linux-pm/drivers/power/supply/power_supply_core.c
+@@ -1305,8 +1305,8 @@ static int psy_register_thermal(struct p
  
-+/* This PMIC can be configured to be at different SIDs */
-+#ifndef PM7250B_SID
-+	#define PM7250B_SID 2
-+#endif
-+
-+#ifndef PM7250B_SID1
-+	#define PM7250B_SID1 3
-+#endif
-+
- / {
- 	thermal-zones {
- 		pm7250b-thermal {
-@@ -39,16 +48,16 @@ trip2 {
- };
+ 	/* Register battery zone device psy reports temperature */
+ 	if (psy_has_property(psy->desc, POWER_SUPPLY_PROP_TEMP)) {
+-		psy->tzd = thermal_zone_device_register(psy->desc->name,
+-				0, 0, psy, &psy_tzd_ops, NULL, 0, 0);
++		psy->tzd = thermal_tripless_zone_device_register(psy->desc->name,
++				psy, &psy_tzd_ops, NULL);
+ 		if (IS_ERR(psy->tzd))
+ 			return PTR_ERR(psy->tzd);
+ 		ret = thermal_zone_device_enable(psy->tzd);
+Index: linux-pm/drivers/thermal/armada_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/armada_thermal.c
++++ linux-pm/drivers/thermal/armada_thermal.c
+@@ -876,8 +876,9 @@ static int armada_thermal_probe(struct p
+ 		/* Wait the sensors to be valid */
+ 		armada_wait_sensor_validity(priv);
  
- &spmi_bus {
--	pmic@2 {
-+	pmic@PM7250B_SID {
- 		compatible = "qcom,pm7250b", "qcom,spmi-pmic";
--		reg = <0x2 SPMI_USID>;
-+		reg = <PM7250B_SID SPMI_USID>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
+-		tz = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
+-						  &legacy_ops, NULL, 0, 0);
++		tz = thermal_tripless_zone_device_register(priv->zone_name,
++							   priv, &legacy_ops,
++							   NULL);
+ 		if (IS_ERR(tz)) {
+ 			dev_err(&pdev->dev,
+ 				"Failed to register thermal zone device\n");
+Index: linux-pm/drivers/thermal/dove_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/dove_thermal.c
++++ linux-pm/drivers/thermal/dove_thermal.c
+@@ -139,8 +139,8 @@ static int dove_thermal_probe(struct pla
+ 		return ret;
+ 	}
  
- 		pm7250b_temp: temp-alarm@2400 {
- 			compatible = "qcom,spmi-temp-alarm";
- 			reg = <0x2400>;
--			interrupts = <0x2 0x24 0x0 IRQ_TYPE_EDGE_BOTH>;
-+			interrupts = <PM7250B_SID 0x24 0x0 IRQ_TYPE_EDGE_BOTH>;
- 			io-channels = <&pm7250b_adc ADC5_DIE_TEMP>;
- 			io-channel-names = "thermal";
- 			#thermal-sensor-cells = <0>;
-@@ -60,7 +69,7 @@ pm7250b_adc: adc@3100 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			#io-channel-cells = <1>;
--			interrupts = <0x2 0x31 0x0 IRQ_TYPE_EDGE_RISING>;
-+			interrupts = <PM7250B_SID 0x31 0x0 IRQ_TYPE_EDGE_RISING>;
+-	thermal = thermal_zone_device_register("dove_thermal", 0, 0,
+-					       priv, &ops, NULL, 0, 0);
++	thermal = thermal_tripless_zone_device_register("dove_thermal", priv,
++							&ops, NULL);
+ 	if (IS_ERR(thermal)) {
+ 		dev_err(&pdev->dev,
+ 			"Failed to register thermal zone device\n");
+Index: linux-pm/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ linux-pm/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -609,9 +609,9 @@ static int int3400_thermal_probe(struct
  
- 			channel@0 {
- 				reg = <ADC5_REF_GND>;
-@@ -141,7 +150,7 @@ channel@99 {
- 		pm7250b_adc_tm: adc-tm@3500 {
- 			compatible = "qcom,spmi-adc-tm5";
- 			reg = <0x3500>;
--			interrupts = <0x2 0x35 0x0 IRQ_TYPE_EDGE_RISING>;
-+			interrupts = <PM7250B_SID 0x35 0x0 IRQ_TYPE_EDGE_RISING>;
- 			#thermal-sensor-cells = <1>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -159,9 +168,9 @@ pm7250b_gpios: pinctrl@c000 {
- 		};
- 	};
+ 	evaluate_odvp(priv);
  
--	pmic@3 {
-+	pmic@PM7250B_SID1 {
- 		compatible = "qcom,pm7250b", "qcom,spmi-pmic";
--		reg = <0x3 SPMI_USID>;
-+		reg = <PM7250B_SID1 SPMI_USID>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 	};
+-	priv->thermal = thermal_zone_device_register("INT3400 Thermal", 0, 0,
+-						priv, &int3400_thermal_ops,
+-						&int3400_thermal_params, 0, 0);
++	priv->thermal = thermal_tripless_zone_device_register("INT3400 Thermal", priv,
++							      &int3400_thermal_ops,
++							      &int3400_thermal_params);
+ 	if (IS_ERR(priv->thermal)) {
+ 		result = PTR_ERR(priv->thermal);
+ 		goto free_art_trt;
+Index: linux-pm/drivers/thermal/kirkwood_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/kirkwood_thermal.c
++++ linux-pm/drivers/thermal/kirkwood_thermal.c
+@@ -71,8 +71,8 @@ static int kirkwood_thermal_probe(struct
+ 	if (IS_ERR(priv->sensor))
+ 		return PTR_ERR(priv->sensor);
+ 
+-	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
+-					       priv, &ops, NULL, 0, 0);
++	thermal = thermal_tripless_zone_device_register("kirkwood_thermal",
++							priv, &ops, NULL);
+ 	if (IS_ERR(thermal)) {
+ 		dev_err(&pdev->dev,
+ 			"Failed to register thermal zone device\n");
+Index: linux-pm/drivers/thermal/spear_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/spear_thermal.c
++++ linux-pm/drivers/thermal/spear_thermal.c
+@@ -122,8 +122,8 @@ static int spear_thermal_probe(struct pl
+ 	stdev->flags = val;
+ 	writel_relaxed(stdev->flags, stdev->thermal_base);
+ 
+-	spear_thermal = thermal_zone_device_register("spear_thermal", 0, 0,
+-				stdev, &ops, NULL, 0, 0);
++	spear_thermal = thermal_tripless_zone_device_register("spear_thermal",
++							      stdev, &ops, NULL);
+ 	if (IS_ERR(spear_thermal)) {
+ 		dev_err(&pdev->dev, "thermal zone device is NULL\n");
+ 		ret = PTR_ERR(spear_thermal);
 
--- 
-2.42.0
+
 
