@@ -2,80 +2,120 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E421CC83F2D
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84AB5C83F28
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237465AbjH3SgR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:36:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48116 "EHLO
+        id S236843AbjH3SgQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:36:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37178 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343617AbjH3QRC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 12:17:02 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 211E11A6;
-        Wed, 30 Aug 2023 09:16:57 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 8eb6230b9429bc7e; Wed, 30 Aug 2023 18:16:56 +0200
-Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
-   discourages use of this host) smtp.mailfrom=rjwysocki.net 
-   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
-   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 1A54266316E;
-        Wed, 30 Aug 2023 18:16:56 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH v1 0/4] thermal: Eliminate thermal_zone_device_register()
-Date:   Wed, 30 Aug 2023 18:10:31 +0200
-Message-ID: <1870450.tdWV9SEqCh@kreacher>
+        with ESMTP id S245487AbjH3PT0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 11:19:26 -0400
+Received: from mail-oo1-xc2e.google.com (mail-oo1-xc2e.google.com [IPv6:2607:f8b0:4864:20::c2e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A1DBDE8;
+        Wed, 30 Aug 2023 08:19:23 -0700 (PDT)
+Received: by mail-oo1-xc2e.google.com with SMTP id 006d021491bc7-5733d11894dso1047750eaf.0;
+        Wed, 30 Aug 2023 08:19:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1693408763; x=1694013563; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=YRqfnUZnc3uxFvV3HrsnMgzxpGHGjPJ2UGCyRPe16Ro=;
+        b=Q+z/A4ggrBCdqc7sDQ33EIrrxtqe3fLJBNhMb6VytJEGwyIF8Eo92IWlgryAl9mkki
+         lceMD3cpZO8J7wjqe/S7L1bEn1AUNkFTrv2g/kBIptDAvXMXH2cMB2NYbvlXAuUXcIZq
+         6O2NGpSj8vlyRSkPNHQzSJfN5zjEeUTaHhgQKagIBv1u8bfUFw+DPgI6wnnl3Nzk4C+F
+         Da9o60rIrsZHEeBRlz+eVPxERlq4IXv8nYa2BJoXvwi5TjqAkM5Eojncqfp8W9V/8E4s
+         wrasiLy3SaOYCaeC4jgjhFssrT5LGaBnncGOGtxfCx5IXIu8FkTUYASzgmxeCk+COL/C
+         FLEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693408763; x=1694013563;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=YRqfnUZnc3uxFvV3HrsnMgzxpGHGjPJ2UGCyRPe16Ro=;
+        b=hZw5mBBWOIP+yYbLRvzFF16SKqI9YOnGvGTkC0rs2+wWzfZMbNwNdsl70Hxktp8WGE
+         fNqEHMr3lQl1HuQ5ZsdXBbzY5h7OyijLnzpsr2FMBWBe3LH1fZvr4NVZ+dGYa84ysNHG
+         BJjEShv+EfVAO7m72K1s8EMJAnu652sVpCJcrw/Wlg+o9uUpZ2oM32egPd1qw2iGf2zY
+         QOpiGlpf0xGrTdL2zFieAyL4IRuntH59VFHYMbvy7/pwFzCO7vAIAPWuNf0B7QpMWFri
+         HDGK00HBMf4LACXmIktuY5G5aG+qhI2Cs9d6TAcSBQmXpqMAxRX8ZdHWqwq/mIScXZA+
+         Gg7Q==
+X-Gm-Message-State: AOJu0YzVK5DVPSv7w8r4kYl4uzFmsCdX8K3F7jxo24vcwBvYDnj+hMS0
+        5q0bTDg3Hf/H5pzIWIxY6H/Y8GgEeAc=
+X-Google-Smtp-Source: AGHT+IHktPBlSz49uYINVyiNNhDIO7TAVM7OzuEgcvHckysoiQK+MP045yQtnayLIlBeMhfFQ5Wieg==
+X-Received: by 2002:a05:6830:459d:b0:6bc:a824:2750 with SMTP id az29-20020a056830459d00b006bca8242750mr2427595otb.2.1693408762641;
+        Wed, 30 Aug 2023 08:19:22 -0700 (PDT)
+Received: from fabio-Precision-3551.. ([2804:14c:485:4b61:5158:34be:358c:6304])
+        by smtp.gmail.com with ESMTPSA id d24-20020a056830139800b006b884bbb4f3sm5672559otq.26.2023.08.30.08.19.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 30 Aug 2023 08:19:21 -0700 (PDT)
+From:   Fabio Estevam <festevam@gmail.com>
+To:     rafael@kernel.org
+Cc:     daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
+        linux-pm@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        robh+dt@kernel.org, conor+dt@kernel.org,
+        devicetree@vger.kernel.org, Fabio Estevam <festevam@denx.de>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v6 1/3] dt-bindings: thermal-zones: Document critical-action
+Date:   Wed, 30 Aug 2023 12:19:06 -0300
+Message-Id: <20230830151908.2149847-1-festevam@gmail.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudefkedguddtudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeffffffkefgheehffelteeiveeffeevhfelteejvddvieejjeelvdeiheeuveeuffenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghl
- rdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopegrmhhithhksehkvghrnhgvlhdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Everyone,
+From: Fabio Estevam <festevam@denx.de>
 
-After recently merged changes in the ACPI thermal and Intel DTS IOSF thermal
-drivers, the only callers of thermal_zone_device_register() are the ones
-using it for registering thermal zones without any trip points.  They all
-pass zeros as 4 (out of 8) function arguments, so retaining the full
-thermal_zone_device_register() just for this purpose seems a bit excessive.
+Document the critical-action property to describe the thermal action
+the OS should perform after the critical temperature is reached.
 
-For this reason, the series adds a thermal_zone_device_register()
-replacement tailored to this specific use case and called
-thermal_tripless_zone_device_register() [2/4] and makes all of the
-existing callers of the former use the replacement [3/4].  This allows
-thermal_zone_device_register() to be dropped [4/4].
+The possible values are "shutdown" and "reboot".
 
-The first patch is just a clean up making function headers in thermal.h
-a bit more consistent.
+The motivation for introducing the critical-action property is that
+different systems may need different thermal actions when the critical
+temperature is reached.
 
-This series it not intended to make any functional impact, but if the
-changes are fine with everyone, I would like to introduce them during the
-ongoing merge window to prevent the obsolete interface from lingering.
+For example, a desktop PC may want the OS to trigger a shutdown
+when the critical temperature is reached.
 
-The series applies to the linux-next branch in linux-pm.git.
+However, in some embedded cases, such behavior does not suit well,
+as the board may be unattended in the field and rebooting may be a
+better approach.
 
-Thanks!
+The bootloader may also benefit from this new property as it can check
+the SoC temperature and in case the temperature is above the critical
+point, it can trigger a shutdown or reboot accordingly.
 
+Signed-off-by: Fabio Estevam <festevam@denx.de>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+Changes since v5:
+- None.
 
+ .../devicetree/bindings/thermal/thermal-zones.yaml       | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+index 4f3acdc4dec0..c2e4d28f885b 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
++++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+@@ -75,6 +75,15 @@ patternProperties:
+           framework and assumes that the thermal sensors in this zone
+           support interrupts.
+ 
++      critical-action:
++        $ref: /schemas/types.yaml#/definitions/string
++        description:
++          The action the OS should perform after the critical temperature is reached.
++
++        enum:
++          - shutdown
++          - reboot
++
+       thermal-sensors:
+         $ref: /schemas/types.yaml#/definitions/phandle-array
+         maxItems: 1
+-- 
+2.34.1
 
