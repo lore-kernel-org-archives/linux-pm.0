@@ -2,95 +2,78 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 946E5C83F1A
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F41E2C83F19
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231745AbjH3SgG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:36:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51970 "EHLO
+        id S236416AbjH3SgE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:36:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56672 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243027AbjH3KId (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 06:08:33 -0400
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2ABE1B3
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:08:28 -0700 (PDT)
-Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-4ffa248263cso8389443e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:08:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693390107; x=1693994907; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=8Nxn5up4QextamTtIqwX1SELm1/pR8j6Wz4/nOgg0Fk=;
-        b=JoYBvOJcSozegsbQV/FmZWEE8MK24oh+oklOxl5RhYTi1Mqx+hbEk3FG12c1cnTTmm
-         omviN62AGBfvENZvLSp94GygoYvuCtrH/yAdx+5NC8sfV62/LMPAPTSzVN5YL5dG8ZOr
-         Jd3DibpzgwhRJ3+jhFP+VgBr8VR0R3EeZKmGuO/sr+hMCHzddzNHLlGzJpjR+bfS/zs7
-         WAgnF6R2yRH8TMZlcitYSYWaWXM3YZSVJmiEv2G4p2znGDSs+wf3IiGAz1GdN8q7MCjz
-         5FecveOcPv/GSJxlm6Ea6cPe4Glup0tDbzj09Jqe3QcdJPdz/9pZVcXFCZvyq8NErJ9v
-         eADw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693390107; x=1693994907;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=8Nxn5up4QextamTtIqwX1SELm1/pR8j6Wz4/nOgg0Fk=;
-        b=Gwx5pmYZ5871EZlyyKv6qmUnU+ZT/ZAEF6+stCXnKtsrr6ZUh6Eo9DVZHIqTZuGTz7
-         kfvhNsz8NFrtWZUCW7S7EymE/BGlhBRNJ9jyLRVWpLG91qOp7RNrhizUSQjGaYKMDShV
-         Eg/Y9FeEcoLhR+TtKAllQvawvhICuYL7FoplGsKuzH5AbdNcNO1izDOdykrK8/opmAwU
-         5LB2NgnV4riNbF8q1f68D+wKJ7Mgmk70FgQYvtzt3aYRYqP5SdcyIcj6IfOW4Hh2d2P2
-         ci4bx19ro9MjhJPaoz9jQrRUn2xi9A3yAX9IBUnpO2yZpo/Ggx45+HUt3jhVcHYeXBOX
-         agkQ==
-X-Gm-Message-State: AOJu0Yw8vTOo0r9F4j1D1yUwdsPL/mBB2hOLjGaSteyzw8mTwCHjZ5Ec
-        SU7xDBY7bC7NTiZm4XsMsHJj8g==
-X-Google-Smtp-Source: AGHT+IEy9l5e5D7iUZ81rJNqEUxrnyMDRnW81xox92SRBSuK5C6pMKRSp+8HSo+rFsIkbxdhltWdLA==
-X-Received: by 2002:a05:6512:3111:b0:4fd:fad6:5495 with SMTP id n17-20020a056512311100b004fdfad65495mr1017342lfb.18.1693390107091;
-        Wed, 30 Aug 2023 03:08:27 -0700 (PDT)
-Received: from [192.168.0.22] (77-252-46-238.static.ip.netia.com.pl. [77.252.46.238])
-        by smtp.gmail.com with ESMTPSA id i5-20020aa7dd05000000b0052333d7e320sm6591175edv.27.2023.08.30.03.08.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 30 Aug 2023 03:08:26 -0700 (PDT)
-Message-ID: <8cb65ac9-a8f0-2df9-cd05-e6afdf8f7e36@linaro.org>
-Date:   Wed, 30 Aug 2023 12:08:25 +0200
+        with ESMTP id S245427AbjH3POj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 11:14:39 -0400
+Received: from phobos.denx.de (phobos.denx.de [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0F9BE8;
+        Wed, 30 Aug 2023 08:14:34 -0700 (PDT)
+Received: from mail.denx.de (unknown [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: festevam@denx.de)
+        by phobos.denx.de (Postfix) with ESMTPSA id 16C8E863DD;
+        Wed, 30 Aug 2023 17:14:33 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+        s=phobos-20191101; t=1693408473;
+        bh=v2cAEiv6fXMr0+QRThhisPn328qsks5KhTTSdjVXwKs=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=uO1rCZZ/dIi3yn15jPe+VG36GXlnP4rCCNAeqtDHYSoOfwyk9v8gkeewDyUNnu7oy
+         SC0ow90yBXOo6OkGoSBrsrWZlQO1PiaLnqz4r1CBqg06ykGZfFn/Y+kI4ZJ6OmE8RV
+         0osjBnCETdHdc4sdUQoOI7hMrnEhd6c4PZICrW32CMSPhpes2wVEyb+GeeVwvybK9w
+         4YlVDsGqgfg5uihIPq1sPGGzvsXguwkJWDk89OvChN5URAYj8qMPd471yM36WpJDQj
+         WP5PFcKepenDvvseQBy59ySu+8aKlYiQs9bjeaCXO6tIRqTsXRgoTNv9PaOD+R6Flm
+         awPlMWO/Kh6aw==
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH 06/11] dt-bindings: pinctrl: qcom,sc7280: Allow
- gpio-reserved-ranges
-Content-Language: en-US
-To:     Luca Weiss <luca.weiss@fairphone.com>,
-        cros-qcom-dts-watchers@chromium.org,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
- <20230830-fp5-initial-v1-6-5a954519bbad@fairphone.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230830-fp5-initial-v1-6-5a954519bbad@fairphone.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
 Content-Transfer-Encoding: 7bit
+Date:   Wed, 30 Aug 2023 12:14:33 -0300
+From:   Fabio Estevam <festevam@denx.de>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Fabio Estevam <festevam@gmail.com>, daniel.lezcano@linaro.org,
+        amitk@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, robh+dt@kernel.org,
+        conor+dt@kernel.org, devicetree@vger.kernel.org
+Subject: Re: [PATCH v5 1/3] dt-bindings: thermal-zones: Document
+ critical-action
+In-Reply-To: <CAJZ5v0gexPEV2M5kfgCEUti=EE+_oR+wUjRboo0Rh=fPfNeDew@mail.gmail.com>
+References: <20230829194200.1901988-1-festevam@gmail.com>
+ <CAJZ5v0hZR3WD+wMA6c-Gt86hM5oCRZDcSsYF4SrYTvT2HtQ=fQ@mail.gmail.com>
+ <c5d72559-4a97-c865-e51e-855d2bc1edee@linaro.org>
+ <CAJZ5v0gexPEV2M5kfgCEUti=EE+_oR+wUjRboo0Rh=fPfNeDew@mail.gmail.com>
+Message-ID: <edd2bc8ea364959e89ed4c3d2cc11a1e@denx.de>
+X-Sender: festevam@denx.de
+User-Agent: Roundcube Webmail/1.3.6
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 30/08/2023 11:58, Luca Weiss wrote:
-> Allow the gpio-reserved-ranges property on SC7280 TLMM.
+Hi Rafael,
+
+On 30/08/2023 10:54, Rafael J. Wysocki wrote:
+
+> Well, as a matter of fact, it isn't, so I'm not sure where this is 
+> going.
 > 
-> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-> ---
+> Bool definitely allows the property to be not present, which means
+> that the default behavior is intended and this is all about overriding
+> a known default behavior.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+This devicetree property can be used on non-Linux environments, such as 
+bootloaders.
 
-Best regards,
-Krzysztof
+Bootloaders may have different default behavior than Linux, so 
+explicitly listing
+"shutdown" or "reboot" make it clearer, independent of the OS.
 
+Thanks
