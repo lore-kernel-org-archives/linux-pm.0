@@ -2,123 +2,117 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE6DAC83F01
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A59E7C83F17
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234434AbjH3Sfo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:35:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48104 "EHLO
+        id S231748AbjH3Sfq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:35:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343618AbjH3QRC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 12:17:02 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8579E1A3;
-        Wed, 30 Aug 2023 09:16:56 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 8838a3f6621ea0da; Wed, 30 Aug 2023 18:16:55 +0200
-Authentication-Results: v370.home.net.pl; spf=softfail (domain owner 
-   discourages use of this host) smtp.mailfrom=rjwysocki.net 
-   (client-ip=195.136.19.94; helo=[195.136.19.94]; 
-   envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 74E3966316E;
-        Wed, 30 Aug 2023 18:16:54 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH v1 2/4] thermal: core: Add function for registering tripless thermal zones
-Date:   Wed, 30 Aug 2023 18:13:35 +0200
-Message-ID: <3255685.aeNJFYEL58@kreacher>
-In-Reply-To: <1870450.tdWV9SEqCh@kreacher>
-References: <1870450.tdWV9SEqCh@kreacher>
+        with ESMTP id S242968AbjH3J67 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 05:58:59 -0400
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7A3DCDC
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:56 -0700 (PDT)
+Received: by mail-ej1-x636.google.com with SMTP id a640c23a62f3a-99cce6f7de2so704280366b.3
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=fairphone.com; s=fair; t=1693389535; x=1693994335; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=4WJXFKBPivuvpwQ6jhhHOzI4G6pGyYQNiDeZ/V0B5Vw=;
+        b=MoZY9pPxilgBBRsXnGVnVL3hic/IHnNnC5KVyj4Vty5j7wogS+MJ41fN0hwrEJLR9Y
+         YND617iI56GqC4jKvA7UoFdNJxp6TpRZvMJ4DR1rw8Ct4B/COsj6KqILPCW0iTcRqAJ2
+         eW0yx+VYeG2XnCiVNYkaOq1wbHOs6USJ0aJERHb0JQd13MFJtCf6SwBTPWy/rULJSSQD
+         +HNHQxQ6tfXb3hwOldfIyEYu3DhOmOW8YBLdhgIXe1YR1wR0rubMvN7EnEUo1ZIAJa6+
+         KzRyDefkYyPRkJ7nIkfiuRiLNVSxTtb6m6UyqU6PPvI/f+/AQqLiNTS70ws2atv2VoKs
+         P3qw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693389535; x=1693994335;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=4WJXFKBPivuvpwQ6jhhHOzI4G6pGyYQNiDeZ/V0B5Vw=;
+        b=UYUYuZKCgpRKqGhVH0dkzzmQndqzIs3vP7d/lJw8kz3hYnv/N50hGFTvdOiDPKT0Hz
+         8mRy1d/XCjVeZgSNUwZY63lIcMAjfgnfnEpLXe7Uk0HiMW80/kFZO6szlfI3LvoloAYn
+         BtNSBt9m/yQtsCHHcEx/UuAwoKVOwc6R+IkMUEgEW6R+LShdElcHOGCCUbwz1glDzQau
+         cX+mW7+Aj+U8Gv2LCEvNJSwgXULOOPB9JaWDEBGT4q+TSf/tsYtmKEdS06zRlGX9QskQ
+         9O7yYrFCQk7F3v1ZW/Bjx1O9iXyU2645mmP3rH2jNTVbtu96tcBxEXTMRgIh6kv70jbi
+         SYjw==
+X-Gm-Message-State: AOJu0YzPWbx0fAi0NjG/6E+mdWR0qdZj6YJn4cgKHebVfWU82d25yVRk
+        07lvkOc99B+8TC06CeiEn0YNXQ==
+X-Google-Smtp-Source: AGHT+IFKLkuiehndiEFuV1D5Mo9Zs1yQrxnE7Qv9Ywvmj3voRbSWIyG43aNwn+Yw9fOV3z1/ycB/Qg==
+X-Received: by 2002:a17:906:301b:b0:9a1:aea2:d18d with SMTP id 27-20020a170906301b00b009a1aea2d18dmr1164824ejz.48.1693389535513;
+        Wed, 30 Aug 2023 02:58:55 -0700 (PDT)
+Received: from otso.luca.vpn.lucaweiss.eu (5073ED84.static.ziggozakelijk.nl. [80.115.237.132])
+        by smtp.gmail.com with ESMTPSA id i15-20020a1709064ecf00b009a2202bfce5sm6957130ejv.118.2023.08.30.02.58.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 30 Aug 2023 02:58:55 -0700 (PDT)
+From:   Luca Weiss <luca.weiss@fairphone.com>
+Date:   Wed, 30 Aug 2023 11:58:35 +0200
+Subject: [PATCH 10/11] dt-bindings: arm: qcom: Add QCM6490 Fairphone 5
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudefkedguddtudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhht
- vghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopegrmhhithhksehkvghrnhgvlhdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230830-fp5-initial-v1-10-5a954519bbad@fairphone.com>
+References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
+In-Reply-To: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
+To:     cros-qcom-dts-watchers@chromium.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org, Luca Weiss <luca.weiss@fairphone.com>
+X-Mailer: b4 0.12.3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Fairphone 5 is a smartphone based on the QCM6490 SoC.
 
-Multiple callers of thermal_zone_device_register() don't pass any trips
-to it and they might use a shortened argument list for that, so add
-a special function with fewer arguments for this purpose.
+Also allow qcom,board-id and qcom,msm-id for QCM6490 since it's required
+by the bootloader.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 ---
- drivers/thermal/thermal_core.c |   11 +++++++++++
- include/linux/thermal.h        |   13 +++++++++++++
- 2 files changed, 24 insertions(+)
+ Documentation/devicetree/bindings/arm/qcom.yaml | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Index: linux-pm/drivers/thermal/thermal_core.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -1400,6 +1400,17 @@ struct thermal_zone_device *thermal_zone
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_register);
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index adbfaea32343..b09a41812cf0 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -391,6 +391,11 @@ properties:
+           - const: qcom,qrb2210
+           - const: qcom,qcm2290
  
-+struct thermal_zone_device *thermal_tripless_zone_device_register(
-+					const char *type,
-+					void *devdata,
-+					struct thermal_zone_device_ops *ops,
-+					const struct thermal_zone_params *tzp)
-+{
-+	return thermal_zone_device_register_with_trips(type, NULL, 0, 0, devdata,
-+						       ops, tzp, 0, 0);
-+}
-+EXPORT_SYMBOL_GPL(thermal_tripless_zone_device_register);
++      - items:
++          - enum:
++              - fairphone,fp5
++          - const: qcom,qcm6490
 +
- void *thermal_zone_device_priv(struct thermal_zone_device *tzd)
- {
- 	return tzd->devdata;
-Index: linux-pm/include/linux/thermal.h
-===================================================================
---- linux-pm.orig/include/linux/thermal.h
-+++ linux-pm/include/linux/thermal.h
-@@ -317,6 +317,12 @@ struct thermal_zone_device *thermal_zone
- 					const struct thermal_zone_params *tzp,
- 					int passive_delay, int polling_delay);
- 
-+struct thermal_zone_device *thermal_tripless_zone_device_register(
-+					const char *type,
-+					void *devdata,
-+					struct thermal_zone_device_ops *ops,
-+					const struct thermal_zone_params *tzp);
-+
- void thermal_zone_device_unregister(struct thermal_zone_device *tz);
- 
- void *thermal_zone_device_priv(struct thermal_zone_device *tzd);
-@@ -377,6 +383,13 @@ static inline struct thermal_zone_device
- 					int passive_delay, int polling_delay);
- { return ERR_PTR(-ENODEV); }
- 
-+static inline struct thermal_zone_device *thermal_tripless_zone_device_register(
-+					const char *type,
-+					void *devdata,
-+					struct thermal_zone_device_ops *ops,
-+					const struct thermal_zone_params *tzp)
-+{ return ERR_PTR(-ENODEV); }
-+
- static inline void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- { }
- 
+       - description: Qualcomm Technologies, Inc. Distributed Unit 1000 platform
+         items:
+           - enum:
+@@ -1074,6 +1079,7 @@ allOf:
+               - qcom,msm8994
+               - qcom,msm8996
+               - qcom,msm8998
++              - qcom,qcm6490
+               - qcom,sdm450
+               - qcom,sdm630
+               - qcom,sdm632
 
-
+-- 
+2.42.0
 
