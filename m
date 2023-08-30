@@ -2,47 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E67C8C83F1A
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DC99C83F1B
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230195AbjH3Sfc convert rfc822-to-8bit (ORCPT
+        id S235597AbjH3Sfc convert rfc822-to-8bit (ORCPT
         <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 30 Aug 2023 14:35:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47466 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44122 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245590AbjH3Pip (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 11:38:45 -0400
-Received: from mail-ot1-f51.google.com (mail-ot1-f51.google.com [209.85.210.51])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7568B185;
-        Wed, 30 Aug 2023 08:38:41 -0700 (PDT)
-Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-6bf106fb6a0so988763a34.0;
-        Wed, 30 Aug 2023 08:38:41 -0700 (PDT)
+        with ESMTP id S244761AbjH3NzN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 09:55:13 -0400
+Received: from mail-oo1-f53.google.com (mail-oo1-f53.google.com [209.85.161.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E97F8E8;
+        Wed, 30 Aug 2023 06:55:10 -0700 (PDT)
+Received: by mail-oo1-f53.google.com with SMTP id 006d021491bc7-5711d5dac14so1321236eaf.0;
+        Wed, 30 Aug 2023 06:55:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693409921; x=1694014721;
+        d=1e100.net; s=20221208; t=1693403710; x=1694008510;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=rhMs9V81K6FB1BimkjzkWIito0Rxj1AsF45fFqPpSDY=;
-        b=VYE0uhUqyPTZphfymf+g8rW9Wg46GN8v8ec4XhEaf8fD9oaN/eaVRmCy5IvrLNUGUu
-         7GprQBbSdqaRCDrT3dfTcUlhnJlENMAYp9+1T6ZIiA04ioxUdCwMAxNL2cRWE/xIQ9wx
-         XkzTQANAmAojQa8amlFiM1FkH/EMV1ImSLRw6aifbaK9Ib6jPG7THjktMiJnRq4WmTJ2
-         S++5Y/Qbsu6NrZ8Ed2Qej/aI1rYdGivTcaFC4wxCkIaAG/VRF2YjNrs5721C7R1U3Erg
-         k5TS8d1rsV2+RUmrFiBo+pZ/B9da3I0SQSpFgi2dMgUUk+DkPr+N8/bQSctE9xKF/y8Z
-         2IgA==
-X-Gm-Message-State: AOJu0YxfN+twBcqUrGV2uA+r0REiozJ0MdzjSJU599Zwv0b4rTEpXhby
-        Rg4m4jl29qsJG6mNMhYSAgCsDg0S25sPCJw8n80=
-X-Google-Smtp-Source: AGHT+IGEievzo3k6W+ScbVtsgWJb9qlrVRVYWsPxxuprgk/UCICWIhG0InifTM3bKHfQPZVb7OFmVgA5k1Ia+lB+YNI=
-X-Received: by 2002:a4a:ca87:0:b0:573:4a72:6ec with SMTP id
- x7-20020a4aca87000000b005734a7206ecmr2478140ooq.1.1693409920640; Wed, 30 Aug
- 2023 08:38:40 -0700 (PDT)
+        bh=XZv8/1ddCjCFIB4WUHiW7nPhVXBzPUUn+j0xqd454kk=;
+        b=Vtna5FpTuYaCEuzZVcNgHMaezQwHUcFOvevAmukX0h5fkZWKHmIfPFlD5jDcYi1NIF
+         LSLVbgqyI5/LPMRqhgzUu6uRhrpuyo4SxqDgTRUAQDYeJpWT3qf0Tx0wSB1d51NrlUVP
+         TUD+GA9SzE7x7pFAoPYHCgG+blkJHAzy9EWQVyANplDav3S2xpfMZZDFPt7/1wdizfeP
+         VRd0kk8QdXrnL7CI7GKxr6/X3NcUQNAk48vukK5vbzsi1BJu62cI/pLjnonnYwjqhYkp
+         XOY+TCLsTlbuPW4Hgk3rrVsyCq+k2g0VeqqQlhfvDRtaEQ5v6V/GJUZcQC40xIWrhpKH
+         WJMQ==
+X-Gm-Message-State: AOJu0YwUwJ8xGOrl/Anoqj9EGLjuK5Fm1HNCIOS2gCxdq2R0GvKODjtq
+        lTnzCSiROxrud2HNJZiuQ0f6qe+qOxzlliaqVX8=
+X-Google-Smtp-Source: AGHT+IFkOfV/Y+byHhRZ0TCeaZuJhHV1eq6BIDMnfnES1FFM8rzU+/3+pvEiV76Mpklm3B0fccCb50WWmh1nPBGK3xk=
+X-Received: by 2002:a4a:bd8f:0:b0:573:2a32:6567 with SMTP id
+ k15-20020a4abd8f000000b005732a326567mr2133213oop.0.1693403710232; Wed, 30 Aug
+ 2023 06:55:10 -0700 (PDT)
 MIME-Version: 1.0
 References: <20230829194200.1901988-1-festevam@gmail.com> <CAJZ5v0hZR3WD+wMA6c-Gt86hM5oCRZDcSsYF4SrYTvT2HtQ=fQ@mail.gmail.com>
- <c5d72559-4a97-c865-e51e-855d2bc1edee@linaro.org> <CAJZ5v0gexPEV2M5kfgCEUti=EE+_oR+wUjRboo0Rh=fPfNeDew@mail.gmail.com>
- <88f29c9a-3faf-1470-6865-27f88b135f87@linaro.org>
-In-Reply-To: <88f29c9a-3faf-1470-6865-27f88b135f87@linaro.org>
+ <c5d72559-4a97-c865-e51e-855d2bc1edee@linaro.org>
+In-Reply-To: <c5d72559-4a97-c865-e51e-855d2bc1edee@linaro.org>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 30 Aug 2023 17:38:29 +0200
-Message-ID: <CAJZ5v0hY16=sMUkq=PaX1fVj4beiZv=dG0xaEzvzGkWqRdHZ6g@mail.gmail.com>
+Date:   Wed, 30 Aug 2023 15:54:58 +0200
+Message-ID: <CAJZ5v0gexPEV2M5kfgCEUti=EE+_oR+wUjRboo0Rh=fPfNeDew@mail.gmail.com>
 Subject: Re: [PATCH v5 1/3] dt-bindings: thermal-zones: Document critical-action
 To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -57,106 +56,83 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Aug 30, 2023 at 5:33 PM Krzysztof Kozlowski
+On Wed, Aug 30, 2023 at 3:07 PM Krzysztof Kozlowski
 <krzysztof.kozlowski@linaro.org> wrote:
 >
-> On 30/08/2023 15:54, Rafael J. Wysocki wrote:
-> > On Wed, Aug 30, 2023 at 3:07 PM Krzysztof Kozlowski
-> > <krzysztof.kozlowski@linaro.org> wrote:
+> On 30/08/2023 13:37, Rafael J. Wysocki wrote:
+> > On Tue, Aug 29, 2023 at 9:42 PM Fabio Estevam <festevam@gmail.com> wrote:
 > >>
-> >> On 30/08/2023 13:37, Rafael J. Wysocki wrote:
-> >>> On Tue, Aug 29, 2023 at 9:42 PM Fabio Estevam <festevam@gmail.com> wrote:
-> >>>>
-> >>>> From: Fabio Estevam <festevam@denx.de>
-> >>>>
-> >>>> Document the critical-action property to describe the thermal action
-> >>>> the OS should perform after the critical temperature is reached.
-> >>>>
-> >>>> The possible values are "shutdown" and "reboot".
-> >>>>
-> >>>> The motivation for introducing the critical-action property is that
-> >>>> different systems may need different thermal actions when the critical
-> >>>> temperature is reached.
-> >>>>
-> >>>> For example, a desktop PC may want the OS to trigger a shutdown
-> >>>> when the critical temperature is reached.
-> >>>>
-> >>>> However, in some embedded cases, such behavior does not suit well,
-> >>>> as the board may be unattended in the field and rebooting may be a
-> >>>> better approach.
-> >>>>
-> >>>> The bootloader may also benefit from this new property as it can check
-> >>>> the SoC temperature and in case the temperature is above the critical
-> >>>> point, it can trigger a shutdown or reboot accordingly.
-> >>>>
-> >>>> Signed-off-by: Fabio Estevam <festevam@denx.de>
-> >>>> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> >>>> ---
-> >>>> Changes since v4:
-> >>>> - None.
-> >>>>
-> >>>>  .../devicetree/bindings/thermal/thermal-zones.yaml       | 9 +++++++++
-> >>>>  1 file changed, 9 insertions(+)
-> >>>>
-> >>>> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> >>>> index 4f3acdc4dec0..c2e4d28f885b 100644
-> >>>> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> >>>> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> >>>> @@ -75,6 +75,15 @@ patternProperties:
-> >>>>            framework and assumes that the thermal sensors in this zone
-> >>>>            support interrupts.
-> >>>>
-> >>>> +      critical-action:
-> >>>> +        $ref: /schemas/types.yaml#/definitions/string
-> >>>> +        description:
-> >>>> +          The action the OS should perform after the critical temperature is reached.
-> >>>> +
-> >>>> +        enum:
-> >>>> +          - shutdown
-> >>>> +          - reboot
-> >>>> +
-> >>>>        thermal-sensors:
-> >>>>          $ref: /schemas/types.yaml#/definitions/phandle-array
-> >>>>          maxItems: 1
-> >>>> --
-> >>>
-> >>> I'm wondering if this should be a bool property called
-> >>> "critical-reboot", say, which when present would mean to carry out a
-> >>> reboot instead of a shutdown in an emergency.
-> >>>
-> >>> As defined above, the "shutdown" value is simply redundant, because
-> >>> the code will effectively convert any other value to "shutdown"
-> >>> anyway.
+> >> From: Fabio Estevam <festevam@denx.de>
 > >>
-> >> We covered this at v1. Bool does not allow this property to change in
-> >> the future, e.g. for a third mode. And how would you change the action
-> >> to shutdown if default action in the system was reboot?
+> >> Document the critical-action property to describe the thermal action
+> >> the OS should perform after the critical temperature is reached.
+> >>
+> >> The possible values are "shutdown" and "reboot".
+> >>
+> >> The motivation for introducing the critical-action property is that
+> >> different systems may need different thermal actions when the critical
+> >> temperature is reached.
+> >>
+> >> For example, a desktop PC may want the OS to trigger a shutdown
+> >> when the critical temperature is reached.
+> >>
+> >> However, in some embedded cases, such behavior does not suit well,
+> >> as the board may be unattended in the field and rebooting may be a
+> >> better approach.
+> >>
+> >> The bootloader may also benefit from this new property as it can check
+> >> the SoC temperature and in case the temperature is above the critical
+> >> point, it can trigger a shutdown or reboot accordingly.
+> >>
+> >> Signed-off-by: Fabio Estevam <festevam@denx.de>
+> >> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> >> ---
+> >> Changes since v4:
+> >> - None.
+> >>
+> >>  .../devicetree/bindings/thermal/thermal-zones.yaml       | 9 +++++++++
+> >>  1 file changed, 9 insertions(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> >> index 4f3acdc4dec0..c2e4d28f885b 100644
+> >> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> >> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> >> @@ -75,6 +75,15 @@ patternProperties:
+> >>            framework and assumes that the thermal sensors in this zone
+> >>            support interrupts.
+> >>
+> >> +      critical-action:
+> >> +        $ref: /schemas/types.yaml#/definitions/string
+> >> +        description:
+> >> +          The action the OS should perform after the critical temperature is reached.
+> >> +
+> >> +        enum:
+> >> +          - shutdown
+> >> +          - reboot
+> >> +
+> >>        thermal-sensors:
+> >>          $ref: /schemas/types.yaml#/definitions/phandle-array
+> >>          maxItems: 1
+> >> --
 > >
-> > Well, as a matter of fact, it isn't, so I'm not sure where this is going.
+> > I'm wondering if this should be a bool property called
+> > "critical-reboot", say, which when present would mean to carry out a
+> > reboot instead of a shutdown in an emergency.
+> >
+> > As defined above, the "shutdown" value is simply redundant, because
+> > the code will effectively convert any other value to "shutdown"
+> > anyway.
 >
-> It isn't in which system and firmware?
+> We covered this at v1. Bool does not allow this property to change in
+> the future, e.g. for a third mode. And how would you change the action
+> to shutdown if default action in the system was reboot?
 
-There is a specific default behavior present in the Linux kernel
-today.  The addition of this property isn't going to change it AFAICS.
+Well, as a matter of fact, it isn't, so I'm not sure where this is going.
 
-> Maybe most, but how can you know
-> for sure. Bindings are independent of given OS implementation, thus
-> relying on default OS choice is shortsighted.
+Bool definitely allows the property to be not present, which means
+that the default behavior is intended and this is all about overriding
+a known default behavior.
 
-So can you point me to any project other than the Linux kernel that
-will support this property once it gets to the DT bindings
-documentation in the kernel source?
-
-> >
-> > Bool definitely allows the property to be not present, which means
-> > that the default behavior is intended and this is all about overriding
-> > a known default behavior.
-> >
-> > Anyway, if the maintainers of DT bindings are fine with the current
-> > definition, I'm not going to block this.  I just wanted to make a note
-> > that it wasn't looking particularly straightforward to me.
->
-> Sure. It has one DT's maintainer Ack (mine) and maybe also Rob will
-> comment on it.
-
-OK
+Anyway, if the maintainers of DT bindings are fine with the current
+definition, I'm not going to block this.  I just wanted to make a note
+that it wasn't looking particularly straightforward to me.
