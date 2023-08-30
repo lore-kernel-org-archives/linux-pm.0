@@ -2,124 +2,155 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 466E4C83F20
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5B19C6FA8F
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235078AbjH3Sf7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:35:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37720 "EHLO
+        id S231255AbjH3SgB convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:36:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40352 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243183AbjH3KQX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 06:16:23 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D7951BB
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:16:20 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-500760b296aso849563e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:16:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693390578; x=1693995378; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=SCycU/0xjFZ34GQd8Xc6zCT4MEY2pCO1qubommXUTPE=;
-        b=pEpE8id9TDvdx3zKJQ+lFGQ4c9z9vrMPjQgwhLbDvow8AXO6SqDzZvlsiEZ+0mn9ci
-         GmSZql/8Vk87tzYANL61dHD4xvx9xpfKQcD+97Uf9aYNSTsT+xKQ/qT8KWq7z30GDN+y
-         qBKaVsUojxD3tjjMGNCc8UPR/E7lOtEhJW87WSOxtDwFjVbWDYatcRf0NL9JZqs6hTq4
-         rqN4zpCb5SGU+oSnD+CEmR3u8o6+w9J6DGuJ90X9Y4VGwuBua2MtdoggEwbzjBPg9NKN
-         ZqFP/ZgjdTP9XPUfQIbhMdUp0LjoOp3lMVxRMU0xoxoOnO8p226dsbvxax+XF8TnoWYp
-         YdUg==
+        with ESMTP id S243706AbjH3LeO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 07:34:14 -0400
+Received: from mail-ot1-f53.google.com (mail-ot1-f53.google.com [209.85.210.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 663EA132;
+        Wed, 30 Aug 2023 04:34:11 -0700 (PDT)
+Received: by mail-ot1-f53.google.com with SMTP id 46e09a7af769-6bf106fb6a0so935305a34.0;
+        Wed, 30 Aug 2023 04:34:11 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693390578; x=1693995378;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=SCycU/0xjFZ34GQd8Xc6zCT4MEY2pCO1qubommXUTPE=;
-        b=FT/BWlIuCYJnPX/0WbJmaM274toB9HNwFaBB/ZRWdePCdoCEqYTVgaQ1CxW3BsEw43
-         OecC64iGo3Ql/Z7W5vVym2H6xmAxTkS2R7AO9n3/i2K5DwNW/2xwsonAEH+4FBs7hvc6
-         JYC+u2WjG3vq3nqnz3dJLSqzQVZXQ210jYf6vGhYeL9xBKqie6HL67UvS6Wq/KcGoeMb
-         0q0KZszQHABbXgActtKm/QJpZlEu8JEQwCgADI4ULxuXcIxIhEcfvR7GF0pOVUtEbmxW
-         Bae+x+bpnxDXWVf5jldFU7g0J8ZBXYHRm5fIf2cN1mle2WQ99A7l1MmLRYzRTaRIU29+
-         2+HA==
-X-Gm-Message-State: AOJu0YyCg/fwX0wCDTQjwTkQuSD48iVEW5max6YvW9L+RlE3R3EdgzQW
-        0yxaWVLwI7kcgnEharkFGxnKEg==
-X-Google-Smtp-Source: AGHT+IHmOlBEZ393iGobxhlTVe1wLheuMhJdQ2v68IlzVNE1xIOL7q0Ig5gu4MDPYErBrvDrobVahg==
-X-Received: by 2002:a05:6512:a95:b0:4fd:d254:edc6 with SMTP id m21-20020a0565120a9500b004fdd254edc6mr2120069lfu.26.1693390578587;
-        Wed, 30 Aug 2023 03:16:18 -0700 (PDT)
-Received: from [192.168.1.101] (abyl195.neoplus.adsl.tpnet.pl. [83.9.31.195])
-        by smtp.gmail.com with ESMTPSA id d20-20020ac24c94000000b00500a297ec4esm2298627lfl.102.2023.08.30.03.16.17
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 30 Aug 2023 03:16:18 -0700 (PDT)
-Message-ID: <db0c5ff6-fcf7-4b75-864a-1db620c2e1ef@linaro.org>
-Date:   Wed, 30 Aug 2023 12:16:16 +0200
+        d=1e100.net; s=20221208; t=1693395250; x=1694000050;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=wZk50f5qfIYptXHl3M1EoNb26pcF10CEZl+wjqQVJ9k=;
+        b=Co6987Ochgz0//q44pt7YNMLeQ5EBKmkWdNdJDoVHSaz+sTv3RscSlt/0UABX+ICOb
+         a13WiTC1ZLrrrN/z3BSHPKpJzIgQp8TKNxOUr3n6eqczLyWp71eTgHgpanW0povfmh3z
+         kPXaIRYxDDlgXIMZjgacnxVN+DpeTw0Jqu9JC7rPdFoe15sNfs9iWVbmJSKbnkRP8mx3
+         Dap01zCU5AmCZDe+6xZwEC8LOEZ283a5O0khwRR6tNfKtMOPa6BHIUW1NikHo1qqmTYk
+         Zjhrh+cm/5FBK+VEyu0Q5dB2SKCWd8tV6R7IJBmwEYAdhUd45e6El+Ije3J0KfVUi/hX
+         kxyg==
+X-Gm-Message-State: AOJu0Yyw+nzoXlATPljdYn4mtds1AFy99Lt/X984l/VJnpdSvUsBm8HR
+        yZo2fHfbjXNDCzn0l9JnFQ44lKLS1GYIXcGfQjM=
+X-Google-Smtp-Source: AGHT+IGeILT7TBoTXfEA1mKCiifAMVcywqeXlWLTMws3d5mrqGTEIxvClcbeBFHT0ktRYWMPqT9jwY+v2obL7A1LubA=
+X-Received: by 2002:a4a:de8f:0:b0:573:55af:777c with SMTP id
+ v15-20020a4ade8f000000b0057355af777cmr1975827oou.0.1693395250501; Wed, 30 Aug
+ 2023 04:34:10 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 07/11] dt-bindings: arm: qcom,ids: Add SoC ID for QCM6490
-Content-Language: en-US
-To:     Luca Weiss <luca.weiss@fairphone.com>,
-        cros-qcom-dts-watchers@chromium.org,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
- <20230830-fp5-initial-v1-7-5a954519bbad@fairphone.com>
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
- 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
- izWDgYvmBE8=
-In-Reply-To: <20230830-fp5-initial-v1-7-5a954519bbad@fairphone.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20230829194200.1901988-1-festevam@gmail.com> <20230829194200.1901988-2-festevam@gmail.com>
+In-Reply-To: <20230829194200.1901988-2-festevam@gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 30 Aug 2023 13:33:59 +0200
+Message-ID: <CAJZ5v0hb-26qYZus97oJDOSga_1mE31ppk+ibK1JX42ZA5-hXw@mail.gmail.com>
+Subject: Re: [PATCH v5 2/3] reboot: Introduce hw_protection_reboot()
+To:     Fabio Estevam <festevam@gmail.com>
+Cc:     daniel.lezcano@linaro.org, rafael@kernel.org, amitk@kernel.org,
+        rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, robh+dt@kernel.org,
+        conor+dt@kernel.org, devicetree@vger.kernel.org,
+        Fabio Estevam <festevam@denx.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 30.08.2023 11:58, Luca Weiss wrote:
-> Add the ID for the Qualcomm QCM6490 SoC.
-> 
-> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+On Tue, Aug 29, 2023 at 9:42 PM Fabio Estevam <festevam@gmail.com> wrote:
+>
+> From: Fabio Estevam <festevam@denx.de>
+>
+> Introduce hw_protection_reboot() to trigger an emergency reboot.
+>
+> It is a counterpart of hw_protection_shutdown() with the difference
+> that it will force a reboot instead of shutdown.
+>
+> The motivation for doing this is to allow the thermal subystem
+> to trigger a reboot when the temperature reaches the critical
+> temperature.
+>
+> Signed-off-by: Fabio Estevam <festevam@denx.de>
 > ---
-Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+> Changes since v4:
+> - None
+>
+>  include/linux/reboot.h |  1 +
+>  kernel/reboot.c        | 34 ++++++++++++++++++++++++++++++++++
+>  2 files changed, 35 insertions(+)
+>
+> diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+> index 2b6bb593be5b..4a319bc24f6a 100644
+> --- a/include/linux/reboot.h
+> +++ b/include/linux/reboot.h
+> @@ -174,6 +174,7 @@ void ctrl_alt_del(void);
+>
+>  extern void orderly_poweroff(bool force);
+>  extern void orderly_reboot(void);
+> +void hw_protection_reboot(const char *reason, int ms_until_forced);
+>  void hw_protection_shutdown(const char *reason, int ms_until_forced);
+>
+>  /*
+> diff --git a/kernel/reboot.c b/kernel/reboot.c
+> index 3bba88c7ffc6..05333ae8bc6b 100644
+> --- a/kernel/reboot.c
+> +++ b/kernel/reboot.c
+> @@ -952,6 +952,40 @@ static void hw_failure_emergency_poweroff(int poweroff_delay_ms)
+>                               msecs_to_jiffies(poweroff_delay_ms));
+>  }
+>
+> +/**
+> + * hw_protection_reboot - Trigger an emergency system reboot
+> + *
+> + * @reason:            Reason of emergency reboot to be printed.
+> + * @ms_until_forced:   Time to wait for orderly reboot before tiggering a
+> + *                     forced reboot. Negative value disables the forced
+> + *                     reboot.
+> + *
+> + * Initiate an emergency system reboot in order to protect hardware from
+> + * further damage. Usage examples include a thermal protection.
+> + *
+> + * NOTE: The request is ignored if protection reboot is already pending even
+> + * if the previous request has given a large timeout for forced reboot.
+> + * Can be called from any context.
+> + */
+> +void hw_protection_reboot(const char *reason, int ms_until_forced)
 
-Konrad
+Some code and kerneldoc comment duplication could be avoided by
+changing hw_protection_shutdown() definition to take an additional
+argument specifying the final action to carry out, so there would be
+
+void __hw_protection_shutdown(const char *reason, int ms_until_forced,
+bool reboot)
+{
+...
+   if (reboot)
+       orderly_reboot();
+   else
+      orderly_poweroff(true);
+}
+
+and both hw_protection_shutdown() and hw_protection_reboot() can be
+defined as static inline wrappers around this.
+
+> +{
+> +       static atomic_t allow_proceed = ATOMIC_INIT(1);
+> +
+> +       pr_emerg("HARDWARE PROTECTION reboot (%s)\n", reason);
+> +
+> +       /* Reboot should be initiated only once. */
+> +       if (!atomic_dec_and_test(&allow_proceed))
+> +               return;
+> +
+> +       /*
+> +        * Queue a backup emergency reboot in the event of
+> +        * orderly_reboot failure
+> +        */
+> +       hw_failure_emergency_poweroff(ms_until_forced);
+> +       orderly_reboot();
+> +}
+> +EXPORT_SYMBOL_GPL(hw_protection_reboot);
+> +
+>  /**
+>   * hw_protection_shutdown - Trigger an emergency system poweroff
+>   *
+> --
+> 2.34.1
+>
