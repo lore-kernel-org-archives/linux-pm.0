@@ -2,135 +2,162 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44849C83F19
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0177C83F1A
 	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236921AbjH3Sfu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:35:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58412 "EHLO
+        id S234945AbjH3Sfw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:35:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47162 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242907AbjH3J6s (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 05:58:48 -0400
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 362441B7
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:44 -0700 (PDT)
-Received: by mail-lf1-x12e.google.com with SMTP id 2adb3069b0e04-4ff09632194so8583435e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:44 -0700 (PDT)
+        with ESMTP id S241977AbjH3HL2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 03:11:28 -0400
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E50221B1
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 00:11:23 -0700 (PDT)
+Received: by mail-ed1-x533.google.com with SMTP id 4fb4d7f45d1cf-52a4b62c2f5so6803388a12.1
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 00:11:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1693389522; x=1693994322; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ImC06/+tS7Twj3eQRRUsuycUqqVXH052q1hemh/ikWU=;
-        b=r8GAC4lMHUa5I2T/ySPKd0cIPPQWidpqX97LzVX/TOy2IDuwivuTKw8Iqz6DA1VQa/
-         OhFvUiDvaCIz0TNirzmBBK15++Vh0P+RiGU2RZfYPIPTR3zqJCoL242WasZCd3Jf4ggt
-         fYi+QCfjcNwHIWoAvP48Fnl5foc1u4ZK0KJuTuHxxwiaipK+AFmotyUc3xkom+RpsL+V
-         njQA0ZTUlUhBDurGXIM8dqBq7pZfioWaNfD6VjN/QnbQOquX/9vlivBZ77/Bs7tHF7dc
-         1/vlbj454uSNwRyAIPqc3hRzyCrEiCoCKBXWVU+P4sYVqoAEeF4quaM1zoncUfiJREG6
-         GvhQ==
+        d=linaro.org; s=google; t=1693379482; x=1693984282; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=4X810Sd+FAfinOuDeQjJFxdDeSuw3tPSc7gW/bUxxmc=;
+        b=a9Y5QTZNXXKs9nPMXo417JCz/QKAcQy1xgeBcXtqVuXe8uLKIF/yrOaNpEqX5Pf/io
+         qnuGi5UXluXpNgEWOMuiC4+Ggl2M0NZOjzcklz6pcZqj+UgvxAwRdDyqwSPJTKtQ8gCi
+         E6r3gXNYg6pZmJvhTzV41yfhyS6mfmHJfZug5MngAZFOj+hp5fdpWHyOdjUH1IiXNCv1
+         jalUgZPSNf/zajd4QppFkTKpi287wr+TGEa7xceG9zzvCugTzra0mSuN02GSSlhpIOtL
+         4YIlKRcCf3Rof4g2Z8+IuqizM6pf39m6nGuhIissvFGfQ12UQghjwZd5INmkAZngSYHK
+         5SgQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693389522; x=1693994322;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ImC06/+tS7Twj3eQRRUsuycUqqVXH052q1hemh/ikWU=;
-        b=MaNLk9lA2qIekxw3qyXXdaYRadZ0LnHjQSknMjF1vdcwcwhnC5gaEYPcD1YetmXrW2
-         ocWoXW2KoeIc81H9UFZFXjpmfJqP8cU08u4btxkbyJ1u5+nDmkK/6vUGmsvWeAYL6Kst
-         mFhJe2LbdRW+pZZOqriK1pbYDYpycDE3F3E0jr65oam/Jn33UVHwlfVcIHp6J+P1/8XQ
-         zKyxP0nCeWED4acuPIdEZSjj4ngUq9MVjsjwu9mdfIFlEdxgNr6D5C3QlJ/U0eWXHTSd
-         D80p6cU52CjQZUXMaKF4tpfczD1fHe4QBY/MG7WB6YAMOwWJLFVXffFD6CstZz/5ApyC
-         xyqg==
-X-Gm-Message-State: AOJu0YyyyrI5BRdYm6LSA4ZFMrtmi05enenT4azIULqNuxgHLOu+dmAX
-        q+sc/WuqUNwZHWzR1ilnNcXLoQ==
-X-Google-Smtp-Source: AGHT+IHhkgd47WHbYn3fJiBbQlVzHfchnV6Zhz/9BP+uHBaTqzKkkSmXoZ5vGmgUP4lJA5UX0lAuqQ==
-X-Received: by 2002:a05:6512:224c:b0:4fe:cc2:247a with SMTP id i12-20020a056512224c00b004fe0cc2247amr1121093lfu.49.1693389522330;
-        Wed, 30 Aug 2023 02:58:42 -0700 (PDT)
-Received: from otso.luca.vpn.lucaweiss.eu (5073ED84.static.ziggozakelijk.nl. [80.115.237.132])
-        by smtp.gmail.com with ESMTPSA id i15-20020a1709064ecf00b009a2202bfce5sm6957130ejv.118.2023.08.30.02.58.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Aug 2023 02:58:41 -0700 (PDT)
-From:   Luca Weiss <luca.weiss@fairphone.com>
-Subject: [PATCH 00/11] Initial support for the Fairphone 5 smartphone
-Date:   Wed, 30 Aug 2023 11:58:25 +0200
-Message-Id: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
+        d=1e100.net; s=20221208; t=1693379482; x=1693984282;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=4X810Sd+FAfinOuDeQjJFxdDeSuw3tPSc7gW/bUxxmc=;
+        b=G32NNRNRar5elyygii1jeOkgYa3CNkTSSDGCG5U74dxWOvTRnHVllWmYXM1VhSOJT7
+         MYlksVWMOYzBbnqDq+ElG606Ue+nb6/885WyWKKZMyYjnhp8ZTHStR31tHnT1EDU0k5a
+         D5sN4PpIwD1Wk8qCt8mZdDNa/YPsbn0HhBLy+Y/+Pv3NQo/t/2ofeNrg0qCpMp9v7hcE
+         zUvidn0uKuEcIGGz0w/X12TUDgZDaDtaCxiqr8Euw9+oAuiWHm7m6YdziDjmt9cgG5DP
+         58vP6A+f2dn57PHn7ypLLltlam8vEifsCdu6N1wwaVyFFfylXKN5Vtd3ntOdF8RsFxj6
+         0/EA==
+X-Gm-Message-State: AOJu0Yya+WtAE39oqoHwOCeUrfDOLGInjOZG+12qaDN4Y8pcby2sPwJP
+        wd1I3IFXqQ0Rlun2fwFWecpwkg==
+X-Google-Smtp-Source: AGHT+IEYCPnvQKeOC3qIczHiEZucOO/GNEh252whblJjg9K7h3SNi2mOr9jig7a/o2KtxMadPr1MLQ==
+X-Received: by 2002:a17:906:76c8:b0:9a1:d67c:b4eb with SMTP id q8-20020a17090676c800b009a1d67cb4ebmr913139ejn.48.1693379482411;
+        Wed, 30 Aug 2023 00:11:22 -0700 (PDT)
+Received: from [192.168.0.22] (77-252-46-238.static.ip.netia.com.pl. [77.252.46.238])
+        by smtp.gmail.com with ESMTPSA id n11-20020a17090625cb00b009934855d8f1sm6910043ejb.34.2023.08.30.00.11.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 30 Aug 2023 00:11:21 -0700 (PDT)
+Message-ID: <db8d5123-19d7-50d0-935b-a25d235e6e2e@linaro.org>
+Date:   Wed, 30 Aug 2023 09:11:20 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH v3 1/1] scripts: Add add-maintainer.py
+Content-Language: en-US
+To:     Mark Brown <broonie@kernel.org>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Nicolas Schier <nicolas@fjasle.eu>,
+        Konstantin Ryabitsev <konstantin@linuxfoundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Bjorn Andersson <andersson@kernel.org>, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, Will Deacon <will@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        quic_pkondeti@quicinc.com, linux-kernel@vger.kernel.org,
+        kernel@quicinc.com, workflows@vger.kernel.org,
+        tools@linux.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+References: <cover.1693037031.git.quic_gurus@quicinc.com>
+ <141b9fcab2208ace3001df4fc10e3dfd42b9f5d9.1693037031.git.quic_gurus@quicinc.com>
+ <2efba6b3-2399-9deb-d0ce-78f7b5e12f30@linaro.org>
+ <20230828175629.GC23466@quicinc.com>
+ <78aa33f9-ead8-b128-2a7a-40530a1a3ed0@linaro.org>
+ <ZOz4XtX3DFRQpvQY@finisterre.sirena.org.uk>
+ <670a87e9-2f0c-ec9e-ebb4-9041c8972ace@linaro.org>
+ <20230829231638.GA27843@quicinc.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230829231638.GA27843@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAMES72QC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDI2MDC0ML3bQCU93MvMySzMQc3SSzZAsjQ4OkRMtkCyWgjoKi1LTMCrBp0bG
- 1tQCNAZuXXQAAAA==
-To:     cros-qcom-dts-watchers@chromium.org,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org, Luca Weiss <luca.weiss@fairphone.com>
-X-Mailer: b4 0.12.3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support to boot up mainline kernel on the QCM6490-based Fairphone 5
-smartphone.
+On 30/08/2023 01:16, Guru Das Srinagesh wrote:
+> On Aug 28 2023 21:45, Krzysztof Kozlowski wrote:
+>> On 28/08/2023 21:41, Mark Brown wrote:
+>>> On Mon, Aug 28, 2023 at 07:59:54PM +0200, Krzysztof Kozlowski wrote:
+>>>> On 28/08/2023 19:56, Guru Das Srinagesh wrote:
+>>>
+>>>>> Your function adds mailing lists also in "To:" which is not ideal, in my view.
+>>>>> You've mentioned before that To or Cc doesn't matter [1] which I disagree
+>>>>> with: it doesn't matter, why does Cc exist as a concept at all?
+>>>
+>>>> To/Cc does not matter when sending new patch, because maintainers know
+>>>> they are maintainers of which parts. I know what I handle.
+>>>
+>>> That might be true for you (and also is for me) but I know there are
+>>> people who pay attention to if they're in the To: for various reasons, I
+>>> gather it's mostly about triaging their emails and is especially likely
+>>> in cases where trees have overlaps in the code they cover.
+>>
+>> True, there can be cases where people pay attention to addresses of
+>> emails. Just like there are cases where people pay attention to "To/Cc"
+>> difference.
+>>
+>> In my short experience with a few patches sent, no one complained to me
+>> that I put him/her/they in "To" field of a patch instead of "Cc" (with
+>> remark to not spamming to much, so imagine I send a patch for regulator
+>> and DTS). Big, multi-subsystem patchsets are different case and this
+>> script does not solve it either.
+> 
+> Not sure what you mean by "does not solve it" - what is the problem being
+> referred to here?
 
-These patches only cover a part of the functionality brought up on
-mainline so far, with the rest needing larger dts and driver changes or
-depend on patches that are not yet merged. I will work on sending those
-once these base patches here have settled.
+Exactly, no one even knows what problem you want to solve by swapping
+To-Cc between patches...
 
-Since QCM6490, like SC7280 are 'yupik' in the vendor-provided kernel, we
-can base the dts on it and leverage existing support. Though current
-sc7280 support mostly assumes ChromeOS devices which have a different
-TrustZone setup, so we need to move some ChromeOS-specific bits to the
-sc7280-chrome-common.dtsi file to make it boot on a standard TZ board.
+> 
+> In case of multi-subsystem patches in a series, the commit message of this
+> patch explains exactly the actions taken.
+> 
+>> Anyway, if it is not ideal for Guru, I wonder how his LKML maintainer
+>> filters work that it is not ideal? What is exactly not ideal in
+>> maintainer workflow?
+> 
+> I am not a maintainer - only an individual contributor - and as such, even
+> though I may get patches on files I've contributed to, I deeply appreciate the
+> distinction between being Cc-ed in a patch vs To-ed in one. The distinction
+> being that if I'm in "To:" I ascribe higher priority to it and lesser if I'm in
+> "Cc:".
 
-Depends on (just for the #include in sc7280.dtsi):
-https://lore.kernel.org/linux-arm-msm/20230818-qcom-vmid-defines-v1-1-45b610c96b13@fairphone.com/
+That's your feeling, quite subjective. I understand it comes from
+corporate world, but again...
 
-The pm7250b patch has been picked up from this series:
-https://lore.kernel.org/linux-arm-msm/20230407-pm7250b-sid-v1-2-fc648478cc25@fairphone.com/
+> 
+> If this script is accepted and gains adoption, maintainers like yourself will
+> only be To-ed in patches that touch files that you're a direct "Maintainer" or
+> "Reviewer" of. 
 
-Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
----
-Luca Weiss (11):
-      arm64: dts: qcom: sc7280: Mark some nodes as 'reserved'
-      nvmem: qfprom: Mark core clk as optional
-      arm64: dts: qcom: sc7280: Move qfprom clock to chrome-common
-      arm64: dts: qcom: pm7250b: make SID configurable
-      arm64: dts: qcom: pm8350c: Add flash led node
-      dt-bindings: pinctrl: qcom,sc7280: Allow gpio-reserved-ranges
-      dt-bindings: arm: qcom,ids: Add SoC ID for QCM6490
-      soc: qcom: socinfo: Add SoC ID for QCM6490
-      cpufreq: Add QCM6490 to cpufreq-dt-platdev blocklist
-      dt-bindings: arm: qcom: Add QCM6490 Fairphone 5
-      arm64: dts: qcom: qcm6490: Add device-tree for Fairphone 5
+It will not get traction because:
+1. People should use b4, not this script.
+2. Remaining people will just use get_maintainers.pl.
+3. People cannot get right even basic commands, so we will never be able
+to rely on To or Cc distinction. I can give you example: my email
+address in get_maintainers.pl is a bit different. Does it matter? Often
+not. Entire bunch of folks were Ccing me on different address. Even
+though every tool told them not to...
 
- Documentation/devicetree/bindings/arm/qcom.yaml    |   6 +
- .../bindings/pinctrl/qcom,sc7280-pinctrl.yaml      |   4 +
- arch/arm64/boot/dts/qcom/Makefile                  |   1 +
- arch/arm64/boot/dts/qcom/pm7250b.dtsi              |  23 +-
- arch/arm64/boot/dts/qcom/pm8350c.dtsi              |   6 +
- arch/arm64/boot/dts/qcom/qcm6490-fairphone-fp5.dts | 659 +++++++++++++++++++++
- arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi |  17 +
- arch/arm64/boot/dts/qcom/sc7280.dtsi               |   7 +-
- drivers/cpufreq/cpufreq-dt-platdev.c               |   1 +
- drivers/nvmem/qfprom.c                             |   2 +-
- drivers/soc/qcom/socinfo.c                         |   1 +
- include/dt-bindings/arm/qcom,ids.h                 |   1 +
- 12 files changed, 717 insertions(+), 11 deletions(-)
----
-base-commit: 0255bba921438ea1e45d3f0873c3e8c5a1e03876
-change-id: 20230818-fp5-initial-b6c8210ba9c8
+> For all other patches in the series you'll be in "Cc:". I
+> imagine that this can be very useful regardless of the specifics of your
+> workflow.
+
+Zero usefulness for me.
 
 Best regards,
--- 
-Luca Weiss <luca.weiss@fairphone.com>
+Krzysztof
 
