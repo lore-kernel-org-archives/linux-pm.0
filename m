@@ -2,78 +2,102 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F41E2C83F19
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60AD8C83F27
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:36:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236416AbjH3SgE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:36:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56672 "EHLO
+        id S236725AbjH3SgP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:36:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45300 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245427AbjH3POj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 11:14:39 -0400
-Received: from phobos.denx.de (phobos.denx.de [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0F9BE8;
-        Wed, 30 Aug 2023 08:14:34 -0700 (PDT)
-Received: from mail.denx.de (unknown [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: festevam@denx.de)
-        by phobos.denx.de (Postfix) with ESMTPSA id 16C8E863DD;
-        Wed, 30 Aug 2023 17:14:33 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
-        s=phobos-20191101; t=1693408473;
-        bh=v2cAEiv6fXMr0+QRThhisPn328qsks5KhTTSdjVXwKs=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=uO1rCZZ/dIi3yn15jPe+VG36GXlnP4rCCNAeqtDHYSoOfwyk9v8gkeewDyUNnu7oy
-         SC0ow90yBXOo6OkGoSBrsrWZlQO1PiaLnqz4r1CBqg06ykGZfFn/Y+kI4ZJ6OmE8RV
-         0osjBnCETdHdc4sdUQoOI7hMrnEhd6c4PZICrW32CMSPhpes2wVEyb+GeeVwvybK9w
-         4YlVDsGqgfg5uihIPq1sPGGzvsXguwkJWDk89OvChN5URAYj8qMPd471yM36WpJDQj
-         WP5PFcKepenDvvseQBy59ySu+8aKlYiQs9bjeaCXO6tIRqTsXRgoTNv9PaOD+R6Flm
-         awPlMWO/Kh6aw==
+        with ESMTP id S242949AbjH3J64 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 05:58:56 -0400
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82850CDC
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:53 -0700 (PDT)
+Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-52a4818db4aso6849123a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=fairphone.com; s=fair; t=1693389532; x=1693994332; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=iNs6j3Ggs2JWRbc5ZnKbQBXSzYL49uka3JdqYW+Ab2M=;
+        b=SPtsM+1X/Bj7RGHNV3Z7c9pzhdLQobQ32YhJ0DXAZDGab88dcYHhzrDvNQulKV4vi7
+         N8yJimOKI0VdToc358sFAOeH6uS7tj7IkCMzR2zBa9Li8mq8ecEIppINgfF6z6SCdQ3l
+         Xc+XSqkP5h1XU8yihi7NFSRNj92fMC91BbxYJ4fqDiDptzvrzsOdGprQjqKmXDV93kyL
+         jqiHgRirFvyxe4Lffw65gyzQRBLTzf5XTrz38xpvjRrq7JqF48noIzCjfvpVAnwh/cES
+         FRBDMK0/tKBo4ensZXRxuPppjEpczyJbXGkrToN43PdUhif9U6mU5cBFemi6nhabxHaS
+         cjlQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693389532; x=1693994332;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=iNs6j3Ggs2JWRbc5ZnKbQBXSzYL49uka3JdqYW+Ab2M=;
+        b=UWyEImPLNTzPQkzSlztREFlvLt6fI9q3pWmVOHQRtnXLR5EApUETJwCBf1mGKU0pUs
+         Gy36Nsb2Tk4ulLB4C6yrbPfKZ2ey/4WdPL/0IM3Z/yqMKTn1ZAI4Ag8iny3mpLDvfCPT
+         XJmbbTv4Eajs/oFjbcS1MVDMWJtEUYZnfrcHStrs0iYdUN7ryNaJaLMZcrkayMC/eYEf
+         9lysCRK2jwRDYvBNENAvkojW+ANuB0LOhsC3ThcE+Iap768uFNJ3iXnYX227ochIyYD1
+         PHaT3ht1Wy/ERaGDjdMgMH2xxTn7UQoPEPswApBCYpuM92X3pJIS+PefrQncV+wfejIp
+         Zsug==
+X-Gm-Message-State: AOJu0YyeHziSA8wsmOY+oZkR84pqJKG2EYgNvI0ARCrGFOEkna3qpRuh
+        wEJQLqmczjwrPZD9FSmyABki8yyt3Rcs92Qhnkx8Qw==
+X-Google-Smtp-Source: AGHT+IGOpJWT1BIO52CgEaoaxvd+0F80/V3wR3R9uefOOSQL+y96/QoEafSts3Kl97HWgTVhtP3qTA==
+X-Received: by 2002:a17:906:8b:b0:9a5:a0c6:9e8e with SMTP id 11-20020a170906008b00b009a5a0c69e8emr1614064ejc.31.1693389531990;
+        Wed, 30 Aug 2023 02:58:51 -0700 (PDT)
+Received: from otso.luca.vpn.lucaweiss.eu (5073ED84.static.ziggozakelijk.nl. [80.115.237.132])
+        by smtp.gmail.com with ESMTPSA id i15-20020a1709064ecf00b009a2202bfce5sm6957130ejv.118.2023.08.30.02.58.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 30 Aug 2023 02:58:51 -0700 (PDT)
+From:   Luca Weiss <luca.weiss@fairphone.com>
+Date:   Wed, 30 Aug 2023 11:58:32 +0200
+Subject: [PATCH 07/11] dt-bindings: arm: qcom,ids: Add SoC ID for QCM6490
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Date:   Wed, 30 Aug 2023 12:14:33 -0300
-From:   Fabio Estevam <festevam@denx.de>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Fabio Estevam <festevam@gmail.com>, daniel.lezcano@linaro.org,
-        amitk@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, robh+dt@kernel.org,
-        conor+dt@kernel.org, devicetree@vger.kernel.org
-Subject: Re: [PATCH v5 1/3] dt-bindings: thermal-zones: Document
- critical-action
-In-Reply-To: <CAJZ5v0gexPEV2M5kfgCEUti=EE+_oR+wUjRboo0Rh=fPfNeDew@mail.gmail.com>
-References: <20230829194200.1901988-1-festevam@gmail.com>
- <CAJZ5v0hZR3WD+wMA6c-Gt86hM5oCRZDcSsYF4SrYTvT2HtQ=fQ@mail.gmail.com>
- <c5d72559-4a97-c865-e51e-855d2bc1edee@linaro.org>
- <CAJZ5v0gexPEV2M5kfgCEUti=EE+_oR+wUjRboo0Rh=fPfNeDew@mail.gmail.com>
-Message-ID: <edd2bc8ea364959e89ed4c3d2cc11a1e@denx.de>
-X-Sender: festevam@denx.de
-User-Agent: Roundcube Webmail/1.3.6
-X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
-X-Virus-Status: Clean
+Message-Id: <20230830-fp5-initial-v1-7-5a954519bbad@fairphone.com>
+References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
+In-Reply-To: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
+To:     cros-qcom-dts-watchers@chromium.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org, Luca Weiss <luca.weiss@fairphone.com>
+X-Mailer: b4 0.12.3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
+Add the ID for the Qualcomm QCM6490 SoC.
 
-On 30/08/2023 10:54, Rafael J. Wysocki wrote:
+Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+---
+ include/dt-bindings/arm/qcom,ids.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-> Well, as a matter of fact, it isn't, so I'm not sure where this is 
-> going.
-> 
-> Bool definitely allows the property to be not present, which means
-> that the default behavior is intended and this is all about overriding
-> a known default behavior.
+diff --git a/include/dt-bindings/arm/qcom,ids.h b/include/dt-bindings/arm/qcom,ids.h
+index be12e1dd1f38..b6aafb988e08 100644
+--- a/include/dt-bindings/arm/qcom,ids.h
++++ b/include/dt-bindings/arm/qcom,ids.h
+@@ -233,6 +233,7 @@
+ #define QCOM_ID_SM8450_3		482
+ #define QCOM_ID_SC7280			487
+ #define QCOM_ID_SC7180P			495
++#define QCOM_ID_QCM6490			497
+ #define QCOM_ID_IPQ5000			503
+ #define QCOM_ID_IPQ0509			504
+ #define QCOM_ID_IPQ0518			505
 
-This devicetree property can be used on non-Linux environments, such as 
-bootloaders.
+-- 
+2.42.0
 
-Bootloaders may have different default behavior than Linux, so 
-explicitly listing
-"shutdown" or "reboot" make it clearer, independent of the OS.
-
-Thanks
