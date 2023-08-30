@@ -2,63 +2,62 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CDEFC6FA8F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DDB0C83F17
 	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233828AbjH3Sfx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:35:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45374 "EHLO
+        id S233572AbjH3Sfy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:35:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242960AbjH3J66 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 05:58:58 -0400
-Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E49BE1B7
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:55 -0700 (PDT)
-Received: by mail-ej1-x62b.google.com with SMTP id a640c23a62f3a-99c3c8adb27so676222366b.1
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:55 -0700 (PDT)
+        with ESMTP id S243043AbjH3KJK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 06:09:10 -0400
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A7F6A1B3
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:09:06 -0700 (PDT)
+Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-500c7796d8eso1905817e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 03:09:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1693389534; x=1693994334; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=NMaT33TMEcSdAqEfjzHnfiZm0MHlTu0tg8DNCHLNy/4=;
-        b=HBV0EOKdS+6uEzk0jhmP4YwUyavmqI+ctdqAq583d3cTi2Q+Th15NIUXDqyct9quqa
-         9DxMt2cfdeGsCNqfRmjY8t/TRlgycmD2mJVi1Af9vWfusDSZamFkPidxgLd7bbsPziwn
-         dWDVoVIiSXOYCW4HAwCh8jAd67gTLXl+NR2ybhHIxQH4XKW1zkFY5PVXhXA9zjlpE+db
-         kkzlt3dFT8uW4Kem2lICOB/moVgQERsQPy/7C879ou1ZGJvjF+NEWlms8zZD9f8ihiz0
-         u1KK8yDsm+aXe08FZq+WPFy01p0pfpPI8G3k/7ATYDJEfpu/z2T4fU5NDEyw/QulgT/e
-         2rwg==
+        d=linaro.org; s=google; t=1693390145; x=1693994945; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=KbGayIc8QmH3229W77BP5+D0jARgdrG8RYkDkQrYe5Y=;
+        b=l/pXmj5Y4iiA15CpbhMZhRCda9HOjjRczLqsESFBAYXnFxBHo3fElpG3N0WqTCCI3A
+         BExzz+AWFds44G6hOlZxX6e37OSY8ZRfossgTtmRuYUXgeaN7UIoKIRWw5QKcmTxgrau
+         UbSW4CEZ3aj17j9KY6sJJf8/GDbAQsGjaC8hMr1v/gijT6jPaC5X6AOlsAR7CSWrTDO7
+         t0QuUNCTAnJGQzEcWF3wdYJqXOK6VPBGDou1Iv4I/LFVm/EvTdAMP+IxnHAw0DgZjZ8M
+         vmSA2W7XIjTm+V8mP9ZaFXt+IAy5AFmk9emWvJ5DHuc5aPSMZ3yW0qcg4VxcilmPBm34
+         JQeA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693389534; x=1693994334;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=NMaT33TMEcSdAqEfjzHnfiZm0MHlTu0tg8DNCHLNy/4=;
-        b=DVXkcn7NEFlug6Fbp02qjTXJgeIqKA/WsRrZmWhJPgCr1RGA/ZvWGa8D6/oSPPOGI+
-         d/A0pAhRww7xHc23GinJwewktXRy4/sdg0SOUZ8g4CKNEc2sqTPQxXRJbWH3DOXV/EhX
-         yI6tzP1lNoGx4intGmJN5OQYF16PxHhzQP1KIJrFUmae2nQLzcHDW8qhYPgvl3NLqwb0
-         D0F9TsANAUbO15B44z6V5eDwMTb2DGyklVUoJfXFPzG4qDoQFOoC9dfvp7qGdiTrzOs2
-         zTwzqW5qd+eecTjRXDLCX1phGK5RHBEemu2/EtfvUwzJjbNdrBUeZBpscl0z4O7MDE2l
-         5S2Q==
-X-Gm-Message-State: AOJu0YzDQ+Cxv6Rt8yBuRpRxxdPLuVtCePiLVUrejY0BzBI3goNr+aJE
-        9MBcBUI3PX2No8HE7xlkwkItAg==
-X-Google-Smtp-Source: AGHT+IEsayzgtGNMlFizdpOnfPYW6WrLF+nLZTrAoohOtQ7FLTkln95jhDk+INqp8xVX4Gj4B65n1A==
-X-Received: by 2002:a17:906:20dd:b0:9a1:c89a:9260 with SMTP id c29-20020a17090620dd00b009a1c89a9260mr1229467ejc.51.1693389534562;
-        Wed, 30 Aug 2023 02:58:54 -0700 (PDT)
-Received: from otso.luca.vpn.lucaweiss.eu (5073ED84.static.ziggozakelijk.nl. [80.115.237.132])
-        by smtp.gmail.com with ESMTPSA id i15-20020a1709064ecf00b009a2202bfce5sm6957130ejv.118.2023.08.30.02.58.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Aug 2023 02:58:54 -0700 (PDT)
-From:   Luca Weiss <luca.weiss@fairphone.com>
-Date:   Wed, 30 Aug 2023 11:58:34 +0200
-Subject: [PATCH 09/11] cpufreq: Add QCM6490 to cpufreq-dt-platdev blocklist
+        d=1e100.net; s=20221208; t=1693390145; x=1693994945;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=KbGayIc8QmH3229W77BP5+D0jARgdrG8RYkDkQrYe5Y=;
+        b=dKU+Kl/Te+cXAo87U7GY4BFE07H7bUkCSIQoG4ve/b1I6l3BGvpJKxmCzC0ZgIowhP
+         bwv2t+H6Od4H4N98JbbWjoacnApFgpsWb3I3oRT4XXoYAiK4LoO/xTJkRYtazxUh7NWl
+         vxt/7zx5zEMQWCasCsK6uaG1oUd/LyW05pm8zKSi6Hp5t8AHBAA/hirLx4Tm+4Pitzff
+         CE95s3wo3AAW34efqTXXiG8tzGqDITpTO0Hr8yhRHkEJBREP1a0X4eYZn9+2imvecizC
+         A5FeJvNa35flEiy4md/cN6DoWmM1DYNvGAHpAVyojvesWZ7G+BpZ5N6pcyx9+zcaqHUg
+         oqww==
+X-Gm-Message-State: AOJu0Yy01+02PKmPrMP5f9JyukyQMLZkq2UZtLD7msZqMA4sDXhw0CTg
+        a4d7LzXgCsWu4f9itwk1kMaeqg==
+X-Google-Smtp-Source: AGHT+IHy9a+HPDPy7Kt18kV1w/1InlaMSmy6OG+3OrqLDuwTDJYIvmuHAlIjm6BwngBARxzJqrSQeA==
+X-Received: by 2002:a19:8c05:0:b0:4fb:821e:2241 with SMTP id o5-20020a198c05000000b004fb821e2241mr1330070lfd.23.1693390144960;
+        Wed, 30 Aug 2023 03:09:04 -0700 (PDT)
+Received: from [192.168.0.22] (77-252-46-238.static.ip.netia.com.pl. [77.252.46.238])
+        by smtp.gmail.com with ESMTPSA id z8-20020aa7c648000000b0052a3ad836basm6550370edr.41.2023.08.30.03.09.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 30 Aug 2023 03:09:04 -0700 (PDT)
+Message-ID: <2704de3f-abf0-0c32-379d-ac83c9e84d9d@linaro.org>
+Date:   Wed, 30 Aug 2023 12:09:03 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230830-fp5-initial-v1-9-5a954519bbad@fairphone.com>
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
-In-Reply-To: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
-To:     cros-qcom-dts-watchers@chromium.org,
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH 08/11] soc: qcom: socinfo: Add SoC ID for QCM6490
+Content-Language: en-US
+To:     Luca Weiss <luca.weiss@fairphone.com>,
+        cros-qcom-dts-watchers@chromium.org,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
@@ -72,33 +71,25 @@ To:     cros-qcom-dts-watchers@chromium.org,
 Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org, Luca Weiss <luca.weiss@fairphone.com>
-X-Mailer: b4 0.12.3
+        linux-pm@vger.kernel.org
+References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
+ <20230830-fp5-initial-v1-8-5a954519bbad@fairphone.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230830-fp5-initial-v1-8-5a954519bbad@fairphone.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Qualcomm QCM6490 platform uses the qcom-cpufreq-hw driver, so add it
-to the cpufreq-dt-platdev driver's blocklist.
+On 30/08/2023 11:58, Luca Weiss wrote:
+> Add SoC ID table entries for Qualcomm QCM6490.
+> 
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> ---
 
-Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
----
- drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
- 1 file changed, 1 insertion(+)
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index fb2875ce1fdd..02ec58a8603b 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -145,6 +145,7 @@ static const struct of_device_id blocklist[] __initconst = {
- 	{ .compatible = "qcom,msm8996", },
- 	{ .compatible = "qcom,msm8998", },
- 	{ .compatible = "qcom,qcm2290", },
-+	{ .compatible = "qcom,qcm6490", },
- 	{ .compatible = "qcom,qcs404", },
- 	{ .compatible = "qcom,qdu1000", },
- 	{ .compatible = "qcom,sa8155p" },
-
--- 
-2.42.0
+Best regards,
+Krzysztof
 
