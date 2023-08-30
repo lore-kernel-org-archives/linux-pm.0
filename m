@@ -2,132 +2,161 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F017FC83F19
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E67C8C83F1A
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234425AbjH3Sfa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:35:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56612 "EHLO
+        id S230195AbjH3Sfc convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:35:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47466 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245187AbjH3OoC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 10:44:02 -0400
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49EDF1A4
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 07:43:57 -0700 (PDT)
-Received: by mail-lf1-x131.google.com with SMTP id 2adb3069b0e04-50091b91a83so8797428e87.3
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 07:43:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1693406635; x=1694011435; darn=vger.kernel.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7y1PTlMIpI19ndr06GdGR/gezHXVIuarLmJLhteMMeY=;
-        b=LYzzjbHgvGqKeGAc0j1Jmdyyz6FO1+DODQ4KJ9WUt6w2aRG++2plKYtoEyWxDiX8en
-         lHIkhRnCXgg9AJdb2BHPr5i1HXPeYojczAsnVzbWKiQgsSqlkT6VcV6QoT3xyGm92WGP
-         n5LhkCdaqb9m5AK9vgcTV1mWYC1HQy9F1DxjIkiF3zrEE8d5yy1jNscF8ER54RpbOkRb
-         hqD0Hsu/kkelpidCNm5Zpe4GU/tK9JrNiInNtl16JLxRkvwcU2PSzwkn7bE/57iOKCWA
-         J4Js6VPp5/baHjwIzrLzIsNWRTdMhRSG/CMSeVqmUfApjrXFRNKqQzx+TZcwj9qEUWec
-         N5/g==
+        with ESMTP id S245590AbjH3Pip (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 11:38:45 -0400
+Received: from mail-ot1-f51.google.com (mail-ot1-f51.google.com [209.85.210.51])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7568B185;
+        Wed, 30 Aug 2023 08:38:41 -0700 (PDT)
+Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-6bf106fb6a0so988763a34.0;
+        Wed, 30 Aug 2023 08:38:41 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693406635; x=1694011435;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=7y1PTlMIpI19ndr06GdGR/gezHXVIuarLmJLhteMMeY=;
-        b=bvvCZzAVa8yzjdVrCKGTka6+WVJAlgKyfxy1qFNCaYJW5aPrDeQdLZnX4UKUnW/Vp+
-         3MQxiFZZsPO7SGjPP+iPk2y+z4GY0cIQTKXncy6+ZDR1O4uEiZd9hOUgZaeRK8yLvFxS
-         7+rrlw84PGxbprbJbhRxDRm+NA9E9EI3Gdz6p26LuEXolE0ExggGFMYfBc5eEXRpPpvm
-         1XBOlRd8YKZsnQzj+pud36H9++Ii7kHDS/Aux/0AHWI7klkumvPT17gIkSZDCOZiFw1h
-         6cl4hT0mxPBTpQIwGxPahXSqwSv1ehLYrK3ydLxN4Lq6QRnjL5y5W2sgl26/fckL2pXs
-         vhhA==
-X-Gm-Message-State: AOJu0YyiLP2VXzIiYT20WJg9ylcIvZJcw2sxv8usdKC+H6+M6Lveiwae
-        vKROeIIJrYl3J0jFnzpXHlNjoQ==
-X-Google-Smtp-Source: AGHT+IHeygykVFMcBkeCr9Jim8Aiw37Bu4dqw61S/Zwn8g9GABuB2bPsegjI40haOVmM0BZ3MWr+/Q==
-X-Received: by 2002:a19:5e18:0:b0:500:95f7:c416 with SMTP id s24-20020a195e18000000b0050095f7c416mr1823828lfb.7.1693406634763;
-        Wed, 30 Aug 2023 07:43:54 -0700 (PDT)
-Received: from localhost (144-178-202-138.static.ef-service.nl. [144.178.202.138])
-        by smtp.gmail.com with ESMTPSA id l15-20020aa7d94f000000b0052568bf9411sm6787493eds.68.2023.08.30.07.43.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 30 Aug 2023 07:43:54 -0700 (PDT)
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date:   Wed, 30 Aug 2023 16:43:53 +0200
-Message-Id: <CV5YJVXIL8OT.1ZWW3KVCHPTA5@otso>
-Cc:     <cros-qcom-dts-watchers@chromium.org>,
-        "Andy Gross" <agross@kernel.org>,
-        "Bjorn Andersson" <andersson@kernel.org>,
-        "Konrad Dybcio" <konrad.dybcio@linaro.org>,
-        "Rob Herring" <robh+dt@kernel.org>,
-        "Krzysztof Kozlowski" <krzysztof.kozlowski+dt@linaro.org>,
-        "Conor Dooley" <conor+dt@kernel.org>,
-        "Srinivas Kandagatla" <srinivas.kandagatla@linaro.org>,
-        "Linus Walleij" <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Viresh Kumar" <viresh.kumar@linaro.org>,
-        <~postmarketos/upstreaming@lists.sr.ht>,
-        <phone-devel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-gpio@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH 02/11] nvmem: qfprom: Mark core clk as optional
-From:   "Luca Weiss" <luca.weiss@fairphone.com>
-To:     "Doug Anderson" <dianders@chromium.org>
-X-Mailer: aerc 0.15.2
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
- <20230830-fp5-initial-v1-2-5a954519bbad@fairphone.com>
- <CAD=FV=WS2hgY=bQjLOs3Fdp8pbZyMsaS-0BpoxPq90Etfi+Xuw@mail.gmail.com>
-In-Reply-To: <CAD=FV=WS2hgY=bQjLOs3Fdp8pbZyMsaS-0BpoxPq90Etfi+Xuw@mail.gmail.com>
+        d=1e100.net; s=20221208; t=1693409921; x=1694014721;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=rhMs9V81K6FB1BimkjzkWIito0Rxj1AsF45fFqPpSDY=;
+        b=VYE0uhUqyPTZphfymf+g8rW9Wg46GN8v8ec4XhEaf8fD9oaN/eaVRmCy5IvrLNUGUu
+         7GprQBbSdqaRCDrT3dfTcUlhnJlENMAYp9+1T6ZIiA04ioxUdCwMAxNL2cRWE/xIQ9wx
+         XkzTQANAmAojQa8amlFiM1FkH/EMV1ImSLRw6aifbaK9Ib6jPG7THjktMiJnRq4WmTJ2
+         S++5Y/Qbsu6NrZ8Ed2Qej/aI1rYdGivTcaFC4wxCkIaAG/VRF2YjNrs5721C7R1U3Erg
+         k5TS8d1rsV2+RUmrFiBo+pZ/B9da3I0SQSpFgi2dMgUUk+DkPr+N8/bQSctE9xKF/y8Z
+         2IgA==
+X-Gm-Message-State: AOJu0YxfN+twBcqUrGV2uA+r0REiozJ0MdzjSJU599Zwv0b4rTEpXhby
+        Rg4m4jl29qsJG6mNMhYSAgCsDg0S25sPCJw8n80=
+X-Google-Smtp-Source: AGHT+IGEievzo3k6W+ScbVtsgWJb9qlrVRVYWsPxxuprgk/UCICWIhG0InifTM3bKHfQPZVb7OFmVgA5k1Ia+lB+YNI=
+X-Received: by 2002:a4a:ca87:0:b0:573:4a72:6ec with SMTP id
+ x7-20020a4aca87000000b005734a7206ecmr2478140ooq.1.1693409920640; Wed, 30 Aug
+ 2023 08:38:40 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230829194200.1901988-1-festevam@gmail.com> <CAJZ5v0hZR3WD+wMA6c-Gt86hM5oCRZDcSsYF4SrYTvT2HtQ=fQ@mail.gmail.com>
+ <c5d72559-4a97-c865-e51e-855d2bc1edee@linaro.org> <CAJZ5v0gexPEV2M5kfgCEUti=EE+_oR+wUjRboo0Rh=fPfNeDew@mail.gmail.com>
+ <88f29c9a-3faf-1470-6865-27f88b135f87@linaro.org>
+In-Reply-To: <88f29c9a-3faf-1470-6865-27f88b135f87@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 30 Aug 2023 17:38:29 +0200
+Message-ID: <CAJZ5v0hY16=sMUkq=PaX1fVj4beiZv=dG0xaEzvzGkWqRdHZ6g@mail.gmail.com>
+Subject: Re: [PATCH v5 1/3] dt-bindings: thermal-zones: Document critical-action
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Fabio Estevam <festevam@gmail.com>, daniel.lezcano@linaro.org,
+        amitk@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, robh+dt@kernel.org,
+        conor+dt@kernel.org, devicetree@vger.kernel.org,
+        Fabio Estevam <festevam@denx.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed Aug 30, 2023 at 4:30 PM CEST, Doug Anderson wrote:
-> Hi,
+On Wed, Aug 30, 2023 at 5:33 PM Krzysztof Kozlowski
+<krzysztof.kozlowski@linaro.org> wrote:
 >
-> On Wed, Aug 30, 2023 at 2:58=E2=80=AFAM Luca Weiss <luca.weiss@fairphone.=
-com> wrote:
+> On 30/08/2023 15:54, Rafael J. Wysocki wrote:
+> > On Wed, Aug 30, 2023 at 3:07 PM Krzysztof Kozlowski
+> > <krzysztof.kozlowski@linaro.org> wrote:
+> >>
+> >> On 30/08/2023 13:37, Rafael J. Wysocki wrote:
+> >>> On Tue, Aug 29, 2023 at 9:42 PM Fabio Estevam <festevam@gmail.com> wrote:
+> >>>>
+> >>>> From: Fabio Estevam <festevam@denx.de>
+> >>>>
+> >>>> Document the critical-action property to describe the thermal action
+> >>>> the OS should perform after the critical temperature is reached.
+> >>>>
+> >>>> The possible values are "shutdown" and "reboot".
+> >>>>
+> >>>> The motivation for introducing the critical-action property is that
+> >>>> different systems may need different thermal actions when the critical
+> >>>> temperature is reached.
+> >>>>
+> >>>> For example, a desktop PC may want the OS to trigger a shutdown
+> >>>> when the critical temperature is reached.
+> >>>>
+> >>>> However, in some embedded cases, such behavior does not suit well,
+> >>>> as the board may be unattended in the field and rebooting may be a
+> >>>> better approach.
+> >>>>
+> >>>> The bootloader may also benefit from this new property as it can check
+> >>>> the SoC temperature and in case the temperature is above the critical
+> >>>> point, it can trigger a shutdown or reboot accordingly.
+> >>>>
+> >>>> Signed-off-by: Fabio Estevam <festevam@denx.de>
+> >>>> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> >>>> ---
+> >>>> Changes since v4:
+> >>>> - None.
+> >>>>
+> >>>>  .../devicetree/bindings/thermal/thermal-zones.yaml       | 9 +++++++++
+> >>>>  1 file changed, 9 insertions(+)
+> >>>>
+> >>>> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> >>>> index 4f3acdc4dec0..c2e4d28f885b 100644
+> >>>> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> >>>> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> >>>> @@ -75,6 +75,15 @@ patternProperties:
+> >>>>            framework and assumes that the thermal sensors in this zone
+> >>>>            support interrupts.
+> >>>>
+> >>>> +      critical-action:
+> >>>> +        $ref: /schemas/types.yaml#/definitions/string
+> >>>> +        description:
+> >>>> +          The action the OS should perform after the critical temperature is reached.
+> >>>> +
+> >>>> +        enum:
+> >>>> +          - shutdown
+> >>>> +          - reboot
+> >>>> +
+> >>>>        thermal-sensors:
+> >>>>          $ref: /schemas/types.yaml#/definitions/phandle-array
+> >>>>          maxItems: 1
+> >>>> --
+> >>>
+> >>> I'm wondering if this should be a bool property called
+> >>> "critical-reboot", say, which when present would mean to carry out a
+> >>> reboot instead of a shutdown in an emergency.
+> >>>
+> >>> As defined above, the "shutdown" value is simply redundant, because
+> >>> the code will effectively convert any other value to "shutdown"
+> >>> anyway.
+> >>
+> >> We covered this at v1. Bool does not allow this property to change in
+> >> the future, e.g. for a third mode. And how would you change the action
+> >> to shutdown if default action in the system was reboot?
 > >
-> > On some platforms like sc7280 on non-ChromeOS devices the core clock
-> > cannot be touched by Linux so we cannot provide it. Mark it as optional
-> > as accessing qfprom works without it.
+> > Well, as a matter of fact, it isn't, so I'm not sure where this is going.
+>
+> It isn't in which system and firmware?
+
+There is a specific default behavior present in the Linux kernel
+today.  The addition of this property isn't going to change it AFAICS.
+
+> Maybe most, but how can you know
+> for sure. Bindings are independent of given OS implementation, thus
+> relying on default OS choice is shortsighted.
+
+So can you point me to any project other than the Linux kernel that
+will support this property once it gets to the DT bindings
+documentation in the kernel source?
+
 > >
-> > Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-> > ---
-> >  drivers/nvmem/qfprom.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > Bool definitely allows the property to be not present, which means
+> > that the default behavior is intended and this is all about overriding
+> > a known default behavior.
+> >
+> > Anyway, if the maintainers of DT bindings are fine with the current
+> > definition, I'm not going to block this.  I just wanted to make a note
+> > that it wasn't looking particularly straightforward to me.
 >
-> Are you actually testing burning fuses from the OS, or are you just
-> using the nvmem in "read-only" mode? From comments in the bindings, if
-> you're trying to burn the fuses then the clock is required. If things
-> are in read-only mode then the clock isn't required.
+> Sure. It has one DT's maintainer Ack (mine) and maybe also Rob will
+> comment on it.
 
-Hi Doug,
-
-I definitely don't plan on burning any fuses on this phone. Not even
-sure that's allowed by the TZ / boot stack.
-
->
-> When I compare to the driver, it seems like the driver assumes that if
-> more than one memory region is provided then you must be supporting
-> burning fuses. The bindings agree that having 4 memory regions
-> specified means that the nvmem supports burning and 1 memory region
-> specified means read-only. The extra 3 memory regions in the nvmem are
-> all about fuse burning, I believe.
->
-> So maybe the right fix here is to just change your dts to specify one
-> memory region?
-
-I got feedback from Konrad that this here would be the preferred
-approach compared to having a different dts for ChromeOS vs non-ChromeOS
-devices. I don't feel strongly to either, for me it's also okay to
-remove the extra memory regions and only have the main one used on
-regular qcom devices.
-
-Let me know what you think.
-
-Regards
-Luca
-
->
-> -Doug
-
+OK
