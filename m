@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7888C6FA8F
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8207C83F18
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235074AbjH3Sfg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Aug 2023 14:35:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45026 "EHLO
+        id S232186AbjH3Sfi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:35:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45078 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242915AbjH3J6w (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 05:58:52 -0400
-Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54D89CD7
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:45 -0700 (PDT)
-Received: by mail-ej1-x634.google.com with SMTP id a640c23a62f3a-99bed101b70so675877166b.3
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:45 -0700 (PDT)
+        with ESMTP id S242922AbjH3J6x (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2023 05:58:53 -0400
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9ED43CC2
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:48 -0700 (PDT)
+Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-52a5c0d949eso4934168a12.0
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2023 02:58:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1693389524; x=1693994324; darn=vger.kernel.org;
+        d=fairphone.com; s=fair; t=1693389527; x=1693994327; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=xX0/yXPE7aSISxZJn2hMtArfZI0yA7qiHLxVlnkrZys=;
-        b=Y9hZ7+A5HiT8beas78k26hVgAAx9719kCV2QlhX19KYdRzG9zrKvsU19WL/ynr8dIE
-         U1mAOwqVauz8S1QiuPXTRb+njFq4RA6N2kB0EdhQDcDQgjDtf9BooH+BQVH+glzIQwsn
-         n0ozbiUvrHusuS9jfrfumr3wcG9ZatSBoTPrTuBu89QLdFtWGknzGHhsJ3NyaE80HHhX
-         4S9BshQ5aIAddvff+/JNz/4akqpbWGW9o0WYzrisx8L55rFsx7TFYnkeP8rVjnLI7Hrb
-         MA5eghZQ3AOlx1QFyzwzPsH6N4gj3UUotdSS4AjbCVqZi09valZCVLrLLUwiE0D2iME9
-         PsaQ==
+        bh=G8zevXRSNaiKUo9Os5nQfhkBpmvVMqAujkMCK+CVjDY=;
+        b=tZVG3LNBI9JP9Yakvkjv3Z78A6Q2LhTmRA5MbC76asj6/p745rYWXFcmDNWpENgxFK
+         2YhvVC58Nj5qrM0zsDzGSvulNJD9niv2/hgiaK274rZawvZ96PqfiyH5KhNke3jzXV0E
+         lIswS9hJNYtSfj11Z3jk3wqoFN9T4pU4CJ9px6ixcqpzXwmGnWDnyjk/N06UqSzU+/YM
+         8lJJ5xk6RjzMc5by5tGSPzBBbiLtl2Y+dwKlGPSkegWhElUkKHY69VVD9cGS8gXsOill
+         oi8uqqWh6z6+AEMIc6KXlpDsZLpEX1zRx18zzImvIpbrKbO4KtN0FDh4bTzr7PNUVUHj
+         CsrA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693389524; x=1693994324;
+        d=1e100.net; s=20221208; t=1693389527; x=1693994327;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=xX0/yXPE7aSISxZJn2hMtArfZI0yA7qiHLxVlnkrZys=;
-        b=fdLsCmTdqZOj6pc3jwFQR5IlX/sOE6lc6ZEOGUatTvGFnCoZqn9LydN5iWYaI9dAah
-         O0hE7nOIjQgO4DonbsZS5sZ/z8Sgz09a1j2l8wIc/DbztaZU4FgPZcn/T6YCt03Ejigt
-         n++FPj8MMmrrL0DvNxt7FHuVmrv2ozQyz9ZjYZa3e90DCNfg5omGCvDhCOronfzd3Rep
-         UhJNOEfNUevfxhpY9Lx+xFyMEzzG+SUY0s164hAwujmZH2866/umYLd6KbqwDwg13JNy
-         KySa+MCCm9GmKexftjXh0bsVWzfgn7xedON0yEQ3wa8Y21SthiTLxFZLSn5Sp04jAeI9
-         QqPg==
-X-Gm-Message-State: AOJu0YwIpAz9E9V32gYYpQSdpNi2PRRwULZUBQ8D+A+HBt1sSXF+GX1c
-        g4Clt6IBBVmRIeg/W8SH+epppw==
-X-Google-Smtp-Source: AGHT+IHE2oNPr8YGDecm3++Y/fHkgaWwsbjkXdc3triMzGQUW4D74YTAwBQ4M0EqJPBcxNRdKwGq0Q==
-X-Received: by 2002:a17:907:78d1:b0:9a5:eedb:ee1d with SMTP id kv17-20020a17090778d100b009a5eedbee1dmr560880ejc.46.1693389523821;
-        Wed, 30 Aug 2023 02:58:43 -0700 (PDT)
+        bh=G8zevXRSNaiKUo9Os5nQfhkBpmvVMqAujkMCK+CVjDY=;
+        b=LSHmN6Yx81ploR8WI2NA+sBZr8WaB7/aBjkBuMlwz7M+ZyXv1uEJqqjcGKpV7fDlCs
+         yBTEdRMKm30uyen8rI6VtbryQ83IOKShTzdnpuo4iMxlL1XE3o8rM2T15MRPE601nm7E
+         1dD1y9QNLWmenoUwLrBgTA5a8cEYYTHczADl+v1WXUcEf2tWHQ+2aQcMkpkvEr//Xtvz
+         9nuSKW1AxX7S0JugbjaW4zdHxteX4wfR2jjQk6NKoe6xKY1kZ1wNChX0CL1LvM/G2UAU
+         3mNOJS8qMlkFolSpbIbkHHikrrA86sAMlwQaTJulRmuEwlTMXLM0Iml7Tl077mp6v7kR
+         qqtw==
+X-Gm-Message-State: AOJu0YxtQDwHM1wbuxEK/GMZ7OC3oguN+c6DgSmsH+a4GPZ3yQXcBTfC
+        c4fnmxKFtGOLj6htjyqpJODFrg==
+X-Google-Smtp-Source: AGHT+IGIItY/qwJX9U0CjB5BG63tTG4RhBnPNl0Zyu8WX4cT11uTgHliy+JPSD26Sm2+/I7M8qxJdQ==
+X-Received: by 2002:a17:907:a07c:b0:9a5:846d:d829 with SMTP id ia28-20020a170907a07c00b009a5846dd829mr1285814ejc.18.1693389527101;
+        Wed, 30 Aug 2023 02:58:47 -0700 (PDT)
 Received: from otso.luca.vpn.lucaweiss.eu (5073ED84.static.ziggozakelijk.nl. [80.115.237.132])
-        by smtp.gmail.com with ESMTPSA id i15-20020a1709064ecf00b009a2202bfce5sm6957130ejv.118.2023.08.30.02.58.42
+        by smtp.gmail.com with ESMTPSA id i15-20020a1709064ecf00b009a2202bfce5sm6957130ejv.118.2023.08.30.02.58.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Aug 2023 02:58:43 -0700 (PDT)
+        Wed, 30 Aug 2023 02:58:46 -0700 (PDT)
 From:   Luca Weiss <luca.weiss@fairphone.com>
-Date:   Wed, 30 Aug 2023 11:58:26 +0200
-Subject: [PATCH 01/11] arm64: dts: qcom: sc7280: Mark some nodes as
- 'reserved'
+Date:   Wed, 30 Aug 2023 11:58:28 +0200
+Subject: [PATCH 03/11] arm64: dts: qcom: sc7280: Move qfprom clock to
+ chrome-common
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230830-fp5-initial-v1-1-5a954519bbad@fairphone.com>
+Message-Id: <20230830-fp5-initial-v1-3-5a954519bbad@fairphone.com>
 References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
 In-Reply-To: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
 To:     cros-qcom-dts-watchers@chromium.org,
@@ -79,80 +79,44 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-With the standard Qualcomm TrustZone setup, components such as lpasscc,
-pdc_reset and watchdog shouldn't be touched by Linux. Mark them with
-the status 'reserved' and reeable them in the chrome-common dtsi.
+On non-ChromeOS boards the clock cannot be touched, so move it in the
+chrome-common dtsi which is the only place where it's needed.
 
 Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 ---
- arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi | 12 ++++++++++++
- arch/arm64/boot/dts/qcom/sc7280.dtsi               |  5 ++++-
- 2 files changed, 16 insertions(+), 1 deletion(-)
+ arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi | 5 +++++
+ arch/arm64/boot/dts/qcom/sc7280.dtsi               | 2 --
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi b/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
-index 2e1cd219fc18..8eb30aa226a2 100644
+index 8eb30aa226a2..6cfcec1eabd9 100644
 --- a/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
 +++ b/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
-@@ -46,6 +46,14 @@ wpss_mem: memory@9ae00000 {
- 	};
- };
- 
-+&lpasscc {
-+	status = "okay";
-+};
-+
-+&pdc_reset {
-+	status = "okay";
-+};
-+
- /* The PMIC PON code isn't compatible w/ how Chrome EC/BIOS handle things. */
- &pmk8350_pon {
+@@ -59,6 +59,11 @@ &pmk8350_pon {
  	status = "disabled";
-@@ -84,6 +92,10 @@ &scm {
- 	dma-coherent;
  };
  
-+&watchdog {
-+	status = "okay";
++&qfprom {
++	clocks = <&gcc GCC_SEC_CTRL_CLK_SRC>;
++	clock-names = "core";
 +};
 +
- &wifi {
- 	status = "okay";
- 
+ /*
+  * Chrome designs always boot from SPI flash hooked up to the qspi.
+  *
 diff --git a/arch/arm64/boot/dts/qcom/sc7280.dtsi b/arch/arm64/boot/dts/qcom/sc7280.dtsi
-index 042908048d09..98a8d627a348 100644
+index 98a8d627a348..5c78038369fd 100644
 --- a/arch/arm64/boot/dts/qcom/sc7280.dtsi
 +++ b/arch/arm64/boot/dts/qcom/sc7280.dtsi
-@@ -2267,6 +2267,7 @@ lpasscc: lpasscc@3000000 {
- 			clocks = <&gcc GCC_CFG_NOC_LPASS_CLK>;
- 			clock-names = "iface";
- 			#clock-cells = <1>;
-+			status = "reserved";
- 		};
- 
- 		lpass_rx_macro: codec@3200000 {
-@@ -4216,6 +4217,7 @@ pdc_reset: reset-controller@b5e0000 {
- 			compatible = "qcom,sc7280-pdc-global";
- 			reg = <0 0x0b5e0000 0 0x20000>;
- 			#reset-cells = <1>;
-+			status = "reserved";
- 		};
- 
- 		tsens0: thermal-sensor@c263000 {
-@@ -5212,11 +5214,12 @@ msi-controller@17a40000 {
- 			};
- 		};
- 
--		watchdog@17c10000 {
-+		watchdog: watchdog@17c10000 {
- 			compatible = "qcom,apss-wdt-sc7280", "qcom,kpss-wdt";
- 			reg = <0 0x17c10000 0 0x1000>;
- 			clocks = <&sleep_clk>;
- 			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
-+			status = "reserved";
- 		};
- 
- 		timer@17c20000 {
+@@ -897,8 +897,6 @@ qfprom: efuse@784000 {
+ 			      <0 0x00780000 0 0xa20>,
+ 			      <0 0x00782000 0 0x120>,
+ 			      <0 0x00786000 0 0x1fff>;
+-			clocks = <&gcc GCC_SEC_CTRL_CLK_SRC>;
+-			clock-names = "core";
+ 			power-domains = <&rpmhpd SC7280_MX>;
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
 
 -- 
 2.42.0
