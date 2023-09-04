@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 592DFCA0FF6
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Sep 2023 15:57:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E876C83F3F
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Sep 2023 15:57:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349806AbjIDP5Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Sep 2023 11:57:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35156 "EHLO
+        id S1353262AbjIDP5U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Sep 2023 11:57:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348444AbjIDP5O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2023 11:57:14 -0400
+        with ESMTP id S1351560AbjIDP5T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2023 11:57:19 -0400
 Received: from relay01.th.seeweb.it (relay01.th.seeweb.it [5.144.164.162])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8EB0BCFD;
-        Mon,  4 Sep 2023 08:57:09 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52325CE0
+        for <linux-pm@vger.kernel.org>; Mon,  4 Sep 2023 08:57:16 -0700 (PDT)
 Received: from v0.lan (bband-dyn191.178-41-225.t-com.sk [178.41.225.191])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 7DE5B1F963;
-        Mon,  4 Sep 2023 17:57:05 +0200 (CEST)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 5B3FE201B0;
+        Mon,  4 Sep 2023 17:57:09 +0200 (CEST)
 From:   Martin Botka <martin.botka@somainline.org>
-Date:   Mon, 04 Sep 2023 17:57:01 +0200
-Subject: [PATCH 1/6] firmware: smccc: Export revision soc_id function
+Date:   Mon, 04 Sep 2023 17:57:06 +0200
+Subject: [PATCH 6/6] arm64: dts: allwinner: h616: Add cooling cells
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230904-cpufreq-h616-v1-1-b8842e525c43@somainline.org>
+Message-Id: <20230904-cpufreq-h616-v1-6-b8842e525c43@somainline.org>
 References: <20230904-cpufreq-h616-v1-0-b8842e525c43@somainline.org>
 In-Reply-To: <20230904-cpufreq-h616-v1-0-b8842e525c43@somainline.org>
 To:     Mark Rutland <mark.rutland@arm.com>,
@@ -55,37 +55,61 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Martin Botka <martin@biqu3d.com>,
         Martin Botka <martin.botka@somainline.org>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1693843024; l=650;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1693843024; l=1174;
  i=martin.botka@somainline.org; s=20230811; h=from:subject:message-id;
- bh=kr+kQu42jftnzRysfuRliIXntokD55LnjWm0KkOrQRY=;
- b=pAzHKAaWc3uxAZHLFKPmIIe/nbRnKh/YE++nWe15qMHVrrI0vNt1Ph6hE+aFzN+4S1wpRixuy
- C3B8nQmhvtKBDaa/gTX1xPTp4ZewRLtv2es7NWSHg0vT3FkLoNVVVaQ
+ bh=qJv56yjDvCMxLlVKkO9qD49pos1hnuOnNYRbCB0UPg0=;
+ b=zMLqucwWJskJLNOgqJTLSKacT6rQBC1cwrFNHN3F2BAMkUGpUNzTlKyvratAfDhTp2hqBTdRU
+ xmbBKBWUWsrDX4Dj9koFphUDq/Thv1MDc4BtfGIm6hqMCQAin2R3D3B
 X-Developer-Key: i=martin.botka@somainline.org; a=ed25519;
  pk=aTCd3jmwU8GrJidWg3DSKLpdVMcpFzXzCSLXLR6NtWU=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-arm_smccc_get_soc_id_revision need to be exported so it can be used
-by sun50i cpufreq driver.
+Add cooling cells so we enable passive cooling on CPU by regulating
+CPU voltage and frequency
 
 Signed-off-by: Martin Botka <martin.botka@somainline.org>
 ---
- drivers/firmware/smccc/smccc.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/firmware/smccc/smccc.c b/drivers/firmware/smccc/smccc.c
-index db818f9dcb8e..d670635914ec 100644
---- a/drivers/firmware/smccc/smccc.c
-+++ b/drivers/firmware/smccc/smccc.c
-@@ -69,6 +69,7 @@ s32 arm_smccc_get_soc_id_revision(void)
- {
- 	return smccc_soc_id_revision;
- }
-+EXPORT_SYMBOL_GPL(arm_smccc_get_soc_id_revision);
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
+index 78e79c591dba..7dc4c95ea280 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
+@@ -26,6 +26,7 @@ cpu0: cpu@0 {
+ 			reg = <0>;
+ 			enable-method = "psci";
+ 			clocks = <&ccu CLK_CPUX>;
++			#cooling-cells = <2>;
+ 		};
  
- static int __init smccc_devices_init(void)
- {
+ 		cpu1: cpu@1 {
+@@ -34,6 +35,7 @@ cpu1: cpu@1 {
+ 			reg = <1>;
+ 			enable-method = "psci";
+ 			clocks = <&ccu CLK_CPUX>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		cpu2: cpu@2 {
+@@ -42,6 +44,7 @@ cpu2: cpu@2 {
+ 			reg = <2>;
+ 			enable-method = "psci";
+ 			clocks = <&ccu CLK_CPUX>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		cpu3: cpu@3 {
+@@ -50,6 +53,7 @@ cpu3: cpu@3 {
+ 			reg = <3>;
+ 			enable-method = "psci";
+ 			clocks = <&ccu CLK_CPUX>;
++			#cooling-cells = <2>;
+ 		};
+ 	};
+ 
 
 -- 
 2.42.0
