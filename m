@@ -2,70 +2,76 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAEF5C71153
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Sep 2023 10:13:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6BE8C71153
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Sep 2023 10:19:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243908AbjIDKNG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Sep 2023 06:13:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37664 "EHLO
+        id S234212AbjIDKTI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Sep 2023 06:19:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39706 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344311AbjIDKNF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2023 06:13:05 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C425519B;
-        Mon,  4 Sep 2023 03:13:02 -0700 (PDT)
+        with ESMTP id S229460AbjIDKTH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2023 06:19:07 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65428BD;
+        Mon,  4 Sep 2023 03:19:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1693822382; x=1725358382;
+  t=1693822744; x=1725358744;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=XS++ZPMYyd6tePay/xpk8nQULoPGc+paf1zNdqr0igk=;
-  b=g3kTJ2c2iU9cgi/6t30DuUwrf1zBA+TBMglRLd4eUZybeeZpVdpATYnJ
-   8piEZ1QoZ1d7hFDd/9mwkFJ1HYy0MoexnMZqDCwY2Lkk05rB9KIoj8hZj
-   2/fvsjerhjXRKS3MT3/8p7/R2tei1+EV0fDZYw9+VfRl9zjfWQ/PgMseS
-   AgmC5RpByVjU3wCAZM1lllFcPBu3lzFUN3AuIgr+M/5QGl5lONcd+pTuQ
-   ptG7F9aQqmRRPxTliMj3x3GCmIGO0P4c4xOY0nGI3GO5wHQBcQ6NSuZ04
-   UBWjOL/NIXU0vM/kMLB9OXs9DTettGEhHhYFN2/ns/EKLs4AK6LunOtIu
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="440530952"
+  bh=gkDnMwjA7l490OUxijQvV0jTzYpNi8dtbxJiRZHOVFw=;
+  b=JXrbKtz8guDuKbv1mbBEoDJHKpS2JDOFz5fMfkm6SDGIUYAg5OzssVxW
+   qNK0+5qFpATlnPPhiPMm+Bl13j5cV+4AzOl1gJhr7x/jPNkzgIv/5Ig1z
+   jLvPTlMaS6zZx/am3Fa+c851XpReXB05Nxbd2sFTGh72vJqjdSinyi/Ky
+   uDgJXkLNIPpbPDwNQHUQ2w5/XNYQsObGi0OWfexIUbL52UbehAYauyuRZ
+   TDEZMnHqu4V+JE5st45ZAU7q8DPq26PmPNzTZiBrZvIPN93JuIePlxEN0
+   hPxx1arYvOU2Sctz8hVFc7Elh/DIR/1Gvjfm7KxX+07kwx823ETHPXV9k
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="376500346"
 X-IronPort-AV: E=Sophos;i="6.02,226,1688454000"; 
-   d="scan'208";a="440530952"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2023 03:13:02 -0700
+   d="scan'208";a="376500346"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2023 03:10:08 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="690543123"
+X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="1071545125"
 X-IronPort-AV: E=Sophos;i="6.02,226,1688454000"; 
-   d="scan'208";a="690543123"
+   d="scan'208";a="1071545125"
 Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2023 03:12:58 -0700
+  by fmsmga005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2023 03:10:06 -0700
 Received: from andy by smile.fi.intel.com with local (Exim 4.96)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1qd6Zj-006Oec-2J;
-        Mon, 04 Sep 2023 13:12:55 +0300
-Date:   Mon, 4 Sep 2023 13:12:55 +0300
+        id 1qd6Wy-006ObZ-0H;
+        Mon, 04 Sep 2023 13:10:04 +0300
+Date:   Mon, 4 Sep 2023 13:10:03 +0300
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Biju Das <biju.das.jz@bp.renesas.com>
 Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, Biju Das <biju.das.au@gmail.com>
-Subject: Re: [PATCH 0/2] Match data improvements for bq256xx driver
-Message-ID: <ZPWtpxi/8t1oTC8d@smile.fi.intel.com>
-References: <20230902202505.97609-1-biju.das.jz@bp.renesas.com>
+Subject: Re: [PATCH 2/2] power: supply: bq2515x: Some cleanups
+Message-ID: <ZPWs+xtfQUlGOaVe@smile.fi.intel.com>
+References: <20230902200518.91585-1-biju.das.jz@bp.renesas.com>
+ <20230902200518.91585-3-biju.das.jz@bp.renesas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230902202505.97609-1-biju.das.jz@bp.renesas.com>
+In-Reply-To: <20230902200518.91585-3-biju.das.jz@bp.renesas.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Sep 02, 2023 at 09:25:03PM +0100, Biju Das wrote:
-> This patch series aims to add match data improvements for bq256xx driver.
-> 
-> This patch series is only compile tested.
+On Sat, Sep 02, 2023 at 09:05:18PM +0100, Biju Das wrote:
+> Some cleanups:
+>  * Remove trailing comma in the terminator entry for OF/ID table.
+>  * Drop a space from terminator entry for OF table.
 
-FWIW,
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+
+Btw, in all similar patches you may add the reason(s) why you are doing that:
+
+1/ unification;
+2/ making code robust against (theoretical) misrebases or other similar things
+   where the new entry goes _after_ the termination without compiler noticing.
 
 -- 
 With Best Regards,
