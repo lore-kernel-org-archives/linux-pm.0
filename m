@@ -2,58 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3DA2CA0FFB
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Sep 2023 16:07:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2462C83F2C
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Sep 2023 16:07:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239163AbjIEQHZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Sep 2023 12:07:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47388 "EHLO
+        id S230200AbjIEQH2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Sep 2023 12:07:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33600 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1353539AbjIEGgB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Sep 2023 02:36:01 -0400
-Received: from muru.com (muru.com [72.249.23.125])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E9E4ECC7;
-        Mon,  4 Sep 2023 23:35:57 -0700 (PDT)
-Received: from localhost (localhost [127.0.0.1])
-        by muru.com (Postfix) with ESMTPS id 3E087809E;
-        Tue,  5 Sep 2023 06:35:57 +0000 (UTC)
-Date:   Tue, 5 Sep 2023 09:35:55 +0300
-From:   Tony Lindgren <tony@atomide.com>
-To:     Grant B Adams <nemith592@gmail.com>
-Cc:     linux-omap@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-        Bin Liu <b-liu@ti.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-usb@vger.kernel.org
-Subject: Re: [PATCH v2 0/2] Fix tps65217-charger vs vbus irq conflict
-Message-ID: <20230905063555.GZ11676@atomide.com>
-References: <20230823085430.6610-1-nemith592@gmail.com>
+        with ESMTP id S1354082AbjIEJfT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Sep 2023 05:35:19 -0400
+X-Greylist: delayed 4124 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 05 Sep 2023 02:35:16 PDT
+Received: from mail.equinoxrise.pl (mail.equinoxrise.pl [217.61.112.157])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 847981AD
+        for <linux-pm@vger.kernel.org>; Tue,  5 Sep 2023 02:35:16 -0700 (PDT)
+Received: by mail.equinoxrise.pl (Postfix, from userid 1002)
+        id BB9B583805; Mon,  4 Sep 2023 09:40:58 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=equinoxrise.pl;
+        s=mail; t=1693813284;
+        bh=v6OgBfK5dN7P5dQ0wCu59rOfZaiqziJeLNblJ8dOcGI=;
+        h=Date:From:To:Subject:From;
+        b=GKzul9RjnnQ3Di/D8QcOp3HDyjlkMpjTvG8E+7Dfui1XIIJ2CdRnwAhwWYBlw/R89
+         JsReW1w3afO4CTP56ybRayNTcfJc8TmKnFF2JAVb7q/2Y3q8TP4FF3Vr8C1Chm9PYy
+         3qihoCulG+HWJs58dIgwCNxhpT5uFqtq66rENJQo78cHw13YMFNgcPRKmM0TMXGBvj
+         I7eCvE+7oThKkXzHJda9PXd86oy8E4Cffxokx8+IeBS2t51tldJUO9dKNa2r1wausd
+         t1eSbKjGt2NSRxt2SjPgqjOcZznYnWc4k5T+ZwbZThlDRKuc7e3zI4eTQ/V7DYwuvl
+         sAQkdhdqrr2KA==
+Received: by mail.equinoxrise.pl for <linux-pm@vger.kernel.org>; Mon,  4 Sep 2023 07:40:34 GMT
+Message-ID: <20230904084500-0.1.7.qke.0.9bahl0027x@equinoxrise.pl>
+Date:   Mon,  4 Sep 2023 07:40:34 GMT
+From:   "Mateusz Talaga" <mateusz.talaga@equinoxrise.pl>
+To:     <linux-pm@vger.kernel.org>
+Subject: Prezentacja
+X-Mailer: mail.equinoxrise.pl
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230823085430.6610-1-nemith592@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-* Grant B Adams <nemith592@gmail.com> [230823 08:54]:
-> Both the tps65217-charger and vbus drivers are trying to allocate the same
-> TPS65217 device interrupt line (TPS65217 is a TI power management IC) 
-> which results in the following error and a probe failure:
-> 
-> genirq: Flags mismatch irq 148. 00002000 (vbus) vs. 00000000 
-> (tps65217-charger)
-> 
-> For the Beaglebone Black's config the tps65217-charger driver is currently
-> disabled and therefore no conflict. Based on comments from Robert C Nelson
-> this driver has been disabled for a long time and he is uncertain on the
-> reasons why it was disabled. With a battery connected to the BBB, I 
-> re-enabled the tps65217-charger driver which resulted in the 
-> abovementioned.
-> 
-> The conflict is resolved by changing both driver's threaded interrupt
-> request function from IRQF_ONESHOT to IRQF_SHARED.
+Dzie=C5=84 dobry!
 
-Looks good to me:
+Czy m=C3=B3g=C5=82bym przedstawi=C4=87 rozwi=C4=85zanie, kt=C3=B3re umo=C5=
+=BCliwia monitoring ka=C5=BCdego auta w czasie rzeczywistym w tym jego po=
+zycj=C4=99, zu=C5=BCycie paliwa i przebieg?
 
-Reviewed-by: Tony Lindgren <tony@atomide.com>
+Dodatkowo nasze narz=C4=99dzie minimalizuje koszty utrzymania samochod=C3=
+=B3w, skraca czas przejazd=C3=B3w, a tak=C5=BCe tworzenie planu tras czy =
+dostaw.
+
+Z naszej wiedzy i do=C5=9Bwiadczenia korzysta ju=C5=BC ponad 49 tys. Klie=
+nt=C3=B3w. Monitorujemy 809 000 pojazd=C3=B3w na ca=C5=82ym =C5=9Bwiecie,=
+ co jest nasz=C4=85 najlepsz=C4=85 wizyt=C3=B3wk=C4=85.
+
+Bardzo prosz=C4=99 o e-maila zwrotnego, je=C5=9Bli mogliby=C5=9Bmy wsp=C3=
+=B3lnie om=C3=B3wi=C4=87 potencja=C5=82 wykorzystania takiego rozwi=C4=85=
+zania w Pa=C5=84stwa firmie.
+
+
+Pozdrawiam
+Mateusz Talaga
