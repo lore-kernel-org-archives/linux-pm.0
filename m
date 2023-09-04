@@ -2,70 +2,89 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 384F1C83F33
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Sep 2023 10:08:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50800C71153
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Sep 2023 10:12:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229557AbjIDKIT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Sep 2023 06:08:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58996 "EHLO
+        id S234140AbjIDKM3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Sep 2023 06:12:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231425AbjIDKIS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2023 06:08:18 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C65DECC4;
-        Mon,  4 Sep 2023 03:08:14 -0700 (PDT)
+        with ESMTP id S231425AbjIDKM2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2023 06:12:28 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D441EAD;
+        Mon,  4 Sep 2023 03:12:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1693822094; x=1725358094;
+  t=1693822345; x=1725358345;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=6MJO084/9+QQ3CfIH+7hHqfnRSbi/y95iDpamtgD/T0=;
-  b=ZLP/bDWroOAkzj9r5Qz+k39W5qVuXcwf5nx4BPx/lSL2MBIE9YVskS03
-   4PePdKfo2SkJE8Y/s/Ix1fhBqn4Ofx/+Q/81rla+caBFA//HQxcaPVhsf
-   1V6dKxrHGzXQgkiOsmCYC88RGn5PlSpZJs1sig9oDJSU2SETlJ7pjgljI
-   ZA2A42jpIud60O/+qkjHM/WqsiruCk95X2SvhAuw4M5p1hu8cmLAPqyMd
-   K64Ohj01jK65h+LsaztDyy3lywUpGyt3ZvaGVAiypoxTXvOGrbSXAuNfH
-   r6eMz6BywVyUL+YJSGYnxqAZwVffNGe5dmqN8Q5EEV2KVpZhMBwSzb8HM
+  bh=8q6jkVH59oY7RpN/0ktD9IL+V0p4TrXwNyR5wB9s2s4=;
+  b=J/jPVL3SAqYBJAZ3mEgPqtDoUcC3SA2RlsEy71yw7zUzWeRgKE+Lzf56
+   yb5XA/oBcBJktPv0YsrSj7aw3vmQ2DtfgelahRGsDDyhBduCcd5Z43gpp
+   v6vtYTwCAdYKTU0oX2x/Cf3vBz9cZvx/buxK5VUayQA8mHde7ORwyjxxp
+   f7L0omKTAi8Nac84a/v8YRWEedpBQ9VvWyMziYx/Mj0XEkHJxlZ3aCTRe
+   BmVX1L4GNSUb/v9AK213MA0Gp1Cv0hCi5PvryiBWpFZ3aONvjqWf9REOE
+   J5iMzkF1Vbpz0lK+dn0o5tMjvO9NEUI+V6c7xp1M49UbQIl4vaiigow0h
    Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="442962683"
+X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="440530794"
 X-IronPort-AV: E=Sophos;i="6.02,226,1688454000"; 
-   d="scan'208";a="442962683"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2023 03:08:14 -0700
+   d="scan'208";a="440530794"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2023 03:12:24 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="830854988"
+X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="690542852"
 X-IronPort-AV: E=Sophos;i="6.02,226,1688454000"; 
-   d="scan'208";a="830854988"
+   d="scan'208";a="690542852"
 Received: from smile.fi.intel.com ([10.237.72.54])
-  by FMSMGA003.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2023 03:08:12 -0700
+  by orsmga003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2023 03:12:22 -0700
 Received: from andy by smile.fi.intel.com with local (Exim 4.96)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1qd6V7-006OaU-2N;
-        Mon, 04 Sep 2023 13:08:09 +0300
-Date:   Mon, 4 Sep 2023 13:08:09 +0300
+        id 1qd6Z9-006Odr-1X;
+        Mon, 04 Sep 2023 13:12:19 +0300
+Date:   Mon, 4 Sep 2023 13:12:19 +0300
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Biju Das <biju.das.jz@bp.renesas.com>
 Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, Biju Das <biju.das.au@gmail.com>
-Subject: Re: [PATCH 2/2] power: supply: bq24257_charger: Some cleanups
-Message-ID: <ZPWsiWoZnQ905lUC@smile.fi.intel.com>
-References: <20230902193331.83672-1-biju.das.jz@bp.renesas.com>
- <20230902193331.83672-3-biju.das.jz@bp.renesas.com>
+Subject: Re: [PATCH 1/2] power: supply: bq2515x: Simpilfy
+ bq2515x_read_properties() and probe()
+Message-ID: <ZPWtg5VU4S7InmmL@smile.fi.intel.com>
+References: <20230902200518.91585-1-biju.das.jz@bp.renesas.com>
+ <20230902200518.91585-2-biju.das.jz@bp.renesas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230902193331.83672-3-biju.das.jz@bp.renesas.com>
+In-Reply-To: <20230902200518.91585-2-biju.das.jz@bp.renesas.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Sep 02, 2023 at 08:33:31PM +0100, Biju Das wrote:
-> Some cleanups:
->  * Remove trailing comma in the terminator entry for OF/ID/ACPI table.
->  * Drop a space from terminator entry for OF table.
+On Sat, Sep 02, 2023 at 09:05:17PM +0100, Biju Das wrote:
+> Add struct bq2515x_info and replace device_id->info in struct
+> bq2515x_device.
+> 
+> Simpilfy bq2515x_read_properties() and probe() by adding struct
+> bq2425x_chip_info as match data for OF/ID tables and use
+> i2c_get_match_data for retrieving match data instead of ID lookup.
+> 
+> Drop enum bq2515x_id as there is no user.
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+...
+
+> +/**
+> + * struct bq2515x_info -
+
+Missing description.
+
+> + * @regmap_config: register map config
+> + * @ilim: input current limit
+> + */
+> +struct bq2515x_info {
+> +	const struct regmap_config *regmap_config;
+> +	int ilim;
+>  };
 
 -- 
 With Best Regards,
