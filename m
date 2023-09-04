@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 779CFCA0FFA
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 592DFCA0FF6
 	for <linux-pm@archiver.kernel.org>; Mon,  4 Sep 2023 15:57:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353250AbjIDP5Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1349806AbjIDP5Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 4 Sep 2023 11:57:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35130 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35156 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345270AbjIDP5O (ORCPT
+        with ESMTP id S1348444AbjIDP5O (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2023 11:57:14 -0400
-Received: from relay02.th.seeweb.it (relay02.th.seeweb.it [5.144.164.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83947CCC
-        for <linux-pm@vger.kernel.org>; Mon,  4 Sep 2023 08:57:09 -0700 (PDT)
+Received: from relay01.th.seeweb.it (relay01.th.seeweb.it [5.144.164.162])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8EB0BCFD;
+        Mon,  4 Sep 2023 08:57:09 -0700 (PDT)
 Received: from v0.lan (bband-dyn191.178-41-225.t-com.sk [178.41.225.191])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 493011FAFE;
-        Mon,  4 Sep 2023 17:57:06 +0200 (CEST)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 7DE5B1F963;
+        Mon,  4 Sep 2023 17:57:05 +0200 (CEST)
 From:   Martin Botka <martin.botka@somainline.org>
-Date:   Mon, 04 Sep 2023 17:57:02 +0200
-Subject: [PATCH 2/6] cpufreq: dt-platdev: Blocklist allwinner,h616 SoC
+Date:   Mon, 04 Sep 2023 17:57:01 +0200
+Subject: [PATCH 1/6] firmware: smccc: Export revision soc_id function
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230904-cpufreq-h616-v1-2-b8842e525c43@somainline.org>
+Message-Id: <20230904-cpufreq-h616-v1-1-b8842e525c43@somainline.org>
 References: <20230904-cpufreq-h616-v1-0-b8842e525c43@somainline.org>
 In-Reply-To: <20230904-cpufreq-h616-v1-0-b8842e525c43@somainline.org>
 To:     Mark Rutland <mark.rutland@arm.com>,
@@ -55,37 +55,37 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Martin Botka <martin@biqu3d.com>,
         Martin Botka <martin.botka@somainline.org>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1693843024; l=763;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1693843024; l=650;
  i=martin.botka@somainline.org; s=20230811; h=from:subject:message-id;
- bh=y6+Jp6XdKlMolFv5lUKbS3BMDgQUVTv9Ux9Y9Pn0TiI=;
- b=jYK1Ddg2mSPl2rn47FMupLfy4TQbq4y4Ff2LU45va19Z4Fmq+B+x7B57OviVOXwqZEwVGQpX+
- L7sv0XXIIk8D2MXSGs4p4If3SIc5J6qsYkfdvrBDMpnb7vKRS9UECKB
+ bh=kr+kQu42jftnzRysfuRliIXntokD55LnjWm0KkOrQRY=;
+ b=pAzHKAaWc3uxAZHLFKPmIIe/nbRnKh/YE++nWe15qMHVrrI0vNt1Ph6hE+aFzN+4S1wpRixuy
+ C3B8nQmhvtKBDaa/gTX1xPTp4ZewRLtv2es7NWSHg0vT3FkLoNVVVaQ
 X-Developer-Key: i=martin.botka@somainline.org; a=ed25519;
  pk=aTCd3jmwU8GrJidWg3DSKLpdVMcpFzXzCSLXLR6NtWU=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The AllWinner H616 uses H6 cpufreq driver.
-Add it to blocklist so its not created twice
+arm_smccc_get_soc_id_revision need to be exported so it can be used
+by sun50i cpufreq driver.
 
 Signed-off-by: Martin Botka <martin.botka@somainline.org>
 ---
- drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ drivers/firmware/smccc/smccc.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index e2b20080de3a..51818cef8979 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -104,6 +104,7 @@ static const struct of_device_id allowlist[] __initconst = {
-  */
- static const struct of_device_id blocklist[] __initconst = {
- 	{ .compatible = "allwinner,sun50i-h6", },
-+	{ .compatible = "allwinner,sun50i-h616", },
+diff --git a/drivers/firmware/smccc/smccc.c b/drivers/firmware/smccc/smccc.c
+index db818f9dcb8e..d670635914ec 100644
+--- a/drivers/firmware/smccc/smccc.c
++++ b/drivers/firmware/smccc/smccc.c
+@@ -69,6 +69,7 @@ s32 arm_smccc_get_soc_id_revision(void)
+ {
+ 	return smccc_soc_id_revision;
+ }
++EXPORT_SYMBOL_GPL(arm_smccc_get_soc_id_revision);
  
- 	{ .compatible = "apple,arm-platform", },
- 
+ static int __init smccc_devices_init(void)
+ {
 
 -- 
 2.42.0
