@@ -2,33 +2,34 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68FB0C83F2C
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Sep 2023 15:57:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30754CA0FE9
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Sep 2023 15:57:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348948AbjIDP5O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Sep 2023 11:57:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35080 "EHLO
+        id S1350332AbjIDP5P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Sep 2023 11:57:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35116 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233243AbjIDP5O (ORCPT
+        with ESMTP id S236342AbjIDP5O (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2023 11:57:14 -0400
-Received: from relay02.th.seeweb.it (relay02.th.seeweb.it [IPv6:2001:4b7a:2000:18::163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84DC2CD7;
+Received: from relay01.th.seeweb.it (relay01.th.seeweb.it [5.144.164.162])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84FCFCE0;
         Mon,  4 Sep 2023 08:57:09 -0700 (PDT)
 Received: from v0.lan (bband-dyn191.178-41-225.t-com.sk [178.41.225.191])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 0D0E21FBA5;
-        Mon,  4 Sep 2023 17:57:07 +0200 (CEST)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id AAA411F8A1;
+        Mon,  4 Sep 2023 17:57:04 +0200 (CEST)
 From:   Martin Botka <martin.botka@somainline.org>
-Date:   Mon, 04 Sep 2023 17:57:03 +0200
-Subject: [PATCH 3/6] dt-bindings: opp: Add compatible for H616
+Subject: [PATCH 0/6] cpufreq for H616
+Date:   Mon, 04 Sep 2023 17:57:00 +0200
+Message-Id: <20230904-cpufreq-h616-v1-0-b8842e525c43@somainline.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230904-cpufreq-h616-v1-3-b8842e525c43@somainline.org>
-References: <20230904-cpufreq-h616-v1-0-b8842e525c43@somainline.org>
-In-Reply-To: <20230904-cpufreq-h616-v1-0-b8842e525c43@somainline.org>
+X-B4-Tracking: v=1; b=H4sIAEz+9WQC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDI2MDCyMT3eSC0rSi1ELdDDNDM10DY3ODlDTTxNREYxMloJaCotS0zAqwcdG
+ xtbUAEKOQaV4AAAA=
 To:     Mark Rutland <mark.rutland@arm.com>,
         Lorenzo Pieralisi <lpieralisi@kernel.org>,
         Sudeep Holla <sudeep.holla@arm.com>,
@@ -55,51 +56,59 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Martin Botka <martin@biqu3d.com>,
         Martin Botka <martin.botka@somainline.org>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1693843024; l=1233;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1693843024; l=1631;
  i=martin.botka@somainline.org; s=20230811; h=from:subject:message-id;
- bh=vkpyJtpACo5loCh7uIWuezcAm00aYr/8qEBY1Y7a4p0=;
- b=LsSyA8ltGbBj/87WeIZvhIIr7CW27Ba6QPMzBx6lX+DRdiVacfciJrzaKnjSiasT24rMfXkvF
- kHkob6+ZQ/jBcRr0WKQr0aVbKXpqug9ql3yQNGreOaV45y6DciUQFZ/
+ bh=U/3GSrY/Da5OP4VIOMN9GgEPvGCUXEMC8rHSLoKA2Rw=;
+ b=MtvEf/mtaOylRcOzTcUjowCffBGTFqT6Srlp77NJ9QYCFml/mSDTBkShMH7IpjvA6TZsxu7K+
+ RVNodzZtuxfBZ3LhwAyAp68ANZQnuFvystXI1eMcjZPUvCL16DzlGJw
 X-Developer-Key: i=martin.botka@somainline.org; a=ed25519;
  pk=aTCd3jmwU8GrJidWg3DSKLpdVMcpFzXzCSLXLR6NtWU=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We need to add compatible for H616 to H6 cpufreq driver bindings.
+Hello,
 
-Also enable opp_supported_hw property that will be needed for H616.
+This patch series adds support for cpufreq on H616 SoC.
+
+H616 is bit interesting. It has SoC versions that have different
+frequencies and uV but some versions have the same version ID and
+we have to check the SoC revision to differentiate between them.
+
+This is done via SMCCC. Thus the exporting of the symbol.
+
+Please note that this series depends on my THS series which
+depends on my SID series.
+
+I also have not enabled the cpufreq on any devices to minimize
+the series dependencies and I did test it only on CB1 where
+it works.
+
+Cheers,
+Martin
 
 Signed-off-by: Martin Botka <martin.botka@somainline.org>
 ---
- .../bindings/opp/allwinner,sun50i-h6-operating-points.yaml          | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Martin Botka (6):
+      firmware: smccc: Export revision soc_id function
+      cpufreq: dt-platdev: Blocklist allwinner,h616 SoC
+      dt-bindings: opp: Add compatible for H616
+      cpufreq: sun50i: Add H616 support
+      arm64: dts: allwinner: h616: Add CPU Operating Performance Points table
+      arm64: dts: allwinner: h616: Add cooling cells
 
-diff --git a/Documentation/devicetree/bindings/opp/allwinner,sun50i-h6-operating-points.yaml b/Documentation/devicetree/bindings/opp/allwinner,sun50i-h6-operating-points.yaml
-index 51f62c3ae194..2fa1199f2d23 100644
---- a/Documentation/devicetree/bindings/opp/allwinner,sun50i-h6-operating-points.yaml
-+++ b/Documentation/devicetree/bindings/opp/allwinner,sun50i-h6-operating-points.yaml
-@@ -23,7 +23,10 @@ allOf:
- 
- properties:
-   compatible:
--    const: allwinner,sun50i-h6-operating-points
-+    contains:
-+      enum:
-+        - allwinner,sun50i-h6-operating-points
-+        - allwinner,sun50i-h616-operating-points
- 
-   nvmem-cells:
-     description: |
-@@ -47,6 +50,7 @@ patternProperties:
-     properties:
-       opp-hz: true
-       clock-latency-ns: true
-+      opp-supported-hw: true
- 
-     patternProperties:
-       "^opp-microvolt-speed[0-9]$": true
+ .../opp/allwinner,sun50i-h6-operating-points.yaml  |   6 +-
+ .../boot/dts/allwinner/sun50i-h616-cpu-opp.dtsi    | 129 ++++++++++++++++++
+ arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi     |   8 ++
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   1 +
+ drivers/cpufreq/sun50i-cpufreq-nvmem.c             | 149 +++++++++++++++++----
+ drivers/firmware/smccc/smccc.c                     |   1 +
+ 6 files changed, 270 insertions(+), 24 deletions(-)
+---
+base-commit: a384547b9656aa2c98f643037b0e940476c41f51
+change-id: 20230824-cpufreq-h616-0370df5aea34
 
+Best regards,
 -- 
-2.42.0
+Martin Botka <martin.botka@somainline.org>
 
