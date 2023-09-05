@@ -2,186 +2,99 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE3F0CA0FF8
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Sep 2023 16:17:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CCD1CA1002
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Sep 2023 16:17:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239241AbjIEQHf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Sep 2023 12:07:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52854 "EHLO
+        id S233990AbjIEQHi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Sep 2023 12:07:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53340 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1353885AbjIEIaw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Sep 2023 04:30:52 -0400
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A35BACCB
-        for <linux-pm@vger.kernel.org>; Tue,  5 Sep 2023 01:30:47 -0700 (PDT)
-Received: by mail-lf1-x12e.google.com with SMTP id 2adb3069b0e04-4fe27849e6aso3469586e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 05 Sep 2023 01:30:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1693902646; x=1694507446; darn=vger.kernel.org;
-        h=in-reply-to:references:from:subject:cc:to:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=LWq30L/k6esO2m+8xJQ6plHCzdQIEU3cixCgpzG9F48=;
-        b=PXUS5OrCIr0hfIiE/RYFGI+eTfixlts42tgW5wCnRf0opXHzFIjtsXr6JyebIdn9tg
-         FBhI3Rqqee/Gl3C0da6tAxI6dCCXEQsjsVtuSr2n/p5xZGLu0vi5//ZskgqBM4Z53AdP
-         UBTfWJ35XhHIySddhkdM0qcNF8soWEqoGeFPw5Iak5/0zLUjsAMolwGVNsRdWCB6lpQY
-         p9RMVuACmnr0R14z8k1RuV8DV64dwrMxOQJtwxVyMP7nPkwp7feR04nkhRtKqX8gStDl
-         GALyse9Jh2L6M/GNvl34rZ5PAUGvFj0cIQx4fhKE/1joHr20rZDln+eGo2ZC8Slye1rm
-         1/iQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693902646; x=1694507446;
-        h=in-reply-to:references:from:subject:cc:to:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=LWq30L/k6esO2m+8xJQ6plHCzdQIEU3cixCgpzG9F48=;
-        b=Fg/PQwBKpZQ6c62tJq7HleYYCNx6QqKwdFodgVZQ8D4d6TzA5eUvWrBKMlG9t9JtfA
-         Y/X9z5Sv+WS5Tu64Mw0q9+lbMTGQl3YyavLXmbwmXao55a1zQGZ6DXbuoj7hw7NxNT9d
-         oa7a9Z8Dpa/gm0n948wbMh1QVzBh2QmLsPm1XZVwcUCI/eT+InR7Nun/RokYs1bdxBNy
-         0GeZBUi9/BKyps8TikHb+ux4X7MHptFg9oLRC2etUUIhMjnChlTLGBPpB+CeLhihZTlS
-         jtewaPve2nqj6U9/rGvV1LeAEYqi44hFwG+0D05MHtuT7YHhvAsyc7izuHC47MUUB/Hy
-         iLPQ==
-X-Gm-Message-State: AOJu0YwI+IipwpA0/Z+JTxeWro8lDgStMh1gXmBwZXG+1nGwaHpwpvGm
-        p90iEr4TmvPY3PA4po4rF282HQ==
-X-Google-Smtp-Source: AGHT+IHnW0XedN1vSaHx1JHDD4mFf80P5Zlb6gBn9z9f8KVQh7bwaME+VxnDiJKWubHNVVg3SjkedQ==
-X-Received: by 2002:a05:6512:ea6:b0:4fe:e50:422d with SMTP id bi38-20020a0565120ea600b004fe0e50422dmr9421046lfb.25.1693902645843;
-        Tue, 05 Sep 2023 01:30:45 -0700 (PDT)
-Received: from localhost (144-178-202-138.static.ef-service.nl. [144.178.202.138])
-        by smtp.gmail.com with ESMTPSA id fj22-20020a0564022b9600b005256aaa6e7asm667460edb.78.2023.09.05.01.30.45
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 05 Sep 2023 01:30:45 -0700 (PDT)
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date:   Tue, 05 Sep 2023 10:30:44 +0200
-Message-Id: <CVAUDGBO4S08.1F0O66ZE6I4IG@otso>
-To:     "Dmitry Baryshkov" <dmitry.baryshkov@linaro.org>,
-        "Krzysztof Kozlowski" <krzysztof.kozlowski@linaro.org>
-Cc:     <cros-qcom-dts-watchers@chromium.org>,
-        "Andy Gross" <agross@kernel.org>,
-        "Bjorn Andersson" <andersson@kernel.org>,
-        "Konrad Dybcio" <konrad.dybcio@linaro.org>,
-        "Rob Herring" <robh+dt@kernel.org>,
-        "Krzysztof Kozlowski" <krzysztof.kozlowski+dt@linaro.org>,
-        "Conor Dooley" <conor+dt@kernel.org>,
-        "Srinivas Kandagatla" <srinivas.kandagatla@linaro.org>,
-        "Linus Walleij" <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Viresh Kumar" <viresh.kumar@linaro.org>,
-        <~postmarketos/upstreaming@lists.sr.ht>,
-        <phone-devel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-gpio@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH 04/11] arm64: dts: qcom: pm7250b: make SID configurable
-From:   "Luca Weiss" <luca.weiss@fairphone.com>
-X-Mailer: aerc 0.15.2
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
- <20230830-fp5-initial-v1-4-5a954519bbad@fairphone.com>
- <b82f4683-e8b5-b424-8f7a-6d2ba1cab61f@linaro.org>
- <CV6NF0466658.20DGU7QKF2UBR@otso>
- <CAA8EJpr1+W3f08X-FpiiVrJ98kg52HaMwbbKn=fG15Whm4C8aQ@mail.gmail.com>
- <728003b9-db27-fdc0-e761-197a02a38c24@linaro.org>
- <CAA8EJpoXreHpxZQ2G10n0OiQzUX4ffk=gvo87dAU4-r+Svqpeg@mail.gmail.com>
-In-Reply-To: <CAA8EJpoXreHpxZQ2G10n0OiQzUX4ffk=gvo87dAU4-r+Svqpeg@mail.gmail.com>
+        with ESMTP id S1349993AbjIEE7t (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Sep 2023 00:59:49 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB1A0CC5;
+        Mon,  4 Sep 2023 21:59:46 -0700 (PDT)
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3854BuRM012731;
+        Tue, 5 Sep 2023 04:59:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id; s=qcppdkim1;
+ bh=8Pb3RG10ggqXhAPFcw8dJQlxsPCGz8Xa8WcpkLD5qBQ=;
+ b=CoHmUnESUsh1AdgKMdeP7biIgEhls5+znaWgkE7CS1/fmuzaAoc58uB/WhWlaP7UY/Jk
+ MckNezk6U/w4w6ftYqxtN5u348IdL5S6tpbPzXTpjb6J3nUtU5XLyXEsn0Pd4PMehqGK
+ o6+i3jSSJXO02VNaDjQMN99PojgCOCrM8iu/adsSS+4OiSjgJbeeF4IyfYLVwLaiRT3s
+ xWY7HAga231ZwVVWT7XH+Lovr5kUh+GoFFEDnpG0ZnhcZ8tErrBS7r/qu4Fnyqfw1/Nc
+ c/GKVa6ol5hgwIoE1gGbxKO6kbIu43Ph1QB/K5Sm6aLoLOu0D9jeOGD06QBJhgBLoiQ6 Dg== 
+Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sww32r26c-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 05 Sep 2023 04:59:41 +0000
+Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+        by APBLRPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 3854xbFx027984;
+        Tue, 5 Sep 2023 04:59:37 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 3sux4kawce-1;
+        Tue, 05 Sep 2023 04:59:37 +0000
+Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3854xb2q027973;
+        Tue, 5 Sep 2023 04:59:37 GMT
+Received: from hu-sgudaval-hyd.qualcomm.com (hu-rohiagar-hyd.qualcomm.com [10.213.106.138])
+        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 3854xaDd027972;
+        Tue, 05 Sep 2023 04:59:37 +0000
+Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 3970568)
+        id D6B2C1D0C; Tue,  5 Sep 2023 10:29:35 +0530 (+0530)
+From:   Rohit Agarwal <quic_rohiagar@quicinc.com>
+To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        djakov@kernel.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@quicinc.com, Rohit Agarwal <quic_rohiagar@quicinc.com>
+Subject: [PATCH 0/2] Add interconnect driver for SDX75
+Date:   Tue,  5 Sep 2023 10:29:33 +0530
+Message-Id: <1693889975-19122-1-git-send-email-quic_rohiagar@quicinc.com>
+X-Mailer: git-send-email 2.7.4
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: K77JBXuAtM3ObSejG8jwRzMN59v76olj
+X-Proofpoint-GUID: K77JBXuAtM3ObSejG8jwRzMN59v76olj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-05_03,2023-08-31_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 phishscore=0
+ clxscore=1015 suspectscore=0 adultscore=0 lowpriorityscore=0 bulkscore=0
+ mlxlogscore=663 mlxscore=0 priorityscore=1501 spamscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2308100000
+ definitions=main-2309050043
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu Aug 31, 2023 at 2:27 PM CEST, Dmitry Baryshkov wrote:
-> On Thu, 31 Aug 2023 at 14:54, Krzysztof Kozlowski
-> <krzysztof.kozlowski@linaro.org> wrote:
-> >
-> > On 31/08/2023 13:33, Dmitry Baryshkov wrote:
-> > > On Thu, 31 Aug 2023 at 13:13, Luca Weiss <luca.weiss@fairphone.com> w=
-rote:
-> > >>
-> > >> On Wed Aug 30, 2023 at 12:06 PM CEST, Krzysztof Kozlowski wrote:
-> > >>> On 30/08/2023 11:58, Luca Weiss wrote:
-> > >>>> Like other Qualcomm PMICs the PM7250B can be used on different add=
-resses
-> > >>>> on the SPMI bus. Use similar defines like the PMK8350 to make this
-> > >>>> possible.
-> > >>>>
-> > >>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-> > >>>> ---
-> > >>>>  arch/arm64/boot/dts/qcom/pm7250b.dtsi | 23 ++++++++++++++++------=
--
-> > >>>>  1 file changed, 16 insertions(+), 7 deletions(-)
-> > >>>>
-> > >>>> diff --git a/arch/arm64/boot/dts/qcom/pm7250b.dtsi b/arch/arm64/bo=
-ot/dts/qcom/pm7250b.dtsi
-> > >>>> index e8540c36bd99..3514de536baa 100644
-> > >>>> --- a/arch/arm64/boot/dts/qcom/pm7250b.dtsi
-> > >>>> +++ b/arch/arm64/boot/dts/qcom/pm7250b.dtsi
-> > >>>> @@ -7,6 +7,15 @@
-> > >>>>  #include <dt-bindings/interrupt-controller/irq.h>
-> > >>>>  #include <dt-bindings/spmi/spmi.h>
-> > >>>>
-> > >>>> +/* This PMIC can be configured to be at different SIDs */
-> > >>>> +#ifndef PM7250B_SID
-> > >>>> +   #define PM7250B_SID 2
-> > >>>> +#endif
-> > >>>
-> > >>> Why do you send the same patch as v1, without any reference to prev=
-ious
-> > >>> discussions?
-> > >>>
-> > >>> You got here feedback already.
-> > >>>
-> > >>> https://lore.kernel.org/linux-arm-msm/f52524da-719b-790f-ad2c-0c3f3=
-13d9fe9@linaro.org/
-> > >>
-> > >> Hi Krzysztof,
-> > >>
-> > >> I did mention that original patch in the cover letter of this series=
-.
-> > >> I'm definitely aware of the discussion earlier this year there but a=
-lso
-> > >> tried to get an update lately if there's any update with no response=
-.
-> > >
-> > > I think the overall consensus was that my proposal is too complicated
-> > > for the DT files.
-> >
-> > I proposed to duplicate the entries. Do you keep QUP nodes in DTSI and
-> > customize per address? No.
->
-> At the same time, we do keep SoC files separate from the board files.
-> Yes, I'm slightly exaggerating here.
->
-> I think that for PMIC files it makes sense to extract common parts if
-> that eases reuse of the common parts.
+Hi,
 
-Hi all,
+This series adds interconnect driver support for SDX75 platform.
 
-what can I do for v2 now?
+Thanks,
+Rohit.
 
-1. Keep this patch as-is, and keep pm7250b in device dts.
+Rohit Agarwal (2):
+  dt-bindings: interconnect: Add compatibles for SDX75
+  interconnect: qcom: Add SDX75 interconnect provider driver
 
-2. Drop pm7250b patch and drop from device dts, until _someone_ figures
-out a solution talking to the PMIC on different SID.
+ .../bindings/interconnect/qcom,sdx75-rpmh.yaml     |  100 ++
+ drivers/interconnect/qcom/Kconfig                  |    9 +
+ drivers/interconnect/qcom/Makefile                 |    2 +
+ drivers/interconnect/qcom/sdx75.c                  | 1134 ++++++++++++++++++++
+ drivers/interconnect/qcom/sdx75.h                  |   97 ++
+ include/dt-bindings/interconnect/qcom,sdx75.h      |  102 ++
+ 6 files changed, 1444 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml
+ create mode 100644 drivers/interconnect/qcom/sdx75.c
+ create mode 100644 drivers/interconnect/qcom/sdx75.h
+ create mode 100644 include/dt-bindings/interconnect/qcom,sdx75.h
 
-3. Something else like copy-pasting pm7250b.dtsi to pm7250-8.dtsi and
-changing the SID there, and using that in device dts.
-
-Please let me know what to do.
-
-Regards
-Luca
-
->
-> >
-> > I definitely do not agree to these ifndef->define. Maybe using just
-> > define would work (so drop ifndef->define), because this makes it
-> > obvious and fail-safe if included in wrong place... except that it is
-> > still not the define we expect. This is not the coding style present in
-> > other DTSes.
-> >
-> > The true problem how these SPMI bindings were created. Requiring SID
-> > address in every child is clearly redundant and I think we do not follo=
-w
-> > such approach anywhere else.
-> >
-> > Best regards,
-> > Krzysztof
-> >
+-- 
+2.7.4
 
