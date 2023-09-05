@@ -2,100 +2,158 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDA9BCA101B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E29E7CA101A
 	for <linux-pm@archiver.kernel.org>; Tue,  5 Sep 2023 16:17:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239453AbjIEQH6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Sep 2023 12:07:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47904 "EHLO
+        id S239429AbjIEQHz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Sep 2023 12:07:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1353059AbjIEGDz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Sep 2023 02:03:55 -0400
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A32251B6
-        for <linux-pm@vger.kernel.org>; Mon,  4 Sep 2023 23:03:52 -0700 (PDT)
-Received: from ptz.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::77] helo=[127.0.0.1])
-        by metis.whiteo.stw.pengutronix.de with esmtp (Exim 4.92)
-        (envelope-from <a.fatoum@pengutronix.de>)
-        id 1qdPA7-0004b9-NU; Tue, 05 Sep 2023 08:03:43 +0200
-Message-ID: <c552d202-4c1e-a561-aac6-1f4a257faff9@pengutronix.de>
-Date:   Tue, 5 Sep 2023 08:03:42 +0200
+        with ESMTP id S1354720AbjIENuu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Sep 2023 09:50:50 -0400
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6E06197
+        for <linux-pm@vger.kernel.org>; Tue,  5 Sep 2023 06:50:46 -0700 (PDT)
+Received: by mail-pf1-x435.google.com with SMTP id d2e1a72fcca58-68a402c1fcdso1587144b3a.1
+        for <linux-pm@vger.kernel.org>; Tue, 05 Sep 2023 06:50:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1693921846; x=1694526646; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=8746KGEIMDYvZy66/CTNAkcgr/TmGj5aYpS8lwWYVY4=;
+        b=VdDtTqAhtNYocHoiJ9gVHQu/RRHFvUxUN0VLFX4b4PcaZGilpvNYsTb19CqYFX1wFx
+         XUAnubf9yBXcyRp8+GGmTZq7i8J3dtYOG3m1rmHnLl1itnPdZURPtVpF6kNYWyAdzprG
+         7wyonjqB8D0fR9WV+mVObsg0wZdwYSsygeUi+bOOmI26x5/skn0HBimEDnQnADeDO/Tu
+         oahms2UAjUCcE8F9aWfJ+tXRM7ebf9NJImAP/l0Q+inapHnPJ2uINpdNM8F/YW2XDm0T
+         b+O8qyhVjAf5jttGjKvJyhU5vOBNFaBB0WnKfLfZ3ci3GKMLPW6tukYHJDi0gyyw47iB
+         d5VQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693921846; x=1694526646;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8746KGEIMDYvZy66/CTNAkcgr/TmGj5aYpS8lwWYVY4=;
+        b=aS+vs6SwBXX5lwbQvRD8uBe2zWkiJc8sKu2djqQNBEPPwKDzeY4lKkBp1vSCeFePsU
+         hL6Wa73fc8VlYA4AaAoZvMrUoJ+n6oOMngKg3GHAXd7Ynn4PHFjRQQF7TfZoSnFKBthr
+         3De/0swPdaGeci+3OYHunBL76P2DR/ynyb5IXYUzCM+uBijmcnxpANm5vs0bA2nE8eJa
+         iTKxYmWhes7TcVpfGU627UCQc0xBf7lok4AOMBbjncC13n7am+Ws+8HEUeXqVvVcHmBu
+         3ifKctirktiMtoQ3P1EBjUdHQ2/eWe7wiVnc+1EwhAAGlEwjgQBXuKOL27ALtcPJqTAT
+         pA1w==
+X-Gm-Message-State: AOJu0YwxK/5LugsGhBNdaH1DVcZOxkElDfyUXCOxIYTjJEfXg6yWJFZ9
+        diygMw6XSRT3rExiQTdJMz8Cg2RBzk7SAs4tn6A1bw==
+X-Google-Smtp-Source: AGHT+IHyxlfWoLfe4fGuaYHNWVkerDWNPmsQOGwuwZTCoO+MCc5SzD8LdTfSRFNhOHbuXHxmu5RBbYiGz+ziPJEEFVE=
+X-Received: by 2002:a05:6a00:1705:b0:68c:33a9:e572 with SMTP id
+ h5-20020a056a00170500b0068c33a9e572mr13265343pfc.29.1693921846035; Tue, 05
+ Sep 2023 06:50:46 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH AUTOSEL 6.4 18/54] thermal: core: constify params in
- thermal_zone_device_register
-Content-Language: en-US
-To:     Greg KH <gregkh@linuxfoundation.org>, Pavel Machek <pavel@denx.de>
-Cc:     Sasha Levin <sashal@kernel.org>, linux-kernel@vger.kernel.org,
-        stable@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        rafael@kernel.org, linux-pm@vger.kernel.org
-References: <20230813154934.1067569-1-sashal@kernel.org>
- <20230813154934.1067569-18-sashal@kernel.org> <ZOSRPJxpVfCiyUWb@duo.ucw.cz>
- <2023082232-anaerobic-smashing-42d3@gregkh>
-From:   Ahmad Fatoum <a.fatoum@pengutronix.de>
-In-Reply-To: <2023082232-anaerobic-smashing-42d3@gregkh>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:900:1d::77
-X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+References: <20230901130312.247719-1-vincent.guittot@linaro.org>
+ <20230901130312.247719-4-vincent.guittot@linaro.org> <20230905112455.GD28319@noisy.programming.kicks-ass.net>
+In-Reply-To: <20230905112455.GD28319@noisy.programming.kicks-ass.net>
+From:   Vincent Guittot <vincent.guittot@linaro.org>
+Date:   Tue, 5 Sep 2023 15:50:34 +0200
+Message-ID: <CAKfTPtCt7m5c0y1ttF3k3coZ34fbALpAToK5vUpgtZVTPwNrzg@mail.gmail.com>
+Subject: Re: [PATCH 3/4] cpufreq/schedutil: use a fixed reference frequency
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
+        paul.walmsley@sifive.com, palmer@dabbelt.com,
+        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
+        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
+        juri.lelli@redhat.com, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+        bristot@redhat.com, vschneid@redhat.com, viresh.kumar@linaro.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
+        conor.dooley@microchip.com, suagrfillet@gmail.com,
+        ajones@ventanamicro.com, lftan@kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 22.08.23 13:31, Greg KH wrote:
-> On Tue, Aug 22, 2023 at 12:43:08PM +0200, Pavel Machek wrote:
->> Hi!
->>
->>> [ Upstream commit 80ddce5f2dbd0e83eadc9f9d373439180d599fe5 ]
->>>
->>> Since commit 3d439b1a2ad3 ("thermal/core: Alloc-copy-free the thermal zone
->>> parameters structure"), thermal_zone_device_register() allocates a copy
->>> of the tzp argument and callers need not explicitly manage its lifetime.
->>>
->>> This means the function no longer cares about the parameter being
->>> mutable, so constify it.
->>>
->>> No functional change.
->>
->> Not a bugfix, should not be in stable.
->>
->> 3d439b1a2ad3 ("thermal/core: Alloc-copy-free the thermal zone
->> parameters structure") is not in 6.1, so this is not correct patch for
->> 6.1.
+On Tue, 5 Sept 2023 at 13:25, Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> On Fri, Sep 01, 2023 at 03:03:11PM +0200, Vincent Guittot wrote:
+>
+> > +#ifdef arch_scale_freq_ref
+> > +/**
+> > + * arch_scale_freq_ref_policy - get the reference frequency of a given CPU that
+> > + * has been used to correlate frequency and compute capacity.
+> > + * @cpu: the CPU in question.
+> > + *
+> > + * Return: the reference CPU frequency.
+> > + */
+> > +static __always_inline
+> > +unsigned long  arch_scale_freq_ref_policy(struct cpufreq_policy *policy)
+> > +{
+> > +     return arch_scale_freq_ref(policy->cpu);
+> > +}
+> > +#else
+> > +static __always_inline
+> > +unsigned long  arch_scale_freq_ref_policy(struct cpufreq_policy *policy)
+>
+> double space    ^^
 
-[Sidenote: this is AUTOSEL for 6.4, where the patch is applicable, unlike 6.1]
+I was expecting checkpatch.pl to catch it
 
+will fix them
 
->> Why was this selected for AUTOSEL? Can you make sure patches marked
->> "No functional change." are not selected in future?
-> 
-> No, because sometimes they are needed in later patches.  And marking
-> things const is good :)
+>
+> > +{
+> > +     if (arch_scale_freq_invariant())
+> > +             return policy->cpuinfo.max_freq;
+> > +
+> > +
+>
+> superfluous whitespace there.
+>
+> > +     return policy->cur;
+> > +}
+> > +#endif
+>
+> static __always_inline
+> unsigned long arch_scale_freq_ref_policy(struct cpufreq_policy *policy)
+> {
+> #ifdef arch_scale_freq_ref
+>         return arch_scale_freq_ref(policy->cpu);
+> #endif
+>
+>         if (arch_scale_freq_invariant())
+>                 return policy->cpuinfo.max_freq;
+>
+>         return policy->cur;
+> }
+>
+> Would have the lot in a single function and possibly easier to read?
 
-The patch used to have a Fixes: trailer[1], but Rafael disagreed that it
-constitutes a fix. In future, I'll insist on keeping the Fixes: tag to
-prevent such issues. But maybe AUTOSEL could also take lines like "Since
-commit $(some commit hash not existing in the stable kernel)" into consideration.
+yes
 
-[1]: https://lore.kernel.org/all/20230708112720.2897484-1-a.fatoum@pengutronix.de/
-
-Cheers,
-Ahmad
-
-
-> 
-> thanks,
-> 
-> greg k-h
-> 
-
--- 
-Pengutronix e.K.                           |                             |
-Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
-31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-
+>
+> > +
+> >  /**
+> >   * get_next_freq - Compute a new frequency for a given cpufreq policy.
+> >   * @sg_policy: schedutil policy object to compute the new frequency for.
+> > @@ -139,11 +164,11 @@ static void sugov_deferred_update(struct sugov_policy *sg_policy)
+> >  static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+> >                                 unsigned long util, unsigned long max)
+> >  {
+> > +     unsigned int freq;
+> >       struct cpufreq_policy *policy = sg_policy->policy;
+> > -     unsigned int freq = arch_scale_freq_invariant() ?
+> > -                             policy->cpuinfo.max_freq : policy->cur;
+>
+> Leave the variable below per the inverse christmas thing.
+>
+> >
+> >       util = map_util_perf(util);
+> > +     freq = arch_scale_freq_ref_policy(policy);
+> >       freq = map_util_freq(util, freq, max);
+> >
+> >       if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+> > --
+> > 2.34.1
+> >
+>
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
