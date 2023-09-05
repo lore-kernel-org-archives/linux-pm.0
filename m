@@ -2,187 +2,117 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88CA6EE49B0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4215EE49B3
 	for <linux-pm@archiver.kernel.org>; Tue,  5 Sep 2023 16:17:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239507AbjIEQIC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Sep 2023 12:08:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57470 "EHLO
+        id S239531AbjIEQID (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Sep 2023 12:08:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40938 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354653AbjIENQf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Sep 2023 09:16:35 -0400
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 441331A7
-        for <linux-pm@vger.kernel.org>; Tue,  5 Sep 2023 06:16:29 -0700 (PDT)
-Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-26934bc3059so2147096a91.1
-        for <linux-pm@vger.kernel.org>; Tue, 05 Sep 2023 06:16:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693919788; x=1694524588; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=erXQ5eudf2h+mjM/A19CSPwgUL1mwzyKAy3jWj8M0MM=;
-        b=XWsWJg081nHdWv6JyHOaoF5ZkS2G3bqqb8eGT6rPe1Xwxq/tq+v1M5uCE5hVitDGUC
-         MNfUUSJ5N7N6zcN9ngAa5Jt771hheivn4ZSqMmo2OFEgIHHs3LcMafC+SiHPYEOwspsd
-         1ItP1VEPrvEcNhiQXu9GqpAMGEVw3hHdsbzSUe+VI6A98xx+JZkhBIo9g7jBeRD7Y1Q5
-         8vCb13Jy0AtxvgTUYlQrHKdBtnqmu26G3aQ2rm/fSfTaoaxzjUX7aDtjs/m+XZH4rXbK
-         LPAU/i2VWeA4GFlcNh0GCrALAp+2CvvGVrXg+iyMXR9qoJpDu2ucn6tlS807wawCStI9
-         6CVA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693919788; x=1694524588;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=erXQ5eudf2h+mjM/A19CSPwgUL1mwzyKAy3jWj8M0MM=;
-        b=dF3gRt0qD4Hd55D8Cp48RHzqS0DpmzU/uzSIc1Ee6MXNFgCRN3LXW+ShfWAoAXfGCR
-         lG26f5cR+beS3ElCzJzhWk/4btgnewBwcm76X5e9EgT+TUkT39oah8Gs5i4Hnxodqaxc
-         vwLORKj+Vbyn1XVcbNviqCFTuAWtqgcZXQn5G8wwJYdssxHxDW0NgQdlVDmaJYD4FWhR
-         liI/28nLZv6pe2COud7J1MN97rUW6caQ/lM1XJp08DqxbC3e5Hn6eyScc2482UYYaO8B
-         83wqCBzRjbYvH2bEqSEV0Gzl5z7cD9PQQ8XrPU53LAfYVHbBrHmd6AnHsQZ11ZxpEhGI
-         B1IQ==
-X-Gm-Message-State: AOJu0YwHGZGV3h2apmO3uF8XqFsRnlK09LdpPrvkUhb6ppYjll8cc4jg
-        4+Sr3uGbQlma6ajHUJg5hLiLy2XSaDAd0ypsaFF5yw==
-X-Google-Smtp-Source: AGHT+IH1+9ZesuntgXO1B0Qubf+cgwm+/rcpVm2vlet/G3P2qMbSrDGXHFpqTkVoBj6UAQFNduQDgqruyYM7xIaeg9o=
-X-Received: by 2002:a17:90a:6089:b0:26d:609a:74cd with SMTP id
- z9-20020a17090a608900b0026d609a74cdmr14918486pji.24.1693919788583; Tue, 05
- Sep 2023 06:16:28 -0700 (PDT)
+        with ESMTP id S1345019AbjIED7i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2023 23:59:38 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6EB68CC7;
+        Mon,  4 Sep 2023 20:59:34 -0700 (PDT)
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3853sfPW009537;
+        Tue, 5 Sep 2023 03:59:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=qcppdkim1;
+ bh=DlB/h95H8PSpLnGU6Uh0gB9WzCZMkNJ1tji39nkc8dg=;
+ b=mruYRtCT0lvlfbUAZEQ5RWpdHel4dd1qXDacks+HdWfuYzw+6QYHhk6Zd5Fs4fCtTxb3
+ qsk1Zcbicf4AOjfImX+uGr/q74ZSoEibXduDsxA4lkBA+O93vA1j1Logi3Zwdpre3Rei
+ tw5mTRMGXlvqjCFq9XSeatkTQIU8RUqI9vvvSJRL0BtcL0nbv7QAmFozNvHHG+a9NyP9
+ N83ohEH+yYLnm87r0Ai/5bSGTjaqAHglknZsLhAyG5++CIOhWycHxxC3g4lN6ECaiLWb
+ O3m5s3MGSJ7CiCOBHlyV2AMHNRamLDzINNigGJyJxKD6311fNsqNms7Amm4DqjxvysTI lQ== 
+Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3swtyng6dn-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 05 Sep 2023 03:59:08 +0000
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+        by NASANPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3853x7bv032552
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 5 Sep 2023 03:59:07 GMT
+Received: from [10.110.10.71] (10.80.80.8) by nasanex01b.na.qualcomm.com
+ (10.46.141.250) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.36; Mon, 4 Sep
+ 2023 20:59:04 -0700
+Message-ID: <df61af06-a43e-05c5-66e8-5a68b08ff14b@quicinc.com>
+Date:   Mon, 4 Sep 2023 20:59:03 -0700
 MIME-Version: 1.0
-References: <20230901130312.247719-1-vincent.guittot@linaro.org>
- <20230901130312.247719-5-vincent.guittot@linaro.org> <cd795543-53db-ed14-e9dd-b5738a4f3b9d@arm.com>
-In-Reply-To: <cd795543-53db-ed14-e9dd-b5738a4f3b9d@arm.com>
-From:   Vincent Guittot <vincent.guittot@linaro.org>
-Date:   Tue, 5 Sep 2023 15:16:17 +0200
-Message-ID: <CAKfTPtA2uWNFm+zqZODvjkNDy0joUKzRTnChEOppgi-eXBm+DQ@mail.gmail.com>
-Subject: Re: [PATCH 4/4] energy_model: use a fixed reference frequency
-To:     Pierre Gondois <pierre.gondois@arm.com>
-Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
-        paul.walmsley@sifive.com, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
-        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
-        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
-        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-        linux-pm@vger.kernel.org, conor.dooley@microchip.com,
-        suagrfillet@gmail.com, ajones@ventanamicro.com, lftan@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.1
+Subject: Re: [PATCH v2] freezer,sched: Use saved_state to reduce some spurious
+ wakeups
+To:     Peter Zijlstra <peterz@infradead.org>
+CC:     Ingo Molnar <mingo@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Thomas Gleixner <tglx@linutronix.de>, <kernel@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>,
+        "Prakash Viswalingam" <quic_prakashv@quicinc.com>
+References: <20230830-avoid-spurious-freezer-wakeups-v2-1-8877245cdbdc@quicinc.com>
+ <20230904212324.GA2568@noisy.programming.kicks-ass.net>
+Content-Language: en-US
+From:   Elliot Berman <quic_eberman@quicinc.com>
+In-Reply-To: <20230904212324.GA2568@noisy.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: AVkS3XEfbtSZ0V9EW8ogUAkua9Jpdv6n
+X-Proofpoint-ORIG-GUID: AVkS3XEfbtSZ0V9EW8ogUAkua9Jpdv6n
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-05_02,2023-08-31_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
+ priorityscore=1501 impostorscore=0 malwarescore=0 mlxscore=0 adultscore=0
+ mlxlogscore=702 phishscore=0 suspectscore=0 clxscore=1015
+ lowpriorityscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2308100000 definitions=main-2309050033
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 5 Sept 2023 at 12:05, Pierre Gondois <pierre.gondois@arm.com> wrote:
->
-> Hello Vincent,
-> I tried the patch-set on a platform using cppc_cpufreq and that has boosting
-> frequencies,
->
-> 1-
-> On such platform, the CPU capacity comes from the CPPC highest_frequency
-> field. The CPU capacity is set to the capacity of the boosting frequency.
-> This behaviour is different from DT platforms where the CPU capacity is
-> updated whenever the boosting mode is enabled (it seems).
 
-ok, I haven't noticed that cppc_cpufreq would be impacted by this
-change in arch_topology. I'm going to check how to fix that
 
->
-> Wouldn't it be better to have CPU max capacities set to their boosting
-> capacity as for CPPC base platforms ? It seems the max frequency is always
-> available somehow for all the cpufreq drivers with boosting available, i.e.
-> acpi-cpufreq, amd-pstate, cppc_cpufreq.
+On 9/4/2023 2:23 PM, Peter Zijlstra wrote:
+> On Wed, Aug 30, 2023 at 10:42:39AM -0700, Elliot Berman wrote:
+> 
+>> Avoid the spurious wakeups by saving the state of TASK_FREEZABLE tasks.
+>> If the task was running before entering TASK_FROZEN state
+>> (__refrigerator()) or if the task received a wake up for the saved
+>> state, then the task is woken on thaw. saved_state from PREEMPT_RT locks
+>> can be re-used because freezer would not stomp on the rtlock wait flow:
+>> TASK_RTLOCK_WAIT isn't considered freezable.
+> 
+> You don't actually assert that anywhere I think, so the moment someone
+> makes that happen you crash and burn.
+> 
 
-Some platforms will never enable boost or  boost is only temporarily
-available before being capped. As a result some prefer to use a more
-sustainable freq for their max capacity. That's why we can't always
-use the max/boost freq
+I can certainly add an assertion on the freezer side.
 
->
->
-> 2-
-> On the CPPC based platforms, the per_cpu freq_factor is not used/updated,
-> meaning that we have:
-> arch_scale_freq_ref_em()
-> \-arch_scale_freq_ref()
->    \-topology_get_freq_ref()
->      \-per_cpu(freq_factor, cpu) (set to the default value: 1)
-> and em_cpu_energy()'s ref_freq variable is then set to 1 instead of the max
-> frequency (leading to a 0 energy computation).
+> Also:
+> 
+>> -#ifdef CONFIG_PREEMPT_RT
+>> +#if IS_ENABLED(CONFIG_PREEMPT_RT) || IS_ENABLED(CONFIG_FREEZER)
+> 
+> That makes wakeup more horrible for everyone :/
 
-IIUC, cppc uses the default cpu capacity of arch_topology and then
-never updates it  and it creates an EM for this SMP system.
-ok, so you have an EM sets with ACPI and SMP.
+I don't think the hot wakeup path is significantly impacted because the 
+added checks come after the hot path is already not taken.
 
-I'm going to check where we could set this reference frequency for your case.
+wait_task_inactive() is impacted in the case of contention on pi_lock, 
+but I don't think that is part of any hot path.
 
->
-> 3-
-> Also just in case, arch_scale_freq_ref_policy() and cpufreq_get_hw_max_freq()
-> seem to have close (but not identical) purpose,
->
-> Regards,
-> Pierre
->
-> On 9/1/23 15:03, Vincent Guittot wrote:
-> > The last item of a performance domain is not always the performance point
-> > that has been used to compute CPU's capacity. This can lead to different
-> > target frequency compared with other part of the system like schedutil and
-> > would result in wrong energy estimation.
-> >
-> > a new arch_scale_freq_ref() is available to return a fixed and coherent
-> > frequency reference that can be used when computing the CPU's frequency
-> > for an level of utilization. Use this function when available or fallback
-> > to the last performance domain item otherwise.
-> >
-> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > ---
-> >   include/linux/energy_model.h | 20 +++++++++++++++++---
-> >   1 file changed, 17 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-> > index b9caa01dfac4..7ee07be6928e 100644
-> > --- a/include/linux/energy_model.h
-> > +++ b/include/linux/energy_model.h
-> > @@ -204,6 +204,20 @@ struct em_perf_state *em_pd_get_efficient_state(struct em_perf_domain *pd,
-> >       return ps;
-> >   }
-> >
-> > +#ifdef arch_scale_freq_ref
-> > +static __always_inline
-> > +unsigned long  arch_scale_freq_ref_em(int cpu, struct em_perf_domain *pd)
-> > +{
-> > +     return arch_scale_freq_ref(cpu);
-> > +}
-> > +#else
-> > +static __always_inline
-> > +unsigned long  arch_scale_freq_ref_em(int cpu, struct em_perf_domain *pd)
-> > +{
-> > +     return pd->table[pd->nr_perf_states - 1].frequency;
-> > +}
-> > +#endif
-> > +
-> >   /**
-> >    * em_cpu_energy() - Estimates the energy consumed by the CPUs of a
-> >    *          performance domain
-> > @@ -224,7 +238,7 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
-> >                               unsigned long max_util, unsigned long sum_util,
-> >                               unsigned long allowed_cpu_cap)
-> >   {
-> > -     unsigned long freq, scale_cpu;
-> > +     unsigned long freq, ref_freq, scale_cpu;
-> >       struct em_perf_state *ps;
-> >       int cpu;
-> >
-> > @@ -241,11 +255,11 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
-> >        */
-> >       cpu = cpumask_first(to_cpumask(pd->cpus));
-> >       scale_cpu = arch_scale_cpu_capacity(cpu);
-> > -     ps = &pd->table[pd->nr_perf_states - 1];
-> > +     ref_freq = arch_scale_freq_ref_em(cpu, pd);
-> >
-> >       max_util = map_util_perf(max_util);
-> >       max_util = min(max_util, allowed_cpu_cap);
-> > -     freq = map_util_freq(max_util, ps->frequency, scale_cpu);
-> > +     freq = map_util_freq(max_util, ref_freq, scale_cpu);
-> >
-> >       /*
-> >        * Find the lowest performance state of the Energy Model above the
+I'll run some further tests on my end to be sure about the wake up 
+latency. Are there any benchmarks/tests you like for measuring the hot 
+path? I can run those as well.
+
+Thanks,
+Elliot
