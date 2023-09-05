@@ -2,189 +2,187 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76862EE49AD
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88CA6EE49B0
 	for <linux-pm@archiver.kernel.org>; Tue,  5 Sep 2023 16:17:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239471AbjIEQIA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Sep 2023 12:08:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39280 "EHLO
+        id S239507AbjIEQIC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Sep 2023 12:08:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57470 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1353635AbjIEG7r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Sep 2023 02:59:47 -0400
-Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CB7CCC2
-        for <linux-pm@vger.kernel.org>; Mon,  4 Sep 2023 23:59:43 -0700 (PDT)
-Received: by mail-ed1-x52a.google.com with SMTP id 4fb4d7f45d1cf-52c4d3ff424so3063078a12.0
-        for <linux-pm@vger.kernel.org>; Mon, 04 Sep 2023 23:59:42 -0700 (PDT)
+        with ESMTP id S1354653AbjIENQf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Sep 2023 09:16:35 -0400
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 441331A7
+        for <linux-pm@vger.kernel.org>; Tue,  5 Sep 2023 06:16:29 -0700 (PDT)
+Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-26934bc3059so2147096a91.1
+        for <linux-pm@vger.kernel.org>; Tue, 05 Sep 2023 06:16:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693897181; x=1694501981; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=WrNPDmoDml6ewedsTVmufnMzTpEiM1aVD/7pamw5cy0=;
-        b=CiTImDm8bxsB0BLttDcrTGg4O0Klu1frvTzKlWCWwZ0ITft2L5RRbKpWf4pxKZ0tcE
-         Nq1PLic4fW+fPYbHlfKheFUzc4nUygsmvu17EgMzxQDX3wrZMUCduXHGC5nXRlO/tHT3
-         kkj3H7c1PkeBSybgRyoBE9Ogwf8iz+CtRR/ur9t/fEQS77t2c9CMjbbpnAbmyxuVs2OV
-         60K969ou9ukHni8tLa7vwBHIfzlefihpwEysQR5cfOO2U5/5qrXfXJNf3nTESXCbG66z
-         Wb5NDlB7hnudwuabpwgDmUg8xKEWw8lceki4TkRDVU0VykAeZtPRbLLFMdambVYWMnb9
-         Akow==
+        d=linaro.org; s=google; t=1693919788; x=1694524588; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=erXQ5eudf2h+mjM/A19CSPwgUL1mwzyKAy3jWj8M0MM=;
+        b=XWsWJg081nHdWv6JyHOaoF5ZkS2G3bqqb8eGT6rPe1Xwxq/tq+v1M5uCE5hVitDGUC
+         MNfUUSJ5N7N6zcN9ngAa5Jt771hheivn4ZSqMmo2OFEgIHHs3LcMafC+SiHPYEOwspsd
+         1ItP1VEPrvEcNhiQXu9GqpAMGEVw3hHdsbzSUe+VI6A98xx+JZkhBIo9g7jBeRD7Y1Q5
+         8vCb13Jy0AtxvgTUYlQrHKdBtnqmu26G3aQ2rm/fSfTaoaxzjUX7aDtjs/m+XZH4rXbK
+         LPAU/i2VWeA4GFlcNh0GCrALAp+2CvvGVrXg+iyMXR9qoJpDu2ucn6tlS807wawCStI9
+         6CVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693897181; x=1694501981;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=WrNPDmoDml6ewedsTVmufnMzTpEiM1aVD/7pamw5cy0=;
-        b=i/bGI2SlCA6oBUI7s+/jTTzLg4iNURghSQK+eHPyayacHVcPXrL80f0ew3SoOpdjVK
-         zSD/TDEdfdrt2TUwCNFDA/kqLpQYMbS6NzPpFAW3TOPWYzDwnY7SQz9wd9J118Kt6DUd
-         01G5U4GKFSHptXyWnkN9zlBXvpCC+er8dnc9t8QtIIfpS5TVEu6GE3ePC3wdKqUM7ZtG
-         rYDwjjn07/Al1+mMVBtUko5LDGBqnN9qFtNNUVWCY0izfT8T5TyByWYWip6PUTL4tv5t
-         Rv93N6rUR7VKKcAYJIuAQUSXN6KmIJ2G5u15l9JJmX7IUK4JtQA1/LMyIqsNLdXIz7wj
-         sDIg==
-X-Gm-Message-State: AOJu0Yw0jOCb//euJ+rjH3WUqHKYK07DG2ujeHyEGRZoqDJSg8yxLIH0
-        yxAsDymF9b3j2rP9f2vR9QlDNA==
-X-Google-Smtp-Source: AGHT+IGesTQJgs+z4nRuVPWyMq2OEnKeRGOp/g7gWt/KdczzMAHmZ5xYUUJhLYCqvpdwwZVeh/f2KQ==
-X-Received: by 2002:a50:ee92:0:b0:52a:3ee9:a78a with SMTP id f18-20020a50ee92000000b0052a3ee9a78amr9260429edr.26.1693897181567;
-        Mon, 04 Sep 2023 23:59:41 -0700 (PDT)
-Received: from [192.168.0.22] (77-252-46-238.static.ip.netia.com.pl. [77.252.46.238])
-        by smtp.gmail.com with ESMTPSA id m21-20020aa7c495000000b005233deb30aesm6719419edq.10.2023.09.04.23.59.40
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 04 Sep 2023 23:59:40 -0700 (PDT)
-Message-ID: <c19e0ecf-7e8c-b9c3-0741-40c7aa3cb200@linaro.org>
-Date:   Tue, 5 Sep 2023 08:59:39 +0200
+        d=1e100.net; s=20221208; t=1693919788; x=1694524588;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=erXQ5eudf2h+mjM/A19CSPwgUL1mwzyKAy3jWj8M0MM=;
+        b=dF3gRt0qD4Hd55D8Cp48RHzqS0DpmzU/uzSIc1Ee6MXNFgCRN3LXW+ShfWAoAXfGCR
+         lG26f5cR+beS3ElCzJzhWk/4btgnewBwcm76X5e9EgT+TUkT39oah8Gs5i4Hnxodqaxc
+         vwLORKj+Vbyn1XVcbNviqCFTuAWtqgcZXQn5G8wwJYdssxHxDW0NgQdlVDmaJYD4FWhR
+         liI/28nLZv6pe2COud7J1MN97rUW6caQ/lM1XJp08DqxbC3e5Hn6eyScc2482UYYaO8B
+         83wqCBzRjbYvH2bEqSEV0Gzl5z7cD9PQQ8XrPU53LAfYVHbBrHmd6AnHsQZ11ZxpEhGI
+         B1IQ==
+X-Gm-Message-State: AOJu0YwHGZGV3h2apmO3uF8XqFsRnlK09LdpPrvkUhb6ppYjll8cc4jg
+        4+Sr3uGbQlma6ajHUJg5hLiLy2XSaDAd0ypsaFF5yw==
+X-Google-Smtp-Source: AGHT+IH1+9ZesuntgXO1B0Qubf+cgwm+/rcpVm2vlet/G3P2qMbSrDGXHFpqTkVoBj6UAQFNduQDgqruyYM7xIaeg9o=
+X-Received: by 2002:a17:90a:6089:b0:26d:609a:74cd with SMTP id
+ z9-20020a17090a608900b0026d609a74cdmr14918486pji.24.1693919788583; Tue, 05
+ Sep 2023 06:16:28 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.0
-Subject: Re: [PATCH 1/2] dt-bindings: interconnect: Add compatibles for SDX75
-Content-Language: en-US
-To:     Rohit Agarwal <quic_rohiagar@quicinc.com>, agross@kernel.org,
-        andersson@kernel.org, konrad.dybcio@linaro.org, djakov@kernel.org,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        conor+dt@kernel.org
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kernel@quicinc.com
-References: <1693889975-19122-1-git-send-email-quic_rohiagar@quicinc.com>
- <1693889975-19122-2-git-send-email-quic_rohiagar@quicinc.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <1693889975-19122-2-git-send-email-quic_rohiagar@quicinc.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20230901130312.247719-1-vincent.guittot@linaro.org>
+ <20230901130312.247719-5-vincent.guittot@linaro.org> <cd795543-53db-ed14-e9dd-b5738a4f3b9d@arm.com>
+In-Reply-To: <cd795543-53db-ed14-e9dd-b5738a4f3b9d@arm.com>
+From:   Vincent Guittot <vincent.guittot@linaro.org>
+Date:   Tue, 5 Sep 2023 15:16:17 +0200
+Message-ID: <CAKfTPtA2uWNFm+zqZODvjkNDy0joUKzRTnChEOppgi-eXBm+DQ@mail.gmail.com>
+Subject: Re: [PATCH 4/4] energy_model: use a fixed reference frequency
+To:     Pierre Gondois <pierre.gondois@arm.com>
+Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
+        paul.walmsley@sifive.com, palmer@dabbelt.com,
+        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
+        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
+        peterz@infradead.org, juri.lelli@redhat.com,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
+        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+        linux-pm@vger.kernel.org, conor.dooley@microchip.com,
+        suagrfillet@gmail.com, ajones@ventanamicro.com, lftan@kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05/09/2023 06:59, Rohit Agarwal wrote:
-> Add dt-bindings compatibles and interconnect IDs for
-> Qualcomm SDX75 platform.
-> 
-> Signed-off-by: Rohit Agarwal <quic_rohiagar@quicinc.com>
-> ---
->  .../bindings/interconnect/qcom,sdx75-rpmh.yaml     | 100 ++++++++++++++++++++
->  include/dt-bindings/interconnect/qcom,sdx75.h      | 102 +++++++++++++++++++++
->  2 files changed, 202 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml
->  create mode 100644 include/dt-bindings/interconnect/qcom,sdx75.h
-> 
-> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml
-> new file mode 100644
-> index 0000000..f2dc87c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml
-> @@ -0,0 +1,100 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/interconnect/qcom,sdx75-rpmh.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Qualcomm RPMh Network-On-Chip Interconnect on SDX75
-> +
-> +maintainers:
-> +  - Georgi Djakov <djakov@kernel.org>
+On Tue, 5 Sept 2023 at 12:05, Pierre Gondois <pierre.gondois@arm.com> wrote:
+>
+> Hello Vincent,
+> I tried the patch-set on a platform using cppc_cpufreq and that has boosting
+> frequencies,
+>
+> 1-
+> On such platform, the CPU capacity comes from the CPPC highest_frequency
+> field. The CPU capacity is set to the capacity of the boosting frequency.
+> This behaviour is different from DT platforms where the CPU capacity is
+> updated whenever the boosting mode is enabled (it seems).
 
-I don't think Georgi maintains this device. It's maintainer of device,
-not the subsystem.
+ok, I haven't noticed that cppc_cpufreq would be impacted by this
+change in arch_topology. I'm going to check how to fix that
 
-> +
-> +description:
-> +  RPMh interconnect providers support system bandwidth requirements through
-> +  RPMh hardware accelerators known as Bus Clock Manager (BCM). The provider is
-> +  able to communicate with the BCM through the Resource State Coordinator (RSC)
-> +  associated with each execution environment. Provider nodes must point to at
-> +  least one RPMh device child node pertaining to their RSC and each provider
-> +  can map to multiple RPMh resources.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - qcom,sdx75-clk-virt
-> +      - qcom,sdx75-dc-noc
-> +      - qcom,sdx75-gem-noc
-> +      - qcom,sdx75-mc-virt
-> +      - qcom,sdx75-pcie-anoc
-> +      - qcom,sdx75-system-noc
-> +
-> +  '#interconnect-cells': true'
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +allOf:
-> +  - $ref: qcom,rpmh-common.yaml#
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - qcom,sdx75-clk-virt
-> +              - qcom,sdx75-mc-virt
-> +    then:
-> +      properties:
-> +        reg: false
-> +    else:
-> +      required:
-> +        - reg
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - qcom,sdx75-clk-virt
-> +    then:
-> +      properties:
-> +        clocks:
-> +          items:
-> +            - description: RPMH CC QPIC Clock
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - qcom,sdx75-clk-virt
+>
+> Wouldn't it be better to have CPU max capacities set to their boosting
+> capacity as for CPPC base platforms ? It seems the max frequency is always
+> available somehow for all the cpufreq drivers with boosting available, i.e.
+> acpi-cpufreq, amd-pstate, cppc_cpufreq.
 
-This if: clause should be merged with the one earlier.
+Some platforms will never enable boost or  boost is only temporarily
+available before being capped. As a result some prefer to use a more
+sustainable freq for their max capacity. That's why we can't always
+use the max/boost freq
 
-> +    then:
-> +      required:
-> +        - clocks
-> +    else:
-> +      properties:
-> +        clocks: false
-> +
-> +required:
-> +  - compatible
+>
+>
+> 2-
+> On the CPPC based platforms, the per_cpu freq_factor is not used/updated,
+> meaning that we have:
+> arch_scale_freq_ref_em()
+> \-arch_scale_freq_ref()
+>    \-topology_get_freq_ref()
+>      \-per_cpu(freq_factor, cpu) (set to the default value: 1)
+> and em_cpu_energy()'s ref_freq variable is then set to 1 instead of the max
+> frequency (leading to a 0 energy computation).
 
-Please keep the order like in example-schema, so required: goes before
-allOf.
+IIUC, cppc uses the default cpu capacity of arch_topology and then
+never updates it  and it creates an EM for this SMP system.
+ok, so you have an EM sets with ACPI and SMP.
 
-> +
-> +unevaluatedProperties: false
+I'm going to check where we could set this reference frequency for your case.
 
-Best regards,
-Krzysztof
-
+>
+> 3-
+> Also just in case, arch_scale_freq_ref_policy() and cpufreq_get_hw_max_freq()
+> seem to have close (but not identical) purpose,
+>
+> Regards,
+> Pierre
+>
+> On 9/1/23 15:03, Vincent Guittot wrote:
+> > The last item of a performance domain is not always the performance point
+> > that has been used to compute CPU's capacity. This can lead to different
+> > target frequency compared with other part of the system like schedutil and
+> > would result in wrong energy estimation.
+> >
+> > a new arch_scale_freq_ref() is available to return a fixed and coherent
+> > frequency reference that can be used when computing the CPU's frequency
+> > for an level of utilization. Use this function when available or fallback
+> > to the last performance domain item otherwise.
+> >
+> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > ---
+> >   include/linux/energy_model.h | 20 +++++++++++++++++---
+> >   1 file changed, 17 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
+> > index b9caa01dfac4..7ee07be6928e 100644
+> > --- a/include/linux/energy_model.h
+> > +++ b/include/linux/energy_model.h
+> > @@ -204,6 +204,20 @@ struct em_perf_state *em_pd_get_efficient_state(struct em_perf_domain *pd,
+> >       return ps;
+> >   }
+> >
+> > +#ifdef arch_scale_freq_ref
+> > +static __always_inline
+> > +unsigned long  arch_scale_freq_ref_em(int cpu, struct em_perf_domain *pd)
+> > +{
+> > +     return arch_scale_freq_ref(cpu);
+> > +}
+> > +#else
+> > +static __always_inline
+> > +unsigned long  arch_scale_freq_ref_em(int cpu, struct em_perf_domain *pd)
+> > +{
+> > +     return pd->table[pd->nr_perf_states - 1].frequency;
+> > +}
+> > +#endif
+> > +
+> >   /**
+> >    * em_cpu_energy() - Estimates the energy consumed by the CPUs of a
+> >    *          performance domain
+> > @@ -224,7 +238,7 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
+> >                               unsigned long max_util, unsigned long sum_util,
+> >                               unsigned long allowed_cpu_cap)
+> >   {
+> > -     unsigned long freq, scale_cpu;
+> > +     unsigned long freq, ref_freq, scale_cpu;
+> >       struct em_perf_state *ps;
+> >       int cpu;
+> >
+> > @@ -241,11 +255,11 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
+> >        */
+> >       cpu = cpumask_first(to_cpumask(pd->cpus));
+> >       scale_cpu = arch_scale_cpu_capacity(cpu);
+> > -     ps = &pd->table[pd->nr_perf_states - 1];
+> > +     ref_freq = arch_scale_freq_ref_em(cpu, pd);
+> >
+> >       max_util = map_util_perf(max_util);
+> >       max_util = min(max_util, allowed_cpu_cap);
+> > -     freq = map_util_freq(max_util, ps->frequency, scale_cpu);
+> > +     freq = map_util_freq(max_util, ref_freq, scale_cpu);
+> >
+> >       /*
+> >        * Find the lowest performance state of the Energy Model above the
