@@ -2,158 +2,157 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BBEE1EC8748
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 16:42:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A560EC873E
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 16:50:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242665AbjIGQmJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 12:42:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52118 "EHLO
+        id S243993AbjIGQu6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 12:50:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43302 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241331AbjIGQlw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 12:41:52 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A48B5267CD;
-        Thu,  7 Sep 2023 08:47:59 -0700 (PDT)
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3875gQgW005547;
-        Thu, 7 Sep 2023 06:01:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references; s=qcppdkim1;
- bh=RiYKEw8O1oLJTlGLFSkxPYr6hZ1vd0atpxNjhMdpMdE=;
- b=NgRSkTeXLrf1EnMvBIhEG1QLbhedJRHOP+5Zf67NeaFtzCY/Yu+ycPNUJxkH5nU91UsO
- 70MumLonGv8JlDd1jvQ+KboRQOkjY04apKkxnANHYirSDLmcbG/62OwRgK7wgkb5H3qG
- BAlm5iGNAEIZ8mfFUOXRkmQ71qv/HiPNI7Tc05APPmfl2ll5FlJgWLSln8xFGymI3vlS
- p67ya4XNSuzfqYSJLNC3HBY1t00JNOZaBMjwHxoBKe5WB/55zKYqo4H8JDaXYy6Aenba
- ahsrLAWlGVtLUGTboR36Jt1Ql2tR7UWc6rX/Q7luIuIrwSiV0KdySCjO3pWMIrto3CH0 xA== 
-Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sxpt02m87-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 07 Sep 2023 06:01:03 +0000
-Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-        by APBLRPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 38760xdY011341;
-        Thu, 7 Sep 2023 06:01:00 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 3sux4kjqv8-1;
-        Thu, 07 Sep 2023 06:01:00 +0000
-Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 387610MN011350;
-        Thu, 7 Sep 2023 06:01:00 GMT
-Received: from hu-sgudaval-hyd.qualcomm.com (hu-krichai-hyd.qualcomm.com [10.213.110.112])
-        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 387610Le011347;
-        Thu, 07 Sep 2023 06:01:00 +0000
-Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 4058933)
-        id 9A5EC13A9; Thu,  7 Sep 2023 11:30:59 +0530 (+0530)
-From:   Krishna chaitanya chundru <quic_krichai@quicinc.com>
-To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        with ESMTP id S244043AbjIGQu5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 12:50:57 -0400
+Received: from mail-oa1-x2c.google.com (mail-oa1-x2c.google.com [IPv6:2001:4860:4864:20::2c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC5E010FC
+        for <linux-pm@vger.kernel.org>; Thu,  7 Sep 2023 09:50:28 -0700 (PDT)
+Received: by mail-oa1-x2c.google.com with SMTP id 586e51a60fabf-1c8c44053e8so591135fac.1
+        for <linux-pm@vger.kernel.org>; Thu, 07 Sep 2023 09:50:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694105333; x=1694710133; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=9kunx9UxE5AO8Mpt3OIBGhm0UdSfJDTNTDmm1Ca6qzg=;
+        b=wW9SZKu0c2965d2Hj0ne71bCYJAWi4DXDyGklyOEkJACnqofxGN+RRDJkHfaKHFnYE
+         SXBurYqwDVacrWaurjgeK+KIW03EHdfM8NJyDO+jywm3F5oLu7l432D31t5s37h+egwU
+         py5eCQwwG7yfuSc+6vJcEU2xnfNadV8usthH2fRL1AmbBxxZqLodJUWqaCY1AhN267aZ
+         G5ocRo207KXu9rPpx4jAGWSuaDRHim5UWBTsxwc8nI2QxVuJo67lUK5ATJAw3IRgRBal
+         N95S2rM/wb2kca5hab9RL6HbDb8Ho9XQmHYvb4gbU0uF3nSZ3TguJkvptGXxgUeDPgHw
+         IrMw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1694105333; x=1694710133;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=9kunx9UxE5AO8Mpt3OIBGhm0UdSfJDTNTDmm1Ca6qzg=;
+        b=FCcwRVIi54G98tL85tUm9mydARu7mFXVbnxS0t9vT9lGPDN2GtKfOAOzzFZbtc11Gs
+         LamywSCceVIWq077E59JHfXZaCQ+KQRr6OKNjj9eBtuQzZajElLBqNYYAO9PzmBeD72B
+         JFSs1wJWctIAH43e75ggBPrYjTabnGOAHushEYy7VwstZYgSFPnut7JFs/keJXkamhJ3
+         0P0fKf5b8MeEjZ6ZRq8EArggg0mC01h4ty1kiU33qej2jLPJwKdEUC5UvTlKLChjzpo7
+         tHuNkDRfdAxPAjTcjMJorv0vZMCMpOwgnBIBWpe8EJw5/pRiYbueA715aDG9MsuYvZww
+         jg7g==
+X-Gm-Message-State: AOJu0Yw3xGq2qJEMOgCtzWqkwciszPGKHPXX3XlHPVnme2SlYCcbmq6u
+        4MUMAJAJTX84RL2Oy30+IUy4EflEdwCEC044PM5pL5OjgNeY/ZzY
+X-Google-Smtp-Source: AGHT+IGWwMUs+woCpFuAAwk4rYJhGtyUArweMKLG0DdWWNZXHEqnr826vQ2pJOiYkeGxQTvNpSH7Tmuy50h8QS8fgX8=
+X-Received: by 2002:a5b:f11:0:b0:d80:12f5:cd4d with SMTP id
+ x17-20020a5b0f11000000b00d8012f5cd4dmr156584ybr.18.1694095179083; Thu, 07 Sep
+ 2023 06:59:39 -0700 (PDT)
+MIME-Version: 1.0
+References: <cover.1693996662.git.quic_varada@quicinc.com> <a6d12e3b253d6a55d85f66979ba8b7d9c9ff6072.1693996662.git.quic_varada@quicinc.com>
+In-Reply-To: <a6d12e3b253d6a55d85f66979ba8b7d9c9ff6072.1693996662.git.quic_varada@quicinc.com>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date:   Thu, 7 Sep 2023 16:59:28 +0300
+Message-ID: <CAA8EJppNsgUNgwadq9oM0_KyORNR5PBZGVZukN6MzAm2KPzC9g@mail.gmail.com>
+Subject: Re: [PATCH v1 07/10] arm64: dts: qcom: ipq5332: populate the opp
+ table based on the eFuse
+To:     Varadarajan Narayanan <quic_varada@quicinc.com>
+Cc:     ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
+        konrad.dybcio@linaro.org, rafael@kernel.org,
+        viresh.kumar@linaro.org, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, mani@kernel.org
-Cc:     lpieralisi@kernel.org, kw@linux.com, robh@kernel.org,
-        bhelgaas@google.com, rafael@kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, quic_vbadigan@quicinc.com,
-        quic_nitegupt@quicinc.com, quic_skananth@quicinc.com,
-        quic_ramkri@quicinc.com, quic_parass@quicinc.com,
-        Krishna chaitanya chundru <quic_krichai@quicinc.com>
-Subject: [PATCH v5 4/5] PCI: qcom: Return error from 'qcom_pcie_icc_update'
-Date:   Thu,  7 Sep 2023 11:30:32 +0530
-Message-Id: <1694066433-8677-5-git-send-email-quic_krichai@quicinc.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1694066433-8677-1-git-send-email-quic_krichai@quicinc.com>
-References: <1694066433-8677-1-git-send-email-quic_krichai@quicinc.com>
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: uScLpW1HzmE7HV1Eb5mCKl9UNJo5-nWi
-X-Proofpoint-GUID: uScLpW1HzmE7HV1Eb5mCKl9UNJo5-nWi
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-09-06_12,2023-09-05_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 spamscore=0
- mlxscore=0 phishscore=0 impostorscore=0 suspectscore=0 mlxlogscore=999
- adultscore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2309070052
+        mturquette@baylibre.com, sboyd@kernel.org,
+        quic_kathirav@quicinc.com, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Return error from the function if the icc path is specified in the
-dt and icc_set_bw failed or link is not up.
+On Thu, 7 Sept 2023 at 08:23, Varadarajan Narayanan
+<quic_varada@quicinc.com> wrote:
+>
+> IPQ53xx have different OPPs available for the CPU based on
+> SoC variant. This can be determined through use of an eFuse
+> register present in the silicon.
+>
+> Add support to read the eFuse and populate the OPPs based on it.
+>
+> Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
+> Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+> ---
+>  arch/arm64/boot/dts/qcom/ipq5332.dtsi | 34 +++++++++++++++++++++++++++++++---
+>  1 file changed, 31 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/arm64/boot/dts/qcom/ipq5332.dtsi b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
+> index 82761ae..3ca3f34 100644
+> --- a/arch/arm64/boot/dts/qcom/ipq5332.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
+> @@ -91,11 +91,34 @@
+>         };
+>
+>         cpu_opp_table: opp-table-cpu {
+> -               compatible = "operating-points-v2";
+> +               compatible = "operating-points-v2-kryo-cpu";
+>                 opp-shared;
+> +               nvmem-cells = <&cpu_speed_bin>;
+> +               nvmem-cell-names = "speed_bin";
+> +
+> +               /*
+> +                * Listed all supported CPU frequencies and opp-supported-hw
+> +                * values to select CPU frequencies based on the limits fused.
+> +                * ------------------------------------------------------------
+> +                * Frequency     BIT3   BIT2   BIT1    BIT0    opp-supported-hw
+> +                *              1.0GHz 1.2GHz 1.5GHz No Limit
+> +                * ------------------------------------------------------------
+> +                * 1100000000     1      1      1       1            0xF
+> +                * 1500000000     0      0      1       1            0x3
+> +                * -----------------------------------------------------------
+> +                */
 
-Signed-off-by: Krishna chaitanya chundru <quic_krichai@quicinc.com>
----
- drivers/pci/controller/dwc/pcie-qcom.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
+This can probably go to the commit message instead.
 
-diff --git a/drivers/pci/controller/dwc/pcie-qcom.c b/drivers/pci/controller/dwc/pcie-qcom.c
-index e2f2940..ca6350b 100644
---- a/drivers/pci/controller/dwc/pcie-qcom.c
-+++ b/drivers/pci/controller/dwc/pcie-qcom.c
-@@ -1357,22 +1357,21 @@ static int qcom_pcie_icc_init(struct qcom_pcie *pcie)
- 	return 0;
- }
- 
--static void qcom_pcie_icc_update(struct qcom_pcie *pcie)
-+static int qcom_pcie_icc_update(struct qcom_pcie *pcie)
- {
- 	struct dw_pcie *pci = pcie->pci;
- 	u32 offset, status, bw;
- 	int speed, width;
--	int ret;
- 
- 	if (!pcie->icc_mem)
--		return;
-+		return 0;
- 
- 	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
- 	status = readw(pci->dbi_base + offset + PCI_EXP_LNKSTA);
- 
- 	/* Only update constraints if link is up. */
- 	if (!(status & PCI_EXP_LNKSTA_DLLLA))
--		return;
-+		return -ENODEV;
- 
- 	speed = FIELD_GET(PCI_EXP_LNKSTA_CLS, status);
- 	width = FIELD_GET(PCI_EXP_LNKSTA_NLW, status);
-@@ -1392,11 +1391,7 @@ static void qcom_pcie_icc_update(struct qcom_pcie *pcie)
- 		break;
- 	}
- 
--	ret = icc_set_bw(pcie->icc_mem, 0, width * bw);
--	if (ret) {
--		dev_err(pci->dev, "failed to set interconnect bandwidth: %d\n",
--			ret);
--	}
-+	return icc_set_bw(pcie->icc_mem, 0, width * bw);
- }
- 
- static int qcom_pcie_link_transition_count(struct seq_file *s, void *data)
-@@ -1529,7 +1524,10 @@ static int qcom_pcie_probe(struct platform_device *pdev)
- 		goto err_phy_exit;
- 	}
- 
--	qcom_pcie_icc_update(pcie);
-+	ret = qcom_pcie_icc_update(pcie);
-+	if (ret)
-+		dev_err(dev, "failed to update interconnect bandwidth: %d\n",
-+			ret);
- 
- 	if (pcie->mhi)
- 		qcom_pcie_init_debugfs(pcie);
-@@ -1596,7 +1594,10 @@ static int qcom_pcie_resume_noirq(struct device *dev)
- 		pcie->suspended = false;
- 	}
- 
--	qcom_pcie_icc_update(pcie);
-+	ret = qcom_pcie_icc_update(pcie);
-+	if (ret)
-+		dev_err(dev, "failed to update interconnect bandwidth: %d\n",
-+			ret);
- 
- 	return 0;
- }
+> +
+> +               opp-1100000000 {
+> +                       opp-hz = /bits/ 64 <1100000000>;
+
+But your table shows 1.0 GHz and 1.2 GHz instead of 1.1 GHz
+
+> +                       opp-microvolt = <850000>;
+> +                       opp-supported-hw = <0xF>;
+> +                       clock-latency-ns = <200000>;
+> +               };
+>
+> -               opp-1488000000 {
+> -                       opp-hz = /bits/ 64 <1488000000>;
+> +               opp-1500000000 {
+> +                       opp-hz = /bits/ 64 <1500000000>;
+
+So, 1.488 GHz or 1.5 GHz?
+
+> +                       opp-microvolt = <950000>;
+
+Which regulator is controlled by this microvolt?
+
+> +                       opp-supported-hw = <0x3>;
+>                         clock-latency-ns = <200000>;
+>                 };
+>         };
+> @@ -150,6 +173,11 @@
+>                         reg = <0x000a4000 0x721>;
+>                         #address-cells = <1>;
+>                         #size-cells = <1>;
+> +
+> +                       cpu_speed_bin: cpu_speed_bin@1d {
+> +                               reg = <0x1d 0x2>;
+> +                               bits = <7 2>;
+> +                       };
+>                 };
+>
+>                 rng: rng@e3000 {
+> --
+> 2.7.4
+>
+
+
 -- 
-2.7.4
-
+With best wishes
+Dmitry
