@@ -2,69 +2,111 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 747B8EC873D
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AC42EC873F
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233189AbjIGPlF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 11:41:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40258 "EHLO
+        id S236744AbjIGPlX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:41:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33826 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241882AbjIGPaz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:30:55 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A4D51FC6;
-        Thu,  7 Sep 2023 08:30:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=CmfnIP/qJkmApsvJ1mr5W1MC2O3k/lCNMHjccWhVsKw=; b=fRdYGkGqNR4pUJvPkojbJwWsMz
-        sZdrBUP2CCBXfu6cwHGF0sztUW3cyBK333/tARup1Ebp0/U8GpoIuMyekEWomOMjekm1eRODZ0PsN
-        27E4y1oQO+S+Y7TwUxHXpQdUCj2yT7rXLjg8ingocYVlPxnBk5BijEgzdNZnCDc7ybMs0HyCH59Bk
-        jOuhAOSPbsVVW2Wa7NFNeCsH5ysmaDxtqjhR6peKzFKCAMID/kRLCU0T6BCHxy+0ti4G4xgW4BkKj
-        I/m6geBKSAhNYIRMaaMoVtth8g9hhhugQ1e8Fz5ns4mzRMX275EpSrbniexf+SJEJgrN01WjtIYor
-        k42vqmdQ==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qeF4D-001opO-18;
-        Thu, 07 Sep 2023 13:29:07 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 730C8300687; Thu,  7 Sep 2023 15:29:06 +0200 (CEST)
-Date:   Thu, 7 Sep 2023 15:29:06 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     Qais Yousef <qyousef@layalina.io>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ingo Molnar <mingo@kernel.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
-Message-ID: <20230907132906.GG10955@noisy.programming.kicks-ass.net>
-References: <20230827233203.1315953-1-qyousef@layalina.io>
- <a6365f63-4669-15e5-b843-f4bfb1bd5e68@arm.com>
- <20230906211850.zyvk6qtt6fvpxaf3@airbuntu>
- <6011d8bb-9a3b-1435-30b0-d75b39bf5efa@arm.com>
- <20230907115307.GD10955@noisy.programming.kicks-ass.net>
- <89067f71-9b83-e647-053e-07f7d55b6529@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <89067f71-9b83-e647-053e-07f7d55b6529@arm.com>
+        with ESMTP id S240182AbjIGPYO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:24:14 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A2F8E66;
+        Thu,  7 Sep 2023 08:24:09 -0700 (PDT)
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38740McB021542;
+        Thu, 7 Sep 2023 06:01:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references; s=qcppdkim1;
+ bh=J+y7Wak/6lSVL84og9A1a1Ald3OU+kiUXVx8BSzTJCU=;
+ b=Nv1OANp4eJSZz/AcaHsvyw/qEa+IESofZHFYxSv86mzZB1Kp/m9p8efOnFZmfOrCymKv
+ 5pf+NyouUZGvH+EZGCg7kL2uleZkX224OlCRllgKnCwc1tC8t+IUOob+z/Gtuwl7JLl9
+ JOarqR1OfkfN1DEINcMc9J+dNrEozJlAo69EPq4j5eEHMTUsGoiXEG9UHjvU4Ip7Mj4A
+ KYDKDuZHLFLADc6cQifgPyNz87S0/ubbkGVQvkmtVoGUJW1WNUA2hiZLI5miFY4Se1rg
+ pNjSoQF+evFyF1RxQ51qMEOpxNQnuK0JTzKOpcHXNKrQ/AWpIUkIx45wiIlRl/JEVFq4 vg== 
+Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sy4bqgg64-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 07 Sep 2023 06:01:01 +0000
+Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+        by APBLRPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 38760wIC011319;
+        Thu, 7 Sep 2023 06:00:58 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 3sux4kjqut-1;
+        Thu, 07 Sep 2023 06:00:58 +0000
+Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38760wbf011314;
+        Thu, 7 Sep 2023 06:00:58 GMT
+Received: from hu-sgudaval-hyd.qualcomm.com (hu-krichai-hyd.qualcomm.com [10.213.110.112])
+        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 38760vbj011313;
+        Thu, 07 Sep 2023 06:00:58 +0000
+Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 4058933)
+        id 38A5913A9; Thu,  7 Sep 2023 11:30:57 +0530 (+0530)
+From:   Krishna chaitanya chundru <quic_krichai@quicinc.com>
+To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, mani@kernel.org
+Cc:     lpieralisi@kernel.org, kw@linux.com, robh@kernel.org,
+        bhelgaas@google.com, rafael@kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, quic_vbadigan@quicinc.com,
+        quic_nitegupt@quicinc.com, quic_skananth@quicinc.com,
+        quic_ramkri@quicinc.com, quic_parass@quicinc.com,
+        Krishna chaitanya chundru <quic_krichai@quicinc.com>
+Subject: [PATCH v5 1/5] dt-bindings: pci: qcom: Add opp table
+Date:   Thu,  7 Sep 2023 11:30:29 +0530
+Message-Id: <1694066433-8677-2-git-send-email-quic_krichai@quicinc.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1694066433-8677-1-git-send-email-quic_krichai@quicinc.com>
+References: <1694066433-8677-1-git-send-email-quic_krichai@quicinc.com>
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: YjE3EIyot4WZsOOo6uASrBAPS_8cc0Wr
+X-Proofpoint-ORIG-GUID: YjE3EIyot4WZsOOo6uASrBAPS_8cc0Wr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-06_12,2023-09-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 clxscore=1015
+ priorityscore=1501 lowpriorityscore=0 malwarescore=0 suspectscore=0
+ phishscore=0 spamscore=0 mlxlogscore=913 mlxscore=0 impostorscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2309070052
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 07, 2023 at 02:06:15PM +0100, Lukasz Luba wrote:
+PCIe needs to choose the appropriate performance state of RPMH power
+domain based upon the PCIe gen speed.
 
-> > Many extentions to the periodic task model are possible, including
-> > things like average runtime with bursts etc.. all have their trade-offs.
-> 
-> Was that maybe proposed somewhere on LKML (the other models)?
+Adding the Operating Performance Points table allows to adjust power domain
+performance state, depending on the PCIe gen speed.
 
-RT literatur mostly methinks. Replacing WCET with a statistical model of
-sorts is not uncommon, the argument goes that not everybody will have
-their worst case at the same time and lows and highs can commonly cancel
-out and this way we can cram a little more on the system.
+Signed-off-by: Krishna chaitanya chundru <quic_krichai@quicinc.com>
+Acked-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ Documentation/devicetree/bindings/pci/qcom,pcie.yaml | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Typically this is proposed in the context of soft-realtime systems.
+diff --git a/Documentation/devicetree/bindings/pci/qcom,pcie.yaml b/Documentation/devicetree/bindings/pci/qcom,pcie.yaml
+index eadba38..ac5a167 100644
+--- a/Documentation/devicetree/bindings/pci/qcom,pcie.yaml
++++ b/Documentation/devicetree/bindings/pci/qcom,pcie.yaml
+@@ -122,6 +122,10 @@ properties:
+     description: GPIO controlled connection to WAKE# signal
+     maxItems: 1
+ 
++  operating-points-v2: true
++  opp-table:
++    type: object
++
+ required:
+   - compatible
+   - reg
+-- 
+2.7.4
+
