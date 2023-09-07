@@ -2,106 +2,162 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21B41EC873A
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A5B4EC873A
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231676AbjIGPlg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 11:41:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36208 "EHLO
+        id S230325AbjIGPlk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:41:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59684 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244756AbjIGPdO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:33:14 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E75D7E47;
-        Thu,  7 Sep 2023 08:32:53 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 30655152B;
-        Thu,  7 Sep 2023 06:06:19 -0700 (PDT)
-Received: from [10.57.92.126] (unknown [10.57.92.126])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9DB333F7B4;
-        Thu,  7 Sep 2023 06:05:39 -0700 (PDT)
-Message-ID: <89067f71-9b83-e647-053e-07f7d55b6529@arm.com>
-Date:   Thu, 7 Sep 2023 14:06:15 +0100
+        with ESMTP id S245554AbjIGP3p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:29:45 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7ECC41FE4;
+        Thu,  7 Sep 2023 08:29:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=30UDpD7H6mzYmx8jrLZsBdMp0E/iK+IE4ikawwxJ9Kw=; b=daUMIbD5H1kGLmZNJbo0BRV+Hk
+        x3CHasEN0NaoOrlckQh5evtcsD4LZFlymfiOjnTvHYLiKklebt+AkSUTNq5CRcLVjXvfTU4gZuia3
+        dZcazUXEHV4vpem8101/o5mhWVG2RNVKX5pDq0AEJ1TTlQPTmoiG1DmSCwHVCYx2Pu9YXLxGj15UE
+        yqRSGNkPrTV47a5cw8FG5tpHXA2JT3T2az+HBRNQxFJdsWahIhthVMPn7DWpBRzYvuwrKiq8ktbWB
+        ukq+nce/1o7uPKIXg5OlWeyukW07bTQqa0pycqvXhA62YhxwInoIXoNMATb070p9rjuvz2YF59pY4
+        nvD/9DKA==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qeBb8-001jrG-0q;
+        Thu, 07 Sep 2023 09:46:51 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 5D863300687; Thu,  7 Sep 2023 11:46:51 +0200 (CEST)
+Date:   Thu, 7 Sep 2023 11:46:51 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Elliot Berman <quic_eberman@quicinc.com>
+Cc:     Ingo Molnar <mingo@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Thomas Gleixner <tglx@linutronix.de>, kernel@quicinc.com,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        Prakash Viswalingam <quic_prakashv@quicinc.com>
+Subject: Re: [PATCH v2] freezer,sched: Use saved_state to reduce some
+ spurious wakeups
+Message-ID: <20230907094651.GB16872@noisy.programming.kicks-ass.net>
+References: <20230830-avoid-spurious-freezer-wakeups-v2-1-8877245cdbdc@quicinc.com>
+ <20230904212324.GA2568@noisy.programming.kicks-ass.net>
+ <df61af06-a43e-05c5-66e8-5a68b08ff14b@quicinc.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.0
-Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
-Content-Language: en-US
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Qais Yousef <qyousef@layalina.io>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ingo Molnar <mingo@kernel.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-References: <20230827233203.1315953-1-qyousef@layalina.io>
- <a6365f63-4669-15e5-b843-f4bfb1bd5e68@arm.com>
- <20230906211850.zyvk6qtt6fvpxaf3@airbuntu>
- <6011d8bb-9a3b-1435-30b0-d75b39bf5efa@arm.com>
- <20230907115307.GD10955@noisy.programming.kicks-ass.net>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20230907115307.GD10955@noisy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <df61af06-a43e-05c5-66e8-5a68b08ff14b@quicinc.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 9/7/23 12:53, Peter Zijlstra wrote:
-> On Thu, Sep 07, 2023 at 08:48:08AM +0100, Lukasz Luba wrote:
+On Mon, Sep 04, 2023 at 08:59:03PM -0700, Elliot Berman wrote:
 > 
->>> Hehe. That's because they're not really periodic ;-)
->>
->> They are periodic in a sense, they wake up every 16ms, but sometimes
->> they have more work. It depends what is currently going in the game
->> and/or sometimes the data locality (might not be in cache).
->>
->> Although, that's for games, other workloads like youtube play or this
->> one 'Yahoo browser' (from your example) are more 'predictable' (after
->> the start up period). And I really like the potential energy saving
->> there :)
 > 
-> So everything media is fundamentally periodic, you're hard tied to the
-> framerate / audio-buffer size etc..
-
-Agree
-
+> On 9/4/2023 2:23 PM, Peter Zijlstra wrote:
+> > On Wed, Aug 30, 2023 at 10:42:39AM -0700, Elliot Berman wrote:
+> > 
+> > > Avoid the spurious wakeups by saving the state of TASK_FREEZABLE tasks.
+> > > If the task was running before entering TASK_FROZEN state
+> > > (__refrigerator()) or if the task received a wake up for the saved
+> > > state, then the task is woken on thaw. saved_state from PREEMPT_RT locks
+> > > can be re-used because freezer would not stomp on the rtlock wait flow:
+> > > TASK_RTLOCK_WAIT isn't considered freezable.
+> > 
+> > You don't actually assert that anywhere I think, so the moment someone
+> > makes that happen you crash and burn.
+> > 
 > 
-> Also note that the traditional periodic task model from the real-time
-> community has the notion of WCET, which completely covers this
-> fluctuation in frame-to-frame work, it only considers the absolute worst
-> case.
+> I can certainly add an assertion on the freezer side.
 
-That's good point, the WCET here. IMO shorter PELT e.g. 8ms allows us
-to 'see' a bit more that information: the worst case in fluctuation of
-a particular task. Then this 'seen' value is maintained in util_est
-for a while. That's why (probably) I see a better 95-, 99-percentile
-numbers for frames rendering time.
+I think the assertion we have in ttwu_state_match() might be sufficient.
 
+> > Also:
+> > 
+> > > -#ifdef CONFIG_PREEMPT_RT
+> > > +#if IS_ENABLED(CONFIG_PREEMPT_RT) || IS_ENABLED(CONFIG_FREEZER)
+> > 
+> > That makes wakeup more horrible for everyone :/
 > 
-> Now, practically, that stinks, esp. when you care about batteries, but
-> it does not mean these tasks are not periodic.
+> I don't think the hot wakeup path is significantly impacted because the
+> added checks come after the hot path is already not taken.
 
-Totally agree they are periodic.
+Perhaps we should start off by doing the below, instead of making it
+more complicated instead. I suppose you're right about the overhead, but
+run a hackbench just to make sure or something.
 
-> 
-> Many extentions to the periodic task model are possible, including
-> things like average runtime with bursts etc.. all have their trade-offs.
 
-Was that maybe proposed somewhere on LKML (the other models)?
-
-I can recall one idea - WALT.
-IIRC ~2016/2017 the WALT proposal and some discussion/conferences, it
-didn't get positive feedback [2].
-
-I don't know if you remember those numbers back than, e.g. video 1080p
-playback was using ~10% less energy... Those 10%-15% are still important
-for us ;)
-
-Regards,
-Lukasz
-
-[1] 
-https://lore.kernel.org/all/1477638642-17428-1-git-send-email-markivx@codeaurora.org/
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 77f01ac385f7..649ddb9adf0d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -749,11 +749,7 @@ struct task_struct {
+ 	struct thread_info		thread_info;
+ #endif
+ 	unsigned int			__state;
+-
+-#ifdef CONFIG_PREEMPT_RT
+-	/* saved state for "spinlock sleepers" */
+ 	unsigned int			saved_state;
+-#endif
+ 
+ 	/*
+ 	 * This begins the randomizable portion of task_struct. Only
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 2299a5cfbfb9..b566821614e1 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -2239,31 +2239,21 @@ int __task_state_match(struct task_struct *p, unsigned int state)
+ 	if (READ_ONCE(p->__state) & state)
+ 		return 1;
+ 
+-#ifdef CONFIG_PREEMPT_RT
+ 	if (READ_ONCE(p->saved_state) & state)
+ 		return -1;
+-#endif
++
+ 	return 0;
+ }
+ 
+ static __always_inline
+ int task_state_match(struct task_struct *p, unsigned int state)
+ {
+-#ifdef CONFIG_PREEMPT_RT
+-	int match;
+-
+ 	/*
+ 	 * Serialize against current_save_and_set_rtlock_wait_state() and
+ 	 * current_restore_rtlock_saved_state().
+ 	 */
+-	raw_spin_lock_irq(&p->pi_lock);
+-	match = __task_state_match(p, state);
+-	raw_spin_unlock_irq(&p->pi_lock);
+-
+-	return match;
+-#else
++	guard(spin_lock_irq)(&p->pi_lock);
+ 	return __task_state_match(p, state);
+-#endif
+ }
+ 
+ /*
+@@ -4056,7 +4046,6 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
+ 
+ 	*success = !!(match = __task_state_match(p, state));
+ 
+-#ifdef CONFIG_PREEMPT_RT
+ 	/*
+ 	 * Saved state preserves the task state across blocking on
+ 	 * an RT lock.  If the state matches, set p::saved_state to
+@@ -4072,7 +4061,7 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
+ 	 */
+ 	if (match < 0)
+ 		p->saved_state = TASK_RUNNING;
+-#endif
++
+ 	return match > 0;
+ }
+ 
