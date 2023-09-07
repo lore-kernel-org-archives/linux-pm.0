@@ -2,92 +2,91 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DB5AEC8741
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 846F6EC8742
 	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234125AbjIGPlM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 11:41:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45514 "EHLO
+        id S234165AbjIGPlO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:41:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344589AbjIGPd2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:33:28 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36A031BF5;
-        Thu,  7 Sep 2023 08:33:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=3WFJ/CyRLDbsGvdiQprNjEUyWtZ4FKis4fJnhduuJtU=; b=IEkvclf72qZHteRaWKJ/MXfSY0
-        LmiryMpgIAzo25gO9gHYKydzx65Qid+hYSB3Q3oM1zNWyft4SMa6M9HTtyxXP7up3IZUxx/px+8iC
-        jabr9E3MRzW5ravGFBh79Xa00aVU5kzxkf3kw6iwnI6PiwRsf66szEznCuIu3m3yLEclq95Zf7mOn
-        H85BKiSz80BsllZxErHmCO8UHTJyBe6R97WYjsxisoqb1PzElgdsvO5qUn4nyguqc8bZ/JKD1rQ0k
-        Arr1f5AcmfBsKdA49ZB0TtzJ2xUtdOCPbVO98Walrdnid/VhstKHk22SOVhs6FLTtz2VhsYyjTeSB
-        SZVxXsjg==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qeEjs-001nr5-0Q;
-        Thu, 07 Sep 2023 13:08:06 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 3DE62300687; Thu,  7 Sep 2023 15:08:05 +0200 (CEST)
-Date:   Thu, 7 Sep 2023 15:08:05 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Qais Yousef <qyousef@layalina.io>
-Cc:     Ingo Molnar <mingo@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Lukasz Luba <lukasz.luba@arm.com>
-Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
-Message-ID: <20230907130805.GE10955@noisy.programming.kicks-ass.net>
-References: <20230827233203.1315953-1-qyousef@layalina.io>
+        with ESMTP id S245224AbjIGPcI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:32:08 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F18319C
+        for <linux-pm@vger.kernel.org>; Thu,  7 Sep 2023 08:31:42 -0700 (PDT)
+Received: by mail-wr1-x42e.google.com with SMTP id ffacd0b85a97d-31c5c06e8bbso1074324f8f.1
+        for <linux-pm@vger.kernel.org>; Thu, 07 Sep 2023 08:31:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694100652; x=1694705452; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=KGhxv+wLkUlJTnXgtlH4J46AYd9o45ySTLmRTKlekWI=;
+        b=ThgKY/4PvULhrkYaFzlTxp+8aTc/JOpz36vJZr8pWZ38GeFO7GQWumwe930LNJ9YF4
+         44vsEwgPsATb7I8WeymexAmTKYrFERykuxNXo+4ENKHv3/nv7ektH2dxqGpwkaBeJQCQ
+         9k8UgpQ9cT/IAoHzAy6oivDs6kXrauMv0m2+DGjgQvKb1Q6Wsio0fVR/a4+MtsqOl71U
+         MUg4ixhx42HXzEBjurNwxp0FACO1u0LEH1MoPdVDzR42P8t5AAvWFoRQj3cOskjsB5vk
+         O6n9DKmhaTh7DSnp6eS6SpNRn9cO3mJMa7Kb7wPHQjncgvtU63bU2WVI/O9D/1rKIugy
+         mvhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1694100652; x=1694705452;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=KGhxv+wLkUlJTnXgtlH4J46AYd9o45ySTLmRTKlekWI=;
+        b=OB1UqvTlbmHOYhE+hSVTMLQqYdAibpGPrwhjoxhNxJ+fbQ9JWMhCKsPD+uyxrE/Ymj
+         Y+vtXYx2hkVhJWsujgV5BPeq1Q6caU6/tqJvtc+50jh3OwmmqggFWFj1GA/cyBzLHA4H
+         UaebSDjXxmGOW+D0+fa4v0Iz9FVm8/rRGEvJExrZnLZhS+AlZ0wyyI4faNX6hZ57MggO
+         0Ak9fbFil8uUpqrNiM4aTbYYO1ymanmpm2cN+/fQLx8bSDFS/w+9ERfTijdSseF2K0Oc
+         tN5KOXDrNKr5efLgDBG7iEbhKTbkMDqm483lN1kF0PUAB5zICqPtuVH7OcmbHw1DBBl1
+         yfbQ==
+X-Gm-Message-State: AOJu0YzG59ThHH9xvREIAcxjzXLrW0o5IcscOAAAuntorJbUfjHGzHeE
+        zifH0qC9XlfkYplYGsHrYbHqQl/+lfYlVYZtB7Y=
+X-Google-Smtp-Source: AGHT+IHgZdZSiR//XinTA9Y8E8bS2xBu6CE90k9cVQP1rRMZIv9GSOKD+LJS0NcyLh090bkwtAQy+Q==
+X-Received: by 2002:a17:906:19:b0:9a1:ec3d:8ffe with SMTP id 25-20020a170906001900b009a1ec3d8ffemr4567309eja.18.1694066647510;
+        Wed, 06 Sep 2023 23:04:07 -0700 (PDT)
+Received: from [192.168.0.22] (77-252-46-238.static.ip.netia.com.pl. [77.252.46.238])
+        by smtp.gmail.com with ESMTPSA id qx12-20020a170906fccc00b0099bd86f9248sm9922585ejb.63.2023.09.06.23.04.06
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 06 Sep 2023 23:04:07 -0700 (PDT)
+Message-ID: <2de8953c-f1c5-3c17-5c95-973ef550bc32@linaro.org>
+Date:   Thu, 7 Sep 2023 08:04:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230827233203.1315953-1-qyousef@layalina.io>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Subject: Re: [PATCH v1 08/10] dt-bindings: cpufreq: qcom-cpufreq-nvmem:
+ document IPQ9574
+Content-Language: en-US
+To:     Varadarajan Narayanan <quic_varada@quicinc.com>,
+        ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
+        konrad.dybcio@linaro.org, rafael@kernel.org,
+        viresh.kumar@linaro.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        mturquette@baylibre.com, sboyd@kernel.org,
+        quic_kathirav@quicinc.com, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
+References: <cover.1693996662.git.quic_varada@quicinc.com>
+ <e0f54a4b249f24b10d3dc21a0224718e46ebd158.1693996662.git.quic_varada@quicinc.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <e0f54a4b249f24b10d3dc21a0224718e46ebd158.1693996662.git.quic_varada@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Aug 28, 2023 at 12:31:56AM +0100, Qais Yousef wrote:
-
-> Equally recent discussion in PELT HALFLIFE thread highlighted the need for
-> a way to tune system response time to achieve better perf, power and thermal
-> characteristic for a given system
+On 07/09/2023 07:21, Varadarajan Narayanan wrote:
+> Document IPQ9574 compatible for Qcom NVMEM CPUFreq driver.
 > 
-> 	https://lore.kernel.org/lkml/20220829055450.1703092-1-dietmar.eggemann@arm.com/
-> 
-
-> To further help tune the system, we introduce PELT HALFLIFE multiplier as
-> a boot time parameter. This parameter has an impact on how fast we migrate, so
-> should compensate for whoever needed to tune fits_capacity(); and it has great
-> impact on default response_time_ms. Particularly it gives a natural faster rise
-> time when the system gets busy, AND fall time when the system goes back to
-> idle. It is coarse grain response control that can be coupled with finer grain
-> control via schedutil's response_time_ms.
-
-You're misrepresenting things... The outcome of that thread above was
-that PELT halftime was not the primary problem. Specifically:
-
-  https://lore.kernel.org/lkml/424e2c81-987d-f10e-106d-8b4c611768bc@arm.com/
-
-mentions that the only thing that gaming nonsense cares about is DVFS
-ramp-up.
-
-None of the other PELT users mattered one bit.
-
-Also, ISTR a fair amount of this was workload dependent. So a solution
-that has per-task configurability -- like UTIL_EST_FASTER, seems more
-suitable.
+> Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+> ---
+>  Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml | 1 +
+>  1 file changed, 1 insertion(+)
 
 
-I'm *really* hesitant on adding all these mostly random knobs -- esp.
-without strong justification -- which you don't present. You mostly seem
-to justify things with: people do random hack, we should legitimize them
-hacks.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-Like the last time around, I want the actual problem explained. The
-problem is not that random people on the internet do random things to
-their kernel.
+Best regards,
+Krzysztof
+
