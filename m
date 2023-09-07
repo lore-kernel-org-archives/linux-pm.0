@@ -2,81 +2,84 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C158EC8741
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA260EC873E
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231294AbjIGPlm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 11:41:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60004 "EHLO
+        id S230164AbjIGPlj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:41:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344004AbjIGPcN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:32:13 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 140D01FDE;
-        Thu,  7 Sep 2023 08:31:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=SJPILCabtzPOmn/vTtUAzt4xxDqr2K6S5moya2vKXFc=; b=M5Md0zitEkbRpUQMRmi0eh00Qv
-        7T+cvtivl2P84nn/h8L/APTva0274xldIcRDx4C0Ol8ZbN/xp7nKr2YN5B7IKdUKZ9p3sv33XWpaj
-        P/qg6CT5ArDW4xcAWrkw85DDpDXzgNjAiSbSVvyDT8qV/kPEKNyYQDpv9UIMdpFp7uEkMd930dLZn
-        mzyVrHJaoYWLyZU7gantVtqG64lScf2yjq1CVcJv5ma7f7wYvOzKENyFuHaa/qtn6DFyho1KrEE/t
-        RldIRW0EWiAWLcFuFsgXyINqSRs3KuWiElIVtSgMxKq3jW/UNgjDBNePmWYCSnC9BVxbKEl617hcj
-        S7yAUaAg==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qeFDT-001oun-33;
-        Thu, 07 Sep 2023 13:38:42 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 0DCDB300687; Thu,  7 Sep 2023 15:38:41 +0200 (CEST)
-Date:   Thu, 7 Sep 2023 15:38:40 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     Qais Yousef <qyousef@layalina.io>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ingo Molnar <mingo@kernel.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, bristot@redhat.com,
-        juri.lelli@redhat.com
-Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
-Message-ID: <20230907133840.GH10955@noisy.programming.kicks-ass.net>
-References: <20230827233203.1315953-1-qyousef@layalina.io>
- <a6365f63-4669-15e5-b843-f4bfb1bd5e68@arm.com>
- <20230906211850.zyvk6qtt6fvpxaf3@airbuntu>
- <6011d8bb-9a3b-1435-30b0-d75b39bf5efa@arm.com>
- <20230907115307.GD10955@noisy.programming.kicks-ass.net>
- <89067f71-9b83-e647-053e-07f7d55b6529@arm.com>
- <20230907132906.GG10955@noisy.programming.kicks-ass.net>
- <5616e50d-b827-4547-5b16-9131ace98419@arm.com>
+        with ESMTP id S1345191AbjIGPfI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:35:08 -0400
+Received: from mail-yw1-x112d.google.com (mail-yw1-x112d.google.com [IPv6:2607:f8b0:4864:20::112d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E89C1FC9
+        for <linux-pm@vger.kernel.org>; Thu,  7 Sep 2023 08:34:34 -0700 (PDT)
+Received: by mail-yw1-x112d.google.com with SMTP id 00721157ae682-58dfe2d5b9aso14494797b3.1
+        for <linux-pm@vger.kernel.org>; Thu, 07 Sep 2023 08:34:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694100840; x=1694705640; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=RbK6fKvS9Fgoje98ZfydB5ImVNxTq9WKZiMHsHIMJYc=;
+        b=MH6X+FZfAM5YBs/S2sUYZ4OQ2GoFvdBu776GPzJmIctBWo3Icro27seLGtsEmYjKm3
+         mmEqLTEpEWfO2QrvBSDwH42HLHhSDhCJt7ReQYcaCQMaJGcbBvRbekB4QkNqEcne9GrY
+         yTMpr4B3s60GJRgSBE2g/FG8R6CwkyXJ+HsAEugINRCo7OmjLGCWXRyIEtiNHpTN9VMb
+         Z1wHDC9gj/w5DSHF2CRMyPdvtsJrcmKBS3NRTi4yOpB8DWma1crOuugCVGCUXEKZY+vW
+         k40YBCyX8StxqAsDAyp8+aA3ikbk0BbH0Jm/zns0e9kedsF6qdN53qSwMApUzrGczNo2
+         naKA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1694100840; x=1694705640;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=RbK6fKvS9Fgoje98ZfydB5ImVNxTq9WKZiMHsHIMJYc=;
+        b=kans9jhl/+ZXGDmJjgwD6IoXbngaZAYouK7ks4HQimWVjcxua5NTKOxRq/pRe67suf
+         WIs8isQ5bv8GQBpbXKFryacdjkAieRj8IlbwhHRcW6MsN7AXZlShmrVv3P78qtJEzzRw
+         wPUG/l9VZ9Yx729RsAQbaA3OgeA/hMHYxvgNytrkywp1KkMlZu1n609pelw8Bg6YcvYB
+         1DaDZVbSS+2hnr5i6qwnHgB7vaGRHoB7JZ6xJ45jgqzVGKiBacDasCHmQdglyW/u8vNF
+         CWtBw2S9OJ2ZM7++Py173ti5IE4FtCcGhS7A8TkyJNkaRq+S1wrfCrrWYweP/PZ4k/5M
+         90jQ==
+X-Gm-Message-State: AOJu0YyhZzrjXcuN7w0KogAP7xvdCKmAesUOL8SB7As1pcqDRBw/3oWS
+        9X5r4mm0vZRCjaVEpg0TsJKabBphGFeyqxE7Ntb0NCXnyC38T6FL
+X-Google-Smtp-Source: AGHT+IHu6D0PjyoNN/3icMZDTJRryJCp5e4gDUZ/wy83CohE7b2nsJzK7Ge1NIZAUgYV6LutVWZGRWBUmBFmeDVHGrc=
+X-Received: by 2002:a05:6902:154d:b0:d72:8a65:394f with SMTP id
+ r13-20020a056902154d00b00d728a65394fmr3971430ybu.18.1694094049986; Thu, 07
+ Sep 2023 06:40:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5616e50d-b827-4547-5b16-9131ace98419@arm.com>
+References: <cover.1693996662.git.quic_varada@quicinc.com> <543183ecfba929683c1b8d7ff24d75df489ef0cf.1693996662.git.quic_varada@quicinc.com>
+In-Reply-To: <543183ecfba929683c1b8d7ff24d75df489ef0cf.1693996662.git.quic_varada@quicinc.com>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date:   Thu, 7 Sep 2023 16:40:39 +0300
+Message-ID: <CAA8EJprSHCx6TQ=-iEV6L55b69yYKANCJmGSqN+YVSv1dSCAqg@mail.gmail.com>
+Subject: Re: [PATCH v1 03/10] clk: qcom: apss-ipq-pll: Fix 'l' value for ipq5332_pll_config
+To:     Varadarajan Narayanan <quic_varada@quicinc.com>
+Cc:     ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
+        konrad.dybcio@linaro.org, rafael@kernel.org,
+        viresh.kumar@linaro.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        mturquette@baylibre.com, sboyd@kernel.org,
+        quic_kathirav@quicinc.com, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 07, 2023 at 02:33:49PM +0100, Lukasz Luba wrote:
-> 
-> 
-> On 9/7/23 14:29, Peter Zijlstra wrote:
-> > On Thu, Sep 07, 2023 at 02:06:15PM +0100, Lukasz Luba wrote:
-> > 
-> > > > Many extentions to the periodic task model are possible, including
-> > > > things like average runtime with bursts etc.. all have their trade-offs.
-> > > 
-> > > Was that maybe proposed somewhere on LKML (the other models)?
-> > 
-> > RT literatur mostly methinks. Replacing WCET with a statistical model of
-> > sorts is not uncommon, the argument goes that not everybody will have
-> > their worst case at the same time and lows and highs can commonly cancel
-> > out and this way we can cram a little more on the system.
-> > 
-> > Typically this is proposed in the context of soft-realtime systems.
-> 
-> Thanks Peter, I will dive into some books...
+On Thu, 7 Sept 2023 at 08:22, Varadarajan Narayanan
+<quic_varada@quicinc.com> wrote:
+>
+> The earlier 'l' value of 0x3e is for 1.5GHz. Not all SKUs support
+> this frequency. Hence set it to 0x2d to get 1.1GHz which is
+> supported in all SKUs.
+>
+> Fixes: c7ef7fbb1ccf ("clk: qcom: apss-ipq-pll: add support for IPQ5332")
+> Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
+> Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
 
-I would look at academic papers, not sure any of that ever made it to
-books, Daniel would know I suppose.
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+
+
+-- 
+With best wishes
+Dmitry
