@@ -2,100 +2,71 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD4C7EC8743
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 17:27:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25D84EC8726
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 17:33:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233497AbjIGR12 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 13:27:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55630 "EHLO
+        id S240304AbjIGRdW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 13:33:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44680 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243586AbjIGR11 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 13:27:27 -0400
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A24D31BEA
-        for <linux-pm@vger.kernel.org>; Thu,  7 Sep 2023 10:27:04 -0700 (PDT)
-Received: by mail-lf1-x12b.google.com with SMTP id 2adb3069b0e04-50079d148aeso2023746e87.3
-        for <linux-pm@vger.kernel.org>; Thu, 07 Sep 2023 10:27:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694107569; x=1694712369; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=vpHIUYmzApKmGGiHZZpnMSxi31KSn/xZKBPfgME94EA=;
-        b=V6Us4WQ4SvWzE5lMj/d9C/mcpM8sOF0YlgeP7Cta3YifaBDXuy5RqtCHPbbnPWlL0R
-         cWNyJGbChsaBkMnwCH6Tgbuy02s3w1sJoL+CXouDq3fDpvPyWAd9l0qN/Jh4lw8AEih6
-         xsJtQaaF0kzZdLrOLz4PYPCZzMRhyoqGDX7+OfVvHS3Ln6EpuZC6AchSLdRevKdm7nfN
-         CLJnH94gV2cnbbvv2m+BAtBN9ImIArEOO/GbnM2NqlAGuZ6DTIyv+Dpt/vAlD3vaeIlm
-         GESnA+WpiXjS1ZaMihHCD88VgfvaEEnFcktROvKNOdARCPPwcN0Gcc/vPwiFyKaws30h
-         cFFA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694107569; x=1694712369;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=vpHIUYmzApKmGGiHZZpnMSxi31KSn/xZKBPfgME94EA=;
-        b=rP0bLSFIhxJd4RcxEJ36eho1Na2LmulzS/u5O1AlMmRfFRZbeeAM1Lnio0QE8ThKmS
-         +2/05CmJhmPLpDoTjJ+YL0b4yfaM9aobXpGMRxnCtOBIZTszRbVqjEiKxXPCFCPQ6MDG
-         ecJt7PpJ8oclHayBNjfKIPGLxg7ofSrQtWG/T/yAYLRGtwNj/RR9eyKonpWSPofJwWq2
-         PXHMeWlcSNAW+3NPOUMgRWglncuVuz5TEy20GHvuzVb4PTM+tBKyuykB2KgfR3mvSp3R
-         C1ldYZkUFqZHLDIBYVAFv4oXcNb1XNdviyLPHjrCL8NvdEhZTBrKJu8vYEp37DwhQc/M
-         SKHg==
-X-Gm-Message-State: AOJu0YxkiH5sjVnaePAhXYBV75t6z+Vh7e8GGBw9sFGWLaj5Oy1uC5Hl
-        3k7rHGyjaBXDuSJdiNbmF1EUL1PriL9Jz08gOZaUXg==
-X-Google-Smtp-Source: AGHT+IE6rP7AS4FnGxp/huXUuWImGW5DpdIfQDtTj/sIRkZFOXfhElTxhQiu10RgpaNZRjIoSI51Qg==
-X-Received: by 2002:a17:906:5c:b0:9a5:db06:4264 with SMTP id 28-20020a170906005c00b009a5db064264mr3607933ejg.72.1694066638936;
-        Wed, 06 Sep 2023 23:03:58 -0700 (PDT)
-Received: from [192.168.0.22] (77-252-46-238.static.ip.netia.com.pl. [77.252.46.238])
-        by smtp.gmail.com with ESMTPSA id g2-20020a1709064e4200b009a5f7fb51d5sm9928020ejw.21.2023.09.06.23.03.57
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 06 Sep 2023 23:03:58 -0700 (PDT)
-Message-ID: <4f882fa1-8174-2816-71c4-a2941372aa19@linaro.org>
-Date:   Thu, 7 Sep 2023 08:03:56 +0200
+        with ESMTP id S245298AbjIGRdT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 13:33:19 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id B1C0A1FE6;
+        Thu,  7 Sep 2023 10:32:49 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B0A7C1763;
+        Thu,  7 Sep 2023 06:57:29 -0700 (PDT)
+Received: from [10.57.92.126] (unknown [10.57.92.126])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2839B3F766;
+        Thu,  7 Sep 2023 06:56:50 -0700 (PDT)
+Message-ID: <8919ed14-8d19-d964-2278-3303a5bda8ee@arm.com>
+Date:   Thu, 7 Sep 2023 14:57:26 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.15.0
-Subject: Re: [PATCH v1 10/10] arm64: dts: qcom: ipq9574: populate the opp
- table based on the eFuse
+Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
 Content-Language: en-US
-To:     Varadarajan Narayanan <quic_varada@quicinc.com>,
-        ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
-        konrad.dybcio@linaro.org, rafael@kernel.org,
-        viresh.kumar@linaro.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        mturquette@baylibre.com, sboyd@kernel.org,
-        quic_kathirav@quicinc.com, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
-References: <cover.1693996662.git.quic_varada@quicinc.com>
- <1512a94f8fe1f8fe22cef2bf8498a6ac27989633.1693996662.git.quic_varada@quicinc.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <1512a94f8fe1f8fe22cef2bf8498a6ac27989633.1693996662.git.quic_varada@quicinc.com>
-Content-Type: text/plain; charset=UTF-8
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Qais Yousef <qyousef@layalina.io>
+References: <20230827233203.1315953-1-qyousef@layalina.io>
+ <a6365f63-4669-15e5-b843-f4bfb1bd5e68@arm.com>
+ <20230906211850.zyvk6qtt6fvpxaf3@airbuntu>
+ <20230907132631.GF10955@noisy.programming.kicks-ass.net>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <20230907132631.GF10955@noisy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 07/09/2023 07:21, Varadarajan Narayanan wrote:
-> IPQ95xx SoCs have different OPPs available for the CPU based on
-> SoC variant. This can be determined from an eFuse register
-> present in the silicon.
+
+
+On 9/7/23 14:26, Peter Zijlstra wrote:
+> On Wed, Sep 06, 2023 at 10:18:50PM +0100, Qais Yousef wrote:
 > 
-> Add support to read the eFuse and populate the OPPs based on it.
+>> This is probably controversial statement. But I am not in favour of util_est.
+>> I need to collect the data, but I think we're better with 16ms PELT HALFLIFE as
+>> default instead. But I will need to do a separate investigation on that.
+> 
+> I think util_est makes perfect sense, where PELT has to fundamentally
+> decay non-running / non-runnable tasks in order to provide a temporal
+> average, DVFS might be best served with a termporal max filter.
+> 
 > 
 
-...
+Since we are here...
+Would you allow to have a configuration for
+the util_est shifter: UTIL_EST_WEIGHT_SHIFT ?
 
->  	};
-> @@ -223,6 +254,11 @@
->  			reg = <0x000a4000 0x5a1>;
->  			#address-cells = <1>;
->  			#size-cells = <1>;
-> +
-> +			cpu_speed_bin: cpu_speed_bin@15 {
-
-No underscores in node names
-
-Best regards,
-Krzysztof
+I've found other values than '2' better in some scenarios. That helps
+to prevent a big task to 'down' migrate from a Big CPU (1024) to some
+Mid CPU (~500-700 capacity) or even Little (~120-300).
 
