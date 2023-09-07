@@ -2,104 +2,79 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0212DEC873E
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1D58EC8746
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231517AbjIGPld (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 11:41:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52076 "EHLO
+        id S231713AbjIGPl3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:41:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57664 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240265AbjIGPaf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:30:35 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B26D1700;
-        Thu,  7 Sep 2023 08:30:09 -0700 (PDT)
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id B2EEE66072BA;
-        Thu,  7 Sep 2023 11:43:14 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1694083395;
-        bh=AtNfCg0ORcDFoK5Walc1Hu3UGCme85N5dgstHaeabAc=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=NejBNi91GDBi0Au8P24t4H4LZjQGG9Ryf1BpDJdsXgET3EkPKMCZFUG7BCYuxsp0A
-         L5J666GBfK2HyOu6yTaz/Zdt9srJi+5RKfsPZV35jTt1DuIjOV5nERNjqPd61FOF9M
-         1HiviQkDD472ch4zIdW+FtQekf0Fqf3SaP8d0MbPWgZ0QpNRuBKobGhS7xydNgFhgX
-         uUE0F5MmxWTv8He1c0FXyZ6t8nMYMInIUVo0N72Mqo1KXMOA4MxZJJvh5lfKIFp7+p
-         X7z5G8hFmmvlxMnVt4LcbxoOqjM8OW9eDq+vbWzlIYRdMbQnJ7STxw4HIqlaHsKBtK
-         d2YAIXSKPE/tQ==
-Message-ID: <cd6eea67-df0f-08b1-61cd-57a3b4f9cf0d@collabora.com>
-Date:   Thu, 7 Sep 2023 12:43:12 +0200
+        with ESMTP id S236114AbjIGPXT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:23:19 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FC19135;
+        Thu,  7 Sep 2023 08:23:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=OI476zBUwqc76nvniBbxYuu0lwS1B+BEzNEeiMb9prM=; b=YWBUFZDlCLXGhIHhep3kUss7WX
+        58SpxA+obyk9Yr50WkV8w6pYdrJcBO9nIVzcW1H9sUd8rqojPW6cAD75eRMtNw+zYwv3NGqsm0/7C
+        mQES2ZWgNpF+Vos54yYoMjqM2ZiJZQ2MNYxtd060vYxy9eTL5vgc2AxiXoIiwLXdk3o3TXZTUk+lz
+        3mdDX2kYgSAW/9gYFpgDgPF6B0I6VJYfuCWAmyg7Vb+t5jXk5FZiwSX0BdDtwAy9l3HiAt1FHTHla
+        Px+XUieyhSyG0q0UNnOWUrhkKMBRfAmGuYuCJoSv3et79OAFOpm8oMG2I5vMz0MB6noWPDi8Yo9mA
+        5nmk/Djg==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1qeDZL-00Aen9-SW; Thu, 07 Sep 2023 11:53:08 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 830C7300687; Thu,  7 Sep 2023 13:53:07 +0200 (CEST)
+Date:   Thu, 7 Sep 2023 13:53:07 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     Qais Yousef <qyousef@layalina.io>, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
+Message-ID: <20230907115307.GD10955@noisy.programming.kicks-ass.net>
+References: <20230827233203.1315953-1-qyousef@layalina.io>
+ <a6365f63-4669-15e5-b843-f4bfb1bd5e68@arm.com>
+ <20230906211850.zyvk6qtt6fvpxaf3@airbuntu>
+ <6011d8bb-9a3b-1435-30b0-d75b39bf5efa@arm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.0
-Subject: Re: [PATCH] power: supply: mt6370: Fix missing error code in
- mt6370_chg_toggle_cfo()
-Content-Language: en-US
-To:     Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>,
-        ChiaEn Wu <chiaen_wu@richtek.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
-Cc:     dan.carpenter@linaro.org, kernel-janitors@vger.kernel.org,
-        error27@gmail.com
-References: <20230906084815.2827930-1-harshit.m.mogalapalli@oracle.com>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20230906084815.2827930-1-harshit.m.mogalapalli@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6011d8bb-9a3b-1435-30b0-d75b39bf5efa@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Il 06/09/23 10:48, Harshit Mogalapalli ha scritto:
-> When mt6370_chg_field_get() suceeds, ret is set to zero and returning
-> zero when flash led is still in strobe mode looks incorrect.
+On Thu, Sep 07, 2023 at 08:48:08AM +0100, Lukasz Luba wrote:
+
+> > Hehe. That's because they're not really periodic ;-)
 > 
-> Fixes: 233cb8a47d65 ("power: supply: mt6370: Add MediaTek MT6370 charger driver")
-> Signed-off-by: Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>
-> ---
-> This is based on static analysis with smatch, only compile tested.
-> ---
->   drivers/power/supply/mt6370-charger.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> They are periodic in a sense, they wake up every 16ms, but sometimes
+> they have more work. It depends what is currently going in the game
+> and/or sometimes the data locality (might not be in cache).
 > 
-> diff --git a/drivers/power/supply/mt6370-charger.c b/drivers/power/supply/mt6370-charger.c
-> index f27dae5043f5..a9641bd3d8cf 100644
-> --- a/drivers/power/supply/mt6370-charger.c
-> +++ b/drivers/power/supply/mt6370-charger.c
-> @@ -324,7 +324,7 @@ static int mt6370_chg_toggle_cfo(struct mt6370_priv *priv)
->   
->   	if (fl_strobe) {
->   		dev_err(priv->dev, "Flash led is still in strobe mode\n");
-> -		return ret;
-> +		return -EINVAL;
+> Although, that's for games, other workloads like youtube play or this
+> one 'Yahoo browser' (from your example) are more 'predictable' (after
+> the start up period). And I really like the potential energy saving
+> there :)
 
-I think that returning 0 here was intentional, but I agree on a return ret
-here being both confusing and wrong.
+So everything media is fundamentally periodic, you're hard tied to the
+framerate / audio-buffer size etc..
 
-That's how I get this logic:
+Also note that the traditional periodic task model from the real-time
+community has the notion of WCET, which completely covers this
+fluctuation in frame-to-frame work, it only considers the absolute worst
+case.
 
-The function is enabling strobe mode, but if the flash led is *already* in
-strobe mode, the function exits cleanly because there's nothing to do, as
-the enablement is already done.
+Now, practically, that stinks, esp. when you care about batteries, but
+it does not mean these tasks are not periodic.
 
-Hence.... I believe that the right fix is not to return -EINVAL, but rather
-to change that to `return 0` instead.
-
-ChiaEn, can you please confirm, or deny my statement?
-
-Regards,
-Angelo
-
->   	}
->   
->   	/* cfo off */
-
-
+Many extentions to the periodic task model are possible, including
+things like average runtime with bursts etc.. all have their trade-offs.
