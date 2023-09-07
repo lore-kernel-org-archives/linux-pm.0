@@ -2,220 +2,157 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8403EEC873E
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 17:00:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47712EC8743
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 17:11:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238853AbjIGRAx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 13:00:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57260 "EHLO
+        id S241687AbjIGRLz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 13:11:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46220 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238432AbjIGRA2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 13:00:28 -0400
-Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C7AF213E
-        for <linux-pm@vger.kernel.org>; Thu,  7 Sep 2023 09:59:56 -0700 (PDT)
-Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-52e828ad46bso1602131a12.1
-        for <linux-pm@vger.kernel.org>; Thu, 07 Sep 2023 09:59:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694105633; x=1694710433; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=n+7VyO9HJQgcCdV1oziXjEck+bwNvVutHKF259s+mUE=;
-        b=Aci/pDVymjFhyjBFSdB6tZcgyeeKhvUCAPy0/A+mhnhD75+uDq3qnAAz/zfPKUTvC/
-         HEXgrP0wMH47UM3xu3HUfllYShstN6U9NIsm4pdDGlI4TT+s8Jcxc4tw9qwXlNY5YUnI
-         TsXTjc50Hdp+/C10ZidoQci6lSXhF3i+aq0QX0vmhXAe5uufVW2HdXEDg4Je0CsQFtOy
-         58hOQxyh3c6oUYo/rNOnbg3oA2XmSv2ZZKuPRaa3ZCscVa2z/dE6R3G/mNgjLlPQgRQt
-         NZ791NloZ5yMqzX+CktZN8Ii8Xv57X3y6kk2dhF+wTkFACkm284RBRH6XAVXWN1tI4eq
-         zDYA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1694105633; x=1694710433;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=n+7VyO9HJQgcCdV1oziXjEck+bwNvVutHKF259s+mUE=;
-        b=AB6K9JEetENVi2d30ISQhw/3GBZFvj/lf26vDafWmqwu/Nax5lI0iEox8U2m0dL/ZU
-         1hKXrypYjJrmJb2FEy+uIKpBrYn8TAr1PD92MVj8huFfL8OmIPWtS+UPE1ueRHIhFw4k
-         30VV8hMzW8Xje28hsRpgjVRgNBCQ5uZy4wYKBX/xYgDbmVbWcrbCzRpu0KA32R72YjWe
-         cBcapy2JuV+bfwv+GabwXrJ7bjO5Vw+6pTsqZhzJZ+yj6N7l9kZtP3Ciuj7Y8rqIhVpb
-         46QXWzF1xd81z3su5bOJC/CfuooX075wfdrMBVtM+l2dTURpRlyRhxhy1uLWCPYa8NUS
-         nnWw==
-X-Gm-Message-State: AOJu0YzPbv2Ji2Qdedc1Y8PUtxF1bUASv85xeOvfEBfJ9Nr+HbnbSxKa
-        Lbi0DgoroL7v35mSQ6TzeL4BhUgXLBPdYufLro3kTA==
-X-Google-Smtp-Source: AGHT+IH+CwVwCl1iJM6DtJhr1qBDbMzFIn3otLkKPSG2M+l5DaLO/pmOhn61jKGup+8AtmrqTLUZag==
-X-Received: by 2002:a19:7710:0:b0:500:bd75:77d1 with SMTP id s16-20020a197710000000b00500bd7577d1mr3079574lfc.63.1694075519864;
-        Thu, 07 Sep 2023 01:31:59 -0700 (PDT)
-Received: from [192.168.37.232] (178235177204.dynamic-4-waw-k-1-1-0.vectranet.pl. [178.235.177.204])
-        by smtp.gmail.com with ESMTPSA id a9-20020aa7d749000000b005257da6be23sm9555588eds.75.2023.09.07.01.31.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 07 Sep 2023 01:31:59 -0700 (PDT)
-Message-ID: <b0508a69-130d-4b05-9dfc-399e482dc2ae@linaro.org>
-Date:   Thu, 7 Sep 2023 10:31:55 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 04/10] clk: qcom: apss-ipq6018: ipq5332: add safe
- source switch for a53pll
-Content-Language: en-US
-To:     Varadarajan Narayanan <quic_varada@quicinc.com>,
-        ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
-        rafael@kernel.org, viresh.kumar@linaro.org, robh+dt@kernel.org,
+        with ESMTP id S241678AbjIGRLy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 13:11:54 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15322170F;
+        Thu,  7 Sep 2023 10:11:24 -0700 (PDT)
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3874sWkD022496;
+        Thu, 7 Sep 2023 06:01:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references; s=qcppdkim1;
+ bh=EQ967FvbvMW5P+5s9a4ppmwhjKQVwaeIdatx+3zV210=;
+ b=nYmD7sip4H7UesbQ11WaSzcyz8YRgQKm+bAuqFhVOdv5Kz20YtPkK0v8L9WunGgpDE9U
+ Hp6uam5hkfLqPEshcS7wMTZd46n25BOIb2KwjjmjiaFJgPflIu53cbqM50b8vkeo/JoM
+ Wqd63WMXd1NRS8ukN0WisnFQBVEL9jFbPqgGECSkF5aU3BoQrZaYRVBy2tVrtAUj26WI
+ pTuNfnK7UjYba9X93+PeHD2EtZ7YMiakq8g7CttNRC+0Cgimrs7pT1f631fWUmeCrEtP
+ gl/wQza8g4Y9RviGy7Zx7Cx5xBH3S1pCYqdstK289zuQJpQo72MpYRLUG5iGIXKwj6j1 7g== 
+Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sxwes18gt-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 07 Sep 2023 06:01:04 +0000
+Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+        by APBLRPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 38760tdo011300;
+        Thu, 7 Sep 2023 06:00:59 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 3sux4kjqv2-1;
+        Thu, 07 Sep 2023 06:00:59 +0000
+Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38760xFA011336;
+        Thu, 7 Sep 2023 06:00:59 GMT
+Received: from hu-sgudaval-hyd.qualcomm.com (hu-krichai-hyd.qualcomm.com [10.213.110.112])
+        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 38760xDN011335;
+        Thu, 07 Sep 2023 06:00:59 +0000
+Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 4058933)
+        id 8E80113A9; Thu,  7 Sep 2023 11:30:58 +0530 (+0530)
+From:   Krishna chaitanya chundru <quic_krichai@quicinc.com>
+To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
         krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        mturquette@baylibre.com, sboyd@kernel.org,
-        quic_kathirav@quicinc.com, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
-References: <cover.1693996662.git.quic_varada@quicinc.com>
- <5e3c29df2b42cceb8072b00546a78e1b99b2d374.1693996662.git.quic_varada@quicinc.com>
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
- 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
- izWDgYvmBE8=
-In-Reply-To: <5e3c29df2b42cceb8072b00546a78e1b99b2d374.1693996662.git.quic_varada@quicinc.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, mani@kernel.org
+Cc:     lpieralisi@kernel.org, kw@linux.com, robh@kernel.org,
+        bhelgaas@google.com, rafael@kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, quic_vbadigan@quicinc.com,
+        quic_nitegupt@quicinc.com, quic_skananth@quicinc.com,
+        quic_ramkri@quicinc.com, quic_parass@quicinc.com,
+        Krishna chaitanya chundru <quic_krichai@quicinc.com>
+Subject: [PATCH v5 3/5] opp: Add dev_pm_opp_find_level_floor()
+Date:   Thu,  7 Sep 2023 11:30:31 +0530
+Message-Id: <1694066433-8677-4-git-send-email-quic_krichai@quicinc.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1694066433-8677-1-git-send-email-quic_krichai@quicinc.com>
+References: <1694066433-8677-1-git-send-email-quic_krichai@quicinc.com>
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: IqBMGPf0peDjwyzxwt33ZtzNL5Q4Gazq
+X-Proofpoint-GUID: IqBMGPf0peDjwyzxwt33ZtzNL5Q4Gazq
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-06_12,2023-09-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ priorityscore=1501 bulkscore=0 clxscore=1015 phishscore=0 adultscore=0
+ spamscore=0 impostorscore=0 suspectscore=0 mlxscore=0 mlxlogscore=999
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2309070052
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 7.09.2023 07:21, Varadarajan Narayanan wrote:
-> Stromer Plus PLL found on IPQ53xx doesn't support dynamic
-> frequency scaling. To achieve the same, we need to park the APPS
-> PLL source to GPLL0, re configure the PLL and then switch the
-> source to APSS_PLL_EARLY.
-> 
-> To support this, register a clock notifier to get the PRE_RATE
-> and POST_RATE notification. Change the APSS PLL source to GPLL0
-> when PRE_RATE notification is received, then configure the PLL
-> and then change back the source to APSS_PLL_EARLY.
-> 
-> Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
-> Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
-> ---
->  drivers/clk/qcom/apss-ipq6018.c | 54 ++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 53 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/clk/qcom/apss-ipq6018.c b/drivers/clk/qcom/apss-ipq6018.c
-> index 4e13a08..ffb6ab5 100644
-> --- a/drivers/clk/qcom/apss-ipq6018.c
-> +++ b/drivers/clk/qcom/apss-ipq6018.c
-> @@ -9,8 +9,11 @@
->  #include <linux/clk-provider.h>
->  #include <linux/regmap.h>
->  #include <linux/module.h>
-> +#include <linux/clk.h>
-> +#include <linux/soc/qcom/smem.h>
->  
->  #include <dt-bindings/clock/qcom,apss-ipq.h>
-> +#include <dt-bindings/arm/qcom,ids.h>
->  
->  #include "common.h"
->  #include "clk-regmap.h"
-> @@ -84,15 +87,64 @@ static const struct qcom_cc_desc apss_ipq6018_desc = {
->  	.num_clks = ARRAY_SIZE(apss_ipq6018_clks),
->  };
->  
-> +static int cpu_clk_notifier_fn(struct notifier_block *nb, unsigned long action,
-> +				void *data)
-> +{
-> +	u8 index;
-> +	int err;
-> +
-> +	if (action == PRE_RATE_CHANGE)
-> +		index = P_GPLL0;
-> +	else if (action == POST_RATE_CHANGE)
-> +		index = P_APSS_PLL_EARLY;
-> +	else
-> +		return 0;
-> +
-> +	err = clk_rcg2_mux_closest_ops.set_parent(&apcs_alias0_clk_src.clkr.hw,
-> +						  index);
-Adding a variable for clk_hw within the apcs_alias0 clock would
-make this easier to digest, I think.
+During initialization of some drivers, need to vote for max level.
 
-And if we wanna be even less error-prone, you can reference the
-ops of this clock in an indirect way.
+Adding dev_pm_opp_find_level_floor() for searching a lesser match or
+operating on OPP in the order of decreasing level.
 
-> +
-> +	return notifier_from_errno(err);
-> +}
-> +
-> +static struct notifier_block cpu_clk_notifier = {
-> +	.notifier_call = cpu_clk_notifier_fn,
-> +};
-> +
->  static int apss_ipq6018_probe(struct platform_device *pdev)
->  {
->  	struct regmap *regmap;
-> +	u32 soc_id;
-> +	int ret;
-> +
-> +	ret = qcom_smem_get_soc_id(&soc_id);
-> +	if (ret)
-> +		return ret;
->  
->  	regmap = dev_get_regmap(pdev->dev.parent, NULL);
->  	if (!regmap)
->  		return -ENODEV;
->  
-> -	return qcom_cc_really_probe(pdev, &apss_ipq6018_desc, regmap);
-> +	ret = qcom_cc_really_probe(pdev, &apss_ipq6018_desc, regmap);
-> +	if (ret)
-> +		return ret;
-> +
-> +	switch (soc_id) {
-> +	/*
-> +	 * Only below variants of IPQ53xx support scaling
-> +	 */
-1. /* Keep this in a 1-line comment */
+Signed-off-by: Krishna chaitanya chundru <quic_krichai@quicinc.com>
+---
+ drivers/opp/core.c     | 25 +++++++++++++++++++++++++
+ include/linux/pm_opp.h |  9 +++++++++
+ 2 files changed, 34 insertions(+)
 
-2. why? explain the reasoning in the commit message
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 919cc53..6d4d226 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -814,6 +814,31 @@ struct dev_pm_opp *dev_pm_opp_find_level_ceil(struct device *dev,
+ EXPORT_SYMBOL_GPL(dev_pm_opp_find_level_ceil);
+ 
+ /**
++ * dev_pm_opp_find_level_floor() - Search for a rounded floor freq
++ * @dev:	device for which we do this operation
++ * @level:	Start level
++ *
++ * Search for the matching floor *available* OPP from a starting level
++ * for a device.
++ *
++ * Return: matching *opp and refreshes *level accordingly, else returns
++ * ERR_PTR in case of error and should be handled using IS_ERR. Error return
++ * values can be:
++ * EINVAL:	for bad pointer
++ * ERANGE:	no match found for search
++ * ENODEV:	if device not found in list of registered devices
++ *
++ * The callers are required to call dev_pm_opp_put() for the returned OPP after
++ * use.
++ */
++struct dev_pm_opp *dev_pm_opp_find_level_floor(struct device *dev,
++					       unsigned long *level)
++{
++	return _find_key_floor(dev, level, 0, true, _read_level, NULL);
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_find_level_floor);
++
++/**
+  * dev_pm_opp_find_bw_ceil() - Search for a rounded ceil bandwidth
+  * @dev:	device for which we do this operation
+  * @bw:	start bandwidth
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 91f87d7..baea92f 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -144,6 +144,9 @@ struct dev_pm_opp *dev_pm_opp_find_level_exact(struct device *dev,
+ struct dev_pm_opp *dev_pm_opp_find_level_ceil(struct device *dev,
+ 					      unsigned int *level);
+ 
++struct dev_pm_opp *dev_pm_opp_find_level_floor(struct device *dev,
++					       unsigned long *level);
++
+ struct dev_pm_opp *dev_pm_opp_find_bw_ceil(struct device *dev,
+ 					   unsigned int *bw, int index);
+ 
+@@ -314,6 +317,12 @@ static inline struct dev_pm_opp *dev_pm_opp_find_bw_ceil(struct device *dev,
+ 	return ERR_PTR(-EOPNOTSUPP);
+ }
+ 
++static inline struct dev_pm_opp *dev_pm_opp_find_level_floor(struct device *dev,
++							     unsigned long *level)
++{
++	return ERR_PTR(-EOPNOTSUPP);
++}
++
+ static inline struct dev_pm_opp *dev_pm_opp_find_bw_floor(struct device *dev,
+ 					unsigned int *bw, int index)
+ {
+-- 
+2.7.4
 
-Konrad
-> +	case QCOM_ID_IPQ5332:
-> +	case QCOM_ID_IPQ5322:
-> +	case QCOM_ID_IPQ5300:
-> +		ret = clk_notifier_register(apcs_alias0_clk_src.clkr.hw.clk,
-> +						&cpu_clk_notifier);
-> +		if (ret)
-> +			return ret;
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +
-> +	return 0;
->  }
->  
->  static struct platform_driver apss_ipq6018_driver = {
