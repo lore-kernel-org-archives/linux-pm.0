@@ -2,79 +2,188 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1D58EC8746
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D31BEC873C
 	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231713AbjIGPl3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 11:41:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57664 "EHLO
+        id S234506AbjIGPlQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:41:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39384 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236114AbjIGPXT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:23:19 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FC19135;
-        Thu,  7 Sep 2023 08:23:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=OI476zBUwqc76nvniBbxYuu0lwS1B+BEzNEeiMb9prM=; b=YWBUFZDlCLXGhIHhep3kUss7WX
-        58SpxA+obyk9Yr50WkV8w6pYdrJcBO9nIVzcW1H9sUd8rqojPW6cAD75eRMtNw+zYwv3NGqsm0/7C
-        mQES2ZWgNpF+Vos54yYoMjqM2ZiJZQ2MNYxtd060vYxy9eTL5vgc2AxiXoIiwLXdk3o3TXZTUk+lz
-        3mdDX2kYgSAW/9gYFpgDgPF6B0I6VJYfuCWAmyg7Vb+t5jXk5FZiwSX0BdDtwAy9l3HiAt1FHTHla
-        Px+XUieyhSyG0q0UNnOWUrhkKMBRfAmGuYuCJoSv3et79OAFOpm8oMG2I5vMz0MB6noWPDi8Yo9mA
-        5nmk/Djg==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1qeDZL-00Aen9-SW; Thu, 07 Sep 2023 11:53:08 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 830C7300687; Thu,  7 Sep 2023 13:53:07 +0200 (CEST)
-Date:   Thu, 7 Sep 2023 13:53:07 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     Qais Yousef <qyousef@layalina.io>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ingo Molnar <mingo@kernel.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
-Message-ID: <20230907115307.GD10955@noisy.programming.kicks-ass.net>
-References: <20230827233203.1315953-1-qyousef@layalina.io>
- <a6365f63-4669-15e5-b843-f4bfb1bd5e68@arm.com>
- <20230906211850.zyvk6qtt6fvpxaf3@airbuntu>
- <6011d8bb-9a3b-1435-30b0-d75b39bf5efa@arm.com>
+        with ESMTP id S245334AbjIGP2i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:28:38 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1B381BF0;
+        Thu,  7 Sep 2023 08:28:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1694100491; x=1725636491;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=9RBRiFY3vB7fzj4b5KuQkX2LlrLmbM4nRtsKuZEBuqA=;
+  b=Pbp6pS9KiO5G187GzHhSRR93LfGSTGeKRIMqVZmOAXhaEKXg3qKCrvfV
+   TWQ4JEcEQuy+Zmamcpu0dP7j5/7HnCYaj+TvtFacnqhjNvqmLdz3A4yXr
+   xPhCyUzGGllpjzTI0cn+w9XTFEmaRP9v1QxierxYANojVpXF2lWUCKMRs
+   sbevC8o8RbRfPmK3YUJdhaHhlbgfFjSfRSq7JVRHcAUmKJo+zHtkwLxv7
+   BXwJ50SS2NsLY0lLB/4KjKQFpTma8A4xBWCvMrwqmpY/aLuW8WPPHitBr
+   jhDTlYNdNv3vGz3UAbjFuVotzTAG4TkeE74EbQNe17mp1O1EQjAOOfk/q
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10825"; a="381084933"
+X-IronPort-AV: E=Sophos;i="6.02,234,1688454000"; 
+   d="scan'208";a="381084933"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Sep 2023 01:52:01 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10825"; a="807440610"
+X-IronPort-AV: E=Sophos;i="6.02,234,1688454000"; 
+   d="scan'208";a="807440610"
+Received: from lkp-server01.sh.intel.com (HELO 59b3c6e06877) ([10.239.97.150])
+  by fmsmga008.fm.intel.com with ESMTP; 07 Sep 2023 01:51:56 -0700
+Received: from kbuild by 59b3c6e06877 with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1qeAjy-00013h-2e;
+        Thu, 07 Sep 2023 08:51:54 +0000
+Date:   Thu, 7 Sep 2023 16:51:39 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Varadarajan Narayanan <quic_varada@quicinc.com>,
+        ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
+        konrad.dybcio@linaro.org, rafael@kernel.org,
+        viresh.kumar@linaro.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        mturquette@baylibre.com, sboyd@kernel.org,
+        quic_kathirav@quicinc.com, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
+Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+        Varadarajan Narayanan <quic_varada@quicinc.com>
+Subject: Re: [PATCH v1 04/10] clk: qcom: apss-ipq6018: ipq5332: add safe
+ source switch for a53pll
+Message-ID: <202309071656.f4IVOEO6-lkp@intel.com>
+References: <5e3c29df2b42cceb8072b00546a78e1b99b2d374.1693996662.git.quic_varada@quicinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6011d8bb-9a3b-1435-30b0-d75b39bf5efa@arm.com>
+In-Reply-To: <5e3c29df2b42cceb8072b00546a78e1b99b2d374.1693996662.git.quic_varada@quicinc.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 07, 2023 at 08:48:08AM +0100, Lukasz Luba wrote:
+Hi Varadarajan,
 
-> > Hehe. That's because they're not really periodic ;-)
-> 
-> They are periodic in a sense, they wake up every 16ms, but sometimes
-> they have more work. It depends what is currently going in the game
-> and/or sometimes the data locality (might not be in cache).
-> 
-> Although, that's for games, other workloads like youtube play or this
-> one 'Yahoo browser' (from your example) are more 'predictable' (after
-> the start up period). And I really like the potential energy saving
-> there :)
+kernel test robot noticed the following build errors:
 
-So everything media is fundamentally periodic, you're hard tied to the
-framerate / audio-buffer size etc..
+[auto build test ERROR on linus/master]
+[also build test ERROR on v6.5 next-20230907]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Also note that the traditional periodic task model from the real-time
-community has the notion of WCET, which completely covers this
-fluctuation in frame-to-frame work, it only considers the absolute worst
-case.
+url:    https://github.com/intel-lab-lkp/linux/commits/Varadarajan-Narayanan/clk-qcom-clk-alpha-pll-introduce-stromer-plus-ops/20230907-132537
+base:   linus/master
+patch link:    https://lore.kernel.org/r/5e3c29df2b42cceb8072b00546a78e1b99b2d374.1693996662.git.quic_varada%40quicinc.com
+patch subject: [PATCH v1 04/10] clk: qcom: apss-ipq6018: ipq5332: add safe source switch for a53pll
+config: s390-randconfig-r031-20230907 (https://download.01.org/0day-ci/archive/20230907/202309071656.f4IVOEO6-lkp@intel.com/config)
+compiler: clang version 16.0.4 (https://github.com/llvm/llvm-project.git ae42196bc493ffe877a7e3dff8be32035dea4d07)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230907/202309071656.f4IVOEO6-lkp@intel.com/reproduce)
 
-Now, practically, that stinks, esp. when you care about batteries, but
-it does not mean these tasks are not periodic.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202309071656.f4IVOEO6-lkp@intel.com/
 
-Many extentions to the periodic task model are possible, including
-things like average runtime with bursts etc.. all have their trade-offs.
+All errors (new ones prefixed by >>):
+
+   In file included from drivers/clk/qcom/apss-ipq6018.c:10:
+   In file included from include/linux/regmap.h:20:
+   In file included from include/linux/iopoll.h:14:
+   In file included from include/linux/io.h:13:
+   In file included from arch/s390/include/asm/io.h:78:
+   include/asm-generic/io.h:547:31: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           val = __raw_readb(PCI_IOBASE + addr);
+                             ~~~~~~~~~~ ^
+   include/asm-generic/io.h:560:61: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           val = __le16_to_cpu((__le16 __force)__raw_readw(PCI_IOBASE + addr));
+                                                           ~~~~~~~~~~ ^
+   include/uapi/linux/byteorder/big_endian.h:37:59: note: expanded from macro '__le16_to_cpu'
+   #define __le16_to_cpu(x) __swab16((__force __u16)(__le16)(x))
+                                                             ^
+   include/uapi/linux/swab.h:102:54: note: expanded from macro '__swab16'
+   #define __swab16(x) (__u16)__builtin_bswap16((__u16)(x))
+                                                        ^
+   In file included from drivers/clk/qcom/apss-ipq6018.c:10:
+   In file included from include/linux/regmap.h:20:
+   In file included from include/linux/iopoll.h:14:
+   In file included from include/linux/io.h:13:
+   In file included from arch/s390/include/asm/io.h:78:
+   include/asm-generic/io.h:573:61: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           val = __le32_to_cpu((__le32 __force)__raw_readl(PCI_IOBASE + addr));
+                                                           ~~~~~~~~~~ ^
+   include/uapi/linux/byteorder/big_endian.h:35:59: note: expanded from macro '__le32_to_cpu'
+   #define __le32_to_cpu(x) __swab32((__force __u32)(__le32)(x))
+                                                             ^
+   include/uapi/linux/swab.h:115:54: note: expanded from macro '__swab32'
+   #define __swab32(x) (__u32)__builtin_bswap32((__u32)(x))
+                                                        ^
+   In file included from drivers/clk/qcom/apss-ipq6018.c:10:
+   In file included from include/linux/regmap.h:20:
+   In file included from include/linux/iopoll.h:14:
+   In file included from include/linux/io.h:13:
+   In file included from arch/s390/include/asm/io.h:78:
+   include/asm-generic/io.h:584:33: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           __raw_writeb(value, PCI_IOBASE + addr);
+                               ~~~~~~~~~~ ^
+   include/asm-generic/io.h:594:59: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           __raw_writew((u16 __force)cpu_to_le16(value), PCI_IOBASE + addr);
+                                                         ~~~~~~~~~~ ^
+   include/asm-generic/io.h:604:59: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           __raw_writel((u32 __force)cpu_to_le32(value), PCI_IOBASE + addr);
+                                                         ~~~~~~~~~~ ^
+   include/asm-generic/io.h:692:20: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           readsb(PCI_IOBASE + addr, buffer, count);
+                  ~~~~~~~~~~ ^
+   include/asm-generic/io.h:700:20: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           readsw(PCI_IOBASE + addr, buffer, count);
+                  ~~~~~~~~~~ ^
+   include/asm-generic/io.h:708:20: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           readsl(PCI_IOBASE + addr, buffer, count);
+                  ~~~~~~~~~~ ^
+   include/asm-generic/io.h:717:21: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           writesb(PCI_IOBASE + addr, buffer, count);
+                   ~~~~~~~~~~ ^
+   include/asm-generic/io.h:726:21: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           writesw(PCI_IOBASE + addr, buffer, count);
+                   ~~~~~~~~~~ ^
+   include/asm-generic/io.h:735:21: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           writesl(PCI_IOBASE + addr, buffer, count);
+                   ~~~~~~~~~~ ^
+>> drivers/clk/qcom/apss-ipq6018.c:94:11: error: use of undeclared identifier 'P_GPLL0'
+                   index = P_GPLL0;
+                           ^
+   12 warnings and 1 error generated.
+
+
+vim +/P_GPLL0 +94 drivers/clk/qcom/apss-ipq6018.c
+
+    86	
+    87	static int cpu_clk_notifier_fn(struct notifier_block *nb, unsigned long action,
+    88					void *data)
+    89	{
+    90		u8 index;
+    91		int err;
+    92	
+    93		if (action == PRE_RATE_CHANGE)
+  > 94			index = P_GPLL0;
+    95		else if (action == POST_RATE_CHANGE)
+    96			index = P_APSS_PLL_EARLY;
+    97		else
+    98			return 0;
+    99	
+   100		err = clk_rcg2_mux_closest_ops.set_parent(&apcs_alias0_clk_src.clkr.hw,
+   101							  index);
+   102	
+   103		return notifier_from_errno(err);
+   104	}
+   105	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
