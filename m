@@ -2,92 +2,69 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D1ACEC873C
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 747B8EC873D
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230298AbjIGPk6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 11:40:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37826 "EHLO
+        id S233189AbjIGPlF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:41:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40258 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345359AbjIGPfb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:35:31 -0400
+        with ESMTP id S241882AbjIGPaz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:30:55 -0400
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EFC32198E;
-        Thu,  7 Sep 2023 08:35:09 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A4D51FC6;
+        Thu,  7 Sep 2023 08:30:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
         References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
         Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=QUUh+RqON6fS6Crk84Dx/3Y/w64C4ZDBuS3vTrptbI8=; b=Z9228xSGlZxiFF7csV7I/eWRaJ
-        uFD4iyFnifMsxh/2+tqDJtloNh7/ZRAGxDeqLYOfl9hXHXV9//sQjwXo1zt7F6OVZEBa6wg+WatEm
-        5WWA5cDb/zTRTqfyA11ngZdy3JIPDqlOh8RH4NYlbo0qpj9CmN49bKBXd0oofklrQ4vi/Mze7aYgp
-        QUYt2TI1E0dq2S4Z1/QS1ul5TtbRWMDsQgSD9CPE8qOD7UKlfDReowzB/PYubPhUFPcGqjL+KqLse
-        V8vyUn6l1bsP6glS4gfziOl8A63JcPOEkZUMQAPkrmDR2ewGhnCr3zm9CLRGyL8JVtlzSdu0u3Rd2
-        i/IbDb4w==;
+        bh=CmfnIP/qJkmApsvJ1mr5W1MC2O3k/lCNMHjccWhVsKw=; b=fRdYGkGqNR4pUJvPkojbJwWsMz
+        sZdrBUP2CCBXfu6cwHGF0sztUW3cyBK333/tARup1Ebp0/U8GpoIuMyekEWomOMjekm1eRODZ0PsN
+        27E4y1oQO+S+Y7TwUxHXpQdUCj2yT7rXLjg8ingocYVlPxnBk5BijEgzdNZnCDc7ybMs0HyCH59Bk
+        jOuhAOSPbsVVW2Wa7NFNeCsH5ysmaDxtqjhR6peKzFKCAMID/kRLCU0T6BCHxy+0ti4G4xgW4BkKj
+        I/m6geBKSAhNYIRMaaMoVtth8g9hhhugQ1e8Fz5ns4mzRMX275EpSrbniexf+SJEJgrN01WjtIYor
+        k42vqmdQ==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
         by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qeDQp-001mRG-2K;
-        Thu, 07 Sep 2023 11:44:21 +0000
+        id 1qeF4D-001opO-18;
+        Thu, 07 Sep 2023 13:29:07 +0000
 Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-        id CF91A300687; Thu,  7 Sep 2023 13:44:20 +0200 (CEST)
-Date:   Thu, 7 Sep 2023 13:44:20 +0200
+        id 730C8300687; Thu,  7 Sep 2023 15:29:06 +0200 (CEST)
+Date:   Thu, 7 Sep 2023 15:29:06 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
-To:     Qais Yousef <qyousef@layalina.io>
-Cc:     Ingo Molnar <mingo@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     Qais Yousef <qyousef@layalina.io>, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+        Ingo Molnar <mingo@kernel.org>,
         Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Lukasz Luba <lukasz.luba@arm.com>
-Subject: Re: [RFC PATCH 5/7] sched/schedutil: Add a new tunable to dictate
- response time
-Message-ID: <20230907114420.GC10955@noisy.programming.kicks-ass.net>
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
+Message-ID: <20230907132906.GG10955@noisy.programming.kicks-ass.net>
 References: <20230827233203.1315953-1-qyousef@layalina.io>
- <20230827233203.1315953-6-qyousef@layalina.io>
+ <a6365f63-4669-15e5-b843-f4bfb1bd5e68@arm.com>
+ <20230906211850.zyvk6qtt6fvpxaf3@airbuntu>
+ <6011d8bb-9a3b-1435-30b0-d75b39bf5efa@arm.com>
+ <20230907115307.GD10955@noisy.programming.kicks-ass.net>
+ <89067f71-9b83-e647-053e-07f7d55b6529@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230827233203.1315953-6-qyousef@layalina.io>
+In-Reply-To: <89067f71-9b83-e647-053e-07f7d55b6529@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Aug 28, 2023 at 12:32:01AM +0100, Qais Yousef wrote:
-> +static inline unsigned long
-> +sugov_apply_response_time(struct sugov_policy *sg_policy, unsigned long util)
-> +{
-> +	unsigned long mult;
-> +
-> +	if (sg_policy->freq_response_time_ms == sg_policy->tunables->response_time_ms)
-> +		return util;
-> +
-> +	mult = sg_policy->freq_response_time_ms * SCHED_CAPACITY_SCALE;
-> +	mult /=	sg_policy->tunables->response_time_ms;
-> +	mult *= util;
-> +
-> +	return mult >> SCHED_CAPACITY_SHIFT;
-> +}
-> +
->  static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->  {
->  	s64 delta_ns;
-> @@ -143,6 +184,7 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
->  	unsigned int freq = arch_scale_freq_invariant() ?
->  				policy->cpuinfo.max_freq : policy->cur;
->  
-> +	util = sugov_apply_response_time(sg_policy, util);
->  	freq = map_util_freq(util, freq, max);
->  
->  	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+On Thu, Sep 07, 2023 at 02:06:15PM +0100, Lukasz Luba wrote:
 
-Urgh, so instead of caching the multiplier you keep computing what is
-essentially a constant over and over and over and over again :/
+> > Many extentions to the periodic task model are possible, including
+> > things like average runtime with bursts etc.. all have their trade-offs.
+> 
+> Was that maybe proposed somewhere on LKML (the other models)?
 
-That is, compute the whole 'freq_response_time_ms * SCHED_CAPACITY_SCALE
-/ response_time_ms' thing *once*, when that file is written to, and then
-reduce the whole thing to:
+RT literatur mostly methinks. Replacing WCET with a statistical model of
+sorts is not uncommon, the argument goes that not everybody will have
+their worst case at the same time and lows and highs can commonly cancel
+out and this way we can cram a little more on the system.
 
-	return (freq_response_mult * util) >> SCHED_CAPACITY_SHIFT;
-
-No need for that special case, no need for divisions, just go.
+Typically this is proposed in the context of soft-realtime systems.
