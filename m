@@ -2,191 +2,155 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6D4FEC8742
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 16:01:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15B31EC873A
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 16:01:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234145AbjIGQBD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 12:01:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39804 "EHLO
+        id S235970AbjIGQBF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 12:01:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45798 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234595AbjIGP5V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:57:21 -0400
-Received: from mail-ua1-x929.google.com (mail-ua1-x929.google.com [IPv6:2607:f8b0:4864:20::929])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 444EF35A6
-        for <linux-pm@vger.kernel.org>; Thu,  7 Sep 2023 08:45:00 -0700 (PDT)
-Received: by mail-ua1-x929.google.com with SMTP id a1e0cc1a2514c-7870821d9a1so626810241.1
-        for <linux-pm@vger.kernel.org>; Thu, 07 Sep 2023 08:45:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694101429; x=1694706229; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=40rylBcMTDXR7i4w8TksqV00SNZY2PfZiThjPzEVKjU=;
-        b=jW97+Ec8J4a5E2qdIbYjdlPukQG6jIiLDpVgYnsyhKPY/Vu5qhuetKt+DfsTz9tuTd
-         oZyQovu8rv3GlKcE6wbCAIhGD/1bwdFWS4OuM61/iUYKokwNkEbI0ETllgblAdXpXu8r
-         ENHmAoxCyS0dS7L0rJ2KQ3AdxvIGYMISeM3r8NpWFBtVKIEpAdWOijl1kg3PJ6xlMWp8
-         mrztKbhtdqkvGj9erogbwCcJvZ5OwmCLJMtWsf+MVYM+HAhvXUvAwBKxzva6Xe0NFe4G
-         y00pgWmHCTIuLVBqx9uV2oluNjPIEOV8FDHMWwLuzGOnErTXeAMl1m5ZK6kLl2/jc4R2
-         Vcvw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1694101429; x=1694706229;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=40rylBcMTDXR7i4w8TksqV00SNZY2PfZiThjPzEVKjU=;
-        b=GRktAQXizW+0raL7pMb4U1v2U4qc/p+GSzLfZSRvmKBYUo8MUSHZxq3L1sGeWQv2St
-         i45MUe8hmrp5H+k28PhUnewK5ffLNr8qRRJS+C0sxyMjwG1Pkociq8mZIrHZpC9jtIZ4
-         RtfjTsw6RvYOW5l1/Nx0x+mwas/+O2kLqKRT4oFDi6nh8xRRcwT1GZDF6ZgP4szoLCs6
-         jxKrXrCnthGo0ed2Dn3LHV6gOwdLq8904dVxBsZiw7HHCYXwy0NtCAaI/ggzcDvT1Psk
-         E7MH+peAYTSL8ditA2ePP+OQXETL3bVYCPyZoDxYIelNk1Bq68zR4KUcFgFhbXbcHOGH
-         aISw==
-X-Gm-Message-State: AOJu0Yw4prlT+cxex56S8LtoX6zKtEUXULZ6iopguwldkUKOQxFJKNXI
-        aWSjfhSEhVIBcmK2cf5rVa+de84HNOWfRDu54Xh+/xq2zIEUpLjX
-X-Google-Smtp-Source: AGHT+IETdhddPzANTZg932/q6SiIInI1A+ozTRz+mJHbAWbdsy/mtMdePXNFfT+4SqFLkAAkJW11kVd7upfsHv7Zxng=
-X-Received: by 2002:a25:1e0a:0:b0:d1c:876d:2c7d with SMTP id
- e10-20020a251e0a000000b00d1c876d2c7dmr3250628ybe.13.1694094907900; Thu, 07
- Sep 2023 06:55:07 -0700 (PDT)
+        with ESMTP id S240197AbjIGP7B (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:59:01 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83895B32D;
+        Thu,  7 Sep 2023 08:47:18 -0700 (PDT)
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3875tJI7005175;
+        Thu, 7 Sep 2023 05:55:48 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=qcppdkim1;
+ bh=+OsCqcxK+Ajp96TjtyRPeQ23lzojPNZiFv6EoyeS/+E=;
+ b=WKZudlHx42LFG5lbLqVdFEQgkw05Rvk+rUODlSgMRs4I2fiwGdH7ZaOtceQ3cUUIJEAN
+ qyU+OvnQL6QH53Sm/eBjR3AJAMeEb+TR0RsgWUqLK87RQV1F987ptUU35FtAFHQ2AnHV
+ gCB1U0HsLOuVcBXc0R7WPb9lLEdxYMwKjMR40Nj98l5HsC1A0Dz6i8ePIAxBstwdiRZa
+ LflYCoxtQ2HJZDbG//auz9uSKDxI86Rgu/+MpH0+Axhc5S2uBXgCmKUbIFzqkttk3xfV
+ fdvD0vpgY3Tw60NnWw4tmIvE/p6911GrQD02SnVRwU4pt1FVbJrdkFmT2FjOh3Rpr5Cw IQ== 
+Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sxq23ajd2-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 07 Sep 2023 05:55:48 +0000
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+        by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3875tls9006484
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 7 Sep 2023 05:55:47 GMT
+Received: from [10.218.5.19] (10.80.80.8) by nalasex01a.na.qualcomm.com
+ (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.36; Wed, 6 Sep
+ 2023 22:55:41 -0700
+Message-ID: <8c88bca4-b562-0122-1451-ef9de7fd8737@quicinc.com>
+Date:   Thu, 7 Sep 2023 11:25:38 +0530
 MIME-Version: 1.0
-References: <cover.1693996662.git.quic_varada@quicinc.com> <5e3c29df2b42cceb8072b00546a78e1b99b2d374.1693996662.git.quic_varada@quicinc.com>
-In-Reply-To: <5e3c29df2b42cceb8072b00546a78e1b99b2d374.1693996662.git.quic_varada@quicinc.com>
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date:   Thu, 7 Sep 2023 16:54:56 +0300
-Message-ID: <CAA8EJppXxiX7+6nhfKyJYDU0i2pkBzXL5J3EQUapLJXxx3b=HA@mail.gmail.com>
-Subject: Re: [PATCH v1 04/10] clk: qcom: apss-ipq6018: ipq5332: add safe
- source switch for a53pll
-To:     Varadarajan Narayanan <quic_varada@quicinc.com>
-Cc:     ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
-        konrad.dybcio@linaro.org, rafael@kernel.org,
-        viresh.kumar@linaro.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        mturquette@baylibre.com, sboyd@kernel.org,
-        quic_kathirav@quicinc.com, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH v2 4/6] clk: qcom: Use HW_CTRL_TRIGGER flag to switch
+ video GDSC to HW mode
+Content-Language: en-US
+To:     Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Abel Vesa <abel.vesa@linaro.org>
+CC:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        "Andy Gross" <agross@kernel.org>,
+        Mike Turquette <mturquette@baylibre.com>,
+        "Stephen Boyd" <sboyd@kernel.org>,
+        Taniya Das <tdas@qti.qualcomm.com>, <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        <linux-arm-msm@vger.kernel.org>,
+        Ajit Pandey <quic_ajipan@quicinc.com>,
+        Imran Shaik <quic_imrashai@quicinc.com>
+References: <20230816145741.1472721-1-abel.vesa@linaro.org>
+ <20230816145741.1472721-5-abel.vesa@linaro.org>
+ <2fc0d771-cee2-4826-a62a-56ed4bfad3a2@linaro.org>
+ <ZOXiUzxfs1cj3SWT@linaro.org>
+ <07e93a9d-69ac-41b7-aa21-b855b97bf801@linaro.org>
+ <ef1439f8-4a9b-53b4-34be-1229b39d2310@quicinc.com>
+ <8257f7b3-dfb8-4683-85de-600f3b1ed54b@linaro.org>
+ <f37d2dd8-d625-048e-9c21-bba710b40086@quicinc.com>
+ <b5ae2ad9-f6c7-47d6-bab8-3f3fdb6b43e2@linaro.org>
+From:   Jagadeesh Kona <quic_jkona@quicinc.com>
+In-Reply-To: <b5ae2ad9-f6c7-47d6-bab8-3f3fdb6b43e2@linaro.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: 4wwObqlmAzf_QKAjFfYTpvLPkkfFY7SW
+X-Proofpoint-GUID: 4wwObqlmAzf_QKAjFfYTpvLPkkfFY7SW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-06_12,2023-09-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ bulkscore=0 phishscore=0 adultscore=0 priorityscore=1501 clxscore=1015
+ suspectscore=0 spamscore=0 impostorscore=0 malwarescore=0 mlxscore=0
+ mlxlogscore=830 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2309070051
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 7 Sept 2023 at 08:22, Varadarajan Narayanan
-<quic_varada@quicinc.com> wrote:
->
-> Stromer Plus PLL found on IPQ53xx doesn't support dynamic
-> frequency scaling. To achieve the same, we need to park the APPS
-> PLL source to GPLL0, re configure the PLL and then switch the
-> source to APSS_PLL_EARLY.
->
-> To support this, register a clock notifier to get the PRE_RATE
-> and POST_RATE notification. Change the APSS PLL source to GPLL0
-> when PRE_RATE notification is received, then configure the PLL
-> and then change back the source to APSS_PLL_EARLY.
-
-This means that we are changing the parents behind the back of CCF,
-which is not great.
-
->
-> Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
-> Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
-> ---
->  drivers/clk/qcom/apss-ipq6018.c | 54 ++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 53 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/clk/qcom/apss-ipq6018.c b/drivers/clk/qcom/apss-ipq6018.c
-> index 4e13a08..ffb6ab5 100644
-> --- a/drivers/clk/qcom/apss-ipq6018.c
-> +++ b/drivers/clk/qcom/apss-ipq6018.c
-> @@ -9,8 +9,11 @@
->  #include <linux/clk-provider.h>
->  #include <linux/regmap.h>
->  #include <linux/module.h>
-> +#include <linux/clk.h>
-> +#include <linux/soc/qcom/smem.h>
->
->  #include <dt-bindings/clock/qcom,apss-ipq.h>
-> +#include <dt-bindings/arm/qcom,ids.h>
->
->  #include "common.h"
->  #include "clk-regmap.h"
-> @@ -84,15 +87,64 @@ static const struct qcom_cc_desc apss_ipq6018_desc = {
->         .num_clks = ARRAY_SIZE(apss_ipq6018_clks),
->  };
->
-> +static int cpu_clk_notifier_fn(struct notifier_block *nb, unsigned long action,
-> +                               void *data)
-> +{
-> +       u8 index;
-> +       int err;
-> +
-> +       if (action == PRE_RATE_CHANGE)
-> +               index = P_GPLL0;
-
-I don't see P_GPLL0 being supported in the ipq6018 driver.
-
-> +       else if (action == POST_RATE_CHANGE)
-> +               index = P_APSS_PLL_EARLY;
-
-You also have to handle ABORT_RATE_CHANGE here.
-
-> +       else
-> +               return 0;
-> +
-> +       err = clk_rcg2_mux_closest_ops.set_parent(&apcs_alias0_clk_src.clkr.hw,
-> +                                                 index);
-> +
-> +       return notifier_from_errno(err);
-> +}
-> +
-> +static struct notifier_block cpu_clk_notifier = {
-> +       .notifier_call = cpu_clk_notifier_fn,
-> +};
-> +
->  static int apss_ipq6018_probe(struct platform_device *pdev)
->  {
->         struct regmap *regmap;
-> +       u32 soc_id;
-> +       int ret;
-> +
-> +       ret = qcom_smem_get_soc_id(&soc_id);
-> +       if (ret)
-> +               return ret;
->
->         regmap = dev_get_regmap(pdev->dev.parent, NULL);
->         if (!regmap)
->                 return -ENODEV;
->
-> -       return qcom_cc_really_probe(pdev, &apss_ipq6018_desc, regmap);
-> +       ret = qcom_cc_really_probe(pdev, &apss_ipq6018_desc, regmap);
-> +       if (ret)
-> +               return ret;
-> +
-> +       switch (soc_id) {
-> +       /*
-> +        * Only below variants of IPQ53xx support scaling
-> +        */
-> +       case QCOM_ID_IPQ5332:
-> +       case QCOM_ID_IPQ5322:
-> +       case QCOM_ID_IPQ5300:
-
-Please use compat strings instead of using the soc-id.
-
-> +               ret = clk_notifier_register(apcs_alias0_clk_src.clkr.hw.clk,
-> +                                               &cpu_clk_notifier);
-> +               if (ret)
-> +                       return ret;
-> +               break;
-> +       default:
-> +               break;
-> +       }
-> +
-> +       return 0;
->  }
->
->  static struct platform_driver apss_ipq6018_driver = {
-> --
-> 2.7.4
->
 
 
---
-With best wishes
+On 9/4/2023 9:32 PM, Konrad Dybcio wrote:
+> On 4.09.2023 11:27, Jagadeesh Kona wrote:
+>>
+>>
+>> On 9/2/2023 5:33 PM, Konrad Dybcio wrote:
+>>> On 28.08.2023 08:48, Jagadeesh Kona wrote:
+>>>>
+>>>>
+>>>> On 8/26/2023 4:17 PM, Konrad Dybcio wrote:
+>>>>> On 23.08.2023 12:41, Abel Vesa wrote:
+>>>>>> On 23-08-16 19:56:46, Konrad Dybcio wrote:
+>>>>>>> On 16.08.2023 16:57, Abel Vesa wrote:
+>>>>>>>> From: Jagadeesh Kona <quic_jkona@quicinc.com>
+>>>>>>>>
+>>>>>>>> The current HW_CTRL flag switches the video GDSC to HW control mode as
+>>>>>>>> part of GDSC enable itself, instead of that use HW_CTRL_TRIGGER flag to
+>>>>>>>> give consumer drivers more control and switch the GDSC mode as and when
+>>>>>>>> required.
+>>>>>>>>
+>>>>>>>> HW_CTRL_TRIGGER flag allows consumer drivers to switch the video GDSC to
+>>>>>>>> HW/SW control modes at runtime using dev_pm_genpd_set_hwmode API.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
+>>>>>>>> Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+>>>>>>>> ---
+>>>>>>> Do we have any use for the HW_CTRL flag?
+>>>>>>>
+>>>>>>> Perhaps it should be renamed to HW_CTRL_ALWAYS?
+>>>>>>>
+>>>>>>> Or even better, *if and only if* that is necessary, add a common
+>>>>>>> property like "always_hw_managed" to the genpd code?
+>>>>>>
+>>>>>> The HW_CTRL flag is still needed for the consumers that expect the GDSC
+>>>>>> to be have the HW control bit set right after it gets enabled.
+>>>>> Guess the correct question here would be.. Are there any?
+>>>>>
+>>>>
+>>>> Yes, Display GDSC(mdss_gdsc) is required to be controlled always in HW control mode when it is enabled.
+>>> Oh really?
+>>>
+>>> Looking at msm-5.10 techpack, only the SDE RSC driver seems to
+>>> trigger regulator fast mode (so, enabling gdsc hw_ctrl on downstream).
+>>>
+>>
+>> Yes, on downstream, display GDSC has only one consumer(SDE RSC driver) and there are no other consumers. SDE RSC driver switches the GDSC to hw control mode once GDSC is enabled and leaves it in hw control mode. Thanks!
+> Sorry for pulling your tongue here a bit, but would it only concern
+> RPMh SoCs? Designs like SM6115 don't implement RSCs, should they not
+> have HW_CTRL enabled at all times?
+> 
 
-Dmitry
+Yes, for RPMh SoCs which have display RSC block, GDSC is switched to HW 
+control mode. For SoCs which doesn't have display RSC block, display 
+driver controls the GDSC in SW mode on downstream. Thanks!
+
+Regards,
+Jagadeesh
+
+> Konrad
