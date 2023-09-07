@@ -2,318 +2,243 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D341CEC8738
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 16:01:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57ACAEC873F
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 16:04:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233333AbjIGQBK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 12:01:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45788 "EHLO
+        id S233909AbjIGQEm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 12:04:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38390 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240802AbjIGP7F (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:59:05 -0400
-Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com [IPv6:2607:f8b0:4864:20::829])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B05F284EA
-        for <linux-pm@vger.kernel.org>; Thu,  7 Sep 2023 08:47:47 -0700 (PDT)
-Received: by mail-qt1-x829.google.com with SMTP id d75a77b69052e-410af8f75d9so7656651cf.0
-        for <linux-pm@vger.kernel.org>; Thu, 07 Sep 2023 08:47:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694101567; x=1694706367; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=leZnxQ3mc0Y64TrxYwQ1se3DBG/OZoqkOEKgPH9MpQQ=;
-        b=JqR3cm7zDl3c4f7S9XgB9ToAj/+BZ+QqB9CVyS7NXhXRCmYXyL7JjadVdFti1VJO8B
-         4O1u2sTzBdeo+wO2jHkMTIuxzsbcAG4auiJeR/mzB0pgc+bbth3PMw9PXi50FffsGmBt
-         WApPQ9zTSmi7XHghlevfV0Xe9GeuOKbgXIcVwR5rboxGeLKEnTI0golrcVx+riAqgCRy
-         Oh8OzpLU741BApLhBJiNYi50kkdQQiDAH8i3KtMAEYSqe+T/xNp5EsK4NyB+vphI3cXL
-         hSmGwcywyuabc+NRb50ZcwnzZnYJZk+Br0bm1s3eQs5QxcH7YDTRftB4NK/cwVTIXdNF
-         GZlw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1694101567; x=1694706367;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=leZnxQ3mc0Y64TrxYwQ1se3DBG/OZoqkOEKgPH9MpQQ=;
-        b=d/tu32cqEMp1K+5zKj5LSqVTTJ8yE/cdoSv+AvLEj35Wun6NiIQJnpyuYV6/pyTzYS
-         pRDOUL2InpkPgoNJVWOINHG9At7s+tuEMam9YH2jYv+jC55xBzsQxZFqTnW6MXdBGX9k
-         bO9w3VLU6Ohn0T5uybVwVWuRLgGJXt7XxfKljFb+31Aq8Ewbh4vjbagrpKjG/ADVJXGp
-         uczvYRF18gPY/JLMsGtW/f6yGSL5VbBeJm0+/kX+i3elUenIqYF6MFWsmsCutBL5hdu9
-         Sl8Bduu8R/eeJDzfoXUYLGt4duYdtf1M/P/Z01iB0778iZU/jdwre/DtCDT+HPc9i9I5
-         7eRw==
-X-Gm-Message-State: AOJu0YyaSZ4U7i3raun2uOgCJp14pXf8LZZcC3zSTTBhxiUfCeZ2rhN1
-        PmDLa/5pgYmE5GAy6hAJdRrKIDP9kw0b7HPHOyeUJcHHGQDnUEkickM=
-X-Google-Smtp-Source: AGHT+IEBVVh25I8axDv4eSe1s2AmtWC7nch4AjPksBX9fVwsSKmVvEAvIs4oH6u6oUQFPX4VBHAjoxwYg4YPHSHon98=
-X-Received: by 2002:a17:90a:408f:b0:26b:13b7:22f9 with SMTP id
- l15-20020a17090a408f00b0026b13b722f9mr14918323pjg.22.1694094457611; Thu, 07
- Sep 2023 06:47:37 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230820210640.585311-1-qyousef@layalina.io> <20230820210640.585311-3-qyousef@layalina.io>
- <CAKfTPtDY48jpO+b-2KXawzxh-ty+FMKX6YUXioNR7kpgO=ua6Q@mail.gmail.com> <20230829163740.uadhv2jfjuumqk3w@airbuntu>
-In-Reply-To: <20230829163740.uadhv2jfjuumqk3w@airbuntu>
-From:   Vincent Guittot <vincent.guittot@linaro.org>
-Date:   Thu, 7 Sep 2023 15:47:26 +0200
-Message-ID: <CAKfTPtCP6uX79dOrzN4PxFTMBFrDAMOOrWyZrsVypUQ0RY7BAA@mail.gmail.com>
-Subject: Re: [PATCH 2/4] sched: cpufreq: Fix apply_dvfs_headroom() escaping
- uclamp constraints
-To:     Qais Yousef <qyousef@layalina.io>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Ingo Molnar <mingo@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Lukasz Luba <lukasz.luba@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+        with ESMTP id S231253AbjIGQE0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 12:04:26 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF50461B2;
+        Thu,  7 Sep 2023 08:53:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1694101992; x=1725637992;
+  h=date:from:to:cc:subject:message-id;
+  bh=wGwPIDqT/fjSP0tlWKICZFczVXEYvufamL3QjFql4q0=;
+  b=fu37YqkjQ2MmLz51XBDi/b/h7RXRVUBWpNp4zr+vr3UmpqZeT27z0Bjr
+   QLDWHb4v3YZQHzJR7GoPgkwozVvwHn2DWmVCtCDzwe/n2jhZMMOKV2h71
+   kUGAOiM6PoLP3sM2kEeUSkf3YjEwOPrpdLINWxWhiAwtlycYCHAh4nVv/
+   zflF1XRXYxvvupwYlox6ASGzIflYplgZ84WXr67PMiKRVaKX7VUPr2Lq6
+   AlFPKGCApXIZj06fe0lmDuRxHS09uccHCEA1DWlIrHJPdq3vDvZCThinC
+   cr0OIo29i9bQWF++eyI3wYoI/Bw+WKHXw3my39cM7+BnYKphp+SiMHHaT
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10825"; a="356777574"
+X-IronPort-AV: E=Sophos;i="6.02,234,1688454000"; 
+   d="scan'208";a="356777574"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Sep 2023 01:38:58 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10825"; a="988680123"
+X-IronPort-AV: E=Sophos;i="6.02,234,1688454000"; 
+   d="scan'208";a="988680123"
+Received: from lkp-server01.sh.intel.com (HELO 59b3c6e06877) ([10.239.97.150])
+  by fmsmga006.fm.intel.com with ESMTP; 07 Sep 2023 01:38:56 -0700
+Received: from kbuild by 59b3c6e06877 with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1qeAXO-000133-1N;
+        Thu, 07 Sep 2023 08:38:54 +0000
+Date:   Thu, 07 Sep 2023 16:38:20 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-acpi@vger.kernel.org, devel@acpica.org,
+        linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 3a0edc2c5c29630924b31f1ccc5f3378024d5354
+Message-ID: <202309071619.ILDku2Js-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 29 Aug 2023 at 18:37, Qais Yousef <qyousef@layalina.io> wrote:
->
-> On 08/29/23 16:35, Vincent Guittot wrote:
-> > On Sun, 20 Aug 2023 at 23:08, Qais Yousef <qyousef@layalina.io> wrote:
-> > >
-> > > DVFS headroom is applied after we calculate the effective_cpu_util()
-> > > which is where we honour uclamp constraints. It makes more sense to
-> > > apply the headroom there once and let all users naturally get the right
-> > > thing without having to sprinkle the call around in various places.
-> >
-> > You have to take care of not mixing scheduler and cpufreq constraint and policy.
-> >
-> > uclamp is a scheduler feature to highlight that the utilization
-> > requirement of a task can't go above a level.
->
-> uclamp is a performance hint, which utilization is how we represent it
-> internally. A task with uclamp of 800 is not the same as util being actually
-> 800. In our previous discussions around util_fits_cpu() we had similar
-> discussion on how the two can't be treated the same.
->
-> Same with uclamp_min; if it is set to 1024 but there is a task with util say
-> 100, this task shouldn't cause overutilized as its actual utilization actually
-> fits, but it just asked to run at a higher performance point. The actual
-> utilization has to be in the over utilized range. Unless uclamp_max forces it
-> to fit of course.
->
-> So uclamp_max sets a cap to the performance that the task is allowed to reach.
-> And this translates into frequency selection and cpu selection (in case of HMP)
-> by design.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 3a0edc2c5c29630924b31f1ccc5f3378024d5354  Merge branch 'powercap' into linux-next
 
-The dvfs head room is a sole property of cpufreq and the scheduler
-doesn't care about it. Scheduler should provide some cpu utilization
-hints. Then what cpufreq will do based on the utilization, the HW
-constraint and the policy is out of scheduler scope.
+elapsed time: 732m
 
-This headroom is there only because energy model wants to forecast
-what will be the frequency that cpufreq will select later on but
-scheduler doesn't care
+configs tested: 172
+configs skipped: 2
 
->
-> I don't think we're mixing matters here. But the headroom should be applied to
-> actual utilization, not uclamp. If the rq is capped to a specific performance
-> level, we should honour this.
->
-> We do the same with iowait boost where it is capped by uclamp_max. A task
-> capped by uclamp_max shouldn't be the trigger of running at a frequency higher
-> than this point. Otherwise we'd need to expose all these internal details to
-> the user, which I think we all agree isn't something to consider at all.
->
-> >
-> > dvfs head room is a cpufreq decision to anticipate either hw
-> > limitation and responsiveness problem or performance hints.
-> >
-> > they come from different sources and rational and this patch mixed
-> > them which i'm not sure is a correct thing to do
->
-> I don't think I'm mixing them up to be honest.
->
-> The governor is driven by effective_cpu_util() to tell it what is the
-> effective_cpu_util() when making frequency selection. This function takes into
-> account all the factors that could impact frequency selection including all type
-> of rq pressures (except thermal). I think it is appropriate to take headroom
-> into account there and make sure we honour uclamp_max hint to cap the
-> performance appropriately based on the effective uclamp_max value of the rq.
->
-> For example if actually util was 640, then after the headroom it'd be 800. And
-> if uclamp_max is 800, then this task will still get the 1.25 headroom. We are
-> not changing this behavior.
->
-> But if the task goes beyond that, then it'll stop at 800 because this what the
-> request is all about. A headroom beyond this point is not required because the
-> task (or rq to be more precise) is capped to this performance point and
-> regardless how busy the cpu gets in terms of real utilization or headroom, it
-> shouldn't go beyond this point. ie: if a task is a 1024 but uclamp_max of is
-> 800 then it'll only get a performance equivalent to OPP@800 would give.
->
-> If we don't do that uclamp_max range effectively is from 0-819 (based on
-> current headroom setting of 1.25). Which is not what we want or what we're
-> telling userspace. Userspace sees the whole system performance levels
-> abstracted from 0 - 1024. As it should. The only effect they would observe and
-> there's no way around it is that OPPs are discrete points. So in reality our
-> 0-1024 is a staircase where a range of util values will map to the same OPP and
-> then we'll get a jump. So the user can end up requesting for example 700 and
-> 720 and not notice any difference because they both map to the same OPP.
-> I don't think we can fix that - but maybe I should add it to the uclamp doc as
-> a caveat when setting uclamp.
->
-> >
-> > >
-> > > Before this fix running
-> > >
-> > >         uclampset -M 800 cat /dev/zero > /dev/null
-> > >
-> > > Will cause the test system to run at max freq of 2.8GHz. After the fix
-> > > it runs at 2.2GHz instead which is the correct value that matches the
-> > > capacity of 800.
-> >
-> > So a task with an utilization of 800 will run at higher freq than a
-> > task clamped to 800 by uclamp ? Why should they run at different freq
-> > for the same utilization ?
->
-> Because uclamp sets an upper limit on the performance level the task should be
-> able to achieve. Imagine a task is 1024 and capped to 800, it should not run at
-> max frequency, right? What's the point of the uclamp_max hint if the headroom
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Who knows ? Here we try to predict the coming utilization of the cpu
-and this prediction is only partial so cpufreq might want to keep some
-headroom even if uclamp max is applied to a cfs rq. Anticipate
-unpredictable irq stolen time
+tested configs:
+alpha                             allnoconfig   gcc  
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+arc                              allmodconfig   gcc  
+arc                               allnoconfig   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                   randconfig-001-20230907   gcc  
+arc                  randconfig-r004-20230907   gcc  
+arc                  randconfig-r005-20230907   gcc  
+arc                  randconfig-r026-20230907   gcc  
+arc                  randconfig-r031-20230907   gcc  
+arm                              allmodconfig   gcc  
+arm                               allnoconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                   randconfig-001-20230907   clang
+arm                  randconfig-r004-20230907   gcc  
+arm                  randconfig-r025-20230907   clang
+arm                  randconfig-r034-20230907   gcc  
+arm64                            allmodconfig   gcc  
+arm64                             allnoconfig   gcc  
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+arm64                randconfig-r001-20230907   clang
+arm64                randconfig-r012-20230907   gcc  
+arm64                randconfig-r013-20230907   gcc  
+arm64                randconfig-r016-20230907   gcc  
+csky                             allmodconfig   gcc  
+csky                              allnoconfig   gcc  
+csky                             allyesconfig   gcc  
+csky                                defconfig   gcc  
+hexagon               randconfig-001-20230907   clang
+hexagon               randconfig-002-20230907   clang
+hexagon              randconfig-r032-20230907   clang
+hexagon              randconfig-r035-20230907   clang
+i386                             allmodconfig   gcc  
+i386                              allnoconfig   gcc  
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-001-20230907   clang
+i386         buildonly-randconfig-002-20230907   clang
+i386         buildonly-randconfig-003-20230907   clang
+i386         buildonly-randconfig-004-20230907   clang
+i386         buildonly-randconfig-005-20230907   clang
+i386         buildonly-randconfig-006-20230907   clang
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                  randconfig-001-20230907   clang
+i386                  randconfig-002-20230907   clang
+i386                  randconfig-003-20230907   clang
+i386                  randconfig-004-20230907   clang
+i386                  randconfig-005-20230907   clang
+i386                  randconfig-006-20230907   clang
+i386                  randconfig-011-20230907   gcc  
+i386                  randconfig-012-20230907   gcc  
+i386                  randconfig-013-20230907   gcc  
+i386                  randconfig-014-20230907   gcc  
+i386                  randconfig-015-20230907   gcc  
+i386                  randconfig-016-20230907   gcc  
+i386                 randconfig-r001-20230907   clang
+i386                 randconfig-r003-20230907   clang
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                        allyesconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch             randconfig-001-20230907   gcc  
+m68k                             allmodconfig   gcc  
+m68k                              allnoconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+m68k                 randconfig-r006-20230907   gcc  
+microblaze                       allmodconfig   gcc  
+microblaze                        allnoconfig   gcc  
+microblaze                       allyesconfig   gcc  
+microblaze                          defconfig   gcc  
+microblaze           randconfig-r012-20230907   gcc  
+microblaze           randconfig-r036-20230907   gcc  
+mips                             allmodconfig   gcc  
+mips                              allnoconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                 randconfig-r011-20230907   clang
+mips                 randconfig-r033-20230907   gcc  
+nios2                            allmodconfig   gcc  
+nios2                             allnoconfig   gcc  
+nios2                            allyesconfig   gcc  
+nios2                               defconfig   gcc  
+nios2                randconfig-r014-20230907   gcc  
+nios2                randconfig-r023-20230907   gcc  
+openrisc                         allmodconfig   gcc  
+openrisc                          allnoconfig   gcc  
+openrisc                         allyesconfig   gcc  
+openrisc                            defconfig   gcc  
+openrisc             randconfig-r002-20230907   gcc  
+openrisc             randconfig-r013-20230907   gcc  
+parisc                           allmodconfig   gcc  
+parisc                            allnoconfig   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                          allyesconfig   gcc  
+powerpc              randconfig-r016-20230907   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                 randconfig-001-20230907   clang
+riscv                randconfig-r002-20230907   clang
+riscv                randconfig-r014-20230907   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                              allnoconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                  randconfig-001-20230907   gcc  
+s390                 randconfig-r003-20230907   clang
+s390                 randconfig-r022-20230907   gcc  
+sh                               allmodconfig   gcc  
+sh                                allnoconfig   gcc  
+sh                               allyesconfig   gcc  
+sh                                  defconfig   gcc  
+sparc                            allmodconfig   gcc  
+sparc                             allnoconfig   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc64                          allmodconfig   gcc  
+sparc64                          allyesconfig   gcc  
+sparc64                             defconfig   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   clang
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                   randconfig-r005-20230907   gcc  
+um                   randconfig-r015-20230907   clang
+um                   randconfig-r021-20230907   clang
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-001-20230907   clang
+x86_64       buildonly-randconfig-002-20230907   clang
+x86_64       buildonly-randconfig-003-20230907   clang
+x86_64       buildonly-randconfig-004-20230907   clang
+x86_64       buildonly-randconfig-005-20230907   clang
+x86_64       buildonly-randconfig-006-20230907   clang
+x86_64                              defconfig   gcc  
+x86_64                randconfig-001-20230907   gcc  
+x86_64                randconfig-002-20230907   gcc  
+x86_64                randconfig-003-20230907   gcc  
+x86_64                randconfig-004-20230907   gcc  
+x86_64                randconfig-005-20230907   gcc  
+x86_64                randconfig-006-20230907   gcc  
+x86_64                randconfig-011-20230907   clang
+x86_64                randconfig-012-20230907   clang
+x86_64                randconfig-013-20230907   clang
+x86_64                randconfig-014-20230907   clang
+x86_64                randconfig-015-20230907   clang
+x86_64                randconfig-016-20230907   clang
+x86_64                randconfig-071-20230907   clang
+x86_64                randconfig-072-20230907   clang
+x86_64                randconfig-073-20230907   clang
+x86_64                randconfig-074-20230907   clang
+x86_64                randconfig-075-20230907   clang
+x86_64                randconfig-076-20230907   clang
+x86_64                          rhel-8.3-rust   clang
+x86_64                               rhel-8.3   gcc  
+xtensa                            allnoconfig   gcc  
+xtensa                           allyesconfig   gcc  
+xtensa               randconfig-r006-20230907   gcc  
+xtensa               randconfig-r015-20230907   gcc  
+xtensa               randconfig-r024-20230907   gcc  
 
-IMO, dvfs_headroom should never be visible in scheduler code. This is
-the case now; it's only visible by cpufreq which is the "owner" and
-energy model which tries to predict cpufreq behavior
-
-> will cause it to run at max anyway? We lost the meaning of the hint. And if
-> this headroom changes in the future, people will start observing different
-> behavior for existing uclamp_max settings on the same system because of this
-> this rightfully hidden and unaccounted for factor.
->
-> >
-> > >
-> > > Note that similar problem exist for uclamp_min. If util was 50, and
-> > > uclamp_min is 100. Since we apply_dvfs_headroom() after apply uclamp
-> > > constraints, we'll end up with util of 125 instead of 100. IOW, we get
-> > > boosted twice, first time by uclamp_min, and second time by dvfs
-> > > headroom.
-> > >
-> > > Signed-off-by: Qais Yousef (Google) <qyousef@layalina.io>
-> > > ---
-> > >  include/linux/energy_model.h     |  1 -
-> > >  kernel/sched/core.c              | 11 ++++++++---
-> > >  kernel/sched/cpufreq_schedutil.c |  5 ++---
-> > >  3 files changed, 10 insertions(+), 7 deletions(-)
-> > >
-> > > diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-> > > index 6ebde4e69e98..adec808b371a 100644
-> > > --- a/include/linux/energy_model.h
-> > > +++ b/include/linux/energy_model.h
-> > > @@ -243,7 +243,6 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
-> > >         scale_cpu = arch_scale_cpu_capacity(cpu);
-> > >         ps = &pd->table[pd->nr_perf_states - 1];
-> > >
-> > > -       max_util = apply_dvfs_headroom(max_util);
-> > >         max_util = min(max_util, allowed_cpu_cap);
-> > >         freq = map_util_freq(max_util, ps->frequency, scale_cpu);
-> > >
-> > > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> > > index efe3848978a0..441d433c83cd 100644
-> > > --- a/kernel/sched/core.c
-> > > +++ b/kernel/sched/core.c
-> > > @@ -7439,8 +7439,10 @@ unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
-> > >          * frequency will be gracefully reduced with the utilization decay.
-> > >          */
-> > >         util = util_cfs + cpu_util_rt(rq);
-> > > -       if (type == FREQUENCY_UTIL)
-> > > +       if (type == FREQUENCY_UTIL) {
-> > > +               util = apply_dvfs_headroom(util);
-> >
-> > This is not the same as before because utilization has not being
-> > scaled by irq steal time yet
->
-> We do the scaling below, no?
->
-> AFAICS, we had:
->
->         (util_cfs + util_rt + irq + ((max-irq)*(util_cfs + util_rt)/max)+ dl_bw) * scale
-
-I think it's only :
-  ((util_cfs + util_rt) * (max -irq) / max + irq + dl_bw) * scale
-
-and it' s effectively similar
-
->
-> Using U = (util_cfs + util_rt) * scale
->
-> we can write this after the multiplication
->
->         U + irq * scale + ((max-irq)*U/max) + dl_bw * scale
->
-> >
-> > >                 util = uclamp_rq_util_with(rq, util, p);
-> > > +       }
-> > >
-> > >         dl_util = cpu_util_dl(rq);
-> > >
-> > > @@ -7471,9 +7473,12 @@ unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
-> > >          *              max - irq
-> > >          *   U' = irq + --------- * U
-> > >          *                 max
-> > > +        *
-> > > +        * We only need to apply dvfs headroom to irq part since the util part
-> > > +        * already had it applied.
-> > >          */
-> > >         util = scale_irq_capacity(util, irq, max);
-> > > -       util += irq;
-> > > +       util += type ==  FREQUENCY_UTIL ? apply_dvfs_headroom(irq) : irq;
-> > >
-> > >         /*
-> > >          * Bandwidth required by DEADLINE must always be granted while, for
-> > > @@ -7486,7 +7491,7 @@ unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
-> > >          * an interface. So, we only do the latter for now.
-> > >          */
-> > >         if (type == FREQUENCY_UTIL)
-> > > -               util += cpu_bw_dl(rq);
-> > > +               util += apply_dvfs_headroom(cpu_bw_dl(rq));
-> >
-> > If we follow your reasoning with uclamp on the dl bandwidth, should we
-> > not skip this as well ?
->
-> I do remove this in patch 4. Can fold that one into this one if you like.
-> I opted to keep the current behavior in this patch and remove these later in
-> patch 4.
->
-> I do think that both RT and DL shouldn't need DVFS headroom in general as they
-> both 'disable' it by default.
-
-and the scheduler in general doesn't care about DVFS headroom.
-
-I don't think it's the right way to fix your problem of selecting the
-right frequency on your platform. It would be better to get a proper
-interface between EM and cpufreq like
-cpufreq_give_me_freq_for_this_utilization_ctx.
-
-And  cpufreq needs 2 information:
-- the utilization of the cpu
-- the uclamp/performance/bandwidth hints on this cpu because the
-uclamp_max hints are screwed up by irq scaling anyway.
-
-For example:
-
-irq = 256
-util = 800 but uclamp=512
-
-If I follow your reasoning about the uclamp being a performance hint
-and uclamp=512 means that we should not go above 512 just for cfs+rt,
-we should stay at 512 in this case because irq only needs 256 which is
-below the 512 bandwidth. The utilization reported to cpufreq will be
-above 512 whatever the current (720)  formula or your proposal (608).
-In the case of uclamp, it should be applied after having been scaled
-by irq time.
-
-So we should have reported utilization of 720 with a bandwidth
-requirement of 512 and then cpufreq can applies its headroom if needed
-
->
->
-> Thanks!
->
-> --
-> Qais Yousef
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
