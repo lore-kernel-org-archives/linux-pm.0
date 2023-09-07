@@ -2,80 +2,101 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFB19EC8742
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 18:42:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ECCDEC874D
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 18:47:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344238AbjIGSmC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 14:42:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50300 "EHLO
+        id S244038AbjIGSr7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 14:47:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60972 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344267AbjIGSmA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 14:42:00 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5B11D1700;
-        Thu,  7 Sep 2023 11:41:55 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 838661762;
-        Thu,  7 Sep 2023 06:45:34 -0700 (PDT)
-Received: from [10.57.92.126] (unknown [10.57.92.126])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A0C7E3F766;
-        Thu,  7 Sep 2023 06:44:54 -0700 (PDT)
-Message-ID: <8657cc7c-169b-3479-5919-72bd39335b15@arm.com>
-Date:   Thu, 7 Sep 2023 14:45:30 +0100
+        with ESMTP id S236590AbjIGSr6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 14:47:58 -0400
+Received: from mail-ed1-x52e.google.com (mail-ed1-x52e.google.com [IPv6:2a00:1450:4864:20::52e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EACA391
+        for <linux-pm@vger.kernel.org>; Thu,  7 Sep 2023 11:47:54 -0700 (PDT)
+Received: by mail-ed1-x52e.google.com with SMTP id 4fb4d7f45d1cf-52a49a42353so1758493a12.2
+        for <linux-pm@vger.kernel.org>; Thu, 07 Sep 2023 11:47:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694112473; x=1694717273; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=a51rbBUhl2yVMBaRWJfNm+10uIGnQdsMPdqet6PAES4=;
+        b=TsL9EfX0Y1LPC5oAj1D2254GHXdiYqC4YU9vuHvnM/4Qq8aqvAYDHvVmUMrFfNKbSv
+         c1nmTDEsjl4WMbjYQ2NEw5bigQNCXWZi2UdBRTSMs/b+ZVWy3DZeA+7YPm80Xg73xbk9
+         yKQu8EoMoy4BTpIFZge5TpHzSldHj5cMNaayvwPPEHfG4HD3ZQiJUz/p/Gn179JzP81d
+         tZhMNZyR5KNFGj1LAmtYY9BKzZcElYonxnNIjYgiwnqF0Pcb3Q8s9d0pFj7OeeuHYgUE
+         5bdnRkouH4P1re8xPam7gs7OhMggp7RwVZveT51Y7l48VBs6ZlLw7I+CA6naRCoiSzA9
+         UKYw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694112473; x=1694717273;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=a51rbBUhl2yVMBaRWJfNm+10uIGnQdsMPdqet6PAES4=;
+        b=UKrtyNu46UKu/waxxmobGd/unrqppYXkHJnih7+LpPIF3GiznIsz5cGZz3h/6W0amI
+         r9K+ogPl0HTpsW4h6ToNlR5wdfFjt+9zyvaXJsrEyVHNU2myc3oHn5nYKgcKIqU4c8mM
+         pTbV7srT8H0ZkcMDFDJWkFC5yyoZhCo+1/dGBTvAMqsn9QiKaykfJ6ilxgYQmDaYeXDa
+         Xw7RDp8828eqrPVDwxSXIeNEH8EzhwOfy7JI2GZHyjlsCe9vdgr/xGwKx9lLuqfPXi8w
+         Fm5/ecpHTEjKUKebZJpAj+U0QbS98w16vxFFjIeSPLljMo3h+isku71qfyUZnB3sKzfo
+         WSHQ==
+X-Gm-Message-State: AOJu0YwB75Y7YxcGqIYOrli42L4FVBr/uDcrzuwwR6wKPF+TnpZHEdHl
+        aPJGDkwWXZ7s9HB4ADy0XfOzJXlA6w3HasRNIn9z9A==
+X-Google-Smtp-Source: AGHT+IFlXAmlomGcmhe6S0hUGMXYE4sEpDzId5svN/29k+3GVd9pMgSG9ox0ZZbhaW0oXLRASeVmdQ==
+X-Received: by 2002:a17:906:24b:b0:9a5:ebfd:79a3 with SMTP id 11-20020a170906024b00b009a5ebfd79a3mr3449605ejl.29.1694066582736;
+        Wed, 06 Sep 2023 23:03:02 -0700 (PDT)
+Received: from [192.168.0.22] (77-252-46-238.static.ip.netia.com.pl. [77.252.46.238])
+        by smtp.gmail.com with ESMTPSA id a1-20020a170906684100b009920e9a3a73sm9946636ejs.115.2023.09.06.23.03.01
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 06 Sep 2023 23:03:02 -0700 (PDT)
+Message-ID: <d822da46-b6c0-6932-6ed6-8806fbeee51d@linaro.org>
+Date:   Thu, 7 Sep 2023 08:03:00 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.15.0
-Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
+Subject: Re: [PATCH v1 07/10] arm64: dts: qcom: ipq5332: populate the opp
+ table based on the eFuse
 Content-Language: en-US
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Qais Yousef <qyousef@layalina.io>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ingo Molnar <mingo@kernel.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, bristot@redhat.com,
-        juri.lelli@redhat.com
-References: <20230827233203.1315953-1-qyousef@layalina.io>
- <a6365f63-4669-15e5-b843-f4bfb1bd5e68@arm.com>
- <20230906211850.zyvk6qtt6fvpxaf3@airbuntu>
- <6011d8bb-9a3b-1435-30b0-d75b39bf5efa@arm.com>
- <20230907115307.GD10955@noisy.programming.kicks-ass.net>
- <89067f71-9b83-e647-053e-07f7d55b6529@arm.com>
- <20230907132906.GG10955@noisy.programming.kicks-ass.net>
- <5616e50d-b827-4547-5b16-9131ace98419@arm.com>
- <20230907133840.GH10955@noisy.programming.kicks-ass.net>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20230907133840.GH10955@noisy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To:     Varadarajan Narayanan <quic_varada@quicinc.com>,
+        ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
+        konrad.dybcio@linaro.org, rafael@kernel.org,
+        viresh.kumar@linaro.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        mturquette@baylibre.com, sboyd@kernel.org,
+        quic_kathirav@quicinc.com, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
+References: <cover.1693996662.git.quic_varada@quicinc.com>
+ <a6d12e3b253d6a55d85f66979ba8b7d9c9ff6072.1693996662.git.quic_varada@quicinc.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <a6d12e3b253d6a55d85f66979ba8b7d9c9ff6072.1693996662.git.quic_varada@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 9/7/23 14:38, Peter Zijlstra wrote:
-> On Thu, Sep 07, 2023 at 02:33:49PM +0100, Lukasz Luba wrote:
->>
->>
->> On 9/7/23 14:29, Peter Zijlstra wrote:
->>> On Thu, Sep 07, 2023 at 02:06:15PM +0100, Lukasz Luba wrote:
->>>
->>>>> Many extentions to the periodic task model are possible, including
->>>>> things like average runtime with bursts etc.. all have their trade-offs.
->>>>
->>>> Was that maybe proposed somewhere on LKML (the other models)?
->>>
->>> RT literatur mostly methinks. Replacing WCET with a statistical model of
->>> sorts is not uncommon, the argument goes that not everybody will have
->>> their worst case at the same time and lows and highs can commonly cancel
->>> out and this way we can cram a little more on the system.
->>>
->>> Typically this is proposed in the context of soft-realtime systems.
->>
->> Thanks Peter, I will dive into some books...
+On 07/09/2023 07:21, Varadarajan Narayanan wrote:
+> IPQ53xx have different OPPs available for the CPU based on
+> SoC variant. This can be determined through use of an eFuse
+> register present in the silicon.
 > 
-> I would look at academic papers, not sure any of that ever made it to
-> books, Daniel would know I suppose.
+> Add support to read the eFuse and populate the OPPs based on it.
+> 
+> Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
 
-Good hint, thanks!
+
+>  	};
+> @@ -150,6 +173,11 @@
+>  			reg = <0x000a4000 0x721>;
+>  			#address-cells = <1>;
+>  			#size-cells = <1>;
+> +
+> +			cpu_speed_bin: cpu_speed_bin@1d {
+
+No underscores in node names. I am pretty sure I repeated it multiple
+times already...
+
+Best regards,
+Krzysztof
+
