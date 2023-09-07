@@ -2,105 +2,95 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7326FEC873D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83BF1EC873F
 	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:53:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236817AbjIGPwl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 11:52:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36142 "EHLO
+        id S238530AbjIGPwo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:52:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243215AbjIGPu1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:50:27 -0400
-Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5408059C8
-        for <linux-pm@vger.kernel.org>; Thu,  7 Sep 2023 08:40:50 -0700 (PDT)
-Received: by mail-ed1-x533.google.com with SMTP id 4fb4d7f45d1cf-52a40cf952dso1518445a12.2
-        for <linux-pm@vger.kernel.org>; Thu, 07 Sep 2023 08:40:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694101193; x=1694705993; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=G88lP2VW9W0ey1BM427zqcg+F+UpGhl5q2J3uTfo6Co=;
-        b=RYvAW12lvwz6uAP68SCj8UMmHJ89SRlK+6d122349mGXAdsbxvLjszlzUGIo2TvBVm
-         N0F+ZfRlcc2dRpJ6I1uZRd+dKy+92Zg6LudvV3RYvTWa+o4iBPozvQmzeC5mUQTn5XvD
-         l5//40QCM+ZcLWM7/3bwqsFpm4UxHflEySB9eLsV9W2yYvar2pKZYNKHlEttZoaiSCwf
-         ps+mlX3CQWfv00nyWXa3yeoJtKC7PU5VJCjCchTwIRj9cEb5W8MXwN6JugkT4akMdXbe
-         VCW5LEYEi69UWF39j4cC/+oV4DyfQmCqpbs+ZpOqO0uUvn0uD2nU5OUln6su6IVtnccH
-         z6QA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1694101193; x=1694705993;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=G88lP2VW9W0ey1BM427zqcg+F+UpGhl5q2J3uTfo6Co=;
-        b=lawtjCxTNdmCuKmtIJJqKfxItmRXAp10d3zElxCPBsRWTAH9H+4wh1yjL+1XmuazaT
-         O/9j5A+/JMk4tbpyfADWmZTus99l8DON7TRmZeR8dUCA67vBV3mClK+uIzSM1PAyFtCD
-         CzneI6wO2+Aaqky1r3l7NNyKZJX93T9HpX0jZ0Tib9Hr2kerl8SKEYQJOz+0tUARz7ZN
-         0GBC2xsCcbXGzJtX5AtRwboGdRyaHX/1ZOTksdwekYKRzi4YW95Y6A5GhBUgkkOE+i+2
-         SVl2qNYiuqf00lY83HkhJ1KJZQ95emJh7yJ13CbLNnxtj/R8YY1sfcy0oCBkI/U87L/a
-         cvrw==
-X-Gm-Message-State: AOJu0YwEQKH6bj3JfQZ4xwl5TR3cRl/u23nrMit1tLaZSm8gWkVVPXDB
-        MBAqSK0AAJ3HtF2CQayXjR/qqQ5wQ4Uxp4ROO4o=
-X-Google-Smtp-Source: AGHT+IHGT591APG6CRNW4zuyJuEfxCr1FfGrojCK5qI1ehGXhuwAoMXIKQPf6+hAJXIGsQZ5/i+wTg==
-X-Received: by 2002:a1c:ed08:0:b0:3fe:2b60:b24e with SMTP id l8-20020a1ced08000000b003fe2b60b24emr4801517wmh.29.1694084900263;
-        Thu, 07 Sep 2023 04:08:20 -0700 (PDT)
-Received: from localhost ([102.36.222.112])
-        by smtp.gmail.com with ESMTPSA id ay30-20020a5d6f1e000000b0031f65cdd271sm3999677wrb.100.2023.09.07.04.08.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 07 Sep 2023 04:08:19 -0700 (PDT)
-Date:   Thu, 7 Sep 2023 14:08:17 +0300
-From:   Dan Carpenter <dan.carpenter@linaro.org>
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-Cc:     Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>,
-        ChiaEn Wu <chiaen_wu@richtek.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org,
-        kernel-janitors@vger.kernel.org, error27@gmail.com
-Subject: Re: [PATCH] power: supply: mt6370: Fix missing error code in
- mt6370_chg_toggle_cfo()
-Message-ID: <1092ffb3-0238-4dc0-baf3-344a653fca3f@kadam.mountain>
-References: <20230906084815.2827930-1-harshit.m.mogalapalli@oracle.com>
- <cd6eea67-df0f-08b1-61cd-57a3b4f9cf0d@collabora.com>
+        with ESMTP id S237313AbjIGPl1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:41:27 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CCAFC1739;
+        Thu,  7 Sep 2023 08:37:53 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C82D41764;
+        Thu,  7 Sep 2023 07:42:16 -0700 (PDT)
+Received: from [10.57.92.126] (unknown [10.57.92.126])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 464C43F766;
+        Thu,  7 Sep 2023 07:41:37 -0700 (PDT)
+Message-ID: <cf5c628a-e047-b5e0-b2a0-f2b280015d02@arm.com>
+Date:   Thu, 7 Sep 2023 15:42:13 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cd6eea67-df0f-08b1-61cd-57a3b4f9cf0d@collabora.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
+Content-Language: en-US
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Qais Yousef <qyousef@layalina.io>
+References: <20230827233203.1315953-1-qyousef@layalina.io>
+ <a6365f63-4669-15e5-b843-f4bfb1bd5e68@arm.com>
+ <20230906211850.zyvk6qtt6fvpxaf3@airbuntu>
+ <20230907132631.GF10955@noisy.programming.kicks-ass.net>
+ <8919ed14-8d19-d964-2278-3303a5bda8ee@arm.com>
+ <20230907142923.GJ10955@noisy.programming.kicks-ass.net>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <20230907142923.GJ10955@noisy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 07, 2023 at 12:43:12PM +0200, AngeloGioacchino Del Regno wrote:
-> Il 06/09/23 10:48, Harshit Mogalapalli ha scritto:
-> > When mt6370_chg_field_get() suceeds, ret is set to zero and returning
-> > zero when flash led is still in strobe mode looks incorrect.
-> > 
-> > Fixes: 233cb8a47d65 ("power: supply: mt6370: Add MediaTek MT6370 charger driver")
-> > Signed-off-by: Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>
-> > ---
-> > This is based on static analysis with smatch, only compile tested.
-> > ---
-> >   drivers/power/supply/mt6370-charger.c | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/power/supply/mt6370-charger.c b/drivers/power/supply/mt6370-charger.c
-> > index f27dae5043f5..a9641bd3d8cf 100644
-> > --- a/drivers/power/supply/mt6370-charger.c
-> > +++ b/drivers/power/supply/mt6370-charger.c
-> > @@ -324,7 +324,7 @@ static int mt6370_chg_toggle_cfo(struct mt6370_priv *priv)
-> >   	if (fl_strobe) {
-> >   		dev_err(priv->dev, "Flash led is still in strobe mode\n");
-> > -		return ret;
-> > +		return -EINVAL;
+
+
+On 9/7/23 15:29, Peter Zijlstra wrote:
+> On Thu, Sep 07, 2023 at 02:57:26PM +0100, Lukasz Luba wrote:
+>>
+>>
+>> On 9/7/23 14:26, Peter Zijlstra wrote:
+>>> On Wed, Sep 06, 2023 at 10:18:50PM +0100, Qais Yousef wrote:
+>>>
+>>>> This is probably controversial statement. But I am not in favour of util_est.
+>>>> I need to collect the data, but I think we're better with 16ms PELT HALFLIFE as
+>>>> default instead. But I will need to do a separate investigation on that.
+>>>
+>>> I think util_est makes perfect sense, where PELT has to fundamentally
+>>> decay non-running / non-runnable tasks in order to provide a temporal
+>>> average, DVFS might be best served with a termporal max filter.
+>>>
+>>>
+>>
+>> Since we are here...
+>> Would you allow to have a configuration for
+>> the util_est shifter: UTIL_EST_WEIGHT_SHIFT ?
+>>
+>> I've found other values than '2' better in some scenarios. That helps
+>> to prevent a big task to 'down' migrate from a Big CPU (1024) to some
+>> Mid CPU (~500-700 capacity) or even Little (~120-300).
 > 
-> I think that returning 0 here was intentional, but I agree on a return ret
-> here being both confusing and wrong.
+> Larger values, I'm thinking you're after? Those would cause the new
+> contribution to weight less, making the function more smooth, right?
 
-If it's a success path then probably we should remove the dev_err().
+Yes, more smooth, because we only use the 'ewma' goodness for decaying
+part (not the raising [1]).
 
-regards,
-dan carpenter
+> 
+> What task characteristic is tied to this? That is, this seems trivial to
+> modify per-task.
 
+In particular Speedometer test and the main browser task, which reaches
+~900util, but sometimes vanish and waits for other background tasks
+to do something. In the meantime it can decay and wake-up on
+Mid/Little (which can cause a penalty to score up to 5-10% vs. if
+we pin the task to big CPUs). So, a longer util_est helps to avoid
+at least very bad down migration to Littles...
+
+[1] https://elixir.bootlin.com/linux/v6.5.1/source/kernel/sched/fair.c#L4442
