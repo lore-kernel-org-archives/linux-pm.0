@@ -2,88 +2,92 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11F30EC873A
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DB5AEC8741
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Sep 2023 15:41:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233635AbjIGPlI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Sep 2023 11:41:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37826 "EHLO
+        id S234125AbjIGPlM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:41:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45514 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345353AbjIGPfb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:35:31 -0400
-Received: from mxout1.routing.net (mxout1.routing.net [IPv6:2a03:2900:1:a::a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 658B71FC9;
-        Thu,  7 Sep 2023 08:35:08 -0700 (PDT)
-Received: from mxbox3.masterlogin.de (unknown [192.168.10.78])
-        by mxout1.routing.net (Postfix) with ESMTP id 04FFB4081B;
-        Thu,  7 Sep 2023 11:20:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-        s=20200217; t=1694085635;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=bmzyT3vhoavJV5YD/9bjCpBgNAP4o0u/rneto0+CusE=;
-        b=w2FAf1f6NYSPYwdHbMqEXFMlOVdC4HmF1Q212UWEGrvaarckAZKkNtvCHUdLCSOkVipCza
-        Ooe2QjKtAInOu1Qw0vq5sGegkzD3DyUtuvitA1FJ0oYh0f41J0DtoO6oUXy+UblT8QEd0e
-        daPaIchb0Lp+CpS0c9Icp9+HxKt+47Y=
-Received: from frank-G5.. (fttx-pool-217.61.150.154.bambit.de [217.61.150.154])
-        by mxbox3.masterlogin.de (Postfix) with ESMTPSA id 0FBA2360465;
-        Thu,  7 Sep 2023 11:20:34 +0000 (UTC)
-From:   Frank Wunderlich <linux@fw-web.de>
-To:     linux-mediatek@lists.infradead.org
-Cc:     Frank Wunderlich <frank-w@public-files.de>,
+        with ESMTP id S1344589AbjIGPd2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2023 11:33:28 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36A031BF5;
+        Thu,  7 Sep 2023 08:33:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=3WFJ/CyRLDbsGvdiQprNjEUyWtZ4FKis4fJnhduuJtU=; b=IEkvclf72qZHteRaWKJ/MXfSY0
+        LmiryMpgIAzo25gO9gHYKydzx65Qid+hYSB3Q3oM1zNWyft4SMa6M9HTtyxXP7up3IZUxx/px+8iC
+        jabr9E3MRzW5ravGFBh79Xa00aVU5kzxkf3kw6iwnI6PiwRsf66szEznCuIu3m3yLEclq95Zf7mOn
+        H85BKiSz80BsllZxErHmCO8UHTJyBe6R97WYjsxisoqb1PzElgdsvO5qUn4nyguqc8bZ/JKD1rQ0k
+        Arr1f5AcmfBsKdA49ZB0TtzJ2xUtdOCPbVO98Walrdnid/VhstKHk22SOVhs6FLTtz2VhsYyjTeSB
+        SZVxXsjg==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qeEjs-001nr5-0Q;
+        Thu, 07 Sep 2023 13:08:06 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 3DE62300687; Thu,  7 Sep 2023 15:08:05 +0200 (CEST)
+Date:   Thu, 7 Sep 2023 15:08:05 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Qais Yousef <qyousef@layalina.io>
+Cc:     Ingo Molnar <mingo@kernel.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Daniel Golle <daniel@makrotopia.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        stable@vger.kernel.org
-Subject: [PATCH] thermal/drivers/mediatek: Fix control buffer enablement on MT7896
-Date:   Thu,  7 Sep 2023 13:20:18 +0200
-Message-Id: <20230907112018.52811-1-linux@fw-web.de>
-X-Mailer: git-send-email 2.34.1
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
+Message-ID: <20230907130805.GE10955@noisy.programming.kicks-ass.net>
+References: <20230827233203.1315953-1-qyousef@layalina.io>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mail-ID: e7eeb8e1-00de-41f6-a5df-ce2e9164136e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230827233203.1315953-1-qyousef@layalina.io>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Frank Wunderlich <frank-w@public-files.de>
+On Mon, Aug 28, 2023 at 12:31:56AM +0100, Qais Yousef wrote:
 
-Reading thermal sensor on mt7986 devices returns invalid temperature:
+> Equally recent discussion in PELT HALFLIFE thread highlighted the need for
+> a way to tune system response time to achieve better perf, power and thermal
+> characteristic for a given system
+> 
+> 	https://lore.kernel.org/lkml/20220829055450.1703092-1-dietmar.eggemann@arm.com/
+> 
 
-bpi-r3 ~ # cat /sys/class/thermal/thermal_zone0/temp
- -274000
+> To further help tune the system, we introduce PELT HALFLIFE multiplier as
+> a boot time parameter. This parameter has an impact on how fast we migrate, so
+> should compensate for whoever needed to tune fits_capacity(); and it has great
+> impact on default response_time_ms. Particularly it gives a natural faster rise
+> time when the system gets busy, AND fall time when the system goes back to
+> idle. It is coarse grain response control that can be coupled with finer grain
+> control via schedutil's response_time_ms.
 
-Fix this by adding missing members in mtk_thermal_data struct which were
-used in mtk_thermal_turn_on_buffer after commit 33140e668b10.
+You're misrepresenting things... The outcome of that thread above was
+that PELT halftime was not the primary problem. Specifically:
 
-Cc: stable@vger.kernel.org
-Fixes: 33140e668b10 ("thermal/drivers/mediatek: Control buffer enablement tweaks")
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
----
- drivers/thermal/mediatek/auxadc_thermal.c | 3 +++
- 1 file changed, 3 insertions(+)
+  https://lore.kernel.org/lkml/424e2c81-987d-f10e-106d-8b4c611768bc@arm.com/
 
-diff --git a/drivers/thermal/mediatek/auxadc_thermal.c b/drivers/thermal/mediatek/auxadc_thermal.c
-index 843214d30bd8..967b9a1aead4 100644
---- a/drivers/thermal/mediatek/auxadc_thermal.c
-+++ b/drivers/thermal/mediatek/auxadc_thermal.c
-@@ -690,6 +690,9 @@ static const struct mtk_thermal_data mt7986_thermal_data = {
- 	.adcpnp = mt7986_adcpnp,
- 	.sensor_mux_values = mt7986_mux_values,
- 	.version = MTK_THERMAL_V3,
-+	.apmixed_buffer_ctl_reg = APMIXED_SYS_TS_CON1,
-+	.apmixed_buffer_ctl_mask = GENMASK(31, 6) | BIT(3),
-+	.apmixed_buffer_ctl_set = BIT(0),
- };
- 
- static bool mtk_thermal_temp_is_valid(int temp)
--- 
-2.34.1
+mentions that the only thing that gaming nonsense cares about is DVFS
+ramp-up.
 
+None of the other PELT users mattered one bit.
+
+Also, ISTR a fair amount of this was workload dependent. So a solution
+that has per-task configurability -- like UTIL_EST_FASTER, seems more
+suitable.
+
+
+I'm *really* hesitant on adding all these mostly random knobs -- esp.
+without strong justification -- which you don't present. You mostly seem
+to justify things with: people do random hack, we should legitimize them
+hacks.
+
+Like the last time around, I want the actual problem explained. The
+problem is not that random people on the internet do random things to
+their kernel.
