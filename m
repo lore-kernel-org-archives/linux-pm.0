@@ -2,96 +2,166 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C5CAEEB56E
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Sep 2023 22:48:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7A16EEB570
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Sep 2023 22:50:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245732AbjIHWss (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Sep 2023 18:48:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37380 "EHLO
+        id S1344334AbjIHWu7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Sep 2023 18:50:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60814 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245597AbjIHWsq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2023 18:48:46 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A0D61FEB;
-        Fri,  8 Sep 2023 15:48:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=fRN1u2nqNkgfLlg5vCIRLVf7sVuYtWHo65n7KgqIXfY=; b=A7s/QcFH1OtqD4N1HXyJG63L4Q
-        j5WyQcSA3kobfAFfAp2qYxX843GAGbLGVXdQI0/1s7vM7uNyVikJu6xNS+5sK3hXXGsi3gfQ8hEIn
-        DV/ergTLfjJrGNYC0ah0hcQ+4GaeCgsJpEHiNILR0QQMQG5VZ2xDS/6HU90rXRSj3iqYcfKB8nJRA
-        82gWfonMICNdxXKgyA9ufisOnxkiCAedDGmcgizcyrbEoe7rnnN/reG+L7gnvcAnQgpLniv4260pY
-        zu2CRxZ7BcUQym6/C+2y1YHcN/Re8eMxC5BflhmYiIy1w+jWPjXiQd73Cehr2AgA4YVoev/LOPmSz
-        Fsb8dAdA==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1qekH7-002nP4-LY; Fri, 08 Sep 2023 22:48:30 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 4F246300353; Sat,  9 Sep 2023 00:48:29 +0200 (CEST)
-Date:   Sat, 9 Sep 2023 00:48:29 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Elliot Berman <quic_eberman@quicinc.com>
-Cc:     Ingo Molnar <mingo@redhat.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Thomas Gleixner <tglx@linutronix.de>, kernel@quicinc.com,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Prakash Viswalingam <quic_prakashv@quicinc.com>
-Subject: Re: [PATCH v2] freezer,sched: Use saved_state to reduce some
- spurious wakeups
-Message-ID: <20230908224829.GA32012@noisy.programming.kicks-ass.net>
-References: <20230830-avoid-spurious-freezer-wakeups-v2-1-8877245cdbdc@quicinc.com>
- <20230904212324.GA2568@noisy.programming.kicks-ass.net>
- <df61af06-a43e-05c5-66e8-5a68b08ff14b@quicinc.com>
- <20230907094651.GB16872@noisy.programming.kicks-ass.net>
- <4c5b5a0b-6d78-878e-7e66-e08e83e6e1c8@quicinc.com>
- <20230908220804.GA29218@noisy.programming.kicks-ass.net>
- <783c60ef-5341-7893-e9e8-2b1b249f89c9@quicinc.com>
+        with ESMTP id S240516AbjIHWu6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2023 18:50:58 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D634A1FEB;
+        Fri,  8 Sep 2023 15:50:54 -0700 (PDT)
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 388Mog7D028246;
+        Fri, 8 Sep 2023 22:50:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : date :
+ subject : mime-version : content-type : content-transfer-encoding :
+ message-id : references : in-reply-to : to : cc; s=qcppdkim1;
+ bh=Z55Ngw5xTpzSsoj7Y26jds8w0rVV/0ec9ylNE7GINhk=;
+ b=jv9+dO0C6X85KKgNvwfzSt0AaReQaqN4kQ5Zbo7PMgqzTQ1z6EM1dOaClf6o+4SvL1jj
+ 5uETzmBXpV2f7N/aiNopSY/s+aevPrP1IPS4b41nqkaq6IPxWAT5TQ2ge2Ye2rsenxxD
+ 6YV6lh+oZLEKnOYigKE7c9m3JhI15o1TfWjRLcQRHTIb98EgP4KAtX3YOyxEOTi5ex5c
+ xGHsfUAFQJux/SvZ7r/vEfMXmGk92nT/P8LgAFYLT8a+eDhYyQH5EjPsmFOXm0t0Nn2i
+ Rcu88jfMdzA605xuff1uQWVWVoAHcYXG4+wtfHs2kf6V0BfjH4nToz2FkZpn/aNU/geS Nw== 
+Received: from nasanppmta02.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3t023wsj44-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 08 Sep 2023 22:50:42 +0000
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+        by NASANPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 388MofIS010603
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 8 Sep 2023 22:50:41 GMT
+Received: from hu-eberman-lv.qualcomm.com (10.49.16.6) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.36; Fri, 8 Sep 2023 15:50:38 -0700
+From:   Elliot Berman <quic_eberman@quicinc.com>
+Date:   Fri, 8 Sep 2023 15:49:15 -0700
+Subject: [PATCH v4 1/2] sched/core: Remove ifdeffery for saved_state
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <783c60ef-5341-7893-e9e8-2b1b249f89c9@quicinc.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20230908-avoid-spurious-freezer-wakeups-v4-1-6155aa3dafae@quicinc.com>
+References: <20230908-avoid-spurious-freezer-wakeups-v4-0-6155aa3dafae@quicinc.com>
+In-Reply-To: <20230908-avoid-spurious-freezer-wakeups-v4-0-6155aa3dafae@quicinc.com>
+To:     Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>
+CC:     Thomas Gleixner <tglx@linutronix.de>, <kernel@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>,
+        Elliot Berman <quic_eberman@quicinc.com>
+X-Mailer: b4 0.13-dev
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: hzGfnqt_xYlvVJstTZOQcLm5PtEBGO2w
+X-Proofpoint-ORIG-GUID: hzGfnqt_xYlvVJstTZOQcLm5PtEBGO2w
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-08_18,2023-09-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 spamscore=0
+ priorityscore=1501 mlxlogscore=892 mlxscore=0 suspectscore=0
+ impostorscore=0 lowpriorityscore=0 bulkscore=0 clxscore=1015 adultscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2309080209
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Sep 08, 2023 at 03:30:43PM -0700, Elliot Berman wrote:
-> 
-> 
-> On 9/8/2023 3:08 PM, Peter Zijlstra wrote:
-> > On Fri, Sep 08, 2023 at 01:08:07PM -0700, Elliot Berman wrote:
-> > 
-> >>> Perhaps we should start off by doing the below, instead of making it
-> >>> more complicated instead. I suppose you're right about the overhead, but
-> >>> run a hackbench just to make sure or something.
-> >>>
-> >>
-> >> I ran perf bench sched message -g 40 -l 40 with the v3 patch [1]. After 60
-> >> iterations each, I don't see a significant difference on my arm64 platform:
-> >> both samples ~normal and ~eq variance w/t-test p-value: 0.79.
-> >>
-> >> We also ran typical high level benchmarks for our SoCs (antutu,
-> >> geekbench, et. al) and didn't see any regressions there.
-> > 
-> > So if you would've made this 2 patches, the first removing the ifdef,
-> > then the changelog for that patch would be a good place to mention it
-> > doesn't measurably regress things.
-> 
-> No problem, easily done.
-> 
-> > As a bonus, it then makes your other changes smaller too ;-)
-> 
-> Did you mean that each commit is smaller but overall delta is the same
-> or something else? 
+In preparation for freezer to also use saved_state, remove the
+CONFIG_PREEMPT_RT compilation guard around saved_state.
 
-That.
+On the arm64 platform I tested which did not have CONFIG_PREEMPT_RT,
+there was no statistically significant deviation by applying this patch.
 
-> I still wanted to update comments on saved_state in
-> kernel/sched/core.c as it gives good explanation of what is going on. I
-> have split the commit but want to make sure I make the changes you were
-> thinking :-)
+Test methodology:
 
-well, it's nearly 1am, I'm not thinking very much :-) Changing those
-comments seems fine when you add the freezer thing.
+perf bench sched message -g 40 -l 40
+
+Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
+---
+ include/linux/sched.h |  2 --
+ kernel/sched/core.c   | 17 +++--------------
+ 2 files changed, 3 insertions(+), 16 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 609bde814cb0..14194a62294f 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -745,10 +745,8 @@ struct task_struct {
+ #endif
+ 	unsigned int			__state;
+ 
+-#ifdef CONFIG_PREEMPT_RT
+ 	/* saved state for "spinlock sleepers" */
+ 	unsigned int			saved_state;
+-#endif
+ 
+ 	/*
+ 	 * This begins the randomizable portion of task_struct. Only
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index c52c2eba7c73..58921ab7442b 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -2219,31 +2219,21 @@ int __task_state_match(struct task_struct *p, unsigned int state)
+ 	if (READ_ONCE(p->__state) & state)
+ 		return 1;
+ 
+-#ifdef CONFIG_PREEMPT_RT
+ 	if (READ_ONCE(p->saved_state) & state)
+ 		return -1;
+-#endif
++
+ 	return 0;
+ }
+ 
+ static __always_inline
+ int task_state_match(struct task_struct *p, unsigned int state)
+ {
+-#ifdef CONFIG_PREEMPT_RT
+-	int match;
+-
+ 	/*
+ 	 * Serialize against current_save_and_set_rtlock_wait_state() and
+ 	 * current_restore_rtlock_saved_state().
+ 	 */
+-	raw_spin_lock_irq(&p->pi_lock);
+-	match = __task_state_match(p, state);
+-	raw_spin_unlock_irq(&p->pi_lock);
+-
+-	return match;
+-#else
++	guard(raw_spinlock_irq)(&p->pi_lock);
+ 	return __task_state_match(p, state);
+-#endif
+ }
+ 
+ /*
+@@ -4053,7 +4043,6 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
+ 
+ 	*success = !!(match = __task_state_match(p, state));
+ 
+-#ifdef CONFIG_PREEMPT_RT
+ 	/*
+ 	 * Saved state preserves the task state across blocking on
+ 	 * an RT lock.  If the state matches, set p::saved_state to
+@@ -4069,7 +4058,7 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
+ 	 */
+ 	if (match < 0)
+ 		p->saved_state = TASK_RUNNING;
+-#endif
++
+ 	return match > 0;
+ }
+ 
+
+-- 
+2.41.0
+
