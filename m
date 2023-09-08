@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CB7AEE57D7
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Sep 2023 06:45:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45CC9EE57D8
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Sep 2023 06:46:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242065AbjIHGpp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Sep 2023 02:45:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54222 "EHLO
+        id S232139AbjIHGqD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Sep 2023 02:46:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56408 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241840AbjIHGpm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2023 02:45:42 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 713EB1BDA;
-        Thu,  7 Sep 2023 23:45:34 -0700 (PDT)
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3885UOmh022263;
-        Fri, 8 Sep 2023 06:45:11 GMT
+        with ESMTP id S242187AbjIHGqC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2023 02:46:02 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA4F21FE9;
+        Thu,  7 Sep 2023 23:45:51 -0700 (PDT)
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3885Jwbd026910;
+        Fri, 8 Sep 2023 06:45:23 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=ywqql9ZtmQwyapHOQUYuvTKhIphYXgenezy78NLhZ1Q=;
- b=CmHjpGffqEpK/d/u/+sQMNHu/tk7sMp7GXH5alOxupA6Q70G2tW8zkeASvLoab/qQ6ZG
- 9F0dWsFTJVPA4gLUekzGTzMV2iJpqSXC7oMzeImW/ISLg3sHSJgJMeFKj9XVQXRB1ZJH
- +8vk8WHLAaucu5ZW0S5Xc+ZEeeWmKsKeNIu+sPwPCrlJmmGu3BVMinLb8u1Nh7i1Poc7
- 9/NPpamHQGTtJlEurFjrZN6EVLBGAu8jX/b3J7UM7EgpT6Xsv6+3F4+te4Ovz/PrJrNs
- iguIpl/LylNygZngb0kJ8NxyfjF9jnSKubwsjtTBeRO8x0iPkB/OhQ4sFfTEioWgJPyc VQ== 
+ bh=FBV/dB+Y0KhHkNhZHSzo7lJ3/iLjdwBAnc7JzlzRKFU=;
+ b=f3+qwy4cnFREkgh4CoVlS+hzN9N+RAlC1Y4VvPmyV8c5SGtC1CDodFMH40LlR3w3X2RL
+ Xtlh5N5dXdBehLEYHRsxrcN+WieB6+YfavLh9YRoW+249rdc66FO6yh5v9kWKH+YQ2Gt
+ Rg+Y/Yott91TkrZC/e+lAfyEwVUi5Fp/4bksyPPG3x9Fd2pcYydlwP3vzY9KMbg7jrNK
+ W8HocMKhOYk6yJvTmCS7HiPdaRI9yk2YA4Pgg6Rw+UkOm/AM0xitrHuOIA6qAFi0xeZ5
+ TzVXFl6E5anNP4aO+eTtxVJS/Xf+fw5nQiN08+CReHNCd+r+Hiq/bKEmMOrF6zBv1FXA zg== 
 Received: from nalasppmta02.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sy50db3e3-1
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3sy7m0jy9n-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 08 Sep 2023 06:45:11 +0000
+        Fri, 08 Sep 2023 06:45:23 +0000
 Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-        by NALASPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3886j94O012591
+        by NALASPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3886jMSG012735
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 8 Sep 2023 06:45:09 GMT
+        Fri, 8 Sep 2023 06:45:22 GMT
 Received: from tengfan2-gv.qualcomm.com (10.80.80.8) by
  nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.36; Thu, 7 Sep 2023 23:45:00 -0700
+ 15.2.1118.36; Thu, 7 Sep 2023 23:45:13 -0700
 From:   Tengfei Fan <quic_tengfan@quicinc.com>
 To:     <agross@kernel.org>, <andersson@kernel.org>,
         <konrad.dybcio@linaro.org>, <djakov@kernel.org>,
@@ -52,9 +52,9 @@ CC:     <arnd@arndb.de>, <geert+renesas@glider.be>,
         <quic_tdas@quicinc.com>, <quic_tingweiz@quicinc.com>,
         <quic_aiquny@quicinc.com>, <kernel@quicinc.com>,
         Tengfei Fan <quic_tengfan@quicinc.com>
-Subject: [PATCH 1/3] dt-bindings: interconnect: Add Qualcomm SM4450
-Date:   Fri, 8 Sep 2023 14:44:25 +0800
-Message-ID: <20230908064427.26999-2-quic_tengfan@quicinc.com>
+Subject: [PATCH 3/3] arm64: defconfig: enable interconnect for SM4450
+Date:   Fri, 8 Sep 2023 14:44:27 +0800
+Message-ID: <20230908064427.26999-4-quic_tengfan@quicinc.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20230908064427.26999-1-quic_tengfan@quicinc.com>
 References: <20230908064427.26999-1-quic_tengfan@quicinc.com>
@@ -65,339 +65,41 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nalasex01a.na.qualcomm.com (10.47.209.196)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: wBRmY1Wg6GZZHVTysnm9incAUyMNoY1n
-X-Proofpoint-GUID: wBRmY1Wg6GZZHVTysnm9incAUyMNoY1n
+X-Proofpoint-GUID: CSLeu145HEE_tOUmacM3xHp3A8XzGeQt
+X-Proofpoint-ORIG-GUID: CSLeu145HEE_tOUmacM3xHp3A8XzGeQt
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
  definitions=2023-09-08_03,2023-09-05_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 phishscore=0
- spamscore=0 malwarescore=0 priorityscore=1501 mlxlogscore=999 adultscore=0
- suspectscore=0 bulkscore=0 lowpriorityscore=0 impostorscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2309080060
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 phishscore=0
+ lowpriorityscore=0 adultscore=0 mlxlogscore=792 spamscore=0 malwarescore=0
+ suspectscore=0 mlxscore=0 bulkscore=0 priorityscore=1501 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2308100000
+ definitions=main-2309080061
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Qualcomm SM4450 SoC has several bus fabrics that could be controlled
-and tuned dynamically according to the bandwidth demand.
+Add the SM4450 interconnect drivers as built-in for
+support the Qualcomm SM4450 platform to boot to uart
+shell.
 
 Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
 ---
- .../interconnect/qcom,sm4450-rpmh.yaml        | 133 ++++++++++++++
- .../dt-bindings/interconnect/qcom,sm4450.h    | 163 ++++++++++++++++++
- 2 files changed, 296 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sm4450-rpmh.yaml
- create mode 100644 include/dt-bindings/interconnect/qcom,sm4450.h
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sm4450-rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,sm4450-rpmh.yaml
-new file mode 100644
-index 000000000000..2744e4b285b6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,sm4450-rpmh.yaml
-@@ -0,0 +1,133 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/interconnect/qcom,sm4450-rpmh.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Qualcomm RPMh Network-On-Chip Interconnect on SM4450
-+
-+maintainers:
-+  - Tengfei Fan <quic_tengfan@quicinc.com>
-+
-+description: |
-+  RPMh interconnect providers support system bandwidth requirements through
-+  RPMh hardware accelerators known as Bus Clock Manager (BCM).
-+
-+  See also:: include/dt-bindings/interconnect/qcom,sm4450.h
-+
-+properties:
-+  compatible:
-+    enum:
-+      - qcom,sm4450-aggre1-noc
-+      - qcom,sm4450-aggre2-noc
-+      - qcom,sm4450-clk-virt
-+      - qcom,sm4450-cnoc2
-+      - qcom,sm4450-cnoc3
-+      - qcom,sm4450-gem-noc
-+      - qcom,sm4450-lpass-ag-noc
-+      - qcom,sm4450-mc-virt
-+      - qcom,sm4450-mmss-noc
-+      - qcom,sm4450-pcie-anoc
-+      - qcom,sm4450-system-noc
-+      - qcom,sm4450-video-aggre-noc
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    minItems: 1
-+    maxItems: 4
-+
-+required:
-+  - compatible
-+
-+allOf:
-+  - $ref: qcom,rpmh-common.yaml#
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,sm4450-clk-virt
-+              - qcom,sm4450-mc-virt
-+    then:
-+      properties:
-+        reg: false
-+    else:
-+      required:
-+        - reg
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,sm4450-pcie-anoc
-+    then:
-+      properties:
-+        clocks:
-+          items:
-+            - description: aggre-NOC PCIe 0 AXI clock
-+            - description: cfg-NOC PCIe a-NOC AHB clock
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,sm4450-aggre1-noc
-+    then:
-+      properties:
-+        clocks:
-+          items:
-+            - description: aggre USB3 PRIM AXI clock
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,sm4450-aggre2-noc
-+    then:
-+      properties:
-+        clocks:
-+          items:
-+            - description: RPMH CC IPA clock
-+            - description: aggre-NOC USB3 AXI clock
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,sm4450-aggre1-noc
-+              - qcom,sm4450-aggre2-noc
-+              - qcom,sm4450-pcie-anoc
-+    then:
-+      required:
-+        - clocks
-+    else:
-+      properties:
-+        clocks: false
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/qcom,gcc-sm4450.h>
-+    #include <dt-bindings/clock/qcom,rpmh.h>
-+
-+    interconnect-0 {
-+        compatible = "qcom,sm4450-clk-virt";
-+        #interconnect-cells = <2>;
-+        qcom,bcm-voters = <&apps_bcm_voter>;
-+    };
-+
-+    interconnect@1700000 {
-+        compatible = "qcom,sm4450-aggre2-noc";
-+        reg = <0 0x01700000 0 0x31080>;
-+        #interconnect-cells = <2>;
-+        qcom,bcm-voters = <&apps_bcm_voter>;
-+        clocks = <&rpmhcc RPMH_IPA_CLK>,
-+                 <&gcc GCC_AGGRE_USB3_PRIM_AXI_CLK>;
-+    };
-diff --git a/include/dt-bindings/interconnect/qcom,sm4450.h b/include/dt-bindings/interconnect/qcom,sm4450.h
-new file mode 100644
-index 000000000000..92aa5454809f
---- /dev/null
-+++ b/include/dt-bindings/interconnect/qcom,sm4450.h
-@@ -0,0 +1,163 @@
-+/* SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause) */
-+/*
-+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
-+ */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SM4450_H
-+#define __DT_BINDINGS_INTERCONNECT_QCOM_SM4450_H
-+
-+#define MASTER_QUP_0				0
-+#define MASTER_A1NOC_CFG			1
-+#define MASTER_SDCC_2				2
-+#define SLAVE_A1NOC_SNOC			3
-+#define SLAVE_SERVICE_A1NOC			4
-+
-+#define MASTER_QDSS_BAM				0
-+#define MASTER_QUP_1				1
-+#define MASTER_A2NOC_CFG			2
-+#define MASTER_CNOC_A2NOC			3
-+#define MASTER_CRYPTO				4
-+#define MASTER_IPA				5
-+#define MASTER_WLAN				6
-+#define MASTER_QDSS_ETR				7
-+#define MASTER_QDSS_ETR_1			8
-+#define MASTER_SDCC_1				9
-+#define MASTER_UFS_MEM				10
-+#define MASTER_USB3_0				11
-+#define SLAVE_A2NOC_SNOC			12
-+#define SLAVE_SERVICE_A2NOC			13
-+
-+#define MASTER_QUP_CORE_0			0
-+#define MASTER_QUP_CORE_1			1
-+#define SLAVE_QUP_CORE_0			2
-+#define SLAVE_QUP_CORE_1			3
-+
-+#define MASTER_CNOC3_CNOC2			0
-+#define MASTER_QDSS_DAP				1
-+#define SLAVE_AHB2PHY_SOUTH			2
-+#define SLAVE_AHB2PHY_NORTH			3
-+#define SLAVE_ANOC_THROTTLE_CFG			4
-+#define SLAVE_CAMERA_CFG			5
-+#define SLAVE_CLK_CTL				6
-+#define SLAVE_RBCPR_CX_CFG			7
-+#define SLAVE_RBCPR_MX_CFG			8
-+#define SLAVE_CRYPTO_0_CFG			9
-+#define SLAVE_CX_RDPM				10
-+#define SLAVE_DISPLAY_CFG			11
-+#define SLAVE_GFX3D_CFG				12
-+#define SLAVE_IMEM_CFG				13
-+#define SLAVE_IPA_CFG				14
-+#define SLAVE_IPC_ROUTER_CFG			15
-+#define SLAVE_LPASS				16
-+#define SLAVE_CNOC_MSS				17
-+#define SLAVE_MX_RDPM				18
-+#define SLAVE_PCIE_0_CFG			19
-+#define SLAVE_PDM				20
-+#define SLAVE_PIMEM_CFG				21
-+#define SLAVE_PMU_WRAPPER_CFG			22
-+#define SLAVE_PRNG				23
-+#define SLAVE_QUP_0				24
-+#define SLAVE_QUP_1				25
-+#define SLAVE_SDC1				26
-+#define SLAVE_SDCC_2				27
-+#define SLAVE_TCSR				28
-+#define SLAVE_TLMM				29
-+#define SLAVE_UFS_MEM_CFG			30
-+#define SLAVE_USB3_0				31
-+#define SLAVE_VENUS_CFG				32
-+#define SLAVE_VSENSE_CTRL_CFG			33
-+#define SLAVE_A1NOC_CFG				34
-+#define SLAVE_A2NOC_CFG				35
-+#define SLAVE_CNOC2_CNOC3			36
-+#define SLAVE_CNOC_MNOC_CFG			37
-+#define SLAVE_PCIE_ANOC_CFG			38
-+#define SLAVE_SNOC_CFG				39
-+#define SLAVE_VIDEO_ANOC_CFG			40
-+
-+#define MASTER_CNOC2_CNOC3			0
-+#define MASTER_GEM_NOC_CNOC			1
-+#define MASTER_GEM_NOC_PCIE_SNOC		2
-+#define SLAVE_AOSS				3
-+#define SLAVE_APPSS				4
-+#define SLAVE_QDSS_CFG				5
-+#define SLAVE_TME_CFG				6
-+#define SLAVE_WLAN				7
-+#define SLAVE_CNOC3_CNOC2			8
-+#define SLAVE_CNOC_A2NOC			9
-+#define SLAVE_BOOT_IMEM				10
-+#define SLAVE_IMEM				11
-+#define SLAVE_PIMEM				12
-+#define SLAVE_PCIE_0				13
-+#define SLAVE_QDSS_STM				14
-+#define SLAVE_TCU				15
-+
-+#define MASTER_GPU_TCU				0
-+#define MASTER_SYS_TCU				1
-+#define MASTER_APPSS_PROC			2
-+#define MASTER_GFX3D				3
-+#define MASTER_MSS_PROC				4
-+#define MASTER_MNOC_HF_MEM_NOC			5
-+#define MASTER_MNOC_SF_MEM_NOC			6
-+#define MASTER_ANOC_PCIE_GEM_NOC		7
-+#define MASTER_SNOC_GC_MEM_NOC			8
-+#define MASTER_SNOC_SF_MEM_NOC			9
-+#define MASTER_WLAN_Q6				10
-+#define SLAVE_GEM_NOC_CNOC			11
-+#define SLAVE_LLCC				12
-+#define SLAVE_MEM_NOC_PCIE_SNOC			13
-+#define MASTER_MNOC_HF_MEM_NOC_DISP		14
-+#define MASTER_ANOC_PCIE_GEM_NOC_DISP		15
-+#define SLAVE_LLCC_DISP				16
-+
-+#define MASTER_CNOC_LPASS_AG_NOC		0
-+#define MASTER_LPASS_PROC			1
-+#define SLAVE_LPASS_CORE_CFG			2
-+#define SLAVE_LPASS_LPI_CFG			3
-+#define SLAVE_LPASS_MPU_CFG			4
-+#define SLAVE_LPASS_TOP_CFG			5
-+#define SLAVE_LPASS_SNOC			6
-+#define SLAVE_SERVICES_LPASS_AML_NOC		7
-+#define SLAVE_SERVICE_LPASS_AG_NOC		8
-+
-+#define MASTER_LLCC				0
-+#define SLAVE_EBI1				1
-+#define MASTER_LLCC_DISP			2
-+#define SLAVE_EBI1_DISP				3
-+
-+#define MASTER_CAMNOC_HF			0
-+#define MASTER_CAMNOC_ICP			1
-+#define MASTER_CAMNOC_SF			2
-+#define MASTER_MDP				3
-+#define MASTER_CNOC_MNOC_CFG			4
-+#define MASTER_VIDEO_P0_MMNOC			5
-+#define MASTER_VIDEO_PROC_MMNOC			6
-+#define SLAVE_MNOC_HF_MEM_NOC			7
-+#define SLAVE_MNOC_SF_MEM_NOC			8
-+#define SLAVE_SERVICE_MNOC			9
-+#define MASTER_MDP_DISP				10
-+#define SLAVE_MNOC_HF_MEM_NOC_DISP		11
-+
-+#define MASTER_PCIE_ANOC_CFG			0
-+#define MASTER_PCIE_0				1
-+#define SLAVE_ANOC_PCIE_GEM_NOC			2
-+#define SLAVE_SERVICE_PCIE_ANOC			3
-+
-+#define MASTER_GIC_AHB				0
-+#define MASTER_A1NOC_SNOC			1
-+#define MASTER_A2NOC_SNOC			2
-+#define MASTER_LPASS_ANOC			3
-+#define MASTER_SNOC_CFG				4
-+#define MASTER_PIMEM				5
-+#define MASTER_GIC				6
-+#define SLAVE_SNOC_GEM_NOC_GC			7
-+#define SLAVE_SNOC_GEM_NOC_SF			8
-+#define SLAVE_SERVICE_SNOC			9
-+
-+#define MASTER_VIDEO_ANOC_CFG			0
-+#define MASTER_VIDEO_P0				1
-+#define MASTER_VIDEO_PROC			2
-+#define SLAVE_VIDEO_0_ANOC_MMNOC		3
-+#define SLAVE_VIDEO_1_ANOC_MMNOC		4
-+#define SLAVE_SERVICE_SRVC_VIDEO_ANOC		5
-+
-+#endif
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 5315789f4868..8d6b423d94a3 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -1499,6 +1499,7 @@ CONFIG_INTERCONNECT_QCOM_SC7280=y
+ CONFIG_INTERCONNECT_QCOM_SC8180X=y
+ CONFIG_INTERCONNECT_QCOM_SC8280XP=y
+ CONFIG_INTERCONNECT_QCOM_SDM845=y
++CONFIG_INTERCONNECT_QCOM_SM4450=y
+ CONFIG_INTERCONNECT_QCOM_SM8150=m
+ CONFIG_INTERCONNECT_QCOM_SM8250=m
+ CONFIG_INTERCONNECT_QCOM_SM8350=m
 -- 
 2.17.1
 
