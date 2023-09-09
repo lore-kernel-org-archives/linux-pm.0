@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02153EEB57B
-	for <linux-pm@archiver.kernel.org>; Sat,  9 Sep 2023 01:14:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5872EEB565
+	for <linux-pm@archiver.kernel.org>; Sat,  9 Sep 2023 01:15:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346287AbjIIBO1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Sep 2023 21:14:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43352 "EHLO
+        id S1345133AbjIIBPF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Sep 2023 21:15:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55156 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346308AbjIIBO0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2023 21:14:26 -0400
+        with ESMTP id S239746AbjIIBPE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2023 21:15:04 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CECE26A9;
-        Fri,  8 Sep 2023 18:14:03 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B340FC116A8;
-        Sat,  9 Sep 2023 01:13:30 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25A6326A5;
+        Fri,  8 Sep 2023 18:14:33 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09D0AC4163D;
+        Sat,  9 Sep 2023 01:13:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1694222012;
-        bh=iTTYjwjlxm5QPY3nAKGxvPdYt+hzxdFG1uHTgR7R2Cc=;
-        h=From:To:Cc:Subject:Date:From;
-        b=FqRIOydqO0xIOKGJ3dzDXGwROSYGM9FP1btTHNncZ+v4brqt8TC+zTZUvQnUZoniC
-         gtolQMUu7GWvS0/xXM73RekxNGaRj+3jntRlbHpjBkvrKc1GwepvnkB51eFGZ29KDJ
-         vX1roIZYuYaCCOTzzp/J7eIKEuaFPsf/Ijo03quxBKCdVi+bWfydQ7DyoSOjkitRP/
-         cYSUmgLM3SscLKfRz9VjQ7YmX3L0D5IqanNky9JBMxUUKafB5mu+ohOlQ2YlfNMFUr
-         n7p6Vl033AIQOd75er3doUK+DBIcwnpJinjE7VdMwdBsF7nBl2RsLB62UozwkBgqtL
-         fCsvcz9gK8o4A==
+        s=k20201202; t=1694222001;
+        bh=zVMpq/gM87f5AGttmVO2xueTDbmIF7lgyde3fz1QGYU=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=hPVfODX7MsR7oYgFjmOCh0XpLWhVF0i34YtuYWqXkXxJplrEN+FyzS7qq5Fu7Zj1s
+         JCxNA205jDqkrZWdTLUx2rIAznckt/sFPWhHb+XzRIhbiiVAOqVBlZCtsqr9mxd8uI
+         bJE2TG2ardA8PXMk4f77o6qO0rR3KGym/PZwYx+drZF3bHZTBK9SSGsfpcB3HHWP4P
+         J87niGa6c/iDKBnAblf5IFzv+PxPLCpUw9wffiWgSHGSmHjLSS3dM6XVLhJkv1wWAW
+         vc455vI1VCYUtML3ZGztYAqcpup2m+vBn+Oi0lnKScdyQrfDup3KITR7DVEkuHSD4w
+         j9jofP0xdXhVg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mark Brown <broonie@kernel.org>,
@@ -35,14 +35,16 @@ Cc:     Mark Brown <broonie@kernel.org>,
         tiny.windzz@gmail.com, rafael@kernel.org, wens@csie.org,
         samuel@sholland.org, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev
-Subject: [PATCH AUTOSEL 5.10] thermal/drivers/sun8i: Free calibration nvmem after reading it
-Date:   Fri,  8 Sep 2023 21:13:28 -0400
-Message-Id: <20230909011328.3582165-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 3/3] thermal/drivers/sun8i: Free calibration nvmem after reading it
+Date:   Fri,  8 Sep 2023 21:13:14 -0400
+Message-Id: <20230909011314.3581953-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230909011314.3581953-1-sashal@kernel.org>
+References: <20230909011314.3581953-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.10.194
+X-stable-base: Linux 6.1.52
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -70,10 +72,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
-index e053b06280172..6a0e809174731 100644
+index 80614b6adfac5..5776ecc8d0c76 100644
 --- a/drivers/thermal/sun8i_thermal.c
 +++ b/drivers/thermal/sun8i_thermal.c
-@@ -285,7 +285,7 @@ static int sun8i_ths_calibrate(struct ths_device *tmdev)
+@@ -286,7 +286,7 @@ static int sun8i_ths_calibrate(struct ths_device *tmdev)
  	size_t callen;
  	int ret = 0;
  
@@ -82,7 +84,7 @@ index e053b06280172..6a0e809174731 100644
  	if (IS_ERR(calcell)) {
  		if (PTR_ERR(calcell) == -EPROBE_DEFER)
  			return -EPROBE_DEFER;
-@@ -315,6 +315,8 @@ static int sun8i_ths_calibrate(struct ths_device *tmdev)
+@@ -316,6 +316,8 @@ static int sun8i_ths_calibrate(struct ths_device *tmdev)
  
  	kfree(caldata);
  out:
