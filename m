@@ -2,45 +2,45 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50D92EEB565
-	for <linux-pm@archiver.kernel.org>; Sat,  9 Sep 2023 00:39:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27FF0EEB57D
+	for <linux-pm@archiver.kernel.org>; Sat,  9 Sep 2023 00:40:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345923AbjIIAj5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Sep 2023 20:39:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55712 "EHLO
+        id S1346059AbjIIAkt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Sep 2023 20:40:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55768 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345924AbjIIAjk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2023 20:39:40 -0400
+        with ESMTP id S1345642AbjIIAj5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2023 20:39:57 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4858213C;
-        Fri,  8 Sep 2023 17:38:47 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 45DDAC07616;
-        Sat,  9 Sep 2023 00:36:51 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA5D02D46;
+        Fri,  8 Sep 2023 17:39:16 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D6248C433B6;
+        Sat,  9 Sep 2023 00:39:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1694219812;
-        bh=NttybWb99FC6X5ngIOaNtIYxdC+tBRRcY0DzHPNBONY=;
+        s=k20201202; t=1694219941;
+        bh=CkSBT054/rBbV1W8umZKmx6ypwiLEej/y11cUSK6H48=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=tdawBOHnCrlTKwg6LCjhIcu6XCvpObeWaT/Xkj6PBEFY1UetFUmlvK/clWo1X7qC0
-         HCKRmnNqIASTCF0vLtujkZtCZZrFcp0PxbAFiHT3fdrRsKLMFTYdSUgxdJLELNak8g
-         MUG912lXob1lDXumFuUAlg5mcFPOzFCTXN6vcK2vvpFm11ow588iGEuFjHSu3j6Sjh
-         RLrFfhclVowXLrhyEyjO8AWxhIdNJ6xrMeEkcilyynV4tdGf7RmRll999qi/A+XWCZ
-         GrR5hCR39HmKgvF4gH0NE696qY6x2XmGIAaFheFqo4i/pHBD7XvKEQ8g2vwKguQESC
-         eMkVj/rxzbYRw==
+        b=h2MJbV8i9tPsOi7YBiirneZ3e1jSMBEHHv+jJKt5tD3MEx+BJoGEHEmhh5A+VKuzC
+         RN1gnlvpmm+rm6URpNgRkKilgh+B6CQmX+OzkMj+UHLJlXjbynkdAkDlaTVKvnTU1x
+         b96suwZhGAsSuRdLstJ347fzBxD1r8z6aYUQmVG5V2afcU7dt/c9jdNjAL0NWAu8PA
+         w75Ev1PeQ5BVWjhVWOUJLBzBu9jpVv5xOslx64dtBpKTLFJ8rUxWqeiBaD8RQr/axt
+         Eyz9Q2mGYYikhYWPm2z+uCucVfE7JrIMH3FZiDQwVJNj+YOXWCQhTjrU2WvOI7f2p3
+         DkDLsmZ5Pk7wg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Rob Clark <robdclark@chromium.org>,
         Georgi Djakov <djakov@kernel.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.5 25/28] interconnect: Fix locking for runpm vs reclaim
-Date:   Fri,  8 Sep 2023 20:35:59 -0400
-Message-Id: <20230909003604.3579407-25-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 23/24] interconnect: Fix locking for runpm vs reclaim
+Date:   Fri,  8 Sep 2023 20:38:15 -0400
+Message-Id: <20230909003818.3580081-23-sashal@kernel.org>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230909003604.3579407-1-sashal@kernel.org>
-References: <20230909003604.3579407-1-sashal@kernel.org>
+In-Reply-To: <20230909003818.3580081-1-sashal@kernel.org>
+References: <20230909003818.3580081-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.5.2
+X-stable-base: Linux 6.1.52
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -234,10 +234,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 5fac448c28fda..e15a92a79df1a 100644
+index cfa52c6369d05..f4a493d78ee9a 100644
 --- a/drivers/interconnect/core.c
 +++ b/drivers/interconnect/core.c
-@@ -28,6 +28,7 @@ static LIST_HEAD(icc_providers);
+@@ -29,6 +29,7 @@ static LIST_HEAD(icc_providers);
  static int providers_count;
  static bool synced_state;
  static DEFINE_MUTEX(icc_lock);
@@ -245,7 +245,7 @@ index 5fac448c28fda..e15a92a79df1a 100644
  static struct dentry *icc_debugfs_dir;
  
  static void icc_summary_show_one(struct seq_file *s, struct icc_node *n)
-@@ -631,7 +632,7 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
+@@ -632,7 +633,7 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
  	if (WARN_ON(IS_ERR(path) || !path->num_nodes))
  		return -EINVAL;
  
@@ -254,7 +254,7 @@ index 5fac448c28fda..e15a92a79df1a 100644
  
  	old_avg = path->reqs[0].avg_bw;
  	old_peak = path->reqs[0].peak_bw;
-@@ -663,7 +664,7 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
+@@ -664,7 +665,7 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
  		apply_constraints(path);
  	}
  
@@ -263,7 +263,7 @@ index 5fac448c28fda..e15a92a79df1a 100644
  
  	trace_icc_set_bw_end(path, ret);
  
-@@ -872,6 +873,7 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider)
+@@ -967,6 +968,7 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider)
  		return;
  
  	mutex_lock(&icc_lock);
@@ -271,7 +271,7 @@ index 5fac448c28fda..e15a92a79df1a 100644
  
  	node->provider = provider;
  	list_add_tail(&node->node_list, &provider->nodes);
-@@ -900,6 +902,7 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider)
+@@ -992,6 +994,7 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider)
  	node->avg_bw = 0;
  	node->peak_bw = 0;
  
@@ -279,7 +279,7 @@ index 5fac448c28fda..e15a92a79df1a 100644
  	mutex_unlock(&icc_lock);
  }
  EXPORT_SYMBOL_GPL(icc_node_add);
-@@ -1025,6 +1028,7 @@ void icc_sync_state(struct device *dev)
+@@ -1129,6 +1132,7 @@ void icc_sync_state(struct device *dev)
  		return;
  
  	mutex_lock(&icc_lock);
