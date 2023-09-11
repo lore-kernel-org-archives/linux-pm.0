@@ -2,216 +2,404 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8519ECA0ECE
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:11:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D32ACA0EC6
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:11:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236769AbjIKVF6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:05:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39078 "EHLO
+        id S237503AbjIKVGB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:06:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236770AbjIKLWn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 07:22:43 -0400
-Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49253CF0
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:22:36 -0700 (PDT)
-Received: by mail-lj1-x234.google.com with SMTP id 38308e7fff4ca-2bceb02fd2bso71146691fa.1
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:22:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694431354; x=1695036154; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=JWYEp19+kxLH9ilfKCkarl8GOyU5SYDVfZv3MA5eqe4=;
-        b=mz1Oanf70aSQ1YkqlAtxjvUhIoGj7+/02AxiZlh+CkXaXVyhwjjVoq0buzAdb8gD92
-         oP1rx0YIOmKtVnl+A3Jy7mezxIHes54Mka7zPatQM8lrxgbj5Ere217D8JB0t+yiJ3K1
-         Q1Isztdrs7Y7egeh6PDW36XUwBqiABG0JBsg1btdYO5c+cHA2WTltZbNQ3pv1tgAVRzt
-         YElDcUnsJSNKiCCLklNE+2ugivTZ7QH4Wq02KYWJp4DXKB1nsQl7W8mf03urUM/85Jot
-         offUfgLJUn+VQiTDBAsUeygrsxYIAIwtH515oMEnhbfAsu51WXB6Wfp3vr3s0x3iid5b
-         GWKw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694431354; x=1695036154;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=JWYEp19+kxLH9ilfKCkarl8GOyU5SYDVfZv3MA5eqe4=;
-        b=IATAU2OqMo7kK3w4jo7Q/cw9n8LQGHyG91LqG1GBACOXrZNvrPVMQ4bop2rSfH91U/
-         HqiNaJf2r79akRsn58JDTCJRVCOfj+3OtpLVDk3rMRyDyJZ6IqMwk7rT5rFhWpk2TXAc
-         73SXUbpX+kwrOcQPtclJmy857MH5Z0YlzOFCpcWO5eLIrImePe64lga8LiVnajpmlKdw
-         PHo2f+vP9Udef483NZsyhAevutiGtkk7nSmbCIB9MHT5maEug0aJ4++STmXHNe8zLeuz
-         w2JV+Ztv3EVVGQbha0GIh0YYU+8LigPD9W5jEhlGAMFjjBNpsIRHJv/YfAcBzD8uEdSb
-         9Y6g==
-X-Gm-Message-State: AOJu0YyWsXFXPrcRyPKwG0RwCeS1BVtEpQbCS3WB1AHipT6NhHyn81WT
-        o8QGsoCS65a3hzpx505r1SvKCw==
-X-Google-Smtp-Source: AGHT+IHRLMhGsK6RsT9iyCrETaJpm/vgcvBoo5IaCQ506Q9GN4EWNfwfYVLjJBE5Ml1DRyCm7I/IFA==
-X-Received: by 2002:a2e:9e45:0:b0:2bc:dba0:60f9 with SMTP id g5-20020a2e9e45000000b002bcdba060f9mr6734230ljk.44.1694431354467;
-        Mon, 11 Sep 2023 04:22:34 -0700 (PDT)
-Received: from [192.168.37.232] (178235177061.dynamic-4-waw-k-1-1-0.vectranet.pl. [178.235.177.61])
-        by smtp.gmail.com with ESMTPSA id ov27-20020a170906fc1b00b00992c92af6f4sm5207739ejb.144.2023.09.11.04.22.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Sep 2023 04:22:33 -0700 (PDT)
-Message-ID: <924aa48f-5c23-4e17-8bc0-256887971ba9@linaro.org>
-Date:   Mon, 11 Sep 2023 13:22:30 +0200
-MIME-Version: 1.0
+        with ESMTP id S244405AbjIKUXv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 16:23:51 -0400
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2063.outbound.protection.outlook.com [40.107.92.63])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3A9A1A7;
+        Mon, 11 Sep 2023 13:23:43 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=TCRAYqLP8LfPtqE7fYWUbaKImXbpxfswgTc8IPnJNFVRKOrH3osKusVwgXIFBDHyrHlQjkVK4jKN9UMqqoTeDpEdfGc1zT8dXeqHrQdZRZ+1LSJ5IKKumNoAmvoaoz6vtBp/0EII/IhuNMudFkj725Oj0eGbJMbVmmHeN/IUyqnzHpb2g7AongluVuMoXgeTvjXpT/5DnXFHtp2y3A6EteM//VTN5D4YZjLyTu1WDYjlr29njW0Me1+fgzJqF2dlnLwGzsaan+x/KWN7tvWv8wFPdDBV2NOQf8gBPYTK4GzCb7Z6Q7xNVIJdGnLdrWHoR6xiwdDX8yfpjSv++X6BUA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=WjlnqbTCyXZcGPQuajvQco2dWajzXilkERB8eXHeCgQ=;
+ b=CnDG6ZBn5XST2OnWyeFjN1TQhALSEfRER054ehpRwR/8T9TVxQYeK+SqGamg0R0UD/zF2f8GZQe9depahVR3uJnf5+StjZsEuo1WUg21BfYAQVwA2oIVrs/Uu/DVVEMc2AeN2Xs0uop5NoPT8abBhx3LZ28vIZbN7SRZTXeacrl5naEEST6X+DWeg9LK8WwdytOR4jklcJxHT1K2NQosld2+7e6cZM6goSoiOjOultCO/E3ix2Lk571Xx2J81DcdRXbCG+zFbcS0gyagDeedoPbI0X6tGHcA+7oW/JLfL2kIWDIltRD51nJosHccFi9s4khYz5vFSh0PhWD+QlGz1g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=WjlnqbTCyXZcGPQuajvQco2dWajzXilkERB8eXHeCgQ=;
+ b=OH6pPsEFyZI1aMYfq8xvt4gT9qDFCAJnPER6W0tsVKsMuMbFgPacdMWLwYt8VcZ4o88GzR0fVZOId7DkDzRJfnXkmqN1z3eTNXblD/LOyoulVkFkF2T/zXWNi9nRphGdOW5RavoMbxwq2iy79LkWl5nLvpKitAMUCUy1Vs0eS6E=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from MN0PR12MB6101.namprd12.prod.outlook.com (2603:10b6:208:3cb::10)
+ by DM8PR12MB5462.namprd12.prod.outlook.com (2603:10b6:8:24::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6768.35; Mon, 11 Sep
+ 2023 20:23:41 +0000
+Received: from MN0PR12MB6101.namprd12.prod.outlook.com
+ ([fe80::36f9:ffa7:c770:d146]) by MN0PR12MB6101.namprd12.prod.outlook.com
+ ([fe80::36f9:ffa7:c770:d146%7]) with mapi id 15.20.6768.029; Mon, 11 Sep 2023
+ 20:23:40 +0000
+Message-ID: <0cd6648d-21f1-445d-95f6-20f580bbcfd1@amd.com>
+Date:   Mon, 11 Sep 2023 15:23:37 -0500
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 04/11] arm64: dts: qcom: pm7250b: make SID configurable
+Subject: Re: [PATCH v17 2/4] PCI: Add support for drivers to register optin or
+ veto of D3
 Content-Language: en-US
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Luca Weiss <luca.weiss@fairphone.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Bjorn Andersson <andersson@kernel.org>
-Cc:     cros-qcom-dts-watchers@chromium.org,
-        Andy Gross <agross@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Hans de Goede <hdegoede@redhat.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+        "open list:X86 PLATFORM DRIVERS" 
+        <platform-driver-x86@vger.kernel.org>,
+        "open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>,
         linux-pm@vger.kernel.org
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
- <20230830-fp5-initial-v1-4-5a954519bbad@fairphone.com>
- <b82f4683-e8b5-b424-8f7a-6d2ba1cab61f@linaro.org>
- <CV6NF0466658.20DGU7QKF2UBR@otso>
- <CAA8EJpr1+W3f08X-FpiiVrJ98kg52HaMwbbKn=fG15Whm4C8aQ@mail.gmail.com>
- <728003b9-db27-fdc0-e761-197a02a38c24@linaro.org>
- <CAA8EJpoXreHpxZQ2G10n0OiQzUX4ffk=gvo87dAU4-r+Svqpeg@mail.gmail.com>
- <CVAUDGBO4S08.1F0O66ZE6I4IG@otso> <CVFY7D7ND3WS.2B2EYB4ZO86P@otso>
- <cae7261a-6727-6163-1420-01039bfb8396@linaro.org>
- <CVFZZ0YSWQ6J.2AKRML6LWRMUH@otso>
- <bd418fae-accc-bd79-969a-b3b5791efd35@linaro.org>
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
- 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
- izWDgYvmBE8=
-In-Reply-To: <bd418fae-accc-bd79-969a-b3b5791efd35@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20230906184354.45846-1-mario.limonciello@amd.com>
+ <20230906184354.45846-3-mario.limonciello@amd.com>
+ <CAJZ5v0jgGOPcFMfRObAM1St1KLjZS0tEki4f32Rbr3ZXwFyFzA@mail.gmail.com>
+From:   Mario Limonciello <mario.limonciello@amd.com>
+In-Reply-To: <CAJZ5v0jgGOPcFMfRObAM1St1KLjZS0tEki4f32Rbr3ZXwFyFzA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: SA9PR13CA0120.namprd13.prod.outlook.com
+ (2603:10b6:806:24::35) To MN0PR12MB6101.namprd12.prod.outlook.com
+ (2603:10b6:208:3cb::10)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MN0PR12MB6101:EE_|DM8PR12MB5462:EE_
+X-MS-Office365-Filtering-Correlation-Id: 398c9418-2552-443e-b07d-08dbb304fc90
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: FQeH8PEPSpEeFtn4o2BGI9WqkTCuphJvdoBhhso1w0WshJrHqXegmfnt6/WwzmEana5z8LoCjqnC+uZxrXbV/+Ejse7lq6C4gKGmDjKpGuHngdStbFs4LJm/TFh0q0WZNzdOpWbejpBM20Lt8wM9V12WTt1FV9kMHptTqEdFn+zOURuG2XAzLZ8akhW0pMvAEkmYfYaAW47rvxwlKP4y4dvXN8qkGU7DQIAVJuuF/RURcAt72VMSscJ5GoEdhVfPtkwtLI2xxLiC3sxoTu8812icuuGNJVU90O/US0DGFdB+GhACV8/CLPqTqlftVU4QCvqju9izlzk3sbsiRMTQivegCYcWd5gcakatZIj4faY21GYatptHjiT+kXioHANodzU1Zc/Pxt+TW0uZVaI/NPtHioV8l6LDxF+mIVGHW6dwMK13RgGm2zkSsdr8b7hK3MjTNtkyv7LgJEcbZQdZXMVvekpt269UFXZusdJjIHVJ519IfAwAfBcij2DWgBC+U0DK1DBdt6mFLulnfLaaor9DAcbiO4o+TIWEuK7zeqV7ZWpIF7EIo6Yo5h0zn1+ms5FjdME7FKxAdAOxrijqhDp6YMZfDzLI2Bd8OKUeyGFm7u6q5HzyZuYuPYjA7By8WzTyLAY/Y1RrjfHo//oYrw==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN0PR12MB6101.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376002)(39860400002)(136003)(396003)(366004)(346002)(186009)(1800799009)(451199024)(36756003)(8676002)(8936002)(4326008)(31686004)(6666004)(6506007)(53546011)(6486002)(31696002)(38100700002)(86362001)(5660300002)(2906002)(83380400001)(26005)(41300700001)(66476007)(44832011)(2616005)(6512007)(66556008)(316002)(54906003)(6916009)(66946007)(478600001)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?aEFnYmhDTHhvVjB4NW9iTUovUVNvUFNmeEN0U1FDZGozU2JVVUFFWmJFNHU4?=
+ =?utf-8?B?aFlLcSt3VVVaYWI2TFpzOW9mQTY4VUVaTllJdi83YkZRZGNrdm53dkNMSndj?=
+ =?utf-8?B?alBlUWpmaEdzbTV6NS9yVkNpZUxlZVd2Z0FlYVRPekRkdmpQLzUrSDUwdWRR?=
+ =?utf-8?B?Mmk3cWZHNmJqaDNGb28rTHA5TnZ2ZEowM0NBVEt6czNxVUQxYzMxRlRqYW8v?=
+ =?utf-8?B?TWQxM3ZzZ2hCWjVtbDB5YnJudVoxQ1lyLzNTci96eUZJYXh6QVMvczVueGJO?=
+ =?utf-8?B?T3JEMXhRMzI1Rzl2K0dvOVI3L29nRzNuakdmbm02aXBtbzNCT2w4bENjT0Nw?=
+ =?utf-8?B?R1pCRUx3OEJJdEE5R2hvaVRVQTUyY3R4VjJ5Zk1abStUY2xSWHl1QzdISFht?=
+ =?utf-8?B?cFlnTTBjcmo0bDgwRnRiR1ZHOFk5blpzVTJiOTh5VjdQQ1cvc0YxZHJna2hL?=
+ =?utf-8?B?bVYrb0oxbE13QXRUbW9zSDQzOThDYWZMaWJITDJwRjRTa3BjRHE4YmRZN0dy?=
+ =?utf-8?B?R25UVS85andLcnkzWTI0V1ErODBoWE8yQXRYcnh3dXB2UjU4cHNRbC9oTjMz?=
+ =?utf-8?B?Q1NEajVPUWQvTytNOU5hN3E5RUZwTjkrMk8yUUpwR0IydTZPZEhTeXB3a3pk?=
+ =?utf-8?B?L29oaGRrL1BJWnlvNnBEdld2NHRVZEN6dXBieTk3eTU2L2dVR2lETStoelZn?=
+ =?utf-8?B?YlAzNmZEemFaY2plQmNuT09UMTA4eGwySmNOdlp2dk9PZFNZNXYySENVNkJZ?=
+ =?utf-8?B?MmZpb3VITlpUa012WUlrclgzRTZuZEFQRGR2bFJlc1Awa1M1dDhTOFZWSFlv?=
+ =?utf-8?B?K0xTTTJzY05QT244R2tHUjZTWTZQbDV3QW5WcGxGSXVWTDNCWlJIQm05cEhv?=
+ =?utf-8?B?akg1dDQydHJONFZkckxLOXRVdmJKQXp6ZTBjUTgvV2NheEFvSWtqY0c5dFBW?=
+ =?utf-8?B?SitoMUZYZmdLdDdDZEZHaitGeXZPR1hybm9NUDBybFhsMXpvd2hzVjB1b2la?=
+ =?utf-8?B?K0ZFTnE0amFQNmdwam9YNlhFbjRYK2JDUlZwODNQaEVDc1htUzNhaC9TTnFJ?=
+ =?utf-8?B?bmlkeExYUjhSZU9KcGlENEZSMXJLQURLaGViNmxkN0xWWjA0N3lyVTVhaEVM?=
+ =?utf-8?B?R1U3a3hTanl0d0Naa1FNdWJ1Rml5Mk9xMnF6TjBBcHVVR2taL0RyUS80VEdx?=
+ =?utf-8?B?RHNLWng2MThpdnpXa0huU1lvY3AxNWo2R3VZWXBaQnFBY1lTSlZaM1Zlc3U0?=
+ =?utf-8?B?WlJZRjA0UHVhbU9wNjRVZ1NrUVpIWVJsT3NjM3ZOWWUwOUd3RGNvSk1HUVFo?=
+ =?utf-8?B?MkwyNVI2MTYra05pTzN6WFFVenc4ODZpaUUvUmNIMVFNL1VTNC9lNmhmVW5m?=
+ =?utf-8?B?T3Q3dUpVNjlLTE9HNWpiQTNjaitDODFuNFFDOTUzRlgrbDMwd2gyWGR1djdt?=
+ =?utf-8?B?YnMrMkxFT3gxQWV0Z0lNRENXbmlLaGNEa3RleG1ETm5UUjcyTFFUR0xOWHVw?=
+ =?utf-8?B?VDVlU3FhM2I0cWZCR3d6S1Zid2p1cGpPR0xUMDdIU1hmRnEycU53ajhjcUpK?=
+ =?utf-8?B?clFTRWk0aXpBbjFaeU1INnl3Y29XZWNDTlpsQnVjeFZQSlBRdTF6Mm80ZWFx?=
+ =?utf-8?B?QWR4WUhzdHZHUndjNm5HRFU4WWtrUHA4TDZtNVdaakRLZ0JjNTdFRWozK3dP?=
+ =?utf-8?B?V0FmR2J6U2F4TExiUFdTNWJRdHR6QkZ2djhtTWMrQ1FwcWlUUFdvY3doUVVi?=
+ =?utf-8?B?UFpWZDVDT0FXM3lxRktkYTNYWE90OUJnRDRxWisyWjFRTytwbEFoUjBlSEc3?=
+ =?utf-8?B?czVGWTZYRnpoYmpHVTY3N0lWcXVWN3dOZy9KM0lCOVhjNExZTmhKVHowV2R5?=
+ =?utf-8?B?NW9FcjdCc3hqM0JHaDYvSDVpSmV1TG56aE0xazJwL29pYk5taEQ0WWNNMEJa?=
+ =?utf-8?B?S3pZMzBYbXg3NHEwcWNIRWpQL1VueVRxNnJxQVp1SXJ4UG9qcmtuQkx3QzQ5?=
+ =?utf-8?B?bW1ubUYxYVhWOFBDdWZ3Ukw0ellvdlNDTElXU0tFTEUvejhyNFZoZ0luaHl6?=
+ =?utf-8?B?dnA0VHFkS25HeFJUUFJLc21rNTVjTndiUGQvUVhHMllOS00yWFJXaUJCQm5C?=
+ =?utf-8?Q?wAaoNVfzBImmzhjcYpeYHUvDH?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 398c9418-2552-443e-b07d-08dbb304fc90
+X-MS-Exchange-CrossTenant-AuthSource: MN0PR12MB6101.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Sep 2023 20:23:40.3447
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: eoVzF4ROD8BN38pkg/8hXiSrH02ig2g9gbiSTSzYozF+tfOJvCV90A/QMVQWy4HW5/RxoHu+AgvPOFPyFSKgpA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM8PR12MB5462
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11.09.2023 13:15, Krzysztof Kozlowski wrote:
-> On 11/09/2023 11:59, Luca Weiss wrote:
->> On Mon Sep 11, 2023 at 11:44 AM CEST, Krzysztof Kozlowski wrote:
->>> On 11/09/2023 10:34, Luca Weiss wrote:
->>>> On Tue Sep 5, 2023 at 10:30 AM CEST, Luca Weiss wrote:
->>>>> On Thu Aug 31, 2023 at 2:27 PM CEST, Dmitry Baryshkov wrote:
->>>>>> On Thu, 31 Aug 2023 at 14:54, Krzysztof Kozlowski
->>>>>> <krzysztof.kozlowski@linaro.org> wrote:
->>>>>>>
->>>>>>> On 31/08/2023 13:33, Dmitry Baryshkov wrote:
->>>>>>>> On Thu, 31 Aug 2023 at 13:13, Luca Weiss <luca.weiss@fairphone.com> wrote:
->>>>>>>>>
->>>>>>>>> On Wed Aug 30, 2023 at 12:06 PM CEST, Krzysztof Kozlowski wrote:
->>>>>>>>>> On 30/08/2023 11:58, Luca Weiss wrote:
->>>>>>>>>>> Like other Qualcomm PMICs the PM7250B can be used on different addresses
->>>>>>>>>>> on the SPMI bus. Use similar defines like the PMK8350 to make this
->>>>>>>>>>> possible.
->>>>>>>>>>>
->>>>>>>>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
->>>>>>>>>>> ---
->>>>>>>>>>>  arch/arm64/boot/dts/qcom/pm7250b.dtsi | 23 ++++++++++++++++-------
->>>>>>>>>>>  1 file changed, 16 insertions(+), 7 deletions(-)
->>>>>>>>>>>
->>>>>>>>>>> diff --git a/arch/arm64/boot/dts/qcom/pm7250b.dtsi b/arch/arm64/boot/dts/qcom/pm7250b.dtsi
->>>>>>>>>>> index e8540c36bd99..3514de536baa 100644
->>>>>>>>>>> --- a/arch/arm64/boot/dts/qcom/pm7250b.dtsi
->>>>>>>>>>> +++ b/arch/arm64/boot/dts/qcom/pm7250b.dtsi
->>>>>>>>>>> @@ -7,6 +7,15 @@
->>>>>>>>>>>  #include <dt-bindings/interrupt-controller/irq.h>
->>>>>>>>>>>  #include <dt-bindings/spmi/spmi.h>
->>>>>>>>>>>
->>>>>>>>>>> +/* This PMIC can be configured to be at different SIDs */
->>>>>>>>>>> +#ifndef PM7250B_SID
->>>>>>>>>>> +   #define PM7250B_SID 2
->>>>>>>>>>> +#endif
->>>>>>>>>>
->>>>>>>>>> Why do you send the same patch as v1, without any reference to previous
->>>>>>>>>> discussions?
->>>>>>>>>>
->>>>>>>>>> You got here feedback already.
->>>>>>>>>>
->>>>>>>>>> https://lore.kernel.org/linux-arm-msm/f52524da-719b-790f-ad2c-0c3f313d9fe9@linaro.org/
->>>>>>>>>
->>>>>>>>> Hi Krzysztof,
->>>>>>>>>
->>>>>>>>> I did mention that original patch in the cover letter of this series.
->>>>>>>>> I'm definitely aware of the discussion earlier this year there but also
->>>>>>>>> tried to get an update lately if there's any update with no response.
->>>>>>>>
->>>>>>>> I think the overall consensus was that my proposal is too complicated
->>>>>>>> for the DT files.
->>>>>>>
->>>>>>> I proposed to duplicate the entries. Do you keep QUP nodes in DTSI and
->>>>>>> customize per address? No.
->>>>>>
->>>>>> At the same time, we do keep SoC files separate from the board files.
->>>>>> Yes, I'm slightly exaggerating here.
->>>>>>
->>>>>> I think that for PMIC files it makes sense to extract common parts if
->>>>>> that eases reuse of the common parts.
->>>>>
->>>>> Hi all,
->>>>>
->>>>> what can I do for v2 now?
->>>>>
->>>>> 1. Keep this patch as-is, and keep pm7250b in device dts.
->>>
->>> This was NAKed by me. What Qualcomm SoC maintainers decide (or not
->>> decide) about other options, should not cause the wrong solution to be
->>> re-posted...
->>>
->>>>>
->>>>> 2. Drop pm7250b patch and drop from device dts, until _someone_ figures
->>>>> out a solution talking to the PMIC on different SID.
->>>>>
->>>>> 3. Something else like copy-pasting pm7250b.dtsi to pm7250-8.dtsi and
->>>>> changing the SID there, and using that in device dts.
+On 9/11/2023 13:34, Rafael J. Wysocki wrote:
+> On Wed, Sep 6, 2023 at 9:16 PM Mario Limonciello
+> <mario.limonciello@amd.com> wrote:
 >>
->> @Konrad, @Bjorn: Can you give any feedback here what's preferable?
->> Otherwise I'm just blocked on this series.
-I'm sure Krzysztof will disagree, but all of the solutions (which are
-either duplicate the dt, add ifdefs or skip adding this pmic) are
-equally band-aid-class.. A bright future where this PMIC thing is
-handled on the driver side that will hopefully come soon(tm) should
-resolve such problems..
+>> commit 9d26d3a8f1b0 ("PCI: Put PCIe ports into D3 during suspend")
+>> changed pci_bridge_d3_possible() so that any vendor's PCIe ports
+>> from modern machines (>=2015) are allowed to be put into D3.
+>>
+>> This policy change has worked for most machines, but the behavior
+>> is improved with `pcie_port_pm=off` on some others.
+>>
+>> Add support for drivers to register both 'optin' and 'veto' callbacks
+>> and a priority which can be used for deciding whether a device should
+>> use D3. When drivers register the callbacks, the list is sorted by
+>> priority.
+>>
+>> Suggested-by: Hans de Goede <hdegoede@redhat.com>
+>> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+>> ---
+>>   drivers/pci/pci.c   | 143 ++++++++++++++++++++++++++++++++++++++++++++
+>>   include/linux/pci.h |   9 +++
+>>   2 files changed, 152 insertions(+)
+>>
+>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> index 59c01d68c6d5..06ab73f58adf 100644
+>> --- a/drivers/pci/pci.c
+>> +++ b/drivers/pci/pci.c
+>> @@ -21,6 +21,7 @@
+>>   #include <linux/module.h>
+>>   #include <linux/spinlock.h>
+>>   #include <linux/string.h>
+>> +#include <linux/list_sort.h>
+>>   #include <linux/log2.h>
+>>   #include <linux/logic_pio.h>
+>>   #include <linux/pm_wakeup.h>
+>> @@ -54,6 +55,8 @@ unsigned int pci_pm_d3hot_delay;
+>>   static void pci_pme_list_scan(struct work_struct *work);
+>>
+>>   static LIST_HEAD(pci_pme_list);
+>> +static LIST_HEAD(d3_possible_list);
+>> +static DEFINE_MUTEX(d3_possible_list_mutex);
+>>   static DEFINE_MUTEX(pci_pme_list_mutex);
+>>   static DECLARE_DELAYED_WORK(pci_pme_work, pci_pme_list_scan);
+>>
+>> @@ -161,6 +164,14 @@ static bool pcie_ats_disabled;
+>>   /* If set, the PCI config space of each device is printed during boot. */
+>>   bool pci_early_dump;
+>>
+>> +/* Preferences set by a driver for D3 optin/veto */
+>> +enum driver_d3_pref {
+>> +       D3_PREF_UNSET,  /* Not configured by driver */
+>> +       D3_PREF_NONE,   /* Driver does not care */
+>> +       D3_PREF_OPTIN,  /* Driver prefers D3 */
+>> +       D3_PREF_VETO,   /* Driver vetoes D3 */
+>> +};
+>> +
+>>   bool pci_ats_disabled(void)
+>>   {
+>>          return pcie_ats_disabled;
+>> @@ -3031,6 +3042,10 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+>>                  if (pci_bridge_d3_force)
+>>                          return true;
+>>
+>> +               /* check for any driver optin of D3 for the bridge */
+>> +               if (bridge->driver_d3 == D3_PREF_OPTIN)
+>> +                       return true;
+>> +
+>>                  /* Even the oldest 2010 Thunderbolt controller supports D3. */
+>>                  if (bridge->is_thunderbolt)
+>>                          return true;
+>> @@ -3050,6 +3065,10 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+>>                  if (dmi_check_system(bridge_d3_blacklist))
+>>                          return false;
+>>
+>> +               /* check for any driver veto for D3 for the bridge */
+>> +               if (bridge->driver_d3 == D3_PREF_VETO)
+>> +                       return false;
+>> +
+>>                  /*
+>>                   * It should be safe to put PCIe ports from 2015 or newer
+>>                   * to D3.
+>> @@ -3168,6 +3187,130 @@ void pci_d3cold_disable(struct pci_dev *dev)
+>>   }
+>>   EXPORT_SYMBOL_GPL(pci_d3cold_disable);
+>>
+>> +static struct pci_dev *pci_get_upstream_port(struct pci_dev *pci_dev)
+>> +{
+>> +       struct pci_dev *bridge;
+>> +
+>> +       bridge = pci_upstream_bridge(pci_dev);
+>> +       if (!bridge)
+>> +               return NULL;
+>> +
+>> +       if (!pci_is_pcie(bridge))
+>> +               return NULL;
+>> +
+>> +       switch (pci_pcie_type(bridge)) {
+>> +       case PCI_EXP_TYPE_ROOT_PORT:
+>> +       case PCI_EXP_TYPE_UPSTREAM:
+>> +       case PCI_EXP_TYPE_DOWNSTREAM:
+>> +               return bridge;
+>> +       default:
+>> +               break;
+>> +       };
+>> +
+>> +       return NULL;
+>> +}
+>> +
+>> +static void pci_refresh_d3_possible(void)
+>> +{
+>> +       struct pci_d3_driver_ops *driver;
+>> +       struct pci_dev *pci_dev = NULL;
+>> +       struct pci_dev *bridge;
+>> +
+>> +       /* 1st pass: unset any preferences set a previous invocation */
+>> +       while ((pci_dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, pci_dev))) {
+>> +               bridge = pci_get_upstream_port(pci_dev);
+>> +               if (!bridge)
+>> +                       continue;
+>> +
+>> +               if (bridge->driver_d3 != D3_PREF_UNSET)
+>> +                       bridge->driver_d3 = D3_PREF_UNSET;
+>> +       }
+>> +
+>> +       pci_dev = NULL;
+>> +
+>> +       /* 2nd pass: update the preference and refresh bridge_d3 */
+>> +       while ((pci_dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, pci_dev))) {
+>> +               bridge = pci_get_upstream_port(pci_dev);
+>> +               if (!bridge)
+>> +                       continue;
+>> +
+>> +               /* don't make multiple passes on the same device */
+>> +               if (bridge->driver_d3 != D3_PREF_UNSET)
+>> +                       continue;
+>> +
+>> +               /* the list is pre-sorted by highest priority */
+>> +               mutex_lock(&d3_possible_list_mutex);
+>> +               list_for_each_entry(driver, &d3_possible_list, list_node) {
+>> +                       /* another higher priority driver already set preference */
+>> +                       if (bridge->driver_d3 != D3_PREF_UNSET)
+>> +                               break;
+>> +                       /* check for opt in to D3 */
+>> +                       if (driver->optin && driver->optin(bridge))
+>> +                               bridge->driver_d3 = D3_PREF_OPTIN;
+>> +                       /* check for opt out of D3 */
+>> +                       else if (driver->veto && driver->veto(bridge))
+>> +                               bridge->driver_d3 = D3_PREF_VETO;
+>> +               }
+>> +               mutex_unlock(&d3_possible_list_mutex);
+>> +
+>> +               /* no driver set a preference */
+>> +               if (bridge->driver_d3 == D3_PREF_UNSET)
+>> +                       bridge->driver_d3 = D3_PREF_NONE;
+>> +
+>> +               /* update bridge_d3 */
+>> +               pci_bridge_d3_update(pci_dev);
+>> +       }
+>> +}
+>> +
+>> +static int pci_d3_driver_cmp(void *priv, const struct list_head *_a,
+>> +                          const struct list_head *_b)
+>> +{
+>> +       struct pci_d3_driver_ops *a = container_of(_a, typeof(*a), list_node);
+>> +       struct pci_d3_driver_ops *b = container_of(_b, typeof(*b), list_node);
+>> +
+>> +       if (a->priority < b->priority)
+>> +               return -1;
+>> +       else if (a->priority > b->priority)
+>> +               return 1;
+>> +       return 0;
+>> +}
+>> +
+>> +/**
+>> + * pci_register_d3_possible_cb - Register a driver callback for checking d3 veto
+>> + * @arg: driver provided structure with function pointer and priority
+>> + *
+>> + * This function can be used by drivers to register a callback that can be
+>> + * used to veto a device going into D3.
+>> + * Returns 0 on success, error code on failure.
+>> + */
+>> +int pci_register_d3_possible_cb(struct pci_d3_driver_ops *arg)
+>> +{
+>> +       mutex_lock(&d3_possible_list_mutex);
+>> +       list_add(&arg->list_node, &d3_possible_list);
+>> +       list_sort(NULL, &d3_possible_list, pci_d3_driver_cmp);
+>> +       mutex_unlock(&d3_possible_list_mutex);
+>> +       pci_refresh_d3_possible();
+>> +       return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(pci_register_d3_possible_cb);
+>> +
+>> +/**
+>> + * pci_unregister_d3_possible_cb - Unregister a driver callback for checking d3 veto
+>> + * @arg: driver provided structure with function pointer and priority
+>> + *
+>> + * This function can be used by drivers to unregister a callback that can be
+>> + * used to veto a device going into D3.
+>> + */
+>> +void pci_unregister_d3_possible_cb(struct pci_d3_driver_ops *arg)
+>> +{
+>> +       mutex_lock(&d3_possible_list_mutex);
+>> +       list_del(&arg->list_node);
+>> +       list_sort(NULL, &d3_possible_list, pci_d3_driver_cmp);
+>> +       mutex_unlock(&d3_possible_list_mutex);
+>> +       pci_refresh_d3_possible();
+>> +}
+>> +EXPORT_SYMBOL_GPL(pci_unregister_d3_possible_cb);
+>> +
+>>   /**
+>>    * pci_pm_init - Initialize PM functions of given PCI device
+>>    * @dev: PCI device to handle.
+>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> index 8c7c2c3c6c65..863399e78869 100644
+>> --- a/include/linux/pci.h
+>> +++ b/include/linux/pci.h
+>> @@ -389,6 +389,7 @@ struct pci_dev {
+>>                                                     bit manually */
+>>          unsigned int    d3hot_delay;    /* D3hot->D0 transition time in ms */
+>>          unsigned int    d3cold_delay;   /* D3cold->D0 transition time in ms */
+>> +       unsigned int    driver_d3;      /* Driver D3 request preference */
+>>
+>>   #ifdef CONFIG_PCIEASPM
+>>          struct pcie_link_state  *link_state;    /* ASPM link state */
+>> @@ -1404,6 +1405,14 @@ void pci_d3cold_disable(struct pci_dev *dev);
+>>   bool pcie_relaxed_ordering_enabled(struct pci_dev *dev);
+>>   void pci_resume_bus(struct pci_bus *bus);
+>>   void pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state);
+>> +struct pci_d3_driver_ops {
+>> +       struct list_head list_node;
+>> +       int priority;
+>> +       bool (*optin)(struct pci_dev *pdev);
+>> +       bool (*veto)(struct pci_dev *pdev);
+>> +};
+>> +int pci_register_d3_possible_cb(struct pci_d3_driver_ops *arg);
+>> +void pci_unregister_d3_possible_cb(struct pci_d3_driver_ops *arg);
+>>
+>>   /* For use by arch with custom probe code */
+>>   void set_pcie_port_type(struct pci_dev *pdev);
+>> --
+> 
+> I don't like this too much TBH.  It appears overly complicated to me
+> and it totally misses the wakeup vs non-wakeup point I've been talking
+> about recently.
 
-From my side, ifdef is the least burdensome, even if ugly..
+Yeah it does miss the wakeup point at the moment.
 
-Konrad
+> 
+> IMV, the underlying issue all boils down to the platform firmware
+> inadequately describing the behavior of the system to the OS.
+> Specifically, had it provided a _S0W returning 0 for the Root Port(s)
+> in question, wakeup signaling would have worked (or else there would
+> have been a defect in the kernel code to be addressed).  
+
+I think you're right.  I'll try and get BIOS guys to provide a test BIOS 
+to prove this direction is correct.
+
+It wouldn't help all the machines already in the field but if it can be 
+done without harm to Windows maybe future SoCs could use it.
+
+> Instead, it
+> decided to kind-of guide Windows in the "right" direction through PEP
+> constraints which doesn't have the same effect on Linux and honestly
+> I'm not even sure if it is a good idea to adjust Linux to that.
+> 
+
+What is the worry with bringing Linux in this direction (using constraints)?
+
+My main hope is that by generalizing this fundamental difference in how 
+Windows and Linux handle Modern Standby / suspend-to-idle we can avoid 
+other future bugs.
+
+> It looks to me like the issue could be addressed by a PCI device quirk
+> playing the role of a missing _S0W (but slightly more precise, because
+> it may distinguish suspend-to-idle from PM-runtime, which _S0W cannot
+> do).
+
+Thanks for this idea.  I'll experiment with this.
