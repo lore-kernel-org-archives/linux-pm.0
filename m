@@ -2,214 +2,118 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 201CCCA0EC3
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52560CA0EC5
 	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242294AbjIKVHY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:07:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51160 "EHLO
+        id S242366AbjIKVHZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:07:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236717AbjIKLPy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 07:15:54 -0400
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70E26CF0
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:15:47 -0700 (PDT)
-Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-401b3ea0656so45442705e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:15:47 -0700 (PDT)
+        with ESMTP id S242679AbjIKQFp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 12:05:45 -0400
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF3DFCCA
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 09:05:40 -0700 (PDT)
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-3ff1c397405so54237575e9.3
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 09:05:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694430946; x=1695035746; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1694448339; x=1695053139; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=7oYncRXl8MdgOuj5ecatA5YK1hlf20bUpcsVqj8+B7w=;
-        b=iy6Ly+qSIjUUd4/DUtUNVlBHa1u5LTfvhrT/hl4O1wLhMitDehJL8lXvytikvsFVcS
-         H/IAUTW7iN5XWLire2POO6epX+pXGgn4E1jMTwlhTDG8n8FR4auFzhs98SAplSxmp1PF
-         bCbAY+tCpf2+Udd+6x6m1+oZCxZmzbcRVDo1OptZ06DKeRET75y72J2q0sp08bLPoB+k
-         OxnYZYAJotbPiTq/56PeJKOhtcJoOhBkc2b9P1KJDV+DqEW2j0pagLTiXDdOSHI402xq
-         GAc7Vmi75iRRMsaf2Jmorz88gcd2/B4xIT1h+3+/oKVyP66b10KM/HrGpbTDYE+j8qt1
-         rWiA==
+        bh=VBVJ2wHJ2/UKLMCz0YHp9T+QNyQaVPOEmzHr3wHgHAg=;
+        b=iirHIJlj/Q1ROqFAMDiIEBdBoauZRMnmRnc0msgGDaO9EZZmBmn7Cn8dQiejSkxgkl
+         SZ9JPgsKdOXkTdAAs2S7UEldKGnXJ9/ZkaRMc+wWG1VvhrY6I/AoZc5AG3h/P6jjDkew
+         J5WewO4CHKoEHL1E9jttRTqwo877Qj6S7BLSguonSMvbhto+YRaAs/foKBq5Bh+v7RrS
+         wuqoQot43wlKYK9H+9s9GUIBdER6EJVcd4rp0oiR/w+IeYwn73/SLAaiWOUGVzHVMv11
+         i4Zlmy6lA5S/gOOaT8GgxefdUKiyAQPc/wOQVILBKLVfPQlfGN2O1B4vo8OfuAsabtE1
+         J9LQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694430946; x=1695035746;
+        d=1e100.net; s=20230601; t=1694448339; x=1695053139;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=7oYncRXl8MdgOuj5ecatA5YK1hlf20bUpcsVqj8+B7w=;
-        b=EB7i3obfiSIBruM1kpK4Lg5eTNV548gcpcyECZWCsNp3vw6GmSQSX5RB62QQuJloqU
-         jeA5MWjw/2PCfwYw5N9DGLdITgfAONnj84K6yQxBJ71qeq1IbFo9zY/oP/8hW+lrUNfQ
-         GkSgOq3heroSPzPb+CT8lFxdlWMmrsEGu0xLRXroBvySG0qvVa1yk9lnMA9guolomnWl
-         N7J9nQr/BiPOOlqMGIDxJbgko1tdGm81IuNODS2IMjMy7tmTK/Orhg/zwlOUGYz2BRtF
-         6oitpDPK1VlCbuM/Y/t7umL4QWsDzq6acl0h0QKV4OPnp6dDI4dPGnZ5mb9d17KHK3hZ
-         qEDA==
-X-Gm-Message-State: AOJu0Yw76JzU8c/0poA+RhyODJE+WMamGs7vy1EZf8Z3tAz2kLbgl1Ir
-        V1bM8Remr1t67PgrrqcR3XcslQ==
-X-Google-Smtp-Source: AGHT+IFMPWetHW3X3w0vf7JC2rs7SsnHakGdeLJ9bxL9NSEuCvaDE4Qf7g+s2Jq63JasENDVFi2WvA==
-X-Received: by 2002:a05:600c:6028:b0:402:f55e:ac11 with SMTP id az40-20020a05600c602800b00402f55eac11mr7826062wmb.20.1694430945795;
-        Mon, 11 Sep 2023 04:15:45 -0700 (PDT)
+        bh=VBVJ2wHJ2/UKLMCz0YHp9T+QNyQaVPOEmzHr3wHgHAg=;
+        b=sSLN/IObrVc9KlGcPvbZLJWc6rM6fR5AZ5yCkCPRTxbuhti+/th3222vwVdIn4wcNE
+         0MOgWYm9qc9SPkDTDBeAO3gWwo+pXc5K4Fmb87VslMaN/n7cbjOu94uV1C6vqxTotXxF
+         D3/8B9aT/SJRTN8V6FA/cGDjQ0NYth1w74A+O4fHq0pqRlxUeY67bOlghTofZ0akN+mC
+         kO6ZLnqasfEncJJwolT3FfKi+yqD8YCC+Cilzvg+y6XyIPqjyyDC2Qd1hWBjJuICIRF8
+         FXRhAUr5TbCqLwdguUvL2ObhITjPO8j2i4pMhB0B+c1HYpd/qmLDGjtAu5bo9PwTa2be
+         0r3g==
+X-Gm-Message-State: AOJu0YwcYWAJprsfgoCTnhGSn521WUHOhiNtjI+MpFNB7jkwa9nfzAFo
+        /y+C4eaIqwqDSnbyqf5FNP3StQ==
+X-Google-Smtp-Source: AGHT+IGyuy2+dN6nVi/A8nEkH5DvEYQPGPUixpXjx1K6xC3tj2xMB32WaeVax7THWg5xlQU35kx7hg==
+X-Received: by 2002:a05:600c:2116:b0:401:c8b9:4b8a with SMTP id u22-20020a05600c211600b00401c8b94b8amr9091672wml.29.1694448339176;
+        Mon, 11 Sep 2023 09:05:39 -0700 (PDT)
 Received: from [192.168.1.20] ([178.197.214.188])
-        by smtp.gmail.com with ESMTPSA id b13-20020a5d634d000000b0031c5e9c2ed7sm9783914wrw.92.2023.09.11.04.15.43
+        by smtp.gmail.com with ESMTPSA id 12-20020a05600c028c00b003fee6e170f9sm10490902wmk.45.2023.09.11.09.05.36
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Sep 2023 04:15:45 -0700 (PDT)
-Message-ID: <bd418fae-accc-bd79-969a-b3b5791efd35@linaro.org>
-Date:   Mon, 11 Sep 2023 13:15:43 +0200
+        Mon, 11 Sep 2023 09:05:38 -0700 (PDT)
+Message-ID: <5f1791b4-78d8-9895-e639-238411b60f00@linaro.org>
+Date:   Mon, 11 Sep 2023 18:05:35 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.15.0
-Subject: Re: [PATCH 04/11] arm64: dts: qcom: pm7250b: make SID configurable
+Subject: Re: [PATCH 04/11] thermal: exynos: remove fine-grained clk management
 Content-Language: en-US
-To:     Luca Weiss <luca.weiss@fairphone.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
-Cc:     cros-qcom-dts-watchers@chromium.org,
-        Andy Gross <agross@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
+To:     Marek Szyprowski <m.szyprowski@samsung.com>,
+        Mateusz Majewski <m.majewski2@samsung.com>,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Cc:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20230830-fp5-initial-v1-0-5a954519bbad@fairphone.com>
- <20230830-fp5-initial-v1-4-5a954519bbad@fairphone.com>
- <b82f4683-e8b5-b424-8f7a-6d2ba1cab61f@linaro.org>
- <CV6NF0466658.20DGU7QKF2UBR@otso>
- <CAA8EJpr1+W3f08X-FpiiVrJ98kg52HaMwbbKn=fG15Whm4C8aQ@mail.gmail.com>
- <728003b9-db27-fdc0-e761-197a02a38c24@linaro.org>
- <CAA8EJpoXreHpxZQ2G10n0OiQzUX4ffk=gvo87dAU4-r+Svqpeg@mail.gmail.com>
- <CVAUDGBO4S08.1F0O66ZE6I4IG@otso> <CVFY7D7ND3WS.2B2EYB4ZO86P@otso>
- <cae7261a-6727-6163-1420-01039bfb8396@linaro.org>
- <CVFZZ0YSWQ6J.2AKRML6LWRMUH@otso>
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>
+References: <20230829091853.626011-1-m.majewski2@samsung.com>
+ <CGME20230829092412eucas1p2b79a6f90b9077a3a5486845b7e68bbc6@eucas1p2.samsung.com>
+ <20230829091853.626011-5-m.majewski2@samsung.com>
+ <a3b9ff0f-fff9-9439-5ec9-95a4de9bdfaa@linaro.org>
+ <afbdce92-beb9-cb7f-305f-968c71dde838@samsung.com>
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <CVFZZ0YSWQ6J.2AKRML6LWRMUH@otso>
+In-Reply-To: <afbdce92-beb9-cb7f-305f-968c71dde838@samsung.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11/09/2023 11:59, Luca Weiss wrote:
-> On Mon Sep 11, 2023 at 11:44 AM CEST, Krzysztof Kozlowski wrote:
->> On 11/09/2023 10:34, Luca Weiss wrote:
->>> On Tue Sep 5, 2023 at 10:30 AM CEST, Luca Weiss wrote:
->>>> On Thu Aug 31, 2023 at 2:27 PM CEST, Dmitry Baryshkov wrote:
->>>>> On Thu, 31 Aug 2023 at 14:54, Krzysztof Kozlowski
->>>>> <krzysztof.kozlowski@linaro.org> wrote:
->>>>>>
->>>>>> On 31/08/2023 13:33, Dmitry Baryshkov wrote:
->>>>>>> On Thu, 31 Aug 2023 at 13:13, Luca Weiss <luca.weiss@fairphone.com> wrote:
->>>>>>>>
->>>>>>>> On Wed Aug 30, 2023 at 12:06 PM CEST, Krzysztof Kozlowski wrote:
->>>>>>>>> On 30/08/2023 11:58, Luca Weiss wrote:
->>>>>>>>>> Like other Qualcomm PMICs the PM7250B can be used on different addresses
->>>>>>>>>> on the SPMI bus. Use similar defines like the PMK8350 to make this
->>>>>>>>>> possible.
->>>>>>>>>>
->>>>>>>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
->>>>>>>>>> ---
->>>>>>>>>>  arch/arm64/boot/dts/qcom/pm7250b.dtsi | 23 ++++++++++++++++-------
->>>>>>>>>>  1 file changed, 16 insertions(+), 7 deletions(-)
->>>>>>>>>>
->>>>>>>>>> diff --git a/arch/arm64/boot/dts/qcom/pm7250b.dtsi b/arch/arm64/boot/dts/qcom/pm7250b.dtsi
->>>>>>>>>> index e8540c36bd99..3514de536baa 100644
->>>>>>>>>> --- a/arch/arm64/boot/dts/qcom/pm7250b.dtsi
->>>>>>>>>> +++ b/arch/arm64/boot/dts/qcom/pm7250b.dtsi
->>>>>>>>>> @@ -7,6 +7,15 @@
->>>>>>>>>>  #include <dt-bindings/interrupt-controller/irq.h>
->>>>>>>>>>  #include <dt-bindings/spmi/spmi.h>
->>>>>>>>>>
->>>>>>>>>> +/* This PMIC can be configured to be at different SIDs */
->>>>>>>>>> +#ifndef PM7250B_SID
->>>>>>>>>> +   #define PM7250B_SID 2
->>>>>>>>>> +#endif
->>>>>>>>>
->>>>>>>>> Why do you send the same patch as v1, without any reference to previous
->>>>>>>>> discussions?
->>>>>>>>>
->>>>>>>>> You got here feedback already.
->>>>>>>>>
->>>>>>>>> https://lore.kernel.org/linux-arm-msm/f52524da-719b-790f-ad2c-0c3f313d9fe9@linaro.org/
->>>>>>>>
->>>>>>>> Hi Krzysztof,
->>>>>>>>
->>>>>>>> I did mention that original patch in the cover letter of this series.
->>>>>>>> I'm definitely aware of the discussion earlier this year there but also
->>>>>>>> tried to get an update lately if there's any update with no response.
->>>>>>>
->>>>>>> I think the overall consensus was that my proposal is too complicated
->>>>>>> for the DT files.
->>>>>>
->>>>>> I proposed to duplicate the entries. Do you keep QUP nodes in DTSI and
->>>>>> customize per address? No.
->>>>>
->>>>> At the same time, we do keep SoC files separate from the board files.
->>>>> Yes, I'm slightly exaggerating here.
->>>>>
->>>>> I think that for PMIC files it makes sense to extract common parts if
->>>>> that eases reuse of the common parts.
->>>>
->>>> Hi all,
->>>>
->>>> what can I do for v2 now?
->>>>
->>>> 1. Keep this patch as-is, and keep pm7250b in device dts.
+On 01/09/2023 10:40, Marek Szyprowski wrote:
+> On 29.08.2023 11:56, Krzysztof Kozlowski wrote:
+>> On 29/08/2023 11:18, Mateusz Majewski wrote:
+>>> This clock only controls the register operations. The gain in power
+>>> efficiency is therefore quite dubious, while there is price of added
+>>> complexity that is important to get right (as a register operation might
+>>> outright hang the CPU if the clock is not enabled).
+>> So once it is done right, this stops being argument. The benefit is to
+>> keep this clock disabled most of the time, which now we lost.
 >>
->> This was NAKed by me. What Qualcomm SoC maintainers decide (or not
->> decide) about other options, should not cause the wrong solution to be
->> re-posted...
->>
->>>>
->>>> 2. Drop pm7250b patch and drop from device dts, until _someone_ figures
->>>> out a solution talking to the PMIC on different SID.
->>>>
->>>> 3. Something else like copy-pasting pm7250b.dtsi to pm7250-8.dtsi and
->>>> changing the SID there, and using that in device dts.
+>> I don't find this patch correct approach.
 > 
-> @Konrad, @Bjorn: Can you give any feedback here what's preferable?
-> Otherwise I'm just blocked on this series.
+> I've suggested this change while playing with this driver.
 > 
->>>>
->>>> Please let me know what to do.
->>>>
->>>> Regards
->>>> Luca
->>>
->>> Hi,
->>>
->>> if there's no feedback I'll keep this patch in v2 of this series and we
->>> can continue to discuss there (if necessary).
->>
->> Sorry, I still do not agree and there were no arguments convincing me to
->> change the mind.
->>
->> I gave you the solution from my perspective. Why do you decided to
->> ignore it and send it as is?
+> For me turning AHB clock on/off during normal driver operation seems to 
+> be over-engineering and really gives no real power saving benefits, 
+> especially if thermal driver is the only one that does such fine-grained 
+> clock management (none of the Exynos supported in mainline does that). 
+> Removing it simplifies code and makes it easier to understand or read, 
+> as the current code already was somehow problematic to understand and 
+> unintuitive:
 > 
-> I get it that you are not final decider for qcom dts changes but it's
-> quite difficult for someone sending patches to not get any feedback what
-> other change to replace this is appropriate. I doubt it's a good idea to
-> just implement some random pm7250-8.dtsi or whatever to potentially
-> immediately get a response that that way is also bad.
+> https://lore.kernel.org/all/c3258cb2-9a56-d048-5738-1132331a157d@linaro.org/
 > 
-> That's why I'm trying to get some info before working on something and
-> sending it. Hopefully Bjorn or Konrad can add their thoughts above.
+> Taking into account that the driver is not really maintained, making it 
+> simpler without noticeable feature loss counts as a benefit for me.
 
-I understand, and it is frustrating. If such case happens the solution
-in upstream is not sending the same NAKed version but send something else.
-
-> 
-> Also I don't recall me ever reading a "solution" from your side but
-> maybe I need to dig through the old emails again.
-
-Here:
-"I proposed to duplicate the entries. Do you keep QUP nodes in DTSI and
-customize per address? No."
-
-Dmitry responded that having PMICs extracted help re-using. He is right.
-But here you hit the limit of such re-usage.
+Hm, ok, let it be, although I bet once someone will come and start
+adding runtime PM for clock handling...
 
 Best regards,
 Krzysztof
