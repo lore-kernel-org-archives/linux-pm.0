@@ -2,160 +2,148 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49D02CA0ECF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3033CA0EC0
 	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242830AbjIKVHn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:07:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38894 "EHLO
+        id S242944AbjIKVHs convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:07:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48442 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238068AbjIKNgU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 09:36:20 -0400
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0BA51A5
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 06:36:15 -0700 (PDT)
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20230911133614euoutp0143a903832a24123868e7e343d39a5fcf~D26I1XkeK2283922839euoutp01H
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 13:36:14 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20230911133614euoutp0143a903832a24123868e7e343d39a5fcf~D26I1XkeK2283922839euoutp01H
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1694439374;
-        bh=+NqJJH6X7tjJ6+L0iqf3etPp0U96Y5vmOPMMdXKrkyk=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=gL49LS8pN2n8bl4Z2YCwljc/5qiPRvxI2blDai5o2dbafyUHwMxP8zmLrNNdXjSRc
-         zOTUSDvCchEZTTOWJz81CkE0tDhxaDVmvUmCPZaUNHDofo5unDkyKM+4uCflyHtjqw
-         iKS2zDmHliAt6d/KGy2qQMNdtI/t0ocL1zG3Hvy0=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20230911133614eucas1p2a6f24ec6a713974c775678e9c2003a01~D26IbnJrG2317523175eucas1p26;
-        Mon, 11 Sep 2023 13:36:14 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id B5.B1.42423.EC71FF46; Mon, 11
-        Sep 2023 14:36:14 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab~D26IBuEM31288212882eucas1p1u;
-        Mon, 11 Sep 2023 13:36:13 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20230911133613eusmtrp263e49da0aa697d53623dc88f9bfdfffc~D26IBDe3x0864008640eusmtrp2U;
-        Mon, 11 Sep 2023 13:36:13 +0000 (GMT)
-X-AuditID: cbfec7f2-a51ff7000002a5b7-5a-64ff17ce85f2
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 17.BB.10549.DC71FF46; Mon, 11
-        Sep 2023 14:36:13 +0100 (BST)
-Received: from AMDC4515.eu.corp.samsungelectronics.net (unknown
-        [106.120.51.28]) by eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20230911133612eusmtip2be196bc65de7d8b30f10c76d75aaf216~D26Gwe_vL0323103231eusmtip2N;
-        Mon, 11 Sep 2023 13:36:12 +0000 (GMT)
-From:   Mateusz Majewski <m.majewski2@samsung.com>
-To:     linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc:     Mateusz Majewski <m.majewski2@samsung.com>,
-        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v2 2/7] thermal: exynos: drop id field
-Date:   Mon, 11 Sep 2023 15:34:26 +0200
-Message-ID: <20230911133435.14061-3-m.majewski2@samsung.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230911133435.14061-1-m.majewski2@samsung.com>
+        with ESMTP id S236986AbjIKLss (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 07:48:48 -0400
+Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D945ACDD;
+        Mon, 11 Sep 2023 04:48:43 -0700 (PDT)
+Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-58e6c05f529so43010207b3.3;
+        Mon, 11 Sep 2023 04:48:43 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694432923; x=1695037723;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=vNxtitsDplq82bteZ8FNeLtI0Rd6/5SNO9LLtNUX32A=;
+        b=lECok5INYMlcjwjfEgqNj1hLL1+bNxABZs0a0T0LfvhQS+Zav3DoCJhbXVfHNPuBme
+         XGUbOE6gkfu3wXVgFqf5MtOWFJNmXLFuG0xmaNqZATWoj+1j7ws5Wd44v02npjGLjobl
+         9a7rXqneTTc/smxS6MUPRvX1TMIBowb7RPHi3CMObctnN79OPnDMEHvFKQJt0JHdbSLJ
+         8fa0LXdkNhYYYVpoXpsboYT9no0Rgm1cQFWFJDB4KKp2o0NfTuyxauH1QYc1Kptanz40
+         8FhG0Ij7Pz6fXbChPrjg7QsitJEsy+qZWVOg7DkrqZc9PEIl5EQevuc3rRvd5XbXiKIu
+         ifvA==
+X-Gm-Message-State: AOJu0YxSDGdrJwu0Dr0ErhowRpWQUz4HI9yNX4WBm19OUH+8x/kWNgG4
+        dNGjDHrXxFxTBDLztTR5eTUUYIC44tbdXg==
+X-Google-Smtp-Source: AGHT+IF7sK1QEmy2OCTWrgIKZWVtvPBHm+GpKGmV/0XeTLBrYJ5phEF824CBE7TxoVrJCKZDuEVR6Q==
+X-Received: by 2002:a81:730b:0:b0:595:b30:1dd8 with SMTP id o11-20020a81730b000000b005950b301dd8mr9205316ywc.18.1694432922930;
+        Mon, 11 Sep 2023 04:48:42 -0700 (PDT)
+Received: from mail-yb1-f170.google.com (mail-yb1-f170.google.com. [209.85.219.170])
+        by smtp.gmail.com with ESMTPSA id i84-20020a815457000000b0057085b18cddsm1915061ywb.54.2023.09.11.04.48.42
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 11 Sep 2023 04:48:42 -0700 (PDT)
+Received: by mail-yb1-f170.google.com with SMTP id 3f1490d57ef6-d7f0a60a159so3767703276.0;
+        Mon, 11 Sep 2023 04:48:42 -0700 (PDT)
+X-Received: by 2002:a25:d8cb:0:b0:c4b:ada8:8b86 with SMTP id
+ p194-20020a25d8cb000000b00c4bada88b86mr8596493ybg.64.1694432921809; Mon, 11
+ Sep 2023 04:48:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrHKsWRmVeSWpSXmKPExsWy7djPc7rnxP+nGCy9yWzxYN42NovD8yss
-        pj58wmbxfct1Jot5n2Ut9r7eym7x7UoHk8Wmx9dYLS7vmsNm8bn3CKPFjPP7mCwmHpvMbLH2
-        yF12i7lfpjJbPHnYx+bA77Fz1l12j8V7XjJ5bFrVyeZx59oeNo/NS+o9+rasYvT4vEkugD2K
-        yyYlNSezLLVI3y6BK2PCxV0sBZN4Km4ff8fawPiJs4uRk0NCwERi7cc1bF2MXBxCAisYJRat
-        +wnlfGGU+D9zAQuE85lR4lvHDXaYlpbe7awgtpDAckaJ1muuEEWtTBK7J99lAkmwCRhIPHiz
-        DKxBRKCVUWJmkzpIEbPAJWaJuzfXsoAkhAXMJA603QBrYBFQlXhwagFYnFfARuLkY4hBEgLy
-        Es9v3QEbxClgK3F27XR2iBpBiZMzn4DVMwPVNG+dzQyyQEKgmVPi0tseRohmF4l31+axQtjC
-        Eq+Ob4F6QUbi/875UAvyJWZsfg80iAPIrpC4e9ALwrSW+HiGGcRkFtCUWL9LH6LYUWLei19Q
-        xXwSN94KQhzAJzFp23RmiDCvREebEES1qsTxPZOYIWxpiSctt6FWekicf/uOZQKj4iwkr8xC
-        8soshL0LGJlXMYqnlhbnpqcWG+allusVJ+YWl+al6yXn525iBCax0/+Of9rBOPfVR71DjEwc
-        jIcYJTiYlUR4Sw79TRHiTUmsrEotyo8vKs1JLT7EKM3BoiTOq217MllIID2xJDU7NbUgtQgm
-        y8TBKdXAZLXk5Pll+9OXrDp1M8FGcHd4mLDdE8nabbtuB69aJnI8f+qhb+vOCdvM3O5dFHFg
-        5laBTO3t/yt3Ma12+DvvqOW7aWwtZUYOyrcurNzQW/SnxreEqbfmleyOlyccJV8L6unJ7fBQ
-        0DUKe37jzpuNl4JV16kKJvPxXjjNcLY4oPRZSO2tCq5PcSayZ+0ET+9xFTn/17Nli3FwmfiM
-        9a1rVspbXtR7GuEgu+5Y3e9l7iyrcs6IJJ+SKPgkfdrQ1svcm8O9eHbUPu1ctksX+q/tm/w8
-        p/uF9aH9E7J/CR7tSRK+tdT783rvY9q3mRh/KmZ129fmGj7yzI2unDqDdfPvpCrZT4vEC0/J
-        PpgmHNuzVImlOCPRUIu5qDgRALRGpKjRAwAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrPIsWRmVeSWpSXmKPExsVy+t/xe7pnxf+nGLT9VrZ4MG8bm8Xh+RUW
-        Ux8+YbP4vuU6k8W8z7IWe19vZbf4dqWDyWLT42usFpd3zWGz+Nx7hNFixvl9TBYTj01mtlh7
-        5C67xdwvU5ktnjzsY3Pg99g56y67x+I9L5k8Nq3qZPO4c20Pm8fmJfUefVtWMXp83iQXwB6l
-        Z1OUX1qSqpCRX1xiqxRtaGGkZ2hpoWdkYqlnaGwea2VkqqRvZ5OSmpNZllqkb5eglzHh4i6W
-        gkk8FbePv2NtYPzE2cXIySEhYCLR0rudtYuRi0NIYCmjxK0DLxghEtISh79MYYewhSX+XOti
-        gyhqZpL4PekfM0iCTcBA4sGbZewgCRGBTkaJrs3nmEASzAK3mCXuv9YCsYUFzCQOtN0Ai7MI
-        qEo8OLWABcTmFbCROPn4LhPEBnmJ57fugG3jFLCVOLt2OpDNAbTNRqL/jA5EuaDEyZlPWCDG
-        y0s0b53NPIFRYBaS1CwkqQWMTKsYRVJLi3PTc4sN9YoTc4tL89L1kvNzNzECY27bsZ+bdzDO
-        e/VR7xAjEwfjIUYJDmYlEd6SQ39ThHhTEiurUovy44tKc1KLDzGaAp09kVlKNDkfGPV5JfGG
-        ZgamhiZmlgamlmbGSuK8ngUdiUIC6YklqdmpqQWpRTB9TBycUg1MwS8PH1raGOjDvGW3/sfN
-        bDPWH7M79YXDhjtCruuL5MXmlA1hUxaEP2FjzGPIn3HudcA/9kWesf7K0fs/n8pIm/H7x+Ot
-        s0QZ9+25/yhp3w6pC2ec20XaDz8JZjwu9aIxS2Jm6YXnbQl/jf2Lzn2dF7+5+YyZc+qrtZnb
-        l8++t+D79MOzDBcV117wC/A9y3FixfoqJQYVnR1cez9Us+Sxaad3tdcKa4sltuczXNO03G38
-        6YBhk2SEs0z1+zZBj+A7m1vlk7do70x3DVurp/j0443pvw3CFn8Q3/XzXeCvTQJztz8/wHDb
-        XZKbi9umabsva1npzz4JPqXtPGyGQZGMfPZi3MbFQnyzqhcZBjxQYinOSDTUYi4qTgQAwn0I
-        NUIDAAA=
-X-CMS-MailID: 20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab
-References: <20230911133435.14061-1-m.majewski2@samsung.com>
-        <CGME20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab@eucas1p1.samsung.com>
+References: <20230829213441.310655-1-ulf.hansson@linaro.org>
+ <CAHk-=wg0gc4Cc90OL29Vr5gDtd4mnsKD+TxtoNtQbAryaWHkZQ@mail.gmail.com>
+ <CAHk-=wjLO=Jsdk2prq0piznMMCk+V0_fRaFRHEPuaALpF8J=hw@mail.gmail.com>
+ <96bb0de0-06d9-46f8-b02f-dc924afff13c@app.fastmail.com> <CAHk-=wi5Lh-NG_rvcx3Zyqd2Uhj76G4V73tWCFULhVzOU6e1xg@mail.gmail.com>
+ <CAPDyKFrJH-1uaPCwnWZDPi4MRtOm=N2CHSRyvjXRDbQ1y-oOrw@mail.gmail.com>
+ <CAJZ5v0hqWYnkNXVju3U3n-9i8eqtjs197tLLNWv8Qa_N9T=KEw@mail.gmail.com>
+ <CAPDyKFpXLj_2HAgyV_VJf+GPQVmxb_iiDe77Q2MY17MDNqy9fA@mail.gmail.com>
+ <CAMuHMdVxLkxN0bmSRXW74R_dGNDSRDB4Z=zE0DoiXDOuweSM0A@mail.gmail.com> <CAPDyKFpUUJeGD77GTYCk59cvW=SdGTkOEXH4dap1JQWekAa0Eg@mail.gmail.com>
+In-Reply-To: <CAPDyKFpUUJeGD77GTYCk59cvW=SdGTkOEXH4dap1JQWekAa0Eg@mail.gmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 11 Sep 2023 13:48:29 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUZcrtHZz7daKjL7Oz2MEmCrjJ_ovO3ttTnZ7xuRWgiRA@mail.gmail.com>
+Message-ID: <CAMuHMdUZcrtHZz7daKjL7Oz2MEmCrjJ_ovO3ttTnZ7xuRWgiRA@mail.gmail.com>
+Subject: Re: [GIT PULL] ARM: SoC/genpd driver updates for v6.6
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+        soc@kernel.org, linux-arm-kernel@lists.infradead.org,
+        Sebastian Reichel <sebastian.reichel@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We do not use the value, and only Exynos 7 defines this alias anyway.
+Hi Ulf,
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
----
-v1 -> v2: minor commit message rewording.
+On Mon, Sep 11, 2023 at 1:28 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On Mon, 11 Sept 2023 at 09:52, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Thu, Aug 31, 2023 at 1:39 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > On Thu, 31 Aug 2023 at 11:33, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > > If I may suggest something, I would call this "pmdomain" instead of
+> > > > "genpd".  I don't think that /drivers/power/ is a particularly
+> > > > suitable location for it, because it doesn't really have much to do
+> > > > with power supplies and more to do with device PM.
+> > >
+> > > "pmdomain" is probably giving a reasonable good hint of what goes on
+> > > in this subsystem. This works fine for me, thanks!
+> >
+> > > > Also, I would move drivers/base/power/domain.c to drivers/pmdomain/
+> > > > (and rename it to something like core.c), because it would be a better
+> > > > location for that fiile IMO.
+> > >
+> > > We could certainly do that, let's discuss it a bit more.
+> > >
+> > > Although, at this point I want to focus on the genpd providers, as to
+> > > release some of the burden from arm-soc maintainers.
+> > >
+> > > > I can also handle future pull requests for this if that's fine with everyone.
+> > >
+> > > Thanks a lot for your offer! However, if a re-route is preferred (I
+> > > think not?), this is probably better suited via arm-soc, as most
+> > > changes are going to be arm platform specific.
+> >
+> > Which brings me to the final question: what is the upstream path
+> > for changes to drivers/genpd/*/ (or whatever it's gonna be called)?
+> > Before, we sent PRs to (arm-)soc.  Do you expect us to send them to
+> > you? There's usually quite some interaction between drivers/soc/reneas/
+> > and drivers/genpd/renesas (and there are DT binding definitions),
+> > but not more than with e.g. drivers/clk/renesas/.
+>
+> I would be happy to pick this up and funnel this via my new genpd
+> tree. As long as it's coupled with changes affecting "genpd
+> providers", of course.
+>
+> I can certainly also collect patches directly from the
+> mailing-list/patch-tracker too. Whatever works for you the best. Of
+> course, in that case I need your acks before I pick up the relevant
+> patches.
+>
+> If we need "immutable" branches, let's discuss that on a case by case basis.
 
- drivers/thermal/samsung/exynos_tmu.c | 6 ------
- 1 file changed, 6 deletions(-)
+At least for Renesas SoCs, every new SoC comes with a DT binding
+definitions file under include/dt-bindings/power/, to be shared by genpd
+driver and DTS (the same is true for clocks).  So PRs will work best.
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 2c1cfb8c4b33..90c33e8017af 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -138,7 +138,6 @@ enum soc_type {
- /**
-  * struct exynos_tmu_data : A structure to hold the private data of the TMU
-  *			    driver
-- * @id: identifier of the one instance of the TMU controller.
-  * @base: base address of the single instance of the TMU controller.
-  * @base_second: base address of the common registers of the TMU controller.
-  * @irq: irq number of the TMU controller.
-@@ -172,7 +171,6 @@ enum soc_type {
-  * @tmu_clear_irqs: SoC specific TMU interrupts clearing method
-  */
- struct exynos_tmu_data {
--	int id;
- 	void __iomem *base;
- 	void __iomem *base_second;
- 	int irq;
-@@ -865,10 +863,6 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 	if (!data || !pdev->dev.of_node)
- 		return -ENODEV;
- 
--	data->id = of_alias_get_id(pdev->dev.of_node, "tmuctrl");
--	if (data->id < 0)
--		data->id = 0;
--
- 	data->irq = irq_of_parse_and_map(pdev->dev.of_node, 0);
- 	if (data->irq <= 0) {
- 		dev_err(&pdev->dev, "failed to get IRQ\n");
+> > And I just realized you moved the code and Makefiles to drivers/genpd/,
+> > but not the Kconfig symbols and logic, which still lives under
+> > drivers/soc/.  So resolving that (and the name) is something that
+> > should be resolved sooner rather than later...
+>
+> In regards to the name, I am relying on input from Linus to make a
+> final decision before I send a patch. In regards to this, I have also
+> started working on a documentation patch for genpd. It needs some more
+> polishing before I can send it though.
+>
+> When it comes to the Kconfig move, I will send out a series for it, this week.
+
+OK.
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.41.0
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
