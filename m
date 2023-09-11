@@ -2,111 +2,86 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB71CCA0EC8
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:10:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1570BCA0EC4
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:10:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235500AbjIKVFl convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:05:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39850 "EHLO
+        id S235868AbjIKVFn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:05:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38984 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243919AbjIKSUT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 14:20:19 -0400
-Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2565B110;
-        Mon, 11 Sep 2023 11:20:14 -0700 (PDT)
-Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-56cae50792fso360977eaf.1;
-        Mon, 11 Sep 2023 11:20:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694456413; x=1695061213;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=aevlgErgu6FzdtarTR4nASHCQw9tTbRMLCKzIvm0UPo=;
-        b=EzI7xfdZ098cEH9SKpkItWnG1OsPvrDpJF5tA4hHyzSLuono3ZgQKwxTaIwSHnVO8x
-         ZXNoxgjbn9QBGs+CeUvayleP01h9H+lwyuQOyUo79yv2D8//aC0FAju+ZznmVdNQk3Me
-         m36k9cdhDEEQC1rVdgfCEo9+xiLealfowIlAAUinCNnan86nAZwE6naLSOc81OBVt6iZ
-         u07Pbr1VzVeYnknZZr2mJX5DYcsiZrtdbaKNJF9eCntdimtGk3yKNrpQlKr+NbGwKofj
-         xzOXtjf69Xky2EZK+L03pluxcRbIGuYGG7isGnyDp+1yZNw/jORUKoE5LdfQGiD6/AyN
-         m5IQ==
-X-Gm-Message-State: AOJu0Yz6BvASBoakrmvlneY+nZXa8ssc8MxL+I7EtONO5ves1isiecd3
-        f3LUn67IphtPLoZDsGxphhbrgbXzYLU0/iX8uJg=
-X-Google-Smtp-Source: AGHT+IGE2PHWPFPgDhP65oUUA8UCMPLu8awoRWAcKlrrqlu+Dp4ZWFkuPM/QouFfqpSHwDeHxo6hsjo77wGBQzNCx0Y=
-X-Received: by 2002:a05:6870:70a6:b0:1bb:724f:2bca with SMTP id
- v38-20020a05687070a600b001bb724f2bcamr10790127oae.1.1694456413283; Mon, 11
- Sep 2023 11:20:13 -0700 (PDT)
+        with ESMTP id S241425AbjIKPI0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 11:08:26 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51C42FA;
+        Mon, 11 Sep 2023 08:08:21 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3BA0AC433C9;
+        Mon, 11 Sep 2023 15:08:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1694444901;
+        bh=QQhUsR8kda3/hj6CcImnvWnHoUxICmdWDtUfw+d0L2k=;
+        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+        b=oMnmqdvCbB/b9eUNHcCKrZgBIXAfEa4l3Ut8F+Krr/A+TO4Qp5xFRdmhtzOYMkOQW
+         98qwiW7ihtvdhmXn9/JMY3cAkCWfkf2RS329FQiqevC0xj5zMYEDcJaG1IoD/tdcm4
+         kpZWOr1Vyd7e3Vmm3u4QL91seR/p4ZlqPgFodnlHBoxj1eBGPhSgK/yrDWOIq40+f5
+         aUnUpUTw2aMPaIA27iibLEyT3mePx5Lnjot6mQy4HcSMzruUmZLyKo9qd8lzteD46Z
+         2M1fvO80IowMc9BrQIeMCwHpPKkPdDJZ3fzLDWpXm32vUmqUZe+eAU80MyQvPY7gmH
+         AOdhADl4GZdow==
+From:   Mark Brown <broonie@kernel.org>
+To:     alsa-devel@alsa-project.org, Julia Lawall <Julia.Lawall@inria.fr>
+Cc:     kernel-janitors@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+        bcm-kernel-feedback-list@broadcom.com,
+        linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linuxppc-dev@lists.ozlabs.org, linux-mmc@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        linux-media@vger.kernel.org
+In-Reply-To: <20230907095521.14053-1-Julia.Lawall@inria.fr>
+References: <20230907095521.14053-1-Julia.Lawall@inria.fr>
+Subject: Re: (subset) [PATCH 00/11] add missing of_node_put
+Message-Id: <169444489227.1851820.10212594180854433279.b4-ty@kernel.org>
+Date:   Mon, 11 Sep 2023 16:08:12 +0100
 MIME-Version: 1.0
-References: <20230907180207.3274207-1-srinivas.pandruvada@linux.intel.com>
-In-Reply-To: <20230907180207.3274207-1-srinivas.pandruvada@linux.intel.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 11 Sep 2023 20:20:02 +0200
-Message-ID: <CAJZ5v0jDXrhpQi1496Hspj3-_-EhT8dDcnG5vx1bJn+4FugUWw@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix global turbo disable check
-To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc:     rafael@kernel.org, viresh.kumar@linaro.org, lenb@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.13-dev-099c9
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 7, 2023 at 8:02 PM Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
->
-> Setting global turbo flag based on CPU 0 P-state limits is problematic
-> as it limits max P-state request on every CPU on the system just based
-> on its P-state limits.
->
-> There are two cases in which global.turbo_disabled flag is set:
-> - When the MSR_IA32_MISC_ENABLE_TURBO_DISABLE bit is set to 1
-> in the MSR MSR_IA32_MISC_ENABLE. This bit can be only changed by
-> the system BIOS before power up.
-> - When the max non turbo P-state is same as max turbo P-state for CPU 0.
->
-> The second check is not a valid to decide global turbo state based on
-> the CPU 0. CPU 0 max turbo P-state can be same as max non turbo P-state,
-> but for other CPUs this may not be true.
->
-> There is no guarantee that max P-state limits are same for every CPU. This
-> is possible that during fusing max P-state for a CPU is constrained. Also
-> with the Intel Speed Select performance profile, CPU 0 may not be present
-> in all profiles. In this case the max non turbo and turbo P-state can be
-> set to the lowest possible P-state by the hardware when switched to
-> such profile. Since max non turbo and turbo P-state is same,
-> global.turbo_disabled flag will be set.
->
-> Once global.turbo_disabled is set, any scaling max and min frequency
-> update for any CPU will result in its max P-state constrained to the max
-> non turbo P-state.
->
-> Hence remove the check of max non turbo P-state equal to max turbo P-state
-> of CPU 0 to set global turbo disabled flag.
->
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index dc50c9fb488d..a534a1f7f1ee 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -571,13 +571,9 @@ static void intel_pstate_hybrid_hwp_adjust(struct cpudata *cpu)
->  static inline void update_turbo_state(void)
->  {
->         u64 misc_en;
-> -       struct cpudata *cpu;
->
-> -       cpu = all_cpu_data[0];
->         rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
-> -       global.turbo_disabled =
-> -               (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
-> -                cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
-> +       global.turbo_disabled = misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE;
->  }
->
->  static int min_perf_pct_min(void)
-> --
+On Thu, 07 Sep 2023 11:55:10 +0200, Julia Lawall wrote:
+> Add of_node_put on a break out of an of_node loop.
+> 
 
-Applied as 6.7 material (under a slightly modified subject), thanks!
+Applied to
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+
+Thanks!
+
+[10/11] ASoC: rsnd: add missing of_node_put
+        commit: 28115b1c4f2bb76e786436bf6597c5eb27638a5c
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
