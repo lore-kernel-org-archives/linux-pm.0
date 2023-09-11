@@ -2,138 +2,114 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A8A4CA0ED0
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6240ACA0EC0
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:17:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242957AbjIKVHs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:07:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60876 "EHLO
+        id S242573AbjIKVHh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:07:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242551AbjIKPry (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 11:47:54 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36E46121;
-        Mon, 11 Sep 2023 08:47:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1694447270; x=1725983270;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version:content-id;
-  bh=X08U4r/zjdzoD2xlVs+dRrXtqyQrZjNfvPMLi8zpWCM=;
-  b=Zq2JNCIc+9yIqGHnEy76FHTSvESKp2+Skka2V9E3cgWOvKIYc3Ou7mvl
-   05D2kVK8KjQ/Jenmr4sQaDJmo8E5pD9XSjUacWDWYIeePZuUpJpNmzpdg
-   qfWodjQaBUXLBzut9SD48+7CQX+JL8YFP3SoLq3X7DJqx/kJOoDL4orgt
-   GUK3wv7mU4eJLJmsButhTPknq48xz+K86Cah72JdHmxEZZLma+0J3Jc7N
-   WtJfJZeuM3mp5LKG+171ToB9hD4zWM8r2hgCAjTgBpO6SnqZ783QqK8Gz
-   CbzBRSPuwm2cITFuVo/XHCZtlS5coxDd/WT0+qSt3pPahL0kSlvNhn32c
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10830"; a="378034289"
-X-IronPort-AV: E=Sophos;i="6.02,244,1688454000"; 
-   d="scan'208";a="378034289"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2023 08:47:26 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10830"; a="772630737"
-X-IronPort-AV: E=Sophos;i="6.02,244,1688454000"; 
-   d="scan'208";a="772630737"
-Received: from mzarkov-mobl3.ger.corp.intel.com ([10.252.36.200])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2023 08:47:21 -0700
-Date:   Mon, 11 Sep 2023 18:47:19 +0300 (EEST)
-From:   =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To:     Krishna Chaitanya Chundru <quic_krichai@quicinc.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
-cc:     linux-pci@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Rob Herring <robh@kernel.org>,
-        =?ISO-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kw@linux.com>,
-        Lukas Wunner <lukas@wunner.de>,
-        Alexandru Gagniuc <mr.nuke.me@gmail.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: [PATCH 00/10] Add PCIe Bandwidth Controller
-In-Reply-To: <647e2b5e-6064-dbfa-bb56-f74358efd1fe@quicinc.com>
-Message-ID: <25bf206e-864b-644-9b4-a0f461b4285@linux.intel.com>
-References: <20230817121708.53213-1-ilpo.jarvinen@linux.intel.com> <fa5a20d0-77db-58bd-3956-ac664dffa587@quicinc.com> <21b95d9-86a5-dcb0-9dda-3f1cdd426b9e@linux.intel.com> <647e2b5e-6064-dbfa-bb56-f74358efd1fe@quicinc.com>
+        with ESMTP id S241467AbjIKPJa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 11:09:30 -0400
+Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78BD0CCC
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 08:09:24 -0700 (PDT)
+Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-4018af103bcso28859645e9.1
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 08:09:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694444962; x=1695049762; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=bOYptsCrf1diNtyghWnfZLvZu7tELTtIDAUqFPNMvD8=;
+        b=nDQUTuVqNirbN+JZkauDGGsx/C3cOoBtpn6rQEEf+1xn63eqKYNA4YwJCDeWqn1/bF
+         uDDIh5u2ZYKhDnne8viz/EFUHPg9pHiTeOVrIsoi6UphXjE1F73GxiX1DdNvXCzUKFFc
+         ur+JX6Z5CXaviw4I1FZfnIPf3Zc1lWLbLjWh3XkoKRX/OGZTgzhHPNLpP661FdlW3lMk
+         t3RdH+PEz0rYZ+kxPz2y9LO9cS1DpAymt11DJahyiNLgjqWVgv/v8fKwmGAIoD6hzWnF
+         9RBNPfVM2aZzPI+ZJ6OA8Aw8Oi0j3r/uufM55v77msMpqbBl/5bdyWIJrBKxWiAsGKlb
+         /IQw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694444962; x=1695049762;
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=bOYptsCrf1diNtyghWnfZLvZu7tELTtIDAUqFPNMvD8=;
+        b=Fwdcqd5S2JigtcsWg5T1Hj0oPqosgH5x6tl0pxszqO/p8Kxk7WkDheRp15Dqopdkas
+         IKz0x582owv8wmixEg6W4mlp27V0CyyWFhnCOXvfhL6sDBvbxccB6T4Y/tQw/s1zUfm9
+         0S5gksILlwhvxdggBKVZa0gDlnlHOneH9OljOcZYfIbBHISYShERj30ic+YkkAbTMb1w
+         T38V+Lpqg408oGoefnF9mGGzeq36sSw1IxryM6tcg7QO/Bg+LYozMIdjKY1qWHjaTZJU
+         xmDbVm/yzFBvN8uPCwrhI50IYt6r0w2qpqDWeTGxUbTnMzqiPtdy3Rg7k4Y7IPRU2H80
+         JpYA==
+X-Gm-Message-State: AOJu0YylS6qi8B4/+oo3Gwbo5BK8QNcbXIZ7pgybfQAWvcQoxdhGimjJ
+        OZkjBkzy1+OpTroSBMXnlq+xCQ==
+X-Google-Smtp-Source: AGHT+IHvwIKHqGYnGN3IiqndAH93l6WqVDjqInO1zvq/pqTFA0C05t49HJS1dXDWNdJXeVZleDHnqw==
+X-Received: by 2002:a05:600c:2209:b0:3fe:1587:fdf3 with SMTP id z9-20020a05600c220900b003fe1587fdf3mr6762828wml.14.1694444962015;
+        Mon, 11 Sep 2023 08:09:22 -0700 (PDT)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id y18-20020a5d6152000000b0031f3780ce60sm10388691wrt.7.2023.09.11.08.09.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 Sep 2023 08:09:21 -0700 (PDT)
+From:   Neil Armstrong <neil.armstrong@linaro.org>
+To:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Xianwei Zhao <xianwei.zhao@amlogic.com>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>
+In-Reply-To: <20230911025223.3433776-1-xianwei.zhao@amlogic.com>
+References: <20230911025223.3433776-1-xianwei.zhao@amlogic.com>
+Subject: Re: (subset) [PATCH V3 RESEND 0/6] Power: T7: add power domain
+ driver
+Message-Id: <169444496123.3944766.3763051739383485051.b4-ty@linaro.org>
+Date:   Mon, 11 Sep 2023 17:09:21 +0200
 MIME-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="8323329-2146389531-1694445120=:1823"
-Content-ID: <d4d8e4d9-df60-ff9e-806d-24cbd22967d6@linux.intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.12.3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323329-2146389531-1694445120=:1823
-Content-Type: text/plain; CHARSET=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Content-ID: <c9761ce4-b9a2-dcba-a6f7-24d03a34d4@linux.intel.com>
-
-+ thermal people.
-
-On Mon, 11 Sep 2023, Krishna Chaitanya Chundru wrote:
-> On 9/4/2023 4:46 PM, Ilpo Järvinen wrote:
-> > On Mon, 4 Sep 2023, Krishna Chaitanya Chundru wrote:
-> > > On 8/17/2023 5:46 PM, Ilpo Järvinen wrote:
-> > > > 
-> > > > This series adds PCIe bandwidth controller (bwctrl) and associated PCIe
-> > > > cooling driver to the thermal core side for limiting PCIe link speed
-> > > > due to thermal reasons. PCIe bandwidth controller is a PCI express bus
-> > > > port service driver. A cooling device is created for each port the
-> > > > service driver finds if they support changing speeds.
-> > > I see we had support for only link speed changes here but we need to add
-> > > support for
-> > > 
-> > > link width change also as bandwidth notification from PCIe supports both
-> > > link
-> > > speed and link width.
-> > Hi,
-> > 
-> > Thanks for the comment. In case you mean that the changes in Link Width
-> > should be reported correctly, they already are since the sysfs interface
-> > reads them directly from LNKSTA register.
-> > 
-> > Or did you perhaps mean that Bandwidth Controller should support also
-> > changing Link Width? If this is the case I don't know how it can be
-> > realized so a pointer on how it can be achieved would be appreciated.
-> 
-> I didn't have any idea on how thermal framework works.
-> 
-> But as we are adding bandwidth controller support we need to add support for
-> width change also, may be we are not using this now, but we may need it in the
-> future.
-> 
-> We had similar use case based on the bandwidth requirement on devices like
-> WLAN, the client try to reduce or increase the link speed and link width.
-> 
-> So in the bandwidth controller driver we can add support for link width also.
-> So any client can easily use the driver to change link speed or width or both
-> to reduce the power consumption.
-> 
-> Adding link width support should be similar to how you added the link speed
-> supported.
-> 
-> Please correct me if I misunderstood something here.
-
 Hi,
 
-Okay, thanks for the clarification. So the point is to plan for adding 
-support for Link Width later and currently only support throttling Link 
-Speed. In any case, the Link Width control seems to be controlled using 
-a different approach (Link Width change does not require Link Retraining).
+On Mon, 11 Sep 2023 10:52:17 +0800, Xianwei Zhao wrote:
+> First patch is that remove C3 some power domain ALWAYS_ON property.
+> Second patch is that add driver to support power parent node.
+> Third patch is that turn on power if initial power domain with
+> "AWAY_ON" property state is off.
+> 
+> Other patchs adds power controller driver support for Amlogic T7 SoC.
+> 
+> [...]
 
-I don't know either how such 2 dimensioned throttling (Link Speed and 
-Link Width) is supposed to be realized using the thermal/cooling device 
-interface which only provides a single integer as the current state. That 
-is, whether to provide a single cooling device (with a single integer 
-exposed to userspace) or separate cooling device for each dimension?
+Thanks, Applied to https://git.kernel.org/pub/scm/linux/kernel/git/amlogic/linux.git (v6.7/arm64-dt)
 
-Perhaps thermal people could provide some insight on this? Is there some 
-precedent I could take look at?
+[6/6] arm64: dts: amlogic: t7: add power domain controller node
+      https://git.kernel.org/amlogic/c/5355699dabac3c97492a30e6e01820fcaae11218
+
+These changes has been applied on the intermediate git tree [1].
+
+The v6.7/arm64-dt branch will then be sent via a formal Pull Request to the Linux SoC maintainers
+for inclusion in their intermediate git branches in order to be sent to Linus during
+the next merge window, or sooner if it's a set of fixes.
+
+In the cases of fixes, those will be merged in the current release candidate
+kernel and as soon they appear on the Linux master branch they will be
+backported to the previous Stable and Long-Stable kernels [2].
+
+The intermediate git branches are merged daily in the linux-next tree [3],
+people are encouraged testing these pre-release kernels and report issues on the
+relevant mailing-lists.
+
+If problems are discovered on those changes, please submit a signed-off-by revert
+patch followed by a corrective changeset.
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/amlogic/linux.git
+[2] https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+[3] https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
 
 -- 
- i.
---8323329-2146389531-1694445120=:1823--
+Neil
+
