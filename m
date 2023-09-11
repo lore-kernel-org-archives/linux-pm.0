@@ -2,167 +2,97 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0000CA0EC1
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89154CA0EC0
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240948AbjIKVGy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:06:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42522 "EHLO
+        id S241139AbjIKVG6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:06:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37446 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238520AbjIKN6X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 09:58:23 -0400
-Received: from mail-yb1-xb31.google.com (mail-yb1-xb31.google.com [IPv6:2607:f8b0:4864:20::b31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45EC4CE5
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 06:58:19 -0700 (PDT)
-Received: by mail-yb1-xb31.google.com with SMTP id 3f1490d57ef6-d77ad095e5cso4157153276.0
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 06:58:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694440698; x=1695045498; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=nACYby6xXH6p7S8DvIzSIkOm0WQtOoj9eojm3GigSa0=;
-        b=aaIZxIzPoCItBRcrNXiZfTiDpO75zLUbn7XX4fn35LgyUzFXePdOi68HUvzt43mSAV
-         8zFJWEKZsL0ejPbj3yeYARMFUho8Rxg+b5ot5i15zE24YmzBKwHnIX88BLOxhXT6vNEM
-         pqbE5yyvFfEFtBRrPvllSyCq8jEs9KXSlFuv2/EEZcYM441029x2ntrNCG7jPSXt9Vo+
-         NBMmKLSzLnhsbOZ/f+mF9QJQaZsbhjisee4dCIF1enp8QBIna0v5GO8MU5lf7OjypNFR
-         NykMddOn5JQsqUNiTqBKbMnwuxZW3Bi1TQpk6YSfU/DYYc3e2E8jp2AfcAvBSbCbQvBq
-         4x7g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694440698; x=1695045498;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=nACYby6xXH6p7S8DvIzSIkOm0WQtOoj9eojm3GigSa0=;
-        b=ux5d6CbFrFcc4dZGMXT/5P6GDJP2Gut6i0NGrUb8EYVUGqb3j688npvgEs6tBpb0M1
-         MJpt9fu6eqSZoHrYPHmZ/QAUG8IRfcngPgoN/UTlsDn0U+B5CnbKgzUDS910IcE8OsyM
-         3ZnjMKQrzX/5N4VBNFD0eiG2S7vuAsda02FdK87nrzEC8RIG+/8Q4AmA8j5ExYvkp/pz
-         g61dm3rwiH96lK9G9HECxqPRwvrytjDI7TDNfnbGd43X5EzuuXmlY7PIto8JkDfJZ3v7
-         gwivOolaQb0B4VfXtqPr/YsWq6wf693cxoWrQdjKIoYN4b/0pEnOH7riCBgw5UUrdrVK
-         tR1w==
-X-Gm-Message-State: AOJu0Yzt6pyIj0HaXKf4Z7L9S72SHyN7pJ7tpT4YoB5rUgnPwicXrPKw
-        fpBGOovBCbGS29dBGGmcnrBDu6cFFg7d1tLL/skgBQ==
-X-Google-Smtp-Source: AGHT+IH8D6O/aZm8DWZWsCsterhrJnASynNQFNSyb8/dl7IOKv39YklR9FBqcQfAiqQ8Ef585oqLrbBNQ5h4aEb5TXo=
-X-Received: by 2002:a25:698f:0:b0:d7b:9d44:76dc with SMTP id
- e137-20020a25698f000000b00d7b9d4476dcmr9304485ybc.38.1694440698473; Mon, 11
- Sep 2023 06:58:18 -0700 (PDT)
+        with ESMTP id S236317AbjIKKPS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 06:15:18 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4256E5F;
+        Mon, 11 Sep 2023 03:15:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1694427314; x=1725963314;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=MVY1RCA+Y6jHOKSik1rPFvNz857POHLvrx8p+7Ur7ao=;
+  b=AVlReW0MCpg9k0qw3TN/c+YAABjy4ysXKq1plWxaK6VfjZM34rW4vfiJ
+   VG9I6qAr/KBY5YagdMff/ES05p1DPNe6PqFAVxeXOb7xVhPpqDao1uG00
+   3fMc7xmVoY1W/CmtSy2ch8TtnUugvjlfpFXLk77GNiJbyfla1+FTm7A/n
+   DZboe8njupLW6YOdWVMpb3Q5FuJalnEzDItT+BVx+4rXSv2NGUpUn96wp
+   GoHtE6N6fDeN1Cmw0CgcUv7L3QimSu8DWl7y3HLVfxS+GHSpJphQiBtzE
+   FBkIUHSIZiYOMXGjB89x2EZctkwdFAzluDKBZEq3liB6wMU+3MV9krB/q
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10829"; a="376958369"
+X-IronPort-AV: E=Sophos;i="6.02,243,1688454000"; 
+   d="scan'208";a="376958369"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2023 03:15:14 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10829"; a="886466175"
+X-IronPort-AV: E=Sophos;i="6.02,243,1688454000"; 
+   d="scan'208";a="886466175"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by fmsmga001.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2023 03:14:48 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1qfdwk-008Hv0-0D;
+        Mon, 11 Sep 2023 13:15:10 +0300
+Date:   Mon, 11 Sep 2023 13:15:09 +0300
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Biju Das <biju.das.jz@bp.renesas.com>
+Cc:     Sebastian Reichel <sre@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Biju Das <biju.das.au@gmail.com>
+Subject: Re: [PATCH 1/2] power: supply: bq24257_charger: Make chip type and
+ name in sync
+Message-ID: <ZP7ored2UfXcFUvz@smile.fi.intel.com>
+References: <20230902193331.83672-1-biju.das.jz@bp.renesas.com>
+ <20230902193331.83672-2-biju.das.jz@bp.renesas.com>
+ <ZPWsdjlFvUzeFy45@smile.fi.intel.com>
+ <OS0PR01MB592285B86C29C3C1A992C09986F3A@OS0PR01MB5922.jpnprd01.prod.outlook.com>
 MIME-Version: 1.0
-References: <20230829213441.310655-1-ulf.hansson@linaro.org>
- <CAHk-=wg0gc4Cc90OL29Vr5gDtd4mnsKD+TxtoNtQbAryaWHkZQ@mail.gmail.com>
- <CAHk-=wjLO=Jsdk2prq0piznMMCk+V0_fRaFRHEPuaALpF8J=hw@mail.gmail.com>
- <96bb0de0-06d9-46f8-b02f-dc924afff13c@app.fastmail.com> <CAHk-=wi5Lh-NG_rvcx3Zyqd2Uhj76G4V73tWCFULhVzOU6e1xg@mail.gmail.com>
- <CAPDyKFrJH-1uaPCwnWZDPi4MRtOm=N2CHSRyvjXRDbQ1y-oOrw@mail.gmail.com>
- <CAJZ5v0hqWYnkNXVju3U3n-9i8eqtjs197tLLNWv8Qa_N9T=KEw@mail.gmail.com>
- <CAPDyKFpXLj_2HAgyV_VJf+GPQVmxb_iiDe77Q2MY17MDNqy9fA@mail.gmail.com>
- <CAMuHMdVxLkxN0bmSRXW74R_dGNDSRDB4Z=zE0DoiXDOuweSM0A@mail.gmail.com>
- <CAPDyKFpUUJeGD77GTYCk59cvW=SdGTkOEXH4dap1JQWekAa0Eg@mail.gmail.com>
- <CAMuHMdUZcrtHZz7daKjL7Oz2MEmCrjJ_ovO3ttTnZ7xuRWgiRA@mail.gmail.com>
- <CAPDyKFpctt6AQBpu+vBQ0ymW3PQGB8dt8-QEhgbz0Uo5T-1Wxw@mail.gmail.com> <CAMuHMdWK0Y7CAGMVyr-_RyZ31WiKMaJHL5XaZjOrFkO8od7Nfw@mail.gmail.com>
-In-Reply-To: <CAMuHMdWK0Y7CAGMVyr-_RyZ31WiKMaJHL5XaZjOrFkO8od7Nfw@mail.gmail.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Mon, 11 Sep 2023 15:57:41 +0200
-Message-ID: <CAPDyKFq9E29XPD6AYjapJDhr=ML_Sdk8FnNtiAduP=p=gJcX5A@mail.gmail.com>
-Subject: Re: [GIT PULL] ARM: SoC/genpd driver updates for v6.6
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
-        soc@kernel.org, linux-arm-kernel@lists.infradead.org,
-        Sebastian Reichel <sebastian.reichel@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OS0PR01MB592285B86C29C3C1A992C09986F3A@OS0PR01MB5922.jpnprd01.prod.outlook.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 11 Sept 2023 at 15:06, Geert Uytterhoeven <geert@linux-m68k.org> wr=
-ote:
->
-> Hi Ulf,
->
-> On Mon, Sep 11, 2023 at 2:07=E2=80=AFPM Ulf Hansson <ulf.hansson@linaro.o=
-rg> wrote:
-> > On Mon, 11 Sept 2023 at 13:48, Geert Uytterhoeven <geert@linux-m68k.org=
-> wrote:
-> > > On Mon, Sep 11, 2023 at 1:28=E2=80=AFPM Ulf Hansson <ulf.hansson@lina=
-ro.org> wrote:
-> > > > On Mon, 11 Sept 2023 at 09:52, Geert Uytterhoeven <geert@linux-m68k=
-.org> wrote:
-> > > > > On Thu, Aug 31, 2023 at 1:39=E2=80=AFPM Ulf Hansson <ulf.hansson@=
-linaro.org> wrote:
-> > > > > > On Thu, 31 Aug 2023 at 11:33, Rafael J. Wysocki <rafael@kernel.=
-org> wrote:
-> > > > > > > If I may suggest something, I would call this "pmdomain" inst=
-ead of
-> > > > > > > "genpd".  I don't think that /drivers/power/ is a particularl=
-y
-> > > > > > > suitable location for it, because it doesn't really have much=
- to do
-> > > > > > > with power supplies and more to do with device PM.
-> > > > > >
-> > > > > > "pmdomain" is probably giving a reasonable good hint of what go=
-es on
-> > > > > > in this subsystem. This works fine for me, thanks!
-> > > > >
-> > > > > > > Also, I would move drivers/base/power/domain.c to drivers/pmd=
-omain/
-> > > > > > > (and rename it to something like core.c), because it would be=
- a better
-> > > > > > > location for that fiile IMO.
-> > > > > >
-> > > > > > We could certainly do that, let's discuss it a bit more.
-> > > > > >
-> > > > > > Although, at this point I want to focus on the genpd providers,=
- as to
-> > > > > > release some of the burden from arm-soc maintainers.
-> > > > > >
-> > > > > > > I can also handle future pull requests for this if that's fin=
-e with everyone.
-> > > > > >
-> > > > > > Thanks a lot for your offer! However, if a re-route is preferre=
-d (I
-> > > > > > think not?), this is probably better suited via arm-soc, as mos=
-t
-> > > > > > changes are going to be arm platform specific.
-> > > > >
-> > > > > Which brings me to the final question: what is the upstream path
-> > > > > for changes to drivers/genpd/*/ (or whatever it's gonna be called=
-)?
-> > > > > Before, we sent PRs to (arm-)soc.  Do you expect us to send them =
-to
-> > > > > you? There's usually quite some interaction between drivers/soc/r=
-eneas/
-> > > > > and drivers/genpd/renesas (and there are DT binding definitions),
-> > > > > but not more than with e.g. drivers/clk/renesas/.
-> > > >
-> > > > I would be happy to pick this up and funnel this via my new genpd
-> > > > tree. As long as it's coupled with changes affecting "genpd
-> > > > providers", of course.
-> > > >
-> > > > I can certainly also collect patches directly from the
-> > > > mailing-list/patch-tracker too. Whatever works for you the best. Of
-> > > > course, in that case I need your acks before I pick up the relevant
-> > > > patches.
-> > > >
-> > > > If we need "immutable" branches, let's discuss that on a case by ca=
-se basis.
-> > >
-> > > At least for Renesas SoCs, every new SoC comes with a DT binding
-> > > definitions file under include/dt-bindings/power/, to be shared by ge=
-npd
-> > > driver and DTS (the same is true for clocks).  So PRs will work best.
-> >
-> > Good point! And Neil pointed out this too [1].
-> >
-> > I am going to host an immutable branch for the dt bindings that you
-> > can pull in. Would that be a better option for you?
->
-> Yes, that would work for me, too.
-> Can I conclude you prefer to take patches over PRs?
+On Sun, Sep 10, 2023 at 07:10:06AM +0000, Biju Das wrote:
+> Hi Andy Shevchenko,
+> > On Sat, Sep 02, 2023 at 08:33:30PM +0100, Biju Das wrote:
 
-In general, yes. But, I am fine with both options, as long as it works
-for you too!
+...
 
-Kind regards
-Uffe
+> > > -	if (ACPI_HANDLE(dev)) {
+> > > -		acpi_id = acpi_match_device(dev->driver->acpi_match_table,
+> > > -					    &client->dev);
+> > > -		if (!acpi_id) {
+> > > -			dev_err(dev, "Failed to match ACPI device\n");
+> > > -			return -ENODEV;
+> > > -		}
+> > > -		bq->chip = (enum bq2425x_chip)acpi_id->driver_data;
+> > > -	} else {
+> > > -		bq->chip = (enum bq2425x_chip)id->driver_data;
+> > > -	}
+> > 
+> > Do we still need acpi.h after this change?
+> 
+> Yes, it is still needed as it is using 
+> ACPI_PTR.
+
+Can we, please, drop ACPI_PTR() as it's more harmful than useful (same way as
+you dropped the ifdeffery for OF cases in other patches)?
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
