@@ -2,98 +2,115 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FE22CA0EC3
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:10:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07CC8CA0EC4
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:10:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236000AbjIKVFt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:05:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34960 "EHLO
+        id S236374AbjIKVFx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:05:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41580 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236899AbjIKLjf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 07:39:35 -0400
-Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E7BA12E
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:39:31 -0700 (PDT)
-Received: by mail-ed1-x531.google.com with SMTP id 4fb4d7f45d1cf-52a23227567so5561364a12.0
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:39:31 -0700 (PDT)
+        with ESMTP id S239896AbjIKObI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 10:31:08 -0400
+Received: from mail-yb1-xb32.google.com (mail-yb1-xb32.google.com [IPv6:2607:f8b0:4864:20::b32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3FA7E4D
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 07:31:02 -0700 (PDT)
+Received: by mail-yb1-xb32.google.com with SMTP id 3f1490d57ef6-d7b79a4899bso3891714276.2
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 07:31:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694432370; x=1695037170; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=2dV5clfovnvmxfWoJFf0sjpcB0l370f7re2S1ptWY3k=;
-        b=gjcGtZtfJeuIYBrMoka+HMEqAGi61AK8GZ0Q+7ve3z+4N+2KzckYZkUr7fLtqchcXq
-         +BfCJjqVZELY6TaCkVgfBc2I6+X71+djSLfV0p85GOhf5+3FY4W6vRT1DqXkmmIQ7Syb
-         DG6Dh0Kj5OexJ12LONNNY5Vn6c8DJLImeESNwfpV3grqpS+5yi+bEQW9+kO/blypMBra
-         /si0+WXaka/JRRjtRZj75lPR2s0rucVxr6uNz2qcaG0rgFTppwxIGhJeYDA0TYSUm9hg
-         amef01Xl8EY53oRyHNjsvqmuWhb9QkAnR0ifDIZzjy2pNLngbhUodLd7tpklP4JMc6Qi
-         5nmg==
+        d=linaro.org; s=google; t=1694442662; x=1695047462; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=MRMbduXBtm2u3hpR450ozQ9ET1j6hRdg7A226yfqXL4=;
+        b=IV60T76h5W9/i/guaWR4U3emnwbgbSJJC3vrAhyqCyMzYnggSjL/CPbSdCMJE01WdY
+         uXwFGBxMdGvBsx3Qxc5p1AGgTD+VIYFCt0T+dnQ6/8+0ey0RBp73QeaeMkxqrEl23eBL
+         AxqVz2NLI9ojxbv6xIbQhLsGEEMykQBJglD6oVVv+NZggCYAw2wU4DJhk/EzpqqT4l4z
+         9rA9e9vLg4P0PbhKbzFovKVUQ9A0iOimkPqXIiKdA3EtagA8a/MCo0DhuemZ0e+PZ8EA
+         oj1s3O84DNyg+OxXCY3RgzFuP64at/H4/MeLsTq8PDfQooE1vYsXLwz/xjuNFujN/kmY
+         e6lw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694432370; x=1695037170;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=2dV5clfovnvmxfWoJFf0sjpcB0l370f7re2S1ptWY3k=;
-        b=T1ncgdmpjmX5zQu0byvT2abj0c7haS4xCMe4tkthPvSee4+TGA2ECN/YSEy7XAOf2a
-         cav5iDMNxKIAzjGHQfe9FtIfDiXSIGKj+20tAKsgxEYYGxxubXtJG/pchTeGMvhTh3w3
-         z6d9Iegu/MoZeywyQzazo6x5Afsd8xKpYZUDggTSFJT0V5qn/DwunjfLKTOKJiOszoOM
-         J7FLuMo5lhz62OV4/17BgOZEySsb+FKnKfpLbgWn/7PNgoTWV8HQXhocbLmiRTSyNqsP
-         3NZZJOT1y/bXaaofuJRZ5GGHFHA2tmfsyLv9pApn/qo2sGGyhBky4xVWDHq8g2ivqtv6
-         fP2g==
-X-Gm-Message-State: AOJu0YyQdxyQa6M7z9fYT01wIhlx381MMT0WS1q3j5Kp2tRFpHMnxUHU
-        6fO/KDDqI50KP1imqCp477rYOQ==
-X-Google-Smtp-Source: AGHT+IGfjOHabCCpFu22I/Ln+ydizv7TNX3FoPbSfKcuPyvjsLJt+HPWHDyz9PVtvK2J6K5QstCFgQ==
-X-Received: by 2002:aa7:d40b:0:b0:523:a45f:419a with SMTP id z11-20020aa7d40b000000b00523a45f419amr7454009edq.41.1694432369717;
-        Mon, 11 Sep 2023 04:39:29 -0700 (PDT)
-Received: from krzk-bin.. ([178.197.214.188])
-        by smtp.gmail.com with ESMTPSA id g15-20020a056402180f00b00523b1335618sm4431003edy.97.2023.09.11.04.39.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 Sep 2023 04:39:28 -0700 (PDT)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Iskren Chernev <me@iskren.info>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Matheus Castello <matheus@castello.eng.br>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Stefan Hansson <newbie13xd@gmail.com>,
-        Svyatoslav Ryhel <clamor95@gmail.com>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org
-Subject: Re: (subset) [PATCH v3 4/4] ARM: configs: s5pv210_defconfig: enable IIO required by MAX17040
-Date:   Mon, 11 Sep 2023 13:39:22 +0200
-Message-Id: <169443234710.34398.14080097652916975038.b4-ty@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230731073613.10394-5-clamor95@gmail.com>
-References: <20230731073613.10394-1-clamor95@gmail.com> <20230731073613.10394-5-clamor95@gmail.com>
+        d=1e100.net; s=20230601; t=1694442662; x=1695047462;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=MRMbduXBtm2u3hpR450ozQ9ET1j6hRdg7A226yfqXL4=;
+        b=kVrGFqXx2nbhHroNGbQr08p31l75/0JFfFU2q4oGmN9cYr99n6d1kHhhYRUTUDsrdV
+         DduqG5AUv4hcECqugtXZXqZ9X6aWMiNrJn33TlVCaqG031IcFnU3wuU9qkFLpHKqUhOM
+         EefZ1Q/qGoRkPyzjIAgNgEoSo2yZak4NnzC5qkzkFnYw3T4is8BMnXh856BiuSGuKa/t
+         5S6WIPmfZo/Tdkv0i9wRplARkqx08ER4NheJUmfdllvBQEoP5TkzE6t1So/wdytfUjHr
+         Z4YUruDCSsQFobhVgAVM351479PvLr8ZIlXh8DW4Dm+0Lu5kfQYlgIs9RaaQjUSg/do6
+         z2JQ==
+X-Gm-Message-State: AOJu0YzGkAkDjlL8AS5Fno3KM5/kRpGf30zFEgsY2Ksuo+ryr+LrXI9S
+        6K+8yM/KTqKuE+/6Y6yttPVoWxdQxJV7xa+RfwrjiQ==
+X-Google-Smtp-Source: AGHT+IHM9lDnQetC5LLtRbUDBIR/L+NWqkeueFcXF7OnhW3zZVv6Wnt9N3vGRRwv0ZYdb7tOzOpDbqjMCh4fQJ5M7tk=
+X-Received: by 2002:a25:7392:0:b0:d7e:761d:cc83 with SMTP id
+ o140-20020a257392000000b00d7e761dcc83mr7054140ybc.14.1694442661879; Mon, 11
+ Sep 2023 07:31:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+References: <20230911025223.3433776-1-xianwei.zhao@amlogic.com>
+In-Reply-To: <20230911025223.3433776-1-xianwei.zhao@amlogic.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Mon, 11 Sep 2023 16:30:25 +0200
+Message-ID: <CAPDyKFqTs=mRnBRREbT+WFj_4qTLd8LTKigY_1TAZOqGGUKk3A@mail.gmail.com>
+Subject: Re: [PATCH V3 RESEND 0/6] Power: T7: add power domain driver
+To:     Xianwei Zhao <xianwei.zhao@amlogic.com>,
+        Neil Armstrong <neil.armstrong@linaro.org>
+Cc:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Mon, 11 Sept 2023 at 04:52, Xianwei Zhao <xianwei.zhao@amlogic.com> wrote:
+>
+> First patch is that remove C3 some power domain ALWAYS_ON property.
+> Second patch is that add driver to support power parent node.
+> Third patch is that turn on power if initial power domain with
+> "AWAY_ON" property state is off.
+>
+> Other patchs adds power controller driver support for Amlogic T7 SoC.
+>
+> Changes Since v2:
+>  -Modify subject.
+>  -Define PWRC_NO_PARENT UINT_MAX
+>  -Remove modification that transform is_off into 1 or 0 using !!
+>
+> Changes Since v1:
+>  -Fix license from "GPL-2.0-only OR .*" to "GPL-2.0-only OR MIT".
+>  -Modify T7_NIC flag  "ALWAYS_ON"
+>
+> xianwei.zhao (6):
+>   genpd: amlogic: modify some power domains property
+>   genpd: amlogic: add driver to support power parent node
+>   genpd: amlogic: init power domain state
+>   dt-bindings: power: add Amlogic T7 power domains
+>   genpd: amlogic: Add support for T7 power domains controller
+>   arm64: dts: amlogic: t7: add power domain controller node
+>
+>  .../power/amlogic,meson-sec-pwrc.yaml         |   3 +-
+>  arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi   |   6 +
+>  drivers/genpd/amlogic/meson-secure-pwrc.c     | 127 ++++++++++++++++--
+>  include/dt-bindings/power/amlogic,t7-pwrc.h   |  63 +++++++++
+>  4 files changed, 185 insertions(+), 14 deletions(-)
+>  create mode 100644 include/dt-bindings/power/amlogic,t7-pwrc.h
+>
+>
+> base-commit: 413f5c02929bb33042bbc4ee233166550a5fca70
+> --
+> 2.37.1
+>
 
-On Mon, 31 Jul 2023 10:36:13 +0300, Svyatoslav Ryhel wrote:
-> After adding support for passing temperature data from thermal sensor
-> to MAX17040 it got dependency on CONFIG_IIO. From all defconfigs
-> using MAX17040 only s5pv210_defconfig did not have IIO already enabled
-> so let's enable it to avoid regression.
-> 
-> 
+Patch 1 to 5, applied for next!
 
-Applied, thanks!
+The DT patch (patch4), is available on an immutable branch "genpd_dt" too.
 
-[4/4] ARM: configs: s5pv210_defconfig: enable IIO required by MAX17040
-      https://git.kernel.org/krzk/linux/c/dc836afd2be7618d8c849fd93bd3e15513289b70
+From now on, I will continue to put changes for genpd DT bindings on
+the above branch, to allow SoC maintainers to pull it in to manage
+potential dependent updates to DTS files.
 
-Best regards,
--- 
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Kind regards
+Uffe
