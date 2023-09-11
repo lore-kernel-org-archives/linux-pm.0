@@ -2,316 +2,161 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ED8ECA0ECA
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:10:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1704ACA0EC5
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:10:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235173AbjIKVF0 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:05:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49576 "EHLO
+        id S235272AbjIKVFf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:05:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53792 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243983AbjIKSex (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 14:34:53 -0400
-Received: from mail-ot1-f50.google.com (mail-ot1-f50.google.com [209.85.210.50])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15BD3198;
-        Mon, 11 Sep 2023 11:34:49 -0700 (PDT)
-Received: by mail-ot1-f50.google.com with SMTP id 46e09a7af769-6bf106fb6a0so759115a34.0;
-        Mon, 11 Sep 2023 11:34:49 -0700 (PDT)
+        with ESMTP id S236818AbjIKL2u (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 07:28:50 -0400
+Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com [IPv6:2607:f8b0:4864:20::112e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 864DBCE5
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:28:45 -0700 (PDT)
+Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-59234aaca15so43886177b3.3
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:28:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694431724; x=1695036524; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=7aH+LgtXU/bZep1051Dmp3W7xLVGoC7LOjeeK6uQUB0=;
+        b=mfl1vtlAR0BVJni1RAdlYmCjR2EghvE6QIsVDjYjSw+z5uVpYMRm7tdZVjp0h17RB/
+         IuIEZJhVJfoAy/J7xTK0o47g/FS96KdRYCG7JtvqHAVrICneMVmcXg1wZhdbAN0un9J2
+         z9kry21+AIsonOz6J5xx1/hjhBapHIm8j67/BqUv1zU8wLePXtUffNrDkt8cgIE/rqrc
+         /ZcoUSvbUltrJn2ud3c1s13f4c9wuTPVHqQ0NpG2CmqEWVFMndLrbiLASJ8hgbxl9jRf
+         GCQ5nAHr1WmT/BSeG7rHqJnzR1VEhivnvIQKv5W8I72PCzoICtFd7rtYioRrb7zGYGyf
+         AlKw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694457288; x=1695062088;
+        d=1e100.net; s=20230601; t=1694431724; x=1695036524;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=0ozIqsa4ll2dstGJiKnp+cx3giqAznmjtqmzWaRuC2Y=;
-        b=u1NFRWSVNljmDDz5OI7n/VdponouHW25zCi0md/BIKPH6/W860SzEU5uqQBvtIhO6d
-         crY8E9fUwGPh/PZ57LdtJx2QiSFKwKxSnx4HuGswRaBfllNt9kFW7jQNEIowR4MJgs/U
-         BW+PAp44fbXCUHykF3ux7DVudE6LfJtd6PIYDG2FD+wjMOSEhmZcKSW5xZoWxIg/idck
-         uXFyy0lm+XhGjgBpnl8UbiirHlXKK8+3wKvgzUWlmHk+BQ+dwqO4XBIy9pSJyCxsFJ30
-         HQrHT7MOhMcvy1GBjUnNlARrBbo34UwvCLxBKUCA8ss8JWTrK1SCr3LoHdv81ZAtGf9d
-         qV1A==
-X-Gm-Message-State: AOJu0YxQS7RQgQEtMonnlG0rsAmht7bT0DznwS/OQyUfeaJeBuNhf7cs
-        bzXa2hko1iCoCt+hwGyQJww3iu0DUDo4RqZhpLA=
-X-Google-Smtp-Source: AGHT+IETfSXiDrOmPCMB2ku2g4cKUUFkv5dF7tlnnSknEk84cwUOYcvU7muL8DylEGougjYynYy0zJ0ORQlzuqz94hM=
-X-Received: by 2002:a05:6808:23ca:b0:3aa:867:c7f0 with SMTP id
- bq10-20020a05680823ca00b003aa0867c7f0mr12781634oib.0.1694457288235; Mon, 11
- Sep 2023 11:34:48 -0700 (PDT)
+        bh=7aH+LgtXU/bZep1051Dmp3W7xLVGoC7LOjeeK6uQUB0=;
+        b=LPvxDIh4Cau+MJsY7ksI9laKuSZobxHbcThQQ/o+8sdJWq0hTvy0qPBnYMOh6KsgSV
+         JL+wEjPQQme7egEJ+2Kqlr0yN1YOUJ0S7l+GVkNrwDswD4sjbouBsLOb+jBUROSkpPrI
+         DgdWyWxqCwz3ZNUVZmlpz4ViWp2yEG4ELif/Q7a+jH9rA0k49ghKjPIq4k3z/9kaImvU
+         1Nfyw+CjMnezVAmDsRzklHMqXuBs6D9kROoGs0HGpFYXVai6RN9YMOEsS1PbzWAKRchW
+         VvG/OYjTPk4P0FsiEOa9Wk+NelG394LwHJpVzUPlAquUxxuGQdVjxfMSChznpFbuiLXQ
+         dj5Q==
+X-Gm-Message-State: AOJu0YzaKIxyG9IGeKIMWZz4+W6olhIjznwD+DDevUrgzXxfcyEBIzWB
+        T+RW4gyal6PODhkA8po3raNUEU9fjXJyHxmaQYOGdg==
+X-Google-Smtp-Source: AGHT+IEswWwSSaXU++NcaMiC0Ujkjj+Vn04CKhSZv7TtPGdjUYWT5Z8lgFE+X0lYJNg7DMjyqZlAFXqETyStZY8C9vo=
+X-Received: by 2002:a25:b16:0:b0:d7f:cdc8:e17c with SMTP id
+ 22-20020a250b16000000b00d7fcdc8e17cmr7889180ybl.51.1694431724711; Mon, 11 Sep
+ 2023 04:28:44 -0700 (PDT)
 MIME-Version: 1.0
-References: <20230906184354.45846-1-mario.limonciello@amd.com> <20230906184354.45846-3-mario.limonciello@amd.com>
-In-Reply-To: <20230906184354.45846-3-mario.limonciello@amd.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 11 Sep 2023 20:34:37 +0200
-Message-ID: <CAJZ5v0jgGOPcFMfRObAM1St1KLjZS0tEki4f32Rbr3ZXwFyFzA@mail.gmail.com>
-Subject: Re: [PATCH v17 2/4] PCI: Add support for drivers to register optin or
- veto of D3
-To:     Mario Limonciello <mario.limonciello@amd.com>
-Cc:     Hans de Goede <hdegoede@redhat.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
-        "open list:X86 PLATFORM DRIVERS" 
-        <platform-driver-x86@vger.kernel.org>,
-        "open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>,
-        linux-pm@vger.kernel.org
+References: <20230829213441.310655-1-ulf.hansson@linaro.org>
+ <CAHk-=wg0gc4Cc90OL29Vr5gDtd4mnsKD+TxtoNtQbAryaWHkZQ@mail.gmail.com>
+ <CAHk-=wjLO=Jsdk2prq0piznMMCk+V0_fRaFRHEPuaALpF8J=hw@mail.gmail.com>
+ <96bb0de0-06d9-46f8-b02f-dc924afff13c@app.fastmail.com> <CAHk-=wi5Lh-NG_rvcx3Zyqd2Uhj76G4V73tWCFULhVzOU6e1xg@mail.gmail.com>
+ <CAPDyKFrJH-1uaPCwnWZDPi4MRtOm=N2CHSRyvjXRDbQ1y-oOrw@mail.gmail.com>
+ <CAJZ5v0hqWYnkNXVju3U3n-9i8eqtjs197tLLNWv8Qa_N9T=KEw@mail.gmail.com>
+ <CAPDyKFpXLj_2HAgyV_VJf+GPQVmxb_iiDe77Q2MY17MDNqy9fA@mail.gmail.com> <CAMuHMdVxLkxN0bmSRXW74R_dGNDSRDB4Z=zE0DoiXDOuweSM0A@mail.gmail.com>
+In-Reply-To: <CAMuHMdVxLkxN0bmSRXW74R_dGNDSRDB4Z=zE0DoiXDOuweSM0A@mail.gmail.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Mon, 11 Sep 2023 13:28:08 +0200
+Message-ID: <CAPDyKFpUUJeGD77GTYCk59cvW=SdGTkOEXH4dap1JQWekAa0Eg@mail.gmail.com>
+Subject: Re: [GIT PULL] ARM: SoC/genpd driver updates for v6.6
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+        soc@kernel.org, linux-arm-kernel@lists.infradead.org,
+        Sebastian Reichel <sebastian.reichel@collabora.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Sep 6, 2023 at 9:16 PM Mario Limonciello
-<mario.limonciello@amd.com> wrote:
+On Mon, 11 Sept 2023 at 09:52, Geert Uytterhoeven <geert@linux-m68k.org> wr=
+ote:
 >
-> commit 9d26d3a8f1b0 ("PCI: Put PCIe ports into D3 during suspend")
-> changed pci_bridge_d3_possible() so that any vendor's PCIe ports
-> from modern machines (>=2015) are allowed to be put into D3.
+> Hi Ulf,
 >
-> This policy change has worked for most machines, but the behavior
-> is improved with `pcie_port_pm=off` on some others.
+> On Thu, Aug 31, 2023 at 1:39=E2=80=AFPM Ulf Hansson <ulf.hansson@linaro.o=
+rg> wrote:
+> > On Thu, 31 Aug 2023 at 11:33, Rafael J. Wysocki <rafael@kernel.org> wro=
+te:
+> > > If I may suggest something, I would call this "pmdomain" instead of
+> > > "genpd".  I don't think that /drivers/power/ is a particularly
+> > > suitable location for it, because it doesn't really have much to do
+> > > with power supplies and more to do with device PM.
+> >
+> > "pmdomain" is probably giving a reasonable good hint of what goes on
+> > in this subsystem. This works fine for me, thanks!
 >
-> Add support for drivers to register both 'optin' and 'veto' callbacks
-> and a priority which can be used for deciding whether a device should
-> use D3. When drivers register the callbacks, the list is sorted by
-> priority.
+> Sounds nice!
+> All of this lives in <linux/pm_domain.h> (with underscore?) anyway,
+> and "PM Domains" is the usual naming, as it covers both Power and
+> Clock Domains.
 >
-> Suggested-by: Hans de Goede <hdegoede@redhat.com>
-> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
-> ---
->  drivers/pci/pci.c   | 143 ++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pci.h |   9 +++
->  2 files changed, 152 insertions(+)
->
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 59c01d68c6d5..06ab73f58adf 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -21,6 +21,7 @@
->  #include <linux/module.h>
->  #include <linux/spinlock.h>
->  #include <linux/string.h>
-> +#include <linux/list_sort.h>
->  #include <linux/log2.h>
->  #include <linux/logic_pio.h>
->  #include <linux/pm_wakeup.h>
-> @@ -54,6 +55,8 @@ unsigned int pci_pm_d3hot_delay;
->  static void pci_pme_list_scan(struct work_struct *work);
->
->  static LIST_HEAD(pci_pme_list);
-> +static LIST_HEAD(d3_possible_list);
-> +static DEFINE_MUTEX(d3_possible_list_mutex);
->  static DEFINE_MUTEX(pci_pme_list_mutex);
->  static DECLARE_DELAYED_WORK(pci_pme_work, pci_pme_list_scan);
->
-> @@ -161,6 +164,14 @@ static bool pcie_ats_disabled;
->  /* If set, the PCI config space of each device is printed during boot. */
->  bool pci_early_dump;
->
-> +/* Preferences set by a driver for D3 optin/veto */
-> +enum driver_d3_pref {
-> +       D3_PREF_UNSET,  /* Not configured by driver */
-> +       D3_PREF_NONE,   /* Driver does not care */
-> +       D3_PREF_OPTIN,  /* Driver prefers D3 */
-> +       D3_PREF_VETO,   /* Driver vetoes D3 */
-> +};
-> +
->  bool pci_ats_disabled(void)
->  {
->         return pcie_ats_disabled;
-> @@ -3031,6 +3042,10 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
->                 if (pci_bridge_d3_force)
->                         return true;
->
-> +               /* check for any driver optin of D3 for the bridge */
-> +               if (bridge->driver_d3 == D3_PREF_OPTIN)
-> +                       return true;
-> +
->                 /* Even the oldest 2010 Thunderbolt controller supports D3. */
->                 if (bridge->is_thunderbolt)
->                         return true;
-> @@ -3050,6 +3065,10 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
->                 if (dmi_check_system(bridge_d3_blacklist))
->                         return false;
->
-> +               /* check for any driver veto for D3 for the bridge */
-> +               if (bridge->driver_d3 == D3_PREF_VETO)
-> +                       return false;
-> +
->                 /*
->                  * It should be safe to put PCIe ports from 2015 or newer
->                  * to D3.
-> @@ -3168,6 +3187,130 @@ void pci_d3cold_disable(struct pci_dev *dev)
->  }
->  EXPORT_SYMBOL_GPL(pci_d3cold_disable);
->
-> +static struct pci_dev *pci_get_upstream_port(struct pci_dev *pci_dev)
-> +{
-> +       struct pci_dev *bridge;
-> +
-> +       bridge = pci_upstream_bridge(pci_dev);
-> +       if (!bridge)
-> +               return NULL;
-> +
-> +       if (!pci_is_pcie(bridge))
-> +               return NULL;
-> +
-> +       switch (pci_pcie_type(bridge)) {
-> +       case PCI_EXP_TYPE_ROOT_PORT:
-> +       case PCI_EXP_TYPE_UPSTREAM:
-> +       case PCI_EXP_TYPE_DOWNSTREAM:
-> +               return bridge;
-> +       default:
-> +               break;
-> +       };
-> +
-> +       return NULL;
-> +}
-> +
-> +static void pci_refresh_d3_possible(void)
-> +{
-> +       struct pci_d3_driver_ops *driver;
-> +       struct pci_dev *pci_dev = NULL;
-> +       struct pci_dev *bridge;
-> +
-> +       /* 1st pass: unset any preferences set a previous invocation */
-> +       while ((pci_dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, pci_dev))) {
-> +               bridge = pci_get_upstream_port(pci_dev);
-> +               if (!bridge)
-> +                       continue;
-> +
-> +               if (bridge->driver_d3 != D3_PREF_UNSET)
-> +                       bridge->driver_d3 = D3_PREF_UNSET;
-> +       }
-> +
-> +       pci_dev = NULL;
-> +
-> +       /* 2nd pass: update the preference and refresh bridge_d3 */
-> +       while ((pci_dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, pci_dev))) {
-> +               bridge = pci_get_upstream_port(pci_dev);
-> +               if (!bridge)
-> +                       continue;
-> +
-> +               /* don't make multiple passes on the same device */
-> +               if (bridge->driver_d3 != D3_PREF_UNSET)
-> +                       continue;
-> +
-> +               /* the list is pre-sorted by highest priority */
-> +               mutex_lock(&d3_possible_list_mutex);
-> +               list_for_each_entry(driver, &d3_possible_list, list_node) {
-> +                       /* another higher priority driver already set preference */
-> +                       if (bridge->driver_d3 != D3_PREF_UNSET)
-> +                               break;
-> +                       /* check for opt in to D3 */
-> +                       if (driver->optin && driver->optin(bridge))
-> +                               bridge->driver_d3 = D3_PREF_OPTIN;
-> +                       /* check for opt out of D3 */
-> +                       else if (driver->veto && driver->veto(bridge))
-> +                               bridge->driver_d3 = D3_PREF_VETO;
-> +               }
-> +               mutex_unlock(&d3_possible_list_mutex);
-> +
-> +               /* no driver set a preference */
-> +               if (bridge->driver_d3 == D3_PREF_UNSET)
-> +                       bridge->driver_d3 = D3_PREF_NONE;
-> +
-> +               /* update bridge_d3 */
-> +               pci_bridge_d3_update(pci_dev);
-> +       }
-> +}
-> +
-> +static int pci_d3_driver_cmp(void *priv, const struct list_head *_a,
-> +                          const struct list_head *_b)
-> +{
-> +       struct pci_d3_driver_ops *a = container_of(_a, typeof(*a), list_node);
-> +       struct pci_d3_driver_ops *b = container_of(_b, typeof(*b), list_node);
-> +
-> +       if (a->priority < b->priority)
-> +               return -1;
-> +       else if (a->priority > b->priority)
-> +               return 1;
-> +       return 0;
-> +}
-> +
-> +/**
-> + * pci_register_d3_possible_cb - Register a driver callback for checking d3 veto
-> + * @arg: driver provided structure with function pointer and priority
-> + *
-> + * This function can be used by drivers to register a callback that can be
-> + * used to veto a device going into D3.
-> + * Returns 0 on success, error code on failure.
-> + */
-> +int pci_register_d3_possible_cb(struct pci_d3_driver_ops *arg)
-> +{
-> +       mutex_lock(&d3_possible_list_mutex);
-> +       list_add(&arg->list_node, &d3_possible_list);
-> +       list_sort(NULL, &d3_possible_list, pci_d3_driver_cmp);
-> +       mutex_unlock(&d3_possible_list_mutex);
-> +       pci_refresh_d3_possible();
-> +       return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(pci_register_d3_possible_cb);
-> +
-> +/**
-> + * pci_unregister_d3_possible_cb - Unregister a driver callback for checking d3 veto
-> + * @arg: driver provided structure with function pointer and priority
-> + *
-> + * This function can be used by drivers to unregister a callback that can be
-> + * used to veto a device going into D3.
-> + */
-> +void pci_unregister_d3_possible_cb(struct pci_d3_driver_ops *arg)
-> +{
-> +       mutex_lock(&d3_possible_list_mutex);
-> +       list_del(&arg->list_node);
-> +       list_sort(NULL, &d3_possible_list, pci_d3_driver_cmp);
-> +       mutex_unlock(&d3_possible_list_mutex);
-> +       pci_refresh_d3_possible();
-> +}
-> +EXPORT_SYMBOL_GPL(pci_unregister_d3_possible_cb);
-> +
->  /**
->   * pci_pm_init - Initialize PM functions of given PCI device
->   * @dev: PCI device to handle.
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 8c7c2c3c6c65..863399e78869 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -389,6 +389,7 @@ struct pci_dev {
->                                                    bit manually */
->         unsigned int    d3hot_delay;    /* D3hot->D0 transition time in ms */
->         unsigned int    d3cold_delay;   /* D3cold->D0 transition time in ms */
-> +       unsigned int    driver_d3;      /* Driver D3 request preference */
->
->  #ifdef CONFIG_PCIEASPM
->         struct pcie_link_state  *link_state;    /* ASPM link state */
-> @@ -1404,6 +1405,14 @@ void pci_d3cold_disable(struct pci_dev *dev);
->  bool pcie_relaxed_ordering_enabled(struct pci_dev *dev);
->  void pci_resume_bus(struct pci_bus *bus);
->  void pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state);
-> +struct pci_d3_driver_ops {
-> +       struct list_head list_node;
-> +       int priority;
-> +       bool (*optin)(struct pci_dev *pdev);
-> +       bool (*veto)(struct pci_dev *pdev);
-> +};
-> +int pci_register_d3_possible_cb(struct pci_d3_driver_ops *arg);
-> +void pci_unregister_d3_possible_cb(struct pci_d3_driver_ops *arg);
->
->  /* For use by arch with custom probe code */
->  void set_pcie_port_type(struct pci_dev *pdev);
-> --
+> However, although I am quite familiar with genpd, I am still wondering
+> what is the meaning of the "generic" part in the name? And what is a
+> non-generic PM Domain?
 
-I don't like this too much TBH.  It appears overly complicated to me
-and it totally misses the wakeup vs non-wakeup point I've been talking
-about recently.
+I guess generic here means "works for most cases".
 
-IMV, the underlying issue all boils down to the platform firmware
-inadequately describing the behavior of the system to the OS.
-Specifically, had it provided a _S0W returning 0 for the Root Port(s)
-in question, wakeup signaling would have worked (or else there would
-have been a defect in the kernel code to be addressed).  Instead, it
-decided to kind-of guide Windows in the "right" direction through PEP
-constraints which doesn't have the same effect on Linux and honestly
-I'm not even sure if it is a good idea to adjust Linux to that.
+There are certainly a bunch of other "non-generic", like the ACPI,
+pm_clk, OMAP2, etc.
 
-It looks to me like the issue could be addressed by a PCI device quirk
-playing the role of a missing _S0W (but slightly more precise, because
-it may distinguish suspend-to-idle from PM-runtime, which _S0W cannot
-do).
+Maybe some of them could be converted to genpd, but that's another story.
+
+>
+> > > Also, I would move drivers/base/power/domain.c to drivers/pmdomain/
+> > > (and rename it to something like core.c), because it would be a bette=
+r
+> > > location for that fiile IMO.
+> >
+> > We could certainly do that, let's discuss it a bit more.
+> >
+> > Although, at this point I want to focus on the genpd providers, as to
+> > release some of the burden from arm-soc maintainers.
+> >
+> > > I can also handle future pull requests for this if that's fine with e=
+veryone.
+> >
+> > Thanks a lot for your offer! However, if a re-route is preferred (I
+> > think not?), this is probably better suited via arm-soc, as most
+> > changes are going to be arm platform specific.
+>
+> Which brings me to the final question: what is the upstream path
+> for changes to drivers/genpd/*/ (or whatever it's gonna be called)?
+> Before, we sent PRs to (arm-)soc.  Do you expect us to send them to
+> you? There's usually quite some interaction between drivers/soc/reneas/
+> and drivers/genpd/renesas (and there are DT binding definitions),
+> but not more than with e.g. drivers/clk/renesas/.
+
+I would be happy to pick this up and funnel this via my new genpd
+tree. As long as it's coupled with changes affecting "genpd
+providers", of course.
+
+I can certainly also collect patches directly from the
+mailing-list/patch-tracker too. Whatever works for you the best. Of
+course, in that case I need your acks before I pick up the relevant
+patches.
+
+If we need "immutable" branches, let's discuss that on a case by case basis=
+.
+
+>
+> And I just realized you moved the code and Makefiles to drivers/genpd/,
+> but not the Kconfig symbols and logic, which still lives under
+> drivers/soc/.  So resolving that (and the name) is something that
+> should be resolved sooner rather than later...
+
+In regards to the name, I am relying on input from Linus to make a
+final decision before I send a patch. In regards to this, I have also
+started working on a documentation patch for genpd. It needs some more
+polishing before I can send it though.
+
+When it comes to the Kconfig move, I will send out a series for it, this we=
+ek.
+
+[...]
+
+Kind regards
+Uffe
