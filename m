@@ -2,101 +2,133 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB92BCA0EC0
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2805CA0EC3
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241193AbjIKVHA convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:07:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38252 "EHLO
+        id S241529AbjIKVHK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:07:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33830 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241726AbjIKPNC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 11:13:02 -0400
-Received: from mail-oi1-f171.google.com (mail-oi1-f171.google.com [209.85.167.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 598BE12E;
-        Mon, 11 Sep 2023 08:12:57 -0700 (PDT)
-Received: by mail-oi1-f171.google.com with SMTP id 5614622812f47-3a9e89fa553so446789b6e.1;
-        Mon, 11 Sep 2023 08:12:57 -0700 (PDT)
+        with ESMTP id S236935AbjIKLne (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 07:43:34 -0400
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D5A2E4D
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:43:28 -0700 (PDT)
+Received: by mail-wr1-x433.google.com with SMTP id ffacd0b85a97d-31f915c3c42so1726408f8f.0
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 04:43:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694432607; x=1695037407; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=zhvqmtlPbl/ToiLBkS2C664oW0NpQWmg1Qdfqpzz/ks=;
+        b=h85qjoOzihIC+Jfm/OgJKc4r5B0bSGnKrJPXJzit6opvv+s72AytROOKIJwpVsL0hG
+         6SkGak0t3IIVzqDzPAFSQdHqwZ319hzXuWe/SayI/RLJA7r7hU+xSl4fZYUz8kZ0Ui5j
+         IOzNBPhcW1wOlGRiHqn1Zmfz030RUBC5LmyfA5RIzlFNpye7jCf3s/9nnPUUaMcn1f+n
+         MzeDofjuT9JXein4Qje7K7cCr3piT2UpaaqDoiXDV2DudODEtMluqwHgWBS9RuXlGy3w
+         kB+dOFMqH8gHfLqMFpRyw/GDG875jW7CfRuAkA+31gn1VY5NZvD65PAgLyGuTv4sSNg0
+         1hgg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694445176; x=1695049976;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=6swvSmT5NqK26Yyzy+9kC9qqap1tUl1p63s40e6jnbA=;
-        b=bVD+HYuqqY53rQc1ZfxKQTb0WEuKRmRecMBkXkAL4kY5rFhOxri3ZYYgG++L8k688B
-         WfkGRXtt+wHNoJDzFL6ahqt3c5ZiyWt+r6AI6nK+rKcCBOG1JgG1zPM9J4xQS/RwHlAH
-         SVz6Iea/5j16bOWpTgHNIOXydSipZkk5rDT7gOFqaj94mQR3TVuKEnp0PltZf4gvLZbO
-         xpmR6XCMrvQ3NviWVKOeX4/ROc6b6Pvz0fk/g+lXlP1ASujfi+/yAmj7oo9zzvuOOB6Z
-         zcdBtxFeD848aF48794/UUOHrMR4E5UVh/xsAeftgFgkusz8OWxYW36dCBLxFXy+hOlL
-         hnFQ==
-X-Gm-Message-State: AOJu0YwckDqrEhq4RUI2AFBX1HS8Sd4/EZNHyUrs2cd0jbID2mComAaj
-        wHjQ7z6cSqFSc6xHD/fW4Rqw/vYKxe4R+i5cYgG9n9q/
-X-Google-Smtp-Source: AGHT+IGNI5zcUadWDNtHZLwpSfhsnFZ6gYzXkoEsS4X00Bv8iWhvgl1gTNm5aAPU2QFPb91pnBGcMsp1J5LyEqnW6ow=
-X-Received: by 2002:a05:6808:221d:b0:3a3:37dd:e052 with SMTP id
- bd29-20020a056808221d00b003a337dde052mr11704505oib.5.1694445176645; Mon, 11
- Sep 2023 08:12:56 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1694432607; x=1695037407;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=zhvqmtlPbl/ToiLBkS2C664oW0NpQWmg1Qdfqpzz/ks=;
+        b=ZMNhx0ZP5AYfFIdp+7VkkSjGP7BmdioMjQUhELJQUuwpphOretyhDKUVaGGbYiRnZw
+         ogyUFBjMPSSgerlnnxPR2vXZFlttzfAM6HHgFVzTNAQuO7RTdrbbctA/FBsVNkZbUxUX
+         0r2cK+x41BH4j3bOGS5hjC2hm+detQS/9nthbZHEzbd5ODVYWP82166ZtE+8t/2Ky0IZ
+         XR/F+pEwPEGiDVV1DOaywcQQmepbAQWS2Al8YARjWCaDVecxguY5VmafWIsSBqMaTpKg
+         Ly99DR5nZamaZQwjy6eqGti9IUfDT7G3U1pXZ9M3MjrMCN9WRdUPFtbVH1cYJbIQwoMQ
+         S+ag==
+X-Gm-Message-State: AOJu0YwtqDFd09FpowZxF+DjVhBuecD8zjGwO3GWrWNXnrgRjOjsTUcD
+        LNLr8sra9gA2Nq2pW9ejxLUQ0RkRHAccdRVkzpEqXQ==
+X-Google-Smtp-Source: AGHT+IHDWHlDL5vz5A1MoSOGg/s1su6sfKxPHNvw4o1B8UIig50Xaff6LXy44TsmqogO5HVIRr8EMQ==
+X-Received: by 2002:a5d:6302:0:b0:316:f3cf:6f12 with SMTP id i2-20020a5d6302000000b00316f3cf6f12mr7051795wru.48.1694432606716;
+        Mon, 11 Sep 2023 04:43:26 -0700 (PDT)
+Received: from [192.168.1.20] ([178.197.214.188])
+        by smtp.gmail.com with ESMTPSA id r15-20020a056000014f00b0031c6dc684f8sm9771891wrx.20.2023.09.11.04.43.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 11 Sep 2023 04:43:25 -0700 (PDT)
+Message-ID: <15898954-3b47-651d-43f4-844f45da171e@linaro.org>
+Date:   Mon, 11 Sep 2023 13:43:23 +0200
 MIME-Version: 1.0
-References: <20230907095521.14053-1-Julia.Lawall@inria.fr> <20230907095521.14053-9-Julia.Lawall@inria.fr>
-In-Reply-To: <20230907095521.14053-9-Julia.Lawall@inria.fr>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 11 Sep 2023 17:12:45 +0200
-Message-ID: <CAJZ5v0i46Ybd3KWQ-ogmbTRoTW=w1nDEg4KpVfo8x0ZFf3qOeg@mail.gmail.com>
-Subject: Re: [PATCH 08/11] thermal/of: add missing of_node_put
-To:     Julia Lawall <Julia.Lawall@inria.fr>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        kernel-janitors@vger.kernel.org,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Subject: Re: [PATCH 1/3] dt-bindings: interconnect: Add Qualcomm SM4450
+Content-Language: en-US
+To:     Tengfei Fan <quic_tengfan@quicinc.com>,
+        Rob Herring <robh@kernel.org>
+Cc:     will@kernel.org, arnd@arndb.de, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, quic_kaushalk@quicinc.com,
+        peng.fan@nxp.com, kernel@quicinc.com, catalin.marinas@arm.com,
+        rafal@milecki.pl, krzysztof.kozlowski+dt@linaro.org,
+        nfraprado@collabora.com, quic_shashim@quicinc.com,
+        robh+dt@kernel.org, linux-arm-msm@vger.kernel.org,
+        quic_tingweiz@quicinc.com, quic_aiquny@quicinc.com,
+        linux-pm@vger.kernel.org, quic_tsoni@quicinc.com,
+        geert+renesas@glider.be, andersson@kernel.org, conor+dt@kernel.org,
+        linux-arm-kernel@lists.infradead.org, agross@kernel.org,
+        quic_tdas@quicinc.com, djakov@kernel.org, konrad.dybcio@linaro.org
+References: <20230908064427.26999-1-quic_tengfan@quicinc.com>
+ <20230908064427.26999-2-quic_tengfan@quicinc.com>
+ <169415894359.3239551.14338430937225080028.robh@kernel.org>
+ <375df554-e661-42ad-8a6f-f862aa05b654@quicinc.com>
+ <5f172a8f-ecd7-44b0-9b02-48eb13d40497@quicinc.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <5f172a8f-ecd7-44b0-9b02-48eb13d40497@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 7, 2023 at 11:56 AM Julia Lawall <Julia.Lawall@inria.fr> wrote:
->
-> for_each_child_of_node performs an of_node_get on each
-> iteration, so a break out of the loop requires an
-> of_node_put.
->
-> This was done using the Coccinelle semantic patch
-> iterators/for_each_child.cocci
->
-> Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
->
-> ---
->  drivers/thermal/thermal_of.c |    8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
->
-> diff -u -p a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-> --- a/drivers/thermal/thermal_of.c
-> +++ b/drivers/thermal/thermal_of.c
-> @@ -37,8 +37,10 @@ static int of_find_trip_id(struct device
->          */
->         for_each_child_of_node(trips, t) {
->
-> -               if (t == trip)
-> +               if (t == trip) {
-> +                       of_node_put(t);
->                         goto out;
-> +               }
->                 i++;
->         }
->
-> @@ -401,8 +403,10 @@ static int thermal_of_for_each_cooling_m
->
->         for_each_child_of_node(cm_np, child) {
->                 ret = thermal_of_for_each_cooling_device(tz_np, child, tz, cdev, action);
-> -               if (ret)
-> +               if (ret) {
-> +                       of_node_put(child);
->                         break;
-> +               }
->         }
->
->         of_node_put(cm_np);
->
+On 11/09/2023 12:15, Tengfei Fan wrote:
+>>>
+>>> My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+>>> on your patch (DT_CHECKER_FLAGS is new in v5.13):
+>>>
+>>> yamllint warnings/errors:
+>>>
+>>> dtschema/dtc warnings/errors:
+>>> Documentation/devicetree/bindings/interconnect/qcom,sm4450-rpmh.example.dts:18:18: fatal error: dt-bindings/clock/qcom,gcc-sm4450.h: No such file or directory
+>>>     18 |         #include <dt-bindings/clock/qcom,gcc-sm4450.h>
+>>>        |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>> compilation terminated.
+>>> make[2]: *** [scripts/Makefile.lib:419: 
+>>> Documentation/devicetree/bindings/interconnect/qcom,sm4450-rpmh.example.dtb] Error 1
+>>> make[2]: *** Waiting for unfinished jobs....
+>>> make[1]: *** [/builds/robherring/dt-review-ci/linux/Makefile:1500: 
+>>> dt_binding_check] Error 2
+>>> make: *** [Makefile:234: __sub-make] Error 2
+>>>
+>>> doc reference errors (make refcheckdocs):
+>>>
+>>> See 
+>>> https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20230908064427.26999-2-quic_tengfan@quicinc.com
+>>>
+>>> The base for the series is generally the latest rc1. A different 
+>>> dependency
+>>> should be noted in *this* patch.
+>>>
+>>> If you already ran 'make dt_binding_check' and didn't see the above
+>>> error(s), then make sure 'yamllint' is installed and dt-schema is up to
+>>> date:
+>>>
+>>> pip3 install dtschema --upgrade
+>>>
+>>> Please check and re-submit after running the above command yourself. Note
+>>> that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+>>> your schema. However, it must be unset to test all examples with your 
+>>> schema.
+>>>
+>> Thanks review this patch, will setup new env for verify again.
+>>
+> this error is due to have dependence with: 
+> https://lore.kernel.org/linux-arm-msm/20230824173410.550126-1-quic_ajipan@quicinc.com/, 
+> will add this link to coverletter.
 
-Applied as 6.6-rc material, thanks!
+The patch should have it for the bot to understand it.
+
+Best regards,
+Krzysztof
+
