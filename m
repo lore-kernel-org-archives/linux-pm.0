@@ -2,97 +2,117 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 523BCCA0EC3
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 23:17:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF558CA0EC3
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 23:17:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231557AbjIKXRG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 19:17:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54168 "EHLO
+        id S231215AbjIKXRK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 19:17:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39190 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354191AbjIKVws (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 17:52:48 -0400
-Received: from mail-oi1-x22a.google.com (mail-oi1-x22a.google.com [IPv6:2607:f8b0:4864:20::22a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A056076BF;
-        Mon, 11 Sep 2023 14:42:21 -0700 (PDT)
-Received: by mail-oi1-x22a.google.com with SMTP id 5614622812f47-3ab8e324725so330088b6e.0;
-        Mon, 11 Sep 2023 14:42:21 -0700 (PDT)
+        with ESMTP id S1352402AbjIKVpF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 17:45:05 -0400
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3BBFE12D66
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 14:35:40 -0700 (PDT)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-68bed2c786eso4046127b3a.0
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 14:35:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1694468450; x=1695073250; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20221208; t=1694468048; x=1695072848; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=q1rskMG9E2Dj5/SRLejxHVPKSzfpoHVWY3HLrjdtxeI=;
-        b=Y7q7OI6SVbBNsJX+noxObMOZ2Atcwke3sziKRBnbC3urDLzct3/xNGfUeW1AJ0rtxr
-         BfNIs6O67uhJ70KQOv5opeeuoFL1oA6yyC95lsNf13UeOoFJH8Qkk3KC/0QbBUWfwA1L
-         HzpOAzV6Y1rj0xKUYkwNTP0kYpGfl2WerY5T0DTP+sKuRfK9I+dP8aVzQdicADPVDFxc
-         ke78bCfm7P1vID8nI2dhVkS3Hi5KFElcGETr2IprkHOrSq9Nnew6VwdkDoQeGfGXYgRi
-         m0zBtL3hL5HohBvfmXr4eav8c7YOeivAACg4VatmK5gAgaKNtS5xtqCZ6UGLInO9+Jm5
-         7ZPw==
+        bh=QF/KJHyY9/xFPzuOnnvTEH4bH3ymUsGSbxLjG3pqY7w=;
+        b=nVCTBzeorsrkgwFGShKaryybgxR6F1E+fEMcNC6WOO7CPCsVcnUO1JA8HGtQ36BMFi
+         HaLL27Xn/6Bh3MFeyyu5I46rHIPmIFdaOT4Y0eb8JayKSGFQjciP0tjFOmdpwMtImPY2
+         Th6g9EXIrmcZXz+KUp88giGD8kF9+gYoLe/hfBGSlPITxG3QgZ61epoOeZL0jpiZkgIs
+         cOBKGTMheRKb5VBDvTR03XpLZGRZpwK3QWFkHsZVdtvIXgZlfgmtuTmvwW1YyZZy8q0i
+         ytl9jKME100XkSLecL8pxASceFslrnx1xWggQcxxE5GJST2eDsBL68N0gjh+zbpWgNzk
+         42uQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694468450; x=1695073250;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1694468048; x=1695072848;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=q1rskMG9E2Dj5/SRLejxHVPKSzfpoHVWY3HLrjdtxeI=;
-        b=IAZ2ZXq3E846aNpc6PwkxArT1OpzPbzQWI00devDm+p2/ROjMS5PcxNVZRm4GsH7Ty
-         M2pvNUF2oHEW0jwFDhQogXsdXfN7rVBsxjb5+IbN2dWiEo6P9b9Bvi+ZkrVJ7RhgcxBz
-         Oxia4ZAwEBOfKvsWCEH75rHAKOtHTD+rm9b+rZQ97D12aCMsF7VFNa9GGxGAZsR5du4T
-         2TTrrkoeupfRvaue8qyEGzMURD8nXDB5m7Wtu5m0TRs52DHP9uCotZISHsD6Ss1iVHqG
-         oBeqHtujkbASDRhVL1LgQvklUtL6ewKp/4RsPKOblUc3kx9tP1LU/DE7WKSV+OFKKUSl
-         EiKQ==
-X-Gm-Message-State: AOJu0YyCROPcx5HLUi/4QUGo4ODefviKIIgFXXfTwqsMbq1Uvir6qUc9
-        LmVK295fflu8zuP0UhGIJcLTSbaqxynUUKeaY7REcB+Rtb8=
-X-Google-Smtp-Source: AGHT+IEBbzm4jId8t/sqQS9P0cIUPm+VwcG3EInsxExrUNDGMdz+ce4CPwziEBKNo8HiJTPmTfVdkWWgOclzmaCPECY=
-X-Received: by 2002:a17:90a:3ec4:b0:26d:414d:a98a with SMTP id
- k62-20020a17090a3ec400b0026d414da98amr9962733pjc.1.1694466242955; Mon, 11 Sep
- 2023 14:04:02 -0700 (PDT)
+        bh=QF/KJHyY9/xFPzuOnnvTEH4bH3ymUsGSbxLjG3pqY7w=;
+        b=DNDsgzqAijvkwxJKgmCzu1P8Oe30OvjiR7Jz1nKrNgGWvXPpK08b9eXcSSkgW4MFKO
+         4bceN23LjxF8UJbppq+TjKeGt0QDa5ENIw0AgUXvwHoypPdHohzKtVSmSGIY1aSaoOt8
+         aDE6r4udHwr6TtlSly9bjrGB0s/A2M/jkmnV+dvmOggyuPxxUwkuq9zQVvvYdOlMBZ7X
+         MXdSvHenzFi9uGyoQlYTc4AJ/zMhjSmgWqhEdcYc611JzT4Runv6mfNCC8QL6tcXeWCs
+         Uaf02/hDNxfNmgEJiCcW3ereNtt3Xna45miN0/EJ77jokr5PLny20W0WE5kSnZUhucMJ
+         2cWw==
+X-Gm-Message-State: AOJu0YxhclT8jMqT62NPdAenYkFK0g7WZi9PCfE6WszetlSJuoUcq1Fl
+        hYifI8psggJ8qJCDvKTf0yM0rYPJ27Q=
+X-Google-Smtp-Source: AGHT+IF5IF+h5UT0Ht/GxBINXzW8EONmxkwPOIAUpzpAeHQ2/vvARDpLTNAKpFn6iMFvfyQmrSgtkA==
+X-Received: by 2002:a05:622a:9:b0:403:a9d3:91e3 with SMTP id x9-20020a05622a000900b00403a9d391e3mr13611321qtw.32.1694467233051;
+        Mon, 11 Sep 2023 14:20:33 -0700 (PDT)
+Received: from udipad-dell.cornell-visitor.cit.cornell.edu (nat-128-84-124-0-446.cit.cornell.edu. [128.84.125.190])
+        by smtp.gmail.com with ESMTPSA id s12-20020ac85ecc000000b00405447ee5e8sm2875365qtx.55.2023.09.11.14.20.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 Sep 2023 14:20:32 -0700 (PDT)
+From:   Meet Udeshi <mudeshi1209@gmail.com>
+To:     daniel.lezcano@linaro.org
+Cc:     linux-pm@vger.kernel.org
+Subject: Re: [PATCH] tools/thermal: tmon: Fix sample data update in PID
+Date:   Mon, 11 Sep 2023 17:20:31 -0400
+Message-Id: <20230911212031.46336-1-mudeshi1209@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230822184940.31316-1-mudeshi1209@gmail.com>
+References: <20230822184940.31316-1-mudeshi1209@gmail.com>
 MIME-Version: 1.0
-References: <20230910125726.1243652-1-festevam@gmail.com> <20230910125726.1243652-2-festevam@gmail.com>
- <8ef4aa62-940b-b0b5-60e1-fb42600b776a@linaro.org>
-In-Reply-To: <8ef4aa62-940b-b0b5-60e1-fb42600b776a@linaro.org>
-From:   Fabio Estevam <festevam@gmail.com>
-Date:   Mon, 11 Sep 2023 18:03:51 -0300
-Message-ID: <CAOMZO5AxQm2s7eNzO+yS5m2sOrwuDKuKwk8q2pt=JJVhO=G3ww@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] dt-bindings: thermal: qoriq-thermal: Adjust
- fsl,tmu-range maxItems
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     shawnguo@kernel.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        rafael@kernel.org, daniel.lezcano@linaro.org, amitk@kernel.org,
-        linux-pm@vger.kernel.org, linux-imx@nxp.com,
-        Fabio Estevam <festevam@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
+Hi Daniel,
 
-On Mon, Sep 11, 2023 at 3:14=E2=80=AFAM Krzysztof Kozlowski
-<krzysztof.kozlowski@linaro.org> wrote:
->
-> On 10/09/2023 14:57, Fabio Estevam wrote:
-> > From: Fabio Estevam <festevam@denx.de>
-> >
-> > imx93 has a maximum of seven entries for fsl,tmu-range.
-> >
->
-> Then qoriq should have it constrained to 4 entries.
+Wondering if this patch is being reviewed by you (you are delegated for this patch on Patchwork).
+I initially only sent this patch to the linux-pm mailing list, but I realised it may not have reached you.
 
-I just noticed that fsl-lx2160a.dtsi is also has a tmu compatible with
-two entries.
+I am new to the Linux patch submission procedure so I apologize for any inconvenience.
 
-Would it be OK to represent it like this?
+Regards,
+Meet.
 
---- a/Documentation/devicetree/bindings/thermal/qoriq-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.yaml
-@@ -33,7 +33,8 @@ properties:
-     description: |
-       The values to be programmed into TTRnCR, as specified by the SoC
-       reference manual. The first cell is TTR0CR, the second is TTR1CR, et=
-c.
--    maxItems: 4
-+    minItems: 2
-+    maxItems: 7
+On Tue, 22 Aug 2023 at 14:50, Meet Udeshi <mudeshi1209@gmail.com> wrote:
+> Fixed the order of update for `xk_1` and `xk_2` in the PID controller in
+> function `controller_handler()`.
+> 
+> The previous timestep data in the PID controller, `xk_1` and `xk_2`,
+> were updated in the wrong order. `xk_1` was overwritten before `xk_2`
+> was assigned. This caused both `xk_1` and `xk_2` to take the value of
+> `xk` when the function `controller_handler()` was called.
+> This means the D-term of the PID controller was simplified from
+> a second-order approximation using two previous timesteps to a
+> first-order approximation using one previous timestep.
+> 
+>     xk - 2 * xk_1 + xk_2 => xk - xk_1
+> 
+> This degraded the performance of the PID controller by making it more
+> noisy and less accurate.
+> 
+> This bug was found by reverse engineering the tmon binary using the
+> [REMaQE tool](https://arxiv.org/abs/2305.06902).
+> 
+> Signed-off-by: Meet Udeshi <mudeshi1209@gmail.com>
+> Fixes: 94f69966faf8 ("tools/thermal: Introduce tmon, a tool for thermal subsystem")
+> ---
+>  tools/thermal/tmon/pid.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/tools/thermal/tmon/pid.c b/tools/thermal/tmon/pid.c
+> index da20088285bd..1c02eb675088 100644
+> --- a/tools/thermal/tmon/pid.c
+> +++ b/tools/thermal/tmon/pid.c
+> @@ -103,8 +103,8 @@ void controller_handler(const double xk, double *yk)
+>  	/* compute output */
+>  	*yk += p_term + i_term + d_term;
+>  	/* update sample data */
+> -	xk_1 = xk;
+>  	xk_2 = xk_1;
+> +	xk_1 = xk;
+>  
+>  	/* clamp output adjustment range */
+>  	if (*yk < -LIMIT_HIGH)
+> -- 
+> 2.34.1
