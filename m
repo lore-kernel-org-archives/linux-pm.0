@@ -2,220 +2,143 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C8E8CA0ECC
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:11:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3D79CA0EC1
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:11:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238415AbjIKVGY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:06:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49926 "EHLO
+        id S238611AbjIKVG3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:06:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43506 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238079AbjIKNgX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 09:36:23 -0400
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF8581AD
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 06:36:18 -0700 (PDT)
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20230911133617euoutp017c38478240910eab49dcdf9279829f08~D26LyObln2490324903euoutp01N
-        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 13:36:17 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20230911133617euoutp017c38478240910eab49dcdf9279829f08~D26LyObln2490324903euoutp01N
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1694439377;
-        bh=XK7PxtizlL9SCG8mpzlPzuWhrWWnEfkUq3uRXLUzkvs=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=JhzOz5pi0iGal+9x88x/9a/faJyiiRDNUpkdAoaaE4KZbaSlXbSQ4GEXDLUj9TSBF
-         HES1YrZO5P+uBmabW+AjMOwZIt5IBisORpoTBWgXYRyabWUcIS7ARXPzIEnKOMlF0Y
-         tSsmov2rKJkNNPt4943Szhd4BOv2GojIE15XL3xo=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20230911133617eucas1p2852362073e5b3efcfe5a588de775a982~D26LdnZAl1712617126eucas1p2m;
-        Mon, 11 Sep 2023 13:36:17 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges3new.samsung.com (EUCPMTA) with SMTP id 5F.03.37758.1D71FF46; Mon, 11
-        Sep 2023 14:36:17 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20230911133616eucas1p10c5eeb0f0240dde975ccc5935cb5c311~D26LG-1cl1320013200eucas1p1r;
-        Mon, 11 Sep 2023 13:36:16 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20230911133616eusmtrp263c0d6531ca98ddf4e69411c98dadc0a~D26LGV6d60864008640eusmtrp2f;
-        Mon, 11 Sep 2023 13:36:16 +0000 (GMT)
-X-AuditID: cbfec7f5-7ffff7000002937e-68-64ff17d13616
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id A1.8A.14344.0D71FF46; Mon, 11
-        Sep 2023 14:36:16 +0100 (BST)
-Received: from AMDC4515.eu.corp.samsungelectronics.net (unknown
-        [106.120.51.28]) by eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20230911133615eusmtip2d8a0d394a91b865243032bb81b27e6ea~D26KEkLPs3194931949eusmtip2U;
-        Mon, 11 Sep 2023 13:36:15 +0000 (GMT)
-From:   Mateusz Majewski <m.majewski2@samsung.com>
-To:     linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc:     Mateusz Majewski <m.majewski2@samsung.com>,
-        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v2 4/7] thermal: exynos: simplify regulator
- (de)initialization
-Date:   Mon, 11 Sep 2023 15:34:28 +0200
-Message-ID: <20230911133435.14061-5-m.majewski2@samsung.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230911133435.14061-1-m.majewski2@samsung.com>
+        with ESMTP id S237902AbjIKNU3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 09:20:29 -0400
+Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83EABCD7
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 06:20:24 -0700 (PDT)
+Received: by mail-ej1-x62b.google.com with SMTP id a640c23a62f3a-9936b3d0286so586650066b.0
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 06:20:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694438423; x=1695043223; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=H6ROeUkGbQ9Rsp3Ap+XbILwaeJ+lJZmemhX/U4xe7Go=;
+        b=CrPldppNBhZzFat6Cf/IAgYlUK2d5z5UWRPxo1iG15CXyL3OcF8eUFKFSmNR5Kp5Hc
+         K37drkwuM6SbP63P2TTLe8yf7seBg8NKG7oZF5jCub5AO5IQVYnVyFE8jwoXj6L5r5mm
+         ezcno/G2sgVCJY/YNqMB8c1t5g2QVZYmw98TtY7Z2CMBNilFSwkIZhpMptebR0ssVQFj
+         dgnOtHk6jM3PW2yzKijnYtgbhcO7xbeDLYHGb9L8AqNGHGPODXRU+ZE57BJlPMQYM0NJ
+         Asmo/LAErkZvJ0eE7IfXbOWmFfNmK54RAIjGPWA96g1vboIP1X/dQvIlMunp4ioP1Y1Q
+         fJrg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694438423; x=1695043223;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=H6ROeUkGbQ9Rsp3Ap+XbILwaeJ+lJZmemhX/U4xe7Go=;
+        b=M02yAPKWT12dEZJiZGLIA/5CETQHBksSZQFqavOLshX2gdn0leDftJ53zFdXCnu7h1
+         XieqPNxUUU26YnQ7bPux+j1Cw7KMx/wdRjUvBjElPdSSu2Fper9mFHAuV0dke+v7gSIc
+         AMtN08lxqWBACdeIGqbZC22MYm0cXdF1WVffEijzNvyUtjHgNhAxNtyyzvUQAPHPZYFC
+         0wz4Oz+LT4nuzMNsohsxi3vJ8lLlAKrHm4Ik4tJ0X+BXnL8VbM1kJU7KRKG7xcN+ET+c
+         3vcX4XHWi0LL6qvumtWG9epwSUk1LQePTLA1Ejlpi/eS4YCtsL2JaXHdD2kCbrDsy3As
+         u3ww==
+X-Gm-Message-State: AOJu0YxJhBJP7eEF2sv7IhGN0f2pU1gIHhh+qS92FIiNxnM2dLzTVEqy
+        hjCRY/wEdzjqlF2jQbEDvx2XtQ==
+X-Google-Smtp-Source: AGHT+IGgYyfvssT4sNtFxUVZDRaUT+8hl2/TVvIOpsTMRx7+mL+0pcQnZkJK2xnZN0g15Oh+sSqCaw==
+X-Received: by 2002:a17:906:21b:b0:99b:e5c3:2e45 with SMTP id 27-20020a170906021b00b0099be5c32e45mr9047002ejd.28.1694438422953;
+        Mon, 11 Sep 2023 06:20:22 -0700 (PDT)
+Received: from [192.168.37.41] (178235177061.dynamic-4-waw-k-1-1-0.vectranet.pl. [178.235.177.61])
+        by smtp.gmail.com with ESMTPSA id g2-20020a1709064e4200b009929ab17bdfsm5309746ejw.168.2023.09.11.06.20.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 11 Sep 2023 06:20:22 -0700 (PDT)
+Message-ID: <7ee011cc-af29-4fb3-8eca-678ec317ba3f@linaro.org>
+Date:   Mon, 11 Sep 2023 15:20:20 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] genpd: qcom: rpmpd: Add MSM8917, MSM8937 and QM215
+To:     =?UTF-8?Q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>,
+        linux-arm-msm@vger.kernel.org
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20230911131627.13494-1-otto.pflueger@abscue.de>
+ <20230911131627.13494-3-otto.pflueger@abscue.de>
+Content-Language: en-US
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
+ 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
+ izWDgYvmBE8=
+In-Reply-To: <20230911131627.13494-3-otto.pflueger@abscue.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrHKsWRmVeSWpSXmKPExsWy7djP87oXxf+nGLz6IWTxYN42NovD8yss
-        pj58wmbxfct1Jot5n2Ut9r7eym7x7UoHk8Wmx9dYLS7vmsNm8bn3CKPFjPP7mCwmHpvMbLH2
-        yF12i7lfpjJbPHnYx+bA77Fz1l12j8V7XjJ5bFrVyeZx59oeNo/NS+o9+rasYvT4vEkugD2K
-        yyYlNSezLLVI3y6BK+Pf3IMsBZ8kKm5/OcbYwDhDpIuRk0NCwETi8KMJrF2MXBxCAisYJS7c
-        u88I4XxhlFi3aR47hPOZUeLEvt/sMC3HWicyQSSWM0rs7W6Aqmplkvg8fzITSBWbgIHEgzfL
-        wDpEBFoZJWY2qYMUMQtcYpa4e3MtC0hCWCBA4v78I2wgNouAqsTTdx/A4rwCNhL/1u1hhlgn
-        L/H81h2wQZwCthJn105nh6gRlDg58wlYPTNQTfPW2cwgCyQEmjklvm85zQLR7CLxsvc41CBh
-        iVfHt0D9ICPxf+d8Jgg7X2LG5vdA9RxAdoXE3YNeEKa1xMczzCAms4CmxPpd+hDFjhIbNvxn
-        h6jgk7jxVhDiAD6JSdumM0OEeSU62oQgqlUlju+ZBLVeWuJJy20miBIPiYffxCcwKs5C8sks
-        JJ/MQli7gJF5FaN4amlxbnpqsXFearlecWJucWleul5yfu4mRmASO/3v+NcdjCtefdQ7xMjE
-        wXiIUYKDWUmEt+TQ3xQh3pTEyqrUovz4otKc1OJDjNIcLErivNq2J5OFBNITS1KzU1MLUotg
-        skwcnFINTOzvT+yedzIzgVuZ96G9IPeK1ouzru9ebMKmOdF2Q6jI7G6l/KpzYTo6KovVF1gY
-        6nW833VersUw88ROVqWZ0xuVIk+9mvcu7lpw+/Zfoh0l6hGhdSaKgTPurloYVi7Q+sxNRCtv
-        f+5aPsczC9SC+mtnd+kmX/3SwTYng+2Ea6mi/fZdbA8DrvguYdh+b/uM8L1hy2/8vyIVOfFw
-        6acwkW+FZRYur2Van6kvuWt3M7pCYGdDgo+SSqu+r9qFO9tv8NcsWTDv3p8WwW8nFswR/nb3
-        ePdz7vflX0/o2V/ZxnJqqsel60Izpm5Ofrmpc+f08jkr76Xvea3wucv2QfnmzYtZ/KLE7kXV
-        LAxSLLpulK3EUpyRaKjFXFScCAAQsjYT0QMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrLIsWRmVeSWpSXmKPExsVy+t/xe7oXxP+nGNz6YGzxYN42NovD8yss
-        pj58wmbxfct1Jot5n2Ut9r7eym7x7UoHk8Wmx9dYLS7vmsNm8bn3CKPFjPP7mCwmHpvMbLH2
-        yF12i7lfpjJbPHnYx+bA77Fz1l12j8V7XjJ5bFrVyeZx59oeNo/NS+o9+rasYvT4vEkugD1K
-        z6Yov7QkVSEjv7jEVina0MJIz9DSQs/IxFLP0Ng81srIVEnfziYlNSezLLVI3y5BL+Pf3IMs
-        BZ8kKm5/OcbYwDhDpIuRk0NCwETiWOtEJhBbSGApo8SzGQkQcWmJw1+msEPYwhJ/rnWxdTFy
-        AdU0M0lM//GHGSTBJmAg8eDNMnaQhIhAJ6NE1+ZzYJOYBW4xS9x/rdXFyMEhLOAnMeETK0iY
-        RUBV4um7DywgNq+AjcS/dXuYIRbISzy/dQdsGaeArcTZtdPZQVqFgGr6z+hAlAtKnJz5hAVi
-        urxE89bZzBMYBWYhSc1CklrAyLSKUSS1tDg3PbfYSK84Mbe4NC9dLzk/dxMjMN62Hfu5ZQfj
-        ylcf9Q4xMnEwHmKU4GBWEuEtOfQ3RYg3JbGyKrUoP76oNCe1+BCjKdDZE5mlRJPzgRGfVxJv
-        aGZgamhiZmlgamlmrCTO61nQkSgkkJ5YkpqdmlqQWgTTx8TBKdXA1P/QzTnC3afI1HN27uaJ
-        bW9aNJtCHxX0rft+4PRFzxD9hpvTn15do7F6y+Ja16+zdj/ZdCPVk0lXNncjo9etExv+dM8S
-        ik3oFn6+8MPU46UOb6QTimsN3Z6uVvav337I78N5/l2qL1mNPGpmxEilZ/XPPLCrSOXDoVmT
-        Oi+Uzmg63pd0SEjIWPhO9A9Hvtxf6Tp2h+K6XLbMMbqRq8K6oa/hgKXhsfWBx53F2idaHnS3
-        7j9mvER84ZFT3puSJ0W8niw04cyi1WEdbb83r2xZsfjQp1cFYbv38nQcvuhkELPk0v3yEP/P
-        p0INjP+aWga3f1/m3Pdxj07nSzUBrf06tckONfLP4+8sC/QI1dW9pcRSnJFoqMVcVJwIAP7Z
-        hWlAAwAA
-X-CMS-MailID: 20230911133616eucas1p10c5eeb0f0240dde975ccc5935cb5c311
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20230911133616eucas1p10c5eeb0f0240dde975ccc5935cb5c311
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20230911133616eucas1p10c5eeb0f0240dde975ccc5935cb5c311
-References: <20230911133435.14061-1-m.majewski2@samsung.com>
-        <CGME20230911133616eucas1p10c5eeb0f0240dde975ccc5935cb5c311@eucas1p1.samsung.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This does reduce the error granularity a bit, but the code
-simplification seems to be worth it.
+On 11.09.2023 15:16, Otto Pflüger wrote:
+> MSM8917 uses the SMPA2 and LDOA3 regulators provided by the PM8937 PMIC
+> for the VDDCX and VDDMX power domains in voltage level mode,
+> respectively. MSM8937 also uses this PMIC and the same regulators.
+> 
+> QM215 is typically paired with a PM8916 PMIC and uses its SMPA1 and
+> LDOA2 regulators in voltage level mode.
+> 
+> Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
+> ---
+Generally one-per-commit is the consensus.
 
-Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
----
- drivers/thermal/samsung/exynos_tmu.c | 33 +++++++---------------------
- 1 file changed, 8 insertions(+), 25 deletions(-)
+> +
+>  static struct rpmpd *sdm660_rpmpds[] = {
+>  	[SDM660_VDDCX] =	&cx_rwcx0_lvl,
+>  	[SDM660_VDDCX_AO] =	&cx_rwcx0_lvl_ao,
+> @@ -764,6 +853,8 @@ static const struct of_device_id rpmpd_match_table[] = {
+>  	{ .compatible = "qcom,msm8226-rpmpd", .data = &msm8226_desc },
+>  	{ .compatible = "qcom,msm8909-rpmpd", .data = &msm8916_desc },
+>  	{ .compatible = "qcom,msm8916-rpmpd", .data = &msm8916_desc },
+> +	{ .compatible = "qcom,msm8917-rpmpd", .data = &msm8917_desc },
+> +	{ .compatible = "qcom,msm8937-rpmpd", .data = &msm8917_desc },
+Don't add two compatibles pointing to the same thing, or you'll
+get an angry response from Krzysztof :D
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index ba9414b419ef..8451deb65f43 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -157,7 +157,6 @@ enum soc_type {
-  * @reference_voltage: reference voltage of amplifier
-  *	in the positive-TC generator block
-  *	0 < reference_voltage <= 31
-- * @regulator: pointer to the TMU regulator structure.
-  * @tzd: pointer to thermal_zone_device structure
-  * @ntrip: number of supported trip points.
-  * @enabled: current status of TMU device
-@@ -183,7 +182,6 @@ struct exynos_tmu_data {
- 	u16 temp_error1, temp_error2;
- 	u8 gain;
- 	u8 reference_voltage;
--	struct regulator *regulator;
- 	struct thermal_zone_device *tzd;
- 	unsigned int ntrip;
- 	bool enabled;
-@@ -994,42 +992,34 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	 * TODO: Add regulator as an SOC feature, so that regulator enable
- 	 * is a compulsory call.
- 	 */
--	data->regulator = devm_regulator_get_optional(&pdev->dev, "vtmu");
--	if (!IS_ERR(data->regulator)) {
--		ret = regulator_enable(data->regulator);
--		if (ret) {
--			dev_err(&pdev->dev, "failed to enable vtmu\n");
--			return ret;
--		}
--	} else {
--		if (PTR_ERR(data->regulator) == -EPROBE_DEFER)
-+	ret = devm_regulator_get_enable_optional(&pdev->dev, "vtmu");
-+	if (ret) {
-+		if (ret == -EPROBE_DEFER)
- 			return -EPROBE_DEFER;
--		dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
-+		dev_info(&pdev->dev, "Failed to get regulator node (vtmu)\n");
- 	}
- 
- 	ret = exynos_map_dt_data(pdev);
- 	if (ret)
--		goto err_sensor;
-+		return ret;
- 
- 	data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
- 	if (IS_ERR(data->clk)) {
- 		dev_err(&pdev->dev, "Failed to get clock\n");
--		ret = PTR_ERR(data->clk);
--		goto err_sensor;
-+		return PTR_ERR(data->clk);
- 	}
- 
- 	data->clk_sec = devm_clk_get(&pdev->dev, "tmu_triminfo_apbif");
- 	if (IS_ERR(data->clk_sec)) {
- 		if (data->soc == SOC_ARCH_EXYNOS5420_TRIMINFO) {
- 			dev_err(&pdev->dev, "Failed to get triminfo clock\n");
--			ret = PTR_ERR(data->clk_sec);
--			goto err_sensor;
-+			return PTR_ERR(data->clk_sec);
- 		}
- 	} else {
- 		ret = clk_prepare(data->clk_sec);
- 		if (ret) {
- 			dev_err(&pdev->dev, "Failed to get clock\n");
--			goto err_sensor;
-+			return ret;
- 		}
- 	}
- 
-@@ -1099,10 +1089,6 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- err_clk_sec:
- 	if (!IS_ERR(data->clk_sec))
- 		clk_unprepare(data->clk_sec);
--err_sensor:
--	if (!IS_ERR(data->regulator))
--		regulator_disable(data->regulator);
--
- 	return ret;
- }
- 
-@@ -1117,9 +1103,6 @@ static int exynos_tmu_remove(struct platform_device *pdev)
- 	if (!IS_ERR(data->clk_sec))
- 		clk_unprepare(data->clk_sec);
- 
--	if (!IS_ERR(data->regulator))
--		regulator_disable(data->regulator);
--
- 	return 0;
- }
- 
--- 
-2.41.0
+You can do:
 
+compatible = "qcom,msm8937-rpmpd", "qcom,msm8917-rpmpd";
+
+and document the fallback in bindings
+
+Konrad
