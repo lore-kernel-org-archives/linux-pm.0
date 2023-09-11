@@ -2,85 +2,158 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63769CA0EC3
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE016CA0EC7
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243090AbjIKVHu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:07:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58738 "EHLO
+        id S243225AbjIKVHw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:07:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32842 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237909AbjIKNUr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 09:20:47 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D330DEB;
-        Mon, 11 Sep 2023 06:20:42 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C4B6C433C7;
-        Mon, 11 Sep 2023 13:20:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1694438442;
-        bh=seMOI04xQEN5HPAT6ZDe8j6wf/v6pSJLVXaemNCMKpw=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=c6CgCk98+gX+mNjA5/yzdOmfddIZBXvZOxW6AV+Ks9Si+CT9d6gCysPmZ2eBUSsJr
-         u6b77NmbTEHSjr8vKXluhcRO+JFWyoh4AiJQwTDnAfu0GEGpmKtJUlEie0QGhtYhl8
-         xlErWIkB2Wgi9YA4DeVfN4IbBS4NWiLeFBMWi/mvIlpksa8rj0NzhEq4Nxt3sHc2I1
-         4e+PhL+de+4voulGPW+vae+PDwQM+8qtU+yCK9BylqsrSw1JkxdbC9ZLPvOi0XiFSc
-         +pHzRca5IqO4ZiFhC/HWs9OV71AZxwax2LY413J9VN51BEnHPhy+sgQhLVe89y4zCz
-         91sjieKQNjJ1A==
-Received: (nullmailer pid 1144444 invoked by uid 1000);
-        Mon, 11 Sep 2023 13:20:40 -0000
-Date:   Mon, 11 Sep 2023 08:20:40 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Stephen Boyd <sboyd@kernel.org>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Nikunj Kela <nkela@quicinc.com>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH v3 09/13] dt-bindings: firmware: arm,scmi: Extend
- bindings for protocol@13
-Message-ID: <169443843853.1144377.15550246606474574952.robh@kernel.org>
-References: <20230825112633.236607-1-ulf.hansson@linaro.org>
- <20230825112633.236607-10-ulf.hansson@linaro.org>
+        with ESMTP id S241211AbjIKPEW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 11:04:22 -0400
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D57D125
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 08:04:17 -0700 (PDT)
+Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-307d58b3efbso4163518f8f.0
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 08:04:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694444656; x=1695049456; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:organization:autocrypt
+         :references:cc:to:content-language:subject:reply-to:from:user-agent
+         :mime-version:date:message-id:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=CBeRh4UL/KjS7sOnQvt2RLKcnJLFWHs8He3ceHHUyU0=;
+        b=X6YKUbz9eShgTaUdXkXLxjjcPO3m11GYoXrOpfx+18wE2JsTQ2m13hQ0HTA3VeGJxN
+         2k03hcCUOpgODK9KkqeV4Ol9NR//An0J/rvNrR7OcEDB8PgxV9x6Jg5ZAs0ZeWYkJIZF
+         ZozmBOm8KU1+H9Vy5FCDYpO/Cor8EskhlDTH2UEq5usFvQk5QyPvvWGt/2i8e0AVlzsu
+         TUWsGc9oyS/I5achrCiI24CD0KTgd+5aygm83blZBU+3P1Kvdyd/8p5BCOfeFWanqewQ
+         XEnwJT/Lf2V/gELmLrribLLBmj4oW2tbYeLUoKLmZ9ow6lTpCzl2b7XfOXBrn5NB4LUD
+         25UQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694444656; x=1695049456;
+        h=content-transfer-encoding:in-reply-to:organization:autocrypt
+         :references:cc:to:content-language:subject:reply-to:from:user-agent
+         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=CBeRh4UL/KjS7sOnQvt2RLKcnJLFWHs8He3ceHHUyU0=;
+        b=gkqKsquc8Pu+S3Ibvm+ciL4sYxmIIj77YhbWM6HTNmRN6dr69Ic8/Q+G6fiPB6Rmol
+         Ol5c6wF/lN3NxKHVh3mM/SDN/EJG4jHqA1IO8Zv/jXA2LL7f0yknm9An4QJ52u2pcCZY
+         KdyhJpHdVizG2A6xD7iaFzuuYUlsKMZTRwT+8klBFdnjmA8RjQm1sRno9YLoedsQO3np
+         DJjoaagCye9sISo9dsSQswJmC1yzQDbN1xNBHqj2hPvR+CiSpGo+HeHLuXaJ7eqL7hrM
+         nclpok4RwvpHH4GsnXP0uSVBe81uHh6qkxQNW2oVDWZgeUScN9PjKmpATMhruuc9QLyn
+         oavw==
+X-Gm-Message-State: AOJu0Yy1AnoC+sSq/JSNFFrnbo3Dg5KNyPP0e0Ak2CkapTXpF8GAHJzn
+        uFWSRjv0T55iDDS08/9zSIh3Pw==
+X-Google-Smtp-Source: AGHT+IGzf5knanit7yknaBtEN0yONkhWmeBMadtWqyiRi3ZNLweDWoCrSEkgQfEZQMEz4SIdHEfD0w==
+X-Received: by 2002:adf:ce0b:0:b0:319:68ce:2c53 with SMTP id p11-20020adfce0b000000b0031968ce2c53mr9380153wrn.25.1694444655591;
+        Mon, 11 Sep 2023 08:04:15 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:982:cbb0:daaa:8bc3:eeb7:ce8? ([2a01:e0a:982:cbb0:daaa:8bc3:eeb7:ce8])
+        by smtp.gmail.com with ESMTPSA id l9-20020a5d4809000000b0031c6e1ea4c7sm10249933wrq.90.2023.09.11.08.04.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 11 Sep 2023 08:04:14 -0700 (PDT)
+Message-ID: <d4db98ca-85b7-4e3a-a40c-43c37e1de6e0@linaro.org>
+Date:   Mon, 11 Sep 2023 17:04:13 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230825112633.236607-10-ulf.hansson@linaro.org>
+User-Agent: Mozilla Thunderbird
+From:   Neil Armstrong <neil.armstrong@linaro.org>
+Reply-To: neil.armstrong@linaro.org
+Subject: Re: [PATCH V3 RESEND 0/6] Power: T7: add power domain driver
+Content-Language: en-US, fr
+To:     Ulf Hansson <ulf.hansson@linaro.org>,
+        Xianwei Zhao <xianwei.zhao@amlogic.com>
+Cc:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>
+References: <20230911025223.3433776-1-xianwei.zhao@amlogic.com>
+ <CAPDyKFqTs=mRnBRREbT+WFj_4qTLd8LTKigY_1TAZOqGGUKk3A@mail.gmail.com>
+Autocrypt: addr=neil.armstrong@linaro.org; keydata=
+ xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
+ GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
+ BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
+ qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
+ 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
+ AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
+ OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
+ Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
+ YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
+ GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
+ UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
+ GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
+ yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
+ QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
+ SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
+ 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
+ Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
+ oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
+ M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
+ 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
+ KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
+ 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
+ QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
+Organization: Linaro Developer Services
+In-Reply-To: <CAPDyKFqTs=mRnBRREbT+WFj_4qTLd8LTKigY_1TAZOqGGUKk3A@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On 11/09/2023 16:30, Ulf Hansson wrote:
+> On Mon, 11 Sept 2023 at 04:52, Xianwei Zhao <xianwei.zhao@amlogic.com> wrote:
+>>
+>> First patch is that remove C3 some power domain ALWAYS_ON property.
+>> Second patch is that add driver to support power parent node.
+>> Third patch is that turn on power if initial power domain with
+>> "AWAY_ON" property state is off.
+>>
+>> Other patchs adds power controller driver support for Amlogic T7 SoC.
+>>
+>> Changes Since v2:
+>>   -Modify subject.
+>>   -Define PWRC_NO_PARENT UINT_MAX
+>>   -Remove modification that transform is_off into 1 or 0 using !!
+>>
+>> Changes Since v1:
+>>   -Fix license from "GPL-2.0-only OR .*" to "GPL-2.0-only OR MIT".
+>>   -Modify T7_NIC flag  "ALWAYS_ON"
+>>
+>> xianwei.zhao (6):
+>>    genpd: amlogic: modify some power domains property
+>>    genpd: amlogic: add driver to support power parent node
+>>    genpd: amlogic: init power domain state
+>>    dt-bindings: power: add Amlogic T7 power domains
+>>    genpd: amlogic: Add support for T7 power domains controller
+>>    arm64: dts: amlogic: t7: add power domain controller node
+>>
+>>   .../power/amlogic,meson-sec-pwrc.yaml         |   3 +-
+>>   arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi   |   6 +
+>>   drivers/genpd/amlogic/meson-secure-pwrc.c     | 127 ++++++++++++++++--
+>>   include/dt-bindings/power/amlogic,t7-pwrc.h   |  63 +++++++++
+>>   4 files changed, 185 insertions(+), 14 deletions(-)
+>>   create mode 100644 include/dt-bindings/power/amlogic,t7-pwrc.h
+>>
+>>
+>> base-commit: 413f5c02929bb33042bbc4ee233166550a5fca70
+>> --
+>> 2.37.1
+>>
+> 
+> Patch 1 to 5, applied for next!
+> 
+> The DT patch (patch4), is available on an immutable branch "genpd_dt" too.
+> 
+>  From now on, I will continue to put changes for genpd DT bindings on
+> the above branch, to allow SoC maintainers to pull it in to manage
+> potential dependent updates to DTS files.
 
-On Fri, 25 Aug 2023 13:26:29 +0200, Ulf Hansson wrote:
-> The protocol@13 node is describing the performance scaling option for the
-> ARM SCMI interface, as a clock provider. This is unnecessary limiting, as
-> performance scaling is in many cases not limited to switching a clock's
-> frequency.
-> 
-> Therefore, let's extend the binding so the interface can be modelled as a
-> generic performance domain too. The common way to describe this, is to use
-> the power-domain DT bindings, so let's use that.
-> 
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-> Cc: Conor Dooley <conor+dt@kernel.org>
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> 
-> Changes in v3:
-> 	- None.
-> 
-> ---
->  .../devicetree/bindings/firmware/arm,scmi.yaml        | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
-> 
+Thanks, let's see how it works :-)
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Neil
+
+> 
+> Kind regards
+> Uffe
 
