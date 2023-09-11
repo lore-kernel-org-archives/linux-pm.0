@@ -2,97 +2,101 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89154CA0EC0
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB92BCA0EC0
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241139AbjIKVG6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:06:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37446 "EHLO
+        id S241193AbjIKVHA convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:07:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38252 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236317AbjIKKPS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 06:15:18 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4256E5F;
-        Mon, 11 Sep 2023 03:15:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1694427314; x=1725963314;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=MVY1RCA+Y6jHOKSik1rPFvNz857POHLvrx8p+7Ur7ao=;
-  b=AVlReW0MCpg9k0qw3TN/c+YAABjy4ysXKq1plWxaK6VfjZM34rW4vfiJ
-   VG9I6qAr/KBY5YagdMff/ES05p1DPNe6PqFAVxeXOb7xVhPpqDao1uG00
-   3fMc7xmVoY1W/CmtSy2ch8TtnUugvjlfpFXLk77GNiJbyfla1+FTm7A/n
-   DZboe8njupLW6YOdWVMpb3Q5FuJalnEzDItT+BVx+4rXSv2NGUpUn96wp
-   GoHtE6N6fDeN1Cmw0CgcUv7L3QimSu8DWl7y3HLVfxS+GHSpJphQiBtzE
-   FBkIUHSIZiYOMXGjB89x2EZctkwdFAzluDKBZEq3liB6wMU+3MV9krB/q
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10829"; a="376958369"
-X-IronPort-AV: E=Sophos;i="6.02,243,1688454000"; 
-   d="scan'208";a="376958369"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2023 03:15:14 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10829"; a="886466175"
-X-IronPort-AV: E=Sophos;i="6.02,243,1688454000"; 
-   d="scan'208";a="886466175"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by fmsmga001.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2023 03:14:48 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1qfdwk-008Hv0-0D;
-        Mon, 11 Sep 2023 13:15:10 +0300
-Date:   Mon, 11 Sep 2023 13:15:09 +0300
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Biju Das <biju.das.jz@bp.renesas.com>
-Cc:     Sebastian Reichel <sre@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Biju Das <biju.das.au@gmail.com>
-Subject: Re: [PATCH 1/2] power: supply: bq24257_charger: Make chip type and
- name in sync
-Message-ID: <ZP7ored2UfXcFUvz@smile.fi.intel.com>
-References: <20230902193331.83672-1-biju.das.jz@bp.renesas.com>
- <20230902193331.83672-2-biju.das.jz@bp.renesas.com>
- <ZPWsdjlFvUzeFy45@smile.fi.intel.com>
- <OS0PR01MB592285B86C29C3C1A992C09986F3A@OS0PR01MB5922.jpnprd01.prod.outlook.com>
+        with ESMTP id S241726AbjIKPNC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 11:13:02 -0400
+Received: from mail-oi1-f171.google.com (mail-oi1-f171.google.com [209.85.167.171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 598BE12E;
+        Mon, 11 Sep 2023 08:12:57 -0700 (PDT)
+Received: by mail-oi1-f171.google.com with SMTP id 5614622812f47-3a9e89fa553so446789b6e.1;
+        Mon, 11 Sep 2023 08:12:57 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694445176; x=1695049976;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=6swvSmT5NqK26Yyzy+9kC9qqap1tUl1p63s40e6jnbA=;
+        b=bVD+HYuqqY53rQc1ZfxKQTb0WEuKRmRecMBkXkAL4kY5rFhOxri3ZYYgG++L8k688B
+         WfkGRXtt+wHNoJDzFL6ahqt3c5ZiyWt+r6AI6nK+rKcCBOG1JgG1zPM9J4xQS/RwHlAH
+         SVz6Iea/5j16bOWpTgHNIOXydSipZkk5rDT7gOFqaj94mQR3TVuKEnp0PltZf4gvLZbO
+         xpmR6XCMrvQ3NviWVKOeX4/ROc6b6Pvz0fk/g+lXlP1ASujfi+/yAmj7oo9zzvuOOB6Z
+         zcdBtxFeD848aF48794/UUOHrMR4E5UVh/xsAeftgFgkusz8OWxYW36dCBLxFXy+hOlL
+         hnFQ==
+X-Gm-Message-State: AOJu0YwckDqrEhq4RUI2AFBX1HS8Sd4/EZNHyUrs2cd0jbID2mComAaj
+        wHjQ7z6cSqFSc6xHD/fW4Rqw/vYKxe4R+i5cYgG9n9q/
+X-Google-Smtp-Source: AGHT+IGNI5zcUadWDNtHZLwpSfhsnFZ6gYzXkoEsS4X00Bv8iWhvgl1gTNm5aAPU2QFPb91pnBGcMsp1J5LyEqnW6ow=
+X-Received: by 2002:a05:6808:221d:b0:3a3:37dd:e052 with SMTP id
+ bd29-20020a056808221d00b003a337dde052mr11704505oib.5.1694445176645; Mon, 11
+ Sep 2023 08:12:56 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <OS0PR01MB592285B86C29C3C1A992C09986F3A@OS0PR01MB5922.jpnprd01.prod.outlook.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20230907095521.14053-1-Julia.Lawall@inria.fr> <20230907095521.14053-9-Julia.Lawall@inria.fr>
+In-Reply-To: <20230907095521.14053-9-Julia.Lawall@inria.fr>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 11 Sep 2023 17:12:45 +0200
+Message-ID: <CAJZ5v0i46Ybd3KWQ-ogmbTRoTW=w1nDEg4KpVfo8x0ZFf3qOeg@mail.gmail.com>
+Subject: Re: [PATCH 08/11] thermal/of: add missing of_node_put
+To:     Julia Lawall <Julia.Lawall@inria.fr>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        kernel-janitors@vger.kernel.org,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Sep 10, 2023 at 07:10:06AM +0000, Biju Das wrote:
-> Hi Andy Shevchenko,
-> > On Sat, Sep 02, 2023 at 08:33:30PM +0100, Biju Das wrote:
+On Thu, Sep 7, 2023 at 11:56 AM Julia Lawall <Julia.Lawall@inria.fr> wrote:
+>
+> for_each_child_of_node performs an of_node_get on each
+> iteration, so a break out of the loop requires an
+> of_node_put.
+>
+> This was done using the Coccinelle semantic patch
+> iterators/for_each_child.cocci
+>
+> Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+>
+> ---
+>  drivers/thermal/thermal_of.c |    8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+>
+> diff -u -p a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+> --- a/drivers/thermal/thermal_of.c
+> +++ b/drivers/thermal/thermal_of.c
+> @@ -37,8 +37,10 @@ static int of_find_trip_id(struct device
+>          */
+>         for_each_child_of_node(trips, t) {
+>
+> -               if (t == trip)
+> +               if (t == trip) {
+> +                       of_node_put(t);
+>                         goto out;
+> +               }
+>                 i++;
+>         }
+>
+> @@ -401,8 +403,10 @@ static int thermal_of_for_each_cooling_m
+>
+>         for_each_child_of_node(cm_np, child) {
+>                 ret = thermal_of_for_each_cooling_device(tz_np, child, tz, cdev, action);
+> -               if (ret)
+> +               if (ret) {
+> +                       of_node_put(child);
+>                         break;
+> +               }
+>         }
+>
+>         of_node_put(cm_np);
+>
 
-...
-
-> > > -	if (ACPI_HANDLE(dev)) {
-> > > -		acpi_id = acpi_match_device(dev->driver->acpi_match_table,
-> > > -					    &client->dev);
-> > > -		if (!acpi_id) {
-> > > -			dev_err(dev, "Failed to match ACPI device\n");
-> > > -			return -ENODEV;
-> > > -		}
-> > > -		bq->chip = (enum bq2425x_chip)acpi_id->driver_data;
-> > > -	} else {
-> > > -		bq->chip = (enum bq2425x_chip)id->driver_data;
-> > > -	}
-> > 
-> > Do we still need acpi.h after this change?
-> 
-> Yes, it is still needed as it is using 
-> ACPI_PTR.
-
-Can we, please, drop ACPI_PTR() as it's more harmful than useful (same way as
-you dropped the ifdeffery for OF cases in other patches)?
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Applied as 6.6-rc material, thanks!
