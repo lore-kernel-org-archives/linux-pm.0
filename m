@@ -2,62 +2,87 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75A04CA0EC8
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C8DCCA0EC7
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241692AbjIKVHR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:07:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43414 "EHLO
+        id S241890AbjIKVHU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:07:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57970 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237983AbjIKN2j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 09:28:39 -0400
-X-Greylist: delayed 588 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 11 Sep 2023 06:28:34 PDT
-Received: from srv01.abscue.de (abscue.de [89.58.28.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 455FA12A;
-        Mon, 11 Sep 2023 06:28:34 -0700 (PDT)
-Received: from srv01.abscue.de (localhost [127.0.0.1])
-        by spamfilter.srv.local (Postfix) with ESMTP id C8BEA1C3D9A;
-        Mon, 11 Sep 2023 15:18:41 +0200 (CEST)
-Received: from fluffy-mammal.fritz.box (dslb-092-072-011-192.092.072.pools.vodafone-ip.de [92.72.11.192])
-        by srv01.abscue.de (Postfix) with ESMTPSA id 918D71C3D96;
-        Mon, 11 Sep 2023 15:18:40 +0200 (CEST)
-From:   =?UTF-8?q?Otto=20Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-To:     linux-arm-msm@vger.kernel.org
-Cc:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        with ESMTP id S240263AbjIKOkH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 10:40:07 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51923F2;
+        Mon, 11 Sep 2023 07:40:03 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 454B4C433CA;
+        Mon, 11 Sep 2023 14:40:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1694443202;
+        bh=DKDQNU6tGRi8sqGEa4X/qoKAhcLxWCiDCTvQUiCtuOQ=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=s01dUBoxSuA/IqEzYivkzVp7cU0o6cNSnMdU+HHL08ujd8Ub3zhnPjUQi9s2Q1RSl
+         iWqjPL9DNYVWmFOjLtA9Jqt7v5gloFFRvpiWwX+LKhdvutwcEv3/STbUyIfyPwuM7u
+         /s0pUFGzJwzncPpvu42C1OpYaw/rDWFufFKTrBvWYlj1hBoCzgiogiY1T5Fwt+59vi
+         SBuqiKTytPjDA2StFG2a0Cb8rIIQR2A+fuD8Jo6QD6IjALkWHcoTTl4MyFDaT2Kdbc
+         8kzsXeYbSFxFjH2oAStVfYcntjpyxw+y2jgXTZuDTd8oQ49qUwJgip+2DtGaz4uexe
+         3tsf+vgjhKSQQ==
+Received: (nullmailer pid 1226648 invoked by uid 1000);
+        Mon, 11 Sep 2023 14:40:00 -0000
+Date:   Mon, 11 Sep 2023 09:40:00 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>,
+        Kevin Hilman <khilman@kernel.org>, devicetree@vger.kernel.org,
+        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org,
         Conor Dooley <conor+dt@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        =?UTF-8?q?Otto=20Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Subject: [PATCH 0/2] genpd: qcom: rpmpd: Add MSM8917 and similar SoCs
-Date:   Mon, 11 Sep 2023 15:16:25 +0200
-Message-Id: <20230911131627.13494-1-otto.pflueger@abscue.de>
-X-Mailer: git-send-email 2.39.1
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Nikunj Kela <nkela@quicinc.com>,
+        Prasad Sodagudi <psodagud@quicinc.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+Subject: Re: [PATCH v3 10/13] dt-bindings: power: Clarify performance
+ capabilities of power-domains
+Message-ID: <169444319926.1226593.2342724672076403322.robh@kernel.org>
+References: <20230825112633.236607-1-ulf.hansson@linaro.org>
+ <20230825112633.236607-11-ulf.hansson@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230825112633.236607-11-ulf.hansson@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add RPM power domain definitions for the Qualcomm MSM8917, MSM8937 and
-QM215 SoCs. These SoCs all have the same power domains (VDDCX and VDDMD
-in voltage level mode), but different regulators are needed for QM215
-because it is used with a PM8916 PMIC instead of a PM8937 PMIC.
 
-Otto Pflüger (2):
-  dt-bindings: power: rpmpd: Add MSM8917, MSM8937 and QM215
-  genpd: qcom: rpmpd: Add MSM8917, MSM8937 and QM215
+On Fri, 25 Aug 2023 13:26:30 +0200, Ulf Hansson wrote:
+> The power-domains bindings has in many years been used to describe so
+> called performance-domains too. Rather than using a separate binding it has
+> been convenient to re-use the power-domain bindings, as in some cases it's
+> in fact a combination of the both that would be the best description.
+> 
+> Therefore, let's make it more clear that the power-domains bindings can be
+> used to describe a performance-domain too.
+> 
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+> Cc: Conor Dooley <conor+dt@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> Changes in v3:
+> 	- New patch.
+> 
+> ---
+>  .../devicetree/bindings/power/power-domain.yaml | 17 +++++++++--------
+>  1 file changed, 9 insertions(+), 8 deletions(-)
+> 
 
- .../devicetree/bindings/power/qcom,rpmpd.yaml |  3 +
- drivers/genpd/qcom/rpmpd.c                    | 92 +++++++++++++++++++
- include/dt-bindings/power/qcom-rpmpd.h        | 21 +++++
- 3 files changed, 116 insertions(+)
+Reviewed-by: Rob Herring <robh@kernel.org>
 
-
-base-commit: 7bc675554773f09d88101bf1ccfc8537dc7c0be9
--- 
-2.39.1
