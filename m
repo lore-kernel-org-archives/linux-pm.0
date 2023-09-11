@@ -2,87 +2,177 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C8DCCA0EC7
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77058CA0EC9
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241890AbjIKVHU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:07:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57970 "EHLO
+        id S242052AbjIKVHW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:07:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41938 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240263AbjIKOkH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 10:40:07 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51923F2;
-        Mon, 11 Sep 2023 07:40:03 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 454B4C433CA;
-        Mon, 11 Sep 2023 14:40:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1694443202;
-        bh=DKDQNU6tGRi8sqGEa4X/qoKAhcLxWCiDCTvQUiCtuOQ=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=s01dUBoxSuA/IqEzYivkzVp7cU0o6cNSnMdU+HHL08ujd8Ub3zhnPjUQi9s2Q1RSl
-         iWqjPL9DNYVWmFOjLtA9Jqt7v5gloFFRvpiWwX+LKhdvutwcEv3/STbUyIfyPwuM7u
-         /s0pUFGzJwzncPpvu42C1OpYaw/rDWFufFKTrBvWYlj1hBoCzgiogiY1T5Fwt+59vi
-         SBuqiKTytPjDA2StFG2a0Cb8rIIQR2A+fuD8Jo6QD6IjALkWHcoTTl4MyFDaT2Kdbc
-         8kzsXeYbSFxFjH2oAStVfYcntjpyxw+y2jgXTZuDTd8oQ49qUwJgip+2DtGaz4uexe
-         3tsf+vgjhKSQQ==
-Received: (nullmailer pid 1226648 invoked by uid 1000);
-        Mon, 11 Sep 2023 14:40:00 -0000
-Date:   Mon, 11 Sep 2023 09:40:00 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        Kevin Hilman <khilman@kernel.org>, devicetree@vger.kernel.org,
-        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org,
+        with ESMTP id S243973AbjIKSeT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 14:34:19 -0400
+Received: from mxout3.routing.net (mxout3.routing.net [IPv6:2a03:2900:1:a::8])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A2651BB;
+        Mon, 11 Sep 2023 11:34:07 -0700 (PDT)
+Received: from mxbox3.masterlogin.de (unknown [192.168.10.78])
+        by mxout3.routing.net (Postfix) with ESMTP id 8F86460546;
+        Mon, 11 Sep 2023 18:34:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
+        s=20200217; t=1694457245;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=E/Gp1HOJQpVt6kzdG1jbBjVVoqID2dO0BkBbfKI/SKo=;
+        b=T3GbUsbwnNVvUGY8yPZLniV/AUr8EG6aIW6ALp3mgTsJWef6nYUREpaG8EOemJtykiHkQ5
+        eTAS+00g8kHtMzUm+FHLwKOp/uKUm3tO1MDyJEZoSTxBFuRlLubzs8VwykqborcfnTnBc1
+        iSDMWmVoR0c/Z+OrRYdz9sCwYAJkhYs=
+Received: from frank-G5.. (fttx-pool-217.61.151.158.bambit.de [217.61.151.158])
+        by mxbox3.masterlogin.de (Postfix) with ESMTPSA id A9F8636077E;
+        Mon, 11 Sep 2023 18:34:04 +0000 (UTC)
+From:   Frank Wunderlich <linux@fw-web.de>
+To:     linux-mediatek@lists.infradead.org
+Cc:     Frank Wunderlich <frank-w@public-files.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Subject: Re: [PATCH v3 10/13] dt-bindings: power: Clarify performance
- capabilities of power-domains
-Message-ID: <169444319926.1226593.2342724672076403322.robh@kernel.org>
-References: <20230825112633.236607-1-ulf.hansson@linaro.org>
- <20230825112633.236607-11-ulf.hansson@linaro.org>
+        Daniel Golle <daniel@makrotopia.org>
+Subject: [RFC v1 3/3] thermal/drivers/mediatek/lvts_thermal: add mt7988 support
+Date:   Mon, 11 Sep 2023 20:33:54 +0200
+Message-Id: <20230911183354.11487-4-linux@fw-web.de>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230911183354.11487-1-linux@fw-web.de>
+References: <20230911183354.11487-1-linux@fw-web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230825112633.236607-11-ulf.hansson@linaro.org>
+Content-Transfer-Encoding: 8bit
+X-Mail-ID: a4e93b6f-45bb-4e0f-b9a9-b41ceba0b075
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Frank Wunderlich <frank-w@public-files.de>
 
-On Fri, 25 Aug 2023 13:26:30 +0200, Ulf Hansson wrote:
-> The power-domains bindings has in many years been used to describe so
-> called performance-domains too. Rather than using a separate binding it has
-> been convenient to re-use the power-domain bindings, as in some cases it's
-> in fact a combination of the both that would be the best description.
-> 
-> Therefore, let's make it more clear that the power-domains bindings can be
-> used to describe a performance-domain too.
-> 
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Kevin Hilman <khilman@kernel.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-> Cc: Conor Dooley <conor+dt@kernel.org>
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> 
-> Changes in v3:
-> 	- New patch.
-> 
-> ---
->  .../devicetree/bindings/power/power-domain.yaml | 17 +++++++++--------
->  1 file changed, 9 insertions(+), 8 deletions(-)
-> 
+Add Support for mediatek fologic 880/MT7988.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+---
+ drivers/thermal/mediatek/lvts_thermal.c | 73 +++++++++++++++++++++++++
+ 1 file changed, 73 insertions(+)
+
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+index c1004b4da3b6..48b257a3c80e 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -82,6 +82,8 @@
+ #define LVTS_GOLDEN_TEMP_DEFAULT	50
+ #define LVTS_COEFF_A_MT8195			-250460
+ #define LVTS_COEFF_B_MT8195			250460
++#define LVTS_COEFF_A_MT7988			-204650
++#define LVTS_COEFF_B_MT7988			204650
+ 
+ #define LVTS_MSR_IMMEDIATE_MODE		0
+ #define LVTS_MSR_FILTERED_MODE		1
+@@ -1272,6 +1274,67 @@ static int lvts_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++/*
++ * LVTS MT7988
++ */
++#define LVTS_HW_SHUTDOWN_MT7988	117000
++//enum mt7988_lvts_domain { MT7988_AP_DOMAIN, MT7988_NUM_DOMAIN };
++
++enum mt7988_lvts_sensor_enum {
++	MT7988_TS3_0,
++	MT7988_TS3_1,
++	MT7988_TS3_2,
++	MT7988_TS3_3,
++	MT7988_TS4_0,
++	MT7988_TS4_1,
++	MT7988_TS4_2,
++	MT7988_TS4_3,
++	MT7988_NUM_TS
++};
++
++//Efuse base : 0x11f50000
++//lvts offset in efuse : 0x918 (set in efuse dts node as calibration data)
++//offsets:
++//918 = LVTS_3_0_COUNT_R
++//91C = LVTS_3_1_COUNT_R
++//920 = LVTS_3_2_COUNT_R
++//924 = LVTS_3_3_COUNT_R
++//928 = LVTS_3_COUNT_RC
++
++//92C = LVTS_4_0_COUNT_R
++//930 = LVTS_4_1_COUNT_R
++//934 = LVTS_4_2_COUNT_R
++//938 = LVTS_4_3_COUNT_R
++//93C = LVTS_4_COUNT_RC
++
++static const struct lvts_ctrl_data mt7988_lvts_data_ctrl[] = {
++	{
++		.cal_offset = { 0x00, 0x04, 0x08, 0x0c }, //918,91C,920,924
++		.lvts_sensor = {
++			{ .dt_id = MT7988_TS3_0 },
++			{ .dt_id = MT7988_TS3_1 },
++			{ .dt_id = MT7988_TS3_2 },
++			{ .dt_id = MT7988_TS3_3 }
++		},
++		.num_lvts_sensor = 4,
++		.offset = 0x0,
++		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT7988,
++	},
++	{
++		.cal_offset = { 0x14, 0x18, 0x1c, 0x20 }, //92C,930,934,938
++		.lvts_sensor = {
++			{ .dt_id = MT7988_TS4_0},
++			{ .dt_id = MT7988_TS4_1},
++			{ .dt_id = MT7988_TS4_2},
++			{ .dt_id = MT7988_TS4_3}
++		},
++		.num_lvts_sensor = 4,
++		.offset = 0x100,
++		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT7988,
++	}
++};
++
++//MT8195
+ static const struct lvts_ctrl_data mt8195_lvts_mcu_data_ctrl[] = {
+ 	{
+ 		.cal_offset = { 0x04, 0x07 },
+@@ -1351,6 +1414,15 @@ static const struct lvts_ctrl_data mt8195_lvts_ap_data_ctrl[] = {
+ 	}
+ };
+ 
++static const struct lvts_data mt7988_lvts_data = {
++	.lvts_ctrl	= mt7988_lvts_data_ctrl,
++	.num_lvts_ctrl	= ARRAY_SIZE(mt7988_lvts_data_ctrl),
++	.coeff = {
++		.a = LVTS_COEFF_A_MT7988,
++		.b = LVTS_COEFF_B_MT7988,
++	},
++};
++
+ static const struct lvts_data mt8195_lvts_mcu_data = {
+ 	.lvts_ctrl	= mt8195_lvts_mcu_data_ctrl,
+ 	.num_lvts_ctrl	= ARRAY_SIZE(mt8195_lvts_mcu_data_ctrl),
+@@ -1372,6 +1444,7 @@ static const struct lvts_data mt8195_lvts_ap_data = {
+ };
+ 
+ static const struct of_device_id lvts_of_match[] = {
++	{ .compatible = "mediatek,mt7988-lvts", .data = &mt7988_lvts_data },
+ 	{ .compatible = "mediatek,mt8195-lvts-mcu", .data = &mt8195_lvts_mcu_data },
+ 	{ .compatible = "mediatek,mt8195-lvts-ap", .data = &mt8195_lvts_ap_data },
+ 	{},
+-- 
+2.34.1
 
