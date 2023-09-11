@@ -2,168 +2,160 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1B5ACA0EC6
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49D02CA0ECF
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:16:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242761AbjIKVHj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:07:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47762 "EHLO
+        id S242830AbjIKVHn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:07:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237406AbjIKMsZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 08:48:25 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E73EE4B;
-        Mon, 11 Sep 2023 05:48:19 -0700 (PDT)
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38BC35Gh013880;
-        Mon, 11 Sep 2023 12:48:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=qcppdkim1;
- bh=+Cl05E6P52wxr9Cy98s8F10fhtxfqzhVr2uRA7Nhc/s=;
- b=nyJermdAWslYkHg0zyXyXmT3/sJF5CeoSzmq9gMP0h0aNeg9ufW4KeGzue7oX8jaOkbP
- qxzIv8LTCaYm7zhacaIPSeDXlcRT0w2h5p4thDffX/XjhonyJODPWIVAPDUNHuOOSA2G
- V1v/l6AiZZu/HrOeuDfFW8KVZ4jbz642MEA4kZnFQ+pfmGUXpafLhkyVncYT9MYCjJ2a
- OIp/vGs7N7yrut2hCv0mskIDzhmgAS9Q9DEJSueELS0j29oWKFi8jqL8C83UvlNrlmB0
- I/7rcX3k/b5lg5pub3jrJChaVyDuubu9SOpuhiH67lQQOj1+dZIiuxXYmuRM7rY/7D/M 9g== 
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3t22hyg2ce-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 11 Sep 2023 12:48:03 +0000
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-        by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 38BCm2ij006149
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 11 Sep 2023 12:48:02 GMT
-Received: from [10.218.5.19] (10.80.80.8) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.36; Mon, 11 Sep
- 2023 05:47:55 -0700
-Message-ID: <63d72a6f-ec05-1515-cd32-269d35d9a66c@quicinc.com>
-Date:   Mon, 11 Sep 2023 18:17:51 +0530
+        with ESMTP id S238068AbjIKNgU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 09:36:20 -0400
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0BA51A5
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 06:36:15 -0700 (PDT)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20230911133614euoutp0143a903832a24123868e7e343d39a5fcf~D26I1XkeK2283922839euoutp01H
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 13:36:14 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20230911133614euoutp0143a903832a24123868e7e343d39a5fcf~D26I1XkeK2283922839euoutp01H
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1694439374;
+        bh=+NqJJH6X7tjJ6+L0iqf3etPp0U96Y5vmOPMMdXKrkyk=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=gL49LS8pN2n8bl4Z2YCwljc/5qiPRvxI2blDai5o2dbafyUHwMxP8zmLrNNdXjSRc
+         zOTUSDvCchEZTTOWJz81CkE0tDhxaDVmvUmCPZaUNHDofo5unDkyKM+4uCflyHtjqw
+         iKS2zDmHliAt6d/KGy2qQMNdtI/t0ocL1zG3Hvy0=
+Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230911133614eucas1p2a6f24ec6a713974c775678e9c2003a01~D26IbnJrG2317523175eucas1p26;
+        Mon, 11 Sep 2023 13:36:14 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+        eusmges1new.samsung.com (EUCPMTA) with SMTP id B5.B1.42423.EC71FF46; Mon, 11
+        Sep 2023 14:36:14 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab~D26IBuEM31288212882eucas1p1u;
+        Mon, 11 Sep 2023 13:36:13 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20230911133613eusmtrp263e49da0aa697d53623dc88f9bfdfffc~D26IBDe3x0864008640eusmtrp2U;
+        Mon, 11 Sep 2023 13:36:13 +0000 (GMT)
+X-AuditID: cbfec7f2-a51ff7000002a5b7-5a-64ff17ce85f2
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 17.BB.10549.DC71FF46; Mon, 11
+        Sep 2023 14:36:13 +0100 (BST)
+Received: from AMDC4515.eu.corp.samsungelectronics.net (unknown
+        [106.120.51.28]) by eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20230911133612eusmtip2be196bc65de7d8b30f10c76d75aaf216~D26Gwe_vL0323103231eusmtip2N;
+        Mon, 11 Sep 2023 13:36:12 +0000 (GMT)
+From:   Mateusz Majewski <m.majewski2@samsung.com>
+To:     linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc:     Mateusz Majewski <m.majewski2@samsung.com>,
+        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH v2 2/7] thermal: exynos: drop id field
+Date:   Mon, 11 Sep 2023 15:34:26 +0200
+Message-ID: <20230911133435.14061-3-m.majewski2@samsung.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230911133435.14061-1-m.majewski2@samsung.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH v2 4/6] clk: qcom: Use HW_CTRL_TRIGGER flag to switch
- video GDSC to HW mode
-Content-Language: en-US
-To:     Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Abel Vesa <abel.vesa@linaro.org>
-CC:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        "Andy Gross" <agross@kernel.org>,
-        Mike Turquette <mturquette@baylibre.com>,
-        "Stephen Boyd" <sboyd@kernel.org>,
-        Taniya Das <tdas@qti.qualcomm.com>, <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        <linux-arm-msm@vger.kernel.org>,
-        Ajit Pandey <quic_ajipan@quicinc.com>,
-        Imran Shaik <quic_imrashai@quicinc.com>
-References: <20230816145741.1472721-1-abel.vesa@linaro.org>
- <20230816145741.1472721-5-abel.vesa@linaro.org>
- <2fc0d771-cee2-4826-a62a-56ed4bfad3a2@linaro.org>
- <ZOXiUzxfs1cj3SWT@linaro.org>
- <07e93a9d-69ac-41b7-aa21-b855b97bf801@linaro.org>
- <ef1439f8-4a9b-53b4-34be-1229b39d2310@quicinc.com>
- <8257f7b3-dfb8-4683-85de-600f3b1ed54b@linaro.org>
- <f37d2dd8-d625-048e-9c21-bba710b40086@quicinc.com>
- <b5ae2ad9-f6c7-47d6-bab8-3f3fdb6b43e2@linaro.org>
- <8c88bca4-b562-0122-1451-ef9de7fd8737@quicinc.com>
- <5d4ba948-46e2-4b95-95a2-17775f4c9881@linaro.org>
-From:   Jagadeesh Kona <quic_jkona@quicinc.com>
-In-Reply-To: <5d4ba948-46e2-4b95-95a2-17775f4c9881@linaro.org>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: Dpknb6oYYLPnAOcRwvFm5IQVmwnanzp3
-X-Proofpoint-GUID: Dpknb6oYYLPnAOcRwvFm5IQVmwnanzp3
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-09-11_07,2023-09-05_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015
- priorityscore=1501 mlxlogscore=820 phishscore=0 spamscore=0
- impostorscore=0 mlxscore=0 adultscore=0 suspectscore=0 malwarescore=0
- bulkscore=0 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2308100000 definitions=main-2309110116
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrHKsWRmVeSWpSXmKPExsWy7djPc7rnxP+nGCy9yWzxYN42NovD8yss
+        pj58wmbxfct1Jot5n2Ut9r7eym7x7UoHk8Wmx9dYLS7vmsNm8bn3CKPFjPP7mCwmHpvMbLH2
+        yF12i7lfpjJbPHnYx+bA77Fz1l12j8V7XjJ5bFrVyeZx59oeNo/NS+o9+rasYvT4vEkugD2K
+        yyYlNSezLLVI3y6BK2PCxV0sBZN4Km4ff8fawPiJs4uRk0NCwERi7cc1bF2MXBxCAisYJRat
+        +wnlfGGU+D9zAQuE85lR4lvHDXaYlpbe7awgtpDAckaJ1muuEEWtTBK7J99lAkmwCRhIPHiz
+        DKxBRKCVUWJmkzpIEbPAJWaJuzfXsoAkhAXMJA603QBrYBFQlXhwagFYnFfARuLkY4hBEgLy
+        Es9v3QEbxClgK3F27XR2iBpBiZMzn4DVMwPVNG+dzQyyQEKgmVPi0tseRohmF4l31+axQtjC
+        Eq+Ob4F6QUbi/875UAvyJWZsfg80iAPIrpC4e9ALwrSW+HiGGcRkFtCUWL9LH6LYUWLei19Q
+        xXwSN94KQhzAJzFp23RmiDCvREebEES1qsTxPZOYIWxpiSctt6FWekicf/uOZQKj4iwkr8xC
+        8soshL0LGJlXMYqnlhbnpqcWG+allusVJ+YWl+al6yXn525iBCax0/+Of9rBOPfVR71DjEwc
+        jIcYJTiYlUR4Sw79TRHiTUmsrEotyo8vKs1JLT7EKM3BoiTOq217MllIID2xJDU7NbUgtQgm
+        y8TBKdXAZLXk5Pll+9OXrDp1M8FGcHd4mLDdE8nabbtuB69aJnI8f+qhb+vOCdvM3O5dFHFg
+        5laBTO3t/yt3Ma12+DvvqOW7aWwtZUYOyrcurNzQW/SnxreEqbfmleyOlyccJV8L6unJ7fBQ
+        0DUKe37jzpuNl4JV16kKJvPxXjjNcLY4oPRZSO2tCq5PcSayZ+0ET+9xFTn/17Nli3FwmfiM
+        9a1rVspbXtR7GuEgu+5Y3e9l7iyrcs6IJJ+SKPgkfdrQ1svcm8O9eHbUPu1ctksX+q/tm/w8
+        p/uF9aH9E7J/CR7tSRK+tdT783rvY9q3mRh/KmZ129fmGj7yzI2unDqDdfPvpCrZT4vEC0/J
+        PpgmHNuzVImlOCPRUIu5qDgRALRGpKjRAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrPIsWRmVeSWpSXmKPExsVy+t/xe7pnxf+nGLT9VrZ4MG8bm8Xh+RUW
+        Ux8+YbP4vuU6k8W8z7IWe19vZbf4dqWDyWLT42usFpd3zWGz+Nx7hNFixvl9TBYTj01mtlh7
+        5C67xdwvU5ktnjzsY3Pg99g56y67x+I9L5k8Nq3qZPO4c20Pm8fmJfUefVtWMXp83iQXwB6l
+        Z1OUX1qSqpCRX1xiqxRtaGGkZ2hpoWdkYqlnaGwea2VkqqRvZ5OSmpNZllqkb5eglzHh4i6W
+        gkk8FbePv2NtYPzE2cXIySEhYCLR0rudtYuRi0NIYCmjxK0DLxghEtISh79MYYewhSX+XOti
+        gyhqZpL4PekfM0iCTcBA4sGbZewgCRGBTkaJrs3nmEASzAK3mCXuv9YCsYUFzCQOtN0Ai7MI
+        qEo8OLWABcTmFbCROPn4LhPEBnmJ57fugG3jFLCVOLt2OpDNAbTNRqL/jA5EuaDEyZlPWCDG
+        y0s0b53NPIFRYBaS1CwkqQWMTKsYRVJLi3PTc4sN9YoTc4tL89L1kvNzNzECY27bsZ+bdzDO
+        e/VR7xAjEwfjIUYJDmYlEd6SQ39ThHhTEiurUovy44tKc1KLDzGaAp09kVlKNDkfGPV5JfGG
+        ZgamhiZmlgamlmbGSuK8ngUdiUIC6YklqdmpqQWpRTB9TBycUg1MwS8PH1raGOjDvGW3/sfN
+        bDPWH7M79YXDhjtCruuL5MXmlA1hUxaEP2FjzGPIn3HudcA/9kWesf7K0fs/n8pIm/H7x+Ot
+        s0QZ9+25/yhp3w6pC2ec20XaDz8JZjwu9aIxS2Jm6YXnbQl/jf2Lzn2dF7+5+YyZc+qrtZnb
+        l8++t+D79MOzDBcV117wC/A9y3FixfoqJQYVnR1cez9Us+Sxaad3tdcKa4sltuczXNO03G38
+        6YBhk2SEs0z1+zZBj+A7m1vlk7do70x3DVurp/j0443pvw3CFn8Q3/XzXeCvTQJztz8/wHDb
+        XZKbi9umabsva1npzz4JPqXtPGyGQZGMfPZi3MbFQnyzqhcZBjxQYinOSDTUYi4qTgQAwn0I
+        NUIDAAA=
+X-CMS-MailID: 20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab
+References: <20230911133435.14061-1-m.majewski2@samsung.com>
+        <CGME20230911133613eucas1p1671b7d154e1d567b02516d8c4d8074ab@eucas1p1.samsung.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+We do not use the value, and only Exynos 7 defines this alias anyway.
 
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
+---
+v1 -> v2: minor commit message rewording.
 
-On 9/7/2023 1:06 PM, Konrad Dybcio wrote:
-> On 7.09.2023 07:55, Jagadeesh Kona wrote:
->>
->>
->> On 9/4/2023 9:32 PM, Konrad Dybcio wrote:
->>> On 4.09.2023 11:27, Jagadeesh Kona wrote:
->>>>
->>>>
->>>> On 9/2/2023 5:33 PM, Konrad Dybcio wrote:
->>>>> On 28.08.2023 08:48, Jagadeesh Kona wrote:
->>>>>>
->>>>>>
->>>>>> On 8/26/2023 4:17 PM, Konrad Dybcio wrote:
->>>>>>> On 23.08.2023 12:41, Abel Vesa wrote:
->>>>>>>> On 23-08-16 19:56:46, Konrad Dybcio wrote:
->>>>>>>>> On 16.08.2023 16:57, Abel Vesa wrote:
->>>>>>>>>> From: Jagadeesh Kona <quic_jkona@quicinc.com>
->>>>>>>>>>
->>>>>>>>>> The current HW_CTRL flag switches the video GDSC to HW control mode as
->>>>>>>>>> part of GDSC enable itself, instead of that use HW_CTRL_TRIGGER flag to
->>>>>>>>>> give consumer drivers more control and switch the GDSC mode as and when
->>>>>>>>>> required.
->>>>>>>>>>
->>>>>>>>>> HW_CTRL_TRIGGER flag allows consumer drivers to switch the video GDSC to
->>>>>>>>>> HW/SW control modes at runtime using dev_pm_genpd_set_hwmode API.
->>>>>>>>>>
->>>>>>>>>> Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
->>>>>>>>>> Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
->>>>>>>>>> ---
->>>>>>>>> Do we have any use for the HW_CTRL flag?
->>>>>>>>>
->>>>>>>>> Perhaps it should be renamed to HW_CTRL_ALWAYS?
->>>>>>>>>
->>>>>>>>> Or even better, *if and only if* that is necessary, add a common
->>>>>>>>> property like "always_hw_managed" to the genpd code?
->>>>>>>>
->>>>>>>> The HW_CTRL flag is still needed for the consumers that expect the GDSC
->>>>>>>> to be have the HW control bit set right after it gets enabled.
->>>>>>> Guess the correct question here would be.. Are there any?
->>>>>>>
->>>>>>
->>>>>> Yes, Display GDSC(mdss_gdsc) is required to be controlled always in HW control mode when it is enabled.
->>>>> Oh really?
->>>>>
->>>>> Looking at msm-5.10 techpack, only the SDE RSC driver seems to
->>>>> trigger regulator fast mode (so, enabling gdsc hw_ctrl on downstream).
->>>>>
->>>>
->>>> Yes, on downstream, display GDSC has only one consumer(SDE RSC driver) and there are no other consumers. SDE RSC driver switches the GDSC to hw control mode once GDSC is enabled and leaves it in hw control mode. Thanks!
->>> Sorry for pulling your tongue here a bit, but would it only concern
->>> RPMh SoCs? Designs like SM6115 don't implement RSCs, should they not
->>> have HW_CTRL enabled at all times?
->>>
->>
->> Yes, for RPMh SoCs which have display RSC block, GDSC is switched to HW control mode. For SoCs which doesn't have display RSC block, display driver controls the GDSC in SW mode on downstream. Thanks!
-> Thanks for explaining!
-> 
-> One last question, I promise.. Should we switch the MDSS GDSC to
-> HW_CTRL mode only after we start controlling the DISP RSC from Linux,
-> or should it be done regardless (because of the RPMh solving algos)?
-> 
+ drivers/thermal/samsung/exynos_tmu.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
- From GDSC driver, MDSS GDSC can be switched to HW_CTRL mode regardless. 
-Thanks!
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 2c1cfb8c4b33..90c33e8017af 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -138,7 +138,6 @@ enum soc_type {
+ /**
+  * struct exynos_tmu_data : A structure to hold the private data of the TMU
+  *			    driver
+- * @id: identifier of the one instance of the TMU controller.
+  * @base: base address of the single instance of the TMU controller.
+  * @base_second: base address of the common registers of the TMU controller.
+  * @irq: irq number of the TMU controller.
+@@ -172,7 +171,6 @@ enum soc_type {
+  * @tmu_clear_irqs: SoC specific TMU interrupts clearing method
+  */
+ struct exynos_tmu_data {
+-	int id;
+ 	void __iomem *base;
+ 	void __iomem *base_second;
+ 	int irq;
+@@ -865,10 +863,6 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 	if (!data || !pdev->dev.of_node)
+ 		return -ENODEV;
+ 
+-	data->id = of_alias_get_id(pdev->dev.of_node, "tmuctrl");
+-	if (data->id < 0)
+-		data->id = 0;
+-
+ 	data->irq = irq_of_parse_and_map(pdev->dev.of_node, 0);
+ 	if (data->irq <= 0) {
+ 		dev_err(&pdev->dev, "failed to get IRQ\n");
+-- 
+2.41.0
 
-Regards,
-Jagadeesh
-
-> Konrad
