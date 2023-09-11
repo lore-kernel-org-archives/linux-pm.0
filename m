@@ -2,212 +2,170 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34D15CA0EC6
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1322CA0EC0
 	for <linux-pm@archiver.kernel.org>; Mon, 11 Sep 2023 21:11:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240002AbjIKVGi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Sep 2023 17:06:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43418 "EHLO
+        id S239806AbjIKVGg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Sep 2023 17:06:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55476 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237984AbjIKN2j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 09:28:39 -0400
-X-Greylist: delayed 588 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 11 Sep 2023 06:28:34 PDT
-Received: from srv01.abscue.de (abscue.de [IPv6:2a03:4000:63:bf5:4817:8eff:feeb:8ac7])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61B19CD7;
-        Mon, 11 Sep 2023 06:28:34 -0700 (PDT)
-Received: from srv01.abscue.de (localhost [127.0.0.1])
-        by spamfilter.srv.local (Postfix) with ESMTP id 2412F1C3D9C;
-        Mon, 11 Sep 2023 15:18:42 +0200 (CEST)
-Received: from fluffy-mammal.fritz.box (dslb-092-072-011-192.092.072.pools.vodafone-ip.de [92.72.11.192])
-        by srv01.abscue.de (Postfix) with ESMTPSA id 7F1151C3D99;
-        Mon, 11 Sep 2023 15:18:41 +0200 (CEST)
-From:   =?UTF-8?q?Otto=20Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-To:     linux-arm-msm@vger.kernel.org
-Cc:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        =?UTF-8?q?Otto=20Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Subject: [PATCH 2/2] genpd: qcom: rpmpd: Add MSM8917, MSM8937 and QM215
-Date:   Mon, 11 Sep 2023 15:16:27 +0200
-Message-Id: <20230911131627.13494-3-otto.pflueger@abscue.de>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230911131627.13494-1-otto.pflueger@abscue.de>
-References: <20230911131627.13494-1-otto.pflueger@abscue.de>
+        with ESMTP id S237853AbjIKNPU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2023 09:15:20 -0400
+Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6833BEE
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 06:15:14 -0700 (PDT)
+Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-2bcde83ce9fso74238341fa.1
+        for <linux-pm@vger.kernel.org>; Mon, 11 Sep 2023 06:15:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694438112; x=1695042912; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=YL6EQgEy3tU456+JOD18a+m3T5ccWapszSBNRkdsmHI=;
+        b=vHXNjYDzKOqcrn+XNPyUE8dUN6iSLRGOgkGduve+2Vl6HYAwqoSmASwtSEPt4r7xld
+         BNp5fZNgi8ZfR76pkGpk9b618vvZretLDMSAtaJTD7cjisIQv5+dIRnaT/D/fpCYBymt
+         OxuqW/rEAZQIJ7jWFUfs7CvKk2m/FvDSZQLv9WJ99w6TnPvuk2ampIYxFXbCbEWH2YMh
+         pr7firIk7xBadI1aqRJ/hTJQbXupUNBfC32kd1lpcB2XRLdsC5BORce6hPvGbiWceJId
+         5rpoia8SGhdZjUhHIt2R6hI73X2M63l3mVnbr1mfKkn0qrExZzmU69F3AZ/3quCKg5Qy
+         q1Xg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694438112; x=1695042912;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=YL6EQgEy3tU456+JOD18a+m3T5ccWapszSBNRkdsmHI=;
+        b=ERk1v3MHYW76tMDiueqO7CXXZPPOS70RrTW+5BW/WbrBSVuuBlcgo4+LfGBLmY/7/N
+         PLQAmE4LYNE+l3XMV2IupBhILc8ovkfhFUZeSc9kFzoMmRa359A6tQA1GYIF0k1muUoh
+         BviVv4++pSAJLVRZMyea4RVWIhe28v1d6e/SWC7rzenGncIUFl07o3E0HEyJLD9yJO+y
+         aGmIUwoGjejxGSqXT8+MEFNFATLRtCgUwMwbe8P0ZX8y2/7vdMlMusYnW78I6gVsRQOL
+         E4QdCEOvE8GkMbLlpopdcMqWAdmrjvBQF9TB6XXzfAabZ/khRL+js2X5A5zQYMRJEUG2
+         6fjw==
+X-Gm-Message-State: AOJu0Yy7gBbZBLtUl415QG8xqjbvHSTobzphrkIssHZEfXNbQvNEsma+
+        +EQ5K0joJRWAaXKVcrWLylhwNQ==
+X-Google-Smtp-Source: AGHT+IHgPjvN+UWeNyYfeTibcUFW047uMqqj3CXvvMBXFOfU+Wn748lBxSTCSiRTpolOZ0ariUm+vA==
+X-Received: by 2002:a05:651c:14b:b0:2bc:da4a:4649 with SMTP id c11-20020a05651c014b00b002bcda4a4649mr8568770ljd.22.1694438112248;
+        Mon, 11 Sep 2023 06:15:12 -0700 (PDT)
+Received: from [10.2.145.31] ([193.65.47.217])
+        by smtp.gmail.com with ESMTPSA id p17-20020a2ea411000000b002b70aff9a97sm1533510ljn.16.2023.09.11.06.15.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 11 Sep 2023 06:15:11 -0700 (PDT)
+Message-ID: <04eb9f71-78f0-41f2-96a6-fc759ba296fa@linaro.org>
+Date:   Mon, 11 Sep 2023 16:15:10 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 5/6] arm64: dts: qcom: sdm845: Add OPP table support to
+ UFSHC
+Content-Language: en-GB
+To:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        cw00.choi@samsung.com, andersson@kernel.org,
+        konrad.dybcio@linaro.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        jejb@linux.ibm.com, martin.petersen@oracle.com
+Cc:     alim.akhtar@samsung.com, avri.altman@wdc.com, bvanassche@acm.org,
+        linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        quic_asutoshd@quicinc.com, quic_cang@quicinc.com,
+        quic_nitirawa@quicinc.com, quic_narepall@quicinc.com,
+        quic_bhaskarv@quicinc.com, quic_richardp@quicinc.com,
+        quic_nguyenb@quicinc.com, quic_ziqichen@quicinc.com,
+        bmasney@redhat.com, krzysztof.kozlowski@linaro.org,
+        linux-kernel@vger.kernel.org
+References: <20230731163357.49045-1-manivannan.sadhasivam@linaro.org>
+ <20230731163357.49045-6-manivannan.sadhasivam@linaro.org>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+In-Reply-To: <20230731163357.49045-6-manivannan.sadhasivam@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-MSM8917 uses the SMPA2 and LDOA3 regulators provided by the PM8937 PMIC
-for the VDDCX and VDDMX power domains in voltage level mode,
-respectively. MSM8937 also uses this PMIC and the same regulators.
+On 31/07/2023 19:33, Manivannan Sadhasivam wrote:
+> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> 
+> UFS host controller, when scaling gears, should choose appropriate
+> performance state of RPMh power domain controller along with clock
+> frequency. So let's add the OPP table support to specify both clock
+> frequency and RPMh performance states replacing the old "freq-table-hz"
+> property.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> [mani: Splitted pd change and used rpmhpd_opp_low_svs]
+> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+> ---
+>   arch/arm64/boot/dts/qcom/sdm845.dtsi | 42 +++++++++++++++++++++-------
+>   1 file changed, 32 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> index 055ca80c0075..2ea6eb44953e 100644
+> --- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> @@ -2605,22 +2605,44 @@ ufs_mem_hc: ufshc@1d84000 {
+>   				<&gcc GCC_UFS_PHY_RX_SYMBOL_0_CLK>,
+>   				<&gcc GCC_UFS_PHY_RX_SYMBOL_1_CLK>,
+>   				<&gcc GCC_UFS_PHY_ICE_CORE_CLK>;
+> -			freq-table-hz =
+> -				<50000000 200000000>,
+> -				<0 0>,
+> -				<0 0>,
+> -				<37500000 150000000>,
+> -				<0 0>,
+> -				<0 0>,
+> -				<0 0>,
+> -				<0 0>,
+> -				<75000000 300000000>;
+> +
+> +			operating-points-v2 = <&ufs_opp_table>;
+>   
+>   			interconnects = <&aggre1_noc MASTER_UFS_MEM 0 &mem_noc SLAVE_EBI1 0>,
+>   					<&gladiator_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_UFS_MEM_CFG 0>;
+>   			interconnect-names = "ufs-ddr", "cpu-ufs";
+>   
+>   			status = "disabled";
+> +
+> +			ufs_opp_table: opp-table {
+> +				compatible = "operating-points-v2";
+> +
+> +				opp-50000000 {
+> +					opp-hz = /bits/ 64 <50000000>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <37500000>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <75000000>;
+> +					required-opps = <&rpmhpd_opp_low_svs>;
+> +				};
 
-QM215 is typically paired with a PM8916 PMIC and uses its SMPA1 and
-LDOA2 regulators in voltage level mode.
+I'd say, I'm still slightly unhappy about the 0 clock rates here.
+We need only three clocks here: core, core_clk_unipro and optional 
+ice_core_clk. Can we modify ufshcd_parse_operating_points() to pass only 
+these two or three clock names to devm_pm_opp_set_config() ? The OPP 
+core doesn't need to know about all the rest of the clocks.
 
-Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
----
- drivers/genpd/qcom/rpmpd.c | 92 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 92 insertions(+)
+> +
+> +				opp-200000000 {
+> +					opp-hz = /bits/ 64 <200000000>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <150000000>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <0>,
+> +						 /bits/ 64 <300000000>;
+> +					required-opps = <&rpmhpd_opp_nom>;
+> +				};
+> +			};
+>   		};
+>   
+>   		ufs_mem_phy: phy@1d87000 {
 
-diff --git a/drivers/genpd/qcom/rpmpd.c b/drivers/genpd/qcom/rpmpd.c
-index 3135dd1dafe0..d97f9642fc17 100644
---- a/drivers/genpd/qcom/rpmpd.c
-+++ b/drivers/genpd/qcom/rpmpd.c
-@@ -105,6 +105,24 @@ static struct rpmpd cx_s1a_corner_ao = {
- 	.key = KEY_CORNER,
- };
- 
-+static struct rpmpd cx_s1a_lvl_ao;
-+static struct rpmpd cx_s1a_lvl = {
-+	.pd = { .name = "cx", },
-+	.peer = &cx_s1a_lvl_ao,
-+	.res_type = RPMPD_SMPA,
-+	.res_id = 1,
-+	.key = KEY_LEVEL,
-+};
-+
-+static struct rpmpd cx_s1a_lvl_ao = {
-+	.pd = { .name = "cx_ao", },
-+	.peer = &cx_s1a_lvl,
-+	.active_only = true,
-+	.res_type = RPMPD_SMPA,
-+	.res_id = 1,
-+	.key = KEY_LEVEL,
-+};
-+
- static struct rpmpd cx_s2a_corner_ao;
- static struct rpmpd cx_s2a_corner = {
- 	.pd = { .name = "cx", },
-@@ -180,6 +198,13 @@ static struct rpmpd cx_s1a_vfc = {
- 	.key = KEY_FLOOR_CORNER,
- };
- 
-+static struct rpmpd cx_s1a_vfl = {
-+	.pd = { .name = "cx_vfl", },
-+	.res_type = RPMPD_SMPA,
-+	.res_id = 1,
-+	.key = KEY_FLOOR_LEVEL,
-+};
-+
- static struct rpmpd cx_s2a_vfc = {
- 	.pd = { .name = "cx_vfc", },
- 	.res_type = RPMPD_SMPA,
-@@ -239,6 +264,24 @@ static struct rpmpd gx_rwgx0_lvl_ao = {
- };
- 
- /* MX */
-+static struct rpmpd mx_l2a_lvl_ao;
-+static struct rpmpd mx_l2a_lvl = {
-+	.pd = { .name = "mx", },
-+	.peer = &mx_l2a_lvl_ao,
-+	.res_type = RPMPD_LDOA,
-+	.res_id = 2,
-+	.key = KEY_LEVEL,
-+};
-+
-+static struct rpmpd mx_l2a_lvl_ao = {
-+	.pd = { .name = "mx_ao", },
-+	.peer = &mx_l2a_lvl,
-+	.active_only = true,
-+	.res_type = RPMPD_LDOA,
-+	.res_id = 2,
-+	.key = KEY_LEVEL,
-+};
-+
- static struct rpmpd mx_l3a_corner_ao;
- static struct rpmpd mx_l3a_corner = {
- 	.pd = { .name = "mx", },
-@@ -257,6 +300,24 @@ static struct rpmpd mx_l3a_corner_ao = {
- 	.key = KEY_CORNER,
- };
- 
-+static struct rpmpd mx_l3a_lvl_ao;
-+static struct rpmpd mx_l3a_lvl = {
-+	.pd = { .name = "mx", },
-+	.peer = &mx_l3a_lvl_ao,
-+	.res_type = RPMPD_LDOA,
-+	.res_id = 3,
-+	.key = KEY_LEVEL,
-+};
-+
-+static struct rpmpd mx_l3a_lvl_ao = {
-+	.pd = { .name = "mx_ao", },
-+	.peer = &mx_l3a_lvl,
-+	.active_only = true,
-+	.res_type = RPMPD_LDOA,
-+	.res_id = 3,
-+	.key = KEY_LEVEL,
-+};
-+
- static struct rpmpd mx_l12a_lvl_ao;
- static struct rpmpd mx_l12a_lvl = {
- 	.pd = { .name = "mx", },
-@@ -572,6 +633,20 @@ static const struct rpmpd_desc msm8916_desc = {
- 	.max_state = MAX_CORNER_RPMPD_STATE,
- };
- 
-+static struct rpmpd *msm8917_rpmpds[] = {
-+	[MSM8917_VDDCX] =	&cx_s2a_lvl,
-+	[MSM8917_VDDCX_AO] =	&cx_s2a_lvl_ao,
-+	[MSM8917_VDDCX_VFL] =	&cx_s2a_vfl,
-+	[MSM8917_VDDMX] =	&mx_l3a_lvl,
-+	[MSM8917_VDDMX_AO] =	&mx_l3a_lvl_ao,
-+};
-+
-+static const struct rpmpd_desc msm8917_desc = {
-+	.rpmpds = msm8917_rpmpds,
-+	.num_pds = ARRAY_SIZE(msm8917_rpmpds),
-+	.max_state = RPM_SMD_LEVEL_TURBO,
-+};
-+
- static struct rpmpd *msm8953_rpmpds[] = {
- 	[MSM8953_VDDMD] =	&md_s1a_lvl,
- 	[MSM8953_VDDMD_AO] =	&md_s1a_lvl_ao,
-@@ -672,6 +747,20 @@ static const struct rpmpd_desc qcs404_desc = {
- 	.max_state = RPM_SMD_LEVEL_BINNING,
- };
- 
-+static struct rpmpd *qm215_rpmpds[] = {
-+	[QM215_VDDCX] =		&cx_s1a_lvl,
-+	[QM215_VDDCX_AO] =	&cx_s1a_lvl_ao,
-+	[QM215_VDDCX_VFL] =	&cx_s1a_vfl,
-+	[QM215_VDDMX] =		&mx_l2a_lvl,
-+	[QM215_VDDMX_AO] =	&mx_l2a_lvl_ao,
-+};
-+
-+static const struct rpmpd_desc qm215_desc = {
-+	.rpmpds = qm215_rpmpds,
-+	.num_pds = ARRAY_SIZE(qm215_rpmpds),
-+	.max_state = RPM_SMD_LEVEL_TURBO,
-+};
-+
- static struct rpmpd *sdm660_rpmpds[] = {
- 	[SDM660_VDDCX] =	&cx_rwcx0_lvl,
- 	[SDM660_VDDCX_AO] =	&cx_rwcx0_lvl_ao,
-@@ -764,6 +853,8 @@ static const struct of_device_id rpmpd_match_table[] = {
- 	{ .compatible = "qcom,msm8226-rpmpd", .data = &msm8226_desc },
- 	{ .compatible = "qcom,msm8909-rpmpd", .data = &msm8916_desc },
- 	{ .compatible = "qcom,msm8916-rpmpd", .data = &msm8916_desc },
-+	{ .compatible = "qcom,msm8917-rpmpd", .data = &msm8917_desc },
-+	{ .compatible = "qcom,msm8937-rpmpd", .data = &msm8917_desc },
- 	{ .compatible = "qcom,msm8939-rpmpd", .data = &msm8939_desc },
- 	{ .compatible = "qcom,msm8953-rpmpd", .data = &msm8953_desc },
- 	{ .compatible = "qcom,msm8976-rpmpd", .data = &msm8976_desc },
-@@ -772,6 +863,7 @@ static const struct of_device_id rpmpd_match_table[] = {
- 	{ .compatible = "qcom,msm8998-rpmpd", .data = &msm8998_desc },
- 	{ .compatible = "qcom,qcm2290-rpmpd", .data = &qcm2290_desc },
- 	{ .compatible = "qcom,qcs404-rpmpd", .data = &qcs404_desc },
-+	{ .compatible = "qcom,qm215-rpmpd", .data = &qm215_desc },
- 	{ .compatible = "qcom,sdm660-rpmpd", .data = &sdm660_desc },
- 	{ .compatible = "qcom,sm6115-rpmpd", .data = &sm6115_desc },
- 	{ .compatible = "qcom,sm6125-rpmpd", .data = &sm6125_desc },
 -- 
-2.39.1
+With best wishes
+Dmitry
+
