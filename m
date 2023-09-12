@@ -2,42 +2,44 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84EBECA0ECF
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Sep 2023 10:00:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59CBFCA0ED2
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Sep 2023 10:00:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232417AbjILKAG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Sep 2023 06:00:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49588 "EHLO
+        id S233351AbjILKAH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Sep 2023 06:00:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233331AbjILKAE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Sep 2023 06:00:04 -0400
-X-Greylist: delayed 1164 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 12 Sep 2023 02:59:58 PDT
+        with ESMTP id S233316AbjILKAG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Sep 2023 06:00:06 -0400
+X-Greylist: delayed 1167 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 12 Sep 2023 03:00:02 PDT
 Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C9B551BB;
-        Tue, 12 Sep 2023 02:59:58 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1ECCE6C;
+        Tue, 12 Sep 2023 03:00:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=kernkonzept.com; s=mx1; h=Cc:To:In-Reply-To:References:Message-Id:
-        Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:
-        Reply-To:Content-ID:Content-Description;
-        bh=nkBWy5eh+OpkWLvtd2NRIsXU76BxvUy48xcA0SXZihQ=; b=aWvmLD578BWL4/ssI24eDGqN6A
-        eJZjKrhC7SpaM+8Xy8kctMd3vPSeFX2s1C90uO6Wewq6nBVqivSyl4oETjp0StW0ZKmNOnnaHsugY
-        DH6ltOSLubsjLo2WvPOKDBJfZKpkGGt8rjebfx5HyHDRSRHnj+Y6pegK/M+KbgLeN0r4V+UUjYiA2
-        rWmEILGxApKY8O+eVVN5ZRI+bulnp5gChDVWB+HIhOLMW84Gq2SRvPjpgYL+P5LrOarju6RcbN9ph
-        G2TGnqKGyM+hnlDIKw7S7aL8eiDC8OMewZwtbxH6ioQaUW2ctOGCDkFE83bjFr/BMPWVslbZrN/eK
-        g424WXbw==;
+        d=kernkonzept.com; s=mx1; h=Cc:To:Content-Transfer-Encoding:Content-Type:
+        MIME-Version:Message-Id:Date:Subject:From:References:In-Reply-To:Reply-To:
+        Content-ID:Content-Description;
+        bh=a+mMID1sDPcfh9ozAJ1YUGCRnHkjo3zaDLTz6xqF7LI=; b=e9ebnOlO6+tNLENF78E4Fqn2kN
+        Cx5xxcl/iiiB6ta+U98RdY9usHt7Yaf2JzdvlLGWlRnuopGi1b+EoI1O78TM1ueCqyApmTdN3fYM5
+        H2HNnRyfmmU8e3KGmBbaU0yDX54cR/V5AEozU0M7X0UdSWGidq7xmrkbG2IFxGdL/J5TUkzx5Ad7c
+        pfPpAw+dVo/MJgSmFPJZze9wjU6mF5IWtEovTn1XSTXbO8vhnsE1j2xWbk/s3cxgh8Ku9DWtn6FuO
+        JpRlEl02BoZsQDc8Uz53TCYYLuio6Oa3zk3wkDs0Usexm+PC8WPZz3sX5CdmhVhDBAkCs9C8rRYmq
+        p9J2yh+A==;
 Received: from [10.22.3.24] (helo=serv1.dd1.int.kernkonzept.com)
         by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.96)
-        id 1qfzsn-0030Ws-0S;
-        Tue, 12 Sep 2023 11:40:33 +0200
+        id 1qfzsj-0030Ws-03;
+        Tue, 12 Sep 2023 11:40:29 +0200
 From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Date:   Tue, 12 Sep 2023 11:40:16 +0200
-Subject: [PATCH 2/4] cpufreq: dt: platdev: Add MSM8909 to blocklist
+Subject: [PATCH 0/4] cpufreq: Add basic cpufreq scaling for Qualcomm
+ MSM8909
+Date:   Tue, 12 Sep 2023 11:40:14 +0200
+Message-Id: <20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230912-msm8909-cpufreq-v1-2-767ce66b544b@kernkonzept.com>
-References: <20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com>
-In-Reply-To: <20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com>
+X-B4-Tracking: v=1; b=H4sIAP4xAGUC/x3MQQqAIBBA0avIrBNMIbSrRIvImZqFZkoRSHdPW
+ r7F/xUKZsYCo6iQ8ebCR2zoOwHrvsQNJftm0Eob5dQgQwnWKSfXdFHGU3oibaxHR2SgVSkj8fM
+ fp/l9P5O3FpRhAAAA
 To:     Viresh Kumar <viresh.kumar@linaro.org>
 Cc:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -49,33 +51,39 @@ Cc:     Andy Gross <agross@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
         devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
-        Stephan Gerhold <stephan.gerhold@kernkonzept.com>
+        Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
+        stable@vger.kernel.org
 X-Mailer: b4 0.12.3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-MSM8909 uses qcom-cpufreq-nvmem to attach power domains and to parse the
-speedbin from NVMEM (for opp-supported-hw).
+Add the necessary definitions to the qcom-cpufreq-nvmem driver to
+support basic cpufreq scaling on the Qualcomm MSM8909 SoC. In practice
+the necessary power domains vary depending on the actual PMIC the SoC
+was combined with. With PM8909 the VDD_APC power domain is shared with
+VDD_CX so the RPM firmware handles all voltage adjustments, while with
+PM8916 and PM660 Linux is responsible to do adaptive voltage scaling
+of a dedicated CPU regulator using CPR.
 
 Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 ---
- drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
- 1 file changed, 1 insertion(+)
+Stephan Gerhold (4):
+      cpufreq: qcom-nvmem: Enable virtual power domain devices
+      cpufreq: dt: platdev: Add MSM8909 to blocklist
+      dt-bindings: cpufreq: qcom-nvmem: Document MSM8909
+      cpufreq: qcom-nvmem: Add MSM8909
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index fb2875ce1fdd..984d2ad1a474 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -141,6 +141,7 @@ static const struct of_device_id blocklist[] __initconst = {
- 	{ .compatible = "nvidia,tegra210", },
- 	{ .compatible = "nvidia,tegra234", },
- 
-+	{ .compatible = "qcom,msm8909", },
- 	{ .compatible = "qcom,apq8096", },
- 	{ .compatible = "qcom,msm8996", },
- 	{ .compatible = "qcom,msm8998", },
+ .../bindings/cpufreq/qcom-cpufreq-nvmem.yaml       |  1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |  1 +
+ drivers/cpufreq/qcom-cpufreq-nvmem.c               | 47 +++++++++++++++++++++-
+ 3 files changed, 48 insertions(+), 1 deletion(-)
+---
+base-commit: 0bb80ecc33a8fb5a682236443c1e740d5c917d1d
+change-id: 20230906-msm8909-cpufreq-dff238de9ff3
 
+Best regards,
 -- 
-2.39.2
+Stephan Gerhold <stephan.gerhold@kernkonzept.com>
+Kernkonzept GmbH at Dresden, Germany, HRB 31129, CEO Dr.-Ing. Michael Hohmuth
 
