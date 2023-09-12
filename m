@@ -2,44 +2,41 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59CBFCA0ED2
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Sep 2023 10:00:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07ED3CA0ECA
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Sep 2023 10:00:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233351AbjILKAH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Sep 2023 06:00:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35818 "EHLO
+        id S233387AbjILKAP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Sep 2023 06:00:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48958 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233316AbjILKAG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Sep 2023 06:00:06 -0400
-X-Greylist: delayed 1167 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 12 Sep 2023 03:00:02 PDT
+        with ESMTP id S233343AbjILKAN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Sep 2023 06:00:13 -0400
 Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1ECCE6C;
-        Tue, 12 Sep 2023 03:00:01 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E67A0E64;
+        Tue, 12 Sep 2023 03:00:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=kernkonzept.com; s=mx1; h=Cc:To:Content-Transfer-Encoding:Content-Type:
-        MIME-Version:Message-Id:Date:Subject:From:References:In-Reply-To:Reply-To:
-        Content-ID:Content-Description;
-        bh=a+mMID1sDPcfh9ozAJ1YUGCRnHkjo3zaDLTz6xqF7LI=; b=e9ebnOlO6+tNLENF78E4Fqn2kN
-        Cx5xxcl/iiiB6ta+U98RdY9usHt7Yaf2JzdvlLGWlRnuopGi1b+EoI1O78TM1ueCqyApmTdN3fYM5
-        H2HNnRyfmmU8e3KGmBbaU0yDX54cR/V5AEozU0M7X0UdSWGidq7xmrkbG2IFxGdL/J5TUkzx5Ad7c
-        pfPpAw+dVo/MJgSmFPJZze9wjU6mF5IWtEovTn1XSTXbO8vhnsE1j2xWbk/s3cxgh8Ku9DWtn6FuO
-        JpRlEl02BoZsQDc8Uz53TCYYLuio6Oa3zk3wkDs0Usexm+PC8WPZz3sX5CdmhVhDBAkCs9C8rRYmq
-        p9J2yh+A==;
+        d=kernkonzept.com; s=mx1; h=Cc:To:In-Reply-To:References:Message-Id:
+        Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:
+        Reply-To:Content-ID:Content-Description;
+        bh=BxXw2lPBlPXmQ8F4w0fefRPMnE8WnMJ9NcWQp72L7OE=; b=WMMOE1JdxyWmMDacjV73+JJ8Ec
+        iBcnvhReNiQMfRVKMTDiS6FOo4trT2yvmbWboWzIDZHe7kevkONS8v3KLV2UTiDAF4Qw8B9ZGjeMa
+        0f1YN50EXx2kE+QYmTu5Jt+MVpTcuzPAjsYtIAuJU4u5SBa1HeHkwBEUQUB4iIPsc4IgbIEk64YeG
+        v6T10qZ9anMbbTKwgx6Pp0rgI8tPPRTCKC0ECJpr0PT5C/6vVfvG76aAC7LM39BOB1+rgnLGTtCd9
+        dAFeOawFHAXelKSqwD5VNkL73SjSiSp+amqdMfC39XckjhUmUYidZ2zyj8c1yeuyE/uw/ZZUOmhIK
+        HIMDzNkw==;
 Received: from [10.22.3.24] (helo=serv1.dd1.int.kernkonzept.com)
         by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.96)
-        id 1qfzsj-0030Ws-03;
-        Tue, 12 Sep 2023 11:40:29 +0200
+        id 1qfzsr-0030Ws-0o;
+        Tue, 12 Sep 2023 11:40:37 +0200
 From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Subject: [PATCH 0/4] cpufreq: Add basic cpufreq scaling for Qualcomm
- MSM8909
-Date:   Tue, 12 Sep 2023 11:40:14 +0200
-Message-Id: <20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com>
+Date:   Tue, 12 Sep 2023 11:40:18 +0200
+Subject: [PATCH 4/4] cpufreq: qcom-nvmem: Add MSM8909
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAP4xAGUC/x3MQQqAIBBA0avIrBNMIbSrRIvImZqFZkoRSHdPW
- r7F/xUKZsYCo6iQ8ebCR2zoOwHrvsQNJftm0Eob5dQgQwnWKSfXdFHGU3oibaxHR2SgVSkj8fM
- fp/l9P5O3FpRhAAAA
+Message-Id: <20230912-msm8909-cpufreq-v1-4-767ce66b544b@kernkonzept.com>
+References: <20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com>
+In-Reply-To: <20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com>
 To:     Viresh Kumar <viresh.kumar@linaro.org>
 Cc:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -51,39 +48,94 @@ Cc:     Andy Gross <agross@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
         devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
-        Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
-        stable@vger.kernel.org
+        Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 X-Mailer: b4 0.12.3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the necessary definitions to the qcom-cpufreq-nvmem driver to
-support basic cpufreq scaling on the Qualcomm MSM8909 SoC. In practice
-the necessary power domains vary depending on the actual PMIC the SoC
-was combined with. With PM8909 the VDD_APC power domain is shared with
-VDD_CX so the RPM firmware handles all voltage adjustments, while with
-PM8916 and PM660 Linux is responsible to do adaptive voltage scaling
-of a dedicated CPU regulator using CPR.
+When the MSM8909 SoC is used together with the PM8909 PMIC the primary
+power supply for the CPU (VDD_APC) is shared with other components to
+the SoC, namely the VDD_CX power domain typically supplied by the PM8909
+S1 regulator. This means that all votes for necessary performance states
+go via the RPM firmware which collects the requirements from all the
+processors in the SoC. The RPM firmware then chooses the actual voltage
+based on the performance states ("corners"), depending on calibration
+values in the NVMEM and other factors.
+
+The MSM8909 SoC is also sometimes used with the PM8916 or PM660 PMIC.
+In that case there is a dedicated regulator connected to VDD_APC and
+Linux is responsible to do adaptive voltage scaling using CPR (similar
+to the existing code for QCS404).
+
+This difference can be described in the device tree, by either assigning
+the CPU a power domain from RPMPD or from the CPR driver.
+
+To describe this in a more generic way, use "apc" as power domain name
+instead of "cpr". From the Linux point of view there is no CPR involved
+when MSM8909 is used together with PM8909.
+
+Also add a simple function that reads the speedbin from a NVMEM cell
+and sets it as-is for opp-supported-hw. The actual bit position can be
+described in the device tree without additional driver changes.
 
 Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 ---
-Stephan Gerhold (4):
-      cpufreq: qcom-nvmem: Enable virtual power domain devices
-      cpufreq: dt: platdev: Add MSM8909 to blocklist
-      dt-bindings: cpufreq: qcom-nvmem: Document MSM8909
-      cpufreq: qcom-nvmem: Add MSM8909
+ drivers/cpufreq/qcom-cpufreq-nvmem.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
- .../bindings/cpufreq/qcom-cpufreq-nvmem.yaml       |  1 +
- drivers/cpufreq/cpufreq-dt-platdev.c               |  1 +
- drivers/cpufreq/qcom-cpufreq-nvmem.c               | 47 +++++++++++++++++++++-
- 3 files changed, 48 insertions(+), 1 deletion(-)
----
-base-commit: 0bb80ecc33a8fb5a682236443c1e740d5c917d1d
-change-id: 20230906-msm8909-cpufreq-dff238de9ff3
+diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+index 17d6ab14c909..2ea5e5ee9f1c 100644
+--- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
++++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+@@ -49,6 +49,24 @@ struct qcom_cpufreq_drv {
+ 
+ static struct platform_device *cpufreq_dt_pdev, *cpufreq_pdev;
+ 
++static int qcom_cpufreq_simple_get_version(struct device *cpu_dev,
++					   struct nvmem_cell *speedbin_nvmem,
++					   char **pvs_name,
++					   struct qcom_cpufreq_drv *drv)
++{
++	u8 *speedbin;
++
++	*pvs_name = NULL;
++	speedbin = nvmem_cell_read(speedbin_nvmem, NULL);
++	if (IS_ERR(speedbin))
++		return PTR_ERR(speedbin);
++
++	dev_dbg(cpu_dev, "speedbin: %d\n", *speedbin);
++	drv->versions = 1 << *speedbin;
++	kfree(speedbin);
++	return 0;
++}
++
+ static void get_krait_bin_format_a(struct device *cpu_dev,
+ 					  int *speed, int *pvs, int *pvs_ver,
+ 					  u8 *buf)
+@@ -212,6 +230,13 @@ static const struct qcom_cpufreq_match_data match_data_krait = {
+ 	.get_version = qcom_cpufreq_krait_name_version,
+ };
+ 
++static const char *msm8909_genpd_names[] = { "apc", NULL };
++
++static const struct qcom_cpufreq_match_data match_data_msm8909 = {
++	.get_version = qcom_cpufreq_simple_get_version,
++	.genpd_names = msm8909_genpd_names,
++};
++
+ static const char *qcs404_genpd_names[] = { "cpr", NULL };
+ 
+ static const struct qcom_cpufreq_match_data match_data_qcs404 = {
+@@ -375,6 +400,7 @@ static struct platform_driver qcom_cpufreq_driver = {
+ };
+ 
+ static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
++	{ .compatible = "qcom,msm8909", .data = &match_data_msm8909 },
+ 	{ .compatible = "qcom,apq8096", .data = &match_data_kryo },
+ 	{ .compatible = "qcom,msm8996", .data = &match_data_kryo },
+ 	{ .compatible = "qcom,qcs404", .data = &match_data_qcs404 },
 
-Best regards,
 -- 
-Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Kernkonzept GmbH at Dresden, Germany, HRB 31129, CEO Dr.-Ing. Michael Hohmuth
+2.39.2
 
