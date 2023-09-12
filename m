@@ -2,118 +2,121 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71EA1CA0ECF
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Sep 2023 09:12:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A234FCA0ECA
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Sep 2023 09:53:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233114AbjILJML convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Sep 2023 05:12:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33174 "EHLO
+        id S233065AbjILJxy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Sep 2023 05:53:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36804 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229504AbjILJMK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Sep 2023 05:12:10 -0400
-Received: from mail-oo1-f41.google.com (mail-oo1-f41.google.com [209.85.161.41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2BED2170D;
-        Tue, 12 Sep 2023 02:12:07 -0700 (PDT)
-Received: by mail-oo1-f41.google.com with SMTP id 006d021491bc7-5733d11894dso1155639eaf.0;
-        Tue, 12 Sep 2023 02:12:07 -0700 (PDT)
+        with ESMTP id S232917AbjILJxy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Sep 2023 05:53:54 -0400
+Received: from mail-ed1-x52e.google.com (mail-ed1-x52e.google.com [IPv6:2a00:1450:4864:20::52e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A72C31BE
+        for <linux-pm@vger.kernel.org>; Tue, 12 Sep 2023 02:53:49 -0700 (PDT)
+Received: by mail-ed1-x52e.google.com with SMTP id 4fb4d7f45d1cf-52a39a1c4d5so7039508a12.3
+        for <linux-pm@vger.kernel.org>; Tue, 12 Sep 2023 02:53:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694512428; x=1695117228; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=SfDSerRFa61yu+/rsV9oiMAv0/IyQd6/vmr5YFqcfiA=;
+        b=JLj/EgGD0m9Xd9+fur/xdXFjYa4wsRE0SqGLr2DAbl4tE8o6pZxYFBgQteg5MAahMj
+         WZUoo7uj+F/PAwS+skRTXaYH2Dzb3uXOF4vHXUq9OVOKbkgaI3E4NQIqJKqk4I9JIcN2
+         xsCbBmZ/4WSLBOHPiWpYZ9z4zHzcKmPmWnU5PaY95pr30D0vRnADfD2NDPPCSuqaP/01
+         R0If/QevDrBGhPZhXg35OB3fr/CQ6tL5dRQIbktbQKBTos7vSaa0Vowacls+g2y0OhHy
+         UIKImMYrxkqOWUmiRPXBP1q043TCN+1EMDLuz/1GcHbFQKwyTLHqalXI0OohxQp6qnSd
+         24gg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694509926; x=1695114726;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=LnBKGyRSUKcxckQc3XRY6QVkUrcVLqMdIRsgoISjA1s=;
-        b=a6ic7U1j9GLMmGRYt62JbaGNpnUNS/cM4y5wgI6HAO806sZtwcwCLi/bDsa3aUzOrj
-         D3M6uYKNOXkUhcO9/LWgTIlWP5xMBgW8EgRDq6nBwkYKX2dgyAPtgUTm4ImvJMxxRgCZ
-         4Qofg/3HK5GwsRQSpWc8MFpv7VJLYovmAfPQFfoY9W8ENW61bRLMhrkWlm3nMJyQo2mH
-         Ha+vr1PHCkJ3EUsEtCx4TJ0U9jz4jhHMcUI9xRpIGFFGeAWEsHjjtR/ZeD7XEWInZs4z
-         s6VysjLLr33xT64VnxM+mng6Go6oxHGqTnzd+/p5x0ibn35HEh0cL8enWFFp7/4Xop3H
-         vRRA==
-X-Gm-Message-State: AOJu0YyzoL4MEGP84Cox9OxH0yKXLc1Hk+w8hi3D0QDO3MML2lCkXm/p
-        oBJKjOdZ9CsR3wMGSuYVT1fCtzrTHNmMKXLaEBE3bkAtj1M=
-X-Google-Smtp-Source: AGHT+IGGZJyReIDgrMZtiubQRbMwIKbiT4QSpHxhHeKHsqnI25JjR/27HBwLNz1LdOK9tuR5yIy/TSHHfrPL+PDzg7Q=
-X-Received: by 2002:a05:6820:81f:b0:573:3a3b:594b with SMTP id
- bg31-20020a056820081f00b005733a3b594bmr13187897oob.1.1694509926275; Tue, 12
- Sep 2023 02:12:06 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1694512428; x=1695117228;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=SfDSerRFa61yu+/rsV9oiMAv0/IyQd6/vmr5YFqcfiA=;
+        b=d/o+Vpl57xMDC7ezR1DC8xCJK64N32KVhJtT790jtOUoEdB5QAVdr/2LZQEQqd/1yF
+         YSWbwurBNehZjqyUfpCbhuDtrowD7hYabIzXx8cQVttJwIGWGd0IlXUuVwsbr7XrSmkK
+         rRYhKtkZkT7krocC5TD9r4WlMYJFeQrHTspuaEylbZV/4d5bSHQHqRW7+pArMxWJixrp
+         x0FzpPn6ib9x93fKoaww5Vb7bEj0aGyxwlXBxR5zviO7pgjcleX2llioHkqlNaBf8CdW
+         YOrtBLb88aHZg61g+/1h62XgRrV6GVQfSSB4uPrmCJQXj6CmUhY32o5u6q8VLDkvkArM
+         TI8w==
+X-Gm-Message-State: AOJu0YyswVIZ1l6udInQEXDFuwalAOD7hGFBjbJfer1r4yvVp7MkLp6G
+        tx7I0Zvpm5NLSrFRa7ipzhEtBg==
+X-Google-Smtp-Source: AGHT+IGC2Jfv2kukYlPCDVcxiRFUcsO8+lVSNevhxfNPazTOHsAhYtrKJx0HYQyriLyy+cS6jzHRNA==
+X-Received: by 2002:a05:6402:153:b0:52c:164:efe5 with SMTP id s19-20020a056402015300b0052c0164efe5mr10037835edu.39.1694512428169;
+        Tue, 12 Sep 2023 02:53:48 -0700 (PDT)
+Received: from [192.168.37.85] (178235177248.dynamic-4-waw-k-1-1-0.vectranet.pl. [178.235.177.248])
+        by smtp.gmail.com with ESMTPSA id j8-20020aa7c0c8000000b00525503fac84sm5698287edp.25.2023.09.12.02.53.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 12 Sep 2023 02:53:47 -0700 (PDT)
+Message-ID: <1c8e9831-e654-4ec9-b742-a68e729e6962@linaro.org>
+Date:   Tue, 12 Sep 2023 11:53:45 +0200
 MIME-Version: 1.0
-References: <20230906184354.45846-1-mario.limonciello@amd.com>
- <20230906184354.45846-3-mario.limonciello@amd.com> <CAJZ5v0jgGOPcFMfRObAM1St1KLjZS0tEki4f32Rbr3ZXwFyFzA@mail.gmail.com>
- <0cd6648d-21f1-445d-95f6-20f580bbcfd1@amd.com>
-In-Reply-To: <0cd6648d-21f1-445d-95f6-20f580bbcfd1@amd.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 12 Sep 2023 11:11:55 +0200
-Message-ID: <CAJZ5v0h0LN1W5Q6Wp-jSJA4QE4ZGurf8Ye26ST5j6W2P+xHCFg@mail.gmail.com>
-Subject: Re: [PATCH v17 2/4] PCI: Add support for drivers to register optin or
- veto of D3
-To:     Mario Limonciello <mario.limonciello@amd.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
-        "open list:X86 PLATFORM DRIVERS" 
-        <platform-driver-x86@vger.kernel.org>,
-        "open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>,
-        linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/4] cpufreq: dt: platdev: Add MSM8909 to blocklist
+Content-Language: en-US
+To:     Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Ilia Lin <ilia.lin@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+References: <20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com>
+ <20230912-msm8909-cpufreq-v1-2-767ce66b544b@kernkonzept.com>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
+ 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
+ izWDgYvmBE8=
+In-Reply-To: <20230912-msm8909-cpufreq-v1-2-767ce66b544b@kernkonzept.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Sep 11, 2023 at 10:23 PM Mario Limonciello
-<mario.limonciello@amd.com> wrote:
->
-> On 9/11/2023 13:34, Rafael J. Wysocki wrote:
-> > On Wed, Sep 6, 2023 at 9:16 PM Mario Limonciello
-> > <mario.limonciello@amd.com> wrote:
-> >>
+On 12.09.2023 11:40, Stephan Gerhold wrote:
+> MSM8909 uses qcom-cpufreq-nvmem to attach power domains and to parse the
+> speedbin from NVMEM (for opp-supported-hw).
+> 
+> Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
+> ---
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 
-[cut]
-
-> >
-> > IMV, the underlying issue all boils down to the platform firmware
-> > inadequately describing the behavior of the system to the OS.
-> > Specifically, had it provided a _S0W returning 0 for the Root Port(s)
-> > in question, wakeup signaling would have worked (or else there would
-> > have been a defect in the kernel code to be addressed).
->
-> I think you're right.  I'll try and get BIOS guys to provide a test BIOS
-> to prove this direction is correct.
->
-> It wouldn't help all the machines already in the field but if it can be
-> done without harm to Windows maybe future SoCs could use it.
->
-> > Instead, it
-> > decided to kind-of guide Windows in the "right" direction through PEP
-> > constraints which doesn't have the same effect on Linux and honestly
-> > I'm not even sure if it is a good idea to adjust Linux to that.
-> >
->
-> What is the worry with bringing Linux in this direction (using constraints)?
-
-First off, ostensibly the purpose of the constraints is to indicate to
-Windows when it can attempt to put the system into the deepest power
-state.  Specifically, AFAICS, Windows is not expected to do so when
-the current power state of a given device is shallower than the
-relevant constraint.  Consequently, a constraint of D0 means that
-effectively Windows is expected to ignore the given device as far as
-Modern Standby goes.
-
-In any case, this has no bearing on the behavior of suspend-to-idle in Linux.
-
-Now, there may be other undocumented side-effects of setting a
-constraint of D0 in Windows, but it is generally risky to rely on such
-things.
-
-Second, it is not entirely clear to me whether or not the future
-versions of Windows will continue to use the constraints in the same
-way.
-
-> My main hope is that by generalizing this fundamental difference in how
-> Windows and Linux handle Modern Standby / suspend-to-idle we can avoid
-> other future bugs.
-
-There is a fundamental difference between Modern Standby and
-suspend-to-idle already, as the former is opportunistic and the latter
-is on-demand.  They can both follow the exact same set of rules.
+Konrad
