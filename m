@@ -2,138 +2,105 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DD09CA0ED2
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Sep 2023 10:00:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C56DFCA0EC3
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Sep 2023 10:04:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233542AbjILKAZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Sep 2023 06:00:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35920 "EHLO
+        id S232897AbjILKEW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Sep 2023 06:04:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50232 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233538AbjILKAT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Sep 2023 06:00:19 -0400
-Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 544F61BB;
-        Tue, 12 Sep 2023 03:00:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=kernkonzept.com; s=mx1; h=Cc:To:In-Reply-To:References:Message-Id:
-        Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:
-        Reply-To:Content-ID:Content-Description;
-        bh=atVlEBB4YMZABXH4SWOY4OFQPXFW6vNTHPIocXGctJs=; b=GBXLRQKsy0kqC1hGKFV9w8TpKE
-        KuakT0tdPMcVGhJZO4zcgucH7f9F3mwE6+kWPFGeux2al94LSQ8zCGjY0INTR0UdY6d0ZupJ+cLLD
-        v1l/3Tje+cC8fP5UExUvTERFP26gAbJT5eJ0qeA9ofEVQqU3dSnzGOQsgXp99xU4Q1fuESB/rvOgw
-        DXBvvmdyEmqbTSJ/vl7BDGvQYigxU6JUfMbI0d5/046342b5ataMVmj6AvspYt52mNjK7WTJjCYNZ
-        cGHWD8pz6u44i1uLfqGrlsj6QMBXBnxFRZcF8BfVnxxT1GSfIHcAOJ1wlfNgMIAf11Bmw9btKwm3V
-        ke/pPqcg==;
-Received: from [10.22.3.24] (helo=serv1.dd1.int.kernkonzept.com)
-        by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.96)
-        id 1qfzsl-0030Ws-0N;
-        Tue, 12 Sep 2023 11:40:31 +0200
-From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Date:   Tue, 12 Sep 2023 11:40:15 +0200
-Subject: [PATCH 1/4] cpufreq: qcom-nvmem: Enable virtual power domain
- devices
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230912-msm8909-cpufreq-v1-1-767ce66b544b@kernkonzept.com>
-References: <20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com>
-In-Reply-To: <20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
-        Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
-        stable@vger.kernel.org
-X-Mailer: b4 0.12.3
+        with ESMTP id S229675AbjILKEW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Sep 2023 06:04:22 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 200781BB;
+        Tue, 12 Sep 2023 03:04:18 -0700 (PDT)
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38C9Owig019691;
+        Tue, 12 Sep 2023 10:04:12 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id; s=qcppdkim1;
+ bh=Vwfy73xj4x08bi6EovEZCWMmUziQqRDVN94w2xVW+ZM=;
+ b=Otfp1z3rmSq4idOrAPHc3RuO4oS2xIClxsV02jf9nhli4FJupPFDPGhc9TAE82qxE6++
+ 8ZcmG62iIbxBoNTuEniWyK0Us5kmJihnx6Nb1rnhWsEmS8XAMczFBZ3R0Tq+ZPE57nHm
+ A1pJ3TCuc6KXWWKVlTj0fI00KCovxEKgmR3pR2eEAHJ1MC7h8VcYfcXBsUvvolvmsSsi
+ KfSjSWkEALBLN4T9uPDH8LPpLihqPr2ZcPvLOeMMErg7Mf8xY7qxl8PDa6OK3+Y+tCV/
+ LSjn3R3ggvJQlHSH2HrpKXfFuXyd38fFl/rrNUR5jrGVlQNkpPu3SFGRQglpFJHrwU9S 5A== 
+Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3t24raabnq-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 12 Sep 2023 10:04:12 +0000
+Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+        by APBLRPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 38CA48LZ029226;
+        Tue, 12 Sep 2023 10:04:08 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 3t0hskmrak-1;
+        Tue, 12 Sep 2023 10:04:08 +0000
+Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38CA48w8029213;
+        Tue, 12 Sep 2023 10:04:08 GMT
+Received: from hu-sgudaval-hyd.qualcomm.com (hu-rohiagar-hyd.qualcomm.com [10.213.106.138])
+        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 38CA481Y029208;
+        Tue, 12 Sep 2023 10:04:08 +0000
+Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 3970568)
+        id 685391D36; Tue, 12 Sep 2023 15:34:07 +0530 (+0530)
+From:   Rohit Agarwal <quic_rohiagar@quicinc.com>
+To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        djakov@kernel.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@quicinc.com, Rohit Agarwal <quic_rohiagar@quicinc.com>
+Subject: [PATCH v2 0/2] Add interconnect driver for SDX75
+Date:   Tue, 12 Sep 2023 15:34:04 +0530
+Message-Id: <1694513046-24064-1-git-send-email-quic_rohiagar@quicinc.com>
+X-Mailer: git-send-email 2.7.4
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: _sy0ssqEcNveB92pDgBVTAJPpcC8df6a
+X-Proofpoint-ORIG-GUID: _sy0ssqEcNveB92pDgBVTAJPpcC8df6a
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-12_07,2023-09-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 spamscore=0
+ clxscore=1015 mlxscore=0 bulkscore=0 suspectscore=0 phishscore=0
+ impostorscore=0 mlxlogscore=693 priorityscore=1501 adultscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2309120085
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The genpd core ignores performance state votes from devices that are
-runtime suspended as of commit 5937c3ce2122 ("PM: domains: Drop/restore
-performance state votes for devices at runtime PM"). However, at the
-moment nothing ever enables the virtual devices created in
-qcom-cpufreq-nvmem for the cpufreq power domain scaling, so they are
-permanently runtime-suspended.
+Hi,
 
-Fix this by enabling the devices after attaching them and use
-dev_pm_syscore_device() to ensure the power domain also stays on when
-going to suspend. Since it supplies the CPU we can never turn it off
-from Linux. There are other mechanisms to turn it off when needed,
-usually in the RPM firmware or the cpuidle path.
+Changes in v2:
+ - Updated the bindings to merge the if clauses and updated the maintainer.
+ - Updated the drivers file to a latest template to add the missing const
+   keyword.
+ - Rebased on v6.6-rc1
 
-Without this fix performance states votes are silently ignored, and the
-CPU/CPR voltage is never adjusted. This has been broken since 5.14 but
-for some reason no one noticed this on QCS404 so far.
+This series adds interconnect driver support for SDX75 platform.
 
-Cc: stable@vger.kernel.org
-Fixes: 1cb8339ca225 ("cpufreq: qcom: Add support for qcs404 on nvmem driver")
-Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
----
- drivers/cpufreq/qcom-cpufreq-nvmem.c | 21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+Thanks,
+Rohit.
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-index 84d7033e5efe..17d6ab14c909 100644
---- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-@@ -25,6 +25,7 @@
- #include <linux/platform_device.h>
- #include <linux/pm_domain.h>
- #include <linux/pm_opp.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/soc/qcom/smem.h>
- 
-@@ -280,6 +281,7 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
- 	}
- 
- 	for_each_possible_cpu(cpu) {
-+		struct device **virt_devs = NULL;
- 		struct dev_pm_opp_config config = {
- 			.supported_hw = NULL,
- 		};
-@@ -300,7 +302,7 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
- 
- 		if (drv->data->genpd_names) {
- 			config.genpd_names = drv->data->genpd_names;
--			config.virt_devs = NULL;
-+			config.virt_devs = &virt_devs;
- 		}
- 
- 		if (config.supported_hw || config.genpd_names) {
-@@ -311,6 +313,23 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
- 				goto free_opp;
- 			}
- 		}
-+
-+		if (virt_devs) {
-+			const char * const *name = config.genpd_names;
-+			int i;
-+
-+			for (i = 0; *name; i++, name++) {
-+				ret = pm_runtime_resume_and_get(virt_devs[i]);
-+				if (ret) {
-+					dev_err(cpu_dev, "failed to resume %s: %d\n",
-+						*name, ret);
-+					goto free_opp;
-+				}
-+
-+				/* Keep CPU power domain always-on */
-+				dev_pm_syscore_device(virt_devs[i], true);
-+			}
-+		}
- 	}
- 
- 	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
+Rohit Agarwal (2):
+  dt-bindings: interconnect: Add compatibles for SDX75
+  interconnect: qcom: Add SDX75 interconnect provider driver
+
+ .../bindings/interconnect/qcom,sdx75-rpmh.yaml     |   92 ++
+ drivers/interconnect/qcom/Kconfig                  |    9 +
+ drivers/interconnect/qcom/Makefile                 |    2 +
+ drivers/interconnect/qcom/sdx75.c                  | 1112 ++++++++++++++++++++
+ drivers/interconnect/qcom/sdx75.h                  |   97 ++
+ include/dt-bindings/interconnect/qcom,sdx75.h      |  102 ++
+ 6 files changed, 1414 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml
+ create mode 100644 drivers/interconnect/qcom/sdx75.c
+ create mode 100644 drivers/interconnect/qcom/sdx75.h
+ create mode 100644 include/dt-bindings/interconnect/qcom,sdx75.h
 
 -- 
-2.39.2
+2.7.4
 
