@@ -2,109 +2,79 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3CDEEDEC5C
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Sep 2023 14:19:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3FCAEDEC6B
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Sep 2023 14:31:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241292AbjIMOTN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Sep 2023 10:19:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32806 "EHLO
+        id S238551AbjIMObf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Sep 2023 10:31:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50576 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241297AbjIMOTJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Sep 2023 10:19:09 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACF4E5BA3;
-        Wed, 13 Sep 2023 07:11:07 -0700 (PDT)
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38DBe3Cl017669;
-        Wed, 13 Sep 2023 14:11:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id; s=qcppdkim1;
- bh=2Vvyz3kaBR5K9Mp05wf4x59Bwusl+MEdOtqRu7dB39g=;
- b=ovFsknzEC/G1nM8AGwgRFO3ZzNkt7GFbTG+o1w1sV6XX0BOMTYddjDI0/L7Y8mtLasp4
- Jflpq4rwnN67+M0cqkagWqQjcYwc0Pxf1BjetgE2bMVXf/Rdo5Gmq4PoV7nqnY0yvMhA
- o5xbNENw4j47UioVeIwD6i3zB+yA3GvoHuYsXZ405AltrTJxYuQejsA/zaafGHqmGY40
- wPiWq8UW5Re7WHgEogqkpu8zPc/C0QafJR0lTqktWOyJLzqbRDDgWbAQCIDjXdEMhL2L
- cO8eCbBm7k+TR52PKrj95L4RSpMTJOnzBd9mETzwCRjukXHJjDpxMQFKxobdU4H1VXgO /A== 
-Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3t314chhh6-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 13 Sep 2023 14:11:02 +0000
-Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-        by APBLRPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 38DEAwSN007638;
-        Wed, 13 Sep 2023 14:10:58 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 3t0hskt7mn-1;
-        Wed, 13 Sep 2023 14:10:58 +0000
-Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38DEAwR4007624;
-        Wed, 13 Sep 2023 14:10:58 GMT
-Received: from hu-sgudaval-hyd.qualcomm.com (hu-rohiagar-hyd.qualcomm.com [10.213.106.138])
-        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 38DEAwFb007620;
-        Wed, 13 Sep 2023 14:10:58 +0000
-Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 3970568)
-        id 71BED1D52; Wed, 13 Sep 2023 19:40:57 +0530 (+0530)
-From:   Rohit Agarwal <quic_rohiagar@quicinc.com>
-To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
-        djakov@kernel.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kernel@quicinc.com, Rohit Agarwal <quic_rohiagar@quicinc.com>
-Subject: [PATCH v3 0/2] Add interconnect driver for SDX75
-Date:   Wed, 13 Sep 2023 19:40:54 +0530
-Message-Id: <1694614256-24109-1-git-send-email-quic_rohiagar@quicinc.com>
-X-Mailer: git-send-email 2.7.4
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: KDkr9WnQBeOnhZtwmHZfYZk9z3KoZ3Pm
-X-Proofpoint-ORIG-GUID: KDkr9WnQBeOnhZtwmHZfYZk9z3KoZ3Pm
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.601,FMLib:17.11.176.26
- definitions=2023-09-13_07,2023-09-13_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 adultscore=0
- clxscore=1015 phishscore=0 spamscore=0 mlxscore=0 bulkscore=0
- lowpriorityscore=0 priorityscore=1501 mlxlogscore=727 impostorscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2308100000 definitions=main-2309130115
+        with ESMTP id S240574AbjIMObf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Sep 2023 10:31:35 -0400
+Received: from bmailout2.hostsharing.net (bmailout2.hostsharing.net [IPv6:2a01:37:3000::53df:4ef0:0])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8FA191;
+        Wed, 13 Sep 2023 07:31:30 -0700 (PDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+         client-signature RSA-PSS (4096 bits) client-digest SHA256)
+        (Client CN "*.hostsharing.net", Issuer "RapidSSL Global TLS RSA4096 SHA256 2022 CA1" (verified OK))
+        by bmailout2.hostsharing.net (Postfix) with ESMTPS id BEB8C2800C99A;
+        Wed, 13 Sep 2023 16:31:28 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+        id A3BCD902E; Wed, 13 Sep 2023 16:31:28 +0200 (CEST)
+Date:   Wed, 13 Sep 2023 16:31:28 +0200
+From:   Lukas Wunner <lukas@wunner.de>
+To:     Mario Limonciello <mario.limonciello@amd.com>
+Cc:     Bjorn Helgaas <bhelgaas@google.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+        "open list:X86 PLATFORM DRIVERS" 
+        <platform-driver-x86@vger.kernel.org>,
+        "open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>,
+        linux-pm@vger.kernel.org,
+        "open list:USB XHCI DRIVER" <linux-usb@vger.kernel.org>,
+        iain@orangesquash.org.uk
+Subject: Re: [PATCH v18 2/2] PCI: Add a quirk for AMD PCIe root ports w/ USB4
+ controllers
+Message-ID: <20230913143128.GA29059@wunner.de>
+References: <20230913040832.114610-1-mario.limonciello@amd.com>
+ <20230913040832.114610-3-mario.limonciello@amd.com>
+ <20230913042522.GB1359@wunner.de>
+ <fd981219-d864-4c46-a348-61f73a9df596@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fd981219-d864-4c46-a348-61f73a9df596@amd.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, Sep 12, 2023 at 11:43:53PM -0500, Mario Limonciello wrote:
+> On 9/12/2023 23:25, Lukas Wunner wrote:
+> > There's already PCI_DEV_FLAGS_NO_D3, would it be possible to just
+> > reuse that instead of adding another codepath for D3 quirks?
+> > 
+> 
+> The root port can handle D3 (including wakeup) at runtime fine.
+> Issue occurs only during s2idle w/ hardware sleep.
 
-Changes in v3:
- - Removed the unnecessary declaration of a struct from patch 2/2
- - Collected the reviewed by tag
+I see.
 
-Changes in v2:
- - Updated the bindings to merge the if clauses and updated the maintainer.
- - Updated the drivers file to a latest template to add the missing const
-   keyword.
- - Rebased on v6.6-rc1
+If this only affects system sleep, not runtime PM, what you can do is
+define a DECLARE_PCI_FIXUP_SUSPEND_LATE() which calls pci_d3cold_disable()
+and also define a DECLARE_PCI_FIXUP_CLASS_RESUME_EARLY() which calls
+pci_d3cold_enable().
 
-This series adds interconnect driver support for SDX75 platform.
+And I think you can make those calls conditional on pm_suspend_no_platform()
+to constrain to s2idle.
+
+User space should still be able to influence runtime PM via the
+d3cold_allowed flag (unless I'm missing something).
 
 Thanks,
-Rohit.
 
-Rohit Agarwal (2):
-  dt-bindings: interconnect: Add compatibles for SDX75
-  interconnect: qcom: Add SDX75 interconnect provider driver
-
- .../bindings/interconnect/qcom,sdx75-rpmh.yaml     |   92 ++
- drivers/interconnect/qcom/Kconfig                  |    9 +
- drivers/interconnect/qcom/Makefile                 |    2 +
- drivers/interconnect/qcom/sdx75.c                  | 1107 ++++++++++++++++++++
- drivers/interconnect/qcom/sdx75.h                  |   97 ++
- include/dt-bindings/interconnect/qcom,sdx75.h      |  102 ++
- 6 files changed, 1409 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml
- create mode 100644 drivers/interconnect/qcom/sdx75.c
- create mode 100644 drivers/interconnect/qcom/sdx75.h
- create mode 100644 include/dt-bindings/interconnect/qcom,sdx75.h
-
--- 
-2.7.4
-
+Lukas
