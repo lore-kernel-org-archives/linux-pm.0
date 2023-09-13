@@ -2,182 +2,296 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21A58EDEC55
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Sep 2023 13:56:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0664EDEC5C
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Sep 2023 14:14:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237959AbjIMN4Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Sep 2023 09:56:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54416 "EHLO
+        id S241500AbjIMOON (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Sep 2023 10:14:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48724 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239563AbjIMN4Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Sep 2023 09:56:24 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 29A1219BF
-        for <linux-pm@vger.kernel.org>; Wed, 13 Sep 2023 06:56:20 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C03D6C433CA;
-        Wed, 13 Sep 2023 13:56:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1694613379;
-        bh=Q6WalZ8TpU7f6rAirYPjnlGFBA7Iavog/gfu/KD0rr4=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=I1ppQjTJo3S4b7S3L8DWA+RTwdkl4GgYwdRn2Wz7xSpS94DTcYJ0aueQoj25rWcnW
-         RvxkdcF3S4m4fR542BA5h4YjMBec/nE0SkdYwORpEbWQZZqF2/FhDk3jeUWi9+ceh6
-         jLZFUGpHIdl+970u+3SDTM/47ZV9gWaItYHKnMMDkx+9i+681QvACFkVV+kJ4hAsZg
-         VEodejJjhDMsm1vvWYLLYJfWbHy1wWGu/A4U2EwZpIoWap4qYDz/EV6chOINuS8iTL
-         ZXNARkfn/WYZT/hMY6ZorRbcDKS7IyorXtM+CGel6pBCoqnaUcyhR6ED63Oy0eA7kH
-         fSKwdh6YUIE1g==
-From:   Conor Dooley <conor@kernel.org>
-To:     ulf.hansson@linaro.org
-Cc:     conor@kernel.org, Conor Dooley <conor.dooley@microchip.com>,
-        arnd@arndb.de, changhuang.liang@starfivetech.com,
-        jiajie.ho@starfivetech.com, linux-pm@vger.kernel.org,
-        linux-riscv@lists.infradead.org, robh@kernel.org,
-        walker.chen@starfivetech.com
-Subject: [GIT PULL 5/5] pmdomain: starfive: Add JH7110 AON PMU support
-Date:   Wed, 13 Sep 2023 14:54:28 +0100
-Message-Id: <20230913-dude-imprecise-fc32622bc947@spud>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230913-bloomers-scorebook-fb45e0a2aa19@spud>
-References: <20230913-bloomers-scorebook-fb45e0a2aa19@spud>
-MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4052; i=conor.dooley@microchip.com; h=from:subject:message-id; bh=5Q3tk4+W6UmElYB6O/7FZbKQ8pSZfsYJMQxdffVIkaw=; b=owGbwMvMwCFWscWwfUFT0iXG02pJDKmM+wW3FNppPxbr5vN92fxrQt807ne8/19t8l82e66pz +bCrOOGHaUsDGIcDLJiiiyJt/tapNb/cdnh3PMWZg4rE8gQBi5OAZhI3FVGhvOpse7Z846eTPN8 K1zNk1n764R3dNSNir33zQt+X/2cosjwv0LnqazhhosOOj3XXCte7Jg0WWWxw1/tsP2xcS8qNhj lcAAA
-X-Developer-Key: i=conor.dooley@microchip.com; a=openpgp; fpr=F9ECA03CF54F12CD01F1655722E2C55B37CF380C
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S241459AbjIMOOF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Sep 2023 10:14:05 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7430E5FD4;
+        Wed, 13 Sep 2023 07:11:12 -0700 (PDT)
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38DBo2Lj011668;
+        Wed, 13 Sep 2023 14:11:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references; s=qcppdkim1;
+ bh=w1pOJP290lRzLyQvRfScUs84cKyWbW1WfCZWOXIqzZ4=;
+ b=bpolpPSbcPg40mpmXvLOxwXIdXcXeSA02aywnzPexYn2aCVISxvyMb96enqKLI2jO31I
+ SrjfsjK1Yp5LjOWO86FtZf61Lz1RgQrrbiKZaxdxiCjT157IcHiSSofWjIHwsLTwivV7
+ kcSIwzCYgvW4/7mJqkHAw29VMwKu53ncg07sQPcDBbb6pKBkIQkFj2gJOoCn5XU48vDJ
+ Dwt9boWM935Mu/wqqRhpuAphX/6osv91RxSBQ52q9pk6QaVQM6953f+wCS0OvwoCJmbs
+ Dr00LFqaBv9ab/3/JpdhOCjaxGMqRV7wHhadTvgU5JL7c/lNr0G9IninF/lAVqvqHAaD aw== 
+Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3t2y8q1qc7-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 13 Sep 2023 14:11:02 +0000
+Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+        by APBLRPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 38DE63BZ002094;
+        Wed, 13 Sep 2023 14:10:59 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 3t0hskt7mp-1;
+        Wed, 13 Sep 2023 14:10:58 +0000
+Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 38DEAweU007623;
+        Wed, 13 Sep 2023 14:10:58 GMT
+Received: from hu-sgudaval-hyd.qualcomm.com (hu-rohiagar-hyd.qualcomm.com [10.213.106.138])
+        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 38DEAwDQ007621;
+        Wed, 13 Sep 2023 14:10:58 +0000
+Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 3970568)
+        id C39281D65; Wed, 13 Sep 2023 19:40:57 +0530 (+0530)
+From:   Rohit Agarwal <quic_rohiagar@quicinc.com>
+To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        djakov@kernel.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@quicinc.com, Rohit Agarwal <quic_rohiagar@quicinc.com>
+Subject: [PATCH v3 1/2] dt-bindings: interconnect: Add compatibles for SDX75
+Date:   Wed, 13 Sep 2023 19:40:55 +0530
+Message-Id: <1694614256-24109-2-git-send-email-quic_rohiagar@quicinc.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1694614256-24109-1-git-send-email-quic_rohiagar@quicinc.com>
+References: <1694614256-24109-1-git-send-email-quic_rohiagar@quicinc.com>
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: LfSKx2jTGIqxVQcgZVu2GwgB--679GYz
+X-Proofpoint-GUID: LfSKx2jTGIqxVQcgZVu2GwgB--679GYz
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-09-13_07,2023-09-13_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ lowpriorityscore=0 malwarescore=0 clxscore=1015 priorityscore=1501
+ adultscore=0 phishscore=0 suspectscore=0 mlxlogscore=999 bulkscore=0
+ spamscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2309130115
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Changhuang Liang <changhuang.liang@starfivetech.com>
+Add dt-bindings compatibles and interconnect IDs for
+Qualcomm SDX75 platform.
 
-Add AON PMU for StarFive JH7110 SoC. It can be used to turn on/off the
-dphy rx/tx power switch.
-
-Reviewed-by: Walker Chen <walker.chen@starfivetech.com>
-Signed-off-by: Changhuang Liang <changhuang.liang@starfivetech.com>
-Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+Signed-off-by: Rohit Agarwal <quic_rohiagar@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- MAINTAINERS                            |  1 +
- drivers/pmdomain/starfive/jh71xx-pmu.c | 57 +++++++++++++++++++++++---
- 2 files changed, 53 insertions(+), 5 deletions(-)
+ .../bindings/interconnect/qcom,sdx75-rpmh.yaml     |  92 +++++++++++++++++++
+ include/dt-bindings/interconnect/qcom,sdx75.h      | 102 +++++++++++++++++++++
+ 2 files changed, 194 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml
+ create mode 100644 include/dt-bindings/interconnect/qcom,sdx75.h
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4d9e7d42412f..f1c34484c9b2 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -20512,6 +20512,7 @@ F:	drivers/usb/cdns3/cdns3-starfive.c
- 
- STARFIVE JH71XX PMU CONTROLLER DRIVER
- M:	Walker Chen <walker.chen@starfivetech.com>
-+M:	Changhuang Liang <changhuang.liang@starfivetech.com>
- S:	Supported
- F:	Documentation/devicetree/bindings/power/starfive*
- F:	drivers/pmdomain/starfive/jh71xx-pmu.c
-diff --git a/drivers/pmdomain/starfive/jh71xx-pmu.c b/drivers/pmdomain/starfive/jh71xx-pmu.c
-index 547cd3b9df11..2724bee7e85f 100644
---- a/drivers/pmdomain/starfive/jh71xx-pmu.c
-+++ b/drivers/pmdomain/starfive/jh71xx-pmu.c
-@@ -2,7 +2,7 @@
- /*
-  * StarFive JH71XX PMU (Power Management Unit) Controller Driver
-  *
-- * Copyright (C) 2022 StarFive Technology Co., Ltd.
-+ * Copyright (C) 2022-2023 StarFive Technology Co., Ltd.
-  */
- 
- #include <linux/interrupt.h>
-@@ -23,6 +23,9 @@
- #define JH71XX_PMU_EVENT_STATUS		0x88
- #define JH71XX_PMU_INT_STATUS		0x8C
- 
-+/* aon pmu register offset */
-+#define JH71XX_AON_PMU_SWITCH		0x00
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml
+new file mode 100644
+index 0000000..71cf7e2
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/qcom,sdx75-rpmh.yaml
+@@ -0,0 +1,92 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interconnect/qcom,sdx75-rpmh.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- /* sw encourage cfg */
- #define JH71XX_PMU_SW_ENCOURAGE_EN_LO	0x05
- #define JH71XX_PMU_SW_ENCOURAGE_EN_HI	0x50
-@@ -159,6 +162,26 @@ static int jh7110_pmu_set_state(struct jh71xx_pmu_dev *pmd, u32 mask, bool on)
- 	return 0;
- }
- 
-+static int jh7110_aon_pmu_set_state(struct jh71xx_pmu_dev *pmd, u32 mask, bool on)
-+{
-+	struct jh71xx_pmu *pmu = pmd->pmu;
-+	unsigned long flags;
-+	u32 val;
++title: Qualcomm RPMh Network-On-Chip Interconnect on SDX75
 +
-+	spin_lock_irqsave(&pmu->lock, flags);
-+	val = readl(pmu->base + JH71XX_AON_PMU_SWITCH);
++maintainers:
++  - Rohit Agarwal <quic_rohiagar@quicinc.com>
 +
-+	if (on)
-+		val |= mask;
-+	else
-+		val &= ~mask;
++description:
++  RPMh interconnect providers support system bandwidth requirements through
++  RPMh hardware accelerators known as Bus Clock Manager (BCM). The provider is
++  able to communicate with the BCM through the Resource State Coordinator (RSC)
++  associated with each execution environment. Provider nodes must point to at
++  least one RPMh device child node pertaining to their RSC and each provider
++  can map to multiple RPMh resources.
 +
-+	writel(val, pmu->base + JH71XX_AON_PMU_SWITCH);
-+	spin_unlock_irqrestore(&pmu->lock, flags);
++properties:
++  compatible:
++    enum:
++      - qcom,sdx75-clk-virt
++      - qcom,sdx75-dc-noc
++      - qcom,sdx75-gem-noc
++      - qcom,sdx75-mc-virt
++      - qcom,sdx75-pcie-anoc
++      - qcom,sdx75-system-noc
 +
-+	return 0;
-+}
++  '#interconnect-cells': true
 +
- static int jh71xx_pmu_set_state(struct jh71xx_pmu_dev *pmd, u32 mask, bool on)
- {
- 	struct jh71xx_pmu *pmu = pmd->pmu;
-@@ -316,10 +339,12 @@ static int jh71xx_pmu_probe(struct platform_device *pdev)
- 	if (!match_data)
- 		return -EINVAL;
- 
--	ret = match_data->pmu_parse_irq(pdev, pmu);
--	if (ret) {
--		dev_err(dev, "failed to parse irq\n");
--		return ret;
-+	if (match_data->pmu_parse_irq) {
-+		ret = match_data->pmu_parse_irq(pdev, pmu);
-+		if (ret) {
-+			dev_err(dev, "failed to parse irq\n");
-+			return ret;
-+		}
- 	}
- 
- 	pmu->genpd = devm_kcalloc(dev, match_data->num_domains,
-@@ -393,10 +418,31 @@ static const struct jh71xx_pmu_match_data jh7110_pmu = {
- 	.pmu_set_state = jh7110_pmu_set_state,
- };
- 
-+static const struct jh71xx_domain_info jh7110_aon_power_domains[] = {
-+	[JH7110_PD_DPHY_TX] = {
-+		.name = "DPHY-TX",
-+		.bit = 30,
-+	},
-+	[JH7110_PD_DPHY_RX] = {
-+		.name = "DPHY-RX",
-+		.bit = 31,
-+	},
-+};
++  reg:
++    maxItems: 1
 +
-+static const struct jh71xx_pmu_match_data jh7110_aon_pmu = {
-+	.num_domains = ARRAY_SIZE(jh7110_aon_power_domains),
-+	.domain_info = jh7110_aon_power_domains,
-+	.pmu_status = JH71XX_AON_PMU_SWITCH,
-+	.pmu_set_state = jh7110_aon_pmu_set_state,
-+};
++  clocks:
++    maxItems: 1
 +
- static const struct of_device_id jh71xx_pmu_of_match[] = {
- 	{
- 		.compatible = "starfive,jh7110-pmu",
- 		.data = (void *)&jh7110_pmu,
-+	}, {
-+		.compatible = "starfive,jh7110-aon-syscon",
-+		.data = (void *)&jh7110_aon_pmu,
- 	}, {
- 		/* sentinel */
- 	}
-@@ -413,5 +459,6 @@ static struct platform_driver jh71xx_pmu_driver = {
- builtin_platform_driver(jh71xx_pmu_driver);
- 
- MODULE_AUTHOR("Walker Chen <walker.chen@starfivetech.com>");
-+MODULE_AUTHOR("Changhuang Liang <changhuang.liang@starfivetech.com>");
- MODULE_DESCRIPTION("StarFive JH71XX PMU Driver");
- MODULE_LICENSE("GPL");
++required:
++  - compatible
++
++allOf:
++  - $ref: qcom,rpmh-common.yaml#
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,sdx75-clk-virt
++              - qcom,sdx75-mc-virt
++    then:
++      properties:
++        reg: false
++    else:
++      required:
++        - reg
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,sdx75-clk-virt
++    then:
++      properties:
++        clocks:
++          items:
++            - description: RPMH CC QPIC Clock
++      required:
++        - clocks
++    else:
++      properties:
++        clocks: false
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/qcom,rpmh.h>
++
++    clk_virt: interconnect-0 {
++            compatible = "qcom,sdx75-clk-virt";
++            #interconnect-cells = <2>;
++            qcom,bcm-voters = <&apps_bcm_voter>;
++            clocks = <&rpmhcc RPMH_QPIC_CLK>;
++    };
++
++    system_noc: interconnect@1640000 {
++            compatible = "qcom,sdx75-system-noc";
++            reg = <0x1640000 0x4b400>;
++            #interconnect-cells = <2>;
++            qcom,bcm-voters = <&apps_bcm_voter>;
++    };
+diff --git a/include/dt-bindings/interconnect/qcom,sdx75.h b/include/dt-bindings/interconnect/qcom,sdx75.h
+new file mode 100644
+index 0000000..e903f5f
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom,sdx75.h
+@@ -0,0 +1,102 @@
++/* SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause) */
++/*
++ * Copyright (c) 2023, Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SDX75_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_SDX75_H
++
++#define MASTER_QPIC_CORE		0
++#define MASTER_QUP_CORE_0		1
++#define SLAVE_QPIC_CORE			2
++#define SLAVE_QUP_CORE_0		3
++
++#define MASTER_LLCC			0
++#define SLAVE_EBI1			1
++
++#define MASTER_CNOC_DC_NOC		0
++#define SLAVE_LAGG_CFG			1
++#define SLAVE_MCCC_MASTER		2
++#define SLAVE_GEM_NOC_CFG		3
++#define SLAVE_SNOOP_BWMON		4
++
++#define MASTER_SYS_TCU			0
++#define MASTER_APPSS_PROC		1
++#define MASTER_GEM_NOC_CFG		2
++#define MASTER_MSS_PROC			3
++#define MASTER_ANOC_PCIE_GEM_NOC	4
++#define MASTER_SNOC_SF_MEM_NOC		5
++#define MASTER_GIC			6
++#define MASTER_IPA_PCIE			7
++#define SLAVE_GEM_NOC_CNOC		8
++#define SLAVE_LLCC			9
++#define SLAVE_MEM_NOC_PCIE_SNOC		10
++#define SLAVE_SERVICE_GEM_NOC		11
++
++#define MASTER_PCIE_0			0
++#define MASTER_PCIE_1			1
++#define MASTER_PCIE_2			2
++#define SLAVE_ANOC_PCIE_GEM_NOC		3
++
++#define MASTER_AUDIO			0
++#define MASTER_GIC_AHB			1
++#define MASTER_PCIE_RSCC		2
++#define MASTER_QDSS_BAM			3
++#define MASTER_QPIC			4
++#define MASTER_QUP_0			5
++#define MASTER_ANOC_SNOC		6
++#define MASTER_GEM_NOC_CNOC		7
++#define MASTER_GEM_NOC_PCIE_SNOC	8
++#define MASTER_SNOC_CFG			9
++#define MASTER_PCIE_ANOC_CFG		10
++#define MASTER_CRYPTO			11
++#define MASTER_IPA			12
++#define MASTER_MVMSS			13
++#define MASTER_EMAC_0			14
++#define MASTER_EMAC_1			15
++#define MASTER_QDSS_ETR			16
++#define MASTER_QDSS_ETR_1		17
++#define MASTER_SDCC_1			18
++#define MASTER_SDCC_4			19
++#define MASTER_USB3_0			20
++#define SLAVE_ETH0_CFG			21
++#define SLAVE_ETH1_CFG			22
++#define SLAVE_AUDIO			23
++#define SLAVE_CLK_CTL			24
++#define SLAVE_CRYPTO_0_CFG		25
++#define SLAVE_IMEM_CFG			26
++#define SLAVE_IPA_CFG			27
++#define SLAVE_IPC_ROUTER_CFG		28
++#define SLAVE_CNOC_MSS			29
++#define SLAVE_ICBDI_MVMSS_CFG		30
++#define SLAVE_PCIE_0_CFG		31
++#define SLAVE_PCIE_1_CFG		32
++#define SLAVE_PCIE_2_CFG		33
++#define SLAVE_PCIE_RSC_CFG		34
++#define SLAVE_PDM			35
++#define SLAVE_PRNG			36
++#define SLAVE_QDSS_CFG			37
++#define SLAVE_QPIC			38
++#define SLAVE_QUP_0			39
++#define SLAVE_SDCC_1			40
++#define SLAVE_SDCC_4			41
++#define SLAVE_SPMI_VGI_COEX		42
++#define SLAVE_TCSR			43
++#define SLAVE_TLMM			44
++#define SLAVE_USB3			45
++#define SLAVE_USB3_PHY_CFG		46
++#define SLAVE_A1NOC_CFG			47
++#define SLAVE_DDRSS_CFG			48
++#define SLAVE_SNOC_GEM_NOC_SF		49
++#define SLAVE_SNOC_CFG			50
++#define SLAVE_PCIE_ANOC_CFG		51
++#define SLAVE_IMEM			52
++#define SLAVE_SERVICE_PCIE_ANOC		53
++#define SLAVE_SERVICE_SNOC		54
++#define SLAVE_PCIE_0			55
++#define SLAVE_PCIE_1			56
++#define SLAVE_PCIE_2			57
++#define SLAVE_QDSS_STM			58
++#define SLAVE_TCU			59
++
++#endif
 -- 
-2.39.2
+2.7.4
 
