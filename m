@@ -2,230 +2,194 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59C8FEEAA56
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Sep 2023 16:54:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7926AEEAA63
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Sep 2023 18:51:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237340AbjINQyw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Sep 2023 12:54:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45264 "EHLO
+        id S234957AbjINSvg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Sep 2023 14:51:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43116 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229705AbjINQyv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2023 12:54:51 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C3381BCB;
-        Thu, 14 Sep 2023 09:54:47 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Rmk1X02Syz6K66F;
-        Fri, 15 Sep 2023 00:54:07 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Thu, 14 Sep
- 2023 17:54:44 +0100
-Date:   Thu, 14 Sep 2023 17:54:43 +0100
-From:   Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To:     James Morse <james.morse@arm.com>
-CC:     <linux-pm@vger.kernel.org>, <loongarch@lists.linux.dev>,
-        <linux-acpi@vger.kernel.org>, <linux-arch@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-riscv@lists.infradead.org>, <kvmarm@lists.linux.dev>,
-        <x86@kernel.org>, Salil Mehta <salil.mehta@huawei.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Jean-Philippe Brucker <jean-philippe@linaro.org>,
-        <jianyong.wu@arm.com>, <justin.he@arm.com>
-Subject: Re: [RFC PATCH v2 35/35] cpumask: Add enabled cpumask for present
- CPUs that can be brought online
-Message-ID: <20230914175443.000038f6@Huawei.com>
-In-Reply-To: <20230913163823.7880-36-james.morse@arm.com>
-References: <20230913163823.7880-1-james.morse@arm.com>
-        <20230913163823.7880-36-james.morse@arm.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+        with ESMTP id S241926AbjINSvP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2023 14:51:15 -0400
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63A0E55BE
+        for <linux-pm@vger.kernel.org>; Thu, 14 Sep 2023 11:46:25 -0700 (PDT)
+Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-402d0eda361so14529845e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 14 Sep 2023 11:46:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1694717184; x=1695321984; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=kIZovquInIL74DbQjfgBZgPlunuh9zGf95Z8S/ooNDg=;
+        b=QYHZqaNpezYBGk6OGK3K6m4VbH7SfnULqezfHtDvf7PB91oxxo1l2DDfY+/WWYqK8n
+         6mfLwZ3sOx29Y5ezx//R3tocP9wvcDGk6+fT11e2PcHepox1cw3ZJGaguRpIUs+8GUfO
+         7PeugPV3kwrp3TbmObDXlQN/98f3KQaKPFNKRAzsXqJNEGCmUJ1av0wr4aFLMDeXhjCf
+         G6HloF/jhuocXimEvYWhPg5TfuNMLK7dZMyF6HMqno9nDLwY29BA7vGHC4UKP7qaZIN6
+         3GQKhRvY1OHG+tZRrlsGdE0jeWEgrGDqG6TWGQqzu35znyYBWb+cRXf5H7IwBGJSa462
+         WBlw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694717184; x=1695321984;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=kIZovquInIL74DbQjfgBZgPlunuh9zGf95Z8S/ooNDg=;
+        b=EjZT4/3fsSBU2011QeCsw2fwnJHcFW/1o75G3obRC2Re21BFcOvQ99Kds/wR9SHckV
+         n9baSC+rjeDRLw75t3m/i1D5GjK2xzt/gN4su0oOqO42x4WKUTk8yykDmy3Xg/Ki98Cf
+         HccxjL2ir8cbdGgcZbHiQnCPPl773nK599Q8FEiC5jw9La+rN3WSpVVOVKK8Qp/8U94S
+         qB5zJW1sTmFMDskdQyRP09z9Dib24UAZPsGjNYI4rY0wPCne6Vc9khnIo3GIAoNFFYK0
+         xGnGLFWSTRF8ToLSs3s30vvGm+K8hn2vZ/Pzq93WwdeMZWto8FyUzok9uEHS0HgkzUBR
+         ni/A==
+X-Gm-Message-State: AOJu0YxaHhWnqwMEm/W8tTCcspfMU4zqJjN2UBo5L01mLupNhA5aO9gl
+        mFkQyWKlRWkxPKcO1kLUzbKFYA==
+X-Google-Smtp-Source: AGHT+IHepuPWdsuiYR2oi1IwB/1DPQW73hMmiXEXagum6xwLJRh7Tnno1d2aZCEgN4NgYG4HRn/k/w==
+X-Received: by 2002:adf:f981:0:b0:319:8430:f80f with SMTP id f1-20020adff981000000b003198430f80fmr5343316wrr.49.1694717183627;
+        Thu, 14 Sep 2023 11:46:23 -0700 (PDT)
+Received: from [192.168.37.232] (178235177003.dynamic-4-waw-k-1-1-0.vectranet.pl. [178.235.177.3])
+        by smtp.gmail.com with ESMTPSA id g8-20020a50ee08000000b00521d2f7459fsm1232748eds.49.2023.09.14.11.46.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 14 Sep 2023 11:46:23 -0700 (PDT)
+Message-ID: <36287e2f-ddff-4323-bbc2-e7a07a9283e7@linaro.org>
+Date:   Thu, 14 Sep 2023 20:46:21 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RESEND v2 3/3] power: supply: Introduce MM8013 fuel gauge
+ driver
+Content-Language: en-US
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Marijn Suijten <marijn.suijten@somainline.org>,
+        Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20230621-topic-mm8013-v2-0-9f1b41f4bc06@linaro.org>
+ <20230621-topic-mm8013-v2-3-9f1b41f4bc06@linaro.org>
+ <20230913154552.okinfq6gdxf2d7ab@mercury.elektranox.org>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
+ 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
+ izWDgYvmBE8=
+In-Reply-To: <20230913154552.okinfq6gdxf2d7ab@mercury.elektranox.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml500005.china.huawei.com (7.191.163.240) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 13 Sep 2023 16:38:23 +0000
-James Morse <james.morse@arm.com> wrote:
-
-> The 'offline' file in sysfs shows all offline CPUs, including those
-> that aren't present. User-space is expected to remove not-present CPUs
-> from this list to learn which CPUs could be brought online.
+On 13.09.2023 17:45, Sebastian Reichel wrote:
+> Hi,
 > 
-> CPUs can be present but not-enabled. These CPUs can't be brought online
-> until the firmware policy changes, which comes with an ACPI notification
-> that will register the CPUs.
-> 
-> With only the offline and present files, user-space is unable to
-> determine which CPUs it can try to bring online. Add a new CPU mask
-> that shows this based on all the registered CPUs.
-
-Bikeshed should be blue.
-
-Enabled is a really confusing name for this - to the extent that I'm not sure
-what it means.  Assuming I have the sense right, how about the horrible
-onlineable or online_capable?
-
+> On Wed, Aug 23, 2023 at 04:36:15PM +0200, Konrad Dybcio wrote:
+>> Add a driver for the Mitsumi MM8013 fuel gauge. The driver is a vastly
+>> cleaned up and improved version of the one that shipped in some obscure
+>> Lenovo downstream kernel [1], with some register definitions borrowed from
+>> ChromeOS EC platform code [2].
+>>
+>> [1] https://github.com/adazem009/kernel_lenovo_bengal/commit/b6b346427a871715709bd22aae449b9383f3b66b
+>> [2] https://chromium.googlesource.com/chromiumos/platform/ec/+/master/driver/battery/mm8013.h
+>> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+>> ---
+[...]
 
 > 
-> Signed-off-by: James Morse <james.morse@arm.com>
-> ---
->  drivers/base/cpu.c      | 10 ++++++++++
->  include/linux/cpumask.h | 25 +++++++++++++++++++++++++
->  kernel/cpu.c            |  3 +++
->  3 files changed, 38 insertions(+)
-> 
-> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-> index c709747c4a18..a19a8be93102 100644
-> --- a/drivers/base/cpu.c
-> +++ b/drivers/base/cpu.c
-> @@ -95,6 +95,7 @@ void unregister_cpu(struct cpu *cpu)
->  {
->  	int logical_cpu = cpu->dev.id;
->  
-> +	set_cpu_enabled(logical_cpu, false);
->  	unregister_cpu_under_node(logical_cpu, cpu_to_node(logical_cpu));
->  
->  	device_unregister(&cpu->dev);
-> @@ -273,6 +274,13 @@ static ssize_t print_cpus_offline(struct device *dev,
->  }
->  static DEVICE_ATTR(offline, 0444, print_cpus_offline, NULL);
->  
-> +static ssize_t print_cpus_enabled(struct device *dev,
-> +				  struct device_attribute *attr, char *buf)
-> +{
-> +	return sysfs_emit(buf, "%*pbl\n", cpumask_pr_args(cpu_enabled_mask));
-> +}
-> +static DEVICE_ATTR(enabled, 0444, print_cpus_enabled, NULL);
-> +
->  static ssize_t print_cpus_isolated(struct device *dev,
->  				  struct device_attribute *attr, char *buf)
->  {
-> @@ -413,6 +421,7 @@ int register_cpu(struct cpu *cpu, int num)
->  	register_cpu_under_node(num, cpu_to_node(num));
->  	dev_pm_qos_expose_latency_limit(&cpu->dev,
->  					PM_QOS_RESUME_LATENCY_NO_CONSTRAINT);
-> +	set_cpu_enabled(num, true);
->  
->  	return 0;
->  }
-> @@ -494,6 +503,7 @@ static struct attribute *cpu_root_attrs[] = {
->  	&cpu_attrs[2].attr.attr,
->  	&dev_attr_kernel_max.attr,
->  	&dev_attr_offline.attr,
-> +	&dev_attr_enabled.attr,
->  	&dev_attr_isolated.attr,
->  #ifdef CONFIG_NO_HZ_FULL
->  	&dev_attr_nohz_full.attr,
-> diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-> index f10fb87d49db..a29ee03f13ff 100644
-> --- a/include/linux/cpumask.h
-> +++ b/include/linux/cpumask.h
-> @@ -92,6 +92,7 @@ static inline void set_nr_cpu_ids(unsigned int nr)
->   *
->   *     cpu_possible_mask- has bit 'cpu' set iff cpu is populatable
->   *     cpu_present_mask - has bit 'cpu' set iff cpu is populated
-> + *     cpu_enabled_mask  - has bit 'cpu' set iff cpu can be brought online
->   *     cpu_online_mask  - has bit 'cpu' set iff cpu available to scheduler
->   *     cpu_active_mask  - has bit 'cpu' set iff cpu available to migration
->   *
-> @@ -124,11 +125,13 @@ static inline void set_nr_cpu_ids(unsigned int nr)
->  
->  extern struct cpumask __cpu_possible_mask;
->  extern struct cpumask __cpu_online_mask;
-> +extern struct cpumask __cpu_enabled_mask;
->  extern struct cpumask __cpu_present_mask;
->  extern struct cpumask __cpu_active_mask;
->  extern struct cpumask __cpu_dying_mask;
->  #define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
->  #define cpu_online_mask   ((const struct cpumask *)&__cpu_online_mask)
-> +#define cpu_enabled_mask   ((const struct cpumask *)&__cpu_enabled_mask)
->  #define cpu_present_mask  ((const struct cpumask *)&__cpu_present_mask)
->  #define cpu_active_mask   ((const struct cpumask *)&__cpu_active_mask)
->  #define cpu_dying_mask    ((const struct cpumask *)&__cpu_dying_mask)
-> @@ -973,6 +976,7 @@ extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
->  #else
->  #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
->  #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
-> +#define for_each_enabled_cpu(cpu)   for_each_cpu((cpu), cpu_enabled_mask)
->  #define for_each_present_cpu(cpu)  for_each_cpu((cpu), cpu_present_mask)
->  #endif
->  
-> @@ -995,6 +999,15 @@ set_cpu_possible(unsigned int cpu, bool possible)
->  		cpumask_clear_cpu(cpu, &__cpu_possible_mask);
->  }
->  
-> +static inline void
-> +set_cpu_enabled(unsigned int cpu, bool can_be_onlined)
-> +{
-> +	if (can_be_onlined)
-> +		cpumask_set_cpu(cpu, &__cpu_enabled_mask);
-> +	else
-> +		cpumask_clear_cpu(cpu, &__cpu_enabled_mask);
-> +}
-> +
->  static inline void
->  set_cpu_present(unsigned int cpu, bool present)
->  {
-> @@ -1074,6 +1087,7 @@ static __always_inline unsigned int num_online_cpus(void)
->  	return raw_atomic_read(&__num_online_cpus);
->  }
->  #define num_possible_cpus()	cpumask_weight(cpu_possible_mask)
-> +#define num_enabled_cpus()	cpumask_weight(cpu_enabled_mask)
->  #define num_present_cpus()	cpumask_weight(cpu_present_mask)
->  #define num_active_cpus()	cpumask_weight(cpu_active_mask)
->  
-> @@ -1082,6 +1096,11 @@ static inline bool cpu_online(unsigned int cpu)
->  	return cpumask_test_cpu(cpu, cpu_online_mask);
->  }
->  
-> +static inline bool cpu_enabled(unsigned int cpu)
-> +{
-> +	return cpumask_test_cpu(cpu, cpu_enabled_mask);
-> +}
-> +
->  static inline bool cpu_possible(unsigned int cpu)
->  {
->  	return cpumask_test_cpu(cpu, cpu_possible_mask);
-> @@ -1106,6 +1125,7 @@ static inline bool cpu_dying(unsigned int cpu)
->  
->  #define num_online_cpus()	1U
->  #define num_possible_cpus()	1U
-> +#define num_enabled_cpus()	1U
->  #define num_present_cpus()	1U
->  #define num_active_cpus()	1U
->  
-> @@ -1119,6 +1139,11 @@ static inline bool cpu_possible(unsigned int cpu)
->  	return cpu == 0;
->  }
->  
-> +static inline bool cpu_enabled(unsigned int cpu)
-> +{
-> +	return cpu == 0;
-> +}
-> +
->  static inline bool cpu_present(unsigned int cpu)
->  {
->  	return cpu == 0;
-> diff --git a/kernel/cpu.c b/kernel/cpu.c
-> index 6de7c6bb74ee..2201a6a449b5 100644
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -3101,6 +3101,9 @@ EXPORT_SYMBOL(__cpu_possible_mask);
->  struct cpumask __cpu_online_mask __read_mostly;
->  EXPORT_SYMBOL(__cpu_online_mask);
->  
-> +struct cpumask __cpu_enabled_mask __read_mostly;
-> +EXPORT_SYMBOL(__cpu_enabled_mask);
-> +
->  struct cpumask __cpu_present_mask __read_mostly;
->  EXPORT_SYMBOL(__cpu_present_mask);
->  
+> Please use regmap.
+Ack
 
+[...]
+
+>> +	switch (psp) {
+>> +	case POWER_SUPPLY_PROP_CAPACITY:
+> 
+> this is in %, while the next two are in uAh. So the fuel gauge does
+> not provide the current capacity in uAh
+> (POWER_SUPPLY_PROP_CHARGE_NOW)?
+Yes. Doesn't seem like raw values are supported.
+
+[...]
+
+> 
+> this is just 'val->intval = (s16) ret;'.
+> 
+>> +		val->intval *= -1000;
+Ack
+
+> 
+> and this seems to be the only property, that properly scales its
+> values, assuming the hardware reports data in mA.
+> 
+
+[...]
+
+> 
+> that's in **micro** volts
+Oh, I didn't read enough docs..
+
+> 
+>> +		ret = mm8013_read_reg(client, REG_VOLTAGE);
+> 
+> this effectively does i2c_smbus_read_word_data() and thus the
+> maximum is is 65536. 65536uV = 65mV. I have serious doubts, that
+> this code does what you want. The same is true for a couple of
+> the other properties.
+Ack
+
+[...]
+
+> With the next submission please include a dump of the uevent
+> in sysfs in the cover letter or below the fold, so that its
+> easy to validty check if the reported values look sensible.
+State of what-will-be-sent in v(n+1), with additional fixups:
+
+POWER_SUPPLY_NAME=mm8013
+POWER_SUPPLY_TYPE=Battery
+POWER_SUPPLY_CAPACITY=100
+POWER_SUPPLY_CHARGE_FULL=7124
+POWER_SUPPLY_CHARGE_FULL_DESIGN=7500
+POWER_SUPPLY_CURRENT_NOW=-122000
+POWER_SUPPLY_CYCLE_COUNT=27
+POWER_SUPPLY_HEALTH=Good
+POWER_SUPPLY_PRESENT=1
+POWER_SUPPLY_STATUS=Full
+POWER_SUPPLY_TEMP=324
+POWER_SUPPLY_VOLTAGE_NOW=4407000
+
+
+> 
+> Thanks and sorry for the slow processing,
+No worries
+
+Konrad
