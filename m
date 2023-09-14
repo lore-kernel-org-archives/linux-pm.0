@@ -2,24 +2,24 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15D19EDE987
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD22BEDE98B
 	for <linux-pm@archiver.kernel.org>; Thu, 14 Sep 2023 06:55:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229589AbjINGz1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S233682AbjINGz1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 14 Sep 2023 02:55:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60432 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233682AbjINGz0 (ORCPT
+        with ESMTP id S232878AbjINGz0 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2023 02:55:26 -0400
-Received: from srv01.abscue.de (abscue.de [89.58.28.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 684DCCCD;
+Received: from srv01.abscue.de (abscue.de [IPv6:2a03:4000:63:bf5:4817:8eff:feeb:8ac7])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A535CCE5;
         Wed, 13 Sep 2023 23:55:21 -0700 (PDT)
 Received: from srv01.abscue.de (localhost [127.0.0.1])
-        by spamfilter.srv.local (Postfix) with ESMTP id 676831C3D96;
-        Thu, 14 Sep 2023 08:55:18 +0200 (CEST)
+        by spamfilter.srv.local (Postfix) with ESMTP id C34391C3D98;
+        Thu, 14 Sep 2023 08:55:19 +0200 (CEST)
 Received: from fluffy-mammal.fritz.box (dslb-092-072-000-199.092.072.pools.vodafone-ip.de [92.72.0.199])
-        by srv01.abscue.de (Postfix) with ESMTPSA id 044411C0119;
-        Thu, 14 Sep 2023 08:55:17 +0200 (CEST)
+        by srv01.abscue.de (Postfix) with ESMTPSA id 614391C3D99;
+        Thu, 14 Sep 2023 08:55:19 +0200 (CEST)
 From:   =?UTF-8?q?Otto=20Pfl=C3=BCger?= <otto.pflueger@abscue.de>
 To:     linux-arm-msm@vger.kernel.org
 Cc:     Andy Gross <agross@kernel.org>,
@@ -31,10 +31,12 @@ Cc:     Andy Gross <agross@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         =?UTF-8?q?Otto=20Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Subject: [PATCH v3 0/3] pmdomain: qcom: rpmpd: Add MSM8917 and similar SoCs
-Date:   Thu, 14 Sep 2023 08:54:20 +0200
-Message-Id: <20230914065422.5452-1-otto.pflueger@abscue.de>
+Subject: [PATCH v3 3/3] pmdomain: qcom: rpmpd: Add QM215 power domains
+Date:   Thu, 14 Sep 2023 08:54:23 +0200
+Message-Id: <20230914065422.5452-4-otto.pflueger@abscue.de>
 X-Mailer: git-send-email 2.39.1
+In-Reply-To: <20230914065422.5452-1-otto.pflueger@abscue.de>
+References: <20230914065422.5452-1-otto.pflueger@abscue.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -42,33 +44,110 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add RPM power domain definitions for the Qualcomm MSM8917, MSM8937 and
-QM215 SoCs. These SoCs all have the same power domains (VDDCX and VDDMX
-in voltage level mode), but different regulators are needed for QM215
-because it is used with a PM8916 PMIC instead of a PM8937 PMIC.
+QM215 is typically paired with a PM8916 PMIC and uses its SMPA1 and
+LDOA2 regulators in voltage level mode for VDDCX and VDDMX, respectively.
 
+Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
 ---
-Changes in v3:
-- Sort compatibles in device tree binding documentation (suggested by
-  Krzysztof)
-- Rebase on latest next with genpd subsystem renamed to pmdomain
-Changes in v2:
-- Fix typo in patch description: VDDMD -> VDDMX
-- Split MSM8917 and QM215 changes (suggested by Konrad)
-- Remove redundant qcom,msm8937-rpmpd entry from rpmpd_match_table
-  and use a fallback compatible instead (suggested by Konrad)
+ drivers/pmdomain/qcom/rpmpd.c | 58 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
-Otto Pflüger (3):
-  dt-bindings: power: rpmpd: Add MSM8917, MSM8937 and QM215
-  pmdomain: qcom: rpmpd: Add MSM8917 power domains
-  pmdomain: qcom: rpmpd: Add QM215 power domains
-
- .../devicetree/bindings/power/qcom,rpmpd.yaml | 79 ++++++++--------
- drivers/pmdomain/qcom/rpmpd.c                 | 91 +++++++++++++++++++
- include/dt-bindings/power/qcom-rpmpd.h        | 21 +++++
- 3 files changed, 155 insertions(+), 36 deletions(-)
-
-
-base-commit: 98897dc735cf6635f0966f76eb0108354168fb15
+diff --git a/drivers/pmdomain/qcom/rpmpd.c b/drivers/pmdomain/qcom/rpmpd.c
+index 2980ebd6ed8c..d793cf2f3af8 100644
+--- a/drivers/pmdomain/qcom/rpmpd.c
++++ b/drivers/pmdomain/qcom/rpmpd.c
+@@ -105,6 +105,24 @@ static struct rpmpd cx_s1a_corner_ao = {
+ 	.key = KEY_CORNER,
+ };
+ 
++static struct rpmpd cx_s1a_lvl_ao;
++static struct rpmpd cx_s1a_lvl = {
++	.pd = { .name = "cx", },
++	.peer = &cx_s1a_lvl_ao,
++	.res_type = RPMPD_SMPA,
++	.res_id = 1,
++	.key = KEY_LEVEL,
++};
++
++static struct rpmpd cx_s1a_lvl_ao = {
++	.pd = { .name = "cx_ao", },
++	.peer = &cx_s1a_lvl,
++	.active_only = true,
++	.res_type = RPMPD_SMPA,
++	.res_id = 1,
++	.key = KEY_LEVEL,
++};
++
+ static struct rpmpd cx_s2a_corner_ao;
+ static struct rpmpd cx_s2a_corner = {
+ 	.pd = { .name = "cx", },
+@@ -180,6 +198,13 @@ static struct rpmpd cx_s1a_vfc = {
+ 	.key = KEY_FLOOR_CORNER,
+ };
+ 
++static struct rpmpd cx_s1a_vfl = {
++	.pd = { .name = "cx_vfl", },
++	.res_type = RPMPD_SMPA,
++	.res_id = 1,
++	.key = KEY_FLOOR_LEVEL,
++};
++
+ static struct rpmpd cx_s2a_vfc = {
+ 	.pd = { .name = "cx_vfc", },
+ 	.res_type = RPMPD_SMPA,
+@@ -239,6 +264,24 @@ static struct rpmpd gx_rwgx0_lvl_ao = {
+ };
+ 
+ /* MX */
++static struct rpmpd mx_l2a_lvl_ao;
++static struct rpmpd mx_l2a_lvl = {
++	.pd = { .name = "mx", },
++	.peer = &mx_l2a_lvl_ao,
++	.res_type = RPMPD_LDOA,
++	.res_id = 2,
++	.key = KEY_LEVEL,
++};
++
++static struct rpmpd mx_l2a_lvl_ao = {
++	.pd = { .name = "mx_ao", },
++	.peer = &mx_l2a_lvl,
++	.active_only = true,
++	.res_type = RPMPD_LDOA,
++	.res_id = 2,
++	.key = KEY_LEVEL,
++};
++
+ static struct rpmpd mx_l3a_corner_ao;
+ static struct rpmpd mx_l3a_corner = {
+ 	.pd = { .name = "mx", },
+@@ -704,6 +747,20 @@ static const struct rpmpd_desc qcs404_desc = {
+ 	.max_state = RPM_SMD_LEVEL_BINNING,
+ };
+ 
++static struct rpmpd *qm215_rpmpds[] = {
++	[QM215_VDDCX] =		&cx_s1a_lvl,
++	[QM215_VDDCX_AO] =	&cx_s1a_lvl_ao,
++	[QM215_VDDCX_VFL] =	&cx_s1a_vfl,
++	[QM215_VDDMX] =		&mx_l2a_lvl,
++	[QM215_VDDMX_AO] =	&mx_l2a_lvl_ao,
++};
++
++static const struct rpmpd_desc qm215_desc = {
++	.rpmpds = qm215_rpmpds,
++	.num_pds = ARRAY_SIZE(qm215_rpmpds),
++	.max_state = RPM_SMD_LEVEL_TURBO,
++};
++
+ static struct rpmpd *sdm660_rpmpds[] = {
+ 	[SDM660_VDDCX] =	&cx_rwcx0_lvl,
+ 	[SDM660_VDDCX_AO] =	&cx_rwcx0_lvl_ao,
+@@ -805,6 +862,7 @@ static const struct of_device_id rpmpd_match_table[] = {
+ 	{ .compatible = "qcom,msm8998-rpmpd", .data = &msm8998_desc },
+ 	{ .compatible = "qcom,qcm2290-rpmpd", .data = &qcm2290_desc },
+ 	{ .compatible = "qcom,qcs404-rpmpd", .data = &qcs404_desc },
++	{ .compatible = "qcom,qm215-rpmpd", .data = &qm215_desc },
+ 	{ .compatible = "qcom,sdm660-rpmpd", .data = &sdm660_desc },
+ 	{ .compatible = "qcom,sm6115-rpmpd", .data = &sm6115_desc },
+ 	{ .compatible = "qcom,sm6125-rpmpd", .data = &sm6125_desc },
 -- 
 2.39.1
