@@ -2,143 +2,206 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59F08EEAA56
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Sep 2023 16:19:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E913EEAA56
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Sep 2023 16:41:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229568AbjINQTo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Sep 2023 12:19:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52352 "EHLO
+        id S231588AbjINQlq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Sep 2023 12:41:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40034 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229992AbjINQTn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2023 12:19:43 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 819D11BE1;
-        Thu, 14 Sep 2023 09:19:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1694708379; x=1726244379;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=9L18DpglYGuALGNLgXH0mKUUMhmDOGiuLGfiAw6wnxM=;
-  b=TXKQnOtMYbRGiNfhOfrwmp9Um67ZvIrtIsMHqDEsPRFYDxWAeNGzRIkz
-   8HXelzMQrtMOFfJLaxRrHK9s59gO3Om02EmpC3X+hQsyPvtWP8Q3AIXeD
-   Dkq+lhny4Pv+Eqxoe1iYxdCvDxbR07wwcHSGsmMfe0Hr+ZqFmv+a15OnT
-   4sMjE01Rf884VK5YayrYlknKkiiDbS+bPkbTc24L7e3L3Iq5Pi4dKF2LZ
-   TMXRWsT4VA/13mg4i3Im5Ev3EhfUClKAFcGzf6joNVFRn+Z5GGK80DYZy
-   IPClIDzSqpEbIVOgzg9vz1opHYuvTMJGa7yxBMcBBe6frjr9NXHQPClPs
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10833"; a="359258172"
-X-IronPort-AV: E=Sophos;i="6.02,146,1688454000"; 
-   d="scan'208";a="359258172"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Sep 2023 09:11:30 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10833"; a="859763286"
-X-IronPort-AV: E=Sophos;i="6.02,146,1688454000"; 
-   d="scan'208";a="859763286"
-Received: from spandruv-desk1.amr.corp.intel.com ([10.209.46.39])
-  by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Sep 2023 09:11:30 -0700
-Message-ID: <7b45ac2ed091497b4e21a6a5c19956161175ba16.camel@linux.intel.com>
-Subject: Re: [PATCH] HID: intel-ish-hid: ipc: Rework EHL OOB wakeup
-From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     Kai-Heng Feng <kai.heng.feng@canonical.com>, jikos@kernel.org,
-        benjamin.tissoires@redhat.com
-Cc:     linux-pm@vger.kernel.org, linux-pci@vger.kernel.org,
-        Jian Hui Lee <jianhui.lee@canonical.com>,
-        Even Xu <even.xu@intel.com>, Zhang Lixu <lixu.zhang@intel.com>,
-        Najumon Ba <najumon.ba@intel.com>, linux-input@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Date:   Thu, 14 Sep 2023 09:11:29 -0700
-In-Reply-To: <20230914041806.816741-1-kai.heng.feng@canonical.com>
-References: <20230914041806.816741-1-kai.heng.feng@canonical.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
-User-Agent: Evolution 3.48.4 (3.48.4-1.fc38) 
+        with ESMTP id S229485AbjINQlp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2023 12:41:45 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 486AD1FD7;
+        Thu, 14 Sep 2023 09:41:41 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4RmjkP6LwKz6K5xM;
+        Fri, 15 Sep 2023 00:41:01 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Thu, 14 Sep
+ 2023 17:41:38 +0100
+Date:   Thu, 14 Sep 2023 17:41:37 +0100
+From:   Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To:     James Morse <james.morse@arm.com>
+CC:     <linux-pm@vger.kernel.org>, <loongarch@lists.linux.dev>,
+        <linux-acpi@vger.kernel.org>, <linux-arch@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-riscv@lists.infradead.org>, <kvmarm@lists.linux.dev>,
+        <x86@kernel.org>, Salil Mehta <salil.mehta@huawei.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Jean-Philippe Brucker <jean-philippe@linaro.org>,
+        <jianyong.wu@arm.com>, <justin.he@arm.com>
+Subject: Re: [RFC PATCH v2 33/35] arm64: document virtual CPU hotplug's
+ expectations
+Message-ID: <20230914174137.00000a62@Huawei.com>
+In-Reply-To: <20230913163823.7880-34-james.morse@arm.com>
+References: <20230913163823.7880-1-james.morse@arm.com>
+        <20230913163823.7880-34-james.morse@arm.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SGkgRXZlbiwKCk9uIFRodSwgMjAyMy0wOS0xNCBhdCAxMjoxOCArMDgwMCwgS2FpLUhlbmcgRmVu
-ZyB3cm90ZToKPiBTeXN0ZW0gY2Fubm90IHN1c3BlbmQgbW9yZSB0aGFuIDI1NSB0aW1lcyBiZWNh
-dXNlIHRoZSBkcml2ZXIgZG9lc24ndAo+IGhhdmUgY29ycmVzcG9uZGluZyBhY3BpX2Rpc2FibGVf
-Z3BlKCkgZm9yIGFjcGlfZW5hYmxlX2dwZSgpLCBzbyB0aGUKPiBHUEUKPiByZWZjb3VudCBvdmVy
-Zmxvd3MuCj4gCj4gU2luY2UgUENJIGNvcmUgYW5kIEFDUEkgY29yZSBhbHJlYWR5IGhhbmRsZXMg
-UENJIFBNRSB3YWtlIGFuZCBHUEUKPiB3YWtlCj4gd2hlbiB0aGUgZGV2aWNlIGhhcyB3YWtldXAg
-Y2FwYWJpbGl0eSwgdXNlIGRldmljZV9pbml0X3dha2V1cCgpIHRvCj4gbGV0Cj4gdGhlbSBkbyB0
-aGUgd2FrZXVwIHNldHRpbmcgd29yay4KPiAKPiBBbHNvIGFkZCBhIHNodXRkb3duIGNhbGxiYWNr
-IHdoaWNoIHVzZXMgcGNpX3ByZXBhcmVfdG9fc2xlZXAoKSB0byBsZXQKPiBQQ0kgYW5kIEFDUEkg
-c2V0IE9PQiB3YWtldXAgZm9yIFM1Lgo+IApQbGVhc2UgdGVzdCB0aGlzIGNoYW5nZS4KClRoYW5r
-cywKU3Jpbml2YXMKCj4gRml4ZXM6IDJlMjNhNzBlZGFiZSAoIkhJRDogaW50ZWwtaXNoLWhpZDog
-aXBjOiBmaW5pc2ggcG93ZXIgZmxvdyBmb3IKPiBFSEwgT09CIikKPiBDYzogSmlhbiBIdWkgTGVl
-IDxqaWFuaHVpLmxlZUBjYW5vbmljYWwuY29tPgo+IFNpZ25lZC1vZmYtYnk6IEthaS1IZW5nIEZl
-bmcgPGthaS5oZW5nLmZlbmdAY2Fub25pY2FsLmNvbT4KPiAtLS0KPiDCoGRyaXZlcnMvaGlkL2lu
-dGVsLWlzaC1oaWQvaXBjL3BjaS1pc2guYyB8IDU5ICsrKysrKystLS0tLS0tLS0tLS0tLS0tCj4g
-LS0KPiDCoDEgZmlsZSBjaGFuZ2VkLCAxNSBpbnNlcnRpb25zKCspLCA0NCBkZWxldGlvbnMoLSkK
-PiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9oaWQvaW50ZWwtaXNoLWhpZC9pcGMvcGNpLWlzaC5j
-Cj4gYi9kcml2ZXJzL2hpZC9pbnRlbC1pc2gtaGlkL2lwYy9wY2ktaXNoLmMKPiBpbmRleCA1NWNi
-MjUwMzhlNjMuLjY1ZTdlZWIyZmE2NCAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2hpZC9pbnRlbC1p
-c2gtaGlkL2lwYy9wY2ktaXNoLmMKPiArKysgYi9kcml2ZXJzL2hpZC9pbnRlbC1pc2gtaGlkL2lw
-Yy9wY2ktaXNoLmMKPiBAQCAtMTE5LDQyICsxMTksNiBAQCBzdGF0aWMgaW5saW5lIGJvb2wgaXNo
-X3Nob3VsZF9sZWF2ZV9kMGkzKHN0cnVjdAo+IHBjaV9kZXYgKnBkZXYpCj4gwqDCoMKgwqDCoMKg
-wqDCoHJldHVybiAhcG1fcmVzdW1lX3ZpYV9maXJtd2FyZSgpIHx8IHBkZXYtPmRldmljZSA9PQo+
-IENIVl9ERVZJQ0VfSUQ7Cj4gwqB9Cj4gwqAKPiAtc3RhdGljIGludCBlbmFibGVfZ3BlKHN0cnVj
-dCBkZXZpY2UgKmRldikKPiAtewo+IC0jaWZkZWYgQ09ORklHX0FDUEkKPiAtwqDCoMKgwqDCoMKg
-wqBhY3BpX3N0YXR1cyBhY3BpX3N0czsKPiAtwqDCoMKgwqDCoMKgwqBzdHJ1Y3QgYWNwaV9kZXZp
-Y2UgKmFkZXY7Cj4gLcKgwqDCoMKgwqDCoMKgc3RydWN0IGFjcGlfZGV2aWNlX3dha2V1cCAqd2Fr
-ZXVwOwo+IC0KPiAtwqDCoMKgwqDCoMKgwqBhZGV2ID0gQUNQSV9DT01QQU5JT04oZGV2KTsKPiAt
-wqDCoMKgwqDCoMKgwqBpZiAoIWFkZXYpIHsKPiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgZGV2X2VycihkZXYsICJnZXQgYWNwaSBoYW5kbGUgZmFpbGVkXG4iKTsKPiAtwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgcmV0dXJuIC1FTk9ERVY7Cj4gLcKgwqDCoMKgwqDCoMKgfQo+
-IC3CoMKgwqDCoMKgwqDCoHdha2V1cCA9ICZhZGV2LT53YWtldXA7Cj4gLQo+IC3CoMKgwqDCoMKg
-wqDCoGFjcGlfc3RzID0gYWNwaV9lbmFibGVfZ3BlKHdha2V1cC0+Z3BlX2RldmljZSwgd2FrZXVw
-LQo+ID5ncGVfbnVtYmVyKTsKPiAtwqDCoMKgwqDCoMKgwqBpZiAoQUNQSV9GQUlMVVJFKGFjcGlf
-c3RzKSkgewo+IC3CoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBkZXZfZXJyKGRldiwgImVu
-YWJsZSBvc2VfZ3BlIGZhaWxlZFxuIik7Cj4gLcKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oHJldHVybiAtRUlPOwo+IC3CoMKgwqDCoMKgwqDCoH0KPiAtCj4gLcKgwqDCoMKgwqDCoMKgcmV0
-dXJuIDA7Cj4gLSNlbHNlCj4gLcKgwqDCoMKgwqDCoMKgcmV0dXJuIC1FTk9ERVY7Cj4gLSNlbmRp
-Zgo+IC19Cj4gLQo+IC1zdGF0aWMgdm9pZCBlbmFibGVfcG1lX3dha2Uoc3RydWN0IHBjaV9kZXYg
-KnBkZXYpCj4gLXsKPiAtwqDCoMKgwqDCoMKgwqBpZiAoKHBjaV9wbWVfY2FwYWJsZShwZGV2LCBQ
-Q0lfRDApIHx8Cj4gLcKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgcGNpX3BtZV9jYXBhYmxlKHBkZXYs
-IFBDSV9EM2hvdCkgfHwKPiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBwY2lfcG1lX2NhcGFibGUo
-cGRldiwgUENJX0QzY29sZCkpICYmICFlbmFibGVfZ3BlKCZwZGV2LQo+ID5kZXYpKSB7Cj4gLcKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHBjaV9wbWVfYWN0aXZlKHBkZXYsIHRydWUpOwo+
-IC3CoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBkZXZfZGJnKCZwZGV2LT5kZXYsICJpc2gg
-aXBjIGRyaXZlciBwbWUgd2FrZQo+IGVuYWJsZWRcbiIpOwo+IC3CoMKgwqDCoMKgwqDCoH0KPiAt
-fQo+IC0KPiDCoC8qKgo+IMKgICogaXNoX3Byb2JlKCkgLSBQQ0kgZHJpdmVyIHByb2JlIGNhbGxi
-YWNrCj4gwqAgKiBAcGRldjrCoMKgwqDCoMKgwqBwY2kgZGV2aWNlCj4gQEAgLTIyNSw3ICsxODks
-NyBAQCBzdGF0aWMgaW50IGlzaF9wcm9iZShzdHJ1Y3QgcGNpX2RldiAqcGRldiwgY29uc3QKPiBz
-dHJ1Y3QgcGNpX2RldmljZV9pZCAqZW50KQo+IMKgCj4gwqDCoMKgwqDCoMKgwqDCoC8qIEVuYWJs
-ZSBQTUUgZm9yIEVITCAqLwo+IMKgwqDCoMKgwqDCoMKgwqBpZiAocGRldi0+ZGV2aWNlID09IEVI
-TF9BeF9ERVZJQ0VfSUQpCj4gLcKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGVuYWJsZV9w
-bWVfd2FrZShwZGV2KTsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZGV2aWNlX2lu
-aXRfd2FrZXVwKGRldiwgdHJ1ZSk7Cj4gwqAKPiDCoMKgwqDCoMKgwqDCoMKgcmV0ID0gaXNoX2lu
-aXQoaXNodHApOwo+IMKgwqDCoMKgwqDCoMKgwqBpZiAocmV0KQo+IEBAIC0yNDgsNiArMjEyLDE5
-IEBAIHN0YXRpYyB2b2lkIGlzaF9yZW1vdmUoc3RydWN0IHBjaV9kZXYgKnBkZXYpCj4gwqDCoMKg
-wqDCoMKgwqDCoGlzaF9kZXZpY2VfZGlzYWJsZShpc2h0cF9kZXYpOwo+IMKgfQo+IMKgCj4gKwo+
-ICsvKioKPiArICogaXNoX3NodXRkb3duKCkgLSBQQ0kgZHJpdmVyIHNodXRkb3duIGNhbGxiYWNr
-Cj4gKyAqIEBwZGV2OsKgwqDCoMKgwqDCoHBjaSBkZXZpY2UKPiArICoKPiArICogVGhpcyBmdW5j
-dGlvbiBzZXRzIHVwIHdha2V1cCBmb3IgUzUKPiArICovCj4gK3N0YXRpYyB2b2lkIGlzaF9zaHV0
-ZG93bihzdHJ1Y3QgcGNpX2RldiAqcGRldikKPiArewo+ICvCoMKgwqDCoMKgwqDCoGlmIChwZGV2
-LT5kZXZpY2UgPT0gRUhMX0F4X0RFVklDRV9JRCkKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgcGNpX3ByZXBhcmVfdG9fc2xlZXAocGRldik7Cj4gK30KPiArCj4gwqBzdGF0aWMgc3Ry
-dWN0IGRldmljZSBfX21heWJlX3VudXNlZCAqaXNoX3Jlc3VtZV9kZXZpY2U7Cj4gwqAKPiDCoC8q
-IDUwbXMgdG8gZ2V0IHJlc3VtZSByZXNwb25zZSAqLwo+IEBAIC0zNzAsMTMgKzM0Nyw2IEBAIHN0
-YXRpYyBpbnQgX19tYXliZV91bnVzZWQgaXNoX3Jlc3VtZShzdHJ1Y3QKPiBkZXZpY2UgKmRldmlj
-ZSkKPiDCoMKgwqDCoMKgwqDCoMKgc3RydWN0IHBjaV9kZXYgKnBkZXYgPSB0b19wY2lfZGV2KGRl
-dmljZSk7Cj4gwqDCoMKgwqDCoMKgwqDCoHN0cnVjdCBpc2h0cF9kZXZpY2UgKmRldiA9IHBjaV9n
-ZXRfZHJ2ZGF0YShwZGV2KTsKPiDCoAo+IC3CoMKgwqDCoMKgwqDCoC8qIGFkZCB0aGlzIHRvIGZp
-bmlzaCBwb3dlciBmbG93IGZvciBFSEwgKi8KPiAtwqDCoMKgwqDCoMKgwqBpZiAoZGV2LT5wZGV2
-LT5kZXZpY2UgPT0gRUhMX0F4X0RFVklDRV9JRCkgewo+IC3CoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqBwY2lfc2V0X3Bvd2VyX3N0YXRlKHBkZXYsIFBDSV9EMCk7Cj4gLcKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoGVuYWJsZV9wbWVfd2FrZShwZGV2KTsKPiAtwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgZGV2X2RiZyhkZXYtPmRldmMsICJzZXQgcG93ZXIgc3RhdGUgdG8g
-RDAgZm9yCj4gZWhsXG4iKTsKPiAtwqDCoMKgwqDCoMKgwqB9Cj4gLQo+IMKgwqDCoMKgwqDCoMKg
-wqBpc2hfcmVzdW1lX2RldmljZSA9IGRldmljZTsKPiDCoMKgwqDCoMKgwqDCoMKgZGV2LT5yZXN1
-bWVfZmxhZyA9IDE7Cj4gwqAKPiBAQCAtMzkyLDYgKzM2Miw3IEBAIHN0YXRpYyBzdHJ1Y3QgcGNp
-X2RyaXZlciBpc2hfZHJpdmVyID0gewo+IMKgwqDCoMKgwqDCoMKgwqAuaWRfdGFibGUgPSBpc2hf
-cGNpX3RibCwKPiDCoMKgwqDCoMKgwqDCoMKgLnByb2JlID0gaXNoX3Byb2JlLAo+IMKgwqDCoMKg
-wqDCoMKgwqAucmVtb3ZlID0gaXNoX3JlbW92ZSwKPiArwqDCoMKgwqDCoMKgwqAuc2h1dGRvd24g
-PSBpc2hfc2h1dGRvd24sCj4gwqDCoMKgwqDCoMKgwqDCoC5kcml2ZXIucG0gPSAmaXNoX3BtX29w
-cywKPiDCoH07Cj4gwqAKCg==
+On Wed, 13 Sep 2023 16:38:21 +0000
+James Morse <james.morse@arm.com> wrote:
+
+> Add a description of physical and virtual CPU hotplug, explain the
+> differences and elaborate on what is required in ACPI for a working
+> virtual hotplug system.
+> 
+> Signed-off-by: James Morse <james.morse@arm.com>
+> ---
+>  Documentation/arch/arm64/cpu-hotplug.rst | 79 ++++++++++++++++++++++++
+>  Documentation/arch/arm64/index.rst       |  1 +
+>  2 files changed, 80 insertions(+)
+>  create mode 100644 Documentation/arch/arm64/cpu-hotplug.rst
+> 
+> diff --git a/Documentation/arch/arm64/cpu-hotplug.rst b/Documentation/arch/arm64/cpu-hotplug.rst
+> new file mode 100644
+> index 000000000000..76ba8d932c72
+> --- /dev/null
+> +++ b/Documentation/arch/arm64/cpu-hotplug.rst
+> @@ -0,0 +1,79 @@
+> +.. SPDX-License-Identifier: GPL-2.0
+> +.. _cpuhp_index:
+> +
+> +====================
+> +CPU Hotplug and ACPI
+> +====================
+> +
+> +CPU hotplug in the arm64 world is commonly used to describe the kernel taking
+> +CPUs online/offline using PSCI. This document is about ACPI firmware allowing
+> +CPUs that were not available during boot to be added to the system later.
+> +
+> +``possible`` and ``present`` refer to the state of the CPU as seen by linux.
+> +
+> +
+> +CPU Hotplug on physical systems - CPUs not present at boot
+> +----------------------------------------------------------
+> +
+> +Physical systems need to mark a CPU that is ``possible`` but not ``present`` as
+> +being ``present``. An example would be a dual socket machine, where the package
+> +in one of the sockets can be replaced while the system is running.
+> +
+> +This is not supported.
+> +
+> +In the arm64 world CPUs are not a single device but a slice of the system.
+> +There are no systems that support the physical addition (or removal) of CPUs
+> +while the system is running, and ACPI is not able to sufficiently describe
+> +them.
+> +
+> +e.g. New CPUs come with new caches, but the platform's cache toplogy is
+> +described in a static table, the PPTT. How caches are shared between CPUs is
+> +not discoverable, and must be described by firmware.
+> +
+> +e.g. The GIC redistributor for each CPU must be accessed by the driver during
+> +boot to discover the system wide supported features. ACPI's MADT GICC
+> +structures can describe a redistributor associated with a disabled CPU, but
+> +can't describe whether the redistributor is accessible, only that it is not
+> +'always on'.
+> +
+> +arm64's ACPI tables assume that everything described is ``present``.
+> +
+> +
+> +CPU Hotplug on virtual systems - CPUs not enabled at boot
+> +---------------------------------------------------------
+> +
+> +Virtual systems have the advantage that all the properties the system will
+> +ever have can be described at boot. There are no power-domain considerations
+> +as such devices are emulated.
+> +
+> +CPU Hotplug on virtual systems is supported. It is distinct from physical
+> +CPU Hotplug as all resources are described as ``present``, but CPUs may be
+> +marked as disabled by firmware. Only the CPU's online/offline behaviour is
+> +influenced by firmware. An example is where a virtual machine boots with a
+> +single CPU, and additional CPUs are added once a cloud orchestrator deploys
+> +the workload.
+> +
+> +For a virtual machine, the VMM (e.g. Qemu) plays the part of firmware.
+> +
+> +Virtual hotplug is implemented as a firmware policy affecting which CPUs can be
+> +brought online. Firmware can enforce its policy via PSCI's return codes. e.g.
+> +``DENIED``.
+> +
+> +The ACPI tables must describe all the resources of the virtual machine. CPUs
+> +that firmware wishes to disable either from boot (or later) should not be
+> +``enabled`` in the MADT GICC structures, but should have the ``online capable``
+> +bit set, to indicate they can be enabled later. The boot CPU must be marked as
+> +``enabled``.  The 'always on' GICR structure must be used to describe the
+> +redistributors.
+
+Hi James,
+
+I guess you know I'm going to comment on this given I got a bit fixated on it
+at the Linaro Open Discussions call the other day.
+
+This is the corner case that I think needs discussion. So far there is nothing
+the ACPI spec that says anything about unplugability of CPUs so I see this as a
+Linux implementation choice and I think it may be a problem for the cloud tennant
+scalability usecases.  The problem is legacy operating systems. Some of whom may have
+a different interpretation of the ACPI Spec unless we make sure it addresses this.
+
+At time of VM startup, I want to provide a flexible number of CPUs say, 1 to 64 -
+but the customer paid for 4 currently so I want to start them off with 4. 
+To make this model work I have to know if they are running a hotplug capable OS
+and, even if the current OSC ACPI code first proposal goes forwards, I either have to
+ask customers to tell me they support it, or boot to find out (relying on OSC handshake
+late in boot).
+
+Code first proposal mentioned:
+https://bugzilla.tianocore.org/show_bug.cgi?id=4481
+
+If the guest doesn't support CPU hotplug I need to set enabled for the 4 CPUs. Once
+booted I can use that OSC to discover if they can ever take advantage of hotplug
+CPUs (arguably we could tweak that definition or add another to say they are fine
+with me removing them as well).
+
+If they do support CPU hotplug maximum flexiblity suggests I set enabled for CPU 0
+and online capable for the next 3 and rely on the OS optimistically poking the
+oneline capable ones to see if they are there at boot.
+
+Of course one option is stick with what you have here and treat it as customer
+lock-in they can only get bigger, not smaller.  Might be acceptable as might
+the horrible approach of trying to hot unplug a CPU and getting no reply
+(not a good user experience)
+
+I probably haven't described that well.
+
+Jonathan
+
+
+> +
+> +CPUs described as ``online capable`` but not ``enabled`` can be set to enabled
+> +by the DSDT's Processor object's _STA method. On virtual systems the _STA method
+> +must always report the CPU as ``present``. Changes to the firmware policy can
+> +be notified to the OS via device-check or eject-request.
+> +
+> +CPUs described as ``enabled`` in the static table, should not have their _STA
+> +modified dynamically by firmware. Soft-restart features such as kexec will
+> +re-read the static properties of the system from these static tables, and
+> +may malfunction if these no longer describe the running system. Linux will
+> +re-discover the dynamic properties of the system from the _STA method later
+> +during boot.
+> diff --git a/Documentation/arch/arm64/index.rst b/Documentation/arch/arm64/index.rst
+> index d08e924204bf..78544de0a8a9 100644
+> --- a/Documentation/arch/arm64/index.rst
+> +++ b/Documentation/arch/arm64/index.rst
+> @@ -13,6 +13,7 @@ ARM64 Architecture
+>      asymmetric-32bit
+>      booting
+>      cpu-feature-registers
+> +    cpu-hotplug
+>      elf_hwcaps
+>      hugetlbpage
+>      kdump
 
