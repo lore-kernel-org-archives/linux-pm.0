@@ -2,62 +2,64 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0C23EE6447
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Sep 2023 09:22:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D3A6EE644C
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Sep 2023 09:22:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233775AbjIOJWD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Sep 2023 05:22:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57932 "EHLO
+        id S232830AbjIOJWE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Sep 2023 05:22:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38216 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233592AbjIOJVx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 05:21:53 -0400
+        with ESMTP id S233706AbjIOJVy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 05:21:54 -0400
 Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF2A51FE1
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 02:21:29 -0700 (PDT)
-Received: by mail-lj1-x229.google.com with SMTP id 38308e7fff4ca-2bb9a063f26so30566691fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 02:21:29 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FB572729
+        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 02:21:32 -0700 (PDT)
+Received: by mail-lj1-x229.google.com with SMTP id 38308e7fff4ca-2b9c907bc68so31614221fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 02:21:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694769688; x=1695374488; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1694769690; x=1695374490; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=dHEtnEQv2A2ReqGymUlGz3D//oT7Ku2G1Pe4mdOxqdo=;
-        b=rXeqFgqtZ1prGJynVHnLiYul3PCLdeCYfhz517PPzNtxLPom8L3xFI2Et6PD8M/CX5
-         y8OF2SxmiWQaQ96aQAsdLPHexlQ4v8P9RzMZJgkR4iP+kyQLAA1VnihbmHpXydLBiBk+
-         92P/6i2q5UjWZRAaaV+gvlkUCjeipiFBf39N9dmTjiKRZrYStTvLAxB7Ee4WCLO0/9KK
-         /7S/BAmW7TaLEzB5Lpx71Df2kyLxhKpFCS3tllSrUQ/M6bmtg4ws1bEoQcyM39KSlTb9
-         M2yW1HdmEbWeJfCRIVluZBreugARBv/aJRjH/xPcLr6u6aoZgenjshAaYeN8bPvdvWu+
-         A6kw==
+        bh=0gMxgrLH8hAqI78TYEwxUv2pVCfDSw58e/K0s6X8qpQ=;
+        b=m9EHb03qwFkHFRxKPPTBlJC1GPblNh5KWKwqCWZWhUQJbXARoxmIhEC+XHs0gbdMUM
+         FjVH9pV5FO4nm/eINjHGt3vMwAry3dsA8RpFnNLRs7PfedJ+ltmoqbEuWYi0T+bPboWu
+         UCNqQF52/gzPm0KnNfN7JiH4icKqEOOs93xU+pSr7UhAb7LqcTuCA+Q61z69BCFv8lrn
+         7Q5HKTSZAyAaRszXMjUolVIZzPMYY3IvoDJdOVwI5yIslSrTmdE053TGemztbzKyhdZG
+         O+lBcIw+OuoO8mk/adF1vdjt631M9Xg31xwFl5u/4Y4r26uDrb5lt+ggvheP0afYie1m
+         MAFw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694769688; x=1695374488;
+        d=1e100.net; s=20230601; t=1694769690; x=1695374490;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=dHEtnEQv2A2ReqGymUlGz3D//oT7Ku2G1Pe4mdOxqdo=;
-        b=YS1+k6AseXt8wwcHCCmd46jZJFTt+sxr2mqP8mprx73zM6GBP6CFhSmYYYHzVMJFJZ
-         YYEReflJK9aGL0NDugPsNjbJ9z6wOw/NZMqRHiCADQVM8Cog74vGioxkAKOnh/HD574F
-         ovDBH7br/sJ6lNeKcrT/isKw3xt8rvYfIijuDCt2G67+EdfxuAwHnc+uARyjCq5bmaE+
-         ZI/gl2AUDx5XGm1ZfdRMswAZtprIQ4QDkj3XHMQOGEs6ymGDkyP8dHLiMGsnGMHDLMvs
-         Wl6l3S32jmRPUT5Yc/hKaDhY0zfYHQAoU3kzSk22VWVi1bLqwtgV1hA73Y+YZAZBsOnE
-         vrKA==
-X-Gm-Message-State: AOJu0YwkuS6zGBqRC09mxeTrrHwNVZ+5ga0/BonTUo/u0SiTIstYybid
-        P13pniK9hQnSfK90+xiBH7s0MUjgyfWCLL/GiAe55A==
-X-Google-Smtp-Source: AGHT+IFK61Er9cAcjOdJ5f7iHl2FE/MjGgnLPUym9+O2jTbIqzOzp8XbomK6ZbZehZ/PX8+bbXKy5w==
-X-Received: by 2002:a2e:3e0e:0:b0:2b6:bc30:7254 with SMTP id l14-20020a2e3e0e000000b002b6bc307254mr981025lja.13.1694769688005;
-        Fri, 15 Sep 2023 02:21:28 -0700 (PDT)
+        bh=0gMxgrLH8hAqI78TYEwxUv2pVCfDSw58e/K0s6X8qpQ=;
+        b=C2JryhxTfhbENrpOmh8D1G1VbUdaxzzbcn6CnlPveQIJDMoEsEiXAlX51cZhJrj1YU
+         sD/oxlDNmcjYhx4cAhBPrOI4bk/VjbVtyrdrafdX8ZsREcgoxNnWx2PRrIJQ8fps6auo
+         SVuI8VTvH+KSZaDMLDTzqTL6RsXb0sJ4U0qCmElEEWphYwt96NXaNvU2nrEf7zkJAQcP
+         zLLsNLpLvIHVhpvQHvvQXQRQiammxA5M3YACv+lWYoVFTeirii7ND9aqo4yWO6FndUaZ
+         IBCaUOWxtFdDxB6MwtvCLleq5GqoZN/H14oUCq4vJP28Lupwi0z5oykUMGZFj+sxGX2n
+         HxIg==
+X-Gm-Message-State: AOJu0Yy5xePdFLr3vxN9c92p7vuVAsoO2s4zUDRbh8MNAbAFnhJzliy0
+        qfsQFiD3cVXUX0zDty/Ep3TLtKExSGZlFJF6egIcHg==
+X-Google-Smtp-Source: AGHT+IEW7ELR0BC0aaaD7PdqOlQ9YNfd9KQIzAAoLD8DzPpKbNrDvmiROuNK6D31n0onkDPudHUjUg==
+X-Received: by 2002:a2e:9409:0:b0:2bd:1bca:ebee with SMTP id i9-20020a2e9409000000b002bd1bcaebeemr874287ljh.19.1694769690056;
+        Fri, 15 Sep 2023 02:21:30 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id p8-20020a2e7408000000b002b9ec22d9fasm639376ljc.29.2023.09.15.02.21.27
+        by smtp.gmail.com with ESMTPSA id p8-20020a2e7408000000b002b9ec22d9fasm639376ljc.29.2023.09.15.02.21.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 Sep 2023 02:21:27 -0700 (PDT)
+        Fri, 15 Sep 2023 02:21:29 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
 Cc:     Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Walker Chen <walker.chen@starfivetech.com>,
-        Conor Dooley <conor@kernel.org>
-Subject: [PATCH v2 13/17] pmdomain: starfive: Move Kconfig file to the pmdomain subsystem
-Date:   Fri, 15 Sep 2023 11:19:59 +0200
-Message-Id: <20230915092003.658361-14-ulf.hansson@linaro.org>
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Mikko Perttunen <mperttunen@nvidia.com>,
+        linux-tegra@vger.kernel.org
+Subject: [PATCH v2 15/17] pmdomain: tegra: Move Kconfig option to the pmdomain subsystem
+Date:   Fri, 15 Sep 2023 11:20:01 +0200
+Message-Id: <20230915092003.658361-16-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230915092003.658361-1-ulf.hansson@linaro.org>
 References: <20230915092003.658361-1-ulf.hansson@linaro.org>
@@ -67,69 +69,60 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Kconfig belongs closer to the corresponding implementation, hence let's
-move it from the soc subsystem to the pmdomain subsystem.
+The Kconfig option belongs closer to the corresponding implementation,
+hence let's move it from the soc subsystem to the pmdomain subsystem.
 
-Cc: Walker Chen <walker.chen@starfivetech.com>
-Cc: Conor Dooley <conor@kernel.org>
-Acked-by: Conor Dooley <conor@kernel.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Jonathan Hunter <jonathanh@nvidia.com>
+Cc: Mikko Perttunen <mperttunen@nvidia.com>
+Cc: <linux-tegra@vger.kernel.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- MAINTAINERS                                | 3 +--
- drivers/pmdomain/Kconfig                   | 1 +
- drivers/{soc => pmdomain}/starfive/Kconfig | 0
- drivers/soc/Kconfig                        | 1 -
- 4 files changed, 2 insertions(+), 3 deletions(-)
- rename drivers/{soc => pmdomain}/starfive/Kconfig (100%)
+ drivers/pmdomain/Kconfig       | 1 +
+ drivers/pmdomain/tegra/Kconfig | 6 ++++++
+ drivers/soc/tegra/Kconfig      | 5 -----
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/pmdomain/tegra/Kconfig
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6b491ebcf790..40744fefed3d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -20515,7 +20515,7 @@ M:	Walker Chen <walker.chen@starfivetech.com>
- M:	Changhuang Liang <changhuang.liang@starfivetech.com>
- S:	Supported
- F:	Documentation/devicetree/bindings/power/starfive*
--F:	drivers/pmdomain/starfive/jh71xx-pmu.c
-+F:	drivers/pmdomain/starfive/
- F:	include/dt-bindings/power/starfive,jh7110-pmu.h
- 
- STARFIVE SOC DRIVERS
-@@ -20523,7 +20523,6 @@ M:	Conor Dooley <conor@kernel.org>
- S:	Maintained
- T:	git https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux.git/
- F:	Documentation/devicetree/bindings/soc/starfive/
--F:	drivers/soc/starfive/
- 
- STARFIVE TRNG DRIVER
- M:	Jia Jie Ho <jiajie.ho@starfivetech.com>
 diff --git a/drivers/pmdomain/Kconfig b/drivers/pmdomain/Kconfig
-index 08f8a3aa9805..2286c36076db 100644
+index 10c3bc2e2444..98e04589bef4 100644
 --- a/drivers/pmdomain/Kconfig
 +++ b/drivers/pmdomain/Kconfig
-@@ -12,5 +12,6 @@ source "drivers/pmdomain/renesas/Kconfig"
- source "drivers/pmdomain/rockchip/Kconfig"
- source "drivers/pmdomain/samsung/Kconfig"
+@@ -14,5 +14,6 @@ source "drivers/pmdomain/samsung/Kconfig"
  source "drivers/pmdomain/st/Kconfig"
-+source "drivers/pmdomain/starfive/Kconfig"
+ source "drivers/pmdomain/starfive/Kconfig"
+ source "drivers/pmdomain/sunxi/Kconfig"
++source "drivers/pmdomain/tegra/Kconfig"
  
  endmenu
-diff --git a/drivers/soc/starfive/Kconfig b/drivers/pmdomain/starfive/Kconfig
-similarity index 100%
-rename from drivers/soc/starfive/Kconfig
-rename to drivers/pmdomain/starfive/Kconfig
-diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
-index 8b46da40f107..10a9ff84ff41 100644
---- a/drivers/soc/Kconfig
-+++ b/drivers/soc/Kconfig
-@@ -23,7 +23,6 @@ source "drivers/soc/renesas/Kconfig"
- source "drivers/soc/rockchip/Kconfig"
- source "drivers/soc/samsung/Kconfig"
- source "drivers/soc/sifive/Kconfig"
--source "drivers/soc/starfive/Kconfig"
- source "drivers/soc/sunxi/Kconfig"
- source "drivers/soc/tegra/Kconfig"
- source "drivers/soc/ti/Kconfig"
+diff --git a/drivers/pmdomain/tegra/Kconfig b/drivers/pmdomain/tegra/Kconfig
+new file mode 100644
+index 000000000000..13ade6d84696
+--- /dev/null
++++ b/drivers/pmdomain/tegra/Kconfig
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++config SOC_TEGRA_POWERGATE_BPMP
++	def_bool y
++	depends on PM_GENERIC_DOMAINS
++	depends on TEGRA_BPMP
+diff --git a/drivers/soc/tegra/Kconfig b/drivers/soc/tegra/Kconfig
+index 6f3098822969..f16beeabaa92 100644
+--- a/drivers/soc/tegra/Kconfig
++++ b/drivers/soc/tegra/Kconfig
+@@ -152,11 +152,6 @@ config SOC_TEGRA_PMC
+ 	select PM_GENERIC_DOMAINS
+ 	select REGMAP
+ 
+-config SOC_TEGRA_POWERGATE_BPMP
+-	def_bool y
+-	depends on PM_GENERIC_DOMAINS
+-	depends on TEGRA_BPMP
+-
+ config SOC_TEGRA20_VOLTAGE_COUPLER
+ 	bool "Voltage scaling support for Tegra20 SoCs"
+ 	depends on ARCH_TEGRA_2x_SOC || COMPILE_TEST
 -- 
 2.34.1
 
