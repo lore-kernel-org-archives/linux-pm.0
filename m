@@ -2,114 +2,103 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CF39EED61A
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Sep 2023 18:22:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3710EEED61F
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Sep 2023 18:32:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236136AbjIOSVn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Sep 2023 14:21:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48164 "EHLO
+        id S236447AbjIOSby (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Sep 2023 14:31:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56210 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236129AbjIOSVT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 14:21:19 -0400
-Received: from fallback13.i.mail.ru (fallback13.i.mail.ru [79.137.243.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49BEC1FCC
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 11:21:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=jiaxyga.com; s=mailru;
-        h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:From:Subject:Content-Type:Content-Transfer-Encoding:To:Cc; bh=e7kyerDZ1bFusdPgCRM4oSWttEQ11h8Jz0EXBk5Jw5Y=;
-        t=1694802074;x=1694892074; 
-        b=XBbF39qoRdaxM00t1g7ZN/vhydRq85RdK/3HwQHinlihC6vg7Hdz1avl7SjZDg3nkUC8UQrOW+ZTGmQVpY1gLp+65bObHcAUcGJL5HjG4eaSNexfaDLx1vzsUBvgtQA0YxkKJGubXeDlx4AAe4oz075RCBROTMVVxDRv7xqFncc=;
-Received: from [10.12.4.13] (port=58028 helo=smtp38.i.mail.ru)
-        by fallback13.i.mail.ru with esmtp (envelope-from <danila@jiaxyga.com>)
-        id 1qhDRI-00GxDC-Ca
-        for linux-pm@vger.kernel.org; Fri, 15 Sep 2023 21:21:12 +0300
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=jiaxyga.com
-        ; s=mailru; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
-        Message-ID:Date:Subject:Cc:To:From:From:Sender:Reply-To:To:Cc:Content-Type:
-        Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
-        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
-        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive:
-        X-Cloud-Ids:Disposition-Notification-To;
-        bh=e7kyerDZ1bFusdPgCRM4oSWttEQ11h8Jz0EXBk5Jw5Y=; t=1694802072; x=1694892072; 
-        b=0QYBFJ/KCTdmW4TAcGt6cjs3zJ3RyMANLqI4K+NpQCV5yuqBPt1DSF0hrOnR953wTEtfIbmInvR
-        hFCGjJrKSx0aaamVEnE1F99y3uoP6zl/PV4ZSjQLic1ZPIwTskuplbb2K2Uh/hvUEQF9KOWmpi4LP
-        TeZ1Zgm4BAOPA3MdTW0=;
-Received: by smtp38.i.mail.ru with esmtpa (envelope-from <danila@jiaxyga.com>)
-        id 1qhDR4-00G5R8-2I; Fri, 15 Sep 2023 21:20:59 +0300
-From:   Danila Tikhonov <danila@jiaxyga.com>
-To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        conor+dt@kernel.org, ulf.hansson@linaro.org
-Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Danila Tikhonov <danila@jiaxyga.com>
-Subject: [PATCH 1/2] dt-bindings: power: qcom,rpmpd: Add SM7150
-Date:   Fri, 15 Sep 2023 21:20:53 +0300
-Message-ID: <20230915182054.113839-2-danila@jiaxyga.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230915182054.113839-1-danila@jiaxyga.com>
-References: <20230915182054.113839-1-danila@jiaxyga.com>
+        with ESMTP id S236547AbjIOSbi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 14:31:38 -0400
+Received: from mail-oa1-f43.google.com (mail-oa1-f43.google.com [209.85.160.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80246210A;
+        Fri, 15 Sep 2023 11:31:33 -0700 (PDT)
+Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-1a2dd615ddcso378761fac.0;
+        Fri, 15 Sep 2023 11:31:33 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694802693; x=1695407493;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=+RgYCzFpl6DzKu9Fze9sl7wbETYZX6GdWsejgca91oM=;
+        b=abn/NDPM7ucaLRj5kSjyVq3w2Z7nO6Hg0QNtae6KmJpINEA5MhAW8Vc8YsFAL6UrJk
+         V17DPN7aG9xR9DWAwjpVng3EPwP9F/rQtwiLTvWYp2JO+oj0opyf2Pz8+loGwadrfjE5
+         ZKW6hcmLHVAt4I60zfR0KWkyWyhMdF8AUwwxlL5SN50BZj8drEjpAydLMJEiDV0d/6rD
+         JlF7hIvVyRa/6Dg0H6UzzXNpgmyT0jwks2BvlmGd9nhoebulsJyeadwMldDOTjfQ1aza
+         aoEHDG1S6i4qLEP4Awim/IqoPIViQjO3q35RheEZqGVm7hL3JZ53+2/IfGrkJuOncTFK
+         YBCw==
+X-Gm-Message-State: AOJu0YxEoVZhTiLcschkgu0owquex1CTnkbBJulC2h6p4ujBGpDBg6pP
+        0WZRlbTO+nzU70zog0lhNMfX0+cT61WcRv1/JfI=
+X-Google-Smtp-Source: AGHT+IH0z5TeQlSLJyYiHcsKw5LugzfwbV7Mem0ZGYRa6hbzNsCnfaaIkdZb6q3zjat9j3l+CU1Fnmm84htOZKgTcx0=
+X-Received: by 2002:a05:6871:686:b0:1d5:f814:56a3 with SMTP id
+ l6-20020a056871068600b001d5f81456a3mr2676714oao.2.1694802692675; Fri, 15 Sep
+ 2023 11:31:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailru-Src: smtp
-X-7564579A: EEAE043A70213CC8
-X-77F55803: 4F1203BC0FB41BD902203E0DD57300EC89AAED3EA3F32E92EBA3BF9EE48D578D182A05F5380850404C228DA9ACA6FE2728F79CDDD891EC7BDF2B4C95B75CC9B3993B39A01EECD83683B621EA0271FB53
-X-7FA49CB5: FF5795518A3D127A4AD6D5ED66289B5278DA827A17800CE7688275994059DE5FEA1F7E6F0F101C67BD4B6F7A4D31EC0BCC500DACC3FED6E28638F802B75D45FF8AA50765F790063790B55F3E386DB9B28638F802B75D45FF36EB9D2243A4F8B5A6FCA7DBDB1FC311F39EFFDF887939037866D6147AF826D867E1B1EEBB84AF7F0177D5E1E9EB4410117882F4460429724CE54428C33FAD305F5C1EE8F4F765FC5FC25ED3FCEC3375A471835C12D1D9774AD6D5ED66289B52BA9C0B312567BB23117882F44604297287769387670735201E561CDFBCA1751F28451B159A507268D2E47CDBA5A96583BA9C0B312567BB2376E601842F6C81A19E625A9149C048EE140C956E756FBB7AC5236E9430F51F07D8FC6C240DEA76429C9F4D5AE37F343AA9539A8B242431040A6AB1C7CE11FEE36A1CB4668A9CA5FA2D242C3BD2E3F4C6C4224003CC836476E2F48590F00D11D6E2021AF6380DFAD1A18204E546F3947CB11811A4A51E3B096D1867E19FE1407959CC434672EE6371089D37D7C0E48F6C8AA50765F7900637A8A59EE88DA1D479EFF80C71ABB335746BA297DBC24807EABDAD6C7F3747799A
-X-C1DE0DAB: 0D63561A33F958A5F4B45C4E1D9922426981EF852F3FB5769CA7FDC079330CF9F87CCE6106E1FC07E67D4AC08A07B9B086D40F53BA1922959C5DF10A05D560A950611B66E3DA6D700B0A020F03D25A0997E3FB2386030E77
-X-C8649E89: 1C3962B70DF3F0ADE00A9FD3E00BEEDF77DD89D51EBB7742D3581295AF09D3DF87807E0823442EA2ED31085941D9CD0AF7F820E7B07EA4CF104E82343679AD000D69A9DD5906C7D0D8BDD1FC0716AB545CC37B0F2EF7D4E17622FCE73A124D83B3573C328C294A3D5F937EF72DE5135B5426C164EAD7B9E921BEC6C0C71ED4F84C41F94D744909CE4BCAC77546666B612CC0CD5AA9A1B9887EE09F5AAA95A50543082AE146A756F3
-X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5ycPtXkTV4k65bRjmOUUP8cvGozZ33TWg5HZplvhhXbhDGzqmQDTd6OAevLeAnq3Ra9uf7zvY2zzsIhlcp/Y7m53TZgf2aB4JOg4gkr2biojwfkaTmrWlazXyzGcAkYccw==
-X-Mailru-Sender: 9EB879F2C80682A09F26F806C73949812E816679BFB18EEA50023357CE020C06DF76B9B9158B2F3E643683D8C0F3ED1CA3C71A376745D86BBE86167304C7680C3980CE5AAA35C7CD60F22E8815EDE5EAEAB4BC95F72C04283CDA0F3B3F5B9367
-X-Mras: Ok
-X-7564579A: 646B95376F6C166E
-X-77F55803: 6242723A09DB00B44C707F29C0362ABF9EEA92AF22DBF093C3CBB22206D1AF8D049FFFDB7839CE9E5434182FDB816D04A17646084A41126376B25EB5AB2F4A61FAE5F190D37F12B6
-X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5xhPKz0ZEsZ5k6NOOPWz5QAiZSCXKGQRq3/7KxbCLSB2ESzQkaOXqCBFZPLWFrEGlV1shfWe2EVcxl5toh0c/aCGOghz/frdRhzMe95NxDFdaloFI76w+pK+PrK8jl8HrA==
-X-Mailru-MI: C000000000000800
-X-Mras: Ok
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 15 Sep 2023 20:31:21 +0200
+Message-ID: <CAJZ5v0i4qvW-4=erNtMn=awuzHZM9YhUmuEuCiD9OOqNrA3Y4w@mail.gmail.com>
+Subject: [GIT PULL] Thermal control updates for v6.6-rc2
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a compatible for SM7150 platforms and relevant defines to the
-include file.
+Hi Linus,
 
-Signed-off-by: Danila Tikhonov <danila@jiaxyga.com>
----
- .../devicetree/bindings/power/qcom,rpmpd.yaml          |  1 +
- include/dt-bindings/power/qcom-rpmpd.h                 | 10 ++++++++++
- 2 files changed, 11 insertions(+)
+Please pull from the tag
 
-diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-index 9b03c41d3604..53886f02d98a 100644
---- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-+++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-@@ -46,6 +46,7 @@ properties:
-       - qcom,sm6125-rpmpd
-       - qcom,sm6350-rpmhpd
-       - qcom,sm6375-rpmpd
-+      - qcom,sm7150-rpmhpd
-       - qcom,sm8150-rpmhpd
-       - qcom,sm8250-rpmhpd
-       - qcom,sm8350-rpmhpd
-diff --git a/include/dt-bindings/power/qcom-rpmpd.h b/include/dt-bindings/power/qcom-rpmpd.h
-index 83be996cb5eb..a021907b792c 100644
---- a/include/dt-bindings/power/qcom-rpmpd.h
-+++ b/include/dt-bindings/power/qcom-rpmpd.h
-@@ -77,6 +77,16 @@
- #define SM6375_VDD_LPI_CX	8
- #define SM6375_VDD_LPI_MX	9
- 
-+/* SM7150 Power Domain Indexes */
-+#define SM7150_CX	0
-+#define SM7150_CX_AO	1
-+#define SM7150_GFX	2
-+#define SM7150_LCX	3
-+#define SM7150_LMX	4
-+#define SM7150_MSS	5
-+#define SM7150_MX	6
-+#define SM7150_MX_AO	7
-+
- /* SM8150 Power Domain Indexes */
- #define SM8150_MSS	0
- #define SM8150_EBI	1
--- 
-2.41.0
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ thermal-6.6-rc2
 
+with top-most commit fb2c10245f201278804a6f28e196e95436059d6d
+
+ thermal: core: Fix disabled trip point check in handle_thermal_trip()
+
+on top of commit 0bb80ecc33a8fb5a682236443c1e740d5c917d1d
+
+ Linux 6.6-rc1
+
+to receive thermal control updates for 6.6-rc2.
+
+These fix a thermal core breakage introduced by one of the recent
+changes, amend those changes by adding 'const' to a new callback
+argument and fix 2 memory leaks.
+
+Specifics:
+
+ - Unbreak disabled trip point check in handle_thermal_trip() that may
+   cause it to skip enabled trip points (Rafael Wysocki).
+
+ - Add missing of_node_put() to of_find_trip_id() and
+   thermal_of_for_each_cooling_maps() that each break out of a
+   for_each_child_of_node() loop without dropping the reference to
+   the child object (Julia Lawall).
+
+ - Constify the recently added trip argument of the .get_trend() thermal
+   zone callback (Rafael Wysocki).
+
+Thanks!
+
+
+---------------
+
+Julia Lawall (1):
+      thermal/of: add missing of_node_put()
+
+Rafael J. Wysocki (2):
+      thermal: Constify the trip argument of the .get_trend() zone callback
+      thermal: core: Fix disabled trip point check in handle_thermal_trip()
+
+---------------
+
+ drivers/acpi/thermal.c                             | 2 +-
+ drivers/thermal/thermal_core.c                     | 6 ++++--
+ drivers/thermal/thermal_of.c                       | 8 ++++++--
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 3 ++-
+ include/linux/thermal.h                            | 4 ++--
+ 5 files changed, 15 insertions(+), 8 deletions(-)
