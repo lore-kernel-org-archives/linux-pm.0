@@ -2,206 +2,77 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88D88EEEC03
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Sep 2023 19:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBFC1CD13B7
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Sep 2023 19:33:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232536AbjIOTJx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Sep 2023 15:09:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37212 "EHLO
+        id S236963AbjIOTdW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Sep 2023 15:33:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33460 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237272AbjIOSqY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 14:46:24 -0400
-Received: from mail-yb1-xb29.google.com (mail-yb1-xb29.google.com [IPv6:2607:f8b0:4864:20::b29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C54E49E3
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 11:45:11 -0700 (PDT)
-Received: by mail-yb1-xb29.google.com with SMTP id 3f1490d57ef6-d81d09d883dso860893276.0
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 11:45:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694803508; x=1695408308; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=mb/JbSxTOf6YSrodg1aYhJ0ml5QYx/b8sq5qwirE40g=;
-        b=rVYwpiEHoZUTb1RScl189CXIouKvFDbkstbiscDXabsDRCbOkQytbby89efW935GVw
-         Y7iB7bty48aTBdwfgSVDtMTpq67HjL+hX5phLgUhI4laX6oC1huweqVHOFr0oP0KxNqq
-         7bIe/ssZObIkQ2Lqbw3MfS7pu1fvw6+adj5tNUW6VaW3KAs4nbUQgRMWR25zr4MMsX7x
-         Krjss6t7VlOOJQsEjSxqa2n2EJwQqDLT4eflNwpbf/yLG9YE1ilfLItiQBQm5ybigNQT
-         ib961tpk2lBHMIDi1YxrT4dJZY8Aixjrpf54+p3GW7tuurNzBUOVn0hEL0yhEdNbk+RT
-         gT8A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694803508; x=1695408308;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=mb/JbSxTOf6YSrodg1aYhJ0ml5QYx/b8sq5qwirE40g=;
-        b=YWBmdYplSGf3huAX5TE8ASHDOlXdzzBYyNyglwycrTHxTETu+9FxOPIcqAXHp1m5pE
-         qOd0lgKrZ+XI4+6FiOxPaFuB8uI8V+vB18PBbwmbmmy16mEtmNkbeKZioIqPAF5NlaGd
-         byRNd+NE7Y/JFgXGiVr0z53uZZKOSArc16cxgVCl66jztQudqO3w/grqm7UxI5FzL6WM
-         PWQBbJLCbQn6uh5ixN+SkPcLuRcpaap4P5uBwbQwcBHgDpTvaQHsS9FSB7DX9BIFwTRn
-         G7UQK48fiAxtznHucDNBqoX8YCpATbJpG5Yb6PNiTA1zOdj4QZIoY34x6WODFhk8aL5Q
-         HTwg==
-X-Gm-Message-State: AOJu0YwvTW2xlQ3TQ6CEPRKxpq1tZvzQCU+6EchYW7oz18adnUL9lQxc
-        IK55w0WzCjGv49zI0eDsp+bXqIChatH7rhstObkrzg==
-X-Google-Smtp-Source: AGHT+IEgvKwcttxHaal71JQerDkqCTheLo6v9lIh37KHgKPxJxzPu18/C942DDKEdzyC+RRK7Px6UodLsnRJQPamVkw=
-X-Received: by 2002:a25:cf09:0:b0:d0e:c8fb:986a with SMTP id
- f9-20020a25cf09000000b00d0ec8fb986amr2587928ybg.42.1694803508490; Fri, 15 Sep
- 2023 11:45:08 -0700 (PDT)
+        with ESMTP id S237003AbjIOTdI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 15:33:08 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF1A419A9;
+        Fri, 15 Sep 2023 12:33:03 -0700 (PDT)
+Received: from mercury (unknown [185.209.196.239])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: sre)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 7B32766072F6;
+        Fri, 15 Sep 2023 20:33:02 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1694806382;
+        bh=iSR+RPv5YIiANQT6etKaNwwRPfS7OeKIt4Bk3q/IhlI=;
+        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+        b=ChOBdnPEl8HNmTPu8KQr9oU4ckmynn4JcyidoZQIg7xPCOPjnPxnIRLSUzXzNTpya
+         elxEYjIcKyn+vzDREtMTS1ggvHz8hCjOz2GGtpO8mrBwU28E66VpZ0xRw3Fh0zjgu4
+         rktn7g893TtbPJb8cFxMBN8cDMfajMKEOkP3kg4gxUvGIs4mT311+iYQuOTfCIE8RW
+         OlGvPj3dPBB39nn/bN4pfWvj1LKOhT8PbefZz6AUHgcSV7Vi7FeNkvvC25/yFhyuG+
+         UAnPgWtp9w5aGPQKnV/AkS64Gqx48e8Nhae1nklvSM8bz7t1+EVqxUKRKJZh5L+0Km
+         C0JIZYEQ9UWkw==
+Received: by mercury (Postfix, from userid 1000)
+        id EF5A5106044B; Fri, 15 Sep 2023 21:32:59 +0200 (CEST)
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
+        Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230621-topic-mm8013-v4-0-975aecd173ed@linaro.org>
+References: <20230621-topic-mm8013-v4-0-975aecd173ed@linaro.org>
+Subject: Re: [PATCH v4 0/3] MM8013 fg driver
+Message-Id: <169480637995.562542.1597166089132918555.b4-ty@collabora.com>
+Date:   Fri, 15 Sep 2023 21:32:59 +0200
 MIME-Version: 1.0
-References: <20230915121504.806672-1-quic_srichara@quicinc.com> <20230915121504.806672-4-quic_srichara@quicinc.com>
-In-Reply-To: <20230915121504.806672-4-quic_srichara@quicinc.com>
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date:   Fri, 15 Sep 2023 21:44:57 +0300
-Message-ID: <CAA8EJpqJaY3ocZYMxWyDhzoCvCrn6d-YyD=jtumAM7aXe_DEdg@mail.gmail.com>
-Subject: Re: [PATCH V2 3/4] thermal/drivers/tsens: Add support for IPQ5018 tsens
-To:     Sricharan Ramabadhran <quic_srichara@quicinc.com>
-Cc:     krzysztof.kozlowski@linaro.org, agross@kernel.org,
-        andersson@kernel.org, konrad.dybcio@linaro.org,
-        srinivas.kandagatla@linaro.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        thara.gopinath@gmail.com, rafael@kernel.org,
-        daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.12.3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 15 Sept 2023 at 15:16, Sricharan Ramabadhran
-<quic_srichara@quicinc.com> wrote:
->
-> IPQ5018 has tsens IP V1.0, 4 sensors and 1 interrupt.
-> The soc does not have a RPM, hence tsens has to be reset and
-> enabled in the driver init. Adding the driver support for same.
->
-> Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
-> ---
->  [v2] Used tsens_calibrate_common instead of legacy
->       and addressed comments from Dmitry.
->
->  drivers/thermal/qcom/tsens-v1.c | 58 +++++++++++++++++++++++++++++++++
->  drivers/thermal/qcom/tsens.c    |  3 ++
->  drivers/thermal/qcom/tsens.h    |  2 +-
->  3 files changed, 62 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
-> index dc1c4ae2d8b0..ed5c017905ab 100644
-> --- a/drivers/thermal/qcom/tsens-v1.c
-> +++ b/drivers/thermal/qcom/tsens-v1.c
-> @@ -79,6 +79,18 @@ static struct tsens_features tsens_v1_feat = {
->         .trip_max_temp  = 120000,
->  };
->
-> +static struct tsens_features tsens_v1_ipq5018_feat = {
-> +       .ver_major      = VER_1_X,
-> +       .crit_int       = 0,
-> +       .combo_int      = 0,
-> +       .adc            = 1,
-> +       .srot_split     = 1,
-> +       .max_sensors    = 11,
-> +       .trip_min_temp  = -40000,
-> +       .trip_max_temp  = 120000,
-> +       .ignore_enable  = 1,
-> +};
-> +
->  static const struct reg_field tsens_v1_regfields[MAX_REGFIELDS] = {
->         /* ----- SROT ------ */
->         /* VERSION */
-> @@ -150,6 +162,39 @@ static int __init init_8956(struct tsens_priv *priv) {
->         return init_common(priv);
->  }
->
-> +static int init_ipq5018(struct tsens_priv *priv)
-> +{
-> +       int ret;
-> +       u32 mask;
-> +
-> +       init_common(priv);
 
-Please take care of init_common()'s return code. Don't continue init
-if init_common() fails.
+On Fri, 15 Sep 2023 14:45:14 +0200, Konrad Dybcio wrote:
+> This series brings support for the Mitsumi MM8013 Li-Ion fuel gauge.
+> 
+> 
 
-> +       if (!priv->tm_map)
-> +               return -ENODEV;
+Applied, thanks!
 
-Why?
+[1/3] dt-bindings: vendor-prefixes: Add Mitsumi Electric Co., Ltd.
+      commit: dc2dc941730438250a5c6567b8685f065ce1dd0f
+[2/3] dt-bindings: power: supply: Document Mitsumi MM8013 fuel gauge
+      commit: 9d15ff53398b4b21198ee6dec4f65a251de881dc
+[3/3] power: supply: Introduce MM8013 fuel gauge driver
+      commit: c75f4bf6800bde67df22ac95139279ec8764118a
 
-> +
-> +       ret = regmap_field_write(priv->rf[TSENS_SW_RST], 1);
-> +       if (ret) {
-> +               dev_err(priv->dev, "Reset failed\n");
-> +               return ret;
-> +       }
-> +
-> +       mask = GENMASK(priv->num_sensors, 0);
-> +       ret = regmap_field_update_bits(priv->rf[SENSOR_EN], mask, mask);
-> +       if (ret) {
-> +               dev_err(priv->dev, "Sensor Enable failed\n");
-> +               return ret;
-> +       }
-> +
-> +       ret = regmap_field_write(priv->rf[TSENS_EN], 1);
-> +       if (ret) {
-> +               dev_err(priv->dev, "Enable failed\n");
-> +               return ret;
-> +       }
-> +
-> +       ret = regmap_field_write(priv->rf[TSENS_SW_RST], 0);
-> +
-> +       return ret;
-> +}
-> +
->  static const struct tsens_ops ops_generic_v1 = {
->         .init           = init_common,
->         .calibrate      = calibrate_v1,
-> @@ -187,3 +232,16 @@ struct tsens_plat_data data_8976 = {
->         .feat           = &tsens_v1_feat,
->         .fields         = tsens_v1_regfields,
->  };
-> +
-> +const struct tsens_ops ops_ipq5018 = {
-> +       .init           = init_ipq5018,
-> +       .calibrate      = tsens_calibrate_common,
-> +       .get_temp       = get_temp_tsens_valid,
-> +};
-> +
-> +struct tsens_plat_data data_ipq5018 = {
-> +       .num_sensors    = 5,
-> +       .ops            = &ops_ipq5018,
-> +       .feat           = &tsens_v1_ipq5018_feat,
-> +       .fields         = tsens_v1_regfields,
-> +};
-> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-> index 0a43ccf02ec4..c792b9dc6676 100644
-> --- a/drivers/thermal/qcom/tsens.c
-> +++ b/drivers/thermal/qcom/tsens.c
-> @@ -1101,6 +1101,9 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
->
->  static const struct of_device_id tsens_table[] = {
->         {
-> +               .compatible = "qcom,ipq5018-tsens",
-> +               .data = &data_ipq5018,
-> +       }, {
->                 .compatible = "qcom,ipq8064-tsens",
->                 .data = &data_8960,
->         }, {
-> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-> index e254cd2df904..b6594b546d11 100644
-> --- a/drivers/thermal/qcom/tsens.h
-> +++ b/drivers/thermal/qcom/tsens.h
-> @@ -645,7 +645,7 @@ extern struct tsens_plat_data data_8960;
->  extern struct tsens_plat_data data_8226, data_8909, data_8916, data_8939, data_8974, data_9607;
->
->  /* TSENS v1 targets */
-> -extern struct tsens_plat_data data_tsens_v1, data_8976, data_8956;
-> +extern struct tsens_plat_data data_tsens_v1, data_8976, data_8956, data_ipq5018;
->
->  /* TSENS v2 targets */
->  extern struct tsens_plat_data data_8996, data_ipq8074, data_tsens_v2;
-> --
-> 2.34.1
->
-
-
+Best regards,
 -- 
-With best wishes
-Dmitry
+Sebastian Reichel <sebastian.reichel@collabora.com>
+
