@@ -2,64 +2,64 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D3A6EE644C
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C131CEE6450
 	for <linux-pm@archiver.kernel.org>; Fri, 15 Sep 2023 09:22:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232830AbjIOJWE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Sep 2023 05:22:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38216 "EHLO
+        id S233562AbjIOJWG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Sep 2023 05:22:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50120 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233706AbjIOJVy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 05:21:54 -0400
-Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FB572729
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 02:21:32 -0700 (PDT)
-Received: by mail-lj1-x229.google.com with SMTP id 38308e7fff4ca-2b9c907bc68so31614221fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 02:21:32 -0700 (PDT)
+        with ESMTP id S233700AbjIOJVx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 05:21:53 -0400
+Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A9172102
+        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 02:21:30 -0700 (PDT)
+Received: by mail-lj1-x230.google.com with SMTP id 38308e7fff4ca-2bfc5218dd8so29978501fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 02:21:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694769690; x=1695374490; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1694769689; x=1695374489; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=0gMxgrLH8hAqI78TYEwxUv2pVCfDSw58e/K0s6X8qpQ=;
-        b=m9EHb03qwFkHFRxKPPTBlJC1GPblNh5KWKwqCWZWhUQJbXARoxmIhEC+XHs0gbdMUM
-         FjVH9pV5FO4nm/eINjHGt3vMwAry3dsA8RpFnNLRs7PfedJ+ltmoqbEuWYi0T+bPboWu
-         UCNqQF52/gzPm0KnNfN7JiH4icKqEOOs93xU+pSr7UhAb7LqcTuCA+Q61z69BCFv8lrn
-         7Q5HKTSZAyAaRszXMjUolVIZzPMYY3IvoDJdOVwI5yIslSrTmdE053TGemztbzKyhdZG
-         O+lBcIw+OuoO8mk/adF1vdjt631M9Xg31xwFl5u/4Y4r26uDrb5lt+ggvheP0afYie1m
-         MAFw==
+        bh=JuZx/GEW25gG646YvVI9ekfBTZl9JZLAF7Xs48rC/qQ=;
+        b=IJjT8vy3KXgaSwnc25Fw68yp7QjBX057yNx20TPUc795dnKZqyInQQwtiOwA92nT/o
+         SYn70PksHZaQXe48doWAuOXXHzL+0HbCURjIijRXB1MIvN2mVRMo336eN9orF0Cd2M/d
+         Wjsp6Oaw+vxixUNeoTkwexOSIfIHGH/emXKN5MCXrrnqDx+iVGAKQPmFumsjEX+A5Tq2
+         RzchKReROrHYzXcfR2eHA22Scj3VSczY+Wnay3aBEA9BY0eJAXakDC1C6XJvxAJ5yl4F
+         nQUpZhwtOvoXlZk+zzc2LExwQWZHpQlrD/UXwc4Z3M1v9EMDtdFabvYg0t43ACgIMnBp
+         LpDg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694769690; x=1695374490;
+        d=1e100.net; s=20230601; t=1694769689; x=1695374489;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=0gMxgrLH8hAqI78TYEwxUv2pVCfDSw58e/K0s6X8qpQ=;
-        b=C2JryhxTfhbENrpOmh8D1G1VbUdaxzzbcn6CnlPveQIJDMoEsEiXAlX51cZhJrj1YU
-         sD/oxlDNmcjYhx4cAhBPrOI4bk/VjbVtyrdrafdX8ZsREcgoxNnWx2PRrIJQ8fps6auo
-         SVuI8VTvH+KSZaDMLDTzqTL6RsXb0sJ4U0qCmElEEWphYwt96NXaNvU2nrEf7zkJAQcP
-         zLLsNLpLvIHVhpvQHvvQXQRQiammxA5M3YACv+lWYoVFTeirii7ND9aqo4yWO6FndUaZ
-         IBCaUOWxtFdDxB6MwtvCLleq5GqoZN/H14oUCq4vJP28Lupwi0z5oykUMGZFj+sxGX2n
-         HxIg==
-X-Gm-Message-State: AOJu0Yy5xePdFLr3vxN9c92p7vuVAsoO2s4zUDRbh8MNAbAFnhJzliy0
-        qfsQFiD3cVXUX0zDty/Ep3TLtKExSGZlFJF6egIcHg==
-X-Google-Smtp-Source: AGHT+IEW7ELR0BC0aaaD7PdqOlQ9YNfd9KQIzAAoLD8DzPpKbNrDvmiROuNK6D31n0onkDPudHUjUg==
-X-Received: by 2002:a2e:9409:0:b0:2bd:1bca:ebee with SMTP id i9-20020a2e9409000000b002bd1bcaebeemr874287ljh.19.1694769690056;
-        Fri, 15 Sep 2023 02:21:30 -0700 (PDT)
-Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id p8-20020a2e7408000000b002b9ec22d9fasm639376ljc.29.2023.09.15.02.21.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        bh=JuZx/GEW25gG646YvVI9ekfBTZl9JZLAF7Xs48rC/qQ=;
+        b=leoWqPb9Uc5zKNEchukgMdvPKWmPUZIN1LgOAG16kLpbUrVF7lzyQoAEvnAdH2DYXj
+         dLp2clpdgE0UVaLvDtuq8/fuFljSmI76bKcXpkAYDOqjzaj2uVlDKl4J+R4m6AL/N5rf
+         0VvbjuuVlsxNCuvHJp/Aw9b1MooI93qdjbtqyxy0TKzaCRrnt7BnKhOY2FNNW8ZNJKUS
+         IhSliWiupdHiQzlCOW1TwBFvUf41o+Tf1U0Drmu/aWVHEYBSc+V3TlEk0ydEmQn+mE1l
+         g9aT8Pk7OP9u8Pbi6VIKuugK6Q0uMXgb52WVHd8DEmZbm/Ou6o81HZjuk08ed0nW+SG7
+         1MIA==
+X-Gm-Message-State: AOJu0YwxN0N9pol0W2lCwDK8aa2lpQrznXly5hBAhl5YGimFgWDzmyYb
+        FRWIgdLGAlyHIlObMO7Q+lx0sg==
+X-Google-Smtp-Source: AGHT+IEVb+rybmAw/IHW2BTXH8tfpMjLEmySPO9nsUGKFLlub7WqeGnWblxKCQk1yld1rt/N2pe2jA==
+X-Received: by 2002:a2e:93c2:0:b0:2bc:da4a:4649 with SMTP id p2-20020a2e93c2000000b002bcda4a4649mr1078194ljh.22.1694769689024;
         Fri, 15 Sep 2023 02:21:29 -0700 (PDT)
+Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
+        by smtp.gmail.com with ESMTPSA id p8-20020a2e7408000000b002b9ec22d9fasm639376ljc.29.2023.09.15.02.21.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 15 Sep 2023 02:21:28 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
 Cc:     Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        linux-tegra@vger.kernel.org
-Subject: [PATCH v2 15/17] pmdomain: tegra: Move Kconfig option to the pmdomain subsystem
-Date:   Fri, 15 Sep 2023 11:20:01 +0200
-Message-Id: <20230915092003.658361-16-ulf.hansson@linaro.org>
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        linux-sunxi@lists.linux.dev
+Subject: [PATCH v2 14/17] pmdomain: sunxi: Move Kconfig option to the pmdomain subsystem
+Date:   Fri, 15 Sep 2023 11:20:00 +0200
+Message-Id: <20230915092003.658361-15-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230915092003.658361-1-ulf.hansson@linaro.org>
 References: <20230915092003.658361-1-ulf.hansson@linaro.org>
@@ -72,57 +72,63 @@ X-Mailing-List: linux-pm@vger.kernel.org
 The Kconfig option belongs closer to the corresponding implementation,
 hence let's move it from the soc subsystem to the pmdomain subsystem.
 
-Cc: Thierry Reding <thierry.reding@gmail.com>
-Cc: Jonathan Hunter <jonathanh@nvidia.com>
-Cc: Mikko Perttunen <mperttunen@nvidia.com>
-Cc: <linux-tegra@vger.kernel.org>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Jernej Skrabec <jernej.skrabec@gmail.com>
+Cc: Samuel Holland <samuel@sholland.org>
+Cc: <linux-sunxi@lists.linux.dev>
+Acked-by: Jernej Skrabec <jernej.skrabec@gmail.com>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/pmdomain/Kconfig       | 1 +
- drivers/pmdomain/tegra/Kconfig | 6 ++++++
- drivers/soc/tegra/Kconfig      | 5 -----
- 3 files changed, 7 insertions(+), 5 deletions(-)
- create mode 100644 drivers/pmdomain/tegra/Kconfig
+ drivers/pmdomain/Kconfig       |  1 +
+ drivers/pmdomain/sunxi/Kconfig | 10 ++++++++++
+ drivers/soc/sunxi/Kconfig      |  9 ---------
+ 3 files changed, 11 insertions(+), 9 deletions(-)
+ create mode 100644 drivers/pmdomain/sunxi/Kconfig
 
 diff --git a/drivers/pmdomain/Kconfig b/drivers/pmdomain/Kconfig
-index 10c3bc2e2444..98e04589bef4 100644
+index 2286c36076db..10c3bc2e2444 100644
 --- a/drivers/pmdomain/Kconfig
 +++ b/drivers/pmdomain/Kconfig
-@@ -14,5 +14,6 @@ source "drivers/pmdomain/samsung/Kconfig"
+@@ -13,5 +13,6 @@ source "drivers/pmdomain/rockchip/Kconfig"
+ source "drivers/pmdomain/samsung/Kconfig"
  source "drivers/pmdomain/st/Kconfig"
  source "drivers/pmdomain/starfive/Kconfig"
- source "drivers/pmdomain/sunxi/Kconfig"
-+source "drivers/pmdomain/tegra/Kconfig"
++source "drivers/pmdomain/sunxi/Kconfig"
  
  endmenu
-diff --git a/drivers/pmdomain/tegra/Kconfig b/drivers/pmdomain/tegra/Kconfig
+diff --git a/drivers/pmdomain/sunxi/Kconfig b/drivers/pmdomain/sunxi/Kconfig
 new file mode 100644
-index 000000000000..13ade6d84696
+index 000000000000..17781bf8d86d
 --- /dev/null
-+++ b/drivers/pmdomain/tegra/Kconfig
-@@ -0,0 +1,6 @@
++++ b/drivers/pmdomain/sunxi/Kconfig
+@@ -0,0 +1,10 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +
-+config SOC_TEGRA_POWERGATE_BPMP
-+	def_bool y
-+	depends on PM_GENERIC_DOMAINS
-+	depends on TEGRA_BPMP
-diff --git a/drivers/soc/tegra/Kconfig b/drivers/soc/tegra/Kconfig
-index 6f3098822969..f16beeabaa92 100644
---- a/drivers/soc/tegra/Kconfig
-+++ b/drivers/soc/tegra/Kconfig
-@@ -152,11 +152,6 @@ config SOC_TEGRA_PMC
- 	select PM_GENERIC_DOMAINS
- 	select REGMAP
- 
--config SOC_TEGRA_POWERGATE_BPMP
--	def_bool y
--	depends on PM_GENERIC_DOMAINS
--	depends on TEGRA_BPMP
++config SUN20I_PPU
++	bool "Allwinner D1 PPU power domain driver"
++	depends on ARCH_SUNXI || COMPILE_TEST
++	depends on PM
++	select PM_GENERIC_DOMAINS
++	help
++	  Say y to enable the PPU power domain driver. This saves power
++	  when certain peripherals, such as the video engine, are idle.
+diff --git a/drivers/soc/sunxi/Kconfig b/drivers/soc/sunxi/Kconfig
+index c5070914fc6a..8aecbc9b1976 100644
+--- a/drivers/soc/sunxi/Kconfig
++++ b/drivers/soc/sunxi/Kconfig
+@@ -19,12 +19,3 @@ config SUNXI_SRAM
+ 	  Say y here to enable the SRAM controller support. This
+ 	  device is responsible on mapping the SRAM in the sunXi SoCs
+ 	  whether to the CPU/DMA, or to the devices.
 -
- config SOC_TEGRA20_VOLTAGE_COUPLER
- 	bool "Voltage scaling support for Tegra20 SoCs"
- 	depends on ARCH_TEGRA_2x_SOC || COMPILE_TEST
+-config SUN20I_PPU
+-	bool "Allwinner D1 PPU power domain driver"
+-	depends on ARCH_SUNXI || COMPILE_TEST
+-	depends on PM
+-	select PM_GENERIC_DOMAINS
+-	help
+-	  Say y to enable the PPU power domain driver. This saves power
+-	  when certain peripherals, such as the video engine, are idle.
 -- 
 2.34.1
 
