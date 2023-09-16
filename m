@@ -2,197 +2,169 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7295CD37B1
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Sep 2023 00:56:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96828CD37B1
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Sep 2023 01:50:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238451AbjIPAzr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Sep 2023 20:55:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50076 "EHLO
+        id S237683AbjIPBuQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Sep 2023 21:50:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38798 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238742AbjIPAzf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 20:55:35 -0400
-Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BCE52738
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 17:54:18 -0700 (PDT)
-Received: by mail-lj1-x22f.google.com with SMTP id 38308e7fff4ca-2b9c907bc68so44906901fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2023 17:54:18 -0700 (PDT)
+        with ESMTP id S237972AbjIPBtu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 21:49:50 -0400
+Received: from mail-oi1-x22e.google.com (mail-oi1-x22e.google.com [IPv6:2607:f8b0:4864:20::22e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87C8B1FCE;
+        Fri, 15 Sep 2023 18:49:44 -0700 (PDT)
+Received: by mail-oi1-x22e.google.com with SMTP id 5614622812f47-3a9e89fa553so527921b6e.1;
+        Fri, 15 Sep 2023 18:49:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1694825657; x=1695430457; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=YouDa+ERRcXfsKD05SHv7uq2HbLul8fzNckpEFgl+38=;
-        b=A/rXRJ+5hj8kZa4RuChDDkIJtcazBhGC0MaUBkPsdLogNF5KaF8LJJ07/6fvpnJRi6
-         Jc072txH1x7ImV90wUQBnfsGU0rhB0gfb8RFRQ9o3PFxA1nHm661EX9L18pUUjsV3bvm
-         gKTVBsmURcasuyxnH/7V/TEVlEIhXnbE9h7cCO5b4MFL17N9qKnUq+hgw0jPTyoLmXDb
-         OgEsoUGl723pYIBipj4arNIINORb1Ud10xn/3IwD4ouUGORWVFCi817alll4cnHCxoi0
-         vP9+GXkR7AVa0QH7xq15RgExKOzwNlEqytzvWfECLmejltwg9XiBmJLrfYeSm7aT+VXk
-         EL6Q==
+        d=gmail.com; s=20230601; t=1694828984; x=1695433784; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4xdcSFdFjeAbW57aqe8jzF0wIE2taB5ecDehO1YAVcs=;
+        b=a/z6nbIo0jyWSUtD3XSc77MP1yvYjbTNc821TSFyeky2W2LyERR0hc4nOBHRW1pD4q
+         awLNNZ2KNKs3CC27OeJCZz30WzheHxW7DUQ/YmonQ2bbNWnBOp/jw/J/FKI3jyP1UrVL
+         XfgYOr7qjyTRVHBiYMHf30HwlRV0WaytPy7k6ZCQ9qe2Sy8Ry2oZiKfK/Tejsg/TU5YW
+         GHDG3tgVeSRbs7e4lpRXtU5JDArT6riSBtm1qQ1UCUUF5aDf2D+B6aTlwAKOqKfTf5Jf
+         14bscC2fbJPupni2r32xXq01iXabc/lGEOrDeRxrXLpRgYVqdqxMnuw0TDnHNGuGmTEG
+         eGgg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694825657; x=1695430457;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=YouDa+ERRcXfsKD05SHv7uq2HbLul8fzNckpEFgl+38=;
-        b=jooYf+WuBPfne+kitm8GmrZZf0pxVAmO10jTeUVzZuidzs/aScFGogv7l6MIdP2RvQ
-         LKSJX4qCY/B2+iCjMGbCTR6cKt0AYfEyZegVUIS0s/iOwTPKR4RbLtl8FNmXP+X0+quL
-         C+tKpG3yIEtAqs0jUyPKP0ynokc6WENFbGwMaQAbbFIbfFcXNF/Yq2IC4dyYcq9Hcan9
-         UQ7HpPWbuNWhmCHjf+cUQ5ICISWvF2j8xkzyR9ztgq4DuGF4KY0Z8E0g2xuq4eCCc+lP
-         24SzfLo39UkuzpiPG1vAualHAAw2sJL+qSyX6VAN8N2J5QcsqNBhy8UWNrZCx9PHiLNf
-         emIQ==
-X-Gm-Message-State: AOJu0YxthwiWfWtjuBQZp0WmNC7yYAdw32hOxsPNgjHy09yG17hHBU4J
-        39IdQmGAOdh5tXOxbd9iE5cQ8A==
-X-Google-Smtp-Source: AGHT+IHUdnhlfTeK4MtrE3fpZApJQcwswA5kVYL+eRCHSesSPAIVMBTUHObYeXXNmyeSYbM6adsOHQ==
-X-Received: by 2002:a2e:3505:0:b0:2bd:10b7:4610 with SMTP id z5-20020a2e3505000000b002bd10b74610mr2594910ljz.25.1694825656782;
-        Fri, 15 Sep 2023 17:54:16 -0700 (PDT)
-Received: from [192.168.37.154] (178235177186.dynamic-4-waw-k-1-1-0.vectranet.pl. [178.235.177.186])
-        by smtp.gmail.com with ESMTPSA id e10-20020a170906248a00b00993928e4d1bsm3046483ejb.24.2023.09.15.17.54.15
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 15 Sep 2023 17:54:16 -0700 (PDT)
-Message-ID: <49687bc6-7121-422c-99fd-e68dd46aae95@linaro.org>
-Date:   Sat, 16 Sep 2023 02:54:14 +0200
+        d=1e100.net; s=20230601; t=1694828984; x=1695433784;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=4xdcSFdFjeAbW57aqe8jzF0wIE2taB5ecDehO1YAVcs=;
+        b=mf2UbyFtTmjljqEBeSnxKi+don8B+4NP+p4O6m/nS6c8E58iidRt5DU0Vs3D2bshgp
+         7OFE+L/4Ib8HAyMgORl8mCcpTWh+IPKZcwXSDIXNCdiVuoibOf7VHtB9Tu0ij2lvY4qs
+         MWGwE1VKgg81VdS9Ggcp/g66mAaQncF03xmoIc9lMGquypAjjxp/zBy83+7hH7ZQtzpo
+         Ecgiu1SxWL1fs5uXNUEDnFDbl9Re0DqgunIZ7RZyMJC/XPrV775kOqvl3MUx+ZRtlRgo
+         8M+P+yN1Hdy9nY0HeVdlB8r3wkt9G7ZqUjndTfx2TZZoM/26RY1QAcKvK45tkvIEk9+k
+         V8/g==
+X-Gm-Message-State: AOJu0YyNDl3HHIXKh7hTGcCb8iX8cuQ99a38mmkrx8lnEWst7ckSbcp0
+        YMaeRC26CYSBMdAQ5Jt14hM=
+X-Google-Smtp-Source: AGHT+IFCWamhKPSBEyZDPSdvLAZn5P1ZKmoTuUrZJBzRgjKBTieVSoAFrMqcauLw9KsBrUGDAIkAEA==
+X-Received: by 2002:a05:6870:9596:b0:1a7:f79c:2fbc with SMTP id k22-20020a056870959600b001a7f79c2fbcmr3427334oao.0.1694828983639;
+        Fri, 15 Sep 2023 18:49:43 -0700 (PDT)
+Received: from fabio-Precision-3551.. ([2804:14c:485:4b61:bb17:c38c:aa6:be85])
+        by smtp.gmail.com with ESMTPSA id eg38-20020a05687098a600b001c4b473581fsm2519986oab.12.2023.09.15.18.49.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 15 Sep 2023 18:49:43 -0700 (PDT)
+From:   Fabio Estevam <festevam@gmail.com>
+To:     rafael@kernel.org
+Cc:     daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
+        linux-pm@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        robh+dt@kernel.org, conor+dt@kernel.org,
+        devicetree@vger.kernel.org, Fabio Estevam <festevam@denx.de>
+Subject: [PATCH v8 2/3] reboot: Introduce hw_protection_reboot()
+Date:   Fri, 15 Sep 2023 22:49:27 -0300
+Message-Id: <20230916014928.2848737-2-festevam@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230916014928.2848737-1-festevam@gmail.com>
+References: <20230916014928.2848737-1-festevam@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/53] icc-rpmh multi-RSC voting groundwork
-Content-Language: en-US
-To:     Mike Tipton <quic_mdtipton@quicinc.com>
-Cc:     Georgi Djakov <djakov@kernel.org>, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        cros-qcom-dts-watchers@chromium.org,
-        Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20230708-topic-rpmh_icc_rsc-v1-0-b223bd2ac8dd@linaro.org>
- <c067a45f-9629-d516-9e56-36538e4ff6db@kernel.org>
- <20230807215739.GA9621@hu-mdtipton-lv.qualcomm.com>
- <10520827-dc01-475c-b09a-35cefc9e0a62@linaro.org>
- <20230913012951.GA19284@hu-mdtipton-lv.qualcomm.com>
- <ffc58838-c306-49f3-a90a-95b2cf02ae3d@linaro.org>
- <20230914023239.GA25147@hu-mdtipton-lv.qualcomm.com>
- <978fd46d-8142-41e6-9c62-df678018d6c2@linaro.org>
- <20230915160525.GA14240@hu-mdtipton-lv.qualcomm.com>
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
- xsFNBF9ALYUBEADWAhxdTBWrwAgDQQzc1O/bJ5O7b6cXYxwbBd9xKP7MICh5YA0DcCjJSOum
- BB/OmIWU6X+LZW6P88ZmHe+KeyABLMP5s1tJNK1j4ntT7mECcWZDzafPWF4F6m4WJOG27kTJ
- HGWdmtO+RvadOVi6CoUDqALsmfS3MUG5Pj2Ne9+0jRg4hEnB92AyF9rW2G3qisFcwPgvatt7
- TXD5E38mLyOPOUyXNj9XpDbt1hNwKQfiidmPh5e7VNAWRnW1iCMMoKqzM1Anzq7e5Afyeifz
- zRcQPLaqrPjnKqZGL2BKQSZDh6NkI5ZLRhhHQf61fkWcUpTp1oDC6jWVfT7hwRVIQLrrNj9G
- MpPzrlN4YuAqKeIer1FMt8cq64ifgTzxHzXsMcUdclzq2LTk2RXaPl6Jg/IXWqUClJHbamSk
- t1bfif3SnmhA6TiNvEpDKPiT3IDs42THU6ygslrBxyROQPWLI9IL1y8S6RtEh8H+NZQWZNzm
- UQ3imZirlPjxZtvz1BtnnBWS06e7x/UEAguj7VHCuymVgpl2Za17d1jj81YN5Rp5L9GXxkV1
- aUEwONM3eCI3qcYm5JNc5X+JthZOWsbIPSC1Rhxz3JmWIwP1udr5E3oNRe9u2LIEq+wH/toH
- kpPDhTeMkvt4KfE5m5ercid9+ZXAqoaYLUL4HCEw+HW0DXcKDwARAQABzShLb25yYWQgRHli
- Y2lvIDxrb25yYWQuZHliY2lvQGxpbmFyby5vcmc+wsGOBBMBCAA4FiEEU24if9oCL2zdAAQV
- R4cBcg5dfFgFAmQ5bqwCGwMFCwkIBwIGFQoJCAsCBBYCAwECHgECF4AACgkQR4cBcg5dfFjO
- BQ//YQV6fkbqQCceYebGg6TiisWCy8LG77zV7DB0VMIWJv7Km7Sz0QQrHQVzhEr3trNenZrf
- yy+o2tQOF2biICzbLM8oyQPY8B///KJTWI2khoB8IJSJq3kNG68NjPg2vkP6CMltC/X3ohAo
- xL2UgwN5vj74QnlNneOjc0vGbtA7zURNhTz5P/YuTudCqcAbxJkbqZM4WymjQhe0XgwHLkiH
- 5LHSZ31MRKp/+4Kqs4DTXMctc7vFhtUdmatAExDKw8oEz5NbskKbW+qHjW1XUcUIrxRr667V
- GWH6MkVceT9ZBrtLoSzMLYaQXvi3sSAup0qiJiBYszc/VOu3RbIpNLRcXN3KYuxdQAptacTE
- mA+5+4Y4DfC3rUSun+hWLDeac9z9jjHm5rE998OqZnOU9aztbd6zQG5VL6EKgsVXAZD4D3RP
- x1NaAjdA3MD06eyvbOWiA5NSzIcC8UIQvgx09xm7dThCuQYJR4Yxjd+9JPJHI6apzNZpDGvQ
- BBZzvwxV6L1CojUEpnilmMG1ZOTstktWpNzw3G2Gis0XihDUef0MWVsQYJAl0wfiv/0By+XK
- mm2zRR+l/dnzxnlbgJ5pO0imC2w0TVxLkAp0eo0LHw619finad2u6UPQAkZ4oj++iIGrJkt5
- Lkn2XgB+IW8ESflz6nDY3b5KQRF8Z6XLP0+IEdLOOARkOW7yEgorBgEEAZdVAQUBAQdAwmUx
- xrbSCx2ksDxz7rFFGX1KmTkdRtcgC6F3NfuNYkYDAQgHwsF2BBgBCAAgFiEEU24if9oCL2zd
- AAQVR4cBcg5dfFgFAmQ5bvICGwwACgkQR4cBcg5dfFju1Q//Xta1ShwL0MLSC1KL1lXGXeRM
- 8arzfyiB5wJ9tb9U/nZvhhdfilEDLe0jKJY0RJErbdRHsalwQCrtq/1ewQpMpsRxXzAjgfRN
- jc4tgxRWmI+aVTzSRpywNahzZBT695hMz81cVZJoZzaV0KaMTlSnBkrviPz1nIGHYCHJxF9r
- cIu0GSIyUjZ/7xslxdvjpLth16H27JCWDzDqIQMtg61063gNyEyWgt1qRSaK14JIH/DoYRfn
- jfFQSC8bffFjat7BQGFz4ZpRavkMUFuDirn5Tf28oc5ebe2cIHp4/kajTx/7JOxWZ80U70mA
- cBgEeYSrYYnX+UJsSxpzLc/0sT1eRJDEhI4XIQM4ClIzpsCIN5HnVF76UQXh3a9zpwh3dk8i
- bhN/URmCOTH+LHNJYN/MxY8wuukq877DWB7k86pBs5IDLAXmW8v3gIDWyIcgYqb2v8QO2Mqx
- YMqL7UZxVLul4/JbllsQB8F/fNI8AfttmAQL9cwo6C8yDTXKdho920W4WUR9k8NT/OBqWSyk
- bGqMHex48FVZhexNPYOd58EY9/7mL5u0sJmo+jTeb4JBgIbFPJCFyng4HwbniWgQJZ1WqaUC
- nas9J77uICis2WH7N8Bs9jy0wQYezNzqS+FxoNXmDQg2jetX8en4bO2Di7Pmx0jXA4TOb9TM
- izWDgYvmBE8=
-In-Reply-To: <20230915160525.GA14240@hu-mdtipton-lv.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 15.09.2023 18:05, Mike Tipton wrote:
-> On Fri, Sep 15, 2023 at 03:43:27PM +0200, Konrad Dybcio wrote:
->> On 14.09.2023 04:32, Mike Tipton wrote:
->>> On Wed, Sep 13, 2023 at 10:31:49AM +0200, Konrad Dybcio wrote:
->>>>> The applicable voters should likely be defined in the target-specific
->>>>> headers, rather than the common qcom,icc.h. The bit range used for them
->>>>> could be common, but each target may only support a small subset of the
->>>>> total set of possible voters across all targets.
->>>> I'm not sure how client drivers would then choose the
->>>> correct path other than
->>>>
->>>> switch (soc) {
->>>> case 8450:
->>>> 	tag = QCOM_ICC_TAG_VOTER_8450_HLOS;
->>>> 	break;
->>>> case 8550:
->>>> 	tag = QCOM_ICC_TAG_VOTER_8550_HLOS;
->>>> 	break;
->>>> ...
->>>> }
->>>>
->>>> which would be unacceptable.
->>>
->>> The same general way it's handled for the endpoint bindings, which are
->>> already target-specific. 
->>>
->>> Any client drivers hardcoding the endpoint bindings in their driver
->>> would have to include the appropriate, target-specific binding header
->>> (e.g. qcom,sm8550-rpmh.h). That would only be possible if their driver
->>> file is itself target-specific. Otherwise, it would have to pull the
->>> endpoint bindings from devicetree. Or just use the recommended
->>> of_icc_get() and let devicetree do everything for them. Same for the
->>> target-specific voter tag bindings.
->>>
->>> Clients can also specify their tags in devicetree. They don't actually
->>> have to call icc_set_tag() directly. For example:
->>>
->>>     #include <dt-bindings/interconnect/qcom,sm8450.h>
->>>
->>>     interconnects = <&mmss_noc MASTER_MDP QCOM_ICC_TAG_VOTER_DISP
->>>                      &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_VOTER_DISP>;
->>>
->>> Then when they call of_icc_get() for this path it'll automatically have
->>> QCOM_ICC_TAG_VOTER_DISP set for them.
->> I think I'd skew towards the "define everything in the DT" approach.
->>
->> One thing that makes me uneasy to go on with this approach is the
->> question whether there is a case in which we would want to switch
->> from e.g. voting through DISP to voting through APPS (or similar)
->> from within a single device.
-> 
-> It shouldn't be common. But it could be done fairly simply by listing
-> paths for each different voter in the dt properties. 
-> 
->     interconnects = <&mmss_noc MASTER_MDP QCOM_ICC_TAG_VOTER_APPS
->                      &mc_virt SLAVE_EBI1  QCOM_ICC_TAG_VOTER_APPS>,
->                     <&mmss_noc MASTER_MDP QCOM_ICC_TAG_VOTER_DISP
->                      &mc_virt SLAVE_EBI1  QCOM_ICC_TAG_VOTER_DISP>,
->     interconnect-names = "path-apps-voter",
->                          "path-disp-voter";
-Eeeeeh, I don't know.. this almost sounds like a patch-up solution
-to a problem that doesn't quite yet exist.
+From: Fabio Estevam <festevam@denx.de>
 
-I debated introducing a third interconnect cell for this, but I am
-not sure the added complexity is worth it.
+Introduce hw_protection_reboot() to trigger an emergency reboot.
 
+It is a counterpart of hw_protection_shutdown() with the difference
+that it will force a reboot instead of shutdown.
 
-Having a global set of RSC-bound tags would be a "nice" and tidy
-solution.. Maybe we could even allocate like 24 bits to these, as
-I don't think you'll be introducing new buckets (or at least I hope
-you won't!).
+The motivation for doing this is to allow the thermal subystem
+to trigger a reboot when the temperature reaches the critical
+temperature.
 
-24 is an obscene amount of RSCs to have, even counting virtual
-channels, so unless you folks have some dark plans to make all
-pieces of hardware powered completely separately from each other,
-I suppose I could ask for a pinky-promise to not exceed that
-number, ever :D
+Signed-off-by: Fabio Estevam <festevam@denx.de>
+---
+Changes since v7:
+- None
 
-Konrad
+ include/linux/reboot.h | 11 ++++++++++-
+ kernel/reboot.c        | 33 ++++++++++++++++++++-------------
+ 2 files changed, 30 insertions(+), 14 deletions(-)
+
+diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+index 2b6bb593be5b..b6d59c7a3377 100644
+--- a/include/linux/reboot.h
++++ b/include/linux/reboot.h
+@@ -174,7 +174,16 @@ void ctrl_alt_del(void);
+ 
+ extern void orderly_poweroff(bool force);
+ extern void orderly_reboot(void);
+-void hw_protection_shutdown(const char *reason, int ms_until_forced);
++void __hw_protection_shutdown(const char *reason, int ms_until_forced, bool shutdown);
++static inline void hw_protection_reboot(const char *reason, int ms_until_forced)
++{
++	__hw_protection_shutdown(reason, ms_until_forced, false);
++}
++
++static inline void hw_protection_shutdown(const char *reason, int ms_until_forced)
++{
++	__hw_protection_shutdown(reason, ms_until_forced, true);
++}
+ 
+ /*
+  * Emergency restart, callable from an interrupt handler.
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index 3bba88c7ffc6..76fa6e9e4f1d 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -953,21 +953,25 @@ static void hw_failure_emergency_poweroff(int poweroff_delay_ms)
+ }
+ 
+ /**
+- * hw_protection_shutdown - Trigger an emergency system poweroff
++ * __hw_protection_shutdown - Trigger an emergency system shutdown or reboot
+  *
+- * @reason:		Reason of emergency shutdown to be printed.
+- * @ms_until_forced:	Time to wait for orderly shutdown before tiggering a
+- *			forced shudown. Negative value disables the forced
+- *			shutdown.
++ * @reason:		Reason of emergency shutdown or reboot to be printed.
++ * @ms_until_forced:	Time to wait for orderly shutdown or reboot before
++ *			triggering it. Negative value disables the forced
++ *			shutdown or reboot.
++ * @shutdown:		If true, indicates that a shutdown will happen
++ *			after the critical tempeature is reached.
++ *			If false, indicates that a reboot will happen
++ *			after the critical tempeature is reached.
+  *
+- * Initiate an emergency system shutdown in order to protect hardware from
+- * further damage. Usage examples include a thermal protection or a voltage or
+- * current regulator failures.
+- * NOTE: The request is ignored if protection shutdown is already pending even
+- * if the previous request has given a large timeout for forced shutdown.
++ * Initiate an emergency system shutdown or reboot in order to protect
++ * hardware from further damage. Usage examples include a thermal protection.
++ * NOTE: The request is ignored if protection shutdown or reboot is already
++ * pending even if the previous request has given a large timeout for forced
++ * shutdown/reboot.
+  * Can be called from any context.
+  */
+-void hw_protection_shutdown(const char *reason, int ms_until_forced)
++void __hw_protection_shutdown(const char *reason, int ms_until_forced, bool shutdown)
+ {
+ 	static atomic_t allow_proceed = ATOMIC_INIT(1);
+ 
+@@ -982,9 +986,12 @@ void hw_protection_shutdown(const char *reason, int ms_until_forced)
+ 	 * orderly_poweroff failure
+ 	 */
+ 	hw_failure_emergency_poweroff(ms_until_forced);
+-	orderly_poweroff(true);
++	if (shutdown)
++		orderly_poweroff(true);
++	else
++		orderly_reboot();
+ }
+-EXPORT_SYMBOL_GPL(hw_protection_shutdown);
++EXPORT_SYMBOL_GPL(__hw_protection_shutdown);
+ 
+ static int __init reboot_setup(char *str)
+ {
+-- 
+2.34.1
+
