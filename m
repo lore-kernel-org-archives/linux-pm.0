@@ -2,157 +2,157 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D19C9CD13D2
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Sep 2023 19:26:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E959C2BA12
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Sep 2023 19:39:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237820AbjIPTZh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 16 Sep 2023 15:25:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41036 "EHLO
+        id S229767AbjIPTjA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 16 Sep 2023 15:39:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236512AbjIPTZT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Sep 2023 15:25:19 -0400
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AAEBF186
-        for <linux-pm@vger.kernel.org>; Sat, 16 Sep 2023 12:25:13 -0700 (PDT)
-Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-31c5c06e8bbso3057881f8f.1
-        for <linux-pm@vger.kernel.org>; Sat, 16 Sep 2023 12:25:13 -0700 (PDT)
+        with ESMTP id S236073AbjIPTiz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Sep 2023 15:38:55 -0400
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4CD5199
+        for <linux-pm@vger.kernel.org>; Sat, 16 Sep 2023 12:38:49 -0700 (PDT)
+Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-403012f27e1so34246085e9.1
+        for <linux-pm@vger.kernel.org>; Sat, 16 Sep 2023 12:38:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1694892311; x=1695497111; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=YemuLAkzZ3mwS+fKbYUx0+x9FMVINu37w9byNNYEGG4=;
-        b=SZmRlQSw8lHgDamtJo31qQUNjwJXNnvvu+2ZwlyXUo1fneAwRHsaxxjuxAKvnZez1P
-         IEGyDIpZD6MuzAXN75Xrxthk14Y/Y7MSvVGonhWOEtQtgyL4L07WuWJh0oLcPGNIuyCV
-         PdosSY5owA4lo7lL7gS+OOuyrS3fv7ZyssPcVD9Dh6RVPb3YgeF4P7CpXhXjL219BK6L
-         t587mm6XKGaY+xk8VE+/HvsJo1L4QRPSZg84pbK9PSLD+jtkoV3SXZapNdFULK8CZU4e
-         X1V6ycKYscQ+gYMY50OZzlXFj0gAPxh3KV2n8lM0jF1phRMmOOS6V7tnlW+oNzH22ejo
-         IRPw==
+        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1694893128; x=1695497928; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=BeZ0NIpOmzeTyZCjOgYbHI0Gt5u0onUOD1oUG1cRlok=;
+        b=HRoQL5RIDFZ0He+o4INrsz2v6P2E6zZMLk1t/L+zL0GyqEJlsDpQkPzg53sU5AdDHp
+         nqp5nilF6Ko5EgCG++Wrj+DMjtdo+0Hq7HBqBGF3B214J2mFWmKLNHQB+X5M1qDal8oD
+         SbmCEJPrg5VyS/kDw7peSPRErcgtLL4SKdh9otgE2L/UnZOUEW1vgVNQmIrcftLm5aKX
+         o6ENd3UMYq1JnMOZPqAw5FGStpaZ08Im6hqZBCWAPDz8/nKdyFRb3n6X410Q+xEDzVeT
+         3MO3FuAMQn2FlfA8BOGpZc+4v9FgJAkNjHe0ymYtp20PEI7EgTXe4aVw6atnHL1rMBR4
+         hPsg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694892311; x=1695497111;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=YemuLAkzZ3mwS+fKbYUx0+x9FMVINu37w9byNNYEGG4=;
-        b=v9aXqYpRPPPGKe4mZPMHIorETHZ+VRtYasE5OuMl3K+VxqeJK+qgWYMKSfGUcBwsf/
-         xaf/4VtDzj6qMt405LPcvmumGQ+MDMuH0UjJDR/4DJO1Mhp8VBg6u5n9CcqvBb1Pz2BR
-         Uez9z1/fVlpn8rudfGv+1d4p8jvoFf8y035zBjVP/yXH7uEYgUOrRyju9QdGJIgy2Fle
-         nK5ERH0/ro9BuVJb8fBeaW4hQ50X+0lBUTk+Hdu9jbtHzIFuRMOeD3HrUxqS4ysjBwse
-         CLSaDza5kkKzRj3vyKLB2tDXpAUjTpUvY4SIUdXaFeEVNlICEa1lK5eEaBZt5FoCfjcr
-         Si/A==
-X-Gm-Message-State: AOJu0Yxp65fxhidPcfgI6Y2R81X1/NWLHWWZyZajL5BUGc4ULmfCYUYW
-        9dMSi8L59dzxVAcUWiiem4t7JM49QcXqhPp1eiU=
-X-Google-Smtp-Source: AGHT+IEADZZw7fcsDZqrMKnoBmJ/kcuGy+M7Cc95Kv1zTWEp0tRpiLumIFPEG3KXk41Wctm0QnIXoA==
-X-Received: by 2002:a05:6000:1549:b0:320:a4e:acf8 with SMTP id 9-20020a056000154900b003200a4eacf8mr303880wry.48.1694892311265;
-        Sat, 16 Sep 2023 12:25:11 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1694893128; x=1695497928;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=BeZ0NIpOmzeTyZCjOgYbHI0Gt5u0onUOD1oUG1cRlok=;
+        b=XoO1NqPQrtEJGPaW6ELqsIPK7m8mENUnC5M+n+zrNdjnmJpbi018sPN/EUFaDy4MzB
+         BLoSKi58kdXtxCdyAmiJq8e/2oSxvgXoov8dTFqmXQQM8x8jwsb61cOeT2Tl/+uXMijS
+         csOxFzp1FNlfQOQ/M+eu0zKbEWHCMHT5pF/pebyVgVYnELVSowWvKVkQvXFxR38Ob1yS
+         Z9J0khBMSUHdoFDZcPgg0qU406YSiwbwVj0BRRPXX1/39b/aBF0gURVt/kSTtyUfC7mi
+         ek6t5qYCq7EQ57MUZ73S+SRpky4HhwSiADFM2ds/vqcxPu2q/4I5iN8ikMyhltg5+N8F
+         1+4w==
+X-Gm-Message-State: AOJu0YwgI5rzGhPSUebcNB+0ipg6iU0Q4fpEYWnEA3Y4mbYmV769AOwi
+        zNTGaQbMhEX997UmiCiabZcnhA==
+X-Google-Smtp-Source: AGHT+IHJwXa3gfND3C/MWf5h9JP4AjQysFATf6P0IvfVvrmYiaaYJq8kFBqOMOKKH6gsoSO4VuJjMg==
+X-Received: by 2002:a5d:46cf:0:b0:31f:918a:ca9d with SMTP id g15-20020a5d46cf000000b0031f918aca9dmr3830791wrs.13.1694893128243;
+        Sat, 16 Sep 2023 12:38:48 -0700 (PDT)
 Received: from airbuntu (host109-151-228-137.range109-151.btcentralplus.com. [109.151.228.137])
-        by smtp.gmail.com with ESMTPSA id n9-20020adfe789000000b003180fdf5589sm3500322wrm.6.2023.09.16.12.25.10
+        by smtp.gmail.com with ESMTPSA id l12-20020a5d674c000000b0030ae53550f5sm7845395wrw.51.2023.09.16.12.38.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 16 Sep 2023 12:25:10 -0700 (PDT)
-Date:   Sat, 16 Sep 2023 20:25:09 +0100
+        Sat, 16 Sep 2023 12:38:47 -0700 (PDT)
+Date:   Sat, 16 Sep 2023 20:38:46 +0100
 From:   Qais Yousef <qyousef@layalina.io>
-To:     Vincent Guittot <vincent.guittot@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
+To:     Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc:     Peter Zijlstra <peterz@infradead.org>,
         Ingo Molnar <mingo@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
         Lukasz Luba <lukasz.luba@arm.com>
-Subject: Re: [PATCH 2/4] sched: cpufreq: Fix apply_dvfs_headroom() escaping
- uclamp constraints
-Message-ID: <20230916192509.bportepj7dbgp6ro@airbuntu>
-References: <20230820210640.585311-1-qyousef@layalina.io>
- <20230820210640.585311-3-qyousef@layalina.io>
- <CAKfTPtDY48jpO+b-2KXawzxh-ty+FMKX6YUXioNR7kpgO=ua6Q@mail.gmail.com>
- <20230829163740.uadhv2jfjuumqk3w@airbuntu>
- <CAKfTPtCP6uX79dOrzN4PxFTMBFrDAMOOrWyZrsVypUQ0RY7BAA@mail.gmail.com>
- <20230907215555.exjxho34ntkjmn6r@airbuntu>
- <CAKfTPtA8Ljy4NBqjw8Wj4pEFc-OCR55QPuwh+5GgrHN6u+ugsg@mail.gmail.com>
- <20230910174638.qe7jqq6mq36brh6o@airbuntu>
- <CAKfTPtBFAXO=CgqSJ1+y=2ppb5t4oErCtvV336fS6J2nSjBCkQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/7] sched: cpufreq: Remove magic margins
+Message-ID: <20230916193846.ewjie23c4vtf4edn@airbuntu>
+References: <20230827233203.1315953-1-qyousef@layalina.io>
+ <20230907130805.GE10955@noisy.programming.kicks-ass.net>
+ <20230908001725.mtqbse3xwhzvo5qp@airbuntu>
+ <44fc6d03-c663-53de-e4f7-e56687c5718d@arm.com>
+ <20230908140757.haewcuwsumphcv7p@airbuntu>
+ <356ec193-5c89-4f7e-5e43-d600dff68cf9@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CAKfTPtBFAXO=CgqSJ1+y=2ppb5t4oErCtvV336fS6J2nSjBCkQ@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <356ec193-5c89-4f7e-5e43-d600dff68cf9@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 09/12/23 18:03, Vincent Guittot wrote:
-
-> And it seems that what is done today doesn't work correctly for you.
-> Your proposal to include cpufreq headroom into the scheduler is not
-> correct IMO and it only applies for some cases. Then, the cpufreq
-> driver can have some really good reason to apply some headroom even
-> with an uclamp value but it can't make any decision.
+On 09/12/23 19:18, Dietmar Eggemann wrote:
+> On 08/09/2023 16:07, Qais Yousef wrote:
+> > On 09/08/23 09:40, Dietmar Eggemann wrote:
+> >> On 08/09/2023 02:17, Qais Yousef wrote:
+> >>> On 09/07/23 15:08, Peter Zijlstra wrote:
+> >>>> On Mon, Aug 28, 2023 at 12:31:56AM +0100, Qais Yousef wrote:
 > 
-> I think that we should use another way to fix your problem with how
-> uclamp than reordering how headroom is applied by cpufreq. Mixing
-> utilization and performance in one signal hide some differences that
-> cpufreq can make a good use of.
+> [...]
 > 
-> As an example:
+> >>> And what was a high end A78 is a mid core today. So if you look at today's
+> >>> mobile world topology we really have a tiy+big+huge combination of cores. The
+> >>> bigs are called mids, but they're very capable. Fits capacity forces migration
+> >>> to the 'huge' cores too soon with that 80% margin. While the 80% might be too
+> >>> small for the tiny ones as some workloads really struggle there if they hang on
+> >>> for too long. It doesn't help that these systems ship with 4ms tick. Something
+> >>> more to consider changing I guess.
+> >>
+> >> If this is the problem then you could simply make the margin (headroom)
+> >> a function of cpu_capacity_orig?
+> > 
+> > I don't see what you mean. instead of capacity_of() but keep the 80%?
+> > 
+> > Again, I could be delusional and misunderstanding everything, but what I really
+> > see fits_capacity() is about is misfit detection. But a task is not really
+> > misfit until it actually has a util above the capacity of the CPU. Now due to
+> > implementation details there can be a delay between the task crossing this
+> > capacity and being able to move it. Which what I believe this headroom is
+> > trying to achieve.
+> > 
+> > I think we can better define this by tying this headroom to the worst case
+> > scenario it takes to actually move this misfit task to the right CPU. If it can
+> > continue to run without being impacted with this delay and crossing the
+> > capacity of the CPU it is on, then we should not trigger misfit IMO.
 > 
-> cfs util = 650
-> cfs uclamp = 800
-> irq = 128
 > 
-> cfs with headroom 650*1.25=812 is clamped to 800
+> Instead of:
 > 
-> Final utilization will be : 800(1024-128)/1024+128*1.25=860 which is
-> above the target of 800.
+>   fits_capacity(unsigned long util, unsigned long capacity)
 > 
-> When we look at the detail, we have:
+>       return approximate_util_avg(util, TICK_USEC) < capacity;
 > 
-> cfs util once scaled to the full range is only 650(1024-128)/1024= 568
+> just make 1280 in:
 > 
-> After applying irq (even with some headroom) 568+128*1.25 = 728 which
-> is below the uclamp of 800 so shouldn't we stay at 800 in this case ?
-
-Shouldn't it be (568+128)*1.25 = 870? Which is almost the 860 above. We calmped
-the 812 to 800, with rounding errors that almost accounts for the 10 points
-difference between 870 and 860..
-
-I might have gotten the math wrong. But what I saw is that we have
-
-	util = (X + Y + Z) * A
-
-and what I did
-
-	util = AX + AY + AZ
-
-so maybe I missed something up, but I just did the multiplication with the
-headroom to each element individually rather than after the sum.
-
-So yeah, if I messed that part up, then that wasn't intentional and should be
-done differently. But I still can't see it.
-
-> >
-> > The main change being done here actually is to apply_dvfs_headroom() *before*
-> > doing uclamp_rq_util_with(). I am not sure how you see this mixing.
+>   #define fits_capacity(cap, max) ((cap) * 1280 < (max) * 1024)
 > 
-> Because dvfs_headroom is a cpufreq hints and you want to apply it
-> somewhere else.
-
-I am still not sure if you mean we are mixing up the code and we need better
-abstraction or something else.
-
-Beside the abstraction problem, which I agree with, I can't see what I am
-mixing up yet :( Sorry I think I need more helping hand to see it.
-
-> > Current code performs apply_dvfs_headroom() *after*; which what causes the CPU
-> > to run at a performance level higher than rq->uclamp[UCLAMP_MAX].
-> >
-> > It doesn't matter how many tasks on the rq, if rq->uclamp[UCLAMP_MAX] is set to
-> > 800, then the CPU should not vote to max (assuminig all other pressures are 0).
+> dependent on cpu's capacity_orig or the capacity diff to the next higher
+> capacity_orig.
 > 
-> You can't remove the irq pressure from the picture. If
-> rq->uclamp[UCLAMP_MAX] is set to 800 means that cpu must not go above
-> 800, it should apply also after taking into account other inputs. At
-> least up to some level as described in my example above
+> Typical example today: {little-medium-big capacity_orig} = {128, 896, 1024}
+> 
+> 896÷128 = 7
+> 
+> 1024/896 = 1.14
+> 
+> to achieve higher margin on little and lower margin on medium.
 
-I was trying to simplify to understand what you mean as I don't think I see the
-problem you're highlighting still.
+I am not keen on this personally. I think these numbers are random to me and
+why they help (or not help) is not clear to me at least.
+
+I do believe that the only reason why we want to move before a task util
+crosses the capacity of the CPU is tied down to the misfit load balance to be
+able to move the task. Because until the task crosses the capacity, it is
+getting its computational demand per our PELT representation. But since load
+balance is not an immediate action (especially on our platforms where it is
+4ms, something I hope we can change); we need to preemptively exclude the CPU
+as a misfit when we know the task will get 'stuck' on this CPU and not get its
+computational demand (as per our representation of course).
+
+I think this removes all guess work and provides a very meaningful decision
+making process that I think will scale transparently so we utilize our
+resources the best we can.
+
+We can probably optimize the code to avoid the call to approximate_util_avg()
+if this is a problem.
+
+Why do you think the ratio of cpu capacities gives more meaningful method to
+judge misfit?
 
 
 Thanks!
