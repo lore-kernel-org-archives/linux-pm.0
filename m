@@ -2,119 +2,137 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5805C46CA1
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Sep 2023 01:50:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22E28CD37BB
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Sep 2023 11:34:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235779AbjIPBuQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Sep 2023 21:50:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38796 "EHLO
+        id S235007AbjIPLe3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 16 Sep 2023 07:34:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52910 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237926AbjIPBtq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2023 21:49:46 -0400
-Received: from mail-ot1-x333.google.com (mail-ot1-x333.google.com [IPv6:2607:f8b0:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB96F1BF2;
-        Fri, 15 Sep 2023 18:49:40 -0700 (PDT)
-Received: by mail-ot1-x333.google.com with SMTP id 46e09a7af769-6c0ab18e084so330684a34.1;
-        Fri, 15 Sep 2023 18:49:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1694828980; x=1695433780; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=/xuPSclHlLs4o7tZAEr9Oqaj9rM7BhYSGMKkn2Xlw7U=;
-        b=IW61rrtjcpZefue1pw5RFD1yWu/DmKI2Irb6Emf05LKsij6wiq8BA61wzQdkRJeRtD
-         j8/pfV7oklI6MO6qSvuIcDAEsmy93MsT/Ah7CGXtKPzqM+AsARtgvSuvDLUvqpuZ13fq
-         aCU5KlIbobiV40kqH6Rmd2YB1fGKb/rDcGMumd0UVUnCHkm/bykY9NrUUUrUiRDBxbH+
-         hzTKQIBKq+FgbhUJTrotLQNhGeyev5UonxMXRSVorIcHng/JFD/WKkMZBgGGb26R1DSk
-         ax72l7H/X5CHUqvmO46Ui5E6Sb3oJWxgT4PrG8o2r6NbO51NkLSZqjVeeTci9GAVUpc9
-         rQvQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694828980; x=1695433780;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/xuPSclHlLs4o7tZAEr9Oqaj9rM7BhYSGMKkn2Xlw7U=;
-        b=kpRSzLGYTmrVHiEbnrhYnGlaLQKREs4aQKxSQvi6gjvMkhS2+RSXOznv1Ub2v9lpQW
-         mwStaoMneaM/Ze+URlTaxd57DgTw36G4Qs5/LIF25tSUgp6zTxqNzcU1u34MTe87jBhR
-         cjCeMdVamiqE7yZMNrF6Xo/DF/CRJp3IaBkdcCjcXqZc4HvnAZ/wbGvuVW5sgj8xa5vg
-         vUebj3LYiR2cdhTGv4/0nsx4cE6B1locT2cYKOZD6BWwTEeAONc4GRehApkI2VTkB0Xv
-         mmb7epvZM0xHGdJhnbgpabI6xmwonozTPFW7mGfo4lTSXzBJUzGly8yrv42ApdjGcL+m
-         VDOQ==
-X-Gm-Message-State: AOJu0YxqLisTG9NvY62SdX4Txhk0X6DOgJDBehJUmLGu/OPr8s0TzSCs
-        VMIMUHpua9L89i7PTJ3YLmM=
-X-Google-Smtp-Source: AGHT+IEnrdg2UFlAMJmRKoqFTkmjZ8+iLTyvNwpjr/5YB7Y1QSm3vTF0XpBV41lXZwQbETA/e6c5WQ==
-X-Received: by 2002:a05:6870:4250:b0:1d5:bda7:132d with SMTP id v16-20020a056870425000b001d5bda7132dmr3393225oac.4.1694828980117;
-        Fri, 15 Sep 2023 18:49:40 -0700 (PDT)
-Received: from fabio-Precision-3551.. ([2804:14c:485:4b61:bb17:c38c:aa6:be85])
-        by smtp.gmail.com with ESMTPSA id eg38-20020a05687098a600b001c4b473581fsm2519986oab.12.2023.09.15.18.49.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 Sep 2023 18:49:39 -0700 (PDT)
-From:   Fabio Estevam <festevam@gmail.com>
-To:     rafael@kernel.org
-Cc:     daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
-        linux-pm@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        robh+dt@kernel.org, conor+dt@kernel.org,
-        devicetree@vger.kernel.org, Fabio Estevam <festevam@denx.de>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v8 1/3] dt-bindings: thermal-zones: Document critical-action
-Date:   Fri, 15 Sep 2023 22:49:26 -0300
-Message-Id: <20230916014928.2848737-1-festevam@gmail.com>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S232622AbjIPLeB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Sep 2023 07:34:01 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69F78CC7;
+        Sat, 16 Sep 2023 04:33:52 -0700 (PDT)
+X-UUID: e54ff656548411ee8051498923ad61e6-20230916
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Type:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=hMzPQ8aaLRD7k9X0lpqUQAXHbIrWQDq6gdiavUcBGAY=;
+        b=j3V/bVvvikNFGVMxAv6SU6tQ9RIIGDsXuM+StWQsWwc3ZbqmsWZ13D7LdUsQMKg3tQw5vVVDctXh7nHaszOPh0rPgDm+fd20iHMofz8Z36GFq/DAo99nNP9uHcdr6Q4N6sRZmpK5Yz44lE7Oh0sLOKsG1w8cBVLKYoqmN4nL5L4=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.31,REQID:ee064795-73f4-4e0c-9311-1e50db0e8a47,IP:0,U
+        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+        release,TS:0
+X-CID-META: VersionHash:0ad78a4,CLOUDID:d32419c3-1e57-4345-9d31-31ad9818b39f,B
+        ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:
+        NO,DKR:0,DKP:0,BRR:0,BRE:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULN
+X-UUID: e54ff656548411ee8051498923ad61e6-20230916
+Received: from mtkmbs13n2.mediatek.inc [(172.21.101.108)] by mailgw02.mediatek.com
+        (envelope-from <bo.ye@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 313232792; Sat, 16 Sep 2023 19:33:45 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.26; Sat, 16 Sep 2023 19:33:44 +0800
+Received: from mcddlt001.gcn.mediatek.inc (10.19.240.15) by
+ mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.1118.26 via Frontend Transport; Sat, 16 Sep 2023 19:33:43 +0800
+From:   Bo Ye <bo.ye@mediatek.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+CC:     <yugang.wang@mediatek.com>, <yongdong.zhang@mediatek.com>,
+        <browse.zhang@mediatek.com>, Bo Ye <bo.ye@mediatek.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>
+Subject: [PATCH] Subject: thermal: Fix potential race condition in suspend/resume
+Date:   Sat, 16 Sep 2023 19:33:26 +0800
+Message-ID: <20230916113327.85693-1-bo.ye@mediatek.com>
+X-Mailer: git-send-email 2.17.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-Product-Ver: SMEX-14.0.0.3152-9.1.1006-23728.005
+X-TM-AS-Result: No-10--4.682700-8.000000
+X-TMASE-MatchedRID: 53RBOU84eqlniBBtNEnVPdsfxZpQv2qMFAr+wPWe7jEmu2XKsBcW8Rwb
+        B+iCKX6CIpXyAy0omPBsNi0cjuzvUperG0eDQRp7Bu2zRCSrLjYrHkgIan9a0YrVCk5dmxbq3qM
+        rf/AypQVwZC1i9Jj6zoeduB0bUkzgz7wL+9mPXSV1e7Xbb6Im2kyQ5fRSh265GNAPebYwJ/uta8
+        DXVXWIqYJi3vP75Z5QBFQhScLIoJe6zsztxuMjKKwxbZnudyr7vJ9Xvh5CmT6bKItl61J/yfJvo
+        cwUrWp7MFRQ7RYz5mULbigRnpKlKTpcQTtiHDgWg4zVeOPsni4XPwbj6LWT34wDFrwDUXDgxGGc
+        duInXkiBFbtJie1T3EMMprcbiest
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
+X-TMASE-Result: 10--4.682700-8.000000
+X-TMASE-Version: SMEX-14.0.0.3152-9.1.1006-23728.005
+X-TM-SNTS-SMTP: 24FFF8FE059C8449768942D227F29DF4D6B35F708D3BEFDA6387961263ED06362000:8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Fabio Estevam <festevam@denx.de>
+From: "yugang.wang" <yugang.wang@mediatek.com>
 
-Document the critical-action property to describe the thermal action
-the OS should perform after the critical temperature is reached.
+Body:
+This patch fixes a race condition during system resume. It occurs if
+the system is exiting a suspend state and a user is trying to
+register/unregister a thermal zone concurrently. The root cause is
+that both actions access the `thermal_tz_list`.
 
-The possible values are "shutdown" and "reboot".
+In detail:
 
-The motivation for introducing the critical-action property is that
-different systems may need different thermal actions when the critical
-temperature is reached.
+1. At PM_POST_SUSPEND during the resume, the system reads all thermal
+   zones in `thermal_tz_list`, then resets and updates their
+   temperatures.
+2. When registering/unregistering a thermal zone, the
+   `thermal_tz_list` gets manipulated.
 
-For example, a desktop PC may want the OS to trigger a shutdown
-when the critical temperature is reached.
+These two actions might occur concurrently, causing a race condition.
+To solve this issue, we introduce a mutex lock to protect
+`thermal_tz_list` from being modified while it's being read and
+updated during the resume from suspend.
 
-However, in some embedded cases, such behavior does not suit well,
-as the board may be unattended in the field and rebooting may be a
-better approach.
+Kernel oops excerpt related to this fix:
 
-The bootloader may also benefit from this new property as it can check
-the SoC temperature and in case the temperature is above the critical
-point, it can trigger a shutdown or reboot accordingly.
+[ 5201.869845] [T316822] pc: [0xffffffeb7d4876f0] mutex_lock+0x34/0x170
+[ 5201.869856] [T316822] lr: [0xffffffeb7ca98a84] thermal_pm_notify+0xd4/0x26c
+[... cut for brevity ...]
+[ 5201.871061] [T316822]  suspend_prepare+0x150/0x470
+[ 5201.871067] [T316822]  enter_state+0x84/0x6f4
+[ 5201.871076] [T316822]  state_store+0x15c/0x1e8
 
-Signed-off-by: Fabio Estevam <festevam@denx.de>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Change-Id: Ifdbdecba17093f91eab7e36ce04b46d311ca6568
+Signed-off-by: yugang.wang <yugang.wang@mediatek.com>
+Signed-off-by: Bo Ye <bo.ye@mediatek.com>
 ---
-Changes since v7:
-- Made critical-action a property of the top-level thermal-zone node. (Rafael)
+ drivers/thermal/thermal_core.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
- .../devicetree/bindings/thermal/thermal-zones.yaml        | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-index 4f3acdc4dec0..d28f3fe1045d 100644
---- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-+++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-@@ -48,6 +48,14 @@ properties:
-       platform-data regarding temperature thresholds and the mitigation actions
-       to take when the temperature crosses those thresholds.
- 
-+  critical-action:
-+    $ref: /schemas/types.yaml#/definitions/string
-+    description:
-+      The action the OS should perform after the critical temperature is reached.
-+    enum:
-+      - shutdown
-+      - reboot
-+
- patternProperties:
-   "^[a-zA-Z][a-zA-Z0-9\\-]{1,12}-thermal$":
-     type: object
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 8717a3343512..a7a18ed57b6d 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1529,12 +1529,14 @@ static int thermal_pm_notify(struct notifier_block *nb,
+ 	case PM_POST_HIBERNATION:
+ 	case PM_POST_RESTORE:
+ 	case PM_POST_SUSPEND:
++		mutex_lock(&thermal_list_lock);
+ 		atomic_set(&in_suspend, 0);
+ 		list_for_each_entry(tz, &thermal_tz_list, node) {
+ 			thermal_zone_device_init(tz);
+ 			thermal_zone_device_update(tz,
+ 						   THERMAL_EVENT_UNSPECIFIED);
+ 		}
++		mutex_unlock(&thermal_list_lock);
+ 		break;
+ 	default:
+ 		break;
 -- 
-2.34.1
+2.17.0
 
