@@ -2,109 +2,105 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58F0BCD37B3
-	for <linux-pm@archiver.kernel.org>; Sun, 17 Sep 2023 09:53:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B5EDCD37B4
+	for <linux-pm@archiver.kernel.org>; Sun, 17 Sep 2023 19:09:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229957AbjIQJwe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 17 Sep 2023 05:52:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39468 "EHLO
+        id S233512AbjIQTJS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 17 Sep 2023 15:09:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230167AbjIQJwS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Sep 2023 05:52:18 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 474AF139
-        for <linux-pm@vger.kernel.org>; Sun, 17 Sep 2023 02:52:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.com; s=s31663417;
- t=1694944330; x=1695549130; i=quwenruo.btrfs@gmx.com;
- bh=ngoqN74E0cXOFHPu40xUwwgTuhap9JEozUTNqKX9u+Y=;
- h=X-UI-Sender-Class:Date:To:From:Subject;
- b=UtMQU6DgunfUMu9vel9RCc2OqQ7ya6LcFcS2JmNMNA9vdbc+FHQmP97MQyoOSXz4Sp6591XJjKE
- +iUp0Z/OsoA0h+CggXf2u43nkJbEkI/85au1Zd2F+UvOptO5/JL+OwbZxNxoGSw/xyuottkeUHupX
- 7CeSI3qodkfvaVtH3QTJktZSlFKGrBsetiPoyBLqvi33ELkkst5JMhSY9ynwPuMM57oWvE9x+yV49
- HSUSuuzA+kFOLU4hmCGtzdPMzj/sXxIJ32lDvJXHS9muQDTOZ42DG8Agx9nLvt4zsI8N/95XHEYLQ
- Gm3PoZnVBujn7fxfiR+I4zw7uZ53CBXcqVZQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [172.16.0.117] ([218.215.59.251]) by mail.gmx.net (mrgmx005
- [212.227.17.184]) with ESMTPSA (Nemesis) id 1N0oBr-1rbzZc1rGf-00wj1G; Sun, 17
- Sep 2023 11:52:10 +0200
-Message-ID: <5b410ac7-ea26-4f26-96a0-84451943c83a@gmx.com>
-Date:   Sun, 17 Sep 2023 19:22:06 +0930
+        with ESMTP id S238011AbjIQTIy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Sep 2023 15:08:54 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23DCA10D;
+        Sun, 17 Sep 2023 12:08:49 -0700 (PDT)
+Received: from mercury (unknown [185.254.75.28])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: sre)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 58B14660721F;
+        Sun, 17 Sep 2023 20:08:47 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1694977727;
+        bh=MhUT4ZgnWZIvqh1JKIu10f1szECnNwOZIDOW8HonKBc=;
+        h=From:To:Cc:Subject:Date:From;
+        b=TrqPdfKzJqDG9xMsqEC1xY+ba/jCjD+czKGJ8mpI4Tuih83nSieN+5ih0xl7IfRb+
+         lU8AcYyQcCWgYdt72h3n4G3j31hdzoePHA9L+KvmNHyItfm1J6Ch4XEi9pchXRf8Sj
+         iDdU7q0Atl57/VTJpE0lmu5V7goPnuP3kAiLTWWXos7DOT8CxapxLnf9413aSw+ysU
+         CdVtmShMhfyPRQxakJJ/wiyx03k47P3jYCbDtCDR1Zt3HI/Mq4/GiICx3q58AOqCYy
+         azpIE9dT2aGOlK/Ov2ay0H367G+IJ8CDZsDvb6L9Qq/iWQIHNogxiPYLeX+nfL8mB9
+         yhCe4a0X1C8ug==
+Received: by mercury (Postfix, from userid 1000)
+        id 394D710604B6; Sun, 17 Sep 2023 21:01:31 +0200 (CEST)
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: [PATCH] dt-bindings: power: supply: Drop deprecated ab8500-battery
+Date:   Sun, 17 Sep 2023 21:01:24 +0200
+Message-Id: <20230917190124.1012316-1-sebastian.reichel@collabora.com>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To:     linux-pm@vger.kernel.org, ray.huang@amd.com
-From:   Qu Wenruo <quwenruo.btrfs@gmx.com>
-Subject: Unable to disable AMD cpu boost using amd-pstate driver?
-Autocrypt: addr=quwenruo.btrfs@gmx.com; keydata=
- xsBNBFnVga8BCACyhFP3ExcTIuB73jDIBA/vSoYcTyysFQzPvez64TUSCv1SgXEByR7fju3o
- 8RfaWuHCnkkea5luuTZMqfgTXrun2dqNVYDNOV6RIVrc4YuG20yhC1epnV55fJCThqij0MRL
- 1NxPKXIlEdHvN0Kov3CtWA+R1iNN0RCeVun7rmOrrjBK573aWC5sgP7YsBOLK79H3tmUtz6b
- 9Imuj0ZyEsa76Xg9PX9Hn2myKj1hfWGS+5og9Va4hrwQC8ipjXik6NKR5GDV+hOZkktU81G5
- gkQtGB9jOAYRs86QG/b7PtIlbd3+pppT0gaS+wvwMs8cuNG+Pu6KO1oC4jgdseFLu7NpABEB
- AAHNIlF1IFdlbnJ1byA8cXV3ZW5ydW8uYnRyZnNAZ214LmNvbT7CwJQEEwEIAD4CGwMFCwkI
- BwIGFQgJCgsCBBYCAwECHgECF4AWIQQt33LlpaVbqJ2qQuHCPZHzoSX+qAUCY00iVQUJDToH
- pgAKCRDCPZHzoSX+qNKACACkjDLzCvcFuDlgqCiS4ajHAo6twGra3uGgY2klo3S4JespWifr
- BLPPak74oOShqNZ8yWzB1Bkz1u93Ifx3c3H0r2vLWrImoP5eQdymVqMWmDAq+sV1Koyt8gXQ
- XPD2jQCrfR9nUuV1F3Z4Lgo+6I5LjuXBVEayFdz/VYK63+YLEAlSowCF72Lkz06TmaI0XMyj
- jgRNGM2MRgfxbprCcsgUypaDfmhY2nrhIzPUICURfp9t/65+/PLlV4nYs+DtSwPyNjkPX72+
- LdyIdY+BqS8cZbPG5spCyJIlZonADojLDYQq4QnufARU51zyVjzTXMg5gAttDZwTH+8LbNI4
- mm2YzsBNBFnVga8BCACqU+th4Esy/c8BnvliFAjAfpzhI1wH76FD1MJPmAhA3DnX5JDORcga
- CbPEwhLj1xlwTgpeT+QfDmGJ5B5BlrrQFZVE1fChEjiJvyiSAO4yQPkrPVYTI7Xj34FnscPj
- /IrRUUka68MlHxPtFnAHr25VIuOS41lmYKYNwPNLRz9Ik6DmeTG3WJO2BQRNvXA0pXrJH1fN
- GSsRb+pKEKHKtL1803x71zQxCwLh+zLP1iXHVM5j8gX9zqupigQR/Cel2XPS44zWcDW8r7B0
- q1eW4Jrv0x19p4P923voqn+joIAostyNTUjCeSrUdKth9jcdlam9X2DziA/DHDFfS5eq4fEv
- ABEBAAHCwHwEGAEIACYCGwwWIQQt33LlpaVbqJ2qQuHCPZHzoSX+qAUCY00ibgUJDToHvwAK
- CRDCPZHzoSX+qK6vB/9yyZlsS+ijtsvwYDjGA2WhVhN07Xa5SBBvGCAycyGGzSMkOJcOtUUf
- tD+ADyrLbLuVSfRN1ke738UojphwkSFj4t9scG5A+U8GgOZtrlYOsY2+cG3R5vjoXUgXMP37
- INfWh0KbJodf0G48xouesn08cbfUdlphSMXujCA8y5TcNyRuNv2q5Nizl8sKhUZzh4BascoK
- DChBuznBsucCTAGrwPgG4/ul6HnWE8DipMKvkV9ob1xJS2W4WJRPp6QdVrBWJ9cCdtpR6GbL
- iQi22uZXoSPv/0oUrGU+U5X4IvdnvT+8viPzszL5wXswJZfqfy8tmHM85yjObVdIG6AlnrrD
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:txS9Ti01rRN+q2xjWeZOUfTTqkp7Kk9uxdyNRojx2QxIaAVnXtM
- NhzPK8nBC9t8lfJQgAR4Rl5Ttwys1YRaNaAFjGIIMbHXXRwQ49UuGgW9AHpzMq+QNgpWfUk
- rNUBbbdpy+UGY7bQc60JbWIWQDQT3BQFyfO4z/Xvkm7Pjti/4TAywkx1Iljwups0g6X+BnF
- ZqG73/K5+I9AQ17ibw9FA==
-UI-OutboundReport: notjunk:1;M01:P0:lQPGK6c5qXs=;z3rrqv60tT+Nl4wFF1vYlKA9Ydf
- XA5t5nonRw+JkpnfjgZCGVVplRQEdJRBLiNJT6N9/YjsZMQ/10xzuTrTuEiP6GbXdL+5LNHA4
- 6TqCdjJE8DCBV6LWDsDDkQbD3AFvl3rzhWZEKo1/vLiCqoFjNVSQE+Pa3nH8RARlvEpiI/kbf
- I/vJc4z31QW+ETkpNxqMAjo17w2Qa5RLg+B1U6/FGIEVLPX3wATKU53nVq8pJzrWkdcp44jSB
- NTPY9thAASSyghwRBsU1mLOK+dtjAe4Ag5uwsTQaQc9pSg2/Hl5yDwepJpUvR4cmJpQEhenfe
- 0hZdprEhylbAzVfeOdd90U3lmS5C56PJA4ulhzrA7o18iOYrhvempenxWDkMbAxUsXbo1KHiu
- /MPK0FRh7x3j6W60lSSdILk2nqCjwYLBk7JHuyMcHYhmuPmMsAk96ZK1ylcf7T1//sCtV1oJz
- ED4snBSSWBSzhmaWF/sHmhwlQNrtXqNq8mdTZuH5acYabDg1TgT1WvuKOPfHA6EWTn6hixZwx
- O5VY+7G/f3ITGHKSjQuEUvoUz/DXvuazCcQ4rctrnPq/zmb+sOR295eGZCpUXRutt5oKwTgB6
- 8/js9pwJqpiuFp06v7Xt8cQSnpQnPQd+7vFQ7Oq13xZRCetyuVqfWWwwe5aQMqQDFD2eofKz5
- LvAKEu/fI+Fe0g30NqdTF7dnceOUTbgb7P6cUWJm3iMyH5lLCGUuV7w2/EBjXcgSBNmOVZDZH
- NI//icQ3nKxXs/e4dbM0w2AH1BBVTwRPCi1E4lP5HTa6l8XYxqWJwf6rx9QzU5qtrRMqODoVF
- fX/k8kZCNMG1Tp85tcY2aqRWJRv73zNp76LOvjhnw6Dh+kXe2z1GMRpWYtU7d7ScTaDnWbJLy
- WxQSnwD97+b+gz6+d5oOws5wLRXoBIVLneAPllGhJ/pvVNC6LLsRChLGZwOgC4rTD13gSsxBv
- PFTzquy2KFa+DfeCDjm2TorXSgU=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rui,
+Linus Walleij modified AB8500 to use the generic simple-battery
+and samsung,battery bindings. This is an unused leftover that
+can be removed.
 
-Thanks for your hard work maintaining amd-pstate driver first.
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+---
+ .../supply/stericsson,ab8500-battery.txt      | 34 -------------------
+ 1 file changed, 34 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/stericsson,ab8500-battery.txt
 
-However it looks like if amd-pstate is used, there is no way to properly
-disable the CPU boost (this becomes obvious especially in Linux 6.5, as
-amd-pstate is enabled for my 7940HS CPU by default).
+diff --git a/Documentation/devicetree/bindings/power/supply/stericsson,ab8500-battery.txt b/Documentation/devicetree/bindings/power/supply/stericsson,ab8500-battery.txt
+deleted file mode 100644
+index ee125cb0e46d..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/stericsson,ab8500-battery.txt
++++ /dev/null
+@@ -1,34 +0,0 @@
+-AB85000 PMIC contains a node, which contains shared
+-information about the battery connected to the PMIC.
+-The node has no compatible property.
+-
+-Properties of this node are:
+-
+-thermistor-on-batctrl:
+-	A boolean value indicating thermistor interface	to battery
+-
+-	Note:
+-	'btemp' and 'batctrl' are the pins interfaced for battery temperature
+-	measurement, 'btemp' signal is used when NTC(negative temperature
+-	coefficient) resister is interfaced external to battery whereas
+-	'batctrl' pin is used when NTC resister is internal to battery.
+-
+-	Example:
+-	ab8500_battery: ab8500_battery {
+-		thermistor-on-batctrl;
+-	};
+-	indicates: NTC resister is internal to battery, 'batctrl' is used
+-		for thermal measurement.
+-
+-	The absence of property 'thermal-on-batctrl' indicates
+-	NTC resister is external to battery and  'btemp' signal is used
+-	for thermal measurement.
+-
+-battery-type:
+-	This shall be the battery manufacturing technology type,
+-	allowed types are:
+-		"UNKNOWN" "NiMH" "LION" "LIPO" "LiFe" "NiCd" "LiMn"
+-	Example:
+-	ab8500_battery: ab8500_battery {
+-		stericsson,battery-type = "LIPO";
+-	}
+-- 
+2.40.1
 
-Previously using acpi-cppc, there is always a file named "boost" in
-/sys/devices/system/cpu/cpufreq, and echo 0 into that file makes my CPU
-temp never cross 75 during gaming sessions.
-
-
-But in Linux 6.5, with amd-pstate, I have to go amd_state=3Dpassive to get
-that file back, and echoing 0 into that file makes no difference.
-I still easily got 90C during the same game.
-
-For now I have to completely disable amd-pstate and rollback to acpi
-driver to get a sane temperature.
-
-Is there any proper way to disable the boost using amd-pstate?
-
-Thanks,
-Qu
