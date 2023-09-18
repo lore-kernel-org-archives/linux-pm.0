@@ -2,45 +2,45 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BE64C46CA1
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 16:34:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A99DECD13D8
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 16:35:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229485AbjIRQex (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Sep 2023 12:34:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59546 "EHLO
+        id S230265AbjIRQfK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Sep 2023 12:35:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52416 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230249AbjIRQee (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 12:34:34 -0400
+        with ESMTP id S230428AbjIRQes (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 12:34:48 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 917D8282BE
-        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 09:15:59 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE89125AC7
+        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 09:15:32 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qiER7-0002CP-3c; Mon, 18 Sep 2023 15:37:13 +0200
+        id 1qiER4-0001yp-NZ; Mon, 18 Sep 2023 15:37:10 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qiER6-007EZq-ND; Mon, 18 Sep 2023 15:37:12 +0200
+        id 1qiER3-007EZ3-WA; Mon, 18 Sep 2023 15:37:10 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qiER6-002fXi-Dx; Mon, 18 Sep 2023 15:37:12 +0200
+        id 1qiER3-002fWw-N7; Mon, 18 Sep 2023 15:37:09 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Sebastian Reichel <sre@kernel.org>
-Cc:     patches@opensource.cirrus.com, linux-pm@vger.kernel.org,
-        kernel@pengutronix.de
-Subject: [PATCH 29/32] power: supply: wm831x_backup: Convert to platform remove callback returning void
-Date:   Mon, 18 Sep 2023 15:36:57 +0200
-Message-Id: <20230918133700.1254499-30-u.kleine-koenig@pengutronix.de>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        linux-pm@vger.kernel.org, kernel@pengutronix.de
+Subject: [PATCH 17/32] power: supply: max14577_charger: Convert to platform remove callback returning void
+Date:   Mon, 18 Sep 2023 15:36:45 +0200
+Message-Id: <20230918133700.1254499-18-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230918133700.1254499-1-u.kleine-koenig@pengutronix.de>
 References: <20230918133700.1254499-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1693; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=O+UPWfl8slAr0QvbbYlMXqYrxqhJnYUbTJbUZe2vRkw=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlCFJxljr+co1/s5FVcZwWtagN3k0PAa4h3abYN YkP7rzntieJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZQhScQAKCRCPgPtYfRL+ TovsCAC0gPEgZDQ7YISnuOGSp/U5gEpZ493oV/Qdvyc296HRPG33sUD5ToLeh/qm7IWP5WA9zQL nn7ar4kHOD1EMPXTQrfXA3ZKoDT2UN4jCIPn6sDxGzSTcmhRFLv8a0zUu0ZJpQPpOFYfYg2RvK/ njqj0FFedrENL6NWZ2ONrDOE4ycZIB7Y/pOTxi6Gnov7pqIDIaY6qdTYIZkoMu5Q0YWjXPYM/VJ kXMGGR0idH+UEtCEB9rnPEndJe4G0PzcTnZ0Kf+CqVnyQ4kKJArp7y6BxBilvJ6who9UN4GyxdS gdc0UKwVh1pyqYX1Lwc+dP6Vsy6j8qlVtzjKUFqQS3gms73g
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1948; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=uBHJekQpPQTr78dF4bso7U9NPKH5evEJEaQhwnGCj+Y=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlCFJjRFcfhKw9k7UBSi0/i09wSsmfHcVXH7pU/ IiKdDgT1NGJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZQhSYwAKCRCPgPtYfRL+ TpG9B/978GK4fFPkbedD1BodrwRd3bcP0vC2zx6JjvfcJjgKRHxX4PfoFc8ITrkRoNcPovvsuk7 bFWZ0eWBCDT5pmRz+JBQC/jaY0uv5sEQ8PI2jOKbfzvjXt2eZJ7+VZuxoyQLoVEpV9Iprr7rg9i tsgtIRdr+sM0PJ+ztijKKhz0OMa1GVOmSQI6NGdYXdE+yr7xeklrF6WuojNLEOQxaOnQfHcz1jV Oiqx6Va1Nu2namzd+uvzq2NTLlNmmbzDyIePth/HX2GXH93ddXNV3dGx4eXdB+HCYKHF6+21G+u Q7ZRU53sNDBCyExXY3kbDFuAebOxYYVCGusTiSDAZfRbBOx1
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -65,34 +65,38 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/power/supply/wm831x_backup.c | 6 ++----
+ drivers/power/supply/max14577_charger.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/supply/wm831x_backup.c b/drivers/power/supply/wm831x_backup.c
-index ffb265b8526d..1a7265660ade 100644
---- a/drivers/power/supply/wm831x_backup.c
-+++ b/drivers/power/supply/wm831x_backup.c
-@@ -197,18 +197,16 @@ static int wm831x_backup_probe(struct platform_device *pdev)
- 	return PTR_ERR_OR_ZERO(devdata->backup);
+diff --git a/drivers/power/supply/max14577_charger.c b/drivers/power/supply/max14577_charger.c
+index 96f9de775043..7c23fa89ea19 100644
+--- a/drivers/power/supply/max14577_charger.c
++++ b/drivers/power/supply/max14577_charger.c
+@@ -606,14 +606,12 @@ static int max14577_charger_probe(struct platform_device *pdev)
+ 	return ret;
  }
  
--static int wm831x_backup_remove(struct platform_device *pdev)
-+static void wm831x_backup_remove(struct platform_device *pdev)
+-static int max14577_charger_remove(struct platform_device *pdev)
++static void max14577_charger_remove(struct platform_device *pdev)
  {
- 	struct wm831x_backup *devdata = platform_get_drvdata(pdev);
+ 	struct max14577_charger *chg = platform_get_drvdata(pdev);
  
- 	power_supply_unregister(devdata->backup);
+ 	device_remove_file(&pdev->dev, &dev_attr_fast_charge_timer);
+ 	power_supply_unregister(chg->charger);
 -
 -	return 0;
  }
  
- static struct platform_driver wm831x_backup_driver = {
- 	.probe = wm831x_backup_probe,
--	.remove = wm831x_backup_remove,
-+	.remove_new = wm831x_backup_remove,
- 	.driver = {
- 		.name = "wm831x-backup",
+ static const struct platform_device_id max14577_charger_id[] = {
+@@ -638,7 +636,7 @@ static struct platform_driver max14577_charger_driver = {
+ 		.of_match_table = of_max14577_charger_dt_match,
  	},
+ 	.probe		= max14577_charger_probe,
+-	.remove		= max14577_charger_remove,
++	.remove_new	= max14577_charger_remove,
+ 	.id_table	= max14577_charger_id,
+ };
+ module_platform_driver(max14577_charger_driver);
 -- 
 2.40.1
 
