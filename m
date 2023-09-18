@@ -2,99 +2,141 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D888C46CA1
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 17:14:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 223A6CD37B0
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 17:25:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231509AbjIRROy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Sep 2023 13:14:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41994 "EHLO
+        id S229641AbjIRRZZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Sep 2023 13:25:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49778 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231405AbjIRROx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 13:14:53 -0400
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7651E1FED
-        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 09:10:53 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qiER3-0001wC-Pt; Mon, 18 Sep 2023 15:37:09 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qiER3-007EYo-55; Mon, 18 Sep 2023 15:37:09 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qiER2-002fWg-SA; Mon, 18 Sep 2023 15:37:08 +0200
-From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     linux-pm@vger.kernel.org, kernel@pengutronix.de
-Subject: [PATCH 13/32] power: supply: goldfish_battery: Convert to platform remove callback returning void
-Date:   Mon, 18 Sep 2023 15:36:41 +0200
-Message-Id: <20230918133700.1254499-14-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230918133700.1254499-1-u.kleine-koenig@pengutronix.de>
-References: <20230918133700.1254499-1-u.kleine-koenig@pengutronix.de>
+        with ESMTP id S230250AbjIRRZW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 13:25:22 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3734FE;
+        Mon, 18 Sep 2023 10:25:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1695057917; x=1726593917;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=SIG5Q4uL+P053EqzXCbB6Lu6kIje4h7gQ5SWY/pulkw=;
+  b=N6mQd0Kw5gMXdsfkmYPPHjWAPwGKOKLHiP+hxnljMkawC8O4Sj+BFi/b
+   mYk7Y6oVAY3hY6oyyejf8HpSdkp4jdIVwAHHng/JKPrkXIzebCIbMvB9u
+   YHSK+y6qCIS5M1utFg+irBQJwjdTJPlGGGI93cQ1kuKjCTqUUIvW77sN+
+   P/6krTXO7CB93dw535DamQ80+0Km8q3MHzqsKG7nybOmZ/2pZh4+ZR8Tq
+   t83oynPZLugJzEBfRhD6MPPVWinAgvf3DAEyp/MfzRfY6OKuEo8T8nQDr
+   ARAuC8UJ6KpSeS/FmCb60n7am5a7+xKMqU4TyHujWj6ZbhLz1dVMXE/rt
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10837"; a="382466640"
+X-IronPort-AV: E=Sophos;i="6.02,157,1688454000"; 
+   d="scan'208";a="382466640"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2023 10:25:16 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10837"; a="739247599"
+X-IronPort-AV: E=Sophos;i="6.02,157,1688454000"; 
+   d="scan'208";a="739247599"
+Received: from spandruv-desk1.amr.corp.intel.com ([10.209.0.131])
+  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2023 10:25:16 -0700
+Message-ID: <f4989b6e49323e501cce1597f73ab024498ab7e7.camel@linux.intel.com>
+Subject: Re: [PATCH v3] tools/power/x86/intel_pstate_tracer: python minimum
+ version
+From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Doug Smythies <dsmythies@telus.net>, rafael.j.wysocki@intel.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Mario.Limonciello@amd.com,
+        'Swapnil Sapkal' <swapnil.sapkal@amd.com>, Ray.Huang@amd.com
+Date:   Mon, 18 Sep 2023 10:25:15 -0700
+In-Reply-To: <002401d9e9e5$248f3d50$6dadb7f0$@telus.net>
+References: <001701d9e9ae$02438120$06ca8360$@telus.net>
+         <002301d9e9e2$13424090$39c6c1b0$@telus.net>
+         <002401d9e9e5$248f3d50$6dadb7f0$@telus.net>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.48.4 (3.48.4-1.fc38) 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1930; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=y72EgNf7ctYp9lWq0PeLJDCgY7D5jVZUxz3iBX7F2jk=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlCFJf3yS00YSrK648+vECAajvRAkSVYCEXyZ39 vb40PQmF3CJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZQhSXwAKCRCPgPtYfRL+ TrPyCAC0nrKtPc6swKT6BLF/PQg2Wn50MgNiHvV4YQIG0jN01xJQVeg1bknBD7iJ/WV0bsTGcMi f5Run/7woOiMzKYh9GfYSL72Ifzxa7fbCEshHtxSgrymCe8xPkb6wCoqf8us165pQIFhsc9Zy64 SqfdbmN49WDbSiGRhMQZtB1Q3gS9g7PdkIu90zeCsynWoKYK2cI0DAFd+PE5+EZUWumTJihwTpP oWfO38LiDKNiWDi6UQuxXC30XinBx0dKySJtHjfNaMxIIR2Bx75ke6v1Kz4iRiXH67p01n75L5x kriB8KnDq+0L4qAJmqFFh7J4aiPDwTedHH0refic8vPqCW4j
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The .remove() callback for a platform driver returns an int which makes
-many driver authors wrongly assume it's possible to do error handling by
-returning an error code. However the value returned is ignored (apart
-from emitting a warning) and this typically results in resource leaks.
-To improve here there is a quest to make the remove callback return
-void. In the first step of this quest all drivers are converted to
-.remove_new() which already returns void. Eventually after all drivers
-are converted, .remove_new() is renamed to .remove().
+On Sun, 2023-09-17 at 21:03 -0700, Doug Smythies wrote:
+>=20
+Think somehow one extra new line in email.
 
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
+> From: Doug Smythies <dsmythies@telus.net>
+>=20
+> Change the minimum python version from 2.7 to 3.6.
+> Remove a 2.X backwards compatibility line.
+>=20
+> Signed-off-by: Doug Smythies <dsmythies@telus.net>
+Acked-by: Srinivas Pandruvada<srinivas.pandruvada@linux.intel.com>
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/power/supply/goldfish_battery.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/power/supply/goldfish_battery.c b/drivers/power/supply/goldfish_battery.c
-index a58d713d75ce..8bb645ad1e5d 100644
---- a/drivers/power/supply/goldfish_battery.c
-+++ b/drivers/power/supply/goldfish_battery.c
-@@ -249,13 +249,12 @@ static int goldfish_battery_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int goldfish_battery_remove(struct platform_device *pdev)
-+static void goldfish_battery_remove(struct platform_device *pdev)
- {
- 	struct goldfish_battery_data *data = platform_get_drvdata(pdev);
- 
- 	power_supply_unregister(data->battery);
- 	power_supply_unregister(data->ac);
--	return 0;
- }
- 
- static const struct of_device_id goldfish_battery_of_match[] = {
-@@ -274,7 +273,7 @@ MODULE_DEVICE_TABLE(acpi, goldfish_battery_acpi_match);
- 
- static struct platform_driver goldfish_battery_device = {
- 	.probe		= goldfish_battery_probe,
--	.remove		= goldfish_battery_remove,
-+	.remove_new	= goldfish_battery_remove,
- 	.driver = {
- 		.name = "goldfish-battery",
- 		.of_match_table = goldfish_battery_of_match,
--- 
-2.40.1
+> ---
+>=20
+> v2 -> v3: Try to fix mess that was v2.
+> v1 -> v2: Fix careless typos.
+>=20
+> ---
+> .../x86/intel_pstate_tracer/intel_pstate_tracer.py=C2=A0=C2=A0 | 12 +++++=
++-----
+> -
+> =C2=A01 file changed, 6 insertions(+), 6 deletions(-)
+>=20
+> diff --git
+> a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> index ec3323100e1a..38cfbdcdedb7 100755
+> --- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> +++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> @@ -1,4 +1,4 @@
+> -#!/usr/bin/env python
+> +#!/usr/bin/env python3
+> =C2=A0# SPDX-License-Identifier: GPL-2.0-only
+> =C2=A0# -*- coding: utf-8 -*-
+> =C2=A0#
+> @@ -11,11 +11,11 @@ then this utility enables and collects trace data
+> for a user specified interval
+> =C2=A0and generates performance plots.
+>=20
+> =C2=A0Prerequisites:
+> -=C2=A0=C2=A0=C2=A0 Python version 2.7.x or higher
+> +=C2=A0=C2=A0=C2=A0 Python version 3.6.x or higher
+> =C2=A0=C2=A0=C2=A0=C2=A0 gnuplot 5.0 or higher
+> -=C2=A0=C2=A0=C2=A0 gnuplot-py 1.8 or higher
+> +=C2=A0=C2=A0=C2=A0 python3-gnuplot 1.8 or higher
+> =C2=A0=C2=A0=C2=A0=C2=A0 (Most of the distributions have these required p=
+ackages. They
+> may be called
+> -=C2=A0=C2=A0=C2=A0=C2=A0 gnuplot-py, phython-gnuplot or phython3-gnuplot=
+, gnuplot-nox,
+> ... )
+> +=C2=A0=C2=A0=C2=A0=C2=A0 gnuplot-py, python-gnuplot or python3-gnuplot, =
+gnuplot-nox, ...
+> )
+>=20
+> =C2=A0=C2=A0=C2=A0=C2=A0 HWP (Hardware P-States are disabled)
+> =C2=A0=C2=A0=C2=A0=C2=A0 Kernel config for Linux trace is enabled
+> @@ -23,7 +23,7 @@ Prerequisites:
+> =C2=A0=C2=A0=C2=A0=C2=A0 see print_help(): for Usage and Output details
+>=20
+> =C2=A0"""
+> -from __future__ import print_function
+> +
+> =C2=A0from datetime import datetime
+> =C2=A0import subprocess
+> =C2=A0import os
+> @@ -562,7 +562,7 @@ if __name__ =3D=3D "__main__":
+>=20
+> =C2=A0=C2=A0=C2=A0=C2=A0 # Temporary (or perhaps not)
+> =C2=A0=C2=A0=C2=A0=C2=A0 cur_version =3D sys.version_info
+> -=C2=A0=C2=A0=C2=A0 print('python version (should be >=3D 2.7):')
+> +=C2=A0=C2=A0=C2=A0 print('python version (should be >=3D 3.6):')
+> =C2=A0=C2=A0=C2=A0=C2=A0 print(cur_version)
+>=20
+> =C2=A0=C2=A0=C2=A0=C2=A0 # Left as "cleanup" for potential future re-run =
+ability.
+> --
+> 2.25.1
+>=20
+>=20
 
