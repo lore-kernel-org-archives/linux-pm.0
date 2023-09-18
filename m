@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E0F9CD13D2
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A97B9C46CA1
 	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 16:20:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230096AbjIRQUd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Sep 2023 12:20:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46672 "EHLO
+        id S230267AbjIRQUe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Sep 2023 12:20:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60852 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229982AbjIRQUS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 12:20:18 -0400
+        with ESMTP id S230123AbjIRQUW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 12:20:22 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CF47216D7
-        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 09:14:33 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 558A82446C
+        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 09:15:07 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qiER6-0002Bw-MF; Mon, 18 Sep 2023 15:37:12 +0200
+        id 1qiER1-0001pX-Vc; Mon, 18 Sep 2023 15:37:07 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qiER6-007EZi-9f; Mon, 18 Sep 2023 15:37:12 +0200
+        id 1qiER1-007EYL-Ix; Mon, 18 Sep 2023 15:37:07 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qiER6-002fXa-0d; Mon, 18 Sep 2023 15:37:12 +0200
+        id 1qiER1-002fWE-9O; Mon, 18 Sep 2023 15:37:07 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     linux-pm@vger.kernel.org, kernel@pengutronix.de
-Subject: [PATCH 27/32] power: supply: twl4030_charger: Convert to platform remove callback returning void
-Date:   Mon, 18 Sep 2023 15:36:55 +0200
-Message-Id: <20230918133700.1254499-28-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 06/32] power: supply: act8945a_charger: Convert to platform remove callback returning void
+Date:   Mon, 18 Sep 2023 15:36:34 +0200
+Message-Id: <20230918133700.1254499-7-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230918133700.1254499-1-u.kleine-koenig@pengutronix.de>
 References: <20230918133700.1254499-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2003; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=85UwmSf+vOQeEPfWwSLPmM3+kPkAsNcqdfQSv9IJGuk=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlCFJvyf2xr1r4LVWPQpcD3cPr8OxEc3ULvymU4 fF6W4Pe8TmJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZQhSbwAKCRCPgPtYfRL+ Tm8QB/4m2QPcD0SxPUIAGsCaRuplQVlcrpJ9jhK61jg8tjlUQc/H/aG14PTQx7s+V1APQ5mKTnE f7htpwcsKYwvmL7Uu8Un/f+j5fO2cdTV/i3YQbIOn2M5DV96S8aOiwM2TD6Ay5Lb+AiN+vj0G/x iOXcDG7MYLVa9DY+JVqRlQhEyXOGbM8cw6cuHMQiH56Yp8NvjpWMPttvfATvK/NRcGBLvQVQ/ZN 35w671aJB5q/LpcDW9O4/xmqfsoguvTUIlTs0/I7JCs+9BEgt7Bq0YAOsmmTeBx13Y5ZRdf8dt5 yeYtbJNaI8YeqEqpzBUbAJS6sYmmJ2rmE1epl4WFtx65spPZ
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1850; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=PrM3ABfp3OcWBml0epzzHjGdmmv7wwl3Zc85DMdKIpc=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlCFJWxtNSwtYwdobrM3XIrpAeDDxEqYexugNfu iGvXzGvxi6JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZQhSVgAKCRCPgPtYfRL+ Tl9zB/4/lqL9QMmgjMasb+FpyhfmnwVA0UjmpCuuVfnlLM8/gMiyAsvyXhwuxrrGFDxYfOBqujM OrVUugNwoM7CcUVFrUErZc0RdeNBucej22qbYOXQ/pqghAyKhD1D+Ne57HKSV2pMrHsaAoLckuB ktje5bEkXspNq9bapixcZKvr4VjqKafjVAORef2xuoO8m/FpcC7bxsxdwtYtIVpyNuh1zsxeM3G gL2BNF57igd5N/s6hpC8+dDfQrPeMgD9IiZowHwWshO/Gosy+tnhfL68fLng/mhRGr9uwyl/Mxi VGfLoHMwy9g7ZMoJE3SP7s4OXWJXzryBGlDMyfaypYlvcKVO
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -64,40 +64,38 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/power/supply/twl4030_charger.c | 6 ++----
+ drivers/power/supply/act8945a_charger.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index e78d061d8d32..7b9b0b3e164e 100644
---- a/drivers/power/supply/twl4030_charger.c
-+++ b/drivers/power/supply/twl4030_charger.c
-@@ -1108,7 +1108,7 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
+index e9b5f4283772..51122bfbf196 100644
+--- a/drivers/power/supply/act8945a_charger.c
++++ b/drivers/power/supply/act8945a_charger.c
+@@ -638,14 +638,12 @@ static int act8945a_charger_probe(struct platform_device *pdev)
  	return 0;
  }
  
--static int twl4030_bci_remove(struct platform_device *pdev)
-+static void twl4030_bci_remove(struct platform_device *pdev)
+-static int act8945a_charger_remove(struct platform_device *pdev)
++static void act8945a_charger_remove(struct platform_device *pdev)
  {
- 	struct twl4030_bci *bci = platform_get_drvdata(pdev);
+ 	struct act8945a_charger *charger = platform_get_drvdata(pdev);
  
-@@ -1123,8 +1123,6 @@ static int twl4030_bci_remove(struct platform_device *pdev)
- 			 TWL4030_INTERRUPTS_BCIIMR1A);
- 	twl_i2c_write_u8(TWL4030_MODULE_INTERRUPTS, 0xff,
- 			 TWL4030_INTERRUPTS_BCIIMR2A);
+ 	charger->init_done = false;
+ 	cancel_work_sync(&charger->work);
 -
 -	return 0;
  }
  
- static const struct of_device_id twl_bci_of_match[] __maybe_unused = {
-@@ -1135,7 +1133,7 @@ MODULE_DEVICE_TABLE(of, twl_bci_of_match);
+ static struct platform_driver act8945a_charger_driver = {
+@@ -653,7 +651,7 @@ static struct platform_driver act8945a_charger_driver = {
+ 		.name = "act8945a-charger",
+ 	},
+ 	.probe	= act8945a_charger_probe,
+-	.remove = act8945a_charger_remove,
++	.remove_new = act8945a_charger_remove,
+ };
+ module_platform_driver(act8945a_charger_driver);
  
- static struct platform_driver twl4030_bci_driver = {
- 	.probe = twl4030_bci_probe,
--	.remove	= twl4030_bci_remove,
-+	.remove_new = twl4030_bci_remove,
- 	.driver	= {
- 		.name	= "twl4030_bci",
- 		.of_match_table = of_match_ptr(twl_bci_of_match),
 -- 
 2.40.1
 
