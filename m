@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04385CD13D1
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 08:19:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A583FCD13D9
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 08:20:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240770AbjIRITA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Sep 2023 04:19:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39764 "EHLO
+        id S240720AbjIRITe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Sep 2023 04:19:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55506 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240771AbjIRISB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 04:18:01 -0400
-Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2074.outbound.protection.outlook.com [40.107.243.74])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0001CCE;
-        Mon, 18 Sep 2023 01:15:27 -0700 (PDT)
+        with ESMTP id S240905AbjIRIS0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 04:18:26 -0400
+Received: from NAM04-BN8-obe.outbound.protection.outlook.com (mail-bn8nam04on2056.outbound.protection.outlook.com [40.107.100.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8ED619AE;
+        Mon, 18 Sep 2023 01:15:42 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=U3geTbYZcSYPDXbtESoqrdUYlfojnQ+mUOrO4eTzmPMMvujmLMw0Y48uFNfOtcftL22K2i6WeEP+t5whNHT54m4+EYryxbGAYHEO6eyfzfUKM7sY1p3ecLk7TvzeSJkCS66UBRzAep4tEEbh6Nso+Hz+9FBronGELnoyPhEKgafjalfqOSVTx8G/m0Kn245WTyrLZHr4FI/i3J7pCItLgW8gqoEbZn8S99zlwat55RA11BMlW1dzQ+WOaYbEmm1UnI2BY6LWnsCRWmlRrqhsSVIUN9SrCCO9X2XnKjXSakl8IlXgh/S8Rwh07CyluDn0lw0AaA38M9WX8YpmKAJodQ==
+ b=J3mf1nprw0km17DfmnWwr/9/ktQerxn+iF7zmWOpn7/J+h/1bu7tSj9eQdG7ArWi3JLnB8gwjvIakSTfjXnyzvEKqgC+sx71VjAB0EydlmhDCLlD8Bj+XEMrV750VYC6o5r2oOXNzRd7kIgcgBq1uEtYans4Ie4LXnFF4L32TxEnMHsOblP/pJiwm7/aXoe922adaJNBiygaY/rH9+CZ0PLf1xZl2Thks4SLFAh1HaUsIgnoeztJcMYwSM0bHR7LZVCTaOC3OuIXolmlNlriDUVzXOVWlreLgvKRUpPSB1cu34i7qSb/dm3fshVf06ODrohw03zx3FglLmUjZkaHrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UUfFVYO1h0xYmkk8WkmHzLQ+Tt+z0gOk/jevQoCQxGY=;
- b=XtGUGg8EDlSG3r9yxI0PV7MR9SXsa8VvaeYAfBuOXWDpOfLESa8CIZ3bKWPT9crTtm590p8pnX/1OXA21+6/QS0MvR28YrueNs6xdiapnqt25MUYweKTvzV+TnpGRT6MBiOrespOy33qKIYPhujQbsbxatLUWTKMrciDjTxIJwA6+sFmCTfnNdTTlKCaQvIFtPmrLZ+OEgQZEafUO/C8Gpai6sRGmuYcol+GlWWsPQHhRdN3/GIfFpYU1HpNenS/2zDMUbKz9f7PmOv3Wj0IzSspzGAxTQUGuAc4ARHQR/rqIdk9iOblH8vdW/X4wEBtsH06aEgADpRJSjdR1/pZXA==
+ bh=g494rm/WucGNct/HgYJq9c6LXzNLWaO7uYjU96lfJiI=;
+ b=dCZx8X0IzWJpUqeixlIMt6ujoC/m2mwTMNbdc1u8aoaVPvQW+ky9YK9BHARa/dEA0Fi+2dE7EWu8rpKNLRtXo0sSBTZ9DhXj6waoZPGlsynGJPzX/tGU5FzwL8yyZqfSuLvI2rrqzLBeo/d3cDJUD+t5PmPkbp+5EXRlR9yCC+Odl4vdwvThW3JIpXn5sL2lGfucA03eJ9QXIih7PugZ1jsDC9h3sCYrZjUO7pFsBFNSzLdrmm3ksuvh4592metslgbCUKsFEUvYHzS7Kk10mKU23a7L97jCLZ8PrLKyPdws4+pg6QzJg2EzBVu9/t5AkP0BRIa8xUanTsUGQqgedw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UUfFVYO1h0xYmkk8WkmHzLQ+Tt+z0gOk/jevQoCQxGY=;
- b=XzRZhmJC1Q9aHGxi7CK0el2UBl7hKbELmRFVOhDH0cEPfBtm3EEJQCNrJUzHypT5duVhe6wuOSyFgrD1pa6EzN/HxbJWGOnw7Cb1bJKeKbqsB/FvcRae+PApVAzaC0mzmXHwDp9SL6cvayMXGGzm3yhu6xap/9Hv6gV1TnnA8EI=
-Received: from SA9PR03CA0012.namprd03.prod.outlook.com (2603:10b6:806:20::17)
- by BL1PR12MB5173.namprd12.prod.outlook.com (2603:10b6:208:308::9) with
+ bh=g494rm/WucGNct/HgYJq9c6LXzNLWaO7uYjU96lfJiI=;
+ b=x2Y8K9ehOO+pfIW/uq+HiRg5qS0sBrgHDWHF+g0JwXVB/SuoAZ5/+kwn64hwqDgH2W/eoXu7jH5eg9pix3cbavhoytj9Wdb4h09YZK+yS3pEtnSbr29MVWnwuW2eNH5oXEKVsjAan4eC80coOgALmfDRgihtyYm5zIXOO6jMrco=
+Received: from SA9P223CA0017.NAMP223.PROD.OUTLOOK.COM (2603:10b6:806:26::22)
+ by PH7PR12MB7018.namprd12.prod.outlook.com (2603:10b6:510:1b8::14) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.27; Mon, 18 Sep
- 2023 08:15:25 +0000
-Received: from SN1PEPF0002636D.namprd02.prod.outlook.com
- (2603:10b6:806:20:cafe::a4) by SA9PR03CA0012.outlook.office365.com
- (2603:10b6:806:20::17) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.26 via Frontend
- Transport; Mon, 18 Sep 2023 08:15:23 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.26; Mon, 18 Sep
+ 2023 08:15:39 +0000
+Received: from SN1PEPF00026369.namprd02.prod.outlook.com
+ (2603:10b6:806:26:cafe::e6) by SA9P223CA0017.outlook.office365.com
+ (2603:10b6:806:26::22) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.27 via Frontend
+ Transport; Mon, 18 Sep 2023 08:15:39 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -46,13 +46,13 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- SN1PEPF0002636D.mail.protection.outlook.com (10.167.241.138) with Microsoft
+ SN1PEPF00026369.mail.protection.outlook.com (10.167.241.134) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6792.20 via Frontend Transport; Mon, 18 Sep 2023 08:15:23 +0000
+ 15.20.6792.19 via Frontend Transport; Mon, 18 Sep 2023 08:15:39 +0000
 Received: from jasmine-meng.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Mon, 18 Sep
- 2023 03:15:17 -0500
+ 2023 03:15:33 -0500
 From:   Meng Li <li.meng@amd.com>
 To:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Huang Rui <ray.huang@amd.com>
@@ -68,10 +68,11 @@ CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         "Perry Yuan" <Perry.Yuan@amd.com>,
         Xiaojian Du <Xiaojian.Du@amd.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        Borislav Petkov <bp@alien8.de>, Meng Li <li.meng@amd.com>
-Subject: [PATCH V7 4/7] cpufreq: Add a notification message that the highest perf has changed
-Date:   Mon, 18 Sep 2023 16:14:04 +0800
-Message-ID: <20230918081407.756858-5-li.meng@amd.com>
+        Borislav Petkov <bp@alien8.de>, Meng Li <li.meng@amd.com>,
+        Wyes Karny <wyes.karny@amd.com>
+Subject: [PATCH V7 7/7] Documentation: introduce amd-pstate preferrd core mode kernel command line options
+Date:   Mon, 18 Sep 2023 16:14:07 +0800
+Message-ID: <20230918081407.756858-8-li.meng@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230918081407.756858-1-li.meng@amd.com>
 References: <20230918081407.756858-1-li.meng@amd.com>
@@ -83,117 +84,55 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SN1PEPF0002636D:EE_|BL1PR12MB5173:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1202dc42-8bc7-410f-b7e5-08dbb81f687d
+X-MS-TrafficTypeDiagnostic: SN1PEPF00026369:EE_|PH7PR12MB7018:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6bd745aa-53ee-463c-1750-08dbb81f71c4
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: K5JS4/4spnPfBBhFJ4Y6BDQE0vSNeLFhFrnBm4cu2x18QaCZmz/fmfS2kux7tA+kXqTpbpmPDPIw+MDhkwi2rETOutGCzr/A4mnNFVelrixqRexQ1N0jA02GSpyQ/bHcok5p0m1JHmUj2demctdfOkjz7rUBQsu6QhjBn2QmBd0Z57Dm6dVmfZ23pddWHmRW/LFaT4V66iEKDk3YVvG4tQEgOZoI/ugV3M/0QNxFcFgRebuH/5N7PrZcz0lpTGDwUJoIOgyzLVEpu47hGfBLsnV14vq11tfMJi1mIPU1GGZhViALEFe3HKOSEgID448+IObrKcsghPLtSdgt0lgfJ9iF2Y+o3Z7lb82fwTMDpj7Mi3CDiRSS1HoA8MOE2VlqeW/Jbusgj8zI/eGeX3AHtYTHL5lkZYkJ5wi091vQgRUUJaycxW8sH7KeTtkHundgrhBKrNjkOmxAF7I/fHTmjn2mqdqDe2geWDgW629r/wG2hEA8W7T/vZ0cCW4GZ4CwWLeEapEejgGP8vXS3Z7aMgrfgd3Hyr0j2imUp0FhSqucVEt2vUqqjaj0PTZLHHezHR+pLZjOn7IazXJINJ4zFW3opQY0vPCYTZgbKZYSihOeBbvqaug3tQMe2WhUju6qZ5K5N70AdDuqBiunFx9zUcM93xi0yulG/m976OCkJpPSv81Rm6ShimdoPaxcQZF9kBtlwGRhQnI8a3hw4egWVFi9joMlEnVb3lJkjcuS+XtAYfBoPAj6VTSGgB0vbOj1Ie1/QtrDNDNd29oZKkVjKRa8537VeZR2f2GMR2MyVbw=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(396003)(39860400002)(136003)(346002)(376002)(186009)(82310400011)(1800799009)(451199024)(36840700001)(40470700004)(46966006)(2616005)(40460700003)(16526019)(26005)(1076003)(7696005)(36860700001)(47076005)(82740400003)(356005)(81166007)(36756003)(86362001)(426003)(336012)(83380400001)(40480700001)(110136005)(5660300002)(15650500001)(478600001)(966005)(41300700001)(6636002)(70586007)(70206006)(54906003)(316002)(8676002)(8936002)(4326008)(6666004)(2906002)(226483002)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: YrH9EughjPkaI6PUgGmq+StlOvMMG1qqTnTq0ngYV7DNwN7UAgHoRziWj791pIQ7v8U+539tG7YIfgNwKq/7LZ7WxxBJ/sQZ3qX7p/172K9yU1B3ZxyDHGhkL7Cm0icNr6Dv3rQzG1N8dei+4Uwx5Ms9OvtqOFRYgXkgpvkIgVAmt+qBWHkysG2A1dMSzDGZaBW1NERdndYniFmdGDBU+ejQi5IApJyL9yYFExJCQ6EgJ0ARLTDEAPHtx6yoUquytsZfrtDdNkiY1fyUO9mRJuGxKshC6RUQGrMXdtSpwEVukd7FsW8ra/koZ2MsdVtodYDImMI7ikrHTUKE3aiB3akNd7MOi4PIVEQTdWv5jGZQp8RVVHFK9HBxs6sUqUmn5EZ5FEWP/BBVMsFFduxRuzBgfNtzpBtSRlzHmp/bdYNkDdYZ0omAFaMzJWyjytiXbReC5p1U0ppxquHJQ+S/yjYYmxjtokydF3pHJwVp2OwghYaa+2dFGWrNecschh4g48WhTyF0Mefpyq8R6u/yGxI7c1FWooWLEFYbtiLvqc4CtDxBLFfOG+7rh1cGG76/13d2mP//CbEZuB27csIs3shL+r75d8kHcZh2Z9RPuR/MX5goBr4JlJGaO9sKuxC0/m+oosKQ+XtFEbbC/j5VXNQypz/hP23JzfBeMMsfqAlSaJtREFSzMIbVC8Ecfe5N0O7OV9SbsP/fCEIi4u3zOPTJmOB8RbKd3g+7PDwmeId98dpqlqqPUK0GRt+UMJY0sSjbxu89h2Lxq70xAENK8mwTACnFCNTiX9gbclJLCLz6OC3OMaYlKDFjjTOEmUDa
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(39860400002)(376002)(346002)(396003)(136003)(451199024)(1800799009)(186009)(82310400011)(36840700001)(46966006)(40470700004)(6666004)(7696005)(40460700003)(86362001)(81166007)(40480700001)(36756003)(82740400003)(356005)(36860700001)(26005)(2616005)(1076003)(47076005)(336012)(2906002)(426003)(16526019)(83380400001)(478600001)(8676002)(5660300002)(4326008)(6636002)(110136005)(8936002)(41300700001)(316002)(54906003)(70206006)(70586007)(36900700001)(14943795004);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Sep 2023 08:15:23.8998
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Sep 2023 08:15:39.4605
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1202dc42-8bc7-410f-b7e5-08dbb81f687d
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6bd745aa-53ee-463c-1750-08dbb81f71c4
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: SN1PEPF0002636D.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: SN1PEPF00026369.namprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL1PR12MB5173
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB7018
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-ACPI 6.5 section 8.4.6.1.1.1 specifies that Notify event 0x85 can be
-emmitted to cause the the OSPM to re-evaluate the highest performance
-register. Add support for this event.
+amd-pstate driver support enable/disable preferred core.
+Default enabled on platforms supporting amd-pstate preferred core.
+Disable amd-pstate preferred core with
+"amd_prefcore=disable" added to the kernel command line.
 
 Signed-off-by: Meng Li <li.meng@amd.com>
-Link: https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#processor-device-notification-values
+Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
+Reviewed-by: Wyes Karny <wyes.karny@amd.com>
 ---
- drivers/acpi/processor_driver.c |  6 ++++++
- drivers/cpufreq/cpufreq.c       | 13 +++++++++++++
- include/linux/cpufreq.h         |  5 +++++
- 3 files changed, 24 insertions(+)
+ Documentation/admin-guide/kernel-parameters.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index 4bd16b3f0781..29b2fb68a35d 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -27,6 +27,7 @@
- #define ACPI_PROCESSOR_NOTIFY_PERFORMANCE 0x80
- #define ACPI_PROCESSOR_NOTIFY_POWER	0x81
- #define ACPI_PROCESSOR_NOTIFY_THROTTLING	0x82
-+#define ACPI_PROCESSOR_NOTIFY_HIGEST_PERF_CHANGED	0x85
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 0a1731a0f0ef..e35b795aa8aa 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -363,6 +363,11 @@
+ 			  selects a performance level in this range and appropriate
+ 			  to the current workload.
  
- MODULE_AUTHOR("Paul Diefenbaugh");
- MODULE_DESCRIPTION("ACPI Processor Driver");
-@@ -83,6 +84,11 @@ static void acpi_processor_notify(acpi_handle handle, u32 event, void *data)
- 		acpi_bus_generate_netlink_event(device->pnp.device_class,
- 						  dev_name(&device->dev), event, 0);
- 		break;
-+	case ACPI_PROCESSOR_NOTIFY_HIGEST_PERF_CHANGED:
-+		cpufreq_update_highest_perf(pr->id);
-+		acpi_bus_generate_netlink_event(device->pnp.device_class,
-+						  dev_name(&device->dev), event, 0);
-+		break;
- 	default:
- 		acpi_handle_debug(handle, "Unsupported event [0x%x]\n", event);
- 		break;
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 60ed89000e82..4ada787ff105 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2718,6 +2718,19 @@ void cpufreq_update_limits(unsigned int cpu)
- }
- EXPORT_SYMBOL_GPL(cpufreq_update_limits);
- 
-+/**
-+ * cpufreq_update_highest_perf - Update highest performance for a given CPU.
-+ * @cpu: CPU to update the highest performance for.
-+ *
-+ * Invoke the driver's ->update_highest_perf callback if present
-+ */
-+void cpufreq_update_highest_perf(unsigned int cpu)
-+{
-+	if (cpufreq_driver->update_highest_perf)
-+		cpufreq_driver->update_highest_perf(cpu);
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_update_highest_perf);
++	amd_prefcore=
++			[X86]
++			disable
++			  Disable amd-pstate preferred core.
 +
- /*********************************************************************
-  *               BOOST						     *
-  *********************************************************************/
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 71d186d6933a..1cc1241fb698 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -235,6 +235,7 @@ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
- void refresh_frequency_limits(struct cpufreq_policy *policy);
- void cpufreq_update_policy(unsigned int cpu);
- void cpufreq_update_limits(unsigned int cpu);
-+void cpufreq_update_highest_perf(unsigned int cpu);
- bool have_governor_per_policy(void);
- bool cpufreq_supports_freq_invariance(void);
- struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
-@@ -263,6 +264,7 @@ static inline bool cpufreq_supports_freq_invariance(void)
- 	return false;
- }
- static inline void disable_cpufreq(void) { }
-+static inline void cpufreq_update_highest_perf(unsigned int cpu) { }
- #endif
- 
- #ifdef CONFIG_CPU_FREQ_STAT
-@@ -380,6 +382,9 @@ struct cpufreq_driver {
- 	/* Called to update policy limits on firmware notifications. */
- 	void		(*update_limits)(unsigned int cpu);
- 
-+	/* Called to update highest performance on firmware notifications. */
-+	void		(*update_highest_perf)(unsigned int cpu);
-+
- 	/* optional */
- 	int		(*bios_limit)(int cpu, unsigned int *limit);
- 
+ 	amijoy.map=	[HW,JOY] Amiga joystick support
+ 			Map of devices attached to JOY0DAT and JOY1DAT
+ 			Format: <a>,<b>
 -- 
 2.34.1
 
