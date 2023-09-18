@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47A20CD37B0
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 09:39:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2734CD13D1
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 09:39:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233492AbjIRJin (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Sep 2023 05:38:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46884 "EHLO
+        id S238765AbjIRJio (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Sep 2023 05:38:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240911AbjIRJi1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 05:38:27 -0400
-Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F435115
-        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 02:38:20 -0700 (PDT)
-Received: by mail-lj1-x22e.google.com with SMTP id 38308e7fff4ca-2bfbd7d49e7so67879781fa.1
-        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 02:38:20 -0700 (PDT)
+        with ESMTP id S240942AbjIRJi3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 05:38:29 -0400
+Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D4F9F121
+        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 02:38:21 -0700 (PDT)
+Received: by mail-ej1-x62b.google.com with SMTP id a640c23a62f3a-9adca291f99so355859066b.2
+        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 02:38:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1695029898; x=1695634698; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=7qMynowtM6sO6WhIunL19I1lsaUMnQPIdw7sq9xV6Eg=;
-        b=Y0bwdr9UoMsxsIrPEDQuyq+Ahl+ss46DHE+tY488mJJGXfRjJ8FwZ0CcRppW2Bw3MH
-         L4kuZa8vUvcqZXAhdq/b8xpUWsDxRh6tmvJdYOVqpm4Uzayo3DKFpcAUNVVjLnSG8+7V
-         8D7IIpu0Gkt4p6H9Z8NEj6sLiPtxZcVm6fs0WAwXtBjrRDyuLdbteJ8VnDNAr0xxrw+T
-         dXC4HPKV3vZ6BBVgnq4iazhJ0QA+MGRo50z5b1dc0OVicRHDCEVcp5Dr7ihsHQsxeS3b
-         S7Apr1Z+4bSbYqoldosPlX/u62zxBRzEO3DenLSNPljZdcpJuXdrmWPGSG0rEgQieLIR
-         mbIg==
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1695029900; x=1695634700; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ntIS/xJA3nmS8C+qHhhmXutBf4D7O4ovO2luXjJAhFI=;
+        b=qWngDVTQZc1Rx2elTHHNXPxz89AfvfLDF33NxG+GxYCbk+S/9J5fB3qf2an/iUtsrZ
+         Ww1KU1sixh1uYR7h8nassEuUjfbAoXpJEGkekBQ3axhAwFOlok/izYSRPSYtcVwynodp
+         qCMWQ9b2nre1SMG3wz1Jbd5SCKQslESkdxKZvgrpUju4TwMKMgNmoJZ+QL4o1BPBTeth
+         52G07n9gKy/f0b37SJYmnyenJc8mV+pA5H1cbiT7Vay1lFqWj1hqsZVh85dSg2/NSoMr
+         mEkcw37hJqQjKy/EElVYnwmTxEnQGxKtghle6OZoVsNf/hr2ge9yKM8vJhYHK+7k1gd9
+         YMnQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695029898; x=1695634698;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=7qMynowtM6sO6WhIunL19I1lsaUMnQPIdw7sq9xV6Eg=;
-        b=S/KHPgUQ9Ui+koAuZ126xO436TTuUonThl6NjbjhRpDDzZDKbcFX6tfCmIbN4rq+mu
-         FVpnzxgNCFVEC6TGryZaO3/9egP0q895YRR2jjRDBtl1gG7MDFIwRFypKONo7X4OLWxs
-         eoulDUxlpPKcsffG1Y3XqA6GfRjHEU8jlMToAh0UlrjqffUOdkVwZCj3xc9/GLe5IGau
-         JfVgXFvO3yCPX7kX4H1aOW4r9HcEap/Rb98z/jY5vASg+vQzm5/M5z7M7G0PW2eIBGxZ
-         dHecF7zBwJ26vfSQe0Ui7ofLRESah2YpRHMC77Q6vI6Qkdsf+SfVJeLHGK+pBoq2Xj7j
-         52jg==
-X-Gm-Message-State: AOJu0Yxuib1DyMj5ogAOY8dpnbwM2fRAO1bGySRRkTYY7fhlLThrrAZ0
-        HK/QItoGt8xSaH+s+zM4jrRevg==
-X-Google-Smtp-Source: AGHT+IGp45ZVIMqUnpyNlGTjOczPJW9+COazaydZ4vg+A0aUFwj9VUvBstOriVWXiS7GXoKBhC6xIQ==
-X-Received: by 2002:a2e:a41c:0:b0:2bf:7dc5:884d with SMTP id p28-20020a2ea41c000000b002bf7dc5884dmr6984504ljn.21.1695029897811;
-        Mon, 18 Sep 2023 02:38:17 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1695029900; x=1695634700;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ntIS/xJA3nmS8C+qHhhmXutBf4D7O4ovO2luXjJAhFI=;
+        b=iPH5Z64VhwtB3safP3jlNq/MXUbqUMjNnwJ31dMyiAA/5bzBApAbO5YNDjriqVELth
+         E/DgA5Dv3Lmo7wFm3NFp7/PkeeiLelXtgxaoZtSyVRsbRQL7w3AA9ZUxVNV13DcFun2v
+         DGxoKLTq1ZB6+bwmRPRhQQbt+PDdJPI9kWbqpCVAJ2NiK9CXX5D8eSoYSw9sXcoQdyRP
+         f0RQ2x8qX9Z8p+AKRdfvQ3dCTyR6D4i5n0mxlnEmsHBL8KfA5SAbtwCrAgUbaVapOE8p
+         H8okcfU+PZzJupx5MJLD3lFoZf1/5b3Mcjr/em1Z7TZEHVp9/aqg28Xod9PD92avAhzE
+         QohA==
+X-Gm-Message-State: AOJu0Yy/Ep5TKXW7Zg9pFj7l8r7yd4meGThDyiCD+jBLX7Qa/5rtX4GE
+        CfQNo16dCA2N2DM1hnrRWCz6KqUCuWkb4wwJIomKvA==
+X-Google-Smtp-Source: AGHT+IE+bQwSHx8xiX+tCm83783tfR+MfKxNjh0NiXnB9zvWHYKlTNvUyJdeI4mN4nlSyQOaB6DwFQ==
+X-Received: by 2002:a17:907:a053:b0:9a1:f96c:4baf with SMTP id gz19-20020a170907a05300b009a1f96c4bafmr7437464ejc.5.1695029900372;
+        Mon, 18 Sep 2023 02:38:20 -0700 (PDT)
 Received: from blmsp.fritz.box ([2001:4091:a246:8222:872:4a5b:b69c:1318])
-        by smtp.gmail.com with ESMTPSA id o10-20020a1709061d4a00b0099293cdbc98sm6251164ejh.145.2023.09.18.02.38.16
+        by smtp.gmail.com with ESMTPSA id o10-20020a1709061d4a00b0099293cdbc98sm6251164ejh.145.2023.09.18.02.38.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Sep 2023 02:38:17 -0700 (PDT)
+        Mon, 18 Sep 2023 02:38:19 -0700 (PDT)
 From:   Markus Schneider-Pargmann <msp@baylibre.com>
 To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -64,111 +65,106 @@ Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
         linux-arm-kernel@lists.infradead.org,
         linux-mediatek@lists.infradead.org,
         Markus Schneider-Pargmann <msp@baylibre.com>
-Subject: [PATCH v8 0/8] soc: mediatek: MT8365 power support
-Date:   Mon, 18 Sep 2023 11:37:44 +0200
-Message-Id: <20230918093751.1188668-1-msp@baylibre.com>
+Subject: [PATCH v8 2/8] soc: mediatek: pm-domains: Move bools to a flags field
+Date:   Mon, 18 Sep 2023 11:37:46 +0200
+Message-Id: <20230918093751.1188668-3-msp@baylibre.com>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230918093751.1188668-1-msp@baylibre.com>
+References: <20230918093751.1188668-1-msp@baylibre.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+To simplify the macros, use a flags field for simple bools. This is in
+preparation for more flags.
 
-no real changes in this update. Rebase to v6.6-rc2 and according change
-of directory.
+Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Reviewed-by: Alexandre Mergnat <amergnat@baylibre.com>
+Tested-by: Alexandre Mergnat <amergnat@baylibre.com>
+---
+ drivers/pmdomain/mediatek/mtk-pm-domains.c |  6 +++---
+ drivers/pmdomain/mediatek/mtk-pm-domains.h | 19 +++++++++++--------
+ 2 files changed, 14 insertions(+), 11 deletions(-)
 
-Thanks for any feedback!
-
-Best,
-Markus
-
-Based on v6.6-rc2
-
-Changes in v8:
-- Rebased to v6.6-rc2
-- Moved changes from drivers/soc to drivers/pmdomain
-
-Changes in v7:
-- Rebased to v6.5-rc1
-- Fixed a couple of small style issues pointed out by Angelo
-
-Changes in v6:
-- Change flags field to be u8 instead of u32
-- Use macro concatenation to simplify BUS_PROT macros:
-  BUS_PROT_WR(_hwip, ...) etc.
-- Use the final bit values for scpsys_bus_prot_flags from the beginning
-  of the series.
-- Changed scpsys_domain_data->caps to be u16 to accommodate the new flag
-  MTK_SCPD_STRICT_BUS_PROTECTION.
-
-Changes in v5:
-- Create defines for all registers and bits in mt8365 power domain patch
-- Redesign scpsys_bus_prot_data to use flags to store reg_update,
-  clr_ack as well as the difference between SMI and INFRACFG. The code
-  uses the appropriate regmap depending on the flags.
-- The WAY_EN patch now uses two flags, one for inverted operations
-  'BUS_PROT_INVERTED' and one to use infracfg-nao for the status flags
-  'BUS_PROT_STA_COMPONENT_INFRA_NAO'.
-
-Changes in v4:
-- Redesigned WAY_EN patch and split it up in smaller patches.
-- Added two documentation patches.
-- Added mediatek,infracfg-nao field to the binding.
-
-Changes in v3:
-- Mainly redesigned WAY_EN patch to be easier to understand
-- Rebased onto v6.0-rc1
-- Several other stuff that is described in the individual patches
-
-Changes in v2:
-- Updated error handling path for scpsys_power_on()
-- Minor updates described in each patch
-
-Previous versions:
-v1 - https://lore.kernel.org/linux-mediatek/20220530204214.913251-1-fparent@baylibre.com/
-v2 - https://lore.kernel.org/linux-mediatek/20220725081853.1636444-1-msp@baylibre.com/
-v3 - https://lore.kernel.org/linux-mediatek/20220822144303.3438467-1-msp@baylibre.com/
-v4 - https://lore.kernel.org/linux-arm-kernel/20230105170735.1637416-1-msp@baylibre.com/
-v5 - https://lore.kernel.org/linux-arm-kernel/20230619085344.2885311-1-msp@baylibre.com/
-v6 - https://lore.kernel.org/linux-arm-kernel/20230627131040.3418538-1-msp@baylibre.com/
-v7 - https://lore.kernel.org/linux-arm-kernel/20230713150414.891893-1-msp@baylibre.com
-
-Alexandre Bailon (2):
-  soc: mediatek: Add support for WAY_EN operations
-  soc: mediatek: Add support for MTK_SCPD_STRICT_BUS_PROTECTION cap
-
-Fabien Parent (2):
-  dt-bindings: power: Add MT8365 power domains
-  soc: mediatek: pm-domains: Add support for MT8365
-
-Markus Schneider-Pargmann (4):
-  soc: mediatek: pm-domains: Move bools to a flags field
-  soc: mediatek: pm-domains: Split bus_prot_mask
-  soc: mediatek: pm-domains: Create bus protection operation functions
-  soc: mediatek: pm-domains: Unify configuration for infracfg and smi
-
- .../power/mediatek,power-controller.yaml      |   6 +
- drivers/pmdomain/mediatek/mt6795-pm-domains.h |  16 +-
- drivers/pmdomain/mediatek/mt8167-pm-domains.h |  20 +-
- drivers/pmdomain/mediatek/mt8173-pm-domains.h |  16 +-
- drivers/pmdomain/mediatek/mt8183-pm-domains.h | 125 ++++++----
- drivers/pmdomain/mediatek/mt8186-pm-domains.h | 236 ++++++++++--------
- drivers/pmdomain/mediatek/mt8188-pm-domains.h | 223 +++++++++++------
- drivers/pmdomain/mediatek/mt8192-pm-domains.h | 112 ++++++---
- drivers/pmdomain/mediatek/mt8195-pm-domains.h | 199 +++++++++------
- drivers/pmdomain/mediatek/mt8365-pm-domains.h | 197 +++++++++++++++
- drivers/pmdomain/mediatek/mtk-pm-domains.c    | 157 ++++++++----
- drivers/pmdomain/mediatek/mtk-pm-domains.h    |  51 ++--
- .../dt-bindings/power/mediatek,mt8365-power.h |  19 ++
- include/linux/soc/mediatek/infracfg.h         |  41 +++
- 14 files changed, 972 insertions(+), 446 deletions(-)
- create mode 100644 drivers/pmdomain/mediatek/mt8365-pm-domains.h
- create mode 100644 include/dt-bindings/power/mediatek,mt8365-power.h
-
-
-base-commit: ce9ecca0238b140b88f43859b211c9fdfd8e5b70
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+index ee962804b830..da675a33bdf5 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+@@ -128,7 +128,7 @@ static int _scpsys_bus_protect_enable(const struct scpsys_bus_prot_data *bpd, st
+ 		if (!mask)
+ 			break;
+ 
+-		if (bpd[i].bus_prot_reg_update)
++		if (bpd[i].flags & BUS_PROT_REG_UPDATE)
+ 			regmap_set_bits(regmap, bpd[i].bus_prot_set, mask);
+ 		else
+ 			regmap_write(regmap, bpd[i].bus_prot_set, mask);
+@@ -165,12 +165,12 @@ static int _scpsys_bus_protect_disable(const struct scpsys_bus_prot_data *bpd,
+ 		if (!mask)
+ 			continue;
+ 
+-		if (bpd[i].bus_prot_reg_update)
++		if (bpd[i].flags & BUS_PROT_REG_UPDATE)
+ 			regmap_clear_bits(regmap, bpd[i].bus_prot_clr, mask);
+ 		else
+ 			regmap_write(regmap, bpd[i].bus_prot_clr, mask);
+ 
+-		if (bpd[i].ignore_clr_ack)
++		if (bpd[i].flags & BUS_PROT_IGNORE_CLR_ACK)
+ 			continue;
+ 
+ 		ret = regmap_read_poll_timeout(regmap, bpd[i].bus_prot_sta,
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+index 5ec53ee073c4..d8c0c299dd45 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+@@ -42,23 +42,27 @@
+ 
+ #define SPM_MAX_BUS_PROT_DATA		6
+ 
+-#define _BUS_PROT(_mask, _set, _clr, _sta, _update, _ignore) {	\
++enum scpsys_bus_prot_flags {
++	BUS_PROT_REG_UPDATE = BIT(1),
++	BUS_PROT_IGNORE_CLR_ACK = BIT(2),
++};
++
++#define _BUS_PROT(_mask, _set, _clr, _sta, _flags) {		\
+ 		.bus_prot_mask = (_mask),			\
+ 		.bus_prot_set = _set,				\
+ 		.bus_prot_clr = _clr,				\
+ 		.bus_prot_sta = _sta,				\
+-		.bus_prot_reg_update = _update,			\
+-		.ignore_clr_ack = _ignore,			\
++		.flags = _flags					\
+ 	}
+ 
+ #define BUS_PROT_WR(_mask, _set, _clr, _sta)			\
+-		_BUS_PROT(_mask, _set, _clr, _sta, false, false)
++		_BUS_PROT(_mask, _set, _clr, _sta, 0)
+ 
+ #define BUS_PROT_WR_IGN(_mask, _set, _clr, _sta)		\
+-		_BUS_PROT(_mask, _set, _clr, _sta, false, true)
++		_BUS_PROT(_mask, _set, _clr, _sta, BUS_PROT_IGNORE_CLR_ACK)
+ 
+ #define BUS_PROT_UPDATE(_mask, _set, _clr, _sta)		\
+-		_BUS_PROT(_mask, _set, _clr, _sta, true, false)
++		_BUS_PROT(_mask, _set, _clr, _sta, BUS_PROT_REG_UPDATE)
+ 
+ #define BUS_PROT_UPDATE_TOPAXI(_mask)				\
+ 		BUS_PROT_UPDATE(_mask,				\
+@@ -71,8 +75,7 @@ struct scpsys_bus_prot_data {
+ 	u32 bus_prot_set;
+ 	u32 bus_prot_clr;
+ 	u32 bus_prot_sta;
+-	bool bus_prot_reg_update;
+-	bool ignore_clr_ack;
++	u8 flags;
+ };
+ 
+ /**
 -- 
 2.40.1
 
