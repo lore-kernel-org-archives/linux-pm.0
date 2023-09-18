@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E14D8CD37B0
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 16:18:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 642ACCD13D9
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Sep 2023 16:18:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230129AbjIRQSu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230196AbjIRQSu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 18 Sep 2023 12:18:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60976 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230054AbjIRQSi (ORCPT
+        with ESMTP id S230064AbjIRQSi (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 12:18:38 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28806274AA
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28B38274AB
         for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 09:15:48 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qiER5-00021q-DE; Mon, 18 Sep 2023 15:37:11 +0200
+        id 1qiER2-0001q7-E3; Mon, 18 Sep 2023 15:37:08 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qiER4-007EZJ-UG; Mon, 18 Sep 2023 15:37:10 +0200
+        id 1qiER2-007EYT-1A; Mon, 18 Sep 2023 15:37:08 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qiER4-002fXC-LC; Mon, 18 Sep 2023 15:37:10 +0200
+        id 1qiER1-002fWM-NY; Mon, 18 Sep 2023 15:37:07 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     linux-pm@vger.kernel.org, kernel@pengutronix.de
-Subject: [PATCH 21/32] power: supply: pcf50633-charger: Convert to platform remove callback returning void
-Date:   Mon, 18 Sep 2023 15:36:49 +0200
-Message-Id: <20230918133700.1254499-22-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 08/32] power: supply: cpcap-battery: Convert to platform remove callback returning void
+Date:   Mon, 18 Sep 2023 15:36:36 +0200
+Message-Id: <20230918133700.1254499-9-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230918133700.1254499-1-u.kleine-koenig@pengutronix.de>
 References: <20230918133700.1254499-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1938; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=YYvLO9P69QKCjKr7Gs/6YSWBHBfCqXLTkFvH9WwQtIw=; b=owGbwMvMwMXY3/A7olbonx/jabUkhlSOoAwh67Loh20nJ78VvH3nRrP4BI9N4W++qBmvZvFYE fkk4ntUJ6MxCwMjF4OsmCKLfeOaTKsqucjOtf8uwwxiZQKZwsDFKQATMeTkYNjioipzx69dd/YW 2fueAXLTJydLF3w7rSZaucF/1V6n64dlsuJzWgp5J8yvECjRSMqXCdsvyz37Xlpnd3bEucv5qkw 7dH8dDf5Rc73czTNtirBl1obCtYuKiuf84pbPd4pqfHV03QP/pqsR5ssu2aavMqrkZxfS8bye0l 7zdPPOSwc3LLXxusF27O9B47SuutUStuJirmceautO32Czs0w1RWOLPfv6qx6fVvmKqfzp1dI8f t7FdOIaiaXyr098PcC7skTdpl+EU8Ao5B6X33L10EOi23nWh3TEGc/7Kq5grevheyn/hu3PaUWv Iqtez7EPP+YeKr1rVYb2760/s3xkjHTmn9JvmbnZuuYeAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1961; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=W1BPXiZHc1y9UWzOM4V1wlkQL4JKJicHGy1RNjT0lrA=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlCFJZJAQpHI3yHQIUs8a6dbf9YlOqnzosFZ1N7 +NceNXnwReJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZQhSWQAKCRCPgPtYfRL+ Tqb8CACVuiy7XcBY7aPhuZmCcK4h5tdDlFr/Kg15fFqy+Bhc41GptCarIWU6Gs/slpKF3lxzo4U TQccGhOLtCaTN/AeArL1Mfyjkxdvg/U2IvKX4MpqqBX7QsvpVVLw8MQbUEjDRC7jWIpNH4yyJe/ v9FwTMcYp1f2eAxlK9MbwPSni5wjz6SP5oS+2Gm9QGhS9mHs0vLQXEfEjbhLWBBsu3gFIK7L/tc Zk8/d8bTNDo3hcqsKprBNAVMU9Na25y8cHPHnF9TAS5ewT9bux/6EDIx2HL24Gq7XvndvusKfXH KFwRBNsODVFMaeVHYgOeNgliLNICKKcGzbAJoRH71RCBfT2E
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -64,40 +64,40 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/power/supply/pcf50633-charger.c | 6 ++----
+ drivers/power/supply/cpcap-battery.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/supply/pcf50633-charger.c b/drivers/power/supply/pcf50633-charger.c
-index fd44cb8ac0e2..950e30917c63 100644
---- a/drivers/power/supply/pcf50633-charger.c
-+++ b/drivers/power/supply/pcf50633-charger.c
-@@ -441,7 +441,7 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
+diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/cpcap-battery.c
+index 5dd76c0ac98d..30ec76cdf34b 100644
+--- a/drivers/power/supply/cpcap-battery.c
++++ b/drivers/power/supply/cpcap-battery.c
+@@ -1151,7 +1151,7 @@ static int cpcap_battery_probe(struct platform_device *pdev)
  	return 0;
  }
  
--static int pcf50633_mbc_remove(struct platform_device *pdev)
-+static void pcf50633_mbc_remove(struct platform_device *pdev)
+-static int cpcap_battery_remove(struct platform_device *pdev)
++static void cpcap_battery_remove(struct platform_device *pdev)
  {
- 	struct pcf50633_mbc *mbc = platform_get_drvdata(pdev);
- 	int i;
-@@ -453,8 +453,6 @@ static int pcf50633_mbc_remove(struct platform_device *pdev)
- 	power_supply_unregister(mbc->usb);
- 	power_supply_unregister(mbc->adapter);
- 	power_supply_unregister(mbc->ac);
+ 	struct cpcap_battery_ddata *ddata = platform_get_drvdata(pdev);
+ 	int error;
+@@ -1161,8 +1161,6 @@ static int cpcap_battery_remove(struct platform_device *pdev)
+ 				   0xffff, 0);
+ 	if (error)
+ 		dev_err(&pdev->dev, "could not disable: %i\n", error);
 -
 -	return 0;
  }
  
- static struct platform_driver pcf50633_mbc_driver = {
-@@ -462,7 +460,7 @@ static struct platform_driver pcf50633_mbc_driver = {
- 		.name = "pcf50633-mbc",
+ static struct platform_driver cpcap_battery_driver = {
+@@ -1171,7 +1169,7 @@ static struct platform_driver cpcap_battery_driver = {
+ 		.of_match_table = of_match_ptr(cpcap_battery_id_table),
  	},
- 	.probe = pcf50633_mbc_probe,
--	.remove = pcf50633_mbc_remove,
-+	.remove_new = pcf50633_mbc_remove,
+ 	.probe	= cpcap_battery_probe,
+-	.remove = cpcap_battery_remove,
++	.remove_new = cpcap_battery_remove,
  };
+ module_platform_driver(cpcap_battery_driver);
  
- module_platform_driver(pcf50633_mbc_driver);
 -- 
 2.40.1
 
