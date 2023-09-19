@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D673CD5BB4
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Sep 2023 12:46:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C56CCD5BB7
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Sep 2023 12:46:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232169AbjISMqT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Sep 2023 08:46:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55920 "EHLO
+        id S232124AbjISMqV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Sep 2023 08:46:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55880 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232132AbjISMqR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2023 08:46:17 -0400
-Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA0E5130
-        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2023 05:46:08 -0700 (PDT)
-Received: by mail-ed1-x52b.google.com with SMTP id 4fb4d7f45d1cf-52f9a45b4bdso6973656a12.3
-        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2023 05:46:08 -0700 (PDT)
+        with ESMTP id S232184AbjISMqT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2023 08:46:19 -0400
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB951187
+        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2023 05:46:10 -0700 (PDT)
+Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-501eec0a373so9167423e87.3
+        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2023 05:46:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1695127567; x=1695732367; darn=vger.kernel.org;
+        d=fairphone.com; s=fair; t=1695127568; x=1695732368; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=WMuJsymgFdsKAjrQm0VavHQLfVQtcng3/FrcyEkfn3s=;
-        b=QthGcJwZLcU4Owdd9tmIeYu+cw4+qDAmK8Dkn+KhTbAeTDfawtgh4Pd6fTFbIAjxMw
-         UvzcvQ2+y3vy3JjNcOBKl9q4oIy8wzUCu5E22mtX1XOcEKVC1QYlRScxlYsJdT9aTdeH
-         kxvWdKIXcoqI6be1m27GvgUKN4SprlGSAATCfdfDSNmu6IQk2qgpnbPqcTBXa2YK1WCE
-         eOfkrVsg/G7X1ZdmsfxyN28/S8q0n6mloPBmp8WuqhsqiwZjlhKYw3LG4/HDkl0BOCkR
-         qjrlZs6MvafszOlZ/U0Ntsfi3sFzehz4cpE3kA2Cu1hAcVTx10dZ+YseolZ4hHc6kZvE
-         MjZg==
+        bh=7fWFiq2Z3kzEyU88O2c9+i0+0nk8+Hu7Vs+xo2WgRZY=;
+        b=0qu5Ts8zT7BUKq+V4tf8qNL+Uamsn0u4PCcd/SdXWT66uBOofC56VEyRBtviIASGBt
+         Fri7YsQnAta4i68K5lR9fRr86BuIsSfJjVuz2LD5/l0QM8X8ZXzfvEBXMujWlx1la7cW
+         qvFI+xYOAX523nh/J32xpYNYTPdY5PnFU7yIQTDhjfHQ/shfG2rJVuWdVMt/fv+aZzen
+         dNqp1ckCWBw8IbGaB+GzaXRAUBVt6a2N/2nVSMMLKaIdVSpjd7HlWynoRZ921MSAH/W9
+         AyvWhlToFeX598Mks+iZGC9GadgNcHgQ2HtHEflgKgosd2gCtyU1L6euO/c6TTajnQRi
+         eWrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695127567; x=1695732367;
+        d=1e100.net; s=20230601; t=1695127568; x=1695732368;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=WMuJsymgFdsKAjrQm0VavHQLfVQtcng3/FrcyEkfn3s=;
-        b=nS79qlLwLuT3NjzHQeor8wkJyoAFK42pIxObvvbo3pUK3h/apEWE+37iocNiwpv+ew
-         xj47cnAA5ZVOSn4QR4lGG8Knew9y3aOoXHI92FaDMQRtPDiwq5hY4So3vNK/0FRvzkL2
-         Jelx1A5zgOi1aPE+CMH+eR59rhdbSexfGXb6ua4X2Rw+jHYr1qAqQwtbewCr6TjgkQJj
-         LVx6NyPL3EpkdQGYPckhAlavJV5xAQdsncMq8DYoemM35JrzGieB84/lD9+MJu7JVB8y
-         0ZvMGRW9ycouVYMOiEyYF3XlcE09lhK/xrESwGKIObGFMcnochcGJqwRu87mHEbsQK7K
-         Sc5Q==
-X-Gm-Message-State: AOJu0Yyj0cLPVYWZxXUVkfLoCWimgYKMUQ80ClclgpQ6t2uRrc4THlfp
-        rV3n8H++BCCDWSdisG8PJpLfaw==
-X-Google-Smtp-Source: AGHT+IESN3P4tFPFTmoegpAyu0985VeUnYTtETuttZ8u4RCYd1u27yyNjPxim8n3sd0Ww2U2wL5r/g==
-X-Received: by 2002:a05:6402:5165:b0:530:8a59:a01d with SMTP id d5-20020a056402516500b005308a59a01dmr9886341ede.27.1695127567136;
-        Tue, 19 Sep 2023 05:46:07 -0700 (PDT)
+        bh=7fWFiq2Z3kzEyU88O2c9+i0+0nk8+Hu7Vs+xo2WgRZY=;
+        b=jWML9334KfUZEu7TPptzGn121XPOQFVgB2cDa4+GzB7dE4bj9MRML5nmYxiJ2zud+M
+         zDJ3a+E4wflHI/AONONFcopVNzelBgYJwwzwLrHcXL2dLClUgSMSxbmwnGOVVwyZUXpZ
+         Fm8UX6YcpD/CYxcPZYL2pPgIgp9xzLtFzKe5gEg2cciqdAm/H4eKEh+IKf5nYTnd/Cqx
+         hYyX/kNaaWZih+NazPp5D4RgXJsbwq9Is6igJinwZMllGnt8PliH7n5nGHMv4cA0btT1
+         HAGKvTYmWYt+e7rL8XlW1Uh+Y19VPmFy3wliTYr+TmGvPL5mwj8+Hhbz5rkcJ6RVjnWj
+         L/9A==
+X-Gm-Message-State: AOJu0YyTl1vWxC5sQ7mopQ/Mn1dsl1kAwEZ6K1oJow4wcllxZTGWLUhd
+        UdGjeF0TndEmyvcxe92ON4by+bUYDTw1Sd0LbRXolc4t
+X-Google-Smtp-Source: AGHT+IGZklR6vmwx+I1m2TYBs5iOwsPLRBe+Obf/CId5PwS12y8h+KZFNQQ9tDvt0rDzC8/Y2ewakQ==
+X-Received: by 2002:a05:6512:31cd:b0:503:1722:bf3a with SMTP id j13-20020a05651231cd00b005031722bf3amr5986480lfe.1.1695127568502;
+        Tue, 19 Sep 2023 05:46:08 -0700 (PDT)
 Received: from otso.luca.vpn.lucaweiss.eu (static-212-193-78-212.thenetworkfactory.nl. [212.78.193.212])
-        by smtp.gmail.com with ESMTPSA id dn22-20020a05640222f600b00532c1dfe8ecsm635878edb.66.2023.09.19.05.46.06
+        by smtp.gmail.com with ESMTPSA id dn22-20020a05640222f600b00532c1dfe8ecsm635878edb.66.2023.09.19.05.46.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Sep 2023 05:46:06 -0700 (PDT)
+        Tue, 19 Sep 2023 05:46:08 -0700 (PDT)
 From:   Luca Weiss <luca.weiss@fairphone.com>
-Date:   Tue, 19 Sep 2023 14:45:58 +0200
-Subject: [PATCH v2 4/7] arm64: dts: qcom: pm8350c: Add flash led node
+Date:   Tue, 19 Sep 2023 14:46:00 +0200
+Subject: [PATCH v2 6/7] dt-bindings: arm: qcom: Add QCM6490 Fairphone 5
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230919-fp5-initial-v2-4-14bb7cedadf5@fairphone.com>
+Message-Id: <20230919-fp5-initial-v2-6-14bb7cedadf5@fairphone.com>
 References: <20230919-fp5-initial-v2-0-14bb7cedadf5@fairphone.com>
 In-Reply-To: <20230919-fp5-initial-v2-0-14bb7cedadf5@fairphone.com>
 To:     cros-qcom-dts-watchers@chromium.org,
@@ -78,31 +78,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a node for the led controller found on PM8350C, used for flash and
-torch purposes.
+Fairphone 5 is a smartphone based on the QCM6490 SoC.
 
 Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 ---
- arch/arm64/boot/dts/qcom/pm8350c.dtsi | 6 ++++++
+ Documentation/devicetree/bindings/arm/qcom.yaml | 6 ++++++
  1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/pm8350c.dtsi b/arch/arm64/boot/dts/qcom/pm8350c.dtsi
-index f28e71487d5c..aa74e21fe0dc 100644
---- a/arch/arm64/boot/dts/qcom/pm8350c.dtsi
-+++ b/arch/arm64/boot/dts/qcom/pm8350c.dtsi
-@@ -30,6 +30,12 @@ pm8350c_gpios: gpio@8800 {
- 			#interrupt-cells = <2>;
- 		};
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index adbfaea32343..76934f4772e9 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -50,6 +50,7 @@ description: |
+         msm8998
+         qcs404
+         qcm2290
++        qcm6490
+         qdu1000
+         qrb2210
+         qrb4210
+@@ -391,6 +392,11 @@ properties:
+           - const: qcom,qrb2210
+           - const: qcom,qcm2290
  
-+		pm8350c_flash: led-controller@ee00 {
-+			compatible = "qcom,pm8350c-flash-led", "qcom,spmi-flash-led";
-+			reg = <0xee00>;
-+			status = "disabled";
-+		};
++      - items:
++          - enum:
++              - fairphone,fp5
++          - const: qcom,qcm6490
 +
- 		pm8350c_pwm: pwm {
- 			compatible = "qcom,pm8350c-pwm";
- 			#pwm-cells = <2>;
+       - description: Qualcomm Technologies, Inc. Distributed Unit 1000 platform
+         items:
+           - enum:
 
 -- 
 2.42.0
