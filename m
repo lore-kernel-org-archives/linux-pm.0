@@ -2,66 +2,66 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BABACD342E
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Sep 2023 00:58:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F9BDCD3430
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Sep 2023 01:00:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230321AbjISA6F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Sep 2023 20:58:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45982 "EHLO
+        id S230249AbjISBAY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Sep 2023 21:00:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49912 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229508AbjISA6E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 20:58:04 -0400
+        with ESMTP id S229750AbjISBAX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2023 21:00:23 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BC83107
-        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 17:57:16 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE87810D
+        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 17:59:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1695085035;
+        s=mimecast20190719; t=1695085173;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=bIURaVhU/G5DJJinyquD0ptYbPAZ38yx5KNcjiMal4E=;
-        b=gC3jNUheufzzhpYHMirHAPAI7iG2RUsIou7U4YVu9DNdTw/I25q6xjs6TXyV9ZoJHxKjfR
-        GcZr6ao7enfrFh++gaJwy0DxaYHusKD/EDKMjT10oDFnOq2A7TWDzt8lh77O4Ee9ToQY4O
-        cnP3qF3vLJdbGX81j9xZwh/mF/WN6jI=
-Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com
- [209.85.210.200]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=bw0RCNykMdY7RZsWbJdeZUErCRZgRpcPnJGa7EHVzz4=;
+        b=Bue/mVDEQh5rS75zAHcFn62FGRisryxKB+eFsVOY5DHkB5Rn90Qrhg6T3qfHPQWrBJ+0/6
+        nwMHdLyucp5Gf99kgIG7tmXbWhYaEsNkYhtY/cUc2IBB17g8PXM2BTVi0wrgNJLiFH6Ne5
+        TFDnDSq4Dr/qnf6dvkvFyQUqePS9dYU=
+Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com
+ [209.85.216.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-83-wfnpTGx5Pi2s9EmhVxJl9Q-1; Mon, 18 Sep 2023 20:49:41 -0400
-X-MC-Unique: wfnpTGx5Pi2s9EmhVxJl9Q-1
-Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-690a0eedb24so868863b3a.1
-        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 17:49:41 -0700 (PDT)
+ us-mta-681-q_HSYzXPMbuKZ48oiF7dkg-1; Mon, 18 Sep 2023 20:59:32 -0400
+X-MC-Unique: q_HSYzXPMbuKZ48oiF7dkg-1
+Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-274bc2cb2dbso1624018a91.0
+        for <linux-pm@vger.kernel.org>; Mon, 18 Sep 2023 17:59:31 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695084581; x=1695689381;
+        d=1e100.net; s=20230601; t=1695085171; x=1695689971;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=bIURaVhU/G5DJJinyquD0ptYbPAZ38yx5KNcjiMal4E=;
-        b=QDT8fl7XpM2ZyNRiJ+Q3Z7S8amcrfq4LdXpyuZ8ecpgGUihZHau6OAfearO0tzi8p8
-         AeXOFAUuodnPHxFTQ4RtpC6rPefMhEcHkqjnXsHdvJKEl4UAiXeGxEdHMktghMknfWuQ
-         1RzD//ih/vkio/2iIIpsHaeYdBzZXWQClpjeNTfi/cvm+ZxFHqZYCksTitCvdevu/Rdr
-         ALrAWzxRGoiwdhdOKXqfwvXvUXtbDpvpR5WPdePjrYc26+61pqG3o8TUuUcIan1iDex8
-         2ALXlrb/2sl4K5R1MZqIFXwlc6jJzchGBkQo83//JCCfMicP3q21Gqb+Q8txZAOyCfgu
-         wTEg==
-X-Gm-Message-State: AOJu0YwlYp5j7yfCLQczOYiJQ3mAocWv9/cWCr85kBybdSeuua7GSsjP
-        sJxkodwIKb0Trq1a/DxWq8odc8mGsN1FSN7LsBLKaLHin/tHHJkb/kFdPu5furIrgGvNfJVxs+x
-        +87G4rvu7cHbqL+F36m0=
-X-Received: by 2002:a05:6a00:13a9:b0:68a:6173:295b with SMTP id t41-20020a056a0013a900b0068a6173295bmr11687170pfg.2.1695084580786;
-        Mon, 18 Sep 2023 17:49:40 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IF3oVg5VMiqyNQpSBftI/mkgS1m694rJEONxMKwBMkdMp9Ry/rErZrzBJO2CPP2aN+mnlKKqg==
-X-Received: by 2002:a05:6a00:13a9:b0:68a:6173:295b with SMTP id t41-20020a056a0013a900b0068a6173295bmr11687156pfg.2.1695084580437;
-        Mon, 18 Sep 2023 17:49:40 -0700 (PDT)
+        bh=bw0RCNykMdY7RZsWbJdeZUErCRZgRpcPnJGa7EHVzz4=;
+        b=R23VcvRSTZRptHVP9KKBWdSj6zCJY8mkH3TKbVJOrfhG+nf2LrZ0d7FQRdwgS9C61d
+         xqk8Qt6HwpUvhz4SAHt1FkQEkSRKansTpFU25AXQNymh5H+wjCgFu1fzLPyz7oZ0C7/S
+         WV1wxr72ISybJBFeJT4mlHh+S3LKBKbUwwZT+cxcs8cmJJSDyG/ajWiaYiAcog/6c5Ej
+         ht+G/2Dx4QLZ2eitViGKvhgM73bs7miCVeHNqFspt+qkMulGKTmsDvUHAT3XXSyK4mVc
+         YncqTtydu7mzSHGaWqyiXN67WRXMTNmV/yDKQLf8QPFCj/elVySj45qXE4jBg+30o3cJ
+         Vfaw==
+X-Gm-Message-State: AOJu0YxwVSwCAOe+ZlrSRq/A9kepYqx+GYSlMvj4yJ6t6IQgmRpHq4uP
+        uwi6nuwS8I1OM3nrfBuRxUpEJN+mn4OoQfLrRhdn945A0efwXyXOGsLVo0MOWmSd3ZWP3qpIHnJ
+        sNpcxeEl8XPkLbcJ8uVs=
+X-Received: by 2002:a17:903:187:b0:1c1:eb8b:79a6 with SMTP id z7-20020a170903018700b001c1eb8b79a6mr9666410plg.24.1695085170964;
+        Mon, 18 Sep 2023 17:59:30 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IE7eI2cxEHhh6ECmh24LHvZfT00fTv4NRQgrtlQ6ac1SnBZhOS9meGvuMTt0rEbyYbfdT98tw==
+X-Received: by 2002:a17:903:187:b0:1c1:eb8b:79a6 with SMTP id z7-20020a170903018700b001c1eb8b79a6mr9666399plg.24.1695085170570;
+        Mon, 18 Sep 2023 17:59:30 -0700 (PDT)
 Received: from ?IPV6:2001:8003:e5b0:9f00:dbbc:1945:6e65:ec5? ([2001:8003:e5b0:9f00:dbbc:1945:6e65:ec5])
-        by smtp.gmail.com with ESMTPSA id i13-20020aa787cd000000b0068fe76cdc62sm70310pfo.93.2023.09.18.17.49.34
+        by smtp.gmail.com with ESMTPSA id kg14-20020a170903060e00b001c41e1e9ca7sm8040575plb.215.2023.09.18.17.59.25
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 18 Sep 2023 17:49:39 -0700 (PDT)
-Message-ID: <54c91de8-f0d2-787f-5710-2da1dfc80937@redhat.com>
-Date:   Tue, 19 Sep 2023 10:49:32 +1000
+        Mon, 18 Sep 2023 17:59:30 -0700 (PDT)
+Message-ID: <8be3a9dc-8f59-9ef9-3662-95814e177125@redhat.com>
+Date:   Tue, 19 Sep 2023 10:59:23 +1000
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.12.0
-Subject: Re: [RFC PATCH v2 23/35] ACPI: Warn when the present bit changes but
- the feature is not enabled
+Subject: Re: [RFC PATCH v2 24/35] drivers: base: Implement weak
+ arch_unregister_cpu()
 Content-Language: en-US
 To:     James Morse <james.morse@arm.com>, linux-pm@vger.kernel.org,
         loongarch@lists.linux.dev, linux-acpi@vger.kernel.org,
@@ -73,9 +73,9 @@ Cc:     x86@kernel.org, Salil Mehta <salil.mehta@huawei.com>,
         Jean-Philippe Brucker <jean-philippe@linaro.org>,
         jianyong.wu@arm.com, justin.he@arm.com
 References: <20230913163823.7880-1-james.morse@arm.com>
- <20230913163823.7880-24-james.morse@arm.com>
+ <20230913163823.7880-25-james.morse@arm.com>
 From:   Gavin Shan <gshan@redhat.com>
-In-Reply-To: <20230913163823.7880-24-james.morse@arm.com>
+In-Reply-To: <20230913163823.7880-25-james.morse@arm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -85,56 +85,93 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 
 On 9/14/23 02:38, James Morse wrote:
-> ACPI firmware can trigger the events to add and remove CPUs, but the
-> OS may not support this.
+> Add arch_unregister_cpu() to allow the ACPI machinery to call
+> unregister_cpu(). This is enough for arm64, riscv and loongarch, but
+> needs to be overridden by x86 and ia64 who need to do more work.
 > 
-> Print a warning when this happens.
-           ^^^^^^^
-           error message
-> 
-> This gives early warning on arm64 systems that don't support
-> CONFIG_ACPI_HOTPLUG_PRESENT_CPU, as making CPUs not present has
-> side effects for other parts of the system.
-> 
+> CC: Jean-Philippe Brucker <jean-philippe@linaro.org>
 > Signed-off-by: James Morse <james.morse@arm.com>
 > ---
->   drivers/acpi/acpi_processor.c | 8 ++++++--
->   1 file changed, 6 insertions(+), 2 deletions(-)
+> Changes since v1:
+>   * Added CONFIG_HOTPLUG_CPU ifdeffery around unregister_cpu
+> ---
+>   arch/ia64/include/asm/cpu.h      | 4 ----
+>   arch/loongarch/include/asm/cpu.h | 6 ------
+>   arch/x86/include/asm/cpu.h       | 1 -
+>   drivers/base/cpu.c               | 9 ++++++++-
+>   4 files changed, 8 insertions(+), 12 deletions(-)
 > 
 
-Maybe a warning message is enough, but a error message
-is also fine, I think.
+I agree with Jonathan this patch needs to come early. Maybe move this
+before the following one:
 
-Reviewed-by: Gavin Shan <gshan@redhat.com>
+[RFC PATCH v2 19/35] ACPI: Move acpi_bus_trim_one() before acpi_scan_hot_remove()
 
-> diff --git a/drivers/acpi/acpi_processor.c b/drivers/acpi/acpi_processor.c
-> index 2cafea1edc24..b67616079751 100644
-> --- a/drivers/acpi/acpi_processor.c
-> +++ b/drivers/acpi/acpi_processor.c
-> @@ -188,8 +188,10 @@ static int acpi_processor_make_present(struct acpi_processor *pr)
->   	acpi_status status;
->   	int ret;
+> diff --git a/arch/ia64/include/asm/cpu.h b/arch/ia64/include/asm/cpu.h
+> index a3e690e685e5..642d71675ddb 100644
+> --- a/arch/ia64/include/asm/cpu.h
+> +++ b/arch/ia64/include/asm/cpu.h
+> @@ -15,8 +15,4 @@ DECLARE_PER_CPU(struct ia64_cpu, cpu_devices);
 >   
-> -	if (!IS_ENABLED(CONFIG_ACPI_HOTPLUG_PRESENT_CPU))
-> +	if (!IS_ENABLED(CONFIG_ACPI_HOTPLUG_PRESENT_CPU)) {
-> +		pr_err_once("Changing CPU present bit is not supported\n");
->   		return -ENODEV;
-> +	}
+>   DECLARE_PER_CPU(int, cpu_state);
 >   
->   	if (invalid_phys_cpuid(pr->phys_id))
->   		return -ENODEV;
-> @@ -462,8 +464,10 @@ static void acpi_processor_make_not_present(struct acpi_device *device)
+> -#ifdef CONFIG_HOTPLUG_CPU
+> -extern void arch_unregister_cpu(int);
+> -#endif
+> -
+>   #endif /* _ASM_IA64_CPU_H_ */
+> diff --git a/arch/loongarch/include/asm/cpu.h b/arch/loongarch/include/asm/cpu.h
+> index b8568e637420..48b9f7168bcc 100644
+> --- a/arch/loongarch/include/asm/cpu.h
+> +++ b/arch/loongarch/include/asm/cpu.h
+> @@ -128,10 +128,4 @@ enum cpu_type_enum {
+>   #define LOONGARCH_CPU_HYPERVISOR	BIT_ULL(CPU_FEATURE_HYPERVISOR)
+>   #define LOONGARCH_CPU_PTW		BIT_ULL(CPU_FEATURE_PTW)
+>   
+> -#if !defined(__ASSEMBLY__)
+> -#ifdef CONFIG_HOTPLUG_CPU
+> -void arch_unregister_cpu(int cpu);
+> -#endif
+> -#endif /* ! __ASSEMBLY__ */
+> -
+>   #endif /* _ASM_CPU_H */
+> diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
+> index f349c94510e8..91867a6a9f8e 100644
+> --- a/arch/x86/include/asm/cpu.h
+> +++ b/arch/x86/include/asm/cpu.h
+> @@ -24,7 +24,6 @@ static inline void prefill_possible_map(void) {}
+>   #endif /* CONFIG_SMP */
+>   
+>   #ifdef CONFIG_HOTPLUG_CPU
+> -extern void arch_unregister_cpu(int);
+>   extern void soft_restart_cpu(void);
+>   #endif
+>   
+> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+> index 677f963e02ce..c709747c4a18 100644
+> --- a/drivers/base/cpu.c
+> +++ b/drivers/base/cpu.c
+> @@ -531,7 +531,14 @@ int __weak arch_register_cpu(int cpu)
 >   {
->   	struct acpi_processor *pr;
+>   	return register_cpu(&per_cpu(cpu_devices, cpu), cpu);
+>   }
+> -#endif
+> +
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +void __weak arch_unregister_cpu(int num)
+> +{
+> +	unregister_cpu(&per_cpu(cpu_devices, num));
+> +}
+> +#endif /* CONFIG_HOTPLUG_CPU */
+> +#endif /* CONFIG_GENERIC_CPU_DEVICES */
 >   
-> -	if (!IS_ENABLED(CONFIG_ACPI_HOTPLUG_PRESENT_CPU))
-> +	if (!IS_ENABLED(CONFIG_ACPI_HOTPLUG_PRESENT_CPU)) {
-> +		pr_err_once("Changing CPU present bit is not supported");
->   		return;
-> +	}
->   
->   	pr = acpi_driver_data(device);
->   	if (pr->id >= nr_cpu_ids)
+
+It seems conflicting with its declaration in include/linux/cpu.h. Besides,
+the function is still needed by drivers/acpi/acpi_processor.c::acpi_processor_make_not_present()
+even both CONFIG_HOTPLUG_CPU and CONFIG_GENERIC_CPU_DEVICES are disabled?
+
+>   static void __init cpu_dev_register_generic(void)
+>   {
 
 Thanks,
 Gavin
