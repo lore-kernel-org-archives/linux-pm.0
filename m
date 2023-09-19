@@ -2,61 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F0B1CD5BAD
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Sep 2023 12:46:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D673CD5BB4
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Sep 2023 12:46:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232166AbjISMqS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Sep 2023 08:46:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55894 "EHLO
+        id S232169AbjISMqT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Sep 2023 08:46:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232112AbjISMqR (ORCPT
+        with ESMTP id S232132AbjISMqR (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2023 08:46:17 -0400
 Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A798FF7
-        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2023 05:46:06 -0700 (PDT)
-Received: by mail-ed1-x52b.google.com with SMTP id 4fb4d7f45d1cf-5315b70c50dso1913857a12.2
-        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2023 05:46:06 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA0E5130
+        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2023 05:46:08 -0700 (PDT)
+Received: by mail-ed1-x52b.google.com with SMTP id 4fb4d7f45d1cf-52f9a45b4bdso6973656a12.3
+        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2023 05:46:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1695127565; x=1695732365; darn=vger.kernel.org;
+        d=fairphone.com; s=fair; t=1695127567; x=1695732367; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=sLLpoq+DcvN55YeifZ9SGsL5kC0r1lCyLX42UdQGXRo=;
-        b=ZM35CBM6YRAPDvoUBrk9km8C+ovnxTJZyhk9lv5c5yUnvFyFiwO/G/QyiWncM7vPU8
-         Ndhht4hVSiEy94DtJ7XiAO0fRts8PlhDbcXaZ3paBZUNqka7KkDuuIPUpwE2tLgl4GNN
-         tO9hwrAn4ntzhRT8KVasQCeoRoyJ7HhmjaQx9XuhaJh4X6nrU5TMPpZCirFj2oqwfQwl
-         RGqSufOhV2AdmrgFbAU7EWdF5egUgzTKWubI+3CckomBpWPFW58gcOr3WHvRZZSApdUV
-         z2U00uELE+0Y/FmkYcJi2SAkNQaVNofh/4OidxP9o1HlW1DXljY/xzd0h03GG2acI5aq
-         0wfg==
+        bh=WMuJsymgFdsKAjrQm0VavHQLfVQtcng3/FrcyEkfn3s=;
+        b=QthGcJwZLcU4Owdd9tmIeYu+cw4+qDAmK8Dkn+KhTbAeTDfawtgh4Pd6fTFbIAjxMw
+         UvzcvQ2+y3vy3JjNcOBKl9q4oIy8wzUCu5E22mtX1XOcEKVC1QYlRScxlYsJdT9aTdeH
+         kxvWdKIXcoqI6be1m27GvgUKN4SprlGSAATCfdfDSNmu6IQk2qgpnbPqcTBXa2YK1WCE
+         eOfkrVsg/G7X1ZdmsfxyN28/S8q0n6mloPBmp8WuqhsqiwZjlhKYw3LG4/HDkl0BOCkR
+         qjrlZs6MvafszOlZ/U0Ntsfi3sFzehz4cpE3kA2Cu1hAcVTx10dZ+YseolZ4hHc6kZvE
+         MjZg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695127565; x=1695732365;
+        d=1e100.net; s=20230601; t=1695127567; x=1695732367;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=sLLpoq+DcvN55YeifZ9SGsL5kC0r1lCyLX42UdQGXRo=;
-        b=M4EknkqImvRgWtJ6JoPvz117gai37pn+zWFe2mPYtsLurluaMF7BgcqfoH2luE5zjX
-         59WpN6n9sAtLWXYwanqAskRG26OypZZa58yQ6dGwHH8/n64LMIk/I3hIPFnexEsHtdfJ
-         r+4Kk+OiV/4Xg/mRkq76M+UoIo1N3bIaue0yPVxVd5ZCqX44gk6gRgFNpH2QfDCVONte
-         aWE9tEr7Deov4jQVOZ10u5RsRaiGeoI5p/3qQClM3gs/MxASFPHuzeTEZwN1T2SuwFm4
-         7+n7eCJMoTM8MaQzEtRUzluk/yshWz54pM7aZsH3QToyqESZZ2GeYuN15lOPQw60r75z
-         ceSQ==
-X-Gm-Message-State: AOJu0YywB+t6HCOYOam4Q1covBzrMabNGyAg4sU+t0vUhLV794lRzvLj
-        9v1D5XoWsp3PcPD8rLAlfXkfUg==
-X-Google-Smtp-Source: AGHT+IFOoSh8VwSk3uaWIZRjca8rl/eH5qw0/LYnlSu9ZwfYCdjYA7p6eBAc6sBe6o86gMi+lEAZdQ==
-X-Received: by 2002:a05:6402:206c:b0:530:ad02:a6e8 with SMTP id bd12-20020a056402206c00b00530ad02a6e8mr7303734edb.42.1695127564948;
-        Tue, 19 Sep 2023 05:46:04 -0700 (PDT)
+        bh=WMuJsymgFdsKAjrQm0VavHQLfVQtcng3/FrcyEkfn3s=;
+        b=nS79qlLwLuT3NjzHQeor8wkJyoAFK42pIxObvvbo3pUK3h/apEWE+37iocNiwpv+ew
+         xj47cnAA5ZVOSn4QR4lGG8Knew9y3aOoXHI92FaDMQRtPDiwq5hY4So3vNK/0FRvzkL2
+         Jelx1A5zgOi1aPE+CMH+eR59rhdbSexfGXb6ua4X2Rw+jHYr1qAqQwtbewCr6TjgkQJj
+         LVx6NyPL3EpkdQGYPckhAlavJV5xAQdsncMq8DYoemM35JrzGieB84/lD9+MJu7JVB8y
+         0ZvMGRW9ycouVYMOiEyYF3XlcE09lhK/xrESwGKIObGFMcnochcGJqwRu87mHEbsQK7K
+         Sc5Q==
+X-Gm-Message-State: AOJu0Yyj0cLPVYWZxXUVkfLoCWimgYKMUQ80ClclgpQ6t2uRrc4THlfp
+        rV3n8H++BCCDWSdisG8PJpLfaw==
+X-Google-Smtp-Source: AGHT+IESN3P4tFPFTmoegpAyu0985VeUnYTtETuttZ8u4RCYd1u27yyNjPxim8n3sd0Ww2U2wL5r/g==
+X-Received: by 2002:a05:6402:5165:b0:530:8a59:a01d with SMTP id d5-20020a056402516500b005308a59a01dmr9886341ede.27.1695127567136;
+        Tue, 19 Sep 2023 05:46:07 -0700 (PDT)
 Received: from otso.luca.vpn.lucaweiss.eu (static-212-193-78-212.thenetworkfactory.nl. [212.78.193.212])
-        by smtp.gmail.com with ESMTPSA id dn22-20020a05640222f600b00532c1dfe8ecsm635878edb.66.2023.09.19.05.46.04
+        by smtp.gmail.com with ESMTPSA id dn22-20020a05640222f600b00532c1dfe8ecsm635878edb.66.2023.09.19.05.46.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Sep 2023 05:46:04 -0700 (PDT)
+        Tue, 19 Sep 2023 05:46:06 -0700 (PDT)
 From:   Luca Weiss <luca.weiss@fairphone.com>
-Date:   Tue, 19 Sep 2023 14:45:55 +0200
-Subject: [PATCH v2 1/7] arm64: dts: qcom: sc7280: Mark some nodes as
- 'reserved'
+Date:   Tue, 19 Sep 2023 14:45:58 +0200
+Subject: [PATCH v2 4/7] arm64: dts: qcom: pm8350c: Add flash led node
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230919-fp5-initial-v2-1-14bb7cedadf5@fairphone.com>
+Message-Id: <20230919-fp5-initial-v2-4-14bb7cedadf5@fairphone.com>
 References: <20230919-fp5-initial-v2-0-14bb7cedadf5@fairphone.com>
 In-Reply-To: <20230919-fp5-initial-v2-0-14bb7cedadf5@fairphone.com>
 To:     cros-qcom-dts-watchers@chromium.org,
@@ -79,116 +78,31 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-With the standard Qualcomm TrustZone setup, components such as lpasscc,
-pdc_reset and watchdog shouldn't be touched by Linux. Mark them with
-the status 'reserved' and reenable them in the chrome-common dtsi.
+Add a node for the led controller found on PM8350C, used for flash and
+torch purposes.
 
 Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 ---
- arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi | 24 ++++++++++++++++++++++
- arch/arm64/boot/dts/qcom/sc7280.dtsi               |  8 +++++++-
- 2 files changed, 31 insertions(+), 1 deletion(-)
+ arch/arm64/boot/dts/qcom/pm8350c.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi b/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
-index 2e1cd219fc18..5d462ae14ba1 100644
---- a/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
-@@ -46,6 +46,26 @@ wpss_mem: memory@9ae00000 {
- 	};
- };
+diff --git a/arch/arm64/boot/dts/qcom/pm8350c.dtsi b/arch/arm64/boot/dts/qcom/pm8350c.dtsi
+index f28e71487d5c..aa74e21fe0dc 100644
+--- a/arch/arm64/boot/dts/qcom/pm8350c.dtsi
++++ b/arch/arm64/boot/dts/qcom/pm8350c.dtsi
+@@ -30,6 +30,12 @@ pm8350c_gpios: gpio@8800 {
+ 			#interrupt-cells = <2>;
+ 		};
  
-+&lpass_aon {
-+	status = "okay";
-+};
++		pm8350c_flash: led-controller@ee00 {
++			compatible = "qcom,pm8350c-flash-led", "qcom,spmi-flash-led";
++			reg = <0xee00>;
++			status = "disabled";
++		};
 +
-+&lpass_core {
-+	status = "okay";
-+};
-+
-+&lpass_hm {
-+	status = "okay";
-+};
-+
-+&lpasscc {
-+	status = "okay";
-+};
-+
-+&pdc_reset {
-+	status = "okay";
-+};
-+
- /* The PMIC PON code isn't compatible w/ how Chrome EC/BIOS handle things. */
- &pmk8350_pon {
- 	status = "disabled";
-@@ -84,6 +104,10 @@ &scm {
- 	dma-coherent;
- };
- 
-+&watchdog {
-+	status = "okay";
-+};
-+
- &wifi {
- 	status = "okay";
- 
-diff --git a/arch/arm64/boot/dts/qcom/sc7280.dtsi b/arch/arm64/boot/dts/qcom/sc7280.dtsi
-index 2af42d0ad99e..3f7f5c99eaf8 100644
---- a/arch/arm64/boot/dts/qcom/sc7280.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc7280.dtsi
-@@ -2316,6 +2316,7 @@ lpasscc: lpasscc@3000000 {
- 			clocks = <&gcc GCC_CFG_NOC_LPASS_CLK>;
- 			clock-names = "iface";
- 			#clock-cells = <1>;
-+			status = "reserved"; /* Owned by ADSP firmware */
- 		};
- 
- 		lpass_rx_macro: codec@3200000 {
-@@ -2467,6 +2468,7 @@ lpass_aon: clock-controller@3380000 {
- 			clock-names = "bi_tcxo", "bi_tcxo_ao", "iface";
- 			#clock-cells = <1>;
- 			#power-domain-cells = <1>;
-+			status = "reserved"; /* Owned by ADSP firmware */
- 		};
- 
- 		lpass_core: clock-controller@3900000 {
-@@ -2477,6 +2479,7 @@ lpass_core: clock-controller@3900000 {
- 			power-domains = <&lpass_hm LPASS_CORE_CC_LPASS_CORE_HM_GDSC>;
- 			#clock-cells = <1>;
- 			#power-domain-cells = <1>;
-+			status = "reserved"; /* Owned by ADSP firmware */
- 		};
- 
- 		lpass_cpu: audio@3987000 {
-@@ -2547,6 +2550,7 @@ lpass_hm: clock-controller@3c00000 {
- 			clock-names = "bi_tcxo";
- 			#clock-cells = <1>;
- 			#power-domain-cells = <1>;
-+			status = "reserved"; /* Owned by ADSP firmware */
- 		};
- 
- 		lpass_ag_noc: interconnect@3c40000 {
-@@ -4243,6 +4247,7 @@ pdc_reset: reset-controller@b5e0000 {
- 			compatible = "qcom,sc7280-pdc-global";
- 			reg = <0 0x0b5e0000 0 0x20000>;
- 			#reset-cells = <1>;
-+			status = "reserved"; /* Owned by firmware */
- 		};
- 
- 		tsens0: thermal-sensor@c263000 {
-@@ -5239,11 +5244,12 @@ msi-controller@17a40000 {
- 			};
- 		};
- 
--		watchdog@17c10000 {
-+		watchdog: watchdog@17c10000 {
- 			compatible = "qcom,apss-wdt-sc7280", "qcom,kpss-wdt";
- 			reg = <0 0x17c10000 0 0x1000>;
- 			clocks = <&sleep_clk>;
- 			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
-+			status = "reserved"; /* Owned by Gunyah hyp */
- 		};
- 
- 		timer@17c20000 {
+ 		pm8350c_pwm: pwm {
+ 			compatible = "qcom,pm8350c-pwm";
+ 			#pwm-cells = <2>;
 
 -- 
 2.42.0
