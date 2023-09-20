@@ -2,259 +2,83 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CA16C04E30
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Sep 2023 17:50:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAF40C04FE8
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Sep 2023 18:52:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229586AbjITRuU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Sep 2023 13:50:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33912 "EHLO
+        id S229473AbjITSwI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Sep 2023 14:52:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35412 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229572AbjITRuS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2023 13:50:18 -0400
-Received: from mxout1.routing.net (mxout1.routing.net [IPv6:2a03:2900:1:a::a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49D5EA3;
-        Wed, 20 Sep 2023 10:50:12 -0700 (PDT)
-Received: from mxbox2.masterlogin.de (unknown [192.168.10.89])
-        by mxout1.routing.net (Postfix) with ESMTP id 9DD9B4045E;
-        Wed, 20 Sep 2023 17:50:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-        s=20200217; t=1695232210;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=5QpydNhnuiJDmq+DkprcEXtw+wHEatREQRn/jQOhq8U=;
-        b=psadO1KI3iBd80l9ivfW3Xc8VuZT4T3fzQ+BK66uGeSaUavtIWoXIoq+BHtSJYcZ0N9Yj2
-        O2mOPIkuv4OXumPzOmkAA9Q6GSWmgquA4FOHgOcEoqtFUzUcF3i5XYEQOGUA4DndII9uv3
-        3HF2l7WMM/u5Ma6yg8ykXBoIkG+CbSU=
-Received: from frank-G5.. (fttx-pool-217.61.152.105.bambit.de [217.61.152.105])
-        by mxbox2.masterlogin.de (Postfix) with ESMTPSA id BD9911006A2;
-        Wed, 20 Sep 2023 17:50:09 +0000 (UTC)
-From:   Frank Wunderlich <linux@fw-web.de>
-To:     linux-mediatek@lists.infradead.org
-Cc:     Frank Wunderlich <frank-w@public-files.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 3/4] thermal/drivers/mediatek/lvts_thermal: make coeff configurable
-Date:   Wed, 20 Sep 2023 19:50:00 +0200
-Message-Id: <20230920175001.47563-4-linux@fw-web.de>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230920175001.47563-1-linux@fw-web.de>
-References: <20230920175001.47563-1-linux@fw-web.de>
+        with ESMTP id S229461AbjITSwH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2023 14:52:07 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17606AF;
+        Wed, 20 Sep 2023 11:52:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1695235922; x=1726771922;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=M54V96/a5JNvmtpGTO55S8B6KkQoazOnDcAbzhvWxAs=;
+  b=lXkQnLPgYbiov/uheohU1+/fwSuuVVarDva+dUQsgBWtmG8XlznFwwzn
+   XMGO6247NbPGMlrrJlJu2HDLUa5vgyGeFML2IMY2IeJ9UhywT5TfyhF9F
+   zWK6R78CXGXg3AI5SO0FPtdNs/T8bjO8thXla0ZT6NKsDaMYbf0X9f2gM
+   fWxePK+4L4N8l350JLthwCGW50RfXH/Ex2Oe+IfNUcXSK9QGfUsEkINo7
+   0mhsQJSACzDZfM8i5Y2vmK5e2NJebcBsq5QDAZPnvvEwov0yEqPWZG196
+   q2y9Z7ePzxLR0P+USCka240nIYtnMYqUktGVZm5R8K66h05R4HbFNbIxu
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10839"; a="377611672"
+X-IronPort-AV: E=Sophos;i="6.03,162,1694761200"; 
+   d="scan'208";a="377611672"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Sep 2023 11:52:01 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10839"; a="812280570"
+X-IronPort-AV: E=Sophos;i="6.03,162,1694761200"; 
+   d="scan'208";a="812280570"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.14])
+  by fmsmga008.fm.intel.com with ESMTP; 20 Sep 2023 11:52:01 -0700
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH linux-next] thermal: int340x: processor_thermal: Ack all PCI interrupts
+Date:   Wed, 20 Sep 2023 11:51:53 -0700
+Message-Id: <20230920185153.613706-1-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mail-ID: ef1a64eb-da28-41db-a1c7-108f57370c3b
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Frank Wunderlich <frank-w@public-files.de>
+All interrupts from the processor thermal PCI device requires ACK. This
+is done by writing 0x01 at offset 0xDC in the config space. This is
+already done for the thereshold interrupt. Extend this for the workload
+hint interrupt.
 
-The upcoming mt7988 has different temperature coefficients so we
-cannot use constants in the functions lvts_golden_temp_init,
-lvts_golden_temp_init and lvts_raw_to_temp anymore.
-
-Add a field in the lvts_ctrl pointing to the lvts_data which now
-contains the soc-specific temperature coefficents.
-
-To make the code better readable, rename static int coeff_b to
-golden_temp_offset, COEFF_A to temp_factor and COEFF_B to temp_offset.
-
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
-v2:
-- rename static int coeff_b to golden_temp_offset
-- rename coeff.a to temp_factor and coeff.b to temp_offset
----
- drivers/thermal/mediatek/lvts_thermal.c | 51 ++++++++++++++++---------
- 1 file changed, 34 insertions(+), 17 deletions(-)
+ .../intel/int340x_thermal/processor_thermal_device_pci.c       | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index effd9b00a424..c2669f405a94 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -80,8 +80,8 @@
- #define LVTS_SENSOR_MAX				4
- #define LVTS_GOLDEN_TEMP_MAX		62
- #define LVTS_GOLDEN_TEMP_DEFAULT	50
--#define LVTS_COEFF_A				-250460
--#define LVTS_COEFF_B				250460
-+#define LVTS_COEFF_A_MT8195			-250460
-+#define LVTS_COEFF_B_MT8195			250460
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+index 44b179ce9bc9..3c5ced79ead0 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+@@ -154,10 +154,11 @@ static irqreturn_t proc_thermal_irq_handler(int irq, void *devid)
+ 	if (status) {
+ 		/* Disable enable interrupt flag */
+ 		proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 0);
+-		pci_write_config_byte(pci_info->pdev, 0xdc, 0x01);
+ 		pkg_thermal_schedule_work(&pci_info->work);
+ 	}
  
- #define LVTS_MSR_IMMEDIATE_MODE		0
- #define LVTS_MSR_FILTERED_MODE		1
-@@ -94,7 +94,7 @@
- #define LVTS_MINIMUM_THRESHOLD		20000
- 
- static int golden_temp = LVTS_GOLDEN_TEMP_DEFAULT;
--static int coeff_b = LVTS_COEFF_B;
-+static int golden_temp_offset;
- 
- struct lvts_sensor_data {
- 	int dt_id;
-@@ -112,6 +112,8 @@ struct lvts_ctrl_data {
- struct lvts_data {
- 	const struct lvts_ctrl_data *lvts_ctrl;
- 	int num_lvts_ctrl;
-+	int temp_factor;
-+	int temp_offset;
- };
- 
- struct lvts_sensor {
-@@ -126,6 +128,7 @@ struct lvts_sensor {
- 
- struct lvts_ctrl {
- 	struct lvts_sensor sensors[LVTS_SENSOR_MAX];
-+	const struct lvts_data *lvts_data;
- 	u32 calibration[LVTS_SENSOR_MAX];
- 	u32 hw_tshut_raw_temp;
- 	int num_lvts_sensor;
-@@ -247,21 +250,21 @@ static void lvts_debugfs_exit(struct lvts_domain *lvts_td) { }
- 
- #endif
- 
--static int lvts_raw_to_temp(u32 raw_temp)
-+static int lvts_raw_to_temp(u32 raw_temp, int temp_factor)
- {
- 	int temperature;
- 
--	temperature = ((s64)(raw_temp & 0xFFFF) * LVTS_COEFF_A) >> 14;
--	temperature += coeff_b;
-+	temperature = ((s64)(raw_temp & 0xFFFF) * temp_factor) >> 14;
-+	temperature += golden_temp_offset;
- 
- 	return temperature;
- }
- 
--static u32 lvts_temp_to_raw(int temperature)
-+static u32 lvts_temp_to_raw(int temperature, int temp_factor)
- {
--	u32 raw_temp = ((s64)(coeff_b - temperature)) << 14;
-+	u32 raw_temp = ((s64)(golden_temp_offset - temperature)) << 14;
- 
--	raw_temp = div_s64(raw_temp, -LVTS_COEFF_A);
-+	raw_temp = div_s64(raw_temp, -temp_factor);
- 
- 	return raw_temp;
- }
-@@ -269,6 +272,9 @@ static u32 lvts_temp_to_raw(int temperature)
- static int lvts_get_temp(struct thermal_zone_device *tz, int *temp)
- {
- 	struct lvts_sensor *lvts_sensor = thermal_zone_device_priv(tz);
-+	struct lvts_ctrl *lvts_ctrl = container_of(lvts_sensor, struct lvts_ctrl,
-+						   sensors[lvts_sensor->id]);
-+	const struct lvts_data *lvts_data = lvts_ctrl->lvts_data;
- 	void __iomem *msr = lvts_sensor->msr;
- 	u32 value;
- 	int rc;
-@@ -301,7 +307,7 @@ static int lvts_get_temp(struct thermal_zone_device *tz, int *temp)
- 	if (rc)
- 		return -EAGAIN;
- 
--	*temp = lvts_raw_to_temp(value & 0xFFFF);
-+	*temp = lvts_raw_to_temp(value & 0xFFFF, lvts_data->temp_factor);
- 
- 	return 0;
- }
-@@ -348,10 +354,13 @@ static bool lvts_should_update_thresh(struct lvts_ctrl *lvts_ctrl, int high)
- static int lvts_set_trips(struct thermal_zone_device *tz, int low, int high)
- {
- 	struct lvts_sensor *lvts_sensor = thermal_zone_device_priv(tz);
--	struct lvts_ctrl *lvts_ctrl = container_of(lvts_sensor, struct lvts_ctrl, sensors[lvts_sensor->id]);
-+	struct lvts_ctrl *lvts_ctrl = container_of(lvts_sensor, struct lvts_ctrl,
-+						   sensors[lvts_sensor->id]);
-+	const struct lvts_data *lvts_data = lvts_ctrl->lvts_data;
- 	void __iomem *base = lvts_sensor->base;
--	u32 raw_low = lvts_temp_to_raw(low != -INT_MAX ? low : LVTS_MINIMUM_THRESHOLD);
--	u32 raw_high = lvts_temp_to_raw(high);
-+	u32 raw_low = lvts_temp_to_raw(low != -INT_MAX ? low : LVTS_MINIMUM_THRESHOLD,
-+				       lvts_data->temp_factor);
-+	u32 raw_high = lvts_temp_to_raw(high, lvts_data->temp_factor);
- 	bool should_update_thresh;
- 
- 	lvts_sensor->low_thresh = low;
-@@ -692,7 +701,7 @@ static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td
- 	return 0;
- }
- 
--static int lvts_golden_temp_init(struct device *dev, u32 *value)
-+static int lvts_golden_temp_init(struct device *dev, u32 *value, int temp_offset)
- {
- 	u32 gt;
- 
-@@ -701,7 +710,7 @@ static int lvts_golden_temp_init(struct device *dev, u32 *value)
- 	if (gt && gt < LVTS_GOLDEN_TEMP_MAX)
- 		golden_temp = gt;
- 
--	coeff_b = golden_temp * 500 + LVTS_COEFF_B;
-+	golden_temp_offset = golden_temp * 500 + temp_offset;
- 
- 	return 0;
- }
-@@ -724,7 +733,7 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
- 	 * The golden temp information is contained in the first chunk
- 	 * of efuse data.
- 	 */
--	ret = lvts_golden_temp_init(dev, (u32 *)lvts_td->calib);
-+	ret = lvts_golden_temp_init(dev, (u32 *)lvts_td->calib, lvts_data->temp_offset);
- 	if (ret)
- 		return ret;
- 
-@@ -735,6 +744,7 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
- 	for (i = 0; i < lvts_data->num_lvts_ctrl; i++) {
- 
- 		lvts_ctrl[i].base = lvts_td->base + lvts_data->lvts_ctrl[i].offset;
-+		lvts_ctrl[i].lvts_data = lvts_data;
- 
- 		ret = lvts_sensor_init(dev, &lvts_ctrl[i],
- 				       &lvts_data->lvts_ctrl[i]);
-@@ -758,7 +768,8 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
- 		 * after initializing the calibration.
- 		 */
- 		lvts_ctrl[i].hw_tshut_raw_temp =
--			lvts_temp_to_raw(lvts_data->lvts_ctrl[i].hw_tshut_temp);
-+			lvts_temp_to_raw(lvts_data->lvts_ctrl[i].hw_tshut_temp,
-+					 lvts_data->temp_factor);
- 
- 		lvts_ctrl[i].low_thresh = INT_MIN;
- 		lvts_ctrl[i].high_thresh = INT_MIN;
-@@ -1223,6 +1234,8 @@ static int lvts_probe(struct platform_device *pdev)
- 	if (irq < 0)
- 		return irq;
- 
-+	golden_temp_offset = lvts_data->temp_offset;
++	pci_write_config_byte(pci_info->pdev, 0xdc, 0x01);
 +
- 	ret = lvts_domain_init(dev, lvts_td, lvts_data);
- 	if (ret)
- 		return dev_err_probe(dev, ret, "Failed to initialize the lvts domain\n");
-@@ -1338,11 +1351,15 @@ static const struct lvts_ctrl_data mt8195_lvts_ap_data_ctrl[] = {
- static const struct lvts_data mt8195_lvts_mcu_data = {
- 	.lvts_ctrl	= mt8195_lvts_mcu_data_ctrl,
- 	.num_lvts_ctrl	= ARRAY_SIZE(mt8195_lvts_mcu_data_ctrl),
-+	.temp_factor	= LVTS_COEFF_A_MT8195,
-+	.temp_offset	= LVTS_COEFF_B_MT8195,
- };
+ 	return ret;
+ }
  
- static const struct lvts_data mt8195_lvts_ap_data = {
- 	.lvts_ctrl	= mt8195_lvts_ap_data_ctrl,
- 	.num_lvts_ctrl	= ARRAY_SIZE(mt8195_lvts_ap_data_ctrl),
-+	.temp_factor	= LVTS_COEFF_A_MT8195,
-+	.temp_offset	= LVTS_COEFF_B_MT8195,
- };
- 
- static const struct of_device_id lvts_of_match[] = {
 -- 
-2.34.1
+2.40.1
 
