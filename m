@@ -2,80 +2,89 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E1E4CE79CF
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Sep 2023 11:07:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D261ECE79AA
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Sep 2023 11:31:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234444AbjITLHp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Sep 2023 07:07:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36570 "EHLO
+        id S233125AbjITLbg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Sep 2023 07:31:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43280 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234382AbjITLHn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2023 07:07:43 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3015CD8
-        for <linux-pm@vger.kernel.org>; Wed, 20 Sep 2023 04:07:37 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id C90F5C433CB
-        for <linux-pm@vger.kernel.org>; Wed, 20 Sep 2023 11:07:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1695208056;
-        bh=srUMZdFlosR2/I0cU6FaCJDFNdlELJHerKg9PxCtjYM=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=ObGKZ5LDt3eSOCRXds2pg9/XGaRUrMFLzwi/Egpv34MnK5A+dlVeYruciWtf8ajyo
-         PcrerDDXgTwzcNPL8IeE2i+EJIn7NXOfDfTimE2Fgxfmavz7Ac2UDDYN/zWzedHS6I
-         p1s8il7Lw7h2ZhfM83XloyjGNivwknGbDVi+cTLLDnsV+gpw7rSeHZxq5Psc5aHtSO
-         1l481U51GkwyQTf/JfFOz242qObe9ABkI+gcUZN+TevJ2L4MlGsALms+uxiqu/Af1Q
-         fCEABZjkxKfCYb5Ew8xguW91uQW0sMCgdu/uvBbyY2ClMG0bnm1LmUjvIBKFsLXYMV
-         Ip96OCxYMMmrQ==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id B9732C53BC6; Wed, 20 Sep 2023 11:07:36 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 215800] amd-pstate does not allow to set arbitrary maximum CPU
- frequency above 2200MHz for a desktop Zen 3 CPU
-Date:   Wed, 20 Sep 2023 11:07:36 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: aros@gmx.com
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: DUPLICATE
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status resolution
-Message-ID: <bug-215800-137361-OwwnagzEXO@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-215800-137361@https.bugzilla.kernel.org/>
-References: <bug-215800-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        with ESMTP id S233727AbjITLbf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2023 07:31:35 -0400
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73A6BB4
+        for <linux-pm@vger.kernel.org>; Wed, 20 Sep 2023 04:31:28 -0700 (PDT)
+Received: by mail-ed1-x529.google.com with SMTP id 4fb4d7f45d1cf-523100882f2so8607377a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 20 Sep 2023 04:31:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1695209487; x=1695814287; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=sISPinFUDL5u/bpoyx1Ij7HAjgfiATRW0k6PVgeAEsw=;
+        b=Gau0z9A3Gdm/I+ZRLP/nM/zUAaLnyCCd9eWOhNEHXEjAx6uI2Rw6/BdH9a9soPI5eE
+         cGTuHQt4jCSVbk3G4Z7Ow84psJiYVk/7uXiJbPYsN5srjWh4cnGmPw2I1+ehnDrRm+1e
+         I41z70tJ7Ok/huzpLqf6xrWnee81cxGOk3g+uitX+ECmHscCiwrkCAv5CMQsHIaRfCQx
+         1t0n5Q4H8OYoi8kvi25ThpZ61JgxrqVYrd0HA6OG+FDbbRpCTMp+1HnDH/vtOfwWLg05
+         OW9RUNiDvxUWbL09Rm2p9OnxVQNiCRot/7y19vnH4Nw8FQ7u6PEIGswlMO97TmikOJ+m
+         SOJg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695209487; x=1695814287;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=sISPinFUDL5u/bpoyx1Ij7HAjgfiATRW0k6PVgeAEsw=;
+        b=NdbHgjPHD0rXhEafYUYa4+hqc621BxEXxoc9Ew8OVPXlGuvBBc8fBQu4C+Cio77j7/
+         969akGffR3n1UD5GDig5IqnsNuW8QkpmFW1KTatjSokD06nCHjClp8neVKadjB2FWRYa
+         QldVCF9Y0C7PsQTReulQbg3WtWsHjUExEH8JXGymyYZnf9q0ddBckNv11M5kIe8Ao207
+         poT4oA76acHxyZ0RF4arqb1i3GGJkMUCFNW/JQhjZ5x40+HkvGj693NTY8iHelT61Ix5
+         XQY4DeoqaAZvOvUjjMe2Be/ugRG5wy63aJGN73JQJ6AS8JVAL8OrwTDnhmObymBEVXJi
+         7XrQ==
+X-Gm-Message-State: AOJu0Yy2wKZ6y1hHASjHhNoPuwYhFwaOGfZYKOXznXIONkUGWozcR8LI
+        f6KE1IFY/ELvmYAja/OJ+4tJeQ==
+X-Google-Smtp-Source: AGHT+IHvJqMLFU0/0VeoTulP60Slvf5E2yjtSP8/g6btQDvx/25B9cI7c5ufzI5k4+V+RhB2J3IRkg==
+X-Received: by 2002:a17:906:220f:b0:9a9:f09d:7c10 with SMTP id s15-20020a170906220f00b009a9f09d7c10mr1849511ejs.11.1695209486889;
+        Wed, 20 Sep 2023 04:31:26 -0700 (PDT)
+Received: from [172.20.24.238] (static-212-193-78-212.thenetworkfactory.nl. [212.78.193.212])
+        by smtp.gmail.com with ESMTPSA id rh1-20020a17090720e100b009ad8ba6976bsm9277668ejb.9.2023.09.20.04.31.25
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 20 Sep 2023 04:31:26 -0700 (PDT)
+Message-ID: <2529838c-501f-45d6-d886-558bccac98b9@linaro.org>
+Date:   Wed, 20 Sep 2023 13:31:25 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH v4 1/2] dt-bindings: pinctrl: qcom: Add SM4450 pinctrl
+Content-Language: en-US
+To:     Tengfei Fan <quic_tengfan@quicinc.com>, agross@kernel.org,
+        andersson@kernel.org, konrad.dybcio@linaro.org, djakov@kernel.org,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        conor+dt@kernel.org
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        quic_tsoni@quicinc.com, quic_shashim@quicinc.com,
+        quic_kaushalk@quicinc.com, quic_tdas@quicinc.com,
+        quic_tingweiz@quicinc.com, quic_aiquny@quicinc.com,
+        kernel@quicinc.com
+References: <20230920082102.5744-1-quic_tengfan@quicinc.com>
+ <20230920082102.5744-2-quic_tengfan@quicinc.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230920082102.5744-2-quic_tengfan@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D215800
-
-Artem S. Tashkinov (aros@gmx.com) changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-         Resolution|---                         |DUPLICATE
-
---- Comment #33 from Artem S. Tashkinov (aros@gmx.com) ---
+On 20/09/2023 10:21, Tengfei Fan wrote:
+> Add device tree binding Documentation details for Qualcomm SM4450
+> TLMM device.
+> 
+> Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
 
 
-*** This bug has been marked as a duplicate of bug 217931 ***
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
---=20
-You may reply to this email to add a comment.
+Best regards,
+Krzysztof
 
-You are receiving this mail because:
-You are the assignee for the bug.=
