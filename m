@@ -2,85 +2,116 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7731CE7D0A6
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:21:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4A18E7D0A8
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:21:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231582AbjIUUVU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 16:21:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49270 "EHLO
+        id S231735AbjIUUVk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:21:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229764AbjIUUUw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:20:52 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6B857DB3;
-        Thu, 21 Sep 2023 10:23:15 -0700 (PDT)
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id BDBA366072B6;
-        Thu, 21 Sep 2023 08:54:47 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1695282888;
-        bh=XKfV63HWdKQ6s7HPBY3YhVeOhdzebvODVX7qw3XgXyM=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=jD9+CmGQSfz4ZX3d2CGSp6+EHhCrCCk4YGT3vBykBF3wqdTzGOXIZCz7QCGMCAUKF
-         yY9nfpT49e8hOI1gUgZME++aIhmRLRNoXiPOyREKIUygnK3mfFMj4/yqGQ79JBK/mr
-         2c6w7osgDp6Z1woUp6qf6pWKsJk8nqB7RtNZhooW/urn9l2MQMxso2S32xIGx4PVwi
-         CINeOwpiW8/6UskufZ3bdJ3kAYbq/ODd2ko3UGc+loP4zAp6OTqiN46HwjTw09C1+8
-         1dolr6haDdAjRiWHIrog91ziBrjkseUViVBdgUSUVaJ/e/VlGg/3b+yyLlvNE0fam4
-         4tT3XHFAZeA9g==
-Message-ID: <7420791d-a424-2db9-eb68-9f583735d4d7@collabora.com>
-Date:   Thu, 21 Sep 2023 09:54:45 +0200
+        with ESMTP id S231552AbjIUUVR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:21:17 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFB59400D8
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:15:03 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 962A4C433C9
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 05:25:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1695273907;
+        bh=c58xEsygUdws9xzfrFKFJkrkCVDiywjPhuXf1PYl/vA=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=EhnJoo8dWXvbEBZb0mt1KGfORDsoHM5HE9EnX+rr+WNVQ5M32GvpewRzTh+/W3tmc
+         3hYzFqAe3MirrC/ukJDC7is2TMMm2GFeIiZX2HiCqU8twjX/1OChB63vmD0O8dFm6d
+         oLx5iJzM5T9cTPDb6V4sJCQylnUKi3JVd869RN6CbthhuLH0UTofdwBPKaSve4IgI1
+         GHW0GXUhoK+TJvM4g87uH4edy2KPLWTeTbs9ML1PWh+O4ulnt3R/hluR0q0dV31TKQ
+         +SVGV1gL7plOlaaSHjS4SWVQDwPb7GCpeFL3HAEcbjxT2NY0mXYNz/5nXQCLmX18f2
+         ouVXUHLm0vxqQ==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+        id 7CE5EC53BD0; Thu, 21 Sep 2023 05:25:07 +0000 (UTC)
+From:   bugzilla-daemon@kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [Bug 217931] amd-pstate lacks crucial features: CPU frequency and
+ boost control
+Date:   Thu, 21 Sep 2023 05:25:07 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: high
+X-Bugzilla-Who: Perry.Yuan@amd.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-217931-137361-nN2QvCF5Yc@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-217931-137361@https.bugzilla.kernel.org/>
+References: <bug-217931-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.0
-Subject: Re: [PATCH v2 3/4] thermal/drivers/mediatek/lvts_thermal: make coeff
- configurable
-Content-Language: en-US
-To:     Frank Wunderlich <linux@fw-web.de>,
-        linux-mediatek@lists.infradead.org
-Cc:     Frank Wunderlich <frank-w@public-files.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-References: <20230920175001.47563-1-linux@fw-web.de>
- <20230920175001.47563-4-linux@fw-web.de>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20230920175001.47563-4-linux@fw-web.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Il 20/09/23 19:50, Frank Wunderlich ha scritto:
-> From: Frank Wunderlich <frank-w@public-files.de>
-> 
-> The upcoming mt7988 has different temperature coefficients so we
-> cannot use constants in the functions lvts_golden_temp_init,
-> lvts_golden_temp_init and lvts_raw_to_temp anymore.
-> 
-> Add a field in the lvts_ctrl pointing to the lvts_data which now
-> contains the soc-specific temperature coefficents.
-> 
-> To make the code better readable, rename static int coeff_b to
-> golden_temp_offset, COEFF_A to temp_factor and COEFF_B to temp_offset.
-> 
-> Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-> 
+https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
 
-Now, that's good!
+Perry Yuan(AMD) (Perry.Yuan@amd.com) changed:
 
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |Perry.Yuan@amd.com
 
+--- Comment #4 from Perry Yuan(AMD) (Perry.Yuan@amd.com) ---
+(In reply to Artem S. Tashkinov from comment #0)
+> Created attachment 305131 [details]
+> Power Options: Processor Power Management in Windows
+>=20
+> It would be really great if amd-pstate had a feature parity with
+> acpi-cpufreq, namely
+>=20
+> 1) Being able to set operating frequencies (maximum, minimum and
+> user-defined)
+>=20
+> 2) Being able to enable/disable boost
+>=20
+> Currently both features are not available and frequency control is simply
+> ignored (bug 215800).
+>=20
+> Rationale:
+>=20
+> 1) This is required for benchmarking and proper temperature control. Boost
+> frequencies are subject to multiple limitations (power in watts, amperage,
+> voltage, temperature, BIOS limitations) and can change depending on the
+> workload. Setting a low enough frequency allows to run benchmarks in the
+> controlled environment and get proper data.
+>=20
+> Windows allows to do that easily, see the attached screenshot.
+>=20
+> 2) Disabling boost is an easy option to subdue operating temperatures tho=
+ugh
+> if the previous issue is tackled, it's not really needed.
 
+Thanks for the suggestion.
+There are two modes for amd pstate driver, one passive, and another active
+mode,  the passive mode already has the boost control feature.
+
+# cat /sys/devices/system/cpu/cpufreq/boost
+1
+
+I have raised this requestion and will get active mode supported with a new
+patch.
+
+Perry.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
