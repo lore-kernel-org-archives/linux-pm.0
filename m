@@ -2,87 +2,187 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A6C6E7D0AA
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:29:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2C4CE7D0A9
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:32:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229545AbjIUU3U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 16:29:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37860 "EHLO
+        id S231940AbjIUUcU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:32:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52938 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232080AbjIUU3H (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:29:07 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1AA65663E0
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:34:22 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 09A8FC433CA
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 05:40:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1695274821;
-        bh=NHrZa2Xp4nWp7oGu4wOjfMWqFY4XW0m+inMbaHLJUOk=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=gOZ+gly8kCX+LrxfeBGAF8rDR/4DUj/OlVc+YwuYhJCsBxjNDs8Dck8CANk8/H6JW
-         WRZjFv8wNBKLF70mmQEtGoSHQHHtbSdWQoDbze+yV4tijyn5SfuyrLo8uudS/xX/s7
-         SoyeSgCPCAKfM8Lb701ZEOHrQ/y5dqMdQEmSKCGPmSethOMfXfUrUXpghr6Cwdn/HD
-         H2ne0dvDA5tF6PkdCMhTooyQzUVuTuJvL046Jfgzj1M/oRHtYu8aMwuKPOgiAnTKnb
-         i5ZDGRMsReUpkk0gz6AxT+I7vGcWWzt7BS4iUK9j4VRwbv2uAP4DEZXR/mUUFovEAq
-         kkaHuXsoAX6JA==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id DBFE4C53BCD; Thu, 21 Sep 2023 05:40:20 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 215801] Rmmod'ing amd-pstate doesn't restore acpi-cpufreq
-Date:   Thu, 21 Sep 2023 05:40:20 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: Perry.Yuan@amd.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-215801-137361-Aba1zfLXqv@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-215801-137361@https.bugzilla.kernel.org/>
-References: <bug-215801-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        with ESMTP id S231888AbjIUUcA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:32:00 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DCA1AF94C;
+        Thu, 21 Sep 2023 11:07:31 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id c8dfa8de6a80f189; Thu, 21 Sep 2023 20:07:29 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 1A650664EBE;
+        Thu, 21 Sep 2023 20:07:28 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v1 04/13] ACPI: thermal: Merge trip initialization functions
+Date:   Thu, 21 Sep 2023 19:51:19 +0200
+Message-ID: <1785516.VLH7GnMWUR@kreacher>
+In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
+References: <1957441.PYKUYFuaPT@kreacher>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedunecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
+ thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D215801
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Perry Yuan(AMD) (Perry.Yuan@amd.com) changed:
+In order to reduce code duplicationeve further, merge
+acpi_thermal_init_passive/active_trip() into one function called
+acpi_thermal_init_trip() that will be used for initializing both
+the passive and active trip points.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |Perry.Yuan@amd.com
+No intentional functional impact.
 
---- Comment #3 from Perry Yuan(AMD) (Perry.Yuan@amd.com) ---
-(In reply to Artem S. Tashkinov from comment #2)
-> This is still relevant as of Linux 6.6.
->=20
-> Would be great if removing amd-pstate enabled acpi-cpufreq.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/thermal.c |   64 ++++++++++++++++++++++---------------------------
+ 1 file changed, 30 insertions(+), 34 deletions(-)
 
-Normally the system hardware needs to reinitialize CPPC and low-level power
-management firmware when CPPC driver loading, so it better to change grub
-parameters and reboot again.
-dynamically removing amd-pstate and load acpi_cpufreq probably cause some
-potential issues.=20
+Index: linux-pm/drivers/acpi/thermal.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/thermal.c
++++ linux-pm/drivers/acpi/thermal.c
+@@ -399,72 +399,68 @@ static long acpi_thermal_get_hot_trip(st
+ 	return tmp;
+ }
+ 
+-static bool acpi_thermal_init_passive_trip(struct acpi_thermal *tz)
++static bool passive_trip_params_init(struct acpi_thermal *tz)
+ {
+ 	unsigned long long tmp;
+ 	acpi_status status;
+-	int temp;
+-
+-	if (psv == -1)
+-		goto fail;
+-
+-	if (psv > 0) {
+-		temp = celsius_to_deci_kelvin(psv);
+-	} else {
+-		temp = get_passive_temp(tz);
+-		if (temp == THERMAL_TEMP_INVALID)
+-			goto fail;
+-	}
+ 
+ 	status = acpi_evaluate_integer(tz->device->handle, "_TC1", NULL, &tmp);
+ 	if (ACPI_FAILURE(status))
+-		goto fail;
++		return false;
+ 
+ 	tz->trips.passive.tc1 = tmp;
+ 
+ 	status = acpi_evaluate_integer(tz->device->handle, "_TC2", NULL, &tmp);
+ 	if (ACPI_FAILURE(status))
+-		goto fail;
++		return false;
+ 
+ 	tz->trips.passive.tc2 = tmp;
+ 
+ 	status = acpi_evaluate_integer(tz->device->handle, "_TSP", NULL, &tmp);
+ 	if (ACPI_FAILURE(status))
+-		goto fail;
++		return false;
+ 
+ 	tz->trips.passive.tsp = tmp;
+ 
+-	if (!update_trip_devices(tz, &tz->trips.passive.trip,
+-				 ACPI_THERMAL_TRIP_PASSIVE, false))
+-		goto fail;
+-
+-	tz->trips.passive.trip.temperature = temp;
+ 	return true;
+-
+-fail:
+-	tz->trips.passive.trip.temperature = THERMAL_TEMP_INVALID;
+-	return false;
+ }
+ 
+-static bool acpi_thermal_init_active_trip(struct acpi_thermal *tz, int index)
++static bool acpi_thermal_init_trip(struct acpi_thermal *tz, int index)
+ {
++	struct acpi_thermal_trip *acpi_trip;
+ 	long temp;
+ 
+-	if (act == -1)
+-		goto fail;
++	if (index == ACPI_THERMAL_TRIP_PASSIVE) {
++		acpi_trip = &tz->trips.passive.trip;
++
++		if (psv == -1)
++			goto fail;
++
++		if (!passive_trip_params_init(tz))
++			goto fail;
++
++		temp = psv > 0 ? celsius_to_deci_kelvin(psv) :
++				 get_passive_temp(tz);
++	} else {
++		acpi_trip = &tz->trips.active[index].trip;
++
++		if (act == -1)
++			goto fail;
++
++		temp = get_active_temp(tz, index);
++	}
+ 
+-	temp = get_active_temp(tz, index);
+ 	if (temp == THERMAL_TEMP_INVALID)
+ 		goto fail;
+ 
+-	if (!update_trip_devices(tz, &tz->trips.active[index].trip, index, false))
++	if (!update_trip_devices(tz, acpi_trip, index, false))
+ 		goto fail;
+ 
+-	tz->trips.active[index].trip.temperature = temp;
++	acpi_trip->temperature = temp;
+ 	return true;
+ 
+ fail:
+-	tz->trips.active[index].trip.temperature = THERMAL_TEMP_INVALID;
++	acpi_trip->temperature = THERMAL_TEMP_INVALID;
+ 	return false;
+ }
+ 
+@@ -473,11 +469,11 @@ static int acpi_thermal_get_trip_points(
+ 	unsigned int count = 0;
+ 	int i;
+ 
+-	if (acpi_thermal_init_passive_trip(tz))
++	if (acpi_thermal_init_trip(tz, ACPI_THERMAL_TRIP_PASSIVE))
+ 		count++;
+ 
+ 	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE; i++) {
+-		if (acpi_thermal_init_active_trip(tz, i))
++		if (acpi_thermal_init_trip(tz, i))
+ 			count++;
+ 		else
+ 			break;
 
-Perry.
 
---=20
-You may reply to this email to add a comment.
 
-You are receiving this mail because:
-You are the assignee for the bug.=
