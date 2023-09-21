@@ -2,61 +2,82 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7EE5E7D0A8
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 19:58:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83ECFE7D0A7
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 19:58:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231138AbjIUT6x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 15:58:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40440 "EHLO
+        id S231285AbjIUT6y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 15:58:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47030 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229477AbjIUT6f (ORCPT
+        with ESMTP id S230378AbjIUT6f (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 15:58:35 -0400
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 20E0346DC2;
-        Thu, 21 Sep 2023 10:13:56 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 20FEF46DC3;
+        Thu, 21 Sep 2023 10:13:57 -0700 (PDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A79BB15BF;
-        Thu, 21 Sep 2023 04:15:07 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 35FE01692;
+        Thu, 21 Sep 2023 06:36:26 -0700 (PDT)
 Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0599D3F5A1;
-        Thu, 21 Sep 2023 04:14:28 -0700 (PDT)
-Date:   Thu, 21 Sep 2023 12:14:26 +0100
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1A5313F5A1;
+        Thu, 21 Sep 2023 06:35:47 -0700 (PDT)
+Date:   Thu, 21 Sep 2023 14:35:44 +0100
 From:   Sudeep Holla <sudeep.holla@arm.com>
 To:     Ulf Hansson <ulf.hansson@linaro.org>
 Cc:     Cristian Marussi <cristian.marussi@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
         Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
         Stephen Boyd <sboyd@kernel.org>,
         Nikunj Kela <nkela@quicinc.com>,
         Prasad Sodagudi <psodagud@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 07/13] cpufreq: scmi: Drop redundant ifdef in
- scmi_cpufreq_probe()
-Message-ID: <20230921111426.b2vp5hu7ssdtmz3n@bogus>
+        linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v3 08/13] dt-bindings: arm: cpus: Add a power-domain-name
+ for a performance-domain
+Message-ID: <20230921133544.sxzpo3xyrttnrtzt@bogus>
 References: <20230825112633.236607-1-ulf.hansson@linaro.org>
- <20230825112633.236607-8-ulf.hansson@linaro.org>
+ <20230825112633.236607-9-ulf.hansson@linaro.org>
+ <20230921111110.tbffr5sik3ycw7gf@bogus>
+ <CAPDyKFrSkgSee=8zruR65TALvAj+hcWw1CaUOUwD3EpdxymtBg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230825112633.236607-8-ulf.hansson@linaro.org>
+In-Reply-To: <CAPDyKFrSkgSee=8zruR65TALvAj+hcWw1CaUOUwD3EpdxymtBg@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Aug 25, 2023 at 01:26:27PM +0200, Ulf Hansson wrote:
-> We have stubs for devm_of_clk_add_hw_provider(), so there should be no need
-> to protect this with the '#ifdef CONFIG_COMMON_CLK'. Let's drop it to clean
-> up the code a bit.
->
+On Thu, Sep 21, 2023 at 03:22:54PM +0200, Ulf Hansson wrote:
+> On Thu, 21 Sept 2023 at 13:11, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> >
+> > On Fri, Aug 25, 2023 at 01:26:28PM +0200, Ulf Hansson wrote:
+> > > When an CPU's performance domain is managed through the SCMI firmware,
+> > > let's enable us describe this as a consumer of a power-domain provider,
+> > > which is the de-facto standard to use for performance domains. In this
+> > > case, let's specify a corresponding power-domain-name, to point out the
+> > > corresponding index for it.
+> > >
+> > > Cc: Rob Herring <robh+dt@kernel.org>
+> > > Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+> > > Cc: Conor Dooley <conor+dt@kernel.org>
+> > > Cc: devicetree@vger.kernel.org
+> > > Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > > ---
+> > >
+> > > Changes in v3:
+> > >       - New patch.
+> >
+> > This patch and 10/13 are quite generic. I am happy to take it as part of
+> > this series but just thought of checking again if that is what you prefer ?
+> 
+> Yes please, go ahead and pick this up through your scmi tree.
+> 
 
-No exactly. The stub is under !CONFIG_OF but we need it for !CONFIG_COMMON_CLK.
-The original build issue reported for which I add this was CONFIG_OF=y &&
-CONFIG_COMMON_CLK=n.
-
-It looks like it is still valid combo though I don't have a handy randconfig
-to present to you. I prefer to drop this for now if that is OK with you.
+Thanks, I just need Viresh's ack for cpufreq changes, we are otherwise all
+set with the series. I will pull once I have his ack.
 
 -- 
 Regards,
