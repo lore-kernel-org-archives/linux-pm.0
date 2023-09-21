@@ -2,125 +2,89 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 436E5E7D0AA
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 21:00:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09992E7D0A2
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 21:00:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231610AbjIUVAL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 17:00:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37774 "EHLO
+        id S232263AbjIUVA7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 17:00:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37794 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232439AbjIUU7o (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:59:44 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72A72AF957;
-        Thu, 21 Sep 2023 11:07:32 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id bfbd3e583f736223; Thu, 21 Sep 2023 20:07:30 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 2DCAD664EBE;
-        Thu, 21 Sep 2023 20:07:30 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH v1 03/13] ACPI: thermal: Collapse trip devices update function wrappers
-Date:   Thu, 21 Sep 2023 19:50:08 +0200
-Message-ID: <3198428.5fSG56mABF@kreacher>
-In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
-References: <1957441.PYKUYFuaPT@kreacher>
+        with ESMTP id S232269AbjIUVAS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 17:00:18 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8F3BFAF96E;
+        Thu, 21 Sep 2023 11:07:37 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3CF091655;
+        Thu, 21 Sep 2023 04:34:09 -0700 (PDT)
+Received: from usa.arm.com (e103737-lin.cambridge.arm.com [10.1.197.49])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 33C4C3F5A1;
+        Thu, 21 Sep 2023 04:33:31 -0700 (PDT)
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Cc:     Sudeep Holla <sudeep.holla@arm.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Cristian Marussi <cristian.marussi@arm.com>
+Subject: [PATCH] firmware: arm_scmi: Move power-domain driver to the pmdomain dir
+Date:   Thu, 21 Sep 2023 12:33:28 +0100
+Message-ID: <20230921113328.3208651-1-sudeep.holla@arm.com>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20230919121605.7304-1-ulf.hansson@linaro.org>
+References: <20230919121605.7304-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddulecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
- thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+To simplify with maintenance let's move the Arm SCMI power-domain driver
+to the new pmdomain directory.
 
-In order to reduce code duplicationeve further, merge
-acpi_thermal_update_passive/active_devices() into one function
-called acpi_thermal_update_trip_devices() that will be used for
-updating both the passive and active trip points.
-
-No intentional functional impact.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Cristian Marussi <cristian.marussi@arm.com>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/acpi/thermal.c |   26 +++++++-------------------
- 1 file changed, 7 insertions(+), 19 deletions(-)
 
-Index: linux-pm/drivers/acpi/thermal.c
-===================================================================
---- linux-pm.orig/drivers/acpi/thermal.c
-+++ linux-pm/drivers/acpi/thermal.c
-@@ -233,14 +233,16 @@ static bool update_trip_devices(struct a
- 	return true;
- }
- 
--static void acpi_thermal_update_passive_devices(struct acpi_thermal *tz)
-+static void acpi_thermal_update_trip_devices(struct acpi_thermal *tz, int index)
- {
--	struct acpi_thermal_trip *acpi_trip = &tz->trips.passive.trip;
-+	struct acpi_thermal_trip *acpi_trip;
- 
-+	acpi_trip = index == ACPI_THERMAL_TRIP_PASSIVE ?
-+			&tz->trips.passive.trip : &tz->trips.active[index].trip;
- 	if (!acpi_thermal_trip_valid(acpi_trip))
- 		return;
- 
--	if (update_trip_devices(tz, acpi_trip, ACPI_THERMAL_TRIP_PASSIVE, true)) {
-+	if (update_trip_devices(tz, acpi_trip, index, true)) {
- 		return;
- 	}
- 
-@@ -283,20 +285,6 @@ static void acpi_thermal_update_active_t
- 		ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
- }
- 
--static void acpi_thermal_update_active_devices(struct acpi_thermal *tz, int index)
--{
--	struct acpi_thermal_trip *acpi_trip = &tz->trips.active[index].trip;
--
--	if (!acpi_thermal_trip_valid(acpi_trip))
--		return;
--
--	if (update_trip_devices(tz, acpi_trip, index, true))
--		return;
--
--	acpi_trip->temperature = THERMAL_TEMP_INVALID;
--	ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
--}
--
- static int acpi_thermal_adjust_trip(struct thermal_trip *trip, void *data)
- {
- 	struct acpi_thermal_trip *acpi_trip = trip->priv;
-@@ -324,9 +312,9 @@ static void acpi_thermal_adjust_thermal_
- 		for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE; i++)
- 			acpi_thermal_update_active_trip(tz, i);
- 	} else {
--		acpi_thermal_update_passive_devices(tz);
-+		acpi_thermal_update_trip_devices(tz, ACPI_THERMAL_TRIP_PASSIVE);
- 		for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE; i++)
--			acpi_thermal_update_active_devices(tz, i);
-+			acpi_thermal_update_trip_devices(tz, i);
- 	}
- 
- 	for_each_thermal_trip(tz->thermal_zone, acpi_thermal_adjust_trip, tz);
+Hi Ulf,
 
+If you are happy with this, please cck. I would like to take this along
+with your scmi_perf_domain change as part of you series.
 
+Regards,
+Sudeep
+
+ drivers/firmware/arm_scmi/Makefile                           | 1 -
+ drivers/pmdomain/arm/Makefile                                | 1 +
+ drivers/{firmware/arm_scmi => pmdomain/arm}/scmi_pm_domain.c | 0
+ 3 files changed, 1 insertion(+), 1 deletion(-)
+ rename drivers/{firmware/arm_scmi => pmdomain/arm}/scmi_pm_domain.c (100%)
+
+diff --git a/drivers/firmware/arm_scmi/Makefile b/drivers/firmware/arm_scmi/Makefile
+index b31d78fa66cc..a7bc4796519c 100644
+--- a/drivers/firmware/arm_scmi/Makefile
++++ b/drivers/firmware/arm_scmi/Makefile
+@@ -16,7 +16,6 @@ scmi-module-objs := $(scmi-driver-y) $(scmi-protocols-y) $(scmi-transport-y)
+ obj-$(CONFIG_ARM_SCMI_PROTOCOL) += scmi-core.o
+ obj-$(CONFIG_ARM_SCMI_PROTOCOL) += scmi-module.o
+ 
+-obj-$(CONFIG_ARM_SCMI_POWER_DOMAIN) += scmi_pm_domain.o
+ obj-$(CONFIG_ARM_SCMI_POWER_CONTROL) += scmi_power_control.o
+ 
+ ifeq ($(CONFIG_THUMB2_KERNEL)$(CONFIG_CC_IS_CLANG),yy)
+diff --git a/drivers/pmdomain/arm/Makefile b/drivers/pmdomain/arm/Makefile
+index 7128db96deac..cfcb1f6cdd90 100644
+--- a/drivers/pmdomain/arm/Makefile
++++ b/drivers/pmdomain/arm/Makefile
+@@ -1,3 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ 
+ obj-$(CONFIG_ARM_SCMI_PERF_DOMAIN) += scmi_perf_domain.o
++obj-$(CONFIG_ARM_SCMI_POWER_DOMAIN) += scmi_pm_domain.o
+diff --git a/drivers/firmware/arm_scmi/scmi_pm_domain.c b/drivers/pmdomain/arm/scmi_pm_domain.c
+similarity index 100%
+rename from drivers/firmware/arm_scmi/scmi_pm_domain.c
+rename to drivers/pmdomain/arm/scmi_pm_domain.c
+-- 
+2.42.0
 
