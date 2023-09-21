@@ -2,27 +2,58 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 691A7E7D0A1
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:23:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BEB2E7D0A0
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:25:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229819AbjIURXG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 13:23:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60578 "EHLO
+        id S229560AbjIURZ4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 13:25:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60668 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229615AbjIURWn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:22:43 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0992817C01;
-        Thu, 21 Sep 2023 10:07:38 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D9E161688;
-        Thu, 21 Sep 2023 06:30:43 -0700 (PDT)
-Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4F9B33F5A1;
-        Thu, 21 Sep 2023 06:30:05 -0700 (PDT)
-Date:   Thu, 21 Sep 2023 14:30:02 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
+        with ESMTP id S229813AbjIURZa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:25:30 -0400
+Received: from mail-oa1-x36.google.com (mail-oa1-x36.google.com [IPv6:2001:4860:4864:20::36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21FC4A5F5
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:11:16 -0700 (PDT)
+Received: by mail-oa1-x36.google.com with SMTP id 586e51a60fabf-1d6b4735158so647448fac.0
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:11:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1695316275; x=1695921075; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=pNpVr3hX07AdKTZ8+Sx0LVisp+9RYkwStP9wMLdYrzw=;
+        b=B8OVRkqoFvTp/wqKlR2eB01zyqeLt/ux2DmkWpBygorKe0l0i4vDYn+pZW2D3a/Oqu
+         LGd2f36Ng9JbBB/4Xe7KjeBi6FjUvGUTdU1xrwgD36hy6cEr+HuiQPRaWGFV1fIdwLV+
+         6ww11evGd8uz1qhvaJpjIKOY5euOIh6Gs8yhJuhKB/E8vC4jySkLaDfu97/6/URr0gmX
+         LK7ZK6vBhhBvwI2Ly0EKMyHUqKU59MLIi6uWuZB767Ia2rEkicw3ssAa3jUyVI9GZggj
+         Blx922e5otyOv6DQ0qAJ9043h9HcuAyqP/Ecq9SCGOdfC8qYPQJxpYXxXbEben/yfM5M
+         +koQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695316275; x=1695921075;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=pNpVr3hX07AdKTZ8+Sx0LVisp+9RYkwStP9wMLdYrzw=;
+        b=LBiZ/4SDsdvUTlPBb1VraJaeXTc3i3NrPLSa/vJuPGFqoIaQi5cYYE+jFuDWxIYk7U
+         lrYNpsUUXlGONCRyM/7WSI8Inow5lnNo/auiqZcuZtp+03yhPPZbpkTUXjPmZvHdGIKe
+         J+m4EMHE+ru+vCFqC8I+clQ6OTUlHBU/TZFIjJ+mPr9YxI1w+ZcqJk8GcPjhzR2Exgo7
+         0j/UI28VnQvZyexETXQnPLYp/oyn54Ez7YvGnehBlEBUqi7VI7w5XXLj+BqESUOMpGbj
+         c0SXB6rTkiPSLwpcRjdvWOvcHy1WBQQBg8/WM5G1KSvKMaZNRUCdtSsppHsqAYbiPqcD
+         tZ9w==
+X-Gm-Message-State: AOJu0YzWnaMaW7+/X7F0sI7W+3UrAB66LSQ5r+DuuEeZp2HvQLMu5CMp
+        cj9WZEqxIRl1mKItfOrwcxMFWPZylZpuTGl8MTZ0fJD4oeeryoTOAfY=
+X-Google-Smtp-Source: AGHT+IFqX3AQtEQOsB1IQQCIx2Q35DO+VOl1a5nyQVZz96a/QlXlu7E2WC2lL+gM1UWaSurybAhPe1nEThyHesRaRIs=
+X-Received: by 2002:a25:d301:0:b0:d7b:a78e:6b2d with SMTP id
+ e1-20020a25d301000000b00d7ba78e6b2dmr8458738ybf.20.1695301372684; Thu, 21 Sep
+ 2023 06:02:52 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230825112633.236607-1-ulf.hansson@linaro.org>
+ <20230825112633.236607-8-ulf.hansson@linaro.org> <20230921111426.b2vp5hu7ssdtmz3n@bogus>
+In-Reply-To: <20230921111426.b2vp5hu7ssdtmz3n@bogus>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Thu, 21 Sep 2023 15:02:16 +0200
+Message-ID: <CAPDyKFqHBWtDioepsJuNHEa6ckwtuAOKBLx+LZEZctADTP--3w@mail.gmail.com>
+Subject: Re: [PATCH v3 07/13] cpufreq: scmi: Drop redundant ifdef in scmi_cpufreq_probe()
+To:     Sudeep Holla <sudeep.holla@arm.com>
 Cc:     Cristian Marussi <cristian.marussi@arm.com>,
         Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
         Stephen Boyd <sboyd@kernel.org>,
@@ -31,48 +62,28 @@ Cc:     Cristian Marussi <cristian.marussi@arm.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 12/13] PM: domains: Allow genpd providers to manage
- OPP tables directly by its FW
-Message-ID: <20230921133002.dfyjkoe5f2pqxhc6@bogus>
-References: <20230825112633.236607-1-ulf.hansson@linaro.org>
- <20230825112633.236607-13-ulf.hansson@linaro.org>
- <20230921112019.gftlr5ys3yw2nwgw@bogus>
- <CAPDyKFpkjOFhjKMY=4dDgngi7PftE_4c+4dHE2KcGAGYnjk6-Q@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFpkjOFhjKMY=4dDgngi7PftE_4c+4dHE2KcGAGYnjk6-Q@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 21, 2023 at 03:05:17PM +0200, Ulf Hansson wrote:
-> On Thu, 21 Sept 2023 at 13:20, Sudeep Holla <sudeep.holla@arm.com> wrote:
+On Thu, 21 Sept 2023 at 13:14, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>
+> On Fri, Aug 25, 2023 at 01:26:27PM +0200, Ulf Hansson wrote:
+> > We have stubs for devm_of_clk_add_hw_provider(), so there should be no need
+> > to protect this with the '#ifdef CONFIG_COMMON_CLK'. Let's drop it to clean
+> > up the code a bit.
 > >
-> > On Fri, Aug 25, 2023 at 01:26:32PM +0200, Ulf Hansson wrote:
-> > > In some cases the OPP tables aren't specified in device tree, but rather
-> > > encoded in the FW. To allow a genpd provider to specify them dynamically
-> > > instead, let's add a new genpd flag, GENPD_FLAG_OPP_TABLE_FW.
-> > >
-> > > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > > ---
-> > >
-> > > Changes in v3:
-> > >       - None.
-> > >
-> >
-> > Just checking if I need Rafael's ack here or that is OK as you are
-> > co-maintainer ? Again asking explicitly to ensure arm-soc is happy when
-> > I send PR.
-> 
-> This should be fine for you to pick up. Rafael would have objected if
-> this was something that he didn't like. Moreover, there's no other
-> patches being queued for genpd at this moment so no worries of
-> conflicts.
-> 
+>
+> No exactly. The stub is under !CONFIG_OF but we need it for !CONFIG_COMMON_CLK.
+> The original build issue reported for which I add this was CONFIG_OF=y &&
+> CONFIG_COMMON_CLK=n.
+>
+> It looks like it is still valid combo though I don't have a handy randconfig
+> to present to you. I prefer to drop this for now if that is OK with you.
 
-Fair enough :), but I just wanted to confirm.
+Sure, it's perfectly fine to drop it. It's just a thing I stumbled
+over that isn't really needed in the $subject series!
 
--- 
-Regards,
-Sudeep
+Kind regards
+Uffe
