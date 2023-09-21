@@ -2,65 +2,79 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E110BE7D0A2
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:01:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78E36E7D0A6
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:17:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231395AbjIUUB6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 16:01:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46734 "EHLO
+        id S230105AbjIUURv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:17:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231534AbjIUUB1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:01:27 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4D7D055AF9;
-        Thu, 21 Sep 2023 10:17:37 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B22F81650;
-        Thu, 21 Sep 2023 04:21:01 -0700 (PDT)
-Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7FA2D3F5A1;
-        Thu, 21 Sep 2023 04:20:22 -0700 (PDT)
-Date:   Thu, 21 Sep 2023 12:20:19 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Cristian Marussi <cristian.marussi@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 12/13] PM: domains: Allow genpd providers to manage
- OPP tables directly by its FW
-Message-ID: <20230921112019.gftlr5ys3yw2nwgw@bogus>
-References: <20230825112633.236607-1-ulf.hansson@linaro.org>
- <20230825112633.236607-13-ulf.hansson@linaro.org>
+        with ESMTP id S231426AbjIUUR1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:17:27 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87341D3DDD
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 11:24:22 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 31497C433C8
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 18:24:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1695320662;
+        bh=jsukAhtxH0F2DDgoxvyjirmFefdwBtVXOV8HQZ5M9aA=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=BQqJIdiNgtIWSanYWS+6vakG8uu+RzzQY5DnjSZSnxq+YYGxlnvzuERaS+9hBjBwr
+         MLndsZ8hV7Lm7UwXZUcwJtiLyK+O+qFBjDnC86/fnYHML+nvc53WHh38yZih3Gs23e
+         kp9roL4ywhQyF+7dAEbFlA3U743OrcZd7E/rr/ZcrRmxUAIHmEnz1YFfbyFjuTuF3Z
+         mMQbKJmgh74AGqR2eMtg7na0w6SvWBMTcAbNzONHl3n+wuMOFLf6IYMbcqxiWcnlLO
+         5eibg2sqnPgQVqZXoGLS5OpE+4PREZ9hJlzk/I7CqteaEsXvMlq0EwPxi4ahYeKA8Y
+         jbTyjfF9isYow==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+        id 1EB7EC4332E; Thu, 21 Sep 2023 18:24:22 +0000 (UTC)
+From:   bugzilla-daemon@kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [Bug 217931] amd-pstate lacks crucial features: CPU frequency and
+ boost control
+Date:   Thu, 21 Sep 2023 18:24:21 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: high
+X-Bugzilla-Who: hej@hot.ee
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-217931-137361-8qPKUic4SK@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-217931-137361@https.bugzilla.kernel.org/>
+References: <bug-217931-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230825112633.236607-13-ulf.hansson@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Aug 25, 2023 at 01:26:32PM +0200, Ulf Hansson wrote:
-> In some cases the OPP tables aren't specified in device tree, but rather
-> encoded in the FW. To allow a genpd provider to specify them dynamically
-> instead, let's add a new genpd flag, GENPD_FLAG_OPP_TABLE_FW.
-> 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> 
-> Changes in v3:
-> 	- None.
-> 
+https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
 
-Just checking if I need Rafael's ack here or that is OK as you are
-co-maintainer ? Again asking explicitly to ensure arm-soc is happy when
-I send PR.
+hej@hot.ee changed:
 
--- 
-Regards,
-Sudeep
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |hej@hot.ee
+
+--- Comment #7 from hej@hot.ee ---
+I'm also looking for a way to contol min/max frequency. I tried active, pas=
+sive
+and guided modes and was surprised none obeyed scaling_max_freq.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
