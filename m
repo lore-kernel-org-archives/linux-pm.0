@@ -2,66 +2,202 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84701E7D0A4
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:12:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 066E2E7D0A4
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:14:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229754AbjIUSMd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 14:12:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47706 "EHLO
+        id S229540AbjIUSOD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 14:14:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46970 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229643AbjIUSMJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:12:09 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C05E86979E;
-        Thu, 21 Sep 2023 10:52:37 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A229615DB;
-        Thu, 21 Sep 2023 04:18:05 -0700 (PDT)
-Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B82123F5A1;
-        Thu, 21 Sep 2023 04:17:26 -0700 (PDT)
-Date:   Thu, 21 Sep 2023 12:17:24 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Ulf Hansson <ulf.hansson@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>
-Cc:     Cristian Marussi <cristian.marussi@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 11/13] cpufreq: scmi: Add support to parse domain-id
- using #power-domain-cells
-Message-ID: <20230921111724.v3c7cl37hhydw44e@bogus>
-References: <20230825112633.236607-1-ulf.hansson@linaro.org>
- <20230825112633.236607-12-ulf.hansson@linaro.org>
+        with ESMTP id S230150AbjIUSNg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:13:36 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A84B483E6;
+        Thu, 21 Sep 2023 10:23:15 -0700 (PDT)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id B2AC466072B4;
+        Thu, 21 Sep 2023 08:54:38 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1695282879;
+        bh=mxa+TQ9McxKXTWkBAdGpIkOnbJ9KXBTRLFoX7g4x3U4=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=aOx3li4jlzpntW7uZPRu6InVLWX1CEWeAd6xYNw5Cu5ySnF3GxElIKu/WXg6KjDcF
+         SpIv2sTg+zYMgzBZADkIltCPzyj40Z42PGN+SI6+iQ0rpbvTjH5vJ5cuRS63vGk3Xp
+         jis6cjJteeDzGPYtOGuSNWvAn8Dc0O4ED2WlXBRcM5US63j09hwqiWLSmr13atHZI2
+         hWnvBochrfDGcR3KhXDJku8+GR8uaPGigvxWIVES9sMIU3F7KyQ9PJMvX0xNhd6CPy
+         IhWVhKQd26cnucXe/AtKomFmpxc7ubr7kgVpAzJiqVCzHJkmyVSyURn6FA3LXK9rrw
+         leS8AqnHoNEAQ==
+Message-ID: <eb6cc1dd-1df9-3b68-1f72-d536189c7b4d@collabora.com>
+Date:   Thu, 21 Sep 2023 09:54:35 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230825112633.236607-12-ulf.hansson@linaro.org>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Subject: Re: [PATCH v2 4/4] thermal/drivers/mediatek/lvts_thermal: add mt7988
+ support
+Content-Language: en-US
+To:     Frank Wunderlich <linux@fw-web.de>,
+        linux-mediatek@lists.infradead.org
+Cc:     Frank Wunderlich <frank-w@public-files.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <20230920175001.47563-1-linux@fw-web.de>
+ <20230920175001.47563-5-linux@fw-web.de>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20230920175001.47563-5-linux@fw-web.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Viresh,
-
-On Fri, Aug 25, 2023 at 01:26:31PM +0200, Ulf Hansson wrote:
-> The performance domain-id can be described in DT using the power-domains
-> property or the clock property. The latter is already supported, so let's
-> add support for the power-domains too.
->
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Il 20/09/23 19:50, Frank Wunderlich ha scritto:
+> From: Frank Wunderlich <frank-w@public-files.de>
+> 
+> Add Support for Mediatek Filogic 880/MT7988 LVTS.
+> 
+> Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 > ---
->
-> Changes in v3:
-> 	- Move to get the power-domain index from power-domain-names.
->
+> v2:
+> - use 105°C for hw shutdown
+> - move constants to binding file
+> - change coeff.a to temp_factor and coeff.b to temp_offset
+> - change to lvts to lvts-ap (Application Processor)
+> - drop comments about efuse offsets
+> - change comment of mt8195 to be similar to mt7988
+> ---
+>   drivers/thermal/mediatek/lvts_thermal.c | 46 +++++++++++++++++++++++++
+>   1 file changed, 46 insertions(+)
+> 
+> diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+> index c2669f405a94..8fd1dc5adb16 100644
+> --- a/drivers/thermal/mediatek/lvts_thermal.c
+> +++ b/drivers/thermal/mediatek/lvts_thermal.c
+> @@ -82,6 +82,8 @@
+>   #define LVTS_GOLDEN_TEMP_DEFAULT	50
+>   #define LVTS_COEFF_A_MT8195			-250460
+>   #define LVTS_COEFF_B_MT8195			250460
+> +#define LVTS_COEFF_A_MT7988			-204650
+> +#define LVTS_COEFF_B_MT7988			204650
+>   
+>   #define LVTS_MSR_IMMEDIATE_MODE		0
+>   #define LVTS_MSR_FILTERED_MODE		1
+> @@ -89,6 +91,7 @@
+>   #define LVTS_MSR_READ_TIMEOUT_US	400
+>   #define LVTS_MSR_READ_WAIT_US		(LVTS_MSR_READ_TIMEOUT_US / 2)
+>   
+> +#define LVTS_HW_SHUTDOWN_MT7988		105000
 
-Can you please provide you ack for all the scmi-cpufreq related changes
-in this series to take it via arm-soc tree ?
+I would simply reuse the definition of LVTS_HW_SHUTDOWN_MT8195....
 
---
-Regards,
-Sudeep
+>   #define LVTS_HW_SHUTDOWN_MT8195		105000
+>   
+>   #define LVTS_MINIMUM_THRESHOLD		20000
+> @@ -1269,6 +1272,41 @@ static int lvts_remove(struct platform_device *pdev)
+>   	return 0;
+>   }
+>   
+> +/*
+> + * LVTS MT7988
+> + */
+> +
+
+Please remove this big comment block, that's not needed.
+
+> +static const struct lvts_ctrl_data mt7988_lvts_ap_data_ctrl[] = {
+> +	{
+> +		.cal_offset = { 0x00, 0x04, 0x08, 0x0c }, //918,91C,920,924
+
+This 918,91c,etc comment is not necessary
+
+> +		.lvts_sensor = {
+> +			{ .dt_id = MT7988_CPU_0 }, // CPU 0,1
+
+If you want to retain those comments, you shall use the right style.
+
+{ .dt_id = MT7988_CPU_0 }, /* CPU 0,1 */
+{ .. } /* CPU 2,3 */
+{ .. } /* Internal 2.5G PHY 1 */
+
+etc
+
+> +			{ .dt_id = MT7988_CPU_1 }, // CPU 2,3
+> +			{ .dt_id = MT7988_ETH2P5G_0 }, // internal 2.5G Phy 1
+> +			{ .dt_id = MT7988_ETH2P5G_1 }  // internal 2.5G Phy 2
+> +		},
+> +		.num_lvts_sensor = 4,
+> +		.offset = 0x0,
+> +		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT7988,
+> +	},
+> +	{
+> +		.cal_offset = { 0x14, 0x18, 0x1c, 0x20 }, //92C,930,934,938
+
+comment not needed
+
+> +		.lvts_sensor = {
+> +			{ .dt_id = MT7988_TOPS_0}, // TOPS > +			{ .dt_id = MT7988_TOPS_1}, // TOPS
+
+The dt_id definition already says "TOPS", this comment is not needed.
+
+> +			{ .dt_id = MT7988_ETHWARP_0}, // WED 1
+> +			{ .dt_id = MT7988_ETHWARP_1}  // WED 2
+
+Same comment about the format; /* WED 1 */
+
+> +		},
+> +		.num_lvts_sensor = 4,
+> +		.offset = 0x100,
+> +		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT7988,
+> +	}
+> +};
+> +
+> +/*
+> + * LVTS MT8195
+> + */
+
+Please also remove this big comment block, it's not needed.
+
+Apart from that, this patch looks good; v3 will be the golden one :-)
+
+Cheers,
+Angelo
+
+> +
+>   static const struct lvts_ctrl_data mt8195_lvts_mcu_data_ctrl[] = {
+>   	{
+>   		.cal_offset = { 0x04, 0x07 },
+> @@ -1348,6 +1386,13 @@ static const struct lvts_ctrl_data mt8195_lvts_ap_data_ctrl[] = {
+>   	}
+>   };
+>   
+> +static const struct lvts_data mt7988_lvts_ap_data = {
+> +	.lvts_ctrl	= mt7988_lvts_ap_data_ctrl,
+> +	.num_lvts_ctrl	= ARRAY_SIZE(mt7988_lvts_ap_data_ctrl),
+> +	.temp_factor	= LVTS_COEFF_A_MT7988,
+> +	.temp_offset	= LVTS_COEFF_B_MT7988,
+> +};
+> +
+>   static const struct lvts_data mt8195_lvts_mcu_data = {
+>   	.lvts_ctrl	= mt8195_lvts_mcu_data_ctrl,
+>   	.num_lvts_ctrl	= ARRAY_SIZE(mt8195_lvts_mcu_data_ctrl),
+> @@ -1363,6 +1408,7 @@ static const struct lvts_data mt8195_lvts_ap_data = {
+>   };
+>   
+>   static const struct of_device_id lvts_of_match[] = {
+> +	{ .compatible = "mediatek,mt7988-lvts-ap", .data = &mt7988_lvts_ap_data },
+>   	{ .compatible = "mediatek,mt8195-lvts-mcu", .data = &mt8195_lvts_mcu_data },
+>   	{ .compatible = "mediatek,mt8195-lvts-ap", .data = &mt8195_lvts_ap_data },
+>   	{},
+
