@@ -2,92 +2,178 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AD76E7D0A2
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:20:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EBD1E7D0A6
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:20:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231447AbjIUUUq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 16:20:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55968 "EHLO
+        id S231610AbjIUUUy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:20:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49302 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231941AbjIUUUH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:20:07 -0400
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC9FF3B7AF
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:12:24 -0700 (PDT)
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-404314388ceso13648825e9.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:12:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695316342; x=1695921142; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=vhrSVaekmaaS857MYrgyAKM4+ElTs9bb8AF7UO+hWSw=;
-        b=p1tYkfwORdaKNDzfwpckKVflBnE+HEwodQbwFoluStv2nYwXVJG7RiLs6f44pvSDVQ
-         ZxOKv9LIui2sVXsSBmQIalp2dqfaXa6lxSJWKwN5UkiwBssPOW01o7n2F5ZlzqWko7MZ
-         VLWuefnE2/n8Xlq7EE62l5GBgUrMzRcKP1b2+8NrPBvBgurGLvNwnIVttUDyV3W2L9b+
-         6PCd5EXof5H/T+86JUbqg3pyubE4JhNDboH03qp6qdJyokVrqb7UovLHA9q8uTfn20d2
-         cKObaT6A8IKt217K16G3bGufvLoyk8CUo0Pl4bhAXXqDC7qruDqFlmz9/GoMEMmRQsZe
-         1Q+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695316342; x=1695921142;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vhrSVaekmaaS857MYrgyAKM4+ElTs9bb8AF7UO+hWSw=;
-        b=Wi+j4U1ZxsGJmi62BwK00gg2ZUWczqSihY4bB3m/PQzjzlQEHIQMSGmm4T6RK1nMc5
-         nxTT4j4q47QwnGTrUcchOk9vzsZBf4N0MmfXsOUHp7ci6e8mYRFeTY08a6INjiyIRdWL
-         MXAMw+P798TqHrW5+viaArldW9PtrdduluAHLOI9/JJ6N2pS1xd1gbrldym+lTWeh6Zg
-         ImwRFzE08Gq3u3NudjlXFgKMLh0KgPcpCiS/SBZhldfz+yzuykEPDpSzTHmMbM4CC+/0
-         bQqnPh5lO/0G9dGfAJmo8hS3tc3RxuA8gjcxk040Ds8DWXpQoT7WcYB47gF+5e1QiDQa
-         ZQyA==
-X-Gm-Message-State: AOJu0YzdP+vJl833+DpXAiZHffKF8FCl4Sp9lAdcas2bKXYCiMKRqOxq
-        DMksnSCildngrBRzRG+Rl4l5Th7nIY/Bmif3lnxCA01OXqky1rQ1IZvh1w==
-X-Google-Smtp-Source: AGHT+IH/oHbQjIKY1hc68OC0HLda5ssIJG+10LaW+f2EeRjP96QRrNJkfgWAiwt9yxSXP5uqPOv7A04wkNF+ihcnhUM=
-X-Received: by 2002:aa7:c3c3:0:b0:532:deae:9c1f with SMTP id
- l3-20020aa7c3c3000000b00532deae9c1fmr4961974edr.18.1695306572624; Thu, 21 Sep
- 2023 07:29:32 -0700 (PDT)
+        with ESMTP id S232018AbjIUUUN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:20:13 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF5BD469A2;
+        Thu, 21 Sep 2023 10:14:31 -0700 (PDT)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 6E5B766072AC;
+        Thu, 21 Sep 2023 12:17:10 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1695295031;
+        bh=5QZOgiLgPuj65gBIxllEBQ8UoAChCrqYN69GWaV+yPQ=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=YIkKEXQn5t4jCUZXXcgaqsS6xgzmWls+xt48pRl4jotoNXPsxnwU8UlPasMZ765an
+         paCIZCGBBoLI4DEJ39pIm/BPJa5zGDs7y7m9WKcShrDe4EOA4RNkvOxQNpinMY+Ktw
+         MopSXw+sp9/afzvJNgoKPhm5XLMOad5TLwgwcpOdaIXyodmGRAtQYNKAifssIrrK/5
+         ZGsptSM+8tnUHNHK1obP3UP/remTXxWWsSC2TytAPZMAjkot5qpiBZpPjIVztfajzd
+         e/+RRAGceAq9iYKuU15E3FuXrbDtHqsSMIJEdwHWdRAdeVz7dIEkbqK0/5TIHlGEud
+         60+XAyr3xGh9g==
+Message-ID: <fb716cdf-12eb-8d85-3b9d-b1d5e5aee212@collabora.com>
+Date:   Thu, 21 Sep 2023 13:17:08 +0200
 MIME-Version: 1.0
-References: <20230825112633.236607-1-ulf.hansson@linaro.org> <20230825112633.236607-5-ulf.hansson@linaro.org>
-In-Reply-To: <20230825112633.236607-5-ulf.hansson@linaro.org>
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Thu, 21 Sep 2023 16:29:15 +0200
-Message-ID: <CAKohpoma56EGs=gTTQGyQ5jw8f1bZvd2tJYZjYTTnkAf4A58tA@mail.gmail.com>
-Subject: Re: [PATCH v3 04/13] firmware: arm_scmi: Align perf ops to use
- domain-id as in-parameter
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Subject: Re: [PATCH v2 4/4] thermal/drivers/mediatek/lvts_thermal: add mt7988
+ support
+To:     Frank Wunderlich <linux@fw-web.de>,
+        linux-mediatek@lists.infradead.org
+Cc:     Frank Wunderlich <frank-w@public-files.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <20230920175001.47563-1-linux@fw-web.de>
+ <20230920175001.47563-5-linux@fw-web.de>
+ <eb6cc1dd-1df9-3b68-1f72-d536189c7b4d@collabora.com>
+ <F68F7C77-BB1E-4D9F-B760-9B35DE3693C5@fw-web.de>
+Content-Language: en-US
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <F68F7C77-BB1E-4D9F-B760-9B35DE3693C5@fw-web.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 25 Aug 2023 at 13:27, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> Most scmi_perf_proto_ops are already using an "u32 domain" as an
-> in-parameter to indicate what performance domain we shall operate upon.
-> However, some of the ops are using a "struct device *dev", which means that
-> an additional OF parsing is needed each time the perf ops gets called, to
-> find the corresponding domain-id.
->
-> To avoid the above, but also to make the code more consistent, let's
-> replace the in-parameter "struct device *dev" with an "u32 domain". Note
-> that, this requires us to make some corresponding changes to the scmi
-> cpufreq driver, so let's do that too.
->
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->
-> Changes in v3:
->         - Re-based.
->
-> ---
->  drivers/cpufreq/scmi-cpufreq.c   | 14 +++++++++-----
+Il 21/09/23 12:39, Frank Wunderlich ha scritto:
+> Am 21. September 2023 09:54:35 MESZ schrieb AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>:
+>> Il 20/09/23 19:50, Frank Wunderlich ha scritto:
+>>> From: Frank Wunderlich <frank-w@public-files.de>
+>   
+>>> diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+>>> index c2669f405a94..8fd1dc5adb16 100644
+>>> --- a/drivers/thermal/mediatek/lvts_thermal.c
+>>> +++ b/drivers/thermal/mediatek/lvts_thermal.c
+>>> @@ -82,6 +82,8 @@
+>>>    #define LVTS_GOLDEN_TEMP_DEFAULT	50
+>>>    #define LVTS_COEFF_A_MT8195			-250460
+>>>    #define LVTS_COEFF_B_MT8195			250460
+>>> +#define LVTS_COEFF_A_MT7988			-204650
+>>> +#define LVTS_COEFF_B_MT7988			204650
+>>>      #define LVTS_MSR_IMMEDIATE_MODE		0
+>>>    #define LVTS_MSR_FILTERED_MODE		1
+>>> @@ -89,6 +91,7 @@
+>>>    #define LVTS_MSR_READ_TIMEOUT_US	400
+>>>    #define LVTS_MSR_READ_WAIT_US		(LVTS_MSR_READ_TIMEOUT_US / 2)
+>>>    +#define LVTS_HW_SHUTDOWN_MT7988		105000
+>>
+>> I would simply reuse the definition of LVTS_HW_SHUTDOWN_MT8195....
+> 
+> Hi angelo,
+> thanks for review.
+> 
+> Imho it should be separated...if someone thinks it needs to be changed later it will be changed not only for mt8195...a generic name can also cause problems if the next soc has different value.
+> 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Okay, I don't really have strong opinions against that anyway.
+
+Cheers
+Angelo
+
+>>>    #define LVTS_HW_SHUTDOWN_MT8195		105000
+>>>      #define LVTS_MINIMUM_THRESHOLD		20000
+>>> @@ -1269,6 +1272,41 @@ static int lvts_remove(struct platform_device *pdev)
+>>>    	return 0;
+>>>    }
+>>>    +/*
+>>> + * LVTS MT7988
+>>> + */
+>>> +
+>>
+>> Please remove this big comment block, that's not needed.
+> 
+> Ok,i drop the comments (maybe except the wed one where the name in technical document (i used for constants) does not point to wed function.
+> 
+>>> +static const struct lvts_ctrl_data mt7988_lvts_ap_data_ctrl[] = {
+>>> +	{
+>>> +		.cal_offset = { 0x00, 0x04, 0x08, 0x0c }, //918,91C,920,924
+>>
+>> This 918,91c,etc comment is not necessary
+>>
+>>> +		.lvts_sensor = {
+>>> +			{ .dt_id = MT7988_CPU_0 }, // CPU 0,1
+>>
+>> If you want to retain those comments, you shall use the right style.
+>>
+>> { .dt_id = MT7988_CPU_0 }, /* CPU 0,1 */
+>> { .. } /* CPU 2,3 */
+>> { .. } /* Internal 2.5G PHY 1 */
+>>
+>> etc
+>>
+>>> +			{ .dt_id = MT7988_CPU_1 }, // CPU 2,3
+>>> +			{ .dt_id = MT7988_ETH2P5G_0 }, // internal 2.5G Phy 1
+>>> +			{ .dt_id = MT7988_ETH2P5G_1 }  // internal 2.5G Phy 2
+>>> +		},
+>>> +		.num_lvts_sensor = 4,
+>>> +		.offset = 0x0,
+>>> +		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT7988,
+>>> +	},
+>>> +	{
+>>> +		.cal_offset = { 0x14, 0x18, 0x1c, 0x20 }, //92C,930,934,938
+>>
+>> comment not needed
+>>
+>>> +		.lvts_sensor = {
+>>> +			{ .dt_id = MT7988_TOPS_0}, // TOPS > +			{ .dt_id = MT7988_TOPS_1}, // TOPS
+>>
+>> The dt_id definition already says "TOPS", this comment is not needed.
+>>
+>>> +			{ .dt_id = MT7988_ETHWARP_0}, // WED 1
+>>> +			{ .dt_id = MT7988_ETHWARP_1}  // WED 2
+>>
+>> Same comment about the format; /* WED 1 */
+>>
+>>> +		},
+>>> +		.num_lvts_sensor = 4,
+>>> +		.offset = 0x100,
+>>> +		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT7988,
+>>> +	}
+>>> +};
+>>> +
+>>> +/*
+>>> + * LVTS MT8195
+>>> + */
+>>
+>> Please also remove this big comment block, it's not needed.
+>>
+>> Apart from that, this patch looks good; v3 will be the golden one :-)
+>>
+>> Cheers,
+>> Angelo
+>>
+> 
+> regards Frank
+
+
+
