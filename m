@@ -2,122 +2,76 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96F8AE7D0A2
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 19:28:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14236E7D0A6
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 19:55:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229456AbjIUT2I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 15:28:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43526 "EHLO
+        id S230427AbjIUTzg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 15:55:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44990 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229743AbjIUT1m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 15:27:42 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 2DCE2A0C3B;
-        Thu, 21 Sep 2023 10:57:37 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A677D1596;
-        Thu, 21 Sep 2023 03:13:01 -0700 (PDT)
-Received: from localhost (ionvoi01-desktop.cambridge.arm.com [10.2.78.69])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 27AD13F59C;
-        Thu, 21 Sep 2023 03:12:24 -0700 (PDT)
-Date:   Thu, 21 Sep 2023 11:12:22 +0100
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     Vincent Guittot <vincent.guittot@linaro.org>
-Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
-        paul.walmsley@sifive.com, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
-        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
-        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
-        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-        linux-pm@vger.kernel.org, conor.dooley@microchip.com,
-        suagrfillet@gmail.com, ajones@ventanamicro.com, lftan@kernel.org
-Subject: Re: [PATCH 4/4] energy_model: use a fixed reference frequency
-Message-ID: <ZQwXBr/QXKUVJYBy@arm.com>
-References: <20230901130312.247719-1-vincent.guittot@linaro.org>
- <20230901130312.247719-5-vincent.guittot@linaro.org>
+        with ESMTP id S230448AbjIUTzR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 15:55:17 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7ABFED66F4
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 11:27:31 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 24797C433C8
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 18:27:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1695320851;
+        bh=W8ZRV80l2nleZS+KF1qVrs9gjJ/hjjtUhbHPzPIIyYY=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=LniWe3LVHiKQJKTGHI74nmBFKbJ9g235liLhTJVqRCFe71ebnVObnE+3EjsQaShyg
+         65EmpvvhJNBsaEPrpG9lw2Ciq+1927fwFxyHBTQN1bk+8FFpApNVIoouxslmpW1c6B
+         S9ppVF2ZMmi8kUpA3VoiP3JbnZlGgjpv+uYFtb6CWMYFoeQ2PBVhSWhuU1GzvaDq9U
+         /BfgZ+tP67yn7kYqRxdTeMMhW9yapsmK/+M/nDx0+BlDV3Kf83OI3UjPhl+zPDccj8
+         OTLNykt3RurRNeMXPok4WMIvN1OTi9WV/Qt2XTFQIpHGTbypZAKLwPmk3tU5qye2e2
+         NVRV9q03Ym82g==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+        id 0F589C53BCD; Thu, 21 Sep 2023 18:27:31 +0000 (UTC)
+From:   bugzilla-daemon@kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [Bug 217931] amd-pstate lacks crucial features: CPU frequency and
+ boost control
+Date:   Thu, 21 Sep 2023 18:27:30 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: high
+X-Bugzilla-Who: aros@gmx.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-217931-137361-WHGvDUPwKw@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-217931-137361@https.bugzilla.kernel.org/>
+References: <bug-217931-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230901130312.247719-5-vincent.guittot@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Friday 01 Sep 2023 at 15:03:12 (+0200), Vincent Guittot wrote:
-> The last item of a performance domain is not always the performance point
-> that has been used to compute CPU's capacity. This can lead to different
-> target frequency compared with other part of the system like schedutil and
-> would result in wrong energy estimation.
-> 
-> a new arch_scale_freq_ref() is available to return a fixed and coherent
-> frequency reference that can be used when computing the CPU's frequency
-> for an level of utilization. Use this function when available or fallback
-> to the last performance domain item otherwise.
-> 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> ---
->  include/linux/energy_model.h | 20 +++++++++++++++++---
->  1 file changed, 17 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-> index b9caa01dfac4..7ee07be6928e 100644
-> --- a/include/linux/energy_model.h
-> +++ b/include/linux/energy_model.h
-> @@ -204,6 +204,20 @@ struct em_perf_state *em_pd_get_efficient_state(struct em_perf_domain *pd,
->  	return ps;
->  }
->  
-> +#ifdef arch_scale_freq_ref
-> +static __always_inline
-> +unsigned long  arch_scale_freq_ref_em(int cpu, struct em_perf_domain *pd)
+https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
 
-The comments in patch 3/4 should be considered for this function and its
-use as well.
+--- Comment #8 from Artem S. Tashkinov (aros@gmx.com) ---
+(In reply to hej from comment #7)
+> I'm also looking for a way to contol min/max frequency. I tried active,
+> passive and guided modes and was surprised none obeyed scaling_max_freq.
 
-Thanks,
-Ionela.
+It's currently not implemented at all in amd-pstate, so those knobs
+(scaling_max_freq|scaling_min_freq|scaling_setspeed) do nothing.
 
-> +{
-> +	return arch_scale_freq_ref(cpu);
-> +}
-> +#else
-> +static __always_inline
-> +unsigned long  arch_scale_freq_ref_em(int cpu, struct em_perf_domain *pd)
-> +{
-> +	return pd->table[pd->nr_perf_states - 1].frequency;
-> +}
-> +#endif
-> +
->  /**
->   * em_cpu_energy() - Estimates the energy consumed by the CPUs of a
->   *		performance domain
-> @@ -224,7 +238,7 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
->  				unsigned long max_util, unsigned long sum_util,
->  				unsigned long allowed_cpu_cap)
->  {
-> -	unsigned long freq, scale_cpu;
-> +	unsigned long freq, ref_freq, scale_cpu;
->  	struct em_perf_state *ps;
->  	int cpu;
->  
-> @@ -241,11 +255,11 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
->  	 */
->  	cpu = cpumask_first(to_cpumask(pd->cpus));
->  	scale_cpu = arch_scale_cpu_capacity(cpu);
-> -	ps = &pd->table[pd->nr_perf_states - 1];
-> +	ref_freq = arch_scale_freq_ref_em(cpu, pd);
->  
->  	max_util = map_util_perf(max_util);
->  	max_util = min(max_util, allowed_cpu_cap);
-> -	freq = map_util_freq(max_util, ps->frequency, scale_cpu);
-> +	freq = map_util_freq(max_util, ref_freq, scale_cpu);
->  
->  	/*
->  	 * Find the lowest performance state of the Energy Model above the
-> -- 
-> 2.34.1
-> 
-> 
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
