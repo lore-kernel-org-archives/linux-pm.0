@@ -2,169 +2,110 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36187E7D0B5
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 21:05:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90198E7D0AD
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 21:12:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232143AbjIUVFt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 17:05:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46272 "EHLO
+        id S231584AbjIUVMX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 17:12:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42134 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233042AbjIUVFU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 17:05:20 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA2A1AF69F;
-        Thu, 21 Sep 2023 11:07:23 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 36cbd7be29a8bf2c; Thu, 21 Sep 2023 20:07:22 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id D268B664EBE;
-        Thu, 21 Sep 2023 20:07:21 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH v1 12/13] ACPI: thermal: Drop critical_valid and hot_valid trip flags
-Date:   Thu, 21 Sep 2023 20:04:49 +0200
-Message-ID: <2375603.NG923GbCHz@kreacher>
-In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
-References: <1957441.PYKUYFuaPT@kreacher>
+        with ESMTP id S230389AbjIUVLD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 17:11:03 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 35E3DA0C3C;
+        Thu, 21 Sep 2023 10:57:37 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B63E61595;
+        Thu, 21 Sep 2023 03:12:48 -0700 (PDT)
+Received: from localhost (ionvoi01-desktop.cambridge.arm.com [10.2.78.69])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 366B93F59C;
+        Thu, 21 Sep 2023 03:12:11 -0700 (PDT)
+Date:   Thu, 21 Sep 2023 11:12:09 +0100
+From:   Ionela Voinescu <ionela.voinescu@arm.com>
+To:     Vincent Guittot <vincent.guittot@linaro.org>
+Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
+        paul.walmsley@sifive.com, palmer@dabbelt.com,
+        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
+        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
+        peterz@infradead.org, juri.lelli@redhat.com,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
+        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+        linux-pm@vger.kernel.org, conor.dooley@microchip.com,
+        suagrfillet@gmail.com, ajones@ventanamicro.com, lftan@kernel.org
+Subject: Re: [PATCH 0/4] consolidate and cleanup CPU capacity
+Message-ID: <ZQwW+XoOFqvyuQ63@arm.com>
+References: <20230901130312.247719-1-vincent.guittot@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
- thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230901130312.247719-1-vincent.guittot@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Friday 01 Sep 2023 at 15:03:08 (+0200), Vincent Guittot wrote:
+> This is the 1st part of consolidating how the max compute capacity is
+> used in the scheduler and how we calculate the frequency for a level of
+> utilization.
+> 
+> Fix some unconsistancy when computing frequency for an utilization. There
+> can be a mismatch between energy model and schedutil.
 
-The critical_valid and hot_valid flags in struct acpi_thermal_trips are
-only used during initialization and they are only false if the
-corresponding trip temperatures are equal to THERMAL_TEMP_INVALID, so
-drop them and use THERMAL_TEMP_INVALID checks instead of them where
-applicable.
+There are a few more pieces of functionality that would be worth
+consolidating in this set as well, if you'd like to consider them:
 
-No intentional functional impact.
+- arch_set_freq_scale() still uses policy->cpuinfo.max_freq. It might be
+  good to use the boot time stored max_freq here as well. Given that
+  arch_scale_cpu_capacity() would be based on that stored value, if
+  arch_scale_freq_capacity() ends up using a different value, it could
+  have interesting effects on the utilization signals in case of
+  boosting.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/thermal.c |   25 ++++++++-----------------
- 1 file changed, 8 insertions(+), 17 deletions(-)
+- As Pierre mentioned in a previous comment, there is already a
+  cpufreq_get_hw_max_freq() weak function that returns
+  policy->cpuinfo.max_freq and it's only used at boot time by 
+  the setup code for AMU use for frequency invariance. I'm tempted to
+  suggest to use this to initialize what is now "freq_factor" as my
+  intention when I created that function was to provide platform
+  providers with the possibility to implement their own and decide on
+  the frequency they choose as their maximum. This could have been an
+  arch_ function as well, but as you mentioned before, mobile and server
+  platforms might want to choose different maximum values even if they
+  are using the same architecture.
 
-Index: linux-pm/drivers/acpi/thermal.c
-===================================================================
---- linux-pm.orig/drivers/acpi/thermal.c
-+++ linux-pm/drivers/acpi/thermal.c
-@@ -100,8 +100,6 @@ struct acpi_thermal_active {
- struct acpi_thermal_trips {
- 	struct acpi_thermal_passive passive;
- 	struct acpi_thermal_active active[ACPI_THERMAL_MAX_ACTIVE];
--	bool critical_valid;
--	bool hot_valid;
- };
- 
- struct acpi_thermal {
-@@ -355,13 +353,13 @@ static long acpi_thermal_get_critical_tr
- 	}
- 	if (crt == -1) {
- 		acpi_handle_debug(tz->device->handle, "Critical threshold disabled\n");
--		goto fail;
-+		return THERMAL_TEMP_INVALID;
- 	}
- 
- 	status = acpi_evaluate_integer(tz->device->handle, "_CRT", NULL, &tmp);
- 	if (ACPI_FAILURE(status)) {
- 		acpi_handle_debug(tz->device->handle, "No critical threshold\n");
--		goto fail;
-+		return THERMAL_TEMP_INVALID;
- 	}
- 	if (tmp <= 2732) {
- 		/*
-@@ -369,17 +367,12 @@ static long acpi_thermal_get_critical_tr
- 		 * so discard them as invalid.
- 		 */
- 		pr_info(FW_BUG "Invalid critical threshold (%llu)\n", tmp);
--		goto fail;
-+		return THERMAL_TEMP_INVALID;
- 	}
- 
- set:
--	tz->trips.critical_valid = true;
- 	acpi_handle_debug(tz->device->handle, "Critical threshold [%llu]\n", tmp);
- 	return tmp;
--
--fail:
--	tz->trips.critical_valid = false;
--	return THERMAL_TEMP_INVALID;
- }
- 
- static long acpi_thermal_get_hot_trip(struct acpi_thermal *tz)
-@@ -389,12 +382,10 @@ static long acpi_thermal_get_hot_trip(st
- 
- 	status = acpi_evaluate_integer(tz->device->handle, "_HOT", NULL, &tmp);
- 	if (ACPI_FAILURE(status)) {
--		tz->trips.hot_valid = false;
- 		acpi_handle_debug(tz->device->handle, "No hot threshold\n");
- 		return THERMAL_TEMP_INVALID;
- 	}
- 
--	tz->trips.hot_valid = true;
- 	acpi_handle_debug(tz->device->handle, "Hot threshold [%llu]\n", tmp);
- 	return tmp;
- }
-@@ -789,7 +780,7 @@ static void acpi_thermal_aml_dependency_
-  */
- static void acpi_thermal_guess_offset(struct acpi_thermal *tz, long crit_temp)
- {
--	if (tz->trips.critical_valid && crit_temp % 5 == 1)
-+	if (crit_temp != THERMAL_TEMP_INVALID && crit_temp % 5 == 1)
- 		tz->kelvin_offset = 273100;
- 	else
- 		tz->kelvin_offset = 273200;
-@@ -850,11 +841,11 @@ static int acpi_thermal_add(struct acpi_
- 	trip_count = acpi_thermal_get_trip_points(tz);
- 
- 	crit_temp = acpi_thermal_get_critical_trip(tz);
--	if (tz->trips.critical_valid)
-+	if (crit_temp != THERMAL_TEMP_INVALID)
- 		trip_count++;
- 
- 	hot_temp = acpi_thermal_get_hot_trip(tz);
--	if (tz->trips.hot_valid)
-+	if (hot_temp != THERMAL_TEMP_INVALID)
- 		trip_count++;
- 
- 	if (!trip_count) {
-@@ -886,13 +877,13 @@ static int acpi_thermal_add(struct acpi_
- 
- 	tz->trip_table = trip;
- 
--	if (tz->trips.critical_valid) {
-+	if (crit_temp != THERMAL_TEMP_INVALID) {
- 		trip->type = THERMAL_TRIP_CRITICAL;
- 		trip->temperature = acpi_thermal_temp(tz, crit_temp);
- 		trip++;
- 	}
- 
--	if (tz->trips.hot_valid) {
-+	if (hot_temp != THERMAL_TEMP_INVALID) {
- 		trip->type = THERMAL_TRIP_HOT;
- 		trip->temperature = acpi_thermal_temp(tz, hot_temp);
- 		trip++;
+Thanks,
+Ionela.
 
-
-
+> 
+> Next step will be to make a difference between the original
+> max compute capacity of a CPU and what is currently available when
+> there is a capping applying forever (i.e. seconds or more).
+> 
+> Vincent Guittot (4):
+>   sched: consolidate and cleanup access to CPU's max compute capacity
+>   topology: add a new arch_scale_freq_reference
+>   cpufreq/schedutil: use a fixed reference frequency
+>   energy_model: use a fixed reference frequency
+> 
+>  arch/arm/include/asm/topology.h   |  1 +
+>  arch/arm64/include/asm/topology.h |  1 +
+>  arch/riscv/include/asm/topology.h |  1 +
+>  drivers/base/arch_topology.c      |  9 +++------
+>  include/linux/arch_topology.h     |  7 +++++++
+>  include/linux/energy_model.h      | 20 +++++++++++++++++---
+>  kernel/sched/core.c               |  2 +-
+>  kernel/sched/cpudeadline.c        |  2 +-
+>  kernel/sched/cpufreq_schedutil.c  | 29 +++++++++++++++++++++++++++--
+>  kernel/sched/deadline.c           |  4 ++--
+>  kernel/sched/fair.c               | 18 ++++++++----------
+>  kernel/sched/rt.c                 |  2 +-
+>  kernel/sched/sched.h              |  6 ------
+>  kernel/sched/topology.c           |  7 +++++--
+>  14 files changed, 75 insertions(+), 34 deletions(-)
+> 
+> -- 
+> 2.34.1
+> 
+> 
