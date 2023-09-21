@@ -2,72 +2,181 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78076E7D0A2
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:37:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3057AE7D0AD
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:57:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232127AbjIUUhl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 16:37:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47924 "EHLO
+        id S232249AbjIUU5g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:57:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37504 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232116AbjIUUha (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:37:30 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AFE083307
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:37:23 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id F0E21C4163D
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 08:23:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1695284614;
-        bh=rIslKoqQA7eDek1JI3G0Q7QE9fK3DN5uHFOOb0ha91c=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=ot24mxcM77d4vJp1ffnjRk6eoh17Gl6Y1PUbHwxke2X2aGjrQKY/VeqY0CKOISJr+
-         0RWlwoxHkEmw8yGDmBzqjnEFwNsBpUpCS5/sMDy5IwMFU3nYvMLt4THy6HDguRuqk8
-         IwvO+gOs06FKN1i1AHYe8DDISdGA3gp10JgD2z9Gn53qwo0CQzqHLX58zhX2S0ZLwc
-         W4X26ihcVWJhIly3a9JSTIc2JDOGbvIEL/K8quFrN7R7dSO/jhpKd1LRoHPRsfPPXG
-         ql6IQYuoUEPSwjkbZ76JBUNT7q7kzJF30BBmJXtEPHAGrtEsSO/L/fzN7NGhbyXP+g
-         3ctTNE1PIc2ng==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id DAE4DC53BCD; Thu, 21 Sep 2023 08:23:33 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 217931] amd-pstate lacks crucial features: CPU frequency and
- boost control
-Date:   Thu, 21 Sep 2023 08:23:33 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: high
-X-Bugzilla-Who: aros@gmx.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-217931-137361-WwEZzfcnXW@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-217931-137361@https.bugzilla.kernel.org/>
-References: <bug-217931-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        with ESMTP id S232259AbjIUU5W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:57:22 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3ADACAF95D;
+        Thu, 21 Sep 2023 11:07:33 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 120831ec96c186fd; Thu, 21 Sep 2023 20:07:31 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 3665E664EBE;
+        Thu, 21 Sep 2023 20:07:31 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v1 02/13] ACPI: thermal: Collapse trip devices update functions
+Date:   Thu, 21 Sep 2023 19:49:24 +0200
+Message-ID: <3534976.iIbC2pHGDl@kreacher>
+In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
+References: <1957441.PYKUYFuaPT@kreacher>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
+ thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---- Comment #6 from Artem S. Tashkinov (aros@gmx.com) ---
-This would also be hugely useful for hundreds of thousands of AMD handheld
-users (not limited to Steam Deck).
+In order to reduce code duplication, merge update_passive_devices() and
+update_active_devices() into one function called update_trip_devices()
+that will be used for updating both the passive and active trip points.
 
---=20
-You may reply to this email to add a comment.
+No intentional functional impact.
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/thermal.c |   53 ++++++++++++++++++-------------------------------
+ 1 file changed, 20 insertions(+), 33 deletions(-)
+
+Index: linux-pm/drivers/acpi/thermal.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/thermal.c
++++ linux-pm/drivers/acpi/thermal.c
+@@ -43,6 +43,8 @@
+ #define ACPI_THERMAL_MAX_ACTIVE		10
+ #define ACPI_THERMAL_MAX_LIMIT_STR_LEN	65
+ 
++#define ACPI_THERMAL_TRIP_PASSIVE	(-1)
++
+ /*
+  * This exception is thrown out in two cases:
+  * 1.An invalid trip point becomes invalid or a valid trip point becomes invalid
+@@ -202,18 +204,25 @@ static void acpi_thermal_update_passive_
+ 		ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
+ }
+ 
+-static bool update_passive_devices(struct acpi_thermal *tz, bool compare)
++static bool update_trip_devices(struct acpi_thermal *tz,
++				struct acpi_thermal_trip *acpi_trip,
++				int index, bool compare)
+ {
+-	struct acpi_thermal_trip *acpi_trip = &tz->trips.passive.trip;
+ 	struct acpi_handle_list devices;
++	char method[] = "_PSL";
+ 	acpi_status status;
+ 
++	if (index != ACPI_THERMAL_TRIP_PASSIVE) {
++		method[1] = 'A';
++		method[2] = 'L';
++		method[3] = '0' + index;
++	}
++
+ 	memset(&devices, 0, sizeof(devices));
+ 
+-	status = acpi_evaluate_reference(tz->device->handle, "_PSL", NULL, &devices);
++	status = acpi_evaluate_reference(tz->device->handle, method, NULL, &devices);
+ 	if (ACPI_FAILURE(status)) {
+-		acpi_handle_info(tz->device->handle,
+-				 "Missing device list for passive threshold\n");
++		acpi_handle_info(tz->device->handle, "%s evaluation failure\n", method);
+ 		return false;
+ 	}
+ 
+@@ -231,8 +240,9 @@ static void acpi_thermal_update_passive_
+ 	if (!acpi_thermal_trip_valid(acpi_trip))
+ 		return;
+ 
+-	if (update_passive_devices(tz, true))
++	if (update_trip_devices(tz, acpi_trip, ACPI_THERMAL_TRIP_PASSIVE, true)) {
+ 		return;
++	}
+ 
+ 	acpi_trip->temperature = THERMAL_TEMP_INVALID;
+ 	ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
+@@ -273,30 +283,6 @@ static void acpi_thermal_update_active_t
+ 		ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
+ }
+ 
+-static bool update_active_devices(struct acpi_thermal *tz, int index, bool compare)
+-{
+-	char method[] = { '_', 'A', 'L', '0' + index, '\0' };
+-	struct acpi_thermal_trip *acpi_trip = &tz->trips.active[index].trip;
+-	struct acpi_handle_list devices;
+-	acpi_status status;
+-
+-	memset(&devices, 0, sizeof(devices));
+-
+-	status = acpi_evaluate_reference(tz->device->handle, method, NULL, &devices);
+-	if (ACPI_FAILURE(status)) {
+-		acpi_handle_info(tz->device->handle,
+-				 "Missing device list for active threshold %d\n",
+-				 index);
+-		return false;
+-	}
+-
+-	if (compare && memcmp(&acpi_trip->devices, &devices, sizeof(devices)))
+-		ACPI_THERMAL_TRIPS_EXCEPTION(tz, "device");
+-
+-	memcpy(&acpi_trip->devices, &devices, sizeof(devices));
+-	return true;
+-}
+-
+ static void acpi_thermal_update_active_devices(struct acpi_thermal *tz, int index)
+ {
+ 	struct acpi_thermal_trip *acpi_trip = &tz->trips.active[index].trip;
+@@ -304,7 +290,7 @@ static void acpi_thermal_update_active_d
+ 	if (!acpi_thermal_trip_valid(acpi_trip))
+ 		return;
+ 
+-	if (update_active_devices(tz, index, true))
++	if (update_trip_devices(tz, acpi_trip, index, true))
+ 		return;
+ 
+ 	acpi_trip->temperature = THERMAL_TEMP_INVALID;
+@@ -460,7 +446,8 @@ static bool acpi_thermal_init_passive_tr
+ 
+ 	tz->trips.passive.tsp = tmp;
+ 
+-	if (!update_passive_devices(tz, false))
++	if (!update_trip_devices(tz, &tz->trips.passive.trip,
++				 ACPI_THERMAL_TRIP_PASSIVE, false))
+ 		goto fail;
+ 
+ 	tz->trips.passive.trip.temperature = temp;
+@@ -482,7 +469,7 @@ static bool acpi_thermal_init_active_tri
+ 	if (temp == THERMAL_TEMP_INVALID)
+ 		goto fail;
+ 
+-	if (!update_active_devices(tz, index, false))
++	if (!update_trip_devices(tz, &tz->trips.active[index].trip, index, false))
+ 		goto fail;
+ 
+ 	tz->trips.active[index].trip.temperature = temp;
+
+
+
