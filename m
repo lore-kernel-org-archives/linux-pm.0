@@ -2,189 +2,180 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA401E7D0AF
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 22:11:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A452AE7D0AB
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 22:11:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232032AbjIUWLl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 18:11:41 -0400
+        id S231935AbjIUWMB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 18:12:01 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50566 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232056AbjIUWLZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 18:11:25 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A8A5AF6B1;
-        Thu, 21 Sep 2023 11:07:26 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id f5571a811c8c5fc5; Thu, 21 Sep 2023 20:07:25 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 85623664EBE;
-        Thu, 21 Sep 2023 20:07:24 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH v1 09/13] thermal: core: Rename trip point index function arguments in governors
-Date:   Thu, 21 Sep 2023 19:58:32 +0200
-Message-ID: <3719288.MHq7AAxBmi@kreacher>
-In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
-References: <1957441.PYKUYFuaPT@kreacher>
+        with ESMTP id S232007AbjIUWLl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 18:11:41 -0400
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3448E6C
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 15:10:13 -0700 (PDT)
+Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-274b01849c4so1059220a91.3
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 15:10:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20230601.gappssmtp.com; s=20230601; t=1695334213; x=1695939013; darn=vger.kernel.org;
+        h=from:to:subject:content-transfer-encoding:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=rONXwfMYlYFNk8bki17YMHK1M2SXsv5Xgdjb4bmYFko=;
+        b=B3LCxs6DLPDFmqJuvXqGL7wb+5cW2loRoFqR+L149KHl5MOVPYIIQRQb5OcgRD/YmY
+         CM8CWYqmFpXljW6F3647sb2MeSV2aOFIZA2VyrWz/fqINnJqWVqNJQbNjWX2SGUkOw20
+         I2c1FeknOunH0KQLZdO/82+TRP4vHsf+9aKXgGoNWA8eMQwB5DIqPHxbs7bDbt+iJ0Ih
+         6ZzXVfJ0ZYEDKENkCxnQI+YNEC6M3LQFoi3nol/III8SZOs6Qj9/vmhGxQ7WowyCke0G
+         keh35bGqrWB3KBsRpIyVYUa8oqksdJn8bC81OJP/J6WTv/r6GE3jhtKE+zgC29NRWJeC
+         1s4g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695334213; x=1695939013;
+        h=from:to:subject:content-transfer-encoding:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=rONXwfMYlYFNk8bki17YMHK1M2SXsv5Xgdjb4bmYFko=;
+        b=YaBdsbqO+ol3wwMk3AWbO6r7ee8irKUG4ErsmOyJIfbcFJahKuHf4xe7ZjwJhp39nk
+         h3hbSRLMoA0h3mXPzgz0zfPFloUkYOpUO/Cj0MZLC4XRu68aRoTNjOor7sdfz7Xt1oqo
+         KQsX0FfZxf5ntxi0Mf6Eq74yi0WOXUdrQVB8lvIPrfaiav1LBPKM1asVRdweKIoPZfBf
+         qKYD2VS0MK2xGMSDmZBPYczmCYODafvFPIY60qynO23yrTxnb8M9VffNccv281EnBlz2
+         9+lilCTnTwxZ9AkwHdBwlRvTWMdJVcTTn9DWESnYRFP407FzeOIyaVOyr1hErvoMuFFz
+         1dbg==
+X-Gm-Message-State: AOJu0Ywp1B/AnmvqbT2fecGVzYU8hrr0i+r15p3US2u1QtuRsPU4y+I6
+        jhpJFc2FpmvVW0/YugQLoMP3Xw==
+X-Google-Smtp-Source: AGHT+IH91/ZBsehnEEKWsGyHj50U56u6X8rgLgbgMFiAheTk0ID/MIumQvNsf43HCYx2aKumZMer5Q==
+X-Received: by 2002:a17:90a:9f46:b0:263:41d2:4e2 with SMTP id q6-20020a17090a9f4600b0026341d204e2mr7350038pjv.32.1695334213123;
+        Thu, 21 Sep 2023 15:10:13 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([20.171.243.82])
+        by smtp.gmail.com with ESMTPSA id i6-20020a17090adc0600b00273744e6eccsm1951175pjv.12.2023.09.21.15.10.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 21 Sep 2023 15:10:12 -0700 (PDT)
+Message-ID: <650cbf44.170a0220.afdf4.a624@mx.google.com>
+Date:   Thu, 21 Sep 2023 15:10:12 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
- thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v6.6-rc2-36-g57594c77e5b2
+X-Kernelci-Report-Type: test
+Subject: pm/testing baseline: 46 runs,
+ 2 regressions (v6.6-rc2-36-g57594c77e5b2)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+pm/testing baseline: 46 runs, 2 regressions (v6.6-rc2-36-g57594c77e5b2)
 
-Rename function argumets used for passing trip point indices in thermal
-governors and in the .throttle() callback to "trip_index" to avoid
-confusion with trip pointer names.
+Regressions Summary
+-------------------
 
-No intentional functional impact.
+platform           | arch  | lab         | compiler | defconfig | regressio=
+ns
+-------------------+-------+-------------+----------+-----------+----------=
+--
+imx8mp-evk         | arm64 | lab-broonie | gcc-10   | defconfig | 1        =
+  =
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/thermal/gov_bang_bang.c  |    4 ++--
- drivers/thermal/gov_step_wise.c  |   16 ++++++++--------
- drivers/thermal/gov_user_space.c |    6 +++---
- include/linux/thermal.h          |    2 +-
- 4 files changed, 14 insertions(+), 14 deletions(-)
+kontron-pitx-imx8m | arm64 | lab-kontron | gcc-10   | defconfig | 1        =
+  =
 
-Index: linux-pm/include/linux/thermal.h
-===================================================================
---- linux-pm.orig/include/linux/thermal.h
-+++ linux-pm/include/linux/thermal.h
-@@ -199,7 +199,7 @@ struct thermal_governor {
- 	char name[THERMAL_NAME_LENGTH];
- 	int (*bind_to_tz)(struct thermal_zone_device *tz);
- 	void (*unbind_from_tz)(struct thermal_zone_device *tz);
--	int (*throttle)(struct thermal_zone_device *tz, int trip);
-+	int (*throttle)(struct thermal_zone_device *tz, int trip_index);
- 	struct list_head	governor_list;
- };
- 
-Index: linux-pm/drivers/thermal/gov_user_space.c
-===================================================================
---- linux-pm.orig/drivers/thermal/gov_user_space.c
-+++ linux-pm/drivers/thermal/gov_user_space.c
-@@ -25,11 +25,11 @@ static int user_space_bind(struct therma
- /**
-  * notify_user_space - Notifies user space about thermal events
-  * @tz: thermal_zone_device
-- * @trip: trip point index
-+ * @trip_index: trip point index
-  *
-  * This function notifies the user space through UEvents.
-  */
--static int notify_user_space(struct thermal_zone_device *tz, int trip)
-+static int notify_user_space(struct thermal_zone_device *tz, int trip_index)
- {
- 	char *thermal_prop[5];
- 	int i;
-@@ -38,7 +38,7 @@ static int notify_user_space(struct ther
- 
- 	thermal_prop[0] = kasprintf(GFP_KERNEL, "NAME=%s", tz->type);
- 	thermal_prop[1] = kasprintf(GFP_KERNEL, "TEMP=%d", tz->temperature);
--	thermal_prop[2] = kasprintf(GFP_KERNEL, "TRIP=%d", trip);
-+	thermal_prop[2] = kasprintf(GFP_KERNEL, "TRIP=%d", trip_index);
- 	thermal_prop[3] = kasprintf(GFP_KERNEL, "EVENT=%d", tz->notify_event);
- 	thermal_prop[4] = NULL;
- 	kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, thermal_prop);
-Index: linux-pm/drivers/thermal/gov_bang_bang.c
-===================================================================
---- linux-pm.orig/drivers/thermal/gov_bang_bang.c
-+++ linux-pm/drivers/thermal/gov_bang_bang.c
-@@ -89,14 +89,14 @@ static int thermal_zone_trip_update(stru
-  *     (trip_temp - hyst) so that the fan gets turned off again.
-  *
-  */
--static int bang_bang_control(struct thermal_zone_device *tz, int trip)
-+static int bang_bang_control(struct thermal_zone_device *tz, int trip_index)
- {
- 	struct thermal_instance *instance;
- 	int ret;
- 
- 	lockdep_assert_held(&tz->lock);
- 
--	ret = thermal_zone_trip_update(tz, trip);
-+	ret = thermal_zone_trip_update(tz, trip_index);
- 	if (ret)
- 		return ret;
- 
-Index: linux-pm/drivers/thermal/gov_step_wise.c
-===================================================================
---- linux-pm.orig/drivers/thermal/gov_step_wise.c
-+++ linux-pm/drivers/thermal/gov_step_wise.c
-@@ -68,23 +68,23 @@ static unsigned long get_target_state(st
- 	return next_target;
- }
- 
--static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip_id)
-+static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip_index)
- {
--	const struct thermal_trip *trip = &tz->trips[trip_id];
-+	const struct thermal_trip *trip = &tz->trips[trip_index];
- 	enum thermal_trend trend;
- 	struct thermal_instance *instance;
- 	bool throttle = false;
- 	int old_target;
- 
--	trend = get_tz_trend(tz, trip_id);
-+	trend = get_tz_trend(tz, trip_index);
- 
- 	if (tz->temperature >= trip->temperature) {
- 		throttle = true;
--		trace_thermal_zone_trip(tz, trip_id, trip->type);
-+		trace_thermal_zone_trip(tz, trip_index, trip->type);
- 	}
- 
- 	dev_dbg(&tz->device, "Trip%d[type=%d,temp=%d]:trend=%d,throttle=%d\n",
--		trip_id, trip->type, trip->temperature, trend, throttle);
-+		trip_index, trip->type, trip->temperature, trend, throttle);
- 
- 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
- 		if (instance->trip != trip)
-@@ -120,7 +120,7 @@ static void thermal_zone_trip_update(str
- /**
-  * step_wise_throttle - throttles devices associated with the given zone
-  * @tz: thermal_zone_device
-- * @trip: trip point index
-+ * @trip_index: trip point index
-  *
-  * Throttling Logic: This uses the trend of the thermal zone to throttle.
-  * If the thermal zone is 'heating up' this throttles all the cooling
-@@ -128,13 +128,13 @@ static void thermal_zone_trip_update(str
-  * step. If the zone is 'cooling down' it brings back the performance of
-  * the devices by one step.
-  */
--static int step_wise_throttle(struct thermal_zone_device *tz, int trip)
-+static int step_wise_throttle(struct thermal_zone_device *tz, int trip_index)
- {
- 	struct thermal_instance *instance;
- 
- 	lockdep_assert_held(&tz->lock);
- 
--	thermal_zone_trip_update(tz, trip);
-+	thermal_zone_trip_update(tz, trip_index);
- 
- 	list_for_each_entry(instance, &tz->thermal_instances, tz_node)
- 		thermal_cdev_update(instance->cdev);
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v6.6-rc2=
+-36-g57594c77e5b2/plan/baseline/
+
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: v6.6-rc2-36-g57594c77e5b2
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      57594c77e5b24fac60e3171dd6fe1199c18323fd =
 
 
 
+Test Regressions
+---------------- =
+
+
+
+platform           | arch  | lab         | compiler | defconfig | regressio=
+ns
+-------------------+-------+-------------+----------+-----------+----------=
+--
+imx8mp-evk         | arm64 | lab-broonie | gcc-10   | defconfig | 1        =
+  =
+
+
+  Details:     https://kernelci.org/test/plan/id/650cb11f37c09776db8a0a50
+
+  Results:     5 PASS, 1 FAIL, 1 SKIP
+  Full config: defconfig
+  Compiler:    gcc-10 (aarch64-linux-gnu-gcc (Debian 10.2.1-6) 10.2.1 20210=
+110)
+  Plain log:   https://storage.kernelci.org//pm/testing/v6.6-rc2-36-g57594c=
+77e5b2/arm64/defconfig/gcc-10/lab-broonie/baseline-imx8mp-evk.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v6.6-rc2-36-g57594c=
+77e5b2/arm64/defconfig/gcc-10/lab-broonie/baseline-imx8mp-evk.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/buildroo=
+t-baseline/20230623.0/arm64/rootfs.cpio.gz =
+
+
+
+  * baseline.bootrr.deferred-probe-empty: https://kernelci.org/test/case/id=
+/650cb11f37c09776db8a0a59
+        failing since 9 days (last pass: pm-6.6-rc1-122-g07b618ec9d7a, firs=
+t fail: v6.6-rc1-5-gb5eda4c9c923)
+
+    2023-09-21T21:09:33.314092  + set<8>[   27.767247] <LAVA_SIGNAL_ENDRUN =
+0_dmesg 123935_1.5.2.4.1>
+    2023-09-21T21:09:33.314230   +x
+    2023-09-21T21:09:33.420682  / # #
+    2023-09-21T21:09:34.580160  export SHELL=3D/bin/sh
+    2023-09-21T21:09:34.585933  #
+    2023-09-21T21:09:36.080291  / # export SHELL=3D/bin/sh. /lava-123935/en=
+vironment
+    2023-09-21T21:09:36.085816  =
+
+    2023-09-21T21:09:38.800984  / # . /lava-123935/environment/lava-123935/=
+bin/lava-test-runner /lava-123935/1
+    2023-09-21T21:09:38.807673  =
+
+    2023-09-21T21:09:38.819439  / # /lava-123935/bin/lava-test-runner /lava=
+-123935/1 =
+
+    ... (12 line(s) more)  =
+
+ =
+
+
+
+platform           | arch  | lab         | compiler | defconfig | regressio=
+ns
+-------------------+-------+-------------+----------+-----------+----------=
+--
+kontron-pitx-imx8m | arm64 | lab-kontron | gcc-10   | defconfig | 1        =
+  =
+
+
+  Details:     https://kernelci.org/test/plan/id/650cb2c46ad14c450c8a0a58
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-10 (aarch64-linux-gnu-gcc (Debian 10.2.1-6) 10.2.1 20210=
+110)
+  Plain log:   https://storage.kernelci.org//pm/testing/v6.6-rc2-36-g57594c=
+77e5b2/arm64/defconfig/gcc-10/lab-kontron/baseline-kontron-pitx-imx8m.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v6.6-rc2-36-g57594c=
+77e5b2/arm64/defconfig/gcc-10/lab-kontron/baseline-kontron-pitx-imx8m.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/buildroo=
+t-baseline/20230623.0/arm64/rootfs.cpio.gz =
+
+
+
+  * baseline.login: https://kernelci.org/test/case/id/650cb2c46ad14c450c8a0=
+a59
+        new failure (last pass: v6.6-rc2-21-g23aa512f7cfb) =
+
+ =20
