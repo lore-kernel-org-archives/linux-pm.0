@@ -2,105 +2,95 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C981AE7D0A5
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05B3BE7D0A2
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:31:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230189AbjIUR2A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 13:28:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54970 "EHLO
+        id S229916AbjIURbi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 13:31:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41972 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230018AbjIUR1h (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:27:37 -0400
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 629DC1998
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:02:12 -0700 (PDT)
-Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-d81c39acfd9so1564915276.0
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:02:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1695315659; x=1695920459; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=SlG0tdesvk2hZuyJ1dUVmziVM4LZO9/3+eAIoN/aiGs=;
-        b=4ralu2YB1+f92Mmm9HrkEuESYlFCw9oHy2zSuSw1XCwrlz8dCuYYo5rE3YIqTbWuec
-         OqVnqYFKz/2tozqNpWJEgiaL64SeMwpEM3Dd31cJqvgNmOi6sC5T+i6/fs93kB7/uIqw
-         k7zn1fC9KpDY11eTW76WmTy6pqfj9OHsM9agiR9YzBUg4HmAgoQ2XQAhzeqNWhcK6RTS
-         pU7/F4my98LVp1GrkGWx8VPoh1hbQdWFbTsalu6hdEEXvSS2tH737rSOCm83emjXTw3g
-         7bUSXx9c8XcKOPEHmjHVdFwWZ4k7CKCP+IplbKOqwJYdpePpjk0ATD2YpY5Pq/BbkWah
-         oc3A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695315659; x=1695920459;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=SlG0tdesvk2hZuyJ1dUVmziVM4LZO9/3+eAIoN/aiGs=;
-        b=cE4brPLbfEX94c/gNnrrckTXSXEiMoki1Y2aDMf310wbzw0A5gpY+ufL4YrSaZ1H3k
-         6JLSjewvmRwinjsNU7m5fWbogRI/+1hJyjDeVBw/QR2ZXtx9QHgRBY/eoYVDpGxY7iE8
-         wP5IPG0xLzG4HS5O5sC4Q0aXSSVHqVeq/xnunQMm4eA4HROvMt0HCqKbwQSAqH4n1NeP
-         KnPYqvWfygbZPo+yzupmo1MVQo710a8D9bZFKo5q1O0WRXmHRl5qfGmMscnmbnypww5V
-         zmlRGMIPc8z0IDUPj1qw5/GEPSBIOtemiOnhCWNdLyCXZ+4KaqLS5e+2vWTQTpB+FqyE
-         gx5g==
-X-Gm-Message-State: AOJu0YyqQglCz8VjBvkAMmd3Tt1EVHAxrCHFtraFMJHBZVW239Tl4M2N
-        zNV9uXiCx2Wc5f5PaDzxLodrnlyo4F9T
-X-Google-Smtp-Source: AGHT+IF937OVQEJlcVjD46qKkz1op8XyFpYCUz4xdIQ1LnJeaeax/FP9gNNX1vIULn/T6b6tqd8ICJWGor0n
-X-Received: from bjg.c.googlers.com ([fda3:e722:ac3:cc00:2b:7d90:c0a8:415])
- (user=bgeffon job=sendgmr) by 2002:a25:adc9:0:b0:d7e:dff4:b0fe with SMTP id
- d9-20020a25adc9000000b00d7edff4b0femr79575ybe.7.1695315659038; Thu, 21 Sep
- 2023 10:00:59 -0700 (PDT)
-Date:   Thu, 21 Sep 2023 13:00:45 -0400
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.42.0.459.ge4e396fd5e-goog
-Message-ID: <20230921170045.4189251-1-bgeffon@google.com>
-Subject: [PATCH] PM: hibernate: use __get_safe_page() rather than touching the list.
-From:   Brian Geffon <bgeffon@google.com>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>
-Cc:     Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Matthias Kaehlcke <mka@chromium.org>, stable@vger.kernel.org,
-        Brian Geffon <bgeffon@google.com>
-Content-Type: text/plain; charset="UTF-8"
+        with ESMTP id S230351AbjIURbX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:31:23 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65DE049D7;
+        Thu, 21 Sep 2023 10:23:14 -0700 (PDT)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id C194366072E0;
+        Thu, 21 Sep 2023 08:55:23 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1695282924;
+        bh=UTUCsGCHXv7lHkH0YxbJh4wFHSzf3govSJtRhJkJ4i0=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=oIqhwiP/FxM4BSY9QC2j4qMKeDZQY+sAzkVmipX2oA0lRP3n7UK5XNXzFd+/bGfPC
+         tIBm3izSADw1ImIQYIpwGQJm5WEssrGxSbgU1i/EXnUOhpfHn56lUWBhNPjNNdHs4k
+         vKk59lgzHlErrbDrmXPP56vS3b91reNXFV3pcMWS6AMmnLL7YJgkimqG5yrLCLRDcX
+         mvw3K3GRcSD6M8j9toGzPtrHnSYg7U+SJQGVgyngSk9yrceU9lIpcfpv012HrwpPRL
+         wzR6F+wfvje8mvlVScZg8dih1P6Mze3JcoyNUPUZ7jYXHcZCIBzdBpJowgEbyB405e
+         2vOxbngwyz4KQ==
+Message-ID: <78e8860a-07e6-60cc-52d3-d5ef762f7ee2@collabora.com>
+Date:   Thu, 21 Sep 2023 09:55:20 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Subject: Re: [PATCH v2 1/4] dt-bindings: thermal: mediatek: add mt7988 lvts
+ compatible
+Content-Language: en-US
+To:     Frank Wunderlich <linux@fw-web.de>,
+        linux-mediatek@lists.infradead.org
+Cc:     Frank Wunderlich <frank-w@public-files.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <20230920175001.47563-1-linux@fw-web.de>
+ <20230920175001.47563-2-linux@fw-web.de>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20230920175001.47563-2-linux@fw-web.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We found at least one situation where the safe pages list was empty and
-get_buffer() would gladly try to use a NULL pointer.
+Il 20/09/23 19:49, Frank Wunderlich ha scritto:
+> From: Frank Wunderlich <frank-w@public-files.de>
+> 
+> Add compatible string for mt7988 lvts application processor.
+> 
+> Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 
-Signed-off-by: Brian Geffon <bgeffon@google.com>
-Fixes: 8357376 ("swsusp: Improve handling of highmem")
-Cc: stable@vger.kernel.org
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 
-Change-Id: Ibb43a9b4ac5ff2d7e3021fdacc08e116650231e9
----
- kernel/power/snapshot.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+> ---
+> v2:
+> - change mt7988-lvts to mt7988-lvts-ap (Application Processor)
+> - not added Ack from Rob because of this change
+> ---
+>   .../devicetree/bindings/thermal/mediatek,lvts-thermal.yaml       | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
+> index fe9ae4c425c0..e6665af52ee6 100644
+> --- a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
+> @@ -18,6 +18,7 @@ description: |
+>   properties:
+>     compatible:
+>       enum:
+> +      - mediatek,mt7988-lvts-ap
+>         - mediatek,mt8192-lvts-ap
+>         - mediatek,mt8192-lvts-mcu
+>         - mediatek,mt8195-lvts-ap
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 362e6bae5891..2dcb33248518 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -2544,8 +2544,9 @@ static void *get_highmem_page_buffer(struct page *page,
- 		pbe->copy_page = pfn_to_page(pfn);
- 	} else {
- 		/* Copy of the page will be stored in normal memory */
--		kaddr = safe_pages_list;
--		safe_pages_list = safe_pages_list->next;
-+		kaddr = __get_safe_page(ca->gfp_mask);
-+		if (!kaddr)
-+			return ERR_PTR(-ENOMEM);
- 		pbe->copy_page = virt_to_page(kaddr);
- 	}
- 	pbe->next = highmem_pblist;
-@@ -2747,8 +2748,9 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
- 		return ERR_PTR(-ENOMEM);
- 	}
- 	pbe->orig_address = page_address(page);
--	pbe->address = safe_pages_list;
--	safe_pages_list = safe_pages_list->next;
-+	pbe->address = __get_safe_page(ca->gfp_mask);
-+	if (!pbe->address)
-+		return ERR_PTR(-ENOMEM);
- 	pbe->next = restore_pblist;
- 	restore_pblist = pbe;
- 	return pbe->address;
--- 
-2.42.0.459.ge4e396fd5e-goog
 
