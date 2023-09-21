@@ -2,100 +2,96 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3605EE7D0A7
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:38:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEF64E7D0A4
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:39:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230014AbjIUSim convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 14:38:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35256 "EHLO
+        id S229866AbjIUSj2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 14:39:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49550 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230304AbjIUSiK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:38:10 -0400
-Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com [209.85.167.173])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 964CAD62E8;
-        Thu, 21 Sep 2023 11:26:50 -0700 (PDT)
-Received: by mail-oi1-f173.google.com with SMTP id 5614622812f47-3adc95fdceeso83763b6e.0;
-        Thu, 21 Sep 2023 11:26:50 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695320810; x=1695925610;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=4n/wqWr27pRntEElj0EkXR3VCLKvT4G/Xcd993NCAk4=;
-        b=JVnGpV8TDgfBN4Hk8s0JvmB3A98d61iOmzqRcFV9g6bmAYjc8yphO8g1ebfLsfyUWu
-         iwqX8gUrB/jtipEvdMsumntv9mM8kmkdgiOWKDaRhthyRmDG1Pp5+DSHXzHZvA5Jg0wY
-         S2b0Im4TeshTSII5FN9YfvKeu7eIU5jG5nXcBq4zBkipAWnrmxxX8qvoKs2raN9xhmr7
-         w9A7xdznhP/CZCZQ5n+UejykLW0lEwBZ89IEoqFmGMxd3gImdnC3U8honwGxoGtxL3zG
-         o8LDpGOQcQ0V21EOYM7k3Tapd3tqUlIRKrpVia5H/2nUzALx66cT9VwwYnxXwsgqEaSt
-         VjFA==
-X-Gm-Message-State: AOJu0YwW4UYVbm7z1oTpMwH/Xf31yoOXSHYRJEnf77FGUe1jZetDlJvf
-        GTqS5tkTLONqxbRmvV/EO38/Z5CZ1paoax7SQfe4paw0
-X-Google-Smtp-Source: AGHT+IHrxNnigtLDAImoAjPYXbdlPLItCPsgM9jP/lbemDhG/GboyCzrBZG0LxMXhPHJITu+MFQrBEHm/2Ne9DJnuAA=
-X-Received: by 2002:a05:6808:20a7:b0:3ad:f525:52d5 with SMTP id
- s39-20020a05680820a700b003adf52552d5mr5455443oiw.4.1695320809853; Thu, 21 Sep
- 2023 11:26:49 -0700 (PDT)
+        with ESMTP id S230307AbjIUSjT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:39:19 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2336CAF96A;
+        Thu, 21 Sep 2023 11:07:34 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 66c059efcc43437d; Thu, 21 Sep 2023 20:07:33 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 0A8DA664EBE;
+        Thu, 21 Sep 2023 20:07:33 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v1 00/13] thermal: ACPI: More ACPI thermal improvements and modification of thermal instances
+Date:   Thu, 21 Sep 2023 19:46:55 +0200
+Message-ID: <1957441.PYKUYFuaPT@kreacher>
 MIME-Version: 1.0
-References: <20230921170045.4189251-1-bgeffon@google.com>
-In-Reply-To: <20230921170045.4189251-1-bgeffon@google.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 21 Sep 2023 20:26:38 +0200
-Message-ID: <CAJZ5v0g1PyhxaD+mk0ccHStpO0YZhRXLdE=X5zKCx0xAGpL5QQ@mail.gmail.com>
-Subject: Re: [PATCH] PM: hibernate: use __get_safe_page() rather than touching
- the list.
-To:     Brian Geffon <bgeffon@google.com>
-Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Matthias Kaehlcke <mka@chromium.org>, stable@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepkedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgr
+ nhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 21, 2023 at 7:01 PM Brian Geffon <bgeffon@google.com> wrote:
->
-> We found at least one situation where the safe pages list was empty and
-> get_buffer() would gladly try to use a NULL pointer.
->
-> Signed-off-by: Brian Geffon <bgeffon@google.com>
-> Fixes: 8357376 ("swsusp: Improve handling of highmem")
-> Cc: stable@vger.kernel.org
->
-> Change-Id: Ibb43a9b4ac5ff2d7e3021fdacc08e116650231e9
-> ---
->  kernel/power/snapshot.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
->
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index 362e6bae5891..2dcb33248518 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -2544,8 +2544,9 @@ static void *get_highmem_page_buffer(struct page *page,
->                 pbe->copy_page = pfn_to_page(pfn);
->         } else {
->                 /* Copy of the page will be stored in normal memory */
-> -               kaddr = safe_pages_list;
-> -               safe_pages_list = safe_pages_list->next;
-> +               kaddr = __get_safe_page(ca->gfp_mask);
-> +               if (!kaddr)
-> +                       return ERR_PTR(-ENOMEM);
->                 pbe->copy_page = virt_to_page(kaddr);
->         }
->         pbe->next = highmem_pblist;
-> @@ -2747,8 +2748,9 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
->                 return ERR_PTR(-ENOMEM);
->         }
->         pbe->orig_address = page_address(page);
-> -       pbe->address = safe_pages_list;
-> -       safe_pages_list = safe_pages_list->next;
-> +       pbe->address = __get_safe_page(ca->gfp_mask);
-> +       if (!pbe->address)
-> +               return ERR_PTR(-ENOMEM);
->         pbe->next = restore_pblist;
->         restore_pblist = pbe;
->         return pbe->address;
-> --
+Hi All,
 
-Applied as 6.7 material, thanks!
+The ACPI thermal driver has undergone some significant changes recently, but
+there is still room for improvements in it.
+
+First off, it turns out that a small rearrangement of its internal data
+structures allows code duplication in it to be reduced quite a bit (patches
+[01-04/13].
+
+Next, by changing the way it binds cooling devices to thermal zones (and trips
+within them), the use of trip point indices can be eliminated from it (patch
+[11/13]) which then allows its internal data structures to be simplified even
+further (patch [12/13]).
+
+However, in order to make those latter changes, it is useful to modify struct
+thermal_instance to carry a trip pointer instead a trip index (patch [05/13])
+which then allows the core to be adjusted to facilitate using trip pointers for
+cooling device binding and unbinding (patch [10/13]).
+
+Meanwhile, the modification of struct thermal_instance mentioned above also
+helps to reduce the thermal governors overhead related to using
+__thermal_zone_get_trip() that carries out bounds checking and copies trip
+point data which both are not necessary in the governor code.  Some related
+cleanups of thermal governors can be done as well (patches [06-09/13].
+
+Finally, it is prudent to visually distinguish the names of structure fields
+and variables that carry temperature values in different units, so patch
+[13/13] changes the names of those items in the ACPI thermal driver that are
+used to store temperature values in deci-Kelvin.
+
+This series is on top of the series of ACPI thermal driver posted last week:
+
+https://patchwork.kernel.org/project/linux-acpi/list/?series=783543
+
+and a couple of recent thermal core patches:
+
+https://patchwork.kernel.org/project/linux-pm/patch/12296181.O9o76ZdvQC@kreacher/
+https://patchwork.kernel.org/project/linux-pm/patch/5981326.lOV4Wx5bFT@kreacher/
+
+It will be exposed in a separate git branch for easier access.
+
+Please see the individual patch changelogs for details.
+
+Thanks!
+
+
+
