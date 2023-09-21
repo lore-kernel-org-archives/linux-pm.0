@@ -2,103 +2,171 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 165AAE7D0A4
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:11:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7B65E7D0AF
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:12:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229666AbjIUSLd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 14:11:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48180 "EHLO
+        id S229826AbjIUSMd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 14:12:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48244 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229512AbjIUSLJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:11:09 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF05E35A3;
-        Thu, 21 Sep 2023 10:28:16 -0700 (PDT)
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id D3FFE66072E9;
-        Thu, 21 Sep 2023 08:59:58 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1695283199;
-        bh=ey5W+Sdk5cYFx0SpuDyLNMLly9gNgQcl9KZF+Hs7Q3c=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=DUp4O18ORCwaBC4JEDWvmA28I6oVL5oekiq2Gl2O/Of+Cl4OjfquAG9qsVYC5qoMr
-         BYIQ9lPFIJEqOCnZO68P99AhTNdyanMSD6IMixj7eydBklxRuiRiLCR6qUTMR1ZMgx
-         9G8c+51+k9VVFf6+ue7kh6EMgkpemHseCPwtYP3PgrZdNutDY/ujy9wiUIA45GcUi4
-         btnRRTEUAtZwDv/xfhVERmXmp3/MCwqzIslni4swqZq60BqIf0x8V/cp2RQZ1cLuVN
-         iOgvFicl15QZCvkPzDAEO936AWvM98dKEz/JjNzn+NMYoPN0O1z5JGTzD5VbgtghmG
-         6ZDmYXuD5Zlzg==
-Message-ID: <83993f62-76d7-78ec-4711-b65e95e3aed9@collabora.com>
-Date:   Thu, 21 Sep 2023 09:59:56 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.0
-Subject: Re: [PATCH v1] thermal/drivers/mediatek/lvts_thermal: remove extra
- error check in lvts_debugfs_init()
-Content-Language: en-US
-To:     Minjie Du <duminjie@vivo.com>,
+        with ESMTP id S229999AbjIUSLp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:11:45 -0400
+Received: from mxout1.routing.net (mxout1.routing.net [IPv6:2a03:2900:1:a::a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C0438ED4E;
+        Thu, 21 Sep 2023 10:45:04 -0700 (PDT)
+Received: from mxbox3.masterlogin.de (unknown [192.168.10.78])
+        by mxout1.routing.net (Postfix) with ESMTP id DC5833FEB1;
+        Thu, 21 Sep 2023 10:39:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
+        s=20200217; t=1695292753;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=U8lPL8gvRmnaEpf/huc7WVV80bv+l3yEM1F4525ShH0=;
+        b=HR7j7WZApj9VbwW3iPBKrTXmBVeJ1d6mFTiD+TlsJUUfllL5FfZrO+5OlG2OGPo8PYmMuU
+        RCPhmFpyYItcvwOHjGwob9LgGN08GTzIgidO9nVKXXmbzjdMHdgaveL80nad8EGpQ/51aP
+        KcCyRxFyMMw79W873zXLOfafao2TFDE=
+Received: from [127.0.0.1] (fttx-pool-217.61.144.184.bambit.de [217.61.144.184])
+        by mxbox3.masterlogin.de (Postfix) with ESMTPSA id EED6C360630;
+        Thu, 21 Sep 2023 10:39:11 +0000 (UTC)
+Date:   Thu, 21 Sep 2023 12:39:11 +0200
+From:   Frank Wunderlich <linux@fw-web.de>
+To:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        linux-mediatek@lists.infradead.org
+CC:     Frank Wunderlich <frank-w@public-files.de>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
         Matthias Brugger <matthias.bgg@gmail.com>,
-        =?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= 
-        <nfraprado@collabora.com>,
-        Alexandre Mergnat <amergnat@baylibre.com>,
-        Chen-Yu Tsai <wenst@chromium.org>,
-        Balsam CHIHI <bchihi@baylibre.com>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        open list <linux-kernel@vger.kernel.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>
-Cc:     opensource.kernel@vivo.com
-References: <20230921075518.3016-1-duminjie@vivo.com>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20230921075518.3016-1-duminjie@vivo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v2_4/4=5D_thermal/drivers/med?= =?US-ASCII?Q?iatek/lvts=5Fthermal=3A_add_mt7988_support?=
+User-Agent: K-9 Mail for Android
+In-Reply-To: <eb6cc1dd-1df9-3b68-1f72-d536189c7b4d@collabora.com>
+References: <20230920175001.47563-1-linux@fw-web.de> <20230920175001.47563-5-linux@fw-web.de> <eb6cc1dd-1df9-3b68-1f72-d536189c7b4d@collabora.com>
+Message-ID: <F68F7C77-BB1E-4D9F-B760-9B35DE3693C5@fw-web.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Mail-ID: 72196824-0e00-40ec-b699-70d3d8de6d29
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Il 21/09/23 09:55, Minjie Du ha scritto:
-> As per the comment above debugfs_create_dir(), it is not expected to
-> return an error, so an extra error check is not needed.
-> Drop the return check of debugfs_create_dir() in
-> lvts_debugfs_init()
-> 
-> Signed-off-by: Minjie Du <duminjie@vivo.com>
-> ---
->   drivers/thermal/mediatek/lvts_thermal.c | 2 --
->   1 file changed, 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-> index effd9b00a424..171ce25fddf5 100644
-> --- a/drivers/thermal/mediatek/lvts_thermal.c
-> +++ b/drivers/thermal/mediatek/lvts_thermal.c
-> @@ -213,8 +213,6 @@ static int lvts_debugfs_init(struct device *dev, struct lvts_domain *lvts_td)
->   
->   		sprintf(name, "controller%d", i);
->   		dentry = debugfs_create_dir(name, lvts_td->dom_dentry);
-> -		if (!dentry)
-> -			continue;
->   
+Am 21=2E September 2023 09:54:35 MESZ schrieb AngeloGioacchino Del Regno <a=
+ngelogioacchino=2Edelregno@collabora=2Ecom>:
+>Il 20/09/23 19:50, Frank Wunderlich ha scritto:
+>> From: Frank Wunderlich <frank-w@public-files=2Ede>
+=20
+>> diff --git a/drivers/thermal/mediatek/lvts_thermal=2Ec b/drivers/therma=
+l/mediatek/lvts_thermal=2Ec
+>> index c2669f405a94=2E=2E8fd1dc5adb16 100644
+>> --- a/drivers/thermal/mediatek/lvts_thermal=2Ec
+>> +++ b/drivers/thermal/mediatek/lvts_thermal=2Ec
+>> @@ -82,6 +82,8 @@
+>>   #define LVTS_GOLDEN_TEMP_DEFAULT	50
+>>   #define LVTS_COEFF_A_MT8195			-250460
+>>   #define LVTS_COEFF_B_MT8195			250460
+>> +#define LVTS_COEFF_A_MT7988			-204650
+>> +#define LVTS_COEFF_B_MT7988			204650
+>>     #define LVTS_MSR_IMMEDIATE_MODE		0
+>>   #define LVTS_MSR_FILTERED_MODE		1
+>> @@ -89,6 +91,7 @@
+>>   #define LVTS_MSR_READ_TIMEOUT_US	400
+>>   #define LVTS_MSR_READ_WAIT_US		(LVTS_MSR_READ_TIMEOUT_US / 2)
+>>   +#define LVTS_HW_SHUTDOWN_MT7988		105000
+>
+>I would simply reuse the definition of LVTS_HW_SHUTDOWN_MT8195=2E=2E=2E=
+=2E
 
-This is fine as it is: the `continue` is here in order to avoid allocating regset
-if the debugfs dir couldn't be created.
-NACK.
+Hi angelo,
+thanks for review=2E
 
-Regards,
-Angelo
+Imho it should be separated=2E=2E=2Eif someone thinks it needs to be chang=
+ed later it will be changed not only for mt8195=2E=2E=2Ea generic name can =
+also cause problems if the next soc has different value=2E
 
->   		regset = devm_kzalloc(dev, sizeof(*regset), GFP_KERNEL);
->   		if (!regset)
+>>   #define LVTS_HW_SHUTDOWN_MT8195		105000
+>>     #define LVTS_MINIMUM_THRESHOLD		20000
+>> @@ -1269,6 +1272,41 @@ static int lvts_remove(struct platform_device *p=
+dev)
+>>   	return 0;
+>>   }
+>>   +/*
+>> + * LVTS MT7988
+>> + */
+>> +
+>
+>Please remove this big comment block, that's not needed=2E
 
+Ok,i drop the comments (maybe except the wed one where the name in technic=
+al document (i used for constants) does not point to wed function=2E
 
+>> +static const struct lvts_ctrl_data mt7988_lvts_ap_data_ctrl[] =3D {
+>> +	{
+>> +		=2Ecal_offset =3D { 0x00, 0x04, 0x08, 0x0c }, //918,91C,920,924
+>
+>This 918,91c,etc comment is not necessary
+>
+>> +		=2Elvts_sensor =3D {
+>> +			{ =2Edt_id =3D MT7988_CPU_0 }, // CPU 0,1
+>
+>If you want to retain those comments, you shall use the right style=2E
+>
+>{ =2Edt_id =3D MT7988_CPU_0 }, /* CPU 0,1 */
+>{ =2E=2E } /* CPU 2,3 */
+>{ =2E=2E } /* Internal 2=2E5G PHY 1 */
+>
+>etc
+>
+>> +			{ =2Edt_id =3D MT7988_CPU_1 }, // CPU 2,3
+>> +			{ =2Edt_id =3D MT7988_ETH2P5G_0 }, // internal 2=2E5G Phy 1
+>> +			{ =2Edt_id =3D MT7988_ETH2P5G_1 }  // internal 2=2E5G Phy 2
+>> +		},
+>> +		=2Enum_lvts_sensor =3D 4,
+>> +		=2Eoffset =3D 0x0,
+>> +		=2Ehw_tshut_temp =3D LVTS_HW_SHUTDOWN_MT7988,
+>> +	},
+>> +	{
+>> +		=2Ecal_offset =3D { 0x14, 0x18, 0x1c, 0x20 }, //92C,930,934,938
+>
+>comment not needed
+>
+>> +		=2Elvts_sensor =3D {
+>> +			{ =2Edt_id =3D MT7988_TOPS_0}, // TOPS > +			{ =2Edt_id =3D MT7988_=
+TOPS_1}, // TOPS
+>
+>The dt_id definition already says "TOPS", this comment is not needed=2E
+>
+>> +			{ =2Edt_id =3D MT7988_ETHWARP_0}, // WED 1
+>> +			{ =2Edt_id =3D MT7988_ETHWARP_1}  // WED 2
+>
+>Same comment about the format; /* WED 1 */
+>
+>> +		},
+>> +		=2Enum_lvts_sensor =3D 4,
+>> +		=2Eoffset =3D 0x100,
+>> +		=2Ehw_tshut_temp =3D LVTS_HW_SHUTDOWN_MT7988,
+>> +	}
+>> +};
+>> +
+>> +/*
+>> + * LVTS MT8195
+>> + */
+>
+>Please also remove this big comment block, it's not needed=2E
+>
+>Apart from that, this patch looks good; v3 will be the golden one :-)
+>
+>Cheers,
+>Angelo
+>
+
+regards Frank
