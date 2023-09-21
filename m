@@ -2,89 +2,113 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA2A4E7D0B0
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 22:06:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 256C4E7D0AF
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 22:11:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232948AbjIUWGj convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 18:06:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49774 "EHLO
+        id S232774AbjIUWLC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 18:11:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50604 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232297AbjIUWGX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 18:06:23 -0400
-Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com [209.85.167.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DDACBEFC9;
-        Thu, 21 Sep 2023 11:15:33 -0700 (PDT)
-Received: by mail-oi1-f180.google.com with SMTP id 5614622812f47-3a9e89fa553so80787b6e.1;
-        Thu, 21 Sep 2023 11:15:33 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695320071; x=1695924871;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=i+whoeEGg+5oxemZIerh1uHW1xW1HG0aWiiwA9/Cfc8=;
-        b=Ix+6LaZzkACc40ptgkr2bZa3uM2VClSBxZUx6AOmwuv6drzD1JyX4Q9U52NX6Pn80G
-         bi5QYqFpPd0dD1kQizWdwbkFkk8+EmS4h1+1p81Wn298sgqyWfVTWW8Wdvbf8/ag64E6
-         I7IhsvWUOzuCaYYieyUEXDgLyr0U8+YyfnE6cN79IXE/QVChCyLsSl2SYojheV/42Ksu
-         8gjiQ0JjcNYImuvEk9ABZwGx/LYbq+7QKoomLXq+dnFna+vPzjALs6GiCnzdFqnZkcYP
-         7+MX29RW5P1CUrBVX2pbMeWLTZc6bdZfNJuqbtfrQneOHnrxvqubjla43EaiGcvk2edO
-         KGmQ==
-X-Gm-Message-State: AOJu0Yza36dsFgsD7OaWj47NnBXckK27jyYQLeOq83J8uc57GZuah+Og
-        WDbWmmR2PK+G5fOSJZOAnbtvXuNg/VoaQ2V0ny8V1Mog
-X-Google-Smtp-Source: AGHT+IEsPvHniz+pyj39xbdxilNtva4bYOPahCcIyYvCqPdiDYDI6h+YOcOn/CICy+Wj9/GzLdL85HgrwEurKX7yP/c=
-X-Received: by 2002:a05:6820:12e:b0:56e:94ed:c098 with SMTP id
- i14-20020a056820012e00b0056e94edc098mr5102215ood.0.1695289015606; Thu, 21 Sep
- 2023 02:36:55 -0700 (PDT)
+        with ESMTP id S232852AbjIUWKu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 18:10:50 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6C361AF6B6;
+        Thu, 21 Sep 2023 11:07:27 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id c196ef04c16d75e5; Thu, 21 Sep 2023 20:07:25 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 66D16664EBE;
+        Thu, 21 Sep 2023 20:07:25 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v1 08/13] thermal: gov_step_wise: Fold update_passive_instance() into its caller
+Date:   Thu, 21 Sep 2023 19:56:47 +0200
+Message-ID: <2180114.Mh6RI2rZIc@kreacher>
+In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
+References: <1957441.PYKUYFuaPT@kreacher>
 MIME-Version: 1.0
-References: <20230920185153.613706-1-srinivas.pandruvada@linux.intel.com>
- <CAJZ5v0jLms5iUM8CXDWNCPcXSQgLv9_XJzqx9RwReqGGUKFL_Q@mail.gmail.com> <51b3a2f115b2392557331442460c2a52432f399d.camel@linux.intel.com>
-In-Reply-To: <51b3a2f115b2392557331442460c2a52432f399d.camel@linux.intel.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 21 Sep 2023 11:36:43 +0200
-Message-ID: <CAJZ5v0hjYnsD=uiMVT5q_ausqOoqoFTpWN2cdrwdofdXgCd78Q@mail.gmail.com>
-Subject: Re: [PATCH linux-next] thermal: int340x: processor_thermal: Ack all
- PCI interrupts
-To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>, daniel.lezcano@linaro.org,
-        rui.zhang@intel.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddulecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
+ thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Sep 20, 2023 at 9:29 PM srinivas pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
->
-> On Wed, 2023-09-20 at 21:21 +0200, Rafael J. Wysocki wrote:
-> > On Wed, Sep 20, 2023 at 8:52 PM Srinivas Pandruvada
-> > <srinivas.pandruvada@linux.intel.com> wrote:
-> > >
-> > > All interrupts from the processor thermal PCI device requires ACK.
-> > > This
-> > > is done by writing 0x01 at offset 0xDC in the config space. This is
-> > > already done for the thereshold interrupt. Extend this for the
-> > > workload
-> > > hint interrupt.
-> > >
-> > > Signed-off-by: Srinivas Pandruvada
-> > > <srinivas.pandruvada@linux.intel.com>
-> >
-> > Is this a fix for one of the commits in linux-next?  If so, which
-> > one?
-> This is on top of workload hints patches.  I marked linux-next as they
-> are not in mainline kernel.
->
-> This can alternatively merged to
-> e682b86211a1 thermal: int340x: Handle workload hint interrupts
->
-> But not sure how to mark the commit id as they will change.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-As a rule, commits in my linux-next branch don't change (they
-sometimes change, but that is not a common case), so you can use the
-current one.  If it changes, I'll update the tag accordingly.
+Fold update_passive_instance() into thermal_zone_trip_update() that is
+its only caller so as to make the code in question easeir to follow.
 
-I'm going to add a Fixes: tag pointing to the above commit to it.
+No intentional functional impact.
 
-Thanks!
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/gov_step_wise.c |   28 ++++++++++------------------
+ 1 file changed, 10 insertions(+), 18 deletions(-)
+
+Index: linux-pm/drivers/thermal/gov_step_wise.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/gov_step_wise.c
++++ linux-pm/drivers/thermal/gov_step_wise.c
+@@ -68,17 +68,6 @@ static unsigned long get_target_state(st
+ 	return next_target;
+ }
+ 
+-static void update_passive_instance(struct thermal_zone_device *tz,
+-				enum thermal_trip_type type, int value)
+-{
+-	/*
+-	 * If value is +1, activate a passive instance.
+-	 * If value is -1, deactivate a passive instance.
+-	 */
+-	if (type == THERMAL_TRIP_PASSIVE)
+-		tz->passive += value;
+-}
+-
+ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip_id)
+ {
+ 	const struct thermal_trip *trip = &tz->trips[trip_id];
+@@ -109,14 +98,17 @@ static void thermal_zone_trip_update(str
+ 		if (instance->initialized && old_target == instance->target)
+ 			continue;
+ 
+-		/* Activate a passive thermal instance */
+ 		if (old_target == THERMAL_NO_TARGET &&
+-			instance->target != THERMAL_NO_TARGET)
+-			update_passive_instance(tz, trip->type, 1);
+-		/* Deactivate a passive thermal instance */
+-		else if (old_target != THERMAL_NO_TARGET &&
+-			instance->target == THERMAL_NO_TARGET)
+-			update_passive_instance(tz, trip->type, -1);
++		    instance->target != THERMAL_NO_TARGET) {
++			/* Activate a passive thermal instance */
++			if (trip->type == THERMAL_TRIP_PASSIVE)
++				tz->passive++;
++		} else if (old_target != THERMAL_NO_TARGET &&
++			   instance->target == THERMAL_NO_TARGET) {
++			/* Deactivate a passive thermal instance */
++			if (trip->type == THERMAL_TRIP_PASSIVE)
++				tz->passive--;
++		}
+ 
+ 		instance->initialized = true;
+ 		mutex_lock(&instance->cdev->lock);
+
+
+
