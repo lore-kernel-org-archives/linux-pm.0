@@ -2,96 +2,87 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78CEFE7D0A8
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:27:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A6C6E7D0AA
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:29:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231720AbjIUU1m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 16:27:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38036 "EHLO
+        id S229545AbjIUU3U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:29:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37860 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231927AbjIUU11 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:27:27 -0400
-Received: from mail-qk1-x72b.google.com (mail-qk1-x72b.google.com [IPv6:2607:f8b0:4864:20::72b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A57BB8FB38
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:46:09 -0700 (PDT)
-Received: by mail-qk1-x72b.google.com with SMTP id af79cd13be357-77410032cedso38728585a.1
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:46:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695318368; x=1695923168; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=F2iVUKRDazi3scGbQVKzP0TAbm4bJPvzK2OVT1wMEJk=;
-        b=CWBMteytZxG5ibA+LGBIww7keVy1IntHzP8nxuUfB93E86L6V/hmUU1wsB5XXzPAEP
-         qJccT3g/oJuwmPG5RB3GiOcm8uIz36OC1I8MA+L65qV5hb5io2kE4DaQt3GzSwof3kKN
-         ST+anebU3ehbnHvFX+3fo/Me+L4O3rQ4dWENxwS5IKStU17OaFSvUjXcqKV7CrnOxs/T
-         FfMt+vKcCXFnqjnmnnXJwt5x/+CysBNuMc5IuS/ys38AN3zFw6/ydwjxRf0oW6uJYesp
-         D/ur8UIBr/AttBRGpALiAfbrkIkU8lfRyPGovj5FHo7AcCnatkMfjSAvzCmXABpYgptC
-         qJKA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695318368; x=1695923168;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=F2iVUKRDazi3scGbQVKzP0TAbm4bJPvzK2OVT1wMEJk=;
-        b=cCmk3iYF8jZnrZbwJYvmj0KpJaVpS/6U+KsdTm8hMTfeejTaENbhFhszxKyfcU35ao
-         eAlatniqocxjbYQ+ICmme85zJ5IYtUa9T6FQvdXfqine/DL76JANj0SwDsnrRIWqRwYV
-         Qkvj69B+Ei1RtaYHJCylkApGfv+K+trQt60WCYrwIC2OlDD5eOP3/5EHraidRTgerl2o
-         KaWE69xbDfRiOvN1rbiyhKyqaLBFi48psJowKQ42MEs9KUSsvaKXw/0uNqMeLqNKldmm
-         +4N+bGmWcjlFwoD/zLWD3XuJMctbQ3ePoHqnU4oJ8ZVl8OR1R8Iuiz9bGUp4nIxHmf/A
-         knOw==
-X-Gm-Message-State: AOJu0YwTaHgdPS1chmoR8NK7TK8nBwoFIxOnBW6lY75OrxlaK5qDQR7T
-        alFpTsqH+KnbeAWu2OfjxTYQhAKnp1H7izvUCLkAaJNIWMgC+FehU5Q=
-X-Google-Smtp-Source: AGHT+IGBGzSSuWFuR2CMHZuIrQTlTZeWSJ2mzK6C15pX7OZvwpMOeVL7zOjvauq3dqsE+276vjD7PnFCpmTJ4T71ZBo=
-X-Received: by 2002:a5b:f91:0:b0:cf8:1070:82d3 with SMTP id
- q17-20020a5b0f91000000b00cf8107082d3mr5445675ybh.32.1695303482171; Thu, 21
- Sep 2023 06:38:02 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230919121605.7304-1-ulf.hansson@linaro.org> <20230921113328.3208651-1-sudeep.holla@arm.com>
- <CAPDyKFrGDZzyp4G1fS5PGCE95b3_w4kJyZfnDs=BEuYLzJ7uXA@mail.gmail.com> <20230921133343.h3chbszl2iuf2b55@bogus>
-In-Reply-To: <20230921133343.h3chbszl2iuf2b55@bogus>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Thu, 21 Sep 2023 15:37:25 +0200
-Message-ID: <CAPDyKFrQAKhofKikc4xV5o=oqAoGOfD9XLiqHNUSBmeCmWE5-w@mail.gmail.com>
-Subject: Re: [PATCH] firmware: arm_scmi: Move power-domain driver to the
- pmdomain dir
-To:     Sudeep Holla <sudeep.holla@arm.com>
-Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org,
-        Cristian Marussi <cristian.marussi@arm.com>
+        with ESMTP id S232080AbjIUU3H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:29:07 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1AA65663E0
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:34:22 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 09A8FC433CA
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 05:40:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1695274821;
+        bh=NHrZa2Xp4nWp7oGu4wOjfMWqFY4XW0m+inMbaHLJUOk=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=gOZ+gly8kCX+LrxfeBGAF8rDR/4DUj/OlVc+YwuYhJCsBxjNDs8Dck8CANk8/H6JW
+         WRZjFv8wNBKLF70mmQEtGoSHQHHtbSdWQoDbze+yV4tijyn5SfuyrLo8uudS/xX/s7
+         SoyeSgCPCAKfM8Lb701ZEOHrQ/y5dqMdQEmSKCGPmSethOMfXfUrUXpghr6Cwdn/HD
+         H2ne0dvDA5tF6PkdCMhTooyQzUVuTuJvL046Jfgzj1M/oRHtYu8aMwuKPOgiAnTKnb
+         i5ZDGRMsReUpkk0gz6AxT+I7vGcWWzt7BS4iUK9j4VRwbv2uAP4DEZXR/mUUFovEAq
+         kkaHuXsoAX6JA==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+        id DBFE4C53BCD; Thu, 21 Sep 2023 05:40:20 +0000 (UTC)
+From:   bugzilla-daemon@kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [Bug 215801] Rmmod'ing amd-pstate doesn't restore acpi-cpufreq
+Date:   Thu, 21 Sep 2023 05:40:20 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: Perry.Yuan@amd.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-215801-137361-Aba1zfLXqv@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-215801-137361@https.bugzilla.kernel.org/>
+References: <bug-215801-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 21 Sept 2023 at 15:33, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> On Thu, Sep 21, 2023 at 03:10:56PM +0200, Ulf Hansson wrote:
-> > On Thu, 21 Sept 2023 at 13:33, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> > >
-> > > To simplify with maintenance let's move the Arm SCMI power-domain driver
-> > > to the new pmdomain directory.
-> > >
-> > > Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> > > Cc: Cristian Marussi <cristian.marussi@arm.com>
-> > > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> >
-> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >
-> > Feel free to take it through your scmi tree!
-> >
-> > Note that, we should move the Kconfig options too, but that requires
-> > changes that I am carrying in my pmdomain tree. We can either wait
-> > until the next cycle or you could send your pull-request to me this
-> > time (instead of through arm-soc), then we can fix this as a late
-> > minute change. The decision is yours.
-> >
->
-> OK. Lets us just delay SCMI Kconfig changes for the next cycle then. I assume
-> you would have other changes merged by then. Or may be as a fix as it would
-> be hardlt 10-15 line with 2 Kconfig options. Let me know if you disagree or
-> have other ideas.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D215801
 
-Let's delay, it's probably easier. Maybe a fix for rc1 would be best.
+Perry Yuan(AMD) (Perry.Yuan@amd.com) changed:
 
-Kind regards
-Uffe
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |Perry.Yuan@amd.com
+
+--- Comment #3 from Perry Yuan(AMD) (Perry.Yuan@amd.com) ---
+(In reply to Artem S. Tashkinov from comment #2)
+> This is still relevant as of Linux 6.6.
+>=20
+> Would be great if removing amd-pstate enabled acpi-cpufreq.
+
+Normally the system hardware needs to reinitialize CPPC and low-level power
+management firmware when CPPC driver loading, so it better to change grub
+parameters and reboot again.
+dynamically removing amd-pstate and load acpi_cpufreq probably cause some
+potential issues.=20
+
+Perry.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
