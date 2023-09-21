@@ -2,168 +2,87 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BFC0E7D0A6
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:52:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D626E7D0A5
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:52:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230013AbjIUSwf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 14:52:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48752 "EHLO
+        id S230418AbjIUSw5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 14:52:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59260 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229737AbjIUSwY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:52:24 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4404AE0AD;
-        Thu, 21 Sep 2023 10:49:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1695318588; x=1726854588;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=oVlN2+/cyaF/i5mxS6OVm7z+2a2Ml5WF4NI8+LaWPmM=;
-  b=igdcw0PYIBKAiQysV/LQHu48HcyUCYKlkde0PHHX7UG+PRYXpTevJwt4
-   nWwuN8pExB9WSUVemmQCLJIgODt1dokEZUDPUX4DgbxSIiIbrWyQtRIn1
-   kr7wq1XI+gxT7Ic7jXGekWnVlc2TVajjNCHpHoTMIewtRlt+5K2GecH/p
-   KM01Y0MivumQI89ZkHMZjENMXxLv28X2hZzp+Zhj0SO/uZalPxH8JIuKS
-   k3k2kXtRizPVHh0wdfX799YGITYSPUKK/9RRQ2oSdsDhm6PENxbo/FwhA
-   7VsACeaFD5WcX8M7Ziy4xwm8HAHlQwVwVDDYm76VfeLzfDp9NP4N78npG
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10839"; a="446943550"
-X-IronPort-AV: E=Sophos;i="6.03,165,1694761200"; 
-   d="scan'208";a="446943550"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Sep 2023 02:40:08 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10839"; a="817308136"
-X-IronPort-AV: E=Sophos;i="6.03,165,1694761200"; 
-   d="scan'208";a="817308136"
-Received: from unknown (HELO rzhang1-mobl7.ccr.corp.intel.com) ([10.254.213.176])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Sep 2023 02:40:03 -0700
-From:   Zhang Rui <rui.zhang@intel.com>
-To:     dwmw2@infradead.org, baolu.lu@linux.intel.com, joro@8bytes.org,
-        will@kernel.org
-Cc:     rafael.j.wysocki@intel.com, christophe.jaillet@wanadoo.fr,
-        chin.hao.ooi@intel.com, iommu@lists.linux.dev,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] iommu/vt-d: Avoid memory allocation in iommu_suspend()
-Date:   Thu, 21 Sep 2023 17:39:56 +0800
-Message-Id: <20230921093956.234692-1-rui.zhang@intel.com>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S229834AbjIUSwp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:52:45 -0400
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 599FC90A75
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:47:12 -0700 (PDT)
+Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-4053c6f0d3dso628295e9.1
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:47:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1695318431; x=1695923231; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=DpJ/97G25b6TPjTn6QzU+EXfaLRmUn9TD44GKiLbxUc=;
+        b=TVcAH8EVOhAKX7jY7A15R/NUShYvR+BmNHZIYvbUpmE2924ztKrVVqs2FPQzaDfRTC
+         wWzlTvWgZ6nMwdy0ZFTe8zPA89MVP1s3Rz7ES7ElxRF2eY1I29iOfAI1b1N+cjXUicJM
+         /Yudp+CY0il2GnWRGJPS0gOmYurSfx9CBLCGoMPjGg539mEih89CmZVqZ5TKdTvvD8hz
+         5SCwk0h5MlWR3rOvoIM1RpxDIhr15q1e9YKlVToI6Ne9OzACt6oMlyJaNNGeXin7NB5f
+         mUMUIgpHAdCghNZQ4JAAlIF7OuYVtWZy05ttfmG/nFaHgWlckI1t4brr5H/tyEMt6gEg
+         g/Pw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695318431; x=1695923231;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=DpJ/97G25b6TPjTn6QzU+EXfaLRmUn9TD44GKiLbxUc=;
+        b=X3O2dM9yxvEfbQOAIUIzY2ePS3SqcIjazF/PnNiYZ3QaaBVjHFANhRqmFmJAZYtDfe
+         a0xGE+qOdEcBWV9Ic1hnts9PkDWspqcwvzDXSM72AD8e2RA+iVL1t7PE56jkoTFfaD3A
+         pYJ9mIuQdrrJK66k5771aZ+KQaVbFWXiGkbgWJ1LGagoR3303771UudL5dmUrQDa0K2k
+         K3FCHIkAUSWE2kHKxY/z+N7vFkFfvxoqoi8qLZrgj/zd7G7hSWVozzPoeMwXtj9h122i
+         5PBnolsGrfjKLyemLOMp27RuTenZvYVtahEEggjbDaTwlqxgomBMKn3InwaxOEI28Sfp
+         0jOg==
+X-Gm-Message-State: AOJu0YxsHtkunLj503Y/BF2XTQx0iICV9nxiMoSGO51/NrkES4KaGZGi
+        BbKkHkHfkmTBJx8R+595+gd0DKz9UkvH1BY0A3UqqwkYyOTh6Ulybqqx0A==
+X-Google-Smtp-Source: AGHT+IFTxMHPC95KiOI2z0xWTy4CeTB0NUWNRpnxeR4sjTTRwKDyfOkzMakcC+k0ZCF0c3b4q1acDPb+GMi6CilNLCU=
+X-Received: by 2002:a05:6512:110e:b0:503:7dd:7ebc with SMTP id
+ l14-20020a056512110e00b0050307dd7ebcmr6385076lfg.18.1695306665262; Thu, 21
+ Sep 2023 07:31:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230825112633.236607-1-ulf.hansson@linaro.org> <20230825112633.236607-12-ulf.hansson@linaro.org>
+In-Reply-To: <20230825112633.236607-12-ulf.hansson@linaro.org>
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Thu, 21 Sep 2023 16:30:48 +0200
+Message-ID: <CAKohponrQRm5xP4Ahei7ZnSmfdsLk+6tFD+7mXZ_c23pEP+x9w@mail.gmail.com>
+Subject: Re: [PATCH v3 11/13] cpufreq: scmi: Add support to parse domain-id
+ using #power-domain-cells
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Nikunj Kela <nkela@quicinc.com>,
+        Prasad Sodagudi <psodagud@quicinc.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The iommu_suspend() syscore suspend callback is invoked with IRQ disabled.
-Allocating memory with the GFP_KERNEL flag may re-enable IRQs during
-the suspend callback, which can cause intermittent suspend/hibernation
-problems with the following kernel traces:
+On Fri, 25 Aug 2023 at 13:27, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> The performance domain-id can be described in DT using the power-domains
+> property or the clock property. The latter is already supported, so let's
+> add support for the power-domains too.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>
+> Changes in v3:
+>         - Move to get the power-domain index from power-domain-names.
+>
+> ---
+>  drivers/cpufreq/scmi-cpufreq.c | 25 +++++++++++++++++++------
+>  1 file changed, 19 insertions(+), 6 deletions(-)
 
-Calling iommu_suspend+0x0/0x1d0
-------------[ cut here ]------------
-WARNING: CPU: 0 PID: 15 at kernel/time/timekeeping.c:868 ktime_get+0x9b/0xb0
-...
-CPU: 0 PID: 15 Comm: rcu_preempt Tainted: G     U      E      6.3-intel #r1
-RIP: 0010:ktime_get+0x9b/0xb0
-...
-Call Trace:
- <IRQ>
- tick_sched_timer+0x22/0x90
- ? __pfx_tick_sched_timer+0x10/0x10
- __hrtimer_run_queues+0x111/0x2b0
- hrtimer_interrupt+0xfa/0x230
- __sysvec_apic_timer_interrupt+0x63/0x140
- sysvec_apic_timer_interrupt+0x7b/0xa0
- </IRQ>
- <TASK>
- asm_sysvec_apic_timer_interrupt+0x1f/0x30
-...
-------------[ cut here ]------------
-Interrupts enabled after iommu_suspend+0x0/0x1d0
-WARNING: CPU: 0 PID: 27420 at drivers/base/syscore.c:68 syscore_suspend+0x147/0x270
-CPU: 0 PID: 27420 Comm: rtcwake Tainted: G     U  W   E      6.3-intel #r1
-RIP: 0010:syscore_suspend+0x147/0x270
-...
-Call Trace:
- <TASK>
- hibernation_snapshot+0x25b/0x670
- hibernate+0xcd/0x390
- state_store+0xcf/0xe0
- kobj_attr_store+0x13/0x30
- sysfs_kf_write+0x3f/0x50
- kernfs_fop_write_iter+0x128/0x200
- vfs_write+0x1fd/0x3c0
- ksys_write+0x6f/0xf0
- __x64_sys_write+0x1d/0x30
- do_syscall_64+0x3b/0x90
- entry_SYSCALL_64_after_hwframe+0x72/0xdc
 
-Given that only 4 words memory is needed, avoid the memory allocation in
-iommu_suspend().
-
-CC: stable@kernel.org
-Fixes: 33e07157105e ("iommu/vt-d: Avoid GFP_ATOMIC where it is not needed")
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Tested-by: Ooi, Chin Hao <chin.hao.ooi@intel.com>
----
- drivers/iommu/intel/iommu.c | 16 ----------------
- drivers/iommu/intel/iommu.h |  2 +-
- 2 files changed, 1 insertion(+), 17 deletions(-)
-
-diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index 5db283c17e0d..3685ba90ec88 100644
---- a/drivers/iommu/intel/iommu.c
-+++ b/drivers/iommu/intel/iommu.c
-@@ -2998,13 +2998,6 @@ static int iommu_suspend(void)
- 	struct intel_iommu *iommu = NULL;
- 	unsigned long flag;
- 
--	for_each_active_iommu(iommu, drhd) {
--		iommu->iommu_state = kcalloc(MAX_SR_DMAR_REGS, sizeof(u32),
--					     GFP_KERNEL);
--		if (!iommu->iommu_state)
--			goto nomem;
--	}
--
- 	iommu_flush_all();
- 
- 	for_each_active_iommu(iommu, drhd) {
-@@ -3024,12 +3017,6 @@ static int iommu_suspend(void)
- 		raw_spin_unlock_irqrestore(&iommu->register_lock, flag);
- 	}
- 	return 0;
--
--nomem:
--	for_each_active_iommu(iommu, drhd)
--		kfree(iommu->iommu_state);
--
--	return -ENOMEM;
- }
- 
- static void iommu_resume(void)
-@@ -3061,9 +3048,6 @@ static void iommu_resume(void)
- 
- 		raw_spin_unlock_irqrestore(&iommu->register_lock, flag);
- 	}
--
--	for_each_active_iommu(iommu, drhd)
--		kfree(iommu->iommu_state);
- }
- 
- static struct syscore_ops iommu_syscore_ops = {
-diff --git a/drivers/iommu/intel/iommu.h b/drivers/iommu/intel/iommu.h
-index c18fb699c87a..7dac94f62b4e 100644
---- a/drivers/iommu/intel/iommu.h
-+++ b/drivers/iommu/intel/iommu.h
-@@ -681,7 +681,7 @@ struct intel_iommu {
- 	struct iopf_queue *iopf_queue;
- 	unsigned char iopfq_name[16];
- 	struct q_inval  *qi;            /* Queued invalidation info */
--	u32 *iommu_state; /* Store iommu states between suspend and resume.*/
-+	u32 iommu_state[MAX_SR_DMAR_REGS]; /* Store iommu states between suspend and resume.*/
- 
- #ifdef CONFIG_IRQ_REMAP
- 	struct ir_table *ir_table;	/* Interrupt remapping info */
--- 
-2.34.1
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
