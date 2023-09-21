@@ -2,89 +2,97 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ED0CE7D0A0
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:32:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFA67E7D0A3
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:51:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229826AbjIURca (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 13:32:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57172 "EHLO
+        id S229464AbjIURvi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 13:51:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38038 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230383AbjIURcN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:32:13 -0400
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C08662D203
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:06:20 -0700 (PDT)
-Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-502e6d632b6so2041716e87.0
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:06:20 -0700 (PDT)
+        with ESMTP id S229794AbjIURvS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:51:18 -0400
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1795C5A03C
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:21:03 -0700 (PDT)
+Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-9aa0495f9cfso524734466b.1
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:21:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695315978; x=1695920778; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=asW3V0UfBRcaqJZf0dqMocPiGq1jVGiQw3a4sepePiw=;
-        b=RQX1Hbf6QpYzr5VxDn4jvHJqpHk4O90otjVUObD/pbBtNJSs5b1aKiG+M96XSpD+Ri
-         zjwak0k9Hord1C/y21cAoWP8bkTnNN0aCIAwfo1Y5cHgGnPLzHS/13w4/k7OrxTO0TsK
-         I7TAZBkfpEwpMOSMGemSCXUQtBGcjp11noS73+Jyl5hHtpFIvHf5YLMUly139gxr2ImC
-         y7TozNIvR/XI3GfiZ1YhQzcuu2su1MsnyDViod47vh5nKxfByIJFYsMhxMH/KrqV09GM
-         rGWsLG8CeV9DsBg94bYXvZNPDNjQsd+WyyPLVsjVt3P0HQ46TNwBz1GscnXdzjbLRlb5
-         CSKA==
+        d=linaro.org; s=google; t=1695316861; x=1695921661; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=/uxubhSOYRKOBgFVb2nJokjnsajJqcWLd3vDjsGmIJY=;
+        b=NGoNxqvE7VivvGrew4BcwIk0SYiasQx02erL8rKEfxMcRoetJ/fDkNszESVgB+8WXu
+         WZfiJwnYp4sJQyBa/6dQjazT3dAZ6z/lqTHYGiacJoLX1UgNijiIVqvChEqAi2N+UqcL
+         pMhY8ziuAqdksvrQgKd9YMagn31cBgIiAIXTXEw8ELUKLSLDbnv+R4SBBCUNMlW7CoOp
+         dnZNQ4eZ/wmmU7nwBtrt6uhF3MlbSbKZtrfWKAAmuLqjetO7/9iDqyfR0jVxFSBQ4TgU
+         vdBOCnBEu85qC/fIEwVYx8bhTbVFauejTG+BPdh2VIlgy3RiJMUWB6N+P8fFYj6qgwRG
+         Gqhg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695315978; x=1695920778;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=asW3V0UfBRcaqJZf0dqMocPiGq1jVGiQw3a4sepePiw=;
-        b=Hiby6dwQZF/erlDAg89hUuyUiWJ/h8l2AARv1Km6XqjJaUsFkiVDlF6nHWW3l1C3dh
-         LrRWR5vIu5Dx+mg0O5kIdRFz2fiGgONnRh8Vrp0f2BtU+I/KPUEQ3rab0T4ZBACtiq9z
-         goRKeXOJtLtMWAqKcr5NAs+KSz07twfEuhEPAJq1X6QXI4u/JCq8G2BJeWGk0nWg52Cg
-         3FE54sGWWN5LoUJH2rOmAog+BcbyKKcdtes7HmLcvo5LnvdkPTrGbx3ePbIaY3Lda74W
-         6FK8Vuse2EAa6h1Ue0AbTmbSC36aFC7YBynB25T5L+SIA8pa5VH3cKFtUrTZs0JjFIqR
-         pjiA==
-X-Gm-Message-State: AOJu0YwOtiZyY/M972X+n0gwK+ZtlXUSZBl/nZmS561nfCNfEYLwaLpr
-        MaCXAmZr2Qu0peFsc1mW7KKMHFEU4TGMMqc63zBfC4ET2PBdtFRLE6M=
-X-Google-Smtp-Source: AGHT+IHKm6xOhbvVAKAE+SKogQZbnbEOCIh1XMXLgsfBvyvWuPOrr7N8DqDuN/nUXgGvHylRHerRg2cumFt/fm+7dMg=
-X-Received: by 2002:a05:6512:3133:b0:4fd:d470:203b with SMTP id
- p19-20020a056512313300b004fdd470203bmr4350086lfd.69.1695306540696; Thu, 21
- Sep 2023 07:29:00 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1695316861; x=1695921661;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=/uxubhSOYRKOBgFVb2nJokjnsajJqcWLd3vDjsGmIJY=;
+        b=TJIjHmS0jH9vcssltx87OGVr0VeWrghVbsbL8oyH1zOb3jwnc9GvU4lrsYl1Go8P7u
+         vyXiun3tFinYNAO5Vvu2gCeZgVUl1yTP7hJh71bPGITb+Vo23GQpfkHBkShW/Uhs0ySR
+         s2A5oODrjwtFdPbXdgVIS7uO4zssgrj+D0SlVDxMosCuuNbblHw8s+vLUBU9z5OJHn/1
+         7e6ROJdm02S36es/3HFz9ydJOMzLGYlyjHVaLY/zvsVYqcGhG7jxnvRs7VOFFT5y2cXL
+         GUoL72zTnYNg8tJghr8V1vT8axZ5T7my4zkCLyhEd29MLMkGkNuNhdREMJAvshQtKjVk
+         LfGA==
+X-Gm-Message-State: AOJu0YzmrmUMhWpM4TshyN57uzwNUHF7O1SRZ7pwLVd6IJNZeKKbZBmb
+        9dDwKazaP1nIGHA0To2aexsEQDBTGwKVoZpeKVzXFw==
+X-Google-Smtp-Source: AGHT+IGPVfoflUP3NlCWwDzwylQtmI+2m3tAC7GFYclWCJd5Ehn+hZ+GXl/jM794pw9McnRpGwN/BQ==
+X-Received: by 2002:a17:906:31da:b0:9ad:f60c:7287 with SMTP id f26-20020a17090631da00b009adf60c7287mr7118902ejf.28.1695290788801;
+        Thu, 21 Sep 2023 03:06:28 -0700 (PDT)
+Received: from [172.20.24.238] (static-212-193-78-212.thenetworkfactory.nl. [212.78.193.212])
+        by smtp.gmail.com with ESMTPSA id cb25-20020a170906a45900b009ad778a68c5sm812501ejb.60.2023.09.21.03.06.27
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 21 Sep 2023 03:06:28 -0700 (PDT)
+Message-ID: <4ac45fc9-1583-a71f-7c75-76ae6c882e67@linaro.org>
+Date:   Thu, 21 Sep 2023 12:06:25 +0200
 MIME-Version: 1.0
-References: <20230825112633.236607-1-ulf.hansson@linaro.org> <20230825112633.236607-4-ulf.hansson@linaro.org>
-In-Reply-To: <20230825112633.236607-4-ulf.hansson@linaro.org>
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Thu, 21 Sep 2023 16:28:43 +0200
-Message-ID: <CAKohpo=qNen_D_8nKATwBJnN9frR3dmBtfajy3Gzw7QKfSRMjw@mail.gmail.com>
-Subject: Re: [PATCH v3 03/13] cpufreq: scmi: Prepare to move OF parsing of
- domain-id to cpufreq
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH v2 1/4] dt-bindings: thermal: mediatek: add mt7988 lvts
+ compatible
+Content-Language: en-US
+To:     Frank Wunderlich <linux@fw-web.de>,
+        linux-mediatek@lists.infradead.org
+Cc:     Frank Wunderlich <frank-w@public-files.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <20230920175001.47563-1-linux@fw-web.de>
+ <20230920175001.47563-2-linux@fw-web.de>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230920175001.47563-2-linux@fw-web.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 25 Aug 2023 at 13:27, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> The OF parsing of the clock domain specifier seems to better belong in the
-> scmi cpufreq driver, rather than being implemented behind the generic
-> ->device_domain_id() perf protocol ops.
->
-> To prepare to remove the ->device_domain_id() ops, let's implement the OF
-> parsing in the scmi cpufreq driver instead.
->
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+On 20/09/2023 19:49, Frank Wunderlich wrote:
+> From: Frank Wunderlich <frank-w@public-files.de>
+> 
+> Add compatible string for mt7988 lvts application processor.
+> 
+> Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 > ---
->
-> Changes in v3:
->         - Re-based.
->
-> ---
->  drivers/cpufreq/scmi-cpufreq.c | 19 +++++++++++++++----
->  1 file changed, 15 insertions(+), 4 deletions(-)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+Best regards,
+Krzysztof
+
