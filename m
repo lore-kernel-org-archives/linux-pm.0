@@ -2,187 +2,99 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2C4CE7D0A9
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:32:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CAC6E7D0AA
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:33:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231940AbjIUUcU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 16:32:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52938 "EHLO
+        id S231810AbjIUUdm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:33:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38122 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231888AbjIUUcA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:32:00 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DCA1AF94C;
-        Thu, 21 Sep 2023 11:07:31 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id c8dfa8de6a80f189; Thu, 21 Sep 2023 20:07:29 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 1A650664EBE;
-        Thu, 21 Sep 2023 20:07:28 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH v1 04/13] ACPI: thermal: Merge trip initialization functions
-Date:   Thu, 21 Sep 2023 19:51:19 +0200
-Message-ID: <1785516.VLH7GnMWUR@kreacher>
-In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
-References: <1957441.PYKUYFuaPT@kreacher>
+        with ESMTP id S231806AbjIUUdM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:33:12 -0400
+Received: from mail-il1-x130.google.com (mail-il1-x130.google.com [IPv6:2607:f8b0:4864:20::130])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 976AD88AC4
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:39:15 -0700 (PDT)
+Received: by mail-il1-x130.google.com with SMTP id e9e14a558f8ab-350fbd09d8bso4239605ab.0
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:39:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1695317955; x=1695922755; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=g7keM3Y6fMhMfFMuWtMa5jx/7Kzyqu5FnvjTMxZXwko=;
+        b=loFTCy1B5Cxmj3czPIxvSEfmCs6HQj6R6+Dx13DTyLpkbRuuTcltfN+bKit6dPTS7S
+         iA6vzTrNTqscA6VMS2rqXhgnfN9DuJZ7nep9m0/HqO3IaGRYfZTur4/+DQQNlj0ssOaw
+         x55QY/EBczhym6MobLWXro+Q9iVQ1DDFCyy1NL9XCuc/pX1/c81Ebz1qELDnWvA0YKVm
+         ylX4rvJRN40ZHgy6ciWMjkNCUD+9r5hFV25qWn2Njq+PcwCbFtOs3V+hqnHj8jnFL7NG
+         2W6dtOUyKIQs/1vYSn4+tffd5ytw+pciecxTi+B12a77KE5ZwW8Ihzj4HovgmZTTkqfX
+         7sEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695317955; x=1695922755;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=g7keM3Y6fMhMfFMuWtMa5jx/7Kzyqu5FnvjTMxZXwko=;
+        b=eWIufhTG0Qb65UPzvw75IM3Xyf/hTq36+KwJSyeQhHEirDlOarpI5ReQnv1oA+k2uv
+         YxzyGGH6ChqI8kVN/4vgxAocu5q+E9VKC9TwvK+5qA8D7HQcRFPpFexrtMRq4XY7tg2f
+         bzMBd1pgB0uZpADrX0akLmiIsjAElDtGQhRjQxYxyGVBhTbN40uZzZHnMopshO01oX5B
+         hLa5q+Ni0aHxrzStvS+Rjsn8cndSyjNGMByVkJ6Mg4386+m1JhghtyVaGk4OvSQNq4iA
+         s2Oswj68L95aMRBSGeJndY8O3dJiQqoQd8Ef4U3vnb9hgGhqfMXQ4/gS0Pozj01xHPv+
+         CWTQ==
+X-Gm-Message-State: AOJu0Yy+8eOObVl/fctj/JmWA7iDjTCWgcTfd/QpWXAnskW9PhWxvg3a
+        sUpCskB5sq3lgljZqrW05CYs5Hxm9wFifalPxwndccpHA+Ez7FTO35I=
+X-Google-Smtp-Source: AGHT+IGFiuq2yAavaGohC3doXrEfCSrTTz4ql7Ccof0B/BskF92xcU/mBMfs+tpyTmR+iHwFXILbeDL6YKk4w7qSnnY=
+X-Received: by 2002:a25:8201:0:b0:d78:20d6:6f4e with SMTP id
+ q1-20020a258201000000b00d7820d66f4emr5008759ybk.38.1695302610815; Thu, 21 Sep
+ 2023 06:23:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20230825112633.236607-1-ulf.hansson@linaro.org>
+ <20230825112633.236607-9-ulf.hansson@linaro.org> <20230921111110.tbffr5sik3ycw7gf@bogus>
+In-Reply-To: <20230921111110.tbffr5sik3ycw7gf@bogus>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Thu, 21 Sep 2023 15:22:54 +0200
+Message-ID: <CAPDyKFrSkgSee=8zruR65TALvAj+hcWw1CaUOUwD3EpdxymtBg@mail.gmail.com>
+Subject: Re: [PATCH v3 08/13] dt-bindings: arm: cpus: Add a power-domain-name
+ for a performance-domain
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     Cristian Marussi <cristian.marussi@arm.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Nikunj Kela <nkela@quicinc.com>,
+        Prasad Sodagudi <psodagud@quicinc.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedunecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
- thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, 21 Sept 2023 at 13:11, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>
+> On Fri, Aug 25, 2023 at 01:26:28PM +0200, Ulf Hansson wrote:
+> > When an CPU's performance domain is managed through the SCMI firmware,
+> > let's enable us describe this as a consumer of a power-domain provider,
+> > which is the de-facto standard to use for performance domains. In this
+> > case, let's specify a corresponding power-domain-name, to point out the
+> > corresponding index for it.
+> >
+> > Cc: Rob Herring <robh+dt@kernel.org>
+> > Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+> > Cc: Conor Dooley <conor+dt@kernel.org>
+> > Cc: devicetree@vger.kernel.org
+> > Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >
+> > Changes in v3:
+> >       - New patch.
+>
+> This patch and 10/13 are quite generic. I am happy to take it as part of
+> this series but just thought of checking again if that is what you prefer ?
 
-In order to reduce code duplicationeve further, merge
-acpi_thermal_init_passive/active_trip() into one function called
-acpi_thermal_init_trip() that will be used for initializing both
-the passive and active trip points.
+Yes please, go ahead and pick this up through your scmi tree.
 
-No intentional functional impact.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/thermal.c |   64 ++++++++++++++++++++++---------------------------
- 1 file changed, 30 insertions(+), 34 deletions(-)
-
-Index: linux-pm/drivers/acpi/thermal.c
-===================================================================
---- linux-pm.orig/drivers/acpi/thermal.c
-+++ linux-pm/drivers/acpi/thermal.c
-@@ -399,72 +399,68 @@ static long acpi_thermal_get_hot_trip(st
- 	return tmp;
- }
- 
--static bool acpi_thermal_init_passive_trip(struct acpi_thermal *tz)
-+static bool passive_trip_params_init(struct acpi_thermal *tz)
- {
- 	unsigned long long tmp;
- 	acpi_status status;
--	int temp;
--
--	if (psv == -1)
--		goto fail;
--
--	if (psv > 0) {
--		temp = celsius_to_deci_kelvin(psv);
--	} else {
--		temp = get_passive_temp(tz);
--		if (temp == THERMAL_TEMP_INVALID)
--			goto fail;
--	}
- 
- 	status = acpi_evaluate_integer(tz->device->handle, "_TC1", NULL, &tmp);
- 	if (ACPI_FAILURE(status))
--		goto fail;
-+		return false;
- 
- 	tz->trips.passive.tc1 = tmp;
- 
- 	status = acpi_evaluate_integer(tz->device->handle, "_TC2", NULL, &tmp);
- 	if (ACPI_FAILURE(status))
--		goto fail;
-+		return false;
- 
- 	tz->trips.passive.tc2 = tmp;
- 
- 	status = acpi_evaluate_integer(tz->device->handle, "_TSP", NULL, &tmp);
- 	if (ACPI_FAILURE(status))
--		goto fail;
-+		return false;
- 
- 	tz->trips.passive.tsp = tmp;
- 
--	if (!update_trip_devices(tz, &tz->trips.passive.trip,
--				 ACPI_THERMAL_TRIP_PASSIVE, false))
--		goto fail;
--
--	tz->trips.passive.trip.temperature = temp;
- 	return true;
--
--fail:
--	tz->trips.passive.trip.temperature = THERMAL_TEMP_INVALID;
--	return false;
- }
- 
--static bool acpi_thermal_init_active_trip(struct acpi_thermal *tz, int index)
-+static bool acpi_thermal_init_trip(struct acpi_thermal *tz, int index)
- {
-+	struct acpi_thermal_trip *acpi_trip;
- 	long temp;
- 
--	if (act == -1)
--		goto fail;
-+	if (index == ACPI_THERMAL_TRIP_PASSIVE) {
-+		acpi_trip = &tz->trips.passive.trip;
-+
-+		if (psv == -1)
-+			goto fail;
-+
-+		if (!passive_trip_params_init(tz))
-+			goto fail;
-+
-+		temp = psv > 0 ? celsius_to_deci_kelvin(psv) :
-+				 get_passive_temp(tz);
-+	} else {
-+		acpi_trip = &tz->trips.active[index].trip;
-+
-+		if (act == -1)
-+			goto fail;
-+
-+		temp = get_active_temp(tz, index);
-+	}
- 
--	temp = get_active_temp(tz, index);
- 	if (temp == THERMAL_TEMP_INVALID)
- 		goto fail;
- 
--	if (!update_trip_devices(tz, &tz->trips.active[index].trip, index, false))
-+	if (!update_trip_devices(tz, acpi_trip, index, false))
- 		goto fail;
- 
--	tz->trips.active[index].trip.temperature = temp;
-+	acpi_trip->temperature = temp;
- 	return true;
- 
- fail:
--	tz->trips.active[index].trip.temperature = THERMAL_TEMP_INVALID;
-+	acpi_trip->temperature = THERMAL_TEMP_INVALID;
- 	return false;
- }
- 
-@@ -473,11 +469,11 @@ static int acpi_thermal_get_trip_points(
- 	unsigned int count = 0;
- 	int i;
- 
--	if (acpi_thermal_init_passive_trip(tz))
-+	if (acpi_thermal_init_trip(tz, ACPI_THERMAL_TRIP_PASSIVE))
- 		count++;
- 
- 	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE; i++) {
--		if (acpi_thermal_init_active_trip(tz, i))
-+		if (acpi_thermal_init_trip(tz, i))
- 			count++;
- 		else
- 			break;
-
-
-
+Kind regards
+Uffe
