@@ -2,230 +2,94 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E95EE7D0A4
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:36:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8074EE7D0A5
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:38:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230102AbjIUSgt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 14:36:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35184 "EHLO
+        id S229658AbjIUSib (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 14:38:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53388 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229602AbjIUSg1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:36:27 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17704AF69C;
-        Thu, 21 Sep 2023 11:07:22 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 2fecdf3dfb7fb0c9; Thu, 21 Sep 2023 20:07:21 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 0973A664EBE;
-        Thu, 21 Sep 2023 20:07:21 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        with ESMTP id S229891AbjIUSiB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:38:01 -0400
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0A2CD9D0F
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 11:30:44 -0700 (PDT)
+Received: by mail-wr1-x436.google.com with SMTP id ffacd0b85a97d-321530de76eso1194167f8f.0
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 11:30:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1695321043; x=1695925843; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=b/lesyyYEsnt9FdfxR9CoxFmQAH4gicQBv/bIfqhS7o=;
+        b=B3OiWa+IBhaNah5i0n0YBIg3vlcUuwp/vZ09TFMMATjPQnUeVbGGOPQAZ3ahDpiPj6
+         qVMAhawdzPUVegYDRmkXIACfDBnrqMEvqXBqbE0yiZkDsmtlo0UqgASkWBvCHyAw9S1/
+         BWUtcF+iI4qGaCsqYsEc8/03yzPjh10WTAJBkZ5az01tnuRbuq19d2WGPiTKf+KDGN6z
+         VYQSIBbk7KUKJXkpV8ewYiB5g9IisTErUD2l3sMcDUferGKA/9/RtIdTdjsBMNKmNTBM
+         htIF6Tb5mckFt/X+P3SAMMorx6yK40pwiTMoRul30+45k0v0IfxR6SMeWGk/nKDrJJBq
+         oGAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695321043; x=1695925843;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=b/lesyyYEsnt9FdfxR9CoxFmQAH4gicQBv/bIfqhS7o=;
+        b=avzD8PegXs9anI+7lBwn6otX77R22xDvoM4bFKmLphX+9EoUEJXMUVxFvzcHE/a2CL
+         LHd9GYGy6gpzuPhrawDJUvIAlI263abSwR2KjDLlj9DcUsV9hs25joUOLdZxpSNBJ8rN
+         rjjeqiTFBdcGRmhoHXj3j++VKkAShBTwdSHW/wFTcxTQ88VFd07g5qOIGT4LSy0aHpyU
+         F2AOhswU4kvp9+e/Z7l285W5VPUqCn5JrDwvEna4/5/lQjSbhE2Ze8dSFctzZFgtygST
+         Bp8JsP+94a9Bgkn2MqZIVcP3DR62Wf0/lWSztZwAMwxymEymaQmD6UpyqLEMEzbqf80d
+         YrPg==
+X-Gm-Message-State: AOJu0Yw/c197QfmKA0EXpDTYtt94CcelzbYvohpwoq4UQ895SHiF5NxJ
+        C/+AUG/FrOncySK94h/jvZ1ogVf2dqvTX+ebF26WKg==
+X-Google-Smtp-Source: AGHT+IGJfbg273QOiGyWJV30e+vCp/gVKXDpLIBgIJKJV1ZLq7zoYeLh1EwUM6sczbGm0RhUCMN7/g==
+X-Received: by 2002:a05:6402:64c:b0:523:100b:462b with SMTP id u12-20020a056402064c00b00523100b462bmr4294427edx.5.1695281801541;
+        Thu, 21 Sep 2023 00:36:41 -0700 (PDT)
+Received: from linaro.org (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.gmail.com with ESMTPSA id x13-20020aa7d38d000000b0052fe12a864esm440591edq.57.2023.09.21.00.36.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 21 Sep 2023 00:36:40 -0700 (PDT)
+Date:   Thu, 21 Sep 2023 09:36:37 +0200
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH v1 13/13] ACPI: thermal: Rename structure fields holding temperature in deci-Kelvin
-Date:   Thu, 21 Sep 2023 20:06:58 +0200
-Message-ID: <1968603.yKVeVyVuyW@kreacher>
-In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
-References: <1957441.PYKUYFuaPT@kreacher>
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v1 9/9] ACPI: thermal: Drop valid flag from struct
+ acpi_thermal_trip
+Message-ID: <20230921073637.GA3346@linaro.org>
+References: <5708760.DvuYhMxLoT@kreacher>
+ <9162925.CDJkKcVGEf@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
- thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <9162925.CDJkKcVGEf@kreacher>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH v1] 
+On Tue, Sep 12, 2023 at 08:47:23PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Notice that the valid flag in struct acpi_thermal_trip is in fact
+> redundant, because the temperature field of invalid trips is always
+> equal to THERMAL_TEMP_INVALID, so drop it from there and adjust the
+> code accordingly.
+> 
+> No intentional functional impact.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
 
-Rename structure fields holding temperature values in deci-Kelvin so as
-to avoid temperature units confusion.
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-No intentional functional impact.
+-- 
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/thermal.c |   44 ++++++++++++++++++++++----------------------
- 1 file changed, 22 insertions(+), 22 deletions(-)
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-Index: linux-pm/drivers/acpi/thermal.c
-===================================================================
---- linux-pm.orig/drivers/acpi/thermal.c
-+++ linux-pm/drivers/acpi/thermal.c
-@@ -82,7 +82,7 @@ MODULE_PARM_DESC(psv, "Disable or overri
- static struct workqueue_struct *acpi_thermal_pm_queue;
- 
- struct acpi_thermal_trip {
--	unsigned long temperature;
-+	unsigned long temp_dk;
- 	struct acpi_handle_list devices;
- };
- 
-@@ -105,8 +105,8 @@ struct acpi_thermal_trips {
- struct acpi_thermal {
- 	struct acpi_device *device;
- 	acpi_bus_id name;
--	unsigned long temperature;
--	unsigned long last_temperature;
-+	unsigned long temp_dk;
-+	unsigned long last_temp_dk;
- 	unsigned long polling_frequency;
- 	volatile u8 zombie;
- 	struct acpi_thermal_trips trips;
-@@ -131,16 +131,16 @@ static int acpi_thermal_get_temperature(
- 	if (!tz)
- 		return -EINVAL;
- 
--	tz->last_temperature = tz->temperature;
-+	tz->last_temp_dk = tz->temp_dk;
- 
- 	status = acpi_evaluate_integer(tz->device->handle, "_TMP", NULL, &tmp);
- 	if (ACPI_FAILURE(status))
- 		return -ENODEV;
- 
--	tz->temperature = tmp;
-+	tz->temp_dk = tmp;
- 
- 	acpi_handle_debug(tz->device->handle, "Temperature is %lu dK\n",
--			  tz->temperature);
-+			  tz->temp_dk);
- 
- 	return 0;
- }
-@@ -175,7 +175,7 @@ static int acpi_thermal_temp(struct acpi
- 
- static bool acpi_thermal_trip_valid(struct acpi_thermal_trip *acpi_trip)
- {
--	return acpi_trip->temperature != THERMAL_TEMP_INVALID;
-+	return acpi_trip->temp_dk != THERMAL_TEMP_INVALID;
- }
- 
- static long get_passive_temp(struct acpi_thermal *tz)
-@@ -197,7 +197,7 @@ static void acpi_thermal_update_passive_
- 	if (!acpi_thermal_trip_valid(acpi_trip) || psv > 0)
- 		return;
- 
--	acpi_trip->temperature = get_passive_temp(tz);
-+	acpi_trip->temp_dk = get_passive_temp(tz);
- 	if (!acpi_thermal_trip_valid(acpi_trip))
- 		ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
- }
-@@ -244,7 +244,7 @@ static void acpi_thermal_update_trip_dev
- 		return;
- 	}
- 
--	acpi_trip->temperature = THERMAL_TEMP_INVALID;
-+	acpi_trip->temp_dk = THERMAL_TEMP_INVALID;
- 	ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
- }
- 
-@@ -278,7 +278,7 @@ static void acpi_thermal_update_active_t
- 	if (!acpi_thermal_trip_valid(acpi_trip))
- 		return;
- 
--	acpi_trip->temperature = get_active_temp(tz, index);
-+	acpi_trip->temp_dk = get_active_temp(tz, index);
- 	if (!acpi_thermal_trip_valid(acpi_trip))
- 		ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
- }
-@@ -292,7 +292,7 @@ static int acpi_thermal_adjust_trip(stru
- 		return 0;
- 
- 	if (acpi_thermal_trip_valid(acpi_trip))
--		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temperature);
-+		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temp_dk);
- 	else
- 		trip->temperature = THERMAL_TEMP_INVALID;
- 
-@@ -447,11 +447,11 @@ static bool acpi_thermal_init_trip(struc
- 	if (!update_trip_devices(tz, acpi_trip, index, false))
- 		goto fail;
- 
--	acpi_trip->temperature = temp;
-+	acpi_trip->temp_dk = temp;
- 	return true;
- 
- fail:
--	acpi_trip->temperature = THERMAL_TEMP_INVALID;
-+	acpi_trip->temp_dk = THERMAL_TEMP_INVALID;
- 	return false;
- }
- 
-@@ -488,7 +488,7 @@ static int thermal_get_temp(struct therm
- 	if (result)
- 		return result;
- 
--	*temp = deci_kelvin_to_millicelsius_with_offset(tz->temperature,
-+	*temp = deci_kelvin_to_millicelsius_with_offset(tz->temp_dk,
- 							tz->kelvin_offset);
- 	return 0;
- }
-@@ -510,10 +510,10 @@ static int thermal_get_trend(struct ther
- 
- 	switch (trip->type) {
- 	case THERMAL_TRIP_PASSIVE:
--		t = tz->trips.passive.tc1 * (tz->temperature -
--						tz->last_temperature) +
--			tz->trips.passive.tc2 * (tz->temperature -
--						acpi_trip->temperature);
-+		t = tz->trips.passive.tc1 * (tz->temp_dk -
-+						tz->last_temp_dk) +
-+			tz->trips.passive.tc2 * (tz->temp_dk -
-+						acpi_trip->temp_dk);
- 		if (t > 0)
- 			*trend = THERMAL_TREND_RAISING;
- 		else if (t < 0)
-@@ -524,7 +524,7 @@ static int thermal_get_trend(struct ther
- 		return 0;
- 
- 	case THERMAL_TRIP_ACTIVE:
--		t = acpi_thermal_temp(tz, tz->temperature);
-+		t = acpi_thermal_temp(tz, tz->temp_dk);
- 		if (t <= trip->temperature)
- 			break;
- 
-@@ -894,7 +894,7 @@ static int acpi_thermal_add(struct acpi_
- 		passive_delay = tz->trips.passive.tsp * 100;
- 
- 		trip->type = THERMAL_TRIP_PASSIVE;
--		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temperature);
-+		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temp_dk);
- 		trip->priv = acpi_trip;
- 		trip++;
- 	}
-@@ -906,7 +906,7 @@ static int acpi_thermal_add(struct acpi_
- 			break;
- 
- 		trip->type = THERMAL_TRIP_ACTIVE;
--		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temperature);
-+		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temp_dk);
- 		trip->priv = acpi_trip;
- 		trip++;
- 	}
-@@ -920,7 +920,7 @@ static int acpi_thermal_add(struct acpi_
- 	INIT_WORK(&tz->thermal_check_work, acpi_thermal_check_fn);
- 
- 	pr_info("%s [%s] (%ld C)\n", acpi_device_name(device),
--		acpi_device_bid(device), deci_kelvin_to_celsius(tz->temperature));
-+		acpi_device_bid(device), deci_kelvin_to_celsius(tz->temp_dk));
- 
- 	result = acpi_dev_install_notify_handler(device, ACPI_DEVICE_NOTIFY,
- 						 acpi_thermal_notify);
-
-
-
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
