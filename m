@@ -2,59 +2,72 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 278D3E7D0A2
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:10:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 207DFE7D0A3
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:22:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230001AbjIURK4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 13:10:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54410 "EHLO
+        id S229628AbjIURWa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 13:22:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230502AbjIURKD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:10:03 -0400
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7863C7693;
-        Thu, 21 Sep 2023 10:05:26 -0700 (PDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        by mail.ozlabs.org (Postfix) with ESMTPSA id 4Rrqvj0M5wz4xPc;
-        Thu, 21 Sep 2023 19:33:21 +1000 (AEST)
-From:   Michael Ellerman <patch-notifications@ellerman.id.au>
-To:     alsa-devel@alsa-project.org, Julia Lawall <Julia.Lawall@inria.fr>
-Cc:     kernel-janitors@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
-        bcm-kernel-feedback-list@broadcom.com,
-        linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linuxppc-dev@lists.ozlabs.org, linux-mmc@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-mediatek@lists.infradead.org,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        linux-media@vger.kernel.org
-In-Reply-To: <20230907095521.14053-1-Julia.Lawall@inria.fr>
-References: <20230907095521.14053-1-Julia.Lawall@inria.fr>
-Subject: Re: [PATCH 00/11] add missing of_node_put
-Message-Id: <169528860030.876432.17353767421208248949.b4-ty@ellerman.id.au>
-Date:   Thu, 21 Sep 2023 19:30:00 +1000
+        with ESMTP id S229558AbjIURWY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:22:24 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0666F4ED5;
+        Thu, 21 Sep 2023 10:07:37 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AA9CB1684;
+        Thu, 21 Sep 2023 06:30:08 -0700 (PDT)
+Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1A7133F5A1;
+        Thu, 21 Sep 2023 06:29:29 -0700 (PDT)
+Date:   Thu, 21 Sep 2023 14:29:27 +0100
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Cristian Marussi <cristian.marussi@arm.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Nikunj Kela <nkela@quicinc.com>,
+        Prasad Sodagudi <psodagud@quicinc.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 07/13] cpufreq: scmi: Drop redundant ifdef in
+ scmi_cpufreq_probe()
+Message-ID: <20230921132927.ca6qoewimwn2xzh5@bogus>
+References: <20230825112633.236607-1-ulf.hansson@linaro.org>
+ <20230825112633.236607-8-ulf.hansson@linaro.org>
+ <20230921111426.b2vp5hu7ssdtmz3n@bogus>
+ <CAPDyKFqHBWtDioepsJuNHEa6ckwtuAOKBLx+LZEZctADTP--3w@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFqHBWtDioepsJuNHEa6ckwtuAOKBLx+LZEZctADTP--3w@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 07 Sep 2023 11:55:10 +0200, Julia Lawall wrote:
-> Add of_node_put on a break out of an of_node loop.
+On Thu, Sep 21, 2023 at 03:02:16PM +0200, Ulf Hansson wrote:
+> On Thu, 21 Sept 2023 at 13:14, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> >
+> > On Fri, Aug 25, 2023 at 01:26:27PM +0200, Ulf Hansson wrote:
+> > > We have stubs for devm_of_clk_add_hw_provider(), so there should be no need
+> > > to protect this with the '#ifdef CONFIG_COMMON_CLK'. Let's drop it to clean
+> > > up the code a bit.
+> > >
+> >
+> > No exactly. The stub is under !CONFIG_OF but we need it for !CONFIG_COMMON_CLK.
+> > The original build issue reported for which I add this was CONFIG_OF=y &&
+> > CONFIG_COMMON_CLK=n.
+> >
+> > It looks like it is still valid combo though I don't have a handy randconfig
+> > to present to you. I prefer to drop this for now if that is OK with you.
+> 
+> Sure, it's perfectly fine to drop it. It's just a thing I stumbled
+> over that isn't really needed in the $subject series!
 > 
 
-Patches 3 and 6 applied to powerpc/next.
+Thanks !
 
-[03/11] powerpc/powermac: add missing of_node_put
-        https://git.kernel.org/powerpc/c/a59e9eb25216eb1dc99e14fc31b76aa648d79540
-[06/11] powerpc/kexec_file: add missing of_node_put
-        https://git.kernel.org/powerpc/c/06b627c1236216ac1239c5e1afcc75359af3fb72
-
-cheers
+-- 
+Regards,
+Sudeep
