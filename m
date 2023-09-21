@@ -2,89 +2,105 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 051C6E7D0A0
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:26:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C981AE7D0A5
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:27:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229580AbjIUR0h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 13:26:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45488 "EHLO
+        id S230189AbjIUR2A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 13:28:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54970 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229586AbjIUR0f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:26:35 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 278CFCD3
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:03:05 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 58F57C116C9
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 08:18:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1695284285;
-        bh=D8V+TQFZG9rU+mIOSaehx4C3OFiPh/LaJ48LHYRyM74=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=nt/tvg9F4UuR79pRiBA3aksqEbPs7/wuL1bAoDgWKBRZyUXW6LADjG4rD1kgtkPGa
-         X18uljDf2xnFRneYtbi6PjKj7cm+WovEMznDJxBvbDMZR031PyGO8xYLlrd/txfpwL
-         lyGBBqlhocbcjkJ6AwEjg6yt0fQW3128bXTBcZYftMn5a8oAYA+pl9GuQTDJ7RyRZb
-         D7yYU14N6N07iBUMSAlmQaEe06ofuRGcfIS7WXjPKb+TMUTXRXWZKF2l680OlDMIBo
-         8azftFTxPUYrqS4Y6MqfwRCXDSb35LiTRl0wQziSubKmPv4q4+pDL+WFoBcCDL3t+9
-         NfYVoaaGJLWEw==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id 3FE5AC53BD0; Thu, 21 Sep 2023 08:18:05 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 215801] Rmmod'ing amd-pstate doesn't restore acpi-cpufreq
-Date:   Thu, 21 Sep 2023 08:18:05 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: aros@gmx.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-215801-137361-WGuteNqqJi@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-215801-137361@https.bugzilla.kernel.org/>
-References: <bug-215801-137361@https.bugzilla.kernel.org/>
+        with ESMTP id S230018AbjIUR1h (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:27:37 -0400
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 629DC1998
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:02:12 -0700 (PDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-d81c39acfd9so1564915276.0
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:02:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1695315659; x=1695920459; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=SlG0tdesvk2hZuyJ1dUVmziVM4LZO9/3+eAIoN/aiGs=;
+        b=4ralu2YB1+f92Mmm9HrkEuESYlFCw9oHy2zSuSw1XCwrlz8dCuYYo5rE3YIqTbWuec
+         OqVnqYFKz/2tozqNpWJEgiaL64SeMwpEM3Dd31cJqvgNmOi6sC5T+i6/fs93kB7/uIqw
+         k7zn1fC9KpDY11eTW76WmTy6pqfj9OHsM9agiR9YzBUg4HmAgoQ2XQAhzeqNWhcK6RTS
+         pU7/F4my98LVp1GrkGWx8VPoh1hbQdWFbTsalu6hdEEXvSS2tH737rSOCm83emjXTw3g
+         7bUSXx9c8XcKOPEHmjHVdFwWZ4k7CKCP+IplbKOqwJYdpePpjk0ATD2YpY5Pq/BbkWah
+         oc3A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695315659; x=1695920459;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=SlG0tdesvk2hZuyJ1dUVmziVM4LZO9/3+eAIoN/aiGs=;
+        b=cE4brPLbfEX94c/gNnrrckTXSXEiMoki1Y2aDMf310wbzw0A5gpY+ufL4YrSaZ1H3k
+         6JLSjewvmRwinjsNU7m5fWbogRI/+1hJyjDeVBw/QR2ZXtx9QHgRBY/eoYVDpGxY7iE8
+         wP5IPG0xLzG4HS5O5sC4Q0aXSSVHqVeq/xnunQMm4eA4HROvMt0HCqKbwQSAqH4n1NeP
+         KnPYqvWfygbZPo+yzupmo1MVQo710a8D9bZFKo5q1O0WRXmHRl5qfGmMscnmbnypww5V
+         zmlRGMIPc8z0IDUPj1qw5/GEPSBIOtemiOnhCWNdLyCXZ+4KaqLS5e+2vWTQTpB+FqyE
+         gx5g==
+X-Gm-Message-State: AOJu0YyqQglCz8VjBvkAMmd3Tt1EVHAxrCHFtraFMJHBZVW239Tl4M2N
+        zNV9uXiCx2Wc5f5PaDzxLodrnlyo4F9T
+X-Google-Smtp-Source: AGHT+IF937OVQEJlcVjD46qKkz1op8XyFpYCUz4xdIQ1LnJeaeax/FP9gNNX1vIULn/T6b6tqd8ICJWGor0n
+X-Received: from bjg.c.googlers.com ([fda3:e722:ac3:cc00:2b:7d90:c0a8:415])
+ (user=bgeffon job=sendgmr) by 2002:a25:adc9:0:b0:d7e:dff4:b0fe with SMTP id
+ d9-20020a25adc9000000b00d7edff4b0femr79575ybe.7.1695315659038; Thu, 21 Sep
+ 2023 10:00:59 -0700 (PDT)
+Date:   Thu, 21 Sep 2023 13:00:45 -0400
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.42.0.459.ge4e396fd5e-goog
+Message-ID: <20230921170045.4189251-1-bgeffon@google.com>
+Subject: [PATCH] PM: hibernate: use __get_safe_page() rather than touching the list.
+From:   Brian Geffon <bgeffon@google.com>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>
+Cc:     Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Matthias Kaehlcke <mka@chromium.org>, stable@vger.kernel.org,
+        Brian Geffon <bgeffon@google.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D215801
+We found at least one situation where the safe pages list was empty and
+get_buffer() would gladly try to use a NULL pointer.
 
---- Comment #4 from Artem S. Tashkinov (aros@gmx.com) ---
-(In reply to Perry Yuan(AMD) from comment #3)
-> (In reply to Artem S. Tashkinov from comment #2)
-> > This is still relevant as of Linux 6.6.
-> >=20
-> > Would be great if removing amd-pstate enabled acpi-cpufreq.
->=20
-> Normally the system hardware needs to reinitialize CPPC and low-level pow=
-er
-> management firmware when CPPC driver loading, so it better to change grub
-> parameters and reboot again.
-> dynamically removing amd-pstate and load acpi_cpufreq probably cause some
-> potential issues.=20
->=20
-> Perry.
+Signed-off-by: Brian Geffon <bgeffon@google.com>
+Fixes: 8357376 ("swsusp: Improve handling of highmem")
+Cc: stable@vger.kernel.org
 
-Could you add this as a note to the amd pstate driver documentation?
+Change-Id: Ibb43a9b4ac5ff2d7e3021fdacc08e116650231e9
+---
+ kernel/power/snapshot.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-Documentation/admin-guide/pm/amd-pstate.rst
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 362e6bae5891..2dcb33248518 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -2544,8 +2544,9 @@ static void *get_highmem_page_buffer(struct page *page,
+ 		pbe->copy_page = pfn_to_page(pfn);
+ 	} else {
+ 		/* Copy of the page will be stored in normal memory */
+-		kaddr = safe_pages_list;
+-		safe_pages_list = safe_pages_list->next;
++		kaddr = __get_safe_page(ca->gfp_mask);
++		if (!kaddr)
++			return ERR_PTR(-ENOMEM);
+ 		pbe->copy_page = virt_to_page(kaddr);
+ 	}
+ 	pbe->next = highmem_pblist;
+@@ -2747,8 +2748,9 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+ 	pbe->orig_address = page_address(page);
+-	pbe->address = safe_pages_list;
+-	safe_pages_list = safe_pages_list->next;
++	pbe->address = __get_safe_page(ca->gfp_mask);
++	if (!pbe->address)
++		return ERR_PTR(-ENOMEM);
+ 	pbe->next = restore_pblist;
+ 	restore_pblist = pbe;
+ 	return pbe->address;
+-- 
+2.42.0.459.ge4e396fd5e-goog
 
-Thank you!
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
