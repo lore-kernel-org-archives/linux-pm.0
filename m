@@ -2,116 +2,195 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4A18E7D0A8
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:21:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01ADBE7D0A7
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:23:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231735AbjIUUVk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 16:21:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49172 "EHLO
+        id S231775AbjIUUX2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:23:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55954 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231552AbjIUUVR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:21:17 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFB59400D8
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:15:03 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 962A4C433C9
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 05:25:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1695273907;
-        bh=c58xEsygUdws9xzfrFKFJkrkCVDiywjPhuXf1PYl/vA=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=EhnJoo8dWXvbEBZb0mt1KGfORDsoHM5HE9EnX+rr+WNVQ5M32GvpewRzTh+/W3tmc
-         3hYzFqAe3MirrC/ukJDC7is2TMMm2GFeIiZX2HiCqU8twjX/1OChB63vmD0O8dFm6d
-         oLx5iJzM5T9cTPDb6V4sJCQylnUKi3JVd869RN6CbthhuLH0UTofdwBPKaSve4IgI1
-         GHW0GXUhoK+TJvM4g87uH4edy2KPLWTeTbs9ML1PWh+O4ulnt3R/hluR0q0dV31TKQ
-         +SVGV1gL7plOlaaSHjS4SWVQDwPb7GCpeFL3HAEcbjxT2NY0mXYNz/5nXQCLmX18f2
-         ouVXUHLm0vxqQ==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id 7CE5EC53BD0; Thu, 21 Sep 2023 05:25:07 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 217931] amd-pstate lacks crucial features: CPU frequency and
- boost control
-Date:   Thu, 21 Sep 2023 05:25:07 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: high
-X-Bugzilla-Who: Perry.Yuan@amd.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-217931-137361-nN2QvCF5Yc@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-217931-137361@https.bugzilla.kernel.org/>
-References: <bug-217931-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        with ESMTP id S231654AbjIUUXH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:23:07 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id EE716561C5;
+        Thu, 21 Sep 2023 10:17:39 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7CA09150C;
+        Thu, 21 Sep 2023 02:01:16 -0700 (PDT)
+Received: from localhost (ionvoi01-desktop.cambridge.arm.com [10.2.78.69])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F048F3F59C;
+        Thu, 21 Sep 2023 02:00:38 -0700 (PDT)
+Date:   Thu, 21 Sep 2023 10:00:37 +0100
+From:   Ionela Voinescu <ionela.voinescu@arm.com>
+To:     Vincent Guittot <vincent.guittot@linaro.org>
+Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
+        paul.walmsley@sifive.com, palmer@dabbelt.com,
+        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
+        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
+        peterz@infradead.org, juri.lelli@redhat.com,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
+        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+        linux-pm@vger.kernel.org, conor.dooley@microchip.com,
+        suagrfillet@gmail.com, ajones@ventanamicro.com, lftan@kernel.org
+Subject: Re: [PATCH 2/4] topology: add a new arch_scale_freq_reference
+Message-ID: <ZQwGHBGg9B8SjzeS@arm.com>
+References: <20230901130312.247719-1-vincent.guittot@linaro.org>
+ <20230901130312.247719-3-vincent.guittot@linaro.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230901130312.247719-3-vincent.guittot@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
+Hi Vincent,
 
-Perry Yuan(AMD) (Perry.Yuan@amd.com) changed:
+On Friday 01 Sep 2023 at 15:03:10 (+0200), Vincent Guittot wrote:
+> Create a new method to get a unique and fixed max frequency. Currently
+> cpuinfo.max_freq or last item of performance domain are used as the max
+> frequency when computing the frequency for a level of utilization but:
+> - cpuinfo_max_freq can change at runtime. boost is one example of
+>   such change.
+> - cpuinfo.max_freq and last item of the PD can be different leading to
+>   different results betwen cpufreq and energy model.
+> 
+> We need to save the max frequency that has been used when computing the
+> CPUs capacity and use this fixed and coherent value to convert between
+> frequency and CPU's capacity.
+> 
+> In fact, we already save the frequency that has been used when computing
+> the capacity of each CPU. We extend the precision to save khZ instead of
+> Mhz currently and we modify the type to be aligned with other variables
+> used when converting frequency to capacity and the other way.
+> 
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> ---
+>  arch/arm/include/asm/topology.h   | 1 +
+>  arch/arm64/include/asm/topology.h | 1 +
+>  arch/riscv/include/asm/topology.h | 1 +
+>  drivers/base/arch_topology.c      | 9 +++------
+>  include/linux/arch_topology.h     | 7 +++++++
+>  5 files changed, 13 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
+> index c7d2510e5a78..853c4f81ba4a 100644
+> --- a/arch/arm/include/asm/topology.h
+> +++ b/arch/arm/include/asm/topology.h
+> @@ -13,6 +13,7 @@
+>  #define arch_set_freq_scale topology_set_freq_scale
+>  #define arch_scale_freq_capacity topology_get_freq_scale
+>  #define arch_scale_freq_invariant topology_scale_freq_invariant
+> +#define arch_scale_freq_ref topology_get_freq_ref
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |Perry.Yuan@amd.com
+The "reference" frequency or performance of a CPU has a specific meaning
+in the ACPI specification as a fixed frequency of a constant clock and its
+associated performance level, usually used for performance to frequency
+conversions. This is not guaranteed to be the maximum
+performance/frequency and it's definitely not the case for arm systems
+where this is tied to the system timer - 1-50Mhz.
 
---- Comment #4 from Perry Yuan(AMD) (Perry.Yuan@amd.com) ---
-(In reply to Artem S. Tashkinov from comment #0)
-> Created attachment 305131 [details]
-> Power Options: Processor Power Management in Windows
->=20
-> It would be really great if amd-pstate had a feature parity with
-> acpi-cpufreq, namely
->=20
-> 1) Being able to set operating frequencies (maximum, minimum and
-> user-defined)
->=20
-> 2) Being able to enable/disable boost
->=20
-> Currently both features are not available and frequency control is simply
-> ignored (bug 215800).
->=20
-> Rationale:
->=20
-> 1) This is required for benchmarking and proper temperature control. Boost
-> frequencies are subject to multiple limitations (power in watts, amperage,
-> voltage, temperature, BIOS limitations) and can change depending on the
-> workload. Setting a low enough frequency allows to run benchmarks in the
-> controlled environment and get proper data.
->=20
-> Windows allows to do that easily, see the attached screenshot.
->=20
-> 2) Disabling boost is an easy option to subdue operating temperatures tho=
-ugh
-> if the previous issue is tackled, it's not really needed.
+So I believe it might create some confusion to call this "reference"
+frequency.
 
-Thanks for the suggestion.
-There are two modes for amd pstate driver, one passive, and another active
-mode,  the passive mode already has the boost control feature.
+Any reason for not calling it arch_scale_freq_max? I know not all max
+frequencies are equal :) but it would still drive the point that this is
+intended to act as a chosen maximum for the scheduler's use, especially
+if there's a well place comment.
 
-# cat /sys/devices/system/cpu/cpufreq/boost
-1
+>  #endif
+>  
+>  /* Replace task scheduler's default cpu-invariant accounting */
+> diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+> index 9fab663dd2de..a323b109b9c4 100644
+> --- a/arch/arm64/include/asm/topology.h
+> +++ b/arch/arm64/include/asm/topology.h
+> @@ -23,6 +23,7 @@ void update_freq_counters_refs(void);
+>  #define arch_set_freq_scale topology_set_freq_scale
+>  #define arch_scale_freq_capacity topology_get_freq_scale
+>  #define arch_scale_freq_invariant topology_scale_freq_invariant
+> +#define arch_scale_freq_ref topology_get_freq_ref
+>  
+>  #ifdef CONFIG_ACPI_CPPC_LIB
+>  #define arch_init_invariance_cppc topology_init_cpu_capacity_cppc
+> diff --git a/arch/riscv/include/asm/topology.h b/arch/riscv/include/asm/topology.h
+> index e316ab3b77f3..61183688bdd5 100644
+> --- a/arch/riscv/include/asm/topology.h
+> +++ b/arch/riscv/include/asm/topology.h
+> @@ -9,6 +9,7 @@
+>  #define arch_set_freq_scale		topology_set_freq_scale
+>  #define arch_scale_freq_capacity	topology_get_freq_scale
+>  #define arch_scale_freq_invariant	topology_scale_freq_invariant
+> +#define arch_scale_freq_ref		topology_get_freq_ref
+>  
+>  /* Replace task scheduler's default cpu-invariant accounting */
+>  #define arch_scale_cpu_capacity	topology_get_cpu_scale
+> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+> index b741b5ba82bd..75fa67477a9d 100644
+> --- a/drivers/base/arch_topology.c
+> +++ b/drivers/base/arch_topology.c
+> @@ -26,7 +26,7 @@
+>  static DEFINE_PER_CPU(struct scale_freq_data __rcu *, sft_data);
+>  static struct cpumask scale_freq_counters_mask;
+>  static bool scale_freq_invariant;
+> -static DEFINE_PER_CPU(u32, freq_factor) = 1;
+> +DEFINE_PER_CPU(unsigned long, freq_factor) = 1;
 
-I have raised this requestion and will get active mode supported with a new
-patch.
+Given its new wider use, it might be good for this to get a more
+relevant name as well. Previously freq_factor made sense for its role
+in using the dmips/mhz values to obtain CPU capacities. But if this is
+now returned from arch_scale_freq_ref() it would be more difficult still
+to easily understand what this value is supposed to reflect, when
+reading the function name or the per-cpu variable name alone.
 
-Perry.
+Thanks,
+Ionela.
 
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
+>  
+>  static bool supports_scale_freq_counters(const struct cpumask *cpus)
+>  {
+> @@ -183,10 +183,7 @@ void topology_update_thermal_pressure(const struct cpumask *cpus,
+>  
+>  	cpu = cpumask_first(cpus);
+>  	max_capacity = arch_scale_cpu_capacity(cpu);
+> -	max_freq = per_cpu(freq_factor, cpu);
+> -
+> -	/* Convert to MHz scale which is used in 'freq_factor' */
+> -	capped_freq /= 1000;
+> +	max_freq = arch_scale_freq_ref(cpu);
+>  
+>  	/*
+>  	 * Handle properly the boost frequencies, which should simply clean
+> @@ -411,7 +408,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+>  	cpumask_andnot(cpus_to_visit, cpus_to_visit, policy->related_cpus);
+>  
+>  	for_each_cpu(cpu, policy->related_cpus)
+> -		per_cpu(freq_factor, cpu) = policy->cpuinfo.max_freq / 1000;
+> +		per_cpu(freq_factor, cpu) = policy->cpuinfo.max_freq;
+>  
+>  	if (cpumask_empty(cpus_to_visit)) {
+>  		topology_normalize_cpu_scale();
+> diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+> index a07b510e7dc5..7a2dba9c3dc0 100644
+> --- a/include/linux/arch_topology.h
+> +++ b/include/linux/arch_topology.h
+> @@ -27,6 +27,13 @@ static inline unsigned long topology_get_cpu_scale(int cpu)
+>  
+>  void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
+>  
+> +DECLARE_PER_CPU(unsigned long, freq_factor);
+> +
+> +static inline unsigned long topology_get_freq_ref(int cpu)
+> +{
+> +	return per_cpu(freq_factor, cpu);
+> +}
+> +
+>  DECLARE_PER_CPU(unsigned long, arch_freq_scale);
+>  
+>  static inline unsigned long topology_get_freq_scale(int cpu)
+> -- 
+> 2.34.1
+> 
+> 
