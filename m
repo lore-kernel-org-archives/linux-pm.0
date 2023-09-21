@@ -2,147 +2,230 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39FE6E7D0A6
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:15:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E95EE7D0A4
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:36:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229897AbjIUSQA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 14:16:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41618 "EHLO
+        id S230102AbjIUSgt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 14:36:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230316AbjIUSPa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:15:30 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 33AE885D05;
-        Thu, 21 Sep 2023 10:37:47 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1AC3114BF;
-        Thu, 21 Sep 2023 02:20:19 -0700 (PDT)
-Received: from localhost (ionvoi01-desktop.cambridge.arm.com [10.2.78.69])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8E5C33F59C;
-        Thu, 21 Sep 2023 02:19:41 -0700 (PDT)
-Date:   Thu, 21 Sep 2023 10:19:40 +0100
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     Vincent Guittot <vincent.guittot@linaro.org>
-Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
-        paul.walmsley@sifive.com, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
-        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
-        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
-        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-        linux-pm@vger.kernel.org, conor.dooley@microchip.com,
-        suagrfillet@gmail.com, ajones@ventanamicro.com, lftan@kernel.org
-Subject: Re: [PATCH 3/4] cpufreq/schedutil: use a fixed reference frequency
-Message-ID: <ZQwKnnXbjLOYUSjO@arm.com>
-References: <20230901130312.247719-1-vincent.guittot@linaro.org>
- <20230901130312.247719-4-vincent.guittot@linaro.org>
+        with ESMTP id S229602AbjIUSg1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:36:27 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17704AF69C;
+        Thu, 21 Sep 2023 11:07:22 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 2fecdf3dfb7fb0c9; Thu, 21 Sep 2023 20:07:21 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 0973A664EBE;
+        Thu, 21 Sep 2023 20:07:21 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v1 13/13] ACPI: thermal: Rename structure fields holding temperature in deci-Kelvin
+Date:   Thu, 21 Sep 2023 20:06:58 +0200
+Message-ID: <1968603.yKVeVyVuyW@kreacher>
+In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
+References: <1957441.PYKUYFuaPT@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230901130312.247719-4-vincent.guittot@linaro.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
+ thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Friday 01 Sep 2023 at 15:03:11 (+0200), Vincent Guittot wrote:
-> cpuinfo_max_freq can change at runtime because of boost as example. This
-> implies that the value could not be the same than the one that has been
-> used when computing the capacity of a CPU.
-> 
-> The new arch_scale_freq_ref() returns a fixed and coherent frequency
-> reference that can be used when computing a frequency based on utilization.
-> 
-> Use this arch_scale_freq_ref() when available and fallback to
-> cpuinfo.max_freq otherwise.
-> 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 29 +++++++++++++++++++++++++++--
->  1 file changed, 27 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 4492608b7d7f..9996ef429e2b 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -114,6 +114,31 @@ static void sugov_deferred_update(struct sugov_policy *sg_policy)
->  	}
->  }
->  
-> +#ifdef arch_scale_freq_ref
-> +/**
-> + * arch_scale_freq_ref_policy - get the reference frequency of a given CPU that
-> + * has been used to correlate frequency and compute capacity.
-> + * @cpu: the CPU in question.
-> + *
-> + * Return: the reference CPU frequency.
-> + */
-> +static __always_inline
-> +unsigned long  arch_scale_freq_ref_policy(struct cpufreq_policy *policy)
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH v1] 
 
-This should not be an arch_ function as it's only a wrapper over an
-arch_ function and not a function that different architectures might
-implement differently usually in architecture specific code.
+Rename structure fields holding temperature values in deci-Kelvin so as
+to avoid temperature units confusion.
 
-> +{
-> +	return arch_scale_freq_ref(policy->cpu);
+No intentional functional impact.
 
-It might make it easier to read if arch_scale_freq_ref() had a default
-implementation that returned 0.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/thermal.c |   44 ++++++++++++++++++++++----------------------
+ 1 file changed, 22 insertions(+), 22 deletions(-)
 
-Then this code would simply become:
+Index: linux-pm/drivers/acpi/thermal.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/thermal.c
++++ linux-pm/drivers/acpi/thermal.c
+@@ -82,7 +82,7 @@ MODULE_PARM_DESC(psv, "Disable or overri
+ static struct workqueue_struct *acpi_thermal_pm_queue;
+ 
+ struct acpi_thermal_trip {
+-	unsigned long temperature;
++	unsigned long temp_dk;
+ 	struct acpi_handle_list devices;
+ };
+ 
+@@ -105,8 +105,8 @@ struct acpi_thermal_trips {
+ struct acpi_thermal {
+ 	struct acpi_device *device;
+ 	acpi_bus_id name;
+-	unsigned long temperature;
+-	unsigned long last_temperature;
++	unsigned long temp_dk;
++	unsigned long last_temp_dk;
+ 	unsigned long polling_frequency;
+ 	volatile u8 zombie;
+ 	struct acpi_thermal_trips trips;
+@@ -131,16 +131,16 @@ static int acpi_thermal_get_temperature(
+ 	if (!tz)
+ 		return -EINVAL;
+ 
+-	tz->last_temperature = tz->temperature;
++	tz->last_temp_dk = tz->temp_dk;
+ 
+ 	status = acpi_evaluate_integer(tz->device->handle, "_TMP", NULL, &tmp);
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
+ 
+-	tz->temperature = tmp;
++	tz->temp_dk = tmp;
+ 
+ 	acpi_handle_debug(tz->device->handle, "Temperature is %lu dK\n",
+-			  tz->temperature);
++			  tz->temp_dk);
+ 
+ 	return 0;
+ }
+@@ -175,7 +175,7 @@ static int acpi_thermal_temp(struct acpi
+ 
+ static bool acpi_thermal_trip_valid(struct acpi_thermal_trip *acpi_trip)
+ {
+-	return acpi_trip->temperature != THERMAL_TEMP_INVALID;
++	return acpi_trip->temp_dk != THERMAL_TEMP_INVALID;
+ }
+ 
+ static long get_passive_temp(struct acpi_thermal *tz)
+@@ -197,7 +197,7 @@ static void acpi_thermal_update_passive_
+ 	if (!acpi_thermal_trip_valid(acpi_trip) || psv > 0)
+ 		return;
+ 
+-	acpi_trip->temperature = get_passive_temp(tz);
++	acpi_trip->temp_dk = get_passive_temp(tz);
+ 	if (!acpi_thermal_trip_valid(acpi_trip))
+ 		ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
+ }
+@@ -244,7 +244,7 @@ static void acpi_thermal_update_trip_dev
+ 		return;
+ 	}
+ 
+-	acpi_trip->temperature = THERMAL_TEMP_INVALID;
++	acpi_trip->temp_dk = THERMAL_TEMP_INVALID;
+ 	ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
+ }
+ 
+@@ -278,7 +278,7 @@ static void acpi_thermal_update_active_t
+ 	if (!acpi_thermal_trip_valid(acpi_trip))
+ 		return;
+ 
+-	acpi_trip->temperature = get_active_temp(tz, index);
++	acpi_trip->temp_dk = get_active_temp(tz, index);
+ 	if (!acpi_thermal_trip_valid(acpi_trip))
+ 		ACPI_THERMAL_TRIPS_EXCEPTION(tz, "state");
+ }
+@@ -292,7 +292,7 @@ static int acpi_thermal_adjust_trip(stru
+ 		return 0;
+ 
+ 	if (acpi_thermal_trip_valid(acpi_trip))
+-		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temperature);
++		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temp_dk);
+ 	else
+ 		trip->temperature = THERMAL_TEMP_INVALID;
+ 
+@@ -447,11 +447,11 @@ static bool acpi_thermal_init_trip(struc
+ 	if (!update_trip_devices(tz, acpi_trip, index, false))
+ 		goto fail;
+ 
+-	acpi_trip->temperature = temp;
++	acpi_trip->temp_dk = temp;
+ 	return true;
+ 
+ fail:
+-	acpi_trip->temperature = THERMAL_TEMP_INVALID;
++	acpi_trip->temp_dk = THERMAL_TEMP_INVALID;
+ 	return false;
+ }
+ 
+@@ -488,7 +488,7 @@ static int thermal_get_temp(struct therm
+ 	if (result)
+ 		return result;
+ 
+-	*temp = deci_kelvin_to_millicelsius_with_offset(tz->temperature,
++	*temp = deci_kelvin_to_millicelsius_with_offset(tz->temp_dk,
+ 							tz->kelvin_offset);
+ 	return 0;
+ }
+@@ -510,10 +510,10 @@ static int thermal_get_trend(struct ther
+ 
+ 	switch (trip->type) {
+ 	case THERMAL_TRIP_PASSIVE:
+-		t = tz->trips.passive.tc1 * (tz->temperature -
+-						tz->last_temperature) +
+-			tz->trips.passive.tc2 * (tz->temperature -
+-						acpi_trip->temperature);
++		t = tz->trips.passive.tc1 * (tz->temp_dk -
++						tz->last_temp_dk) +
++			tz->trips.passive.tc2 * (tz->temp_dk -
++						acpi_trip->temp_dk);
+ 		if (t > 0)
+ 			*trend = THERMAL_TREND_RAISING;
+ 		else if (t < 0)
+@@ -524,7 +524,7 @@ static int thermal_get_trend(struct ther
+ 		return 0;
+ 
+ 	case THERMAL_TRIP_ACTIVE:
+-		t = acpi_thermal_temp(tz, tz->temperature);
++		t = acpi_thermal_temp(tz, tz->temp_dk);
+ 		if (t <= trip->temperature)
+ 			break;
+ 
+@@ -894,7 +894,7 @@ static int acpi_thermal_add(struct acpi_
+ 		passive_delay = tz->trips.passive.tsp * 100;
+ 
+ 		trip->type = THERMAL_TRIP_PASSIVE;
+-		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temperature);
++		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temp_dk);
+ 		trip->priv = acpi_trip;
+ 		trip++;
+ 	}
+@@ -906,7 +906,7 @@ static int acpi_thermal_add(struct acpi_
+ 			break;
+ 
+ 		trip->type = THERMAL_TRIP_ACTIVE;
+-		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temperature);
++		trip->temperature = acpi_thermal_temp(tz, acpi_trip->temp_dk);
+ 		trip->priv = acpi_trip;
+ 		trip++;
+ 	}
+@@ -920,7 +920,7 @@ static int acpi_thermal_add(struct acpi_
+ 	INIT_WORK(&tz->thermal_check_work, acpi_thermal_check_fn);
+ 
+ 	pr_info("%s [%s] (%ld C)\n", acpi_device_name(device),
+-		acpi_device_bid(device), deci_kelvin_to_celsius(tz->temperature));
++		acpi_device_bid(device), deci_kelvin_to_celsius(tz->temp_dk));
+ 
+ 	result = acpi_dev_install_notify_handler(device, ACPI_DEVICE_NOTIFY,
+ 						 acpi_thermal_notify);
 
-freq = arch_scale_freq_ref(policy->cpu);
-if (freq)
-	return freq;
-else if (arch_scale_freq_invariant())
-	return ..
-..
 
-This approach is similar to the use of arch_freq_get_on_cpu() in
-cpufreq.c, and, as there, having a chosen maximum frequency of 0 would
-not be a valid value.
 
-> +}
-> +#else
-> +static __always_inline
-> +unsigned long  arch_scale_freq_ref_policy(struct cpufreq_policy *policy)
-> +{
-> +	if (arch_scale_freq_invariant())
-> +		return policy->cpuinfo.max_freq;
-> +
-> +
-> +	return policy->cur;
-> +}
-> +#endif
-> +
->  /**
->   * get_next_freq - Compute a new frequency for a given cpufreq policy.
->   * @sg_policy: schedutil policy object to compute the new frequency for.
-> @@ -139,11 +164,11 @@ static void sugov_deferred_update(struct sugov_policy *sg_policy)
->  static unsigned int get_next_freq(struct sugov_policy *sg_policy,
->  				  unsigned long util, unsigned long max)
->  {
-> +	unsigned int freq;
->  	struct cpufreq_policy *policy = sg_policy->policy;
-> -	unsigned int freq = arch_scale_freq_invariant() ?
-> -				policy->cpuinfo.max_freq : policy->cur;
->  
->  	util = map_util_perf(util);
-> +	freq = arch_scale_freq_ref_policy(policy);
-
-Given its single use here, it would likely be better to place the code
-above directly here, rather than create a wrapper over a few lines of
-code.
-
-Hope it helps,
-Ionela.
-
->  	freq = map_util_freq(util, freq, max);
->  
->  	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
-> -- 
-> 2.34.1
-> 
-> 
