@@ -2,69 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87E2FE7D0A7
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 19:58:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7EE5E7D0A8
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 19:58:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230486AbjIUT6w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 15:58:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42890 "EHLO
+        id S231138AbjIUT6x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 15:58:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40440 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231191AbjIUT6l (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 15:58:41 -0400
+        with ESMTP id S229477AbjIUT6f (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 15:58:35 -0400
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 202DC46DC0;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 20E0346DC2;
         Thu, 21 Sep 2023 10:13:56 -0700 (PDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC3BD168F;
-        Thu, 21 Sep 2023 06:34:23 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A79BB15BF;
+        Thu, 21 Sep 2023 04:15:07 -0700 (PDT)
 Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E02E23F5A1;
-        Thu, 21 Sep 2023 06:33:45 -0700 (PDT)
-Date:   Thu, 21 Sep 2023 14:33:43 +0100
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0599D3F5A1;
+        Thu, 21 Sep 2023 04:14:28 -0700 (PDT)
+Date:   Thu, 21 Sep 2023 12:14:26 +0100
 From:   Sudeep Holla <sudeep.holla@arm.com>
 To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org,
-        Cristian Marussi <cristian.marussi@arm.com>
-Subject: Re: [PATCH] firmware: arm_scmi: Move power-domain driver to the
- pmdomain dir
-Message-ID: <20230921133343.h3chbszl2iuf2b55@bogus>
-References: <20230919121605.7304-1-ulf.hansson@linaro.org>
- <20230921113328.3208651-1-sudeep.holla@arm.com>
- <CAPDyKFrGDZzyp4G1fS5PGCE95b3_w4kJyZfnDs=BEuYLzJ7uXA@mail.gmail.com>
+Cc:     Cristian Marussi <cristian.marussi@arm.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Nikunj Kela <nkela@quicinc.com>,
+        Prasad Sodagudi <psodagud@quicinc.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 07/13] cpufreq: scmi: Drop redundant ifdef in
+ scmi_cpufreq_probe()
+Message-ID: <20230921111426.b2vp5hu7ssdtmz3n@bogus>
+References: <20230825112633.236607-1-ulf.hansson@linaro.org>
+ <20230825112633.236607-8-ulf.hansson@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFrGDZzyp4G1fS5PGCE95b3_w4kJyZfnDs=BEuYLzJ7uXA@mail.gmail.com>
+In-Reply-To: <20230825112633.236607-8-ulf.hansson@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 21, 2023 at 03:10:56PM +0200, Ulf Hansson wrote:
-> On Thu, 21 Sept 2023 at 13:33, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> >
-> > To simplify with maintenance let's move the Arm SCMI power-domain driver
-> > to the new pmdomain directory.
-> >
-> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> > Cc: Cristian Marussi <cristian.marussi@arm.com>
-> > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> 
-> Feel free to take it through your scmi tree!
-> 
-> Note that, we should move the Kconfig options too, but that requires
-> changes that I am carrying in my pmdomain tree. We can either wait
-> until the next cycle or you could send your pull-request to me this
-> time (instead of through arm-soc), then we can fix this as a late
-> minute change. The decision is yours.
-> 
+On Fri, Aug 25, 2023 at 01:26:27PM +0200, Ulf Hansson wrote:
+> We have stubs for devm_of_clk_add_hw_provider(), so there should be no need
+> to protect this with the '#ifdef CONFIG_COMMON_CLK'. Let's drop it to clean
+> up the code a bit.
+>
 
-OK. Lets us just delay SCMI Kconfig changes for the next cycle then. I assume
-you would have other changes merged by then. Or may be as a fix as it would
-be hardlt 10-15 line with 2 Kconfig options. Let me know if you disagree or
-have other ideas.
+No exactly. The stub is under !CONFIG_OF but we need it for !CONFIG_COMMON_CLK.
+The original build issue reported for which I add this was CONFIG_OF=y &&
+CONFIG_COMMON_CLK=n.
+
+It looks like it is still valid combo though I don't have a handy randconfig
+to present to you. I prefer to drop this for now if that is OK with you.
 
 -- 
 Regards,
