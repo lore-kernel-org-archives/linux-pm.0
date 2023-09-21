@@ -2,95 +2,89 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05B3BE7D0A2
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:31:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ED0CE7D0A0
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 17:32:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229916AbjIURbi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 13:31:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41972 "EHLO
+        id S229826AbjIURca (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 13:32:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230351AbjIURbX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:31:23 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65DE049D7;
-        Thu, 21 Sep 2023 10:23:14 -0700 (PDT)
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id C194366072E0;
-        Thu, 21 Sep 2023 08:55:23 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1695282924;
-        bh=UTUCsGCHXv7lHkH0YxbJh4wFHSzf3govSJtRhJkJ4i0=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=oIqhwiP/FxM4BSY9QC2j4qMKeDZQY+sAzkVmipX2oA0lRP3n7UK5XNXzFd+/bGfPC
-         tIBm3izSADw1ImIQYIpwGQJm5WEssrGxSbgU1i/EXnUOhpfHn56lUWBhNPjNNdHs4k
-         vKk59lgzHlErrbDrmXPP56vS3b91reNXFV3pcMWS6AMmnLL7YJgkimqG5yrLCLRDcX
-         mvw3K3GRcSD6M8j9toGzPtrHnSYg7U+SJQGVgyngSk9yrceU9lIpcfpv012HrwpPRL
-         wzR6F+wfvje8mvlVScZg8dih1P6Mze3JcoyNUPUZ7jYXHcZCIBzdBpJowgEbyB405e
-         2vOxbngwyz4KQ==
-Message-ID: <78e8860a-07e6-60cc-52d3-d5ef762f7ee2@collabora.com>
-Date:   Thu, 21 Sep 2023 09:55:20 +0200
+        with ESMTP id S230383AbjIURcN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 13:32:13 -0400
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C08662D203
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:06:20 -0700 (PDT)
+Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-502e6d632b6so2041716e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:06:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1695315978; x=1695920778; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=asW3V0UfBRcaqJZf0dqMocPiGq1jVGiQw3a4sepePiw=;
+        b=RQX1Hbf6QpYzr5VxDn4jvHJqpHk4O90otjVUObD/pbBtNJSs5b1aKiG+M96XSpD+Ri
+         zjwak0k9Hord1C/y21cAoWP8bkTnNN0aCIAwfo1Y5cHgGnPLzHS/13w4/k7OrxTO0TsK
+         I7TAZBkfpEwpMOSMGemSCXUQtBGcjp11noS73+Jyl5hHtpFIvHf5YLMUly139gxr2ImC
+         y7TozNIvR/XI3GfiZ1YhQzcuu2su1MsnyDViod47vh5nKxfByIJFYsMhxMH/KrqV09GM
+         rGWsLG8CeV9DsBg94bYXvZNPDNjQsd+WyyPLVsjVt3P0HQ46TNwBz1GscnXdzjbLRlb5
+         CSKA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695315978; x=1695920778;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=asW3V0UfBRcaqJZf0dqMocPiGq1jVGiQw3a4sepePiw=;
+        b=Hiby6dwQZF/erlDAg89hUuyUiWJ/h8l2AARv1Km6XqjJaUsFkiVDlF6nHWW3l1C3dh
+         LrRWR5vIu5Dx+mg0O5kIdRFz2fiGgONnRh8Vrp0f2BtU+I/KPUEQ3rab0T4ZBACtiq9z
+         goRKeXOJtLtMWAqKcr5NAs+KSz07twfEuhEPAJq1X6QXI4u/JCq8G2BJeWGk0nWg52Cg
+         3FE54sGWWN5LoUJH2rOmAog+BcbyKKcdtes7HmLcvo5LnvdkPTrGbx3ePbIaY3Lda74W
+         6FK8Vuse2EAa6h1Ue0AbTmbSC36aFC7YBynB25T5L+SIA8pa5VH3cKFtUrTZs0JjFIqR
+         pjiA==
+X-Gm-Message-State: AOJu0YwOtiZyY/M972X+n0gwK+ZtlXUSZBl/nZmS561nfCNfEYLwaLpr
+        MaCXAmZr2Qu0peFsc1mW7KKMHFEU4TGMMqc63zBfC4ET2PBdtFRLE6M=
+X-Google-Smtp-Source: AGHT+IHKm6xOhbvVAKAE+SKogQZbnbEOCIh1XMXLgsfBvyvWuPOrr7N8DqDuN/nUXgGvHylRHerRg2cumFt/fm+7dMg=
+X-Received: by 2002:a05:6512:3133:b0:4fd:d470:203b with SMTP id
+ p19-20020a056512313300b004fdd470203bmr4350086lfd.69.1695306540696; Thu, 21
+ Sep 2023 07:29:00 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.0
-Subject: Re: [PATCH v2 1/4] dt-bindings: thermal: mediatek: add mt7988 lvts
- compatible
-Content-Language: en-US
-To:     Frank Wunderlich <linux@fw-web.de>,
-        linux-mediatek@lists.infradead.org
-Cc:     Frank Wunderlich <frank-w@public-files.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-References: <20230920175001.47563-1-linux@fw-web.de>
- <20230920175001.47563-2-linux@fw-web.de>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20230920175001.47563-2-linux@fw-web.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20230825112633.236607-1-ulf.hansson@linaro.org> <20230825112633.236607-4-ulf.hansson@linaro.org>
+In-Reply-To: <20230825112633.236607-4-ulf.hansson@linaro.org>
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Thu, 21 Sep 2023 16:28:43 +0200
+Message-ID: <CAKohpo=qNen_D_8nKATwBJnN9frR3dmBtfajy3Gzw7QKfSRMjw@mail.gmail.com>
+Subject: Re: [PATCH v3 03/13] cpufreq: scmi: Prepare to move OF parsing of
+ domain-id to cpufreq
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Nikunj Kela <nkela@quicinc.com>,
+        Prasad Sodagudi <psodagud@quicinc.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Il 20/09/23 19:49, Frank Wunderlich ha scritto:
-> From: Frank Wunderlich <frank-w@public-files.de>
-> 
-> Add compatible string for mt7988 lvts application processor.
-> 
-> Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-
+On Fri, 25 Aug 2023 at 13:27, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> The OF parsing of the clock domain specifier seems to better belong in the
+> scmi cpufreq driver, rather than being implemented behind the generic
+> ->device_domain_id() perf protocol ops.
+>
+> To prepare to remove the ->device_domain_id() ops, let's implement the OF
+> parsing in the scmi cpufreq driver instead.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
-> v2:
-> - change mt7988-lvts to mt7988-lvts-ap (Application Processor)
-> - not added Ack from Rob because of this change
+>
+> Changes in v3:
+>         - Re-based.
+>
 > ---
->   .../devicetree/bindings/thermal/mediatek,lvts-thermal.yaml       | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
-> index fe9ae4c425c0..e6665af52ee6 100644
-> --- a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
-> @@ -18,6 +18,7 @@ description: |
->   properties:
->     compatible:
->       enum:
-> +      - mediatek,mt7988-lvts-ap
->         - mediatek,mt8192-lvts-ap
->         - mediatek,mt8192-lvts-mcu
->         - mediatek,mt8195-lvts-ap
+>  drivers/cpufreq/scmi-cpufreq.c | 19 +++++++++++++++----
+>  1 file changed, 15 insertions(+), 4 deletions(-)
 
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
