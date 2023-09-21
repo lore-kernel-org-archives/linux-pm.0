@@ -2,94 +2,121 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3B2BE7D0AB
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 22:27:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1A2AE7D0A1
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 23:00:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233026AbjIUW1T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 18:27:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59802 "EHLO
+        id S231370AbjIUXBA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 19:01:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55324 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233089AbjIUW1C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 18:27:02 -0400
-Received: from mail-qv1-xf2e.google.com (mail-qv1-xf2e.google.com [IPv6:2607:f8b0:4864:20::f2e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1BFD36D5B
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:06:52 -0700 (PDT)
-Received: by mail-qv1-xf2e.google.com with SMTP id 6a1803df08f44-6515d44b562so6444546d6.3
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:06:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695316012; x=1695920812; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=C3AGJ5YqreaKjGqVvvBcJoqmWbVP9NW6r7+ZQpOUS+4=;
-        b=WyNC1w4jVTj1bZMEFXt13FgWzHxeqU9qMM7KZAVq0bihoKlZxYMTtFlIkNUOiUTlPH
-         wNnVAR0DwLGT6oz3qIW31RiwicTilyrTlUjum3qL9MocjpRNIydJuAyhLVbaXEOsINMT
-         kPasyIcyZ3A4oSr2aYNSgf+7oiCThoWpTNU0Lke5q9fELltcJrwlR6Vj8AY+bccRUeAK
-         86nENJii1wLVGb8GMm9hJzWQXj6/bSM6RHRyokGEpIliT+UekUiHO2J9EbO2mvqCk8ke
-         et/btoOlr2FUZOEl3pKQLM//1t7+JZ+mDYcl0IBvpjHcpU03u2nhPu9XGkKDVIJQgnbY
-         d1IQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695316012; x=1695920812;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=C3AGJ5YqreaKjGqVvvBcJoqmWbVP9NW6r7+ZQpOUS+4=;
-        b=HaemnAaQuERmHQT4j/vCvusmjefTB8T2HAJ7IxWycSrvtv270BlOpnHlFPRpF4k5Rz
-         p3XiYQd+V7oCPrxuD9ZQkH96c92L7EMCHfY8OhtoxnNgNOKmWmhhAtb4KA2nxznQsXeR
-         NqN58KQTaY7Pp9DcmOUOx1+PtNzx8p8UDiRztV0aOzulpdZodz+taczv/EkmDf+ypqq5
-         E/rTtO3KVyDYUku/E9R26JOxP9Lg5VfNxRFiGE2v5uLNVxhiKxI2Op021rM0HKGbl5o/
-         1AOTe6pKXRnv7coMZJzcZrVNnKRuxyFJRgyvjM/jy3s6kqjl1p69Dtq8Qcnx556rPD6x
-         bM+Q==
-X-Gm-Message-State: AOJu0YzK7KyhqsweMAXyQKye+w2EhdsiKyk79RPA7kzOItYbQZPulVWG
-        mngJgdkOymId+i+iRh55zKh1vP0rTvi3neEC04EmrSK6lGiE6URpoW8=
-X-Google-Smtp-Source: AGHT+IGxEP7M4RGeRIoS5MoOfdR/G92y7IkWBKiScp+pN2700H3k/FEmydtbEwKJZ/XQkDiYo3ii4LoHbD1J2F0GMzI=
-X-Received: by 2002:a05:6902:100c:b0:d80:68d1:b826 with SMTP id
- w12-20020a056902100c00b00d8068d1b826mr6552250ybt.6.1695301553511; Thu, 21 Sep
- 2023 06:05:53 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230825112633.236607-1-ulf.hansson@linaro.org>
- <20230825112633.236607-13-ulf.hansson@linaro.org> <20230921112019.gftlr5ys3yw2nwgw@bogus>
-In-Reply-To: <20230921112019.gftlr5ys3yw2nwgw@bogus>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Thu, 21 Sep 2023 15:05:17 +0200
-Message-ID: <CAPDyKFpkjOFhjKMY=4dDgngi7PftE_4c+4dHE2KcGAGYnjk6-Q@mail.gmail.com>
-Subject: Re: [PATCH v3 12/13] PM: domains: Allow genpd providers to manage OPP
- tables directly by its FW
-To:     Sudeep Holla <sudeep.holla@arm.com>
-Cc:     Cristian Marussi <cristian.marussi@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
+        with ESMTP id S231406AbjIUXAk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 19:00:40 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EE5A83306
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:37:23 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 59EA3C4160E
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 08:21:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1695284510;
+        bh=tQYneJVAH5RUqoeoh3OUB5PFLJ9q7Ixv6O6Y0CNVBvk=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=akRacofKDKu2a4pKoRHlbvpECyHgHTXmXtYP9zxvA8kgA9XO8BuL6w8AqK2SHvZnE
+         u05ke/j7J1Rw1fIGHpbfkAtPv5Mav4NOZjJhEyNGRyDdgzUBLnxirag+Te2M+dg3ay
+         6L8C2TbiEf4esStPWn0J1OfyPYAoyi4M5ZOoZkLvCMwv5M5BBP1NNgeD3hBcZGVqtA
+         cjyNoZ8kMZ/tN68vD/SzKvaqhYNMclgZXJ6lInOECh72Xw2L6n3gDPubCWW74wD1K+
+         ev8jZyar8rVneWPIr3qEGANIruJeRVTxxjsd5/oRKv0wqHh7nWklwVcumJuney2h25
+         3hYNJ3jXpxO/w==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+        id 47E48C53BD0; Thu, 21 Sep 2023 08:21:50 +0000 (UTC)
+From:   bugzilla-daemon@kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [Bug 217931] amd-pstate lacks crucial features: CPU frequency and
+ boost control
+Date:   Thu, 21 Sep 2023 08:21:50 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: high
+X-Bugzilla-Who: aros@gmx.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-217931-137361-EJg0qPjUqT@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-217931-137361@https.bugzilla.kernel.org/>
+References: <bug-217931-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 21 Sept 2023 at 13:20, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> On Fri, Aug 25, 2023 at 01:26:32PM +0200, Ulf Hansson wrote:
-> > In some cases the OPP tables aren't specified in device tree, but rather
-> > encoded in the FW. To allow a genpd provider to specify them dynamically
-> > instead, let's add a new genpd flag, GENPD_FLAG_OPP_TABLE_FW.
-> >
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > ---
-> >
-> > Changes in v3:
-> >       - None.
-> >
->
-> Just checking if I need Rafael's ack here or that is OK as you are
-> co-maintainer ? Again asking explicitly to ensure arm-soc is happy when
-> I send PR.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
 
-This should be fine for you to pick up. Rafael would have objected if
-this was something that he didn't like. Moreover, there's no other
-patches being queued for genpd at this moment so no worries of
-conflicts.
+--- Comment #5 from Artem S. Tashkinov (aros@gmx.com) ---
+(In reply to Perry Yuan(AMD) from comment #4)
+> (In reply to Artem S. Tashkinov from comment #0)
+> > Created attachment 305131 [details]
+> > Power Options: Processor Power Management in Windows
+> >=20
+> > It would be really great if amd-pstate had a feature parity with
+> > acpi-cpufreq, namely
+> >=20
+> > 1) Being able to set operating frequencies (maximum, minimum and
+> > user-defined)
+> >=20
+> > 2) Being able to enable/disable boost
+> >=20
+> > Currently both features are not available and frequency control is simp=
+ly
+> > ignored (bug 215800).
+> >=20
+> > Rationale:
+> >=20
+> > 1) This is required for benchmarking and proper temperature control. Bo=
+ost
+> > frequencies are subject to multiple limitations (power in watts, ampera=
+ge,
+> > voltage, temperature, BIOS limitations) and can change depending on the
+> > workload. Setting a low enough frequency allows to run benchmarks in the
+> > controlled environment and get proper data.
+> >=20
+> > Windows allows to do that easily, see the attached screenshot.
+> >=20
+> > 2) Disabling boost is an easy option to subdue operating temperatures
+> though
+> > if the previous issue is tackled, it's not really needed.
+>=20
+> Thanks for the suggestion.
+> There are two modes for amd pstate driver, one passive, and another active
+> mode,  the passive mode already has the boost control feature.
+>=20
+> # cat /sys/devices/system/cpu/cpufreq/boost
+> 1
+>=20
+> I have raised this requestion and will get active mode supported with a n=
+ew
+> patch.
+>=20
 
-Kind regards
-Uffe
+Thank you for chiming in, Perry!
+
+I'm looking forward to being able to control min/max frequency which kinda
+negates the need for boost control. I know this can be done since the Windo=
+ws
+CPPC driver allows that perfectly.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
