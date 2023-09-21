@@ -2,128 +2,169 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBB94E7D0B2
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 21:05:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36187E7D0B5
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 21:05:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232066AbjIUVFs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 17:05:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35632 "EHLO
+        id S232143AbjIUVFt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 17:05:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46272 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232973AbjIUVFQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 17:05:16 -0400
-Received: from mail-oa1-x31.google.com (mail-oa1-x31.google.com [IPv6:2001:4860:4864:20::31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D31105490D
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:31:53 -0700 (PDT)
-Received: by mail-oa1-x31.google.com with SMTP id 586e51a60fabf-1dc89741cedso336480fac.0
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:31:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695317507; x=1695922307; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=JKBCWQGoZXYISlj4ce5hI/hMxdBTdeB63Q+PfDkksMw=;
-        b=Z9LGvFZuIeW4vcfdgdO+na93WL90An6RwX4zaebo/eFulYRKzfoOsjzQ61zHURz6Z3
-         GL9we0dD/1LjONmfwa5ctGzFhK2Tq0Gx/yNC/6dKPgJaoLwVG5bUDvak1qyXVioqSQZs
-         tcZDUbzF4hVH1SPj2VpJHvQoIfT7x32YpwpdIYhC9pMfpRtZQNBh/MEnyyEZjvDN2oel
-         qHQlh0kcHOy/WLAcVSuFTlWd59TUOV1KLlPw0s4f1oybh3DSp86+r2zlt+xem792ssKd
-         isRmWu3Edx4FT7fVchyJf2OQiwFjEXtCIJj/yBY3IWyY9PKdJ9RS1YcDYmnqXOSYEpKn
-         /jiw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695317507; x=1695922307;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=JKBCWQGoZXYISlj4ce5hI/hMxdBTdeB63Q+PfDkksMw=;
-        b=k6hjrLNJQiE7OBbypBxt6tQlVRrnkqZkgCYxkbpUVJenO/kb2RGysFCCFLz39AttoJ
-         nLmSq3Q+TDEhh0Qi9zepX2aGsxbE0nEBS7kEHOaBtF9hxnRutuCW7qEVLZheVxggmPL5
-         Mr/YfrGQc7tI45kXcI2BZ3tz8uKk/VCC9TIA4YntMF2bw9GSOPglucRFXvzmfT65vxUI
-         /xvb5iAHtBwIeo9mgwND89C2pOkhV8yXSUlanWNq4X0npjD0Ie+N7U0RT3AoRErU5Tod
-         5xWhmUJU7KPkzIUdzKI7lQJ6ljRFnn1W8mlYS3DHwG/7aOvM2QDXW/IyEMJIbqAiUmN+
-         eYVw==
-X-Gm-Message-State: AOJu0YwBza8RjY70iNFdN1+CwP9NtENfTsVsTUbaeXznLpTwY5xl0Cfn
-        GyZK9VRc2W8JlUnP3h/EOvll/S8fvTs0dCciyynsxGH5baQjsunh24k=
-X-Google-Smtp-Source: AGHT+IF4etN+Lj1MoiBPYE9O7MxBCxBGEDBcLLZyD6+EOR0BOfhOgfmrV9Rjd46Xx5Okz8nIXqKXRgGlicgkoa5JBtk=
-X-Received: by 2002:a25:cb14:0:b0:d44:af:3cce with SMTP id b20-20020a25cb14000000b00d4400af3ccemr5617959ybg.27.1695301892106;
- Thu, 21 Sep 2023 06:11:32 -0700 (PDT)
+        with ESMTP id S233042AbjIUVFU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 17:05:20 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA2A1AF69F;
+        Thu, 21 Sep 2023 11:07:23 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 36cbd7be29a8bf2c; Thu, 21 Sep 2023 20:07:22 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id D268B664EBE;
+        Thu, 21 Sep 2023 20:07:21 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v1 12/13] ACPI: thermal: Drop critical_valid and hot_valid trip flags
+Date:   Thu, 21 Sep 2023 20:04:49 +0200
+Message-ID: <2375603.NG923GbCHz@kreacher>
+In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
+References: <1957441.PYKUYFuaPT@kreacher>
 MIME-Version: 1.0
-References: <20230919121605.7304-1-ulf.hansson@linaro.org> <20230921113328.3208651-1-sudeep.holla@arm.com>
-In-Reply-To: <20230921113328.3208651-1-sudeep.holla@arm.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Thu, 21 Sep 2023 15:10:56 +0200
-Message-ID: <CAPDyKFrGDZzyp4G1fS5PGCE95b3_w4kJyZfnDs=BEuYLzJ7uXA@mail.gmail.com>
-Subject: Re: [PATCH] firmware: arm_scmi: Move power-domain driver to the
- pmdomain dir
-To:     Sudeep Holla <sudeep.holla@arm.com>
-Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org,
-        Cristian Marussi <cristian.marussi@arm.com>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
+ thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 21 Sept 2023 at 13:33, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> To simplify with maintenance let's move the Arm SCMI power-domain driver
-> to the new pmdomain directory.
->
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Cristian Marussi <cristian.marussi@arm.com>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+The critical_valid and hot_valid flags in struct acpi_thermal_trips are
+only used during initialization and they are only false if the
+corresponding trip temperatures are equal to THERMAL_TEMP_INVALID, so
+drop them and use THERMAL_TEMP_INVALID checks instead of them where
+applicable.
 
-Feel free to take it through your scmi tree!
+No intentional functional impact.
 
-Note that, we should move the Kconfig options too, but that requires
-changes that I am carrying in my pmdomain tree. We can either wait
-until the next cycle or you could send your pull-request to me this
-time (instead of through arm-soc), then we can fix this as a late
-minute change. The decision is yours.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/thermal.c |   25 ++++++++-----------------
+ 1 file changed, 8 insertions(+), 17 deletions(-)
 
-Kind regards
-Uffe
+Index: linux-pm/drivers/acpi/thermal.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/thermal.c
++++ linux-pm/drivers/acpi/thermal.c
+@@ -100,8 +100,6 @@ struct acpi_thermal_active {
+ struct acpi_thermal_trips {
+ 	struct acpi_thermal_passive passive;
+ 	struct acpi_thermal_active active[ACPI_THERMAL_MAX_ACTIVE];
+-	bool critical_valid;
+-	bool hot_valid;
+ };
+ 
+ struct acpi_thermal {
+@@ -355,13 +353,13 @@ static long acpi_thermal_get_critical_tr
+ 	}
+ 	if (crt == -1) {
+ 		acpi_handle_debug(tz->device->handle, "Critical threshold disabled\n");
+-		goto fail;
++		return THERMAL_TEMP_INVALID;
+ 	}
+ 
+ 	status = acpi_evaluate_integer(tz->device->handle, "_CRT", NULL, &tmp);
+ 	if (ACPI_FAILURE(status)) {
+ 		acpi_handle_debug(tz->device->handle, "No critical threshold\n");
+-		goto fail;
++		return THERMAL_TEMP_INVALID;
+ 	}
+ 	if (tmp <= 2732) {
+ 		/*
+@@ -369,17 +367,12 @@ static long acpi_thermal_get_critical_tr
+ 		 * so discard them as invalid.
+ 		 */
+ 		pr_info(FW_BUG "Invalid critical threshold (%llu)\n", tmp);
+-		goto fail;
++		return THERMAL_TEMP_INVALID;
+ 	}
+ 
+ set:
+-	tz->trips.critical_valid = true;
+ 	acpi_handle_debug(tz->device->handle, "Critical threshold [%llu]\n", tmp);
+ 	return tmp;
+-
+-fail:
+-	tz->trips.critical_valid = false;
+-	return THERMAL_TEMP_INVALID;
+ }
+ 
+ static long acpi_thermal_get_hot_trip(struct acpi_thermal *tz)
+@@ -389,12 +382,10 @@ static long acpi_thermal_get_hot_trip(st
+ 
+ 	status = acpi_evaluate_integer(tz->device->handle, "_HOT", NULL, &tmp);
+ 	if (ACPI_FAILURE(status)) {
+-		tz->trips.hot_valid = false;
+ 		acpi_handle_debug(tz->device->handle, "No hot threshold\n");
+ 		return THERMAL_TEMP_INVALID;
+ 	}
+ 
+-	tz->trips.hot_valid = true;
+ 	acpi_handle_debug(tz->device->handle, "Hot threshold [%llu]\n", tmp);
+ 	return tmp;
+ }
+@@ -789,7 +780,7 @@ static void acpi_thermal_aml_dependency_
+  */
+ static void acpi_thermal_guess_offset(struct acpi_thermal *tz, long crit_temp)
+ {
+-	if (tz->trips.critical_valid && crit_temp % 5 == 1)
++	if (crit_temp != THERMAL_TEMP_INVALID && crit_temp % 5 == 1)
+ 		tz->kelvin_offset = 273100;
+ 	else
+ 		tz->kelvin_offset = 273200;
+@@ -850,11 +841,11 @@ static int acpi_thermal_add(struct acpi_
+ 	trip_count = acpi_thermal_get_trip_points(tz);
+ 
+ 	crit_temp = acpi_thermal_get_critical_trip(tz);
+-	if (tz->trips.critical_valid)
++	if (crit_temp != THERMAL_TEMP_INVALID)
+ 		trip_count++;
+ 
+ 	hot_temp = acpi_thermal_get_hot_trip(tz);
+-	if (tz->trips.hot_valid)
++	if (hot_temp != THERMAL_TEMP_INVALID)
+ 		trip_count++;
+ 
+ 	if (!trip_count) {
+@@ -886,13 +877,13 @@ static int acpi_thermal_add(struct acpi_
+ 
+ 	tz->trip_table = trip;
+ 
+-	if (tz->trips.critical_valid) {
++	if (crit_temp != THERMAL_TEMP_INVALID) {
+ 		trip->type = THERMAL_TRIP_CRITICAL;
+ 		trip->temperature = acpi_thermal_temp(tz, crit_temp);
+ 		trip++;
+ 	}
+ 
+-	if (tz->trips.hot_valid) {
++	if (hot_temp != THERMAL_TEMP_INVALID) {
+ 		trip->type = THERMAL_TRIP_HOT;
+ 		trip->temperature = acpi_thermal_temp(tz, hot_temp);
+ 		trip++;
 
-> ---
->
-> Hi Ulf,
->
-> If you are happy with this, please cck. I would like to take this along
-> with your scmi_perf_domain change as part of you series.
->
-> Regards,
-> Sudeep
->
->  drivers/firmware/arm_scmi/Makefile                           | 1 -
->  drivers/pmdomain/arm/Makefile                                | 1 +
->  drivers/{firmware/arm_scmi => pmdomain/arm}/scmi_pm_domain.c | 0
->  3 files changed, 1 insertion(+), 1 deletion(-)
->  rename drivers/{firmware/arm_scmi => pmdomain/arm}/scmi_pm_domain.c (100%)
->
-> diff --git a/drivers/firmware/arm_scmi/Makefile b/drivers/firmware/arm_scmi/Makefile
-> index b31d78fa66cc..a7bc4796519c 100644
-> --- a/drivers/firmware/arm_scmi/Makefile
-> +++ b/drivers/firmware/arm_scmi/Makefile
-> @@ -16,7 +16,6 @@ scmi-module-objs := $(scmi-driver-y) $(scmi-protocols-y) $(scmi-transport-y)
->  obj-$(CONFIG_ARM_SCMI_PROTOCOL) += scmi-core.o
->  obj-$(CONFIG_ARM_SCMI_PROTOCOL) += scmi-module.o
->
-> -obj-$(CONFIG_ARM_SCMI_POWER_DOMAIN) += scmi_pm_domain.o
->  obj-$(CONFIG_ARM_SCMI_POWER_CONTROL) += scmi_power_control.o
->
->  ifeq ($(CONFIG_THUMB2_KERNEL)$(CONFIG_CC_IS_CLANG),yy)
-> diff --git a/drivers/pmdomain/arm/Makefile b/drivers/pmdomain/arm/Makefile
-> index 7128db96deac..cfcb1f6cdd90 100644
-> --- a/drivers/pmdomain/arm/Makefile
-> +++ b/drivers/pmdomain/arm/Makefile
-> @@ -1,3 +1,4 @@
->  # SPDX-License-Identifier: GPL-2.0-only
->
->  obj-$(CONFIG_ARM_SCMI_PERF_DOMAIN) += scmi_perf_domain.o
-> +obj-$(CONFIG_ARM_SCMI_POWER_DOMAIN) += scmi_pm_domain.o
-> diff --git a/drivers/firmware/arm_scmi/scmi_pm_domain.c b/drivers/pmdomain/arm/scmi_pm_domain.c
-> similarity index 100%
-> rename from drivers/firmware/arm_scmi/scmi_pm_domain.c
-> rename to drivers/pmdomain/arm/scmi_pm_domain.c
-> --
-> 2.42.0
->
+
+
