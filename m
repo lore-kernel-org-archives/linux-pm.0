@@ -2,102 +2,96 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 067CDE7D0A7
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:24:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78CEFE7D0A8
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 20:27:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230387AbjIUUYY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 16:24:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55796 "EHLO
+        id S231720AbjIUU1m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:27:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38036 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231833AbjIUUYG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:24:06 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8886A199D;
-        Thu, 21 Sep 2023 10:23:15 -0700 (PDT)
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id D52BE66072BD;
-        Thu, 21 Sep 2023 08:55:48 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1695282949;
-        bh=WiT2aa8Rhk3aS7e7dZ1mtGJrKI4vTo0qji3osRdEPc4=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=Zhmj7ZlENxigYQSiBMNrhhDc3znNJb6e3KXnfU9zYJCvR6zs4dSBACc7Ck1CvAzbi
-         6hQx5bcxvlG4do+a2qAwpSzXiNcQT5ZJGHgGDCPaCasLDRqMVVSXU8CUybcobIsyCJ
-         2YlAo+iObbdEFviGeos7ADDrGmcuzZi5h5c6TLc8ZLdX0b/tmfuu+0mee7gIMv+7IW
-         x6A7Kvc+NnFHqigaVBGfAFbQy5SEFsHdcQF0NCbJ+9w6pt3KXfwgrvg7y2bY8xSnQ+
-         VHG6xP02c5eBfzU4n8qoi7LViqLAmfNcN7fhP09ASdjF7eCv2B+FZrzg1CTPTgryG4
-         8wiGhfzQ8wxTQ==
-Message-ID: <31fbdae8-d41c-358b-c8ea-6ee31b158dfd@collabora.com>
-Date:   Thu, 21 Sep 2023 09:55:46 +0200
+        with ESMTP id S231927AbjIUU11 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 16:27:27 -0400
+Received: from mail-qk1-x72b.google.com (mail-qk1-x72b.google.com [IPv6:2607:f8b0:4864:20::72b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A57BB8FB38
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:46:09 -0700 (PDT)
+Received: by mail-qk1-x72b.google.com with SMTP id af79cd13be357-77410032cedso38728585a.1
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 10:46:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1695318368; x=1695923168; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=F2iVUKRDazi3scGbQVKzP0TAbm4bJPvzK2OVT1wMEJk=;
+        b=CWBMteytZxG5ibA+LGBIww7keVy1IntHzP8nxuUfB93E86L6V/hmUU1wsB5XXzPAEP
+         qJccT3g/oJuwmPG5RB3GiOcm8uIz36OC1I8MA+L65qV5hb5io2kE4DaQt3GzSwof3kKN
+         ST+anebU3ehbnHvFX+3fo/Me+L4O3rQ4dWENxwS5IKStU17OaFSvUjXcqKV7CrnOxs/T
+         FfMt+vKcCXFnqjnmnnXJwt5x/+CysBNuMc5IuS/ys38AN3zFw6/ydwjxRf0oW6uJYesp
+         D/ur8UIBr/AttBRGpALiAfbrkIkU8lfRyPGovj5FHo7AcCnatkMfjSAvzCmXABpYgptC
+         qJKA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695318368; x=1695923168;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=F2iVUKRDazi3scGbQVKzP0TAbm4bJPvzK2OVT1wMEJk=;
+        b=cCmk3iYF8jZnrZbwJYvmj0KpJaVpS/6U+KsdTm8hMTfeejTaENbhFhszxKyfcU35ao
+         eAlatniqocxjbYQ+ICmme85zJ5IYtUa9T6FQvdXfqine/DL76JANj0SwDsnrRIWqRwYV
+         Qkvj69B+Ei1RtaYHJCylkApGfv+K+trQt60WCYrwIC2OlDD5eOP3/5EHraidRTgerl2o
+         KaWE69xbDfRiOvN1rbiyhKyqaLBFi48psJowKQ42MEs9KUSsvaKXw/0uNqMeLqNKldmm
+         +4N+bGmWcjlFwoD/zLWD3XuJMctbQ3ePoHqnU4oJ8ZVl8OR1R8Iuiz9bGUp4nIxHmf/A
+         knOw==
+X-Gm-Message-State: AOJu0YwTaHgdPS1chmoR8NK7TK8nBwoFIxOnBW6lY75OrxlaK5qDQR7T
+        alFpTsqH+KnbeAWu2OfjxTYQhAKnp1H7izvUCLkAaJNIWMgC+FehU5Q=
+X-Google-Smtp-Source: AGHT+IGBGzSSuWFuR2CMHZuIrQTlTZeWSJ2mzK6C15pX7OZvwpMOeVL7zOjvauq3dqsE+276vjD7PnFCpmTJ4T71ZBo=
+X-Received: by 2002:a5b:f91:0:b0:cf8:1070:82d3 with SMTP id
+ q17-20020a5b0f91000000b00cf8107082d3mr5445675ybh.32.1695303482171; Thu, 21
+ Sep 2023 06:38:02 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.0
-Subject: Re: [PATCH v2 2/4] dt-bindings: thermal: mediatek: Add LVTS thermal
- sensors for mt7988
-Content-Language: en-US
-To:     Frank Wunderlich <linux@fw-web.de>,
-        linux-mediatek@lists.infradead.org
-Cc:     Frank Wunderlich <frank-w@public-files.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-References: <20230920175001.47563-1-linux@fw-web.de>
- <20230920175001.47563-3-linux@fw-web.de>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20230920175001.47563-3-linux@fw-web.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20230919121605.7304-1-ulf.hansson@linaro.org> <20230921113328.3208651-1-sudeep.holla@arm.com>
+ <CAPDyKFrGDZzyp4G1fS5PGCE95b3_w4kJyZfnDs=BEuYLzJ7uXA@mail.gmail.com> <20230921133343.h3chbszl2iuf2b55@bogus>
+In-Reply-To: <20230921133343.h3chbszl2iuf2b55@bogus>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Thu, 21 Sep 2023 15:37:25 +0200
+Message-ID: <CAPDyKFrQAKhofKikc4xV5o=oqAoGOfD9XLiqHNUSBmeCmWE5-w@mail.gmail.com>
+Subject: Re: [PATCH] firmware: arm_scmi: Move power-domain driver to the
+ pmdomain dir
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org,
+        Cristian Marussi <cristian.marussi@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Il 20/09/23 19:49, Frank Wunderlich ha scritto:
-> From: Frank Wunderlich <frank-w@public-files.de>
-> 
-> Add sensor constants for MT7988.
-> 
-> Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+On Thu, 21 Sept 2023 at 15:33, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>
+> On Thu, Sep 21, 2023 at 03:10:56PM +0200, Ulf Hansson wrote:
+> > On Thu, 21 Sept 2023 at 13:33, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> > >
+> > > To simplify with maintenance let's move the Arm SCMI power-domain driver
+> > > to the new pmdomain directory.
+> > >
+> > > Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> > > Cc: Cristian Marussi <cristian.marussi@arm.com>
+> > > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> >
+> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >
+> > Feel free to take it through your scmi tree!
+> >
+> > Note that, we should move the Kconfig options too, but that requires
+> > changes that I am carrying in my pmdomain tree. We can either wait
+> > until the next cycle or you could send your pull-request to me this
+> > time (instead of through arm-soc), then we can fix this as a late
+> > minute change. The decision is yours.
+> >
+>
+> OK. Lets us just delay SCMI Kconfig changes for the next cycle then. I assume
+> you would have other changes merged by then. Or may be as a fix as it would
+> be hardlt 10-15 line with 2 Kconfig options. Let me know if you disagree or
+> have other ideas.
 
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Let's delay, it's probably easier. Maybe a fix for rc1 would be best.
 
-> ---
-> v2:
-> - new patch (moved from driver code to binding header)
-> - give sensors more meaningful names
-> ---
->   include/dt-bindings/thermal/mediatek,lvts-thermal.h | 9 +++++++++
->   1 file changed, 9 insertions(+)
-> 
-> diff --git a/include/dt-bindings/thermal/mediatek,lvts-thermal.h b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
-> index 8fa5a46675c4..8c1fdc18cf34 100644
-> --- a/include/dt-bindings/thermal/mediatek,lvts-thermal.h
-> +++ b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
-> @@ -7,6 +7,15 @@
->   #ifndef __MEDIATEK_LVTS_DT_H
->   #define __MEDIATEK_LVTS_DT_H
->   
-> +#define MT7988_CPU_0		0
-> +#define MT7988_CPU_1		1
-> +#define MT7988_ETH2P5G_0	2
-> +#define MT7988_ETH2P5G_1	3
-> +#define MT7988_TOPS_0		4
-> +#define MT7988_TOPS_1		5
-> +#define MT7988_ETHWARP_0	6
-> +#define MT7988_ETHWARP_1	7
-> +
->   #define MT8195_MCU_BIG_CPU0     0
->   #define MT8195_MCU_BIG_CPU1     1
->   #define MT8195_MCU_BIG_CPU2     2
-
+Kind regards
+Uffe
