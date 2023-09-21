@@ -2,94 +2,100 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8074EE7D0A5
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:38:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3605EE7D0A7
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 18:38:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229658AbjIUSib (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 14:38:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53388 "EHLO
+        id S230014AbjIUSim convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Sep 2023 14:38:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35256 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229891AbjIUSiB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:38:01 -0400
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0A2CD9D0F
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 11:30:44 -0700 (PDT)
-Received: by mail-wr1-x436.google.com with SMTP id ffacd0b85a97d-321530de76eso1194167f8f.0
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2023 11:30:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695321043; x=1695925843; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=b/lesyyYEsnt9FdfxR9CoxFmQAH4gicQBv/bIfqhS7o=;
-        b=B3OiWa+IBhaNah5i0n0YBIg3vlcUuwp/vZ09TFMMATjPQnUeVbGGOPQAZ3ahDpiPj6
-         qVMAhawdzPUVegYDRmkXIACfDBnrqMEvqXBqbE0yiZkDsmtlo0UqgASkWBvCHyAw9S1/
-         BWUtcF+iI4qGaCsqYsEc8/03yzPjh10WTAJBkZ5az01tnuRbuq19d2WGPiTKf+KDGN6z
-         VYQSIBbk7KUKJXkpV8ewYiB5g9IisTErUD2l3sMcDUferGKA/9/RtIdTdjsBMNKmNTBM
-         htIF6Tb5mckFt/X+P3SAMMorx6yK40pwiTMoRul30+45k0v0IfxR6SMeWGk/nKDrJJBq
-         oGAQ==
+        with ESMTP id S230304AbjIUSiK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 14:38:10 -0400
+Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com [209.85.167.173])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 964CAD62E8;
+        Thu, 21 Sep 2023 11:26:50 -0700 (PDT)
+Received: by mail-oi1-f173.google.com with SMTP id 5614622812f47-3adc95fdceeso83763b6e.0;
+        Thu, 21 Sep 2023 11:26:50 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695321043; x=1695925843;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=b/lesyyYEsnt9FdfxR9CoxFmQAH4gicQBv/bIfqhS7o=;
-        b=avzD8PegXs9anI+7lBwn6otX77R22xDvoM4bFKmLphX+9EoUEJXMUVxFvzcHE/a2CL
-         LHd9GYGy6gpzuPhrawDJUvIAlI263abSwR2KjDLlj9DcUsV9hs25joUOLdZxpSNBJ8rN
-         rjjeqiTFBdcGRmhoHXj3j++VKkAShBTwdSHW/wFTcxTQ88VFd07g5qOIGT4LSy0aHpyU
-         F2AOhswU4kvp9+e/Z7l285W5VPUqCn5JrDwvEna4/5/lQjSbhE2Ze8dSFctzZFgtygST
-         Bp8JsP+94a9Bgkn2MqZIVcP3DR62Wf0/lWSztZwAMwxymEymaQmD6UpyqLEMEzbqf80d
-         YrPg==
-X-Gm-Message-State: AOJu0Yw/c197QfmKA0EXpDTYtt94CcelzbYvohpwoq4UQ895SHiF5NxJ
-        C/+AUG/FrOncySK94h/jvZ1ogVf2dqvTX+ebF26WKg==
-X-Google-Smtp-Source: AGHT+IGJfbg273QOiGyWJV30e+vCp/gVKXDpLIBgIJKJV1ZLq7zoYeLh1EwUM6sczbGm0RhUCMN7/g==
-X-Received: by 2002:a05:6402:64c:b0:523:100b:462b with SMTP id u12-20020a056402064c00b00523100b462bmr4294427edx.5.1695281801541;
-        Thu, 21 Sep 2023 00:36:41 -0700 (PDT)
-Received: from linaro.org (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id x13-20020aa7d38d000000b0052fe12a864esm440591edq.57.2023.09.21.00.36.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Sep 2023 00:36:40 -0700 (PDT)
-Date:   Thu, 21 Sep 2023 09:36:37 +0200
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v1 9/9] ACPI: thermal: Drop valid flag from struct
- acpi_thermal_trip
-Message-ID: <20230921073637.GA3346@linaro.org>
-References: <5708760.DvuYhMxLoT@kreacher>
- <9162925.CDJkKcVGEf@kreacher>
+        d=1e100.net; s=20230601; t=1695320810; x=1695925610;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=4n/wqWr27pRntEElj0EkXR3VCLKvT4G/Xcd993NCAk4=;
+        b=JVnGpV8TDgfBN4Hk8s0JvmB3A98d61iOmzqRcFV9g6bmAYjc8yphO8g1ebfLsfyUWu
+         iwqX8gUrB/jtipEvdMsumntv9mM8kmkdgiOWKDaRhthyRmDG1Pp5+DSHXzHZvA5Jg0wY
+         S2b0Im4TeshTSII5FN9YfvKeu7eIU5jG5nXcBq4zBkipAWnrmxxX8qvoKs2raN9xhmr7
+         w9A7xdznhP/CZCZQ5n+UejykLW0lEwBZ89IEoqFmGMxd3gImdnC3U8honwGxoGtxL3zG
+         o8LDpGOQcQ0V21EOYM7k3Tapd3tqUlIRKrpVia5H/2nUzALx66cT9VwwYnxXwsgqEaSt
+         VjFA==
+X-Gm-Message-State: AOJu0YwW4UYVbm7z1oTpMwH/Xf31yoOXSHYRJEnf77FGUe1jZetDlJvf
+        GTqS5tkTLONqxbRmvV/EO38/Z5CZ1paoax7SQfe4paw0
+X-Google-Smtp-Source: AGHT+IHrxNnigtLDAImoAjPYXbdlPLItCPsgM9jP/lbemDhG/GboyCzrBZG0LxMXhPHJITu+MFQrBEHm/2Ne9DJnuAA=
+X-Received: by 2002:a05:6808:20a7:b0:3ad:f525:52d5 with SMTP id
+ s39-20020a05680820a700b003adf52552d5mr5455443oiw.4.1695320809853; Thu, 21 Sep
+ 2023 11:26:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9162925.CDJkKcVGEf@kreacher>
+References: <20230921170045.4189251-1-bgeffon@google.com>
+In-Reply-To: <20230921170045.4189251-1-bgeffon@google.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 21 Sep 2023 20:26:38 +0200
+Message-ID: <CAJZ5v0g1PyhxaD+mk0ccHStpO0YZhRXLdE=X5zKCx0xAGpL5QQ@mail.gmail.com>
+Subject: Re: [PATCH] PM: hibernate: use __get_safe_page() rather than touching
+ the list.
+To:     Brian Geffon <bgeffon@google.com>
+Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Matthias Kaehlcke <mka@chromium.org>, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 12, 2023 at 08:47:23PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Notice that the valid flag in struct acpi_thermal_trip is in fact
-> redundant, because the temperature field of invalid trips is always
-> equal to THERMAL_TEMP_INVALID, so drop it from there and adjust the
-> code accordingly.
-> 
-> No intentional functional impact.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Sep 21, 2023 at 7:01 PM Brian Geffon <bgeffon@google.com> wrote:
+>
+> We found at least one situation where the safe pages list was empty and
+> get_buffer() would gladly try to use a NULL pointer.
+>
+> Signed-off-by: Brian Geffon <bgeffon@google.com>
+> Fixes: 8357376 ("swsusp: Improve handling of highmem")
+> Cc: stable@vger.kernel.org
+>
+> Change-Id: Ibb43a9b4ac5ff2d7e3021fdacc08e116650231e9
 > ---
+>  kernel/power/snapshot.c | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+>
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index 362e6bae5891..2dcb33248518 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -2544,8 +2544,9 @@ static void *get_highmem_page_buffer(struct page *page,
+>                 pbe->copy_page = pfn_to_page(pfn);
+>         } else {
+>                 /* Copy of the page will be stored in normal memory */
+> -               kaddr = safe_pages_list;
+> -               safe_pages_list = safe_pages_list->next;
+> +               kaddr = __get_safe_page(ca->gfp_mask);
+> +               if (!kaddr)
+> +                       return ERR_PTR(-ENOMEM);
+>                 pbe->copy_page = virt_to_page(kaddr);
+>         }
+>         pbe->next = highmem_pblist;
+> @@ -2747,8 +2748,9 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
+>                 return ERR_PTR(-ENOMEM);
+>         }
+>         pbe->orig_address = page_address(page);
+> -       pbe->address = safe_pages_list;
+> -       safe_pages_list = safe_pages_list->next;
+> +       pbe->address = __get_safe_page(ca->gfp_mask);
+> +       if (!pbe->address)
+> +               return ERR_PTR(-ENOMEM);
+>         pbe->next = restore_pblist;
+>         restore_pblist = pbe;
+>         return pbe->address;
+> --
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
--- 
-
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Applied as 6.7 material, thanks!
