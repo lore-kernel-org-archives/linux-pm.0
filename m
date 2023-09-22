@@ -2,33 +2,34 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61363E7D0B4
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Sep 2023 05:50:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3467BE7D0C9
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Sep 2023 05:50:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229837AbjIVFui (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Sep 2023 01:50:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36296 "EHLO
+        id S230059AbjIVFuk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Sep 2023 01:50:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36334 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229539AbjIVFui (ORCPT
+        with ESMTP id S229813AbjIVFui (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Sep 2023 01:50:38 -0400
-Received: from mxout3.routing.net (mxout3.routing.net [IPv6:2a03:2900:1:a::8])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FC52192;
-        Thu, 21 Sep 2023 22:50:27 -0700 (PDT)
+Received: from mxout2.routing.net (mxout2.routing.net [IPv6:2a03:2900:1:a::b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32332C2;
+        Thu, 21 Sep 2023 22:50:29 -0700 (PDT)
 Received: from mxbox1.masterlogin.de (unknown [192.168.10.88])
-        by mxout3.routing.net (Postfix) with ESMTP id 7FED06054A;
-        Fri, 22 Sep 2023 05:50:25 +0000 (UTC)
+        by mxout2.routing.net (Postfix) with ESMTP id 574835FAFC;
+        Fri, 22 Sep 2023 05:50:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-        s=20200217; t=1695361825;
+        s=20200217; t=1695361827;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=ED86tK2Vq5XtLhncWzK58V3rGjhhsqFD9oGClRJ2Dh4=;
-        b=PL76FSDw0gaIlL/uJGUDHHikS5oxLaHQL7QHNsmEVb+rm5Kggsq0ktcU0LSQSHIvuL8xN8
-        gb54hh3sd7nJHtaNdWWi1ecR6c+09KosP+k4tkMnhOxa4z9VsLd7nD+5gpXZxv+ubuMANP
-        +/+RX6U42D1H4PMsM/xvKZKJsNdWXAg=
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=UoH4W3986fDzxNI5gGh01oTwLD5puh/l8B+NZqmUkdE=;
+        b=Z27W9aaUiUcLJfBEEMIP/D5/ub8RhY31duqvE/rHZAwtGA7V1kEqTHc3r/2gBJ/R26Vqo+
+        JUDYNOB3+Q1gmGW/cmPrlefKbY1U+38S0kbsHg89d5+sTcQTwCjq/NyxPg/Xoloo3PvUq2
+        q3DSPOM2DChvt4gDwxJbvYgfS2gDUv0=
 Received: from frank-G5.. (fttx-pool-217.61.149.125.bambit.de [217.61.149.125])
-        by mxbox1.masterlogin.de (Postfix) with ESMTPSA id 6847B4021D;
-        Fri, 22 Sep 2023 05:50:24 +0000 (UTC)
+        by mxbox1.masterlogin.de (Postfix) with ESMTPSA id 567E540625;
+        Fri, 22 Sep 2023 05:50:26 +0000 (UTC)
 From:   Frank Wunderlich <linux@fw-web.de>
 To:     linux-mediatek@lists.infradead.org
 Cc:     Frank Wunderlich <frank-w@public-files.de>,
@@ -43,35 +44,56 @@ Cc:     Frank Wunderlich <frank-w@public-files.de>,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v3 0/4] add LVTS support for mt7988
-Date:   Fri, 22 Sep 2023 07:50:16 +0200
-Message-Id: <20230922055020.6436-1-linux@fw-web.de>
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Conor Dooley <conor.dooley@microchip.com>
+Subject: [PATCH v3 2/4] dt-bindings: thermal: mediatek: Add LVTS thermal sensors for mt7988
+Date:   Fri, 22 Sep 2023 07:50:18 +0200
+Message-Id: <20230922055020.6436-3-linux@fw-web.de>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230922055020.6436-1-linux@fw-web.de>
+References: <20230922055020.6436-1-linux@fw-web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Mail-ID: 3c8c9fa6-0274-4355-a868-cc9d80e6d39d
+X-Mail-ID: e5a5378d-0ffe-43d2-843a-7836791bd6a3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-This series makes allows soc specific temperature coefficients
-and adds support for mt7988 which has a different one.
+Add sensor constants for MT7988.
 
-Frank Wunderlich (4):
-  dt-bindings: thermal: mediatek: add mt7988 lvts compatible
-  dt-bindings: thermal: mediatek: Add LVTS thermal sensors for mt7988
-  thermal/drivers/mediatek/lvts_thermal: make coeff configurable
-  thermal/drivers/mediatek/lvts_thermal: add mt7988 support
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+---
+v2:
+- new patch (moved from driver code to binding header)
+- give sensors more meaningful names
+---
+ include/dt-bindings/thermal/mediatek,lvts-thermal.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
- .../thermal/mediatek,lvts-thermal.yaml        |  1 +
- drivers/thermal/mediatek/lvts_thermal.c       | 89 +++++++++++++++----
- .../thermal/mediatek,lvts-thermal.h           |  9 ++
- 3 files changed, 82 insertions(+), 17 deletions(-)
-
+diff --git a/include/dt-bindings/thermal/mediatek,lvts-thermal.h b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
+index 8fa5a46675c4..8c1fdc18cf34 100644
+--- a/include/dt-bindings/thermal/mediatek,lvts-thermal.h
++++ b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
+@@ -7,6 +7,15 @@
+ #ifndef __MEDIATEK_LVTS_DT_H
+ #define __MEDIATEK_LVTS_DT_H
+ 
++#define MT7988_CPU_0		0
++#define MT7988_CPU_1		1
++#define MT7988_ETH2P5G_0	2
++#define MT7988_ETH2P5G_1	3
++#define MT7988_TOPS_0		4
++#define MT7988_TOPS_1		5
++#define MT7988_ETHWARP_0	6
++#define MT7988_ETHWARP_1	7
++
+ #define MT8195_MCU_BIG_CPU0     0
+ #define MT8195_MCU_BIG_CPU1     1
+ #define MT8195_MCU_BIG_CPU2     2
 -- 
 2.34.1
 
