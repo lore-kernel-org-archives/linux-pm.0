@@ -2,259 +2,285 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED0B0E7D0CF
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Sep 2023 05:50:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BD65E7D0CD
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Sep 2023 06:13:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230387AbjIVFul (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Sep 2023 01:50:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36378 "EHLO
+        id S229556AbjIVGNc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Sep 2023 02:13:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45934 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230504AbjIVFuk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Sep 2023 01:50:40 -0400
-Received: from mxout1.routing.net (mxout1.routing.net [IPv6:2a03:2900:1:a::a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 030E3FB;
-        Thu, 21 Sep 2023 22:50:29 -0700 (PDT)
-Received: from mxbox1.masterlogin.de (unknown [192.168.10.88])
-        by mxout1.routing.net (Postfix) with ESMTP id 2B12540551;
-        Fri, 22 Sep 2023 05:50:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-        s=20200217; t=1695361828;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=H4PGtOOvMqPAJvUztaljSdd3cxuehsc/o+gXiODesZ0=;
-        b=obn2gtLmKsMbQ7oTfVG3YzYrZftXFejU2vWsy4x5Pd+z5Px6Sw1WnQvyLI0WNeK/d/uFs7
-        x+R9eFgmlu52E7Tyz8ruFx2RaVJ7YIAcPaDNfYPSSpN+yLH+jnI4w3q47q8jZeqlMCGkqz
-        UqWyV7pLZvrJvgJpkMzoc/49xJ/BUkU=
-Received: from frank-G5.. (fttx-pool-217.61.149.125.bambit.de [217.61.149.125])
-        by mxbox1.masterlogin.de (Postfix) with ESMTPSA id 46C5B403BF;
-        Fri, 22 Sep 2023 05:50:27 +0000 (UTC)
-From:   Frank Wunderlich <linux@fw-web.de>
-To:     linux-mediatek@lists.infradead.org
-Cc:     Frank Wunderlich <frank-w@public-files.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v3 3/4] thermal/drivers/mediatek/lvts_thermal: make coeff configurable
-Date:   Fri, 22 Sep 2023 07:50:19 +0200
-Message-Id: <20230922055020.6436-4-linux@fw-web.de>
+        with ESMTP id S229539AbjIVGNb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Sep 2023 02:13:31 -0400
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2046.outbound.protection.outlook.com [40.107.223.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7252A102;
+        Thu, 21 Sep 2023 23:13:22 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Ie1DHzg49H53E3oPeJ02TjLaOmfQIa8nX+ODUtPlsuqFrnePpCczHsm9MY+8glgXj8U+u2EwgHMhUtpJ7/DmpoIpeMpQJVvCW2WgLF8Kx5PLxEVwP3/QDp29HmnvHNv0xtYODqXo2ySjelLF5PndJPT75bN2q83ixKwvCb9iTnZi4UQnFtNECHBXaI5bEmoXx0tzqwOC98DvsD7M/8qqxlgrhGjtmn03FfUGX9jWrasihQkkSf69GZI9nVYi4NUcZpe839j4eFqCrwlXRE8YBXTWIwzHFD/NJppStRoH0wck4GUvT6C73wRNg1EvCy9t9brYMIGsjMcGYN58fE7WDw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=x0GCw/OOAtDYk02YhrFafWRaCj7uejX6fgV14PS83fo=;
+ b=Czzn1I2YC3wvrW+pmF4KA7oO0XJmbqDBafVZXCMbqCWlqKPtPxemOynPJQ/mUCfnuBHBghNne+4wifhpBMKDLm06oT6/bMVA3lPmJj77xQPco0HdNFuofFZkJVj1etpTxTQ1wTJCYmUHcZoQwjfIFf1KTpivd/K4w14nVk/28V7p81EBGS8to8P7/3diS8fBV6OgoaHya5SA5gMdVB4UHFu06RkEAa0uoK3CuoRlZFtKVcopNo9U3Mu9nUy3+sKRv2f6coU/Eww/2fDOGk78bEQAJfG/OKnV0iPLzUO0BQt5tGKuV/L1oaeoMa99fWh3RtPYrkVmbx2LXKWCE9IKFQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=x0GCw/OOAtDYk02YhrFafWRaCj7uejX6fgV14PS83fo=;
+ b=by2IfPkSFG4l6Vqj5aWg/tCfeZT8jzYYEeSWEHK2+7r6Dw+QZz+biEcvLiFuu34eEFenIfZ2tADfjpU//hsJ3dQ+HzltueGSYymQQZBTx9GfmpY0rVQom0r5X7K3Z1r45YkjUi8CPPlhR1vj7iNjGl3dbM2ZZ3OQhMJC6xSAdL0=
+Received: from MW4PR03CA0293.namprd03.prod.outlook.com (2603:10b6:303:b5::28)
+ by PH7PR12MB6908.namprd12.prod.outlook.com (2603:10b6:510:1ba::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6813.20; Fri, 22 Sep
+ 2023 06:13:19 +0000
+Received: from CO1PEPF000044FB.namprd21.prod.outlook.com
+ (2603:10b6:303:b5:cafe::99) by MW4PR03CA0293.outlook.office365.com
+ (2603:10b6:303:b5::28) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.30 via Frontend
+ Transport; Fri, 22 Sep 2023 06:13:19 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ CO1PEPF000044FB.mail.protection.outlook.com (10.167.241.201) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.6838.0 via Frontend Transport; Fri, 22 Sep 2023 06:13:19 +0000
+Received: from beas.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Fri, 22 Sep
+ 2023 01:13:15 -0500
+From:   Wyes Karny <wyes.karny@amd.com>
+To:     <ray.huang@amd.com>, <rafael@kernel.org>, <viresh.kumar@linaro.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <perry.yuan@amd.com>, Wyes Karny <wyes.karny@amd.com>
+Subject: [PATCH] cpufreq/amd-pstate: Fix scaling_min_freq and scaling_max_freq update
+Date:   Fri, 22 Sep 2023 06:12:29 +0000
+Message-ID: <20230922061229.475966-1-wyes.karny@amd.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230922055020.6436-1-linux@fw-web.de>
-References: <20230922055020.6436-1-linux@fw-web.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mail-ID: fa0f46da-b851-4668-a9a5-c9f39f15d774
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PEPF000044FB:EE_|PH7PR12MB6908:EE_
+X-MS-Office365-Filtering-Correlation-Id: faeeabca-965e-4cd3-1555-08dbbb33045a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 9wiMpU/RhwbI34w7v2/pIUKBs9VdVYIepHdrx1D0/RZtwT+nHOLWuTHaqRY4YMEvdWQDHxaQb2hEYqVd81GmJeMfXaeXDKZDB9+J8DYN2jORbC8IHzWq/P9qWLJy3GAnG2daVUZJTOzsHeX7qKjWVDcjlS2ssj6w3aSH6aXLIpjb/AJWrLmckF5W3N+mQ68EtFJbRahZbj4gkWIo8X2xs2ua1FTfN2ZwsTo8AHBrMn4I4cZNV4YPrC99lMI5wYY77JKgd0nuuoSc/R28eRjodjjSVge8iuWMpEOkuzvnamOEi9iqkTJpcI5zTdgV8H4jsEv1khnbq5tWAYuDS9joUcJWeqyEd1XRak2JWMTZHHzUT8+tMYlm+cluiOxFd4OWQBbJf6WE624/ePoRHy+9LlUiJi1qOva8X08Hsi5boJijpby488s1rrgJIDArLNVqyb+Mng8udocCxAS+mF0zQj1V6XT6No/3+knrl0U1M+oMTUzH/9ExJAG3IplIpHLbI21YW4t7LqrRCQ2g1vHWxiuQUmRN9ergFuyvFwbEqXyh8nqFbY2QfLJM6cuieralV/iydgb/ZUgurQVv6O23iFhbnAaOJhr1cCksjuAQ7y0G2Whhl3oT4qNf8DfXzrRqYNnjhDEHK/fXg4Z6jOwWVt/KMk2VT64fFMxU6ZAvxbPHwtsnl1DFYlCj61PLGQ2L0xalUJZPipbEo5OGOrG8o2nH0hNH9gxnYQAn5YFbn4bVuDrEksUfeY/Nb/jjfYUJOtu2l9d6WxKbyt7KUcWQ5WxMCPLjyQbQmBhWcoKbtLA1RBQZMoa7EstKfCBHDVPwpWM2ROKoBZi2X0AfSoK0GQ==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(396003)(346002)(376002)(39860400002)(136003)(186009)(230921699003)(451199024)(1800799009)(82310400011)(40470700004)(36840700001)(46966006)(83380400001)(6666004)(478600001)(4326008)(7696005)(40460700003)(81166007)(36860700001)(36756003)(356005)(40480700001)(82740400003)(426003)(1076003)(86362001)(16526019)(26005)(15650500001)(2906002)(2616005)(336012)(54906003)(47076005)(8936002)(110136005)(5660300002)(44832011)(70206006)(8676002)(41300700001)(316002)(70586007)(2101003)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2023 06:13:19.2233
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: faeeabca-965e-4cd3-1555-08dbbb33045a
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: CO1PEPF000044FB.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6908
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Frank Wunderlich <frank-w@public-files.de>
+When amd_pstate is running, writing to scaling_min_freq and
+scaling_max_freq has no effect. These values are only passed to the
+policy level, but not to the platform level. This means that the
+platform does not know about the frequency limits set by the user. To
+fix this, update the min_perf and max_perf values at the platform level
+whenever the user changes the scaling_min_freq and scaling_max_freq
+values.
 
-The upcoming mt7988 has different temperature coefficients so we
-cannot use constants in the functions lvts_golden_temp_init,
-lvts_golden_temp_init and lvts_raw_to_temp anymore.
-
-Add a field in the lvts_ctrl pointing to the lvts_data which now
-contains the soc-specific temperature coefficents.
-
-To make the code better readable, rename static int coeff_b to
-golden_temp_offset, COEFF_A to temp_factor and COEFF_B to temp_offset.
-
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Signed-off-by: Wyes Karny <wyes.karny@amd.com>
 ---
-v2:
-- rename static int coeff_b to golden_temp_offset
-- rename coeff.a to temp_factor and coeff.b to temp_offset
----
- drivers/thermal/mediatek/lvts_thermal.c | 51 ++++++++++++++++---------
- 1 file changed, 34 insertions(+), 17 deletions(-)
+ drivers/cpufreq/amd-pstate.c | 60 ++++++++++++++++++++++++++++--------
+ include/linux/amd-pstate.h   |  4 +++
+ 2 files changed, 51 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index effd9b00a424..c2669f405a94 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -80,8 +80,8 @@
- #define LVTS_SENSOR_MAX				4
- #define LVTS_GOLDEN_TEMP_MAX		62
- #define LVTS_GOLDEN_TEMP_DEFAULT	50
--#define LVTS_COEFF_A				-250460
--#define LVTS_COEFF_B				250460
-+#define LVTS_COEFF_A_MT8195			-250460
-+#define LVTS_COEFF_B_MT8195			250460
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 9a1e194d5cf8..4839cdd2715e 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -307,11 +307,11 @@ static int pstate_init_perf(struct amd_cpudata *cpudata)
+ 		highest_perf = AMD_CPPC_HIGHEST_PERF(cap1);
  
- #define LVTS_MSR_IMMEDIATE_MODE		0
- #define LVTS_MSR_FILTERED_MODE		1
-@@ -94,7 +94,7 @@
- #define LVTS_MINIMUM_THRESHOLD		20000
- 
- static int golden_temp = LVTS_GOLDEN_TEMP_DEFAULT;
--static int coeff_b = LVTS_COEFF_B;
-+static int golden_temp_offset;
- 
- struct lvts_sensor_data {
- 	int dt_id;
-@@ -112,6 +112,8 @@ struct lvts_ctrl_data {
- struct lvts_data {
- 	const struct lvts_ctrl_data *lvts_ctrl;
- 	int num_lvts_ctrl;
-+	int temp_factor;
-+	int temp_offset;
- };
- 
- struct lvts_sensor {
-@@ -126,6 +128,7 @@ struct lvts_sensor {
- 
- struct lvts_ctrl {
- 	struct lvts_sensor sensors[LVTS_SENSOR_MAX];
-+	const struct lvts_data *lvts_data;
- 	u32 calibration[LVTS_SENSOR_MAX];
- 	u32 hw_tshut_raw_temp;
- 	int num_lvts_sensor;
-@@ -247,21 +250,21 @@ static void lvts_debugfs_exit(struct lvts_domain *lvts_td) { }
- 
- #endif
- 
--static int lvts_raw_to_temp(u32 raw_temp)
-+static int lvts_raw_to_temp(u32 raw_temp, int temp_factor)
- {
- 	int temperature;
- 
--	temperature = ((s64)(raw_temp & 0xFFFF) * LVTS_COEFF_A) >> 14;
--	temperature += coeff_b;
-+	temperature = ((s64)(raw_temp & 0xFFFF) * temp_factor) >> 14;
-+	temperature += golden_temp_offset;
- 
- 	return temperature;
- }
- 
--static u32 lvts_temp_to_raw(int temperature)
-+static u32 lvts_temp_to_raw(int temperature, int temp_factor)
- {
--	u32 raw_temp = ((s64)(coeff_b - temperature)) << 14;
-+	u32 raw_temp = ((s64)(golden_temp_offset - temperature)) << 14;
- 
--	raw_temp = div_s64(raw_temp, -LVTS_COEFF_A);
-+	raw_temp = div_s64(raw_temp, -temp_factor);
- 
- 	return raw_temp;
- }
-@@ -269,6 +272,9 @@ static u32 lvts_temp_to_raw(int temperature)
- static int lvts_get_temp(struct thermal_zone_device *tz, int *temp)
- {
- 	struct lvts_sensor *lvts_sensor = thermal_zone_device_priv(tz);
-+	struct lvts_ctrl *lvts_ctrl = container_of(lvts_sensor, struct lvts_ctrl,
-+						   sensors[lvts_sensor->id]);
-+	const struct lvts_data *lvts_data = lvts_ctrl->lvts_data;
- 	void __iomem *msr = lvts_sensor->msr;
- 	u32 value;
- 	int rc;
-@@ -301,7 +307,7 @@ static int lvts_get_temp(struct thermal_zone_device *tz, int *temp)
- 	if (rc)
- 		return -EAGAIN;
- 
--	*temp = lvts_raw_to_temp(value & 0xFFFF);
-+	*temp = lvts_raw_to_temp(value & 0xFFFF, lvts_data->temp_factor);
- 
- 	return 0;
- }
-@@ -348,10 +354,13 @@ static bool lvts_should_update_thresh(struct lvts_ctrl *lvts_ctrl, int high)
- static int lvts_set_trips(struct thermal_zone_device *tz, int low, int high)
- {
- 	struct lvts_sensor *lvts_sensor = thermal_zone_device_priv(tz);
--	struct lvts_ctrl *lvts_ctrl = container_of(lvts_sensor, struct lvts_ctrl, sensors[lvts_sensor->id]);
-+	struct lvts_ctrl *lvts_ctrl = container_of(lvts_sensor, struct lvts_ctrl,
-+						   sensors[lvts_sensor->id]);
-+	const struct lvts_data *lvts_data = lvts_ctrl->lvts_data;
- 	void __iomem *base = lvts_sensor->base;
--	u32 raw_low = lvts_temp_to_raw(low != -INT_MAX ? low : LVTS_MINIMUM_THRESHOLD);
--	u32 raw_high = lvts_temp_to_raw(high);
-+	u32 raw_low = lvts_temp_to_raw(low != -INT_MAX ? low : LVTS_MINIMUM_THRESHOLD,
-+				       lvts_data->temp_factor);
-+	u32 raw_high = lvts_temp_to_raw(high, lvts_data->temp_factor);
- 	bool should_update_thresh;
- 
- 	lvts_sensor->low_thresh = low;
-@@ -692,7 +701,7 @@ static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td
+ 	WRITE_ONCE(cpudata->highest_perf, highest_perf);
+-
++	WRITE_ONCE(cpudata->max_limit_perf, highest_perf);
+ 	WRITE_ONCE(cpudata->nominal_perf, AMD_CPPC_NOMINAL_PERF(cap1));
+ 	WRITE_ONCE(cpudata->lowest_nonlinear_perf, AMD_CPPC_LOWNONLIN_PERF(cap1));
+ 	WRITE_ONCE(cpudata->lowest_perf, AMD_CPPC_LOWEST_PERF(cap1));
+-
++	WRITE_ONCE(cpudata->min_limit_perf, AMD_CPPC_LOWEST_PERF(cap1));
  	return 0;
  }
  
--static int lvts_golden_temp_init(struct device *dev, u32 *value)
-+static int lvts_golden_temp_init(struct device *dev, u32 *value, int temp_offset)
- {
- 	u32 gt;
+@@ -329,11 +329,12 @@ static int cppc_init_perf(struct amd_cpudata *cpudata)
+ 		highest_perf = cppc_perf.highest_perf;
  
-@@ -701,7 +710,7 @@ static int lvts_golden_temp_init(struct device *dev, u32 *value)
- 	if (gt && gt < LVTS_GOLDEN_TEMP_MAX)
- 		golden_temp = gt;
+ 	WRITE_ONCE(cpudata->highest_perf, highest_perf);
+-
++	WRITE_ONCE(cpudata->max_limit_perf, highest_perf);
+ 	WRITE_ONCE(cpudata->nominal_perf, cppc_perf.nominal_perf);
+ 	WRITE_ONCE(cpudata->lowest_nonlinear_perf,
+ 		   cppc_perf.lowest_nonlinear_perf);
+ 	WRITE_ONCE(cpudata->lowest_perf, cppc_perf.lowest_perf);
++	WRITE_ONCE(cpudata->min_limit_perf, cppc_perf.lowest_perf);
  
--	coeff_b = golden_temp * 500 + LVTS_COEFF_B;
-+	golden_temp_offset = golden_temp * 500 + temp_offset;
+ 	if (cppc_state == AMD_PSTATE_ACTIVE)
+ 		return 0;
+@@ -432,6 +433,10 @@ static void amd_pstate_update(struct amd_cpudata *cpudata, u32 min_perf,
+ 	u64 prev = READ_ONCE(cpudata->cppc_req_cached);
+ 	u64 value = prev;
  
++	min_perf = clamp_t(unsigned long, min_perf, cpudata->min_limit_perf,
++			cpudata->max_limit_perf);
++	max_perf = clamp_t(unsigned long, max_perf, cpudata->min_limit_perf,
++			cpudata->max_limit_perf);
+ 	des_perf = clamp_t(unsigned long, des_perf, min_perf, max_perf);
+ 
+ 	if ((cppc_state == AMD_PSTATE_GUIDED) && (gov_flags & CPUFREQ_GOV_DYNAMIC_SWITCHING)) {
+@@ -470,6 +475,22 @@ static int amd_pstate_verify(struct cpufreq_policy_data *policy)
  	return 0;
  }
-@@ -724,7 +733,7 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
- 	 * The golden temp information is contained in the first chunk
- 	 * of efuse data.
- 	 */
--	ret = lvts_golden_temp_init(dev, (u32 *)lvts_td->calib);
-+	ret = lvts_golden_temp_init(dev, (u32 *)lvts_td->calib, lvts_data->temp_offset);
- 	if (ret)
- 		return ret;
  
-@@ -735,6 +744,7 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
- 	for (i = 0; i < lvts_data->num_lvts_ctrl; i++) {
- 
- 		lvts_ctrl[i].base = lvts_td->base + lvts_data->lvts_ctrl[i].offset;
-+		lvts_ctrl[i].lvts_data = lvts_data;
- 
- 		ret = lvts_sensor_init(dev, &lvts_ctrl[i],
- 				       &lvts_data->lvts_ctrl[i]);
-@@ -758,7 +768,8 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
- 		 * after initializing the calibration.
- 		 */
- 		lvts_ctrl[i].hw_tshut_raw_temp =
--			lvts_temp_to_raw(lvts_data->lvts_ctrl[i].hw_tshut_temp);
-+			lvts_temp_to_raw(lvts_data->lvts_ctrl[i].hw_tshut_temp,
-+					 lvts_data->temp_factor);
- 
- 		lvts_ctrl[i].low_thresh = INT_MIN;
- 		lvts_ctrl[i].high_thresh = INT_MIN;
-@@ -1223,6 +1234,8 @@ static int lvts_probe(struct platform_device *pdev)
- 	if (irq < 0)
- 		return irq;
- 
-+	golden_temp_offset = lvts_data->temp_offset;
++static int amd_pstate_update_min_max_limit(struct cpufreq_policy *policy)
++{
++	u32 max_limit_perf, min_limit_perf;
++	struct amd_cpudata *cpudata = policy->driver_data;
 +
- 	ret = lvts_domain_init(dev, lvts_td, lvts_data);
- 	if (ret)
- 		return dev_err_probe(dev, ret, "Failed to initialize the lvts domain\n");
-@@ -1338,11 +1351,15 @@ static const struct lvts_ctrl_data mt8195_lvts_ap_data_ctrl[] = {
- static const struct lvts_data mt8195_lvts_mcu_data = {
- 	.lvts_ctrl	= mt8195_lvts_mcu_data_ctrl,
- 	.num_lvts_ctrl	= ARRAY_SIZE(mt8195_lvts_mcu_data_ctrl),
-+	.temp_factor	= LVTS_COEFF_A_MT8195,
-+	.temp_offset	= LVTS_COEFF_B_MT8195,
- };
++	max_limit_perf = div_u64(policy->max * cpudata->highest_perf, cpudata->max_freq);
++	min_limit_perf = div_u64(policy->min * cpudata->highest_perf, cpudata->max_freq);
++
++	WRITE_ONCE(cpudata->max_limit_perf, max_limit_perf);
++	WRITE_ONCE(cpudata->min_limit_perf, min_limit_perf);
++	WRITE_ONCE(cpudata->max_limit_freq, policy->max);
++	WRITE_ONCE(cpudata->min_limit_freq, policy->min);
++
++	return 0;
++}
++
+ static int amd_pstate_update_freq(struct cpufreq_policy *policy,
+ 				  unsigned int target_freq, bool fast_switch)
+ {
+@@ -480,6 +501,9 @@ static int amd_pstate_update_freq(struct cpufreq_policy *policy,
+ 	if (!cpudata->max_freq)
+ 		return -ENODEV;
  
- static const struct lvts_data mt8195_lvts_ap_data = {
- 	.lvts_ctrl	= mt8195_lvts_ap_data_ctrl,
- 	.num_lvts_ctrl	= ARRAY_SIZE(mt8195_lvts_ap_data_ctrl),
-+	.temp_factor	= LVTS_COEFF_A_MT8195,
-+	.temp_offset	= LVTS_COEFF_B_MT8195,
- };
++	if (policy->min != cpudata->min_limit_freq || policy->max != cpudata->max_limit_freq)
++		amd_pstate_update_min_max_limit(policy);
++
+ 	cap_perf = READ_ONCE(cpudata->highest_perf);
+ 	min_perf = READ_ONCE(cpudata->lowest_perf);
+ 	max_perf = cap_perf;
+@@ -532,6 +556,10 @@ static void amd_pstate_adjust_perf(unsigned int cpu,
+ 	struct amd_cpudata *cpudata = policy->driver_data;
+ 	unsigned int target_freq;
  
- static const struct of_device_id lvts_of_match[] = {
++	if (policy->min != cpudata->min_limit_freq || policy->max != cpudata->max_limit_freq)
++		amd_pstate_update_min_max_limit(policy);
++
++
+ 	cap_perf = READ_ONCE(cpudata->highest_perf);
+ 	lowest_nonlinear_perf = READ_ONCE(cpudata->lowest_nonlinear_perf);
+ 	max_freq = READ_ONCE(cpudata->max_freq);
+@@ -745,6 +773,8 @@ static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	/* Initial processor data capability frequencies */
+ 	cpudata->max_freq = max_freq;
+ 	cpudata->min_freq = min_freq;
++	cpudata->max_limit_freq = max_freq;
++	cpudata->min_limit_freq = min_freq;
+ 	cpudata->nominal_freq = nominal_freq;
+ 	cpudata->lowest_nonlinear_freq = lowest_nonlinear_freq;
+ 
+@@ -1183,16 +1213,25 @@ static int amd_pstate_epp_cpu_exit(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
+-static void amd_pstate_epp_init(unsigned int cpu)
++static void amd_pstate_epp_update_limit(struct cpufreq_policy *policy)
+ {
+-	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+ 	struct amd_cpudata *cpudata = policy->driver_data;
+-	u32 max_perf, min_perf;
++	u32 max_perf, min_perf, min_limit_perf, max_limit_perf;
+ 	u64 value;
+ 	s16 epp;
+ 
+ 	max_perf = READ_ONCE(cpudata->highest_perf);
+ 	min_perf = READ_ONCE(cpudata->lowest_perf);
++	max_limit_perf = div_u64(policy->max * cpudata->highest_perf, cpudata->max_freq);
++	min_limit_perf = div_u64(policy->min * cpudata->highest_perf, cpudata->max_freq);
++
++	max_perf = clamp_t(unsigned long, max_perf, cpudata->min_limit_perf,
++			cpudata->max_limit_perf);
++	min_perf = clamp_t(unsigned long, min_perf, cpudata->min_limit_perf,
++			cpudata->max_limit_perf);
++
++	WRITE_ONCE(cpudata->max_limit_perf, max_limit_perf);
++	WRITE_ONCE(cpudata->min_limit_perf, min_limit_perf);
+ 
+ 	value = READ_ONCE(cpudata->cppc_req_cached);
+ 
+@@ -1210,9 +1249,6 @@ static void amd_pstate_epp_init(unsigned int cpu)
+ 	value &= ~AMD_CPPC_DES_PERF(~0L);
+ 	value |= AMD_CPPC_DES_PERF(0);
+ 
+-	if (cpudata->epp_policy == cpudata->policy)
+-		goto skip_epp;
+-
+ 	cpudata->epp_policy = cpudata->policy;
+ 
+ 	/* Get BIOS pre-defined epp value */
+@@ -1222,7 +1258,7 @@ static void amd_pstate_epp_init(unsigned int cpu)
+ 		 * This return value can only be negative for shared_memory
+ 		 * systems where EPP register read/write not supported.
+ 		 */
+-		goto skip_epp;
++		return;
+ 	}
+ 
+ 	if (cpudata->policy == CPUFREQ_POLICY_PERFORMANCE)
+@@ -1236,8 +1272,6 @@ static void amd_pstate_epp_init(unsigned int cpu)
+ 
+ 	WRITE_ONCE(cpudata->cppc_req_cached, value);
+ 	amd_pstate_set_epp(cpudata, epp);
+-skip_epp:
+-	cpufreq_cpu_put(policy);
+ }
+ 
+ static int amd_pstate_epp_set_policy(struct cpufreq_policy *policy)
+@@ -1252,7 +1286,7 @@ static int amd_pstate_epp_set_policy(struct cpufreq_policy *policy)
+ 
+ 	cpudata->policy = policy->policy;
+ 
+-	amd_pstate_epp_init(policy->cpu);
++	amd_pstate_epp_update_limit(policy);
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
+index 446394f84606..6ad02ad9c7b4 100644
+--- a/include/linux/amd-pstate.h
++++ b/include/linux/amd-pstate.h
+@@ -70,6 +70,10 @@ struct amd_cpudata {
+ 	u32	nominal_perf;
+ 	u32	lowest_nonlinear_perf;
+ 	u32	lowest_perf;
++	u32     min_limit_perf;
++	u32     max_limit_perf;
++	u32     min_limit_freq;
++	u32     max_limit_freq;
+ 
+ 	u32	max_freq;
+ 	u32	min_freq;
 -- 
 2.34.1
 
