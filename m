@@ -2,314 +2,168 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98962E7D0B4
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Sep 2023 23:20:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E27EE7D0B4
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Sep 2023 05:47:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229865AbjIUXUV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Sep 2023 19:20:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41984 "EHLO
+        id S229541AbjIVFrP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Sep 2023 01:47:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229823AbjIUXUU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2023 19:20:20 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BAA2AF6BB;
-        Thu, 21 Sep 2023 11:07:28 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 4759fab77295fb91; Thu, 21 Sep 2023 20:07:26 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 4C8CC664EBE;
-        Thu, 21 Sep 2023 20:07:26 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH v1 07/13] thermal: gov_power_allocator: Use trip pointers instead of trip indices
-Date:   Thu, 21 Sep 2023 19:55:26 +0200
-Message-ID: <2590280.Lt9SDvczpP@kreacher>
-In-Reply-To: <1957441.PYKUYFuaPT@kreacher>
-References: <1957441.PYKUYFuaPT@kreacher>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrudekiedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhn
- thgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
+        with ESMTP id S229539AbjIVFrO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Sep 2023 01:47:14 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B13718F;
+        Thu, 21 Sep 2023 22:47:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1695361628; x=1726897628;
+  h=from:to:cc:subject:date:message-id;
+  bh=E934W0ha3pK8ajkIFoaGlzg0zJoW8eJf9K2yV/pdMhs=;
+  b=N5p0MKEwtap6HfFcQBJPnPWH0Cd9CpxH4qVAFGCXVO5Qe/sqpkKrsQPg
+   Az8IHHzL9/AFQzTGRgDrVYqn89vdApVHlIkQkgpn5SfF5ItrgQf2hKCuF
+   p0o7sc7Em+KglcXK1wQf7iZRw8LuDw6fowwik1Z8J352x5qVFPKTdAwpt
+   RI7+I3aU+Zc+fJBw09k+pC87N4WMG3++atBEvq0Xtzs2Zt7Fe7gkd+fLi
+   R5dTfAoL/BCaOYOqr/KeE92QxPPkpO678wwbqvK32Fm5MAX8MsLfpbpmZ
+   TCDPb+Sl0xZRPl/ANOySWUaC0rReoMeXvstXuo3E8W7LEKEr3bfiz51kV
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10840"; a="411688436"
+X-IronPort-AV: E=Sophos;i="6.03,167,1694761200"; 
+   d="scan'208";a="411688436"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Sep 2023 22:47:08 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10840"; a="871136956"
+X-IronPort-AV: E=Sophos;i="6.03,167,1694761200"; 
+   d="scan'208";a="871136956"
+Received: from inlubt0316.iind.intel.com ([10.191.20.213])
+  by orsmga004.jf.intel.com with ESMTP; 21 Sep 2023 22:47:04 -0700
+From:   Raag Jadav <raag.jadav@intel.com>
+To:     rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz,
+        Jonathan.Cameron@huawei.com, paul@crapouillou.net,
+        andriy.shevchenko@linux.intel.com, rf@opensource.cirrus.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        mallikarjunappa.sangannavar@intel.com, bala.senthil@intel.com,
+        Raag Jadav <raag.jadav@intel.com>
+Subject: [PATCH v4] PM: Fix symbol export for _SIMPLE_ variants of _PM_OPS()
+Date:   Fri, 22 Sep 2023 11:15:52 +0530
+Message-Id: <20230922054552.3570-1-raag.jadav@intel.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Currently EXPORT_*_SIMPLE_DEV_PM_OPS() use EXPORT_*_DEV_PM_OPS() set
+of macros to export dev_pm_ops symbol, which export the symbol in case
+CONFIG_PM=y but don't take CONFIG_PM_SLEEP into consideration.
 
-Eliminate the __thermal_zone_get_trip() usage that adds unnecessary
-overhead (due to pointless bounds checking and copying of trip point
-data) from the power allocator thermal governor and generally make it
-use trip pointers instead of trip indices where applicable.
+Since _SIMPLE_ variants of _PM_OPS() do not include runtime PM handles
+and are only used in case CONFIG_PM_SLEEP=y, we should not be exporting
+dev_pm_ops symbol for them in case CONFIG_PM_SLEEP=n.
 
-The general functionality is not expected to be changed.
+This can be fixed by having two distinct set of export macros for both
+_RUNTIME_ and _SIMPLE_ variants of _PM_OPS(), such that the export of
+dev_pm_ops symbol used in each variant depends on CONFIG_PM and
+CONFIG_PM_SLEEP respectively.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Introduce _DEV_SLEEP_PM_OPS() set of export macros for _SIMPLE_ variants
+of _PM_OPS(), which export dev_pm_ops symbol only in case CONFIG_PM_SLEEP=y
+and discard it otherwise.
+
+Fixes: 34e1ed189fab ("PM: Improve EXPORT_*_DEV_PM_OPS macros")
+Signed-off-by: Raag Jadav <raag.jadav@intel.com>
 ---
- drivers/thermal/gov_power_allocator.c |  102 ++++++++++++----------------------
- 1 file changed, 38 insertions(+), 64 deletions(-)
+PS: This is a standalone fix and works without updating existing drivers.
 
-Index: linux-pm/drivers/thermal/gov_power_allocator.c
-===================================================================
---- linux-pm.orig/drivers/thermal/gov_power_allocator.c
-+++ linux-pm/drivers/thermal/gov_power_allocator.c
-@@ -16,8 +16,6 @@
- 
- #include "thermal_core.h"
- 
--#define INVALID_TRIP -1
--
- #define FRAC_BITS 10
- #define int_to_frac(x) ((x) << FRAC_BITS)
- #define frac_to_int(x) ((x) >> FRAC_BITS)
-@@ -55,23 +53,23 @@ static inline s64 div_frac(s64 x, s64 y)
-  * @err_integral:	accumulated error in the PID controller.
-  * @prev_err:	error in the previous iteration of the PID controller.
-  *		Used to calculate the derivative term.
-+ * @sustainable_power:	Sustainable power (heat) that this thermal zone can
-+ *			dissipate
-  * @trip_switch_on:	first passive trip point of the thermal zone.  The
-  *			governor switches on when this trip point is crossed.
-  *			If the thermal zone only has one passive trip point,
-- *			@trip_switch_on should be INVALID_TRIP.
-+ *			@trip_switch_on should be NULL.
-  * @trip_max_desired_temperature:	last passive trip point of the thermal
-  *					zone.  The temperature we are
-  *					controlling for.
-- * @sustainable_power:	Sustainable power (heat) that this thermal zone can
-- *			dissipate
-  */
- struct power_allocator_params {
- 	bool allocated_tzp;
- 	s64 err_integral;
- 	s32 prev_err;
--	int trip_switch_on;
--	int trip_max_desired_temperature;
- 	u32 sustainable_power;
-+	const struct thermal_trip *trip_switch_on;
-+	const struct thermal_trip *trip_max_desired_temperature;
- };
- 
- /**
-@@ -90,14 +88,12 @@ static u32 estimate_sustainable_power(st
- 	u32 sustainable_power = 0;
- 	struct thermal_instance *instance;
- 	struct power_allocator_params *params = tz->governor_data;
--	const struct thermal_trip *trip_max_desired_temperature =
--			&tz->trips[params->trip_max_desired_temperature];
- 
- 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
- 		struct thermal_cooling_device *cdev = instance->cdev;
- 		u32 min_power;
- 
--		if (instance->trip != trip_max_desired_temperature)
-+		if (instance->trip != params->trip_max_desired_temperature)
- 			continue;
- 
- 		if (!cdev_is_power_actor(cdev))
-@@ -116,24 +112,23 @@ static u32 estimate_sustainable_power(st
-  * estimate_pid_constants() - Estimate the constants for the PID controller
-  * @tz:		thermal zone for which to estimate the constants
-  * @sustainable_power:	sustainable power for the thermal zone
-- * @trip_switch_on:	trip point number for the switch on temperature
-+ * @trip_switch_on:	trip point for the switch on temperature
-  * @control_temp:	target temperature for the power allocator governor
-  *
-  * This function is used to update the estimation of the PID
-  * controller constants in struct thermal_zone_parameters.
-  */
- static void estimate_pid_constants(struct thermal_zone_device *tz,
--				   u32 sustainable_power, int trip_switch_on,
-+				   u32 sustainable_power,
-+				   const struct thermal_trip *trip_switch_on,
- 				   int control_temp)
- {
--	struct thermal_trip trip;
- 	u32 temperature_threshold = control_temp;
- 	int ret;
- 	s32 k_i;
- 
--	ret = __thermal_zone_get_trip(tz, trip_switch_on, &trip);
--	if (!ret)
--		temperature_threshold -= trip.temperature;
-+	if (trip_switch_on)
-+		temperature_threshold -= trip_switch_on->temperature;
- 
- 	/*
- 	 * estimate_pid_constants() tries to find appropriate default
-@@ -386,7 +381,7 @@ static int allocate_power(struct thermal
- 	struct thermal_instance *instance;
- 	struct power_allocator_params *params = tz->governor_data;
- 	const struct thermal_trip *trip_max_desired_temperature =
--			&tz->trips[params->trip_max_desired_temperature];
-+					params->trip_max_desired_temperature;
- 	u32 *req_power, *max_power, *granted_power, *extra_actor_power;
- 	u32 *weighted_req_power;
- 	u32 total_req_power, max_allocatable_power, total_weighted_req_power;
-@@ -513,46 +508,35 @@ static int allocate_power(struct thermal
- static void get_governor_trips(struct thermal_zone_device *tz,
- 			       struct power_allocator_params *params)
- {
--	int i, last_active, last_passive;
--	bool found_first_passive;
--
--	found_first_passive = false;
--	last_active = INVALID_TRIP;
--	last_passive = INVALID_TRIP;
-+	const struct thermal_trip *last_active = NULL:
-+	const struct thermal_trip *last_passive = NULL;
-+	bool found_first_passive = false;
-+	int i;
- 
- 	for (i = 0; i < tz->num_trips; i++) {
--		struct thermal_trip trip;
--		int ret;
-+		const struct thermal_trip *trip = &tz->trips[i];
- 
--		ret = __thermal_zone_get_trip(tz, i, &trip);
--		if (ret) {
--			dev_warn(&tz->device,
--				 "Failed to get trip point %d type: %d\n", i,
--				 ret);
--			continue;
--		}
--
--		if (trip.type == THERMAL_TRIP_PASSIVE) {
-+		if (trip->type == THERMAL_TRIP_PASSIVE) {
- 			if (!found_first_passive) {
--				params->trip_switch_on = i;
-+				params->trip_switch_on = trip;
- 				found_first_passive = true;
- 			} else  {
--				last_passive = i;
-+				last_passive = trip;
- 			}
--		} else if (trip.type == THERMAL_TRIP_ACTIVE) {
--			last_active = i;
-+		} else if (trip->type == THERMAL_TRIP_ACTIVE) {
-+			last_active = trip;
- 		} else {
- 			break;
- 		}
- 	}
- 
--	if (last_passive != INVALID_TRIP) {
-+	if (last_passive) {
- 		params->trip_max_desired_temperature = last_passive;
- 	} else if (found_first_passive) {
- 		params->trip_max_desired_temperature = params->trip_switch_on;
--		params->trip_switch_on = INVALID_TRIP;
-+		params->trip_switch_on = NULL;
- 	} else {
--		params->trip_switch_on = INVALID_TRIP;
-+		params->trip_switch_on = NULL;
- 		params->trip_max_desired_temperature = last_active;
- 	}
+Changes since v3:
+- Rename _PM_OPS macro to _DISCARD_PM_OPS
+
+Changes since v2:
+- Drop redundant patches
+
+Changes since v1:
+- Update drivers to new set of macros
+
+ include/linux/pm.h | 43 +++++++++++++++++++++++++++++--------------
+ 1 file changed, 29 insertions(+), 14 deletions(-)
+
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 1400c37b29c7..629c1633bbd0 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -374,24 +374,39 @@ const struct dev_pm_ops name = { \
+ 	RUNTIME_PM_OPS(runtime_suspend_fn, runtime_resume_fn, idle_fn) \
  }
-@@ -567,14 +551,12 @@ static void allow_maximum_power(struct t
- {
- 	struct thermal_instance *instance;
- 	struct power_allocator_params *params = tz->governor_data;
--	const struct thermal_trip *trip_max_desired_temperature =
--			&tz->trips[params->trip_max_desired_temperature];
- 	u32 req_power;
  
- 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
- 		struct thermal_cooling_device *cdev = instance->cdev;
- 
--		if ((instance->trip != trip_max_desired_temperature) ||
-+		if (instance->trip != params->trip_max_desired_temperature ||
- 		    (!cdev_is_power_actor(instance->cdev)))
- 			continue;
- 
-@@ -636,7 +618,6 @@ static int power_allocator_bind(struct t
- {
- 	int ret;
- 	struct power_allocator_params *params;
--	struct thermal_trip trip;
- 
- 	ret = check_power_actors(tz);
- 	if (ret)
-@@ -662,12 +643,13 @@ static int power_allocator_bind(struct t
- 	get_governor_trips(tz, params);
- 
- 	if (tz->num_trips > 0) {
--		ret = __thermal_zone_get_trip(tz, params->trip_max_desired_temperature,
--					      &trip);
--		if (!ret)
-+		const struct thermal_trip *trip;
+-#ifdef CONFIG_PM
+-#define _EXPORT_DEV_PM_OPS(name, license, ns)				\
++#define _EXPORT_PM_OPS(name, license, ns)				\
+ 	const struct dev_pm_ops name;					\
+ 	__EXPORT_SYMBOL(name, license, ns);				\
+ 	const struct dev_pm_ops name
+-#define EXPORT_PM_FN_GPL(name)		EXPORT_SYMBOL_GPL(name)
+-#define EXPORT_PM_FN_NS_GPL(name, ns)	EXPORT_SYMBOL_NS_GPL(name, ns)
+-#else
+-#define _EXPORT_DEV_PM_OPS(name, license, ns)				\
 +
-+		trip = params->trip_max_desired_temperature;
-+		if (trip)
- 			estimate_pid_constants(tz, tz->tzp->sustainable_power,
- 					       params->trip_switch_on,
--					       trip.temperature);
-+					       trip->temperature);
++#define _DISCARD_PM_OPS(name, license, ns)				\
+ 	static __maybe_unused const struct dev_pm_ops __static_##name
++
++#ifdef CONFIG_PM
++#define _EXPORT_DEV_PM_OPS(name, license, ns)		_EXPORT_PM_OPS(name, license, ns)
++#define EXPORT_PM_FN_GPL(name)				EXPORT_SYMBOL_GPL(name)
++#define EXPORT_PM_FN_NS_GPL(name, ns)			EXPORT_SYMBOL_NS_GPL(name, ns)
++#else
++#define _EXPORT_DEV_PM_OPS(name, license, ns)		_DISCARD_PM_OPS(name, license, ns)
+ #define EXPORT_PM_FN_GPL(name)
+ #define EXPORT_PM_FN_NS_GPL(name, ns)
+ #endif
+ 
+-#define EXPORT_DEV_PM_OPS(name) _EXPORT_DEV_PM_OPS(name, "", "")
+-#define EXPORT_GPL_DEV_PM_OPS(name) _EXPORT_DEV_PM_OPS(name, "GPL", "")
+-#define EXPORT_NS_DEV_PM_OPS(name, ns) _EXPORT_DEV_PM_OPS(name, "", #ns)
+-#define EXPORT_NS_GPL_DEV_PM_OPS(name, ns) _EXPORT_DEV_PM_OPS(name, "GPL", #ns)
++#ifdef CONFIG_PM_SLEEP
++#define _EXPORT_DEV_SLEEP_PM_OPS(name, license, ns)	_EXPORT_PM_OPS(name, license, ns)
++#else
++#define _EXPORT_DEV_SLEEP_PM_OPS(name, license, ns)	_DISCARD_PM_OPS(name, license, ns)
++#endif
++
++#define EXPORT_DEV_PM_OPS(name)				_EXPORT_DEV_PM_OPS(name, "", "")
++#define EXPORT_GPL_DEV_PM_OPS(name)			_EXPORT_DEV_PM_OPS(name, "GPL", "")
++#define EXPORT_NS_DEV_PM_OPS(name, ns)			_EXPORT_DEV_PM_OPS(name, "", #ns)
++#define EXPORT_NS_GPL_DEV_PM_OPS(name, ns)		_EXPORT_DEV_PM_OPS(name, "GPL", #ns)
++
++#define EXPORT_DEV_SLEEP_PM_OPS(name)			_EXPORT_DEV_SLEEP_PM_OPS(name, "", "")
++#define EXPORT_GPL_DEV_SLEEP_PM_OPS(name)		_EXPORT_DEV_SLEEP_PM_OPS(name, "GPL", "")
++#define EXPORT_NS_DEV_SLEEP_PM_OPS(name, ns)		_EXPORT_DEV_SLEEP_PM_OPS(name, "", #ns)
++#define EXPORT_NS_GPL_DEV_SLEEP_PM_OPS(name, ns)	_EXPORT_DEV_SLEEP_PM_OPS(name, "GPL", #ns)
+ 
+ /*
+  * Use this if you want to use the same suspend and resume callbacks for suspend
+@@ -404,19 +419,19 @@ const struct dev_pm_ops name = { \
+ 	_DEFINE_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL)
+ 
+ #define EXPORT_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+-	EXPORT_DEV_PM_OPS(name) = { \
++	EXPORT_DEV_SLEEP_PM_OPS(name) = { \
+ 		SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+ 	}
+ #define EXPORT_GPL_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+-	EXPORT_GPL_DEV_PM_OPS(name) = { \
++	EXPORT_GPL_DEV_SLEEP_PM_OPS(name) = { \
+ 		SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+ 	}
+ #define EXPORT_NS_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn, ns)	\
+-	EXPORT_NS_DEV_PM_OPS(name, ns) = { \
++	EXPORT_NS_DEV_SLEEP_PM_OPS(name, ns) = { \
+ 		SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+ 	}
+ #define EXPORT_NS_GPL_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn, ns)	\
+-	EXPORT_NS_GPL_DEV_PM_OPS(name, ns) = { \
++	EXPORT_NS_GPL_DEV_SLEEP_PM_OPS(name, ns) = { \
+ 		SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
  	}
  
- 	reset_pid_controller(params);
-@@ -697,11 +679,10 @@ static void power_allocator_unbind(struc
- 	tz->governor_data = NULL;
- }
- 
--static int power_allocator_throttle(struct thermal_zone_device *tz, int trip_id)
-+static int power_allocator_throttle(struct thermal_zone_device *tz, int trip_index)
- {
- 	struct power_allocator_params *params = tz->governor_data;
--	struct thermal_trip trip;
--	int ret;
-+	const struct thermal_trip *trip = &tz->trips[trip_index];
- 	bool update;
- 
- 	lockdep_assert_held(&tz->lock);
-@@ -710,12 +691,12 @@ static int power_allocator_throttle(stru
- 	 * We get called for every trip point but we only need to do
- 	 * our calculations once
- 	 */
--	if (trip_id != params->trip_max_desired_temperature)
-+	if (trip != params->trip_max_desired_temperature)
- 		return 0;
- 
--	ret = __thermal_zone_get_trip(tz, params->trip_switch_on, &trip);
--	if (!ret && (tz->temperature < trip.temperature)) {
--		update = (tz->last_temperature >= trip.temperature);
-+	trip = params->trip_switch_on;
-+	if (trip && tz->temperature < trip->temperature) {
-+		update = tz->last_temperature >= trip->temperature;
- 		tz->passive = 0;
- 		reset_pid_controller(params);
- 		allow_maximum_power(tz, update);
-@@ -724,14 +705,7 @@ static int power_allocator_throttle(stru
- 
- 	tz->passive = 1;
- 
--	ret = __thermal_zone_get_trip(tz, params->trip_max_desired_temperature, &trip);
--	if (ret) {
--		dev_warn(&tz->device, "Failed to get the maximum desired temperature: %d\n",
--			 ret);
--		return ret;
--	}
--
--	return allocate_power(tz, trip.temperature);
-+	return allocate_power(tz, params->trip_max_desired_temperature->temperature);
- }
- 
- static struct thermal_governor thermal_gov_power_allocator = {
-
-
+-- 
+2.17.1
 
