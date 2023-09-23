@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C49F5CE7A91
-	for <linux-pm@archiver.kernel.org>; Sat, 23 Sep 2023 11:50:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 949F1CE7A8B
+	for <linux-pm@archiver.kernel.org>; Sat, 23 Sep 2023 11:50:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231430AbjIWLu2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 23 Sep 2023 07:50:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34990 "EHLO
+        id S231479AbjIWLua (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 23 Sep 2023 07:50:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35066 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231437AbjIWLu0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Sep 2023 07:50:26 -0400
-Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5E4A19F
-        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:19 -0700 (PDT)
-Received: by mail-lj1-x22a.google.com with SMTP id 38308e7fff4ca-2c12ae20a5cso57208461fa.2
-        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:19 -0700 (PDT)
+        with ESMTP id S231437AbjIWLu2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Sep 2023 07:50:28 -0400
+Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E48A41AC
+        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:21 -0700 (PDT)
+Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-99bdcade7fbso429379066b.1
+        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695469818; x=1696074618; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1695469820; x=1696074620; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=UPs/8kVgbnM0mW5nRHnV6PsEkWTa8KX9zy7vOpy7zco=;
-        b=PweBAeQYomHnpiZ33syNTGedNrTDTDRbzwDrg2QFtoBAWX4zfrpQJWtGWfHpYUBFvz
-         LjJ3D/C4MZX36ce4zqfbwiqTizZYeXmMzflqyNHdKSavFKR/y2p69e/S4dUz8bLypykt
-         c+Upo6GoERq9MggkLvsUTLv3UJtwOLkczlWVB/TFXtwqFoyV9WhojPT4zmri5xu2BQKA
-         +35LV/dGfnWyeBqI0c8qud3KWaV9/9JLGJgFYxrSyDmbzAZj3X2G2hbqiUHXH0JZxKqS
-         MFOmHGL8ziqvMOFTdhsD9RfYljE24B+6XdUG6vM1L2SBkDbgd2r/+goXPNV0elSaoROM
-         tW3Q==
+        bh=Z22Rfgd7UjpYt4TAoqngtq5qLN6/k4A45SAesnG+QTI=;
+        b=JLBeSQiCAXlpMl4ybd17rbwgJeipNxL4Xo+SnWlEwAmABKLVqMjqxkkr4ceB5c3RnR
+         cpi+25uwJq7kUlyaZdiHTvvdV9+XDaMuqs9Tgmg7j6J2sO+sV4HCqlMyppyVZ21R8M2M
+         VzHHWPbJHb9THQBWcdXIUj3cGfFqK2tE/+IazsTuBOhxfERebBmuoMpJ+XwUNSpWzpcp
+         /p0gINNfScBa0naH80YEgjiD2arIXQivf/ydWV1yctIa3qpDoUEa0OnanhTh+9ut++WH
+         u20We6AN1Ws0vgf1n69T5eRG1WdJVUCy6IPZfQgXac1o0AzVnAQhzbgX4d6NmuZA9FQO
+         cZzA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695469818; x=1696074618;
+        d=1e100.net; s=20230601; t=1695469820; x=1696074620;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=UPs/8kVgbnM0mW5nRHnV6PsEkWTa8KX9zy7vOpy7zco=;
-        b=cqylaqRr8B4AZ/NTVeCze7gqezHgZYE+h67VX1DnPCdACfd4GM0Rd/fw8HiGnR6q19
-         JEvqXhbd+62qaxsqhM6oYAcfmiUwHFhmXkJXK8R+E95W9OpIjXLkBHaD/ckdzt2POOxR
-         Zlm+up49L+gadP5H2NhjYFJwkmpgj0fmb6N35yIvTzgpl53TFymFm8ndWmzo9FToAS2C
-         GcVAwxbeZXbBc3bXOEFvTcpGx2rW8Dyl6IcnhxxC4xGuB4v8cfvKpMlnqs06RqUr9ijI
-         4pktFB3k+s473zeB1xxB2idSoUSY4GX1BKCx2Fn6/Jsyzi50WRm4ieOlnKiZzUEm77bk
-         QMcw==
-X-Gm-Message-State: AOJu0YzfXrOZDkN+CNCm+g9JBosfnd1UN6xoBlLARcR/BClNl1seRGEk
-        s1dORNKcsP2z6rZpzvHFYuf2aQ==
-X-Google-Smtp-Source: AGHT+IF3iCPcqri7mExufzMYrYPnONmgorXVtSZYUy19mZQ/qSGbhFXVMLsCZeWD4KykDA+ieBz8OA==
-X-Received: by 2002:a2e:9d98:0:b0:2bc:e882:f717 with SMTP id c24-20020a2e9d98000000b002bce882f717mr1448649ljj.53.1695469817288;
-        Sat, 23 Sep 2023 04:50:17 -0700 (PDT)
+        bh=Z22Rfgd7UjpYt4TAoqngtq5qLN6/k4A45SAesnG+QTI=;
+        b=W26Xdac6QiIiS0MIFDpo9V+cnJ6rfK1qqwqoWMxE7BWvKSJ4qAdi45YpqnlcJXJISn
+         radsGkqgVoVFtRIraFGq7WmwHLAtU5bdsklIdyKUahi7NqLGFMOEY/4NGtZAB9GkoqLY
+         y0dwXKre6ofIavvqDaFkCCpoGpWUOMlkl5k/F//FW0r+XUAdPPAWv90xj+jHod+wwQru
+         GKUxFEetGEQv+k8Vo/BlkgwTgMWfXif9J1QqnLawviCr02wmjKt/rM0DGw5JAvDqG38T
+         2Fe4/lvmGaUU+iUxmGamAO9ic+JjQ2XtZblm0A2ysiWhsffkr8zpCeUR97BHBNkhB3K+
+         sBrw==
+X-Gm-Message-State: AOJu0Yw7Ilfjw4enF3zgGI6IRRRgv7rlk/L5iCgWQXdZ5IsFycE/VvBh
+        uXdwiDKgW1Tgs//HWN1rZ3VGkdP6DWcqF/25AkbbMw==
+X-Google-Smtp-Source: AGHT+IHOKPV7tYEYJr657kkH+IPPQoUNAztuS8mSEUiRMTXXngg1z06D5l/pJFMhWEUG1uokl2U5lg==
+X-Received: by 2002:a17:907:3d86:b0:9ae:729c:f651 with SMTP id he6-20020a1709073d8600b009ae729cf651mr1743569ejc.17.1695469820447;
+        Sat, 23 Sep 2023 04:50:20 -0700 (PDT)
 Received: from hackbox.lan ([86.120.16.169])
-        by smtp.gmail.com with ESMTPSA id k15-20020a1709062a4f00b009ad8084e08asm3853310eje.0.2023.09.23.04.50.15
+        by smtp.gmail.com with ESMTPSA id k15-20020a1709062a4f00b009ad8084e08asm3853310eje.0.2023.09.23.04.50.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 23 Sep 2023 04:50:16 -0700 (PDT)
+        Sat, 23 Sep 2023 04:50:19 -0700 (PDT)
 From:   Abel Vesa <abel.vesa@linaro.org>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
@@ -63,10 +63,11 @@ To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Taniya Das <tdas@qti.qualcomm.com>
 Cc:     linux-pm@vger.kernel.org,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm@vger.kernel.org
-Subject: [RESEND v3 1/5] PM: domains: Allow devices attached to genpd to be managed by HW
-Date:   Sat, 23 Sep 2023 14:50:04 +0300
-Message-Id: <20230923115008.1698384-2-abel.vesa@linaro.org>
+        linux-arm-msm@vger.kernel.org,
+        Jagadeesh Kona <quic_jkona@quicinc.com>
+Subject: [RESEND v3 3/5] clk: qcom: gdsc: Add set and get hwmode callbacks to switch GDSC mode
+Date:   Sat, 23 Sep 2023 14:50:06 +0300
+Message-Id: <20230923115008.1698384-4-abel.vesa@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230923115008.1698384-1-abel.vesa@linaro.org>
 References: <20230923115008.1698384-1-abel.vesa@linaro.org>
@@ -76,160 +77,95 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Ulf Hansson <ulf.hansson@linaro.org>
+From: Jagadeesh Kona <quic_jkona@quicinc.com>
 
-Some power-domains may be capable of relying on the HW to control the power
-for a device that's hooked up to it. Typically, for these kinds of
-configurations the device doesn't really need to be attached to a PM domain
-(genpd), from Linux point of view. However, in some cases the behaviour of
-the power-domain and its device can be changed in runtime.
+Add support for set and get hwmode callbacks to switch the GDSC between
+SW and HW modes. Currently, the GDSC is moved to HW control mode
+using HW_CTRL flag and if this flag is present, GDSC is moved to HW
+mode as part of GDSC enable itself. The intention is to keep the
+HW_CTRL flag functionality as is, since many older chipsets still use
+this flag.
 
-To allow a consumer driver to change the behaviour of the PM domain for its
-device, let's provide a new function, dev_pm_genpd_set_hwmode(). Moreover,
-let's add a corresponding optional genpd callback, ->set_hwmode_dev(),
-which the genpd provider should implement if it can support switching
-between HW controlled mode and SW controlled mode. Similarly, add the
-dev_pm_genpd_get_hwmode() to allow consumers to read the current mode and
-its corresponding optional genpd callback, ->get_hwmode_dev(), which the
-genpd provider can also implement for reading back the mode from the
-hardware.
+Introduce a new HW_CTRL_TRIGGER flag to switch the GDSC back and forth
+between HW/SW modes dynamically at runtime. If HW_CTRL_TRIGGER flag is
+present, register set_hwmode_dev callback to switch the GDSC mode which
+can be invoked from consumer drivers using dev_pm_genpd_set_hwmode
+function. Unlike HW_CTRL flag, HW_CTRL_TRIGGER won't move the GDSC to HW
+control mode as part of GDSC enable itself, GDSC will be moved to HW
+control mode only when consumer driver explicity calls
+dev_pm_genpd_set_hwmode to switch to HW mode. Also add the
+dev_pm_genpd_get_hwmode to allow the consumers to read the actual
+HW/SW mode from hardware.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
 Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
 ---
- drivers/base/power/domain.c | 69 +++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   | 17 +++++++++
- 2 files changed, 86 insertions(+)
+ drivers/clk/qcom/gdsc.c | 32 ++++++++++++++++++++++++++++++++
+ drivers/clk/qcom/gdsc.h |  1 +
+ 2 files changed, 33 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 5cb2023581d4..dfb4f1de540d 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -541,6 +541,75 @@ void dev_pm_genpd_synced_poweroff(struct device *dev)
+diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
+index 5358e28122ab..c763524cd5da 100644
+--- a/drivers/clk/qcom/gdsc.c
++++ b/drivers/clk/qcom/gdsc.c
+@@ -363,6 +363,34 @@ static int gdsc_disable(struct generic_pm_domain *domain)
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(dev_pm_genpd_synced_poweroff);
  
-+/**
-+ * dev_pm_genpd_set_hwmode - Set the HW mode for the device and its PM domain.
-+ *
-+ * @dev: Device for which the HW-mode should be changed.
-+ * @enable: Value to set or unset the HW-mode.
-+ *
-+ * Some PM domains can rely on HW signals to control the power for a device. To
-+ * allow a consumer driver to switch the behaviour for its device in runtime,
-+ * which may be beneficial from a latency or energy point of view, this function
-+ * may be called.
-+ *
-+ * It is assumed that the users guarantee that the genpd wouldn't be detached
-+ * while this routine is getting called.
-+ *
-+ * Returns 0 on success and negative error values on failures.
-+ */
-+int dev_pm_genpd_set_hwmode(struct device *dev, bool enable)
++static int gdsc_set_hwmode(struct generic_pm_domain *domain, struct device *dev, bool mode)
 +{
-+	struct generic_pm_domain *genpd;
-+	int ret = 0;
++	struct gdsc *sc = domain_to_gdsc(domain);
 +
-+	genpd = dev_to_genpd_safe(dev);
-+	if (!genpd)
-+		return -ENODEV;
++	if (sc->rsupply && !regulator_is_enabled(sc->rsupply)) {
++		pr_err("Cannot set mode while parent is disabled\n");
++		return -EIO;
++	}
 +
-+	if (!genpd->set_hwmode_dev)
-+		return -EOPNOTSUPP;
-+
-+	genpd_lock(genpd);
-+
-+	if (dev_gpd_data(dev)->hw_mode == enable)
-+		goto out;
-+
-+	ret = genpd->set_hwmode_dev(genpd, dev, enable);
-+	if (!ret)
-+		dev_gpd_data(dev)->hw_mode = enable;
-+
-+out:
-+	genpd_unlock(genpd);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_set_hwmode);
-+
-+/**
-+ * dev_pm_genpd_get_hwmode - Get the HW mode setting for the device.
-+ *
-+ * @dev: Device for which the current HW-mode setting should be fetched.
-+ *
-+ * This helper function allows consumer drivers to fetch the current HW mode
-+ * setting of its the device.
-+ *
-+ * It is assumed that the users guarantee that the genpd wouldn't be detached
-+ * while this routine is getting called.
-+ */
-+bool dev_pm_genpd_get_hwmode(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	genpd = dev_to_genpd_safe(dev);
-+	if (!genpd)
-+		return false;
-+
-+	if (genpd->get_hwmode_dev)
-+		return genpd->get_hwmode_dev(genpd, dev);
-+
-+	return dev_gpd_data(dev)->hw_mode;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_get_hwmode);
-+
- static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- {
- 	unsigned int state_idx = genpd->state_idx;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index f776fb93eaa0..36d308ba40b0 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -146,6 +146,10 @@ struct generic_pm_domain {
- 	int (*set_performance_state)(struct generic_pm_domain *genpd,
- 				     unsigned int state);
- 	struct gpd_dev_ops dev_ops;
-+	int (*set_hwmode_dev)(struct generic_pm_domain *domain,
-+			      struct device *dev, bool enable);
-+	bool (*get_hwmode_dev)(struct generic_pm_domain *domain,
-+			      struct device *dev);
- 	int (*attach_dev)(struct generic_pm_domain *domain,
- 			  struct device *dev);
- 	void (*detach_dev)(struct generic_pm_domain *domain,
-@@ -208,6 +212,7 @@ struct generic_pm_domain_data {
- 	unsigned int performance_state;
- 	unsigned int default_pstate;
- 	unsigned int rpm_pstate;
-+	bool hw_mode;
- 	void *data;
- };
- 
-@@ -237,6 +242,8 @@ int dev_pm_genpd_remove_notifier(struct device *dev);
- void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
- ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev);
- void dev_pm_genpd_synced_poweroff(struct device *dev);
-+int dev_pm_genpd_set_hwmode(struct device *dev, bool enable);
-+bool dev_pm_genpd_get_hwmode(struct device *dev);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -305,6 +312,16 @@ static inline ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev)
- static inline void dev_pm_genpd_synced_poweroff(struct device *dev)
- { }
- 
-+static inline int dev_pm_genpd_set_hwmode(struct device *dev, bool enable)
-+{
-+	return -EOPNOTSUPP;
++	return gdsc_hwctrl(sc, mode);
 +}
 +
-+static inline bool dev_pm_genpd_get_hwmode(struct device *dev)
++static bool gdsc_get_hwmode(struct generic_pm_domain *domain, struct device *dev)
 +{
++	struct gdsc *sc = domain_to_gdsc(domain);
++	u32 val;
++	int ret;
++
++	ret = regmap_read(sc->regmap, sc->gdscr, &val);
++	if (ret)
++		return ret;
++
++	if (val & HW_CONTROL_MASK)
++		return true;
++
 +	return false;
 +}
 +
- #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
- #endif
+ static int gdsc_init(struct gdsc *sc)
+ {
+ 	u32 mask, val;
+@@ -451,6 +479,10 @@ static int gdsc_init(struct gdsc *sc)
+ 		sc->pd.power_off = gdsc_disable;
+ 	if (!sc->pd.power_on)
+ 		sc->pd.power_on = gdsc_enable;
++	if (sc->flags & HW_CTRL_TRIGGER) {
++		sc->pd.set_hwmode_dev = gdsc_set_hwmode;
++		sc->pd.get_hwmode_dev = gdsc_get_hwmode;
++	}
+ 
+ 	ret = pm_genpd_init(&sc->pd, NULL, !on);
+ 	if (ret)
+diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
+index 803512688336..1e2779b823d1 100644
+--- a/drivers/clk/qcom/gdsc.h
++++ b/drivers/clk/qcom/gdsc.h
+@@ -67,6 +67,7 @@ struct gdsc {
+ #define ALWAYS_ON	BIT(6)
+ #define RETAIN_FF_ENABLE	BIT(7)
+ #define NO_RET_PERIPH	BIT(8)
++#define HW_CTRL_TRIGGER	BIT(9)
+ 	struct reset_controller_dev	*rcdev;
+ 	unsigned int			*resets;
+ 	unsigned int			reset_count;
 -- 
 2.34.1
 
