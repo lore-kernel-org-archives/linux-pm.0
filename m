@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55178CE7A89
-	for <linux-pm@archiver.kernel.org>; Sat, 23 Sep 2023 11:50:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 857BFCE7A8F
+	for <linux-pm@archiver.kernel.org>; Sat, 23 Sep 2023 11:50:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231423AbjIWLu0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 23 Sep 2023 07:50:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34962 "EHLO
+        id S231453AbjIWLu1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 23 Sep 2023 07:50:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35024 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231168AbjIWLuZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Sep 2023 07:50:25 -0400
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90346199
-        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:17 -0700 (PDT)
-Received: by mail-lj1-x235.google.com with SMTP id 38308e7fff4ca-2c123eed8b2so58843851fa.0
-        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:17 -0700 (PDT)
+        with ESMTP id S231431AbjIWLu0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Sep 2023 07:50:26 -0400
+Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BFD11B2
+        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:20 -0700 (PDT)
+Received: by mail-ej1-x631.google.com with SMTP id a640c23a62f3a-99357737980so443813666b.2
+        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695469816; x=1696074616; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=7bX8G2i5J1ALZVJ03xHMbBXo1RYMNHbxXzPAX+U85OE=;
-        b=K0m+vLUa/C7Xf/+YAzKhc6H3pkg/sDzr0qXZaV8BBkMyWOCG81/uTyMZsVPA91/tQ3
-         UsCweKMYI0P2ORdI08MVMlyGXobeiKg4K/o51fpfBM17OvU8HMBqsrabFo1VjWAkP4Id
-         XMLS+jabwehKPu6J9i6Cm8OL/OT9kz2XzJEf7fF3a0XdLdCH4nwwf/KR8xFaNvuG6Vp3
-         1UbJ+JyxoOsM4qDLeHkJUqx3pb2siZPwtJ/eyIt1uHBnhgYxvhMytgDaRdgt9OaAMV3w
-         bQT10DblOasvNNF5y/JbFkmtxdxWakNEqrXRytDDt7qAU0U6ufptzsdukb/fDcf/a/S2
-         E3EA==
+        d=linaro.org; s=google; t=1695469819; x=1696074619; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gkMg6Ss1ODOcr8VdxRq6yPqfjTyE6Onn/Fwc4BWB7DM=;
+        b=rLkzUVP9FvDi4+xOnZH7Iga1U2MJSV+W/0G+rtds2o8MTzHpFrZ009AS4vb/8PN6td
+         f9vExEq4tuN4HGGf7XfxTn1GwdiQhiq2QZ11Dyu6shWaC5nbvKNbgotBaGEmajaiBSW0
+         +gc72amGkuTSZxoRt/Kv4yH99qDceXRaltQ6HceQpxu+z9o1RXa07q0i7ymRcV4of6hf
+         H1TXEbkI7YxfcN4wk+VvVt/uvBnohsgKBGXfTxIEqbLg7QVI7WZB7aFFxF+SE5/vHkHi
+         qzgCk6EctIw9+jHV9x2iX5Zz4NXmrGfEj5Dt4AzZEqMqLS83NEF+JKgCl0eQKlExPsl0
+         R5Ig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695469816; x=1696074616;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=7bX8G2i5J1ALZVJ03xHMbBXo1RYMNHbxXzPAX+U85OE=;
-        b=oMvxs2mcHYiGnEmcmfCWQChIUTD0fLDUVKYB39WNYqX2Z5adZ3c9IeZDkz1L0HRyz9
-         r72ry5PQNSSzk8kypn9eLXCQFjoaEgBPJ+QPP5K6kDFGjhgT3kVulyvHQw1eRYwXLATJ
-         a++9Zv/JpMFrCbNsoqFU8zScTvm9xr7ifGc9imq3xP9O6wiJ0Pz1jqlcTdEb6YuuhSun
-         ko4Iw4Dx/He/pc6x+tSs61Po2wGhfJtewcQ+fqPtDxO9aoGwTwnCOufBOS/Id3JKIMwc
-         MVC3gerH0kSp+IlzsOKuhV8urHTUJPHrXpIIDtJrHIMGbThDml5Gb/b4K0dGC3UNytnh
-         CjjA==
-X-Gm-Message-State: AOJu0Yy90QMvfq1+q7iVW+GhRmZnvEzJCTWt26B+h6FSo/QRu+7MBIHc
-        wh3h3Hb1x+ikdx9CW+NFYxXrRMRrAYkg/GSB4FTPbg==
-X-Google-Smtp-Source: AGHT+IFPgixQMTZBwhEQNanrBYrypYYVQy1y92nrJ8OITb8jeQ0HonezWs4Vxf8Fzb9n9BbvigDoeQ==
-X-Received: by 2002:a2e:9091:0:b0:2bf:f497:52d6 with SMTP id l17-20020a2e9091000000b002bff49752d6mr1657463ljg.22.1695469815760;
-        Sat, 23 Sep 2023 04:50:15 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1695469819; x=1696074619;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=gkMg6Ss1ODOcr8VdxRq6yPqfjTyE6Onn/Fwc4BWB7DM=;
+        b=iwq8lJKA3+2q5uducDpjVTKEqiBXo3tZo/i7X5TniuH9OBgyhTPQpWO1TOHJbC11Aa
+         7ngSPtOX/+gw23l90upE3iAFSw5mtRjbe/tpa2qo/BnupK3+bAq2hbX9WxmeyDNm8IUK
+         HwQOVVN69+aTdodH3Gz1oyEXVRXe/JAGK18ULxQB+NojeyKj+2KQmafptFwU62VtdPhJ
+         DDnsa3OpgKGOTuz3PNgTGP37CFJux7/vWX3wmAbyhCosn5ctTMMZoUkmVhDLg0DmU+c1
+         P0YBz5e+W5mmJ8qsFqwT5k2z8y36nXuT0uwfPqRc+Sbvlyw3tMCpP+FH9glVFBBk1T6t
+         MkEg==
+X-Gm-Message-State: AOJu0Yyv/obiMY6m9mZ4cYuMqH6FnlRUPk8mHZODwqpWex9yVfz1M+0z
+        E/u7dQueU1Mei9Mtf6GaFnHtKQ==
+X-Google-Smtp-Source: AGHT+IFA63qVcvn23d2cB7ArqMpEOgP3SaNn+1EhFxPur0BUfXBa/lAhkkc40O5YTXiHAPiXx/8TGQ==
+X-Received: by 2002:a17:906:310d:b0:9a2:24f9:fabe with SMTP id 13-20020a170906310d00b009a224f9fabemr2003596ejx.66.1695469818880;
+        Sat, 23 Sep 2023 04:50:18 -0700 (PDT)
 Received: from hackbox.lan ([86.120.16.169])
-        by smtp.gmail.com with ESMTPSA id k15-20020a1709062a4f00b009ad8084e08asm3853310eje.0.2023.09.23.04.50.14
+        by smtp.gmail.com with ESMTPSA id k15-20020a1709062a4f00b009ad8084e08asm3853310eje.0.2023.09.23.04.50.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 23 Sep 2023 04:50:15 -0700 (PDT)
+        Sat, 23 Sep 2023 04:50:18 -0700 (PDT)
 From:   Abel Vesa <abel.vesa@linaro.org>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
@@ -62,47 +63,70 @@ To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Taniya Das <tdas@qti.qualcomm.com>
 Cc:     linux-pm@vger.kernel.org,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm@vger.kernel.org
-Subject: [RESEND v3 0/5] PM: domains: Add control for switching back and forth to HW control
-Date:   Sat, 23 Sep 2023 14:50:03 +0300
-Message-Id: <20230923115008.1698384-1-abel.vesa@linaro.org>
+        linux-arm-msm@vger.kernel.org, Taniya Das <quic_tdas@quicinc.com>
+Subject: [RESEND v3 2/5] PM: domains: Add the domain HW-managed mode to the summary
+Date:   Sat, 23 Sep 2023 14:50:05 +0300
+Message-Id: <20230923115008.1698384-3-abel.vesa@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230923115008.1698384-1-abel.vesa@linaro.org>
+References: <20230923115008.1698384-1-abel.vesa@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is just a resend of v3:
-https://lore.kernel.org/lkml/20230823114528.3677667-1-abel.vesa@linaro.org/
+Now that genpd supports dynamically switching the control for an
+attached device between hardware- and software-mode,  let's add this
+information to the genpd summary in debugfs.
 
-Just added Ulf's R-b tag to the 2nd patch. No other changes.
+Suggested-by: Taniya Das <quic_tdas@quicinc.com>
+Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/domain.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-Abel Vesa (1):
-  PM: domains: Add the domain HW-managed mode to the summary
-
-Jagadeesh Kona (3):
-  clk: qcom: gdsc: Add set and get hwmode callbacks to switch GDSC mode
-  clk: qcom: Use HW_CTRL_TRIGGER flag to switch video GDSC to HW mode
-  venus: pm_helpers: Use dev_pm_genpd_set_hwmode to switch GDSC mode
-
-Ulf Hansson (1):
-  PM: domains: Allow devices attached to genpd to be managed by HW
-
- drivers/base/power/domain.c                   | 84 ++++++++++++++++++-
- drivers/clk/qcom/gdsc.c                       | 32 +++++++
- drivers/clk/qcom/gdsc.h                       |  1 +
- drivers/clk/qcom/videocc-sc7180.c             |  2 +-
- drivers/clk/qcom/videocc-sc7280.c             |  2 +-
- drivers/clk/qcom/videocc-sdm845.c             |  4 +-
- drivers/clk/qcom/videocc-sm8250.c             |  4 +-
- drivers/clk/qcom/videocc-sm8550.c             |  4 +-
- drivers/media/platform/qcom/venus/core.c      |  4 +
- drivers/media/platform/qcom/venus/core.h      |  1 +
- .../media/platform/qcom/venus/pm_helpers.c    | 47 +++++------
- include/linux/pm_domain.h                     | 17 ++++
- 12 files changed, 165 insertions(+), 37 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index dfb4f1de540d..93350e67b0e8 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -3171,6 +3171,15 @@ static void rtpm_status_str(struct seq_file *s, struct device *dev)
+ 	seq_printf(s, "%-25s  ", p);
+ }
+ 
++static void mode_status_str(struct seq_file *s, struct device *dev)
++{
++	struct generic_pm_domain_data *gpd_data;
++
++	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
++
++	seq_printf(s, "%20s", gpd_data->hw_mode ? "HW" : "SW");
++}
++
+ static void perf_status_str(struct seq_file *s, struct device *dev)
+ {
+ 	struct generic_pm_domain_data *gpd_data;
+@@ -3229,6 +3238,7 @@ static int genpd_summary_one(struct seq_file *s,
+ 		seq_printf(s, "\n    %-50s  ", kobj_path);
+ 		rtpm_status_str(s, pm_data->dev);
+ 		perf_status_str(s, pm_data->dev);
++		mode_status_str(s, pm_data->dev);
+ 		kfree(kobj_path);
+ 	}
+ 
+@@ -3245,8 +3255,9 @@ static int summary_show(struct seq_file *s, void *data)
+ 	int ret = 0;
+ 
+ 	seq_puts(s, "domain                          status          children                           performance\n");
+-	seq_puts(s, "    /device                                             runtime status\n");
+-	seq_puts(s, "----------------------------------------------------------------------------------------------\n");
++	seq_puts(s, "    /device                                             runtime status                           managed by\n");
++	seq_puts(s, "------------------------------------------------------------------------------------------------------------\n");
++
+ 
+ 	ret = mutex_lock_interruptible(&gpd_list_lock);
+ 	if (ret)
 -- 
 2.34.1
 
