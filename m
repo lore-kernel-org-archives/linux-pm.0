@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 949F1CE7A8B
-	for <linux-pm@archiver.kernel.org>; Sat, 23 Sep 2023 11:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E653ACE7A88
+	for <linux-pm@archiver.kernel.org>; Sat, 23 Sep 2023 11:50:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231479AbjIWLua (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 23 Sep 2023 07:50:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35066 "EHLO
+        id S231574AbjIWLuh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 23 Sep 2023 07:50:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35058 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231437AbjIWLu2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Sep 2023 07:50:28 -0400
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E48A41AC
-        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:21 -0700 (PDT)
-Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-99bdcade7fbso429379066b.1
-        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:21 -0700 (PDT)
+        with ESMTP id S231168AbjIWLuf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Sep 2023 07:50:35 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12B2F1AD
+        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:25 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id ffacd0b85a97d-31f7638be6eso3392412f8f.3
+        for <linux-pm@vger.kernel.org>; Sat, 23 Sep 2023 04:50:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695469820; x=1696074620; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1695469823; x=1696074623; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Z22Rfgd7UjpYt4TAoqngtq5qLN6/k4A45SAesnG+QTI=;
-        b=JLBeSQiCAXlpMl4ybd17rbwgJeipNxL4Xo+SnWlEwAmABKLVqMjqxkkr4ceB5c3RnR
-         cpi+25uwJq7kUlyaZdiHTvvdV9+XDaMuqs9Tgmg7j6J2sO+sV4HCqlMyppyVZ21R8M2M
-         VzHHWPbJHb9THQBWcdXIUj3cGfFqK2tE/+IazsTuBOhxfERebBmuoMpJ+XwUNSpWzpcp
-         /p0gINNfScBa0naH80YEgjiD2arIXQivf/ydWV1yctIa3qpDoUEa0OnanhTh+9ut++WH
-         u20We6AN1Ws0vgf1n69T5eRG1WdJVUCy6IPZfQgXac1o0AzVnAQhzbgX4d6NmuZA9FQO
-         cZzA==
+        bh=MeiFNC+rrHZ3HIl5q4lUJWW0SsohudondY4l8XE9nCs=;
+        b=yBU/VdbM0W/CaM8Z5WFXHZ0Wl4WjxJBowwQ0yRGe9OLqZbPTJzTtAowfrGqiwkhGrd
+         Qtd4kl+3B+g7Sy23u/BTS5KXE5w8wY0Gpx89Lb6EnSh9CpIPGiGedSkHeiObhn6EhbrL
+         hIepGbzgADtHDe1Rs42OXhIWepg9/vc2bWGo2IWIKQhO0Es+Qv/jsRcO15/vxvXoW76R
+         NhJqDKXFnyeyvLjwrwJq7DFheBo4S1QG7SFnoNsWQTQTIILMMBHVNuUDfUDkDzL/S9Cd
+         ivSHxUXfS+CYlLE77wWhKQeOgsL6XRKQPy/TUCR/RNf88zrOQWxf2fSWUzFGx/xoOes4
+         ErqA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695469820; x=1696074620;
+        d=1e100.net; s=20230601; t=1695469823; x=1696074623;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Z22Rfgd7UjpYt4TAoqngtq5qLN6/k4A45SAesnG+QTI=;
-        b=W26Xdac6QiIiS0MIFDpo9V+cnJ6rfK1qqwqoWMxE7BWvKSJ4qAdi45YpqnlcJXJISn
-         radsGkqgVoVFtRIraFGq7WmwHLAtU5bdsklIdyKUahi7NqLGFMOEY/4NGtZAB9GkoqLY
-         y0dwXKre6ofIavvqDaFkCCpoGpWUOMlkl5k/F//FW0r+XUAdPPAWv90xj+jHod+wwQru
-         GKUxFEetGEQv+k8Vo/BlkgwTgMWfXif9J1QqnLawviCr02wmjKt/rM0DGw5JAvDqG38T
-         2Fe4/lvmGaUU+iUxmGamAO9ic+JjQ2XtZblm0A2ysiWhsffkr8zpCeUR97BHBNkhB3K+
-         sBrw==
-X-Gm-Message-State: AOJu0Yw7Ilfjw4enF3zgGI6IRRRgv7rlk/L5iCgWQXdZ5IsFycE/VvBh
-        uXdwiDKgW1Tgs//HWN1rZ3VGkdP6DWcqF/25AkbbMw==
-X-Google-Smtp-Source: AGHT+IHOKPV7tYEYJr657kkH+IPPQoUNAztuS8mSEUiRMTXXngg1z06D5l/pJFMhWEUG1uokl2U5lg==
-X-Received: by 2002:a17:907:3d86:b0:9ae:729c:f651 with SMTP id he6-20020a1709073d8600b009ae729cf651mr1743569ejc.17.1695469820447;
-        Sat, 23 Sep 2023 04:50:20 -0700 (PDT)
+        bh=MeiFNC+rrHZ3HIl5q4lUJWW0SsohudondY4l8XE9nCs=;
+        b=fT03JYuT9VPkTKplsEXTkGBYxgbxMEW2V+pfvt0KvnTq7x36VW0vpBqz/DvEMpagGi
+         mwCWCR6fkLG9R8ok4fbPIJ2lD2+yywp3LlfotMdsfc3+V5swb4DvMeST4tgZH5hCrehR
+         /wwXB9k8L4sg2LcX79J4sAvLPC/QPu2n1EuPLjfh48va7xQPjowYNbI5lk8nO23llHpQ
+         JyWZd1ayXXIMNu4B8x7k9Y1uhSJLlRoJQkRqiyaBG+y1NsvEQeSh6E3HJWHto6gp9A7E
+         g3KjI1lT3OrIAYIv5SE2P0cw/+/dXqSbQ2WKA+p2RzQlL8SVfsydcLE3XnEcVB+Hg4A8
+         ZOGQ==
+X-Gm-Message-State: AOJu0Yy1YI7UlN2gtkinTynZZ5aFYjd0JDLK1qun8qfO6rm8AQYXXgF9
+        t7u68ruS7ary3FxuDkSisDNMbw==
+X-Google-Smtp-Source: AGHT+IEEs3tycQ2S46mMPFPwhhvWTqLgXkB29lSmnmQuc0JgQ24wOK/BSGujJGfGOX6+kWrnT+6XHA==
+X-Received: by 2002:a5d:4e83:0:b0:319:785a:fce5 with SMTP id e3-20020a5d4e83000000b00319785afce5mr1816609wru.38.1695469823486;
+        Sat, 23 Sep 2023 04:50:23 -0700 (PDT)
 Received: from hackbox.lan ([86.120.16.169])
-        by smtp.gmail.com with ESMTPSA id k15-20020a1709062a4f00b009ad8084e08asm3853310eje.0.2023.09.23.04.50.19
+        by smtp.gmail.com with ESMTPSA id k15-20020a1709062a4f00b009ad8084e08asm3853310eje.0.2023.09.23.04.50.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 23 Sep 2023 04:50:19 -0700 (PDT)
+        Sat, 23 Sep 2023 04:50:23 -0700 (PDT)
 From:   Abel Vesa <abel.vesa@linaro.org>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
@@ -65,9 +65,9 @@ Cc:     linux-pm@vger.kernel.org,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         linux-arm-msm@vger.kernel.org,
         Jagadeesh Kona <quic_jkona@quicinc.com>
-Subject: [RESEND v3 3/5] clk: qcom: gdsc: Add set and get hwmode callbacks to switch GDSC mode
-Date:   Sat, 23 Sep 2023 14:50:06 +0300
-Message-Id: <20230923115008.1698384-4-abel.vesa@linaro.org>
+Subject: [RESEND v3 5/5] venus: pm_helpers: Use dev_pm_genpd_set_hwmode to switch GDSC mode
+Date:   Sat, 23 Sep 2023 14:50:08 +0300
+Message-Id: <20230923115008.1698384-6-abel.vesa@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230923115008.1698384-1-abel.vesa@linaro.org>
 References: <20230923115008.1698384-1-abel.vesa@linaro.org>
@@ -79,93 +79,141 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Jagadeesh Kona <quic_jkona@quicinc.com>
 
-Add support for set and get hwmode callbacks to switch the GDSC between
-SW and HW modes. Currently, the GDSC is moved to HW control mode
-using HW_CTRL flag and if this flag is present, GDSC is moved to HW
-mode as part of GDSC enable itself. The intention is to keep the
-HW_CTRL flag functionality as is, since many older chipsets still use
-this flag.
+This change demonstrates the use of dev_pm_genpd_set_hwmode API from
+video driver to switch the video mvs0 gdsc to SW/HW modes at runtime
+based on requirement.
 
-Introduce a new HW_CTRL_TRIGGER flag to switch the GDSC back and forth
-between HW/SW modes dynamically at runtime. If HW_CTRL_TRIGGER flag is
-present, register set_hwmode_dev callback to switch the GDSC mode which
-can be invoked from consumer drivers using dev_pm_genpd_set_hwmode
-function. Unlike HW_CTRL flag, HW_CTRL_TRIGGER won't move the GDSC to HW
-control mode as part of GDSC enable itself, GDSC will be moved to HW
-control mode only when consumer driver explicity calls
-dev_pm_genpd_set_hwmode to switch to HW mode. Also add the
-dev_pm_genpd_get_hwmode to allow the consumers to read the actual
-HW/SW mode from hardware.
+This change adds a new boolean array member vcodec_pmdomains_hwctrl in
+venus_resources structure to indicate if GDSC's have HW control support
+or not. This data is used in vcodec_control_v4() to check if GDSC has
+support to switch to HW control mode and then call dev_pm_genpd_set_hwmode
+to switch the GDSC mode.
+
+Before the GDSC HWCTL was available to the consumer, the venus driver
+needed to somehow keep the power from collapsing while under the driver
+control. The only way to do that was to clear the CORE_PWR_DISABLE bit
+(in wrapper POWER_CONTROL register) and, respectively, set it back after
+the driver control was completed.
+
+Now, that there is a way to switch the GDSC HW/SW control back and
+forth, the CORE_PWR_DISABLE toggling can be dropped.
 
 Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
 Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
 ---
- drivers/clk/qcom/gdsc.c | 32 ++++++++++++++++++++++++++++++++
- drivers/clk/qcom/gdsc.h |  1 +
- 2 files changed, 33 insertions(+)
+ drivers/media/platform/qcom/venus/core.c      |  4 ++
+ drivers/media/platform/qcom/venus/core.h      |  1 +
+ .../media/platform/qcom/venus/pm_helpers.c    | 47 ++++++++-----------
+ 3 files changed, 25 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
-index 5358e28122ab..c763524cd5da 100644
---- a/drivers/clk/qcom/gdsc.c
-+++ b/drivers/clk/qcom/gdsc.c
-@@ -363,6 +363,34 @@ static int gdsc_disable(struct generic_pm_domain *domain)
+diff --git a/drivers/media/platform/qcom/venus/core.c b/drivers/media/platform/qcom/venus/core.c
+index 054b8e74ba4f..8145062ab6f7 100644
+--- a/drivers/media/platform/qcom/venus/core.c
++++ b/drivers/media/platform/qcom/venus/core.c
+@@ -706,6 +706,7 @@ static const struct venus_resources sdm845_res_v2 = {
+ 	.vcodec1_clks = { "vcodec1_core", "vcodec1_bus" },
+ 	.vcodec_clks_num = 2,
+ 	.vcodec_pmdomains = { "venus", "vcodec0", "vcodec1" },
++	.vcodec_pmdomains_hwctrl = { false, true, true },
+ 	.vcodec_pmdomains_num = 3,
+ 	.opp_pmdomain = (const char *[]) { "cx", NULL },
+ 	.vcodec_num = 2,
+@@ -755,6 +756,7 @@ static const struct venus_resources sc7180_res = {
+ 	.vcodec0_clks = { "vcodec0_core", "vcodec0_bus" },
+ 	.vcodec_clks_num = 2,
+ 	.vcodec_pmdomains = { "venus", "vcodec0" },
++	.vcodec_pmdomains_hwctrl = { false, true },
+ 	.vcodec_pmdomains_num = 2,
+ 	.opp_pmdomain = (const char *[]) { "cx", NULL },
+ 	.vcodec_num = 1,
+@@ -812,6 +814,7 @@ static const struct venus_resources sm8250_res = {
+ 	.vcodec0_clks = { "vcodec0_core" },
+ 	.vcodec_clks_num = 1,
+ 	.vcodec_pmdomains = { "venus", "vcodec0" },
++	.vcodec_pmdomains_hwctrl = { false, true },
+ 	.vcodec_pmdomains_num = 2,
+ 	.opp_pmdomain = (const char *[]) { "mx", NULL },
+ 	.vcodec_num = 1,
+@@ -871,6 +874,7 @@ static const struct venus_resources sc7280_res = {
+ 	.vcodec0_clks = {"vcodec_core", "vcodec_bus"},
+ 	.vcodec_clks_num = 2,
+ 	.vcodec_pmdomains = { "venus", "vcodec0" },
++	.vcodec_pmdomains_hwctrl = { false, true },
+ 	.vcodec_pmdomains_num = 2,
+ 	.opp_pmdomain = (const char *[]) { "cx", NULL },
+ 	.vcodec_num = 1,
+diff --git a/drivers/media/platform/qcom/venus/core.h b/drivers/media/platform/qcom/venus/core.h
+index 4a633261ece4..6d591ecad482 100644
+--- a/drivers/media/platform/qcom/venus/core.h
++++ b/drivers/media/platform/qcom/venus/core.h
+@@ -73,6 +73,7 @@ struct venus_resources {
+ 	const char * const vcodec1_clks[VIDC_VCODEC_CLKS_NUM_MAX];
+ 	unsigned int vcodec_clks_num;
+ 	const char * const vcodec_pmdomains[VIDC_PMDOMAINS_NUM_MAX];
++	bool vcodec_pmdomains_hwctrl[VIDC_PMDOMAINS_NUM_MAX];
+ 	unsigned int vcodec_pmdomains_num;
+ 	const char **opp_pmdomain;
+ 	unsigned int vcodec_num;
+diff --git a/drivers/media/platform/qcom/venus/pm_helpers.c b/drivers/media/platform/qcom/venus/pm_helpers.c
+index 48c9084bb4db..c53eef23c793 100644
+--- a/drivers/media/platform/qcom/venus/pm_helpers.c
++++ b/drivers/media/platform/qcom/venus/pm_helpers.c
+@@ -408,35 +408,28 @@ static const struct venus_pm_ops pm_ops_v3 = {
+ 
+ static int vcodec_control_v4(struct venus_core *core, u32 coreid, bool enable)
+ {
+-	void __iomem *ctrl, *stat;
+-	u32 val;
+-	int ret;
+-
+-	if (IS_V6(core)) {
+-		ctrl = core->wrapper_base + WRAPPER_CORE_POWER_CONTROL_V6;
+-		stat = core->wrapper_base + WRAPPER_CORE_POWER_STATUS_V6;
+-	} else if (coreid == VIDC_CORE_ID_1) {
+-		ctrl = core->wrapper_base + WRAPPER_VCODEC0_MMCC_POWER_CONTROL;
+-		stat = core->wrapper_base + WRAPPER_VCODEC0_MMCC_POWER_STATUS;
+-	} else {
+-		ctrl = core->wrapper_base + WRAPPER_VCODEC1_MMCC_POWER_CONTROL;
+-		stat = core->wrapper_base + WRAPPER_VCODEC1_MMCC_POWER_STATUS;
+-	}
+-
+-	if (enable) {
+-		writel(0, ctrl);
+-
+-		ret = readl_poll_timeout(stat, val, val & BIT(1), 1, 100);
+-		if (ret)
+-			return ret;
+-	} else {
+-		writel(1, ctrl);
++	int i, ret = 0;
++	struct device *dev = core->dev;
++	const struct venus_resources *res = core->res;
+ 
+-		ret = readl_poll_timeout(stat, val, !(val & BIT(1)), 1, 100);
+-		if (ret)
+-			return ret;
++	for (i = 0; i < res->vcodec_pmdomains_num; i++) {
++		if (res->vcodec_pmdomains_hwctrl[i]) {
++
++			if (!core->pmdomains[i])
++				return -ENODEV;
++
++			/*
++			 * enable( true ), switch the gdsc to SW mode
++			 * enable( false), switch the gdsc to HW mode
++			 */
++			ret = dev_pm_genpd_set_hwmode(core->pmdomains[i], !enable);
++			if (ret) {
++				dev_err(dev, "Failed to switch power-domain:%d to %s mode\n",
++					i, enable ? "SW" : "HW");
++				return ret;
++			}
++		}
+ 	}
+-
  	return 0;
  }
  
-+static int gdsc_set_hwmode(struct generic_pm_domain *domain, struct device *dev, bool mode)
-+{
-+	struct gdsc *sc = domain_to_gdsc(domain);
-+
-+	if (sc->rsupply && !regulator_is_enabled(sc->rsupply)) {
-+		pr_err("Cannot set mode while parent is disabled\n");
-+		return -EIO;
-+	}
-+
-+	return gdsc_hwctrl(sc, mode);
-+}
-+
-+static bool gdsc_get_hwmode(struct generic_pm_domain *domain, struct device *dev)
-+{
-+	struct gdsc *sc = domain_to_gdsc(domain);
-+	u32 val;
-+	int ret;
-+
-+	ret = regmap_read(sc->regmap, sc->gdscr, &val);
-+	if (ret)
-+		return ret;
-+
-+	if (val & HW_CONTROL_MASK)
-+		return true;
-+
-+	return false;
-+}
-+
- static int gdsc_init(struct gdsc *sc)
- {
- 	u32 mask, val;
-@@ -451,6 +479,10 @@ static int gdsc_init(struct gdsc *sc)
- 		sc->pd.power_off = gdsc_disable;
- 	if (!sc->pd.power_on)
- 		sc->pd.power_on = gdsc_enable;
-+	if (sc->flags & HW_CTRL_TRIGGER) {
-+		sc->pd.set_hwmode_dev = gdsc_set_hwmode;
-+		sc->pd.get_hwmode_dev = gdsc_get_hwmode;
-+	}
- 
- 	ret = pm_genpd_init(&sc->pd, NULL, !on);
- 	if (ret)
-diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
-index 803512688336..1e2779b823d1 100644
---- a/drivers/clk/qcom/gdsc.h
-+++ b/drivers/clk/qcom/gdsc.h
-@@ -67,6 +67,7 @@ struct gdsc {
- #define ALWAYS_ON	BIT(6)
- #define RETAIN_FF_ENABLE	BIT(7)
- #define NO_RET_PERIPH	BIT(8)
-+#define HW_CTRL_TRIGGER	BIT(9)
- 	struct reset_controller_dev	*rcdev;
- 	unsigned int			*resets;
- 	unsigned int			reset_count;
 -- 
 2.34.1
 
