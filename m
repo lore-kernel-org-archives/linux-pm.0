@@ -2,46 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70953CE7A8D
-	for <linux-pm@archiver.kernel.org>; Sun, 24 Sep 2023 13:17:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1086CE7A88
+	for <linux-pm@archiver.kernel.org>; Sun, 24 Sep 2023 13:21:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229993AbjIXNRh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 24 Sep 2023 09:17:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53788 "EHLO
+        id S229688AbjIXNV1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 24 Sep 2023 09:21:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46352 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230015AbjIXNRI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 24 Sep 2023 09:17:08 -0400
+        with ESMTP id S229737AbjIXNU5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 24 Sep 2023 09:20:57 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1AF8B103;
-        Sun, 24 Sep 2023 06:16:21 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2BB5C433AB;
-        Sun, 24 Sep 2023 13:16:18 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22C9F1BE7;
+        Sun, 24 Sep 2023 06:18:29 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21EC5C43395;
+        Sun, 24 Sep 2023 13:18:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1695561379;
-        bh=vh7BfSr1u7GfUodRI3KNjHPlHcY9eWH6Sws6x5MztBg=;
+        s=k20201202; t=1695561508;
+        bh=l5DnyFuuiHFzaawxIuRGJaUElNH7zX3N6SPI0DudOqg=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=P+KwYcK+2m1m5ZnZk38v4D5WMBHFTfimEwNdAD6ZKvCbGBk18TIDigb+psyIk/8Ya
-         ILuaDCcokz0NL9mAACjAF/AfgpFIG7CppPRqqANw4rl/8r0S0fa0+6/974P9ZY01rT
-         8UOhHLxNVI5cson0a2DhG6heSI1VrL/pJRvz/IbJ6Qh1MILS/8SjoKbjJhj3+D++zH
-         jnY4Eu/+HeBLtAHBNYy82F4N8FXbhz9Fakvylg06peDsC3SS/Y9/K+AHtIHAvH9ToV
-         gx8w6CqwLtrgS1dehSsb//Jo7W6P24vUMEv3ENCJodojbS4U4RBL6TObeA0+QeyaN5
-         gJQmtlRdSnl4g==
+        b=oSCaXQzyI/1XWlfL9nUrQXa83K7SFgrUJYiJGHzVv0iklIDsbbpnpniK/Xs868Daj
+         NHeu0HaJubHeOLl1cu5kMIi3x1QBv3fdZfNSs6up+aTaDsEg7C6lg3uSV83EHUM65Y
+         xZgxUxDlv86wEVsCXEVMGJryWvupxGMGlFKEH2Dx5xG5II/LLrmgEUZ5H5Dion9573
+         2dk/VZr/2+SXzwb4cxJSpZIm3P9/7TCW17/BOOsv8DNTJH1FfEx/TJcHSz/PKkhEzV
+         aUbFRLYikIXMt60fgdJPAgQlXGcbS3JvYKrlC1kZ8890b1qX+y7wJkQsIkJHTVkldp
+         jsUv44VEMAN4Q==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Julia Lawall <Julia.Lawall@inria.fr>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
         daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.5 23/41] thermal/of: add missing of_node_put()
-Date:   Sun, 24 Sep 2023 09:15:11 -0400
-Message-Id: <20230924131529.1275335-23-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 19/28] thermal/of: add missing of_node_put()
+Date:   Sun, 24 Sep 2023 09:17:36 -0400
+Message-Id: <20230924131745.1275960-19-sashal@kernel.org>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230924131529.1275335-1-sashal@kernel.org>
-References: <20230924131529.1275335-1-sashal@kernel.org>
+In-Reply-To: <20230924131745.1275960-1-sashal@kernel.org>
+References: <20230924131745.1275960-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.5.5
+X-stable-base: Linux 6.1.55
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -66,10 +66,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 22272f9c5934a..e615f735f4c03 100644
+index 762d1990180bf..4104743dbc17e 100644
 --- a/drivers/thermal/thermal_of.c
 +++ b/drivers/thermal/thermal_of.c
-@@ -38,8 +38,10 @@ static int of_find_trip_id(struct device_node *np, struct device_node *trip)
+@@ -149,8 +149,10 @@ static int of_find_trip_id(struct device_node *np, struct device_node *trip)
  	 */
  	for_each_child_of_node(trips, t) {
  
@@ -81,7 +81,7 @@ index 22272f9c5934a..e615f735f4c03 100644
  		i++;
  	}
  
-@@ -402,8 +404,10 @@ static int thermal_of_for_each_cooling_maps(struct thermal_zone_device *tz,
+@@ -519,8 +521,10 @@ static int thermal_of_for_each_cooling_maps(struct thermal_zone_device *tz,
  
  	for_each_child_of_node(cm_np, child) {
  		ret = thermal_of_for_each_cooling_device(tz_np, child, tz, cdev, action);
