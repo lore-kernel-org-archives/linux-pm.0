@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50E1FCE7A95
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFED2CE7A96
 	for <linux-pm@archiver.kernel.org>; Mon, 25 Sep 2023 13:18:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231766AbjIYNSS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 25 Sep 2023 09:18:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45080 "EHLO
+        id S231706AbjIYNST (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 25 Sep 2023 09:18:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57756 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231706AbjIYNSM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2023 09:18:12 -0400
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D8DE121
-        for <linux-pm@vger.kernel.org>; Mon, 25 Sep 2023 06:18:03 -0700 (PDT)
-Received: by mail-lf1-x12b.google.com with SMTP id 2adb3069b0e04-502e7d66c1eso10273903e87.1
-        for <linux-pm@vger.kernel.org>; Mon, 25 Sep 2023 06:18:03 -0700 (PDT)
+        with ESMTP id S231831AbjIYNSO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2023 09:18:14 -0400
+Received: from mail-lj1-x232.google.com (mail-lj1-x232.google.com [IPv6:2a00:1450:4864:20::232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A33B6A2
+        for <linux-pm@vger.kernel.org>; Mon, 25 Sep 2023 06:18:07 -0700 (PDT)
+Received: by mail-lj1-x232.google.com with SMTP id 38308e7fff4ca-2c01d22f332so91290501fa.0
+        for <linux-pm@vger.kernel.org>; Mon, 25 Sep 2023 06:18:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695647882; x=1696252682; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1695647886; x=1696252686; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=2bFHpy7o1LqMw4W/VuJiDN5LSPCulCxHGcm0dhiriMk=;
-        b=akzsUeXATj6phxvbMERpRKxwOFzaqEdoEpSv0qkCkrIv8xSul2dEEqSCp2Wg0ZYNLW
-         TDWdEo8mdnA3tl1Tfq+59V/IelAMic1xq/D9hSJuPe6WHL0AEI6jrP09on29j9JmA0jv
-         8HhGi5hlL+ihxBkqAEUdmQo+Sb+iJs1FUX9oXHbdvItStVA4p+0O6AA1F2D+B5jwwOHj
-         WqxI1/cLrmnrJPrX8FS/iyu6eOKZjfJvTjL1y5Ajdqzfzi1xYjnWAFkAPmxRx0EXewhZ
-         40mqR4b6q1256GPxNCzgtd+ud/pdQizE81b+7kCgDY+YesbV3O8uTauH7nh9FK/dpZXV
-         evow==
+        bh=fsWOr9mWvmZX2dTzJ+FE4Q2Az+t23E8t0uKEFGAoZOI=;
+        b=U+lFD7sQe5sx6HhehOqSxkdj/OGzQTs4Dbqn7qRYWEWfrhW83gX2ZKRMQ+w9tKJzfR
+         9/NzaYUqQgVNtB0JX1JBZsie8+5jpsnjzh22dFDGf4L5u51F/8ijM7XhlV6Gg9npz2Jf
+         7iKIWHcysRbDb6B8c4FRdYsZMV2gMIOopWSshEmWl6mockpkPVTRMhoUwAv3EgDQsUkT
+         zu62iSCjhU4zuQjyN6EeYuNbIBlOMuf6flDKWqRR+HhdY1QjnhlkOoQxfofse393fwA7
+         JXUX/Jd90HAB2eb8ebuNRvdLEyq93/2cp0jGt+ueJHR/GhHrLSxo9ahGY3pxMNCfRsN8
+         L26w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695647882; x=1696252682;
+        d=1e100.net; s=20230601; t=1695647886; x=1696252686;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=2bFHpy7o1LqMw4W/VuJiDN5LSPCulCxHGcm0dhiriMk=;
-        b=hnlGW9jd0c4y7ujS/NTSqfZaegUv9d46+YucG9rFvudN17QAqsV1YT3ezSyeeML6h+
-         rb86Usv3x5QhBtmAxnQCLBiMy3ZzluH9OcHlqE+E7amW68KUW/Cn8lT/6IPWvTrkCzYP
-         ZmtEw3HRoTvTpTmfgelq7TCKAtUthZKdBdDQp9SkZbcxPKDNtZ/jVKHkZPNvxH11Qn00
-         ZpwcK8fLNGM2I2MeNXKwoeFZCXjosrNoyqPIWaCiimYkPNDePsEVR0Av5f3QiDN21mAm
-         f5CsdMEZ2KdpmRbn0KPgWYMN+kegs6EYphOlvrpSH7UAS9SuUrEpfxuC56LW+MjdCuRM
-         IFYQ==
-X-Gm-Message-State: AOJu0YwopwbZfSAyzWbYAlcE7pq2GEDvfRFUrsNLSLWOK6CmjmInmw3g
-        itUtno+X54BVCcnFjtfZZ0uZgQ==
-X-Google-Smtp-Source: AGHT+IGmFBgkJKVaTj0hT0ug8ZmhpL42wRm/KPZyj7Yq0oqitc6hAqHCl9UOX5muul8rmBpDMAJOnQ==
-X-Received: by 2002:a05:6512:39c5:b0:4fd:faa5:64ed with SMTP id k5-20020a05651239c500b004fdfaa564edmr7421632lfu.11.1695647882083;
-        Mon, 25 Sep 2023 06:18:02 -0700 (PDT)
+        bh=fsWOr9mWvmZX2dTzJ+FE4Q2Az+t23E8t0uKEFGAoZOI=;
+        b=tGemxmXcfPEBG4EaykBWQmZCuA0hr7Fg3a+y//Rkq0xAlgbpeQwYCwrp+6hYtpzdrN
+         xdErVweC/KoCfZcvMAbofPkzrQ435VglTrYJh2sIBfDD+lsHQNF1Qet4tvNVAT0rg1ul
+         jrps33lXDJH/CicWna4aYMvu/7it8INNoDrXNBdEVqrXSfxkvZcuxMUa6aHa+iPdLBQ7
+         02/5CauZ5YF7sTPvAP+FvcJgP4wFdZUKo4TaOAyQ5HCcYJfjIn+gP9KoWfYg5CBQWnf1
+         PDCuFMk3FHGkIuXSKvKbImLNaTP6lECTFHFYoiV74Ge5qOFNMEJ94DukarRe7GLNf2Fu
+         b5dA==
+X-Gm-Message-State: AOJu0YzoAUHGBByRaNhhaB3ifNYuOHscG+GhblIX+Uhxufd4DVkc4Qh6
+        Fe01PXciqY0vfMWPPUmglXgeUQ==
+X-Google-Smtp-Source: AGHT+IHKfCzTsoS2MbdaJLaciuQf01sFJ3IqvH48z4MJ8ZgPdLdgU+/B/Iawd1QmPe8D7Z1RTRnMSw==
+X-Received: by 2002:ac2:5110:0:b0:502:a964:84b1 with SMTP id q16-20020ac25110000000b00502a96484b1mr2196692lfb.25.1695647886003;
+        Mon, 25 Sep 2023 06:18:06 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id m29-20020a056512015d00b004fe10276bbfsm1823583lfo.296.2023.09.25.06.18.01
+        by smtp.gmail.com with ESMTPSA id m29-20020a056512015d00b004fe10276bbfsm1823583lfo.296.2023.09.25.06.18.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Sep 2023 06:18:01 -0700 (PDT)
+        Mon, 25 Sep 2023 06:18:05 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -60,9 +60,9 @@ Cc:     Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 6/9] OPP: Extend support for the opp-level beyond required-opps
-Date:   Mon, 25 Sep 2023 15:17:12 +0200
-Message-Id: <20230925131715.138411-7-ulf.hansson@linaro.org>
+Subject: [PATCH 9/9] firmware: arm_scmi: Add generic OPP support to the SCMI performance domain
+Date:   Mon, 25 Sep 2023 15:17:15 +0200
+Message-Id: <20230925131715.138411-10-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230925131715.138411-1-ulf.hansson@linaro.org>
 References: <20230925131715.138411-1-ulf.hansson@linaro.org>
@@ -72,84 +72,74 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-At this point the level (performance state) for an OPP is currently limited
-to be requested for a device that is attached to a PM domain.  Moreover,
-the device needs to have the so called required-opps assigned to it, which
-are based upon OPP tables being described in DT.
-
-To extend the support beyond required-opps and DT, let's enable the level
-to be set for all OPPs. More precisely, if the requested OPP has a valid
-level let's try to request it through the device's optional PM domain, via
-calling dev_pm_domain_set_performance_state().
+To allow a consumer driver to use the OPP library to scale the performance
+for its device, let's dynamically add the OPP table when the device gets
+attached to its SCMI performance domain.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/opp/core.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+ drivers/pmdomain/arm/scmi_perf_domain.c | 34 +++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 60dca60ac4af..afb73978cdcb 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1107,6 +1107,22 @@ void _update_set_required_opps(struct opp_table *opp_table)
- 		opp_table->set_required_opps = _opp_set_required_opps_generic;
+diff --git a/drivers/pmdomain/arm/scmi_perf_domain.c b/drivers/pmdomain/arm/scmi_perf_domain.c
+index aa100270500f..bc3f78abb6da 100644
+--- a/drivers/pmdomain/arm/scmi_perf_domain.c
++++ b/drivers/pmdomain/arm/scmi_perf_domain.c
+@@ -9,6 +9,7 @@
+ #include <linux/device.h>
+ #include <linux/module.h>
+ #include <linux/pm_domain.h>
++#include <linux/pm_opp.h>
+ #include <linux/scmi_protocol.h>
+ #include <linux/slab.h>
+ 
+@@ -42,6 +43,37 @@ scmi_pd_set_perf_state(struct generic_pm_domain *genpd, unsigned int state)
+ 	return ret;
  }
  
-+static int _set_opp_level(struct device *dev, struct opp_table *opp_table,
-+			  struct dev_pm_opp *opp)
++static int
++scmi_pd_attach_dev(struct generic_pm_domain *genpd, struct device *dev)
 +{
-+	int ret = 0;
++	struct scmi_perf_domain *pd = to_scmi_pd(genpd);
++	int ret;
 +
-+	/* Request a new performance state through the device's PM domain. */
-+	if (opp && opp->level) {
-+		ret = dev_pm_domain_set_performance_state(dev, opp->level);
-+		if (ret)
-+			dev_err(dev, "Failed to set performance state %u (%d)\n",
-+				opp->level, ret);
-+	}
++	/*
++	 * Allow the device to be attached, but don't add the OPP table unless
++	 * the performance level can be changed.
++	 */
++	if (!pd->info->set_perf)
++		return 0;
++
++	ret = pd->perf_ops->device_opps_add(pd->ph, dev, pd->domain_id);
++	if (ret)
++		dev_warn(dev, "failed to add OPPs for the device\n");
 +
 +	return ret;
 +}
 +
- static void _find_current_opp(struct device *dev, struct opp_table *opp_table)
++static void
++scmi_pd_detach_dev(struct generic_pm_domain *genpd, struct device *dev)
++{
++	struct scmi_perf_domain *pd = to_scmi_pd(genpd);
++
++	if (!pd->info->set_perf)
++		return;
++
++	dev_pm_opp_remove_all_dynamic(dev);
++}
++
+ static int scmi_perf_domain_probe(struct scmi_device *sdev)
  {
- 	struct dev_pm_opp *opp = ERR_PTR(-ENODEV);
-@@ -1154,8 +1170,13 @@ static int _disable_opp_table(struct device *dev, struct opp_table *opp_table)
- 	if (opp_table->regulators)
- 		regulator_disable(opp_table->regulators[0]);
+ 	struct device *dev = &sdev->dev;
+@@ -95,6 +127,8 @@ static int scmi_perf_domain_probe(struct scmi_device *sdev)
+ 		scmi_pd->genpd.flags = GENPD_FLAG_ALWAYS_ON |
+ 				       GENPD_FLAG_OPP_TABLE_FW;
+ 		scmi_pd->genpd.set_performance_state = scmi_pd_set_perf_state;
++		scmi_pd->genpd.attach_dev = scmi_pd_attach_dev;
++		scmi_pd->genpd.detach_dev = scmi_pd_detach_dev;
  
-+	ret = _set_opp_level(dev, opp_table, NULL);
-+	if (ret)
-+		goto out;
-+
- 	ret = _set_required_opps(dev, opp_table, NULL, false);
- 
-+out:
- 	opp_table->enabled = false;
- 	return ret;
- }
-@@ -1198,6 +1219,10 @@ static int _set_opp(struct device *dev, struct opp_table *opp_table,
- 			return ret;
- 		}
- 
-+		ret = _set_opp_level(dev, opp_table, opp);
-+		if (ret)
-+			return ret;
-+
- 		ret = _set_opp_bw(opp_table, opp, dev);
- 		if (ret) {
- 			dev_err(dev, "Failed to set bw: %d\n", ret);
-@@ -1241,6 +1266,10 @@ static int _set_opp(struct device *dev, struct opp_table *opp_table,
- 			return ret;
- 		}
- 
-+		ret = _set_opp_level(dev, opp_table, opp);
-+		if (ret)
-+			return ret;
-+
- 		ret = _set_required_opps(dev, opp_table, opp, false);
- 		if (ret) {
- 			dev_err(dev, "Failed to set required opps: %d\n", ret);
+ 		ret = pm_genpd_init(&scmi_pd->genpd, NULL, false);
+ 		if (ret)
 -- 
 2.34.1
 
