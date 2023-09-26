@@ -2,95 +2,83 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3567E7F14F
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 23:43:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1095E7F150
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 23:43:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232167AbjIZXn6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S233161AbjIZXn6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 26 Sep 2023 19:43:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47460 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232164AbjIZXl5 (ORCPT
+        with ESMTP id S232157AbjIZXl5 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 19:41:57 -0400
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D04971FD9;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D8751F0F;
         Tue, 26 Sep 2023 15:58:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1695769096; x=1727305096;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=vrcoEgVELLZi6Sw6jH1sTR/5AVns7yOWGtEjy7HI65E=;
-  b=OONX9y8w67U95kXqmgpqlxToGqHT+/rqh5N2eKMxyDsrZsVuultehI9J
-   /bp4lyePtxhcB9bqEu/WWrbNXjj1eLgaSWYnaWFCtyMQl73RRijlNRwS7
-   ihXJJ2doAuurRz8B932IK7ly+0yUCroznLxpcJf+UmhCGgOYX6DhM7WCi
-   RJk8OZrtW1wzYB50z5aQfZKPCnJ3ID7aDlp49a2gGQ6ffTCDC4lXa8RHP
-   RVDuBEA8Hdg2XHm5F9vqPwTc9VJs2xyAY7pilJRwSKV6bzhQqG4kFO4BO
-   605nHjyc1qrkCHsJ4GemeNQLbvFkehhQ0p9HSOANhSlDP7Uhiy4iKUCx7
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=DxIF+KDozytca3TFXn/HBp6pAW3jotr/Qf5xWOpXuSw=;
+  b=b+I6qgiAHbWlMUFxTLlNRq2zXJoRte+Mbfkt2852qPrAH2xnnQ0tqT64
+   0WMzdCIfKHDjI08x0jI0IkxnpsNgfaGFKVL7uGdCz4u1pHhrJsBhhVhBe
+   af7z2GmiY/OprfKC5igWYedKLNi5O8haz20WiCxnOWsjDDtQqsRqvnT35
+   m+DyHb4WTMuXdTt7JrxPEnpEpEeCCeazMNqtwepvMoOMaF37qSSBNIrpU
+   diUjnwkttkigIw94hyHAh89tK6D4ZsaNwULiYE+E5a14wWjBHs2Kf2ASd
+   Zg4OnSKeh1HEySVRyJsj0vRhj8DdqyDrJfOytMwu9H2wdd4xd0F5PXwmh
    Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10845"; a="412599587"
+X-IronPort-AV: E=McAfee;i="6600,9927,10845"; a="412599577"
 X-IronPort-AV: E=Sophos;i="6.03,179,1694761200"; 
-   d="scan'208";a="412599587"
+   d="scan'208";a="412599577"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Sep 2023 15:58:15 -0700
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Sep 2023 15:58:14 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10845"; a="752346088"
+X-IronPort-AV: E=McAfee;i="6600,9927,10845"; a="752346080"
 X-IronPort-AV: E=Sophos;i="6.03,179,1694761200"; 
-   d="scan'208";a="752346088"
+   d="scan'208";a="752346080"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.14])
-  by fmsmga007.fm.intel.com with ESMTP; 26 Sep 2023 15:58:15 -0700
+  by fmsmga007.fm.intel.com with ESMTP; 26 Sep 2023 15:58:14 -0700
 From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 3/5] thermal: int340x: processor_thermal: Handle power floor interrupts
-Date:   Tue, 26 Sep 2023 15:58:11 -0700
-Message-Id: <20230926225813.995948-4-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 0/5] thermal: processor_thermal: Power floor status
+Date:   Tue, 26 Sep 2023 15:58:08 -0700
+Message-Id: <20230926225813.995948-1-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230926225813.995948-1-srinivas.pandruvada@linux.intel.com>
-References: <20230926225813.995948-1-srinivas.pandruvada@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On thermal device interrupt, if the interrupt is generated for passing
-power floor status, call the callback to pass notification to the user
-space.
+Support power floor notifications for Meteor Lake processors.
 
-First call proc_thermal_check_power_floor_intr() to check interrupt, if
-this callback returns true, wake the IRQ thread to call
-proc_thermal_power_floor_intr_callback() to notify user space.
+The first change is to prepare for power floor status and others
+add support for power floor.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- .../intel/int340x_thermal/processor_thermal_device_pci.c    | 6 ++++++
- 1 file changed, 6 insertions(+)
+Srinivas Pandruvada (5):
+  thermal: int340x: processor_thermal: Set feature mask before
+    proc_thermal_add
+  thermal: int340x: processor_thermal: Support power floor notifications
+  thermal: int340x: processor_thermal: Handle power floor interrupts
+  thermal: int340x: processor_thermal: Enable power floor support
+  selftests/thermel/intel: Add test to read power floor status
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-index e2c7beb91c60..a5accc290a3d 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-@@ -127,6 +127,7 @@ static irqreturn_t proc_thermal_irq_thread_handler(int irq, void *devid)
- 	struct proc_thermal_pci *pci_info = devid;
- 
- 	proc_thermal_wt_intr_callback(pci_info->pdev, pci_info->proc_priv);
-+	proc_thermal_power_floor_intr_callback(pci_info->pdev, pci_info->proc_priv);
- 
- 	return IRQ_HANDLED;
- }
-@@ -145,6 +146,11 @@ static irqreturn_t proc_thermal_irq_handler(int irq, void *devid)
- 			ret = IRQ_WAKE_THREAD;
- 	}
- 
-+	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_POWER_FLOOR) {
-+		if (proc_thermal_check_power_floor_intr(pci_info->proc_priv))
-+			ret = IRQ_WAKE_THREAD;
-+	}
-+
- 	/*
- 	 * Since now there are two sources of interrupts: one from thermal threshold
- 	 * and another from workload hint, add a check if there was really a threshold
+ .../driver-api/thermal/intel_dptf.rst         |   8 ++
+ .../thermal/intel/int340x_thermal/Makefile    |   1 +
+ .../processor_thermal_device.c                |  68 ++++++++++-
+ .../processor_thermal_device.h                |   8 ++
+ .../processor_thermal_device_pci.c            |  29 +++--
+ .../processor_thermal_power_floor.c           | 114 ++++++++++++++++++
+ tools/testing/selftests/Makefile              |   1 +
+ .../thermal/intel/power_floor/Makefile        |  12 ++
+ .../intel/power_floor/power_floor_test.c      | 108 +++++++++++++++++
+ 9 files changed, 336 insertions(+), 13 deletions(-)
+ create mode 100644 drivers/thermal/intel/int340x_thermal/processor_thermal_power_floor.c
+ create mode 100644 tools/testing/selftests/thermal/intel/power_floor/Makefile
+ create mode 100644 tools/testing/selftests/thermal/intel/power_floor/power_floor_test.c
+
 -- 
 2.41.0
 
