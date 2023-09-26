@@ -2,152 +2,141 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4D61EE0205
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 20:03:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B460E7F124
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 20:05:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235799AbjIZUDV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Sep 2023 16:03:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60798 "EHLO
+        id S235807AbjIZUFE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Sep 2023 16:05:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59762 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235795AbjIZUDS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 16:03:18 -0400
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6914811F
-        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2023 13:03:11 -0700 (PDT)
-Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-27762a19386so3528343a91.2
-        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2023 13:03:11 -0700 (PDT)
+        with ESMTP id S235695AbjIZUFD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 16:05:03 -0400
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8591A13A
+        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2023 13:04:55 -0700 (PDT)
+Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-405361bb9cdso97185385e9.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2023 13:04:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1695758591; x=1696363391; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=fA05+bYS7KOIKR/I8Uj+c2mjDDZM40BJJRZc83kHMhs=;
-        b=pNGxaZJY6XSKDWtaxJ6XWeX4twkjghpOUJXzslSuxvE4vqljxtL/R671TaNpJePTaZ
-         y6A+4UHFA3IHcGokPJgih9tf7BtB9sQUHpzTE5SQ/j1JEAen/3fbt7LQ9x4PpHlYIvO2
-         KDgwnDKN5bTR6VmxViftxxwCtUesGX9bnL/iA2ZTCK3UH47C6qgDJ9tmzCHrj41IwiQ0
-         UjPYKqS/c3quP/1xEshQ/aM8h0fYfMxVf0q0QnlNLkyr3qAf4dByeLbJ/sBykIxcssuH
-         Nou66/kqJi/v3oNXA+ODpltDrfsXlKpUYnsJOyAOzzutRDyJETUn1WrZF2qsdcalN+vT
-         2SWg==
+        d=linaro.org; s=google; t=1695758694; x=1696363494; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=oDuSK4KGoNy5IBROwbpo5Gs9zMqpOACWxsw/hgKI19I=;
+        b=Y9zKW0kFemT29oWCVhMEa8HO3N4zuEloGknPoMRplonwK1W6Wn5/TId1J3KupmNDUZ
+         tRAgZD2okqOsg+4wOtSOM6I0aSuk41JSzA7pxf3ha7VLLAAzFjLDjobGYnD0rYHNxcxT
+         AEQ5XiCyrRMZ6U+jSZbPzmNFMv9I4u7MsJvMH/5hsVNDvBuIy5YgAACyGT4YW/npU/fh
+         gF0gLfaExMYyboEjMfv9s26pkhk7BUzf+vpaR7th46T6Gd4kH12UNXUz7lSrZwN+kBWp
+         AV4y/ebwioe7H/9oTOQdR8IVO3ivRMJChmBrCjGE+aD9by6ju9sq+OQwQHhADCHBBrBt
+         sQ1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695758591; x=1696363391;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=fA05+bYS7KOIKR/I8Uj+c2mjDDZM40BJJRZc83kHMhs=;
-        b=Ze3oce9qpdH4J0J2UFLCbbbL2oAyehETkqWigrT6Lk6omLrp+zzwcImL64JrSUHvsf
-         o9xuKwGWECx6lwYhHVRAy2CoZvLGtE3hhgeZ0xzGUREL9Xtvvj4f61Mu0a9wGnFko8lg
-         RzxI8mbFf82edopTLD9fco5yKIzdbuBaGpUdWmpFco4qJYxtM0JS1GHyJCPZ6tYChiS5
-         KgT0LtMZZTxHKK9ckxLQyTtZ3zUW6z6LSrQreTxObMDZCkxT1DX6J1NNWEBx8DUPfUoP
-         5yT43wfgfBlXEDg36a0vVtkJKoLnyBazWeOrX2X+7lbGD2BqJMK5GXNvIaXxgjCxtxkM
-         yi0w==
-X-Gm-Message-State: AOJu0YzVpFrq0hngQpoaDWLghWVVdhLXqNKNaEyLXzimLzs8HET0KpDE
-        yVQSe8z9PynQO9bYFJ2r6QR4U0t8w6zFhmwKAY2QzQ==
-X-Google-Smtp-Source: AGHT+IEQWocucOt77iz92cLf81oVW1Qi0Z2ZvMtVVl9yhDa/wA+LToQsFIZ/7D0ie7+TsWMUTo3dCgff4aufnilluGc=
-X-Received: by 2002:a17:90a:6341:b0:263:4305:4e82 with SMTP id
- v1-20020a17090a634100b0026343054e82mr7899778pjs.6.1695758590638; Tue, 26 Sep
- 2023 13:03:10 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1695758694; x=1696363494;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=oDuSK4KGoNy5IBROwbpo5Gs9zMqpOACWxsw/hgKI19I=;
+        b=blMW7gnx6tG252rEXP6I+bjkMsiZeJuuWBGBS+Z4n2xFd68n3LHmAe51siqErEWcRv
+         cKY/rfwd/p91zW2IXDNBN8emxyNKPyj490fb6e6PdSOWdExTw4/F+4zDZLTmvjYMfqVh
+         Dno7QiYqjO5j+BluZGYao/b77N19qSH2gswyw8f0UvWAudD8O1TLyXkpLOUL1yoRc3Mb
+         F5dl9QMnLnVjyRSmmhM8tmCScC/FR8Lcbl2CIrI04Ecj3iDqlxxR9tpqhJ1EyfBd89o9
+         mHbQ/K9ZT6LSW9vBl7kBscn146HaFlnffgharYJVGqOSlmaWUeLwHfNQV7rj+r1ttO5P
+         vLrw==
+X-Gm-Message-State: AOJu0Yx4/bv+OF2bwpT2+N7Obk7sh3ybnuzBx3q4gyP0eVjx0yTRtnbY
+        owAKIJlkxLiEzqaPh918YPL/hQ==
+X-Google-Smtp-Source: AGHT+IEq2S5YFKgDav65p1XenZETXWnJAWMoyizGalrJtdFoiekdF4QJFzS2G23idkhDiljU8kfKGg==
+X-Received: by 2002:a5d:4e0b:0:b0:31a:d6cb:7f9e with SMTP id p11-20020a5d4e0b000000b0031ad6cb7f9emr9386196wrt.21.1695758693166;
+        Tue, 26 Sep 2023 13:04:53 -0700 (PDT)
+Received: from [192.168.33.189] (178235177023.dynamic-4-waw-k-1-1-0.vectranet.pl. [178.235.177.23])
+        by smtp.gmail.com with ESMTPSA id v13-20020a17090606cd00b009ae5e46210asm8169519ejb.99.2023.09.26.13.04.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 26 Sep 2023 13:04:52 -0700 (PDT)
+Message-ID: <28473da7-e194-4581-a1d9-6ef574d52ed7@linaro.org>
+Date:   Tue, 26 Sep 2023 22:04:51 +0200
 MIME-Version: 1.0
-References: <20230922155336.507220-1-bgeffon@google.com> <20230922160704.511283-1-bgeffon@google.com>
- <CAJZ5v0gRmoSaP3T0s9Li3grBB6DkaXf6D_0oHdw3=-UJWjJEKA@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gRmoSaP3T0s9Li3grBB6DkaXf6D_0oHdw3=-UJWjJEKA@mail.gmail.com>
-From:   Brian Geffon <bgeffon@google.com>
-Date:   Tue, 26 Sep 2023 16:02:34 -0400
-Message-ID: <CADyq12wMR0viVN+m6T3rAL0kn1792iB0V5s=_tSxkLuPZk6KxA@mail.gmail.com>
-Subject: Re: [PATCH] PM: hibernate: clean up sync_read handling in snapshot_write_next
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Matthias Kaehlcke <mka@chromium.org>, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 0/2] Enable tsens and thermal for sa8775p SoC
+Content-Language: en-US
+To:     Priyansh Jain <quic_priyjain@quicinc.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        quic_manafm@quicinc.com, kernel@quicinc.com
+References: <20230926091154.25463-1-quic_priyjain@quicinc.com>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
+ 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
+ izWDgYvmBE8=
+In-Reply-To: <20230926091154.25463-1-quic_priyjain@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 26, 2023 at 2:24=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.or=
-g> wrote:
->
-> On Fri, Sep 22, 2023 at 6:07=E2=80=AFPM Brian Geffon <bgeffon@google.com>=
- wrote:
-> >
-> > In snapshot_write_next sync_read is set and unset in three different
-> > spots unnecessiarly. As a result there is a subtle bug where the first
-> > page after the meta data has been loaded unconditionally sets sync_read
-> > to 0. If this first pfn was actually a highmem page then the returned
-> > buffer will be the global "buffer," and the page needs to be loaded
-> > synchronously.
-> >
-> > That is, I'm not sure we can always assume the following to be safe:
-> >                 handle->buffer =3D get_buffer(&orig_bm, &ca);
-> >                 handle->sync_read =3D 0;
-> >
-> > Because get_buffer can call get_highmem_page_buffer which can
-> > return 'buffer'
-> >
-> > The easiest way to address this is just set sync_read before
-> > snapshot_write_next returns if handle->buffer =3D=3D buffer.
-> >
-> > Signed-off-by: Brian Geffon <bgeffon@google.com>
-> > Fixes: 8357376d3df2 ("[PATCH] swsusp: Improve handling of highmem")
-> > Cc: stable@vger.kernel.org
->
-> If you send an update of a patch, it is always better to give it a
-> higher version number to avoid any possible confusion.
+On 26.09.2023 11:11, Priyansh Jain wrote:
+> Adding compatible string in TSENS dt-bindings, device node
+> for TSENS controller and Thermal zone support
+> 
+> Changes since v3:
+> - Correct the unit address of tsens node
+> - Updated tsens nodes in sorted order by address
+> - Moved thermal zones outside /soc node
+> 
+> Changes since v2:
+> - Indentation mistakes are resolved
+> - Updated offset of tsens srot region in reg property
+> - Updated tsens reg property cells properly
+> 
+> 
+> Priyansh Jain (2):
+>   dt-bindings: thermal: tsens: Add sa8775p compatible
+>   arm64: dts: qcom: Enable tsens and thermal for sa8775p SoC
+> 
+>  .../bindings/thermal/qcom-tsens.yaml          |    1 +
+>  arch/arm64/boot/dts/qcom/sa8775p.dtsi         | 1096 +++++++++++++++++
+>  2 files changed, 1097 insertions(+)
+> 
+I only seem to have received the cover letter, and so did
+the list..
 
-Yes, I apologize. I wanted to add a Fixes line and I wasn't sure what
-the best practice was. I'll do my best to not create any additional
-work for you going forward!
-
->
-> > ---
-> >  kernel/power/snapshot.c | 6 +-----
-> >  1 file changed, 1 insertion(+), 5 deletions(-)
-> >
-> > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> > index 190ed707ddcc..362e6bae5891 100644
-> > --- a/kernel/power/snapshot.c
-> > +++ b/kernel/power/snapshot.c
-> > @@ -2780,8 +2780,6 @@ int snapshot_write_next(struct snapshot_handle *h=
-andle)
-> >         if (handle->cur > 1 && handle->cur > nr_meta_pages + nr_copy_pa=
-ges + nr_zero_pages)
-> >                 return 0;
-> >
-> > -       handle->sync_read =3D 1;
-> > -
-> >         if (!handle->cur) {
-> >                 if (!buffer)
-> >                         /* This makes the buffer be freed by swsusp_fre=
-e() */
-> > @@ -2824,7 +2822,6 @@ int snapshot_write_next(struct snapshot_handle *h=
-andle)
-> >                         memory_bm_position_reset(&zero_bm);
-> >                         restore_pblist =3D NULL;
-> >                         handle->buffer =3D get_buffer(&orig_bm, &ca);
-> > -                       handle->sync_read =3D 0;
-> >                         if (IS_ERR(handle->buffer))
-> >                                 return PTR_ERR(handle->buffer);
-> >                 }
-> > @@ -2834,9 +2831,8 @@ int snapshot_write_next(struct snapshot_handle *h=
-andle)
-> >                 handle->buffer =3D get_buffer(&orig_bm, &ca);
-> >                 if (IS_ERR(handle->buffer))
-> >                         return PTR_ERR(handle->buffer);
-> > -               if (handle->buffer !=3D buffer)
-> > -                       handle->sync_read =3D 0;
-> >         }
-> > +       handle->sync_read =3D (handle->buffer =3D=3D buffer);
-> >         handle->cur++;
-> >
-> >         /* Zero pages were not included in the image, memset it and mov=
-e on. */
-> > --
->
-> Anyway, applied as 6.7 material with some minor edits in the subject
-> and changelog.
-
-Thank you for taking the time to review!
-Cheers
-
->
-> Thanks!
+Konrad
