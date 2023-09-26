@@ -2,95 +2,78 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CD51E7F140
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 22:47:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74B08E7F14D
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 23:43:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229463AbjIZWrv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Sep 2023 18:47:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50202 "EHLO
+        id S229615AbjIZXn5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Sep 2023 19:43:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47474 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229938AbjIZWpv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 18:45:51 -0400
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 980CD180
-        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2023 13:56:30 -0700 (PDT)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-1c724577e1fso1175345ad.0
-        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2023 13:56:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1695761790; x=1696366590; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=K+cA0vEenc1gqjUMM9wmqTHY3iLNBl/eCPHeoCPbd9o=;
-        b=Kq/RuLeI1lsxBMQk6FTV9WLOxdyOooQs0Jb29yl0kLyXR9SBKICMctAwUj71b2pgSm
-         l7Bd2Tie3PBRIhRmzsZWl4Q5kDzQuhoFiLsCdL/5p206FS+lSLbapfL6FAfzBXOc/yC5
-         DK/VWMVnjYvxdWLKh7Lxf/MwA98AJBzNG4YH5uI57g8xKa3Jd1o71Wee2HNbFxiC9i5x
-         S4bAbvDf70DVjeonBw77JLXtKLzEbI1rg4UyiSfPP1dLA/V+DDBmCiiAEXAL5k8t2F2T
-         SkWpIclpLt8ElFDJZOamU3AMGOj2pjI7QUm9QYn4mCw6+DTCB2gEJ31l6uFT9Ke6TGW+
-         fVOw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695761790; x=1696366590;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=K+cA0vEenc1gqjUMM9wmqTHY3iLNBl/eCPHeoCPbd9o=;
-        b=IWIx5JFP2dojmr4Qgag+jsbxvI6JFYTNuuE+wMMAAOWMRk84M9f7A5QAkLUXKtXPoQ
-         f/Ge5PM3BIrrPAo3nO9lFq0Kj4lcBqIrZNqJrlgpeVRpT60fmhDeLxzXhJaGJrgEV74I
-         70aCFUPaSDoBHWvNypEk0JqJu1WguM+uKUV7wV9PI4Xmhl4OtN2PUswamn6D1kJzJHxI
-         bBHPP93fvE+8UnBI0GPlQNgkMH1o/rkaMZdTSBKom5tQRG+WmGL/20djPdnP5R/YiLu/
-         aKLu9jtjoyoEUcw82upePuw+bb1tqzu92kmsuwbiGVnyZ97u84yR39T1sSr7u5qtl2SO
-         1H7Q==
-X-Gm-Message-State: AOJu0YwSTXc1dSwPvCd/g8aWo4FpgBLLPqRvv0lTH+EpiPzqcbTVBbko
-        d8AGChXuazJ6CstyZV0mJTwl/w==
-X-Google-Smtp-Source: AGHT+IHm1IEuFlvmqbG+rMZZJWspqFftAv9gQV/yoTCiylQnMNOAJue7sY122lWTZw0J/AV6+YyC/Q==
-X-Received: by 2002:a17:902:c951:b0:1c3:a91a:627f with SMTP id i17-20020a170902c95100b001c3a91a627fmr12682196pla.47.1695761789886;
-        Tue, 26 Sep 2023 13:56:29 -0700 (PDT)
-Received: from google.com (55.212.185.35.bc.googleusercontent.com. [35.185.212.55])
-        by smtp.gmail.com with ESMTPSA id f13-20020a170902ce8d00b001bdb85291casm11445673plg.208.2023.09.26.13.56.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Sep 2023 13:56:29 -0700 (PDT)
-Date:   Tue, 26 Sep 2023 20:56:25 +0000
-From:   Carlos Llamas <cmllamas@google.com>
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Elliot Berman <quic_eberman@quicinc.com>,
-        Ingo Molnar <mingo@redhat.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Thomas Gleixner <tglx@linutronix.de>, kernel@quicinc.com,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Prakash Viswalingam <quic_prakashv@quicinc.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        stable@vger.kernel.org
-Subject: Re: [PATCH v4 0/2] Avoid spurious freezer wakeups
-Message-ID: <ZRNFeXZ4tRbT7ws6@google.com>
-References: <20230908-avoid-spurious-freezer-wakeups-v4-0-6155aa3dafae@quicinc.com>
- <ZRMEHb3_0Ku1UuK_@google.com>
- <20230926200238.GB13828@noisy.programming.kicks-ass.net>
+        with ESMTP id S233115AbjIZXl5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 19:41:57 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 581DB213B;
+        Tue, 26 Sep 2023 15:58:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1695769098; x=1727305098;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=s4nbWPXt0jBdK8UpfhF2ooQidQPMY3DrIy5/uJVqdK8=;
+  b=iU2Fx/GlVL9wohH80SGLOGbFsP2CSiKRacxXq/2guosonqLLZjFLOOFk
+   EG0/Zm6Om3SGtpESuFF3c6wrTFQJq1TiSm00WQglPWW/4QnYWAQhLGxM8
+   ZEJnAHNqSnkatEHFfq08yOBx3aHIGipHGp/df/1MebgosAYwTRmj3ukr1
+   u5iAOi54MlDBOr8aWAYOkmEu9F33qz4f3vWQM5dTpKxZ9tMNgNtuAFoDV
+   GDU22fXTOl8zT6ZEa9zD8cDykf1pxQNLvLHUm9bQLFiP/CwcZHXGwy+Dt
+   r+MZx7sl6LpS/c+QzFeXax2BjcN0I6oAwL4FJG71d76bAKv32IzQsyWtd
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10845"; a="412599590"
+X-IronPort-AV: E=Sophos;i="6.03,179,1694761200"; 
+   d="scan'208";a="412599590"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Sep 2023 15:58:15 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10845"; a="752346091"
+X-IronPort-AV: E=Sophos;i="6.03,179,1694761200"; 
+   d="scan'208";a="752346091"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.14])
+  by fmsmga007.fm.intel.com with ESMTP; 26 Sep 2023 15:58:15 -0700
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 4/5] thermal: int340x: processor_thermal: Enable power floor support
+Date:   Tue, 26 Sep 2023 15:58:12 -0700
+Message-Id: <20230926225813.995948-5-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230926225813.995948-1-srinivas.pandruvada@linux.intel.com>
+References: <20230926225813.995948-1-srinivas.pandruvada@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230926200238.GB13828@noisy.programming.kicks-ass.net>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 26, 2023 at 10:02:38PM +0200, Peter Zijlstra wrote:
-> On Tue, Sep 26, 2023 at 04:17:33PM +0000, Carlos Llamas wrote:
-> > 
-> > This issue is hurting the performance of our stable 6.1 releases. Does
-> > it make sense to backport these patches into stable branches once they
-> > land in mainline? I would assume we want to fix the perf regression
-> > there too?
-> 
-> Note that these patches are in tip/sched/core, slated for the next merge
-> window.
+Enable power floor feature support for Meteor Lake processors.
 
-We can wait, no problem. I just wanted to make sure we also patch stable
-if needed. Elliot, would you be able to send a backport of your patches
-to stable once they land in mainline on the next merge window?
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ .../intel/int340x_thermal/processor_thermal_device_pci.c        | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: stable@vger.kernel.org
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+index a5accc290a3d..2ca4860df092 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+@@ -395,7 +395,7 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
+ 	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WT_REQ) },
+ 	{ PCI_DEVICE_DATA(INTEL, MTLP_THERMAL, PROC_THERMAL_FEATURE_RAPL |
+ 	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_DLVR |
+-	  PROC_THERMAL_FEATURE_WT_HINT) },
++	  PROC_THERMAL_FEATURE_WT_HINT | PROC_THERMAL_FEATURE_POWER_FLOOR) },
+ 	{ PCI_DEVICE_DATA(INTEL, ARL_S_THERMAL, PROC_THERMAL_FEATURE_RAPL |
+ 	  PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_WT_HINT) },
+ 	{ PCI_DEVICE_DATA(INTEL, RPL_THERMAL, PROC_THERMAL_FEATURE_RAPL |
+-- 
+2.41.0
 
---
-Carlos Llamas
