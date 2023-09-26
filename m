@@ -2,112 +2,129 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E3DEE732E8
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 16:25:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E41B7E732EA
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 16:35:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229605AbjI1QZn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Sep 2023 12:25:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36650 "EHLO
+        id S231388AbjI1Qf1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Sep 2023 12:35:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58054 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231263AbjI1QZm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 12:25:42 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B0AAEB;
-        Thu, 28 Sep 2023 09:25:41 -0700 (PDT)
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38SFfLq1015805;
-        Thu, 28 Sep 2023 16:25:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=qcppdkim1;
- bh=dvWWXdVXiGWDkgySuet7W6R6F3UF6xZSLY4i8jRlvQw=;
- b=JgCKJs7XQcEwcC8ZZ0h3BYHmwikscgfyeQDjb4kRQWlFzdVFmoOWBlmfbMsT23MWgJKd
- yoUSx5quzHOBGJHVA/bFSYYTZnhUz5EBuqcka9xq3oSafWH7sP7t59miUmnSXqz94C45
- i74iRjN14i3kYHtCre4mAICsJg/C+GHMMJSURVcayygqOky9tx+W6ODAs/SrxxsGSjYR
- sby8+7f0PEiRUqy6gD/m6dwWcYJ4H4/fyIvQb5v+W8NuDPoMUFrPm1NsnubSbJyotboE
- iYL7jQLMDl/GgVetwvlfFkgBKsJgDjr5lp2FBhSV0KccEDR3yUsCPmKt32Zh0dZuFpGY DA== 
-Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3td8wdrp6x-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 28 Sep 2023 16:25:00 +0000
-Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-        by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 38SGOxeI002522
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 28 Sep 2023 16:24:59 GMT
-Received: from [10.110.102.158] (10.80.80.8) by nasanex01b.na.qualcomm.com
- (10.46.141.250) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.36; Thu, 28 Sep
- 2023 09:24:56 -0700
-Message-ID: <a0456690-1917-4d82-877a-f23d871049b5@quicinc.com>
-Date:   Thu, 28 Sep 2023 09:24:55 -0700
+        with ESMTP id S231426AbjI1Qf0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 12:35:26 -0400
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2048.outbound.protection.outlook.com [40.107.93.48])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42B2CBF;
+        Thu, 28 Sep 2023 09:35:24 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=PEbSUtWBTHUNpMP6PZWmJ1uQ2JeVAg4+9eWi1Rejf+k0HE/IHOHdkjNr4fQtcNOPJxdvh5aaZ8N1/N2e0RmW/QWo+f6C3nP7Dr4l/dsjOzg8eYEUyj4HyyGuewht1cz0XDQJK276OpygCQdrTbikOAYZ1H8yQMO/JMEr6ZpFxS7RmihdlqH357MkMSsFPSXB6d8XqXS4Spdz2JTqDRTJn74AWW4/805r3XUbTWLSF4PeWc9VVIC+qJXo5jCXUm2DT8Ql+UVGDd1dcC3Ymt4AoSJaX7IG5ZYtr+d8OzBmhhOa+95Y/AcbJ0PX8qks0AujQzE2A0+ZvXuWJu5DtQKEXA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=677s5/v2RCD50dIi6oZiOGkmwZEmYBXuyVLUMjCt/w4=;
+ b=OCpFca7ZnEFVkA1rySBVm0dwtd/Z/JN4OIEqcTdcMdGkn+/iyiUzgQRIvBnmjFtTJuAa1orylBiNxpQcD3obEP3/VqKoQOUpzrW7gNaGJYwHEv/O8fV+FrFVx9S7dI4JTjOJlcpXflg/6OEcTvdQBWHCQIPTw1HMFI1bh3Fjbk2icoHUIH8w6Ws6fCGM3KUmdfmsvOE66N+yo/6PVW+WoI4LpG4JD3mWFpbJjKSF+rLVMGJokn/LteuXr467HPVLhgKwHHbiIVKWjAlFR1P5AIh2r+4YSgL2RcqTGELmxvqycDNo5HGZnyFE8E6BFzwpjuBZgQQVmrUmC9JpnZ/sfQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=lists.freedesktop.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=677s5/v2RCD50dIi6oZiOGkmwZEmYBXuyVLUMjCt/w4=;
+ b=qtFIHPmeQe+82kan5izhcazAZ7L8XMj3Xf3eR3B1QpYtMt7XGc9B1k0M48wOei3Hd9Zoz86EexFxd7cU05TLq13Y+kGrGcbr3ZeFbnIMpBUbk5+vD8mqWKiEy+nir85bDWENP8Q7xNFKU1IC/oaXI/dNvNaS4gAzr6senivz7gw=
+Received: from SA1PR02CA0008.namprd02.prod.outlook.com (2603:10b6:806:2cf::13)
+ by PH0PR12MB5420.namprd12.prod.outlook.com (2603:10b6:510:e8::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6838.25; Thu, 28 Sep
+ 2023 16:35:22 +0000
+Received: from SA2PEPF00001508.namprd04.prod.outlook.com
+ (2603:10b6:806:2cf:cafe::5a) by SA1PR02CA0008.outlook.office365.com
+ (2603:10b6:806:2cf::13) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6838.25 via Frontend
+ Transport; Thu, 28 Sep 2023 16:35:22 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ SA2PEPF00001508.mail.protection.outlook.com (10.167.242.40) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.6838.14 via Frontend Transport; Thu, 28 Sep 2023 16:35:22 +0000
+Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Thu, 28 Sep
+ 2023 11:35:20 -0500
+From:   Mario Limonciello <mario.limonciello@amd.com>
+To:     <amd-gfx@lists.freedesktop.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        "Alex Deucher" <alexander.deucher@amd.com>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <Jun.ma2@amd.com>, Mario Limonciello <mario.limonciello@amd.com>
+Subject: [PATCH 1/3] drm/amd: Fix detection of _PR3 on the PCIe root port
+Date:   Tue, 26 Sep 2023 17:59:53 -0500
+Message-ID: <20230926225955.386553-2-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230926225955.386553-1-mario.limonciello@amd.com>
+References: <20230926225955.386553-1-mario.limonciello@amd.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 0/2] Avoid spurious freezer wakeups
-Content-Language: en-US
-To:     Peter Zijlstra <peterz@infradead.org>,
-        Carlos Llamas <cmllamas@google.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-CC:     Ingo Molnar <mingo@redhat.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Thomas Gleixner <tglx@linutronix.de>, <kernel@quicinc.com>,
-        <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>,
-        "Prakash Viswalingam" <quic_prakashv@quicinc.com>
-References: <20230908-avoid-spurious-freezer-wakeups-v4-0-6155aa3dafae@quicinc.com>
- <ZRMEHb3_0Ku1UuK_@google.com>
- <20230926200238.GB13828@noisy.programming.kicks-ass.net>
-From:   Elliot Berman <quic_eberman@quicinc.com>
-In-Reply-To: <20230926200238.GB13828@noisy.programming.kicks-ass.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: voW2hM9_I6oH-E1B9Ahh6aw547ZEEFqW
-X-Proofpoint-GUID: voW2hM9_I6oH-E1B9Ahh6aw547ZEEFqW
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-09-28_16,2023-09-28_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- mlxlogscore=784 malwarescore=0 lowpriorityscore=0 impostorscore=0
- phishscore=0 mlxscore=0 clxscore=1015 suspectscore=0 bulkscore=0
- adultscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2309180000 definitions=main-2309280142
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA2PEPF00001508:EE_|PH0PR12MB5420:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3e0c4f86-aff2-4c48-0383-08dbc040e8e9
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 6dQ0rlQaWgxO4Fh9COCjqm9WxK4IsJH8vtkZR1xERDfApbIUgg/y9UbZVSd4YVOJRzRjTmwmmqD3NQL8wHy/zhemRU0OV0nqgBS0AeYQd35/Sp7IKaJTD2k1F5GLUOQecSO1LjenKfNYV+JKLNQSrPpwosz2UlVC7dZjLVv06iCiOrimXQ4suoY9rJ6EgV339WWYZnaOSo3kFxePW3d8QI4zGJCZhlgGPGmpwVbhi668RQZ17IwgVF3Tehd8l9gs7iqi8ld0HOKd+glFwj859M2RpqWfKl1EAyyF4B8oZ1MyI2O9DN3DiP/oxRsuiPpATuzv/bRGd1oHqT+9MvAdvb5wMpDfoiWF+rrNX7r7j4ZpFTKriVfXU0ss7HhBymYDrq1XCBuN8UCVlzQVFxjeuOJBuF9xvvXIQcMC4SjbpPMPh/Z8DuyLK5zUNoAhMa4BygOHRJLsky70iaVx9tXjUy4XSU2NJkYoLMv1wjM/dlAiYIhuD4fqVVGKOQ6SuWp4NXUH3lkWsxk5ZvNQYPu3caeRuIg5YWu+8orhdadFayKpTg5WYnA1SLerTW+FdybGPcySXRk0wufQUy35SYVwshGKVAfRJR0Ay3ZJb0vkWErmW3fWl+oARSlxUfvC5ZJc5r8aKH3La85qF4pQCenaZEKneTRasCPgwa8H3tw8VLo5Wgo3QaWKGOStBWyWfltmvKfg5G3MMK6wVrNPXM4uMS3CXFoM/gVHKrJfdReyTeQGD+RHQi1LDYax78AONbEXTFb9IfP4M7SH5iXIIxHXyw==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(136003)(346002)(396003)(39860400002)(376002)(230922051799003)(82310400011)(451199024)(1800799009)(186009)(64100799003)(36840700001)(40470700004)(46966006)(44832011)(5660300002)(2906002)(40480700001)(70206006)(54906003)(70586007)(6636002)(316002)(110136005)(4326008)(41300700001)(8936002)(8676002)(40460700003)(36756003)(86362001)(2616005)(1076003)(16526019)(26005)(356005)(81166007)(6666004)(336012)(7696005)(83380400001)(82740400003)(36860700001)(426003)(478600001)(47076005)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Sep 2023 16:35:22.0456
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3e0c4f86-aff2-4c48-0383-08dbc040e8e9
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: SA2PEPF00001508.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB5420
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Peter,
+On some systems with Navi3x dGPU will attempt to use BACO for runtime
+PM but fails to resume properly.  This is because on these systems
+the root port goes into D3cold which is incompatible with BACO.
 
-On 9/26/2023 1:02 PM, Peter Zijlstra wrote:
-> On Tue, Sep 26, 2023 at 04:17:33PM +0000, Carlos Llamas wrote:
->> On Fri, Sep 08, 2023 at 03:49:14PM -0700, Elliot Berman wrote:
->>> After commit f5d39b020809 ("freezer,sched: Rewrite core freezer logic"),
->>> tasks that transition directly from TASK_FREEZABLE to TASK_FROZEN  are
->>> always woken up on the thaw path. Prior to that commit, tasks could ask
->>> freezer to consider them "frozen enough" via freezer_do_not_count(). The
->>> commit replaced freezer_do_not_count() with a TASK_FREEZABLE state which
->>> allows freezer to immediately mark the task as TASK_FROZEN without
->>> waking up the task.  This is efficient for the suspend path, but on the
->>> thaw path, the task is always woken up even if the task didn't need to
->>> wake up and goes back to its TASK_(UN)INTERRUPTIBLE state. Although
->>> these tasks are capable of handling of the wakeup, we can observe a
->>> power/perf impact from the extra wakeup.
->>
->> This issue is hurting the performance of our stable 6.1 releases. Does
->> it make sense to backport these patches into stable branches once they
->> land in mainline? I would assume we want to fix the perf regression
->> there too?
-> 
-> Note that these patches are in tip/sched/core, slated for the next merge
-> window.
+This happens because in this case dGPU is connected to a bridge between
+root port which causes BOCO detection logic to fail.  Fix the intent of
+the logic by looking at root port, not the immediate upstream bridge for
+_PR3.
 
-Can the changes be scheduled for the next 6.6-rc? I'd like to get the
-changes backported to stable sooner since we observed the regression on
-real systems.
+Cc: stable@vger.kernel.org
+Suggested-by: Jun Ma <Jun.Ma2@amd.com>
+Tested-by: David Perry <David.Perry@amd.com>
+Fixes: b10c1c5b3a4e ("drm/amdgpu: add check for ACPI power resources")
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-Elliot
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
+index e4627d92e1d0..bad2b5577e96 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
+@@ -2238,7 +2238,7 @@ static int amdgpu_device_ip_early_init(struct amdgpu_device *adev)
+ 		adev->flags |= AMD_IS_PX;
+ 
+ 	if (!(adev->flags & AMD_IS_APU)) {
+-		parent = pci_upstream_bridge(adev->pdev);
++		parent = pcie_find_root_port(adev->pdev);
+ 		adev->has_pr3 = parent ? pci_pr3_present(parent) : false;
+ 	}
+ 
+-- 
+2.34.1
+
