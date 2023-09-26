@@ -2,134 +2,110 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BFB3E7F120
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 20:07:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2E92E7F141
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 22:18:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231899AbjIZUHd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Sep 2023 16:07:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47320 "EHLO
+        id S231222AbjIZWSA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Sep 2023 18:18:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52264 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235820AbjIZUHc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 16:07:32 -0400
-Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8944513A
-        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2023 13:07:25 -0700 (PDT)
-Received: by mail-ej1-x62f.google.com with SMTP id a640c23a62f3a-99357737980so1179372366b.2
-        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2023 13:07:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695758844; x=1696363644; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=GnPN1NOYmkf+oNudX673WFOim8syjAZ8/Se4c2tU2Nc=;
-        b=CN/ZO5Cr3TelCc9UIRzrIv9ENKncxKTvpQhTJE7AwYdNWMEhhRrbV1VoSSSFCCFBDG
-         WseRZyyreYNXgwuUQokKQMZfL2fPsb4qCuCfyEmWk+WA11H+HmNmpdYwUtgR6Q52oq8z
-         Et2/gy8WLeg7dOfUS7j910GrGAo3NikB38Cdea4evmL1t7H+IherJtcMsPGQjZSyZZQY
-         lXEXPNm1EvhDDDy8yHbrOVR0RMNP8bp2rrRJ1sGjZ5oGin1GAaOp8VI9x+JkU1MpmN5a
-         Lyt80MyuLoGwzvhMVA0WU/gROCyAshNcgn3zB7RWXUADqUFOpIgk8paoxUO1SVywFuZ3
-         AdVg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695758844; x=1696363644;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=GnPN1NOYmkf+oNudX673WFOim8syjAZ8/Se4c2tU2Nc=;
-        b=K03OBPhEgXoVcebdK9ZM4v+g2gXRdV/fGp9vscQf4XdkxL0iCfkFlYA/ZfGZoO7jCL
-         j/aaxeYSKmXoGSeXAnLyTaWR1wloJ2N8oHSngjNRD1cAvHObcsGd7rYwDjv2tzIqSU3a
-         i3SCoWSwcwsr+HZqm4JCCISdLC0i1qPhmswovCPd0tEgThk0SIeW7t68ZiDME523j6My
-         OybLN4zbm8SpFq4H8O5xMuJ1Kq3M4eVw0/EIBOrUQ188A2u2tD81KGQMZkc9E61QvvaM
-         s5eLIyv3Th4ecK92ZiB4TEdh2rrdsm+WViaWKn0fbjFJhMRDK/tX545cOcKM4jPBA3S1
-         UCOA==
-X-Gm-Message-State: AOJu0Yyt+H8EgqnGnoFik8RPZJjFlb/f28WLUpqYZ9wPukqIMiNekyO9
-        u4NgXQbEHGj3d2EI6dUEjgcwyw==
-X-Google-Smtp-Source: AGHT+IEpcloLUT7V/Nzji/sun7iJolr6vWxw/e3GcLqXFw2c32z0CZyuBUDDPjlr4esUEcapUYoVyQ==
-X-Received: by 2002:a17:906:310d:b0:9a2:24f9:fabe with SMTP id 13-20020a170906310d00b009a224f9fabemr10679684ejx.66.1695758843936;
-        Tue, 26 Sep 2023 13:07:23 -0700 (PDT)
-Received: from [192.168.33.189] (178235177023.dynamic-4-waw-k-1-1-0.vectranet.pl. [178.235.177.23])
-        by smtp.gmail.com with ESMTPSA id h9-20020a17090619c900b009ae54eba5casm8218821ejd.102.2023.09.26.13.07.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 26 Sep 2023 13:07:23 -0700 (PDT)
-Message-ID: <47a4bc7d-3f87-4a55-9905-19df20a9e03d@linaro.org>
-Date:   Tue, 26 Sep 2023 22:07:21 +0200
+        with ESMTP id S231447AbjIZWP7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 18:15:59 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B70423128;
+        Tue, 26 Sep 2023 15:05:28 -0700 (PDT)
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38QLs9jb012012;
+        Tue, 26 Sep 2023 22:04:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=qcppdkim1;
+ bh=PKb/D0HqamWxi3Wj4ngvJzC8qkJDnebrZ+o4mvzqv1s=;
+ b=p6d1x0TQkx3wzOuyLL7onb4u6LtHYEyn58xaDH3eS1aUpaDUsCbNKDwzQPiZeyzoJYOA
+ oUDklgXR5Ihtz6bX2D0bOsAf0wWfm5FlYytvmoSmCg6XhPcft7YWhVLY2uva3jdO6tJY
+ ldY+w8pRI36mlun8k4uvucDoqmy5blVkHjl2oY+9cgn5fnyMnrn42Z5elGaJwhovMwPv
+ YoOVL5V5dyJ6oFK28j5hkUkxP7r51RXHN5+O90Ma43OTqQNVYw1f3tb1X45lnVNrY4MZ
+ 4qB4dq2GCme6pGC8Q5fVhOEdwwWh661OtPaSLr9Ra2W0zzHM4byK2DLeFWPToYRm70+I 0w== 
+Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tbgfv37v8-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 26 Sep 2023 22:04:49 +0000
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+        by NASANPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 38QM4miu006581
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 26 Sep 2023 22:04:48 GMT
+Received: from [10.110.53.84] (10.80.80.8) by nasanex01b.na.qualcomm.com
+ (10.46.141.250) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.36; Tue, 26 Sep
+ 2023 15:04:45 -0700
+Message-ID: <7db6eaee-af6d-492a-bc7c-23c6aa6bbdf8@quicinc.com>
+Date:   Tue, 26 Sep 2023 15:04:44 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/2] Enable tsens and thermal for sa8775p SoC
+Subject: Re: [PATCH v4 0/2] Avoid spurious freezer wakeups
+To:     Carlos Llamas <cmllamas@google.com>,
+        Peter Zijlstra <peterz@infradead.org>
+CC:     Ingo Molnar <mingo@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Thomas Gleixner <tglx@linutronix.de>, <kernel@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>,
+        "Prakash Viswalingam" <quic_prakashv@quicinc.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        <stable@vger.kernel.org>
+References: <20230908-avoid-spurious-freezer-wakeups-v4-0-6155aa3dafae@quicinc.com>
+ <ZRMEHb3_0Ku1UuK_@google.com>
+ <20230926200238.GB13828@noisy.programming.kicks-ass.net>
+ <ZRNFeXZ4tRbT7ws6@google.com>
 Content-Language: en-US
-To:     Priyansh Jain <quic_priyjain@quicinc.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        quic_manafm@quicinc.com, kernel@quicinc.com
-References: <20230926085948.23046-1-quic_priyjain@quicinc.com>
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
- 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
- izWDgYvmBE8=
-In-Reply-To: <20230926085948.23046-1-quic_priyjain@quicinc.com>
-Content-Type: text/plain; charset=UTF-8
+From:   Elliot Berman <quic_eberman@quicinc.com>
+In-Reply-To: <ZRNFeXZ4tRbT7ws6@google.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: xtoe0jaJDYGL5l2tozlam7dUcuC-zwrx
+X-Proofpoint-ORIG-GUID: xtoe0jaJDYGL5l2tozlam7dUcuC-zwrx
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-09-26_15,2023-09-26_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 suspectscore=0
+ phishscore=0 impostorscore=0 bulkscore=0 mlxlogscore=793 mlxscore=0
+ spamscore=0 adultscore=0 priorityscore=1501 clxscore=1015
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2309260189
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 26.09.2023 10:59, Priyansh Jain wrote:
-> Adding compatible string in TSENS dt-bindings, device node
-> for TSENS controller and Thermal zone support
+
+
+On 9/26/2023 1:56 PM, Carlos Llamas wrote:
+> On Tue, Sep 26, 2023 at 10:02:38PM +0200, Peter Zijlstra wrote:
+>> On Tue, Sep 26, 2023 at 04:17:33PM +0000, Carlos Llamas wrote:
+>>>
+>>> This issue is hurting the performance of our stable 6.1 releases. Does
+>>> it make sense to backport these patches into stable branches once they
+>>> land in mainline? I would assume we want to fix the perf regression
+>>> there too?
+>>
+>> Note that these patches are in tip/sched/core, slated for the next merge
+>> window.
 > 
-> Changes since v3:
-"since v3", but this is v2.. but only in the cover letter?
-Did you mean "in v3"?
+> We can wait, no problem. I just wanted to make sure we also patch stable
+> if needed. Elliot, would you be able to send a backport of your patches
+> to stable once they land in mainline on the next merge window?
 
-I guess this is the v3 series, but you accidentally sent the cover
-letter with "v2" in the title and then resent it separately at [1]?
+Yep, happy to send it. There's a trivial conflict to resolve w/older
+kernels not having the new guard(...)(...) macros.
 
-Please consider using the b4 tool [2], it makes such mistakes not
-happen and simplifies a couple more things for both the submitters
-and maintainers.
-
-
-[1] https://lore.kernel.org/linux-arm-msm/28473da7-e194-4581-a1d9-6ef574d52ed7@linaro.org/T/#t
-[2] https://b4.docs.kernel.org/en/latest/index.html
-
-Konrad
+> 
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: stable@vger.kernel.org
+> 
+> --
+> Carlos Llamas
