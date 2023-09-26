@@ -2,125 +2,75 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A642E8181E
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 19:54:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 201F3EE0205
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Sep 2023 20:02:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233435AbjIZTy2 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Sep 2023 15:54:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47232 "EHLO
+        id S235770AbjIZUDB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Sep 2023 16:03:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49396 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235606AbjIZTy1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 15:54:27 -0400
-Received: from mail-oo1-f48.google.com (mail-oo1-f48.google.com [209.85.161.48])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DE55C0;
-        Tue, 26 Sep 2023 12:54:21 -0700 (PDT)
-Received: by mail-oo1-f48.google.com with SMTP id 006d021491bc7-57be74614c0so317848eaf.1;
-        Tue, 26 Sep 2023 12:54:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695758060; x=1696362860;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=06BDXw+aAsRZJmkH29TBr2CENepoEaV3xhr3PlQFcqA=;
-        b=j8pJ0Iv7DFKZqJoZR3C+GSAl68bWY35bLPTo0DqbNgMb5Ve1Kcftpbc0/2b6jYmOCK
-         Af6lrMTsc7n6bzPzf4ksMAa3ZTBu0vPmhJKz8b5vkfxRAlqZALAmIXOtx4MX2lOt80vw
-         KaHiMKw4zgtwquxC9egJRprTcQX+lro78xzJpKpU9Kzuj7HeGlgivKuFqxHD4/lXw7V+
-         r9fuBSdYXdl/GFmwtYUtzOONxYfOyVh/76GWjiwx/Latr1BNWqFlUL49LPOXpYUTywmN
-         jC0T+ZTOWW8nHV/aZRbg6UJPcgGMcEE6KGoBvu20NPjA8JktUIXvD79ON+phrxMw5PcU
-         4ZWA==
-X-Gm-Message-State: AOJu0Yxi7PtJsfiKhvB57bXiCZ7l5qF9E4NckRrEEegJvuU7Z4ethPuo
-        cYCI7g0m18jHjOuPXBirn96OREeIIc4vWZVNheY=
-X-Google-Smtp-Source: AGHT+IEz9FuVLAFKk1rCFfQcKhvYL1wc0uuG6qkYOGCi08eKz+4CbpYXS5/O4EdhAsoBPP/x0iUQZoh2GGF3VXNjSrQ=
-X-Received: by 2002:a4a:e687:0:b0:57b:3b64:7ea5 with SMTP id
- u7-20020a4ae687000000b0057b3b647ea5mr80798oot.1.1695758060246; Tue, 26 Sep
- 2023 12:54:20 -0700 (PDT)
+        with ESMTP id S229817AbjIZUDA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 16:03:00 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E8FDD6;
+        Tue, 26 Sep 2023 13:02:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=cW7UwTU4IBzgMWLZdvH0diCsmdfVN4HZZOVutj9gxn4=; b=D8UzNTfbhr+RjQ6dS2l7M9zg+3
+        gRcveDYnv0zJMts4w7+KAkwEzdYwpRuBx0CRSlvObEb0jgLxCrzK+R6jWuGjrj+7/6c0/sVLbtv7z
+        MuZEzvgFP2oehG8m+Y4/LFpLAeiGGaV6+1CnViVcv/wkOutebLSgo54A1f78K+JfT7b7UQREG+7hG
+        abYzeE/vBcWGE3BbW9Ie8VsfGcwbj9Lkxs+Reg7kIX9ZAnOPmIGIEJ1q0HQlWQQJPUcps++Ur3yKe
+        ZqfVCxXJvFJOhFepDiPDBEwp1IbXnpmaq0lMSEG5doWRY014fTvo4dsIRjT06xeullaw7awtJUL0S
+        1/0gh4FA==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qlEGT-0034BK-18;
+        Tue, 26 Sep 2023 20:02:39 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 76C02300288; Tue, 26 Sep 2023 22:02:38 +0200 (CEST)
+Date:   Tue, 26 Sep 2023 22:02:38 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Carlos Llamas <cmllamas@google.com>
+Cc:     Elliot Berman <quic_eberman@quicinc.com>,
+        Ingo Molnar <mingo@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Thomas Gleixner <tglx@linutronix.de>, kernel@quicinc.com,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        Prakash Viswalingam <quic_prakashv@quicinc.com>
+Subject: Re: [PATCH v4 0/2] Avoid spurious freezer wakeups
+Message-ID: <20230926200238.GB13828@noisy.programming.kicks-ass.net>
+References: <20230908-avoid-spurious-freezer-wakeups-v4-0-6155aa3dafae@quicinc.com>
+ <ZRMEHb3_0Ku1UuK_@google.com>
 MIME-Version: 1.0
-References: <20230925081139.1305766-1-lukasz.luba@arm.com> <20230925081139.1305766-13-lukasz.luba@arm.com>
-In-Reply-To: <20230925081139.1305766-13-lukasz.luba@arm.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 26 Sep 2023 21:54:09 +0200
-Message-ID: <CAJZ5v0igw77JdpoSbOkbdWxw3pwX2ejr+sv077OuQJWLLD5GxA@mail.gmail.com>
-Subject: Re: [PATCH v4 12/18] PM: EM: Use runtime modified EM for CPUs energy
- estimation in EAS
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        rafael@kernel.org, dietmar.eggemann@arm.com, rui.zhang@intel.com,
-        amit.kucheria@verdurent.com, amit.kachhap@gmail.com,
-        daniel.lezcano@linaro.org, viresh.kumar@linaro.org,
-        len.brown@intel.com, pavel@ucw.cz, mhiramat@kernel.org,
-        qyousef@layalina.io, wvw@google.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ZRMEHb3_0Ku1UuK_@google.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Sep 25, 2023 at 10:11 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
->
-> The new Energy Model (EM) supports runtime modification of the performance
-> state table to better model the power used by the SoC. Use this new
-> feature to improve energy estimation and therefore task placement in
-> Energy Aware Scheduler (EAS).
->
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
-> ---
->  include/linux/energy_model.h | 20 +++++++++++++-------
->  1 file changed, 13 insertions(+), 7 deletions(-)
->
-> diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-> index 8f055ab356ed..41290ee2cdd0 100644
-> --- a/include/linux/energy_model.h
-> +++ b/include/linux/energy_model.h
-> @@ -261,15 +261,14 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
->                                 unsigned long max_util, unsigned long sum_util,
->                                 unsigned long allowed_cpu_cap)
->  {
-> +       struct em_perf_table *runtime_table;
+On Tue, Sep 26, 2023 at 04:17:33PM +0000, Carlos Llamas wrote:
+> On Fri, Sep 08, 2023 at 03:49:14PM -0700, Elliot Berman wrote:
+> > After commit f5d39b020809 ("freezer,sched: Rewrite core freezer logic"),
+> > tasks that transition directly from TASK_FREEZABLE to TASK_FROZEN  are
+> > always woken up on the thaw path. Prior to that commit, tasks could ask
+> > freezer to consider them "frozen enough" via freezer_do_not_count(). The
+> > commit replaced freezer_do_not_count() with a TASK_FREEZABLE state which
+> > allows freezer to immediately mark the task as TASK_FROZEN without
+> > waking up the task.  This is efficient for the suspend path, but on the
+> > thaw path, the task is always woken up even if the task didn't need to
+> > wake up and goes back to its TASK_(UN)INTERRUPTIBLE state. Although
+> > these tasks are capable of handling of the wakeup, we can observe a
+> > power/perf impact from the extra wakeup.
+> 
+> This issue is hurting the performance of our stable 6.1 releases. Does
+> it make sense to backport these patches into stable branches once they
+> land in mainline? I would assume we want to fix the perf regression
+> there too?
 
-You may as well call it just "table".  The "runtime_" prefix doesn't
-add much value here IMO.
-
->         unsigned long freq, scale_cpu;
-> -       struct em_perf_state *table, *ps;
-> +       struct em_perf_state *ps;
->         int cpu, i;
->
->         if (!sum_util)
->                 return 0;
->
-> -       table = pd->default_table->state;
-> -
->         /*
->          * In order to predict the performance state, map the utilization of
->          * the most utilized CPU of the performance domain to a requested
-> @@ -280,7 +279,14 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
->          */
->         cpu = cpumask_first(to_cpumask(pd->cpus));
->         scale_cpu = arch_scale_cpu_capacity(cpu);
-> -       ps = &table[pd->nr_perf_states - 1];
-> +
-> +       /*
-> +        * No rcu_read_lock() since it's already called by task scheduler.
-> +        * The runtime_table is always there for CPUs, so we don't check.
-> +        */
-> +       runtime_table = rcu_dereference(pd->runtime_table);
-> +
-> +       ps = &runtime_table->state[pd->nr_perf_states - 1];
->
->         max_util = map_util_perf(max_util);
->         max_util = min(max_util, allowed_cpu_cap);
-> @@ -290,9 +296,9 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
->          * Find the lowest performance state of the Energy Model above the
->          * requested frequency.
->          */
-> -       i = em_pd_get_efficient_state(table, pd->nr_perf_states, freq,
-> -                                     pd->flags);
-> -       ps = &table[i];
-> +       i = em_pd_get_efficient_state(runtime_table->state, pd->nr_perf_states,
-> +                                     freq, pd->flags);
-> +       ps = &runtime_table->state[i];
->
->         /*
->          * The capacity of a CPU in the domain at the performance state (ps)
-> --
+Note that these patches are in tip/sched/core, slated for the next merge
+window.
