@@ -2,48 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D1DDE82CD3
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D672E82CD2
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229774AbjI0TiA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 15:38:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58726 "EHLO
+        id S229789AbjI0TiC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 15:38:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58740 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229729AbjI0Th6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 15:37:58 -0400
+        with ESMTP id S229747AbjI0Th7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 15:37:59 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16AE2114
-        for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2023 12:37:57 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 350EB10A
+        for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2023 12:37:58 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaM0-0002Qj-7j; Wed, 27 Sep 2023 21:37:48 +0200
+        id 1qlaLw-0002F8-M5; Wed, 27 Sep 2023 21:37:44 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaLz-009PaW-2j; Wed, 27 Sep 2023 21:37:47 +0200
+        id 1qlaLw-009PZr-9L; Wed, 27 Sep 2023 21:37:44 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaLy-005Rgk-Po; Wed, 27 Sep 2023 21:37:46 +0200
+        id 1qlaLw-005Rg7-0D; Wed, 27 Sep 2023 21:37:44 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-        Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org, kernel@pengutronix.de
-Subject: [PATCH 22/31] thermal: rockchip: Convert to platform remove callback returning void
-Date:   Wed, 27 Sep 2023 21:37:27 +0200
-Message-Id: <20230927193736.2236447-23-u.kleine-koenig@pengutronix.de>
+        linux-pm@vger.kernel.org, kernel@pengutronix.de
+Subject: [PATCH 12/31] thermal: int3402: Convert to platform remove callback returning void
+Date:   Wed, 27 Sep 2023 21:37:17 +0200
+Message-Id: <20230927193736.2236447-13-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 References: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1954; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=e9cswn2yEzGLDC3P0jt87Owou9KyRVBuLfDjfIop/Mc=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlFIRy71cHzhX/ZuIEZQHoUBDTG+CGXJ4ufI0VD wDtDvakgvyJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRSEcgAKCRCPgPtYfRL+ TmPRB/9Q/oLKkk1Th1akg27q61GsJsMU10Du/v9EzM16DwZYTHR25fuBljtlcZe+dNxZV+5suKd ZmI09Fse46EVDBcm17gwGY3ohWxM1PCEDsILOWTXz2VS0N5wnPCW1cdhOYAzQn6WX8i+CIQ0Z46 aiItwpBzexEgwAbhbnJDpfNB3G208JnaJWUQgB6ujqcnOYwHUCvxlfMvX1pobLzPivvhS4rllEq QeVFBl497yxtK0BYqTxY+0f+j0xTWjAW2ZIr5dVxBpV2cYuCdaxx58fbVWBFkHfJ8tWcOjjsYC6 e20P2VcjnmmDCnrXPAlUTUR4u2xW9xiOTFVJzAIBQXE03U+R
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2055; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=qoMLAjTRS9n8eyX+9x9h12/oeNtnXaQblOJdaPK8n74=; b=owGbwMvMwMXY3/A7olbonx/jabUkhlSRlnSNI3Vu7H6Hb6nHzJxhd8Va/+rHf3evGLAU2r+Tf ph1KMmhk9GYhYGRi0FWTJHFvnFNplWVXGTn2n+XYQaxMoFMYeDiFICJMDGy/3fsWDUjqCPmUsHm nzp61nY+W1xjeJbP0zdJTwntOKFkHu7hW3FUpYmrV8Cup1U6IEbz8+ywrl6LCQdTlW6GiS/609I j1Me8Omla2xz/lDCO+ma3k6bfWRVy2VcbMlvk//xnPCnQ5cXNzZ+3+OqrPGYUcpFpXT9lzrLq68 eWrNxQlvx0jp9z9PS5vi0b+Cws/MMP/jgsyrRII8hB4+0nl63To/IXrb3efOHJvP6n5cm9099x/ XipcmyOehrb7xsyXyLn+4pW1Iny6pTt8a3itO9MDd+fcffA7JnzopU0ZHYsk07KncHap/aoS4yj cNEjAQOnlHO7+e+36ldo7lLLcpq05vqqbPcG/4q0+lUA
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -69,40 +67,39 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/thermal/rockchip_thermal.c | 6 ++----
+ drivers/thermal/intel/int340x_thermal/int3402_thermal.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 77231a9d28ff..086ed42dd16c 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -1601,7 +1601,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+diff --git a/drivers/thermal/intel/int340x_thermal/int3402_thermal.c b/drivers/thermal/intel/int340x_thermal/int3402_thermal.c
+index 43fa351e2b9e..ab8bfb5a3946 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3402_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3402_thermal.c
+@@ -71,15 +71,13 @@ static int int3402_thermal_probe(struct platform_device *pdev)
  	return 0;
  }
  
--static int rockchip_thermal_remove(struct platform_device *pdev)
-+static void rockchip_thermal_remove(struct platform_device *pdev)
+-static int int3402_thermal_remove(struct platform_device *pdev)
++static void int3402_thermal_remove(struct platform_device *pdev)
  {
- 	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
- 	int i;
-@@ -1614,8 +1614,6 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
- 	}
+ 	struct int3402_thermal_data *d = platform_get_drvdata(pdev);
  
- 	thermal->chip->control(thermal->regs, false);
+ 	acpi_remove_notify_handler(d->handle,
+ 				   ACPI_DEVICE_NOTIFY, int3402_notify);
+ 	int340x_thermal_zone_remove(d->int340x_zone);
 -
 -	return 0;
  }
  
- static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
-@@ -1691,7 +1689,7 @@ static struct platform_driver rockchip_thermal_driver = {
- 		.of_match_table = of_rockchip_thermal_match,
- 	},
- 	.probe = rockchip_thermal_probe,
--	.remove = rockchip_thermal_remove,
-+	.remove_new = rockchip_thermal_remove,
- };
+ static const struct acpi_device_id int3402_thermal_match[] = {
+@@ -91,7 +89,7 @@ MODULE_DEVICE_TABLE(acpi, int3402_thermal_match);
  
- module_platform_driver(rockchip_thermal_driver);
+ static struct platform_driver int3402_thermal_driver = {
+ 	.probe = int3402_thermal_probe,
+-	.remove = int3402_thermal_remove,
++	.remove_new = int3402_thermal_remove,
+ 	.driver = {
+ 		   .name = "int3402 thermal",
+ 		   .acpi_match_table = int3402_thermal_match,
 -- 
 2.40.1
 
