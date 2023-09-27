@@ -2,46 +2,48 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02EC6E82CCB
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D1DDE82CD3
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229785AbjI0TiB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 15:38:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58734 "EHLO
+        id S229774AbjI0TiA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 15:38:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58726 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229743AbjI0Th6 (ORCPT
+        with ESMTP id S229729AbjI0Th6 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 15:37:58 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19CBE126
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16AE2114
         for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2023 12:37:57 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaLx-0002Fs-E2; Wed, 27 Sep 2023 21:37:45 +0200
+        id 1qlaM0-0002Qj-7j; Wed, 27 Sep 2023 21:37:48 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaLx-009Pa5-1S; Wed, 27 Sep 2023 21:37:45 +0200
+        id 1qlaLz-009PaW-2j; Wed, 27 Sep 2023 21:37:47 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaLw-005RgI-OS; Wed, 27 Sep 2023 21:37:44 +0200
+        id 1qlaLy-005Rgk-Po; Wed, 27 Sep 2023 21:37:46 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-        linux-pm@vger.kernel.org, kernel@pengutronix.de
-Subject: [PATCH 15/31] thermal: k3_bandgap: Convert to platform remove callback returning void
-Date:   Wed, 27 Sep 2023 21:37:20 +0200
-Message-Id: <20230927193736.2236447-16-u.kleine-koenig@pengutronix.de>
+        Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-rockchip@lists.infradead.org, kernel@pengutronix.de
+Subject: [PATCH 22/31] thermal: rockchip: Convert to platform remove callback returning void
+Date:   Wed, 27 Sep 2023 21:37:27 +0200
+Message-Id: <20230927193736.2236447-23-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 References: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1747; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=SyG9lEoEJ5Y7nBQv0324s5IbOFIPmCoox+ucvRaLCC4=; b=owGbwMvMwMXY3/A7olbonx/jabUkhlSRliylGx+62XIVaxSYc5cmHBa3ePp/25nd+0psg3ckX Vp5+5JIJ6MxCwMjF4OsmCKLfeOaTKsqucjOtf8uwwxiZQKZwsDFKQAT8X7J/r/Qd2+Uk2F3Lk/v 3xKvtXsNbzmImLLyanIyrfjasNu3MS170y7FyfIzpDQe9m1wOX1csXzdvuLfYY+nf2nLvFyh0nl h42wFcy6liHVa9T2TDbYI57JI6ifGNn3O3nvgz4dVL76XfXUR/LiiM4fj9aV38b92sRsxOEi6LF rWN9NQ98KaGqYli16LqWcdM/O8kqbOkWB19vPbNzz/wyVNX218kiKjIapU8lXI7mHntOkd8kebk 58LxYuwZN5Y4vKzz27hvpxfHK4z/uxUrl2XXKacVlJlraKgxTZ1w6ftvAms1uaJVWzmfPXCXypS V4WuturTjY477LXs8BfTxaknEiJ1i776VIe13N81Zb44AA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1954; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=e9cswn2yEzGLDC3P0jt87Owou9KyRVBuLfDjfIop/Mc=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlFIRy71cHzhX/ZuIEZQHoUBDTG+CGXJ4ufI0VD wDtDvakgvyJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRSEcgAKCRCPgPtYfRL+ TmPRB/9Q/oLKkk1Th1akg27q61GsJsMU10Du/v9EzM16DwZYTHR25fuBljtlcZe+dNxZV+5suKd ZmI09Fse46EVDBcm17gwGY3ohWxM1PCEDsILOWTXz2VS0N5wnPCW1cdhOYAzQn6WX8i+CIQ0Z46 aiItwpBzexEgwAbhbnJDpfNB3G208JnaJWUQgB6ujqcnOYwHUCvxlfMvX1pobLzPivvhS4rllEq QeVFBl497yxtK0BYqTxY+0f+j0xTWjAW2ZIr5dVxBpV2cYuCdaxx58fbVWBFkHfJ8tWcOjjsYC6 e20P2VcjnmmDCnrXPAlUTUR4u2xW9xiOTFVJzAIBQXE03U+R
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -67,36 +69,40 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/thermal/k3_bandgap.c | 6 ++----
+ drivers/thermal/rockchip_thermal.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/k3_bandgap.c b/drivers/thermal/k3_bandgap.c
-index 4a918c1e92f9..e88192d2afea 100644
---- a/drivers/thermal/k3_bandgap.c
-+++ b/drivers/thermal/k3_bandgap.c
-@@ -235,12 +235,10 @@ static int k3_bandgap_probe(struct platform_device *pdev)
- 	return ret;
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index 77231a9d28ff..086ed42dd16c 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -1601,7 +1601,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 	return 0;
  }
  
--static int k3_bandgap_remove(struct platform_device *pdev)
-+static void k3_bandgap_remove(struct platform_device *pdev)
+-static int rockchip_thermal_remove(struct platform_device *pdev)
++static void rockchip_thermal_remove(struct platform_device *pdev)
  {
- 	pm_runtime_put_sync(&pdev->dev);
- 	pm_runtime_disable(&pdev->dev);
+ 	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
+ 	int i;
+@@ -1614,8 +1614,6 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
+ 	}
+ 
+ 	thermal->chip->control(thermal->regs, false);
 -
 -	return 0;
  }
  
- static const struct of_device_id of_k3_bandgap_match[] = {
-@@ -253,7 +251,7 @@ MODULE_DEVICE_TABLE(of, of_k3_bandgap_match);
+ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
+@@ -1691,7 +1689,7 @@ static struct platform_driver rockchip_thermal_driver = {
+ 		.of_match_table = of_rockchip_thermal_match,
+ 	},
+ 	.probe = rockchip_thermal_probe,
+-	.remove = rockchip_thermal_remove,
++	.remove_new = rockchip_thermal_remove,
+ };
  
- static struct platform_driver k3_bandgap_sensor_driver = {
- 	.probe = k3_bandgap_probe,
--	.remove = k3_bandgap_remove,
-+	.remove_new = k3_bandgap_remove,
- 	.driver = {
- 		.name = "k3-soc-thermal",
- 		.of_match_table	= of_k3_bandgap_match,
+ module_platform_driver(rockchip_thermal_driver);
 -- 
 2.40.1
 
