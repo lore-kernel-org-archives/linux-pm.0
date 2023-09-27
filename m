@@ -2,137 +2,172 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D8A7E810B2
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 09:28:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E1B8E810B5
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 09:34:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230382AbjI0J2l convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 05:28:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51402 "EHLO
+        id S230480AbjI0Jet (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 05:34:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32848 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229985AbjI0J2l (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 05:28:41 -0400
-Received: from mail-yw1-f177.google.com (mail-yw1-f177.google.com [209.85.128.177])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4C3BE6;
-        Wed, 27 Sep 2023 02:28:39 -0700 (PDT)
-Received: by mail-yw1-f177.google.com with SMTP id 00721157ae682-5a200028437so7787237b3.1;
-        Wed, 27 Sep 2023 02:28:39 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695806919; x=1696411719;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=EbZCD6ltUso31jdZjCWvFNyLqtiYopd8rfOZZMwIaq8=;
-        b=Dho1zW87oKjVDlM/8FIlVGnTb21X7Hd2i80vEdFRjGi6SVQhE/QNIQVrUKqbegiZIo
-         qd5EB+QBHzAwXIk/mhXn83C4JiuUouCW4e53+bofududvzSb81eYVHOZW+b7hnMFnnSu
-         +Dg38ag0i4XQpVLuxwDdl0Zua62fzH0y9Gs5TvPA17aYFqEr3Ka9wvkAje+SaWq9Ji9U
-         PHugdFmIznZR7CnExbc1fKlWpOVROcpkXbuYQl+/ufJmqq2FAShJ5fM9iThSrHUngWz2
-         2KfWowMoqcVktRciYJ1QkUsCzV0SPyfE+cHEDnuzU9UTwnxDedIUJjBZw1MYOUtTvPz+
-         7IpQ==
-X-Gm-Message-State: AOJu0Yw80Yu1773w7kD0u8WpO08r4g7v1uADtBxZoErTNMfLeYIuleQG
-        2xfub+hGRfAKDOR1W5Cqflc3Wi4JJ2QuSg==
-X-Google-Smtp-Source: AGHT+IGz1I/BN/UCd21CejdXQ/W1wEeP7cTdDHTnzgeZfCmyS4DqVgXEzgCPHeNfxx8shyvQ4Bk33Q==
-X-Received: by 2002:a0d:f884:0:b0:592:9235:4bcc with SMTP id i126-20020a0df884000000b0059292354bccmr1566619ywf.50.1695806918772;
-        Wed, 27 Sep 2023 02:28:38 -0700 (PDT)
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
-        by smtp.gmail.com with ESMTPSA id h68-20020a0df747000000b0059adc0c4392sm3558596ywf.140.2023.09.27.02.28.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 27 Sep 2023 02:28:38 -0700 (PDT)
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-59f7cc71e2eso77116117b3.0;
-        Wed, 27 Sep 2023 02:28:38 -0700 (PDT)
-X-Received: by 2002:a81:4f0b:0:b0:59b:fb30:9862 with SMTP id
- d11-20020a814f0b000000b0059bfb309862mr1716025ywb.3.1695806917927; Wed, 27 Sep
- 2023 02:28:37 -0700 (PDT)
+        with ESMTP id S230131AbjI0Jer (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 05:34:47 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B17A194;
+        Wed, 27 Sep 2023 02:34:46 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id A935A2195F;
+        Wed, 27 Sep 2023 09:34:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+        t=1695807284; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=s6vdFMu54hcy8kVfOzk2s3fK2p7wmNvWqgyO2kKPKgk=;
+        b=S69tpaJ8kO4e2+MLb8oh/lzG1p4misWVs/xjUnc2Vx0axsFfAiRud1XQqQAFiW3d1B420x
+        fyRQJbAZPNn9FnnuUEQis0F3TqRa7fwZoY+0+C8otGoyFIIfy0CkRusrkNrDFOW52s1JfG
+        gZgIEPwAv2qcmUDE7w64+gCopMec//s=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+        s=susede2_ed25519; t=1695807284;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=s6vdFMu54hcy8kVfOzk2s3fK2p7wmNvWqgyO2kKPKgk=;
+        b=+cgTChSNYRxlzcQvo5QVxrkC6uQiadE2hGV9fDg/JymBp2Z40OALi6JhSUaTt0pWDyGqz+
+        mMlp7b+N8dfvpCBA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 960CB13A74;
+        Wed, 27 Sep 2023 09:34:44 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id ZvGeJDT3E2UlEwAAMHmgww
+        (envelope-from <jack@suse.cz>); Wed, 27 Sep 2023 09:34:44 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+        id 5CD8DA07E6; Wed, 27 Sep 2023 11:34:43 +0200 (CEST)
+From:   Jan Kara <jack@suse.cz>
+To:     Christian Brauner <brauner@kernel.org>
+Cc:     <linux-fsdevel@vger.kernel.org>, <linux-block@vger.kernel.org>,
+        Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
+        linux-pm@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+        "Rafael J . Wysocki" <rafael@kernel.org>
+Subject: [PATCH 16/29] PM: hibernate: Convert to bdev_open_by_dev()
+Date:   Wed, 27 Sep 2023 11:34:22 +0200
+Message-Id: <20230927093442.25915-16-jack@suse.cz>
+X-Mailer: git-send-email 2.35.3
+In-Reply-To: <20230818123232.2269-1-jack@suse.cz>
+References: <20230818123232.2269-1-jack@suse.cz>
 MIME-Version: 1.0
-References: <20230814-void-drivers-soc-renesas-rmobile-sysc-v1-1-6648dfd854de@google.com>
- <CAMuHMdWiC4v9fctp18bRrEH-m_-0VjMg9+XpON8vdRYwniTU3g@mail.gmail.com>
- <CAMuHMdWk_jcZ1V7J68bw11YZ+EjEqAWOKHzanVyxo2zktbMteg@mail.gmail.com> <CAPDyKFqgsHYz1hfOQ=KniNJj+u7ZSMoxS03Rixj1n2AOUdSVaQ@mail.gmail.com>
-In-Reply-To: <CAPDyKFqgsHYz1hfOQ=KniNJj+u7ZSMoxS03Rixj1n2AOUdSVaQ@mail.gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 27 Sep 2023 11:28:25 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdW+ovx_Vbp1FQbvHESYrv3kHx5FvkjSb0V8dq857x5e9w@mail.gmail.com>
-Message-ID: <CAMuHMdW+ovx_Vbp1FQbvHESYrv3kHx5FvkjSb0V8dq857x5e9w@mail.gmail.com>
-Subject: Re: [PATCH] soc: renesas: rmobile-sysc: fix -Wvoid-pointer-to-enum-cast
- warning
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Justin Stitt <justinstitt@google.com>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        Nathan Chancellor <nathan@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Tom Rix <trix@redhat.com>, linux-renesas-soc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, llvm@lists.linux.dev,
-        Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3203; i=jack@suse.cz; h=from:subject; bh=0BnssG6LUA6Teyfes5myOAc1zf8i56lDBWDFNSXFylo=; b=owGbwMvMwME4Z+4qdvsUh5uMp9WSGFKFv8v/U1EUfjBDtoYnZHp78I3geTGLZq53zON9esrelv1H V6FxJ6MxCwMjB4OsmCLL6siL2tfmGXVtDdWQgRnEygQyhYGLUwAmct2f/a/wuoOfElTa9bfkl/7//P TipILXfiXxc52cal/M67IWENyWsXa3mNdjhV8WqSfk7Vw2KPWeFuW4+uV+pLbItdiwFOvarNCD5Zal a9yKHG5U5IdacJQJl/6/f/CoaVLJqUVXZT7PPGY0ZULlpoM1q3QmRC2tsL34nq10b1uQ39LZAkFFhV mpXfc+5jwsMdPVDe7U9v+XVn/Iju3t9u7ZIT61C00kWBYv8grwUj9b8X7rPsGKiTeXvHA9fGHvu9NZ sgITIiWlFStLahcW+epap/remhK//KtW8dMJq4/z+pVf0Sr5krM30beAt3a3hsOcT8/7qr84V12LY3 y2eZadDcta6cuavBWLpBPSeEMsAA==
+X-Developer-Key: i=jack@suse.cz; a=openpgp; fpr=93C6099A142276A28BBE35D815BC833443038D8C
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Ulf,
+Convert hibernation code to use bdev_open_by_dev().
 
-On Tue, Sep 26, 2023 at 1:22 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On Mon, 18 Sept 2023 at 11:21, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Wed, Aug 30, 2023 at 10:24 AM Geert Uytterhoeven
-> > <geert@linux-m68k.org> wrote:
-> > > On Tue, Aug 15, 2023 at 12:11 AM Justin Stitt <justinstitt@google.com> wrote:
-> > > > When building with clang 18 I see the following warning:
-> > > > |      drivers/soc/renesas/rmobile-sysc.c:193:22: warning: cast to smaller integer
-> > > > |               type 'enum pd_types' from 'const void *' [-Wvoid-pointer-to-enum-cast]
-> > > > |        193 |                 add_special_pd(np, (enum pd_types)id->data);
-> > > >
-> > > > This is due to the fact that `id->data` is a void* and `enum pd_types`
-> > > > has the size of an integer. This cast from pointer-width to int-width
-> > > > causes truncation and possible data loss. Instead, cast to `uintptr_t`
-> > > > which has the same width as void*.
-> > > >
-> > > > Link: https://github.com/ClangBuiltLinux/linux/issues/1910
-> > > > Reported-by: Nathan Chancellor <nathan@kernel.org>
-> > >
-> > > scripts/checkpatch.pl:
-> > >
-> > >     WARNING: Reported-by: should be immediately followed by Closes:
-> > > with a URL to the report
-> > >
-> > > Hence changing the Link: tag to a Closes: tag.
-> > >
-> > > > Signed-off-by: Justin Stitt <justinstitt@google.com>
-> > > > ---
-> > > > Note: It should be noted that there is likely no data loss occurring in
-> > > > this case since the enum only has a few fields. The narrowing cast from
-> > > > pointer to int will not lose any data.
-> > >
-> > > Indeed, the theoretical narrowing could only happen on a 64-bit
-> > > platform, while this driver is only used on arm32.
-> > >
-> > > Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > > i.e. will queue in renesas-devel for v6.7.
-> >
-> > As the Generic PM Domain providers were moved to drivers/pmdomain/
-> > in v6.6-rc2, and now have their own maintainer, I have moved this
-> > commit from renesas-drivers-for-v6.7 to renesas-pmdomain-for-v6.7[1],
-> > with s/soc/pmdomain/ in the oneline-summary.
-> >
-> > Ulf: if you prefer, you can still take this patch directly.
-> > Else I will send a PR after rc3 and/or rc5, like I do with my other
-> > renesas-<foo>-for-<version> branches.
-> > Thanks!
->
-> Apologize for the delay, been traveling lately. Anyway, I can
-> certainly pick up the patch and carry it for v6.7. Just let me know,
-> if/when you have dropped the patch from your tree.
+CC: linux-pm@vger.kernel.org
+Acked-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Rafael J. Wysocki <rafael@kernel.org>
+Acked-by: Christian Brauner <brauner@kernel.org>
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ kernel/power/swap.c | 31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
 
-Thanks, dropped.
-
-P.S. And now I notice it was never part of linux-next, due to an
-     oversight in my scripting. Fixed that, too ;-)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 74edbce2320b..095a263da7c4 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -222,7 +222,7 @@ int swsusp_swap_in_use(void)
+  */
+ 
+ static unsigned short root_swap = 0xffff;
+-static struct block_device *hib_resume_bdev;
++static struct bdev_handle *hib_resume_bdev_handle;
+ 
+ struct hib_bio_batch {
+ 	atomic_t		count;
+@@ -276,7 +276,8 @@ static int hib_submit_io(blk_opf_t opf, pgoff_t page_off, void *addr,
+ 	struct bio *bio;
+ 	int error = 0;
+ 
+-	bio = bio_alloc(hib_resume_bdev, 1, opf, GFP_NOIO | __GFP_HIGH);
++	bio = bio_alloc(hib_resume_bdev_handle->bdev, 1, opf,
++			GFP_NOIO | __GFP_HIGH);
+ 	bio->bi_iter.bi_sector = page_off * (PAGE_SIZE >> 9);
+ 
+ 	if (bio_add_page(bio, page, PAGE_SIZE, 0) < PAGE_SIZE) {
+@@ -356,14 +357,14 @@ static int swsusp_swap_check(void)
+ 		return res;
+ 	root_swap = res;
+ 
+-	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device,
++	hib_resume_bdev_handle = bdev_open_by_dev(swsusp_resume_device,
+ 			BLK_OPEN_WRITE, NULL, NULL);
+-	if (IS_ERR(hib_resume_bdev))
+-		return PTR_ERR(hib_resume_bdev);
++	if (IS_ERR(hib_resume_bdev_handle))
++		return PTR_ERR(hib_resume_bdev_handle);
+ 
+-	res = set_blocksize(hib_resume_bdev, PAGE_SIZE);
++	res = set_blocksize(hib_resume_bdev_handle->bdev, PAGE_SIZE);
+ 	if (res < 0)
+-		blkdev_put(hib_resume_bdev, NULL);
++		bdev_release(hib_resume_bdev_handle);
+ 
+ 	return res;
+ }
+@@ -1522,10 +1523,10 @@ int swsusp_check(bool exclusive)
+ 	void *holder = exclusive ? &swsusp_holder : NULL;
+ 	int error;
+ 
+-	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device, BLK_OPEN_READ,
+-					    holder, NULL);
+-	if (!IS_ERR(hib_resume_bdev)) {
+-		set_blocksize(hib_resume_bdev, PAGE_SIZE);
++	hib_resume_bdev_handle = bdev_open_by_dev(swsusp_resume_device,
++				BLK_OPEN_READ, holder, NULL);
++	if (!IS_ERR(hib_resume_bdev_handle)) {
++		set_blocksize(hib_resume_bdev_handle->bdev, PAGE_SIZE);
+ 		clear_page(swsusp_header);
+ 		error = hib_submit_io(REQ_OP_READ, swsusp_resume_block,
+ 					swsusp_header, NULL);
+@@ -1550,11 +1551,11 @@ int swsusp_check(bool exclusive)
+ 
+ put:
+ 		if (error)
+-			blkdev_put(hib_resume_bdev, holder);
++			bdev_release(hib_resume_bdev_handle);
+ 		else
+ 			pr_debug("Image signature found, resuming\n");
+ 	} else {
+-		error = PTR_ERR(hib_resume_bdev);
++		error = PTR_ERR(hib_resume_bdev_handle);
+ 	}
+ 
+ 	if (error)
+@@ -1570,12 +1571,12 @@ int swsusp_check(bool exclusive)
+ 
+ void swsusp_close(bool exclusive)
+ {
+-	if (IS_ERR(hib_resume_bdev)) {
++	if (IS_ERR(hib_resume_bdev_handle)) {
+ 		pr_debug("Image device not initialised\n");
+ 		return;
+ 	}
+ 
+-	blkdev_put(hib_resume_bdev, exclusive ? &swsusp_holder : NULL);
++	bdev_release(hib_resume_bdev_handle);
+ }
+ 
+ /**
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.35.3
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
