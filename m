@@ -2,48 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05E90E82CD3
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 680E0E82CD0
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229771AbjI0TiG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 15:38:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58834 "EHLO
+        id S229770AbjI0TiE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 15:38:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58764 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229786AbjI0TiB (ORCPT
+        with ESMTP id S229729AbjI0TiB (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 15:38:01 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8CFA10E
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 26A37122
         for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2023 12:37:59 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaM2-0002bo-G9; Wed, 27 Sep 2023 21:37:50 +0200
+        id 1qlaM1-0002WQ-9M; Wed, 27 Sep 2023 21:37:49 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaM1-009Pb0-Cg; Wed, 27 Sep 2023 21:37:49 +0200
+        id 1qlaLz-009Pai-V0; Wed, 27 Sep 2023 21:37:47 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaM1-005RhG-3T; Wed, 27 Sep 2023 21:37:49 +0200
+        id 1qlaLz-005Rgw-Lp; Wed, 27 Sep 2023 21:37:47 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        linux-omap@vger.kernel.org, kernel@pengutronix.de
-Subject: [PATCH 30/31] thermal: ti-bandgap: Convert to platform remove callback returning void
-Date:   Wed, 27 Sep 2023 21:37:35 +0200
-Message-Id: <20230927193736.2236447-31-u.kleine-koenig@pengutronix.de>
+Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+        linux-pm@vger.kernel.org, kernel@pengutronix.de
+Subject: [PATCH 25/31] thermal: spear: Convert to platform remove callback returning void
+Date:   Wed, 27 Sep 2023 21:37:30 +0200
+Message-Id: <20230927193736.2236447-26-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 References: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1902; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=/Htw7XUwPMUQ5co1pUmLGdKiOOqGevqunQPfT41Kens=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlFIR7qI669EFclFzfw61tYSRCuPOV1lPbGl4mO a/wkHEm9ZaJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRSEewAKCRCPgPtYfRL+ TkN3B/9CwK1nVibQ7r++BNbI+nJTbIDsS9qJUYUysGIiRxXsg1MQp5IAmN0y6azESIqDgiRDKPG QcYuYK0Aci7eww628Vty1WOOxN1LYQatfHcGbHb7nsb44ffGitDg/wgLwppeIh8TNxKlChNbkle swDf/f2eGn2l7HlNQRLFUVtWAzkD7qOTnxdAM/aeEuzNV8vE5BDlv2Cyx5kUzT56vyR0Ph7kdxx S+wdAu+mGZQdMnI9Y7BWlwi+G28fpZjA6YvgWBH2Bir/L9saO+2a56I2alGRad3YTQ+MY9FezRj i/x/w19lfbWcgp8vJMUQQx+cU4mkTLNhUPSnssWuG158GzXC
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1979; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=7ZfoAOrL7r9Iqg+bNpE99ULlAAl8RUnI2fFr5kxTDXM=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlFIR1xmkUtGtPVyhnz4rI+z9SHbgbqr6VbIgwr jNYErjqhUOJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRSEdQAKCRCPgPtYfRL+ ThvxB/4ttE4R+sKcJloNwdhPqqmZg78M2JldvYv551oJYo/P4NjOUdQf98znrlgguGiZ+cO7Du1 mDygBUZxdAFHvuYWNjujN0j4KlOyJGvpQzuAQnghiuwdFYzkUGmkmhKNB0S7SlQNkjLDW3lxuYA bLK7hPe5pG3uUd+L9Ju0VtN/V/dvf5OKkI3c9Ydr6RDNkMsVJBJCxz8g25AtlUFe+hkOM8SbYun ISSG6cRhDAtCK4luTnIiayaosYSmm3hGaDXY+2FY5uw3lLSuKuwV/+KUJyV0fqAkI2Xx7BfTuyS 2e6ZUNI7r5/lXbUb2mxpod/Bmxz+PD3hYYS6pqTHO1OWkZvT
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -69,40 +67,40 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 6 ++----
+ drivers/thermal/spear_thermal.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index 0c2eb9c6e58b..caadfc61be93 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -1069,7 +1069,7 @@ int ti_bandgap_probe(struct platform_device *pdev)
+diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
+index 96d99289799a..60a871998b07 100644
+--- a/drivers/thermal/spear_thermal.c
++++ b/drivers/thermal/spear_thermal.c
+@@ -150,7 +150,7 @@ static int spear_thermal_probe(struct platform_device *pdev)
+ 	return ret;
  }
  
- static
--int ti_bandgap_remove(struct platform_device *pdev)
-+void ti_bandgap_remove(struct platform_device *pdev)
+-static int spear_thermal_exit(struct platform_device *pdev)
++static void spear_thermal_exit(struct platform_device *pdev)
  {
- 	struct ti_bandgap *bgp = platform_get_drvdata(pdev);
- 	int i;
-@@ -1098,8 +1098,6 @@ int ti_bandgap_remove(struct platform_device *pdev)
+ 	unsigned int actual_mask = 0;
+ 	struct thermal_zone_device *spear_thermal = platform_get_drvdata(pdev);
+@@ -163,8 +163,6 @@ static int spear_thermal_exit(struct platform_device *pdev)
+ 	writel_relaxed(actual_mask & ~stdev->flags, stdev->thermal_base);
  
- 	if (TI_BANDGAP_HAS(bgp, TSHUT))
- 		free_irq(gpiod_to_irq(bgp->tshut_gpiod), NULL);
+ 	clk_disable(stdev->clk);
 -
 -	return 0;
  }
  
- #ifdef CONFIG_PM_SLEEP
-@@ -1283,7 +1281,7 @@ MODULE_DEVICE_TABLE(of, of_ti_bandgap_match);
+ static const struct of_device_id spear_thermal_id_table[] = {
+@@ -175,7 +173,7 @@ MODULE_DEVICE_TABLE(of, spear_thermal_id_table);
  
- static struct platform_driver ti_bandgap_sensor_driver = {
- 	.probe = ti_bandgap_probe,
--	.remove = ti_bandgap_remove,
-+	.remove_new = ti_bandgap_remove,
+ static struct platform_driver spear_thermal_driver = {
+ 	.probe = spear_thermal_probe,
+-	.remove = spear_thermal_exit,
++	.remove_new = spear_thermal_exit,
  	.driver = {
- 			.name = "ti-soc-thermal",
- 			.pm = DEV_PM_OPS,
+ 		.name = "spear_thermal",
+ 		.pm = &spear_thermal_pm_ops,
 -- 
 2.40.1
 
