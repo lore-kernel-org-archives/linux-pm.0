@@ -2,172 +2,189 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E1B8E810B5
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 09:34:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52D72E810C3
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 09:34:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230480AbjI0Jet (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 05:34:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32848 "EHLO
+        id S230526AbjI0Jey (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 05:34:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32896 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230131AbjI0Jer (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 05:34:47 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B17A194;
-        Wed, 27 Sep 2023 02:34:46 -0700 (PDT)
+        with ESMTP id S230448AbjI0Jes (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 05:34:48 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9157A193;
+        Wed, 27 Sep 2023 02:34:45 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id A935A2195F;
-        Wed, 27 Sep 2023 09:34:44 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 967601FD5E;
+        Wed, 27 Sep 2023 09:34:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-        t=1695807284; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=s6vdFMu54hcy8kVfOzk2s3fK2p7wmNvWqgyO2kKPKgk=;
-        b=S69tpaJ8kO4e2+MLb8oh/lzG1p4misWVs/xjUnc2Vx0axsFfAiRud1XQqQAFiW3d1B420x
-        fyRQJbAZPNn9FnnuUEQis0F3TqRa7fwZoY+0+C8otGoyFIIfy0CkRusrkNrDFOW52s1JfG
-        gZgIEPwAv2qcmUDE7w64+gCopMec//s=
+        t=1695807283; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=8yq/EWr5xgyIq2expGTOm/a8E50tdoL6jyUvlCURtkA=;
+        b=AFBlD5DhZEt1NESHiYyz8SkegLzofp7eJ1WULrYqvNawr6FwYRs8YvfnxMMuueLH4oaPAr
+        4/E8CfUtgD9JCSYdgqDNPTGf3WDqWggCkDqswdM4bg88sfMPDeWHH5NIlB2Bfj+JpMt9FG
+        ZcOWlzLEUXG/bpJ8Kbaqy4vRi+qRmpA=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-        s=susede2_ed25519; t=1695807284;
+        s=susede2_ed25519; t=1695807283;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=s6vdFMu54hcy8kVfOzk2s3fK2p7wmNvWqgyO2kKPKgk=;
-        b=+cgTChSNYRxlzcQvo5QVxrkC6uQiadE2hGV9fDg/JymBp2Z40OALi6JhSUaTt0pWDyGqz+
-        mMlp7b+N8dfvpCBA==
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=8yq/EWr5xgyIq2expGTOm/a8E50tdoL6jyUvlCURtkA=;
+        b=mg4W9cwL1b35dhDAXFy+IpXoqDtwwHWZKy46oqV5YDeY2A866tqG4ZHrqCDezVtTxVLjRN
+        B2SqzI+xFxiJavDw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 960CB13A74;
-        Wed, 27 Sep 2023 09:34:44 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 779CF13A74;
+        Wed, 27 Sep 2023 09:34:43 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id ZvGeJDT3E2UlEwAAMHmgww
-        (envelope-from <jack@suse.cz>); Wed, 27 Sep 2023 09:34:44 +0000
+        id YqW3HDP3E2X+EgAAMHmgww
+        (envelope-from <jack@suse.cz>); Wed, 27 Sep 2023 09:34:43 +0000
 Received: by quack3.suse.cz (Postfix, from userid 1000)
-        id 5CD8DA07E6; Wed, 27 Sep 2023 11:34:43 +0200 (CEST)
+        id DAA33A07C9; Wed, 27 Sep 2023 11:34:42 +0200 (CEST)
 From:   Jan Kara <jack@suse.cz>
 To:     Christian Brauner <brauner@kernel.org>
 Cc:     <linux-fsdevel@vger.kernel.org>, <linux-block@vger.kernel.org>,
         Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
-        linux-pm@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-        "Rafael J . Wysocki" <rafael@kernel.org>
-Subject: [PATCH 16/29] PM: hibernate: Convert to bdev_open_by_dev()
-Date:   Wed, 27 Sep 2023 11:34:22 +0200
-Message-Id: <20230927093442.25915-16-jack@suse.cz>
+        Alasdair Kergon <agk@redhat.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        "Darrick J. Wong" <djwong@kernel.org>,
+        Dave Kleikamp <shaggy@kernel.org>,
+        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
+        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
+        Jack Wang <jinpu.wang@ionos.com>,
+        Jaegeuk Kim <jaegeuk@kernel.org>,
+        jfs-discussion@lists.sourceforge.net,
+        Joern Engel <joern@lazybastard.org>,
+        Joseph Qi <joseph.qi@linux.alibaba.com>,
+        Kent Overstreet <kent.overstreet@gmail.com>,
+        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
+        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
+        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
+        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linux-xfs@vger.kernel.org,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Mike Snitzer <snitzer@kernel.org>,
+        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
+        reiserfs-devel@vger.kernel.org,
+        Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Song Liu <song@kernel.org>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
+        Trond Myklebust <trond.myklebust@hammerspace.com>,
+        xen-devel@lists.xenproject.org
+Subject: [PATCH v4 0/29] block: Make blkdev_get_by_*() return handle
+Date:   Wed, 27 Sep 2023 11:34:06 +0200
+Message-ID: <20230818123232.2269-1-jack@suse.cz>
 X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20230818123232.2269-1-jack@suse.cz>
-References: <20230818123232.2269-1-jack@suse.cz>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3203; i=jack@suse.cz; h=from:subject; bh=0BnssG6LUA6Teyfes5myOAc1zf8i56lDBWDFNSXFylo=; b=owGbwMvMwME4Z+4qdvsUh5uMp9WSGFKFv8v/U1EUfjBDtoYnZHp78I3geTGLZq53zON9esrelv1H V6FxJ6MxCwMjB4OsmCLL6siL2tfmGXVtDdWQgRnEygQyhYGLUwAmct2f/a/wuoOfElTa9bfkl/7//P TipILXfiXxc52cal/M67IWENyWsXa3mNdjhV8WqSfk7Vw2KPWeFuW4+uV+pLbItdiwFOvarNCD5Zal a9yKHG5U5IdacJQJl/6/f/CoaVLJqUVXZT7PPGY0ZULlpoM1q3QmRC2tsL34nq10b1uQ39LZAkFFhV mpXfc+5jwsMdPVDe7U9v+XVn/Iju3t9u7ZIT61C00kWBYv8grwUj9b8X7rPsGKiTeXvHA9fGHvu9NZ sgITIiWlFStLahcW+epap/remhK//KtW8dMJq4/z+pVf0Sr5krM30beAt3a3hsOcT8/7qr84V12LY3 y2eZadDcta6cuavBWLpBPSeEMsAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3761; i=jack@suse.cz; h=from:subject:message-id; bh=szriGynEGZ/XhMNms+k06ASpRGig2ulDzrbrydRWx/Q=; b=owEBbQGS/pANAwAIAZydqgc/ZEDZAcsmYgBlE/cIrHCVKGuvNFZzgT9xiRfuRKr6Es2Qs4om7G7p jp8k2rmJATMEAAEIAB0WIQSrWdEr1p4yirVVKBycnaoHP2RA2QUCZRP3CAAKCRCcnaoHP2RA2XGWB/ 4+O+K19fPnUyIouL+A+izJvDBxQbTCWLdn5TEMu5YdIMbi0dvnwAfknt+NWIhJaTQX2oqlgt3Z+UIT peMYb+jQZabj8X4xHMMy3Sfq64tRwodJHlZby5Ux9AfTZe49zDp4M4B3yxQqarEhmz6e4FJUGDaSej vcJmLz6AuSnYuAh4QK/3jCXQrEElZRTjarZjfbunWocM/2dQ7CB+rOSwKJcRMoDpqntU8QyArxca4l q6I2pBMNjnYMgjtG+ABGSBtTrj87TuJSTB3V8qtI38sfCYjMVVEoQiJKuUm1GMh2sPOFelwVMXMCJH mKs8UbSjcFd3wsbJXc8EOKLxzYparl
 X-Developer-Key: i=jack@suse.cz; a=openpgp; fpr=93C6099A142276A28BBE35D815BC833443038D8C
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20230927093406.OpxCgq9aOTZTaMZLd-xlD1VuUh07MB4-v308nbLCgxo@z>
 
-Convert hibernation code to use bdev_open_by_dev().
+Hello,
 
+this is a v3 of the patch series which implements the idea of blkdev_get_by_*()
+calls returning bdev_handle which is then passed to blkdev_put() [1]. This
+makes the get and put calls for bdevs more obviously matching and allows us to
+propagate context from get to put without having to modify all the users
+(again!). In particular I need to propagate used open flags to blkdev_put() to
+be able count writeable opens and add support for blocking writes to mounted
+block devices. I'll send that series separately.
+
+The series is based on Btrfs tree's for-next branch [2] as of today as the
+series depends on Christoph's changes to btrfs device handling.  Patches have
+passed some reasonable testing - I've tested block changes, md, dm, bcache,
+xfs, btrfs, ext4, swap. More testing or review is always welcome. Thanks! I've
+pushed out the full branch to:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs.git bdev_handle
+
+to ease review / testing. Christian, can you pull the patches to your tree
+to get some exposure in linux-next as well? Thanks!
+
+Changes since v3:
+* Rebased on top on btrfs tree
+
+Changes since v2:
+* Rebased on top of current vfs tree
+* Added some acks
+* Reflected minor nits from Christoph
+* Added missing conversion of blkdev_put() calls in cramfs and erofs
+* Fixed possible leak of bdev handle in xfs if logdev is the same as fs dev
+
+Changes since v1:
+* Rebased on top of current vfs tree
+* Renamed final functions to bdev_open_by_*() and bdev_release()
+* Fixed detection of exclusive open in blkdev_ioctl() and blkdev_fallocate()
+* Fixed swap conversion to properly reinitialize swap_info->bdev_handle
+* Fixed xfs conversion to not oops with rtdev without logdev
+* Couple other minor fixups
+
+								Honza
+
+[1] https://lore.kernel.org/all/ZJGNsVDhZx0Xgs2H@infradead.org
+[2] git://git.kernel.org/pub/scm/linux/kernel/git/kdave/linux.git for-next
+
+CC: Alasdair Kergon <agk@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Anna Schumaker <anna@kernel.org>
+CC: Chao Yu <chao@kernel.org>
+CC: Christian Borntraeger <borntraeger@linux.ibm.com>
+CC: Coly Li <colyli@suse.de
+CC: "Darrick J. Wong" <djwong@kernel.org>
+CC: Dave Kleikamp <shaggy@kernel.org>
+CC: David Sterba <dsterba@suse.com>
+CC: dm-devel@redhat.com
+CC: drbd-dev@lists.linbit.com
+CC: Gao Xiang <xiang@kernel.org>
+CC: Jack Wang <jinpu.wang@ionos.com>
+CC: Jaegeuk Kim <jaegeuk@kernel.org>
+CC: jfs-discussion@lists.sourceforge.net
+CC: Joern Engel <joern@lazybastard.org>
+CC: Joseph Qi <joseph.qi@linux.alibaba.com>
+CC: Kent Overstreet <kent.overstreet@gmail.com>
+CC: linux-bcache@vger.kernel.org
+CC: linux-btrfs@vger.kernel.org
+CC: linux-erofs@lists.ozlabs.org
+CC: <linux-ext4@vger.kernel.org>
+CC: linux-f2fs-devel@lists.sourceforge.net
+CC: linux-mm@kvack.org
+CC: linux-mtd@lists.infradead.org
+CC: linux-nfs@vger.kernel.org
+CC: linux-nilfs@vger.kernel.org
+CC: linux-nvme@lists.infradead.org
 CC: linux-pm@vger.kernel.org
-Acked-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Rafael J. Wysocki <rafael@kernel.org>
-Acked-by: Christian Brauner <brauner@kernel.org>
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- kernel/power/swap.c | 31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+CC: linux-raid@vger.kernel.org
+CC: linux-s390@vger.kernel.org
+CC: linux-scsi@vger.kernel.org
+CC: linux-xfs@vger.kernel.org
+CC: "Md. Haris Iqbal" <haris.iqbal@ionos.com>
+CC: Mike Snitzer <snitzer@kernel.org>
+CC: Minchan Kim <minchan@kernel.org>
+CC: ocfs2-devel@oss.oracle.com
+CC: reiserfs-devel@vger.kernel.org
+CC: Sergey Senozhatsky <senozhatsky@chromium.org>
+CC: Song Liu <song@kernel.org>
+CC: Sven Schnelle <svens@linux.ibm.com>
+CC: target-devel@vger.kernel.org
+CC: Ted Tso <tytso@mit.edu>
+CC: Trond Myklebust <trond.myklebust@hammerspace.com>
+CC: xen-devel@lists.xenproject.org
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 74edbce2320b..095a263da7c4 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -222,7 +222,7 @@ int swsusp_swap_in_use(void)
-  */
- 
- static unsigned short root_swap = 0xffff;
--static struct block_device *hib_resume_bdev;
-+static struct bdev_handle *hib_resume_bdev_handle;
- 
- struct hib_bio_batch {
- 	atomic_t		count;
-@@ -276,7 +276,8 @@ static int hib_submit_io(blk_opf_t opf, pgoff_t page_off, void *addr,
- 	struct bio *bio;
- 	int error = 0;
- 
--	bio = bio_alloc(hib_resume_bdev, 1, opf, GFP_NOIO | __GFP_HIGH);
-+	bio = bio_alloc(hib_resume_bdev_handle->bdev, 1, opf,
-+			GFP_NOIO | __GFP_HIGH);
- 	bio->bi_iter.bi_sector = page_off * (PAGE_SIZE >> 9);
- 
- 	if (bio_add_page(bio, page, PAGE_SIZE, 0) < PAGE_SIZE) {
-@@ -356,14 +357,14 @@ static int swsusp_swap_check(void)
- 		return res;
- 	root_swap = res;
- 
--	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device,
-+	hib_resume_bdev_handle = bdev_open_by_dev(swsusp_resume_device,
- 			BLK_OPEN_WRITE, NULL, NULL);
--	if (IS_ERR(hib_resume_bdev))
--		return PTR_ERR(hib_resume_bdev);
-+	if (IS_ERR(hib_resume_bdev_handle))
-+		return PTR_ERR(hib_resume_bdev_handle);
- 
--	res = set_blocksize(hib_resume_bdev, PAGE_SIZE);
-+	res = set_blocksize(hib_resume_bdev_handle->bdev, PAGE_SIZE);
- 	if (res < 0)
--		blkdev_put(hib_resume_bdev, NULL);
-+		bdev_release(hib_resume_bdev_handle);
- 
- 	return res;
- }
-@@ -1522,10 +1523,10 @@ int swsusp_check(bool exclusive)
- 	void *holder = exclusive ? &swsusp_holder : NULL;
- 	int error;
- 
--	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device, BLK_OPEN_READ,
--					    holder, NULL);
--	if (!IS_ERR(hib_resume_bdev)) {
--		set_blocksize(hib_resume_bdev, PAGE_SIZE);
-+	hib_resume_bdev_handle = bdev_open_by_dev(swsusp_resume_device,
-+				BLK_OPEN_READ, holder, NULL);
-+	if (!IS_ERR(hib_resume_bdev_handle)) {
-+		set_blocksize(hib_resume_bdev_handle->bdev, PAGE_SIZE);
- 		clear_page(swsusp_header);
- 		error = hib_submit_io(REQ_OP_READ, swsusp_resume_block,
- 					swsusp_header, NULL);
-@@ -1550,11 +1551,11 @@ int swsusp_check(bool exclusive)
- 
- put:
- 		if (error)
--			blkdev_put(hib_resume_bdev, holder);
-+			bdev_release(hib_resume_bdev_handle);
- 		else
- 			pr_debug("Image signature found, resuming\n");
- 	} else {
--		error = PTR_ERR(hib_resume_bdev);
-+		error = PTR_ERR(hib_resume_bdev_handle);
- 	}
- 
- 	if (error)
-@@ -1570,12 +1571,12 @@ int swsusp_check(bool exclusive)
- 
- void swsusp_close(bool exclusive)
- {
--	if (IS_ERR(hib_resume_bdev)) {
-+	if (IS_ERR(hib_resume_bdev_handle)) {
- 		pr_debug("Image device not initialised\n");
- 		return;
- 	}
- 
--	blkdev_put(hib_resume_bdev, exclusive ? &swsusp_holder : NULL);
-+	bdev_release(hib_resume_bdev_handle);
- }
- 
- /**
--- 
-2.35.3
-
+Previous versions:
+Link: http://lore.kernel.org/r/20230629165206.383-1-jack@suse.cz # v1
+Link: http://lore.kernel.org/r/20230810171429.31759-1-jack@suse.cz # v2
