@@ -2,218 +2,131 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6987FE7F154
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 03:00:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D0A7E80A81
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 04:37:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230000AbjI0DAN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Sep 2023 23:00:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36418 "EHLO
+        id S229861AbjI0EhR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 00:37:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34168 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235277AbjI0C6N (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2023 22:58:13 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63F51213E;
-        Tue, 26 Sep 2023 15:58:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1695769098; x=1727305098;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=53Q/dN7+UjOepgyjr5Ng/0IW68O9tovEk/mUVgFrHy0=;
-  b=FExODShz0+R9HRSYZqUMA2R0KFxEbG17qxU8LhoAXj1Rx7lwASxJTGQp
-   QJq9TgFhX5+x2ELKSmleXREA9s+owGFuiL0NK8xvM6GJ/Y2PNVrpqioOT
-   urU3IQmcPADly7ph0wOGXdT+I1LCu6yWoQQ3UKsLUhjGVPUba+zERgBRR
-   AjYQY8cPjAbyO/V/h9ka4iP08w15RyLw1w8fcuf9CL2Eybt8+EoAFgPRA
-   AjGudOvSfwnAcpZ3qQ9eQQehEUBgimAegmoiWfC2e8q1YJR11TJWRyz/L
-   T2zNulMSmJjk59flZQ5fkTPn3BqxhKZzub/ST0tpvyozqvPCIdiVW80i0
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10845"; a="412599595"
-X-IronPort-AV: E=Sophos;i="6.03,179,1694761200"; 
-   d="scan'208";a="412599595"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Sep 2023 15:58:15 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10845"; a="752346094"
-X-IronPort-AV: E=Sophos;i="6.03,179,1694761200"; 
-   d="scan'208";a="752346094"
-Received: from spandruv-desk.jf.intel.com ([10.54.75.14])
-  by fmsmga007.fm.intel.com with ESMTP; 26 Sep 2023 15:58:15 -0700
-From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 5/5] selftests/thermel/intel: Add test to read power floor status
-Date:   Tue, 26 Sep 2023 15:58:13 -0700
-Message-Id: <20230926225813.995948-6-srinivas.pandruvada@linux.intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230926225813.995948-1-srinivas.pandruvada@linux.intel.com>
-References: <20230926225813.995948-1-srinivas.pandruvada@linux.intel.com>
+        with ESMTP id S229872AbjI0Efw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 00:35:52 -0400
+Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com [IPv6:2a00:1450:4864:20::52f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E718D2713;
+        Tue, 26 Sep 2023 19:26:09 -0700 (PDT)
+Received: by mail-ed1-x52f.google.com with SMTP id 4fb4d7f45d1cf-530bc7c5bc3so12180973a12.1;
+        Tue, 26 Sep 2023 19:26:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=jms.id.au; s=google; t=1695781568; x=1696386368; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=emIKXtRIs/yM2DWwZD9zMtoiHVTkPPbqlVWgbeCiXyc=;
+        b=DP/bBc/dIpsB5DhQVva+sSfLpN0+1lOOg6nw/SsMTCAoznpTyh/EmfVcCUW5vnRf8X
+         y6U7KmkFWqEnq+yopqQRYjYHf5IXaL871jHrOBdU6c1hCFitnO6UX2keP1DxAy3WzvqE
+         BNTCYAUgOm4xvMcYU54DuHaFc7cibNsT2aq4w=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695781568; x=1696386368;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=emIKXtRIs/yM2DWwZD9zMtoiHVTkPPbqlVWgbeCiXyc=;
+        b=Z/lhA+NBoh7LDNvHpth6LRGwpEDf5KCsQk9bBS5XEzr6oji/wkmnSxBYeWoq8KkAFX
+         aJOBHe7IQV/414fi0zed1yJOT4rw8e7aFnr1i40X28kSuVse1Je4OPQpAxfaejQww1Tl
+         /TqBycF8ebV3lPgQJRjDeQk0vmYnajRRn3vkVaTYZVmT4mQVaoPX5gopSqomvxw0HALF
+         NrQiY1V/zYTHIqmMuGBgM4ZX8x5hlWrambpkTJT289WgIJcHMzBN+YNDxpejhs4+YiFO
+         XmGueOm8ZA351yetc5xIocwGz6Ora/Q4qJcjCz2fyCpRPs7RCbRWSjcAql0tM9CQYQtF
+         y2iw==
+X-Gm-Message-State: AOJu0YwTyFFQjV5eAbgVdFs3WiTRE7jFlcoomv990c4+0Lu/PybOB6J9
+        Ekpna/RJNbfMls62SYIGX85yeaArvFqSSUGLFGY=
+X-Google-Smtp-Source: AGHT+IHCCOjXb8+6pc5O9HOXdlXxVDhFBKsFiifAI3BglZZL/BL8JlMYEB/1h28CGguKKA8HQFS3La5RDl0OFTUHTbc=
+X-Received: by 2002:a17:906:9a:b0:9b2:9d6f:2949 with SMTP id
+ 26-20020a170906009a00b009b29d6f2949mr400624ejc.57.1695781568293; Tue, 26 Sep
+ 2023 19:26:08 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
+From:   Joel Stanley <joel@jms.id.au>
+Date:   Wed, 27 Sep 2023 02:25:56 +0000
+Message-ID: <CACPK8XeROYz_XaB3TvUhdXm7Vm8fjC8yU+mfvA58=_FiDrBy-g@mail.gmail.com>
+Subject: Re: [PATCH 00/40] soc: Convert to platform remove callback returning void
+To:     =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Li Yang <leoyang.li@nxp.com>,
+        Herve Codina <herve.codina@bootlin.com>,
+        Qiang Zhao <qiang.zhao@nxp.com>,
+        Hitomi Hasegawa <hasegawa-hitomi@fujitsu.com>,
+        Huisong Li <lihuisong@huawei.com>,
+        Krzysztof Halasa <khalasa@piap.pl>,
+        Karol Gugala <kgugala@antmicro.com>,
+        Mateusz Holenko <mholenko@antmicro.com>,
+        Gabriel Somlo <gsomlo@gmail.com>,
+        Yinbo Zhu <zhuyinbo@loongson.cn>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Conor Dooley <conor.dooley@microchip.com>,
+        Daire McNamara <daire.mcnamara@microchip.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Sumit Gupta <sumitg@nvidia.com>,
+        Shang XiaoJing <shangxiaojing@huawei.com>,
+        Muhammad Usama Anjum <usama.anjum@collabora.com>,
+        Rob Herring <robh@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Santosh Shilimkar <ssantosh@kernel.org>,
+        Michal Simek <michal.simek@amd.com>,
+        Andrew Jeffery <andrew@aj.id.au>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Zev Weiss <zev@bewilderbeest.net>,
+        linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        linux-mediatek@lists.infradead.org,
+        linux-riscv@lists.infradead.org,
+        zhang songyi <zhang.songyi@zte.com.cn>,
+        Lubomir Rintel <lkundrak@v3.sk>, linux-arm-msm@vger.kernel.org,
+        linux-rockchip@lists.infradead.org,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        linux-samsung-soc@vger.kernel.org,
+        Nick Alcock <nick.alcock@oracle.com>,
+        Yang Yingliang <yangyingliang@huawei.com>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        Ruan Jinjie <ruanjinjie@huawei.com>, kernel@pengutronix.de
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some SoCs have firmware support to notify, if the system can't lower
-power limit to a value requested from user space via RAPL constraints.
+On Mon, 25 Sept 2023 at 09:55, Uwe Kleine-K=C3=B6nig
+<u.kleine-koenig@pengutronix.de> wrote:
+>
+> Hello,
+>
+> this series converts all platform drivers below drivers/soc to use
+> .remove_new(). The motivation is to get rid of an integer return code
+> that is (mostly) ignored by the platform driver core and error prone on
+> the driver side.
+>
+> See commit 5c5a7680e67b ("platform: Provide a remove callback that
+> returns no value") for an extended explanation and the eventual goal.
+>
+> As there is no single maintainer team for drivers/soc, I suggest the
+> individual maintainers to pick up "their" patches.
 
-This test program waits for notification of power floor and prints. This
-program can be used to test this feature and also allows other user space
-programs to use as a reference.
+I'd be happy if Arnd merged the lot at once. Arnd, what do you think?
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- tools/testing/selftests/Makefile              |   1 +
- .../thermal/intel/power_floor/Makefile        |  12 ++
- .../intel/power_floor/power_floor_test.c      | 108 ++++++++++++++++++
- 3 files changed, 121 insertions(+)
- create mode 100644 tools/testing/selftests/thermal/intel/power_floor/Makefile
- create mode 100644 tools/testing/selftests/thermal/intel/power_floor/power_floor_test.c
+If that will be too messy then I understand. I have queued the aspeed
+ones locally and will push that out if we decide that's the best way
+to go.
 
-diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
-index 725ce59e4637..c99de76fb20d 100644
---- a/tools/testing/selftests/Makefile
-+++ b/tools/testing/selftests/Makefile
-@@ -85,6 +85,7 @@ TARGETS += syscall_user_dispatch
- TARGETS += sysctl
- TARGETS += tc-testing
- TARGETS += tdx
-+TARGETS += thermal/intel/power_floor
- TARGETS += thermal/intel/workload_hint
- TARGETS += timens
- ifneq (1, $(quicktest))
-diff --git a/tools/testing/selftests/thermal/intel/power_floor/Makefile b/tools/testing/selftests/thermal/intel/power_floor/Makefile
-new file mode 100644
-index 000000000000..9b88e57dbba5
---- /dev/null
-+++ b/tools/testing/selftests/thermal/intel/power_floor/Makefile
-@@ -0,0 +1,12 @@
-+# SPDX-License-Identifier: GPL-2.0
-+ifndef CROSS_COMPILE
-+uname_M := $(shell uname -m 2>/dev/null || echo not)
-+ARCH ?= $(shell echo $(uname_M) | sed -e s/i.86/x86/ -e s/x86_64/x86/)
-+
-+ifeq ($(ARCH),x86)
-+TEST_GEN_PROGS := power_floor_test
-+
-+include ../../../lib.mk
-+
-+endif
-+endif
-diff --git a/tools/testing/selftests/thermal/intel/power_floor/power_floor_test.c b/tools/testing/selftests/thermal/intel/power_floor/power_floor_test.c
-new file mode 100644
-index 000000000000..0326b39a11b9
---- /dev/null
-+++ b/tools/testing/selftests/thermal/intel/power_floor/power_floor_test.c
-@@ -0,0 +1,108 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#define _GNU_SOURCE
-+
-+#include <stdio.h>
-+#include <string.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <fcntl.h>
-+#include <poll.h>
-+#include <signal.h>
-+
-+#define POWER_FLOOR_ENABLE_ATTRIBUTE "/sys/bus/pci/devices/0000:00:04.0/power_limits/power_floor_enable"
-+#define POWER_FLOOR_STATUS_ATTRIBUTE  "/sys/bus/pci/devices/0000:00:04.0/power_limits/power_floor_status"
-+
-+void power_floor_exit(int signum)
-+{
-+	int fd;
-+
-+	/* Disable feature via sysfs knob */
-+
-+	fd = open(POWER_FLOOR_ENABLE_ATTRIBUTE, O_RDWR);
-+	if (fd < 0) {
-+		perror("Unable to open power floor enable file\n");
-+		exit(1);
-+	}
-+
-+	if (write(fd, "0\n", 2) < 0) {
-+		perror("Can' disable power floor notifications\n");
-+		exit(1);
-+	}
-+
-+	printf("Disabled power floor notifications\n");
-+
-+	close(fd);
-+}
-+
-+int main(int argc, char **argv)
-+{
-+	struct pollfd ufd;
-+	char status_str[3];
-+	int fd, ret;
-+
-+	if (signal(SIGINT, power_floor_exit) == SIG_IGN)
-+		signal(SIGINT, SIG_IGN);
-+	if (signal(SIGHUP, power_floor_exit) == SIG_IGN)
-+		signal(SIGHUP, SIG_IGN);
-+	if (signal(SIGTERM, power_floor_exit) == SIG_IGN)
-+		signal(SIGTERM, SIG_IGN);
-+
-+	/* Enable feature via sysfs knob */
-+	fd = open(POWER_FLOOR_ENABLE_ATTRIBUTE, O_RDWR);
-+	if (fd < 0) {
-+		perror("Unable to open power floor enable file\n");
-+		exit(1);
-+	}
-+
-+	if (write(fd, "1\n", 2) < 0) {
-+		perror("Can' enable power floor notifications\n");
-+		exit(1);
-+	}
-+
-+	close(fd);
-+
-+	printf("Enabled power floor notifications\n");
-+
-+	while (1) {
-+		fd = open(POWER_FLOOR_STATUS_ATTRIBUTE, O_RDONLY);
-+		if (fd < 0) {
-+			perror("Unable to power floor status file\n");
-+			exit(1);
-+		}
-+
-+		if ((lseek(fd, 0L, SEEK_SET)) < 0) {
-+			fprintf(stderr, "Failed to set pointer to beginning\n");
-+			exit(1);
-+		}
-+
-+		if (read(fd, status_str, sizeof(status_str)) < 0) {
-+			fprintf(stderr, "Failed to read from:%s\n",
-+			POWER_FLOOR_STATUS_ATTRIBUTE);
-+			exit(1);
-+		}
-+
-+		ufd.fd = fd;
-+		ufd.events = POLLPRI;
-+
-+		ret = poll(&ufd, 1, -1);
-+		if (ret < 0) {
-+			perror("poll error");
-+			exit(1);
-+		} else if (ret == 0) {
-+			printf("Poll Timeout\n");
-+		} else {
-+			if ((lseek(fd, 0L, SEEK_SET)) < 0) {
-+				fprintf(stderr, "Failed to set pointer to beginning\n");
-+				exit(1);
-+			}
-+
-+			if (read(fd, status_str, sizeof(status_str)) < 0)
-+				exit(0);
-+
-+			printf("power floor status: %s\n", status_str);
-+		}
-+
-+		close(fd);
-+	}
-+}
--- 
-2.41.0
+Thanks for doing this cleanup Uwe.
 
+Cheers,
+
+Joel
