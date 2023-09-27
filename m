@@ -2,51 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27474E82CD7
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37E37E82CD9
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229796AbjI0TiD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 15:38:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58780 "EHLO
+        id S229754AbjI0TiE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 15:38:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58802 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229769AbjI0TiA (ORCPT
+        with ESMTP id S229770AbjI0TiA (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 15:38:00 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F84E136
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 602CC10A
         for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2023 12:37:59 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaM0-0002Ug-SM; Wed, 27 Sep 2023 21:37:48 +0200
+        id 1qlaM1-0002a1-Tt; Wed, 27 Sep 2023 21:37:49 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaLz-009Pae-KJ; Wed, 27 Sep 2023 21:37:47 +0200
+        id 1qlaM0-009Pat-VH; Wed, 27 Sep 2023 21:37:48 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaLz-005Rgs-Al; Wed, 27 Sep 2023 21:37:47 +0200
+        id 1qlaM0-005Rh8-Lj; Wed, 27 Sep 2023 21:37:48 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
-Subject: [PATCH 24/31] thermal: exynos_tmu: Convert to platform remove callback returning void
-Date:   Wed, 27 Sep 2023 21:37:29 +0200
-Message-Id: <20230927193736.2236447-25-u.kleine-koenig@pengutronix.de>
+Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        =?utf-8?q?Niklas_S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Johan Hovold <johan+linaro@kernel.org>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        kernel@pengutronix.de
+Subject: [PATCH 28/31] thermal: soctherm: Convert to platform remove callback returning void
+Date:   Wed, 27 Sep 2023 21:37:33 +0200
+Message-Id: <20230927193736.2236447-29-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 References: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1858; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=dsnoZztErRYNWr2jU7eLRLQsZSepGY3S0hl8c5LtKzA=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlFIR0TaGGXeMoBxWYJ1msvYfy3UomoULeWg05x o4x+QoASn6JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRSEdAAKCRCPgPtYfRL+ TtvGCACfmjjCslXNoNAEjTNPuJidBY+JAYOn9VRADLcP46dCsssoj6+L1IipPI+RMzpGPG/e0y4 56ncD423YD1HsRiGbXpRFGK8gaz5M1WMrNM8LNq6I2d5k1H73pF3mZqNrv48JgqgPXNluPo6ucv vIVumXOSzZqTAcT8aPnRHD5Gt9iL5ioYrYVqAcmIVHeq5f4jOL1TZzW/7JMZeWzRmUzgqFhJeG0 4FGA0BWU0pobgS75av4ftclcgKJN4QFZT6hsWvoeDAnNp6+YWEUThxGW9MJsSHlPQygpirBW9U/ IOPPHiP4Xlebq1YX2Co52t8yqBgiTCg33fsGe4a+59bt/Eu4
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1900; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=uHVcHD4muj48wU7dFB0AW5fmvDkHoBh8EbeZlIdklcc=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlFIR4xNQwDwkSqNP7b56y0F7eEi1bDNdpRSghz NJgZg2wpVmJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRSEeAAKCRCPgPtYfRL+ TrFmB/9BVMH7cwlUzWiCs3E/AO0ZbkTeUc/Hba5ZmDaXAk2Gj9mL3vN/R3YTC2VmBxrbvEuNUei kwt8uqP6X20RpF1gt5v1/oZj6xad5EOV/r714xDPOXGWvA6HmUUc+HtAkceK/BfuIlnkV+4aUPw CSiAjZ4rcS9z0l95D6PgMRk5jbkpeWe+cG/e8DlQUOybEqpR6wCbC1URj6tPNaVdCG10A1m/qGb Z3X57BFZKwjfnqnZNBq4UwZPytqYO3X5odTjnuIlYgluIJXiu50i0btXQw34wjWgYj6CJwYP3oq UeOAIgS3ys5F0M/585zfX281+ZdiUBelwLlVZhQFIFpf8p7Z
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -72,40 +74,39 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 6 ++----
+ drivers/thermal/tegra/soctherm.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index e5bc2c82010f..123ec81e1943 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -1124,7 +1124,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	return ret;
+diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+index ea66cba09e56..e7fe8683bfc5 100644
+--- a/drivers/thermal/tegra/soctherm.c
++++ b/drivers/thermal/tegra/soctherm.c
+@@ -2219,15 +2219,13 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+ 	return err;
  }
  
--static int exynos_tmu_remove(struct platform_device *pdev)
-+static void exynos_tmu_remove(struct platform_device *pdev)
+-static int tegra_soctherm_remove(struct platform_device *pdev)
++static void tegra_soctherm_remove(struct platform_device *pdev)
  {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+ 	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
  
-@@ -1137,8 +1137,6 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+ 	debugfs_remove_recursive(tegra->debugfs_dir);
  
- 	if (!IS_ERR(data->regulator))
- 		regulator_disable(data->regulator);
+ 	soctherm_clk_enable(pdev, false);
 -
 -	return 0;
  }
  
- #ifdef CONFIG_PM_SLEEP
-@@ -1173,7 +1171,7 @@ static struct platform_driver exynos_tmu_driver = {
- 		.of_match_table = exynos_tmu_match,
- 	},
- 	.probe = exynos_tmu_probe,
--	.remove	= exynos_tmu_remove,
-+	.remove_new = exynos_tmu_remove,
- };
+ static int __maybe_unused soctherm_suspend(struct device *dev)
+@@ -2274,7 +2272,7 @@ static SIMPLE_DEV_PM_OPS(tegra_soctherm_pm, soctherm_suspend, soctherm_resume);
  
- module_platform_driver(exynos_tmu_driver);
+ static struct platform_driver tegra_soctherm_driver = {
+ 	.probe = tegra_soctherm_probe,
+-	.remove = tegra_soctherm_remove,
++	.remove_new = tegra_soctherm_remove,
+ 	.driver = {
+ 		.name = "tegra_soctherm",
+ 		.pm = &tegra_soctherm_pm,
 -- 
 2.40.1
 
