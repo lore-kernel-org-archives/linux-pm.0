@@ -2,465 +2,164 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60834E82CD3
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 20:26:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F9E8E7F14F
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 22:45:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229830AbjI0U03 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 16:26:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46912 "EHLO
+        id S229731AbjI0Wpr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 18:45:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56714 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229879AbjI0U00 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 16:26:26 -0400
-Received: from sonic309-25.consmr.mail.ir2.yahoo.com (sonic309-25.consmr.mail.ir2.yahoo.com [77.238.179.83])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF87F194
-        for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2023 13:26:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rocketmail.com; s=s2048; t=1695846381; bh=9liyMz7dI1f+ZL0FPhVqZI8KcCxBwUJ44/9Y4J+NCAs=; h=From:To:Cc:Subject:Date:In-Reply-To:References:From:Subject:Reply-To; b=WVg6RslXc2qnSULPWmT+6JOcThZxRvZ+t+4j5fOS0/zIh/TBtadYWynO59F4H2pRewwFkidgl90TNnFNzV3gcB4P25Ltl4f7Qq8fqBjsEjfuh/27HWxXKYm69mOVs/fP6+GkGnK4MfF/eq+z7weCPaf4c/0bKsoMOR/XyL28uS95mpeTyeKtAKU5+OI6QxP/sMOrHFAR98MoBP22wrwEYI3hdNyDsuxXgxSYfEINn/GRAimYKJj4118kNpZ7g/D/7tWpYLjCnxvOPuqEwu8caChvi9UJ6QPR8FD5M1YbnsFKtmDtwijqZb6gv18MxbzUf6JGll0X/TgYWL24gEKIzw==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1695846381; bh=fg7zFwGRmLa8czAJVDF4rudTssn6wSYGSaIg21XlQKK=; h=X-Sonic-MF:From:To:Subject:Date:From:Subject; b=kBAdqHBu0RNE4YupUErDaFB2UFI5sO8GNH63iDJMvMMXqZbGK95qiwLYDZ5/Mni4dJMorhfP3wyAy1t4Lku5QH6HEYwnwal44jAdMK2TomsT0cdg7e++vD5QINpYeBOKUDHQzIJZ7LA3ZR2IPYNZpNACrz7CL+jwchamrKPGDKQRKIt1LLCzltMfD+d/5DQvuey+wliL8tkDuwVp2kVDiDDPTj0rw58rw6KPkUPRAaOn5YAPbJ+NRYBw4dRXza/rgJQmmnMJaye1fkk/rEbRmBO+NXEbEgDhRfHFCR/AkQuGiaV/Rv/+JgVyQftk2eqm6znS0IcIbqb0CxHQNm3NMA==
-X-YMail-OSG: UnrsOS0VM1nFQQ5w7LbiOI5L1tY0WRw.YpLT5lkYdAMjFpyUCy_wp9QwmHncOND
- _PrTfHq94_RkB0SHB7oCUFJhiZ6jCK2aXdc7gfwByVsXSvUBGXUUs.63pqkTs9R2jSTfh5HMvL3H
- 4Jqi0VJbY2Mfn2eOh5cuWSz0JUFOu3kl1M9NHpMDk76_SZeJuuVZucFUZPhd3cjtG01WWRHJ7AEJ
- Tlmgsr0Z7oXor881B.ZNq5mFw5jEXstIdtVFmu7rKhlgB9zbcs7oKUkeGR.wZrMmbRMIsdfsfKhg
- TREJ9huCgm56cUe2YG_EMqcr7KrGXdS1YN_AQVIoGGlrza9VWthGxEL55_4r7N.ZN8jG0KFmP1Bn
- AllKB5IIUYqjvKK_5VnREWv3fWdMbUtAQudoXH6Em5cAHGTKZsEe4RLfOZyc9eY3oHdmUYsT8BkZ
- 6Nm_Bo6DhlDflWRLcW_041ytizWwLrfBKeiHnLsf5Txn4g_pILZi8zNdyTXOQFvdcnNu7IyRnsDR
- C75KJ6KFFIfIenzArGFqpWUbT82tAPO.6O18PbL4Adh1BvmjfJefjR0CsmU1XQNsRCjZRYJg8pQq
- G_4bDPSRUKM5.urI13wNU7iCmpgGuynmKliNAnvoCwQDO1vXaPpMGOpYVA0byML6IApsf45b7ofk
- .qA1QGygSs8QJ_ZejtgFkKxWAzDeb5BjQ0VXuli9ER_baR0GznJ1dtg7zgxmk2ZCUkaPacMccK5Z
- w2Y3qUcN7mSVpqecW0h7GBhXu3UIm..PXslN4KD3YBj_1jkDaeQpwph6DikdXQSgQ3.dI7DPTihf
- OjIlHK6PCCUyNqpxoc_qXzMsjD8YYF1BMWcv5axn81LFMRoUoHhrohFGWLhZc5BI_45MPaQ5gptn
- 3xpAV88CinYLDP2GXi6zFyPzEP8Gr90kbq11aGiqgH3h7x2F0UZZiDclzzgLM4b24Icf7zQucjTw
- 8RdArWVxVZzvYlhaiEKY_V3YvWN.0BDI5nG8LWu6jhP8H16.HJiuqt2KK362OpFH54xv70B8Iv2j
- xCXmP3mPNYDjqAGbGplHzPEGqccAAnEyl8D.nyjGGTl3usT.Ze5JeO_4VVs4KHpKtDyeMkNeTfg.
- MZg_OK0_4CDppnWHEgnGgWqeu7U9YrDkOLctDiqlTCRQeyzdJ18LTzjCSwgtVx70HHtyKxPBH49_
- 9o6DgzN_XrsyALsyzHN.PeCSV_adsevnbyIL7rmFFRdvZO0wffJHEbordIhd3vTUbYlWvFY62R8c
- gQl7kE2kQT22jSPAHanNY0ViyHCQkOdT3UfQP3DIEH5Br9j.DJdnmwIvi5C1V5wOCmRPRVhpyxqP
- s1tPBHuu5GaqChNhw2bAkd3d1YoEwjO0YR_szBtER8aP_0Twymy5Bf4c5Rs6ahR0QSRYYOp.1tOZ
- Jjuq5VNfhbAUBuhNFIxQQcvgCKIn1ggbdwTU1B9I_eK_9_B9XlRdrz787JnJlqt6GeE_7PmOaXpY
- keNyXxJe4f7At6Q16YvvkhG.nhFH7ZFkur8.KbsGJCsn1YeBdwiKcq5RwWGIjScQ8HVLsfi5MhfF
- 5Dic2ali.3A2sft3Hp2zIhtYB.0QZRR.fuWe1B2DQM9z130i0VULAJYasoOcTTQcTByHRUTGSsMz
- WcRouMHb_rc9.r4ex_Jm9a1OZNAo1pq0dmk1c6dLMbaaVKN5eiicj1_obnuP5rBKX.daT_lfA_nM
- T5CBCBDVJKOINeu1MaaXgp9nPTXnZw4I2EapJ5b7H7cnhsc9wPfxfOq5PXpOUVLqMg0ptDUav9ak
- pcYhIF_wn9bjqljp6x8ZqePe4GjYsXuQLucUoCUYlY4NX6UiJXFyFTiMdn3lDjQtd4X6abfz0gCV
- 2aq0GFRYy637AzglLOCAYVPKQ5ZJTwlGPneQFVzoiG2KeBbuvPptIyV.TE3aKoDGpOaKymQV2rBr
- AJ01fkele2rFYt3Rz3Odtw_G3d2UmvghCdJxyzlIF.fmLCLL0sWKEJ.NEFvG0SV6ZEyHufXP4Lgg
- gBAm6OGGClmzzUugy9LXNRPqZlDqCOIiUQxgWEc4jqfMe4JrkmQM4bB_4qEVWxXkOYD8pGLe6.ZH
- WALE9uMIcwe2kUOD_g4A8_cmg0Dinxgcw1_NfF0yTZxVZaxlQzRyf2BEMPmD813lVnG5kS5.7WLc
- 7DFxqEdAF5Uymts6qn6DbccsAuQoPLBV52YnpoDTrPIrET3nA62i2Y1MUD2Zihprs11YQZt4ElgB
- _xvCarOIYq1AMY9Lfdg3.XuP0rB1cpzh2m7am1V17nxemnPdRPhWttsqSVRLccuYiwXl_445rX56
- 2YPsd44KwP6RRK2wMtkfK6LA1SNLdiSOq
-X-Sonic-MF: <jahau@rocketmail.com>
-X-Sonic-ID: 29f307a1-56a3-490b-baca-1e117cd0e593
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic309.consmr.mail.ir2.yahoo.com with HTTP; Wed, 27 Sep 2023 20:26:21 +0000
-Received: by hermes--production-ir2-55db9d9d5-5hvhf (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 1d998f486e26fd309cd8d11c694d3a2b;
-          Wed, 27 Sep 2023 20:26:16 +0000 (UTC)
-From:   Jakob Hauser <jahau@rocketmail.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Lee Jones <lee@kernel.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        Yang Yingliang <yangyingliang@huawei.com>,
-        Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Raymond Hackley <raymondhackley@protonmail.com>,
-        Henrik Grimler <henrik@grimler.se>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        Jakob Hauser <jahau@rocketmail.com>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCH 2/5] power: supply: rt5033_charger: Add cable detection and USB OTG supply
-Date:   Wed, 27 Sep 2023 22:25:59 +0200
-Message-Id: <efe3e6132216ff87a1643c0fdbf471a672a3f4f3.1695844349.git.jahau@rocketmail.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <cover.1695844349.git.jahau@rocketmail.com>
-References: <cover.1695844349.git.jahau@rocketmail.com>
+        with ESMTP id S229460AbjI0Wpq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 18:45:46 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22D00AF;
+        Wed, 27 Sep 2023 15:45:44 -0700 (PDT)
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 38RMhLEc021202;
+        Wed, 27 Sep 2023 22:44:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=date : from : to :
+ cc : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=qcppdkim1; bh=2WzMCyujUUN8vsItkqe30uu8LNBKln4ud1vWe5HQBXc=;
+ b=gp/ksm5e9YgMqVJk1uaNNgbzZXcDL9Y5PUlM8QRbA/WQGoOju4jq+yo6DBVFV/arFrxr
+ 3Lsii92FbWJhJiVUmyzbCbKMgKESQ1iw3zecNq+yFsqdSoynyWjQqR/5LVHFF2uk6r9B
+ 6OlyhnZ1WNYXmPOHIp2+W2d7FEw2Yy00vavA/7K2mTyYLJuQnzIMKW76PyAz60YHY8Uk
+ cYH7LJP3EgAgYFADMUcwJ+SAfU2zn9EXDZi/OXxd5sDTINUz8mZbCXbxNrmetlf13KdP
+ 30+NKDfSkehHZsm+71weqSzFdgJlcWQGP66V+I7zQ7KdternlvvZbsAEF56KyfDJIUF3 bA== 
+Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tc43mu1gr-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 27 Sep 2023 22:44:34 +0000
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+        by NASANPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 38RMiXT1007881
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 27 Sep 2023 22:44:33 GMT
+Received: from quicinc.com (10.49.16.6) by nasanex01b.na.qualcomm.com
+ (10.46.141.250) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.36; Wed, 27 Sep
+ 2023 15:44:30 -0700
+Date:   Wed, 27 Sep 2023 15:44:28 -0700
+From:   Guru Das Srinagesh <quic_gurus@quicinc.com>
+To:     Pavan Kondeti <quic_pkondeti@quicinc.com>
+CC:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Guru Das Srinagesh <quic_gurus@quicinc.com>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        "Nick Desaulniers" <ndesaulniers@google.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Nicolas Schier <nicolas@fjasle.eu>,
+        "Konstantin Ryabitsev" <konstantin@linuxfoundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Bjorn Andersson <andersson@kernel.org>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, Will Deacon <will@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        <linux-kernel@vger.kernel.org>, <kernel@quicinc.com>,
+        <workflows@vger.kernel.org>, <tools@linux.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v3 1/1] scripts: Add add-maintainer.py
+Message-ID: <ZRSwTBkhlg5kj7jf@quicinc.com>
+Mail-Followup-To: Pavan Kondeti <quic_pkondeti@quicinc.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Nicolas Schier <nicolas@fjasle.eu>,
+        Konstantin Ryabitsev <konstantin@linuxfoundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Bjorn Andersson <andersson@kernel.org>, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, Will Deacon <will@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, kernel@quicinc.com,
+        workflows@vger.kernel.org, tools@linux.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+References: <cover.1693037031.git.quic_gurus@quicinc.com>
+ <141b9fcab2208ace3001df4fc10e3dfd42b9f5d9.1693037031.git.quic_gurus@quicinc.com>
+ <2efba6b3-2399-9deb-d0ce-78f7b5e12f30@linaro.org>
+ <0f0bc437-e052-459d-bbda-bebeff1537ae@quicinc.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <0f0bc437-e052-459d-bbda-bebeff1537ae@quicinc.com>
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01b.na.qualcomm.com (10.47.209.197) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: T6hX6RCIoYGyX4HlYCDsPLRHDWQvfoYp
+X-Proofpoint-GUID: T6hX6RCIoYGyX4HlYCDsPLRHDWQvfoYp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-09-27_15,2023-09-27_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
+ impostorscore=0 bulkscore=0 phishscore=0 mlxlogscore=819 malwarescore=0
+ adultscore=0 spamscore=0 clxscore=1011 priorityscore=1501 mlxscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2309270195
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Implement cable detection by extcon and handle the driver according to the
-connector type.
+On Sep 27 2023 10:21, Pavan Kondeti wrote:
+> On Mon, Aug 28, 2023 at 10:21:32AM +0200, Krzysztof Kozlowski wrote:
+> > On 26/08/2023 10:07, Guru Das Srinagesh wrote:
+> > > This script runs get_maintainer.py on a given patch file (or multiple
+> > > patch files) and adds its output to the patch file in place with the
+> > > appropriate email headers "To: " or "Cc: " as the case may be. These new
+> > > headers are added after the "From: " line in the patch.
+> > > 
+> > > Currently, for a single patch, maintainers and reviewers are added as
+> > > "To: ", mailing lists and all other roles are added as "Cc: ".
+> > > 
+> > > For a series of patches, however, a set-union scheme is employed in
+> > > order to solve the all-too-common problem of ending up sending only
+> > > subsets of a patch series to some lists, which results in important
+> > > pieces of context such as the cover letter (or other patches in the
+> > > series) being dropped from those lists. This scheme is as follows:
+> > > 
+> > > - Create set-union of all maintainers and reviewers from all patches and
+> > >   use this to do the following per patch:
+> > >   - add only that specific patch's maintainers and reviewers as "To: "
+> > >   - add the other maintainers and reviewers from the other patches as "Cc: "
+> > > 
+> > > - Create set-union of all mailing lists corresponding to all patches and
+> > >   add this to all patches as "Cc: "
+> > > 
+> > > - Create set-union of all other roles corresponding to all patches and
+> > >   add this to all patches as "Cc: "
+> > > 
+> > > Please note that patch files that don't have any "Maintainer"s or
+> > > "Reviewers" explicitly listed in their `get_maintainer.pl` output will
+> > 
+> > So before you will ignoring the reviewers, right? One more reason to not
+> > get it right...
+> > 
+> > > not have any "To: " entries added to them; developers are expected to
+> > > manually make edits to the added entries in such cases to convert some
+> > > "Cc: " entries to "To: " as desired.
+> > > 
+> > > The script is quiet by default (only prints errors) and its verbosity
+> > > can be adjusted via an optional parameter.
+> > > 
+> > > Signed-off-by: Guru Das Srinagesh <quic_gurus@quicinc.com>
+> > > ---
+> > >  MAINTAINERS               |   5 ++
+> > >  scripts/add-maintainer.py | 164 ++++++++++++++++++++++++++++++++++++++
+> > >  2 files changed, 169 insertions(+)
+> > >  create mode 100755 scripts/add-maintainer.py
+> > > 
+> > 
+> > I do not see the benefits of this script. For me - it's unnecessarily
+> > more complicated instead of my simple bash function which makes
+> > everything one command less than here.
+> > One more thing to maintain.
+> 
+> Thanks for your bash script. I slightly modified it to keep maintainers
+> in To and rest in Cc. 
+> 
+> git send-email --dry-run --to="$(scripts/get_maintainer.pl --no-multiline --separator=, --no-r --no-l --no-git --no-roles --no-rolestats --no-git-fallback *.patch)" --cc="$(scripts/get_maintainer.pl --no-multiline --separator=, --no-m --no-git --no-roles --no-rolestats --no-git-fallback *.patch)" *.patch
 
-There are basically three types of action: "set_charging", "set_otg" and
-"set_disconnect".
+FYI, b4 has "b4.send-auto-to-cmd" and "b4.send-auto-cc-cmd" [1] as well to
+override its default behaviour. You can just set the above two b4 config
+options as you like and it will do the right thing.
 
-A forth helper function to "unset_otg" was added because this is used in both
-"set_charging" and "set_disconnect". In the first case it covers the rather
-rare event that someone changes from OTG to charging without disconnect. In
-the second case, when disconnecting, the values are set back to the ones from
-initialization to return into a defined state.
-
-Additionally, there is "set_mivr". When connecting to e.g. a laptop/PC, the
-minimum input voltage regulation (MIVR) shall prevent a voltage drop if the
-cable or the supply is weak. The MIVR value is set to 4600MV, same as in the
-Android driver [1]. When disconnecting, MIVR is set back to DISABLED.
-
-In the function rt5033_get_charger_state(): When in OTG mode, the chip
-reports status "charging". Change this to "discharging" because there is
-no charging going on in OTG mode [2].
-
-[1] https://github.com/msm8916-mainline/linux-downstream/blob/GT-I9195I/drivers/battery/rt5033_charger.c#L499
-[2] https://github.com/msm8916-mainline/linux-downstream/blob/GT-I9195I/drivers/battery/rt5033_charger.c#L686-L687
-
-Tested-by: Raymond Hackley <raymondhackley@protonmail.com>
-Signed-off-by: Jakob Hauser <jahau@rocketmail.com>
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/power/supply/rt5033_charger.c | 276 +++++++++++++++++++++++++-
- 1 file changed, 274 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/rt5033_charger.c b/drivers/power/supply/rt5033_charger.c
-index 57a0dc631e85..2c2073b8979d 100644
---- a/drivers/power/supply/rt5033_charger.c
-+++ b/drivers/power/supply/rt5033_charger.c
-@@ -6,8 +6,11 @@
-  * Author: Beomho Seo <beomho.seo@samsung.com>
-  */
- 
-+#include <linux/devm-helpers.h>
-+#include <linux/extcon.h>
- #include <linux/mod_devicetable.h>
- #include <linux/module.h>
-+#include <linux/mutex.h>
- #include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
-@@ -27,6 +30,14 @@ struct rt5033_charger {
- 	struct regmap			*regmap;
- 	struct power_supply		*psy;
- 	struct rt5033_charger_data	*chg;
-+	struct extcon_dev		*edev;
-+	struct notifier_block		extcon_nb;
-+	struct work_struct		extcon_work;
-+	struct mutex			lock;
-+	bool online;
-+	bool otg;
-+	bool mivr_enabled;
-+	u8 cv_regval;
- };
- 
- static int rt5033_get_charger_state(struct rt5033_charger *charger)
-@@ -57,6 +68,10 @@ static int rt5033_get_charger_state(struct rt5033_charger *charger)
- 		state = POWER_SUPPLY_STATUS_UNKNOWN;
- 	}
- 
-+	/* For OTG mode, RT5033 would still report "charging" */
-+	if (charger->otg)
-+		state = POWER_SUPPLY_STATUS_DISCHARGING;
-+
- 	return state;
- }
- 
-@@ -148,6 +163,9 @@ static inline int rt5033_init_const_charge(struct rt5033_charger *charger)
- 		return -EINVAL;
- 	}
- 
-+	/* Store that value for later usage */
-+	charger->cv_regval = reg_data;
-+
- 	/* Set end of charge current */
- 	if (chg->eoc_uamp < RT5033_CHARGER_EOC_MIN ||
- 	    chg->eoc_uamp > RT5033_CHARGER_EOC_MAX) {
-@@ -331,6 +349,152 @@ static int rt5033_charger_reg_init(struct rt5033_charger *charger)
- 	return 0;
- }
- 
-+static int rt5033_charger_set_otg(struct rt5033_charger *charger)
-+{
-+	int ret;
-+
-+	mutex_lock(&charger->lock);
-+
-+	/* Set OTG boost v_out to 5 volts */
-+	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL2,
-+			RT5033_CHGCTRL2_CV_MASK,
-+			0x37 << RT5033_CHGCTRL2_CV_SHIFT);
-+	if (ret) {
-+		dev_err(charger->dev, "Failed set OTG boost v_out\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Set operation mode to OTG */
-+	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL1,
-+			RT5033_CHGCTRL1_MODE_MASK, RT5033_BOOST_MODE);
-+	if (ret) {
-+		dev_err(charger->dev, "Failed to update OTG mode.\n");
-+		return -EINVAL;
-+	}
-+
-+	/* In case someone switched from charging to OTG directly */
-+	if (charger->online)
-+		charger->online = false;
-+
-+	charger->otg = true;
-+
-+	mutex_unlock(&charger->lock);
-+
-+	return 0;
-+}
-+
-+static int rt5033_charger_unset_otg(struct rt5033_charger *charger)
-+{
-+	int ret;
-+	u8 data;
-+
-+	/* Restore constant voltage for charging */
-+	data = charger->cv_regval;
-+	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL2,
-+			RT5033_CHGCTRL2_CV_MASK,
-+			data << RT5033_CHGCTRL2_CV_SHIFT);
-+	if (ret) {
-+		dev_err(charger->dev, "Failed to restore constant voltage\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Set operation mode to charging */
-+	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL1,
-+			RT5033_CHGCTRL1_MODE_MASK, RT5033_CHARGER_MODE);
-+	if (ret) {
-+		dev_err(charger->dev, "Failed to update charger mode.\n");
-+		return -EINVAL;
-+	}
-+
-+	charger->otg = false;
-+
-+	return 0;
-+}
-+
-+static int rt5033_charger_set_charging(struct rt5033_charger *charger)
-+{
-+	int ret;
-+
-+	mutex_lock(&charger->lock);
-+
-+	/* In case someone switched from OTG to charging directly */
-+	if (charger->otg) {
-+		ret = rt5033_charger_unset_otg(charger);
-+		if (ret)
-+			return -EINVAL;
-+	}
-+
-+	charger->online = true;
-+
-+	mutex_unlock(&charger->lock);
-+
-+	return 0;
-+}
-+
-+static int rt5033_charger_set_mivr(struct rt5033_charger *charger)
-+{
-+	int ret;
-+
-+	mutex_lock(&charger->lock);
-+
-+	/*
-+	 * When connected via USB connector type SDP (Standard Downstream Port),
-+	 * the minimum input voltage regulation (MIVR) should be enabled. It
-+	 * prevents an input voltage drop due to insufficient current provided
-+	 * by the adapter or USB input. As a downside, it may reduces the
-+	 * charging current and thus slows the charging.
-+	 */
-+	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL4,
-+			RT5033_CHGCTRL4_MIVR_MASK, RT5033_CHARGER_MIVR_4600MV);
-+	if (ret) {
-+		dev_err(charger->dev, "Failed to set MIVR level.\n");
-+		return -EINVAL;
-+	}
-+
-+	charger->mivr_enabled = true;
-+
-+	mutex_unlock(&charger->lock);
-+
-+	/* Beyond this, do the same steps like setting charging */
-+	rt5033_charger_set_charging(charger);
-+
-+	return 0;
-+}
-+
-+static int rt5033_charger_set_disconnect(struct rt5033_charger *charger)
-+{
-+	int ret;
-+
-+	mutex_lock(&charger->lock);
-+
-+	/* Disable MIVR if enabled */
-+	if (charger->mivr_enabled) {
-+		ret = regmap_update_bits(charger->regmap,
-+				RT5033_REG_CHG_CTRL4,
-+				RT5033_CHGCTRL4_MIVR_MASK,
-+				RT5033_CHARGER_MIVR_DISABLE);
-+		if (ret) {
-+			dev_err(charger->dev, "Failed to disable MIVR.\n");
-+			return -EINVAL;
-+		}
-+
-+		charger->mivr_enabled = false;
-+	}
-+
-+	if (charger->otg) {
-+		ret = rt5033_charger_unset_otg(charger);
-+		if (ret)
-+			return -EINVAL;
-+	}
-+
-+	if (charger->online)
-+		charger->online = false;
-+
-+	mutex_unlock(&charger->lock);
-+
-+	return 0;
-+}
-+
- static enum power_supply_property rt5033_charger_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_CHARGE_TYPE,
-@@ -367,8 +531,7 @@ static int rt5033_charger_get_property(struct power_supply *psy,
- 		val->strval = RT5033_MANUFACTURER;
- 		break;
- 	case POWER_SUPPLY_PROP_ONLINE:
--		val->intval = (rt5033_get_charger_state(charger) ==
--				POWER_SUPPLY_STATUS_CHARGING);
-+		val->intval = charger->online;
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -403,6 +566,86 @@ static struct rt5033_charger_data *rt5033_charger_dt_init(
- 	return chg;
- }
- 
-+static void rt5033_charger_extcon_work(struct work_struct *work)
-+{
-+	struct rt5033_charger *charger =
-+		container_of(work, struct rt5033_charger, extcon_work);
-+	struct extcon_dev *edev = charger->edev;
-+	int connector, state;
-+	int ret;
-+
-+	for (connector = EXTCON_USB_HOST; connector <= EXTCON_CHG_USB_PD;
-+	     connector++) {
-+		state = extcon_get_state(edev, connector);
-+		if (state == 1)
-+			break;
-+	}
-+
-+	/*
-+	 * Adding a delay between extcon notification and extcon action. This
-+	 * makes extcon action execution more reliable. Without the delay the
-+	 * execution sometimes fails, possibly because the chip is busy or not
-+	 * ready.
-+	 */
-+	msleep(100);
-+
-+	switch (connector) {
-+	case EXTCON_CHG_USB_SDP:
-+		ret = rt5033_charger_set_mivr(charger);
-+		if (ret) {
-+			dev_err(charger->dev, "failed to set USB mode\n");
-+			break;
-+		}
-+		dev_info(charger->dev, "USB mode. connector type: %d\n",
-+			 connector);
-+		break;
-+	case EXTCON_CHG_USB_DCP:
-+	case EXTCON_CHG_USB_CDP:
-+	case EXTCON_CHG_USB_ACA:
-+	case EXTCON_CHG_USB_FAST:
-+	case EXTCON_CHG_USB_SLOW:
-+	case EXTCON_CHG_WPT:
-+	case EXTCON_CHG_USB_PD:
-+		ret = rt5033_charger_set_charging(charger);
-+		if (ret) {
-+			dev_err(charger->dev, "failed to set charging\n");
-+			break;
-+		}
-+		dev_info(charger->dev, "charging. connector type: %d\n",
-+			 connector);
-+		break;
-+	case EXTCON_USB_HOST:
-+		ret = rt5033_charger_set_otg(charger);
-+		if (ret) {
-+			dev_err(charger->dev, "failed to set OTG\n");
-+			break;
-+		}
-+		dev_info(charger->dev, "OTG enabled\n");
-+		break;
-+	default:
-+		ret = rt5033_charger_set_disconnect(charger);
-+		if (ret) {
-+			dev_err(charger->dev, "failed to set disconnect\n");
-+			break;
-+		}
-+		dev_info(charger->dev, "disconnected\n");
-+		break;
-+	}
-+
-+	power_supply_changed(charger->psy);
-+}
-+
-+static int rt5033_charger_extcon_notifier(struct notifier_block *nb,
-+					  unsigned long event, void *param)
-+{
-+	struct rt5033_charger *charger =
-+		container_of(nb, struct rt5033_charger, extcon_nb);
-+
-+	schedule_work(&charger->extcon_work);
-+
-+	return NOTIFY_OK;
-+}
-+
- static const struct power_supply_desc rt5033_charger_desc = {
- 	.name = "rt5033-charger",
- 	.type = POWER_SUPPLY_TYPE_USB,
-@@ -415,6 +658,7 @@ static int rt5033_charger_probe(struct platform_device *pdev)
- {
- 	struct rt5033_charger *charger;
- 	struct power_supply_config psy_cfg = {};
-+	struct device_node *np_conn, *np_edev;
- 	int ret;
- 
- 	charger = devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
-@@ -424,6 +668,7 @@ static int rt5033_charger_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, charger);
- 	charger->dev = &pdev->dev;
- 	charger->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	mutex_init(&charger->lock);
- 
- 	psy_cfg.of_node = pdev->dev.of_node;
- 	psy_cfg.drv_data = charger;
-@@ -443,6 +688,33 @@ static int rt5033_charger_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
-+	/*
-+	 * Extcon support is not vital for the charger to work. If no extcon
-+	 * is available, just emit a warning and leave the probe function.
-+	 */
-+	np_conn = of_parse_phandle(pdev->dev.of_node, "richtek,usb-connector", 0);
-+	np_edev = of_get_parent(np_conn);
-+	charger->edev = extcon_find_edev_by_node(np_edev);
-+	if (IS_ERR(charger->edev)) {
-+		dev_warn(&pdev->dev, "no extcon device found in device-tree\n");
-+		goto out;
-+	}
-+
-+	ret = devm_work_autocancel(&pdev->dev, &charger->extcon_work,
-+				   rt5033_charger_extcon_work);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to initialize extcon work\n");
-+		return ret;
-+	}
-+
-+	charger->extcon_nb.notifier_call = rt5033_charger_extcon_notifier;
-+	ret = devm_extcon_register_notifier_all(&pdev->dev, charger->edev,
-+						&charger->extcon_nb);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to register extcon notifier\n");
-+		return ret;
-+	}
-+out:
- 	return 0;
- }
- 
--- 
-2.39.2
-
+Guru Das.
