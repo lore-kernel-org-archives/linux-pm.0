@@ -2,49 +2,49 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40FA7E82CCB
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E0ACE82CCA
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 19:38:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229786AbjI0TiG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 15:38:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58818 "EHLO
+        id S229772AbjI0TiF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 15:38:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229780AbjI0TiB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 15:38:01 -0400
+        with ESMTP id S229771AbjI0TiA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 15:38:00 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85CB213A
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2220A121
         for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2023 12:37:59 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaM2-0002cr-Hw; Wed, 27 Sep 2023 21:37:50 +0200
+        id 1qlaM1-0002XN-BZ; Wed, 27 Sep 2023 21:37:49 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaM1-009Pb5-KP; Wed, 27 Sep 2023 21:37:49 +0200
+        id 1qlaM0-009Pal-5b; Wed, 27 Sep 2023 21:37:48 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qlaM1-005RhK-B7; Wed, 27 Sep 2023 21:37:49 +0200
+        id 1qlaLz-005Rh0-Sc; Wed, 27 Sep 2023 21:37:47 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang@linux.alibaba.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>, linux-pm@vger.kernel.org,
         kernel@pengutronix.de
-Subject: [PATCH 31/31] thermal: uniphier: Convert to platform remove callback returning void
-Date:   Wed, 27 Sep 2023 21:37:36 +0200
-Message-Id: <20230927193736.2236447-32-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 26/31] thermal: sprd: Convert to platform remove callback returning void
+Date:   Wed, 27 Sep 2023 21:37:31 +0200
+Message-Id: <20230927193736.2236447-27-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 References: <20230927193736.2236447-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1838; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=z/ClpKnPyFge+NWzcPB577xRCQuThx5vjaDx/3YvIhM=; b=owGbwMvMwMXY3/A7olbonx/jabUkhlSRlhqecs8PHu6iv8133+Cv3WK+r65HLHnpbNsKJYayq 7zBdnydjMYsDIxcDLJiiiz2jWsyrarkIjvX/rsMM4iVCWQKAxenAExk+3r2/56nzvDnf6l5kTw7 qMTbgcG/pmbHab/pc+eZbOPWmbI8U0X1Wq/yws0vWYIuHopeuff48b4FM/4xMx3Prs+Qyffx+3k rV9VCPozv0mvGWnv/r89uy3717IxxlV/AERYn7H9JKlvXNrnx+aa5wfPznaIf3Jzm7xvfev+pVX Ke5zQ5/T9JM+Vyr7Ub8pZ+vlWzwUnOpXuWF1f+Xp+rotmZ3Bv5rhwUuBWyytt+zaTLl/m0u5e0a D/tKT/FpGzSqnWr781y0YyIltBNPVZ/1r836EoyMQvamPZp0o/6sxmZnp61q0u7VS5K32t44rwt s2Pum3yxKzlyvKLTn1x/qfvFRCXisn/chdlrCnW1tj0EAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1841; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=FJIeMV+NAgsAAlfJhTgA/L0aMWXEPFUJ+GH6vBCQS0c=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlFIR2yp41cxfM9R8chQgwhQsdcNqG+Zydybtnj BvspXNlYAiJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRSEdgAKCRCPgPtYfRL+ Tt+3B/9RswlpH7IU+7Ig3ar36GBEfnlfhJOkeAD+miKmrcHi9o11xi4PMCZ5Opl09kKjz2qQvbp HrgJhfoqu2fXYf//jSwU37hywICi8B0C+Boq1bqrX83pX1vUZaFjl03K6e2ev7Urwb+On2mjHiX m6StrvUlD255/EWmpPp1g6NEsM0xFXGdCAinXT5Ri/+UUlk+zU11DDtltqpnomA4kHdFtbmG7qh b25GyfoozsXJnxNKj5SLCBM+Z9GOUx5350vb3IwHSigrivbvW7Ry0S1TmoIAIXBoUuSi4ziRgrl 2bn5Fq7N4JfRBnFgCV+6e4XxEhHslK3L504mGiG3iad77U6x
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -70,38 +70,39 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/thermal/uniphier_thermal.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/thermal/sprd_thermal.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
-index 6f32ab61d174..274f36358b21 100644
---- a/drivers/thermal/uniphier_thermal.c
-+++ b/drivers/thermal/uniphier_thermal.c
-@@ -317,14 +317,12 @@ static int uniphier_tm_probe(struct platform_device *pdev)
- 	return 0;
+diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
+index e27c4bdc8912..874192546548 100644
+--- a/drivers/thermal/sprd_thermal.c
++++ b/drivers/thermal/sprd_thermal.c
+@@ -516,7 +516,7 @@ static int sprd_thm_resume(struct device *dev)
  }
+ #endif
  
--static int uniphier_tm_remove(struct platform_device *pdev)
-+static void uniphier_tm_remove(struct platform_device *pdev)
+-static int sprd_thm_remove(struct platform_device *pdev)
++static void sprd_thm_remove(struct platform_device *pdev)
  {
- 	struct uniphier_tm_dev *tdev = platform_get_drvdata(pdev);
+ 	struct sprd_thermal_data *thm = platform_get_drvdata(pdev);
+ 	int i;
+@@ -528,7 +528,6 @@ static int sprd_thm_remove(struct platform_device *pdev)
+ 	}
  
- 	/* disable sensor */
- 	uniphier_tm_disable_sensor(tdev);
--
+ 	clk_disable_unprepare(thm->clk);
 -	return 0;
  }
  
- static const struct uniphier_tm_soc_data uniphier_pxs2_tm_data = {
-@@ -362,7 +360,7 @@ MODULE_DEVICE_TABLE(of, uniphier_tm_dt_ids);
+ static const struct of_device_id sprd_thermal_of_match[] = {
+@@ -543,7 +542,7 @@ static const struct dev_pm_ops sprd_thermal_pm_ops = {
  
- static struct platform_driver uniphier_tm_driver = {
- 	.probe = uniphier_tm_probe,
--	.remove = uniphier_tm_remove,
-+	.remove_new = uniphier_tm_remove,
+ static struct platform_driver sprd_thermal_driver = {
+ 	.probe = sprd_thm_probe,
+-	.remove = sprd_thm_remove,
++	.remove_new = sprd_thm_remove,
  	.driver = {
- 		.name = "uniphier-thermal",
- 		.of_match_table = uniphier_tm_dt_ids,
+ 		.name = "sprd-thermal",
+ 		.pm = &sprd_thermal_pm_ops,
 -- 
 2.40.1
 
