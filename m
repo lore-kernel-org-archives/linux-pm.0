@@ -2,189 +2,196 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52D72E810C3
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 09:34:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE1A2E810D0
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 09:35:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230526AbjI0Jey (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 05:34:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32896 "EHLO
+        id S230527AbjI0JfD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 05:35:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44602 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230448AbjI0Jes (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 05:34:48 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9157A193;
-        Wed, 27 Sep 2023 02:34:45 -0700 (PDT)
+        with ESMTP id S231151AbjI0Je7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 05:34:59 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C71F19F;
+        Wed, 27 Sep 2023 02:34:49 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 967601FD5E;
-        Wed, 27 Sep 2023 09:34:43 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id A4C4F1FD68;
+        Wed, 27 Sep 2023 09:34:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-        t=1695807283; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=8yq/EWr5xgyIq2expGTOm/a8E50tdoL6jyUvlCURtkA=;
-        b=AFBlD5DhZEt1NESHiYyz8SkegLzofp7eJ1WULrYqvNawr6FwYRs8YvfnxMMuueLH4oaPAr
-        4/E8CfUtgD9JCSYdgqDNPTGf3WDqWggCkDqswdM4bg88sfMPDeWHH5NIlB2Bfj+JpMt9FG
-        ZcOWlzLEUXG/bpJ8Kbaqy4vRi+qRmpA=
+        t=1695807284; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=Z5OCfoVmTsaBL2Gfx6TUXOFq7TTPvyZsCL/Ny27Rypk=;
+        b=OtRd956PzORnCmj7nHXnA7pNQIlJ5q2TgW7rGbbbcBidcmE/oPQ0+xbSRBPqu4Fu4amFTS
+        viF4wcZzVfAfJiyQvf1CkJ6XliKsW9xJh4sOwI3pUeRDTioCrngwtK9DKqKZliBWTYxTH5
+        Z9vxxvmWnZ/OpZwgbBzQYXsj0B1ZH98=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-        s=susede2_ed25519; t=1695807283;
+        s=susede2_ed25519; t=1695807284;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=8yq/EWr5xgyIq2expGTOm/a8E50tdoL6jyUvlCURtkA=;
-        b=mg4W9cwL1b35dhDAXFy+IpXoqDtwwHWZKy46oqV5YDeY2A866tqG4ZHrqCDezVtTxVLjRN
-        B2SqzI+xFxiJavDw==
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=Z5OCfoVmTsaBL2Gfx6TUXOFq7TTPvyZsCL/Ny27Rypk=;
+        b=tY2GuTgZlnT5Jv2rXYOdnpLhg2ktTanaP+bwzW0VL3v1Rynzt1SUzLw8ou/UzDEnayGoR3
+        YU7Zew8b7zW8m9Bg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 779CF13A74;
-        Wed, 27 Sep 2023 09:34:43 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 929151338F;
+        Wed, 27 Sep 2023 09:34:44 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id YqW3HDP3E2X+EgAAMHmgww
-        (envelope-from <jack@suse.cz>); Wed, 27 Sep 2023 09:34:43 +0000
+        id bDrFIzT3E2UjEwAAMHmgww
+        (envelope-from <jack@suse.cz>); Wed, 27 Sep 2023 09:34:44 +0000
 Received: by quack3.suse.cz (Postfix, from userid 1000)
-        id DAA33A07C9; Wed, 27 Sep 2023 11:34:42 +0200 (CEST)
+        id 6526AA07EA; Wed, 27 Sep 2023 11:34:43 +0200 (CEST)
 From:   Jan Kara <jack@suse.cz>
 To:     Christian Brauner <brauner@kernel.org>
 Cc:     <linux-fsdevel@vger.kernel.org>, <linux-block@vger.kernel.org>,
         Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
-        Alasdair Kergon <agk@redhat.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        "Darrick J. Wong" <djwong@kernel.org>,
-        Dave Kleikamp <shaggy@kernel.org>,
-        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
-        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
-        Jack Wang <jinpu.wang@ionos.com>,
-        Jaegeuk Kim <jaegeuk@kernel.org>,
-        jfs-discussion@lists.sourceforge.net,
-        Joern Engel <joern@lazybastard.org>,
-        Joseph Qi <joseph.qi@linux.alibaba.com>,
-        Kent Overstreet <kent.overstreet@gmail.com>,
-        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
-        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
-        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
-        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
-        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-xfs@vger.kernel.org,
-        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
-        Mike Snitzer <snitzer@kernel.org>,
-        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
-        reiserfs-devel@vger.kernel.org,
-        Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Song Liu <song@kernel.org>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
-        Trond Myklebust <trond.myklebust@hammerspace.com>,
-        xen-devel@lists.xenproject.org
-Subject: [PATCH v4 0/29] block: Make blkdev_get_by_*() return handle
-Date:   Wed, 27 Sep 2023 11:34:06 +0200
-Message-ID: <20230818123232.2269-1-jack@suse.cz>
+        linux-pm@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+        "Rafael J . Wysocki" <rafael@kernel.org>
+Subject: [PATCH 17/29] PM: hibernate: Drop unused snapshot_test argument
+Date:   Wed, 27 Sep 2023 11:34:23 +0200
+Message-Id: <20230927093442.25915-17-jack@suse.cz>
 X-Mailer: git-send-email 2.35.3
+In-Reply-To: <20230818123232.2269-1-jack@suse.cz>
+References: <20230818123232.2269-1-jack@suse.cz>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3761; i=jack@suse.cz; h=from:subject:message-id; bh=szriGynEGZ/XhMNms+k06ASpRGig2ulDzrbrydRWx/Q=; b=owEBbQGS/pANAwAIAZydqgc/ZEDZAcsmYgBlE/cIrHCVKGuvNFZzgT9xiRfuRKr6Es2Qs4om7G7p jp8k2rmJATMEAAEIAB0WIQSrWdEr1p4yirVVKBycnaoHP2RA2QUCZRP3CAAKCRCcnaoHP2RA2XGWB/ 4+O+K19fPnUyIouL+A+izJvDBxQbTCWLdn5TEMu5YdIMbi0dvnwAfknt+NWIhJaTQX2oqlgt3Z+UIT peMYb+jQZabj8X4xHMMy3Sfq64tRwodJHlZby5Ux9AfTZe49zDp4M4B3yxQqarEhmz6e4FJUGDaSej vcJmLz6AuSnYuAh4QK/3jCXQrEElZRTjarZjfbunWocM/2dQ7CB+rOSwKJcRMoDpqntU8QyArxca4l q6I2pBMNjnYMgjtG+ABGSBtTrj87TuJSTB3V8qtI38sfCYjMVVEoQiJKuUm1GMh2sPOFelwVMXMCJH mKs8UbSjcFd3wsbJXc8EOKLxzYparl
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3587; i=jack@suse.cz; h=from:subject; bh=ue+d316dU3wKe970FQgK6UwU0ZJMWcHPgjUjn81LUJc=; b=owEBbQGS/pANAwAIAZydqgc/ZEDZAcsmYgBlE/cgqt+pK7mBPymiUvyrC8EZQuP5m3r6g9hplhOk gq3ZAeiJATMEAAEIAB0WIQSrWdEr1p4yirVVKBycnaoHP2RA2QUCZRP3IAAKCRCcnaoHP2RA2dA3B/ 0SRUwo54z6mYOGazjAxztad6pjzapFEcC6+7GnIe90mklxKvfI/Bndrs1pVYNkl5hv0T3m+hrMJ9c+ dkorLtXViACZ3jcRcAlmka60swIoEcgm+BnURcZSd/KhB7bH2W1XXLaGuP5GNiw19KhkW9YlzxgLrp VeTBCLxuIWacOC2JOJ4dY3ceOoZ0ip6smEsJ6il8PfLp/ZZ+Jbu7kMDxHuLQ6d5mWzgERWA8zbsNPe DDtLxZ4X3reatLC6Uu4Q+8KQTebGayXVj6IWmckDpl0aX9uszLAFvv1trks0qa3QY0+Ysl/QtpKw2D lm3Aq1XfbCaFHoCCentYIHqIRZeEl0
 X-Developer-Key: i=jack@suse.cz; a=openpgp; fpr=93C6099A142276A28BBE35D815BC833443038D8C
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20230927093406.OpxCgq9aOTZTaMZLd-xlD1VuUh07MB4-v308nbLCgxo@z>
 
-Hello,
+snapshot_test argument is now unused in swsusp_close() and
+load_image_and_restore(). Drop it
 
-this is a v3 of the patch series which implements the idea of blkdev_get_by_*()
-calls returning bdev_handle which is then passed to blkdev_put() [1]. This
-makes the get and put calls for bdevs more obviously matching and allows us to
-propagate context from get to put without having to modify all the users
-(again!). In particular I need to propagate used open flags to blkdev_put() to
-be able count writeable opens and add support for blocking writes to mounted
-block devices. I'll send that series separately.
-
-The series is based on Btrfs tree's for-next branch [2] as of today as the
-series depends on Christoph's changes to btrfs device handling.  Patches have
-passed some reasonable testing - I've tested block changes, md, dm, bcache,
-xfs, btrfs, ext4, swap. More testing or review is always welcome. Thanks! I've
-pushed out the full branch to:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs.git bdev_handle
-
-to ease review / testing. Christian, can you pull the patches to your tree
-to get some exposure in linux-next as well? Thanks!
-
-Changes since v3:
-* Rebased on top on btrfs tree
-
-Changes since v2:
-* Rebased on top of current vfs tree
-* Added some acks
-* Reflected minor nits from Christoph
-* Added missing conversion of blkdev_put() calls in cramfs and erofs
-* Fixed possible leak of bdev handle in xfs if logdev is the same as fs dev
-
-Changes since v1:
-* Rebased on top of current vfs tree
-* Renamed final functions to bdev_open_by_*() and bdev_release()
-* Fixed detection of exclusive open in blkdev_ioctl() and blkdev_fallocate()
-* Fixed swap conversion to properly reinitialize swap_info->bdev_handle
-* Fixed xfs conversion to not oops with rtdev without logdev
-* Couple other minor fixups
-
-								Honza
-
-[1] https://lore.kernel.org/all/ZJGNsVDhZx0Xgs2H@infradead.org
-[2] git://git.kernel.org/pub/scm/linux/kernel/git/kdave/linux.git for-next
-
-CC: Alasdair Kergon <agk@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Anna Schumaker <anna@kernel.org>
-CC: Chao Yu <chao@kernel.org>
-CC: Christian Borntraeger <borntraeger@linux.ibm.com>
-CC: Coly Li <colyli@suse.de
-CC: "Darrick J. Wong" <djwong@kernel.org>
-CC: Dave Kleikamp <shaggy@kernel.org>
-CC: David Sterba <dsterba@suse.com>
-CC: dm-devel@redhat.com
-CC: drbd-dev@lists.linbit.com
-CC: Gao Xiang <xiang@kernel.org>
-CC: Jack Wang <jinpu.wang@ionos.com>
-CC: Jaegeuk Kim <jaegeuk@kernel.org>
-CC: jfs-discussion@lists.sourceforge.net
-CC: Joern Engel <joern@lazybastard.org>
-CC: Joseph Qi <joseph.qi@linux.alibaba.com>
-CC: Kent Overstreet <kent.overstreet@gmail.com>
-CC: linux-bcache@vger.kernel.org
-CC: linux-btrfs@vger.kernel.org
-CC: linux-erofs@lists.ozlabs.org
-CC: <linux-ext4@vger.kernel.org>
-CC: linux-f2fs-devel@lists.sourceforge.net
-CC: linux-mm@kvack.org
-CC: linux-mtd@lists.infradead.org
-CC: linux-nfs@vger.kernel.org
-CC: linux-nilfs@vger.kernel.org
-CC: linux-nvme@lists.infradead.org
 CC: linux-pm@vger.kernel.org
-CC: linux-raid@vger.kernel.org
-CC: linux-s390@vger.kernel.org
-CC: linux-scsi@vger.kernel.org
-CC: linux-xfs@vger.kernel.org
-CC: "Md. Haris Iqbal" <haris.iqbal@ionos.com>
-CC: Mike Snitzer <snitzer@kernel.org>
-CC: Minchan Kim <minchan@kernel.org>
-CC: ocfs2-devel@oss.oracle.com
-CC: reiserfs-devel@vger.kernel.org
-CC: Sergey Senozhatsky <senozhatsky@chromium.org>
-CC: Song Liu <song@kernel.org>
-CC: Sven Schnelle <svens@linux.ibm.com>
-CC: target-devel@vger.kernel.org
-CC: Ted Tso <tytso@mit.edu>
-CC: Trond Myklebust <trond.myklebust@hammerspace.com>
-CC: xen-devel@lists.xenproject.org
+Acked-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Rafael J. Wysocki <rafael@kernel.org>
+Acked-by: Christian Brauner <brauner@kernel.org>
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ kernel/power/hibernate.c | 14 +++++++-------
+ kernel/power/power.h     |  2 +-
+ kernel/power/swap.c      |  6 +++---
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
-Previous versions:
-Link: http://lore.kernel.org/r/20230629165206.383-1-jack@suse.cz # v1
-Link: http://lore.kernel.org/r/20230810171429.31759-1-jack@suse.cz # v2
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 8d35b9f9aaa3..dee341ae4ace 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -684,7 +684,7 @@ static void power_down(void)
+ 		cpu_relax();
+ }
+ 
+-static int load_image_and_restore(bool snapshot_test)
++static int load_image_and_restore(void)
+ {
+ 	int error;
+ 	unsigned int flags;
+@@ -694,12 +694,12 @@ static int load_image_and_restore(bool snapshot_test)
+ 	lock_device_hotplug();
+ 	error = create_basic_memory_bitmaps();
+ 	if (error) {
+-		swsusp_close(snapshot_test);
++		swsusp_close();
+ 		goto Unlock;
+ 	}
+ 
+ 	error = swsusp_read(&flags);
+-	swsusp_close(snapshot_test);
++	swsusp_close();
+ 	if (!error)
+ 		error = hibernation_restore(flags & SF_PLATFORM_MODE);
+ 
+@@ -788,7 +788,7 @@ int hibernate(void)
+ 		pm_pr_dbg("Checking hibernation image\n");
+ 		error = swsusp_check(false);
+ 		if (!error)
+-			error = load_image_and_restore(false);
++			error = load_image_and_restore();
+ 	}
+ 	thaw_processes();
+ 
+@@ -952,7 +952,7 @@ static int software_resume(void)
+ 	/* The snapshot device should not be opened while we're running */
+ 	if (!hibernate_acquire()) {
+ 		error = -EBUSY;
+-		swsusp_close(true);
++		swsusp_close();
+ 		goto Unlock;
+ 	}
+ 
+@@ -973,7 +973,7 @@ static int software_resume(void)
+ 		goto Close_Finish;
+ 	}
+ 
+-	error = load_image_and_restore(true);
++	error = load_image_and_restore();
+ 	thaw_processes();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_RESTORE);
+@@ -987,7 +987,7 @@ static int software_resume(void)
+ 	pm_pr_dbg("Hibernation image not present or could not be loaded.\n");
+ 	return error;
+  Close_Finish:
+-	swsusp_close(true);
++	swsusp_close();
+ 	goto Finish;
+ }
+ 
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index a98f95e309a3..17fd9aaaf084 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -172,7 +172,7 @@ int swsusp_check(bool exclusive);
+ extern void swsusp_free(void);
+ extern int swsusp_read(unsigned int *flags_p);
+ extern int swsusp_write(unsigned int flags);
+-void swsusp_close(bool exclusive);
++void swsusp_close(void);
+ #ifdef CONFIG_SUSPEND
+ extern int swsusp_unmark(void);
+ #endif
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 095a263da7c4..68a5c2f06957 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -444,7 +444,7 @@ static int get_swap_writer(struct swap_map_handle *handle)
+ err_rel:
+ 	release_swap_writer(handle);
+ err_close:
+-	swsusp_close(false);
++	swsusp_close();
+ 	return ret;
+ }
+ 
+@@ -509,7 +509,7 @@ static int swap_writer_finish(struct swap_map_handle *handle,
+ 	if (error)
+ 		free_all_swap_pages(root_swap);
+ 	release_swap_writer(handle);
+-	swsusp_close(false);
++	swsusp_close();
+ 
+ 	return error;
+ }
+@@ -1569,7 +1569,7 @@ int swsusp_check(bool exclusive)
+  * @exclusive: Close the resume device which is exclusively opened.
+  */
+ 
+-void swsusp_close(bool exclusive)
++void swsusp_close(void)
+ {
+ 	if (IS_ERR(hib_resume_bdev_handle)) {
+ 		pr_debug("Image device not initialised\n");
+-- 
+2.35.3
+
