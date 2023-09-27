@@ -2,146 +2,125 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35D21E82CA7
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 15:51:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81C83E82CAE
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Sep 2023 16:10:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232578AbjI0PvW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Sep 2023 11:51:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38984 "EHLO
+        id S231683AbjI0QKH convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Sep 2023 12:10:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45928 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232847AbjI0PvJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 11:51:09 -0400
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A095CCA
-        for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2023 08:37:47 -0700 (PDT)
-Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-313e742a787so7691298f8f.1
-        for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2023 08:37:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695829065; x=1696433865; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=+c41Z29h1pZ9sFJu8iZns80gRGUweaCHUdE5sjhlKV0=;
-        b=KtQF4pW03iIWPv5xPYwQV3QLNvnjhueUvM2vS3aE6Yd5En5CgQX13jRnb3pSKx201y
-         DPfHcA8wXaSaFh/O8bD7sj58+RyOyrbypD+h2/BJnwZF5ssJS4EswYWdLE/6HmOZPR55
-         M2jDaO+2z2zYHzyI7nJM0o4mjFE5YSm8XKtiDbEbbiFYuYErsZxIcYYZE+mtSLMp0L2K
-         KhiNzgKH+QRzdb/aCaBuBetesVDsSfgdiKT+3ectSM91o5pcVTaGHrLH3QPfFnTlshZ1
-         cPANNNTUO48O89Ftu+2dVshtV/8V+qz+t6VghlKzFtybjM1DG859irxtwMTd8XoBAWfd
-         a7/Q==
+        with ESMTP id S231481AbjI0QKC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2023 12:10:02 -0400
+Received: from mail-oo1-f47.google.com (mail-oo1-f47.google.com [209.85.161.47])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8C7B1B8;
+        Wed, 27 Sep 2023 09:09:56 -0700 (PDT)
+Received: by mail-oo1-f47.google.com with SMTP id 006d021491bc7-57bf04841ccso444706eaf.0;
+        Wed, 27 Sep 2023 09:09:56 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695829065; x=1696433865;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=+c41Z29h1pZ9sFJu8iZns80gRGUweaCHUdE5sjhlKV0=;
-        b=sryceG5JF9YR4mg5vzkrlwD5/EzGXDSYFXd2cyL1AJiS2r+PnLQEf2jPjov38aCtaj
-         NPjrwbpa1rYmkLofEuZv70MzMb9khj9kmc1NSc49Wm3VPvebMdG4vudd8Y2EHQsD8Rqc
-         curwbbJraDjCJ7mjsmEqzuTqPLPnfsKhw0joNP8nigcuTROqWZGUXA37+vZt53Zx+Cr1
-         NUVSXfVMZFaBQO3UTl6uttM6DlJIJbxV5bCYvzI28xl34cUKmSV+aAdUtkj5vvfKlzY5
-         bZCanftbpe1zGpfH+QymmpY1suxyzVzDfNk1UAix7xa98JXb/HsrtsYJwrd+Limkafm6
-         0ixA==
-X-Gm-Message-State: AOJu0YxPzWzAI3fBNnPZekbEsWSzhAiiB1VBMSMOla8RggK6hGqQr8lJ
-        n3641XWQdy/AMW60s4th1YVW/A==
-X-Google-Smtp-Source: AGHT+IFBJnn51g+Nws/rADxL0hMPtAm9b/lnLL6DtiDmGTQrfdC3KSFioHmMnuI5UekqIq4rYxqbaw==
-X-Received: by 2002:adf:f50f:0:b0:319:5234:5c92 with SMTP id q15-20020adff50f000000b0031952345c92mr1737140wro.35.1695829065420;
-        Wed, 27 Sep 2023 08:37:45 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:c49e:e1a5:3210:b8c0? ([2a05:6e02:1041:c10:c49e:e1a5:3210:b8c0])
-        by smtp.googlemail.com with ESMTPSA id x17-20020a5d6511000000b0031fd849e797sm17354482wru.105.2023.09.27.08.37.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 27 Sep 2023 08:37:45 -0700 (PDT)
-Message-ID: <d4bdea97-1e92-6422-01c4-bf7caca4ea45@linaro.org>
-Date:   Wed, 27 Sep 2023 17:37:44 +0200
+        d=1e100.net; s=20230601; t=1695830996; x=1696435796;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uoBx4haDwLKQQRn3ZmCIvGY1ND5OJ+IJ+kQUcWjxXZg=;
+        b=tPgQxZ3U4FJh2OB1AmEHhIkB3I9oLbaDeLNHHmFlhKcBEmjaQ7KAHHkMU9EBny2VF3
+         bsQG4Jt5AH94x3AJvzH/11F+xglLGGJlVt5KAUIsyw0/9RntD/gM43R80jXWbkOUQ62W
+         m2p0euFGCWJ14+Pn5581lpO07ebcY6kw6VutC+/BGUIVAemfbfldPDCPuINxIcoaLJOM
+         PQEkkfwsX19xUPJgcwVFuiLNgnISYpKMLwkcjrjddu3P/IJQ/Loq6mJvZ1ABVZI6j/uk
+         cQKRrKvbeBtAU53uGqsYG7I2JWh2n/GmRQDBRmq+lyLJwGlU6NdJ0xdJkRcn2nzvKa/4
+         ezIw==
+X-Gm-Message-State: AOJu0Yyp/uSe8YtzpHEw+58/5sLuzStbuDjtJ+lOJIRC2nVVjTYee074
+        2pnu9y/91HPIVb3pda5CfrAKCGFIAVCOW20d0kc=
+X-Google-Smtp-Source: AGHT+IEi5cA9AxvFYp7fB68YSeYwHe3jVtm4j1rrNlisxxUbOI1nfAfQyHhvuz6Cw8HTl6SXKYe00OcEDINZTFnKZJ8=
+X-Received: by 2002:a4a:c58f:0:b0:57b:7804:9d72 with SMTP id
+ x15-20020a4ac58f000000b0057b78049d72mr2771381oop.1.1695830995803; Wed, 27 Sep
+ 2023 09:09:55 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v1 06/13] thermal: gov_fair_share: Rearrange
- get_trip_level()
-Content-Language: en-US
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+References: <1957441.PYKUYFuaPT@kreacher> <1882755.CQOukoFCf9@kreacher>
+ <3c9f7b7d-a9ca-79ae-4e64-367a82f953bc@linaro.org> <CAJZ5v0ifXSWd4QL+j-=8OBr1aQr0WAeMBGYtis_gkHJDBLeWMg@mail.gmail.com>
+ <d4bdea97-1e92-6422-01c4-bf7caca4ea45@linaro.org>
+In-Reply-To: <d4bdea97-1e92-6422-01c4-bf7caca4ea45@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 27 Sep 2023 18:09:44 +0200
+Message-ID: <CAJZ5v0hOJYuaJ2VXPCrHZspOjj342+NkB=nHXPT6YKvy90XXBA@mail.gmail.com>
+Subject: Re: [PATCH v1 06/13] thermal: gov_fair_share: Rearrange get_trip_level()
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Linux PM <linux-pm@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Linux ACPI <linux-acpi@vger.kernel.org>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Zhang Rui <rui.zhang@intel.com>,
         Lukasz Luba <lukasz.luba@arm.com>
-References: <1957441.PYKUYFuaPT@kreacher> <1882755.CQOukoFCf9@kreacher>
- <3c9f7b7d-a9ca-79ae-4e64-367a82f953bc@linaro.org>
- <CAJZ5v0ifXSWd4QL+j-=8OBr1aQr0WAeMBGYtis_gkHJDBLeWMg@mail.gmail.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <CAJZ5v0ifXSWd4QL+j-=8OBr1aQr0WAeMBGYtis_gkHJDBLeWMg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 27/09/2023 17:06, Rafael J. Wysocki wrote:
-> On Wed, Sep 27, 2023 at 5:00 PM Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> On 21/09/2023 19:54, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> Make get_trip_level() access the thermal zone's trip table directly
->>> instead of using __thermal_zone_get_trip() which adds overhead related
->>> to the unnecessary bounds checking and copying the trip point data.
->>>
->>> Also rearrange the code in it to make it somewhat easier to follow.
->>>
->>> The general functionality is not expected to be changed.
->>>
->>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> ---
->>>    drivers/thermal/gov_fair_share.c |   22 ++++++++++------------
->>>    1 file changed, 10 insertions(+), 12 deletions(-)
->>>
->>> Index: linux-pm/drivers/thermal/gov_fair_share.c
->>> ===================================================================
->>> --- linux-pm.orig/drivers/thermal/gov_fair_share.c
->>> +++ linux-pm/drivers/thermal/gov_fair_share.c
->>> @@ -21,23 +21,21 @@
->>>     */
->>>    static int get_trip_level(struct thermal_zone_device *tz)
->>>    {
->>> -     struct thermal_trip trip;
->>> -     int count;
->>> +     const struct thermal_trip *trip = tz->trips;
->>> +     int i;
->>>
->>> -     for (count = 0; count < tz->num_trips; count++) {
->>> -             __thermal_zone_get_trip(tz, count, &trip);
->>> -             if (tz->temperature < trip.temperature)
->>> +     if (tz->temperature < trip->temperature)
->>> +             return 0;
->>> +
->>> +     for (i = 0; i < tz->num_trips - 1; i++) {
->>> +             trip++;
->>> +             if (tz->temperature < trip->temperature)
->>>                        break;
->>>        }
->>
->> Is it possible to use for_each_thermal_trip() instead ? That would make
->> the code more self-encapsulate
-> 
-> It is possible in principle, but this is a governor which is regarded
-> as part of the core, isn't it?
-> 
-> So is an extra overhead related to using a callback (which may be
-> subject to retpolines and such) really justified in this case?
+On Wed, Sep 27, 2023 at 5:37 PM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> On 27/09/2023 17:06, Rafael J. Wysocki wrote:
+> > On Wed, Sep 27, 2023 at 5:00 PM Daniel Lezcano
+> > <daniel.lezcano@linaro.org> wrote:
+> >>
+> >> On 21/09/2023 19:54, Rafael J. Wysocki wrote:
+> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>>
+> >>> Make get_trip_level() access the thermal zone's trip table directly
+> >>> instead of using __thermal_zone_get_trip() which adds overhead related
+> >>> to the unnecessary bounds checking and copying the trip point data.
+> >>>
+> >>> Also rearrange the code in it to make it somewhat easier to follow.
+> >>>
+> >>> The general functionality is not expected to be changed.
+> >>>
+> >>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>> ---
+> >>>    drivers/thermal/gov_fair_share.c |   22 ++++++++++------------
+> >>>    1 file changed, 10 insertions(+), 12 deletions(-)
+> >>>
+> >>> Index: linux-pm/drivers/thermal/gov_fair_share.c
+> >>> ===================================================================
+> >>> --- linux-pm.orig/drivers/thermal/gov_fair_share.c
+> >>> +++ linux-pm/drivers/thermal/gov_fair_share.c
+> >>> @@ -21,23 +21,21 @@
+> >>>     */
+> >>>    static int get_trip_level(struct thermal_zone_device *tz)
+> >>>    {
+> >>> -     struct thermal_trip trip;
+> >>> -     int count;
+> >>> +     const struct thermal_trip *trip = tz->trips;
+> >>> +     int i;
+> >>>
+> >>> -     for (count = 0; count < tz->num_trips; count++) {
+> >>> -             __thermal_zone_get_trip(tz, count, &trip);
+> >>> -             if (tz->temperature < trip.temperature)
+> >>> +     if (tz->temperature < trip->temperature)
+> >>> +             return 0;
+> >>> +
+> >>> +     for (i = 0; i < tz->num_trips - 1; i++) {
+> >>> +             trip++;
+> >>> +             if (tz->temperature < trip->temperature)
+> >>>                        break;
+> >>>        }
+> >>
+> >> Is it possible to use for_each_thermal_trip() instead ? That would make
+> >> the code more self-encapsulate
+> >
+> > It is possible in principle, but this is a governor which is regarded
+> > as part of the core, isn't it?
+> >
+> > So is an extra overhead related to using a callback (which may be
+> > subject to retpolines and such) really justified in this case?
+>
+>  From my POV, all trip points browsing should be replaced by
+> for_each_thermal_trip() so any change in the future in how we go through
+> the existing thermal trips will impact one place.
+>
+> If the routine needs to be optimized, that is something we can do also
+> (may be an inline the callback?)
 
- From my POV, all trip points browsing should be replaced by 
-for_each_thermal_trip() so any change in the future in how we go through 
-the existing thermal trips will impact one place.
-
-If the routine needs to be optimized, that is something we can do also 
-(may be an inline the callback?)
-
-
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+OK
