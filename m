@@ -2,90 +2,81 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34FF1E732E7
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 15:46:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66211E732E8
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 15:56:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231941AbjI1PqF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Sep 2023 11:46:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46668 "EHLO
+        id S231263AbjI1P4b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Sep 2023 11:56:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39148 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231845AbjI1PqE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 11:46:04 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27B77AC;
-        Thu, 28 Sep 2023 08:46:02 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 80c322cf61eba005; Thu, 28 Sep 2023 17:46:00 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 1EEE56655D6;
-        Thu, 28 Sep 2023 17:46:00 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v1] ACPI: thermal: Mark uninitialized active trips as invalid
-Date:   Thu, 28 Sep 2023 17:45:59 +0200
-Message-ID: <5738410.DvuYhMxLoT@kreacher>
+        with ESMTP id S232231AbjI1P41 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 11:56:27 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3DB3B7;
+        Thu, 28 Sep 2023 08:56:25 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84E30C433C7;
+        Thu, 28 Sep 2023 15:56:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1695916585;
+        bh=+yB/ieAYMpsdupP/5zZB4lDxUaT4bemJx8J3u0gpO74=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=RyGd+26oibkU148y/+dyH5DGAuaaxM1izEQx7gzA41NtIQiZkZPG5dOo8ZdHYc2Jm
+         sEuwg9csKx6VYw+BBY0vIILEiwkL+5FC4wHZ4ONy7O52CIQIssFSiV+bM5tTtr2vnk
+         CLLN0cnmmfzaIZfeJfbZsdYw4FWKLgE4Uj1lVPLBDik2PNLtJjTJ57zDv9vfeSSjwu
+         IRD6l39yum87T0792AsUMZr67DcQ4xjCASTS1pvjMGtl39QBzvWEiPjupdjY44CBwn
+         BIagKsXD47z2+V2H1MwjoC6cTG5O4slAZSiV+z5rmypZomxX1ZOAi25nd4BOivIbun
+         4MeTxcMmC9pCg==
+Received: (nullmailer pid 577358 invoked by uid 1000);
+        Thu, 28 Sep 2023 15:56:21 -0000
+Date:   Thu, 28 Sep 2023 10:56:21 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Priyansh Jain <quic_priyjain@quicinc.com>
+Cc:     Amit Kucheria <amitk@kernel.org>, linux-arm-msm@vger.kernel.org,
+        Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
+        Rob Herring <robh+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        quic_manafm@quicinc.com, kernel@quicinc.com,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        linux-pm@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>
+Subject: Re: [PATCH v3 1/2] dt-bindings: thermal: tsens: Add sa8775p
+ compatible
+Message-ID: <169591652205.576134.1499529748346625633.robh@kernel.org>
+References: <20230926085948.23046-1-quic_priyjain@quicinc.com>
+ <20230926085948.23046-2-quic_priyjain@quicinc.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrtddtgdeivdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgv
- rhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehrrghfrggvlheskhgvrhhnvghlrdhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230926085948.23046-2-quic_priyjain@quicinc.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-After removing the valid flag from struct acpi_thermal_trip, the trip
-temperature value is used in validity checks, so it must be
-THERMAL_TEMP_INVALID for the active trip entries in struct acpi_thermal_trips
-that are not going to be used (because the corresponding objects are not
-present in the ACPI tables, for example).
+On Tue, 26 Sep 2023 14:29:47 +0530, Priyansh Jain wrote:
+> Add compatibility string for the thermal sensors on sa8775p platform.
+> 
+> Signed-off-by: Priyansh Jain <quic_priyjain@quicinc.com>
+> ---
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+> 
 
-Accordingly, modify acpi_thermal_get_trip_points() to set the temperature
-value to THERMAL_TEMP_INVALID for trip point entries skipped by it after
-acpi_thermal_init_trip() has returned 'false' for an active trip.
 
-Fixes: 058f5e407deb ("ACPI: thermal: Drop valid flag from struct acpi_thermal_trip")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Please add Acked-by/Reviewed-by tags when posting new versions. However,
+there's no need to repost patches *only* to add the tags. The upstream
+maintainer will do that for acks received on the version they apply.
 
-Commit 058f5e407deb mentioned above is present in the linux-next branch
-of linux-pm.git and acpi_thermal_init_trip() is introduced by
+If a tag was not added on purpose, please state why and what changed.
 
-https://patchwork.kernel.org/project/linux-pm/patch/1785516.VLH7GnMWUR@kreacher/
+Missing tags:
 
----
- drivers/acpi/thermal.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux-pm/drivers/acpi/thermal.c
-===================================================================
---- linux-pm.orig/drivers/acpi/thermal.c
-+++ linux-pm/drivers/acpi/thermal.c
-@@ -480,6 +480,9 @@ static int acpi_thermal_get_trip_points(
- 
- 	}
- 
-+	while (++i < ACPI_THERMAL_MAX_ACTIVE)
-+		tz->trips.active[i].trip.temperature = THERMAL_TEMP_INVALID;
-+
- 	return count;
- }
- 
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
 
 
