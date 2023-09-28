@@ -2,143 +2,112 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C793E743CE
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 23:21:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D7A8E743D0
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 23:38:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229653AbjI1XVC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Sep 2023 19:21:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41460 "EHLO
+        id S229794AbjI1Xi4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Sep 2023 19:38:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48018 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229541AbjI1XVC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 19:21:02 -0400
+        with ESMTP id S229541AbjI1Xi4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 19:38:56 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C143419D;
-        Thu, 28 Sep 2023 16:21:00 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 238A6C433C7;
-        Thu, 28 Sep 2023 23:21:00 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B9AB195;
+        Thu, 28 Sep 2023 16:38:54 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B0CEC433C8;
+        Thu, 28 Sep 2023 23:38:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1695943260;
-        bh=k64X9q04AEuNGrWkclSxZJW6XBP6jAVc1KA+H9h5J5E=;
-        h=Date:From:To:Cc:Subject:From;
-        b=ZnYJ5ZaAC1DG+zN5R3A6CWFGNLLLAOYMZuzaF4kqwaCrmXT9K0QFm+Xe22tyCFUMa
-         2nlABDwfIdFTrrnS8sUpzTrAZOEIZK8ceZH9xVVvEV90pUbjpWDI+BIydA5Mvsylrn
-         8G6I2dJDGpHhFO1Wezd9p8gIjcOfT5x911gW8qR3/ei6ioZP4Pm3FzFnHdgpZfLitq
-         7Wq6+bThyz92Oqy3yPZYLBAEb8e2e/aC+uu9qBih77UDWRd96WABk1nKVxJqEWC7d+
-         gRAx0y1yJGep9HFmKZ6HmaXV+Im/A4arndjmkEgrMhxU7pspwas+ZAiisyTThJn4qz
-         jBpbtGsqRWAMw==
+        s=k20201202; t=1695944333;
+        bh=eWU967jREmjZE4MCqLTeXdTZLBzl8v3/op7N9RLiY+E=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=kfM4lHBOYywiUs1pSsJD72kDGGNfgjYh2nlEYO/Hn5nbeITF+6qyQUmtAbQcdYbW7
+         XdcdgETTEEoPg5c7zOshcCcA3jjeEg0W42+ivpFGnbDL40OIEEX1Jz68enbD/EHZwD
+         RnOffNJf0bvf2KHzcbwjA0smxFXx3yBpoY+mSmvg7UV/ExaKyFc6OWEkCcIuhvqd8l
+         30jSqINA6zVSQRvGDH8ig9BH+FfxTNwl9ifdO3ab+M7zojCxUMxVS0p/yj5tOsI5oe
+         Hu/ZEI00ZJKeyi47AGEQIqf31w7d0vpcuPo5jC331mPR61a+4nbYZv67g/uH/SxXam
+         GdQWaV5q66dFw==
 Received: by mercury (Postfix, from userid 1000)
-        id 10DD010605D8; Fri, 29 Sep 2023 01:20:58 +0200 (CEST)
-Date:   Fri, 29 Sep 2023 01:20:58 +0200
+        id C06C9106058E; Thu, 28 Sep 2023 15:38:14 +0200 (CEST)
+Date:   Thu, 28 Sep 2023 15:38:14 +0200
 From:   Sebastian Reichel <sre@kernel.org>
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [GIT PULL] power-supply fixes for 6.6-rc
-Message-ID: <20230928232058.twqyaqzrwqsrvjmu@mercury.elektranox.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Johan Hovold <johan@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
+Subject: Re: [PATCH] power: supply: qcom_battmgr: fix battery_id type
+Message-ID: <20230928133814.szn5dd4gzshmccia@mercury.elektranox.org>
+References: <20230919124222.1155894-1-sebastian.reichel@collabora.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="5zhobtwbbsjzysaz"
+        protocol="application/pgp-signature"; boundary="jpqm2iodkegz3nb3"
 Content-Disposition: inline
+In-Reply-To: <20230919124222.1155894-1-sebastian.reichel@collabora.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---5zhobtwbbsjzysaz
+--jpqm2iodkegz3nb3
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
++cc Johan Hovold who gave away that he is involved with this at
+Kernel Recipes :)
 
-All patches have been in linux-next for a week, no issues have been
-reported. Please pull. Greetings,
+On Tue, Sep 19, 2023 at 02:42:22PM +0200, Sebastian Reichel wrote:
+> qcom_battmgr_update_request.battery_id is written to using cpu_to_le32()
+> and should be of type __le32, just like all other 32bit integer requests
+> for qcom_battmgr.
+>=20
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202309162149.4owm9iXc-lkp@i=
+ntel.com/
+> Fixes: 29e8142b5623 ("power: supply: Introduce Qualcomm PMIC GLINK power =
+supply")
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> ---
+>  drivers/power/supply/qcom_battmgr.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/q=
+com_battmgr.c
+> index de77df97b3a4..a05fd00711f6 100644
+> --- a/drivers/power/supply/qcom_battmgr.c
+> +++ b/drivers/power/supply/qcom_battmgr.c
+> @@ -105,7 +105,7 @@ struct qcom_battmgr_property_request {
+> =20
+>  struct qcom_battmgr_update_request {
+>  	struct pmic_glink_hdr hdr;
+> -	u32 battery_id;
+> +	__le32 battery_id;
+>  };
+> =20
+>  struct qcom_battmgr_charge_time_request {
+> --=20
+> 2.40.1
+>=20
 
--- Sebastian
-
-The following changes since commit 0bb80ecc33a8fb5a682236443c1e740d5c917d1d:
-
-  Linux 6.6-rc1 (2023-09-10 16:28:41 -0700)
-
-are available in the Git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v6.6-rc
-
-for you to fetch changes up to 488ef44c068e79752dba8eda0b75f524f111a695:
-
-  power: supply: rk817: Fix node refcount leak (2023-09-20 19:37:15 +0200)
-
-----------------------------------------------------------------
-Power Supply Fixes for 6.6 cycle
-
- * core: fix use after free during device release
- * ab8500: avoid reporting multiple batteries to userspace
- * rk817: fix DT node resource leak
- * misc. small fixes, mostly for compiler warnings/errors
-
-----------------------------------------------------------------
-Chris Morgan (1):
-      power: supply: rk817: Fix node refcount leak
-
-Christophe JAILLET (1):
-      power: supply: rt9467: Fix rt9467_run_aicl()
-
-Dan Carpenter (1):
-      power: supply: ucs1002: fix error code in ucs1002_get_property()
-
-David Thompson (1):
-      pwr-mlxbf: extend Kconfig to include gpio-mlxbf3 dependency
-
-Harshit Mogalapalli (1):
-      power: supply: mt6370: Fix missing error code in mt6370_chg_toggle_cfo()
-
-Justin Stitt (1):
-      power: vexpress: fix -Wvoid-pointer-to-enum-cast warning
-
-Krzysztof Kozlowski (1):
-      power: reset: use capital "OR" for multiple licenses in SPDX
-
-Linus Walleij (1):
-      power: supply: ab8500: Set typing and props
-
-Nicolas Frattaroli (1):
-      power: supply: rk817: Add missing module alias
-
-Randy Dunlap (1):
-      power: supply: rt5033_charger: recognize EXTCON setting
-
-Sebastian Reichel (1):
-      power: supply: core: fix use after free in uevent
-
- drivers/power/reset/Kconfig               |  2 +-
- drivers/power/reset/pwr-mlxbf.c           |  2 +-
- drivers/power/reset/vexpress-poweroff.c   |  2 +-
- drivers/power/supply/Kconfig              |  1 +
- drivers/power/supply/ab8500_btemp.c       |  9 +--------
- drivers/power/supply/ab8500_chargalg.c    |  2 +-
- drivers/power/supply/mt6370-charger.c     |  2 +-
- drivers/power/supply/power_supply_sysfs.c |  7 +++++++
- drivers/power/supply/rk817_charger.c      | 16 +++++++++++++---
- drivers/power/supply/rt9467-charger.c     |  4 ++--
- drivers/power/supply/ucs1002_power.c      |  3 ++-
- 11 files changed, 31 insertions(+), 19 deletions(-)
-
---5zhobtwbbsjzysaz
+--jpqm2iodkegz3nb3
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmUWClkACgkQ2O7X88g7
-+pq8uw//SQI0R3FPJ20CdlBauqP/1Hn9F+LqVfMke/s5s60GDHB2Gqc9zhWDj6Kc
-PDZIelZ6LktRwUiEHkbk1mJnAQS8bdfzXaDewUAspnK8PRG8y1X5X5LVBnWeYj/v
-QZAEA8PBOTCGIEFK1Dz2njkSJhNsv/uMZcUf9kzeuEnakjIvkWtv5f/aMkGDnSEb
-sgm+ek7stI9CiLZsnlOKw3vgyu/KWZUD3WRZ9ixI5m4Z4frrMW01lOJnFfanbVWt
-bBnYWUsE3LyHzOkMFWvPXB2KYzUJTcv07mTHrmwYYbQ77JdMez3lQHDOe/khj33X
-KDhXDHSLG4ueZ7XUaRCBbWxNeCmvlRnaOx4Y/Er4dmtGVCKTbKS6LWKf1pSa2+jy
-V7IUV7V6V4txOK6yeZW6yoXVsME29TWHm7M8Bq0yhmN8AiTaV14mVBAfFCCwKjfs
-uh9NVQMLzwvuVVDGHuiTSGfByOz+4jItFgUyEQD9STM136pHGqXGcGItXodqcTUk
-RK9EvpW2+ZYROH/ZWHW7yS4vO3WBb3+w3iar103DldU4jJ4f9SXYZB6Em63d29Xv
-kYa29Ka5O/TckTy++OC1BoKjBtUlyE0qz+G0NJYmo6BQdM33FfC2mxrMbZmC1wWv
-XXF/ZIGD2cgDnQt6t/CoEGHOi2M7A72vKOCLT/E2jlHbNL07Xk0=
-=rnvM
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmUVgb8ACgkQ2O7X88g7
++prwdhAAoPJP/kxvYglc2zIyjQTXI/AExR3u3+o47C9YvdKmXIQOiosSNdIs+a//
+BvpjDsFrTx32MCX4koS+KGSO1f64xepggcCzddr/Kp/URu0oc7zcx2560YC9IRrT
+ioFr3PT3+OZXbcA2KxT4m2emAcr0tANrQL6ri2BO5O59U5lVOEMZCIUE5Mef6wIC
+0VdBZwxlthYKEdFJiLW5bvWK5tm+U7nhimTWCX84/5jTvOXYXId7RY1oZjh3I0LV
+bOC6Ah0bVbF5nJ+tlA5kDHzFeRqsOhyxURxejasWqq9IrvYooOe0bKPwGRyEmATe
+qPewgJMwK/4ki0YIPVWsNTUTKf8gRw+7e2RmX0WJX/5Vf6/U5mMZNXhK6OQ9G8PU
+OiihKwvTlFToYadhXUSAl8iMP24047AUy1KTTA23FKB7uvUxryg6ylW2K1FndmV+
+WZxJZlJ2c+Gj8Z5FC8/LFV3OnCxfh9kyVdu8n8UoMGs+UNQ4VZnfC1ZkluskQEcO
+EfDQunn3u1xS9sPRcF7tdKF3rW7sDJHp7WObe+AiVkOmxUrFU45AwaE3NFp7OmFN
+tbNbEHMGJXmU1rsuhO7BNogLltx1eXjQstPkSMkOAjaprs5FXaKXQVOflQVohwjv
+b5M7LGGcJQBBaViH+xs16eSTlUg08RobdGZZjW1AcddVAzRv1gQ=
+=qDg+
 -----END PGP SIGNATURE-----
 
---5zhobtwbbsjzysaz--
+--jpqm2iodkegz3nb3--
