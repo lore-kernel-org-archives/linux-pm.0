@@ -2,98 +2,122 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20ADEE743C4
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 21:56:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28337E743C8
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 22:05:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231935AbjI1V4e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Sep 2023 17:56:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49700 "EHLO
+        id S231689AbjI1WFJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Sep 2023 18:05:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231689AbjI1V4d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 17:56:33 -0400
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A434C199
-        for <linux-pm@vger.kernel.org>; Thu, 28 Sep 2023 14:56:31 -0700 (PDT)
-Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-40651a72807so12352595e9.1
-        for <linux-pm@vger.kernel.org>; Thu, 28 Sep 2023 14:56:31 -0700 (PDT)
+        with ESMTP id S230325AbjI1WFJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 18:05:09 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D43D199
+        for <linux-pm@vger.kernel.org>; Thu, 28 Sep 2023 15:05:07 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-405621baba7so107440355e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 28 Sep 2023 15:05:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1695938190; x=1696542990; darn=vger.kernel.org;
+        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1695938706; x=1696543506; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZZ+JMo8V6Wz42802JHuPtu0Gp5ARsCgYfg45BA+tI/Y=;
-        b=0sB2IGOLjRg1hLzscJBhDhrIr1+NelfvTguJ8ITY4DhxQXiedFxClO0Vy1SvY46VDR
-         JU9J7hQyJy9Ar8QMlBOCnFBvpJBGEOuKr9Hecen1PGDly7R5iCZblRmKBnJTzSEiJB2I
-         ixOUmdySyQegyv9Hsb9qWSqzegndIyM7Ptc0wXsxT3rooyvUPshvmAvWEMNoKoEPpJgv
-         3vwDqR4MNvtRryBVsQ4XcJ3Qyd7qtaF442sB5Tj3HRtTLooQ9vxt94ZPai8RTuPzdFkL
-         pJX4l9fmBiJ94WCkXQ4FfgmEN/XccsN5iV0d658lt7pABkL14Tr7+GIs0LyXqgodtXJO
-         O8cg==
+        bh=ArDC+M/Fj9/rymDfPmXsJ4SDmxJk6crmGXVQHrpZfh4=;
+        b=KxgUIrtyjEy7/g8YMcZVf/n0F/JCfovtnretUayc4SYLldBYJCbnnCceGqxPW/Miqd
+         3RNI63iJQc5VimmYYqwCDEsdKQxKVnN/6QANip7pWG00xbep1l+a5N2e9qFIjxFyyYSc
+         5jsZeISsVmiRHZb7j0a1IHi+GgdGoo3eBeBhxOdiXXu9zRINyzx/RRHKanuIr+wLg/+8
+         yB/SEiIKcU3AiDB4vnhkSYPcVm+ioXrXqAry3IYMrEv+SiZeZUi4q3YdXco6N5AUaWZu
+         us0LIvUOAmRQTF7EqKvTCF917s0s1fFO7x6+tppraeDlko7B2F1vHskMxYOLsukkOY1J
+         jUFQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695938190; x=1696542990;
+        d=1e100.net; s=20230601; t=1695938706; x=1696543506;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ZZ+JMo8V6Wz42802JHuPtu0Gp5ARsCgYfg45BA+tI/Y=;
-        b=wa+UGoGtQ4sag0k1mYfjucKQawmmDmacWbaJBNcDsprlUOQgE8RttjYc7uIWR/vxty
-         IJjt/YP6NsVzKHfOTDrE9zDBLSfWvYsDP1WXhqkGmmTleI6saYa3mQiO8dPgGkiN+Hsv
-         JxLQaR7YjzNA+EovBPhei+UdjRN+m8O7mPGREkhzMNMfWQQ8j78sizbsyUFnbqgy0tQG
-         MkTvnHJg+WWLW0jryhz/6w6/L+xUwNUa9JCwVGXcJla+lEKUUPrMerpNXkNtp3C/CSZn
-         opatMQvIy5XP1mGbuN6dDl9xVo2vb0x2vRXVmDoFtFtan8TZF1FIzxAbTIH1iBucV/rW
-         XECg==
-X-Gm-Message-State: AOJu0Yz8RiMIn9YXbDEddlI4Xy4TenC5Ch24AXcip8x3OTBEmOl1Q50j
-        WcdaDV8XnoO9PXyfZgjDnBJ1rg==
-X-Google-Smtp-Source: AGHT+IFGAZs15eAB0nMhOS0SGwjaQr6z+YM1hrsVNfS7p5IbowMrlzFUDnG4zqCEElNL0h0Z752N2g==
-X-Received: by 2002:a5d:640d:0:b0:320:16b:167d with SMTP id z13-20020a5d640d000000b00320016b167dmr2398306wru.63.1695938190049;
-        Thu, 28 Sep 2023 14:56:30 -0700 (PDT)
+        bh=ArDC+M/Fj9/rymDfPmXsJ4SDmxJk6crmGXVQHrpZfh4=;
+        b=vUY/22M5ajtHlDiQ96ToFyZ4XgmphRAHTeuo4TYACZXec3PPYNenAeNpJex8As6A5t
+         apmw8HPEK4zk955C35xJv9OKzOStvLT9cIhYUiS43aEt96AbxWD1FxjcrzbSc7nvTEBZ
+         tQuphAnsxgSgVGFNyB9rWUnYvXby7O/5rEcJLfB92KBwx+mPfZbNTiwlzAfZI+EAOI8l
+         u8SQy9ZITckkmudhnka9zYOlg4HYF5QFVfG5uWniqoVT5mdwJ00o0DE65eXiJNe7j/Tv
+         FYUTPqZZrlEt7pfdJWn4tQY+o3pZSpDjsOnKX28A+hPcOyguaDXZLiT9j3glmyVT4BZ6
+         cUug==
+X-Gm-Message-State: AOJu0YzXfas4eRttDpWJHVr1R8AF35pyzAcSthCDAEYVR82qTizsj1Kt
+        yRmyVdup9QqSFl4yAeH0kKReZA==
+X-Google-Smtp-Source: AGHT+IHU/EtVhwXCw30fq3cDxe4k2xBSQJzSV11vdm9krtEtk8XG/afGLewXVtCXSrWuuq7tQZnVaw==
+X-Received: by 2002:a05:600c:ad3:b0:402:e68f:888c with SMTP id c19-20020a05600c0ad300b00402e68f888cmr2387507wmr.7.1695938705848;
+        Thu, 28 Sep 2023 15:05:05 -0700 (PDT)
 Received: from airbuntu (host109-151-228-137.range109-151.btcentralplus.com. [109.151.228.137])
-        by smtp.gmail.com with ESMTPSA id bt14-20020a056000080e00b003200c918c81sm13825072wrb.112.2023.09.28.14.56.29
+        by smtp.gmail.com with ESMTPSA id m5-20020a05600c280500b0040535648639sm74825wmb.36.2023.09.28.15.05.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 Sep 2023 14:56:29 -0700 (PDT)
-Date:   Thu, 28 Sep 2023 22:56:28 +0100
+        Thu, 28 Sep 2023 15:05:05 -0700 (PDT)
+Date:   Thu, 28 Sep 2023 23:05:04 +0100
 From:   Qais Yousef <qyousef@layalina.io>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        rafael@kernel.org, dietmar.eggemann@arm.com, rui.zhang@intel.com,
-        amit.kucheria@verdurent.com, amit.kachhap@gmail.com,
-        daniel.lezcano@linaro.org, viresh.kumar@linaro.org,
-        len.brown@intel.com, pavel@ucw.cz, mhiramat@kernel.org,
-        wvw@google.com
-Subject: Re: [PATCH v4 00/18] Introduce runtime modifiable Energy Model
-Message-ID: <20230928215628.u53wmwlr6lm5qzpe@airbuntu>
-References: <20230925081139.1305766-1-lukasz.luba@arm.com>
+To:     Vincent Guittot <vincent.guittot@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Fix apply_dvfs_headroom() escaping
+ uclamp constraints
+Message-ID: <20230928220504.gcft523kvt5jlfoi@airbuntu>
+References: <20230829163740.uadhv2jfjuumqk3w@airbuntu>
+ <CAKfTPtCP6uX79dOrzN4PxFTMBFrDAMOOrWyZrsVypUQ0RY7BAA@mail.gmail.com>
+ <20230907215555.exjxho34ntkjmn6r@airbuntu>
+ <CAKfTPtA8Ljy4NBqjw8Wj4pEFc-OCR55QPuwh+5GgrHN6u+ugsg@mail.gmail.com>
+ <20230910174638.qe7jqq6mq36brh6o@airbuntu>
+ <CAKfTPtBFAXO=CgqSJ1+y=2ppb5t4oErCtvV336fS6J2nSjBCkQ@mail.gmail.com>
+ <20230916192509.bportepj7dbgp6ro@airbuntu>
+ <CAKfTPtA5JqNCauG-rP3wGfq+p8EEVx9Tvwj6ksM3SYCwRmfCTg@mail.gmail.com>
+ <20230924172301.7lqdcsnpqk7trtno@airbuntu>
+ <ZRW86K0Y1ECd4NRG@vingu-book>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20230925081139.1305766-1-lukasz.luba@arm.com>
+In-Reply-To: <ZRW86K0Y1ECd4NRG@vingu-book>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Lukasz
+On 09/28/23 19:50, Vincent Guittot wrote:
 
-On 09/25/23 09:11, Lukasz Luba wrote:
-> Hi all,
+> > 
+> > Yep, absolutely. It seems we agree that CFS shouldn't go above 800 if it is
+> > capped even if there's headroom, but the question you have on the way it is
 > 
-> This patch set adds a new feature which allows to modify Energy Model (EM)
-> power values at runtime. It will allow to better reflect power model of
-> a recent SoCs and silicon. Different characteristics of the power usage
-> can be leveraged and thus better decisions made during task placement in EAS.
+> At least I want to ensure that cpufreq has the right information to make a
+> smart decision. In the example above, it's not needed to go above 800 for
+> neither cfs nor irq.
+
+Okay you want to do even bigger rework :-) I thought I might have pushed some
+boundary with the rework I had in mind hehe.
+
+> I'm not in favor of showing all details to cpufreq because it will have to
+> follow the internal changes. In instead, I was thinking of something like:
 > 
-> It's part of feature set know as Dynamic Energy Model. It has been presented
-> and discussed recently at OSPM2023 [3]. This patch set implements the 1st
-> improvement for the EM.
+> /* Function name to be changed */
+> unsigned_long effective_cpu_util(int cpu, unsigned int *min, unsigned int *max)
+> 
+> The function returns the actual utilization of the CPU and some minimum and
+> maximum limits with the possibility to have the min and/or Actual values > Max
+> because the min would be a hard minimum value whereas max only a soft maximum
+> value.
+> 
+> Min would be the minimum perf to provide to the cpu : typically DL_bw + irq
+> Actual would be the actual utilization of the cpu: cfs+rt+dl+irq (after scaling
+>   everything in the normal range)
+> Max would be the maximum needed performance for normal work: typically the
+> minimum between uclamp and capacity
+> 
+> Then cpufreq can use these 3 values to compute a performance level and it 
+> will know up to which perf level it should go and if it is worth it.
+> Something likr:
 
-Thanks for the series! I'm on CC this time :-) Unfortunately I have a planned
-holiday starting tomorrow, so won't get a chance to do proper review till I'm
-back which would be few weeks from now.
-
-I just want to iterate that this is a real problem being seen in practice where
-it's hard to provide a single average EM for all workloads now. So we certainly
-need something like this.
-
-Hopefully I'll get a chance to help with review when I'm back from holidays.
+Okay thanks! I think I have better clarity now. Let me try to rework the
+patches.
 
 
-Thanks!
+Cheers
 
 --
 Qais Yousef
