@@ -2,57 +2,98 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89BB9E732C5
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 12:39:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A43B1E732C8
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Sep 2023 12:49:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231542AbjI1Mj1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Sep 2023 08:39:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40326 "EHLO
+        id S232091AbjI1MtT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Sep 2023 08:49:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232446AbjI1Mj0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 08:39:26 -0400
-Received: from mail11.truemail.it (mail11.truemail.it [217.194.8.81])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 977BC191
-        for <linux-pm@vger.kernel.org>; Thu, 28 Sep 2023 05:39:25 -0700 (PDT)
-Received: from francesco-nb.pivistrello.it (93-49-2-63.ip317.fastwebnet.it [93.49.2.63])
-        by mail11.truemail.it (Postfix) with ESMTPA id 87420211ED;
-        Thu, 28 Sep 2023 14:32:47 +0200 (CEST)
-From:   Francesco Dolcini <francesco@dolcini.it>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>
-Cc:     Francesco Dolcini <francesco.dolcini@toradex.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v1 0/4] power: reset: gpio-poweroff: use sys-off handler API
-Date:   Thu, 28 Sep 2023 14:32:00 +0200
-Message-Id: <20230928123204.20345-1-francesco@dolcini.it>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S231293AbjI1MtT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2023 08:49:19 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 6C5DE139;
+        Thu, 28 Sep 2023 05:49:17 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5EFDD1FB;
+        Thu, 28 Sep 2023 05:49:55 -0700 (PDT)
+Received: from [10.34.100.121] (e126645.nice.arm.com [10.34.100.121])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0D5283F5A1;
+        Thu, 28 Sep 2023 05:49:15 -0700 (PDT)
+Message-ID: <93262faa-7089-f2a2-3df7-058c338adfc6@arm.com>
+Date:   Thu, 28 Sep 2023 14:49:08 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH] cpufreq: Rebuild sched-domains when removing cpufreq
+ driver
+Content-Language: en-US
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc:     linux-kernel@vger.kernel.org,
+        Shrikanth Hegde <sshegde@linux.vnet.ibm.com>,
+        vschneid@redhat.com, "Rafael J. Wysocki" <rafael@kernel.org>,
+        linux-pm@vger.kernel.org
+References: <20230918112937.493352-1-pierre.gondois@arm.com>
+ <20230928071810.hkdmuoaasrv4b2oq@vireshk-i7>
+From:   Pierre Gondois <pierre.gondois@arm.com>
+In-Reply-To: <20230928071810.hkdmuoaasrv4b2oq@vireshk-i7>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Francesco Dolcini <francesco.dolcini@toradex.com>
+Hello Viresh, Dietmar,
 
-Use the new sys-off handler API for gpio-poweroff. This allows us to have more
-than one power-off handler and to have a priority for the handler. Also, add a
-priority property so we can use gpio-poweroff even when registering another
-poweroff handler or using the legacy pm_power_off method.
+On 9/28/23 09:18, Viresh Kumar wrote:
+> On 18-09-23, 13:29, Pierre Gondois wrote:
+>> The Energy Aware Scheduler (EAS) relies on the schedutil governor.
+>> When moving to/from the schedutil governor, sched domains must be
+>> rebuilt to allow re-evaluating the enablement conditions of EAS.
+>> This is done through sched_cpufreq_governor_change().
+>>
+>> Having a cpufreq governor assumes having a cpufreq driver running.
+>> Inserting/removing a cpufreq driver should trigger a re-evaluation
+>> of EAS enablement conditions, avoiding to see EAS enabled when
+>> removing a running cpufreq driver.
+>>
+>> Add a sched_cpufreq_governor_change() call in cpufreq driver removal
+>> path.
+>>
+>> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+>> ---
+>>   drivers/cpufreq/cpufreq.c | 2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 60ed89000e82..0a4979c34fd1 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1673,6 +1673,8 @@ static void __cpufreq_offline(unsigned int cpu, struct cpufreq_policy *policy)
+>>   		cpufreq_driver->exit(policy);
+>>   		policy->freq_table = NULL;
+>>   	}
+>> +
+>> +	sched_cpufreq_governor_change(policy, policy->governor);
+> 
+> This is called from many paths. Consider using cpufreq_remove_dev() instead,
+> before the policy is freed.
 
-Stefan Eichenberger (4):
-  power: reset: gpio-poweroff: use a struct to store the module
-    variables
-  power: reset: gpio-poweroff: use sys-off handler API
-  dt-bindings: power: reset: gpio-poweroff: Add priority property
-  power: reset: gpio-poweroff: make sys handler priority configurable
+Another solution would be to call sched_cpufreq_governor_change()
+from cpufreq_schedutil's init()/exit() callbacks. This would make
+more sense as EAS/schedutil cpufreq are tightly bound, and it would
+allow to cover all the possible paths.
 
- .../bindings/power/reset/gpio-poweroff.yaml   |  4 +
- drivers/power/reset/gpio-poweroff.c           | 82 ++++++++++---------
- 2 files changed, 48 insertions(+), 38 deletions(-)
+When tried locally, it seems to cover all scenarios:
+- insmod/rmmod a cpufreq driver
+- changing the governor policy
+- offlining all the CPUs of a pd
 
--- 
-2.25.1
+Dietmar:
+The function would be static to cpufreq_schedutil, and the name can
+be changed at the same time to (unless you think of a better name ?):
+   static void sugov_check_eas_state(void);
 
+Regards,
+Pierre
