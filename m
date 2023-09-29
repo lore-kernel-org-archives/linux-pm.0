@@ -2,61 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 233F1E728C5
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Sep 2023 16:16:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3898E728D2
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Sep 2023 16:16:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233606AbjI2QQ4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Sep 2023 12:16:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37996 "EHLO
+        id S233607AbjI2QQ6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Sep 2023 12:16:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53338 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233485AbjI2QQz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Sep 2023 12:16:55 -0400
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05CA9CC0
-        for <linux-pm@vger.kernel.org>; Fri, 29 Sep 2023 09:16:51 -0700 (PDT)
-Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-405361bb9f7so147739135e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 29 Sep 2023 09:16:50 -0700 (PDT)
+        with ESMTP id S233638AbjI2QQ5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Sep 2023 12:16:57 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B65F1B5
+        for <linux-pm@vger.kernel.org>; Fri, 29 Sep 2023 09:16:53 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-40566f8a093so112261205e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 29 Sep 2023 09:16:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696004209; x=1696609009; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1696004211; x=1696609011; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=H6c/rs6jB3aMqjmJKuUrCClcqTF3WAZZDBGZ7tftjkA=;
-        b=k9NJuJ4ep5FYO71fat3tCQxu6xngVDfOqFoMHZceFtIndvT0FenpJ0MwPhg81dG6yD
-         6v/GW62uBqufJ4KJLpIBkuSLhvmGJkBSRYq81ywlinqcvpDMY4paUzgtsHmTRMA/B5Nf
-         V1tSfQx4KwqJaY37ZWRaCYm7lsywFnq82R0fHgEReqjwwI7b0Z8nSQHlaecGm9OMbxXU
-         cvg1+Fk8pR+oYwcBj4DDPQkNyKNFv439Z9rbd0tuRdF8AYFREddBPZ308pnloDAlOAPw
-         ITafANtrJXGectSDAvUhpj02FZLBymJ63s8/sobb8VbTaQOw232FCXckIcoVsuE+ct4o
-         lO3w==
+        bh=MikOgdHnw9Cj1F3F15+YBxnX7Q0cPaNa5HmAcMHbwVs=;
+        b=Up6A5L6slPRGd0ev40c2i0B4MtiiT2z2ZzBA5H7gxs141wmsXDs3ev2NNjHO6kfxgB
+         1slgibq/awH6SzdmUjG8yQnZJ1YM1yrQVWMtY0UeI+YwJbk1NcrcPOMVCfGpCx/MhQYX
+         oDpxTbtKGSOq/xujlqAwcxFgC/YRwuqUV+SCr+TbWBvWvAmEbKS1TqyKTfV55srfzXxk
+         znD7pReiYo7x7afeC+RbZ8k1nn34+oQN7Rh7SimBkbXfB2zH/JwA8UY6EBxxOAvjjeTj
+         L4RN653xogllCaioSYfuVxSPIONxNwoQMoJIvDMKTyzDqhItXUqlA+3dpk23fBRN/sIB
+         PTnA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696004209; x=1696609009;
+        d=1e100.net; s=20230601; t=1696004211; x=1696609011;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=H6c/rs6jB3aMqjmJKuUrCClcqTF3WAZZDBGZ7tftjkA=;
-        b=lfn6kJiFg9/sAiRHAqN68bt8ezbzJ9QQwW9fkH0GMGKAsu9VXnAitUJc89JbMTiliC
-         QkgSirIPpASzSPzeTeyCJWRgyxmH1JpyVkGM8gR8lWVtBPmVmbYiunHZ4MN6WOT/ESp9
-         bpiwGVhaEyRYwOpigkS3L/oVg6sgkF+PaWEqCgjv68ozI9D//bXuUYDekYMxRaqtZc9I
-         RpP8V7XxJ1jOUDrU0CRaL0SbdmfnM+6vGtjSag5Xmq0qm5q5ZQ3CEU8E+0Js+nLFF0qO
-         6ZRHDbOQDgGbcTPQySYDRhs9kwYHwFq2ydlQZ0vsT5S/hJn/vrRASAgX5rEIB7YEOQrM
-         mrXQ==
-X-Gm-Message-State: AOJu0Yzyiu9Czzm0Y5A0dGARUdHXWZ2qOoEXTPyMbOuIjJO+Nf8JTFYN
-        z1hPVN9GU4EO9U5mgi8shZ27Pg==
-X-Google-Smtp-Source: AGHT+IFnWBnJtlPvqMUCRo4ORFYlchXTqDfFCkv5g4n1DcCAAvbigOpXJk39mgpCAARmjx/c4QxnpQ==
-X-Received: by 2002:a1c:6a08:0:b0:405:3455:d603 with SMTP id f8-20020a1c6a08000000b004053455d603mr4411205wmc.17.1696004209374;
-        Fri, 29 Sep 2023 09:16:49 -0700 (PDT)
+        bh=MikOgdHnw9Cj1F3F15+YBxnX7Q0cPaNa5HmAcMHbwVs=;
+        b=ho/Bs29IfRgPP0BSD1U+U6elYfo/ONyJ08zseacfrOL4RqlEJYtMYkd8ipNDpmSf3/
+         /tRXnkhLIoAyfGBdTLymVUO8nTi2ZTmNexv4le4tCYv3mT7I4xrTL5i6LUPoSGFzspmm
+         hkqvUcxg/vI9KAOwMz9irCOLmWUbGQdauCF2XVvl9KXLMDruodY00QV2/ipomNceZ/7G
+         KlAIBBSn9j0H7VPxIQC3N4Xp92OlMEOvThmxH3dEuQ57J72Y3h4vDmvVkAdgppEPV8BO
+         2LlUYQucqaBpJcCwdhUMI7CCdhRiBtGpZVlr87W5VivioOFCCc/LH4AhwX9I7NIP8zUG
+         SFnA==
+X-Gm-Message-State: AOJu0YxtBDgZ1gpFxlqkIA+GnB/8q2j+YpcyHriIuhX2IS8v2OhOWVZ7
+        /pO5YK/HqMNmgspymNmB+wrOZQ==
+X-Google-Smtp-Source: AGHT+IGh9+hHCV8PgonNR9t6AFEVc/cDbuI0Aqd6VW8dFYYBRvr/czuKcfiIKkHf283fsaQY+Cme5Q==
+X-Received: by 2002:adf:f5c3:0:b0:314:350a:6912 with SMTP id k3-20020adff5c3000000b00314350a6912mr4034356wrp.36.1696004211549;
+        Fri, 29 Sep 2023 09:16:51 -0700 (PDT)
 Received: from lion.localdomain (host-2-99-112-229.as13285.net. [2.99.112.229])
-        by smtp.gmail.com with ESMTPSA id x15-20020adfcc0f000000b0032330e43590sm10226848wrh.22.2023.09.29.09.16.48
+        by smtp.gmail.com with ESMTPSA id x15-20020adfcc0f000000b0032330e43590sm10226848wrh.22.2023.09.29.09.16.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 29 Sep 2023 09:16:49 -0700 (PDT)
+        Fri, 29 Sep 2023 09:16:51 -0700 (PDT)
 From:   Caleb Connolly <caleb.connolly@linaro.org>
-Date:   Fri, 29 Sep 2023 17:16:18 +0100
-Subject: [PATCH 2/4] dt-bindings: thermal: Add qcom,qmi-cooling yaml
- bindings
+Date:   Fri, 29 Sep 2023 17:16:20 +0100
+Subject: [PATCH 4/4] MAINTAINERS: Add entry for Qualcomm Cooling Driver
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230905-caleb-qmi_cooling-v1-2-5aa39d4164a7@linaro.org>
+Message-Id: <20230905-caleb-qmi_cooling-v1-4-5aa39d4164a7@linaro.org>
 References: <20230905-caleb-qmi_cooling-v1-0-5aa39d4164a7@linaro.org>
 In-Reply-To: <20230905-caleb-qmi_cooling-v1-0-5aa39d4164a7@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -78,252 +77,46 @@ Cc:     linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Caleb Connolly <caleb.connolly@linaro.org>
 X-Mailer: b4 0.13-dev-46309
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6892;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=874;
  i=caleb.connolly@linaro.org; h=from:subject:message-id;
- bh=zW3HWrMT85pnatyJIPEtqsqc6tm+j8grjbjQ5daBbLc=;
- b=owGbwMvMwCFYaeA6f6eBkTjjabUkhlSxH3n8/Dnpsxq25YX+tV/74oXvzm8P4mukVFu0KyW/O
- Ld95tfsKGVhEORgkBVTZBE/scyyae1le43tCy7AzGFlAhnCwMUpABMxsGT4K9DGYOn04evGZQ/v
- 2LXxsZQWBb9dxilYvuibj4OcCrvESUaG5vTa0tDtN7Ty+vqa9n5fE8uz7tBEQ8+pe2/MepTGf+j
- UGQA=
+ bh=lGmSgXW2XFQ/63QULMjMdPqhafuryymoFyIIA0vaTv4=;
+ b=owGbwMvMwCFYaeA6f6eBkTjjabUkhlSxH3k3+Bf291/I99V6oPb+kdyaZ+r2Kh0Zr0ryDjwKT
+ X47/eahjlIWBkEOBlkxRRbxE8ssm9ZettfYvuACzBxWJpAhDFycAjCR6aIMf0WmOf4TP2lWzrrO
+ Z86kBbf+Pnwx+brP5aM537axFL9jkGRm+B+dkP7m9KzXj94U3tmz1+oo1631m720+J2ksk6djA+
+ b4HAfAA==
 X-Developer-Key: i=caleb.connolly@linaro.org; a=openpgp;
  fpr=83B24DA7FE145076BC38BB250CD904EB673A7C47
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cooling subnode of a remoteproc represents a client of the Thermal
-Mitigation Device QMI service running on it. Each subnode of the cooling
-node represents a single control exposed by the service.
+Add myself as the maintainer for the Qualcomm Cooling
+driver.
 
 Signed-off-by: Caleb Connolly <caleb.connolly@linaro.org>
 ---
- .../bindings/remoteproc/qcom,msm8996-mss-pil.yaml  |  13 ++
- .../bindings/remoteproc/qcom,pas-common.yaml       |   6 +
- .../bindings/thermal/qcom,qmi-cooling.yaml         | 168 +++++++++++++++++++++
- 3 files changed, 187 insertions(+)
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/remoteproc/qcom,msm8996-mss-pil.yaml b/Documentation/devicetree/bindings/remoteproc/qcom,msm8996-mss-pil.yaml
-index 0643faae2c39..9d0398764a31 100644
---- a/Documentation/devicetree/bindings/remoteproc/qcom,msm8996-mss-pil.yaml
-+++ b/Documentation/devicetree/bindings/remoteproc/qcom,msm8996-mss-pil.yaml
-@@ -145,6 +145,12 @@ properties:
-       and devices related to the Modem.
-     unevaluatedProperties: false
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 01dde0acebd3..d92cfa1dd57f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -17800,6 +17800,14 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/mtd/qcom,nandc.yaml
+ F:	drivers/mtd/nand/raw/qcom_nandc.c
  
-+  cooling:
-+    $ref: /schemas/thermal/qcom,qmi-cooling.yaml#
-+    description:
-+      Cooling subnode which represents the cooling devices exposed by the Modem.
-+    unevaluatedProperties: false
++QUALCOMM QMI (THERMAL MITIGATION DEVICE) COOLING DRIVER
++M:	Caleb Connolly <caleb.connolly@linaro.org>
++L:	linux-pm@vger.kernel.org
++L:	linux-arm-msm@vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/thermal/qcom,qmi-cooling.yaml
++F:	drivers/thermal/qcom/qmi-cooling.*
 +
-   # Deprecated properties
-   mba:
-     type: object
-@@ -386,6 +392,13 @@ examples:
-         qcom,smem-states = <&modem_smp2p_out 0>;
-         qcom,smem-state-names = "stop";
- 
-+        cooling {
-+            vdd {
-+              label = "cpuv_restriction_cold";
-+              #cooling-cells = <2>;
-+            };
-+        };
-+
-         glink-edge {
-             interrupts = <GIC_SPI 449 IRQ_TYPE_EDGE_RISING>;
-             label = "modem";
-diff --git a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
-index 63a82e7a8bf8..bbc82253f76b 100644
---- a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
-+++ b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
-@@ -77,6 +77,12 @@ properties:
-       and devices related to the ADSP.
-     unevaluatedProperties: false
- 
-+  cooling:
-+    $ref: /schemas/thermal/qcom,qmi-cooling.yaml#
-+    description:
-+      Cooling subnode which represents the cooling devices exposed by the Modem.
-+    unevaluatedProperties: false
-+
- required:
-   - clocks
-   - clock-names
-diff --git a/Documentation/devicetree/bindings/thermal/qcom,qmi-cooling.yaml b/Documentation/devicetree/bindings/thermal/qcom,qmi-cooling.yaml
-new file mode 100644
-index 000000000000..65b1c7b40c1d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qcom,qmi-cooling.yaml
-@@ -0,0 +1,168 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+# Copyright 2023 (c), Linaro Limited
-+
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/qcom,qmi-cooling.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Qualcomm QMI based thermal mitigation (TMD) cooling devices.
-+
-+maintainers:
-+  - Caleb Connolly <caleb.connolly@linaro.org>
-+
-+description:
-+  Qualcomm QMI based TMD cooling device(s) are used for various mitigations for
-+  remote subsystem(s) including remote processor mitigation, rail voltage
-+  restriction etc. Some devices such as "cpuv_restriction_cold" are for warming,
-+  (e.g. by raising minimum voltage on core system rails).
-+
-+  Each subnode represents a control for a single instance of the TMD service running
-+  on a remote subsystem.
-+
-+definitions:
-+  tmd:
-+    type: object
-+    description: |
-+      A single Thermal Mitigation Device exposed by a remote subsystem.
-+    properties:
-+      label:
-+        maxItems: 1
-+      "#cooling-cells":
-+        $ref: /schemas/thermal/thermal-cooling-devices.yaml#/properties/#cooling-cells
-+
-+    required:
-+      - label
-+      - "#cooling-cells"
-+
-+    additionalProperties: false
-+
-+properties:
-+  compatible:
-+    enum:
-+      - qcom,qmi-cooling-modem
-+      - qcom,qmi-cooling-adsp
-+      - qcom,qmi-cooling-cdsp
-+      - qcom,qmi-cooling-slpi
-+
-+  vdd:
-+    $ref: "#/definitions/tmd"
-+    description:
-+      Restrict primary rail minimum voltage to "nominal" setting.
-+    properties:
-+      label:
-+        const: cpuv_restriction_cold
-+
-+required:
-+  - compatible
-+  - vdd
-+
-+# Modem has additional TMDs
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: qcom,qmi-cooling-modem
-+    then:
-+      properties:
-+        pa:
-+          $ref: "#/definitions/tmd"
-+          description:
-+            Power Amplifier TMD
-+          properties:
-+            label:
-+              const: pa
-+
-+        proc:
-+          $ref: "#/definitions/tmd"
-+          description:
-+            Modem processor temperature TMD
-+          properties:
-+            label:
-+              const: modem
-+
-+        current:
-+          $ref: "#/definitions/tmd"
-+          description:
-+            Modem peak current TMD
-+          properties:
-+            label:
-+              const: modem_current
-+
-+        skin:
-+          $ref: "#/definitions/tmd"
-+          description:
-+            Modem skin temperature TMD
-+          properties:
-+            label:
-+              const: modem_skin
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    remoteproc-modem {
-+        cooling {
-+            compatible = "qcom,qmi-cooling-modem";
-+
-+            modem_pa: pa {
-+              label = "pa";
-+              #cooling-cells = <2>;
-+            };
-+
-+            modem_proc: proc {
-+              label = "modem";
-+              #cooling-cells = <2>;
-+            };
-+
-+            modem_current: current {
-+              label = "modem_current";
-+              #cooling-cells = <2>;
-+            };
-+
-+            modem_skin: skin {
-+              label = "modem_skin";
-+              #cooling-cells = <2>;
-+            };
-+
-+            modem_vdd: vdd {
-+              label = "cpuv_restriction_cold";
-+              #cooling-cells = <2>;
-+            };
-+        };
-+    };
-+
-+    remoteproc-adsp {
-+        cooling {
-+            compatible = "qcom,qmi-cooling-adsp";
-+
-+            adsp_vdd: vdd {
-+              label = "cpuv_restriction_cold";
-+              #cooling-cells = <2>;
-+            };
-+        };
-+    };
-+
-+    remoteproc-cdsp {
-+        cooling {
-+            compatible = "qcom,qmi-cooling-cdsp";
-+
-+            cdsp_vdd: vdd {
-+              label = "cpuv_restriction_cold";
-+              #cooling-cells = <2>;
-+            };
-+        };
-+    };
-+
-+    remoteproc-slpi {
-+        cooling {
-+            compatible = "qcom,qmi-cooling-slpi";
-+
-+            slpi_vdd: vdd {
-+              label = "cpuv_restriction_cold";
-+              #cooling-cells = <2>;
-+            };
-+        };
-+    };
-+...
+ QUALCOMM QSEECOM DRIVER
+ M:	Maximilian Luz <luzmaximilian@gmail.com>
+ L:	linux-arm-msm@vger.kernel.org
 
 -- 
 2.42.0
