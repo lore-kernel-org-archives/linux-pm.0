@@ -2,87 +2,186 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AA50E728D7
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Sep 2023 18:45:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 415E1E77365
+	for <linux-pm@archiver.kernel.org>; Sat, 30 Sep 2023 10:22:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233733AbjI2Sp1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Sep 2023 14:45:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39832 "EHLO
+        id S234066AbjI3KW1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 30 Sep 2023 06:22:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49856 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233354AbjI2Sp0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Sep 2023 14:45:26 -0400
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94AB21AB
-        for <linux-pm@vger.kernel.org>; Fri, 29 Sep 2023 11:45:24 -0700 (PDT)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-69101022969so13013883b3a.3
-        for <linux-pm@vger.kernel.org>; Fri, 29 Sep 2023 11:45:24 -0700 (PDT)
+        with ESMTP id S234061AbjI3KWZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 Sep 2023 06:22:25 -0400
+Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D232193;
+        Sat, 30 Sep 2023 03:22:23 -0700 (PDT)
+Received: by mail-ed1-x52a.google.com with SMTP id 4fb4d7f45d1cf-5362bcc7026so4627367a12.1;
+        Sat, 30 Sep 2023 03:22:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1696013124; x=1696617924; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=FYvvehpsv1wV0TUOJ3vJBMvoWOTY9QRuZLtItNWRlh4=;
-        b=Zyitjam0qO5uRgJ6uhXe/DeqenrEDsPN+B9GJtq8Xa9uwn85g5QeJxGrjLYb1V2Ui2
-         i3icp/ioq2tm8FAev2/RcCReEc+O3RDAUFNi5ci+C9RyfwvTavw6zGWOHXZr3zSyURpU
-         8n2pDX5LvQD4x9MCc7ax7a2Ncldz+drrR2B3E=
+        d=gmail.com; s=20230601; t=1696069341; x=1696674141; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=2cw31Dklv6LbIdS/IsVHOoHw1kB38CKqlZS0s3OaLsA=;
+        b=ZsgEtLfqgmGHkIGx4MtMKbdwnTroxkKr0De5EOUCs9eOb4XMbJTcN6LjIf3OrZwBUm
+         dXTmg9ccNxraOO/lJ7BeRy3ZYKqYuCR1wUVDJhRzf1LmGNomZ2akZqnU+aXpbpJahZJw
+         RApqBjTIL62O63gve7pmt2ymzUZ1aMVIn2QHHSTsAE/2i1FRehoAx/x27mP2wDIlh3vw
+         6vxKAerdYXoP0QJ3DjK86Rkw26aqsipaMEWKE2ppAwz7COkSh7sEGXZ9CjNvoT8Eu5G0
+         nOWYSjfQjBAxgJffO9G9tNVntt2QfQUibb/bVYprMcMf/Rr4OSlLo5OiAVhqhAbtfv6o
+         CJNg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696013124; x=1696617924;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=FYvvehpsv1wV0TUOJ3vJBMvoWOTY9QRuZLtItNWRlh4=;
-        b=cLhlp7U7rXnb2DhyFSujnXtH3iUagOrJAwrCRLFDHQNF858CPKPRjzaYvs3hwHOLfO
-         ps1ipNO0/IW0QjVO4VtRSqZixFoY+gqX4QXLfKtNggLr2yOsuInZ88CYtP64ROqEWCqe
-         Q6+7nO6tfBfKRjbp9fwGg0GrhYKniU3DMm7HplBFDm7+v/eOLLzZ0B/LCySikrINtHKp
-         tsJEd0vIoHtlKqiq+bTHAJ8RKdddkaeKvQu681XIoW4DBpJeYErbRKj5pTpA795s9EFh
-         V45SY+0DywVi0/CwY5HmCk+J8ZnlVmS88QIr6Mcg4CE8KclBQncS9LY52Jq1xcayW226
-         tC8Q==
-X-Gm-Message-State: AOJu0Yy0Q2FfF7vBio3n1dlsuzlSWGvSxftjr9fz+EVykNMKdwklbxd9
-        lfOdFcldYuhDtd3MUdNfPvcA/Q==
-X-Google-Smtp-Source: AGHT+IGFXw3HGbe7BuDnIOEXbQlJ3E2VZIJO6eZbA0D0+j0Hvk6pixrOymO/vfTRQDQmvRsKnAaxFQ==
-X-Received: by 2002:a05:6a20:1604:b0:15e:e0fd:98e7 with SMTP id l4-20020a056a20160400b0015ee0fd98e7mr5722710pzj.20.1696013124059;
-        Fri, 29 Sep 2023 11:45:24 -0700 (PDT)
-Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
-        by smtp.gmail.com with ESMTPSA id u13-20020aa7848d000000b00690d4464b95sm4795297pfn.16.2023.09.29.11.45.23
+        d=1e100.net; s=20230601; t=1696069341; x=1696674141;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=2cw31Dklv6LbIdS/IsVHOoHw1kB38CKqlZS0s3OaLsA=;
+        b=XKeO1GnvUiCUoJ9qMr5++LfiXeUcMQcspXBX5fEesbScHjYppZxxH6+pl/GzivHsxd
+         1AJRRZi/NT4aS45FX6V41WJJ0PSGnGGJtp5j6LTeJaAIFcZuzuQpYwi0e81oJoMAmBae
+         hjthDsp+KUyIVSF8bOUMeqvLDNk1c1MYEqHIFq6y0A/uEDN5ixX1corXjRc9mOm3N8x7
+         vMVwK5FvNcZq22DwuCjuiH1LHotXXMA1Dp+nDL7pL5VuEqzTUNqIWlLjW/RS76zOMP4X
+         VCOdxlpJK2QIK5KmSb/WQL60AnW7Z9EEn2WV1/FtPnarm/V01+TRCdg96zsNiV1MC/rh
+         8cFw==
+X-Gm-Message-State: AOJu0YxuL3Gii3oWYPYySPMwJtyF7HlrI40Vtdd23plICqzhSfMGOMLe
+        /Zc76FVfi1ptBTH0EDo+MTA=
+X-Google-Smtp-Source: AGHT+IFPaOzMep6Ta1wNJ5ZEFYYnN+5naZP3Mq/f/gUdSLTk4k8Jd9dajDC275ZkuPBe0WnIWrr2iw==
+X-Received: by 2002:a17:906:51c9:b0:9ae:6355:5ef4 with SMTP id v9-20020a17090651c900b009ae63555ef4mr5432600ejk.3.1696069341055;
+        Sat, 30 Sep 2023 03:22:21 -0700 (PDT)
+Received: from fedora.. (dh207-96-216.xnet.hr. [88.207.96.216])
+        by smtp.googlemail.com with ESMTPSA id j25-20020a170906255900b0099bcf1c07c6sm13716547ejb.138.2023.09.30.03.22.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 29 Sep 2023 11:45:23 -0700 (PDT)
-From:   Kees Cook <keescook@chromium.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Justin Stitt <justinstitt@google.com>
-Cc:     Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH] cpuidle: dt: refactor deprecated strncpy
-Date:   Fri, 29 Sep 2023 11:45:22 -0700
-Message-Id: <169601312172.3009670.14336910026222113184.b4-ty@chromium.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230913-strncpy-drivers-cpuidle-dt_idle_states-c-v1-1-d16a0dbe5658@google.com>
-References: <20230913-strncpy-drivers-cpuidle-dt_idle_states-c-v1-1-d16a0dbe5658@google.com>
+        Sat, 30 Sep 2023 03:22:20 -0700 (PDT)
+From:   Robert Marko <robimarko@gmail.com>
+To:     ilia.lin@kernel.org, vireshk@kernel.org, nm@ti.com,
+        sboyd@kernel.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        rafael@kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Cc:     Robert Marko <robimarko@gmail.com>
+Subject: [PATCH v5 1/4] cpufreq: qcom-nvmem: add support for IPQ8074
+Date:   Sat, 30 Sep 2023 12:21:16 +0200
+Message-ID: <20230930102218.229613-1-robimarko@gmail.com>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 13 Sep 2023 00:23:19 +0000, Justin Stitt wrote:
-> `strncpy` is deprecated for use on NUL-terminated destination strings [1].
-> 
-> We should prefer more robust and less ambiguous string interfaces.
-> 
-> A suitable replacement is `strscpy` [2] due to the fact that it guarantees
-> NUL-termination on the destination buffer. With this, we can also drop
-> the now unnecessary `CPUIDLE_(NAME|DESC)_LEN - 1` pieces.
-> 
-> [...]
+IPQ8074 comes in 2 families:
+* IPQ8070A/IPQ8071A (Acorn) up to 1.4GHz
+* IPQ8072A/IPQ8074A/IPQ8076A/IPQ8078A (Hawkeye) up to 2.2GHz
 
-Applied to for-next/hardening, thanks!
+So, in order to be able to share one OPP table lets add support for IPQ8074
+family based of SMEM SoC ID-s as speedbin fuse is always 0 on IPQ8074.
 
-[1/1] cpuidle: dt: refactor deprecated strncpy
-      https://git.kernel.org/kees/c/fd94c38f8441
+IPQ8074 compatible is blacklisted from DT platdev as the cpufreq device
+will get created by NVMEM CPUFreq driver.
 
-Take care,
+Signed-off-by: Robert Marko <robimarko@gmail.com>
+---
+Changes in v4:
+* Add support for IPQ8174 (Oak) family
 
+Changes in v3:
+* Use enum for SoC versions
+
+Changes in v2:
+* Print an error if SMEM ID is not part of the IPQ8074 family
+and restrict the speed to Acorn variant (1.4GHz)
+
+ drivers/cpufreq/cpufreq-dt-platdev.c |  1 +
+ drivers/cpufreq/qcom-cpufreq-nvmem.c | 45 ++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 2016d47889c0..157c91b9962c 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -180,6 +180,7 @@ static const struct of_device_id blocklist[] __initconst = {
+ 	{ .compatible = "ti,am62a7", },
+ 
+ 	{ .compatible = "qcom,ipq8064", },
++	{ .compatible = "qcom,ipq8074", },
+ 	{ .compatible = "qcom,apq8064", },
+ 	{ .compatible = "qcom,msm8974", },
+ 	{ .compatible = "qcom,msm8960", },
+diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+index 84d7033e5efe..ba9e1d60e5b5 100644
+--- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
++++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+@@ -30,6 +30,11 @@
+ 
+ #include <dt-bindings/arm/qcom,ids.h>
+ 
++enum ipq8074_versions {
++	IPQ8074_HAWKEYE_VERSION = 0,
++	IPQ8074_ACORN_VERSION,
++};
++
+ struct qcom_cpufreq_drv;
+ 
+ struct qcom_cpufreq_match_data {
+@@ -203,6 +208,41 @@ static int qcom_cpufreq_krait_name_version(struct device *cpu_dev,
+ 	return ret;
+ }
+ 
++static int qcom_cpufreq_ipq8074_name_version(struct device *cpu_dev,
++					     struct nvmem_cell *speedbin_nvmem,
++					     char **pvs_name,
++					     struct qcom_cpufreq_drv *drv)
++{
++	u32 msm_id;
++	int ret;
++	*pvs_name = NULL;
++
++	ret = qcom_smem_get_soc_id(&msm_id);
++	if (ret)
++		return ret;
++
++	switch (msm_id) {
++	case QCOM_ID_IPQ8070A:
++	case QCOM_ID_IPQ8071A:
++		drv->versions = BIT(IPQ8074_ACORN_VERSION);
++		break;
++	case QCOM_ID_IPQ8072A:
++	case QCOM_ID_IPQ8074A:
++	case QCOM_ID_IPQ8076A:
++	case QCOM_ID_IPQ8078A:
++		drv->versions = BIT(IPQ8074_HAWKEYE_VERSION);
++		break;
++	default:
++		dev_err(cpu_dev,
++			"SoC ID %u is not part of IPQ8074 family, limiting to 1.4GHz!\n",
++			msm_id);
++		drv->versions = BIT(IPQ8074_ACORN_VERSION);
++		break;
++	}
++
++	return 0;
++}
++
+ static const struct qcom_cpufreq_match_data match_data_kryo = {
+ 	.get_version = qcom_cpufreq_kryo_name_version,
+ };
+@@ -217,6 +257,10 @@ static const struct qcom_cpufreq_match_data match_data_qcs404 = {
+ 	.genpd_names = qcs404_genpd_names,
+ };
+ 
++static const struct qcom_cpufreq_match_data match_data_ipq8074 = {
++	.get_version = qcom_cpufreq_ipq8074_name_version,
++};
++
+ static int qcom_cpufreq_probe(struct platform_device *pdev)
+ {
+ 	struct qcom_cpufreq_drv *drv;
+@@ -360,6 +404,7 @@ static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
+ 	{ .compatible = "qcom,msm8996", .data = &match_data_kryo },
+ 	{ .compatible = "qcom,qcs404", .data = &match_data_qcs404 },
+ 	{ .compatible = "qcom,ipq8064", .data = &match_data_krait },
++	{ .compatible = "qcom,ipq8074", .data = &match_data_ipq8074 },
+ 	{ .compatible = "qcom,apq8064", .data = &match_data_krait },
+ 	{ .compatible = "qcom,msm8974", .data = &match_data_krait },
+ 	{ .compatible = "qcom,msm8960", .data = &match_data_krait },
 -- 
-Kees Cook
+2.41.0
 
