@@ -2,49 +2,51 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B4C2E748EA
-	for <linux-pm@archiver.kernel.org>; Sat, 30 Sep 2023 20:28:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB467E748E9
+	for <linux-pm@archiver.kernel.org>; Sat, 30 Sep 2023 20:28:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231202AbjI3U2V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 30 Sep 2023 16:28:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48872 "EHLO
+        id S231779AbjI3U2b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 30 Sep 2023 16:28:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57624 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230108AbjI3U2U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 Sep 2023 16:28:20 -0400
+        with ESMTP id S232105AbjI3U2a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 Sep 2023 16:28:30 -0400
 Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CF97CA;
-        Sat, 30 Sep 2023 13:28:18 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9783F9;
+        Sat, 30 Sep 2023 13:28:28 -0700 (PDT)
 Received: from mercury (unknown [185.254.75.28])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 5072B6607285;
-        Sat, 30 Sep 2023 21:28:17 +0100 (BST)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id A09F16607295;
+        Sat, 30 Sep 2023 21:28:27 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1696105697;
-        bh=hRlP4DfBi86OovKpM21F/xWPEezlBHK/OG5lsM8V+Sw=;
+        s=mail; t=1696105707;
+        bh=5H7NbrsgqULN82SuDa6zSGealrTVrOF+2Ikbmj0ec6U=;
         h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-        b=fMB7aJfZXrh7iex7stsguBcQ2tYDcR2fIaw1W/etZfGkG/Wrv62zz7Srvy0C2hJGb
-         TBQHVnX98LXJfG2mQNd9HTXHBe0jJMpptCsRDNCfJ5cXDsmVZsHG+7upLb7r8NuX4y
-         bFCUPVMaoDWELQOellD7+DFN21ySb9m+Vsli+QIM6BEIEupnVgCDoMXiXA70l/rRrc
-         Pswf6eGDb4kx39se8pvmqhIMqrukMF3y/mulv3fSg1dZv58OVRmKVFUlA6aei8TLCq
-         pGu+XAmesx4FP0B3x9iGLrtuGY1mkGyGGv+v/vruTyEeOo6mu7CnW2mzihvLn6wSbH
-         zaItx0xGQGX+g==
+        b=jJYWVNPkUmKZ2usi5PEOqnrSdjkJB6ZmaU+jEsvH0zV09bN6sO30gcON49Y7sQ4VI
+         ND+czJgr02BKj6bX4RWFC7GTyY3n3jw1JEnHXpvXjWmBFWqP8+UfIkmsYPA1hQut/N
+         nTBlwBwPrNNgObz/Y4s1p9V73SJ5OKj7G3vBE7loDf8CohHpyPBwXFmy6rK+3LRLLI
+         kmBeKhpldjglQ/kDdmxiTzOv9OUCeljMIORdnxoAXNURJQf25gqGA8eed4RAX53sIz
+         To9TXAsg2ZIGATPFGuxlusSP6b4ZGY8w8apDUd9izWos8L6Gi0apGsodoN3ASy+BmI
+         eXgjjXqJdGpgQ==
 Received: by mercury (Postfix, from userid 1000)
-        id 2184910603F9; Sat, 30 Sep 2023 22:28:15 +0200 (CEST)
+        id AE0C210605D7; Sat, 30 Sep 2023 22:28:25 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Dan Carpenter <dan.carpenter@linaro.org>
-Cc:     Konrad Dybcio <konradybcio@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        kernel-janitors@vger.kernel.org
-In-Reply-To: <c46b4408-bf1d-408d-9e6b-16b0ad272532@moroto.mountain>
-References: <c46b4408-bf1d-408d-9e6b-16b0ad272532@moroto.mountain>
-Subject: Re: [PATCH] power: supply: mm8013: Fix an error checking issue in
- mm8013_checkdevice()
-Message-Id: <169610569512.214910.12711679981052235128.b4-ty@collabora.com>
-Date:   Sat, 30 Sep 2023 22:28:15 +0200
+To:     Sebastian Reichel <sre@kernel.org>,
+        Johan Hovold <johan+linaro@kernel.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org
+In-Reply-To: <20230929101649.20206-1-johan+linaro@kernel.org>
+References: <20230929101649.20206-1-johan+linaro@kernel.org>
+Subject: Re: [PATCH] power: supply: qcom_battmgr: fix enable request
+ endianness
+Message-Id: <169610570570.215050.7442025506091281047.b4-ty@collabora.com>
+Date:   Sat, 30 Sep 2023 22:28:25 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -54,16 +56,18 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
-On Wed, 27 Sep 2023 15:41:05 +0300, Dan Carpenter wrote:
-> There is a missing "ret = " assignment so this checks the same "ret"
-> value twice.
+On Fri, 29 Sep 2023 12:16:49 +0200, Johan Hovold wrote:
+> Add the missing endianness conversion when sending the enable request so
+> that the driver will work also on a hypothetical big-endian machine.
+> 
+> This issue was reported by sparse.
 > 
 > 
 
 Applied, thanks!
 
-[1/1] power: supply: mm8013: Fix an error checking issue in mm8013_checkdevice()
-      commit: 8f8e9b7388514d937843337140f18ceb0f3da6eb
+[1/1] power: supply: qcom_battmgr: fix enable request endianness
+      commit: 8894b432548851f705f72ff135d3dcbd442a18d1
 
 Best regards,
 -- 
