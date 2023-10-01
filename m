@@ -2,141 +2,479 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4318CE748ED
-	for <linux-pm@archiver.kernel.org>; Sun,  1 Oct 2023 12:34:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 451CCE748ED
+	for <linux-pm@archiver.kernel.org>; Sun,  1 Oct 2023 13:18:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234942AbjJAMe3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 1 Oct 2023 08:34:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57102 "EHLO
+        id S234979AbjJANSE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 1 Oct 2023 09:18:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32890 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234896AbjJAMe3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 1 Oct 2023 08:34:29 -0400
-Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2058.outbound.protection.outlook.com [40.107.21.58])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6603994;
-        Sun,  1 Oct 2023 05:34:25 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=AigZJZkahtwIwh1+ClwtasVXar8JTtj0HgpekceZpHQ1dUGWJCjxtIx1PSsw8YB3hdQz1Tf+cUeOJtjRDUdRoKle5tzzijnL2d/boVblAl7r19dGeROFVGbA5lA6QrJ5xtPNUku/e6R9zyAisPqlXtcxZ9za+9etmcqoGp4EwaDbY9lmHQeyNXU7iN5xXE7VaSXoG5Us98lmC3nCYWC06O2O/MyoBKscQkcqnnKe+h1Dd9sEack9T3k7v6RB/8jf0IioCW8679MOWKKMkdn7kAju+2X6PuPRSi7MiSTwQ0H8LFCbs1oW13c7t5f1tfuzudyKZ5z+FpQUwTQckm5qBw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=TKBFoXA6t1zyJFBEp8w4iE5PFiGNiC6HHMYYVwlfJGI=;
- b=hPpnfDtDbmLxrFxEV2dK4O1kFnpL55GrBvRVn4AsOoJ0cU96Nj+mujLIwpUdXoGIO/zp7dvMZZ8qnSAypjYDmDI3ES1s0dIoXfzh4C5WOhzmZ1Y2/w1j8noe7vNe+qdChoIlfj7zKGmYVFsbVrO3ooNK6iOSNswWojfJ7Hj4xrjwr8swghRFa4opZoqvh24LVAxxaJdKsyYtYWa8tnYny1gD8LZGFJmyluz9GbhtrSRimGMDJKLGXz1rvdUCuhSsdmF5fuf0ZDfaARKrix1REclP1X2WOYdsVrIl5lkkpZpJpfYnFy7cJqUho0vZ+EVqxyxEqIlPwLY6jeMcQkJyQQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector2-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TKBFoXA6t1zyJFBEp8w4iE5PFiGNiC6HHMYYVwlfJGI=;
- b=MlkhCbk+UH1kjph09Veoxn7q6l28Jog2EuErz1Ah8w8vgVlLtVkYRB890A5iwcj+SBkvXgoFpJmf7BU6EHWy9DC+2dY2B2enVU9Wf5Xd32X1kxQ2ziqM+7GUVLUkfcSL1J2DnHXyy8+DLrXzmlyp1thAvTmWgL3M1WhnBnQWkuc=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from DU0PR04MB9417.eurprd04.prod.outlook.com (2603:10a6:10:358::11)
- by DU2PR04MB8758.eurprd04.prod.outlook.com (2603:10a6:10:2e1::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6838.29; Sun, 1 Oct
- 2023 12:34:22 +0000
-Received: from DU0PR04MB9417.eurprd04.prod.outlook.com
- ([fe80::2b3:d8de:95c8:b28b]) by DU0PR04MB9417.eurprd04.prod.outlook.com
- ([fe80::2b3:d8de:95c8:b28b%3]) with mapi id 15.20.6838.024; Sun, 1 Oct 2023
- 12:34:21 +0000
-From:   "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
-To:     ulf.hansson@linaro.org, shawnguo@kernel.org, s.hauer@pengutronix.de
-Cc:     kernel@pengutronix.de, festevam@gmail.com, linux-imx@nxp.com,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Peng Fan <peng.fan@nxp.com>,
-        Dong Aisheng <Aisheng.dong@nxp.com>
-Subject: [PATCH] pmdomain: imx: scu-pd: correct DMA2 channel
-Date:   Sun,  1 Oct 2023 20:38:53 +0800
-Message-Id: <20231001123853.200773-1-peng.fan@oss.nxp.com>
-X-Mailer: git-send-email 2.37.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SI1PR02CA0004.apcprd02.prod.outlook.com
- (2603:1096:4:1f7::12) To DU0PR04MB9417.eurprd04.prod.outlook.com
- (2603:10a6:10:358::11)
+        with ESMTP id S229716AbjJANSE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 1 Oct 2023 09:18:04 -0400
+Received: from sonic309-24.consmr.mail.ir2.yahoo.com (sonic309-24.consmr.mail.ir2.yahoo.com [77.238.179.82])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 173B2B7
+        for <linux-pm@vger.kernel.org>; Sun,  1 Oct 2023 06:17:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rocketmail.com; s=s2048; t=1696166278; bh=hXqZ/BJqAdqfWupb9eY6ATDe04QF4KS61GYr5ErKHuA=; h=From:To:Cc:Subject:Date:In-Reply-To:References:From:Subject:Reply-To; b=gVYl8sIGWg29EQd6N9ChVBNgVe9Hv9OQFajYbZW3vPKAFfFO/GwLxwIP1a8RGEx59hw5X9/NvPXqPV90la7sokZywMCAQrRYZs+moO1k53en8njPBzMy/DQdVOPeXdyxQWM1xtLzn7bpfWyTyYpQRYcUsRfhlDvAP+VRoMxAyB7VuKywT2W11KkbsbGFBsRBTouhaUdA/x3eFq/DY77tUkT8JDzdWkeDieGcQXI4Nc40I5lkc/EwQP7jjKLrs68fDWWjNJUy/M+GEmApsMc3g9hKzyOPDR7iy8JkpQdAFktwUbV8VRyD0WSERb9M2iCB81QKAswnWYtRWDNZ7vo1dQ==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1696166278; bh=Gr0OSsZYAqeAsb7I6Npw6eYkTMvr9nJtPD8hJMkSL7D=; h=X-Sonic-MF:From:To:Subject:Date:From:Subject; b=Ebkd1Ch5FMSjc0Ka2Pl04/o+XW4v13V9IMxVcWs7jE98pPa/HCPXST3/hKhNtcguzdl158IybRoHSMh4Ere0lnSoCSQme5rTUoN8hEQ1kmLJnnyOSCZzuAz12iWn0tsdObiIW5vzEVgmSFfDON9smDHkfESs71NzMuBvjt34YU8GUKQPtVnYBWq4j21lO31rawL5FMCrqN6ZEMc8VqIzX2TNubmhJOVCa+FUZTOoHGktlYtAi79jX1CYsvUvVD1exJjS3k3fRHJJF/hSM5Q90vxaONUhmQTCEuBUMt1tKqG6n3k8QRIA+N/W1WIaBFtVmoM2yxChgvNAxEM0U8sGRQ==
+X-YMail-OSG: r.w_7WEVM1ltXMe915MzJ6cXfoz_a33fzUSyGP.pE8M8UbJJG_306Gu8s7ZkmFR
+ lt8_HT6VUlXaromHhqw5o1XCSxDOYa89.d1C6EeczPD.A2ZthsPvGqLZf2nV_BtZ9mCw.MAMUSWz
+ GoKkqRcdnTx63CMKguMfdUBFcul4KkNFwEjyWNbr._TP_Ezyc_6Ho0QZiunZWphkYYydY_vEUqSF
+ EO40zKnJu2UmxkR.92EmVDVejLZVItKYg10fiH_8noPuuD06TA2dOFqoltOaspQAIKWbzzFGLi_Y
+ bXw4Gdz_4aWRzaP5IIGKegn_yPpWDAwiLliI1FJb012vMBFJEVviDuNKKuvhn.q0EUA.aaPQ9ka1
+ Azf_VSjpBQZOYrI2pLGjJWu2QfIX0d6BsN4hV2CBkXZwkXKIn4C3IvU9gaOy6BFo1BzKBUbtWj_8
+ NdBdPoj7I_FT1NNEmXFzXAQO.Y32buAxPu51KA5iIq0UKpzDybfA1lJHj55_ibJUIcXQ.SkVPITP
+ Tfc6cDq.iQaeEMjsZZ7BKTUqL8EmtPWI_ZbSSvLKiQlGNE56uaJSjiEHW2mUOiipqrLduxAH9WDY
+ 3v6SxPBImOCmV5aqVtqN9w3wDqLw.xpI45lMV5ErbyD2I.lxgZhHGI6lRLTPpw_x1m.gSwz_t.tG
+ p0VSstF4Y2Xo4Qom6tm7KCs0FBgcLf_E4B28vfXOLqlOIkqSg81Xr0IBcunnHkQSETXrkQ5dKuBw
+ UpMPCrnVwziEUZl82S0_U3wJcAQ49_LKE88XqrikCm9Tp0KssFmVBOc9Srf6SjZ.E0B0F7I6073q
+ kRQ9FvHe_scYl9xA81NVjQHXGFzcV7.rfD__raAeKAymbS3bNrLKFGw.BuuTcUAqMvI1keHqPgNL
+ 2SQatJrCco389ZuGYKQD4Kr2JCafLSIAjsXWwl94H9vGlfUA6MqhRFHe8VUXt_HfAm_y.pe6e2Yo
+ fFbdHk1Pu4zaNNNpQf38HTR84UmSTJmDTn.sZMjfyN03Q5Mta0AqjW5H5WChqqJLaQDs9.KvCW3A
+ QtWIJMtL1crO_lJxnW4WJtXlJJ36kHIzEIK1fPrneK.B3UQFMmecs_0ARMzxzMX9.Fngw998fqr5
+ t6S49wAxt0R9EKummPlKIRz5JJKNmra7Xm1VFB9RJPco5O.2nK.R53aZ4okbcD3lD1rxf7bDWtBi
+ Unx_2wdD9I7Mp5.9_nCKUwuHXEbi9rddf1HsSavmhO5A6WWWnkSOsfIi.WeE9Rr3Rvpcmiibf5VD
+ 9MtkB_6s8PPD0yMaV0UWZkUa69Ya0o22Ozdu2HqbKEgibXcrw4uCMl7d2et9DcMkom8nM1dVof0V
+ iAP8xlnM4.t1Fom1W6LvKW_LcY88Tnnw9.cfiBxtaLxGlweC4cS935yn9_gxdLSyA2bzu5d4DjMW
+ s1lltgS7BUXrwXVMpB4yPLZjYyEQQFplr5EsDMdoHORxFcb1ydGWcN1mIMxQToOIQ8FlBbqWU_cg
+ WDTqiDZrNCzqbtVytdDuL08NDy0mml2_eyl_qzigtGpSELW.b4YisTMKjDuXPF7byKny4eFr2iRs
+ jY_BceSypK.PnG4TTST_7187q6l_omQBaYJ3M69J.qvBhmggAYChVX8lG5SFyiEO_fB5GFT8K2wU
+ FFqzSghRh81kU7SGcmC.uYR8CDRFMVv7IRzxpl8rQ.0NQtYrRjIW8OTILmMIt590IKigduNBZTrQ
+ XhuAe3KmcGZTVb3GhpjIiZ7YlV2Rei2FYRiezFi7V.4oyJkpW0j8WPKcAmJPcPwravKzbxytoei0
+ OUBLphKKirpEBIO0OEISt4fEfLuT3kb2yxdkG1nJ19wte5_mFq6nIPK8JGpgBZOOQ4AMpeJmhji5
+ JOHfm1_RdnqiDx0wiOvF69fTE0SDJWzVh5izU4WI1EzNza3mCoxasQb8b1AcHBcHljrASFi.Vcf2
+ Nmm16oOryzMZVz45CsR27wNxdla1DWEPInk8nxy3gRQ2YbsDcSDPz7xQQf97YB0YdIvHE3CG30uD
+ JCh3Im9Itg8xIN2IZ31M7P7xsrg3HziLVjpyvVU.l4G_G2yb.DSddH6Le1v0_WmYFwgKmZIoDokp
+ PqprLGfcjSVijmkPQLryNrwZywtqccXQopIQGsAVJgKmsyxqCuw97Zkw21RIfcHFtowubbcS0OZe
+ Nl5q59qVpd5ZW6OwsSJGo0QiKrjpnlt36neDqlLIjOzQCBB8.nwd4CiVCVdqNevEk4iQqbon.Fmk
+ 6C.60K_rxLMfbFOChXp9bSDPM.fvc_4rrudTS10oaSxt3ZlwOMtFBmUqsJpPoLsrSfrr3PhXSiW0
+ hqMyNGOTbinujqvL.AE8.jfxBO.J4LV0-
+X-Sonic-MF: <jahau@rocketmail.com>
+X-Sonic-ID: 44667c56-2af3-4666-9e9b-ed3bfc1b95ed
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic309.consmr.mail.ir2.yahoo.com with HTTP; Sun, 1 Oct 2023 13:17:58 +0000
+Received: by hermes--production-ir2-55db9d9d5-gk4f2 (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID f1c2828dd5bee1de58f8566f5b57afb9;
+          Sun, 01 Oct 2023 13:17:57 +0000 (UTC)
+From:   Jakob Hauser <jahau@rocketmail.com>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     Lee Jones <lee@kernel.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        Yang Yingliang <yangyingliang@huawei.com>,
+        Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Raymond Hackley <raymondhackley@protonmail.com>,
+        Henrik Grimler <henrik@grimler.se>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        Jakob Hauser <jahau@rocketmail.com>
+Subject: [PATCH v2 1/3] power: supply: rt5033_charger: Add cable detection and USB OTG supply
+Date:   Sun,  1 Oct 2023 15:17:42 +0200
+Message-Id: <cc4e37e510abbb0cdfa7faa8408da48c2cb448a4.1696165240.git.jahau@rocketmail.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <cover.1696165240.git.jahau@rocketmail.com>
+References: <cover.1696165240.git.jahau@rocketmail.com>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DU0PR04MB9417:EE_|DU2PR04MB8758:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9f5c9cff-54a9-4fc0-0ab9-08dbc27abcf0
-X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: n4d3l7etQxW8oLDJjZEtl3Vnz7iSp1Uwklr4LBzDWuZN1ZBwVM8iam1k1ve0amVQqX2mTnfP23SkwrFpPfPmKmjgYyiCWkxpidcOj/QUuEJckHHXBkPCcvtImYu2d9YbjDfbthk+p6dk6FFd7q+AM95aIzObUpb5cVlUC5JCYtlLEF64iDtuHiJwGZslOtjj9hpLqbBTKy3BONP1vFkAXWbJjLdfqoGRVIQoawm4gh8P/gaUTNnoGKkPt9GMVCLWSHZVjkq7xjBb0F0svaQmZflapcKrlRpd/14FFbgnFFixs2uhFD7SdSWRkQT57i6PKP4tjIQsHDm463kJDEmp1KdJ+TiSy0lw2EvtCMre5htHl6XizPygBLkp28aRkjtC5WpdQ8+3gBe/XUzlA07iH1r83iJnBv3Ek8wxwwzEuCYZBr6mlDO1J/lAAEZadZLjVGT1+pjRkVt1rHSztIU12Dk/27thWbi40ML5qMpA8V7hoER2+x+jLWuo86SHhvt8RRjUK8XEIZBunL54+Sqazqs4KpDZ83m3qJ2JlNPCqI/xSwWWcIuK6sBhEmcNNlqvVlWV5Z8yMOOe0sIstR5Wh/jQmHOiSS1pob4VqGCpOdz6YabwLUTq0GGXKrIOyA+j
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR04MB9417.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(396003)(39850400004)(136003)(366004)(346002)(376002)(230922051799003)(186009)(451199024)(64100799003)(1800799009)(66556008)(54906003)(66946007)(66476007)(316002)(478600001)(83380400001)(41300700001)(8936002)(8676002)(4326008)(26005)(38100700002)(38350700002)(2616005)(86362001)(5660300002)(6486002)(1076003)(6506007)(52116002)(6512007)(6666004)(2906002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?9Q71vHPMXyRvyAWwrUgcB5Hi2vpLJiiOw+uOxOMoFwFFAu65qM9ibE1WKRGU?=
- =?us-ascii?Q?f2FDW0IKRvk0e/gKwsoctgoy7Ka+q5DL6mynP9RwrCzeDzULJPcJBfMlJSmh?=
- =?us-ascii?Q?YrUo9Y72fZCe2L7j1ynyTMsX7JSxZ/B4cze41W9kpvWgaOK0LPjt9NmjezRD?=
- =?us-ascii?Q?uzjO9EHYSF97yVrz5Bl7QjahbeaXBNedZ3n8BJIyaDPUoSB7AXDg0zHu+/6D?=
- =?us-ascii?Q?ZgSlA/rQrGCadqn18HcVX0ChXRTFmGOo6FteHFW8sUVMD+x8den18L6GWxc9?=
- =?us-ascii?Q?duGwVXMQuNbj32JHLkLMbKhw6lPIfvWjaKGhb3qWjO8NPuhWu1M8citY12i+?=
- =?us-ascii?Q?TiO/FpRjqOthNNKL7gjZPsZMH+Q/mqZY2ll534LC5j7ukXkjAz3FGI8V2xCs?=
- =?us-ascii?Q?LmwK2Sta7XCPqHq+PvmGklMzb8/qOm0K8UzFSAlI12lrAnYxrWRlmkYDmZs2?=
- =?us-ascii?Q?TD1/K74SvRsje8RTHm0gjI3z+hl0Tsau8q1Oanp9kg3/vQBymNQacar6kOTQ?=
- =?us-ascii?Q?pmXDNpyaEAV73meikDwDJkueoEmhrdKNpGIystSRot4vGDUjTFKLtwoAFgch?=
- =?us-ascii?Q?VkPcmJOdPbYYJIGvvGGQcS9tqUFevGGVFUu8xqxq5eAy/gAYppWJKTMmhiE2?=
- =?us-ascii?Q?cwT3mjskqNW6QNXx5wqo4FJphOJRMYF+ju4Ci40IrftV9l8EPJUjb4E2sRnC?=
- =?us-ascii?Q?l4a+qH3hhLv4oY+wo8MobD0xMU5qAMLB+PjjYlZhxhbKssA54MwnVBWtAlPC?=
- =?us-ascii?Q?ui55zEunELqCC5kgOAmQwvXaBR8MC+xxGhzVDuiHG9GR+uCbaDgvSvDWkvDS?=
- =?us-ascii?Q?TkUiA7haAqtesouZ7XWxl/ieLSNDC17AZ4xnsvQoxbN0LdPyV0pQZ2TIHp6U?=
- =?us-ascii?Q?oRGpQ+ED0yb0VJdi0PHp8ENf96J78BtftisVPNkinS/L8bRbpfJcXCn76F1M?=
- =?us-ascii?Q?iSXAoz1W4YBPI7HxQc12ehelY4vR4rV+1IWX/gl8wxo8K7MWBwtT180IQ2QP?=
- =?us-ascii?Q?IVLmqmG7cFV/zx2jQtDOUN6ecDsOjd0MdjT8qjY4KHhKPwt42FQYOe20P/1w?=
- =?us-ascii?Q?3qqBzhkJrfxZUS/azg8LjpPJ5lDlc2WU+jqYfaghVqzIZWmD6AVlELTl5KEv?=
- =?us-ascii?Q?6nb9E20R+9HluU7sGskMlY51BaHY3pLRHMejQqbcjVfrEv/0fQJ2bZyitUaZ?=
- =?us-ascii?Q?R8JawUWDYEYhMosyf4OVWaA05EYWsMjx8Lv8RrzxCBQcnIA+rAWkLjSoRk6u?=
- =?us-ascii?Q?/R24JZb9Kh371BZqN8dZteq/oPmyvIGrL0RaQJM26nTxnpcZNvXyviKSnYnZ?=
- =?us-ascii?Q?FnJdLUqQVhqdUg3Px1SJQWU2EGyrakXpru/BMoQLLEyMP3EUtIxmICor56ar?=
- =?us-ascii?Q?xMJHbiVulT4rhvnTyJnvPv7jFdBo/WVj/bbLqc8wImqO3NuiaxvAYfai1qw4?=
- =?us-ascii?Q?PAe4m/3LIIkQmPBRVnakS4umvbG/V5asKgbumWk4JdGBfO1ktt4ugsWu1uT6?=
- =?us-ascii?Q?tnQ7SBIQG4BKIXdV7TavuUcsOimmHIzzffK3tD5RFHdkk6n9kP6a9vq+NJOz?=
- =?us-ascii?Q?oCmg6v9uaEe3ZK8qTtpNCmAciZj2hkql6HPQqS2L?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9f5c9cff-54a9-4fc0-0ab9-08dbc27abcf0
-X-MS-Exchange-CrossTenant-AuthSource: DU0PR04MB9417.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Oct 2023 12:34:21.7770
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Dv9yc9PhfKzOPObJ0RIbufa5/hg7qFH5A2e9aTS98KHcCe7VpugxVwpO0655Uzt1aJfR8CgGCsUTfw6yCLjSwA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU2PR04MB8758
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Peng Fan <peng.fan@nxp.com>
+Implement cable detection by extcon and handle the driver according to the
+connector type.
 
-Per "dt-bindings/firmware/imx/rsrc.h", `IMX_SC_R_DMA_2_CH0 + 5` not
-equals to IMX_SC_R_DMA_2_CH5, so there should be two entries in
-imx8qxp_scu_pd_ranges, otherwise the imx_scu_add_pm_domain may filter
-out wrong power domains.
+There are basically three types of action: "set_charging", "set_otg" and
+"set_disconnect".
 
-Fixes: 927b7d15dcf2 ("genpd: imx: scu-pd: enlarge PD range")
-Reported-by: Dong Aisheng <Aisheng.dong@nxp.com>
-Signed-off-by: Peng Fan <peng.fan@nxp.com>
+A forth helper function to "unset_otg" was added because this is used in both
+"set_charging" and "set_disconnect". In the first case it covers the rather
+rare event that someone changes from OTG to charging without disconnect. In
+the second case, when disconnecting, the values are set back to the ones from
+initialization to return into a defined state.
+
+Additionally, there is "set_mivr". When connecting to e.g. a laptop/PC, the
+minimum input voltage regulation (MIVR) shall prevent a voltage drop if the
+cable or the supply is weak. The MIVR value is set to 4600MV, same as in the
+Android driver [1]. When disconnecting, MIVR is set back to DISABLED.
+
+In the function rt5033_get_charger_state(): When in OTG mode, the chip
+reports status "charging". Change this to "discharging" because there is
+no charging going on in OTG mode [2].
+
+Yang Yingliang detected missing mutex_unlock() in some error path and
+suggested a fix [3]. The suggestion was squashed into this patch.
+
+[1] https://github.com/msm8916-mainline/linux-downstream/blob/GT-I9195I/drivers/battery/rt5033_charger.c#L499
+[2] https://github.com/msm8916-mainline/linux-downstream/blob/GT-I9195I/drivers/battery/rt5033_charger.c#L686-L687
+[3] https://lore.kernel.org/linux-pm/20230822030207.644738-1-yangyingliang@huawei.com
+
+Tested-by: Raymond Hackley <raymondhackley@protonmail.com>
+Co-developed-by: Yang Yingliang <yangyingliang@huawei.com>
+Signed-off-by: Jakob Hauser <jahau@rocketmail.com>
 ---
- drivers/pmdomain/imx/scu-pd.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/power/supply/rt5033_charger.c | 287 +++++++++++++++++++++++++-
+ 1 file changed, 285 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pmdomain/imx/scu-pd.c b/drivers/pmdomain/imx/scu-pd.c
-index 2f693b67ddb4..891c1d925a9d 100644
---- a/drivers/pmdomain/imx/scu-pd.c
-+++ b/drivers/pmdomain/imx/scu-pd.c
-@@ -150,7 +150,8 @@ static const struct imx_sc_pd_range imx8qxp_scu_pd_ranges[] = {
- 	{ "mclk-out-1", IMX_SC_R_MCLK_OUT_1, 1, false, 0 },
- 	{ "dma0-ch", IMX_SC_R_DMA_0_CH0, 32, true, 0 },
- 	{ "dma1-ch", IMX_SC_R_DMA_1_CH0, 16, true, 0 },
--	{ "dma2-ch", IMX_SC_R_DMA_2_CH0, 32, true, 0 },
-+	{ "dma2-ch-0", IMX_SC_R_DMA_2_CH0, 5, true, 0 },
-+	{ "dma2-ch-1", IMX_SC_R_DMA_2_CH5, 27, true, 0 },
- 	{ "dma3-ch", IMX_SC_R_DMA_3_CH0, 32, true, 0 },
- 	{ "asrc0", IMX_SC_R_ASRC_0, 1, false, 0 },
- 	{ "asrc1", IMX_SC_R_ASRC_1, 1, false, 0 },
+diff --git a/drivers/power/supply/rt5033_charger.c b/drivers/power/supply/rt5033_charger.c
+index c0c516f22c66..091ca4a21f29 100644
+--- a/drivers/power/supply/rt5033_charger.c
++++ b/drivers/power/supply/rt5033_charger.c
+@@ -6,8 +6,12 @@
+  * Author: Beomho Seo <beomho.seo@samsung.com>
+  */
+ 
++#include <linux/devm-helpers.h>
++#include <linux/extcon.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/regmap.h>
+@@ -26,6 +30,14 @@ struct rt5033_charger {
+ 	struct regmap			*regmap;
+ 	struct power_supply		*psy;
+ 	struct rt5033_charger_data	*chg;
++	struct extcon_dev		*edev;
++	struct notifier_block		extcon_nb;
++	struct work_struct		extcon_work;
++	struct mutex			lock;
++	bool online;
++	bool otg;
++	bool mivr_enabled;
++	u8 cv_regval;
+ };
+ 
+ static int rt5033_get_charger_state(struct rt5033_charger *charger)
+@@ -56,6 +68,10 @@ static int rt5033_get_charger_state(struct rt5033_charger *charger)
+ 		state = POWER_SUPPLY_STATUS_UNKNOWN;
+ 	}
+ 
++	/* For OTG mode, RT5033 would still report "charging" */
++	if (charger->otg)
++		state = POWER_SUPPLY_STATUS_DISCHARGING;
++
+ 	return state;
+ }
+ 
+@@ -147,6 +163,9 @@ static inline int rt5033_init_const_charge(struct rt5033_charger *charger)
+ 		return -EINVAL;
+ 	}
+ 
++	/* Store that value for later usage */
++	charger->cv_regval = reg_data;
++
+ 	/* Set end of charge current */
+ 	if (chg->eoc_uamp < RT5033_CHARGER_EOC_MIN ||
+ 	    chg->eoc_uamp > RT5033_CHARGER_EOC_MAX) {
+@@ -330,6 +349,162 @@ static int rt5033_charger_reg_init(struct rt5033_charger *charger)
+ 	return 0;
+ }
+ 
++static int rt5033_charger_set_otg(struct rt5033_charger *charger)
++{
++	int ret;
++
++	mutex_lock(&charger->lock);
++
++	/* Set OTG boost v_out to 5 volts */
++	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL2,
++			RT5033_CHGCTRL2_CV_MASK,
++			0x37 << RT5033_CHGCTRL2_CV_SHIFT);
++	if (ret) {
++		dev_err(charger->dev, "Failed set OTG boost v_out\n");
++		ret = -EINVAL;
++		goto out_unlock;
++	}
++
++	/* Set operation mode to OTG */
++	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL1,
++			RT5033_CHGCTRL1_MODE_MASK, RT5033_BOOST_MODE);
++	if (ret) {
++		dev_err(charger->dev, "Failed to update OTG mode.\n");
++		ret = -EINVAL;
++		goto out_unlock;
++	}
++
++	/* In case someone switched from charging to OTG directly */
++	if (charger->online)
++		charger->online = false;
++
++	charger->otg = true;
++
++out_unlock:
++	mutex_unlock(&charger->lock);
++
++	return ret;
++}
++
++static int rt5033_charger_unset_otg(struct rt5033_charger *charger)
++{
++	int ret;
++	u8 data;
++
++	/* Restore constant voltage for charging */
++	data = charger->cv_regval;
++	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL2,
++			RT5033_CHGCTRL2_CV_MASK,
++			data << RT5033_CHGCTRL2_CV_SHIFT);
++	if (ret) {
++		dev_err(charger->dev, "Failed to restore constant voltage\n");
++		return -EINVAL;
++	}
++
++	/* Set operation mode to charging */
++	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL1,
++			RT5033_CHGCTRL1_MODE_MASK, RT5033_CHARGER_MODE);
++	if (ret) {
++		dev_err(charger->dev, "Failed to update charger mode.\n");
++		return -EINVAL;
++	}
++
++	charger->otg = false;
++
++	return 0;
++}
++
++static int rt5033_charger_set_charging(struct rt5033_charger *charger)
++{
++	int ret;
++
++	mutex_lock(&charger->lock);
++
++	/* In case someone switched from OTG to charging directly */
++	if (charger->otg) {
++		ret = rt5033_charger_unset_otg(charger);
++		if (ret) {
++			mutex_unlock(&charger->lock);
++			return -EINVAL;
++		}
++	}
++
++	charger->online = true;
++
++	mutex_unlock(&charger->lock);
++
++	return 0;
++}
++
++static int rt5033_charger_set_mivr(struct rt5033_charger *charger)
++{
++	int ret;
++
++	mutex_lock(&charger->lock);
++
++	/*
++	 * When connected via USB connector type SDP (Standard Downstream Port),
++	 * the minimum input voltage regulation (MIVR) should be enabled. It
++	 * prevents an input voltage drop due to insufficient current provided
++	 * by the adapter or USB input. As a downside, it may reduces the
++	 * charging current and thus slows the charging.
++	 */
++	ret = regmap_update_bits(charger->regmap, RT5033_REG_CHG_CTRL4,
++			RT5033_CHGCTRL4_MIVR_MASK, RT5033_CHARGER_MIVR_4600MV);
++	if (ret) {
++		dev_err(charger->dev, "Failed to set MIVR level.\n");
++		mutex_unlock(&charger->lock);
++		return -EINVAL;
++	}
++
++	charger->mivr_enabled = true;
++
++	mutex_unlock(&charger->lock);
++
++	/* Beyond this, do the same steps like setting charging */
++	rt5033_charger_set_charging(charger);
++
++	return 0;
++}
++
++static int rt5033_charger_set_disconnect(struct rt5033_charger *charger)
++{
++	int ret = 0;
++
++	mutex_lock(&charger->lock);
++
++	/* Disable MIVR if enabled */
++	if (charger->mivr_enabled) {
++		ret = regmap_update_bits(charger->regmap,
++				RT5033_REG_CHG_CTRL4,
++				RT5033_CHGCTRL4_MIVR_MASK,
++				RT5033_CHARGER_MIVR_DISABLE);
++		if (ret) {
++			dev_err(charger->dev, "Failed to disable MIVR.\n");
++			ret = -EINVAL;
++			goto out_unlock;
++		}
++
++		charger->mivr_enabled = false;
++	}
++
++	if (charger->otg) {
++		ret = rt5033_charger_unset_otg(charger);
++		if (ret) {
++			ret = -EINVAL;
++			goto out_unlock;
++		}
++	}
++
++	if (charger->online)
++		charger->online = false;
++
++out_unlock:
++	mutex_unlock(&charger->lock);
++
++	return ret;
++}
++
+ static enum power_supply_property rt5033_charger_props[] = {
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_CHARGE_TYPE,
+@@ -366,8 +541,7 @@ static int rt5033_charger_get_property(struct power_supply *psy,
+ 		val->strval = RT5033_MANUFACTURER;
+ 		break;
+ 	case POWER_SUPPLY_PROP_ONLINE:
+-		val->intval = (rt5033_get_charger_state(charger) ==
+-				POWER_SUPPLY_STATUS_CHARGING);
++		val->intval = charger->online;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -402,6 +576,86 @@ static struct rt5033_charger_data *rt5033_charger_dt_init(
+ 	return chg;
+ }
+ 
++static void rt5033_charger_extcon_work(struct work_struct *work)
++{
++	struct rt5033_charger *charger =
++		container_of(work, struct rt5033_charger, extcon_work);
++	struct extcon_dev *edev = charger->edev;
++	int connector, state;
++	int ret;
++
++	for (connector = EXTCON_USB_HOST; connector <= EXTCON_CHG_USB_PD;
++	     connector++) {
++		state = extcon_get_state(edev, connector);
++		if (state == 1)
++			break;
++	}
++
++	/*
++	 * Adding a delay between extcon notification and extcon action. This
++	 * makes extcon action execution more reliable. Without the delay the
++	 * execution sometimes fails, possibly because the chip is busy or not
++	 * ready.
++	 */
++	msleep(100);
++
++	switch (connector) {
++	case EXTCON_CHG_USB_SDP:
++		ret = rt5033_charger_set_mivr(charger);
++		if (ret) {
++			dev_err(charger->dev, "failed to set USB mode\n");
++			break;
++		}
++		dev_info(charger->dev, "USB mode. connector type: %d\n",
++			 connector);
++		break;
++	case EXTCON_CHG_USB_DCP:
++	case EXTCON_CHG_USB_CDP:
++	case EXTCON_CHG_USB_ACA:
++	case EXTCON_CHG_USB_FAST:
++	case EXTCON_CHG_USB_SLOW:
++	case EXTCON_CHG_WPT:
++	case EXTCON_CHG_USB_PD:
++		ret = rt5033_charger_set_charging(charger);
++		if (ret) {
++			dev_err(charger->dev, "failed to set charging\n");
++			break;
++		}
++		dev_info(charger->dev, "charging. connector type: %d\n",
++			 connector);
++		break;
++	case EXTCON_USB_HOST:
++		ret = rt5033_charger_set_otg(charger);
++		if (ret) {
++			dev_err(charger->dev, "failed to set OTG\n");
++			break;
++		}
++		dev_info(charger->dev, "OTG enabled\n");
++		break;
++	default:
++		ret = rt5033_charger_set_disconnect(charger);
++		if (ret) {
++			dev_err(charger->dev, "failed to set disconnect\n");
++			break;
++		}
++		dev_info(charger->dev, "disconnected\n");
++		break;
++	}
++
++	power_supply_changed(charger->psy);
++}
++
++static int rt5033_charger_extcon_notifier(struct notifier_block *nb,
++					  unsigned long event, void *param)
++{
++	struct rt5033_charger *charger =
++		container_of(nb, struct rt5033_charger, extcon_nb);
++
++	schedule_work(&charger->extcon_work);
++
++	return NOTIFY_OK;
++}
++
+ static const struct power_supply_desc rt5033_charger_desc = {
+ 	.name = "rt5033-charger",
+ 	.type = POWER_SUPPLY_TYPE_USB,
+@@ -414,6 +668,7 @@ static int rt5033_charger_probe(struct platform_device *pdev)
+ {
+ 	struct rt5033_charger *charger;
+ 	struct power_supply_config psy_cfg = {};
++	struct device_node *np_conn, *np_edev;
+ 	int ret;
+ 
+ 	charger = devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
+@@ -423,6 +678,7 @@ static int rt5033_charger_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, charger);
+ 	charger->dev = &pdev->dev;
+ 	charger->regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	mutex_init(&charger->lock);
+ 
+ 	psy_cfg.of_node = pdev->dev.of_node;
+ 	psy_cfg.drv_data = charger;
+@@ -442,6 +698,33 @@ static int rt5033_charger_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	/*
++	 * Extcon support is not vital for the charger to work. If no extcon
++	 * is available, just emit a warning and leave the probe function.
++	 */
++	np_conn = of_parse_phandle(pdev->dev.of_node, "richtek,usb-connector", 0);
++	np_edev = of_get_parent(np_conn);
++	charger->edev = extcon_find_edev_by_node(np_edev);
++	if (IS_ERR(charger->edev)) {
++		dev_warn(&pdev->dev, "no extcon device found in device-tree\n");
++		goto out;
++	}
++
++	ret = devm_work_autocancel(&pdev->dev, &charger->extcon_work,
++				   rt5033_charger_extcon_work);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to initialize extcon work\n");
++		return ret;
++	}
++
++	charger->extcon_nb.notifier_call = rt5033_charger_extcon_notifier;
++	ret = devm_extcon_register_notifier_all(&pdev->dev, charger->edev,
++						&charger->extcon_nb);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register extcon notifier\n");
++		return ret;
++	}
++out:
+ 	return 0;
+ }
+ 
 -- 
-2.37.1
+2.39.2
 
