@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E0AE74902
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Oct 2023 18:04:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13FD4E74901
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Oct 2023 18:04:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238705AbjJBSEI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Oct 2023 14:04:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59226 "EHLO
+        id S238723AbjJBSEK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Oct 2023 14:04:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59280 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238697AbjJBSEH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Oct 2023 14:04:07 -0400
+        with ESMTP id S238706AbjJBSEJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Oct 2023 14:04:09 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2BA13B4;
-        Mon,  2 Oct 2023 11:04:03 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D637C4;
+        Mon,  2 Oct 2023 11:04:06 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 323f4ac4e097ed97; Mon, 2 Oct 2023 20:04:02 +0200
+ id 0e4c9e098fc70d13; Mon, 2 Oct 2023 20:04:04 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id ACC1D6658DF;
-        Mon,  2 Oct 2023 20:04:01 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 5035D6658DF;
+        Mon,  2 Oct 2023 20:04:04 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -31,9 +31,9 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH v1 4/4] thermal: int340x: Use thermal_zone_for_each_trip()
-Date:   Mon, 02 Oct 2023 20:03:42 +0200
-Message-ID: <3260859.aeNJFYEL58@kreacher>
+Subject: [PATCH v1 1/4] thermal: core: Add function to walk trips under zone lock
+Date:   Mon, 02 Oct 2023 19:59:35 +0200
+Message-ID: <2306658.ElGaqSPkdT@kreacher>
 In-Reply-To: <4871671.31r3eYUQgx@kreacher>
 References: <4871671.31r3eYUQgx@kreacher>
 MIME-Version: 1.0
@@ -42,7 +42,7 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrvdelgdduvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghp
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrvdelgdduvdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghp
  thhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhm
 X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
@@ -51,125 +51,59 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Modify int340x_thermal_update_trips() to use thermal_zone_for_each_trip()
-for walking trips instead of using the trips[] table passed to the
-thermal zone registration function.
+Add a wrapper around for_each_thermal_trip(), called
+thermal_zone_for_each_trip(), that will invoke the former under the
+thermal zone lock and pass its return value to the caller.
 
-For this purpose, store active trip point indices in the priv fieids of
-the corresponding thermal_trip structures.
+Two drivers will be modified subsequently to use this new function.
 
-No intentional functional impact.
+No functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c |   76 +++++------
- 1 file changed, 41 insertions(+), 35 deletions(-)
+ drivers/thermal/thermal_trip.c |   14 ++++++++++++++
+ include/linux/thermal.h        |    3 +++
+ 2 files changed, 17 insertions(+)
 
-Index: linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+Index: linux-pm/drivers/thermal/thermal_trip.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-+++ linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-@@ -67,6 +67,16 @@ static struct thermal_zone_device_ops in
- 	.critical	= int340x_thermal_critical,
- };
- 
-+static inline void *int_to_trip_priv(int i)
-+{
-+	return (void *)(long)i;
-+}
-+
-+static inline int trip_priv_to_int(const struct thermal_trip *trip)
-+{
-+	return (long)trip->priv;
-+}
-+
- static int int340x_thermal_read_trips(struct acpi_device *zone_adev,
- 				      struct thermal_trip *zone_trips,
- 				      int trip_cnt)
-@@ -101,6 +111,7 @@ static int int340x_thermal_read_trips(st
- 			break;
- 
- 		zone_trips[trip_cnt].type = THERMAL_TRIP_ACTIVE;
-+		zone_trips[trip_cnt].priv = int_to_trip_priv(i);
- 		trip_cnt++;
- 	}
- 
-@@ -212,45 +223,40 @@ void int340x_thermal_zone_remove(struct
+--- linux-pm.orig/drivers/thermal/thermal_trip.c
++++ linux-pm/drivers/thermal/thermal_trip.c
+@@ -27,6 +27,20 @@ int for_each_thermal_trip(struct thermal
  }
- EXPORT_SYMBOL_GPL(int340x_thermal_zone_remove);
+ EXPORT_SYMBOL_GPL(for_each_thermal_trip);
  
--void int340x_thermal_update_trips(struct int34x_thermal_zone *int34x_zone)
-+static int int340x_update_one_trip(struct thermal_trip *trip, void *arg)
++int thermal_zone_for_each_trip(struct thermal_zone_device *tz,
++			       int (*cb)(struct thermal_trip *, void *),
++			       void *data)
++{
++	int ret;
++
++	mutex_lock(&tz->lock);
++	ret = for_each_thermal_trip(tz, cb, data);
++	mutex_unlock(&tz->lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(thermal_zone_for_each_trip);
++
+ int thermal_zone_get_num_trips(struct thermal_zone_device *tz)
  {
--	struct acpi_device *zone_adev = int34x_zone->adev;
--	struct thermal_trip *zone_trips = int34x_zone->trips;
--	int trip_cnt = int34x_zone->zone->num_trips;
--	int act_trip_nr = 0;
--	int i;
--
--	mutex_lock(&int34x_zone->zone->lock);
--
--	for (i = int34x_zone->aux_trip_nr; i < trip_cnt; i++) {
--		int temp, err;
--
--		switch (zone_trips[i].type) {
--		case THERMAL_TRIP_CRITICAL:
--			err = thermal_acpi_critical_trip_temp(zone_adev, &temp);
--			break;
--		case THERMAL_TRIP_HOT:
--			err = thermal_acpi_hot_trip_temp(zone_adev, &temp);
--			break;
--		case THERMAL_TRIP_PASSIVE:
--			err = thermal_acpi_passive_trip_temp(zone_adev, &temp);
--			break;
--		case THERMAL_TRIP_ACTIVE:
--			err = thermal_acpi_active_trip_temp(zone_adev, act_trip_nr++,
--							    &temp);
--			break;
--		default:
--			err = -ENODEV;
--		}
--		if (err) {
--			zone_trips[i].temperature = THERMAL_TEMP_INVALID;
--			continue;
--		}
-+	struct acpi_device *zone_adev = arg;
-+	int temp, err;
+ 	return tz->num_trips;
+Index: linux-pm/include/linux/thermal.h
+===================================================================
+--- linux-pm.orig/include/linux/thermal.h
++++ linux-pm/include/linux/thermal.h
+@@ -287,6 +287,9 @@ int thermal_zone_set_trip(struct thermal
+ int for_each_thermal_trip(struct thermal_zone_device *tz,
+ 			  int (*cb)(struct thermal_trip *, void *),
+ 			  void *data);
++int thermal_zone_for_each_trip(struct thermal_zone_device *tz,
++			       int (*cb)(struct thermal_trip *, void *),
++			       void *data);
+ int thermal_zone_get_num_trips(struct thermal_zone_device *tz);
  
--		zone_trips[i].temperature = temp;
-+	switch (trip->type) {
-+	case THERMAL_TRIP_CRITICAL:
-+		err = thermal_acpi_critical_trip_temp(zone_adev, &temp);
-+		break;
-+	case THERMAL_TRIP_HOT:
-+		err = thermal_acpi_hot_trip_temp(zone_adev, &temp);
-+		break;
-+	case THERMAL_TRIP_PASSIVE:
-+		err = thermal_acpi_passive_trip_temp(zone_adev, &temp);
-+		break;
-+	case THERMAL_TRIP_ACTIVE:
-+		err = thermal_acpi_active_trip_temp(zone_adev,
-+						    trip_priv_to_int(trip),
-+						    &temp);
-+		break;
-+	default:
-+		err = -ENODEV;
- 	}
-+	if (err)
-+		temp = THERMAL_TEMP_INVALID;
- 
--	mutex_unlock(&int34x_zone->zone->lock);
-+	trip->temperature = temp;
-+	return 0;
-+}
-+
-+void int340x_thermal_update_trips(struct int34x_thermal_zone *int34x_zone)
-+{
-+	thermal_zone_for_each_trip(int34x_zone->zone, int340x_update_one_trip,
-+				   int34x_zone->adev);
- }
- EXPORT_SYMBOL_GPL(int340x_thermal_update_trips);
- 
+ int thermal_zone_get_crit_temp(struct thermal_zone_device *tz, int *temp);
 
 
 
