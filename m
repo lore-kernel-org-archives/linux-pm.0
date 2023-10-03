@@ -2,132 +2,116 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13D36E75455
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Oct 2023 13:05:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3E8EE7AD41
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Oct 2023 13:26:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232480AbjJCNFE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Oct 2023 09:05:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34812 "EHLO
+        id S234951AbjJCN0x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Oct 2023 09:26:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57602 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232455AbjJCNFE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Oct 2023 09:05:04 -0400
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.166])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD077A1;
-        Tue,  3 Oct 2023 06:05:00 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1696338115; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=K6+CPrYO0ApXPmGEp8FHGc+LNByfwIPuVTAHxEoBcg3p1DPvvdaFdYoCc6+z5oheCX
-    4XhaCyB/anVeeFCU4fiEAIKQaf0rsXmxTEdowb/1Fe87XMGw8xNEJPq6nYqId02gfuJh
-    w2/pSpLl9eyeim+LQRAIf0EFAqZt9hzFmIhrhrSUKO/GoSTl3Hta3s7e5nNONzNFLEM9
-    Dj9xSkF1/aK8m2UOCGT0fT2dHdQ6F2Q9MJC0okdJ/MadBvdPem4hD8i7pLbJXr5f7s/5
-    D/xPSzLwMAPuSgfZULd0SjLT3xcpsebVy3MpzFU71aKpQQFV2VDCcFS3bogGtIW2HyIB
-    Cosg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1696338115;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=AvW+X7TnuvQSmOQWBDMXpfLpHp0X0rQYKQIMVG8JkH8=;
-    b=kbLGHLsDn9OOxnyTXp0jYcGCyAPdSCJ9d+sZFfH7x1Y/LJQKusCj9ub35aJmZo5cNF
-    W/XULx9gJooj2VjmMFWRabVW8Byp9FsjM3VJl9VDxPPrU9LArjL+NIPCMiJFQ8jvjBxi
-    Txybm1d6reFAAllbpxGD9syLdSvsBvjQaNyuwTZnDkhO1XSXUNa9uKPjpoMG1ZYLOx7i
-    u5YMnVdNs5iTiFxIQcPspTUj+/E650yscVX8PfTc1MxP/tJYzAF1NNhbKTtLNAFWv6T1
-    hdpTC6j8SrS+vZ4n7Jj+eZWlypQsnizLTTF+HoS8b401aMEkS4CFq+aufQE6yYS8x4nI
-    Dfvw==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1696338115;
-    s=strato-dkim-0002; d=gerhold.net;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=AvW+X7TnuvQSmOQWBDMXpfLpHp0X0rQYKQIMVG8JkH8=;
-    b=feZ+cqNwotdO3KEoXEawSFD/lJNElCylDGN5F+Y64jbK5AUmxzqcr/g18yj5oRxrQP
-    kyJ87Qykgwge5XYZMa92W/gkuFI5UkdSyNvmozR9XDBz2xTP8CTz5OzhencnFSU2TM8L
-    rjPtsHF9amIEQa2mT8DIgjGZJDf3aHqgxXZfvZimkiJISsjE/93UtjQ0GuZXdyBTuQyB
-    +v1V7hEOAKgrhbNZ54/MsjDEBiT69igvSeXChDgNTk1s4SVyziy4Cg46SLAN3h8K7FTO
-    Gr0CfYOvywQcR8hBQuGOmLZg9TIgCkbDsnYL7N5rEy1aqfFPL3aFopY+kFK5Q9vGK3uC
-    3zWQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1696338115;
-    s=strato-dkim-0003; d=gerhold.net;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=AvW+X7TnuvQSmOQWBDMXpfLpHp0X0rQYKQIMVG8JkH8=;
-    b=GdV0/i8ao1XAWoe0l249j8oEISXEw5v65hSiDlVEhuGGCJUf32aObuXz+mYZvz2NW/
-    TYxc0BZ2JH0N7bBJuBDw==
-X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u261EJF5OxJD4peA8paF1A=="
-Received: from gerhold.net
-    by smtp.strato.de (RZmta 49.8.2 DYNA|AUTH)
-    with ESMTPSA id R04c57z93D1s2Me
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-        (Client did not present a certificate);
-    Tue, 3 Oct 2023 15:01:54 +0200 (CEST)
-Date:   Tue, 3 Oct 2023 15:01:48 +0200
-From:   Stephan Gerhold <stephan@gerhold.net>
-To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Cc:     Stephen Boyd <sboyd@kernel.org>, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Nishanth Menon <nm@ti.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-        Christian Marangi <ansuelsmth@gmail.com>
-Subject: Re: [PATCH v4 05/23] interconnect: icc-clk: add support for scaling
- using OPP
-Message-ID: <ZRwQvP_GbvwvLAn8@gerhold.net>
-References: <20230827115033.935089-1-dmitry.baryshkov@linaro.org>
- <20230827115033.935089-6-dmitry.baryshkov@linaro.org>
- <493aff10d698c9ca5bdbeae45250f5fe.sboyd@kernel.org>
- <7312633f-3b53-43a1-b6e3-010513c2a1e2@linaro.org>
+        with ESMTP id S234854AbjJCN0v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Oct 2023 09:26:51 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88FDFA3;
+        Tue,  3 Oct 2023 06:26:48 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 33a4cce9f7ccaff8; Tue, 3 Oct 2023 15:26:47 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 6F4326659AF;
+        Tue,  3 Oct 2023 15:26:46 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v2 5/6] thermal: core: Drop thermal_zone_device_exec()
+Date:   Tue, 03 Oct 2023 15:25:33 +0200
+Message-ID: <7586518.EvYhyI6sBW@kreacher>
+In-Reply-To: <4846448.GXAFRqVoOG@kreacher>
+References: <4846448.GXAFRqVoOG@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7312633f-3b53-43a1-b6e3-010513c2a1e2@linaro.org>
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrfeeigdeivdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphht
+ thhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 03, 2023 at 11:30:28AM +0300, Dmitry Baryshkov wrote:
-> On 28/08/2023 21:09, Stephen Boyd wrote:
-> > Quoting Dmitry Baryshkov (2023-08-27 04:50:15)
-> > > diff --git a/drivers/interconnect/icc-clk.c b/drivers/interconnect/icc-clk.c
-> > > index d787f2ea36d9..45ffb068979d 100644
-> > > --- a/drivers/interconnect/icc-clk.c
-> > > +++ b/drivers/interconnect/icc-clk.c
-> > > @@ -25,12 +28,16 @@ struct icc_clk_provider {
-> > >   static int icc_clk_set(struct icc_node *src, struct icc_node *dst)
-> > >   {
-> > >          struct icc_clk_node *qn = src->data;
-> > > +       unsigned long rate = icc_units_to_bps(src->peak_bw);
-> > >          int ret;
-> > >          if (!qn || !qn->clk)
-> > >                  return 0;
-> > > -       if (!src->peak_bw) {
-> > > +       if (qn->opp)
-> > > +               return dev_pm_opp_set_rate(qn->dev, rate);
-> > 
-> > Just curious how does lockdep do with this? Doesn't OPP call into
-> > interconnect code, so lockdep will complain about ABBA?
-> 
-> Unfortunately it does. It seems, the icc-clk is not a proper way to go here.
-> I will take a look at reusing set_required_opps for this case.
-> 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Could you elaborate a bit which locks exactly cause trouble here?
-I'm probably missing something here.
+Because thermal_zone_device_exec() has no users any more and there are
+no plans to use it anywhere, revert commit 9a99a996d1ec ("thermal: core:
+Introduce thermal_zone_device_exec()") that introduced it.
 
-From a quick look at the OPP code I don't see a global lock taken there
-for the entire OPP switch sequence, so I'm not sure how this could cause
-an ABBA deadlock.
+No functional impact.
 
-Thanks,
-Stephan
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+v1 -> v2: No changes
+
+---
+ drivers/thermal/thermal_core.c |   19 -------------------
+ include/linux/thermal.h        |    4 ----
+ 2 files changed, 23 deletions(-)
+
+Index: linux-pm/drivers/thermal/thermal_core.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -493,25 +493,6 @@ void thermal_zone_device_update(struct t
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_device_update);
+ 
+-/**
+- * thermal_zone_device_exec - Run a callback under the zone lock.
+- * @tz: Thermal zone.
+- * @cb: Callback to run.
+- * @data: Data to pass to the callback.
+- */
+-void thermal_zone_device_exec(struct thermal_zone_device *tz,
+-			      void (*cb)(struct thermal_zone_device *,
+-					 unsigned long),
+-			      unsigned long data)
+-{
+-	mutex_lock(&tz->lock);
+-
+-	cb(tz, data);
+-
+-	mutex_unlock(&tz->lock);
+-}
+-EXPORT_SYMBOL_GPL(thermal_zone_device_exec);
+-
+ static void thermal_zone_device_check(struct work_struct *work)
+ {
+ 	struct thermal_zone_device *tz = container_of(work, struct
+Index: linux-pm/include/linux/thermal.h
+===================================================================
+--- linux-pm.orig/include/linux/thermal.h
++++ linux-pm/include/linux/thermal.h
+@@ -340,10 +340,6 @@ int thermal_zone_unbind_cooling_device(s
+ 				       struct thermal_cooling_device *);
+ void thermal_zone_device_update(struct thermal_zone_device *,
+ 				enum thermal_notify_event);
+-void thermal_zone_device_exec(struct thermal_zone_device *tz,
+-			      void (*cb)(struct thermal_zone_device *,
+-					 unsigned long),
+-			      unsigned long data);
+ 
+ struct thermal_cooling_device *thermal_cooling_device_register(const char *,
+ 		void *, const struct thermal_cooling_device_ops *);
+
+
+
