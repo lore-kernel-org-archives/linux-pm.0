@@ -2,81 +2,102 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FCBFE92716
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 16:02:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 210BEE772AF
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 16:05:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234816AbjJEQCt convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 12:02:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42824 "EHLO
+        id S234750AbjJEQF1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 12:05:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48312 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235789AbjJEQB5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 12:01:57 -0400
-Received: from mail-oo1-xc30.google.com (mail-oo1-xc30.google.com [IPv6:2607:f8b0:4864:20::c30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD06323D20;
-        Thu,  5 Oct 2023 04:05:06 -0700 (PDT)
-Received: by mail-oo1-xc30.google.com with SMTP id 006d021491bc7-57de3096e25so174467eaf.1;
-        Thu, 05 Oct 2023 04:05:06 -0700 (PDT)
+        with ESMTP id S237563AbjJEQEG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 12:04:06 -0400
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B78523511
+        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 03:53:41 -0700 (PDT)
+Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-1bf6ea270b2so5610955ad.0
+        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 03:53:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1696503220; x=1697108020; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=pe8xFyJLCKJi/KhKGcW7VjeNy4RCMTgeeKud37OqgOU=;
+        b=L+SAhMPQP1b7vqNvLlJOJ2+ZbCgL2MKj8IBLZROooWmV+96LR9Xx6b7jmJaQeSgui8
+         5s3UuTjAOTSHSZ1AalZ43bAEuZZwYWn6NJMD7/sgEOsEcQnpWJzBRKrg2CKdYV4sCssO
+         hPpsNypjfG+iQCV+1dChXcMBnSE0IGOkROK/0eSN9z5fQf7L4U8V5N5+oo+XzePD5Vmc
+         Mv6Vqn55eAQzWS0bGJ+AFUu82rZR2OURUM513B/Sno+zxXNHRKeoAT6DMCq4FmuheX3p
+         +aA8ASZQeR+drix7FSuKKSVuZ82HdVtkLUyMmmvepcQM2orduaPohFvcA6DYS4hUXTQz
+         1pBw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696503903; x=1697108703;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8A+Fvcyy0CxxYZT2asQGYv+IG3i4az/fLQnzcd8QYxU=;
-        b=VYScoWd491SLfWxMN1VGvJ2u6TGMZdVswXfMsBYpqcH7KnP4fP19rQ6KG6ZiSdHQ/p
-         Dq+pv2s+Jhmc10A3f9FwxB7jwO1fHriu9gYbKFaQRHt/PVhwax+azLTUFVfGfbGLp5V8
-         yBmWPiABQoZrDCmk2/V/r+T9MHAD0VpJHYpIK8+Q5ksEMJy5qWvU8Xdua/Efy0OEWn/M
-         0NiyjYIoAQ7P6yzPW/z52tdAyPIExh3sqsuohpIm/jtg9ru6q8g0pJDNlR9c56qpaDXA
-         mMmSM3w5qAAo5akTOkddY0W9ZxZ9PJ9aFNyE5ZVqS1s8qyhTdZ0tcCP0FGkmosNdkdvi
-         Qdxw==
-X-Gm-Message-State: AOJu0Yy9EThVfJWezSlXIFBmjcSKPyy/hdWg7b/uG+nnPkyq6alHtvjq
-        oPIg9L1NKa4E+hMX2omjic8WCq5Qay5ol7mW0xs=
-X-Google-Smtp-Source: AGHT+IEDQL53+ju6VUU2WVkO64QHb88QaJsba566ALMVEb5ykrLA0ijgHowjurBxevBOMNfVLxNTUISTkuaPKCzkAgs=
-X-Received: by 2002:a4a:c509:0:b0:57e:c9bf:696e with SMTP id
- i9-20020a4ac509000000b0057ec9bf696emr4741772ooq.1.1696503903280; Thu, 05 Oct
- 2023 04:05:03 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1696503220; x=1697108020;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=pe8xFyJLCKJi/KhKGcW7VjeNy4RCMTgeeKud37OqgOU=;
+        b=MbXXPbfdQkwzr1oAfl6/FfAnSDaYWRZmXZgw3f/sud5dEr5WKX33fsFZ7uKHk0EdHr
+         qhKn4XjNF9X26kFNXzOTClo6+4uYPvuHFpKs8ftRUfJ8gATPXiQnO/vJZ/MJEkDdxPb7
+         dmDktpNYtsIV6lNbNqjEEj/1lz9Cfy2L+t70aYG6BP/C71kcRFPiERg2noS9uLCo13RN
+         rToBWew+wRHbhuBe4zZmT9uqeeUmc7WJnHdGHAo9seSp/lTgexGjyyoV/Pi6dknQPmBk
+         0urc4Sg1zvtJLqCsSzKxpYwwhBjh1O69q5jJnTuGN1JM2h0xZcDAOPUxQxW4znooQXTJ
+         oZWA==
+X-Gm-Message-State: AOJu0YynCwMjb/dumVuszgpyI2W6tRWDb8zPUcoPfvaHGrDyUW1o8Ja0
+        TTHmUpjM4HcNhVjkSNTZlc0VUi7Yrb8PtK9TnOg=
+X-Google-Smtp-Source: AGHT+IF8C3jiHLeH9TQdFxyoDdc9T2PYQRtsYCBM21zQ+O35XEF2pklTd9GgZJ2yChUIFrGyWdhB+w==
+X-Received: by 2002:a17:902:7084:b0:1b6:649b:92cc with SMTP id z4-20020a170902708400b001b6649b92ccmr3842601plk.69.1696503220565;
+        Thu, 05 Oct 2023 03:53:40 -0700 (PDT)
+Received: from localhost ([122.172.81.92])
+        by smtp.gmail.com with ESMTPSA id f12-20020a170902ab8c00b001c444106bcasm1346984plr.46.2023.10.05.03.53.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 Oct 2023 03:53:39 -0700 (PDT)
+Date:   Thu, 5 Oct 2023 16:23:37 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Liao Chang <liaochang1@huawei.com>
+Cc:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: ondemand: Allow powersave_bias_target() to bail
+ out if freq_table is unsorted
+Message-ID: <20231005105337.ozxgstfz45bskca5@vireshk-i7>
+References: <20230908031614.2262451-1-liaochang1@huawei.com>
 MIME-Version: 1.0
-References: <4846448.GXAFRqVoOG@kreacher> <8288399.T7Z3S40VBb@kreacher> <f14894b4-805c-3eb4-755c-4795405d7e7e@linaro.org>
-In-Reply-To: <f14894b4-805c-3eb4-755c-4795405d7e7e@linaro.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 5 Oct 2023 13:04:51 +0200
-Message-ID: <CAJZ5v0j-K5bo1hoLEb1-PYx27cNfC36uWEF--pc41beFKCk=eg@mail.gmail.com>
-Subject: Re: [PATCH v2 3/6] ACPI: thermal: Combine passive and active trip
- update functions
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230908031614.2262451-1-liaochang1@huawei.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Oct 4, 2023 at 6:30 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->
-> On 03/10/2023 15:21, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Combine acpi_thermal_update_passive_trip() and
-> > acpi_thermal_update_active_trip() into one common function called
-> > acpi_thermal_update_trip(), so as to reduce code duplication and
-> > prepare the code in question for subsequent changes.
-> >
-> > No intentional functional impact.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
->
-> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On 08-09-23, 03:16, Liao Chang wrote:
+> The generic_powersave_bias_target() function uses the
+> cpufreq_table_find_index_[h/l]() functions to calculate the frequency
+> bounds for the powersave bias target. However, these two functions only
+> work on sorted frequency tables. Therefore, the
+> generic_powersave_bias_target() function should bail out early if the
+> frequency table is unsorted.
+> 
+> Signed-off-by: Liao Chang <liaochang1@huawei.com>
+> ---
+>  drivers/cpufreq/cpufreq_ondemand.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index c52d19d67557..f7ff94f71395 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -71,7 +71,8 @@ static unsigned int generic_powersave_bias_target(struct cpufreq_policy *policy,
+>  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+>  	struct cpufreq_frequency_table *freq_table = policy->freq_table;
+>  
+> -	if (!freq_table) {
+> +	if (!freq_table ||
+> +	    WARN_ON_ONCE(policy->freq_table_sorted == CPUFREQ_TABLE_UNSORTED)) {
+>  		dbs_info->freq_lo = 0;
+>  		dbs_info->freq_lo_delay_us = 0;
+>  		return freq_next;
 
-Thanks for all of the reviews, much appreciated!
+Shouldn't we make the governor use the generic functions then ?
+cpufreq_frequency_table_target() ?
 
-I'm going to apply the series now unless you have strong objections
-against any of the remaining patches [4,6/6].
+> -- 
+> 2.34.1
 
-Cheers!
+-- 
+viresh
