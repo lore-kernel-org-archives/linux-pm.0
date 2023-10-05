@@ -2,181 +2,101 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E2CBE92709
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:43:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8581DE92709
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:47:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237054AbjJEOnY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 10:43:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55950 "EHLO
+        id S238648AbjJEOqa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 10:46:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45040 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238539AbjJEOkk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:40:40 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5ACA477644;
-        Thu,  5 Oct 2023 07:12:58 -0700 (PDT)
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3958A1lg012152;
-        Thu, 5 Oct 2023 09:57:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=date : from : to :
- cc : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=qcppdkim1; bh=TULmcO8l188rP5vtjqFrkpttdGmBezWswKLwM6tqT+k=;
- b=Qj7I3eeKQbICxxNLcDf5mcOHdj3UtQIdHYHW2wnUCyZU6x6xlHzHPqqBsPyfiY3rOw9A
- 0b03WbvtDQ3foBmuYteEiAO4in9C/+s9ZBh/4D9ICpLfNdRljEkkN1OEanDWjzgsel8z
- iOS/6pFb3Tdht6vV4XSmSWp91aKKZos440p/+oTTJhIDQ6VMhhgAjtNNq1oHIqIk6B93
- iCfHE3/F6fwZpB8mi7iRyRs86dQGDqc7MSmKTViYighBvUG19YiOAhqV5cliyTt0oYKD
- GJau/y+OshTswMi4sZMfaI8RLcyJCpK5o6/k7tgysj3CB8AbYw8FLeVcE9qd5TKZmyPv mA== 
-Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3th8e1teue-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 05 Oct 2023 09:57:56 +0000
-Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
-        by NASANPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3959vtAJ028265
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 5 Oct 2023 09:57:55 GMT
-Received: from varda-linux.qualcomm.com (10.80.80.8) by
- nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.36; Thu, 5 Oct 2023 02:57:49 -0700
-Date:   Thu, 5 Oct 2023 15:27:45 +0530
-From:   Varadarajan Narayanan <quic_varada@quicinc.com>
-To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-CC:     <ilia.lin@kernel.org>, <agross@kernel.org>, <andersson@kernel.org>,
-        <konrad.dybcio@linaro.org>, <rafael@kernel.org>,
-        <viresh.kumar@linaro.org>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <conor+dt@kernel.org>,
-        <mturquette@baylibre.com>, <sboyd@kernel.org>,
-        <quic_kathirav@quicinc.com>, <linux-pm@vger.kernel.org>,
-        <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>
-Subject: Re: [PATCH v1 07/10] arm64: dts: qcom: ipq5332: populate the opp
- table based on the eFuse
-Message-ID: <20231005095744.GA29795@varda-linux.qualcomm.com>
-References: <cover.1693996662.git.quic_varada@quicinc.com>
- <a6d12e3b253d6a55d85f66979ba8b7d9c9ff6072.1693996662.git.quic_varada@quicinc.com>
- <CAA8EJppNsgUNgwadq9oM0_KyORNR5PBZGVZukN6MzAm2KPzC9g@mail.gmail.com>
+        with ESMTP id S238973AbjJEOoD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:44:03 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 930C126A55
+        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 07:20:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1696515603;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=/M/mDfnV0O1UQMEklooDLZvgibVMpXp93dsISQC12dY=;
+        b=JUinUkLi84aWmaiX/p6WzafbKAIRhSyEcPSf8jeJx/OcIZVJNiRWtkbXCQbJq1dOiPgKlG
+        d+z6cnlO+J/FR1LKiKqArNyOCtHIN6p8c2fqYWrBDn/nM/hfqP7+weqUtNYs93lPdFvMiU
+        in6m7VPjO2Rp9tPAVcfODp2ceQF60Uk=
+Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
+ by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-526-YciYf3GKOOCx-hhuUbdJTg-1; Thu, 05 Oct 2023 07:18:46 -0400
+X-MC-Unique: YciYf3GKOOCx-hhuUbdJTg-1
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com [10.11.54.1])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 8A4CD3800BB7;
+        Thu,  5 Oct 2023 11:18:45 +0000 (UTC)
+Received: from dba-icx.bos.redhat.com (prarit2023-dbaguest.khw1.lab.eng.bos.redhat.com [10.16.200.91])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 2E1CF40C2015;
+        Thu,  5 Oct 2023 11:18:45 +0000 (UTC)
+From:   David Arcari <darcari@redhat.com>
+To:     linux-pm@vger.kernel.org
+Cc:     David Arcari <darcari@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Chen Yu <yu.c.chen@intel.com>, linux-kernel@vger.kernel.org,
+        stable@vger.kernel.org
+Subject: [PATCH] thermal: intel: powerclamp: fix mismatch in get function for max_idle
+Date:   Thu,  5 Oct 2023 07:17:57 -0400
+Message-ID: <20231005111757.1293740-1-darcari@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <CAA8EJppNsgUNgwadq9oM0_KyORNR5PBZGVZukN6MzAm2KPzC9g@mail.gmail.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nasanex01a.na.qualcomm.com (10.52.223.231)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: oIcgO5TZ66_7muH1tFN8rHdOi-fpZKDV
-X-Proofpoint-ORIG-GUID: oIcgO5TZ66_7muH1tFN8rHdOi-fpZKDV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-05_06,2023-10-02_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 suspectscore=0
- adultscore=0 priorityscore=1501 mlxscore=0 lowpriorityscore=0 spamscore=0
- bulkscore=0 mlxlogscore=999 malwarescore=0 impostorscore=0 clxscore=1015
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2309180000
- definitions=main-2310050077
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 07, 2023 at 04:59:28PM +0300, Dmitry Baryshkov wrote:
-> On Thu, 7 Sept 2023 at 08:23, Varadarajan Narayanan
-> <quic_varada@quicinc.com> wrote:
-> >
-> > IPQ53xx have different OPPs available for the CPU based on
-> > SoC variant. This can be determined through use of an eFuse
-> > register present in the silicon.
-> >
-> > Add support to read the eFuse and populate the OPPs based on it.
-> >
-> > Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
-> > Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
-> > ---
-> >  arch/arm64/boot/dts/qcom/ipq5332.dtsi | 34 +++++++++++++++++++++++++++++++---
-> >  1 file changed, 31 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/arm64/boot/dts/qcom/ipq5332.dtsi b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
-> > index 82761ae..3ca3f34 100644
-> > --- a/arch/arm64/boot/dts/qcom/ipq5332.dtsi
-> > +++ b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
-> > @@ -91,11 +91,34 @@
-> >         };
-> >
-> >         cpu_opp_table: opp-table-cpu {
-> > -               compatible = "operating-points-v2";
-> > +               compatible = "operating-points-v2-kryo-cpu";
-> >                 opp-shared;
-> > +               nvmem-cells = <&cpu_speed_bin>;
-> > +               nvmem-cell-names = "speed_bin";
-> > +
-> > +               /*
-> > +                * Listed all supported CPU frequencies and opp-supported-hw
-> > +                * values to select CPU frequencies based on the limits fused.
-> > +                * ------------------------------------------------------------
-> > +                * Frequency     BIT3   BIT2   BIT1    BIT0    opp-supported-hw
-> > +                *              1.0GHz 1.2GHz 1.5GHz No Limit
-> > +                * ------------------------------------------------------------
-> > +                * 1100000000     1      1      1       1            0xF
-> > +                * 1500000000     0      0      1       1            0x3
-> > +                * -----------------------------------------------------------
-> > +                */
->
-> This can probably go to the commit message instead.
+KASAN reported this
 
-Ok
+      [ 444.853098] BUG: KASAN: global-out-of-bounds in param_get_int+0x77/0x90
+      [ 444.853111] Read of size 4 at addr ffffffffc16c9220 by task cat/2105
+      ...
+      [ 444.853442] The buggy address belongs to the variable:
+      [ 444.853443] max_idle+0x0/0xffffffffffffcde0 [intel_powerclamp]
 
-> > +
-> > +               opp-1100000000 {
-> > +                       opp-hz = /bits/ 64 <1100000000>;
->
-> But your table shows 1.0 GHz and 1.2 GHz instead of 1.1 GHz
+There is a mismatch between the param_get_int and the definition of
+max_idle.  Replacing param_get_int with param_get_byte resolves this
+issue.
 
-Will update it.
+Fixes: ebf519710218 ("thermal: intel: powerclamp: Add two module parameters")
 
-> > +                       opp-microvolt = <850000>;
-> > +                       opp-supported-hw = <0xF>;
-> > +                       clock-latency-ns = <200000>;
-> > +               };
-> >
-> > -               opp-1488000000 {
-> > -                       opp-hz = /bits/ 64 <1488000000>;
-> > +               opp-1500000000 {
-> > +                       opp-hz = /bits/ 64 <1500000000>;
->
-> So, 1.488 GHz or 1.5 GHz?
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Amit Kucheria <amitk@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: David Arcari <darcari@redhat.com>
+Cc: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: stable@vger.kernel.org
+Signed-off-by: David Arcari <darcari@redhat.com>
+---
+ drivers/thermal/intel/intel_powerclamp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-1.5 GHz
+diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
+index 36243a3972fd..5ac5cb60bae6 100644
+--- a/drivers/thermal/intel/intel_powerclamp.c
++++ b/drivers/thermal/intel/intel_powerclamp.c
+@@ -256,7 +256,7 @@ static int max_idle_set(const char *arg, const struct kernel_param *kp)
+ 
+ static const struct kernel_param_ops max_idle_ops = {
+ 	.set = max_idle_set,
+-	.get = param_get_int,
++	.get = param_get_byte,
+ };
+ 
+ module_param_cb(max_idle, &max_idle_ops, &max_idle, 0644);
+-- 
+2.41.0
 
-> > +                       opp-microvolt = <950000>;
->
-> Which regulator is controlled by this microvolt?
-
-Based on the SKU, the XBL sets up the regulator to provide 950000uV
-on CPUs capable of running 1.5G and 850000uV on other SKUs. Linux
-doesn't control it.
-
-Thanks
-Varada
-> > +                       opp-supported-hw = <0x3>;
-> >                         clock-latency-ns = <200000>;
-> >                 };
-> >         };
-> > @@ -150,6 +173,11 @@
-> >                         reg = <0x000a4000 0x721>;
-> >                         #address-cells = <1>;
-> >                         #size-cells = <1>;
-> > +
-> > +                       cpu_speed_bin: cpu_speed_bin@1d {
-> > +                               reg = <0x1d 0x2>;
-> > +                               bits = <7 2>;
-> > +                       };
-> >                 };
-> >
-> >                 rng: rng@e3000 {
-> > --
-> > 2.7.4
-> >
->
->
-> --
-> With best wishes
-> Dmitry
