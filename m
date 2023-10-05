@@ -2,224 +2,180 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99ADBE92703
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 13:56:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98922E92704
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:09:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230004AbjJENz5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 09:55:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52544 "EHLO
+        id S232562AbjJEOJW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 10:09:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33074 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243920AbjJENuL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 09:50:11 -0400
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01EE123D10
-        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 04:02:59 -0700 (PDT)
-Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-1c3bd829b86so6428135ad.0
-        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 04:02:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696503778; x=1697108578; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=yLNoHDbJ10mcu0IVX/StKsMp6qzKf98pbXCXR9Rqaug=;
-        b=s9Z4fSo8xs76+r26MIk/ML/9RwWrGchAxKPlmDE7cv0XEN7zEMY5w0dkWhlDFcNBwZ
-         MggkFfDjiey4bHaYN2VxFlVBS9H4/KMMe9whilPutPmkkRI+YM2qDhsHd8uAoHkeozcm
-         z5uKTtBXD34w9273pzT6E8244YafH8G9nd+8iyqbTqGNNUWQce8VTKjmq9eW/eNfIgRG
-         NRrOFYAEDac+nLOA+hxLiGPQK/azF8xfdbVErqFqKAsl6J0++BkSdtzFjhwviA+SGv8B
-         NAdbK1wXdgpEB9XJd0NjJnH3cUsH61tRpypJ3OttkItv2OaKsj305fv8JQtvPSyClLU1
-         4hsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696503778; x=1697108578;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yLNoHDbJ10mcu0IVX/StKsMp6qzKf98pbXCXR9Rqaug=;
-        b=DdTWBA7xwutSEIiVaXEnoe0WMe5dB2IuARoLr11iv8zA/FULUBs064AtndFHmNLN1V
-         RX/ehrckPmax4l2KN09v7pDyapk0PKCjSktBNc/n98Skji0E+UOtTRuzv5O6PwMpYeHW
-         zFJkn/Nz3lq4WHe+yFbyXAd78kqgE6Ai7y0qrGalg0Xqyn/BM/r6Tdry3xN7+LJEBtx6
-         vqYjl4CZ0qVKCnhil1PnUVLFGZHpJOoaeLMAkaaLdCBnUhi8jwGawfRqfz96h395AW8e
-         9Jv1WUkxWhAUxTdgGoZ8h0UdJVaccXiIRIc3fSW6f85uapB14noVTdbUJWhkuUCpg78X
-         FB1A==
-X-Gm-Message-State: AOJu0Yx/MUT/qJnK/fwwKebeCwqirKZswadqO9JN+riUT0v2g+lu4b/o
-        31VM74xWmZ1DgU3EUq4gQQ8dQIs+Ss6QBqyyWtc=
-X-Google-Smtp-Source: AGHT+IFitTju8/l9sr0q4R16qW7R2WVCwX4ieaIe75MpfZdWGZ14MogwGx2vrjkDjgzr4HUe6wzd7Q==
-X-Received: by 2002:a17:902:f80a:b0:1c0:cb4d:df7c with SMTP id ix10-20020a170902f80a00b001c0cb4ddf7cmr4476950plb.1.1696503778489;
-        Thu, 05 Oct 2023 04:02:58 -0700 (PDT)
-Received: from localhost ([122.172.81.92])
-        by smtp.gmail.com with ESMTPSA id e18-20020a17090301d200b001b89b1b99fasm1345702plh.243.2023.10.05.04.02.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Oct 2023 04:02:57 -0700 (PDT)
-Date:   Thu, 5 Oct 2023 16:32:55 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Liao Chang <liaochang1@huawei.com>
-Cc:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] cpufreq: userspace: Use fine-grained mutex in
- userspace governor
-Message-ID: <20231005110255.fk736npzqsrffl2c@vireshk-i7>
-References: <20230912061057.2516963-1-liaochang1@huawei.com>
+        with ESMTP id S232736AbjJEOHV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:07:21 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FD3E4204;
+        Thu,  5 Oct 2023 01:54:24 -0700 (PDT)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 191CF660731A;
+        Thu,  5 Oct 2023 09:54:19 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1696496059;
+        bh=bApHrP5+rFCG+AvPQEp0nvYRi/WjkCcLC3j4z/vfddQ=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=I2CGLtIBRs07RgZCkRO2P3NXkFXb3qjOhfw9LtB4KRtCUj2rRosl8OyqvCKZqg35u
+         OEeV1JpqU6IRvfCT2zzFqzhJhzVeF1FdUWctYBon6aQF+sEZ9t5HDnDtRTqkz5GVm2
+         jQfo1suUiMDzkhvcEtmi1gldJwEVk2+xlQPXkGAmpZyyw4wIXGbVcTPxPRYt6PB44V
+         ohZgPaIgJzYssvvWaJ43D4PFiquBmYzaQj+D1RWkRFHV19LxfleStWVJP7Ps8el3la
+         VqV6IxldPDGrrpoPVZ5RuHrJde0+Asswow34c2Q8WPNDmlJ3rXdUMSlWQGjk8OagnD
+         ai9W46lzqe7jQ==
+Message-ID: <06f8a769-1845-ea87-dcc4-37dd5ad255ed@collabora.com>
+Date:   Thu, 5 Oct 2023 10:54:16 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230912061057.2516963-1-liaochang1@huawei.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Subject: Re: [PATCH v8 0/8] soc: mediatek: MT8365 power support
+Content-Language: en-US
+To:     Markus Schneider-Pargmann <msp@baylibre.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>
+Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
+        Alexandre Mergnat <amergnat@baylibre.com>,
+        Chun-Jie Chen <chun-jie.chen@mediatek.com>,
+        Tinghan Shen <tinghan.shen@mediatek.com>,
+        Fabien Parent <parent.f@gmail.com>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org
+References: <20230918093751.1188668-1-msp@baylibre.com>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20230918093751.1188668-1-msp@baylibre.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12-09-23, 06:10, Liao Chang wrote:
-> The userspace governor currently uses a big global mutex to avoid the
-> race condition on the governor_data field of cpufreq_policy structure.
-> This leads to a low concurrency if multiple userspace applications are
-> trying to set the speed of different policies at the same time. This
-> patch introduces a per-policy mutex to allow the updating of different
-> policies to be performed concurrently, improving overall concurrency.
+Il 18/09/23 11:37, Markus Schneider-Pargmann ha scritto:
+> Hi,
 > 
-> Signed-off-by: Liao Chang <liaochang1@huawei.com>
-> ---
->  drivers/cpufreq/cpufreq_userspace.c | 69 +++++++++++++++++------------
->  1 file changed, 40 insertions(+), 29 deletions(-)
+> no real changes in this update. Rebase to v6.6-rc2 and according change
+> of directory.
+
+Since the driver changed to pmdomain/mediatek, can you please change the commit
+titles for the driver commits?
+
+soc: mediatek: pm-domains: ===> pmdomain: mediatek: pm-domains:
+
+or alternatively, I honestly would like it more like
+
+pmdomain: mediatek: pd:
+
+and (not relevant to this series)
+
+pmdomain: mediatek: scpsys:
+
+...but before that, does anyone have any strong opinions against the prefix
+"pmdomain: mediatek: pd:", instead of the full "pm-domains"?
+
+Thanks!
+Angelo
+
 > 
-> diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
-> index 50a4d7846580..442e31060d62 100644
-> --- a/drivers/cpufreq/cpufreq_userspace.c
-> +++ b/drivers/cpufreq/cpufreq_userspace.c
-> @@ -16,7 +16,11 @@
->  #include <linux/slab.h>
->  
->  static DEFINE_PER_CPU(unsigned int, cpu_is_managed);
-> -static DEFINE_MUTEX(userspace_mutex);
-> +
-> +struct userspace_policy {
-> +	unsigned int setspeed;
-> +	struct mutex mutex;
-> +};
->  
->  /**
->   * cpufreq_set - set the CPU frequency
-> @@ -28,19 +32,19 @@ static DEFINE_MUTEX(userspace_mutex);
->  static int cpufreq_set(struct cpufreq_policy *policy, unsigned int freq)
->  {
->  	int ret = -EINVAL;
-> -	unsigned int *setspeed = policy->governor_data;
-> +	struct userspace_policy *userspace = policy->governor_data;
->  
->  	pr_debug("cpufreq_set for cpu %u, freq %u kHz\n", policy->cpu, freq);
->  
-> -	mutex_lock(&userspace_mutex);
-> +	mutex_lock(&userspace->mutex);
->  	if (!per_cpu(cpu_is_managed, policy->cpu))
->  		goto err;
->  
-> -	*setspeed = freq;
-> +	userspace->setspeed = freq;
->  
->  	ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
->   err:
-> -	mutex_unlock(&userspace_mutex);
-> +	mutex_unlock(&userspace->mutex);
->  	return ret;
->  }
->  
-> @@ -51,67 +55,74 @@ static ssize_t show_speed(struct cpufreq_policy *policy, char *buf)
->  
->  static int cpufreq_userspace_policy_init(struct cpufreq_policy *policy)
->  {
-> -	unsigned int *setspeed;
-> +	struct userspace_policy *userspace;
->  
-> -	setspeed = kzalloc(sizeof(*setspeed), GFP_KERNEL);
-> -	if (!setspeed)
-> +	userspace = kzalloc(sizeof(*userspace), GFP_KERNEL);
-> +	if (!userspace)
->  		return -ENOMEM;
->  
-> -	policy->governor_data = setspeed;
-> +	mutex_init(&userspace->mutex);
-> +
-> +	policy->governor_data = userspace;
->  	return 0;
->  }
->  
-> +/*
-> + * Any routine that writes to the policy struct will hold the "rwsem" of
-> + * policy struct that means it is free to free "governor_data" here.
-> + */
->  static void cpufreq_userspace_policy_exit(struct cpufreq_policy *policy)
->  {
-> -	mutex_lock(&userspace_mutex);
->  	kfree(policy->governor_data);
->  	policy->governor_data = NULL;
-> -	mutex_unlock(&userspace_mutex);
->  }
->  
->  static int cpufreq_userspace_policy_start(struct cpufreq_policy *policy)
->  {
-> -	unsigned int *setspeed = policy->governor_data;
-> +	struct userspace_policy *userspace = policy->governor_data;
->  
->  	BUG_ON(!policy->cur);
->  	pr_debug("started managing cpu %u\n", policy->cpu);
->  
-> -	mutex_lock(&userspace_mutex);
-> +	mutex_lock(&userspace->mutex);
->  	per_cpu(cpu_is_managed, policy->cpu) = 1;
-> -	*setspeed = policy->cur;
-> -	mutex_unlock(&userspace_mutex);
-> +	userspace->setspeed = policy->cur;
-> +	mutex_unlock(&userspace->mutex);
->  	return 0;
->  }
->  
->  static void cpufreq_userspace_policy_stop(struct cpufreq_policy *policy)
->  {
-> -	unsigned int *setspeed = policy->governor_data;
-> +	struct userspace_policy *userspace = policy->governor_data;
->  
->  	pr_debug("managing cpu %u stopped\n", policy->cpu);
->  
-> -	mutex_lock(&userspace_mutex);
-> +	mutex_lock(&userspace->mutex);
->  	per_cpu(cpu_is_managed, policy->cpu) = 0;
-> -	*setspeed = 0;
-> -	mutex_unlock(&userspace_mutex);
-> +	userspace->setspeed = 0;
-> +	mutex_unlock(&userspace->mutex);
->  }
->  
->  static void cpufreq_userspace_policy_limits(struct cpufreq_policy *policy)
->  {
-> -	unsigned int *setspeed = policy->governor_data;
-> +	struct userspace_policy *userspace = policy->governor_data;
->  
-> -	mutex_lock(&userspace_mutex);
-> +	mutex_lock(&userspace->mutex);
->  
->  	pr_debug("limit event for cpu %u: %u - %u kHz, currently %u kHz, last set to %u kHz\n",
-> -		 policy->cpu, policy->min, policy->max, policy->cur, *setspeed);
-> -
-> -	if (policy->max < *setspeed)
-> -		__cpufreq_driver_target(policy, policy->max, CPUFREQ_RELATION_H);
-> -	else if (policy->min > *setspeed)
-> -		__cpufreq_driver_target(policy, policy->min, CPUFREQ_RELATION_L);
-> +		 policy->cpu, policy->min, policy->max, policy->cur, userspace->setspeed);
-> +
-> +	if (policy->max < userspace->setspeed)
-> +		__cpufreq_driver_target(policy, policy->max,
-> +					CPUFREQ_RELATION_H);
-> +	else if (policy->min > userspace->setspeed)
-> +		__cpufreq_driver_target(policy, policy->min,
-> +					CPUFREQ_RELATION_L);
->  	else
-> -		__cpufreq_driver_target(policy, *setspeed, CPUFREQ_RELATION_L);
-> +		__cpufreq_driver_target(policy, userspace->setspeed,
-> +					CPUFREQ_RELATION_L);
->  
-> -	mutex_unlock(&userspace_mutex);
-> +	mutex_unlock(&userspace->mutex);
->  }
->  
->  static struct cpufreq_governor cpufreq_gov_userspace = {
+> Thanks for any feedback!
+> 
+> Best,
+> Markus
+> 
+> Based on v6.6-rc2
+> 
+> Changes in v8:
+> - Rebased to v6.6-rc2
+> - Moved changes from drivers/soc to drivers/pmdomain
+> 
+> Changes in v7:
+> - Rebased to v6.5-rc1
+> - Fixed a couple of small style issues pointed out by Angelo
+> 
+> Changes in v6:
+> - Change flags field to be u8 instead of u32
+> - Use macro concatenation to simplify BUS_PROT macros:
+>    BUS_PROT_WR(_hwip, ...) etc.
+> - Use the final bit values for scpsys_bus_prot_flags from the beginning
+>    of the series.
+> - Changed scpsys_domain_data->caps to be u16 to accommodate the new flag
+>    MTK_SCPD_STRICT_BUS_PROTECTION.
+> 
+> Changes in v5:
+> - Create defines for all registers and bits in mt8365 power domain patch
+> - Redesign scpsys_bus_prot_data to use flags to store reg_update,
+>    clr_ack as well as the difference between SMI and INFRACFG. The code
+>    uses the appropriate regmap depending on the flags.
+> - The WAY_EN patch now uses two flags, one for inverted operations
+>    'BUS_PROT_INVERTED' and one to use infracfg-nao for the status flags
+>    'BUS_PROT_STA_COMPONENT_INFRA_NAO'.
+> 
+> Changes in v4:
+> - Redesigned WAY_EN patch and split it up in smaller patches.
+> - Added two documentation patches.
+> - Added mediatek,infracfg-nao field to the binding.
+> 
+> Changes in v3:
+> - Mainly redesigned WAY_EN patch to be easier to understand
+> - Rebased onto v6.0-rc1
+> - Several other stuff that is described in the individual patches
+> 
+> Changes in v2:
+> - Updated error handling path for scpsys_power_on()
+> - Minor updates described in each patch
+> 
+> Previous versions:
+> v1 - https://lore.kernel.org/linux-mediatek/20220530204214.913251-1-fparent@baylibre.com/
+> v2 - https://lore.kernel.org/linux-mediatek/20220725081853.1636444-1-msp@baylibre.com/
+> v3 - https://lore.kernel.org/linux-mediatek/20220822144303.3438467-1-msp@baylibre.com/
+> v4 - https://lore.kernel.org/linux-arm-kernel/20230105170735.1637416-1-msp@baylibre.com/
+> v5 - https://lore.kernel.org/linux-arm-kernel/20230619085344.2885311-1-msp@baylibre.com/
+> v6 - https://lore.kernel.org/linux-arm-kernel/20230627131040.3418538-1-msp@baylibre.com/
+> v7 - https://lore.kernel.org/linux-arm-kernel/20230713150414.891893-1-msp@baylibre.com
+> 
+> Alexandre Bailon (2):
+>    soc: mediatek: Add support for WAY_EN operations
+>    soc: mediatek: Add support for MTK_SCPD_STRICT_BUS_PROTECTION cap
+> 
+> Fabien Parent (2):
+>    dt-bindings: power: Add MT8365 power domains
+>    soc: mediatek: pm-domains: Add support for MT8365
+> 
+> Markus Schneider-Pargmann (4):
+>    soc: mediatek: pm-domains: Move bools to a flags field
+>    soc: mediatek: pm-domains: Split bus_prot_mask
+>    soc: mediatek: pm-domains: Create bus protection operation functions
+>    soc: mediatek: pm-domains: Unify configuration for infracfg and smi
+> 
+>   .../power/mediatek,power-controller.yaml      |   6 +
+>   drivers/pmdomain/mediatek/mt6795-pm-domains.h |  16 +-
+>   drivers/pmdomain/mediatek/mt8167-pm-domains.h |  20 +-
+>   drivers/pmdomain/mediatek/mt8173-pm-domains.h |  16 +-
+>   drivers/pmdomain/mediatek/mt8183-pm-domains.h | 125 ++++++----
+>   drivers/pmdomain/mediatek/mt8186-pm-domains.h | 236 ++++++++++--------
+>   drivers/pmdomain/mediatek/mt8188-pm-domains.h | 223 +++++++++++------
+>   drivers/pmdomain/mediatek/mt8192-pm-domains.h | 112 ++++++---
+>   drivers/pmdomain/mediatek/mt8195-pm-domains.h | 199 +++++++++------
+>   drivers/pmdomain/mediatek/mt8365-pm-domains.h | 197 +++++++++++++++
+>   drivers/pmdomain/mediatek/mtk-pm-domains.c    | 157 ++++++++----
+>   drivers/pmdomain/mediatek/mtk-pm-domains.h    |  51 ++--
+>   .../dt-bindings/power/mediatek,mt8365-power.h |  19 ++
+>   include/linux/soc/mediatek/infracfg.h         |  41 +++
+>   14 files changed, 972 insertions(+), 446 deletions(-)
+>   create mode 100644 drivers/pmdomain/mediatek/mt8365-pm-domains.h
+>   create mode 100644 include/dt-bindings/power/mediatek,mt8365-power.h
+> 
+> 
+> base-commit: ce9ecca0238b140b88f43859b211c9fdfd8e5b70
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
--- 
-viresh
