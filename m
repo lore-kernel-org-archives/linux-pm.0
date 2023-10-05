@@ -2,127 +2,120 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 706E3E92702
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:25:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B245E92705
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:26:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229688AbjJEOYv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 10:24:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36224 "EHLO
+        id S233945AbjJEO01 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 10:26:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229767AbjJEOWi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:22:38 -0400
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FEDE23D15
-        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 04:03:24 -0700 (PDT)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-1c61acd1285so5491735ad.2
-        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 04:03:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696503804; x=1697108604; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=tlcMpFTEGkun5fY2EQzH5O3YtCneY5PYvuzDAb/3BCc=;
-        b=Ifsau/CbOFHhHiKCQCz/Un93uMTQsNKQa8mYyAoCqpnJoNr9zELfRZ2Q9OpJrDPfAG
-         dNGNA8Z2QuGNIDx8Rb8S1zUUdhZORX7hDwwcjMX5drTvviABmjnEaKFbZQybnY6JErQM
-         wrX0AeLfwOGjrRwtDyrfuKZuR5vPnH/9/eqo0TD9BXM4A2Py1wmMSyCxIFdGu30KVy/X
-         b5LXMYnK5YmsEKnOu5YcCu4J8UxEgEL3gGWBXhXck4bTcO5vI/v7IdrPn1mlnhrKMQio
-         Hs7UIHUjiRCkakY/e8DdpgtNA68AHyHOjbYgE9zmt6XA7kzy78IBotNd589Y8B6Bq2F1
-         BwcA==
+        with ESMTP id S235037AbjJEOY3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:24:29 -0400
+Received: from mail-oo1-xc2c.google.com (mail-oo1-xc2c.google.com [IPv6:2607:f8b0:4864:20::c2c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D148E24EA3;
+        Thu,  5 Oct 2023 04:35:26 -0700 (PDT)
+Received: by mail-oo1-xc2c.google.com with SMTP id 006d021491bc7-57b83ff7654so32948eaf.1;
+        Thu, 05 Oct 2023 04:35:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696503804; x=1697108604;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tlcMpFTEGkun5fY2EQzH5O3YtCneY5PYvuzDAb/3BCc=;
-        b=LyoufthdswTmNmJDfDIhqQe72Qw9W4czPcvqMr8lv4ASVFBHG4ge3GnZRMj36NJDur
-         n2bVUPqNSYocC97+hzbsFxg/nXKcii6qtkFtvjKiZiaIfhSe9fdJMz2CkftLJaMrRYeC
-         FZtWFsPaYxSOKDBzg5ENkvvhGx86rrSTxCsdhlkO9hHH41jRUI1Zm7fW7CeCXgifILTo
-         a7SfioTjVRHcnd+4Y+CuGoHA1ernpgD3woW4JSscHSS4CZQbJHyTLAhlMDxhclxh4Eit
-         EBbD7o0Eddgy4HgKgjGqxEWDlrNiMWZqI9lg6Ym1+j86D86ee3ePmn7czFZRgWdESWNn
-         GJBA==
-X-Gm-Message-State: AOJu0YzE0RHP9QCoAkK0qYbW2gExICa4fhT0PKvTHl3yYFHSGxEj7OZp
-        C+kbSBanH6J6UBJ57USk29w21w==
-X-Google-Smtp-Source: AGHT+IEE30y5cggjo7TIaKZK9gXoRYY8q0eXCt0k1bfV/W+365AotNoCtt2rx3tPShczRgXukld3bQ==
-X-Received: by 2002:a17:902:6bc1:b0:1c3:6e38:3943 with SMTP id m1-20020a1709026bc100b001c36e383943mr4092169plt.56.1696503803794;
-        Thu, 05 Oct 2023 04:03:23 -0700 (PDT)
-Received: from localhost ([122.172.81.92])
-        by smtp.gmail.com with ESMTPSA id w19-20020a1709027b9300b001b89536974bsm1351261pll.202.2023.10.05.04.03.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Oct 2023 04:03:23 -0700 (PDT)
-Date:   Thu, 5 Oct 2023 16:33:21 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Liao Chang <liaochang1@huawei.com>
-Cc:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] cpufreq: userspace: Move is_managed indicator into
- per-policy structure
-Message-ID: <20231005110321.ythrdcueqwjrksbq@vireshk-i7>
-References: <20230912061057.2516963-1-liaochang1@huawei.com>
- <20230912061057.2516963-2-liaochang1@huawei.com>
+        d=1e100.net; s=20230601; t=1696505724; x=1697110524;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=tygO0/Unj1OPWc8Mz0QglmIWnjA9+0+dmFzmqyz1J+o=;
+        b=k/enZevEUmbB4KETX4y2nKZlitP+O/fGXGJjy+2M4ZrlH+DkeA/aIT/Wlcm4u0ctaP
+         k6SBQN2waCKH4WtoCCUwbRZCQCtQcQjujrgRQbOviLrv3ouN4FuHTh4jHQIAx0xtUYrg
+         lJ6R8fegRX+dFLWkqcSrC3P7AesLw4iGQD7biSoFEKVzAjohHD/nWQi/scQiErt59xcT
+         UHadDnSVjRhCpEOO2N6xxGdggfeyQ3GtUno9SOWPiwTSNakJb9yGqoaXA8eRtesto89s
+         vqykgZb81vzcPrYn/G7xuyNBcYZsMnkrBrhE94M+Nng5ZQtOS5evOEMx0nbtqYF7dkuf
+         HW8g==
+X-Gm-Message-State: AOJu0YzrqiBB3Rdr2s77SB9WmHez5Ybcbh+dAU9MfuyYF7XsDvqJWQ4o
+        aUfsYQ4SK9Bz78XN2jofQpvhs0mW58lbAvYiM78=
+X-Google-Smtp-Source: AGHT+IEYjTOMTdyxnqxj8++Rbg9c/07xqvdW1Ngb7KJt8os3DU9DAtMjQX4r0q8c449LjmjX2HeX3sAq0hcssOVDRFQ=
+X-Received: by 2002:a05:6820:390:b0:57c:6e35:251e with SMTP id
+ r16-20020a056820039000b0057c6e35251emr4712190ooj.1.1696505724466; Thu, 05 Oct
+ 2023 04:35:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230912061057.2516963-2-liaochang1@huawei.com>
+References: <20230719130527.8074-1-xuewen.yan@unisoc.com> <ZR6delkbZxl31zuY@gmail.com>
+In-Reply-To: <ZR6delkbZxl31zuY@gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 5 Oct 2023 13:35:13 +0200
+Message-ID: <CAJZ5v0j8T0KUjLzS=MCF1M33KMhf-EVrT1W5Tncr6wnOXUMgwQ@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: schedutil: next_freq need update when
+ cpufreq_limits changed
+To:     Ingo Molnar <mingo@kernel.org>
+Cc:     Xuewen Yan <xuewen.yan@unisoc.com>, rafael@kernel.org,
+        viresh.kumar@linaro.org, mingo@redhat.com, peterz@infradead.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+        bristot@redhat.com, vschneid@redhat.com, guohua.yan@unisoc.com,
+        qyousef@layalina.io, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12-09-23, 06:10, Liao Chang wrote:
-> The userspace governor use the 'cpu' field of cpufreq_policy structure
-> to track if it is allowed to set the speed of policy.  However, there is
-> a window where the 'cpu' field is equal to the value of nr_cpus_id when
-> all affected CPUs of policy are offline, which is an illegal value to
-> get the per-CPU variable. To avoid this issue, this patch uses a
-> per-policy indicator to track if the policy is managed.
-> 
-> Signed-off-by: Liao Chang <liaochang1@huawei.com>
-> ---
->  drivers/cpufreq/cpufreq_userspace.c | 9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
-> index 442e31060d62..2c42fee76daa 100644
-> --- a/drivers/cpufreq/cpufreq_userspace.c
-> +++ b/drivers/cpufreq/cpufreq_userspace.c
-> @@ -15,9 +15,8 @@
->  #include <linux/mutex.h>
->  #include <linux/slab.h>
->  
-> -static DEFINE_PER_CPU(unsigned int, cpu_is_managed);
-> -
->  struct userspace_policy {
-> +	unsigned int is_managed;
->  	unsigned int setspeed;
->  	struct mutex mutex;
->  };
-> @@ -37,7 +36,7 @@ static int cpufreq_set(struct cpufreq_policy *policy, unsigned int freq)
->  	pr_debug("cpufreq_set for cpu %u, freq %u kHz\n", policy->cpu, freq);
->  
->  	mutex_lock(&userspace->mutex);
-> -	if (!per_cpu(cpu_is_managed, policy->cpu))
-> +	if (!userspace->is_managed)
->  		goto err;
->  
->  	userspace->setspeed = freq;
-> @@ -85,7 +84,7 @@ static int cpufreq_userspace_policy_start(struct cpufreq_policy *policy)
->  	pr_debug("started managing cpu %u\n", policy->cpu);
->  
->  	mutex_lock(&userspace->mutex);
-> -	per_cpu(cpu_is_managed, policy->cpu) = 1;
-> +	userspace->is_managed = 1;
->  	userspace->setspeed = policy->cur;
->  	mutex_unlock(&userspace->mutex);
->  	return 0;
-> @@ -98,7 +97,7 @@ static void cpufreq_userspace_policy_stop(struct cpufreq_policy *policy)
->  	pr_debug("managing cpu %u stopped\n", policy->cpu);
->  
->  	mutex_lock(&userspace->mutex);
-> -	per_cpu(cpu_is_managed, policy->cpu) = 0;
-> +	userspace->is_managed = 0;
->  	userspace->setspeed = 0;
->  	mutex_unlock(&userspace->mutex);
->  }
+On Thu, Oct 5, 2023 at 1:26 PM Ingo Molnar <mingo@kernel.org> wrote:
+>
+>
+> * Xuewen Yan <xuewen.yan@unisoc.com> wrote:
+>
+> > When cpufreq's policy is single, there is a scenario that will
+> > cause sg_policy's next_freq to be unable to update.
+> >
+> > When the cpu's util is always max, the cpufreq will be max,
+> > and then if we change the policy's scaling_max_freq to be a
+> > lower freq, indeed, the sg_policy's next_freq need change to
+> > be the lower freq, however, because the cpu_is_busy, the next_freq
+> > would keep the max_freq.
+> >
+> > For example:
+> > The cpu7 is single cpu:
+> >
+> > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # while true;do done&
+> > [1] 4737
+> > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # taskset -p 80 4737
+> > pid 4737's current affinity mask: ff
+> > pid 4737's new affinity mask: 80
+> > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # cat scaling_max_freq
+> > 2301000
+> > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # cat scaling_cur_freq
+> > 2301000
+> > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # echo 2171000 > scaling_max_freq
+> > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # cat scaling_max_freq
+> > 2171000
+> >
+> > At this time, the sg_policy's next_freq would keep 2301000.
+> >
+> > To prevent the case happen, add the judgment of the need_freq_update flag.
+> >
+> > Signed-off-by: Xuewen Yan <xuewen.yan@unisoc.com>
+> > Co-developed-by: Guohua Yan <guohua.yan@unisoc.com>
+> > Signed-off-by: Guohua Yan <guohua.yan@unisoc.com>
+> > ---
+> >  kernel/sched/cpufreq_schedutil.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index 4492608b7d7f..458d359f5991 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -350,7 +350,8 @@ static void sugov_update_single_freq(struct update_util_data *hook, u64 time,
+> >        * Except when the rq is capped by uclamp_max.
+> >        */
+> >       if (!uclamp_rq_is_capped(cpu_rq(sg_cpu->cpu)) &&
+> > -         sugov_cpu_is_busy(sg_cpu) && next_f < sg_policy->next_freq) {
+> > +         sugov_cpu_is_busy(sg_cpu) && next_f < sg_policy->next_freq &&
+> > +         !sg_policy->need_freq_update) {
+> >               next_f = sg_policy->next_freq;
+> >
+> >               /* Restore cached freq as next_freq has changed */
+>
+> Just wondering about the status of this fix - is it pending in
+> some tree, or should we apply it to the scheduler tree?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I have not queued it up yet, so it can be applied to the scheduler tree.
 
--- 
-viresh
+Thanks!
