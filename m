@@ -2,98 +2,125 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D953E92707
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:35:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8298E92710
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:43:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235577AbjJEOfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 10:35:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38606 "EHLO
+        id S238084AbjJEOnU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 10:43:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235389AbjJEOeQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:34:16 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C0CC24875
-        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 04:20:52 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-50337b43ee6so1121094e87.3
-        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 04:20:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696504850; x=1697109650; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=AfjjBx8bRosL03zIEqb5fC4vsYyRufBl5/7gyLY5YvY=;
-        b=pVXUvDcxNUXW6+THwL9jZb+yNvyRIIPsCJDfdl47zAG0kTrjnhCvDX5K+zS+Zhs+ui
-         tRDkiUaCK2W4pFN0R2jc2dT+Aj7BjpUmT6Tqhh6/UMoCpIUmvsqDggo8aQ8u2bvkc7qF
-         sv1p1cnUoUUWwCLyQFMvMJndP1PcnYxgdOkpj3uPkDBigp2qFkdrYsgK3KYDBeElxQXs
-         hKZvK4vlhUNdFJIS6y5c7VzLeO9c4G5TsSx40Vpyo2OJXApZGFwd50hkfh8ww0Dm3gmm
-         jV+RcmqPdFLS8fC0ROj8eyZj3xq7h9T1/OUDUG5S78KivRYfMHRa86VNcdksxuGjzIj7
-         xEZw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696504850; x=1697109650;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=AfjjBx8bRosL03zIEqb5fC4vsYyRufBl5/7gyLY5YvY=;
-        b=ZEaoWBUg4tHdMXy4KSW+G0+ycUV6ewSqMWsK6WQwLqcY4rv+Q0i1CBCF5W37A4OE36
-         TRFDrvvZ6IzEHLxKHN+63ij77dXLXL/2PxPkcLPdLmfU0JLJ/OwSN/snN5ekJpNzreSe
-         VPHZxhEQhsNFSbKTAu/4WbXBzNTzDCu5RjMSnpMSY1RBvL6xL5qa2O122PnF7j26SdJW
-         UgZzzNZdGghmAlPSJSpy98VDV+Al9z51fJmdp/3rAyMqCiODpN9vVyDJthdvwgrGtDJC
-         FpEAAk8qymdeLpH7A5IHwuTamQ3ToLbq/xuEZQ5Hoti/3IxSlc8TnY9tRadB23yrOQjT
-         OIvw==
-X-Gm-Message-State: AOJu0YxcAbfWxnUd6jvqbfzXh3DptISAH6E5Bk3cw8Cvuh75KRZU6fpP
-        ve/nsP8zavz+38cwKUHIFwTq5w==
-X-Google-Smtp-Source: AGHT+IF8iEf39U3EvChPzm6UH7GQU2jK7ervLMhE6RcloOs8ZvA9CjMZCrFvVxd2JoT2k/lXG3kZhg==
-X-Received: by 2002:a19:8c0e:0:b0:500:bc14:3e06 with SMTP id o14-20020a198c0e000000b00500bc143e06mr4555039lfd.44.1696504849804;
-        Thu, 05 Oct 2023 04:20:49 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:8bb6:12b3:863a:e5dd? ([2a05:6e02:1041:c10:8bb6:12b3:863a:e5dd])
-        by smtp.googlemail.com with ESMTPSA id hn8-20020a05600ca38800b00405959bbf4fsm1297865wmb.19.2023.10.05.04.20.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 05 Oct 2023 04:20:49 -0700 (PDT)
-Message-ID: <3620cb02-c6af-cd65-439c-92ea9c369174@linaro.org>
-Date:   Thu, 5 Oct 2023 13:20:48 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v2 4/6] ACPI: thermal: Use thermal_zone_for_each_trip()
- for updating trips
-Content-Language: en-US
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
+        with ESMTP id S237088AbjJEOi2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:38:28 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 883834F077;
+        Thu,  5 Oct 2023 07:02:49 -0700 (PDT)
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3952obcM020199;
+        Thu, 5 Oct 2023 02:52:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=date : from : to :
+ cc : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=qcppdkim1; bh=dFUWap6jlVEo0/FWKF6ZbuQBL/+MeVOOJ+8zsML8Umo=;
+ b=edDpNhoHl+kWZPg5qVWs2Gzi7Y81akUnBumc1EpagtG3tiiGNE/zIMkzrpwP8D3wtJOJ
+ q7LEHVmd6ww7Q6IjqC3NoaGxWO0fp7Xmfcyw5cMFrukL2REFE6UP1jED3rgj0Re84fdW
+ FfHaiRIcSCEQ3m0tlDQ6WBoVNTIjEm5kZp0pc+Oh61L3SAQEN/WlG1ikGJEaYEwNTp5E
+ BTKXlK330LmGV6+LQYcelciZH+Pv6YQzvSal9US7e/UBPtWuIieteax0GbZVQzx4qFDK
+ 0dm0wRa0dkZde2v8rKkeiq2a5S1i02Ynl7TXW4n68w4AdxIpq47RFApBxmXOcqH2H7TX LQ== 
+Received: from nalasppmta02.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3thj6gg9hp-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 05 Oct 2023 02:52:08 +0000
+Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
+        by NALASPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3952q7YM016314
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 5 Oct 2023 02:52:07 GMT
+Received: from hu-bjorande-lv.qualcomm.com (10.49.16.6) by
+ nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.30; Wed, 4 Oct 2023 19:52:07 -0700
+Date:   Wed, 4 Oct 2023 19:52:06 -0700
+From:   Bjorn Andersson <quic_bjorande@quicinc.com>
+To:     Manivannan Sadhasivam <mani@kernel.org>
+CC:     Caleb Connolly <caleb.connolly@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bhupesh Sharma <bhupesh.linux@gmail.com>,
+        "Bjorn Andersson" <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-References: <4846448.GXAFRqVoOG@kreacher> <1954465.PYKUYFuaPT@kreacher>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <1954465.PYKUYFuaPT@kreacher>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+        Sibi Sankar <quic_sibis@quicinc.com>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        <linux-arm-msm@vger.kernel.org>,
+        <linux-remoteproc@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH 0/4] thermal: Introduce Qualcomm Thermal Mitigation
+ Device support
+Message-ID: <20231005025206.GF3553829@hu-bjorande-lv.qualcomm.com>
+References: <20230905-caleb-qmi_cooling-v1-0-5aa39d4164a7@linaro.org>
+ <20231001155701.GA53767@thinkpad>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20231001155701.GA53767@thinkpad>
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01b.na.qualcomm.com (10.47.209.197) To
+ nalasex01c.na.qualcomm.com (10.47.97.35)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: FrSBzj2ulkS9SaY4CyHpLk6gx13PtlDB
+X-Proofpoint-ORIG-GUID: FrSBzj2ulkS9SaY4CyHpLk6gx13PtlDB
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-10-04_13,2023-10-02_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
+ lowpriorityscore=0 suspectscore=0 spamscore=0 malwarescore=0 adultscore=0
+ priorityscore=1501 clxscore=1015 mlxlogscore=999 impostorscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2309180000 definitions=main-2310050023
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 03/10/2023 15:24, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sun, Oct 01, 2023 at 09:27:01PM +0530, Manivannan Sadhasivam wrote:
+> On Fri, Sep 29, 2023 at 05:16:16PM +0100, Caleb Connolly wrote:
+> > The Thermal Mitigation Device (TMD) Service is a QMI service that runs
+> > on remote subsystems (the modem and DSPs) on Qualcomm SoCs.
+> > It exposes various mitigations including passive thermal controls and
+> > rail voltage restrictions.
+> > 
+> > This series introduces support for exposing TMDs as cooling devices
+> > in the kernel through the thermal framework, using the QMI interface.
+> > 
+> > Each TMD client is described as a child of the remoteproc node in
+> > devicetree. With subnodes for each control.
+> > 
 > 
-> Rearrange the code handling notifications from the platform firmware
-> regarding trip point updates to carry out one loop over trip points
-> instead of two of them by using thermal_zone_for_each_trip() for that,
-> which is more straightforward than using a combination of
-> thermal_zone_device_exec() and for_each_thermal_trip(), each with its
-> own callback function.
+> Daniel expressed concerns in the past aganist representing TMD driver as a
+> cooling device since it is not tied to thermal zones and the governors cannot
+> use it. Instead he suggested to represent it as a powercap device with thermal
+> constraints.
 > 
-> No intentional functional impact.
+> So please look into that approach.
 > 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+The powercap framework revolves around the idea that we have some amount
+of power (micro-watt) being available to the system, which can be split
+across a range of devices.
 
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+Say that we implement this as a powercap thing, what current consumption
+would you attribute these entires? How would you map a given uW value to
+the mitigation levels provided by the qmi-cooling instances?
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
+Beyond that, I'm still not sure how we would plug this in. We don't have
+a picture of the power consumption/flow through the system at any point
+in time - as the control of the power grid is distributed across the
+various subsystems.
+
+Regards,
+Bjorn
