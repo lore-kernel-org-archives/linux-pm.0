@@ -2,96 +2,87 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CCFCE75451
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C77B3E92718
 	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 16:15:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240235AbjJEQOA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 12:14:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57380 "EHLO
+        id S240398AbjJEQOB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 12:14:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54138 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240488AbjJEQNE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 12:13:04 -0400
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E755A23538
-        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 03:59:03 -0700 (PDT)
-Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-278f0f565e2so553453a91.2
-        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 03:59:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696503543; x=1697108343; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=JNyCQ67xdT96qFsLCo+WWGtR8HPuUjeLj+uqNqnLI8g=;
-        b=Tp5lTQkkRcFT7HVAS5m2wq+oEvkf5NYnCcmBwt8gRlk9H1wsDQNU25D+f+rb7CI8IQ
-         XCEjaSXvf9YjMufPTULOByVskjvlLsrut9vlPCVLibdzaEvLOA/Ryucsjfv3JE2QC3DB
-         4+4dcq4mVaWK3h6hNG50FVCFQfbntE1WVnfGZqoKOBCeNqNxtypBfCsFtGb2tkArW9Gr
-         ZLfGpgt2TAS6S1jCp+cAvgqs+UlgNtoD7da/rAd1N9o4wIe95joiHqz9qaat6tE5HIsW
-         tKJLsjkYP6sFWpEvIjvAZpth91OPynBqQoUABQhyLhXhxm7/CR4g8OCvbv7r2vXlF9Jk
-         E68Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696503543; x=1697108343;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=JNyCQ67xdT96qFsLCo+WWGtR8HPuUjeLj+uqNqnLI8g=;
-        b=ji17BTfrXEuOiVy0BWfj1rWhVHFxWXIaqRYD3bJxKU6sENykNM//QrBe/Fru0JmfwA
-         X2m8X2//5ABce7cFtzt59Okib5/2DG9UIvw0kENPuB4k4SnlzkQQDS8ByOipvCWl5P35
-         AUXCuJfckRLuz7ClLngushBN5ClIb2rLPRFcLtWgueSQpmB1e39SWB5YZw+fe0yNSp0o
-         M6SEiFI/iDw8X4bgrmrAyyntv0QOqtnbWdIEHuq7HP+r8qESATwr+jvzDfpXKF4arcZo
-         +UJz1nIHUbsmdcLKxD0uixW0yDO0DfSHgawXX5zALU6wlGcXhUzdhQjLr7cW1Rwwuvtg
-         TXGg==
-X-Gm-Message-State: AOJu0Yx3yIAOrf6t66+kgJKmmU7dBoQndYn0eUI6M5s5ubmCdfFI9Pa6
-        e7dlM8JX9ampsbCxV7d7BCY/OA==
-X-Google-Smtp-Source: AGHT+IEqVdlbNS4vW9mOpsOKz3y7xe+62W+DJy82LP+RQC3oEmT65otErnMxK2N9X98S9Eq1rXS2Yw==
-X-Received: by 2002:a17:90a:850b:b0:274:3d7d:e793 with SMTP id l11-20020a17090a850b00b002743d7de793mr4575546pjn.47.1696503543399;
-        Thu, 05 Oct 2023 03:59:03 -0700 (PDT)
-Received: from localhost ([122.172.81.92])
-        by smtp.gmail.com with ESMTPSA id g4-20020a17090ace8400b00274b9dd8519sm1254350pju.35.2023.10.05.03.59.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Oct 2023 03:59:02 -0700 (PDT)
-Date:   Thu, 5 Oct 2023 16:29:00 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Liao Chang <liaochang1@huawei.com>
-Cc:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: conservative: Simplify the condition of storing
- 'down_threshold'
-Message-ID: <20231005105900.uctt4jna4wovt5g6@vireshk-i7>
-References: <20230912060942.2516761-1-liaochang1@huawei.com>
+        with ESMTP id S240543AbjJEQNH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 12:13:07 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF8CB2066F;
+        Thu,  5 Oct 2023 03:20:39 -0700 (PDT)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id B58C7660731C;
+        Thu,  5 Oct 2023 11:20:37 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1696501238;
+        bh=gtShXwSvNgcZvx08zMfHtG7ILqlH7jFASuzzPiQpLPw=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=LmyoZxlvxhWUxUVTDQnppkA5Iu3cWn6/tGSFPwsUJHX8fLXTfRmxOLlVBuF9h9vLf
+         +iM0l0oQw1B8URqd7+da9jI8QgpgVfPOk0X57GSH0ADILQfC/Hl9GHzbPaTcuI0vha
+         9GVotVohyea8Q6E+cx9n3Pm288TFIbbavhipoZ+YcKRedXsXoBuzx8tTTok6/nweFN
+         bsMLVtIWuLqUjZt61Spps4t2XPOM1gJPhs2byvSJR6xw1IB2G/FK9/uo6hcpHsWtr5
+         W67BfPbHUaHxy6zBJWj++QKvwYtByXi09WhpKxvE2f16miqVx93Rc1j3wH+JIP2nY9
+         /Bp8h6B0PSRIw==
+Message-ID: <12c2a112-b69a-99ce-227a-eb1e8c539a44@collabora.com>
+Date:   Thu, 5 Oct 2023 12:20:35 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230912060942.2516761-1-liaochang1@huawei.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Subject: Re: [PATCH v8 0/8] soc: mediatek: MT8365 power support
+Content-Language: en-US
+To:     Markus Schneider-Pargmann <msp@baylibre.com>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Alexandre Mergnat <amergnat@baylibre.com>,
+        Chun-Jie Chen <chun-jie.chen@mediatek.com>,
+        Tinghan Shen <tinghan.shen@mediatek.com>,
+        Fabien Parent <parent.f@gmail.com>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org
+References: <20230918093751.1188668-1-msp@baylibre.com>
+ <06f8a769-1845-ea87-dcc4-37dd5ad255ed@collabora.com>
+ <20231005094316.nj5w6cmefvc36tbl@blmsp>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20231005094316.nj5w6cmefvc36tbl@blmsp>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12-09-23, 06:09, Liao Chang wrote:
-> The governor currently checks if the input new down_threshold is less
-> than 100 before storing it. However, the up_threshold field of dbs_data
-> structure is also limited to be less than 100, so this check is
-> unnecessary and remove it.
+Il 05/10/23 11:43, Markus Schneider-Pargmann ha scritto:
+> Hi Angelo,
 > 
-> Signed-off-by: Liao Chang <liaochang1@huawei.com>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+> On Thu, Oct 05, 2023 at 10:54:16AM +0200, AngeloGioacchino Del Regno wrote:
+>> Il 18/09/23 11:37, Markus Schneider-Pargmann ha scritto:
+>>> Hi,
+>>>
+>>> no real changes in this update. Rebase to v6.6-rc2 and according change
+>>> of directory.
+>>
+>> Since the driver changed to pmdomain/mediatek, can you please change the commit
+>> titles for the driver commits?
 > 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index b6bd0ff35323..56500b25d77c 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -187,8 +187,7 @@ static ssize_t down_threshold_store(struct gov_attr_set *attr_set,
->  	ret = sscanf(buf, "%u", &input);
->  
->  	/* cannot be lower than 1 otherwise freq will not fall */
-> -	if (ret != 1 || input < 1 || input > 100 ||
-> -			input >= dbs_data->up_threshold)
-> +	if (ret != 1 || input < 1 || input >= dbs_data->up_threshold)
->  		return -EINVAL;
->  
->  	cs_tuners->down_threshold = input;
+> As far as I understand Ulf applied the series today and changed the
+> title as well:
+> https://lore.kernel.org/lkml/CAPDyKFrUbWBQgMm6wYwFfybiRQKhBpwH7wwcXaT+KrQJLevq3w@mail.gmail.com/
+> 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Whoops! I didn't notice that, sorry!
 
--- 
-viresh
+Cheers,
+Angelo
+
