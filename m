@@ -2,179 +2,197 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AA2BE92709
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:51:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B2AEE9270E
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 15:13:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229872AbjJEOut (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 10:50:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44644 "EHLO
+        id S229461AbjJEPNL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 11:13:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239681AbjJEOrn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:47:43 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C40424682;
-        Thu,  5 Oct 2023 07:34:51 -0700 (PDT)
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3957jcwf026789;
-        Thu, 5 Oct 2023 08:53:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=qcppdkim1;
- bh=eE+3lVu2w4k3uwLOxwaySx3ouHPIax279I51XhOh3ug=;
- b=Gry/b2rfE4ADnco0RlmPzyXgRrhKf36W7iHcINr8grmWGfu1fTEVPbwQhcAGM9kBy3/O
- UKE1C2vjiPntBn2lng2F4ZMmkytnS2PeItM5JLROMesiW9t0rr8wg/46W3/89Euu9weF
- jQ7ztUONtPX5DNjh7BG2anhIcmRKFlndK1DEmKqh0MS5xvhIdxUbdEa66393imoi20ce
- CQtaP76GMbQVsyUT4tK8aj2mUvuTC83MgwH7n0T3GB6iTvNr/3Udc2X0YR7N/K/k1I9+
- UrIcWSvyXiW6tbu4vWR7PKcy++QghmS6fcYXxd0RVJg76ZCQfpjXlj0geheQNKeBH/tw xA== 
-Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tgynhbh8t-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 05 Oct 2023 08:53:00 +0000
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3958qxDO027273
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 5 Oct 2023 08:52:59 GMT
-Received: from [10.217.219.216] (10.80.80.8) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.36; Thu, 5 Oct
- 2023 01:52:52 -0700
-Message-ID: <396a55c1-8ae3-8296-2826-e7ab0f5cb103@quicinc.com>
-Date:   Thu, 5 Oct 2023 14:22:49 +0530
+        with ESMTP id S233471AbjJEPMP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 11:12:15 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 6A9C9194;
+        Thu,  5 Oct 2023 06:48:18 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7DA30168F;
+        Thu,  5 Oct 2023 06:42:06 -0700 (PDT)
+Received: from e126645.arm.com (e126645.nice.arm.com [10.34.100.116])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id B6CBD3F641;
+        Thu,  5 Oct 2023 06:41:25 -0700 (PDT)
+From:   Pierre Gondois <pierre.gondois@arm.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Pierre Gondois <pierre.gondois@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
+        Valentin Schneider <vschneid@redhat.com>,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v2] cpufreq: Rebuild sched-domains when removing cpufreq driver
+Date:   Thu,  5 Oct 2023 15:41:20 +0200
+Message-Id: <20231005134120.1217829-1-pierre.gondois@arm.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.13.1
-Subject: Re: [PATCH v5 2/5] arm64: dts: qcom: sm8450: Add opp table support to
- PCIe
-Content-Language: en-US
-To:     Manivannan Sadhasivam <mani@kernel.org>
-CC:     <agross@kernel.org>, <andersson@kernel.org>,
-        <konrad.dybcio@linaro.org>, <krzysztof.kozlowski+dt@linaro.org>,
-        <conor+dt@kernel.org>, <vireshk@kernel.org>, <nm@ti.com>,
-        <sboyd@kernel.org>, <lpieralisi@kernel.org>, <kw@linux.com>,
-        <robh@kernel.org>, <bhelgaas@google.com>, <rafael@kernel.org>,
-        <linux-arm-msm@vger.kernel.org>, <linux-pci@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <quic_vbadigan@quicinc.com>,
-        <quic_nitegupt@quicinc.com>, <quic_skananth@quicinc.com>,
-        <quic_ramkri@quicinc.com>, <quic_parass@quicinc.com>
-References: <1694066433-8677-1-git-send-email-quic_krichai@quicinc.com>
- <1694066433-8677-3-git-send-email-quic_krichai@quicinc.com>
- <20230928183808.GA10963@thinkpad>
-From:   Krishna Chaitanya Chundru <quic_krichai@quicinc.com>
-In-Reply-To: <20230928183808.GA10963@thinkpad>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: po57y_E2hETBeVbcWCnsVmh_SpTwKbCa
-X-Proofpoint-ORIG-GUID: po57y_E2hETBeVbcWCnsVmh_SpTwKbCa
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-05_06,2023-10-02_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 spamscore=0
- priorityscore=1501 impostorscore=0 malwarescore=0 mlxscore=0
- mlxlogscore=992 clxscore=1015 adultscore=0 lowpriorityscore=0 bulkscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2309180000 definitions=main-2310050067
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+The Energy Aware Scheduler (EAS) relies on the schedutil governor.
+When moving to/from the schedutil governor, sched domains must be
+rebuilt to allow re-evaluating the enablement conditions of EAS.
+This is done through sched_cpufreq_governor_change().
 
-On 9/29/2023 12:08 AM, Manivannan Sadhasivam wrote:
-> On Thu, Sep 07, 2023 at 11:30:30AM +0530, Krishna chaitanya chundru wrote:
->> PCIe needs to choose the appropriate performance state of RPMH power
->> domain based up on the PCIe gen speed.
->>
->> So let's add the OPP table support to specify RPMH performance states.
->>
->> Use opp-level for the PCIe gen speed for easier use.
->>
-> So, you just want to control RPMh performance state using OPP and not clock
-> rates? What will happen if you switch to lowest performance state of RPMh but
-> still run PCIe clocks at max rate?
->
-> - Mani
+Having a cpufreq governor assumes a cpufreq driver is running.
+Inserting/removing a cpufreq driver should trigger a re-evaluation
+of EAS enablement conditions, avoiding to see EAS enabled when
+removing a running cpufreq driver.
 
-Based up on the RPMH state the clock rates will be scaled accordingly.
+Rebuild the sched domains in schedutil's sugov_init()/sugov_exit(),
+allowing to check EAS's enablement condition whenever schedutil
+governor is initialized/exited from.
+Move relevant code up in schedutil.c to avoid a split and conditional
+function declaration.
+Rename sched_cpufreq_governor_change() to sugov_eas_rebuild_sd().
 
-- KC
+Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+---
+ drivers/cpufreq/cpufreq.c        |  3 +-
+ include/linux/cpufreq.h          |  8 -----
+ kernel/sched/cpufreq_schedutil.c | 55 +++++++++++++++++---------------
+ 3 files changed, 30 insertions(+), 36 deletions(-)
 
->> Signed-off-by: Krishna chaitanya chundru <quic_krichai@quicinc.com>
->> ---
->>   arch/arm64/boot/dts/qcom/sm8450.dtsi | 47 ++++++++++++++++++++++++++++++++++++
->>   1 file changed, 47 insertions(+)
->>
->> diff --git a/arch/arm64/boot/dts/qcom/sm8450.dtsi b/arch/arm64/boot/dts/qcom/sm8450.dtsi
->> index 2a60cf8..a6264a5 100644
->> --- a/arch/arm64/boot/dts/qcom/sm8450.dtsi
->> +++ b/arch/arm64/boot/dts/qcom/sm8450.dtsi
->> @@ -1820,7 +1820,28 @@
->>   			pinctrl-names = "default";
->>   			pinctrl-0 = <&pcie0_default_state>;
->>   
->> +			operating-points-v2 = <&pcie0_opp_table>;
->> +
->>   			status = "disabled";
->> +
->> +			pcie0_opp_table: opp-table {
->> +				compatible = "operating-points-v2";
->> +
->> +				opp-1 {
->> +					opp-level = <1>;
->> +					required-opps = <&rpmhpd_opp_low_svs>;
->> +				};
->> +
->> +				opp-2 {
->> +					opp-level = <2>;
->> +					required-opps = <&rpmhpd_opp_low_svs>;
->> +				};
->> +
->> +				opp-3 {
->> +					opp-level = <3>;
->> +					required-opps = <&rpmhpd_opp_nom>;
->> +				};
->> +			};
->>   		};
->>   
->>   		pcie0_phy: phy@1c06000 {
->> @@ -1932,7 +1953,33 @@
->>   			pinctrl-names = "default";
->>   			pinctrl-0 = <&pcie1_default_state>;
->>   
->> +			operating-points-v2 = <&pcie1_opp_table>;
->> +
->>   			status = "disabled";
->> +
->> +			pcie1_opp_table: opp-table {
->> +				compatible = "operating-points-v2";
->> +
->> +				opp-1 {
->> +					opp-level = <1>;
->> +					required-opps = <&rpmhpd_opp_low_svs>;
->> +				};
->> +
->> +				opp-2 {
->> +					opp-level = <2>;
->> +					required-opps = <&rpmhpd_opp_low_svs>;
->> +				};
->> +
->> +				opp-3 {
->> +					opp-level = <3>;
->> +					required-opps = <&rpmhpd_opp_low_svs>;
->> +				};
->> +
->> +				opp-4 {
->> +					opp-level = <4>;
->> +					required-opps = <&rpmhpd_opp_nom>;
->> +				};
->> +			};
->>   		};
->>   
->>   		pcie1_phy: phy@1c0f000 {
->> -- 
->> 2.7.4
->>
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 60ed89000e82..4bc15634d49c 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1544,7 +1544,7 @@ static int cpufreq_online(unsigned int cpu)
+ 
+ 		/*
+ 		 * Register with the energy model before
+-		 * sched_cpufreq_governor_change() is called, which will result
++		 * sugov_eas_rebuild_sd() is called, which will result
+ 		 * in rebuilding of the sched domains, which should only be done
+ 		 * once the energy model is properly initialized for the policy
+ 		 * first.
+@@ -2652,7 +2652,6 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 		ret = cpufreq_start_governor(policy);
+ 		if (!ret) {
+ 			pr_debug("governor change\n");
+-			sched_cpufreq_governor_change(policy, old_gov);
+ 			return 0;
+ 		}
+ 		cpufreq_exit_governor(policy);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 71d186d6933a..1c5ca92a0555 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -1193,14 +1193,6 @@ static inline int of_perf_domain_get_sharing_cpumask(int pcpu, const char *list_
+ }
+ #endif
+ 
+-#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
+-void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
+-			struct cpufreq_governor *old_gov);
+-#else
+-static inline void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
+-			struct cpufreq_governor *old_gov) { }
+-#endif
+-
+ extern unsigned int arch_freq_get_on_cpu(int cpu);
+ 
+ #ifndef arch_set_freq_scale
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 4492608b7d7f..901cada51ba7 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -555,6 +555,31 @@ static const struct kobj_type sugov_tunables_ktype = {
+ 
+ /********************** cpufreq governor interface *********************/
+ 
++#ifdef CONFIG_ENERGY_MODEL
++static void rebuild_sd_workfn(struct work_struct *work)
++{
++	rebuild_sched_domains_energy();
++}
++
++static DECLARE_WORK(rebuild_sd_work, rebuild_sd_workfn);
++
++/*
++ * EAS shouldn't be attempted without sugov, so rebuild the sched_domains
++ * on governor changes to make sure the scheduler knows about it.
++ */
++static void sugov_eas_rebuild_sd(void)
++{
++	/*
++	 * When called from the cpufreq_register_driver() path, the
++	 * cpu_hotplug_lock is already held, so use a work item to
++	 * avoid nested locking in rebuild_sched_domains().
++	 */
++	schedule_work(&rebuild_sd_work);
++}
++#else
++static inline void sugov_eas_rebuild_sd(void) { };
++#endif
++
+ struct cpufreq_governor schedutil_gov;
+ 
+ static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
+@@ -709,6 +734,8 @@ static int sugov_init(struct cpufreq_policy *policy)
+ 	if (ret)
+ 		goto fail;
+ 
++	sugov_eas_rebuild_sd();
++
+ out:
+ 	mutex_unlock(&global_tunables_lock);
+ 	return 0;
+@@ -750,6 +777,8 @@ static void sugov_exit(struct cpufreq_policy *policy)
+ 	sugov_kthread_stop(sg_policy);
+ 	sugov_policy_free(sg_policy);
+ 	cpufreq_disable_fast_switch(policy);
++
++	sugov_eas_rebuild_sd();
+ }
+ 
+ static int sugov_start(struct cpufreq_policy *policy)
+@@ -838,29 +867,3 @@ struct cpufreq_governor *cpufreq_default_governor(void)
+ #endif
+ 
+ cpufreq_governor_init(schedutil_gov);
+-
+-#ifdef CONFIG_ENERGY_MODEL
+-static void rebuild_sd_workfn(struct work_struct *work)
+-{
+-	rebuild_sched_domains_energy();
+-}
+-static DECLARE_WORK(rebuild_sd_work, rebuild_sd_workfn);
+-
+-/*
+- * EAS shouldn't be attempted without sugov, so rebuild the sched_domains
+- * on governor changes to make sure the scheduler knows about it.
+- */
+-void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
+-				  struct cpufreq_governor *old_gov)
+-{
+-	if (old_gov == &schedutil_gov || policy->governor == &schedutil_gov) {
+-		/*
+-		 * When called from the cpufreq_register_driver() path, the
+-		 * cpu_hotplug_lock is already held, so use a work item to
+-		 * avoid nested locking in rebuild_sched_domains().
+-		 */
+-		schedule_work(&rebuild_sd_work);
+-	}
+-
+-}
+-#endif
+-- 
+2.25.1
+
