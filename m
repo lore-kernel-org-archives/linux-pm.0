@@ -2,125 +2,181 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8298E92710
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:43:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E2CBE92709
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:43:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238084AbjJEOnU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 10:43:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46276 "EHLO
+        id S237054AbjJEOnY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 10:43:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55950 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237088AbjJEOi2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:38:28 -0400
+        with ESMTP id S238539AbjJEOkk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:40:40 -0400
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 883834F077;
-        Thu,  5 Oct 2023 07:02:49 -0700 (PDT)
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3952obcM020199;
-        Thu, 5 Oct 2023 02:52:08 GMT
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5ACA477644;
+        Thu,  5 Oct 2023 07:12:58 -0700 (PDT)
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3958A1lg012152;
+        Thu, 5 Oct 2023 09:57:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=date : from : to :
  cc : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=qcppdkim1; bh=dFUWap6jlVEo0/FWKF6ZbuQBL/+MeVOOJ+8zsML8Umo=;
- b=edDpNhoHl+kWZPg5qVWs2Gzi7Y81akUnBumc1EpagtG3tiiGNE/zIMkzrpwP8D3wtJOJ
- q7LEHVmd6ww7Q6IjqC3NoaGxWO0fp7Xmfcyw5cMFrukL2REFE6UP1jED3rgj0Re84fdW
- FfHaiRIcSCEQ3m0tlDQ6WBoVNTIjEm5kZp0pc+Oh61L3SAQEN/WlG1ikGJEaYEwNTp5E
- BTKXlK330LmGV6+LQYcelciZH+Pv6YQzvSal9US7e/UBPtWuIieteax0GbZVQzx4qFDK
- 0dm0wRa0dkZde2v8rKkeiq2a5S1i02Ynl7TXW4n68w4AdxIpq47RFApBxmXOcqH2H7TX LQ== 
-Received: from nalasppmta02.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3thj6gg9hp-1
+ in-reply-to; s=qcppdkim1; bh=TULmcO8l188rP5vtjqFrkpttdGmBezWswKLwM6tqT+k=;
+ b=Qj7I3eeKQbICxxNLcDf5mcOHdj3UtQIdHYHW2wnUCyZU6x6xlHzHPqqBsPyfiY3rOw9A
+ 0b03WbvtDQ3foBmuYteEiAO4in9C/+s9ZBh/4D9ICpLfNdRljEkkN1OEanDWjzgsel8z
+ iOS/6pFb3Tdht6vV4XSmSWp91aKKZos440p/+oTTJhIDQ6VMhhgAjtNNq1oHIqIk6B93
+ iCfHE3/F6fwZpB8mi7iRyRs86dQGDqc7MSmKTViYighBvUG19YiOAhqV5cliyTt0oYKD
+ GJau/y+OshTswMi4sZMfaI8RLcyJCpK5o6/k7tgysj3CB8AbYw8FLeVcE9qd5TKZmyPv mA== 
+Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3th8e1teue-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 05 Oct 2023 02:52:08 +0000
-Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3952q7YM016314
+        Thu, 05 Oct 2023 09:57:56 +0000
+Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
+        by NASANPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3959vtAJ028265
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 5 Oct 2023 02:52:07 GMT
-Received: from hu-bjorande-lv.qualcomm.com (10.49.16.6) by
- nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
+        Thu, 5 Oct 2023 09:57:55 GMT
+Received: from varda-linux.qualcomm.com (10.80.80.8) by
+ nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.30; Wed, 4 Oct 2023 19:52:07 -0700
-Date:   Wed, 4 Oct 2023 19:52:06 -0700
-From:   Bjorn Andersson <quic_bjorande@quicinc.com>
-To:     Manivannan Sadhasivam <mani@kernel.org>
-CC:     Caleb Connolly <caleb.connolly@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bhupesh Sharma <bhupesh.linux@gmail.com>,
-        "Bjorn Andersson" <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Sibi Sankar <quic_sibis@quicinc.com>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        <linux-arm-msm@vger.kernel.org>,
-        <linux-remoteproc@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH 0/4] thermal: Introduce Qualcomm Thermal Mitigation
- Device support
-Message-ID: <20231005025206.GF3553829@hu-bjorande-lv.qualcomm.com>
-References: <20230905-caleb-qmi_cooling-v1-0-5aa39d4164a7@linaro.org>
- <20231001155701.GA53767@thinkpad>
+ 15.2.1118.36; Thu, 5 Oct 2023 02:57:49 -0700
+Date:   Thu, 5 Oct 2023 15:27:45 +0530
+From:   Varadarajan Narayanan <quic_varada@quicinc.com>
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+CC:     <ilia.lin@kernel.org>, <agross@kernel.org>, <andersson@kernel.org>,
+        <konrad.dybcio@linaro.org>, <rafael@kernel.org>,
+        <viresh.kumar@linaro.org>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <conor+dt@kernel.org>,
+        <mturquette@baylibre.com>, <sboyd@kernel.org>,
+        <quic_kathirav@quicinc.com>, <linux-pm@vger.kernel.org>,
+        <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>
+Subject: Re: [PATCH v1 07/10] arm64: dts: qcom: ipq5332: populate the opp
+ table based on the eFuse
+Message-ID: <20231005095744.GA29795@varda-linux.qualcomm.com>
+References: <cover.1693996662.git.quic_varada@quicinc.com>
+ <a6d12e3b253d6a55d85f66979ba8b7d9c9ff6072.1693996662.git.quic_varada@quicinc.com>
+ <CAA8EJppNsgUNgwadq9oM0_KyORNR5PBZGVZukN6MzAm2KPzC9g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20231001155701.GA53767@thinkpad>
-X-Originating-IP: [10.49.16.6]
-X-ClientProxiedBy: nalasex01b.na.qualcomm.com (10.47.209.197) To
- nalasex01c.na.qualcomm.com (10.47.97.35)
+In-Reply-To: <CAA8EJppNsgUNgwadq9oM0_KyORNR5PBZGVZukN6MzAm2KPzC9g@mail.gmail.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nasanex01a.na.qualcomm.com (10.52.223.231)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: FrSBzj2ulkS9SaY4CyHpLk6gx13PtlDB
-X-Proofpoint-ORIG-GUID: FrSBzj2ulkS9SaY4CyHpLk6gx13PtlDB
+X-Proofpoint-GUID: oIcgO5TZ66_7muH1tFN8rHdOi-fpZKDV
+X-Proofpoint-ORIG-GUID: oIcgO5TZ66_7muH1tFN8rHdOi-fpZKDV
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-04_13,2023-10-02_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
- lowpriorityscore=0 suspectscore=0 spamscore=0 malwarescore=0 adultscore=0
- priorityscore=1501 clxscore=1015 mlxlogscore=999 impostorscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2309180000 definitions=main-2310050023
+ definitions=2023-10-05_06,2023-10-02_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 suspectscore=0
+ adultscore=0 priorityscore=1501 mlxscore=0 lowpriorityscore=0 spamscore=0
+ bulkscore=0 mlxlogscore=999 malwarescore=0 impostorscore=0 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2309180000
+ definitions=main-2310050077
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Oct 01, 2023 at 09:27:01PM +0530, Manivannan Sadhasivam wrote:
-> On Fri, Sep 29, 2023 at 05:16:16PM +0100, Caleb Connolly wrote:
-> > The Thermal Mitigation Device (TMD) Service is a QMI service that runs
-> > on remote subsystems (the modem and DSPs) on Qualcomm SoCs.
-> > It exposes various mitigations including passive thermal controls and
-> > rail voltage restrictions.
-> > 
-> > This series introduces support for exposing TMDs as cooling devices
-> > in the kernel through the thermal framework, using the QMI interface.
-> > 
-> > Each TMD client is described as a child of the remoteproc node in
-> > devicetree. With subnodes for each control.
-> > 
-> 
-> Daniel expressed concerns in the past aganist representing TMD driver as a
-> cooling device since it is not tied to thermal zones and the governors cannot
-> use it. Instead he suggested to represent it as a powercap device with thermal
-> constraints.
-> 
-> So please look into that approach.
-> 
+On Thu, Sep 07, 2023 at 04:59:28PM +0300, Dmitry Baryshkov wrote:
+> On Thu, 7 Sept 2023 at 08:23, Varadarajan Narayanan
+> <quic_varada@quicinc.com> wrote:
+> >
+> > IPQ53xx have different OPPs available for the CPU based on
+> > SoC variant. This can be determined through use of an eFuse
+> > register present in the silicon.
+> >
+> > Add support to read the eFuse and populate the OPPs based on it.
+> >
+> > Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
+> > Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+> > ---
+> >  arch/arm64/boot/dts/qcom/ipq5332.dtsi | 34 +++++++++++++++++++++++++++++++---
+> >  1 file changed, 31 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/arch/arm64/boot/dts/qcom/ipq5332.dtsi b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
+> > index 82761ae..3ca3f34 100644
+> > --- a/arch/arm64/boot/dts/qcom/ipq5332.dtsi
+> > +++ b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
+> > @@ -91,11 +91,34 @@
+> >         };
+> >
+> >         cpu_opp_table: opp-table-cpu {
+> > -               compatible = "operating-points-v2";
+> > +               compatible = "operating-points-v2-kryo-cpu";
+> >                 opp-shared;
+> > +               nvmem-cells = <&cpu_speed_bin>;
+> > +               nvmem-cell-names = "speed_bin";
+> > +
+> > +               /*
+> > +                * Listed all supported CPU frequencies and opp-supported-hw
+> > +                * values to select CPU frequencies based on the limits fused.
+> > +                * ------------------------------------------------------------
+> > +                * Frequency     BIT3   BIT2   BIT1    BIT0    opp-supported-hw
+> > +                *              1.0GHz 1.2GHz 1.5GHz No Limit
+> > +                * ------------------------------------------------------------
+> > +                * 1100000000     1      1      1       1            0xF
+> > +                * 1500000000     0      0      1       1            0x3
+> > +                * -----------------------------------------------------------
+> > +                */
+>
+> This can probably go to the commit message instead.
 
-The powercap framework revolves around the idea that we have some amount
-of power (micro-watt) being available to the system, which can be split
-across a range of devices.
+Ok
 
-Say that we implement this as a powercap thing, what current consumption
-would you attribute these entires? How would you map a given uW value to
-the mitigation levels provided by the qmi-cooling instances?
+> > +
+> > +               opp-1100000000 {
+> > +                       opp-hz = /bits/ 64 <1100000000>;
+>
+> But your table shows 1.0 GHz and 1.2 GHz instead of 1.1 GHz
 
+Will update it.
 
-Beyond that, I'm still not sure how we would plug this in. We don't have
-a picture of the power consumption/flow through the system at any point
-in time - as the control of the power grid is distributed across the
-various subsystems.
+> > +                       opp-microvolt = <850000>;
+> > +                       opp-supported-hw = <0xF>;
+> > +                       clock-latency-ns = <200000>;
+> > +               };
+> >
+> > -               opp-1488000000 {
+> > -                       opp-hz = /bits/ 64 <1488000000>;
+> > +               opp-1500000000 {
+> > +                       opp-hz = /bits/ 64 <1500000000>;
+>
+> So, 1.488 GHz or 1.5 GHz?
 
-Regards,
-Bjorn
+1.5 GHz
+
+> > +                       opp-microvolt = <950000>;
+>
+> Which regulator is controlled by this microvolt?
+
+Based on the SKU, the XBL sets up the regulator to provide 950000uV
+on CPUs capable of running 1.5G and 850000uV on other SKUs. Linux
+doesn't control it.
+
+Thanks
+Varada
+> > +                       opp-supported-hw = <0x3>;
+> >                         clock-latency-ns = <200000>;
+> >                 };
+> >         };
+> > @@ -150,6 +173,11 @@
+> >                         reg = <0x000a4000 0x721>;
+> >                         #address-cells = <1>;
+> >                         #size-cells = <1>;
+> > +
+> > +                       cpu_speed_bin: cpu_speed_bin@1d {
+> > +                               reg = <0x1d 0x2>;
+> > +                               bits = <7 2>;
+> > +                       };
+> >                 };
+> >
+> >                 rng: rng@e3000 {
+> > --
+> > 2.7.4
+> >
+>
+>
+> --
+> With best wishes
+> Dmitry
