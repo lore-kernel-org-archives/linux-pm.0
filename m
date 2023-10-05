@@ -2,101 +2,101 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F671E7AD44
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 16:33:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06766E9270D
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 16:33:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235320AbjJEQdL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 12:33:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52808 "EHLO
+        id S231791AbjJEQdj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 12:33:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46470 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231613AbjJEQce (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 12:32:34 -0400
-Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A775E24870
-        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 04:20:16 -0700 (PDT)
-Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-313e742a787so511037f8f.1
-        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 04:20:16 -0700 (PDT)
+        with ESMTP id S232972AbjJEQck (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 12:32:40 -0400
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 383A523531
+        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 03:57:50 -0700 (PDT)
+Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-690d8fb3b7eso708482b3a.1
+        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 03:57:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696504815; x=1697109615; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=D4AE5jS4qjwXCMnOlOFtdJ9RttCSKbWymcLORudPBgc=;
-        b=vITy67iqXCawyJRrBYTbANj04Wqd82i9f+X41xRdVLpr9q1nrjp3lsGFiHlsCH4/Mm
-         gYaoQefcPxWoF98ga9pncX77lQMPRQgXX5DlFeNEWdkrD7jVEA4VmiAonOKryk1TfyP8
-         Xf/ODAA7V8B2gZkU8C/xsfqPlqxWBhEehk7ysxdNpqytvgNkJj5CllMfDprn49pUEKT7
-         OlgtR6JFLaxWz3LozZJ5G3+wdPB+at/WpKJKi/DeZqjdgNeEx3aT5HuOoDzmhwmoJ19G
-         RrDWYo6ObHQwOXN+QuZunJj8p0F5Nl5JdS7rlbIFcT3WQLYQL6NMEKxcncm3Le4s1NKf
-         kqVg==
+        d=linaro.org; s=google; t=1696503469; x=1697108269; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=8cDRtKnd/4diHbjlhPc0Xt/Y0fuLcZWAs7MWCmgie4k=;
+        b=buXhQQ3idmiv7NOcQMJ1dMF4CYjdrkMg8EyCZX4Yn2X5iPf2ixPllq1z3LM1o3RATe
+         v0pPAc9G4vOvXSe+YGCQ8XfZK5HDbkP0Qmujl5mwTNF7e7aymM88K9qtxYn+BXptC90h
+         ArkS6dkQ7rdgZjEYnzSN7HC+4dVLR5cAbdUT5rfyZqOxVJwM9zFgLAsrxdupMJojkfL1
+         fNg5nxIjgohW/y9xvXt+MS2/YenX6b6/4TxhNPehHCYpeaEZmYK7UpWfAXUVSAW4vb9L
+         57nYQjDzukmlTzsv/pYtVItmbWgaYAEaK8AKbk3WqTvh4AkrTnWYw/h8NrJCP2LtkyRx
+         s4MQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696504815; x=1697109615;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=D4AE5jS4qjwXCMnOlOFtdJ9RttCSKbWymcLORudPBgc=;
-        b=UjNI5eUMKIWSvj3bc20TZ4zH9+fvRtKvXp2u9Tf80Gcfr8nW74jCBKDIKfFmxTeGEq
-         11lX0ODiOCuUy7PtsYHfL1msbn7/0cCGrpZlBGqSgpruEJyVrg4p1Fv3MDsizHdUllvJ
-         VCVWhvpNh1iuHUZApWzbfKNttAaNJyNol7bIj3axQH0WA8PhUs3YK0liByAsqKGN71pp
-         tVmYtv4J8kiCFuqAPoyEzy8EnGDygEJTZlgqI3KPZlSbBWagzpSrspljo4LzY7HBIJzo
-         VceZm+oFG7TFERzpcXwdOuPUW6U0TDvTZMY6iO2qPHUga63YDlXGRkdY7CbvL4h29bKI
-         Ldfg==
-X-Gm-Message-State: AOJu0Ywx7VN2XyOWx5mOyOt8DunPV8xDxI25zOsAVQ/FOCyK9aBBRqgC
-        gJj66LGvfUOyDwKmuY+gJniJ8A==
-X-Google-Smtp-Source: AGHT+IEI36e0d7npO9gHvSq0PCK8REknqrsXlLxeDQM2Vg3iDm3n0GAUq6RQUC7RZu5soOlpwzCm6w==
-X-Received: by 2002:a5d:6387:0:b0:323:1688:a70e with SMTP id p7-20020a5d6387000000b003231688a70emr1084141wru.16.1696504815109;
-        Thu, 05 Oct 2023 04:20:15 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:8bb6:12b3:863a:e5dd? ([2a05:6e02:1041:c10:8bb6:12b3:863a:e5dd])
-        by smtp.googlemail.com with ESMTPSA id t25-20020a1c7719000000b004065daba6casm3539418wmi.46.2023.10.05.04.20.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 05 Oct 2023 04:20:14 -0700 (PDT)
-Message-ID: <d784edb6-9a95-b30c-6f55-a1daccad2f9e@linaro.org>
-Date:   Thu, 5 Oct 2023 13:20:13 +0200
+        d=1e100.net; s=20230601; t=1696503469; x=1697108269;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=8cDRtKnd/4diHbjlhPc0Xt/Y0fuLcZWAs7MWCmgie4k=;
+        b=h7I/SqjX74Kfs1PgvQ5SNz8jDGYM9jSKfGP5ue9D5X2217NGs5f3+0b57EJG2LfUYz
+         HnDt/w9Eo898IcGek4az32PcQY5WznLfXhyVMXKIpVADD5984FnOjAA6Gw37YQ9pRQkv
+         ANIUh3Hv7BFaQUK8UfOhbGsGakWHIdNpBgwkDPbATa8J618vnTRiXCdUUHaDhBFIq0yG
+         mperaqCJWw9jrQbhO1M5AMHRpeTvWkuEigntw855KjPtFTwtMZBm1ilx6syc1etc+wym
+         yl38iGJ86xpiZxEOWnN8cfTYZNiX9+zSEdoLW0p3EUb7C3aIYWp8W6n9U5OrbDjrphA0
+         klmg==
+X-Gm-Message-State: AOJu0Yx00juTOU8HDvg/9Q8Tr0dRrVYB8B9urJ7BAmYZzh/BBKHS2VMr
+        0xxV4LoY+ZBtx9W+T3yuFc816Q==
+X-Google-Smtp-Source: AGHT+IFIoveqW8638epw2bxKQUXtW3HEDC9HlLThX3FOfrwhD2GggsQd21dYCdaH96/Y6Gff6NLFuA==
+X-Received: by 2002:a05:6a21:4982:b0:160:7679:90 with SMTP id ax2-20020a056a21498200b0016076790090mr4019045pzc.56.1696503469704;
+        Thu, 05 Oct 2023 03:57:49 -0700 (PDT)
+Received: from localhost ([122.172.81.92])
+        by smtp.gmail.com with ESMTPSA id t23-20020aa79397000000b0069348918cfcsm1081690pfe.193.2023.10.05.03.57.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 Oct 2023 03:57:49 -0700 (PDT)
+Date:   Thu, 5 Oct 2023 16:27:46 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Liao Chang <liaochang1@huawei.com>
+Cc:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: conservative: Ensure requested_freq is greater
+ than min frequency
+Message-ID: <20231005105746.ikezg2buza2qwvig@vireshk-i7>
+References: <20230912060957.2516790-1-liaochang1@huawei.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v2 6/6] thermal: int340x: Use thermal_zone_for_each_trip()
-Content-Language: en-US
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-References: <4846448.GXAFRqVoOG@kreacher> <3532950.iIbC2pHGDl@kreacher>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <3532950.iIbC2pHGDl@kreacher>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230912060957.2516790-1-liaochang1@huawei.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 03/10/2023 15:26, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 12-09-23, 06:09, Liao Chang wrote:
+> The governor ensures that the requested frequency is greater than the
+> minimum frequency when the condition for decreasing frequency is
+> satisfied. This is done by either reducing the frequency step from the
+> current frequency if the current frequency is greater than the sum of
+> the frequency step and the minimum frequency, or setting the frequency
+> to the minimum one otherwise.
 > 
-> Modify int340x_thermal_update_trips() to use thermal_zone_for_each_trip()
-> for walking trips instead of using the trips[] table passed to the
-> thermal zone registration function.
-> 
-> For this purpose, store active trip point indices in the priv fieids of
-> the corresponding thermal_trip structures.
-> 
-> No intentional functional impact.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Liao Chang <liaochang1@huawei.com>
 > ---
+>  drivers/cpufreq/cpufreq_conservative.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> v1 -> v2: Mo changes
-> 
-> ---
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 56500b25d77c..54e09242b2e2 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -130,7 +130,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+>  		if (requested_freq == policy->min)
+>  			goto out;
+>  
+> -		if (requested_freq > freq_step)
+> +		if (requested_freq > policy->min + freq_step)
+>  			requested_freq -= freq_step;
+>  		else
+>  			requested_freq = policy->min;
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+I think all we want to ensure here is that we don't end up getting a
+negative number (since requested_freq is unsigned int, it will end up
+being a very large freq). __cpufreq_driver_target() will eventually
+set the freq to policy->min only as we are using CPUFREQ_RELATION_LE
+here.
 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+viresh
