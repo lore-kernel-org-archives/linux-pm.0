@@ -2,115 +2,81 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23F48E92717
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 15:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FCBFE92716
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 16:02:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234920AbjJEPug (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 11:50:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55244 "EHLO
+        id S234816AbjJEQCt convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 12:02:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42824 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235462AbjJEPtZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 11:49:25 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8920A8690;
-        Thu,  5 Oct 2023 08:09:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1696518574; x=1728054574;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=jpcWaEz7B26fb8p/m9yTGm1Sg1FRrUAivyKn3XZFmUo=;
-  b=nmRlPngEzhc132Ips5FS1/9djdzS/HgZ8a8z6EuiaziABaroJEw9vX4D
-   cFN6ZMYSZZbRBN7pegwyKZRRFjIS+SuPcv4PoyM7N1/u99ubVs224lcOd
-   Qw7rOfI7PnggqmpWfdi5FgGZASIOftEj7I2lMli+qoUpyVUUIyWL0v+u1
-   oSciTjyILpaCqSw67573b9Q2ysrLy+xt1heyhlNBiQxHOy/Z97JxYDSzx
-   ardJ8oPzM9M0IUL4ISYxtu9sCulFaJ9mE2KHeXPzFNiZDwaiA1ph7QONR
-   IJaO63xaIiCs6EojtnEJyD5/SRXSHETWl3CiKsvwSTXSwuoHj5+3E65B4
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10854"; a="373880505"
-X-IronPort-AV: E=Sophos;i="6.03,203,1694761200"; 
-   d="scan'208";a="373880505"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2023 08:09:33 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10854"; a="745479250"
-X-IronPort-AV: E=Sophos;i="6.03,203,1694761200"; 
-   d="scan'208";a="745479250"
-Received: from spandruv-desk1.amr.corp.intel.com ([10.209.88.30])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2023 08:09:34 -0700
-Message-ID: <ff3f7c023d73c2c8216cff2910e4965a026cdd98.camel@linux.intel.com>
-Subject: Re: [PATCH] thermal: intel: powerclamp: fix mismatch in get
- function for max_idle
-From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     David Arcari <darcari@redhat.com>, linux-pm@vger.kernel.org
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Chen Yu <yu.c.chen@intel.com>,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Date:   Thu, 05 Oct 2023 08:09:34 -0700
-In-Reply-To: <20231005111757.1293740-1-darcari@redhat.com>
-References: <20231005111757.1293740-1-darcari@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.48.4 (3.48.4-1.fc38) 
+        with ESMTP id S235789AbjJEQB5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 12:01:57 -0400
+Received: from mail-oo1-xc30.google.com (mail-oo1-xc30.google.com [IPv6:2607:f8b0:4864:20::c30])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD06323D20;
+        Thu,  5 Oct 2023 04:05:06 -0700 (PDT)
+Received: by mail-oo1-xc30.google.com with SMTP id 006d021491bc7-57de3096e25so174467eaf.1;
+        Thu, 05 Oct 2023 04:05:06 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696503903; x=1697108703;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=8A+Fvcyy0CxxYZT2asQGYv+IG3i4az/fLQnzcd8QYxU=;
+        b=VYScoWd491SLfWxMN1VGvJ2u6TGMZdVswXfMsBYpqcH7KnP4fP19rQ6KG6ZiSdHQ/p
+         Dq+pv2s+Jhmc10A3f9FwxB7jwO1fHriu9gYbKFaQRHt/PVhwax+azLTUFVfGfbGLp5V8
+         yBmWPiABQoZrDCmk2/V/r+T9MHAD0VpJHYpIK8+Q5ksEMJy5qWvU8Xdua/Efy0OEWn/M
+         0NiyjYIoAQ7P6yzPW/z52tdAyPIExh3sqsuohpIm/jtg9ru6q8g0pJDNlR9c56qpaDXA
+         mMmSM3w5qAAo5akTOkddY0W9ZxZ9PJ9aFNyE5ZVqS1s8qyhTdZ0tcCP0FGkmosNdkdvi
+         Qdxw==
+X-Gm-Message-State: AOJu0Yy9EThVfJWezSlXIFBmjcSKPyy/hdWg7b/uG+nnPkyq6alHtvjq
+        oPIg9L1NKa4E+hMX2omjic8WCq5Qay5ol7mW0xs=
+X-Google-Smtp-Source: AGHT+IEDQL53+ju6VUU2WVkO64QHb88QaJsba566ALMVEb5ykrLA0ijgHowjurBxevBOMNfVLxNTUISTkuaPKCzkAgs=
+X-Received: by 2002:a4a:c509:0:b0:57e:c9bf:696e with SMTP id
+ i9-20020a4ac509000000b0057ec9bf696emr4741772ooq.1.1696503903280; Thu, 05 Oct
+ 2023 04:05:03 -0700 (PDT)
 MIME-Version: 1.0
+References: <4846448.GXAFRqVoOG@kreacher> <8288399.T7Z3S40VBb@kreacher> <f14894b4-805c-3eb4-755c-4795405d7e7e@linaro.org>
+In-Reply-To: <f14894b4-805c-3eb4-755c-4795405d7e7e@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 5 Oct 2023 13:04:51 +0200
+Message-ID: <CAJZ5v0j-K5bo1hoLEb1-PYx27cNfC36uWEF--pc41beFKCk=eg@mail.gmail.com>
+Subject: Re: [PATCH v2 3/6] ACPI: thermal: Combine passive and active trip
+ update functions
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 2023-10-05 at 07:17 -0400, David Arcari wrote:
-> KASAN reported this
->=20
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [ 444.853098] BUG: KASAN: global-out-of-bo=
-unds in
-> param_get_int+0x77/0x90
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [ 444.853111] Read of size 4 at addr fffff=
-fffc16c9220 by task
-> cat/2105
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ...
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [ 444.853442] The buggy address belongs to=
- the variable:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [ 444.853443] max_idle+0x0/0xffffffffffffc=
-de0
-> [intel_powerclamp]
->=20
-> There is a mismatch between the param_get_int and the definition of
-> max_idle.=C2=A0 Replacing param_get_int with param_get_byte resolves this
-> issue.
->=20
-> Fixes: ebf519710218 ("thermal: intel: powerclamp: Add two module
-> parameters")
->=20
-> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Amit Kucheria <amitk@kernel.org>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: David Arcari <darcari@redhat.com>
-> Cc: Chen Yu <yu.c.chen@intel.com>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: stable@vger.kernel.org
-> Signed-off-by: David Arcari <darcari@redhat.com>
-Reviewed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+On Wed, Oct 4, 2023 at 6:30 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>
+> On 03/10/2023 15:21, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Combine acpi_thermal_update_passive_trip() and
+> > acpi_thermal_update_active_trip() into one common function called
+> > acpi_thermal_update_trip(), so as to reduce code duplication and
+> > prepare the code in question for subsequent changes.
+> >
+> > No intentional functional impact.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+>
+> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-> ---
-> =C2=A0drivers/thermal/intel/intel_powerclamp.c | 2 +-
-> =C2=A01 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/thermal/intel/intel_powerclamp.c
-> b/drivers/thermal/intel/intel_powerclamp.c
-> index 36243a3972fd..5ac5cb60bae6 100644
-> --- a/drivers/thermal/intel/intel_powerclamp.c
-> +++ b/drivers/thermal/intel/intel_powerclamp.c
-> @@ -256,7 +256,7 @@ static int max_idle_set(const char *arg, const
-> struct kernel_param *kp)
-> =C2=A0
-> =C2=A0static const struct kernel_param_ops max_idle_ops =3D {
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0.set =3D max_idle_set,
-> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0.get =3D param_get_int,
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0.get =3D param_get_byte,
-> =C2=A0};
-> =C2=A0
-> =C2=A0module_param_cb(max_idle, &max_idle_ops, &max_idle, 0644);
+Thanks for all of the reviews, much appreciated!
 
+I'm going to apply the series now unless you have strong objections
+against any of the remaining patches [4,6/6].
+
+Cheers!
