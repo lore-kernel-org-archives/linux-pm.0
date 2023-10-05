@@ -2,154 +2,98 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89FA6E92707
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:34:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D953E92707
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:35:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233673AbjJEOew (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 10:34:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58076 "EHLO
+        id S235577AbjJEOfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 10:35:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38606 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234934AbjJEOcl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:32:41 -0400
-Received: from mail-yw1-x1133.google.com (mail-yw1-x1133.google.com [IPv6:2607:f8b0:4864:20::1133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C33524EB8
-        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 04:39:55 -0700 (PDT)
-Received: by mail-yw1-x1133.google.com with SMTP id 00721157ae682-59f6767a15dso17633087b3.0
-        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 04:39:55 -0700 (PDT)
+        with ESMTP id S235389AbjJEOeQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:34:16 -0400
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C0CC24875
+        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 04:20:52 -0700 (PDT)
+Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-50337b43ee6so1121094e87.3
+        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 04:20:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696505994; x=1697110794; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=0IYhvMB+/tYsbO1if1548hQ+c5ri7I00N34cZT67haM=;
-        b=oUq2raYXSnEPlgXt9I4U8k/ylLqsjxW7iy19qYuBTNdQNuQgMb3A7Dpz1OpTKmXVpZ
-         bsMOeRUoimciF283mTMFn2aX+N2iDW5xlSkEBBPqawFIl6M/UxoJVSWEsyTulKgmfPRs
-         SaU9+JOqJTJPx4MyVA4FiY5en+miU2dTVehnKbFJ5R+cLqZ547vuBbmgyp0VqL0FATmR
-         ZbywQHrc3+dm1lA+tG/gYeLz+vkztGYrG8fNPF7egVXjnxqQNu1swsvhbDZlGbr75sid
-         kF/Z2tBOpOx57v+pW3Y/YqqpsycOPdvliwuUJbC0UpWPTnev5H22Y+rUIV+UBWMOHiCv
-         k1UQ==
+        d=linaro.org; s=google; t=1696504850; x=1697109650; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=AfjjBx8bRosL03zIEqb5fC4vsYyRufBl5/7gyLY5YvY=;
+        b=pVXUvDcxNUXW6+THwL9jZb+yNvyRIIPsCJDfdl47zAG0kTrjnhCvDX5K+zS+Zhs+ui
+         tRDkiUaCK2W4pFN0R2jc2dT+Aj7BjpUmT6Tqhh6/UMoCpIUmvsqDggo8aQ8u2bvkc7qF
+         sv1p1cnUoUUWwCLyQFMvMJndP1PcnYxgdOkpj3uPkDBigp2qFkdrYsgK3KYDBeElxQXs
+         hKZvK4vlhUNdFJIS6y5c7VzLeO9c4G5TsSx40Vpyo2OJXApZGFwd50hkfh8ww0Dm3gmm
+         jV+RcmqPdFLS8fC0ROj8eyZj3xq7h9T1/OUDUG5S78KivRYfMHRa86VNcdksxuGjzIj7
+         xEZw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696505994; x=1697110794;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=0IYhvMB+/tYsbO1if1548hQ+c5ri7I00N34cZT67haM=;
-        b=VDtY975LsY3nHML16+3jABW1EW7VOKsGkR2CEP3dRzqHYOLAybCZWHvxEPjRpBAx5Q
-         i8CtC0daTOlHfZmhePbcqTymCJ4UISTM9n2KmHp05YRQn3pWbrqmJPOVIuAp9BjrYeTZ
-         hEvorHFHYBUeuQTN831qI8EoeXs/d9x+qCHvWm3/VvVSUjVWFb1FfPVV9mXEEytx89e+
-         RV6OvRNEQaM4aQ21tBxb1eJ57d8bj5UAHqTYB71LiQbs2LOYm6smLeqiUoX9Ajyn7aT7
-         bBopbuWLRGGbR6XEmn6UfbvLSf7J/wXCyGFFJig6otS+e2W2gsjqm4Eaz55ZSBeK08fN
-         BHNQ==
-X-Gm-Message-State: AOJu0YzYoBG7q4vDSkP+pwEWwbgK2sFvq4dV+TT6mip4IJazi9pRPCxO
-        goIHS73bcIjCQA/qaMPB6v3Z1pMCK7JmboAy84gF5Q==
-X-Google-Smtp-Source: AGHT+IGz2SaLD3aU6BIPbHvTjKIKQ4LlW6fB/f1GiSxG/rP9irvPSE52u5ik65BnlAY9ONpAHojoUO4fqPhRZjJyZyE=
-X-Received: by 2002:a0d:d711:0:b0:59f:79e7:6e5d with SMTP id
- z17-20020a0dd711000000b0059f79e76e5dmr716346ywd.15.1696505994365; Thu, 05 Oct
- 2023 04:39:54 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1696504850; x=1697109650;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=AfjjBx8bRosL03zIEqb5fC4vsYyRufBl5/7gyLY5YvY=;
+        b=ZEaoWBUg4tHdMXy4KSW+G0+ycUV6ewSqMWsK6WQwLqcY4rv+Q0i1CBCF5W37A4OE36
+         TRFDrvvZ6IzEHLxKHN+63ij77dXLXL/2PxPkcLPdLmfU0JLJ/OwSN/snN5ekJpNzreSe
+         VPHZxhEQhsNFSbKTAu/4WbXBzNTzDCu5RjMSnpMSY1RBvL6xL5qa2O122PnF7j26SdJW
+         UgZzzNZdGghmAlPSJSpy98VDV+Al9z51fJmdp/3rAyMqCiODpN9vVyDJthdvwgrGtDJC
+         FpEAAk8qymdeLpH7A5IHwuTamQ3ToLbq/xuEZQ5Hoti/3IxSlc8TnY9tRadB23yrOQjT
+         OIvw==
+X-Gm-Message-State: AOJu0YxcAbfWxnUd6jvqbfzXh3DptISAH6E5Bk3cw8Cvuh75KRZU6fpP
+        ve/nsP8zavz+38cwKUHIFwTq5w==
+X-Google-Smtp-Source: AGHT+IF8iEf39U3EvChPzm6UH7GQU2jK7ervLMhE6RcloOs8ZvA9CjMZCrFvVxd2JoT2k/lXG3kZhg==
+X-Received: by 2002:a19:8c0e:0:b0:500:bc14:3e06 with SMTP id o14-20020a198c0e000000b00500bc143e06mr4555039lfd.44.1696504849804;
+        Thu, 05 Oct 2023 04:20:49 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:8bb6:12b3:863a:e5dd? ([2a05:6e02:1041:c10:8bb6:12b3:863a:e5dd])
+        by smtp.googlemail.com with ESMTPSA id hn8-20020a05600ca38800b00405959bbf4fsm1297865wmb.19.2023.10.05.04.20.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 05 Oct 2023 04:20:49 -0700 (PDT)
+Message-ID: <3620cb02-c6af-cd65-439c-92ea9c369174@linaro.org>
+Date:   Thu, 5 Oct 2023 13:20:48 +0200
 MIME-Version: 1.0
-References: <cover.1693996662.git.quic_varada@quicinc.com> <a6d12e3b253d6a55d85f66979ba8b7d9c9ff6072.1693996662.git.quic_varada@quicinc.com>
- <CAA8EJppNsgUNgwadq9oM0_KyORNR5PBZGVZukN6MzAm2KPzC9g@mail.gmail.com> <20231005095744.GA29795@varda-linux.qualcomm.com>
-In-Reply-To: <20231005095744.GA29795@varda-linux.qualcomm.com>
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date:   Thu, 5 Oct 2023 14:39:43 +0300
-Message-ID: <CAA8EJpr124fymnbZ1bO=Dbbxavn3Z=1xOPmFRPnfSp-UB3p6OQ@mail.gmail.com>
-Subject: Re: [PATCH v1 07/10] arm64: dts: qcom: ipq5332: populate the opp
- table based on the eFuse
-To:     Varadarajan Narayanan <quic_varada@quicinc.com>
-Cc:     ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
-        konrad.dybcio@linaro.org, rafael@kernel.org,
-        viresh.kumar@linaro.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        mturquette@baylibre.com, sboyd@kernel.org,
-        quic_kathirav@quicinc.com, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH v2 4/6] ACPI: thermal: Use thermal_zone_for_each_trip()
+ for updating trips
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+References: <4846448.GXAFRqVoOG@kreacher> <1954465.PYKUYFuaPT@kreacher>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <1954465.PYKUYFuaPT@kreacher>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 5 Oct 2023 at 12:58, Varadarajan Narayanan
-<quic_varada@quicinc.com> wrote:
->
-> On Thu, Sep 07, 2023 at 04:59:28PM +0300, Dmitry Baryshkov wrote:
-> > On Thu, 7 Sept 2023 at 08:23, Varadarajan Narayanan
-> > <quic_varada@quicinc.com> wrote:
-> > >
-> > > IPQ53xx have different OPPs available for the CPU based on
-> > > SoC variant. This can be determined through use of an eFuse
-> > > register present in the silicon.
-> > >
-> > > Add support to read the eFuse and populate the OPPs based on it.
-> > >
-> > > Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
-> > > Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
-> > > ---
-> > >  arch/arm64/boot/dts/qcom/ipq5332.dtsi | 34 +++++++++++++++++++++++++++++++---
-> > >  1 file changed, 31 insertions(+), 3 deletions(-)
-> > >
-> > > diff --git a/arch/arm64/boot/dts/qcom/ipq5332.dtsi b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
-> > > index 82761ae..3ca3f34 100644
-> > > --- a/arch/arm64/boot/dts/qcom/ipq5332.dtsi
-> > > +++ b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
-> > > @@ -91,11 +91,34 @@
-> > >         };
-> > >
-> > >         cpu_opp_table: opp-table-cpu {
-> > > -               compatible = "operating-points-v2";
-> > > +               compatible = "operating-points-v2-kryo-cpu";
-> > >                 opp-shared;
-> > > +               nvmem-cells = <&cpu_speed_bin>;
-> > > +               nvmem-cell-names = "speed_bin";
-> > > +
-> > > +               /*
-> > > +                * Listed all supported CPU frequencies and opp-supported-hw
-> > > +                * values to select CPU frequencies based on the limits fused.
-> > > +                * ------------------------------------------------------------
-> > > +                * Frequency     BIT3   BIT2   BIT1    BIT0    opp-supported-hw
-> > > +                *              1.0GHz 1.2GHz 1.5GHz No Limit
-> > > +                * ------------------------------------------------------------
-> > > +                * 1100000000     1      1      1       1            0xF
-> > > +                * 1500000000     0      0      1       1            0x3
-> > > +                * -----------------------------------------------------------
-> > > +                */
-> >
-> > This can probably go to the commit message instead.
->
-> Ok
->
-> > > +
-> > > +               opp-1100000000 {
-> > > +                       opp-hz = /bits/ 64 <1100000000>;
-> >
-> > But your table shows 1.0 GHz and 1.2 GHz instead of 1.1 GHz
->
-> Will update it.
->
-> > > +                       opp-microvolt = <850000>;
-> > > +                       opp-supported-hw = <0xF>;
-> > > +                       clock-latency-ns = <200000>;
-> > > +               };
-> > >
-> > > -               opp-1488000000 {
-> > > -                       opp-hz = /bits/ 64 <1488000000>;
-> > > +               opp-1500000000 {
-> > > +                       opp-hz = /bits/ 64 <1500000000>;
-> >
-> > So, 1.488 GHz or 1.5 GHz?
->
-> 1.5 GHz
->
-> > > +                       opp-microvolt = <950000>;
-> >
-> > Which regulator is controlled by this microvolt?
->
-> Based on the SKU, the XBL sets up the regulator to provide 950000uV
-> on CPUs capable of running 1.5G and 850000uV on other SKUs. Linux
-> doesn't control it.
+On 03/10/2023 15:24, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Rearrange the code handling notifications from the platform firmware
+> regarding trip point updates to carry out one loop over trip points
+> instead of two of them by using thermal_zone_for_each_trip() for that,
+> which is more straightforward than using a combination of
+> thermal_zone_device_exec() and for_each_thermal_trip(), each with its
+> own callback function.
+> 
+> No intentional functional impact.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
 
-Then why do you need this property here in the first place?
-
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 -- 
-With best wishes
-Dmitry
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
