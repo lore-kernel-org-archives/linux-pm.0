@@ -2,206 +2,202 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 792CDE9270B
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:20:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BA94E92707
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Oct 2023 14:23:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231441AbjJEOUD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Oct 2023 10:20:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51428 "EHLO
+        id S232371AbjJEOXs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Oct 2023 10:23:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55672 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233217AbjJEORn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:17:43 -0400
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7DC821D02
-        for <linux-pm@vger.kernel.org>; Thu,  5 Oct 2023 02:43:19 -0700 (PDT)
-Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-3247d69ed2cso788630f8f.0
-        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2023 02:43:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1696498998; x=1697103798; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=JwKnCE50Or3wTNbb8nnaCjSfC0KHldEcWfUSQ5mNeMI=;
-        b=PcjYl6fosxe3bu124GfB1jVOexCe2p5G1dYKIInFv7zmOBTZ2RLTD5bxDytT9F/s/q
-         7Gl+lrx7WsZ3db5b6q5954TN4MV20dJTtaBzqHRB3NATgnVYCOD7xVHwUGBlWltcp3z2
-         UNx1IpttiSEJHxn5N+To8PKATussPj/ym20yoa4YRcTq7f/2fgZGWjsnq2Mx1zB33lXZ
-         2VC70HbtLNJGXbIEI9H68tqWtY12yJ4o1pYDeBnHfp4Cp7HlqQbITxWl8XuBKNd8tlmo
-         gKeroiZRz1EPGziaY+KTLSt1x7BEaIVy09vtxJmaGqzTyavt+SgHq+WRKlRjwLEuvSx0
-         JdxQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696498998; x=1697103798;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=JwKnCE50Or3wTNbb8nnaCjSfC0KHldEcWfUSQ5mNeMI=;
-        b=D7WfKwCWMUyRpOloygt/At/bg4KKDYTXjxKsNRFMVOwQryzkPy6m3QhE3l6wCMY3+Z
-         V7Y+0dDL5J6GZL/Z5OlzOC7bFp5eJYq9U3JcNaZmpWqSRerRUCSB3dK7NtqRaFdtke51
-         XMrJSPXsCYttorKymjGqf7+DevIARPAr/iNBGnPxHHaUndVsqMZEoKcYAU720pxwXqTA
-         qQ70iKNs/S9wq3Rlfy7aY0OSiAPtq4HKneIbIB5+t0m8iCQwHdMvmFKpfrxKSYX3blNr
-         QLMhSulHYDLmHWo2jgcLksgzyYaueiSbgcdcpvV2+ynGo/czFNvQc78kYxvNjIXWd6fW
-         7CBw==
-X-Gm-Message-State: AOJu0YxRgBp1cV5lyoja6P5y8e1NLuudq4+zD700lnA8SizA4nNzqNmu
-        7q9bDG5jfDRunUKHXb0S2lgY3A==
-X-Google-Smtp-Source: AGHT+IEA8Pv/FN9E11LJAyjgn8EofUjuGcu3RKUVzw7ZzFbiuhbNcnB4JemmblVGztHfx0rlL56C5A==
-X-Received: by 2002:a5d:630c:0:b0:31f:fa6a:936e with SMTP id i12-20020a5d630c000000b0031ffa6a936emr4440521wru.17.1696498998220;
-        Thu, 05 Oct 2023 02:43:18 -0700 (PDT)
-Received: from blmsp ([2001:4091:a246:8222:dbda:9cd9:39cc:f174])
-        by smtp.gmail.com with ESMTPSA id d16-20020adff850000000b003232d122dbfsm1355989wrq.66.2023.10.05.02.43.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Oct 2023 02:43:17 -0700 (PDT)
-Date:   Thu, 5 Oct 2023 11:43:16 +0200
-From:   Markus Schneider-Pargmann <msp@baylibre.com>
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Alexandre Mergnat <amergnat@baylibre.com>,
-        Chun-Jie Chen <chun-jie.chen@mediatek.com>,
-        Tinghan Shen <tinghan.shen@mediatek.com>,
-        Fabien Parent <parent.f@gmail.com>, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
-Subject: Re: [PATCH v8 0/8] soc: mediatek: MT8365 power support
-Message-ID: <20231005094316.nj5w6cmefvc36tbl@blmsp>
-References: <20230918093751.1188668-1-msp@baylibre.com>
- <06f8a769-1845-ea87-dcc4-37dd5ad255ed@collabora.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <06f8a769-1845-ea87-dcc4-37dd5ad255ed@collabora.com>
+        with ESMTP id S233553AbjJEOW3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2023 10:22:29 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD4EC10D1;
+        Thu,  5 Oct 2023 06:48:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1696513712; x=1728049712;
+  h=date:from:to:cc:subject:message-id;
+  bh=Bsp9ehixeLHcbtUpyA+rx7/7o5Slibw2J6eHfc2hOYE=;
+  b=YflALmyFUKrPrA7oM0a+QtjP3T7vZaosfNicSTCfOruoCc5k3ZLqjMjv
+   W+5xj8p4A0gVHrL0ZmYfiv1pODYzo/fFHRyOyvlmoGvvYU6cmTjeYvPuL
+   RJi0JfaTx3r6MGhuJUdZ7hBg3DhxzWuuKCmkqAmCou0RsveoRIh7eKh2k
+   YBQiT1N1nw5RitlPvulFv+5iQ+EhXAgKQlV0oRj3hxZizC5c8fGUGHD9F
+   SezRKE1QLBZefislW1KuysOlliUwTQe/OpnxCqLaCUA/EYaj+D47mnMIn
+   RWubZNviqmPfPQjpOmsLYrZ3eptfAqq7A93+LVSZeBwlDaLzfh0DGLWlr
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10853"; a="469730089"
+X-IronPort-AV: E=Sophos;i="6.03,202,1694761200"; 
+   d="scan'208";a="469730089"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2023 03:05:46 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10853"; a="781190361"
+X-IronPort-AV: E=Sophos;i="6.03,202,1694761200"; 
+   d="scan'208";a="781190361"
+Received: from lkp-server02.sh.intel.com (HELO c3b01524d57c) ([10.239.97.151])
+  by orsmga008.jf.intel.com with ESMTP; 05 Oct 2023 03:05:43 -0700
+Received: from kbuild by c3b01524d57c with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1qoLEk-000LH9-0Q;
+        Thu, 05 Oct 2023 10:05:42 +0000
+Date:   Thu, 05 Oct 2023 18:04:42 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-acpi@vger.kernel.org, devel@acpica.org,
+        linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 087dbcb2127272bfc2419ec2dc1e19e6a030f3af
+Message-ID: <202310051838.6aED2Oiq-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Angelo,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 087dbcb2127272bfc2419ec2dc1e19e6a030f3af  Merge branch 'pm-sleep-fixes' into linux-next
 
-On Thu, Oct 05, 2023 at 10:54:16AM +0200, AngeloGioacchino Del Regno wrote:
-> Il 18/09/23 11:37, Markus Schneider-Pargmann ha scritto:
-> > Hi,
-> > 
-> > no real changes in this update. Rebase to v6.6-rc2 and according change
-> > of directory.
-> 
-> Since the driver changed to pmdomain/mediatek, can you please change the commit
-> titles for the driver commits?
+elapsed time: 728m
 
-As far as I understand Ulf applied the series today and changed the
-title as well:
-https://lore.kernel.org/lkml/CAPDyKFrUbWBQgMm6wYwFfybiRQKhBpwH7wwcXaT+KrQJLevq3w@mail.gmail.com/
+configs tested: 130
+configs skipped: 2
 
-Best,
-Markus
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> 
-> soc: mediatek: pm-domains: ===> pmdomain: mediatek: pm-domains:
-> 
-> or alternatively, I honestly would like it more like
-> 
-> pmdomain: mediatek: pd:
-> 
-> and (not relevant to this series)
-> 
-> pmdomain: mediatek: scpsys:
-> 
-> ...but before that, does anyone have any strong opinions against the prefix
-> "pmdomain: mediatek: pd:", instead of the full "pm-domains"?
-> 
-> Thanks!
-> Angelo
-> 
-> > 
-> > Thanks for any feedback!
-> > 
-> > Best,
-> > Markus
-> > 
-> > Based on v6.6-rc2
-> > 
-> > Changes in v8:
-> > - Rebased to v6.6-rc2
-> > - Moved changes from drivers/soc to drivers/pmdomain
-> > 
-> > Changes in v7:
-> > - Rebased to v6.5-rc1
-> > - Fixed a couple of small style issues pointed out by Angelo
-> > 
-> > Changes in v6:
-> > - Change flags field to be u8 instead of u32
-> > - Use macro concatenation to simplify BUS_PROT macros:
-> >    BUS_PROT_WR(_hwip, ...) etc.
-> > - Use the final bit values for scpsys_bus_prot_flags from the beginning
-> >    of the series.
-> > - Changed scpsys_domain_data->caps to be u16 to accommodate the new flag
-> >    MTK_SCPD_STRICT_BUS_PROTECTION.
-> > 
-> > Changes in v5:
-> > - Create defines for all registers and bits in mt8365 power domain patch
-> > - Redesign scpsys_bus_prot_data to use flags to store reg_update,
-> >    clr_ack as well as the difference between SMI and INFRACFG. The code
-> >    uses the appropriate regmap depending on the flags.
-> > - The WAY_EN patch now uses two flags, one for inverted operations
-> >    'BUS_PROT_INVERTED' and one to use infracfg-nao for the status flags
-> >    'BUS_PROT_STA_COMPONENT_INFRA_NAO'.
-> > 
-> > Changes in v4:
-> > - Redesigned WAY_EN patch and split it up in smaller patches.
-> > - Added two documentation patches.
-> > - Added mediatek,infracfg-nao field to the binding.
-> > 
-> > Changes in v3:
-> > - Mainly redesigned WAY_EN patch to be easier to understand
-> > - Rebased onto v6.0-rc1
-> > - Several other stuff that is described in the individual patches
-> > 
-> > Changes in v2:
-> > - Updated error handling path for scpsys_power_on()
-> > - Minor updates described in each patch
-> > 
-> > Previous versions:
-> > v1 - https://lore.kernel.org/linux-mediatek/20220530204214.913251-1-fparent@baylibre.com/
-> > v2 - https://lore.kernel.org/linux-mediatek/20220725081853.1636444-1-msp@baylibre.com/
-> > v3 - https://lore.kernel.org/linux-mediatek/20220822144303.3438467-1-msp@baylibre.com/
-> > v4 - https://lore.kernel.org/linux-arm-kernel/20230105170735.1637416-1-msp@baylibre.com/
-> > v5 - https://lore.kernel.org/linux-arm-kernel/20230619085344.2885311-1-msp@baylibre.com/
-> > v6 - https://lore.kernel.org/linux-arm-kernel/20230627131040.3418538-1-msp@baylibre.com/
-> > v7 - https://lore.kernel.org/linux-arm-kernel/20230713150414.891893-1-msp@baylibre.com
-> > 
-> > Alexandre Bailon (2):
-> >    soc: mediatek: Add support for WAY_EN operations
-> >    soc: mediatek: Add support for MTK_SCPD_STRICT_BUS_PROTECTION cap
-> > 
-> > Fabien Parent (2):
-> >    dt-bindings: power: Add MT8365 power domains
-> >    soc: mediatek: pm-domains: Add support for MT8365
-> > 
-> > Markus Schneider-Pargmann (4):
-> >    soc: mediatek: pm-domains: Move bools to a flags field
-> >    soc: mediatek: pm-domains: Split bus_prot_mask
-> >    soc: mediatek: pm-domains: Create bus protection operation functions
-> >    soc: mediatek: pm-domains: Unify configuration for infracfg and smi
-> > 
-> >   .../power/mediatek,power-controller.yaml      |   6 +
-> >   drivers/pmdomain/mediatek/mt6795-pm-domains.h |  16 +-
-> >   drivers/pmdomain/mediatek/mt8167-pm-domains.h |  20 +-
-> >   drivers/pmdomain/mediatek/mt8173-pm-domains.h |  16 +-
-> >   drivers/pmdomain/mediatek/mt8183-pm-domains.h | 125 ++++++----
-> >   drivers/pmdomain/mediatek/mt8186-pm-domains.h | 236 ++++++++++--------
-> >   drivers/pmdomain/mediatek/mt8188-pm-domains.h | 223 +++++++++++------
-> >   drivers/pmdomain/mediatek/mt8192-pm-domains.h | 112 ++++++---
-> >   drivers/pmdomain/mediatek/mt8195-pm-domains.h | 199 +++++++++------
-> >   drivers/pmdomain/mediatek/mt8365-pm-domains.h | 197 +++++++++++++++
-> >   drivers/pmdomain/mediatek/mtk-pm-domains.c    | 157 ++++++++----
-> >   drivers/pmdomain/mediatek/mtk-pm-domains.h    |  51 ++--
-> >   .../dt-bindings/power/mediatek,mt8365-power.h |  19 ++
-> >   include/linux/soc/mediatek/infracfg.h         |  41 +++
-> >   14 files changed, 972 insertions(+), 446 deletions(-)
-> >   create mode 100644 drivers/pmdomain/mediatek/mt8365-pm-domains.h
-> >   create mode 100644 include/dt-bindings/power/mediatek,mt8365-power.h
-> > 
-> > 
-> > base-commit: ce9ecca0238b140b88f43859b211c9fdfd8e5b70
-> 
-> 
+tested configs:
+alpha                             allnoconfig   gcc  
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+arc                              allmodconfig   gcc  
+arc                               allnoconfig   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                   randconfig-001-20231005   gcc  
+arm                              alldefconfig   clang
+arm                              allmodconfig   gcc  
+arm                               allnoconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                         bcm2835_defconfig   clang
+arm                                 defconfig   gcc  
+arm                            dove_defconfig   clang
+arm                         lpc32xx_defconfig   clang
+arm                         orion5x_defconfig   clang
+arm                   randconfig-001-20231005   gcc  
+arm                         s3c6400_defconfig   gcc  
+arm                         s5pv210_defconfig   clang
+arm                           spitz_defconfig   clang
+arm                    vt8500_v6_v7_defconfig   clang
+arm64                            allmodconfig   gcc  
+arm64                             allnoconfig   gcc  
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+csky                             allmodconfig   gcc  
+csky                              allnoconfig   gcc  
+csky                             allyesconfig   gcc  
+csky                                defconfig   gcc  
+i386                             allmodconfig   gcc  
+i386                              allnoconfig   gcc  
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-001-20231005   gcc  
+i386         buildonly-randconfig-002-20231005   gcc  
+i386         buildonly-randconfig-003-20231005   gcc  
+i386         buildonly-randconfig-004-20231005   gcc  
+i386         buildonly-randconfig-005-20231005   gcc  
+i386         buildonly-randconfig-006-20231005   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                  randconfig-001-20231005   gcc  
+i386                  randconfig-002-20231005   gcc  
+i386                  randconfig-003-20231005   gcc  
+i386                  randconfig-004-20231005   gcc  
+i386                  randconfig-005-20231005   gcc  
+i386                  randconfig-006-20231005   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                        allyesconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch             randconfig-001-20231005   gcc  
+m68k                             allmodconfig   gcc  
+m68k                              allnoconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+microblaze                       allmodconfig   gcc  
+microblaze                        allnoconfig   gcc  
+microblaze                       allyesconfig   gcc  
+microblaze                          defconfig   gcc  
+mips                             allmodconfig   gcc  
+mips                              allnoconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                  decstation_64_defconfig   gcc  
+mips                           ip28_defconfig   clang
+mips                  maltasmvp_eva_defconfig   gcc  
+nios2                            allmodconfig   gcc  
+nios2                             allnoconfig   gcc  
+nios2                            allyesconfig   gcc  
+nios2                               defconfig   gcc  
+openrisc                         alldefconfig   gcc  
+openrisc                         allmodconfig   gcc  
+openrisc                          allnoconfig   gcc  
+openrisc                         allyesconfig   gcc  
+openrisc                            defconfig   gcc  
+parisc                           allmodconfig   gcc  
+parisc                            allnoconfig   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc64                            defconfig   gcc  
+powerpc                      acadia_defconfig   clang
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                          allyesconfig   gcc  
+powerpc                       ebony_defconfig   clang
+powerpc                     kmeter1_defconfig   clang
+powerpc                     ksi8560_defconfig   clang
+powerpc                         wii_defconfig   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   clang
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                              allnoconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+sh                               allmodconfig   gcc  
+sh                                allnoconfig   gcc  
+sh                               allyesconfig   gcc  
+sh                                  defconfig   gcc  
+sh                           se7750_defconfig   gcc  
+sh                             sh03_defconfig   gcc  
+sparc                            allmodconfig   gcc  
+sparc                             allnoconfig   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                       sparc32_defconfig   gcc  
+sparc64                          allmodconfig   gcc  
+sparc64                          allyesconfig   gcc  
+sparc64                             defconfig   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   clang
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64                              defconfig   gcc  
+x86_64                randconfig-001-20231005   gcc  
+x86_64                randconfig-002-20231005   gcc  
+x86_64                randconfig-003-20231005   gcc  
+x86_64                randconfig-004-20231005   gcc  
+x86_64                randconfig-005-20231005   gcc  
+x86_64                randconfig-006-20231005   gcc  
+x86_64                          rhel-8.3-rust   clang
+x86_64                               rhel-8.3   gcc  
+xtensa                            allnoconfig   gcc  
+xtensa                           allyesconfig   gcc  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
