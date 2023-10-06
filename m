@@ -2,119 +2,201 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6130E81E1B
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Oct 2023 17:22:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39F8AE81E1E
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Oct 2023 17:43:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232991AbjJFRWB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Oct 2023 13:22:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34386 "EHLO
+        id S233033AbjJFRnP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Oct 2023 13:43:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55654 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229900AbjJFRV6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Oct 2023 13:21:58 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D6966AD;
-        Fri,  6 Oct 2023 10:21:55 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CE8C4C15;
-        Fri,  6 Oct 2023 10:22:34 -0700 (PDT)
-Received: from FVFF77S0Q05N.cambridge.arm.com (FVFF77S0Q05N.cambridge.arm.com [10.1.37.158])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D40043F5A1;
-        Fri,  6 Oct 2023 10:21:53 -0700 (PDT)
-Date:   Fri, 6 Oct 2023 18:21:48 +0100
-From:   Mark Rutland <mark.rutland@arm.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Brian Geffon <bgeffon@google.com>,
-        Pavankumar Kondeti <quic_pkondeti@quicinc.com>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        kernel@quicinc.com,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] PM: hibernate: Fix a bug in copying the zero bitmap
- to safe pages
-Message-ID: <ZSBCLE1VLxN-hdRD@FVFF77S0Q05N.cambridge.arm.com>
-References: <20231004-hib_zero_bitmap_fix-v2-1-6a530b7b6e98@quicinc.com>
- <CADyq12ziGEpkpvLv9zg91Zpp-12GW1iLnXcT8LaMt48WiKaVMw@mail.gmail.com>
- <CAJZ5v0g8uBw6syXMC9p6BRn_E77wyUsvBOYX3dv1jwXU7k-uHA@mail.gmail.com>
+        with ESMTP id S233011AbjJFRnP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Oct 2023 13:43:15 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15236CE;
+        Fri,  6 Oct 2023 10:43:11 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2BDCC433C7;
+        Fri,  6 Oct 2023 17:43:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1696614190;
+        bh=3pHBD8r/iPh/v5cgOzJJy4If3hivbFUEGjN+b6bqFKI=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=OvPbzaM2D/+mLKHaRTMMFrEpSKvYejfKtoC/+RB+YAabg/6A0VNDQRGB+7TAtZuak
+         uS64Q/Sft1qfwBN87fAPShxrS7YYollPm7HQlVrSl4w+8Hnap/mYjI8utfUE3Jo2XN
+         /I4fS8KyXJfgv0wbgfQM9uVPr+JIU2/Sn/pJmg9xyPWj7wHBvSmxz1dM2Znfd80spl
+         FHbIf7UeIREC89a4S8JbzrDSKg26GiJilhrzCNvELcupBvD8/LGtqzEE9KPV+TPDUS
+         pmaNKW7CLwgRk67DkXeq5yjKGSVIKm5sSpEkNaErN0y7HOgag4Oqz3CikmAxgbODEF
+         TvQO2dMbhDbnA==
+Message-ID: <f142ae65-0609-ccf2-5908-663cd2ecab73@kernel.org>
+Date:   Sat, 7 Oct 2023 02:43:04 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0g8uBw6syXMC9p6BRn_E77wyUsvBOYX3dv1jwXU7k-uHA@mail.gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH v7 08/26] PM / devfreq: rk3399_dmc,dfi: generalize DDRTYPE
+ defines
+Content-Language: en-US
+To:     Sascha Hauer <s.hauer@pengutronix.de>,
+        linux-rockchip@lists.infradead.org
+Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Will Deacon <will@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>, kernel@pengutronix.de,
+        Michael Riesch <michael.riesch@wolfvision.net>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Vincent Legoll <vincent.legoll@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
+        Sebastian Reichel <sebastian.reichel@collabora.com>
+References: <20230704093242.583575-1-s.hauer@pengutronix.de>
+ <20230704093242.583575-9-s.hauer@pengutronix.de>
+From:   Chanwoo Choi <chanwoo@kernel.org>
+In-Reply-To: <20230704093242.583575-9-s.hauer@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
-
-On Wed, Oct 04, 2023 at 08:46:56PM +0200, Rafael J. Wysocki wrote:
-> On Wed, Oct 4, 2023 at 2:19 PM Brian Geffon <bgeffon@google.com> wrote:
-> >
-> > On Wed, Oct 4, 2023 at 1:01 AM Pavankumar Kondeti
-> > <quic_pkondeti@quicinc.com> wrote:
-> > >
-> > > The following crash is observed 100% of the time during resume from
-> > > the hibernation on a x86 QEMU system.
-> > >
-> > > [   12.931887]  ? __die_body+0x1a/0x60
-> > > [   12.932324]  ? page_fault_oops+0x156/0x420
-> > > [   12.932824]  ? search_exception_tables+0x37/0x50
-> > > [   12.933389]  ? fixup_exception+0x21/0x300
-> > > [   12.933889]  ? exc_page_fault+0x69/0x150
-> > > [   12.934371]  ? asm_exc_page_fault+0x26/0x30
-> > > [   12.934869]  ? get_buffer.constprop.0+0xac/0x100
-> > > [   12.935428]  snapshot_write_next+0x7c/0x9f0
-> > > [   12.935929]  ? submit_bio_noacct_nocheck+0x2c2/0x370
-> > > [   12.936530]  ? submit_bio_noacct+0x44/0x2c0
-> > > [   12.937035]  ? hib_submit_io+0xa5/0x110
-> > > [   12.937501]  load_image+0x83/0x1a0
-> > > [   12.937919]  swsusp_read+0x17f/0x1d0
-> > > [   12.938355]  ? create_basic_memory_bitmaps+0x1b7/0x240
-> > > [   12.938967]  load_image_and_restore+0x45/0xc0
-> > > [   12.939494]  software_resume+0x13c/0x180
-> > > [   12.939994]  resume_store+0xa3/0x1d0
-> > >
-> > > The commit being fixed introduced a bug in copying the zero bitmap
-> > > to safe pages. A temporary bitmap is allocated with PG_ANY flag in
-> > > prepare_image() to make a copy of zero bitmap after the unsafe pages
-> > > are marked. Freeing this temporary bitmap with PG_UNSAFE_KEEP later
-> > > results in an inconsistent state of unsafe pages. Since free bit is
-> > > left as is for this temporary bitmap after free, these pages are
-> > > treated as unsafe pages when they are allocated again. This results
-> > > in incorrect calculation of the number of pages pre-allocated for the
-> > > image.
-> > >
-> > > nr_pages = (nr_zero_pages + nr_copy_pages) - nr_highmem - allocated_unsafe_pages;
-> > >
-> > > The allocate_unsafe_pages is estimated to be higher than the actual
-> > > which results in running short of pages in safe_pages_list. Hence the
-> > > crash is observed in get_buffer() due to NULL pointer access of
-> > > safe_pages_list.
-> > >
-> > > Fix this issue by creating the temporary zero bitmap from safe pages
-> > > (free bit not set) so that the corresponding free bits can be cleared while
-> > > freeing this bitmap.
-> > >
-> > > Cc: stable <stable@kernel.org>
-> > > Fixes: 005e8dddd497 ("PM: hibernate: don't store zero pages in the image file")
-> > > Suggested-by:: Brian Geffon <bgeffon@google.com>
-> > > Signed-off-by: Pavankumar Kondeti <quic_pkondeti@quicinc.com>
-> >
-> > Reviewed-by: Brian Geffon <bgeffon@google.com>
+On 23. 7. 4. 18:32, Sascha Hauer wrote:
+> The DDRTYPE defines are named to be RK3399 specific, but they can be
+> used for other Rockchip SoCs as well, so replace the RK3399_PMUGRF_
+> prefix with ROCKCHIP_. They are defined in a SoC specific header
+> file, so when generalizing the prefix also move the new defines to
+> a SoC agnostic header file. While at it use GENMASK to define the
+> DDRTYPE bitfield and give it a name including the full register name.
 > 
-> Applied as 6.7 material, but without the Cc: stable tag that is (a)
-> invalid (there should be vger.kernel.org in the host part) and (b)
-> unnecessary AFAICS.
+> Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> ---
+>  drivers/devfreq/event/rockchip-dfi.c |  9 +++++----
+>  drivers/devfreq/rk3399_dmc.c         | 10 +++++-----
+>  include/soc/rockchip/rk3399_grf.h    |  7 +------
+>  include/soc/rockchip/rockchip_grf.h  | 17 +++++++++++++++++
+>  4 files changed, 28 insertions(+), 15 deletions(-)
+>  create mode 100644 include/soc/rockchip/rockchip_grf.h
+> 
+> diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+> index 82de24a027579..6bccb6fbcfc0c 100644
+> --- a/drivers/devfreq/event/rockchip-dfi.c
+> +++ b/drivers/devfreq/event/rockchip-dfi.c
+> @@ -18,8 +18,10 @@
+>  #include <linux/list.h>
+>  #include <linux/of.h>
+>  #include <linux/of_device.h>
+> +#include <linux/bitfield.h>
+>  #include <linux/bits.h>
+>  
+> +#include <soc/rockchip/rockchip_grf.h>
+>  #include <soc/rockchip/rk3399_grf.h>
+>  
+>  #define DMC_MAX_CHANNELS	2
+> @@ -74,9 +76,9 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
+>  	writel_relaxed(CLR_DDRMON_CTRL, dfi_regs + DDRMON_CTRL);
+>  
+>  	/* set ddr type to dfi */
+> -	if (dfi->ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR3)
+> +	if (dfi->ddr_type == ROCKCHIP_DDRTYPE_LPDDR3)
+>  		writel_relaxed(LPDDR3_EN, dfi_regs + DDRMON_CTRL);
+> -	else if (dfi->ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR4)
+> +	else if (dfi->ddr_type == ROCKCHIP_DDRTYPE_LPDDR4)
+>  		writel_relaxed(LPDDR4_EN, dfi_regs + DDRMON_CTRL);
+>  
+>  	/* enable count, use software mode */
+> @@ -191,8 +193,7 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
+>  
+>  	/* get ddr type */
+>  	regmap_read(regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
+> -	dfi->ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
+> -			RK3399_PMUGRF_DDRTYPE_MASK;
+> +	dfi->ddr_type = FIELD_GET(RK3399_PMUGRF_OS_REG2_DDRTYPE, val);
+>  
+>  	dfi->channel_mask = GENMASK(1, 0);
+>  
+> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+> index daff407026157..fd2c5ffedf41e 100644
+> --- a/drivers/devfreq/rk3399_dmc.c
+> +++ b/drivers/devfreq/rk3399_dmc.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/suspend.h>
+>  
+>  #include <soc/rockchip/pm_domains.h>
+> +#include <soc/rockchip/rockchip_grf.h>
+>  #include <soc/rockchip/rk3399_grf.h>
+>  #include <soc/rockchip/rockchip_sip.h>
+>  
+> @@ -381,17 +382,16 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	regmap_read(data->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
+> -	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
+> -		    RK3399_PMUGRF_DDRTYPE_MASK;
+> +	ddr_type = FIELD_GET(RK3399_PMUGRF_OS_REG2_DDRTYPE, val);
+>  
+>  	switch (ddr_type) {
+> -	case RK3399_PMUGRF_DDRTYPE_DDR3:
+> +	case ROCKCHIP_DDRTYPE_DDR3:
+>  		data->odt_dis_freq = data->ddr3_odt_dis_freq;
+>  		break;
+> -	case RK3399_PMUGRF_DDRTYPE_LPDDR3:
+> +	case ROCKCHIP_DDRTYPE_LPDDR3:
+>  		data->odt_dis_freq = data->lpddr3_odt_dis_freq;
+>  		break;
+> -	case RK3399_PMUGRF_DDRTYPE_LPDDR4:
+> +	case ROCKCHIP_DDRTYPE_LPDDR4:
+>  		data->odt_dis_freq = data->lpddr4_odt_dis_freq;
+>  		break;
+>  	default:
+> diff --git a/include/soc/rockchip/rk3399_grf.h b/include/soc/rockchip/rk3399_grf.h
+> index 3eebabcb28123..775f8444bea8d 100644
+> --- a/include/soc/rockchip/rk3399_grf.h
+> +++ b/include/soc/rockchip/rk3399_grf.h
+> @@ -11,11 +11,6 @@
+>  
+>  /* PMU GRF Registers */
+>  #define RK3399_PMUGRF_OS_REG2		0x308
+> -#define RK3399_PMUGRF_DDRTYPE_SHIFT	13
+> -#define RK3399_PMUGRF_DDRTYPE_MASK	7
+> -#define RK3399_PMUGRF_DDRTYPE_DDR3	3
+> -#define RK3399_PMUGRF_DDRTYPE_LPDDR2	5
+> -#define RK3399_PMUGRF_DDRTYPE_LPDDR3	6
+> -#define RK3399_PMUGRF_DDRTYPE_LPDDR4	7
+> +#define RK3399_PMUGRF_OS_REG2_DDRTYPE		GENMASK(15, 13)
+>  
+>  #endif
+> diff --git a/include/soc/rockchip/rockchip_grf.h b/include/soc/rockchip/rockchip_grf.h
+> new file mode 100644
+> index 0000000000000..dde1a9796ccb5
+> --- /dev/null
+> +++ b/include/soc/rockchip/rockchip_grf.h
+> @@ -0,0 +1,17 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * Rockchip General Register Files definitions
+> + */
+> +
+> +#ifndef __SOC_ROCKCHIP_GRF_H
+> +#define __SOC_ROCKCHIP_GRF_H
+> +
+> +/* Rockchip DDRTYPE defines */
+> +enum {
+> +	ROCKCHIP_DDRTYPE_DDR3	= 3,
+> +	ROCKCHIP_DDRTYPE_LPDDR2	= 5,
+> +	ROCKCHIP_DDRTYPE_LPDDR3	= 6,
+> +	ROCKCHIP_DDRTYPE_LPDDR4	= 7,
+> +};
+> +
+> +#endif /* __SOC_ROCKCHIP_GRF_H */
 
-Just to check, did you mean as v6.6 material?
 
-I'm consistently hitting this on real arm64 hardware with v6.6-rc*.
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-If this is v6.7 material, are we going to revert 005e8dddd497 for now?
+This patch must require Ack of rockchip Maintainer (Heiko Stuebner)
+because of include/soc/rockchip.
 
-I've tested the above patch atop v6.6-rc3, and it solves the problem for me, so
-FWIW:
+-- 
+Best Regards,
+Samsung Electronics
+Chanwoo Choi
 
-Tested-by: Mark Rutland <mark.rutland@arm.com>
-
-Thanks,
-Mark.
