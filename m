@@ -2,85 +2,139 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD22FE92FFD
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Oct 2023 17:51:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A57CAE81E1E
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Oct 2023 17:57:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233093AbjJFRvg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Oct 2023 13:51:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35810 "EHLO
+        id S233005AbjJFR5b convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Oct 2023 13:57:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46320 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233083AbjJFRve (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Oct 2023 13:51:34 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1EB6BE;
-        Fri,  6 Oct 2023 10:51:32 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id fe1c702b030d306b; Fri, 6 Oct 2023 19:51:31 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id E4A8F665D08;
-        Fri,  6 Oct 2023 19:51:30 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH v1 0/6] thermal: core: Pass trip pointers to governor .throttle() callbacks
-Date:   Fri, 06 Oct 2023 19:38:28 +0200
-Message-ID: <13365827.uLZWGnKmhe@kreacher>
+        with ESMTP id S233094AbjJFR5b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Oct 2023 13:57:31 -0400
+Received: from mail-ot1-f44.google.com (mail-ot1-f44.google.com [209.85.210.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85A7FC6;
+        Fri,  6 Oct 2023 10:57:29 -0700 (PDT)
+Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-6c6591642f2so517215a34.1;
+        Fri, 06 Oct 2023 10:57:29 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696615049; x=1697219849;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=d+dhIoEDM1PenE6vLFoSqXGSc7iM/SVLbgtY4WYn6B4=;
+        b=QBoh6KbzE2wjS8YSVpxqkRvuj5Bc/XFMYoHfwzqI9DVAp6icHl/H0kMcdjpI4A6FFO
+         3K43EEJ3TmzLzdtfkXwiS1SZ0BOAFfWGeE8u13tMaT0m9jIXBBNWdWirT8Ox70LCDIg3
+         hfXaDpuqDl3YsqPfpC0+19Hc3pZX7gluzuz+fZVuhPQ1t0zh+htCZCk93Mu9Ws+mm9WM
+         Mfs9mg85b6h8TP7dlnm92Qr26iCEV7sJ6ExwhBh1h/AfoA4fIk2g+Vs/XgTvcf6AMFas
+         fNWZTSMudgHN1XCeHRGDU2rTi4Vwfjeadvo4RHtLzgiT4/xCtUa3sFEJqJAwI/Jlm014
+         oYCw==
+X-Gm-Message-State: AOJu0Yzak7bklGW1pViDA9chAaJL/9DRZT6LZKsyi2xmCwZ1j9/xD+BW
+        Pka28XJ2kpP6atMvBqcYeWIJoNzOVCywuSSk/Dw=
+X-Google-Smtp-Source: AGHT+IFQiP2+5fPGIBtxfCHPwHkFQVRVFSTgV7dwuQI3d0uucjF6cm31T6uWBAEa3xg0Xg59eK69Jb1nw5EWZV3fg2g=
+X-Received: by 2002:a4a:b807:0:b0:57b:3b64:7ea5 with SMTP id
+ g7-20020a4ab807000000b0057b3b647ea5mr8048795oop.1.1696615048770; Fri, 06 Oct
+ 2023 10:57:28 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20231004-hib_zero_bitmap_fix-v2-1-6a530b7b6e98@quicinc.com>
+ <CADyq12ziGEpkpvLv9zg91Zpp-12GW1iLnXcT8LaMt48WiKaVMw@mail.gmail.com>
+ <CAJZ5v0g8uBw6syXMC9p6BRn_E77wyUsvBOYX3dv1jwXU7k-uHA@mail.gmail.com> <ZSBCLE1VLxN-hdRD@FVFF77S0Q05N.cambridge.arm.com>
+In-Reply-To: <ZSBCLE1VLxN-hdRD@FVFF77S0Q05N.cambridge.arm.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 6 Oct 2023 19:57:17 +0200
+Message-ID: <CAJZ5v0jy3D13AERvPBRG+nzVupERB059zsvpb_hzcifA52=Vqw@mail.gmail.com>
+Subject: Re: [PATCH v2] PM: hibernate: Fix a bug in copying the zero bitmap to
+ safe pages
+To:     Mark Rutland <mark.rutland@arm.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Brian Geffon <bgeffon@google.com>,
+        Pavankumar Kondeti <quic_pkondeti@quicinc.com>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        kernel@quicinc.com,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrgeeigdduudeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgu
- rhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+On Fri, Oct 6, 2023 at 7:21 PM Mark Rutland <mark.rutland@arm.com> wrote:
+>
+> Hi Rafael,
+>
+> On Wed, Oct 04, 2023 at 08:46:56PM +0200, Rafael J. Wysocki wrote:
+> > On Wed, Oct 4, 2023 at 2:19 PM Brian Geffon <bgeffon@google.com> wrote:
+> > >
+> > > On Wed, Oct 4, 2023 at 1:01 AM Pavankumar Kondeti
+> > > <quic_pkondeti@quicinc.com> wrote:
+> > > >
+> > > > The following crash is observed 100% of the time during resume from
+> > > > the hibernation on a x86 QEMU system.
+> > > >
+> > > > [   12.931887]  ? __die_body+0x1a/0x60
+> > > > [   12.932324]  ? page_fault_oops+0x156/0x420
+> > > > [   12.932824]  ? search_exception_tables+0x37/0x50
+> > > > [   12.933389]  ? fixup_exception+0x21/0x300
+> > > > [   12.933889]  ? exc_page_fault+0x69/0x150
+> > > > [   12.934371]  ? asm_exc_page_fault+0x26/0x30
+> > > > [   12.934869]  ? get_buffer.constprop.0+0xac/0x100
+> > > > [   12.935428]  snapshot_write_next+0x7c/0x9f0
+> > > > [   12.935929]  ? submit_bio_noacct_nocheck+0x2c2/0x370
+> > > > [   12.936530]  ? submit_bio_noacct+0x44/0x2c0
+> > > > [   12.937035]  ? hib_submit_io+0xa5/0x110
+> > > > [   12.937501]  load_image+0x83/0x1a0
+> > > > [   12.937919]  swsusp_read+0x17f/0x1d0
+> > > > [   12.938355]  ? create_basic_memory_bitmaps+0x1b7/0x240
+> > > > [   12.938967]  load_image_and_restore+0x45/0xc0
+> > > > [   12.939494]  software_resume+0x13c/0x180
+> > > > [   12.939994]  resume_store+0xa3/0x1d0
+> > > >
+> > > > The commit being fixed introduced a bug in copying the zero bitmap
+> > > > to safe pages. A temporary bitmap is allocated with PG_ANY flag in
+> > > > prepare_image() to make a copy of zero bitmap after the unsafe pages
+> > > > are marked. Freeing this temporary bitmap with PG_UNSAFE_KEEP later
+> > > > results in an inconsistent state of unsafe pages. Since free bit is
+> > > > left as is for this temporary bitmap after free, these pages are
+> > > > treated as unsafe pages when they are allocated again. This results
+> > > > in incorrect calculation of the number of pages pre-allocated for the
+> > > > image.
+> > > >
+> > > > nr_pages = (nr_zero_pages + nr_copy_pages) - nr_highmem - allocated_unsafe_pages;
+> > > >
+> > > > The allocate_unsafe_pages is estimated to be higher than the actual
+> > > > which results in running short of pages in safe_pages_list. Hence the
+> > > > crash is observed in get_buffer() due to NULL pointer access of
+> > > > safe_pages_list.
+> > > >
+> > > > Fix this issue by creating the temporary zero bitmap from safe pages
+> > > > (free bit not set) so that the corresponding free bits can be cleared while
+> > > > freeing this bitmap.
+> > > >
+> > > > Cc: stable <stable@kernel.org>
+> > > > Fixes: 005e8dddd497 ("PM: hibernate: don't store zero pages in the image file")
+> > > > Suggested-by:: Brian Geffon <bgeffon@google.com>
+> > > > Signed-off-by: Pavankumar Kondeti <quic_pkondeti@quicinc.com>
+> > >
+> > > Reviewed-by: Brian Geffon <bgeffon@google.com>
+> >
+> > Applied as 6.7 material, but without the Cc: stable tag that is (a)
+> > invalid (there should be vger.kernel.org in the host part) and (b)
+> > unnecessary AFAICS.
+>
+> Just to check, did you mean as v6.6 material?
 
-While working on https://lore.kernel.org/linux-pm/4846448.GXAFRqVoOG@kreacher/
-I started to change thermal governors so as to reduce the usage of trip
-indices in them.  At that time, I was concerned that they could not be
-replaced with trip pointers overall, because they were needed in certain
-situations (tracing, debug messages, userspace governor) and computing them
-whenever they were needed would be extra overhead with relatively weak
-justification.  In the meantime, however, I realized that for a given trip
-pointer, it is actually trivial to compute the corresponding index: it is
-sufficient to subtract the start of the trips[] table in the thermal zone
-containing the trip from that trip pointer for this purpose.  Patch [1/6]
-modifies thermal_zone_trip_id() in accordance with this observation.
+Yes, I did, sorry.
 
-Now that the cost of computing a trip index for a given trip pointer and
-thermal zone is not a concern any more, the governors can be generally
-switched over to using trip pointers for representing trips.  One of the
-things they need to do sometimes, though, is to iterate over trips in a
-given thermal zone (the core needs to do that too, of course) and
-for_each_thermal_trip() is somewhat inconvenient for this purpose, because
-it requires callback functions to be defined and in some cases new data
-types need to be introduced just in order to use it.  For this reason,
-patch [2/6] adds a macro for iterating over trip points in a given thermal
-zone with the help of a trip pointer and changes for_each_thermal_trip() to
-use that macro internally.
+Actually, I've just sent a pull request with it.
 
-Patches [3-5/6] change individual governors to prepare them for using trip
-pointers everywhere for representing trips, except for the trip argument of
-the .throttle() callback and patch [6/6] finally changes the .throttle()
-callback definition so that it takes a trip pointer as the argument
-representing the trip.
+> I'm consistently hitting this on real arm64 hardware with v6.6-rc*.
+>
+> If this is v6.7 material, are we going to revert 005e8dddd497 for now?
+>
+> I've tested the above patch atop v6.6-rc3, and it solves the problem for me, so
+> FWIW:
+>
+> Tested-by: Mark Rutland <mark.rutland@arm.com>
 
-Please refer to the individual patch changelogs for details.
-
-Thanks!
-
-
-
+Thanks a lot for verifying this!  Alas, it is too late to add the tag ...
