@@ -2,26 +2,26 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2E2BE81E1E
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Oct 2023 17:51:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD22FE92FFD
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Oct 2023 17:51:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233088AbjJFRvf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Oct 2023 13:51:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35806 "EHLO
+        id S233093AbjJFRvg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Oct 2023 13:51:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35810 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232953AbjJFRvd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Oct 2023 13:51:33 -0400
+        with ESMTP id S233083AbjJFRve (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Oct 2023 13:51:34 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DD5DB6;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1EB6BE;
         Fri,  6 Oct 2023 10:51:32 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id ad6d2b9f66b12151; Fri, 6 Oct 2023 19:51:30 +0200
+ id fe1c702b030d306b; Fri, 6 Oct 2023 19:51:31 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 30F1D665D08;
+        by v370.home.net.pl (Postfix) with ESMTPSA id E4A8F665D08;
         Fri,  6 Oct 2023 19:51:30 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
@@ -30,62 +30,57 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Zhang Rui <rui.zhang@intel.com>,
         Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH v1 1/6] thermal: trip: Simplify computing trip indices
-Date:   Fri, 06 Oct 2023 19:40:25 +0200
-Message-ID: <3256881.aeNJFYEL58@kreacher>
-In-Reply-To: <13365827.uLZWGnKmhe@kreacher>
-References: <13365827.uLZWGnKmhe@kreacher>
+Subject: [PATCH v1 0/6] thermal: core: Pass trip pointers to governor .throttle() callbacks
+Date:   Fri, 06 Oct 2023 19:38:28 +0200
+Message-ID: <13365827.uLZWGnKmhe@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrgeeigdduudehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepiedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgv
- lhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrgeeigdduudeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgu
+ rhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhm
 X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-A trip index can be computed right away as a difference between the
-value of a trip pointer pointing to the given trip object and the
-start of the trips[] table in the thermal zone containing the trip, so
-change thermal_zone_trip_id() accordingly.
+While working on https://lore.kernel.org/linux-pm/4846448.GXAFRqVoOG@kreacher/
+I started to change thermal governors so as to reduce the usage of trip
+indices in them.  At that time, I was concerned that they could not be
+replaced with trip pointers overall, because they were needed in certain
+situations (tracing, debug messages, userspace governor) and computing them
+whenever they were needed would be extra overhead with relatively weak
+justification.  In the meantime, however, I realized that for a given trip
+pointer, it is actually trivial to compute the corresponding index: it is
+sufficient to subtract the start of the trips[] table in the thermal zone
+containing the trip from that trip pointer for this purpose.  Patch [1/6]
+modifies thermal_zone_trip_id() in accordance with this observation.
 
-No intentional functional impact (except for some speedup).
+Now that the cost of computing a trip index for a given trip pointer and
+thermal zone is not a concern any more, the governors can be generally
+switched over to using trip pointers for representing trips.  One of the
+things they need to do sometimes, though, is to iterate over trips in a
+given thermal zone (the core needs to do that too, of course) and
+for_each_thermal_trip() is somewhat inconvenient for this purpose, because
+it requires callback functions to be defined and in some cases new data
+types need to be introduced just in order to use it.  For this reason,
+patch [2/6] adds a macro for iterating over trip points in a given thermal
+zone with the help of a trip pointer and changes for_each_thermal_trip() to
+use that macro internally.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/thermal/thermal_trip.c |   13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+Patches [3-5/6] change individual governors to prepare them for using trip
+pointers everywhere for representing trips, except for the trip argument of
+the .throttle() callback and patch [6/6] finally changes the .throttle()
+callback definition so that it takes a trip pointer as the argument
+representing the trip.
 
-Index: linux-pm/drivers/thermal/thermal_trip.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_trip.c
-+++ linux-pm/drivers/thermal/thermal_trip.c
-@@ -175,14 +175,11 @@ int thermal_zone_set_trip(struct thermal
- int thermal_zone_trip_id(struct thermal_zone_device *tz,
- 			 const struct thermal_trip *trip)
- {
--	int i;
--
- 	lockdep_assert_held(&tz->lock);
- 
--	for (i = 0; i < tz->num_trips; i++) {
--		if (&tz->trips[i] == trip)
--			return i;
--	}
--
--	return -ENODATA;
-+	/*
-+	 * Assume the trip to be located within the bounds of the thermal
-+	 * zone's trips[] table.
-+	 */
-+	return trip - tz->trips;
- }
+Please refer to the individual patch changelogs for details.
+
+Thanks!
 
 
 
