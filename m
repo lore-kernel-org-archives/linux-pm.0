@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94B19E95A91
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Oct 2023 10:36:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B09B7E95A91
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Oct 2023 10:36:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345877AbjJIKgb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Oct 2023 06:36:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46970 "EHLO
+        id S1345914AbjJIKgf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Oct 2023 06:36:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47042 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345831AbjJIKga (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2023 06:36:30 -0400
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 515D09F
-        for <linux-pm@vger.kernel.org>; Mon,  9 Oct 2023 03:36:28 -0700 (PDT)
-Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-3296b49c546so2468674f8f.3
-        for <linux-pm@vger.kernel.org>; Mon, 09 Oct 2023 03:36:28 -0700 (PDT)
+        with ESMTP id S1345890AbjJIKgc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2023 06:36:32 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CC889D
+        for <linux-pm@vger.kernel.org>; Mon,  9 Oct 2023 03:36:31 -0700 (PDT)
+Received: by mail-wr1-x42e.google.com with SMTP id ffacd0b85a97d-32157c8e4c7so4354542f8f.1
+        for <linux-pm@vger.kernel.org>; Mon, 09 Oct 2023 03:36:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696847787; x=1697452587; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1696847789; x=1697452589; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=re7b+0McMMJs79AIsRmZVXLCw9N+5e5Qqk3aklm3ETc=;
-        b=kmsDUtAsrjuA2Wdc3hsWu2yZ/c5ilHfeqWH+Uuy+u4uj5O8kL9oPPTgZY1WcBjFw00
-         2rUWYUsebVOmdH72oqY/vP81dvhWhiUfXh6lx45D1eZclu88SolVvC3xPlKMhiL4KxUL
-         OsoXCXNSp2WTNhwCszD/iWRBsRZfzua0Xb6RpVUpMIjjE9HYaaqfL9WRUU7dMOyDe4sH
-         vkT7+eHAg0DNZ11O6t3qkkbDkYcrT/s7n6EdvchnMJXVUeqWblDWx7NE2ATUrcMeoPGL
-         /9dQCqKGrKIeiqxQDcC1RWTBjHngA05H9WfR8uqH5iM6z7/sFuRxb5Eg7pIC3oKUji5I
-         SI5A==
+        bh=kNKKT3nz1YObI5oerkbE50Couf3/jlljKZ/fkPRsfb8=;
+        b=KKeeHEgwkzQ7bGffr2RggX/J5Aa4SZbzSD22Y5kids44XDdQavj8NZcLWx99fYBZ44
+         wIcGSDTNGZfBUNPtXTPGSYvprHajbjEV5o3pkN9iozzacYoFjWK0YowgKFPjbyxhUr/N
+         sj9jnBgC4u8sVATjbsjYf0H32w6xoMuBLH4CdlRu4BmmZkHjZvKyjwPmlp+SR6paFCiG
+         5vHmH2oc5AFL7ysO68tWlkmkvKm/FlEnSh7vog1EsBd11/nWf5R8L6d903K82pOls5oX
+         OByluKj0k3RjPvFjgO9OGw3mKzpAlxhqx6BGxGRs+z2Y0e6+w0Ws8l9y2fI1DXs0KydH
+         5S3Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696847787; x=1697452587;
+        d=1e100.net; s=20230601; t=1696847789; x=1697452589;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=re7b+0McMMJs79AIsRmZVXLCw9N+5e5Qqk3aklm3ETc=;
-        b=dXl9eW9A2RCFBqEyAWKiItQqgZbBqQgOtXXI3AA3UVwCB6mPfYI4udVF7/rsulWhcj
-         +hZCpPrEI/hpJZB4DaeDU67AyXDly4IRKKS1ho2bexHjHKD75YvAyS9bTD7kzAQFvyHA
-         Hw+Rl5X0a5EmPbsgKrTAYWfShDwXv7y/Y/G13/R0+qDwZbiWRxv9fhQvSHcJyuXRdi9l
-         iFYRiakDN2T3aLYkLMJpfBAYZHfik0cUGvh387r+LrjAUAq+Pnc+/+2qkng4Q5kPWBsr
-         MqnkqXdPpwfQ66PGqp5Dieta0151uM0oGNwAQJPP9JITagXHh4GT2FPawQtut562iWeg
-         LBdg==
-X-Gm-Message-State: AOJu0YxW8ugmUDz0hy7j9fAmtC3o91cAemb1I4ifU+yiAa80jp71rWpy
-        pFhoOlfWqwmGEvOkHuHZ8jyMQQ==
-X-Google-Smtp-Source: AGHT+IEjQw3F2QpiyYMDHKQ0Ydoc0UsVzOGqUY2ht0reqHXmAAoEP6EJ50UQeRQWWBd0aG7tZrfNCQ==
-X-Received: by 2002:adf:f505:0:b0:327:ffef:ba51 with SMTP id q5-20020adff505000000b00327ffefba51mr13155370wro.49.1696847786785;
-        Mon, 09 Oct 2023 03:36:26 -0700 (PDT)
+        bh=kNKKT3nz1YObI5oerkbE50Couf3/jlljKZ/fkPRsfb8=;
+        b=uxU9mLLTFrNmUq3bWj/8EZOys9e0ZhacXbadaS+DvPhxCR7EXDxt/Knm7mY+iiRMvw
+         iNNxc/9E/ZXIpaRfa655HL+0F2RIS+B1dviX6DRLgFpUlrMyeHd24eUOhPvAE9jC+nAY
+         SXGfFh/wwVsptDqlAsRSwtD0gi/q/tMu2cZIfzThFnucHlcgK20AKIHRsiM2pJTNhImE
+         G4p2csknS5VkA9DOhJ/Cro5M3KpM7zunV96QdD48D1acaCYPHvgdY3KfYtdB7COu4601
+         Kwi+aOIUleJ6bLSySbKmlsqKGKehBLfs6X3ngpwUFTW7VTJtY+I6P16c/OwInSjbWu9V
+         nluA==
+X-Gm-Message-State: AOJu0YxG1Z31aBOU5i1wjWv8BXeXCxlJmH2xPfbYjQMvz09qzRuaAZ6p
+        WNUb10p/au4xxqEPIWPvD50rTQ==
+X-Google-Smtp-Source: AGHT+IG26Qla65j//2waJk5p+C3Wp1IkFGp+wjCfVC7nMqMP8R+PELrHfGujdUavK8O0HgXO8xjo4Q==
+X-Received: by 2002:a5d:4586:0:b0:321:5e2f:37e1 with SMTP id p6-20020a5d4586000000b003215e2f37e1mr13248647wrq.19.1696847789459;
+        Mon, 09 Oct 2023 03:36:29 -0700 (PDT)
 Received: from vingu-book.. ([2a01:e0a:f:6020:53f1:24bc:5e47:821d])
-        by smtp.gmail.com with ESMTPSA id f16-20020adfdb50000000b0031ff89af0e4sm9226722wrj.99.2023.10.09.03.36.25
+        by smtp.gmail.com with ESMTPSA id f16-20020adfdb50000000b0031ff89af0e4sm9226722wrj.99.2023.10.09.03.36.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Oct 2023 03:36:26 -0700 (PDT)
+        Mon, 09 Oct 2023 03:36:28 -0700 (PDT)
 From:   Vincent Guittot <vincent.guittot@linaro.org>
 To:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
         paul.walmsley@sifive.com, palmer@dabbelt.com,
@@ -64,9 +64,9 @@ To:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
 Cc:     conor.dooley@microchip.com, suagrfillet@gmail.com,
         ajones@ventanamicro.com, lftan@kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v2 1/6] sched: consolidate and cleanup access to CPU's max compute capacity
-Date:   Mon,  9 Oct 2023 12:36:16 +0200
-Message-Id: <20231009103621.374412-2-vincent.guittot@linaro.org>
+Subject: [PATCH v2 3/6] cpufreq: use the fixed and coherent frequency for scaling capacity
+Date:   Mon,  9 Oct 2023 12:36:18 +0200
+Message-Id: <20231009103621.374412-4-vincent.guittot@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20231009103621.374412-1-vincent.guittot@linaro.org>
 References: <20231009103621.374412-1-vincent.guittot@linaro.org>
@@ -76,260 +76,61 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Remove struct rq cpu_capacity_orig field and use arch_scale_cpu_capacity()
-instead.
+cpuinfo.max_freq can change at runtime because of boost as an example. This
+implies that the value could be different from the frequency that has been
+used to compute the capacity of a CPU.
 
-Scheduler uses 3 methods to get access to the CPU's max compute capacity:
-- arch_scale_cpu_capacity(cpu) which is the default way to get CPU's capacity.
-- cpu_capacity_orig field which is periodically updated with
-  arch_scale_cpu_capacity().
-- capacity_orig_of(cpu) which encapsulates rq->cpu_capacity_orig.
-
-There is no real need to save the value returned by arch_scale_cpu_capacity()
-in struct rq. arch_scale_cpu_capacity() returns:
-- either a per_cpu variable.
-- or a const value for systems which have only one capacity.
-
-Remove cpu_capacity_orig and use arch_scale_cpu_capacity() everywhere.
-
-No functional changes.
-
-some tests of Arm64
-small SMP device (hikey): no noticeable changes
-HMP device (RB5): hackbench shows minor improvement (1-2%)
-large smp (thx2): hackbench and tbench shows minor improvement (1%)
+The new arch_scale_freq_ref() returns a fixed and coherent frequency
+that can be used to compute the capacity for a given frequency.
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-
 ---
- Documentation/scheduler/sched-capacity.rst | 13 +++++++------
- kernel/sched/core.c                        |  2 +-
- kernel/sched/cpudeadline.c                 |  2 +-
- kernel/sched/deadline.c                    |  4 ++--
- kernel/sched/fair.c                        | 18 ++++++++----------
- kernel/sched/rt.c                          |  2 +-
- kernel/sched/sched.h                       |  6 ------
- kernel/sched/topology.c                    |  7 +++++--
- 8 files changed, 25 insertions(+), 29 deletions(-)
+ drivers/cpufreq/cpufreq.c | 4 ++--
+ include/linux/cpufreq.h   | 9 +++++++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/scheduler/sched-capacity.rst b/Documentation/scheduler/sched-capacity.rst
-index e2c1cf743158..de414b33dd2a 100644
---- a/Documentation/scheduler/sched-capacity.rst
-+++ b/Documentation/scheduler/sched-capacity.rst
-@@ -39,14 +39,15 @@ per Hz, leading to::
- -------------------
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 60ed89000e82..8c4f9c2f9c44 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -454,7 +454,7 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
  
- Two different capacity values are used within the scheduler. A CPU's
--``capacity_orig`` is its maximum attainable capacity, i.e. its maximum
--attainable performance level. A CPU's ``capacity`` is its ``capacity_orig`` to
--which some loss of available performance (e.g. time spent handling IRQs) is
--subtracted.
-+``original capacity`` is its maximum attainable capacity, i.e. its maximum
-+attainable performance level. This original capacity is returned by
-+the function arch_scale_cpu_capacity(). A CPU's ``capacity`` is its ``original
-+capacity`` to which some loss of available performance (e.g. time spent
-+handling IRQs) is subtracted.
+ 	arch_set_freq_scale(policy->related_cpus,
+ 			    policy->cur,
+-			    policy->cpuinfo.max_freq);
++			    arch_scale_freq_ref(policy->cpu));
  
- Note that a CPU's ``capacity`` is solely intended to be used by the CFS class,
--while ``capacity_orig`` is class-agnostic. The rest of this document will use
--the term ``capacity`` interchangeably with ``capacity_orig`` for the sake of
-+while ``original capacity`` is class-agnostic. The rest of this document will use
-+the term ``capacity`` interchangeably with ``original capacity`` for the sake of
- brevity.
+ 	spin_lock(&policy->transition_lock);
+ 	policy->transition_ongoing = false;
+@@ -2174,7 +2174,7 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
  
- 1.3 Platform examples
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index cf6d3fdd4eb5..a3f9cd52eec5 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -9929,7 +9929,7 @@ void __init sched_init(void)
- #ifdef CONFIG_SMP
- 		rq->sd = NULL;
- 		rq->rd = NULL;
--		rq->cpu_capacity = rq->cpu_capacity_orig = SCHED_CAPACITY_SCALE;
-+		rq->cpu_capacity = SCHED_CAPACITY_SCALE;
- 		rq->balance_callback = &balance_push_callback;
- 		rq->active_balance = 0;
- 		rq->next_balance = jiffies;
-diff --git a/kernel/sched/cpudeadline.c b/kernel/sched/cpudeadline.c
-index 57c92d751bcd..95baa12a1029 100644
---- a/kernel/sched/cpudeadline.c
-+++ b/kernel/sched/cpudeadline.c
-@@ -131,7 +131,7 @@ int cpudl_find(struct cpudl *cp, struct task_struct *p,
- 			if (!dl_task_fits_capacity(p, cpu)) {
- 				cpumask_clear_cpu(cpu, later_mask);
+ 	policy->cur = freq;
+ 	arch_set_freq_scale(policy->related_cpus, freq,
+-			    policy->cpuinfo.max_freq);
++			    arch_scale_freq_ref(policy->cpu));
+ 	cpufreq_stats_record_transition(policy, freq);
  
--				cap = capacity_orig_of(cpu);
-+				cap = arch_scale_cpu_capacity(cpu);
- 
- 				if (cap > max_cap ||
- 				    (cpu == task_cpu(p) && cap == max_cap)) {
-diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
-index d98408a274e5..7039a8d5ae9b 100644
---- a/kernel/sched/deadline.c
-+++ b/kernel/sched/deadline.c
-@@ -132,7 +132,7 @@ static inline unsigned long __dl_bw_capacity(const struct cpumask *mask)
- 	int i;
- 
- 	for_each_cpu_and(i, mask, cpu_active_mask)
--		cap += capacity_orig_of(i);
-+		cap += arch_scale_cpu_capacity(i);
- 
- 	return cap;
- }
-@@ -144,7 +144,7 @@ static inline unsigned long __dl_bw_capacity(const struct cpumask *mask)
- static inline unsigned long dl_bw_capacity(int i)
+ 	if (trace_cpu_frequency_enabled()) {
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 71d186d6933a..bbc483b4b6e5 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -1211,6 +1211,15 @@ void arch_set_freq_scale(const struct cpumask *cpus,
  {
- 	if (!sched_asym_cpucap_active() &&
--	    capacity_orig_of(i) == SCHED_CAPACITY_SCALE) {
-+	    arch_scale_cpu_capacity(i) == SCHED_CAPACITY_SCALE) {
- 		return dl_bw_cpus(i) << SCHED_CAPACITY_SHIFT;
- 	} else {
- 		RCU_LOCKDEP_WARN(!rcu_read_lock_sched_held(),
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 04fbcbda97d5..7e2027c810e7 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4713,7 +4713,7 @@ static inline void util_est_update(struct cfs_rq *cfs_rq,
- 	 * To avoid overestimation of actual task utilization, skip updates if
- 	 * we cannot grant there is idle time in this CPU.
- 	 */
--	if (task_util(p) > capacity_orig_of(cpu_of(rq_of(cfs_rq))))
-+	if (task_util(p) > arch_scale_cpu_capacity(cpu_of(rq_of(cfs_rq))))
- 		return;
- 
- 	/*
-@@ -4761,14 +4761,14 @@ static inline int util_fits_cpu(unsigned long util,
- 		return fits;
- 
- 	/*
--	 * We must use capacity_orig_of() for comparing against uclamp_min and
-+	 * We must use arch_scale_cpu_capacity() for comparing against uclamp_min and
- 	 * uclamp_max. We only care about capacity pressure (by using
- 	 * capacity_of()) for comparing against the real util.
- 	 *
- 	 * If a task is boosted to 1024 for example, we don't want a tiny
- 	 * pressure to skew the check whether it fits a CPU or not.
- 	 *
--	 * Similarly if a task is capped to capacity_orig_of(little_cpu), it
-+	 * Similarly if a task is capped to arch_scale_cpu_capacity(little_cpu), it
- 	 * should fit a little cpu even if there's some pressure.
- 	 *
- 	 * Only exception is for thermal pressure since it has a direct impact
-@@ -4780,7 +4780,7 @@ static inline int util_fits_cpu(unsigned long util,
- 	 * For uclamp_max, we can tolerate a drop in performance level as the
- 	 * goal is to cap the task. So it's okay if it's getting less.
- 	 */
--	capacity_orig = capacity_orig_of(cpu);
-+	capacity_orig = arch_scale_cpu_capacity(cpu);
- 	capacity_orig_thermal = capacity_orig - arch_scale_thermal_pressure(cpu);
- 
- 	/*
-@@ -7261,7 +7261,7 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
- 		 * Look for the CPU with best capacity.
- 		 */
- 		else if (fits < 0)
--			cpu_cap = capacity_orig_of(cpu) - thermal_load_avg(cpu_rq(cpu));
-+			cpu_cap = arch_scale_cpu_capacity(cpu) - thermal_load_avg(cpu_rq(cpu));
- 
- 		/*
- 		 * First, select CPU which fits better (-1 being better than 0).
-@@ -7503,7 +7503,7 @@ cpu_util(int cpu, struct task_struct *p, int dst_cpu, int boost)
- 		util = max(util, util_est);
- 	}
- 
--	return min(util, capacity_orig_of(cpu));
-+	return min(util, arch_scale_cpu_capacity(cpu));
  }
- 
- unsigned long cpu_util_cfs(int cpu)
-@@ -9294,8 +9294,6 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
- 	unsigned long capacity = scale_rt_capacity(cpu);
- 	struct sched_group *sdg = sd->groups;
- 
--	cpu_rq(cpu)->cpu_capacity_orig = arch_scale_cpu_capacity(cpu);
--
- 	if (!capacity)
- 		capacity = 1;
- 
-@@ -9371,7 +9369,7 @@ static inline int
- check_cpu_capacity(struct rq *rq, struct sched_domain *sd)
- {
- 	return ((rq->cpu_capacity * sd->imbalance_pct) <
--				(rq->cpu_capacity_orig * 100));
-+				(arch_scale_cpu_capacity(cpu_of(rq)) * 100));
- }
- 
- /*
-@@ -9382,7 +9380,7 @@ check_cpu_capacity(struct rq *rq, struct sched_domain *sd)
- static inline int check_misfit_status(struct rq *rq, struct sched_domain *sd)
- {
- 	return rq->misfit_task_load &&
--		(rq->cpu_capacity_orig < rq->rd->max_cpu_capacity ||
-+		(arch_scale_cpu_capacity(rq->cpu) < rq->rd->max_cpu_capacity ||
- 		 check_cpu_capacity(rq, sd));
- }
- 
-diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
-index 88fc98601413..72f0a0767059 100644
---- a/kernel/sched/rt.c
-+++ b/kernel/sched/rt.c
-@@ -471,7 +471,7 @@ static inline bool rt_task_fits_capacity(struct task_struct *p, int cpu)
- 	min_cap = uclamp_eff_value(p, UCLAMP_MIN);
- 	max_cap = uclamp_eff_value(p, UCLAMP_MAX);
- 
--	cpu_cap = capacity_orig_of(cpu);
-+	cpu_cap = arch_scale_cpu_capacity(cpu);
- 
- 	return cpu_cap >= min(min_cap, max_cap);
- }
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 649eb9ec0657..74195eb39eaa 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -1033,7 +1033,6 @@ struct rq {
- 	struct sched_domain __rcu	*sd;
- 
- 	unsigned long		cpu_capacity;
--	unsigned long		cpu_capacity_orig;
- 
- 	struct balance_callback *balance_callback;
- 
-@@ -2967,11 +2966,6 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
  #endif
- 
- #ifdef CONFIG_SMP
--static inline unsigned long capacity_orig_of(int cpu)
--{
--	return cpu_rq(cpu)->cpu_capacity_orig;
--}
--
- /**
-  * enum cpu_util_type - CPU utilization type
-  * @FREQUENCY_UTIL:	Utilization used to select frequency
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index a7b50bba7829..1cc595907363 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -2488,12 +2488,15 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
- 	/* Attach the domains */
- 	rcu_read_lock();
- 	for_each_cpu(i, cpu_map) {
-+		unsigned long capacity;
 +
- 		rq = cpu_rq(i);
- 		sd = *per_cpu_ptr(d.sd, i);
- 
-+		capacity = arch_scale_cpu_capacity(i);
- 		/* Use READ_ONCE()/WRITE_ONCE() to avoid load/store tearing: */
--		if (rq->cpu_capacity_orig > READ_ONCE(d.rd->max_cpu_capacity))
--			WRITE_ONCE(d.rd->max_cpu_capacity, rq->cpu_capacity_orig);
-+		if (capacity > READ_ONCE(d.rd->max_cpu_capacity))
-+			WRITE_ONCE(d.rd->max_cpu_capacity, capacity);
- 
- 		cpu_attach_domain(sd, d.rd, i);
- 	}
++#ifndef arch_scale_freq_ref
++static __always_inline
++unsigned int arch_scale_freq_ref(int cpu)
++{
++	return 0;
++}
++#endif
++
+ /* the following are really really optional */
+ extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
+ extern struct freq_attr cpufreq_freq_attr_scaling_boost_freqs;
 -- 
 2.34.1
 
