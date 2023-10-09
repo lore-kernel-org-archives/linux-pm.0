@@ -2,49 +2,49 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD88CCD612C
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Oct 2023 19:06:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A293CD612D
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Oct 2023 19:06:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378284AbjJITGF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Oct 2023 15:06:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59906 "EHLO
+        id S1346660AbjJITGH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Oct 2023 15:06:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59904 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346677AbjJITGE (ORCPT
+        with ESMTP id S1346678AbjJITGE (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2023 15:06:04 -0400
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2F3DAF;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E0049D;
         Mon,  9 Oct 2023 12:06:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1696878362; x=1728414362;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=Gt0OEXf5yCXtZ8JHNFgavK0pqZGrMUKjiML+Ljc5m7M=;
-  b=LpJyOJlkeiCJYMw2iWcAH9Bl0yVYWe2kb70MG/VNWUyJZtAtzd7Vgmoa
-   f1AXmAmeHPza7yQFIgWYXQRspprumgScrJlwEJoODvTsCgYBUBxinKx/v
-   G6MH4aM72daNMC+5iGywxRzAAmyxbmBeAud+rEwbY/VL9OpR1lTg72ltN
-   20wfc2nkmQmrB48Yjcdhmy1Pz788WHsYogQpwBKechxPSLjBPKO2rdOJp
-   dKbG3wHuwWA4R+YsPWuoBrvVxgLW97aNUNj9scLDaURoxXDIpyf4IKPj/
-   Y31/44aY5fGQLW2dx8p9Mt+ufdOYJkfr8KrWUlSFIa95XLdM43iVt6yVS
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10858"; a="415213780"
+  bh=lXy3qAy84UAqa6rr2FC6hF0O3EtdwdGB+Op/XW6RxRI=;
+  b=T1mX5qCJKK7PTml59axXhYzNjKt6MfcySzzCg1fapa//Smxc5G1Xz76i
+   Jfys0Ji7j44zJZUkjrUiWL/1vcPB8fyjSRc5cnWUa8Abv2t0aPukd8s9u
+   a3rsInM0/72QE2urVx3PQHk04qfZPEhPL7WXfE2kvwm5WmPKEoAOrz+MA
+   QVUDQFwhaj/3lbHqen9Rrpti94jEj4KMFpKUW9PwNwyusidf1Fj9PZ+Ih
+   awut9Echf/oeNkLoTCDe50NvdcLMjAFgLoqoTprcdmDrSl7PHmT07i7jd
+   Rf8nFUSF3lZcWlkg8DklWw5MTk0uTScAklGaSAcsWptEsnJR885ka9lLQ
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10858"; a="415213774"
 X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; 
-   d="scan'208";a="415213780"
+   d="scan'208";a="415213774"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Oct 2023 12:06:01 -0700
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Oct 2023 12:06:00 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10858"; a="823445851"
+X-IronPort-AV: E=McAfee;i="6600,9927,10858"; a="823445845"
 X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; 
-   d="scan'208";a="823445851"
+   d="scan'208";a="823445845"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.14])
   by fmsmga004.fm.intel.com with ESMTP; 09 Oct 2023 12:06:00 -0700
 From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 5/7] thermal: int340x: processor_thermal: Handle power floor interrupts
-Date:   Mon,  9 Oct 2023 12:05:36 -0700
-Message-Id: <20231009190538.2488792-6-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 3/7] thermal: int340x: processor_thermal: Set feature mask before proc_thermal_add
+Date:   Mon,  9 Oct 2023 12:05:34 -0700
+Message-Id: <20231009190538.2488792-4-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20231009190538.2488792-1-srinivas.pandruvada@linux.intel.com>
 References: <20231009190538.2488792-1-srinivas.pandruvada@linux.intel.com>
@@ -54,58 +54,79 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On thermal device interrupt, if the interrupt is generated for passing
-power floor status, call the callback to pass notification to the user
-space.
+The function proc_thermal_add() adds sysfs entries for power limits.
+The feature mask of available features is not present by this time.
+If feature mask is available, then this can be used to selectively
+create attributes.
 
-First call proc_thermal_check_power_floor_intr() to check interrupt, if
-this callback returns true, wake the IRQ thread to call
-proc_thermal_power_floor_intr_callback() to notify user space.
+Feature mask is set during call to proc_thermal_mmio_add(). Change the
+order of calls so that proc_thermal_mmio_add() is called before
+proc_thermal_add().
+
+There is no functional impact with this change.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
 v2:
-- Use common interrupt clearing function to clear interrupt.
-Previously it was cleared in the callback function
-proc_thermal_power_floor_intr_callback().
+No change
 
- .../intel/int340x_thermal/processor_thermal_device_pci.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ .../processor_thermal_device_pci.c            | 21 +++++++++----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-index ae70fabffb2d..4c2194f19ed2 100644
+index d353a190ce44..ae70fabffb2d 100644
 --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
 +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-@@ -126,7 +126,8 @@ static void proc_thermal_clear_soc_int_status(struct proc_thermal_device *proc_p
- {
- 	u64 status;
+@@ -266,19 +266,19 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
  
--	if (!(proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_WT_HINT))
-+	if (!(proc_priv->mmio_feature_mask &
-+	    (PROC_THERMAL_FEATURE_WT_HINT | PROC_THERMAL_FEATURE_POWER_FLOOR)))
- 		return;
+ 	INIT_DELAYED_WORK(&pci_info->work, proc_thermal_threshold_work_fn);
  
- 	status = readq(proc_priv->mmio_base + SOC_WT_RES_INT_STATUS_OFFSET);
-@@ -139,6 +140,7 @@ static irqreturn_t proc_thermal_irq_thread_handler(int irq, void *devid)
- 	struct proc_thermal_pci *pci_info = devid;
+-	ret = proc_thermal_add(&pdev->dev, proc_priv);
+-	if (ret) {
+-		dev_err(&pdev->dev, "error: proc_thermal_add, will continue\n");
+-		pci_info->no_legacy = 1;
+-	}
+-
+ 	proc_priv->priv_data = pci_info;
+ 	pci_info->proc_priv = proc_priv;
+ 	pci_set_drvdata(pdev, proc_priv);
  
- 	proc_thermal_wt_intr_callback(pci_info->pdev, pci_info->proc_priv);
-+	proc_thermal_power_floor_intr_callback(pci_info->pdev, pci_info->proc_priv);
- 	proc_thermal_clear_soc_int_status(pci_info->proc_priv);
+ 	ret = proc_thermal_mmio_add(pdev, proc_priv, id->driver_data);
+ 	if (ret)
+-		goto err_ret_thermal;
++		return ret;
++
++	ret = proc_thermal_add(&pdev->dev, proc_priv);
++	if (ret) {
++		dev_err(&pdev->dev, "error: proc_thermal_add, will continue\n");
++		pci_info->no_legacy = 1;
++	}
  
- 	return IRQ_HANDLED;
-@@ -158,6 +160,11 @@ static irqreturn_t proc_thermal_irq_handler(int irq, void *devid)
- 			ret = IRQ_WAKE_THREAD;
+ 	psv_trip.temperature = get_trip_temp(pci_info);
+ 
+@@ -288,7 +288,7 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
+ 							&tzone_params, 0, 0);
+ 	if (IS_ERR(pci_info->tzone)) {
+ 		ret = PTR_ERR(pci_info->tzone);
+-		goto err_ret_mmio;
++		goto err_del_legacy;
  	}
  
-+	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_POWER_FLOOR) {
-+		if (proc_thermal_check_power_floor_intr(pci_info->proc_priv))
-+			ret = IRQ_WAKE_THREAD;
-+	}
-+
- 	/*
- 	 * Since now there are two sources of interrupts: one from thermal threshold
- 	 * and another from workload hint, add a check if there was really a threshold
+ 	if (use_msi && (pdev->msi_enabled || pdev->msix_enabled)) {
+@@ -325,11 +325,10 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
+ 		pci_free_irq_vectors(pdev);
+ err_ret_tzone:
+ 	thermal_zone_device_unregister(pci_info->tzone);
+-err_ret_mmio:
+-	proc_thermal_mmio_remove(pdev, proc_priv);
+-err_ret_thermal:
++err_del_legacy:
+ 	if (!pci_info->no_legacy)
+ 		proc_thermal_remove(proc_priv);
++	proc_thermal_mmio_remove(pdev, proc_priv);
+ 	pci_disable_device(pdev);
+ 
+ 	return ret;
 -- 
 2.40.1
 
