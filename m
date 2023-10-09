@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 427E5E95A8E
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Oct 2023 10:36:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ECFDE95A91
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Oct 2023 10:36:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345890AbjJIKgg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Oct 2023 06:36:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47012 "EHLO
+        id S1345922AbjJIKgh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Oct 2023 06:36:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47072 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345887AbjJIKgc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2023 06:36:32 -0400
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6FA4AB
-        for <linux-pm@vger.kernel.org>; Mon,  9 Oct 2023 03:36:29 -0700 (PDT)
-Received: by mail-wr1-x433.google.com with SMTP id ffacd0b85a97d-323168869daso4295762f8f.2
-        for <linux-pm@vger.kernel.org>; Mon, 09 Oct 2023 03:36:29 -0700 (PDT)
+        with ESMTP id S1345910AbjJIKge (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2023 06:36:34 -0400
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 576FEC6
+        for <linux-pm@vger.kernel.org>; Mon,  9 Oct 2023 03:36:32 -0700 (PDT)
+Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-4064876e8b8so42346745e9.0
+        for <linux-pm@vger.kernel.org>; Mon, 09 Oct 2023 03:36:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696847788; x=1697452588; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1696847791; x=1697452591; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=1IicB4ODERuC1IEqNgt/JtBz6z2h9Ys3ExqnEipNKQY=;
-        b=AasJ6UtCQrpQt+8GtUfwZdiYa81u585pfCUctZVy8RZLsEdtULx8chhLCtjK5RLOWH
-         /WrYoJ8QJ/R+T01N4u6AK0uWobVZGtDL+WdEN2K/rQTF0PUlo3+NMQGFwvFGlkWMSu5+
-         uTNvgN5ZXhoslm0foOsgUd+NcHcUeVKpIY/PEaFtd+AYCeVOqHZsgwKh7L2gh8qONXJm
-         bz+8Su8VmsHNJ+MLh3Ff6Y1ia0CBw59dj6hFgb57L6ugeW+Gfy0J/sHq95/wUWRJa3e2
-         +Dvj1n0t2iT1JLGLpV/XCY1lDFhuqT8YD+rQ0A8YBnY5DtSTlApOXgD7qwjjgSk5qoyW
-         yEOQ==
+        bh=RmtdGUvSawQ4q9KDGPlbeId1/iTLhEjjDMVIwSogQm4=;
+        b=BoQxuiosFjVPZt8rIcS2jhV7/cOVSW3fBHkNztfizdSO555RdCP+O62fPV2dAzkqy3
+         6gRLD5DdtjvXAlT5j5SNvqku6Bk0Y8KRTu3YOoYmj1H0+99gVGSo8YR/kpP1k2uetAOH
+         GJEU8vOxXy7MYI0OPlghIoPpyMigXVv9+MyrEuqzAu9C8e/35KffZ03iMcvtsmTIIqGY
+         DXz/y9Tg1YzPNZYIHRtPJrVL8QwSH/AbYuU2EvsKfPjFG2IolWIa8VE+KMioqA67CHzR
+         sFOohL1SEGzZrUVFI0I3QF0DP0GXG2+c2HM5TNk/HMXxtKfyObT/vhE2Rm+C8mp/c70w
+         vPRA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696847788; x=1697452588;
+        d=1e100.net; s=20230601; t=1696847791; x=1697452591;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=1IicB4ODERuC1IEqNgt/JtBz6z2h9Ys3ExqnEipNKQY=;
-        b=b3zKumtQGWi48rZa2xOWU5pZ5lGCxqQaTG4NhJBrV86AE0xx+/Ha0RzG3AnLClQ36h
-         xCge0Rw/CR21mFPIvq5L1Un0f8HwhRU5fKiGcMFdgAIXMYo0B6dF9EWEizhHXwM53yRa
-         +Myg/ImwvHqm5UNsM+MrqcojmtfD72PNZfiRUAxkFVQs5AyOI9/uqJ0+KS7XZMlhDgEm
-         yReGy0oe4f5WxnqUByuhUlbPeUOs4RQK07FaVkAspb6YIoUj0e2UCXfLCwwoh3tvtHo2
-         0r33cuFHrUal/Lx3rVhLvuXsOock1pBmsbeMBVfHla9e7hjva5hzrBCNsjPl+nHEojdy
-         inZQ==
-X-Gm-Message-State: AOJu0YwN5yBe/Ll6FUuUDSiWqDrhwfdvEz7zDTcmtEoKae+tr3wcltkF
-        CB4MGHD6gaB2iZjR4G9BJne2vg==
-X-Google-Smtp-Source: AGHT+IGYCDsjL+s+eXaJYDwmVGq+Pm1XzCDysQm4pemCHQ7SCDtFRnahF5GOdbFaRBcM0Tt7ZFT2Dw==
-X-Received: by 2002:a5d:4d02:0:b0:317:6fb5:bafc with SMTP id z2-20020a5d4d02000000b003176fb5bafcmr12403144wrt.65.1696847788095;
-        Mon, 09 Oct 2023 03:36:28 -0700 (PDT)
+        bh=RmtdGUvSawQ4q9KDGPlbeId1/iTLhEjjDMVIwSogQm4=;
+        b=Ul4Uam6IGg2/Gkx1UpaGb/pZYXd05c9Bs8ze9z7akZJoYRindIj6bcPZGglrczaoFc
+         huCg+5igysrBOFasfSwY78lZzX1YuzmgXS/Czq0ubEmob5vIWVT441glCVZ19Se9OrhQ
+         qFXpgjF0s8/aY9Eu3Xk0Mq7CJ1hsvChQYoy9Qfm+eYKZ2avKM6I9RLqZXyj0lCnX0N6x
+         MQzQqiKJGOols/swWz9dZrBM9hM+M/q5tnB7NR+qEIZdTCOmhEqc4+Sh+/pTH63YwYsd
+         u6eYRhNygTS+hJ51yd9VYrSELM6HyOJk6SQzbNiam1AN8g+UcAG0UHc8kLpVXlmcNcDX
+         MLJg==
+X-Gm-Message-State: AOJu0YzUnKtB2nrH9LApOv59UR+s+MYXidAZhlle6WTRIdiyQXzurxua
+        r1nQ7QSQeeQJ/F2P9cclYqlsgw==
+X-Google-Smtp-Source: AGHT+IFsDHg/Rs8MQPYQNA1a7DXBKSokGpRKvXSJgz2PNurvi4j34eIaCQtgEUCXe0uK4YQzK2pDKA==
+X-Received: by 2002:a05:6000:91:b0:320:67:5580 with SMTP id m17-20020a056000009100b0032000675580mr12443168wrx.5.1696847790816;
+        Mon, 09 Oct 2023 03:36:30 -0700 (PDT)
 Received: from vingu-book.. ([2a01:e0a:f:6020:53f1:24bc:5e47:821d])
-        by smtp.gmail.com with ESMTPSA id f16-20020adfdb50000000b0031ff89af0e4sm9226722wrj.99.2023.10.09.03.36.26
+        by smtp.gmail.com with ESMTPSA id f16-20020adfdb50000000b0031ff89af0e4sm9226722wrj.99.2023.10.09.03.36.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Oct 2023 03:36:27 -0700 (PDT)
+        Mon, 09 Oct 2023 03:36:30 -0700 (PDT)
 From:   Vincent Guittot <vincent.guittot@linaro.org>
 To:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
         paul.walmsley@sifive.com, palmer@dabbelt.com,
@@ -64,9 +64,9 @@ To:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
 Cc:     conor.dooley@microchip.com, suagrfillet@gmail.com,
         ajones@ventanamicro.com, lftan@kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v2 2/6] topology: add a new arch_scale_freq_reference
-Date:   Mon,  9 Oct 2023 12:36:17 +0200
-Message-Id: <20231009103621.374412-3-vincent.guittot@linaro.org>
+Subject: [PATCH v2 4/6] cpufreq/schedutil: use a fixed reference frequency
+Date:   Mon,  9 Oct 2023 12:36:19 +0200
+Message-Id: <20231009103621.374412-5-vincent.guittot@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20231009103621.374412-1-vincent.guittot@linaro.org>
 References: <20231009103621.374412-1-vincent.guittot@linaro.org>
@@ -76,179 +76,67 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Create a new method to get a unique and fixed max frequency. Currently
-cpuinfo.max_freq or the highest (or last) state of performance domain are
-used as the max frequency when computing the frequency for a level of
-utilization but:
-- cpuinfo_max_freq can change at runtime. boost is one example of
-  such change.
-- cpuinfo.max_freq and last item of the PD can be different leading to
-  different results between cpufreq and energy model.
+cpuinfo.max_freq can change at runtime because of boost as an example. This
+implies that the value could be different than the one that has been
+used when computing the capacity of a CPU.
 
-We need to save the reference frequency that has been used when computing
-the CPUs capacity and use this fixed and coherent value to convert between
-frequency and CPU's capacity.
+The new arch_scale_freq_ref() returns a fixed and coherent reference
+frequency that can be used when computing a frequency based on utilization.
 
-In fact, we already save the frequency that has been used when computing
-the capacity of each CPU. We extend the precision to save khZ instead of
-Mhz currently and we modify the type to be aligned with other variables
-used when converting frequency to capacity and the other way.
+Use this arch_scale_freq_ref() when available and fallback to
+policy otherwise.
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
- arch/arm/include/asm/topology.h   |  1 +
- arch/arm64/include/asm/topology.h |  1 +
- arch/riscv/include/asm/topology.h |  1 +
- drivers/base/arch_topology.c      | 29 ++++++++++++++---------------
- include/linux/arch_topology.h     |  7 +++++++
- 5 files changed, 24 insertions(+), 15 deletions(-)
+ kernel/sched/cpufreq_schedutil.c | 26 ++++++++++++++++++++++++--
+ 1 file changed, 24 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
-index c7d2510e5a78..853c4f81ba4a 100644
---- a/arch/arm/include/asm/topology.h
-+++ b/arch/arm/include/asm/topology.h
-@@ -13,6 +13,7 @@
- #define arch_set_freq_scale topology_set_freq_scale
- #define arch_scale_freq_capacity topology_get_freq_scale
- #define arch_scale_freq_invariant topology_scale_freq_invariant
-+#define arch_scale_freq_ref topology_get_freq_ref
- #endif
- 
- /* Replace task scheduler's default cpu-invariant accounting */
-diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
-index 9fab663dd2de..a323b109b9c4 100644
---- a/arch/arm64/include/asm/topology.h
-+++ b/arch/arm64/include/asm/topology.h
-@@ -23,6 +23,7 @@ void update_freq_counters_refs(void);
- #define arch_set_freq_scale topology_set_freq_scale
- #define arch_scale_freq_capacity topology_get_freq_scale
- #define arch_scale_freq_invariant topology_scale_freq_invariant
-+#define arch_scale_freq_ref topology_get_freq_ref
- 
- #ifdef CONFIG_ACPI_CPPC_LIB
- #define arch_init_invariance_cppc topology_init_cpu_capacity_cppc
-diff --git a/arch/riscv/include/asm/topology.h b/arch/riscv/include/asm/topology.h
-index e316ab3b77f3..61183688bdd5 100644
---- a/arch/riscv/include/asm/topology.h
-+++ b/arch/riscv/include/asm/topology.h
-@@ -9,6 +9,7 @@
- #define arch_set_freq_scale		topology_set_freq_scale
- #define arch_scale_freq_capacity	topology_get_freq_scale
- #define arch_scale_freq_invariant	topology_scale_freq_invariant
-+#define arch_scale_freq_ref		topology_get_freq_ref
- 
- /* Replace task scheduler's default cpu-invariant accounting */
- #define arch_scale_cpu_capacity	topology_get_cpu_scale
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index b741b5ba82bd..9a073c2d2086 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -19,6 +19,7 @@
- #include <linux/init.h>
- #include <linux/rcupdate.h>
- #include <linux/sched.h>
-+#include <linux/units.h>
- 
- #define CREATE_TRACE_POINTS
- #include <trace/events/thermal_pressure.h>
-@@ -26,7 +27,8 @@
- static DEFINE_PER_CPU(struct scale_freq_data __rcu *, sft_data);
- static struct cpumask scale_freq_counters_mask;
- static bool scale_freq_invariant;
--static DEFINE_PER_CPU(u32, freq_factor) = 1;
-+DEFINE_PER_CPU(unsigned long, capacity_ref_freq) = 1;
-+EXPORT_PER_CPU_SYMBOL_GPL(capacity_ref_freq);
- 
- static bool supports_scale_freq_counters(const struct cpumask *cpus)
- {
-@@ -170,9 +172,9 @@ DEFINE_PER_CPU(unsigned long, thermal_pressure);
-  * operating on stale data when hot-plug is used for some CPUs. The
-  * @capped_freq reflects the currently allowed max CPUs frequency due to
-  * thermal capping. It might be also a boost frequency value, which is bigger
-- * than the internal 'freq_factor' max frequency. In such case the pressure
-- * value should simply be removed, since this is an indication that there is
-- * no thermal throttling. The @capped_freq must be provided in kHz.
-+ * than the internal 'capacity_ref_freq' max frequency. In such case the
-+ * pressure value should simply be removed, since this is an indication that
-+ * there is no thermal throttling. The @capped_freq must be provided in kHz.
-  */
- void topology_update_thermal_pressure(const struct cpumask *cpus,
- 				      unsigned long capped_freq)
-@@ -183,10 +185,7 @@ void topology_update_thermal_pressure(const struct cpumask *cpus,
- 
- 	cpu = cpumask_first(cpus);
- 	max_capacity = arch_scale_cpu_capacity(cpu);
--	max_freq = per_cpu(freq_factor, cpu);
--
--	/* Convert to MHz scale which is used in 'freq_factor' */
--	capped_freq /= 1000;
-+	max_freq = arch_scale_freq_ref(cpu);
- 
- 	/*
- 	 * Handle properly the boost frequencies, which should simply clean
-@@ -279,13 +278,13 @@ void topology_normalize_cpu_scale(void)
- 
- 	capacity_scale = 1;
- 	for_each_possible_cpu(cpu) {
--		capacity = raw_capacity[cpu] * per_cpu(freq_factor, cpu);
-+		capacity = raw_capacity[cpu] * per_cpu(capacity_ref_freq, cpu);
- 		capacity_scale = max(capacity, capacity_scale);
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 4492608b7d7f..1fa7e74add8f 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -114,6 +114,28 @@ static void sugov_deferred_update(struct sugov_policy *sg_policy)
  	}
+ }
  
- 	pr_debug("cpu_capacity: capacity_scale=%llu\n", capacity_scale);
- 	for_each_possible_cpu(cpu) {
--		capacity = raw_capacity[cpu] * per_cpu(freq_factor, cpu);
-+		capacity = raw_capacity[cpu] * per_cpu(capacity_ref_freq, cpu);
- 		capacity = div64_u64(capacity << SCHED_CAPACITY_SHIFT,
- 			capacity_scale);
- 		topology_set_cpu_scale(cpu, capacity);
-@@ -321,15 +320,15 @@ bool __init topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu)
- 			cpu_node, raw_capacity[cpu]);
- 
- 		/*
--		 * Update freq_factor for calculating early boot cpu capacities.
-+		 * Update capacity_ref_freq for calculating early boot cpu capacities.
- 		 * For non-clk CPU DVFS mechanism, there's no way to get the
- 		 * frequency value now, assuming they are running at the same
--		 * frequency (by keeping the initial freq_factor value).
-+		 * frequency (by keeping the initial capacity_ref_freq value).
- 		 */
- 		cpu_clk = of_clk_get(cpu_node, 0);
- 		if (!PTR_ERR_OR_ZERO(cpu_clk)) {
--			per_cpu(freq_factor, cpu) =
--				clk_get_rate(cpu_clk) / 1000;
-+			per_cpu(capacity_ref_freq, cpu) =
-+				clk_get_rate(cpu_clk) / HZ_PER_KHZ;
- 			clk_put(cpu_clk);
- 		}
- 	} else {
-@@ -411,7 +410,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
- 	cpumask_andnot(cpus_to_visit, cpus_to_visit, policy->related_cpus);
- 
- 	for_each_cpu(cpu, policy->related_cpus)
--		per_cpu(freq_factor, cpu) = policy->cpuinfo.max_freq / 1000;
-+		per_cpu(capacity_ref_freq, cpu) = policy->cpuinfo.max_freq;
- 
- 	if (cpumask_empty(cpus_to_visit)) {
- 		topology_normalize_cpu_scale();
-diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-index a07b510e7dc5..38ca6c76af56 100644
---- a/include/linux/arch_topology.h
-+++ b/include/linux/arch_topology.h
-@@ -27,6 +27,13 @@ static inline unsigned long topology_get_cpu_scale(int cpu)
- 
- void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
- 
-+DECLARE_PER_CPU(unsigned long, capacity_ref_freq);
-+
-+static inline unsigned long topology_get_freq_ref(int cpu)
++/**
++ * cpufreq_get_capacity_ref_freq - get the reference frequency of a given CPU that
++ * has been used to correlate frequency and compute capacity.
++ * @policy: the cpufreq policy of the CPU in question.
++ * @use_current: Fallback to current freq instead of policy->cpuinfo.max_freq.
++ *
++ * Return: the reference CPU frequency to compute a capacity.
++ */
++static __always_inline
++unsigned long get_capacity_ref_freq(struct cpufreq_policy *policy)
 +{
-+	return per_cpu(capacity_ref_freq, cpu);
++	unsigned int freq = arch_scale_freq_ref(policy->cpu);
++
++	if (freq)
++		return freq;
++
++	if (arch_scale_freq_invariant())
++		return policy->cpuinfo.max_freq;
++
++	return policy->cur;
 +}
 +
- DECLARE_PER_CPU(unsigned long, arch_freq_scale);
+ /**
+  * get_next_freq - Compute a new frequency for a given cpufreq policy.
+  * @sg_policy: schedutil policy object to compute the new frequency for.
+@@ -140,10 +162,10 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+ 				  unsigned long util, unsigned long max)
+ {
+ 	struct cpufreq_policy *policy = sg_policy->policy;
+-	unsigned int freq = arch_scale_freq_invariant() ?
+-				policy->cpuinfo.max_freq : policy->cur;
++	unsigned int freq;
  
- static inline unsigned long topology_get_freq_scale(int cpu)
+ 	util = map_util_perf(util);
++	freq = get_capacity_ref_freq(policy);
+ 	freq = map_util_freq(util, freq, max);
+ 
+ 	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
 -- 
 2.34.1
 
