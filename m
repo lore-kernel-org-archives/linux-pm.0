@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB00DCD8CAF
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Oct 2023 17:55:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02A22CD8CB0
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Oct 2023 17:55:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234123AbjJJRzg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Oct 2023 13:55:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33622 "EHLO
+        id S234041AbjJJRzi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Oct 2023 13:55:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33598 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234120AbjJJRzf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2023 13:55:35 -0400
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C666EB6;
-        Tue, 10 Oct 2023 10:55:30 -0700 (PDT)
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 39AHtQLc020714;
-        Tue, 10 Oct 2023 12:55:26 -0500
+        with ESMTP id S234090AbjJJRze (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2023 13:55:34 -0400
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 553D6D3;
+        Tue, 10 Oct 2023 10:55:33 -0700 (PDT)
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 39AHtRNv018200;
+        Tue, 10 Oct 2023 12:55:27 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1696960526;
-        bh=2vRqxyjvNiTXuW5n7S+93rlxonDxAUlJF8y4TRgu2H0=;
-        h=From:To:CC:Subject:Date;
-        b=nyG7/iCR78SO1fVuZX55auCdF9WShnvuut1+0LqrwOj5RqhfbLRWnJFTLYuihRnZq
-         LG4sk3hApC9mSaUB3ofUz0GFaQqorImtDnxWwG+EwIJp6l45eONONLVXUhLgvkZkKA
-         lK7TecII96UCL8iLelYrIdkE+Wi8GBHMtWX1X3Z0=
-Received: from DFLE107.ent.ti.com (dfle107.ent.ti.com [10.64.6.28])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 39AHtQlu092611
+        s=ti-com-17Q1; t=1696960527;
+        bh=Zaus7Gie6qHv+bp5Vv5G6I7IcCxb/UdUdWGr++n6yKg=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=rWICb+/kX1SzQJzPiU0/yqnZxYL3cul5mhcf0VwKLxJ6+nhfg+sjudpIvMLek8/pP
+         fK8d2XRiNZMusRluVDU3QTx5HJ3HK7oHtAMssnkBhMDthxrH7aYwdsynU3PF15/Lg2
+         ayW8MIx46XHPpkvTpciXtDLcAyfOdZanbcULtTDY=
+Received: from DLEE106.ent.ti.com (dlee106.ent.ti.com [157.170.170.36])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 39AHtRSN097595
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 10 Oct 2023 12:55:26 -0500
-Received: from DFLE102.ent.ti.com (10.64.6.23) by DFLE107.ent.ti.com
- (10.64.6.28) with Microsoft SMTP Server (version=TLS1_2,
+        Tue, 10 Oct 2023 12:55:27 -0500
+Received: from DLEE103.ent.ti.com (157.170.170.33) by DLEE106.ent.ti.com
+ (157.170.170.36) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 10
  Oct 2023 12:55:26 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DFLE102.ent.ti.com
- (10.64.6.23) with Microsoft SMTP Server (version=TLS1_2,
+Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE103.ent.ti.com
+ (157.170.170.33) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
  Frontend Transport; Tue, 10 Oct 2023 12:55:26 -0500
-Received: from localhost (ileaxei01-snat2.itg.ti.com [10.180.69.6])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 39AHtQWp035430;
+Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
+        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 39AHtQ9R085859;
         Tue, 10 Oct 2023 12:55:26 -0500
 From:   Bryan Brattlof <bb@ti.com>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -46,12 +46,14 @@ CC:     Vibhore Vardhan <vibhore@ti.com>, Dhruva Gole <d-gole@ti.com>,
         ARM Power Management <linux-pm@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Bryan Brattlof <bb@ti.com>
-Subject: [PATCH 0/2] cpufreq: ti-cpufreq: Enable AM62P5 CPUFreq
-Date:   Tue, 10 Oct 2023 12:55:25 -0500
-Message-ID: <20231010175524.558577-4-bb@ti.com>
+Subject: [PATCH 2/2] cpufreq: ti-cpufreq: Add opp support for am62p5 SoCs
+Date:   Tue, 10 Oct 2023 12:55:27 -0500
+Message-ID: <20231010175524.558577-6-bb@ti.com>
 X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231010175524.558577-4-bb@ti.com>
+References: <20231010175524.558577-4-bb@ti.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=655; i=bb@ti.com; h=from:subject; bh=3kH20oH9+v+qks6XbMW/ipJmFMODHCgjuRduTChPqIE=; b=owNCWmg5MUFZJlNZpX6GxwAAan///7/7+/v++e/j4/tNv25fHZU32H/K6Vev+utu+n7l7v+wA RsbRD1BoMQA0000aaGgADTI0DI0BkAMgBoDTI0A0yaMIyaNBoA08oANA0eoeo2mkOTagAZBoBo0 DQAGgHoT1HqDQABpoGg0ZPU0B6nqDTJ6ho0A00ADRp6IGgHqHqGhD1GZTT1AyaGJoGIAGTT1GIy AZNAyaAAYgAyBoAAAGmQNBoYjBPSAZAAaNLB9qUK/aAj4AgYj1k137AI4HRbTmhAw5B6wGgHrlh k0gTs+WUzZNyAsEstTkqwgDcswb+4YiOgC8sy4+x5lUWMSLN5EGSpwAuxFX760ld1JF9Qkb4xTU 8hUmjBTvgIlfdHJ7PXZk+c/6+m7DUkfl8s4La/DZNpi6AZxopK1mA7Q92oRhGQINUso7RbxIGSr JXJRTmIGSQ6fj5q5uyAbTL/4hsQOjEdmrGtcKI10MfFyKhaQGl4d2TuFjwjatkgd5kddMGKG6ej p8VFndHeFzyXoxZgpSrjsp9mJA9f1MtBuz/xg8VRQ1xn7UCOrZvSMXmdlZ8WjnvYV1I7uR+CBHn cHdB15qjrXgBwXHFA10rjum8r5vsP4CH8AArea+xBhFAgTvCmRzkS7I0J4++HqgZZ/OWceM6SAP 6rbGYMrqYd72b/i7kinChIUr9DY4A==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=962; i=bb@ti.com; h=from:subject; bh=oiw5jmvhIpjWbcu11ZW56kGgRNZ9ita9AYwhDYguzd0=; b=owNCWmg5MUFZJlNZm81aOQAAaX///vfbq3/9Kv3Pr+pzm7P++/t7z+Sk/e/7/r2snN1n928wA RmYjtQAA0BoADQA0AAaABoNAABoAA0GnqBkAeo0aeoHqDQGJpoGh6ajZpqiA0AeoDTQAAGRoaMJ p6jQ00yAB6mgyAyBpo000NBkPUGTTRtIeo00DQGQBpgg9QyTNTIxMmgZNDRk00yAaZBoZA0DQ0M gyAD0TEA0AYJ6mg0GgAyA0DQNAGmjAglhtUCNFq2wsgPKviU+G2mDFdyCRzDDzck0FDXsaTAt/h 0BnV/GKH7NXtWcKcbuxFYYvkMH5fz4Mnl1qShokPhcvArtWAEG6gBTNzAl1DM95uZ2ZElXiOkHf hgQg1duCXqX4ELluHEZoAeSAJuCmfQw82Z8yEKEUPis6+Q0e9WCFho7xGeuWzijX7ZQRnf6dbAD soiiQ5261+KognDRMAfLCc6lrpDjQ/ad/wC7sWSUmXbDXaB5IXO4xy+2AAsl5lxZnYJ/RVLqP4K t1YEom5oWKRtE/Sh+sUidq6Y2HV5bxYseRcpR2i9l6uBKk6l7/hYboLdsX8DYH1vKfaubBPFDK5 y2czyoH3GFmjy5YhfuICJlJvHMrWHyzCJkMr0lmUkRtwQJkpwUgO5H5haYxh6DcBtqIgDrohgVh LQvpYY//i7kinChITeatHI=
 X-Developer-Key: i=bb@ti.com; a=openpgp; fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -60,26 +62,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello everyone!
+The am62p5 is a variation of the am625 and the am62a7 SoC families. Add
+the am62p5 to the list using the same cpufreq data as the rest of the
+am62x extended family.
 
-This short series adds the am62p5 compatible to ti-cpufreq and
-cpufreq-dt-platdev for the new am62p family of TI SoCs. It uses the same
-A53s and efuse configuration as the rest of the am62xxx extended family
-so we're just using the same am625 data structure for the am62p5.
+Signed-off-by: Bryan Brattlof <bb@ti.com>
+---
+ drivers/cpufreq/ti-cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks for reviewing
-~Bryan
-
-Bryan Brattlof (2):
-  cpufreq: dt-platdev: add am62p5 to blocklist
-  cpufreq: ti-cpufreq: Add opp support for am62p5 SoCs
-
- drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
- drivers/cpufreq/ti-cpufreq.c         | 1 +
- 2 files changed, 2 insertions(+)
-
-
-base-commit: c9727271cb239dce91add464364f10fb2b376456
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index 3c37d78996607..46c41e2ca727b 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -338,6 +338,7 @@ static const struct of_device_id ti_cpufreq_of_match[] = {
+ 	{ .compatible = "ti,omap36xx", .data = &omap36xx_soc_data, },
+ 	{ .compatible = "ti,am625", .data = &am625_soc_data, },
+ 	{ .compatible = "ti,am62a7", .data = &am625_soc_data, },
++	{ .compatible = "ti,am62p5", .data = &am625_soc_data, },
+ 	/* legacy */
+ 	{ .compatible = "ti,omap3430", .data = &omap34xx_soc_data, },
+ 	{ .compatible = "ti,omap3630", .data = &omap36xx_soc_data, },
 -- 
 2.42.0
 
