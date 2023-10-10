@@ -2,91 +2,184 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C5C9CD80D5
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Oct 2023 13:53:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 071DCCD80D5
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Oct 2023 14:08:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232723AbjJJNxr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Oct 2023 09:53:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52212 "EHLO
+        id S232670AbjJJOIg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Oct 2023 10:08:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48168 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232377AbjJJNxb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2023 09:53:31 -0400
-Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3E6D1BF5
-        for <linux-pm@vger.kernel.org>; Tue, 10 Oct 2023 06:40:36 -0700 (PDT)
-Received: by mail-lj1-x22e.google.com with SMTP id 38308e7fff4ca-2c00df105f8so72193381fa.2
-        for <linux-pm@vger.kernel.org>; Tue, 10 Oct 2023 06:40:36 -0700 (PDT)
+        with ESMTP id S231997AbjJJOIe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2023 10:08:34 -0400
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B87DA7;
+        Tue, 10 Oct 2023 07:08:32 -0700 (PDT)
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-3247cefa13aso5205661f8f.1;
+        Tue, 10 Oct 2023 07:08:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696945235; x=1697550035; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=XxximMkoWGQA+uzz71VUStaHnVSe2K/WIUNaeHglvcc=;
-        b=LqV+ZEePymX0b2CYVfcmrvRnvP85Ofakx8Pjdst4wUPz3S7lkMC6GuMgPueHipAj9a
-         Qa9B3UvKidAUN2IURc/nGqPKVs5RbVDHBoSPhBNoLm3KCd7VtE3ULkXt/vRZoawa3hKr
-         31OY5msVJ6FfyljsiancWRyaP7M+wddn5OZWmnjx2prezuxh26Tyf8EgyhDe9DvCLEVb
-         6B5D70vp9NrGEYHWu1gNmUu+gcIScZqaB3q+2IsnOJ6D6TdB+i2EgvOdwcDcHPDutkxq
-         V2RKJlt9s6/lgG98fRRHM9e7uALhf9Pz6x8u0q8bzxmADpnhNuLrgEdPSObPSELn9pZT
-         NwGQ==
+        d=gmail.com; s=20230601; t=1696946910; x=1697551710; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:subject:cc
+         :to:from:date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=k2Very6RldBCzTfWE3kixTMSpP7cmdjStMj9exgkPjU=;
+        b=Mm9LKzgi7b7on3KUTrVv0icEuH1SSqkAlKz4x3vMBzIwqRmwyyOkyzhES3J4Wu0CUU
+         jOk+/w3jK48w4IFlTgbAQX4bS5m1fvjiJJCVvKV5j5xZ4ImbPwLEBgb7ayi+N+pSych4
+         tAS9Lz/HL4QxVAZXND6Tg6bBPSeJBQqm+ezizyvto1NsffLskhR3reHJ6vf799hrhKPU
+         v0ZvFTHQEBq3RgVZiZkJV6tp1HZ5SjPx1ARh4sjCWAW1HEDW6VraigYkxENWnt24zBXD
+         zLGq05CdkFlpBlxipe90GcMIMu4z61z8o+x5W95YG08QrgmkW8FYV1Cy26TeFMJsdjTU
+         bAog==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696945235; x=1697550035;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=XxximMkoWGQA+uzz71VUStaHnVSe2K/WIUNaeHglvcc=;
-        b=oyeaIftcJ4bdL/We79RnDxMtqRQwFgAysJ3MJYTll40fzGCxahcyonIkgvmI1oSltl
-         n4YlD3jFZvmOjZcbi44sJ1sgC6XYaK+W6fAyV9+fOJre7E+m45hnZSkZwi63JVjG/LPa
-         gkHqcV8XIHxexiOw9iBZhXF22T67zf13upkRHd7mGDpwGZGWRn77/LBKWyHwIH8SoSMe
-         hY+jMLASFbQvTqQWS7H6cf/ZT3SM2aK8UNS6n/+mPdjpqQOYBBO/qG5crk9GOtXgDUmZ
-         Yh0oK+lELAOOW/Awc2dWSQsTTbfH/H2S1chHLhbo2HieWBhHO/n/bcI9ermeNMNjDozh
-         6Btg==
-X-Gm-Message-State: AOJu0Yzb0zv9ciD6jSUQUcTYA0VQ0ft+4l3KYHJP2QAEr48Sc7fUc7+q
-        ytEN8dxRzeUGMwPVOnk5P/zVzw==
-X-Google-Smtp-Source: AGHT+IF6lr0SvRheFgchDQzYQqCJnSx8Bi6IESHLFO+fVACAqFpnSaNlGIZF0isBSwL9absMNKdW/Q==
-X-Received: by 2002:a2e:9a84:0:b0:2c2:8e57:24a7 with SMTP id p4-20020a2e9a84000000b002c28e5724a7mr16879591lji.21.1696945234817;
-        Tue, 10 Oct 2023 06:40:34 -0700 (PDT)
-Received: from [172.30.204.192] (UNUSED.212-182-62-129.lubman.net.pl. [212.182.62.129])
-        by smtp.gmail.com with ESMTPSA id y9-20020a2e3209000000b002b9b9fd0f92sm2348720ljy.105.2023.10.10.06.40.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 Oct 2023 06:40:34 -0700 (PDT)
-Message-ID: <e255dcbd-6342-49e6-9bfe-17a47b2a3c8a@linaro.org>
-Date:   Tue, 10 Oct 2023 15:40:32 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 4/4] ARM: dts: qcom: ipq8064: Add CPU OPP table
-Content-Language: en-US
-To:     Robert Marko <robimarko@gmail.com>, ilia.lin@kernel.org,
+        d=1e100.net; s=20230601; t=1696946910; x=1697551710;
+        h=in-reply-to:content-disposition:mime-version:references:subject:cc
+         :to:from:date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=k2Very6RldBCzTfWE3kixTMSpP7cmdjStMj9exgkPjU=;
+        b=gkjqLEYnbiYMR9SNGI4bCtowoCgEkMtNLkINfRdbWxlIdXxDKyXhoBqVWiSq2OzCrd
+         zDmCkkmgkj7fBb7/en0ZxGozy5PfQ7CxHBQhCLg+qzrFG5oB4rksHL7HiiOhdjvsCXql
+         Rp1KG7p8W9qIDiOwC9DyTVYUUAA0tfzNWAT0STgYH+euOYPYPxQFJpEi+2nIVOZZ6KK1
+         5608MsjBMkj4xjCxCrtUjBAvCOYcd4hR2JAubDsj468vmMk58dyS0jkcSktiFL3K01vp
+         qGM21poHliBLjkhEf5KTsf9m/O2QWYa5+50Ns7To0XpQaprUD5R6yQmnQtbHRPDjmsyL
+         yk4g==
+X-Gm-Message-State: AOJu0Yw0bE/faD5n/iZ37rvWQGMeTImH/9w3GKXZSz7oNrF9lsheFc6c
+        J6dIOE3zxcIDmo+N2mtKz1c=
+X-Google-Smtp-Source: AGHT+IGK8a/xY8dx9qijIprNgPtnjeeEi8L86iN5hElkw2DXb8x4UZqPCWmnz2E26uesS3W4ykeRVA==
+X-Received: by 2002:a5d:6a4c:0:b0:31f:8a6d:e527 with SMTP id t12-20020a5d6a4c000000b0031f8a6de527mr16864437wrw.45.1696946910316;
+        Tue, 10 Oct 2023 07:08:30 -0700 (PDT)
+Received: from Ansuel-xps. (93-34-89-13.ip49.fastwebnet.it. [93.34.89.13])
+        by smtp.gmail.com with ESMTPSA id s13-20020adfeccd000000b003198a9d758dsm12801549wro.78.2023.10.10.07.08.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Oct 2023 07:08:29 -0700 (PDT)
+Message-ID: <65255add.df0a0220.ff2f9.021d@mx.google.com>
+X-Google-Original-Message-ID: <ZSVa3JfmUmLRBkda@Ansuel-xps.>
+Date:   Tue, 10 Oct 2023 16:08:28 +0200
+From:   Christian Marangi <ansuelsmth@gmail.com>
+To:     Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc:     Robert Marko <robimarko@gmail.com>, ilia.lin@kernel.org,
         vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
         robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
         conor+dt@kernel.org, agross@kernel.org, andersson@kernel.org,
         rafael@kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-msm@vger.kernel.org
-Cc:     Christian Marangi <ansuelsmth@gmail.com>
+Subject: Re: [PATCH v5 3/4] cpufreq: qcom-nvmem: add support for IPQ8064
 References: <20230930102218.229613-1-robimarko@gmail.com>
- <20230930102218.229613-4-robimarko@gmail.com>
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-In-Reply-To: <20230930102218.229613-4-robimarko@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+ <20230930102218.229613-3-robimarko@gmail.com>
+ <5b57e0e0-490e-464d-bdc8-5823ad8da2d8@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5b57e0e0-490e-464d-bdc8-5823ad8da2d8@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 9/30/23 12:21, Robert Marko wrote:
-> From: Christian Marangi <ansuelsmth@gmail.com>
+On Tue, Oct 10, 2023 at 03:39:54PM +0200, Konrad Dybcio wrote:
 > 
-> Add CPU OPP table for IPQ8062, IPQ8064 and IPQ8065 SoC.
-> Use opp-supported-hw binding to correctly enable and disable the
-> frequency as IPQ8062 supports up to 1.0Ghz, IPQ8064 supports up to
-> 1.4GHz with 1.2GHz as an additional frequency and IPQ8065 supports
-> 1.7GHZ but doesn't have 1.2GHZ frequency and has to be disabled.
 > 
-> Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
-> Signed-off-by: Robert Marko <robimarko@gmail.com>
-> ---
-Christian/Robert, can you provide a downstream source for this?
+> On 9/30/23 12:21, Robert Marko wrote:
+> > From: Christian Marangi <ansuelsmth@gmail.com>
+> > 
+> > IPQ8064 comes in 3 families:
+> > * IPQ8062 up to 1.0GHz
+> > * IPQ8064/IPQ8066/IPQ8068 up to 1.4GHz
+> > * IPQ8065/IPQ8069 up to 1.7Ghz
+> > 
+> > So, in order to be able to support one OPP table, add support for
+> > IPQ8064 family based of SMEM SoC ID-s and correctly set the version so
+> > opp-supported-hw can be correctly used.
+> > 
+> > Bit are set with the following logic:
+> > * IPQ8062 BIT 0
+> > * IPQ8064/IPQ8066/IPQ8068 BIT 1
+> > * IPQ8065/IPQ8069 BIT 2
+> > 
+> > speed is never fused, only pvs values are fused.
+> > 
+> > IPQ806x SoC doesn't have pvs_version so we drop and we use the new
+> > pattern:
+> > opp-microvolt-speed0-pvs<PSV_VALUE>
+> > 
+> > Example:
+> > - for ipq8062 psv2
+> >    opp-microvolt-speed0-pvs2 = < 925000 878750 971250>
+> > 
+> > Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+> > Signed-off-by: Robert Marko <robimarko@gmail.com>
+> > ---
+> [...]
+> 
+> > +{
+> > +	int speed = 0, pvs = 0, pvs_ver = 0;
+> > +	int msm_id, ret = 0;
+> > +	u8 *speedbin;
+> > +	size_t len;
+> > +
+> > +	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
+> > +
+> > +	if (IS_ERR(speedbin))
+> The stray newline above this line triggers my OCD :D
+> 
+> > +		return PTR_ERR(speedbin);
+> > +
+> > +	if (len != 4) {
+> > +		dev_err(cpu_dev, "Unable to read nvmem data. Defaulting to 0!\n");
+> > +		kfree(speedbin);
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	get_krait_bin_format_a(cpu_dev, &speed, &pvs, &pvs_ver, speedbin);
+> > +
+> > +	ret = qcom_smem_get_soc_id(&msm_id);
+> > +	if (ret)
+> > +		return ret;
+> speedbin leaks here
+> 
+> you can free it right after the get_krait.. call
+> > +
+> > +	switch (msm_id) {
+> > +	case QCOM_ID_IPQ8062:
+> > +		drv->versions = BIT(IPQ8062_VERSION);
+> > +		break;
+> > +	case QCOM_ID_IPQ8064:
+> > +	case QCOM_ID_IPQ8066:
+> > +	case QCOM_ID_IPQ8068:
+> > +		drv->versions = BIT(IPQ8064_VERSION);
+> > +		break;
+> > +	case QCOM_ID_IPQ8065:
+> > +	case QCOM_ID_IPQ8069:
+> > +		drv->versions = BIT(IPQ8065_VERSION);
+> > +		break;
+> > +	default:
+> > +		dev_err(cpu_dev,
+> > +			"SoC ID %u is not part of IPQ8064 family, limiting to 1.0GHz!\n",
+> > +			msm_id);
+> > +		drv->versions = BIT(IPQ8062_VERSION);
+> > +		break;
+> > +	}
+> > +
+> > +	/* IPQ8064 speed is never fused. Only pvs values are fused. */
+> > +	snprintf(*pvs_name, sizeof("speedXX-pvsXX"), "speed%d-pvs%d",
+> > +		 speed, pvs);
+> Then drop the format for `speed` and just throw in a zero!
+> 
+> [...]
+> 
+> > -	{ .compatible = "qcom,ipq8064", .data = &match_data_krait },
+> > +	{ .compatible = "qcom,ipq8064", .data = &match_data_ipq8064 },
+> This change demands a Fixes tag, because you're essentially saying "the
+> support for this SoC was supposedly there, but it could have never worked
+> and was broken all along".
+>
 
-Konrad
+Mhhh actually no. We are just changing the opp binding and introducing
+hardcoded versions. But the thing worked and actually it's what was used
+before this change in openwrt. Also current ipq806x dtsi doesn't have
+any opp definition so no regression there. (and also 99% downstream either
+use openwrt or use qcom sdk where this implementation is not used at
+all)
+
+Given these thing should we still add a fixes tag referencing the commit
+that introduced the compatible for qcom,ipq8064? It's quite problematic
+as this depends on qcom_smem_get_soc_id().
+
+-- 
+	Ansuel
