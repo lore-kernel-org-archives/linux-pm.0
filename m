@@ -2,101 +2,70 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADDB3CD68F1
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Oct 2023 06:32:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0B82CD68F4
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Oct 2023 06:51:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1442266AbjJJGco (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Oct 2023 02:32:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47302 "EHLO
+        id S1442330AbjJJGvv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Oct 2023 02:51:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59328 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1442248AbjJJGcn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2023 02:32:43 -0400
-Received: from mail-il1-x12f.google.com (mail-il1-x12f.google.com [IPv6:2607:f8b0:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D6E4B0
-        for <linux-pm@vger.kernel.org>; Mon,  9 Oct 2023 23:32:39 -0700 (PDT)
-Received: by mail-il1-x12f.google.com with SMTP id e9e14a558f8ab-35140cc9187so22485215ab.2
-        for <linux-pm@vger.kernel.org>; Mon, 09 Oct 2023 23:32:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696919559; x=1697524359; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=TMjAqcpLnIT/rrI7hIEQLgNPdRLO8Rld137dNw3SF7I=;
-        b=mP8I8d6e5a5ShtHsoOZr83t0almE7JYNg5YZ6NV/SnQDGUb79i6xA6b7xjWu9mh4bH
-         hyB1+eZWuhlmIiT7PCBILsMlUO49kQfTqEfu4SuYdyoo41ZLzlUEwC/cSJqonBOyOgxS
-         uAJURKxKWPXFXhGEGebvl0Qzgz3OGJkSW9EBdvuzV/WAc5zFVvHhbWxKTESaZAQOyNXi
-         iGqKBKeFTi536sVR9+KlgUcKR36uTUCp+beRa7ezXd/bdb2US5APZf1F6PQmSclYTtCt
-         gJTQTsm8XEzrWjN4W2lJ0FgiAY/j+H2ZdbH8SuXIECZHm8QtkR/+H+sOVnJs8qslygI+
-         BOpw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696919559; x=1697524359;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=TMjAqcpLnIT/rrI7hIEQLgNPdRLO8Rld137dNw3SF7I=;
-        b=eVdmmJdFJK12Trdhr6GQtwrYjYCbWhv+jd5F6IlZgpC+tnfBmnJSdff7RWZuiwpvzx
-         xWxN0hxBmVOA6bTX/Ts4M91ft6KkuRXE6+BfQ0qaRA9Ny6HSL+IIicVfBQWmFXVYB1jF
-         CNn4ljPrmir/HgA/FRm0xR4IZpaJk3WiPQoCIZvL93lTVxxdZNvpjFVTDeTPPrJEy4k4
-         8KqaUbIIoGMckSGdZVcWF/vLh3ZyG4zt1f2YICWajXSRo74CyGgcS3Y3G3eCHrFjChMA
-         865Gpnfx5lq0p1D5OCIEHD00MlHoBNlj8PtMMkvEvP4Y6cZirwpogsoR68hH+pXZ+JAb
-         +LkA==
-X-Gm-Message-State: AOJu0Ywfk8A7jHkvYwvnnvuNsT1UGRCDmoxaO2/TMxtvjA2pBupuB7HR
-        RwV9yoFNsRYrFjwry5VVEYXb8w==
-X-Google-Smtp-Source: AGHT+IFudao3PbpP569Ne+5jwXH4fImT8uscTRIidiWKdGzpzFr6qyIB+LvshslYWivEZAwnbXVarQ==
-X-Received: by 2002:a05:6e02:180a:b0:357:3d82:2d48 with SMTP id a10-20020a056e02180a00b003573d822d48mr381725ilv.8.1696919558757;
-        Mon, 09 Oct 2023 23:32:38 -0700 (PDT)
-Received: from localhost ([122.172.81.92])
-        by smtp.gmail.com with ESMTPSA id u7-20020a637907000000b005776446f7cbsm9400467pgc.66.2023.10.09.23.32.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Oct 2023 23:32:38 -0700 (PDT)
-Date:   Tue, 10 Oct 2023 12:02:35 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-        Christian Marangi <ansuelsmth@gmail.com>,
-        Stephan Gerhold <stephan@gerhold.net>
-Subject: Re: [PATCH v5 0/6] cpufreq: qcom-nvmem: support apq8064 cpufreq
- scaling
-Message-ID: <20231010063235.rj2ehxugtjr5x2xr@vireshk-i7>
-References: <20231002185940.1271800-1-dmitry.baryshkov@linaro.org>
+        with ESMTP id S1442295AbjJJGvu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2023 02:51:50 -0400
+Received: from muru.com (muru.com [72.249.23.125])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5A6B59D;
+        Mon,  9 Oct 2023 23:51:47 -0700 (PDT)
+Received: from localhost (localhost [127.0.0.1])
+        by muru.com (Postfix) with ESMTPS id 0AB8980A9;
+        Tue, 10 Oct 2023 06:51:47 +0000 (UTC)
+Date:   Tue, 10 Oct 2023 09:51:45 +0300
+From:   Tony Lindgren <tony@atomide.com>
+To:     Thomas Richard <thomas.richard@bootlin.com>
+Cc:     linux-pm@vger.kernel.org, linux-serial@vger.kernel.org,
+        Gregory CLEMENT <gregory.clement@bootlin.com>,
+        Kumar Udit <u-kumar1@ti.com>, Dhruva Gole <d-gole@ti.com>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Vignesh R <vigneshr@ti.com>
+Subject: Re: serial: 8250_omap: suspend issue with console_suspend disabled
+Message-ID: <20231010065145.GD27774@atomide.com>
+References: <59b13c93-6637-3050-c145-31be0d6c12c9@bootlin.com>
+ <20230920053828.GD5282@atomide.com>
+ <a5bee830-07af-426b-94ac-3574cba34bec@bootlin.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20231002185940.1271800-1-dmitry.baryshkov@linaro.org>
+In-Reply-To: <a5bee830-07af-426b-94ac-3574cba34bec@bootlin.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 02-10-23, 21:59, Dmitry Baryshkov wrote:
-> This is a split of APQ8064 cpufreq series, as requested by Viresh. This
-> series includes only opp and cpufreq parts, with the DT and soc parts
-> being split to a separate patchset.
-> 
-> Each core has independent power and frequency control. Additionally the
-> L2 cache is scaled to follow the CPU frequencies (failure to do so
-> results in strange semi-random crashes).
-> 
-> Core voltage is controlled through the SAW2 devices, one for each core.
-> The L2 has two regulators, vdd-mem and vdd-dig.
-> 
-> Changes since v4:
-> - Reordered variables in qcom_cpufreq_init() (Konrad)
-> - Fixed of_platform_device_create() error check (Konrad)
-> - Dropped unused ret variable in qcom_cpufreq_apq8064_name_version() (Konrad)
+Hi,
 
-Applied. Thanks.
+* Thomas Richard <thomas.richard@bootlin.com> [231009 15:13]:
+> > The runtime PM usage count should keep the related power domain on though,
+> > sounds like this issue somewhere else if the power domains get force
+> > suspended with runtime PM usage count?
+> 
+> If I understand correctly, there are 2 solutions to keep the power
+> domain on through.
+> The first one is to set the flag GENPD_FLAG_ALWAYS_ON for the power domain.
+> The second one is to set the wakup_path of the device (using
+> device_set_wakeup_path) and set the flag GENPD_FLAG_ACTIVE_WAKEUP to the
+> power domain.
+> 
+> I didn't found any flag or option to say that the device is not
+> suspended, but it is not an error, so we don't want to poweroff the
+> power domain.
 
--- 
-viresh
+If no_console_suspend is set then GENPD_FLAG_ALWAYS_ON makes sense to
+me as we want to see the debug messages. This will also alter the SoCs
+suspend state though, so no_console_suspend is of limited use. Can you
+please send an updated patch against tty-next branch for this?
+
+It would be good to understand why the related power domain gets suspended
+with active runtime PM usage count though. To me it seems this might be
+an issue somewhere in the SoC related power domain code that just tries
+to force suspend everything.
+
+Regards,
+
+Tony
