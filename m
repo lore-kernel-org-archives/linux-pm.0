@@ -2,99 +2,116 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CC34C41513
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Oct 2023 17:59:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B66BACDB46E
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Oct 2023 18:35:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379671AbjJLR7J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Oct 2023 13:59:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41442 "EHLO
+        id S1379677AbjJLSfE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Oct 2023 14:35:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1442086AbjJLR7B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2023 13:59:01 -0400
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20CECDC;
-        Thu, 12 Oct 2023 10:59:00 -0700 (PDT)
-Received: by mail-ej1-x632.google.com with SMTP id a640c23a62f3a-9a645e54806so195597566b.0;
-        Thu, 12 Oct 2023 10:59:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697133538; x=1697738338; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=zs3+sAOJu0kBwxZ0dser/vItknBWGT6p32J9u+acJCk=;
-        b=iaZrBED548IW1oaqTyFiylNlS6rwaa4z3MIZSWBZTELGs75jurHxDiaMqPtYtFatkC
-         jKWtL0Z5mkePuA2Vgj9Zh6VbblaNBeriNGZ82HcLwlbHAe1Mn/xbmXu0KNFHh9IItMtW
-         m0OwQadbq88HgS4TS16Oi+UbYEbFdL/aGWfNQtvBvGtktLAbgFwNPrfukBVtGqf8QvXi
-         Om+YEvEJVJQsmXfbtBo00j/fnFRnPK/fXk3Xh7CbFqDxWtyuBYdT7BXJEnbJh9j3wogU
-         R6RDelqlnddhWTcoh3tuUuqT+C1feOjKueUzAeest1aExHbSF/nwh8oymVYie++Oryar
-         KScg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697133538; x=1697738338;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=zs3+sAOJu0kBwxZ0dser/vItknBWGT6p32J9u+acJCk=;
-        b=bG/D3MhY8I9z0X0CjA30vzFavwCY5e3R5cI9wsAQ9S0jmOMfeMwuK6xXh4zLaBw44A
-         7U6/kjg8Hx1orBr9xme8Rq03+ya3uIIzxSZ+XD0DyE/ClQATlhYpHohnUVxnWypYRet7
-         3I9yz9ZX5kXB/an+w0h5jkr6vsb6mjHfB12WjB7ceycR1LckYJpsnmDS3EUIjnriKQ2m
-         ybLc2jaRTqgQf3plmFCebUW8lEUTDhDPSi8uyRtrCGboWzuFS2vNcHvJzN55D5UHWSMO
-         3XIvzeIUkullUvHWoKzE/NH6FzSxlkQ7BNh0wAYfKMx/VFwVpm8cpxLd8TF5qRH3srQs
-         lTKw==
-X-Gm-Message-State: AOJu0YxC0226hRWjqt1mjxVd86hLb8HwIvR9bwauTQ5iVDKptawE8Otz
-        PH/6g9U4se+NHuqW7ckXxCs=
-X-Google-Smtp-Source: AGHT+IF/YU8vd6JUNl+eP3lbnEbdb/071IgSnsQGblva12Ql0JpQaNX94lXgXn3I3hzmtY1egSQFgw==
-X-Received: by 2002:a17:907:774c:b0:9b2:7a4e:69fc with SMTP id kx12-20020a170907774c00b009b27a4e69fcmr22373760ejc.19.1697133538582;
-        Thu, 12 Oct 2023 10:58:58 -0700 (PDT)
-Received: from localhost (p200300e41f3f4900f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f3f:4900:f22f:74ff:fe1f:3a53])
-        by smtp.gmail.com with ESMTPSA id cf7-20020a170906b2c700b009b296ce13a3sm11628560ejb.18.2023.10.12.10.58.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Oct 2023 10:58:58 -0700 (PDT)
-From:   Thierry Reding <thierry.reding@gmail.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>
-Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-        Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v2 13/13] thermal: Enforce self-encapsulation
-Date:   Thu, 12 Oct 2023 19:58:36 +0200
-Message-ID: <20231012175836.3408077-16-thierry.reding@gmail.com>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231012175836.3408077-1-thierry.reding@gmail.com>
-References: <20231012175836.3408077-1-thierry.reding@gmail.com>
+        with ESMTP id S1347365AbjJLSfD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2023 14:35:03 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7F633C0;
+        Thu, 12 Oct 2023 11:35:01 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 2306233976aef423; Thu, 12 Oct 2023 20:35:00 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by cloudserver094114.home.pl (Postfix) with ESMTPSA id 77F29666869;
+        Thu, 12 Oct 2023 20:34:59 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Lukasz Luba <lukasz.luba@arm.com>
+Subject: [PATCH v2 5/6] thermal: gov_step_wise: Fold update_passive_instance() into its caller
+Date:   Thu, 12 Oct 2023 20:33:28 +0200
+Message-ID: <3277562.44csPzL39Z@kreacher>
+In-Reply-To: <5734364.DvuYhMxLoT@kreacher>
+References: <5734364.DvuYhMxLoT@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedriedtgdduudejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepiedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgv
+ lhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Thierry Reding <treding@nvidia.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-With the last driver being fixed to not reach into the core anymore,
-make sure that no new drivers will be able to do so by generating a
-build error when they try to do so.
+Fold update_passive_instance() into thermal_zone_trip_update() that is
+its only caller so as to make the code in question easeir to follow.
 
-Signed-off-by: Thierry Reding <treding@nvidia.com>
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/thermal_core.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 91d9d4f63609..9c599658b866 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -15,7 +15,7 @@
- #include "thermal_netlink.h"
+v1 -> v2: Add the tag from Daniel.
+
+---
+ drivers/thermal/gov_step_wise.c |   28 ++++++++++------------------
+ 1 file changed, 10 insertions(+), 18 deletions(-)
+
+Index: linux-pm/drivers/thermal/gov_step_wise.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/gov_step_wise.c
++++ linux-pm/drivers/thermal/gov_step_wise.c
+@@ -68,17 +68,6 @@ static unsigned long get_target_state(st
+ 	return next_target;
+ }
  
- #ifndef THERMAL_CORE_SUBSYS
--#warning This header can only be included by the thermal core code
-+#error This header can only be included by the thermal core code
- #endif
+-static void update_passive_instance(struct thermal_zone_device *tz,
+-				enum thermal_trip_type type, int value)
+-{
+-	/*
+-	 * If value is +1, activate a passive instance.
+-	 * If value is -1, deactivate a passive instance.
+-	 */
+-	if (type == THERMAL_TRIP_PASSIVE)
+-		tz->passive += value;
+-}
+-
+ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip_id)
+ {
+ 	const struct thermal_trip *trip = &tz->trips[trip_id];
+@@ -109,14 +98,17 @@ static void thermal_zone_trip_update(str
+ 		if (instance->initialized && old_target == instance->target)
+ 			continue;
  
- /* Default Thermal Governor */
--- 
-2.42.0
+-		/* Activate a passive thermal instance */
+ 		if (old_target == THERMAL_NO_TARGET &&
+-			instance->target != THERMAL_NO_TARGET)
+-			update_passive_instance(tz, trip->type, 1);
+-		/* Deactivate a passive thermal instance */
+-		else if (old_target != THERMAL_NO_TARGET &&
+-			instance->target == THERMAL_NO_TARGET)
+-			update_passive_instance(tz, trip->type, -1);
++		    instance->target != THERMAL_NO_TARGET) {
++			/* Activate a passive thermal instance */
++			if (trip->type == THERMAL_TRIP_PASSIVE)
++				tz->passive++;
++		} else if (old_target != THERMAL_NO_TARGET &&
++			   instance->target == THERMAL_NO_TARGET) {
++			/* Deactivate a passive thermal instance */
++			if (trip->type == THERMAL_TRIP_PASSIVE)
++				tz->passive--;
++		}
+ 
+ 		instance->initialized = true;
+ 		mutex_lock(&instance->cdev->lock);
+
+
 
