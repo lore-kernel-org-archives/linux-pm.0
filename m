@@ -2,40 +2,40 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9FB3CDB46E
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Oct 2023 08:00:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B450BCDB482
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Oct 2023 08:00:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347098AbjJLIAl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1378166AbjJLIAl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 12 Oct 2023 04:00:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48574 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48572 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347199AbjJLIAk (ORCPT
+        with ESMTP id S1347198AbjJLIAk (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2023 04:00:40 -0400
 Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D7C2CC;
-        Thu, 12 Oct 2023 01:00:36 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01190B8;
+        Thu, 12 Oct 2023 01:00:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
   d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
   t=1697097636; x=1728633636;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=Llh/lnkSAp58X6xL4PsI82prPrdE86rvb844sXbMTkc=;
-  b=pEXxw/pvygXyCn6uJfO5NTi9uSH5uyVPKxhjrntEaVbqCfUgLe5p69TW
-   1gm4eMeABoCyEj9x8P9SWfGp9FwGmHE3VMGKTFpMRAnAvHcAMn/dm5poW
-   pHOd5pas7wduGiOuNliEosY1RuSoZTT7Qor3WU1VkMS8YT8C15TGJKeZ/
-   AklBsu9ueqGisfP+obnRX1qh4Fma7Fn1AlFk8+zR4E1FkGtaTvVozlNhX
-   VAFznTFNnt/OfHpC4lt/dqV3nMfy0NLmIIm7lEI1h63gkjm+LycRTb027
-   RgjWmhudW8J89SNmXLWZEnhe0WyD0ybpmnQkJev80C6CORIHRsZSOKdS5
-   Q==;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=8sDm0h+pCIl9iKfc4jxuflqUqRc8yd1m5/OgP1/13vY=;
+  b=NhMdpW4MZMRhxLbQed+nd3kQTgk2CPHK4+Xx9+yb9bzKd4t34lVYhU4d
+   FPRr8GPMkPwheq3iWeZAq3qWksp7aLeIeQTM85GbnoAJLzMQUcoJ4YQCf
+   /jaipljUm/whFVMRH6boA595JGzv1NakVAoW1IPn68feH5tvw+LSa9u+V
+   YktipGhROtRTPddUde0loRP2q50pjjkCsnow6ZnwX9J6JG1z52W6HyB6j
+   xAXOVykqi4IvMmNFdKicn9JQ8pvAGHzJHkfjODPV775gCdyKFO7bgy5rD
+   boN/6ycfmL3At3p1G0II3fFIA+86zxLLw5kpTYf7os8TKZ+17Ekgqs/0Y
+   A==;
 X-IronPort-AV: E=Sophos;i="6.03,218,1694728800"; 
-   d="scan'208";a="33422564"
+   d="scan'208";a="33422563"
 Received: from vtuxmail01.tq-net.de ([10.115.0.20])
-  by mx1.tq-group.com with ESMTP; 12 Oct 2023 10:00:34 +0200
+  by mx1.tq-group.com with ESMTP; 12 Oct 2023 10:00:33 +0200
 Received: from steina-w.tq-net.de (steina-w.tq-net.de [10.123.53.18])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id CD8BE280084;
+        by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id 781CE280082;
         Thu, 12 Oct 2023 10:00:33 +0200 (CEST)
 From:   Alexander Stein <alexander.stein@ew.tq-group.com>
 To:     "David S . Miller" <davem@davemloft.net>,
@@ -57,64 +57,48 @@ Cc:     Alexander Stein <alexander.stein@ew.tq-group.com>,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
         NXP Linux Team <linux-imx@nxp.com>, netdev@vger.kernel.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        Conor Dooley <conor.dooley@microchip.com>
-Subject: [PATCH v2 1/3] dt-bindings: imx-thermal: Add #thermal-sensor-cells property
-Date:   Thu, 12 Oct 2023 10:00:31 +0200
-Message-Id: <20231012080033.2715241-2-alexander.stein@ew.tq-group.com>
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v2 0/3] imx6q related DT binding fixes
+Date:   Thu, 12 Oct 2023 10:00:30 +0200
+Message-Id: <20231012080033.2715241-1-alexander.stein@ew.tq-group.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20231012080033.2715241-1-alexander.stein@ew.tq-group.com>
-References: <20231012080033.2715241-1-alexander.stein@ew.tq-group.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This property is defined in thermal-sensor.yaml. Reference this file and
-constraint '#thermal-sensor-cells' to 0 for imx-thermal.
-Fixes the warning:
-arch/arm/boot/dts/nxp/imx/imx6q-mba6a.dtb: tempmon:
- '#thermal-sensor-cells' does not match any of the regexes: 'pinctrl-[0-9]+'
- From schema: Documentation/devicetree/bindings/thermal/imx-thermal.yaml
+Hi everyone,
 
-Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
----
+while working on i.MX6Q based board (arch/arm/boot/dts/nxp/imx/imx6q-mba6a.dts)
+I noticed several warnings on dtbs_check.
+I'm also not sure whether thse patches warrent a Fixes tag, so I only added that
+for patch 3. All of these patches are independent and can be picked up
+individually.
+
+Patches already merged:
+* 0268e1ae25949 ("dt-bindings: trivial-devices: Remove national,lm75")
+* 57db57ae15a97 ("dt-bindings: display: fsl,imx6-hdmi: Change to 'unevaluatedProperties: false'")
+  which deprecates v1 patch 3
+
+Changes in v2:
+* Fix example for imx-thermal.yaml
+* Collected R-b & A-b
+* Dropped v1 patch 6 for now as it is contoversial
+
+Best regards,
+Alexander
+
+Alexander Stein (3):
+  dt-bindings: imx-thermal: Add #thermal-sensor-cells property
+  dt-bindings: net: microchip: Allow nvmem-cell usage
+  dt-bindings: timer: add imx7d compatible
+
+ .../devicetree/bindings/net/microchip,lan95xx.yaml         | 2 ++
  Documentation/devicetree/bindings/thermal/imx-thermal.yaml | 7 +++++++
- 1 file changed, 7 insertions(+)
+ Documentation/devicetree/bindings/timer/fsl,imxgpt.yaml    | 4 +++-
+ 3 files changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.yaml b/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
-index 3aecea77869f0..808d987bd8d1a 100644
---- a/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
-@@ -60,6 +60,9 @@ properties:
-   clocks:
-     maxItems: 1
- 
-+  "#thermal-sensor-cells":
-+    const: 0
-+
- required:
-   - compatible
-   - interrupts
-@@ -67,6 +70,9 @@ required:
-   - nvmem-cells
-   - nvmem-cell-names
- 
-+allOf:
-+  - $ref: thermal-sensor.yaml#
-+
- additionalProperties: false
- 
- examples:
-@@ -104,5 +110,6 @@ examples:
-              nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
-              nvmem-cell-names = "calib", "temp_grade";
-              clocks = <&clks IMX6SX_CLK_PLL3_USB_OTG>;
-+             #thermal-sensor-cells = <0>;
-         };
-     };
 -- 
 2.34.1
 
