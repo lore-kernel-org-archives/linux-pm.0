@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 305D0C41513
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Oct 2023 17:59:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05784C46CA1
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Oct 2023 17:59:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1442093AbjJLR7B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Oct 2023 13:59:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59088 "EHLO
+        id S1442057AbjJLR7C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Oct 2023 13:59:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59196 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379671AbjJLR6w (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2023 13:58:52 -0400
-Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3391CB8;
-        Thu, 12 Oct 2023 10:58:49 -0700 (PDT)
-Received: by mail-ed1-x52a.google.com with SMTP id 4fb4d7f45d1cf-5347e657a11so2039652a12.2;
-        Thu, 12 Oct 2023 10:58:49 -0700 (PDT)
+        with ESMTP id S1441986AbjJLR6y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2023 13:58:54 -0400
+Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1DF01C9;
+        Thu, 12 Oct 2023 10:58:51 -0700 (PDT)
+Received: by mail-ej1-x62f.google.com with SMTP id a640c23a62f3a-9ad810be221so200445866b.2;
+        Thu, 12 Oct 2023 10:58:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697133527; x=1697738327; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1697133529; x=1697738329; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=sul7VIEtKmE6Ca4YfS1+LkRAlSPAG09Y67S7vqcXqTY=;
-        b=VVGP+9yBjbQnhGI4nAX9o7w7Mw2v7lK7kP7EyyLnC4D3w/cTX8KR21WLKpzBEIFeCI
-         oWFlEdXvz3hqnl42CX3EeoHL/vWWdu1oVbCmsRvlZGR1ou/3vx5qLg+aD0DDyOUs8ZIx
-         iyRua6n5QYydNekneo61KGwMJPSMRoAT10oBNxxnge2KrOLDSPX2Lebmt/w+Pwv3MtRk
-         GNDhdfJC5UkaG4qFww6fRf3e5tPa+svjCRoVwaIk1jR+9sC+MT0HVQu0j+97FYNhpC8v
-         8IUB+s3yYZhiB5hWJvO6wzbbTz2YJekQhS9Qmn4PpDiZUvg4h1958S5eEJV4zENDhClT
-         CJHw==
+        bh=2WNElS/gVnJhRodzwUmP0WXL6VdUMTQJu5AaQ9GZlUg=;
+        b=SPR6d2QwufOKWrXD2/9Q++jxb+iO7DJcj4nOwhln0SMWvYHA4FUeM2k22oL04Uoi+9
+         YyPfuCOzvA0ME4eNpBkOoqTcEVyJyLNcd8t7H740RXTWMOY1klh1bfuy3FHqit+ugpie
+         NmySB39ZxmDZ7FKZOiNhcJBA8vqNj4eiW7K2YalKXKZ1g1gcGEn1jVZHXtZDTi2c9yu2
+         GFUDYKlsGkZg/lIeE37DvENcdTeunoOQ5cieWQunqM+THZ8fYnz9gyI3GuVlR/Wv5y/8
+         RLuWFVKwJCFH5fInU3/YCd3XDxUYJ9QvcPXchADYXZDYYIKFx18BXxROHgRuyrWmLWOJ
+         Dk9Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697133527; x=1697738327;
+        d=1e100.net; s=20230601; t=1697133529; x=1697738329;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=sul7VIEtKmE6Ca4YfS1+LkRAlSPAG09Y67S7vqcXqTY=;
-        b=UhfdFCrH98y5rO1kC25fCe/BZWibG62+O4DngIuarDQR9L/O1pBeE/3fSWWduRvqpn
-         Obhis0bNrMqmu87tKhhPq3vvZvvr07HaJ1cHQdckpuxtdXaISFecg2JdaFW0zRkxQ1Ar
-         g8AYUyn1vjNvLBMDj4pYkIcbxsdVytoE1XGJYuqc0z8Dwx12piS9mP8psrXrFqD+nzg3
-         Q35VNVS6hL2XuyemJZLu689N1Y7W02/F9T5GKs6g/cV6EF7BUQ2hxbpQX7Gv7TlQB23t
-         O+Dj9s5sW2Gqo/uD11ZeGA965Y4pGMIORJgphJHC38GS+CXgkohJQIH4uZNnwE+UKRhI
-         N/bQ==
-X-Gm-Message-State: AOJu0YyJWv4iAp41icrogPfa3Qe1lD5jErWL29c4xaD7I1fz0jscDpUX
-        JagriA0rnIOVeZ19deNukiI=
-X-Google-Smtp-Source: AGHT+IG7ySSfvPXg82HUmFgUA1OoZ7PFPJxrAMwD/Y8NJcjqqQTX/DkgJubwU0voepnoyCNphYiWag==
-X-Received: by 2002:aa7:c607:0:b0:530:7abf:3a84 with SMTP id h7-20020aa7c607000000b005307abf3a84mr20393321edq.25.1697133527523;
-        Thu, 12 Oct 2023 10:58:47 -0700 (PDT)
+        bh=2WNElS/gVnJhRodzwUmP0WXL6VdUMTQJu5AaQ9GZlUg=;
+        b=clc4p77qZnHdM78j+Yi63fq/RHp9GLcpCas/KTy7M6Ezwuqy6dnpovmebrr5nZh1Yn
+         XrIb1jvLaNtawZhtQWHnxzBuKkh5I7pI5uMr/bnM1KZ9ppS4Yk0ttd9cwSz0ZKP2rGoy
+         GVj+liPFC3iBqf0FCzxKLXgK4uIq9aJdsx9Cef2otiAX9fZnZpn/BktNud8V8EMGlNoK
+         6NxqAyVbMQQoDHHkzYlr1NSyk10P+6nSjC7VwBTj3K0LAlHdUX/kMozdQeg1qgIbKP1s
+         9wyrtQQYMsT4u5AWnOZKCvCSQg0PymB5OkPbGwO2iXXsiZ0huj08Yj5OWIuCP5nlvEDE
+         Ju+Q==
+X-Gm-Message-State: AOJu0Yzulhws463wXg5TsEcWDFrrHsgNtqwlTBWW5c+1nD6QZvta8xWV
+        ihZyX8gemQwvC7m/kYPmKkA=
+X-Google-Smtp-Source: AGHT+IHcE/jBQFNxQ41NPCURuAvnpb/2vkuwQ1FGV1bsMXNlj5dqIlQYfKNQyIRn2B0k5iQBXy23pA==
+X-Received: by 2002:a17:907:7603:b0:9b2:b633:ada2 with SMTP id jx3-20020a170907760300b009b2b633ada2mr21913345ejc.36.1697133529446;
+        Thu, 12 Oct 2023 10:58:49 -0700 (PDT)
 Received: from localhost (p200300e41f3f4900f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f3f:4900:f22f:74ff:fe1f:3a53])
-        by smtp.gmail.com with ESMTPSA id bd19-20020a056402207300b0053e31113ff7sm193004edb.94.2023.10.12.10.58.46
+        by smtp.gmail.com with ESMTPSA id b20-20020a170906491400b00988dbbd1f7esm11314362ejq.213.2023.10.12.10.58.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Oct 2023 10:58:46 -0700 (PDT)
+        Thu, 12 Oct 2023 10:58:49 -0700 (PDT)
 From:   Thierry Reding <thierry.reding@gmail.com>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         "Rafael J . Wysocki" <rafael@kernel.org>,
@@ -59,9 +59,9 @@ To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
 Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
         Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v2 04/13] thermal: tegra: Use driver-private data consistently
-Date:   Thu, 12 Oct 2023 19:58:25 +0200
-Message-ID: <20231012175836.3408077-5-thierry.reding@gmail.com>
+Subject: [PATCH v2 06/13] thermal: tegra: Do not register cooling device
+Date:   Thu, 12 Oct 2023 19:58:27 +0200
+Message-ID: <20231012175836.3408077-7-thierry.reding@gmail.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231012175836.3408077-1-thierry.reding@gmail.com>
 References: <20231012175836.3408077-1-thierry.reding@gmail.com>
@@ -73,647 +73,577 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Thierry Reding <treding@nvidia.com>
 
-Instead of passing around platform and plain devices and figuring out
-the driver-private data within each helper, directly pass around the
-driver-private data when it's available.
+The SOCTHERM's built-in throttling mechanism doesn't map well to the
+concept of a cooling device because it will automatically start to
+throttle when the programmed temperature threshold is crossed.
 
-Also store a pointer to the parent device in the main driver-private
-data structure for easier access.
+Remove the cooling device implementation and instead unconditionally
+program the throttling for the CPU and GPU thermal zones.
 
 Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
- drivers/thermal/tegra/soctherm.c | 213 ++++++++++++++-----------------
- 1 file changed, 95 insertions(+), 118 deletions(-)
+Changes in v2:
+- adapt to new DT bindings
+
+ drivers/thermal/tegra/soctherm.c          | 287 +++++++++-------------
+ drivers/thermal/tegra/soctherm.h          |   1 +
+ drivers/thermal/tegra/tegra124-soctherm.c |   4 +
+ drivers/thermal/tegra/tegra132-soctherm.c |   4 +
+ drivers/thermal/tegra/tegra210-soctherm.c |   4 +
+ 5 files changed, 132 insertions(+), 168 deletions(-)
 
 diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index e7fe8683bfc5..f434e141dcdf 100644
+index 11c23ace2c81..105ec20d509d 100644
 --- a/drivers/thermal/tegra/soctherm.c
 +++ b/drivers/thermal/tegra/soctherm.c
-@@ -299,7 +299,6 @@ static const char *const throt_names[] = {
- struct tegra_soctherm;
- struct tegra_thermctl_zone {
- 	void __iomem *reg;
--	struct device *dev;
- 	struct tegra_soctherm *ts;
- 	struct thermal_zone_device *tz;
- 	const struct tegra_tsensor_group *sg;
-@@ -327,6 +326,7 @@ struct soctherm_throt_cfg {
+@@ -33,7 +33,6 @@
+ 
+ #include <dt-bindings/thermal/tegra124-soctherm.h>
+ 
+-#include "../thermal_core.h"
+ #include "soctherm.h"
+ 
+ #define SENSOR_CONFIG0				0
+@@ -317,12 +316,16 @@ struct soctherm_throt_cfg {
+ 	const char *name;
+ 	unsigned int id;
+ 	u8 priority;
++	int temperature;
++	int hysteresis;
+ 	u8 cpu_throt_level;
+ 	u32 cpu_throt_depth;
+ 	u32 gpu_throt_level;
+ 	struct soctherm_oc_cfg oc_cfg;
+-	struct thermal_cooling_device *cdev;
+ 	bool init;
++
++	unsigned int num_zones;
++	struct device_node **zones;
  };
  
  struct tegra_soctherm {
-+	struct device *dev;
- 	struct reset_control *reset;
- 	struct clk *clock_tsensor;
- 	struct clk *clock_soctherm;
-@@ -444,14 +444,15 @@ static int tegra_thermctl_get_temp(struct thermal_zone_device *tz, int *out_temp
-  *
-  * Return: The precision adjusted capped temperature in millicelsius.
-  */
--static int enforce_temp_range(struct device *dev, int trip_temp)
-+static int enforce_temp_range(struct tegra_soctherm *ts, int trip_temp)
- {
- 	int temp;
- 
- 	temp = clamp_val(trip_temp, min_low_temp, max_high_temp);
- 	if (temp != trip_temp)
--		dev_dbg(dev, "soctherm: trip temperature %d forced to %d\n",
-+		dev_dbg(ts->dev, "trip temperature %d forced to %d\n",
- 			trip_temp, temp);
-+
- 	return temp;
- }
- 
-@@ -471,18 +472,17 @@ static int enforce_temp_range(struct device *dev, int trip_temp)
-  *
-  * Return: 0 upon success, or %-EINVAL upon failure.
-  */
--static int thermtrip_program(struct device *dev,
-+static int thermtrip_program(struct tegra_soctherm *ts,
- 			     const struct tegra_tsensor_group *sg,
- 			     int trip_temp)
- {
--	struct tegra_soctherm *ts = dev_get_drvdata(dev);
- 	int temp;
- 	u32 r;
- 
- 	if (!sg || !sg->thermtrip_threshold_mask)
- 		return -EINVAL;
- 
--	temp = enforce_temp_range(dev, trip_temp) / ts->soc->thresh_grain;
-+	temp = enforce_temp_range(ts, trip_temp) / ts->soc->thresh_grain;
- 
- 	r = readl(ts->regs + THERMCTL_THERMTRIP_CTL);
- 	r = REG_SET_MASK(r, sg->thermtrip_threshold_mask, temp);
-@@ -496,7 +496,7 @@ static int thermtrip_program(struct device *dev,
- /**
+@@ -497,9 +500,7 @@ static int thermtrip_program(struct tegra_soctherm *ts,
   * throttrip_program() - Configures the hardware to throttle the
   * pulse if a given sensor group reaches a given temperature
-- * @dev: ptr to the struct device for the SOC_THERM IP block
-+ * @ts: pointer to a struct tegra_soctherm
-  * @sg: pointer to the sensor group to set the thermtrip temperature for
+  * @ts: pointer to a struct tegra_soctherm
+- * @sg: pointer to the sensor group to set the thermtrip temperature for
   * @stc: pointer to the throttle need to be triggered
-  * @trip_temp: the temperature in millicelsius to trigger the thermal trip at
-@@ -510,12 +510,11 @@ static int thermtrip_program(struct device *dev,
+- * @trip_temp: the temperature in millicelsius to trigger the thermal trip at
+  *
+  * Sets the thermal trip threshold and throttle event of the given sensor
+  * group. If this threshold is crossed, the hardware will trigger the
+@@ -510,43 +511,68 @@ static int thermtrip_program(struct tegra_soctherm *ts,
   *
   * Return: 0 upon success, or %-EINVAL upon failure.
   */
--static int throttrip_program(struct device *dev,
-+static int throttrip_program(struct tegra_soctherm *ts,
- 			     const struct tegra_tsensor_group *sg,
- 			     struct soctherm_throt_cfg *stc,
- 			     int trip_temp)
+-static int throttrip_program(struct tegra_soctherm *ts,
+-			     const struct tegra_tsensor_group *sg,
+-			     struct soctherm_throt_cfg *stc,
+-			     int trip_temp)
++static int throttrip_program(struct tegra_soctherm *tegra,
++			     struct soctherm_throt_cfg *stc)
  {
--	struct tegra_soctherm *ts = dev_get_drvdata(dev);
- 	int temp, cpu_throt, gpu_throt;
- 	unsigned int throt;
- 	u32 r, reg_off;
-@@ -523,7 +522,7 @@ static int throttrip_program(struct device *dev,
- 	if (!sg || !stc || !stc->init)
- 		return -EINVAL;
+-	int temp, cpu_throt, gpu_throt;
+-	unsigned int throt;
+-	u32 r, reg_off;
++	int high, low, cpu_throt, gpu_throt;
++	unsigned int throt, i, j;
  
--	temp = enforce_temp_range(dev, trip_temp) / ts->soc->thresh_grain;
-+	temp = enforce_temp_range(ts, trip_temp) / ts->soc->thresh_grain;
+-	if (!sg || !stc || !stc->init)
+-		return -EINVAL;
++	high = enforce_temp_range(tegra, stc->temperature);
++	high /= tegra->soc->thresh_grain;
++	low = enforce_temp_range(tegra, stc->temperature - stc->hysteresis);
++	low /= tegra->soc->thresh_grain;
  
- 	/* Hardcode LIGHT on LEVEL1 and HEAVY on LEVEL2 */
- 	throt = stc->id;
-@@ -536,7 +535,7 @@ static int throttrip_program(struct device *dev,
- 		cpu_throt = THERMCTL_LVL0_CPU0_CPU_THROT_HEAVY;
- 		gpu_throt = THERMCTL_LVL0_CPU0_GPU_THROT_HEAVY;
- 		if (throt != THROTTLE_HEAVY)
--			dev_warn(dev,
-+			dev_warn(ts->dev,
- 				 "invalid throt id %d - assuming HEAVY",
- 				 throt);
- 	}
-@@ -588,7 +587,6 @@ static int tegra_thermctl_set_trip_temp(struct thermal_zone_device *tz, int trip
- 	struct tegra_soctherm *ts = zone->ts;
- 	struct thermal_trip trip;
- 	const struct tegra_tsensor_group *sg = zone->sg;
--	struct device *dev = zone->dev;
- 	int ret;
+-	temp = enforce_temp_range(ts, trip_temp) / ts->soc->thresh_grain;
++	for (i = 0; i < stc->num_zones; i++) {
++		struct tegra_thermctl_zone *zone = NULL;
++		unsigned int offset;
++		u32 r;
  
- 	if (!tz)
-@@ -605,7 +603,7 @@ static int tegra_thermctl_set_trip_temp(struct thermal_zone_device *tz, int trip
- 		 * if not, program critical trip to HW.
- 		 */
- 		if (min_low_temp == tsensor_group_thermtrip_get(ts, sg->id))
--			return thermtrip_program(dev, sg, temp);
-+			return thermtrip_program(ts, sg, temp);
+-	/* Hardcode LIGHT on LEVEL1 and HEAVY on LEVEL2 */
+-	throt = stc->id;
+-	reg_off = THERMCTL_LVL_REG(sg->thermctl_lvl0_offset, throt + 1);
++		for (j = 0; j < tegra->soc->num_ttgs; j++) {
++			struct thermal_zone_device *tz = tegra->thermctl_tzs[j];
+ 
+-	if (throt == THROTTLE_LIGHT) {
+-		cpu_throt = THERMCTL_LVL0_CPU0_CPU_THROT_LIGHT;
+-		gpu_throt = THERMCTL_LVL0_CPU0_GPU_THROT_LIGHT;
+-	} else {
+-		cpu_throt = THERMCTL_LVL0_CPU0_CPU_THROT_HEAVY;
+-		gpu_throt = THERMCTL_LVL0_CPU0_GPU_THROT_HEAVY;
+-		if (throt != THROTTLE_HEAVY)
+-			dev_warn(ts->dev,
+-				 "invalid throt id %d - assuming HEAVY",
+-				 throt);
+-	}
++			if (tz->device.of_node == stc->zones[i]) {
++				zone = thermal_zone_device_priv(tz);
++				break;
++			}
++		}
+ 
+-	r = readl(ts->regs + reg_off);
+-	r = REG_SET_MASK(r, sg->thermctl_lvl0_up_thresh_mask, temp);
+-	r = REG_SET_MASK(r, sg->thermctl_lvl0_dn_thresh_mask, temp);
+-	r = REG_SET_MASK(r, THERMCTL_LVL0_CPU0_CPU_THROT_MASK, cpu_throt);
+-	r = REG_SET_MASK(r, THERMCTL_LVL0_CPU0_GPU_THROT_MASK, gpu_throt);
+-	r = REG_SET_MASK(r, THERMCTL_LVL0_CPU0_EN_MASK, 1);
+-	writel(r, ts->regs + reg_off);
++		if (!zone)
++			continue;
++
++		if (!zone->sg->can_throttle) {
++			dev_warn(tegra->dev, "zone %s cannot be throttled\n",
++				 zone->sg->name);
++			continue;
++		}
++
++		/* Hardcode LIGHT on LEVEL1 and HEAVY on LEVEL2 */
++		throt = stc->id;
++		offset = THERMCTL_LVL_REG(zone->sg->thermctl_lvl0_offset, throt + 1);
++
++		if (throt == THROTTLE_LIGHT) {
++			cpu_throt = THERMCTL_LVL0_CPU0_CPU_THROT_LIGHT;
++			gpu_throt = THERMCTL_LVL0_CPU0_GPU_THROT_LIGHT;
++		} else {
++			cpu_throt = THERMCTL_LVL0_CPU0_CPU_THROT_HEAVY;
++			gpu_throt = THERMCTL_LVL0_CPU0_GPU_THROT_HEAVY;
++			if (throt != THROTTLE_HEAVY)
++				dev_warn(tegra->dev,
++					 "invalid throt id %d - assuming HEAVY",
++					 throt);
++		}
++
++		r = readl(tegra->regs + offset);
++		r = REG_SET_MASK(r, zone->sg->thermctl_lvl0_up_thresh_mask, high);
++		r = REG_SET_MASK(r, zone->sg->thermctl_lvl0_dn_thresh_mask, low);
++		r = REG_SET_MASK(r, THERMCTL_LVL0_CPU0_CPU_THROT_MASK, cpu_throt);
++		r = REG_SET_MASK(r, THERMCTL_LVL0_CPU0_GPU_THROT_MASK, gpu_throt);
++		r = REG_SET_MASK(r, THERMCTL_LVL0_CPU0_EN_MASK, 1);
++		writel(r, tegra->regs + offset);
++
++		dev_info(tegra->dev,
++			 "throttrip: will throttle when %s reaches %d mC\n",
++			 zone->sg->name, stc->temperature);
++	}
+ 
+ 	return 0;
+ }
+@@ -606,25 +632,6 @@ static int tegra_thermctl_set_trip_temp(struct thermal_zone_device *tz, int trip
+ 			return thermtrip_program(ts, sg, temp);
  		else
  			return 0;
- 
-@@ -625,7 +623,7 @@ static int tegra_thermctl_set_trip_temp(struct thermal_zone_device *tz, int trip
- 			else
- 				continue;
- 
--			return throttrip_program(dev, sg, stc, temp);
-+			return throttrip_program(ts, sg, stc, temp);
- 		}
+-
+-	} else if (trip.type == THERMAL_TRIP_HOT) {
+-		int i;
+-
+-		for (i = 0; i < THROTTLE_SIZE; i++) {
+-			struct thermal_cooling_device *cdev;
+-			struct soctherm_throt_cfg *stc;
+-
+-			if (!ts->throt_cfgs[i].init)
+-				continue;
+-
+-			cdev = ts->throt_cfgs[i].cdev;
+-			if (get_thermal_instance(tz, cdev, trip_id))
+-				stc = find_throttle_cfg_by_name(ts, cdev->type);
+-			else
+-				continue;
+-
+-			return throttrip_program(ts, sg, stc, temp);
+-		}
  	}
  
-@@ -667,9 +665,9 @@ static int tegra_thermctl_set_trips(struct thermal_zone_device *tz, int lo, int
- 	r = REG_SET_MASK(r, THERMCTL_LVL0_CPU0_EN_MASK, 0);
- 	writel(r, zone->ts->regs + zone->sg->thermctl_lvl0_offset);
+ 	return 0;
+@@ -685,29 +692,9 @@ static const struct thermal_zone_device_ops tegra_of_thermal_ops = {
+ 	.set_trips = tegra_thermctl_set_trips,
+ };
  
--	lo = enforce_temp_range(zone->dev, lo) / zone->ts->soc->thresh_grain;
--	hi = enforce_temp_range(zone->dev, hi) / zone->ts->soc->thresh_grain;
--	dev_dbg(zone->dev, "%s hi:%d, lo:%d\n", __func__, hi, lo);
-+	lo = enforce_temp_range(zone->ts, lo) / zone->ts->soc->thresh_grain;
-+	hi = enforce_temp_range(zone->ts, hi) / zone->ts->soc->thresh_grain;
-+	dev_dbg(zone->ts->dev, "%s hi:%d, lo:%d\n", __func__, hi, lo);
- 
- 	r = REG_SET_MASK(r, zone->sg->thermctl_lvl0_up_thresh_mask, hi);
- 	r = REG_SET_MASK(r, zone->sg->thermctl_lvl0_dn_thresh_mask, lo);
-@@ -731,11 +729,10 @@ static int get_hot_temp(struct thermal_zone_device *tz, int *trip_id, int *temp)
+-static int get_hot_temp(struct thermal_zone_device *tz, int *trip_id, int *temp)
+-{
+-	int i, ret;
+-	struct thermal_trip trip;
+-
+-	for (i = 0; i < thermal_zone_get_num_trips(tz); i++) {
+-
+-		ret = thermal_zone_get_trip(tz, i, &trip);
+-		if (ret)
+-			return -EINVAL;
+-
+-		if (trip.type == THERMAL_TRIP_HOT) {
+-			*trip_id = i;
+-			return 0;
+-		}
+-	}
+-
+-	return -EINVAL;
+-}
+-
+ /**
+  * tegra_soctherm_set_hwtrips() - set HW trip point from DT data
+- * @dev: struct device * of the SOC_THERM instance
++ * @ts: pointer to a struct tegra_soctherm
+  * @sg: pointer to the sensor group to set the thermtrip temperature for
+  * @tz: struct thermal_zone_device *
+  *
+@@ -725,16 +712,12 @@ static int get_hot_temp(struct thermal_zone_device *tz, int *trip_id, int *temp)
+  * THERMTRIP has been enabled successfully when a message similar to
   * this one appears on the serial console:
-  * ""throttrip: will throttle when sensor group XXX reaches YYYYYY mC"
+  * "thermtrip: will shut down when sensor group XXX reaches YYYYYY mC"
+- * THROTTLE has been enabled successfully when a message similar to
+- * this one appears on the serial console:
+- * ""throttrip: will throttle when sensor group XXX reaches YYYYYY mC"
   */
--static int tegra_soctherm_set_hwtrips(struct device *dev,
-+static int tegra_soctherm_set_hwtrips(struct tegra_soctherm *ts,
+ static int tegra_soctherm_set_hwtrips(struct tegra_soctherm *ts,
  				      const struct tegra_tsensor_group *sg,
  				      struct thermal_zone_device *tz)
  {
--	struct tegra_soctherm *ts = dev_get_drvdata(dev);
- 	struct soctherm_throt_cfg *stc;
- 	int i, trip, temperature, ret;
+-	struct soctherm_throt_cfg *stc;
+-	int i, trip, temperature, ret;
++	int temperature, ret;
  
-@@ -745,18 +742,19 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
- 		if (thermal_zone_get_crit_temp(tz, &temperature))
- 			temperature = max_high_temp;
- 
--	ret = thermtrip_program(dev, sg, temperature);
-+	ret = thermtrip_program(ts, sg, temperature);
- 	if (ret) {
--		dev_err(dev, "thermtrip: %s: error during enable\n", sg->name);
-+		dev_err(ts->dev, "thermtrip: %s: error during enable\n",
-+			sg->name);
- 		return ret;
- 	}
- 
--	dev_info(dev, "thermtrip: will shut down when %s reaches %d mC\n",
-+	dev_info(ts->dev, "thermtrip: will shut down when %s reaches %d mC\n",
+ 	/* Get thermtrips. If missing, try to get critical trips. */
+ 	temperature = tsensor_group_thermtrip_get(ts, sg->id);
+@@ -752,43 +735,31 @@ static int tegra_soctherm_set_hwtrips(struct tegra_soctherm *ts,
+ 	dev_info(ts->dev, "thermtrip: will shut down when %s reaches %d mC\n",
  		 sg->name, temperature);
  
- 	ret = get_hot_temp(tz, &trip, &temperature);
- 	if (ret) {
--		dev_info(dev, "throttrip: %s: missing hot temperature\n",
-+		dev_info(ts->dev, "throttrip: %s: missing hot temperature\n",
- 			 sg->name);
- 		return 0;
- 	}
-@@ -773,21 +771,21 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
- 		else
- 			continue;
- 
--		ret = throttrip_program(dev, sg, stc, temperature);
-+		ret = throttrip_program(ts, sg, stc, temperature);
- 		if (ret) {
--			dev_err(dev, "throttrip: %s: error during enable\n",
-+			dev_err(ts->dev, "throttrip: %s: error during enable\n",
- 				sg->name);
- 			return ret;
- 		}
- 
--		dev_info(dev,
-+		dev_info(ts->dev,
- 			 "throttrip: will throttle when %s reaches %d mC\n",
- 			 sg->name, temperature);
- 		break;
- 	}
- 
- 	if (i == THROTTLE_SIZE)
--		dev_info(dev, "throttrip: %s: missing throttle cdev\n",
-+		dev_info(ts->dev, "throttrip: %s: missing throttle cdev\n",
- 			 sg->name);
- 
- 	return 0;
-@@ -1253,8 +1251,7 @@ static int soctherm_oc_int_init(struct device_node *np, int num_irqs)
- #ifdef CONFIG_DEBUG_FS
- static int regs_show(struct seq_file *s, void *data)
- {
--	struct platform_device *pdev = s->private;
--	struct tegra_soctherm *ts = platform_get_drvdata(pdev);
-+	struct tegra_soctherm *ts = s->private;
- 	const struct tegra_tsensor *tsensors = ts->soc->tsensors;
- 	const struct tegra_tsensor_group **ttgs = ts->soc->ttgs;
- 	u32 r, state;
-@@ -1449,24 +1446,24 @@ static int regs_show(struct seq_file *s, void *data)
- 
- DEFINE_SHOW_ATTRIBUTE(regs);
- 
--static void soctherm_debug_init(struct platform_device *pdev)
-+static void soctherm_debug_init(struct tegra_soctherm *tegra)
- {
--	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
- 	struct dentry *root;
- 
- 	root = debugfs_create_dir("soctherm", NULL);
- 
- 	tegra->debugfs_dir = root;
- 
--	debugfs_create_file("reg_contents", 0644, root, pdev, &regs_fops);
-+	debugfs_create_file("reg_contents", 0644, root, tegra, &regs_fops);
- }
- #else
--static inline void soctherm_debug_init(struct platform_device *pdev) {}
-+static inline void soctherm_debug_init(struct tegra_soctherm *ts)
-+{
+-	ret = get_hot_temp(tz, &trip, &temperature);
+-	if (ret) {
+-		dev_info(ts->dev, "throttrip: %s: missing hot temperature\n",
+-			 sg->name);
+-		return 0;
+-	}
+-
+-	for (i = 0; i < THROTTLE_OC1; i++) {
+-		struct thermal_cooling_device *cdev;
+-
+-		if (!ts->throt_cfgs[i].init)
+-			continue;
+-
+-		cdev = ts->throt_cfgs[i].cdev;
+-		if (get_thermal_instance(tz, cdev, trip))
+-			stc = find_throttle_cfg_by_name(ts, cdev->type);
+-		else
+-			continue;
+-
+-		ret = throttrip_program(ts, sg, stc, temperature);
+-		if (ret) {
+-			dev_err(ts->dev, "throttrip: %s: error during enable\n",
+-				sg->name);
+-			return ret;
+-		}
++	return 0;
 +}
- #endif
  
--static int soctherm_clk_enable(struct platform_device *pdev, bool enable)
-+static int soctherm_clk_enable(struct tegra_soctherm *tegra, bool enable)
- {
--	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
- 	int err;
+-		dev_info(ts->dev,
+-			 "throttrip: will throttle when %s reaches %d mC\n",
+-			 sg->name, temperature);
+-		break;
+-	}
++/*
++ * soctherm_enable_hw_throttling() - enable hardware throttling trip points
++ * @tegra: pointer to a struct tegra_soctherm
++ *
++ * THROTTLE has been enabled successfully when a message similar to
++ * this one appears on the serial console:
++ * ""throttrip: will throttle when sensor group XXX reaches YYYYYY mC"
++ */
++static void soctherm_enable_hw_throttling(struct tegra_soctherm *tegra)
++{
++	struct soctherm_throt_cfg *stc;
++	int err;
  
- 	if (!tegra->clock_soctherm || !tegra->clock_tsensor)
-@@ -1531,10 +1528,8 @@ static const struct thermal_cooling_device_ops throt_cooling_ops = {
- 	.set_cur_state = throt_set_cdev_state,
- };
+-	if (i == THROTTLE_SIZE)
+-		dev_info(ts->dev, "throttrip: %s: missing throttle cdev\n",
+-			 sg->name);
++	/* if configured, program the pulse skipper for CPU and GPU zones */
++	stc = find_throttle_cfg_by_name(tegra, "heavy");
++	if (!stc)
++		return;
  
--static int soctherm_thermtrips_parse(struct platform_device *pdev)
-+static int soctherm_thermtrips_parse(struct tegra_soctherm *ts)
- {
--	struct device *dev = &pdev->dev;
--	struct tegra_soctherm *ts = dev_get_drvdata(dev);
- 	struct tsensor_group_thermtrips *tt = ts->soc->thermtrips;
- 	const int max_num_prop = ts->soc->num_ttgs * 2;
- 	u32 *tlb;
-@@ -1543,22 +1538,22 @@ static int soctherm_thermtrips_parse(struct platform_device *pdev)
- 	if (!tt)
- 		return -ENOMEM;
+-	return 0;
++	err = throttrip_program(tegra, stc);
++	if (err)
++		dev_err(tegra->dev, "throttrip: %s: failed to enable: %d\n",
++			stc->name, err);
+ }
  
--	n = of_property_count_u32_elems(dev->of_node, "nvidia,thermtrips");
-+	n = of_property_count_u32_elems(ts->dev->of_node, "nvidia,thermtrips");
- 	if (n <= 0) {
--		dev_info(dev,
-+		dev_info(ts->dev,
- 			 "missing thermtrips, will use critical trips as shut down temp\n");
- 		return n;
- 	}
- 
- 	n = min(max_num_prop, n);
- 
--	tlb = devm_kcalloc(&pdev->dev, max_num_prop, sizeof(u32), GFP_KERNEL);
-+	tlb = devm_kcalloc(ts->dev, max_num_prop, sizeof(u32), GFP_KERNEL);
- 	if (!tlb)
- 		return -ENOMEM;
--	ret = of_property_read_u32_array(dev->of_node, "nvidia,thermtrips",
-+	ret = of_property_read_u32_array(ts->dev->of_node, "nvidia,thermtrips",
- 					 tlb, n);
- 	if (ret) {
--		dev_err(dev, "invalid num ele: thermtrips:%d\n", ret);
-+		dev_err(ts->dev, "invalid num ele: thermtrips:%d\n", ret);
- 		return ret;
- 	}
- 
-@@ -1575,9 +1570,9 @@ static int soctherm_thermtrips_parse(struct platform_device *pdev)
+ static irqreturn_t soctherm_thermal_isr(int irq, void *dev_id)
+@@ -1494,40 +1465,6 @@ static int soctherm_clk_enable(struct tegra_soctherm *tegra, bool enable)
  	return 0;
  }
  
--static void soctherm_oc_cfg_parse(struct device *dev,
--				struct device_node *np_oc,
--				struct soctherm_throt_cfg *stc)
-+static void soctherm_oc_cfg_parse(struct tegra_soctherm *tegra,
-+				  struct device_node *np_oc,
-+				  struct soctherm_throt_cfg *stc)
+-static int throt_get_cdev_max_state(struct thermal_cooling_device *cdev,
+-				    unsigned long *max_state)
+-{
+-	*max_state = 1;
+-	return 0;
+-}
+-
+-static int throt_get_cdev_cur_state(struct thermal_cooling_device *cdev,
+-				    unsigned long *cur_state)
+-{
+-	struct tegra_soctherm *ts = cdev->devdata;
+-	u32 r;
+-
+-	r = readl(ts->regs + THROT_STATUS);
+-	if (REG_GET_MASK(r, THROT_STATUS_STATE_MASK))
+-		*cur_state = 1;
+-	else
+-		*cur_state = 0;
+-
+-	return 0;
+-}
+-
+-static int throt_set_cdev_state(struct thermal_cooling_device *cdev,
+-				unsigned long cur_state)
+-{
+-	return 0;
+-}
+-
+-static const struct thermal_cooling_device_ops throt_cooling_ops = {
+-	.get_max_state = throt_get_cdev_max_state,
+-	.get_cur_state = throt_get_cdev_cur_state,
+-	.set_cur_state = throt_set_cdev_state,
+-};
+-
+ static int soctherm_thermtrips_parse(struct tegra_soctherm *ts)
  {
- 	u32 val;
+ 	struct tsensor_group_thermtrips *tt = ts->soc->thermtrips;
+@@ -1633,6 +1570,33 @@ static int soctherm_throt_cfg_parse(struct tegra_soctherm *ts,
+ 	else
+ 		goto err;
  
-@@ -1601,19 +1596,20 @@ static void soctherm_oc_cfg_parse(struct device *dev,
- 	stc->oc_cfg.mode = OC_THROTTLE_MODE_BRIEF;
- }
- 
--static int soctherm_throt_cfg_parse(struct device *dev,
-+static int soctherm_throt_cfg_parse(struct tegra_soctherm *ts,
- 				    struct device_node *np,
- 				    struct soctherm_throt_cfg *stc)
- {
--	struct tegra_soctherm *ts = dev_get_drvdata(dev);
- 	int ret;
- 	u32 val;
- 
- 	ret = of_property_read_u32(np, "nvidia,priority", &val);
- 	if (ret) {
--		dev_err(dev, "throttle-cfg: %s: invalid priority\n", stc->name);
-+		dev_err(ts->dev, "throttle-cfg: %s: invalid priority\n",
-+			stc->name);
- 		return -EINVAL;
- 	}
++	ret = of_property_read_u32(np, "temperature-millicelsius",
++				   &stc->temperature);
++	if (ret < 0)
++		goto err;
 +
- 	stc->priority = val;
- 
- 	ret = of_property_read_u32(np, ts->soc->use_ccroc ?
-@@ -1640,7 +1636,7 @@ static int soctherm_throt_cfg_parse(struct device *dev,
++	ret = of_property_read_u32(np, "hysteresis-millicelsius",
++				   &stc->hysteresis);
++	if (ret < 0)
++		goto err;
++
++	stc->num_zones = of_count_phandle_with_args(np, "nvidia,thermal-zones",
++						    NULL);
++	if (stc->num_zones > 0) {
++		struct device_node *zone;
++		unsigned int i;
++
++		stc->zones = devm_kcalloc(ts->dev, stc->num_zones, sizeof(zone),
++					  GFP_KERNEL);
++		if (!stc->zones)
++			return -ENOMEM;
++
++		for (i = 0; i < stc->num_zones; i++) {
++			zone = of_parse_phandle(np, "nvidia,thermal-zones", i);
++			stc->zones[i] = zone;
++		}
++	}
++
  	return 0;
  
  err:
--	dev_err(dev, "throttle-cfg: %s: no throt prop or invalid prop\n",
-+	dev_err(ts->dev, "throttle-cfg: %s: no throt prop or invalid prop\n",
- 		stc->name);
- 	return -EINVAL;
+@@ -1642,14 +1606,12 @@ static int soctherm_throt_cfg_parse(struct tegra_soctherm *ts,
  }
-@@ -1648,25 +1644,23 @@ static int soctherm_throt_cfg_parse(struct device *dev,
+ 
  /**
-  * soctherm_init_hw_throt_cdev() - Parse the HW throttle configurations
-  * and register them as cooling devices.
-- * @pdev: Pointer to platform_device struct
-+ * @tegra: pointer to Tegra soctherm structure
+- * soctherm_init_hw_throt_cdev() - Parse the HW throttle configurations
+- * and register them as cooling devices.
++ * soctherm_init_hw_throttling() - parse the HW throttle configurations
+  * @tegra: pointer to Tegra soctherm structure
   */
--static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
-+static void soctherm_init_hw_throt_cdev(struct tegra_soctherm *tegra)
+-static void soctherm_init_hw_throt_cdev(struct tegra_soctherm *tegra)
++static void soctherm_init_hw_throttling(struct tegra_soctherm *tegra)
  {
--	struct device *dev = &pdev->dev;
--	struct tegra_soctherm *ts = dev_get_drvdata(dev);
  	struct device_node *np_stc, *np_stcc;
- 	const char *name;
+-	const char *name;
  	int i;
  
  	for (i = 0; i < THROTTLE_SIZE; i++) {
--		ts->throt_cfgs[i].name = throt_names[i];
--		ts->throt_cfgs[i].id = i;
--		ts->throt_cfgs[i].init = false;
-+		tegra->throt_cfgs[i].name = throt_names[i];
-+		tegra->throt_cfgs[i].id = i;
-+		tegra->throt_cfgs[i].init = false;
+@@ -1666,11 +1628,10 @@ static void soctherm_init_hw_throt_cdev(struct tegra_soctherm *tegra)
  	}
  
--	np_stc = of_get_child_by_name(dev->of_node, "throttle-cfgs");
-+	np_stc = of_get_child_by_name(tegra->dev->of_node, "throttle-cfgs");
- 	if (!np_stc) {
--		dev_info(dev,
-+		dev_info(tegra->dev,
- 			 "throttle-cfg: no throttle-cfgs - not enabling\n");
- 		return;
- 	}
-@@ -1677,33 +1671,34 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
+ 	for_each_child_of_node(np_stc, np_stcc) {
++		const char *name = np_stcc->name;
+ 		struct soctherm_throt_cfg *stc;
+-		struct thermal_cooling_device *tcd;
  		int err;
  
- 		name = np_stcc->name;
--		stc = find_throttle_cfg_by_name(ts, name);
-+		stc = find_throttle_cfg_by_name(tegra, name);
+-		name = np_stcc->name;
+ 		stc = find_throttle_cfg_by_name(tegra, name);
  		if (!stc) {
--			dev_err(dev,
--				"throttle-cfg: could not find %s\n", name);
-+			dev_err(tegra->dev, "throttle-cfg: could not find %s\n",
-+				name);
- 			continue;
- 		}
- 
- 		if (stc->init) {
--			dev_err(dev, "throttle-cfg: %s: redefined!\n", name);
-+			dev_err(tegra->dev, "throttle-cfg: %s: redefined!\n",
-+				name);
- 			of_node_put(np_stcc);
- 			break;
- 		}
- 
--		err = soctherm_throt_cfg_parse(dev, np_stcc, stc);
-+		err = soctherm_throt_cfg_parse(tegra, np_stcc, stc);
- 		if (err)
- 			continue;
- 
+ 			dev_err(tegra->dev, "throttle-cfg: could not find %s\n",
+@@ -1692,19 +1653,6 @@ static void soctherm_init_hw_throt_cdev(struct tegra_soctherm *tegra)
  		if (stc->id >= THROTTLE_OC1) {
--			soctherm_oc_cfg_parse(dev, np_stcc, stc);
-+			soctherm_oc_cfg_parse(tegra, np_stcc, stc);
+ 			soctherm_oc_cfg_parse(tegra, np_stcc, stc);
  			stc->init = true;
- 		} else {
- 
- 			tcd = thermal_of_cooling_device_register(np_stcc,
--							 (char *)name, ts,
-+							 (char *)name, tegra,
- 							 &throt_cooling_ops);
- 			if (IS_ERR_OR_NULL(tcd)) {
--				dev_err(dev,
-+				dev_err(tegra->dev,
- 					"throttle-cfg: %s: failed to register cooling device\n",
- 					name);
- 				continue;
-@@ -1711,7 +1706,6 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
- 			stc->cdev = tcd;
- 			stc->init = true;
- 		}
+-		} else {
 -
- 	}
- 
- 	of_node_put(np_stc);
-@@ -1931,9 +1925,8 @@ static void soctherm_throttle_program(struct tegra_soctherm *ts,
- 	writel(r, ts->regs + THROT_PRIORITY_LOCK);
- }
- 
--static void tegra_soctherm_throttle(struct device *dev)
-+static void tegra_soctherm_throttle(struct tegra_soctherm *ts)
- {
--	struct tegra_soctherm *ts = dev_get_drvdata(dev);
- 	u32 v;
- 	int i;
- 
-@@ -1969,43 +1962,29 @@ static void tegra_soctherm_throttle(struct device *dev)
- 	writel(v, ts->regs + THERMCTL_STATS_CTL);
- }
- 
--static int soctherm_interrupts_init(struct platform_device *pdev,
--				    struct tegra_soctherm *tegra)
-+static int soctherm_interrupts_init(struct tegra_soctherm *tegra)
- {
--	struct device_node *np = pdev->dev.of_node;
- 	int ret;
- 
--	ret = soctherm_oc_int_init(np, TEGRA_SOC_OC_IRQ_MAX);
-+	ret = soctherm_oc_int_init(tegra->dev->of_node, TEGRA_SOC_OC_IRQ_MAX);
- 	if (ret < 0) {
--		dev_err(&pdev->dev, "soctherm_oc_int_init failed\n");
-+		dev_err(tegra->dev, "soctherm_oc_int_init failed\n");
- 		return ret;
- 	}
- 
--	tegra->thermal_irq = platform_get_irq(pdev, 0);
--	if (tegra->thermal_irq < 0) {
--		dev_dbg(&pdev->dev, "get 'thermal_irq' failed.\n");
--		return 0;
--	}
--
--	tegra->edp_irq = platform_get_irq(pdev, 1);
--	if (tegra->edp_irq < 0) {
--		dev_dbg(&pdev->dev, "get 'edp_irq' failed.\n");
--		return 0;
--	}
--
--	ret = devm_request_threaded_irq(&pdev->dev,
-+	ret = devm_request_threaded_irq(tegra->dev,
- 					tegra->thermal_irq,
- 					soctherm_thermal_isr,
- 					soctherm_thermal_isr_thread,
- 					IRQF_ONESHOT,
--					dev_name(&pdev->dev),
-+					dev_name(tegra->dev),
- 					tegra);
- 	if (ret < 0) {
--		dev_err(&pdev->dev, "request_irq 'thermal_irq' failed.\n");
-+		dev_err(tegra->dev, "failed to request thermal IRQ: %d\n", ret);
- 		return ret;
- 	}
- 
--	ret = devm_request_threaded_irq(&pdev->dev,
-+	ret = devm_request_threaded_irq(tegra->dev,
- 					tegra->edp_irq,
- 					soctherm_edp_isr,
- 					soctherm_edp_isr_thread,
-@@ -2013,16 +1992,15 @@ static int soctherm_interrupts_init(struct platform_device *pdev,
- 					"soctherm_edp",
- 					tegra);
- 	if (ret < 0) {
--		dev_err(&pdev->dev, "request_irq 'edp_irq' failed.\n");
-+		dev_err(tegra->dev, "failed to request EDP IRQ: %d\n", ret);
- 		return ret;
- 	}
- 
- 	return 0;
- }
- 
--static void soctherm_init(struct platform_device *pdev)
-+static void soctherm_init(struct tegra_soctherm *tegra)
- {
--	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
- 	const struct tegra_tsensor_group **ttgs = tegra->soc->ttgs;
- 	int i;
- 	u32 pdiv, hotspot;
-@@ -2048,7 +2026,7 @@ static void soctherm_init(struct platform_device *pdev)
- 	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
- 
- 	/* Configure hw throttle */
--	tegra_soctherm_throttle(&pdev->dev);
-+	tegra_soctherm_throttle(tegra);
- }
- 
- static const struct of_device_id tegra_soctherm_of_match[] = {
-@@ -2096,9 +2074,9 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 	if (!tegra)
- 		return -ENOMEM;
- 
--	mutex_init(&tegra->thermctl_lock);
- 	dev_set_drvdata(&pdev->dev, tegra);
--
-+	mutex_init(&tegra->thermctl_lock);
-+	tegra->dev = &pdev->dev;
- 	tegra->soc = soc;
- 
- 	tegra->regs = devm_platform_ioremap_resource_byname(pdev, "soctherm-reg");
-@@ -2121,6 +2099,9 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+-			tcd = thermal_of_cooling_device_register(np_stcc,
+-							 (char *)name, tegra,
+-							 &throt_cooling_ops);
+-			if (IS_ERR_OR_NULL(tcd)) {
+-				dev_err(tegra->dev,
+-					"throttle-cfg: %s: failed to register cooling device\n",
+-					name);
+-				continue;
+-			}
+-			stc->cdev = tcd;
+-			stc->init = true;
  		}
  	}
  
-+	tegra->thermal_irq = platform_get_irq(pdev, 0);
-+	tegra->edp_irq = platform_get_irq(pdev, 1);
-+
- 	tegra->reset = devm_reset_control_get(&pdev->dev, "soctherm");
- 	if (IS_ERR(tegra->reset)) {
- 		dev_err(&pdev->dev, "can't get soctherm reset\n");
-@@ -2165,15 +2146,15 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 	if (!tegra->thermctl_tzs)
- 		return -ENOMEM;
+@@ -2148,7 +2096,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
  
--	err = soctherm_clk_enable(pdev, true);
-+	err = soctherm_clk_enable(tegra, true);
- 	if (err)
- 		return err;
+ 	soctherm_thermtrips_parse(tegra);
  
--	soctherm_thermtrips_parse(pdev);
-+	soctherm_thermtrips_parse(tegra);
+-	soctherm_init_hw_throt_cdev(tegra);
++	soctherm_init_hw_throttling(tegra);
  
--	soctherm_init_hw_throt_cdev(pdev);
-+	soctherm_init_hw_throt_cdev(tegra);
+ 	soctherm_init(tegra);
  
--	soctherm_init(pdev);
-+	soctherm_init(tegra);
- 
- 	for (i = 0; i < soc->num_ttgs; ++i) {
- 		struct tegra_thermctl_zone *zone =
-@@ -2184,7 +2165,6 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 		}
- 
- 		zone->reg = tegra->regs + soc->ttgs[i]->sensor_temp_offset;
--		zone->dev = &pdev->dev;
- 		zone->sg = soc->ttgs[i];
- 		zone->ts = tegra;
- 
-@@ -2202,19 +2182,19 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 		tegra->thermctl_tzs[soc->ttgs[i]->id] = z;
- 
- 		/* Configure hw trip points */
--		err = tegra_soctherm_set_hwtrips(&pdev->dev, soc->ttgs[i], z);
-+		err = tegra_soctherm_set_hwtrips(tegra, soc->ttgs[i], z);
- 		if (err)
+@@ -2183,6 +2131,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
  			goto disable_clocks;
  	}
  
--	err = soctherm_interrupts_init(pdev, tegra);
-+	err = soctherm_interrupts_init(tegra);
++	soctherm_enable_hw_throttling(tegra);
+ 	err = soctherm_interrupts_init(tegra);
  
--	soctherm_debug_init(pdev);
-+	soctherm_debug_init(tegra);
- 
- 	return 0;
- 
- disable_clocks:
--	soctherm_clk_enable(pdev, false);
-+	soctherm_clk_enable(tegra, false);
- 
- 	return err;
- }
-@@ -2225,42 +2205,39 @@ static void tegra_soctherm_remove(struct platform_device *pdev)
- 
- 	debugfs_remove_recursive(tegra->debugfs_dir);
- 
--	soctherm_clk_enable(pdev, false);
-+	soctherm_clk_enable(tegra, false);
- }
- 
- static int __maybe_unused soctherm_suspend(struct device *dev)
- {
--	struct platform_device *pdev = to_platform_device(dev);
-+	struct tegra_soctherm *tegra = dev_get_drvdata(dev);
- 
--	soctherm_clk_enable(pdev, false);
-+	soctherm_clk_enable(tegra, false);
- 
- 	return 0;
- }
- 
- static int __maybe_unused soctherm_resume(struct device *dev)
- {
--	struct platform_device *pdev = to_platform_device(dev);
--	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
-+	struct tegra_soctherm *tegra = dev_get_drvdata(dev);
- 	struct tegra_soctherm_soc *soc = tegra->soc;
- 	int err, i;
- 
--	err = soctherm_clk_enable(pdev, true);
-+	err = soctherm_clk_enable(tegra, true);
- 	if (err) {
--		dev_err(&pdev->dev,
--			"Resume failed: enable clocks failed\n");
-+		dev_err(dev, "Resume failed: enable clocks failed\n");
- 		return err;
- 	}
- 
--	soctherm_init(pdev);
-+	soctherm_init(tegra);
- 
- 	for (i = 0; i < soc->num_ttgs; ++i) {
- 		struct thermal_zone_device *tz;
- 
- 		tz = tegra->thermctl_tzs[soc->ttgs[i]->id];
--		err = tegra_soctherm_set_hwtrips(dev, soc->ttgs[i], tz);
-+		err = tegra_soctherm_set_hwtrips(tegra, soc->ttgs[i], tz);
- 		if (err) {
--			dev_err(&pdev->dev,
--				"Resume failed: set hwtrips failed\n");
-+			dev_err(dev, "Resume failed: set hwtrips failed\n");
- 			return err;
+ 	soctherm_debug_init(tegra);
+@@ -2238,6 +2187,8 @@ static int __maybe_unused soctherm_resume(struct device *dev)
  		}
  	}
+ 
++	soctherm_enable_hw_throttling(tegra);
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/thermal/tegra/soctherm.h b/drivers/thermal/tegra/soctherm.h
+index 70501e73d586..894bee5d96c5 100644
+--- a/drivers/thermal/tegra/soctherm.h
++++ b/drivers/thermal/tegra/soctherm.h
+@@ -83,6 +83,7 @@ struct tegra_tsensor_group {
+ 	u16 thermctl_lvl0_offset;
+ 	u32 thermctl_lvl0_up_thresh_mask;
+ 	u32 thermctl_lvl0_dn_thresh_mask;
++	bool can_throttle;
+ };
+ 
+ struct tegra_tsensor_configuration {
+diff --git a/drivers/thermal/tegra/tegra124-soctherm.c b/drivers/thermal/tegra/tegra124-soctherm.c
+index 20ad27f4d1a1..7b11fa8fb533 100644
+--- a/drivers/thermal/tegra/tegra124-soctherm.c
++++ b/drivers/thermal/tegra/tegra124-soctherm.c
+@@ -60,6 +60,7 @@ static const struct tegra_tsensor_group tegra124_tsensor_group_cpu = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_CPU,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA124_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA124_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = true,
+ };
+ 
+ static const struct tegra_tsensor_group tegra124_tsensor_group_gpu = {
+@@ -79,6 +80,7 @@ static const struct tegra_tsensor_group tegra124_tsensor_group_gpu = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_GPU,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA124_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA124_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = true,
+ };
+ 
+ static const struct tegra_tsensor_group tegra124_tsensor_group_pll = {
+@@ -96,6 +98,7 @@ static const struct tegra_tsensor_group tegra124_tsensor_group_pll = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_TSENSE,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA124_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA124_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = false,
+ };
+ 
+ static const struct tegra_tsensor_group tegra124_tsensor_group_mem = {
+@@ -115,6 +118,7 @@ static const struct tegra_tsensor_group tegra124_tsensor_group_mem = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_MEM,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA124_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA124_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = false,
+ };
+ 
+ static const struct tegra_tsensor_group *tegra124_tsensor_groups[] = {
+diff --git a/drivers/thermal/tegra/tegra132-soctherm.c b/drivers/thermal/tegra/tegra132-soctherm.c
+index b76308fdad9e..304561fe9110 100644
+--- a/drivers/thermal/tegra/tegra132-soctherm.c
++++ b/drivers/thermal/tegra/tegra132-soctherm.c
+@@ -60,6 +60,7 @@ static const struct tegra_tsensor_group tegra132_tsensor_group_cpu = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_CPU,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA132_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA132_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = true,
+ };
+ 
+ static const struct tegra_tsensor_group tegra132_tsensor_group_gpu = {
+@@ -79,6 +80,7 @@ static const struct tegra_tsensor_group tegra132_tsensor_group_gpu = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_GPU,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA132_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA132_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = true,
+ };
+ 
+ static const struct tegra_tsensor_group tegra132_tsensor_group_pll = {
+@@ -96,6 +98,7 @@ static const struct tegra_tsensor_group tegra132_tsensor_group_pll = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_TSENSE,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA132_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA132_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = false,
+ };
+ 
+ static const struct tegra_tsensor_group tegra132_tsensor_group_mem = {
+@@ -115,6 +118,7 @@ static const struct tegra_tsensor_group tegra132_tsensor_group_mem = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_MEM,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA132_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA132_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = false,
+ };
+ 
+ static const struct tegra_tsensor_group *tegra132_tsensor_groups[] = {
+diff --git a/drivers/thermal/tegra/tegra210-soctherm.c b/drivers/thermal/tegra/tegra210-soctherm.c
+index d0ff793f18c5..6277a8e12b8a 100644
+--- a/drivers/thermal/tegra/tegra210-soctherm.c
++++ b/drivers/thermal/tegra/tegra210-soctherm.c
+@@ -61,6 +61,7 @@ static const struct tegra_tsensor_group tegra210_tsensor_group_cpu = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_CPU,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA210_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = true,
+ };
+ 
+ static const struct tegra_tsensor_group tegra210_tsensor_group_gpu = {
+@@ -80,6 +81,7 @@ static const struct tegra_tsensor_group tegra210_tsensor_group_gpu = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_GPU,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA210_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = true,
+ };
+ 
+ static const struct tegra_tsensor_group tegra210_tsensor_group_pll = {
+@@ -97,6 +99,7 @@ static const struct tegra_tsensor_group tegra210_tsensor_group_pll = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_TSENSE,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA210_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = false,
+ };
+ 
+ static const struct tegra_tsensor_group tegra210_tsensor_group_mem = {
+@@ -116,6 +119,7 @@ static const struct tegra_tsensor_group tegra210_tsensor_group_mem = {
+ 	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_MEM,
+ 	.thermctl_lvl0_up_thresh_mask = TEGRA210_THERMCTL_LVL0_UP_THRESH_MASK,
+ 	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
++	.can_throttle = false,
+ };
+ 
+ static const struct tegra_tsensor_group *tegra210_tsensor_groups[] = {
 -- 
 2.42.0
 
