@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CE89CDB483
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Oct 2023 17:58:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E089CDB46E
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Oct 2023 17:59:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379687AbjJLR6u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Oct 2023 13:58:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59056 "EHLO
+        id S1441930AbjJLR7A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Oct 2023 13:59:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59108 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379619AbjJLR6t (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2023 13:58:49 -0400
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0276D8;
-        Thu, 12 Oct 2023 10:58:47 -0700 (PDT)
-Received: by mail-ej1-x632.google.com with SMTP id a640c23a62f3a-99de884ad25so206765366b.3;
-        Thu, 12 Oct 2023 10:58:47 -0700 (PDT)
+        with ESMTP id S1379692AbjJLR6w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2023 13:58:52 -0400
+Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 07FCBDD;
+        Thu, 12 Oct 2023 10:58:50 -0700 (PDT)
+Received: by mail-ed1-x52a.google.com with SMTP id 4fb4d7f45d1cf-53dfc28a2afso2194074a12.1;
+        Thu, 12 Oct 2023 10:58:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697133526; x=1697738326; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1697133528; x=1697738328; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=q0oAnve8cYc6KUjHI3njmCc6tg17dGeZJbr4s0kltN4=;
-        b=eCUgyGRjbmBQe+ufO9CcZlZKJsyDZREV7zke4FYsstlJLTrGnKhbhLp8K0eend7eOR
-         8G60IoblsvcKOjAaWKh6wFgLfcsJw5e6FDmsTulUpGQrPmAiq7EFnRxIT+RW987TEU+V
-         u4ZOc2TcpgzX9XHxGSDukZ52Zc9ag91mn42m2mb4Q6X8AiBXUE3DtP72K7m5930plhoh
-         p/t6imtkPZUtbs5FmXibUrs0i2yKpoWkGDp4XA5Z0/LpPdurJnZ/sKst/2jik9YM3FsA
-         pwSAcxTGOHI3CqLcFhnH74UFHRoxU1iF34OUAQ0+Ut6zYwaq6wtfarVtzw1fv62mqG9M
-         G1XA==
+        bh=8w1QvXNCjhCwydWbGL6K5jdkXe4i3JkNhn/cRw8swm4=;
+        b=cd8EERvH6wtA3LHXZkYQCkeN3lQZVJO6i+bWn6+alq09962D6Lf2wkRk/mfoY/Rjrn
+         LgBx5Qib4SM/B+jK5QkaOBLeUarNfmIbMEQroF5SGbsVtOPN1zXExGl02d0UKufWtaf5
+         Fr9LeTdkUgSq35OVZkUtaOHXdmQq6HTcBhOqPCi0SPDY+QsxaJLkv03puVgW2kbi/B3x
+         XEwu6ggUI/HwOps+v0/mDRtmUYa/mjN1xTV64Myx4r3xBbC1ziKNugj3hytA3DupGAi2
+         7hbZYmB92L2K+nJZvCo1SQwFefWIDgvw7VE5uFMBGBxJQH6tVZyB3xQtEk77RD4Ac1lE
+         P43w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697133526; x=1697738326;
+        d=1e100.net; s=20230601; t=1697133528; x=1697738328;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=q0oAnve8cYc6KUjHI3njmCc6tg17dGeZJbr4s0kltN4=;
-        b=j3EIosEyr7hIUCszoyjUYh+ZsPaqL6JO3FAIL9+snwchSpqUdANQqJsFbPardiRqHL
-         6KClHEhvgQbCjh4YAtFAWNNDPjr9AcDDKdCdKnRDRIh4dlv3tV2DdO/o+Str3sPRR00b
-         +yavrIo0IqNXU3BEhlTpfS9VlshLflt2rrYf9Jahg5/B/VEoybg+sWvPWBHJo+VVCU5l
-         JwVO9AvjrKsWE0Yrjn6uRXTMvQQMxrOZ6acYb4W426EyrE0xo8V9A4qmFXx6UcQNK2nI
-         44/1vCogCMJLWtWL82/Hdag3bMBLqY2Kk1R5CjxntJ1OcdWcz9UTSx3mvHYEyTJcPhRe
-         ybvg==
-X-Gm-Message-State: AOJu0YzxjDKAIFF2JCUTtSOhkwZM1ZkaLgL9MMQSa6BkUzHi+tvxUBVC
-        WQ1hzEByXuL3dwQ7LZZOAqU=
-X-Google-Smtp-Source: AGHT+IHUvOSGncrYRjOb3iBZVORaW42pRMEajVW1II2lJOQdf4sSfG5bya02H7M4bbLWVKlGnkSIbA==
-X-Received: by 2002:a17:906:104e:b0:9b2:ba65:db21 with SMTP id j14-20020a170906104e00b009b2ba65db21mr23301796ejj.45.1697133526122;
-        Thu, 12 Oct 2023 10:58:46 -0700 (PDT)
+        bh=8w1QvXNCjhCwydWbGL6K5jdkXe4i3JkNhn/cRw8swm4=;
+        b=sqq+ayWtMIBF2F+7dqTCmKdvlX1tqutVbUqVFcOIEZHF88y5ReeDizKhfWtPElGSvq
+         xFF+mqJUuNKvRguUv/WeH2coMUOmJtsB7+d6RZ01pNfdgjPVYiSKxWW8M2Elx4RCqsna
+         35uOnaNX7f2w5IYQaEYEzz531BWYda44tkgy82Adz3QJxKV0vkIVLtlFeE+Ma0hAqljb
+         BYC9Fwx4oiz8kEvkNtkHpSny9sVliT9KlvueE6z7CIVeRDmRz/vFq0/APINYYVHMu8lH
+         Fkd+nJ6vs5z08Wy3GGYX/v+L867ys56HQI/qTjW5y7WTfRDmvmyehPjk/BqnA1IGB+pS
+         6RxA==
+X-Gm-Message-State: AOJu0YwvAtbseHel2NSnzRp8rIZbE0yph1WNiMxSVe15Fq8cbaV3ATYa
+        BOAvZvX5Mnd0IRGocAcpzSs=
+X-Google-Smtp-Source: AGHT+IENSRl5HdQNxKI72dP6CzFsGJdIGO1t5hauPXbx3MvA5x2RA3yUuEsex+p3PXXTGUJ7hKdUSg==
+X-Received: by 2002:a05:6402:2065:b0:53d:f072:7b0a with SMTP id bd5-20020a056402206500b0053df0727b0amr3279263edb.39.1697133528424;
+        Thu, 12 Oct 2023 10:58:48 -0700 (PDT)
 Received: from localhost (p200300e41f3f4900f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f3f:4900:f22f:74ff:fe1f:3a53])
-        by smtp.gmail.com with ESMTPSA id a24-20020a170906685800b009828e26e519sm11283686ejs.122.2023.10.12.10.58.45
+        by smtp.gmail.com with ESMTPSA id b25-20020aa7df99000000b0053808d83f0fsm10417564edy.9.2023.10.12.10.58.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Oct 2023 10:58:45 -0700 (PDT)
+        Thu, 12 Oct 2023 10:58:48 -0700 (PDT)
 From:   Thierry Reding <thierry.reding@gmail.com>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         "Rafael J . Wysocki" <rafael@kernel.org>,
@@ -59,9 +59,9 @@ To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
 Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
         Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v2 03/13] dt-bindings: thermal: tegra: Add nvidia,thermal-zones property
-Date:   Thu, 12 Oct 2023 19:58:24 +0200
-Message-ID: <20231012175836.3408077-4-thierry.reding@gmail.com>
+Subject: [PATCH v2 05/13] thermal: tegra: Constify SoC-specific data
+Date:   Thu, 12 Oct 2023 19:58:26 +0200
+Message-ID: <20231012175836.3408077-6-thierry.reding@gmail.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231012175836.3408077-1-thierry.reding@gmail.com>
 References: <20231012175836.3408077-1-thierry.reding@gmail.com>
@@ -73,35 +73,58 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Thierry Reding <treding@nvidia.com>
 
-The throttle configurations need to be associated with one or more
-thermal zones before they can be enabled, so introduce a new property,
-called nvidia,thermal-zones, that contains a list of phandles to the
-thermal zones for which a throttle configuration is applicable.
+The SoC-specific parameter structure is read-only data, so consistently
+use const to mark it as such.
 
 Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
-Changes in v2:
-- new patch to hook up throttling with thermal zones
+ drivers/thermal/tegra/soctherm.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
- .../bindings/thermal/nvidia,tegra124-soctherm.yaml           | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.yaml b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.yaml
-index 0eb6277082fe..359344f60a6e 100644
---- a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.yaml
-+++ b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.yaml
-@@ -161,6 +161,11 @@ properties:
-               throttling is engaged after the OC event is deasserted.
-             default: 0
+diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+index f434e141dcdf..11c23ace2c81 100644
+--- a/drivers/thermal/tegra/soctherm.c
++++ b/drivers/thermal/tegra/soctherm.c
+@@ -339,7 +339,7 @@ struct tegra_soctherm {
  
-+          nvidia,thermal-zones:
-+            $ref: /schemas/types.yaml#/definitions/phandle
-+            description: A list of phandles to the thermal zones that this
-+              throttle configuration applies to.
-+
-   # optional
-   nvidia,thermtrips:
-     $ref: /schemas/types.yaml#/definitions/uint32-matrix
+ 	u32 *calib;
+ 	struct thermal_zone_device **thermctl_tzs;
+-	struct tegra_soctherm_soc *soc;
++	const struct tegra_soctherm_soc *soc;
+ 
+ 	struct soctherm_throt_cfg throt_cfgs[THROTTLE_SIZE];
+ 
+@@ -2054,19 +2054,15 @@ MODULE_DEVICE_TABLE(of, tegra_soctherm_of_match);
+ 
+ static int tegra_soctherm_probe(struct platform_device *pdev)
+ {
+-	const struct of_device_id *match;
+ 	struct tegra_soctherm *tegra;
+ 	struct thermal_zone_device *z;
+ 	struct tsensor_shared_calib shared_calib;
+-	struct tegra_soctherm_soc *soc;
++	const struct tegra_soctherm_soc *soc;
+ 	unsigned int i;
+ 	int err;
+ 
+-	match = of_match_node(tegra_soctherm_of_match, pdev->dev.of_node);
+-	if (!match)
+-		return -ENODEV;
++	soc = device_get_match_data(&pdev->dev);
+ 
+-	soc = (struct tegra_soctherm_soc *)match->data;
+ 	if (soc->num_ttgs > TEGRA124_SOCTHERM_SENSOR_NUM)
+ 		return -EINVAL;
+ 
+@@ -2220,7 +2216,7 @@ static int __maybe_unused soctherm_suspend(struct device *dev)
+ static int __maybe_unused soctherm_resume(struct device *dev)
+ {
+ 	struct tegra_soctherm *tegra = dev_get_drvdata(dev);
+-	struct tegra_soctherm_soc *soc = tegra->soc;
++	const struct tegra_soctherm_soc *soc = tegra->soc;
+ 	int err, i;
+ 
+ 	err = soctherm_clk_enable(tegra, true);
 -- 
 2.42.0
 
