@@ -2,24 +2,24 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8023FCDB484
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1492CDB486
 	for <linux-pm@archiver.kernel.org>; Sat, 14 Oct 2023 13:38:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233046AbjJNNim (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 14 Oct 2023 09:38:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33076 "EHLO
+        id S233060AbjJNNin (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 14 Oct 2023 09:38:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33092 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233033AbjJNNik (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Oct 2023 09:38:40 -0400
-Received: from srv01.abscue.de (abscue.de [89.58.28.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06F04C2;
+        with ESMTP id S233092AbjJNNil (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Oct 2023 09:38:41 -0400
+Received: from srv01.abscue.de (abscue.de [IPv6:2a03:4000:63:bf5:4817:8eff:feeb:8ac7])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EDDFCA;
         Sat, 14 Oct 2023 06:38:37 -0700 (PDT)
 Received: from srv01.abscue.de (localhost [127.0.0.1])
-        by spamfilter.srv.local (Postfix) with ESMTP id 3BC0A1C071C;
-        Sat, 14 Oct 2023 15:38:34 +0200 (CEST)
-Received: from fluffy-mammal.fritz.box (dslb-088-078-204-065.088.078.pools.vodafone-ip.de [88.78.204.65])
-        by srv01.abscue.de (Postfix) with ESMTPSA id C5B1D1C071A;
+        by spamfilter.srv.local (Postfix) with ESMTP id 3DCF11C071B;
         Sat, 14 Oct 2023 15:38:33 +0200 (CEST)
+Received: from fluffy-mammal.fritz.box (dslb-088-078-204-065.088.078.pools.vodafone-ip.de [88.78.204.65])
+        by srv01.abscue.de (Postfix) with ESMTPSA id BDDE71C071A;
+        Sat, 14 Oct 2023 15:38:32 +0200 (CEST)
 From:   =?UTF-8?q?Otto=20Pfl=C3=BCger?= <otto.pflueger@abscue.de>
 To:     linux-arm-msm@vger.kernel.org
 Cc:     Andy Gross <agross@kernel.org>,
@@ -31,12 +31,10 @@ Cc:     Andy Gross <agross@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         =?UTF-8?q?Otto=20Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Subject: [PATCH v4 2/3] pmdomain: qcom: rpmpd: Add MSM8917 power domains
-Date:   Sat, 14 Oct 2023 15:38:22 +0200
-Message-Id: <20231014133823.14088-3-otto.pflueger@abscue.de>
+Subject: [PATCH v4 0/3] pmdomain: qcom: rpmpd: Add MSM8917 and similar SoCs
+Date:   Sat, 14 Oct 2023 15:38:20 +0200
+Message-Id: <20231014133823.14088-1-otto.pflueger@abscue.de>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20231014133823.14088-1-otto.pflueger@abscue.de>
-References: <20231014133823.14088-1-otto.pflueger@abscue.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -44,72 +42,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-MSM8917 uses the SMPA2 and LDOA3 regulators provided by the PM8937 PMIC
-for the VDDCX and VDDMX power domains in voltage level mode,
-respectively. These definitions should also work on MSM8937.
+Add RPM power domain definitions for the Qualcomm MSM8917, MSM8937 and
+QM215 SoCs. These SoCs all have the same power domains (VDDCX and VDDMX
+in voltage level mode), but different regulators are needed for QM215
+because it is used with a PM8916 PMIC instead of a PM8937 PMIC.
 
-Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
 ---
- drivers/pmdomain/qcom/rpmpd.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+Changes in v4:
+- Rebase on latest next as of 2023-10-14 with new SM7150 compatible
+- Add missing Reviewed-by (if there were no changes to rebase on, I
+  would have simply resent the patch)
+Changes in v3:
+- Sort compatibles in device tree binding documentation (suggested by
+  Krzysztof)
+- Rebase on latest next with genpd subsystem renamed to pmdomain
+Changes in v2:
+- Fix typo in patch description: VDDMD -> VDDMX
+- Split MSM8917 and QM215 changes (suggested by Konrad)
+- Remove redundant qcom,msm8937-rpmpd entry from rpmpd_match_table
+  and use a fallback compatible instead (suggested by Konrad)
 
-diff --git a/drivers/pmdomain/qcom/rpmpd.c b/drivers/pmdomain/qcom/rpmpd.c
-index 3135dd1dafe0..2980ebd6ed8c 100644
---- a/drivers/pmdomain/qcom/rpmpd.c
-+++ b/drivers/pmdomain/qcom/rpmpd.c
-@@ -257,6 +257,24 @@ static struct rpmpd mx_l3a_corner_ao = {
- 	.key = KEY_CORNER,
- };
- 
-+static struct rpmpd mx_l3a_lvl_ao;
-+static struct rpmpd mx_l3a_lvl = {
-+	.pd = { .name = "mx", },
-+	.peer = &mx_l3a_lvl_ao,
-+	.res_type = RPMPD_LDOA,
-+	.res_id = 3,
-+	.key = KEY_LEVEL,
-+};
-+
-+static struct rpmpd mx_l3a_lvl_ao = {
-+	.pd = { .name = "mx_ao", },
-+	.peer = &mx_l3a_lvl,
-+	.active_only = true,
-+	.res_type = RPMPD_LDOA,
-+	.res_id = 3,
-+	.key = KEY_LEVEL,
-+};
-+
- static struct rpmpd mx_l12a_lvl_ao;
- static struct rpmpd mx_l12a_lvl = {
- 	.pd = { .name = "mx", },
-@@ -572,6 +590,20 @@ static const struct rpmpd_desc msm8916_desc = {
- 	.max_state = MAX_CORNER_RPMPD_STATE,
- };
- 
-+static struct rpmpd *msm8917_rpmpds[] = {
-+	[MSM8917_VDDCX] =	&cx_s2a_lvl,
-+	[MSM8917_VDDCX_AO] =	&cx_s2a_lvl_ao,
-+	[MSM8917_VDDCX_VFL] =	&cx_s2a_vfl,
-+	[MSM8917_VDDMX] =	&mx_l3a_lvl,
-+	[MSM8917_VDDMX_AO] =	&mx_l3a_lvl_ao,
-+};
-+
-+static const struct rpmpd_desc msm8917_desc = {
-+	.rpmpds = msm8917_rpmpds,
-+	.num_pds = ARRAY_SIZE(msm8917_rpmpds),
-+	.max_state = RPM_SMD_LEVEL_TURBO,
-+};
-+
- static struct rpmpd *msm8953_rpmpds[] = {
- 	[MSM8953_VDDMD] =	&md_s1a_lvl,
- 	[MSM8953_VDDMD_AO] =	&md_s1a_lvl_ao,
-@@ -764,6 +796,7 @@ static const struct of_device_id rpmpd_match_table[] = {
- 	{ .compatible = "qcom,msm8226-rpmpd", .data = &msm8226_desc },
- 	{ .compatible = "qcom,msm8909-rpmpd", .data = &msm8916_desc },
- 	{ .compatible = "qcom,msm8916-rpmpd", .data = &msm8916_desc },
-+	{ .compatible = "qcom,msm8917-rpmpd", .data = &msm8917_desc },
- 	{ .compatible = "qcom,msm8939-rpmpd", .data = &msm8939_desc },
- 	{ .compatible = "qcom,msm8953-rpmpd", .data = &msm8953_desc },
- 	{ .compatible = "qcom,msm8976-rpmpd", .data = &msm8976_desc },
+Otto Pflüger (3):
+  dt-bindings: power: rpmpd: Add MSM8917, MSM8937 and QM215
+  pmdomain: qcom: rpmpd: Add MSM8917 power domains
+  pmdomain: qcom: rpmpd: Add QM215 power domains
+
+ .../devicetree/bindings/power/qcom,rpmpd.yaml | 81 +++++++++--------
+ drivers/pmdomain/qcom/rpmpd.c                 | 91 +++++++++++++++++++
+ include/dt-bindings/power/qcom-rpmpd.h        | 21 +++++
+ 3 files changed, 156 insertions(+), 37 deletions(-)
+
+
+base-commit: e3b18f7200f45d66f7141136c25554ac1e82009b
 -- 
 2.39.2
