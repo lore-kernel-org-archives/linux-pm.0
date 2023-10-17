@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C94C0C46CA1
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Oct 2023 19:02:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DC2FCDB484
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Oct 2023 19:02:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344010AbjJQTCV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1344021AbjJQTCV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 17 Oct 2023 15:02:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51736 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51724 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234963AbjJQTCT (ORCPT
+        with ESMTP id S234982AbjJQTCT (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2023 15:02:19 -0400
 Received: from emag.lindev.ch (unknown [81.221.122.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CE00BF1;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CDECEF0;
         Tue, 17 Oct 2023 12:02:16 -0700 (PDT)
 Received: from ryzen9.fritz.box (unknown [81.221.122.240])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: bero@lindev.ch)
-        by emag.lindev.ch (Postfix) with ESMTPSA id 3FAE7200352;
-        Tue, 17 Oct 2023 20:55:40 +0200 (CEST)
+        by emag.lindev.ch (Postfix) with ESMTPSA id 39CFF20046A;
+        Tue, 17 Oct 2023 20:55:41 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lindev.ch; s=default;
-        t=1697568967; bh=Ja5GDjPjzlabYnV2JkRWGvSkZafw0uMJZhY2eX7wBEU=;
-        h=From:To:Cc:Subject:Date;
-        b=bwUV13uDuoGrWHkrXNS+oQ6IUy0EvbssEqXMay7fLEbO0f0rmiYwhSlggHKAPP132
-         JdZPX6ff2hnYGAD+F6RqTAqz+v73VNYA71Lo1I3k3Vz1F2FKsayEqVDJFXM6vtL1Ls
-         eZv6ggVOs3t+M2vhPO/bq2Hdpqkl0kmtQuZ/zS7Y=
+        t=1697568968; bh=LuquMC1zO/eWMES9gHlWrV4+uC7g9zZf8IQJ+6DQiJI=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References;
+        b=jckV5UtiZyYH6rKDhV2im+XXvBmbP6x2I/dvzT7CWrcyViHFewMnEycR14UbkbGgN
+         +EhkNTPYWxpLXyIRc9ewFgXUioo3MI50fNZ6oLRogHUpeThlSWaFDWrRYLuumcxFRO
+         SQuC35deey8dOrbR3qoN6oCYL1WUgUcNMKVCkn0I=
 From:   =?UTF-8?q?Bernhard=20Rosenkr=C3=A4nzer?= <bero@lindev.ch>
 To:     daniel.lezcano@linaro.org, angelogioacchino.delregno@collabora.com,
         rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
@@ -39,10 +39,12 @@ Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         wenst@chromium.org, ames.lo@mediatek.com, rex-bc.chen@mediatek.com,
         nfraprado@collabora.com, abailon@baylibre.com,
         amergnat@baylibre.com, khilman@baylibre.com
-Subject: [PATCH v5 0/5] Add LVTS support for mt8192
-Date:   Tue, 17 Oct 2023 20:55:50 +0200
-Message-ID: <20231017185555.142062-1-bero@lindev.ch>
+Subject: [PATCH v5 3/5] thermal/drivers/mediatek/lvts_thermal: Add mt8192 support
+Date:   Tue, 17 Oct 2023 20:55:53 +0200
+Message-ID: <20231017185555.142062-4-bero@lindev.ch>
 X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231017185555.142062-1-bero@lindev.ch>
+References: <20231017185555.142062-1-bero@lindev.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -50,69 +52,149 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Bernhard Rosenkränzer <bero@baylibre.com>
+From: Balsam CHIHI <bchihi@baylibre.com>
 
-Add full LVTS support (MCU thermal domain + AP thermal domain) to MediaTek MT8192 SoC.
-Also, add Suspend and Resume support to LVTS Driver (all SoCs),
-and update the documentation that describes the Calibration Data Offsets.
+Add LVTS Driver support for MT8192.
 
-v5 changes are a lot smaller than originally assumed -- commit
-185673ca71d3f7e9c7d62ee5084348e084352e56 fixed the issue I
-was originally planning to work around in this patchset,
-so what remains for v5 is noirq and cosmetics.
+Co-developed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
+Signed-off-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
+Signed-off-by: Balsam CHIHI <bchihi@baylibre.com>
+Reviewed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
+[bero@baylibre.com: cosmetic changes, rebase]
+Signed-off-by: Bernhard Rosenkränzer <bero@baylibre.com>
+Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+Reviewed-by: Alexandre Mergnat <amergnat@baylibre.com>
+---
+ drivers/thermal/mediatek/lvts_thermal.c | 95 +++++++++++++++++++++++++
+ 1 file changed, 95 insertions(+)
 
-Changelog:
-   v5 :
-        - Suspend/Resume in noirq stage
-	- Reorder chipset specific functions
-        - Rebased :
-            base-commit: 4d5ab2376ec576af173e5eac3887ed0b51bd8566
-
-   v4 :
-        - Shrink the lvts_ap thermal sensor I/O range to 0xc00 to make
-          room for SVS support, pointed out by
-          AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-
-    v3 :
-        - Rebased :
-            base-commit: 6a3d37b4d885129561e1cef361216f00472f7d2e
-        - Fix issues in v2 pointed out by Nícolas F. R. A. Prado <nfraprado@collabora.com>:
-          Use filtered mode to make sure threshold interrupts are triggered,
-          protocol documentation, cosmetics
-        - I (bero@baylibre.com) will be taking care of this patchset
-          from now on, since Balsam has left BayLibre. Thanks for
-          getting it almost ready, Balsam!
-
-    v2 :
-        - Based on top of thermal/linux-next :
-            base-commit: 7ac82227ee046f8234471de4c12a40b8c2d3ddcc
-        - Squash "add thermal zones and thermal nodes" and
-            "add temperature mitigation threshold" commits together to form
-            "arm64: dts: mediatek: mt8192: Add thermal nodes and thermal zones" commit.
-        - Add Suspend and Resume support to LVTS Driver.
-        - Update Calibration Data documentation.
-        - Fix calibration data offsets for mt8192
-            (Thanks to "Chen-Yu Tsai" and "Nícolas F. R. A. Prado").
-        https://lore.kernel.org/all/20230425133052.199767-1-bchihi@baylibre.com/
-        Tested-by: Chen-Yu Tsai <wenst@chromium.org>
-
-    v1 :
-        - The initial series "Add LVTS support for mt8192" :
-            "https://lore.kernel.org/all/20230307163413.143334-1-bchihi@baylibre.com/".
-
-Balsam CHIHI (5):
-  dt-bindings: thermal: mediatek: Add LVTS thermal controller definition
-    for mt8192
-  thermal/drivers/mediatek/lvts_thermal: Add suspend and resume
-  thermal/drivers/mediatek/lvts_thermal: Add mt8192 support
-  arm64: dts: mediatek: mt8192: Add thermal nodes and thermal zones
-  thermal/drivers/mediatek/lvts_thermal: Update calibration data
-    documentation
-
- arch/arm64/boot/dts/mediatek/mt8192.dtsi      | 454 ++++++++++++++++++
- drivers/thermal/mediatek/lvts_thermal.c       | 163 ++++++-
- .../thermal/mediatek,lvts-thermal.h           |  19 +
- 3 files changed, 634 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+index c5a03bdf63e9d..487401424951d 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -89,6 +89,7 @@
+ #define LVTS_MSR_READ_TIMEOUT_US	400
+ #define LVTS_MSR_READ_WAIT_US		(LVTS_MSR_READ_TIMEOUT_US / 2)
+ 
++#define LVTS_HW_SHUTDOWN_MT8192		105000
+ #define LVTS_HW_SHUTDOWN_MT8195		105000
+ 
+ #define LVTS_MINIMUM_THRESHOLD		20000
+@@ -1286,6 +1287,88 @@ static int lvts_resume(struct device *dev)
+ 	return 0;
+ }
+ 
++static const struct lvts_ctrl_data mt8192_lvts_mcu_data_ctrl[] = {
++	{
++		.cal_offset = { 0x04, 0x08 },
++		.lvts_sensor = {
++			{ .dt_id = MT8192_MCU_BIG_CPU0 },
++			{ .dt_id = MT8192_MCU_BIG_CPU1 }
++		},
++		.num_lvts_sensor = 2,
++		.offset = 0x0,
++		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT8192,
++		.mode = LVTS_MSR_FILTERED_MODE,
++	},
++	{
++		.cal_offset = { 0x0c, 0x10 },
++		.lvts_sensor = {
++			{ .dt_id = MT8192_MCU_BIG_CPU2 },
++			{ .dt_id = MT8192_MCU_BIG_CPU3 }
++		},
++		.num_lvts_sensor = 2,
++		.offset = 0x100,
++		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT8192,
++		.mode = LVTS_MSR_FILTERED_MODE,
++	},
++	{
++		.cal_offset = { 0x14, 0x18, 0x1c, 0x20 },
++		.lvts_sensor = {
++			{ .dt_id = MT8192_MCU_LITTLE_CPU0 },
++			{ .dt_id = MT8192_MCU_LITTLE_CPU1 },
++			{ .dt_id = MT8192_MCU_LITTLE_CPU2 },
++			{ .dt_id = MT8192_MCU_LITTLE_CPU3 }
++		},
++		.num_lvts_sensor = 4,
++		.offset = 0x200,
++		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT8192,
++		.mode = LVTS_MSR_FILTERED_MODE,
++	}
++};
++
++static const struct lvts_ctrl_data mt8192_lvts_ap_data_ctrl[] = {
++		{
++		.cal_offset = { 0x24, 0x28 },
++		.lvts_sensor = {
++			{ .dt_id = MT8192_AP_VPU0 },
++			{ .dt_id = MT8192_AP_VPU1 }
++		},
++		.num_lvts_sensor = 2,
++		.offset = 0x0,
++		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT8192,
++	},
++	{
++		.cal_offset = { 0x2c, 0x30 },
++		.lvts_sensor = {
++			{ .dt_id = MT8192_AP_GPU0 },
++			{ .dt_id = MT8192_AP_GPU1 }
++		},
++		.num_lvts_sensor = 2,
++		.offset = 0x100,
++		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT8192,
++	},
++	{
++		.cal_offset = { 0x34, 0x38 },
++		.lvts_sensor = {
++			{ .dt_id = MT8192_AP_INFRA },
++			{ .dt_id = MT8192_AP_CAM },
++		},
++		.num_lvts_sensor = 2,
++		.offset = 0x200,
++		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT8192,
++	},
++	{
++		.cal_offset = { 0x3c, 0x40, 0x44 },
++		.lvts_sensor = {
++			{ .dt_id = MT8192_AP_MD0 },
++			{ .dt_id = MT8192_AP_MD1 },
++			{ .dt_id = MT8192_AP_MD2 }
++		},
++		.num_lvts_sensor = 3,
++		.offset = 0x300,
++		.hw_tshut_temp = LVTS_HW_SHUTDOWN_MT8192,
++	}
++};
++
+ static const struct lvts_ctrl_data mt8195_lvts_mcu_data_ctrl[] = {
+ 	{
+ 		.cal_offset = { 0x04, 0x07 },
+@@ -1365,6 +1448,16 @@ static const struct lvts_ctrl_data mt8195_lvts_ap_data_ctrl[] = {
+ 	}
+ };
+ 
++static const struct lvts_data mt8192_lvts_mcu_data = {
++	.lvts_ctrl	= mt8192_lvts_mcu_data_ctrl,
++	.num_lvts_ctrl	= ARRAY_SIZE(mt8192_lvts_mcu_data_ctrl),
++};
++
++static const struct lvts_data mt8192_lvts_ap_data = {
++	.lvts_ctrl	= mt8192_lvts_ap_data_ctrl,
++	.num_lvts_ctrl	= ARRAY_SIZE(mt8192_lvts_ap_data_ctrl),
++};
++
+ static const struct lvts_data mt8195_lvts_mcu_data = {
+ 	.lvts_ctrl	= mt8195_lvts_mcu_data_ctrl,
+ 	.num_lvts_ctrl	= ARRAY_SIZE(mt8195_lvts_mcu_data_ctrl),
+@@ -1376,6 +1469,8 @@ static const struct lvts_data mt8195_lvts_ap_data = {
+ };
+ 
+ static const struct of_device_id lvts_of_match[] = {
++	{ .compatible = "mediatek,mt8192-lvts-mcu", .data = &mt8192_lvts_mcu_data },
++	{ .compatible = "mediatek,mt8192-lvts-ap", .data = &mt8192_lvts_ap_data },
+ 	{ .compatible = "mediatek,mt8195-lvts-mcu", .data = &mt8195_lvts_mcu_data },
+ 	{ .compatible = "mediatek,mt8195-lvts-ap", .data = &mt8195_lvts_ap_data },
+ 	{},
 -- 
 2.42.0
+
