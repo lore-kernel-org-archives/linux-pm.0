@@ -2,32 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45C79CDB483
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C94C0C46CA1
 	for <linux-pm@archiver.kernel.org>; Tue, 17 Oct 2023 19:02:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344007AbjJQTCU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 Oct 2023 15:02:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51700 "EHLO
+        id S1344010AbjJQTCV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 Oct 2023 15:02:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51736 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234968AbjJQTCT (ORCPT
+        with ESMTP id S234963AbjJQTCT (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2023 15:02:19 -0400
-X-Greylist: delayed 367 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 17 Oct 2023 12:02:16 PDT
-Received: from emag.lindev.ch (unknown [IPv6:2a01:2a8:8f03:b001:97bb:be5f:f990:97fe])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A540D90;
+Received: from emag.lindev.ch (unknown [81.221.122.240])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CE00BF1;
         Tue, 17 Oct 2023 12:02:16 -0700 (PDT)
 Received: from ryzen9.fritz.box (unknown [81.221.122.240])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: bero@lindev.ch)
-        by emag.lindev.ch (Postfix) with ESMTPSA id 1125A200469;
-        Tue, 17 Oct 2023 20:55:41 +0200 (CEST)
+        by emag.lindev.ch (Postfix) with ESMTPSA id 3FAE7200352;
+        Tue, 17 Oct 2023 20:55:40 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lindev.ch; s=default;
-        t=1697568968; bh=sGV1KaGdNbJasxMe48TsIwJCZ4Q8G01C6MkFdMZptyA=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=WMaC6jPPX+FM6LKRrYsBCPHxJmD5ULASta3hAVLm/RXCM9mZVPWXGzd89m5mmJfRh
-         vhuPW8gvjCp1BtaTYRonLfp0jFkia8JmqyhxKhnYZlktNvr67vpSi0DTAzdaMP8MfJ
-         PFkIhNcE3l+DAVJz+S4V3MtnJJe3R8380cVt9S6k=
+        t=1697568967; bh=Ja5GDjPjzlabYnV2JkRWGvSkZafw0uMJZhY2eX7wBEU=;
+        h=From:To:Cc:Subject:Date;
+        b=bwUV13uDuoGrWHkrXNS+oQ6IUy0EvbssEqXMay7fLEbO0f0rmiYwhSlggHKAPP132
+         JdZPX6ff2hnYGAD+F6RqTAqz+v73VNYA71Lo1I3k3Vz1F2FKsayEqVDJFXM6vtL1Ls
+         eZv6ggVOs3t+M2vhPO/bq2Hdpqkl0kmtQuZ/zS7Y=
 From:   =?UTF-8?q?Bernhard=20Rosenkr=C3=A4nzer?= <bero@lindev.ch>
 To:     daniel.lezcano@linaro.org, angelogioacchino.delregno@collabora.com,
         rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
@@ -40,12 +39,10 @@ Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         wenst@chromium.org, ames.lo@mediatek.com, rex-bc.chen@mediatek.com,
         nfraprado@collabora.com, abailon@baylibre.com,
         amergnat@baylibre.com, khilman@baylibre.com
-Subject: [PATCH v5 2/5] thermal/drivers/mediatek/lvts_thermal: Add suspend and resume
-Date:   Tue, 17 Oct 2023 20:55:52 +0200
-Message-ID: <20231017185555.142062-3-bero@lindev.ch>
+Subject: [PATCH v5 0/5] Add LVTS support for mt8192
+Date:   Tue, 17 Oct 2023 20:55:50 +0200
+Message-ID: <20231017185555.142062-1-bero@lindev.ch>
 X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231017185555.142062-1-bero@lindev.ch>
-References: <20231017185555.142062-1-bero@lindev.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -53,81 +50,69 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Balsam CHIHI <bchihi@baylibre.com>
+From: Bernhard Rosenkränzer <bero@baylibre.com>
 
-Add suspend and resume support to LVTS driver.
+Add full LVTS support (MCU thermal domain + AP thermal domain) to MediaTek MT8192 SoC.
+Also, add Suspend and Resume support to LVTS Driver (all SoCs),
+and update the documentation that describes the Calibration Data Offsets.
 
-Signed-off-by: Balsam CHIHI <bchihi@baylibre.com>
-[bero@baylibre.com: suspend/resume in noirq phase]
-Co-developed-by: Bernhard Rosenkränzer <bero@baylibre.com>
-Signed-off-by: Bernhard Rosenkränzer <bero@baylibre.com>
-Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
-Reviewed-by: Alexandre Mergnat <amergnat@baylibre.com>
----
- drivers/thermal/mediatek/lvts_thermal.c | 37 +++++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+v5 changes are a lot smaller than originally assumed -- commit
+185673ca71d3f7e9c7d62ee5084348e084352e56 fixed the issue I
+was originally planning to work around in this patchset,
+so what remains for v5 is noirq and cosmetics.
 
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index 877a0e5ac3fd3..c5a03bdf63e9d 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -1254,6 +1254,38 @@ static void lvts_remove(struct platform_device *pdev)
- 	lvts_debugfs_exit(lvts_td);
- }
- 
-+static int lvts_suspend(struct device *dev)
-+{
-+	struct lvts_domain *lvts_td;
-+	int i;
-+
-+	lvts_td = dev_get_drvdata(dev);
-+
-+	for (i = 0; i < lvts_td->num_lvts_ctrl; i++)
-+		lvts_ctrl_set_enable(&lvts_td->lvts_ctrl[i], false);
-+
-+	clk_disable_unprepare(lvts_td->clk);
-+
-+	return 0;
-+}
-+
-+static int lvts_resume(struct device *dev)
-+{
-+	struct lvts_domain *lvts_td;
-+	int i, ret;
-+
-+	lvts_td = dev_get_drvdata(dev);
-+
-+	ret = clk_prepare_enable(lvts_td->clk);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < lvts_td->num_lvts_ctrl; i++)
-+		lvts_ctrl_set_enable(&lvts_td->lvts_ctrl[i], true);
-+
-+	return 0;
-+}
-+
- static const struct lvts_ctrl_data mt8195_lvts_mcu_data_ctrl[] = {
- 	{
- 		.cal_offset = { 0x04, 0x07 },
-@@ -1350,12 +1382,17 @@ static const struct of_device_id lvts_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, lvts_of_match);
- 
-+static const struct dev_pm_ops lvts_pm_ops = {
-+	NOIRQ_SYSTEM_SLEEP_PM_OPS(lvts_suspend, lvts_resume)
-+};
-+
- static struct platform_driver lvts_driver = {
- 	.probe = lvts_probe,
- 	.remove_new = lvts_remove,
- 	.driver = {
- 		.name = "mtk-lvts-thermal",
- 		.of_match_table = lvts_of_match,
-+		.pm = &lvts_pm_ops,
- 	},
- };
- module_platform_driver(lvts_driver);
+Changelog:
+   v5 :
+        - Suspend/Resume in noirq stage
+	- Reorder chipset specific functions
+        - Rebased :
+            base-commit: 4d5ab2376ec576af173e5eac3887ed0b51bd8566
+
+   v4 :
+        - Shrink the lvts_ap thermal sensor I/O range to 0xc00 to make
+          room for SVS support, pointed out by
+          AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+
+    v3 :
+        - Rebased :
+            base-commit: 6a3d37b4d885129561e1cef361216f00472f7d2e
+        - Fix issues in v2 pointed out by Nícolas F. R. A. Prado <nfraprado@collabora.com>:
+          Use filtered mode to make sure threshold interrupts are triggered,
+          protocol documentation, cosmetics
+        - I (bero@baylibre.com) will be taking care of this patchset
+          from now on, since Balsam has left BayLibre. Thanks for
+          getting it almost ready, Balsam!
+
+    v2 :
+        - Based on top of thermal/linux-next :
+            base-commit: 7ac82227ee046f8234471de4c12a40b8c2d3ddcc
+        - Squash "add thermal zones and thermal nodes" and
+            "add temperature mitigation threshold" commits together to form
+            "arm64: dts: mediatek: mt8192: Add thermal nodes and thermal zones" commit.
+        - Add Suspend and Resume support to LVTS Driver.
+        - Update Calibration Data documentation.
+        - Fix calibration data offsets for mt8192
+            (Thanks to "Chen-Yu Tsai" and "Nícolas F. R. A. Prado").
+        https://lore.kernel.org/all/20230425133052.199767-1-bchihi@baylibre.com/
+        Tested-by: Chen-Yu Tsai <wenst@chromium.org>
+
+    v1 :
+        - The initial series "Add LVTS support for mt8192" :
+            "https://lore.kernel.org/all/20230307163413.143334-1-bchihi@baylibre.com/".
+
+Balsam CHIHI (5):
+  dt-bindings: thermal: mediatek: Add LVTS thermal controller definition
+    for mt8192
+  thermal/drivers/mediatek/lvts_thermal: Add suspend and resume
+  thermal/drivers/mediatek/lvts_thermal: Add mt8192 support
+  arm64: dts: mediatek: mt8192: Add thermal nodes and thermal zones
+  thermal/drivers/mediatek/lvts_thermal: Update calibration data
+    documentation
+
+ arch/arm64/boot/dts/mediatek/mt8192.dtsi      | 454 ++++++++++++++++++
+ drivers/thermal/mediatek/lvts_thermal.c       | 163 ++++++-
+ .../thermal/mediatek,lvts-thermal.h           |  19 +
+ 3 files changed, 634 insertions(+), 2 deletions(-)
+
 -- 
 2.42.0
-
