@@ -2,151 +2,120 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EFB9CDB482
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Oct 2023 17:54:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D46FCDB474
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Oct 2023 19:02:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233549AbjJQRya (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 Oct 2023 13:54:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38822 "EHLO
+        id S234988AbjJQTCU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 Oct 2023 15:02:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51716 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232198AbjJQRya (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2023 13:54:30 -0400
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E13B93
-        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 10:54:28 -0700 (PDT)
-Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-405417465aaso56586515e9.1
-        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 10:54:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1697565266; x=1698170066; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=MUUCkiu5vUAHLKvjzzzRJs8u1+C022EMiTeERsZUBSE=;
-        b=zYPdVUDaC2JicSkU4IMs9d9NBqFPCry6g4Ba4t6ARWvAGQoOVBygefGGeBhfDzH/Cn
-         1xHfyPbeQtmpAM0aj8eipbnl692o2eLCi/o1Nvrv6ENCr2u4MR7BsoKdDy8PfRTQZFMn
-         YVXd/Ni9hrdNlVwk+q/5ciZprB2KmKfZgi0q8rEuB7H3oMTCqo6Rt3Grm1W4+2nWm0Oy
-         ZuKva5akUaHLAkgQHNiZQVGhEv0U5iPdNsVxagXXNzqEIQp52FAhEjBmaC9fDpms5QJL
-         9UrNHxpHAc7cJuAZOjgKO6I63XU6M26RuOZOGuSb6gLd2MaXbuoI0wNBOqEDYO0IRG2G
-         RUXg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697565266; x=1698170066;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=MUUCkiu5vUAHLKvjzzzRJs8u1+C022EMiTeERsZUBSE=;
-        b=QpI2Deqp4db6nanJEHIs/DuL5SF+JsfPJuR0PWIZ9gaYPrmxXAczB1u+MGzgVOHt5S
-         22+cxKe8mjMp77WnwjV27g1NyBTXlwvGYaQkWqL4V9P+MsbVyCR8sKfJgEtwBobwEAQk
-         hALAWCaus1ONSINVLT7ZNu9RtDbqBPRrntp4z7ODkBscFNpItiLxSevu5DtFZYRIqtTE
-         slOFtzYikNMamajzd0kXJ3xouzm4fo+01i9YJsL78VwUwFP4WaudaqSvveYp8iG8N0iQ
-         e624kx86XlQ7G0U28M0q2vkXMD//TrD3H/5GbIx23H7Oo3GGpt6B+EUer2YoM7XaYWnA
-         Su2g==
-X-Gm-Message-State: AOJu0Yzo79EndquY9ZHGhJKj/V4b17SZziUxASuViNZ4uvoh2VUAhzlC
-        tdIDSO5Q61+ei0gFz8Y+bTtL4w==
-X-Google-Smtp-Source: AGHT+IG505kDYsm+03qRLM/qO/s22ze8aCQIk76ph//q3WRXO4DCwOktsuci2V9jr+fr4BJ+ziIiuw==
-X-Received: by 2002:a05:600c:3114:b0:407:7e5f:ffb9 with SMTP id g20-20020a05600c311400b004077e5fffb9mr2450207wmo.9.1697565266528;
-        Tue, 17 Oct 2023 10:54:26 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:c49e:e1a5:3210:b8c0? ([2a05:6e02:1041:c10:c49e:e1a5:3210:b8c0])
-        by smtp.googlemail.com with ESMTPSA id v18-20020a05600c15d200b00406447b798bsm2221328wmf.37.2023.10.17.10.54.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 17 Oct 2023 10:54:26 -0700 (PDT)
-Message-ID: <2d5190ed-5c95-4278-8e70-211a71de821b@linaro.org>
-Date:   Tue, 17 Oct 2023 19:54:25 +0200
+        with ESMTP id S232228AbjJQTCT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2023 15:02:19 -0400
+X-Greylist: delayed 368 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 17 Oct 2023 12:02:16 PDT
+Received: from emag.lindev.ch (unknown [81.221.122.240])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A549BC6;
+        Tue, 17 Oct 2023 12:02:16 -0700 (PDT)
+Received: from ryzen9.fritz.box (unknown [81.221.122.240])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: bero@lindev.ch)
+        by emag.lindev.ch (Postfix) with ESMTPSA id E2D8120046E;
+        Tue, 17 Oct 2023 20:55:41 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lindev.ch; s=default;
+        t=1697568969; bh=gwey47VpMjc/YXHiRhLoI1/IArDcNkx8f4YK5Mbj5Qo=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References;
+        b=G07QyuGHICoGRRAEvMHlAG7B4565tNqjcEeelAyNntzafwJT0q1TIXXhGP9tIeQG0
+         6SjHmys4mNasFBUGafjFT4ot9Bdp/xRKbMksx7iYiYhFVmCg6LlkyWSXi2NFDtPNik
+         e0Eixk2mi1KZlcacLJpQF/+kai43IiF5eYAFLm1Y=
+From:   =?UTF-8?q?Bernhard=20Rosenkr=C3=A4nzer?= <bero@lindev.ch>
+To:     daniel.lezcano@linaro.org, angelogioacchino.delregno@collabora.com,
+        rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
+        matthias.bgg@gmail.com, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, dunlap@infradead.org,
+        e.xingchen@zte.com.cn, p.zabel@pengutronix.de
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        wenst@chromium.org, ames.lo@mediatek.com, rex-bc.chen@mediatek.com,
+        nfraprado@collabora.com, abailon@baylibre.com,
+        amergnat@baylibre.com, khilman@baylibre.com
+Subject: [PATCH v5 5/5] thermal/drivers/mediatek/lvts_thermal: Update calibration data documentation
+Date:   Tue, 17 Oct 2023 20:55:55 +0200
+Message-ID: <20231017185555.142062-6-bero@lindev.ch>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231017185555.142062-1-bero@lindev.ch>
+References: <20231017185555.142062-1-bero@lindev.ch>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH][next] thermal: lvts: make some read-only arrays static
- const
-Content-Language: en-US
-To:     Colin Ian King <colin.i.king@gmail.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20231017171655.177096-1-colin.i.king@gmail.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <20231017171655.177096-1-colin.i.king@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Balsam CHIHI <bchihi@baylibre.com>
 
-Hi Colin,
+Update LVTS calibration data documentation for mt8192 and mt8195.
 
-On 17/10/2023 19:16, Colin Ian King wrote:
-> Don't populate the read-only arrays on the stack, instead make them
-> static const. 
+Signed-off-by: Balsam CHIHI <bchihi@baylibre.com>
+Reviewed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
+[bero@baylibre.com: Fix issues pointed out by Nícolas F. R. A. Prado <nfraprado@collabora.com>]
+Signed-off-by: Bernhard Rosenkränzer <bero@baylibre.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Reviewed-by: Alexandre Mergnat <amergnat@baylibre.com>
+---
+ drivers/thermal/mediatek/lvts_thermal.c | 31 +++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
 
-Why ?
-
-> Make lvts_write_config parameters cmds and nr_cmds
-> const too.
-> 
-> Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
-> ---
->   drivers/thermal/mediatek/lvts_thermal.c | 11 ++++++-----
->   1 file changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-> index 877a0e5ac3fd..b20e69cb466f 100644
-> --- a/drivers/thermal/mediatek/lvts_thermal.c
-> +++ b/drivers/thermal/mediatek/lvts_thermal.c
-> @@ -308,7 +308,7 @@ static int lvts_get_temp(struct thermal_zone_device *tz, int *temp)
->   
->   static void lvts_update_irq_mask(struct lvts_ctrl *lvts_ctrl)
->   {
-> -	u32 masks[] = {
-> +	static const u32 masks[] = {
->   		LVTS_MONINT_OFFSET_SENSOR0,
->   		LVTS_MONINT_OFFSET_SENSOR1,
->   		LVTS_MONINT_OFFSET_SENSOR2,
-> @@ -400,7 +400,7 @@ static irqreturn_t lvts_ctrl_irq_handler(struct lvts_ctrl *lvts_ctrl)
->   {
->   	irqreturn_t iret = IRQ_NONE;
->   	u32 value;
-> -	u32 masks[] = {
-> +	static const u32 masks[] = {
->   		LVTS_INT_SENSOR0,
->   		LVTS_INT_SENSOR1,
->   		LVTS_INT_SENSOR2,
-> @@ -781,7 +781,7 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
->    * each write in the configuration register must be separated by a
->    * delay of 2 us.
->    */
-> -static void lvts_write_config(struct lvts_ctrl *lvts_ctrl, u32 *cmds, int nr_cmds)
-> +static void lvts_write_config(struct lvts_ctrl *lvts_ctrl, const u32 *cmds, const int nr_cmds)
->   {
->   	int i;
->   
-> @@ -865,7 +865,8 @@ static int lvts_ctrl_set_enable(struct lvts_ctrl *lvts_ctrl, int enable)
->   
->   static int lvts_ctrl_connect(struct device *dev, struct lvts_ctrl *lvts_ctrl)
->   {
-> -	u32 id, cmds[] = { 0xC103FFFF, 0xC502FF55 };
-> +	u32 id;
-> +	static const u32 cmds[] = { 0xC103FFFF, 0xC502FF55 };
->   
->   	lvts_write_config(lvts_ctrl, cmds, ARRAY_SIZE(cmds));
->   
-> @@ -889,7 +890,7 @@ static int lvts_ctrl_initialize(struct device *dev, struct lvts_ctrl *lvts_ctrl)
->   	/*
->   	 * Write device mask: 0xC1030000
->   	 */
-> -	u32 cmds[] = {
-> +	static const u32 cmds[] = {
->   		0xC1030E01, 0xC1030CFC, 0xC1030A8C, 0xC103098D, 0xC10308F1,
->   		0xC10307A6, 0xC10306B8, 0xC1030500, 0xC1030420, 0xC1030300,
->   		0xC1030030, 0xC10300F6, 0xC1030050, 0xC1030060, 0xC10300AC,
-
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+index 487401424951d..15fcf573f5cc5 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -604,7 +604,34 @@ static int lvts_sensor_init(struct device *dev, struct lvts_ctrl *lvts_ctrl,
+  * The efuse blob values follows the sensor enumeration per thermal
+  * controller. The decoding of the stream is as follow:
+  *
+- * stream index map for MCU Domain :
++ * MT8192 :
++ * Stream index map for MCU Domain mt8192 :
++ *
++ * <-----mcu-tc#0-----> <-----sensor#0----->        <-----sensor#1----->
++ *  0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0x09 | 0x0A | 0x0B
++ *
++ * <-----sensor#2----->        <-----sensor#3----->
++ *  0x0C | 0x0D | 0x0E | 0x0F | 0x10 | 0x11 | 0x12 | 0x13
++ *
++ * <-----sensor#4----->        <-----sensor#5----->        <-----sensor#6----->        <-----sensor#7----->
++ *  0x14 | 0x15 | 0x16 | 0x17 | 0x18 | 0x19 | 0x1A | 0x1B | 0x1C | 0x1D | 0x1E | 0x1F | 0x20 | 0x21 | 0x22 | 0x23
++ *
++ * Stream index map for AP Domain mt8192 :
++ *
++ * <-----sensor#0----->        <-----sensor#1----->
++ *  0x24 | 0x25 | 0x26 | 0x27 | 0x28 | 0x29 | 0x2A | 0x2B
++ *
++ * <-----sensor#2----->        <-----sensor#3----->
++ *  0x2C | 0x2D | 0x2E | 0x2F | 0x30 | 0x31 | 0x32 | 0x33
++ *
++ * <-----sensor#4----->        <-----sensor#5----->
++ *  0x34 | 0x35 | 0x36 | 0x37 | 0x38 | 0x39 | 0x3A | 0x3B
++ *
++ * <-----sensor#6----->        <-----sensor#7----->        <-----sensor#8----->
++ *  0x3C | 0x3D | 0x3E | 0x3F | 0x40 | 0x41 | 0x42 | 0x43 | 0x44 | 0x45 | 0x46 | 0x47
++ *
++ * MT8195 :
++ * Stream index map for MCU Domain mt8195 :
+  *
+  * <-----mcu-tc#0-----> <-----sensor#0-----> <-----sensor#1----->
+  *  0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0x09
+@@ -615,7 +642,7 @@ static int lvts_sensor_init(struct device *dev, struct lvts_ctrl *lvts_ctrl,
+  * <-----mcu-tc#2-----> <-----sensor#4-----> <-----sensor#5-----> <-----sensor#6-----> <-----sensor#7----->
+  *  0x13 | 0x14 | 0x15 | 0x16 | 0x17 | 0x18 | 0x19 | 0x1A | 0x1B | 0x1C | 0x1D | 0x1E | 0x1F | 0x20 | 0x21
+  *
+- * stream index map for AP Domain :
++ * Stream index map for AP Domain mt8195 :
+  *
+  * <-----ap--tc#0-----> <-----sensor#0-----> <-----sensor#1----->
+  *  0x22 | 0x23 | 0x24 | 0x25 | 0x26 | 0x27 | 0x28 | 0x29 | 0x2A
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.42.0
 
