@@ -2,85 +2,251 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5F8CCDB483
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Oct 2023 19:13:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98DACCDB474
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Oct 2023 20:12:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344026AbjJQTN7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 Oct 2023 15:13:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49610 "EHLO
+        id S231444AbjJQUMs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 Oct 2023 16:12:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33126 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344170AbjJQTNu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2023 15:13:50 -0400
-Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com [209.85.167.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0BF3BED;
-        Tue, 17 Oct 2023 12:13:47 -0700 (PDT)
-Received: by mail-oi1-f180.google.com with SMTP id 5614622812f47-3b2e22f1937so381687b6e.1;
-        Tue, 17 Oct 2023 12:13:47 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697570026; x=1698174826;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+p0kxY4gwKc//5ZmnF/ggeLrPmmpxhe1gSUrK4+qn6c=;
-        b=NFodA4N9eLMaKwI67elHmBzWDhRo0WkwLDdW8FAkhJMCt3M862TF1tItw6+i4Uj1ZJ
-         jtuBcAE4Fzmg0XBhOYKhHcAHALTZPkserw2hfayebsi265QZRuBf6ku5lFC0XjEhIUen
-         4Vi9We8L8hQ6r10hu0SLzUBY1/3r3BSnfC1m5rlg9QZafaUDJR8uj1pHAolA3+W+UCwZ
-         nmlBBwzf1smc7LQOmmM6Y8FbtGlrC98N9MrRUE018Sv2imLljLRp6ychciSiljs9sNgV
-         kO9uC7eRqj4ITMCFFKMsW5i6zZqCKKdhb9coWLEfvKdFSQjs4j7Tkdub3NVH9KlRkjdc
-         96Vg==
-X-Gm-Message-State: AOJu0YzZZmaWdBqgnomxioEMb81tffKEjQFv04UMwujxTR9wbyEpN5/L
-        DGTGLGKTrWTyATT7+xJOMQ==
-X-Google-Smtp-Source: AGHT+IG3P5iru3/qAhDB9vARMywC6qwUxaoia+zyRzPU/qw5YD+aiVDkw0advvZ05zhFRaU+V0GWxw==
-X-Received: by 2002:a05:6808:408a:b0:3a7:1e98:80ad with SMTP id db10-20020a056808408a00b003a71e9880admr3146263oib.9.1697570026298;
-        Tue, 17 Oct 2023 12:13:46 -0700 (PDT)
-Received: from herring.priv (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id 6-20020aca0b06000000b003a3860b375esm354399oil.34.2023.10.17.12.13.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Oct 2023 12:13:45 -0700 (PDT)
-Received: (nullmailer pid 2531500 invoked by uid 1000);
-        Tue, 17 Oct 2023 19:13:44 -0000
-Date:   Tue, 17 Oct 2023 14:13:44 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Christian Marangi <ansuelsmth@gmail.com>
-Cc:     Nishanth Menon <nm@ti.com>, Andy Gross <agross@kernel.org>,
-        devicetree@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>, linux-kernel@vger.kernel.org,
-        Rob Herring <robh+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        linux-arm-msm@vger.kernel.org,
+        with ESMTP id S231149AbjJQUMr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2023 16:12:47 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11E4D6FAC;
+        Tue, 17 Oct 2023 13:12:44 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id 5ff2401e82b762db; Tue, 17 Oct 2023 22:12:43 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by cloudserver094114.home.pl (Postfix) with ESMTPSA id 72FA9666BCD;
+        Tue, 17 Oct 2023 22:12:42 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Sricharan Ramabadhran <quic_srichara@quicinc.com>
-Subject: Re: [PATCH v6 1/4] dt-bindings: cpufreq: qcom-cpufreq-nvmem:
- Document krait-cpu
-Message-ID: <169757002397.2531435.15590671540784074185.robh@kernel.org>
-References: <20231013173854.7399-1-ansuelsmth@gmail.com>
- <20231013173854.7399-2-ansuelsmth@gmail.com>
+        Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH v1 3/3] ACPI: thermal: Use library functions to obtain trip point temperature values
+Date:   Tue, 17 Oct 2023 22:12:33 +0200
+Message-ID: <2926905.e9J7NaK4W3@kreacher>
+In-Reply-To: <5740803.DvuYhMxLoT@kreacher>
+References: <5740803.DvuYhMxLoT@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231013173854.7399-2-ansuelsmth@gmail.com>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrjedvgddugeegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghp
+ thhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehrrghfrggvlheskhgvrhhnvghlrdhorhhg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Fri, 13 Oct 2023 19:38:51 +0200, Christian Marangi wrote:
-> Document newly introduced operating-points-v2-krait-cpu compatible to
-> the list of accepted compatible for opp-v2-kryo-cpu nodes.
-> 
-> Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
-> ---
-> Changes v6:
-> * Add this patch
-> ---
->  .../devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml       | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
+Modify the ACPI thermal driver to use functions from the ACPI thermal
+library to obtain trip point temperature values instead of duplicating
+them locally.
 
-Acked-by: Rob Herring <robh@kernel.org>
+Among other things, this requires the functions in question to be
+exported to it, because it can be built as a module.
+
+It effectively changes the behavior of the driver to treat temperature
+values out of the reasonable range (-55 centigrade to 175 centigrade) as
+invalid, but there is no other expected functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/internal.h    |    5 +++
+ drivers/acpi/thermal.c     |   57 +++++++++++++++++++--------------------------
+ drivers/acpi/thermal_lib.c |    4 +++
+ 3 files changed, 34 insertions(+), 32 deletions(-)
+
+Index: linux-pm/drivers/acpi/thermal_lib.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/thermal_lib.c
++++ linux-pm/drivers/acpi/thermal_lib.c
+@@ -52,21 +52,25 @@ int acpi_active_trip_temp(struct acpi_de
+ 
+ 	return acpi_trip_temp(adev, obj_name, ret_temp);
+ }
++EXPORT_SYMBOL_NS_GPL(acpi_active_trip_temp, ACPI_THERMAL);
+ 
+ int acpi_passive_trip_temp(struct acpi_device *adev, int *ret_temp)
+ {
+ 	return acpi_trip_temp(adev, "_PSV", ret_temp);
+ }
++EXPORT_SYMBOL_NS_GPL(acpi_passive_trip_temp, ACPI_THERMAL);
+ 
+ int acpi_hot_trip_temp(struct acpi_device *adev, int *ret_temp)
+ {
+ 	return acpi_trip_temp(adev, "_HOT", ret_temp);
+ }
++EXPORT_SYMBOL_NS_GPL(acpi_hot_trip_temp, ACPI_THERMAL);
+ 
+ int acpi_critical_trip_temp(struct acpi_device *adev, int *ret_temp)
+ {
+ 	return acpi_trip_temp(adev, "_CRT", ret_temp);
+ }
++EXPORT_SYMBOL_NS_GPL(acpi_critical_trip_temp, ACPI_THERMAL);
+ 
+ static int thermal_temp(int error, int temp_decik, int *ret_temp)
+ {
+Index: linux-pm/drivers/acpi/internal.h
+===================================================================
+--- linux-pm.orig/drivers/acpi/internal.h
++++ linux-pm/drivers/acpi/internal.h
+@@ -85,6 +85,11 @@ bool acpi_scan_is_offline(struct acpi_de
+ acpi_status acpi_sysfs_table_handler(u32 event, void *table, void *context);
+ void acpi_scan_table_notify(void);
+ 
++int acpi_active_trip_temp(struct acpi_device *adev, int id, int *ret_temp);
++int acpi_passive_trip_temp(struct acpi_device *adev, int *ret_temp);
++int acpi_hot_trip_temp(struct acpi_device *adev, int *ret_temp);
++int acpi_critical_trip_temp(struct acpi_device *adev, int *ret_temp);
++
+ /* --------------------------------------------------------------------------
+                      Device Node Initialization / Removal
+    -------------------------------------------------------------------------- */
+Index: linux-pm/drivers/acpi/thermal.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/thermal.c
++++ linux-pm/drivers/acpi/thermal.c
+@@ -31,6 +31,8 @@
+ #include <linux/uaccess.h>
+ #include <linux/units.h>
+ 
++#include "internal.h"
++
+ #define ACPI_THERMAL_CLASS		"thermal_zone"
+ #define ACPI_THERMAL_DEVICE_NAME	"Thermal Zone"
+ #define ACPI_THERMAL_NOTIFY_TEMPERATURE	0x80
+@@ -188,24 +190,19 @@ static int active_trip_index(struct acpi
+ 
+ static long get_passive_temp(struct acpi_thermal *tz)
+ {
+-	unsigned long long tmp;
+-	acpi_status status;
++	int temp;
+ 
+-	status = acpi_evaluate_integer(tz->device->handle, "_PSV", NULL, &tmp);
+-	if (ACPI_FAILURE(status))
++	if (acpi_passive_trip_temp(tz->device, &temp))
+ 		return THERMAL_TEMP_INVALID;
+ 
+-	return tmp;
++	return temp;
+ }
+ 
+ static long get_active_temp(struct acpi_thermal *tz, int index)
+ {
+-	char method[] = { '_', 'A', 'C', '0' + index, '\0' };
+-	unsigned long long tmp;
+-	acpi_status status;
++	int temp;
+ 
+-	status = acpi_evaluate_integer(tz->device->handle, method, NULL, &tmp);
+-	if (ACPI_FAILURE(status))
++	if (acpi_active_trip_temp(tz->device, index, &temp))
+ 		return THERMAL_TEMP_INVALID;
+ 
+ 	/*
+@@ -215,10 +212,10 @@ static long get_active_temp(struct acpi_
+ 	if (act > 0) {
+ 		unsigned long long override = celsius_to_deci_kelvin(act);
+ 
+-		if (tmp > override)
+-			tmp = override;
++		if (temp > override)
++			return override;
+ 	}
+-	return tmp;
++	return temp;
+ }
+ 
+ static void acpi_thermal_update_trip(struct acpi_thermal *tz,
+@@ -339,13 +336,12 @@ static void acpi_thermal_trips_update(st
+ 					dev_name(&adev->dev), event, 0);
+ }
+ 
+-static long acpi_thermal_get_critical_trip(struct acpi_thermal *tz)
++static int acpi_thermal_get_critical_trip(struct acpi_thermal *tz)
+ {
+-	unsigned long long tmp;
+-	acpi_status status;
++	int temp;
+ 
+ 	if (crt > 0) {
+-		tmp = celsius_to_deci_kelvin(crt);
++		temp = celsius_to_deci_kelvin(crt);
+ 		goto set;
+ 	}
+ 	if (crt == -1) {
+@@ -353,38 +349,34 @@ static long acpi_thermal_get_critical_tr
+ 		return THERMAL_TEMP_INVALID;
+ 	}
+ 
+-	status = acpi_evaluate_integer(tz->device->handle, "_CRT", NULL, &tmp);
+-	if (ACPI_FAILURE(status)) {
+-		acpi_handle_debug(tz->device->handle, "No critical threshold\n");
++	if (acpi_critical_trip_temp(tz->device, &temp))
+ 		return THERMAL_TEMP_INVALID;
+-	}
+-	if (tmp <= 2732) {
++
++	if (temp <= 2732) {
+ 		/*
+ 		 * Below zero (Celsius) values clearly aren't right for sure,
+ 		 * so discard them as invalid.
+ 		 */
+-		pr_info(FW_BUG "Invalid critical threshold (%llu)\n", tmp);
++		pr_info(FW_BUG "Invalid critical threshold (%d)\n", temp);
+ 		return THERMAL_TEMP_INVALID;
+ 	}
+ 
+ set:
+-	acpi_handle_debug(tz->device->handle, "Critical threshold [%llu]\n", tmp);
+-	return tmp;
++	acpi_handle_debug(tz->device->handle, "Critical threshold [%d]\n", temp);
++	return temp;
+ }
+ 
+-static long acpi_thermal_get_hot_trip(struct acpi_thermal *tz)
++static int acpi_thermal_get_hot_trip(struct acpi_thermal *tz)
+ {
+-	unsigned long long tmp;
+-	acpi_status status;
++	int temp;
+ 
+-	status = acpi_evaluate_integer(tz->device->handle, "_HOT", NULL, &tmp);
+-	if (ACPI_FAILURE(status)) {
++	if (acpi_hot_trip_temp(tz->device, &temp) || temp == THERMAL_TEMP_INVALID) {
+ 		acpi_handle_debug(tz->device->handle, "No hot threshold\n");
+ 		return THERMAL_TEMP_INVALID;
+ 	}
+ 
+-	acpi_handle_debug(tz->device->handle, "Hot threshold [%llu]\n", tmp);
+-	return tmp;
++	acpi_handle_debug(tz->device->handle, "Hot threshold [%d]\n", temp);
++	return temp;
+ }
+ 
+ static bool passive_trip_params_init(struct acpi_thermal *tz)
+@@ -1142,6 +1134,7 @@ static void __exit acpi_thermal_exit(voi
+ module_init(acpi_thermal_init);
+ module_exit(acpi_thermal_exit);
+ 
++MODULE_IMPORT_NS(ACPI_THERMAL);
+ MODULE_AUTHOR("Paul Diefenbaugh");
+ MODULE_DESCRIPTION("ACPI Thermal Zone Driver");
+ MODULE_LICENSE("GPL");
+
+
 
