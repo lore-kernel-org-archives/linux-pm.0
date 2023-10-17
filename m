@@ -2,32 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 425B4CDB485
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Oct 2023 19:02:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43F79CDB474
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Oct 2023 19:05:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344029AbjJQTCW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 Oct 2023 15:02:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51756 "EHLO
+        id S1344007AbjJQTFw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 Oct 2023 15:05:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344017AbjJQTCV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2023 15:02:21 -0400
-Received: from emag.lindev.ch (unknown [81.221.122.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 1986AE8;
-        Tue, 17 Oct 2023 12:02:19 -0700 (PDT)
-Received: from ryzen9.fritz.box (unknown [81.221.122.240])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: bero@lindev.ch)
-        by emag.lindev.ch (Postfix) with ESMTPSA id 640B720046B;
-        Tue, 17 Oct 2023 20:55:41 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lindev.ch; s=default;
-        t=1697568968; bh=m/FZi1EUFGOpL27ZJu9SFCLqewFhxDwg/9DzzkcAj38=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=pKBj92SAqqRthF4wUXdBrt0QDK5ZGGIa7x14O3qQ4wWxwoC2KfffQ3E4plGZX+GUM
-         BX8Dzezi5kU8dMdjAUtd2qJHkLtnmeY2D6vLUzhbaezImuayNMBVgHonulyUE1heYV
-         tAhBRvNzrhtvysE43L+kvCtAoaJZQJAaD6iRQGsE=
-From:   =?UTF-8?q?Bernhard=20Rosenkr=C3=A4nzer?= <bero@lindev.ch>
+        with ESMTP id S234988AbjJQTFv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2023 15:05:51 -0400
+Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C766101
+        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 12:05:48 -0700 (PDT)
+Received: by mail-ed1-x535.google.com with SMTP id 4fb4d7f45d1cf-533d31a8523so10255540a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 12:05:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1697569547; x=1698174347; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=5T8pyCBsKAygZpdsiydX+RlsNqoe0a3HYugW6rTPXAk=;
+        b=xIpa2yRGehksghAk/xwcexb+wQYmPO4IRYVTxy/ehJXOMJsgXGM+0meRv5QwolwYUw
+         CTNDzcfHwJuOjV5JNH7ofaixDVxbdqQQ8S2xPW3YR1I73VD17bcFNuPL2d2nz6BSq2+0
+         PJojsfe1n0OlNJBs4IsM2DHy8/uIiSkvhK1VKxzSWCQyiJWNW/+LpAUvcxJOutNF/+5d
+         yCayjgQQQ456+4djDU9bnoEQKqWxXCJNE9lTp00mAAu4l2fH+1MAHj40gIOm8jk4sE/e
+         yHui/c/EilT7MmRXVV2XBiB7/uhhfh1yNYOaoDDN0/k3prlaRNwTDbN3jdPdSE1syiXK
+         6T3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1697569547; x=1698174347;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=5T8pyCBsKAygZpdsiydX+RlsNqoe0a3HYugW6rTPXAk=;
+        b=pNOAW/u0yuS6n/6v/DxLMZtIuba9DSoAqeznjskanLFvMXTMefnKbHoat7FtTdLB88
+         1jdrc0Erzp5RRXGb1cvfm7HVyEORxKiOQGefWcdRCgqjJQiTDTZxz1W7WJYAlFcnOM/K
+         Nf3T9HrWfT89GLERqeuLjc/8EJWetcvux6aAZnjTi+WJulGXIngJisxvopEReMj8SB1n
+         NWHB35E9+FZf3fF2BXw/6zMMMzavae2S9DKOCy3lo/Cnd2SRxZtYGzEEoWAxHkhsgk2U
+         TpoJop8tkXFRiUv04LEWR+NhTrkCgFlLE6i+VAp8uJPM7idqsUmtuaiaKFvyOIWXo4xb
+         QZWA==
+X-Gm-Message-State: AOJu0Ywg8YWDfkZaTASVGG0RjKnCCBBssw4xhzPeBQX2aGAmZT7/+Rsd
+        8nFEKjDZYplPM8BCNQuOEpYRtQ==
+X-Google-Smtp-Source: AGHT+IHIS2pmlJT58sIePf55BkdjnJMp56dc57XPsYb/UA7y89bQ2UAlMws2Jd/KFo1tOI+tOPXEwQ==
+X-Received: by 2002:a50:ab55:0:b0:52e:1d58:a6ff with SMTP id t21-20020a50ab55000000b0052e1d58a6ffmr2012654edc.35.1697569546785;
+        Tue, 17 Oct 2023 12:05:46 -0700 (PDT)
+Received: from ryzen9.fritz.box ([2a01:2a8:8f03:b001:fe65:a70:2777:ab31])
+        by smtp.gmail.com with ESMTPSA id bq14-20020a056402214e00b00537963f692esm1637990edb.0.2023.10.17.12.05.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 17 Oct 2023 12:05:46 -0700 (PDT)
+From:   =?UTF-8?q?Bernhard=20Rosenkr=C3=A4nzer?= <bero@baylibre.com>
 To:     daniel.lezcano@linaro.org, angelogioacchino.delregno@collabora.com,
         rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
         matthias.bgg@gmail.com, robh+dt@kernel.org,
@@ -39,12 +60,10 @@ Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         wenst@chromium.org, ames.lo@mediatek.com, rex-bc.chen@mediatek.com,
         nfraprado@collabora.com, abailon@baylibre.com,
         amergnat@baylibre.com, khilman@baylibre.com
-Subject: [PATCH v5 4/5] arm64: dts: mediatek: mt8192: Add thermal nodes and thermal zones
-Date:   Tue, 17 Oct 2023 20:55:54 +0200
-Message-ID: <20231017185555.142062-5-bero@lindev.ch>
+Subject: [PATCH v5 0/5] Add LVTS support for mt8192
+Date:   Tue, 17 Oct 2023 21:05:40 +0200
+Message-ID: <20231017190545.157282-1-bero@baylibre.com>
 X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231017185555.142062-1-bero@lindev.ch>
-References: <20231017185555.142062-1-bero@lindev.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -52,563 +71,67 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Balsam CHIHI <bchihi@baylibre.com>
+Add full LVTS support (MCU thermal domain + AP thermal domain) to MediaTek MT8192 SoC.
+Also, add Suspend and Resume support to LVTS Driver (all SoCs),
+and update the documentation that describes the Calibration Data Offsets.
 
-Add thermal nodes and thermal zones for the mt8192.
+v5 changes are a lot smaller than originally assumed -- commit
+185673ca71d3f7e9c7d62ee5084348e084352e56 fixed the issue I
+was originally planning to work around in this patchset,
+so what remains for v5 is noirq and cosmetics.
 
-The mt8192 SoC has several hotspots around the CPUs.
-Specify the targeted temperature threshold to apply the mitigation
-and define the associated cooling devices.
+Changelog:
+   v5 :
+        - Suspend/Resume in noirq stage
+	- Reorder chipset specific functions
+        - Rebased :
+            base-commit: 4d5ab2376ec576af173e5eac3887ed0b51bd8566
 
-Signed-off-by: Balsam CHIHI <bchihi@baylibre.com>
-Reviewed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
-[bero@baylibre.com: cosmetic changes, reduce lvts_ap size]
-Signed-off-by: Bernhard Rosenkränzer <bero@baylibre.com>
-Reviewed-by: Alexandre Mergnat <amergnat@baylibre.com>
----
- arch/arm64/boot/dts/mediatek/mt8192.dtsi | 454 +++++++++++++++++++++++
- 1 file changed, 454 insertions(+)
+   v4 :
+        - Shrink the lvts_ap thermal sensor I/O range to 0xc00 to make
+          room for SVS support, pointed out by
+          AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8192.dtsi b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-index 69f4cded5dbbf..238f6eb258323 100644
---- a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-@@ -14,6 +14,8 @@
- #include <dt-bindings/phy/phy.h>
- #include <dt-bindings/power/mt8192-power.h>
- #include <dt-bindings/reset/mt8192-resets.h>
-+#include <dt-bindings/thermal/thermal.h>
-+#include <dt-bindings/thermal/mediatek,lvts-thermal.h>
- 
- / {
- 	compatible = "mediatek,mt8192";
-@@ -72,6 +74,7 @@ cpu0: cpu@0 {
- 			next-level-cache = <&l2_0>;
- 			performance-domains = <&performance 0>;
- 			capacity-dmips-mhz = <427>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu1: cpu@100 {
-@@ -90,6 +93,7 @@ cpu1: cpu@100 {
- 			next-level-cache = <&l2_0>;
- 			performance-domains = <&performance 0>;
- 			capacity-dmips-mhz = <427>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu2: cpu@200 {
-@@ -108,6 +112,7 @@ cpu2: cpu@200 {
- 			next-level-cache = <&l2_0>;
- 			performance-domains = <&performance 0>;
- 			capacity-dmips-mhz = <427>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu3: cpu@300 {
-@@ -126,6 +131,7 @@ cpu3: cpu@300 {
- 			next-level-cache = <&l2_0>;
- 			performance-domains = <&performance 0>;
- 			capacity-dmips-mhz = <427>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu4: cpu@400 {
-@@ -144,6 +150,7 @@ cpu4: cpu@400 {
- 			next-level-cache = <&l2_1>;
- 			performance-domains = <&performance 1>;
- 			capacity-dmips-mhz = <1024>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu5: cpu@500 {
-@@ -162,6 +169,7 @@ cpu5: cpu@500 {
- 			next-level-cache = <&l2_1>;
- 			performance-domains = <&performance 1>;
- 			capacity-dmips-mhz = <1024>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu6: cpu@600 {
-@@ -180,6 +188,7 @@ cpu6: cpu@600 {
- 			next-level-cache = <&l2_1>;
- 			performance-domains = <&performance 1>;
- 			capacity-dmips-mhz = <1024>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu7: cpu@700 {
-@@ -198,6 +207,7 @@ cpu7: cpu@700 {
- 			next-level-cache = <&l2_1>;
- 			performance-domains = <&performance 1>;
- 			capacity-dmips-mhz = <1024>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu-map {
-@@ -788,6 +798,17 @@ spi0: spi@1100a000 {
- 			status = "disabled";
- 		};
- 
-+		lvts_ap: thermal-sensor@1100b000 {
-+			compatible = "mediatek,mt8192-lvts-ap";
-+			reg = <0 0x1100b000 0 0xc00>;
-+			interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH 0>;
-+			clocks = <&infracfg CLK_INFRA_THERM>;
-+			resets = <&infracfg MT8192_INFRA_RST0_THERM_CTRL_SWRST>;
-+			nvmem-cells = <&lvts_e_data1>;
-+			nvmem-cell-names = "lvts-calib-data-1";
-+			#thermal-sensor-cells = <1>;
-+		};
-+
- 		pwm0: pwm@1100e000 {
- 			compatible = "mediatek,mt8183-disp-pwm";
- 			reg = <0 0x1100e000 0 0x1000>;
-@@ -1114,6 +1135,17 @@ nor_flash: spi@11234000 {
- 			status = "disabled";
- 		};
- 
-+		lvts_mcu: thermal-sensor@11278000 {
-+			compatible = "mediatek,mt8192-lvts-mcu";
-+			reg = <0 0x11278000 0 0x1000>;
-+			interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH 0>;
-+			clocks = <&infracfg CLK_INFRA_THERM>;
-+			resets = <&infracfg MT8192_INFRA_RST4_THERM_CTRL_MCU_SWRST>;
-+			nvmem-cells = <&lvts_e_data1>;
-+			nvmem-cell-names = "lvts-calib-data-1";
-+			#thermal-sensor-cells = <1>;
-+		};
-+
- 		efuse: efuse@11c10000 {
- 			compatible = "mediatek,mt8192-efuse", "mediatek,efuse";
- 			reg = <0 0x11c10000 0 0x1000>;
-@@ -1899,4 +1931,426 @@ larb2: larb@1f002000 {
- 			power-domains = <&spm MT8192_POWER_DOMAIN_MDP>;
- 		};
- 	};
-+
-+	thermal_zones: thermal-zones {
-+		cpu0-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_mcu MT8192_MCU_LITTLE_CPU0>;
-+
-+			trips {
-+				cpu0_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu0_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu0_alert>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		cpu1-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_mcu MT8192_MCU_LITTLE_CPU1>;
-+
-+			trips {
-+				cpu1_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu1_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu1_alert>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		cpu2-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_mcu MT8192_MCU_LITTLE_CPU2>;
-+
-+			trips {
-+				cpu2_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu2_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu2_alert>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		cpu3-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_mcu MT8192_MCU_LITTLE_CPU3>;
-+
-+			trips {
-+				cpu3_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu3_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu3_alert>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		cpu4-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_mcu MT8192_MCU_BIG_CPU0>;
-+
-+			trips {
-+				cpu4_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu4_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu4_alert>;
-+					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		cpu5-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_mcu MT8192_MCU_BIG_CPU1>;
-+
-+			trips {
-+				cpu5_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu5_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu5_alert>;
-+					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		cpu6-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_mcu MT8192_MCU_BIG_CPU2>;
-+
-+			trips {
-+				cpu6_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu6_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu6_alert>;
-+					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		cpu7-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_mcu MT8192_MCU_BIG_CPU3>;
-+
-+			trips {
-+				cpu7_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu7_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu7_alert>;
-+					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		vpu0-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_ap MT8192_AP_VPU0>;
-+
-+			trips {
-+				vpu0_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				vpu0_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		vpu1-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_ap MT8192_AP_VPU1>;
-+
-+			trips {
-+				vpu1_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				vpu1_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		gpu0-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_ap MT8192_AP_GPU0>;
-+
-+			trips {
-+				gpu0_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				gpu0_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		gpu1-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_ap MT8192_AP_GPU1>;
-+
-+			trips {
-+				gpu1_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				gpu1_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		infra-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_ap MT8192_AP_INFRA>;
-+
-+			trips {
-+				infra_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				infra_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cam-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_ap MT8192_AP_CAM>;
-+
-+			trips {
-+				cam_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cam_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		md0-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_ap MT8192_AP_MD0>;
-+
-+			trips {
-+				md0_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				md0_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		md1-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_ap MT8192_AP_MD1>;
-+
-+			trips {
-+				md1_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				md1_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		md2-thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <250>;
-+			thermal-sensors = <&lvts_ap MT8192_AP_MD2>;
-+
-+			trips {
-+				md2_alert: trip-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				md2_crit: trip-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
- };
+    v3 :
+        - Rebased :
+            base-commit: 6a3d37b4d885129561e1cef361216f00472f7d2e
+        - Fix issues in v2 pointed out by Nícolas F. R. A. Prado <nfraprado@collabora.com>:
+          Use filtered mode to make sure threshold interrupts are triggered,
+          protocol documentation, cosmetics
+        - I (bero@baylibre.com) will be taking care of this patchset
+          from now on, since Balsam has left BayLibre. Thanks for
+          getting it almost ready, Balsam!
+
+    v2 :
+        - Based on top of thermal/linux-next :
+            base-commit: 7ac82227ee046f8234471de4c12a40b8c2d3ddcc
+        - Squash "add thermal zones and thermal nodes" and
+            "add temperature mitigation threshold" commits together to form
+            "arm64: dts: mediatek: mt8192: Add thermal nodes and thermal zones" commit.
+        - Add Suspend and Resume support to LVTS Driver.
+        - Update Calibration Data documentation.
+        - Fix calibration data offsets for mt8192
+            (Thanks to "Chen-Yu Tsai" and "Nícolas F. R. A. Prado").
+        https://lore.kernel.org/all/20230425133052.199767-1-bchihi@baylibre.com/
+        Tested-by: Chen-Yu Tsai <wenst@chromium.org>
+
+    v1 :
+        - The initial series "Add LVTS support for mt8192" :
+            "https://lore.kernel.org/all/20230307163413.143334-1-bchihi@baylibre.com/".
+
+Balsam CHIHI (5):
+  dt-bindings: thermal: mediatek: Add LVTS thermal controller definition
+    for mt8192
+  thermal/drivers/mediatek/lvts_thermal: Add suspend and resume
+  thermal/drivers/mediatek/lvts_thermal: Add mt8192 support
+  arm64: dts: mediatek: mt8192: Add thermal nodes and thermal zones
+  thermal/drivers/mediatek/lvts_thermal: Update calibration data
+    documentation
+
+ arch/arm64/boot/dts/mediatek/mt8192.dtsi      | 454 ++++++++++++++++++
+ drivers/thermal/mediatek/lvts_thermal.c       | 163 ++++++-
+ .../thermal/mediatek,lvts-thermal.h           |  19 +
+ 3 files changed, 634 insertions(+), 2 deletions(-)
+
 -- 
 2.42.0
-
