@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB207CDB482
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 09:32:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D729CDB486
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 09:32:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230314AbjJRJcl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Oct 2023 05:32:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47886 "EHLO
+        id S230414AbjJRJcn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Oct 2023 05:32:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47918 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230368AbjJRJcY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 05:32:24 -0400
+        with ESMTP id S230398AbjJRJcZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 05:32:25 -0400
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DCF2A1AD;
-        Wed, 18 Oct 2023 02:31:24 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E95D10D;
+        Wed, 18 Oct 2023 02:31:25 -0700 (PDT)
 Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39I7dH60024520;
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39I7b1rB021260;
         Wed, 18 Oct 2023 09:31:21 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=T/oG60Q9zeRn1XvdoFfQJ2ViE5hDmDaNlQSy1uGrojE=;
- b=KOwub9r25lbfH4Ynjwlkksxz/5ZgywxBaTIblGbWlS/3G9Yi66R0TW3maDGRcj8ubyUN
- Xg91Sv9bX2zQgrxCMhbLKtn7PF9oEqTsIqu7cAcphvNMpcm6gqvuKJ9+ywsCJykQAFMM
- x6MAX9aVqytNiAJB+idx0n8CGZR188h/H+RvOHzj+6JuQGfhJJknvbnn3umI4hm8rEZX
- uKsW3QZZ31VoT6i6HPfmgHUWS91x6cW1lfakmYuBiEtwqMp8EQ+GkU+MEm6PbYBCimCS
- Gu2cXgvqSTjw14nNS4FGqP3VTZbIZ2uhrtxHXh6jmMVZBIv1j7p/b4z9JGe5BdomqGxN ag== 
-Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tt5v80rsk-1
+ bh=J+RrOxHnHVj5svT/nwmDwiuOMNv1BKVPDHfQq+9ETLs=;
+ b=ghzkQsq/pl3Wn+UBLoFiFogy0GfkM2TTCE4+YdzB9jP5xAUvvCMzHWfUrW313RXfJxZ5
+ 7/qaQLAMsEswYdqbS1dhc4yqmavr/KcGbIpVmH6G0C63W4qLMXoIM9/XI+8o8wz/kKKI
+ AQVpdQZreeet0zgkBtKxRFp7BDW299RShDcNK/Y0lax3syerj/Z4m4xuf0qSc9Zjo9eB
+ /vle8waczwdbhlohzT7f1BqykIvgDSsoA2xqfCPI9WoOnaTTAaDC7rLaZlqoQjErMfKs
+ oUb1f5ZTFu7bpeChGpBdcGmXjrvu5Czy08+PNFd94b/K0VJzLCVqYXK99FmPG+Ux0Sw/ OA== 
+Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tt5v80rs4-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
         Wed, 18 Oct 2023 09:31:21 +0000
 Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
-        by NASANPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39I9UuOm032409
+        by NASANPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39I9Ujl5026111
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 18 Oct 2023 09:30:57 GMT
+        Wed, 18 Oct 2023 09:30:45 GMT
 Received: from varda-linux.qualcomm.com (10.80.80.8) by
  nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.39; Wed, 18 Oct 2023 02:30:51 -0700
+ 15.2.1118.39; Wed, 18 Oct 2023 02:30:39 -0700
 From:   Varadarajan Narayanan <quic_varada@quicinc.com>
 To:     <agross@kernel.org>, <andersson@kernel.org>,
         <konrad.dybcio@linaro.org>, <robh+dt@kernel.org>,
@@ -48,9 +48,9 @@ To:     <agross@kernel.org>, <andersson@kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>
 CC:     Varadarajan Narayanan <quic_varada@quicinc.com>
-Subject: [PATCH v3 6/8] arm64: dts: qcom: ipq5332: populate the opp table based on the eFuse
-Date:   Wed, 18 Oct 2023 14:59:19 +0530
-Message-ID: <fbd343f731973f532496c2ccfe65e6b487a14db3.1697600121.git.quic_varada@quicinc.com>
+Subject: [PATCH v3 4/8] clk: qcom: apss-ipq6018: ipq5332: add safe source switch for a53pll
+Date:   Wed, 18 Oct 2023 14:59:17 +0530
+Message-ID: <b32f259c96aae4b748c44f11a44db0659dc1bd29.1697600121.git.quic_varada@quicinc.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <cover.1697600121.git.quic_varada@quicinc.com>
 References: <cover.1697600121.git.quic_varada@quicinc.com>
@@ -61,13 +61,13 @@ X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
  nasanex01a.na.qualcomm.com (10.52.223.231)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: k7mr5MDZvN8zAVhTdbIPfR8MbZe4O4VL
-X-Proofpoint-ORIG-GUID: k7mr5MDZvN8zAVhTdbIPfR8MbZe4O4VL
+X-Proofpoint-GUID: kE9567NVTmL3Qj7QUjRtW3-hS8sldiNP
+X-Proofpoint-ORIG-GUID: kE9567NVTmL3Qj7QUjRtW3-hS8sldiNP
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-10-18_07,2023-10-17_01,2023-05-22_02
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- mlxlogscore=939 lowpriorityscore=0 phishscore=0 impostorscore=0
+ mlxlogscore=999 lowpriorityscore=0 phishscore=0 impostorscore=0
  suspectscore=0 mlxscore=0 clxscore=1015 bulkscore=0 priorityscore=1501
  spamscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2309180000 definitions=main-2310180080
@@ -75,71 +75,116 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IPQ53xx have different OPPs available for the CPU based on
-SoC variant. This can be determined through use of an eFuse
-register present in the silicon.
+Stromer Plus PLL found on IPQ53xx doesn't support dynamic
+frequency scaling. To achieve the same, we need to park the APPS
+PLL source to GPLL0, re configure the PLL and then switch the
+source to APSS_PLL_EARLY.
 
-Add support to read the eFuse and populate the OPPs based on it.
+To support this, register a clock notifier to get the PRE_RATE
+and POST_RATE notification. Change the APSS PLL source to GPLL0
+when PRE_RATE notification is received, then configure the PLL
+and then change back the source to APSS_PLL_EARLY.
 
-	------------------------------------------------
-	Frequency	BIT2	BIT1	opp-supported-hw
-			1.1GHz	1.5GHz
-	------------------------------------------------
-	1100000000	1	1	0xf
-	1500000000	0	1	0x3
-	------------------------------------------------
+Additionally, not all SKUs of IPQ53xx support scaling. Hence,
+do the above to the SKUs that support scaling.
 
 Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
 Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
 ---
-v2:	Fix inconsistencies in comment and move it to commit log
-	as suggested
-	Remove opp-microvolt entries as no regulator is managed by Linux
-	cpu_speed_bin -> cpu-speed-bin in node name
-	Remove "nvmem-cell-names" due to dtbs_check error
+v3:	devm_kzalloc for cpu_clk_notifier instead of global static
+v2:	Handle ABORT_RATE_CHANGE
+	Use local variable for apcs_alias0_clk_src.clkr.hw
+	Use single line comment instead of multi line style
 ---
- arch/arm64/boot/dts/qcom/ipq5332.dtsi | 19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
+ drivers/clk/qcom/apss-ipq6018.c | 58 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/ipq5332.dtsi b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
-index 4206f05..a0dcba3 100644
---- a/arch/arm64/boot/dts/qcom/ipq5332.dtsi
-+++ b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
-@@ -91,11 +91,19 @@
- 	};
+diff --git a/drivers/clk/qcom/apss-ipq6018.c b/drivers/clk/qcom/apss-ipq6018.c
+index 4e13a08..db65b0d 100644
+--- a/drivers/clk/qcom/apss-ipq6018.c
++++ b/drivers/clk/qcom/apss-ipq6018.c
+@@ -9,8 +9,11 @@
+ #include <linux/clk-provider.h>
+ #include <linux/regmap.h>
+ #include <linux/module.h>
++#include <linux/clk.h>
++#include <linux/soc/qcom/smem.h>
  
- 	cpu_opp_table: opp-table-cpu {
--		compatible = "operating-points-v2";
-+		compatible = "operating-points-v2-kryo-cpu";
- 		opp-shared;
-+		nvmem-cells = <&cpu_speed_bin>;
+ #include <dt-bindings/clock/qcom,apss-ipq.h>
++#include <dt-bindings/arm/qcom,ids.h>
  
--		opp-1488000000 {
--			opp-hz = /bits/ 64 <1488000000>;
-+		opp-1100000000 {
-+			opp-hz = /bits/ 64 <1100000000>;
-+			opp-supported-hw = <0xF>;
-+			clock-latency-ns = <200000>;
-+		};
+ #include "common.h"
+ #include "clk-regmap.h"
+@@ -84,15 +87,68 @@ static const struct qcom_cc_desc apss_ipq6018_desc = {
+ 	.num_clks = ARRAY_SIZE(apss_ipq6018_clks),
+ };
+ 
++static int cpu_clk_notifier_fn(struct notifier_block *nb, unsigned long action,
++				void *data)
++{
++	struct clk_hw *hw;
++	u8 index;
++	int err;
 +
-+		opp-1500000000 {
-+			opp-hz = /bits/ 64 <1500000000>;
-+			opp-supported-hw = <0x3>;
- 			clock-latency-ns = <200000>;
- 		};
- 	};
-@@ -163,6 +171,11 @@
- 			reg = <0x000a4000 0x721>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
++	if (action == PRE_RATE_CHANGE)
++		index = P_GPLL0;
++	else if (action == POST_RATE_CHANGE || action == ABORT_RATE_CHANGE)
++		index = P_APSS_PLL_EARLY;
++	else
++		return NOTIFY_OK;
 +
-+			cpu_speed_bin: cpu-speed-bin@1d {
-+				reg = <0x1d 0x2>;
-+				bits = <7 2>;
-+			};
- 		};
++	hw = &apcs_alias0_clk_src.clkr.hw;
++	err = clk_rcg2_mux_closest_ops.set_parent(hw, index);
++
++	return notifier_from_errno(err);
++}
++
+ static int apss_ipq6018_probe(struct platform_device *pdev)
+ {
++	struct notifier_block *cpu_clk_notifier;
+ 	struct regmap *regmap;
++	u32 soc_id;
++	int ret;
++
++	ret = qcom_smem_get_soc_id(&soc_id);
++	if (ret)
++		return ret;
  
- 		rng: rng@e3000 {
+ 	regmap = dev_get_regmap(pdev->dev.parent, NULL);
+ 	if (!regmap)
+ 		return -ENODEV;
+ 
+-	return qcom_cc_really_probe(pdev, &apss_ipq6018_desc, regmap);
++	ret = qcom_cc_really_probe(pdev, &apss_ipq6018_desc, regmap);
++	if (ret)
++		return ret;
++
++	switch (soc_id) {
++	/* Only below variants of IPQ53xx support scaling */
++	case QCOM_ID_IPQ5332:
++	case QCOM_ID_IPQ5322:
++	case QCOM_ID_IPQ5300:
++		cpu_clk_notifier = devm_kzalloc(&pdev->dev,
++						sizeof(*cpu_clk_notifier),
++						GFP_KERNEL);
++		if (!cpu_clk_notifier)
++			return -ENOMEM;
++
++		cpu_clk_notifier->notifier_call = cpu_clk_notifier_fn;
++
++		ret = clk_notifier_register(apcs_alias0_clk_src.clkr.hw.clk,
++					    cpu_clk_notifier);
++		if (ret)
++			return ret;
++		break;
++	default:
++		break;
++	}
++
++	return 0;
+ }
+ 
+ static struct platform_driver apss_ipq6018_driver = {
 -- 
 2.7.4
 
