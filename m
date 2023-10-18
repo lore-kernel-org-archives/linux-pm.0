@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9603ACDB47E
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:17:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50B54C41513
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:17:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229669AbjJRGRj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Oct 2023 02:17:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42860 "EHLO
+        id S229702AbjJRGRl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Oct 2023 02:17:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229606AbjJRGRj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:17:39 -0400
+        with ESMTP id S229606AbjJRGRk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:17:40 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A9E0C4
-        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:37 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA9FC93
+        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:38 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrs-0001Zw-JW; Wed, 18 Oct 2023 08:17:20 +0200
+        id 1qszru-0001Zu-CO; Wed, 18 Oct 2023 08:17:22 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrr-002UYQ-1l; Wed, 18 Oct 2023 08:17:19 +0200
+        id 1qszrq-002UYH-W6; Wed, 18 Oct 2023 08:17:19 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.96)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrq-00Eviy-30;
+        id 1qszrq-00Evii-2k;
         Wed, 18 Oct 2023 08:17:18 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
@@ -45,10 +45,11 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sascha Hauer <s.hauer@pengutronix.de>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
         Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v8 15/26] PM / devfreq: rockchip-dfi: give variable a better name
-Date:   Wed, 18 Oct 2023 08:17:03 +0200
-Message-Id: <20231018061714.3553817-16-s.hauer@pengutronix.de>
+Subject: [PATCH v8 12/26] PM / devfreq: rockchip-dfi: Handle LPDDR4X
+Date:   Wed, 18 Oct 2023 08:17:00 +0200
+Message-Id: <20231018061714.3553817-13-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20231018061714.3553817-1-s.hauer@pengutronix.de>
 References: <20231018061714.3553817-1-s.hauer@pengutronix.de>
@@ -62,82 +63,42 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-struct dmc_count_channel::total counts the clock cycles of the DDR
-controller. Rename it accordingly to give the reader a better idea
-what this is about. While at it, at some documentation to struct
-dmc_count_channel.
+In the DFI driver LPDDR4X can be handled in the same way as LPDDR4. Add
+the missing case.
 
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 1 +
+ include/soc/rockchip/rockchip_grf.h  | 1 +
+ 2 files changed, 2 insertions(+)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 7a4f1901314d4..3d5c6d737ccd9 100644
+index 8ce0191552ef1..bdf421b248df9 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -46,9 +46,14 @@
- #define DDRMON_CH1_COUNT_NUM		0x3c
- #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
- 
-+/**
-+ * struct dmc_count_channel - structure to hold counter values from the DDR controller
-+ * @access:       Number of read and write accesses
-+ * @clock_cycles: DDR clock cycles
-+ */
- struct dmc_count_channel {
- 	u32 access;
--	u32 total;
-+	u32 clock_cycles;
+@@ -90,6 +90,7 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
+ 			       dfi_regs + DDRMON_CTRL);
+ 		break;
+ 	case ROCKCHIP_DDRTYPE_LPDDR4:
++	case ROCKCHIP_DDRTYPE_LPDDR4X:
+ 		writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_LPDDR4, DDRMON_CTRL_DDR_TYPE_MASK),
+ 			       dfi_regs + DDRMON_CTRL);
+ 		break;
+diff --git a/include/soc/rockchip/rockchip_grf.h b/include/soc/rockchip/rockchip_grf.h
+index dde1a9796ccb5..e46fd72aea8d1 100644
+--- a/include/soc/rockchip/rockchip_grf.h
++++ b/include/soc/rockchip/rockchip_grf.h
+@@ -12,6 +12,7 @@ enum {
+ 	ROCKCHIP_DDRTYPE_LPDDR2	= 5,
+ 	ROCKCHIP_DDRTYPE_LPDDR3	= 6,
+ 	ROCKCHIP_DDRTYPE_LPDDR4	= 7,
++	ROCKCHIP_DDRTYPE_LPDDR4X = 8,
  };
  
- struct dmc_count {
-@@ -151,7 +156,7 @@ static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_coun
- 			continue;
- 		count->c[i].access = readl_relaxed(dfi_regs +
- 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
--		count->c[i].total = readl_relaxed(dfi_regs +
-+		count->c[i].clock_cycles = readl_relaxed(dfi_regs +
- 				DDRMON_CH0_COUNT_NUM + i * 20);
- 	}
- }
-@@ -183,29 +188,29 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
- 	struct dmc_count count;
- 	struct dmc_count *last = &dfi->last_event_count;
--	u32 access = 0, total = 0;
-+	u32 access = 0, clock_cycles = 0;
- 	int i;
- 
- 	rockchip_dfi_read_counters(dfi, &count);
- 
- 	/* We can only report one channel, so find the busiest one */
- 	for (i = 0; i < dfi->max_channels; i++) {
--		u32 a, t;
-+		u32 a, c;
- 
- 		if (!(dfi->channel_mask & BIT(i)))
- 			continue;
- 
- 		a = count.c[i].access - last->c[i].access;
--		t = count.c[i].total - last->c[i].total;
-+		c = count.c[i].clock_cycles - last->c[i].clock_cycles;
- 
- 		if (a > access) {
- 			access = a;
--			total = t;
-+			clock_cycles = c;
- 		}
- 	}
- 
- 	edata->load_count = access * 4;
--	edata->total_count = total;
-+	edata->total_count = clock_cycles;
- 
- 	dfi->last_event_count = count;
- 
+ #endif /* __SOC_ROCKCHIP_GRF_H */
 -- 
 2.39.2
 
