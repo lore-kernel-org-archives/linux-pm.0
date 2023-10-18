@@ -2,137 +2,121 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AB64CDB482
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 09:37:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F528CDB47E
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 09:44:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229835AbjJRJhy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Oct 2023 05:37:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48096 "EHLO
+        id S229529AbjJRJol (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Oct 2023 05:44:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46326 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234992AbjJRJcc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 05:32:32 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D86ABD44;
-        Wed, 18 Oct 2023 02:31:37 -0700 (PDT)
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39I8HTIH017351;
-        Wed, 18 Oct 2023 09:31:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type; s=qcppdkim1;
- bh=71SDrbCHhggW77N4ET/lTU7t3o/T2Zf+gfsOoMco9/w=;
- b=El2eEPp2kr9nYe/WIi7GiUaXqmFlO5uUuLvNWOfNxkTi65Lmf3ecb1YEIE7AbDyHg0r4
- ldrwO70WNqdEL8Gme+P8/UFbYizZAhlAHcBGua2eJ4R1rmI87DqTGWadwZgqo53i4lVO
- oCo5q9Gc8zK9QGAWxu0sFQ7V20plR/eVw9mAS5rL1YiE+HBtEaMVgjF/QTVfsOOrvlP8
- bFvzRVJ5i0sifxEzVz9J1AB4xZbN+wn24PIB5CYrE5cMVtaqvpHnYpFeQVid7llkw0RJ
- VxF2F8y2vIFqXXgqUhZN2Cm0Y82AVu7U6nLCPf4KUe5ClSOC/BEs36r7d8yrwJcEVnaL AQ== 
-Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tsr7c2mk0-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 18 Oct 2023 09:31:04 +0000
-Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
-        by NASANPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39I9V2ef026356
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 18 Oct 2023 09:31:02 GMT
-Received: from varda-linux.qualcomm.com (10.80.80.8) by
- nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.39; Wed, 18 Oct 2023 02:30:56 -0700
-From:   Varadarajan Narayanan <quic_varada@quicinc.com>
-To:     <agross@kernel.org>, <andersson@kernel.org>,
-        <konrad.dybcio@linaro.org>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <conor+dt@kernel.org>,
-        <mturquette@baylibre.com>, <sboyd@kernel.org>, <rafael@kernel.org>,
-        <viresh.kumar@linaro.org>, <ilia.lin@kernel.org>,
-        <quic_kathirav@quicinc.com>, <linux-arm-msm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>
-CC:     Varadarajan Narayanan <quic_varada@quicinc.com>,
-        Praveenkumar I <ipkumar@codeaurora.org>
-Subject: [PATCH v3 7/8] cpufreq: qti: Introduce cpufreq for ipq95xx
-Date:   Wed, 18 Oct 2023 14:59:20 +0530
-Message-ID: <da0cdb5efdfc84c854807e6fbe57654871125ffb.1697600121.git.quic_varada@quicinc.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <cover.1697600121.git.quic_varada@quicinc.com>
-References: <cover.1697600121.git.quic_varada@quicinc.com>
+        with ESMTP id S229510AbjJRJol (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 05:44:41 -0400
+Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net [IPv6:2a01:4f8:150:2161:1:b009:f23e:0])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04B4EB0;
+        Wed, 18 Oct 2023 02:44:38 -0700 (PDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+         client-signature RSA-PSS (4096 bits) client-digest SHA256)
+        (Client CN "*.hostsharing.net", Issuer "RapidSSL Global TLS RSA4096 SHA256 2022 CA1" (verified OK))
+        by bmailout3.hostsharing.net (Postfix) with ESMTPS id 349ED100AF921;
+        Wed, 18 Oct 2023 11:44:36 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+        id 0525E30EFD; Wed, 18 Oct 2023 11:44:36 +0200 (CEST)
+Date:   Wed, 18 Oct 2023 11:44:35 +0200
+From:   Lukas Wunner <lukas@wunner.de>
+To:     Ricky WU <ricky_wu@realtek.com>
+Cc:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        "bhelgaas@google.com" <bhelgaas@google.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Tony Luck <tony.luck@intel.com>,
+        "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PCI: pciehp: Prevent child devices from doing RPM on
+ PCIe Link Down
+Message-ID: <20231018094435.GA21090@wunner.de>
+References: <20231016040132.23824-1-kai.heng.feng@canonical.com>
+ <20231016093210.GA22952@wunner.de>
+ <263982e90fc046cf977ecb8727003690@realtek.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nasanex01a.na.qualcomm.com (10.52.223.231)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: a82e-l75JEBiHhdDS8ltw7kLtYeAcyh2
-X-Proofpoint-GUID: a82e-l75JEBiHhdDS8ltw7kLtYeAcyh2
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-18_07,2023-10-17_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 phishscore=0
- lowpriorityscore=0 spamscore=0 clxscore=1015 bulkscore=0 adultscore=0
- impostorscore=0 mlxscore=0 priorityscore=1501 mlxlogscore=999
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2309180000 definitions=main-2310180080
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <263982e90fc046cf977ecb8727003690@realtek.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IPQ95xx SoCs have different OPPs available for the CPU based on
-the SoC variant. This can be determined from an eFuse register
-present in the silicon.
+[cc -= unrelated mailing lists bpf, kernel-hardening]
 
-Added support for ipq95xx on nvmem driver which helps to
-determine OPPs at runtime based on the eFuse register which
-has the CPU frequency limits. opp-supported-hw dt binding
-can be used to indicate the available OPPs for each limit.
+On Tue, Oct 17, 2023 at 10:25:39AM +0000, Ricky WU wrote:
+> > On Mon, Oct 16, 2023 at 12:01:31PM +0800, Kai-Heng Feng wrote:
+> > > When inserting an SD7.0 card to Realtek card reader, it can trigger
+> > > PCI slot Link down and causes the following error:
+> > 
+> > Why does *inserting* a card cause a Link Down?
+> > 
+> > 
+> > > [   63.898861] pcieport 0000:00:1c.0: pciehp: Slot(8): Link Down
+> > > [   63.912118] BUG: unable to handle page fault for address:
+> > ffffb24d403e5010
+> > [...]
+> > > [   63.912198]  ? asm_exc_page_fault+0x27/0x30
+> > > [   63.912203]  ? ioread32+0x2e/0x70
+> > > [   63.912206]  ? rtsx_pci_write_register+0x5b/0x90 [rtsx_pci]
+> > > [   63.912217]  rtsx_set_l1off_sub+0x1c/0x30 [rtsx_pci]
+> > > [   63.912226]  rts5261_set_l1off_cfg_sub_d0+0x36/0x40 [rtsx_pci]
+> > > [   63.912234]  rtsx_pci_runtime_idle+0xc7/0x160 [rtsx_pci]
+> > > [   63.912243]  ? __pfx_pci_pm_runtime_idle+0x10/0x10
+> > > [   63.912246]  pci_pm_runtime_idle+0x34/0x70
+> > > [   63.912248]  rpm_idle+0xc4/0x2b0
+> > > [   63.912251]  pm_runtime_work+0x93/0xc0
+> > > [   63.912254]  process_one_work+0x21a/0x430
+> > > [   63.912258]  worker_thread+0x4a/0x3c0
+> > 
+> > This looks like pcr->remap_addr is accessed after it has been iounmap'ed in
+> > rtsx_pci_remove() or before it has been iomap'ed in rtsx_pci_probe().
+> > 
+> > Is the card reader itself located below a hotplug port and unplugged here?
+> 
+> Yes it is card reader unplug itself, because sd7.0 card is not used
+> rtsx_pcr, it use nvme driver
 
-Signed-off-by: Praveenkumar I <ipkumar@codeaurora.org>
-Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
-Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
----
-v2:	Simplify bin selection by tweaking the order in dts
----
- drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
- drivers/cpufreq/qcom-cpufreq-nvmem.c | 8 ++++++++
- 2 files changed, 9 insertions(+)
+I can only guess here as the dmesg and lspci output I requested
+hasn't been provided:
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index f43e5cd..4f794ba 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -183,6 +183,7 @@ static const struct of_device_id blocklist[] __initconst = {
- 	{ .compatible = "qcom,ipq5332", },
- 	{ .compatible = "qcom,ipq8064", },
- 	{ .compatible = "qcom,ipq8074", },
-+	{ .compatible = "qcom,ipq9574", },
- 	{ .compatible = "qcom,apq8064", },
- 	{ .compatible = "qcom,msm8974", },
- 	{ .compatible = "qcom,msm8960", },
-diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-index 0014909..d44be4e 100644
---- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-@@ -166,6 +166,13 @@ static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
- 	case QCOM_ID_IPQ5300:
- 		drv->versions = 1 << (unsigned int)(*speedbin);
- 		break;
-+	case QCOM_ID_IPQ9514:
-+	case QCOM_ID_IPQ9550:
-+	case QCOM_ID_IPQ9554:
-+	case QCOM_ID_IPQ9570:
-+	case QCOM_ID_IPQ9574:
-+		drv->versions = 1 << (unsigned int)(*speedbin);
-+		break;
- 	default:
- 		BUG();
- 		break;
-@@ -417,6 +424,7 @@ static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
- 	{ .compatible = "qcom,ipq8064", .data = &match_data_krait },
- 	{ .compatible = "qcom,ipq8074", .data = &match_data_ipq8074 },
- 	{ .compatible = "qcom,apq8064", .data = &match_data_krait },
-+	{ .compatible = "qcom,ipq9574", .data = &match_data_kryo },
- 	{ .compatible = "qcom,msm8974", .data = &match_data_krait },
- 	{ .compatible = "qcom,msm8960", .data = &match_data_krait },
- 	{},
--- 
-2.7.4
+I assume that this card reader may contain a PCIe switch with a
+regular SD card reader below a first Downstream Port (which is
+hotplug-capable).  If an SD express card is inserted, the regular
+SD card reader disappears from the Downstream Port and the
+inserted card appears as an NVMe drive (possibly below a
+second Downstream Port, or below the first Downstream Port).
 
+The commit message is somewhat misleading in that it links the
+unhandled page fault to card insertion.  That may be the trigger,
+but the root cause appears to be that a runtime PM request is
+performed asynchronously after the SD card reader has iounmap'ed
+pcr->remap_addr.
+
+If that is indeed the root cause (as I suspect), the fix needs to
+be placed somewhere else.
+
+pciehp is only one of several hotplug drivers and fixing this only
+in pciehp may leave the other hotplug drivers vulnerable to the same
+issue.
+
+Unfortunately the information provided so far is insufficient to
+recommend a better fix.  It would be necessary to debug why the
+asynchronous RPM request is not canceled even though rtsx_pci_remove()
+runtime resumes the device before iounmap'ing pcr->remap_addr.
+Perhaps there's a bug in runtime PM code that causes asynchronous
+requests to not be canceled upon a pm_runtime_get_sync()?
+Or perhaps a wmb() is necessary in pci_device_remove() after setting
+pci_dev->driver = NULL?
+
+Thanks,
+
+Lukas
