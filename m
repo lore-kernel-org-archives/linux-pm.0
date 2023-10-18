@@ -2,42 +2,41 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C62E3C41513
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 08:03:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48857CDB485
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 08:03:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235026AbjJRIDK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Oct 2023 04:03:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50468 "EHLO
+        id S235053AbjJRIDM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Oct 2023 04:03:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234909AbjJRIDJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 04:03:09 -0400
+        with ESMTP id S235063AbjJRIDK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 04:03:10 -0400
 Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C6F7F7;
-        Wed, 18 Oct 2023 01:03:07 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDA7BB6;
+        Wed, 18 Oct 2023 01:03:08 -0700 (PDT)
 Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 1FC1B66072F4;
-        Wed, 18 Oct 2023 09:03:04 +0100 (BST)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 8164C66072ED;
+        Wed, 18 Oct 2023 09:03:06 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1697616185;
-        bh=BzCeLcDnyVpGNQ25QSxsx2zwulo4lGI2Vka4ybY5HjA=;
+        s=mail; t=1697616187;
+        bh=NZBceo1UrDJC+0U1E84JTtwh8BxlG/3QVtT5mYfLMpo=;
         h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=NE+Dui5a6xhmhcondJxHHYw+UhK723wueVo/00NuAro4Oepei8lsvl6fVuZFnOoQk
-         LcPbBnYIomG9s6riHWfNHl5HyC6niRV68J/8LdrXHjzgmCBN5Fni80qvvER4t4/pHD
-         zJTsNYui4MBRXVDyrf6q5xRUA3IuoZnocvB1g2q9zIlibHdYgkqjVaSqE9CEE7rv+4
-         +qyVT9n2B1A/RwPq2xXoaGdIzxgCxtOUzBGxGVQAsf1Ia7Ux1IFI2+iAxe9SZMPlql
-         YtVACzVw80+8GZtrNeqg1+J2IUVGN7eG+wg+SEO3+GPtF3/qy3K1+oPZq8JbEjMB6b
-         WdOmAlm169YUQ==
-Message-ID: <0130480d-aebf-44fd-9334-e288ac2ddc32@collabora.com>
-Date:   Wed, 18 Oct 2023 10:03:01 +0200
+        b=GIt28U9eLenzBpXXEt4AQF62FAgGQ+kccHKXchztEJ02I/fdsVPEyiSXmEy2lkC+o
+         LyVdOJijQFH3QzkO3Rao+dFnrwOK70SgsWUTP9+9s2XsWxa0H/LvqolBb8ja1XGIbR
+         /QIFt+8j8JT3+EMidl2ZDH114wR13fhRpJW33b9yuUuFSxSp1cS1xmLezOEWIvpQCE
+         QDPxGycsNT6ojiLm5FqM6D3vQkpxNNhY6Pjskhd8f75V7SZGx3ctUk6MpWqWO40dBu
+         CD4qp2eRtrSh67TLMNTvWxyXkcXTJR7N+BgMi+ZtPTKpDY9aBFH4i9/4DlKRGuBLs+
+         oeonPHBNIN97A==
+Message-ID: <8a045940-3125-47a2-86ca-c4dee5e7a87e@collabora.com>
+Date:   Wed, 18 Oct 2023 10:03:04 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 4/5] arm64: dts: mediatek: mt8192: Add thermal nodes
- and thermal zones
-Content-Language: en-US
+Subject: Re: [PATCH v5 2/5] thermal/drivers/mediatek/lvts_thermal: Add suspend
+ and resume
 To:     =?UTF-8?Q?Bernhard_Rosenkr=C3=A4nzer?= <bero@baylibre.com>,
         daniel.lezcano@linaro.org, rafael@kernel.org, amitk@kernel.org,
         rui.zhang@intel.com, matthias.bgg@gmail.com, robh+dt@kernel.org,
@@ -50,10 +49,11 @@ Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         nfraprado@collabora.com, abailon@baylibre.com,
         amergnat@baylibre.com, khilman@baylibre.com
 References: <20231017190545.157282-1-bero@baylibre.com>
- <20231017190545.157282-5-bero@baylibre.com>
+ <20231017190545.157282-3-bero@baylibre.com>
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20231017190545.157282-5-bero@baylibre.com>
+Content-Language: en-US
+In-Reply-To: <20231017190545.157282-3-bero@baylibre.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -63,17 +63,15 @@ X-Mailing-List: linux-pm@vger.kernel.org
 Il 17/10/23 21:05, Bernhard Rosenkränzer ha scritto:
 > From: Balsam CHIHI <bchihi@baylibre.com>
 > 
-> Add thermal nodes and thermal zones for the mt8192.
-> 
-> The mt8192 SoC has several hotspots around the CPUs.
-> Specify the targeted temperature threshold to apply the mitigation
-> and define the associated cooling devices.
+> Add suspend and resume support to LVTS driver.
 > 
 > Signed-off-by: Balsam CHIHI <bchihi@baylibre.com>
-> Reviewed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
-> [bero@baylibre.com: cosmetic changes, reduce lvts_ap size]
+> [bero@baylibre.com: suspend/resume in noirq phase]
+> Co-developed-by: Bernhard Rosenkränzer <bero@baylibre.com>
 > Signed-off-by: Bernhard Rosenkränzer <bero@baylibre.com>
+> Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
 > Reviewed-by: Alexandre Mergnat <amergnat@baylibre.com>
 
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+
 
