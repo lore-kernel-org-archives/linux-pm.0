@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E132BCDB483
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:18:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23243CDB484
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:18:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229818AbjJRGSB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Oct 2023 02:18:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59596 "EHLO
+        id S229960AbjJRGSC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Oct 2023 02:18:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60628 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344535AbjJRGR6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:17:58 -0400
+        with ESMTP id S1344537AbjJRGR7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:17:59 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 08382FD
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8BF5E10D
         for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:49 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszru-0001Zv-CN; Wed, 18 Oct 2023 08:17:22 +0200
+        id 1qszrx-0001Zm-7n; Wed, 18 Oct 2023 08:17:25 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrr-002UYM-1B; Wed, 18 Oct 2023 08:17:19 +0200
+        id 1qszrq-002UXx-Og; Wed, 18 Oct 2023 08:17:18 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.96)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrq-00Evit-2u;
+        id 1qszrq-00EviA-27;
         Wed, 18 Oct 2023 08:17:18 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
@@ -45,11 +45,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sascha Hauer <s.hauer@pengutronix.de>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v8 14/26] PM / devfreq: rockchip-dfi: Prepare for multiple users
-Date:   Wed, 18 Oct 2023 08:17:02 +0200
-Message-Id: <20231018061714.3553817-15-s.hauer@pengutronix.de>
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v8 05/26] PM / devfreq: rockchip-dfi: dfi store raw values in counter struct
+Date:   Wed, 18 Oct 2023 08:16:53 +0200
+Message-Id: <20231018061714.3553817-6-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20231018061714.3553817-1-s.hauer@pengutronix.de>
 References: <20231018061714.3553817-1-s.hauer@pengutronix.de>
@@ -63,140 +62,39 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When adding perf support later the DFI must be enabled when
-either of devfreq-event or perf is active. Prepare for that
-by adding a usage counter for the DFI. Also move enabling
-and disabling of the clock away from the devfreq-event specific
-functions to which the perf specific part won't have access.
+When adding perf support to the DFI driver the perf part will
+need the raw counter values, so move the fixed * 4 factor to
+rockchip_dfi_get_event().
 
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 57 +++++++++++++++++++---------
- 1 file changed, 40 insertions(+), 17 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index d56a33d03db4c..7a4f1901314d4 100644
+index 6b1ef29df7048..680f629da64fc 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -68,14 +68,29 @@ struct rockchip_dfi {
- 	void __iomem *regs;
- 	struct regmap *regmap_pmu;
- 	struct clk *clk;
-+	int usecount;
-+	struct mutex mutex;
- 	u32 ddr_type;
- 	unsigned int channel_mask;
- 	unsigned int max_channels;
- };
+@@ -97,7 +97,7 @@ static int rockchip_dfi_get_busier_ch(struct devfreq_event_dev *edev)
+ 	/* Find out which channel is busier */
+ 	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
+ 		dfi->ch_usage[i].access = readl_relaxed(dfi_regs +
+-				DDRMON_CH0_DFI_ACCESS_NUM + i * 20) * 4;
++				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
+ 		dfi->ch_usage[i].total = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_COUNT_NUM + i * 20);
+ 		tmp = dfi->ch_usage[i].access;
+@@ -149,7 +149,7 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
  
--static void rockchip_dfi_start_hardware_counter(struct rockchip_dfi *dfi)
-+static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
- {
- 	void __iomem *dfi_regs = dfi->regs;
-+	int ret = 0;
-+
-+	mutex_lock(&dfi->mutex);
-+
-+	dfi->usecount++;
-+	if (dfi->usecount > 1)
-+		goto out;
-+
-+	ret = clk_prepare_enable(dfi->clk);
-+	if (ret) {
-+		dev_err(&dfi->edev->dev, "failed to enable dfi clk: %d\n", ret);
-+		goto out;
-+	}
+ 	busier_ch = rockchip_dfi_get_busier_ch(edev);
  
- 	/* clear DDRMON_CTRL setting */
- 	writel_relaxed(HIWORD_UPDATE(0, DDRMON_CTRL_TIMER_CNT_EN | DDRMON_CTRL_SOFTWARE_EN |
-@@ -100,14 +115,30 @@ static void rockchip_dfi_start_hardware_counter(struct rockchip_dfi *dfi)
- 	/* enable count, use software mode */
- 	writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_SOFTWARE_EN, DDRMON_CTRL_SOFTWARE_EN),
- 		       dfi_regs + DDRMON_CTRL);
-+out:
-+	mutex_unlock(&dfi->mutex);
-+
-+	return ret;
- }
- 
--static void rockchip_dfi_stop_hardware_counter(struct rockchip_dfi *dfi)
-+static void rockchip_dfi_disable(struct rockchip_dfi *dfi)
- {
- 	void __iomem *dfi_regs = dfi->regs;
- 
-+	mutex_lock(&dfi->mutex);
-+
-+	dfi->usecount--;
-+
-+	WARN_ON_ONCE(dfi->usecount < 0);
-+
-+	if (dfi->usecount > 0)
-+		goto out;
-+
- 	writel_relaxed(HIWORD_UPDATE(0, DDRMON_CTRL_SOFTWARE_EN),
- 		       dfi_regs + DDRMON_CTRL);
-+	clk_disable_unprepare(dfi->clk);
-+out:
-+	mutex_unlock(&dfi->mutex);
- }
- 
- static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_count *count)
-@@ -125,29 +156,20 @@ static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_coun
- 	}
- }
- 
--static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
-+static int rockchip_dfi_event_disable(struct devfreq_event_dev *edev)
- {
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
- 
--	rockchip_dfi_stop_hardware_counter(dfi);
--	clk_disable_unprepare(dfi->clk);
-+	rockchip_dfi_disable(dfi);
+-	edata->load_count = dfi->ch_usage[busier_ch].access;
++	edata->load_count = dfi->ch_usage[busier_ch].access * 4;
+ 	edata->total_count = dfi->ch_usage[busier_ch].total;
  
  	return 0;
- }
- 
--static int rockchip_dfi_enable(struct devfreq_event_dev *edev)
-+static int rockchip_dfi_event_enable(struct devfreq_event_dev *edev)
- {
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
--	int ret;
--
--	ret = clk_prepare_enable(dfi->clk);
--	if (ret) {
--		dev_err(&edev->dev, "failed to enable dfi clk: %d\n", ret);
--		return ret;
--	}
- 
--	rockchip_dfi_start_hardware_counter(dfi);
--	return 0;
-+	return rockchip_dfi_enable(dfi);
- }
- 
- static int rockchip_dfi_set_event(struct devfreq_event_dev *edev)
-@@ -191,8 +213,8 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- }
- 
- static const struct devfreq_event_ops rockchip_dfi_ops = {
--	.disable = rockchip_dfi_disable,
--	.enable = rockchip_dfi_enable,
-+	.disable = rockchip_dfi_event_disable,
-+	.enable = rockchip_dfi_event_enable,
- 	.get_event = rockchip_dfi_get_event,
- 	.set_event = rockchip_dfi_set_event,
- };
-@@ -280,6 +302,7 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
- 		return PTR_ERR(dfi->regmap_pmu);
- 
- 	dfi->dev = dev;
-+	mutex_init(&dfi->mutex);
- 
- 	desc = &dfi->desc;
- 	desc->ops = &rockchip_dfi_ops;
 -- 
 2.39.2
 
