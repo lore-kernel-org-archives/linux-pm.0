@@ -2,32 +2,32 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50B54C41513
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:17:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6844CDB485
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:17:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229702AbjJRGRl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Oct 2023 02:17:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42894 "EHLO
+        id S229707AbjJRGRm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Oct 2023 02:17:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42912 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229606AbjJRGRk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:17:40 -0400
+        with ESMTP id S229700AbjJRGRl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:17:41 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA9FC93
-        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:38 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 282FBF9
+        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:40 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszru-0001Zu-CO; Wed, 18 Oct 2023 08:17:22 +0200
+        id 1qszrs-0001a6-MK; Wed, 18 Oct 2023 08:17:20 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrq-002UYH-W6; Wed, 18 Oct 2023 08:17:19 +0200
+        id 1qszrr-002UYi-E6; Wed, 18 Oct 2023 08:17:19 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.96)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrq-00Evii-2k;
-        Wed, 18 Oct 2023 08:17:18 +0200
+        id 1qszrr-00EvjZ-0X;
+        Wed, 18 Oct 2023 08:17:19 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -45,11 +45,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sascha Hauer <s.hauer@pengutronix.de>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v8 12/26] PM / devfreq: rockchip-dfi: Handle LPDDR4X
-Date:   Wed, 18 Oct 2023 08:17:00 +0200
-Message-Id: <20231018061714.3553817-13-s.hauer@pengutronix.de>
+        Conor Dooley <conor.dooley@microchip.com>
+Subject: [PATCH v8 23/26] dt-bindings: soc: rockchip: grf: add rockchip,rk3588-pmugrf
+Date:   Wed, 18 Oct 2023 08:17:11 +0200
+Message-Id: <20231018061714.3553817-24-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20231018061714.3553817-1-s.hauer@pengutronix.de>
 References: <20231018061714.3553817-1-s.hauer@pengutronix.de>
@@ -63,42 +62,31 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In the DFI driver LPDDR4X can be handled in the same way as LPDDR4. Add
-the missing case.
+Add rockchip,rk3588-pmugrf compatible string.
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 1 +
- include/soc/rockchip/rockchip_grf.h  | 1 +
- 2 files changed, 2 insertions(+)
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 8ce0191552ef1..bdf421b248df9 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -90,6 +90,7 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
- 			       dfi_regs + DDRMON_CTRL);
- 		break;
- 	case ROCKCHIP_DDRTYPE_LPDDR4:
-+	case ROCKCHIP_DDRTYPE_LPDDR4X:
- 		writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_LPDDR4, DDRMON_CTRL_DDR_TYPE_MASK),
- 			       dfi_regs + DDRMON_CTRL);
- 		break;
-diff --git a/include/soc/rockchip/rockchip_grf.h b/include/soc/rockchip/rockchip_grf.h
-index dde1a9796ccb5..e46fd72aea8d1 100644
---- a/include/soc/rockchip/rockchip_grf.h
-+++ b/include/soc/rockchip/rockchip_grf.h
-@@ -12,6 +12,7 @@ enum {
- 	ROCKCHIP_DDRTYPE_LPDDR2	= 5,
- 	ROCKCHIP_DDRTYPE_LPDDR3	= 6,
- 	ROCKCHIP_DDRTYPE_LPDDR4	= 7,
-+	ROCKCHIP_DDRTYPE_LPDDR4X = 8,
- };
+Notes:
+    Changes since v5:
+     - new patch
+
+ Documentation/devicetree/bindings/soc/rockchip/grf.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/soc/rockchip/grf.yaml b/Documentation/devicetree/bindings/soc/rockchip/grf.yaml
+index e4fa6a07b4fa2..1309bf5ae0cdd 100644
+--- a/Documentation/devicetree/bindings/soc/rockchip/grf.yaml
++++ b/Documentation/devicetree/bindings/soc/rockchip/grf.yaml
+@@ -233,6 +233,7 @@ allOf:
+               - rockchip,rk3399-grf
+               - rockchip,rk3399-pmugrf
+               - rockchip,rk3568-pmugrf
++              - rockchip,rk3588-pmugrf
+               - rockchip,rv1108-grf
+               - rockchip,rv1108-pmugrf
  
- #endif /* __SOC_ROCKCHIP_GRF_H */
 -- 
 2.39.2
 
