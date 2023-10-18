@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D570CDB484
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:17:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB973CDB484
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:18:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344419AbjJRGRu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Oct 2023 02:17:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59646 "EHLO
+        id S1344562AbjJRGSA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Oct 2023 02:18:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229742AbjJRGRt (ORCPT
+        with ESMTP id S229818AbjJRGRt (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:17:49 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4DED10D
-        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:46 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DED22119
+        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:47 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrs-0001a4-MS; Wed, 18 Oct 2023 08:17:20 +0200
+        id 1qszrx-0001a2-7S; Wed, 18 Oct 2023 08:17:25 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrr-002UYg-C0; Wed, 18 Oct 2023 08:17:19 +0200
+        id 1qszrr-002UYl-Di; Wed, 18 Oct 2023 08:17:19 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.96)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrr-00EvjW-0S;
+        id 1qszrr-00Evjf-0d;
         Wed, 18 Oct 2023 08:17:19 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
@@ -44,12 +44,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Conor Dooley <conor.dooley@microchip.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v8 22/26] dt-bindings: devfreq: event: rockchip,dfi: Add rk3588 support
-Date:   Wed, 18 Oct 2023 08:17:10 +0200
-Message-Id: <20231018061714.3553817-23-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v8 24/26] arm64: dts: rockchip: rk3399: Enable DFI
+Date:   Wed, 18 Oct 2023 08:17:12 +0200
+Message-Id: <20231018061714.3553817-25-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20231018061714.3553817-1-s.hauer@pengutronix.de>
 References: <20231018061714.3553817-1-s.hauer@pengutronix.de>
@@ -63,50 +61,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds rockchip,rk3588-dfi to the list of compatibles. Unlike ealier
-SoCs the rk3588 has four interrupts (one for each channel) instead of
-only one, so increase the number of allowed interrupts to four.
+the DFI unit can provide useful data for measuring DDR utilization
+and works without any configuration from the board, so enable it in the
+dtsi file directly.
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi | 1 -
+ 1 file changed, 1 deletion(-)
 
-Notes:
-    Changes since v4:
-     - new patch
-    
-    Changes since v5:
-     - drop interrupt-names property
-    
-    Changes since v4:
-     - new patch
-
- .../devicetree/bindings/devfreq/event/rockchip,dfi.yaml       | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-index e8b64494ee8bd..50d3fabe958d5 100644
---- a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-+++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-@@ -14,6 +14,7 @@ properties:
-     enum:
-       - rockchip,rk3399-dfi
-       - rockchip,rk3568-dfi
-+      - rockchip,rk3588-dfi
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+index 9da0b6d77c8d2..e3972ef668f8c 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+@@ -1358,7 +1358,6 @@ dfi: dfi@ff630000 {
+ 		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
+ 		clocks = <&cru PCLK_DDR_MON>;
+ 		clock-names = "pclk_ddr_mon";
+-		status = "disabled";
+ 	};
  
-   clocks:
-     maxItems: 1
-@@ -23,7 +24,8 @@ properties:
-       - const: pclk_ddr_mon
- 
-   interrupts:
--    maxItems: 1
-+    minItems: 1
-+    maxItems: 4
- 
-   reg:
-     maxItems: 1
+ 	vpu: video-codec@ff650000 {
 -- 
 2.39.2
 
