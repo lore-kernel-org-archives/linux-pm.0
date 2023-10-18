@@ -2,32 +2,32 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B513CDB483
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3062BC46CA1
 	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:18:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344489AbjJRGSu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Oct 2023 02:18:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59646 "EHLO
+        id S1344560AbjJRGSw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Oct 2023 02:18:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60628 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344583AbjJRGSV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:18:21 -0400
+        with ESMTP id S1344554AbjJRGSL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:18:11 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD13AD52
-        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:57 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F5941BC
+        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:56 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrx-0001Zi-7N; Wed, 18 Oct 2023 08:17:25 +0200
+        id 1qszrx-0001Zy-7m; Wed, 18 Oct 2023 08:17:25 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrq-002UXq-Kg; Wed, 18 Oct 2023 08:17:18 +0200
+        id 1qszrr-002UYZ-7T; Wed, 18 Oct 2023 08:17:19 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.96)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrq-00Evht-1i;
-        Wed, 18 Oct 2023 08:17:18 +0200
+        id 1qszrr-00EvjG-0B;
+        Wed, 18 Oct 2023 08:17:19 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -44,10 +44,11 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v8 01/26] PM / devfreq: rockchip-dfi: Make pmu regmap mandatory
-Date:   Wed, 18 Oct 2023 08:16:49 +0200
-Message-Id: <20231018061714.3553817-2-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v8 19/26] PM / devfreq: rockchip-dfi: add support for RK3588
+Date:   Wed, 18 Oct 2023 08:17:07 +0200
+Message-Id: <20231018061714.3553817-20-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20231018061714.3553817-1-s.hauer@pengutronix.de>
 References: <20231018061714.3553817-1-s.hauer@pengutronix.de>
@@ -61,51 +62,101 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-As a matter of fact the regmap_pmu already is mandatory because
-it is used unconditionally in the driver. Bail out gracefully in
-probe() rather than crashing later.
+Add support for the RK3588 to the driver. The RK3588 has four DDR
+channels with a register stride of 0x4000 between the channel
+registers, also it has a DDRMON_CTRL register per channel.
 
-Fixes: b9d1262bca0af ("PM / devfreq: event: support rockchip dfi controller")
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
-
-Notes:
-    Changes since v4:
-     - move to beginning of the series to make it easier to backport to stable
-     - Add a Fixes: tag
-     - add missing of_node_put()
-
- drivers/devfreq/event/rockchip-dfi.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 36 +++++++++++++++++++++++++++-
+ include/soc/rockchip/rk3588_grf.h    | 18 ++++++++++++++
+ 2 files changed, 53 insertions(+), 1 deletion(-)
+ create mode 100644 include/soc/rockchip/rk3588_grf.h
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 39ac069cabc75..74893c06aa087 100644
+index bf38829a2a4af..794f36e7eebd1 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -193,14 +193,15 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(data->clk),
- 				     "Cannot get the clk pclk_ddr_mon\n");
+@@ -26,8 +26,9 @@
+ #include <soc/rockchip/rockchip_grf.h>
+ #include <soc/rockchip/rk3399_grf.h>
+ #include <soc/rockchip/rk3568_grf.h>
++#include <soc/rockchip/rk3588_grf.h>
  
--	/* try to find the optional reference to the pmu syscon */
- 	node = of_parse_phandle(np, "rockchip,pmu", 0);
--	if (node) {
--		data->regmap_pmu = syscon_node_to_regmap(node);
--		of_node_put(node);
--		if (IS_ERR(data->regmap_pmu))
--			return PTR_ERR(data->regmap_pmu);
--	}
-+	if (!node)
-+		return dev_err_probe(&pdev->dev, -ENODEV, "Can't find pmu_grf registers\n");
-+
-+	data->regmap_pmu = syscon_node_to_regmap(node);
-+	of_node_put(node);
-+	if (IS_ERR(data->regmap_pmu))
-+		return PTR_ERR(data->regmap_pmu);
-+
- 	data->dev = dev;
+-#define DMC_MAX_CHANNELS	2
++#define DMC_MAX_CHANNELS	4
  
- 	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
+ #define HIWORD_UPDATE(val, mask)	((val) | (mask) << 16)
+ 
+@@ -723,9 +724,42 @@ static int rk3568_dfi_init(struct rockchip_dfi *dfi)
+ 	return 0;
+ };
+ 
++static int rk3588_dfi_init(struct rockchip_dfi *dfi)
++{
++	struct regmap *regmap_pmu = dfi->regmap_pmu;
++	u32 reg2, reg3, reg4;
++
++	regmap_read(regmap_pmu, RK3588_PMUGRF_OS_REG2, &reg2);
++	regmap_read(regmap_pmu, RK3588_PMUGRF_OS_REG3, &reg3);
++	regmap_read(regmap_pmu, RK3588_PMUGRF_OS_REG4, &reg4);
++
++	/* lower 3 bits of the DDR type */
++	dfi->ddr_type = FIELD_GET(RK3588_PMUGRF_OS_REG2_DRAMTYPE_INFO, reg2);
++
++	/*
++	 * For version three and higher the upper two bits of the DDR type are
++	 * in RK3588_PMUGRF_OS_REG3
++	 */
++	if (FIELD_GET(RK3588_PMUGRF_OS_REG3_SYSREG_VERSION, reg3) >= 0x3)
++		dfi->ddr_type |= FIELD_GET(RK3588_PMUGRF_OS_REG3_DRAMTYPE_INFO_V3, reg3) << 3;
++
++	dfi->buswidth[0] = FIELD_GET(RK3588_PMUGRF_OS_REG2_BW_CH0, reg2) == 0 ? 4 : 2;
++	dfi->buswidth[1] = FIELD_GET(RK3588_PMUGRF_OS_REG2_BW_CH1, reg2) == 0 ? 4 : 2;
++	dfi->buswidth[2] = FIELD_GET(RK3568_PMUGRF_OS_REG2_BW_CH0, reg4) == 0 ? 4 : 2;
++	dfi->buswidth[3] = FIELD_GET(RK3588_PMUGRF_OS_REG2_BW_CH1, reg4) == 0 ? 4 : 2;
++	dfi->channel_mask = FIELD_GET(RK3588_PMUGRF_OS_REG2_CH_INFO, reg2) |
++			    FIELD_GET(RK3588_PMUGRF_OS_REG2_CH_INFO, reg4) << 2;
++	dfi->max_channels = 4;
++
++	dfi->ddrmon_stride = 0x4000;
++
++	return 0;
++};
++
+ static const struct of_device_id rockchip_dfi_id_match[] = {
+ 	{ .compatible = "rockchip,rk3399-dfi", .data = rk3399_dfi_init },
+ 	{ .compatible = "rockchip,rk3568-dfi", .data = rk3568_dfi_init },
++	{ .compatible = "rockchip,rk3588-dfi", .data = rk3588_dfi_init },
+ 	{ },
+ };
+ 
+diff --git a/include/soc/rockchip/rk3588_grf.h b/include/soc/rockchip/rk3588_grf.h
+new file mode 100644
+index 0000000000000..630b35a550640
+--- /dev/null
++++ b/include/soc/rockchip/rk3588_grf.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++#ifndef __SOC_RK3588_GRF_H
++#define __SOC_RK3588_GRF_H
++
++#define RK3588_PMUGRF_OS_REG2		0x208
++#define RK3588_PMUGRF_OS_REG2_DRAMTYPE_INFO		GENMASK(15, 13)
++#define RK3588_PMUGRF_OS_REG2_BW_CH0			GENMASK(3, 2)
++#define RK3588_PMUGRF_OS_REG2_BW_CH1                    GENMASK(19, 18)
++#define RK3588_PMUGRF_OS_REG2_CH_INFO                   GENMASK(29, 28)
++
++#define RK3588_PMUGRF_OS_REG3		0x20c
++#define RK3588_PMUGRF_OS_REG3_DRAMTYPE_INFO_V3		GENMASK(13, 12)
++#define RK3588_PMUGRF_OS_REG3_SYSREG_VERSION		GENMASK(31, 28)
++
++#define RK3588_PMUGRF_OS_REG4           0x210
++#define RK3588_PMUGRF_OS_REG5           0x214
++
++#endif /* __SOC_RK3588_GRF_H */
 -- 
 2.39.2
 
