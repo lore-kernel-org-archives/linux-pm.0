@@ -2,32 +2,32 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92558CDB484
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:17:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 717D8CDB482
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Oct 2023 06:17:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344481AbjJRGRq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Oct 2023 02:17:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42980 "EHLO
+        id S229717AbjJRGRt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Oct 2023 02:17:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59602 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229722AbjJRGRp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:17:45 -0400
+        with ESMTP id S1344493AbjJRGRr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Oct 2023 02:17:47 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3CF7FE
-        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:43 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E2D7FA
+        for <linux-pm@vger.kernel.org>; Tue, 17 Oct 2023 23:17:45 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrs-0001Zn-JW; Wed, 18 Oct 2023 08:17:20 +0200
+        id 1qszrs-0001a7-JN; Wed, 18 Oct 2023 08:17:20 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrq-002UY0-Oz; Wed, 18 Oct 2023 08:17:18 +0200
+        id 1qszrr-002UYq-GC; Wed, 18 Oct 2023 08:17:19 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.96)
         (envelope-from <sha@pengutronix.de>)
-        id 1qszrq-00EviG-2E;
-        Wed, 18 Oct 2023 08:17:18 +0200
+        id 1qszrr-00Evjn-0p;
+        Wed, 18 Oct 2023 08:17:19 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -44,11 +44,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v8 06/26] PM / devfreq: rockchip-dfi: Use free running counter
-Date:   Wed, 18 Oct 2023 08:16:54 +0200
-Message-Id: <20231018061714.3553817-7-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v8 26/26] arm64: dts: rockchip: rk3588s: Add DFI
+Date:   Wed, 18 Oct 2023 08:17:14 +0200
+Message-Id: <20231018061714.3553817-27-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20231018061714.3553817-1-s.hauer@pengutronix.de>
 References: <20231018061714.3553817-1-s.hauer@pengutronix.de>
@@ -62,133 +61,56 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The DDR_MON counters are free running counters. These are resetted to 0
-when starting them over like currently done when reading the current
-counter values.
-
-Resetting the counters becomes a problem with perf support we want to
-add later, because perf needs counters that are not modified elsewhere.
-
-This patch removes resetting the counters and keeps them running
-instead. That means we no longer use the absolute counter values but
-instead compare them with the counter values we read last time. Not
-stopping the counters also has the impact that they are running while
-we are reading them. We cannot read multiple timers atomically, so
-the values do not exactly fit together. The effect should be negligible
-though as the time between two measurements is some orders of magnitude
-bigger than the time we need to read multiple registers.
+The DFI unit can be used to measure DRAM utilization using perf. Add the
+node to the device tree. The DFI needs a rockchip,pmu phandle to the pmu
+containing registers for SDRAM configuration details. This is added in
+this patch as well.
 
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
 
 Notes:
     Changes since v4:
-     - rephrase commit message
-     - Drop unused variable
+     - new patch
 
- drivers/devfreq/event/rockchip-dfi.c | 52 ++++++++++++++++------------
- 1 file changed, 30 insertions(+), 22 deletions(-)
+ arch/arm64/boot/dts/rockchip/rk3588s.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 680f629da64fc..126bb744645b6 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -38,11 +38,15 @@
- #define DDRMON_CH1_COUNT_NUM		0x3c
- #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s.dtsi b/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
+index 5544f66c6ff41..e693a341f6f27 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
+@@ -443,6 +443,11 @@ usb_host1_ohci: usb@fc8c0000 {
+ 		status = "disabled";
+ 	};
  
--struct dmc_usage {
-+struct dmc_count_channel {
- 	u32 access;
- 	u32 total;
- };
- 
-+struct dmc_count {
-+	struct dmc_count_channel c[RK3399_DMC_NUM_CH];
-+};
++	pmu1grf: syscon@fd58a000 {
++		compatible = "rockchip,rk3588-pmugrf", "syscon", "simple-mfd";
++		reg = <0x0 0xfd58a000 0x0 0x10000>;
++	};
 +
- /*
-  * The dfi controller can monitor DDR load. It has an upper and lower threshold
-  * for the operating points. Whenever the usage leaves these bounds an event is
-@@ -51,7 +55,7 @@ struct dmc_usage {
- struct rockchip_dfi {
- 	struct devfreq_event_dev *edev;
- 	struct devfreq_event_desc desc;
--	struct dmc_usage ch_usage[RK3399_DMC_NUM_CH];
-+	struct dmc_count last_event_count;
- 	struct device *dev;
- 	void __iomem *regs;
- 	struct regmap *regmap_pmu;
-@@ -85,30 +89,18 @@ static void rockchip_dfi_stop_hardware_counter(struct devfreq_event_dev *edev)
- 	writel_relaxed(SOFTWARE_DIS, dfi_regs + DDRMON_CTRL);
- }
+ 	sys_grf: syscon@fd58c000 {
+ 		compatible = "rockchip,rk3588-sys-grf", "syscon";
+ 		reg = <0x0 0xfd58c000 0x0 0x1000>;
+@@ -1329,6 +1334,17 @@ pcie2x1l2_intc: legacy-interrupt-controller {
+ 		};
+ 	};
  
--static int rockchip_dfi_get_busier_ch(struct devfreq_event_dev *edev)
-+static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dmc_count *count)
- {
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
--	u32 tmp, max = 0;
--	u32 i, busier_ch = 0;
-+	u32 i;
- 	void __iomem *dfi_regs = dfi->regs;
- 
--	rockchip_dfi_stop_hardware_counter(edev);
--
--	/* Find out which channel is busier */
- 	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
--		dfi->ch_usage[i].access = readl_relaxed(dfi_regs +
-+		count->c[i].access = readl_relaxed(dfi_regs +
- 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
--		dfi->ch_usage[i].total = readl_relaxed(dfi_regs +
-+		count->c[i].total = readl_relaxed(dfi_regs +
- 				DDRMON_CH0_COUNT_NUM + i * 20);
--		tmp = dfi->ch_usage[i].access;
--		if (tmp > max) {
--			busier_ch = i;
--			max = tmp;
--		}
- 	}
--	rockchip_dfi_start_hardware_counter(edev);
--
--	return busier_ch;
- }
- 
- static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
-@@ -145,12 +137,28 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- 				  struct devfreq_event_data *edata)
- {
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
--	int busier_ch;
-+	struct dmc_count count;
-+	struct dmc_count *last = &dfi->last_event_count;
-+	u32 access = 0, total = 0;
-+	int i;
++	dfi: dfi@fe060000 {
++		reg = <0x00 0xfe060000 0x00 0x10000>;
++		compatible = "rockchip,rk3588-dfi";
++		interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH 0>,
++			     <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH 0>,
++			     <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH 0>,
++			     <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH 0>;
++		interrupt-names = "ch0", "ch1", "ch2", "ch3";
++		rockchip,pmu = <&pmu1grf>;
++	};
 +
-+	rockchip_dfi_read_counters(edev, &count);
-+
-+	/* We can only report one channel, so find the busiest one */
-+	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
-+		u32 a = count.c[i].access - last->c[i].access;
-+		u32 t = count.c[i].total - last->c[i].total;
-+
-+		if (a > access) {
-+			access = a;
-+			total = t;
-+		}
-+	}
- 
--	busier_ch = rockchip_dfi_get_busier_ch(edev);
-+	edata->load_count = access * 4;
-+	edata->total_count = total;
- 
--	edata->load_count = dfi->ch_usage[busier_ch].access * 4;
--	edata->total_count = dfi->ch_usage[busier_ch].total;
-+	dfi->last_event_count = count;
- 
- 	return 0;
- }
+ 	gmac1: ethernet@fe1c0000 {
+ 		compatible = "rockchip,rk3588-gmac", "snps,dwmac-4.20a";
+ 		reg = <0x0 0xfe1c0000 0x0 0x10000>;
 -- 
 2.39.2
 
