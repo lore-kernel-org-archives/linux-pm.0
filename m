@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9702CDB485
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Oct 2023 08:41:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E4F4CDB484
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Oct 2023 08:41:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235219AbjJSIlg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Oct 2023 04:41:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37076 "EHLO
+        id S232846AbjJSIlo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Oct 2023 04:41:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56634 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232850AbjJSIle (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2023 04:41:34 -0400
+        with ESMTP id S1344967AbjJSIlm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2023 04:41:42 -0400
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66E2D134;
-        Thu, 19 Oct 2023 01:41:32 -0700 (PDT)
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39J8L4rU004799;
-        Thu, 19 Oct 2023 08:41:03 GMT
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7127A12A;
+        Thu, 19 Oct 2023 01:41:40 -0700 (PDT)
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39J7sZvf031917;
+        Thu, 19 Oct 2023 08:41:15 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=E/dfkglF2jsrihxivfU2b/SqyWaUEpeP2bPXuuNoQyM=;
- b=Cmmai1XQiiJgl1moA5en5mT8iLb7PknOd/0O1X0atRoNSzkOHcFp5GLk3LG/VpQsPg8z
- 6yDfhRk2HGsClej4d+/jylZCEiGds0/A1WOjLmmP4PipDlpSsJHgQwT6kmMSh6w+IAhR
- 3TKhK90fecogy+Zc3YYFLqLFL+cQ/UfXHIgdQ1SYzeYpvbxJYy52HlsNoHpbAumUxOdt
- T4ZQibxd/Pk4xjnSA39n4AaRwEh4wAuHhKs0HqUOvHXisBehUMoyNG78elUg8imY60tT
- KaPGQkoqMGuM0QVFgLUkjiQBvpeCGhtA3HeqLLXadKhaduSf5CucmGQYdfrfVGyRf1bH 0A== 
-Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tth2f22bs-1
+ bh=2D+d4VEjOV3Ir+15KuGEfBVLg9k/jCvwAdwiFzJmVdM=;
+ b=b/yzMXIbrmVcQ6c2sVfKlEz8Ob3lQgHT9j/djdCU8bxVOFNSdoF1EWk6+8bGpkBhu2ve
+ KN/Od1nyr0VFbvKKqOfEIjN0fQTvEXE6IMFTDgt45mymoWPGvucEtkeVg2LA8oI9bHUg
+ Ep5cMq4DgO8PMz8IPs3uclqd79phXf2qhXPkch0FN/mNYz3e3KLE1SVStSfO8tHJdAX1
+ xWZhxP04uNxuQHw9vwJY+cnqHvtZYhXeyv7T7eEDwJd9EIStw46Qz4NdzrnGOMou8vwt
+ Qjuih9ZyHyZC95NBRiLc2SUi/19gqejf/Q3wi2JMcdFsbEhC9QKcwJj+TwhBG1ftKKNh BA== 
+Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ttnnah9rt-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 19 Oct 2023 08:41:03 +0000
+        Thu, 19 Oct 2023 08:41:14 +0000
 Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
-        by NASANPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39J8f23G018091
+        by NASANPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39J8fEZo022901
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 19 Oct 2023 08:41:02 GMT
+        Thu, 19 Oct 2023 08:41:14 GMT
 Received: from varda-linux.qualcomm.com (10.80.80.8) by
  nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.39; Thu, 19 Oct 2023 01:40:56 -0700
+ 15.2.1118.39; Thu, 19 Oct 2023 01:41:08 -0700
 From:   Varadarajan Narayanan <quic_varada@quicinc.com>
 To:     <agross@kernel.org>, <andersson@kernel.org>,
         <konrad.dybcio@linaro.org>, <robh+dt@kernel.org>,
@@ -49,9 +49,9 @@ To:     <agross@kernel.org>, <andersson@kernel.org>,
         <linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>,
         <linux-pm@vger.kernel.org>
 CC:     Varadarajan Narayanan <quic_varada@quicinc.com>
-Subject: [PATCH v4 1/9] clk: qcom: config IPQ_APSS_6018 should depend on QCOM_SMEM
-Date:   Thu, 19 Oct 2023 14:10:35 +0530
-Message-ID: <9796f8e752c4de94b0939e4512bc646a5e72fc32.1697694811.git.quic_varada@quicinc.com>
+Subject: [PATCH v4 3/9] clk: qcom: apss-ipq-pll: Use stromer plus ops for stromer plus pll
+Date:   Thu, 19 Oct 2023 14:10:37 +0530
+Message-ID: <9ea8deab1c8b49008acb91510e9e1b1c1e0b4f3d.1697694811.git.quic_varada@quicinc.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <cover.1697694811.git.quic_varada@quicinc.com>
 References: <cover.1697694811.git.quic_varada@quicinc.com>
@@ -62,43 +62,51 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nasanex01a.na.qualcomm.com (10.52.223.231)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: tkKkznSx81Fb0gWyet_3in1o7lGhtJBP
-X-Proofpoint-GUID: tkKkznSx81Fb0gWyet_3in1o7lGhtJBP
+X-Proofpoint-GUID: HPnvVYsFwqZAMZe0_8vSXhDzPyOnnVzW
+X-Proofpoint-ORIG-GUID: HPnvVYsFwqZAMZe0_8vSXhDzPyOnnVzW
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-10-19_06,2023-10-18_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
- mlxlogscore=994 spamscore=0 malwarescore=0 suspectscore=0
- lowpriorityscore=0 impostorscore=0 priorityscore=1501 clxscore=1015
- adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0 mlxscore=0
+ phishscore=0 adultscore=0 malwarescore=0 spamscore=0 bulkscore=0
+ clxscore=1015 mlxlogscore=772 impostorscore=0 suspectscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2309180000 definitions=main-2310190072
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The config IPQ_APSS_6018 should depend on QCOM_SMEM, to
-avoid the following error.
+The set rate and determine rate operations are different between
+Stromer and Stromer Plus PLLs. Since the programming sequence is
+different, the PLLs dont get configured properly and random,
+inexplicable crash/freeze is seen. Hence, use stromer plus ops
+for ipq_pll_stromer_plus.
 
-Fixes: 5e77b4ef1b19 ("clk: qcom: Add ipq6018 apss clock controller")
-Reported-by: kernel test robot <yujie.liu@intel.com>
-Closes: https://lore.kernel.org/r/202310181650.g8THtfsm-lkp@intel.com/
+Acked-by: Stephen Boyd <sboyd@kernel.org>
+Fixes: c7ef7fbb1ccf ("clk: qcom: apss-ipq-pll: add support for IPQ5332")
+Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
 Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
 ---
- drivers/clk/qcom/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+v4:	Update commit log to include
+		"What goes wrong if we don't have this patch?"
+v2:	Add Fixes tag
+---
+ drivers/clk/qcom/apss-ipq-pll.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index 3194c8b..ad1acd9 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -131,6 +131,7 @@ config IPQ_APSS_6018
- 	tristate "IPQ APSS Clock Controller"
- 	select IPQ_APSS_PLL
- 	depends on QCOM_APCS_IPC || COMPILE_TEST
-+	depends on QCOM_SMEM
- 	help
- 	  Support for APSS clock controller on IPQ platforms. The
- 	  APSS clock controller manages the Mux and enable block that feeds the
+diff --git a/drivers/clk/qcom/apss-ipq-pll.c b/drivers/clk/qcom/apss-ipq-pll.c
+index e170331..18c4ffe 100644
+--- a/drivers/clk/qcom/apss-ipq-pll.c
++++ b/drivers/clk/qcom/apss-ipq-pll.c
+@@ -68,7 +68,7 @@ static struct clk_alpha_pll ipq_pll_stromer_plus = {
+ 				.fw_name = "xo",
+ 			},
+ 			.num_parents = 1,
+-			.ops = &clk_alpha_pll_stromer_ops,
++			.ops = &clk_alpha_pll_stromer_plus_ops,
+ 		},
+ 	},
+ };
 -- 
 2.7.4
 
