@@ -2,182 +2,118 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF463CDB465
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Oct 2023 10:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79CDACDB465
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Oct 2023 10:53:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235250AbjJSKvI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Oct 2023 06:51:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41804 "EHLO
+        id S232678AbjJSKxI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Oct 2023 06:53:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55062 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235329AbjJSKu4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2023 06:50:56 -0400
-Received: from mail-yb1-xb31.google.com (mail-yb1-xb31.google.com [IPv6:2607:f8b0:4864:20::b31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D345D58
-        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2023 03:50:41 -0700 (PDT)
-Received: by mail-yb1-xb31.google.com with SMTP id 3f1490d57ef6-d852b28ec3bso8828716276.2
-        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2023 03:50:41 -0700 (PDT)
+        with ESMTP id S1345285AbjJSKxG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2023 06:53:06 -0400
+Received: from mail-lj1-x233.google.com (mail-lj1-x233.google.com [IPv6:2a00:1450:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 506A2121;
+        Thu, 19 Oct 2023 03:53:04 -0700 (PDT)
+Received: by mail-lj1-x233.google.com with SMTP id 38308e7fff4ca-2c501bd6ff1so95111741fa.3;
+        Thu, 19 Oct 2023 03:53:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1697712640; x=1698317440; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=W7s/8+3r7RFx6yWj1hujuMRvbCyWrWX9uW8mMRBRCYM=;
-        b=MeFM5FbIGVnkoFTob4eJMR+iSEl5tnE7VuhJsz/BOv2m5udYpHZosn7KqFp9HkdxYJ
-         4QsGduPPzcKJ3QdHDVjIgNNDqVE7h7RM3tXrZzbp0m8qZuuvokt9Tmqsj2k51HJbtfYS
-         3XHw6wnKZ/0CydW1EkHDGUy1kxJG4sPSHvpiWGoPlaQnq4vky00N0UOfGrdSwAWPCdkq
-         vBN1tAHGnFgdj8uWA6GkPuilA+KIZ9ih0LFVg3GGXdJIcWyH266vBAp5yl0uAGfAW6QG
-         WYy47wbp3r0zsfw2Qc1reXj74gFWYbA5lB0shVZ3fK2z0smZ+2kKkItPPDZRjC3euQeU
-         ZOYA==
+        d=gmail.com; s=20230601; t=1697712782; x=1698317582; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:subject:cc
+         :to:from:date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=a2iJFIQZU3dMWJmF9fQqJT6sOJuhpG2IbdIzEIIeAV0=;
+        b=dMz2uwuSU7lYXT/hKRJL5HQ3W8Td6np6Idc0NASEawoS/cOZNPXZUZ70fPb0EkSMY3
+         /4nLqK4ym4DzImgE1lATwjbumLMqzZv1iTht9+HtDJb7XpNjQuX52HVsPvYLklOgo9/Y
+         VksStneetXYJSbyqPa1+ZPH1vyyHa6zXLZkKuAklvGvkmknT5YQHVTynKEK2eGQtES1z
+         62qNgWuJedYkJa2PlCPrkx8XQ6gzctVYIrpvxUdgb5eGOa0R2mD6CoSpta+ELwhVKj5J
+         OIkQZxU6ysIdJyAsuea+NBMKEcmcDTyVvYDPU169IfxvTzOvlrKiir/Nnr+1Q8uvscv2
+         f1DA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697712640; x=1698317440;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=W7s/8+3r7RFx6yWj1hujuMRvbCyWrWX9uW8mMRBRCYM=;
-        b=mO7zcX9ZDyNytsVt3nTpzi2F0B6uh4FyTzNFoZW8mociH4hWwfcoUd6K+fwwAP+KCC
-         6lorajTfJuSu44lEtgAwcThCDPylUcvx76FRO+dzSPn1SqXKlH0QnJv3acwKemLsaxzy
-         U+h129ciniGUyU2sDDjQJlEEXo7dbAwGKKMMGra6wgW2K+mzmhTsKOaNI4PrUE7dHpAn
-         p45lnS8EO+9mWlZ0+SrtRsLd/Qi2rnLZJS9AcdiUJa9ibWnSPpiLFuX0KTYyXC8ngHty
-         7o25X5lBbel3AF6hFtE4KQwbKU2XoFiIpYJKnXZiyWIV/1JQ0WRqLUJ2/Ar11i2vtEeW
-         C5Og==
-X-Gm-Message-State: AOJu0YwWaOtB0MHFcrN1gqepIeQ4l1qcLZwiG5MqikxF1zHJvKkAB/fI
-        WJAPCrkslv0DWm9Di8ouoW4ZMHGklULY4XYR6B8QxA==
-X-Google-Smtp-Source: AGHT+IFPxBdsxnQPRHzd8OSMsox5Do9D+FzcetAm0MgZTfWyC44uvU469gyS3vnZSEqmbuBz23jJ3l8V1DLvv2UpspM=
-X-Received: by 2002:a25:5d0b:0:b0:d9a:cc6b:70fc with SMTP id
- r11-20020a255d0b000000b00d9acc6b70fcmr1899433ybb.3.1697712639886; Thu, 19 Oct
- 2023 03:50:39 -0700 (PDT)
-MIME-Version: 1.0
-References: <20231018-msm8909-cpufreq-v2-0-0962df95f654@kernkonzept.com> <20231018-msm8909-cpufreq-v2-3-0962df95f654@kernkonzept.com>
-In-Reply-To: <20231018-msm8909-cpufreq-v2-3-0962df95f654@kernkonzept.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Thu, 19 Oct 2023 12:50:03 +0200
-Message-ID: <CAPDyKFruPQhkRyWURkEcMbt_EKdGAqr0j+zYZS-+3-taE+y0+g@mail.gmail.com>
-Subject: Re: [PATCH v2 3/3] cpufreq: qcom-nvmem: Add MSM8909
-To:     Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Andy Gross <agross@kernel.org>,
+        d=1e100.net; s=20230601; t=1697712782; x=1698317582;
+        h=in-reply-to:content-disposition:mime-version:references:subject:cc
+         :to:from:date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=a2iJFIQZU3dMWJmF9fQqJT6sOJuhpG2IbdIzEIIeAV0=;
+        b=iqxGzS8Ha1W2i0SREbYt6KLDaZ4lSOdSLwAuy7oSAsolVTqHFFsHNl0qVyqbdY+c8U
+         2VPNXT+bzrEBsDCxad2bq0Fy15838jwdsV+RU8BZ/N/Ox2SDrHB7fwjn59bZIXxMjCjK
+         bYhhNYgeKHeujj1p+2H+y/2CSMgvBe4BvGzVM7fS7Lc2z5JtOGkHQ62J00qU9rpsi1cs
+         G98lqH611mt7mArPM1KpPlMCs/gxUIInaXYfxh7QSCXyxJYmaJIJNFH1s1ulMZki1PcA
+         bi+d6ZQfjZt1WIc/uOP1fK7TkgGeZs/fV/eZ5881jcb8A0vIgGVz7Vgdurp/gp3aJpcr
+         1gKg==
+X-Gm-Message-State: AOJu0YxDpRQ91ZH6fmGQlZYimEUOBXUor4lHosqIWyEg3Sg4vTDxgSDb
+        AMzj61w2aGI/HNvZqoHSWl8=
+X-Google-Smtp-Source: AGHT+IGzZ6w/a2I2t2hj+OoCFUEN+jp/x1/0jBQjv+5/Krw0aEMmBE8FvF+3HQVEJYZ7RYhQGJX34g==
+X-Received: by 2002:ac2:5194:0:b0:503:9eb:47f0 with SMTP id u20-20020ac25194000000b0050309eb47f0mr1122559lfi.59.1697712782192;
+        Thu, 19 Oct 2023 03:53:02 -0700 (PDT)
+Received: from Ansuel-xps. (93-34-89-13.ip49.fastwebnet.it. [93.34.89.13])
+        by smtp.gmail.com with ESMTPSA id fb21-20020a056512125500b005031641b40asm1043740lfb.159.2023.10.19.03.52.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 19 Oct 2023 03:53:01 -0700 (PDT)
+Message-ID: <65310a8d.050a0220.28bdd.4114@mx.google.com>
+X-Google-Original-Message-ID: <ZTEKiUCiP/fMJUdl@Ansuel-xps.>
+Date:   Thu, 19 Oct 2023 12:52:57 +0200
+From:   Christian Marangi <ansuelsmth@gmail.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Ilia Lin <ilia.lin@kernel.org>, Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org, Stephan Gerhold <stephan@gerhold.net>
-Content-Type: text/plain; charset="UTF-8"
+        Conor Dooley <conor+dt@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Sricharan Ramabadhran <quic_srichara@quicinc.com>,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v6 0/4] cpufreq: qcom-nvmem: add support for ipq806x
+References: <20231013173854.7399-1-ansuelsmth@gmail.com>
+ <20231019064653.feqpjdmblm7mmsug@vireshk-i7>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231019064653.feqpjdmblm7mmsug@vireshk-i7>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 18 Oct 2023 at 10:06, Stephan Gerhold
-<stephan.gerhold@kernkonzept.com> wrote:
->
-> When the MSM8909 SoC is used together with the PM8909 PMIC the primary
-> power supply for the CPU (VDD_APC) is shared with other components to
-> the SoC, namely the VDD_CX power domain typically supplied by the PM8909
-> S1 regulator. This means that all votes for necessary performance states
-> go via the RPM firmware which collects the requirements from all the
-> processors in the SoC. The RPM firmware then chooses the actual voltage
-> based on the performance states ("corners"), depending on calibration
-> values in the NVMEM and other factors.
->
-> The MSM8909 SoC is also sometimes used with the PM8916 or PM660 PMIC.
-> In that case there is a dedicated regulator connected to VDD_APC and
-> Linux is responsible to do adaptive voltage scaling using CPR (similar
-> to the existing code for QCS404).
->
-> This difference can be described in the device tree, by either assigning
-> the CPU a power domain from RPMPD or from the CPR driver.
->
-> Describe this using "perf" as generic power domain name, which is also
-> used already for SCMI based platforms.
->
-> Also add a simple function that reads the speedbin from a NVMEM cell
-> and sets it as-is for opp-supported-hw. The actual bit position can be
-> described in the device tree without additional driver changes.
->
-> Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-> ---
->  drivers/cpufreq/qcom-cpufreq-nvmem.c | 26 ++++++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
->
-> diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-> index 3794390089b0..e52031863350 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-> @@ -59,6 +59,24 @@ struct qcom_cpufreq_drv {
->
->  static struct platform_device *cpufreq_dt_pdev, *cpufreq_pdev;
->
-> +static int qcom_cpufreq_simple_get_version(struct device *cpu_dev,
-> +                                          struct nvmem_cell *speedbin_nvmem,
-> +                                          char **pvs_name,
-> +                                          struct qcom_cpufreq_drv *drv)
-> +{
-> +       u8 *speedbin;
-> +
-> +       *pvs_name = NULL;
-> +       speedbin = nvmem_cell_read(speedbin_nvmem, NULL);
-> +       if (IS_ERR(speedbin))
-> +               return PTR_ERR(speedbin);
-> +
-> +       dev_dbg(cpu_dev, "speedbin: %d\n", *speedbin);
-> +       drv->versions = 1 << *speedbin;
-> +       kfree(speedbin);
-> +       return 0;
-> +}
-> +
->  static void get_krait_bin_format_a(struct device *cpu_dev,
->                                           int *speed, int *pvs, int *pvs_ver,
->                                           u8 *buf)
-> @@ -252,6 +270,8 @@ static int qcom_cpufreq_ipq8074_name_version(struct device *cpu_dev,
->         return 0;
->  }
->
-> +static const char *generic_genpd_names[] = { "perf", NULL };
-> +
-
-As discussed, using "perf" as a generic name for a performance domain
-for CPUs makes perfect sense to me. However, we need to update the DT
-doc bindings for this too. At least we should update
-Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml as a
-part of $subject series.
-
-At a later step, we should have a look at updating the description for
-the power-domain-names in the common
-Documentation/devicetree/bindings/arm/cpus.yaml, I think.
-
->  static const struct qcom_cpufreq_match_data match_data_kryo = {
->         .get_version = qcom_cpufreq_kryo_name_version,
->  };
-> @@ -260,6 +280,11 @@ static const struct qcom_cpufreq_match_data match_data_krait = {
->         .get_version = qcom_cpufreq_krait_name_version,
->  };
->
-> +static const struct qcom_cpufreq_match_data match_data_msm8909 = {
-> +       .get_version = qcom_cpufreq_simple_get_version,
-> +       .genpd_names = generic_genpd_names,
-> +};
-> +
->  static const char *qcs404_genpd_names[] = { "cpr", NULL };
->
->  static const struct qcom_cpufreq_match_data match_data_qcs404 = {
-> @@ -434,6 +459,7 @@ static struct platform_driver qcom_cpufreq_driver = {
->
->  static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
->         { .compatible = "qcom,apq8096", .data = &match_data_kryo },
-> +       { .compatible = "qcom,msm8909", .data = &match_data_msm8909 },
->         { .compatible = "qcom,msm8996", .data = &match_data_kryo },
->         { .compatible = "qcom,qcs404", .data = &match_data_qcs404 },
->         { .compatible = "qcom,ipq8064", .data = &match_data_krait },
->
-> --
-> 2.39.2
+On Thu, Oct 19, 2023 at 12:16:53PM +0530, Viresh Kumar wrote:
+> On 13-10-23, 19:38, Christian Marangi wrote:
+> > The first patch of this series was split to a separate series as it
+> > doesn't depend on [1] and can be applied right away,
+> > [1] introduced some breaking change to function that ipq806x, ipq807x
+> > patch was dropped to permit an easier rebase and merge of both.
+> > 
+> > This small series adds support for ipq806x qcom-cpufreq-nvmem driver.
+> > Special function are required to make use of the opp-supported-hw
+> > binding by hardcoding custom bits based on the qcom SoC ID.
+> > 
+> > The qcom-cpufreq-nvmem driver had recent changes to also improve
+> > support for apq8064. Because of this, this series depends on a
+> > just merged series.
+> > 
+> > Depends on [1].
+> > 
+> > [1] https://lore.kernel.org/linux-pm/20231010063235.rj2ehxugtjr5x2xr@vireshk-i7/T/#t
+> > 
+> > Christian Marangi (4):
+> >   dt-bindings: cpufreq: qcom-cpufreq-nvmem: Document krait-cpu
+> >   dt-bindings: opp: opp-v2-kryo-cpu: Document named opp-microvolt
+> >     property
+> 
+> Applied above two. Thanks.
+> 
+> >   cpufreq: qcom-nvmem: add support for IPQ8064
+> 
+> This doesn't apply/build anymore.
 >
 
-Other than the above, feel free to add:
+Hi, I sent v7 that fix the conflict problem. I dropped from the series
+the 2 applied patch and added the 2 dependent patch since it seems
+fixing the problem in the series might take longer times.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Can you check? Thanks a lot for the help in accepting this series.
 
-Kind regards
-Uffe
+> >   ARM: dts: qcom: ipq8064: Add CPU OPP table
+> 
+
+-- 
+	Ansuel
