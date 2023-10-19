@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9162DCDB483
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Oct 2023 08:41:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0760EC41513
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Oct 2023 08:42:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235279AbjJSIly (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Oct 2023 04:41:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56644 "EHLO
+        id S235323AbjJSIl7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Oct 2023 04:41:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47424 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231851AbjJSIlv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2023 04:41:51 -0400
+        with ESMTP id S235238AbjJSIlw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2023 04:41:52 -0400
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7F810134;
-        Thu, 19 Oct 2023 01:41:43 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40523184;
+        Thu, 19 Oct 2023 01:41:46 -0700 (PDT)
 Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39J7skbK008047;
-        Thu, 19 Oct 2023 08:41:09 GMT
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39J7skSb008038;
+        Thu, 19 Oct 2023 08:41:21 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=6A8Rw+sbRT4V2/G0ENUVH19WTb2WHsVjktF1KZ9Gls0=;
- b=eyvnfGJFqSP0jbiHaHm5yGavGTb0Ft+q5piRQ++Q96ya5nwGrUWUkV9Vm3Uj1fmBglIk
- wj7pkcNVaef2wyCNmucXQpjI42f9vXBev37Ao6rDEKTcML2Ic/8I+cIvC2coKw7xzvgj
- ++5G64wDjBXF9aRY3C+/j+kHYbMbFfi0lkvJWvrqv/sCeAkagerPOqqJuMLUs9lVpnxQ
- KIFsAJN2NmAXaUUHDSHNQektBWVgtIYL4ZYcTJIzp6Glj5T6Wu9Vm1laGZjOlYTC9FKa
- E0Xp2C6meDWvXYz4Hi+CnyXh893lCOWG+1BzbE/sLiFHKqbn61AGgx5p3KHRCgCnujfV sA== 
-Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tt8xsb9g8-1
+ bh=752q2NEkSJqynU3w4XSYItex3HD6Wnytgigz8YSx60A=;
+ b=TF2hZK4RrkCQ8upd6epd5ettqQ+LpIFOOMLE8vGV3Zv0xNsbvK0XOksVE9e44uU0/o0x
+ lrt/gS6ZUPw8eTNgoS+FLxgprU3AlGggxvekj/21X7QpK4hdLaQ54XJhcgh/SeeJPvW3
+ jieH25IMI72W59Dan+DncxOSHhuu+dmfhOPx38eegdnhKTLiUGIEAHo2tMhpyujODu7p
+ Nnx/NsbKQ5N0KAnweUb9XqVpUNvNURgoF7PQa7OScvUmqDtHudXSh5WODSyrjw5g0+nY
+ YlZLON+VtIBQVRY3pCNibhUuLvlF4CkI4+QPO0s4HcXMS86k6lbfduXM+vgIyfFWz/OH CQ== 
+Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tt8xsb9gj-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 19 Oct 2023 08:41:09 +0000
+        Thu, 19 Oct 2023 08:41:20 +0000
 Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
-        by NASANPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39J8f87G002666
+        by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39J8fKqF005771
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 19 Oct 2023 08:41:08 GMT
+        Thu, 19 Oct 2023 08:41:20 GMT
 Received: from varda-linux.qualcomm.com (10.80.80.8) by
  nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.39; Thu, 19 Oct 2023 01:41:02 -0700
+ 15.2.1118.39; Thu, 19 Oct 2023 01:41:14 -0700
 From:   Varadarajan Narayanan <quic_varada@quicinc.com>
 To:     <agross@kernel.org>, <andersson@kernel.org>,
         <konrad.dybcio@linaro.org>, <robh+dt@kernel.org>,
@@ -49,9 +49,9 @@ To:     <agross@kernel.org>, <andersson@kernel.org>,
         <linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>,
         <linux-pm@vger.kernel.org>
 CC:     Varadarajan Narayanan <quic_varada@quicinc.com>
-Subject: [PATCH v4 2/9] clk: qcom: clk-alpha-pll: introduce stromer plus ops
-Date:   Thu, 19 Oct 2023 14:10:36 +0530
-Message-ID: <5e1c2ff9522dd29e69f286dbbe1c867433763629.1697694811.git.quic_varada@quicinc.com>
+Subject: [PATCH v4 4/9] clk: qcom: apss-ipq-pll: Fix 'l' value for ipq5332_pll_config
+Date:   Thu, 19 Oct 2023 14:10:38 +0530
+Message-ID: <8053157ca734d5db09106f2d291bb6a156d38c49.1697694811.git.quic_varada@quicinc.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <cover.1697694811.git.quic_varada@quicinc.com>
 References: <cover.1697694811.git.quic_varada@quicinc.com>
@@ -62,8 +62,8 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nasanex01a.na.qualcomm.com (10.52.223.231)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: SDiaI6DgQmsOvR0_atcnfAxEgddElr9o
-X-Proofpoint-ORIG-GUID: SDiaI6DgQmsOvR0_atcnfAxEgddElr9o
+X-Proofpoint-GUID: PfcWrbAlActJ00sAhhIsm6VyCvpWXtHH
+X-Proofpoint-ORIG-GUID: PfcWrbAlActJ00sAhhIsm6VyCvpWXtHH
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-10-19_06,2023-10-18_01,2023-05-22_02
@@ -76,111 +76,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Stromer plus APSS PLL does not support dynamic frequency scaling.
-To switch between frequencies, we have to shut down the PLL,
-configure the L and ALPHA values and turn on again. So introduce the
-separate set of ops for Stromer Plus PLL.
+The earlier 'l' value of 0x3e is for 1.5GHz. Not all SKUs support
+this frequency. Hence set it to 0x2d to get 1.1GHz which is
+supported in all SKUs.
 
+The frequency can still increase above this initial configuration
+made here when the cpufreq driver picks a different OPP.
+
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Fixes: c7ef7fbb1ccf ("clk: qcom: apss-ipq-pll: add support for IPQ5332")
 Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
 Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
 ---
-v4:	Ensure PLL is enabled before re-enabling
-v3:	Use prepare/unprepare instead of disable/enable in clk_alpha_pll_stromer_plus_ops
-v2:	Use clk_alpha_pll_stromer_determine_rate, instead of adding new
-	clk_alpha_pll_stromer_plus_determine_rate as the alpha pll width
-	is same for both
-
-	Fix review comments
-		udelay(50) -> usleep_range(50, 60)
-		Remove SoC-specific from print message
+v4:	Update commit log to indicate that cpufreq could subsequently
+	change the frequency based on the selected OPP
 ---
- drivers/clk/qcom/clk-alpha-pll.c | 63 ++++++++++++++++++++++++++++++++++++++++
- drivers/clk/qcom/clk-alpha-pll.h |  1 +
- 2 files changed, 64 insertions(+)
+ drivers/clk/qcom/apss-ipq-pll.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clk/qcom/clk-alpha-pll.c b/drivers/clk/qcom/clk-alpha-pll.c
-index 4edbf77..05898d2 100644
---- a/drivers/clk/qcom/clk-alpha-pll.c
-+++ b/drivers/clk/qcom/clk-alpha-pll.c
-@@ -2508,3 +2508,66 @@ const struct clk_ops clk_alpha_pll_stromer_ops = {
- 	.set_rate = clk_alpha_pll_stromer_set_rate,
+diff --git a/drivers/clk/qcom/apss-ipq-pll.c b/drivers/clk/qcom/apss-ipq-pll.c
+index 18c4ffe..41279e5 100644
+--- a/drivers/clk/qcom/apss-ipq-pll.c
++++ b/drivers/clk/qcom/apss-ipq-pll.c
+@@ -74,7 +74,7 @@ static struct clk_alpha_pll ipq_pll_stromer_plus = {
  };
- EXPORT_SYMBOL_GPL(clk_alpha_pll_stromer_ops);
-+
-+static int clk_alpha_pll_stromer_plus_set_rate(struct clk_hw *hw,
-+					       unsigned long rate,
-+					       unsigned long prate)
-+{
-+	struct clk_alpha_pll *pll = to_clk_alpha_pll(hw);
-+	u32 l, alpha_width = pll_alpha_width(pll);
-+	int ret, pll_mode;
-+	u64 a;
-+
-+	rate = alpha_pll_round_rate(rate, prate, &l, &a, alpha_width);
-+
-+	ret = regmap_read(pll->clkr.regmap, PLL_MODE(pll), &pll_mode);
-+	if (ret)
-+		return ret;
-+
-+	regmap_write(pll->clkr.regmap, PLL_MODE(pll), 0);
-+
-+	/* Delay of 2 output clock ticks required until output is disabled */
-+	udelay(1);
-+
-+	regmap_write(pll->clkr.regmap, PLL_L_VAL(pll), l);
-+
-+	if (alpha_width > ALPHA_BITWIDTH)
-+		a <<= alpha_width - ALPHA_BITWIDTH;
-+
-+	regmap_write(pll->clkr.regmap, PLL_ALPHA_VAL(pll), a);
-+	regmap_write(pll->clkr.regmap, PLL_ALPHA_VAL_U(pll),
-+					a >> ALPHA_BITWIDTH);
-+
-+	regmap_write(pll->clkr.regmap, PLL_MODE(pll), PLL_BYPASSNL);
-+
-+	/* Wait five micro seconds or more */
-+	udelay(5);
-+	regmap_update_bits(pll->clkr.regmap, PLL_MODE(pll), PLL_RESET_N,
-+			   PLL_RESET_N);
-+
-+	/* The lock time should be less than 50 micro seconds worst case */
-+	usleep_range(50, 60);
-+
-+	ret = wait_for_pll_enable_lock(pll);
-+	if (ret) {
-+		pr_err("Wait for PLL enable lock failed [%s] %d\n",
-+		       clk_hw_get_name(hw), ret);
-+		return ret;
-+	}
-+
-+	if (pll_mode & PLL_OUTCTRL)
-+		regmap_update_bits(pll->clkr.regmap, PLL_MODE(pll), PLL_OUTCTRL,
-+				   PLL_OUTCTRL);
-+
-+	return 0;
-+}
-+
-+const struct clk_ops clk_alpha_pll_stromer_plus_ops = {
-+	.prepare = clk_alpha_pll_enable,
-+	.unprepare = clk_alpha_pll_disable,
-+	.is_enabled = clk_alpha_pll_is_enabled,
-+	.recalc_rate = clk_alpha_pll_recalc_rate,
-+	.determine_rate = clk_alpha_pll_stromer_determine_rate,
-+	.set_rate = clk_alpha_pll_stromer_plus_set_rate,
-+};
-+EXPORT_SYMBOL_GPL(clk_alpha_pll_stromer_plus_ops);
-diff --git a/drivers/clk/qcom/clk-alpha-pll.h b/drivers/clk/qcom/clk-alpha-pll.h
-index 3b24a66..a1a75bb 100644
---- a/drivers/clk/qcom/clk-alpha-pll.h
-+++ b/drivers/clk/qcom/clk-alpha-pll.h
-@@ -152,6 +152,7 @@ extern const struct clk_ops clk_alpha_pll_postdiv_ops;
- extern const struct clk_ops clk_alpha_pll_huayra_ops;
- extern const struct clk_ops clk_alpha_pll_postdiv_ro_ops;
- extern const struct clk_ops clk_alpha_pll_stromer_ops;
-+extern const struct clk_ops clk_alpha_pll_stromer_plus_ops;
  
- extern const struct clk_ops clk_alpha_pll_fabia_ops;
- extern const struct clk_ops clk_alpha_pll_fixed_fabia_ops;
+ static const struct alpha_pll_config ipq5332_pll_config = {
+-	.l = 0x3e,
++	.l = 0x2d,
+ 	.config_ctl_val = 0x4001075b,
+ 	.config_ctl_hi_val = 0x304,
+ 	.main_output_mask = BIT(0),
 -- 
 2.7.4
 
