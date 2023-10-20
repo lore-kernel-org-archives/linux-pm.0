@@ -2,155 +2,140 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4340CDB483
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Oct 2023 17:07:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EFCEC001DF
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Oct 2023 03:00:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233273AbjJSRHz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Oct 2023 13:07:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52866 "EHLO
+        id S233437AbjJTDA0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Oct 2023 23:00:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49624 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233041AbjJSRHy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2023 13:07:54 -0400
-Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de [85.215.255.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68F1B9E;
-        Thu, 19 Oct 2023 10:07:51 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1697735268; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=gL+OYJWOZsBK8wjUer7YzfA6lu2/OAmILo7rXbMEpIo6Q5vpMyC7mSWdbhANMzl7q+
-    Yu5Sz+ZybFahk9W7740bmh3r2LQT5BzJ9GIa8FZy0cXEABKXDEY8LS0fzGz4GNwzzAo2
-    7PIAaqu2cgWNqw5JgtFO/ghcduIJuqL9WtdsO3ZItYiXxK8iFxT9KrozvKRvEojXiUCn
-    1hXv6cMNAJGsvhVYq7ntP5eZ+xrumKheqlDvHcyuDN3ITzSmXHIDuPkDxaiznH/Fz83I
-    8wDGnOGbV1esiSODY+sD3w13uc8ia4t1qetiLpxsB0ucKa/Z9Vlf5cBXMHaZcdvp/nIG
-    a5Eg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1697735268;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=ggdAcZ8XFp1hnFIstd7n2G5k77VgwuMSI/PGdGGtmZ8=;
-    b=T8uEwk7akEKn3bWwEfLVQY5L3xK5W0hJHI2EdktHjkdNySOpoSZpJ8sl9eAXEtVwnz
-    P+J2UNQb7RmFnrgApP98u3q24kXUIGQgDv2hlwZfEZzuAgvZp7VCxYq+DTqaNlkjZGbV
-    N+oOEWGaIwpKMKxPUTq3xZPtv+2rrajpsOE1E/VHbjRX9d1eCi9HB8IUyAWLea4U5XSq
-    sVSFQ/EiFq6GfBWeDAD/QVfMyUHbQf2HSc9jqiYy/SDfh7rM5/xzBnqknx/lVFMItKvk
-    wWh2Uw9zNJAWmPqap08exwrIK/zGkyqopS+SAZBHzYJR/DFMa8Ud9FHaZR4QoDdwMFGw
-    Pb4g==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo00
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1697735268;
-    s=strato-dkim-0002; d=gerhold.net;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=ggdAcZ8XFp1hnFIstd7n2G5k77VgwuMSI/PGdGGtmZ8=;
-    b=SUmf/7em3PDqqlxJi6XO0HJImqy824rDa1rYbI+jD1uANy/YAqLOaFom9WYb+THzPZ
-    iaDWgRpAtIZSJQvVGyRk2U+/KctdVGTBXKNcZrPV+Za6kbIflE60hn7QCoJQYVocVtrQ
-    cjTrSfj26muuvN1xwmWY02Iz7g/mdToTG6efrS0AzAmyLDhLkVUhCQRHIO5/360bsFkP
-    opF4nVSAQIjPPCf2FVhDW6k6n4rUtOwlLdD+CiaAFvOJ++oqgz5PrgTCAgYa2s0hxef3
-    twDk4RrWo/nWEMlDOQciApA6kKkejkZEpp5rSsfDC5PuIIbknlslSR/ptr6wpsH7262n
-    jFzg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1697735268;
-    s=strato-dkim-0003; d=gerhold.net;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=ggdAcZ8XFp1hnFIstd7n2G5k77VgwuMSI/PGdGGtmZ8=;
-    b=9jhv3SStOE/B1Ma3imgq1ohB5nXLSIXSN7EHHaG3zof6i2DaDRzyTci5sZfrlo/LQN
-    J8uF5e3y68hG2BkmleCw==
-X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u261EJF5OxJD4paA95vh"
-Received: from gerhold.net
-    by smtp.strato.de (RZmta 49.9.0 DYNA|AUTH)
-    with ESMTPSA id j34a49z9JH7lEPB
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-        (Client did not present a certificate);
-    Thu, 19 Oct 2023 19:07:47 +0200 (CEST)
-Date:   Thu, 19 Oct 2023 19:07:40 +0200
-From:   Stephan Gerhold <stephan@gerhold.net>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] cpufreq: qcom-nvmem: Enable virtual power domain
- devices
-Message-ID: <ZTFiXJ2XO4WQN_gu@gerhold.net>
-References: <20231018-msm8909-cpufreq-v2-0-0962df95f654@kernkonzept.com>
- <20231018-msm8909-cpufreq-v2-2-0962df95f654@kernkonzept.com>
- <CAPDyKFot9=M1ooP_Q1AOgG5o_4DTQ2qsyai1ZdXAzBwf89W4uA@mail.gmail.com>
- <CAPDyKFr5A-P=UhWs4rUMBWup3pH75WAhcZ56Y2_Sfk3=WfxRCQ@mail.gmail.com>
- <ZTEph19CAvbgbN_E@gerhold.net>
- <CAPDyKFo1PVZYsdW_=92EtMmTT9hmkm-mBR69N_WvPh4f-Hw=NA@mail.gmail.com>
- <ZTFBzjLAaaUHux4O@gerhold.net>
- <CAPDyKFruYqngQoW21Ra+hm4ybjS7LoD4casYbo8bP4J+hLUnaA@mail.gmail.com>
+        with ESMTP id S233397AbjJTDA0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2023 23:00:26 -0400
+Received: from EUR05-DB8-obe.outbound.protection.outlook.com (mail-db8eur05on2053.outbound.protection.outlook.com [40.107.20.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10F8A18C
+        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2023 20:00:24 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=dxDz8+XrdNtCIWLsVDfEfhwZOw7nRURgk2LdGDS+hTWMz5xI7M2gPE2ekRy5cym+rJW8fRTgIu5oQ2zBLALl+EwopLQNij4o9DeeAH2qpDETvXhK2IcxxnAgV5x6oI28XjqG86jqowoanCDVOCXi/U+trjB5jRu08CjVhhduv7J8Hk6XH+Wqfymp0+8sJJVpZUKN5rs+HZ/VKr/0Sjw6pVNaK53/O/FDUbAAXwbSEES4BAjGK+JUSpWHyOj91F3zw9arJfZj6qZHlX5RA495FoPmIioIyJi2kHoZIcTUEFtEOnkNueNhJclugYtbl+S3ROLRy0wlMbHNNcqm/XQlbA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=t80/7CCyfN4mpL4wq0UzsbiJ/y/3YeveyP7iAIaIyw4=;
+ b=hHHYywhWWPBS8rJauGy+RD+NFfwwAvsAuAHjyrvGVp7stO0Eu5mfq4NBZ6U5DcISFDiF1yG9DdMSpbn+Z5vCXB2XuBBeIVw1UJJgJLaEYqMmndCUp1ADowZit3BiwIQYdyMQr6kKR3DpRU+0K+zrBeWf1TTwu4FaRhwOGXK4PADReM1yb5YHanhBD6tE1LWsAW//xWDmTAlAWiSv3+BK0KbKHwzIsIEJhXh4FHku85J+9KB2iJQYg0DW0VqeJMpIOSc83BGei/GK4BYD95jeaKJ28CeL4M7nYkN0lI3gfxoVYLy5RSC0O6V0HFi0JAD96jRVijs0Ojl+i7Mz9FBLmg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=t80/7CCyfN4mpL4wq0UzsbiJ/y/3YeveyP7iAIaIyw4=;
+ b=cDUZEOav/ctKcP/v8rWNTgy36KdQphPIO+xH+VZrmD/mWegRMxA+ys0WTBkWUcK3JWZDp1VvIKlJWFO1F0SE5TiMsFT9szY4FGp4LCPt4Rs7mWvvxD1H1tRV7pv56Y9Z6Ir295HoBA+T42johOOpVGuRqRqqPyuGYTEx9LODIv0=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AS8PR04MB8753.eurprd04.prod.outlook.com (2603:10a6:20b:42c::18)
+ by AS1PR04MB9630.eurprd04.prod.outlook.com (2603:10a6:20b:475::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6886.36; Fri, 20 Oct
+ 2023 03:00:21 +0000
+Received: from AS8PR04MB8753.eurprd04.prod.outlook.com
+ ([fe80::c3aa:ebce:c927:68f]) by AS8PR04MB8753.eurprd04.prod.outlook.com
+ ([fe80::c3aa:ebce:c927:68f%3]) with mapi id 15.20.6933.008; Fri, 20 Oct 2023
+ 03:00:21 +0000
+From:   Pengfei Li <pengfei.li_1@nxp.com>
+To:     ulf.hansson@linaro.org, shawnguo@kernel.org,
+        s.hauer@pengutronix.de, kernel@pengutronix.de
+Cc:     festevam@gmail.com, linux-imx@nxp.com, linus.walleij@linaro.org,
+        rafael@kernel.org, heiko@sntech.de, robh@kernel.org,
+        pengfei.li_1@nxp.com, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH] pmdomain: imx: Make imx pgc power domain also set the fwnode
+Date:   Sat, 21 Oct 2023 02:59:49 +0800
+Message-Id: <20231020185949.537083-1-pengfei.li_1@nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SI2PR06CA0006.apcprd06.prod.outlook.com
+ (2603:1096:4:186::19) To AS8PR04MB8753.eurprd04.prod.outlook.com
+ (2603:10a6:20b:42c::18)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFruYqngQoW21Ra+hm4ybjS7LoD4casYbo8bP4J+hLUnaA@mail.gmail.com>
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AS8PR04MB8753:EE_|AS1PR04MB9630:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9527dcc0-b7b8-4b15-df00-08dbd118b2c3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: B/WznM+I/VwbMDkocU5QuFCyZddXxoE7EhrxIoAZlhq0+AyNiif2cglpSWDbfdTUqEkFclpvyh9Pwgc8JNHt1W8vVTbwDPvxUYuYzqGD9eWkwMVGBWJK2KQ5tS5wCotkjk9/QDlDAOQaA2dFhb2NTp8jCLFzkHCtl+axoTDB7/ReSBkZMjVdyxdQQTrva56XAE32CBW3YtLyp9jQ/41SqU6Oyri718okG0uLLU7yDSlpOvGInT+qqYt2wIWqBMaw2/XYfFRCKk7cmPiiPJYXNNZqoVLb/BK375txEtJxNkx4NdODZ0z6Zfd1TmXhlGIL+bFnBjKEjbajpvdeiAqZ11LYzvcH+IKzGEjRVIaidtaP8bSRHiu/RpJiWZYElGUgZkgIvVY+x5+/ccL2iaIrV0Rs0laVQmt29QAAH0WmxSapOJQPPfN+5goyKFxdZyCmLBReQxH3OlT7zzeHyjTpRTZh2gpS2TTGiM/Bdcjt+KmDdSoehCLC7r/lhyMRfdYPwJj18FNbsnvNcULfb3oMSFlo58NGb46wISvLRma7SGPZ+Tg41Oe8+WNdP4L+LEXe1HwkAF/8oyi/VgbHr8BEfbxSPjQqxk17AL9qB7jVqCifrbHxSrECIk1VpqZO11TY
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR04MB8753.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(346002)(396003)(39860400002)(366004)(136003)(376002)(230922051799003)(451199024)(186009)(64100799003)(1800799009)(8936002)(66946007)(8676002)(6506007)(478600001)(6486002)(66476007)(316002)(38100700002)(1076003)(6512007)(52116002)(2616005)(66556008)(26005)(7416002)(86362001)(38350700005)(36756003)(5660300002)(6666004)(4326008)(2906002)(41300700001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?prbwrk6l7MhAEC3m2O3WmuAwHdZ7uICT594E0UUi8getardfk4GownVTvdH3?=
+ =?us-ascii?Q?EHVzPJv0ylFqu/g9SFpl+xqYW2Gg+ddc0XbdhJVJUMYa9KgLaF+q3zd95wuO?=
+ =?us-ascii?Q?5FBwA9tVYkuXgcVDBqrGP3we1DsIva6Ukvh3n73VXW1T4Tfj4JxVbEdzskpW?=
+ =?us-ascii?Q?riNxn9GOXkuUblVxKzjP105AWc5MMJkLSuqqiwAkiIkj9SGD7gIZY5jrfQeB?=
+ =?us-ascii?Q?5k5OjMFZLmJADUPcStmo7z4MpfqJe3irb8nCQvBSJKJSDokwOvnhOVBmRkH+?=
+ =?us-ascii?Q?tjXfnVNSxlkeYPzHCz7T2rTZ6hz36dFcF6QMleZP1WuRwNd1Xb2Go6ZoQMRn?=
+ =?us-ascii?Q?9Z+bOE7juGShD37i+e/Dt5bGIL5J/nJL0Bvnb3K0rWOEMAA8Pt8RELKCknB2?=
+ =?us-ascii?Q?a8nOyH+2txQRKT/MvQbB0uVdJghPl6HI9jNNP0Lk/fWa0mjqKQJFoc7+jGna?=
+ =?us-ascii?Q?1qYKDpsSfUaZjw6erLawXzJRv68pvSQGDWodVaOzNZSfZav1SKJ6VHCLN5D9?=
+ =?us-ascii?Q?VLAPjty1xTzUXLqgSH3tDBAQgt5GghL+/9FrhNMGsLGIwCZI0CWAlWV1ws8K?=
+ =?us-ascii?Q?sxwoijK+nobLuJH/OmN42In31NBtXeIn/MSw8Zt/wc+q7lJ0ALENxwBA9Zr0?=
+ =?us-ascii?Q?RKyLrTMk3USfwnKLTbiLv73dGUVtg98Hia7ZmT6mPxsrebcGkUepzRPK2+B2?=
+ =?us-ascii?Q?NeHHy9qu7LHBqrXucZGLVzMKesRJ9wDiOAIm7+oCC5NVBdjJJbwbIaIcdTdy?=
+ =?us-ascii?Q?VclIJPE1syvkg1J+p17nS+wjNbQY9dCIIS9meXxWx1klgZLgnEy65Ep87kYs?=
+ =?us-ascii?Q?2BVxkWtGhcPadgtzHAMgFZIYDmWndE5lIz2pldeqsmEGh4ZkbX3oGBAVD/yT?=
+ =?us-ascii?Q?CFoiXUO/UI1iza+pKfM1oh/fOf48SWRxX/ahb5v2wE1Q7oILdyAXd9kEyYTS?=
+ =?us-ascii?Q?o9nNC6ObJvMa74USiOiQr1ko4vq0c/iGITN1a+DJkwJsF3i2bOJGN9nGjpjc?=
+ =?us-ascii?Q?vQZuOXCZAhWFtDXDUUCgF1VVQUYQnmBwhW9uhBx7J5kWwjCo6hlCn5P5oa38?=
+ =?us-ascii?Q?uNzXQ1UWOFpMZFO7cJjbJu6k4LMMZG4oHbz6x84OQxcwlNmwZ8DoTr5kjlHx?=
+ =?us-ascii?Q?QISCl7jyWCqCLqK70WG6hoxfK0XBUXS05PQQIlvG69/CxdXyP56HEmr2FhWI?=
+ =?us-ascii?Q?XF9SqZOv9aw4cTmB33nE3xiaVr8+0KbX8SwfQzUyi2bnsmiU/ewm/Yx8F/O6?=
+ =?us-ascii?Q?4P1otmLh10MOjeR08m3MFAD5BHfnFFDZMdZifhKbKQYU84szIsDgOn6Vmlit?=
+ =?us-ascii?Q?gmdkVnFDtrzWwTzy/VrZunpFi2I6WZjXKqRtbqbQelfIBs6t6tBkllCuK+VE?=
+ =?us-ascii?Q?cXD6dnte8yv5Mxb98fqNmtn9g74XvuvfEnFOieGio4oD3Ji91BssjyccFhK3?=
+ =?us-ascii?Q?1rostiGE4GKxTD9fZzLTDHEzZO8qCKIhXpBr/kMwB6lgptsBbCTwaS5BQbu3?=
+ =?us-ascii?Q?D1I3PYcgRpiQVA2i6WswSe2t54J1YlNKAkGFAcS+dm3JsXJY/rqcfkbUEigS?=
+ =?us-ascii?Q?MnsGVtwu4fqp51BXQhyqgznifj0sjyk/IUj9TvT1?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9527dcc0-b7b8-4b15-df00-08dbd118b2c3
+X-MS-Exchange-CrossTenant-AuthSource: AS8PR04MB8753.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Oct 2023 03:00:21.4487
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: hmeLKAgdhx0uJ30vvCViZHaLX97hbemBoBdonLXo9Hk51nP1m3mfbkxjXjCho8LlYp8R9GYoJk6M81tPFfeo9Q==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS1PR04MB9630
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Oct 19, 2023 at 05:19:53PM +0200, Ulf Hansson wrote:
-> On Thu, 19 Oct 2023 at 16:49, Stephan Gerhold <stephan@gerhold.net> wrote:
-> > On Thu, Oct 19, 2023 at 04:12:56PM +0200, Ulf Hansson wrote:
-> > > On Thu, 19 Oct 2023 at 15:05, Stephan Gerhold <stephan@gerhold.net> wrote:
-> > > > On Thu, Oct 19, 2023 at 01:26:19PM +0200, Ulf Hansson wrote:
-> > > > > BTW, if you really need something like the above, the proper way to do
-> > > > > it would instead be to call device_set_awake_path() for the device.
-> > > > >
-> > > > > This informs genpd that the device needs to stay powered-on during
-> > > > > system suspend (assuming that GENPD_FLAG_ACTIVE_WAKEUP has been set
-> > > > > for it), hence it will keep the corresponding PM domain powered-on
-> > > > > too.
-> > > >
-> > > > Thanks, I can try if this works as alternative to the
-> > > > dev_pm_syscore_device()!
-> > >
-> > > Yes, please. We don't want to abuse the dev_pm_syscore_device() thingy.
-> >
-> > Could you clarify the idea behind GENPD_FLAG_ACTIVE_WAKEUP? Would I set
-> > it conditionally for all RPMPDs or just the ones consumed by the CPU?
-> > How does the genpd *provider* know if one of its *consumer* devices
-> > needs to have its power domain kept on for wakeup?
-> 
-> We are thinking of the GENPD_FLAG_ACTIVE_WAKEUP as a platform
-> configuration type of flag for the genpd in question. The consumer
-> driver shouldn't need to know about the details of what is happening
-> on the PM domain level - only whether it needs its device to remain
-> powered-on during system suspend or not.
-> 
+Currently, The imx pgc power domain doesn't set the fwnode
+pointer, which results in supply regulator device can't get
+consumer imx pgc power domain device from fwnode when creating
+a link.
 
-Thanks! I will test if this works for RPMPD and post new versions of the
-patches. By coincidence I think this flag might actually be useful as
-temporary solution for CPR. If I:
+This causes the driver core to instead try to create a link
+between the parent gpc device of imx pgc power domain device and
+supply regulator device. However, at this point, the gpc device
+has already been bound, and the link creation will fail. So adding
+the fwnode pointer to the imx pgc power domain device will fix
+this issue.
 
- 1. Change $subject patch to use device_set_awake_path() instead, and
- 2. Set GENPD_FLAG_ACTIVE_WAKEUP for the RPMPD genpds, but
- 3. Do *not* set GENPD_FLAG_ACTIVE_WAKEUP for the CPR genpd.
+Signed-off-by: Pengfei Li <pengfei.li_1@nxp.com>
+---
+ drivers/pmdomain/imx/gpc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Then the genpd ->power_on|off() callbacks should still be called
-for CPR during system suspend, right? :D
+diff --git a/drivers/pmdomain/imx/gpc.c b/drivers/pmdomain/imx/gpc.c
+index 114f44ca07dd..7d81e3171d39 100644
+--- a/drivers/pmdomain/imx/gpc.c
++++ b/drivers/pmdomain/imx/gpc.c
+@@ -497,6 +497,7 @@ static int imx_gpc_probe(struct platform_device *pdev)
+ 
+ 			pd_pdev->dev.parent = &pdev->dev;
+ 			pd_pdev->dev.of_node = np;
++			pd_pdev->dev.fwnode = of_fwnode_handle(np);
+ 
+ 			ret = platform_device_add(pd_pdev);
+ 			if (ret) {
+-- 
+2.34.1
 
-> I suspect that the GENPD_FLAG_ACTIVE_WAKEUP is probably okay to set
-> for most genpds, but there may be some exceptions.
-> 
-
-Out of curiosity, do you have an example for such an exception where
-GENPD_FLAG_ACTIVE_WAKEUP shouldn't be set, aside from workarounds like
-I just described?
-
-As you said, the consumer device should just say that it wants to stay
-powered for wakeup during suspend. But if its power domains get powered
-off, I would expect that to break. How could a genpd driver still
-provide power without being powered on? Wouldn't that rather be a low
-performance state?
-
-Thanks,
-Stephan
