@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33178C001DF
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Oct 2023 06:21:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D81F7CDB474
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Oct 2023 06:21:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347013AbjJTGVE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Oct 2023 02:21:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48322 "EHLO
+        id S1376326AbjJTGVS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Oct 2023 02:21:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37780 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1376329AbjJTGU7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2023 02:20:59 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 009D610D2;
-        Thu, 19 Oct 2023 23:20:50 -0700 (PDT)
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39K53ZDb014006;
-        Fri, 20 Oct 2023 06:20:18 GMT
+        with ESMTP id S1376344AbjJTGVL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2023 02:21:11 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F351D73;
+        Thu, 19 Oct 2023 23:21:01 -0700 (PDT)
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39K6DFge000544;
+        Fri, 20 Oct 2023 06:20:36 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=752q2NEkSJqynU3w4XSYItex3HD6Wnytgigz8YSx60A=;
- b=YYCWkh7FBKh054C0UjgYBl6Q4NYayHPS4c9+TXXBfeJulCoEMUVocthtX7GFppq7iulr
- pM5w50VySCNxk0Hbz1aNlsd90ebYNNdNFBOm1aKyJrz712UeFNQMV3fQHn4XKOA/h8zo
- QwhgCs/F1UzXi3SB//PbRNHxy0tr8F9ixKoTJZWSONantSzTWqof4iptLCDwCu7Qm6Hz
- Rx302raw9rUgE8ZB10JmNGPN6HG9RkYpNzB+JQi6YQjKQypVBcEgun1k07yhjGDzgX2H
- hTVRoBv0cRYsluWX5cBw+n6CEvijTH3EYQA+BP0NOf9VA+0t8679VFOwPxRI7EbOpVFf Eg== 
-Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tubxgguap-1
+ bh=m0AmhCm0JSBrSdfidoMph5nAJXYnICf0M/MiA5Ja0yI=;
+ b=Nzk1m9nOFNhmhmrjzCShSLZYnK/NZ44nnoxCPbwsML1TLp2HmYmt7pdUVUOkbOBTQ/GP
+ jgpc4vczHkAz/sUnlMW4QTFEDTqPbuRXxEHjAkqzIFvJS33syZuREjRC89+/U5hmpnGa
+ Cjo8IZs4PWvhSUb6UdpQ+Ss5QPs4sIL3xbcr3rFqU7f3/kYFxuyoczcFrfwNOZh5TjQs
+ xT5ewSq9wu4mYzOT7ZdSY45tgXoKBIpqYjM+TVqVXnCiwsKYjUmz71am7V8itSBjDt7S
+ OUI7G3d/9MtavdxYNdTDcD/vLwVclXXMug0fE+uY3comvaYppBMyoaE3ltKbbr5X4fBY Xw== 
+Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3tubwr8wbj-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 20 Oct 2023 06:20:18 +0000
+        Fri, 20 Oct 2023 06:20:35 +0000
 Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-        by NASANPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39K6KHM1007269
+        by NASANPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 39K6KYbq027973
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 20 Oct 2023 06:20:17 GMT
+        Fri, 20 Oct 2023 06:20:34 GMT
 Received: from varda-linux.qualcomm.com (10.80.80.8) by
  nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.39; Thu, 19 Oct 2023 23:20:11 -0700
+ 15.2.1118.39; Thu, 19 Oct 2023 23:20:29 -0700
 From:   Varadarajan Narayanan <quic_varada@quicinc.com>
 To:     <agross@kernel.org>, <andersson@kernel.org>,
         <konrad.dybcio@linaro.org>, <robh+dt@kernel.org>,
@@ -49,9 +49,9 @@ To:     <agross@kernel.org>, <andersson@kernel.org>,
         <linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>,
         <linux-pm@vger.kernel.org>
 CC:     Varadarajan Narayanan <quic_varada@quicinc.com>
-Subject: [PATCH v5 4/9] clk: qcom: apss-ipq-pll: Fix 'l' value for ipq5332_pll_config
-Date:   Fri, 20 Oct 2023 11:49:34 +0530
-Message-ID: <00e6be6cb9cee56628123a64ade118d0a752018b.1697781921.git.quic_varada@quicinc.com>
+Subject: [PATCH v5 7/9] arm64: dts: qcom: ipq5332: populate the opp table based on the eFuse
+Date:   Fri, 20 Oct 2023 11:49:37 +0530
+Message-ID: <463f01759cedef3121767d2432aa415794036ce1.1697781921.git.quic_varada@quicinc.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <cover.1697781921.git.quic_varada@quicinc.com>
 References: <cover.1697781921.git.quic_varada@quicinc.com>
@@ -62,52 +62,87 @@ X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
  nasanex01b.na.qualcomm.com (10.46.141.250)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: 5j31JynmEA8pMxaSvniZvOvZY-uubLcD
-X-Proofpoint-ORIG-GUID: 5j31JynmEA8pMxaSvniZvOvZY-uubLcD
+X-Proofpoint-ORIG-GUID: e0EQdKsaYco86KyWIQx6ha7zUmFcmZ_a
+X-Proofpoint-GUID: e0EQdKsaYco86KyWIQx6ha7zUmFcmZ_a
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-10-20_04,2023-10-19_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 suspectscore=0
- bulkscore=0 lowpriorityscore=0 phishscore=0 spamscore=0 priorityscore=1501
- mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0 clxscore=1015
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxlogscore=960
+ priorityscore=1501 impostorscore=0 spamscore=0 clxscore=1015 bulkscore=0
+ mlxscore=0 malwarescore=0 phishscore=0 lowpriorityscore=0 suspectscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2310170001
  definitions=main-2310200053
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The earlier 'l' value of 0x3e is for 1.5GHz. Not all SKUs support
-this frequency. Hence set it to 0x2d to get 1.1GHz which is
-supported in all SKUs.
+IPQ53xx have different OPPs available for the CPU based on
+SoC variant. This can be determined through use of an eFuse
+register present in the silicon.
 
-The frequency can still increase above this initial configuration
-made here when the cpufreq driver picks a different OPP.
+Add support to read the eFuse and populate the OPPs based on it.
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-Fixes: c7ef7fbb1ccf ("clk: qcom: apss-ipq-pll: add support for IPQ5332")
+	------------------------------------------------
+	Frequency	BIT2	BIT1	opp-supported-hw
+			1.1GHz	1.5GHz
+	------------------------------------------------
+	1100000000	1	1	0x7
+	1500000000	0	1	0x3
+	------------------------------------------------
+
 Signed-off-by: Kathiravan T <quic_kathirav@quicinc.com>
 Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
 ---
-v4:	Update commit log to indicate that cpufreq could subsequently
-	change the frequency based on the selected OPP
+v4:	Change opp-supported-hw from 0xf to 0x7 in commit log
+	and DT entry.
+v2:	Fix inconsistencies in comment and move it to commit log
+	as suggested
+	Remove opp-microvolt entries as no regulator is managed by Linux
+	cpu_speed_bin -> cpu-speed-bin in node name
+	Remove "nvmem-cell-names" due to dtbs_check error
 ---
- drivers/clk/qcom/apss-ipq-pll.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm64/boot/dts/qcom/ipq5332.dtsi | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/clk/qcom/apss-ipq-pll.c b/drivers/clk/qcom/apss-ipq-pll.c
-index 18c4ffe..41279e5 100644
---- a/drivers/clk/qcom/apss-ipq-pll.c
-+++ b/drivers/clk/qcom/apss-ipq-pll.c
-@@ -74,7 +74,7 @@ static struct clk_alpha_pll ipq_pll_stromer_plus = {
- };
+diff --git a/arch/arm64/boot/dts/qcom/ipq5332.dtsi b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
+index 4206f05..42e2e48 100644
+--- a/arch/arm64/boot/dts/qcom/ipq5332.dtsi
++++ b/arch/arm64/boot/dts/qcom/ipq5332.dtsi
+@@ -91,11 +91,19 @@
+ 	};
  
- static const struct alpha_pll_config ipq5332_pll_config = {
--	.l = 0x3e,
-+	.l = 0x2d,
- 	.config_ctl_val = 0x4001075b,
- 	.config_ctl_hi_val = 0x304,
- 	.main_output_mask = BIT(0),
+ 	cpu_opp_table: opp-table-cpu {
+-		compatible = "operating-points-v2";
++		compatible = "operating-points-v2-kryo-cpu";
+ 		opp-shared;
++		nvmem-cells = <&cpu_speed_bin>;
+ 
+-		opp-1488000000 {
+-			opp-hz = /bits/ 64 <1488000000>;
++		opp-1100000000 {
++			opp-hz = /bits/ 64 <1100000000>;
++			opp-supported-hw = <0x7>;
++			clock-latency-ns = <200000>;
++		};
++
++		opp-1500000000 {
++			opp-hz = /bits/ 64 <1500000000>;
++			opp-supported-hw = <0x3>;
+ 			clock-latency-ns = <200000>;
+ 		};
+ 	};
+@@ -163,6 +171,11 @@
+ 			reg = <0x000a4000 0x721>;
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
++
++			cpu_speed_bin: cpu-speed-bin@1d {
++				reg = <0x1d 0x2>;
++				bits = <7 2>;
++			};
+ 		};
+ 
+ 		rng: rng@e3000 {
 -- 
 2.7.4
 
