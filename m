@@ -2,40 +2,40 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1DC2CDB474
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Oct 2023 13:00:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59B91C00A98
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Oct 2023 13:00:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1377409AbjJTNAc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Oct 2023 09:00:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46852 "EHLO
+        id S1377192AbjJTNAg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Oct 2023 09:00:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1377212AbjJTNAb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2023 09:00:31 -0400
+        with ESMTP id S1377411AbjJTNAd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2023 09:00:33 -0400
 Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3DEC3D5F;
-        Fri, 20 Oct 2023 06:00:28 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F745D61;
+        Fri, 20 Oct 2023 06:00:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
   d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1697806829; x=1729342829;
+  t=1697806831; x=1729342831;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=Hd4Emqyn1f/ioRu7HJKUdLwnMCvvFUuy8Lnwq9cpDbU=;
-  b=n0OI0UIcT+QiHSoozXfs+UBk8EPe8fZ55XwucmjaMzVpDgcXt8ObG1jd
-   HDg3MkJE3rrdqnEjqjE1ggzjJml0RWnC91UWw/9clsh5oqjfSe6YMqygH
-   sjnaW1JY8Gw4F5ZeQja5UWloA5jyrfl/j+4D/39u7E/qRG7s7fgrhyz2Q
-   WY5RqUdWvIs4M9Ef3ij8g3xrIxXYlpvUD3fTV1/smaEkG9MqAyhvRs/1u
-   0uqFvuSA4iz2N51vctsPHJbPqT7KhnQCn0jTdflQlSt5hpne915Kk+0JB
-   erVnY4K3L8hXpOzFCkKcQINnjRt+vdwrzuGnCTUBNaaRIqGNaIAXykEiD
-   w==;
+  bh=mLOxA8Bx0MyGO/U31hrvN9KrvyYCpT1lmRzQsWSFyG4=;
+  b=A5+YiMkMQSNw7ROhdXG/PcgSMTruZhIIOiPy2rZMoxo5KBEIylh1+MEm
+   M1GmBnzuM1mCBSswmikYZ1Li2Zn4lLMG2S1SPkCh1aaqC3i0AahmAyk/t
+   5i1oNHHAkmpkRLkkOitrTr4x2kroNvd/XxPHycfMwyp4Bq6jxvQ8D64DV
+   ir4kGjUXZ7IHSmvXK6DrLwDnR965jy3XBPQFERWSKPV1N7TW/n1f2fDj2
+   aQp+axo59FbvBMPaurp/2qdKf9KyBaIAbpVGxY+7E4D4WWeiWnGB+jE89
+   3Twj9bVvNwQKtyzdfyIq4P4jjyJygSXN/0VkJDAlQAJXqxHQadgnMhydu
+   Q==;
 X-IronPort-AV: E=Sophos;i="6.03,238,1694728800"; 
-   d="scan'208";a="33575470"
+   d="scan'208";a="33575472"
 Received: from vtuxmail01.tq-net.de ([10.115.0.20])
-  by mx1.tq-group.com with ESMTP; 20 Oct 2023 15:00:22 +0200
+  by mx1.tq-group.com with ESMTP; 20 Oct 2023 15:00:23 +0200
 Received: from steina-w.tq-net.de (steina-w.tq-net.de [10.123.53.18])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id 28134280085;
+        by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id C026F280085;
         Fri, 20 Oct 2023 15:00:22 +0200 (CEST)
 From:   Alexander Stein <alexander.stein@ew.tq-group.com>
 To:     Rob Herring <robh+dt@kernel.org>,
@@ -55,9 +55,9 @@ Cc:     Alexander Stein <alexander.stein@ew.tq-group.com>,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux@ew.tq-group.com, linux-clk@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH 2/5] dt-bindings: soc: imx93-media-blk-ctrl: Add LDB subnode into schema and example
-Date:   Fri, 20 Oct 2023 15:00:15 +0200
-Message-Id: <20231020130019.665853-3-alexander.stein@ew.tq-group.com>
+Subject: [PATCH 4/5] clk: imx: clk-fracn-gppll: Add 477.4MHz config for video pll
+Date:   Fri, 20 Oct 2023 15:00:17 +0200
+Message-Id: <20231020130019.665853-5-alexander.stein@ew.tq-group.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20231020130019.665853-1-alexander.stein@ew.tq-group.com>
 References: <20231020130019.665853-1-alexander.stein@ew.tq-group.com>
@@ -67,86 +67,26 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the LDB bridge subnode and add the subnode into the example.
-For the subnode to work, the block control must scan its subnodes and
-bind drivers to them, do not misuse either simple-bus or simple-mfd
-here.
+Add the 477.4MHz frequency support that will be used by video subsystem
+on imx93.
 
 Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
 ---
- .../soc/imx/fsl,imx93-media-blk-ctrl.yaml     | 44 +++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ drivers/clk/imx/clk-fracn-gppll.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/soc/imx/fsl,imx93-media-blk-ctrl.yaml b/Documentation/devicetree/bindings/soc/imx/fsl,imx93-media-blk-ctrl.yaml
-index b3554e7f9e76..5ba66dfb0e05 100644
---- a/Documentation/devicetree/bindings/soc/imx/fsl,imx93-media-blk-ctrl.yaml
-+++ b/Documentation/devicetree/bindings/soc/imx/fsl,imx93-media-blk-ctrl.yaml
-@@ -24,6 +24,12 @@ properties:
-   reg:
-     maxItems: 1
- 
-+  '#address-cells':
-+    const: 1
-+
-+  '#size-cells':
-+    const: 1
-+
-   '#power-domain-cells':
-     const: 1
- 
-@@ -46,9 +52,16 @@ properties:
-       - const: csi
-       - const: dsi
- 
-+  bridge@20:
-+    type: object
-+    $ref: /schemas/display/bridge/fsl,ldb.yaml#
-+    unevaluatedProperties: false
-+
- required:
-   - compatible
-   - reg
-+  - '#address-cells'
-+  - '#size-cells'
-   - power-domains
-   - clocks
-   - clock-names
-@@ -77,4 +90,35 @@ examples:
-                clock-names = "apb", "axi", "nic", "disp", "cam",
-                              "pxp", "lcdif", "isi", "csi", "dsi";
-       #power-domain-cells = <1>;
-+      #address-cells = <1>;
-+      #size-cells = <1>;
-+
-+      bridge@20 {
-+          compatible = "fsl,imx93-ldb";
-+          reg = <0x20 0x4>, <0x24 0x4>;
-+          reg-names = "ldb", "lvds";
-+          clocks = <&clk IMX93_CLK_LVDS_GATE>;
-+          clock-names = "ldb";
-+
-+          ports {
-+              #address-cells = <1>;
-+              #size-cells = <0>;
-+
-+              port@0 {
-+                  reg = <0>;
-+
-+                  ldb_from_lcdif2: endpoint {
-+                      remote-endpoint = <&lcdif2_to_ldb>;
-+                  };
-+              };
-+
-+              port@1 {
-+                  reg = <1>;
-+
-+                  ldb_lvds: endpoint {
-+                      remote-endpoint = <&ldb_to_panel>;
-+                  };
-+              };
-+          };
-+        };
-     };
+diff --git a/drivers/clk/imx/clk-fracn-gppll.c b/drivers/clk/imx/clk-fracn-gppll.c
+index 44462ab50e51..deb03c6d16e9 100644
+--- a/drivers/clk/imx/clk-fracn-gppll.c
++++ b/drivers/clk/imx/clk-fracn-gppll.c
+@@ -84,6 +84,7 @@ static const struct imx_fracn_gppll_rate_table fracn_tbl[] = {
+ 	PLL_FRACN_GP(519750000U, 173, 25, 100, 1, 8),
+ 	PLL_FRACN_GP(498000000U, 166, 0, 1, 0, 8),
+ 	PLL_FRACN_GP(484000000U, 121, 0, 1, 0, 6),
++	PLL_FRACN_GP(477400000U, 119, 35, 100, 0, 6),
+ 	PLL_FRACN_GP(445333333U, 167, 0, 1, 0, 9),
+ 	PLL_FRACN_GP(400000000U, 200, 0, 1, 0, 12),
+ 	PLL_FRACN_GP(393216000U, 163, 84, 100, 0, 10),
 -- 
 2.34.1
 
