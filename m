@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21DFEC004C0
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Oct 2023 00:53:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BED0C25B42
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Oct 2023 00:53:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232356AbjJUAxY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Oct 2023 20:53:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51868 "EHLO
+        id S230375AbjJUAxZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Oct 2023 20:53:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51876 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230318AbjJUAxW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2023 20:53:22 -0400
+        with ESMTP id S231837AbjJUAxX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2023 20:53:23 -0400
 Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB867D7F;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC65E10C0;
         Fri, 20 Oct 2023 17:53:15 -0700 (PDT)
 Received: from mercury (cola.collaboradmins.com [195.201.22.229])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 593116607332;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 74700660734F;
         Sat, 21 Oct 2023 01:53:14 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1697849594;
-        bh=n+cp6ATKcN+tRvhf+29E1cAWuHZDFud0FRdhecmVEyc=;
+        bh=J/N/iVD+wc6dz/BxIvLp1pOeheB2VoCW51rXkqVrKC8=;
         h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-        b=RrxEtuH3C4f6Vch/+SimF3XL4qNqVaVQVY++iL8EDB+zvWHlOxoIxHQvJSrFCHetc
-         lF364MHWTdFYSPAgAF2cvy9sKkdOGWTMmD1y9+4FNySwCs6AGC+Fl8WMYN/eAZcKAc
-         3UPI/eXYpAr/HR3p/+SlXTPnqclFQ7bvAz8R1/Bp+7yc0l6agFmLJrlwza7qGSgCaW
-         UBV5+o6sk5N27Dx300e8GjbQhMaXTWVxKKy5tVgbLpvqZhOd/u21AoXmO7ZNSmWH6z
-         vA9vs35uS5eiXWYrzbosDa57sBtMFD2RbAsspoOq0JSsIt2HXrjL5eTDpYjXdbaHlb
-         lk0goFfEfWMmg==
+        b=MgZ/nAglAtJ2LQRiwqmxOW/44PcfTLKLCHOuVB7m/dF8rplrAYqK4qE+SSh6tukrT
+         OjVh3V/M4G5Z53yjI8lYIZPqr6Aca0TByZEOlOr9C8Zc7VLYemiUa15F52qWEXKVXW
+         awdPI8XUhE56tUrxQwYxTXwsYKhY/iKg1BSnLNi6EUpT8rusLdhc1Q0vBmgHErT1W+
+         cCy/rEYRGQCVf0QJtn4jXVOEnOl6Iq5CPyV7iXdz55E9loU1q9Ub9u+20o/YolzDf+
+         GcyMeMTZzPV4/yPgrgqKFQ3tVIOGx1jlCsxIFOOkVpJkccp2uVtwQzOx/C0FKeunhr
+         3dCcC+6JYvEtA==
 Received: by mercury (Postfix, from userid 1000)
-        id 2DC55106061E; Sat, 21 Oct 2023 02:53:11 +0200 (CEST)
+        id 386CA1066142; Sat, 21 Oct 2023 02:53:11 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Justin Stitt <justinstitt@google.com>
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-hardening@vger.kernel.org
-In-Reply-To: <20231020-strncpy-drivers-power-supply-bq24190_charger-c-v1-1-e896223cb795@google.com>
-References: <20231020-strncpy-drivers-power-supply-bq24190_charger-c-v1-1-e896223cb795@google.com>
-Subject: Re: [PATCH] power: supply: bq24190_charger: replace deprecated
+In-Reply-To: <20231020-strncpy-drivers-power-supply-charger-manager-c-v1-1-698f73bcad2a@google.com>
+References: <20231020-strncpy-drivers-power-supply-charger-manager-c-v1-1-698f73bcad2a@google.com>
+Subject: Re: [PATCH] power: supply: charger-manager: replace deprecated
  strncpy with strscpy
-Message-Id: <169784959113.1512524.17628671686184916927.b4-ty@collabora.com>
+Message-Id: <169784959122.1512524.17275327804996893357.b4-ty@collabora.com>
 Date:   Sat, 21 Oct 2023 02:53:11 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -53,20 +53,24 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
-On Fri, 20 Oct 2023 18:14:47 +0000, Justin Stitt wrote:
+On Fri, 20 Oct 2023 19:21:46 +0000, Justin Stitt wrote:
 > strncpy() is deprecated for use on NUL-terminated destination strings
 > [1] and as such we should prefer more robust and less ambiguous string
 > interfaces.
 > 
-> We expect bdi->model_name to be NUL-terminated based on its usage with
-> sysfs_emit and format strings:
+> We expect cm->psy_name_buf to be NUL-terminated based on its usage with
+> format strings:
+> 1522: cm->charger_psy_desc.name = cm->psy_name_buf;
+> ...
+> 1587: dev_err(&pdev->dev, "Cannot register charger-manager with name \"%s\"\n",
+> 1587:   cm->charger_psy_desc.name);
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: bq24190_charger: replace deprecated strncpy with strscpy
-      commit: b0009b8bed98bd5d59449af48781703df261c247
+[1/1] power: supply: charger-manager: replace deprecated strncpy with strscpy
+      commit: e1402bd297a3477c16eca4c1e4094372237f40a7
 
 Best regards,
 -- 
