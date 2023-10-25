@@ -2,25 +2,25 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71F3FC25B47
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Oct 2023 09:33:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 458FEC0032E
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Oct 2023 09:33:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233957AbjJYJdo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Oct 2023 05:33:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39436 "EHLO
+        id S234415AbjJYJdr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Oct 2023 05:33:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39466 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231794AbjJYJdn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2023 05:33:43 -0400
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DD1ACE;
-        Wed, 25 Oct 2023 02:33:40 -0700 (PDT)
-Received: from kwepemi500024.china.huawei.com (unknown [172.30.72.57])
-        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4SFkF16SVdzrTcJ;
-        Wed, 25 Oct 2023 17:30:45 +0800 (CST)
+        with ESMTP id S232808AbjJYJdp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2023 05:33:45 -0400
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 37311CE;
+        Wed, 25 Oct 2023 02:33:43 -0700 (PDT)
+Received: from kwepemi500024.china.huawei.com (unknown [172.30.72.56])
+        by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4SFkF46rL7z15NKS;
+        Wed, 25 Oct 2023 17:30:48 +0800 (CST)
 Received: from huawei.com (10.175.103.91) by kwepemi500024.china.huawei.com
  (7.221.188.100) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Wed, 25 Oct
- 2023 17:33:37 +0800
+ 2023 17:33:39 +0800
 From:   Zeng Heng <zengheng4@huawei.com>
 To:     <broonie@kernel.org>, <joey.gouly@arm.com>, <will@kernel.org>,
         <amit.kachhap@arm.com>, <rafael@kernel.org>,
@@ -31,10 +31,12 @@ To:     <broonie@kernel.org>, <joey.gouly@arm.com>, <will@kernel.org>,
 CC:     <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <wangxiongfeng2@huawei.com>, <xiexiuqi@huawei.com>
-Subject: [PATCH 0/3] Make the cpuinfo_cur_freq interface read correctly
-Date:   Wed, 25 Oct 2023 17:38:44 +0800
-Message-ID: <20231025093847.3740104-1-zengheng4@huawei.com>
+Subject: [PATCH 2/3] cpufreq: CPPC: Keep the target core awake when reading its cpufreq rate
+Date:   Wed, 25 Oct 2023 17:38:46 +0800
+Message-ID: <20231025093847.3740104-3-zengheng4@huawei.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20231025093847.3740104-1-zengheng4@huawei.com>
+References: <20231025093847.3740104-1-zengheng4@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Content-Type:   text/plain; charset=US-ASCII
@@ -46,22 +48,91 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Patch 1~2: It is required to ensure that amu can continue to work normally
-during the sample period while cstate is enabled.
+As ARM AMU's document says, all counters are subject to any changes
+in clock frequency, including clock stopping caused by the WFI and WFE
+instructions.
 
-Patch 3: Even works in the mmio mode, cpc_read still has random delay
-errors, so let's extend the sampling time.
+Therefore, using smp_call_on_cpu() to trigger target CPU to
+read self's AMU counters, which ensures the counters are working
+properly while cstate feature is enabled.
 
-Zeng Heng (3):
-  arm64: cpufeature: Export cpu_has_amu_feat()
-  cpufreq: CPPC: Keep the target core awake when reading its cpufreq
-    rate
-  cpufreq: CPPC: Eliminate the impact of cpc_read() latency error
+Reported-by: Sumit Gupta <sumitg@nvidia.com>
+Link: https://lore.kernel.org/all/20230418113459.12860-7-sumitg@nvidia.com/
+Signed-off-by: Zeng Heng <zengheng4@huawei.com>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 39 ++++++++++++++++++++++++++--------
+ 1 file changed, 30 insertions(+), 9 deletions(-)
 
- arch/arm64/kernel/cpufeature.c |  1 +
- drivers/cpufreq/cppc_cpufreq.c | 53 ++++++++++++++++++++++++++++------
- 2 files changed, 45 insertions(+), 9 deletions(-)
-
---
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index fe08ca419b3d..321a9dc9484d 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -90,6 +90,12 @@ static int cppc_perf_from_fbctrs(struct cppc_cpudata *cpu_data,
+ 				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
+ 				 struct cppc_perf_fb_ctrs *fb_ctrs_t1);
+ 
++struct fb_ctr_pair {
++	u32 cpu;
++	struct cppc_perf_fb_ctrs fb_ctrs_t0;
++	struct cppc_perf_fb_ctrs fb_ctrs_t1;
++};
++
+ /**
+  * cppc_scale_freq_workfn - CPPC arch_freq_scale updater for frequency invariance
+  * @work: The work item.
+@@ -840,9 +846,24 @@ static int cppc_perf_from_fbctrs(struct cppc_cpudata *cpu_data,
+ 	return (reference_perf * delta_delivered) / delta_reference;
+ }
+ 
++static int cppc_get_perf_ctrs_pair(void *val)
++{
++	struct fb_ctr_pair *fb_ctrs = val;
++	int cpu = fb_ctrs->cpu;
++	int ret;
++
++	ret = cppc_get_perf_ctrs(cpu, &fb_ctrs->fb_ctrs_t0);
++	if (ret)
++		return ret;
++
++	udelay(2); /* 2usec delay between sampling */
++
++	return cppc_get_perf_ctrs(cpu, &fb_ctrs->fb_ctrs_t1);
++}
++
+ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
+ {
+-	struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
++	struct fb_ctr_pair fb_ctrs = { .cpu = cpu, };
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+ 	struct cppc_cpudata *cpu_data = policy->driver_data;
+ 	u64 delivered_perf;
+@@ -850,18 +871,18 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
+ 
+ 	cpufreq_cpu_put(policy);
+ 
+-	ret = cppc_get_perf_ctrs(cpu, &fb_ctrs_t0);
+-	if (ret)
+-		return 0;
+-
+-	udelay(2); /* 2usec delay between sampling */
++	if (cpu_has_amu_feat(cpu))
++		ret = smp_call_on_cpu(cpu, cppc_get_perf_ctrs_pair,
++				      &fb_ctrs, false);
++	else
++		ret = cppc_get_perf_ctrs_pair(&fb_ctrs);
+ 
+-	ret = cppc_get_perf_ctrs(cpu, &fb_ctrs_t1);
+ 	if (ret)
+ 		return 0;
+ 
+-	delivered_perf = cppc_perf_from_fbctrs(cpu_data, &fb_ctrs_t0,
+-					       &fb_ctrs_t1);
++	delivered_perf = cppc_perf_from_fbctrs(cpu_data,
++					      &fb_ctrs.fb_ctrs_t0,
++					      &fb_ctrs.fb_ctrs_t1);
+ 
+ 	return cppc_cpufreq_perf_to_khz(cpu_data, delivered_perf);
+ }
+-- 
 2.25.1
 
