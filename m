@@ -2,126 +2,130 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13C4CC0032E
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Oct 2023 07:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03539C0032E
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Oct 2023 07:35:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233166AbjJYHcj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Oct 2023 03:32:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51292 "EHLO
+        id S232825AbjJYHfC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Oct 2023 03:35:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233802AbjJYHcP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2023 03:32:15 -0400
-Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A47110E6
-        for <linux-pm@vger.kernel.org>; Wed, 25 Oct 2023 00:32:12 -0700 (PDT)
-Received: by mail-lj1-x22f.google.com with SMTP id 38308e7fff4ca-2c51388ccebso78872861fa.3
-        for <linux-pm@vger.kernel.org>; Wed, 25 Oct 2023 00:32:11 -0700 (PDT)
+        with ESMTP id S233863AbjJYHef (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2023 03:34:35 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 99CCE10EC
+        for <linux-pm@vger.kernel.org>; Wed, 25 Oct 2023 00:33:27 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-40790b0a224so41761775e9.0
+        for <linux-pm@vger.kernel.org>; Wed, 25 Oct 2023 00:33:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1698219130; x=1698823930; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=LkK06hkxzdwxK+868ZNfQOlrMKOnjIUgKDjw97JuG+E=;
-        b=CP6fAhQdNQHxbFCGvyNAig0lhqLQCpHazulAV2WIYg2LEV7xR9Bg2TG1wls42fO+W7
-         4rqwexrp0ImsZDIfhMz5hBxI43dtY6roRPtmznmnRtHdtbp3fUabCqoWxEEpuzkf/Ihb
-         BsY6CCZnsk6/FXc3dwtv95x9saEKdTNpKwjXcTrNFdcW99lyfi9cdUHMwgAFoDTJdD7G
-         s2Qa0oTflZCleCTA+oWcJaZzTCxxq5+B4uEUIGDF35UOd8q1HVyBFfVRs2J+TeVbzfCm
-         dlHMxaPZVwRAhZlxzfXuo+LNJn9eFNqpSTzVJ/UwuAwMcE10dURyCDfRrOkvRURDEDXp
-         DyHQ==
+        d=linaro.org; s=google; t=1698219206; x=1698824006; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=E2eqgnAodNXL6fIehdUVCI+hakeHSDnsMXbTs0DNdW8=;
+        b=tXhlcUs9DHDqh2H8uwr0Zb/91auE3/w4rH9fge7ebbh302TQmkxWmi2Nfx+km5dyEc
+         ixAmyv7Uy6r8xQ0zwuGyhuahkd9zVCGGpBX5lCt+KtmZErLG1QRGblgXuBCPAMkpZeVu
+         OlzpfYFk+AkZ7HGG5p1/20HI7BMH/zfsjTBiy22KzcePDIapC/4bT6mdDfLhYPvVEvY3
+         33yaJv2JucBlLqwRfGjNfKw80491aRmASSa0IHsIACEDvkb05KAyzSty2ww3otQ70zjo
+         U9GZzVxctSbSG4wbTru2MwmxpIfEaO7DU+bOKDdFpQyEEpM27x2vSmPm/p+/vQ+CuiQz
+         WLCw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698219130; x=1698823930;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=LkK06hkxzdwxK+868ZNfQOlrMKOnjIUgKDjw97JuG+E=;
-        b=KrDt8nxoR8NhuTbZ1YMUw9G+pybUro64/cV/B24CqOrjUCjh2fzLAqHxMIFtuaMTff
-         PDNWjqdUE+FBOdXYiMzk7LC2mzz+lCD/U4cFRc+zYe+e+ntPOjPiaC5GZCBh+jyZhUw9
-         6/wYWmvaAalz/g1o8ZAv8q7Lf13WXnJu3aBM8XFEa17XDWgZxGLfSJ3PHvpQSnGCtY2V
-         ghj2zn5HkF9cu1dzQQHiPffr+6WFdZUvxhmU8NNGd73EM81AZgM7qU5B5CH3Ug4UHy2f
-         P9rFsNEei7/pyfdyV9di2yOvIbKQDwtuyhr1zG2cgDuyiUCxsyT2pr8Otc83v292L8xf
-         E/8A==
-X-Gm-Message-State: AOJu0YwK2S0yFEVXSywlUJPoAyvlCijHvYGIcA1MyA7eYm4DIM3u8ppL
-        qi+MU0R5R0vNMfWy6OuW8+wVaQ==
-X-Google-Smtp-Source: AGHT+IH+Yira0OYgCUa++PaIdfxYJvBb1lvUtqlD4An+snbTHt/sntEuCvgnEiScLvU95z7u0RShvg==
-X-Received: by 2002:a2e:b790:0:b0:2c2:a337:5ea with SMTP id n16-20020a2eb790000000b002c2a33705eamr10722063ljo.27.1698219130228;
-        Wed, 25 Oct 2023 00:32:10 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1698219206; x=1698824006;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=E2eqgnAodNXL6fIehdUVCI+hakeHSDnsMXbTs0DNdW8=;
+        b=lXThsFwM1NQvWRpnKoZoQCPJVPGe3pRGnmdXEWMlQQEf+/OyAJxZWy8FqRpcxhL0Ag
+         LsIIn75lBUpb4QeP1pCMEuFJI2FKKOaRPA6rz8b7mH4UjQ37h/BRzhqGpuvpaKiMRsPq
+         Sa92OLgjS9UwpkYLwQoF9df37QbNMbopEAvi6jK5LHEuCk4Z0HBvXGErZgC+MR8X7KlG
+         mNJlZmrNQotc3wixpxa91hV0xebT+eU3/ZHHRkdXPdSxvdXpjOXwPoZnAOOl6NI+VoZI
+         zEJX7KEqeEb+jZsi4/tTryQv6s6nsW6zQXIiVtRa0prQ8zZX1HTGaofve5OuqujVipLD
+         Y0NA==
+X-Gm-Message-State: AOJu0YyPAlHZ6u+Zm53tcKKpjjMumc6R8djik+qO9NNaPPCe4fuO/DNl
+        0IVwMtwFiMt624ZcSAkP3poezw==
+X-Google-Smtp-Source: AGHT+IGR7mUTfR0Jkxhv4FTSNfI8iuxIvO+leW32Tko+z7CAQFiuYBAOOw/u8pEv9wpreB3eT+AZKw==
+X-Received: by 2002:a05:600c:4f4e:b0:403:b86:f624 with SMTP id m14-20020a05600c4f4e00b004030b86f624mr10293500wmq.23.1698219205992;
+        Wed, 25 Oct 2023 00:33:25 -0700 (PDT)
 Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
-        by smtp.gmail.com with ESMTPSA id m21-20020a05600c4f5500b0040841e79715sm14036237wmq.27.2023.10.25.00.32.09
+        by smtp.gmail.com with ESMTPSA id k13-20020a5d628d000000b0032daf848f68sm11470533wru.59.2023.10.25.00.33.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Oct 2023 00:32:09 -0700 (PDT)
+        Wed, 25 Oct 2023 00:33:25 -0700 (PDT)
 From:   Neil Armstrong <neil.armstrong@linaro.org>
-Date:   Wed, 25 Oct 2023 09:32:02 +0200
-Subject: [PATCH 1/2] dt-bindings: power: qcom,rpmpd: document the SM8650
- RPMh Power Domains
+Subject: [PATCH 0/2] interconnect: qcom: Introduce support for SM8650
+Date:   Wed, 25 Oct 2023 09:33:22 +0200
+Message-Id: <20231025-topic-sm8650-upstream-interconnect-v1-0-b7277e03aa3d@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231025-topic-sm8650-upstream-rpmpd-v1-1-f25d313104c6@linaro.org>
-References: <20231025-topic-sm8650-upstream-rpmpd-v1-0-f25d313104c6@linaro.org>
-In-Reply-To: <20231025-topic-sm8650-upstream-rpmpd-v1-0-f25d313104c6@linaro.org>
+X-B4-Tracking: v=1; b=H4sIAMLEOGUC/x3NPQrDMAxA4asEzRX4Bwe3VykdgqK2GiIbyw2Fk
+ LvXdPyW9w4wbsIGt+mAxruYFB3wlwnoveiLUdZhCC5E7/yMvVQhtC3PyeGnWm+8bCjauVFRZeq
+ Ykw9rjpnSNcII1cZP+f4n98d5/gAgqBpUdAAAAA==
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Abel Vesa <abel.vesa@linaro.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Neil Armstrong <neil.armstrong@linaro.org>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1245;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1627;
  i=neil.armstrong@linaro.org; h=from:subject:message-id;
- bh=iyrV9MsmSRaFXNkt/CNnLJ+tmAlijZsh8rTitKBaq6g=;
- b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlOMR3jqfahPM5bx7B4kHScB4B7os/yKbaBRvnfuAh
- 57/rSfiJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZTjEdwAKCRB33NvayMhJ0UtIEA
- Cops3457fn46b3U7vAcShT+c9Ygo+mADKziI7dm1hbLr4QG4NGE+FIODg3wwZKokavLf0eFByaK/DX
- qUJfNKjL5NRXTtzK47e1Qx4TNYk2bVZKAUgNf2exI2xDT+J7bXJViJefoXRMigdUstrFITmgXYlQrl
- tFlnGOEZ/f/E0FnnsUrntmxqx/ItUkCTT1lSUBjjVzZYNeFYU+aJKbvJ+WUDCqZajTsoJrY92B1Sq7
- S8LCfi/lBWrClR5HlKYXzMSizhDNt+SUG6gwJmtJmA2/8ASpd/t7Db6YCq9Mx5EsYyeh2z311IqROM
- uiUEjEeXKxN5ViXMh0uW+NYcflAwAGF8ZpBl8lsSlRJn/M4WEfOdL8qmua9c5hnT7HcOXAVifjchIF
- rPVTcr/d7u5TSKxBSfUBMaF3xsesYOwWMXzPbxXxPICaO5Fesl98sxoXvt2XDXr0pSCqHcTKg0ayM7
- piTzkOU1ABgvx//823/PfXqyDl+hHrjLC6/1uUK4IVcupAwSmCAJ4JxaKbVxoXC5hEl41Vwp7tmvn2
- nNtMfPam9ZE6vbFyk509Yt4tEnvBCHM0Yccze/ibipTa7l662LbhgoFZZpiGX/HbmavmOfriqljZB7
- POm21Sw47PoozQbGOJhZKuwDZJrDOe1u3CJKgvjuChbkoXAzqwZEXJcU18vA==
+ bh=isr7qGH7tBgtDgsJyFqvZhEy13eUuJCYCkZnKEkquP4=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlOMTDXHdnY3SCIwzC0AbOIFopob6B/HV9EBNDoNQe
+ w4zp+qSJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZTjEwwAKCRB33NvayMhJ0Ro1EA
+ CZPdznsnpngZJYzBu9c1C9brjIk0lGjOEfMiwHWsq3BXH+MPcfiCVvcy+aWzGkmi/lFxvHaPY21auW
+ YCmwB5wog+8KSo9ycR7DYlTBhlfg332XZ1bL9iX0j+rZtaZRW6G9lyPgmmHVGn8EyoA96/+yhPG4gb
+ oOxTlijf+ziazFIGYeBis2czjOM1wh1VRcSg/oU1slzEoocaK+Ql2T3LG38PpGNNEyi0C6gn+wJyEH
+ jpTh9LlPuFG/FGkD+o9vptjDZcqh8GuOORCGgvDFEw6mKYA7bvqzlVdhdAXeiI11yah+Jpr/N1yxLA
+ w/yUGTQDqtAtVHslMEu+B4CuPzwyvNeh3CIBK+Ht7IRiJRDDmmnqXuHCTueNBbKlp37v8gV2i1E48E
+ 9Y6ZPQ6CYAMb6NTwDoj2nHqOPwoh3Ag66OKDSezEKe0t/0AY/KV2OwKGEM24YKtyHMoIyvTQkCFOyZ
+ nv2Sfa/HxUGaFyul9TaOEnFpEmGox0mHaWUsBe1dBGrah59csSD0BoZZmfz6FoAwal/Gc9ZL6/OQBu
+ F4lW1WH44cCP714pTyY+x9E07a8aj2wvqT/ZnzEbw/CutVUpylEgj8wryvb/dA0vnQ4FICD4vZqY0d
+ 0wGSKGj2r0+FNkYDjU92a3Th6JxTrRUyY22pVw7aFpYOa2vfqXBSVwRkHHQA==
 X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
  fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the RPMh Power Domains on the SM8650 Platform.
+This covers the RPMh Network-On-Chip Interconnect bindings
+and driver for the interconnect framework.
+
+As reported for earlier Interconnect drivers, the IDs
+for multi-rsc voting has been removed from this driver
+so the proper solution can be developed without having
+to remove entries later on.
+
+To easy Bjorn into merging the DT bits, would it be possible
+to have an immutable branch with bindings shared with Bjorn once
+this patchset have been properly reviewed and accepted ?
+
+Dependencies: None
+
+For convenience, a regularly refreshed linux-next based git tree containing
+all the SM8650 related work is available at:
+https://git.codelinaro.org/neil.armstrong/linux/-/tree/topic/sm85650/upstream/integ
 
 Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
 ---
- Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 1 +
- include/dt-bindings/power/qcom,rpmhpd.h                 | 1 +
- 2 files changed, 2 insertions(+)
+Neil Armstrong (2):
+      dt-bindings: interconnect: document the RPMh Network-On-Chip Interconnect in Qualcomm SM8650 SoC
+      interconnect: qcom: introduce RPMh Network-On-Chip Interconnect on SM8650 SoC
 
-diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-index d38c762e1280..2803f7d56821 100644
---- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-+++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-@@ -55,6 +55,7 @@ properties:
-           - qcom,sm8350-rpmhpd
-           - qcom,sm8450-rpmhpd
-           - qcom,sm8550-rpmhpd
-+          - qcom,sm8650-rpmhpd
-       - items:
-           - enum:
-               - qcom,msm8937-rpmpd
-diff --git a/include/dt-bindings/power/qcom,rpmhpd.h b/include/dt-bindings/power/qcom,rpmhpd.h
-index 7c201a66bc69..0f6a74e09970 100644
---- a/include/dt-bindings/power/qcom,rpmhpd.h
-+++ b/include/dt-bindings/power/qcom,rpmhpd.h
-@@ -26,5 +26,6 @@
- #define RPMHPD_QPHY             16
- #define RPMHPD_DDR              17
- #define RPMHPD_XO               18
-+#define RPMHPD_NSP2             19
- 
- #endif
+ .../bindings/interconnect/qcom,sm8650-rpmh.yaml    |  136 ++
+ drivers/interconnect/qcom/Kconfig                  |    9 +
+ drivers/interconnect/qcom/Makefile                 |    2 +
+ drivers/interconnect/qcom/sm8650.c                 | 1674 ++++++++++++++++++++
+ drivers/interconnect/qcom/sm8650.h                 |  143 ++
+ .../dt-bindings/interconnect/qcom,sm8650-rpmh.h    |  154 ++
+ 6 files changed, 2118 insertions(+)
+---
+base-commit: fe1998aa935b44ef873193c0772c43bce74f17dc
+change-id: 20231016-topic-sm8650-upstream-interconnect-8512d838c593
 
+Best regards,
 -- 
-2.34.1
+Neil Armstrong <neil.armstrong@linaro.org>
 
