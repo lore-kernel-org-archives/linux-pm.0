@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F054AC25B6E
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Oct 2023 19:21:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22CCBC0032E
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Oct 2023 19:21:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229894AbjJYTVr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Oct 2023 15:21:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38958 "EHLO
+        id S230007AbjJYTVv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Oct 2023 15:21:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59028 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229735AbjJYTVq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2023 15:21:46 -0400
+        with ESMTP id S230354AbjJYTVt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2023 15:21:49 -0400
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 00231137;
-        Wed, 25 Oct 2023 12:21:43 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id DB8E013D;
+        Wed, 25 Oct 2023 12:21:46 -0700 (PDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 70B181474;
-        Wed, 25 Oct 2023 12:22:25 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 50C091424;
+        Wed, 25 Oct 2023 12:22:28 -0700 (PDT)
 Received: from e129166.arm.com (unknown [10.57.81.88])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 9A9EB3F738;
-        Wed, 25 Oct 2023 12:21:42 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 7ABB43F738;
+        Wed, 25 Oct 2023 12:21:45 -0700 (PDT)
 From:   Lukasz Luba <lukasz.luba@arm.com>
 To:     linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org,
         rafael@kernel.org
 Cc:     linux-pm@vger.kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com
-Subject: [PATCH 2/7] thermal: gov_power_allocator: Setup trip points earlier
-Date:   Wed, 25 Oct 2023 20:22:20 +0100
-Message-Id: <20231025192225.468228-3-lukasz.luba@arm.com>
+Subject: [PATCH 4/7] thermal: gov_power_allocator: Rearrange the order of variables
+Date:   Wed, 25 Oct 2023 20:22:22 +0100
+Message-Id: <20231025192225.468228-5-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20231025192225.468228-1-lukasz.luba@arm.com>
 References: <20231025192225.468228-1-lukasz.luba@arm.com>
@@ -36,64 +36,119 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Setup the trip points at the beginning of the binding function. This
-simplifies the code a bit and allows further cleaning. Add also the
-check if the last passive trip point is found and fail binding if not.
+Rearrange the order of variables in function and make them aligned with
+the standard order for the kernel coding style. Also, move some variables
+defined in nested code into the top of the function, to improve visibility
+off all variables used.
+
+This change is not expected to alter the general functionality.
 
 Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/thermal/gov_power_allocator.c | 27 +++++++++++++++++----------
- 1 file changed, 17 insertions(+), 10 deletions(-)
+ drivers/thermal/gov_power_allocator.c | 39 ++++++++++++++-------------
+ 1 file changed, 20 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index 97a8a6e4e1b0b..0dfc5b5ab5235 100644
+index 4b9ef04577a9a..79621b42ead38 100644
 --- a/drivers/thermal/gov_power_allocator.c
 +++ b/drivers/thermal/gov_power_allocator.c
-@@ -617,14 +617,24 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 	int ret;
- 	struct power_allocator_params *params;
+@@ -84,13 +84,14 @@ struct power_allocator_params {
+  */
+ static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
+ {
+-	u32 sustainable_power = 0;
+-	struct thermal_instance *instance;
+ 	struct power_allocator_params *params = tz->governor_data;
++	struct thermal_cooling_device *cdev;
++	struct thermal_instance *instance;
++	u32 sustainable_power = 0;
++	u32 min_power;
  
--	ret = check_power_actors(tz);
--	if (ret)
--		return ret;
--
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+-		struct thermal_cooling_device *cdev = instance->cdev;
+-		u32 min_power;
++		cdev = instance->cdev;
+ 
+ 		if (instance->trip != params->trip_max)
+ 			continue;
+@@ -211,10 +212,10 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+ 			  int control_temp,
+ 			  u32 max_allocatable_power)
+ {
++	struct power_allocator_params *params = tz->governor_data;
+ 	s64 p, i, d, power_range;
+ 	s32 err, max_power_frac;
+ 	u32 sustainable_power;
+-	struct power_allocator_params *params = tz->governor_data;
+ 
+ 	max_power_frac = int_to_frac(max_allocatable_power);
+ 
+@@ -373,20 +374,20 @@ static void divvy_up_power(u32 *req_power, u32 *max_power, int num_actors,
+ 		}
+ }
+ 
+-static int allocate_power(struct thermal_zone_device *tz,
+-			  int control_temp)
++static int allocate_power(struct thermal_zone_device *tz, int control_temp)
+ {
+-	struct thermal_instance *instance;
++	u32 total_req_power, max_allocatable_power, total_weighted_req_power;
++	u32 *req_power, *max_power, *granted_power, *extra_actor_power;
+ 	struct power_allocator_params *params = tz->governor_data;
+ 	const struct thermal_trip *trip_max = params->trip_max;
+-	u32 *req_power, *max_power, *granted_power, *extra_actor_power;
+-	u32 *weighted_req_power;
+-	u32 total_req_power, max_allocatable_power, total_weighted_req_power;
+ 	u32 total_granted_power, power_range;
+-	int i, num_actors, total_weight, ret = 0;
++	struct thermal_cooling_device *cdev;
++	struct thermal_instance *instance;
++	u32 *weighted_req_power;
++	int i, weight, ret = 0;
++	int total_weight = 0;
++	int num_actors = 0;
+ 
+-	num_actors = 0;
+-	total_weight = 0;
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+ 		if ((instance->trip == trip_max) &&
+ 		    cdev_is_power_actor(instance->cdev)) {
+@@ -424,8 +425,7 @@ static int allocate_power(struct thermal_zone_device *tz,
+ 	max_allocatable_power = 0;
+ 
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+-		int weight;
+-		struct thermal_cooling_device *cdev = instance->cdev;
++		cdev = instance->cdev;
+ 
+ 		if (instance->trip != trip_max)
+ 			continue;
+@@ -547,12 +547,13 @@ static void reset_pid_controller(struct power_allocator_params *params)
+ 
+ static void allow_maximum_power(struct thermal_zone_device *tz, bool update)
+ {
+-	struct thermal_instance *instance;
+ 	struct power_allocator_params *params = tz->governor_data;
++	struct thermal_cooling_device *cdev;
++	struct thermal_instance *instance;
+ 	u32 req_power;
+ 
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+-		struct thermal_cooling_device *cdev = instance->cdev;
++		cdev = instance->cdev;
+ 
+ 		if (instance->trip != params->trip_max ||
+ 		    !cdev_is_power_actor(instance->cdev))
+@@ -619,8 +620,8 @@ static int check_power_actors(struct thermal_zone_device *tz,
+  */
+ static int power_allocator_bind(struct thermal_zone_device *tz)
+ {
+-	int ret;
+ 	struct power_allocator_params *params;
++	int ret;
+ 
  	params = kzalloc(sizeof(*params), GFP_KERNEL);
  	if (!params)
- 		return -ENOMEM;
- 
-+	get_governor_trips(tz, params);
-+	if (!params->trip_max) {
-+		dev_warn(&tz->device, "power_allocator: missing trip_max\n");
-+		kfree(params);
-+		return -EINVAL;
-+	}
-+
-+	ret = check_power_actors(tz);
-+	if (ret) {
-+		dev_warn(&tz->device, "power_allocator: binding failed\n");
-+		kfree(params);
-+		return ret;
-+	}
-+
- 	if (!tz->tzp) {
- 		tz->tzp = kzalloc(sizeof(*tz->tzp), GFP_KERNEL);
- 		if (!tz->tzp) {
-@@ -638,12 +648,9 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 	if (!tz->tzp->sustainable_power)
- 		dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
- 
--	get_governor_trips(tz, params);
--
--	if (params->trip_max)
--		estimate_pid_constants(tz, tz->tzp->sustainable_power,
--				       params->trip_switch_on,
--				       params->trip_max->temperature);
-+	estimate_pid_constants(tz, tz->tzp->sustainable_power,
-+			       params->trip_switch_on,
-+			       params->trip_max->temperature);
- 
- 	reset_pid_controller(params);
- 
 -- 
 2.25.1
 
