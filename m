@@ -2,141 +2,130 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB248C25B67
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Oct 2023 15:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5EECC25B48
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Oct 2023 17:03:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231584AbjJZPNq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Oct 2023 11:13:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59884 "EHLO
+        id S231699AbjJZRDv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Oct 2023 13:03:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54848 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231540AbjJZPNq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2023 11:13:46 -0400
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAA4518F
-        for <linux-pm@vger.kernel.org>; Thu, 26 Oct 2023 08:13:43 -0700 (PDT)
-Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-6b36e1fcea0so932457b3a.1
-        for <linux-pm@vger.kernel.org>; Thu, 26 Oct 2023 08:13:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1698333223; x=1698938023; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=sIQNokBhQSScd068h2R0va+GxK2e4ptgRXBIV8yGO3Q=;
-        b=N62rOjtivORs1dnaKyFdptn0As3ebL4e2NRp4MbtpxB9NhDjEp5XfFLDjW5wu9AikT
-         v4ZEReFBnrUJnqqwDpG6EOTYtHxx3iZSge7qELAO4/Uvt/M6tPB0cCuQbRw4HPvQs8dz
-         6dB9UpZt+wWSe+JfhagQGXCePRB8a/pULdL186CltT7SodHSkcsiYi5/QYd91htniKuv
-         18HUO0QyHm44ye30s416GpgwfRB2jxi5uXQVNrVLSaHOqkGWlWTYooI31FEONHkgzsGa
-         LRsXBkfmhFTolbfVbWPiSK+V2+oO2gTNsOQhVy5PS+HCBt44Bxii7dpGrdCRJiAbOlhs
-         gUBQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698333223; x=1698938023;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=sIQNokBhQSScd068h2R0va+GxK2e4ptgRXBIV8yGO3Q=;
-        b=k0fWLEd/tD8aNawKRItMEhw1eA7XVPg5fMOBul5ubYSxsqf7ocW6hSHkTv8I7Swqza
-         hcT9SDMH1XEdmmGE9+2HgCDOpdHQ3GBoFQVIYANe2nG7TmOgipbZb5RyrV5cr1q0XIoO
-         iaOLW6TITp+BO0uVM2eDJdcNStrEZ9gK1eEUyrO1GUcNsQ6P8qgUiukJonMsPgnRv61f
-         cxfaHAw4nB4QkIPPnB+6IQ6Ok5HzN663SMJjpeCId9Xxdo6BHK+Z2scNXb9nO8SztqPi
-         t3QiWi+lUenuxlTRE2dTls2d+dT4rE+zu3R9byLjQ9Ul+2KfLq5yPmLq8+v2AR9ODu+J
-         4Cgg==
-X-Gm-Message-State: AOJu0YxWoEHw1VxRlH+aaLZm7mmdD0TEiKgXJlJQZ43bl6wcXVZaTNqt
-        OhaUOrZciV8RANG+qr2pFDkbuhjrszUdBA6mxroOfg==
-X-Google-Smtp-Source: AGHT+IHpvFfxEX2wvpX4oLmokC74kO3PgHJfv15pxMoSpuOPt/vENsjW1mHuLxZFo88vzceGkfO3QCACBcu/EM6N+5k=
-X-Received: by 2002:a17:90a:1a43:b0:27d:12e1:94e0 with SMTP id
- 3-20020a17090a1a4300b0027d12e194e0mr12590526pjl.36.1698333223116; Thu, 26 Oct
- 2023 08:13:43 -0700 (PDT)
+        with ESMTP id S229668AbjJZRDu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2023 13:03:50 -0400
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2075.outbound.protection.outlook.com [40.107.237.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B293F1AE;
+        Thu, 26 Oct 2023 10:03:47 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=UfXeeQGM5ZaC54BS9sCxpimo55IrGWKdP+MUxG4gY7p4CK6Baszkc1rfcJecRTe0uj5mM1kGq76KS+r25vo4aQHnDWyaZpTPUvf9H/j7/rZdwuSNKWMcj3RpCrvhO0Dx1lfKHt6r2Dh/Jq2t5bXpyAHgvA7GAPius/qLOM1X/hF5n/l7mWsLeki7B25Lq1rqLWg4PDBuRF6gchE+yp5G7fT+d+PNPXHtBtSpGE5INtvCoun3grCDu6xVSSPiWlG9AURUdtnqFXmVluRPhfcH9Gkyd/n1VabRGRgS6N8Ej6A71GCwZs/1/g17GGWfLs7cPXPHOQgP2h0AFl1s3uh7TQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=4gqpZRTKbezAhXhfFJVDy/c/wxyVZ2csRDXirWwXxko=;
+ b=FtxDa9sQwIPRXMQtbLUzmlny3XcLsNRXsPSCGJlxFWXhARi2NEuYgnCz99alsIoItG/BgsUQbKjwS6W1WzVGbpKQiEKI8izsc1jpkJ1ij564co9IOZjRyqf2EH1OlbvoDtk4HfX/lpn7Tr7fPFMMoIKrBXixGwUbhbIZOVMXLYT55QwWXuEl+1lckUXIYYQxg5tJUaVxf5QWU5eB7Urpe84rB25XYdhrpwff6e46qLh4VV7gsHPKSHTqi5/8MHXZuxtbmS+5g7gr/tFigaE5a5Cw7HFZlmeS1FjxlSnbXpViv9GLV0fhUkKaO7cdwDU+d6Jd5qoPD4O8blhi/m5qtA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=infradead.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=4gqpZRTKbezAhXhfFJVDy/c/wxyVZ2csRDXirWwXxko=;
+ b=DDwzhl9mB2nX1/HduNhFLv1gj37qSTJOBVQBnayIkQrppgIWQKsGvEvXCSzCE/CEOPat+leuvByFb8G3gB16Y62DYJcYaSiacu6yps4P7A3CFk61gCxrAJU8ZSPMYbq3ar1YqsuXISh6NMNcthuouPQlHkoWUeboVv5T32VBZN8=
+Received: from MN2PR18CA0005.namprd18.prod.outlook.com (2603:10b6:208:23c::10)
+ by CH2PR12MB4261.namprd12.prod.outlook.com (2603:10b6:610:a9::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6933.19; Thu, 26 Oct
+ 2023 17:03:45 +0000
+Received: from BL02EPF0001A0FA.namprd03.prod.outlook.com
+ (2603:10b6:208:23c:cafe::ef) by MN2PR18CA0005.outlook.office365.com
+ (2603:10b6:208:23c::10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6933.22 via Frontend
+ Transport; Thu, 26 Oct 2023 17:03:45 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ BL02EPF0001A0FA.mail.protection.outlook.com (10.167.242.101) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.6933.15 via Frontend Transport; Thu, 26 Oct 2023 17:03:45 +0000
+Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.32; Thu, 26 Oct
+ 2023 12:03:43 -0500
+From:   Mario Limonciello <mario.limonciello@amd.com>
+To:     Peter Zijlstra <peterz@infradead.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Borislav Petkov <bp@alien8.de>,
+        "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>
+CC:     Arnaldo Carvalho de Melo <acme@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Jiri Olsa <jolsa@kernel.org>,
+        "Namhyung Kim" <namhyung@kernel.org>,
+        Ian Rogers <irogers@google.com>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "H . Peter Anvin" <hpa@zytor.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        "Len Brown" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        David Woodhouse <dwmw@amazon.co.uk>,
+        Sandipan Das <sandipan.das@amd.com>,
+        "open list:PERFORMANCE EVENTS SUBSYSTEM" 
+        <linux-perf-users@vger.kernel.org>,
+        "open list:PERFORMANCE EVENTS SUBSYSTEM" 
+        <linux-kernel@vger.kernel.org>,
+        "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>,
+        "open list:ACPI" <linux-acpi@vger.kernel.org>,
+        Mario Limonciello <mario.limonciello@amd.com>
+Subject: [PATCH v2 0/2] Fixes for s3 with parallel bootup
+Date:   Thu, 26 Oct 2023 12:03:28 -0500
+Message-ID: <20231026170330.4657-1-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-References: <20231018162540.667646-1-vincent.guittot@linaro.org>
- <20231018162540.667646-4-vincent.guittot@linaro.org> <f5e398f3-fbb7-4840-9084-14c8254b2118@arm.com>
-In-Reply-To: <f5e398f3-fbb7-4840-9084-14c8254b2118@arm.com>
-From:   Vincent Guittot <vincent.guittot@linaro.org>
-Date:   Thu, 26 Oct 2023 17:13:31 +0200
-Message-ID: <CAKfTPtBJRT56dL7+UW-viZuK3wKfGimQfrkvtuCQ_20g4N5LPQ@mail.gmail.com>
-Subject: Re: [PATCH v3 3/6] cpufreq/schedutil: use a fixed reference frequency
-To:     Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
-        paul.walmsley@sifive.com, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
-        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com, rostedt@goodmis.org,
-        bsegall@google.com, mgorman@suse.de, bristot@redhat.com,
-        vschneid@redhat.com, viresh.kumar@linaro.org, lenb@kernel.org,
-        robert.moore@intel.com, lukasz.luba@arm.com,
-        ionela.voinescu@arm.com, pierre.gondois@arm.com,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-acpi@vger.kernel.org, acpica-devel@lists.linuxfoundation.org,
-        conor.dooley@microchip.com, suagrfillet@gmail.com,
-        ajones@ventanamicro.com, lftan@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BL02EPF0001A0FA:EE_|CH2PR12MB4261:EE_
+X-MS-Office365-Filtering-Correlation-Id: d8c10c76-fdb2-4346-f92e-08dbd6458390
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: XqGBLEHbLDsAdmcEUtsUf4GtLcCLpSkLuVai3qY3YqJ69PXNHhJPQ7Sex3eHY3KdfXlKBdnDZVcDpTQ0jvFedvbPElLqbBihj1LXBgcm/lFfA1sVIwkeT1tZqpkqoA0xmAbJGEzsOHPURUyMaLrTkT23ELXj7Zf+NbDkc3JjuTm0o7u14CV72EZnf9h2iEvmVH+TLkrBghZe4xiVHvfxgv23ZMQrq5dKah58E+9uRCT6cAEc9rT2Notu+Jfh3kfdbdN5LX/cBe6QSDJvyGUMXcoz/LUZjrjkaWQa8HA+ACgcTkQqg81L2ufyzVo1iNfgwBJV4IGzvutpHFVFs7QalrkIEU323M0WKHe8UXWU6JU7I7jlqA4zVRiPJtXsANjn4wFpTnhs3FCh+UxDeI97JaCPYjE+fg6yFb00ZPSuUSTgNAhZdDfioI3XAk80n4h5RCPnsh/4jWFer+zJhPkfeF8X1HxthXKdfWX6UnL61/AaNtdtg6bgCoVZFZHdBJ1fuqY7bxJmtfzanVThX377EGQ7lPMfvywDFmN3JDSB8rNCxZv3PoOplR4uF8My9zal1NNZsOfdfHj18lAPe2xoTjZcJtw8DcBaT2YCFoP2q0LyS80lpB+cY7fBkKK/EANpO2e3BEsmByYE26RG2jOYDOKusQ/8UAwN+NfPgxQCfVogNp7MSHIYy146ePDiwITsqKJJNWFH/Wb8UNYqcr+auF0+VfuXoE3/BPSjv8/JVLSAmjcYPgMlhfgO/EeA9O8+zphTjXsf9uK0Z24jMy5o1Q==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(39860400002)(136003)(346002)(376002)(396003)(230922051799003)(186009)(1800799009)(64100799003)(82310400011)(451199024)(36840700001)(40470700004)(46966006)(4744005)(83380400001)(7416002)(110136005)(54906003)(8936002)(70206006)(8676002)(70586007)(5660300002)(4326008)(316002)(478600001)(2906002)(41300700001)(44832011)(7696005)(40460700003)(6666004)(1076003)(2616005)(26005)(16526019)(426003)(336012)(40480700001)(47076005)(36860700001)(81166007)(36756003)(86362001)(82740400003)(356005)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Oct 2023 17:03:45.0992
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: d8c10c76-fdb2-4346-f92e-08dbd6458390
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: BL02EPF0001A0FA.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR12MB4261
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 25 Oct 2023 at 22:13, Dietmar Eggemann <dietmar.eggemann@arm.com> wrote:
->
-> On 18/10/2023 18:25, Vincent Guittot wrote:
-> > cpuinfo.max_freq can change at runtime because of boost as an example. This
-> > implies that the value could be different than the one that has been
-> > used when computing the capacity of a CPU.
-> >
-> > The new arch_scale_freq_ref() returns a fixed and coherent reference
-> > frequency that can be used when computing a frequency based on utilization.
-> >
-> > Use this arch_scale_freq_ref() when available and fallback to
-> > policy otherwise.
-> >
-> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-> > Tested-by: Lukasz Luba <lukasz.luba@arm.com>
-> >
-> > ---
-> >  kernel/sched/cpufreq_schedutil.c | 26 ++++++++++++++++++++++++--
-> >  1 file changed, 24 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > index 458d359f5991..6e4030482ae8 100644
-> > --- a/kernel/sched/cpufreq_schedutil.c
-> > +++ b/kernel/sched/cpufreq_schedutil.c
-> > @@ -114,6 +114,28 @@ static void sugov_deferred_update(struct sugov_policy *sg_policy)
-> >       }
-> >  }
-> >
-> > +/**
-> > + * cpufreq_get_capacity_ref_freq - get the reference frequency of a given CPU that
->
-> s/cpufreq_get_capacity_ref_freq/get_capacity_ref_freq
->
-> s/of a given CPU/for a given cpufreq policy ? (of which the CPU managing
-> it is used for the arch_scale_freq_ref() call in the function.
->
-> > + * has been used to correlate frequency and compute capacity.
-> > + * @policy: the cpufreq policy of the CPU in question.
-> > + * @use_current: Fallback to current freq instead of policy->cpuinfo.max_freq.
->
-> Looks like use_current does not exists as a parameter.
+Parallel bootup on systems that use x2apic broke suspend to ram.
+This series ensures x2apic is re-enabled at startup and fixes an exposed
+pre-emption issue.
 
-Thanks for the review. I'm going to apply your comments
+Mario Limonciello (2):
+  x86: Enable x2apic during resume from suspend if used previously
+  perf/x86/amd: Stop calling amd_pmu_cpu_reset() from amd_pmu_cpu_dead()
 
->
-> > + *
-> > + * Return: the reference CPU frequency to compute a capacity.
-> > + */
-> > +static __always_inline
-> > +unsigned long get_capacity_ref_freq(struct cpufreq_policy *policy)
-> > +{
-> > +     unsigned int freq = arch_scale_freq_ref(policy->cpu);
-> > +
-> > +     if (freq)
-> > +             return freq;
-> > +
-> > +     if (arch_scale_freq_invariant())
-> > +             return policy->cpuinfo.max_freq;
-> > +
-> > +     return policy->cur;
-> > +}
->
-> Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
->
->
->
+ arch/x86/events/amd/core.c   |  7 ++++++-
+ arch/x86/include/asm/smp.h   |  1 +
+ arch/x86/kernel/acpi/sleep.c | 13 +++++++++----
+ arch/x86/kernel/head_64.S    | 15 +++++++++++++++
+ 4 files changed, 31 insertions(+), 5 deletions(-)
+
+-- 
+2.34.1
+
