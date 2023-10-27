@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D5F1C25B47
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Oct 2023 08:04:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 571ACC25B6E
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Oct 2023 08:04:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235085AbjJ0IEe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Oct 2023 04:04:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46988 "EHLO
+        id S235148AbjJ0IEf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 Oct 2023 04:04:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47004 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235086AbjJ0IET (ORCPT
+        with ESMTP id S235097AbjJ0IET (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2023 04:04:19 -0400
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65017196
-        for <linux-pm@vger.kernel.org>; Fri, 27 Oct 2023 01:04:14 -0700 (PDT)
-Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-4083f613272so14536475e9.1
-        for <linux-pm@vger.kernel.org>; Fri, 27 Oct 2023 01:04:14 -0700 (PDT)
+Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C95A9D44
+        for <linux-pm@vger.kernel.org>; Fri, 27 Oct 2023 01:04:11 -0700 (PDT)
+Received: by mail-lj1-x231.google.com with SMTP id 38308e7fff4ca-2b9d07a8d84so23454681fa.3
+        for <linux-pm@vger.kernel.org>; Fri, 27 Oct 2023 01:04:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1698393853; x=1698998653; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1698393849; x=1698998649; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=HdB4lDzOqWgKx+jcR+6XZlgYVoJSXQa0m+FGwW4RKJM=;
-        b=IzKpjjvZmme+Q2E2K/KLw818QjNRvAaVWMjvBKySUsICuQUL6IkhFw93MJa4p4fWyl
-         Hc59EOrKePqLRZE/Ofy++YQZWbd3pz5yKcBu28X3Re123JwtNuJaRRv7A0ULd1ejSXX5
-         pMAGwLyvKrdzvOtqrERFEhzTKbe+f0WKNvFCKnWbHdBV9cb3SXt/0+yIb71cDxmHnrDK
-         gpzqCRCMQBajZDsIOfsauNBwYMpuZFJIxfr4M8w+wK2fN0VDU6CwJHsvGuuO6hjeWnM+
-         XJY030HzckDsG2aW4LbS3wr1CUoZzmD3MfGQyMzADz4TbyjdnKlS9tJF7rbO9Hda8Bez
-         r57g==
+        bh=r/qdhwYexgC4eelalZMREFYWDVhGmAVpyIy4h5YJd+Y=;
+        b=UwG/4VS2MSxnkHtnsQpx9o/IPbZw1SxCBiaWXkPAhvhzizTMzCCoLnLGF4IHzjENat
+         p41YfyeuOalrUJevD4TBvRf890ua3fFIJoTyZdQDjvv8D3qHL11Ntu/6ji8O9I0mp7zt
+         anztlSB/tAGfuE/cy2m4NgHBbFDhm39MQhI8VLPBWD5W2qjTAfJNX3MP05Aj4SXC2SAS
+         +dCFxr2+vbXfCASS4kYKZoZNlXyQU9TnhvA64gvJV3qmfKdLXvk+vaXI5ZjbAUWy5cMN
+         DS/HtrOHsQ1DBTnsFgr4/qM8B1P5gFIn8msWC/ZrDXdhoMwFttPih9Gy5hZU7d19DQed
+         Sgcg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698393853; x=1698998653;
+        d=1e100.net; s=20230601; t=1698393849; x=1698998649;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=HdB4lDzOqWgKx+jcR+6XZlgYVoJSXQa0m+FGwW4RKJM=;
-        b=w5sVYLCdbURqUuki9x/OXZmiT6KOnONDniuxIO00wSTAzwdklShc0YIKNaZ4pHKGH7
-         W0IdzrdkSiMSBbG/8S2EovgHk5NASKasubbAjkAPrUFONF7LlYM2w7AYs+lrrpidWI3i
-         z106XkJaMFZe2HmG6FH8XbtiFYxTDDmkrVtMYRPObuIeUTh3e6IlUkUU326FvG/rKjLv
-         Z0G7XV3lzl62mwsaOndO3HJCi58SYiieR3fhls+iqA47ReSrB+yTn1D85eY8elhig4lF
-         /tz3o0/tr0JhIAfDC8Ne34RoZw7T7pKVj19u8xQHLxjt0hoqvmdU1CudQy14uMsCmffi
-         7z1g==
-X-Gm-Message-State: AOJu0YzoLeQ8oJxIfscjS4oWBjtyeKDcX3D1h+FeACwJQbk7tKadKvZw
-        VLUwtGWy7SSCxDerQv1l6oX7uA==
-X-Google-Smtp-Source: AGHT+IGrWV8Xk3kn8lNdugKW10Jxvl72LQpr+DY/ZkB+QIZGkVhbRfYWJpxErHANxVy9nJ2+gvLW9g==
-X-Received: by 2002:a05:600c:2990:b0:402:ee71:29 with SMTP id r16-20020a05600c299000b00402ee710029mr1624044wmd.10.1698393852695;
-        Fri, 27 Oct 2023 01:04:12 -0700 (PDT)
+        bh=r/qdhwYexgC4eelalZMREFYWDVhGmAVpyIy4h5YJd+Y=;
+        b=l6UvQk5wGyX3ericolke/MK/KGHOkbgJb4s1zNhM/b/hrrGOSyNkBVuzUawCI+JxpQ
+         ddKXCizrFFCoN6bDghq6Lvjj+w3m/NoG27BkqppoKgbUwHU+26XHIv46HGpo2ocvixyE
+         avg4ivQYgojciblb3bYLE5YkqQPh4EeW0x8Npo5R4SZGVwp07vt4UT6dLm/bPUkIzc9Y
+         lZ3rpxZev3zvq1h8YbF9/adX3diBLEzj6yuZ7bEM3d89x4mhM3MGJMEGB7WmrI2NiAAw
+         myssBRqEvYwG94G52DgQamy/kJ/+39gXhadp6P8AdpNKub+KNRDPuv4TQhKuZfl/Ui3s
+         gW8g==
+X-Gm-Message-State: AOJu0YwawINpYpTDUZantz6/h+LA/9E6MNnjHNI3uFxkZNk8vnIfr4z6
+        ccfzvCqSTm2ChDmupqA97GS3ew==
+X-Google-Smtp-Source: AGHT+IGXugARg3H3+vIzNim0kJhoC4UBCl4/dUe/XX18rWVm78ZhMKD3Vu64iuuup/7qbp3srdsKEQ==
+X-Received: by 2002:a2e:8217:0:b0:2c5:1eb6:bd1e with SMTP id w23-20020a2e8217000000b002c51eb6bd1emr1414040ljg.43.1698393849239;
+        Fri, 27 Oct 2023 01:04:09 -0700 (PDT)
 Received: from vingu-book.. ([2a01:e0a:f:6020:c5e:e24e:ad0b:58c6])
-        by smtp.gmail.com with ESMTPSA id 17-20020a05600c025100b004083729fc14sm4397488wmj.20.2023.10.27.01.04.11
+        by smtp.gmail.com with ESMTPSA id 17-20020a05600c025100b004083729fc14sm4397488wmj.20.2023.10.27.01.04.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Oct 2023 01:04:12 -0700 (PDT)
+        Fri, 27 Oct 2023 01:04:08 -0700 (PDT)
 From:   Vincent Guittot <vincent.guittot@linaro.org>
 To:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
         paul.walmsley@sifive.com, palmer@dabbelt.com,
@@ -66,9 +66,9 @@ To:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
 Cc:     conor.dooley@microchip.com, suagrfillet@gmail.com,
         ajones@ventanamicro.com, lftan@kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v4 4/7] energy_model: use a fixed reference frequency
-Date:   Fri, 27 Oct 2023 10:03:57 +0200
-Message-Id: <20231027080400.56703-5-vincent.guittot@linaro.org>
+Subject: [PATCH v2 2/7] cpufreq: use the fixed and coherent frequency for scaling capacity
+Date:   Fri, 27 Oct 2023 10:03:55 +0200
+Message-Id: <20231027080400.56703-3-vincent.guittot@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20231027080400.56703-1-vincent.guittot@linaro.org>
 References: <20231027080400.56703-1-vincent.guittot@linaro.org>
@@ -78,35 +78,54 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The last item of a performance domain is not always the performance point
-that has been used to compute CPU's capacity. This can lead to different
-target frequency compared with other part of the system like schedutil and
-would result in wrong energy estimation.
+cpuinfo.max_freq can change at runtime because of boost as an example. This
+implies that the value could be different from the frequency that has been
+used to compute the capacity of a CPU.
 
-A new arch_scale_freq_ref() is available to return a fixed and coherent
-frequency reference that can be used when computing the CPU's frequency
-for an level of utilization. Use this function to get this reference
-frequency.
-
-Energy model is never used without defining arch_scale_freq_ref() but
-can be compiled. Define a default arch_scale_freq_ref() returning 0
-in such case.
+The new arch_scale_freq_ref() returns a fixed and coherent frequency
+that can be used to compute the capacity for a given frequency.
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 Tested-by: Lukasz Luba <lukasz.luba@arm.com>
+Acked-by: Rafael J. Wysocki <rafael@kernel.org>
 ---
- include/linux/energy_model.h | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/cpufreq/cpufreq.c | 4 ++--
+ include/linux/cpufreq.h   | 9 +++++++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-index b9caa01dfac4..1b0c8490d4bd 100644
---- a/include/linux/energy_model.h
-+++ b/include/linux/energy_model.h
-@@ -204,6 +204,14 @@ struct em_perf_state *em_pd_get_efficient_state(struct em_perf_domain *pd,
- 	return ps;
- }
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 60ed89000e82..8c4f9c2f9c44 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -454,7 +454,7 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
  
+ 	arch_set_freq_scale(policy->related_cpus,
+ 			    policy->cur,
+-			    policy->cpuinfo.max_freq);
++			    arch_scale_freq_ref(policy->cpu));
+ 
+ 	spin_lock(&policy->transition_lock);
+ 	policy->transition_ongoing = false;
+@@ -2174,7 +2174,7 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+ 
+ 	policy->cur = freq;
+ 	arch_set_freq_scale(policy->related_cpus, freq,
+-			    policy->cpuinfo.max_freq);
++			    arch_scale_freq_ref(policy->cpu));
+ 	cpufreq_stats_record_transition(policy, freq);
+ 
+ 	if (trace_cpu_frequency_enabled()) {
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 71d186d6933a..bbc483b4b6e5 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -1211,6 +1211,15 @@ void arch_set_freq_scale(const struct cpumask *cpus,
+ {
+ }
+ #endif
++
 +#ifndef arch_scale_freq_ref
 +static __always_inline
 +unsigned int arch_scale_freq_ref(int cpu)
@@ -115,32 +134,9 @@ index b9caa01dfac4..1b0c8490d4bd 100644
 +}
 +#endif
 +
- /**
-  * em_cpu_energy() - Estimates the energy consumed by the CPUs of a
-  *		performance domain
-@@ -224,7 +232,7 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
- 				unsigned long max_util, unsigned long sum_util,
- 				unsigned long allowed_cpu_cap)
- {
--	unsigned long freq, scale_cpu;
-+	unsigned long freq, ref_freq, scale_cpu;
- 	struct em_perf_state *ps;
- 	int cpu;
- 
-@@ -241,11 +249,11 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
- 	 */
- 	cpu = cpumask_first(to_cpumask(pd->cpus));
- 	scale_cpu = arch_scale_cpu_capacity(cpu);
--	ps = &pd->table[pd->nr_perf_states - 1];
-+	ref_freq = arch_scale_freq_ref(cpu);
- 
- 	max_util = map_util_perf(max_util);
- 	max_util = min(max_util, allowed_cpu_cap);
--	freq = map_util_freq(max_util, ps->frequency, scale_cpu);
-+	freq = map_util_freq(max_util, ref_freq, scale_cpu);
- 
- 	/*
- 	 * Find the lowest performance state of the Energy Model above the
+ /* the following are really really optional */
+ extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
+ extern struct freq_attr cpufreq_freq_attr_scaling_boost_freqs;
 -- 
 2.34.1
 
