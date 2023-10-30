@@ -2,73 +2,58 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AD6DC4332F
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Nov 2023 03:40:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BAF7C4332F
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Nov 2023 04:34:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231281AbjKDDki (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Nov 2023 23:40:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46410 "EHLO
+        id S230367AbjKDEeE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Nov 2023 00:34:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229509AbjKDDkg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Nov 2023 23:40:36 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58B62BF;
-        Fri,  3 Nov 2023 20:40:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=U+9D1UD9cowPYuIICmEuA0h3GjH5Xsb90babyNblpd8=; b=o155olG8sm8yhfnbz+GMwiRvKK
-        f/1s4DlOyjhKgr6l9y+Gb51R+W4Yn6/JyW+7Z4cKsVmacdl+PB+XnsCrM8cWzb9HsDEb59izObFsf
-        i1krlaXvpPG8DFCv31d1GB0CytF0WeLbZJSWNr5qAfwHHUp+RjvLIH7KPflqtOtnWjRaUn1smmoWF
-        EDqzGqJue8NCbwKILNO1sHV+0KTePiI0YcXqkRmXUmo8ZXBJuRwUbtVU2FNijSCFc8ra7zW/2+8ox
-        9Dp2Zrz5Ycq+Z9Ymw2m4eueWQQFuTSGWJ5zOLkKzfYLEtrezrSmq5wpylGYIoWEIwWySzNkf69YdD
-        Z9MgMP9Q==;
-Received: from [50.53.46.231] (helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qz7WT-00CZjk-1x;
-        Sat, 04 Nov 2023 03:40:33 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Subject: [PATCH] PM: domains: fix inappropriate use of kernel-doc
-Date:   Fri,  3 Nov 2023 20:40:33 -0700
-Message-ID: <20231104034033.14926-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.42.0
+        with ESMTP id S229509AbjKDEeD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Nov 2023 00:34:03 -0400
+X-Greylist: delayed 4198 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 03 Nov 2023 21:34:01 PDT
+Received: from mail.profitpathwaygo.com (mail.profitpathwaygo.com [141.94.21.238])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 116C7D47
+        for <linux-pm@vger.kernel.org>; Fri,  3 Nov 2023 21:34:00 -0700 (PDT)
+Received: by mail.profitpathwaygo.com (Postfix, from userid 1002)
+        id B178453889; Mon, 30 Oct 2023 08:30:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=profitpathwaygo.com;
+        s=mail; t=1698654950;
+        bh=qp3Ofokho6Ql+WtI8ZPVilyHYhskXL7fod7u9CWs8W4=;
+        h=Date:From:To:Subject:From;
+        b=gjsOnlV5UASaESbpWs1emFpTvHzPwEn4bN77Olj7WY8jzkHQFaOLfZTsLZKHTJRhg
+         g82ucnpIfrPquGhOXCMdLM8GQrTU2joJ+p1V6sIT4/7yOF/hwolb6dwE3Tmrk6eOGH
+         9QrHHp/yrh0tunlgTmHtwFIUAgEWP38KfXiDy+ap5Lf73mT8+yWssMzOVXMcKX+XJI
+         6PjG4fA8FudxjhjlwdfPbVgROscZwtZHtdVdPcZ5kES8eZ2BtpOKLM6QGWfJ4ZGGza
+         svfxANkOh2lx3fDKj3smenzDur2+APGOpunOODEJ01GssBJ378LIXt686hUyxn5WDP
+         LPppU8rzrtE+g==
+Received: by mail.profitpathwaygo.com for <linux-pm@vger.kernel.org>; Mon, 30 Oct 2023 08:30:28 GMT
+Message-ID: <20231030074500-0.1.2s.15545.0.0e803fotr1@profitpathwaygo.com>
+Date:   Mon, 30 Oct 2023 08:30:28 GMT
+From:   "Adam Charachuta" <adam.charachuta@profitpathwaygo.com>
+To:     <linux-pm@vger.kernel.org>
+Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania_?=
+X-Mailer: mail.profitpathwaygo.com
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is no mechanism for using kernel-doc notation on a data item
-(only struct/union/enum definitions, functions, and function-like
-macros), so convert the "/**" notation to C comment "/*" notation
-to avoid a kernel-doc warning:
+Dzie=C5=84 dobry,
 
-drivers/base/power/domain_governor.c:412: warning: cannot understand function prototype: 'struct dev_power_governor pm_domain_always_on_gov = '
+zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
+=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
+o dalszych rozm=C3=B3w.=20
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org
----
- drivers/base/power/domain_governor.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
+=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
+=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
+strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
 
-diff -- a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -406,7 +406,7 @@ struct dev_power_governor simple_qos_gov
- 	.power_down_ok = default_power_down_ok,
- };
- 
--/**
-+/*
-  * pm_genpd_gov_always_on - A governor implementing an always-on policy
-  */
- struct dev_power_governor pm_domain_always_on_gov = {
+Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
+
+
+Pozdrawiam serdecznie
+Adam Charachuta
