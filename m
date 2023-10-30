@@ -2,206 +2,128 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBC98C4332F
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Oct 2023 10:25:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09280C4167D
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Oct 2023 10:29:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232546AbjJ3KZR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Oct 2023 06:25:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41524 "EHLO
+        id S232544AbjJ3K3w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Oct 2023 06:29:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34330 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232637AbjJ3KYx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Oct 2023 06:24:53 -0400
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A41491BF7
-        for <linux-pm@vger.kernel.org>; Mon, 30 Oct 2023 03:24:27 -0700 (PDT)
-Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-6b709048f32so3580346b3a.0
-        for <linux-pm@vger.kernel.org>; Mon, 30 Oct 2023 03:24:27 -0700 (PDT)
+        with ESMTP id S232515AbjJ3K3v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Oct 2023 06:29:51 -0400
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA389B3
+        for <linux-pm@vger.kernel.org>; Mon, 30 Oct 2023 03:29:47 -0700 (PDT)
+Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-6ba54c3ed97so4243711b3a.2
+        for <linux-pm@vger.kernel.org>; Mon, 30 Oct 2023 03:29:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1698661467; x=1699266267; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=fcED4WjT67F9vTej3BnZaz4/stcnOOOgNE1CTcd6l/E=;
-        b=Itlp8lMvy58UID6ioZWhAjfk515YBZ9LFmvOBkdL2zN7Jm2YaSWVR01ZEbfPBUVxTq
-         0hDMWVWgzUY1XNkEKdLRMumPtPgcfzdNW/8+omNFUG6TL8kXeMgJTFA5IKV0lbL4ipxL
-         oTOsmdmDBo19hUJ9U1nbpT2nwKrdIPe1o6V8M9cjXgVyRz6kUo3QzHsgwXBNBb3aXTtu
-         AaWOMsKNnMuXwppR/cLUMrEEDJ15Ke7fYL2h/e03sRY/nvVIP1Mg0DDc6xZO1YKQs7Lb
-         5/V8Jy35sN8X+5tHRrnamvz6LdAO2stqVNlIl/awFYZArmmS+nxa35ML0gPiRbrlwX2l
-         MXbA==
+        d=linaro.org; s=google; t=1698661787; x=1699266587; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=xQ903xeVy9AHTb8iQsfsuNGoJuliVwNflrg4mGwSUpg=;
+        b=XaXwNxN5BAKfgACkpsi8UODdwRRu9pCDTCeDqeBNCs16ikE4nibXbbzGR2a1ht4Eh4
+         coJZZNURbMVzXGkjKGULTAA/1Az7UZtNWcK4a296hDJiHxP9NhdmorvuoI183MHe0LU9
+         TufSd2MfPxdAZKvu6fB872VUS73lTNUiJGeLMV3dzzxporuokW9LGPY2WRiXU2U6pMvV
+         AQWVDRg/mBP+hHAs7h3ggIRXzKs0pUcCA0uji+1R1ktmJi461F08qTQwoI8x55UDPoU4
+         tC5DfSHom1TofIxcHEO8u/0djqALtDg/8dj22m591zQWW2ZsPJ6nYQOc0ZPZHZ4Afz9+
+         0rhw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698661467; x=1699266267;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=fcED4WjT67F9vTej3BnZaz4/stcnOOOgNE1CTcd6l/E=;
-        b=ErBph8ZzDCVGfCgWIH6JXWciJHX7xxNS1SH7EnVbSMonJh/fvWAGKVmxnhaFD3pw51
-         xcbfuFTtodOQns24QpbmS1CzFg8EodcYltYKFpcemZeWQS6nnL89fTnBi4jbVMYMXgl8
-         b8J8g37E7C3M2dYD2fL7/d9K5YY0nSVY5Dbj1fLlpR91xEnE+7PciHyu8DWGoEbnjl2H
-         bPbXIa1prypUf3ykEd4TvZlaAa6Pe1qBdannfBm1mwd3ELnTX1fp9GHTUK0hlNbM0TmX
-         bEx+Q6gVjkvWfLCn/jL+Dm8E5TfnVkB68TGoH4pDUbBFJakQf5l81dAd+3WVPmCnUp2u
-         INhw==
-X-Gm-Message-State: AOJu0Yw7ka58pu0zCsTOlOH4Z8BHUdtA+HwfvPxnCnZyrOGv3DbA3QwI
-        vItTSffVH0NU7C48J3jL+gkdqg==
-X-Google-Smtp-Source: AGHT+IFyefwXgF0q1Fm+W6NnDmQKzc97ponS+jh5210IUt7CJEk7s5l9m1aqi/ZSU2nls0p7KU5sjA==
-X-Received: by 2002:a05:6a00:21d0:b0:68e:2f6e:b4c0 with SMTP id t16-20020a056a0021d000b0068e2f6eb4c0mr7744981pfj.28.1698661466983;
-        Mon, 30 Oct 2023 03:24:26 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1698661787; x=1699266587;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=xQ903xeVy9AHTb8iQsfsuNGoJuliVwNflrg4mGwSUpg=;
+        b=coSx+rQTXWTI5lNvoe7PIIw3KQxz0K76kASMYnYRSpp4efwwnt0deeJO3QM/nF654F
+         gpEX/yF38FOPvjn1dzt2Vf5O+wkSNq6FmfbhU5+t9P6s0SsDFyPkZQhmmO7z5CyC9ppl
+         RTXSx2vqNlnlqwKA4Sg1KpYsWRHxsQ7TXC0dN0k2BiEQnoDTMpVzacV2kI8jOQ2d+Gee
+         cZRd1ASEV0nv/bhj0jluZ84Q9H6R6CgBF7zhqVnHwbaSe+inAr+qxa3Dj+o9SPBkr2Gg
+         nFUNn03Cc0W6THJd1e70ztjkvczTHiORosqNIy0BhN+nu7UVkFfl2jAJxxGe4/RI/BqB
+         Z7JA==
+X-Gm-Message-State: AOJu0YwxHAviCZtyy1UxtdEEQkEKVIZfr1J/4PAxz37FMwetLRL1z18/
+        RJDd04J2DSKi1eF/Fn903Mb1cQ==
+X-Google-Smtp-Source: AGHT+IEIkqkVLiCDQVtENyPWVuu+h7nL9aLn3AM3oh8xYNImGe5nqy1fuDl53jyeHebKXVRznc0WIQ==
+X-Received: by 2002:a05:6a20:914a:b0:13f:9cee:ff42 with SMTP id x10-20020a056a20914a00b0013f9ceeff42mr11931773pzc.41.1698661787428;
+        Mon, 30 Oct 2023 03:29:47 -0700 (PDT)
 Received: from localhost ([122.172.80.14])
-        by smtp.gmail.com with ESMTPSA id a18-20020aa78652000000b006be484e5b9bsm5600469pfo.58.2023.10.30.03.24.25
+        by smtp.gmail.com with ESMTPSA id e26-20020a62aa1a000000b006c003d9897bsm5628756pff.138.2023.10.30.03.29.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Oct 2023 03:24:26 -0700 (PDT)
+        Mon, 30 Oct 2023 03:29:46 -0700 (PDT)
+Date:   Mon, 30 Oct 2023 15:59:44 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Stephan Gerhold <stephan@gerhold.net>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
         Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
         linux-kernel@vger.kernel.org
-Subject: [PATCH V2 1/3] OPP: Level zero is valid
-Date:   Mon, 30 Oct 2023 15:54:15 +0530
-Message-Id: <36de122e568dcba371d3581e5f936243b405a874.1698661048.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
-In-Reply-To: <cover.1698661048.git.viresh.kumar@linaro.org>
-References: <cover.1698661048.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] OPP: Use _set_opp_level() for single genpd case
+Message-ID: <20231030102944.nrw4bta467zxes5c@vireshk-i7>
+References: <cover.1697710527.git.viresh.kumar@linaro.org>
+ <f709e9e273004be43efe3a2854a7e7b51a777f99.1697710527.git.viresh.kumar@linaro.org>
+ <CAPDyKFqbnsdT0nqKwQhai875CwwpW_vepr816fL+i8yLh=YQhw@mail.gmail.com>
+ <20231025065458.z3klmhahrcqh6qyw@vireshk-i7>
+ <CAPDyKFr4vdsKVYEx0aF5k_a1bTjp3NzMpNgaXDJOJrvujT7iRg@mail.gmail.com>
+ <ZTkciw5AwufxQYnB@gerhold.net>
+ <CAPDyKFq+zsoeF-4h5TfT4Z+S46a501_pUq8y2c1x==Tt6EKBGA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFq+zsoeF-4h5TfT4Z+S46a501_pUq8y2c1x==Tt6EKBGA@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The level zero can be used by some OPPs to drop performance state vote
-for the device. It is perfectly fine to allow the same.
+On 26-10-23, 11:53, Ulf Hansson wrote:
+> On Wed, 25 Oct 2023 at 15:49, Stephan Gerhold <stephan@gerhold.net> wrote:
+> >  2. The OPP WARNing triggers with both variants because it just checks
+> >     if "required-opps" has a single entry. I guess we need extra checks
+> >     to exclude the "parent genpd" case compared to the "OPP" case.
+> >
+> >         [    1.116244] WARNING: CPU: 2 PID: 36 at drivers/opp/of.c:331 _link_required_opps+0x180/0x1cc
+> >         [    1.125897] Hardware name: Qualcomm Technologies, Inc. APQ 8016 SBC (DT)
+> >         [    1.146887] pc : _link_required_opps+0x180/0x1cc
+> >         [    1.146902] lr : _link_required_opps+0xdc/0x1cc
+> >         [    1.276408] Call trace:
+> >         [    1.283519]  _link_required_opps+0x180/0x1cc
+> >         [    1.285779]  _of_add_table_indexed+0x61c/0xd40
+> >         [    1.290292]  dev_pm_opp_of_add_table+0x10/0x18
+> >         [    1.294546]  of_genpd_add_provider_simple+0x80/0x160
+> >         [    1.298974]  cpr_probe+0x6a0/0x97c
+> >         [    1.304092]  platform_probe+0x64/0xbc
+> >
+> > It does seem to work correctly, with and without this patch. So I guess
+> > another option might be to simply silence this WARN_ON(). :')
+> 
+> Oh, thanks for pointing this out! This case haven't crossed my mind yet!
+> 
+> Allow me to think a bit more about it. I will get back to you again
+> with a suggestion soon, unless Viresh comes back first. :-)
 
-_set_opp_level() considers it as an invalid value currently and returns
-early.
+I have resent the series now.
 
-In order to support this properly, initialize the level field with
-U32_MAX, which denotes unused level field.
+Stephan, please give it a try again. Thanks.
 
-Reported-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/opp/core.c     | 24 ++++++++++++++++++++----
- drivers/opp/of.c       |  8 +++++++-
- include/linux/pm_opp.h |  5 ++++-
- 3 files changed, 31 insertions(+), 6 deletions(-)
+Regarding this case where a genpd's table points to a parent genpd's table via
+the required-opps, it is a bit tricky to solve and the only way around that I
+could think of is that someone needs to call dev_pm_opp_set_config() with the
+right device pointer, with that we won't hit the warning anymore and things will
+work as expected.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 84f345c69ea5..f2e2aa07b431 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -201,7 +201,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq_indexed);
-  * @opp:	opp for which level value has to be returned for
-  *
-  * Return: level read from device tree corresponding to the opp, else
-- * return 0.
-+ * return U32_MAX.
-  */
- unsigned int dev_pm_opp_get_level(struct dev_pm_opp *opp)
- {
-@@ -221,7 +221,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_level);
-  * @index:	index of the required opp
-  *
-  * Return: performance state read from device tree corresponding to the
-- * required opp, else return 0.
-+ * required opp, else return U32_MAX.
-  */
- unsigned int dev_pm_opp_get_required_pstate(struct dev_pm_opp *opp,
- 					    unsigned int index)
-@@ -808,6 +808,14 @@ struct dev_pm_opp *dev_pm_opp_find_level_ceil(struct device *dev,
- 	struct dev_pm_opp *opp;
- 
- 	opp = _find_key_ceil(dev, &temp, 0, true, _read_level, NULL);
-+
-+	/* False match */
-+	if (temp == OPP_LEVEL_UNSET) {
-+		dev_err(dev, "%s: OPP levels aren't available\n", __func__);
-+		dev_pm_opp_put(opp);
-+		return ERR_PTR(-ENODEV);
-+	}
-+
- 	*level = temp;
- 	return opp;
- }
-@@ -1049,12 +1057,18 @@ static int _set_opp_bw(const struct opp_table *opp_table,
- static int _set_performance_state(struct device *dev, struct device *pd_dev,
- 				  struct dev_pm_opp *opp, int i)
- {
--	unsigned int pstate = likely(opp) ? opp->required_opps[i]->level: 0;
-+	unsigned int pstate = 0;
- 	int ret;
- 
- 	if (!pd_dev)
- 		return 0;
- 
-+	if (likely(opp)) {
-+		pstate = opp->required_opps[i]->level;
-+		if (pstate == OPP_LEVEL_UNSET)
-+			return 0;
-+	}
-+
- 	ret = dev_pm_domain_set_performance_state(pd_dev, pstate);
- 	if (ret) {
- 		dev_err(dev, "Failed to set performance state of %s: %d (%d)\n",
-@@ -1135,7 +1149,7 @@ static int _set_opp_level(struct device *dev, struct opp_table *opp_table,
- 	int ret = 0;
- 
- 	if (opp) {
--		if (!opp->level)
-+		if (opp->level == OPP_LEVEL_UNSET)
- 			return 0;
- 
- 		level = opp->level;
-@@ -1867,6 +1881,8 @@ struct dev_pm_opp *_opp_allocate(struct opp_table *opp_table)
- 
- 	INIT_LIST_HEAD(&opp->node);
- 
-+	opp->level = OPP_LEVEL_UNSET;
-+
- 	return opp;
- }
- 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 81fa27599d58..85fad7ca0007 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -1393,8 +1393,14 @@ int of_get_required_opp_performance_state(struct device_node *np, int index)
- 
- 	opp = _find_opp_of_np(opp_table, required_np);
- 	if (opp) {
--		pstate = opp->level;
-+		if (opp->level == OPP_LEVEL_UNSET) {
-+			pr_err("%s: OPP levels aren't available for %pOF\n",
-+			       __func__, np);
-+		} else {
-+			pstate = opp->level;
-+		}
- 		dev_pm_opp_put(opp);
-+
- 	}
- 
- 	dev_pm_opp_put_opp_table(opp_table);
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index ccd97bcef269..af53101a1383 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -92,9 +92,12 @@ struct dev_pm_opp_config {
- 	struct device ***virt_devs;
- };
- 
-+#define OPP_LEVEL_UNSET			U32_MAX
-+
- /**
-  * struct dev_pm_opp_data - The data to use to initialize an OPP.
-- * @level: The performance level for the OPP.
-+ * @level: The performance level for the OPP. Set level to OPP_LEVEL_UNSET if
-+ * level field isn't used.
-  * @freq: The clock rate in Hz for the OPP.
-  * @u_volt: The voltage in uV for the OPP.
-  */
+In this case the OPP core needs to call dev_pm_domain_set_performance_state()
+for device and then its genpd. We need the right device pointers :(
+
+Ulf, also another important thing here is that maybe we would want the genpd
+core to not propagate the voting anymore to the parent genpd's ? The
+dev_pm_opp_set_opp() call is better placed at handling all things and not just
+the performance state, like clk, regulator, bandwidth and so the recursion
+should happen at OPP level only. For now my series shouldn't break anything,
+just that we will try to set performance state twice for the parent genpd, the
+second call should silently return as the target state should be equal to
+current state.
+
 -- 
-2.31.1.272.g89b43f80a514
-
+viresh
