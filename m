@@ -2,49 +2,48 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BE48C41535
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23BCBC00142
 	for <linux-pm@archiver.kernel.org>; Tue, 31 Oct 2023 22:29:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346613AbjJaW32 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1346752AbjJaW32 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 31 Oct 2023 18:29:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43426 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346647AbjJaW31 (ORCPT
+        with ESMTP id S1346604AbjJaW31 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Oct 2023 18:29:27 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 879EC109
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B1CB103
         for <linux-pm@vger.kernel.org>; Tue, 31 Oct 2023 15:29:24 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qxxEZ-0000Xy-5m; Tue, 31 Oct 2023 23:29:15 +0100
+        id 1qxxEZ-0000Xw-1v; Tue, 31 Oct 2023 23:29:15 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qxxEY-005fLO-PM; Tue, 31 Oct 2023 23:29:14 +0100
+        id 1qxxEY-005fLI-Bv; Tue, 31 Oct 2023 23:29:14 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qxxEY-00AENT-GB; Tue, 31 Oct 2023 23:29:14 +0100
+        id 1qxxEY-00AENL-2k; Tue, 31 Oct 2023 23:29:14 +0100
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Georgi Djakov <djakov@kernel.org>
-Cc:     Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 3/9] interconnect: imx8mn: Convert to platform remove callback returning void
-Date:   Tue, 31 Oct 2023 23:28:55 +0100
-Message-ID: <20231031222851.3126434-14-u.kleine-koenig@pengutronix.de>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        kernel@pengutronix.de
+Subject: [PATCH 1/9] interconnect: qcom: Make qnoc_remove return void
+Date:   Tue, 31 Oct 2023 23:28:53 +0100
+Message-ID: <20231031222851.3126434-12-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231031222851.3126434-11-u.kleine-koenig@pengutronix.de>
 References: <20231031222851.3126434-11-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1549; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=pi9hxrh98TW1fq33tvO9dGpcMAyXvHi/wtWC2VrTHmI=; b=owGbwMvMwMXY3/A7olbonx/jabUkhlTH+uV6TtGTMu8+inzyyz65JLPalD3DM9g2NjJdYeqm+ OSef4c7GY1ZGBi5GGTFFFnsG9dkWlXJRXau/XcZZhArE8gUBi5OAZgIvygHw3RWgemX9nv0TFHe kZoi7mC1+1nDpVsM3tZaKZXcP7xCjIpC5r9QrUzWXbA81GOuQ8KeHy0nDbpXtmz+cf/Jw4i3zxW uB5/uF6ky2r9Z+HLwC8WL9zOiQtQs5yWy3st4LLUy6+3/tK6mnimcHJHxc/WkzLVl+3ZLHpHcfD 3syb/AmQWvlXyW1jqf4trQ8rVqVv1WZpu+597Hp/9a6X3l6GP1RoFaXe8fCcoTDiutfG1vcnmZ+ K4J0pa51sKNMy1nTTpePqVck7ExSoFXnkl4y/PE8BmN6c937dJuy/DzYfzuyjfVY1srY9mba/w3 DdRnxTteZ/ryj4fvhGvi9AmXpgmFbH79q8Yj71r35pg9AA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5551; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=IoeCKLYUiMYEB258k7BTNsrq5ClLeVUSXQAw7TiXaII=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlQX+lfWzKuPxqbeIMsV6SjJ41Q5mqOqeN3gppg ncILFknb/SJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUF/pQAKCRCPgPtYfRL+ Ttk6B/sEtvTvWt/GBiLA6kJSW5TYu1ghUWoXzlwRbrVQlYkSIt0mvdZ8cEm0x9ApnkCYtSS7I5j Wmuh5jvEUo+/YLmPK68kvlC4rpEK+BGSM53insYgpomkqpC5o5Hw24MqBvrs0AmKeXwmlabU/C+ KrBKaKV27ELgsQzhQlA4pIPzgizJhWQLlhXTnz5eUJBpxgdO9TLQ6YV+WltR2GVhU+aKZnaJQa7 QKZ0RZYngXgMNshY7VuHT7WxNThx5uHXCZrHc93oD3/aN/YNkVDVLzdGUCe+q28m6Nn1F4BChA2 OAOoyX0Uc+DKf39vieEitDaa1o72/GLqeJVZL/LaFssRmlJa
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -65,36 +64,133 @@ void. In the first step of this quest all drivers are converted to
 .remove_new(), which already returns void. Eventually after all drivers
 are converted, .remove_new() will be renamed to .remove().
 
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
+Several interconnect/qcom drivers use qnoc_remove() as remove callback.
+Make this function return void (instead of unconditionally zero) and
+adapt the drivers using this function accordingly.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/interconnect/imx/imx8mn.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/interconnect/qcom/icc-rpm.c | 4 +---
+ drivers/interconnect/qcom/icc-rpm.h | 2 +-
+ drivers/interconnect/qcom/msm8916.c | 2 +-
+ drivers/interconnect/qcom/msm8939.c | 2 +-
+ drivers/interconnect/qcom/msm8996.c | 2 +-
+ drivers/interconnect/qcom/qcm2290.c | 2 +-
+ drivers/interconnect/qcom/qcs404.c  | 2 +-
+ drivers/interconnect/qcom/sdm660.c  | 2 +-
+ 8 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/interconnect/imx/imx8mn.c b/drivers/interconnect/imx/imx8mn.c
-index 8ce6d8e4bf5e..fa3d4f97dfa4 100644
---- a/drivers/interconnect/imx/imx8mn.c
-+++ b/drivers/interconnect/imx/imx8mn.c
-@@ -75,16 +75,9 @@ static int imx8mn_icc_probe(struct platform_device *pdev)
- 	return imx_icc_register(pdev, nodes, ARRAY_SIZE(nodes), NULL);
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 628e651c555c..fb54e78f8fd7 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -627,14 +627,12 @@ int qnoc_probe(struct platform_device *pdev)
  }
+ EXPORT_SYMBOL(qnoc_probe);
  
--static int imx8mn_icc_remove(struct platform_device *pdev)
--{
--	imx_icc_unregister(pdev);
+-int qnoc_remove(struct platform_device *pdev)
++void qnoc_remove(struct platform_device *pdev)
+ {
+ 	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+ 
+ 	icc_provider_deregister(&qp->provider);
+ 	icc_nodes_remove(&qp->provider);
+ 	clk_disable_unprepare(qp->bus_clk);
 -
 -	return 0;
--}
--
- static struct platform_driver imx8mn_icc_driver = {
- 	.probe = imx8mn_icc_probe,
--	.remove = imx8mn_icc_remove,
-+	.remove_new = imx_icc_unregister,
+ }
+ EXPORT_SYMBOL(qnoc_remove);
+diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
+index a13768cfd231..f4883d43eae4 100644
+--- a/drivers/interconnect/qcom/icc-rpm.h
++++ b/drivers/interconnect/qcom/icc-rpm.h
+@@ -161,7 +161,7 @@ extern const struct rpm_clk_resource aggre1_branch_clk;
+ extern const struct rpm_clk_resource aggre2_branch_clk;
+ 
+ int qnoc_probe(struct platform_device *pdev);
+-int qnoc_remove(struct platform_device *pdev);
++void qnoc_remove(struct platform_device *pdev);
+ 
+ bool qcom_icc_rpm_smd_available(void);
+ int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val);
+diff --git a/drivers/interconnect/qcom/msm8916.c b/drivers/interconnect/qcom/msm8916.c
+index 35148880b3e8..499b1a9ac413 100644
+--- a/drivers/interconnect/qcom/msm8916.c
++++ b/drivers/interconnect/qcom/msm8916.c
+@@ -1344,7 +1344,7 @@ MODULE_DEVICE_TABLE(of, msm8916_noc_of_match);
+ 
+ static struct platform_driver msm8916_noc_driver = {
+ 	.probe = qnoc_probe,
+-	.remove = qnoc_remove,
++	.remove_new = qnoc_remove,
  	.driver = {
- 		.name = "imx8mn-interconnect",
- 	},
+ 		.name = "qnoc-msm8916",
+ 		.of_match_table = msm8916_noc_of_match,
+diff --git a/drivers/interconnect/qcom/msm8939.c b/drivers/interconnect/qcom/msm8939.c
+index b52c5ac1175c..8ff2c23b1ca0 100644
+--- a/drivers/interconnect/qcom/msm8939.c
++++ b/drivers/interconnect/qcom/msm8939.c
+@@ -1421,7 +1421,7 @@ MODULE_DEVICE_TABLE(of, msm8939_noc_of_match);
+ 
+ static struct platform_driver msm8939_noc_driver = {
+ 	.probe = qnoc_probe,
+-	.remove = qnoc_remove,
++	.remove_new = qnoc_remove,
+ 	.driver = {
+ 		.name = "qnoc-msm8939",
+ 		.of_match_table = msm8939_noc_of_match,
+diff --git a/drivers/interconnect/qcom/msm8996.c b/drivers/interconnect/qcom/msm8996.c
+index b73566c9b21f..788131400cd1 100644
+--- a/drivers/interconnect/qcom/msm8996.c
++++ b/drivers/interconnect/qcom/msm8996.c
+@@ -2108,7 +2108,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qnoc_probe,
+-	.remove = qnoc_remove,
++	.remove_new = qnoc_remove,
+ 	.driver = {
+ 		.name = "qnoc-msm8996",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/qcm2290.c b/drivers/interconnect/qcom/qcm2290.c
+index b88cf9a022e0..96735800b13c 100644
+--- a/drivers/interconnect/qcom/qcm2290.c
++++ b/drivers/interconnect/qcom/qcm2290.c
+@@ -1367,7 +1367,7 @@ MODULE_DEVICE_TABLE(of, qcm2290_noc_of_match);
+ 
+ static struct platform_driver qcm2290_noc_driver = {
+ 	.probe = qnoc_probe,
+-	.remove = qnoc_remove,
++	.remove_new = qnoc_remove,
+ 	.driver = {
+ 		.name = "qnoc-qcm2290",
+ 		.of_match_table = qcm2290_noc_of_match,
+diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+index 9fa1da70c843..11b49a89c03d 100644
+--- a/drivers/interconnect/qcom/qcs404.c
++++ b/drivers/interconnect/qcom/qcs404.c
+@@ -1083,7 +1083,7 @@ MODULE_DEVICE_TABLE(of, qcs404_noc_of_match);
+ 
+ static struct platform_driver qcs404_noc_driver = {
+ 	.probe = qnoc_probe,
+-	.remove = qnoc_remove,
++	.remove_new = qnoc_remove,
+ 	.driver = {
+ 		.name = "qnoc-qcs404",
+ 		.of_match_table = qcs404_noc_of_match,
+diff --git a/drivers/interconnect/qcom/sdm660.c b/drivers/interconnect/qcom/sdm660.c
+index 7392bebba334..ab91de446da8 100644
+--- a/drivers/interconnect/qcom/sdm660.c
++++ b/drivers/interconnect/qcom/sdm660.c
+@@ -1714,7 +1714,7 @@ MODULE_DEVICE_TABLE(of, sdm660_noc_of_match);
+ 
+ static struct platform_driver sdm660_noc_driver = {
+ 	.probe = qnoc_probe,
+-	.remove = qnoc_remove,
++	.remove_new = qnoc_remove,
+ 	.driver = {
+ 		.name = "qnoc-sdm660",
+ 		.of_match_table = sdm660_noc_of_match,
 -- 
 2.42.0
 
