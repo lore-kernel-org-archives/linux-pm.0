@@ -2,74 +2,111 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61261C4332F
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 15:25:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83CDAC4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 15:45:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233774AbjKAPZH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Nov 2023 11:25:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38288 "EHLO
+        id S232332AbjKAPpw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Nov 2023 11:45:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42080 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233988AbjKAPZG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 11:25:06 -0400
-Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com [209.85.210.54])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3C5F10C;
-        Wed,  1 Nov 2023 08:25:01 -0700 (PDT)
-Received: by mail-ot1-f54.google.com with SMTP id 46e09a7af769-6d2fedd836fso1852238a34.1;
-        Wed, 01 Nov 2023 08:25:01 -0700 (PDT)
+        with ESMTP id S1344665AbjKAOqp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 10:46:45 -0400
+Received: from mail-ot1-f44.google.com (mail-ot1-f44.google.com [209.85.210.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3273EDC;
+        Wed,  1 Nov 2023 07:46:43 -0700 (PDT)
+Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-6ce2eaf7c2bso4523438a34.0;
+        Wed, 01 Nov 2023 07:46:43 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698852301; x=1699457101;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=bozvejefCHTTSfjvuu0aaoVgbRnxlhlTjic682S1lbI=;
-        b=MIPQuRu62hCjhsG83wk3wtUP7yoTaID9+oWct3Itv3KgcovEaJmO+3/syWDHSJNL5Z
-         HonQDIPkNgzjArjLd9ER3PDYRRfQjS7n66h8YjmeJiXfwiYURamd0hEUoKvof9phEamJ
-         sEQhYlSvzQcMPg1Uw+paJZ4t2VdAQDsGM5BhnkSYh6+oaRnMuCLiL9ORPDPSnM1Kgnf2
-         G6rsqXPpTKqfg4fifhUSWFAN29VdPKuqjepR0iWRfp1GNClCfyiYfakYDuU97wVBxVy0
-         5UvuDCALROZii+87TnhXyjaMXtqeRXtpLmtRhBDSls5cLZWL8IvrTSKIzdPVihccJmFB
-         aD4Q==
-X-Gm-Message-State: AOJu0YwGGZG3fnrhOKtKVtN8QrAppE45ORJmGnyCtcA9gVrp0AwWKNd1
-        aogr76e6qSzTleUrMyCD319fzxVoaA==
-X-Google-Smtp-Source: AGHT+IEYN8x9bXiuUbuf+qfeGYLHvQyPLqgNx1U8v0X75YtJDLybB108jIoN/mEm5DI81Ty8xLs9JA==
-X-Received: by 2002:a05:6830:3499:b0:6bd:152f:990e with SMTP id c25-20020a056830349900b006bd152f990emr21769798otu.5.1698852300984;
-        Wed, 01 Nov 2023 08:25:00 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1698850002; x=1699454802;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=3jeA19kl1acYj+K5OAp8lk/hS9qxEtIjfOF2DeOY2Wk=;
+        b=oR8sOc8IS7ND8q7t6Dpf9jTtI7ICLx3r9zVXXSDumYHXKIU8LVQvbRTq9MujYec6GK
+         DUPoVs3LVmL3CoOforCS6uflkAMK2z/H3Rk7z8tjuyuCqyS94IsammqJGa6YSGUb+ttR
+         5aFg9sb1Pj8EN0Yf1dDU+/VIqPgrGZAWomvNpJ6fTT/g0uAoX+hnSDKlXp0oOfx12qEW
+         QZQ5idyNNEZtDz67h2tJfOzRKbrnxjL26jxAY1sZvRnmHcQOSH040EnHP/P1cj+SvubC
+         yxv12qcs6eUSRW0z4NEUIWiuTRIFP5j/hBxx9pcXZmoPnZBf+aYT59gu0FZ9ufbSJZZV
+         7xmw==
+X-Gm-Message-State: AOJu0YxvPWuzedPRQTQ5/nM51hiC7gyc78VGd9JPxcUcB19Lwk3BLyGa
+        1tPYdkL+w20f9wHjPgUVsQ==
+X-Google-Smtp-Source: AGHT+IE+dz1IOeT7KVIPxGWJde5p4oVtUL0RCQEmKwS1I+MeRIbZm2OK92ubWKocNbqh109fS8FEdQ==
+X-Received: by 2002:a9d:6197:0:b0:6cd:da93:90ce with SMTP id g23-20020a9d6197000000b006cdda9390cemr15395286otk.19.1698850002398;
+        Wed, 01 Nov 2023 07:46:42 -0700 (PDT)
 Received: from herring.priv (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id be14-20020a056830350e00b006ce32aac3e4sm230090otb.48.2023.11.01.08.24.59
+        by smtp.gmail.com with ESMTPSA id a13-20020a0568300b8d00b006b8c87551e8sm216507otv.35.2023.11.01.07.46.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Nov 2023 08:25:00 -0700 (PDT)
-Received: (nullmailer pid 316059 invoked by uid 1000);
-        Wed, 01 Nov 2023 15:24:59 -0000
-Date:   Wed, 1 Nov 2023 10:24:59 -0500
+        Wed, 01 Nov 2023 07:46:41 -0700 (PDT)
+Received: (nullmailer pid 121158 invoked by uid 1000);
+        Wed, 01 Nov 2023 14:46:40 -0000
 From:   Rob Herring <robh@kernel.org>
-To:     Elliot Berman <quic_eberman@quicinc.com>
-Cc:     Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-        devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Subject: Re: [PATCH] dt-bindings: power: reset: $ref reboot-mode in
- nvmem-reboot-mode
-Message-ID: <169885229755.315654.10498316199571342193.robh@kernel.org>
-References: <20231031-ref-nvmem-reboot-mode-v1-1-c1af9070ce52@quicinc.com>
+To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] opp: ti: Use device_get_match_data()
+Date:   Wed,  1 Nov 2023 09:45:00 -0500
+Message-ID: <20231101144501.118972-1-robh@kernel.org>
+X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231031-ref-nvmem-reboot-mode-v1-1-c1af9070ce52@quicinc.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Use preferred device_get_match_data() instead of of_match_device() to
+get the driver match data. With this, adjust the includes to explicitly
+include the correct headers.
 
-On Tue, 31 Oct 2023 11:28:22 -0700, Elliot Berman wrote:
-> nvmem-reboot-mode.yaml should $ref: reboot-mode.yaml, but instead
-> rewrites the properties. Update so it $refs instead.
-> 
-> Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
-> ---
->  .../devicetree/bindings/power/reset/nvmem-reboot-mode.yaml        | 8 +++-----
->  1 file changed, 3 insertions(+), 5 deletions(-)
-> 
+As this driver only does DT based matching, of_match_device() will never
+return NULL if we've gotten to probe(). Therefore, the NULL check and
+error return for it can be dropped.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+v2:
+ - Add missing commit msg
+---
+ drivers/opp/ti-opp-supply.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/opp/ti-opp-supply.c b/drivers/opp/ti-opp-supply.c
+index 8f3f13fbbb25..e3b97cd1fbbf 100644
+--- a/drivers/opp/ti-opp-supply.c
++++ b/drivers/opp/ti-opp-supply.c
+@@ -18,6 +18,7 @@
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_opp.h>
++#include <linux/property.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/slab.h>
+ 
+@@ -373,23 +374,15 @@ static int ti_opp_supply_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct device *cpu_dev = get_cpu_device(0);
+-	const struct of_device_id *match;
+ 	const struct ti_opp_supply_of_data *of_data;
+ 	int ret = 0;
+ 
+-	match = of_match_device(ti_opp_supply_of_match, dev);
+-	if (!match) {
+-		/* We do not expect this to happen */
+-		dev_err(dev, "%s: Unable to match device\n", __func__);
+-		return -ENODEV;
+-	}
+-	if (!match->data) {
++	of_data = device_get_match_data(dev);
++	if (!of_data) {
+ 		/* Again, unlikely.. but mistakes do happen */
+ 		dev_err(dev, "%s: Bad data in match\n", __func__);
+ 		return -EINVAL;
+ 	}
+-	of_data = match->data;
+-
+ 	dev_set_drvdata(dev, (void *)of_data);
+ 
+ 	/* If we need optimized voltage */
+-- 
+2.42.0
 
