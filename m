@@ -2,81 +2,105 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC3BAC4332F
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 21:14:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAB38C4167B
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 21:26:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232713AbjKAVOE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Nov 2023 17:14:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59400 "EHLO
+        id S1345553AbjKAV0Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Nov 2023 17:26:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35764 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345228AbjKAVN6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 17:13:58 -0400
-X-Greylist: delayed 11999 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 01 Nov 2023 14:13:53 PDT
-Received: from 12.mo584.mail-out.ovh.net (12.mo584.mail-out.ovh.net [178.33.104.253])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C400C111
-        for <linux-pm@vger.kernel.org>; Wed,  1 Nov 2023 14:13:53 -0700 (PDT)
-Received: from director4.ghost.mail-out.ovh.net (unknown [10.109.138.174])
-        by mo584.mail-out.ovh.net (Postfix) with ESMTP id C3B5527CFC
-        for <linux-pm@vger.kernel.org>; Wed,  1 Nov 2023 17:36:38 +0000 (UTC)
-Received: from ghost-submission-6684bf9d7b-k8p4s (unknown [10.108.4.11])
-        by director4.ghost.mail-out.ovh.net (Postfix) with ESMTPS id 3EE021FD7A;
-        Wed,  1 Nov 2023 17:36:37 +0000 (UTC)
-Received: from foxhound.fi ([37.59.142.103])
-        by ghost-submission-6684bf9d7b-k8p4s with ESMTPSA
-        id Yc+/CaWMQmUEEgAAHOvW/w
-        (envelope-from <jose.pekkarinen@foxhound.fi>); Wed, 01 Nov 2023 17:36:37 +0000
-Authentication-Results: garm.ovh; auth=pass (GARM-103G0057af23061-cf36-4f4c-8b48-a29c5d4dfc4c,
-                    E3092659390FA2EDB47E70EC17E7DF57E79FF282) smtp.auth=jose.pekkarinen@foxhound.fi
-X-OVh-ClientIp: 87.94.110.27
-From:   =?UTF-8?q?Jos=C3=A9=20Pekkarinen?= <jose.pekkarinen@foxhound.fi>
-To:     rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz,
-        gregkh@linuxfoundation.org, skhan@linuxfoundation.org
-Cc:     =?UTF-8?q?Jos=C3=A9=20Pekkarinen?= <jose.pekkarinen@foxhound.fi>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-kernel-mentees@lists.linuxfoundation.org,
-        syzbot+95f2e2439b97575ec3c0@syzkaller.appspotmail.com
-Subject: [PATCH] drivers core: lookup sysfs power group before removal
-Date:   Wed,  1 Nov 2023 19:36:27 +0200
-Message-Id: <20231101173627.2658-1-jose.pekkarinen@foxhound.fi>
-X-Mailer: git-send-email 2.39.2
+        with ESMTP id S1345496AbjKAV0W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 17:26:22 -0400
+Received: from mail-yw1-x112f.google.com (mail-yw1-x112f.google.com [IPv6:2607:f8b0:4864:20::112f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7A58120
+        for <linux-pm@vger.kernel.org>; Wed,  1 Nov 2023 14:26:15 -0700 (PDT)
+Received: by mail-yw1-x112f.google.com with SMTP id 00721157ae682-5ae143e08b1so3677247b3.1
+        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2023 14:26:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1698873975; x=1699478775; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=dM+LROLHmfkfBpSjaW1PZaGn9FpCSaF42cM5WqtKLcg=;
+        b=zKOe3QtqKy97r7XIo9YXDIoPsTtLkRg9ZoRf9e9UJB0h3FxNFBDQE2lu2D3ZcFBrv5
+         oUBYc7Bk0hFee1Y3rXeeil+8qdWFmOzyOv0Oc7CzkMcKAiqVqjKWzeeLdKg22+KoqurW
+         NoAijegqGCLDamykt/PnMtunCFBMVzIZH47f1T8N/Hpl36S9y5DBe4BBBMdtjBXi9Enz
+         VPK82C7IdiOc6p7CR9SHWyvOEfj4z4VejlzGVTaT4kC8n5YI9OVAEuXDC8JIi6omUB/I
+         oWgaN9t35P3DVwxCmCletC9tuDaYmzdw4EQEkpEK6eXx5+tgIU8RlUzk2oibNuO2PIgm
+         K1dQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698873975; x=1699478775;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=dM+LROLHmfkfBpSjaW1PZaGn9FpCSaF42cM5WqtKLcg=;
+        b=g6ZbkCaLQ9gyRBugyhMGzmrXE071aJBjpoEWrrrkNzisGQWDO8O1fVkYjCDGAP8zxW
+         /jJEAWjJbxRJWi0xXtvnNiD9ML5BDpF9aBFb3ZouRebvBRNoRZg6CRLv07xucBSKXiwM
+         l+8G1Ibh/V+K84H2zLOQWNcRuiY5bQ4ha1WF7ubTKfFtIpM2nY7pKYQ7mmnR2TNX90lQ
+         lgmTz+SUsxdwDfPu/IeIWqvuqfdL+wnFPPaVvw8jyiaE/xTKo6SFeJl+EE3igSAbSlQM
+         TV2rGxiuP895hrdRwc56io2QhHQctPxihZozP0FlY3rP35FKhkRPp10HJjJXNF6M5SOC
+         wKUw==
+X-Gm-Message-State: AOJu0YyxCj7GHj4LS2DPb5tA/DJLmm53MdYsBqDxSFsI6AzwcW6iw8ng
+        6FUiJotk5BGJEIQimiufRV4yciZ0VqKHLXkcsoJqCw==
+X-Google-Smtp-Source: AGHT+IHCuEtVdpcr5cRUi6mQUFHDfZfg/vkcqJjTOAGyHJ1KQcm7224b4vSdHNYWO23AYt8ggbFXP3aPDO5syxbQ3lU=
+X-Received: by 2002:a81:c404:0:b0:5a7:bc0e:193e with SMTP id
+ j4-20020a81c404000000b005a7bc0e193emr17704074ywi.18.1698873974900; Wed, 01
+ Nov 2023 14:26:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 10134788012345763331
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedruddtgedguddtvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhephffvvefufffkofggtgfgsehtkeertdertdejnecuhfhrohhmpeflohhsrocurfgvkhhkrghrihhnvghnuceojhhoshgvrdhpvghkkhgrrhhinhgvnhesfhhogihhohhunhgurdhfiheqnecuggftrfgrthhtvghrnhepfedtleeuteeitedvtedtteeuieevudejfeffvdetfeekleehhfelleefteetjeejnecukfhppeduvdejrddtrddtrddupdekjedrleegrdduuddtrddvjedpfeejrdehledrudegvddruddtfeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduvdejrddtrddtrddupdhmrghilhhfrhhomhepoehjohhsvgdrphgvkhhkrghrihhnvghnsehfohighhhouhhnugdrfhhiqedpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdpoffvtefjohhsthepmhhoheekgedpmhhouggvpehsmhhtphhouhht
+References: <20231101-gdsc-hwctrl-v3-0-0740ae6b2b04@linaro.org> <20231101-gdsc-hwctrl-v3-1-0740ae6b2b04@linaro.org>
+In-Reply-To: <20231101-gdsc-hwctrl-v3-1-0740ae6b2b04@linaro.org>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date:   Wed, 1 Nov 2023 23:26:04 +0200
+Message-ID: <CAA8EJpobBJfmztkLoQBmUAbUR16HY0sNZpnA+ZTSmn5VvRWauA@mail.gmail.com>
+Subject: Re: [PATCH RESEND v3 1/5] PM: domains: Allow devices attached to
+ genpd to be managed by HW
+To:     Abel Vesa <abel.vesa@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Stanimir Varbanov <stanimir.k.varbanov@gmail.com>,
+        Vikash Garodia <quic_vgarodia@quicinc.com>,
+        "Bryan O'Donoghue" <bryan.odonoghue@linaro.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Taniya Das <tdas@qti.qualcomm.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hinted by syzboot, there is a few cases where the sysfs power group may
-not be there, like the failure while adding it, or adding its runtime
-group, or when the sysfs firmware loader fallback fail to populate. In
-the last case, the device_del function will be called leading to attempt
-to remove the sysfs group. This patch will lookup for it in advance to
-grant that it is effectively there before cleaning it up.
+On Wed, 1 Nov 2023 at 11:08, Abel Vesa <abel.vesa@linaro.org> wrote:
+>
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> Some power-domains may be capable of relying on the HW to control the power
+> for a device that's hooked up to it. Typically, for these kinds of
+> configurations the device doesn't really need to be attached to a PM domain
+> (genpd), from Linux point of view. However, in some cases the behaviour of
+> the power-domain and its device can be changed in runtime.
+>
+> To allow a consumer driver to change the behaviour of the PM domain for its
+> device, let's provide a new function, dev_pm_genpd_set_hwmode(). Moreover,
+> let's add a corresponding optional genpd callback, ->set_hwmode_dev(),
+> which the genpd provider should implement if it can support switching
+> between HW controlled mode and SW controlled mode. Similarly, add the
+> dev_pm_genpd_get_hwmode() to allow consumers to read the current mode and
+> its corresponding optional genpd callback, ->get_hwmode_dev(), which the
+> genpd provider can also implement for reading back the mode from the
+> hardware.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
 
-Reported-by: syzbot+95f2e2439b97575ec3c0@syzkaller.appspotmail.com
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 
-Signed-off-by: José Pekkarinen <jose.pekkarinen@foxhound.fi>
----
- drivers/base/power/sysfs.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index a1474fb67db9..6601729c4698 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -834,5 +834,7 @@ void dpm_sysfs_remove(struct device *dev)
- 	dev_pm_qos_constraints_destroy(dev);
- 	rpm_sysfs_remove(dev);
- 	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
--	sysfs_remove_group(&dev->kobj, &pm_attr_group);
-+
-+	if (kernfs_find_and_get((&dev->kobj)->sd, pm_attr_group.name))
-+		sysfs_remove_group(&dev->kobj, &pm_attr_group);
- }
 -- 
-2.39.2
-
+With best wishes
+Dmitry
