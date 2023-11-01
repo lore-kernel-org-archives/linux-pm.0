@@ -2,111 +2,126 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83CDAC4332F
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 15:45:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48C9CC4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 15:47:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232332AbjKAPpw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Nov 2023 11:45:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42080 "EHLO
+        id S233678AbjKAPr5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Nov 2023 11:47:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344665AbjKAOqp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 10:46:45 -0400
-Received: from mail-ot1-f44.google.com (mail-ot1-f44.google.com [209.85.210.44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3273EDC;
-        Wed,  1 Nov 2023 07:46:43 -0700 (PDT)
-Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-6ce2eaf7c2bso4523438a34.0;
-        Wed, 01 Nov 2023 07:46:43 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698850002; x=1699454802;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=3jeA19kl1acYj+K5OAp8lk/hS9qxEtIjfOF2DeOY2Wk=;
-        b=oR8sOc8IS7ND8q7t6Dpf9jTtI7ICLx3r9zVXXSDumYHXKIU8LVQvbRTq9MujYec6GK
-         DUPoVs3LVmL3CoOforCS6uflkAMK2z/H3Rk7z8tjuyuCqyS94IsammqJGa6YSGUb+ttR
-         5aFg9sb1Pj8EN0Yf1dDU+/VIqPgrGZAWomvNpJ6fTT/g0uAoX+hnSDKlXp0oOfx12qEW
-         QZQ5idyNNEZtDz67h2tJfOzRKbrnxjL26jxAY1sZvRnmHcQOSH040EnHP/P1cj+SvubC
-         yxv12qcs6eUSRW0z4NEUIWiuTRIFP5j/hBxx9pcXZmoPnZBf+aYT59gu0FZ9ufbSJZZV
-         7xmw==
-X-Gm-Message-State: AOJu0YxvPWuzedPRQTQ5/nM51hiC7gyc78VGd9JPxcUcB19Lwk3BLyGa
-        1tPYdkL+w20f9wHjPgUVsQ==
-X-Google-Smtp-Source: AGHT+IE+dz1IOeT7KVIPxGWJde5p4oVtUL0RCQEmKwS1I+MeRIbZm2OK92ubWKocNbqh109fS8FEdQ==
-X-Received: by 2002:a9d:6197:0:b0:6cd:da93:90ce with SMTP id g23-20020a9d6197000000b006cdda9390cemr15395286otk.19.1698850002398;
-        Wed, 01 Nov 2023 07:46:42 -0700 (PDT)
-Received: from herring.priv (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id a13-20020a0568300b8d00b006b8c87551e8sm216507otv.35.2023.11.01.07.46.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Nov 2023 07:46:41 -0700 (PDT)
-Received: (nullmailer pid 121158 invoked by uid 1000);
-        Wed, 01 Nov 2023 14:46:40 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] opp: ti: Use device_get_match_data()
-Date:   Wed,  1 Nov 2023 09:45:00 -0500
-Message-ID: <20231101144501.118972-1-robh@kernel.org>
-X-Mailer: git-send-email 2.42.0
+        with ESMTP id S234146AbjKAPr4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 11:47:56 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F03BE12E;
+        Wed,  1 Nov 2023 08:47:44 -0700 (PDT)
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3A1EHSWl000923;
+        Wed, 1 Nov 2023 15:47:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=qcppdkim1;
+ bh=owa8O8xm4O+CR6cBywaNZb9A1GNgekDluOYlBTuZTVw=;
+ b=F+QNmUALlawaqHLKrRu3Iis0CSJ1+0B6R7MRd5pwyCtaUdWGLhl8Gyq0Rc9/y0vC0yvg
+ NoGwa9Iiv3YyP5HqqjT3S/dsn2i1EnkbQT/TrB2bTlrYMYUdufJXgiewm6YVOWFEXkrg
+ IC+f0Qi6zi0WDz+eU22gWWlbZbioaPhIkv6uksMGu+i0HveEkjyRCBFyhtvz1V21ieJu
+ hb/JqNWrh2oFl9fQOo6afim0VHjU8H5OciQBoDZamPdc3wp8ypTxb8K/MvX9h+0jtOy7
+ Cjp0fr+9x1lf7jBSriGUKiiMFCXnrVVBcEK5MXVNUHtoQ8peC9YtYijlCrjWYSTHmL5V Dg== 
+Received: from nasanppmta02.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3u3e06tb98-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 01 Nov 2023 15:47:39 +0000
+Received: from nasanex01c.na.qualcomm.com (nasanex01c.na.qualcomm.com [10.45.79.139])
+        by NASANPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3A1FlcRA031748
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 1 Nov 2023 15:47:38 GMT
+Received: from [10.216.63.119] (10.80.80.8) by nasanex01c.na.qualcomm.com
+ (10.45.79.139) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.39; Wed, 1 Nov
+ 2023 08:47:33 -0700
+Message-ID: <2683c865-7775-a2ef-0417-01f9aca80b6a@quicinc.com>
+Date:   Wed, 1 Nov 2023 21:17:24 +0530
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH] dt-bindings: power: reset: $ref reboot-mode in
+ nvmem-reboot-mode
+Content-Language: en-US
+To:     Elliot Berman <quic_eberman@quicinc.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+CC:     <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+References: <20231031-ref-nvmem-reboot-mode-v1-1-c1af9070ce52@quicinc.com>
+From:   Mukesh Ojha <quic_mojha@quicinc.com>
+In-Reply-To: <20231031-ref-nvmem-reboot-mode-v1-1-c1af9070ce52@quicinc.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nasanex01c.na.qualcomm.com (10.45.79.139)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: PlbOTgSHSA7NPNztDGjwcT57MQBwB0Zr
+X-Proofpoint-GUID: PlbOTgSHSA7NPNztDGjwcT57MQBwB0Zr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-11-01_13,2023-11-01_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 spamscore=0
+ impostorscore=0 mlxscore=0 clxscore=1011 phishscore=0 adultscore=0
+ lowpriorityscore=0 suspectscore=0 priorityscore=1501 bulkscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2310240000 definitions=main-2311010128
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use preferred device_get_match_data() instead of of_match_device() to
-get the driver match data. With this, adjust the includes to explicitly
-include the correct headers.
 
-As this driver only does DT based matching, of_match_device() will never
-return NULL if we've gotten to probe(). Therefore, the NULL check and
-error return for it can be dropped.
 
-Signed-off-by: Rob Herring <robh@kernel.org>
----
-v2:
- - Add missing commit msg
----
- drivers/opp/ti-opp-supply.c | 13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+On 10/31/2023 11:58 PM, Elliot Berman wrote:
+> nvmem-reboot-mode.yaml should $ref: reboot-mode.yaml, but instead
+> rewrites the properties. Update so it $refs instead.
+> 
+> Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
 
-diff --git a/drivers/opp/ti-opp-supply.c b/drivers/opp/ti-opp-supply.c
-index 8f3f13fbbb25..e3b97cd1fbbf 100644
---- a/drivers/opp/ti-opp-supply.c
-+++ b/drivers/opp/ti-opp-supply.c
-@@ -18,6 +18,7 @@
- #include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/pm_opp.h>
-+#include <linux/property.h>
- #include <linux/regulator/consumer.h>
- #include <linux/slab.h>
- 
-@@ -373,23 +374,15 @@ static int ti_opp_supply_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	struct device *cpu_dev = get_cpu_device(0);
--	const struct of_device_id *match;
- 	const struct ti_opp_supply_of_data *of_data;
- 	int ret = 0;
- 
--	match = of_match_device(ti_opp_supply_of_match, dev);
--	if (!match) {
--		/* We do not expect this to happen */
--		dev_err(dev, "%s: Unable to match device\n", __func__);
--		return -ENODEV;
--	}
--	if (!match->data) {
-+	of_data = device_get_match_data(dev);
-+	if (!of_data) {
- 		/* Again, unlikely.. but mistakes do happen */
- 		dev_err(dev, "%s: Bad data in match\n", __func__);
- 		return -EINVAL;
- 	}
--	of_data = match->data;
--
- 	dev_set_drvdata(dev, (void *)of_data);
- 
- 	/* If we need optimized voltage */
--- 
-2.42.0
+Reviewed-by: Mukesh Ojha <quic_mojha@quicinc.com>
 
+-Mukesh
+
+> ---
+>   .../devicetree/bindings/power/reset/nvmem-reboot-mode.yaml        | 8 +++-----
+>   1 file changed, 3 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
+> index 14a262bcbf7c..627f8a6078c2 100644
+> --- a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
+> +++ b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
+> @@ -28,17 +28,15 @@ properties:
+>       items:
+>         - const: reboot-mode
+>   
+> -patternProperties:
+> -  "^mode-.+":
+> -    $ref: /schemas/types.yaml#/definitions/uint32
+> -    description: Vendor-specific mode value written to the mode register
+> +allOf:
+> +  - $ref: reboot-mode.yaml#
+>   
+>   required:
+>     - compatible
+>     - nvmem-cells
+>     - nvmem-cell-names
+>   
+> -additionalProperties: false
+> +unevaluatedProperties: false
+>   
+>   examples:
+>     - |
+> 
+> ---
+> base-commit: ffc253263a1375a65fa6c9f62a893e9767fbebfa
+> change-id: 20231031-ref-nvmem-reboot-mode-1369970436e4
+> 
+> Best regards,
