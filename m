@@ -2,257 +2,151 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B5BFC04A68
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 09:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D6CEC4167B
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 09:04:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233002AbjKAJEf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Nov 2023 05:04:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36448 "EHLO
+        id S233257AbjKAJEv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Nov 2023 05:04:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40208 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233120AbjKAJEe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 05:04:34 -0400
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 084A010D
-        for <linux-pm@vger.kernel.org>; Wed,  1 Nov 2023 02:04:25 -0700 (PDT)
-Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-9d0b4dfd60dso711738266b.1
-        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2023 02:04:24 -0700 (PDT)
+        with ESMTP id S234266AbjKAJEq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 05:04:46 -0400
+Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6695D122
+        for <linux-pm@vger.kernel.org>; Wed,  1 Nov 2023 02:04:40 -0700 (PDT)
+Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-5b9a453d3d3so2272369a12.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2023 02:04:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1698829463; x=1699434263; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ViHvhY7/7pjsjCfPWyii+lKtXPJD6Bts4D46Eo2ic5Q=;
-        b=aWmBGsGrQ2Zajj+q79lcA8o0RRq3c2MXPsej5V2IU0eyohQ6DPXpfHvN+6ItkhIIXB
-         Wrek/aLx8P0VF1onu6QpmKedOYI/SazSL62Sz90FHqF2Kp3cqsVG7xOqqaDRdL43EIyF
-         gSZdGVgOLJb+ZGLjn8TO76vxCExigvILdUi3v2JGta3en4EHHFcsZmahYu5obG70SGog
-         DDL1aFwiLZjM5Jw/mSsFvGMQfIYC7J6NBjRuxLXuIMzxSb4GjqVIIsTRKKnZGdIP+5QY
-         yRo2eV8MWPsF6izyTAQ4s/GPDeVF5DHoiEpzfn3Xu85PvqtX/rlxxefchGEhz6v6dA1C
-         pM6Q==
+        d=linaro.org; s=google; t=1698829480; x=1699434280; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=T97XsuQPDMRDtHy08B+rqECq/pabjxSIR/W6V7wvFWM=;
+        b=wDR/u07J09wey+Tzfc9wT2uc3JDwIYuShLiN2TlGprBgCfFRjfv8xR8r3Lo8t9BrG+
+         yI0fYEEM/bfAH1gvXNxhC+vF9g7sQWRyi8uqH1tvhxh2H93ZKtVIb4Fr2bHJpulosKeK
+         qHoTqaDYKKD7OwXWnTBMIqqQ2hvoHbV2rTXhQheMKWZFHN+Q248QE2pMr6WXL5wUjgnr
+         YLM1BHjvcEOgUcrX1Qxwnalb4WSq2uQUOR/nCghOSD50HRCED/4tq17cPGP/lSKa1QZn
+         Q9rGJ7lGWoqmub44HKvLQDahlLIyix6jZ1uCMhfpewTfcspqAJkzbQP+dvjqfu1c/lZT
+         /WpA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698829463; x=1699434263;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ViHvhY7/7pjsjCfPWyii+lKtXPJD6Bts4D46Eo2ic5Q=;
-        b=L1VWEnEslgVH2gQyjIwwxuUlzHzMsm2kbRhuNXJJLMa8om5YGhevnzMlHc/ckw6U/C
-         j8I1yFNYYzx4yyPVpvfqaJWKd85CjYINcJNqTl0RucS+VmwMqUMBHi6VQnUZWCoghtxl
-         w6nDnm7rnFZDaRrIoRlkqK0TwGYTFYvo5x8X8E+32CUUsCoBd7pCYDM0Pkhtga7VCu54
-         6d3N1iORdURbDhT/KVRCj5seYoZmlNnQUv4Rhi5HBTreoIFjjsoavZgsEJMauKRzo82E
-         LUaS+fU+w80gStw5tX9j4OvzNrNjw5cV3C1MIsFre+AlkM0eIkwKf5N1HJN1iK281JIl
-         1gTw==
-X-Gm-Message-State: AOJu0YwFnxRfRQ9saFjzTW2Wss5yUxE8+03PBGZn3B1umo/mIBnKdrZo
-        tLLUIwCFsawmhf4gDLal7crO4Q==
-X-Google-Smtp-Source: AGHT+IHgfedVe+e1xDscZqpmwYEVUPqDIi8n61Kt2vd/n+wQV4pwVLy7AzvncRBXdQzxbke7FOiz5Q==
-X-Received: by 2002:a17:907:31c9:b0:9d5:7c6f:de66 with SMTP id xf9-20020a17090731c900b009d57c6fde66mr1530396ejb.38.1698829463279;
-        Wed, 01 Nov 2023 02:04:23 -0700 (PDT)
-Received: from [127.0.1.1] ([86.122.213.220])
-        by smtp.gmail.com with ESMTPSA id l25-20020a170906a41900b0099cd1c0cb21sm2152781ejz.129.2023.11.01.02.04.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Nov 2023 02:04:22 -0700 (PDT)
-From:   Abel Vesa <abel.vesa@linaro.org>
-Date:   Wed, 01 Nov 2023 11:04:07 +0200
-Subject: [PATCH RESEND v3 1/5] PM: domains: Allow devices attached to genpd
- to be managed by HW
+        d=1e100.net; s=20230601; t=1698829480; x=1699434280;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=T97XsuQPDMRDtHy08B+rqECq/pabjxSIR/W6V7wvFWM=;
+        b=CY7caagpckknTqbyX4flA10nTPk7MMg5AGf7qFBfzKvW0OImmPt5Pyq8+vLJ8eV6Bw
+         YSDTCSjB4V1u0pNO41eTTDK6FxTetDY92eaqQMBvWA1xx/x8B8SoO0v3CNwI+KsA8mOC
+         8+1PKN9oGd5QBWvCtJBuEyZQBvP4DvRV70sw6BgcWM6wwl8cb+yb4iMJFWRM+2H16mZd
+         CadkQj1HQ0IV/W97oO+ZAYxulRMxMeLkBOR68TQ0Paecx5Y0Nx4+tgSdHVQ4bM9OS0v7
+         3P81Cq4axOXBSdnXoxAZaGitDhpc4FizmQ3sZGF36+0In4okT3aKvCV0UiyVIYKSJi+7
+         IdBQ==
+X-Gm-Message-State: AOJu0Yxu14jyOcaLfs881RhWSK2IVPRwXspEmjyncHNSIP6WzW3ZgHtj
+        kPX1zB1qMqy7+cZn7nmOLAkYrMuz6AiiEoCn6UqBpw==
+X-Google-Smtp-Source: AGHT+IE3lvIVL/RqHctY3lvCHB1fhOmc51H/phVezjStkLmOqrn9OaDOQHPPmsK4zrwvjKKx4RwmqYLMKXfHu3BQP9o=
+X-Received: by 2002:a05:6a20:4327:b0:16b:b4a0:e06b with SMTP id
+ h39-20020a056a20432700b0016bb4a0e06bmr14390989pzk.43.1698829479791; Wed, 01
+ Nov 2023 02:04:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20231101-gdsc-hwctrl-v3-1-0740ae6b2b04@linaro.org>
-References: <20231101-gdsc-hwctrl-v3-0-0740ae6b2b04@linaro.org>
-In-Reply-To: <20231101-gdsc-hwctrl-v3-0-0740ae6b2b04@linaro.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Stanimir Varbanov <stanimir.k.varbanov@gmail.com>,
-        Vikash Garodia <quic_vgarodia@quicinc.com>,
-        Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc:     Taniya Das <tdas@qti.qualcomm.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-media@vger.kernel.org,
-        Abel Vesa <abel.vesa@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5556; i=abel.vesa@linaro.org;
- h=from:subject:message-id; bh=32sYVIPbODR7bZmmLO/F82004WOVKvzKlgNaKLnb6O8=;
- b=owEBbQKS/ZANAwAKARtfRMkAlRVWAcsmYgBlQhSNlwiaCkrAaRR5zOijghAtEwYGf4/QARt4t
- z2quO7an3WJAjMEAAEKAB0WIQRO8+4RTnqPKsqn0bgbX0TJAJUVVgUCZUIUjQAKCRAbX0TJAJUV
- VkO7D/wOG+0OZ38ra04gQ31fYcS6XYOhaapbNoqndp26GKjWdwLhAWk1idQFvBYODw1jziEaXMg
- kRuoETr4u+h5RIh8rEXexzYBTCB0MJaRwlWXwCJ++d2zvzIMf/MLdIARHtbU/FEzSwU2CdpCmxn
- kfpQrXblCVsqcpA6+Zl8SiyXiPJ2vrQ7l2CZEH48i/9rl4y0CH5lNgphMWHRu3HaGJF8FC5HsbD
- qrUbMbmkoWCo9FhZNjcFNJBhVEM+ZdTa3UBvVkfkgF/XFliRg40keW+Q2Lj/GM1uojaN6oLIOxI
- pgi3h/0VfgjD2mj3WFDyVN1GTpodflaSok/o+eQVQ0KH+ROSl3ockHPzlaaR1x/GbEpam00NuLk
- BZXnfRjPgvGn9e0MfqdSSWn4dIOvKpb5bzkhOFRRtdIlJ5BAz33NPppV0OMHB6OYPloIvwKLDJL
- SoudyqMZP8+f8+f59geJCciVEeQjHVHW639mfhYWmmkufmyoTOmmQsKuvaFtXGLZ7ScxrzJyBP9
- QkjvGx4qBcsXXUVRNqDgihbr3K23bGjf9oxZMUGAl1AHaOiW72ngUcokeEheeV4+Cr68fGSB2yL
- jz4PHX8bS7Ce4TdcukX6LFc4/XaSfxYKmjGAlR4ALa1NZm1K8kp9Ekk4dnCgxb9+5HTIQvoSxnM
- 1lLzP+ekrNwUaGw==
-X-Developer-Key: i=abel.vesa@linaro.org; a=openpgp;
- fpr=6AFF162D57F4223A8770EF5AF7BF214136F41FAE
+References: <20231027080400.56703-1-vincent.guittot@linaro.org>
+ <20231027080400.56703-8-vincent.guittot@linaro.org> <ZUGUvdjrpw9NHSex@e129154.nice.arm.com>
+In-Reply-To: <ZUGUvdjrpw9NHSex@e129154.nice.arm.com>
+From:   Vincent Guittot <vincent.guittot@linaro.org>
+Date:   Wed, 1 Nov 2023 10:04:27 +0100
+Message-ID: <CAKfTPtDDouduP57P8GH6J4qDjbKUasVRe-K0QUKcZHC2NZ+syQ@mail.gmail.com>
+Subject: Re: [PATCH v4 7/7] arm64/amu: use capacity_ref_freq to set AMU ratio
+To:     Beata Michalska <beata.michalska@arm.com>
+Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
+        paul.walmsley@sifive.com, palmer@dabbelt.com,
+        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
+        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
+        peterz@infradead.org, juri.lelli@redhat.com,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
+        viresh.kumar@linaro.org, lenb@kernel.org, robert.moore@intel.com,
+        lukasz.luba@arm.com, ionela.voinescu@arm.com,
+        pierre.gondois@arm.com, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        acpica-devel@lists.linuxfoundation.org, conor.dooley@microchip.com,
+        suagrfillet@gmail.com, ajones@ventanamicro.com, lftan@kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Ulf Hansson <ulf.hansson@linaro.org>
+Hi Beata,
 
-Some power-domains may be capable of relying on the HW to control the power
-for a device that's hooked up to it. Typically, for these kinds of
-configurations the device doesn't really need to be attached to a PM domain
-(genpd), from Linux point of view. However, in some cases the behaviour of
-the power-domain and its device can be changed in runtime.
+On Wed, 1 Nov 2023 at 00:59, Beata Michalska <beata.michalska@arm.com> wrote:
+>
+> On Fri, Oct 27, 2023 at 10:04:00AM +0200, Vincent Guittot wrote:
+> > Use the new capacity_ref_freq to set the ratio that is used by AMU for
+> > computing the arch_scale_freq_capacity().
+> > This helps to keep everything aligned using the same reference for
+> > computing CPUs capacity.
+> >
 
-To allow a consumer driver to change the behaviour of the PM domain for its
-device, let's provide a new function, dev_pm_genpd_set_hwmode(). Moreover,
-let's add a corresponding optional genpd callback, ->set_hwmode_dev(),
-which the genpd provider should implement if it can support switching
-between HW controlled mode and SW controlled mode. Similarly, add the
-dev_pm_genpd_get_hwmode() to allow consumers to read the current mode and
-its corresponding optional genpd callback, ->get_hwmode_dev(), which the
-genpd provider can also implement for reading back the mode from the
-hardware.
+[..]
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
----
- drivers/base/power/domain.c | 69 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   | 17 +++++++++++
- 2 files changed, 86 insertions(+)
+> > @@ -381,6 +385,9 @@ void topology_init_cpu_capacity_cppc(void)
+> >       }
+> >
+> >       for_each_possible_cpu(cpu) {
+> > +             freq_inv_set_max_ratio(cpu,
+> > +                                    per_cpu(capacity_ref_freq, cpu) * HZ_PER_KHZ);
+> > +
+> The capacity_ref_freq set earlier will still lead to units mismatch,
+> as at the point of calling topology_init_cpu_capacity_cppc the lowest & nominal
+> frequencies will be provided in MHz (unless I have missed smth).
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index da1777e39eaa..3fb1a234c7f2 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -550,6 +550,75 @@ void dev_pm_genpd_synced_poweroff(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(dev_pm_genpd_synced_poweroff);
- 
-+/**
-+ * dev_pm_genpd_set_hwmode - Set the HW mode for the device and its PM domain.
-+ *
-+ * @dev: Device for which the HW-mode should be changed.
-+ * @enable: Value to set or unset the HW-mode.
-+ *
-+ * Some PM domains can rely on HW signals to control the power for a device. To
-+ * allow a consumer driver to switch the behaviour for its device in runtime,
-+ * which may be beneficial from a latency or energy point of view, this function
-+ * may be called.
-+ *
-+ * It is assumed that the users guarantee that the genpd wouldn't be detached
-+ * while this routine is getting called.
-+ *
-+ * Returns 0 on success and negative error values on failures.
-+ */
-+int dev_pm_genpd_set_hwmode(struct device *dev, bool enable)
-+{
-+	struct generic_pm_domain *genpd;
-+	int ret = 0;
-+
-+	genpd = dev_to_genpd_safe(dev);
-+	if (!genpd)
-+		return -ENODEV;
-+
-+	if (!genpd->set_hwmode_dev)
-+		return -EOPNOTSUPP;
-+
-+	genpd_lock(genpd);
-+
-+	if (dev_gpd_data(dev)->hw_mode == enable)
-+		goto out;
-+
-+	ret = genpd->set_hwmode_dev(genpd, dev, enable);
-+	if (!ret)
-+		dev_gpd_data(dev)->hw_mode = enable;
-+
-+out:
-+	genpd_unlock(genpd);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_set_hwmode);
-+
-+/**
-+ * dev_pm_genpd_get_hwmode - Get the HW mode setting for the device.
-+ *
-+ * @dev: Device for which the current HW-mode setting should be fetched.
-+ *
-+ * This helper function allows consumer drivers to fetch the current HW mode
-+ * setting of its the device.
-+ *
-+ * It is assumed that the users guarantee that the genpd wouldn't be detached
-+ * while this routine is getting called.
-+ */
-+bool dev_pm_genpd_get_hwmode(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	genpd = dev_to_genpd_safe(dev);
-+	if (!genpd)
-+		return false;
-+
-+	if (genpd->get_hwmode_dev)
-+		return genpd->get_hwmode_dev(genpd, dev);
-+
-+	return dev_gpd_data(dev)->hw_mode;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_get_hwmode);
-+
- static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- {
- 	unsigned int state_idx = genpd->state_idx;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 34663d0d5c55..0e7d177fdc3e 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -151,6 +151,10 @@ struct generic_pm_domain {
- 	int (*set_performance_state)(struct generic_pm_domain *genpd,
- 				     unsigned int state);
- 	struct gpd_dev_ops dev_ops;
-+	int (*set_hwmode_dev)(struct generic_pm_domain *domain,
-+			      struct device *dev, bool enable);
-+	bool (*get_hwmode_dev)(struct generic_pm_domain *domain,
-+			      struct device *dev);
- 	int (*attach_dev)(struct generic_pm_domain *domain,
- 			  struct device *dev);
- 	void (*detach_dev)(struct generic_pm_domain *domain,
-@@ -213,6 +217,7 @@ struct generic_pm_domain_data {
- 	unsigned int performance_state;
- 	unsigned int default_pstate;
- 	unsigned int rpm_pstate;
-+	bool hw_mode;
- 	void *data;
- };
- 
-@@ -242,6 +247,8 @@ int dev_pm_genpd_remove_notifier(struct device *dev);
- void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
- ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev);
- void dev_pm_genpd_synced_poweroff(struct device *dev);
-+int dev_pm_genpd_set_hwmode(struct device *dev, bool enable);
-+bool dev_pm_genpd_get_hwmode(struct device *dev);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -310,6 +317,16 @@ static inline ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev)
- static inline void dev_pm_genpd_synced_poweroff(struct device *dev)
- { }
- 
-+static inline int dev_pm_genpd_set_hwmode(struct device *dev, bool enable)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline bool dev_pm_genpd_get_hwmode(struct device *dev)
-+{
-+	return false;
-+}
-+
- #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
- #endif
+I don't get your point:
+the unit of per_cpu(capacity_freq_ref, cpu) is Khz
 
--- 
-2.34.1
+For cppc, we have
+per_cpu(capacity_freq_ref, cpu) = cppc_perf_to_khz(&perf_caps,
+raw_capacity[cpu]);
 
+freq_inv_set_max_ratio() uses
+arch_timer_get_rate() which returns a freq in Hz
+and
+per_cpu(capacity_freq_ref, cpu) * HZ_PER_KHZ. to get a freq in Hz too.
+
+> This means that use of both, the capacity_ref_freq and the arch_freq_scale
+> will generate unexpected results, so I guess this should get amended in the
+> preceding patch (?) [1]
+>
+> ---
+> BR
+> B.
+>
+> [1] https://lore.kernel.org/linux-arm-kernel/20231027080400.56703-4-vincent.guittot@linaro.org/T/#m42daa167097edc190b1cfc05382c385ed801d909
+>
+> >               capacity = raw_capacity[cpu];
+> >               capacity = div64_u64(capacity << SCHED_CAPACITY_SHIFT,
+> >                                    capacity_scale);
+> > @@ -422,8 +429,11 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+> >
+> >       cpumask_andnot(cpus_to_visit, cpus_to_visit, policy->related_cpus);
+> >
+> > -     for_each_cpu(cpu, policy->related_cpus)
+> > +     for_each_cpu(cpu, policy->related_cpus) {
+> >               per_cpu(capacity_ref_freq, cpu) = policy->cpuinfo.max_freq;
+> > +             freq_inv_set_max_ratio(cpu,
+> > +                                    per_cpu(capacity_ref_freq, cpu) * HZ_PER_KHZ);
+> > +     }
+> >
+> >       if (cpumask_empty(cpus_to_visit)) {
+> >               topology_normalize_cpu_scale();
+> > diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+> > index 38ca6c76af56..ffdf0b7c55fa 100644
+> > --- a/include/linux/arch_topology.h
+> > +++ b/include/linux/arch_topology.h
+> > @@ -99,6 +99,7 @@ void update_siblings_masks(unsigned int cpu);
+> >  void remove_cpu_topology(unsigned int cpuid);
+> >  void reset_cpu_topology(void);
+> >  int parse_acpi_topology(void);
+> > +void freq_inv_set_max_ratio(int cpu, u64 max_rate);
+> >  #endif
+> >
+> >  #endif /* _LINUX_ARCH_TOPOLOGY_H_ */
+> > --
+> > 2.34.1
+> >
