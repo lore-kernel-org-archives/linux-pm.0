@@ -2,63 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D46C1C001B2
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 09:04:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1C9FC4167B
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 09:04:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233491AbjKAJEg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Nov 2023 05:04:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36460 "EHLO
+        id S233230AbjKAJEe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Nov 2023 05:04:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36400 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233142AbjKAJEe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 05:04:34 -0400
-Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7ED0DE
-        for <linux-pm@vger.kernel.org>; Wed,  1 Nov 2023 02:04:26 -0700 (PDT)
-Received: by mail-ej1-x62f.google.com with SMTP id a640c23a62f3a-9d23be183c6so584654866b.0
-        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2023 02:04:26 -0700 (PDT)
+        with ESMTP id S233002AbjKAJEc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 05:04:32 -0400
+Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C412101
+        for <linux-pm@vger.kernel.org>; Wed,  1 Nov 2023 02:04:23 -0700 (PDT)
+Received: by mail-ed1-x535.google.com with SMTP id 4fb4d7f45d1cf-543c3756521so183881a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2023 02:04:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1698829465; x=1699434265; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=wy1RT/8l0KHF5wsFu6GhibgFreZIXSZSGpoMQMm9nKQ=;
-        b=KqiPf3MKfoqZ7kc+yN5OIXBb2QyaOjsUv5r0X0Z5KVP//hHHS3g1IAgP0CP5jD+rHc
-         6w6DW70S1gc1bPYd9V526AE8OAOo11MvoZ+iQTYI0KrvPY5nlOwnSr4/ddO43Reri+O5
-         /jBwzPfisXtN1GxAQZ155cHPnBnAMddb6BPong/fJofVtEIlghhCKC5ONz3ZQCzrjomG
-         MCdZ3dVgHJugAHjdvO98uhIRFmv5QPjNcu/8eO9cY30hP1Nx67GVjzlIeZNTVSgZDVnc
-         X9F3r9c1jy9JfrPc9qeu7wLhemqAI6gO7Vqcunt6N2LnJhDXao+qXVSsoWZ6x2zPCsmW
-         iTkA==
+        d=linaro.org; s=google; t=1698829461; x=1699434261; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xAgADHr8F66v1cbu28V1cj8/cSQmipxI6WLHMltxgpQ=;
+        b=RPSn18fzes6e2b/JtI1UvjoemLWI/NDclJQkEyBCcg106ZoS0agTlS1IUNIRQ9K8DX
+         d6WW60yDjWgS/M8oWXq++0gKJWyk2aSME2w0FiDUKeT6XLNwlTMW4q0GGU+Cd2ZHWUNt
+         Uy9sD0SObPcfvy5HvQlK89eEf7IUPqdXyyVBi7zbxQt+csgjAiDmmxiUDRu4LCKwRJQI
+         9l67Tq+1xs3oWApsf59egESXDWVPRwwPy531padYqlioIYze8l2KkWoThTT0nXMHvJWw
+         aw7cmPaE/0eEwx4E9fz2KrMKSkE/wkztaVUnC0shoIElApy2fxqBDYoPZMRBw27c4cOb
+         3BNg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698829465; x=1699434265;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=wy1RT/8l0KHF5wsFu6GhibgFreZIXSZSGpoMQMm9nKQ=;
-        b=FaN5OOqcp9HIlvFLksFYElOEsAgrTxKLTygqTjCK7woHPAWvyNnt7RkOUzTYDUifEY
-         D63yZDvjSzvJokHdkk5pqvB52KFlqE8zYI2PcBoLtW3sB0+Vp71VwbLx7EMDtLGaF/zX
-         Szo/ZTc5Rx4i5El/uRrizzK0T7R9c+8bJ0V9jnGX0ilWBhYrWnyTp+nX/cG+tpezuP6q
-         0UPx308xIhLG3FvYscxNCu3dKBqqKftcMsL7HSITnoJN77WJ6ZfScLqJYbmr6Fpg9+q6
-         khrNsfeZCR0DHoqdnbYY41/7pX/3w+hZgPYjSuBdtrJ97PA1CpOFBy3aEoajwavsO+KO
-         v0XA==
-X-Gm-Message-State: AOJu0YzjVP5R4KxQjbGzIJtQKKV850d9eY/9I/2G6cZ4f1wnGyK7G7LZ
-        OEHCNhdD0CORztc1pKMh4Xb8OQ==
-X-Google-Smtp-Source: AGHT+IF0uQ6L63mtTK6fvz1bIka3oLMpIDS//D4L4ujaEmxmgdeLqCOWEMLFLMvYXy05/lYBAL/xdw==
-X-Received: by 2002:a17:907:26c4:b0:9d4:771b:69b4 with SMTP id bp4-20020a17090726c400b009d4771b69b4mr1343872ejc.44.1698829465256;
-        Wed, 01 Nov 2023 02:04:25 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1698829461; x=1699434261;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=xAgADHr8F66v1cbu28V1cj8/cSQmipxI6WLHMltxgpQ=;
+        b=qZV0CR4x+IxMFhhFbw5u3RhqQAFZl1p+TLeoCSvM3pcLn8hoxOhDA2r+PP85isuh3t
+         W9XJ7Clxd0aKK5AzkGPEI2Vy5BiiWnP7LaYjgwEwkXGNQ2ZIALSEA0i44w/jxH6o2q1u
+         xxSrpPRMJsBKErsPBjmQv+Qx6GpvkSaRG0JtYFL5yB/YT7g5SmesVFEAgicrFmQm7b1K
+         8M31gjODhyHNv5UoboW+dVn6/pCrVDMTdjkJpJH63KSPopMddhtqiIovWrtTphVAixtw
+         oszLN7pC05Ug1JGCJYtb57U+5vKuTIvrtLT0h6vx6nD92aQDpECyYLAMg5FY88ZC0bvq
+         b7fg==
+X-Gm-Message-State: AOJu0YxcCLlvRZm9V05fs5j2sVIJdJGu9hMafSpgV9J2jc0fp5yq25/U
+        2g11p+TIsAfFNjO8ibBVpPSp9g==
+X-Google-Smtp-Source: AGHT+IG/oxz6Hjy41Gw/rCWlijHAqZQYXIkwi5awktL6htxV3fZ98awAExkMrsPT43rS0fRw5YRBGg==
+X-Received: by 2002:a17:906:dac4:b0:9ae:5120:5147 with SMTP id xi4-20020a170906dac400b009ae51205147mr1491707ejb.38.1698829461446;
+        Wed, 01 Nov 2023 02:04:21 -0700 (PDT)
 Received: from [127.0.1.1] ([86.122.213.220])
-        by smtp.gmail.com with ESMTPSA id l25-20020a170906a41900b0099cd1c0cb21sm2152781ejz.129.2023.11.01.02.04.23
+        by smtp.gmail.com with ESMTPSA id l25-20020a170906a41900b0099cd1c0cb21sm2152781ejz.129.2023.11.01.02.04.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Nov 2023 02:04:24 -0700 (PDT)
+        Wed, 01 Nov 2023 02:04:20 -0700 (PDT)
 From:   Abel Vesa <abel.vesa@linaro.org>
-Date:   Wed, 01 Nov 2023 11:04:08 +0200
-Subject: [PATCH RESEND v3 2/5] PM: domains: Add the domain HW-managed mode
- to the summary
+Subject: [PATCH RESEND v3 0/5] PM: domains: Add control for switching back
+ and forth to HW control
+Date:   Wed, 01 Nov 2023 11:04:06 +0200
+Message-Id: <20231101-gdsc-hwctrl-v3-0-0740ae6b2b04@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231101-gdsc-hwctrl-v3-2-0740ae6b2b04@linaro.org>
-References: <20231101-gdsc-hwctrl-v3-0-0740ae6b2b04@linaro.org>
-In-Reply-To: <20231101-gdsc-hwctrl-v3-0-0740ae6b2b04@linaro.org>
+X-B4-Tracking: v=1; b=H4sIAIYUQmUC/x2NsQrCMBBAf6Xc7NGkAQdnuzroKA7J5doENNVca
+ YXSfzdxfPAebwPhHFng1GyQeYkSp1TAHBqgYNPIGH1h6FRntFYaRy+EYaU5P1GbQWm2R0XOQym
+ cFUaXbaJQmw9Nr7b6bVixBtV5Zx7i93+8w7W/9ZczPPb9BwrOThaJAAAA
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
@@ -77,80 +77,63 @@ Cc:     Taniya Das <tdas@qti.qualcomm.com>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-media@vger.kernel.org,
         Abel Vesa <abel.vesa@linaro.org>,
-        Taniya Das <quic_tdas@quicinc.com>
+        Taniya Das <quic_tdas@quicinc.com>,
+        Jagadeesh Kona <quic_jkona@quicinc.com>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2157; i=abel.vesa@linaro.org;
- h=from:subject:message-id; bh=mHCbi3fcCtSdQT1eVVDhxrqekocNkt9Tq7L+ASfI19c=;
- b=owEBbQKS/ZANAwAKARtfRMkAlRVWAcsmYgBlQhSOhLKXMJSo21lGzR3ysdpejTLKwJBoQxkYh
- MH83w6uWJ2JAjMEAAEKAB0WIQRO8+4RTnqPKsqn0bgbX0TJAJUVVgUCZUIUjgAKCRAbX0TJAJUV
- Vo2aD/9YiFkZJAlAo90gqui3KRk45JLMQKlpflWTNJZdCvZRVYf+wotXkWcS8jRWqYg7BIcdi7e
- 2mY9aRzvMNSMdcCD6Tc4LEFFzusUyBWLDuo+R6i7eKK5//FdPYVo8aArCKXRPN/JSXxNNiZcE2m
- I7e1wNExM8MvNjWbrIf1bDeFV2xegv3IIpNXUplfttlxRyO0AKpsZ0Vrae9Rfnna7vQb0wBnc1k
- 1SpTMwYJD/2I8/qsEC9A6AuE/7OjfoFmqZSmovl7IcpSKon03Xm9/cK2F1+mKdAWpdFCM9pJSZh
- 51Enr+10aABCccaH6jI+MC/02CosSvTJcOhHt/5A0wgf7al3gVubTf0G82MM8JAjfLsCwhiO3pb
- x7DPW19h67/tuh9A2KOS9NaN+1ozEpGzB2dfEJxWyUpL6JLNTSOHGsUCP5NBWUI6LuV4UhhaO5K
- M/mADvROhxudpOLxFCQaMZt6ZIHwlYGxaKwdB+14TMkAN/vvlXLw1EJvSRQljAsGFp1UCm5lJJ1
- MxM4LfgooUIXcdh/muKWmqXViGAVyA1Q8TX99Rsw/y7tnsiEht+wvWThIYT6I8AB0WWWL7L9bza
- Snsrp8DkgULIWOspS+coIBw1P7wg/kKQ3jScDlPDXqbGW8HLWwNvYddd7iqvyx+DJAYEQvugZhP
- DG22z09XDbhQOrw==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1535; i=abel.vesa@linaro.org;
+ h=from:subject:message-id; bh=IMghRN0GHIaYwd3qOqpxrh49MQz/bpL0aj591dU6KPY=;
+ b=owEBbQKS/ZANAwAKARtfRMkAlRVWAcsmYgBlQhSItQu7eU6tRAk2KSC1vO4XZNRtKRF3QXL6b
+ e3vVamqDhGJAjMEAAEKAB0WIQRO8+4RTnqPKsqn0bgbX0TJAJUVVgUCZUIUiAAKCRAbX0TJAJUV
+ VvN3EAC4Vw8ic4lltLGvppV48k2HtbT7bCdgtSOVW+ajY/kiMZfMyL43s8U0s/gEHjbfwfn2zSM
+ NZO56shVcbFdLo9kwMKpVC3+3J4qK74vSgNl4nIPvOxUP3toZMPNN/ouOs4OTkvRAe6ZcM7yqjd
+ 7coaHqfKqDtcCAprgnpRN1A1JxxdCrapM3IYAxeZkdVecSR4OeazJAuJ1n9k4a+RFm0uDy3mnBg
+ MK4YhSfRGdq5R2xzI5+KaFhNlFQ4tF6EeS31fDsH0DRpjibsezNgtZi8MrtoKCGUaTOwDCjLwoo
+ QBlL/IdHpMXxU7cWqrnxcsPqBi9k+CjzH5ktI8p8KQ60k/oUoZO0iPCGBnfnPtse4k1Q0MLZOwA
+ sHzLIcam9ZYmVhEP+niuuGQqy+ldNrkJ373/KhmC8xMC6XG8NeQ36ui76dJqfqoqlAlxlCio+k8
+ HULfB7BgyKd3JDfPVQ0Gh7qgdxTA/qi6v2LE9pyzyKCNUFB4OMoAlfiNMxxZUSDKjYiW+2uboTe
+ NNaDhPdGzpDqDK0NvMBtkTADYzk/EjUz0iN0qMTQkE2tYKztJqZTK0KZX8KNs19J/1lqR7COm4i
+ jLfE4SgOt1BBT74m4et3gDO2p8aETtVHv7lw2U4UBArBSNGqy/oNXMJ35rr1dTUI5nwvT5lwBTs
+ C6j6j5EBRax9w6g==
 X-Developer-Key: i=abel.vesa@linaro.org; a=openpgp;
  fpr=6AFF162D57F4223A8770EF5AF7BF214136F41FAE
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that genpd supports dynamically switching the control for an
-attached device between hardware- and software-mode,  let's add this
-information to the genpd summary in debugfs.
+This is just a resend of v3:
+https://lore.kernel.org/lkml/20230923115008.1698384-1-abel.vesa@linaro.org/
 
-Suggested-by: Taniya Das <quic_tdas@quicinc.com>
 Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+Abel Vesa (1):
+      PM: domains: Add the domain HW-managed mode to the summary
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 3fb1a234c7f2..7044271ec93b 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -3181,6 +3181,15 @@ static void rtpm_status_str(struct seq_file *s, struct device *dev)
- 	seq_printf(s, "%-25s  ", p);
- }
- 
-+static void mode_status_str(struct seq_file *s, struct device *dev)
-+{
-+	struct generic_pm_domain_data *gpd_data;
-+
-+	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
-+
-+	seq_printf(s, "%20s", gpd_data->hw_mode ? "HW" : "SW");
-+}
-+
- static void perf_status_str(struct seq_file *s, struct device *dev)
- {
- 	struct generic_pm_domain_data *gpd_data;
-@@ -3239,6 +3248,7 @@ static int genpd_summary_one(struct seq_file *s,
- 		seq_printf(s, "\n    %-50s  ", kobj_path);
- 		rtpm_status_str(s, pm_data->dev);
- 		perf_status_str(s, pm_data->dev);
-+		mode_status_str(s, pm_data->dev);
- 		kfree(kobj_path);
- 	}
- 
-@@ -3255,8 +3265,9 @@ static int summary_show(struct seq_file *s, void *data)
- 	int ret = 0;
- 
- 	seq_puts(s, "domain                          status          children                           performance\n");
--	seq_puts(s, "    /device                                             runtime status\n");
--	seq_puts(s, "----------------------------------------------------------------------------------------------\n");
-+	seq_puts(s, "    /device                                             runtime status                           managed by\n");
-+	seq_puts(s, "------------------------------------------------------------------------------------------------------------\n");
-+
- 
- 	ret = mutex_lock_interruptible(&gpd_list_lock);
- 	if (ret)
+Jagadeesh Kona (3):
+      clk: qcom: gdsc: Add set and get hwmode callbacks to switch GDSC mode
+      clk: qcom: Use HW_CTRL_TRIGGER flag to switch video GDSC to HW mode
+      venus: pm_helpers: Use dev_pm_genpd_set_hwmode to switch GDSC mode
 
+Ulf Hansson (1):
+      PM: domains: Allow devices attached to genpd to be managed by HW
+
+ drivers/base/power/domain.c                    | 84 +++++++++++++++++++++++++-
+ drivers/clk/qcom/gdsc.c                        | 32 ++++++++++
+ drivers/clk/qcom/gdsc.h                        |  1 +
+ drivers/clk/qcom/videocc-sc7180.c              |  2 +-
+ drivers/clk/qcom/videocc-sc7280.c              |  2 +-
+ drivers/clk/qcom/videocc-sdm845.c              |  4 +-
+ drivers/clk/qcom/videocc-sm8250.c              |  4 +-
+ drivers/clk/qcom/videocc-sm8550.c              |  4 +-
+ drivers/media/platform/qcom/venus/core.c       |  4 ++
+ drivers/media/platform/qcom/venus/core.h       |  1 +
+ drivers/media/platform/qcom/venus/pm_helpers.c | 47 ++++++--------
+ include/linux/pm_domain.h                      | 17 ++++++
+ 12 files changed, 165 insertions(+), 37 deletions(-)
+---
+base-commit: fa7d0c17278644aa691f96d08bef8001b762f9cd
+change-id: 20231101-gdsc-hwctrl-13f01ea60cbd
+
+Best regards,
 -- 
-2.34.1
+Abel Vesa <abel.vesa@linaro.org>
 
