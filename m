@@ -2,69 +2,84 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ECC69C4332F
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 17:14:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55C5DC4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Nov 2023 17:54:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344598AbjKARO6 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Nov 2023 13:14:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43526 "EHLO
+        id S232365AbjKARyR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Nov 2023 13:54:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37484 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344562AbjKARO5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 13:14:57 -0400
-Received: from mail-oo1-f43.google.com (mail-oo1-f43.google.com [209.85.161.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC1AEBD;
-        Wed,  1 Nov 2023 10:14:55 -0700 (PDT)
-Received: by mail-oo1-f43.google.com with SMTP id 006d021491bc7-587310758ccso3306eaf.0;
-        Wed, 01 Nov 2023 10:14:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698858895; x=1699463695;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=b6irXt2HPa6/qTlgvmtKNDDj+Spoz+b92gnZoTUz0Dc=;
-        b=C8kj3wvpkABxRKRY6qyBvSt71gqJLnUxNXzYGtjhxkF54HdAjn3V6ZgSc9hRCt451L
-         ml29MntiGYHWnGvR5rMzkBVkNkXRqVNbOUqjl4xe0R/xn8G6qFuHv949dGG/F3iDs8l3
-         p7Nq8yOu44w/u8HwgmtSUWrxQk5SIXBGK0tyFS0275Pt3gS611n7lOTrLVNc/FHcaPcS
-         IY5PKwiyZpq7lFAHzhSIjlC+f3sPjghUoybHjo6l/7g7VeKjswTBpyb3T5AAAH6H+KbS
-         UU5n7+t/m10Zy/pS9aOMPjuAwXC3oOLIuOBw0E7si5YMaFOd0I9s70FiPmf/MarhFN9+
-         WKkQ==
-X-Gm-Message-State: AOJu0YxeI/bHkuFhxo30Wz3h1Qw1wnM6t/azpuTqRbKkJe6UQVUmY/R4
-        ++Yj0C+LQ2qlmgP2sdpmQTR8h822J0b6EU9afZH83niH
-X-Google-Smtp-Source: AGHT+IF87ZQfQerqkIZ1542x4dQRiTH0vDbQllcAactL/pZJaB1xoaLqSrKy6OZ0c3sAX45oR0ct/g1s06o2I+lNeJU=
-X-Received: by 2002:a4a:dbd8:0:b0:583:ec88:e0 with SMTP id t24-20020a4adbd8000000b00583ec8800e0mr17347583oou.0.1698858895016;
- Wed, 01 Nov 2023 10:14:55 -0700 (PDT)
+        with ESMTP id S231258AbjKARyR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2023 13:54:17 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00553109;
+        Wed,  1 Nov 2023 10:54:10 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C845C433C9;
+        Wed,  1 Nov 2023 17:54:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1698861250;
+        bh=JAumfjAMArYws76N389UqFy89DYhXF68dhxExokMXXI=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=gp/1JaVgjaX0aErHXARToRP3jqVB4mU1rKyb6acTpxhiky76TB9Au9YxcUcD2wkVf
+         oQ0d2jabJM17qBhkJCxYSHCiUyVLvQm4o4onpY/I4xrc7/ku06ZJRZkOp/RPqQxAiu
+         1jzYI9CoeyudoOCLekiRugVrhVBBv6+BxDVgLgrM=
+Date:   Wed, 1 Nov 2023 18:54:07 +0100
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     =?iso-8859-1?Q?Jos=E9?= Pekkarinen <jose.pekkarinen@foxhound.fi>
+Cc:     rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz,
+        skhan@linuxfoundation.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        linux-kernel-mentees@lists.linuxfoundation.org,
+        syzbot+95f2e2439b97575ec3c0@syzkaller.appspotmail.com
+Subject: Re: [PATCH] drivers core: lookup sysfs power group before removal
+Message-ID: <2023110139-dupe-snipping-5700@gregkh>
+References: <20231101173627.2658-1-jose.pekkarinen@foxhound.fi>
 MIME-Version: 1.0
-References: <CAJZ5v0iBWcy2LyeXE0vxqKZOWBK5yWgofktygEvo4B3=6J8Wjg@mail.gmail.com>
- <CAHk-=wgYWb+LtHvQM+ULLWjfOLnfGcuDXNLrefEQbwCu=7apGQ@mail.gmail.com>
-In-Reply-To: <CAHk-=wgYWb+LtHvQM+ULLWjfOLnfGcuDXNLrefEQbwCu=7apGQ@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 1 Nov 2023 18:14:43 +0100
-Message-ID: <CAJZ5v0iBpbsifm01HMa_CQW6Wdtjwh1yJXOhOw9qYc-cDmDKJw@mail.gmail.com>
-Subject: Re: [GIT PULL] Power management updates for v6.7-rc1
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20231101173627.2658-1-jose.pekkarinen@foxhound.fi>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Nov 1, 2023 at 4:26â€¯AM Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> On Fri, 27 Oct 2023 at 03:52, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > Please pull from the tag
-> >
-> >  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
-> >  pm-6.7-rc1
-> >
-> > with top-most commit bf224871c27a7c7e2146d667176977ffe3752750
->
-> Not sure why this didn't get the pr-tracker-bot attention, but it's
-> merged, so here's the manual version,
+On Wed, Nov 01, 2023 at 07:36:27PM +0200, José Pekkarinen wrote:
+> Hinted by syzboot, there is a few cases where the sysfs power group may
+> not be there, like the failure while adding it, or adding its runtime
+> group, or when the sysfs firmware loader fallback fail to populate. In
+> the last case, the device_del function will be called leading to attempt
+> to remove the sysfs group. This patch will lookup for it in advance to
+> grant that it is effectively there before cleaning it up.
+> 
+> Reported-by: syzbot+95f2e2439b97575ec3c0@syzkaller.appspotmail.com
+> 
+> Signed-off-by: José Pekkarinen <jose.pekkarinen@foxhound.fi>
+> ---
+>  drivers/base/power/sysfs.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+> index a1474fb67db9..6601729c4698 100644
+> --- a/drivers/base/power/sysfs.c
+> +++ b/drivers/base/power/sysfs.c
+> @@ -834,5 +834,7 @@ void dpm_sysfs_remove(struct device *dev)
+>  	dev_pm_qos_constraints_destroy(dev);
+>  	rpm_sysfs_remove(dev);
+>  	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
+> -	sysfs_remove_group(&dev->kobj, &pm_attr_group);
+> +
+> +	if (kernfs_find_and_get((&dev->kobj)->sd, pm_attr_group.name))
+> +		sysfs_remove_group(&dev->kobj, &pm_attr_group);
 
-Thank you!
+What's to keep it from going away right after finding it?
+
+In other words, what is wrong with removing a group that is not there?
+What error happens?  It should be fine, or are you seeing real code
+failures somewhere?
+
+Also, I think you just leaked a reference count here, how was this
+tested?
+
+thanks,
+
+greg k-h
