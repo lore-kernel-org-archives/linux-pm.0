@@ -2,146 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CB88C41535
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Nov 2023 10:43:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FE52C4332F
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Nov 2023 12:09:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346637AbjKBKnA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 Nov 2023 06:43:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46968 "EHLO
+        id S229919AbjKBMJy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 Nov 2023 08:09:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36416 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347183AbjKBKm7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2023 06:42:59 -0400
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D283128
-        for <linux-pm@vger.kernel.org>; Thu,  2 Nov 2023 03:42:49 -0700 (PDT)
-Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-5bd33a450fdso105095a12.0
-        for <linux-pm@vger.kernel.org>; Thu, 02 Nov 2023 03:42:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1698921768; x=1699526568; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Pd/NLx66E9zKbyZKSmW6GKzzom6QC7VJQH4VG6waGJI=;
-        b=JngVmes3LKL+tq7VRLskzUathjAuUPBIpszmIMvi3JExngnHk7fEGjBCmyK6b6fzmL
-         9vibGKdEzIVQIPiw1q6hq2zzk0GTT0bplbFF7K/Ehvr+C9LGpARQIUlJTyJUojn2O9Xa
-         DyKmHYD7ZT1LvwIWMa8FNYuiiPtM3BJO3KW3Cg+4oB7C7K+W8bT6SOTjvknOPSadAjRl
-         s3wz8pD14HiI7XsUvKThGzo4XtirBs3croyMI9QyYBG02+lfGM8DTPF0bCeV0UzCjfBn
-         wHTx2EQ6KCG4LZIeKu/J6sC8570D1LrwoJ0XQRNn13fbvaMbbysI0BZHLEJ3oQ+ocD5o
-         P7QQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698921768; x=1699526568;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Pd/NLx66E9zKbyZKSmW6GKzzom6QC7VJQH4VG6waGJI=;
-        b=eoQJYM7XPjf7Bdpai6HbUfR8uiVJZtTJaGO93nGOB7a0qkARAyRYUsb1jVYHX0Vd0t
-         ubavwaxR9zz9hXRKV2FZOrh0rOo0thzOq8mLuQEwfaln1gmcmwgj2D1EFljMPlW464/J
-         3sIC7XjNhF6DnDKR/yPvKDG1a60yiJMCBEjeibfstEK7bB/tJb2ceXXWjrO6p+Kf446A
-         b9wx2uzzTpa1PwALhYtKTjc1BfFteoYTxVWqFCBa3PBFmcePCOlayhIEvaA5lKPXRPlT
-         l/PhzRybDKsSbdisci++nMW2BIN9kxd+6utYg67AajEiEbQwnyMtcJew6jwI1TIlxL/e
-         dOQA==
-X-Gm-Message-State: AOJu0YyKwDhdvCh+9LNQ8uH8Lj1B2Udq5cMWPLmN8lQjvjKX0GyIY6IT
-        AKd9VfHwJbp/Zf5b+cshb/dhFVxmRw72VDjPXwYuDA==
-X-Google-Smtp-Source: AGHT+IG9q8u5gOigN0kAQNp7r+iSnUd3jOn4cu/HyW0nSc2d2OH3QUFya3mfy+9toAaBAa+OcGAKzvricdwJEQfd/c4=
-X-Received: by 2002:a05:6a21:7903:b0:181:7914:7b34 with SMTP id
- bg3-20020a056a21790300b0018179147b34mr3334001pzc.21.1698921768594; Thu, 02
- Nov 2023 03:42:48 -0700 (PDT)
+        with ESMTP id S229806AbjKBMJy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2023 08:09:54 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41760128;
+        Thu,  2 Nov 2023 05:09:52 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A021FC433C7;
+        Thu,  2 Nov 2023 12:09:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1698926991;
+        bh=IwE9+OvFRLx91Mib23swemUFGjVhO8KF9WcxPps/jzs=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=SRW8Tc5FZ8RxUVh+wdGHrbvjyKFIYpnUUNw2ZsH8qdEMiE0mEzoRZRaybRTTlYzDA
+         NlxH7vHPtKL0xnIFxITJPqC6pr4xMU7oFmTKcYVPm5Ze2CJf+qsbXtCyhhBgEvh00w
+         TUIsqio11IPhFjZK4IKJ6HTN2oFsZXKCxhHeRePwL2yuhU04m7c4LRsJL80RW1ETam
+         nT5l44sn4SnYmLPAT1/n9uVMPjd9ysMXaCtTS1NefKIW6AM40widFo4v2IC61Ui63R
+         PRm503pvXhyS2XsGk485oiiaq6n1PIo3xjnFWSZ4DiJFQb15aChjHPFh1Ie+6HXYzC
+         AQvxUrpbeF2Rw==
+Date:   Thu, 2 Nov 2023 07:09:50 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Krishna chaitanya chundru <quic_krichai@quicinc.com>,
+        agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, mani@kernel.org,
+        lpieralisi@kernel.org, kw@linux.com, robh@kernel.org,
+        bhelgaas@google.com, rafael@kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, quic_vbadigan@quicinc.com,
+        quic_nitegupt@quicinc.com, quic_skananth@quicinc.com,
+        quic_ramkri@quicinc.com, quic_parass@quicinc.com
+Subject: Re: [PATCH v5 5/5] PCI: qcom: Add OPP support to scale performance
+ state of power domain
+Message-ID: <20231102120950.GA115288@bhelgaas>
 MIME-Version: 1.0
-References: <20231027080400.56703-1-vincent.guittot@linaro.org>
- <20231027080400.56703-7-vincent.guittot@linaro.org> <89b5db0e-1121-4d0c-a8f4-1202465f5251@arm.com>
-In-Reply-To: <89b5db0e-1121-4d0c-a8f4-1202465f5251@arm.com>
-From:   Vincent Guittot <vincent.guittot@linaro.org>
-Date:   Thu, 2 Nov 2023 11:42:37 +0100
-Message-ID: <CAKfTPtDKMhNpjATHtVuTvas59=ugtw7Q2T3fVKx8T83=-nM3xQ@mail.gmail.com>
-Subject: Re: [PATCH v4 6/7] cpufreq/cppc: set the frequency used for computing
- the capacity
-To:     Pierre Gondois <pierre.gondois@arm.com>
-Cc:     linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
-        paul.walmsley@sifive.com, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
-        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
-        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
-        viresh.kumar@linaro.org, lenb@kernel.org, robert.moore@intel.com,
-        lukasz.luba@arm.com, ionela.voinescu@arm.com,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-acpi@vger.kernel.org, acpica-devel@lists.linuxfoundation.org,
-        conor.dooley@microchip.com, suagrfillet@gmail.com,
-        ajones@ventanamicro.com, lftan@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231102053013.7yt7pxin5awlu7w7@vireshk-i7>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Pierre,
+On Thu, Nov 02, 2023 at 11:00:13AM +0530, Viresh Kumar wrote:
+> On 01-11-23, 17:17, Bjorn Helgaas wrote:
+> > Can you expand "OPP" somewhere so we know what it stands for?  I'm
+> > sure everybody knows except me :)
+> 
+> It is "Operating Performance Points", defined here:
+> 
+> Documentation/power/opp.rst
 
-On Thu, 2 Nov 2023 at 10:07, Pierre Gondois <pierre.gondois@arm.com> wrote:
->
-> Hello Vincent,
->
-> On 10/27/23 10:03, Vincent Guittot wrote:
-> > Save the frequency associated to the performance that has been used when
-> > initializing the capacity of CPUs.
-> > Also, cppc cpufreq driver can register an artificial energy model. In such
-> > case, it needs the frequency for this compute capacity.
-> >
-> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > ---
-> >   drivers/base/arch_topology.c | 15 ++++++++++++++-
-> >   1 file changed, 14 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> > index 9a073c2d2086..d4bef370feb3 100644
-> > --- a/drivers/base/arch_topology.c
-> > +++ b/drivers/base/arch_topology.c
-> > @@ -349,6 +349,7 @@ bool __init topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu)
-> >
-> >   void topology_init_cpu_capacity_cppc(void)
-> >   {
-> > +     u64 capacity, capacity_scale = 0;
-> >       struct cppc_perf_caps perf_caps;
-> >       int cpu;
-> >
-> > @@ -365,6 +366,10 @@ void topology_init_cpu_capacity_cppc(void)
-> >                   (perf_caps.highest_perf >= perf_caps.nominal_perf) &&
-> >                   (perf_caps.highest_perf >= perf_caps.lowest_perf)) {
-> >                       raw_capacity[cpu] = perf_caps.highest_perf;
-> > +                     capacity_scale = max_t(u64, capacity_scale, raw_capacity[cpu]);
-> > +
-> > +                     per_cpu(capacity_ref_freq, cpu) = cppc_perf_to_khz(&perf_caps, raw_capacity[cpu]);
-> > +
->
-> To continue Beata's point, I think there is an issue with the following:
-> cppc_perf_to_khz() and cppc_khz_to_perf() were previously used with a struct containing
-> frequencies in KHz, cf. [1].
-> In the original _CPC object, frequencies are in MHz. It means that the perf_caps struct
-> here contains frequencies in MHz, and per_cpu(capacity_ref_freq, cpu) is in MHz aswell.
-
-Yeah, I haven't noticed this intermediate step in cppc_cpufreq. I'm
-going to fix this
-
->
-> [1] https://github.com/torvalds/linux/blob/master/drivers/cpufreq/cppc_cpufreq.c#L682
->
->
-> >                       pr_debug("cpu_capacity: CPU%d cpu_capacity=%u (raw).\n",
-> >                                cpu, raw_capacity[cpu]);
-> >                       continue;
-> > @@ -375,7 +380,15 @@ void topology_init_cpu_capacity_cppc(void)
-> >               goto exit;
-> >       }
-> >
-> > -     topology_normalize_cpu_scale();
-> > +     for_each_possible_cpu(cpu) {
-> > +             capacity = raw_capacity[cpu];
-> > +             capacity = div64_u64(capacity << SCHED_CAPACITY_SHIFT,
-> > +                                  capacity_scale);
-> > +             topology_set_cpu_scale(cpu, capacity);
-> > +             pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
-> > +                     cpu, topology_get_cpu_scale(cpu));
-> > +     }
-> > +
-> >       schedule_work(&update_topology_flags_work);
-> >       pr_debug("cpu_capacity: cpu_capacity initialization done\n");
-> >
+Thanks; I meant in the subject or commit log of the next revision, of
+course.
