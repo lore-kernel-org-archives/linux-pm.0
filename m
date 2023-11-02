@@ -2,117 +2,134 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A57BC4167B
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Nov 2023 05:47:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DA98C4332F
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Nov 2023 05:51:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231623AbjKBFrw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 Nov 2023 01:47:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43170 "EHLO
+        id S232212AbjKBFvm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 Nov 2023 01:51:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33234 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346332AbjKBFp7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2023 01:45:59 -0400
-Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19DF5116
-        for <linux-pm@vger.kernel.org>; Wed,  1 Nov 2023 22:45:54 -0700 (PDT)
-Received: by mail-pj1-x102a.google.com with SMTP id 98e67ed59e1d1-280260db156so579825a91.2
-        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2023 22:45:54 -0700 (PDT)
+        with ESMTP id S230319AbjKBFvm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2023 01:51:42 -0400
+Received: from mail-oi1-x230.google.com (mail-oi1-x230.google.com [IPv6:2607:f8b0:4864:20::230])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC9D3116;
+        Wed,  1 Nov 2023 22:51:38 -0700 (PDT)
+Received: by mail-oi1-x230.google.com with SMTP id 5614622812f47-3b3e13fc1f7so358764b6e.0;
+        Wed, 01 Nov 2023 22:51:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1698903953; x=1699508753; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=kzrhZXo+dGDa3AqsNy7Vgj6MpkiaO6zQpmKf2ZstGE8=;
-        b=i3sYaFjVPw6nxGK9AjgMg84FPLo/1W/BnhDpSq/j8wj9DX2owAo+n33nJO8gMrT1fT
-         RcmOhZe4ab04wzeB8NJZ7ngL0TS1xdWFFnyM8iUvOdY9XMe9f5H9Z0K5Gg4Mqp/4xcsw
-         NWloP0yPpQSAncTLjT86JnIo0k7QomDpPy3TKIC/nIuvm4mELvv1eDv8dxxH4v3WEhak
-         pw8WXPPpPPTMkgdg/ubR4Y/8W9ENab+/8Acu6PdH0ZDXwwi5LKNPNlnQQYTnrE5Csy2l
-         sZQ+xOWYOTT3WdCiTGSTtsytPv87RdlYMXR8A650VfhKokN0SR/2ks/IkGFW8Wl3aXUt
-         sLyg==
+        d=gmail.com; s=20230601; t=1698904298; x=1699509098; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=1rNVTOYzg1T8LSeT98N14So2HKEm2/4/i4nFsHZ5hrA=;
+        b=IvTmaMLW8ZR6fjUHcABC37Jm8e1wrkvYmGcEHlOcSvw/Wj/36VJ2iAcPwiy8eTZzhS
+         qNa1NOrJs3N2rYf5Gm+AZPXRBwQy0I/F7ra3lT6hlv+lRU4lgJ66ffchpU8o+vqG/bT1
+         vcVf0PF8ftGks4Wo///eHMIpek1ERSpYpSf1BdMz+I1B5iaHOQNhYNaoYzZe3I/sadLI
+         UxjDMxleagv2iekYp3Vd2A8gMrVxbAuViuRG6TUSY8TMcLdDhHQlv1Lx48iIopW+TtQJ
+         UQHINgdSueCnAh2c2qUuUHEc15rUte0KJBO57AOFOOYVh7B9X94YRf0QiezO5zCPerJr
+         9/xA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698903953; x=1699508753;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=kzrhZXo+dGDa3AqsNy7Vgj6MpkiaO6zQpmKf2ZstGE8=;
-        b=SLNBmzVXNd06SATrAjISnOfHMXjXPrTW9YBdamWnr38rZNiOFIExzO91UUkwBYwgK1
-         M2Lk007BYwQjCTnKjuUUTJeZG6l6My2u6/5EgzQvCZUlc39MbaF0Qd9TzKOcWhYsebyd
-         bqau7kM1U0QNYX15lraBbg1pppCFeYqeur1kDcozhbC7b853Rq1smxi+StBSSPYTpDl6
-         b8mYfxiQFhaCbrYf8Elpf8CeEfzdUk6vR1SvigkyAaE3K3Jh2B/Te43J6vdqHXIqPjDn
-         0TYk+894Nk5FI8PYYXUylXIwENcU4yt+q7s0d8j6RApM2rBQBGLbpF7wD+9EtCVubv3Z
-         /Eug==
-X-Gm-Message-State: AOJu0YwPtDTZHO6uBHNWdeKZ08H1DiW6oo5P14/87KfY4fZxpgfjhVr/
-        W/cte3okDnIg9CbKE4mxM+x5vA==
-X-Google-Smtp-Source: AGHT+IEPgw24FpLWuRgkEYbzkkE3f3S+pHxPyeik0vL+BYe7aur6FmN4y2lRlfWUQuB5rJ4Kp1fOnA==
-X-Received: by 2002:a17:90b:3449:b0:27d:6404:bffc with SMTP id lj9-20020a17090b344900b0027d6404bffcmr17526493pjb.1.1698903953531;
-        Wed, 01 Nov 2023 22:45:53 -0700 (PDT)
-Received: from localhost ([122.172.80.14])
-        by smtp.gmail.com with ESMTPSA id gm19-20020a17090b101300b00280070a2613sm1658809pjb.51.2023.11.01.22.45.52
+        d=1e100.net; s=20230601; t=1698904298; x=1699509098;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1rNVTOYzg1T8LSeT98N14So2HKEm2/4/i4nFsHZ5hrA=;
+        b=mcit172+NevKZZzkFn+RnPWds+IMtvdd1jbe0lYwZT5oXAA5+SYE0VHZHViJZBXwK6
+         9/+m6/1Jo4oiPlT5RrT+3w6LAiwqOnDF3LdTPVAwBm6z+AjFGtboHpXbya+lyxybS2cm
+         WhpZxcIsnAssMctXxtq1WUy1NzBWi+zZsXAef9uhP+72D+V4HXCVn7DVy5lhS6la7Zkv
+         n5PJPRqMZHK9q3RBZA2/Wbfz9Sc30+RzsjCbxOA1Gu5Z99R87BxyOFgqvZzk7mBxeQ6U
+         +mZcQT5mKGqSr/qOqdyyRqoKaYkDSrSXbD4xAD/5lgxCmdX+dWhDh+iwI9rtvdw4SLrr
+         fmxw==
+X-Gm-Message-State: AOJu0YzZIVztQzYA/W5WjYR7WYbR8zVB9+yXXIP52lG4X4KpVXalMq4e
+        n160CxaU13APAwZKptn77dg=
+X-Google-Smtp-Source: AGHT+IHYMFpEG3Jl5+tmBRGQz8dDUvy6BpTDMmz4f3y6MvPNlpNgM3G12CxKGKU1/VE7HETeK0eWeQ==
+X-Received: by 2002:a05:6808:1528:b0:3b5:75e7:bcea with SMTP id u40-20020a056808152800b003b575e7bceamr6458060oiw.57.1698904298091;
+        Wed, 01 Nov 2023 22:51:38 -0700 (PDT)
+Received: from localhost.localdomain ([58.48.52.254])
+        by smtp.gmail.com with ESMTPSA id i10-20020aa787ca000000b0069337938be8sm2090023pfo.110.2023.11.01.22.51.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Nov 2023 22:45:53 -0700 (PDT)
-Date:   Thu, 2 Nov 2023 11:15:51 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>
-Subject: [GIT PULL] cpufreq/arm updates for 6.7-part2
-Message-ID: <20231102054551.rah3brlwv7457kzl@vireshk-i7>
+        Wed, 01 Nov 2023 22:51:37 -0700 (PDT)
+From:   "xinglong.yang" <seanyang230@gmail.com>
+X-Google-Original-From: "xinglong.yang" <xinglong.yang@cixtech.com>
+To:     xinglong.yang@cixtech.com, rafael@kernel.org,
+        daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] driver: thermal: simplify the traverse of sensor in thermal_zone.
+Date:   Thu,  2 Nov 2023 13:51:20 +0800
+Message-ID: <20231102055120.1192015-1-xinglong.yang@cixtech.com>
+X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
+The number of sensor in a thermal zone needs to be greater than zero
+and equal to one. Add the opinion when the number of sensor is greater
+than one in a thermal zone.
 
-I was waiting for some dependency patches from ARM SoC to land in for this.
+There is also no need to traverse the sensor in the thermal zone,
+because there is only one sensor on one thermal zone.
 
-The following changes since commit 038ef0d990a0a5fbc2024084f51e8af7d9bc95a2:
+Signed-off-by: xinglong.yang <xinglong.yang@cixtech.com>
+---
+ drivers/thermal/thermal_of.c | 34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
 
-  dt-bindings: cpufreq: qcom-hw: document SM8650 CPUFREQ Hardware (2023-10-25 15:51:22 +0530)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/cpufreq-arm-updates-6.7-part2
-
-for you to fetch changes up to 5b5b5806f22390808b8e8fa180fe35b003a4a74d:
-
-  cpufreq: qcom-nvmem: Introduce cpufreq for ipq95xx (2023-11-02 11:04:53 +0530)
-
-----------------------------------------------------------------
-ARM cpufreq updates for 6.7
-
-- Add support for several Qualcomm SoC versions (Robert Marko and
-  Varadarajan Narayanan).
-
-----------------------------------------------------------------
-Robert Marko (1):
-      cpufreq: qcom-nvmem: add support for IPQ8074
-
-Varadarajan Narayanan (2):
-      cpufreq: qcom-nvmem: Enable cpufreq for ipq53xx
-      cpufreq: qcom-nvmem: Introduce cpufreq for ipq95xx
-
-Viresh Kumar (1):
-      Merge branch 'cpufreq/arm/qcom-nvmem' into HEAD
-
- Documentation/devicetree/bindings/soc/qcom/qcom,geni-se.yaml |   2 +
- MAINTAINERS                                                  |  12 ++
- drivers/cpufreq/cpufreq-dt-platdev.c                         |   3 +
- drivers/cpufreq/qcom-cpufreq-nvmem.c                         |  60 ++++++++++
- drivers/firmware/Kconfig                                     |  32 ++++++
- drivers/firmware/Makefile                                    |   2 +
- drivers/firmware/qcom_qseecom.c                              | 120 ++++++++++++++++++++
- drivers/firmware/qcom_qseecom_uefisecapp.c                   | 871 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/firmware/qcom_scm.c                                  | 394 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/soc/qcom/socinfo.c                                   |  11 ++
- drivers/soc/qcom/wcnss_ctrl.c                                |   1 -
- include/dt-bindings/arm/qcom,ids.h                           |   5 +
- include/linux/firmware/qcom/qcom_qseecom.h                   |  46 ++++++++
- include/linux/firmware/qcom/qcom_scm.h                       |  22 ++++
- include/linux/ucs2_string.h                                  |   1 +
- lib/ucs2_string.c                                            |  52 +++++++++
- 16 files changed, 1633 insertions(+), 1 deletion(-)
- create mode 100644 drivers/firmware/qcom_qseecom.c
- create mode 100644 drivers/firmware/qcom_qseecom_uefisecapp.c
- create mode 100644 include/linux/firmware/qcom/qcom_qseecom.h
-
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index e615f735f4c0..a405754c42cd 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -186,6 +186,7 @@ static struct device_node *of_thermal_zone_find(struct device_node *sensor, int
+ 	for_each_available_child_of_node(np, tz) {
+ 
+ 		int count, i;
++		int ret;
+ 
+ 		count = of_count_phandle_with_args(tz, "thermal-sensors",
+ 						   "#thermal-sensor-cells");
+@@ -193,26 +194,25 @@ static struct device_node *of_thermal_zone_find(struct device_node *sensor, int
+ 			pr_err("%pOFn: missing thermal sensor\n", tz);
+ 			tz = ERR_PTR(-EINVAL);
+ 			goto out;
++		} else if (count > 1) {
++			pr_err("%pOFn: number of thermal sensor greater than one\n", tz);
++			tz = ERR_PTR(-EINVAL);
++			goto out;
+ 		}
+ 
+-		for (i = 0; i < count; i++) {
+-
+-			int ret;
+-
+-			ret = of_parse_phandle_with_args(tz, "thermal-sensors",
+-							 "#thermal-sensor-cells",
+-							 i, &sensor_specs);
+-			if (ret < 0) {
+-				pr_err("%pOFn: Failed to read thermal-sensors cells: %d\n", tz, ret);
+-				tz = ERR_PTR(ret);
+-				goto out;
+-			}
++		ret = of_parse_phandle_with_args(tz, "thermal-sensors",
++						 "#thermal-sensor-cells",
++						 0, &sensor_specs);
++		if (ret < 0) {
++			pr_err("%pOFn: Failed to read thermal-sensors cells: %d\n", tz, ret);
++			tz = ERR_PTR(ret);
++			goto out;
++		}
+ 
+-			if ((sensor == sensor_specs.np) && id == (sensor_specs.args_count ?
+-								  sensor_specs.args[0] : 0)) {
+-				pr_debug("sensor %pOFn id=%d belongs to %pOFn\n", sensor, id, tz);
+-				goto out;
+-			}
++		if ((sensor == sensor_specs.np) && id == (sensor_specs.args_count ?
++							  sensor_specs.args[0] : 0)) {
++			pr_debug("sensor %pOFn id=%d belongs to %pOFn\n", sensor, id, tz);
++			goto out;
+ 		}
+ 	}
+ 	tz = ERR_PTR(-ENODEV);
 -- 
-viresh
+2.42.0
+
