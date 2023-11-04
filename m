@@ -2,50 +2,48 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1ADAC4167B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E97D0C41535
 	for <linux-pm@archiver.kernel.org>; Sat,  4 Nov 2023 21:15:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230085AbjKDVPw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 4 Nov 2023 17:15:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40008 "EHLO
+        id S230137AbjKDVPx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Nov 2023 17:15:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40020 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230137AbjKDVPw (ORCPT
+        with ESMTP id S230056AbjKDVPw (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Nov 2023 17:15:52 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 892BBB0
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C91BBE
         for <linux-pm@vger.kernel.org>; Sat,  4 Nov 2023 14:15:49 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qzNza-0007x9-IB; Sat, 04 Nov 2023 22:15:42 +0100
+        id 1qzNza-0007wr-I5; Sat, 04 Nov 2023 22:15:42 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qzNzZ-006e1Q-FH; Sat, 04 Nov 2023 22:15:41 +0100
+        id 1qzNzY-006e1G-R7; Sat, 04 Nov 2023 22:15:40 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qzNzZ-00D1bF-6D; Sat, 04 Nov 2023 22:15:41 +0100
+        id 1qzNzY-00D1b3-I3; Sat, 04 Nov 2023 22:15:40 +0100
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Sean Wang <sean.wang@mediatek.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        linux-pm@vger.kernel.org, kernel@pengutronix.de,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
-Subject: [PATCH 08/14] power: reset: mt6323-poweroff: Convert to platform remove callback returning void
-Date:   Sat,  4 Nov 2023 22:15:10 +0100
-Message-ID: <20231104211501.3676352-24-u.kleine-koenig@pengutronix.de>
+Cc:     Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        kernel@pengutronix.de
+Subject: [PATCH 05/14] power: reset: at91-poweroff: Convert to platform remove callback returning void
+Date:   Sat,  4 Nov 2023 22:15:07 +0100
+Message-ID: <20231104211501.3676352-21-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231104211501.3676352-16-u.kleine-koenig@pengutronix.de>
 References: <20231104211501.3676352-16-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1813; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=+ks+08sNas6pRwQOIu9JqI3KzDyMtEsulLgfZXQOgLc=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlRrRfbtVNNlwYL9e4IQ3CBHffi67iJXbrWETgo wljmV/D+IeJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUa0XwAKCRCPgPtYfRL+ Tv5UB/9Cyj7hmzhYSg/jRT/T2W3i95PssgWRVEh5CX70+1G/lp2Vkon6fJxXqOQASadNr36iiy+ JETjkP6mjXsqcQs9vwbSXVK1VWPah3sC93rWO+8nBDQPNdksfNccp5R6/vbqZr2d3oIwgdpjxfu LU1Eedx/SSpCa/XvnQ8WstE0J6xQMLXZ7+iT23K2tFkranQkfn5TD1TfW7KYZjsziMncru/dESa gvXn27dj84G3VQW2a2rdGirOxcyQrbus+HiDgJq8tJIYOTlodGxcui5khY6x1S8GzaC0fEa/WFu Is7YBPo+hjgAux4wwm0N2zuVckwFRa5abA4J7QuKwjHSMMoT
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1960; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=RwiCczqEbLtdO2aF0EtISXUmbXSbx1rbU+RFhJjoe6o=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlRrRbDDQyOzgTIjEaYCQcbRMXtzAIt1tOYc4fq Nxn4AKG0+aJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUa0WwAKCRCPgPtYfRL+ TnmjB/9sWF+zrJQupHRVHd6lr2JJVwjol9MXkP9PlxvPg1PRxhClZKS/FZ+/8hh/MmhVrPyL2AV YIdh+cyK/DDfOsUMAmGNIyoIMfF9FrnpPfOb7TpOpxL1eXk6xCBfdhdCyu+xfCrMBLwbZZHGCN/ oO9HrXnu2sC3sOsSOB07iWbbugu6dYrENaiXKoZveGNyDi0jeWXYL+KMT7dOI6fBU1N4svgHY2R aKHsqpNPBX+7kbt4wvt6iYXhot4gE01kQzrA2ljjUrnwkkfVt5GYb9P4BlGvhgr+FXh5eNT0wG8 8gxOZVt2Izl8k4avYa+ys8Psm+9aiBB95Jop6o+aZkksBUmm
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -71,36 +69,40 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/power/reset/mt6323-poweroff.c | 6 ++----
+ drivers/power/reset/at91-poweroff.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/reset/mt6323-poweroff.c b/drivers/power/reset/mt6323-poweroff.c
-index 108167f7738b..57a63c0ab7fb 100644
---- a/drivers/power/reset/mt6323-poweroff.c
-+++ b/drivers/power/reset/mt6323-poweroff.c
-@@ -70,12 +70,10 @@ static int mt6323_pwrc_probe(struct platform_device *pdev)
- 	return 0;
+diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at91-poweroff.c
+index 83567428ab43..126e774e210c 100644
+--- a/drivers/power/reset/at91-poweroff.c
++++ b/drivers/power/reset/at91-poweroff.c
+@@ -202,7 +202,7 @@ static int at91_poweroff_probe(struct platform_device *pdev)
+ 	return ret;
  }
  
--static int mt6323_pwrc_remove(struct platform_device *pdev)
-+static void mt6323_pwrc_remove(struct platform_device *pdev)
+-static int at91_poweroff_remove(struct platform_device *pdev)
++static void at91_poweroff_remove(struct platform_device *pdev)
  {
- 	if (pm_power_off == &mt6323_do_pwroff)
+ 	if (pm_power_off == at91_poweroff)
  		pm_power_off = NULL;
+@@ -211,8 +211,6 @@ static int at91_poweroff_remove(struct platform_device *pdev)
+ 		iounmap(at91_shdwc.mpddrc_base);
+ 
+ 	clk_disable_unprepare(at91_shdwc.sclk);
 -
 -	return 0;
  }
  
- static const struct of_device_id mt6323_pwrc_dt_match[] = {
-@@ -86,7 +84,7 @@ MODULE_DEVICE_TABLE(of, mt6323_pwrc_dt_match);
+ static const struct of_device_id at91_poweroff_of_match[] = {
+@@ -225,7 +223,7 @@ MODULE_DEVICE_TABLE(of, at91_poweroff_of_match);
  
- static struct platform_driver mt6323_pwrc_driver = {
- 	.probe          = mt6323_pwrc_probe,
--	.remove         = mt6323_pwrc_remove,
-+	.remove_new     = mt6323_pwrc_remove,
- 	.driver         = {
- 		.name   = "mt6323-pwrc",
- 		.of_match_table = mt6323_pwrc_dt_match,
+ static struct platform_driver at91_poweroff_driver = {
+ 	.probe = at91_poweroff_probe,
+-	.remove = at91_poweroff_remove,
++	.remove_new = at91_poweroff_remove,
+ 	.driver = {
+ 		.name = "at91-poweroff",
+ 		.of_match_table = at91_poweroff_of_match,
 -- 
 2.42.0
 
