@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08554C41535
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Nov 2023 21:15:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A68EBC0018A
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Nov 2023 21:15:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229893AbjKDVPt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S229904AbjKDVPt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sat, 4 Nov 2023 17:15:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39984 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230043AbjKDVPs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Nov 2023 17:15:48 -0400
+        with ESMTP id S229893AbjKDVPr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Nov 2023 17:15:47 -0400
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF9B5D69
-        for <linux-pm@vger.kernel.org>; Sat,  4 Nov 2023 14:15:44 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2A6ABE
+        for <linux-pm@vger.kernel.org>; Sat,  4 Nov 2023 14:15:43 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qzNzb-00081c-8f; Sat, 04 Nov 2023 22:15:43 +0100
+        id 1qzNzZ-0007x2-LE; Sat, 04 Nov 2023 22:15:41 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qzNza-006e1t-Pi; Sat, 04 Nov 2023 22:15:42 +0100
+        id 1qzNzZ-006e1N-8e; Sat, 04 Nov 2023 22:15:41 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1qzNza-00D1bd-Gk; Sat, 04 Nov 2023 22:15:42 +0100
+        id 1qzNzY-00D1bB-W2; Sat, 04 Nov 2023 22:15:41 +0100
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     linux-pm@vger.kernel.org, kernel@pengutronix.de
-Subject: [PATCH 14/14] power: reset: tps65086-restart: Convert to platform remove callback returning void
-Date:   Sat,  4 Nov 2023 22:15:16 +0100
-Message-ID: <20231104211501.3676352-30-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 07/14] power: reset: ltc2952-poweroff: Convert to platform remove callback returning void
+Date:   Sat,  4 Nov 2023 22:15:09 +0100
+Message-ID: <20231104211501.3676352-23-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231104211501.3676352-16-u.kleine-koenig@pengutronix.de>
 References: <20231104211501.3676352-16-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2366; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=LSg5gjyDq1wrqMKq1cCWRsWtI99bSUZa0jKD7m2siIM=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlRrRmhp2iZHlY+61sJVkE14XGn619lCsTX6VAk tHjL6xK7baJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUa0ZgAKCRCPgPtYfRL+ ThdrB/4+hU3YOU7qcRffVbSke0Jo7uPa27XKv2AJDbGtNPiRFQsVXtU2tKaneGV7zOp0FeJm7Ja g/WWf7sdhkAUbOA1wPfspSa6M0XkPIEM77Sodq0EaIrKT0sZo5jL+YR1PhvUyGSSKi1vtgNj78C AjCh1yvwmaSMb0qQU3lhkl1UwHJ2xTX3YhXWOR/3kK/zdQJZ3xbsQwtvu508iKmCAXIGAOpLTUz T8c1C3jy/dPkLL2CVNmOfNTW+vqKMQphql3zDSat1rOjjO06zkZlCSxELcpYauwdaJbnpb5g4n6 vFuzUgMbIUFBzqNVMzrHbkzie8qLvJqhhH5IXWamxVwu/a6c
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2052; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=wPJKACzqFpjEc7Yw1PnvgZmIx/Ezc5+4mzCTFHqISQM=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlRrRe3PQHAxsHGorELLD0GO29ZsZQKceeDvEkx ita8H36VsmJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUa0XgAKCRCPgPtYfRL+ TuY2B/4t0Co3MoDs0nzwFqD/eIXrWao0QpNsCJaHJ41nkr7XAQ7AQnR/gR+MpHinrqqEV4XznMd FQMg/CY7irLMlJUpJkHmL1UVwubxrj+H6oxTcqfd+CS/o4A4KegtK/MU0Xv+k6BW0DiPwNOxXqC nftby4t4BteIeXnAhAJBX3GLn8hJtOdymL19BzefEKHqdBtV2kPhNkvJ2AKIbig+sWb8HHnCklp MM6IzojNl0/sIEvUYkaoZ0VEALmRU/0wX9WFHA3+DCeFpNb5Hiq2hyIDxXC0q2+g6f6QNfbMhfR QDRbtxQkQNPt1OP8NiMjm+oI6589ds0PKwPqKg035vH4g1yu
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -60,54 +60,44 @@ void. In the first step of this quest all drivers are converted to
 .remove_new(), which already returns void. Eventually after all drivers
 are converted, .remove_new() will be renamed to .remove().
 
-Returning an error if unregister_restart_handler() failed has no effect
-but triggering another error message. So converting this driver to
-.remove_new() has no effect but to suppress the duplicated error message.
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/power/reset/tps65086-restart.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/power/reset/ltc2952-poweroff.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/power/reset/tps65086-restart.c b/drivers/power/reset/tps65086-restart.c
-index 5ec819eac7da..ee8e9f4b837e 100644
---- a/drivers/power/reset/tps65086-restart.c
-+++ b/drivers/power/reset/tps65086-restart.c
-@@ -62,19 +62,21 @@ static int tps65086_restart_probe(struct platform_device *pdev)
+diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
+index eea05921a054..fa25fbd53934 100644
+--- a/drivers/power/reset/ltc2952-poweroff.c
++++ b/drivers/power/reset/ltc2952-poweroff.c
+@@ -286,7 +286,7 @@ static int ltc2952_poweroff_probe(struct platform_device *pdev)
  	return 0;
  }
  
--static int tps65086_restart_remove(struct platform_device *pdev)
-+static void tps65086_restart_remove(struct platform_device *pdev)
+-static int ltc2952_poweroff_remove(struct platform_device *pdev)
++static void ltc2952_poweroff_remove(struct platform_device *pdev)
  {
- 	struct tps65086_restart *tps65086_restart = platform_get_drvdata(pdev);
- 	int ret;
+ 	struct ltc2952_poweroff *data = platform_get_drvdata(pdev);
  
- 	ret = unregister_restart_handler(&tps65086_restart->handler);
- 	if (ret) {
-+		/*
-+		 * tps65086_restart_probe() registered the restart handler. So
-+		 * unregistering should work fine. Checking the error code
-+		 * shouldn't be needed, still doing it for completeness.
-+		 */
- 		dev_err(&pdev->dev, "%s: cannot unregister restart handler: %d\n",
- 			__func__, ret);
--		return -ENODEV;
- 	}
--
+@@ -295,7 +295,6 @@ static int ltc2952_poweroff_remove(struct platform_device *pdev)
+ 	hrtimer_cancel(&data->timer_wde);
+ 	atomic_notifier_chain_unregister(&panic_notifier_list,
+ 					 &data->panic_notifier);
 -	return 0;
  }
  
- static const struct platform_device_id tps65086_restart_id_table[] = {
-@@ -88,7 +90,7 @@ static struct platform_driver tps65086_restart_driver = {
- 		.name = "tps65086-restart",
- 	},
- 	.probe = tps65086_restart_probe,
--	.remove = tps65086_restart_remove,
-+	.remove_new = tps65086_restart_remove,
- 	.id_table = tps65086_restart_id_table,
- };
- module_platform_driver(tps65086_restart_driver);
+ static const struct of_device_id of_ltc2952_poweroff_match[] = {
+@@ -306,7 +305,7 @@ MODULE_DEVICE_TABLE(of, of_ltc2952_poweroff_match);
+ 
+ static struct platform_driver ltc2952_poweroff_driver = {
+ 	.probe = ltc2952_poweroff_probe,
+-	.remove = ltc2952_poweroff_remove,
++	.remove_new = ltc2952_poweroff_remove,
+ 	.driver = {
+ 		.name = "ltc2952-poweroff",
+ 		.of_match_table = of_ltc2952_poweroff_match,
 -- 
 2.42.0
 
