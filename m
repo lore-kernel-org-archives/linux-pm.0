@@ -2,123 +2,149 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01559C4332F
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Nov 2023 09:53:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED0CCC4332F
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Nov 2023 00:02:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229819AbjKEJxg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 5 Nov 2023 04:53:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60274 "EHLO
+        id S229986AbjKFACi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 5 Nov 2023 19:02:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55518 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229594AbjKEJxg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Nov 2023 04:53:36 -0500
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C719CC
-        for <linux-pm@vger.kernel.org>; Sun,  5 Nov 2023 01:53:33 -0800 (PST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qzZow-0002g3-Vs; Sun, 05 Nov 2023 10:53:31 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qzZov-006l9m-1v; Sun, 05 Nov 2023 10:53:29 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qzZou-00D8qC-OS; Sun, 05 Nov 2023 10:53:28 +0100
-Date:   Sun, 5 Nov 2023 10:53:28 +0100
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Sean Wang <sean.wang@mediatek.com>, linux-pm@vger.kernel.org,
-        linux-actions@lists.infradead.org, linux-kbuild@vger.kernel.org,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-        linux-mediatek@lists.infradead.org, kernel@pengutronix.de,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Cristian Ciocaltea <cristian.ciocaltea@gmail.com>,
-        linux-arm-kernel@lists.infradead.org,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-Subject: Re: [PATCH 00/14] power: reset: Drop platform_driver_probe() and
- convert to platform remove callback returning void
-Message-ID: <20231105095328.gi6yi455xlmihmms@pengutronix.de>
-References: <20231104211501.3676352-16-u.kleine-koenig@pengutronix.de>
+        with ESMTP id S229485AbjKFACh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Nov 2023 19:02:37 -0500
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A262DB
+        for <linux-pm@vger.kernel.org>; Sun,  5 Nov 2023 16:02:34 -0800 (PST)
+Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-32faea0fa1fso2029285f8f.1
+        for <linux-pm@vger.kernel.org>; Sun, 05 Nov 2023 16:02:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1699228952; x=1699833752; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=J1AYyM8WMgGaJPfSt8fkmKPCmurjYQvKjXkBlzKHwao=;
+        b=T65BnQt7GdaGf91W48Is3AWtj1PvJVhY4kKuXBEP2vQ1/OE8ivVbFbvuVnszVSl/Pl
+         gAbxJnO/4/bDtJwiePL+WNCqaeGi96rSDoL9sdewtqqJvMaeBjTd0j0Aa5jgkHWznD2D
+         /JsnysPfBTN9ID1LwxiSOb8AsFV08dbeWlpxErBAZF7nQnQLAUWyFoh2ju8ZpP3jfLFK
+         czOWVGjiz42ewdWkEP/Hd7tzeF6AY9T58TS/0rPvCIaJUo/20/91qOnjHEpts6FbhaUP
+         v22ezo2bq1SmUUWyh0u9UcoZJAZb8cil4A9UCGYxqnmp/iKIDC9HkDKDgCuE3lbOvP9U
+         syPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699228952; x=1699833752;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=J1AYyM8WMgGaJPfSt8fkmKPCmurjYQvKjXkBlzKHwao=;
+        b=Dn64DDd1AXjE4EVMJJKq7aZwzgUT6rD+dpI950T6LiDGz8dNN6JVdiGM+kFp6P+LQm
+         zlOu4/QorJwsWNc9K+7+NgPUo6nqWsClyabFL5ZFioi/juUvzKDd5yu7LYU1/3/mcN+r
+         EACn3NE5Xw6uysS0lPUZGjtKyAwHqcuG/6XDB5mQ3e8pozrPWE45A51BZOEW/Fx9gG7v
+         XoXCqDRsPR/Y9RpQjoKJ1nvWOeQPLonqPEINXxCkIfyAGQdZMAT6QerkkUPzTRCcC4Ey
+         uCDqCkkfLYu658kJj3/9LMB+ZJV0lvEj/f+YxUxEcpzxQ5pGVTPnaRblbk8EyUQ2KTsE
+         oepw==
+X-Gm-Message-State: AOJu0YxtwTzUQ1VMo1vBe8WqCmwx3F5sAX7OC6DXHJoVpGqSyBMUvzGc
+        wFgU9+tqVYavdG6LGWPwiY2RUA==
+X-Google-Smtp-Source: AGHT+IG1SlWCrb8exGbqnTO8eoBdntnUvQrXYJfIuCg2LsAQitLdPnyoxiskqKc3Y3arWbSVTJYrwA==
+X-Received: by 2002:a5d:5887:0:b0:32f:b47c:f1f6 with SMTP id n7-20020a5d5887000000b0032fb47cf1f6mr8893115wrf.32.1699228952385;
+        Sun, 05 Nov 2023 16:02:32 -0800 (PST)
+Received: from ?IPV6:2a05:6e02:1041:c10:3442:eeb4:7620:ee3d? ([2a05:6e02:1041:c10:3442:eeb4:7620:ee3d])
+        by smtp.googlemail.com with ESMTPSA id i7-20020adfe487000000b0032de6f95fb3sm7834663wrm.40.2023.11.05.16.02.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 05 Nov 2023 16:02:31 -0800 (PST)
+Message-ID: <283d4abe-885b-415d-a24d-681408a23845@linaro.org>
+Date:   Mon, 6 Nov 2023 01:02:30 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="exvhp4fxjdw7awiz"
-Content-Disposition: inline
-In-Reply-To: <20231104211501.3676352-16-u.kleine-koenig@pengutronix.de>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] thermal: core: Add trip thresholds for trip crossing
+ detection
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Lukasz Luba <lukasz.luba@arm.com>
+References: <12317335.O9o76ZdvQC@kreacher>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <12317335.O9o76ZdvQC@kreacher>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---exvhp4fxjdw7awiz
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello Sebastian,
-
-On Sat, Nov 04, 2023 at 10:15:02PM +0100, Uwe Kleine-K=F6nig wrote:
-> there are two different types of patches here that would justify to
-> different series. But as the patches are not independant I chose to put
-> them in a single series.
->=20
-> The first three patches drop usage of platform_driver_probe(). This is a
-> concept that isn't so relevant any more today. I didn't check, but it
-> saves typically only a few 100k and there are thoughts to deprecate it
-> to simplify the core. Getting the usage right is not trivial though the
-> at91 drivers got it nearly right. The alternative to these patches is to
-> add __ref to the driver struct ideally with a comment describing the
-> need like is e.g. done in commit 5b44abbc39ca ("platform/x86: hp-wmi::
-> Mark driver struct with __refdata to prevent section mismatch warning").
->=20
-> The remaining patches convert the platform drivers to .remove_new(), see
-> commit 5c5a7680e67b ("platform: Provide a remove callback that returns
-> no value") for an extended explanation and the eventual goal. All
-> conversions but one are trivial as the remove functions return zero
-> unconditionally. The only exception is the tps65086-restart driver.
-
-I forgot to convert two of the drivers that used platform_driver_probe()
-before. I added them as patches 15 and 16 to this series in the hope
-that b4 (or whatever tool you use to apply patches) gets that right.
-
-> Uwe Kleine-K=F6nig (14):
->   power: reset: at91-poweroff: Stop using module_platform_driver_probe()
->   power: reset: at91-reset:: Stop using module_platform_driver_probe()
-
-If you could do s/::/:/ on that patch description that would be great.
-(Or should I resend for that?)
-
-Best regards
-Uwe
+Hi Rafael,
 
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+On 03/11/2023 15:56, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The trip crossing detection in handle_thermal_trip() does not work
+> correctly in the cases when a trip point is crossed on the way up and
+> then the zone temperature stays above its low temperature (that is, its
+> temperature decreased by its hysteresis).  The trip temperature may
+> be passed by the zone temperature subsequently in that case, even
+> multiple times, but that does not count as the trip crossing as long as
+> the zone temperature does not fall below the trip's low temperature or,
+> in other words, until the trip is crossed on the way down.
+> 
+> |-----------low--------high------------|
+>               |<--------->|
+>               |    hyst   |
+>               |           |
+>               |          -|--> crossed on the way up
+>               |
+>           <---|-- crossed on the way down
+> 
+> However, handle_thermal_trip() will invoke thermal_notify_tz_trip_up()
+> every time the trip temperature is passed by the zone temperature on
+> the way up regardless of whether or not the trip has been crossed on
+> the way down yet.  Moreover, it will not call thermal_notify_tz_trip_down()
+> if the last zone temperature was between the trip's temperature and its
+> low temperature, so some "trip crossed on the way down" events may not
+> be reported.
+> 
+> To address this issue, introduce trip thresholds equal to either the
+> temperature of the given trip, or its low temperature, such that if
+> the trip's threshold is passed by the zone temperature on the way up,
+> its value will be set to the trip's low temperature and
+> thermal_notify_tz_trip_up() will be called, and if the trip's threshold
+> is passed by the zone temperature on the way down, its value will be set
+> to the trip's temperature (high) and thermal_notify_tz_trip_down() will
+> be called.  Accordingly, if the threshold is passed on the way up, it
+> cannot be passed on the way up again until its passed on the way down
+> and if it is passed on the way down, it cannot be passed on the way down
+> again until it is passed on the way up which guarantees correct
+> triggering of trip crossing notifications.
+> 
+> If the last temperature of the zone is invalid, the trip's threshold
+> will be set depending of the zone's current temperature: If that
+> temperature is above the trip's temperature, its threshold will be
+> set to its low temperature or otherwise its threshold will be set to
+> its (high) temperature.  Because the zone temperature is initially
+> set to invalid and tz->last_temperature is only updated by
+> update_temperature(), this is sufficient to set the correct initial
+> threshold values for all trips.
+> 
+> Link: https://lore.kernel.org/all/20220718145038.1114379-4-daniel.lezcano@linaro.org
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> v1 (RFC) -> v2: Add missing description of a new struct thermal_trip field.
+> 
+> And because no comments have been sent for a week, this is not an RFC
+> any more.
 
---exvhp4fxjdw7awiz
-Content-Type: application/pgp-signature; name="signature.asc"
+Can you give me a few days to review this patch and test it with some 
+debugfs code planned to be submitted?
 
------BEGIN PGP SIGNATURE-----
+Thanks
 
-iQEyBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmVHZhcACgkQj4D7WH0S
-/k5Jtgf40bkUI/tsBT/eZ+3h+kAaBPC08oSM1xfjCN+GUtb6iX04GbymnfMlJtmv
-CnIUVrxvvgtEN9L+hXNxSAieshEoBVk3TKFKI5mZWCxNUNL3L0KtsuHqWj5gcMSA
-DIw46hr/yAJcUhiIkyDH3oPzSwVc1JMoOKJ550PInrP9gi9f7YppCPQBV0W7ifDP
-DXV5xfmXq359kRsrbia2Tt0jOXMSoOdRM81O62BiNGQ7XceIjNKAeEx/NGm2jYag
-oWwPyP4SbLNFVkqeNEiFD/4der+mqkJuefoQv+AlATpBsCUfzKDdcnmKjSbWhcGn
-nRewc9gpBbRmYHpPKV3u7R91oOui
-=xpzD
------END PGP SIGNATURE-----
 
---exvhp4fxjdw7awiz--
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
