@@ -2,204 +2,104 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58DFEC4332F
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Nov 2023 15:01:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F45FC4332F
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Nov 2023 19:08:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232193AbjKIPBz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Nov 2023 10:01:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41888 "EHLO
+        id S1344916AbjKITIo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Nov 2023 14:08:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44308 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232308AbjKIPBy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2023 10:01:54 -0500
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D55E72D62;
-        Thu,  9 Nov 2023 07:01:51 -0800 (PST)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.3.0)
- id a42070ca4c13ac30; Thu, 9 Nov 2023 16:01:49 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by cloudserver094114.home.pl (Postfix) with ESMTPSA id EB14B667CDF;
-        Thu,  9 Nov 2023 16:01:48 +0100 (CET)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH v3] thermal: core: Add trip thresholds for trip crossing detection
-Date:   Thu, 09 Nov 2023 16:01:48 +0100
-Message-ID: <12346243.O9o76ZdvQC@kreacher>
+        with ESMTP id S1344704AbjKITIo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2023 14:08:44 -0500
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F47130EB;
+        Thu,  9 Nov 2023 11:08:42 -0800 (PST)
+Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-280165bba25so1063884a91.2;
+        Thu, 09 Nov 2023 11:08:42 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1699556921; x=1700161721; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=npAIX4H7GIRegyucDnBbB08OaARn4b9MKFCtEnd9Z7U=;
+        b=H39Viedvuru8lFvMNT3sCYgi7QaIX4l9Y2Xm6L88HQaav9DhtYEo965P6yVeoyoIwr
+         wP+mOObD/nHC/Ja1hDSLla0W0REWh3YIMhIAejeSBCV2OdH74m1ixW84sQhlW9XgQmP7
+         53gDcUxtbvnpKUIJHQE7Ms6pliUUsieG2XBm19arB0UPe1PimF3kdbMGJUe7uUQZ0xXo
+         fOiks2BontqSmd7aHVdinIcB0+V2VeKQb6sc0pFq0+hRo3sg4py+xQm1DKttDlM46eNI
+         JX5GPpGVygcwGmOOw7CwdjoA6tOrDjLYV8W4jjv0mTZ+8ATyC0QPcA6eNKcndVINW14F
+         I/lg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1699556921; x=1700161721;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=npAIX4H7GIRegyucDnBbB08OaARn4b9MKFCtEnd9Z7U=;
+        b=T2BbfjNSQBprB+fXjdjaK1c4/R2x7E/CjxVGJhCUmrGqQFj4yRsEKHNAednHS2eWNT
+         5UNv4kA0jyg2dglAOYB1RzGhtb2yGHMjefFit9wm5/8uItDq/tWvBjMy64Ofi/ptkZb9
+         iH9ACRH1kG/FrUv68L1skICt1nSnQJnIKFTMJ1hmyYMPikJ8Vna9wANa0EqBqQBD2wnK
+         edkUNAnLM87v25BlgzxAXzXz+c/zuP0b8eBDyDsCm3L9KNGxOVSzoyazyTa4izFJ4cGl
+         5WPW13d5q34juK9U1Uzr1Ja+SE5VMZt4aNWY38K/ftBqe1reu1OXET5cIOYcpieGS0UO
+         it0w==
+X-Gm-Message-State: AOJu0Yz2vTr9BsCTvlcpDRovCWIW+I3XWaoIsBRBKvX9r5TZ7eXKvQA5
+        qjpv6gFwG5ZeIP02w+FoJTg=
+X-Google-Smtp-Source: AGHT+IHANweqCAVqfZMYyy8BrIodOf/S3c/ozotfwvar93GAbDNaJdXSTIsp1f0jdVE3vUyj50hSvA==
+X-Received: by 2002:a17:90a:1a4a:b0:27d:58a8:fa7f with SMTP id 10-20020a17090a1a4a00b0027d58a8fa7fmr2559321pjl.37.1699556921602;
+        Thu, 09 Nov 2023 11:08:41 -0800 (PST)
+Received: from localhost ([2620:10d:c090:400::4:7384])
+        by smtp.gmail.com with ESMTPSA id z10-20020a17090a8b8a00b0026b3f76a063sm117323pjn.44.2023.11.09.11.08.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 09 Nov 2023 11:08:41 -0800 (PST)
+Sender: Tejun Heo <htejun@gmail.com>
+Date:   Thu, 9 Nov 2023 09:08:39 -1000
+From:   Tejun Heo <tj@kernel.org>
+To:     Mukesh Ojha <quic_mojha@quicinc.com>
+Cc:     myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        cw00.choi@samsung.com, jstultz@google.com, tglx@linutronix.de,
+        sboyd@kernel.org, jiangshanlai@gmail.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: timer list corruption in devfreq
+Message-ID: <ZU0uNy6l0ZuzBmlf@slm.duckdns.org>
+References: <1699459797-21703-1-git-send-email-quic_mojha@quicinc.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedruddvuddgjedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehrrghfrggvlheskhgvrhhnvghl
- rdhorhhgpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1699459797-21703-1-git-send-email-quic_mojha@quicinc.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hello,
 
-The trip crossing detection in handle_thermal_trip() does not work
-correctly in the cases when a trip point is crossed on the way up and
-then the zone temperature stays above its low temperature (that is, its
-temperature decreased by its hysteresis).  The trip temperature may
-be passed by the zone temperature subsequently in that case, even
-multiple times, but that does not count as the trip crossing as long as
-the zone temperature does not fall below the trip's low temperature or,
-in other words, until the trip is crossed on the way down.
+On Wed, Nov 08, 2023 at 09:39:57PM +0530, Mukesh Ojha wrote:
+> We are facing an issue on 6.1 kernel while using devfreq framework
+> and looks like the devfreq_monitor_stop()/devfreq_monitor_start is
+> vulnerable if frequent governor change is being done from user space
+> in a loop.
+> 
+> echo simple_ondemand > /sys/class/devfreq/1d84000.ufshc/governor
+> echo performance > /sys/class/devfreq/1d84000.ufshc/governor
+> 
+> Here, we are using ufs device, but could be any device.
+> 
+> Issue is because same instance of timer is being queued from two
+> places one from devfreq_monitor() and one from devfreq_monitor_start() as
+> cancel_delayed_work_sync() from devfreq_monitor_stop() was not
+> able to delete the delayed work time completely due to which
+> devfreq_monitor() work rearmed the same timer.
+> 
+> But there looks to be issue in the timer framework where
+> it was initially discussed in [1] and later fixed in [2]
+> but not sure being whether is it issue in cancel_delayed_work_sync()
+> where del_timer() inside try_to_grab_pending() need to be replaced
+> with timer_delete[_sync]() or devfreq_monitor_stop() need to use
+> this api's and then delete the work.
 
-|-----------low--------high------------|
-             |<--------->|
-             |    hyst   |
-             |           |
-             |          -|--> crossed on the way up
-             |
-         <---|-- crossed on the way down
+So, having shutdown can be more convenient in some cases and that'd be a
+useful addition to workqueue both for immediate and delayed work items. That
+said, that's usually not essential in fixing these issues - e.g. Can't you
+just synchronize devfreq_monitor_start() and stop()?
 
-However, handle_thermal_trip() will invoke thermal_notify_tz_trip_up()
-every time the trip temperature is passed by the zone temperature on
-the way up regardless of whether or not the trip has been crossed on
-the way down yet.  Moreover, it will not call thermal_notify_tz_trip_down()
-if the last zone temperature was between the trip's temperature and its
-low temperature, so some "trip crossed on the way down" events may not
-be reported.
+Thanks.
 
-To address this issue, introduce trip thresholds equal to either the
-temperature of the given trip, or its low temperature, such that if
-the trip's threshold is passed by the zone temperature on the way up,
-its value will be set to the trip's low temperature and
-thermal_notify_tz_trip_up() will be called, and if the trip's threshold
-is passed by the zone temperature on the way down, its value will be set
-to the trip's temperature (high) and thermal_notify_tz_trip_down() will
-be called.  Accordingly, if the threshold is passed on the way up, it
-cannot be passed on the way up again until its passed on the way down
-and if it is passed on the way down, it cannot be passed on the way down
-again until it is passed on the way up which guarantees correct
-triggering of trip crossing notifications.
-
-If the last temperature of the zone is invalid, the trip's threshold
-will be set depending of the zone's current temperature: If that
-temperature is above the trip's temperature, its threshold will be
-set to its low temperature or otherwise its threshold will be set to
-its (high) temperature.  Because the zone temperature is initially
-set to invalid and tz->last_temperature is only updated by
-update_temperature(), this is sufficient to set the correct initial
-threshold values for all trips.
-
-Link: https://lore.kernel.org/all/20220718145038.1114379-4-daniel.lezcano@linaro.org
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-v2 -> v3: Take possible changes of trip point temperature or hysteresis into
-          account.
-
-v1 (RFC) -> v2: Add missing description of a new struct thermal_trip field.
-
----
- drivers/thermal/thermal_core.c |   43 ++++++++++++++++++++++++++++++++++-------
- include/linux/thermal.h        |    2 +
- 2 files changed, 38 insertions(+), 7 deletions(-)
-
-Index: linux-pm/drivers/thermal/thermal_core.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -345,22 +345,51 @@ static void handle_critical_trips(struct
- }
- 
- static void handle_thermal_trip(struct thermal_zone_device *tz,
--				const struct thermal_trip *trip)
-+				struct thermal_trip *trip)
- {
- 	if (trip->temperature == THERMAL_TEMP_INVALID)
- 		return;
- 
--	if (tz->last_temperature != THERMAL_TEMP_INVALID) {
--		if (tz->last_temperature < trip->temperature &&
--		    tz->temperature >= trip->temperature)
-+	if (tz->last_temperature == THERMAL_TEMP_INVALID) {
-+		/* Initialization. */
-+		trip->threshold = trip->temperature;
-+		if (tz->temperature >= trip->threshold)
-+			trip->threshold -= trip->hysteresis;
-+	} else if (tz->last_temperature < trip->threshold) {
-+		/*
-+		 * The trip threshold is equal to the trip temperature, unless
-+		 * the latter has changed in the meantime.  In either case,
-+		 * the trip is crossed if the current zone temperature is at
-+		 * least equal to its temperature, but otherwise ensure that
-+		 * the threshold and the trip temperature will be equal.
-+		 */
-+		if (tz->temperature >= trip->temperature) {
- 			thermal_notify_tz_trip_up(tz->id,
- 						  thermal_zone_trip_id(tz, trip),
- 						  tz->temperature);
--		if (tz->last_temperature >= trip->temperature &&
--		    tz->temperature < trip->temperature - trip->hysteresis)
-+			trip->threshold = trip->temperature - trip->hysteresis;
-+		} else {
-+			trip->threshold = trip->temperature;
-+		}
-+	} else {
-+		/*
-+		 * The previous zone temperature was above or equal to the trip
-+		 * threshold, which would be equal to the "low temperature" of
-+		 * the trip (its temperature minus its hysteresis), unless the
-+		 * trip temperature or hysteresis had changed.  In either case,
-+		 * the trip is crossed if the current zone temperature is below
-+		 * the low temperature of the trip, but otherwise ensure that
-+		 * the trip threshold will be equal to the low temperature of
-+		 * the trip.
-+		 */
-+		if (tz->temperature < trip->temperature - trip->hysteresis) {
- 			thermal_notify_tz_trip_down(tz->id,
- 						    thermal_zone_trip_id(tz, trip),
- 						    tz->temperature);
-+			trip->threshold = trip->temperature;
-+		} else {
-+			trip->threshold = trip->temperature - trip->hysteresis;
-+		}
- 	}
- 
- 	if (trip->type == THERMAL_TRIP_CRITICAL || trip->type == THERMAL_TRIP_HOT)
-@@ -403,7 +432,7 @@ static void thermal_zone_device_init(str
- void __thermal_zone_device_update(struct thermal_zone_device *tz,
- 				  enum thermal_notify_event event)
- {
--	const struct thermal_trip *trip;
-+	struct thermal_trip *trip;
- 
- 	if (atomic_read(&in_suspend))
- 		return;
-Index: linux-pm/include/linux/thermal.h
-===================================================================
---- linux-pm.orig/include/linux/thermal.h
-+++ linux-pm/include/linux/thermal.h
-@@ -57,12 +57,14 @@ enum thermal_notify_event {
-  * struct thermal_trip - representation of a point in temperature domain
-  * @temperature: temperature value in miliCelsius
-  * @hysteresis: relative hysteresis in miliCelsius
-+ * @threshold: trip crossing notification threshold miliCelsius
-  * @type: trip point type
-  * @priv: pointer to driver data associated with this trip
-  */
- struct thermal_trip {
- 	int temperature;
- 	int hysteresis;
-+	int threshold;
- 	enum thermal_trip_type type;
- 	void *priv;
- };
-
-
-
+-- 
+tejun
