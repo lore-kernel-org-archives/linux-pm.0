@@ -2,184 +2,220 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D394C4332F
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Nov 2023 18:04:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A323C4167D
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Nov 2023 18:07:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230107AbjKJSEM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Nov 2023 13:04:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51120 "EHLO
+        id S234723AbjKJSHW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Nov 2023 13:07:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55932 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230335AbjKJSC6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Nov 2023 13:02:58 -0500
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DCA43821E;
-        Fri, 10 Nov 2023 05:55:19 -0800 (PST)
-Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-54366784377so3339096a12.3;
-        Fri, 10 Nov 2023 05:55:19 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1699624518; x=1700229318; darn=vger.kernel.org;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UswF9wK9RxveNOhJEzFqGZeqyG/2CbmNW7YwWxlNx9Y=;
-        b=kObNMqbFoSq+C9Z+y0630uHbW7gg1XxcTO9LwxelRoqse/+iFLBl9PuYr26Rcuqt1z
-         TXWPnkteSPzr+enLFU0TDXG6sNy3eBqN/6hZp0IklKqAeiSc09V08wtkGmpnMdfOhprF
-         pmDXdAHYIhxrS9pkudCID5z5cYA8HF4EoY8A8dWgBHm23mtXgjgWV3zgvLNHxM8/ePZK
-         p1KozMuor5efO6Q/shOyyaE38V31uWMr1rHM+JjGeoo25hLmLTXlaV5XqHUmIUSv6ly0
-         +ZsTQ2o4mrr4jDtTmPLvEJEKfw6FqOJYHKIAL3ovY8wUaguyCJ8x0ADAaJrnLuh6d6Ud
-         n1Jg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699624518; x=1700229318;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=UswF9wK9RxveNOhJEzFqGZeqyG/2CbmNW7YwWxlNx9Y=;
-        b=I/o+yVMNL69iv31ZDjT+QTzrHwI1wAlBKqCoOajqv1rPpRxROTSSIgdws9wl5Q5Ukk
-         Y4RXEmusV6Ltjl8hbZlCosWnU25VctjSUenMoOfXmJ9vxU1tYJDaB5LtAv12T7yT/cYn
-         2U/04FWBH9Ohi3Lsw5mQap9DLK5iVtwLfMhaWbCvaXwtlz8+bVpMFIip31dVafk6ys7J
-         x+S3V/xNyu3hQamOKjDbr8YHsPFLbRgi6HXknh4/bbKxo/9TmBAXeFGANhPy6MRaYjH7
-         Wk9pfzxDfij4MkcWW6SFgn38M0zWiatPpRCA/e2aDcvXEY3Yz74/77yY8CLI4bkE3WPQ
-         lGpw==
-X-Gm-Message-State: AOJu0Yx5Gzj4iD8+d02Hncnp+VhgkHoIe1hEA4YQpfI044rFHLdtV3SP
-        mAkA4RiPfASJzCVc+YDv3WI=
-X-Google-Smtp-Source: AGHT+IEkxvsbJHesJxJKfEdDzxhg4FI5naEHpbkF9lSpoTT7SFYoAjys9SfU2a4kKs4y9A8VgVxhpQ==
-X-Received: by 2002:a50:c050:0:b0:543:74e6:9da2 with SMTP id u16-20020a50c050000000b0054374e69da2mr7671284edd.0.1699624517451;
-        Fri, 10 Nov 2023 05:55:17 -0800 (PST)
-Received: from orome.fritz.box (p200300e41f0fa600f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f0f:a600:f22f:74ff:fe1f:3a53])
-        by smtp.gmail.com with ESMTPSA id a2-20020a50ff02000000b0053e8f1f79afsm1165989edu.30.2023.11.10.05.55.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Nov 2023 05:55:16 -0800 (PST)
-Date:   Fri, 10 Nov 2023 14:55:15 +0100
-From:   Thierry Reding <thierry.reding@gmail.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: Re: [PATCH v2 06/13] thermal: tegra: Do not register cooling device
-Message-ID: <ZU42Qx0TbtEswEuA@orome.fritz.box>
-References: <20231012175836.3408077-1-thierry.reding@gmail.com>
- <20231012175836.3408077-7-thierry.reding@gmail.com>
- <ea6c4056-9e7c-4aa3-b207-a97436682b8e@linaro.org>
+        with ESMTP id S235774AbjKJSFU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Nov 2023 13:05:20 -0500
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E7C99EEC;
+        Fri, 10 Nov 2023 00:33:18 -0800 (PST)
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AA7gBBN011899;
+        Fri, 10 Nov 2023 08:33:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=qcppdkim1;
+ bh=0g31E2AhP85G9hfjyKxjq/sbrz0JScFMKaVi/mJsAwo=;
+ b=jDuAgLMb6c32yAx6FjS3JGSfRmlrNRsKOoCfcnRQwC0xryPBhmI3ezbjJuBTBQ3FsqJx
+ YFz00HKaP7FqQRGQ9x+Dc7mCvG9mdick2sYXrBrG1XPvwsAbegGfICSTmHXdcLB4E40i
+ /vDandvS1lusgMEsUZFRkFInmlIPV7u/gQK9GPpiFQj/kuzfZCbCVo8xno+9OJ4Dq2/j
+ L0bX/MoZVKvzXC67CGlPXHesrM5MKUUwszLdyy+NKO7ccN4jlC/ap3Y6zgZ5Sh+rxJMG
+ ndS8YjqUSynipDsCgN3wIcfM7MA1dEY7AJ9PvD34+rTprS8US6LVGD7pedmxXvAsdmEq Ww== 
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3u93tq9pes-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 10 Nov 2023 08:33:10 +0000
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3AA8XA7e016922
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 10 Nov 2023 08:33:10 GMT
+Received: from [10.217.216.47] (10.80.80.8) by nalasex01a.na.qualcomm.com
+ (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.39; Fri, 10 Nov
+ 2023 00:33:01 -0800
+Message-ID: <5b3315fe-f59b-cdf3-b980-a5a68bceb6a9@quicinc.com>
+Date:   Fri, 10 Nov 2023 14:02:58 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="2ifyYy2hSJpHxEx3"
-Content-Disposition: inline
-In-Reply-To: <ea6c4056-9e7c-4aa3-b207-a97436682b8e@linaro.org>
-User-Agent: Mutt/2.2.12 (2023-09-09)
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH RESEND v3 3/5] clk: qcom: gdsc: Add set and get hwmode
+ callbacks to switch GDSC mode
+Content-Language: en-US
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Abel Vesa <abel.vesa@linaro.org>
+CC:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        "Andy Gross" <agross@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        "Michael Turquette" <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Stanimir Varbanov <stanimir.k.varbanov@gmail.com>,
+        Vikash Garodia <quic_vgarodia@quicinc.com>,
+        Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Taniya Das <tdas@qti.qualcomm.com>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <linux-clk@vger.kernel.org>, <linux-media@vger.kernel.org>
+References: <20231101-gdsc-hwctrl-v3-0-0740ae6b2b04@linaro.org>
+ <20231101-gdsc-hwctrl-v3-3-0740ae6b2b04@linaro.org>
+ <CAA8EJpqTafxkXfAZXdTCat1VphvHUTTWe1TUjbpMvqta1Jf+Cw@mail.gmail.com>
+From:   Jagadeesh Kona <quic_jkona@quicinc.com>
+In-Reply-To: <CAA8EJpqTafxkXfAZXdTCat1VphvHUTTWe1TUjbpMvqta1Jf+Cw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: 0yWIBZBRQecYYPSMJiHBmWTOIVmjEPrP
+X-Proofpoint-ORIG-GUID: 0yWIBZBRQecYYPSMJiHBmWTOIVmjEPrP
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-11-10_04,2023-11-09_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0 mlxscore=0
+ suspectscore=0 clxscore=1015 priorityscore=1501 mlxlogscore=999
+ spamscore=0 phishscore=0 impostorscore=0 bulkscore=0 adultscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311060000 definitions=main-2311100071
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---2ifyYy2hSJpHxEx3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, Oct 13, 2023 at 05:57:13PM +0200, Daniel Lezcano wrote:
-> On 12/10/2023 19:58, Thierry Reding wrote:
-> > From: Thierry Reding <treding@nvidia.com>
-> >=20
-> > The SOCTHERM's built-in throttling mechanism doesn't map well to the
-> > concept of a cooling device because it will automatically start to
-> > throttle when the programmed temperature threshold is crossed.
-> >=20
-> > Remove the cooling device implementation and instead unconditionally
-> > program the throttling for the CPU and GPU thermal zones.
-> >=20
-> > Signed-off-by: Thierry Reding <treding@nvidia.com>
-> > ---
->=20
-> [ ... ]
->=20
-> > +	ret =3D of_property_read_u32(np, "temperature-millicelsius",
-> > +				   &stc->temperature);
-> > +	if (ret < 0)
-> > +		goto err;
-> > +
-> > +	ret =3D of_property_read_u32(np, "hysteresis-millicelsius",
-> > +				   &stc->hysteresis);
-> > +	if (ret < 0)
-> > +		goto err;
-> > +
-> > +	stc->num_zones =3D of_count_phandle_with_args(np, "nvidia,thermal-zon=
-es",
-> > +						    NULL);
-> > +	if (stc->num_zones > 0) {
-> > +		struct device_node *zone;
-> > +		unsigned int i;
-> > +
-> > +		stc->zones =3D devm_kcalloc(ts->dev, stc->num_zones, sizeof(zone),
-> > +					  GFP_KERNEL);
-> > +		if (!stc->zones)
-> > +			return -ENOMEM;
-> > +
-> > +		for (i =3D 0; i < stc->num_zones; i++) {
-> > +			zone =3D of_parse_phandle(np, "nvidia,thermal-zones", i);
-> > +			stc->zones[i] =3D zone;
-> > +		}
-> > +	}
->=20
-> What is the connection between the temperature sensor and the hardware
-> limiter?
->=20
-> I mean, one hand there is the hardware limiter which is not connected to =
-the
-> sensor neither a thermal zone and it could be self contained in a separate
-> driver. And then there is the temperature sensor.
->=20
-> The thermal zone phandle things connected with the throttling bindings
-> sounds like strange to me.
->=20
-> What prevents to split the throttling and the sensor into separate code?
+On 11/2/2023 2:58 AM, Dmitry Baryshkov wrote:
+> On Wed, 1 Nov 2023 at 11:06, Abel Vesa <abel.vesa@linaro.org> wrote:
+>>
+>> From: Jagadeesh Kona <quic_jkona@quicinc.com>
+>>
+>> Add support for set and get hwmode callbacks to switch the GDSC between
+>> SW and HW modes. Currently, the GDSC is moved to HW control mode
+>> using HW_CTRL flag and if this flag is present, GDSC is moved to HW
+>> mode as part of GDSC enable itself. The intention is to keep the
+>> HW_CTRL flag functionality as is, since many older chipsets still use
+>> this flag.
+>>
+>> Introduce a new HW_CTRL_TRIGGER flag to switch the GDSC back and forth
+>> between HW/SW modes dynamically at runtime. If HW_CTRL_TRIGGER flag is
+>> present, register set_hwmode_dev callback to switch the GDSC mode which
+>> can be invoked from consumer drivers using dev_pm_genpd_set_hwmode
+>> function. Unlike HW_CTRL flag, HW_CTRL_TRIGGER won't move the GDSC to HW
+>> control mode as part of GDSC enable itself, GDSC will be moved to HW
+>> control mode only when consumer driver explicity calls
+>> dev_pm_genpd_set_hwmode to switch to HW mode. Also add the
+>> dev_pm_genpd_get_hwmode to allow the consumers to read the actual
+>> HW/SW mode from hardware.
+> 
+> Can we add two new flags:
+> - HW_CTRL_TRIGGER
+> - DEFAULT_HW_TRIGGER
+> 
+> And then define HW_CTRL as HW_CTRL_TRIGGER | DEFAULT_HW_TRIGGER ?
+> 
+> This way older platforms will keep existing behaviour, but can
+> gradually migrate to the new callbacks?
+> 
 
-Both the temperature sensor and the hardware throttle mechanism are part
-of the same IP block, so it would be quite difficult (and unnecessary)
-to split them into separate drivers.
+Thanks Dmitry for your review,
 
-The hardware throttler uses the temperature sensor's data to initiate
-throttling automatically when certain (programmable) temperature
-thresholds are reached.
+The current usecases we have for GDSC's are either use the existing 
+HW_CTRL flag to switch the GDSC to HW mode in gdsc_enable() and back to 
+SW mode in gdsc_disable(). The second usecase is don't switch GDSC mode 
+in gdsc_enable() & gdsc_disable() at all, and switch the GDSC mode only 
+in new callbacks when consumers explicitly request it using 
+dev_pm_genpd_set_hwmode(), this can be achieved using the new 
+HW_CTRL_TRIGGER flag.
 
-The reason why we need to reference the thermal zone is because the
-registers needed to program the throttler are contained within the
-sensor group (which are effectively mapped to thermal zones).
+By defining HW_CTRL as HW_CTRL_TRIGGER | DEFAULT_HW_TRIGGER, it switches 
+the GDSC mode both in enable & disable callbacks and in new callbacks as 
+well. But we currently don't have any usecase that requires this behaviour.
 
-I suppose there are a number of other ways how this could be described.
-The thermal zones could be extended with extra information about the
-throttling, or we could use just the sensor group ID instead of a full
-phandle to reference this.
+Thanks,
+Jagadeesh
 
-I was sort of trying to keep things somewhat aligned with the concept of
-thermal zones and not rewrite the entire thing, but perhaps I should go
-back to the drawing board and think about whether there's an even better
-way to describe this in DT.
-
-Thierry
-
---2ifyYy2hSJpHxEx3
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmVONkAACgkQ3SOs138+
-s6FLgQ/+L/ArqQGbn+pd8w9dyyEkvK0jYYuf2nmQyyj/6o01UxsJoBNFREXDlBt7
-2Qwd8eHD1hTkPrphvBX1BbO03pxG/wUk7nYesjGTEKot9CdEDdIpIgx5j8CnONxu
-BYiIwOLCYiaGG46H5eEMM9fVfqNmU7zLf1zLERUEDbPNY2dpGKRRrBnsTT1KzChy
-6ynwh+Yvbtohnw3I9OFsDKRf/8y+X8aqnXFLHRf3pbiZFEIShuJFflKbwidfincl
-QY8pFOA9W3avFbykVPU6i3pH5JB6Z7D+3Xq5G92PCjcoIP0H3QRMw/Ai9PJY0FYv
-YZj8JOmHdEKJfzh0DtFICAKFdBTUzQDgZPjOcmJ9LuCDt8SLQwbiloDxuJBb8Q9j
-BsSJckkWZ4I2AcxSpgkHWYYH+uW4q4vCkRSVGpzCovUtT5Mz1zOKJeTANTbonXT5
-zKdpCDTuyNIYdzj5F5Xnw/tRf9yNBqXsc9P9gDecY7Hgsu4iAcQnUCjm5CBpDRoJ
-tTgzsfFl72WaAgLnMqSGQ6uOwFPLJM8rgsUfi0K5L3X6ufoWziz62YZGxAyTroVi
-0weQCtzTwiYoij9sem3NuLyIi0FdtQPEVCMFMuWw0TdiPDLiTDpOJlSTK24AsJQR
-r+tRXyeLmY98I1s5EoEHaLScLDBdqgBxjIlah8xQNBf3tuMlu+M=
-=XD6k
------END PGP SIGNATURE-----
-
---2ifyYy2hSJpHxEx3--
+>>
+>> Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
+>> Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+>> ---
+>>   drivers/clk/qcom/gdsc.c | 32 ++++++++++++++++++++++++++++++++
+>>   drivers/clk/qcom/gdsc.h |  1 +
+>>   2 files changed, 33 insertions(+)
+>>
+>> diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
+>> index 5358e28122ab..c763524cd5da 100644
+>> --- a/drivers/clk/qcom/gdsc.c
+>> +++ b/drivers/clk/qcom/gdsc.c
+>> @@ -363,6 +363,34 @@ static int gdsc_disable(struct generic_pm_domain *domain)
+>>          return 0;
+>>   }
+>>
+>> +static int gdsc_set_hwmode(struct generic_pm_domain *domain, struct device *dev, bool mode)
+>> +{
+>> +       struct gdsc *sc = domain_to_gdsc(domain);
+>> +
+>> +       if (sc->rsupply && !regulator_is_enabled(sc->rsupply)) {
+>> +               pr_err("Cannot set mode while parent is disabled\n");
+>> +               return -EIO;
+>> +       }
+>> +
+>> +       return gdsc_hwctrl(sc, mode);
+>> +}
+>> +
+>> +static bool gdsc_get_hwmode(struct generic_pm_domain *domain, struct device *dev)
+>> +{
+>> +       struct gdsc *sc = domain_to_gdsc(domain);
+>> +       u32 val;
+>> +       int ret;
+>> +
+>> +       ret = regmap_read(sc->regmap, sc->gdscr, &val);
+>> +       if (ret)
+>> +               return ret;
+>> +
+>> +       if (val & HW_CONTROL_MASK)
+>> +               return true;
+>> +
+>> +       return false;
+>> +}
+>> +
+>>   static int gdsc_init(struct gdsc *sc)
+>>   {
+>>          u32 mask, val;
+>> @@ -451,6 +479,10 @@ static int gdsc_init(struct gdsc *sc)
+>>                  sc->pd.power_off = gdsc_disable;
+>>          if (!sc->pd.power_on)
+>>                  sc->pd.power_on = gdsc_enable;
+>> +       if (sc->flags & HW_CTRL_TRIGGER) {
+>> +               sc->pd.set_hwmode_dev = gdsc_set_hwmode;
+>> +               sc->pd.get_hwmode_dev = gdsc_get_hwmode;
+>> +       }
+>>
+>>          ret = pm_genpd_init(&sc->pd, NULL, !on);
+>>          if (ret)
+>> diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
+>> index 803512688336..1e2779b823d1 100644
+>> --- a/drivers/clk/qcom/gdsc.h
+>> +++ b/drivers/clk/qcom/gdsc.h
+>> @@ -67,6 +67,7 @@ struct gdsc {
+>>   #define ALWAYS_ON      BIT(6)
+>>   #define RETAIN_FF_ENABLE       BIT(7)
+>>   #define NO_RET_PERIPH  BIT(8)
+>> +#define HW_CTRL_TRIGGER        BIT(9)
+>>          struct reset_controller_dev     *rcdev;
+>>          unsigned int                    *resets;
+>>          unsigned int                    reset_count;
+>>
+>> --
+>> 2.34.1
+>>
+> 
+> 
