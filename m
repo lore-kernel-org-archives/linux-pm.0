@@ -2,159 +2,138 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C608CC4167D
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Nov 2023 18:17:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42C48C4332F
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Nov 2023 18:24:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345104AbjKJSRY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Nov 2023 13:17:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57768 "EHLO
+        id S235537AbjKJSYQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Nov 2023 13:24:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36058 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345363AbjKJSPs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Nov 2023 13:15:48 -0500
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80150171B;
-        Fri, 10 Nov 2023 05:58:20 -0800 (PST)
-Received: by mail-ej1-x62d.google.com with SMTP id a640c23a62f3a-9e62b14c9eeso108572666b.2;
-        Fri, 10 Nov 2023 05:58:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1699624699; x=1700229499; darn=vger.kernel.org;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=hNjbt0EtWa2A1C+JeS9QVXzbju/y/OeX+qJLYHRr0y4=;
-        b=TMF8ZURBzTgVMbTf9asmaZtswCAe/1pIpUjReXju+AoOSQc11qdRC5l9HFnB18M6L1
-         VCsTOijD6AeLUTigjeRkiQVfMs2ndwxkYBykZNOkOJAhNnDzBmjl6wZWpvuQvpp3JBDp
-         /4HDVhB2tqLg944+gesA33ledsuNfj92DSff4PWatqWcrCQdcsF3PKd3GVT6j9Q9ujn9
-         R0IAD4qxesr+WE3mzNNK+shdGvl6J/mnxxQv46E1B9wppLGeBM3ru1zr2mFDI6hDAneg
-         X7JFhApP/7JwqMR3hQm8e3nYVmwEE+Z9xuL/dEvudELM3ExQ6EkKXH6c6M5OkXLAmXV/
-         0aDA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699624699; x=1700229499;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=hNjbt0EtWa2A1C+JeS9QVXzbju/y/OeX+qJLYHRr0y4=;
-        b=fE+jDHwfgk0gfd6uiQm8xfjm6Z2WVsGSqXZdF9ZHgBARy1UjrnGSkryvKKUySpVZX8
-         UfPZr3uHqJo59o+4mVVpAZ/ROOy5DSenqJ03Qamib/EJIDJ2o9v0zQtJcsi7PY725Vns
-         Mosdvb6iFK9qzSct4VN+WgDp7GLb0bTWF/7eP6x9lxCKXDxpHbx5xT5eraTmuzQJgZ8I
-         otII6IQX1ud53a34wxfdcjO/qQhH44OriBX+9xI+q8juLNwWcqS9YOHUYeyICGeC1Ab+
-         vqX050Kv9nscRFV8f6QrR3MTepYLxtdGsbeUDsi4d6qbAFZEg69wY9fTYgSngw8jagWa
-         3orQ==
-X-Gm-Message-State: AOJu0YxcheMQiNgprOqqPLy2yXb4ItXDZ2DGCyBCyoKGRuRteSMN9bFI
-        SKO4gdtXRXfDfx9SiuKTtn4=
-X-Google-Smtp-Source: AGHT+IGVQ1Y1WUrgKjE0Ruzh3iRLkcjv8OxVq2OuRdMai07SfdEZi65obyfpOC0335sUnZnRwKjZVA==
-X-Received: by 2002:a17:907:9802:b0:9de:32bb:fa96 with SMTP id ji2-20020a170907980200b009de32bbfa96mr7549574ejc.9.1699624698722;
-        Fri, 10 Nov 2023 05:58:18 -0800 (PST)
-Received: from orome.fritz.box (p200300e41f0fa600f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f0f:a600:f22f:74ff:fe1f:3a53])
-        by smtp.gmail.com with ESMTPSA id b4-20020a170906038400b0099bc8bd9066sm3988035eja.150.2023.11.10.05.58.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Nov 2023 05:58:18 -0800 (PST)
-Date:   Fri, 10 Nov 2023 14:58:16 +0100
-From:   Thierry Reding <thierry.reding@gmail.com>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: Re: [PATCH v2 02/13] dt-bindings: thermal: tegra: Document throttle
- temperature
-Message-ID: <ZU42-H6Lk6kOPuKS@orome.fritz.box>
-References: <20231012175836.3408077-1-thierry.reding@gmail.com>
- <20231012175836.3408077-3-thierry.reding@gmail.com>
- <20231016140249.GA2655027-robh@kernel.org>
+        with ESMTP id S235618AbjKJSXT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Nov 2023 13:23:19 -0500
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id B0E0A9EE0;
+        Fri, 10 Nov 2023 00:30:59 -0800 (PST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 73B9B106F;
+        Fri, 10 Nov 2023 00:31:43 -0800 (PST)
+Received: from [192.168.1.25] (unknown [172.31.20.19])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 221603F6C4;
+        Fri, 10 Nov 2023 00:30:51 -0800 (PST)
+Message-ID: <00ce01bf-1612-46cd-926d-ac283cfddff9@arm.com>
+Date:   Fri, 10 Nov 2023 09:30:47 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="IL1DOl7t2BE0L6Kx"
-Content-Disposition: inline
-In-Reply-To: <20231016140249.GA2655027-robh@kernel.org>
-User-Agent: Mutt/2.2.12 (2023-09-09)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 0/7] consolidate and cleanup CPU capacity
+To:     Vincent Guittot <vincent.guittot@linaro.org>,
+        linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
+        paul.walmsley@sifive.com, palmer@dabbelt.com,
+        aou@eecs.berkeley.edu, sudeep.holla@arm.com,
+        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
+        peterz@infradead.org, juri.lelli@redhat.com,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
+        viresh.kumar@linaro.org, lenb@kernel.org, robert.moore@intel.com,
+        lukasz.luba@arm.com, ionela.voinescu@arm.com,
+        beata.michalska@arm.com, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
+Cc:     conor.dooley@microchip.com, suagrfillet@gmail.com,
+        ajones@ventanamicro.com, lftan@kernel.org
+References: <20231109101438.1139696-1-vincent.guittot@linaro.org>
+Content-Language: en-US
+From:   Pierre Gondois <pierre.gondois@arm.com>
+In-Reply-To: <20231109101438.1139696-1-vincent.guittot@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+For a CPPC platform + EM/EAS (but without AMU):
+Tested-by: Pierre Gondois <pierre.gondois@arm.com>
 
---IL1DOl7t2BE0L6Kx
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Oct 16, 2023 at 09:02:49AM -0500, Rob Herring wrote:
-> On Thu, Oct 12, 2023 at 07:58:23PM +0200, Thierry Reding wrote:
-> > From: Thierry Reding <treding@nvidia.com>
-> >=20
-> > Each throttling configuration needs to specify the temperature threshold
-> > at which it should start throttling. Previously this was tied to a given
-> > trip point as a cooling device and used the temperature specified for
-> > that trip point. This doesn't work well because the throttling mechanism
-> > is not a cooling device in the traditional sense.
-> >=20
-> > Instead, allow device trees to specify the throttle temperature in the
-> > throttle configuration directly so that the throttle doesn't need to be
-> > exposed as a cooling device.
-> >=20
-> > Signed-off-by: Thierry Reding <treding@nvidia.com>
-> > ---
-> > Changes in v2:
-> > - rename temperature to temperature-millicelsius and drop $ref
-> > - add hysteresis-millicelsius property
-> >=20
-> >  .../bindings/thermal/nvidia,tegra124-soctherm.yaml | 14 ++++++++++++++
-> >  1 file changed, 14 insertions(+)
-> >=20
-> > diff --git a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-=
-soctherm.yaml b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-s=
-octherm.yaml
-> > index 04a2ba1aa946..0eb6277082fe 100644
-> > --- a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-socther=
-m.yaml
-> > +++ b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-socther=
-m.yaml
-> > @@ -121,6 +121,20 @@ properties:
-> >                # high (85%, TEGRA_SOCTHERM_THROT_LEVEL_HIGH)
-> >                - 3
-> > =20
-> > +          temperature-millicelsius:
->=20
-> 'temperature' is redundant since we have units. Perhaps=20
-> 'throttle-millicelsius' or 'auto-throttle-millicelsius' instead to say=20
-> what the temperature is for.
-
-Okay, will do.
-
->=20
-> > +            minimum: -273000
-> > +            maximum: 200000
->=20
-> Quite impressive operating range.
-
-Yeah, I don't actually know where these come from. Looking at the manual
-these sensors are actually limited to -127=C2=B0C - 127=C2=B0C. I'll fix th=
-at up.
-
-Thierry
-
---IL1DOl7t2BE0L6Kx
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmVONvgACgkQ3SOs138+
-s6Fqfg//Wrvd1xbopW4sXoP86ueodfIy1oZbQEWuPK1X0QLTbougyvBWkAu0qFmS
-ztxjspB29ruwaGAYju4ShhMuORc+4W8co5TIpmGZUXrtHzzNGaIxqlmYbypsQQGR
-JlOrOdui73QlAkyV/Avu5s+UQ1CP+7t2Nlx5iTVJECygoF/msZQ05K0iRrl2J3B4
-/KNMecnCoosxnQz5baPVfWPqOqjMtGStwcBqOh/LOlToYn7JLV5VJDRFLDH3vTY5
-mSk4jij0pMo+RLmKQZwIYUwKN/kITXLZ9k/Toy7nfnvT/ScJCXwBaK5e4beGLNDf
-s+OPGn4IVZixIsMb87lJsZeMFslHm4qwuPhEUEYjFYzUvfryVE4A8xowsINLQ9D5
-C9MMr2grhQ/hpTpuFRfWD0r7Eo7nB/fJYFNiWidCb7WhLpEfa9fIjJGa12ivbQzE
-5ywBHAG1cmil0kXCRfYxzr3Aa9VuQ6UA52mEGXtmuxH1PfNzjP/CH0U9w+U62F6m
-sQdu3tCFZj0w4IWFUZ5ripF3sRtKwBu/xaDCMy+K92ThnHv1q24QrqR05pueniwJ
-XSDbsB9TOBNmTdVaUkn/JVXtH16C5ko+Jgzdgn6ElKtguV0UwfbZNpXRX+uwDkmE
-w4uuQcP/wP2tCP8IWiLWxkgjgkfSH+OoqxywPXfMjvV4diSbjCg=
-=cB6H
------END PGP SIGNATURE-----
-
---IL1DOl7t2BE0L6Kx--
+On 11/9/23 11:14, Vincent Guittot wrote:
+> This is the 1st part of consolidating how the max compute capacity is
+> used in the scheduler and how we calculate the frequency for a level of
+> utilization.
+> 
+> Fix some unconsistancy when computing frequency for an utilization. There
+> can be a mismatch between energy model and schedutil.
+> 
+> Next step will be to make a difference between the original
+> max compute capacity of a CPU and what is currently available when
+> there is a capping applying forever (i.e. seconds or more).
+> 
+> Changes since v5:
+> - remove useless return in freq_inv_set_max_ratio()
+> - Add tags
+> 
+> Changes since v4:
+> - Capitalize the verb in subject
+> - Remove usless parentheses in cppc_get_dmi_max_khz()
+> - Use freq_ref pattern everywhere
+> - Fix MHz / kHz units conversion for cppc_cpufreq
+> - Move default definition of arch_scale_freq_ref() in
+>    include/linux/sched/topology.h beside arch_scale_cpu_capacity
+>    which faces similar default declaration behavior. This location covers
+>    all cases with arch and CONFIG_* which was not the case with previous
+>    attempts.
+> 
+> Changes since v3:
+> - Split patch 5 cpufreq/cppc
+> - Fix topology_init_cpu_capacity_cppc()
+> - Fix init if AMU ratio
+> - Added some tags
+> 
+> Changes since v2:
+> - Remove the 1st patch which has been queued in tip
+> - Rework how to initialize the reference frequency for cppc_cpufreq and
+>    change topology_init_cpu_capacity_cppc() to also set capacity_ref_freq
+> - Add a RFC to convert AMU to use arch_scale_freq_ref and move the config
+>    of the AMU ratio to be done when intializing cpu capacity and
+>    capacity_ref_freq
+> - Added some tags
+> 
+> Changes since v1:
+> - Fix typos
+> - Added changes in cpufreq to use arch_scale_freq_ref() when calling
+>    arch_set_freq_scale (patch 3).
+> - arch_scale_freq_ref() is always defined and returns 0 (as proposed
+>    by Ionela) when not defined by the arch. This simplifies the code with
+>    the addition of patch 3.
+> - Simplify Energy Model which always uses arch_scale_freq_ref(). The
+>    latter returns 0 when not defined by arch instead of last item of the
+>    perf domain. This is not a problem because the function is only defined
+>    for compilation purpose in this case and we don't care about the
+>    returned value. (patch 5)
+> - Added changes in cppc cpufreq to set capacity_ref_freq (patch 6)
+> - Added reviewed tag for patch 1 which got a minor change but not for
+>    others as I did some changes which could make previous reviewed tag
+>    no more relevant.
+> 
+> Vincent Guittot (7):
+>    topology: Add a new arch_scale_freq_reference
+>    cpufreq: Use the fixed and coherent frequency for scaling capacity
+>    cpufreq/schedutil: Use a fixed reference frequency
+>    energy_model: Use a fixed reference frequency
+>    cpufreq/cppc: Move and rename cppc_cpufreq_{perf_to_khz|khz_to_perf}
+>    cpufreq/cppc: Set the frequency used for computing the capacity
+>    arm64/amu: Use capacity_ref_freq to set AMU ratio
+> 
+>   arch/arm/include/asm/topology.h   |   1 +
+>   arch/arm64/include/asm/topology.h |   1 +
+>   arch/arm64/kernel/topology.c      |  26 +++---
+>   arch/riscv/include/asm/topology.h |   1 +
+>   drivers/acpi/cppc_acpi.c          | 104 ++++++++++++++++++++++
+>   drivers/base/arch_topology.c      |  56 ++++++++----
+>   drivers/cpufreq/cppc_cpufreq.c    | 139 ++++--------------------------
+>   drivers/cpufreq/cpufreq.c         |   4 +-
+>   include/acpi/cppc_acpi.h          |   2 +
+>   include/linux/arch_topology.h     |   8 ++
+>   include/linux/cpufreq.h           |   1 +
+>   include/linux/energy_model.h      |   6 +-
+>   include/linux/sched/topology.h    |   8 ++
+>   kernel/sched/cpufreq_schedutil.c  |  26 +++++-
+>   14 files changed, 224 insertions(+), 159 deletions(-)
+> 
