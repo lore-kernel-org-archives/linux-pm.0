@@ -2,43 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5058FC4332F
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Nov 2023 10:08:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 983E5C07533
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Nov 2023 10:08:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229697AbjKNKIO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Nov 2023 05:08:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59968 "EHLO
+        id S232480AbjKNKIQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Nov 2023 05:08:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60004 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230045AbjKNKIN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2023 05:08:13 -0500
+        with ESMTP id S232435AbjKNKIP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2023 05:08:15 -0500
 Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BCD83197;
-        Tue, 14 Nov 2023 02:08:08 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 02565191;
+        Tue, 14 Nov 2023 02:08:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=kernkonzept.com; s=mx1; h=Cc:To:Content-Transfer-Encoding:Content-Type:
-        MIME-Version:Message-Id:Date:Subject:From:References:In-Reply-To:Reply-To:
-        Content-ID:Content-Description;
-        bh=lnb08R9HF7IxaFru8lvv0AlBanwWuzGilxFh5qu9Cgw=; b=B0lhctY9wEXw5rPpcquomTcVF5
-        imyojfw0Xtm+P2Ztw3e/0xTHGJOAnaC8INQ7wQz9TUoMGxg6inziLUeex2+lXQ9MxbDhAAVheChgb
-        BRfKAVefFGp2feYWZTt56ncPQyvBVv33kpnf3pnb0yMhR9pIOW6a8Naz1xDXUPDD0se5JN8qA/d4p
-        iWuZeJjorEsCM0CEjVe/UnoP/eZ7gryqPihbU7v3zzjJl1LTOBLAZvcqP1FycL1+bCu8o4xE6WWGm
-        SKZQHkTg0jOCkppU767cDeqVQ7LQrK1WR4PnR4B6W1Jk8RQV0/ehYkDVqxOqiEF3SlsoqBpnkON/D
-        ZXuJZPAw==;
+        d=kernkonzept.com; s=mx1; h=Cc:To:In-Reply-To:References:Message-Id:
+        Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:
+        Reply-To:Content-ID:Content-Description;
+        bh=U1jqULllO9yyumvw2SGWYMHOTDF/1W4JaEKNAJ5zL9g=; b=UxxEL2jHHreKo90GBCCSwoWIWo
+        BK0IvKT7BIo8AvjH9p+jhGpnag+bgSLKbojRzqF++uxhYAp66MHtkhCBqCFHJAoR0jDypw2tC/j8z
+        OtPyf5iendwiO82EXogfOWJMVcK+fRsVA+ZPNGw3nit6MreWLBtelCw1aUIGKdqlkAQTSoFHHg3Dl
+        48lLbp5ntWDSzBdEPo0ufpzbKVwRQv9dlSzBIijDnqG/RALi6Cs4jT4V/89/uNEc81eq9UxzciBIo
+        uHzm0n4sMaYjfLW4zYbvuNem0tldizO36ls4ytVh0Gz3uSXlaNc/5gm+WsMcOIyByYlf29JH1MqGi
+        3wA1ytrg==;
 Received: from [10.22.3.24] (helo=serv1.dd1.int.kernkonzept.com)
         by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.96)
-        id 1r2qKx-0050az-2v;
-        Tue, 14 Nov 2023 11:08:03 +0100
+        id 1r2qL2-0050az-0X;
+        Tue, 14 Nov 2023 11:08:08 +0100
 From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Subject: [PATCH v3 0/3] cpufreq: qcom-nvmem: Fix power domain scaling
-Date:   Tue, 14 Nov 2023 11:07:42 +0100
-Message-Id: <20231114-msm8909-cpufreq-v3-0-926097a6e5c1@kernkonzept.com>
+Date:   Tue, 14 Nov 2023 11:07:44 +0100
+Subject: [PATCH v3 2/3] cpufreq: qcom-nvmem: Preserve PM domain votes in
+ system suspend
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAO9GU2UC/2XNTQ6CMBCG4auQrq3pDxTqynsYF9JOpSG02GKjE
- u5uIcYNy/dL5pkZRQgWIjoVMwqQbLTe5eCHAqnu5u6Arc6NGGGcSCLwEIdGEonV+DQBHlgbw3i
- jQRrDUb4aAxj72sTLNXdn4+TDe3uQ6Lr+LMp2VqKY4FrUCoRoq7Jszz0E13v3gXE6Kj+gVUzsr
- 1BCm73CskKkYNrIyoiq3CvLsnwBczAyCfoAAAA=
+Message-Id: <20231114-msm8909-cpufreq-v3-2-926097a6e5c1@kernkonzept.com>
+References: <20231114-msm8909-cpufreq-v3-0-926097a6e5c1@kernkonzept.com>
+In-Reply-To: <20231114-msm8909-cpufreq-v3-0-926097a6e5c1@kernkonzept.com>
 To:     Viresh Kumar <viresh.kumar@linaro.org>,
         Ulf Hansson <ulf.hansson@linaro.org>
 Cc:     Andy Gross <agross@kernel.org>,
@@ -51,62 +50,111 @@ Cc:     Andy Gross <agross@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
         devicetree@vger.kernel.org, Stephan Gerhold <stephan@gerhold.net>,
-        Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
-        stable@vger.kernel.org
+        Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 X-Mailer: b4 0.12.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The power domain scaling setup for QCS404 and MSM8909 in
-cpufreq-com-nvmem does not work correctly at the moment because the
-genpd core ignores all the performance state votes that are specified in
-the CPU OPP table. This happens because nothing in the driver makes the
-genpd core aware that the power domains are actively being consumed by
-the CPU.
+From the Linux point of view, the power domains used by the CPU must
+stay always-on. This is because we still need the CPU to keep running
+until the last instruction, which will typically be a firmware call that
+shuts down the CPU cleanly.
 
-Fix this by marking the devices as runtime active. Also mark the devices
-to be in the "awake path" during system suspend so that performance
-state votes necessary for the CPU are preserved during system suspend.
+At the moment the power domain votes (enable + performance state) are
+dropped during system suspend, which means the CPU could potentially
+malfunction while entering suspend.
 
-While all the patches in this series are needed for full functionality,
-the cpufreq and pmdomain patches can be merged independently. There is
-no compile-time dependency between those two.
+We need to distinguish between two different setups used with
+qcom-cpufreq-nvmem:
+
+ 1. CPR power domain: The backing regulator used by CPR should stay
+    always-on in Linux; it is typically disabled automatically by
+    hardware when the CPU enters a deep idle state. However, we
+    should pause the CPR state machine during system suspend.
+
+ 2. RPMPD: The power domains used by the CPU should stay always-on
+    in Linux (also across system suspend). The CPU typically only
+    uses the *_AO ("active-only") variants of the power domains in
+    RPMPD. For those, the RPM firmware will automatically drop
+    the votes internally when the CPU enters a deep idle state.
+
+Make this work correctly by calling device_set_awake_path() on the
+virtual genpd devices, so that the votes are maintained across system
+suspend. The power domain drivers need to set GENPD_FLAG_ACTIVE_WAKEUP
+to opt into staying on during system suspend.
+
+For now we only set this for the RPMPD case. For CPR, not setting it
+will ensure the state machine is still paused during system suspend,
+while the backing regulator will stay on with "regulator-always-on".
 
 Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 ---
-Changes in v3:
-- Drop patches with MSM8909 definitions that were applied already
-- Add extra patch to fix system suspend properly by using
-  device_set_awake_path() instead of dev_pm_syscore_device()
-- Set GENPD_FLAG_ACTIVE_WAKEUP for rpmpd so that performance state votes
-  needed by the CPU are preserved during suspend
-- Link to v2: https://lore.kernel.org/r/20231018-msm8909-cpufreq-v2-0-0962df95f654@kernkonzept.com
-
-Changes in v2:
-- Reword commit messages based on discussion with Uffe
-- Use generic power domain name "perf" (Uffe)
-- Fix pm_runtime error handling (Uffe)
-- Add allocation cleanup patch as preparation
-- Fix ordering of qcom,msm8909 compatible (Konrad)
-- cpufreq-dt-platdev blocklist/dt-bindings patches were applied already
-- Link to v1: https://lore.kernel.org/r/20230912-msm8909-cpufreq-v1-0-767ce66b544b@kernkonzept.com
-
+This patch can be merged independently from the pmdomain one for RPMPD.
+Both are needed to actually preserve the votes during system suspend but
+there is no compile-time dependency.
 ---
-Stephan Gerhold (3):
-      cpufreq: qcom-nvmem: Enable virtual power domain devices
-      cpufreq: qcom-nvmem: Preserve PM domain votes in system suspend
-      pmdomain: qcom: rpmpd: Set GENPD_FLAG_ACTIVE_WAKEUP
+ drivers/cpufreq/qcom-cpufreq-nvmem.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
- drivers/cpufreq/qcom-cpufreq-nvmem.c | 73 ++++++++++++++++++++++++++++++++++--
- drivers/pmdomain/qcom/rpmpd.c        |  1 +
- 2 files changed, 71 insertions(+), 3 deletions(-)
----
-base-commit: b85ea95d086471afb4ad062012a4d73cd328fa86
-change-id: 20230906-msm8909-cpufreq-dff238de9ff3
+diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+index d239a45ed497..ea05d9d67490 100644
+--- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
++++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+@@ -23,6 +23,7 @@
+ #include <linux/nvmem-consumer.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
++#include <linux/pm.h>
+ #include <linux/pm_domain.h>
+ #include <linux/pm_opp.h>
+ #include <linux/pm_runtime.h>
+@@ -426,6 +427,18 @@ static const struct qcom_cpufreq_match_data match_data_ipq8074 = {
+ 	.get_version = qcom_cpufreq_ipq8074_name_version,
+ };
+ 
++static void qcom_cpufreq_suspend_virt_devs(struct qcom_cpufreq_drv *drv, unsigned int cpu)
++{
++	const char * const *name = drv->data->genpd_names;
++	int i;
++
++	if (!drv->cpus[cpu].virt_devs)
++		return;
++
++	for (i = 0; *name; i++, name++)
++		device_set_awake_path(drv->cpus[cpu].virt_devs[i]);
++}
++
+ static void qcom_cpufreq_put_virt_devs(struct qcom_cpufreq_drv *drv, unsigned int cpu)
+ {
+ 	const char * const *name = drv->data->genpd_names;
+@@ -578,11 +591,25 @@ static void qcom_cpufreq_remove(struct platform_device *pdev)
+ 	}
+ }
+ 
++static int qcom_cpufreq_suspend(struct device *dev)
++{
++	struct qcom_cpufreq_drv *drv = dev_get_drvdata(dev);
++	unsigned int cpu;
++
++	for_each_possible_cpu(cpu)
++		qcom_cpufreq_suspend_virt_devs(drv, cpu);
++
++	return 0;
++}
++
++static DEFINE_SIMPLE_DEV_PM_OPS(qcom_cpufreq_pm_ops, qcom_cpufreq_suspend, NULL);
++
+ static struct platform_driver qcom_cpufreq_driver = {
+ 	.probe = qcom_cpufreq_probe,
+ 	.remove_new = qcom_cpufreq_remove,
+ 	.driver = {
+ 		.name = "qcom-cpufreq-nvmem",
++		.pm = pm_sleep_ptr(&qcom_cpufreq_pm_ops),
+ 	},
+ };
+ 
 
-Best regards,
 -- 
-Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Kernkonzept GmbH at Dresden, Germany, HRB 31129, CEO Dr.-Ing. Michael Hohmuth
+2.39.2
 
