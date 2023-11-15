@@ -2,117 +2,194 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF9E1C55825
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Nov 2023 15:02:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 565B7C072A2
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Nov 2023 16:48:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344336AbjKOPCr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Nov 2023 10:02:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58130 "EHLO
+        id S229511AbjKOQsS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Nov 2023 11:48:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43114 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344328AbjKOPCq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2023 10:02:46 -0500
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 558AD125;
-        Wed, 15 Nov 2023 07:02:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1700060564; x=1731596564;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=QEUjGSpL6orxUQ+6h440g1bWRxTgIYCOricGGKyI/i0=;
-  b=mRf2JVv/6lKjkrUMprUb+9QbhI2c+dcpQdy6EV+xXturYQThoGfgx14Z
-   x3Dqc3WuXtvRata1z6DU9nFOyRUBvx2ukIzYlhc29IfNqFIK5IL9xYN+Y
-   g6VK/f71BQtaCWQUf3qgZnb/WMV7Y/THKQ6qvonLJvklcW2ij7MaBc7BC
-   u3hOP/tP5bOMSrJ4KxKAqPi2M8ek3Ik4FUsdrbgdDCbkXWDqi9e4m0JtN
-   pjdymC2JodghFwZ8QxLMWtsujfXOM7zvbxR7SUEGc4nl9o8P7l8HeYYRE
-   RhZAl1hTDg4n8BRllWIUbbtLcjBhkVDlTAtRyncihAKi1mniOcLVGlYxG
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10895"; a="3970790"
-X-IronPort-AV: E=Sophos;i="6.03,305,1694761200"; 
-   d="scan'208";a="3970790"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Nov 2023 07:02:26 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.03,305,1694761200"; 
-   d="scan'208";a="6195338"
-Received: from lkp-server02.sh.intel.com (HELO b8de5498638e) ([10.239.97.151])
-  by orviesa002.jf.intel.com with ESMTP; 15 Nov 2023 07:02:23 -0800
-Received: from kbuild by b8de5498638e with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1r3HPI-0000Qr-0D;
-        Wed, 15 Nov 2023 15:02:20 +0000
-Date:   Wed, 15 Nov 2023 23:01:56 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>, rafael@kernel.org
-Cc:     oe-kbuild-all@lists.linux.dev, daniel.lezcano@linaro.org,
-        rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel@collabora.com,
-        wenst@chromium.org,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-Subject: Re: [PATCH] thermal: Add support for device tree thermal zones
- consumers
-Message-ID: <202311152213.NNF5X5wd-lkp@intel.com>
-References: <20231114131514.89031-1-angelogioacchino.delregno@collabora.com>
+        with ESMTP id S229497AbjKOQsS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2023 11:48:18 -0500
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61ADD9C;
+        Wed, 15 Nov 2023 08:48:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=MIME-Version:Content-Type:Date:Cc:To:
+        From:Subject:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+        Content-Description:In-Reply-To:References;
+        bh=/m64+VL59bE7XoXu9zT2zewLDEhVyoNiu2reFj9BKi0=; b=tjOGqrvUvDMw8pvoWHT1g40V0T
+        +rDrZXm6gZ1LEqfRHYoZXR97sqpTkI9VQwHZwrkQcN5XIs0s9my7JXFoDJg1S+P+m/Ey1BiDYyztN
+        WZuS3v8Bdrfx4xEEGwRJuvNH2FYV+4m9h/eGBzcKktrSf1R31dZjp+3coZZH4QBXTf6O0qS6mdyoc
+        da4XH8fKJNhRMef/J4Q+FGy0q5SSj3mnzJBXCRuq/nmEXh7ang29URTp9WwadCBLhrIx5pRWhBHl/
+        0dFM317e1QI4jPAFQPph+7XvFbcvM9Zt84chKz5Rj+4MJbbN4nFQ3kRx0bGRTJeEik1uaPYmsuwTC
+        0+FuNr+A==;
+Received: from [12.186.190.1] (helo=u3832b3a9db3152.ant.amazon.com)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1r3J3S-00FIjM-I1; Wed, 15 Nov 2023 16:47:54 +0000
+Message-ID: <a5f86bcf03b2ed809245d57f5971ae42a8b85128.camel@infradead.org>
+Subject: [PATCH]  PM: tools: Fix sleepgraph syntax error
+From:   David Woodhouse <dwmw2@infradead.org>
+To:     Len Brown <lenb@kernel.org>,
+        Todd E Brandt <todd.e.brandt@linux.intel.com>,
+        Xueqin Luo <luoxueqin@kylinos.cn>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc:     linux-pm <linux-pm@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Date:   Wed, 15 Nov 2023 11:47:51 -0500
+Content-Type: multipart/signed; micalg="sha-256"; protocol="application/pkcs7-signature";
+        boundary="=-+lKzRdjWpPAdi9zcnwFB"
+User-Agent: Evolution 3.44.4-0ubuntu2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231114131514.89031-1-angelogioacchino.delregno@collabora.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi AngeloGioacchino,
 
-kernel test robot noticed the following build errors:
+--=-+lKzRdjWpPAdi9zcnwFB
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-[auto build test ERROR on rafael-pm/thermal]
-[also build test ERROR on linus/master v6.7-rc1 next-20231115]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+From: David Woodhouse <dwmw@amazon.co.uk>
 
-url:    https://github.com/intel-lab-lkp/linux/commits/AngeloGioacchino-Del-Regno/thermal-Add-support-for-device-tree-thermal-zones-consumers/20231114-211656
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal
-patch link:    https://lore.kernel.org/r/20231114131514.89031-1-angelogioacchino.delregno%40collabora.com
-patch subject: [PATCH] thermal: Add support for device tree thermal zones consumers
-config: arm-randconfig-004-20231115 (https://download.01.org/0day-ci/archive/20231115/202311152213.NNF5X5wd-lkp@intel.com/config)
-compiler: arm-linux-gnueabi-gcc (GCC) 13.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231115/202311152213.NNF5X5wd-lkp@intel.com/reproduce)
+The sleepgraph tool currently fails:
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202311152213.NNF5X5wd-lkp@intel.com/
+  File "/usr/bin/sleepgraph", line 4155
+    or re.match('psci: CPU(?P<cpu>[0-9]*) killed.*', msg)):
+                                                         ^
+SyntaxError: unmatched ')'
 
-All errors (new ones prefixed by >>):
+Fixes: 34ea427e01ea ("PM: tools: sleepgraph: Recognize "CPU killed" message=
+s")
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 
-   arm-linux-gnueabi-ld: drivers/power/supply/power_supply_core.o: in function `thermal_of_get_zone_by_index':
->> power_supply_core.c:(.text+0x167c): multiple definition of `thermal_of_get_zone_by_index'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5a4): first defined here
-   arm-linux-gnueabi-ld: drivers/power/supply/power_supply_core.o: in function `thermal_of_get_zone':
->> power_supply_core.c:(.text+0x1684): multiple definition of `thermal_of_get_zone'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5ac): first defined here
-   arm-linux-gnueabi-ld: drivers/hwmon/hwmon.o: in function `thermal_of_get_zone_by_index':
-   hwmon.c:(.text+0x9cc): multiple definition of `thermal_of_get_zone_by_index'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5a4): first defined here
-   arm-linux-gnueabi-ld: drivers/hwmon/hwmon.o: in function `thermal_of_get_zone':
-   hwmon.c:(.text+0x9d4): multiple definition of `thermal_of_get_zone'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5ac): first defined here
-   arm-linux-gnueabi-ld: drivers/hwmon/tc654.o: in function `thermal_of_get_zone_by_index':
-   tc654.c:(.text+0x5c8): multiple definition of `thermal_of_get_zone_by_index'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5a4): first defined here
-   arm-linux-gnueabi-ld: drivers/hwmon/tc654.o: in function `thermal_of_get_zone':
-   tc654.c:(.text+0x5d0): multiple definition of `thermal_of_get_zone'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5ac): first defined here
-   arm-linux-gnueabi-ld: drivers/hwmon/mlxreg-fan.o: in function `thermal_of_get_zone_by_index':
-   mlxreg-fan.c:(.text+0x3f0): multiple definition of `thermal_of_get_zone_by_index'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5a4): first defined here
-   arm-linux-gnueabi-ld: drivers/hwmon/mlxreg-fan.o: in function `thermal_of_get_zone':
-   mlxreg-fan.c:(.text+0x3f8): multiple definition of `thermal_of_get_zone'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5ac): first defined here
-   arm-linux-gnueabi-ld: drivers/hwmon/pwm-fan.o: in function `thermal_of_get_zone_by_index':
-   pwm-fan.c:(.text+0x9c): multiple definition of `thermal_of_get_zone_by_index'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5a4): first defined here
-   arm-linux-gnueabi-ld: drivers/hwmon/pwm-fan.o: in function `thermal_of_get_zone':
-   pwm-fan.c:(.text+0xa4): multiple definition of `thermal_of_get_zone'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5ac): first defined here
-   arm-linux-gnueabi-ld: drivers/cpufreq/cpufreq.o: in function `thermal_of_get_zone_by_index':
-   cpufreq.c:(.text+0x1a7c): multiple definition of `thermal_of_get_zone_by_index'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5a4): first defined here
-   arm-linux-gnueabi-ld: drivers/cpufreq/cpufreq.o: in function `thermal_of_get_zone':
-   cpufreq.c:(.text+0x1a84): multiple definition of `thermal_of_get_zone'; drivers/soc/qcom/qcom_aoss.o:qcom_aoss.c:(.text+0x5ac): first defined here
+diff --git a/tools/power/pm-graph/sleepgraph.py b/tools/power/pm-graph/slee=
+pgraph.py
+index 4a356a706785..40ad221e8881 100755
+--- a/tools/power/pm-graph/sleepgraph.py
++++ b/tools/power/pm-graph/sleepgraph.py
+@@ -4151,7 +4151,7 @@ def parseKernelLog(data):
+ 			elif(re.match('Enabling non-boot CPUs .*', msg)):
+ 				# start of first cpu resume
+ 				cpu_start =3D ktime
+-			elif(re.match('smpboot: CPU (?P<cpu>[0-9]*) is now offline', msg)) \
++			elif(re.match('smpboot: CPU (?P<cpu>[0-9]*) is now offline', msg) \
+ 				or re.match('psci: CPU(?P<cpu>[0-9]*) killed.*', msg)):
+ 				# end of a cpu suspend, start of the next
+ 				m =3D re.match('smpboot: CPU (?P<cpu>[0-9]*) is now offline', msg)
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+
+--=-+lKzRdjWpPAdi9zcnwFB
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Transfer-Encoding: base64
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCCEkQw
+ggYQMIID+KADAgECAhBNlCwQ1DvglAnFgS06KwZPMA0GCSqGSIb3DQEBDAUAMIGIMQswCQYDVQQG
+EwJVUzETMBEGA1UECBMKTmV3IEplcnNleTEUMBIGA1UEBxMLSmVyc2V5IENpdHkxHjAcBgNVBAoT
+FVRoZSBVU0VSVFJVU1QgTmV0d29yazEuMCwGA1UEAxMlVVNFUlRydXN0IFJTQSBDZXJ0aWZpY2F0
+aW9uIEF1dGhvcml0eTAeFw0xODExMDIwMDAwMDBaFw0zMDEyMzEyMzU5NTlaMIGWMQswCQYDVQQG
+EwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVyMRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYD
+VQQKEw9TZWN0aWdvIExpbWl0ZWQxPjA8BgNVBAMTNVNlY3RpZ28gUlNBIENsaWVudCBBdXRoZW50
+aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC
+AQEAyjztlApB/975Rrno1jvm2pK/KxBOqhq8gr2+JhwpKirSzZxQgT9tlC7zl6hn1fXjSo5MqXUf
+ItMltrMaXqcESJuK8dtK56NCSrq4iDKaKq9NxOXFmqXX2zN8HHGjQ2b2Xv0v1L5Nk1MQPKA19xeW
+QcpGEGFUUd0kN+oHox+L9aV1rjfNiCj3bJk6kJaOPabPi2503nn/ITX5e8WfPnGw4VuZ79Khj1YB
+rf24k5Ee1sLTHsLtpiK9OjG4iQRBdq6Z/TlVx/hGAez5h36bBJMxqdHLpdwIUkTqT8se3ed0PewD
+ch/8kHPo5fZl5u1B0ecpq/sDN/5sCG52Ds+QU5O5EwIDAQABo4IBZDCCAWAwHwYDVR0jBBgwFoAU
+U3m/WqorSs9UgOHYm8Cd8rIDZsswHQYDVR0OBBYEFAnA8vwL2pTbX/4r36iZQs/J4K0AMA4GA1Ud
+DwEB/wQEAwIBhjASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEF
+BQcDBDARBgNVHSAECjAIMAYGBFUdIAAwUAYDVR0fBEkwRzBFoEOgQYY/aHR0cDovL2NybC51c2Vy
+dHJ1c3QuY29tL1VTRVJUcnVzdFJTQUNlcnRpZmljYXRpb25BdXRob3JpdHkuY3JsMHYGCCsGAQUF
+BwEBBGowaDA/BggrBgEFBQcwAoYzaHR0cDovL2NydC51c2VydHJ1c3QuY29tL1VTRVJUcnVzdFJT
+QUFkZFRydXN0Q0EuY3J0MCUGCCsGAQUFBzABhhlodHRwOi8vb2NzcC51c2VydHJ1c3QuY29tMA0G
+CSqGSIb3DQEBDAUAA4ICAQBBRHUAqznCFfXejpVtMnFojADdF9d6HBA4kMjjsb0XMZHztuOCtKF+
+xswhh2GqkW5JQrM8zVlU+A2VP72Ky2nlRA1GwmIPgou74TZ/XTarHG8zdMSgaDrkVYzz1g3nIVO9
+IHk96VwsacIvBF8JfqIs+8aWH2PfSUrNxP6Ys7U0sZYx4rXD6+cqFq/ZW5BUfClN/rhk2ddQXyn7
+kkmka2RQb9d90nmNHdgKrwfQ49mQ2hWQNDkJJIXwKjYA6VUR/fZUFeCUisdDe/0ABLTI+jheXUV1
+eoYV7lNwNBKpeHdNuO6Aacb533JlfeUHxvBz9OfYWUiXu09sMAviM11Q0DuMZ5760CdO2VnpsXP4
+KxaYIhvqPqUMWqRdWyn7crItNkZeroXaecG03i3mM7dkiPaCkgocBg0EBYsbZDZ8bsG3a08LwEsL
+1Ygz3SBsyECa0waq4hOf/Z85F2w2ZpXfP+w8q4ifwO90SGZZV+HR/Jh6rEaVPDRF/CEGVqR1hiuQ
+OZ1YL5ezMTX0ZSLwrymUE0pwi/KDaiYB15uswgeIAcA6JzPFf9pLkAFFWs1QNyN++niFhsM47qod
+x/PL+5jR87myx5uYdBEQkkDc+lKB1Wct6ucXqm2EmsaQ0M95QjTmy+rDWjkDYdw3Ms6mSWE3Bn7i
+5ZgtwCLXgAIe5W8mybM2JzCCBhQwggT8oAMCAQICEQDGvhmWZ0DEAx0oURL6O6l+MA0GCSqGSIb3
+DQEBCwUAMIGWMQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVyMRAwDgYD
+VQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxPjA8BgNVBAMTNVNlY3RpZ28g
+UlNBIENsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBMB4XDTIyMDEwNzAw
+MDAwMFoXDTI1MDEwNjIzNTk1OVowJDEiMCAGCSqGSIb3DQEJARYTZHdtdzJAaW5mcmFkZWFkLm9y
+ZzCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBALQ3GpC2bomUqk+91wLYBzDMcCj5C9m6
+oZaHwvmIdXftOgTbCJXADo6G9T7BBAebw2JV38EINgKpy/ZHh7htyAkWYVoFsFPrwHounto8xTsy
+SSePMiPlmIdQ10BcVSXMUJ3Juu16GlWOnAMJY2oYfEzmE7uT9YgcBqKCo65pTFmOnR/VVbjJk4K2
+xE34GC2nAdUQkPFuyaFisicc6HRMOYXPuF0DuwITEKnjxgNjP+qDrh0db7PAjO1D4d5ftfrsf+kd
+RR4gKVGSk8Tz2WwvtLAroJM4nXjNPIBJNT4w/FWWc/5qPHJy2U+eITZ5LLE5s45mX2oPFknWqxBo
+bQZ8a9dsZ3dSPZBvE9ZrmtFLrVrN4eo1jsXgAp1+p7bkfqd3BgBEmfsYWlBXO8rVXfvPgLs32VdV
+NZxb/CDWPqBsiYv0Hv3HPsz07j5b+/cVoWqyHDKzkaVbxfq/7auNVRmPB3v5SWEsH8xi4Bez2V9U
+KxfYCnqsjp8RaC2/khxKt0A552Eaxnz/4ly/2C7wkwTQnBmdlFYhAflWKQ03Ufiu8t3iBE3VJbc2
+5oMrglj7TRZrmKq3CkbFnX0fyulB+kHimrt6PIWn7kgyl9aelIl6vtbhMA+l0nfrsORMa4kobqQ5
+C5rveVgmcIad67EDa+UqEKy/GltUwlSh6xy+TrK1tzDvAgMBAAGjggHMMIIByDAfBgNVHSMEGDAW
+gBQJwPL8C9qU21/+K9+omULPyeCtADAdBgNVHQ4EFgQUzMeDMcimo0oz8o1R1Nver3ZVpSkwDgYD
+VR0PAQH/BAQDAgWgMAwGA1UdEwEB/wQCMAAwHQYDVR0lBBYwFAYIKwYBBQUHAwQGCCsGAQUFBwMC
+MEAGA1UdIAQ5MDcwNQYMKwYBBAGyMQECAQEBMCUwIwYIKwYBBQUHAgEWF2h0dHBzOi8vc2VjdGln
+by5jb20vQ1BTMFoGA1UdHwRTMFEwT6BNoEuGSWh0dHA6Ly9jcmwuc2VjdGlnby5jb20vU2VjdGln
+b1JTQUNsaWVudEF1dGhlbnRpY2F0aW9uYW5kU2VjdXJlRW1haWxDQS5jcmwwgYoGCCsGAQUFBwEB
+BH4wfDBVBggrBgEFBQcwAoZJaHR0cDovL2NydC5zZWN0aWdvLmNvbS9TZWN0aWdvUlNBQ2xpZW50
+QXV0aGVudGljYXRpb25hbmRTZWN1cmVFbWFpbENBLmNydDAjBggrBgEFBQcwAYYXaHR0cDovL29j
+c3Auc2VjdGlnby5jb20wHgYDVR0RBBcwFYETZHdtdzJAaW5mcmFkZWFkLm9yZzANBgkqhkiG9w0B
+AQsFAAOCAQEAyW6MUir5dm495teKqAQjDJwuFCi35h4xgnQvQ/fzPXmtR9t54rpmI2TfyvcKgOXp
+qa7BGXNFfh1JsqexVkIqZP9uWB2J+uVMD+XZEs/KYNNX2PvIlSPrzIB4Z2wyIGQpaPLlYflrrVFK
+v9CjT2zdqvy2maK7HKOQRt3BiJbVG5lRiwbbygldcALEV9ChWFfgSXvrWDZspnU3Gjw/rMHrGnql
+Htlyebp3pf3fSS9kzQ1FVtVIDrL6eqhTwJxe+pXSMMqFiN0whpBtXdyDjzBtQTaZJ7zTT/vlehc/
+tDuqZwGHm/YJy883Ll+GP3NvOkgaRGWEuYWJJ6hFCkXYjyR9IzCCBhQwggT8oAMCAQICEQDGvhmW
+Z0DEAx0oURL6O6l+MA0GCSqGSIb3DQEBCwUAMIGWMQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3Jl
+YXRlciBNYW5jaGVzdGVyMRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0
+ZWQxPjA8BgNVBAMTNVNlY3RpZ28gUlNBIENsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgU2VjdXJl
+IEVtYWlsIENBMB4XDTIyMDEwNzAwMDAwMFoXDTI1MDEwNjIzNTk1OVowJDEiMCAGCSqGSIb3DQEJ
+ARYTZHdtdzJAaW5mcmFkZWFkLm9yZzCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBALQ3
+GpC2bomUqk+91wLYBzDMcCj5C9m6oZaHwvmIdXftOgTbCJXADo6G9T7BBAebw2JV38EINgKpy/ZH
+h7htyAkWYVoFsFPrwHounto8xTsySSePMiPlmIdQ10BcVSXMUJ3Juu16GlWOnAMJY2oYfEzmE7uT
+9YgcBqKCo65pTFmOnR/VVbjJk4K2xE34GC2nAdUQkPFuyaFisicc6HRMOYXPuF0DuwITEKnjxgNj
+P+qDrh0db7PAjO1D4d5ftfrsf+kdRR4gKVGSk8Tz2WwvtLAroJM4nXjNPIBJNT4w/FWWc/5qPHJy
+2U+eITZ5LLE5s45mX2oPFknWqxBobQZ8a9dsZ3dSPZBvE9ZrmtFLrVrN4eo1jsXgAp1+p7bkfqd3
+BgBEmfsYWlBXO8rVXfvPgLs32VdVNZxb/CDWPqBsiYv0Hv3HPsz07j5b+/cVoWqyHDKzkaVbxfq/
+7auNVRmPB3v5SWEsH8xi4Bez2V9UKxfYCnqsjp8RaC2/khxKt0A552Eaxnz/4ly/2C7wkwTQnBmd
+lFYhAflWKQ03Ufiu8t3iBE3VJbc25oMrglj7TRZrmKq3CkbFnX0fyulB+kHimrt6PIWn7kgyl9ae
+lIl6vtbhMA+l0nfrsORMa4kobqQ5C5rveVgmcIad67EDa+UqEKy/GltUwlSh6xy+TrK1tzDvAgMB
+AAGjggHMMIIByDAfBgNVHSMEGDAWgBQJwPL8C9qU21/+K9+omULPyeCtADAdBgNVHQ4EFgQUzMeD
+Mcimo0oz8o1R1Nver3ZVpSkwDgYDVR0PAQH/BAQDAgWgMAwGA1UdEwEB/wQCMAAwHQYDVR0lBBYw
+FAYIKwYBBQUHAwQGCCsGAQUFBwMCMEAGA1UdIAQ5MDcwNQYMKwYBBAGyMQECAQEBMCUwIwYIKwYB
+BQUHAgEWF2h0dHBzOi8vc2VjdGlnby5jb20vQ1BTMFoGA1UdHwRTMFEwT6BNoEuGSWh0dHA6Ly9j
+cmwuc2VjdGlnby5jb20vU2VjdGlnb1JTQUNsaWVudEF1dGhlbnRpY2F0aW9uYW5kU2VjdXJlRW1h
+aWxDQS5jcmwwgYoGCCsGAQUFBwEBBH4wfDBVBggrBgEFBQcwAoZJaHR0cDovL2NydC5zZWN0aWdv
+LmNvbS9TZWN0aWdvUlNBQ2xpZW50QXV0aGVudGljYXRpb25hbmRTZWN1cmVFbWFpbENBLmNydDAj
+BggrBgEFBQcwAYYXaHR0cDovL29jc3Auc2VjdGlnby5jb20wHgYDVR0RBBcwFYETZHdtdzJAaW5m
+cmFkZWFkLm9yZzANBgkqhkiG9w0BAQsFAAOCAQEAyW6MUir5dm495teKqAQjDJwuFCi35h4xgnQv
+Q/fzPXmtR9t54rpmI2TfyvcKgOXpqa7BGXNFfh1JsqexVkIqZP9uWB2J+uVMD+XZEs/KYNNX2PvI
+lSPrzIB4Z2wyIGQpaPLlYflrrVFKv9CjT2zdqvy2maK7HKOQRt3BiJbVG5lRiwbbygldcALEV9Ch
+WFfgSXvrWDZspnU3Gjw/rMHrGnqlHtlyebp3pf3fSS9kzQ1FVtVIDrL6eqhTwJxe+pXSMMqFiN0w
+hpBtXdyDjzBtQTaZJ7zTT/vlehc/tDuqZwGHm/YJy883Ll+GP3NvOkgaRGWEuYWJJ6hFCkXYjyR9
+IzGCBMcwggTDAgEBMIGsMIGWMQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVz
+dGVyMRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxPjA8BgNVBAMT
+NVNlY3RpZ28gUlNBIENsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBAhEA
+xr4ZlmdAxAMdKFES+jupfjANBglghkgBZQMEAgEFAKCCAeswGAYJKoZIhvcNAQkDMQsGCSqGSIb3
+DQEHATAcBgkqhkiG9w0BCQUxDxcNMjMxMTE1MTY0NzUxWjAvBgkqhkiG9w0BCQQxIgQg1MXGzUxn
+4X5U+OYtauh+jN1m6lyoqjGXHWeAbjM29fkwgb0GCSsGAQQBgjcQBDGBrzCBrDCBljELMAkGA1UE
+BhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEYMBYG
+A1UEChMPU2VjdGlnbyBMaW1pdGVkMT4wPAYDVQQDEzVTZWN0aWdvIFJTQSBDbGllbnQgQXV0aGVu
+dGljYXRpb24gYW5kIFNlY3VyZSBFbWFpbCBDQQIRAMa+GZZnQMQDHShREvo7qX4wgb8GCyqGSIb3
+DQEJEAILMYGvoIGsMIGWMQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
+MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxPjA8BgNVBAMTNVNl
+Y3RpZ28gUlNBIENsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBAhEAxr4Z
+lmdAxAMdKFES+jupfjANBgkqhkiG9w0BAQEFAASCAgBatdjnmMSgwjN9aWd/Om+Z20cEMEa0atfc
+Zzkpjh1RPuEcta8Q4NguvcefZP9RVGDPs8URHvwkXJVSg9r6jRNCixJMb0pXr/uJo2N1CwD0G5tQ
+7r/x/Q5Ui9yNYZi0Ti/g/va/Pr40XHtrt4G8aKqIxBJSY6gVxswQVaTh4Uvg/VYSOlBC4HbUTvNK
+gz9bBngNAF7p6BOqZk6wBgMhHIKFu70QFOdLSKiKuOLT2c5qK8XbdbQbRg6JQ4VY377jj2/QYgpn
+j/RaT6rGZsgibBJG46cmilkUmXMgwXwr4QomhjcrW/Nu60t1t1F3aH9qaK6d3bYVf7/lNWyjEeqH
++fHhr1Tti0FkZAbZvH49U5QplenSK3ttVdjPSBflLrN9zTYUC35+Ml0n0ICfntJ2wWHqnrVIgJcu
+ZV4WV18MQad0vWKELfktRbJPN0ssBYV8Eet7ex1GXFRhsW72FGzNY3qpOdKXg2Y20PWGLoeOzhGv
+ylDFE0SMAbktfaYsdCF9jEdrvMJhudEEAk6gIbLQ27s30Cbq+pTa2Za5x3I/M4eRjBxJYC0qTxRJ
+YngjXoAK1hQaKMC9KegxLWLOORzgXqOUeCWiAZkvRmqBe1nxniQt7VARaiNvANfrj3b1IXU4jjWT
+Tx8nLtIfQVRa5HPYsza3PpP013mPG/KO1+2eL6RjogAAAAAAAA==
+
+
+--=-+lKzRdjWpPAdi9zcnwFB--
