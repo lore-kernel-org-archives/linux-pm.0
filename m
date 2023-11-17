@@ -2,172 +2,237 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3A60C197A0
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Nov 2023 16:10:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14963C072A2
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Nov 2023 16:20:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346116AbjKQQK5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Nov 2023 11:10:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46472 "EHLO
+        id S232579AbjKQQUw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Nov 2023 11:20:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346084AbjKQQKw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2023 11:10:52 -0500
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12DC090;
-        Fri, 17 Nov 2023 08:10:48 -0800 (PST)
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 3AHGAEte032286;
-        Fri, 17 Nov 2023 10:10:14 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1700237414;
-        bh=T/wBuC6DtVWXHqmfK8fabulf+ENqoFBjAQef4pkVTeM=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=CRnP6wGsm8MksLN9E655pnO/IhR8fhXvG8PWulKwIit1g6xzStqQ8CS5PFCZDPIav
-         ZIaFBoEZPtpvgInWvFH3Bxl4iI3VE2yicIRMclx8ZZDXzmOl5OvzbNEKKNT6XcUbkF
-         DSC+alD49Y+OdRj0k9OUQlVQdbS28bRMvuKoDBzY=
-Received: from DFLE112.ent.ti.com (dfle112.ent.ti.com [10.64.6.33])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 3AHGAENf081164
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Fri, 17 Nov 2023 10:10:14 -0600
-Received: from DFLE114.ent.ti.com (10.64.6.35) by DFLE112.ent.ti.com
- (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Fri, 17
- Nov 2023 10:10:14 -0600
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Fri, 17 Nov 2023 10:10:13 -0600
-Received: from fllv0039.itg.ti.com (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 3AHGA8GN004950;
-        Fri, 17 Nov 2023 10:10:13 -0600
-From:   Andrew Davis <afd@ti.com>
-To:     Mark Rutland <mark.rutland@arm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Karol Gugala <kgugala@antmicro.com>,
-        Mateusz Holenko <mholenko@antmicro.com>,
-        Gabriel Somlo <gsomlo@gmail.com>,
-        Joel Stanley <joel@jms.id.au>, Mark Brown <broonie@kernel.org>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang@linux.alibaba.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Lee Jones <lee@kernel.org>,
-        Dmitry Osipenko <dmitry.osipenko@collabora.com>
-CC:     <linux-arm-kernel@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-spi@vger.kernel.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH RFC 4/5] spi: sprd: adi: Use devm_register_restart_handler()
-Date:   Fri, 17 Nov 2023 10:10:05 -0600
-Message-ID: <20231117161006.87734-5-afd@ti.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20231117161006.87734-1-afd@ti.com>
-References: <20231117161006.87734-1-afd@ti.com>
+        with ESMTP id S232906AbjKQQUv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2023 11:20:51 -0500
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85895194;
+        Fri, 17 Nov 2023 08:20:47 -0800 (PST)
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AHEkMOI029888;
+        Fri, 17 Nov 2023 16:20:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : mime-version : content-type; s=qcppdkim1;
+ bh=mKxl7mcNGcLSLkngeUuCtfO8PYAu/Usr2ex5A/C5PEA=;
+ b=a9draQvGqS4wNbHwnO9JUwq0xZnKaH4QC6Zg/35/BZCrVKWFRwlPbt0v9QvoKjhXUiBd
+ tGCS0P8iMgXFhutQyDnQJ1JN/QqMEEwwWszYPyNbnUW397Po3yg9CMZ1JQR6rmqU1R+7
+ VpPK+eyfrkEg7T4xCeOCj5CUdHkpUeDG082DzJa6es4/ejzmoItUqi6aOBBoZIxgO1ef
+ G6hqMJZwACi8VBEmvfCme47hqPmLXCD0kawDWAfI56sDYPQKeLq2qAPQr+dkYSFXVahf
+ PN0vUmz8jb2sqZ4dYmJOjTDtR9moEOKioui7EyU4OlIcbizq6gTBSAxcGJ8hCnT1Vx7b 7Q== 
+Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ue6varmmh-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 17 Nov 2023 16:20:42 +0000
+Received: from nasanex01c.na.qualcomm.com (nasanex01c.na.qualcomm.com [10.45.79.139])
+        by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3AHGKf1d017071
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 17 Nov 2023 16:20:41 GMT
+Received: from hu-mojha-hyd.qualcomm.com (10.80.80.8) by
+ nasanex01c.na.qualcomm.com (10.45.79.139) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.40; Fri, 17 Nov 2023 08:20:39 -0800
+From:   Mukesh Ojha <quic_mojha@quicinc.com>
+To:     <myungjoo.ham@samsung.com>, <kyungmin.park@samsung.com>,
+        <cw00.choi@samsung.com>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Mukesh Ojha <quic_mojha@quicinc.com>
+Subject: [PATCH v3] PM / devfreq: Synchronize device_monitor_[start/stop]
+Date:   Fri, 17 Nov 2023 21:50:27 +0530
+Message-ID: <1700238027-20518-1-git-send-email-quic_mojha@quicinc.com>
+X-Mailer: git-send-email 2.7.4
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nasanex01c.na.qualcomm.com (10.45.79.139)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: -Wcl2VhZ7_6xmn9P-J99qfzp6zn4T0vE
+X-Proofpoint-ORIG-GUID: -Wcl2VhZ7_6xmn9P-J99qfzp6zn4T0vE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-11-17_14,2023-11-17_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501 mlxscore=0
+ spamscore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0 malwarescore=0
+ phishscore=0 impostorscore=0 mlxlogscore=999 adultscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311060000
+ definitions=main-2311170122
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use device life-cycle managed register function to simplify probe error
-path and eliminate need for explicit remove function.
+There is a chance if a frequent switch of the governor
+done in a loop result in timer list corruption where
+timer cancel being done from two place one from
+cancel_delayed_work_sync() and followed by expire_timers()
+can be seen from the traces[1].
 
-Signed-off-by: Andrew Davis <afd@ti.com>
+while true
+do
+        echo "simple_ondemand" > /sys/class/devfreq/1d84000.ufshc/governor
+        echo "performance" > /sys/class/devfreq/1d84000.ufshc/governor
+done
+
+
+It looks to be issue with devfreq driver where
+device_monitor_[start/stop] need to synchronized so that
+delayed work should get corrupted while it is either
+being queued or running or being cancelled.
+
+Let's use polling flag and devfreq lock to synchronize the
+queueing the timer instance twice and work data being
+corrupted.
+
+[1]
+...
+..
+<idle>-0    [003]   9436.209662:  timer_cancel   timer=0xffffff80444f0428
+<idle>-0    [003]   9436.209664:  timer_expire_entry   timer=0xffffff80444f0428  now=0x10022da1c  function=__typeid__ZTSFvP10timer_listE_global_addr  baseclk=0x10022da1c
+<idle>-0    [003]   9436.209718:  timer_expire_exit   timer=0xffffff80444f0428
+kworker/u16:6-14217    [003]   9436.209863:  timer_start   timer=0xffffff80444f0428  function=__typeid__ZTSFvP10timer_listE_global_addr  expires=0x10022da2b  now=0x10022da1c  flags=182452227
+vendor.xxxyyy.ha-1593    [004]   9436.209888:  timer_cancel   timer=0xffffff80444f0428
+vendor.xxxyyy.ha-1593    [004]   9436.216390:  timer_init   timer=0xffffff80444f0428
+vendor.xxxyyy.ha-1593    [004]   9436.216392:  timer_start   timer=0xffffff80444f0428  function=__typeid__ZTSFvP10timer_listE_global_addr  expires=0x10022da2c  now=0x10022da1d  flags=186646532
+vendor.xxxyyy.ha-1593    [005]   9436.220992:  timer_cancel   timer=0xffffff80444f0428
+xxxyyyTraceManag-7795    [004]   9436.261641:  timer_cancel   timer=0xffffff80444f0428
+
+[2]
+
+ 9436.261653][    C4] Unable to handle kernel paging request at virtual address dead00000000012a
+[ 9436.261664][    C4] Mem abort info:
+[ 9436.261666][    C4]   ESR = 0x96000044
+[ 9436.261669][    C4]   EC = 0x25: DABT (current EL), IL = 32 bits
+[ 9436.261671][    C4]   SET = 0, FnV = 0
+[ 9436.261673][    C4]   EA = 0, S1PTW = 0
+[ 9436.261675][    C4] Data abort info:
+[ 9436.261677][    C4]   ISV = 0, ISS = 0x00000044
+[ 9436.261680][    C4]   CM = 0, WnR = 1
+[ 9436.261682][    C4] [dead00000000012a] address between user and kernel address ranges
+[ 9436.261685][    C4] Internal error: Oops: 96000044 [#1] PREEMPT SMP
+[ 9436.261701][    C4] Skip md ftrace buffer dump for: 0x3a982d0
+...
+
+[ 9436.262138][    C4] CPU: 4 PID: 7795 Comm: TraceManag Tainted: G S      W  O      5.10.149-android12-9-o-g17f915d29d0c #1
+[ 9436.262141][    C4] Hardware name: Qualcomm Technologies, Inc.  (DT)
+[ 9436.262144][    C4] pstate: 22400085 (nzCv daIf +PAN -UAO +TCO BTYPE=--)
+[ 9436.262161][    C4] pc : expire_timers+0x9c/0x438
+[ 9436.262164][    C4] lr : expire_timers+0x2a4/0x438
+[ 9436.262168][    C4] sp : ffffffc010023dd0
+[ 9436.262171][    C4] x29: ffffffc010023df0 x28: ffffffd0636fdc18
+[ 9436.262178][    C4] x27: ffffffd063569dd0 x26: ffffffd063536008
+[ 9436.262182][    C4] x25: 0000000000000001 x24: ffffff88f7c69280
+[ 9436.262185][    C4] x23: 00000000000000e0 x22: dead000000000122
+[ 9436.262188][    C4] x21: 000000010022da29 x20: ffffff8af72b4e80
+[ 9436.262191][    C4] x19: ffffffc010023e50 x18: ffffffc010025038
+[ 9436.262195][    C4] x17: 0000000000000240 x16: 0000000000000201
+[ 9436.262199][    C4] x15: ffffffffffffffff x14: ffffff889f3c3100
+[ 9436.262203][    C4] x13: ffffff889f3c3100 x12: 00000000049f56b8
+[ 9436.262207][    C4] x11: 00000000049f56b8 x10: 00000000ffffffff
+[ 9436.262212][    C4] x9 : ffffffc010023e50 x8 : dead000000000122
+[ 9436.262216][    C4] x7 : ffffffffffffffff x6 : ffffffc0100239d8
+[ 9436.262220][    C4] x5 : 0000000000000000 x4 : 0000000000000101
+[ 9436.262223][    C4] x3 : 0000000000000080 x2 : ffffff889edc155c
+[ 9436.262227][    C4] x1 : ffffff8001005200 x0 : ffffff80444f0428
+[ 9436.262232][    C4] Call trace:
+[ 9436.262236][    C4]  expire_timers+0x9c/0x438
+[ 9436.262240][    C4]  __run_timers+0x1f0/0x330
+[ 9436.262245][    C4]  run_timer_softirq+0x28/0x58
+[ 9436.262255][    C4]  efi_header_end+0x168/0x5ec
+[ 9436.262265][    C4]  __irq_exit_rcu+0x108/0x124
+[ 9436.262274][    C4]  __handle_domain_irq+0x118/0x1e4
+[ 9436.262282][    C4]  gic_handle_irq.30369+0x6c/0x2bc
+[ 9436.262286][    C4]  el0_irq_naked+0x60/0x6c
+
+Reported-by: Joyyoung Huang <huangzaiyang@oppo.com>
+Signed-off-by: Mukesh Ojha <quic_mojha@quicinc.com>
 ---
- drivers/spi/spi-sprd-adi.c | 30 ++++++++----------------------
- 1 file changed, 8 insertions(+), 22 deletions(-)
+Changes in v3: https://lore.kernel.org/lkml/1700235522-31105-1-git-send-email-quic_mojha@quicinc.com/
+ - Remove the unexpected 'twice' from the subject.
 
-diff --git a/drivers/spi/spi-sprd-adi.c b/drivers/spi/spi-sprd-adi.c
-index bf01feedbf93f..58c3badd9c79a 100644
---- a/drivers/spi/spi-sprd-adi.c
-+++ b/drivers/spi/spi-sprd-adi.c
-@@ -138,8 +138,7 @@ struct sprd_adi_data {
- 	u32 slave_offset;
- 	u32 slave_addr_size;
- 	int (*read_check)(u32 val, u32 reg);
--	int (*restart)(struct notifier_block *this,
--		       unsigned long mode, void *cmd);
-+	int (*restart)(struct sys_off_data *data);
- 	void (*wdg_rst)(void *p);
- };
+Changes in v2: https://lore.kernel.org/lkml/1699957648-31299-1-git-send-email-quic_mojha@quicinc.com/
+ - Changed subject.
+ - Added lock to avoid work data corruption due to
+   parallel calls to devfreq_monitor_start while work
+   is queued in flight.
+ - Added lock to cover the same as above case while the
+   work is being cancelled.
+ - Added Reported-by for similar issue reported at
+   https://lore.kernel.org/lkml/SEYPR02MB565398175FA093AC3E63EE7BA3B0A@SEYPR02MB5653.apcprd02.prod.outlook.com/
+
+ drivers/devfreq/devfreq.c | 24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 474d81831ad3..a25c74fc31d7 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -461,10 +461,14 @@ static void devfreq_monitor(struct work_struct *work)
+ 	if (err)
+ 		dev_err(&devfreq->dev, "dvfs failed with (%d) error\n", err);
  
-@@ -150,7 +149,6 @@ struct sprd_adi {
- 	struct hwspinlock	*hwlock;
- 	unsigned long		slave_vbase;
- 	unsigned long		slave_pbase;
--	struct notifier_block	restart_handler;
- 	const struct sprd_adi_data *data;
- };
++	if (devfreq->stop_polling)
++		goto out;
++
+ 	queue_delayed_work(devfreq_wq, &devfreq->work,
+ 				msecs_to_jiffies(devfreq->profile->polling_ms));
+-	mutex_unlock(&devfreq->lock);
  
-@@ -370,11 +368,9 @@ static void sprd_adi_set_wdt_rst_mode(void *p)
- #endif
++out:
++	mutex_unlock(&devfreq->lock);
+ 	trace_devfreq_monitor(devfreq);
  }
  
--static int sprd_adi_restart(struct notifier_block *this, unsigned long mode,
--				  void *cmd, struct sprd_adi_wdg *wdg)
-+static int sprd_adi_restart(struct sprd_adi *sadi, unsigned long mode,
-+			    const char *cmd, struct sprd_adi_wdg *wdg)
- {
--	struct sprd_adi *sadi = container_of(this, struct sprd_adi,
--					     restart_handler);
- 	u32 val, reboot_mode = 0;
+@@ -483,6 +487,10 @@ void devfreq_monitor_start(struct devfreq *devfreq)
+ 	if (IS_SUPPORTED_FLAG(devfreq->governor->flags, IRQ_DRIVEN))
+ 		return;
  
- 	if (!cmd)
-@@ -448,8 +444,7 @@ static int sprd_adi_restart(struct notifier_block *this, unsigned long mode,
- 	return NOTIFY_DONE;
- }
- 
--static int sprd_adi_restart_sc9860(struct notifier_block *this,
--					   unsigned long mode, void *cmd)
-+static int sprd_adi_restart_sc9860(struct sys_off_data *data)
- {
- 	struct sprd_adi_wdg wdg = {
- 		.base = PMIC_WDG_BASE,
-@@ -458,7 +453,7 @@ static int sprd_adi_restart_sc9860(struct notifier_block *this,
- 		.wdg_clk = PMIC_CLK_EN,
- 	};
- 
--	return sprd_adi_restart(this, mode, cmd, &wdg);
-+	return sprd_adi_restart(data->cb_data, data->mode, data->cmd, &wdg);
- }
- 
- static void sprd_adi_hw_init(struct sprd_adi *sadi)
-@@ -590,9 +585,9 @@ static int sprd_adi_probe(struct platform_device *pdev)
++	mutex_lock(&devfreq->lock);
++	if (delayed_work_pending(&devfreq->work))
++		goto out;
++
+ 	switch (devfreq->profile->timer) {
+ 	case DEVFREQ_TIMER_DEFERRABLE:
+ 		INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
+@@ -491,12 +499,16 @@ void devfreq_monitor_start(struct devfreq *devfreq)
+ 		INIT_DELAYED_WORK(&devfreq->work, devfreq_monitor);
+ 		break;
+ 	default:
+-		return;
++		goto out;
  	}
  
- 	if (sadi->data->restart) {
--		sadi->restart_handler.notifier_call = sadi->data->restart;
--		sadi->restart_handler.priority = 128;
--		ret = register_restart_handler(&sadi->restart_handler);
-+		ret = devm_register_restart_handler(&pdev->dev,
-+						    sadi->data->restart,
-+						    sadi);
- 		if (ret) {
- 			dev_err(&pdev->dev, "can not register restart handler\n");
- 			goto put_ctlr;
-@@ -606,14 +601,6 @@ static int sprd_adi_probe(struct platform_device *pdev)
- 	return ret;
+ 	if (devfreq->profile->polling_ms)
+ 		queue_delayed_work(devfreq_wq, &devfreq->work,
+ 			msecs_to_jiffies(devfreq->profile->polling_ms));
++
++out:
++	devfreq->stop_polling = false;
++	mutex_unlock(&devfreq->lock);
  }
+ EXPORT_SYMBOL(devfreq_monitor_start);
  
--static void sprd_adi_remove(struct platform_device *pdev)
--{
--	struct spi_controller *ctlr = dev_get_drvdata(&pdev->dev);
--	struct sprd_adi *sadi = spi_controller_get_devdata(ctlr);
--
--	unregister_restart_handler(&sadi->restart_handler);
--}
--
- static struct sprd_adi_data sc9860_data = {
- 	.slave_offset = ADI_10BIT_SLAVE_OFFSET,
- 	.slave_addr_size = ADI_10BIT_SLAVE_ADDR_SIZE,
-@@ -657,7 +644,6 @@ static struct platform_driver sprd_adi_driver = {
- 		.of_match_table = sprd_adi_of_match,
- 	},
- 	.probe = sprd_adi_probe,
--	.remove_new = sprd_adi_remove,
- };
- module_platform_driver(sprd_adi_driver);
+@@ -513,7 +525,15 @@ void devfreq_monitor_stop(struct devfreq *devfreq)
+ 	if (IS_SUPPORTED_FLAG(devfreq->governor->flags, IRQ_DRIVEN))
+ 		return;
+ 
++	mutex_lock(&devfreq->lock);
++	if (devfreq->stop_polling) {
++		mutex_unlock(&devfreq->lock);
++		return;
++	}
++
++	devfreq->stop_polling = true;
+ 	cancel_delayed_work_sync(&devfreq->work);
++	mutex_unlock(&devfreq->lock);
+ }
+ EXPORT_SYMBOL(devfreq_monitor_stop);
  
 -- 
-2.39.2
+2.7.4
 
