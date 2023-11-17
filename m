@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25E40C197A0
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Nov 2023 16:10:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44233C5AE5E
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Nov 2023 16:10:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346082AbjKQQKw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Nov 2023 11:10:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60716 "EHLO
+        id S234707AbjKQQKx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Nov 2023 11:10:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60732 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231693AbjKQQKu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2023 11:10:50 -0500
+        with ESMTP id S1346071AbjKQQKv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2023 11:10:51 -0500
 Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49638127;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 495D7E6;
         Fri, 17 Nov 2023 08:10:47 -0800 (PST)
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 3AHGADSL119470;
-        Fri, 17 Nov 2023 10:10:13 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1700237413;
-        bh=S2L3bCQjS4V5uoOpa2XWqDJtGarbiLRZq+mnrAw4iks=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=TI2VIhiqa482KMcnEagSiDxLVBtUzI06ANw29jYYweKOO+OatTBmbfM7TVzKSVnkB
-         2KkgFpoTrqVVYh3sKP0HBntCNtn5OjKrChqyKTlRMy8Ku8D1YlHNRbQiibJRvJhx8Q
-         q54XUGTl2UTdT+FpjrCiGmVjw+7RPNo7jzYeD5S4=
-Received: from DFLE112.ent.ti.com (dfle112.ent.ti.com [10.64.6.33])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 3AHGADtU001162
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Fri, 17 Nov 2023 10:10:13 -0600
-Received: from DFLE114.ent.ti.com (10.64.6.35) by DFLE112.ent.ti.com
- (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Fri, 17
- Nov 2023 10:10:13 -0600
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Fri, 17 Nov 2023 10:10:12 -0600
-Received: from fllv0039.itg.ti.com (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 3AHGA8GM004950;
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 3AHGABSU119464;
         Fri, 17 Nov 2023 10:10:11 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1700237411;
+        bh=F/1wswiAY1XblJ8zuw53T70Bg/cif/hAR2h+0LkgMdM=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=ouR0t1e0TfiMtAgC61F+w3go10AW+3lXJXXwhGuS+F/5saDJt2beKZHMmk+bOLgTd
+         PretWxm9eimqr0NZfLfNDmNkAOocZZmjrM+mQ7PP2ehLF3fvwOM7dagYsjhI8RyklN
+         AicFpZ/E6T6d3YlfIO2i+XVjqkeM+4gBXwCaFcR8=
+Received: from DFLE111.ent.ti.com (dfle111.ent.ti.com [10.64.6.32])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 3AHGABaH070305
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Fri, 17 Nov 2023 10:10:11 -0600
+Received: from DFLE102.ent.ti.com (10.64.6.23) by DFLE111.ent.ti.com
+ (10.64.6.32) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Fri, 17
+ Nov 2023 10:10:10 -0600
+Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE102.ent.ti.com
+ (10.64.6.23) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
+ Frontend Transport; Fri, 17 Nov 2023 10:10:10 -0600
+Received: from fllv0039.itg.ti.com (ileaxei01-snat.itg.ti.com [10.180.69.5])
+        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 3AHGA8GK004950;
+        Fri, 17 Nov 2023 10:10:09 -0600
 From:   Andrew Davis <afd@ti.com>
 To:     Mark Rutland <mark.rutland@arm.com>,
         Lorenzo Pieralisi <lpieralisi@kernel.org>,
@@ -55,9 +55,9 @@ To:     Mark Rutland <mark.rutland@arm.com>,
 CC:     <linux-arm-kernel@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <linux-spi@vger.kernel.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH RFC 3/5] power: reset: gpio-restart: Use devm_register_sys_off_handler()
-Date:   Fri, 17 Nov 2023 10:10:04 -0600
-Message-ID: <20231117161006.87734-4-afd@ti.com>
+Subject: [PATCH RFC 1/5] kernel/reboot: Deprecate register_restart_handler()
+Date:   Fri, 17 Nov 2023 10:10:02 -0600
+Message-ID: <20231117161006.87734-2-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20231117161006.87734-1-afd@ti.com>
 References: <20231117161006.87734-1-afd@ti.com>
@@ -69,107 +69,63 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use device life-cycle managed register function to simplify probe error
-path and eliminate need for explicit remove function.
+There are now two ways to add a handler to the restart_handler_list.
+Two ways to do the same thing is bad design, so let's unify on using
+the new method register_sys_off_handler() everywhere.
+
+Reasons:
+ * The other register_*_handler functions take a callback, this old
+   API takes a notifier_block, which makes it confusing with the
+   register_*_notifier class of functions.
+ * register_sys_off_handler (new API) is a more unified API allowing for
+   registering several system off types.
+ * The new API has more helpers built around it now, including devm and
+   platform helpers.
+ * The new API manages the struct notifier_block for us, simplifying using
+   code.
+
+Mark register_restart_handler() as deprecated to try to warn off new users
+while we finish converting the remaining existing users.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/gpio-restart.c | 34 ++++++++----------------------
- 1 file changed, 9 insertions(+), 25 deletions(-)
+ include/linux/reboot.h | 8 ++++++--
+ kernel/reboot.c        | 3 +++
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/reset/gpio-restart.c b/drivers/power/reset/gpio-restart.c
-index 3aa19765772dc..d1e177176fa1f 100644
---- a/drivers/power/reset/gpio-restart.c
-+++ b/drivers/power/reset/gpio-restart.c
-@@ -17,17 +17,14 @@
+diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+index c4cc3b89ced1f..c5fff3157b191 100644
+--- a/include/linux/reboot.h
++++ b/include/linux/reboot.h
+@@ -46,8 +46,12 @@ extern int unregister_reboot_notifier(struct notifier_block *);
  
- struct gpio_restart {
- 	struct gpio_desc *reset_gpio;
--	struct notifier_block restart_handler;
- 	u32 active_delay_ms;
- 	u32 inactive_delay_ms;
- 	u32 wait_delay_ms;
- };
+ extern int devm_register_reboot_notifier(struct device *, struct notifier_block *);
  
--static int gpio_restart_notify(struct notifier_block *this,
--				unsigned long mode, void *cmd)
-+static int gpio_restart_notify(struct sys_off_data *data)
+-extern int register_restart_handler(struct notifier_block *);
+-extern int unregister_restart_handler(struct notifier_block *);
++/*
++ * This function is deprecated, use register_sys_off_handler(SYS_OFF_MODE_RESTART)
++ * or devm_register_restart_handler() instead.
++ */
++extern int __deprecated register_restart_handler(struct notifier_block *);
++extern int __deprecated unregister_restart_handler(struct notifier_block *);
+ extern void do_kernel_restart(char *cmd);
+ 
+ /*
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index 395a0ea3c7a8a..768ce97829f41 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -189,6 +189,9 @@ static ATOMIC_NOTIFIER_HEAD(restart_handler_list);
+  *
+  *	Currently always returns zero, as atomic_notifier_chain_register()
+  *	always returns zero.
++ *
++ *	This function is deprecated, use register_sys_off_handler(SYS_OFF_MODE_RESTART)
++ *	or devm_register_restart_handler() instead.
+  */
+ int register_restart_handler(struct notifier_block *nb)
  {
--	struct gpio_restart *gpio_restart =
--		container_of(this, struct gpio_restart, restart_handler);
-+	struct gpio_restart *gpio_restart = data->cb_data;
- 
- 	/* drive it active, also inactive->active edge */
- 	gpiod_direction_output(gpio_restart->reset_gpio, 1);
-@@ -52,6 +49,7 @@ static int gpio_restart_probe(struct platform_device *pdev)
- {
- 	struct gpio_restart *gpio_restart;
- 	bool open_source = false;
-+	int priority = 129;
- 	u32 property;
- 	int ret;
- 
-@@ -71,8 +69,6 @@ static int gpio_restart_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	gpio_restart->restart_handler.notifier_call = gpio_restart_notify;
--	gpio_restart->restart_handler.priority = 129;
- 	gpio_restart->active_delay_ms = 100;
- 	gpio_restart->inactive_delay_ms = 100;
- 	gpio_restart->wait_delay_ms = 3000;
-@@ -83,7 +79,7 @@ static int gpio_restart_probe(struct platform_device *pdev)
- 			dev_err(&pdev->dev, "Invalid priority property: %u\n",
- 					property);
- 		else
--			gpio_restart->restart_handler.priority = property;
-+			priority = property;
- 	}
- 
- 	of_property_read_u32(pdev->dev.of_node, "active-delay",
-@@ -93,9 +89,11 @@ static int gpio_restart_probe(struct platform_device *pdev)
- 	of_property_read_u32(pdev->dev.of_node, "wait-delay",
- 			&gpio_restart->wait_delay_ms);
- 
--	platform_set_drvdata(pdev, gpio_restart);
--
--	ret = register_restart_handler(&gpio_restart->restart_handler);
-+	ret = devm_register_sys_off_handler(&pdev->dev,
-+					    SYS_OFF_MODE_RESTART,
-+					    priority,
-+					    gpio_restart_notify,
-+					    gpio_restart);
- 	if (ret) {
- 		dev_err(&pdev->dev, "%s: cannot register restart handler, %d\n",
- 				__func__, ret);
-@@ -105,19 +103,6 @@ static int gpio_restart_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static void gpio_restart_remove(struct platform_device *pdev)
--{
--	struct gpio_restart *gpio_restart = platform_get_drvdata(pdev);
--	int ret;
--
--	ret = unregister_restart_handler(&gpio_restart->restart_handler);
--	if (ret) {
--		dev_err(&pdev->dev,
--				"%s: cannot unregister restart handler, %d\n",
--				__func__, ret);
--	}
--}
--
- static const struct of_device_id of_gpio_restart_match[] = {
- 	{ .compatible = "gpio-restart", },
- 	{},
-@@ -125,7 +110,6 @@ static const struct of_device_id of_gpio_restart_match[] = {
- 
- static struct platform_driver gpio_restart_driver = {
- 	.probe = gpio_restart_probe,
--	.remove_new = gpio_restart_remove,
- 	.driver = {
- 		.name = "restart-gpio",
- 		.of_match_table = of_gpio_restart_match,
 -- 
 2.39.2
 
