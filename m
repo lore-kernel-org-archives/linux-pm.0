@@ -2,252 +2,103 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5458C5AE5B
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Nov 2023 13:30:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 508E5C2BB3F
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Nov 2023 15:59:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229480AbjKRNaq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 18 Nov 2023 08:30:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50264 "EHLO
+        id S233095AbjKRP7K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 18 Nov 2023 10:59:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41796 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229788AbjKRNao (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Nov 2023 08:30:44 -0500
-Received: from mout01.posteo.de (mout01.posteo.de [185.67.36.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06160182
-        for <linux-pm@vger.kernel.org>; Sat, 18 Nov 2023 05:30:38 -0800 (PST)
-Received: from submission (posteo.de [185.67.36.169]) 
-        by mout01.posteo.de (Postfix) with ESMTPS id 9CD93240029
-        for <linux-pm@vger.kernel.org>; Sat, 18 Nov 2023 14:30:36 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=posteo.net; s=2017;
-        t=1700314236; bh=3F/rP6L7e0SBkQiJqvApWGDZ0Wtovw2lNrA+0VpRX70=;
-        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:
-         Content-Transfer-Encoding:From;
-        b=LTFcECwvHnU/sRROGmpOO7n0xzKAKK6sq8VfT6JOJzOGmtyWCl5/zzULckI+PVzS4
-         354Y5dADb85hD/Obauw8Wfhil/bzaoUnBEki9RKfi5VihiaScWul66L4x+HuIw7Qnr
-         fuWRQ4aVXkSTA/g79BCiMEB6urYaYRlnmnRgzSetoyzmyLMCrnFLf1vOXgEWWt1zUK
-         xz2g7B/y1w9bZv7488XdKuFYOSlDTH0twrgCVGPpksNNMUr1prDNRhPH7dPjRFcAIn
-         lXy1ex2MDDCEKJY6V+yKkvVwULtug4eMfRqmYtxox1kFfkz5xY6Veqq6n9KouEZ9PK
-         mUVYdg14P8skA==
-Received: from customer (localhost [127.0.0.1])
-        by submission (posteo.de) with ESMTPSA id 4SXZQh010wz6tsB;
-        Sat, 18 Nov 2023 14:30:35 +0100 (CET)
-From:   Charalampos Mitrodimas <charmitro@posteo.net>
-To:     sre@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Charalampos Mitrodimas <charmitro@posteo.net>
-Subject: [PATCH 1/2] power: supply: Fix indentation and some other warnings
-Date:   Sat, 18 Nov 2023 13:29:57 +0000
-Message-Id: <20231118132958.157238-2-charmitro@posteo.net>
-In-Reply-To: <20231118132958.157238-1-charmitro@posteo.net>
-References: <20231118132958.157238-1-charmitro@posteo.net>
+        with ESMTP id S231225AbjKRP7A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Nov 2023 10:59:00 -0500
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3ECFB2103
+        for <linux-pm@vger.kernel.org>; Sat, 18 Nov 2023 07:57:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1700323070; x=1731859070;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=skP3LCXJ9xsI3+N/L6EA++C4Xkj5EvMu+Gb62HwFpxI=;
+  b=SttlCeejDsdFlKMWRntT5wFLxzqCF308utTZnWq4cZCbTL+cxurt9dNw
+   sMt+Og/bGZkoC0RTytG6oPGV/fTM51hw0r8T+WVJImoZKYg6o9z+XOYEC
+   O1GTzTutcLgAOwBATNb1ireaSTErQBOy6NBTCcZoTHvw6fL7yKQpeK/Lz
+   E7K0ntHQ9AqEdsdF9sX0Gdy4KRxvuhRAIEqMJGq+CY14txtpOdJDwoewG
+   wJpUiBpeF49A4m0RGcbLQOZ/FjXRU0p3DCOhGhkO5S7cTDE7kc9SusLtA
+   xZ3bjaUPtoJR7M8oSw0UDcxAPwJKCK0XbkNolIhcdlCMA0Tn6eB7MudgN
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10898"; a="4534374"
+X-IronPort-AV: E=Sophos;i="6.04,209,1695711600"; 
+   d="scan'208";a="4534374"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2023 07:56:03 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10898"; a="769483332"
+X-IronPort-AV: E=Sophos;i="6.04,209,1695711600"; 
+   d="scan'208";a="769483332"
+Received: from lkp-server02.sh.intel.com (HELO b8de5498638e) ([10.239.97.151])
+  by fmsmga007.fm.intel.com with ESMTP; 18 Nov 2023 07:56:01 -0800
+Received: from kbuild by b8de5498638e with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1r4Nfr-000427-1L;
+        Sat, 18 Nov 2023 15:55:59 +0000
+Date:   Sat, 18 Nov 2023 23:54:50 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Radu Solea <radusolea@google.com>, linux-pm@vger.kernel.org
+Cc:     oe-kbuild-all@lists.linux.dev, rafael@kernel.org,
+        Radu Solea <radusolea@google.com>
+Subject: Re: [PATCH RESEND] thermal core: add option to run PM_POST_SUSPEND
+ asynchronously
+Message-ID: <202311182337.iQCfkhrO-lkp@intel.com>
+References: <20231116222842.2121193-1-radusolea@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231116222842.2121193-1-radusolea@google.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-These were mentioned by checkpatch:
-	Errors:
-		(1) code indent should use tabs where possible
-		(2) switch and case should be at the same indent
-	Warnings:
-		(1) Missing a blank line after declarations
+Hi Radu,
 
-Signed-off-by: Charalampos Mitrodimas <charmitro@posteo.net>
----
- drivers/power/supply/power_supply_core.c | 161 ++++++++++++-----------
- 1 file changed, 81 insertions(+), 80 deletions(-)
+kernel test robot noticed the following build warnings:
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 73265001dd4b..4a5b570dff44 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -861,44 +861,44 @@ const size_t power_supply_battery_info_properties_size = ARRAY_SIZE(power_supply
- EXPORT_SYMBOL_GPL(power_supply_battery_info_properties_size);
- 
- bool power_supply_battery_info_has_prop(struct power_supply_battery_info *info,
--				        enum power_supply_property psp)
-+					enum power_supply_property psp)
- {
- 	if (!info)
- 		return false;
- 
- 	switch (psp) {
--		case POWER_SUPPLY_PROP_TECHNOLOGY:
--			return info->technology != POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
--		case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
--			return info->energy_full_design_uwh >= 0;
--		case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
--			return info->charge_full_design_uah >= 0;
--		case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
--			return info->voltage_min_design_uv >= 0;
--		case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
--			return info->voltage_max_design_uv >= 0;
--		case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
--			return info->precharge_current_ua >= 0;
--		case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
--			return info->charge_term_current_ua >= 0;
--		case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
--			return info->constant_charge_current_max_ua >= 0;
--		case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
--			return info->constant_charge_voltage_max_uv >= 0;
--		case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN:
--			return info->temp_ambient_alert_min > INT_MIN;
--		case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX:
--			return info->temp_ambient_alert_max < INT_MAX;
--		case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
--			return info->temp_alert_min > INT_MIN;
--		case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
--			return info->temp_alert_max < INT_MAX;
--		case POWER_SUPPLY_PROP_TEMP_MIN:
--			return info->temp_min > INT_MIN;
--		case POWER_SUPPLY_PROP_TEMP_MAX:
--			return info->temp_max < INT_MAX;
--		default:
--			return false;
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		return info->technology != POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
-+	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
-+		return info->energy_full_design_uwh >= 0;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+		return info->charge_full_design_uah >= 0;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-+		return info->voltage_min_design_uv >= 0;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-+		return info->voltage_max_design_uv >= 0;
-+	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
-+		return info->precharge_current_ua >= 0;
-+	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
-+		return info->charge_term_current_ua >= 0;
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		return info->constant_charge_current_max_ua >= 0;
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		return info->constant_charge_voltage_max_uv >= 0;
-+	case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN:
-+		return info->temp_ambient_alert_min > INT_MIN;
-+	case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX:
-+		return info->temp_ambient_alert_max < INT_MAX;
-+	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
-+		return info->temp_alert_min > INT_MIN;
-+	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
-+		return info->temp_alert_max < INT_MAX;
-+	case POWER_SUPPLY_PROP_TEMP_MIN:
-+		return info->temp_min > INT_MIN;
-+	case POWER_SUPPLY_PROP_TEMP_MAX:
-+		return info->temp_max < INT_MAX;
-+	default:
-+		return false;
- 	}
- }
- EXPORT_SYMBOL_GPL(power_supply_battery_info_has_prop);
-@@ -914,53 +914,53 @@ int power_supply_battery_info_get_prop(struct power_supply_battery_info *info,
- 		return -EINVAL;
- 
- 	switch (psp) {
--		case POWER_SUPPLY_PROP_TECHNOLOGY:
--			val->intval = info->technology;
--			return 0;
--		case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
--			val->intval = info->energy_full_design_uwh;
--			return 0;
--		case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
--			val->intval = info->charge_full_design_uah;
--			return 0;
--		case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
--			val->intval = info->voltage_min_design_uv;
--			return 0;
--		case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
--			val->intval = info->voltage_max_design_uv;
--			return 0;
--		case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
--			val->intval = info->precharge_current_ua;
--			return 0;
--		case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
--			val->intval = info->charge_term_current_ua;
--			return 0;
--		case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
--			val->intval = info->constant_charge_current_max_ua;
--			return 0;
--		case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
--			val->intval = info->constant_charge_voltage_max_uv;
--			return 0;
--		case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN:
--			val->intval = info->temp_ambient_alert_min;
--			return 0;
--		case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX:
--			val->intval = info->temp_ambient_alert_max;
--			return 0;
--		case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
--			val->intval = info->temp_alert_min;
--			return 0;
--		case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
--			val->intval = info->temp_alert_max;
--			return 0;
--		case POWER_SUPPLY_PROP_TEMP_MIN:
--			val->intval = info->temp_min;
--			return 0;
--		case POWER_SUPPLY_PROP_TEMP_MAX:
--			val->intval = info->temp_max;
--			return 0;
--		default:
--			return -EINVAL;
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		val->intval = info->technology;
-+		return 0;
-+	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
-+		val->intval = info->energy_full_design_uwh;
-+		return 0;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+		val->intval = info->charge_full_design_uah;
-+		return 0;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-+		val->intval = info->voltage_min_design_uv;
-+		return 0;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-+		val->intval = info->voltage_max_design_uv;
-+		return 0;
-+	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
-+		val->intval = info->precharge_current_ua;
-+		return 0;
-+	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
-+		val->intval = info->charge_term_current_ua;
-+		return 0;
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		val->intval = info->constant_charge_current_max_ua;
-+		return 0;
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		val->intval = info->constant_charge_voltage_max_uv;
-+		return 0;
-+	case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN:
-+		val->intval = info->temp_ambient_alert_min;
-+		return 0;
-+	case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX:
-+		val->intval = info->temp_ambient_alert_max;
-+		return 0;
-+	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
-+		val->intval = info->temp_alert_min;
-+		return 0;
-+	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
-+		val->intval = info->temp_alert_max;
-+		return 0;
-+	case POWER_SUPPLY_PROP_TEMP_MIN:
-+		val->intval = info->temp_min;
-+		return 0;
-+	case POWER_SUPPLY_PROP_TEMP_MAX:
-+		val->intval = info->temp_max;
-+		return 0;
-+	default:
-+		return -EINVAL;
- 	}
- }
- EXPORT_SYMBOL_GPL(power_supply_battery_info_get_prop);
-@@ -1255,6 +1255,7 @@ EXPORT_SYMBOL_GPL(power_supply_powers);
- static void power_supply_dev_release(struct device *dev)
- {
- 	struct power_supply *psy = to_power_supply(dev);
-+
- 	dev_dbg(dev, "%s\n", __func__);
- 	kfree(psy);
- }
+[auto build test WARNING on rafael-pm/thermal]
+[also build test WARNING on linus/master v6.7-rc1 next-20231117]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Radu-Solea/thermal-core-add-option-to-run-PM_POST_SUSPEND-asynchronously/20231117-063150
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal
+patch link:    https://lore.kernel.org/r/20231116222842.2121193-1-radusolea%40google.com
+patch subject: [PATCH RESEND] thermal core: add option to run PM_POST_SUSPEND asynchronously
+config: csky-randconfig-r111-20231118 (https://download.01.org/0day-ci/archive/20231118/202311182337.iQCfkhrO-lkp@intel.com/config)
+compiler: csky-linux-gcc (GCC) 13.2.0
+reproduce: (https://download.01.org/0day-ci/archive/20231118/202311182337.iQCfkhrO-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202311182337.iQCfkhrO-lkp@intel.com/
+
+sparse warnings: (new ones prefixed by >>)
+>> drivers/thermal/thermal_core.c:49:20: sparse: sparse: symbol 'resume_thermal_zones_wk' was not declared. Should it be static?
+   drivers/thermal/thermal_core.c: note: in included file (through include/linux/rculist.h, include/linux/pid.h, include/linux/sched.h, ...):
+   include/linux/list.h:83:21: sparse: sparse: self-comparison always evaluates to true
+   include/linux/list.h:83:21: sparse: sparse: self-comparison always evaluates to true
+   include/linux/list.h:83:21: sparse: sparse: self-comparison always evaluates to true
+   include/linux/list.h:83:21: sparse: sparse: self-comparison always evaluates to true
+   include/linux/list.h:83:21: sparse: sparse: self-comparison always evaluates to true
+
+vim +/resume_thermal_zones_wk +49 drivers/thermal/thermal_core.c
+
+    47	
+    48	#ifdef CONFIG_THERMAL_ASYNC_RESUME
+  > 49	struct work_struct *resume_thermal_zones_wk;
+    50	#endif /* CONFIG_THERMAL_ASYNC_RESUME */
+    51	
+
 -- 
-2.39.2
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
