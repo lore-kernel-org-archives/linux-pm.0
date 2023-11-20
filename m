@@ -2,46 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E223C197A0
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:16:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C782C5AD4C
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:16:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233789AbjKTPQc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Nov 2023 10:16:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41362 "EHLO
+        id S234266AbjKTPQd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Nov 2023 10:16:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41354 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234089AbjKTPQ3 (ORCPT
+        with ESMTP id S233770AbjKTPQ3 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 10:16:29 -0500
 Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4367FD8;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3EE02CF;
         Mon, 20 Nov 2023 07:16:26 -0800 (PST)
-Received: from pps.filterd (m0333520.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2YME031903;
-        Mon, 20 Nov 2023 15:15:20 GMT
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2bwP005937;
+        Mon, 20 Nov 2023 15:15:23 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references; s=corp-2023-03-30;
- bh=WF/RvvGLD0DY5qsZ8VlYaxR5Y2ufu/6MrfyvnyHeYNg=;
- b=WOkdKrg8THkEHHRK1Vr49VLu1XU37NvEKZmK/t4XRdB4NU+eH9djHU6qDtQmzYpZ7385
- V9mTyo4fZ+qn0a7c7Tkpgw9x6eRqIoNDss0EcJaU/Y+WX4BVrOFupfTUzszRgvk8uNHJ
- UcIzh5OF0lML2sgz0kSF5jdYvbc06tWs0wQBSF4II/XQkLEX/u6X0CDncTlkA7LZaGvc
- NQhEhoGfPvaIvZD15g6s9EyErYgY7r2JwaaFZUcaIt2PZ5TT5Ckb3g2C+SRkYmL/WvTH
- Z9Gb+8uDFRar4GfshLqbphsQ9x09qZh+x/CS+SNJrKq0cE5NTwqz36yukoEWRGfUWgaF gA== 
+ bh=pp3oJCE+l4dkX48YqTrLpZqytXIk14RQ2yK9nosdrJs=;
+ b=CI9F+SCdR/2H1DUT4In+BIN+OkyLXpvdpMVYDWHIfCXjxmzvP7R1vZllEc1XM+MTGylC
+ EHlY9tgiwNLjC1grH2ktMjKX4GU8sl504X8eICJnnR+5MTXrj2eARUtcFaSokuNb5fer
+ Qgsgo0QrFSwnXup5jjetf4lUNpvTGsjatfVTYmZB8bR455kAv3dERcYcTEQEKXjA4VXw
+ 0zQChqo3/EY8KfkBSwoB/ogGw7cuRtaYKHahxtSIJmqc3hRhQ8PyzcZr7vhyaaophQ8Y
+ FdWrdFG8x1criycN7C95dHOnLLjFHbAf2Zu+X1fC3EEdmBax5T+eSubuCh4eogtn8E6y 8g== 
 Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uenadjw5s-1
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uemvuava1-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 20 Nov 2023 15:15:19 +0000
+        Mon, 20 Nov 2023 15:15:23 +0000
 Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKDq0up023517;
-        Mon, 20 Nov 2023 15:15:19 GMT
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKFAjmd023633;
+        Mon, 20 Nov 2023 15:15:22 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uekq5gr0h-1
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uekq5gr2y-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 20 Nov 2023 15:15:19 +0000
+        Mon, 20 Nov 2023 15:15:22 +0000
 Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3AKFFF8T037000;
-        Mon, 20 Nov 2023 15:15:18 GMT
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3AKFFF8Z037000;
+        Mon, 20 Nov 2023 15:15:21 GMT
 Received: from mihai.localdomain (ban25x6uut25.us.oracle.com [10.153.73.25])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uekq5gqwc-3;
-        Mon, 20 Nov 2023 15:15:18 +0000
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uekq5gqwc-6;
+        Mon, 20 Nov 2023 15:15:21 +0000
 From:   Mihai Carabas <mihai.carabas@oracle.com>
 To:     linux-arm-kernel@lists.infradead.org
 Cc:     kvm@vger.kernel.org, linux-pm@vger.kernel.org,
@@ -55,9 +55,9 @@ Cc:     kvm@vger.kernel.org, linux-pm@vger.kernel.org,
         joao.m.martins@oracle.com, juerg.haefliger@canonical.com,
         mic@digikod.net, mihai.carabas@oracle.com, arnd@arndb.de,
         ankur.a.arora@oracle.com
-Subject: [PATCH 2/7] x86/kvm: Move haltpoll_want() to be arch defined
-Date:   Mon, 20 Nov 2023 16:01:33 +0200
-Message-Id: <1700488898-12431-3-git-send-email-mihai.carabas@oracle.com>
+Subject: [PATCH 5/7] arm64: Define TIF_POLLING_NRFLAG
+Date:   Mon, 20 Nov 2023 16:01:36 +0200
+Message-Id: <1700488898-12431-6-git-send-email-mihai.carabas@oracle.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
 References: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
@@ -65,104 +65,55 @@ X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2023-11-20_15,2023-11-20_01,2023-05-22_02
 X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 bulkscore=0 mlxscore=0
- mlxlogscore=999 phishscore=0 malwarescore=0 suspectscore=0 spamscore=0
+ mlxlogscore=872 phishscore=0 malwarescore=0 suspectscore=0 spamscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311060000
  definitions=main-2311200106
-X-Proofpoint-GUID: rt-YbBsIs9NWtChDWPYah5SFcMWtTrIW
-X-Proofpoint-ORIG-GUID: rt-YbBsIs9NWtChDWPYah5SFcMWtTrIW
+X-Proofpoint-GUID: hrfueO0l1RIGqOXgnbRbJW6s5m_a1g8c
+X-Proofpoint-ORIG-GUID: hrfueO0l1RIGqOXgnbRbJW6s5m_a1g8c
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Joao Martins <joao.m.martins@oracle.com>
 
-Right now, kvm_para_has_hint(KVM_HINTS_REALTIME) is x86 only, and so in the
-pursuit of making cpuidle-haltpoll arch independent, move the check for
-haltpoll enablement to be defined per architecture. Same thing for
-boot_option_idle_override. To that end, add a arch_haltpoll_want() and move the
-check there.
+The default idle method for arm64 is WFI and it therefore
+unconditionally requires the reschedule interrupt when idle.
+
+Commit 842514849a61 ("arm64: Remove TIF_POLLING_NRFLAG") had
+reverted it because WFI was the only idle method. ARM64 support
+for haltpoll means that poll_idle() polls for TIF_POLLING_NRFLAG,
+so define on arm64 *only if* haltpoll is built, using the same bit.
 
 Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
-Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
 Signed-off-by: Mihai Carabas <mihai.carabas@oracle.com>
 ---
- arch/x86/include/asm/cpuidle_haltpoll.h |  1 +
- arch/x86/kernel/kvm.c                   | 10 ++++++++++
- drivers/cpuidle/cpuidle-haltpoll.c      |  8 ++------
- include/linux/cpuidle_haltpoll.h        |  5 +++++
- 4 files changed, 18 insertions(+), 6 deletions(-)
+ arch/arm64/include/asm/thread_info.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/x86/include/asm/cpuidle_haltpoll.h b/arch/x86/include/asm/cpuidle_haltpoll.h
-index c8b39c6716ff..2c5a53ce266f 100644
---- a/arch/x86/include/asm/cpuidle_haltpoll.h
-+++ b/arch/x86/include/asm/cpuidle_haltpoll.h
-@@ -4,5 +4,6 @@
- 
- void arch_haltpoll_enable(unsigned int cpu);
- void arch_haltpoll_disable(unsigned int cpu);
-+bool arch_haltpoll_want(void);
- 
- #endif
-diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
-index 1cceac5984da..75a24f107b2a 100644
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -1151,4 +1151,14 @@ void arch_haltpoll_disable(unsigned int cpu)
- 	smp_call_function_single(cpu, kvm_enable_host_haltpoll, NULL, 1);
- }
- EXPORT_SYMBOL_GPL(arch_haltpoll_disable);
-+
-+bool arch_haltpoll_want(void)
-+{
-+	/* Do not load haltpoll if idle= is passed */
-+	if (boot_option_idle_override != IDLE_NO_OVERRIDE)
-+		return false;
-+
-+	return kvm_para_has_hint(KVM_HINTS_REALTIME);
-+}
-+EXPORT_SYMBOL_GPL(arch_haltpoll_want);
- #endif
-diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
-index e66df22f9695..72f9c84990c5 100644
---- a/drivers/cpuidle/cpuidle-haltpoll.c
-+++ b/drivers/cpuidle/cpuidle-haltpoll.c
-@@ -96,7 +96,7 @@ static void haltpoll_uninit(void)
- 
- static bool haltpoll_want(void)
- {
--	return kvm_para_has_hint(KVM_HINTS_REALTIME) || force;
-+	return (kvm_para_available() && arch_haltpoll_want()) || force;
- }
- 
- static int __init haltpoll_init(void)
-@@ -104,11 +104,7 @@ static int __init haltpoll_init(void)
- 	int ret;
- 	struct cpuidle_driver *drv = &haltpoll_driver;
- 
--	/* Do not load haltpoll if idle= is passed */
--	if (boot_option_idle_override != IDLE_NO_OVERRIDE)
--		return -ENODEV;
--
--	if (!kvm_para_available() || !haltpoll_want())
-+	if (!haltpoll_want())
- 		return -ENODEV;
- 
- 	cpuidle_poll_state_init(drv);
-diff --git a/include/linux/cpuidle_haltpoll.h b/include/linux/cpuidle_haltpoll.h
-index d50c1e0411a2..bae68a6603e3 100644
---- a/include/linux/cpuidle_haltpoll.h
-+++ b/include/linux/cpuidle_haltpoll.h
-@@ -12,5 +12,10 @@ static inline void arch_haltpoll_enable(unsigned int cpu)
- static inline void arch_haltpoll_disable(unsigned int cpu)
- {
- }
-+
-+static inline bool arch_haltpoll_want(void)
-+{
-+	return false;
-+}
- #endif
- #endif
+diff --git a/arch/arm64/include/asm/thread_info.h b/arch/arm64/include/asm/thread_info.h
+index 2c62ab3aeb84..c5fd3107c8ce 100644
+--- a/arch/arm64/include/asm/thread_info.h
++++ b/arch/arm64/include/asm/thread_info.h
+@@ -69,6 +69,9 @@ struct thread_info {
+ #define TIF_SYSCALL_TRACEPOINT	10	/* syscall tracepoint for ftrace */
+ #define TIF_SECCOMP		11	/* syscall secure computing */
+ #define TIF_SYSCALL_EMU		12	/* syscall emulation active */
++#if IS_ENABLED(CONFIG_HALTPOLL_CPUIDLE) || IS_ENABLED(CONFIG_HALTPOLL_CPUIDLE_MODULE)
++#define TIF_POLLING_NRFLAG      16      /* poll_idle() polls TIF_NEED_RESCHED */
++#endif
+ #define TIF_MEMDIE		18	/* is terminating due to OOM killer */
+ #define TIF_FREEZE		19
+ #define TIF_RESTORE_SIGMASK	20
+@@ -94,6 +97,9 @@ struct thread_info {
+ #define _TIF_SYSCALL_TRACEPOINT	(1 << TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
+ #define _TIF_SYSCALL_EMU	(1 << TIF_SYSCALL_EMU)
++#if IS_ENABLED(CONFIG_HALTPOLL_CPUIDLE) || IS_ENABLED(CONFIG_HALTPOLL_CPUIDLE_MODULE)
++#define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
++#endif
+ #define _TIF_UPROBE		(1 << TIF_UPROBE)
+ #define _TIF_SINGLESTEP		(1 << TIF_SINGLESTEP)
+ #define _TIF_32BIT		(1 << TIF_32BIT)
 -- 
 1.8.3.1
 
