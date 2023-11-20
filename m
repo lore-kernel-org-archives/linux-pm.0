@@ -2,46 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B5E5C2BB3F
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:16:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E223C197A0
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:16:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233834AbjKTPQ1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Nov 2023 10:16:27 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41328 "EHLO
+        id S233789AbjKTPQc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Nov 2023 10:16:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41362 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233770AbjKTPQ1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 10:16:27 -0500
+        with ESMTP id S234089AbjKTPQ3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 10:16:29 -0500
 Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81496A4;
-        Mon, 20 Nov 2023 07:16:23 -0800 (PST)
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2WHm027654;
-        Mon, 20 Nov 2023 15:15:24 GMT
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4367FD8;
+        Mon, 20 Nov 2023 07:16:26 -0800 (PST)
+Received: from pps.filterd (m0333520.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2YME031903;
+        Mon, 20 Nov 2023 15:15:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references; s=corp-2023-03-30;
- bh=hlNIjt1lJtZP47W7eO4KvEIII2+KWpAFpv+PlhUsURU=;
- b=o58V0R8A+E1zQ+SsMJvASydoOg6yhLfPoVow6VNQGEyTW8yuHUx78AxnBxqu+geBa3f4
- pAgkQjoWEuFGUbkNQVRkB0M8hWgptRafKNvfQrv8sOf/IhWCunOsjUvupuereHMTuh0H
- OHkE3T7Tuq4WEFXC7xvGpRVbvJrKtm99EkSUORzMMY8+rfMFd+Oi4VM1acNWPboHYliJ
- 0hqbi5Jbg/0S+8YYn+iQJ7BvwWLQC/VTmCBYpqqMSdKy3ZfsqPorEdImcv4hypc5H9jH
- 4E9G465XiumZTMhrkmPOdQEaiaREMPh/dtTaJHPSocWTi672AvCDnuNJqs/HM9FZGoc1 nw== 
+ bh=WF/RvvGLD0DY5qsZ8VlYaxR5Y2ufu/6MrfyvnyHeYNg=;
+ b=WOkdKrg8THkEHHRK1Vr49VLu1XU37NvEKZmK/t4XRdB4NU+eH9djHU6qDtQmzYpZ7385
+ V9mTyo4fZ+qn0a7c7Tkpgw9x6eRqIoNDss0EcJaU/Y+WX4BVrOFupfTUzszRgvk8uNHJ
+ UcIzh5OF0lML2sgz0kSF5jdYvbc06tWs0wQBSF4II/XQkLEX/u6X0CDncTlkA7LZaGvc
+ NQhEhoGfPvaIvZD15g6s9EyErYgY7r2JwaaFZUcaIt2PZ5TT5Ckb3g2C+SRkYmL/WvTH
+ Z9Gb+8uDFRar4GfshLqbphsQ9x09qZh+x/CS+SNJrKq0cE5NTwqz36yukoEWRGfUWgaF gA== 
 Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uekpejwf0-1
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uenadjw5s-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 20 Nov 2023 15:15:24 +0000
+        Mon, 20 Nov 2023 15:15:19 +0000
 Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2wL7023702;
-        Mon, 20 Nov 2023 15:15:23 GMT
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKDq0up023517;
+        Mon, 20 Nov 2023 15:15:19 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uekq5gr46-1
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uekq5gr0h-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 20 Nov 2023 15:15:23 +0000
+        Mon, 20 Nov 2023 15:15:19 +0000
 Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3AKFFF8b037000;
-        Mon, 20 Nov 2023 15:15:22 GMT
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3AKFFF8T037000;
+        Mon, 20 Nov 2023 15:15:18 GMT
 Received: from mihai.localdomain (ban25x6uut25.us.oracle.com [10.153.73.25])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uekq5gqwc-7;
-        Mon, 20 Nov 2023 15:15:22 +0000
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uekq5gqwc-3;
+        Mon, 20 Nov 2023 15:15:18 +0000
 From:   Mihai Carabas <mihai.carabas@oracle.com>
 To:     linux-arm-kernel@lists.infradead.org
 Cc:     kvm@vger.kernel.org, linux-pm@vger.kernel.org,
@@ -55,9 +55,9 @@ Cc:     kvm@vger.kernel.org, linux-pm@vger.kernel.org,
         joao.m.martins@oracle.com, juerg.haefliger@canonical.com,
         mic@digikod.net, mihai.carabas@oracle.com, arnd@arndb.de,
         ankur.a.arora@oracle.com
-Subject: [PATCH 6/7] cpuidle-haltpoll: ARM64 support
-Date:   Mon, 20 Nov 2023 16:01:37 +0200
-Message-Id: <1700488898-12431-7-git-send-email-mihai.carabas@oracle.com>
+Subject: [PATCH 2/7] x86/kvm: Move haltpoll_want() to be arch defined
+Date:   Mon, 20 Nov 2023 16:01:33 +0200
+Message-Id: <1700488898-12431-3-git-send-email-mihai.carabas@oracle.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
 References: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
@@ -68,48 +68,101 @@ X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 bulk
  mlxlogscore=999 phishscore=0 malwarescore=0 suspectscore=0 spamscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311060000
  definitions=main-2311200106
-X-Proofpoint-GUID: srZIfO3ZIE8aevxHjRldc4X9uOZ7nIZa
-X-Proofpoint-ORIG-GUID: srZIfO3ZIE8aevxHjRldc4X9uOZ7nIZa
+X-Proofpoint-GUID: rt-YbBsIs9NWtChDWPYah5SFcMWtTrIW
+X-Proofpoint-ORIG-GUID: rt-YbBsIs9NWtChDWPYah5SFcMWtTrIW
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Joao Martins <joao.m.martins@oracle.com>
 
-To test whether it's a guest or not for the default cases, the haltpoll
-driver uses the kvm_para* helpers to find out if it's a guest or not.
-
-ARM64 doesn't have or defined any of these, so it remains disabled on
-the default. Although it allows to be force-loaded.
+Right now, kvm_para_has_hint(KVM_HINTS_REALTIME) is x86 only, and so in the
+pursuit of making cpuidle-haltpoll arch independent, move the check for
+haltpoll enablement to be defined per architecture. Same thing for
+boot_option_idle_override. To that end, add a arch_haltpoll_want() and move the
+check there.
 
 Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
+Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
 Signed-off-by: Mihai Carabas <mihai.carabas@oracle.com>
 ---
- drivers/cpuidle/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/cpuidle_haltpoll.h |  1 +
+ arch/x86/kernel/kvm.c                   | 10 ++++++++++
+ drivers/cpuidle/cpuidle-haltpoll.c      |  8 ++------
+ include/linux/cpuidle_haltpoll.h        |  5 +++++
+ 4 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index cac5997dca50..067927eda466 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -35,7 +35,7 @@ config CPU_IDLE_GOV_TEO
+diff --git a/arch/x86/include/asm/cpuidle_haltpoll.h b/arch/x86/include/asm/cpuidle_haltpoll.h
+index c8b39c6716ff..2c5a53ce266f 100644
+--- a/arch/x86/include/asm/cpuidle_haltpoll.h
++++ b/arch/x86/include/asm/cpuidle_haltpoll.h
+@@ -4,5 +4,6 @@
  
- config CPU_IDLE_GOV_HALTPOLL
- 	bool "Haltpoll governor (for virtualized systems)"
--	depends on KVM_GUEST
-+	depends on (X86 && KVM_GUEST) || ARM64
- 	help
- 	  This governor implements haltpoll idle state selection, to be
- 	  used in conjunction with the haltpoll cpuidle driver, allowing
-@@ -73,7 +73,7 @@ endmenu
+ void arch_haltpoll_enable(unsigned int cpu);
+ void arch_haltpoll_disable(unsigned int cpu);
++bool arch_haltpoll_want(void);
  
- config HALTPOLL_CPUIDLE
- 	tristate "Halt poll cpuidle driver"
--	depends on X86 && KVM_GUEST
-+	depends on (X86 && KVM_GUEST) || ARM64
- 	select CPU_IDLE_GOV_HALTPOLL
- 	default y
- 	help
+ #endif
+diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
+index 1cceac5984da..75a24f107b2a 100644
+--- a/arch/x86/kernel/kvm.c
++++ b/arch/x86/kernel/kvm.c
+@@ -1151,4 +1151,14 @@ void arch_haltpoll_disable(unsigned int cpu)
+ 	smp_call_function_single(cpu, kvm_enable_host_haltpoll, NULL, 1);
+ }
+ EXPORT_SYMBOL_GPL(arch_haltpoll_disable);
++
++bool arch_haltpoll_want(void)
++{
++	/* Do not load haltpoll if idle= is passed */
++	if (boot_option_idle_override != IDLE_NO_OVERRIDE)
++		return false;
++
++	return kvm_para_has_hint(KVM_HINTS_REALTIME);
++}
++EXPORT_SYMBOL_GPL(arch_haltpoll_want);
+ #endif
+diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
+index e66df22f9695..72f9c84990c5 100644
+--- a/drivers/cpuidle/cpuidle-haltpoll.c
++++ b/drivers/cpuidle/cpuidle-haltpoll.c
+@@ -96,7 +96,7 @@ static void haltpoll_uninit(void)
+ 
+ static bool haltpoll_want(void)
+ {
+-	return kvm_para_has_hint(KVM_HINTS_REALTIME) || force;
++	return (kvm_para_available() && arch_haltpoll_want()) || force;
+ }
+ 
+ static int __init haltpoll_init(void)
+@@ -104,11 +104,7 @@ static int __init haltpoll_init(void)
+ 	int ret;
+ 	struct cpuidle_driver *drv = &haltpoll_driver;
+ 
+-	/* Do not load haltpoll if idle= is passed */
+-	if (boot_option_idle_override != IDLE_NO_OVERRIDE)
+-		return -ENODEV;
+-
+-	if (!kvm_para_available() || !haltpoll_want())
++	if (!haltpoll_want())
+ 		return -ENODEV;
+ 
+ 	cpuidle_poll_state_init(drv);
+diff --git a/include/linux/cpuidle_haltpoll.h b/include/linux/cpuidle_haltpoll.h
+index d50c1e0411a2..bae68a6603e3 100644
+--- a/include/linux/cpuidle_haltpoll.h
++++ b/include/linux/cpuidle_haltpoll.h
+@@ -12,5 +12,10 @@ static inline void arch_haltpoll_enable(unsigned int cpu)
+ static inline void arch_haltpoll_disable(unsigned int cpu)
+ {
+ }
++
++static inline bool arch_haltpoll_want(void)
++{
++	return false;
++}
+ #endif
+ #endif
 -- 
 1.8.3.1
 
