@@ -2,46 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83A49C5AE5E
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:16:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA1D4C197A0
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:17:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234437AbjKTPQh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Nov 2023 10:16:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48030 "EHLO
+        id S234632AbjKTPRT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Nov 2023 10:17:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234364AbjKTPQe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 10:16:34 -0500
+        with ESMTP id S234654AbjKTPRH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 10:17:07 -0500
 Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3503BE;
-        Mon, 20 Nov 2023 07:16:30 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC18C1719;
+        Mon, 20 Nov 2023 07:16:53 -0800 (PST)
 Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2Z4M005926;
-        Mon, 20 Nov 2023 15:15:25 GMT
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2Z4L005926;
+        Mon, 20 Nov 2023 15:15:18 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references; s=corp-2023-03-30;
- bh=uAhbu4AUajdcQROPp7AvbiHI/LFlFhMVo6VGoxnZCWM=;
- b=iWm+eqFDXMPL5yZeVVivDaYQytpZR3S/mzy8etq05l2MOlypXUEQv/NlVT9fec+oMhtz
- n6qGjTv90sWy1upsgg/PIzkJFQu1Etcu5jo+g8rKD0xSjrOf6pp7oYpwgoQ5MNF6zwWE
- 93OErUMGMZPhTtsrGMiM9TKbrZX2/fJxDJJ+12ujXGEaMvovc4UR2YbMvmPljXeynlgd
- 01PhAiRt0XeHp/KUnWYeru74ECbsdn8TbZs5c2MMwCk548yK80dpJR+BLulGzaV7+Ana
- 5a267z8ctt3NaKeDhr4sotvF63M/mOGOM4eu8A41OfAhDxjbB9WiXrDaWWT6dfZkWymQ QA== 
+ bh=2V8o9BaQ17wiFTJFImvoF31znAoRVZkAB3vW9iybNe4=;
+ b=lYsJ3knbU8SDz0I3uqfqg7oUXll/0QCVmQZUyZQdJkVEk0ICCXbReZAHmvc4VePULkVx
+ eSLWcWrd6XoqQ3wWUhMDPxjW0Kr+MLmXN5oRV6lPJ2PeXE3zuLoCwRMctmF6EQ9eRG5v
+ 5ByW01SMgAXOrxLi2zwGxjYKgadp3NuGOs6EcYhz6UCO5Gvs4K8Hhgy+x2+0fhJnXb2N
+ 2jd6SXjsTy58zv/bSmQMNUY/jpLDGRlDkM9IGd+/4vr5Qxb9ZyBRe9Yqh2ap+at9ALiM
+ 5jLtWSi+KjFgR/kA6hBaoCM5VnxbNkSaN4wmqAo2lkECeGIz43Hwu4gyTueASHHh1ITD sw== 
 Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uemvuava8-1
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uemvuav9n-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 20 Nov 2023 15:15:25 +0000
+        Mon, 20 Nov 2023 15:15:18 +0000
 Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2uu1023572;
-        Mon, 20 Nov 2023 15:15:24 GMT
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKE2Me6023469;
+        Mon, 20 Nov 2023 15:15:17 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uekq5gr51-1
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uekq5gqym-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 20 Nov 2023 15:15:24 +0000
+        Mon, 20 Nov 2023 15:15:17 +0000
 Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3AKFFF8d037000;
-        Mon, 20 Nov 2023 15:15:24 GMT
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3AKFFF8R037000;
+        Mon, 20 Nov 2023 15:15:16 GMT
 Received: from mihai.localdomain (ban25x6uut25.us.oracle.com [10.153.73.25])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uekq5gqwc-8;
-        Mon, 20 Nov 2023 15:15:23 +0000
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uekq5gqwc-2;
+        Mon, 20 Nov 2023 15:15:16 +0000
 From:   Mihai Carabas <mihai.carabas@oracle.com>
 To:     linux-arm-kernel@lists.infradead.org
 Cc:     kvm@vger.kernel.org, linux-pm@vger.kernel.org,
@@ -55,9 +55,9 @@ Cc:     kvm@vger.kernel.org, linux-pm@vger.kernel.org,
         joao.m.martins@oracle.com, juerg.haefliger@canonical.com,
         mic@digikod.net, mihai.carabas@oracle.com, arnd@arndb.de,
         ankur.a.arora@oracle.com
-Subject: [PATCH 7/7] cpuidle/poll_state: replace cpu_relax with smp_cond_load_relaxed
-Date:   Mon, 20 Nov 2023 16:01:38 +0200
-Message-Id: <1700488898-12431-8-git-send-email-mihai.carabas@oracle.com>
+Subject: [PATCH 1/7] x86: Move ARCH_HAS_CPU_RELAX to arch
+Date:   Mon, 20 Nov 2023 16:01:32 +0200
+Message-Id: <1700488898-12431-2-git-send-email-mihai.carabas@oracle.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
 References: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
@@ -68,47 +68,51 @@ X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 bulk
  mlxlogscore=999 phishscore=0 malwarescore=0 suspectscore=0 spamscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311060000
  definitions=main-2311200106
-X-Proofpoint-GUID: nJCLzdI_KlVOa57CUYhmhyCxfgZd5UAK
-X-Proofpoint-ORIG-GUID: nJCLzdI_KlVOa57CUYhmhyCxfgZd5UAK
+X-Proofpoint-GUID: QT8FxzDkqsUsT7eSEWgaw5FTRjZ6RwsG
+X-Proofpoint-ORIG-GUID: QT8FxzDkqsUsT7eSEWgaw5FTRjZ6RwsG
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-cpu_relax on ARM64 does a simple "yield". Thus we replace it with
-smp_cond_load_relaxed which basically does a "wfe".
+From: Joao Martins <joao.m.martins@oracle.com>
 
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
+ARM64 is going to use it for haltpoll support (for poll-state)
+so move the definition to be arch-agnostic and allow architectures
+to override it.
+
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
 Signed-off-by: Mihai Carabas <mihai.carabas@oracle.com>
 ---
- drivers/cpuidle/poll_state.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ arch/Kconfig     | 3 +++
+ arch/x86/Kconfig | 1 +
+ 2 files changed, 4 insertions(+)
 
-diff --git a/drivers/cpuidle/poll_state.c b/drivers/cpuidle/poll_state.c
-index 9b6d90a72601..440cd713e39a 100644
---- a/drivers/cpuidle/poll_state.c
-+++ b/drivers/cpuidle/poll_state.c
-@@ -26,12 +26,16 @@ static int __cpuidle poll_idle(struct cpuidle_device *dev,
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 4a85a10b12fd..92af0e9bc35e 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -1371,6 +1371,9 @@ config RELR
+ config ARCH_HAS_MEM_ENCRYPT
+ 	bool
  
- 		limit = cpuidle_poll_time(drv, dev);
++config ARCH_HAS_CPU_RELAX
++	bool
++
+ config ARCH_HAS_CC_PLATFORM
+ 	bool
  
--		while (!need_resched()) {
--			cpu_relax();
--			if (loop_count++ < POLL_IDLE_RELAX_COUNT)
--				continue;
--
-+		for (;;) {
- 			loop_count = 0;
-+
-+			smp_cond_load_relaxed(&current_thread_info()->flags,
-+					      (VAL & _TIF_NEED_RESCHED) ||
-+					      (loop_count++ >= POLL_IDLE_RELAX_COUNT));
-+
-+			if (loop_count < POLL_IDLE_RELAX_COUNT)
-+				break;
-+
- 			if (local_clock_noinstr() - time_start > limit) {
- 				dev->poll_time_limit = true;
- 				break;
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index d1c362f479d9..0c77670d020e 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -73,6 +73,7 @@ config X86
+ 	select ARCH_HAS_CACHE_LINE_SIZE
+ 	select ARCH_HAS_CPU_CACHE_INVALIDATE_MEMREGION
+ 	select ARCH_HAS_CPU_FINALIZE_INIT
++	select ARCH_HAS_CPU_RELAX
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VIRTUAL
+ 	select ARCH_HAS_DEBUG_VM_PGTABLE	if !X86_PAE
 -- 
 1.8.3.1
 
