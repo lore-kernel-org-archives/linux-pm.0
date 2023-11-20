@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BFBFC2BB3F
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 14:16:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19210C2BB3F
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 14:16:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233348AbjKTOQ0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Nov 2023 09:16:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38344 "EHLO
+        id S233414AbjKTOQ3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Nov 2023 09:16:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38352 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233128AbjKTOQZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 09:16:25 -0500
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com (mail-sn1nam02on2079.outbound.protection.outlook.com [40.107.96.79])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8BF0B112;
-        Mon, 20 Nov 2023 06:16:21 -0800 (PST)
+        with ESMTP id S233345AbjKTOQ0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 09:16:26 -0500
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2062.outbound.protection.outlook.com [40.107.223.62])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBB0210C;
+        Mon, 20 Nov 2023 06:16:22 -0800 (PST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=RULUSfo8EtKIsH91vVf2Dd+va+bhnRouNTcyTJFx8j+qekEiFUUKtzqh8PakThUBQvwIsgkw5rKopQHN29OxjeN4on/2/Taiw+dG0NLmADM9qejJq1DetdmlSmEPzAhTivP2yQS2GKA69A/jeA7PJOBpLhfW3rczKKOipaggsx1JK9F5HEKEKj34rxrguWIyzF++3BOpHxj5rFphl2UqvW6HcAn989ds7lhwJBpY4RmQW/3nensQFo2BkfBpzpzDtxB7DUYVWWlEQ2dWqTuzDy0goVutiFWNeQhpuJV7pbtq156tY0+Q22KUwRaR1hThM56xBlmVy9ic0P36Zqa4bA==
+ b=hCHsL1dBRYy3zmdGtvj7J25O3LSZ44ynvLGTQImdTsl6xLFd3OlXIu+6K8NfTMmDid77kKf1FVcWffZHulXqkivYo95ITNnNqAHo5wBVZTYZdH1XsuK+PGbYSgHQMNpxGdeaErI65YFNvikZNJTVbXC8zXq79/3jyIRU0xdgmo77NPDy5qRVRdf93JfE9WCmjfPfe8O7CZfy8SiHl116e5dXmjZo3sc3DfjtEcQl9SAODIg3U3wY//ulufY7y53dBl1FV1d9OvpNLpej6m4P/VXTJ402Ram6/E8/C8U+f58EfSRCCNIIBklNrL3/LNuj8ZPvKE76nOlZMIOLjK1n3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=eoO2hsj6V7V8s3YNmSkGpN60ZmtwaHkyVi9LGkFRJGE=;
- b=iN9oW2Q22lfuwP0DaHSWgDztLv75lv5BS/59Epn00FkWB5dVShSB8OgtFAiQqHsNYQEO0ms0vAe2jOffEmns2JXESCIoKsdxNz9Sn9836e+7OCFOREj4zd3DBq4bBeWkGpvl0BIlcl2CcRjSK8KEAMD4wZ5FMOXxAlB8e8r1Yx6rn1K+sxXHvoD5yD9gjyrdLZJAUIgKOOhPCf16wKGdLCZ0gEdzVyqTx+a9fRudJlihmJPz0vr4oYb2jyGdIuo4AFUpr8B5n9+iKVsBvWZosYCLBgHgc7j0HuwXjBwB0m8RsWwbOa1uOBqzB7lAs4Ml0GXri+F/n6D2RNe2WHzgIg==
+ bh=5CgYUedyKiO6EIimQ7+v0ot41IaJmK11YFGpcndJIq8=;
+ b=ABo88JEH9BtR8Lm/4WmONMpyY+QNDH0LhvC0+v+XUcsAmClkdwMS17czn4dhRO4Qpzvop30HBUiJe93+XqWQe5YSTnTYbU70jJQ2X3K/aX0c8MMFq1lxaLAAxasmAfWfwpdxYK+k0/oR1mPFuvLgHKjHzy4zGBt2z+hAU5bt+rBAJGxhSW3JdJiDWf7LRhmtvdf1TeHVRr/Oc8hJte4F1ce8CKiqdq+XIQFBePLi9Kt6AXDpek3tFmkhpShh0vTDiuWYSDknPoFGgjtUcl7txuIwwC1Z1CVye1ChGY6qhDfrdDPplHfBYfiRgTyxR3HAqVtm9hSKTHJyTil4oihvkg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=o2.pl smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=eoO2hsj6V7V8s3YNmSkGpN60ZmtwaHkyVi9LGkFRJGE=;
- b=WXAb1aj7NzTc4lWQ6bPrMGpR0bUVIsYidkOyD1dycSFFLL6nei3g0Dv57Eg7vwp7jUxrHm6cVHaEjx2mC59yMvN2iHN2RDulk+PMwQxavID+lJHpEi2JEsHXCTHUmWwcZBFVRQCDoRLy0nbuoDX/eP6YDkAKAj95JBLIZbTz8po=
-Received: from CY8PR12CA0071.namprd12.prod.outlook.com (2603:10b6:930:4c::22)
- by SA1PR12MB8987.namprd12.prod.outlook.com (2603:10b6:806:386::22) with
+ bh=5CgYUedyKiO6EIimQ7+v0ot41IaJmK11YFGpcndJIq8=;
+ b=xr2T4ATFBEezhvbhmqd1Kr82S+LUavivU1sMmeqL+14c2BPnkqpe3KF3P4DtfZTi+li9lJ+nzuMMIsQcwEKViTllKF9aMftVkpNSjVraYZhyWTo9CaFGRig6zPj2zVf3zHp69AuHKDxT06uX+qFM8DuqOyly5r9EvYV2AY8g0vU=
+Received: from CY8PR12CA0072.namprd12.prod.outlook.com (2603:10b6:930:4c::15)
+ by CY8PR12MB8216.namprd12.prod.outlook.com (2603:10b6:930:78::20) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7002.26; Mon, 20 Nov
- 2023 14:16:19 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7002.27; Mon, 20 Nov
+ 2023 14:16:21 +0000
 Received: from CY4PEPF0000EE3E.namprd03.prod.outlook.com
- (2603:10b6:930:4c:cafe::9d) by CY8PR12CA0071.outlook.office365.com
- (2603:10b6:930:4c::22) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10b6:930:4c:cafe::b0) by CY8PR12CA0072.outlook.office365.com
+ (2603:10b6:930:4c::15) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7002.27 via Frontend
- Transport; Mon, 20 Nov 2023 14:16:19 +0000
+ Transport; Mon, 20 Nov 2023 14:16:21 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -48,11 +48,11 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  CY4PEPF0000EE3E.mail.protection.outlook.com (10.167.242.18) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.7025.12 via Frontend Transport; Mon, 20 Nov 2023 14:16:19 +0000
+ 15.20.7025.12 via Frontend Transport; Mon, 20 Nov 2023 14:16:20 +0000
 Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.34; Mon, 20 Nov
- 2023 08:16:17 -0600
+ 2023 08:16:19 -0600
 From:   Mario Limonciello <mario.limonciello@amd.com>
 To:     =?UTF-8?q?Mateusz=20Jo=C5=84czyk?= <mat.jonczyk@o2.pl>,
         Alessandro Zummo <a.zummo@towertech.it>,
@@ -64,9 +64,9 @@ CC:     "open list:REAL TIME CLOCK (RTC) SUBSYSTEM"
         <aalsing@gmail.com>, <Dhaval.Giani@amd.com>, <xmb8dsv4@gmail.com>,
         <x86@kernel.org>, <dhaval.giani@gmail.com>,
         "Mario Limonciello" <mario.limonciello@amd.com>
-Subject: [PATCH v2 2/4] rtc: Adjust failure return code for cmos_set_alarm()
-Date:   Mon, 20 Nov 2023 08:15:53 -0600
-Message-ID: <20231120141555.458-3-mario.limonciello@amd.com>
+Subject: [PATCH v2 4/4] rtc: Extend timeout for waiting for UIP to clear to 1s
+Date:   Mon, 20 Nov 2023 08:15:55 -0600
+Message-ID: <20231120141555.458-5-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20231120141555.458-1-mario.limonciello@amd.com>
 References: <20231120141555.458-1-mario.limonciello@amd.com>
@@ -78,64 +78,104 @@ X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY4PEPF0000EE3E:EE_|SA1PR12MB8987:EE_
-X-MS-Office365-Filtering-Correlation-Id: 29ee09bf-3549-43aa-4ebb-08dbe9d34403
+X-MS-TrafficTypeDiagnostic: CY4PEPF0000EE3E:EE_|CY8PR12MB8216:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8d9f8afb-11e5-4ced-90a8-08dbe9d34528
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: P14lE1DbBPSO+WKrAh6RO8nILE6ZwaOSDwQj7c9rxRzsOeTNSwEq7eco3bHJkKzUvRKhcqwfJkC/URGzPON3AG4I4/jbdFvcyuZgEzNKn+WM5hPzB+Il0p9pFVdxDm5E/gqd5Vy4MqmuerF77Dyi8SvaqskwuoBsJpiwQwKmpEoCXVyL0wc0JUQsGxj7O5VUVDFon9C+7zAAwBjqz/EF33YwN3RXhKxF1xQn7s+NqFAiDm0lwbPH7kcqH7WenyLf/T1hBOQfSD7FP7L5dlyUiCkGqQgBdfgCt1gqldubWt0864So6kvQG+1LGDRAZuOD2EzWzpgGOj3ImrZYTCbgjmgK/2Cfzs23DTH7rdp7gxvo63vB4/SrnZXc3bt4ssZl/9xWUF17KRtSWAyyMTl14uZ90YnCDY3CbKgWTXwPCIIEjZcTbTKdyaOFRqEtp/IjHkQQVToErAoy3QXUDwgqoqrTblznVUB7353OFgFybvmm9us/+8l0GCs1pQUwXfFYSd7jBHl0L1CZ2aHZNOvCaBBzf6GL1wVGWFHA42dQb6Vl1aDywQ8vzi9QPUYHY2LMwAzjDEP6FwhLvM9B17xz2Mek0+YwCCnf4u5pzSH0/SgwXdvYBp/HNBIr9EOEMNbeEuqPxecEpT1UFOdtFwipdLQzaJ+KzUDJ4F4xtUeotQT0g2ot3jp+dhdLqVsqV8/ZKSSfJCEr+XLmodSdjfbQTknpcjBzjkAg8UeuThEFXLeztC4XTOw46C7j+AcE1evJzeLGE42ditb0sLWbJCbs9w==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(346002)(396003)(39860400002)(136003)(376002)(230922051799003)(451199024)(64100799003)(186009)(1800799012)(82310400011)(36840700001)(46966006)(40470700004)(40460700003)(70206006)(70586007)(110136005)(54906003)(316002)(7696005)(36756003)(6666004)(426003)(336012)(478600001)(2616005)(16526019)(1076003)(82740400003)(81166007)(356005)(83380400001)(36860700001)(86362001)(47076005)(44832011)(40480700001)(26005)(2906002)(5660300002)(7416002)(4326008)(8676002)(8936002)(41300700001)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: MVWJJC5EZmpDXlhwHJnH2BSEL0pyjTy2A+ZTErcCmrljP5+a3SIFpDmyO6cR2uswdRtCJSccz1I7jW5TkWQiNnmkDFksXnx/B/VOc3rs3//gSHAhkB2K+vp0ibuWTF7Gv5gBNN7A5aQ+fKMz1g56/ojOgymDD8PiUUAz2IP8nLJw37XDXBD3ZHLw/5IIpBHcYzu8PoKTC17Trl9AVrWH6ttCI86pQUKkfj2DtX+5UeMgWT7pC0lCgtRNBxZ2PHTKqK6og/2ZpcuYbpagD9D2h5lrbYD8PwRgIHiCioL7O+c+TD4MkLfAcYNJRUmu7gwDKfTb4BHrqZrBhhi/Cw87W7jp3WEJ/luSG2NtBkmBausiK2UajAPnf6QpoDnOA+0iLW3q/5Xg4u94xB9iQTvdTNeNM8xORJazq85Aic6RQ8xPWim3D8MXa18n6c/0Bw3CWl5ZmD70AWLHiD1SSntAL5rRUFVvc2jgWFb3/+aLC3yrZUo25No9sDo3vmWD8IQR0OrRU8ZY7FvPCUEPS7xy9FMlVqKxNp56yLjQ4SP0ruK3Mr69lbT6Ov5JwW/3LbJf/LnXkzRc+27NSP+lErzI5zTBNRTkU/PHYB/OGYKCTFDOz7l9etSC4GX7o3qyQzRFqDyZJuKHAtwaDdEaDmEeooa5cirwofjgMrc039nwpmMJOsO1xB1IG18HmF76AeBwb8WZlee/td5AZ/l/yN+TUXrz2AFS3/qhO7yT+ZBuOVcaBRgFjuog0YCYlJOZ/EipJjIg47j3FUpWnllaYJA0Dw==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(136003)(396003)(376002)(39850400004)(346002)(230922051799003)(451199024)(64100799003)(186009)(1800799012)(82310400011)(46966006)(40470700004)(36840700001)(40460700003)(83380400001)(426003)(336012)(26005)(16526019)(1076003)(47076005)(36860700001)(41300700001)(4326008)(8676002)(8936002)(7416002)(2906002)(44832011)(5660300002)(478600001)(966005)(7696005)(6666004)(110136005)(70586007)(70206006)(54906003)(316002)(36756003)(81166007)(86362001)(82740400003)(356005)(2616005)(40480700001)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Nov 2023 14:16:19.0402
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Nov 2023 14:16:20.9621
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 29ee09bf-3549-43aa-4ebb-08dbe9d34403
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8d9f8afb-11e5-4ced-90a8-08dbe9d34528
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource: CY4PEPF0000EE3E.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB8987
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR12MB8216
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When mc146818_avoid_UIP() fails to return a valid value, this is because
-UIP didn't clear in the timeout period. Adjust the return code in this
-case to -ETIMEDOUT.
+Specs don't say anything about UIP being cleared within 10ms. They
+only say that UIP won't occur for another 244uS. If a long NMI occurs
+while UIP is still updating it might not be possible to get valid
+data in 10ms.
 
-Cc: stable@vger.kernel.org
-Fixes: cdedc45c579f ("rtc: cmos: avoid UIP when reading alarm time")
-Fixes: cd17420ebea5 ("rtc: cmos: avoid UIP when writing alarm time")
+This has been observed in the wild that around s2idle some calls can
+take up to 480ms before UIP is clear.
+
+Adjust callers from outside an interrupt context to wait for up to a
+1s instead of 10ms.
+
+Cc: stable@vger.kernel.org # 6.1.y: commit d2a632a8a117 ("rtc: mc146818-lib: reduce RTC_UIP polling period")
+Fixes: ec5895c0f2d8 ("rtc: mc146818-lib: extract mc146818_avoid_UIP")
+Reported-by: xmb8dsv4@gmail.com
+Closes: https://bugzilla.kernel.org/show_bug.cgi?id=217626
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
 v1->v2:
- * cover cmos_read_alarm() too
- * Add stable tags
+ * Add tags
 ---
- drivers/rtc/rtc-cmos.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/rtc.c          | 2 +-
+ drivers/base/power/trace.c     | 2 +-
+ drivers/rtc/rtc-cmos.c         | 2 +-
+ drivers/rtc/rtc-mc146818-lib.c | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
+index 961ebc7f1872..2e7066980f3e 100644
+--- a/arch/x86/kernel/rtc.c
++++ b/arch/x86/kernel/rtc.c
+@@ -67,7 +67,7 @@ void mach_get_cmos_time(struct timespec64 *now)
+ 		return;
+ 	}
+ 
+-	if (mc146818_get_time(&tm, 10)) {
++	if (mc146818_get_time(&tm, 1000)) {
+ 		pr_err("Unable to read current time from RTC\n");
+ 		now->tv_sec = now->tv_nsec = 0;
+ 		return;
+diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+index c2e925357474..cd6e559648b2 100644
+--- a/drivers/base/power/trace.c
++++ b/drivers/base/power/trace.c
+@@ -120,7 +120,7 @@ static unsigned int read_magic_time(void)
+ 	struct rtc_time time;
+ 	unsigned int val;
+ 
+-	if (mc146818_get_time(&time, 10) < 0) {
++	if (mc146818_get_time(&time, 1000) < 0) {
+ 		pr_err("Unable to read current time from RTC\n");
+ 		return 0;
+ 	}
 diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-index 228fb2d11c70..391f91d3d144 100644
+index d278b085821e..6bc1e0279cd9 100644
 --- a/drivers/rtc/rtc-cmos.c
 +++ b/drivers/rtc/rtc-cmos.c
-@@ -292,7 +292,7 @@ static int cmos_read_alarm(struct device *dev, struct rtc_wkalrm *t)
+@@ -231,7 +231,7 @@ static int cmos_read_time(struct device *dev, struct rtc_time *t)
+ 	if (!pm_trace_rtc_valid())
+ 		return -EIO;
  
- 	/* This not only a rtc_op, but also called directly */
- 	if (!is_valid_irq(cmos->irq))
--		return -EIO;
-+		return -ETIMEDOUT;
- 
- 	/* Basic alarms only support hour, minute, and seconds fields.
- 	 * Some also support day and month, for alarms up to a year in
-@@ -557,7 +557,7 @@ static int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t)
- 	 * Use mc146818_avoid_UIP() to avoid this.
- 	 */
- 	if (!mc146818_avoid_UIP(cmos_set_alarm_callback, &p))
--		return -EIO;
-+		return -ETIMEDOUT;
- 
- 	cmos->alarm_expires = rtc_tm_to_time64(&t->time);
+-	ret = mc146818_get_time(t, 10);
++	ret = mc146818_get_time(t, 1000);
+ 	if (ret < 0) {
+ 		dev_err_ratelimited(dev, "unable to read current time\n");
+ 		return ret;
+diff --git a/drivers/rtc/rtc-mc146818-lib.c b/drivers/rtc/rtc-mc146818-lib.c
+index 5abb925da4fa..9191e5f50fae 100644
+--- a/drivers/rtc/rtc-mc146818-lib.c
++++ b/drivers/rtc/rtc-mc146818-lib.c
+@@ -91,7 +91,7 @@ EXPORT_SYMBOL_GPL(mc146818_avoid_UIP);
+  */
+ bool mc146818_does_rtc_work(void)
+ {
+-	return mc146818_avoid_UIP(NULL, 10, NULL);
++	return mc146818_avoid_UIP(NULL, 1000, NULL);
+ }
+ EXPORT_SYMBOL_GPL(mc146818_does_rtc_work);
  
 -- 
 2.34.1
