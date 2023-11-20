@@ -2,122 +2,49 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA929C5AD4C
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:23:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA8A0C197A0
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:55:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233163AbjKTPX6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Nov 2023 10:23:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55808 "EHLO
+        id S232079AbjKTPzD convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Nov 2023 10:55:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33138 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232515AbjKTPX6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 10:23:58 -0500
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id B35EFBE;
-        Mon, 20 Nov 2023 07:23:54 -0800 (PST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BCC73FEC;
-        Mon, 20 Nov 2023 07:24:40 -0800 (PST)
-Received: from [10.57.4.99] (unknown [10.57.4.99])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1D8863F6C4;
-        Mon, 20 Nov 2023 07:23:51 -0800 (PST)
-Message-ID: <96565d08-8d6b-4a37-8a83-90bdd53ba89a@arm.com>
-Date:   Mon, 20 Nov 2023 15:24:52 +0000
+        with ESMTP id S229823AbjKTPzC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 10:55:02 -0500
+X-Greylist: delayed 164017 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 20 Nov 2023 07:54:59 PST
+Received: from s770432.srvape.com (unknown [IPv6:2a11:3b80:1:0:1f0::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 15958B4
+        for <linux-pm@vger.kernel.org>; Mon, 20 Nov 2023 07:54:58 -0800 (PST)
+Received: from allprojectfundings.com (localhost [IPv6:::1])
+        by s770432.srvape.com (Postfix) with ESMTP id CC28729BFCD
+        for <linux-pm@vger.kernel.org>; Mon, 20 Nov 2023 16:49:08 +0100 (CET)
+Reply-To: amiraziz@wealthconsultantmanagers.com
+From:   Amir Aziz <funding@allprojectfundings.com>
+To:     linux-pm@vger.kernel.org
+Subject: We Can Finance Your Business / Projects
+Date:   20 Nov 2023 07:49:10 -0800
+Message-ID: <20231120074910.E5466CA48261A6F0@allprojectfundings.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 8/9] thermal: exynos: use BIT wherever possible
-Content-Language: en-US
-To:     Mateusz Majewski <m.majewski2@samsung.com>
-Cc:     Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-kernel@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>
-References: <20231120145049.310509-1-m.majewski2@samsung.com>
- <CGME20231120145107eucas1p13ed9ea8772346c404d2d7f47d4c80f5a@eucas1p1.samsung.com>
- <20231120145049.310509-9-m.majewski2@samsung.com>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20231120145049.310509-9-m.majewski2@samsung.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Mateusz,
+Greetings,
 
-On 11/20/23 14:50, Mateusz Majewski wrote:
-> The original driver did not use that macro and it allows us to make our
-> intentions slightly clearer.
-> 
-> Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
-> ---
->   drivers/thermal/samsung/exynos_tmu.c | 24 ++++++++++++------------
->   1 file changed, 12 insertions(+), 12 deletions(-)
-> 
+We are a consultancy firm situated in Bahrain currently looking 
+to finance new or existing projects in any industry.
 
-[snip]
+Currently we are sourcing for opportunities for our review and 
+consideration and would be delighted to discuss further.
 
-> @@ -590,15 +590,15 @@ static void exynos5433_tmu_control(struct platform_device *pdev, bool on)
->   				continue;
->   
->   			interrupt_en |=
-> -				(1 << (EXYNOS7_TMU_INTEN_RISE0_SHIFT + i));
-> +				BIT(EXYNOS7_TMU_INTEN_RISE0_SHIFT + i);
->   		}
->   
->   		interrupt_en |=
->   			interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
->   
-> -		con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> +		con |= BIT(EXYNOS_TMU_CORE_EN_SHIFT);
->   	} else
-
-Minor issue: the if-else segment here. When the 'if' has the
-brackets, then the 'else' should have them as well,
-even if there is only a single line under 'else'.
-It's not strictly to this patch, but you can address that
-later somewhere (just saw it here).
-
-> -		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> +		con &= ~BIT(EXYNOS_TMU_CORE_EN_SHIFT);
->   
->   	pd_det_en = on ? EXYNOS5433_PD_DET_EN : 0;
->   
-> @@ -622,17 +622,17 @@ static void exynos7_tmu_control(struct platform_device *pdev, bool on)
->   				continue;
->   
->   			interrupt_en |=
-> -				(1 << (EXYNOS7_TMU_INTEN_RISE0_SHIFT + i));
-> +				BIT(EXYNOS7_TMU_INTEN_RISE0_SHIFT + i);
->   		}
->   
->   		interrupt_en |=
->   			interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
->   
-> -		con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> -		con |= (1 << EXYNOS7_PD_DET_EN_SHIFT);
-> +		con |= BIT(EXYNOS_TMU_CORE_EN_SHIFT);
-> +		con |= BIT(EXYNOS7_PD_DET_EN_SHIFT);
->   	} else {
-> -		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> -		con &= ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
-> +		con &= ~BIT(EXYNOS_TMU_CORE_EN_SHIFT);
-> +		con &= ~BIT(EXYNOS7_PD_DET_EN_SHIFT);
->   	}
->   
->   	writel(interrupt_en, data->base + EXYNOS7_TMU_REG_INTEN);
-
-
-The patch LGTM,
-
-Reviewed-by Lukasz Luba <lukasz.luba@arm.com>
+Please feel free to contact us if you wish to proceed via our 
+email : amiraziz@wealthconsultantmanagers.com
 
 Regards,
-Lukasz
+Amir Aziz
+
+N:B We will never charge or ask for any upfront fees of any sort.
