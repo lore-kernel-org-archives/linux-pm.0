@@ -2,52 +2,52 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E5C4C197A0
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 14:52:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DA08C5AD4C
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 14:52:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233357AbjKTOwR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Nov 2023 09:52:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47196 "EHLO
+        id S232435AbjKTOwU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Nov 2023 09:52:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55368 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233846AbjKTOvz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 09:51:55 -0500
+        with ESMTP id S233707AbjKTOv6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 09:51:58 -0500
 Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 639AF10FE
-        for <linux-pm@vger.kernel.org>; Mon, 20 Nov 2023 06:51:04 -0800 (PST)
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20231120145102euoutp021dfc09c50befcf04e3a28fba2626ae6a~ZXFb7rzkg2626426264euoutp02p
-        for <linux-pm@vger.kernel.org>; Mon, 20 Nov 2023 14:51:02 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20231120145102euoutp021dfc09c50befcf04e3a28fba2626ae6a~ZXFb7rzkg2626426264euoutp02p
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A56E1171E
+        for <linux-pm@vger.kernel.org>; Mon, 20 Nov 2023 06:51:08 -0800 (PST)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20231120145107euoutp02c363bd6c27739b18615c527dfdf386b1~ZXFgIhG8a2495724957euoutp02X
+        for <linux-pm@vger.kernel.org>; Mon, 20 Nov 2023 14:51:07 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20231120145107euoutp02c363bd6c27739b18615c527dfdf386b1~ZXFgIhG8a2495724957euoutp02X
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1700491863;
-        bh=z+drqHSTXutvqyghqqSngnAvaJMAvU0O0c1Ke0HntPc=;
+        s=mail20170921; t=1700491867;
+        bh=HFjJa1RguNICip8Nann+GThTo5GBNLI3URdePUvmffE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=kwZQvROpy8RL9K+EGs6KHsA0Mf9sO/JY5dnuz7xmgxq9dfTS6qwGqfNBcMr9rf3QG
-         Rc+SFlLt1/YRkrs6NoA1zo2Kbl+BOFIWsRjtVvtEv/agLI/ArCNsKSPigN8xVRvA4Z
-         YTJ+K/1pkXLYnIrL59q9RRIGWxtsUCUJnGhd657c=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20231120145102eucas1p1a44aa06fa354de95a8205ea742f5460a~ZXFbfJwLv1858518585eucas1p1Q;
-        Mon, 20 Nov 2023 14:51:02 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id CA.37.09539.6527B556; Mon, 20
-        Nov 2023 14:51:02 +0000 (GMT)
+        b=RJROzEWzw/z52hXiYkUqtHSJy1qUZmagNu441oM1lCR0PAkDjIPfvzGJMw8LeExcf
+         +UIfz6npQX6ZmbqLO67shH1rbHaVrBcWc+8NGowkPxxHwsz4sXNMUwVfHhOiHTqj8L
+         JAr7xC4ep1zmK26cWtBGqBGZBhq49zZvtty1e8nE=
+Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20231120145107eucas1p257acb28f624092f513f92bdf4e3402ef~ZXFf0tf1y0521605216eucas1p2z;
+        Mon, 20 Nov 2023 14:51:07 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+        eusmges3new.samsung.com (EUCPMTA) with SMTP id A8.A8.09552.A527B556; Mon, 20
+        Nov 2023 14:51:07 +0000 (GMT)
 Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20231120145101eucas1p2f5da2c4612cf10b0b8b2055863fbd7c2~ZXFa3T_6J1100611006eucas1p2u;
-        Mon, 20 Nov 2023 14:51:01 +0000 (GMT)
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20231120145106eucas1p1964c7fdc0297d538faa0aeb20190d178~ZXFfYQS382504625046eucas1p17;
+        Mon, 20 Nov 2023 14:51:06 +0000 (GMT)
 Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
         eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20231120145101eusmtrp235997a8555478e4749b94eb8b26820f2~ZXFa1sjfI0691806918eusmtrp2B;
-        Mon, 20 Nov 2023 14:51:01 +0000 (GMT)
-X-AuditID: cbfec7f2-515ff70000002543-52-655b7256120d
+        20231120145106eusmtrp20de9c8945620aecf4b00892a3f597c11~ZXFfXl5eb0691806918eusmtrp2P;
+        Mon, 20 Nov 2023 14:51:06 +0000 (GMT)
+X-AuditID: cbfec7f5-853ff70000002550-8f-655b725a9c69
 Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 24.C3.09146.5527B556; Mon, 20
-        Nov 2023 14:51:01 +0000 (GMT)
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 1B.C3.09146.A527B556; Mon, 20
+        Nov 2023 14:51:06 +0000 (GMT)
 Received: from AMDC4515.eu.corp.samsungelectronics.net (unknown
         [106.120.51.28]) by eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20231120145100eusmtip271c74bbc8e56a76859f5bf666ad20f0f~ZXFZ-1b0v0740707407eusmtip2Y;
-        Mon, 20 Nov 2023 14:51:00 +0000 (GMT)
+        20231120145105eusmtip270942d3c46daa8e61451e3142463bd41~ZXFegph5a1340013400eusmtip2C;
+        Mon, 20 Nov 2023 14:51:05 +0000 (GMT)
 From:   Mateusz Majewski <m.majewski2@samsung.com>
 To:     linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
@@ -63,154 +63,221 @@ Cc:     Mateusz Majewski <m.majewski2@samsung.com>,
         Mark Brown <broonie@kernel.org>,
         Marek Szyprowski <m.szyprowski@samsung.com>,
         Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH v5 3/9] thermal: exynos: switch from workqueue-driven
- interrupt handling to threaded interrupts
-Date:   Mon, 20 Nov 2023 15:50:43 +0100
-Message-ID: <20231120145049.310509-4-m.majewski2@samsung.com>
+Subject: [PATCH v5 7/9] thermal: exynos: split initialization of TMU and the
+ thermal zone
+Date:   Mon, 20 Nov 2023 15:50:47 +0100
+Message-ID: <20231120145049.310509-8-m.majewski2@samsung.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231120145049.310509-1-m.majewski2@samsung.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrOKsWRmVeSWpSXmKPExsWy7djP87phRdGpBrOWS1k8mLeNzeLw/AqL
-        qQ+fsFl833KdyWLeZ1mLva+3slt8u9LBZLHp8TVWi8u75rBZfO49wmgx4/w+JouFTS3sFhOP
-        TWa2WHvkLrvF3C9TmS2ePOxjcxDwWDNvDaPHzll32T0W73nJ5LFpVSebx51re9g8Ni+p9+jb
-        sorR4/MmuQCOKC6blNSczLLUIn27BK6MT5OOMxXskayY/OwJWwPjJNEuRk4OCQETiUcbFzJ1
-        MXJxCAmsYJQ4fXg7O0hCSOALo8T6fywQic+MEn9+n2aC6fh57yFUYjmjxKr5vVDtrUwS7SdP
-        MoNUsQkYSDx4swxslIhAK6PEzCZ1kCJmga/MEldfzwcq4uAQFiiUODmlBqSGRUBVYvql7ywg
-        Nq+ArcTpNztYIbbJS+xZ9B1sM6eAnUTbkedsEDWCEidnPgGrZwaqad46mxlkvoRAP6fEm/8L
-        2SCaXSR+nLzFAmELS7w6voUdwpaR+L9zPtQ7+RIzNr9nAblHQqBC4u5BLwjTWuLjGbArmQU0
-        Jdbv0ocodpTYc7+FHaKCT+LGW0GIA/gkJm2bzgwR5pXoaBOCqFaVOL5nEjOELS3xpOU21EoP
-        ifeTTrJMYFScheSVWUhemYWwdwEj8ypG8dTS4tz01GLDvNRyveLE3OLSvHS95PzcTYzAtHb6
-        3/FPOxjnvvqod4iRiYPxEKMEB7OSCO83oYhUId6UxMqq1KL8+KLSnNTiQ4zSHCxK4ryqKfKp
-        QgLpiSWp2ampBalFMFkmDk6pBiZe47uPzQ6135rWdJblP9uaHZ+6tbRM37lE891z3hr4emP0
-        +8Mqa789iMgJf7Ar69gRpx1e/pPWentKhcY5LDdrPJ207KEWc1DjemVNr+hlv743fTjQeZzt
-        9AoNrzn6demmzYJ+3dMPzew/8lEsfJ5dZd3PnL8WF0NSrOb43bihtvG0V/Kvcvbqhy95bqvY
-        bpp6fb2+sPc7jw05F/YuuByzf1Lo99uSxne4NCees5v+4Nijqjd+r8r6wsOtH5Vrdy9YsS3n
-        IHu83uuOL72zKp3uyTQ+FXToerxo3uekM67a8wo3Hvx28I/x1NgQxmMH4n84H3PO++Kd06Q6
-        /1rk3Hn3ayyPS8uxi5dNepjl43hViaU4I9FQi7moOBEAPHihy9oDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrJIsWRmVeSWpSXmKPExsVy+t/xe7qhRdGpBu1bdCwezNvGZnF4foXF
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrGKsWRmVeSWpSXmKPExsWy7djPc7rRRdGpBl+7GC0ezNvGZnF4foXF
         1IdP2Cy+b7nOZDHvs6zF3tdb2S2+Xelgstj0+BqrxeVdc9gsPvceYbSYcX4fk8XCphZ2i4nH
         JjNbrD1yl91i7pepzBZPHvaxOQh4rJm3htFj56y77B6L97xk8ti0qpPN4861PWwem5fUe/Rt
-        WcXo8XmTXABHlJ5NUX5pSapCRn5xia1StKGFkZ6hpYWekYmlnqGxeayVkamSvp1NSmpOZllq
-        kb5dgl7Gp0nHmQr2SFZMfvaErYFxkmgXIyeHhICJxM97D1m6GLk4hASWMko07D/FCpGQljj8
-        ZQo7hC0s8edaFxtEUTOTxPG108CK2AQMJB68WcYOkhAR6GSU6Np8jgkkwSzwn1ni60wFEFtY
-        IF/i5dl7YJNYBFQlpl/6zgJi8wrYSpx+swNqm7zEnkXfwXo5Bewk2o48B9rGAbTNVqLjrgZE
-        uaDEyZlPWCDGy0s0b53NPIFRYBaS1CwkqQWMTKsYRVJLi3PTc4sN9YoTc4tL89L1kvNzNzEC
-        43DbsZ+bdzDOe/VR7xAjEwfjIUYJDmYlEd5vQhGpQrwpiZVVqUX58UWlOanFhxhNgc6eyCwl
-        mpwPTAR5JfGGZgamhiZmlgamlmbGSuK8ngUdiUIC6YklqdmpqQWpRTB9TBycUg1MU5c+Of/L
-        54Iz24XFOzQ6VQ1kr0/TLYhuL7jTvWKNz7LjdhfyQreteT1X8bTlbg/bpWwqd7/3d78qObep
-        W80s+dfJabsnsQd9uXc752yb/o6ad+2P3XTk3x2WvLSD9xajsEtjaLdb5oWVnWf0l23p7anm
-        SBJ9fn+GVLr/4r08NaK/vzN2GL8MmtPRVCQW161xgUH+788nO3jTufmvb+XXuxGoF7F/9pRP
-        uocy5sZ23U6vVRYrU2y4z8r8rtggY5nSHlf+IP7j61e+Yp6qkXm5X7e4ex2737v0xpct6VeC
-        ayconlx/PenilylSxp2C6o+Oajj/DOTbqcO1v1oxV8p4w4Kka/aS7beWPgtvvr5XiaU4I9FQ
-        i7moOBEA0YtMw0wDAAA=
-X-CMS-MailID: 20231120145101eucas1p2f5da2c4612cf10b0b8b2055863fbd7c2
+        WcXo8XmTXABHFJdNSmpOZllqkb5dAlfG+tcNjAV31Cs63ts0MC5T6GLk4JAQMJGYd1Kri5GL
+        Q0hgBaPExF0LWSCcL4wSr5qbWCGcz4wS3w9eY+pi5ATruHroIxNEYjmjxOeOPcwQTiuTxL3f
+        99lAqtgEDCQevFnGDmKLCLQySsxsUgcpYhb4yixx9fV8ZpCEsEC0xJpX/SwgNouAqsThZdPA
+        bF4BW4kzh7eyQKyTl9iz6DvYak4BO4m2I8/ZIGoEJU7OfAJWwwxU07x1NtgVEgL9nBKP7y5n
+        hmh2kdiy/C/U3cISr45vYYewZST+75wPFc+XmLH5PQskNCok7h70gjCtJT6eYQYxmQU0Jdbv
+        0ocodpT4MPcbK0QFn8SNt4IQB/BJTNo2nRkizCvR0SYEUa0qcXzPJKhTpCWetNxmgijxkNh5
+        P38Co+IsJJ/MQvLJLIS1CxiZVzGKp5YW56anFhvnpZbrFSfmFpfmpesl5+duYgQmtdP/jn/d
+        wbji1Ue9Q4xMHIyHGCU4mJVEeL8JRaQK8aYkVlalFuXHF5XmpBYfYpTmYFES51VNkU8VEkhP
+        LEnNTk0tSC2CyTJxcEo1MCkLLViYJ/145oynJrPsfinIRYXoB6xdvyZ82a6sHvviG7dqb+2d
+        aT3l86d59Uc+2zYsLmHm23nld1bcopP/LOJfT9p1ZmNroYsP46zetWdqp1vu2vS408v7+lHr
+        G9vXPJXz9Xb5niXa1pahLXHd4LHOhAsbj53yO/ZCLfd+p786y4WpO9q2HzpntO59yGnF4z+u
+        1Tvd9V/45MGkKwde91tPjn7SYN8S1VW3nnnSwvy4B2oV18+kcv/068x4X6s+T3TpxtpZB6V8
+        wssvJ7R/cZdS/RqgksRZ3v9soeaX8uoK16mO5Q9FNSN/94ScLutjFF2+x+5vj6u8CmPqYQ+X
+        5EizDV5MOUtzLx+wzagQllFiKc5INNRiLipOBADxwxt32QMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrBIsWRmVeSWpSXmKPExsVy+t/xe7pRRdGpBnc3Klk8mLeNzeLw/AqL
+        qQ+fsFl833KdyWLeZ1mLva+3slt8u9LBZLHp8TVWi8u75rBZfO49wmgx4/w+JouFTS3sFhOP
+        TWa2WHvkLrvF3C9TmS2ePOxjcxDwWDNvDaPHzll32T0W73nJ5LFpVSebx51re9g8Ni+p9+jb
+        sorR4/MmuQCOKD2bovzSklSFjPziElulaEMLIz1DSws9IxNLPUNj81grI1MlfTublNSczLLU
+        In27BL2M9a8bGAvuqFd0vLdpYFym0MXIySEhYCJx9dBHpi5GLg4hgaWMElvW3WSGSEhLHP4y
+        hR3CFpb4c62LDaKomUniwqdWsASbgIHEgzfL2EESIgKdjBJdm88xgSSYBf4zS3ydCbZCWCBS
+        out6PyOIzSKgKnF42TQWEJtXwFbizOGtLBAb5CX2LPoO1sspYCfRduQ50DYOoG22Eh13NSDK
+        BSVOznzCAjFeXqJ562zmCYwCs5CkZiFJLWBkWsUoklpanJueW2yoV5yYW1yal66XnJ+7iREY
+        hduO/dy8g3Heq496hxiZOBgPMUpwMCuJ8H4TikgV4k1JrKxKLcqPLyrNSS0+xGgKdPZEZinR
+        5HxgGsgriTc0MzA1NDGzNDC1NDNWEuf1LOhIFBJITyxJzU5NLUgtgulj4uCUamCarMR+/d+D
+        VT+mBU7awyW46T6PVYvgt6qtn7l0erjzVy8pnc1++cDv/VPXpks4+mkbnpn2/K3yX9lr0x7b
+        HFG7GOn4zU+ewVRpW7PfKZ6aiLlGrnyMKgkSM3geds5iqr62Ret+EKeypHTg5YyqaRMu/VY6
+        eqs6su51e9e10yt+bW+WO+fV43b01/36X8pTfi7uXjk/ry2UocRTZ+tG/RtVyk94NxQLLnxo
+        JcxSXrtl9aYnz38ws7ofaMh64fz+v2E/46m1Z5XW3WhXy4uO4pPSPsTG6K9yx5olaeK9rD4W
+        HauQP1rPJNdaSep9lvrw537E7g/BD/9oRl07Uf0sVsElyrJBP6Wk6Zj6zvuyzbOUWIozEg21
+        mIuKEwHgfQqfSwMAAA==
+X-CMS-MailID: 20231120145106eucas1p1964c7fdc0297d538faa0aeb20190d178
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20231120145101eucas1p2f5da2c4612cf10b0b8b2055863fbd7c2
+X-RootMTR: 20231120145106eucas1p1964c7fdc0297d538faa0aeb20190d178
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20231120145101eucas1p2f5da2c4612cf10b0b8b2055863fbd7c2
+X-CMS-RootMailID: 20231120145106eucas1p1964c7fdc0297d538faa0aeb20190d178
 References: <20231120145049.310509-1-m.majewski2@samsung.com>
-        <CGME20231120145101eucas1p2f5da2c4612cf10b0b8b2055863fbd7c2@eucas1p2.samsung.com>
+        <CGME20231120145106eucas1p1964c7fdc0297d538faa0aeb20190d178@eucas1p1.samsung.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The workqueue boilerplate is mostly one-to-one what the threaded
-interrupts do.
+This will be needed in the future, as the thermal zone subsystem might
+call our callbacks right after devm_thermal_of_zone_register. Currently
+we just make get_temp return EAGAIN in such case, but this will not be
+possible with state-modifying callbacks, for instance set_trips.
 
 Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
 ---
-v1 -> v2: devm_request_threaded_irq call formatting change.
+v3 -> v4: Reordered calls done while leaving exynos_tmu_initialize so
+  that they mirror the calls done while entering this function.
+v1 -> v2: We take clocks into account; exynos_tmu_initialize needs both
+  clocks, as tmu_initialize might use the base_second registers. However,
+  exynos_thermal_zone_configure only needs clk.
 
- drivers/thermal/samsung/exynos_tmu.c | 29 +++++++++-------------------
- 1 file changed, 9 insertions(+), 20 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 104 +++++++++++++++------------
+ 1 file changed, 60 insertions(+), 44 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 4ff32245d2a9..c144592d4584 100644
+index d918bf6d5359..6b3a7dd05c68 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -142,7 +142,6 @@ enum soc_type {
-  * @base_second: base address of the common registers of the TMU controller.
-  * @irq: irq number of the TMU controller.
-  * @soc: id of the SOC type.
-- * @irq_work: pointer to the irq work structure.
-  * @lock: lock to implement synchronization.
-  * @clk: pointer to the clock structure.
-  * @clk_sec: pointer to the clock structure for accessing the base_second.
-@@ -175,7 +174,6 @@ struct exynos_tmu_data {
- 	void __iomem *base_second;
- 	int irq;
- 	enum soc_type soc;
--	struct work_struct irq_work;
- 	struct mutex lock;
- 	struct clk *clk, *clk_sec, *sclk;
- 	u32 cal_type;
-@@ -763,10 +761,9 @@ static int exynos7_tmu_read(struct exynos_tmu_data *data)
- 		EXYNOS7_TMU_TEMP_MASK;
- }
- 
--static void exynos_tmu_work(struct work_struct *work)
-+static irqreturn_t exynos_tmu_threaded_irq(int irq, void *id)
+@@ -251,25 +251,8 @@ static void sanitize_temp_error(struct exynos_tmu_data *data, u32 trim_info)
+ static int exynos_tmu_initialize(struct platform_device *pdev)
  {
--	struct exynos_tmu_data *data = container_of(work,
--			struct exynos_tmu_data, irq_work);
-+	struct exynos_tmu_data *data = id;
+ 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+-	struct thermal_zone_device *tzd = data->tzd;
+-	int num_trips = thermal_zone_get_num_trips(tzd);
+ 	unsigned int status;
+-	int ret = 0, temp;
+-
+-	ret = thermal_zone_get_crit_temp(tzd, &temp);
+-	if (ret && data->soc != SOC_ARCH_EXYNOS5433) { /* FIXME */
+-		dev_err(&pdev->dev,
+-			"No CRITICAL trip point defined in device tree!\n");
+-		goto out;
+-	}
+-
+-	if (num_trips > data->ntrip) {
+-		dev_info(&pdev->dev,
+-			 "More trip points than supported by this TMU.\n");
+-		dev_info(&pdev->dev,
+-			 "%d trip points should be configured in polling mode.\n",
+-			 num_trips - data->ntrip);
+-	}
++	int ret = 0;
  
- 	thermal_zone_device_update(data->tzd, THERMAL_EVENT_UNSPECIFIED);
- 
-@@ -778,7 +775,8 @@ static void exynos_tmu_work(struct work_struct *work)
- 
+ 	mutex_lock(&data->lock);
+ 	clk_enable(data->clk);
+@@ -280,32 +263,63 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 	if (!status) {
+ 		ret = -EBUSY;
+ 	} else {
+-		int i, ntrips =
+-			min_t(int, num_trips, data->ntrip);
+-
+ 		data->tmu_initialize(pdev);
+-
+-		/* Write temperature code for rising and falling threshold */
+-		for (i = 0; i < ntrips; i++) {
+-
+-			struct thermal_trip trip;
+-
+-			ret = thermal_zone_get_trip(tzd, i, &trip);
+-			if (ret)
+-				goto err;
+-
+-			data->tmu_set_trip_temp(data, i, trip.temperature / MCELSIUS);
+-			data->tmu_set_trip_hyst(data, i, trip.temperature / MCELSIUS,
+-						trip.hysteresis / MCELSIUS);
+-		}
+-
+ 		data->tmu_clear_irqs(data);
+ 	}
++
++	if (!IS_ERR(data->clk_sec))
++		clk_disable(data->clk_sec);
++	clk_disable(data->clk);
++	mutex_unlock(&data->lock);
++
++	return ret;
++}
++
++static int exynos_thermal_zone_configure(struct platform_device *pdev)
++{
++	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
++	struct thermal_zone_device *tzd = data->tzd;
++	int i, num_trips = thermal_zone_get_num_trips(tzd);
++	int ret = 0, temp;
++
++	ret = thermal_zone_get_crit_temp(tzd, &temp);
++
++	if (ret && data->soc != SOC_ARCH_EXYNOS5433) { /* FIXME */
++		dev_err(&pdev->dev,
++			"No CRITICAL trip point defined in device tree!\n");
++		goto out;
++	}
++
++	mutex_lock(&data->lock);
++
++	if (num_trips > data->ntrip) {
++		dev_info(&pdev->dev,
++			 "More trip points than supported by this TMU.\n");
++		dev_info(&pdev->dev,
++			 "%d trip points should be configured in polling mode.\n",
++			 num_trips - data->ntrip);
++	}
++
++	clk_enable(data->clk);
++
++	num_trips = min_t(int, num_trips, data->ntrip);
++
++	/* Write temperature code for rising and falling threshold */
++	for (i = 0; i < num_trips; i++) {
++		struct thermal_trip trip;
++
++		ret = thermal_zone_get_trip(tzd, i, &trip);
++		if (ret)
++			goto err;
++
++		data->tmu_set_trip_temp(data, i, trip.temperature / MCELSIUS);
++		data->tmu_set_trip_hyst(data, i, trip.temperature / MCELSIUS,
++					trip.hysteresis / MCELSIUS);
++	}
++
+ err:
  	clk_disable(data->clk);
  	mutex_unlock(&data->lock);
--	enable_irq(data->irq);
+-	if (!IS_ERR(data->clk_sec))
+-		clk_disable(data->clk_sec);
+ out:
+ 	return ret;
+ }
+@@ -1044,10 +1058,12 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 		break;
+ 	}
+ 
+-	/*
+-	 * data->tzd must be registered before calling exynos_tmu_initialize(),
+-	 * requesting irq and calling exynos_tmu_control().
+-	 */
++	ret = exynos_tmu_initialize(pdev);
++	if (ret) {
++		dev_err(&pdev->dev, "Failed to initialize TMU\n");
++		return ret;
++	}
 +
-+	return IRQ_HANDLED;
- }
- 
- static void exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
-@@ -812,16 +810,6 @@ static void exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
- 	writel(val_irq, data->base + tmu_intclear);
- }
- 
--static irqreturn_t exynos_tmu_irq(int irq, void *id)
--{
--	struct exynos_tmu_data *data = id;
--
--	disable_irq_nosync(irq);
--	schedule_work(&data->irq_work);
--
--	return IRQ_HANDLED;
--}
--
- static const struct of_device_id exynos_tmu_match[] = {
- 	{
- 		.compatible = "samsung,exynos3250-tmu",
-@@ -1023,8 +1011,6 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err_sensor;
- 
--	INIT_WORK(&data->irq_work, exynos_tmu_work);
--
- 	data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
- 	if (IS_ERR(data->clk)) {
- 		dev_err(&pdev->dev, "Failed to get clock\n");
-@@ -1093,8 +1079,11 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	data->tzd = devm_thermal_of_zone_register(&pdev->dev, 0, data,
+ 						  &exynos_sensor_ops);
+ 	if (IS_ERR(data->tzd)) {
+@@ -1058,9 +1074,9 @@ static int exynos_tmu_probe(struct platform_device *pdev)
  		goto err_sclk;
  	}
  
--	ret = devm_request_irq(&pdev->dev, data->irq, exynos_tmu_irq,
--		IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
-+	ret = devm_request_threaded_irq(&pdev->dev, data->irq, NULL,
-+					exynos_tmu_threaded_irq,
-+					IRQF_TRIGGER_RISING
-+						| IRQF_SHARED | IRQF_ONESHOT,
-+					dev_name(&pdev->dev), data);
+-	ret = exynos_tmu_initialize(pdev);
++	ret = exynos_thermal_zone_configure(pdev);
  	if (ret) {
- 		dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
+-		dev_err(&pdev->dev, "Failed to initialize TMU\n");
++		dev_err(&pdev->dev, "Failed to configure the thermal zone\n");
  		goto err_sclk;
+ 	}
+ 
 -- 
 2.42.0
 
