@@ -2,128 +2,134 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5B35C54E76
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 12:34:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D062CC197A0
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 14:16:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232607AbjKTMeI convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Nov 2023 07:34:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35160 "EHLO
+        id S232986AbjKTOQZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Nov 2023 09:16:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38320 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232138AbjKTMeH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 07:34:07 -0500
-Received: from mail-ot1-f52.google.com (mail-ot1-f52.google.com [209.85.210.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69A21F7;
-        Mon, 20 Nov 2023 04:34:03 -0800 (PST)
-Received: by mail-ot1-f52.google.com with SMTP id 46e09a7af769-6d31666d89cso623177a34.1;
-        Mon, 20 Nov 2023 04:34:03 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700483642; x=1701088442;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=kOYntcNL1KZc0ge/tQKhNBAvlh0SCDjd66OAjfQiGAw=;
-        b=MMaRxzfKYzW/awQ2p7UPLGJTsQyb8Wiuog40dmQAjx0z3fIn4t7+XRniVFx2+0FIti
-         Ej7pZqwi3P1slFZyC/m3//5RgpTMDDsrp9dggTN/VdWKIwZbVMHsexB78gtfDvRXXHX6
-         973chT+6x28kQLb1+NU+2geF7glHqCvIX9aVlsayiO6VtFln2r7OouQRyOyxASaanscU
-         8j6yMoDfKrKo5LRt9BGHVLO8UViEz2XasHUa856ClZloHTKmi2dZmqHi1se56UJNhEO5
-         j06C5ozYUmeklfm9AMBtvKoViQUTi2Q1A/fCO/J5ySb0ezh6SW2T8EFqcqyl0E+6usBD
-         Vr4g==
-X-Gm-Message-State: AOJu0YzpeL0AYGto5P3qo3AIZme75nfWTik7vVa3M8xmOi4jbwG6gfMg
-        C1mzFtBdtfiUOm+NC0RUqgVdR5bU/RIIyASVGdc=
-X-Google-Smtp-Source: AGHT+IHOhga94JMqtY8hoAxuRge3pX+yrowVNWJ1RcCc2pGQgiUNtVlE+tAxUR7Q7yYHZcKpMtKT5b8WQ/iMJBS5YbM=
-X-Received: by 2002:a05:6820:169:b0:583:fc94:c3fd with SMTP id
- k9-20020a056820016900b00583fc94c3fdmr6797935ood.0.1700483642570; Mon, 20 Nov
- 2023 04:34:02 -0800 (PST)
+        with ESMTP id S232963AbjKTOQY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 09:16:24 -0500
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2050.outbound.protection.outlook.com [40.107.92.50])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10C84110;
+        Mon, 20 Nov 2023 06:16:21 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=bDwtTK7LRvrmhVJBFF0SrCZG4Ehfocggf9qL/k+eqYFLC+hkDIw/WjdI3jf2SdWNy99rze0chMn04c5Lb3EyCUQrskpA93dSpdRQDJ+aONPtg0jTcNVnzaQouuLxVNK7mp5vWfqA2tC7HwmwRWo74SpPtfVBAI7eyerbattdJJ7hI0eI6AaFCIIW89quV76dF8Jjuvfc30J1PuyAOtOuiOQh0WuYro34FObAQkAf2mAa/MCRhZ8ZKSnM/q61MAjqY8DqkeUmW6PQNFZcy7/PHxZH8+LcWrdHkqDob+lYFAT+TxdoTQsx3+nh/OWw/HHnsD2/i3PtF8vJPpKN8fJy8Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=3AQ+mHof3kjrxEz9O7jMsJYhFe655aK6wk5/P6yxx+E=;
+ b=dpmdxfRYmpzIP0Nae7p87BcmqrSqz5VAt4OOSzFWym5qJzGCI0QJzJg7gk7+uzJ10d0rIFl1rO1iCWu33HP7WL59evhz3uVPFLZ9DfU81Pd2Nt0p4WhwckmUayLywykyxXes4NaV57lOtgJyy85Amht/s/+yi2NpD1R61/FuXLHua2WI/G7bwc1VhjMJGqZTUKVtogFvLtid+b1Y9HFptMCK3tkGzAVtyLZKuIxODMUNIdTR5j1MtLxJIdUooltac52wM9HPvXhd4a5/8+HNKoF/7wTG3g9xBP35Pyngvobv9LAeKckfQuA7hDBt5804bgHKvlP5ElzC39WbQ4XoUw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=o2.pl smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=3AQ+mHof3kjrxEz9O7jMsJYhFe655aK6wk5/P6yxx+E=;
+ b=LN6qFNNtaTVj+eJD0qtgZwMN4AxYFE2AV5BqX6J21rQSMejIP7F61nXBAfo800/4rlCZso0TMFqwrt0WNq2VPoAmn8xWk8Vx6KjNrBIPlSD3qIkU4maFK3WNFWVBN1syj8jE7EF3oDW/QvQ0uYhn0L9uuaWQH46/BVri4hEp2yU=
+Received: from CY8PR12CA0058.namprd12.prod.outlook.com (2603:10b6:930:4c::23)
+ by DM4PR12MB6662.namprd12.prod.outlook.com (2603:10b6:8:b5::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7002.27; Mon, 20 Nov
+ 2023 14:16:18 +0000
+Received: from CY4PEPF0000EE3E.namprd03.prod.outlook.com
+ (2603:10b6:930:4c:cafe::67) by CY8PR12CA0058.outlook.office365.com
+ (2603:10b6:930:4c::23) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7002.27 via Frontend
+ Transport; Mon, 20 Nov 2023 14:16:18 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ CY4PEPF0000EE3E.mail.protection.outlook.com (10.167.242.18) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.7025.12 via Frontend Transport; Mon, 20 Nov 2023 14:16:18 +0000
+Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.34; Mon, 20 Nov
+ 2023 08:16:16 -0600
+From:   Mario Limonciello <mario.limonciello@amd.com>
+To:     =?UTF-8?q?Mateusz=20Jo=C5=84czyk?= <mat.jonczyk@o2.pl>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>
+CC:     "open list:REAL TIME CLOCK (RTC) SUBSYSTEM" 
+        <linux-rtc@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <tobrohl@gmail.com>,
+        <aalsing@gmail.com>, <Dhaval.Giani@amd.com>, <xmb8dsv4@gmail.com>,
+        <x86@kernel.org>, <dhaval.giani@gmail.com>,
+        "Mario Limonciello" <mario.limonciello@amd.com>
+Subject: [PATCH v2 1/4] rtc: mc146818-lib: Adjust failure return code for mc146818_get_time()
+Date:   Mon, 20 Nov 2023 08:15:52 -0600
+Message-ID: <20231120141555.458-2-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20231120141555.458-1-mario.limonciello@amd.com>
+References: <20231120141555.458-1-mario.limonciello@amd.com>
 MIME-Version: 1.0
-References: <20231120081516.55172-1-chris.feng@mediatek.com>
-In-Reply-To: <20231120081516.55172-1-chris.feng@mediatek.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 20 Nov 2023 13:33:49 +0100
-Message-ID: <CAJZ5v0g1zQvgqRrThoAenm+YAfTNdeAkn=hCu6Hk8MtGrcEXNA@mail.gmail.com>
-Subject: Re: [PATCH v2] PM: hibernate: Fix the bug where wake events cannot
- wake system during hibernation
-To:     Chris Feng <chris.feng@mediatek.com>
-Cc:     rafael@kernel.org, pavel@ucw.cz, len.brown@intel.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        stable@kernel.org, hua.yang@mediatek.com, ting.wang@mediatek.com,
-        liang.lu@mediatek.com, chetan.kumar@mediatek.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CY4PEPF0000EE3E:EE_|DM4PR12MB6662:EE_
+X-MS-Office365-Filtering-Correlation-Id: b82c310b-9a2e-4a05-79ec-08dbe9d343ad
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: jL9RDqRQFso9fznOglG/9zPPG7NJMns+JYleJBDWBXlEEhAZE2gp+3JnKGaYfP5Ur8y6v7/sHHXQalek9TAzfW8XyZJdsttbEiBHJS4Wp/S084N2yo+0Zw7IeBpuomOVFoXRBFWQ39p8qWFITWNrpPxtODbYMlPWJf6zTYAJuG2eyebyiQ9BvcWQcZrYz7Y4UNV1c4j3Z/XlwRJgIwtF4iv6hD9pSHuMXWG5ZC7kXK9ob2QUbjPylrMhuYXg/00h0AwyqN2EBDSBouIvKfN07oAMvpEVtLtx4vOuTtXX0tgOMoqg6CYEEtpAXN0NBWoRp3j/QtciCES0+xtFpjvIgeZCOIMPGQV56BFL0tgg0YCG+mtha5OQ22SMtD5XuPBCqfq3g/eN3eZpDBfGN64171+VgjTlxTLENn3vdyUVvWZixRZxW9MBc16/RTls+qBub/a/rqFyuQ5d1Ji0niq2S9L7vSmgpVfHW2EusbzvgBA513zCJmWPfGwsg9GHtsfxCDvAlhujnChwKrLm9pu51xIvtIImePfsZgo3dqrL8Hd/pziLnX24fPpQoP4Dneo0Hit514mu1mbP6zNdXpqO33ldLAZKv0/I+dUiSHBGQ7aiCLPFI/DLu20i7aSPt7iQiM80kdpmBuGSrDTeCG0Uq4j0bXspGsSwnjDg+/VklkJubKESUceBwlatPN+s8UmfrYZfL22ZDibddsuBoUiFm3Qxj6hiW64f37A7vWGUU5zUF7qCuOaDfFWafFEWSinAoqi5ZB2mv6BldVHZz4qSmg==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(39860400002)(136003)(346002)(396003)(376002)(230922051799003)(82310400011)(451199024)(64100799003)(1800799012)(186009)(36840700001)(46966006)(40470700004)(40460700003)(83380400001)(426003)(336012)(26005)(16526019)(1076003)(47076005)(36860700001)(4326008)(8676002)(8936002)(41300700001)(7416002)(2906002)(44832011)(5660300002)(316002)(478600001)(7696005)(6666004)(110136005)(70586007)(70206006)(54906003)(36756003)(81166007)(86362001)(82740400003)(356005)(2616005)(40480700001)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Nov 2023 14:16:18.4933
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: b82c310b-9a2e-4a05-79ec-08dbe9d343ad
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: CY4PEPF0000EE3E.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB6662
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Nov 20, 2023 at 9:15 AM Chris Feng <chris.feng@mediatek.com> wrote:
->
-> Wake-up events that occur in the hibernation process's
-> hibernation_platform_enter() cannot wake up the system. Although the
-> current hibernation framework will execute part of the recovery process
-> after a wake-up event occurs, it ultimately performs a shutdown operation
-> because the system does not check the return value of
-> hibernation_platform_enter(). Moreover, when restoring the device before
-> system shutdown, the device's I/O and DMA capabilities will be turned on,
-> which can lead to data loss.
+mc146818_get_time() calls mc146818_avoid_UIP() to avoid fetching the
+time while RTC update is in progress (UIP). When this fails, the return
+code is -EIO, but actually there was no IO failure.
 
-This isn't correct, because devices are enabled to do IO and DMA
-already before saving the hibernation image.
+The reason for the return from mc146818_avoid_UIP() is that the UIP
+wasn't cleared in the time period. Adjust the return code to -ETIMEDOUT
+to match the behavior.
 
-The problem really only is that if a wakeup event occurs before
-putting the system into the final low-power state, it will be missed,
-so the patch subject should be something like "Avoid missing wakeup
-events during hibernation".
+Cc: stable@vger.kernel.org
+Fixes: 2a61b0ac5493 ("rtc: mc146818-lib: refactor mc146818_get_time")
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+v1->v2:
+ * Add stable and fixes tag
+---
+ drivers/rtc/rtc-mc146818-lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> To solve this problem, check the return value of
-> hibernation_platform_enter(). When it returns -EAGAIN or -EBUSY, execute
-> the hibernation recovery process, discard the previously saved image, and
-> ultimately return to the working state.
->
-> Signed-off-by: Chris Feng <chris.feng@mediatek.com>
-> ---
-> [PATCH v2]:
->  - Execute the hibernation recovery process and return to the working state
->    when the return value of the function hibernation_platform_enter() is
->    -EAGAIN or -EBUSY. Both of the two values may indicate the occurrence of
->    a wake-up event.
-> ---
->  kernel/power/hibernate.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
->
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index 8d35b9f9aaa3..7e39a9baca9e 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -642,9 +642,9 @@ int hibernation_platform_enter(void)
->   */
->  static void power_down(void)
->  {
-> -#ifdef CONFIG_SUSPEND
->         int error;
->
-> +#ifdef CONFIG_SUSPEND
->         if (hibernation_mode == HIBERNATION_SUSPEND) {
->                 error = suspend_devices_and_enter(mem_sleep_current);
->                 if (error) {
-> @@ -667,7 +667,13 @@ static void power_down(void)
->                 kernel_restart(NULL);
->                 break;
->         case HIBERNATION_PLATFORM:
-> -               hibernation_platform_enter();
-> +               error = hibernation_platform_enter();
-> +               if (error == -EAGAIN || error == -EBUSY) {
-> +                       swsusp_unmark();
-> +                       events_check_enabled = false;
-> +                       pr_err("Hibernation Abort.\n");
+diff --git a/drivers/rtc/rtc-mc146818-lib.c b/drivers/rtc/rtc-mc146818-lib.c
+index f1c09f1db044..43a28e82674e 100644
+--- a/drivers/rtc/rtc-mc146818-lib.c
++++ b/drivers/rtc/rtc-mc146818-lib.c
+@@ -138,7 +138,7 @@ int mc146818_get_time(struct rtc_time *time)
+ 
+ 	if (!mc146818_avoid_UIP(mc146818_get_time_callback, &p)) {
+ 		memset(time, 0, sizeof(*time));
+-		return -EIO;
++		return -ETIMEDOUT;
+ 	}
+ 
+ 	if (!(p.ctrl & RTC_DM_BINARY) || RTC_ALWAYS_BCD)
+-- 
+2.34.1
 
-This is not an error condition, so pr_err() is not the right level.
-pr_info() would suffice.
-
-Also the message needs to be more precise, so whoever reads it will
-know that this is about a (legitimate) wakeup event.
-
-> +                       return;
-> +               }
->                 fallthrough;
->         case HIBERNATION_SHUTDOWN:
->                 if (kernel_can_power_off())
-> --
