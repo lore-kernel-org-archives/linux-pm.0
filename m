@@ -2,130 +2,114 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D457C2BB3F
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:11:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B5E5C2BB3F
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Nov 2023 15:16:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234279AbjKTPLh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Nov 2023 10:11:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59192 "EHLO
+        id S233834AbjKTPQ1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Nov 2023 10:16:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41328 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234328AbjKTPLa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 10:11:30 -0500
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B992ED;
-        Mon, 20 Nov 2023 07:11:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1700493084; x=1732029084;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=DmNtpirpP7FYaYPM29SydoZP1gej1xVLaVAOvU6FEFg=;
-  b=IOLRtmeBYdAhWspyX/ibdWzREAfiryjValk1jONP8CIzlT2agAmWcNqO
-   S9niuHt4dnUugMuxo+hSAyOjYkz25jaE/72j7AZf7cIE0M07Prw8Jzq0J
-   +pafqA9uY7L5go7HzzHT5nwxvATioS4TzenRZfFmXfxJxvUPJ0hLx+8/j
-   bkQ25+cNQxT27DD4o+woNCCvaGIJqEy8cEOoCb+YyZInXyJNjWa2OyhQs
-   gpAcA8Ir/Fi202YH4AdE65gBAxXGMuBm11+azXDt5uwxkPSvkyec6EfnA
-   sUM+uiFOj5ZRRjhJMMmYemGpjdox1Y0B77P26oWUSDYJ8BkV4BPqOT1vy
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10900"; a="376670632"
-X-IronPort-AV: E=Sophos;i="6.04,214,1695711600"; 
-   d="scan'208";a="376670632"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Nov 2023 07:04:13 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10900"; a="889940568"
-X-IronPort-AV: E=Sophos;i="6.04,214,1695711600"; 
-   d="scan'208";a="889940568"
-Received: from lkp-server02.sh.intel.com (HELO b8de5498638e) ([10.239.97.151])
-  by orsmga004.jf.intel.com with ESMTP; 20 Nov 2023 07:04:09 -0800
-Received: from kbuild by b8de5498638e with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1r55oF-0006YG-1R;
-        Mon, 20 Nov 2023 15:03:38 +0000
-Date:   Mon, 20 Nov 2023 22:55:16 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Chris Feng <chris.feng@mediatek.com>, rafael@kernel.org,
-        pavel@ucw.cz, len.brown@intel.com
-Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        stable@kernel.org, hua.yang@mediatek.com, ting.wang@mediatek.com,
-        liang.lu@mediatek.com, chetan.kumar@mediatek.com,
-        Chris Feng <chris.feng@mediatek.com>
-Subject: Re: [PATCH v2] PM: hibernate: Fix the bug where wake events cannot
- wake system during hibernation
-Message-ID: <202311202258.eqaMpEXc-lkp@intel.com>
-References: <20231120081516.55172-1-chris.feng@mediatek.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231120081516.55172-1-chris.feng@mediatek.com>
+        with ESMTP id S233770AbjKTPQ1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2023 10:16:27 -0500
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81496A4;
+        Mon, 20 Nov 2023 07:16:23 -0800 (PST)
+Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2WHm027654;
+        Mon, 20 Nov 2023 15:15:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references; s=corp-2023-03-30;
+ bh=hlNIjt1lJtZP47W7eO4KvEIII2+KWpAFpv+PlhUsURU=;
+ b=o58V0R8A+E1zQ+SsMJvASydoOg6yhLfPoVow6VNQGEyTW8yuHUx78AxnBxqu+geBa3f4
+ pAgkQjoWEuFGUbkNQVRkB0M8hWgptRafKNvfQrv8sOf/IhWCunOsjUvupuereHMTuh0H
+ OHkE3T7Tuq4WEFXC7xvGpRVbvJrKtm99EkSUORzMMY8+rfMFd+Oi4VM1acNWPboHYliJ
+ 0hqbi5Jbg/0S+8YYn+iQJ7BvwWLQC/VTmCBYpqqMSdKy3ZfsqPorEdImcv4hypc5H9jH
+ 4E9G465XiumZTMhrkmPOdQEaiaREMPh/dtTaJHPSocWTi672AvCDnuNJqs/HM9FZGoc1 nw== 
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3uekpejwf0-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 20 Nov 2023 15:15:24 +0000
+Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3AKF2wL7023702;
+        Mon, 20 Nov 2023 15:15:23 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3uekq5gr46-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 20 Nov 2023 15:15:23 +0000
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3AKFFF8b037000;
+        Mon, 20 Nov 2023 15:15:22 GMT
+Received: from mihai.localdomain (ban25x6uut25.us.oracle.com [10.153.73.25])
+        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3uekq5gqwc-7;
+        Mon, 20 Nov 2023 15:15:22 +0000
+From:   Mihai Carabas <mihai.carabas@oracle.com>
+To:     linux-arm-kernel@lists.infradead.org
+Cc:     kvm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, catalin.marinas@arm.com,
+        will@kernel.org, tglx@linutronix.de, mingo@redhat.com,
+        bp@alien8.de, x86@kernel.org, hpa@zytor.com, pbonzini@redhat.com,
+        wanpengli@tencent.com, vkuznets@redhat.com, rafael@kernel.org,
+        daniel.lezcano@linaro.org, akpm@linux-foundation.org,
+        pmladek@suse.com, peterz@infradead.org, dianders@chromium.org,
+        npiggin@gmail.com, rick.p.edgecombe@intel.com,
+        joao.m.martins@oracle.com, juerg.haefliger@canonical.com,
+        mic@digikod.net, mihai.carabas@oracle.com, arnd@arndb.de,
+        ankur.a.arora@oracle.com
+Subject: [PATCH 6/7] cpuidle-haltpoll: ARM64 support
+Date:   Mon, 20 Nov 2023 16:01:37 +0200
+Message-Id: <1700488898-12431-7-git-send-email-mihai.carabas@oracle.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
+References: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.987,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-11-20_15,2023-11-20_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 bulkscore=0 mlxscore=0
+ mlxlogscore=999 phishscore=0 malwarescore=0 suspectscore=0 spamscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311060000
+ definitions=main-2311200106
+X-Proofpoint-GUID: srZIfO3ZIE8aevxHjRldc4X9uOZ7nIZa
+X-Proofpoint-ORIG-GUID: srZIfO3ZIE8aevxHjRldc4X9uOZ7nIZa
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Chris,
+From: Joao Martins <joao.m.martins@oracle.com>
 
-kernel test robot noticed the following build errors:
+To test whether it's a guest or not for the default cases, the haltpoll
+driver uses the kvm_para* helpers to find out if it's a guest or not.
 
-[auto build test ERROR on linus/master]
-[also build test ERROR on v6.7-rc2 next-20231120]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+ARM64 doesn't have or defined any of these, so it remains disabled on
+the default. Although it allows to be force-loaded.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Chris-Feng/PM-hibernate-Fix-the-bug-where-wake-events-cannot-wake-system-during-hibernation/20231120-161752
-base:   linus/master
-patch link:    https://lore.kernel.org/r/20231120081516.55172-1-chris.feng%40mediatek.com
-patch subject: [PATCH v2] PM: hibernate: Fix the bug where wake events cannot wake system during hibernation
-config: arm-randconfig-003-20231120 (https://download.01.org/0day-ci/archive/20231120/202311202258.eqaMpEXc-lkp@intel.com/config)
-compiler: clang version 16.0.4 (https://github.com/llvm/llvm-project.git ae42196bc493ffe877a7e3dff8be32035dea4d07)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231120/202311202258.eqaMpEXc-lkp@intel.com/reproduce)
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
+Signed-off-by: Mihai Carabas <mihai.carabas@oracle.com>
+---
+ drivers/cpuidle/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202311202258.eqaMpEXc-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> kernel/power/hibernate.c:672:4: error: call to undeclared function 'swsusp_unmark'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-                           swsusp_unmark();
-                           ^
-   1 error generated.
-
-
-vim +/swsusp_unmark +672 kernel/power/hibernate.c
-
-   664	
-   665		switch (hibernation_mode) {
-   666		case HIBERNATION_REBOOT:
-   667			kernel_restart(NULL);
-   668			break;
-   669		case HIBERNATION_PLATFORM:
-   670			error = hibernation_platform_enter();
-   671			if (error == -EAGAIN || error == -EBUSY) {
- > 672				swsusp_unmark();
-   673				events_check_enabled = false;
-   674				pr_err("Hibernation Abort.\n");
-   675				return;
-   676			}
-   677			fallthrough;
-   678		case HIBERNATION_SHUTDOWN:
-   679			if (kernel_can_power_off())
-   680				kernel_power_off();
-   681			break;
-   682		}
-   683		kernel_halt();
-   684		/*
-   685		 * Valid image is on the disk, if we continue we risk serious data
-   686		 * corruption after resume.
-   687		 */
-   688		pr_crit("Power down manually\n");
-   689		while (1)
-   690			cpu_relax();
-   691	}
-   692	
-
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index cac5997dca50..067927eda466 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -35,7 +35,7 @@ config CPU_IDLE_GOV_TEO
+ 
+ config CPU_IDLE_GOV_HALTPOLL
+ 	bool "Haltpoll governor (for virtualized systems)"
+-	depends on KVM_GUEST
++	depends on (X86 && KVM_GUEST) || ARM64
+ 	help
+ 	  This governor implements haltpoll idle state selection, to be
+ 	  used in conjunction with the haltpoll cpuidle driver, allowing
+@@ -73,7 +73,7 @@ endmenu
+ 
+ config HALTPOLL_CPUIDLE
+ 	tristate "Halt poll cpuidle driver"
+-	depends on X86 && KVM_GUEST
++	depends on (X86 && KVM_GUEST) || ARM64
+ 	select CPU_IDLE_GOV_HALTPOLL
+ 	default y
+ 	help
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+1.8.3.1
+
