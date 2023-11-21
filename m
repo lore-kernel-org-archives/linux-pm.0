@@ -1,140 +1,169 @@
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b="vBFX28TR"
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D90EB113
-	for <linux-pm@vger.kernel.org>; Tue, 21 Nov 2023 09:02:43 -0800 (PST)
-Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-50a6ff9881fso8438548e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 21 Nov 2023 09:02:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1700586162; x=1701190962; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=RY5bcl1x0MOfQG1a+xI6jyP9NlPUMrTJp9SfZPaMtRU=;
-        b=vBFX28TR2bJC6tSdQXVe3UL/sE/o35fhE/8cq3/EVycTKBMmR2yN+slXCatW8C3WEJ
-         FFNGr7fiV+y5eKVUOcP2HDENJyjQ2H5eFIi4zM8IQ9J0RIZ+4zrE4MO+r9Rtj23JEKT/
-         K2QoTG7rOmrmKD+Q1he8kgRjZmPzMPjbPZSrPz/q2mwYJrQ+csUvOxLt47gFZVfXs1Lc
-         dvKiOniDnHy1CfPiLs4YEO1zYuCm95sxXzXFnesAsD/4BkAEfQt2JHNSGCJmT+p+PEOZ
-         /L5UQH9XOP1WWK22R4jWkZiausMJwcBT232LEwG6hSH4AjEmdN96qUtLrxH07wruebnQ
-         VSpg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700586162; x=1701190962;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=RY5bcl1x0MOfQG1a+xI6jyP9NlPUMrTJp9SfZPaMtRU=;
-        b=Cq/EC1zq83umkaze5rvINxyQCeZYjKQ6NOJUPvxBt/OLMaRuKpNB5S9esCgRhkaSfx
-         u3J+1Be2kLGd6XyHKo/nRuFKW9F2wcEb/oIsAcQKGCtOA06MbJpgh041yZwVvv+DU8ux
-         MyVg6Xdx6uA879M3f6FhWXPV5BRLUmlN3TJuMUcuM26RJk9HnjY65j/DGBjfPmgE1+MK
-         lmrIL9yK6GuAy6SbRhB0KmkiNMoUxAqdFvbrvJzoE3d+MnDheIqJOM/bOchXKsPxXhGO
-         V4DrneOMr68T26CzVi28+vUiMmJnAbH9pRxU/HHxQBtfIowsz88mdWqk6lNSgrk0bTBK
-         Upvw==
-X-Gm-Message-State: AOJu0Yx2WIg07TB0FR3Qy8QOfi5P4Fv0tvMdh5hYOf+nwg8HMKZgWqGg
-	yO3DiWnMKMToDWg/9/TJeB5eIg==
-X-Google-Smtp-Source: AGHT+IHWCWoNHIImsBka/l40pqodUCB/BIiBTxP670O+sPPNIcGbx21bgGmTyfJmWQu0QXTVfIcyFg==
-X-Received: by 2002:a2e:878d:0:b0:2c5:4a0:f3cb with SMTP id n13-20020a2e878d000000b002c504a0f3cbmr7237202lji.11.1700586158495;
-        Tue, 21 Nov 2023 09:02:38 -0800 (PST)
-Received: from airbuntu (host109-151-228-202.range109-151.btcentralplus.com. [109.151.228.202])
-        by smtp.gmail.com with ESMTPSA id k7-20020a7bc407000000b003fd2d3462fcsm703126wmi.1.2023.11.21.09.02.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Nov 2023 09:02:38 -0800 (PST)
-Date: Tue, 14 Nov 2023 21:13:32 +0000
-From: Qais Yousef <qyousef@layalina.io>
-To: Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>, mingo@redhat.com,
-	juri.lelli@redhat.com, dietmar.eggemann@arm.com,
-	rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-	bristot@redhat.com, vschneid@redhat.com, viresh.kumar@linaro.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	lukasz.luba@arm.com, wyes.karny@amd.com, beata.michalska@arm.com
-Subject: Re: [PATCH v3 0/2] Rework interface between scheduler and schedutil
- governor
-Message-ID: <20231114211332.c3yhmfm7vxgysi72@airbuntu>
-References: <20231103131821.1176294-1-vincent.guittot@linaro.org>
- <CAJZ5v0g4N2UojiQqJn7fxWj2=h=6sgFfGEqEVx1wuh2VdvaH6Q@mail.gmail.com>
- <20231116143450.GF8262@noisy.programming.kicks-ass.net>
+Authentication-Results: smtp.subspace.kernel.org; dkim=none
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B4ACD4B;
+	Tue, 21 Nov 2023 09:12:59 -0800 (PST)
+Received: from [10.0.3.168] (unknown [93.240.169.83])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: pmenzel)
+	by mx.molgen.mpg.de (Postfix) with ESMTPSA id AEB2561E5FE01;
+	Tue, 21 Nov 2023 18:12:33 +0100 (CET)
+Message-ID: <d8fba4f9-f868-4ef3-938b-f202e5bcc4ad@molgen.mpg.de>
+Date: Tue, 21 Nov 2023 18:12:30 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: Qualcomm Atheros QCA61x4 keeps drawing 0.85 W despite Bluetooth
+ being disable in GNOME
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+ Johan Hedberg <johan.hedberg@gmail.com>,
+ Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+ linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-pm@vger.kernel.org,
+ Hans de Goede <hdegoede@redhat.com>, Mike Jones <mike@mjones.io>,
+ Rocky Liao <quic_rjliao@quicinc.com>
+References: <d994bd71-8d8b-4b6a-855e-8ea5bfede3ca@molgen.mpg.de>
+ <22494842-a785-4151-915d-6f3a677d96cb@molgen.mpg.de>
+ <1f3cb0cc-4bb0-471f-a785-a5d237cd46a3@rowland.harvard.edu>
+ <d63ebc5f-9b72-4457-949b-3e90883bd3c0@molgen.mpg.de>
+ <d61ae9a8-2228-4af1-a5f0-912e7763fbd1@rowland.harvard.edu>
+ <de236c7d-e265-452a-a60e-b10293a5b944@molgen.mpg.de>
+ <41253614-764e-4e95-b052-a46bf5587c29@rowland.harvard.edu>
+ <3489df64-0f8f-43e1-a05f-ccb145ff6d59@molgen.mpg.de>
+ <fd84c14a-1866-4643-8ce9-0d6da5c4b82e@rowland.harvard.edu>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <fd84c14a-1866-4643-8ce9-0d6da5c4b82e@rowland.harvard.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20231116143450.GF8262@noisy.programming.kicks-ass.net>
-X-Spam-Level: *
 
-On 11/16/23 15:34, Peter Zijlstra wrote:
-> On Mon, Nov 06, 2023 at 04:05:40PM +0100, Rafael J. Wysocki wrote:
-> > On Fri, Nov 3, 2023 at 2:18 PM Vincent Guittot
-> > <vincent.guittot@linaro.org> wrote:
-> > >
-> > > Following the discussion with Qais [1] about how to handle uclamp
-> > > requirements and after syncing with him, we agreed that I should move
-> > > forward on the patchset to rework the interface between scheduler and
-> > > schedutil governor to provide more information to the latter. Scheduler
-> > > (and EAS in particular) doesn't need anymore to guess estimate which
-> > > headroom the governor wants to apply and will directly ask for the target
-> > > freq. Then the governor directly gets the actual utilization and new
-> > > minimum and maximum boundaries to select this target frequency and
-> > > doesn't have to deal anymore with scheduler internals like uclamp when
-> > > including iowait boost.
+Dear Alan,
 
-Thanks a lot for taking over Vincent and helping with this! And sorry for
-delayed review, was out travelling between holiday and LPC so haven't caught up
-with the list properly yet..
 
-Beside the comments on patch 1, it looks good to me. Do we want to generalize
-the way the interface is called though so that scheduler is not tightly coupled
-to schedutil? Speaking with Intel folks in LPC, it seemed they rely on firmware
-to make a lot of decision and if we further generalize how the interface is
-called (I think we need a new cpufreq wrapper akin to cpufreq_update_util()) to
-allow governors to hook into it and do their own thing. This could allow them
-to use uclamp and these min/max perf hints.
+Thank you for your reply.
 
-But I haven't thought this fully through. So something to consider separately
-anyway to not hold this up unnecessarily. Maybe we do want to keep schedutil
-tightly integrated and get people to switch to schedutil instead..
-
-> > >
-> > > [1] https://lore.kernel.org/lkml/CAKfTPtA5JqNCauG-rP3wGfq+p8EEVx9Tvwj6ksM3SYCwRmfCTg@mail.gmail.com/
-> > >
-> > > Changes since v2:
-> > > - remove useless target variable
-> > >
-> > > Changes since v1:
-> > > - fix a bug (always set max even when returning early)
-> > > - fix typos
-> > >
-> > > Vincent Guittot (2):
-> > >   sched/schedutil: Rework performance estimation
-> > >   sched/schedutil: Rework iowait boost
-> > >
-> > >  include/linux/energy_model.h     |  1 -
-> > >  kernel/sched/core.c              | 82 ++++++++++++-------------------
-> > >  kernel/sched/cpufreq_schedutil.c | 69 ++++++++++++++++----------
-> > >  kernel/sched/fair.c              | 22 +++++++--
-> > >  kernel/sched/sched.h             | 84 +++-----------------------------
-> > >  5 files changed, 100 insertions(+), 158 deletions(-)
-> > >
-> > > --
-> > 
-> > For the schedutil changes in the series:
-> > 
-> > Acked-by: Rafael J. Wysocki <rafael@kernel.org>
-> > 
-> > and I'm assuming this series to be targeted at sched.
+Am 21.11.23 um 17:23 schrieb Alan Stern:
+> On Mon, Nov 20, 2023 at 11:05:04PM +0100, Paul Menzel wrote:
+>> [Cc: +Rocky Liao as Qualcomm developer]
 > 
-> Sure, I'll go queue it. Thanks!
+>> Am 20.11.23 um 19:10 schrieb Alan Stern:
+>>> Again, nothing out of the ordinary.  Maybe dynamic debugging will give
+>>> us a clue.  Try doing this:
+>>>
+>>> 	Unload the btusb module.
+>>>
+>>> 	echo module usbcore +p >/sys/kernel/debug/dynamic_debug/control
+>>>
+>>> 	Load the btusb module
+>>>
+>>> 	Make sure that Bluetooth is turned off in Gnome
+>>>
+>>> 	Wait a few seconds
+>>>
+>>> 	echo module usbcore -p >/sys/kernel/debug/dynamic_debug/control
+>>>
+>>> Then let's see what the dmesg log contains for that time period.
+>>
+>> ```
+>> $ sudo modprobe -r btusb
+>> $ sudo dmesg | tail -1
+>> [340309.272439] usbcore: deregistering interface driver btusb
+>> $ echo module usbcore +p | sudo tee /sys/kernel/debug/dynamic_debug/control
+>> module usbcore +p
+>> $ sudo modprobe btusb
+>> $ /sbin/rfkill
+>> ID TYPE      DEVICE      SOFT      HARD
+>>   1 wlan      phy0   unblocked unblocked
+>> 36 bluetooth hci0     blocked unblocked
+>> $ echo module usbcore -p | sudo tee /sys/kernel/debug/dynamic_debug/control
+>> module usbcore -p
+>> $ sudo modprobe -r btusb
+>> $ sudo dmesg | tail -1
+>> [340608.761313] usbcore: deregistering interface driver btusb
+>> $ sudo dmesg
+>> […]
+>> [340309.272439] usbcore: deregistering interface driver btusb
+>> [340560.326182] xhci_hcd 0000:00:14.0: hcd_pci_runtime_resume: 0
+>> [340560.326214] usb usb1: usb auto-resume
+>> [340560.326258] hub 1-0:1.0: hub_resume
+>> [340560.326381] usb usb1-port3: status 0107 change 0000
+>> [340560.326418] usb usb1-port4: status 0107 change 0000
+>> [340560.326451] usb usb1-port5: status 0507 change 0000
+>> [340560.326650] hub 1-0:1.0: state 7 ports 12 chg 0000 evt 0000
+>> [340560.326807] hub 1-0:1.0: state 7 ports 12 chg 0000 evt 0000
+>> [340560.373988] usb 1-3: usb auto-resume
+>> [340560.373998] hub 1-0:1.0: state 7 ports 12 chg 0000 evt 0008
+>> [340560.441936] usb 1-3: Waited 0ms for CONNECT
+>> [340560.441957] usb 1-3: finish reset-resume
+>> [340560.570940] usb 1-3: reset full-speed USB device number 2 using xhci_hcd
+> 
+> Those two lines are unexpected.  Why does the device need to be reset?
+> While the btusb module is loaded, does anything show up in
+> /sys/bus/usb/devices/1-3/quirks?
 
-Sorry for being late. If this wasn't queued already I think worth waiting to
-iron out some comments on patch 1 first.
+     $ more /sys/bus/usb/devices/1-3/quirks
+     0x2
+
+>>> Also, please post the output from "lsusb -v" for the Bluetooth device.
+>>
+>> ```
+>> $ sudo lsusb -d 0cf3:e300 -v
+>>
+>> Bus 001 Device 002: ID 0cf3:e300 Qualcomm Atheros Communications QCA61x4
+>> Bluetooth 4.0
+>> Device Descriptor:
+>>    bLength                18
+>>    bDescriptorType         1
+>>    bcdUSB               2.01
+>>    bDeviceClass          224 Wireless
+>>    bDeviceSubClass         1 Radio Frequency
+>>    bDeviceProtocol         1 Bluetooth
+>>    bMaxPacketSize0        64
+>>    idVendor           0x0cf3 Qualcomm Atheros Communications
+>>    idProduct          0xe300 QCA61x4 Bluetooth 4.0
+>>    bcdDevice            0.01
+>>    iManufacturer           0
+>>    iProduct                0
+>>    iSerial                 0
+>>    bNumConfigurations      1
+>>    Configuration Descriptor:
+>>      bLength                 9
+>>      bDescriptorType         2
+>>      wTotalLength       0x00b1
+>>      bNumInterfaces          2
+>>      bConfigurationValue     1
+>>      iConfiguration          0
+>>      bmAttributes         0xe0
+>>        Self Powered
+>>        Remote Wakeup
+> 
+> That's what I was interested in.  The device does support remote wakeup.
+
+That would make sense so it can be resumed? (It does not necessarily 
+mean something like Wake-On-LAN, right?
+
+Also, for this device it’s disabled?
+
+     $ grep . /sys/bus/usb/devices/1-3/power/wakeup
+     disabled
+
+>> PPS: Looking through the commit log/history for `drivers/bluetooth/btusb.c`,
+>> I found commit 7ecacafc2406 (Bluetooth: btusb: Disable runtime suspend on
+>> Realtek devices) [1] authored on December 5th, 2019. This is for Realtek
+>> devices though, and not Qualcomm.
+> 
+> Furthermore the driver has changed considerably since 2019.  See
+> commits 8274db0776d1, 895915226a59, 7bd9fb058d77, and 34ec58b9fd1c.
+
+Thank you for the references.
 
 
-Thanks!
+Kind regards,
 
---
-Qais Yousef
+Paul
