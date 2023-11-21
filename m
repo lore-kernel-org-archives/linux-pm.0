@@ -1,126 +1,139 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="TuNSM3c+"
-Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D5D5D43
-	for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 05:33:04 -0800 (PST)
-Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-6b2018a11efso904108b3a.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 05:33:04 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b="t7YTy+tv"
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AEC91B6
+	for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 05:40:09 -0800 (PST)
+Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-4083f613275so5970395e9.2
+        for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 05:40:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1700746384; x=1701351184; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=yvVEsznFGOEcHL++JvtqHDNKFWEmCpdzy05jYiWZejk=;
-        b=TuNSM3c+IKndbuqfknq5r3rhJZwn758kINi3ElXTqbNwseMoxPuVALWc+a7p85knKL
-         Q1ZUNWD9wo/39D6ATE2bXlgRP6vatdYD6vopADg0Uy56abCeWtYMflg3i+yCXsyR3qRU
-         tqY9Z+223WCJAY0DEYPUwvfrRokgqTZjyWOIPQDnElZ3A6YeC2l22Wx1BbkhTJO/Cy++
-         oewVm+bvqByQIcn7LGFyLLIvXK1bIjYCq0rdUbHa3q34+jqddTCvWBdzquiGTAW7BWGR
-         2FzwusRw86Ra/5vQf6BOOa9EEqE+z7vfGfZBUmkx04UyyM1zion94Cx0Co+1F2jPGXgW
-         A0ag==
+        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1700746808; x=1701351608; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=eVDsDxYliWC5xW8ZDSuWoJIog0SBBE+nKOkI20zAozo=;
+        b=t7YTy+tvGV9s/CeFP0DyVTNRRMQFjk6NpifKhiavcJ4m2A7tV+raYH4TpyCrCYR1IG
+         nfh8UQxbQr4axmAdHl4m1D8Y57vnbPLlPje2ffpJJcNxkax3LOAKPuWnGIlCb6ZpEaD0
+         2H2/wKotaTuu2hjMWs9vq+hsL1Yq/9q7UImwJ5QGihxdUwWstkLEpZ/ASDa7o2wiIeqX
+         wMh52fsfTC+utyaUI+81OsNbnq1Cj0/Q2dUQ/F/1ky72A76kS7amxKpUHXY9IXYmc7nz
+         jbB8w2ARlbX1Fpcd+IRmr6vVZaRkQZjDdiqrP7CjK0dan94xxWIBSXtG4o6nQzI0rWgS
+         w/yg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700746384; x=1701351184;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=yvVEsznFGOEcHL++JvtqHDNKFWEmCpdzy05jYiWZejk=;
-        b=NNtq5N6fZ+avizobDVotQf4/ahPT8xnTMt1VasvVi7Z5GgFY2g/AKdEePwpBPclvCv
-         QT/nAYtZNa0AML8xVlDs4wuArVaIPU07fCuQfuohd2jDEfEwpHJXyrxzvP/x27nN1OUJ
-         QO6dRwApICFVR9nOGo9GDwQOIbDmpld9igFkxJp78N22mSHbuNvvTaUJo30jgPqjrEbM
-         ZnmQZTKbsa02BVf0CpQ2SvYw5wCjr8nHMqwJOPWRIyVSVIxy6EsA/uERmjmtalAvH75Q
-         elDkJhB8cYCEFOXBd7Q2PiD5HyZvquaWlneAMEUnykGk++TF2YgEpOjy+kURC8eDkma2
-         gjtA==
-X-Gm-Message-State: AOJu0Yz4LFKM4ZLWDhR+DMGHDjtpmi/7xVa+P1Uc3H5skVlL3HXzMxDE
-	C9QdInASQSizpWlJXHE9rLSka/dnzfN4k2JZ6J3i+g==
-X-Google-Smtp-Source: AGHT+IGeJ8HWTjPQII5hKN4+VrgDmeYXnjKUIUFadHHOWbUsRdPsUh0SMrOCZbLFTxSuF/OxQ+sqNEP5Tm3v5rMIUPY=
-X-Received: by 2002:a05:6a20:7d90:b0:14c:a2e1:65ec with SMTP id
- v16-20020a056a207d9000b0014ca2e165ecmr6520553pzj.38.1700746384045; Thu, 23
- Nov 2023 05:33:04 -0800 (PST)
+        d=1e100.net; s=20230601; t=1700746808; x=1701351608;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=eVDsDxYliWC5xW8ZDSuWoJIog0SBBE+nKOkI20zAozo=;
+        b=d4DHphJznhwrbsCbuh3nFfIZPbFMsEv9Nn/LykHGjt73Fi3OYCFLd9vc1e+mkKJUS1
+         afj+WRPspQMkHeMQNJ4xr8MjDrODc3tj1deMenPe+g8JKUhF7ZPfv5dcxFZba8cBXMuk
+         GybyoR6njsZBvCl1Wlkz0NKCzczxxqU4vPv54pcqHcKxTlTen82Ke42jHGsQtsR/AZbs
+         sBYuWcOSxj6ftHSTok8aGVBHiunoVF7TMqbOXh6p0hyCFHHwncCn3vgagMLPlsycuYNA
+         2AxrOp3wUGW5d0E9VFlg08Vh6OFpOQJemED4m0OtByxxiIDcV/s+4xUQfrraI1Rlvk0Y
+         vfwA==
+X-Gm-Message-State: AOJu0Yw9oinFP8IvBUw03yCEHmlxMw+SbyCpKVY6jnE3hF7bqIurqTjw
+	9x/N2WaonAWuTI1b3NroLU1knQ==
+X-Google-Smtp-Source: AGHT+IEPVFwZh3UkjWjulXsoLjw+PU6cdUqbZg/3GBbWo2gxUgSRxk8s7yyP+GiRcEQX+WQY0Ymehw==
+X-Received: by 2002:a05:600c:5490:b0:408:3f61:cb4f with SMTP id iv16-20020a05600c549000b004083f61cb4fmr3646255wmb.23.1700746807827;
+        Thu, 23 Nov 2023 05:40:07 -0800 (PST)
+Received: from airbuntu (host109-151-228-202.range109-151.btcentralplus.com. [109.151.228.202])
+        by smtp.gmail.com with ESMTPSA id m6-20020a056000180600b00332e73f8231sm25946wrh.39.2023.11.23.05.40.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 23 Nov 2023 05:40:07 -0800 (PST)
+Date: Tue, 21 Nov 2023 22:31:34 +0000
+From: Qais Yousef <qyousef@layalina.io>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+	mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
+	rafael@kernel.org, viresh.kumar@linaro.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	lukasz.luba@arm.com, wyes.karny@amd.com, beata.michalska@arm.com
+Subject: Re: [PATCH v3 1/2] sched/schedutil: Rework performance estimation
+Message-ID: <20231121223134.iewtzozmz6bz5jr5@airbuntu>
+References: <20231103131821.1176294-1-vincent.guittot@linaro.org>
+ <20231103131821.1176294-2-vincent.guittot@linaro.org>
+ <20231114205422.k5m6y4m5vnw7dvzj@airbuntu>
+ <CAKfTPtDMEes6V2xRHavAwWrVuiZBdFAsaaxv9=-psAZCTPQWKg@mail.gmail.com>
+ <20231121211725.gaekv6svnqdiq5l4@airbuntu>
+ <CAKfTPtDzAZMcuWOYYOOAjCyvrOQiqyHZJBFVbACAvTqo+pU1gQ@mail.gmail.com>
+ <20231121220955.uxk2zanxfemwyfz6@airbuntu>
+ <CAKfTPtAHbYCyqA6jLqkoWgQ2X625tann8Mpy0QttgQo5OPvS9w@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20231103131821.1176294-1-vincent.guittot@linaro.org>
- <20231103131821.1176294-2-vincent.guittot@linaro.org> <20231114205422.k5m6y4m5vnw7dvzj@airbuntu>
- <CAKfTPtDMEes6V2xRHavAwWrVuiZBdFAsaaxv9=-psAZCTPQWKg@mail.gmail.com>
- <20231121211725.gaekv6svnqdiq5l4@airbuntu> <CAKfTPtDzAZMcuWOYYOOAjCyvrOQiqyHZJBFVbACAvTqo+pU1gQ@mail.gmail.com>
- <20231121220955.uxk2zanxfemwyfz6@airbuntu>
-In-Reply-To: <20231121220955.uxk2zanxfemwyfz6@airbuntu>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Thu, 23 Nov 2023 14:32:52 +0100
-Message-ID: <CAKfTPtAHbYCyqA6jLqkoWgQ2X625tann8Mpy0QttgQo5OPvS9w@mail.gmail.com>
-Subject: Re: [PATCH v3 1/2] sched/schedutil: Rework performance estimation
-To: Qais Yousef <qyousef@layalina.io>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
-	mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com, rafael@kernel.org, 
-	viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, lukasz.luba@arm.com, wyes.karny@amd.com, 
-	beata.michalska@arm.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtAHbYCyqA6jLqkoWgQ2X625tann8Mpy0QttgQo5OPvS9w@mail.gmail.com>
 
-On Thu, 23 Nov 2023 at 14:15, Qais Yousef <qyousef@layalina.io> wrote:
->
-> On 11/23/23 08:47, Vincent Guittot wrote:
->
-> > > > > And is it right to mix irq and uclamp_min with bw_min which is for DL? We might
-> > > >
-> > > > cpu_bw_dl() is not the actual utilization by DL task but the computed
-> > > > bandwidth which can be seen as min performance level
-> > >
-> > > Yep. That's why I am not in favour of a dvfs headroom for DL.
-> > >
-> > > But what I meant here is that in effective_cpu_util(), where we populate min
-> > > and max we have
-> > >
-> > >         if (min) {
-> > >                 /*
-> > >                  * The minimum utilization returns the highest level between:
-> > >                  * - the computed DL bandwidth needed with the irq pressure which
-> > >                  *   steals time to the deadline task.
-> > >                  * - The minimum performance requirement for CFS and/or RT.
-> > >                  */
-> > >                 *min = max(irq + cpu_bw_dl(rq), uclamp_rq_get(rq, UCLAMP_MIN));
-> > >
-> > > So if there was an RT/CFS task requesting a UCLAMP_MIN of 1024 for example,
-> > > bw_min will end up being too high, no?
+On 11/23/23 14:32, Vincent Guittot wrote:
+> On Thu, 23 Nov 2023 at 14:15, Qais Yousef <qyousef@layalina.io> wrote:
 > >
-> > But at the end, we want at least uclamp_min for cfs or rt just like we
-> > want at least DL bandwidth for DL tasks
->
-> The issue I see is that we do
->
-> static void sugov_get_util()
-> {
-> ..
->         util = effective_cpu_util(.., &min, ..); // min = max(irq + cpu_bw_dl(), rq_uclamp_min)
->         ..
->         sg_cpu->bw_min = min; // bw_min can pick the rq_uclamp_min. Shouldn't it be irq + cpu_bw_dl() only?
->         ..
-> }
->
-> If yes, why the comparison in ignore_dl_rate_limit() is still correct then?
->
->         if (cpu_bw_dl(cpu_rq(sg_cpu->cpu)) > sg_cpu->bw_min)
+> > On 11/23/23 08:47, Vincent Guittot wrote:
+> >
+> > > > > > And is it right to mix irq and uclamp_min with bw_min which is for DL? We might
+> > > > >
+> > > > > cpu_bw_dl() is not the actual utilization by DL task but the computed
+> > > > > bandwidth which can be seen as min performance level
+> > > >
+> > > > Yep. That's why I am not in favour of a dvfs headroom for DL.
+> > > >
+> > > > But what I meant here is that in effective_cpu_util(), where we populate min
+> > > > and max we have
+> > > >
+> > > >         if (min) {
+> > > >                 /*
+> > > >                  * The minimum utilization returns the highest level between:
+> > > >                  * - the computed DL bandwidth needed with the irq pressure which
+> > > >                  *   steals time to the deadline task.
+> > > >                  * - The minimum performance requirement for CFS and/or RT.
+> > > >                  */
+> > > >                 *min = max(irq + cpu_bw_dl(rq), uclamp_rq_get(rq, UCLAMP_MIN));
+> > > >
+> > > > So if there was an RT/CFS task requesting a UCLAMP_MIN of 1024 for example,
+> > > > bw_min will end up being too high, no?
+> > >
+> > > But at the end, we want at least uclamp_min for cfs or rt just like we
+> > > want at least DL bandwidth for DL tasks
+> >
+> > The issue I see is that we do
+> >
+> > static void sugov_get_util()
+> > {
+> > ..
+> >         util = effective_cpu_util(.., &min, ..); // min = max(irq + cpu_bw_dl(), rq_uclamp_min)
+> >         ..
+> >         sg_cpu->bw_min = min; // bw_min can pick the rq_uclamp_min. Shouldn't it be irq + cpu_bw_dl() only?
+> >         ..
+> > }
+> >
+> > If yes, why the comparison in ignore_dl_rate_limit() is still correct then?
+> >
+> >         if (cpu_bw_dl(cpu_rq(sg_cpu->cpu)) > sg_cpu->bw_min)
+> 
+> yes, this is to ensure enough performance for the deadline task when
+> the dl bandwidth increases without waiting the rate limit period which
+> would prevent the system from providing enough bandwidth to the
+> deadline scheduler. This remains true because it's still at least
+> above cpu_bw_dl()
 
-yes, this is to ensure enough performance for the deadline task when
-the dl bandwidth increases without waiting the rate limit period which
-would prevent the system from providing enough bandwidth to the
-deadline scheduler. This remains true because it's still at least
-above cpu_bw_dl()
+Okay I think I get it now. I think renaming bw_min to perf_min or something
+along those lines in the next opportunity would be a good thing.
 
->
-> And does cpufreq_driver_adjust_perf() still need the sg_cpu->bw_min arg
-> actually? sg_cpu->util already calculated based on sugov_effective_cpu_perf()
-> which takes all constraints (including bw_min) into account.
+> 
+> >
+> > And does cpufreq_driver_adjust_perf() still need the sg_cpu->bw_min arg
+> > actually? sg_cpu->util already calculated based on sugov_effective_cpu_perf()
+> > which takes all constraints (including bw_min) into account.
+> 
+> cpufreq_driver_adjust_perf() is used for systems on which you can't
+> actually set an operating frequency but only a min and a desired
+> performance level and let the hw move freely in this range.
 
-cpufreq_driver_adjust_perf() is used for systems on which you can't
-actually set an operating frequency but only a min and a desired
-performance level and let the hw move freely in this range.
+I see. Thanks for the explanation.
 
->
->
-> Thanks!
->
-> --
-> Qais Yousef
+
+Cheers
+
+--
+Qais Yousef
