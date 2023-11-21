@@ -1,96 +1,71 @@
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7B3549F81;
+	Tue, 21 Nov 2023 15:43:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="oU7Nb4IX"
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7602B1704;
-	Tue, 21 Nov 2023 05:45:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=armlinux.org.uk; s=pandora-2019; h=Date:Sender:Message-Id:Content-Type:
-	Content-Transfer-Encoding:MIME-Version:Subject:Cc:To:From:References:
-	In-Reply-To:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-	List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=6zOoGrrmAHYsbAYjPwlImlFJnip+vYBWOCuz8Ez17B0=; b=oU7Nb4IXXCx1oE0KlmHdTcLpUu
-	kg/KqIwuxpe4VR+Ms2sPwNfjqTsW28iX6HEpHO0QawAPus9kVilpyvN9KFs240JWrKUXUaIoY0TUL
-	PryuKTIwrKdrPCTN9P+nOVElqmUyTUF5B1vkvUCZb56DexWEnOAHwBAerF/rq4VKcsmjsHh0wvUsm
-	oeUjK0M1VhPsya3CJvb6qbHU0+JLoKJjoOdsK5Jz3Fx2F6Ms9NJd3+XlQJ6FhsWIOJXhKI/m2mgHh
-	gp2IPAWUI+jyk4pKhYJ/1f/Uv+vvd3Q/Z/D9qyW2KqSj7IKYtPaFjvhfVR4zi9y657CGrZnVjXJN1
-	5beqDYGw==;
-Received: from e0022681537dd.dyn.armlinux.org.uk ([fd8f:7570:feb6:1:222:68ff:fe15:37dd]:40512 helo=rmk-PC.armlinux.org.uk)
-	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <rmk@armlinux.org.uk>)
-	id 1r5R4J-0007Bz-32;
-	Tue, 21 Nov 2023 13:45:35 +0000
-Received: from rmk by rmk-PC.armlinux.org.uk with local (Exim 4.94.2)
-	(envelope-from <rmk@rmk-PC.armlinux.org.uk>)
-	id 1r5R4L-00Ct0d-To; Tue, 21 Nov 2023 13:45:37 +0000
-In-Reply-To: <ZVyz/Ve5pPu8AWoA@shell.armlinux.org.uk>
-References: <ZVyz/Ve5pPu8AWoA@shell.armlinux.org.uk>
-From: "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>
-To: linux-pm@vger.kernel.org,
-	 loongarch@lists.linux.dev,
-	 linux-acpi@vger.kernel.org,
-	 linux-arch@vger.kernel.org,
-	 linux-kernel@vger.kernel.org,
-	 linux-arm-kernel@lists.infradead.org,
-	 linux-riscv@lists.infradead.org,
-	 kvmarm@lists.linux.dev,
-	 x86@kernel.org,
-	 linux-csky@vger.kernel.org,
-	 linux-doc@vger.kernel.org,
-	 linux-ia64@vger.kernel.org,
-	 linux-parisc@vger.kernel.org
-Cc: Salil Mehta <salil.mehta@huawei.com>,
-	 Jean-Philippe Brucker <jean-philippe@linaro.org>,
-	 jianyong.wu@arm.com,
-	 justin.he@arm.com,
-	 James Morse <james.morse@arm.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>
-Subject: [PATCH 21/21] riscv: convert to use arch_cpu_is_hotpluggable()
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cvNqDZoY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A914C433C8;
+	Tue, 21 Nov 2023 15:43:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1700581439;
+	bh=m9kkL9A22jnuerrDu70VmA1coTYVI+8/zZjiYsSHxqw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=cvNqDZoY4W722oGmOQZw/jvyISy5utwgaaeSJjSZMkzV4A1x1liWax90Y+iH7qo1j
+	 6zF7rXGixD1L9DAgjxGJ+JqHuw7ImcN8uzHCUHForxEqwqdrerklY6hU13btIOPMOi
+	 uzTBjkFASm/zkDulnlWCb31185VjZCxa/i/YlzwcXTQhyReTaRnO2Z53HQyGjv128+
+	 rQ5EZvKPryRnLWyW+rFQ7mePv4rpWCvCucoqNhZO0c1isQ5wfIgtP9ihfImmYYBRuq
+	 OI8g/noZWYIDGOYKyC130qRxIrCWYB1S87CyyBWp1aXF7WS0zdQoRcBi1a5Tqn2pF6
+	 E9+ihDlyORpRA==
+Date: Tue, 21 Nov 2023 15:43:50 +0000
+From: Will Deacon <will@kernel.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: linux@armlinux.org.uk, catalin.marinas@arm.com,
+	paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+	sudeep.holla@arm.com, gregkh@linuxfoundation.org, rafael@kernel.org,
+	mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+	mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
+	viresh.kumar@linaro.org, lenb@kernel.org, robert.moore@intel.com,
+	lukasz.luba@arm.com, ionela.voinescu@arm.com,
+	pierre.gondois@arm.com, beata.michalska@arm.com,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
+	linux-acpi@vger.kernel.org, conor.dooley@microchip.com,
+	suagrfillet@gmail.com, ajones@ventanamicro.com, lftan@kernel.org
+Subject: Re: [PATCH v6 7/7] arm64/amu: Use capacity_ref_freq to set AMU ratio
+Message-ID: <20231121154349.GA1938@willie-the-truck>
+References: <20231109101438.1139696-1-vincent.guittot@linaro.org>
+ <20231109101438.1139696-8-vincent.guittot@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <E1r5R4L-00Ct0d-To@rmk-PC.armlinux.org.uk>
-Sender: Russell King <rmk@armlinux.org.uk>
-Date: Tue, 21 Nov 2023 13:45:37 +0000
+In-Reply-To: <20231109101438.1139696-8-vincent.guittot@linaro.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 
-Convert riscv to use the arch_cpu_is_hotpluggable() helper rather than
-arch_register_cpu().
+On Thu, Nov 09, 2023 at 11:14:38AM +0100, Vincent Guittot wrote:
+> Use the new capacity_ref_freq to set the ratio that is used by AMU for
+> computing the arch_scale_freq_capacity().
+> This helps to keep everything aligned using the same reference for
+> computing CPUs capacity.
+> 
+> The default value of the ratio (stored in per_cpu(arch_max_freq_scale))
+> ensures that arch_scale_freq_capacity() returns max capacity until it is
+> set to its correct value with the cpu capacity and capacity_ref_freq.
+> 
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  arch/arm64/kernel/topology.c  | 26 +++++++++++++-------------
+>  drivers/base/arch_topology.c  | 12 +++++++++++-
+>  include/linux/arch_topology.h |  1 +
+>  3 files changed, 25 insertions(+), 14 deletions(-)
 
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
-Reviewed-by: Gavin Shan <gshan@redhat.com>
-Signed-off-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk>
----
- arch/riscv/kernel/setup.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+Acked-by: Will Deacon <will@kernel.org>
 
-diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index b3a0aa2b78d5..7493fafbe4cb 100644
---- a/arch/riscv/kernel/setup.c
-+++ b/arch/riscv/kernel/setup.c
-@@ -298,12 +298,9 @@ void __init setup_arch(char **cmdline_p)
- 	riscv_user_isa_enable();
- }
- 
--int arch_register_cpu(int cpu)
-+bool arch_cpu_is_hotpluggable(int cpu)
- {
--	struct cpu *c = &per_cpu(cpu_devices, cpu);
--
--	c->hotpluggable = cpu_has_hotplug(cpu);
--	return register_cpu(c, cpu);
-+	return cpu_has_hotplug(cpu);
- }
- 
- void free_initmem(void)
--- 
-2.30.2
-
+Will
