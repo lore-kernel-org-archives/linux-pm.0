@@ -1,117 +1,127 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b="Lqi+60Kv"
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7608A1
-	for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 05:15:06 -0800 (PST)
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-40b2c9ee8ecso5679915e9.2
-        for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 05:15:06 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GN91Olpl"
+Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05633D41
+	for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 05:32:23 -0800 (PST)
+Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-507e85ebf50so1079463e87.1
+        for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 05:32:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1700745305; x=1701350105; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Jo0VusAlTEB88f2sT0ODs9DnrUfyK3YpWUuHjmpc9uU=;
-        b=Lqi+60KvDiXwNLjA78wrxV55qinBfpY+X4OQ/G8GlS0RJt5pjv67fvFWWNXd+S48ml
-         ss7fwMJF+3Ag9zOjWUTqVg9F/MxFa+hXKVq23IxJaMo2dMAdFcr6pV3ZdFSLmUOFkeQl
-         fFIx8IytyGYdYbu25GNyeHHFp7lb5/dv0z3CE8+Upm3A+ChUFQ+austUv2grBnLmm8U2
-         shOymWzYakbHQfCjx5P+2h8ks2qZ1Lynt0UdeLYoB9bzjs+6cqhjDmdWXVHENy0grLkC
-         RBkuz+hBOaYVdCCeOUix3r7cRmRr8tWJciXRYCKgX1pErRvGZK3LRFxQRP2MZZXRwGHC
-         lcYw==
+        d=linaro.org; s=google; t=1700746341; x=1701351141; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=h7Q3RZYDKc2FsZpbY/DwgsOyJU0rLY3O3P98wvrreFk=;
+        b=GN91Olpl6/5oqv4Tu0Bu8IBq9Iv+CY4EJCjk2OoTvz9Bgxvbv8gjo9p7ZTfLSB3o+o
+         ITenqo6/BwFDrtsDICL2xQXeYrmhpVs4JlEI5F/pHKyW5FYWG3pY2lNmk1DlzlovVcnC
+         YlHb1b/LVH+h8uCLMNYjOwlkGkfVXdmF8O/WMG34qein3AjXgGZggWmCu9Jmj7Uc9vAx
+         inp+0HNr58ueOmNRikC8gdYh4zJMjYAei2/nefEZz7ggcQbNam3LzkvwVNL5FGvRFH5O
+         TL6ymqeBF6nHSaHgrLiqvPCNeZy8KRY3dtvea9hmKsr7o1CqV8p0tcH8ae1PJ3nTmY+r
+         Lpug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700745305; x=1701350105;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Jo0VusAlTEB88f2sT0ODs9DnrUfyK3YpWUuHjmpc9uU=;
-        b=htuzYcpJmksuEsFvHYPg5NplWryX613d9IftZNpY2m2xTViFCswX7Jr+/W5USVBd6I
-         e+0zUWA5CpLCONjHF1KavesmDMlKZoFAGcdPODWbtg+mGyrf3Pvgrv9ItRFpagxvDQIv
-         QqQHnD75mU/tYQfExpNbgl6tyhVLJdcXZSIynCNiUvGQycSBLcvCLEZ1vxe1h2B8w5a6
-         +A9mPzROCk+wLIDcpwh+cGocj0J3CfHPCYY5skXnm2ULiEiuNZpR35ZNmk+mxDC+2vdc
-         ZGtIORw1TGdci9OGj2DhlP2z6VABlwAKp+HNvIbBYsM3+BQdig2qct4Cj7pUOa6i3FGj
-         OIgw==
-X-Gm-Message-State: AOJu0YweVZAcGAtRDgvV7SO4qoST1Wz2opZgOutncN1lCoNcS8PeAzm1
-	uXGKzNYPVA7nTqJuub2iS/42SA==
-X-Google-Smtp-Source: AGHT+IHFIPlBypH+y70zykSYD0JH2A79f5qgCQNwz67TkR62W5bTrpuIgu0rn8dZjMQZnDZ7iGdCLg==
-X-Received: by 2002:a05:600c:1990:b0:401:b504:b6a0 with SMTP id t16-20020a05600c199000b00401b504b6a0mr4303066wmq.3.1700745305079;
-        Thu, 23 Nov 2023 05:15:05 -0800 (PST)
-Received: from airbuntu (host109-151-228-202.range109-151.btcentralplus.com. [109.151.228.202])
-        by smtp.gmail.com with ESMTPSA id o36-20020a05600c512400b0040596352951sm2722938wms.5.2023.11.23.05.15.04
+        d=1e100.net; s=20230601; t=1700746341; x=1701351141;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=h7Q3RZYDKc2FsZpbY/DwgsOyJU0rLY3O3P98wvrreFk=;
+        b=Y0Pvh91sRnMV0ub4nGlxKGfZs/B5A5JrJHyf0qeSgLZYhgHnopJi3alQhpBThM/zKe
+         1UKeEZpjosw+jV+tZ5nD6eGdmlAsv63r/xUZ0VUzK6s7/DYTZme4NqnhrIUcDaoLMvrs
+         /XIYL9waTjFk9N1FJuYfee6deQ7Hf1KshDOhOibVVwWeUyCQIZD5IvouhJp9/Vf4BXty
+         fQshOU6703yfCVJpyqmFqUZCZadc+57waKRrjepX1xXhLCGDSq98QM3BfBVoYpbLo9rA
+         MEXZpJxtZIQYXpe+R+xo0RtnGDfBT4gzsj0X6G7OwBXfRG8yaEi1VQSEen5AumnE0plt
+         gUig==
+X-Gm-Message-State: AOJu0Ywj6hVtZ2AqYSUQAhwSDVwISAhp+bbZDoEj7n2OGWQ2AYPsLpzN
+	XSdvSkGJLsi1P4TxogVI1Z/gnw==
+X-Google-Smtp-Source: AGHT+IF40R3U2MxW68uTyxmtH1aJIFALjg4sxuSt8tZUriPCQEjkscRmm1ZCvWzkHU54ByIf9xZyKg==
+X-Received: by 2002:a19:e05c:0:b0:507:a0d6:f178 with SMTP id g28-20020a19e05c000000b00507a0d6f178mr3590022lfj.35.1700746341165;
+        Thu, 23 Nov 2023 05:32:21 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id e4-20020a5d65c4000000b003313a1e0ba1sm1647658wrw.89.2023.11.23.05.32.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Nov 2023 05:15:04 -0800 (PST)
-Date: Tue, 21 Nov 2023 22:09:55 +0000
-From: Qais Yousef <qyousef@layalina.io>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
-	mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
-	rafael@kernel.org, viresh.kumar@linaro.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	lukasz.luba@arm.com, wyes.karny@amd.com, beata.michalska@arm.com
-Subject: Re: [PATCH v3 1/2] sched/schedutil: Rework performance estimation
-Message-ID: <20231121220955.uxk2zanxfemwyfz6@airbuntu>
-References: <20231103131821.1176294-1-vincent.guittot@linaro.org>
- <20231103131821.1176294-2-vincent.guittot@linaro.org>
- <20231114205422.k5m6y4m5vnw7dvzj@airbuntu>
- <CAKfTPtDMEes6V2xRHavAwWrVuiZBdFAsaaxv9=-psAZCTPQWKg@mail.gmail.com>
- <20231121211725.gaekv6svnqdiq5l4@airbuntu>
- <CAKfTPtDzAZMcuWOYYOOAjCyvrOQiqyHZJBFVbACAvTqo+pU1gQ@mail.gmail.com>
+        Thu, 23 Nov 2023 05:32:20 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Subject: [PATCH v2 0/2] interconnect: qcom: Introduce support for SM8650
+Date: Thu, 23 Nov 2023 14:32:11 +0100
+Message-Id: <20231123-topic-sm8650-upstream-interconnect-v2-0-7e050874f59b@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtDzAZMcuWOYYOOAjCyvrOQiqyHZJBFVbACAvTqo+pU1gQ@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAFtUX2UC/42NSw6CMBQAr0K69pl+UkBX3sOwqOUJL5GWvFaiI
+ dzdSjyAy5nFzCoSMmES52oVjAsliqGAPlTCjy4MCNQXFlpqo6SqIceZPKSpra2E55wyo5uAQkb
+ 2MQT0GVqrdN+a1tuTESU0M97ptU+uXeGRUo783p+L+tpfXtt/8osCCbdGNw1K45zpLw8KjuMx8
+ iC6bds+kYh8aNUAAAA=
+To: Andy Gross <agross@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konrad.dybcio@linaro.org>, Georgi Djakov <djakov@kernel.org>, 
+ Rob Herring <robh+dt@kernel.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Abel Vesa <abel.vesa@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1850;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=xj9eEaLtiaHWn0GWa1onMQEQ+NWKsOyiMFekEju5+wg=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlX1Ri8Lf52DJM+paX1tAzv50+Vjq7jvSF9RTJfmtG
+ 4MIwTB+JAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZV9UYgAKCRB33NvayMhJ0VcFD/
+ 0U9Xo4OUpX2uri9oaJq6iX1GZbIp3PQw1fFV/FJqsiIA8b2qZb98iHhZfqip/UHRPkBjF0sPPM4r1A
+ WuswVNHBrRgEP2FBnA7YTjoI+qZ4Ew41oEDZ2Y0GBB0X4yXGTP2VJigVRrczIMu8D9SS+ClkkXtYOe
+ z7ZHGxSjuWPEHBBwNfQlJLuu0poNgfoOd2G/Rq47U2dk16xlfQNZSCJ7grXEd7v1OIBnpRphFcmPJ1
+ eghpiq4AjtKg2WmyMayMzJ1/x6dYMwwPWnsN2fD/t/2kVxjFtgRx/lWHP98hbIKcnMqi9M848HlIUA
+ 5dyXe1uGQbyvoRADM3LhqO6LUXQliXQIYZ4336HxgVDZLo1vFtbIlox7XUyM9YEbjmXf38/v/RUOws
+ h+BZ+ZvzU1vWcP0Ym1p2Eh6E2rzkqQtBiKTh4KahPRjae8EVfjk8XQLFkgcKKJ8jtEUwUAfONGRxPi
+ YvCLJ5HaQekoq0iR+8ZcnSwaIquNozVvLXiwi/Rt329xrTovLApN3HpoXxEyxj5/ErOAmUvILAXvRC
+ Zwt6rrUFYuHl7lT9OfBYSWVFegRUKdGQmU0L/h3hLQuRDFU0159pT3sn3SoDR3S+oZoHFa96uVaQ78
+ kpfGgxFSnJeTv3QAi8WAjnVkdQ38uG+9Rs288/V2D73hpYYoiDmHWG1T71zA==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
 
-On 11/23/23 08:47, Vincent Guittot wrote:
+This covers the RPMh Network-On-Chip Interconnect bindings
+and driver for the interconnect framework.
 
-> > > > And is it right to mix irq and uclamp_min with bw_min which is for DL? We might
-> > >
-> > > cpu_bw_dl() is not the actual utilization by DL task but the computed
-> > > bandwidth which can be seen as min performance level
-> >
-> > Yep. That's why I am not in favour of a dvfs headroom for DL.
-> >
-> > But what I meant here is that in effective_cpu_util(), where we populate min
-> > and max we have
-> >
-> >         if (min) {
-> >                 /*
-> >                  * The minimum utilization returns the highest level between:
-> >                  * - the computed DL bandwidth needed with the irq pressure which
-> >                  *   steals time to the deadline task.
-> >                  * - The minimum performance requirement for CFS and/or RT.
-> >                  */
-> >                 *min = max(irq + cpu_bw_dl(rq), uclamp_rq_get(rq, UCLAMP_MIN));
-> >
-> > So if there was an RT/CFS task requesting a UCLAMP_MIN of 1024 for example,
-> > bw_min will end up being too high, no?
-> 
-> But at the end, we want at least uclamp_min for cfs or rt just like we
-> want at least DL bandwidth for DL tasks
+As reported for earlier Interconnect drivers, the IDs
+for multi-rsc voting has been removed from this driver
+so the proper solution can be developed without having
+to remove entries later on.
 
-The issue I see is that we do
+To easy Bjorn into merging the DT bits, would it be possible
+to have an immutable branch with bindings shared with Bjorn once
+this patchset have been properly reviewed and accepted ?
 
-static void sugov_get_util()
-{
-..
-	util = effective_cpu_util(.., &min, ..); // min = max(irq + cpu_bw_dl(), rq_uclamp_min)
-	..
-	sg_cpu->bw_min = min; // bw_min can pick the rq_uclamp_min. Shouldn't it be irq + cpu_bw_dl() only?
-	..
-}
+Dependencies: None
 
-If yes, why the comparison in ignore_dl_rate_limit() is still correct then?
+For convenience, a regularly refreshed linux-next based git tree containing
+all the SM8650 related work is available at:
+https://git.codelinaro.org/neil.armstrong/linux/-/tree/topic/sm8650/upstream/integ
 
-	if (cpu_bw_dl(cpu_rq(sg_cpu->cpu)) > sg_cpu->bw_min)
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+Changes in v2:
+- Collected Reviewed-by
+- Moved required block in bindings as requested by Krzysztof
+- Link to v1: https://lore.kernel.org/r/20231025-topic-sm8650-upstream-interconnect-v1-0-b7277e03aa3d@linaro.org
 
-And does cpufreq_driver_adjust_perf() still need the sg_cpu->bw_min arg
-actually? sg_cpu->util already calculated based on sugov_effective_cpu_perf()
-which takes all constraints (including bw_min) into account.
+---
+Neil Armstrong (2):
+      dt-bindings: interconnect: document the RPMh Network-On-Chip Interconnect in Qualcomm SM8650 SoC
+      interconnect: qcom: introduce RPMh Network-On-Chip Interconnect on SM8650 SoC
 
+ .../bindings/interconnect/qcom,sm8650-rpmh.yaml    |  136 ++
+ drivers/interconnect/qcom/Kconfig                  |    9 +
+ drivers/interconnect/qcom/Makefile                 |    2 +
+ drivers/interconnect/qcom/sm8650.c                 | 1674 ++++++++++++++++++++
+ drivers/interconnect/qcom/sm8650.h                 |  143 ++
+ .../dt-bindings/interconnect/qcom,sm8650-rpmh.h    |  154 ++
+ 6 files changed, 2118 insertions(+)
+---
+base-commit: 07b677953b9dca02928be323e2db853511305fa9
+change-id: 20231016-topic-sm8650-upstream-interconnect-8512d838c593
 
-Thanks!
+Best regards,
+-- 
+Neil Armstrong <neil.armstrong@linaro.org>
 
---
-Qais Yousef
