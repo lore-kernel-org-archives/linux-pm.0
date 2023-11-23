@@ -1,105 +1,125 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="PuKHJoKZ"
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA92310CF
-	for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 08:17:46 -0800 (PST)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-40b27726369so6937285e9.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 08:17:46 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xr+SvMiW"
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0265D1B2
+	for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 08:19:40 -0800 (PST)
+Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-332c46d5988so662295f8f.1
+        for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 08:19:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1700756265; x=1701361065; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+        d=linaro.org; s=google; t=1700756378; x=1701361178; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:organization:autocrypt
+         :content-language:references:cc:to:subject:reply-to:from:user-agent
+         :mime-version:date:message-id:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=D1QWKo5v1x3RldbHoETv2ObEXLCGaOLMr/Qq6NkPTAw=;
-        b=PuKHJoKZOgm6NKkcURNE+DT/ehuqGdHHOs25dDJque7EDpPzXvkgfe0G57xSgAXzl8
-         EasBU8v8YqqL3yGe1/98uicjkxfFpIRBoJDtNBUaLnh/MIkAmMHH5DjP/SSVD2H3zG7L
-         mQZiwekWNEP0XgfweP2TBNA/NUNnrx5Fd04YksUa2tqJMGyIl258Oyx3ia8oaHfNd0X0
-         RtDTQcNXScxMeMMoJ3Fn3R9qf9fS8csd9OBK5Uk9z78ckE+oRDb4yvBcjJ/e6aoK3Ot+
-         IcqTQdLnDw8ZK1JfakwjTEvOu9Os5jWwxpSYTW2OsnhMt4YwC7NAXfIz8hGnPp2oUUob
-         OrQQ==
+        bh=kFib22uBVjZl/F9aPk76OV4H7hn/DOMh18iJcGB0mUg=;
+        b=xr+SvMiWkoQKhrhCKRAZJBFJsAPSV9UrtazIl6y+6DrY6q7tRZQrYyOW9bNUaQph2b
+         /SwS8YIR4RldFY3TmPJXEAuFeUOB6t4rgL0kTYiYGTJJqxGLWuQzkb7f2LT+dMYLfUoI
+         F1e31KOO7TZbWDeAEo83x8rVXWBBFcC5dDR3agHy4cOd6syw6QxR/sY2oaI1vSv6vvkh
+         3sZutglx1qQBvpyG56rP5+fbKdyXnE4T4fAso2EddO7b9nMbU05sadhN3vtFewwn97iU
+         TldWSp3WP4LT0lYw7+P29AKoJSSuq4+VkcUUYX/zK9v7aY5POva3DM5so3yEJ6CV2xcG
+         Jgyg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700756265; x=1701361065;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=D1QWKo5v1x3RldbHoETv2ObEXLCGaOLMr/Qq6NkPTAw=;
-        b=I1lYY8RSjq5lsSV//JKIlAJ84YnOZW4glerlQF+oO/Vo+BO/09+v2SHCNEVkxjDUEU
-         gl9wH8qgG61W/tZ+o7Odgx6hpOIFE+VKy5EhDBIaVQdslQN2kl40L/WjkNPoCvNsRn74
-         mKSIJ2kxq29MHJQWKtv3ESVheZJk2M8XEHK479ukT81WA4H0qf95zxLNsn5gZwbxyzg2
-         K57HGnrPBC9jZU/ZzSvfAq2pMmOqZphSdrIMaj9au/oUh6xbbmCAFmuN3u06Cx9KGm3N
-         OHrMKV0FvYVhINU+cZCOpBGIEAulwtuHCFw26gm3PGk5AEIv9g9W6CthzFzOqJnRivHc
-         DBEQ==
-X-Gm-Message-State: AOJu0YxhNT8R5uyCiF0+dKQy98k2YnEutX4o60dU1fw+AfNgbxblWWFm
-	asvm87D090sWivlgAnPhmNrZTg==
-X-Google-Smtp-Source: AGHT+IHG1IHPzr5+pbBp8rozL88cTH/APU9g55yvH+q/8GEbtJ5D528qSdJUOc4Q7WvVqxqFHAVyUg==
-X-Received: by 2002:a05:600c:354c:b0:405:39b4:3145 with SMTP id i12-20020a05600c354c00b0040539b43145mr75899wmq.2.1700756265210;
-        Thu, 23 Nov 2023 08:17:45 -0800 (PST)
-Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
-        by smtp.gmail.com with ESMTPSA id y3-20020adfee03000000b0032f7e832cabsm2052748wrn.90.2023.11.23.08.17.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Nov 2023 08:17:44 -0800 (PST)
-From: Neil Armstrong <neil.armstrong@linaro.org>
-Date: Thu, 23 Nov 2023 17:17:41 +0100
-Subject: [PATCH v2 1/2] dt-bindings: power: meson-g12a-power: document ISP
- power domain
+        d=1e100.net; s=20230601; t=1700756378; x=1701361178;
+        h=content-transfer-encoding:in-reply-to:organization:autocrypt
+         :content-language:references:cc:to:subject:reply-to:from:user-agent
+         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=kFib22uBVjZl/F9aPk76OV4H7hn/DOMh18iJcGB0mUg=;
+        b=IgdurN/XRqGnMQowwjg2BpWdwuBYvkHVZCgSJNqn+VrVXy8L0wpn4DoPvU9/oszbqk
+         z3GSmritEvwC2c0NNyQ//5UeqlMqdn5Hzrt7gziVL4AKga6/X9vw+AOxkHJuP/oRrpGw
+         Akt2l/vPJ3I63bs1MPUnIa8RZyPb1KxUHhGmOdJbkrC8HAKyxSYlCG9t/1KHvXpY27mv
+         wB06R9Jaraw/CilfA2DHnJ3AC/1Ch1exdRZhocdV+/xKD/flwJH92dHhVaBi60o5LrO4
+         vrTKRQec11VCt2kl3fUhli3IgFAHeZJjy7YuZgC3g8DNipp1ft51fgiWTc/RWd6GZxgt
+         vMBw==
+X-Gm-Message-State: AOJu0YzSF5m2d5y7awYF262ji6wnpKjjcxiNxWQ2oQpboF1vTlhc1ANE
+	2RCk6698F1SoCfEckbDbzhtxQA==
+X-Google-Smtp-Source: AGHT+IHMw3+2jNOgA+734otOpWfY2vuzMRBbfign+rWcFlx1PV+Buo7Mm4lDlK2VT1yXzL5+sl8dLA==
+X-Received: by 2002:a5d:584e:0:b0:331:6c3b:4f1e with SMTP id i14-20020a5d584e000000b003316c3b4f1emr4595043wrf.56.1700756378356;
+        Thu, 23 Nov 2023 08:19:38 -0800 (PST)
+Received: from ?IPV6:2a01:e0a:982:cbb0:89c5:1f48:b86f:30ba? ([2a01:e0a:982:cbb0:89c5:1f48:b86f:30ba])
+        by smtp.gmail.com with ESMTPSA id j7-20020adfb307000000b00332e7f9e2a8sm45074wrd.68.2023.11.23.08.19.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 23 Nov 2023 08:19:37 -0800 (PST)
+Message-ID: <20dee547-8358-4af4-ba90-c5e9a7367c48@linaro.org>
+Date: Thu, 23 Nov 2023 17:19:36 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20231123-topic-amlogic-upstream-isp-pmdomain-v2-1-61f2fcf709e5@linaro.org>
-References: <20231123-topic-amlogic-upstream-isp-pmdomain-v2-0-61f2fcf709e5@linaro.org>
-In-Reply-To: <20231123-topic-amlogic-upstream-isp-pmdomain-v2-0-61f2fcf709e5@linaro.org>
-To: Rob Herring <robh+dt@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
- Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>, 
- Jerome Brunet <jbrunet@baylibre.com>, 
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+User-Agent: Mozilla Thunderbird
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Reply-To: neil.armstrong@linaro.org
+Subject: Re: [PATCH v2 1/2] dt-bindings: power: meson-g12a-power: document ISP
+ power domain
+To: Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
  Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Daniel Scally <dan.scally@ideasonboard.com>, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- Neil Armstrong <neil.armstrong@linaro.org>
-X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=643;
- i=neil.armstrong@linaro.org; h=from:subject:message-id;
- bh=TxQCQp8KexETWz0DJ5Ct9muX5KYY3F1pMZr7p8jc1eY=;
- b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlX3smKF0j7nA9VBHAoArGETDgFABLBq+akOAUMfBw
- jks/YGWJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZV97JgAKCRB33NvayMhJ0c8+D/
- 95IVvCDmoe/Lg2/8P5KkyobwLXAIcequgCcdntyasiSIm4J1E1f86uko4BSsU5yVlpIaaTRrQ0N/3R
- y5hkNE24ppDxdjraw/K5W7Lu3ooELU0qiCiLJS46My/En8UXBv52LSI2RjzUA+IH/xXswYlvt8/RZj
- Cj1BmDSFmVewFPyctRF5r8YtaEsUQMhUd6lOxIP1OFE02wlQdklaRnjGH2DY6D4iFXg+NMwGUJ1Kt2
- eygrQ7B8TuV5alfnzgQvPvwBCws6dXOzVnufEGz6NcoZJoxCjcy+nLJhWa72KyVMFeiE0XT3x0mtC6
- Ru+l9E48F29MPVit+ijBGu1SkEfaL17/yqs5vJ6S40N+MfQ1Ta7A2pOQr855AsXn3ZTHPX1Vwp/FaK
- 5rspfLzkyL7WvQXVCGbK5C4/+i5ltdiJgq7UDpXcU5zfJNF3YnKDTnd7yaOuWdp9ihmGBi4kmbSjG4
- cvq2oPuLGlmsmVNw4gUoYj3kJIGwnIYtFzWGDNWgC3YJBktymd+L39jSAhdt+B4lxU2UaGk8OUTJDz
- fTm9YxSUls8SXyiRfkzZ9f/X0w0WDzqYXT166ul81xaq4aaAan4BQLwcPxoTgewYTPbMo/4jIcjKcv
- yDMMFdXEKi5qq6578gj4ZwfuR1+G27bQcwYruddf39cSSN9vfdIOFt6pTVYg==
-X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
- fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+Cc: Daniel Scally <dan.scally@ideasonboard.com>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20231123-topic-amlogic-upstream-isp-pmdomain-v2-0-61f2fcf709e5@linaro.org>
+ <20231123-topic-amlogic-upstream-isp-pmdomain-v2-1-61f2fcf709e5@linaro.org>
+Content-Language: en-US, fr
+Autocrypt: addr=neil.armstrong@linaro.org; keydata=
+ xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
+ GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
+ BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
+ qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
+ 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
+ AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
+ OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
+ Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
+ YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
+ GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
+ UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
+ GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
+ yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
+ QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
+ SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
+ 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
+ Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
+ oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
+ M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
+ 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
+ KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
+ 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
+ QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
+Organization: Linaro Developer Services
+In-Reply-To: <20231123-topic-amlogic-upstream-isp-pmdomain-v2-1-61f2fcf709e5@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Add MIPI ISP power domain ID to the G12A Power domains bindings header
+On 23/11/2023 17:17, Neil Armstrong wrote:
+> Add MIPI ISP power domain ID to the G12A Power domains bindings header
+> 
+> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+> ---
+>   include/dt-bindings/power/meson-g12a-power.h | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/include/dt-bindings/power/meson-g12a-power.h b/include/dt-bindings/power/meson-g12a-power.h
+> index 44ec0c50e340..01fd0ac4dd08 100644
+> --- a/include/dt-bindings/power/meson-g12a-power.h
+> +++ b/include/dt-bindings/power/meson-g12a-power.h
+> @@ -10,5 +10,6 @@
+>   #define PWRC_G12A_VPU_ID		0
+>   #define PWRC_G12A_ETH_ID		1
+>   #define PWRC_G12A_NNA_ID		2
+> +#define PWRC_G12A_ISP_ID		3
+>   
+>   #endif
+> 
 
-Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
----
- include/dt-bindings/power/meson-g12a-power.h | 1 +
- 1 file changed, 1 insertion(+)
+I forgot:
+Reviewed-by: Daniel Scally <dan.scally@ideasonboard.com>
+Tested-by: Daniel Scally <dan.scally@ideasonboard.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 
-diff --git a/include/dt-bindings/power/meson-g12a-power.h b/include/dt-bindings/power/meson-g12a-power.h
-index 44ec0c50e340..01fd0ac4dd08 100644
---- a/include/dt-bindings/power/meson-g12a-power.h
-+++ b/include/dt-bindings/power/meson-g12a-power.h
-@@ -10,5 +10,6 @@
- #define PWRC_G12A_VPU_ID		0
- #define PWRC_G12A_ETH_ID		1
- #define PWRC_G12A_NNA_ID		2
-+#define PWRC_G12A_ISP_ID		3
- 
- #endif
+If needed I can send a v4 with those added...
 
--- 
-2.34.1
-
+Neil
