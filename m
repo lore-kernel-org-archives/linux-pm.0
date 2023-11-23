@@ -1,112 +1,100 @@
 Authentication-Results: smtp.subspace.kernel.org; dkim=none
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTP id 9F5BE91
-	for <linux-pm@vger.kernel.org>; Thu, 23 Nov 2023 04:08:52 -0800 (PST)
+	by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0FB83D64;
+	Thu, 23 Nov 2023 05:12:31 -0800 (PST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C53C21063;
-	Thu, 23 Nov 2023 04:09:38 -0800 (PST)
-Received: from usa.arm.com (e103737-lin.cambridge.arm.com [10.1.197.49])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 939B33F7A6;
-	Thu, 23 Nov 2023 04:08:51 -0800 (PST)
-From: Sudeep Holla <sudeep.holla@arm.com>
-To: linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Cristian Marussi <cristian.marussi@arm.com>
-Subject: [PATCH 2/2] firmware: arm_scpi: Move power-domain driver to the pmdomain dir
-Date: Thu, 23 Nov 2023 12:08:47 +0000
-Message-ID: <20231123120847.2825444-2-sudeep.holla@arm.com>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231123120847.2825444-1-sudeep.holla@arm.com>
-References: <20231123120847.2825444-1-sudeep.holla@arm.com>
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F1C871042;
+	Thu, 23 Nov 2023 05:13:16 -0800 (PST)
+Received: from [10.57.4.190] (unknown [10.57.4.190])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 25DA43F6C4;
+	Thu, 23 Nov 2023 05:12:28 -0800 (PST)
+Message-ID: <3a381307-81a2-40ab-a2bf-f899e3fd7c80@arm.com>
+Date: Thu, 23 Nov 2023 13:13:27 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] sched/pelt: avoid underestimate of task utilization
+Content-Language: en-US
+To: Vincent Guittot <vincent.guittot@linaro.org>
+References: <20231122140119.472110-1-vincent.guittot@linaro.org>
+Cc: mingo@redhat.com, peterz@infradead.org, rafael@kernel.org,
+ qyousef@layalina.io, mgorman@suse.de, bsegall@google.com,
+ rostedt@goodmis.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com,
+ juri.lelli@redhat.com, bristot@redhat.com, vschneid@redhat.com,
+ linux-kernel@vger.kernel.org, viresh.kumar@linaro.org
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <20231122140119.472110-1-vincent.guittot@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-To simplify with maintenance let's move the Arm SCPI power-domain driver
-to the new pmdomain directory. Note this is different from and precedes
-the new Arm SCMI protocol.
 
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/firmware/Kconfig                            |  9 ---------
- drivers/firmware/Makefile                           |  1 -
- drivers/pmdomain/arm/Kconfig                        | 12 ++++++++++++
- drivers/pmdomain/arm/Makefile                       |  1 +
- drivers/{firmware => pmdomain/arm}/scpi_pm_domain.c |  0
- 5 files changed, 13 insertions(+), 10 deletions(-)
- rename drivers/{firmware => pmdomain/arm}/scpi_pm_domain.c (100%)
 
-diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
-index 4a98a859d44d..afeb050ae1b4 100644
---- a/drivers/firmware/Kconfig
-+++ b/drivers/firmware/Kconfig
-@@ -28,15 +28,6 @@ config ARM_SCPI_PROTOCOL
- 	  This protocol library provides interface for all the client drivers
- 	  making use of the features offered by the SCP.
+On 11/22/23 14:01, Vincent Guittot wrote:
+> It has been reported that thread's util_est can significantly decrease as
+> a result of sharing the CPU with other threads. The use case can be easily
+> reproduced with a periodic task TA that runs 1ms and sleeps 100us.
+> When the task is alone on the CPU, its max utilization and its util_est is
+> around 888. If another similar task starts to run on the same CPU, TA will
+> have to share the CPU runtime and its maximum utilization will decrease
+> around half the CPU capacity (512) then TA's util_est will follow this new
+> maximum trend which is only the result of sharing the CPU with others
+> tasks. Such situation can be detected with runnable_avg wich is close or
+> equal to util_avg when TA is alone but increases above util_avg when TA
+> shares the CPU with other threads and wait on the runqueue.
+> 
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> ---
+> 
+> This patch implements what I mentioned in [1]. I have been able to
+> reproduce such pattern with rt-app.
+> 
+> [1] https://lore.kernel.org/lkml/CAKfTPtDd-HhF-YiNTtL9i5k0PfJbF819Yxu4YquzfXgwi7voyw@mail.gmail.com/#t
 
--config ARM_SCPI_POWER_DOMAIN
--	tristate "SCPI power domain driver"
--	depends on ARM_SCPI_PROTOCOL || (COMPILE_TEST && OF)
--	default y
--	select PM_GENERIC_DOMAINS if PM
--	help
--	  This enables support for the SCPI power domains which can be
--	  enabled or disabled via the SCP firmware
--
- config ARM_SDE_INTERFACE
- 	bool "ARM Software Delegated Exception Interface (SDEI)"
- 	depends on ARM64
-diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
-index 5f9dab82e1a0..944833702ebd 100644
---- a/drivers/firmware/Makefile
-+++ b/drivers/firmware/Makefile
-@@ -3,7 +3,6 @@
- # Makefile for the linux kernel.
- #
- obj-$(CONFIG_ARM_SCPI_PROTOCOL)	+= arm_scpi.o
--obj-$(CONFIG_ARM_SCPI_POWER_DOMAIN) += scpi_pm_domain.o
- obj-$(CONFIG_ARM_SDE_INTERFACE)	+= arm_sdei.o
- obj-$(CONFIG_DMI)		+= dmi_scan.o
- obj-$(CONFIG_DMI_SYSFS)		+= dmi-sysfs.o
-diff --git a/drivers/pmdomain/arm/Kconfig b/drivers/pmdomain/arm/Kconfig
-index acbe4331aaf7..efa139c34e08 100644
---- a/drivers/pmdomain/arm/Kconfig
-+++ b/drivers/pmdomain/arm/Kconfig
-@@ -23,3 +23,15 @@ config ARM_SCMI_POWER_DOMAIN
- 	  This driver can also be built as a module. If so, the module
- 	  will be called scmi_pm_domain. Note this may needed early in boot
- 	  before rootfs may be available.
-+
-+config ARM_SCPI_POWER_DOMAIN
-+	tristate "SCPI power domain driver"
-+	depends on ARM_SCPI_PROTOCOL || (COMPILE_TEST && OF)
-+	default y
-+	select PM_GENERIC_DOMAINS if PM
-+	help
-+	  This enables support for the SCPI power domains which can be
-+	  enabled or disabled via the SCP firmware
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called scpi_pm_domain.
-diff --git a/drivers/pmdomain/arm/Makefile b/drivers/pmdomain/arm/Makefile
-index cfcb1f6cdd90..502fe4d0a83e 100644
---- a/drivers/pmdomain/arm/Makefile
-+++ b/drivers/pmdomain/arm/Makefile
-@@ -2,3 +2,4 @@
+Thanks Vincet for looking at it! I didn't have to to come
+back to this issue.
 
- obj-$(CONFIG_ARM_SCMI_PERF_DOMAIN) += scmi_perf_domain.o
- obj-$(CONFIG_ARM_SCMI_POWER_DOMAIN) += scmi_pm_domain.o
-+obj-$(CONFIG_ARM_SCPI_POWER_DOMAIN) += scpi_pm_domain.o
-diff --git a/drivers/firmware/scpi_pm_domain.c b/drivers/pmdomain/arm/scpi_pm_domain.c
-similarity index 100%
-rename from drivers/firmware/scpi_pm_domain.c
-rename to drivers/pmdomain/arm/scpi_pm_domain.c
---
-2.42.0
+> 
+>   kernel/sched/fair.c | 13 +++++++++++++
+>   1 file changed, 13 insertions(+)
+> 
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 07f555857698..eeb505d28905 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -4774,6 +4774,11 @@ static inline unsigned long task_util(struct task_struct *p)
+>   	return READ_ONCE(p->se.avg.util_avg);
+>   }
+>   
+> +static inline unsigned long task_runnable(struct task_struct *p)
+> +{
+> +	return READ_ONCE(p->se.avg.runnable_avg);
+> +}
+> +
+>   static inline unsigned long _task_util_est(struct task_struct *p)
+>   {
+>   	struct util_est ue = READ_ONCE(p->se.avg.util_est);
+> @@ -4892,6 +4897,14 @@ static inline void util_est_update(struct cfs_rq *cfs_rq,
+>   	if (task_util(p) > arch_scale_cpu_capacity(cpu_of(rq_of(cfs_rq))))
+>   		return;
+>   
+> +	/*
+> +	 * To avoid underestimate of task utilization, skip updates of ewma if
+> +	 * we cannot grant that thread got all CPU time it wanted.
+> +	 */
+> +	if ((ue.enqueued + UTIL_EST_MARGIN) < task_runnable(p))
+> +		goto done;
+> +
+> +
+>   	/*
+>   	 * Update Task's estimated utilization
+>   	 *
 
+That looks reasonable to do. I cannot test it right now on my pixel6.
+It should do the trick to the task util that we need in bigger apps
+than rt-app as well.
+
+Reviewed-by: Lukasz luba <lukasz.luba@arm.com>
