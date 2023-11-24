@@ -1,35 +1,31 @@
 Authentication-Results: smtp.subspace.kernel.org; dkim=none
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 02EC811F
-	for <linux-pm@vger.kernel.org>; Fri, 24 Nov 2023 00:10:48 -0800 (PST)
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EEB56DD
+	for <linux-pm@vger.kernel.org>; Fri, 24 Nov 2023 00:10:47 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1r6RGp-0005Ko-Tt; Fri, 24 Nov 2023 09:10:39 +0100
+	id 1r6RGq-0005NC-BY; Fri, 24 Nov 2023 09:10:40 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1r6RGp-00BDab-Fu; Fri, 24 Nov 2023 09:10:39 +0100
+	id 1r6RGp-00BDaj-Rb; Fri, 24 Nov 2023 09:10:39 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1r6RGp-007Hhq-5q; Fri, 24 Nov 2023 09:10:39 +0100
+	id 1r6RGp-007Hhy-If; Fri, 24 Nov 2023 09:10:39 +0100
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Ulf Hansson <ulf.hansson@linaro.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	"Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	NXP Linux Team <linux-imx@nxp.com>,
-	linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 6/9] pmdomain: imx93-blk-ctrl: Convert to platform remove callback returning void
-Date: Fri, 24 Nov 2023 09:06:30 +0100
-Message-ID: <20231124080623.564924-7-u.kleine-koenig@pengutronix.de>
+To: Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konrad.dybcio@linaro.org>,
+	Andy Gross <agross@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	Pengutronix Kernel Team <kernel@pengutronix.de>
+Subject: [PATCH 8/9] pmdomain: qcom-cpr: Convert to platform remove callback returning void
+Date: Fri, 24 Nov 2023 09:06:32 +0100
+Message-ID: <20231124080623.564924-9-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.42.0.586.gbc5204569f7d.dirty
 In-Reply-To: <20231124080623.564924-1-u.kleine-koenig@pengutronix.de>
 References: <20231124080623.564924-1-u.kleine-koenig@pengutronix.de>
@@ -40,7 +36,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1973; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=qlTqRAkHlYmqKK29fATW8unizLMrfP09jkrBAih35fw=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlYFmG/UN8qYgG4O1CAZiiL7Pgwp2kRFh2lpG9c rcJb5XPWPKJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZWBZhgAKCRCPgPtYfRL+ TjhvCACxH0KfYKXiutfgoinNuzIIxkpnBLcXyGmmDksEkYt1HQdGYhuc0HveuhkcvNn7q6HkxRH XgWShZ1hyUiXNTUKxMrrvhXcUzBLQnMDaZ8WChtpvDUwNKk///wHYIH7V2ltNnKMLMO6WmF1IV1 6nkoZ49n765pD0YoVemRbtyniNnL8f3GwntkOmoepA8hCVF5e7JaXDpQ6yt/n3Lbnf0Daq3QesD HDDy5dc5bjqiP3KF+mNDd449hONfGmujz1/IBm5r976ZL7bz+n/uzwg/uo9joL8q2r20JI1EKHT 8T+0dX/70a8IQsg91ItxYEj5ZZt14QXMFI5QhKzYYmVc9mJo
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1809; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=TvkOctt3AvlLAkuA7GxL6uPUOFK92fQI8cfQjr4qIY4=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlYFmIBeEvg/DyHJK/ahO9lV4PP34uEyctNMj+E cvI46N0asaJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZWBZiAAKCRCPgPtYfRL+ TlbdB/4qFE6/+10hVsz5J3BFePCqlF3xG9CFjV2dCmRPIfeL04RQZck3uHBTNMAWUKaoR+M++um Ncmq54V7xeWL3fIZ87Tukz3BHf8ZWQTJpyVZRWYP2tJknmIoBP5UXR1OjSzNX7pljM1Ke9nal8S Zn7Ql113eqKA/9um2mvKOmA/L4wxLqUsrjJw6krM3bW6UCgXhqOasyYGRFdB7AbS9og1Zq2wqzn ddk1auq9SU6A6ofhsTaKFYB3vX5yykuxbzGis6+GI2QmGOxkJ36wMVddwzmUcI2SrV0MNXV4C+U RInXtGrSPiRXSqCTXLAa1ioghWI9nsvV6FubE8nfuO5VO3Fp
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -63,40 +59,40 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/pmdomain/imx/imx93-blk-ctrl.c | 6 ++----
+ drivers/pmdomain/qcom/cpr.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pmdomain/imx/imx93-blk-ctrl.c b/drivers/pmdomain/imx/imx93-blk-ctrl.c
-index 40bd90f8b977..904ffa55b8f4 100644
---- a/drivers/pmdomain/imx/imx93-blk-ctrl.c
-+++ b/drivers/pmdomain/imx/imx93-blk-ctrl.c
-@@ -306,7 +306,7 @@ static int imx93_blk_ctrl_probe(struct platform_device *pdev)
+diff --git a/drivers/pmdomain/qcom/cpr.c b/drivers/pmdomain/qcom/cpr.c
+index e9dd42bded6f..c64e84a27cc7 100644
+--- a/drivers/pmdomain/qcom/cpr.c
++++ b/drivers/pmdomain/qcom/cpr.c
+@@ -1712,7 +1712,7 @@ static int cpr_probe(struct platform_device *pdev)
  	return ret;
  }
  
--static int imx93_blk_ctrl_remove(struct platform_device *pdev)
-+static void imx93_blk_ctrl_remove(struct platform_device *pdev)
+-static int cpr_remove(struct platform_device *pdev)
++static void cpr_remove(struct platform_device *pdev)
  {
- 	struct imx93_blk_ctrl *bc = dev_get_drvdata(&pdev->dev);
- 	int i;
-@@ -318,8 +318,6 @@ static int imx93_blk_ctrl_remove(struct platform_device *pdev)
+ 	struct cpr_drv *drv = platform_get_drvdata(pdev);
  
- 		pm_genpd_remove(&domain->genpd);
- 	}
+@@ -1725,8 +1725,6 @@ static int cpr_remove(struct platform_device *pdev)
+ 	pm_genpd_remove(&drv->pd);
+ 
+ 	debugfs_remove_recursive(drv->debugfs);
 -
 -	return 0;
  }
  
- static const struct imx93_blk_ctrl_domain_data imx93_media_blk_ctl_domain_data[] = {
-@@ -438,7 +436,7 @@ MODULE_DEVICE_TABLE(of, imx93_blk_ctrl_of_match);
+ static const struct of_device_id cpr_match_table[] = {
+@@ -1737,7 +1735,7 @@ MODULE_DEVICE_TABLE(of, cpr_match_table);
  
- static struct platform_driver imx93_blk_ctrl_driver = {
- 	.probe = imx93_blk_ctrl_probe,
--	.remove = imx93_blk_ctrl_remove,
-+	.remove_new = imx93_blk_ctrl_remove,
- 	.driver = {
- 		.name = "imx93-blk-ctrl",
- 		.of_match_table = imx93_blk_ctrl_of_match,
+ static struct platform_driver cpr_driver = {
+ 	.probe		= cpr_probe,
+-	.remove		= cpr_remove,
++	.remove_new	= cpr_remove,
+ 	.driver		= {
+ 		.name	= "qcom-cpr",
+ 		.of_match_table = cpr_match_table,
 -- 
 2.42.0
 
