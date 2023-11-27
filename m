@@ -1,33 +1,32 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="ZkVXa4hE"
-Received: from NAM04-BN8-obe.outbound.protection.outlook.com (mail-bn8nam04on2062.outbound.protection.outlook.com [40.107.100.62])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C899D60;
-	Mon, 27 Nov 2023 11:26:16 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="qXV29ecQ"
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2067.outbound.protection.outlook.com [40.107.244.67])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F392A10D7;
+	Mon, 27 Nov 2023 11:26:18 -0800 (PST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=BuMtHx7YaKB2FYe42pltZPlas+uhrWd4h1PYa5eES5wtIhPEAnZIe7Q424t5MbjlcMnQDhugXnwZI1IO1Y77OEeSr/NBr5sofO6HlfyrOyY4m1dzQCdNDfIS7T5BMzZjQmTujcTIeNzkrDZdYxAGZ8aiJJ7+p5jOQ69PStFKWK5cROpcFB1b2396UITcPSzSM5UQ7HbDBW8xx7iWnbN/0C838M3/LbqpY4GV8I8HxLQrOEC9kr2jFRFhyb8+maGNDW9u4MTH6HD4RjnXY+raWtvRju0qTgjvQjh73NrWIqs3fAHBbi/9yt7Tr6kT45e3P5ZCnq9hYXinwCCWG4uVGw==
+ b=Dgnzr/WD28guiC5CSf6pfW1uOKLn8pU0sK6E6eOAlusy8y79O33iuBuZ0wgD8bxdVDzoMsahweEZwPJpOhhdx3RfkfNj9UZlzeOQxiGG6JEN16jemqRlwmqHKVJL3JWZ3nEalTMAdlFAle/SvBDnTuKXaOL23KXE8nT0MRuaSM65J32CxouG4VgRQuirJmnbajM8d+ra9x/nNw7ng1PX7v2kdmOzjeITSOo9O1tp/XxxakFzSmuEhFW/YgmvnPYpIPjHrdj5AliF8gEs8vgezmyg8uVdu/BtW1+Pgfsmprh7axUyU9UTbhXtMJTn1IEWRXbXV8gaOiDEn7xzITwphw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=koPpbArlYcE4vPhoQ+Ikg770yizTTTEAbSY0aTCnKVY=;
- b=C7QP+zpc4rfkjUxa+pgC7m4tg8zFphX1Zxkb/GY/xnb9j9+yxeMAskvq+gIEjIKTpvffk/fFtOY89AL3Byxr/AwXS/Y42MNvEJbQM/4qsG7CCzNBI47VD9knRV+JkUQZhHxwVPimDwCGZJbCpU58My2AeJrwmhcQo1XI/b73dnr+9SwTLxELNU6XKmhRTVEPcrp/SgZ/oemflMkDB3Q1XPKh98wWJ9bz7Z69mvIqHjWfabFb4D56DulMmtgUGZKkephL211rDGuSpm3P5ufZ1fdg65tVrb80Ylu0BYaOMvq7O1CCY5K97J4/dOaWM0nWwPQmQWnwaRhs2K/yUgxvHg==
+ bh=umLioW63EAOyf1vpISoUT/wL0Lfpe3FtD1EImu1KLys=;
+ b=An4W6rJUfvgFwIRVefaJKxN5FRkKZ7HeQ0Szm5btIfUbf8FlpFbHWboPJB3eYZA+zI3psGuYCist+uyNHSAf2nIkmZuf7KgxkE+WTRlbX/wrITO5OeJcOfsD6ARGi9ub8x2EIjhXif4gg9TQI2D86b1uJtz74RxDc9Eowiq2jXGmXZG1EqHqLmuBLJFWUxZ2mfPBTUJW5WHzBMPOc/LPIp9twW8HXFcq4/x7Uc+SSEQT5l4Yzt4z6KnMCxOUwtk+Wn9Rr47mwtn1VMIL+o3YxXpEZI+lyJTARpV3xcXGmnaD+Y7vfa1ZIWU9b9KUP/qozeRID8LS9vAXSVtTepQO7g==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=o2.pl smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=koPpbArlYcE4vPhoQ+Ikg770yizTTTEAbSY0aTCnKVY=;
- b=ZkVXa4hEjw4Q/dN5ROMjOt3CPLnrFZ/vLngCrS7sFiBFez5Dl1oUCLaYfJMxl5Wnku1dAxCjuLmgLD9xJJc+9FNN80GEtUJipzmfLkVksioZJCXcjUG14nHWp3QhXKonX0XktFY24L1sF3VBmQKXkgdKpyUp73vmCkp3OtWohC0=
-Received: from SJ0PR13CA0018.namprd13.prod.outlook.com (2603:10b6:a03:2c0::23)
- by PH7PR12MB6737.namprd12.prod.outlook.com (2603:10b6:510:1a8::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7025.27; Mon, 27 Nov
- 2023 19:26:12 +0000
+ bh=umLioW63EAOyf1vpISoUT/wL0Lfpe3FtD1EImu1KLys=;
+ b=qXV29ecQ1cv3rulNTvc/40mf4Inyo5JOaoe5G1aWsnIq1jHFCrKTDQZjkb5SwF5nQRCQzsAM0oKXYrvUJ4w5QDizd7IEgm6VEtxGWhWYcv20btbuU0J5ca+DjPgFHkjIAtdpSN0P5pCmRO3VYOJN+32Mfy0MuXztiZup4WBaJEY=
+Received: from SJ0PR13CA0027.namprd13.prod.outlook.com (2603:10b6:a03:2c0::32)
+ by DM4PR12MB6373.namprd12.prod.outlook.com (2603:10b6:8:a4::7) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7025.29; Mon, 27 Nov 2023 19:26:14 +0000
 Received: from DS1PEPF00017096.namprd05.prod.outlook.com
- (2603:10b6:a03:2c0:cafe::f2) by SJ0PR13CA0018.outlook.office365.com
- (2603:10b6:a03:2c0::23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7046.21 via Frontend
- Transport; Mon, 27 Nov 2023 19:26:11 +0000
+ (2603:10b6:a03:2c0:cafe::e9) by SJ0PR13CA0027.outlook.office365.com
+ (2603:10b6:a03:2c0::32) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7046.19 via Frontend
+ Transport; Mon, 27 Nov 2023 19:26:14 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -37,11 +36,11 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  DS1PEPF00017096.mail.protection.outlook.com (10.167.18.100) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.7046.17 via Frontend Transport; Mon, 27 Nov 2023 19:26:11 +0000
+ 15.20.7046.17 via Frontend Transport; Mon, 27 Nov 2023 19:26:14 +0000
 Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.34; Mon, 27 Nov
- 2023 13:26:10 -0600
+ 2023 13:26:12 -0600
 From: Mario Limonciello <mario.limonciello@amd.com>
 To: =?UTF-8?q?Mateusz=20Jo=C5=84czyk?= <mat.jonczyk@o2.pl>, Alessandro Zummo
 	<a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>
@@ -52,9 +51,9 @@ CC: "open list:REAL TIME CLOCK (RTC) SUBSYSTEM" <linux-rtc@vger.kernel.org>,
 	<dave.hansen@linux.intel.com>, Borislav Petkov <bp@alien8.de>, "H . Peter
  Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
 	<mingo@redhat.com>, Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH v3 2/4] rtc: Adjust failure return code for cmos_set_alarm()
-Date: Mon, 27 Nov 2023 13:25:51 -0600
-Message-ID: <20231127192553.9734-3-mario.limonciello@amd.com>
+Subject: [PATCH v3 4/4] rtc: Extend timeout for waiting for UIP to clear to 1s
+Date: Mon, 27 Nov 2023 13:25:53 -0600
+Message-ID: <20231127192553.9734-5-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20231127192553.9734-1-mario.limonciello@amd.com>
 References: <20231127192553.9734-1-mario.limonciello@amd.com>
@@ -70,67 +69,110 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS1PEPF00017096:EE_|PH7PR12MB6737:EE_
-X-MS-Office365-Filtering-Correlation-Id: fa6019ca-a280-4f75-2493-08dbef7eb708
+X-MS-TrafficTypeDiagnostic: DS1PEPF00017096:EE_|DM4PR12MB6373:EE_
+X-MS-Office365-Filtering-Correlation-Id: c746ae24-a050-42c2-23c0-08dbef7eb8ae
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
 X-Microsoft-Antispam-Message-Info:
-	MK1ecO+vuBzGC2WNPgSXbXOk4FdzcrkoLskO8GkkrYKDBC6xF1LrRWY9s/bALVjkzOHnfBPAgvQmDUWDldDCgZZqZSd3ZuFBfEmjCvn/bUQq5AMslqDsj89LbDFYTEJf1mZ4r422RSpUeL/rlxgr1RVY6aJolyhcIjJh/DGa4U/08tueM4QlVax0qVDjU5WhM18uJHeQL9OCDjwnFLaXS/uTjdxlx4NLtIUQJX+rEX6nUkwW2X2IbmV+aL6Y2jDPFsVFZMSwNZEkcbqwESz+WnNl0zueaPR+fWnpsvltjEHC3XpVBYzcOHBfr5hr0OwYrw/bbjhO3+CCyV8nml3/Lx1M/O4bk+9zZ7P12x0leZrJ46jg+z6p85JFSgq8tOdnuMyYwQgpNBqb/9PoB0Fuwkg9UbvShdY5dEo/xELHALBOnO/syCSkobKF8wopOLLUus8gXE6tRDjOzfbXcLFWCn2Z2zugE/oRojNY1dkyMsUxmcjRxA/sngWmxd6bhdVaSSgBKN+g6sBMlYNhOS9jWyUvsg24QPjHT+DRSEs+oMt74dwoQSY3Ixo7XGmBV6yAJbp6aLvnX8ACciYdqYkcxOMNxZfeqtzchHD85XhUTPePP3ZjAZP3UBrKThWpAQ2hdtEf/ATwGnOFK5BwCQCgXiJ9KSY7KfsfkAGZKIbhr05pyrhhqz/dHKMW9iRBjJ0y7h8lHSNYHPFVBQV58/boqXaYsCh7XqRDOMupylAFv59VTBR7w3lONZpVaT6CaOBerI/wYJ9Xlz8WX6u/WzWsHg==
+	03QZLve4gPcKn+D+6Wif9kA4R7I0iGDHiuYgBjAkFDlnBvwG8s3bVcW4a4kDoRV/q7dcXoMN5Cf1VjhLZ3/dc/zzWnmPvfFztyVnh8JnTqjzaHG2cd1WMJ3xp794xC/hstfQD+4jld+5uXFtcXsuguF9bEUxLfjFvzEFAwOB6yjsXBz8Ef5WpHD1kdgNbSyaaDNILnZRKuUeeYPLm2mRneqtxjT0esq8QD4SbDY0xfSM1/GjauD9qDg7VU/h0oRoOG2OK5MB1NUqYms/WuOVmrUPfrlXoGd3ZAEM/CnKEXxndWdirvdxx0KXk9/2GgVQrOw4aq6zhUJ0PAMyNzDL35Uq5mRF0uRZBNok9lji97oKjq9Q11zeqPeO8az9SFrSzylLf/yUc0KjuLvne9NGtQzgHBFPZ/NOnV2EmNbgwF/fHJg0yDR3NhJ8mt86Q36w8T4cRia7cUMmyfNzYA2mzdKuloNbLENGYRq41OJ1adSl9p5iy5Z0GstVC9z4uKTVM2U0wOy5TIF2LEsyknTaXZnAn/k5oUJ9tEF49wyCtk8kIVuOzlIiCyDA4kZwECrXiWWQxuIsOJCLYvsjp5hrbhkKNC4HL3nGf45v3GsIvocOMd0aaX5UeW+S1cYw8FfB2sFmzKGTNtuo+T8pSxk9/nH1c81SnWPL28U2/QcLzAzkM5wEyO1hpERywQj7n6xkuwNDHnpWtQct9jH2V5JQEr4jtge4swZe8DsxNzt099f56TEtgi/1QKSXJuXdhfcpXPkj/xV3X411/LDpnXVRbQ==
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(39860400002)(396003)(376002)(136003)(346002)(230922051799003)(186009)(451199024)(64100799003)(1800799012)(82310400011)(40470700004)(36840700001)(46966006)(6666004)(4326008)(8936002)(8676002)(7696005)(54906003)(110136005)(316002)(40460700003)(478600001)(81166007)(356005)(47076005)(36756003)(40480700001)(41300700001)(1076003)(86362001)(26005)(44832011)(70586007)(36860700001)(336012)(2906002)(2616005)(426003)(83380400001)(66574015)(16526019)(82740400003)(5660300002)(7416002)(70206006)(36900700001);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(346002)(376002)(39860400002)(396003)(136003)(230922051799003)(1800799012)(82310400011)(186009)(64100799003)(451199024)(46966006)(36840700001)(40470700004)(41300700001)(36756003)(1076003)(86362001)(81166007)(47076005)(356005)(83380400001)(5660300002)(82740400003)(7416002)(336012)(426003)(16526019)(26005)(44832011)(2906002)(2616005)(40480700001)(36860700001)(7696005)(6666004)(8676002)(4326008)(8936002)(40460700003)(966005)(478600001)(110136005)(70206006)(70586007)(54906003)(316002)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Nov 2023 19:26:11.7801
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Nov 2023 19:26:14.5457
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: fa6019ca-a280-4f75-2493-08dbef7eb708
+X-MS-Exchange-CrossTenant-Network-Message-Id: c746ae24-a050-42c2-23c0-08dbef7eb8ae
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	DS1PEPF00017096.namprd05.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6737
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB6373
 
-When mc146818_avoid_UIP() fails to return a valid value, this is because
-UIP didn't clear in the timeout period. Adjust the return code in this
-case to -ETIMEDOUT.
+Specs don't say anything about UIP being cleared within 10ms. They
+only say that UIP won't occur for another 244uS. If a long NMI occurs
+while UIP is still updating it might not be possible to get valid
+data in 10ms.
 
+This has been observed in the wild that around s2idle some calls can
+take up to 480ms before UIP is clear.
+
+Adjust callers from outside an interrupt context to wait for up to a
+1s instead of 10ms.
+
+Cc: stable@vger.kernel.org # 6.1.y
+Fixes: ec5895c0f2d8 ("rtc: mc146818-lib: extract mc146818_avoid_UIP")
+Reported-by: Carsten Hatger <xmb8dsv4@gmail.com>
+Closes: https://bugzilla.kernel.org/show_bug.cgi?id=217626
 Tested-by: Mateusz Jończyk <mat.jonczyk@o2.pl>
 Reviewed-by: Mateusz Jończyk <mat.jonczyk@o2.pl>
 Acked-by: Mateusz Jończyk <mat.jonczyk@o2.pl>
-Cc: stable@vger.kernel.org
-Fixes: cdedc45c579f ("rtc: cmos: avoid UIP when reading alarm time")
-Fixes: cd17420ebea5 ("rtc: cmos: avoid UIP when writing alarm time")
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
+v2->v3:
+ * Add tags
+ * Add Carsten's name
 v1->v2:
- * cover cmos_read_alarm() too
- * Add stable tags
+ * Add tags
 ---
- drivers/rtc/rtc-cmos.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/rtc.c          | 2 +-
+ drivers/base/power/trace.c     | 2 +-
+ drivers/rtc/rtc-cmos.c         | 2 +-
+ drivers/rtc/rtc-mc146818-lib.c | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
+index 961ebc7f1872..2e7066980f3e 100644
+--- a/arch/x86/kernel/rtc.c
++++ b/arch/x86/kernel/rtc.c
+@@ -67,7 +67,7 @@ void mach_get_cmos_time(struct timespec64 *now)
+ 		return;
+ 	}
+ 
+-	if (mc146818_get_time(&tm, 10)) {
++	if (mc146818_get_time(&tm, 1000)) {
+ 		pr_err("Unable to read current time from RTC\n");
+ 		now->tv_sec = now->tv_nsec = 0;
+ 		return;
+diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+index c2e925357474..cd6e559648b2 100644
+--- a/drivers/base/power/trace.c
++++ b/drivers/base/power/trace.c
+@@ -120,7 +120,7 @@ static unsigned int read_magic_time(void)
+ 	struct rtc_time time;
+ 	unsigned int val;
+ 
+-	if (mc146818_get_time(&time, 10) < 0) {
++	if (mc146818_get_time(&time, 1000) < 0) {
+ 		pr_err("Unable to read current time from RTC\n");
+ 		return 0;
+ 	}
 diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-index 228fb2d11c70..391f91d3d144 100644
+index d278b085821e..6bc1e0279cd9 100644
 --- a/drivers/rtc/rtc-cmos.c
 +++ b/drivers/rtc/rtc-cmos.c
-@@ -292,7 +292,7 @@ static int cmos_read_alarm(struct device *dev, struct rtc_wkalrm *t)
+@@ -231,7 +231,7 @@ static int cmos_read_time(struct device *dev, struct rtc_time *t)
+ 	if (!pm_trace_rtc_valid())
+ 		return -EIO;
  
- 	/* This not only a rtc_op, but also called directly */
- 	if (!is_valid_irq(cmos->irq))
--		return -EIO;
-+		return -ETIMEDOUT;
- 
- 	/* Basic alarms only support hour, minute, and seconds fields.
- 	 * Some also support day and month, for alarms up to a year in
-@@ -557,7 +557,7 @@ static int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t)
- 	 * Use mc146818_avoid_UIP() to avoid this.
- 	 */
- 	if (!mc146818_avoid_UIP(cmos_set_alarm_callback, &p))
--		return -EIO;
-+		return -ETIMEDOUT;
- 
- 	cmos->alarm_expires = rtc_tm_to_time64(&t->time);
+-	ret = mc146818_get_time(t, 10);
++	ret = mc146818_get_time(t, 1000);
+ 	if (ret < 0) {
+ 		dev_err_ratelimited(dev, "unable to read current time\n");
+ 		return ret;
+diff --git a/drivers/rtc/rtc-mc146818-lib.c b/drivers/rtc/rtc-mc146818-lib.c
+index ab077dde397b..fa7a09b2123e 100644
+--- a/drivers/rtc/rtc-mc146818-lib.c
++++ b/drivers/rtc/rtc-mc146818-lib.c
+@@ -93,7 +93,7 @@ EXPORT_SYMBOL_GPL(mc146818_avoid_UIP);
+  */
+ bool mc146818_does_rtc_work(void)
+ {
+-	return mc146818_avoid_UIP(NULL, 10, NULL);
++	return mc146818_avoid_UIP(NULL, 1000, NULL);
+ }
+ EXPORT_SYMBOL_GPL(mc146818_does_rtc_work);
  
 -- 
 2.34.1
