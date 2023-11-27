@@ -1,133 +1,84 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C57F3033D;
-	Mon, 27 Nov 2023 13:53:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBABA2DF84;
+	Mon, 27 Nov 2023 14:08:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="j6oghxJx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A26C2C433C9;
-	Mon, 27 Nov 2023 13:53:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1701093239;
-	bh=GTb9GqaRsBrlekhwa6N38fc0CNzOeE8HWqbJZ/h0/sw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=j6oghxJxrr3PmUOx2TowPlRTMgt888N0YYTPcXPzBuaxhMHKoAt39URjaOREyU12b
-	 m4HAHzm49h/JPhcx1UtMjOogq6R0PBxWpI8oYHx0/jsUK9PjfDkAoJ3DJoGH3By43A
-	 xZ9xSyxqf9+cyDKYD25xYdONAn5Rd5YZwEuhkaWE=
-Date: Mon, 27 Nov 2023 13:08:24 +0000
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Matti Vaittinen <mazziesaccount@gmail.com>
-Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
-	Mark Brown <broonie@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>, kernel@pengutronix.de,
-	linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	=?iso-8859-1?Q?S=F8ren?= Andersen <san@skov.dk>
-Subject: Re: [PATCH v1 0/3] introduce priority-based shutdown support
-Message-ID: <2023112722-headdress-kissing-8c9f@gregkh>
-References: <20231124145338.3112416-1-o.rempel@pengutronix.de>
- <2023112403-laxative-lustiness-6a7f@gregkh>
- <ZWC/hKav0JANhWKM@finisterre.sirena.org.uk>
- <2023112458-stature-commuting-c66f@gregkh>
- <ZWDGGqsCq9iSnHtO@finisterre.sirena.org.uk>
- <2023112435-dazzler-crisped-04a6@gregkh>
- <20231124163234.GC819414@pengutronix.de>
- <2023112453-flagstick-bullring-8511@gregkh>
- <CANhJrGPop=tL8y+chvPwMpSZYF1pkeWeRp3xL+7JsuY=U0fyag@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NZsq3uLN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C873C433C9;
+	Mon, 27 Nov 2023 14:08:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1701094123;
+	bh=wn7K+MJ4CCUYwE/Jmw8x+LP459OMd0Ff92Uy1W27qFY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=NZsq3uLNd/9703PT2wWztiWDYt9MEeniA4F061hp7w0uYqIxzzOecYGkZt5kF6y2p
+	 sP0wDVz/zjFuYX5N6bNrZlN8DcJ1ueKUiRJTx64PE9q3dMlhEEJXpU6U94cQxuXLER
+	 tdBeiDszeaSOyccm7v746m9G7r91DOJoeVUHLlz9N4nkeOAc9fcFm3AkJvqdhQj7jB
+	 jqALVZGfpJsDY/kgjh+jPa7urVBy3589nwmW4XyNNTc6XIUBYStU7eHhd7oHN4tIu7
+	 FGLADXux5JurYFIBHH2kkfzO0izX62BOOeRXG/WDVBLF1KueQ+3+XkabbKtsp0DIDe
+	 lqp5MpnLp73gw==
+Message-ID: <7fbe4090-94cd-4aaf-98b6-07f2a089d51a@kernel.org>
+Date: Mon, 27 Nov 2023 16:08:37 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CANhJrGPop=tL8y+chvPwMpSZYF1pkeWeRp3xL+7JsuY=U0fyag@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/2] interconnect: qcom: Introduce support for SM8650
+Content-Language: en-US
+To: Bjorn Andersson <andersson@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, Andy Gross <agross@kernel.org>,
+ linux-kernel@vger.kernel.org,
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ Rob Herring <robh+dt@kernel.org>, Konrad Dybcio <konrad.dybcio@linaro.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Abel Vesa <abel.vesa@linaro.org>
+References: <20231123-topic-sm8650-upstream-interconnect-v2-0-7e050874f59b@linaro.org>
+From: Georgi Djakov <djakov@kernel.org>
+In-Reply-To: <20231123-topic-sm8650-upstream-interconnect-v2-0-7e050874f59b@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 27, 2023 at 02:54:21PM +0200, Matti Vaittinen wrote:
-> pe 24. marrask. 2023 klo 19.26 Greg Kroah-Hartman
-> (gregkh@linuxfoundation.org) kirjoitti:
-> >
-> > On Fri, Nov 24, 2023 at 05:32:34PM +0100, Oleksij Rempel wrote:
-> > > On Fri, Nov 24, 2023 at 03:56:19PM +0000, Greg Kroah-Hartman wrote:
-> > > > On Fri, Nov 24, 2023 at 03:49:46PM +0000, Mark Brown wrote:
-> > > > > On Fri, Nov 24, 2023 at 03:27:48PM +0000, Greg Kroah-Hartman wrote:
-> > > > > > On Fri, Nov 24, 2023 at 03:21:40PM +0000, Mark Brown wrote:
-> > > > >
-> > > > > > > This came out of some discussions about trying to handle emergency power
-> > > > > > > failure notifications.
-> > > > >
-> > > > > > I'm sorry, but I don't know what that means.  Are you saying that the
-> > > > > > kernel is now going to try to provide a hard guarantee that some devices
-> > > > > > are going to be shut down in X number of seconds when asked?  If so, why
-> > > > > > not do this in userspace?
-> > > > >
-> > > > > No, it was initially (or when I initially saw it anyway) handling of
-> > > > > notifications from regulators that they're in trouble and we have some
-> > > > > small amount of time to do anything we might want to do about it before
-> > > > > we expire.
-> > > >
-> > > > So we are going to guarantee a "time" in which we are going to do
-> > > > something?  Again, if that's required, why not do it in userspace using
-> > > > a RT kernel?
-> > >
-> > > For the HW in question I have only 100ms time before power loss. By
-> > > doing it over use space some we will have even less time to react.
-> >
-> > Why can't userspace react that fast?  Why will the kernel be somehow
-> > faster?  Speed should be the same, just get the "power is cut" signal
-> > and have userspace flush and unmount the disk before power is gone.  Why
-> > can the kernel do this any differently?
-> >
-> > > In fact, this is not a new requirement. It exist on different flavors of
-> > > automotive Linux for about 10 years. Linux in cars should be able to
-> > > handle voltage drops for example on ignition and so on. The only new thing is
-> > > the attempt to mainline it.
-> >
-> > But your patch is not guaranteeing anything, it's just doing a "I want
-> > this done before the other devices are handled", that's it.  There is no
-> > chance that 100ms is going to be a requirement, or that some other
-> > device type is not going to come along and demand to be ahead of your
-> > device in the list.
-> >
-> > So you are going to have a constant fight among device types over the
-> > years, and people complaining that the kernel is now somehow going to
-> > guarantee that a device is shutdown in a set amount of time, which
-> > again, the kernel can not guarantee here.
-> >
-> > This might work as a one-off for a specific hardware platform, which is
-> > odd, but not anything you really should be adding for anyone else to use
-> > here as your reasoning for it does not reflect what the code does.
+On 23.11.23 15:32, Neil Armstrong wrote:
+> This covers the RPMh Network-On-Chip Interconnect bindings
+> and driver for the interconnect framework.
+
+Thanks Neil!
+
+> As reported for earlier Interconnect drivers, the IDs
+> for multi-rsc voting has been removed from this driver
+> so the proper solution can be developed without having
+> to remove entries later on.
 > 
-> I was (am) interested in knowing how/where the regulator error
-> notifications are utilized - hence I asked this in ELCE last summer.
-> Replies indeed mostly pointed to automotive and handling the under
-> voltage events.
+> To easy Bjorn into merging the DT bits, would it be possible
+> to have an immutable branch with bindings shared with Bjorn once
+> this patchset have been properly reviewed and accepted ?
+
+Hi Bjorn,
+
+Here is a stable branch with the DT bindings header that might be needed
+for SM8650 dts patches.
+
+https://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git/log/?h=icc-sm8650
+
+Thanks,
+Georgi
+
 > 
-> As to what has changed (I think this was asked in another mail on this
-> topic) - I understood from the discussions that the demand of running
-> systems with as low power as possible is even more
-> important/desirable. Hence, the under-voltage events are more usual
-> than they were when cars used to be working by burning flammable
-> liquids :)
+> Dependencies: None
 > 
-> Anyways, what I thought I'd comment on is that the severity of the
-> regulator error notifications can be given from device-tree. Rationale
-> behind this is that figuring out whether a certain detected problem is
-> fatal or not (in embedded systems) should be done by the board
-> designers, per board. Maybe the understanding which hardware should
-> react first is also a property of hardware and could come from the
-> device-tree? Eg, instead of having a "DEVICE_SHUTDOWN_PRIO_STORAGE"
-> set unconditionally for EMMC, systems could set shutdown priority per
-> board and per device explicitly using device-tree?
+> For convenience, a regularly refreshed linux-next based git tree containing
+> all the SM8650 related work is available at:
+> https://git.codelinaro.org/neil.armstrong/linux/-/tree/topic/sm8650/upstream/integ
+> 
+> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+> ---
+> Changes in v2:
+> - Collected Reviewed-by
+> - Moved required block in bindings as requested by Krzysztof
+> - Link to v1: https://lore.kernel.org/r/20231025-topic-sm8650-upstream-interconnect-v1-0-b7277e03aa3d@linaro.org
 
-Yes, using device tree would be good, but now you have created something
-that is device-tree-specific and not all the world is device tree :(
-
-Also, many devices are finally moving out to non-device-tree busses,
-like PCI and USB, so how would you handle them in this type of scheme?
-
-thanks,
-
-greg k-h
