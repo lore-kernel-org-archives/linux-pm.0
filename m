@@ -1,46 +1,46 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hju7Sgcc"
-Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 131D119BE
-	for <linux-pm@vger.kernel.org>; Mon, 27 Nov 2023 07:29:20 -0800 (PST)
-Received: by mail-ed1-x531.google.com with SMTP id 4fb4d7f45d1cf-54acdd65c88so4368343a12.2
-        for <linux-pm@vger.kernel.org>; Mon, 27 Nov 2023 07:29:19 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="L3TAiNK9"
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 216E91FC2
+	for <linux-pm@vger.kernel.org>; Mon, 27 Nov 2023 07:29:26 -0800 (PST)
+Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-54af1daf6a9so5861788a12.1
+        for <linux-pm@vger.kernel.org>; Mon, 27 Nov 2023 07:29:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1701098958; x=1701703758; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1701098964; x=1701703764; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=8KqUGGYBrVzv5cHQpnzoWSbk/05sDmdEfZhra6WsNz8=;
-        b=hju7SgccjZ9zmKBukLGv7t8oBdRj8x+Zt6VPbvgGTESbRi8WEGcK6j33/j3xySr9j9
-         ZsV2m68CFMgz9H+kJRRVcD6E5SGp+t1Lu57gxz25ICh7A0kugMSlhX1Qa4SX0qrbF4qT
-         7tHnHjr48rfsYUOeAYyvp1ubWYpC+ilFC0oPoje/PQ/pH8EQj8dDySWvsDPY7CUgUbOK
-         xqbNQqzsWkNBgEZDBwNgZ5KpqIWw5M2CR7EYX2hDyGw9bA95PMIW5KL4CazCaM+ET043
-         AQHhENVbDQX2rW2IN47/QX98e8Ec6XSLU4kz2isSEHMuxXUJkL4UXeGuIzKr/9umTOT4
-         f8RA==
+        bh=c6/lhVmHX/sXs0e46ClnnLz5Erfr7PRCNkXawgtymt8=;
+        b=L3TAiNK961B+e2vdd8O3nLAD/FSNmUkcpOVDNA5ge13EgQfaTB34fAlqSa2aNNYjHE
+         9CwGe32LwwOE/PzYvA07dGL9XKLGAqmw7svOpNg6OcJKDBf2zejUBK3SE5IiS/VenLv1
+         qHeS6sd4wFej+qZhjtKucQXAD169UAYskstSVCvjQV6Z6NS7hRVWO/S2fuBh60c54PU/
+         ZKtI3zd6LGGfbv01Wer4xD0uvF0t0ClAhK932BgdOAafJuE7TIiU2oRk/UVyLh/5Eonb
+         /dB46YzLeo2Mcnz6BnWOs9D7fI/ck1XDaMsXG8vpNLcedOWXZ/ZKA+kUIiSJ+lU/7eS4
+         DoGA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1701098958; x=1701703758;
+        d=1e100.net; s=20230601; t=1701098964; x=1701703764;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=8KqUGGYBrVzv5cHQpnzoWSbk/05sDmdEfZhra6WsNz8=;
-        b=fWgBtUSwz+bpkXKTKiYjbWDjANuZpJSy7JPE7+aqnRRu3swXh7xIGpBLfSB/vumYJw
-         lvLQQl7yHDm0TPrsyBFTS5s4HmUOfprnv1RI3F/drMhgoKWyiNSAafwAppHXxs1DGrUv
-         pzr8DGVCx7vi1yDCVoAKC0KAKnYFBvL+s/ffJbcCBtFsZqmiQ7XW3VHZ98tdRFIrRAKi
-         9tjbnAh2U9Fec6fNCnTuiCVzY7Ir/t7RZXFpRX4naZD2eDRrsmmYFmTNdJxYm0MY8MDG
-         XWkk1rxImvAKcKiSvjuG+aj2hzqLjUtGYprH3/8/z6GelwxPYPqtsPxfLMQalN38vGIS
-         pgcQ==
-X-Gm-Message-State: AOJu0YxeQTNVttn4UYhGkXbtLLtp1xlTbZDkUzBQZ5MROxbXwN8l9cY1
-	ra16BsRb9sX8HaUZwNET4T0lWg==
-X-Google-Smtp-Source: AGHT+IE34J1yrZKyVnjv9I0/jaxeMheQIdVlY6+QPWz/y7bn5Rjj11hn2KtJFU/SMs8gA930OCx/fQ==
-X-Received: by 2002:a05:6402:1359:b0:54b:22a1:e6fe with SMTP id y25-20020a056402135900b0054b22a1e6femr4926690edw.7.1701098958210;
-        Mon, 27 Nov 2023 07:29:18 -0800 (PST)
+        bh=c6/lhVmHX/sXs0e46ClnnLz5Erfr7PRCNkXawgtymt8=;
+        b=QdGrKJ+gz6ZNT0ZSnco9IAoAK3ZfKI+HZlEUgeFcjkr4KezHv54moUh+4kWnf79Y6J
+         MEwMzupvj7rNPjrIM4uMF39i3HIm/KGzAe2PZ6iE6DPA0+aK2XyYhAaAKyM4wqU1XaPa
+         MN5sV1M/QabQxt08Et0JVao7mrPNuksu3JgFyfW+aGfmkZtCYYFq4x3CENUVctcFAvG6
+         f5Z8m+swRbfFy7AnjlEQDfL5mVul/HLwn2UhEY1hS8i62StDlFSUeuxQwXHW9f5iithP
+         ta72Su4LOVRxT0HUXkveOmJeL3SIT//bYASpyGlnpcLV/01HskQat5+JH9StxzeZVWc0
+         LELQ==
+X-Gm-Message-State: AOJu0Yy2D5ugI2D9bVspj8QNr7kmriN3IuCa9U4q/3fH0xd3N7DG+7DF
+	971EU33MDvrXhTKZc3JAMPcGvQ==
+X-Google-Smtp-Source: AGHT+IE12MRZ+K4+7Ya9XYiXHy8f8LRtqIz85wDPP5rtzWUU+R4ruteNN5riVPicBCMiZlt8klaJfQ==
+X-Received: by 2002:aa7:c401:0:b0:54b:3bba:8372 with SMTP id j1-20020aa7c401000000b0054b3bba8372mr5621717edq.5.1701098964534;
+        Mon, 27 Nov 2023 07:29:24 -0800 (PST)
 Received: from [10.167.154.1] (178235187180.dynamic-4-waw-k-2-3-0.vectranet.pl. [178.235.187.180])
-        by smtp.gmail.com with ESMTPSA id e7-20020a056402104700b00542db304680sm5321002edu.63.2023.11.27.07.29.14
+        by smtp.gmail.com with ESMTPSA id e7-20020a056402104700b00542db304680sm5321002edu.63.2023.11.27.07.29.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Nov 2023 07:29:17 -0800 (PST)
+        Mon, 27 Nov 2023 07:29:24 -0800 (PST)
 From: Konrad Dybcio <konrad.dybcio@linaro.org>
-Date: Mon, 27 Nov 2023 16:28:48 +0100
-Subject: [PATCH v2 08/12] arm64: dts: qcom: qcm2290: Add display nodes
+Date: Mon, 27 Nov 2023 16:28:50 +0100
+Subject: [PATCH v2 10/12] arm64: dts: qcom: qrb2210-rb1: Set up HDMI
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -49,7 +49,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231125-topic-rb1_feat-v2-8-979b28f35e4a@linaro.org>
+Message-Id: <20231125-topic-rb1_feat-v2-10-979b28f35e4a@linaro.org>
 References: <20231125-topic-rb1_feat-v2-0-979b28f35e4a@linaro.org>
 In-Reply-To: <20231125-topic-rb1_feat-v2-0-979b28f35e4a@linaro.org>
 To: Rob Clark <robdclark@gmail.com>, 
@@ -76,253 +76,132 @@ Cc: Marijn Suijten <marijn.suijten@somainline.org>,
  linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  iommu@lists.linux.dev, Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1701098925; l=6335;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1701098925; l=2344;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=BTvepHr7en8R5ipJOnsIKxJu6757PVnhk3uZkFoZtMc=;
- b=szvoMpvK+ObnNJ6LxCnrwTffnTk1GdVPeI133ELHQNKr8OXo5e88CkULH498pnI8joR0XUbFg
- my+j2X4g1vgBDywqUYycb06FrY3cEMPvnB30RoupdgclF+VA8+PJDfG
+ bh=HG+qKKvGUGteXhS1Efd/CaFsVpJbWzVwdo27Zc2OxfM=;
+ b=bScEiiVF7H6OgG93/bEfiiBpKcPZrN5AKqa/34nrmj67oU8vvcbgzuavBX+sO/7vUBhqlFj4Q
+ H4dnTJ831zLC3QqIiTvg8eNp9DXstc5E1AfZnn/Y3db9beLHUlgcQ+X
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 
-Add the required nodes to support display on QCM2290.
+Add the required nodes to support display output via the HDMI port.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/qcm2290.dtsi | 214 ++++++++++++++++++++++++++++++++++
- 1 file changed, 214 insertions(+)
+ arch/arm64/boot/dts/qcom/qrb2210-rb1.dts | 86 ++++++++++++++++++++++++++++++++
+ 1 file changed, 86 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/qcm2290.dtsi b/arch/arm64/boot/dts/qcom/qcm2290.dtsi
-index d46e591e72b5..a3edc4667cc5 100644
---- a/arch/arm64/boot/dts/qcom/qcm2290.dtsi
-+++ b/arch/arm64/boot/dts/qcom/qcm2290.dtsi
-@@ -5,6 +5,7 @@
-  * Based on sm6115.dtsi and previous efforts by Shawn Guo & Loic Poulain.
-  */
- 
-+#include <dt-bindings/clock/qcom,dispcc-qcm2290.h>
- #include <dt-bindings/clock/qcom,gcc-qcm2290.h>
- #include <dt-bindings/clock/qcom,rpmcc.h>
- #include <dt-bindings/dma/qcom-gpi.h>
-@@ -1105,6 +1106,219 @@ usb_dwc3: usb@4e00000 {
- 			};
+diff --git a/arch/arm64/boot/dts/qcom/qrb2210-rb1.dts b/arch/arm64/boot/dts/qcom/qrb2210-rb1.dts
+index 94885b9c21c8..ac6584164058 100644
+--- a/arch/arm64/boot/dts/qcom/qrb2210-rb1.dts
++++ b/arch/arm64/boot/dts/qcom/qrb2210-rb1.dts
+@@ -40,6 +40,17 @@ key-volume-up {
  		};
+ 	};
  
-+		mdss: display-subsystem@5e00000 {
-+			compatible = "qcom,qcm2290-mdss";
-+			reg = <0x0 0x05e00000 0x0 0x1000>;
-+			reg-names = "mdss";
-+			interrupts = <GIC_SPI 186 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
++	hdmi-connector {
++		compatible = "hdmi-connector";
++		type = "a";
 +
-+			clocks = <&gcc GCC_DISP_AHB_CLK>,
-+				 <&gcc GCC_DISP_HF_AXI_CLK>,
-+				 <&dispcc DISP_CC_MDSS_MDP_CLK>;
-+			clock-names = "iface",
-+				      "bus",
-+				      "core";
-+
-+			resets = <&dispcc DISP_CC_MDSS_CORE_BCR>;
-+
-+			power-domains = <&dispcc MDSS_GDSC>;
-+
-+			iommus = <&apps_smmu 0x420 0x2>,
-+				 <&apps_smmu 0x421 0x0>;
-+
-+			#address-cells = <2>;
-+			#size-cells = <2>;
-+			ranges;
-+
-+			status = "disabled";
-+
-+			mdp: display-controller@5e01000 {
-+				compatible = "qcom,qcm2290-dpu";
-+				reg = <0x0 0x05e01000 0x0 0x8f000>,
-+				      <0x0 0x05eb0000 0x0 0x2008>;
-+				reg-names = "mdp",
-+					    "vbif";
-+
-+				interrupt-parent = <&mdss>;
-+				interrupts = <0>;
-+
-+				clocks = <&gcc GCC_DISP_HF_AXI_CLK>,
-+					 <&dispcc DISP_CC_MDSS_AHB_CLK>,
-+					 <&dispcc DISP_CC_MDSS_MDP_CLK>,
-+					 <&dispcc DISP_CC_MDSS_MDP_LUT_CLK>,
-+					 <&dispcc DISP_CC_MDSS_VSYNC_CLK>;
-+				clock-names = "bus",
-+					      "iface",
-+					      "core",
-+					      "lut",
-+					      "vsync";
-+
-+				operating-points-v2 = <&mdp_opp_table>;
-+				power-domains = <&rpmpd QCM2290_VDDCX>;
-+
-+				ports {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+
-+					port@0 {
-+						reg = <0>;
-+						dpu_intf1_out: endpoint {
-+							remote-endpoint = <&mdss_dsi0_in>;
-+						};
-+					};
-+				};
-+
-+				mdp_opp_table: opp-table {
-+					compatible = "operating-points-v2";
-+
-+					opp-19200000 {
-+						opp-hz = /bits/ 64 <19200000>;
-+						required-opps = <&rpmpd_opp_min_svs>;
-+					};
-+
-+					opp-192000000 {
-+						opp-hz = /bits/ 64 <192000000>;
-+						required-opps = <&rpmpd_opp_low_svs>;
-+					};
-+
-+					opp-256000000 {
-+						opp-hz = /bits/ 64 <256000000>;
-+						required-opps = <&rpmpd_opp_svs>;
-+					};
-+
-+					opp-307200000 {
-+						opp-hz = /bits/ 64 <307200000>;
-+						required-opps = <&rpmpd_opp_svs_plus>;
-+					};
-+
-+					opp-384000000 {
-+						opp-hz = /bits/ 64 <384000000>;
-+						required-opps = <&rpmpd_opp_nom>;
-+					};
-+				};
-+			};
-+
-+			mdss_dsi0: dsi@5e94000 {
-+				compatible = "qcom,qcm2290-dsi-ctrl", "qcom,mdss-dsi-ctrl";
-+				reg = <0x0 0x05e94000 0x0 0x400>;
-+				reg-names = "dsi_ctrl";
-+
-+				interrupt-parent = <&mdss>;
-+				interrupts = <4>;
-+
-+				clocks = <&dispcc DISP_CC_MDSS_BYTE0_CLK>,
-+					 <&dispcc DISP_CC_MDSS_BYTE0_INTF_CLK>,
-+					 <&dispcc DISP_CC_MDSS_PCLK0_CLK>,
-+					 <&dispcc DISP_CC_MDSS_ESC0_CLK>,
-+					 <&dispcc DISP_CC_MDSS_AHB_CLK>,
-+					 <&gcc GCC_DISP_HF_AXI_CLK>;
-+				clock-names = "byte",
-+					      "byte_intf",
-+					      "pixel",
-+					      "core",
-+					      "iface",
-+					      "bus";
-+
-+				assigned-clocks = <&dispcc DISP_CC_MDSS_BYTE0_CLK_SRC>,
-+						  <&dispcc DISP_CC_MDSS_PCLK0_CLK_SRC>;
-+				assigned-clock-parents = <&mdss_dsi0_phy 0>,
-+							 <&mdss_dsi0_phy 1>;
-+
-+				operating-points-v2 = <&dsi_opp_table>;
-+				power-domains = <&rpmpd QCM2290_VDDCX>;
-+				phys = <&mdss_dsi0_phy>;
-+
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				status = "disabled";
-+
-+				dsi_opp_table: opp-table {
-+					compatible = "operating-points-v2";
-+
-+					opp-19200000 {
-+						opp-hz = /bits/ 64 <19200000>;
-+						required-opps = <&rpmpd_opp_min_svs>;
-+					};
-+
-+					opp-164000000 {
-+						opp-hz = /bits/ 64 <164000000>;
-+						required-opps = <&rpmpd_opp_low_svs>;
-+					};
-+
-+					opp-187500000 {
-+						opp-hz = /bits/ 64 <187500000>;
-+						required-opps = <&rpmpd_opp_svs>;
-+					};
-+				};
-+
-+				ports {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+
-+					port@0 {
-+						reg = <0>;
-+
-+						mdss_dsi0_in: endpoint {
-+							remote-endpoint = <&dpu_intf1_out>;
-+						};
-+					};
-+
-+					port@1 {
-+						reg = <1>;
-+
-+						mdss_dsi0_out: endpoint {
-+						};
-+					};
-+				};
-+			};
-+
-+			mdss_dsi0_phy: phy@5e94400 {
-+				compatible = "qcom,dsi-phy-14nm-2290";
-+				reg = <0x0 0x05e94400 0x0 0x100>,
-+				      <0x0 0x05e94500 0x0 0x300>,
-+				      <0x0 0x05e94800 0x0 0x188>;
-+				reg-names = "dsi_phy",
-+					    "dsi_phy_lane",
-+					    "dsi_pll";
-+
-+				clocks = <&dispcc DISP_CC_MDSS_AHB_CLK>,
-+					 <&rpmcc RPM_SMD_XO_CLK_SRC>;
-+				clock-names = "iface",
-+					      "ref";
-+
-+				power-domains = <&rpmpd QCM2290_VDDMX>;
-+				required-opps = <&rpmpd_opp_nom>;
-+
-+				#clock-cells = <1>;
-+				#phy-cells = <0>;
-+
-+				status = "disabled";
++		port {
++			hdmi_con: endpoint {
++				remote-endpoint = <&lt9611_out>;
 +			};
 +		};
++	};
 +
-+		dispcc: clock-controller@5f00000 {
-+			compatible = "qcom,qcm2290-dispcc";
-+			reg = <0x0 0x05f00000 0x0 0x20000>;
-+			clocks = <&rpmcc RPM_SMD_XO_CLK_SRC>,
-+				 <&rpmcc RPM_SMD_XO_A_CLK_SRC>,
-+				 <&gcc GCC_DISP_GPLL0_CLK_SRC>,
-+				 <&gcc GCC_DISP_GPLL0_DIV_CLK_SRC>,
-+				 <&mdss_dsi0_phy 0>,
-+				 <&mdss_dsi0_phy 1>;
-+			clock-names = "bi_tcxo",
-+				      "bi_tcxo_ao",
-+				      "gcc_disp_gpll0_clk_src",
-+				      "gcc_disp_gpll0_div_clk_src",
-+				      "dsi0_phy_pll_out_byteclk",
-+				      "dsi0_phy_pll_out_dsiclk";
-+			#power-domain-cells = <1>;
-+			#clock-cells = <1>;
-+			#reset-cells = <1>;
+ 	leds {
+ 		compatible = "gpio-leds";
+ 
+@@ -158,6 +169,68 @@ vph_pwr: regulator-vph-pwr {
+ 	};
+ };
+ 
++&gpi_dma0 {
++	status = "okay";
++};
++
++&i2c2 {
++	clock-frequency = <400000>;
++	status = "okay";
++
++	lt9611_codec: hdmi-bridge@2b {
++		compatible = "lontium,lt9611uxc";
++		reg = <0x2b>;
++		interrupts-extended = <&tlmm 46 IRQ_TYPE_EDGE_FALLING>;
++		reset-gpios = <&tlmm 41 GPIO_ACTIVE_HIGH>;
++
++		vdd-supply = <&vreg_hdmi_out_1p2>;
++		vcc-supply = <&lt9611_3v3>;
++
++		pinctrl-0 = <&lt9611_irq_pin &lt9611_rst_pin>;
++		pinctrl-names = "default";
++		#sound-dai-cells = <1>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				lt9611_a: endpoint {
++					remote-endpoint = <&mdss_dsi0_out>;
++				};
++			};
++
++			port@2 {
++				reg = <2>;
++
++				lt9611_out: endpoint {
++					remote-endpoint = <&hdmi_con>;
++				};
++			};
 +		};
++	};
++};
 +
- 		remoteproc_mpss: remoteproc@6080000 {
- 			compatible = "qcom,qcm2290-mpss-pas", "qcom,sm6115-mpss-pas";
- 			reg = <0x0 0x06080000 0x0 0x100>;
++&mdss {
++	status = "okay";
++};
++
++&mdss_dsi0 {
++	vdda-supply = <&pm2250_l5>;
++	status = "okay";
++};
++
++&mdss_dsi0_out {
++	remote-endpoint = <&lt9611_a>;
++	data-lanes = <0 1 2 3>;
++};
++
++&mdss_dsi0_phy {
++	status = "okay";
++};
++
+ &pm2250_resin {
+ 	linux,code = <KEY_VOLUMEDOWN>;
+ 	status = "okay";
+@@ -377,6 +450,19 @@ &sdhc_2 {
+ };
+ 
+ &tlmm {
++	lt9611_rst_pin: lt9611-rst-state {
++		pins = "gpio41";
++		function = "gpio";
++		input-disable;
++		output-high;
++	};
++
++	lt9611_irq_pin: lt9611-irq-state {
++		pins = "gpio46";
++		function = "gpio";
++		bias-disable;
++	};
++
+ 	sd_det_in_on: sd-det-in-on-state {
+ 		pins = "gpio88";
+ 		function = "gpio";
 
 -- 
 2.43.0
