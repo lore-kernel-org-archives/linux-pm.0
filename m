@@ -1,334 +1,202 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="OdpgXv1H"
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2054.outbound.protection.outlook.com [40.107.92.54])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21B49D53;
-	Tue, 28 Nov 2023 06:46:48 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=QRmQt++Y2C4diQcPL3o/uV4UfNNwNK3tD3J2Kqnm/iWZx30UhGWcfy10xlUvfzhXw+MvMzqBb0w1vB13S3QXecqxMvDBtngwLp8S/xwtrbhTKj0M0Pa3qhKxX2TrSZaERd9nve7botDlJ39AD2hCttucRfSpAEIPya6jH51YK4jTewkw7w7CcjuWS8mYvgV+e4kmyH4o9zyyY8lGcgVqxRCVmj+bgSD0XjwIPIC6HYvlkTK/iIwLPbS0lgMuCHQRASDYjMWfaYt46FWIcRjq6iKfzFzHQffoFFmt8eLEjTckGfk3Rq37JwENVgQFAOjfo+iOj7fJY3imjbiFY6ioAQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ps6iDQXFBMjrpu52pMY4QXIybFrEFrNvG7BxcKU0/28=;
- b=gIaR94fAL4XfAy9vwTKHlzAbQFRfGh3gc1jnK66YFdKCOa8ZTzqtiWmB5NlAkzBmbq+FM0wi+DknfBnqr0AuLoxm55l/NMP8N+6SELuw4bSzhz/5OHEcogkUmXUcURsJoiUfHGQti8OQ+2BFws2v8IAlp/YYu0jr9TvZCI+jTjNY1KfRJFQ7vS4P+533sEk43qaBuIqlJ52VFD0sKR6xe1w7zIu61cqY7i5R/G3CAqQAeGfmfypuaPvd/caHAGkxoJEUTB78Ap5EpbQd0nIed08CjFvQUD+J79WS0Z9cW/cHe+2KTZ4MEcEMkoC/Rwk8Eri3UO3RGJG6VnoO4JypVA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=o2.pl smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ps6iDQXFBMjrpu52pMY4QXIybFrEFrNvG7BxcKU0/28=;
- b=OdpgXv1HmZTplZYuzAqnRNft/0sCISIw7ppAeevga9UD2VOKjrOkwBAAnQ0vWPeTDCgSFnZ8Z36Mi7IJO0iNv26Xq0DSpPPOkPqUFRhp4emp3vGdKZg194/suHAgYSY2iET9FmTnXBiMTiQy6Kqr39kxaNDZJQ9xbyYufHuNt6Y=
-Received: from BY5PR13CA0013.namprd13.prod.outlook.com (2603:10b6:a03:180::26)
- by DS0PR12MB6605.namprd12.prod.outlook.com (2603:10b6:8:d3::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7025.27; Tue, 28 Nov
- 2023 14:46:44 +0000
-Received: from CO1PEPF000042A7.namprd03.prod.outlook.com
- (2603:10b6:a03:180:cafe::a) by BY5PR13CA0013.outlook.office365.com
- (2603:10b6:a03:180::26) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7046.18 via Frontend
- Transport; Tue, 28 Nov 2023 14:46:44 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- CO1PEPF000042A7.mail.protection.outlook.com (10.167.243.36) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.7046.17 via Frontend Transport; Tue, 28 Nov 2023 14:46:43 +0000
-Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.34; Tue, 28 Nov
- 2023 08:46:38 -0600
-From: Mario Limonciello <mario.limonciello@amd.com>
-To: =?UTF-8?q?Mateusz=20Jo=C5=84czyk?= <mat.jonczyk@o2.pl>, Alessandro Zummo
-	<a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>
-CC: "open list:REAL TIME CLOCK (RTC) SUBSYSTEM" <linux-rtc@vger.kernel.org>,
-	open list <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-	<tobrohl@gmail.com>, <aalsing@gmail.com>, <Dhaval.Giani@amd.com>,
-	<xmb8dsv4@gmail.com>, <x86@kernel.org>, <dhaval.giani@gmail.com>, Dave Hansen
-	<dave.hansen@linux.intel.com>, Borislav Petkov <bp@alien8.de>, "H . Peter
- Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
-	<mingo@redhat.com>, Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH v4 3/4] rtc: Add support for configuring the UIP timeout for RTC reads
-Date: Mon, 27 Nov 2023 23:36:52 -0600
-Message-ID: <20231128053653.101798-4-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20231128053653.101798-1-mario.limonciello@amd.com>
-References: <20231128053653.101798-1-mario.limonciello@amd.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pk101a4/"
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E9A8AA
+	for <linux-pm@vger.kernel.org>; Tue, 28 Nov 2023 06:48:22 -0800 (PST)
+Received: by mail-ej1-x636.google.com with SMTP id a640c23a62f3a-a0029289b1bso768857966b.1
+        for <linux-pm@vger.kernel.org>; Tue, 28 Nov 2023 06:48:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1701182901; x=1701787701; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=YXM2QvVCfM/PcFCqOwwKdvg2nVXyFEWc8mKRxKzbzTQ=;
+        b=pk101a4/CwbMf3wXq3THwftGYH7H8dO4zVHkIX3HqEbeB6Ot0nEnJY9Txg86xvmMI8
+         YVW0S+QsIPRIY+0v1voM7XJvpk9PM0nZfr12JMI3pTo4Zt88QKzxwyXl0MtQywSieZKA
+         8FyxdbYlArqKC3tUmQ6LO9x+2ZNXiRASCnQtzqTGmJ5Nmjh8rXqxZAu6NKJjuLnOz4Xi
+         j5YiVl3BFJebP86kHZhGeoxlBgVDGuhlfv35PB/58jHgRuk9VnXXtEU/P5/abFCbho+U
+         b27RkQooINGqSCzQ/9OclThVeg3gG9LqvjBezA8VSBYVwSzI3uwDsF3curSBXzHMP594
+         8YuA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1701182901; x=1701787701;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=YXM2QvVCfM/PcFCqOwwKdvg2nVXyFEWc8mKRxKzbzTQ=;
+        b=quif8oez08/FjTfXwpcbUm4GuH77BsR7HPa2RFThfS7EeZqKnP96bg0H/OxfoDL+Qd
+         MwQWewqmj1oP5mZplpwJ5+28FOy8o5FOmaAedqOIg13mwLF7MgipdtTPp5WsTGDxKTVU
+         7EpsMPTrZxcScBG30wlb6AlP/ob6dATdGu7Bt19Aw8DB13pjGjSJ+X/+/ri1LE6nuvGz
+         IAbF47i2lgy+AXzkzN3FpOfkiS36BdCqtMjr6hQ4V+t+GFpsC9IA9jZrHCGAGT5QN5j/
+         6U2j5sVYXvt1a4nudJg3yQXs2IQ9RZCelx0oOMyVvcGtR5Uqw62FJJSjKDa2HGIgCqW1
+         l3gg==
+X-Gm-Message-State: AOJu0YxkBgZUKteU4hKR212C8uKYKnxLJosY/2NAglFehv97YmFhmCl3
+	zgb0ula4oBpCyp7T8l2ZVIklig==
+X-Google-Smtp-Source: AGHT+IHXkszZI4Dc6MOOOL7fYPkFDn7aB1/w1V2XnU19A5IPpq4XJl+HD8u3ZmfUBoElU0FeS3Drrg==
+X-Received: by 2002:a17:906:20ce:b0:a0c:46b4:a70d with SMTP id c14-20020a17090620ce00b00a0c46b4a70dmr7003390ejc.28.1701182900768;
+        Tue, 28 Nov 2023 06:48:20 -0800 (PST)
+Received: from [192.168.1.20] ([178.197.223.109])
+        by smtp.gmail.com with ESMTPSA id kz15-20020a17090777cf00b009fd50aa6984sm6846778ejc.83.2023.11.28.06.48.18
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 28 Nov 2023 06:48:20 -0800 (PST)
+Message-ID: <4e90608e-aca5-4b57-be76-350ad54f9e7c@linaro.org>
+Date: Tue, 28 Nov 2023 15:48:18 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CO1PEPF000042A7:EE_|DS0PR12MB6605:EE_
-X-MS-Office365-Filtering-Correlation-Id: 50b24af6-af33-4a40-f804-08dbf020d713
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info:
-	i0hJLQ7Ax1ZwOVFbbbSQqCgv+lb/e9gJmjzo9H5UfZOEG1G6t/GzpdJsEjx3ouR6hacOfYkshHaoWFIhCxyzT249/0bTjwbu+OUqsL/2OcTjzoADxx2KhpYS46AwSh9AEhuxKk2URTtbPcHFYscTmI0Py9on01TwoVI9KmO6RkRDn47zRXdXUQ1IIGTNcMB3//yhcD/juyrOe8g+Hco3rj9rE6vYOnHREcCmUzsyxUV+7s2MJ86tt8t/1w3lDuxUQ+l5wyyi/pEZRSbzQ8GEJNhSNIWDf2Z3X92kj8ReWFPVh79szBo1s3N7YmjH9rtAGkVUjgd/6M3FpTr02r1X19HwiktgWyy+vdp6EEK3ts0k2nk3eG/QjbRrY7uQy754yj5X5MYX1Yp16FL1eb/GvV+BxCkJToWW2VizKApOwaZOJpr2XOqoTvjg3Xrj2SiryQ8WBo4Kacnxs+C8tzB2Z/+8TttsoD2oGfnHjQIatnewsiPMvDukhPIhRrsFq8bEyUIZH+5W9ZuGej1dVtWR9ucyqE8Blbp4hK/2CjYLzYlaqy06lOriCCVpFneCQvHoRAx2ubj7bOYEDV+FWNeSs3j7FThxCChLo4/+4+Ca1PDsTL/T68KDHSPMriPCPcy7ZUF4jZJl30kvaCCzLHzTmFd3HCnR76XSsWNzflbGUQXzC9QA9iz41Pr5N57K44mv5xBn3+XcgoN6iefYGmoEXwTQd2NiiZK802s7Sn9dhxky7X0ayVQieLscl3Kk7e8T7Y6soY580Y1D5DjXcQzTxJLkfYlzlu2dSFYhSivb8MFMrt3GKauwuXBovNRAggJBlgzAv5vKuFF7eVtwOSLNfQ==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(346002)(396003)(39860400002)(136003)(376002)(230273577357003)(230173577357003)(230922051799003)(186009)(451199024)(64100799003)(82310400011)(1800799012)(46966006)(36840700001)(40470700004)(8676002)(6666004)(8936002)(45080400002)(4326008)(7696005)(316002)(70206006)(110136005)(70586007)(54906003)(40460700003)(478600001)(81166007)(47076005)(356005)(36756003)(41300700001)(1076003)(86362001)(26005)(40480700001)(2906002)(36860700001)(44832011)(2616005)(83380400001)(336012)(426003)(16526019)(5660300002)(82740400003)(7416002)(557034005)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Nov 2023 14:46:43.9524
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 50b24af6-af33-4a40-f804-08dbf020d713
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	CO1PEPF000042A7.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB6605
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 4/6] thermal: sun8i: add syscon register access code
+Content-Language: en-US
+To: Andre Przywara <andre.przywara@arm.com>
+Cc: Vasily Khoruzhick <anarsoul@gmail.com>, Yangtao Li
+ <tiny.windzz@gmail.com>, Chen-Yu Tsai <wens@csie.org>,
+ Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Samuel Holland <samuel@sholland.org>, "Rafael J . Wysocki"
+ <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+ Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Martin Botka <martin.botka@somainline.org>,
+ Bob McChesney <bob@electricworry.net>, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-sunxi@lists.linux.dev, Icenowy Zheng <icenowy@aosc.io>
+References: <20231128005849.19044-1-andre.przywara@arm.com>
+ <20231128005849.19044-5-andre.przywara@arm.com>
+ <ddceb30f-1778-4312-af91-97813fe3c6fb@linaro.org>
+ <20231128143309.38a4ce61@donnerap.manchester.arm.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Autocrypt: addr=krzysztof.kozlowski@linaro.org; keydata=
+ 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
+ D2GYIS41Kv4Isx2dEFh+/Q==
+In-Reply-To: <20231128143309.38a4ce61@donnerap.manchester.arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-The UIP timeout is hardcoded to 10ms for all RTC reads, but in some
-contexts this might not be enough time. Add a timeout parameter to
-mc146818_get_time() and mc146818_get_time_callback().
+On 28/11/2023 15:33, Andre Przywara wrote:
+> On Tue, 28 Nov 2023 08:43:32 +0100
+> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+> 
+> Hi,
+> 
+>> On 28/11/2023 01:58, Andre Przywara wrote:
+>>>  
+>>> +static struct regmap *sun8i_ths_get_syscon_regmap(struct device_node *node)
+>>> +{
+>>> +	struct device_node *syscon_node;
+>>> +	struct platform_device *syscon_pdev;
+>>> +	struct regmap *regmap = NULL;
+>>> +
+>>> +	syscon_node = of_parse_phandle(node, "syscon", 0);  
+>>
+>> Nope. For the 100th time, this cannot be generic.
+> 
+> OK. Shall this name refer to the required functionality (temperature
+> offset fix) or to the target syscon node (like allwinner,misc-syscon).
+> The problem is that this is really a syscon, as in: "random collection of
+> bits that we didn't know where else to put in", so "syscon" alone actually
+> says it all.
 
-If UIP timeout is configured by caller to be >=100 ms and a call
-takes this long, log a warning.
+Every syscon is a "random collection of bits...", but not every "random
+collection of bits..." is a syscon.
 
-Make all callers use 10ms to ensure no functional changes.
+Your target device does not implement syscon nodes. Your Linux
+implementation does not use it as syscon. Therefore if something does
+not look like syscon and does not behave like syscon, it is not a syscon.
 
-Cc: stable@vger.kernel.org # 6.1.y
-Fixes: ec5895c0f2d8 ("rtc: mc146818-lib: extract mc146818_avoid_UIP")
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
-v3->v4:
- * Change label
- * Logic adjustment for for loop
- * Fix pr_warn variable
-v2->v3:
- * Logic adjustments
- * Clarify warning message
-v1->v2:
- * Add a warning if 100ms or more
- * Add stable and fixes tags
----
- arch/alpha/kernel/rtc.c        |  2 +-
- arch/x86/kernel/hpet.c         |  2 +-
- arch/x86/kernel/rtc.c          |  2 +-
- drivers/base/power/trace.c     |  2 +-
- drivers/rtc/rtc-cmos.c         |  6 +++---
- drivers/rtc/rtc-mc146818-lib.c | 37 ++++++++++++++++++++++++++--------
- include/linux/mc146818rtc.h    |  3 ++-
- 7 files changed, 38 insertions(+), 16 deletions(-)
+I looked at the bit and this is SRAM, not syscon. I am sorry, but it is
+something entirely different and we have a binding for it: "sram", I think.
 
-diff --git a/arch/alpha/kernel/rtc.c b/arch/alpha/kernel/rtc.c
-index fb3025396ac9..cfdf90bc8b3f 100644
---- a/arch/alpha/kernel/rtc.c
-+++ b/arch/alpha/kernel/rtc.c
-@@ -80,7 +80,7 @@ init_rtc_epoch(void)
- static int
- alpha_rtc_read_time(struct device *dev, struct rtc_time *tm)
- {
--	int ret = mc146818_get_time(tm);
-+	int ret = mc146818_get_time(tm, 10);
- 
- 	if (ret < 0) {
- 		dev_err_ratelimited(dev, "unable to read current time\n");
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 41eecf180b7f..17adad4cbe78 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -1438,7 +1438,7 @@ irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
- 	memset(&curr_time, 0, sizeof(struct rtc_time));
- 
- 	if (hpet_rtc_flags & (RTC_UIE | RTC_AIE)) {
--		if (unlikely(mc146818_get_time(&curr_time) < 0)) {
-+		if (unlikely(mc146818_get_time(&curr_time, 10) < 0)) {
- 			pr_err_ratelimited("unable to read current time from RTC\n");
- 			return IRQ_HANDLED;
- 		}
-diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
-index 1309b9b05338..961ebc7f1872 100644
---- a/arch/x86/kernel/rtc.c
-+++ b/arch/x86/kernel/rtc.c
-@@ -67,7 +67,7 @@ void mach_get_cmos_time(struct timespec64 *now)
- 		return;
- 	}
- 
--	if (mc146818_get_time(&tm)) {
-+	if (mc146818_get_time(&tm, 10)) {
- 		pr_err("Unable to read current time from RTC\n");
- 		now->tv_sec = now->tv_nsec = 0;
- 		return;
-diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-index 72b7a92337b1..c2e925357474 100644
---- a/drivers/base/power/trace.c
-+++ b/drivers/base/power/trace.c
-@@ -120,7 +120,7 @@ static unsigned int read_magic_time(void)
- 	struct rtc_time time;
- 	unsigned int val;
- 
--	if (mc146818_get_time(&time) < 0) {
-+	if (mc146818_get_time(&time, 10) < 0) {
- 		pr_err("Unable to read current time from RTC\n");
- 		return 0;
- 	}
-diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-index 391f91d3d144..d278b085821e 100644
---- a/drivers/rtc/rtc-cmos.c
-+++ b/drivers/rtc/rtc-cmos.c
-@@ -231,7 +231,7 @@ static int cmos_read_time(struct device *dev, struct rtc_time *t)
- 	if (!pm_trace_rtc_valid())
- 		return -EIO;
- 
--	ret = mc146818_get_time(t);
-+	ret = mc146818_get_time(t, 10);
- 	if (ret < 0) {
- 		dev_err_ratelimited(dev, "unable to read current time\n");
- 		return ret;
-@@ -307,7 +307,7 @@ static int cmos_read_alarm(struct device *dev, struct rtc_wkalrm *t)
- 	 *
- 	 * Use the mc146818_avoid_UIP() function to avoid this.
- 	 */
--	if (!mc146818_avoid_UIP(cmos_read_alarm_callback, &p))
-+	if (!mc146818_avoid_UIP(cmos_read_alarm_callback, 10, &p))
- 		return -EIO;
- 
- 	if (!(p.rtc_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
-@@ -556,7 +556,7 @@ static int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t)
- 	 *
- 	 * Use mc146818_avoid_UIP() to avoid this.
- 	 */
--	if (!mc146818_avoid_UIP(cmos_set_alarm_callback, &p))
-+	if (!mc146818_avoid_UIP(cmos_set_alarm_callback, 10, &p))
- 		return -ETIMEDOUT;
- 
- 	cmos->alarm_expires = rtc_tm_to_time64(&t->time);
-diff --git a/drivers/rtc/rtc-mc146818-lib.c b/drivers/rtc/rtc-mc146818-lib.c
-index 43a28e82674e..4c17b3cef11e 100644
---- a/drivers/rtc/rtc-mc146818-lib.c
-+++ b/drivers/rtc/rtc-mc146818-lib.c
-@@ -8,26 +8,31 @@
- #include <linux/acpi.h>
- #endif
- 
-+#define UIP_RECHECK_DELAY		100	/* usec */
-+#define UIP_RECHECK_DELAY_MS		(USEC_PER_MSEC / UIP_RECHECK_DELAY)
-+#define UIP_RECHECK_LOOPS_MS(x)		(x / UIP_RECHECK_DELAY_MS)
-+
- /*
-  * Execute a function while the UIP (Update-in-progress) bit of the RTC is
-- * unset.
-+ * unset. The timeout is configurable by the caller in ms.
-  *
-  * Warning: callback may be executed more then once.
-  */
- bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
-+			int timeout,
- 			void *param)
- {
- 	int i;
- 	unsigned long flags;
- 	unsigned char seconds;
- 
--	for (i = 0; i < 100; i++) {
-+	for (i = 0; UIP_RECHECK_LOOPS_MS(i) < timeout; i++) {
- 		spin_lock_irqsave(&rtc_lock, flags);
- 
- 		/*
- 		 * Check whether there is an update in progress during which the
- 		 * readout is unspecified. The maximum update time is ~2ms. Poll
--		 * every 100 usec for completion.
-+		 * for completion.
- 		 *
- 		 * Store the second value before checking UIP so a long lasting
- 		 * NMI which happens to hit after the UIP check cannot make
-@@ -37,7 +42,7 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
- 
- 		if (CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP) {
- 			spin_unlock_irqrestore(&rtc_lock, flags);
--			udelay(100);
-+			udelay(UIP_RECHECK_DELAY);
- 			continue;
- 		}
- 
-@@ -56,7 +61,7 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
- 		 */
- 		if (CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP) {
- 			spin_unlock_irqrestore(&rtc_lock, flags);
--			udelay(100);
-+			udelay(UIP_RECHECK_DELAY);
- 			continue;
- 		}
- 
-@@ -72,6 +77,10 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
- 		}
- 		spin_unlock_irqrestore(&rtc_lock, flags);
- 
-+		if (UIP_RECHECK_LOOPS_MS(i) >= 100)
-+			pr_warn("Reading current time from RTC took around %li ms\n",
-+				UIP_RECHECK_LOOPS_MS(i));
-+
- 		return true;
- 	}
- 	return false;
-@@ -84,7 +93,7 @@ EXPORT_SYMBOL_GPL(mc146818_avoid_UIP);
-  */
- bool mc146818_does_rtc_work(void)
- {
--	return mc146818_avoid_UIP(NULL, NULL);
-+	return mc146818_avoid_UIP(NULL, 10, NULL);
- }
- EXPORT_SYMBOL_GPL(mc146818_does_rtc_work);
- 
-@@ -130,13 +139,25 @@ static void mc146818_get_time_callback(unsigned char seconds, void *param_in)
- 	p->ctrl = CMOS_READ(RTC_CONTROL);
- }
- 
--int mc146818_get_time(struct rtc_time *time)
-+/**
-+ * mc146818_get_time - Get the current time from the RTC
-+ * @time: pointer to struct rtc_time to store the current time
-+ * @timeout: timeout value in ms
-+ *
-+ * This function reads the current time from the RTC and stores it in the
-+ * provided struct rtc_time. The timeout parameter specifies the maximum
-+ * time to wait for the RTC to become ready.
-+ *
-+ * Return: 0 on success, -ETIMEDOUT if the RTC did not become ready within
-+ * the specified timeout, or another error code if an error occurred.
-+ */
-+int mc146818_get_time(struct rtc_time *time, int timeout)
- {
- 	struct mc146818_get_time_callback_param p = {
- 		.time = time
- 	};
- 
--	if (!mc146818_avoid_UIP(mc146818_get_time_callback, &p)) {
-+	if (!mc146818_avoid_UIP(mc146818_get_time_callback, timeout, &p)) {
- 		memset(time, 0, sizeof(*time));
- 		return -ETIMEDOUT;
- 	}
-diff --git a/include/linux/mc146818rtc.h b/include/linux/mc146818rtc.h
-index b0da04fe087b..34dfcc77f505 100644
---- a/include/linux/mc146818rtc.h
-+++ b/include/linux/mc146818rtc.h
-@@ -126,10 +126,11 @@ struct cmos_rtc_board_info {
- #endif /* ARCH_RTC_LOCATION */
- 
- bool mc146818_does_rtc_work(void);
--int mc146818_get_time(struct rtc_time *time);
-+int mc146818_get_time(struct rtc_time *time, int timeout);
- int mc146818_set_time(struct rtc_time *time);
- 
- bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
-+			int timeout,
- 			void *param);
- 
- #endif /* _MC146818RTC_H */
--- 
-2.34.1
+> 
+> 
+> And btw: it would have been about the same effort (and more helpful!) to
+> type:
+> 
+> "This cannot be generic, please check writing-bindings.rst."    ;-)
+> 
+>>
+>>> +	if (!syscon_node)
+>>> +		return ERR_PTR(-ENODEV);
+>>> +
+>>> +	syscon_pdev = of_find_device_by_node(syscon_node);
+>>> +	if (!syscon_pdev) {
+>>> +		/* platform device might not be probed yet */
+>>> +		regmap = ERR_PTR(-EPROBE_DEFER);
+>>> +		goto out_put_node;
+>>> +	}
+>>> +
+>>> +	/* If no regmap is found then the other device driver is at fault */
+>>> +	regmap = dev_get_regmap(&syscon_pdev->dev, NULL);
+>>> +	if (!regmap)
+>>> +		regmap = ERR_PTR(-EINVAL);  
+>>
+>> Aren't you open-coding existing API to get regmap from syscon?
+> 
+> That's a good point, I lifted that code from sun8i-emac.c, where we have
+> the exact same problem. 
+> Unfortunately syscon_regmap_lookup_by_phandle() requires the syscon DT
+> node to have "syscon" in its compatible string list, which we
+> don't have. We actually explicitly dropped this for the A64 (with
+> 1f1f5183981d70bf0950), and never added this for later SoCs in the first place.
+> I guess we could add it back, and it would work for this case here (tested
+> that), but then cannot replace the sun8i-emac.c code, because that would
+> break older DTs.
+> So is there any chance we can drop the requirement for "syscon" in the
+> compatible string list, in the implementation of
+> syscon_regmap_lookup_by_phandle()? Maybe optionally, using a different
+> prototype? Or is there another existing API that does this already?
+
+I must correct myself: I was wrong. You are not open-coding, because as
+pointed out, this is not a phandle to syscon (even if you call it like
+"syscon").
+
+The code is fine, maybe except missing links (needs double checking,
+because maybe regmap creates links?). The DT binding and DTS needs
+fixing, because it is not a syscon.
+
+Best regards,
+Krzysztof
 
