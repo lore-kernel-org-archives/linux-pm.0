@@ -1,359 +1,314 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QIP8JiDT"
-Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF381D5C
-	for <linux-pm@vger.kernel.org>; Wed, 29 Nov 2023 06:41:07 -0800 (PST)
-Received: by mail-ej1-x631.google.com with SMTP id a640c23a62f3a-9ffb5a4f622so936711266b.0
-        for <linux-pm@vger.kernel.org>; Wed, 29 Nov 2023 06:41:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1701268866; x=1701873666; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=rqbTJ8EbDQbHHnryxuUzp2b+Ju/3+ZVUiQp8WfOFvU0=;
-        b=QIP8JiDTLx4zdtE46Sv1Sef8RfLIqOuZlchHVv7t5gcFEzHm70XCMRA1mRTyQRKkj7
-         SddCfhjq+imbNJJkhfRoHx7PvQ2NsDW2RYm2xSjmhTj1yT9JVEe/bsog+ItkWdKAJC03
-         GWmQbkDSJKYm0HFlwlILow7tT0tI2akHpkeLUYFFUyo9w+/Ce7O6Y4wi5rWonqkx52tc
-         tFB0rK5D34xigeja7E8FGMJtup6QBLQeqt4qPWd3ggPQc2eGFyk3vdYPp5Hpre/cFot8
-         WKmEk0Ip7lnRB3g/Oz7pDqcnElSqbK+wDqN2FqEsS96JUADz6oU1CVR4Udsq1c4EezEk
-         rUxg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1701268866; x=1701873666;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=rqbTJ8EbDQbHHnryxuUzp2b+Ju/3+ZVUiQp8WfOFvU0=;
-        b=VUwtfhmaHLmNxEICZ1dOR99+g/O8wAtnHNGVgkudLMJwwgq5hoszknTNCE84VRilKp
-         vHMVvvRXUuDmIC6reJTgG8w6m/3ZR2XH9Q9AcT+2MfCCxortWLPvQcePj1vHLR2J7OMQ
-         RidAn+V0pMnhoG0kss64AsH89u5mGIPjWswocC0bq4LttkHAWYPiprXLTY73i+eyoO1a
-         CZf8WbyXbHX5VPefbMSyT8EUIdTJdcNNWNAyy3SQ22w2UBR2O+atLSLo39eqGV+rQ9cO
-         j98GV6U8pq47VUQ9HtFIPGYVRgTbPyh7DFzo5a1j7woC8n85eJmJmZKIAdlGaiuXSdCi
-         FXHw==
-X-Gm-Message-State: AOJu0YzMobgSTtUA29sFg3ggwQDvuL4gItadXWM0NC9lJnqGGn07Xu3f
-	A1D4thSDLAYYJP9055KTVwHm//9comjrT731EXs=
-X-Google-Smtp-Source: AGHT+IGIqYCOlzlKtMXJVvfx2IZ2REpgcTE7xG28KEZiT2qVxkpmUZgkVnZnDgGmqxIHZB+3fu00/w==
-X-Received: by 2002:a17:907:9187:b0:a04:1714:539d with SMTP id bp7-20020a170907918700b00a041714539dmr10358275ejb.55.1701268865932;
-        Wed, 29 Nov 2023 06:41:05 -0800 (PST)
-Received: from [10.167.154.1] (178235187166.dynamic-4-waw-k-2-3-0.vectranet.pl. [178.235.187.166])
-        by smtp.gmail.com with ESMTPSA id s21-20020a170906285500b00a0179ebc25esm7965638ejc.85.2023.11.29.06.41.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Nov 2023 06:41:05 -0800 (PST)
-From: Konrad Dybcio <konrad.dybcio@linaro.org>
-Date: Wed, 29 Nov 2023 15:41:01 +0100
-Subject: [PATCH v3 1/2] dt-bindings: interconnect: Add Qualcomm SM6115 NoC
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="OBejSv+W"
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98C2CD68;
+	Wed, 29 Nov 2023 06:41:09 -0800 (PST)
+Received: from [100.107.97.3] (cola.collaboradmins.com [195.201.22.229])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by madras.collabora.co.uk (Postfix) with ESMTPSA id 8E99F6602F24;
+	Wed, 29 Nov 2023 14:41:07 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1701268868;
+	bh=vNeLZMlPkhUhdd+AyyawtDHu3JvfSkKheqyMNSol1hs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=OBejSv+WqfzINSs92uk1mIp7gozLHf7L+TQrYtY2RmdSSf9V09l/DlXfCVeK5Uv56
+	 QsS0w+WI/m3Q/6nyM7OtiIDkg/si1ChqGXh6MXb8H3UlWNLzcXal5GKVlxVOam0EVK
+	 /b1eEHyB01epxyH5d4IV5loAeL5hes0+2CNwpKU8srWE6NpCREEHuWql9BatndmKF9
+	 qeHcpx/YAQs/6quyLvigfQajjykoWuDRBE1UYqtwOBv+V+pdw7hTiuyXgJ1phdUgS9
+	 5Xb/J/7FbaRnzq6RKE4z9juY1z10aPcF9HD2myXQMeqDb+NMKtFnc8ozwL3h7lTvij
+	 Pbd1+eV9lQAUQ==
+Message-ID: <0bb40af7-6b20-48cb-a05f-4eed1176f5f0@collabora.com>
+Date: Wed, 29 Nov 2023 15:41:04 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20231125-topic-6115icc-v3-1-bd8907b8cfd7@linaro.org>
-References: <20231125-topic-6115icc-v3-0-bd8907b8cfd7@linaro.org>
-In-Reply-To: <20231125-topic-6115icc-v3-0-bd8907b8cfd7@linaro.org>
-To: Andy Gross <agross@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
- Georgi Djakov <djakov@kernel.org>, Rob Herring <robh+dt@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: Marijn Suijten <marijn.suijten@somainline.org>, 
- linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- Konrad Dybcio <konradybcio@kernel.org>, 
- Konrad Dybcio <konrad.dybcio@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1701268861; l=7801;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=8Ybxwq3bSFbHr5wYpl4WXvhpK9emTDOCAH9yeI0PfQc=;
- b=aa++H1T03Nn9WxucYcwftbwibLlV6ecWGtc+Ip7lR17nI7aXmxgD/USOe+OvssSN6LawTxl3e
- /aeQgD8t7a+DsMFphxCI869zzlRyG0W/LO5qy/2Il2OMOSOf5KlRLDM
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] pmdomain: mediatek: fix race condition in power on/power
+ off sequences
+Content-Language: en-US
+To: Eugen Hristev <eugen.hristev@collabora.com>,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linux-pm@vger.kernel.org
+Cc: eballetbo@kernel.org, ulf.hansson@linaro.org,
+ linux-kernel@vger.kernel.org, kernel@collabora.com
+References: <20231129113120.4907-1-eugen.hristev@collabora.com>
+ <fd645c33-1b16-4825-b9ea-eecb578dd2a0@collabora.com>
+ <bf7ac271-1bda-4114-b080-4b20f857dbc2@collabora.com>
+ <80cbe288-2960-4937-be47-56610946695d@collabora.com>
+ <7b759141-ff2d-4cac-803e-120f31d2d556@collabora.com>
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <7b759141-ff2d-4cac-803e-120f31d2d556@collabora.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Add bindings for Qualcomm SM6115 Network-On-Chip interconnect.
+Il 29/11/23 14:48, Eugen Hristev ha scritto:
+> On 11/29/23 15:37, AngeloGioacchino Del Regno wrote:
+>> Il 29/11/23 14:28, Eugen Hristev ha scritto:
+>>> On 11/29/23 14:52, AngeloGioacchino Del Regno wrote:
+>>>> Il 29/11/23 12:31, Eugen Hristev ha scritto:
+>>>>> It can happen that during the power off sequence for a power domain
+>>>>> another power on sequence is started, and it can lead to powering on and
+>>>>> off in the same time for the similar power domain.
+>>>>> This can happen if parallel probing occurs: one device starts probing, and
+>>>>> one power domain is probe deferred, this leads to all power domains being
+>>>>> rolled back and powered off, while in the same time another device starts
+>>>>> probing and requests powering on the same power domains or similar.
+>>>>>
+>>>>> This was encountered on MT8186, when the sequence is :
+>>>>> Power on SSUSB
+>>>>> Power on SSUSB_P1
+>>>>> Power on DIS
+>>>>>     -> probe deferred
+>>>>> Power off DIS
+>>>>> Power off SSUSB_P1
+>>>>> Power off SSUSB
+>>>>>
+>>>>> During the sequence of powering off SSUSB, some new similar sequence starts,
+>>>>> and during the power on of SSUSB, clocks are enabled.
+>>>>> In this case, powering off SSUSB fails from the first sequence, because
+>>>>> power off ACK bit check times out (as clocks are powered back on by the second
+>>>>> sequence). In consequence, powering it on also times out, and it leads to
+>>>>> the whole power domain in a bad state.
+>>>>>
+>>>>> To solve this issue, added a mutex that locks the whole power off/power on
+>>>>> sequence such that it would never happen that multiple sequences try to
+>>>>> enable or disable the same power domain in parallel.
+>>>>>
+>>>>> Fixes: 59b644b01cf4 ("soc: mediatek: Add MediaTek SCPSYS power domains")
+>>>>> Signed-off-by: Eugen Hristev <eugen.hristev@collabora.com>
+>>>>
+>>>> I don't think that it's a race between genpd_power_on() and genpd_power_off() 
+>>>> calls
+>>>> at all, because genpd *does* have locking after all... at least for probe and for
+>>>> parents of a power domain (and more anyway).
+>>>>
+>>>> As far as I remember, what happens when you start .probe()'ing a device is:
+>>>> platform_probe() -> dev_pm_domain_attach() -> genpd_dev_pm_attach()
+>>>>
+>>>> There, you end up with
+>>>>
+>>>>      if (power_on) {
+>>>>          genpd_lock(pd);
+>>>>          ret = genpd_power_on(pd, 0);
+>>>>          genpd_unlock(pd);
+>>>>      }
+>>>>
+>>>> ...but when you fail probing, you go with genpd_dev_pm_detach(), which then calls
+>>>>
+>>>>      /* Check if PM domain can be powered off after removing this device. */
+>>>>      genpd_queue_power_off_work(pd);
+>>>>
+>>>> but even then, you end up being in a worker doing
+>>>>
+>>>>      genpd_lock(genpd);
+>>>>      genpd_power_off(genpd, false, 0);
+>>>>      genpd_unlock(genpd);
+>>>>
+>>>> ...so I don't understand why this mutex can resolve the situation here (also: are
+>>>> you really sure that the race is solved like that?)
+>>>>
+>>>> I'd say that this probably needs more justification and a trace of the actual
+>>>> situation here.
+>>>>
+>>>> Besides, if this really resolves the issue, I would prefer seeing variants of
+>>>> scpsys_power_{on,off}() functions, because we anyway don't need to lock mutexes
+>>>> during this driver's probe (add_subdomain calls scpsys_power_on()).
+>>>> In that case, `scpsys_power_on_unlocked()` would be an idea... but still, please
+>>>> analyze why your solution works, if it does, because I'm not convinced.
+>>>
+>>> What I see in my tests, is that a power on call for SSUSB domain happens while 
+>>> the previous power off sequence did not yet complete, most likely while it's 
+>>> waiting in readx_poll_timeout . This leads to inconsistency of the power domain, 
+>>> not getting the ACKs next time a power on attempt occurs.
+>>>
+>>> I understand what you say about locks, but in this case the powering off is not 
+>>> called by the genpd itself, but rather it's called by the rollback probe failed 
+>>> mechanism : when the probing fails, scpsys_domain_cleanup() is called during the 
+>>> same probing session.
+>>> Then it happens that probing begins again and previous cleanup is not yet 
+>>> completed. I am not sure whether the lock is still held from the previous run, 
+>>> but it's clearly not waiting for a lock to be released to be called again.
+>>>
+>>
+>> Sorry but I'm a bit lost now: is the problem about probe deferrals of the USB
+>> driver, or about probe deferrals of the mtk-pm-domains driver?
+>>
+>> scpsys_domain_cleanup() is only called upon scpsys_probe() failure.
+> 
+> You are right, my explanation was bad.
+> 
+> It happens during the mtk-pm-domains driver probe.
+> 
+> Not all domains can power up, then everything is rolled back. and this happens 
+> multiple times
+> On rare occasions, it happens that another probing sequence starts while the 
+> previous one was not finished .
+> I mentioned devices because I had in mind the fact that each device requires a 
+> power domain, and parallel probing of these devices causes a call to mtk-pm-domains 
+> driver probe to be called from two different places.
+> 
+> e.g. device 1 probes -> call mtk-pm-domains probe because it requires X power domain
+> 
+> device 2 probes -> call mtk-pm-domains probe because it requires Y power domain.
+> 
+> First attempt fails but not completed while second attempt starts.
+> 
+> Maybe this is a better explanation of the situation ?
 
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
----
- .../bindings/interconnect/qcom,sm6115.yaml         | 152 +++++++++++++++++++++
- include/dt-bindings/interconnect/qcom,sm6115.h     | 111 +++++++++++++++
- 2 files changed, 263 insertions(+)
+Yeah, now it's a bit clearer!
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sm6115.yaml b/Documentation/devicetree/bindings/interconnect/qcom,sm6115.yaml
-new file mode 100644
-index 000000000000..14b1a0b08e73
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,sm6115.yaml
-@@ -0,0 +1,152 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/interconnect/qcom,sm6115.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Qualcomm SM6115 Network-On-Chip interconnect
-+
-+maintainers:
-+  - Konrad Dybcio <konradybcio@kernel.org>
-+
-+description:
-+  The Qualcomm SM6115 interconnect providers support adjusting the
-+  bandwidth requirements between the various NoC fabrics.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - qcom,sm6115-bimc
-+      - qcom,sm6115-cnoc
-+      - qcom,sm6115-snoc
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    minItems: 1
-+    maxItems: 4
-+
-+  clock-names:
-+    minItems: 1
-+    maxItems: 4
-+
-+# Child node's properties
-+patternProperties:
-+  '^interconnect-[a-z0-9]+$':
-+    type: object
-+    description:
-+      The interconnect providers do not have a separate QoS register space,
-+      but share parent's space.
-+
-+    $ref: qcom,rpm-common.yaml#
-+
-+    properties:
-+      compatible:
-+        enum:
-+          - qcom,sm6115-clk-virt
-+          - qcom,sm6115-mmrt-virt
-+          - qcom,sm6115-mmnrt-virt
-+
-+    required:
-+      - compatible
-+
-+    unevaluatedProperties: false
-+
-+required:
-+  - compatible
-+  - reg
-+
-+allOf:
-+  - $ref: qcom,rpm-common.yaml#
-+  - if:
-+      properties:
-+        compatible:
-+          const: qcom,sm6115-cnoc
-+
-+    then:
-+      properties:
-+        clocks:
-+          items:
-+            - description: USB-NoC AXI clock
-+
-+        clock-names:
-+          items:
-+            - const: usb_axi
-+
-+  - if:
-+      properties:
-+        compatible:
-+          const: qcom,sm6115-snoc
-+
-+    then:
-+      properties:
-+        clocks:
-+          items:
-+            - description: CPU-NoC AXI clock.
-+            - description: UFS-NoC AXI clock.
-+            - description: USB-NoC AXI clock.
-+            - description: IPA clock.
-+
-+        clock-names:
-+          items:
-+            - const: cpu_axi
-+            - const: ufs_axi
-+            - const: usb_axi
-+            - const: ipa
-+
-+  - if:
-+      properties:
-+        compatible:
-+          enum:
-+            - qcom,sm6115-bimc
-+            - qcom,sm6115-clk-virt
-+            - qcom,sm6115-mmrt-virt
-+            - qcom,sm6115-mmnrt-virt
-+
-+    then:
-+      properties:
-+        clocks: false
-+        clock-names: false
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/qcom,gcc-sm6115.h>
-+    #include <dt-bindings/clock/qcom,rpmcc.h>
-+
-+    snoc: interconnect@1880000 {
-+        compatible = "qcom,sm6115-snoc";
-+        reg = <0x01880000 0x60200>;
-+        clocks = <&gcc GCC_SYS_NOC_CPUSS_AHB_CLK>,
-+                 <&gcc GCC_SYS_NOC_UFS_PHY_AXI_CLK>,
-+                 <&gcc GCC_SYS_NOC_USB3_PRIM_AXI_CLK>,
-+                 <&rpmcc RPM_SMD_IPA_CLK>;
-+        clock-names = "cpu_axi",
-+                      "ufs_axi",
-+                      "usb_axi",
-+                      "ipa";
-+        #interconnect-cells = <1>;
-+
-+        qup_virt: interconnect-clk {
-+            compatible = "qcom,sm6115-clk-virt";
-+            #interconnect-cells = <1>;
-+        };
-+
-+        mmnrt_virt: interconnect-mmnrt {
-+            compatible = "qcom,sm6115-mmnrt-virt";
-+            #interconnect-cells = <1>;
-+        };
-+
-+        mmrt_virt: interconnect-mmrt {
-+            compatible = "qcom,sm6115-mmrt-virt";
-+            #interconnect-cells = <1>;
-+        };
-+    };
-+
-+    cnoc: interconnect@1900000 {
-+        compatible = "qcom,sm6115-cnoc";
-+        reg = <0x01900000 0x8200>;
-+        #interconnect-cells = <1>;
-+    };
-diff --git a/include/dt-bindings/interconnect/qcom,sm6115.h b/include/dt-bindings/interconnect/qcom,sm6115.h
-new file mode 100644
-index 000000000000..21090e585f05
---- /dev/null
-+++ b/include/dt-bindings/interconnect/qcom,sm6115.h
-@@ -0,0 +1,111 @@
-+/* SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause */
-+/*
-+ * Copyright (c) 2020, The Linux Foundation. All rights reserved.
-+ * Copyright (c) 2023, Linaro Limited
-+ */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SM6115_H
-+#define __DT_BINDINGS_INTERCONNECT_QCOM_SM6115_H
-+
-+/* BIMC */
-+#define MASTER_AMPSS_M0				0
-+#define MASTER_SNOC_BIMC_RT			1
-+#define MASTER_SNOC_BIMC_NRT			2
-+#define SNOC_BIMC_MAS				3
-+#define MASTER_GRAPHICS_3D			4
-+#define MASTER_TCU_0				5
-+#define SLAVE_EBI_CH0				6
-+#define BIMC_SNOC_SLV				7
-+
-+/* CNOC */
-+#define SNOC_CNOC_MAS				0
-+#define MASTER_QDSS_DAP				1
-+#define SLAVE_AHB2PHY_USB			2
-+#define SLAVE_APSS_THROTTLE_CFG			3
-+#define SLAVE_BIMC_CFG				4
-+#define SLAVE_BOOT_ROM				5
-+#define SLAVE_CAMERA_NRT_THROTTLE_CFG		6
-+#define SLAVE_CAMERA_RT_THROTTLE_CFG		7
-+#define SLAVE_CAMERA_CFG			8
-+#define SLAVE_CLK_CTL				9
-+#define SLAVE_RBCPR_CX_CFG			10
-+#define SLAVE_RBCPR_MX_CFG			11
-+#define SLAVE_CRYPTO_0_CFG			12
-+#define SLAVE_DCC_CFG				13
-+#define SLAVE_DDR_PHY_CFG			14
-+#define SLAVE_DDR_SS_CFG			15
-+#define SLAVE_DISPLAY_CFG			16
-+#define SLAVE_DISPLAY_THROTTLE_CFG		17
-+#define SLAVE_GPU_CFG				18
-+#define SLAVE_GPU_THROTTLE_CFG			19
-+#define SLAVE_HWKM_CORE				20
-+#define SLAVE_IMEM_CFG				21
-+#define SLAVE_IPA_CFG				22
-+#define SLAVE_LPASS				23
-+#define SLAVE_MAPSS				24
-+#define SLAVE_MDSP_MPU_CFG			25
-+#define SLAVE_MESSAGE_RAM			26
-+#define SLAVE_CNOC_MSS				27
-+#define SLAVE_PDM				28
-+#define SLAVE_PIMEM_CFG				29
-+#define SLAVE_PKA_CORE				30
-+#define SLAVE_PMIC_ARB				31
-+#define SLAVE_QDSS_CFG				32
-+#define SLAVE_QM_CFG				33
-+#define SLAVE_QM_MPU_CFG			34
-+#define SLAVE_QPIC				35
-+#define SLAVE_QUP_0				36
-+#define SLAVE_RPM				37
-+#define SLAVE_SDCC_1				38
-+#define SLAVE_SDCC_2				39
-+#define SLAVE_SECURITY				40
-+#define SLAVE_SNOC_CFG				41
-+#define SLAVE_TCSR				42
-+#define SLAVE_TLMM				43
-+#define SLAVE_USB3				44
-+#define SLAVE_VENUS_CFG				45
-+#define SLAVE_VENUS_THROTTLE_CFG		46
-+#define SLAVE_VSENSE_CTRL_CFG			47
-+#define SLAVE_SERVICE_CNOC			48
-+
-+/* SNOC */
-+#define MASTER_CRYPTO_CORE0			0
-+#define MASTER_SNOC_CFG				1
-+#define MASTER_TIC				2
-+#define MASTER_ANOC_SNOC			3
-+#define BIMC_SNOC_MAS				4
-+#define MASTER_PIMEM				5
-+#define MASTER_QDSS_BAM				6
-+#define MASTER_QPIC				7
-+#define MASTER_QUP_0				8
-+#define MASTER_IPA				9
-+#define MASTER_QDSS_ETR				10
-+#define MASTER_SDCC_1				11
-+#define MASTER_SDCC_2				12
-+#define MASTER_USB3				13
-+#define SLAVE_APPSS				14
-+#define SNOC_CNOC_SLV				15
-+#define SLAVE_OCIMEM				16
-+#define SLAVE_PIMEM				17
-+#define SNOC_BIMC_SLV				18
-+#define SLAVE_SERVICE_SNOC			19
-+#define SLAVE_QDSS_STM				20
-+#define SLAVE_TCU				21
-+#define SLAVE_ANOC_SNOC				22
-+
-+/* CLK Virtual */
-+#define MASTER_QUP_CORE_0			0
-+#define SLAVE_QUP_CORE_0			1
-+
-+/* MMRT Virtual */
-+#define MASTER_CAMNOC_HF			0
-+#define MASTER_MDP_PORT0			1
-+#define SLAVE_SNOC_BIMC_RT			2
-+
-+/* MMNRT Virtual */
-+#define MASTER_CAMNOC_SF			0
-+#define MASTER_VIDEO_P0				1
-+#define MASTER_VIDEO_PROC			2
-+#define SLAVE_SNOC_BIMC_NRT			3
-+
-+#endif
+At this point, I think that you can get away with locking just one path (or two):
 
--- 
-2.43.0
+/* This is the one giving me lots of suspects */
+static void scpsys_remove_one_domain(struct scpsys_domain *pd)
+{
+	int ret;
+
+***lock***
+	if (scpsys_domain_is_on(pd))
+		scpsys_power_off(&pd->genpd);
+***unlock***
+
+	.....
+}
+
+/* This one as well eventually */
+static struct
+generic_pm_domain *scpsys_add_one_domain(struct scpsys *scpsys, struct device_node 
+*node)
+{
+	...............
+
+	if (MTK_SCPD_CAPS(pd, MTK_SCPD_KEEP_DEFAULT_OFF)) {
+
+		if (scpsys_domain_is_on(pd)) /* Maybe LOCK this one too? */
+
+			dev_warn(scpsys->dev,
+				 "%pOF: A default off power domain has been ON\n", node);
+	} else {
+**		*** lock ***
+		ret = scpsys_power_on(&pd->genpd);
+**		*** unlock ***
+		if (ret < 0) {
+			dev_err(scpsys->dev, "%pOF: failed to power on domain: %d\n", node, ret);
+			goto err_put_subsys_clocks;
+		}
+
+		if (MTK_SCPD_CAPS(pd, MTK_SCPD_ALWAYS_ON))
+			pd->genpd.flags |= GENPD_FLAG_ALWAYS_ON;
+	}
+
+	..........
+}
+
+Can you please try locking only the remove_one_domain() poweroff call before
+trying both?
+
+Reason is that in the add_one_domain() case, we haven't registered the power
+domain yet, so locking may not be required there to make things ticking right.
+
+Cheers!
+
+>>
+>>>>
+>>>>> ---
+>>>>>   drivers/pmdomain/mediatek/mtk-pm-domains.c | 24 +++++++++++++++++-----
+>>>>>   1 file changed, 19 insertions(+), 5 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c 
+>>>>> b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+>>>>> index d5f0ee05c794..4f136b47e539 100644
+>>>>> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
+>>>>> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+>>>>> @@ -9,6 +9,7 @@
+>>>>>   #include <linux/io.h>
+>>>>>   #include <linux/iopoll.h>
+>>>>>   #include <linux/mfd/syscon.h>
+>>>>> +#include <linux/mutex.h>
+>>>>>   #include <linux/of.h>
+>>>>>   #include <linux/of_clk.h>
+>>>>>   #include <linux/platform_device.h>
+>>>>> @@ -56,6 +57,7 @@ struct scpsys {
+>>>>>       struct device *dev;
+>>>>>       struct regmap *base;
+>>>>>       const struct scpsys_soc_data *soc_data;
+>>>>> +    struct mutex mutex;
+>>>>>       struct genpd_onecell_data pd_data;
+>>>>>       struct generic_pm_domain *domains[];
+>>>>>   };
+>>>>> @@ -238,9 +240,13 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+>>>>>       bool tmp;
+>>>>>       int ret;
+>>>>> +    mutex_lock(&scpsys->mutex);
+>>>>> +
+>>>>>       ret = scpsys_regulator_enable(pd->supply);
+>>>>> -    if (ret)
+>>>>> +    if (ret) {
+>>>>> +        mutex_unlock(&scpsys->mutex);
+>>>>>           return ret;
+>>>>> +    }
+>>>>>       ret = clk_bulk_prepare_enable(pd->num_clks, pd->clks);
+>>>>>       if (ret)
+>>>>> @@ -291,6 +297,7 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+>>>>>               goto err_enable_bus_protect;
+>>>>>       }
+>>>>> +    mutex_unlock(&scpsys->mutex);
+>>>>>       return 0;
+>>>>>   err_enable_bus_protect:
+>>>>> @@ -305,6 +312,7 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+>>>>>       clk_bulk_disable_unprepare(pd->num_clks, pd->clks);
+>>>>>   err_reg:
+>>>>>       scpsys_regulator_disable(pd->supply);
+>>>>> +    mutex_unlock(&scpsys->mutex);
+>>>>>       return ret;
+>>>>>   }
+>>>>> @@ -315,13 +323,15 @@ static int scpsys_power_off(struct generic_pm_domain 
+>>>>> *genpd)
+>>>>>       bool tmp;
+>>>>>       int ret;
+>>>>> +    mutex_lock(&scpsys->mutex);
+>>>>> +
+>>>>>       ret = scpsys_bus_protect_enable(pd);
+>>>>>       if (ret < 0)
+>>>>> -        return ret;
+>>>>> +        goto err_mutex_unlock;
+>>>>>       ret = scpsys_sram_disable(pd);
+>>>>>       if (ret < 0)
+>>>>> -        return ret;
+>>>>> +        goto err_mutex_unlock;
+>>>>>       if (pd->data->ext_buck_iso_offs && MTK_SCPD_CAPS(pd, 
+>>>>> MTK_SCPD_EXT_BUCK_ISO))
+>>>>>           regmap_set_bits(scpsys->base, pd->data->ext_buck_iso_offs,
+>>>>> @@ -340,13 +350,15 @@ static int scpsys_power_off(struct generic_pm_domain 
+>>>>> *genpd)
+>>>>>       ret = readx_poll_timeout(scpsys_domain_is_on, pd, tmp, !tmp, 
+>>>>> MTK_POLL_DELAY_US,
+>>>>>                    MTK_POLL_TIMEOUT);
+>>>>>       if (ret < 0)
+>>>>> -        return ret;
+>>>>> +        goto err_mutex_unlock;
+>>>>>       clk_bulk_disable_unprepare(pd->num_clks, pd->clks);
+>>>>>       scpsys_regulator_disable(pd->supply);
+>>>>> -    return 0;
+>>>>> +err_mutex_unlock:
+>>>>> +    mutex_unlock(&scpsys->mutex);
+>>>>> +    return ret;
+>>>>>   }
+>>>>>   static struct
+>>>>> @@ -700,6 +712,8 @@ static int scpsys_probe(struct platform_device *pdev)
+>>>>>           return PTR_ERR(scpsys->base);
+>>>>>       }
+>>>>> +    mutex_init(&scpsys->mutex);
+>>>>> +
+>>>>>       ret = -ENODEV;
+>>>>>       for_each_available_child_of_node(np, node) {
+>>>>>           struct generic_pm_domain *domain;
+>>>>
+>>
 
