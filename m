@@ -1,278 +1,85 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDEDD10DA;
-	Fri,  1 Dec 2023 13:08:34 -0800 (PST)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
- id 4a30dc77d0f6a91a; Fri, 1 Dec 2023 22:08:32 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id DAA7B6686C5;
-	Fri,  1 Dec 2023 22:08:31 +0100 (CET)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v2 0/2] thermal: sysfs: Rework the handling of trip point updates
-Date: Fri, 01 Dec 2023 22:06:53 +0100
-Message-ID: <6021522.lOV4Wx5bFT@kreacher>
-In-Reply-To: <12359903.O9o76ZdvQC@kreacher>
-References: <12359903.O9o76ZdvQC@kreacher>
+Received: from mail-oi1-f172.google.com (mail-oi1-f172.google.com [209.85.167.172])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81CFC10D0;
+	Fri,  1 Dec 2023 13:19:27 -0800 (PST)
+Received: by mail-oi1-f172.google.com with SMTP id 5614622812f47-3b85d97a529so387742b6e.0;
+        Fri, 01 Dec 2023 13:19:27 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1701465567; x=1702070367;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=4Na5SuSnuGSKFtr3bwJTXAsXLv0Bpp+jJLrkc0svhQs=;
+        b=VlPLDeQI4xfHpelXtmbZ9bma3FXq7BWeo3ctW3tavKWCgDi9GAUsgmDaBKCOkz+DTE
+         q4snhugFtsrSNC3RUGElcRv0oWOCnUowVnmSY21tc72+0jCw4I7c7R2ejVx/pQbmmZj3
+         jmo5MQcdngf9pVisAAvB2d8wpFLlgtn14nRFS2Zf5GMOZf8HzAV6LB5roY3pbi6tn20b
+         fYVCyba/EeX+biDBU8aAe07UC3vcqamKbugm5StEn8sLSqUhB6kfFt6UeIPaOW5Izeee
+         lWY7SA/ijBxW/hJjcoJADnKweWcAOLOSV1FzA1thA1tD1Qock4iHNwoZ2SPM6dLzJfh+
+         0spA==
+X-Gm-Message-State: AOJu0YxPXACLpK00i0bhiKLff8Qd7/DHDuRQZXkI8HNcSqAL8mwqjYnX
+	SZe83msth3vB7mwnJK1JmL2fYRClpmmyNnBL+h9WfO/DocA=
+X-Google-Smtp-Source: AGHT+IFEc4P+oh95LTEsSLeRVbfU6mBGECB8PMHw30gUbESltyScgK6F/oxN4q8ypDgHTa5g37jjAkAgU5l7sc24BmA=
+X-Received: by 2002:a05:6870:971f:b0:1fa:f195:e3b4 with SMTP id
+ n31-20020a056870971f00b001faf195e3b4mr2755801oaq.2.1701465566780; Fri, 01 Dec
+ 2023 13:19:26 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 1 Dec 2023 22:19:15 +0100
+Message-ID: <CAJZ5v0gCXED78oLB7wPJ+bn0keQvYzZhyk-XsQVUJrP2i+c-xQ@mail.gmail.com>
+Subject: [GIT PULL] ACPI fixes for v6.7-rc4
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrudeiledgudeghecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhr
- ihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Linus,
 
-Both trip_point_temp_store() and trip_point_hyst_store() use
-thermal_zone_set_trip() to update a given trip point, but none of them
-actually needs to change more than one field in struct thermal_trip
-representing it.  However, each of them effectively calls
-__thermal_zone_get_trip() twice in a row for the same trip index value,
-once directly and once via thermal_zone_set_trip(), which is not
-particularly efficient, and the way in which thermal_zone_set_trip()
-carries out the update is not particularly straightforward.
+Please pull from the tag
 
-Moreover, input processing need not be done under the thermal zone lock
-in any of these functions.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-6.7-rc4
 
-Rework trip_point_temp_store() and trip_point_hyst_store() to address
-the above, move the part of thermal_zone_set_trip() that is still
-useful to a new function called thermal_zone_trip_updated() and drop
-the rest of it.
+with top-most commit 7d4c44a53dade7103c3a9a928705db2326efba6f
 
-While at it, make trip_point_hyst_store() reject negative hysteresis
-values.
+ Merge branch 'acpi-tables'
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/thermal/thermal_core.h  |    2 +
- drivers/thermal/thermal_sysfs.c |   75 ++++++++++++++++++++++++++++------------
- drivers/thermal/thermal_trip.c  |   45 ++++--------------------
- include/linux/thermal.h         |    4 --
- 4 files changed, 64 insertions(+), 62 deletions(-)
+on top of commit 2cc14f52aeb78ce3f29677c2de1f06c0e91471ab
 
-Index: linux-pm/drivers/thermal/thermal_sysfs.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_sysfs.c
-+++ linux-pm/drivers/thermal/thermal_sysfs.c
-@@ -78,6 +78,19 @@ mode_store(struct device *dev, struct de
- 	return count;
- }
- 
-+static int check_thermal_zone_and_trip_id(struct device *dev,
-+					  struct thermal_zone_device *tz,
-+					  int trip_id)
-+{
-+	if (!device_is_registered(dev))
-+		return -ENODEV;
-+
-+	if (trip_id < 0 || trip_id >= tz->num_trips)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
- static ssize_t
- trip_point_type_show(struct device *dev, struct device_attribute *attr,
- 		     char *buf)
-@@ -120,28 +133,37 @@ trip_point_temp_store(struct device *dev
- 		      const char *buf, size_t count)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
--	struct thermal_trip trip;
-+	struct thermal_trip *trip;
- 	int trip_id, ret;
-+	int temp;
-+
-+	ret = kstrtoint(buf, 10, &temp);
-+	if (ret)
-+		return -EINVAL;
- 
- 	if (sscanf(attr->attr.name, "trip_point_%d_temp", &trip_id) != 1)
- 		return -EINVAL;
- 
- 	mutex_lock(&tz->lock);
- 
--	if (!device_is_registered(dev)) {
--		ret = -ENODEV;
--		goto unlock;
--	}
--
--	ret = __thermal_zone_get_trip(tz, trip_id, &trip);
-+	ret = check_thermal_zone_and_trip_id(dev, tz, trip_id);
- 	if (ret)
- 		goto unlock;
- 
--	ret = kstrtoint(buf, 10, &trip.temperature);
--	if (ret)
--		goto unlock;
-+	trip = &tz->trips[trip_id];
-+
-+	if (temp != trip->temperature) {
-+		if (tz->ops->set_trip_temp) {
-+			ret = tz->ops->set_trip_temp(tz, trip_id, temp);
-+			if (ret)
-+				goto unlock;
-+		}
-+
-+		trip->temperature = temp;
-+
-+		thermal_zone_trip_updated(tz, trip);
-+	}
- 
--	ret = thermal_zone_set_trip(tz, trip_id, &trip);
- unlock:
- 	mutex_unlock(&tz->lock);
- 	
-@@ -179,28 +201,37 @@ trip_point_hyst_store(struct device *dev
- 		      const char *buf, size_t count)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
--	struct thermal_trip trip;
-+	struct thermal_trip *trip;
- 	int trip_id, ret;
-+	int hyst;
-+
-+	ret = kstrtoint(buf, 10, &hyst);
-+	if (ret || hyst < 0)
-+		return -EINVAL;
- 
- 	if (sscanf(attr->attr.name, "trip_point_%d_hyst", &trip_id) != 1)
- 		return -EINVAL;
- 
- 	mutex_lock(&tz->lock);
- 
--	if (!device_is_registered(dev)) {
--		ret = -ENODEV;
--		goto unlock;
--	}
--
--	ret = __thermal_zone_get_trip(tz, trip_id, &trip);
-+	ret = check_thermal_zone_and_trip_id(dev, tz, trip_id);
- 	if (ret)
- 		goto unlock;
- 
--	ret = kstrtoint(buf, 10, &trip.hysteresis);
--	if (ret)
--		goto unlock;
-+	trip = &tz->trips[trip_id];
-+
-+	if (hyst != trip->hysteresis) {
-+		if (tz->ops->set_trip_hyst) {
-+			ret = tz->ops->set_trip_hyst(tz, trip_id, hyst);
-+			if (ret)
-+				goto unlock;
-+		}
-+
-+		trip->hysteresis = hyst;
-+
-+		thermal_zone_trip_updated(tz, trip);
-+	}
- 
--	ret = thermal_zone_set_trip(tz, trip_id, &trip);
- unlock:
- 	mutex_unlock(&tz->lock);
- 
-Index: linux-pm/drivers/thermal/thermal_core.h
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.h
-+++ linux-pm/drivers/thermal/thermal_core.h
-@@ -124,6 +124,8 @@ int __thermal_zone_get_trip(struct therm
- 			    struct thermal_trip *trip);
- int thermal_zone_trip_id(struct thermal_zone_device *tz,
- 			 const struct thermal_trip *trip);
-+void thermal_zone_trip_updated(struct thermal_zone_device *tz,
-+			       const struct thermal_trip *trip);
- int __thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
- 
- /* sysfs I/F */
-Index: linux-pm/drivers/thermal/thermal_trip.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_trip.c
-+++ linux-pm/drivers/thermal/thermal_trip.c
-@@ -147,42 +147,6 @@ int thermal_zone_get_trip(struct thermal
- }
- EXPORT_SYMBOL_GPL(thermal_zone_get_trip);
- 
--int thermal_zone_set_trip(struct thermal_zone_device *tz, int trip_id,
--			  const struct thermal_trip *trip)
--{
--	struct thermal_trip t;
--	int ret;
--
--	ret = __thermal_zone_get_trip(tz, trip_id, &t);
--	if (ret)
--		return ret;
--
--	if (t.type != trip->type)
--		return -EINVAL;
--
--	if (t.temperature != trip->temperature && tz->ops->set_trip_temp) {
--		ret = tz->ops->set_trip_temp(tz, trip_id, trip->temperature);
--		if (ret)
--			return ret;
--	}
--
--	if (t.hysteresis != trip->hysteresis && tz->ops->set_trip_hyst) {
--		ret = tz->ops->set_trip_hyst(tz, trip_id, trip->hysteresis);
--		if (ret)
--			return ret;
--	}
--
--	if (tz->trips && (t.temperature != trip->temperature || t.hysteresis != trip->hysteresis))
--		tz->trips[trip_id] = *trip;
--
--	thermal_notify_tz_trip_change(tz->id, trip_id, trip->type,
--				      trip->temperature, trip->hysteresis);
--
--	__thermal_zone_device_update(tz, THERMAL_TRIP_CHANGED);
--
--	return 0;
--}
--
- int thermal_zone_trip_id(struct thermal_zone_device *tz,
- 			 const struct thermal_trip *trip)
- {
-@@ -192,3 +156,12 @@ int thermal_zone_trip_id(struct thermal_
- 	 */
- 	return trip - tz->trips;
- }
-+
-+void thermal_zone_trip_updated(struct thermal_zone_device *tz,
-+			       const struct thermal_trip *trip)
-+{
-+	thermal_notify_tz_trip_change(tz->id, thermal_zone_trip_id(tz, trip),
-+				      trip->type, trip->temperature,
-+				      trip->hysteresis);
-+	__thermal_zone_device_update(tz, THERMAL_TRIP_CHANGED);
-+}
-Index: linux-pm/include/linux/thermal.h
-===================================================================
---- linux-pm.orig/include/linux/thermal.h
-+++ linux-pm/include/linux/thermal.h
-@@ -282,10 +282,6 @@ int __thermal_zone_get_trip(struct therm
- 			    struct thermal_trip *trip);
- int thermal_zone_get_trip(struct thermal_zone_device *tz, int trip_id,
- 			  struct thermal_trip *trip);
--
--int thermal_zone_set_trip(struct thermal_zone_device *tz, int trip_id,
--			  const struct thermal_trip *trip);
--
- int for_each_thermal_trip(struct thermal_zone_device *tz,
- 			  int (*cb)(struct thermal_trip *, void *),
- 			  void *data);
+ Linux 6.7-rc3
+
+to receive ACPI fixes for 6.7-rc4.
+
+This fix a recently introduced build issue on ARM32 and a NULL pointer
+dereference in the ACPI backlight driver due to a design issue exposed
+by a recent change in the ACPI bus type code.
+
+Specifics:
+
+ - Fix a recently introduced build issue on ARM32 platforms caused by an
+   inadvertent header file breakage (Dave Jiang).
+
+ - Eliminate questionable usage of acpi_driver_data() in the ACPI
+   backlight cooling device code that leads to NULL pointer dereferences
+   after recent ACPI core changes (Hans de Goede).
+
+Thanks!
 
 
+---------------
 
+Dave Jiang (1):
+      ACPI: Fix ARM32 platforms compile issue introduced by fw_table changes
+
+Hans de Goede (1):
+      ACPI: video: Use acpi_video_device for cooling-dev driver data
+
+---------------
+
+ drivers/acpi/acpi_video.c | 14 +++++---------
+ include/linux/acpi.h      | 22 +++++++++++-----------
+ include/linux/fw_table.h  |  3 ---
+ lib/fw_table.c            |  2 +-
+ 4 files changed, 17 insertions(+), 24 deletions(-)
