@@ -1,308 +1,130 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="mDYthD0y"
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9EF0E6;
-	Fri,  1 Dec 2023 01:52:58 -0800 (PST)
-Received: from [100.107.97.3] (cola.collaboradmins.com [195.201.22.229])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by madras.collabora.co.uk (Postfix) with ESMTPSA id D393866028F5;
-	Fri,  1 Dec 2023 09:52:56 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1701424377;
-	bh=uB2TrBWbPzNfO1Pa9O+R+Gcny3corfkI3WYrnflXA4Q=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=mDYthD0yJhSmNZOfzbepaBJtOjfeye0vgHAsXkcXISgVzodR8OlfYt5o63hiywZi6
-	 9B7nZmXAIA7bYY6osFyV5KQaOJ0pLJ/GOoQMw2SHavsXf6/ADfyvvaA6I9plsdksbJ
-	 xZtgiziKpvLslq0VsVQQ8C1keqaXTWdLkcIdDGxxgRfxd1nGItKnKfrKWHIWaljVah
-	 lPS4KipDw0d34Q9KSxnMLjoQpv+2qFJZ63JQpDBx1nvXovZQWV+TxzpdV3WuqM3LKz
-	 WV7HxihwZs7TnI+0nczVXsmkL1K1Z4/BW+5E6RdNq3AqXJHGLsXhMJQHZNKDGEJeCi
-	 lATE8dbKEh0ww==
-Message-ID: <99c1fd8f-4b17-4d4a-87a5-6a65745632fe@collabora.com>
-Date: Fri, 1 Dec 2023 10:52:54 +0100
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="SjiNrOkV"
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE32810FA
+	for <linux-pm@vger.kernel.org>; Fri,  1 Dec 2023 01:56:41 -0800 (PST)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20231201095639euoutp0106917206936fd462d6b2665d637a3f6e~crKiic5d-0038400384euoutp01y
+	for <linux-pm@vger.kernel.org>; Fri,  1 Dec 2023 09:56:39 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20231201095639euoutp0106917206936fd462d6b2665d637a3f6e~crKiic5d-0038400384euoutp01y
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1701424599;
+	bh=eb8mbc98REMcBZ07pJdFy0917NkB5OE4nrZXufMorTE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=SjiNrOkVAavObxxJ1bYuJC1sZdbrgXVpJIWDWkXqf20PeYXczsAjYHR3/BHCiwQ9D
+	 qfyVdXjghW8BPX4+iGRKsKk5J6IRmsMtoARHh/962ipIgo7HV/7ek05Op+aRdvwWtK
+	 6q9ZUKvrSQZ52hTWtJJnfEclrwIHPaakC4G0QofE=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+	eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+	20231201095639eucas1p275186a94f3422adb0dca88500fdd48b3~crKiND2Np1612516125eucas1p2b;
+	Fri,  1 Dec 2023 09:56:39 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+	eusmges2new.samsung.com (EUCPMTA) with SMTP id C1.42.09814.7DDA9656; Fri,  1
+	Dec 2023 09:56:39 +0000 (GMT)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+	20231201095638eucas1p1124e1028823c48efac89d2bc96cc1762~crKh2uNK30245502455eucas1p1_;
+	Fri,  1 Dec 2023 09:56:38 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+	eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+	20231201095638eusmtrp19c4635cc3ee18fcc8f426a358ddab7e7~crKh2BX040736407364eusmtrp10;
+	Fri,  1 Dec 2023 09:56:38 +0000 (GMT)
+X-AuditID: cbfec7f4-727ff70000002656-e0-6569add71dc3
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+	eusmgms1.samsung.com (EUCPMTA) with SMTP id F3.20.09146.6DDA9656; Fri,  1
+	Dec 2023 09:56:38 +0000 (GMT)
+Received: from AMDC4515.eu.corp.samsungelectronics.net (unknown
+	[106.120.51.28]) by eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20231201095637eusmtip23de90d4c8028fcf21681096181e6cdd6~crKg8KX5n1179711797eusmtip29;
+	Fri,  1 Dec 2023 09:56:37 +0000 (GMT)
+From: Mateusz Majewski <m.majewski2@samsung.com>
+To: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Mateusz Majewski <m.majewski2@samsung.com>, Bartlomiej Zolnierkiewicz
+	<bzolnier@gmail.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano
+	<daniel.lezcano@linaro.org>, Amit Kucheria <amitk@kernel.org>, Zhang Rui
+	<rui.zhang@intel.com>, Alim Akhtar <alim.akhtar@samsung.com>, Liam Girdwood
+	<lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski
+	<m.szyprowski@samsung.com>, Lukasz Luba <lukasz.luba@arm.com>, Dan Carpenter
+	<dan.carpenter@linaro.org>
+Subject: [PATCH v6 1/9] thermal: exynos: remove an unnecessary field
+ description
+Date: Fri,  1 Dec 2023 10:56:17 +0100
+Message-ID: <20231201095625.301884-2-m.majewski2@samsung.com>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231201095625.301884-1-m.majewski2@samsung.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] thermal: Add support for device tree thermal zones
- consumers
-Content-Language: en-US
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org
-Cc: rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, kernel@collabora.com, wenst@chromium.org
-References: <20231115144857.424005-1-angelogioacchino.delregno@collabora.com>
- <09de3b1b-b725-46b8-97a6-55776fd5ca45@linaro.org>
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <09de3b1b-b725-46b8-97a6-55776fd5ca45@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrDKsWRmVeSWpSXmKPExsWy7djPc7rX12amGqxdwWrxYN42NovD8yss
+	pj58wmbxfct1JosP81rZLeZ9lrXY+3oru8W3Kx1MFpseX2O1uLxrDpvF594jjBYzzu9jsljY
+	1MJuMfHYZGaLtUfuslvM/TKV2eLJwz42B0GPNfPWMHrsnHWX3WPxnpdMHptWdbJ53Lm2h81j
+	85J6j74tqxg9Pm+SC+CI4rJJSc3JLEst0rdL4Mo4dWQOW8Eq9orVew6xNDBOZuti5OCQEDCR
+	2HBOsIuRi0NIYAWjxLZzf5ggnC+MEqc2fGCHcD4zSpw5Op21i5ETrKN7y1c2iMRyoMS3SSwQ
+	TiuTRNe+I+wgVWwCBhIP3iwDs0UEWhklZjapg9jMAgtZJFr+5YLYwgJBEu83n2IBsVkEVCWu
+	rDrPDGLzCthKbGi/wQSxTV5iz6LvYDangJ3E/EOtLBA1ghInZz5hgZgpL9G8dTYzyBESApM5
+	JV6tu8oG0ewi8WfxXKhBwhKvjm9hh7BlJE5P7mGBsPMlZmx+zwIJjAqJuwe9IExriY9nmEFM
+	ZgFNifW79CGKHSXOrv3BDlHBJ3HjrSDEAXwSk7ZNZ4YI80p0tAlBVKtKHN8ziRnClpZ40nIb
+	6hQPiX07FrBPYFScheSVWUhemYWwdwEj8ypG8dTS4tz01GKjvNRyveLE3OLSvHS95PzcTYzA
+	BHf63/EvOxiXv/qod4iRiYPxEKMEB7OSCO/1p+mpQrwpiZVVqUX58UWlOanFhxilOViUxHlV
+	U+RThQTSE0tSs1NTC1KLYLJMHJxSDUwB5zxmxUZbMIauZTNMPtay3Fbls9OU192nGz+8uf1+
+	85Yfene4M841f934zD2Oz/VMqnfgvcDlD/5djj16oc5kVoB/TdrE76tefpuWvX7C/qyijuj/
+	ds3L+Phuqaq/1fntlzORq6Z3aUz0HMsN6/jz+Fc2aB1vuVZ+/a93J78PK9OFys7lPqsdTC4W
+	Ny23ahSz6ruyT4o5kdHq8pSJ+f48UR9Oxhl4bDzG+ymcKWL3VM2v049dmCE+bxIT56tp7woV
+	M3uDvWeF80a8TrP4WtAckHNjoumOVyv458hrSMslLyjN3fO38bH3Cf4rF8M/q2ax/7V8M0Mu
+	ryXkzso+t5R3kkUX6s+XC+d0r6u5sUeJpTgj0VCLuag4EQACtN443wMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrAIsWRmVeSWpSXmKPExsVy+t/xe7rX1mamGkyZoGnxYN42NovD8yss
+	pj58wmbxfct1JosP81rZLeZ9lrXY+3oru8W3Kx1MFpseX2O1uLxrDpvF594jjBYzzu9jsljY
+	1MJuMfHYZGaLtUfuslvM/TKV2eLJwz42B0GPNfPWMHrsnHWX3WPxnpdMHptWdbJ53Lm2h81j
+	85J6j74tqxg9Pm+SC+CI0rMpyi8tSVXIyC8usVWKNrQw0jO0tNAzMrHUMzQ2j7UyMlXSt7NJ
+	Sc3JLEst0rdL0Ms4dWQOW8Eq9orVew6xNDBOZuti5OSQEDCR6N7yFcjm4hASWMoo0fB3GwtE
+	Qlri8Jcp7BC2sMSfa11QRc1MEtt/rQBLsAkYSDx4s4wdJCEi0Mko0bX5HBOIwyywmkXi2L7v
+	TCBVwgIBEkt+bWAGsVkEVCWurDoPZvMK2EpsaL/BBLFCXmLPIoh6TgE7ifmHWsHOEAKq6dry
+	nxGiXlDi5MwnYHFmoPrmrbOZJzAKzEKSmoUktYCRaRWjSGppcW56brGhXnFibnFpXrpecn7u
+	JkZgVG479nPzDsZ5rz7qHWJk4mA8xCjBwawkwnv9aXqqEG9KYmVValF+fFFpTmrxIUZToLsn
+	MkuJJucD00JeSbyhmYGpoYmZpYGppZmxkjivZ0FHopBAemJJanZqakFqEUwfEwenVAPTKR5F
+	EW3u0PB8UX1VlY+BO8NOJmkxRJ248d6Tb7dtXl51TVVs+oTU360VT21rlj1iM456lhKU+0bu
+	ztnF+Um/6/aE2yTIiNnM/n9h2a57C17+f5iju/1k4esMocLtS8OC7sv0/WNc4Pv8WD1Dp0IC
+	v+25959ncYgXbz3gtNz15DzzLU9dPs7+oqSSlSAYu/rx/zsfVKK7/qz6Lp1j0xf74vO7mTZP
+	HCpWsIRUZlVFZTpM1tq3l/GEB9u1hIbj1qZTnnO0+90Nm83CprSxWSLw2RuLa+YS2+f37Z16
+	eF9WpHUG92eOOftmnr67xCBq5w7nBBOND0v/7mGfEnVzQdobHeX8fd++h7h/bvm44UieEktx
+	RqKhFnNRcSIA1SWXxFMDAAA=
+X-CMS-MailID: 20231201095638eucas1p1124e1028823c48efac89d2bc96cc1762
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20231201095638eucas1p1124e1028823c48efac89d2bc96cc1762
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20231201095638eucas1p1124e1028823c48efac89d2bc96cc1762
+References: <20231201095625.301884-1-m.majewski2@samsung.com>
+	<CGME20231201095638eucas1p1124e1028823c48efac89d2bc96cc1762@eucas1p1.samsung.com>
 
-Il 30/11/23 14:22, Daniel Lezcano ha scritto:
-> 
-> Hi Angelo,
-> 
-> thanks for your proposal
-> 
-> On 15/11/2023 15:48, AngeloGioacchino Del Regno wrote:
->> Add helpers to support retrieving thermal zones from device tree nodes:
->> this will allow a device tree consumer to specify phandles to specific
->> thermal zone(s), including support for specifying thermal-zone-names.
->> This is useful, for example, for smart voltage scaling drivers that
->> need to adjust CPU/GPU/other voltages based on temperature, and for
->> battery charging drivers that need to scale current based on various
->> aggregated temperature sensor readings which are board-dependant.
-> 
-> IMO these changes are trying to solve something from the DT perspective adding more 
-> confusion between phandle, names, types etc ... and it does not really help AFAICT.
-> 
+It seems that the field has been removed in one of the previous commits,
+but the description has been forgotten.
 
-I honestly don't see how can assigning thermal zones (like we're doing for other
-consumers like clocks, etc) to a node can be confusing?
-To me, it looks like a pattern that is repeating over and over in device tree, for
-multiple types of consumers.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-> Overall I'm a bit reluctant to add more API in the thermal.h. From my POV, we 
-> should try to remove as much as possible functions from there.
-> 
-
-Cleaning up the API is always something that makes sense, but I don't see why this
-should prevent useful additions...
-
-> That said, the name of a thermal zone does not really exists and there is confusion 
-> in the code between a name and a type. (type being assumed to be a name).
-
-That depends on how you see it. What my brain ticks around is:
-A thermal zone is a physical zone on the PCB, or a physical zone on a chip,
-which has its own "real name", as in, it can be physically identified.
-
-Example: The "Skin area" of a laptop is something "reachable" from the user as an
-externally exposed part. This area's temperature is read by thermistor EXTERNAL_1,
-not by thermistor "SKIN0".
-
-Same goes for "big cluster area", "little cluster area", "cpu complex area", etc.
-
-> 
-> There could be several thermal zones with the same types for non-DT description. 
-> However, the documentation says we should create an unique type in the DT and that 
-> is what is happening when registering a thermal zone from the DT [1] as we use the 
-> node name.
-> 
->  From an external driver, it possible to get the np->name from the phandles and 
-> call thermal_zone_get_by_name(np->name).
-> 
-
-That'd still require you to pass a thermal zone phandle to the node(driver) though?
-
-> The hardening change which may make sense is to check a thermal zone with the same 
-> name is not already registered in thermal_of.c by checking 
-> thermal_zone_get_by_name() fails before registering it.
-> 
-
-Yes we can harden that, but I don't see how is this relevant to thermal zones
-device tree consumers (proposed in this patch)?
-
-Cheers,
-Angelo
-
->    -- Daniel
-> 
-> [1] 
-> https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git/tree/drivers/thermal/thermal_of.c?h=thermal%2Fbleeding-edge#n514
-> 
->> Example:
->> smart-scaling-driver@10000000 {
->>     [...]
->>
->>     thermal-zones = <&cluster_big_tz>, <&gpu_tz>, <&vpu_tz>;
->>     thermal-zone-names = "cpu", "gpu", "vpu";
->>
->>     [...]
->> }
->>
->> battery-charger@20000000 {
->>     [...]
->>
->>     thermal-zones = <&battery_temp>, <&device_skin_temp>;
->>     thermal-zone-names = "batt-ext-sensor", "skin";
->>
->>     [...]
->> }
->>
->> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
->> ---
->>
->> Changes in v2:
->>   - Added missing static inline for !CONFIG_OF fallback functions
->>
->> Background story: while I was cleaning up the MediaTek Smart Voltage Scaling
->> (SVS) driver, I've found out that there's a lot of commonization to be done.
->> After a rewrite of "this and that" in that driver, I came across a barrier
->> that didn't allow me to remove another ~100 lines of code, and that was also
->> anyway breaking the driver, because the thermal zone names are different
->> from what was originally intended.
->>
->> I've been looking for thermal zone handle retrieval around the kernel and
->> found that there currently are at least four other drivers that could make
->> use this as a cleanup: charger-manager, which is retrieving a thermal zone
->> to look for with a "cm-thermal-zone" string property, gpu/drm/tiny/repaper.c
->> that does the same by checking a "pervasive,thermal-zone" string property,
->> and ab8500_temp and sdhci-omap which are simply hardcoding a "cpu_thermal"
->> and "battery-thermal" thermal zone names respectively.
->>
->> There are a number of other devices (mostly embedded, mostly smartphones)
->> that don't have an upstream driver and that could make use of this as well.
->>
->> Cheers!
->>
->>
->>   drivers/thermal/thermal_of.c | 91 ++++++++++++++++++++++++++++++++++++
->>   include/linux/thermal.h      | 15 ++++++
->>   2 files changed, 106 insertions(+)
->>
->> diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
->> index 1e0655b63259..d8ead456993e 100644
->> --- a/drivers/thermal/thermal_of.c
->> +++ b/drivers/thermal/thermal_of.c
->> @@ -538,6 +538,97 @@ static struct thermal_zone_device 
->> *thermal_of_zone_register(struct device_node *
->>       return ERR_PTR(ret);
->>   }
->> +/**
->> + * __thermal_of_get_zone_by_index() - Get thermal zone handle from the DT
->> + *                      thermal-zones index
->> + * @dev:   Pointer to the consumer device
->> + * @index: Index of thermal-zones
->> + *
->> + * This function will search for a thermal zone in the thermal-zones phandle
->> + * array corresponding to the specified index, then will search for its name
->> + * into the registered thermal zones through thermal_zone_get_zone_by_name()
->> + *
->> + * Please note that this function is for internal use only and expects that
->> + * all of the sanity checks are performed by its caller.
->> + *
->> + * Return: thermal_zone_device pointer on success, ERR_PTR() on error or NULL
->> + * when the API is disabled or the "thermal-zones" DT property is missing.
->> + */
->> +static struct thermal_zone_device
->> +*__thermal_of_get_zone_by_index(struct device *dev, int index)
->> +{
->> +    struct thermal_zone_device *tzd;
->> +    struct device_node *np;
->> +
->> +    np = of_parse_phandle(dev->of_node, "thermal-zones", index);
->> +    if (!np)
->> +        return NULL;
->> +
->> +    tzd = thermal_zone_get_zone_by_name(np->name);
->> +    of_node_put(np);
->> +
->> +    return tzd;
->> +}
->> +
->> +/**
->> + * thermal_of_get_zone_by_index() - Get thermal zone handle from a DT node
->> + *                    based on index
->> + * @dev:   Pointer to the consumer device
->> + * @index: Index of thermal-zones
->> + *
->> + * Return: thermal_zone_device pointer on success, ERR_PTR() on error or NULL
->> + * when the API is disabled or the "thermal-zones" DT property is missing.
->> + */
->> +struct thermal_zone_device *thermal_of_get_zone_by_index(struct device *dev, int 
->> index)
->> +{
->> +    if (!dev || !dev->of_node)
->> +        return ERR_PTR(-ENODEV);
->> +
->> +    if (!of_property_present(dev->of_node, "thermal-zones"))
->> +        return NULL;
->> +
->> +    return __thermal_of_get_zone_by_index(dev, index);
->> +}
->> +
->> +/**
->> + * thermal_of_get_zone() - Get thermal zone handle from a DT node based
->> + *               on name, or the first handle in list
->> + * @dev:   Pointer to the consumer device
->> + * @name:  Name as found in thermal-zone-names or NULL
->> + *
->> + * This function will search for a thermal zone in the thermal-zones phandle
->> + * array corresponding to the index of that in the thermal-zone-names array.
->> + * If the name is not specified (NULL), it will return the first thermal zone
->> + * in the thermal-zones phandle array.
->> + *
->> + * Return: thermal_zone_device pointer on success, ERR_PTR() on error or NULL
->> + * when the API is disabled or the "thermal-zones" DT property is missing.
->> + */
->> +struct thermal_zone_device *thermal_of_get_zone(struct device *dev, const char 
->> *name)
->> +{
->> +    int index;
->> +
->> +    if (!dev || !dev->of_node)
->> +        return ERR_PTR(-ENODEV);
->> +
->> +    if (!of_property_present(dev->of_node, "thermal-zones")) {
->> +        pr_err("thermal zones property not present\n");
->> +        return NULL;
->> +    }
->> +
->> +    if (name) {
->> +        index = of_property_match_string(dev->of_node, "thermal-zone-names", name);
->> +        if (index < 0) {
->> +            pr_err("thermal zone names property not present\n");
->> +            return ERR_PTR(index);
->> +        }
->> +    } else {
->> +        index = 0;
->> +    }
->> +
->> +    return __thermal_of_get_zone_by_index(dev, index);
->> +}
->> +
->>   static void devm_thermal_of_zone_release(struct device *dev, void *res)
->>   {
->>       thermal_of_zone_unregister(*(struct thermal_zone_device **)res);
->> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->> index cee814d5d1ac..0fceeb7ed08a 100644
->> --- a/include/linux/thermal.h
->> +++ b/include/linux/thermal.h
->> @@ -261,6 +261,9 @@ struct thermal_zone_device 
->> *devm_thermal_of_zone_register(struct device *dev, in
->>   void devm_thermal_of_zone_unregister(struct device *dev, struct 
->> thermal_zone_device *tz);
->> +struct thermal_zone_device *thermal_of_get_zone_by_index(struct device *dev, int 
->> index);
->> +struct thermal_zone_device *thermal_of_get_zone(struct device *dev, const char 
->> *name);
->> +
->>   #else
->>   static inline
->> @@ -274,6 +277,18 @@ static inline void devm_thermal_of_zone_unregister(struct 
->> device *dev,
->>                              struct thermal_zone_device *tz)
->>   {
->>   }
->> +
->> +static inline
->> +struct thermal_zone_device *thermal_of_get_zone_by_index(struct device *dev, int 
->> index)
->> +{
->> +    return ERR_PTR(-ENOTSUPP);
->> +}
->> +
->> +static inline
->> +struct thermal_zone_device *thermal_of_get_zone(struct device *dev, const char 
->> *name)
->> +{
->> +    return ERR_PTR(-ENOTSUPP);
->> +}
->>   #endif
->>   int __thermal_zone_get_trip(struct thermal_zone_device *tz, int trip_id,
-> 
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 123ec81e1943..187086658e8f 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -160,7 +160,6 @@ enum soc_type {
+  *	in the positive-TC generator block
+  *	0 < reference_voltage <= 31
+  * @regulator: pointer to the TMU regulator structure.
+- * @reg_conf: pointer to structure to register with core thermal.
+  * @tzd: pointer to thermal_zone_device structure
+  * @ntrip: number of supported trip points.
+  * @enabled: current status of TMU device
+-- 
+2.42.0
 
