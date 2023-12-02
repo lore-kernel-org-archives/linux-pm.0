@@ -1,43 +1,43 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YOG4ixL6"
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0428E18C;
-	Sat,  2 Dec 2023 04:52:06 -0800 (PST)
-Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-54c5ed26cf6so1992507a12.3;
-        Sat, 02 Dec 2023 04:52:05 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ELM3Yfn0"
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BABFE12D;
+	Sat,  2 Dec 2023 04:52:02 -0800 (PST)
+Received: by mail-ej1-x630.google.com with SMTP id a640c23a62f3a-a00d5b0ec44so435881366b.0;
+        Sat, 02 Dec 2023 04:52:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1701521524; x=1702126324; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1701521521; x=1702126321; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=uvqh3YsIrEQFTmWeg+MPEc2rGBC/JrpRd/TYuGzYb50=;
-        b=YOG4ixL6jUh9MlGv/w74on9he66ZRyG1UfdLT9e+GwCZds6+8Nqzn5MpYII7XoFRmz
-         FS0VLVEWoTgDB6ugoiYf205j3hv4i0E5LbrkNMnEcW5WS9OLFvHTgP46gnoTHlpLo4Xg
-         Zhev5WQJfazHvnjiNd1rrwqOsZDsxl1Yo5L1xzPxVmiQl3lX9tyUSfDjNXsgznxl3P2H
-         rtT4f4npzx9Cajd4PIpEJXLU1fwlREBdeUhNRA9CFWj6ffdRR2u4x+c0bWcgYohAywZO
-         ysVVLZknoSXBqnfZyaLI3pIImRt24zyOG8mJn3J57q+US9DsVFq9wBHYvi4zbhTNleqQ
-         5OuA==
+        bh=vGS3uiiSRjNFmcXcLobVydkfz1z0YWeEIsOnLuIOTtk=;
+        b=ELM3Yfn0abe0IWNwxW4ZEDlMxP5wL8KGoLtdNbnK3hAiP6fMCdrkx8bQF/rDRdLjHm
+         XOHK+PciiX9tcrmznu8ihnNp5cRkHP6Ik1kcuKrVUTK6UGu+fQWN7y7LRlOOF5kCVw8H
+         vfLm1iEU49yEoslnLwMDVVYv2erM3bNx6ZZUIkPsEIQnbTV7Ak/7qhVtqcxJ64HdrsNw
+         o2Z8SWs98wc54vHpS5hSzEbMxkPrimJYAcBs6QByjv96x4ZuUdjzcfaCX8EnJXa7L/Kt
+         mZL5gVIHbXBqPPl4K0/9eVJrvdOxUNZhWB/1yFZWmiMYfGoU+yugvuEGgJoiYM4k/njg
+         3TfQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1701521524; x=1702126324;
+        d=1e100.net; s=20230601; t=1701521521; x=1702126321;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=uvqh3YsIrEQFTmWeg+MPEc2rGBC/JrpRd/TYuGzYb50=;
-        b=AV9f3X5bM0WxyXI8QJpHMD4kzgnPTtrrudkll1GzSnaeWIaBU4wStfvOPmYP9Vbu7V
-         XNrD49+dq4ayzu1+38V4Njw2LFVWiNplZ4L95mA9v57CgWNSy1rEtCSUZYi2uI52Fcht
-         yRibEBT/KH45avZOIcjqn6dsxIjTi6JZVqJ7nSJSjiAc/HeGgw7eVwdTbA0IITBelJnP
-         HcKvbWhWP25b7OKzhUiTRKthGLFzsfyZhj38qINHc6FEEWfcfH4FfTYG4/9bxp9iafeT
-         /Br+qkb14LnE6+5tP/WHyHPz3+yeARjlX3MBnVE4rtQcnuGbr9pcJqbofVQPwNgotzwo
-         SJbw==
-X-Gm-Message-State: AOJu0Yx9qUcCkuueMbBHDm0j88k8TKfZLtU9iiCC/7aVgannkRHb9Nq0
-	pUUhDsqPj9oxhL0Vv1uPkA==
-X-Google-Smtp-Source: AGHT+IFQ04hd02/k8ts4CI8E4zUUh78rM2JYghUB6DkvNvfM35AgawiZ8im+gUYqpmxxzX2y97BApA==
-X-Received: by 2002:a17:907:bb86:b0:a18:f82c:65d2 with SMTP id xo6-20020a170907bb8600b00a18f82c65d2mr1932769ejc.34.1701521524226;
-        Sat, 02 Dec 2023 04:52:04 -0800 (PST)
+        bh=vGS3uiiSRjNFmcXcLobVydkfz1z0YWeEIsOnLuIOTtk=;
+        b=laS2WnkWAiNnEfQTCHDa3ir6mkQTE4miA8SrNuMwPu7oZ2pUoaYXOpyvO7nUtPQBpL
+         p6EoBgG2NdNa8ZI9biJ0X8Ic3FWRYTGF+d9sBLqUROdtOJuySw39fgogCfVqTYWLMspa
+         yUcVTT9SABkFBShm7VmxsySAk4mduz69LfxH130/6xQRy2V0/zd77CA5dbUgKt7Cry3J
+         Kd0ZNcAOZ4GRrOGvp/2w9qBlUdFyyWMQaLlsbD2wd2fmV7w1ZbHee/p8tHcXU2Y1Difc
+         mrF4fIpJoXsoFGfBfztn2EQRA5nO2OdJsHvhTcX+NpueGr/dA55WoBEcUScQc//nNNzQ
+         +a/g==
+X-Gm-Message-State: AOJu0YxMh7FtLLlERGrSB7mcLHNngnANtZqnvd40y/YsJJARSxRJx1gY
+	74fEAsCTQnHMcZ0QSPPw6w==
+X-Google-Smtp-Source: AGHT+IFQCssdJ19Dhg4av1bEqGzWCJHnq4HF6friZV69W7kUuaniNiFQHWBT6X9GqTCcTQpVcwkvXw==
+X-Received: by 2002:a17:907:a18f:b0:a19:9b79:8b47 with SMTP id om15-20020a170907a18f00b00a199b798b47mr814246ejc.88.1701521521158;
+        Sat, 02 Dec 2023 04:52:01 -0800 (PST)
 Received: from U4.lan ([2a02:810b:f40:4300:908e:b829:354b:f8ee])
-        by smtp.gmail.com with ESMTPSA id g5-20020a170906198500b009c5c5c2c5a4sm3018161ejd.219.2023.12.02.04.52.03
+        by smtp.gmail.com with ESMTPSA id g5-20020a170906198500b009c5c5c2c5a4sm3018161ejd.219.2023.12.02.04.52.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 02 Dec 2023 04:52:03 -0800 (PST)
+        Sat, 02 Dec 2023 04:52:00 -0800 (PST)
 From: Alex Bee <knaerzche@gmail.com>
 To: Heiko Stuebner <heiko@sntech.de>,
 	Conor Dooley <conor+dt@kernel.org>,
@@ -55,9 +55,9 @@ Cc: Daniel Vetter <daniel@ffwll.ch>,
 	linux-rockchip@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	Alex Bee <knaerzche@gmail.com>
-Subject: [PATCH v2 5/5] ARM: dts: rockchip: Enable GPU for XPI-3128
-Date: Sat,  2 Dec 2023 13:51:44 +0100
-Message-ID: <20231202125144.66052-6-knaerzche@gmail.com>
+Subject: [PATCH v2 2/5] ARM: dts: rockchip: Add power-controller for RK3128
+Date: Sat,  2 Dec 2023 13:51:41 +0100
+Message-ID: <20231202125144.66052-3-knaerzche@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231202125144.66052-1-knaerzche@gmail.com>
 References: <20231202125144.66052-1-knaerzche@gmail.com>
@@ -69,29 +69,133 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add the supply and enable gpu node for XPI-3128 board.
+Add power controller and qos nodes for RK3128 in order to use
+them as powerdomains.
 
 Signed-off-by: Alex Bee <knaerzche@gmail.com>
 ---
- arch/arm/boot/dts/rockchip/rk3128-xpi-3128.dts | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm/boot/dts/rockchip/rk3128.dtsi | 101 +++++++++++++++++++++++++
+ 1 file changed, 101 insertions(+)
 
-diff --git a/arch/arm/boot/dts/rockchip/rk3128-xpi-3128.dts b/arch/arm/boot/dts/rockchip/rk3128-xpi-3128.dts
-index 61b9f069c8a2..0a8ead0bfe09 100644
---- a/arch/arm/boot/dts/rockchip/rk3128-xpi-3128.dts
-+++ b/arch/arm/boot/dts/rockchip/rk3128-xpi-3128.dts
-@@ -315,6 +315,11 @@ &gpio3 {
- 			  "", "", "", "";
- };
+diff --git a/arch/arm/boot/dts/rockchip/rk3128.dtsi b/arch/arm/boot/dts/rockchip/rk3128.dtsi
+index 4e8b38604ecd..b72905db04f7 100644
+--- a/arch/arm/boot/dts/rockchip/rk3128.dtsi
++++ b/arch/arm/boot/dts/rockchip/rk3128.dtsi
+@@ -8,6 +8,7 @@
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/interrupt-controller/irq.h>
+ #include <dt-bindings/pinctrl/rockchip.h>
++#include <dt-bindings/power/rk3128-power.h>
  
-+&gpu {
-+	mali-supply = <&vdd_log>;
-+	status = "okay";
-+};
+ / {
+ 	compatible = "rockchip,rk3128";
+@@ -133,6 +134,106 @@ smp-sram@0 {
+ 	pmu: syscon@100a0000 {
+ 		compatible = "rockchip,rk3128-pmu", "syscon", "simple-mfd";
+ 		reg = <0x100a0000 0x1000>;
 +
- &pinctrl {
- 	dp83848c {
- 		dp83848c_rst: dp83848c-rst {
++		power: power-controller {
++			compatible = "rockchip,rk3128-power-controller";
++			#power-domain-cells = <1>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			power-domain@RK3128_PD_VIO {
++				reg = <RK3128_PD_VIO>;
++				clocks = <&cru ACLK_CIF>,
++					 <&cru HCLK_CIF>,
++					 <&cru DCLK_EBC>,
++					 <&cru HCLK_EBC>,
++					 <&cru ACLK_IEP>,
++					 <&cru HCLK_IEP>,
++					 <&cru ACLK_LCDC0>,
++					 <&cru HCLK_LCDC0>,
++					 <&cru PCLK_MIPI>,
++					 <&cru ACLK_RGA>,
++					 <&cru HCLK_RGA>,
++					 <&cru ACLK_VIO0>,
++					 <&cru ACLK_VIO1>,
++					 <&cru HCLK_VIO>,
++					 <&cru HCLK_VIO_H2P>,
++					 <&cru DCLK_VOP>,
++					 <&cru SCLK_VOP>;
++				pm_qos = <&qos_ebc>,
++					 <&qos_iep>,
++					 <&qos_lcdc>,
++					 <&qos_rga>,
++					 <&qos_vip>;
++				#power-domain-cells = <0>;
++			};
++
++			power-domain@RK3128_PD_VIDEO {
++				reg = <RK3128_PD_VIDEO>;
++				clocks = <&cru ACLK_VDPU>,
++					 <&cru HCLK_VDPU>,
++					 <&cru ACLK_VEPU>,
++					 <&cru HCLK_VEPU>,
++					 <&cru SCLK_HEVC_CORE>;
++				pm_qos = <&qos_vpu>;
++				#power-domain-cells = <0>;
++			};
++
++			power-domain@RK3128_PD_GPU {
++				reg = <RK3128_PD_GPU>;
++				clocks = <&cru ACLK_GPU>;
++				pm_qos = <&qos_gpu>;
++				#power-domain-cells = <0>;
++			};
++
++			power-domain@RK3128_PD_CRYPTO {
++				reg = <RK3128_PD_CRYPTO>;
++				clocks = <&cru HCLK_CRYPTO>,
++					 <&cru SCLK_CRYPTO>;
++				pm_qos = <&qos_crypto>;
++				#power-domain-cells = <0>;
++			};
++		};
++	};
++
++	qos_crypto: qos@10128080 {
++		compatible = "rockchip,rk3128-qos", "syscon";
++		reg = <0x10128080 0x20>;
++	};
++
++	qos_gpu: qos@1012d000 {
++		compatible = "rockchip,rk3128-qos", "syscon";
++		reg = <0x1012d000 0x20>;
++	};
++
++	qos_vpu: qos@1012e000 {
++		compatible = "rockchip,rk3128-qos", "syscon";
++		reg = <0x1012e000 0x20>;
++	};
++
++	qos_rga: qos@1012f000 {
++		compatible = "rockchip,rk3128-qos", "syscon";
++		reg = <0x1012f000 0x20>;
++	};
++
++	qos_ebc: qos@1012f080 {
++		compatible = "rockchip,rk3128-qos", "syscon";
++		reg = <0x1012f080 0x20>;
++	};
++
++	qos_iep: qos@1012f100 {
++		compatible = "rockchip,rk3128-qos", "syscon";
++		reg = <0x1012f100 0x20>;
++	};
++
++	qos_lcdc: qos@1012f180 {
++		compatible = "rockchip,rk3128-qos", "syscon";
++		reg = <0x1012f180 0x20>;
++	};
++
++	qos_vip: qos@1012f200 {
++		compatible = "rockchip,rk3128-qos", "syscon";
++		reg = <0x1012f200 0x20>;
+ 	};
+ 
+ 	gic: interrupt-controller@10139000 {
 -- 
 2.43.0
 
