@@ -1,96 +1,52 @@
-X-Greylist: delayed 1048 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 04 Dec 2023 06:31:18 PST
-Received: from mxout70.expurgate.net (mxout70.expurgate.net [194.37.255.70])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3EB7107
-	for <linux-pm@vger.kernel.org>; Mon,  4 Dec 2023 06:31:18 -0800 (PST)
-Received: from [127.0.0.1] (helo=localhost)
-	by relay.expurgate.net with smtp (Exim 4.92)
-	(envelope-from <prvs=171688d2d9=fe@dev.tdt.de>)
-	id 1rA9hf-008Cav-0Y; Mon, 04 Dec 2023 15:13:43 +0100
-Received: from [195.243.126.94] (helo=securemail.tdt.de)
-	by relay.expurgate.net with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <fe@dev.tdt.de>)
-	id 1rA9he-00FI99-06; Mon, 04 Dec 2023 15:13:42 +0100
-Received: from securemail.tdt.de (localhost [127.0.0.1])
-	by securemail.tdt.de (Postfix) with ESMTP id A2C0E240049;
-	Mon,  4 Dec 2023 15:13:41 +0100 (CET)
-Received: from mail.dev.tdt.de (unknown [10.2.4.42])
-	by securemail.tdt.de (Postfix) with ESMTP id 21C7C240040;
-	Mon,  4 Dec 2023 15:13:41 +0100 (CET)
-Received: from localhost.localdomain (unknown [10.2.3.40])
-	by mail.dev.tdt.de (Postfix) with ESMTPSA id 70C0821439;
-	Mon,  4 Dec 2023 15:13:40 +0100 (CET)
-From: Florian Eckert <fe@dev.tdt.de>
-To: Eckert.Florian@googlemail.com,
-	rafael@kernel.org,
-	daniel.lezcano@linaro.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] tools/thermal/tmon: Fix compilation warning for wrong format
-Date: Mon,  4 Dec 2023 15:13:35 +0100
-Message-ID: <20231204141335.2798194-1-fe@dev.tdt.de>
-X-Mailer: git-send-email 2.30.2
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20DA6AC;
+	Mon,  4 Dec 2023 06:52:56 -0800 (PST)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
+ id 2d93f8201ef448fb; Mon, 4 Dec 2023 15:52:55 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 26B4066875B;
+	Mon,  4 Dec 2023 15:52:55 +0100 (CET)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH v3 0/2] thermal: sysfs: Simplifications of trip point attribute callbacks
+Date: Mon, 04 Dec 2023 15:46:56 +0100
+Message-ID: <12338384.O9o76ZdvQC@kreacher>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-purgate-ID: 151534::1701699222-9A6DADE9-07D521F6/0/0
-X-purgate-type: clean
-X-purgate: clean
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrudejiedgjeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhn
+ vghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 
-The following warnings are shown during compilation:
+Hi,
 
-tui.c: In function 'show_cooling_device':
- tui.c:216:40: warning: format '%d' expects argument of type 'int', but
-argument 7 has type 'long unsigned int' [-Wformat=3D]
-   216 |                         "%02d %12.12s%6d %6d",
-       |                                      ~~^
-       |                                        |
-       |                                        int
-       |                                      %6ld
- ......
-   219 |                         ptdata.cdi[j].cur_state,
-       |                         ~~~~~~~~~~~~~~~~~~~~~~~
-       |                                      |
-       |                                      long unsigned int
- tui.c:216:44: warning: format '%d' expects argument of type 'int', but
-argument 8 has type 'long unsigned int' [-Wformat=3D]
-   216 |                         "%02d %12.12s%6d %6d",
-       |                                          ~~^
-       |                                            |
-       |                                            int
-       |                                          %6ld
- ......
-   220 |                         ptdata.cdi[j].max_state);
-       |                         ~~~~~~~~~~~~~~~~~~~~~~~
-       |                                      |
-       |                                      long unsigned int
+This is the third iteration of
 
-To fix this, the correct string format must be used for printing.
+https://lore.kernel.org/linux-pm/5754079.DvuYhMxLoT@kreacher/
 
-Signed-off-by: Florian Eckert <fe@dev.tdt.de>
----
- tools/thermal/tmon/tui.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+which only differs from its second iteration
 
-diff --git a/tools/thermal/tmon/tui.c b/tools/thermal/tmon/tui.c
-index 031b258667d8..7f5dd2b87f15 100644
---- a/tools/thermal/tmon/tui.c
-+++ b/tools/thermal/tmon/tui.c
-@@ -213,7 +213,7 @@ void show_cooling_device(void)
- 		 * cooling device instances. skip unused idr.
- 		 */
- 		mvwprintw(cooling_device_window, j + 2, 1,
--			"%02d %12.12s%6d %6d",
-+			"%02d %12.12s%6lu %6lu",
- 			ptdata.cdi[j].instance,
- 			ptdata.cdi[j].type,
- 			ptdata.cdi[j].cur_state,
---=20
-2.30.2
+https://lore.kernel.org/linux-pm/12359903.O9o76ZdvQC@kreacher/
+
+with the removal of a redundant check at the end of trip_point_hyst_show().
+
+Please refer to the individual patch changelogs for details.
+
+Thanks!
+
+
+
 
