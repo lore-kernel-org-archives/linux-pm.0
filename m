@@ -1,89 +1,107 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="SyeWcAiT"
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B800DB5;
-	Tue,  5 Dec 2023 14:58:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-	Content-ID:Content-Description:In-Reply-To:References;
-	bh=+wPQgMtfP3e+4Wk8NNsQzADS8z91J+KBS6ktKYz5c3k=; b=SyeWcAiTZWnRR5UdV+pQOksTQV
-	j/lgXABiUbfdSoeR0tkqA9lDLIYgGvkUceaJK8glrdHDycjTE6zuLCo15Giyt/MLgsCmu1hqRoAvs
-	Ft2OCuPEkm/Z98RqKalBfmQJIfEcpvfsF6DLY3GnSwy4yNNYAfqbAY88SaRHTjq8pKcoVzp76aWJZ
-	I+rUK5LL2bI44mLfOcaftgkqKe77YyZrfgcv3mR1xle87Qbg5JUN/FCc3oWlv3xnsRN5dUhAXw4ka
-	TPz/GBNZ6LCYB4JN5RTdYtE+0lzjxKObsW6vG673UFgDibCdI42a1+DrdRHOsogx2JRInA+2nh1Fn
-	nzWrp4+w==;
-Received: from [50.53.46.231] (helo=bombadil.infradead.org)
-	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1rAeNU-008Z1T-2S;
-	Tue, 05 Dec 2023 22:58:57 +0000
-From: Randy Dunlap <rdunlap@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@ucw.cz>,
-	Kevin Hilman <khilman@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] PM: domains: fix domain_governor kernel-doc warnings
-Date: Tue,  5 Dec 2023 14:58:56 -0800
-Message-ID: <20231205225856.32739-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="G1MLO4n3"
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44EBB194
+	for <linux-pm@vger.kernel.org>; Tue,  5 Dec 2023 17:20:28 -0800 (PST)
+Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-548ae9a5eeaso2997a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 05 Dec 2023 17:20:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1701825627; x=1702430427; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5e6HKJAOBlM7RBaBxZJTZJBR5HIXv1/xwkFWn2KvL2U=;
+        b=G1MLO4n3We5ST7XVyVRQH5l7kPVb+PNi3SMITT1ejHZ2LFkrXlASh1bSEkdRm2X4Ft
+         YngynDBIWZFW+avHn7VBs1aO7P10RpeScweooDZ5SDzqX0dqj7tX/3Pnjul8mlwGj0Zw
+         kckHnNm5K0NK/IYCO82+m2AfwuSs1hPDTkotiZoajJdIcjsDmKQJ3CAzKTvke5oZH6sV
+         JhgfLrNrOS1L2U/yE78IPgnN1lkd/piNtKuX4nXBaIjmtbB4BXjHcJz37mRilTa/3EE6
+         cYKjaPcQuavHKfujEPuxLFr6sho9JyP1hIs2+664z1JAng667sWtC6fMCpfZXpfUItnR
+         vWaw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1701825627; x=1702430427;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5e6HKJAOBlM7RBaBxZJTZJBR5HIXv1/xwkFWn2KvL2U=;
+        b=OibCzX4bJWDcRWNEdgDjBc5Up0A4ojM8y/ojyHTohB4SWlumZbU0HllU/hhzo2kjoL
+         hQVOUzfHgLcuQP2WClWVUX36XpajDUdDCgU7B0t3L7j2jGvA/TlRwMyJDIwV248Rbw3k
+         XLeVLM202Pp07y9sOEp6S8CyCOoEKutX6t9k9Ggd06+j7celKK2zMAb7HY1VKUFEtG62
+         4OSp9lFNwp7+XxTSkHSOx8FNWkOAVoclTx3MODm0b9OfbtUC0+C/UKQhct9wlD5w6Rs1
+         MBE/Rk6fYhvkrrUNp+1k9jARWZYqYyfATLcE8SQwyj6hphSYr/zdHml3EjnMZSPodpZm
+         M0kQ==
+X-Gm-Message-State: AOJu0YzjoTD7bycD9kRyw7tmEufst1YPCz1xmxKR/1xFzyJHW8PuaBKI
+	/rggahVoQi7TVBqyW7SfKD5K7f4EO1LIogDJXT5Isg==
+X-Google-Smtp-Source: AGHT+IH6ze5+GrRW43I2juEb9LY8A3zNcTx1dV7WkAhnVYtpXJuIlWRKuZksEimpHZUhS75quQcqnccdAB0vavQnjIM=
+X-Received: by 2002:a50:9f89:0:b0:54b:bf08:a95f with SMTP id
+ c9-20020a509f89000000b0054bbf08a95fmr42502edf.6.1701825626583; Tue, 05 Dec
+ 2023 17:20:26 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20231120234015.3273143-1-radusolea@google.com> <9d1009d9-b95b-4152-841f-19470a17ba97@linaro.org>
+In-Reply-To: <9d1009d9-b95b-4152-841f-19470a17ba97@linaro.org>
+From: Radu Solea <radusolea@google.com>
+Date: Tue, 5 Dec 2023 17:20:14 -0800
+Message-ID: <CAPpbzyhEkqjA0Kv=f_O1hy-dT8o-O4tPB_KpQqbE9b7vwC+2NA@mail.gmail.com>
+Subject: Re: [PATCH v2 RESEND] thermal core: add option to run PM_POST_SUSPEND asynchronously
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, rafael@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Fix kernel-doc warnings found when using "W=1".
+On Wed, Nov 29, 2023 at 4:20=E2=80=AFAM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> On 21/11/2023 00:40, Radu Solea wrote:
+> > Some thermal zones are bus connected and slow to resume, thus
+> > delaying actions which depend on completion of PM_POST_SUSPEND.
+> > Add optional execution path to resume thermal zones on the system
+> > unbounded workqueue.
+> >
+> > Signed-off-by: Radu Solea <radusolea@google.com>
+> > ---
+>
+> This async change may have a lot of hidden implications.
+>
+> Could you elaborate more the issue and how the async will fix the problem=
+?
+>
+> If you have a platform being slow to resume, can you provide numbers
+> with and without this option?
+>
+> Thanks
+>    -- D.
+>
+> --
+> <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for AR=
+M SoCs
+>
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+>
 
-domain_governor.c:54: warning: No description found for return value of 'default_suspend_ok'
-domain_governor.c:266: warning: No description found for return value of '_default_power_down_ok'
-domain_governor.c:412: warning: cannot understand function prototype: 'struct dev_power_governor pm_domain_always_on_gov = '
+In multicore systems PM_POST_SUSPEND is executed on a single core.
+Any work done in the notification chain delays all subsequent actions
+in the chain with respect to system time, including the completion of
+the write() to /sys/power/state.
+I didn't include numbers from my system since they are likely
+irrelevant for other systems out there. The particular number I'm
+chasing is ~50ms.
+This comes from having on-board peripherals as thermal zones, they
+execute async and significantly slower than the main core, add a/d
+conversions and bus delays to that and it's easy to see those numbers.
+Making the entire sequence synchronous to itself and async to
+PM_POST_SUSPEND isn't that much of a change, it allows the sequence to
+run on any core with spare cycles delayed with whatever the system
+unbounded queue load is at the time.
+(on my target system) I've seen consistent time gains (those same
+50ms) to PM_POST_SUSPEND completion with this sequence actually
+completing before the chain finishes, this will vary from integration
+to integration.
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org
----
- drivers/base/power/domain_governor.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff -- a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -49,6 +49,8 @@ static int dev_update_qos_constraint(str
- /**
-  * default_suspend_ok - Default PM domain governor routine to suspend devices.
-  * @dev: Device to check.
-+ *
-+ * Returns: true if OK to suspend, false if not OK to suspend
-  */
- static bool default_suspend_ok(struct device *dev)
- {
-@@ -261,6 +263,8 @@ static bool __default_power_down_ok(stru
-  * @now: current ktime.
-  *
-  * This routine must be executed under the PM domain's lock.
-+ *
-+ * Returns: true if OK to power down, false if not OK to power down
-  */
- static bool _default_power_down_ok(struct dev_pm_domain *pd, ktime_t now)
- {
-@@ -406,8 +410,8 @@ struct dev_power_governor simple_qos_gov
- 	.power_down_ok = default_power_down_ok,
- };
- 
--/**
-- * pm_genpd_gov_always_on - A governor implementing an always-on policy
-+/*
-+ * pm_domain_always_on_gov - A governor implementing an always-on policy
-  */
- struct dev_power_governor pm_domain_always_on_gov = {
- 	.suspend_ok = default_suspend_ok,
+Thank you,
+Radu.
