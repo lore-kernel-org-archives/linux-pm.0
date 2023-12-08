@@ -1,375 +1,132 @@
-Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BBDB090;
-	Fri,  8 Dec 2023 10:06:50 -0800 (PST)
-Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-1fb6cbacf9aso265694fac.0;
-        Fri, 08 Dec 2023 10:06:50 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702058810; x=1702663610;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=b4xTGFAIp30c2C+iNKcAQyofR6J2/l8xMVBA8C0RN1Y=;
-        b=IS7KThKaP+cYilkuh89dYw9VL89K71B/H0TtT5Bys29Zn5zWgnXtmd0asK9CO8mQdo
-         b4wVuugKaryIw+47LR5ITf36DCH/gFPW/h8zLq9c7JXMSkyJa2bTIDyahqDPIXewMfYD
-         P/AmiSY3INv+7Gxbb+sNCZU/UKmIRAGhQvjTKZ/uCOPqxqDEyoMDjvkgzGUtd+g1vqw0
-         RACpo7Tt2m43336/exDGWdFLXimxji95F/kwWIMTuwuy8ihgrvC0PSgWt+z3Cb1HDUsY
-         2RhGcI6dKZCxzysJYnPI0zZjncjquI8H+CpR2EcB/YvFuaehzF2BOOW3CFc7BIFzuqxW
-         3w3g==
-X-Gm-Message-State: AOJu0YwgiqjeClfvuW1LuMhqcoAgDIhJFdgs3Ntlvlscja87/7IdLsnx
-	wHEkrVjfJYP3wx+azyafW7cG2ZIuJVAWhGdXo3E=
-X-Google-Smtp-Source: AGHT+IFp3Obw3fvviTYikCGFv6XRCivk+HYOYcZ0GwOtUK/NgAhrHos5S+iJd+7GLoUMW/jtAt3uumEHWoOnchGHQb4=
-X-Received: by 2002:a05:6870:41cd:b0:1fa:f195:e3b4 with SMTP id
- z13-20020a05687041cd00b001faf195e3b4mr1015112oac.2.1702058809957; Fri, 08 Dec
- 2023 10:06:49 -0800 (PST)
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B70C10E7;
+	Fri,  8 Dec 2023 11:20:45 -0800 (PST)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
+ id 150833a18591e4b8; Fri, 8 Dec 2023 20:20:43 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 9A3BF6688FC;
+	Fri,  8 Dec 2023 20:20:42 +0100 (CET)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
+Subject: [PATCH v1 3/3] thermal: core: Rework thermal zone availability check
+Date: Fri, 08 Dec 2023 20:20:00 +0100
+Message-ID: <2258035.iZASKD2KPV@kreacher>
+In-Reply-To: <1880915.tdWV9SEqCh@kreacher>
+References: <1880915.tdWV9SEqCh@kreacher>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20231208002342.367117-1-qyousef@layalina.io> <20231208002342.367117-8-qyousef@layalina.io>
-In-Reply-To: <20231208002342.367117-8-qyousef@layalina.io>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 8 Dec 2023 19:06:37 +0100
-Message-ID: <CAJZ5v0iYUY-LrL3LNdMqxyMntBij_pkpETB2esYPraPekqtbhw@mail.gmail.com>
-Subject: Re: [PATCH v2 7/8] sched/schedutil: Add a new tunable to dictate
- response time
-To: Qais Yousef <qyousef@layalina.io>
-Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Lukasz Luba <lukasz.luba@arm.com>, Wei Wang <wvw@google.com>, Rick Yiu <rickyiu@google.com>, 
-	Chung-Kai Mei <chungkai@google.com>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrudekiedguddvgecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgt
+ phhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
-On Fri, Dec 8, 2023 at 1:24=E2=80=AFAM Qais Yousef <qyousef@layalina.io> wr=
-ote:
->
-> The new tunable, response_time_ms,  allow us to speed up or slow down
-> the response time of the policy to meet the perf, power and thermal
-> characteristic desired by the user/sysadmin. There's no single universal
-> trade-off that we can apply for all systems even if they use the same
-> SoC. The form factor of the system, the dominant use case, and in case
-> of battery powered systems, the size of the battery and presence or
-> absence of active cooling can play a big role on what would be best to
-> use.
->
-> The new tunable provides sensible defaults, but yet gives the power to
-> control the response time to the user/sysadmin, if they wish to.
->
-> This tunable is applied before we apply the DVFS headroom.
->
-> The default behavior of applying 1.25 headroom can be re-instated easily
-> now. But we continue to keep the min required headroom to overcome
-> hardware limitation in its speed to change DVFS. And any additional
-> headroom to speed things up must be applied by userspace to match their
-> expectation for best perf/watt as it dictates a type of policy that will
-> be better for some systems, but worse for others.
->
-> There's a whitespace clean up included in sugov_start().
->
-> Signed-off-by: Qais Yousef (Google) <qyousef@layalina.io>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I thought that there was an agreement to avoid adding any new tunables
-to schedutil.
+In order to avoid running __thermal_zone_device_update() for thermal
+zones going away, the thermal zone lock is held around device_del()
+in thermal_zone_device_unregister() and thermal_zone_device_update()
+passes the given thermal zone device to device_is_registered().
+This allows thermal_zone_device_update() to skip the
+__thermal_zone_device_update() if device_del() has already run for
+the thermal zone at hand.
 
-> ---
->  Documentation/admin-guide/pm/cpufreq.rst |  17 +++-
->  drivers/cpufreq/cpufreq.c                |   4 +-
->  include/linux/cpufreq.h                  |   3 +
->  kernel/sched/cpufreq_schedutil.c         | 115 ++++++++++++++++++++++-
->  4 files changed, 132 insertions(+), 7 deletions(-)
->
-> diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/adm=
-in-guide/pm/cpufreq.rst
-> index 6adb7988e0eb..fa0d602a920e 100644
-> --- a/Documentation/admin-guide/pm/cpufreq.rst
-> +++ b/Documentation/admin-guide/pm/cpufreq.rst
-> @@ -417,7 +417,7 @@ is passed by the scheduler to the governor callback w=
-hich causes the frequency
->  to go up to the allowed maximum immediately and then draw back to the va=
-lue
->  returned by the above formula over time.
->
-> -This governor exposes only one tunable:
-> +This governor exposes two tunables:
->
->  ``rate_limit_us``
->         Minimum time (in microseconds) that has to pass between two conse=
-cutive
-> @@ -427,6 +427,21 @@ This governor exposes only one tunable:
->         The purpose of this tunable is to reduce the scheduler context ov=
-erhead
->         of the governor which might be excessive without it.
->
-> +``respone_time_ms``
-> +       Amount of time (in milliseconds) required to ramp the policy from
-> +       lowest to highest frequency. Can be decreased to speed up the
-> +       responsiveness of the system, or increased to slow the system dow=
-n in
-> +       hope to save power. The best perf/watt will depend on the system
-> +       characteristics and the dominant workload you expect to run. For
-> +       userspace that has smart context on the type of workload running =
-(like
-> +       in Android), one can tune this to suite the demand of that worklo=
-ad.
-> +
-> +       Note that when slowing the response down, you can end up effectiv=
-ely
-> +       chopping off the top frequencies for that policy as the util is c=
-apped
-> +       to 1024. On HMP systems this chopping effect will only occur on t=
-he
-> +       biggest core whose capacity is 1024. Don't rely on this behavior =
-as
-> +       this is a limitation that can hopefully be improved in the future=
-.
-> +
->  This governor generally is regarded as a replacement for the older `onde=
-mand`_
->  and `conservative`_ governors (described below), as it is simpler and mo=
-re
->  tightly integrated with the CPU scheduler, its overhead in terms of CPU =
-context
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 9875284ca6e4..15c397ce3252 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -533,8 +533,8 @@ void cpufreq_disable_fast_switch(struct cpufreq_polic=
-y *policy)
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_disable_fast_switch);
->
-> -static unsigned int __resolve_freq(struct cpufreq_policy *policy,
-> -               unsigned int target_freq, unsigned int relation)
-> +unsigned int __resolve_freq(struct cpufreq_policy *policy,
-> +                           unsigned int target_freq, unsigned int relati=
-on)
->  {
->         unsigned int idx;
->
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 1c5ca92a0555..29c3723653a3 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -613,6 +613,9 @@ int cpufreq_driver_target(struct cpufreq_policy *poli=
-cy,
->  int __cpufreq_driver_target(struct cpufreq_policy *policy,
->                                    unsigned int target_freq,
->                                    unsigned int relation);
-> +unsigned int __resolve_freq(struct cpufreq_policy *policy,
-> +                           unsigned int target_freq,
-> +                           unsigned int relation);
->  unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
->                                          unsigned int target_freq);
->  unsigned int cpufreq_policy_transition_delay_us(struct cpufreq_policy *p=
-olicy);
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_sche=
-dutil.c
-> index 1d4d6025c15f..788208becc13 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -8,9 +8,12 @@
->
->  #define IOWAIT_BOOST_MIN       (SCHED_CAPACITY_SCALE / 8)
->
-> +DEFINE_PER_CPU_READ_MOSTLY(unsigned long, response_time_mult);
-> +
->  struct sugov_tunables {
->         struct gov_attr_set     attr_set;
->         unsigned int            rate_limit_us;
-> +       unsigned int            response_time_ms;
->  };
->
->  struct sugov_policy {
-> @@ -22,6 +25,7 @@ struct sugov_policy {
->         raw_spinlock_t          update_lock;
->         u64                     last_freq_update_time;
->         s64                     freq_update_delay_ns;
-> +       unsigned int            freq_response_time_ms;
->         unsigned int            next_freq;
->         unsigned int            cached_raw_freq;
->
-> @@ -59,6 +63,70 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
->
->  /************************ Governor internals ***********************/
->
-> +static inline u64 sugov_calc_freq_response_ms(struct sugov_policy *sg_po=
-licy)
-> +{
-> +       int cpu =3D cpumask_first(sg_policy->policy->cpus);
-> +       unsigned long cap =3D arch_scale_cpu_capacity(cpu);
-> +       unsigned int max_freq, sec_max_freq;
-> +
-> +       max_freq =3D sg_policy->policy->cpuinfo.max_freq;
-> +       sec_max_freq =3D __resolve_freq(sg_policy->policy,
-> +                                     max_freq - 1,
-> +                                     CPUFREQ_RELATION_H);
-> +
-> +       /*
-> +        * We will request max_freq as soon as util crosses the capacity =
-at
-> +        * second highest frequency. So effectively our response time is =
-the
-> +        * util at which we cross the cap@2nd_highest_freq.
-> +        */
-> +       cap =3D sec_max_freq * cap / max_freq;
-> +
-> +       return approximate_runtime(cap + 1);
-> +}
-> +
-> +static inline void sugov_update_response_time_mult(struct sugov_policy *=
-sg_policy)
-> +{
-> +       unsigned long mult;
-> +       int cpu;
-> +
-> +       if (unlikely(!sg_policy->freq_response_time_ms))
-> +               sg_policy->freq_response_time_ms =3D sugov_calc_freq_resp=
-onse_ms(sg_policy);
-> +
-> +       mult =3D sg_policy->freq_response_time_ms * SCHED_CAPACITY_SCALE;
-> +       mult /=3D sg_policy->tunables->response_time_ms;
-> +
-> +       if (SCHED_WARN_ON(!mult))
-> +               mult =3D SCHED_CAPACITY_SCALE;
-> +
-> +       for_each_cpu(cpu, sg_policy->policy->cpus)
-> +               per_cpu(response_time_mult, cpu) =3D mult;
-> +}
-> +
-> +/*
-> + * Shrink or expand how long it takes to reach the maximum performance o=
-f the
-> + * policy.
-> + *
-> + * sg_policy->freq_response_time_ms is a constant value defined by PELT
-> + * HALFLIFE and the capacity of the policy (assuming HMP systems).
-> + *
-> + * sg_policy->tunables->response_time_ms is a user defined response time=
-. By
-> + * setting it lower than sg_policy->freq_response_time_ms, the system wi=
-ll
-> + * respond faster to changes in util, which will result in reaching maxi=
-mum
-> + * performance point quicker. By setting it higher, it'll slow down the =
-amount
-> + * of time required to reach the maximum OPP.
-> + *
-> + * This should be applied when selecting the frequency.
-> + */
-> +static inline unsigned long
-> +sugov_apply_response_time(unsigned long util, int cpu)
-> +{
-> +       unsigned long mult;
-> +
-> +       mult =3D per_cpu(response_time_mult, cpu) * util;
-> +
-> +       return mult >> SCHED_CAPACITY_SHIFT;
-> +}
-> +
->  static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64=
- time)
->  {
->         s64 delta_ns;
-> @@ -156,7 +224,10 @@ unsigned long sugov_effective_cpu_perf(int cpu, unsi=
-gned long actual,
->                                  unsigned long min,
->                                  unsigned long max)
->  {
-> -       /* Add dvfs headroom to actual utilization */
-> +       /*
-> +        * Speed up/slow down response timee first then apply DVFS headro=
-om.
-> +        */
-> +       actual =3D sugov_apply_response_time(actual, cpu);
->         actual =3D apply_dvfs_headroom(actual, cpu);
->         /* Actually we don't need to target the max performance */
->         if (actual < max)
-> @@ -555,8 +626,42 @@ rate_limit_us_store(struct gov_attr_set *attr_set, c=
-onst char *buf, size_t count
->
->  static struct governor_attr rate_limit_us =3D __ATTR_RW(rate_limit_us);
->
-> +static ssize_t response_time_ms_show(struct gov_attr_set *attr_set, char=
- *buf)
-> +{
-> +       struct sugov_tunables *tunables =3D to_sugov_tunables(attr_set);
-> +
-> +       return sprintf(buf, "%u\n", tunables->response_time_ms);
-> +}
-> +
-> +static ssize_t
-> +response_time_ms_store(struct gov_attr_set *attr_set, const char *buf, s=
-ize_t count)
-> +{
-> +       struct sugov_tunables *tunables =3D to_sugov_tunables(attr_set);
-> +       struct sugov_policy *sg_policy;
-> +       unsigned int response_time_ms;
-> +
-> +       if (kstrtouint(buf, 10, &response_time_ms))
-> +               return -EINVAL;
-> +
-> +       /* XXX need special handling for high values? */
-> +
-> +       tunables->response_time_ms =3D response_time_ms;
-> +
-> +       list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_h=
-ook) {
-> +               if (sg_policy->tunables =3D=3D tunables) {
-> +                       sugov_update_response_time_mult(sg_policy);
-> +                       break;
-> +               }
-> +       }
-> +
-> +       return count;
-> +}
-> +
-> +static struct governor_attr response_time_ms =3D __ATTR_RW(response_time=
-_ms);
-> +
->  static struct attribute *sugov_attrs[] =3D {
->         &rate_limit_us.attr,
-> +       &response_time_ms.attr,
->         NULL
->  };
->  ATTRIBUTE_GROUPS(sugov);
-> @@ -744,11 +849,13 @@ static int sugov_init(struct cpufreq_policy *policy=
-)
->                 goto stop_kthread;
->         }
->
-> -       tunables->rate_limit_us =3D cpufreq_policy_transition_delay_us(po=
-licy);
-> -
->         policy->governor_data =3D sg_policy;
->         sg_policy->tunables =3D tunables;
->
-> +       tunables->rate_limit_us =3D cpufreq_policy_transition_delay_us(po=
-licy);
-> +       tunables->response_time_ms =3D sugov_calc_freq_response_ms(sg_pol=
-icy);
-> +       sugov_update_response_time_mult(sg_policy);
-> +
->         ret =3D kobject_init_and_add(&tunables->attr_set.kobj, &sugov_tun=
-ables_ktype,
->                                    get_governor_parent_kobj(policy), "%s"=
-,
->                                    schedutil_gov.name);
-> @@ -808,7 +915,7 @@ static int sugov_start(struct cpufreq_policy *policy)
->         void (*uu)(struct update_util_data *data, u64 time, unsigned int =
-flags);
->         unsigned int cpu;
->
-> -       sg_policy->freq_update_delay_ns =3D sg_policy->tunables->rate_lim=
-it_us * NSEC_PER_USEC;
-> +       sg_policy->freq_update_delay_ns         =3D sg_policy->tunables->=
-rate_limit_us * NSEC_PER_USEC;
->         sg_policy->last_freq_update_time        =3D 0;
->         sg_policy->next_freq                    =3D 0;
->         sg_policy->work_in_progress             =3D false;
-> --
-> 2.34.1
->
+However, instead of looking at driver core internals, the thermal
+subsystem may as well rely on its own data structures for this
+purpose.  Namely, if the thermal zone is not present in
+thermal_tz_list, it can be regarded as unavailable, which in fact is
+already the case in thermal_zone_device_unregister().  Accordingly,
+the device_is_registered() check in thermal_zone_device_update() can
+be replaced with checking whether or not the node list_head in struct
+thermal_zone_device is empty, in which case it is not there in
+thermal_tz_list.
+
+To make this work, though, it is necessary to initialize tz->node
+in thermal_zone_device_register_with_trips() before registering the
+thermal zone device and it needs to be added to thermal_tz_list and
+deleted from it under its zone lock.
+
+After the above modifications, the zone lock does not need to be
+held around device_del() in thermal_zone_device_unregister() any more.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/thermal_core.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+Index: linux-pm/drivers/thermal/thermal_core.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -505,11 +505,16 @@ int thermal_zone_device_is_enabled(struc
+ 	return tz->mode == THERMAL_DEVICE_ENABLED;
+ }
+ 
++static bool thermal_zone_is_present(struct thermal_zone_device *tz)
++{
++	return !list_empty(&tz->node);
++}
++
+ void thermal_zone_device_update(struct thermal_zone_device *tz,
+ 				enum thermal_notify_event event)
+ {
+ 	mutex_lock(&tz->lock);
+-	if (device_is_registered(&tz->device))
++	if (thermal_zone_is_present(tz))
+ 		__thermal_zone_device_update(tz, event);
+ 	mutex_unlock(&tz->lock);
+ }
+@@ -1304,6 +1309,7 @@ thermal_zone_device_register_with_trips(
+ 	}
+ 
+ 	INIT_LIST_HEAD(&tz->thermal_instances);
++	INIT_LIST_HEAD(&tz->node);
+ 	ida_init(&tz->ida);
+ 	mutex_init(&tz->lock);
+ 	init_completion(&tz->removal);
+@@ -1369,7 +1375,9 @@ thermal_zone_device_register_with_trips(
+ 	}
+ 
+ 	mutex_lock(&thermal_list_lock);
++	mutex_lock(&tz->lock);
+ 	list_add_tail(&tz->node, &thermal_tz_list);
++	mutex_unlock(&tz->lock);
+ 	mutex_unlock(&thermal_list_lock);
+ 
+ 	/* Bind cooling devices for this zone */
+@@ -1460,7 +1468,10 @@ void thermal_zone_device_unregister(stru
+ 		mutex_unlock(&thermal_list_lock);
+ 		return;
+ 	}
++
++	mutex_lock(&tz->lock);
+ 	list_del(&tz->node);
++	mutex_unlock(&tz->lock);
+ 
+ 	/* Unbind all cdevs associated with 'this' thermal zone */
+ 	list_for_each_entry(cdev, &thermal_cdev_list, node)
+@@ -1477,9 +1488,7 @@ void thermal_zone_device_unregister(stru
+ 	ida_free(&thermal_tz_ida, tz->id);
+ 	ida_destroy(&tz->ida);
+ 
+-	mutex_lock(&tz->lock);
+ 	device_del(&tz->device);
+-	mutex_unlock(&tz->lock);
+ 
+ 	kfree(tz->tzp);
+ 
+
+
+
