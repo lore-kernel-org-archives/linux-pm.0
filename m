@@ -1,26 +1,26 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=trvn.ru header.i=@trvn.ru header.b="vGRocFg6"
+	dkim=pass (2048-bit key) header.d=trvn.ru header.i=@trvn.ru header.b="Dq2QeZSt"
 Received: from box.trvn.ru (box.trvn.ru [194.87.146.52])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DDE794;
-	Tue, 12 Dec 2023 04:49:24 -0800 (PST)
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C729B7;
+	Tue, 12 Dec 2023 04:49:25 -0800 (PST)
 Received: from authenticated-user (box.trvn.ru [194.87.146.52])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
 	(No client certificate requested)
-	by box.trvn.ru (Postfix) with ESMTPSA id D0AC94055E;
-	Tue, 12 Dec 2023 17:49:19 +0500 (+05)
+	by box.trvn.ru (Postfix) with ESMTPSA id A5FFD41BE2;
+	Tue, 12 Dec 2023 17:49:23 +0500 (+05)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=trvn.ru; s=mail;
-	t=1702385360; bh=xFPFmz9fsOLXhhrMLkO4fvtQbfof7wfzBF6Z1Vazxa4=;
-	h=From:Subject:Date:To:Cc:From;
-	b=vGRocFg63MUT6d05xfPiF5NwJF6E0XmREHY5ilqf2t0mFSdJpVPxJh8I8irBMWKIf
-	 dcDtNOQCAVhyKh+eTaW9aLAdIQFRiM/12Fdi28QRcFqoGLrzBlIR8wEEASxz8DWtRE
-	 73eWgqqvEK7C6UNhXJ5wIb0G2M5E8OVxLgeVx62IOnEsGTtLPH7NQgaxCzo8d1c/5G
-	 Od8CIlHjeZW/eFvxf3mx+Z2eYUdZS/LDxdsHqJxzGJiAMmNrNDVflMf1EdaFVeq6XB
-	 KepJqulfMPv+Xa66s1HXsNfPn7oqAfRzroaoHYNiXVy6LYZGZEZwodmNPqXt1D+ssu
-	 7qFz50guLW5ZA==
+	t=1702385364; bh=DBs7WSTRsWsDILHndJynPWxZbqbs68OouyDKWJNsV3g=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=Dq2QeZStRsBgvXeNeOCBYrOodf6o3G4/jWun3ZOswapINve/6C0SyHFDbuNzpqEVM
+	 v4AQPR/+lua6VXyzOUwYxd1rVaq26KVzXVf+c+kwGTAo4zDrDAohG6mC53Gc2Rw2Ki
+	 63XD0vZSqCozO/1uOFFOSKkFPfzEhxwZCapeJKGABTqfWMjDXSae3LFDz8U8lhq35I
+	 B+saGvq1iokb7/MAeaVh2w9lXJ19fFGvfJaN5ikXQ5zgFDc0c1QqvO7f4YHvd/HhlK
+	 KzHIB6RIfYvJ6mKO8yjnxe/fy++Dz68oRfzdV0jccR5jhSs7MHxfKG6+nPUf9XnYKa
+	 FYl1A6UB+c1Lw==
 From: Nikita Travkin <nikita@trvn.ru>
-Subject: [PATCH v2 0/3] power: supply: Acer Aspire 1 embedded controller
-Date: Tue, 12 Dec 2023 17:49:08 +0500
-Message-Id: <20231212-aspire1-ec-v2-0-ca495ea0a7ac@trvn.ru>
+Date: Tue, 12 Dec 2023 17:49:11 +0500
+Subject: [PATCH v2 3/3] arm64: dts: qcom: acer-aspire1: Add embedded
+ controller
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -29,9 +29,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAMRWeGUC/03MQQrCMBCF4auUWRvJTKFBV95DukjT0c4mLZM2K
- CV3NxYEl/+D9+2QWIUTXJsdlLMkmWMNOjUQJh+fbGSsDWSpRbKd8WkRZTQcTDe0IwUf0DuCeli
- UH/I6sHtfe5K0zvo+7Izf9ce4fyajsWbwF8ZA5Kx1t1VzPOsGfSnlA+8AoN+iAAAA
+Message-Id: <20231212-aspire1-ec-v2-3-ca495ea0a7ac@trvn.ru>
+References: <20231212-aspire1-ec-v2-0-ca495ea0a7ac@trvn.ru>
+In-Reply-To: <20231212-aspire1-ec-v2-0-ca495ea0a7ac@trvn.ru>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, 
  Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
  Conor Dooley <conor+dt@kernel.org>, cros-qcom-dts-watchers@chromium.org, 
@@ -40,20 +40,20 @@ To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>,
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
  Nikita Travkin <nikita@trvn.ru>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1984; i=nikita@trvn.ru;
- h=from:subject:message-id; bh=xFPFmz9fsOLXhhrMLkO4fvtQbfof7wfzBF6Z1Vazxa4=;
- b=owEBbQKS/ZANAwAIAUMc7O4oGb91AcsmYgBleFbLLp9TgfCu2NMSxQbxwWH59fQ7saOPgfap6
- BKmiM87cYmJAjMEAAEIAB0WIQTAhK9UUj+qg34uxUdDHOzuKBm/dQUCZXhWywAKCRBDHOzuKBm/
- dYssD/99sUsXEvLbcayqGJCcrcNfTp4gYzWCpuAd3tzlIJjc+rHa7WDuq1ZwFObpq+E/2pTFUds
- egv63KvAIm25HmkzPpC/EpzgThQquh7KFG/zqdWjrFKe8uacM+8MxEKgvvA4IXB3k39z6bu2o92
- 6GIxy8dqybthxldv6+5TdGCWnoMC6PtknRYcujiOsQtjR0XfHGzZPs3/LUjTUBZZreLEkEmeHMA
- fHa9lCO60KNryCAAzOp1P0eOdGvl4sihF9T1pqBTdX/o73YwWijLXYtX7Y7998BKeSpgu09AUtx
- S3gQIIkZp4wfDgKQwxBBdVQifLl2q9uiSVE+YH0K2HfQi2whLLxSDjmXfs6E3sYo7TvpBucU/hf
- xTLqllDW0ZYQxKuM+6j043G8KnZqO9LU4AF7NbqfaYIFjJYImlki3wxHZDraVmKC6jOEMFnejVD
- aYm6SHN6rXzq1aa/WxiF79DFRzmOpct9v4T42bgst82LEKwi+rBzddfVb2Lxn0dE5bmI13i1oMz
- m/oMElTSE0WiV7K0qW9uM6Ps0wdhsuN9aiJMEKp6QcWv8IpaY+A03012dNCLCPBnhRjeCwxjVg/
- dL2wHceBS0ir2mdgqlzb/g4Dp3IEi6y9wAyUxlyEnuBvlCjMDTn42jEuhpY2V9lZI4S65rpAJds
- VJGFW1LkvP+0zkA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2154; i=nikita@trvn.ru;
+ h=from:subject:message-id; bh=DBs7WSTRsWsDILHndJynPWxZbqbs68OouyDKWJNsV3g=;
+ b=owEBbQKS/ZANAwAIAUMc7O4oGb91AcsmYgBleFbO4BMOxnuKYg8prK0BAmEHO7knOBgU1+LtD
+ sxVx2hHg0CJAjMEAAEIAB0WIQTAhK9UUj+qg34uxUdDHOzuKBm/dQUCZXhWzgAKCRBDHOzuKBm/
+ dYeOEACYbgi/Lw+ut86oYgWpI1M/DR7uk3HEOarerIFdTww9LgdSJudP/wlTc7DX4Ppq1THDSr7
+ uXsY4W//1+MFSXb70CA0al9vI1UJb6g1ld9FJmvyg+GCNWnCSeDNbCLlobhcXRTUhqK6hFDAh+2
+ z9DExuys0gsX4loOqeRU8SgpJidN28k1XHH+9N8uVi59HmbtB/0mf3Wdr4qSYKbRy9WzxIYzjF/
+ 97GhkqEbKT0NT9kWO5uj286rftE9ygxo1HwBTfjSdf3ljE++d6gZDN7jlUtXhrM7bdL12IbFse+
+ nXrtMXjzfmscWLJgett7AcMykrIMTMaXDioz6d7o7TCFPF1scsQ8iSl/KiMEGHLw3hu4Ywgrozl
+ F+Pkbwfl6Exv/xThaL2BRYr8iE8ZYarhfAyjMAj1LHJk3dZ5JkiNQgdhwp8UNKEYzxki9t8KtaA
+ x5b7SFukBWjdw9uBNGkqLb7DE/YRyPWmq/uwhGdbk6PnywBsCIeyIGN6/HsL8DVl962G56GPBvS
+ 7wM83YLn29BTkIyfjeFsOaurID0ykyXNMDj2hoDbIj6AE3hQ0eHrIzfJz7ZWCXe4+9mJ3D1pffo
+ wLLm4KhNN3kYHe6vheFQCbgJ+CfZMcE3M+QIPEQbbjm6DHfR62IFGZ2Pn9Oeg6KF9ztr4MFHT1h
+ yJ/wacIWwonjODg==
 X-Developer-Key: i=nikita@trvn.ru; a=openpgp;
  fpr=C084AF54523FAA837E2EC547431CECEE2819BF75
 
@@ -69,43 +69,80 @@ features:
 bus and is already enabled. This port only provides fn key behavior
 configuration.
 
-Unfortunately, while all this functionality is implemented in ACPI, it's
-currently not possible to use ACPI to boot Linux on such Qualcomm
-devices. Thus this series implements and enables a new driver that
-provides support for the EC features.
-
-The EC would be one of the last pieces to get almost full support for the
-Acer Aspire 1 laptop in the upstream Linux kernel.
-
-This series is similar to the EC driver for Lenovo Yoga C630, proposed
-in [1] but seemingly never followed up...
-
-[1] https://lore.kernel.org/all/20230205152809.2233436-1-dmitry.baryshkov@linaro.org/
+Add the EC to the device tree and describe the relationship between the
+EC-managed type-c port and the SoC DisplayPort.
 
 Signed-off-by: Nikita Travkin <nikita@trvn.ru>
 ---
-Changes in v2:
-- Drop incorrectly allowed reg in the ec connector binding (Krzysztof)
-- Minor style changes (Konrad)
-- Link to v1: https://lore.kernel.org/r/20231207-aspire1-ec-v1-0-ba9e1c227007@trvn.ru
+ arch/arm64/boot/dts/qcom/sc7180-acer-aspire1.dts | 40 +++++++++++++++++++++++-
+ 1 file changed, 39 insertions(+), 1 deletion(-)
 
----
-Nikita Travkin (3):
-      dt-bindings: power: supply: Add Acer Aspire 1 EC
-      power: supply: Add Acer Aspire 1 embedded controller driver
-      arm64: dts: qcom: acer-aspire1: Add embedded controller
+diff --git a/arch/arm64/boot/dts/qcom/sc7180-acer-aspire1.dts b/arch/arm64/boot/dts/qcom/sc7180-acer-aspire1.dts
+index dbb48934d499..a29f542fa612 100644
+--- a/arch/arm64/boot/dts/qcom/sc7180-acer-aspire1.dts
++++ b/arch/arm64/boot/dts/qcom/sc7180-acer-aspire1.dts
+@@ -147,7 +147,25 @@ &i2c2 {
+ 	clock-frequency = <400000>;
+ 	status = "okay";
+ 
+-	/* embedded-controller@76 */
++	embedded-controller@76 {
++		compatible = "acer,aspire1-ec";
++		reg = <0x76>;
++
++		interrupts-extended = <&tlmm 30 IRQ_TYPE_LEVEL_LOW>;
++
++		pinctrl-0 = <&ec_int_default>;
++		pinctrl-names = "default";
++
++		connector {
++			compatible = "usb-c-connector";
++
++			port {
++				ec_dp_in: endpoint {
++					remote-endpoint = <&mdss_dp_out>;
++				};
++			};
++		};
++	};
+ };
+ 
+ &i2c4 {
+@@ -298,6 +316,19 @@ &mdss {
+ 	status = "okay";
+ };
+ 
++&mdss_dp {
++	data-lanes = <0 1>;
++
++	vdda-1p2-supply = <&vreg_l3c_1p2>;
++	vdda-0p9-supply = <&vreg_l4a_0p8>;
++
++	status = "okay";
++};
++
++&mdss_dp_out {
++	remote-endpoint = <&ec_dp_in>;
++};
++
+ &mdss_dsi0 {
+ 	vdda-supply = <&vreg_l3c_1p2>;
+ 	status = "okay";
+@@ -687,6 +718,13 @@ codec_irq_default: codec-irq-deault-state {
+ 		bias-disable;
+ 	};
+ 
++	ec_int_default: ec-int-default-state {
++		pins = "gpio30";
++		function = "gpio";
++		drive-strength = <2>;
++		bias-disable;
++	};
++
+ 	edp_bridge_irq_default: edp-bridge-irq-default-state {
+ 		pins = "gpio11";
+ 		function = "gpio";
 
- .../bindings/power/supply/acer,aspire1-ec.yaml     |  67 ++++
- arch/arm64/boot/dts/qcom/sc7180-acer-aspire1.dts   |  40 +-
- drivers/power/supply/Kconfig                       |  14 +
- drivers/power/supply/Makefile                      |   1 +
- drivers/power/supply/acer-aspire1-ec.c             | 433 +++++++++++++++++++++
- 5 files changed, 554 insertions(+), 1 deletion(-)
----
-base-commit: abb240f7a2bd14567ab53e602db562bb683391e6
-change-id: 20231206-aspire1-ec-6b3d2cac1a72
-
-Best regards,
 -- 
-Nikita Travkin <nikita@trvn.ru>
+2.43.0
 
