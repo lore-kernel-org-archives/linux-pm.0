@@ -1,135 +1,102 @@
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27E3344C65;
-	Sun, 17 Dec 2023 14:16:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ad7ET35A"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-40c824b199fso11532215e9.1;
-        Sun, 17 Dec 2023 06:16:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1702822595; x=1703427395; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=QE9LT5uKY7JsupABUBOBD9RMHYXjaUg8xO88EJrYaiI=;
-        b=ad7ET35At84zRVG5iBN9bHnBzMCm5UonhOYE/Igc7vy3MHULFqYlw4kbaqJkZ8+n44
-         ZN8/mfGNtylQJgSOjztV7J3spuR/PTgPUn20sEj7QjK3FibupqmZBYyrJCr6oKd8tWti
-         UDPbJeocZPBxmBaqvrBsVZn1oEKPUvEqf+R+xLmfnF0jHZymNdRE684INZCLhkukBVsw
-         ZevkxNuvdDaoO53e5ST409Z1V2RYVSOHFzzjnIG4hH0ZP808rHkSL7tzLZZEUXhWOLl0
-         F5M6w7WYj9KoIG0YRiIcGlVh/aaUS+GecXCAXC2LcXSAm2DY5kQItfT5dXGtfwdlxb6u
-         hjgw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702822595; x=1703427395;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=QE9LT5uKY7JsupABUBOBD9RMHYXjaUg8xO88EJrYaiI=;
-        b=oDVWHamIO96GVciKpwORNUmU1CnrvBZseMW6zo+K1qx4kEAV3TAmpymW48WmNceTfn
-         xDnchN9BFKPG4+j2o026AYi1BUbLROHtQmJ+ulm2MSqClA0VSsbe3AKXOVhyJlt1cRmh
-         3mJNSO1i6BCKemdC1xumCC0fdxD85P42DFX+jKD+QyrL/tWhVJa5hdnuR+/KL5+yFC/H
-         IvJaeCJZVuBT80YlH8uuXCHlPdZBh8t5fpf4stoFplO6ZTF1nGVeeyW38sUESwboPCWw
-         9LV1+ovdhsLFgjHuLk2W9VsNE1hehmNIO0xUl+7FVbA4gyROJmhiRP40A1c9tzabl4j0
-         aDYQ==
-X-Gm-Message-State: AOJu0YxqaIhL88OjcO1DIerKTwLjhQ3DUzlkFSeLvZK8iJMF14nJuMGQ
-	BtsqvBXE/goWvP8vklQQfP2XUC2Q+dKeXA3x2jM=
-X-Google-Smtp-Source: AGHT+IExjfuW3jpa3SoAweUUhttwxY1n4WMOilHgVfSu02tbiEGYUETmuPVXW8HjArsYt2iXhbv/LkNJ28MdXpL/zFs=
-X-Received: by 2002:a05:600c:21d4:b0:40c:36ff:7513 with SMTP id
- x20-20020a05600c21d400b0040c36ff7513mr7155285wmj.164.1702822595053; Sun, 17
- Dec 2023 06:16:35 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DBEB45BF1
+	for <linux-pm@vger.kernel.org>; Sun, 17 Dec 2023 14:30:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rEs9f-0006WW-9b; Sun, 17 Dec 2023 15:30:07 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rEs9e-00GUhc-2u; Sun, 17 Dec 2023 15:30:06 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rEs9d-004hzT-Pr; Sun, 17 Dec 2023 15:30:05 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: kernel@pengutronix.de,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	linux-pm@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 10/15] memory: exynos5422-dmc: Convert to platform remove callback returning void
+Date: Sun, 17 Dec 2023 15:29:36 +0100
+Message-ID:  <167dbda286584eafec07da8c11673da07ba72362.1702822744.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <cover.1702822744.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1702822744.git.u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20231128005849.19044-6-andre.przywara@arm.com>
- <a14fb458-caf0-4a4a-b76b-c2503b0840d2@gmail.com> <20231211000528.57cb646c@minigeek.lan>
- <CALHCpMjz4YiE_=6Cxq7RqF_3qPaw8UCA=6eLy9ZZuofRhr7mcA@mail.gmail.com> <20231214095914.4a98ba8c@donnerap.manchester.arm.com>
-In-Reply-To: <20231214095914.4a98ba8c@donnerap.manchester.arm.com>
-From: Maxim Kiselev <bigunclemax@gmail.com>
-Date: Sun, 17 Dec 2023 18:16:23 +0400
-Message-ID: <CALHCpMj6+J7xDO0EGut=hmJxXONXrgQoHTQ3vVzdk_97g6BzkA@mail.gmail.com>
-Subject: Re: [PATCH v3 5/6] thermal: sun8i: add support for H616 THS controller
-To: Andre Przywara <andre.przywara@arm.com>
-Cc: anarsoul@gmail.com, bob@electricworry.net, conor+dt@kernel.org, 
-	daniel.lezcano@linaro.org, devicetree@vger.kernel.org, 
-	jernej.skrabec@gmail.com, krzysztof.kozlowski+dt@linaro.org, 
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
-	linux-sunxi@lists.linux.dev, lukasz.luba@arm.com, martin.botka@somainline.org, 
-	rafael@kernel.org, robh+dt@kernel.org, rui.zhang@intel.com, 
-	samuel@sholland.org, tiny.windzz@gmail.com, wens@csie.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2061; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=FHOjgtzRIN9XHjUcxCP7MGMz7yRB1JuZQ6LGi2PE66k=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlfwXQmW+Q6PEK4vacr/EoUiA1qF6qrGQu4k8BB 9+ceA0cHFWJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZX8F0AAKCRCPgPtYfRL+ TibiCAC1uo4RR6+/cFLGqWwewyu7CjBqgCgdaQNtmQtdcpP2BuwkSLign+vU7FxZOYvzOomdeb7 Kbha57cN1prbQpTJKp03UX5Y1TyYuVy9YkkPh+Ac2Xi2b98vREFLjfHkN36A2dnfUjLBm4v34+7 vE1YzF5TRy+eKezWaP/iCLmnv85eU9Sn5FMf6SYKYcOEWOuesQzWE+LzP4pM+h4Qsu7IkMOMtgl Hp8SNhDVJklZXTzVGDXH1qQETrw545SnVH1mjxL044eXLlp+mYtBnJhB160GOkhvLz6Z/jZmBgh 50xvY3amw2c7RHVnhGLOYfeiqWmVuYPjiebx2NauufYrlzb+
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Hi Andre,
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is ignored (apart
+from emitting a warning) and this typically results in resource leaks.
 
-=D1=87=D1=82, 14 =D0=B4=D0=B5=D0=BA. 2023=E2=80=AF=D0=B3. =D0=B2 13:59, And=
-re Przywara <andre.przywara@arm.com>:
->
-> On Tue, 12 Dec 2023 21:09:45 +0300
-> Maxim Kiselev <bigunclemax@gmail.com> wrote:
->
-> Hi Maksim,
->
-> sorry for the delay.
+To improve here there is a quest to make the remove callback return
+void. In the first step of this quest all drivers are converted to
+.remove_new(), which already returns void. Eventually after all drivers
+are converted, .remove_new() will be renamed to .remove().
 
-Now it's my turn to apologize for the delay :)
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
->
-> > =D0=BF=D0=BD, 11 =D0=B4=D0=B5=D0=BA. 2023=E2=80=AF=D0=B3. =D0=B2 02:48,=
- Andre Przywara <andre.przywara@arm.com>:
-> > >
-> > > On Sat, 9 Dec 2023 13:44:34 +0300
-> > > Maksim Kiselev <bigunclemax@gmail.com> wrote:
-> > >
-> > > Hi Maksim,
-> > >
-> > > > Hi Martin, Andre.
-> > > >
-> > > > May I inquire? Why do we need a separate sun50i_h616_ths_calibrate(=
-)
-> > > > function? Why can't we just extend an existing sun50i_h6_ths_calibr=
-ate()?
-> > > >
-> > > > At my glance the calculations in both functions are the same. We ju=
-st
-> > > > need to handle a special case for the 4th sensor.
-> > >
-> > > You seem to be right, they are indeed the same, just written slightly
-> > > differently. Do you already have any patches that unify that?
-> >
-> > No, I don't have any patches for that yet. But I can do it if you told
-> > me where to
-> > send the patch. Should I put it here as a reply?
->
-> Can you make one patch on top of mainline, that prepares the existing
-> sun50i_h6_ths_calibrate() function to deal with four sensors? I would the=
-n
-> include this patch of yours in the next submission, and put Martin's H616
-> patch (now probably just the struct ths_thermal_chip) on top then.
->
-> Please send this patch just to the list (CC:ing people like Martin and
-> me), starting a new thread.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/memory/samsung/exynos5422-dmc.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-You can find my patch here:
-https://lore.kernel.org/all/20231217133637.54773-1-bigunclemax@gmail.com/
+diff --git a/drivers/memory/samsung/exynos5422-dmc.c b/drivers/memory/samsung/exynos5422-dmc.c
+index 6d019dbd721c..da7ecd921c72 100644
+--- a/drivers/memory/samsung/exynos5422-dmc.c
++++ b/drivers/memory/samsung/exynos5422-dmc.c
+@@ -1558,7 +1558,7 @@ static int exynos5_dmc_probe(struct platform_device *pdev)
+  * clean the device's resources. It just calls explicitly disable function for
+  * the performance counters.
+  */
+-static int exynos5_dmc_remove(struct platform_device *pdev)
++static void exynos5_dmc_remove(struct platform_device *pdev)
+ {
+ 	struct exynos5_dmc *dmc = dev_get_drvdata(&pdev->dev);
+ 
+@@ -1569,8 +1569,6 @@ static int exynos5_dmc_remove(struct platform_device *pdev)
+ 
+ 	clk_disable_unprepare(dmc->mout_bpll);
+ 	clk_disable_unprepare(dmc->fout_bpll);
+-
+-	return 0;
+ }
+ 
+ static const struct of_device_id exynos5_dmc_of_match[] = {
+@@ -1581,7 +1579,7 @@ MODULE_DEVICE_TABLE(of, exynos5_dmc_of_match);
+ 
+ static struct platform_driver exynos5_dmc_platdrv = {
+ 	.probe	= exynos5_dmc_probe,
+-	.remove = exynos5_dmc_remove,
++	.remove_new = exynos5_dmc_remove,
+ 	.driver = {
+ 		.name	= "exynos5-dmc",
+ 		.of_match_table = exynos5_dmc_of_match,
+-- 
+2.42.0
 
-Best regards,
-Maksim
-
-> Many thanks,
-> Andre
->
-> > > I don't know if Martin or I find time to do it this week, but we coul=
-d
-> > > also optimise this later.
-> > >
-> > > Cheers,
-> > > Andre
-> >
-> > Best regards,
-> > Maksim
->
