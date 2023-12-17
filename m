@@ -1,122 +1,66 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F14B145971
-	for <linux-pm@vger.kernel.org>; Sun, 17 Dec 2023 14:30:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rEs9f-0006VJ-OC; Sun, 17 Dec 2023 15:30:07 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rEs9b-00GUh4-VU; Sun, 17 Dec 2023 15:30:03 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rEs9b-004hyq-J9; Sun, 17 Dec 2023 15:30:03 +0100
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc: kernel@pengutronix.de,
-	Markus Mayer <mmayer@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Santosh Shilimkar <ssantosh@kernel.org>,
-	Paul Cercueil <paul@crapouillou.net>,
-	linux-mips@vger.kernel.org,
-	Yong Wu <yong.wu@mediatek.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	linux-mediatek@lists.infradead.org,
-	Roger Quadros <rogerq@kernel.org>,
-	Tony Lindgren <tony@atomide.com>,
-	linux-omap@vger.kernel.org,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4541A4CB32;
+	Sun, 17 Dec 2023 17:21:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YusXwokC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBCE7C433C8;
+	Sun, 17 Dec 2023 17:21:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1702833713;
+	bh=8N3P5nYe7wXCoqXxo98OZAZtfqGTeIMLsSiomVlGjP4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=YusXwokCqi/jVflsk+obcw8ntr0+E/IL24iW+t2XMlaPQeivpW2snFpflUCGjJFf6
+	 pWUvWjPSQdxjwSTPeuEoy3tXsGEmKT8YV2fFd2oxw4jb+QoXbN2GFCxo1oTvuT5h8L
+	 ja9ZT3x7DkhQ8k8N0UEM1JT37V30qbzYMPrD1kMkbIl6KfnM0PS7qxpfLg4zPDaQrO
+	 ghGJ//TNJ2TORJlYbBUcOLVvGW+434n91lhLgq44gEl49e1KxJ7VQgZ2teEVEsX4Nu
+	 k6D+DTaMTlAqkQuWV1T97eaQuMgSzqbBBDpLZ9Tb70lKhypi0A6QcR0SV2ZFU/rZEW
+	 JZikVQpqI9MdA==
+From: Bjorn Andersson <andersson@kernel.org>
+To: Andy Gross <agross@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	Georgi Djakov <djakov@kernel.org>,
+	Rob Herring <robh+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc: Marijn Suijten <marijn.suijten@somainline.org>,
+	linux-arm-msm@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	linux-samsung-soc@vger.kernel.org,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	linux-stm32@st-md-mailman.stormreply.com,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Nick Alcock <nick.alcock@oracle.com>,
-	linux-tegra@vger.kernel.org,
-	Rob Herring <robh@kernel.org>
-Subject: [PATCH 00/15] memory: Convert to platform remove callback returning void
-Date: Sun, 17 Dec 2023 15:29:26 +0100
-Message-ID: <cover.1702822744.git.u.kleine-koenig@pengutronix.de>
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: (subset) [PATCH 0/2] Enable interconnect on SM6115
+Date: Sun, 17 Dec 2023 11:21:08 -0600
+Message-ID: <170283349423.66089.10057591496955925021.b4-ty@kernel.org>
 X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231209-topic-6115iccdt-v1-0-f62da62b7276@linaro.org>
+References: <20231209-topic-6115iccdt-v1-0-f62da62b7276@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2631; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=FyuyHaIj5jd4bPxOXQjJ+ozo7s7sihGMLWkkNmVGnME=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlfwXFp0yrTZyYp2KFK2fwTyu80UmXy69MORJAs wm48iAIgimJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZX8FxQAKCRCPgPtYfRL+ TgNJB/9eFZpgOAoyZMQMzWGucpEqIvWX6W0eNcnXBmurNkaFQmk9v1UHmj1xyNFW24mvDrwXPRz PaBLdyRO1QyT7ZOOWdkxvvYU+/g6yBUmpw+P5lihn0tefw+vl6Ej1suMnbs2tMdJ0FTQYQZRyQL ZnZyl3AYPprWtaCsKyu9b4pRwdQGJ4KG1NnvRkE562N+Wg7eXkwU5ah9EQWW4t+Jcs6SgvZHMhp 1quJkD1SA//uBFFZXLUV5UysntvLZwazuV3zLV81y6r02+H5X8Y3mcj7mX2qPf8Ubh9GWDrcybC h8kJTYL4+I5P2Hh+7xPkiTW8Rt32gZGaprL2X8zZ8V/x9QkC
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Hello,
 
-this series converts the platform drivers below drivers/memory to make
-use of .remove_new. See commit 5c5a7680e67b ("platform: Provide a remove
-callback that returns no value") for an extended explanation and the
-eventual goal. The TL;DR; is to make it harder for driver authors to
-leak resources without noticing.
+On Mon, 11 Dec 2023 10:23:57 +0100, Konrad Dybcio wrote:
+> The SM6115 interconnect driver has been merged now. Add nodes required
+> to make use of it.
+> 
+> Patch 1 for icc, patch 2 for qcom.
+> 
+> Likely depends on patch 3/ (qcm2290 BWMON compatible) from [1].
+> 
+> [...]
 
-This is merge window material. All patches are pairwise independent of
-each other so they can be applied individually. Still it would be great
-to let them go in all together.
+Applied, thanks!
 
-Best regards
-Uwe
+[2/2] arm64: dts: qcom: sm6115: Hook up interconnects
+      commit: b3eaa47395b9d0fc593e7f8b8b0abb4c769ad30d
 
-Uwe Kleine-König (15):
-  memory: brcmstb_dpfe: Convert to platform remove callback returning void
-  memory: brcmstb_memc: Convert to platform remove callback returning void
-  memory: emif: Convert to platform remove callback returning void
-  memory: fsl-corenet-cf: Convert to platform remove callback returning void
-  memory: fsl_ifc: Convert to platform remove callback returning void
-  memory: jz4780-nemc: Convert to platform remove callback returning void
-  memory: mtk-smi: Convert to platform remove callback returning void
-  memory: omap-gpmc: Convert to platform remove callback returning void
-  memory: renesas-rpc-if: Convert to platform remove callback returning void
-  memory: exynos5422-dmc: Convert to platform remove callback returning void
-  memory: stm32-fmc2-ebi: Convert to platform remove callback returning void
-  memory: tegra186-emc: Convert to platform remove callback returning void
-  memory: tegra210-emc: Convert to platform remove callback returning void
-  memory: ti-aemif: Convert to platform remove callback returning void
-  memory: ti-emif-pm: Convert to platform remove callback returning void
-
- drivers/memory/brcmstb_dpfe.c            |  6 ++----
- drivers/memory/brcmstb_memc.c            |  6 ++----
- drivers/memory/emif.c                    |  6 ++----
- drivers/memory/fsl-corenet-cf.c          |  6 ++----
- drivers/memory/fsl_ifc.c                 |  6 ++----
- drivers/memory/jz4780-nemc.c             |  5 ++---
- drivers/memory/mtk-smi.c                 | 10 ++++------
- drivers/memory/omap-gpmc.c               |  6 ++----
- drivers/memory/renesas-rpc-if.c          |  6 ++----
- drivers/memory/samsung/exynos5422-dmc.c  |  6 ++----
- drivers/memory/stm32-fmc2-ebi.c          |  6 ++----
- drivers/memory/tegra/tegra186-emc.c      |  6 ++----
- drivers/memory/tegra/tegra210-emc-core.c |  6 ++----
- drivers/memory/ti-aemif.c                |  5 ++---
- drivers/memory/ti-emif-pm.c              |  6 ++----
- 15 files changed, 32 insertions(+), 60 deletions(-)
-
-base-commit: 17cb8a20bde66a520a2ca7aad1063e1ce7382240
+Best regards,
 -- 
-2.42.0
+Bjorn Andersson <andersson@kernel.org>
