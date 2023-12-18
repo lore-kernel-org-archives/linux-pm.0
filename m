@@ -1,126 +1,146 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03FB33A1A8
-	for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2023 18:19:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF23A4FF9A
+	for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2023 19:14:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b="Axs4Ivw/"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-40c3ceded81so35231605e9.1
-        for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2023 10:19:36 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="3zWuQXFQ"
+Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-552eaf800abso2043a12.0
+        for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2023 11:14:58 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1702923575; x=1703528375; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=wngOefNv+z6F34iAlT1vTTC0xRYTMvpTjWKXnGOQBpw=;
-        b=Axs4Ivw/LVR6wXDIgkeETJk8VxIH2znyzG0XGSSY5wb20qZpTkjoMTNjKy1yLysnL0
-         RZOc7uLW55tJ1Kj6W0J6I+nDtpRnN2n6Lh8/Lw3hy1Lgimm9Un3ol2fI05D7y2qthquB
-         NIwcAJyXs42v9hzhASLi6oQKzbDIOy/r9D3486ur2kNtY8kuMKE6vrP5o1bMFvHouKis
-         WJmfSRQrbUjn1vy1puM4zEd/uSOQYnREl/E/V+Ly01NqFNll3IIwGuvHwWcl4GiwABqX
-         5N7iJcUY/OIioJwVSp0ZjcjaqsTsWjFDLKNTpc5hkmvFehlM9mQ3D8i/ev7Zeraod7ly
-         sD4w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702923575; x=1703528375;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+        d=google.com; s=20230601; t=1702926897; x=1703531697; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=wngOefNv+z6F34iAlT1vTTC0xRYTMvpTjWKXnGOQBpw=;
-        b=O2GUJEYhsrr3HaUrj348/n8Otfleiho6gkYCiP1QB3FSsoCDHZGM/LfdYv3tiMetu7
-         yrlsrIhY9Ik7Euu6SpdGqsVZ32zJvNRZSs52r9+bcr4MKIVvagEJbsY7yIp68mOXdjN1
-         2Inyif/EBf4vO8Fa5y85QUO9xLF/TfPtwxscZYC6H4t/GOBDUzLSIAkIjAYp2yRpGAkJ
-         W/0TYWZtf36rnOC7ad1t9ZrtpdN1RCDh166jTH7hilfYRmMKIoVGQUgV4dIcauI/+KpE
-         ejBfji0vUV1pLcz3XAX9IHBrTBRw3IvGSPNiWm/q9jTuW4/viewAiqTg2sC2kkAK9AdB
-         U+Zg==
-X-Gm-Message-State: AOJu0YzqVxdrW/6FTu2EgJPSZv751yiOQAQRxyMwcq9TGj5Ae9vwV+mc
-	F7kMfO3uvC0JKy6/pS363yzHfw==
-X-Google-Smtp-Source: AGHT+IE8TGKpR7h58VoFinOm8qiIsJoctzMe6kl9K+yyn18hvEFRCCJaQY587qUcggqnBYSzX1gryg==
-X-Received: by 2002:a7b:ce08:0:b0:40c:2964:5570 with SMTP id m8-20020a7bce08000000b0040c29645570mr8591538wmc.61.1702923575256;
-        Mon, 18 Dec 2023 10:19:35 -0800 (PST)
-Received: from airbuntu (host86-135-101-43.range86-135.btcentralplus.com. [86.135.101.43])
-        by smtp.gmail.com with ESMTPSA id v6-20020a05600c444600b0040c4886f254sm32817208wmn.13.2023.12.18.10.19.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Dec 2023 10:19:34 -0800 (PST)
-Date: Sun, 17 Dec 2023 21:44:55 +0000
-From: Qais Yousef <qyousef@layalina.io>
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	Lukasz Luba <lukasz.luba@arm.com>, Wei Wang <wvw@google.com>,
-	Rick Yiu <rickyiu@google.com>, Chung-Kai Mei <chungkai@google.com>,
-	Hongyan Xia <hongyan.xia2@arm.com>
-Subject: Re: [PATCH 1/4] sched/fair: Be less aggressive in calling
- cpufreq_update_util()
-Message-ID: <20231217214455.5rf67ezdrwqdvwwh@airbuntu>
-References: <20231208015242.385103-1-qyousef@layalina.io>
- <20231208015242.385103-2-qyousef@layalina.io>
- <212396c7-8c36-4850-8871-ea4c757a9324@arm.com>
+        bh=kNpYr419SHpnA91LgqU+sPKJUI14VGiXGrBhdYoDPNA=;
+        b=3zWuQXFQ/ECQgRLlCHw035sI4O+1XZuFWUaBpkUcwMwRq+6c/97qJOzoNtAmDM8vzJ
+         L287eanCCTfycXAFxZkPVrDIwRl0hdcL6TNyUT1hK/nt+lEdXyUwZW5g3To4paLbZzNo
+         BrwAe/R3LGXZFI3yng0DrrcZdECCH+nYu9DAjFYr7O0QeRRAAzOZE9uS8rshVBNpNM2E
+         XgY+dlU5cRLtJt/WIuM1/MHFxm7lXIXyAIoVIyszBHQXLYGF8OSK7KsKO42dD6JId7tW
+         Xer59Q5V/wtcUTOawWCIWRKdTAXa+k2j5zHXZ8qYnw7yYdFpkvR7i07nNBzwuDitrFWY
+         xH1w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1702926897; x=1703531697;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=kNpYr419SHpnA91LgqU+sPKJUI14VGiXGrBhdYoDPNA=;
+        b=E/anwXkqR4cPwolxkOImXoCTxCT3x02tULvVTRuVP4KV7EZRZMD42BkPHVr3OmMrOB
+         Bst92Xt3qtpoOMa0N9+Omz69T8wchFYgBzMhTNDmwY/2UM/Lb1lZsM552pKtFAm3EUz6
+         5LP16DIRPJnmrF2aStH+frYvrimLR5KhbMPzEIrFRBs0NDiJCtCiRYMVzFiMtLSipTk5
+         f8PSqwQWBZhE70KD4e2ey9QTJqKB2IiBqlccPgKxLPWrvnY2zwioEjXwCS9YIRsC2vDm
+         IumpW0gSTJvgxn2IABVMiNUDs2MZpRIfXFrABFtbtc6Vnrz1QkxyuyHPF7qVEKzuOEfb
+         vIeQ==
+X-Gm-Message-State: AOJu0Yy8YOa2aeqNo3jJGT9psyCZ6l9NNZxsGURRwplAoJORgNjXJlXY
+	jwIEC3rP9GAVAgTK/DmwNHoD0rKicH/X374sQWBLYBiD62Fg
+X-Google-Smtp-Source: AGHT+IEkv8jZZJriA4wx0GJWunIvhpMmkRJZ+mRaAkxemnVSlrPj6+RAhRBwC1SC7sKbW+h9EDGaGgBGf0f6CcAl7ZQ=
+X-Received: by 2002:a05:6402:1c98:b0:553:7668:506 with SMTP id
+ cy24-20020a0564021c9800b0055376680506mr23139edb.5.1702926896901; Mon, 18 Dec
+ 2023 11:14:56 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <212396c7-8c36-4850-8871-ea4c757a9324@arm.com>
+References: <20231120234015.3273143-1-radusolea@google.com>
+ <9d1009d9-b95b-4152-841f-19470a17ba97@linaro.org> <CAPpbzyhEkqjA0Kv=f_O1hy-dT8o-O4tPB_KpQqbE9b7vwC+2NA@mail.gmail.com>
+ <570c9777-3d89-4f3c-b856-3e821883a7e2@linaro.org> <CAPpbzyiZmxhfQDOukEeuDv+B6j3CH43ugx_WyAvR3B-riRZChQ@mail.gmail.com>
+ <0412fada-037d-47ea-bc3a-4634d134232c@linaro.org> <CAPpbzyiUEc0_5mDOWGQyXGbN4J4x8PHHBVRRUq4bSmqFdp4XtQ@mail.gmail.com>
+ <b5d75de8-2006-40fa-add7-2db59f3e6cc4@linaro.org> <CAPpbzygHs7Z2S9TJ7vwmhZUtRqfCnxAwFdRRG4q37yetNCPWMQ@mail.gmail.com>
+In-Reply-To: <CAPpbzygHs7Z2S9TJ7vwmhZUtRqfCnxAwFdRRG4q37yetNCPWMQ@mail.gmail.com>
+From: Radu Solea <radusolea@google.com>
+Date: Mon, 18 Dec 2023 11:14:45 -0800
+Message-ID: <CAPpbzyjfXM06UwRHLVX665nphpH4_-rwXYFDpyh-pxC7f-ui-A@mail.gmail.com>
+Subject: Re: [PATCH v2 RESEND] thermal core: add option to run PM_POST_SUSPEND asynchronously
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, rafael@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 12/18/23 09:51, Dietmar Eggemann wrote:
-> On 08/12/2023 02:52, Qais Yousef wrote:
-> > Due to the way code is structured, it makes a lot of sense to trigger
-> > cpufreq_update_util() from update_load_avg(). But this is too aggressive
-> > as in most cases we are iterating through entities in a loop to
-> > update_load_avg() in the hierarchy. So we end up sending too many
-> > request in an loop as we're updating the hierarchy.
-> > 
-> > Combine this with the rate limit in schedutil, we could end up
-> > prematurely send up a wrong frequency update before we have actually
-> > updated all entities appropriately.
-> > 
-> > Be smarter about it by limiting the trigger to perform frequency updates
-> > after all accounting logic has done. This ended up being in the
-> 
-> What are the boundaries of the 'accounting logic' here? Is this related
-> to the update of all sched_entities and cfs_rq's involved when a task is
-> attached/detached (or enqueued/dequeued)?
-
-Yes.
-
-> 
-> I can't see that there are any premature cfs_rq_util_change() in the
-> current code when we consider this.
-
-Thanks for checking. I'll revisit the problem as indicated previously. This
-patch is still needed; I'll update rationale at least and fix highlighted
-issues with decay.
-
-> 
-> And avoiding updates for a smaller task to make sure updates for a
-> bigger task go through is IMHO not feasible.
-
-Where did this line of thought come from? This patch is about consolidating
-how scheduler request frequency updates. And later patches requires the single
-update at tick to pass the new SCHED_CPUFREQ_PERF_HINTS.
-
-If you're referring to the logic in later patches about ignore_short_tasks();
-then we only ignore the performance hints for this task.
-
-Why not feasible? What's the rationale?
-
-> 
-> I wonder how much influence does this patch has on the test results
-> presented the patch header?
-
-The only change of behavior is how we deal with decay. Which I thought wouldn't
-introduce a functional change, but as caught to by Christian, it did. No
-functional changes are supposed to happen that can affect the test results
-AFAICT.
-
-
-Cheers
-
---
-Qais Yousef
+On Thu, Dec 14, 2023 at 10:26=E2=80=AFAM Radu Solea <radusolea@google.com> =
+wrote:
+>
+> On Thu, Dec 14, 2023 at 12:25=E2=80=AFAM Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+> >
+> > On 14/12/2023 01:21, Radu Solea wrote:
+> >
+> > [ ... ]
+> >
+> > >>> I can't go into much detail about the hardware. But let's put it th=
+is
+> > >>> way, if thermal_zone_device_update() takes 5 ms for each device (re=
+ad
+> > >>> temp, get trips, set trips, etc). Assume 5 onboard thermal zones, o=
+n a
+> > >>> good day, ignoring system churn you'd get to around 25ms (already
+> > >>> significant).
+> > >>> Now on top of that add that these devices have multiple functions,
+> > >>> like a PMIC for example. The resume sequence is the perfect time fr=
+ame
+> > >>> where you'd encounter more than one operation aimed at any one of
+> > >>> these devices. Unless you have uncommonly smart drivers and devices=
+,
+> > >>> these will be queued.
+> > >>> The driver in most cases will spin (hardly ideal, but realistic), e=
+ven
+> > >>> if they would yield the effect on the completion of the chain is at
+> > >>> least the same or, likely, worse.
+> > >>>
+> > >>> To the patch itself, I realized I've been somewhat hamfisted.
+> > >>> thermal_zone_device_init() should not be deferred, and likely shoul=
+d
+> > >>> execute for all zones before the in_suspend lock-out is released. I=
+'ll
+> > >>> correct that once we've landed on something.
+> > >>>
+> > >>> To my 50ms, it's almost the worst-case, but it happens way more oft=
+en
+> > >>> than would be comfortable.
+> > >>
+> > >> If you call monitor_thermal_zone() instead of
+> > >> thermal_zone_device_update(), does it speed up the resume time ?
+> > >>
+> > > Looks like it does, I'll rework the patch. Don't think the config
+> > > switch is useful anymore.
+> >
+> > Well, we probably have to go a bit further in the concept.
+> >
+> > There are some thermal zones which may need to be checked immediately
+> > and others no. That depends on the temperature speed behavior.
+> >
+> > The higher is the temperature speed for a device, the lower is the
+> > polling (including zero).
+> >
+> > So the monitoring delay can be used as a criteria to check if the
+> > thermal zone needs an update or postpone the monitoring.
+> >
+> > As we don't want to change the current behavior, we can add a global
+> > option telling the polling delay above which we call
+> > monitor_thermal_zone() and defaulting to zero.
+> >
+> > Does it make sense?
+> It does, alternatively we add a device tree flag to the tz and not add
+> a side effect to the delay.
+> Either works imo.
+>
+On a second, more careful look, I don't think using polling-delay is
+going to work as expected here. A 0 delay is used for interrupt-driven
+systems. thermal_zone_device_set_polling() will cancel work if the
+delay is 0. So it looks like we effectively end up without a resume
+update for those devices. We could reuse the delay-based approach with
+a resume-specific work item so it doesn't get cancelled. On the other
+hand I suspect that the threshold which we would add for async will
+never move from zero.
+> >
+> > --
+> > <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for =
+ARM SoCs
+> >
+> > Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> > <http://twitter.com/#!/linaroorg> Twitter |
+> > <http://www.linaro.org/linaro-blog/> Blog
+> >
