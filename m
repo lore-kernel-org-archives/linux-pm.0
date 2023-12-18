@@ -1,79 +1,83 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 366D7F9CD
-	for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2023 06:09:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rLP9wyXs"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-1d2e6e14865so8218335ad.0
-        for <linux-pm@vger.kernel.org>; Sun, 17 Dec 2023 22:09:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1702879793; x=1703484593; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=4fv33Fm98eoYxsFhCy3k/IYwg8anoZGWSZZeryLa0Lk=;
-        b=rLP9wyXsWxAlAXC2WbW9KVDY0fNJ7Cez6j4C+8W8AMgxz0R5jYWXyjyst+wPu4gd40
-         Vi3m16LjxYZiD8yPyctnuETvNXDCMQrQzl+OAjm96lpb7Gn+jG0vrCyAYnLqNgZnnKdo
-         dyo6Bs0Agklm7puOB6BF/nbjOZvFxFjEpkdKMRPS825L1A/E4TPQz3FXjH2uoNtrF8Gu
-         X2FDJ8TO7R6RX6K/uj0iDb9N8sXgI/haPruHbEDlCtcDKI/vwnto6XWZOXk4kfcxmEy7
-         f6pxhUCCosmln19t0ohxqnRx3SgjgCn47si0diVNleAc2ycONeDS5s5d92Xj/2W40OmN
-         QOtg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702879793; x=1703484593;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4fv33Fm98eoYxsFhCy3k/IYwg8anoZGWSZZeryLa0Lk=;
-        b=Hq8ud29hUPPtlCCWRzrhO6FbtRzzQp5CSZh0mfDsNUKQXtmsHZU+WzkovqBKub6lcq
-         Bo5RSIgI/3wDWxgo4J9BcZxOTbz2M3zO+6b/XlGiUIks92XF7Ff9wkCMfiWl71jJ1XNG
-         sQznjCtXyBw3f6lnmg66rp1wjoxJrzGoytmsAlF7nR6WapZ/EG42Qc2P5BpqPDC2m9+I
-         4BsJNWCPyad/mGfEg4UYNkf1IgdvcwveZlGndelowGo4puxGl/bbSQHgoZxOh6goDde7
-         wqwCmY3EZVbx/FBmpcfCj6J+zLnE1kf0y0W7Ud+obH6a9czSKEwpQTxIrxjTRUE/L41S
-         nUrA==
-X-Gm-Message-State: AOJu0YyjUrYxmR1vEc930w6fNLIi4R8T+XHQrQo3R9651DsZq7I5uve2
-	aX3owGnxsxORJySScCSfSt5ruQ==
-X-Google-Smtp-Source: AGHT+IHO/9Xk10TyLpqn8u0P4FpfNwnhyw1y6P9qlEWj/EdN4sfd0o4DUGEMCVK2HXlQ7b1MpZUXAA==
-X-Received: by 2002:a17:903:2446:b0:1d0:6ffd:6e6e with SMTP id l6-20020a170903244600b001d06ffd6e6emr8491684pls.102.1702879793608;
-        Sun, 17 Dec 2023 22:09:53 -0800 (PST)
-Received: from localhost ([122.172.82.6])
-        by smtp.gmail.com with ESMTPSA id a18-20020a170902ecd200b001d058ad8770sm18245931plh.306.2023.12.17.22.09.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 17 Dec 2023 22:09:53 -0800 (PST)
-Date: Mon, 18 Dec 2023 11:39:51 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Samuel Holland <samuel@sholland.org>
-Cc: Brandon Cheo Fusi <fusibrandon13@gmail.com>, aou@eecs.berkeley.edu,
-	conor+dt@kernel.org, devicetree@vger.kernel.org,
-	jernej.skrabec@gmail.com, krzysztof.kozlowski+dt@linaro.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org,
-	linux-sunxi@lists.linux.dev, palmer@dabbelt.com,
-	paul.walmsley@sifive.com, rafael@kernel.org, robh+dt@kernel.org,
-	tiny.windzz@gmail.com, wens@csie.org
-Subject: Re: [PATCH 4/5] cpufreq: Add support for RISC-V CPU Frequency
- scaling drivers
-Message-ID: <20231218060951.yhhyini4neyusyxv@vireshk-i7>
-References: <20231214111702.xdd7qlcrpqh74i3j@vireshk-i7>
- <20231215151723.46409-1-fusibrandon13@gmail.com>
- <11b5aea1-7c6e-4be5-ae01-9c4c869dc98c@sholland.org>
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1EF2B101C0;
+	Mon, 18 Dec 2023 08:19:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9B18F1FB;
+	Mon, 18 Dec 2023 00:20:12 -0800 (PST)
+Received: from [192.168.178.6] (unknown [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3EE383F5A1;
+	Mon, 18 Dec 2023 00:19:26 -0800 (PST)
+Message-ID: <c34df726-33df-4188-8010-3b268dfbb607@arm.com>
+Date: Mon, 18 Dec 2023 09:19:04 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11b5aea1-7c6e-4be5-ae01-9c4c869dc98c@sholland.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/4] sched: cpufreq: Remove uclamp max-aggregation
+Content-Language: en-US
+To: Qais Yousef <qyousef@layalina.io>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ Lukasz Luba <lukasz.luba@arm.com>, Wei Wang <wvw@google.com>,
+ Rick Yiu <rickyiu@google.com>, Chung-Kai Mei <chungkai@google.com>,
+ Hongyan Xia <hongyan.xia2@arm.com>
+References: <20231208015242.385103-1-qyousef@layalina.io>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+In-Reply-To: <20231208015242.385103-1-qyousef@layalina.io>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On 15-12-23, 15:09, Samuel Holland wrote:
-> Move the option to the main drivers/cpufreq/Kconfig, like QORIQ_CPUFREQ,
-> which is also used with multiple architectures (PowerPC and ARM, in that
-> case). We don't want two options for the same driver.
+On 08/12/2023 02:52, Qais Yousef wrote:
 
-+1
+[...]
 
--- 
-viresh
+> ===
+> 
+> This patch is based on remove margins series [1] and data is collected it
+> against it as a baseline.
+> 
+> Testing on pixel 6 with mainline(ish) kernel
+
+How is the Pixel6 configured in terms of per-policy rate_limit_us and
+response_time_ms ? Is this the now default 2ms and whatever the systems
+calculates for response_time_ms ?
+
+Pixel6 is still a slow switching device, rigth?
+
+root           297     2 1 08:58:01 ?     00:00:13 [sugov:0]
+root           298     2 0 08:58:01 ?     00:00:03 [sugov:4]
+root           299     2 1 08:58:01 ?     00:00:05 [sugov:6]
+
+> ==
+> 
+> Speedometer browser benchmark
+> 
+>        | baseline  | 1.25 headroom |   patch   | patch + 1.25 headroom
+> -------+-----------+---------------+-----------+---------------------
+> score  |  108.03   |     135.72    |   108.09  |    137.47
+> -------+-----------+---------------+-----------+---------------------
+> power  |  1204.75  |    1451.79    |  1216.17  |    1484.73
+> -------+-----------+---------------+-----------+---------------------
+
+What's the difference between baseline & 1.25 headroom. IMHO, we have:
+
+ static inline unsigned long map_util_perf(unsigned long util)
+ {
+   return util + (util >> 2);
+ }
+
+on baseline?
+
+By patch you refer to the whole patch-set + [1]?
+
+And I assume 'patch + 1.25 headroom' is 'response_time_ms' tuned to
+reach 1.25 ?
+
+[...]
