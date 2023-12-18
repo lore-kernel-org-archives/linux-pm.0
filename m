@@ -1,51 +1,50 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EAC65BFB5
-	for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2023 16:02:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 286BE5D75D
+	for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2023 16:02:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="aCVDHbyX"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-40c31f18274so41499965e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2023 08:02:28 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Q7zJpdoY"
+Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-a22f59c6aeaso393070366b.2
+        for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2023 08:02:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1702915347; x=1703520147; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1702915351; x=1703520151; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=yeZetCZqAjDfSmYH46X1jjlV0+TjZufo6m3dLVzQ+S4=;
-        b=aCVDHbyXp8XIpxKCqBbIKLTaXbB4yNe3M/7nwZrIWprL6XYTg0vAEn7br2DpVsHsYd
-         5MWeWp9MOuUAcdX3BeXxuolkvVeYHsQwMkrOegXRKa2Dq8f+PB7uvhKgXl3eqvgNi7ol
-         ra2dD890cEwd7JpjHktH03XXzO/bj7+GZ6LPPAWAOX4hEKTVPw9ZzRhNouwoJ8Sa5DYM
-         HmBUtQBa01ZXP0hs8pvwye8rdB3k9kdXfozk4fJnzOALvnDSWLMqZnp3YokqVfeJjvnz
-         xY9DbB1RHHIKAcPI+M63NyLR1G1xPcHG+qWOLgsSHDjTV+NmcuIBzyOc3TeqGInZKYTy
-         Zk0A==
+        bh=Sxy5gxd9WgX/1XXZmcDuoy9fxNWpJ2waJT/hDOrUyLQ=;
+        b=Q7zJpdoYCjuikLscqUvzEXbL7sRdGSxdTV0XBiNPa7ac4sn0zpd8kat/F/RHDUzKW/
+         l0fjAQAGD8VaiMj8ztygs19LHdGuQloW9nZAwNuJIBInxgNSAoJJLLD84z6tnxbN3bCd
+         PJsQqOxeuPGIfXUm6auqLxTd6Qd9c4ztDI7w0hdqW7s4tjMJee7Npts58C340DohD2EV
+         /YRs1fDYAlhD7TydlI9KXT3Ehz3mxREntRz0c6VXKtvCwZOW9rjsBDsstcEd20HNyxij
+         4L3Z6wNDxvyq3KkngPSha6//G/SU4Yz1d/XO/lYur4vpSarQ1Ll1Eg7Txvhl1BsjVdSx
+         yLAw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702915347; x=1703520147;
+        d=1e100.net; s=20230601; t=1702915351; x=1703520151;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=yeZetCZqAjDfSmYH46X1jjlV0+TjZufo6m3dLVzQ+S4=;
-        b=HqrI4vze4sEOkC7qsVJyAOMFhKEtQbFlIQVLN34QIBnC9KhG9HbvTK8vQCNZbCmMHS
-         QEek76CqH+ejr7/XhIeQeyBZDSFoIgh9jduXN73qP8nertD8iGeP8ChHpD4Duequ1tTS
-         B/52RhcwKIXqAPRUog7cRf9lO4lv7C+6V27+Fw5of5gIRH43P/i7f+lZMQZ2AHuxxoD+
-         at5oi0jmToIBFOJKS96sq4oTzdYYoka1ERSOnHGnn4E1MSlEv3pf3uE4tf/dvJiqk4RN
-         ZRGj0DMic90KIGw0MIJMjl4DTO1qf64lpf93g2kXCen2/VWtK/B0I1N00+tDleZG4Mzg
-         A5Og==
-X-Gm-Message-State: AOJu0Yypmao3oNpUJ5CYnIDD+WHKCToUb/hBgnWCB9gmis26bseB4/Zh
-	dTSmfvnbKAU9xe8hP7oEJYNEng==
-X-Google-Smtp-Source: AGHT+IEhH8Cm/7N1a2HGbuWE26iVjDxJr/RSPJj5TmO1nT/mLSPqnfvL2D5CLL3oKA1egQJFO8uxWQ==
-X-Received: by 2002:a05:600c:474d:b0:40c:708b:cf52 with SMTP id w13-20020a05600c474d00b0040c708bcf52mr2013391wmo.122.1702915346798;
-        Mon, 18 Dec 2023 08:02:26 -0800 (PST)
+        bh=Sxy5gxd9WgX/1XXZmcDuoy9fxNWpJ2waJT/hDOrUyLQ=;
+        b=h3DjttCIopMG/21+6Z2EsleoAgUYI5wDQ46Jc9K9mACt51Zmu5CbZYJXnOWqgjkMP6
+         dX3reqMtaV0ULaQQ+uUA2iEcF+bN3y07ebAORQFPl3Iuz54lmbobPjYHwyOGk3CXBRfm
+         XE5TlhR1L3YnK+RWBZBXDxzhVq8viTvcIuhjWR9xb2bnAhkxO/dLRqy5HrsKb3ztpQe+
+         XoVA3og58X3BlUOtlIhqqdjMm5EdV0ZUbz7KH4D3QAhQ8/FJZ7VmumgnJ8Tqwjrg5BsJ
+         XGzfyUtJ+UN8eIlhb29f4ITMEm5YjOtYMpAV+gVfsh/NFy6iTQiiynYnsprt3aYiiGx1
+         olMg==
+X-Gm-Message-State: AOJu0YxYiyajnBJhSp4gB41/voyT7Cjo7kkqn4lE5SaG6+RulM9zLWxD
+	UPR6Q1yMmfnHAZPOsUl4l7AuUQ==
+X-Google-Smtp-Source: AGHT+IHJ6MZS2cN8lT0WcCi3rQBgJZ1sxp49j/86r1zoFSRgnH9Y8segI9yzqQhF+3KkiWJxZGXHtQ==
+X-Received: by 2002:a17:907:1a55:b0:a23:357b:5ace with SMTP id mf21-20020a1709071a5500b00a23357b5acemr1284144ejc.19.1702915351393;
+        Mon, 18 Dec 2023 08:02:31 -0800 (PST)
 Received: from [10.167.154.1] (178235179137.dynamic-4-waw-k-1-3-0.vectranet.pl. [178.235.179.137])
-        by smtp.gmail.com with ESMTPSA id ts7-20020a170907c5c700b00a1dd58874b8sm14260693ejc.119.2023.12.18.08.02.24
+        by smtp.gmail.com with ESMTPSA id ts7-20020a170907c5c700b00a1dd58874b8sm14260693ejc.119.2023.12.18.08.02.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Dec 2023 08:02:26 -0800 (PST)
+        Mon, 18 Dec 2023 08:02:31 -0800 (PST)
 From: Konrad Dybcio <konrad.dybcio@linaro.org>
-Date: Mon, 18 Dec 2023 17:02:06 +0100
-Subject: [PATCH 05/12] clk: qcom: gcc-sm8550: use collapse-voting for PCIe
- GDSCs
+Date: Mon, 18 Dec 2023 17:02:08 +0100
+Subject: [PATCH 07/12] clk: qcom: gpucc-sm8550: Update GPU PLL settings
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -54,7 +53,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231218-topic-8550_fixes-v1-5-ce1272d77540@linaro.org>
+Message-Id: <20231218-topic-8550_fixes-v1-7-ce1272d77540@linaro.org>
 References: <20231218-topic-8550_fixes-v1-0-ce1272d77540@linaro.org>
 In-Reply-To: <20231218-topic-8550_fixes-v1-0-ce1272d77540@linaro.org>
 To: Bjorn Andersson <andersson@kernel.org>, 
@@ -72,69 +71,43 @@ Cc: Marijn Suijten <marijn.suijten@somainline.org>,
  linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, 
  devicetree@vger.kernel.org, Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1702915332; l=1720;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1702915332; l=976;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=N7ribrag25hwrEIJX+mk3d9ZiSp/Y74Ht6lzkGi4xcQ=;
- b=Q0hpQovWX3D9xySyJlu36S3vjYXNimLqsRXVvoDPkESrr0Tz8RPZbVIA4Ax+HmuuKblQEcaS4
- pRsrNl+94xoA7LlvekJOjpLRk0zNUJWxHmDqY9i9dLummXWEoXnZ6oJ
+ bh=q/YWhe5rzcUAmIFXqSmcshP5410IbnXzatBPzE34Z1U=;
+ b=ls2LT4NdvgbEWszZcqguVQIutVml18NyUafbddPc5km0Vmg6JEz8pXhPg5v3vdlrhMV2bzNZ/
+ 1scuV2kyQ2EBMTI8FvVLZ+iqp4nvlng2slRNpPC6i/8ziBxfIL8satV
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 
-The PCIe GDSCs can be shared with other masters and should use the APCS
-collapse-vote register when updating the power state.
+The settings in the driver seem to have been taken from an older
+release. Update them to match the latest values.
 
-This is specifically also needed to be able to disable power domains
-that have been enabled by boot firmware using the vote register.
-
-Following other recent Qualcomm platforms, describe this register and
-the corresponding mask for the PCIe (and _phy) GDSCs.
-
-Fixes: 955f2ea3b9e9 ("clk: qcom: Add GCC driver for SM8550")
+Fixes: bfae40744b33 ("clk: qcom: gpucc-sm8550: Add support for graphics clock controller")
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/clk/qcom/gcc-sm8550.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/clk/qcom/gpucc-sm8550.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/clk/qcom/gcc-sm8550.c b/drivers/clk/qcom/gcc-sm8550.c
-index a16d07426b71..73bda0d03aa7 100644
---- a/drivers/clk/qcom/gcc-sm8550.c
-+++ b/drivers/clk/qcom/gcc-sm8550.c
-@@ -2998,6 +2998,8 @@ static struct clk_branch gcc_video_axi1_clk = {
+diff --git a/drivers/clk/qcom/gpucc-sm8550.c b/drivers/clk/qcom/gpucc-sm8550.c
+index 420dcb27b47d..2fa8673424d7 100644
+--- a/drivers/clk/qcom/gpucc-sm8550.c
++++ b/drivers/clk/qcom/gpucc-sm8550.c
+@@ -35,12 +35,12 @@ enum {
+ };
  
- static struct gdsc pcie_0_gdsc = {
- 	.gdscr = 0x6b004,
-+	.collapse_ctrl = 0x52020,
-+	.collapse_mask = BIT(0),
- 	.pd = {
- 		.name = "pcie_0_gdsc",
- 	},
-@@ -3007,6 +3009,8 @@ static struct gdsc pcie_0_gdsc = {
+ static const struct pll_vco lucid_ole_vco[] = {
+-	{ 249600000, 2300000000, 0 },
++	{ 249600000, 2000000000, 0 },
+ };
  
- static struct gdsc pcie_0_phy_gdsc = {
- 	.gdscr = 0x6c000,
-+	.collapse_ctrl = 0x52020,
-+	.collapse_mask = BIT(3),
- 	.pd = {
- 		.name = "pcie_0_phy_gdsc",
- 	},
-@@ -3016,6 +3020,8 @@ static struct gdsc pcie_0_phy_gdsc = {
- 
- static struct gdsc pcie_1_gdsc = {
- 	.gdscr = 0x8d004,
-+	.collapse_ctrl = 0x52020,
-+	.collapse_mask = BIT(1),
- 	.pd = {
- 		.name = "pcie_1_gdsc",
- 	},
-@@ -3025,6 +3031,8 @@ static struct gdsc pcie_1_gdsc = {
- 
- static struct gdsc pcie_1_phy_gdsc = {
- 	.gdscr = 0x8e000,
-+	.collapse_ctrl = 0x52020,
-+	.collapse_mask = BIT(4),
- 	.pd = {
- 		.name = "pcie_1_phy_gdsc",
- 	},
+ static const struct alpha_pll_config gpu_cc_pll0_config = {
+-	.l = 0x0d,
+-	.alpha = 0x0,
++	.l = 0x1e,
++	.alpha = 0xbaaa,
+ 	.config_ctl_val = 0x20485699,
+ 	.config_ctl_hi_val = 0x00182261,
+ 	.config_ctl_hi1_val = 0x82aa299c,
 
 -- 
 2.43.0
