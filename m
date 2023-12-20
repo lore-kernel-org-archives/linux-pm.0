@@ -1,16 +1,16 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 53C5741854;
-	Wed, 20 Dec 2023 16:21:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3F85946432;
+	Wed, 20 Dec 2023 16:22:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 968951FB;
-	Wed, 20 Dec 2023 08:22:00 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 898C31FB;
+	Wed, 20 Dec 2023 08:23:37 -0800 (PST)
 Received: from [10.57.82.217] (unknown [10.57.82.217])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CBD4B3F64C;
-	Wed, 20 Dec 2023 08:21:14 -0800 (PST)
-Message-ID: <3f83b7a7-b674-486f-889a-033f550f3654@arm.com>
-Date: Wed, 20 Dec 2023 16:22:22 +0000
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C19F93F64C;
+	Wed, 20 Dec 2023 08:22:51 -0800 (PST)
+Message-ID: <65b879ad-aff2-4f7e-bad1-ac85dc5fd146@arm.com>
+Date: Wed, 20 Dec 2023 16:23:59 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -18,67 +18,88 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 4/8] thermal: gov_power_allocator: Simplify checks for
- valid power actor
+Subject: Re: [PATCH v2 6/8] thermal/sysfs: Update instance->weight under tz
+ lock
 Content-Language: en-US
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org,
  linux-pm@vger.kernel.org, rui.zhang@intel.com
 References: <20231212134844.1213381-1-lukasz.luba@arm.com>
- <20231212134844.1213381-5-lukasz.luba@arm.com>
- <CAJZ5v0g_+D5WV0kiC_guS4OQP4wb1qgw1xmzFQBhvF9fz4zxJQ@mail.gmail.com>
+ <20231212134844.1213381-7-lukasz.luba@arm.com>
+ <CAJZ5v0hes13rmAgcyMYtz1ZXxV72pM3QgRY=LKF9jK=GbAyS=g@mail.gmail.com>
 From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <CAJZ5v0g_+D5WV0kiC_guS4OQP4wb1qgw1xmzFQBhvF9fz4zxJQ@mail.gmail.com>
+In-Reply-To: <CAJZ5v0hes13rmAgcyMYtz1ZXxV72pM3QgRY=LKF9jK=GbAyS=g@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-On 12/20/23 14:40, Rafael J. Wysocki wrote:
+On 12/20/23 14:53, Rafael J. Wysocki wrote:
 > On Tue, Dec 12, 2023 at 2:48 PM Lukasz Luba <lukasz.luba@arm.com> wrote:
 >>
->> There is a need to check if the cooling device in the thermal zone
->> supports IPA callback and is set for control trip point.
->> Refactor the code which validates the power actor capabilities and
->> make it more consistent in all places.
+>> The user-space can change thermal instance weight value while the
+>> throtte() callback is running for a governor.
 > 
-> This really is about reducing code duplication which is worth
-> mentioning, so I would say
+> This needs to be more precise IMV.  Something like
 > 
-> "Add a helper to check if a given cooling device in a thermal zone
-> supports the IPA callback and is bound to the control trip point and
-> use it wherever that check is needed to reduce code duplication."
-> 
+> "User space can change the weight of a thermal instance via sysfs
+> while the .throttle() callback is running for a governor, because
+> weight_store() does not use the zone lock."
 
-Thanks, I'll use it.
+Agree, I'll use it.
 
->>
->> No intentional functional impact.
+> 
+>> The IPA governor uses the
+>> 'weight' value for power calculation and also keeps it in 'total_weight'.
+>> Therefore, the 'weight' value must not change during the throttle()
+>> callback. Use 'tz->lock' mutex which also guards the throttle() to make
+>> the update value safe.
+> 
+> "The IPA governor uses instance weight values for power calculations
+> and caches the sum of them as total_weight, so it gets confused when
+> one of them changes while its .throttle() callback is running.
+> 
+> To prevent that from happening, use thermal zone locking in weight_store()."
+
+Agree, thanks.
+
+> 
 >>
 >> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 >> ---
->>   drivers/thermal/gov_power_allocator.c | 41 +++++++++++----------------
->>   1 file changed, 17 insertions(+), 24 deletions(-)
+>>   drivers/thermal/thermal_sysfs.c | 6 ++++++
+>>   1 file changed, 6 insertions(+)
 >>
->> diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
->> index 3328c3ec71f2..1a605fd9c8c6 100644
->> --- a/drivers/thermal/gov_power_allocator.c
->> +++ b/drivers/thermal/gov_power_allocator.c
->> @@ -85,6 +85,13 @@ struct power_allocator_params {
->>          u32 *weighted_req_power;
->>   };
->>
->> +static bool power_actor_is_valid(struct power_allocator_params *params,
->> +                                struct thermal_instance *instance)
->> +{
->> +       return ((instance->trip == params->trip_max) &&
+>> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+>> index eef40d4f3063..df85df7d4a88 100644
+>> --- a/drivers/thermal/thermal_sysfs.c
+>> +++ b/drivers/thermal/thermal_sysfs.c
+>> @@ -961,6 +961,7 @@ ssize_t weight_store(struct device *dev, struct device_attribute *attr,
+>>                       const char *buf, size_t count)
+>>   {
+>>          struct thermal_instance *instance;
+>> +       struct thermal_zone_device *tz;
 > 
-> The inner parens are redundant.
+> IMO the local var doesn't help much.  You may as well use
+> instance->tz->lock directly below.
 
-OK
+OK, I'll change that.
 
 > 
->> +                cdev_is_power_actor(instance->cdev));
->> +}
-> 
-> The part below LGTM.
+>>          int ret, weight;
+>>
+>>          ret = kstrtoint(buf, 0, &weight);
+>> @@ -968,7 +969,12 @@ ssize_t weight_store(struct device *dev, struct device_attribute *attr,
+>>                  return ret;
+>>
+>>          instance = container_of(attr, struct thermal_instance, weight_attr);
+>> +       tz = instance->tz;
+>> +
+>> +       /* Don't race with governors using the 'weight' value */
+>> +       mutex_lock(&tz->lock);
+>>          instance->weight = weight;
+>> +       mutex_unlock(&tz->lock);
+>>
+>>          return count;
+>>   }
+>> --
