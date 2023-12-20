@@ -1,113 +1,75 @@
-Received: from mx.kernkonzept.com (serv1.kernkonzept.com [159.69.200.6])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88A80210E9;
-	Wed, 20 Dec 2023 10:57:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kernkonzept.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kernkonzept.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernkonzept.com header.i=@kernkonzept.com header.b="Pm6rYARo"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=kernkonzept.com; s=mx1; h=In-Reply-To:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-	Reply-To:Content-ID:Content-Description;
-	bh=CsVrMzlnClZBs8fIy1cwy38/3lc5X9yJ6wHcUOPH4WM=; b=Pm6rYARoAbayjWXgboBdqN3rYh
-	NIjefdVbMu0n9vThQoS94qSZ81IT2T4LImMgGMcrvzKTg0QRHQP3jcP78E8IDujY2habqr++Hn26V
-	YWzzF0WraOICVuN1+sYKITJi0rAfy3k0ydmaMiIyG3CgPft4yBR63ysDpBd85woAlFkKKLhTbadWT
-	CIhsH4Lh6PqjDsySHZnbWBTpcVZSJnOvhRkiVpmXqj/DdWLOwFP3TFIIwi7fkVAtRrPwagOLmjdQW
-	hojj4P2XTfUPE1GgYKPk2KGQzG5bgFCdsiSmpqgyemU9JQe6dXrgHBGlw4aYF8fAvZsNSCVtXBZ+G
-	87TvQWiQ==;
-Received: from [10.22.3.24] (helo=kernkonzept.com)
-	by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.96)
-	id 1rFthn-00DKcd-2H;
-	Wed, 20 Dec 2023 11:21:35 +0100
-Date: Wed, 20 Dec 2023 11:21:30 +0100
-From: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-To: Konrad Dybcio <konrad.dybcio@linaro.org>
-Cc: Georgi Djakov <djakov@kernel.org>, Andy Gross <agross@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>, linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Adam Skladowski <a39.skl@gmail.com>
-Subject: Re: [PATCH 2/2] interconnect: qcom: Add MSM8909 interconnect
- provider driver
-Message-ID: <ZYLAKvXE156fPHJ1@kernkonzept.com>
-References: <20231206-icc-msm8909-v1-0-fe0dd632beff@kernkonzept.com>
- <20231206-icc-msm8909-v1-2-fe0dd632beff@kernkonzept.com>
- <3f921a53-8eac-48e6-be17-43c07a0313d0@linaro.org>
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9B35D210EA;
+	Wed, 20 Dec 2023 11:02:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 919B71FB;
+	Wed, 20 Dec 2023 03:03:40 -0800 (PST)
+Received: from e129166.arm.com (unknown [10.57.82.217])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id CC9DC3F5A1;
+	Wed, 20 Dec 2023 03:02:52 -0800 (PST)
+From: Lukasz Luba <lukasz.luba@arm.com>
+To: linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Cc: lukasz.luba@arm.com,
+	dietmar.eggemann@arm.com,
+	linux-arm-kernel@lists.infradead.org,
+	sboyd@kernel.org,
+	nm@ti.com,
+	linux-samsung-soc@vger.kernel.org,
+	daniel.lezcano@linaro.org,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	krzysztof.kozlowski@linaro.org,
+	alim.akhtar@samsung.com,
+	m.szyprowski@samsung.com,
+	xuewen.yan94@gmail.com,
+	mhiramat@kernel.org,
+	qyousef@layalina.io,
+	wvw@google.com
+Subject: [RFC PATCH 0/2] Introduce runtime modifiable Energy Model
+Date: Wed, 20 Dec 2023 11:03:37 +0000
+Message-Id: <20231220110339.1065505-1-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <3f921a53-8eac-48e6-be17-43c07a0313d0@linaro.org>
 
-On Sat, Dec 09, 2023 at 06:54:16PM +0100, Konrad Dybcio wrote:
-> On 6.12.2023 15:35, Stephan Gerhold wrote:
-> > From: Adam Skladowski <a39.skl@gmail.com>
-> > 
-> > Add driver for interconnect busses found in MSM8909 based platforms.
-> > The topology consists of three NoCs that are partially controlled by a
-> > RPM processor.
-> > 
-> > In the downstream/vendor kernel from Qualcomm there is an additional
-> > "mm-snoc". However, it doesn't have a separate RPM clock assigned. It
-> > looks like this is actually the same NoC in hardware and the "mm-snoc"
-> > was only defined to assign a different "qcom,util-fact". In mainline we
-> > can represent this by assigning the equivalent "ab_coeff" to all the
-> > nodes that are part of "mm-snoc" downstream.
-> Worth mentioning that snoc_mm used the same clock as snoc, which is not
-> obvious with some of these older designs:
-> 
-> static DEFINE_CLK_VOTER(snoc_msmbus_a_clk,  &snoc_a_clk.c,  LONG_MAX);
-> static DEFINE_CLK_VOTER(snoc_mm_msmbus_a_clk,  &snoc_a_clk.c,  LONG_MAX);
-> 
+Hi all,
 
-Thanks, will try to clarify this in v2!
+This is a follow-up patch aiming to show the users of the proposed
+runtime modifiable Energy Model framework. The patches and discussion is
+available here [1]. I didn't wanted to add more complexity in that
+already big EM patch set and planned to add more users later.
+This patch set is one of the first user. I have talked about the chip
+binning in a few conferences and the need to update the EM after boot.
+This Exynos is one of the platforms which adjust voltage after the EM
+is registered. This is perfectly fine and alloed in the kernel, even
+from a module so very late. The EM framework should just allow to
+modify the power values after that.
 
-> [...]
-> 
-> > +
-> > +static struct platform_driver msm8909_noc_driver = {
-> > +	.probe = qnoc_probe,
-> > +	.remove = qnoc_remove,
-> > +	.driver = {
-> > +		.name = "qnoc-msm8909",
-> > +		.of_match_table = msm8909_noc_of_match,
-> > +		.sync_state = icc_sync_state,
-> > +	},
-> > +};
-> > +module_platform_driver(msm8909_noc_driver);
-> And you may want this to be a bit higher up in the food chain!
+This patch set will have to wait for merging of the dependet main EM
+change. 
 
-I would prefer to keep this as-is for now since this is what it has been
-intensively tested with. I do have a timing issue when interconnect is
-configured for the debug UART, but moving to core_initcall() does not
-help either. It seems like the ICC driver simply cannot be probed
-earlier due to other dependencies, or due to the time the RPM needs
-until it shows up.
+Regards,
+Lukasz Luba
 
-At some point we should do a thorough review of the initcall levels for
-all the Qualcomm-related core drivers and see if and in which cases
-diverting from the defaults actually helps. I would leave this up for
-future work right now, though.
+[1] https://lore.kernel.org/lkml/20231129110853.94344-1-lukasz.luba@arm.com/
 
-> 
-> Otherwise I don't see anything obviously wrong, I assume you tested
-> this without clk/pd_ignore_unused, with rpmcc cleanup and can confirm
-> the QoS programming went through without angry resets.
-> 
+Lukasz Luba (2):
+  OPP: Add API to update EM after adjustment of voltage for OPPs
+  soc: samsung: exynos-asv: Update Energy Model after adjusting voltage
 
-Yes, all of that works in my tests. 🎉
-
-Thanks for the review!
+ drivers/opp/of.c                 | 69 ++++++++++++++++++++++++++++++++
+ drivers/soc/samsung/exynos-asv.c | 10 ++++-
+ include/linux/pm_opp.h           |  6 +++
+ 3 files changed, 84 insertions(+), 1 deletion(-)
 
 -- 
-Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Kernkonzept GmbH at Dresden, Germany, HRB 31129, CEO Dr.-Ing. Michael Hohmuth
+2.25.1
+
