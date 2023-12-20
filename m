@@ -1,148 +1,113 @@
-Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [217.70.183.196])
+Received: from mx.kernkonzept.com (serv1.kernkonzept.com [159.69.200.6])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BA8420DD3;
-	Wed, 20 Dec 2023 10:49:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88A80210E9;
+	Wed, 20 Dec 2023 10:57:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kernkonzept.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kernkonzept.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="R7cNe7Pl"
-Received: by mail.gandi.net (Postfix) with ESMTPSA id EFA00E0017;
-	Wed, 20 Dec 2023 10:49:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1703069376;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=iDREN8pL6rlwj/zx8p4+gf0J/H2ZGLILA62AWk5JrKI=;
-	b=R7cNe7PljnMWbHiOXpSckQyJhiJsd9Xey7FxPrajIPq0BvmESrVg2a+Ikz8vdb5UdFPxqb
-	orIOWQUaIATjaZNTR44qk96mq+KAdE8dZZStq77Dp6/i9fPJ92glBlXnHUuXn0ZpYNuTuK
-	UHjta+d0mpLjVdM2NUBWpXzZGvShj33o2o+tSCib6EHcHW43yp4/6od2YYRh6n28HEHTjs
-	9eJITUPh5n/pMV6SqSoN/gA/9r7VS+b2thgaa3YvphqJrFF0JY4i4G8mnalssN9xFiBMBT
-	rUmRCl2lbrECykoAsoUrGYVoers5mbNKHkBT4PxOCvpWLIiRXQ6Oije3v8vQkw==
-Message-ID: <4c31acd8-4edb-44f5-9a90-cb2f2dc530b6@bootlin.com>
-Date: Wed, 20 Dec 2023 11:49:35 +0100
+	dkim=pass (2048-bit key) header.d=kernkonzept.com header.i=@kernkonzept.com header.b="Pm6rYARo"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=kernkonzept.com; s=mx1; h=In-Reply-To:Content-Transfer-Encoding:
+	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Reply-To:Content-ID:Content-Description;
+	bh=CsVrMzlnClZBs8fIy1cwy38/3lc5X9yJ6wHcUOPH4WM=; b=Pm6rYARoAbayjWXgboBdqN3rYh
+	NIjefdVbMu0n9vThQoS94qSZ81IT2T4LImMgGMcrvzKTg0QRHQP3jcP78E8IDujY2habqr++Hn26V
+	YWzzF0WraOICVuN1+sYKITJi0rAfy3k0ydmaMiIyG3CgPft4yBR63ysDpBd85woAlFkKKLhTbadWT
+	CIhsH4Lh6PqjDsySHZnbWBTpcVZSJnOvhRkiVpmXqj/DdWLOwFP3TFIIwi7fkVAtRrPwagOLmjdQW
+	hojj4P2XTfUPE1GgYKPk2KGQzG5bgFCdsiSmpqgyemU9JQe6dXrgHBGlw4aYF8fAvZsNSCVtXBZ+G
+	87TvQWiQ==;
+Received: from [10.22.3.24] (helo=kernkonzept.com)
+	by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.96)
+	id 1rFthn-00DKcd-2H;
+	Wed, 20 Dec 2023 11:21:35 +0100
+Date: Wed, 20 Dec 2023 11:21:30 +0100
+From: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
+To: Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc: Georgi Djakov <djakov@kernel.org>, Andy Gross <agross@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>, linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Adam Skladowski <a39.skl@gmail.com>
+Subject: Re: [PATCH 2/2] interconnect: qcom: Add MSM8909 interconnect
+ provider driver
+Message-ID: <ZYLAKvXE156fPHJ1@kernkonzept.com>
+References: <20231206-icc-msm8909-v1-0-fe0dd632beff@kernkonzept.com>
+ <20231206-icc-msm8909-v1-2-fe0dd632beff@kernkonzept.com>
+ <3f921a53-8eac-48e6-be17-43c07a0313d0@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: omap-i2c: runtime pm issue during suspend to ram
-Content-Language: en-US
-From: Thomas Richard <thomas.richard@bootlin.com>
-To: linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org,
- linux-omap@vger.kernel.org, Vignesh Raghavendra <vigneshr@ti.com>,
- Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>
-Cc: =?UTF-8?Q?Th=C3=A9o_Lebrun?= <theo.lebrun@bootlin.com>,
- Gregory CLEMENT <gregory.clement@bootlin.com>, Kumar Udit <u-kumar1@ti.com>
-References: <f68c9a54-0fde-4709-9d2f-0d23a049341b@bootlin.com>
-In-Reply-To: <f68c9a54-0fde-4709-9d2f-0d23a049341b@bootlin.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-GND-Sasl: thomas.richard@bootlin.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3f921a53-8eac-48e6-be17-43c07a0313d0@linaro.org>
 
-On 12/19/23 18:15, Thomas Richard wrote:
-> Hello,
+On Sat, Dec 09, 2023 at 06:54:16PM +0100, Konrad Dybcio wrote:
+> On 6.12.2023 15:35, Stephan Gerhold wrote:
+> > From: Adam Skladowski <a39.skl@gmail.com>
+> > 
+> > Add driver for interconnect busses found in MSM8909 based platforms.
+> > The topology consists of three NoCs that are partially controlled by a
+> > RPM processor.
+> > 
+> > In the downstream/vendor kernel from Qualcomm there is an additional
+> > "mm-snoc". However, it doesn't have a separate RPM clock assigned. It
+> > looks like this is actually the same NoC in hardware and the "mm-snoc"
+> > was only defined to assign a different "qcom,util-fact". In mainline we
+> > can represent this by assigning the equivalent "ab_coeff" to all the
+> > nodes that are part of "mm-snoc" downstream.
+> Worth mentioning that snoc_mm used the same clock as snoc, which is not
+> obvious with some of these older designs:
+> 
+> static DEFINE_CLK_VOTER(snoc_msmbus_a_clk,  &snoc_a_clk.c,  LONG_MAX);
+> static DEFINE_CLK_VOTER(snoc_mm_msmbus_a_clk,  &snoc_a_clk.c,  LONG_MAX);
+> 
 
-I add some people in this thread.
+Thanks, will try to clarify this in v2!
+
+> [...]
+> 
+> > +
+> > +static struct platform_driver msm8909_noc_driver = {
+> > +	.probe = qnoc_probe,
+> > +	.remove = qnoc_remove,
+> > +	.driver = {
+> > +		.name = "qnoc-msm8909",
+> > +		.of_match_table = msm8909_noc_of_match,
+> > +		.sync_state = icc_sync_state,
+> > +	},
+> > +};
+> > +module_platform_driver(msm8909_noc_driver);
+> And you may want this to be a bit higher up in the food chain!
+
+I would prefer to keep this as-is for now since this is what it has been
+intensively tested with. I do have a timing issue when interconnect is
+configured for the debug UART, but moving to core_initcall() does not
+help either. It seems like the ICC driver simply cannot be probed
+earlier due to other dependencies, or due to the time the RPM needs
+until it shows up.
+
+At some point we should do a thorough review of the initcall levels for
+all the Qualcomm-related core drivers and see if and in which cases
+diverting from the defaults actually helps. I would leave this up for
+future work right now, though.
 
 > 
-> I have a gpio expander (pca953x driver) connected to an i2c controller
-> managed by the omap-i2c driver.
-> And I have some issues with pm_runtime_force_suspend/resume during
-> suspend to ram.
-> For some reasons, related to hardware design, I need to access to this
-> gpio expander during suspend_noirq and resume_noirq. So I had to move
-> the suspend/resume of the pca953x to suspend_noirq/resume_noirq.
+> Otherwise I don't see anything obviously wrong, I assume you tested
+> this without clk/pd_ignore_unused, with rpmcc cleanup and can confirm
+> the QoS programming went through without angry resets.
 > 
-> The i2c controller is autosuspended when I start the suspend sequence.
-> In suspend_noirq, I access to one gpio of the expander, so rpm_resume is
-> called to resume the i2c controller.
-> And rpm_resume returns an error because disable_depth > 0 [1]. In
-> suspend_noirq, runtime pm is disabled (disable_depth is incremented when
-> runtime pm is disabled [2]). So the expander is not reachable, and the
-> access fails.
-> 
-> [1]
-> https://elixir.bootlin.com/linux/v6.7-rc6/source/drivers/base/power/runtime.c#L773
-> [2]
-> https://elixir.bootlin.com/linux/v6.7-rc6/source/drivers/base/power/runtime.c#L1474
-> 
-> The suspend_noirq of the gpio expander don't do i2c access, so no
-> problem for pca953x suspend.
-> The pm_runtime_force_suspend (suspend_noirq [3]) of the i2c controller
-> does nothing as the device is already suspended [4].
-> 
-> [3]
-> https://elixir.bootlin.com/linux/v6.7-rc6/source/drivers/i2c/busses/i2c-omap.c#L1579
-> [4]
-> https://elixir.bootlin.com/linux/v6.7-rc6/source/drivers/base/power/runtime.c#L1878
-> 
-> Then during the pm_runtime_force_resume (resume_noirq [3]) the i2c
-> controller is not resumed because needs_for_resume is equal to 0 [5].
-> The needs_for_resume flag is set in pm_runtime_force_suspend [6] but we
-> don't reach this point, because the device is already suspended [4].
-> 
-> [5]
-> https://elixir.bootlin.com/linux/v6.7-rc6/source/drivers/base/power/runtime.c#L1929
-> [6]
-> https://elixir.bootlin.com/linux/v6.7-rc6/source/drivers/base/power/runtime.c#L1900
-> 
-> Then the resume_noirq of the pca953x driver is called, consequently
-> rpm_resume is called to resume the i2c controller. But it is never
-> resumed because disable_depth > 0 [7] (runtime pm is still disabled in
-> resume_noirq). So the resume_noirq fails.
-> 
-> [7]
-> https://elixir.bootlin.com/linux/v6.7-rc6/source/drivers/base/power/runtime.c#L773
-> 
-> I found a workaround which is to resume the controller and disable
-> runtime pm during suspend, then runtime pm is enabled during resume.
-> But there is probably a better solution to fix this issue.
-> 
-> Best Regards,
-> 
-> Thomas Richard
-> 
-> 
-> diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
-> index 42165ef57946..fe79b27b46fd 100644
-> --- a/drivers/i2c/busses/i2c-omap.c
-> +++ b/drivers/i2c/busses/i2c-omap.c
-> @@ -1575,9 +1575,24 @@ static int __maybe_unused
-> omap_i2c_runtime_resume(struct device *dev)
->         return 0;
->  }
-> 
-> +static int omap_i2c_suspend(struct device *dev)
-> +{
-> +       pm_runtime_get_sync(dev);
-> +       pm_runtime_disable(dev);
-> +       return 0;
-> +}
-> +
-> +static int omap_i2c_resume(struct device *dev)
-> +{
-> +       pm_runtime_enable(dev);
-> +       pm_runtime_put_autosuspend(dev);
-> +       return 0;
-> +}
-> +
->  static const struct dev_pm_ops omap_i2c_pm_ops = {
->         SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
->                                       pm_runtime_force_resume)
-> +       SET_SYSTEM_SLEEP_PM_OPS(omap_i2c_suspend, omap_i2c_resume)
->         SET_RUNTIME_PM_OPS(omap_i2c_runtime_suspend,
->                            omap_i2c_runtime_resume, NULL)
->  };
-> 
-> 
-> 
+
+Yes, all of that works in my tests. 🎉
+
+Thanks for the review!
+
 -- 
-Thomas Richard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
+Stephan Gerhold <stephan.gerhold@kernkonzept.com>
+Kernkonzept GmbH at Dresden, Germany, HRB 31129, CEO Dr.-Ing. Michael Hohmuth
