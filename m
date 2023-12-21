@@ -1,29 +1,29 @@
 Received: from madrid.collaboradmins.com (madrid.collaboradmins.com [46.235.227.194])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 414227AE7B;
-	Thu, 21 Dec 2023 12:48:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EC257BEEE;
+	Thu, 21 Dec 2023 12:48:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="PVPjgZyC"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="ZMitHe2c"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1703162927;
-	bh=IzGXP7pU6vgksVmgOm8IVqKNTU11eGk4o8LGz/dSNic=;
+	s=mail; t=1703162929;
+	bh=ssMjukwPYr5YFlWiAdM91Hji1S8UHvaa/NNDxIiec6o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=PVPjgZyCfYFO033Aa4w6Zfpat7VbZzivozeRdDK8DYjwtiY3sdwdXsNJ3Qev1liTs
-	 vxBXJOUuuzacj3D8cWibZLDKmIo4bk/NXeGNNbS7Vok9imkK8wV/dLLudEq8cf0oTf
-	 /brH2cIXgJANZ8JFbicSX7exL1Jrp7RWvakS83ANrzpAITAuXKzC1v0MQtO0Nn4+JD
-	 sVvXB5SsYq1ugaiSRaA47IGXEQJ/uL7iz3BzN34tauZwR8vuJXz5dfsm0iN4hLQkXA
-	 XrK5t2o1WmFlYKs5g5gYb5Nt1lG/Bxhl0vijrC+EoTuFNfCdgwrE6R7F6SuuvZMM+L
-	 YT/jmQwkwaRUA==
+	b=ZMitHe2cFQXc5iZcG2E859bVs3QezJ9Heebe5o2HM+KroJkJxidtsnLxxrNI8YAfO
+	 7AtQ3f2OB0PNRp65286MIAcIWq7KDMab7oFCpimORGlzJ7CpLe6pWhL8HARYRrHsde
+	 qy8CfDcCdHx16BPNFvDRS5XrUhLbnwB9X3AQ2HAyyNTbMTskmpccCVsFnST/4VlfLq
+	 XIjXCF4LS0Bmi7MqkJtwnRDOkPR8XpMwEEOwFUIiiTO61Zpea36GvsxfbU/1WgGux3
+	 5SLvjx9Mtq7WIB7fBrU9mwhClmIjCiN+8Wst/diu+bzoZnVFhAM9QnLKI89yTMKEmR
+	 iSlt5UdgZWzRw==
 Received: from IcarusMOD.eternityproject.eu (cola.collaboradmins.com [195.201.22.229])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by madrid.collaboradmins.com (Postfix) with ESMTPSA id 30282378200A;
-	Thu, 21 Dec 2023 12:48:47 +0000 (UTC)
+	by madrid.collaboradmins.com (Postfix) with ESMTPSA id B34403782013;
+	Thu, 21 Dec 2023 12:48:48 +0000 (UTC)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: daniel.lezcano@linaro.org
 Cc: rafael@kernel.org,
@@ -33,9 +33,9 @@ Cc: rafael@kernel.org,
 	linux-kernel@vger.kernel.org,
 	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
 	kernel@collabora.com
-Subject: [RFC PATCH 20/26] thermal/drivers/int340x: Migrate to thermal_zone_device_register()
-Date: Thu, 21 Dec 2023 13:48:19 +0100
-Message-ID: <20231221124825.149141-21-angelogioacchino.delregno@collabora.com>
+Subject: [RFC PATCH 22/26] cxgb4: Migrate to thermal_zone_device_register()
+Date: Thu, 21 Dec 2023 13:48:21 +0100
+Message-ID: <20231221124825.149141-23-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231221124825.149141-1-angelogioacchino.delregno@collabora.com>
 References: <20231221124825.149141-1-angelogioacchino.delregno@collabora.com>
@@ -55,51 +55,50 @@ Migrate to the new thermal zone device registration function.
 
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- .../intel/int340x_thermal/int3400_thermal.c     | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ .../net/ethernet/chelsio/cxgb4/cxgb4_thermal.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index 427d370648d5..87bfc1f9a5a4 100644
---- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -536,11 +536,6 @@ static struct thermal_zone_device_ops int3400_thermal_ops = {
- 	.change_mode = int3400_thermal_change_mode,
- };
+diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_thermal.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_thermal.c
+index dea9d2907666..0192dba14a84 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_thermal.c
++++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_thermal.c
+@@ -37,12 +37,21 @@ static struct thermal_trip trip = { .type = THERMAL_TRIP_CRITICAL } ;
  
--static struct thermal_zone_params int3400_thermal_params = {
--	.governor_name = "user_space",
--	.no_hwmon = true,
--};
--
- static void int3400_setup_gddv(struct int3400_thermal_priv *priv)
- {
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-@@ -571,6 +566,14 @@ static void int3400_setup_gddv(struct int3400_thermal_priv *priv)
- 
- static int int3400_thermal_probe(struct platform_device *pdev)
+ int cxgb4_thermal_init(struct adapter *adap)
  {
 +	struct thermal_zone_device_params tzdp = {
-+		.type = "INT3400 Thermal",
-+		.tzp = {
-+			.governor_name = "user_space",
-+			.no_hwmon = true
-+		},
-+		.ops = &int3400_thermal_ops
++		.ops = &cxgb4_thermal_ops,
++		.devdata = adap,
++		.trips = &trip,
++		.num_trips = num_trip,
 +	};
- 	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
- 	struct int3400_thermal_priv *priv;
- 	int result;
-@@ -609,9 +612,7 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 	struct ch_thermal *ch_thermal = &adap->ch_thermal;
+-	char ch_tz_name[THERMAL_NAME_LENGTH];
+ 	int num_trip = CXGB4_NUM_TRIPS;
+ 	u32 param, val;
+ 	int ret;
  
- 	evaluate_odvp(priv);
++	tzdp.type = kasprintf("cxgb4_%s", adap->name);
++	if (!tzdp.type)
++		return -ENOMEM;
++
+ 	/* on older firmwares we may not get the trip temperature,
+ 	 * set the num of trips to 0.
+ 	 */
+@@ -58,11 +67,8 @@ int cxgb4_thermal_init(struct adapter *adap)
+ 		trip.temperature = val * 1000;
+ 	}
  
--	priv->thermal = thermal_tripless_zone_device_register("INT3400 Thermal", priv,
--							      &int3400_thermal_ops,
--							      &int3400_thermal_params);
-+	priv->thermal = thermal_zone_device_register(&tzdp);
- 	if (IS_ERR(priv->thermal)) {
- 		result = PTR_ERR(priv->thermal);
- 		goto free_art_trt;
+-	snprintf(ch_tz_name, sizeof(ch_tz_name), "cxgb4_%s", adap->name);
+-	ch_thermal->tzdev = thermal_zone_device_register_with_trips(ch_tz_name, &trip, num_trip,
+-								    0, adap,
+-								    &cxgb4_thermal_ops,
+-								    NULL, 0, 0);
++	ch_thermal->tzdev = thermal_zone_device_register(&tzdp);
++	kfree(tzdp.type);
+ 	if (IS_ERR(ch_thermal->tzdev)) {
+ 		ret = PTR_ERR(ch_thermal->tzdev);
+ 		dev_err(adap->pdev_dev, "Failed to register thermal zone\n");
 -- 
 2.43.0
 
