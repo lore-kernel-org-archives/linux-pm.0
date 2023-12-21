@@ -1,40 +1,40 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F37BD63D5;
-	Thu, 21 Dec 2023 03:51:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9EE579DC;
+	Thu, 21 Dec 2023 03:51:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="hwtfozIn"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 3BL31Ugn012423;
-	Thu, 21 Dec 2023 03:50:51 GMT
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="ZZtfraEM"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 3BL3nDES020761;
+	Thu, 21 Dec 2023 03:50:52 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	from:subject:date:message-id:mime-version:content-type
-	:content-transfer-encoding:to:cc; s=qcppdkim1; bh=s9b4MZ8weiSojT
-	IfRsZ5Ycdt8rZB3bdGHp5md8HL4w4=; b=hwtfozInE/3ng8fy04SVKlnCAxiFCQ
-	adFa+K6p0X1VsY7Iur6e3jjls6S+9emnJmucKpHbtxqroBHiSUGX/BfyIUjZns6Z
-	HphSq7Sxuz8HsBtvrNz000VsX9aRAUDrGCvTnuGfP50c5xh9R381sSbO4xxFAw6r
-	JLBm/HEGCCj10cjytVqjWEhWkPdBWpAJm8D8zgSfgawk9F053vL/e3dZ+5KCL6Gk
-	L6o6J+VXHyPB5GPHLEuN6UrfWFLq2atePdNFpST8a2g46zgB2u4VORBkZM60PI6s
-	1u6IcSrEdAUTKG9dagDAEmNfwWWP9nmOtxhloEJKZktpQ+H/tGqmeliw==
-Received: from nalasppmta05.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3v3wt9tjaw-1
+	from:date:subject:mime-version:content-type
+	:content-transfer-encoding:message-id:references:in-reply-to:to
+	:cc; s=qcppdkim1; bh=rr9r9gWxhO4lMOjEkKreNfvWKgKBiYqYX4s9TmL7zcQ
+	=; b=ZZtfraEMM+C9hJeHXHu0wsytwhZK/1knz38pGjYDyVntREPd2bKCgJDquDm
+	f6Ia2tBGaCvZth9rdd7Il8u8Q2UtxRaDT/LxxQ0/flHVCNNWcVi+APikkWmyGtTB
+	cvu5zygqR1+3m/67sA8JgOLRyco5W4z/PDaGWCsMcUGiLUXTgZktgpCp/ecOZq90
+	Fr5Z+i6jHOOBIQSiISZZ7g6xbcsakHgp8k9KQj3fJgCx6cadu9qyLLHELL4lu41q
+	oOC7LXDlMQpzZlxGW8LTuvmu2TVkjq4c+rKrq8N7eyuttdxtbRtO37aOH1cDYRk3
+	WKAEX8ohqfk5+AKejMKd/xr+LyQ==
+Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3v3r6ru9m7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 21 Dec 2023 03:50:50 +0000 (GMT)
+	Thu, 21 Dec 2023 03:50:52 +0000 (GMT)
 Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-	by NALASPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3BL3on9G004593
+	by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3BL3opK2020560
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 21 Dec 2023 03:50:49 GMT
+	Thu, 21 Dec 2023 03:50:51 GMT
 Received: from [169.254.0.1] (10.49.16.6) by nalasex01c.na.qualcomm.com
  (10.47.97.35) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.40; Wed, 20 Dec
- 2023 19:50:49 -0800
+ 2023 19:50:51 -0800
 From: Bjorn Andersson <quic_bjorande@quicinc.com>
-Subject: [PATCH 0/8] arm64: dts: qcom: sa8295p: Enable GPU
-Date: Wed, 20 Dec 2023 19:50:34 -0800
-Message-ID: <20231220-sa8295p-gpu-v1-0-d8cdf2257f97@quicinc.com>
+Date: Wed, 20 Dec 2023 19:50:40 -0800
+Subject: [PATCH 6/8] arm64: dts: qcom: sa8295p-adp: add max20411
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -43,9 +43,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAq2g2UC/x2NQQqEMAwAvyI5b8CmW9j1K7KHWqMGpFsaFEH8u
- 8HjDAxzgnIVVuiaEyrvovLPBu7VQFpinhllNAZqyTuiFjV+6BsKzmXD4FKY/Nuz5wRWDFEZhxp
- zWqzJ27qaLJUnOZ5F/7uuG8pwJsZyAAAA
+Message-ID: <20231220-sa8295p-gpu-v1-6-d8cdf2257f97@quicinc.com>
+References: <20231220-sa8295p-gpu-v1-0-d8cdf2257f97@quicinc.com>
+In-Reply-To: <20231220-sa8295p-gpu-v1-0-d8cdf2257f97@quicinc.com>
 To: Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio
 	<konrad.dybcio@linaro.org>,
@@ -70,62 +70,103 @@ CC: <linux-arm-msm@vger.kernel.org>, <linux-clk@vger.kernel.org>,
         Bjorn Andersson
 	<andersson@kernel.org>
 X-Mailer: b4 0.12.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1703130649; l=1636;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1703130649; l=1576;
  i=quic_bjorande@quicinc.com; s=20230915; h=from:subject:message-id;
- bh=FiZgkZfXSovh7vIjDrL3sD8wd3dejO0nieX2YoLE65U=;
- b=C0OfEAnCzRC0wPMuHy5id+exPNU9XxOmfFL/T+44tZ9a9yVzzjrrZhETzzTc3PYc27yiiU8ygtGN
- g+v6ZbAIBIQjF/kD220breLrdza58X3ftqmd7VlAFCr861mqG0O9
+ bh=iuhv7P68f++bs7xsess+Ut/fTJIye+b8NI9cCDTyLVc=;
+ b=up+NYbS/7WM3RyIz183b67hkzTM4B+OxT3FeiOsRy7DKP/j7O7czuFnmznVDSKWIy3nQMV/XgEDy
+ erOT+Ci2DAPf4unP6aUx+vpjqUlXheYer2PriM2JqsGSTG8WGsfU
 X-Developer-Key: i=quic_bjorande@quicinc.com; a=ed25519;
  pk=VkhObtljigy9k0ZUIE1Mvr0Y+E1dgBEH9WoLQnUtbIM=
 X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
  nalasex01c.na.qualcomm.com (10.47.97.35)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: 5xBJz-S5nOWnNOgV6lUjZuxHvnI6wXiB
-X-Proofpoint-GUID: 5xBJz-S5nOWnNOgV6lUjZuxHvnI6wXiB
+X-Proofpoint-ORIG-GUID: TaqN9-nB1Vy7tNOm2EgLwry4Nc5tp4yW
+X-Proofpoint-GUID: TaqN9-nB1Vy7tNOm2EgLwry4Nc5tp4yW
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-12-09_02,2023-12-07_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxlogscore=635
- spamscore=0 lowpriorityscore=0 mlxscore=0 suspectscore=0 adultscore=0
- clxscore=1011 impostorscore=0 bulkscore=0 priorityscore=1501
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ definitions=2023-12-09_01,2023-12-07_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 bulkscore=0
+ mlxscore=0 mlxlogscore=988 clxscore=1015 malwarescore=0 suspectscore=0
+ spamscore=0 priorityscore=1501 lowpriorityscore=0 phishscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2311290000 definitions=main-2312210026
 
-Due to the different PMIC configuration found in the SA8295P platform,
-compared to SC8280XP, the VDD_GFX pads are supplied by an dedicated
-MAX20411 LDO.
+From: Bjorn Andersson <andersson@kernel.org>
 
-Support for expressing the regulator supply is added to the binding, the
-support for enabling the parent supply for GX is added, the missing
-gfx.lvl power-domain is dropped, and the DeviceTree is wired up to
-enable the GPU in this configuration.
+The SA8295P ADP has a MAX20411 LDO regulator on I2C 12, supplying the
+VDD_GFX pads. Enable the bus and add the maxim,max20411 device on the
+bus.
 
-Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
-Bjorn Andersson (8):
-      dt-bindings: clock: qcom: Allow VDD_GFX supply to GX
-      clk: qcom: gdsc: Enable supply reglator in GPU GX handler
-      clk: qcom: gpucc-sc8280xp: Add external supply for GX gdsc
-      soc: qcom: rpmhpd: Drop SA8540P gfx.lvl
-      arm64: dts: qcom: sa8540p: Drop gfx.lvl as power-domain for gpucc
-      arm64: dts: qcom: sa8295p-adp: add max20411
-      arm64: dts: qcom: sa8295p-adp: Enable GPU
-      arm64: defconfig: Enable MAX20411 regulator driver
+ arch/arm64/boot/dts/qcom/sa8295p-adp.dts | 40 ++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
- .../devicetree/bindings/clock/qcom,gpucc.yaml      |  3 +
- arch/arm64/boot/dts/qcom/sa8295p-adp.dts           | 69 ++++++++++++++++++++++
- arch/arm64/boot/dts/qcom/sa8540p.dtsi              |  2 +
- arch/arm64/configs/defconfig                       |  1 +
- drivers/clk/qcom/gdsc.c                            |  8 ++-
- drivers/clk/qcom/gpucc-sc8280xp.c                  |  1 +
- drivers/pmdomain/qcom/rpmhpd.c                     |  1 -
- 7 files changed, 83 insertions(+), 2 deletions(-)
----
-base-commit: 20d857259d7d10cd0d5e8b60608455986167cfad
-change-id: 20231220-sa8295p-gpu-51c5f343e3ec
+diff --git a/arch/arm64/boot/dts/qcom/sa8295p-adp.dts b/arch/arm64/boot/dts/qcom/sa8295p-adp.dts
+index fd253942e5e5..e16406c9c19d 100644
+--- a/arch/arm64/boot/dts/qcom/sa8295p-adp.dts
++++ b/arch/arm64/boot/dts/qcom/sa8295p-adp.dts
+@@ -266,6 +266,26 @@ &dispcc1 {
+ 	status = "okay";
+ };
+ 
++&i2c12 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&qup1_i2c4_state>;
++
++	status = "okay";
++
++	vdd_gfx: regulator@39 {
++		compatible = "maxim,max20411";
++		reg = <0x39>;
++
++		regulator-min-microvolt = <800000>;
++		regulator-max-microvolt = <968750>;
++
++		enable-gpios = <&pmm8540a_gpios 2 GPIO_ACTIVE_HIGH>;
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&max20411_en>;
++	};
++};
++
+ &mdss0 {
+ 	status = "okay";
+ };
+@@ -476,6 +496,10 @@ &pcie4_phy {
+ 	status = "okay";
+ };
+ 
++&qup1 {
++	status = "okay";
++};
++
+ &qup2 {
+ 	status = "okay";
+ };
+@@ -728,4 +752,20 @@ wake-n-pins {
+ 			bias-pull-up;
+ 		};
+ 	};
++
++	qup1_i2c4_state: qup1-i2c4-state {
++		pins = "gpio0", "gpio1";
++		function = "qup12";
++
++		drive-strength = <2>;
++		bias-pull-up;
++	};
++};
++
++&pmm8540a_gpios {
++	max20411_en: max20411-en-state {
++		pins = "gpio2";
++		function = "normal";
++		output-enable;
++	};
+ };
 
-Best regards,
 -- 
-Bjorn Andersson <quic_bjorande@quicinc.com>
+2.25.1
 
