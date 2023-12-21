@@ -1,29 +1,29 @@
 Received: from madrid.collaboradmins.com (madrid.collaboradmins.com [46.235.227.194])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EC627BEEF;
-	Thu, 21 Dec 2023 12:48:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 589687BF0F;
+	Thu, 21 Dec 2023 12:48:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="vL4wvS9+"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="NByCFnyz"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1703162928;
-	bh=V38Z9HnmY0IrWbFobu25Eju6bXU79J2Cvnfm9VP0Vr0=;
+	s=mail; t=1703162930;
+	bh=6AYkxKl8UtbFduON+vHDTlSbEKDTiAXo+qEGqK3aoS0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=vL4wvS9+XJ9f1gis+v3R4vYAWlxDG1u1X1posyjFEsH17a1fbM/gQGhhM+csylOBs
-	 Sj6ll2vdiO1ZbaSZudEq4krn9PY5Yj549Z1BOkKaUdO58reXlzi1SjCqCN/p2CgMYq
-	 DSe72DNXaPrBvTQAwU+Ae/jsJMA0grnJ1wwjkZ8uxChZHWhAfnnLnzwVmrL+HL9dAY
-	 oVpjU+SpwDodKvcBVW6mHGr9F1C7EUCszMC3ydQAxw9jy5yk3VHM8xakUZTNBgINmO
-	 csofa+MMn7z044sf8P7uQGqhVOKbh0dHJ41JpnHpYofYfWOrVwRqPt5+t5RY8m7CGF
-	 d5cbLIkJElycQ==
+	b=NByCFnyzTo9m0wh9v1y13lUpMSf5CRF7uM6N7DGKk0U5Y/h4ryJ4gNAZw8J2ltJe8
+	 w0Cr0vo6JEevDL+3XbhBlwbmJoRSa2kUBsoovq2Nt2dgBLaAjbiJKnewj9Xx418VjL
+	 EavcvSLQOmu9yGCYW1K7pyabhD1JJqFvkQSF7RQXEYONyjbQNBAppq38DTkwwZqIl9
+	 NtWy0sGdQz1xBDxjzvdr721DQ52GnCeW/G97EQLIXb2nQ10Zoic1opx2wEPEf67ePC
+	 E9cBmOPLFrM9p4v4v2DHbPBWyvRGb7GWEFwjtxJ4MUORe2vtGfAjODakNezpCjuysC
+	 v3buCg4Ym2PNQ==
 Received: from IcarusMOD.eternityproject.eu (cola.collaboradmins.com [195.201.22.229])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by madrid.collaboradmins.com (Postfix) with ESMTPSA id EBF35378200E;
-	Thu, 21 Dec 2023 12:48:47 +0000 (UTC)
+	by madrid.collaboradmins.com (Postfix) with ESMTPSA id 402A5378201D;
+	Thu, 21 Dec 2023 12:48:50 +0000 (UTC)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: daniel.lezcano@linaro.org
 Cc: rafael@kernel.org,
@@ -33,9 +33,9 @@ Cc: rafael@kernel.org,
 	linux-kernel@vger.kernel.org,
 	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
 	kernel@collabora.com
-Subject: [RFC PATCH 21/26] wifi: iwlwifi: mvm: Migrate to thermal_zone_device_register()
-Date: Thu, 21 Dec 2023 13:48:20 +0100
-Message-ID: <20231221124825.149141-22-angelogioacchino.delregno@collabora.com>
+Subject: [RFC PATCH 24/26] fixup! power: supply: core: Migrate to thermal_zone_device_register()
+Date: Thu, 21 Dec 2023 13:48:23 +0100
+Message-ID: <20231221124825.149141-25-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231221124825.149141-1-angelogioacchino.delregno@collabora.com>
 References: <20231221124825.149141-1-angelogioacchino.delregno@collabora.com>
@@ -47,82 +47,23 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The thermal API has a new thermal_zone_device_register() function which
-is deprecating the older thermal_zone_device_register_with_trips() and
-thermal_tripless_zone_device_register().
-
-Migrate to the new thermal zone device registration function.
-
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/net/wireless/intel/iwlwifi/mvm/tt.c | 27 ++++++++++++---------
- 1 file changed, 16 insertions(+), 11 deletions(-)
+ drivers/power/supply/power_supply_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/tt.c b/drivers/net/wireless/intel/iwlwifi/mvm/tt.c
-index dee9c367dcd3..268ff6ca3cac 100644
---- a/drivers/net/wireless/intel/iwlwifi/mvm/tt.c
-+++ b/drivers/net/wireless/intel/iwlwifi/mvm/tt.c
-@@ -674,8 +674,14 @@ static  struct thermal_zone_device_ops tzone_ops = {
- static void iwl_mvm_thermal_zone_register(struct iwl_mvm *mvm)
- {
- 	int i, ret;
--	char name[16];
- 	static atomic_t counter = ATOMIC_INIT(0);
-+	struct thermal_zone_device_params tzdp = {
-+		.ops = &tzone_ops,
-+		.devdata = mvm,
-+		.trips = mvm->tz_device.trips,
-+		.num_trips = IWL_MAX_DTS_TRIPS,
-+		.mask = IWL_WRITABLE_TRIPS_MSK,
-+	};
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index d656a2e39157..b0211ab97f9c 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -1310,7 +1310,7 @@ static int psy_register_thermal(struct power_supply *psy)
  
- 	if (!iwl_mvm_is_tt_in_fw(mvm)) {
- 		mvm->tz_device.tzone = NULL;
-@@ -683,28 +689,25 @@ static void iwl_mvm_thermal_zone_register(struct iwl_mvm *mvm)
- 		return;
- 	}
- 
--	BUILD_BUG_ON(ARRAY_SIZE(name) >= THERMAL_NAME_LENGTH);
-+	tzdp.type = kasprintf("iwlwifi_%u", atomic_inc_return(&counter) & 0xFF);
-+	if (!tzdp.type)
-+		return -ENOMEM;
- 
--	sprintf(name, "iwlwifi_%u", atomic_inc_return(&counter) & 0xFF);
--	mvm->tz_device.tzone = thermal_zone_device_register_with_trips(name,
--							mvm->tz_device.trips,
--							IWL_MAX_DTS_TRIPS,
--							IWL_WRITABLE_TRIPS_MSK,
--							mvm, &tzone_ops,
--							NULL, 0, 0);
-+	mvm->tz_device.tzone = thermal_zone_device_register(&tzdp);
-+	kfree(tzdp.type);
- 	if (IS_ERR(mvm->tz_device.tzone)) {
- 		IWL_DEBUG_TEMP(mvm,
- 			       "Failed to register to thermal zone (err = %ld)\n",
- 			       PTR_ERR(mvm->tz_device.tzone));
- 		mvm->tz_device.tzone = NULL;
--		return;
-+		goto err_free;
- 	}
- 
- 	ret = thermal_zone_device_enable(mvm->tz_device.tzone);
- 	if (ret) {
- 		IWL_DEBUG_TEMP(mvm, "Failed to enable thermal zone\n");
- 		thermal_zone_device_unregister(mvm->tz_device.tzone);
--		return;
-+		goto err_free;
- 	}
- 
- 	/* 0 is a valid temperature,
-@@ -714,6 +717,8 @@ static void iwl_mvm_thermal_zone_register(struct iwl_mvm *mvm)
- 		mvm->tz_device.trips[i].temperature = INT_MIN;
- 		mvm->tz_device.trips[i].type = THERMAL_TRIP_PASSIVE;
- 	}
-+
-+	return;
- }
- 
- static int iwl_mvm_tcool_get_max_state(struct thermal_cooling_device *cdev,
+ 	/* Register battery zone device psy reports temperature */
+ 	if (psy_has_property(psy->desc, POWER_SUPPLY_PROP_TEMP)) {
+-		tzdp.name = psy->desc->name;
++		tzdp.type = psy->desc->name;
+ 		psy->tzd = thermal_zone_device_register(&tzdp);
+ 		if (IS_ERR(psy->tzd))
+ 			return PTR_ERR(psy->tzd);
 -- 
 2.43.0
 
