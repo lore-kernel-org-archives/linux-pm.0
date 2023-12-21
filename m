@@ -1,277 +1,162 @@
-Received: from madrid.collaboradmins.com (madrid.collaboradmins.com [46.235.227.194])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE52E7C670;
-	Thu, 21 Dec 2023 12:48:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="1mF95Ueg"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1703162932;
-	bh=JvnNtNzLnxBHi+1B1yovKVASCm/Y8JsnlC3wCWBkVHc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=1mF95Ueg2YUSSDBl1QmdMUylbMga3HSXJmzyGclvWb10VCCfy5kTErmhb41XNRgsx
-	 7IM9CnziwKY0iIWy07uhkWGdJdGEx5iWogKMj0nQG4AuDKTHXEPjs6Fs/wPjWl5Xj+
-	 Lk/I+BPrj6OiMDbjjL6KizWNo89J1LweQEKABLUdz7VZB0Wp3OTGAsFJE5RQ4PAsiJ
-	 Id+VQqJlTkPmyVZzMMKCT2yqHhza0os4qdSRtXQLmFj+fqRM6p8YffIZGGyz6W2f//
-	 khaD/ajprR7yOt06Cgv6D8W1NTiicjHHqqVNIIcrsGA0N9LESZ5llYooSxt4MSv5Vp
-	 avJV8jmCu8+FA==
-Received: from IcarusMOD.eternityproject.eu (cola.collaboradmins.com [195.201.22.229])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by madrid.collaboradmins.com (Postfix) with ESMTPSA id BFCBB3782025;
-	Thu, 21 Dec 2023 12:48:51 +0000 (UTC)
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-To: daniel.lezcano@linaro.org
-Cc: rafael@kernel.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	kernel@collabora.com
-Subject: [RFC PATCH 26/26] thermal: Introduce thermal zones names
-Date: Thu, 21 Dec 2023 13:48:25 +0100
-Message-ID: <20231221124825.149141-27-angelogioacchino.delregno@collabora.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20231221124825.149141-1-angelogioacchino.delregno@collabora.com>
-References: <20231221124825.149141-1-angelogioacchino.delregno@collabora.com>
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B5B98768E3;
+	Thu, 21 Dec 2023 12:50:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D90762F4;
+	Thu, 21 Dec 2023 04:50:46 -0800 (PST)
+Received: from donnerap.manchester.arm.com (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7D29D3F738;
+	Thu, 21 Dec 2023 04:49:59 -0800 (PST)
+Date: Thu, 21 Dec 2023 12:49:57 +0000
+From: Andre Przywara <andre.przywara@arm.com>
+To: Brandon Cheo Fusi <fusibrandon13@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski
+ <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Chen-Yu Tsai
+ <wens@csie.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland
+ <samuel@sholland.org>, Yangtao Li <tiny.windzz@gmail.com>, "Rafael J .
+ Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, devicetree@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Subject: Re: [RFC PATCH v2 2/3] cpufreq: sun50i: Add support for D1's speed
+ bin decoding
+Message-ID: <20231221124957.27fa9922@donnerap.manchester.arm.com>
+In-Reply-To: <20231221101013.67204-3-fusibrandon13@gmail.com>
+References: <20231221101013.67204-1-fusibrandon13@gmail.com>
+	<20231221101013.67204-3-fusibrandon13@gmail.com>
+Organization: ARM
+X-Mailer: Claws Mail 3.18.0 (GTK+ 2.24.32; aarch64-unknown-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Currently thermal zones have a "type" but this is often used, and
-referenced, as a name instead in multiple kernel drivers that are
-either registering a zone or grabbing a thermal zone handle and
-unfortunately this is a kind of abuse/misuse of the thermal zone
-concept of "type".
+On Thu, 21 Dec 2023 11:10:12 +0100
+Brandon Cheo Fusi <fusibrandon13@gmail.com> wrote:
 
-In order to disambiguate name<->type and to actually provide an
-accepted way of giving a specific name to a thermal zone for both
-platform drivers and devicetree-defined zones, add a new "name"
-member in the main thermal_zone_device structure, and also to the
-thermal_zone_device_params structure which is used to register a
-thermal zone device.
+Hi Brandon,
 
-This will enforce the following constraints:
- - Multiple thermal zones may be of the same "type" (no change);
- - A thermal zone may have a *unique* name: trying to register
-   a new zone with the same name as an already present one will
-   produce a failure;
----
- drivers/thermal/thermal_core.c  | 34 ++++++++++++++++++++++++++++++---
- drivers/thermal/thermal_of.c    |  1 +
- drivers/thermal/thermal_sysfs.c |  9 +++++++++
- drivers/thermal/thermal_trace.h | 17 +++++++++++------
- include/linux/thermal.h         |  4 ++++
- 5 files changed, 56 insertions(+), 9 deletions(-)
+thanks for the quick turnaround, and for splitting this code up, that
+makes reasoning about this much easier!
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 9eb0200a85ff..adf2ac8113e1 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1238,8 +1238,8 @@ EXPORT_SYMBOL_GPL(thermal_zone_get_crit_temp);
- struct thermal_zone_device *thermal_zone_device_register(struct thermal_zone_device_params *tzdp)
- {
- 	struct thermal_zone_device *tz;
--	int id;
--	int result;
-+	int id, tz_name_len;
-+	int result = 0;
- 	struct thermal_governor *governor;
- 
- 	if (!tzdp->type || strlen(tzdp->type) == 0) {
-@@ -1248,11 +1248,36 @@ struct thermal_zone_device *thermal_zone_device_register(struct thermal_zone_dev
- 	}
- 
- 	if (strlen(tzdp->type) >= THERMAL_NAME_LENGTH) {
--		pr_err("Thermal zone name (%s) too long, should be under %d chars\n",
-+		pr_err("Thermal zone type (%s) too long, should be under %d chars\n",
- 		       tzdp->type, THERMAL_NAME_LENGTH);
- 		return ERR_PTR(-EINVAL);
- 	}
- 
-+	tz_name_len = tzdp->name ? strlen(tzdp->name) : 0;
-+	if (tz_name_len) {
-+		struct thermal_zone_device *pos;
-+
-+		if (tz_name_len >= THERMAL_NAME_LENGTH) {
-+			pr_err("Thermal zone name (%s) too long, should be under %d chars\n",
-+			       tzdp->name, THERMAL_NAME_LENGTH);
-+			return ERR_PTR(-EINVAL);
-+		}
-+
-+		mutex_lock(&thermal_list_lock);
-+		list_for_each_entry(pos, &thermal_tz_list, node)
-+			if (!strncasecmp(tzdp->name, pos->name, THERMAL_NAME_LENGTH)) {
-+				result = -EEXIST;
-+				break;
-+			}
-+		mutex_unlock(&thermal_list_lock);
-+
-+		if (result) {
-+			pr_err("Thermal zone name (%s) already exists and must be unique\n",
-+			       tzdp->name);
-+			return ERR_PTR(result);
-+		}
-+	}
-+
- 	/*
- 	 * Max trip count can't exceed 31 as the "mask >> num_trips" condition.
- 	 * For example, shifting by 32 will result in compiler warning:
-@@ -1307,6 +1332,9 @@ struct thermal_zone_device *thermal_zone_device_register(struct thermal_zone_dev
- 	tz->id = id;
- 	strscpy(tz->type, tzdp->type, sizeof(tz->type));
- 
-+	if (tz_name_len)
-+		strscpy(tz->name, tzdp->name, sizeof(tzdp->name));
-+
- 	if (!tzdp->ops->critical)
- 		tzdp->ops->critical = thermal_zone_device_critical;
- 
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 62a903ad649f..eaacc140abeb 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -486,6 +486,7 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
- 		ret = PTR_ERR(np);
- 		goto out_kfree_of_ops;
- 	}
-+	tzdp.name = np->name;
- 	tzdp.type = np->name;
- 
- 	tzdp.trips = thermal_of_trips_init(np, &tzdp.num_trips);
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index f52af8a3b4b5..f4002fa6caa2 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -23,6 +23,14 @@
- 
- /* sys I/F for thermal zone */
- 
-+static ssize_t
-+name_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+
-+	return sprintf(buf, "%s\n", tz->name);
-+}
-+
- static ssize_t
- type_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
-@@ -341,6 +349,7 @@ create_s32_tzp_attr(offset);
-  * All the attributes created for tzp (create_s32_tzp_attr) also are always
-  * present on the sysfs interface.
-  */
-+static DEVICE_ATTR_RO(name);
- static DEVICE_ATTR_RO(type);
- static DEVICE_ATTR_RO(temp);
- static DEVICE_ATTR_RW(policy);
-diff --git a/drivers/thermal/thermal_trace.h b/drivers/thermal/thermal_trace.h
-index 459c8ce6cf3b..c9dbae1e3b9e 100644
---- a/drivers/thermal/thermal_trace.h
-+++ b/drivers/thermal/thermal_trace.h
-@@ -28,6 +28,7 @@ TRACE_EVENT(thermal_temperature,
- 	TP_ARGS(tz),
- 
- 	TP_STRUCT__entry(
-+		__string(thermal_zone_name, tz->name)
- 		__string(thermal_zone, tz->type)
- 		__field(int, id)
- 		__field(int, temp_prev)
-@@ -35,15 +36,16 @@ TRACE_EVENT(thermal_temperature,
- 	),
- 
- 	TP_fast_assign(
-+		__assign_str(thermal_zone_name, tz->name);
- 		__assign_str(thermal_zone, tz->type);
- 		__entry->id = tz->id;
- 		__entry->temp_prev = tz->last_temperature;
- 		__entry->temp = tz->temperature;
- 	),
- 
--	TP_printk("thermal_zone=%s id=%d temp_prev=%d temp=%d",
--		__get_str(thermal_zone), __entry->id, __entry->temp_prev,
--		__entry->temp)
-+	TP_printk("thermal_zone=%s name=%s id=%d temp_prev=%d temp=%d",
-+		  __get_str(thermal_zone), __get_str(thermal_zone_name),
-+		  __entry->id, __entry->temp_prev, __entry->temp)
- );
- 
- TRACE_EVENT(cdev_update,
-@@ -73,6 +75,7 @@ TRACE_EVENT(thermal_zone_trip,
- 	TP_ARGS(tz, trip, trip_type),
- 
- 	TP_STRUCT__entry(
-+		__string(thermal_zone_name, tz->name)
- 		__string(thermal_zone, tz->type)
- 		__field(int, id)
- 		__field(int, trip)
-@@ -80,15 +83,17 @@ TRACE_EVENT(thermal_zone_trip,
- 	),
- 
- 	TP_fast_assign(
-+		__assign_str(thermal_zone_name, tz->name);
- 		__assign_str(thermal_zone, tz->type);
- 		__entry->id = tz->id;
- 		__entry->trip = trip;
- 		__entry->trip_type = trip_type;
- 	),
- 
--	TP_printk("thermal_zone=%s id=%d trip=%d trip_type=%s",
--		__get_str(thermal_zone), __entry->id, __entry->trip,
--		show_tzt_type(__entry->trip_type))
-+	TP_printk("thermal_zone=%s name=%s id=%d trip=%d trip_type=%s",
-+		  __get_str(thermal_zone), __get_str(thermal_zone_name),
-+		  __entry->id, __entry->trip,
-+		  show_tzt_type(__entry->trip_type))
- );
- 
- #ifdef CONFIG_CPU_THERMAL
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 84b62575d93a..a06521eda162 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -115,6 +115,7 @@ struct thermal_cooling_device {
- /**
-  * struct thermal_zone_device - structure for a thermal zone
-  * @id:		unique id number for each thermal zone
-+ * @name:       name of the thermal zone device
-  * @type:	the thermal zone device type
-  * @device:	&struct device for this thermal zone
-  * @removal:	removal completion
-@@ -155,6 +156,7 @@ struct thermal_cooling_device {
-  */
- struct thermal_zone_device {
- 	int id;
-+	char name[THERMAL_NAME_LENGTH];
- 	char type[THERMAL_NAME_LENGTH];
- 	struct device device;
- 	struct completion removal;
-@@ -260,6 +262,7 @@ struct thermal_zone_params {
- 
- /**
-  * struct thermal_zone_device_params - parameters for a thermal zone device
-+ * @name:		name of the thermal zone device
-  * @type:		the thermal zone device type
-  * @tzp:		thermal zone platform parameters
-  * @ops:		standard thermal zone device callbacks
-@@ -274,6 +277,7 @@ struct thermal_zone_params {
-  *			driven systems)
-  */
- struct thermal_zone_device_params {
-+	const char *name;
- 	const char *type;
- 	struct thermal_zone_params tzp;
- 	struct thermal_zone_device_ops *ops;
--- 
-2.43.0
+> Adds support for decoding the efuse value read from D1 efuse speed
+> bins, and factors out equivalent code for sun50i.
+> 
+> The algorithm is gotten from
+> 
+> https://github.com/Tina-Linux/linux-5.4/blob/master/drivers/cpufreq/sun50i-cpufreq-nvmem.c#L293-L338
+> 
+> and maps an efuse value to either 0 or 1, with 1 meaning stable at
+> a lower supply voltage for the same clock frequency.
+> 
+> Signed-off-by: Brandon Cheo Fusi <fusibrandon13@gmail.com>
+> ---
+>  drivers/cpufreq/sun50i-cpufreq-nvmem.c | 34 ++++++++++++++++++++++++++
+>  1 file changed, 34 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+> index fc509fc49..b1cb95308 100644
+> --- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+> +++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+> @@ -29,6 +29,33 @@ struct sunxi_cpufreq_data {
+>  	u32 (*efuse_xlate)(u32 *speedbin, size_t len);
+>  };
+>  
+> +static u32 sun20i_efuse_xlate(u32 *speedbin, size_t len)
+
+I feel like this prototype can be shortened to:
+
+static u32 sun20i_efuse_xlate(u32 speedbin)
+
+See below.
+
+> +{
+> +	u32 ret, efuse_value = 0;
+> +	int i;
+> +
+> +	for (i = 0; i < len; i++)
+> +		efuse_value |= ((u32)speedbin[i] << (i * 8));
+
+The cast is not needed. Looking deeper into the original code you linked
+to, cell_value[] there is an array of u8, so they assemble a little endian
+32-bit integer from *up to* four 8-bit values read from the nvmem.
+
+So I think this code here is wrong, len is the size of the nvmem cells
+holding the bin identifier, in *bytes*, so the idea here is to just read
+the (lowest) 16 bits (in the D1 case, cf. "reg = <0x00 0x2>;" in the next
+patch) from this nvmem cell. Here you are combining two 32-bit words into
+efuse_value.
+
+So I think this whole part above is actually not necessary: we are
+expecting maximum 32 bits, and nvmem_cell_read() should take care of
+masking off unrequested bits, so we get the correct value back already. So
+can you try to remove the loop above, and use ...
+
+> +
+> +	switch (efuse_value) {
+
+	switch (*speedbin & 0xffff) {
+
+here instead? Or drop the pointer at all, and just use one u32 value, see
+the above prototype.
+
+Cheers,
+Andre
+
+P.S. This is just a "peephole review" of this patch, I haven't got around
+to look at this whole scheme in whole yet, to see if we actually need this
+or can simplify this or clean it up.
+
+
+> +	case 0x5e00:
+> +		/* QFN package */
+> +		ret = 0;
+> +		break;
+> +	case 0x5c00:
+> +	case 0x7400:
+> +		/* QFN package */
+> +		ret = 1;
+> +		break;
+> +	case 0x5000:
+> +	default:
+> +		/* BGA package */
+> +		ret = 0;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+>  static u32 sun50i_efuse_xlate(u32 *speedbin, size_t len)
+>  {
+>  	u32 efuse_value = 0;
+> @@ -46,6 +73,10 @@ static u32 sun50i_efuse_xlate(u32 *speedbin, size_t len)
+>  		return 0;
+>  }
+>  
+> +struct sunxi_cpufreq_data sun20i_cpufreq_data = {
+> +	.efuse_xlate = sun20i_efuse_xlate,
+> +};
+> +
+>  struct sunxi_cpufreq_data sun50i_cpufreq_data = {
+>  	.efuse_xlate = sun50i_efuse_xlate,
+>  };
+> @@ -54,6 +85,9 @@ static const struct of_device_id cpu_opp_match_list[] = {
+>  	{ .compatible = "allwinner,sun50i-h6-operating-points",
+>  	  .data = &sun50i_cpufreq_data,
+>  	},
+> +	{ .compatible = "allwinner,sun20i-d1-operating-points",
+> +	  .data = &sun20i_cpufreq_data,
+> +	},
+>  	{}
+>  };
+>  
 
