@@ -1,47 +1,47 @@
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C58A553A02
-	for <linux-pm@vger.kernel.org>; Thu, 21 Dec 2023 15:24:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0F7155E6D
+	for <linux-pm@vger.kernel.org>; Thu, 21 Dec 2023 15:24:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xM+H0TUe"
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-40d3dfcc240so7677325e9.1
-        for <linux-pm@vger.kernel.org>; Thu, 21 Dec 2023 07:24:15 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="VEUNSsIv"
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-40c236624edso9425095e9.1
+        for <linux-pm@vger.kernel.org>; Thu, 21 Dec 2023 07:24:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1703172254; x=1703777054; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1703172257; x=1703777057; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=zohfXtGM2GCrz2nZyChH1tghSTpVPce2CN7RQuQ1TjI=;
-        b=xM+H0TUeIH3fH92MyfVz5ts+f7ofnMDFAgZT1lH38ca7/h1zAywoJvuNIDpzb5l/Fm
-         hWK1/wTupHrmnWaykWkwkuDWztU7DtJw/moa5IXbOrRtAsrud7F3XJTTcr2EogbDLgLg
-         kW3DmshBQqWAQxUtxTy3sxW478Y4Fq0/GS/B93oQLd45AvXi4CQC/plvnlT1Ru5IJ/Zf
-         Svs4OfZ++rhHhPUpymFV0SE7u4Ot6tlzHxxGfLEO9d1Q2YiUD9WSOciy2ZMZNc6F4ayz
-         0mO1Uv62Sl8mFv+ZUN1LwbLELVraAJX7XSjwRztRPZlX7lqla8ly3KKZAftG1rcrZgfh
-         CCew==
+        bh=v2IDvvFl1KhscU/ilds+t97AGOmZudJ+EzMV/y1ilp8=;
+        b=VEUNSsIvUwzoUXEIYXZslcPNgbLstdnAG7PlLUIT3JgtY/A3uyRromANiZvxwSKVMH
+         qMcZg1h2+CVtgUqdGbjV3cERhbZdOVCnuSmBNGE7OPyNm/qbfWWFI/KhZE62q2Y/btko
+         3Y2NcAAQe1LJFNOm1Xjffm7j9Z+32qak8yaPgHfgqOIkuQFjoTl3o+ACfz5GAzKZKxnW
+         TQwt3atXOnwYWXn7FZaN/w30XnMqDGnWFccSk9inhnXa9ZXxjL0bi64KjUmkFsGjZBi5
+         Mt0yghyKXjoBLmJKAN/uGnpRgdQ6ktNY1M6uiVJjL6rFo1KO6xlGIzaQEi/as2SYDjqs
+         deOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1703172254; x=1703777054;
+        d=1e100.net; s=20230601; t=1703172257; x=1703777057;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=zohfXtGM2GCrz2nZyChH1tghSTpVPce2CN7RQuQ1TjI=;
-        b=xH/L1/J5IV6BpT7mxXLlJ4uyNW+aV/v5rYoNm+O5r0xy3FTziccBvju32K9yNjkHDr
-         UpXd2FGNFpHQbJrChRxPM7AEOgEvpqtfGZGB0taVy0PJHNsGtaFod67MtmSvaRhc80uB
-         BzqO3Jkt+WWX5daxrItg/hq5Z2wxT7a5vE62yooOoWyp02C6UpQGiTN3rwgD4lpsHIqs
-         R75Xpejvw1XI35RLz4wOUiMN2M7Gh3VEGJ3MRo3Pe2zeK7eswMFqXCc+PfgmRxj1dRIT
-         QCqxjymo9ryIR8V+8YinbcdRE34LqTsvz4H8a0ufPs4EBxn5TJV7kwdjyUi78BLwOxgD
-         0KuQ==
-X-Gm-Message-State: AOJu0YxKUahxSSf0wBhXIPlTCon5vC0HYNkWvLwuKpkvBXv++rkiUHJ0
-	h8CDVOdbL+b99FVKYgCguSz4GA==
-X-Google-Smtp-Source: AGHT+IGtJfW7BlyAUKqwR1FNvygLVOGbcBkSWigaj2LfFH2vhX9i97acD457XBguD/r7aqGMCj1bqw==
-X-Received: by 2002:a05:600c:21c3:b0:40d:2377:306d with SMTP id x3-20020a05600c21c300b0040d2377306dmr696756wmj.87.1703172254005;
-        Thu, 21 Dec 2023 07:24:14 -0800 (PST)
+        bh=v2IDvvFl1KhscU/ilds+t97AGOmZudJ+EzMV/y1ilp8=;
+        b=CTlA8iXVbp501x53tpEPReVeGl3GTEuO3D4Z1LPPlcb0AuTwcH5Y1Wz5fCdWLOe6Hy
+         fz2px3GZkGafQBVwCGV6zYACGAbjyBpvg5eB4dNjMLOPzRBTjqp4Z6oRITXdMLjX+nBp
+         kbvgZIFh4fzGdiERUQiIrlZ3VoZMS2QQeX0u6T2KuYADobQRi4YGbRLxRyOt5Kbofcnn
+         HeW1YQ04Y61WgCuEWTRzY8Iq/RdugEC7Jm7tEPQsfacRLgtlPmhUwrzKSBYdT0/n3KmK
+         S0BquzsquQL0f5GkNrDUhsg0YFR/ZW+szh/5FIGSOx81sx+5TY4c2k4o5F9+S8CUPd51
+         rB5A==
+X-Gm-Message-State: AOJu0YyglAO8UEsHuqrDkHHzK3QuIKRt8gCwzJNWRPQpIrF3Q5veGC+o
+	ywWoYhCpA7TM3E1vwdCMQISv+Q==
+X-Google-Smtp-Source: AGHT+IE9mmJLB0IisEbGy8IufwuZhkhmunNZmT5+LpqMtbrUOi+nzeNCbpx+kJ6O693BzQ/WVjpW/g==
+X-Received: by 2002:a05:600c:3647:b0:40c:3c72:609a with SMTP id y7-20020a05600c364700b0040c3c72609amr823990wmq.3.1703172256916;
+        Thu, 21 Dec 2023 07:24:16 -0800 (PST)
 Received: from vingu-book.. ([2a01:e0a:f:6020:2db4:9d2a:db65:42d6])
-        by smtp.gmail.com with ESMTPSA id t3-20020a05600c450300b0040c4acaa4bfsm11466974wmo.19.2023.12.21.07.24.12
+        by smtp.gmail.com with ESMTPSA id t3-20020a05600c450300b0040c4acaa4bfsm11466974wmo.19.2023.12.21.07.24.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Dec 2023 07:24:13 -0800 (PST)
+        Thu, 21 Dec 2023 07:24:16 -0800 (PST)
 From: Vincent Guittot <vincent.guittot@linaro.org>
 To: catalin.marinas@arm.com,
 	will@kernel.org,
@@ -73,9 +73,9 @@ To: catalin.marinas@arm.com,
 	linux-arm-msm@vger.kernel.org,
 	linux-trace-kernel@vger.kernel.org
 Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v2 2/5] sched: Take cpufreq feedback into account
-Date: Thu, 21 Dec 2023 16:24:04 +0100
-Message-Id: <20231221152407.436177-3-vincent.guittot@linaro.org>
+Subject: [PATCH v2 4/5] sched: Rename arch_update_thermal_pressure into arch_update_hw_pressure
+Date: Thu, 21 Dec 2023 16:24:06 +0100
+Message-Id: <20231221152407.436177-5-vincent.guittot@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20231221152407.436177-1-vincent.guittot@linaro.org>
 References: <20231221152407.436177-1-vincent.guittot@linaro.org>
@@ -87,172 +87,521 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Aggregate the different pressures applied on the capacity of CPUs and
-create a new function that returns the actual capacity of the CPU:
-  get_actual_cpu_capacity()
+Now that cpufreq provides a pressure value to the scheduler, rename
+arch_update_thermal_pressure into HW pressure to reflect that it returns
+a pressure applied by HW (i.e. with a high frequency change) and not
+always related to thermal mitigation but also generated by max current
+limitation as an example. Such high frequency signal needs filtering to be
+smoothed and provide an value that reflects the average available capacity
+into the scheduler time scale.
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- kernel/sched/fair.c | 45 +++++++++++++++++++++++++--------------------
- 1 file changed, 25 insertions(+), 20 deletions(-)
+ arch/arm/include/asm/topology.h               |  6 ++---
+ arch/arm64/include/asm/topology.h             |  6 ++---
+ drivers/base/arch_topology.c                  | 26 +++++++++----------
+ drivers/cpufreq/qcom-cpufreq-hw.c             |  4 +--
+ include/linux/arch_topology.h                 |  8 +++---
+ include/linux/sched/topology.h                |  8 +++---
+ .../{thermal_pressure.h => hw_pressure.h}     | 14 +++++-----
+ include/trace/events/sched.h                  |  2 +-
+ init/Kconfig                                  | 12 ++++-----
+ kernel/sched/core.c                           |  8 +++---
+ kernel/sched/fair.c                           | 16 ++++++------
+ kernel/sched/pelt.c                           | 18 ++++++-------
+ kernel/sched/pelt.h                           | 16 ++++++------
+ kernel/sched/sched.h                          | 10 +++----
+ 14 files changed, 77 insertions(+), 77 deletions(-)
+ rename include/trace/events/{thermal_pressure.h => hw_pressure.h} (55%)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index bcea3d55d95d..0235081defa5 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4932,13 +4932,22 @@ static inline void util_est_update(struct cfs_rq *cfs_rq,
- 	trace_sched_util_est_se_tp(&p->se);
+diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
+index 853c4f81ba4a..ad36b6570067 100644
+--- a/arch/arm/include/asm/topology.h
++++ b/arch/arm/include/asm/topology.h
+@@ -22,9 +22,9 @@
+ /* Enable topology flag updates */
+ #define arch_update_cpu_topology topology_update_cpu_topology
+ 
+-/* Replace task scheduler's default thermal pressure API */
+-#define arch_scale_thermal_pressure topology_get_thermal_pressure
+-#define arch_update_thermal_pressure	topology_update_thermal_pressure
++/* Replace task scheduler's default HW pressure API */
++#define arch_scale_hw_pressure topology_get_hw_pressure
++#define arch_update_hw_pressure	topology_update_hw_pressure
+ 
+ #else
+ 
+diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+index a323b109b9c4..0f6ef432fb84 100644
+--- a/arch/arm64/include/asm/topology.h
++++ b/arch/arm64/include/asm/topology.h
+@@ -35,9 +35,9 @@ void update_freq_counters_refs(void);
+ /* Enable topology flag updates */
+ #define arch_update_cpu_topology topology_update_cpu_topology
+ 
+-/* Replace task scheduler's default thermal pressure API */
+-#define arch_scale_thermal_pressure topology_get_thermal_pressure
+-#define arch_update_thermal_pressure	topology_update_thermal_pressure
++/* Replace task scheduler's default HW pressure API */
++#define arch_scale_hw_pressure topology_get_hw_pressure
++#define arch_update_hw_pressure	topology_update_hw_pressure
+ 
+ #include <asm-generic/topology.h>
+ 
+diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+index 0906114963ff..405af7a87008 100644
+--- a/drivers/base/arch_topology.c
++++ b/drivers/base/arch_topology.c
+@@ -22,7 +22,7 @@
+ #include <linux/units.h>
+ 
+ #define CREATE_TRACE_POINTS
+-#include <trace/events/thermal_pressure.h>
++#include <trace/events/hw_pressure.h>
+ 
+ static DEFINE_PER_CPU(struct scale_freq_data __rcu *, sft_data);
+ static struct cpumask scale_freq_counters_mask;
+@@ -160,26 +160,26 @@ void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity)
+ 	per_cpu(cpu_scale, cpu) = capacity;
  }
  
-+static inline unsigned long get_actual_cpu_capacity(int cpu)
-+{
-+	unsigned long capacity = arch_scale_cpu_capacity(cpu);
-+
-+	capacity -= max(thermal_load_avg(cpu_rq(cpu)), cpufreq_get_pressure(cpu));
-+
-+	return capacity;
-+}
-+
- static inline int util_fits_cpu(unsigned long util,
- 				unsigned long uclamp_min,
- 				unsigned long uclamp_max,
- 				int cpu)
+-DEFINE_PER_CPU(unsigned long, thermal_pressure);
++DEFINE_PER_CPU(unsigned long, hw_pressure);
+ 
+ /**
+- * topology_update_thermal_pressure() - Update thermal pressure for CPUs
++ * topology_update_hw_pressure() - Update HW pressure for CPUs
+  * @cpus        : The related CPUs for which capacity has been reduced
+  * @capped_freq : The maximum allowed frequency that CPUs can run at
+  *
+- * Update the value of thermal pressure for all @cpus in the mask. The
++ * Update the value of HW pressure for all @cpus in the mask. The
+  * cpumask should include all (online+offline) affected CPUs, to avoid
+  * operating on stale data when hot-plug is used for some CPUs. The
+  * @capped_freq reflects the currently allowed max CPUs frequency due to
+- * thermal capping. It might be also a boost frequency value, which is bigger
++ * HW capping. It might be also a boost frequency value, which is bigger
+  * than the internal 'capacity_freq_ref' max frequency. In such case the
+  * pressure value should simply be removed, since this is an indication that
+- * there is no thermal throttling. The @capped_freq must be provided in kHz.
++ * there is no HW throttling. The @capped_freq must be provided in kHz.
+  */
+-void topology_update_thermal_pressure(const struct cpumask *cpus,
++void topology_update_hw_pressure(const struct cpumask *cpus,
+ 				      unsigned long capped_freq)
  {
--	unsigned long capacity_orig, capacity_orig_thermal;
- 	unsigned long capacity = capacity_of(cpu);
-+	unsigned long capacity_orig;
- 	bool fits, uclamp_max_fits;
+-	unsigned long max_capacity, capacity, th_pressure;
++	unsigned long max_capacity, capacity, hw_pressure;
+ 	u32 max_freq;
+ 	int cpu;
+ 
+@@ -189,21 +189,21 @@ void topology_update_thermal_pressure(const struct cpumask *cpus,
  
  	/*
-@@ -4970,7 +4979,6 @@ static inline int util_fits_cpu(unsigned long util,
- 	 * goal is to cap the task. So it's okay if it's getting less.
+ 	 * Handle properly the boost frequencies, which should simply clean
+-	 * the thermal pressure value.
++	 * the HW pressure value.
  	 */
- 	capacity_orig = arch_scale_cpu_capacity(cpu);
--	capacity_orig_thermal = capacity_orig - arch_scale_thermal_pressure(cpu);
+ 	if (max_freq <= capped_freq)
+ 		capacity = max_capacity;
+ 	else
+ 		capacity = mult_frac(max_capacity, capped_freq, max_freq);
+ 
+-	th_pressure = max_capacity - capacity;
++	hw_pressure = max_capacity - capacity;
+ 
+-	trace_thermal_pressure_update(cpu, th_pressure);
++	trace_hw_pressure_update(cpu, hw_pressure);
+ 
+ 	for_each_cpu(cpu, cpus)
+-		WRITE_ONCE(per_cpu(thermal_pressure, cpu), th_pressure);
++		WRITE_ONCE(per_cpu(hw_pressure, cpu), hw_pressure);
+ }
+-EXPORT_SYMBOL_GPL(topology_update_thermal_pressure);
++EXPORT_SYMBOL_GPL(topology_update_hw_pressure);
+ 
+ static ssize_t cpu_capacity_show(struct device *dev,
+ 				 struct device_attribute *attr,
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index 70b0f21968a0..ec8df5496a0c 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -347,8 +347,8 @@ static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
+ 
+ 	throttled_freq = freq_hz / HZ_PER_KHZ;
+ 
+-	/* Update thermal pressure (the boost frequencies are accepted) */
+-	arch_update_thermal_pressure(policy->related_cpus, throttled_freq);
++	/* Update HW pressure (the boost frequencies are accepted) */
++	arch_update_hw_pressure(policy->related_cpus, throttled_freq);
  
  	/*
- 	 * We want to force a task to fit a cpu as implied by uclamp_max.
-@@ -5045,7 +5053,8 @@ static inline int util_fits_cpu(unsigned long util,
- 	 * handle the case uclamp_min > uclamp_max.
- 	 */
- 	uclamp_min = min(uclamp_min, uclamp_max);
--	if (fits && (util < uclamp_min) && (uclamp_min > capacity_orig_thermal))
-+	if (fits && (util < uclamp_min) &&
-+	    (uclamp_min > get_actual_cpu_capacity(cpu)))
- 		return -1;
+ 	 * In the unlikely case policy is unregistered do not enable
+diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+index a63d61ca55af..b721f360d759 100644
+--- a/include/linux/arch_topology.h
++++ b/include/linux/arch_topology.h
+@@ -60,14 +60,14 @@ void topology_scale_freq_tick(void);
+ void topology_set_scale_freq_source(struct scale_freq_data *data, const struct cpumask *cpus);
+ void topology_clear_scale_freq_source(enum scale_freq_source source, const struct cpumask *cpus);
  
- 	return fits;
-@@ -7426,7 +7435,7 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
- 		 * Look for the CPU with best capacity.
- 		 */
- 		else if (fits < 0)
--			cpu_cap = arch_scale_cpu_capacity(cpu) - thermal_load_avg(cpu_rq(cpu));
-+			cpu_cap = get_actual_cpu_capacity(cpu);
+-DECLARE_PER_CPU(unsigned long, thermal_pressure);
++DECLARE_PER_CPU(unsigned long, hw_pressure);
  
- 		/*
- 		 * First, select CPU which fits better (-1 being better than 0).
-@@ -7919,8 +7928,8 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
- 	struct root_domain *rd = this_rq()->rd;
- 	int cpu, best_energy_cpu, target = -1;
- 	int prev_fits = -1, best_fits = -1;
--	unsigned long best_thermal_cap = 0;
--	unsigned long prev_thermal_cap = 0;
-+	unsigned long best_actual_cap = 0;
-+	unsigned long prev_actual_cap = 0;
- 	struct sched_domain *sd;
- 	struct perf_domain *pd;
- 	struct energy_env eenv;
-@@ -7950,7 +7959,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
- 
- 	for (; pd; pd = pd->next) {
- 		unsigned long util_min = p_util_min, util_max = p_util_max;
--		unsigned long cpu_cap, cpu_thermal_cap, util;
-+		unsigned long cpu_cap, cpu_actual_cap, util;
- 		long prev_spare_cap = -1, max_spare_cap = -1;
- 		unsigned long rq_util_min, rq_util_max;
- 		unsigned long cur_delta, base_energy;
-@@ -7962,18 +7971,17 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
- 		if (cpumask_empty(cpus))
- 			continue;
- 
--		/* Account thermal pressure for the energy estimation */
-+		/* Account external pressure for the energy estimation */
- 		cpu = cpumask_first(cpus);
--		cpu_thermal_cap = arch_scale_cpu_capacity(cpu);
--		cpu_thermal_cap -= arch_scale_thermal_pressure(cpu);
-+		cpu_actual_cap = get_actual_cpu_capacity(cpu);
- 
--		eenv.cpu_cap = cpu_thermal_cap;
-+		eenv.cpu_cap = cpu_actual_cap;
- 		eenv.pd_cap = 0;
- 
- 		for_each_cpu(cpu, cpus) {
- 			struct rq *rq = cpu_rq(cpu);
- 
--			eenv.pd_cap += cpu_thermal_cap;
-+			eenv.pd_cap += cpu_actual_cap;
- 
- 			if (!cpumask_test_cpu(cpu, sched_domain_span(sd)))
- 				continue;
-@@ -8044,7 +8052,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
- 			if (prev_delta < base_energy)
- 				goto unlock;
- 			prev_delta -= base_energy;
--			prev_thermal_cap = cpu_thermal_cap;
-+			prev_actual_cap = cpu_actual_cap;
- 			best_delta = min(best_delta, prev_delta);
- 		}
- 
-@@ -8059,7 +8067,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
- 			 * but best energy cpu has better capacity.
- 			 */
- 			if ((max_fits < 0) &&
--			    (cpu_thermal_cap <= best_thermal_cap))
-+			    (cpu_actual_cap <= best_actual_cap))
- 				continue;
- 
- 			cur_delta = compute_energy(&eenv, pd, cpus, p,
-@@ -8080,14 +8088,14 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
- 			best_delta = cur_delta;
- 			best_energy_cpu = max_spare_cap_cpu;
- 			best_fits = max_fits;
--			best_thermal_cap = cpu_thermal_cap;
-+			best_actual_cap = cpu_actual_cap;
- 		}
- 	}
- 	rcu_read_unlock();
- 
- 	if ((best_fits > prev_fits) ||
- 	    ((best_fits > 0) && (best_delta < prev_delta)) ||
--	    ((best_fits < 0) && (best_thermal_cap > prev_thermal_cap)))
-+	    ((best_fits < 0) && (best_actual_cap > prev_actual_cap)))
- 		target = best_energy_cpu;
- 
- 	return target;
-@@ -9465,8 +9473,8 @@ static inline void init_sd_lb_stats(struct sd_lb_stats *sds)
- 
- static unsigned long scale_rt_capacity(int cpu)
+-static inline unsigned long topology_get_thermal_pressure(int cpu)
++static inline unsigned long topology_get_hw_pressure(int cpu)
  {
-+	unsigned long max = get_actual_cpu_capacity(cpu);
+-	return per_cpu(thermal_pressure, cpu);
++	return per_cpu(hw_pressure, cpu);
+ }
+ 
+-void topology_update_thermal_pressure(const struct cpumask *cpus,
++void topology_update_hw_pressure(const struct cpumask *cpus,
+ 				      unsigned long capped_freq);
+ 
+ struct cpu_topology {
+diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+index a6e04b4a21d7..e3b2cf7de018 100644
+--- a/include/linux/sched/topology.h
++++ b/include/linux/sched/topology.h
+@@ -264,17 +264,17 @@ unsigned long arch_scale_cpu_capacity(int cpu)
+ }
+ #endif
+ 
+-#ifndef arch_scale_thermal_pressure
++#ifndef arch_scale_hw_pressure
+ static __always_inline
+-unsigned long arch_scale_thermal_pressure(int cpu)
++unsigned long arch_scale_hw_pressure(int cpu)
+ {
+ 	return 0;
+ }
+ #endif
+ 
+-#ifndef arch_update_thermal_pressure
++#ifndef arch_update_hw_pressure
+ static __always_inline
+-void arch_update_thermal_pressure(const struct cpumask *cpus,
++void arch_update_hw_pressure(const struct cpumask *cpus,
+ 				  unsigned long capped_frequency)
+ { }
+ #endif
+diff --git a/include/trace/events/thermal_pressure.h b/include/trace/events/hw_pressure.h
+similarity index 55%
+rename from include/trace/events/thermal_pressure.h
+rename to include/trace/events/hw_pressure.h
+index b68680201360..b9cd68854128 100644
+--- a/include/trace/events/thermal_pressure.h
++++ b/include/trace/events/hw_pressure.h
+@@ -1,27 +1,27 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ #undef TRACE_SYSTEM
+-#define TRACE_SYSTEM thermal_pressure
++#define TRACE_SYSTEM hw_pressure
+ 
+ #if !defined(_TRACE_THERMAL_PRESSURE_H) || defined(TRACE_HEADER_MULTI_READ)
+ #define _TRACE_THERMAL_PRESSURE_H
+ 
+ #include <linux/tracepoint.h>
+ 
+-TRACE_EVENT(thermal_pressure_update,
+-	TP_PROTO(int cpu, unsigned long thermal_pressure),
+-	TP_ARGS(cpu, thermal_pressure),
++TRACE_EVENT(hw_pressure_update,
++	TP_PROTO(int cpu, unsigned long hw_pressure),
++	TP_ARGS(cpu, hw_pressure),
+ 
+ 	TP_STRUCT__entry(
+-		__field(unsigned long, thermal_pressure)
++		__field(unsigned long, hw_pressure)
+ 		__field(int, cpu)
+ 	),
+ 
+ 	TP_fast_assign(
+-		__entry->thermal_pressure = thermal_pressure;
++		__entry->hw_pressure = hw_pressure;
+ 		__entry->cpu = cpu;
+ 	),
+ 
+-	TP_printk("cpu=%d thermal_pressure=%lu", __entry->cpu, __entry->thermal_pressure)
++	TP_printk("cpu=%d hw_pressure=%lu", __entry->cpu, __entry->hw_pressure)
+ );
+ #endif /* _TRACE_THERMAL_PRESSURE_H */
+ 
+diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
+index dbb01b4b7451..d115d64c4011 100644
+--- a/include/trace/events/sched.h
++++ b/include/trace/events/sched.h
+@@ -752,7 +752,7 @@ DECLARE_TRACE(pelt_dl_tp,
+ 	TP_PROTO(struct rq *rq),
+ 	TP_ARGS(rq));
+ 
+-DECLARE_TRACE(pelt_thermal_tp,
++DECLARE_TRACE(pelt_hw_tp,
+ 	TP_PROTO(struct rq *rq),
+ 	TP_ARGS(rq));
+ 
+diff --git a/init/Kconfig b/init/Kconfig
+index 9ffb103fc927..37ceeb67e01c 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -538,24 +538,24 @@ config HAVE_SCHED_AVG_IRQ
+ 	depends on IRQ_TIME_ACCOUNTING || PARAVIRT_TIME_ACCOUNTING
+ 	depends on SMP
+ 
+-config SCHED_THERMAL_PRESSURE
++config SCHED_HW_PRESSURE
+ 	bool
+ 	default y if ARM && ARM_CPU_TOPOLOGY
+ 	default y if ARM64
+ 	depends on SMP
+ 	depends on CPU_FREQ_THERMAL
+ 	help
+-	  Select this option to enable thermal pressure accounting in the
+-	  scheduler. Thermal pressure is the value conveyed to the scheduler
++	  Select this option to enable HW pressure accounting in the
++	  scheduler. HW pressure is the value conveyed to the scheduler
+ 	  that reflects the reduction in CPU compute capacity resulted from
+-	  thermal throttling. Thermal throttling occurs when the performance of
+-	  a CPU is capped due to high operating temperatures.
++	  HW throttling. HW throttling occurs when the performance of
++	  a CPU is capped due to high operating temperatures as an example.
+ 
+ 	  If selected, the scheduler will be able to balance tasks accordingly,
+ 	  i.e. put less load on throttled CPUs than on non/less throttled ones.
+ 
+ 	  This requires the architecture to implement
+-	  arch_update_thermal_pressure() and arch_scale_thermal_pressure().
++	  arch_update_hw_pressure() and arch_scale_thermal_pressure().
+ 
+ config BSD_PROCESS_ACCT
+ 	bool "BSD Process Accounting"
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index db4be4921e7f..a6f084bdf1c5 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -107,7 +107,7 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_rt_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_dl_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_irq_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_se_tp);
+-EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_thermal_tp);
++EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_hw_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_cpu_capacity_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_overutilized_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_cfs_tp);
+@@ -5658,7 +5658,7 @@ void scheduler_tick(void)
  	struct rq *rq = cpu_rq(cpu);
--	unsigned long max = arch_scale_cpu_capacity(cpu);
- 	unsigned long used, free;
- 	unsigned long irq;
+ 	struct task_struct *curr = rq->curr;
+ 	struct rq_flags rf;
+-	unsigned long thermal_pressure;
++	unsigned long hw_pressure;
+ 	u64 resched_latency;
  
-@@ -9478,12 +9486,9 @@ static unsigned long scale_rt_capacity(int cpu)
+ 	if (housekeeping_cpu(cpu, HK_TYPE_TICK))
+@@ -5669,8 +5669,8 @@ void scheduler_tick(void)
+ 	rq_lock(rq, &rf);
+ 
+ 	update_rq_clock(rq);
+-	thermal_pressure = arch_scale_thermal_pressure(cpu_of(rq));
+-	update_thermal_load_avg(rq_clock_thermal(rq), rq, thermal_pressure);
++	hw_pressure = arch_scale_hw_pressure(cpu_of(rq));
++	update_hw_load_avg(rq_clock_hw(rq), rq, hw_pressure);
+ 	curr->sched_class->task_tick(rq, curr, 0);
+ 	if (sched_feat(LATENCY_WARN))
+ 		resched_latency = cpu_resched_latency(rq);
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 0235081defa5..ce0d32f441a8 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -78,7 +78,7 @@ static unsigned int normalized_sysctl_sched_base_slice	= 750000ULL;
+ 
+ const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
+ 
+-int sched_thermal_decay_shift;
++int sched_hw_decay_shift;
+ static int __init setup_sched_thermal_decay_shift(char *str)
+ {
+ 	int _shift = 0;
+@@ -86,7 +86,7 @@ static int __init setup_sched_thermal_decay_shift(char *str)
+ 	if (kstrtoint(str, 0, &_shift))
+ 		pr_warn("Unable to set scheduler thermal pressure decay shift parameter\n");
+ 
+-	sched_thermal_decay_shift = clamp(_shift, 0, 10);
++	sched_hw_decay_shift = clamp(_shift, 0, 10);
+ 	return 1;
+ }
+ __setup("sched_thermal_decay_shift=", setup_sched_thermal_decay_shift);
+@@ -4936,7 +4936,7 @@ static inline unsigned long get_actual_cpu_capacity(int cpu)
+ {
+ 	unsigned long capacity = arch_scale_cpu_capacity(cpu);
+ 
+-	capacity -= max(thermal_load_avg(cpu_rq(cpu)), cpufreq_get_pressure(cpu));
++	capacity -= max(hw_load_avg(cpu_rq(cpu)), cpufreq_get_pressure(cpu));
+ 
+ 	return capacity;
+ }
+@@ -4969,7 +4969,7 @@ static inline int util_fits_cpu(unsigned long util,
+ 	 * Similarly if a task is capped to arch_scale_cpu_capacity(little_cpu), it
+ 	 * should fit a little cpu even if there's some pressure.
+ 	 *
+-	 * Only exception is for thermal pressure since it has a direct impact
++	 * Only exception is for HW or cpufreq pressure since it has a direct impact
+ 	 * on available OPP of the system.
+ 	 *
+ 	 * We honour it for uclamp_min only as a drop in performance level
+@@ -9226,7 +9226,7 @@ static inline bool others_have_blocked(struct rq *rq)
+ 	if (READ_ONCE(rq->avg_dl.util_avg))
+ 		return true;
+ 
+-	if (thermal_load_avg(rq))
++	if (hw_load_avg(rq))
+ 		return true;
+ 
+ #ifdef CONFIG_HAVE_SCHED_AVG_IRQ
+@@ -9258,7 +9258,7 @@ static bool __update_blocked_others(struct rq *rq, bool *done)
+ {
+ 	const struct sched_class *curr_class;
+ 	u64 now = rq_clock_pelt(rq);
+-	unsigned long thermal_pressure;
++	unsigned long hw_pressure;
+ 	bool decayed;
+ 
  	/*
- 	 * avg_rt.util_avg and avg_dl.util_avg track binary signals
- 	 * (running and not running) with weights 0 and 1024 respectively.
--	 * avg_thermal.load_avg tracks thermal pressure and the weighted
--	 * average uses the actual delta max capacity(load).
+@@ -9267,11 +9267,11 @@ static bool __update_blocked_others(struct rq *rq, bool *done)
  	 */
- 	used = READ_ONCE(rq->avg_rt.util_avg);
- 	used += READ_ONCE(rq->avg_dl.util_avg);
--	used += thermal_load_avg(rq);
+ 	curr_class = rq->curr->sched_class;
  
- 	if (unlikely(used >= max))
+-	thermal_pressure = arch_scale_thermal_pressure(cpu_of(rq));
++	hw_pressure = arch_scale_hw_pressure(cpu_of(rq));
+ 
+ 	decayed = update_rt_rq_load_avg(now, rq, curr_class == &rt_sched_class) |
+ 		  update_dl_rq_load_avg(now, rq, curr_class == &dl_sched_class) |
+-		  update_thermal_load_avg(rq_clock_thermal(rq), rq, thermal_pressure) |
++		  update_hw_load_avg(rq_clock_hw(rq), rq, hw_pressure) |
+ 		  update_irq_load_avg(rq, 0);
+ 
+ 	if (others_have_blocked(rq))
+diff --git a/kernel/sched/pelt.c b/kernel/sched/pelt.c
+index 63b6cf898220..f951c44f1d52 100644
+--- a/kernel/sched/pelt.c
++++ b/kernel/sched/pelt.c
+@@ -384,30 +384,30 @@ int update_dl_rq_load_avg(u64 now, struct rq *rq, int running)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_SCHED_THERMAL_PRESSURE
++#ifdef CONFIG_SCHED_HW_PRESSURE
+ /*
+- * thermal:
++ * hardware:
+  *
+  *   load_sum = \Sum se->avg.load_sum but se->avg.load_sum is not tracked
+  *
+  *   util_avg and runnable_load_avg are not supported and meaningless.
+  *
+  * Unlike rt/dl utilization tracking that track time spent by a cpu
+- * running a rt/dl task through util_avg, the average thermal pressure is
+- * tracked through load_avg. This is because thermal pressure signal is
++ * running a rt/dl task through util_avg, the average HW pressure is
++ * tracked through load_avg. This is because HW pressure signal is
+  * time weighted "delta" capacity unlike util_avg which is binary.
+  * "delta capacity" =  actual capacity  -
+- *			capped capacity a cpu due to a thermal event.
++ *			capped capacity a cpu due to a HW event.
+  */
+ 
+-int update_thermal_load_avg(u64 now, struct rq *rq, u64 capacity)
++int update_hw_load_avg(u64 now, struct rq *rq, u64 capacity)
+ {
+-	if (___update_load_sum(now, &rq->avg_thermal,
++	if (___update_load_sum(now, &rq->avg_hw,
+ 			       capacity,
+ 			       capacity,
+ 			       capacity)) {
+-		___update_load_avg(&rq->avg_thermal, 1);
+-		trace_pelt_thermal_tp(rq);
++		___update_load_avg(&rq->avg_hw, 1);
++		trace_pelt_hw_tp(rq);
  		return 1;
+ 	}
+ 
+diff --git a/kernel/sched/pelt.h b/kernel/sched/pelt.h
+index 3a0e0dc28721..e3ab44c4a2ef 100644
+--- a/kernel/sched/pelt.h
++++ b/kernel/sched/pelt.h
+@@ -7,21 +7,21 @@ int __update_load_avg_cfs_rq(u64 now, struct cfs_rq *cfs_rq);
+ int update_rt_rq_load_avg(u64 now, struct rq *rq, int running);
+ int update_dl_rq_load_avg(u64 now, struct rq *rq, int running);
+ 
+-#ifdef CONFIG_SCHED_THERMAL_PRESSURE
+-int update_thermal_load_avg(u64 now, struct rq *rq, u64 capacity);
++#ifdef CONFIG_SCHED_HW_PRESSURE
++int update_hw_load_avg(u64 now, struct rq *rq, u64 capacity);
+ 
+-static inline u64 thermal_load_avg(struct rq *rq)
++static inline u64 hw_load_avg(struct rq *rq)
+ {
+-	return READ_ONCE(rq->avg_thermal.load_avg);
++	return READ_ONCE(rq->avg_hw.load_avg);
+ }
+ #else
+ static inline int
+-update_thermal_load_avg(u64 now, struct rq *rq, u64 capacity)
++update_hw_load_avg(u64 now, struct rq *rq, u64 capacity)
+ {
+ 	return 0;
+ }
+ 
+-static inline u64 thermal_load_avg(struct rq *rq)
++static inline u64 hw_load_avg(struct rq *rq)
+ {
+ 	return 0;
+ }
+@@ -202,12 +202,12 @@ update_dl_rq_load_avg(u64 now, struct rq *rq, int running)
+ }
+ 
+ static inline int
+-update_thermal_load_avg(u64 now, struct rq *rq, u64 capacity)
++update_hw_load_avg(u64 now, struct rq *rq, u64 capacity)
+ {
+ 	return 0;
+ }
+ 
+-static inline u64 thermal_load_avg(struct rq *rq)
++static inline u64 hw_load_avg(struct rq *rq)
+ {
+ 	return 0;
+ }
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index e58a54bda77d..677d24202eec 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1078,8 +1078,8 @@ struct rq {
+ #ifdef CONFIG_HAVE_SCHED_AVG_IRQ
+ 	struct sched_avg	avg_irq;
+ #endif
+-#ifdef CONFIG_SCHED_THERMAL_PRESSURE
+-	struct sched_avg	avg_thermal;
++#ifdef CONFIG_SCHED_HW_PRESSURE
++	struct sched_avg	avg_hw;
+ #endif
+ 	u64			idle_stamp;
+ 	u64			avg_idle;
+@@ -1531,11 +1531,11 @@ static inline u64 rq_clock_task(struct rq *rq)
+  *	3			256
+  *	4			512
+  */
+-extern int sched_thermal_decay_shift;
++extern int sched_hw_decay_shift;
+ 
+-static inline u64 rq_clock_thermal(struct rq *rq)
++static inline u64 rq_clock_hw(struct rq *rq)
+ {
+-	return rq_clock_task(rq) >> sched_thermal_decay_shift;
++	return rq_clock_task(rq) >> sched_hw_decay_shift;
+ }
+ 
+ static inline void rq_clock_skip_update(struct rq *rq)
 -- 
 2.34.1
 
