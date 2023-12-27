@@ -1,47 +1,47 @@
-Received: from mail-lj1-f180.google.com (mail-lj1-f180.google.com [209.85.208.180])
+Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2B592C868
-	for <linux-pm@vger.kernel.org>; Wed, 27 Dec 2023 10:26:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B20B44372
+	for <linux-pm@vger.kernel.org>; Wed, 27 Dec 2023 10:45:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="aYHB0cCN"
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-2cca9a9362aso35780121fa.3
-        for <linux-pm@vger.kernel.org>; Wed, 27 Dec 2023 02:26:55 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="e4QlTTPn"
+Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-33678156e27so4753423f8f.1
+        for <linux-pm@vger.kernel.org>; Wed, 27 Dec 2023 02:45:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1703672814; x=1704277614; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1703673951; x=1704278751; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=5pYdZbFTr6EOagElFAJ5jqcne6NyYjq9KUM2N1ydhjs=;
-        b=aYHB0cCNUANJjgzmot+A20M/MJOl5QInj1GsFhBbv1YEHOVbYtOanuPQNBvKMEPLl3
-         P/jgnBsJqHm0ufRhdL3HgUK8e+XBoK8Gx5FIw1tOxuimUBT51Ihaf2SUbNJoOCvc6rGw
-         Vl/DurRPl6VCB+5/cJzCIIccGZ4oc+jRyknp5gchWadUEDYuaXcW4g9af2xHo0gnRHaD
-         +kjfqJIkoPGw1bHyWECAazmiIVR3kHpvePo2dLFLmxY1s4nsX9tUt/GsEvpzL+z5hGnD
-         N3m2v1L0oKWH/+ImNXtf1JTJ1nVz7Q9XeeFF+ENUWAlU2479uXuAx/xVjNeqbLjNzoiQ
-         c+Gg==
+        bh=Pg6XiFOzjT3bgag//+MTHDLXZWXP1BzRE73I0Dy4cLk=;
+        b=e4QlTTPnl7uz9w8ImfgRJtVrLQ9gCwtZ6aeMLiuGOUtGl9kO5aeQfycXR9rSa5hKDZ
+         Kqt1HQvWsA6o7CVLJcO86nPgHq8YekN9YloUcXVh24L9lSoV3Y+znolNELvLl1UIu4s4
+         rpSigSigdTH6/w/w5gnPAVJfcx7njaPG0ni838rdnVed330EDt8AQF+wOF3mHRH4QEPx
+         +JACvBgcMS6Wp96ozwgUWYXMmhMOuygXWnKPYZga7As4LjA43J2PHBwZmS8Xsyqf2gID
+         45Kv57FQ4NWCBSfZOYsiS2x0yfp1OPhfXk8CKzcN6t0p07J4g0R7SiWeNKAO2Ut2wv5V
+         C/3g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1703672814; x=1704277614;
+        d=1e100.net; s=20230601; t=1703673951; x=1704278751;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=5pYdZbFTr6EOagElFAJ5jqcne6NyYjq9KUM2N1ydhjs=;
-        b=u0hJvtVoLTfo7SXdOQ4z2PsZXR32F+/KeaGNo0gt/99FupoiHqExsPiM+HYQHhsdSF
-         syd5nNjbd57W9tzr+TRlQ133bQy9yn9fd2L3HR3F7w/PTtzGIMSqibAbs9Q3OxhOBh13
-         co8Guv1A0evrKk7FHGeUiqw0JKBlcfTsFlKNpGY4mVdJY2OVn6EuBKq+IAe7cyz6Uthr
-         GuFggxuCcQp+og61TT2Ak2pOu4gU1Cp/XYsq21Rb/Mzyr91MDOfE1ndJyOkw9QGBYtiL
-         WTAp9biIpsomRIWMD3rR58F8P3iDghGr3XNPBlG2kmcPcpjqmFJwP9uXhtWv1NXzPmA7
-         4hJg==
-X-Gm-Message-State: AOJu0YyT1ibRt2kZ5msjaFEIv8wayqpOqK2D98KHLGUSeFA57DnIVHHU
-	o3vqCEFGIoVOQTvpwlyZ47CzVqU3Q01Fp5jrsgKSZhZVl/0=
-X-Google-Smtp-Source: AGHT+IFEP6H0ZGbER0ED4jo46IPV/kLgZJuEcrMS2UzoIcFt7QYyUQ77bOPpfYt3wMSylNRDJNE85A==
-X-Received: by 2002:a05:651c:168e:b0:2cc:dcb6:5198 with SMTP id bd14-20020a05651c168e00b002ccdcb65198mr152173ljb.110.1703672813669;
-        Wed, 27 Dec 2023 02:26:53 -0800 (PST)
+        bh=Pg6XiFOzjT3bgag//+MTHDLXZWXP1BzRE73I0Dy4cLk=;
+        b=W1cVoGHAYEoOIPsAAsFYmI6L+k6IlatXEENfecbXDMQ0JLFo8genlQz14VQI1tw5Ep
+         7odjsUvTU2iq7u0OsjOJs6+6ngW3rosnanp6qD5V5b0BkC0pAaHj1zcipiq+JsXmAQAT
+         cqtUsKgcebqykyzloCxLlkgZX57Rdiz2pC/lmgXnsh5UWzt7UJjQsozDA7YP1Q4HN2lf
+         AHsMYAh3bn90lwzwGwQXSxnDQCtMmjmgOr1KEfektipu11fev9qEvm5eyXaMp0sX7bWA
+         ihzagWKzhTRCj/zFPuR1J98UPpjcz1iLNtXt33A1r4K+Mhcjl/Vii4hN9/U27oN4xFaN
+         9SUQ==
+X-Gm-Message-State: AOJu0YyLcmM2T2d5J1OXoSSYzWw2OLdE+OKXgy9c8NL2War5YR7emNuN
+	UuYd/8utOj1Z+uXDednD0uk4VSkLMgOIIA==
+X-Google-Smtp-Source: AGHT+IFf7ga6Rmf5APlQdXCMZZb9lLPZhnycI+qCX2F66exdZMIM3JkCCCbR4rA2SKFiuXYzw5JnGA==
+X-Received: by 2002:a5d:6dad:0:b0:336:e64c:f539 with SMTP id u13-20020a5d6dad000000b00336e64cf539mr1077311wrs.59.1703673951212;
+        Wed, 27 Dec 2023 02:45:51 -0800 (PST)
 Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id y17-20020adff151000000b0033664ffaf5dsm14556763wro.37.2023.12.27.02.26.53
+        by smtp.gmail.com with ESMTPSA id s11-20020adfeccb000000b00336644c400bsm14509421wro.64.2023.12.27.02.45.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Dec 2023 02:26:53 -0800 (PST)
+        Wed, 27 Dec 2023 02:45:50 -0800 (PST)
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 To: daniel.lezcano@linaro.org,
 	rjw@rjwysocki.net,
@@ -49,12 +49,12 @@ To: daniel.lezcano@linaro.org,
 Cc: rui.zhang@intel.com,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v4 2/2] thermal/debugfs: Add thermal debugfs information for mitigation episodes
-Date: Wed, 27 Dec 2023 11:26:43 +0100
-Message-Id: <20231227102643.2655651-2-daniel.lezcano@linaro.org>
+Subject: [PATCH v5 2/2] thermal/debugfs: Add thermal debugfs information for mitigation episodes
+Date: Wed, 27 Dec 2023 11:45:32 +0100
+Message-Id: <20231227104532.2671761-2-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20231227102643.2655651-1-daniel.lezcano@linaro.org>
-References: <20231227102643.2655651-1-daniel.lezcano@linaro.org>
+In-Reply-To: <20231227104532.2671761-1-daniel.lezcano@linaro.org>
+References: <20231227104532.2671761-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -117,6 +117,8 @@ framework for other components first.
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
 Changelog:
+  - v5
+    - No changes
   - v4
     - Reworded "trip violation" (Rafael)
     - Reworded some comments and clarified other ones (Rafael)
