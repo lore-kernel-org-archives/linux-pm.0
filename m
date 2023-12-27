@@ -1,59 +1,82 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f171.google.com (mail-oi1-f171.google.com [209.85.167.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D86E47F69;
-	Wed, 27 Dec 2023 20:41:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
- id 954e4a2bde97b9af; Wed, 27 Dec 2023 21:41:45 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id AB00B668E17;
-	Wed, 27 Dec 2023 21:41:44 +0100 (CET)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Greg KH <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: Youngmin Nam <youngmin.nam@samsung.com>, rafael@kernel.org, linux-kernel@vger.kernel.org, d7271.choe@samsung.com, janghyuck.kim@samsung.com, hyesoo.yu@samsung.com, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v1 0/3] PM: sleep: Fix possible device suspend-resume deadlocks
-Date: Wed, 27 Dec 2023 21:35:53 +0100
-Message-ID: <6019796.lOV4Wx5bFT@kreacher>
-In-Reply-To: <5754861.DvuYhMxLoT@kreacher>
-References: <CGME20231227084252epcas2p3b063f7852f81f82cd0a31afd7f404db4@epcas2p3.samsung.com> <2023122701-mortify-deed-4e66@gregkh> <5754861.DvuYhMxLoT@kreacher>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EF4D47F69;
+	Wed, 27 Dec 2023 20:50:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-oi1-f171.google.com with SMTP id 5614622812f47-3bb7e50679bso336145b6e.0;
+        Wed, 27 Dec 2023 12:50:13 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1703710212; x=1704315012;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=rUvcnoDQa7BmxbZaffxRN9h8EUNEzN5n5IycYr5Fua4=;
+        b=m2ug5lXE4WaGtRbqlv1NP6sXUxQosOfGBBLGVf+3Nc/OM+dW8RJpi7aKlmZ0LqZrwn
+         VWuYLOV6oAElz3DI4ENdT494KrXZ2lorroFQMPBktQ/r/uQRJ0QRy9Zp6Ka+XAFeU50o
+         c3UJzXEbWk4vAMraJYP1odYrHylTpZGepzls89iaYaAXXfYdKBpnMqX2PW6LA5w18OjU
+         WXVao4bk8REf6x/vTJ1xnSdepdnfIHaLNnaCDG5coFRL1NHINeq/Z0+p2SWzn8dwh1Kq
+         IYhUdm5TpUgf6+dIlk5uc3XQRnvmpwZ1x56mzD0/CUBzD9yllwwOgVHPOTGCGQtY8ylp
+         zogQ==
+X-Gm-Message-State: AOJu0YyiX7p2j/SR0QUZwWZUU04GNN879Di1pHhDGYZSGkyA/lxMUayf
+	CuwM9H/m9D2Pls4jaVR89dXRbln1ZOzJ2UV63mo=
+X-Google-Smtp-Source: AGHT+IE5f1EYLVkNXbT9YLi/wb/oWEyUAssobeSCyrneCWtfm2xdqV1g1iL8b7hY0qZYbrt8ZEHkQi4KCeuqxWnNbMQ=
+X-Received: by 2002:a05:6808:2029:b0:3bb:6d31:602a with SMTP id
+ q41-20020a056808202900b003bb6d31602amr18957335oiw.1.1703710212559; Wed, 27
+ Dec 2023 12:50:12 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <CGME20231227084252epcas2p3b063f7852f81f82cd0a31afd7f404db4@epcas2p3.samsung.com>
+ <2023122701-mortify-deed-4e66@gregkh> <5754861.DvuYhMxLoT@kreacher> <5755916.DvuYhMxLoT@kreacher>
+In-Reply-To: <5755916.DvuYhMxLoT@kreacher>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 27 Dec 2023 21:50:01 +0100
+Message-ID: <CAJZ5v0jupWr_89mttKMg-KGa6_dpu62JiUkUaueMfHVgeUXYWg@mail.gmail.com>
+Subject: Re: [BUG] mutex deadlock of dpm_resume() in low memory situation
+To: Greg KH <gregkh@linuxfoundation.org>, Youngmin Nam <youngmin.nam@samsung.com>
+Cc: len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, d7271.choe@samsung.com, 
+	janghyuck.kim@samsung.com, hyesoo.yu@samsung.com, 
+	"Rafael J. Wysocki" <rjw@rjwysocki.net>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrvddvledgudegudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeefudduuedtuefgleffudeigeeitdeufeelvdejgefftdethffhhfethfeljefgteenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepuddtpdhrtghpthhtohepghhrvghgkhhhsehlihhnuhigfhhouhhnuggrthhiohhnrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohephihouhhnghhmihhnrdhnrghmsehsrghmshhunhhgrdgtohhmpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegujedvjedurdgthhhovgesshgrmhhsuhhnghdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
+Content-Transfer-Encoding: quoted-printable
 
-Hi Everyone,
+On Wed, Dec 27, 2023 at 7:58=E2=80=AFPM Rafael J. Wysocki <rjw@rjwysocki.ne=
+t> wrote:
+>
+> On Wednesday, December 27, 2023 7:39:20 PM CET Rafael J. Wysocki wrote:
+> > On Wednesday, December 27, 2023 5:08:40 PM CET Greg KH wrote:
+> > > On Wed, Dec 27, 2023 at 05:42:50PM +0900, Youngmin Nam wrote:
+> > > > Could you look into this issue ?
+> > >
+> > > Can you submit a patch that resolves the issue for you, as you have a
+> > > way to actually test this out?  That would be the quickest way to get=
+ it
+> > > resolved, and to help confirm that this is even an issue at all.
+> >
+> > Something like the appended patch should be sufficient to address this =
+AFAICS.
+> >
+> > I haven't tested it yet (will do so shortly), so all of the usual discl=
+aimers
+> > apply.
+> >
+> > I think that it can be split into 2 patches, but for easier testing her=
+e
+> > it goes in one piece.
+>
+> Well, please scratch this, it will not handle "async" devices properly.
 
-As reported here
+This
 
-https://lore.kernel.org/linux-pm/ZYvjiqX6EsL15moe@perf/
+https://lore.kernel.org/linux-pm/6019796.lOV4Wx5bFT@kreacher/
 
-the device suspend-resume code running during system-wide PM transitions
-deadlock on low memory, because it attempts to acquire a mutex that's
-already held by it in those cases.
+should address the issue properly (it has been lightly tested).
 
-This series addresses the issue by changing the resume code behavior
-to directly run the device PM functions synchronously if they cannot
-be scheduled for asynchronous executions (patch [3/3]).
-
-For this purpose, the async code is rearranged (patch [1/3]) and a
-new variant of async_schedule_dev() is introduced (patch [2/3]).
-
-Thanks!
-
-
-
+Please give it a go and let me know if it works for you (on top of 6.7-rc7)=
+.
