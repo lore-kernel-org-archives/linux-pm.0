@@ -1,69 +1,103 @@
-Received: from SHSQR01.spreadtrum.com (mx1.unisoc.com [222.66.158.135])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7F3D6AA2;
-	Thu, 28 Dec 2023 10:39:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=unisoc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=unisoc.com
-Received: from dlp.unisoc.com ([10.29.3.86])
-	by SHSQR01.spreadtrum.com with ESMTP id 3BSAdRon039450;
-	Thu, 28 Dec 2023 18:39:27 +0800 (+08)
-	(envelope-from Di.Shen@unisoc.com)
-Received: from SHDLP.spreadtrum.com (bjmbx01.spreadtrum.com [10.0.64.7])
-	by dlp.unisoc.com (SkyGuard) with ESMTPS id 4T14bD0bQHz2QnGWT;
-	Thu, 28 Dec 2023 18:32:56 +0800 (CST)
-Received: from bj10906pcu1.spreadtrum.com (10.0.73.72) by
- BJMBX01.spreadtrum.com (10.0.64.7) with Microsoft SMTP Server (TLS) id
- 15.0.1497.23; Thu, 28 Dec 2023 18:39:25 +0800
-From: Di Shen <di.shen@unisoc.com>
-To: <rafael@kernel.org>, <daniel.lezcano@linaro.org>, <rui.zhang@intel.com>,
-        <lukasz.luba@arm.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <xuewen.yan@unisoc.com>, <zhanglyra@gmail.com>, <orsonzhai@gmail.com>
-Subject: [PATCH] thermal: core: export the governor register related API
-Date: Thu, 28 Dec 2023 18:39:21 +0800
-Message-ID: <20231228103921.23839-1-di.shen@unisoc.com>
-X-Mailer: git-send-email 2.17.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C78916FBF
+	for <linux-pm@vger.kernel.org>; Thu, 28 Dec 2023 10:49:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="iI0B8S3A"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1703760570; x=1735296570;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=R5TMjyXxMAVvHfktZcOqUrrKY5qVT+aFxOwGz5GOYow=;
+  b=iI0B8S3AJVYfUcYh489rsq/VHkgmXn/Zt6/nq9/n1yj7hVZdJUztHrqx
+   +kg9URBjparY56m3MGSZi02gZzcOyoLH1eQ2fCToFsqBzqwIqv+8vpzxK
+   3KH1eBOae8YUaxjL2QS4y5m1tZ/+ZnG7M3pCozDtzkSDp/QCdIx3CQbUb
+   +edtfycctnWmSrwuweoTDEq7XbmJZg6OvaHSAzZ5HyB8+po8yocGpfJlg
+   XEnoGKM02fpbKOtdLyhWEQbghFfsgzfqoFWedCkDRzNudkQYwjUZPcrmU
+   0OP0T1uYgIOlY2kpofFT58OSwLeqNy6yBnN6AO+2RI4IyHG6DBIxHfvV7
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10936"; a="3832080"
+X-IronPort-AV: E=Sophos;i="6.04,311,1695711600"; 
+   d="scan'208";a="3832080"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Dec 2023 02:49:29 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10936"; a="897170668"
+X-IronPort-AV: E=Sophos;i="6.04,311,1695711600"; 
+   d="scan'208";a="897170668"
+Received: from sgruszka-mobl.ger.corp.intel.com (HELO localhost) ([10.252.50.175])
+  by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Dec 2023 02:49:27 -0800
+From: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	linux-pm@vger.kernel.org
+Subject: [PATCH v2 1/2] thermal: netlink: Add enum for mutlicast groups indexes
+Date: Thu, 28 Dec 2023 11:02:47 +0100
+Message-Id: <20231228100248.180721-1-stanislaw.gruszka@linux.intel.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-ClientProxiedBy: SHCAS03.spreadtrum.com (10.0.1.207) To
- BJMBX01.spreadtrum.com (10.0.64.7)
-X-MAIL:SHSQR01.spreadtrum.com 3BSAdRon039450
+Content-Transfer-Encoding: 8bit
 
-To enable users to register their own thermal governor, this patch
-exports thermal_register_governor() and thermal_unregister_governor().
-This change would not affect the registration of the default governor.
+Use enum instead of hard-coded numbers for indexing multicast groups.
 
-Signed-off-by: Di Shen <di.shen@unisoc.com>
+Signed-off-by: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
 ---
- drivers/thermal/thermal_core.c | 2 ++
- 1 file changed, 2 insertions(+)
+v2: No change
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 9c17d35ccbbd..56695988e20f 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -167,6 +167,7 @@ int thermal_register_governor(struct thermal_governor *governor)
+ drivers/thermal/thermal_netlink.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/thermal/thermal_netlink.c b/drivers/thermal/thermal_netlink.c
+index 21f00d73acb7..aca36c4ddbf3 100644
+--- a/drivers/thermal/thermal_netlink.c
++++ b/drivers/thermal/thermal_netlink.c
+@@ -13,9 +13,14 @@
  
- 	return err;
- }
-+EXPORT_SYMBOL_GPL(thermal_register_governor);
+ #include "thermal_core.h"
  
- void thermal_unregister_governor(struct thermal_governor *governor)
- {
-@@ -193,6 +194,7 @@ void thermal_unregister_governor(struct thermal_governor *governor)
- exit:
- 	mutex_unlock(&thermal_governor_lock);
- }
-+EXPORT_SYMBOL_GPL(thermal_unregister_governor);
++enum thermal_genl_multicast_groups {
++	THERMAL_GENL_SAMPLING_GROUP = 0,
++	THERMAL_GENL_EVENT_GROUP = 1,
++};
++
+ static const struct genl_multicast_group thermal_genl_mcgrps[] = {
+-	{ .name = THERMAL_GENL_SAMPLING_GROUP_NAME, },
+-	{ .name = THERMAL_GENL_EVENT_GROUP_NAME,  },
++	[THERMAL_GENL_SAMPLING_GROUP] = { .name = THERMAL_GENL_SAMPLING_GROUP_NAME, },
++	[THERMAL_GENL_EVENT_GROUP]  = { .name = THERMAL_GENL_EVENT_GROUP_NAME,  },
+ };
  
- int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
- 				   char *policy)
+ static const struct nla_policy thermal_genl_policy[THERMAL_GENL_ATTR_MAX + 1] = {
+@@ -95,7 +100,7 @@ int thermal_genl_sampling_temp(int id, int temp)
+ 
+ 	genlmsg_end(skb, hdr);
+ 
+-	genlmsg_multicast(&thermal_gnl_family, skb, 0, 0, GFP_KERNEL);
++	genlmsg_multicast(&thermal_gnl_family, skb, 0, THERMAL_GENL_SAMPLING_GROUP, GFP_KERNEL);
+ 
+ 	return 0;
+ out_cancel:
+@@ -290,7 +295,7 @@ static int thermal_genl_send_event(enum thermal_genl_event event,
+ 
+ 	genlmsg_end(msg, hdr);
+ 
+-	genlmsg_multicast(&thermal_gnl_family, msg, 0, 1, GFP_KERNEL);
++	genlmsg_multicast(&thermal_gnl_family, msg, 0, THERMAL_GENL_EVENT_GROUP, GFP_KERNEL);
+ 
+ 	return 0;
+ 
 -- 
-2.17.1
+2.34.1
 
