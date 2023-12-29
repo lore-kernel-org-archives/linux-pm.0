@@ -1,99 +1,117 @@
-Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
+Received: from mail-ot1-f43.google.com (mail-ot1-f43.google.com [209.85.210.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97ABB10A26
-	for <linux-pm@vger.kernel.org>; Fri, 29 Dec 2023 10:50:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iOeV39u5"
-Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-3367601a301so6481841f8f.2
-        for <linux-pm@vger.kernel.org>; Fri, 29 Dec 2023 02:50:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1703847050; x=1704451850; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=2xqjN3Qj9j09eMYaDIGiYmAZIOx1BVzIvkIYHk7g9T0=;
-        b=iOeV39u5yubyithhqPnDpTOL/9jTJSR0WPyKcAG2qVuEGJZN3Mrcziapa5c+/cxAMM
-         OwMzNdwFls3JKlQf+3bL4fI/vMOC3gvRqyYRKLJzC1nJo285lQmU+ISwXDYhD0dfcZ7N
-         Mq86AQDY9mQIP8UJ1wiX3WwSAzBLmRUOJ0MHd7fIjLZ9wm26owCEHVrRnAW2AoY2+u28
-         PP0gNrqWc12kU1FySfH7T6rCglyWAtIs8sufBUnohCmWiNscLEvO1rOm0IOIKYe0Mx8a
-         QUEL55MxXkbIWVzfa2TZ1BKu8pMjvsckTN2Jz5XSi6UlAHgyqTP2aT/59BcnAzUV69R2
-         hsfg==
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7B0D11C89;
+	Fri, 29 Dec 2023 13:37:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ot1-f43.google.com with SMTP id 46e09a7af769-6dbb09061c0so702450a34.0;
+        Fri, 29 Dec 2023 05:37:48 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1703847050; x=1704451850;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2xqjN3Qj9j09eMYaDIGiYmAZIOx1BVzIvkIYHk7g9T0=;
-        b=C6tdempJCDEr90/GD0QroPz2ChvUizKjExqjWtRIeb3nmu+T2MLTK0VU61Gal6yRDY
-         UEgcIISTTMFb49Nud0Rwok8YKPb/nivdVj1Y62hSINzkoO0a9KGbs5hgXPLOTTTwRlP7
-         JX818amU9MOdCncaxP87rGBlPMOS7iqWcgCCO9kaiPoPdCzLnbuRxBB7J14WPm5ztIdh
-         +LVx3JRuW70G37KM6et93R3y/AN8QjIipOglz6PEJhGS0Iohtd7izX0guiBStbUzq/sh
-         OPO4uuxUNtF6sG3htzLpekifvE0RVY2EXcoYjd3qk0saHjInUjlj/OUffg/wKgLgTIue
-         eDmQ==
-X-Gm-Message-State: AOJu0Yz33niC3L87s+FC4lbpH6C8zTL8Yj/bMRGrUzbZySONacvODcKX
-	kf8OXwKPFgBj2ymxv31w2SUW4U/DfNFOEA==
-X-Google-Smtp-Source: AGHT+IHcx225fckoMtJ4LeKav6+dRtZ3vv8CWubYpxumm76xMw0A4/K8rmjP9GYLC417nQxFFm2kBw==
-X-Received: by 2002:adf:ff8b:0:b0:336:66ff:2031 with SMTP id j11-20020adfff8b000000b0033666ff2031mr4051141wrr.170.1703847049857;
-        Fri, 29 Dec 2023 02:50:49 -0800 (PST)
-Received: from [192.168.100.86] ([37.228.218.3])
-        by smtp.gmail.com with ESMTPSA id p7-20020adfe607000000b00336843ae919sm18728375wrm.49.2023.12.29.02.50.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 29 Dec 2023 02:50:49 -0800 (PST)
-Message-ID: <fc16eb72-fbef-4059-a871-ef229e1f121a@linaro.org>
-Date: Fri, 29 Dec 2023 10:50:47 +0000
+        d=1e100.net; s=20230601; t=1703857067; x=1704461867;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=drT8s+9Lo4+5xk7ZxtQR2sSrDLvVgTHuFaCMfu3pdag=;
+        b=jjjdrYmlt83Gxk3/lJbyEgIGy5auA5McVadTlVL3n4SJQqq95Eo5/TzyxkZB0TI2lE
+         Z3SzGkvNGiG6cSMiH9xFsD8QcuqP/5MiP8rJt+ftWRxPaCtElntDIPRM796ODSz48l0j
+         y+g++xfj2M+QTmQuQ7aWdxXm3FuZ9PMKdCK+5O35x60JNnGWk2Zhbp4nMpUaeZzg4soQ
+         OjxHh8Yb7vAIOw3UyMFi/beCZRmJN6Z04ElIT7GLxLDlw4bDE4sMiccN9iT4tpe+G+h/
+         m5xHJ9NQft4R04hvEB534sfzV29BaVnTarQ/qp3CblNRuC+16r5L3URwbef6s34/0JbU
+         S/DA==
+X-Gm-Message-State: AOJu0YwS3u/Lk0dKXGLTWFFPtorC8bqiHBxgtErDtHxOg87Fh91Mlqxj
+	wHHpv5xXNGHLk6KcK1EqnpjEebzl5iiCL9SIr24=
+X-Google-Smtp-Source: AGHT+IGEah4smnh3673Ggbi7LnWBwdysNZv3gQ/XZQ6XmhmEhR2aGnlwdVeSk4oAdq7B71RVy2rkTd8yfY0wZSTVa1s=
+X-Received: by 2002:a05:6820:2801:b0:594:cb36:b255 with SMTP id
+ dm1-20020a056820280100b00594cb36b255mr7180554oob.1.1703857067610; Fri, 29 Dec
+ 2023 05:37:47 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/5] media: venus: Convert to
- dev_pm_domain_attach|detach_list() for vcodec
-To: Ulf Hansson <ulf.hansson@linaro.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Kevin Hilman <khilman@kernel.org>,
- Konrad Dybcio <konrad.dybcio@linaro.org>,
- Bjorn Andersson <andersson@kernel.org>, Nikunj Kela <nkela@quicinc.com>,
- Prasad Sodagudi <psodagud@quicinc.com>, Stephan Gerhold
- <stephan@gerhold.net>, Ben Horgan <Ben.Horgan@arm.com>,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-remoteproc@vger.kernel.org, linux-media@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Stanimir Varbanov <stanimir.k.varbanov@gmail.com>,
- Vikash Garodia <quic_vgarodia@quicinc.com>,
- Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-References: <20231228114157.104822-1-ulf.hansson@linaro.org>
- <20231228114157.104822-6-ulf.hansson@linaro.org>
-Content-Language: en-US
-From: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-In-Reply-To: <20231228114157.104822-6-ulf.hansson@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <CGME20231227084252epcas2p3b063f7852f81f82cd0a31afd7f404db4@epcas2p3.samsung.com>
+ <5754861.DvuYhMxLoT@kreacher> <6019796.lOV4Wx5bFT@kreacher>
+ <4874693.GXAFRqVoOG@kreacher> <ZY3auVvVzxwTmAX8@linux.intel.com>
+In-Reply-To: <ZY3auVvVzxwTmAX8@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 29 Dec 2023 14:37:36 +0100
+Message-ID: <CAJZ5v0gns5zeLEk39NGwjLy40wzHAHDWYBYapWwQWcJ9jrF-3Q@mail.gmail.com>
+Subject: Re: [PATCH v1 2/3] async: Introduce async_schedule_dev_nocall()
+To: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg KH <gregkh@linuxfoundation.org>, 
+	linux-pm@vger.kernel.org, Youngmin Nam <youngmin.nam@samsung.com>, rafael@kernel.org, 
+	linux-kernel@vger.kernel.org, d7271.choe@samsung.com, 
+	janghyuck.kim@samsung.com, hyesoo.yu@samsung.com, 
+	Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 28/12/2023 11:41, Ulf Hansson wrote:
-> Let's avoid some of the boilerplate code to manage the vcodec PM domains,
-> by converting into using dev_pm_domain_attach|detach_list().
-> 
-> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> Cc: Stanimir Varbanov <stanimir.k.varbanov@gmail.com>
-> Cc: Vikash Garodia <quic_vgarodia@quicinc.com>
-> Cc: "Bryan O'Donoghue" <bryan.odonoghue@linaro.org>
-> Cc: Bjorn Andersson <andersson@kernel.org>
-> Cc: Konrad Dybcio <konrad.dybcio@linaro.org>
-> Cc: <linux-media@vger.kernel.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+On Fri, Dec 29, 2023 at 8:02=E2=80=AFAM Stanislaw Gruszka
+<stanislaw.gruszka@linux.intel.com> wrote:
+>
+> On Wed, Dec 27, 2023 at 09:38:23PM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > In preparation for subsequent changes, introduce a specialized variant
+> > of async_schedule_dev() that will not invoke the argument function
+> > synchronously when it cannot be scheduled for asynchronous execution.
+> >
+> > The new function, async_schedule_dev_nocall(), will be used for fixing
+> > possible deadlocks in the system-wide power management core code.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/base/power/main.c |   12 ++++++++----
+> >  include/linux/async.h     |    2 ++
+> >  kernel/async.c            |   29 +++++++++++++++++++++++++++++
+> >  3 files changed, 39 insertions(+), 4 deletions(-)
+> >
+> > Index: linux-pm/kernel/async.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux-pm.orig/kernel/async.c
+> > +++ linux-pm/kernel/async.c
+> > @@ -244,6 +244,35 @@ async_cookie_t async_schedule_node(async
+> >  EXPORT_SYMBOL_GPL(async_schedule_node);
+> >
+> >  /**
+> > + * async_schedule_dev_nocall - A simplified variant of async_schedule_=
+dev()
+> > + * @func: function to execute asynchronously
+> > + * @dev: device argument to be passed to function
+> > + *
+> > + * @dev is used as both the argument for the function and to provide N=
+UMA
+> > + * context for where to run the function.
+> > + *
+> > + * If the asynchronous execution of @func is scheduled successfully, r=
+eturn
+> > + * true. Otherwise, do nothing and return false, unlike async_schedule=
+_dev()
+> > + * that will run the function synchronously then.
+> > + */
+> > +bool async_schedule_dev_nocall(async_func_t func, struct device *dev)
+> > +{
+> > +     struct async_entry *entry;
+> > +
+> > +     entry =3D kzalloc(sizeof(struct async_entry), GFP_KERNEL);
+>
+> Is GFP_KERNEL intended here ?
 
-On top of 39676dfe52331 - (tag: next-20231222, linux-next/master) Add 
-linux-next specific files for 20231222 (7 days ago)
+Yes, it is.
 
-Tested-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-Reviewed-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+PM will be the only user of this, at least for now, and it all runs in
+process context.
 
----
-bod
+> I think it's not safe since will
+> be called from device_resume_noirq() .
+
+device_resume_noirq() runs in process context too.
+
+The name is somewhat confusing (sorry about that) and it means that
+hardirq handlers (for the majority of IRQs) don't run in that resume
+phase, but interrupts are enabled locally on all CPUs (this is
+required for wakeup handling, among other things).
