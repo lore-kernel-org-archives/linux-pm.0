@@ -1,132 +1,90 @@
-Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C36381A590
-	for <linux-pm@vger.kernel.org>; Wed,  3 Jan 2024 14:20:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7A941A71F;
+	Wed,  3 Jan 2024 15:13:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UYO54ebB"
-Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-a2814fa68eeso175003166b.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jan 2024 06:20:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1704291657; x=1704896457; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ENyq9C8VT12HKkFyaBEnj5k/Q7yDIEUWoULUxoNgLvw=;
-        b=UYO54ebBY4UoITxOiJvd1TFS5ZMEa5mwZtNqBc6yXBt3ps3QfnS4hp7rZMIsjfQ5UL
-         TkovF3f+h1TDY5Cbq/wBjTYVFbVk7GgX6vpZjAKnauiEjY1MqaUqe5Pc3zptMjaCHrVK
-         GgnARH5PhKfJKnIDGIyjlrmmsORMFtr55dHy9n2FyWzUMYjwzx+1j5j+nm1ZS5sXNJnu
-         Ch2J2UA+6kujy9DkC9+vAr+MIxtV72sLNlqrtq5zMMLS+KZoDA42qGc2QbI9gpLk29/A
-         psK6Dz3p16bIUyANzytxYiWaqk2slu7bszTb9qWjgL/vEFTIYsFUqWssWclzBSiHnUMM
-         3UhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1704291657; x=1704896457;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ENyq9C8VT12HKkFyaBEnj5k/Q7yDIEUWoULUxoNgLvw=;
-        b=U+427GkKjvNFKzIY41k0i7akwJS3nqQfg35WG/ERIP2juUqRQ53LgBOtToW9pLppns
-         z4hWSFcl270xkipLjgdaI3oZvO7P0m1JSmIKfPCjTW9GBiSliBfRlK+BvM431ziyaHm7
-         TmEsB34g5zaoNjcyoAyI06o2XMW8qNHfy/nadUNaA+YFetj//FQN22DPZn1m2V36R2lf
-         7hIXGaWxwPDYJx5MozdSitU6/JNH4LpyBTbo1NAYlKlmcRs/1U0SxbG8AeHTFauFdybv
-         IsfxlBw2bbUp1xtCegkyRehZMjZX0Ki4Synvlw3wD9qYt4JmHP0YgdL1dK+wx+6K+hgt
-         X/wA==
-X-Gm-Message-State: AOJu0YxT4Mu9ss046u6Su1J+syYROFuqmMZB2xAdWlZd4iR0KI/ZQZMq
-	Lk2iD1Bto5kksOFdyTVYXhZgLRm09keskw==
-X-Google-Smtp-Source: AGHT+IH7MJevMD7XZ43XmWVT3UQtQVmLymVJAkmIgQoi6Jelzk4nVGGYuMAwr4bcDeCTaDCGkQQfPg==
-X-Received: by 2002:a17:907:968d:b0:a23:357f:f583 with SMTP id hd13-20020a170907968d00b00a23357ff583mr13158197ejc.30.1704291657122;
-        Wed, 03 Jan 2024 06:20:57 -0800 (PST)
-Received: from krzk-bin.. ([178.197.218.27])
-        by smtp.gmail.com with ESMTPSA id ka24-20020a170907921800b00a26abf393d0sm12229325ejb.138.2024.01.03.06.20.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Jan 2024 06:20:56 -0800 (PST)
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Liviu Dudau <liviu.dudau@arm.com>,
-	Sudeep Holla <sudeep.holla@arm.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Amit Kucheria <amit.kucheria@linaro.org>,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	Rob Herring <robh@kernel.org>
-Subject: [PATCH 2/2] arm64: dts: juno: fix thermal zone node names
-Date: Wed,  3 Jan 2024 15:20:51 +0100
-Message-Id: <20240103142051.111717-2-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240103142051.111717-1-krzysztof.kozlowski@linaro.org>
-References: <20240103142051.111717-1-krzysztof.kozlowski@linaro.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TIUKMdGI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2ECBBC433CB;
+	Wed,  3 Jan 2024 15:13:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1704294792;
+	bh=bFm0Z1sKJZItmcrSwYlr++E/l6Wo9Z9RcEYIw1gv8/k=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=TIUKMdGIxBTc4tUVBKOOy03kAHheVOgCdA51aToMHMZ3YINlt8SR9K5e66IhWeB5U
+	 zxG67KSJBbgpwPAaQZff1JkqfEfErcjUrKEWcQx+7DCcDCNvcRAjVmemKiMiHx8n6V
+	 4dix+n/6EfSLm7kDjjlcnKTgdyh9wQGxqpO1aT8Ec7FSzHcrCvgeyL7b9IHpR2IMnC
+	 hs/h09zfO6J+pln+zbQCz9kEz+9vdjetSzsnVuyS0bhQPOD5Wg3zVo6y30skbhn4pn
+	 1C/BgAnXSyByvbAMPPs9eeEJFgaONm+1RmIACU2lPkn8cnZjrUQZhX8tQevBifBfFf
+	 QmmgCKVUQaRJA==
+Received: by mail-lj1-f174.google.com with SMTP id 38308e7fff4ca-2cc9fa5e8e1so114008371fa.3;
+        Wed, 03 Jan 2024 07:13:12 -0800 (PST)
+X-Gm-Message-State: AOJu0YxHmCm3TXmE7jYJzpLvY5VRIi3LGCy987pZPjZmwJq3ra6rfXV/
+	dPu/KttpdmpJxPbNjUn4GltKf/KN4yxSAiLPYw==
+X-Google-Smtp-Source: AGHT+IFSlj6nZ8ZUfTGFMSFmV/q5bvx3ay0bqNUHIfGx+Gz9YS2Lv41/6TR2DLdMKsWU/APCPg4voqSUFRKuaq9MzdA=
+X-Received: by 2002:a2e:98d5:0:b0:2cc:843a:ec97 with SMTP id
+ s21-20020a2e98d5000000b002cc843aec97mr7360555ljj.43.1704294790370; Wed, 03
+ Jan 2024 07:13:10 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20240103142051.111717-1-krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20240103142051.111717-1-krzysztof.kozlowski@linaro.org>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Wed, 3 Jan 2024 08:12:58 -0700
+X-Gmail-Original-Message-ID: <CAL_JsqKAKNHz4wPuJPX7ULhVUz=KFRtNn=coWhs3d6LWk+jtGQ@mail.gmail.com>
+Message-ID: <CAL_JsqKAKNHz4wPuJPX7ULhVUz=KFRtNn=coWhs3d6LWk+jtGQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: correct thermal zone node name limit
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, 
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Linux kernel uses thermal zone node name during registering thermal
-zones and has a hard-coded limit of 20 characters, including terminating
-NUL byte.  Exceeding the limit will cause failure to configure thermal
-zone.
+On Wed, Jan 3, 2024 at 7:20=E2=80=AFAM Krzysztof Kozlowski
+<krzysztof.kozlowski@linaro.org> wrote:
+>
+> Linux kernel uses thermal zone node name during registering thermal
+> zones and has a hard-coded limit of 20 characters, including terminating
+> NUL byte.  The bindings expect node names to finish with '-thermal'
+> which is eight bytes long, thus we have only 11 characters for the reset
+> of the node name, not 12.
+>
+> Reported-by: Rob Herring <robh@kernel.org>
+> Closes: https://lore.kernel.org/all/CAL_JsqKogbT_4DPd1n94xqeHaU_J8ve5K09W=
+OyVsRX3jxxUW3w@mail.gmail.com/
+> Fixes: 1202a442a31f ("dt-bindings: thermal: Add yaml bindings for thermal=
+ zones")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/thermal/thermal-zones.yaml | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml=
+ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> index 4a8dabc48170..bbc883fd4044 100644
+> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> @@ -49,7 +49,7 @@ properties:
+>        to take when the temperature crosses those thresholds.
+>
+>  patternProperties:
+> -  "^[a-zA-Z][a-zA-Z0-9\\-]{1,12}-thermal$":
+> +  "^[a-zA-Z][a-zA-Z0-9\\-]{1,11}-thermal$":
 
-Reported-by: Rob Herring <robh@kernel.org>
-Closes: https://lore.kernel.org/all/CAL_JsqKogbT_4DPd1n94xqeHaU_J8ve5K09WOyVsRX3jxxUW3w@mail.gmail.com/
-Fixes: fb4d25d7a33f ("arm64: dts: juno: Align thermal zone names with bindings")
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- arch/arm64/boot/dts/arm/juno-base.dtsi | 4 ++--
- arch/arm64/boot/dts/arm/juno-scmi.dtsi | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Now off by 1 instead of 2. It should be 1 starting char, 1-10 chars,
+and 8 chars for "-thermal".
 
-diff --git a/arch/arm64/boot/dts/arm/juno-base.dtsi b/arch/arm64/boot/dts/arm/juno-base.dtsi
-index b897f5542c0a..98ed2b329ed6 100644
---- a/arch/arm64/boot/dts/arm/juno-base.dtsi
-+++ b/arch/arm64/boot/dts/arm/juno-base.dtsi
-@@ -773,14 +773,14 @@ soc_crit0: trip0 {
- 			};
- 		};
- 
--		big_cluster_thermal_zone: big-cluster-thermal {
-+		big_cluster_thermal_zone: big-cl-thermal {
- 			polling-delay = <1000>;
- 			polling-delay-passive = <100>;
- 			thermal-sensors = <&scpi_sensors0 21>;
- 			status = "disabled";
- 		};
- 
--		little_cluster_thermal_zone: little-cluster-thermal {
-+		little_cluster_thermal_zone: little-cl-thermal {
- 			polling-delay = <1000>;
- 			polling-delay-passive = <100>;
- 			thermal-sensors = <&scpi_sensors0 22>;
-diff --git a/arch/arm64/boot/dts/arm/juno-scmi.dtsi b/arch/arm64/boot/dts/arm/juno-scmi.dtsi
-index 31929e2377d8..f38c5b6ef657 100644
---- a/arch/arm64/boot/dts/arm/juno-scmi.dtsi
-+++ b/arch/arm64/boot/dts/arm/juno-scmi.dtsi
-@@ -84,11 +84,11 @@ soc-thermal {
- 			thermal-sensors = <&scmi_sensors0 3>;
- 		};
- 
--		big-cluster-thermal {
-+		big-cl-thermal {
- 			thermal-sensors = <&scmi_sensors0 21>;
- 		};
- 
--		little-cluster-thermal {
-+		little-cl-thermal {
- 			thermal-sensors = <&scmi_sensors0 22>;
- 		};
- 
--- 
-2.34.1
+Can you also add a comment that this length is due to the kernel.
 
+Rob
