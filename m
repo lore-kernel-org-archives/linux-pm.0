@@ -1,168 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C89DC1C290;
-	Wed,  3 Jan 2024 16:57:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E17931C280;
+	Wed,  3 Jan 2024 17:26:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iYOVHk2X"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40EA1C433C8;
-	Wed,  3 Jan 2024 16:57:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1704301032;
-	bh=Dg2dDaPNZtNW//yG71kg8XZ8E7Hu6Q4eVI6C38LDthI=;
-	h=From:Date:Subject:To:Cc:From;
-	b=iYOVHk2XhpQokWq7/u1JypdHbjqJIiozmZIPP46+vKl8+c5MNTwZ6lIeawQdtTHlV
-	 fD/GNag5+BHJ3/XEBKZ3BU3o036DXxaNh+5e+43uCAJq6l8sBZedNQmiO+XtajmUV9
-	 fCBitXICxXvR2TVg8YtfB2MjhLHc7sLAZSYCFMcrWb2WrAIXYYKmQ113Vw5m2m9rHz
-	 o/GeuEn1DesYlKAWVMgrpROoZySLAsZwhabV9haMU4APb5I6MSdePpHfCgha9sfVM5
-	 5NecWyk06XBBXjdFEdq95t21rkwffHIloaFf5YhpyfgWsftyXx+XgHBDIV9kfMux5D
-	 A0IKqSxubn/Sw==
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Wed, 03 Jan 2024 09:57:07 -0700
-Subject: [PATCH] power: supply: bq24190_charger: Fix "initializer element
- is not constant" error
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="MJtJBiNZ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1704302816; x=1735838816;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=EJE3hRpgK0X23wIsKdiyvAzh6pSGgJFYMhCfGWSeSWc=;
+  b=MJtJBiNZoMJMrCXxgFmqDk221JUfRAy3g1DTgKZkkTYsYBbpFL8LqdKK
+   Hq6D2B7N8oA+bclF+KQP51jyvNRQljZleend+40frvaXHGZst4JoK8ajS
+   oTTyWu8XmTftWa9GKDONFx/VyBg+/1J+tc2uvTKuJICS3a45/IxCCEfhC
+   2XUf7Vldi4c5Mx570ga8GGRVEeLYvfkpP0P/11vl+EKi9Awv/2YByVaUL
+   25RCODabia2S0UILg/sJjALo1+lMUT1/ahHCHN6eAYgccuIhSAbbyM8Xo
+   OaoBmcekpKCz4bbWmMT68WbOnSvcUJxyK+lA1kN4j8QmilKSxs1Q4zxXh
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10942"; a="18561802"
+X-IronPort-AV: E=Sophos;i="6.04,328,1695711600"; 
+   d="scan'208";a="18561802"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jan 2024 09:26:55 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10942"; a="953283636"
+X-IronPort-AV: E=Sophos;i="6.04,328,1695711600"; 
+   d="scan'208";a="953283636"
+Received: from sgruszka-mobl.ger.corp.intel.com (HELO localhost) ([10.252.36.57])
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jan 2024 09:26:51 -0800
+Date: Wed, 3 Jan 2024 16:02:34 +0100
+From: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Chen Yu <yu.c.chen@intel.com>, Len Brown <len.brown@intel.com>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Zhang Rui <rui.zhang@intel.com>, Zhao Liu <zhao1.liu@intel.com>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 4/4] thermal: intel: hfi: Add a suspend notifier
+Message-ID: <ZZV3CgnaWznmzFKF@linux.intel.com>
+References: <20240103041459.11113-1-ricardo.neri-calderon@linux.intel.com>
+ <20240103041459.11113-5-ricardo.neri-calderon@linux.intel.com>
+ <CAJZ5v0jSERoeMki9ZvWtTqiZidETeo1Xm_Qb0Oo2qRG0PMrSJQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240103-fix-bq24190_charger-vbus_desc-non-const-v1-1-115ddf798c70@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAOKRlWUC/x2N0QqDMAxFf0XyvEBaRXC/MoasaXR9SbdkE0H89
- 5U9HrjnngNcrIjDtTvAZCteqjYIlw74+dBVsOTGECkOFKjHpeyY3nEIE81tYasYbunrcxZn1Kr
- IVf2DPKaFKGQepwzt7WXS1H/pdj/PHxCHbTp5AAAA
-To: sre@kernel.org
-Cc: chenhuiz@axis.com, linux-pm@vger.kernel.org, llvm@lists.linux.dev, 
- patches@lists.linux.dev, Nathan Chancellor <nathan@kernel.org>
-X-Mailer: b4 0.13-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5503; i=nathan@kernel.org;
- h=from:subject:message-id; bh=Dg2dDaPNZtNW//yG71kg8XZ8E7Hu6Q4eVI6C38LDthI=;
- b=owGbwMvMwCUmm602sfCA1DTG02pJDKlTJ74w+KGgfPuA2GGRZGmtJnFX1sCTLfPF89kTBesaf
- 0nwf77WUcrCIMbFICumyFL9WPW4oeGcs4w3Tk2CmcPKBDKEgYtTACbiO5nhf2Cw+8YJE3meun/0
- trPeHP7hkEg663+bHsYk7nvWam3vPRkZ+lVfdFmtn2Te5xzC9vn95czL5/vPbpKOuFWgVcWztXY
- yCwA=
-X-Developer-Key: i=nathan@kernel.org; a=openpgp;
- fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jSERoeMki9ZvWtTqiZidETeo1Xm_Qb0Oo2qRG0PMrSJQ@mail.gmail.com>
 
-When building with a version of GCC prior to 8.x, there is an error
-around non-constant initializer elements:
+On Wed, Jan 03, 2024 at 02:34:26PM +0100, Rafael J. Wysocki wrote:
+> > +static int hfi_pm_notify(struct notifier_block *nb,
+> > +                        unsigned long mode, void *unused)
+> > +{
+> > +       struct hfi_cpu_info *info = &per_cpu(hfi_cpu_info, 0);
+> > +       struct hfi_instance *hfi = info->hfi_instance;
+> > +       int ret = 0;
+> > +
+> > +       /* HFI may not be in use. */
+> > +       if (!hfi)
+> > +               return ret;
+> > +
+> > +       mutex_lock(&hfi_instance_lock);
+> > +       /*
+> > +        * Only handle the HFI instance of the package of the boot CPU. The
+> > +        * instances of other packages are handled in the CPU hotplug callbacks.
+> > +        */
+> > +       switch (mode) {
+> > +       case PM_HIBERNATION_PREPARE:
+> > +       case PM_SUSPEND_PREPARE:
+> > +       case PM_RESTORE_PREPARE:
+> > +               ret = smp_call_function_single(0, hfi_do_disable, NULL, true);
+> > +               break;
+> > +
+> > +       case PM_POST_RESTORE:
+> > +       case PM_POST_HIBERNATION:
+> > +       case PM_POST_SUSPEND:
+> > +               ret = smp_call_function_single(0, hfi_do_enable, hfi, true);
+> > +               break;
+> 
+> Because this handles the boot CPU only, one has to wonder if it should
+> be a syscore op rather than a PM notifier.
+> 
+> It does not sleep AFAICS, so it can run in that context, and it is
+> guaranteed to run on the boot CPU then, so it is not necessary to
+> force that.  Moreover, syscore ops are guaranteed to be
+> non-concurrent, so locking is not needed.
 
-  drivers/power/supply/bq24190_charger.c:1978:16: error: initializer element is not constant
-     .vbus_desc = bq24190_vbus_desc,
-                  ^~~~~~~~~~~~~~~~~
-  drivers/power/supply/bq24190_charger.c:1978:16: note: (near initialization for 'bq24190_chip_info_tbl[0].vbus_desc')
-  drivers/power/supply/bq24190_charger.c:1989:16: error: initializer element is not constant
-     .vbus_desc = bq24190_vbus_desc,
-                  ^~~~~~~~~~~~~~~~~
-  drivers/power/supply/bq24190_charger.c:1989:16: note: (near initialization for 'bq24190_chip_info_tbl[1].vbus_desc')
-  drivers/power/supply/bq24190_charger.c:2000:16: error: initializer element is not constant
-     .vbus_desc = bq24190_vbus_desc,
-                  ^~~~~~~~~~~~~~~~~
-  drivers/power/supply/bq24190_charger.c:2000:16: note: (near initialization for 'bq24190_chip_info_tbl[2].vbus_desc')
-  drivers/power/supply/bq24190_charger.c:2011:16: error: initializer element is not constant
-     .vbus_desc = bq24190_vbus_desc,
-                  ^~~~~~~~~~~~~~~~~
-  drivers/power/supply/bq24190_charger.c:2011:16: note: (near initialization for 'bq24190_chip_info_tbl[3].vbus_desc')
-  drivers/power/supply/bq24190_charger.c:2022:16: error: initializer element is not constant
-     .vbus_desc = bq24296_vbus_desc,
-                  ^~~~~~~~~~~~~~~~~
-  drivers/power/supply/bq24190_charger.c:2022:16: note: (near initialization for 'bq24190_chip_info_tbl[4].vbus_desc')
+There are below warnings in smp_call_function_single() :
 
-Clang versions prior to 17.x show a similar error:
+        /*
+         * Can deadlock when called with interrupts disabled.
+         * We allow cpu's that are not yet online though, as no one else can
+         * send smp call function interrupt to this cpu and as such deadlocks
+         * can't happen.
+         */
+        WARN_ON_ONCE(cpu_online(this_cpu) && irqs_disabled()
+                     && !oops_in_progress);
 
-  drivers/power/supply/bq24190_charger.c:1978:16: error: initializer element is not a compile-time constant
-                  .vbus_desc = bq24190_vbus_desc,
-                               ^~~~~~~~~~~~~~~~~
-  1 error generated.
+        /*
+         * When @wait we can deadlock when we interrupt between llist_add() and
+         * arch_send_call_function_ipi*(); when !@wait we can deadlock due to
+         * csd_lock() on because the interrupt context uses the same csd
+         * storage.
+         */
+        WARN_ON_ONCE(!in_task());
 
-Newer compilers have decided to accept these structures as compile time
-constants as an extension. To resolve this issue for all supported
-compilers, change the vbus_desc member in 'struct bq24190_chip_info' to
-a pointer, as it is only ever passed by reference anyways, and adjust
-the assignments accordingly.
+And this one in syscore_suspend(): 
 
-Closes: https://github.com/ClangBuiltLinux/linux/issues/1973
-Fixes: b150a703b56f ("power: supply: bq24190_charger: Add support for BQ24296")
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
----
- drivers/power/supply/bq24190_charger.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+        WARN_ONCE(!irqs_disabled(),
+                "Interrupts enabled before system core suspend.\n");
+                                                                     
+So seems they are not compatible.
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index a8995a21fadb..2b393eb5c282 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -246,7 +246,7 @@ struct bq24190_dev_info {
- struct bq24190_chip_info {
- 	int ichg_array_size;
- #ifdef CONFIG_REGULATOR
--	const struct regulator_desc vbus_desc;
-+	const struct regulator_desc *vbus_desc;
- #endif
- 	int (*check_chip)(struct bq24190_dev_info *bdi);
- 	int (*set_chg_config)(struct bq24190_dev_info *bdi, const u8 chg_config);
-@@ -728,7 +728,7 @@ static int bq24190_register_vbus_regulator(struct bq24190_dev_info *bdi)
- 	else
- 		cfg.init_data = &bq24190_vbus_init_data;
- 	cfg.driver_data = bdi;
--	reg = devm_regulator_register(bdi->dev, &bdi->info->vbus_desc, &cfg);
-+	reg = devm_regulator_register(bdi->dev, bdi->info->vbus_desc, &cfg);
- 	if (IS_ERR(reg)) {
- 		ret = PTR_ERR(reg);
- 		dev_err(bdi->dev, "Can't register regulator: %d\n", ret);
-@@ -1975,7 +1975,7 @@ static const struct bq24190_chip_info bq24190_chip_info_tbl[] = {
- 	[BQ24190] = {
- 		.ichg_array_size = ARRAY_SIZE(bq24190_ccc_ichg_values),
- #ifdef CONFIG_REGULATOR
--		.vbus_desc = bq24190_vbus_desc,
-+		.vbus_desc = &bq24190_vbus_desc,
- #endif
- 		.check_chip = bq24190_check_chip,
- 		.set_chg_config = bq24190_battery_set_chg_config,
-@@ -1986,7 +1986,7 @@ static const struct bq24190_chip_info bq24190_chip_info_tbl[] = {
- 	[BQ24192] = {
- 		.ichg_array_size = ARRAY_SIZE(bq24190_ccc_ichg_values),
- #ifdef CONFIG_REGULATOR
--		.vbus_desc = bq24190_vbus_desc,
-+		.vbus_desc = &bq24190_vbus_desc,
- #endif
- 		.check_chip = bq24190_check_chip,
- 		.set_chg_config = bq24190_battery_set_chg_config,
-@@ -1997,7 +1997,7 @@ static const struct bq24190_chip_info bq24190_chip_info_tbl[] = {
- 	[BQ24192i] = {
- 		.ichg_array_size = ARRAY_SIZE(bq24190_ccc_ichg_values),
- #ifdef CONFIG_REGULATOR
--		.vbus_desc = bq24190_vbus_desc,
-+		.vbus_desc = &bq24190_vbus_desc,
- #endif
- 		.check_chip = bq24190_check_chip,
- 		.set_chg_config = bq24190_battery_set_chg_config,
-@@ -2008,7 +2008,7 @@ static const struct bq24190_chip_info bq24190_chip_info_tbl[] = {
- 	[BQ24196] = {
- 		.ichg_array_size = ARRAY_SIZE(bq24190_ccc_ichg_values),
- #ifdef CONFIG_REGULATOR
--		.vbus_desc = bq24190_vbus_desc,
-+		.vbus_desc = &bq24190_vbus_desc,
- #endif
- 		.check_chip = bq24190_check_chip,
- 		.set_chg_config = bq24190_battery_set_chg_config,
-@@ -2019,7 +2019,7 @@ static const struct bq24190_chip_info bq24190_chip_info_tbl[] = {
- 	[BQ24296] = {
- 		.ichg_array_size = BQ24296_CCC_ICHG_VALUES_LEN,
- #ifdef CONFIG_REGULATOR
--		.vbus_desc = bq24296_vbus_desc,
-+		.vbus_desc = &bq24296_vbus_desc,
- #endif
- 		.check_chip = bq24296_check_chip,
- 		.set_chg_config = bq24296_battery_set_chg_config,
-
----
-base-commit: b150a703b56fb6eb282d059b421652ccd9155c23
-change-id: 20240103-fix-bq24190_charger-vbus_desc-non-const-c6bf001dc69d
-
-Best regards,
--- 
-Nathan Chancellor <nathan@kernel.org>
-
+Regards
+Stanislaw
