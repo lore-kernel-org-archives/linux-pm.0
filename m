@@ -1,193 +1,285 @@
-Received: from mail-oo1-f52.google.com (mail-oo1-f52.google.com [209.85.161.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de [85.215.255.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAAE91D692;
-	Wed,  3 Jan 2024 20:09:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-oo1-f52.google.com with SMTP id 006d021491bc7-594363b4783so347704eaf.1;
-        Wed, 03 Jan 2024 12:09:40 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1704312580; x=1704917380;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=MZOqC+vh8nhBkqQBS+jkEHlXm5GbUXDC2IWE5XgtUcw=;
-        b=W4yZCJtrMnIEAwJiRbxeRibdxJNLSbttUrq4IhtLOBnihFvFL01XHmClBUlMsoWNyW
-         zqk6b0tlizWQXuccc8TRMagKEjyan8h+n8BSzBgAPi8wmYrw2i5RsAveKxo3GqRkOoL7
-         ZZCkE+z/4XFGHqttPBTrESoBPzJMMlbJHgChN+avqZ8TnE9BfIT1bcNicf9iYuE3Yauz
-         /z9lloxYog6RNCnPl3wMz4AMxnfmcE+FYVmLgul19/bunqrYvXFyObt9qmPlDhVYyDxb
-         L9Y8SdgEz3sx3HajPJN39uHFd3Pd2iXmws13IA/q72Z2oeOkFTuyK6YiAX+Bildvr5FO
-         8lLg==
-X-Gm-Message-State: AOJu0YxXORmARHd3FlvIzSExmxOe27tpObmUW9gFT12aljdh57m60lK/
-	NZHIeeRSQbpqAdlebrhgrzUlMRN+atofS9ulDcY=
-X-Google-Smtp-Source: AGHT+IFGRBo6mDTu/6Go6p6Xvr+1jM4RYFUjBFAq+gr8WyiRnKRMQs1ciEaJ9M3mqO4WwE5lS20MjnN9DH9qyoi1XlE=
-X-Received: by 2002:a05:6820:2e01:b0:594:35b4:8a with SMTP id
- ec1-20020a0568202e0100b0059435b4008amr27264639oob.0.1704312579904; Wed, 03
- Jan 2024 12:09:39 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C9121DA2F;
+	Wed,  3 Jan 2024 21:34:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gerhold.net
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=gerhold.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gerhold.net header.i=@gerhold.net header.b="Fs6Eda+r";
+	dkim=permerror (0-bit key) header.d=gerhold.net header.i=@gerhold.net header.b="cqnsFZHe"
+ARC-Seal: i=1; a=rsa-sha256; t=1704316217; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=rExV4khYM1zRU7cjvMdaVI5m8LV9lavXrH9khRwoa9+hsct+KlUOy+7Mn3Lr1BATpU
+    78xlKqiwhJAVIy7NygyaNk5uufVnzQLxsnnnCuBBiFwrkkYSErK1sHRZcTpDIgZlx/b3
+    EZziYYyv4GWtWr0d7557XjlPlpT8bw/mcpgTWPfl+5gpMf0hz82rb8i7eW3EopFZlNdW
+    eDa/WDkoSRL2y0YNLitYEa5GX+xqFHGXUp1BbGjuY9gNOdhWkeUKj1z9q6iYdSb8CfwN
+    b7F9GlL1n+u071uUFkhgOfqYDEyD0hVcal9sSOV19H/WVVFkjxME5txjuNxNSsuIkxXh
+    r9cA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1704316217;
+    s=strato-dkim-0002; d=strato.com;
+    h=Cc:To:Message-Id:Subject:Date:From:Cc:Date:From:Subject:Sender;
+    bh=U74J5n70oOkdpD2USO/TKMTXE9DOo0XAlgw3xl3xdRE=;
+    b=FeAgxTn5QHOvfY9YSAsU+NVItER0D1BULeZm57ZinxB+XiX/aURBLLr/qy2sjEyjcm
+    J+SVc42E/+BTTM/+wH+iVVI9pYR/WVFBMQ2X2ZYQIAaT0fEnXNOhsWquQAQQF5BDf6+I
+    3GOW3b+3/8nfws1/+sKtWf2gaOQcUXFFN55hs6tzszCMlJtbc7Tirf56i7s08yha6fyn
+    sbZPlstykr4txTMmmWUaHABzVs9sGCsn54hFmyXf7O6tqn3mVccaZInVw3M/DtWwcWG/
+    /bcApHTSyxV6o5iGRMDqm/ZhcYeIhPUOupGYbM1lQx9esh0p1P14z/C8cUXUz1Q6euSV
+    beUQ==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo00
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1704316217;
+    s=strato-dkim-0002; d=gerhold.net;
+    h=Cc:To:Message-Id:Subject:Date:From:Cc:Date:From:Subject:Sender;
+    bh=U74J5n70oOkdpD2USO/TKMTXE9DOo0XAlgw3xl3xdRE=;
+    b=Fs6Eda+rwZlBGXOzSSZuJAwHnJw9YH1SWt3JYgk7fNgwMgP1qzAcspmoIIH/XD3Bjc
+    lbxnC8h4r65lWCUOjjYwJRcFhJX1RPasONW2tpa/wBtTP1DAPBWTg8zULdWvOVMSwO25
+    6oW5idrSoPFamRxFc34dBa4K0goFoEmW4lj0Qj0nPGfr6scPz063264DSW0lLKoUIxAv
+    u/6tLpgMYVKzf6TEQFxODh0SNiUItGdLhd3L7S7R58IWmtsVoDCXjBzBp6XoOiiY/k0X
+    aa4l01U3WXY0gwtauC5crJ6uRV0sH5t2+zuG202mIqaPzv96BGzFzh69D6LxF30+C184
+    0cQg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1704316217;
+    s=strato-dkim-0003; d=gerhold.net;
+    h=Cc:To:Message-Id:Subject:Date:From:Cc:Date:From:Subject:Sender;
+    bh=U74J5n70oOkdpD2USO/TKMTXE9DOo0XAlgw3xl3xdRE=;
+    b=cqnsFZHe4irgeHQwZ9PI5Q5l3JQkuTFnatPMYKPDp6sYzZpoFuHndOg5lryn8OZwjP
+    MpcWoqkAXWwZI1jCOYBg==
+X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQjVd4CteZ/7jYgS+mLFY+H0JAn9VOH8mz0="
+Received: from [192.168.244.3]
+    by smtp.strato.de (RZmta 49.10.0 SBL|AUTH)
+    with ESMTPSA id 58bb61003LAGNVs
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Wed, 3 Jan 2024 22:10:16 +0100 (CET)
+From: Stephan Gerhold <stephan@gerhold.net>
+Date: Wed, 03 Jan 2024 22:10:05 +0100
+Subject: [PATCH v2] PM: domains: Scale down parent performance states in
+ reverse order
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <4556052.LvFx2qVVIh@kreacher> <2938222.e9J7NaK4W3@kreacher> <24822e06-1e5e-41e8-9f68-8fa82b1b11d4@arm.com>
-In-Reply-To: <24822e06-1e5e-41e8-9f68-8fa82b1b11d4@arm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 3 Jan 2024 21:09:28 +0100
-Message-ID: <CAJZ5v0jcC=Apc8U3G6qKAXBHOJ2Q0RF4DE8dvgtE8jozRzg7cg@mail.gmail.com>
-Subject: Re: [PATCH v1 2/6] thermal: netlink: Pass pointers to thermal_notify_tz_trip_change()
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240103-genpd-perf-order-v2-1-eeecfc55624b@gerhold.net>
+X-B4-Tracking: v=1; b=H4sIACzNlWUC/32NQQqDMBBFryKz7hQzopKueo/iIk0mGiiJTERaJ
+ Hdv6gG6fA/++wdklsAZbs0BwnvIIcUKdGnALibOjMFVBmqpU9T2OHNcHa4sHpM4Fnz6rmtJW+q
+ NhTpbhX14n8nHVHkJeUvyOR929bN/YrtChUOvR2sHbUbS95llSS93jbzBVEr5Avg2SC+yAAAA
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Viresh Kumar <viresh.kumar@linaro.org>, 
+ Stephan Gerhold <stephan@gerhold.net>
+X-Mailer: b4 0.12.4
 
-On Wed, Jan 3, 2024 at 8:57=E2=80=AFPM Lukasz Luba <lukasz.luba@arm.com> wr=
-ote:
->
->
->
-> On 12/15/23 19:56, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Instead of requiring the caller of thermal_notify_tz_trip_change() to
-> > provide specific values needed to populate struct param in it, make it
-> > extract those values from objects passed to it by the caller via const
-> > pointers.
-> >
-> > No intentional functional impact.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >   drivers/thermal/thermal_netlink.c |   12 +++++++-----
-> >   drivers/thermal/thermal_netlink.h |    8 ++++----
-> >   drivers/thermal/thermal_trip.c    |    8 ++------
-> >   3 files changed, 13 insertions(+), 15 deletions(-)
-> >
-> > Index: linux-pm/drivers/thermal/thermal_netlink.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux-pm.orig/drivers/thermal/thermal_netlink.c
-> > +++ linux-pm/drivers/thermal/thermal_netlink.c
-> > @@ -361,12 +361,14 @@ int thermal_notify_tz_trip_delete(int tz
-> >       return thermal_genl_send_event(THERMAL_GENL_EVENT_TZ_TRIP_DELETE,=
- &p);
-> >   }
-> >
-> > -int thermal_notify_tz_trip_change(int tz_id, int trip_id, int trip_typ=
-e,
-> > -                               int trip_temp, int trip_hyst)
-> > +int thermal_notify_tz_trip_change(const struct thermal_zone_device *tz=
-,
-> > +                               const struct thermal_trip *trip)
-> >   {
-> > -     struct param p =3D { .tz_id =3D tz_id, .trip_id =3D trip_id,
-> > -                        .trip_type =3D trip_type, .trip_temp =3D trip_=
-temp,
-> > -                        .trip_hyst =3D trip_hyst };
-> > +     struct param p =3D { .tz_id =3D tz->id,
-> > +                        .trip_id =3D thermal_zone_trip_id(tz, trip),
-> > +                        .trip_type =3D trip->type,
-> > +                        .trip_temp =3D trip->temperature,
-> > +                        .trip_hyst =3D trip->hysteresis };
-> >
-> >       return thermal_genl_send_event(THERMAL_GENL_EVENT_TZ_TRIP_CHANGE,=
- &p);
-> >   }
-> > Index: linux-pm/drivers/thermal/thermal_netlink.h
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux-pm.orig/drivers/thermal/thermal_netlink.h
-> > +++ linux-pm/drivers/thermal/thermal_netlink.h
-> > @@ -23,8 +23,8 @@ int thermal_notify_tz_trip_up(int tz_id,
-> >   int thermal_notify_tz_trip_delete(int tz_id, int id);
-> >   int thermal_notify_tz_trip_add(int tz_id, int id, int type,
-> >                              int temp, int hyst);
-> > -int thermal_notify_tz_trip_change(int tz_id, int id, int type,
-> > -                               int temp, int hyst);
-> > +int thermal_notify_tz_trip_change(const struct thermal_zone_device *tz=
-,
-> > +                               const struct thermal_trip *trip);
-> >   int thermal_notify_cdev_state_update(int cdev_id, int state);
-> >   int thermal_notify_cdev_add(int cdev_id, const char *name, int max_st=
-ate);
-> >   int thermal_notify_cdev_delete(int cdev_id);
-> > @@ -79,8 +79,8 @@ static inline int thermal_notify_tz_trip
-> >       return 0;
-> >   }
-> >
-> > -static inline int thermal_notify_tz_trip_change(int tz_id, int id, int=
- type,
-> > -                                             int temp, int hyst)
-> > +static inline int thermal_notify_tz_trip_change(const struct thermal_z=
-one_device *tz,
->
-> I was wondering if it's not too long line, but I can see it's common
-> in that header file. Shouldn't we break such lines like:
->
-> static inline
-> int thermal_notify_tz_trip_change(const struct thermal_zone_device *tz,
->                                 const struct thermal_trip *trip)
->
-> ?
+Power domains might have parent domains assigned that are automatically
+managed by the PM domain core. In particular, parent domains are
+automatically powered on/off and setting performance states on child
+domains is translated to parent domains (e.g. using an OPP table from
+the device tree).
 
-IMO the additional line break doesn't really make it easier to read.
+Currently parent performance states are always adjusted before the
+performance state of the child domain is changed.
 
-And note that it is OK now to have code lines longer than 80 chars (as
-long as they are not longer than 100 chars IIRC), although it is still
-recommended (but not required any more) to observe the "old" 80 chars
-length limit.
+However, typically a parent/child relationship between two power
+domains with performance states models the requirement to keep the
+parent domain at a performance state equal or higher to the child
+domain. When scaling down there is a brief moment where the parent
+domain will end up having a lower performance state than required by
+the child domain.
 
-> Although, it would apply to all other long lines in that header, so not
-> particularly to this $subject.
+To avoid this, we need to differentiate between scaling up/down and
+adjust the order of operations:
 
-Well, right.
+ - When scaling up, parent domains should be adjusted before the child
+   domain. In case of an error, the rollback happens in reverse order.
 
-> > +                                             const struct thermal_trip=
- *trip)
-> >   {
-> >       return 0;
-> >   }
-> > Index: linux-pm/drivers/thermal/thermal_trip.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux-pm.orig/drivers/thermal/thermal_trip.c
-> > +++ linux-pm/drivers/thermal/thermal_trip.c
-> > @@ -155,9 +155,7 @@ int thermal_zone_trip_id(const struct th
-> >   void thermal_zone_trip_updated(struct thermal_zone_device *tz,
-> >                              const struct thermal_trip *trip)
-> >   {
-> > -     thermal_notify_tz_trip_change(tz->id, thermal_zone_trip_id(tz, tr=
-ip),
-> > -                                   trip->type, trip->temperature,
-> > -                                   trip->hysteresis);
-> > +     thermal_notify_tz_trip_change(tz, trip);
-> >       __thermal_zone_device_update(tz, THERMAL_TRIP_CHANGED);
-> >   }
-> >
-> > @@ -168,8 +166,6 @@ void thermal_zone_set_trip_temp(struct t
-> >               return;
-> >
-> >       trip->temperature =3D temp;
-> > -     thermal_notify_tz_trip_change(tz->id, thermal_zone_trip_id(tz, tr=
-ip),
-> > -                                   trip->type, trip->temperature,
-> > -                                   trip->hysteresis);
-> > +     thermal_notify_tz_trip_change(tz, trip);
-> >   }
-> >   EXPORT_SYMBOL_GPL(thermal_zone_set_trip_temp);
-> >
-> >
-> >
->
-> Other than the comment above, LGTM.
->
-> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+ - When scaling down, parent domains should be adjusted after the child
+   domain, in reverse order, just as if we would rollback scaling up.
+   In case of an error, the rollback happens in normal order (just as
+   if we would normally scale up).
 
-Thanks!
+Implement this by moving the existing functionality of
+_genpd_set_performance_state() to two separate functions that are
+called in the proper iteration order.
+
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+---
+Changes in v2:
+- Rebase to adjust for move of drivers/base/power/domain.c
+  to drivers/pmdomain/core.c
+- Regenerate CC list
+- No code changes
+- Link to v1: https://lore.kernel.org/r/20231205-genpd-perf-order-v1-1-6597cc69a729@gerhold.net
+---
+Related discussion: https://lore.kernel.org/linux-pm/ZWXgFNKgm9QaFuzx@gerhold.net/
+---
+ drivers/pmdomain/core.c | 124 ++++++++++++++++++++++++++++++------------------
+ 1 file changed, 77 insertions(+), 47 deletions(-)
+
+diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+index a1f6cba3ae6c..fec9dc6ab828 100644
+--- a/drivers/pmdomain/core.c
++++ b/drivers/pmdomain/core.c
+@@ -311,72 +311,102 @@ static int genpd_xlate_performance_state(struct generic_pm_domain *genpd,
+ }
+ 
+ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
+-					unsigned int state, int depth)
++					unsigned int state, int depth);
++
++static void _genpd_rollback_parent_state(struct gpd_link *link, int depth)
+ {
+-	struct generic_pm_domain *parent;
+-	struct gpd_link *link;
+-	int parent_state, ret;
++	struct generic_pm_domain *parent = link->parent;
++	int parent_state;
+ 
+-	if (state == genpd->performance_state)
+-		return 0;
++	genpd_lock_nested(parent, depth + 1);
+ 
+-	/* Propagate to parents of genpd */
+-	list_for_each_entry(link, &genpd->child_links, child_node) {
+-		parent = link->parent;
++	parent_state = link->prev_performance_state;
++	link->performance_state = parent_state;
+ 
+-		/* Find parent's performance state */
+-		ret = genpd_xlate_performance_state(genpd, parent, state);
+-		if (unlikely(ret < 0))
+-			goto err;
++	parent_state = _genpd_reeval_performance_state(parent, parent_state);
++	if (_genpd_set_performance_state(parent, parent_state, depth + 1)) {
++		pr_err("%s: Failed to roll back to %d performance state\n",
++		       parent->name, parent_state);
++	}
+ 
+-		parent_state = ret;
++	genpd_unlock(parent);
++}
+ 
+-		genpd_lock_nested(parent, depth + 1);
++static int _genpd_set_parent_state(struct generic_pm_domain *genpd,
++				   struct gpd_link *link,
++				   unsigned int state, int depth)
++{
++	struct generic_pm_domain *parent = link->parent;
++	int parent_state, ret;
+ 
+-		link->prev_performance_state = link->performance_state;
+-		link->performance_state = parent_state;
+-		parent_state = _genpd_reeval_performance_state(parent,
+-						parent_state);
+-		ret = _genpd_set_performance_state(parent, parent_state, depth + 1);
+-		if (ret)
+-			link->performance_state = link->prev_performance_state;
++	/* Find parent's performance state */
++	ret = genpd_xlate_performance_state(genpd, parent, state);
++	if (unlikely(ret < 0))
++		return ret;
+ 
+-		genpd_unlock(parent);
++	parent_state = ret;
+ 
+-		if (ret)
+-			goto err;
+-	}
++	genpd_lock_nested(parent, depth + 1);
+ 
+-	if (genpd->set_performance_state) {
+-		ret = genpd->set_performance_state(genpd, state);
+-		if (ret)
+-			goto err;
+-	}
++	link->prev_performance_state = link->performance_state;
++	link->performance_state = parent_state;
+ 
+-	genpd->performance_state = state;
+-	return 0;
++	parent_state = _genpd_reeval_performance_state(parent, parent_state);
++	ret = _genpd_set_performance_state(parent, parent_state, depth + 1);
++	if (ret)
++		link->performance_state = link->prev_performance_state;
+ 
+-err:
+-	/* Encountered an error, lets rollback */
+-	list_for_each_entry_continue_reverse(link, &genpd->child_links,
+-					     child_node) {
+-		parent = link->parent;
++	genpd_unlock(parent);
+ 
+-		genpd_lock_nested(parent, depth + 1);
++	return ret;
++}
++
++static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
++					unsigned int state, int depth)
++{
++	struct gpd_link *link = NULL;
++	int ret;
++
++	if (state == genpd->performance_state)
++		return 0;
+ 
+-		parent_state = link->prev_performance_state;
+-		link->performance_state = parent_state;
++	/* When scaling up, propagate to parents first in normal order */
++	if (state > genpd->performance_state) {
++		list_for_each_entry(link, &genpd->child_links, child_node) {
++			ret = _genpd_set_parent_state(genpd, link, state, depth);
++			if (ret)
++				goto rollback_parents_up;
++		}
++	}
+ 
+-		parent_state = _genpd_reeval_performance_state(parent,
+-						parent_state);
+-		if (_genpd_set_performance_state(parent, parent_state, depth + 1)) {
+-			pr_err("%s: Failed to roll back to %d performance state\n",
+-			       parent->name, parent_state);
++	if (genpd->set_performance_state) {
++		ret = genpd->set_performance_state(genpd, state);
++		if (ret) {
++			if (link)
++				goto rollback_parents_up;
++			return ret;
+ 		}
++	}
+ 
+-		genpd_unlock(parent);
++	/* When scaling down, propagate to parents last in reverse order */
++	if (state < genpd->performance_state) {
++		list_for_each_entry_reverse(link, &genpd->child_links, child_node) {
++			ret = _genpd_set_parent_state(genpd, link, state, depth);
++			if (ret)
++				goto rollback_parents_down;
++		}
+ 	}
+ 
++	genpd->performance_state = state;
++	return 0;
++
++rollback_parents_up:
++	list_for_each_entry_continue_reverse(link, &genpd->child_links, child_node)
++		_genpd_rollback_parent_state(link, depth);
++	return ret;
++rollback_parents_down:
++	list_for_each_entry_continue(link, &genpd->child_links, child_node)
++		_genpd_rollback_parent_state(link, depth);
+ 	return ret;
+ }
+ 
+
+---
+base-commit: 0fef202ac2f8e6d9ad21aead648278f1226b9053
+change-id: 20231205-genpd-perf-order-bf33029c25ac
+
+Best regards,
+-- 
+Stephan Gerhold <stephan@gerhold.net>
+
