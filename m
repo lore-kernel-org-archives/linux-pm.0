@@ -1,75 +1,119 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com [209.85.167.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 374C728E02
-	for <linux-pm@vger.kernel.org>; Thu,  4 Jan 2024 18:35:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="UgxsaWNw"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1704393333;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=F9ZBJJfDZvL4vcmw1UTFuG3ge8BWaykNpSZgdDbo8vs=;
-	b=UgxsaWNwvPOqXbpZB9D9KM7YCGiet4sYA1I3+GpaLIaeh6lsdtc1sQVLR0+lu3WoEnqHl/
-	afyTxaTbJGcXgAQcUa2JGiB9w7i9XNAFQ1m5TB13xRf9SihWJs0mLvesqlsnYY6DN93pG1
-	VWvX+bEYL2OCFfYXCIwAJBOJTmmxcWs=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-227-sqSeawCEOIq0W2uyVgir1Q-1; Thu, 04 Jan 2024 13:35:26 -0500
-X-MC-Unique: sqSeawCEOIq0W2uyVgir1Q-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com [10.11.54.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 25A9588B7A0;
-	Thu,  4 Jan 2024 18:35:26 +0000 (UTC)
-Received: from localhost.localdomain (unknown [10.39.192.122])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 4776E3C27;
-	Thu,  4 Jan 2024 18:35:25 +0000 (UTC)
-From: Hans de Goede <hdegoede@redhat.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>,
-	Chen-Yu Tsai <wens@csie.org>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH 1/3] power: supply: axp288_charger: Call power_supply_changed() after set_property()
-Date: Thu,  4 Jan 2024 19:35:14 +0100
-Message-ID: <20240104183516.312044-1-hdegoede@redhat.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C845E2C18C;
+	Thu,  4 Jan 2024 19:08:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-oi1-f180.google.com with SMTP id 5614622812f47-3bb7e50679bso188849b6e.0;
+        Thu, 04 Jan 2024 11:08:11 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1704395291; x=1705000091;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=oHvkNoyDDxzbLwlNA3wT9KR65mBKm5P0nwrkbLsti3U=;
+        b=q5WBGurLyfQC0VKvO8Rh0sE0OC7StNUhOnNS89gR3ENpkyNkU5kSC1cI8mreV3jz6Z
+         T0uvWexe9TPquoc8qBpbliDGd1URnJ35q9s2jkMpCYQWOwrJGBxn/jLkZZoP6arym3gz
+         ojaMsU3cZBKnoE3xYx8W+OHbJ9LJcGHcTybTmS9rPUWkALCQ+mteA5iEpRR2O3y397N3
+         1TATnv0GRggBasWBXb9epojn1KA522XJ7G/1q3xHEi8MJQSjJwXL+VGBxwkX4MeP8dN2
+         ZwhrhDI0uyeTMUE20fXfFFQ09HN/vhc1mKzU1oaBiVfzMGyfLpM6o12XMh+Y0lzRhHuK
+         koHw==
+X-Gm-Message-State: AOJu0YwOWNxE5sXOo0X2112G6QQVAIM9Tm9Mh/Xf30AZMHzClV55Ww9V
+	912QF2QMBWJUDZd7zqCtZJBDrsnev1fJIODSKZE=
+X-Google-Smtp-Source: AGHT+IECo+vuspUhcs7s76845zh7su3GowH0b83Oe/Q0O+NoCL0hKkiCZtCG9PSj/vh+F3VB8Y+VAKPTsIFuwjG2Ae8=
+X-Received: by 2002:a4a:e70a:0:b0:596:27ee:455b with SMTP id
+ y10-20020a4ae70a000000b0059627ee455bmr1857781oou.1.1704395290859; Thu, 04 Jan
+ 2024 11:08:10 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.1
+References: <20240104171553.2080674-1-lukasz.luba@arm.com> <20240104171553.2080674-3-lukasz.luba@arm.com>
+In-Reply-To: <20240104171553.2080674-3-lukasz.luba@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 4 Jan 2024 20:07:59 +0100
+Message-ID: <CAJZ5v0jCtS1XHczORnZFhwO7N=FommFNbQC7NdaM5SHKXUnTog@mail.gmail.com>
+Subject: Re: [PATCH v6 02/23] PM: EM: Refactor em_cpufreq_update_efficiencies()
+ arguments
+To: Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rafael@kernel.org, 
+	dietmar.eggemann@arm.com, rui.zhang@intel.com, amit.kucheria@verdurent.com, 
+	amit.kachhap@gmail.com, daniel.lezcano@linaro.org, viresh.kumar@linaro.org, 
+	len.brown@intel.com, pavel@ucw.cz, mhiramat@kernel.org, qyousef@layalina.io, 
+	wvw@google.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-A successful set_property() call may result in some related properties
-on the charger and/or the battery it is supplying having changed.
+The word "refactor" appears to be quite loaded in your patch
+descriptions, but it is not always the best one to use IMV.
 
-Call power_supply_changed() after a successful set_property().
+For instance, this patch simply extends the argument list of
+em_cpufreq_update_efficiencies(), so I would say just that in the
+subject: "Extend em_cpufreq_update_efficiencies() argument list"
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/axp288_charger.c | 2 ++
- 1 file changed, 2 insertions(+)
+On Thu, Jan 4, 2024 at 6:14=E2=80=AFPM Lukasz Luba <lukasz.luba@arm.com> wr=
+ote:
+>
+> In order to prepare the code for the modifiable EM perf_state table,
+> refactor existing function em_cpufreq_update_efficiencies().
 
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index b5903193e2f9..3c442114d55b 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -359,6 +359,8 @@ static int axp288_charger_usb_set_property(struct power_supply *psy,
- 
- out:
- 	mutex_unlock(&info->lock);
-+	if (ret == 0)
-+		power_supply_changed(info->psy_usb);
- 	return ret;
- }
- 
--- 
-2.43.0
+"make em_cpufreq_update_efficiencies() take a pointer to the EM table
+as its second argument and modify it to use that new argument instead
+of the "table" member of dev->em_pd"
 
+or something like this.
+
+> The function now takes the ptr to the EM table as its argument.
+>
+> No functional impact.
+>
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  kernel/power/energy_model.c | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+>
+> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+> index 8b9dd4a39f63..42486674b834 100644
+> --- a/kernel/power/energy_model.c
+> +++ b/kernel/power/energy_model.c
+> @@ -237,10 +237,10 @@ static int em_create_pd(struct device *dev, int nr_=
+states,
+>         return 0;
+>  }
+>
+> -static void em_cpufreq_update_efficiencies(struct device *dev)
+> +static void
+> +em_cpufreq_update_efficiencies(struct device *dev, struct em_perf_state =
+*table)
+>  {
+>         struct em_perf_domain *pd =3D dev->em_pd;
+> -       struct em_perf_state *table;
+>         struct cpufreq_policy *policy;
+>         int found =3D 0;
+>         int i;
+> @@ -254,8 +254,6 @@ static void em_cpufreq_update_efficiencies(struct dev=
+ice *dev)
+>                 return;
+>         }
+>
+> -       table =3D pd->table;
+> -
+>         for (i =3D 0; i < pd->nr_perf_states; i++) {
+>                 if (!(table[i].flags & EM_PERF_STATE_INEFFICIENT))
+>                         continue;
+> @@ -397,7 +395,7 @@ int em_dev_register_perf_domain(struct device *dev, u=
+nsigned int nr_states,
+>
+>         dev->em_pd->flags |=3D flags;
+>
+> -       em_cpufreq_update_efficiencies(dev);
+> +       em_cpufreq_update_efficiencies(dev, dev->em_pd->table);
+>
+>         em_debug_create_pd(dev);
+>         dev_info(dev, "EM: created perf domain\n");
+> --
+
+The code change itself LGTM.
