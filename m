@@ -1,21 +1,21 @@
-Received: from andre.telenet-ops.be (andre.telenet-ops.be [195.130.132.53])
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [195.130.132.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F0545101B
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jan 2024 15:34:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D60E5100B
+	for <linux-pm@vger.kernel.org>; Mon,  8 Jan 2024 15:34:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:d323:2fd4:4f64:e281])
-	by andre.telenet-ops.be with bizsmtp
-	id YFZw2B00E0Qz0eJ01FZwK9; Mon, 08 Jan 2024 16:34:07 +0100
+	by baptiste.telenet-ops.be with bizsmtp
+	id YFZw2B0070Qz0eJ01FZwVM; Mon, 08 Jan 2024 16:34:07 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rMrcp-00EtMc-Dt;
+	id 1rMrcp-00EtLn-0E;
 	Mon, 08 Jan 2024 16:33:56 +0100
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rMrdU-00D7oq-Kx;
+	id 1rMrdU-00D7ns-66;
 	Mon, 08 Jan 2024 16:33:56 +0100
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Michael Turquette <mturquette@baylibre.com>,
@@ -38,9 +38,9 @@ Cc: Cong Dang <cong.dang.xn@renesas.com>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 14/15] arm64: dts: renesas: Add Gray Hawk Single board support
-Date: Mon,  8 Jan 2024 16:33:53 +0100
-Message-Id: <3ba3eae34719e6141ab04077586c9ebd849a0346.1704726960.git.geert+renesas@glider.be>
+Subject: [PATCH 02/15] dt-bindings: clock: Add R8A779H0 V4M CPG Core Clock Definitions
+Date: Mon,  8 Jan 2024 16:33:41 +0100
+Message-Id: <2e083461752c9d52fdb251ad9071f6111f13c3c5.1704726960.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1704726960.git.geert+renesas@glider.be>
 References: <cover.1704726960.git.geert+renesas@glider.be>
@@ -52,103 +52,124 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add initial support for the Renesas Gray Hawk Single board, which is
-based on the R-Car V4M (R8A779H0) SoC:
-  - Memory,
-  - Crystal oscillators,
-  - Serial console.
+From: Duy Nguyen <duy.nguyen.rh@renesas.com>
 
-Based on the White Hawk Single DTS, and on a patch for the Gray Hawk
-board stack in the BSP by Hai Pham.
+Add all Clock Pulse Generator Core Clock Outputs for the Renesas R-Car
+V4M (R8A779H0) SoC.
 
+Signed-off-by: Duy Nguyen <duy.nguyen.rh@renesas.com>
+Signed-off-by: Hai Pham <hai.pham.ud@renesas.com>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-An alternative naming candidate would be "r8a779h0-gray-hawk-s.dts".
-
-As the Gray Hawk and White Hawk board stacks share all boards except for
-the CPU board, we might be able to reuse white-hawk-common.dtsi[1] once
-all needed SoC support has been added to r8a779h0.dtsi.
-
-[1] "[PATCH/RFC 0/7] arm64: dts: renesas: Add support for more R-Car V4H
-     and White Hawk variants"
-    https://lore.kernel.org/all/cover.1702309604.git.geert+renesas@glider.be
+Changes compared to the BSP:
+  - Drop POST* clocks, as they are internal clocks.
 ---
- arch/arm64/boot/dts/renesas/Makefile          |  2 +
- .../dts/renesas/r8a779h0-gray-hawk-single.dts | 52 +++++++++++++++++++
- 2 files changed, 54 insertions(+)
- create mode 100644 arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts
+ include/dt-bindings/clock/r8a779h0-cpg-mssr.h | 96 +++++++++++++++++++
+ 1 file changed, 96 insertions(+)
+ create mode 100644 include/dt-bindings/clock/r8a779h0-cpg-mssr.h
 
-diff --git a/arch/arm64/boot/dts/renesas/Makefile b/arch/arm64/boot/dts/renesas/Makefile
-index 8ea68d5827105b76..34d7c2262260f220 100644
---- a/arch/arm64/boot/dts/renesas/Makefile
-+++ b/arch/arm64/boot/dts/renesas/Makefile
-@@ -86,6 +86,8 @@ dtb-$(CONFIG_ARCH_R8A779G0) += r8a779g0-white-hawk-ard-audio-da7212.dtbo
- r8a779g0-white-hawk-ard-audio-da7212-dtbs := r8a779g0-white-hawk.dtb r8a779g0-white-hawk-ard-audio-da7212.dtbo
- dtb-$(CONFIG_ARCH_R8A779G0) += r8a779g0-white-hawk-ard-audio-da7212.dtb
- 
-+dtb-$(CONFIG_ARCH_R8A779H0) += r8a779h0-gray-hawk-single.dtb
-+
- dtb-$(CONFIG_ARCH_R8A77951) += r8a779m1-salvator-xs.dtb
- r8a779m1-salvator-xs-panel-aa104xd12-dtbs := r8a779m1-salvator-xs.dtb salvator-panel-aa104xd12.dtbo
- dtb-$(CONFIG_ARCH_R8A77951) += r8a779m1-salvator-xs-panel-aa104xd12.dtb
-diff --git a/arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts b/arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts
+diff --git a/include/dt-bindings/clock/r8a779h0-cpg-mssr.h b/include/dt-bindings/clock/r8a779h0-cpg-mssr.h
 new file mode 100644
-index 0000000000000000..fe3863cbf69d8454
+index 0000000000000000..baf41231c215acb3
 --- /dev/null
-+++ b/arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts
-@@ -0,0 +1,52 @@
-+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++++ b/include/dt-bindings/clock/r8a779h0-cpg-mssr.h
+@@ -0,0 +1,96 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
 +/*
-+ * Device Tree Source for the Gray Hawk Single board
-+ *
 + * Copyright (C) 2023 Renesas Electronics Corp.
-+ * Copyright (C) 2024 Glider bv
 + */
++#ifndef __DT_BINDINGS_CLOCK_R8A779H0_CPG_MSSR_H__
++#define __DT_BINDINGS_CLOCK_R8A779H0_CPG_MSSR_H__
 +
-+/dts-v1/;
-+#include "r8a779h0.dtsi"
++#include <dt-bindings/clock/renesas-cpg-mssr.h>
 +
-+/ {
-+	model = "Renesas Gray Hawk Single board based on r8a779h0";
-+	compatible = "renesas,gray-hawk-single", "renesas,r8a779h0";
++/* r8a779h0 CPG Core Clocks */
 +
-+	aliases {
-+		serial0 = &hscif0;
-+	};
++#define R8A779H0_CLK_ZX			0
++#define R8A779H0_CLK_ZD			1
++#define R8A779H0_CLK_ZS			2
++#define R8A779H0_CLK_ZT			3
++#define R8A779H0_CLK_ZTR		4
++#define R8A779H0_CLK_S0D2		5
++#define R8A779H0_CLK_S0D3		6
++#define R8A779H0_CLK_S0D4		7
++#define R8A779H0_CLK_S0D1_VIO		8
++#define R8A779H0_CLK_S0D2_VIO		9
++#define R8A779H0_CLK_S0D4_VIO		10
++#define R8A779H0_CLK_S0D8_VIO		11
++#define R8A779H0_CLK_VIOBUSD1		12
++#define R8A779H0_CLK_VIOBUSD2		13
++#define R8A779H0_CLK_S0D1_VC		14
++#define R8A779H0_CLK_S0D2_VC		15
++#define R8A779H0_CLK_S0D4_VC		16
++#define R8A779H0_CLK_VCBUSD1		17
++#define R8A779H0_CLK_VCBUSD2		18
++#define R8A779H0_CLK_S0D2_MM		19
++#define R8A779H0_CLK_S0D4_MM		20
++#define R8A779H0_CLK_S0D2_U3DG		21
++#define R8A779H0_CLK_S0D4_U3DG		22
++#define R8A779H0_CLK_S0D2_RT		23
++#define R8A779H0_CLK_S0D3_RT		24
++#define R8A779H0_CLK_S0D4_RT		25
++#define R8A779H0_CLK_S0D6_RT		26
++#define R8A779H0_CLK_S0D2_PER		27
++#define R8A779H0_CLK_S0D3_PER		28
++#define R8A779H0_CLK_S0D4_PER		29
++#define R8A779H0_CLK_S0D6_PER		30
++#define R8A779H0_CLK_S0D12_PER		31
++#define R8A779H0_CLK_S0D24_PER		32
++#define R8A779H0_CLK_S0D1_HSC		33
++#define R8A779H0_CLK_S0D2_HSC		34
++#define R8A779H0_CLK_S0D4_HSC		35
++#define R8A779H0_CLK_S0D8_HSC		36
++#define R8A779H0_CLK_SVD1_IR		37
++#define R8A779H0_CLK_SVD2_IR		38
++#define R8A779H0_CLK_IMPAD1		39
++#define R8A779H0_CLK_IMPAD4		40
++#define R8A779H0_CLK_IMPB		41
++#define R8A779H0_CLK_SVD1_VIP		42
++#define R8A779H0_CLK_SVD2_VIP		43
++#define R8A779H0_CLK_CL			44
++#define R8A779H0_CLK_CL16M		45
++#define R8A779H0_CLK_CL16M_MM		46
++#define R8A779H0_CLK_CL16M_RT		47
++#define R8A779H0_CLK_CL16M_PER		48
++#define R8A779H0_CLK_CL16M_HSC		49
++#define R8A779H0_CLK_ZC0		50
++#define R8A779H0_CLK_ZC1		51
++#define R8A779H0_CLK_ZC2		52
++#define R8A779H0_CLK_ZC3		53
++#define R8A779H0_CLK_ZB3		54
++#define R8A779H0_CLK_ZB3D2		55
++#define R8A779H0_CLK_ZB3D4		56
++#define R8A779H0_CLK_ZG			57
++#define R8A779H0_CLK_SD0H		58
++#define R8A779H0_CLK_SD0		59
++#define R8A779H0_CLK_RPC		60
++#define R8A779H0_CLK_RPCD2		61
++#define R8A779H0_CLK_MSO		62
++#define R8A779H0_CLK_CANFD		63
++#define R8A779H0_CLK_CSI		64
++#define R8A779H0_CLK_FRAY		65
++#define R8A779H0_CLK_IPC		66
++#define R8A779H0_CLK_SASYNCRT		67
++#define R8A779H0_CLK_SASYNCPERD1	68
++#define R8A779H0_CLK_SASYNCPERD2	69
++#define R8A779H0_CLK_SASYNCPERD4	70
++#define R8A779H0_CLK_DSIEXT		71
++#define R8A779H0_CLK_DSIREF		72
++#define R8A779H0_CLK_ADGH		73
++#define R8A779H0_CLK_OSC		74
++#define R8A779H0_CLK_ZR0		75
++#define R8A779H0_CLK_ZR1		76
++#define R8A779H0_CLK_ZR2		77
++#define R8A779H0_CLK_RGMII		78
++#define R8A779H0_CLK_CPEX		79
++#define R8A779H0_CLK_CP			80
++#define R8A779H0_CLK_CBFUSA		81
++#define R8A779H0_CLK_R			82
 +
-+	chosen {
-+		bootargs = "ignore_loglevel";
-+		stdout-path = "serial0:921600n8";
-+	};
-+
-+	memory@48000000 {
-+		device_type = "memory";
-+		/* first 128MB is reserved for secure area. */
-+		reg = <0x0 0x48000000 0x0 0x78000000>;
-+	};
-+
-+	memory@480000000 {
-+		device_type = "memory";
-+		reg = <0x4 0x80000000 0x1 0x80000000>;
-+	};
-+};
-+
-+&extal_clk {
-+	clock-frequency = <16666666>;
-+};
-+
-+&extalr_clk {
-+	clock-frequency = <32768>;
-+};
-+
-+&hscif0 {
-+	uart-has-rtscts;
-+	status = "okay";
-+};
-+
-+&scif_clk {
-+	clock-frequency = <24000000>;
-+};
++#endif /* __DT_BINDINGS_CLOCK_R8A779H0_CPG_MSSR_H__ */
 -- 
 2.34.1
 
