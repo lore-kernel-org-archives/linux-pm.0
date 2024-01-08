@@ -1,21 +1,21 @@
-Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [195.130.132.51])
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [195.130.132.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2011D51010
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jan 2024 15:34:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71D2851020
+	for <linux-pm@vger.kernel.org>; Mon,  8 Jan 2024 15:34:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:d323:2fd4:4f64:e281])
-	by baptiste.telenet-ops.be with bizsmtp
-	id YFZw2B00D0Qz0eJ01FZwVR; Mon, 08 Jan 2024 16:34:07 +0100
+	by andre.telenet-ops.be with bizsmtp
+	id YFZw2B0050Qz0eJ01FZwK0; Mon, 08 Jan 2024 16:34:07 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rMrcp-00EtMV-CG;
+	id 1rMrcp-00EtMA-5I;
 	Mon, 08 Jan 2024 16:33:56 +0100
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rMrdU-00D7og-IF;
+	id 1rMrdU-00D7oG-C3;
 	Mon, 08 Jan 2024 16:33:56 +0100
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Michael Turquette <mturquette@baylibre.com>,
@@ -38,9 +38,9 @@ Cc: Cong Dang <cong.dang.xn@renesas.com>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 12/15] soc: renesas: rcar-rst: Add support for R-Car V4M
-Date: Mon,  8 Jan 2024 16:33:51 +0100
-Message-Id: <1569c749978c3565db6dc013efa41eaa9c688844.1704726960.git.geert+renesas@glider.be>
+Subject: [PATCH 07/15] clk: renesas: rcar-gen4: Add support for FRQCRC1
+Date: Mon,  8 Jan 2024 16:33:46 +0100
+Message-Id: <b7ec45c86c2bd17cf3b3de43194c4821b606e483.1704726960.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1704726960.git.geert+renesas@glider.be>
 References: <cover.1704726960.git.geert+renesas@glider.be>
@@ -52,31 +52,46 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Duy Nguyen <duy.nguyen.rh@renesas.com>
+R-Car V4H and V4M have a second Frequency Control Register C.
+Add support for this by treating bit field offsets beyond 31 as
+referring to the second register.
 
-Add support for the R-Car V4M (R8A779H0) SoC to the R-Car RST driver.
-
-Signed-off-by: Duy Nguyen <duy.nguyen.rh@renesas.com>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Early firmware versions may not enable WDT resets, so you may need to do
-s/rcar_rst_gen4/rcar_rst_v3u/ for testing.
+Tested by enabling CLOCK_ALLOW_WRITE_DEBUGFS and checking the impact of
+CPU core clk rate on CPU core speed on R-Car V4M.
 ---
- drivers/soc/renesas/rcar-rst.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/clk/renesas/rcar-gen4-cpg.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/soc/renesas/rcar-rst.c b/drivers/soc/renesas/rcar-rst.c
-index 98fd97da6cd4330d..7ba02f3a4a4fbb9f 100644
---- a/drivers/soc/renesas/rcar-rst.c
-+++ b/drivers/soc/renesas/rcar-rst.c
-@@ -117,6 +117,7 @@ static const struct of_device_id rcar_rst_matches[] __initconst = {
- 	{ .compatible = "renesas,r8a779a0-rst", .data = &rcar_rst_v3u },
- 	{ .compatible = "renesas,r8a779f0-rst", .data = &rcar_rst_gen4 },
- 	{ .compatible = "renesas,r8a779g0-rst", .data = &rcar_rst_gen4 },
-+	{ .compatible = "renesas,r8a779h0-rst", .data = &rcar_rst_gen4 },
- 	{ /* sentinel */ }
- };
+diff --git a/drivers/clk/renesas/rcar-gen4-cpg.c b/drivers/clk/renesas/rcar-gen4-cpg.c
+index c68d8b987054131b..a2bbdad021ed8e95 100644
+--- a/drivers/clk/renesas/rcar-gen4-cpg.c
++++ b/drivers/clk/renesas/rcar-gen4-cpg.c
+@@ -179,7 +179,8 @@ static struct clk * __init cpg_pll_clk_register(const char *name,
+  */
+ #define CPG_FRQCRB			0x00000804
+ #define CPG_FRQCRB_KICK			BIT(31)
+-#define CPG_FRQCRC			0x00000808
++#define CPG_FRQCRC0			0x00000808
++#define CPG_FRQCRC1			0x000008e0
  
+ struct cpg_z_clk {
+ 	struct clk_hw hw;
+@@ -304,7 +305,12 @@ static struct clk * __init cpg_z_clk_register(const char *name,
+ 	init.parent_names = &parent_name;
+ 	init.num_parents = 1;
+ 
+-	zclk->reg = reg + CPG_FRQCRC;
++	if (offset < 32) {
++		zclk->reg = reg + CPG_FRQCRC0;
++	} else {
++		zclk->reg = reg + CPG_FRQCRC1;
++		offset -= 32;
++	}
+ 	zclk->kick_reg = reg + CPG_FRQCRB;
+ 	zclk->hw.init = &init;
+ 	zclk->mask = GENMASK(offset + 4, offset);
 -- 
 2.34.1
 
