@@ -1,24 +1,24 @@
-Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [195.130.132.49])
+Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [195.130.137.80])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31F70537E3
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jan 2024 15:34:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E63A51015
+	for <linux-pm@vger.kernel.org>; Mon,  8 Jan 2024 15:34:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4T7ylh6q7qz4wyrT
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jan 2024 16:34:08 +0100 (CET)
+Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
+	by riemann.telenet-ops.be (Postfix) with ESMTPS id 4T7ylp2S2Gz4x3X1
+	for <linux-pm@vger.kernel.org>; Mon,  8 Jan 2024 16:34:14 +0100 (CET)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:d323:2fd4:4f64:e281])
-	by xavier.telenet-ops.be with bizsmtp
-	id YFZw2B00H0Qz0eJ01FZwDC; Mon, 08 Jan 2024 16:34:08 +0100
+	by michel.telenet-ops.be with bizsmtp
+	id YFZw2B00B0Qz0eJ06FZwok; Mon, 08 Jan 2024 16:34:07 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rMrcp-00EtMO-9w;
+	id 1rMrcp-00EtMX-Cz;
 	Mon, 08 Jan 2024 16:33:56 +0100
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rMrdU-00D7oW-FY;
+	id 1rMrdU-00D7ol-Jw;
 	Mon, 08 Jan 2024 16:33:56 +0100
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Michael Turquette <mturquette@baylibre.com>,
@@ -41,9 +41,9 @@ Cc: Cong Dang <cong.dang.xn@renesas.com>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 10/15] soc: renesas: Introduce ARCH_RCAR_GEN4
-Date: Mon,  8 Jan 2024 16:33:49 +0100
-Message-Id: <4f4a2dbdb6ba51e151cbdc128da377083b0d850d.1704726960.git.geert+renesas@glider.be>
+Subject: [PATCH 13/15] arm64: dts: renesas: Add Renesas R8A779H0 SoC support
+Date: Mon,  8 Jan 2024 16:33:52 +0100
+Message-Id: <c2df80019c373029e7193e1715f8db9448b7be5f.1704726960.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1704726960.git.geert+renesas@glider.be>
 References: <cover.1704726960.git.geert+renesas@glider.be>
@@ -55,67 +55,151 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Currently, all Kconfig symbols for R-Car Gen4 SoCs select the
-ARCH_RCAR_GEN3 SoC family symbol, which might confuse the casual reader.
+From: Hai Pham <hai.pham.ud@renesas.com>
 
-Fix this by introducing a new SoC family symbol for R-Car Gen4 SoCs.
-For now this just selects ARCH_RCAR_GEN3, to avoid duplication, and to
-relax dependencies.
+Add initial support for the Renesas R-Car V4M (R8A779H0) SoC.
 
+Signed-off-by: Hai Pham <hai.pham.ud@renesas.com>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Once "[PATCH] i2c: rcar: Prepare for the advent of ARCH_RCAR_GEN4"[1]
-has been applied, ARCH_RCAR_GEN4 can stop selecting ARCH_RCAR_GEN3.
-
-I'm open for suggestions how to improve this.
-Perhaps factor out common parts into ARCH_RCAR?
-
-[1] https://lore.kernel.org/r/bf7b105f7d9728ae5cd9fa99d1cdd278d71e7df2.1704723713.git.geert+renesas@glider.be
+Changes compared to the BSP:
+  - Add "-clk" suffix to clock node names,
+  - Rename "pmu_a76" node to "pmu-a76",
+  - Drop bogus CPU masks from GICv3 PPI interrupt specifiers,
+  - Drop hscif0 dmas and dma-names placeholder,
+  - Add missing hypervisor virtual timer IRQ to timer node.
 ---
- drivers/soc/renesas/Kconfig | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/arm64/boot/dts/renesas/r8a779h0.dtsi | 121 ++++++++++++++++++++++
+ 1 file changed, 121 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/renesas/r8a779h0.dtsi
 
-diff --git a/drivers/soc/renesas/Kconfig b/drivers/soc/renesas/Kconfig
-index 0986672f63757663..784a2b50561d5a97 100644
---- a/drivers/soc/renesas/Kconfig
-+++ b/drivers/soc/renesas/Kconfig
-@@ -34,6 +34,10 @@ config ARCH_RCAR_GEN3
- 	select SYS_SUPPORTS_SH_CMT
- 	select SYS_SUPPORTS_SH_TMU
- 
-+config ARCH_RCAR_GEN4
-+	bool
-+	select ARCH_RCAR_GEN3
+diff --git a/arch/arm64/boot/dts/renesas/r8a779h0.dtsi b/arch/arm64/boot/dts/renesas/r8a779h0.dtsi
+new file mode 100644
+index 0000000000000000..4e7944a5625aa966
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/r8a779h0.dtsi
+@@ -0,0 +1,121 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++/*
++ * Device Tree Source for the R-Car V4M (R8A779H0) SoC
++ *
++ * Copyright (C) 2023 Renesas Electronics Corp.
++ */
 +
- config ARCH_RMOBILE
- 	bool
- 	select PM
-@@ -240,7 +244,7 @@ config ARCH_R8A77961
- 
- config ARCH_R8A779F0
- 	bool "ARM64 Platform support for R-Car S4-8"
--	select ARCH_RCAR_GEN3
-+	select ARCH_RCAR_GEN4
- 	select SYSC_R8A779F0
- 	help
- 	  This enables support for the Renesas R-Car S4-8 SoC.
-@@ -261,14 +265,14 @@ config ARCH_R8A77970
- 
- config ARCH_R8A779A0
- 	bool "ARM64 Platform support for R-Car V3U"
--	select ARCH_RCAR_GEN3
-+	select ARCH_RCAR_GEN4
- 	select SYSC_R8A779A0
- 	help
- 	  This enables support for the Renesas R-Car V3U SoC.
- 
- config ARCH_R8A779G0
- 	bool "ARM64 Platform support for R-Car V4H"
--	select ARCH_RCAR_GEN3
-+	select ARCH_RCAR_GEN4
- 	select SYSC_R8A779G0
- 	help
- 	  This enables support for the Renesas R-Car V4H SoC.
++#include <dt-bindings/clock/r8a779h0-cpg-mssr.h>
++#include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/power/r8a779h0-sysc.h>
++
++/ {
++	compatible = "renesas,r8a779h0";
++	#address-cells = <2>;
++	#size-cells = <2>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		a76_0: cpu@0 {
++			compatible = "arm,cortex-a76";
++			reg = <0>;
++			device_type = "cpu";
++			power-domains = <&sysc R8A779H0_PD_A1E0D0C0>;
++		};
++	};
++
++	extal_clk: extal-clk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		/* This value must be overridden by the board */
++		clock-frequency = <0>;
++	};
++
++	extalr_clk: extalr-clk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		/* This value must be overridden by the board */
++		clock-frequency = <0>;
++	};
++
++	pmu-a76 {
++		compatible = "arm,cortex-a76-pmu";
++		interrupts-extended = <&gic GIC_PPI 7 IRQ_TYPE_LEVEL_LOW>;
++	};
++
++	/* External SCIF clock - to be overridden by boards that provide it */
++	scif_clk: scif-clk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <0>;
++	};
++
++	soc: soc {
++		compatible = "simple-bus";
++		interrupt-parent = <&gic>;
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		cpg: clock-controller@e6150000 {
++			compatible = "renesas,r8a779h0-cpg-mssr";
++			reg = <0 0xe6150000 0 0x4000>;
++			clocks = <&extal_clk>, <&extalr_clk>;
++			clock-names = "extal", "extalr";
++			#clock-cells = <2>;
++			#power-domain-cells = <0>;
++			#reset-cells = <1>;
++		};
++
++		rst: reset-controller@e6160000 {
++			compatible = "renesas,r8a779h0-rst";
++			reg = <0 0xe6160000 0 0x4000>;
++		};
++
++		sysc: system-controller@e6180000 {
++			compatible = "renesas,r8a779h0-sysc";
++			reg = <0 0xe6180000 0 0x4000>;
++			#power-domain-cells = <1>;
++		};
++
++		hscif0: serial@e6540000 {
++			compatible = "renesas,hscif-r8a779h0",
++				     "renesas,rcar-gen4-hscif", "renesas,hscif";
++			reg = <0 0xe6540000 0 0x60>;
++			interrupts = <GIC_SPI 246 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg CPG_MOD 514>,
++				 <&cpg CPG_CORE R8A779H0_CLK_SASYNCPERD1>,
++				 <&scif_clk>;
++			clock-names = "fck", "brg_int", "scif_clk";
++			power-domains = <&sysc R8A779H0_PD_ALWAYS_ON>;
++			resets = <&cpg 514>;
++			status = "disabled";
++		};
++
++		gic: interrupt-controller@f1000000 {
++			compatible = "arm,gic-v3";
++			#interrupt-cells = <3>;
++			#address-cells = <0>;
++			interrupt-controller;
++			reg = <0x0 0xf1000000 0 0x20000>,
++			      <0x0 0xf1060000 0 0x110000>;
++			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
++		};
++
++		prr: chipid@fff00044 {
++			compatible = "renesas,prr";
++			reg = <0 0xfff00044 0 4>;
++		};
++	};
++
++	timer {
++		compatible = "arm,armv8-timer";
++		interrupts-extended = <&gic GIC_PPI 13 IRQ_TYPE_LEVEL_LOW>,
++				      <&gic GIC_PPI 14 IRQ_TYPE_LEVEL_LOW>,
++				      <&gic GIC_PPI 11 IRQ_TYPE_LEVEL_LOW>,
++				      <&gic GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>,
++				      <&gic GIC_PPI 12 IRQ_TYPE_LEVEL_LOW>;
++	};
++};
 -- 
 2.34.1
 
