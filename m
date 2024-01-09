@@ -1,91 +1,135 @@
-Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from SHSQR01.spreadtrum.com (mx1.unisoc.com [222.66.158.135])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93DEE36AFA
-	for <linux-pm@vger.kernel.org>; Tue,  9 Jan 2024 11:31:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FUlSUJPM"
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-2cd0c17e42bso31231611fa.0
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2024 03:31:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1704799874; x=1705404674; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=7AtoqUTwZLfl0KwHmLzuwT//NH99rWdFjZcUUxVIHc0=;
-        b=FUlSUJPMvRE/xzNo6JzzHmjaxoWsZFzintADMVojSc9epiUy4v0APfYb+MNLz5pJpR
-         8Z2ROqj79SnMX3u5CY+ZGXJQVFuCJw0V1WFf4IlIJf6jasxDgaCVyMaLxdrwNuR+zfo+
-         U+sA0NBP6CPsOAGe47vYB+0fjWMdnoEfr7x289TzWGFcGfe8kWEr/S2S3auHQXeMySKT
-         3e3hGM9o9JTqUrEnk01puyRWLpCkm8jhZLLNJ3Rn4YO+BBnLBDMTepY2EQxm9fID5VPM
-         286XjyP+w1l9IWWNSZym/N+8VYpnkn2m+Qjz4G6lEs1ALLQU/E9Yypp6rkucvVsPShrB
-         yQ/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1704799874; x=1705404674;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=7AtoqUTwZLfl0KwHmLzuwT//NH99rWdFjZcUUxVIHc0=;
-        b=OlIpfUtsxyPPp7/ruI1IC5QnutVzDsGu6Ta656soe74eoaKNONSCHpfzmeZ+gA1fzA
-         ry/086tkXWNebinSp5W9wsIqacm1u34td0K15T9SDDkti+SAAg49YyTDMYGSSUPuOXlS
-         MqsgtIQtMQHeB/pO4YwLmVl7Zl2i7JE8UlX96SBon8bmvrGRCXD+bmmliI7pfLUCVBYn
-         2hiqw4jxJBjwm5mDsINLFS7e3ny9RH47h1UahCqUkX30C84AIp82kjcrYnyubsshTXO4
-         uVlLf3B/6lvXK8NIvmW6kVayC2s+JouLTD3+kyvdOuF/reyiXYyzwM20rPWLQAXSuDaL
-         c2Zw==
-X-Gm-Message-State: AOJu0YwLOtJpp3GsGqyXtMPB0AsuANG1T3OXyI9OYHlNqdcowACsHarQ
-	SpxiLq7fszUMFOt0xCOJg7RdmssUM4LTdg==
-X-Google-Smtp-Source: AGHT+IFeyakWPVTGSlb2yexBb353agn2iLP9slBWjtFFmXKMTmAlmsgVOfLhN2uL0+mAM8Cpht5rxQ==
-X-Received: by 2002:a2e:9785:0:b0:2cd:d5a:7f34 with SMTP id y5-20020a2e9785000000b002cd0d5a7f34mr2160742lji.32.1704799874610;
-        Tue, 09 Jan 2024 03:31:14 -0800 (PST)
-Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.googlemail.com with ESMTPSA id c15-20020a5d4ccf000000b00336765e9babsm2151544wrt.83.2024.01.09.03.31.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 09 Jan 2024 03:31:14 -0800 (PST)
-Message-ID: <3a92f601-8422-40f0-b15b-76db3fe2901b@linaro.org>
-Date: Tue, 9 Jan 2024 12:31:13 +0100
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB8EB29CE3
+	for <linux-pm@vger.kernel.org>; Tue,  9 Jan 2024 11:32:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=unisoc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=unisoc.com
+Received: from dlp.unisoc.com ([10.29.3.86])
+	by SHSQR01.spreadtrum.com with ESMTP id 409BRfDM002970;
+	Tue, 9 Jan 2024 19:27:41 +0800 (+08)
+	(envelope-from Di.Shen@unisoc.com)
+Received: from SHDLP.spreadtrum.com (bjmbx01.spreadtrum.com [10.0.64.7])
+	by dlp.unisoc.com (SkyGuard) with ESMTPS id 4T8T4v4h3Jz2RS3WG;
+	Tue,  9 Jan 2024 19:20:47 +0800 (CST)
+Received: from bj10906pcu1.spreadtrum.com (10.0.73.72) by
+ BJMBX01.spreadtrum.com (10.0.64.7) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.23; Tue, 9 Jan 2024 19:27:40 +0800
+From: Di Shen <di.shen@unisoc.com>
+To: <lukasz.luba@arm.com>, <rafael@kernel.org>, <daniel.lezcano@linaro.org>,
+        <rui.zhang@intel.com>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <wvw@google.com>, <tkjos@google.com>, <xuewen.yan@unisoc.com>,
+        <zhanglyra@gmail.com>, <orsonzhai@gmail.com>
+Subject: [PATCH V6] thermal/core/power_allocator: avoid thermal cdev can not be reset
+Date: Tue, 9 Jan 2024 19:27:36 +0800
+Message-ID: <20240109112736.32566-1-di.shen@unisoc.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 5/6] thermal: netlink: Pass thermal zone pointer to
- notify routines
-Content-Language: en-US
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux PM <linux-pm@vger.kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Zhang Rui <rui.zhang@intel.com>, Linux ACPI <linux-acpi@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
-References: <4556052.LvFx2qVVIh@kreacher> <1975810.PYKUYFuaPT@kreacher>
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <1975810.PYKUYFuaPT@kreacher>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SHCAS01.spreadtrum.com (10.0.1.201) To
+ BJMBX01.spreadtrum.com (10.0.64.7)
+X-MAIL:SHSQR01.spreadtrum.com 409BRfDM002970
 
-On 15/12/2023 21:00, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> There are several routines in the thermal netlink API that take a
-> thermal zone ID or a thermal zone type as their arguments, but from
-> their callers perspective it would be more convenient to pass a thermal
-> zone pointer to them and let them extract the necessary data from the
-> given thermal zone object by themselves.
-> 
-> Modify the code accordingly.
-> 
-> No intentional functional impact.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Commit 0952177f2a1f ("thermal/core/power_allocator: Update once
+cooling devices when temp is low") adds an update flag to avoid
+the thermal event is triggered when there is no need, and
+thermal cdev would be updated once when temperature is low.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+But when the trips are writable, and switch_on_temp is set
+to be a higher value, the cooling device state may not be
+reset to 0, because last_temperature is smaller than the
+switch_on_temp.
 
+For example:
+First:
+switch_on_temp=70 control_temp=85;
+Then userspace change the trip_temp:
+switch_on_temp=45 control_temp=55 cur_temp=54
+
+Then userspace reset the trip_temp:
+switch_on_temp=70 control_temp=85 cur_temp=57 last_temp=54
+
+At this time, the cooling device state should be reset to 0.
+However, because cur_temp(57) < switch_on_temp(70)
+last_temp(54) < switch_on_temp(70)  ---->  update = false,
+update is false, the cooling device state can not be reset.
+
+Considering tz->passive can also be represented the temperature
+status, this patch modifies the update flag with tz->passive.
+
+When the first time the temperature drops below switch_on, the
+states of cooling devices can be reset once(because tz->passive = 1),
+and the tz->passive is updated to 0. In the next round, because
+tz->passive is 0, the cdev->state would not be updated.
+
+By using the tz->passive as the "update" flag, the issue above
+can be solved, and the cooling devices can be update only once
+when the temperature is low.
+
+Fixes: <0952177f2a1f> (thermal/core/power_allocator: Update once cooling devices when temp is low)
+Signed-off-by: Di Shen <di.shen@unisoc.com>
+
+---
+V6:
+Compared to the previous version:
+- Not change the thermal core.
+- Not add new variables and function.
+- Use tz->passive as "update" flag to indicates whether the cooling
+  device should be reset.
+
+V5: [5]
+- Simplify the reset ops, make it no return value and no specific
+  trip ID as argument.
+- Extend the commit message.
+
+V4: [4]
+- Compared to V3, handle it in thermal core instead of in governor.
+- Add an ops to the governor structure, and call it when a trip
+  point is changed.
+- Define reset ops for power allocator.
+
+V3: [3]
+- Add fix tag.
+
+V2: [2]
+- Compared to v1, do not revert.
+- Add a variable(last_switch_on_temp) in power_allocator_params
+  to record the last switch_on_temp value.
+- Adds a function to renew the update flag and update the
+  last_switch_on_temp when thermal trips are writable.
+
+V1: [1]
+- Revert commit 0952177f2a1f.
+
+[1] https://lore.kernel.org/all/20230309135515.1232-1-di.shen@unisoc.com/
+[2] https://lore.kernel.org/all/20230315093008.17489-1-di.shen@unisoc.com/
+[3] https://lore.kernel.org/all/20230320095620.7480-1-di.shen@unisoc.com/
+[4] https://lore.kernel.org/all/20230619063534.12831-1-di.shen@unisoc.com/
+[5] https://lore.kernel.org/all/20230710033234.28641-1-di.shen@unisoc.com/
+---
+---
+ drivers/thermal/gov_power_allocator.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index 83d4f451b1a9..931cd88425e4 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -693,7 +693,7 @@ static int power_allocator_throttle(struct thermal_zone_device *tz,
+ 
+ 	trip = params->trip_switch_on;
+ 	if (trip && tz->temperature < trip->temperature) {
+-		update = tz->last_temperature >= trip->temperature;
++		update = tz->passive;
+ 		tz->passive = 0;
+ 		reset_pid_controller(params);
+ 		allow_maximum_power(tz, update);
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.17.1
 
