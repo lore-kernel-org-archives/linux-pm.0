@@ -1,155 +1,148 @@
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3586E3A8E4
-	for <linux-pm@vger.kernel.org>; Tue,  9 Jan 2024 16:40:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A081A3A27B
+	for <linux-pm@vger.kernel.org>; Tue,  9 Jan 2024 16:47:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="UlDgN3dg"
-Received: from pendragon.ideasonboard.com (213-243-189-158.bb.dnainternet.fi [213.243.189.158])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 3BC02475;
-	Tue,  9 Jan 2024 17:39:34 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1704818374;
-	bh=4/kUOxDd7PkJFu1C5LOw2ZOBFqybUHLiV1hKOSU8ARk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=UlDgN3dgVvLTMeMsxYFUtM8lSjOMDJxiDycMlOvXJKl6NgdYSxMfQNQkZ0V+QOL7C
-	 QqW9phjb8Fj7zNSXJNz4M7z10mK9+AKwkNNvixeHa1GlRfqLBG3Oye/ZiMtdlVOC3o
-	 5Y46IZuP3jIDR6ciN3t1BEI5bYgSGTmD57Z3xSsU=
-Date: Tue, 9 Jan 2024 18:40:47 +0200
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Sakari Ailus <sakari.ailus@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH 2/2] pm: runtime: Add pm_runtime_put_autosuspend()
- replacement
-Message-ID: <20240109164047.GB27655@pendragon.ideasonboard.com>
-References: <20240109133639.111210-1-sakari.ailus@linux.intel.com>
- <20240109133639.111210-2-sakari.ailus@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cp29K+++"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-40d5aefcc2fso35731045e9.0
+        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2024 08:47:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1704818819; x=1705423619; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Kyb6CN2MTJ0KrepLWGAugAgymHc/HiwDmVkQZF3Jz+E=;
+        b=cp29K+++Oy4/Vn7OfXe9ZoO+/1ViLgt5OhQUP915YB0MmAK1WBVPFW6AhCC/L7/nzR
+         4DrH5uJh49YpE2xJLlBdrdX+8PFYV6jJo8yr2sARo54wbimFqsiEFDBhipe0xKIPu/1r
+         DbNfxo+mk99p4FRTzVnsJPcYZwQcXORK4NNN9Y8gOZpGG3ZaJoM/EOq0PWa+1BrxHpJi
+         E/SeH7Sf6R4Avk/roUWRc2zPNBSjL6IrHBKpwVB+hJdElr0EGFP/eoQJLCXp+KBkp8k9
+         fyjVoT7bqNIi/ll7WnTFb6hWDiVFaQ6H0GBFdX5WS5FEKstHhA7xn9NdQFlA4GXIKepg
+         mgbA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1704818819; x=1705423619;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Kyb6CN2MTJ0KrepLWGAugAgymHc/HiwDmVkQZF3Jz+E=;
+        b=G+BvOorkXgxwWgbndR1zDPY2kU7p46eeLTtV+Yy7VWIO9WIt4NnQ3iM2oIgozCFVzU
+         E+M3KYkp2cK2AKzmYQt40fHh/Or1Z8D8KEo2viKrRtVOkMN+9duipd4EDGOzyy9TQzt9
+         KwsL7qg0hixzpvdZkqBV+7zuKapOdqfSpmW9YgEUMn8fGHtMz38LGpIDHjg7O2EN5IuR
+         E+Hh8x7jySdJx9IamN7lRTfBgb/P0n8b63Ytbm2ch7buw8zhhxjUm+AW2BvUDur9Hzef
+         gguKC4rFNlDeKuvLz2c5EllHc6lPrE1WHTUDdMBn2/2VOyrMXQlHwYqAssXU2904V0n3
+         xrrQ==
+X-Gm-Message-State: AOJu0YwcmUPmZd4dHQO8nm0Foz9BPKPGU4ECt5USKuLd6VCvtKgIqKQZ
+	zkI26m67pukZf30AmT5oEJ3MoZmvpzKC4Q==
+X-Google-Smtp-Source: AGHT+IF9dRAWRS2L2cDEzdxGpgrA4GkSU0CGNenchoR2D4PFYAdKqLE6O0kUT8J5tmPJebBS3lDDGw==
+X-Received: by 2002:a05:600c:22d0:b0:40d:8199:c3f with SMTP id 16-20020a05600c22d000b0040d81990c3fmr3183585wmg.153.1704818818906;
+        Tue, 09 Jan 2024 08:46:58 -0800 (PST)
+Received: from vingu-book.. ([2a01:e0a:f:6020:378:51f6:d46e:8457])
+        by smtp.gmail.com with ESMTPSA id r4-20020adff104000000b00336a0c083easm2847845wro.53.2024.01.09.08.46.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 09 Jan 2024 08:46:58 -0800 (PST)
+From: Vincent Guittot <vincent.guittot@linaro.org>
+To: linux@armlinux.org.uk,
+	catalin.marinas@arm.com,
+	will@kernel.org,
+	sudeep.holla@arm.com,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	agross@kernel.org,
+	andersson@kernel.org,
+	konrad.dybcio@linaro.org,
+	mingo@redhat.com,
+	peterz@infradead.org,
+	juri.lelli@redhat.com,
+	dietmar.eggemann@arm.com,
+	rostedt@goodmis.org,
+	bsegall@google.com,
+	mgorman@suse.de,
+	bristot@redhat.com,
+	vschneid@redhat.com,
+	lukasz.luba@arm.com,
+	rui.zhang@intel.com,
+	mhiramat@kernel.org,
+	daniel.lezcano@linaro.org,
+	amit.kachhap@gmail.com,
+	corbet@lwn.net,
+	gregkh@linuxfoundation.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
+	linux-doc@vger.kernel.org
+Cc: qyousef@layalina.io,
+	Vincent Guittot <vincent.guittot@linaro.org>
+Subject: [PATCH v4 0/5] Rework system pressure interface to the scheduler
+Date: Tue,  9 Jan 2024 17:46:50 +0100
+Message-Id: <20240109164655.626085-1-vincent.guittot@linaro.org>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20240109133639.111210-2-sakari.ailus@linux.intel.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Sakari,
+Following the consolidation and cleanup of CPU capacity in [1], this serie
+reworks how the scheduler gets the pressures on CPUs. We need to take into
+account all pressures applied by cpufreq on the compute capacity of a CPU
+for dozens of ms or more and not only cpufreq cooling device or HW
+mitigiations. We split the pressure applied on CPU's capacity in 2 parts:
+- one from cpufreq and freq_qos
+- one from HW high freq mitigiation.
 
-Thank you for the patch.
+The next step will be to add a dedicated interface for long standing
+capping of the CPU capacity (i.e. for seconds or more) like the
+scaling_max_freq of cpufreq sysfs. The latter is already taken into
+account by this serie but as a temporary pressure which is not always the
+best choice when we know that it will happen for seconds or more.
 
-On Tue, Jan 09, 2024 at 03:36:39PM +0200, Sakari Ailus wrote:
-> Add __pm_runtime_put_autosuspend() that replaces
-> pm_runtime_put_autosuspend() for new users. The intent is to later
-> re-purpose pm_runtime_put_autosuspend() to also mark the device's last
-> busy stamp---which is what the vast majority of users actually need.
-> 
-> This is also described in pm_runtime_put_autosuspend() documentation.
-> 
-> Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+[1] https://lore.kernel.org/lkml/20231211104855.558096-1-vincent.guittot@linaro.org/
 
-This looks good to me, so
+Change since v3:
+- Fix uninitialized variables in cpufreq_update_pressure()
 
-Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Change since v2:
+- Rework cpufreq_update_pressure()
 
-Do you plan to patch the existing users tree-wide ?
+Change since v1:
+- Use struct cpufreq_policy as parameter of cpufreq_update_pressure()
+- Fix typos and comments
+- Make sched_thermal_decay_shift boot param as deprecated
 
-> ---
->  Documentation/power/runtime_pm.rst | 17 +++++++++++------
->  include/linux/pm_runtime.h         | 12 ++++++++++++
->  2 files changed, 23 insertions(+), 6 deletions(-)
-> 
-> diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
-> index da99379071a4..6fa50e4f87ce 100644
-> --- a/Documentation/power/runtime_pm.rst
-> +++ b/Documentation/power/runtime_pm.rst
-> @@ -154,7 +154,7 @@ suspending the device are satisfied) and to queue up a suspend request for the
->  device in that case.  If there is no idle callback, or if the callback returns
->  0, then the PM core will attempt to carry out a runtime suspend of the device,
->  also respecting devices configured for autosuspend.  In essence this means a
-> -call to pm_runtime_autosuspend() (do note that drivers needs to update the
-> +call to __pm_runtime_autosuspend() (do note that drivers needs to update the
->  device last busy mark, pm_runtime_mark_last_busy(), to control the delay under
->  this circumstance).  To prevent this (for example, if the callback routine has
->  started a delayed suspend), the routine must return a non-zero value.  Negative
-> @@ -409,6 +409,10 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
->        pm_request_idle(dev) and return its result
->  
->    `int pm_runtime_put_autosuspend(struct device *dev);`
-> +    - does the same as __pm_runtime_put_autosuspend() for now, but in the
-> +      future, will also call pm_runtime_mark_last_busy() as well, DO NOT USE!
-> +
-> +  `int __pm_runtime_put_autosuspend(struct device *dev);`
->      - decrement the device's usage counter; if the result is 0 then run
->        pm_request_autosuspend(dev) and return its result
->  
-> @@ -539,6 +543,7 @@ It is safe to execute the following helper functions from interrupt context:
->  - pm_runtime_put_noidle()
->  - pm_runtime_put()
->  - pm_runtime_put_autosuspend()
-> +- __pm_runtime_put_autosuspend()
->  - pm_runtime_enable()
->  - pm_suspend_ignore_children()
->  - pm_runtime_set_active()
-> @@ -864,9 +869,9 @@ automatically be delayed until the desired period of inactivity has elapsed.
->  
->  Inactivity is determined based on the power.last_busy field.  Drivers should
->  call pm_runtime_mark_last_busy() to update this field after carrying out I/O,
-> -typically just before calling pm_runtime_put_autosuspend().  The desired length
-> -of the inactivity period is a matter of policy.  Subsystems can set this length
-> -initially by calling pm_runtime_set_autosuspend_delay(), but after device
-> +typically just before calling __pm_runtime_put_autosuspend().  The desired
-> +length of the inactivity period is a matter of policy.  Subsystems can set this
-> +length initially by calling pm_runtime_set_autosuspend_delay(), but after device
->  registration the length should be controlled by user space, using the
->  /sys/devices/.../power/autosuspend_delay_ms attribute.
->  
-> @@ -877,7 +882,7 @@ instead of the non-autosuspend counterparts::
->  
->  	Instead of: pm_runtime_suspend    use: pm_runtime_autosuspend;
->  	Instead of: pm_schedule_suspend   use: pm_request_autosuspend;
-> -	Instead of: pm_runtime_put        use: pm_runtime_put_autosuspend;
-> +	Instead of: pm_runtime_put        use: __pm_runtime_put_autosuspend;
->  	Instead of: pm_runtime_put_sync   use: pm_runtime_put_sync_autosuspend.
->  
->  Drivers may also continue to use the non-autosuspend helper functions; they
-> @@ -916,7 +921,7 @@ Here is a schematic pseudo-code example::
->  		lock(&foo->private_lock);
->  		if (--foo->num_pending_requests == 0) {
->  			pm_runtime_mark_last_busy(&foo->dev);
-> -			pm_runtime_put_autosuspend(&foo->dev);
-> +			__pm_runtime_put_autosuspend(&foo->dev);
->  		} else {
->  			foo_process_next_request(foo);
->  		}
-> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-> index 13cd526634c1..d28df13ffe4d 100644
-> --- a/include/linux/pm_runtime.h
-> +++ b/include/linux/pm_runtime.h
-> @@ -482,6 +482,18 @@ static inline int pm_runtime_put(struct device *dev)
->  	return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC);
->  }
->  
-> +/**
-> + * __pm_runtime_put_autosuspend - Drop device usage counter and queue autosuspend if 0.
-> + * @dev: Target device.
-> + *
-> + * Decrement the runtime PM usage counter of @dev and if it turns out to be
-> + * equal to 0, queue up a work item for @dev like in pm_request_autosuspend().
-> + */
-> +static inline int __pm_runtime_put_autosuspend(struct device *dev)
-> +{
-> +	return __pm_runtime_suspend(dev, RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
-> +}
-> +
->  /**
->   * pm_runtime_put_autosuspend - Drop device usage counter and queue autosuspend if 0.
->   * @dev: Target device.
+Vincent Guittot (5):
+  cpufreq: Add a cpufreq pressure feedback for the scheduler
+  sched: Take cpufreq feedback into account
+  thermal/cpufreq: Remove arch_update_thermal_pressure()
+  sched: Rename arch_update_thermal_pressure into
+    arch_update_hw_pressure
+  sched/pelt: Remove shift of thermal clock
+
+ .../admin-guide/kernel-parameters.txt         |  1 +
+ arch/arm/include/asm/topology.h               |  6 +-
+ arch/arm64/include/asm/topology.h             |  6 +-
+ drivers/base/arch_topology.c                  | 26 ++++----
+ drivers/cpufreq/cpufreq.c                     | 36 +++++++++++
+ drivers/cpufreq/qcom-cpufreq-hw.c             |  4 +-
+ drivers/thermal/cpufreq_cooling.c             |  3 -
+ include/linux/arch_topology.h                 |  8 +--
+ include/linux/cpufreq.h                       | 10 +++
+ include/linux/sched/topology.h                |  8 +--
+ .../{thermal_pressure.h => hw_pressure.h}     | 14 ++---
+ include/trace/events/sched.h                  |  2 +-
+ init/Kconfig                                  | 12 ++--
+ kernel/sched/core.c                           |  8 +--
+ kernel/sched/fair.c                           | 63 +++++++++----------
+ kernel/sched/pelt.c                           | 18 +++---
+ kernel/sched/pelt.h                           | 16 ++---
+ kernel/sched/sched.h                          | 22 +------
+ 18 files changed, 144 insertions(+), 119 deletions(-)
+ rename include/trace/events/{thermal_pressure.h => hw_pressure.h} (55%)
 
 -- 
-Regards,
+2.34.1
 
-Laurent Pinchart
