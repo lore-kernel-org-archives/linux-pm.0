@@ -1,46 +1,32 @@
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 733973A8E5
-	for <linux-pm@vger.kernel.org>; Tue,  9 Jan 2024 16:37:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3586E3A8E4
+	for <linux-pm@vger.kernel.org>; Tue,  9 Jan 2024 16:40:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="Y/tPUQmp"
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="UlDgN3dg"
 Received: from pendragon.ideasonboard.com (213-243-189-158.bb.dnainternet.fi [213.243.189.158])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id AB242475;
-	Tue,  9 Jan 2024 17:36:26 +0100 (CET)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 3BC02475;
+	Tue,  9 Jan 2024 17:39:34 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1704818186;
-	bh=w2vE0WTv24GgGx55X1nYqEcrexe6YcLeUgYhx407efA=;
+	s=mail; t=1704818374;
+	bh=4/kUOxDd7PkJFu1C5LOw2ZOBFqybUHLiV1hKOSU8ARk=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Y/tPUQmp75fqLLEkKN6mTGr0VWap/jbdoA01CswVVDgfshJc5M7Mx90DkI8vFtBJZ
-	 0zB72Bg2E1EWdgH/TaasOQAa0d3NLUoOk1+6v7aygfCrn2iZsmdZPub5q9czipnpwU
-	 K2JJeIVX9YbpF262uCJ5cTJi1NirpPIJ31fL3G60=
-Date: Tue, 9 Jan 2024 18:37:39 +0200
+	b=UlDgN3dgVvLTMeMsxYFUtM8lSjOMDJxiDycMlOvXJKl6NgdYSxMfQNQkZ0V+QOL7C
+	 QqW9phjb8Fj7zNSXJNz4M7z10mK9+AKwkNNvixeHa1GlRfqLBG3Oye/ZiMtdlVOC3o
+	 5Y46IZuP3jIDR6ciN3t1BEI5bYgSGTmD57Z3xSsU=
+Date: Tue, 9 Jan 2024 18:40:47 +0200
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 To: Sakari Ailus <sakari.ailus@linux.intel.com>
 Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>,
-	Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Lucas De Marchi <lucas.demarchi@intel.com>,
-	Thomas =?utf-8?Q?Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
-	Paul Elder <paul.elder@ideasonboard.com>,
-	Alex Elder <elder@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/2] pm: runtime: Simplify pm_runtime_get_if_active()
- usage
-Message-ID: <20240109163739.GA27655@pendragon.ideasonboard.com>
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH 2/2] pm: runtime: Add pm_runtime_put_autosuspend()
+ replacement
+Message-ID: <20240109164047.GB27655@pendragon.ideasonboard.com>
 References: <20240109133639.111210-1-sakari.ailus@linux.intel.com>
- <20240109133657.111258-1-sakari.ailus@linux.intel.com>
+ <20240109133639.111210-2-sakari.ailus@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -49,278 +35,119 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20240109133657.111258-1-sakari.ailus@linux.intel.com>
+In-Reply-To: <20240109133639.111210-2-sakari.ailus@linux.intel.com>
 
 Hi Sakari,
 
 Thank you for the patch.
 
-On Tue, Jan 09, 2024 at 03:36:57PM +0200, Sakari Ailus wrote:
-> There are two ways to opportunistically increment a device's runtime PM
-> usage count, calling either pm_runtime_get_if_active() or
-> pm_runtime_get_if_in_use(). The former has an argument to tell whether to
-> ignore the usage count or not, and the latter simply calls the former with
-> ign_usage_count set to false. The other users that want to ignore the
-> usage_count will have to explitly set that argument to true which is a bit
-> cumbersome.
+On Tue, Jan 09, 2024 at 03:36:39PM +0200, Sakari Ailus wrote:
+> Add __pm_runtime_put_autosuspend() that replaces
+> pm_runtime_put_autosuspend() for new users. The intent is to later
+> re-purpose pm_runtime_put_autosuspend() to also mark the device's last
+> busy stamp---which is what the vast majority of users actually need.
 > 
-> To make this function more practical to use, remove the ign_usage_count
-> argument from the function. The main implementation is renamed as
-> __pm_runtime_get_conditional().
+> This is also described in pm_runtime_put_autosuspend() documentation.
 > 
 > Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
 
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+This looks good to me, so
+
+Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+
+Do you plan to patch the existing users tree-wide ?
 
 > ---
->  Documentation/power/runtime_pm.rst      |  5 ++--
->  drivers/accel/ivpu/ivpu_pm.c            |  2 +-
->  drivers/base/power/runtime.c            |  9 ++++---
->  drivers/gpu/drm/i915/intel_runtime_pm.c |  2 +-
->  drivers/gpu/drm/xe/xe_pm.c              |  2 +-
->  drivers/media/i2c/ccs/ccs-core.c        |  2 +-
->  drivers/media/i2c/ov64a40.c             |  2 +-
->  drivers/media/i2c/thp7312.c             |  2 +-
->  drivers/net/ipa/ipa_smp2p.c             |  2 +-
->  drivers/pci/pci.c                       |  2 +-
->  include/linux/pm_runtime.h              | 32 +++++++++++++++++++++----
->  sound/hda/hdac_device.c                 |  2 +-
->  12 files changed, 44 insertions(+), 20 deletions(-)
+>  Documentation/power/runtime_pm.rst | 17 +++++++++++------
+>  include/linux/pm_runtime.h         | 12 ++++++++++++
+>  2 files changed, 23 insertions(+), 6 deletions(-)
 > 
 > diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
-> index 65b86e487afe..da99379071a4 100644
+> index da99379071a4..6fa50e4f87ce 100644
 > --- a/Documentation/power/runtime_pm.rst
 > +++ b/Documentation/power/runtime_pm.rst
-> @@ -396,10 +396,9 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
->        nonzero, increment the counter and return 1; otherwise return 0 without
->        changing the counter
+> @@ -154,7 +154,7 @@ suspending the device are satisfied) and to queue up a suspend request for the
+>  device in that case.  If there is no idle callback, or if the callback returns
+>  0, then the PM core will attempt to carry out a runtime suspend of the device,
+>  also respecting devices configured for autosuspend.  In essence this means a
+> -call to pm_runtime_autosuspend() (do note that drivers needs to update the
+> +call to __pm_runtime_autosuspend() (do note that drivers needs to update the
+>  device last busy mark, pm_runtime_mark_last_busy(), to control the delay under
+>  this circumstance).  To prevent this (for example, if the callback routine has
+>  started a delayed suspend), the routine must return a non-zero value.  Negative
+> @@ -409,6 +409,10 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+>        pm_request_idle(dev) and return its result
 >  
-> -  `int pm_runtime_get_if_active(struct device *dev, bool ign_usage_count);`
-> +  `int pm_runtime_get_if_active(struct device *dev);`
->      - return -EINVAL if 'power.disable_depth' is nonzero; otherwise, if the
-> -      runtime PM status is RPM_ACTIVE, and either ign_usage_count is true
-> -      or the device's usage_count is non-zero, increment the counter and
-> +      runtime PM status is RPM_ACTIVE, increment the counter and
->        return 1; otherwise return 0 without changing the counter
+>    `int pm_runtime_put_autosuspend(struct device *dev);`
+> +    - does the same as __pm_runtime_put_autosuspend() for now, but in the
+> +      future, will also call pm_runtime_mark_last_busy() as well, DO NOT USE!
+> +
+> +  `int __pm_runtime_put_autosuspend(struct device *dev);`
+>      - decrement the device's usage counter; if the result is 0 then run
+>        pm_request_autosuspend(dev) and return its result
 >  
->    `void pm_runtime_put_noidle(struct device *dev);`
-> diff --git a/drivers/accel/ivpu/ivpu_pm.c b/drivers/accel/ivpu/ivpu_pm.c
-> index 0af8864cb3b5..c6d93c7a1c58 100644
-> --- a/drivers/accel/ivpu/ivpu_pm.c
-> +++ b/drivers/accel/ivpu/ivpu_pm.c
-> @@ -292,7 +292,7 @@ int ivpu_rpm_get_if_active(struct ivpu_device *vdev)
->  {
->  	int ret;
+> @@ -539,6 +543,7 @@ It is safe to execute the following helper functions from interrupt context:
+>  - pm_runtime_put_noidle()
+>  - pm_runtime_put()
+>  - pm_runtime_put_autosuspend()
+> +- __pm_runtime_put_autosuspend()
+>  - pm_runtime_enable()
+>  - pm_suspend_ignore_children()
+>  - pm_runtime_set_active()
+> @@ -864,9 +869,9 @@ automatically be delayed until the desired period of inactivity has elapsed.
 >  
-> -	ret = pm_runtime_get_if_active(vdev->drm.dev, false);
-> +	ret = pm_runtime_get_if_in_use(vdev->drm.dev);
->  	drm_WARN_ON(&vdev->drm, ret < 0);
+>  Inactivity is determined based on the power.last_busy field.  Drivers should
+>  call pm_runtime_mark_last_busy() to update this field after carrying out I/O,
+> -typically just before calling pm_runtime_put_autosuspend().  The desired length
+> -of the inactivity period is a matter of policy.  Subsystems can set this length
+> -initially by calling pm_runtime_set_autosuspend_delay(), but after device
+> +typically just before calling __pm_runtime_put_autosuspend().  The desired
+> +length of the inactivity period is a matter of policy.  Subsystems can set this
+> +length initially by calling pm_runtime_set_autosuspend_delay(), but after device
+>  registration the length should be controlled by user space, using the
+>  /sys/devices/.../power/autosuspend_delay_ms attribute.
 >  
->  	return ret;
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 05793c9fbb84..6af8e67ab9c7 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -1176,7 +1176,7 @@ int __pm_runtime_resume(struct device *dev, int rpmflags)
->  EXPORT_SYMBOL_GPL(__pm_runtime_resume);
+> @@ -877,7 +882,7 @@ instead of the non-autosuspend counterparts::
 >  
->  /**
-> - * pm_runtime_get_if_active - Conditionally bump up device usage counter.
-> + * __pm_runtime_get_conditional - Conditionally bump up device usage counter.
->   * @dev: Device to handle.
->   * @ign_usage_count: Whether or not to look at the current usage counter value.
->   *
-> @@ -1196,8 +1196,11 @@ EXPORT_SYMBOL_GPL(__pm_runtime_resume);
->   *
->   * The caller is responsible for decrementing the runtime PM usage counter of
->   * @dev after this function has returned a positive value for it.
-> + *
-> + * This function is not intended to be called by drivers, use
-> + * pm_runtime_get_if_active() or pm_runtime_get_if_in_use() instead.
->   */
-> -int pm_runtime_get_if_active(struct device *dev, bool ign_usage_count)
-> +int __pm_runtime_get_conditional(struct device *dev, bool ign_usage_count)
->  {
->  	unsigned long flags;
->  	int retval;
-> @@ -1218,7 +1221,7 @@ int pm_runtime_get_if_active(struct device *dev, bool ign_usage_count)
+>  	Instead of: pm_runtime_suspend    use: pm_runtime_autosuspend;
+>  	Instead of: pm_schedule_suspend   use: pm_request_autosuspend;
+> -	Instead of: pm_runtime_put        use: pm_runtime_put_autosuspend;
+> +	Instead of: pm_runtime_put        use: __pm_runtime_put_autosuspend;
+>  	Instead of: pm_runtime_put_sync   use: pm_runtime_put_sync_autosuspend.
 >  
->  	return retval;
->  }
-> -EXPORT_SYMBOL_GPL(pm_runtime_get_if_active);
-> +EXPORT_SYMBOL_GPL(__pm_runtime_get_conditional);
->  
->  /**
->   * __pm_runtime_set_status - Set runtime PM status of a device.
-> diff --git a/drivers/gpu/drm/i915/intel_runtime_pm.c b/drivers/gpu/drm/i915/intel_runtime_pm.c
-> index 860b51b56a92..51cbca330bd5 100644
-> --- a/drivers/gpu/drm/i915/intel_runtime_pm.c
-> +++ b/drivers/gpu/drm/i915/intel_runtime_pm.c
-> @@ -246,7 +246,7 @@ static intel_wakeref_t __intel_runtime_pm_get_if_active(struct intel_runtime_pm
->  		 * function, since the power state is undefined. This applies
->  		 * atm to the late/early system suspend/resume handlers.
->  		 */
-> -		if (pm_runtime_get_if_active(rpm->kdev, ignore_usecount) <= 0)
-> +		if (__pm_runtime_get_conditional(rpm->kdev, ignore_usecount) <= 0)
->  			return 0;
->  	}
->  
-> diff --git a/drivers/gpu/drm/xe/xe_pm.c b/drivers/gpu/drm/xe/xe_pm.c
-> index b429c2876a76..dd110058bf74 100644
-> --- a/drivers/gpu/drm/xe/xe_pm.c
-> +++ b/drivers/gpu/drm/xe/xe_pm.c
-> @@ -330,7 +330,7 @@ int xe_pm_runtime_put(struct xe_device *xe)
->  
->  int xe_pm_runtime_get_if_active(struct xe_device *xe)
->  {
-> -	return pm_runtime_get_if_active(xe->drm.dev, true);
-> +	return pm_runtime_get_if_active(xe->drm.dev);
->  }
->  
->  void xe_pm_assert_unbounded_bridge(struct xe_device *xe)
-> diff --git a/drivers/media/i2c/ccs/ccs-core.c b/drivers/media/i2c/ccs/ccs-core.c
-> index e21287d50c15..e1ae0f9fad43 100644
-> --- a/drivers/media/i2c/ccs/ccs-core.c
-> +++ b/drivers/media/i2c/ccs/ccs-core.c
-> @@ -674,7 +674,7 @@ static int ccs_set_ctrl(struct v4l2_ctrl *ctrl)
->  		break;
->  	}
->  
-> -	pm_status = pm_runtime_get_if_active(&client->dev, true);
-> +	pm_status = pm_runtime_get_if_active(&client->dev);
->  	if (!pm_status)
->  		return 0;
->  
-> diff --git a/drivers/media/i2c/ov64a40.c b/drivers/media/i2c/ov64a40.c
-> index 4fba4c2cb064..541bf74581d2 100644
-> --- a/drivers/media/i2c/ov64a40.c
-> +++ b/drivers/media/i2c/ov64a40.c
-> @@ -3287,7 +3287,7 @@ static int ov64a40_set_ctrl(struct v4l2_ctrl *ctrl)
->  					 exp_max, 1, exp_val);
->  	}
->  
-> -	pm_status = pm_runtime_get_if_active(ov64a40->dev, true);
-> +	pm_status = pm_runtime_get_if_active(ov64a40->dev);
->  	if (!pm_status)
->  		return 0;
->  
-> diff --git a/drivers/media/i2c/thp7312.c b/drivers/media/i2c/thp7312.c
-> index 2806887514dc..19bd923a7315 100644
-> --- a/drivers/media/i2c/thp7312.c
-> +++ b/drivers/media/i2c/thp7312.c
-> @@ -1052,7 +1052,7 @@ static int thp7312_s_ctrl(struct v4l2_ctrl *ctrl)
->  	if (ctrl->flags & V4L2_CTRL_FLAG_INACTIVE)
->  		return -EINVAL;
->  
-> -	if (!pm_runtime_get_if_active(thp7312->dev, true))
-> +	if (!pm_runtime_get_if_active(thp7312->dev))
->  		return 0;
->  
->  	switch (ctrl->id) {
-> diff --git a/drivers/net/ipa/ipa_smp2p.c b/drivers/net/ipa/ipa_smp2p.c
-> index 5620dc271fac..cbf3d4761ce3 100644
-> --- a/drivers/net/ipa/ipa_smp2p.c
-> +++ b/drivers/net/ipa/ipa_smp2p.c
-> @@ -92,7 +92,7 @@ static void ipa_smp2p_notify(struct ipa_smp2p *smp2p)
->  		return;
->  
->  	dev = &smp2p->ipa->pdev->dev;
-> -	smp2p->power_on = pm_runtime_get_if_active(dev, true) > 0;
-> +	smp2p->power_on = pm_runtime_get_if_active(dev) > 0;
->  
->  	/* Signal whether the IPA power is enabled */
->  	mask = BIT(smp2p->enabled_bit);
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index d8f11a078924..f8293ae71389 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -2510,7 +2510,7 @@ static void pci_pme_list_scan(struct work_struct *work)
->  			 * If the device is in a low power state it
->  			 * should not be polled either.
->  			 */
-> -			pm_status = pm_runtime_get_if_active(dev, true);
-> +			pm_status = pm_runtime_get_if_active(dev);
->  			if (!pm_status)
->  				continue;
->  
+>  Drivers may also continue to use the non-autosuspend helper functions; they
+> @@ -916,7 +921,7 @@ Here is a schematic pseudo-code example::
+>  		lock(&foo->private_lock);
+>  		if (--foo->num_pending_requests == 0) {
+>  			pm_runtime_mark_last_busy(&foo->dev);
+> -			pm_runtime_put_autosuspend(&foo->dev);
+> +			__pm_runtime_put_autosuspend(&foo->dev);
+>  		} else {
+>  			foo_process_next_request(foo);
+>  		}
 > diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-> index 7c9b35448563..13cd526634c1 100644
+> index 13cd526634c1..d28df13ffe4d 100644
 > --- a/include/linux/pm_runtime.h
 > +++ b/include/linux/pm_runtime.h
-> @@ -72,7 +72,8 @@ extern int pm_runtime_force_resume(struct device *dev);
->  extern int __pm_runtime_idle(struct device *dev, int rpmflags);
->  extern int __pm_runtime_suspend(struct device *dev, int rpmflags);
->  extern int __pm_runtime_resume(struct device *dev, int rpmflags);
-> -extern int pm_runtime_get_if_active(struct device *dev, bool ign_usage_count);
-> +extern int __pm_runtime_get_conditional(struct device *dev,
-> +					bool ign_usage_count);
->  extern int pm_schedule_suspend(struct device *dev, unsigned int delay);
->  extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
->  extern int pm_runtime_barrier(struct device *dev);
-> @@ -94,16 +95,33 @@ extern void pm_runtime_release_supplier(struct device_link *link);
->  
->  extern int devm_pm_runtime_enable(struct device *dev);
+> @@ -482,6 +482,18 @@ static inline int pm_runtime_put(struct device *dev)
+>  	return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC);
+>  }
 >  
 > +/**
-> + * pm_runtime_get_if_active - Bump up runtime PM usage counter if the device is
-> + *			      in active state
+> + * __pm_runtime_put_autosuspend - Drop device usage counter and queue autosuspend if 0.
 > + * @dev: Target device.
 > + *
-> + * Increment the runtime PM usage counter of @dev if its runtime PM status is
-> + * %RPM_ACTIVE, in which case it returns 1. If the device is in a different
-> + * state, 0 is returned. -EINVAL is returned if runtime PM is disabled for the
-> + * device.
+> + * Decrement the runtime PM usage counter of @dev and if it turns out to be
+> + * equal to 0, queue up a work item for @dev like in pm_request_autosuspend().
 > + */
-> +static inline int pm_runtime_get_if_active(struct device *dev)
+> +static inline int __pm_runtime_put_autosuspend(struct device *dev)
 > +{
-> +	return __pm_runtime_get_conditional(dev, true);
+> +	return __pm_runtime_suspend(dev, RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
 > +}
 > +
 >  /**
->   * pm_runtime_get_if_in_use - Conditionally bump up runtime PM usage counter.
+>   * pm_runtime_put_autosuspend - Drop device usage counter and queue autosuspend if 0.
 >   * @dev: Target device.
->   *
->   * Increment the runtime PM usage counter of @dev if its runtime PM status is
-> - * %RPM_ACTIVE and its runtime PM usage counter is greater than 0.
-> + * %RPM_ACTIVE and its runtime PM usage counter is greater than 0, in which case
-> + * it returns 1. If the device is in a different state or its usage_count is 0,
-> + * 0 is returned. -EINVAL is returned if runtime PM is disabled for the device.
->   */
->  static inline int pm_runtime_get_if_in_use(struct device *dev)
->  {
-> -	return pm_runtime_get_if_active(dev, false);
-> +	return __pm_runtime_get_conditional(dev, false);
->  }
->  
->  /**
-> @@ -275,8 +293,12 @@ static inline int pm_runtime_get_if_in_use(struct device *dev)
->  {
->  	return -EINVAL;
->  }
-> -static inline int pm_runtime_get_if_active(struct device *dev,
-> -					   bool ign_usage_count)
-> +static inline int pm_runtime_get_if_active(struct device *dev)
-> +{
-> +	return -EINVAL;
-> +}
-> +static inline int __pm_runtime_get_conditional(struct device *dev,
-> +					       bool ign_usage_count)
->  {
->  	return -EINVAL;
->  }
-> diff --git a/sound/hda/hdac_device.c b/sound/hda/hdac_device.c
-> index 7f7b67fe1b65..068c16e52dff 100644
-> --- a/sound/hda/hdac_device.c
-> +++ b/sound/hda/hdac_device.c
-> @@ -612,7 +612,7 @@ EXPORT_SYMBOL_GPL(snd_hdac_power_up_pm);
->  int snd_hdac_keep_power_up(struct hdac_device *codec)
->  {
->  	if (!atomic_inc_not_zero(&codec->in_pm)) {
-> -		int ret = pm_runtime_get_if_active(&codec->dev, true);
-> +		int ret = pm_runtime_get_if_active(&codec->dev);
->  		if (!ret)
->  			return -1;
->  		if (ret < 0)
 
 -- 
 Regards,
