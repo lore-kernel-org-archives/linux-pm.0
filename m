@@ -1,135 +1,104 @@
-Received: from SHSQR01.spreadtrum.com (mx1.unisoc.com [222.66.158.135])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB8EB29CE3
-	for <linux-pm@vger.kernel.org>; Tue,  9 Jan 2024 11:32:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=unisoc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=unisoc.com
-Received: from dlp.unisoc.com ([10.29.3.86])
-	by SHSQR01.spreadtrum.com with ESMTP id 409BRfDM002970;
-	Tue, 9 Jan 2024 19:27:41 +0800 (+08)
-	(envelope-from Di.Shen@unisoc.com)
-Received: from SHDLP.spreadtrum.com (bjmbx01.spreadtrum.com [10.0.64.7])
-	by dlp.unisoc.com (SkyGuard) with ESMTPS id 4T8T4v4h3Jz2RS3WG;
-	Tue,  9 Jan 2024 19:20:47 +0800 (CST)
-Received: from bj10906pcu1.spreadtrum.com (10.0.73.72) by
- BJMBX01.spreadtrum.com (10.0.64.7) with Microsoft SMTP Server (TLS) id
- 15.0.1497.23; Tue, 9 Jan 2024 19:27:40 +0800
-From: Di Shen <di.shen@unisoc.com>
-To: <lukasz.luba@arm.com>, <rafael@kernel.org>, <daniel.lezcano@linaro.org>,
-        <rui.zhang@intel.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <wvw@google.com>, <tkjos@google.com>, <xuewen.yan@unisoc.com>,
-        <zhanglyra@gmail.com>, <orsonzhai@gmail.com>
-Subject: [PATCH V6] thermal/core/power_allocator: avoid thermal cdev can not be reset
-Date: Tue, 9 Jan 2024 19:27:36 +0800
-Message-ID: <20240109112736.32566-1-di.shen@unisoc.com>
-X-Mailer: git-send-email 2.17.1
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 135EE29CE3;
+	Tue,  9 Jan 2024 11:34:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F1A3BC15;
+	Tue,  9 Jan 2024 03:34:50 -0800 (PST)
+Received: from [192.168.178.6] (unknown [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6A59B3F73F;
+	Tue,  9 Jan 2024 03:34:00 -0800 (PST)
+Message-ID: <d37e3d06-d9fc-4fc3-ad92-e7031489660a@arm.com>
+Date: Tue, 9 Jan 2024 12:33:59 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-ClientProxiedBy: SHCAS01.spreadtrum.com (10.0.1.201) To
- BJMBX01.spreadtrum.com (10.0.64.7)
-X-MAIL:SHSQR01.spreadtrum.com 409BRfDM002970
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 0/5] Rework system pressure interface to the scheduler
+Content-Language: en-US
+To: Vincent Guittot <vincent.guittot@linaro.org>, linux@armlinux.org.uk,
+ catalin.marinas@arm.com, will@kernel.org, sudeep.holla@arm.com,
+ rafael@kernel.org, viresh.kumar@linaro.org, agross@kernel.org,
+ andersson@kernel.org, konrad.dybcio@linaro.org, mingo@redhat.com,
+ peterz@infradead.org, juri.lelli@redhat.com, rostedt@goodmis.org,
+ bsegall@google.com, mgorman@suse.de, bristot@redhat.com,
+ vschneid@redhat.com, lukasz.luba@arm.com, rui.zhang@intel.com,
+ mhiramat@kernel.org, daniel.lezcano@linaro.org, amit.kachhap@gmail.com,
+ corbet@lwn.net, gregkh@linuxfoundation.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Cc: qyousef@layalina.io
+References: <20240108134843.429769-1-vincent.guittot@linaro.org>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+In-Reply-To: <20240108134843.429769-1-vincent.guittot@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Commit 0952177f2a1f ("thermal/core/power_allocator: Update once
-cooling devices when temp is low") adds an update flag to avoid
-the thermal event is triggered when there is no need, and
-thermal cdev would be updated once when temperature is low.
+On 08/01/2024 14:48, Vincent Guittot wrote:
+> Following the consolidation and cleanup of CPU capacity in [1], this serie
+> reworks how the scheduler gets the pressures on CPUs. We need to take into
+> account all pressures applied by cpufreq on the compute capacity of a CPU
+> for dozens of ms or more and not only cpufreq cooling device or HW
+> mitigiations. we split the pressure applied on CPU's capacity in 2 parts:
+> - one from cpufreq and freq_qos
+> - one from HW high freq mitigiation.
+> 
+> The next step will be to add a dedicated interface for long standing
+> capping of the CPU capacity (i.e. for seconds or more) like the
+> scaling_max_freq of cpufreq sysfs. The latter is already taken into
+> account by this serie but as a temporary pressure which is not always the
+> best choice when we know that it will happen for seconds or more.
 
-But when the trips are writable, and switch_on_temp is set
-to be a higher value, the cooling device state may not be
-reset to 0, because last_temperature is smaller than the
-switch_on_temp.
+I guess this is related to the 'user space system pressure' (*) slide of
+your OSPM '23 talk.
 
-For example:
-First:
-switch_on_temp=70 control_temp=85;
-Then userspace change the trip_temp:
-switch_on_temp=45 control_temp=55 cur_temp=54
+Where do you draw the line when it comes to time between (*) and the
+'medium pace system pressure' (e.g. thermal and FREQ_QOS).
 
-Then userspace reset the trip_temp:
-switch_on_temp=70 control_temp=85 cur_temp=57 last_temp=54
+IIRC, with (*) you want to rebuild the sched domains etc.
 
-At this time, the cooling device state should be reset to 0.
-However, because cur_temp(57) < switch_on_temp(70)
-last_temp(54) < switch_on_temp(70)  ---->  update = false,
-update is false, the cooling device state can not be reset.
-
-Considering tz->passive can also be represented the temperature
-status, this patch modifies the update flag with tz->passive.
-
-When the first time the temperature drops below switch_on, the
-states of cooling devices can be reset once(because tz->passive = 1),
-and the tz->passive is updated to 0. In the next round, because
-tz->passive is 0, the cdev->state would not be updated.
-
-By using the tz->passive as the "update" flag, the issue above
-can be solved, and the cooling devices can be update only once
-when the temperature is low.
-
-Fixes: <0952177f2a1f> (thermal/core/power_allocator: Update once cooling devices when temp is low)
-Signed-off-by: Di Shen <di.shen@unisoc.com>
-
----
-V6:
-Compared to the previous version:
-- Not change the thermal core.
-- Not add new variables and function.
-- Use tz->passive as "update" flag to indicates whether the cooling
-  device should be reset.
-
-V5: [5]
-- Simplify the reset ops, make it no return value and no specific
-  trip ID as argument.
-- Extend the commit message.
-
-V4: [4]
-- Compared to V3, handle it in thermal core instead of in governor.
-- Add an ops to the governor structure, and call it when a trip
-  point is changed.
-- Define reset ops for power allocator.
-
-V3: [3]
-- Add fix tag.
-
-V2: [2]
-- Compared to v1, do not revert.
-- Add a variable(last_switch_on_temp) in power_allocator_params
-  to record the last switch_on_temp value.
-- Adds a function to renew the update flag and update the
-  last_switch_on_temp when thermal trips are writable.
-
-V1: [1]
-- Revert commit 0952177f2a1f.
-
-[1] https://lore.kernel.org/all/20230309135515.1232-1-di.shen@unisoc.com/
-[2] https://lore.kernel.org/all/20230315093008.17489-1-di.shen@unisoc.com/
-[3] https://lore.kernel.org/all/20230320095620.7480-1-di.shen@unisoc.com/
-[4] https://lore.kernel.org/all/20230619063534.12831-1-di.shen@unisoc.com/
-[5] https://lore.kernel.org/all/20230710033234.28641-1-di.shen@unisoc.com/
----
----
- drivers/thermal/gov_power_allocator.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index 83d4f451b1a9..931cd88425e4 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -693,7 +693,7 @@ static int power_allocator_throttle(struct thermal_zone_device *tz,
- 
- 	trip = params->trip_switch_on;
- 	if (trip && tz->temperature < trip->temperature) {
--		update = tz->last_temperature >= trip->temperature;
-+		update = tz->passive;
- 		tz->passive = 0;
- 		reset_pid_controller(params);
- 		allow_maximum_power(tz, update);
--- 
-2.17.1
+> 
+> [1] https://lore.kernel.org/lkml/20231211104855.558096-1-vincent.guittot@linaro.org/
+> 
+> Change since v1:
+> - Rework cpufreq_update_pressure()
+> 
+> Change since v1:
+> - Use struct cpufreq_policy as parameter of cpufreq_update_pressure()
+> - Fix typos and comments
+> - Make sched_thermal_decay_shift boot param as deprecated
+> 
+> Vincent Guittot (5):
+>   cpufreq: Add a cpufreq pressure feedback for the scheduler
+>   sched: Take cpufreq feedback into account
+>   thermal/cpufreq: Remove arch_update_thermal_pressure()
+>   sched: Rename arch_update_thermal_pressure into
+>     arch_update_hw_pressure
+>   sched/pelt: Remove shift of thermal clock
+> 
+>  .../admin-guide/kernel-parameters.txt         |  1 +
+>  arch/arm/include/asm/topology.h               |  6 +-
+>  arch/arm64/include/asm/topology.h             |  6 +-
+>  drivers/base/arch_topology.c                  | 26 ++++----
+>  drivers/cpufreq/cpufreq.c                     | 36 +++++++++++
+>  drivers/cpufreq/qcom-cpufreq-hw.c             |  4 +-
+>  drivers/thermal/cpufreq_cooling.c             |  3 -
+>  include/linux/arch_topology.h                 |  8 +--
+>  include/linux/cpufreq.h                       | 10 +++
+>  include/linux/sched/topology.h                |  8 +--
+>  .../{thermal_pressure.h => hw_pressure.h}     | 14 ++---
+>  include/trace/events/sched.h                  |  2 +-
+>  init/Kconfig                                  | 12 ++--
+>  kernel/sched/core.c                           |  8 +--
+>  kernel/sched/fair.c                           | 63 +++++++++----------
+>  kernel/sched/pelt.c                           | 18 +++---
+>  kernel/sched/pelt.h                           | 16 ++---
+>  kernel/sched/sched.h                          | 22 +------
+>  18 files changed, 144 insertions(+), 119 deletions(-)
+>  rename include/trace/events/{thermal_pressure.h => hw_pressure.h} (55%)
 
