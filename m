@@ -1,48 +1,49 @@
 Received: from pb-smtp20.pobox.com (pb-smtp20.pobox.com [173.228.157.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5904FBEA
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C58CEFBE8
 	for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2024 22:30:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b="PEKK0G1D";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="1ogzqw/y"
+	dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b="EkCb9EmG";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="LEMUVgNB"
 Received: from pb-smtp20.pobox.com (unknown [127.0.0.1])
-	by pb-smtp20.pobox.com (Postfix) with ESMTP id 3891E20C47;
+	by pb-smtp20.pobox.com (Postfix) with ESMTP id 49D3020C49;
 	Thu, 11 Jan 2024 17:30:37 -0500 (EST)
 	(envelope-from nico@fluxnic.net)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=pobox.com; h=from:to:cc
-	:subject:date:message-id:mime-version:content-transfer-encoding;
-	 s=sasl; bh=sfEaKIIjCJW5ccyb2+CguAHPgJMfQcWP9YWXXViX1dM=; b=PEKK
-	0G1DHo7qy7/10AEWnSxykxDqlcbM9BkIljCxdWPe5vRiPiWObIVFHmrkIV3+UlMa
-	uWNvt5ABDNCeQXGXF4gvjaL4vcnnlY4VYvBRPIs+L+wIk3IKa+K68UKFhNj93zPe
-	eDs7oDGy6ONdFu0JuKNJMWBBoKLzWxUL8vXsVpc=
+	:subject:date:message-id:in-reply-to:references:mime-version
+	:content-transfer-encoding; s=sasl; bh=JZ5BgK2JLSGk76VVuRL/OjYJD
+	2kkyIpgN3ChEjL0A8o=; b=EkCb9EmG08bEi+lmdz/9beLc/4YfG1PO66k1z2OqU
+	EPAeiB+x4P+ABwYeGaPrY2TWh21wc/LktwL34q79b+OgdBVZ53n0OQwQYVhwibCO
+	+a9SuPTuL0oulxNs2b8kWe/ozKDdmMt+zaaL9RQpLNJNOXhRf5gJlPNXbjqW+mUV
+	pM=
 Received: from pb-smtp20.sea.icgroup.com (unknown [127.0.0.1])
-	by pb-smtp20.pobox.com (Postfix) with ESMTP id 3116E20C46;
+	by pb-smtp20.pobox.com (Postfix) with ESMTP id 4290F20C48;
 	Thu, 11 Jan 2024 17:30:37 -0500 (EST)
 	(envelope-from nico@fluxnic.net)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=fluxnic.net;
- h=from:to:cc:subject:date:message-id:mime-version:content-transfer-encoding;
- s=2016-12.pbsmtp; bh=sfEaKIIjCJW5ccyb2+CguAHPgJMfQcWP9YWXXViX1dM=;
- b=1ogzqw/yS1dHtKVszoAPnWlUxAB1W+MKFU+Kq/8LufzJ+eczpf0uJhho4t2Igqwyog/+47u71uEQxKNCLHVyqgPjCl3kgRE9D1C094bRYXbQvWk/wYcSSRa+7357zRWEe3qmZLor1EqxY67co8OcxWCgIWQMws0OU4EYhGsWAQw=
+ h=from:to:cc:subject:date:message-id:in-reply-to:references:mime-version:content-transfer-encoding; s=2016-12.pbsmtp; bh=k4kESBp+xD1U4bJE+I3PsSMi+E07tGQRkJ3s238fRZY=; b=LEMUVgNBTbk7FHDOgnUGjIMi/JuSq6f1DiUo43fAcvcwlT0vWBKTTX+eDhVfZM0bD830/kRnRkP3draFgHNt6tseyrRk8NiKOA0c9OKE6zhqBt0jEqtH2Xub2ePJOJlPhdFck3/g1juj/c4xRsd1hy0Ve4zb5bHYR28cl5RY9o4=
 Received: from yoda.fluxnic.net (unknown [24.201.101.36])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by pb-smtp20.pobox.com (Postfix) with ESMTPSA id C4FC920C44;
+	by pb-smtp20.pobox.com (Postfix) with ESMTPSA id D3FF720C45;
 	Thu, 11 Jan 2024 17:30:32 -0500 (EST)
 	(envelope-from nico@fluxnic.net)
 Received: from xanadu.lan (OpenWrt.lan [192.168.1.1])
-	by yoda.fluxnic.net (Postfix) with ESMTPSA id 47619AD5A5F;
+	by yoda.fluxnic.net (Postfix) with ESMTPSA id 792B7AD5A61;
 	Thu, 11 Jan 2024 17:30:30 -0500 (EST)
 From: Nicolas Pitre <nico@fluxnic.net>
 To: Daniel Lezcano <daniel.lezcano@linaro.org>,
 	linux-pm@vger.kernel.org
 Cc: Nicolas Pitre <npitre@baylibre.com>
-Subject: [PATCH 0/9] Mediatek thermal sensor driver support for MT8186 and MT8188
-Date: Thu, 11 Jan 2024 17:29:57 -0500
-Message-ID: <20240111223020.3593558-1-nico@fluxnic.net>
+Subject: [PATCH 2/9] thermal/drivers/mediatek/lvts_thermal: move comment
+Date: Thu, 11 Jan 2024 17:29:59 -0500
+Message-ID: <20240111223020.3593558-3-nico@fluxnic.net>
 X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20240111223020.3593558-1-nico@fluxnic.net>
+References: <20240111223020.3593558-1-nico@fluxnic.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -50,23 +51,62 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-Pobox-Relay-ID:
- 0841536E-B0D1-11EE-B6FD-F515D2CDFF5E-78420484!pb-smtp20.pobox.com
+ 084A9410-B0D1-11EE-823D-F515D2CDFF5E-78420484!pb-smtp20.pobox.com
 Content-Transfer-Encoding: quoted-printable
 
-This is a bunch of patches to support the MT8186 and MT8188 thermal
-sensor configurations. Several changes are needed to cope with oddities
-these SOCs implement.
+From: Nicolas Pitre <npitre@baylibre.com>
 
-All values (calibration data offsets, etc.) were lifted and adapted from
-the vendor driver source code.
+Move efuse data interpretation inside lvts_golden_temp_init() alongside
+the actual code retrieving wanted value.
 
-Feedback appreciated.
+Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
+---
+ drivers/thermal/mediatek/lvts_thermal.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diffstat:
-
- .../thermal/mediatek,lvts-thermal.yaml        |   6 +
- arch/arm64/boot/dts/mediatek/mt8186.dtsi      | 256 ++++++++++++
- drivers/thermal/mediatek/lvts_thermal.c       | 375 ++++++++++++++----
- .../thermal/mediatek,lvts-thermal.h           |  26 ++
- 4 files changed, 585 insertions(+), 78 deletions(-)
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/me=
+diatek/lvts_thermal.c
+index 8aa6a8675b..73ca2be0f5 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -732,11 +732,15 @@ static int lvts_calibration_read(struct device *dev=
+, struct lvts_domain *lvts_td
+ 	return 0;
+ }
+=20
+-static int lvts_golden_temp_init(struct device *dev, u32 *value, int tem=
+p_offset)
++static int lvts_golden_temp_init(struct device *dev, u8 *calib, int temp=
+_offset)
+ {
+ 	u32 gt;
+=20
+-	gt =3D (*value) >> 24;
++	/*
++	 * The golden temp information is contained in the 4th byte (index =3D =
+3)
++	 * of efuse data.
++	 */
++	gt =3D calib[3];
+=20
+ 	if (gt && gt < LVTS_GOLDEN_TEMP_MAX)
+ 		golden_temp =3D gt;
+@@ -760,11 +764,7 @@ static int lvts_ctrl_init(struct device *dev, struct=
+ lvts_domain *lvts_td,
+ 	if (ret)
+ 		return ret;
+=20
+-	/*
+-	 * The golden temp information is contained in the first chunk
+-	 * of efuse data.
+-	 */
+-	ret =3D lvts_golden_temp_init(dev, (u32 *)lvts_td->calib, lvts_data->te=
+mp_offset);
++	ret =3D lvts_golden_temp_init(dev, lvts_td->calib, lvts_data->temp_offs=
+et);
+ 	if (ret)
+ 		return ret;
+=20
+--=20
+2.42.0
 
