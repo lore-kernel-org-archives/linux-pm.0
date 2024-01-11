@@ -1,152 +1,86 @@
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from pb-smtp1.pobox.com (pb-smtp1.pobox.com [64.147.108.70])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 975865811C
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2024 20:34:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73B961C2D
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2024 22:30:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="yA1hq8y5"
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-40e62043a5cso605e9.0
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2024 12:34:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1705005269; x=1705610069; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ZhucuI11iLm9jZSo5DyrLuQREbxS6U88O/YNonTCxz8=;
-        b=yA1hq8y5Uw2ph0oQijZJOjlee/RLujzmEgrk2cYBtYcVwt8VYVyE1UKUGGuzqCD5Lu
-         rPSGYMQ6dlpLWyWFnOgRCaLhmKjQHFW3mB5j8VkXAog/iiTViA0xf3NMaTb832m+jdKZ
-         smKWjXXOys0Vt+In1nWTlhAjFPCIWtDoDzrQ3ieCHFIP4nvUiFT/By1z1q2xYDF3ZdpL
-         wZwl1N6rkjckZwaYLbi1iP3E0RMQtEY/wjVBpYFqIUzMkte7WgJEnanv6N6tDPiBNm1M
-         s5kPk3RVbjBl8CeIXXEGEQhoRiQ5D5HOC4SI2Nt9R3FghdBCpNy2cEel0bU8Y4AT33I2
-         V7NA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705005269; x=1705610069;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ZhucuI11iLm9jZSo5DyrLuQREbxS6U88O/YNonTCxz8=;
-        b=PFXryLRDQ1kLk7rLORQEu+Cx5nDL0HC3V/6mncSQA2CUCjuaMo631dZRODbj78Mlrg
-         +XVGSfUG+hL6F3EnIxn7o7Eh5+Tm4ar/peaYmk94noz2oZSIRIA/DsHxAB9aD4sC+Qny
-         Ci7FQod/I7GO+6A29Bpd87tyFqZpmo0mfdVkHOoAlnog8oUzi7HDhTD2Ob5QFp5nTrUv
-         iKjouLk27f1RMUaeP3iidpJ3bipJ0cTTnw0Sk8kMbo2j1qNpHa0WhT+qJhlvT6CHFznu
-         ZyJkP/myZzP/jk6JvTDGDDHGZix4XkWr1vwAGdGDLGO2jTgR7Df4XsOEtnr+CSF9Aa+7
-         XXAQ==
-X-Gm-Message-State: AOJu0Yxungm0gI98hBgCPEM1eGhTB8/Q5lWFVfszjJRCV3Byz+NRKlmC
-	2rSeeoh+5OlUJmePcn67vy2LGGdocOpdZrtd9ruJkwhw1cYY
-X-Google-Smtp-Source: AGHT+IEwsvtKygl+nvSOgn3WrpQlaoPEPZDIYAeAvmwuubPmfNOdEKX4uyCZcs5X4QVXtXNLJ5Llz2AVykCfzYGX6ws=
-X-Received: by 2002:a05:600c:1d1f:b0:40e:61cf:af91 with SMTP id
- l31-20020a05600c1d1f00b0040e61cfaf91mr127026wms.7.1705005268801; Thu, 11 Jan
- 2024 12:34:28 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b="QtCYofxp";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="SHQjjGYk"
+Received: from pb-smtp1.pobox.com (unknown [127.0.0.1])
+	by pb-smtp1.pobox.com (Postfix) with ESMTP id E86BE1D3A52;
+	Thu, 11 Jan 2024 17:30:31 -0500 (EST)
+	(envelope-from nico@fluxnic.net)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=pobox.com; h=from:to:cc
+	:subject:date:message-id:in-reply-to:references:mime-version
+	:content-transfer-encoding; s=sasl; bh=hkTGZr0oUZ+TSkNkO9ROijrGu
+	KlR3lmE5vddsIDP9f8=; b=QtCYofxpPxMLZ4aST8wSFhSEE0sne7sbjlPZlcXN7
+	avnkq2WYJII/RFX6pb8XMMyfHviLqgzaKV+7iB1g0+0dcLWdKvyHQfnO+Gnm5fu/
+	UV8nUhTHjZeffIvVjAly20sKB8iRxyO+2NKFvbTy7Pw0af4f41ncUWmSFYnmtKeK
+	yk=
+Received: from pb-smtp1.nyi.icgroup.com (unknown [127.0.0.1])
+	by pb-smtp1.pobox.com (Postfix) with ESMTP id E003B1D3A51;
+	Thu, 11 Jan 2024 17:30:31 -0500 (EST)
+	(envelope-from nico@fluxnic.net)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=fluxnic.net;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references:mime-version:content-transfer-encoding; s=2016-12.pbsmtp; bh=ZBPyzkXdxEzT3ofgqN7dBTpCfXhcN2e7z86BUzF5PW0=; b=SHQjjGYkQuoNVuAtNlvZc4s+xdkFaHR/fHeLy9g/SrKn5dA//A+EO9gCZOW0yiMF/xwjkRMW7I1JT8x5Q2pJtWZrJJ84f/hDKgu87k4uKVnWRVD80kPymn4k6PsEW9AWgTjDe7E1Rdov6L4IQ1ocQr2hNop4KnyzbwUIp81K4K8=
+Received: from yoda.fluxnic.net (unknown [24.201.101.36])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by pb-smtp1.pobox.com (Postfix) with ESMTPSA id 654FC1D3A4F;
+	Thu, 11 Jan 2024 17:30:31 -0500 (EST)
+	(envelope-from nico@fluxnic.net)
+Received: from xanadu.lan (OpenWrt.lan [192.168.1.1])
+	by yoda.fluxnic.net (Postfix) with ESMTPSA id 682C5AD5A60;
+	Thu, 11 Jan 2024 17:30:30 -0500 (EST)
+From: Nicolas Pitre <nico@fluxnic.net>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>,
+	linux-pm@vger.kernel.org
+Cc: Nicolas Pitre <npitre@baylibre.com>
+Subject: [PATCH 1/9] thermal/drivers/mediatek/lvts_thermal: retrieve all calibration bytes
+Date: Thu, 11 Jan 2024 17:29:58 -0500
+Message-ID: <20240111223020.3593558-2-nico@fluxnic.net>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20240111223020.3593558-1-nico@fluxnic.net>
+References: <20240111223020.3593558-1-nico@fluxnic.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240109-update-llvm-links-v1-0-eb09b59db071@kernel.org> <202401101645.ED161519BA@keescook>
-In-Reply-To: <202401101645.ED161519BA@keescook>
-From: Fangrui Song <maskray@google.com>
-Date: Thu, 11 Jan 2024 12:34:17 -0800
-Message-ID: <CAFP8O3+947djoRjnVPuPhHUHbHv_9CugufuXQ+c=N03yLsaEcA@mail.gmail.com>
-Subject: Re: [PATCH 0/3] Update LLVM Phabricator and Bugzilla links
-To: Nathan Chancellor <nathan@kernel.org>
-Cc: Kees Cook <keescook@chromium.org>, akpm@linux-foundation.org, llvm@lists.linux.dev, 
-	patches@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	linux-trace-kernel@vger.kernel.org, linux-s390@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, 
-	linux-efi@vger.kernel.org, amd-gfx@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, 
-	linux-arch@vger.kernel.org, kasan-dev@googlegroups.com, linux-mm@kvack.org, 
-	bridge@lists.linux.dev, netdev@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	ast@kernel.org, daniel@iogearbox.net, andrii@kernel.org, mykolal@fb.com, 
-	bpf@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+X-Pobox-Relay-ID:
+ 076CC54A-B0D1-11EE-954F-78DCEB2EC81B-78420484!pb-smtp1.pobox.com
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jan 10, 2024 at 4:46=E2=80=AFPM Kees Cook <keescook@chromium.org> w=
-rote:
->
-> On Tue, Jan 09, 2024 at 03:16:28PM -0700, Nathan Chancellor wrote:
-> > This series updates all instances of LLVM Phabricator and Bugzilla link=
-s
-> > to point to GitHub commits directly and LLVM's Bugzilla to GitHub issue
-> > shortlinks respectively.
-> >
-> > I split up the Phabricator patch into BPF selftests and the rest of the
-> > kernel in case the BPF folks want to take it separately from the rest o=
-f
-> > the series, there are obviously no dependency issues in that case. The
-> > Bugzilla change was mechanical enough and should have no conflicts.
-> >
-> > I am aiming this at Andrew and CC'ing other lists, in case maintainers
-> > want to chime in, but I think this is pretty uncontroversial (famous
-> > last words...).
-> >
-> > ---
-> > Nathan Chancellor (3):
-> >       selftests/bpf: Update LLVM Phabricator links
-> >       arch and include: Update LLVM Phabricator links
-> >       treewide: Update LLVM Bugzilla links
-> >
-> >  arch/arm64/Kconfig                                 |  4 +--
-> >  arch/powerpc/Makefile                              |  4 +--
-> >  arch/powerpc/kvm/book3s_hv_nested.c                |  2 +-
-> >  arch/riscv/Kconfig                                 |  2 +-
-> >  arch/riscv/include/asm/ftrace.h                    |  2 +-
-> >  arch/s390/include/asm/ftrace.h                     |  2 +-
-> >  arch/x86/power/Makefile                            |  2 +-
-> >  crypto/blake2b_generic.c                           |  2 +-
-> >  drivers/firmware/efi/libstub/Makefile              |  2 +-
-> >  drivers/gpu/drm/amd/amdgpu/sdma_v4_4_2.c           |  2 +-
-> >  drivers/media/test-drivers/vicodec/codec-fwht.c    |  2 +-
-> >  drivers/regulator/Kconfig                          |  2 +-
-> >  include/asm-generic/vmlinux.lds.h                  |  2 +-
-> >  include/linux/compiler-clang.h                     |  2 +-
-> >  lib/Kconfig.kasan                                  |  2 +-
-> >  lib/raid6/Makefile                                 |  2 +-
-> >  lib/stackinit_kunit.c                              |  2 +-
-> >  mm/slab_common.c                                   |  2 +-
-> >  net/bridge/br_multicast.c                          |  2 +-
-> >  security/Kconfig                                   |  2 +-
-> >  tools/testing/selftests/bpf/README.rst             | 32 +++++++++++---=
---------
-> >  tools/testing/selftests/bpf/prog_tests/xdpwall.c   |  2 +-
-> >  .../selftests/bpf/progs/test_core_reloc_type_id.c  |  2 +-
-> >  23 files changed, 40 insertions(+), 40 deletions(-)
-> > ---
-> > base-commit: 0dd3ee31125508cd67f7e7172247f05b7fd1753a
-> > change-id: 20240109-update-llvm-links-d03f9d649e1e
-> >
-> > Best regards,
-> > --
-> > Nathan Chancellor <nathan@kernel.org>
-> >
->
-> Excellent! Thanks for doing this. I spot checked a handful I was
-> familiar with and everything looks good to me.
->
-> Reviewed-by: Kees Cook <keescook@chromium.org>
->
-> --
-> Kees Cook
->
+From: Nicolas Pitre <npitre@baylibre.com>
 
-These reviews.llvm.org links would definitely be kept like
-https://lists.llvm.org/pipermail/llvm-dev/ or cfe-dev links
-(discussions have been migrated to Discourse).
-However, I agree that the github repo link looks more official. I have
-clicked a few links and they look good.
+Calibration values are 24-bit wide. Those values so far appear to span
+only 16 bits but let's not push our luck.
 
-Since I maintain reviews.llvm.org and created the static archive [1],
+Found while looking at the original Mediatek driver code.
 
-Acked-by: Fangrui Song <maskray@google.com>
+Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
+---
+ drivers/thermal/mediatek/lvts_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[1]: https://discourse.llvm.org/t/llvm-phabricator-turndown/76137
-
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/me=
+diatek/lvts_thermal.c
+index 98d9c80bd4..8aa6a8675b 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -679,7 +679,7 @@ static int lvts_calibration_init(struct device *dev, =
+struct lvts_ctrl *lvts_ctrl
+=20
+ 	for (i =3D 0; i < lvts_ctrl_data->num_lvts_sensor; i++)
+ 		memcpy(&lvts_ctrl->calibration[i],
+-		       efuse_calibration + lvts_ctrl_data->cal_offset[i], 2);
++		       efuse_calibration + lvts_ctrl_data->cal_offset[i], 3);
+=20
+ 	return 0;
+ }
 --=20
-=E5=AE=8B=E6=96=B9=E7=9D=BF
+2.42.0
+
