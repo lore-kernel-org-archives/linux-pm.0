@@ -1,105 +1,160 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C75B171B3;
-	Thu, 11 Jan 2024 13:59:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 948143D542
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2024 14:09:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernelci.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=kernelci.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ehLkLBqW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1704981557; x=1736517557;
-  h=from:to:cc:subject:date:message-id;
-  bh=0UpJJ1HfJ79wY08r8lPqeB0h9S9S+PYOAwBJXQY0h70=;
-  b=ehLkLBqW19SlxvoQnT1J7RUbxkdocrxcsiceE/AfhGIojxmJDYU/9sv1
-   b1cxW0CT0akTvFkBNmZFYaytokZKOwZZ8duvA80Zygax1zADmQuY9bGZ7
-   aPRC2zuPuImtoad2ATUd2Spp55HGlbIcHQj43l3vKbf77Jsk2UKKkEufk
-   ancFsZRw95DdA9SV8UKdD82G2ari1yZNqQdg/tsSLXqWt+IsQqICMGdYf
-   AxVP0/qEEarZIG5qZ0BoeR9cIRAsZKcROm+Ap+ZwwR0KvAkSnkemW0snm
-   1xfW05td6uLfPphQiWs/ApQAlkI2iel7umpSXsx3SPVYUbdFF07ijpuNu
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10950"; a="12340490"
-X-IronPort-AV: E=Sophos;i="6.04,186,1695711600"; 
-   d="scan'208";a="12340490"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Jan 2024 05:59:12 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10950"; a="852958952"
-X-IronPort-AV: E=Sophos;i="6.04,186,1695711600"; 
-   d="scan'208";a="852958952"
-Received: from pasangle-nuc10i7fnh.iind.intel.com ([10.223.107.92])
-  by fmsmga004.fm.intel.com with ESMTP; 11 Jan 2024 05:59:09 -0800
-From: Parshuram Sangle <parshuram.sangle@intel.com>
-To: mtosatti@redhat.com,
-	rafael@kernel.org,
-	daniel.lezcano@linaro.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	jaishankar.rajendran@intel.com,
-	parshuram.sangle@intel.com
-Subject: [PATCH] cpuidle: do not shrink guest poll_limit_ns below grow_start
-Date: Thu, 11 Jan 2024 19:29:50 +0530
-Message-Id: <20240111135950.17016-1-parshuram.sangle@intel.com>
-X-Mailer: git-send-email 2.17.1
+	dkim=pass (2048-bit key) header.d=kernelci-org.20230601.gappssmtp.com header.i=@kernelci-org.20230601.gappssmtp.com header.b="H+HrSrlf"
+Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-1d50d0c98c3so37513965ad.1
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2024 06:09:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20230601.gappssmtp.com; s=20230601; t=1704982189; x=1705586989; darn=vger.kernel.org;
+        h=from:to:subject:content-transfer-encoding:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=l7ZSRPh2OpESjLd0uhmvAyPCKfE2pKLc9icDiFUCXjg=;
+        b=H+HrSrlfOyRMcIo3Oa/0yUYpuBzhojGksaWcE9MFFpFKB9JEVi5wb3uJDY1AMQCd7q
+         kL/0bp/B7DRI7Cqh4gtrgxcw0bVljrbiiglzW/kHddKOnOKXivHAyfHYN3q1wgPGRICM
+         MUgo6DgSb9H2nmRpCVRRYCi+ft5bO0j8ABv8Tf3HN90rMTN4sXyW9NKgtTnRfVYthNed
+         fF/eXAowCeegqgDpPyZAaZ5w7amBqoFJbWe3uOKVCx8k0d1mDZCTmg/Nh1mSZPiDlKAh
+         vhByhKYkGtPxX40uTPRDzugqEWG/DkPUejjqBNejFKdwDBMkHKDRDwSxgsN3Pu6MWm+j
+         XXNg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1704982189; x=1705586989;
+        h=from:to:subject:content-transfer-encoding:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=l7ZSRPh2OpESjLd0uhmvAyPCKfE2pKLc9icDiFUCXjg=;
+        b=QMAGO9EcFsCEbYM7sxKrxORMC+dCaKYA3iF89I21q/Suhon9BsP0gYk5zWIoyNeGok
+         qcaelvgKjNs4cDPOgelWrIInYaAPbmTmG7pwgiOerVN3y5eDNVxA5ZornV4UmVpJdbH5
+         +GByTxhIxakafISrfms/n4MDPZfvlrgIOvjjl3SfSfkuF0HzP5eEx/sFOQV6Rap5Zt/H
+         1XbhYlWMptpK+5iX8TM3sZxcPM61BfQbPWPlrV3udsuQozy84+xvCq8EAS4IkmTW34Cd
+         vGbC8nnTHUy1D+iq6oKwOEbUwrj80/gujVRDJiWlNHynxchOmTlYuD5RPGhO1NzdU8/u
+         +vXw==
+X-Gm-Message-State: AOJu0YznizejKNqxvj88rLB7NgBJmvk76dXSNAgJqwSmGvc1vmy/j5QO
+	0Hm/ALH1THTFi8wtqSNR080egEtJJ6sqAg==
+X-Google-Smtp-Source: AGHT+IHPu3jAHanNlP1naOfs+ebaUMNlApqBle3JbtdjpeLtJgJO7aeoV+f7W/2MRCShNKBOT3P+Kg==
+X-Received: by 2002:a17:90a:fb85:b0:28d:fd67:fa9c with SMTP id cp5-20020a17090afb8500b0028dfd67fa9cmr154616pjb.37.1704982188870;
+        Thu, 11 Jan 2024 06:09:48 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([20.171.243.82])
+        by smtp.gmail.com with ESMTPSA id oh6-20020a17090b3a4600b0028cc9afaae9sm1580750pjb.34.2024.01.11.06.09.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 11 Jan 2024 06:09:48 -0800 (PST)
+Message-ID: <659ff6ac.170a0220.72251.3e65@mx.google.com>
+Date: Thu, 11 Jan 2024 06:09:48 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v6.7-rc8-188-g2bbcd5ace0c78
+X-Kernelci-Report-Type: build
+Subject: pm/testing build: 8 builds: 0 failed, 8 passed,
+ 4 warnings (v6.7-rc8-188-g2bbcd5ace0c78)
+To: rafael@kernel.org, linux-pm@vger.kernel.org,
+ kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From: "kernelci.org bot" <bot@kernelci.org>
 
-While adjusting guest halt poll limit, grow block starts at
-guest_halt_poll_grow_start without taking intermediate values.
-Similar behavior is expected while shrinking the value. This
-avoids short interval values which are really not required.
+pm/testing build: 8 builds: 0 failed, 8 passed, 4 warnings (v6.7-rc8-188-g2=
+bbcd5ace0c78)
 
-VCPU1 trace (guest_halt_poll_shrink equals 2):
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v6.=
+7-rc8-188-g2bbcd5ace0c78/
 
-VCPU1 grow 10000
-VCPU1 shrink 5000
-VCPU1 shrink 2500
-VCPU1 shrink 1250
-VCPU1 shrink 625
-VCPU1 shrink 312
-VCPU1 shrink 156
-VCPU1 shrink 78
-VCPU1 shrink 39
-VCPU1 shrink 19
-VCPU1 shrink 9
-VCPU1 shrink 4
+Tree: pm
+Branch: testing
+Git Describe: v6.7-rc8-188-g2bbcd5ace0c78
+Git Commit: 2bbcd5ace0c7837ee4de185d520ea81e3e4048c0
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 8 unique architectures
 
-Similar change is done in KVM halt poll flow with below patch:
-Link: https://lore.kernel.org/kvm/20211006133021.271905-3-sashal@kernel.org/
+Warnings Detected:
 
-Co-developed-by: Rajendran Jaishankar <jaishankar.rajendran@intel.com>
-Signed-off-by: Rajendran Jaishankar <jaishankar.rajendran@intel.com>
-Signed-off-by: Parshuram Sangle <parshuram.sangle@intel.com>
+arc:
+
+arm64:
+
+arm:
+
+i386:
+
+mips:
+
+riscv:
+
+sparc:
+    sparc64_defconfig (gcc-10): 4 warnings
+
+x86_64:
+
+
+Warnings summary:
+
+    2    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version genera=
+tion failed, symbol will not be versioned.
+    2    <stdin>:1519:2: warning: #warning syscall clone3 not implemented [=
+-Wcpp]
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
+tion mismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
+ismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
+ismatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
+ section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
+on mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
+---------------------------------------------------------------------------=
+-----
+sparc64_defconfig (sparc, gcc-10) =E2=80=94 PASS, 0 errors, 4 warnings, 0 s=
+ection mismatches
+
+Warnings:
+    <stdin>:1519:2: warning: #warning syscall clone3 not implemented [-Wcpp]
+    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
+failed, symbol will not be versioned.
+    <stdin>:1519:2: warning: #warning syscall clone3 not implemented [-Wcpp]
+    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
+failed, symbol will not be versioned.
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
+ection mismatches
+
 ---
- drivers/cpuidle/governors/haltpoll.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpuidle/governors/haltpoll.c b/drivers/cpuidle/governors/haltpoll.c
-index 1dff3a52917d..663b7f164d20 100644
---- a/drivers/cpuidle/governors/haltpoll.c
-+++ b/drivers/cpuidle/governors/haltpoll.c
-@@ -98,10 +98,15 @@ static void adjust_poll_limit(struct cpuidle_device *dev, u64 block_ns)
- 		unsigned int shrink = guest_halt_poll_shrink;
- 
- 		val = dev->poll_limit_ns;
--		if (shrink == 0)
-+		if (shrink == 0) {
- 			val = 0;
--		else
-+		} else {
- 			val /= shrink;
-+			/* Reset value to 0 if shrunk below grow_start */
-+			if (val < guest_halt_poll_grow_start)
-+				val = 0;
-+		}
-+
- 		trace_guest_halt_poll_ns_shrink(val, dev->poll_limit_ns);
- 		dev->poll_limit_ns = val;
- 	}
--- 
-2.17.1
-
+For more info write to <info@kernelci.org>
