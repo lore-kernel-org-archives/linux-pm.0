@@ -1,171 +1,171 @@
-Received: from pb-smtp21.pobox.com (pb-smtp21.pobox.com [173.228.157.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-il1-f171.google.com (mail-il1-f171.google.com [209.85.166.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80AF9FBF5
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2024 22:30:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fluxnic.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 749955B5BD
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jan 2024 05:05:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=brainfault.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=brainfault.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b="BAijCw4A";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="frRuE+/+"
-Received: from pb-smtp21.pobox.com (unknown [127.0.0.1])
-	by pb-smtp21.pobox.com (Postfix) with ESMTP id F377A1A2A4;
-	Thu, 11 Jan 2024 17:30:38 -0500 (EST)
-	(envelope-from nico@fluxnic.net)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=pobox.com; h=from:to:cc
-	:subject:date:message-id:in-reply-to:references:mime-version
-	:content-transfer-encoding; s=sasl; bh=YIO+NNGpbOcWCmjE53f1rHUW1
-	8VTLldxliUTcDhP7ys=; b=BAijCw4ARCPYTHBREgi6BN7WV84/kDh2GZ60JDH/a
-	sM2ZM0UOlgdSyakgV2OmzQenp7Rebb2bGsIyWFNGbuWBp77LHE36EddoFh0wxdfu
-	AsHSTcVAwQrpUtWFIs0IsOK5gpx0A3F7oMME/ZRBz5cKLFiJaqilGV5zxuqkjgAW
-	ss=
-Received: from pb-smtp21.sea.icgroup.com (unknown [127.0.0.1])
-	by pb-smtp21.pobox.com (Postfix) with ESMTP id EC8361A2A3;
-	Thu, 11 Jan 2024 17:30:38 -0500 (EST)
-	(envelope-from nico@fluxnic.net)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=fluxnic.net;
- h=from:to:cc:subject:date:message-id:in-reply-to:references:mime-version:content-transfer-encoding; s=2016-12.pbsmtp; bh=cHmXOGat/9c1PBWLEMTltQj5jyyZw2+qHjopr8HFGro=; b=frRuE+/+j+DLFJbqmD5iWGrI7yn/1NiBMZtuQtIr9OP3eRJcq8k13RkhDhLeJKC7E+tRO9CnOXTC27aeoCzPI7+9rDOU7NRvL5kJ6ljbOYLgtad14JvxljJo4yIe92OGNGXNdi2Gn+Jz68l2U1wdJjB2C4V0CkcjA1kkvGSVahU=
-Received: from yoda.fluxnic.net (unknown [24.201.101.36])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by pb-smtp21.pobox.com (Postfix) with ESMTPSA id 3107B1A29F;
-	Thu, 11 Jan 2024 17:30:34 -0500 (EST)
-	(envelope-from nico@fluxnic.net)
-Received: from xanadu.lan (OpenWrt.lan [192.168.1.1])
-	by yoda.fluxnic.net (Postfix) with ESMTPSA id 402A1AD5A69;
-	Thu, 11 Jan 2024 17:30:31 -0500 (EST)
-From: Nicolas Pitre <nico@fluxnic.net>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>,
-	linux-pm@vger.kernel.org
-Cc: Nicolas Pitre <npitre@baylibre.com>
-Subject: [PATCH 7/9] thermal/drivers/mediatek/lvts_thermal: provision for gt variable location
-Date: Thu, 11 Jan 2024 17:30:04 -0500
-Message-ID: <20240111223020.3593558-8-nico@fluxnic.net>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20240111223020.3593558-1-nico@fluxnic.net>
-References: <20240111223020.3593558-1-nico@fluxnic.net>
+	dkim=pass (2048-bit key) header.d=brainfault-org.20230601.gappssmtp.com header.i=@brainfault-org.20230601.gappssmtp.com header.b="LEsYPTBR"
+Received: by mail-il1-f171.google.com with SMTP id e9e14a558f8ab-3606e211e5cso34329585ab.3
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2024 21:05:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1705035918; x=1705640718; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=X8rappFKRLNOmh48iN1mvyDH+G2PtYqO6EungDZP0OA=;
+        b=LEsYPTBRSt/FFR8y4cYlxuEQMUORzDfznVf2G+z3upMhR6M4NLs/6dHaWCmF1tFxPP
+         P43ubGgrArnxnZjB7rOpi4c693BATZkpiQPGfJt6d7sBg62RtkA23uubGirVhr+lOzSI
+         bRlk0sr6u0eOlpFm/xjYCam1ju7hPPRWA1hSuFQ/t57vWorUqUX8HGD3jl+MWcRm70Ie
+         2VOY58niALvv4nQ0wFhb9Ve57j+TFFfQ1quYOyy/8446O6WgS/rT2PvxlJoAK5v3fEsy
+         uedY16XFzEm42AKOZBme9TbnYYS1yTRRn8lKH+x9+2QPAEE6NRw+ZXXmYGH/So6EK0nC
+         s15Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1705035918; x=1705640718;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=X8rappFKRLNOmh48iN1mvyDH+G2PtYqO6EungDZP0OA=;
+        b=gUjYCNOtQe2iFXC+Oze5NZDQeA3OXVafDZjEdh7KHlk8PvAopw39uKJq4/Cq2Ig2xe
+         8ss/bljSj4vNkblBPM3h34puIGhehal2CJH5jSpGvTp5fnksIrpu92sg9JaV53lemg/N
+         y1DJcdvIh6mTiJusYnxUJpE7IhhhvPR7FRrNJWKTH8+QtXM6xW7vTWg7MPqbmZP5BLxu
+         vLn+kK1zXLmj6q08IMDw0SGOFV73AFtQmO4hXP2aYlUkKvYm9Y3oIRMovJc6sEY0ZEZj
+         v9jcCUOJ+tdyb7Joz+e0jrBjao+dTk1Rf0N/7O0ycFEr3hSv7LN3TiQCu6oph8jDoxhw
+         hlsQ==
+X-Gm-Message-State: AOJu0Yz773CXEQJuY5HUPa9wDu5AJX+MyEbBt5DZfDXBfoyeSkCzTa9K
+	M5PJ5eaRfzw3y83fHnfpqC859LsC9orlGJYJwCgthvc0DKSWiA==
+X-Google-Smtp-Source: AGHT+IGCR28IRbastME/z+5U6vMfxuvFQ4GIlL0eywubg6xedGxnSa839M5nymwISZxw5wbZTYlIBpblsPmMoFP5VFI=
+X-Received: by 2002:a05:6e02:20e8:b0:360:a0fc:cbdb with SMTP id
+ q8-20020a056e0220e800b00360a0fccbdbmr582188ilv.66.1705035918451; Thu, 11 Jan
+ 2024 21:05:18 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Pobox-Relay-ID:
- 09164394-B0D1-11EE-8F59-A19503B9AAD1-78420484!pb-smtp21.pobox.com
+References: <20240111093058.121838-1-sunilvl@ventanamicro.com> <20240111093058.121838-3-sunilvl@ventanamicro.com>
+In-Reply-To: <20240111093058.121838-3-sunilvl@ventanamicro.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 12 Jan 2024 10:35:07 +0530
+Message-ID: <CAAhSdy22JrFOS8V-FC=ZCQiybhcJCszxy_TsnGAzuzYA06Mw7Q@mail.gmail.com>
+Subject: Re: [PATCH -next 2/2] cpuidle: RISC-V: Add ACPI LPI support
+To: Sunil V L <sunilvl@ventanamicro.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Conor Dooley <conor@kernel.org>, Andrew Jones <ajones@ventanamicro.com>, 
+	Atish Kumar Patra <atishp@rivosinc.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-From: Nicolas Pitre <npitre@baylibre.com>
+On Thu, Jan 11, 2024 at 3:01=E2=80=AFPM Sunil V L <sunilvl@ventanamicro.com=
+> wrote:
+>
+> Add required callbacks to support Low Power Idle (LPI) on ACPI based
+> RISC-V platforms.
+>
+> Signed-off-by: Sunil V L <sunilvl@ventanamicro.com>
+> ---
+>  drivers/cpuidle/cpuidle-riscv-sbi.c | 78 +++++++++++++++++++++++++++++
+>  1 file changed, 78 insertions(+)
+>
+> diff --git a/drivers/cpuidle/cpuidle-riscv-sbi.c b/drivers/cpuidle/cpuidl=
+e-riscv-sbi.c
+> index e8094fc92491..cea67a54ab39 100644
+> --- a/drivers/cpuidle/cpuidle-riscv-sbi.c
+> +++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
+> @@ -632,3 +632,81 @@ static int __init sbi_cpuidle_init(void)
+>         return 0;
+>  }
+>  device_initcall(sbi_cpuidle_init);
+> +
+> +#ifdef CONFIG_ACPI_PROCESSOR_IDLE
+> +
+> +#include <linux/acpi.h>
+> +#include <acpi/processor.h>
+> +
+> +#define RISCV_FFH_LPI_TYPE_MASK                0x1000000000000000ULL
+> +#define RISCV_FFH_LPI_RSVD_MASK                0x0FFFFFFF00000000ULL
+> +
+> +static int acpi_cpu_init_idle(unsigned int cpu)
+> +{
+> +       int i;
+> +       struct acpi_lpi_state *lpi;
+> +       struct acpi_processor *pr =3D per_cpu(processors, cpu);
+> +
+> +       if (unlikely(!pr || !pr->flags.has_lpi))
+> +               return -EINVAL;
+> +
+> +       /*
+> +        * The SBI HSM suspend function is only available when:
+> +        * 1) SBI version is 0.3 or higher
+> +        * 2) SBI HSM extension is available
+> +        */
+> +       if (sbi_spec_version < sbi_mk_version(0, 3) ||
+> +           !sbi_probe_extension(SBI_EXT_HSM)) {
+> +               pr_warn("HSM suspend not available\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       if (pr->power.count <=3D 1)
+> +               return -ENODEV;
+> +
+> +       for (i =3D 1; i < pr->power.count; i++) {
+> +               u32 state;
+> +
+> +               lpi =3D &pr->power.lpi_states[i];
+> +
+> +               /* Validate Entry Method as per FFH spec.
+> +                * bits[63:60] should be 0x1
+> +                * bits[59:32] should be 0x0
+> +                * bits[31:0] represent a SBI power_state
+> +                */
+> +               if (!(lpi->address & RISCV_FFH_LPI_TYPE_MASK) ||
+> +                   (lpi->address & RISCV_FFH_LPI_RSVD_MASK)) {
+> +                       pr_warn("Invalid LPI entry method %#llx\n", lpi->=
+address);
+> +                       return -EINVAL;
+> +               }
+> +
+> +               state =3D lpi->address;
+> +               if (!sbi_suspend_state_is_valid(state)) {
+> +                       pr_warn("Invalid SBI power state %#x\n", state);
+> +                       return -EINVAL;
+> +               }
+> +       }
+> +
+> +       return 0;
+> +}
+> +
+> +int acpi_processor_ffh_lpi_probe(unsigned int cpu)
+> +{
+> +       return acpi_cpu_init_idle(cpu);
+> +}
+> +
+> +int acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
+> +{
+> +       u32 state =3D lpi->address;
+> +
+> +       if (state & SBI_HSM_SUSP_NON_RET_BIT)
+> +               return CPU_PM_CPU_IDLE_ENTER_PARAM(sbi_suspend,
+> +                                                  lpi->index,
+> +                                                  state);
+> +       else
+> +               return CPU_PM_CPU_IDLE_ENTER_RETENTION_PARAM(sbi_suspend,
+> +                                                            lpi->index,
+> +                                                            state);
+> +}
+> +
+> +#endif
 
-The golden temperature calibration value in nvram is not always the
-3rd byte. A future commit will prove this assumption wrong.
+Lets keep the cpuidle-riscv-sbi.c driver focused on DT only. Instead,
+I would suggest moving the required function from cpuidle-riscv-sbi.c
+to arch/riscv and have a separate driver under driver/acpi/riscv for
+LPI states.
 
-Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
----
- drivers/thermal/mediatek/lvts_thermal.c | 20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/me=
-diatek/lvts_thermal.c
-index e923d22c17..b20b70fd36 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -121,6 +121,7 @@ struct lvts_data {
- 	int num_lvts_ctrl;
- 	int temp_factor;
- 	int temp_offset;
-+	int gt_calib_bit_offset;
- };
-=20
- struct lvts_sensor {
-@@ -748,20 +749,21 @@ static int lvts_calibration_read(struct device *dev=
-, struct lvts_domain *lvts_td
- 	return 0;
- }
-=20
--static int lvts_golden_temp_init(struct device *dev, u8 *calib, int temp=
-_offset)
-+static int lvts_golden_temp_init(struct device *dev, u8 *calib,
-+				 const struct lvts_data *lvts_data)
- {
- 	u32 gt;
-=20
- 	/*
--	 * The golden temp information is contained in the 4th byte (index =3D =
-3)
--	 * of efuse data.
-+	 * The golden temp information is contained in the first 32-bit
-+	 * word  of efuse data at a specific bit offset.
- 	 */
--	gt =3D calib[3];
-+	gt =3D (((u32 *)calib)[0] >> lvts_data->gt_calib_bit_offset) & 0xff;
-=20
- 	if (gt && gt < LVTS_GOLDEN_TEMP_MAX)
- 		golden_temp =3D gt;
-=20
--	golden_temp_offset =3D golden_temp * 500 + temp_offset;
-+	golden_temp_offset =3D golden_temp * 500 + lvts_data->temp_offset;
-=20
- 	return 0;
- }
-@@ -780,7 +782,7 @@ static int lvts_ctrl_init(struct device *dev, struct =
-lvts_domain *lvts_td,
- 	if (ret)
- 		return ret;
-=20
--	ret =3D lvts_golden_temp_init(dev, lvts_td->calib, lvts_data->temp_offs=
-et);
-+	ret =3D lvts_golden_temp_init(dev, lvts_td->calib, lvts_data);
- 	if (ret)
- 		return ret;
-=20
-@@ -1622,6 +1624,7 @@ static const struct lvts_data mt7988_lvts_ap_data =3D=
- {
- 	.num_lvts_ctrl	=3D ARRAY_SIZE(mt7988_lvts_ap_data_ctrl),
- 	.temp_factor	=3D LVTS_COEFF_A_MT7988,
- 	.temp_offset	=3D LVTS_COEFF_B_MT7988,
-+	.gt_calib_bit_offset =3D 24,
- };
-=20
- static const struct lvts_data mt8186_lvts_data =3D {
-@@ -1629,16 +1632,19 @@ static const struct lvts_data mt8186_lvts_data =3D=
- {
- 	.num_lvts_ctrl	=3D ARRAY_SIZE(mt8186_lvts_data_ctrl),
- 	.temp_factor	=3D LVTS_COEFF_A_MT8186,
- 	.temp_offset	=3D LVTS_COEFF_B_MT8186,
-+	.gt_calib_bit_offset =3D 24,
- };
-=20
- static const struct lvts_data mt8192_lvts_mcu_data =3D {
- 	.lvts_ctrl	=3D mt8192_lvts_mcu_data_ctrl,
- 	.num_lvts_ctrl	=3D ARRAY_SIZE(mt8192_lvts_mcu_data_ctrl),
-+	.gt_calib_bit_offset =3D 24,
- };
-=20
- static const struct lvts_data mt8192_lvts_ap_data =3D {
- 	.lvts_ctrl	=3D mt8192_lvts_ap_data_ctrl,
- 	.num_lvts_ctrl	=3D ARRAY_SIZE(mt8192_lvts_ap_data_ctrl),
-+	.gt_calib_bit_offset =3D 24,
- };
-=20
- static const struct lvts_data mt8195_lvts_mcu_data =3D {
-@@ -1646,6 +1652,7 @@ static const struct lvts_data mt8195_lvts_mcu_data =
-=3D {
- 	.num_lvts_ctrl	=3D ARRAY_SIZE(mt8195_lvts_mcu_data_ctrl),
- 	.temp_factor	=3D LVTS_COEFF_A_MT8195,
- 	.temp_offset	=3D LVTS_COEFF_B_MT8195,
-+	.gt_calib_bit_offset =3D 24,
- };
-=20
- static const struct lvts_data mt8195_lvts_ap_data =3D {
-@@ -1653,6 +1660,7 @@ static const struct lvts_data mt8195_lvts_ap_data =3D=
- {
- 	.num_lvts_ctrl	=3D ARRAY_SIZE(mt8195_lvts_ap_data_ctrl),
- 	.temp_factor	=3D LVTS_COEFF_A_MT8195,
- 	.temp_offset	=3D LVTS_COEFF_B_MT8195,
-+	.gt_calib_bit_offset =3D 24,
- };
-=20
- static const struct of_device_id lvts_of_match[] =3D {
---=20
-2.42.0
-
+Regards,
+Anup
