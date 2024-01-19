@@ -1,63 +1,95 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 837FB58AD3;
-	Fri, 19 Jan 2024 21:27:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B228458AA9
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2024 21:38:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705699649; cv=none; b=ji923pVD7OJS47iaxRlu5Cvz2pNBteiEF+7GGgMrQn7oJzLl3u8CcAOb8SlpHw54Qp3fwUaOMaJbTffKE4UXaJN+wcvdXtpkPyBkd4ORIUsI/chZTg/xQJlz+nra9uYvn2Uc33tYa1EKPOQPm4ZR7QMA2Pxwn4czjOTTsjhe7NI=
+	t=1705700301; cv=none; b=mMu9B1L+JjkXme9IsO+Xc/e1onO6RRGxrDypRI2ykDq+D5u9fb38vKYUNQZTNjiPdRBw3+zzrr3KbO6zUshfHxCVy9nQKuzOQni1Oi0T+eo+ibxqG/X4zFUG3QHBtW5B47il4YaQcFiDOFIAL3VgPFDt0Fy7ayc5+nWn2vRDMMU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705699649; c=relaxed/simple;
-	bh=pUGLxoRsz/H8zRHxHLNOc/0DMtA512B94VVuQ+HeGdE=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=rEJipj29wCy4Jx2Lf7/0YgOzTIfUiDsNesEv25QgUqiL3C1aR2FOWLeKZ9baY4uiuygq2salKws2HfQntQEiJ/5NJh20G+UGo89aeIoG4dA4GPV+0GwAHuO0NMsL7e0S5VvVoagWQ9ZuLlK4q829M5DHbRw+6Cpt9oib/PLnP3w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R4P6poek; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1705700301; c=relaxed/simple;
+	bh=3lt1dcQR6Od3BGJeII6X3O7ggxtd2J4v3l8Q9u7gaCY=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Gdr03GcyeRDP+6Lrt/0RStLUkvd9Glh7lV43Nvv4+F1jMU3Yku//i3kafpa1F0Xwsd9TFWKmbD6k8IDvGFFHLVHM4aB+19tX3J3kzMfU7wtTP/uWYaumRvW0x40VB0rBV3gQbGKnICFqw/UkFlx9fKCmeT7Sd4wLnY4KRf9ODyw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=f2PD9nch; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R4P6poek"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 5A519C43390;
-	Fri, 19 Jan 2024 21:27:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="f2PD9nch"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 2FE05C433A6
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2024 21:38:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1705699649;
-	bh=pUGLxoRsz/H8zRHxHLNOc/0DMtA512B94VVuQ+HeGdE=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=R4P6poek70Llt7vtdomHpgA+SvucWCVWL9eHZ8F2nCn+zV1tnc4LBv8hJpIT2+zdC
-	 ms2LIROpvSEeoiE9a9+sU/zzgX01MNzyGFJ+phfXQqv9Bf72U5xPndtZ7jSDv0OkMZ
-	 pMrMsBeI97x0gR7Egf/mm631d9K6EUzHk0Id6Ia6BZXtzM6qdDD2QL8ZJHKRq/aHms
-	 UYspG1GxmiVeXS1frRH/kV0uDqRA3hqE5E6AWicQLe180IqMrKCa1aPAJHBkVsxcQY
-	 R12+cP7zBztGaAPfycEjYKDDPJm3rqdUdeHmwXQ49Jqnab+TcnBA6XAAj5AbE5ZsZI
-	 aAF/HGb3G5LPA==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 44B65DFC688;
-	Fri, 19 Jan 2024 21:27:29 +0000 (UTC)
-Subject: Re: [GIT PULL] power-supply changes for 6.8-v2
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <ynrunm37opgms7vp4e2woj3nhqxkzvvg5bvrt3nquzndcsfc33@p46rdj6sipak>
-References: <ynrunm37opgms7vp4e2woj3nhqxkzvvg5bvrt3nquzndcsfc33@p46rdj6sipak>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <ynrunm37opgms7vp4e2woj3nhqxkzvvg5bvrt3nquzndcsfc33@p46rdj6sipak>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v6.8-v2
-X-PR-Tracked-Commit-Id: 17d49b7e47a1001c8796f05f4a2bbdef0a998213
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: ab1e2d0fccc570c950fd939840ebc8efa3bd39b8
-Message-Id: <170569964927.21908.11135079422455416941.pr-tracker-bot@kernel.org>
-Date: Fri, 19 Jan 2024 21:27:29 +0000
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>
+	s=k20201202; t=1705700301;
+	bh=3lt1dcQR6Od3BGJeII6X3O7ggxtd2J4v3l8Q9u7gaCY=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=f2PD9nchLzLccEd8e3HhN2VQ4azpj+Xr/HX9i2F+HpTyNqaCB0PTO+w8zdlyH26r+
+	 9VTXTWneqFFBLfD0yPfqso9MhYNLR68VVCl1rITxZo89CKjkr+JGVYKymAICPPy7Hy
+	 wPV9u/XyE8quGQHFbOqaFQr9nU9kAl1o/dz7kzzADJ4LzH/SjBEbptfZ5KNOD5msm9
+	 T4jS0bG9xcBQJf+ppipa6kxPNyz3E+R8cpie2oyDLPBBr79+EYv/HJ6ib1Ftx3GyzC
+	 Sjczm9PgpA0MwnFM01mDDH5S72Qfhysu0MCXOKCsLhaaIMaLsU5P7U+fopIm1TsuJQ
+	 L7B0BOzwOoFPQ==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 1DD2BC53BD0; Fri, 19 Jan 2024 21:38:21 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 217931] amd-pstate lacks crucial features: CPU frequency and
+ boost control
+Date: Fri, 19 Jan 2024 21:38:20 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: high
+X-Bugzilla-Who: mario.limonciello@amd.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-217931-137361-B22ByKM7ZM@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-217931-137361@https.bugzilla.kernel.org/>
+References: <bug-217931-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
 
-The pull request you sent on Fri, 19 Jan 2024 01:46:29 +0100:
+https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v6.8-v2
+--- Comment #33 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
+Can you please try this patch?
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/ab1e2d0fccc570c950fd939840ebc8efa3bd39b8
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 1f6186475715..935376d8861d 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -1233,9 +1233,9 @@ static void amd_pstate_epp_update_limit(struct
+cpufreq_policy *policy)
+        min_limit_perf =3D div_u64(policy->min * cpudata->highest_perf,
+cpudata->max_freq);
 
-Thank you!
+        max_perf =3D clamp_t(unsigned long, max_perf, cpudata->min_limit_pe=
+rf,
+-                       cpudata->max_limit_perf);
++                       max_limit_perf);
+        min_perf =3D clamp_t(unsigned long, min_perf, cpudata->min_limit_pe=
+rf,
+-                       cpudata->max_limit_perf);
++                       min_limit_perf);
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+        WRITE_ONCE(cpudata->max_limit_perf, max_limit_perf);
+        WRITE_ONCE(cpudata->min_limit_perf, min_limit_perf);
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
