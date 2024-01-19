@@ -1,161 +1,138 @@
-Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B33DB3C470
-	for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2024 11:15:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.214.62.61
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C918853E1D
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2024 13:25:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705662954; cv=none; b=GNYyBIb2fOur8J8jOT1CnHUbwFq3en3MpBwKZJG1fGdy4nqkxRw41tkQVtyju2m7CkJRbMaOFg9WyMZjPOPtLsbsrNN8BoawkXhIXoIEhqCEmjRt14apEvFgre/rTf2OTPd937upfawN5HvajD+K25kxQgroa10YlCr16v3u2lU=
+	t=1705670743; cv=none; b=HixgWi+sh6FjyGUdjXsnp6yXqzawW0zum2+ukg8jXngPYz+IzbTQhufwp67tRXMubIwb1XZiEvI1f/OJU9Wo06XaNmCGQJIkWAeB7FyxXgj392OLr0OM607AJh4d1057yc7qsFJAWKd8eJf3bIzogpZoLnvVgcyDxMpA78yXoCs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705662954; c=relaxed/simple;
-	bh=DO+mFZ7HF6rMuHe6kj7D6RUUm/n7CFHefjKby+CVNOo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=r13g0w59nkwZMcDOFl7noiP905fcyekgnzC6guNTrl8j4ZgtqzHMO6rrbdaWqoTOk1+wHA+3E7QZlydoctTxkseqwXPEI+19eOsjyznuXe8tJZf7Zas2VZ5XNQPXi8Z4javfjnYiZi6ltHTC/KQX1dmZNlMbMwZsM3wozZGvFGo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=bKIwIUGV; arc=none smtp.client-ip=85.214.62.61
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=denx.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="bKIwIUGV"
-Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
-	(No client certificate requested)
-	(Authenticated sender: marex@denx.de)
-	by phobos.denx.de (Postfix) with ESMTPSA id BCFF787A82;
-	Fri, 19 Jan 2024 12:15:49 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
-	s=phobos-20191101; t=1705662950;
-	bh=SUsZc5co9UnGPw9CafszzMNh7dbWHLX8Es5IDCF8Q+M=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=bKIwIUGV1ESVXKbIOMqL5nNhQ7s47t+FdDi6xZp/yJerbxZwm8L2P/J3Jl9HWu9LJ
-	 FH/r4ZocLwtrwzZVrVhfFv55x+KO4F0Bf9IHTy7sQojaLOYHLDnRLkpwAL7Lhuz09U
-	 ECLF9Cf95+DtBS0WfatGLDJatfPdjN4cXXvYDmjrX6oOTCiLvPgEIQSTDN1WQdoqD1
-	 csc93BhBGnQ+Fucr7mcZgkhj0EkuyJrG39WweP+KGoupfGPgNwZe9L54wZfzqM3oiz
-	 SlvM9S47TodIvmRxk+y28e3gTA057A83Dz5NnNKIGmhNUJosB7KlAcD9ISeiPcYolk
-	 iMjZN/orw2aCg==
-Message-ID: <73886bd9-e2ab-40ef-a1a0-a82222d97201@denx.de>
-Date: Fri, 19 Jan 2024 11:58:54 +0100
+	s=arc-20240116; t=1705670743; c=relaxed/simple;
+	bh=y/hGCVajOvX8o6Efi9UdqxsGrdX7qFeQ/WFMS56UPW4=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=EnDpaYiM6S/A2UsXxmpeRoicuf33WdVX1qPAE8iJsjkysB3uk7KT+TCAhvMM4raNZ+694zK2pom/9yDz87H4rLwQxvIeiAmCicwZ0I9cxRHWK6yn1ArngzSDmCmJM0ZcKNq7nJ3yx9bIux6UQW2EavhKfu1ww8Coo9/2/I3JX3U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ore@pengutronix.de>)
+	id 1rQos7-00074H-C1; Fri, 19 Jan 2024 14:25:23 +0100
+Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ore@pengutronix.de>)
+	id 1rQos6-000viI-6t; Fri, 19 Jan 2024 14:25:22 +0100
+Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ore@pengutronix.de>)
+	id 1rQos6-00F981-0Q;
+	Fri, 19 Jan 2024 14:25:22 +0100
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: Sebastian Reichel <sre@kernel.org>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
+	kernel@pengutronix.de,
+	linux-kernel@vger.kernel.org,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>
+Subject: [RFC PATCH v1 3/7] dt-bindings: power: reset: add bindings for NVMEM hardware storing PSCR Data
+Date: Fri, 19 Jan 2024 14:25:17 +0100
+Message-Id: <20240119132521.3609945-4-o.rempel@pengutronix.de>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240119132521.3609945-1-o.rempel@pengutronix.de>
+References: <20240119132521.3609945-1-o.rempel@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] pmdomain: imx8m-blk-ctrl: imx8mp-blk-ctrl: Error out
- if domains are missing in DT
-Content-Language: en-US
-To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Peng Fan <peng.fan@nxp.com>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Jindong Yue <jindong.yue@nxp.com>, Marco Felsch <m.felsch@pengutronix.de>,
- NXP Linux Team <linux-imx@nxp.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Ulf Hansson <ulf.hansson@linaro.org>, Fabio Estevam <festevam@gmail.com>,
- linux-arm-kernel@lists.infradead.org, Lucas Stach <l.stach@pengutronix.de>
-References: <20240119014807.268694-1-marex@denx.de>
- <asamq53uiegrgwo5c25sjn7n47bsv6xa3ybkueuhb2d42m66ze@t6ujdompm2gs>
-From: Marek Vasut <marex@denx.de>
-In-Reply-To: <asamq53uiegrgwo5c25sjn7n47bsv6xa3ybkueuhb2d42m66ze@t6ujdompm2gs>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
-X-Virus-Status: Clean
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ore@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-On 1/19/24 08:42, Uwe Kleine-König wrote:
-> On Fri, Jan 19, 2024 at 02:47:41AM +0100, Marek Vasut wrote:
->> This driver assumes that domain->power_dev is non-NULL in its suspend/resume
->> path. The assumption is valid, since all the devices that are being looked up
->> here should be described in DT. In case they are not described in DT, beause
->> the DT is faulty, suspend/resume attempt would trigger NULL pointer dereference.
->> To avoid this failure, check whether the power_dev assignment is not NULL right
->> away in probe callback and fail early if it is.
->>
->> Signed-off-by: Marek Vasut <marex@denx.de>
->> ---
->> Cc: "Uwe Kleine-König" <u.kleine-koenig@pengutronix.de>
->> Cc: Fabio Estevam <festevam@gmail.com>
->> Cc: Jindong Yue <jindong.yue@nxp.com>
->> Cc: Lucas Stach <l.stach@pengutronix.de>
->> Cc: Marco Felsch <m.felsch@pengutronix.de>
->> Cc: NXP Linux Team <linux-imx@nxp.com>
->> Cc: Peng Fan <peng.fan@nxp.com>
->> Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
->> Cc: Sascha Hauer <s.hauer@pengutronix.de>
->> Cc: Shawn Guo <shawnguo@kernel.org>
->> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> Cc: linux-arm-kernel@lists.infradead.org
->> Cc: linux-pm@vger.kernel.org
->> ---
->> V2: Add extra check for domain being NULL (thanks Peng)
->> ---
->>   drivers/pmdomain/imx/imx8m-blk-ctrl.c  | 9 ++++++---
->>   drivers/pmdomain/imx/imx8mp-blk-ctrl.c | 9 ++++++---
->>   2 files changed, 12 insertions(+), 6 deletions(-)
->>
->> diff --git a/drivers/pmdomain/imx/imx8m-blk-ctrl.c b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
->> index 1341a707f61bc..ca942d7929c2b 100644
->> --- a/drivers/pmdomain/imx/imx8m-blk-ctrl.c
->> +++ b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
->> @@ -258,11 +258,14 @@ static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
->>   
->>   		domain->power_dev =
->>   			dev_pm_domain_attach_by_name(dev, data->gpc_name);
->> -		if (IS_ERR(domain->power_dev)) {
->> -			dev_err_probe(dev, PTR_ERR(domain->power_dev),
->> +		if (IS_ERR_OR_NULL(domain->power_dev)) {
->> +			if (!domain->power_dev)
->> +				ret = -ENODEV;
->> +			else
->> +				ret = PTR_ERR(domain->power_dev);
->> +			dev_err_probe(dev, ret,
->>   				      "failed to attach power domain \"%s\"\n",
->>   				      data->gpc_name);
->> -			ret = PTR_ERR(domain->power_dev);
->>   			goto cleanup_pds;
->>   		}
->>   
->> diff --git a/drivers/pmdomain/imx/imx8mp-blk-ctrl.c b/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
->> index e3203eb6a0229..e488cf79b8007 100644
->> --- a/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
->> +++ b/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
->> @@ -687,11 +687,14 @@ static int imx8mp_blk_ctrl_probe(struct platform_device *pdev)
->>   
->>   		domain->power_dev =
->>   			dev_pm_domain_attach_by_name(dev, data->gpc_name);
->> -		if (IS_ERR(domain->power_dev)) {
->> -			dev_err_probe(dev, PTR_ERR(domain->power_dev),
->> +		if (IS_ERR_OR_NULL(domain->power_dev)) {
->> +			if (!domain->power_dev)
->> +				ret = -ENODEV;
->> +			else
->> +				ret = PTR_ERR(domain->power_dev);
->> +			dev_err_probe(dev, ret,
->>   				      "failed to attach power domain %s\n",
->>   				      data->gpc_name);
->> -			ret = PTR_ERR(domain->power_dev);
-> 
-> This could be made a bit more compact using:
-> 
-> 	domain->power_dev =
-> 		dev_pm_domain_attach_by_name(dev, data->gpc_name) ||
-> 		ERR_PTR(-ENODEV);
-> 	if (IS_ERR(domain->power_dev)) {
-> 		ret = PTR_ERR(domain->power_dev);
-> 		...
-> 
-> I'm unsure though if this is human friendly enough?!
+Add device tree bindings that describe hardware implementations of
+Non-Volatile Memory (NVMEM) used for storing Power State Change Reasons (PSCR).
 
-I think it is only more cryptic and doesn't improve readability.
+Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
+---
+ .../bindings/power/reset/pscr-nvmem.yaml      | 54 +++++++++++++++++++
+ 1 file changed, 54 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/pscr-nvmem.yaml
 
-> Having said that I wonder about dev_pm_domain_attach_by_name(). IMHO if
-> NULL is an error case it and other errors are signaled by error
-> pointers, there is something to fix there.
+diff --git a/Documentation/devicetree/bindings/power/reset/pscr-nvmem.yaml b/Documentation/devicetree/bindings/power/reset/pscr-nvmem.yaml
+new file mode 100644
+index 000000000000..0642b470af41
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/pscr-nvmem.yaml
+@@ -0,0 +1,54 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/state-change/pscr-nvmem.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Generic NVMEM Power State Change Reason storage
++
++maintainers:
++  - Oleksij Rempel <o.rempel@pengutronix.de>
++
++description: This binding describes the Non-Volatile Memory (NVMEM) hardware
++  that stores Power State Change Reasons (PSCR).
++
++allOf:
++  - $ref: pse-controller.yaml#
++
++properties:
++  compatible:
++    const: pscr-nvmem
++
++  nvmem-cells:
++    description: |
++      A phandle pointing to the nvmem-cells node where the power state change
++      reasons are stored.
++    maxItems: 1
++
++  nvmem-cell-names:
++    items:
++      - const: pscr
++
++  pscr-unknown:
++  pscr-under-voltage:
++  pscr-over-current:
++  pscr-over-temperature:
++
++required:
++  - compatible
++  - nvmem-cells
++  - nvmem-cell-names
++
++additionalProperties: false
++
++examples:
++  - |
++    power-state-change-reason {
++      compatible = "pscr-nvmem";
++      nvmem-cells = <&pscr_cell>;
++      nvmem-cell-names = "pscr";
++      pscr-unknown = <1>;
++      pscr-under-voltage = <2>;
++      pscr-over-temperature = <3>;
++    };
++...
+-- 
+2.39.2
 
-I don't think dev_pm_domain_attach_by_name() returning NULL is an error 
--- the domain may be missing from DT and that is legitimate use case I 
-think.
-
-But not here, where all the domains should be described in DT because 
-the driver makes assumptions about their presence in the suspend/resume 
-part, and because the DT should fully describe the domains of this 
-hardware anyway, so we better catch such DT issues.
