@@ -1,16 +1,15 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E68C54BFF
-	for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2024 13:25:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B50E554FA4
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2024 13:25:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705670745; cv=none; b=kY5jlQqd9/NV1rSigXqIcWXoP6xbUVP9lFgsJbkmSJD3QlZTTi5Rrn/7Fd9BTV+ZxwSapQLK1VzICNYx9jlT4Ewesw0LPVaPTJt+feHGvcjKmXcsutyYFMCH7x+BgWBAxNlL+fAyY+XV/IhaY+iL5Mm8vgSNVJxPEn24Dswceyo=
+	t=1705670746; cv=none; b=RhgZp6hK0ka59EIUvzlSURresrQdWYguCrJ28LaXOmvvAKqRNIM4u5HvxR1AbzmeFDhNtnkjqcl3mBa3r+ej5FXY+UKUEFKSbuNqAwNFkndfKN1Atd5eEg3ee9U1TNP0CxvJiDmuzMtqcLuihVOembLoRVCDSCVKsYYjdAWbryw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705670745; c=relaxed/simple;
-	bh=XRisp6Vk9LcyDYqrO7hm1pl+pjDkrGL7bL4CcMKtXaY=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=BWKRq2dQp9cuK3EO6UEaQAMMSlbvJ4Ovd7wwqVqsflFgKolayoo/ul0BoXfpzvdQwpbbzki9DF+FMtQTEmbAmbKpzmsvFNpeiUWCzy4EEaKeUMi/U4PouzXvwHE+MPxK57sUXgBM1ZMa6ZIGkCqTtNjrQGnV+jqykH/rgQ7KJG8=
+	s=arc-20240116; t=1705670746; c=relaxed/simple;
+	bh=SnlmRY4YzKLUEZW36LRtIOn/V1xJIwJfrgcpZ0DRfw0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=lcMv8es9KQ7QKwHd0ggmk6qiuHV6DrT1eMiUJZlY1zWoL5NFA/j35A9j/ebOH/1YDy5cKWSiOFwFKuz+Sk4X60bjXvjRYXBMgnvs5cEHyeS0FRViNlFx/K9x7VHn5XRjPaz0J/NPWjVQJBLa9fvVymmZ6r3keymObcMZXaI6Z7w=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,15 +17,15 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rQos7-00074I-C2; Fri, 19 Jan 2024 14:25:23 +0100
+	id 1rQos7-00074E-C1; Fri, 19 Jan 2024 14:25:23 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rQos6-000viM-7a; Fri, 19 Jan 2024 14:25:22 +0100
+	id 1rQos6-000viF-4D; Fri, 19 Jan 2024 14:25:22 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rQos6-00F98B-0X;
+	id 1rQos6-00F97X-0B;
 	Fri, 19 Jan 2024 14:25:22 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Sebastian Reichel <sre@kernel.org>,
@@ -46,12 +45,10 @@ Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>
-Subject: [RFC PATCH v1 4/7] nvmem: provide consumer access to cell size metrics
-Date: Fri, 19 Jan 2024 14:25:18 +0100
-Message-Id: <20240119132521.3609945-5-o.rempel@pengutronix.de>
+Subject: [RFC PATCH v1 0/7] Introduction of PSCR Framework and Related Components
+Date: Fri, 19 Jan 2024 14:25:14 +0100
+Message-Id: <20240119132521.3609945-1-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240119132521.3609945-1-o.rempel@pengutronix.de>
-References: <20240119132521.3609945-1-o.rempel@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -64,77 +61,53 @@ X-SA-Exim-Mail-From: ore@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Add nvmem_cell_get_size() function to provide access to cell size
-metrics. In some cases we may get cell size less as consumer would
-expect it. So, nvmem_cell_write() would fail with incorrect buffer size.
+Hello all,
 
-Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
----
- drivers/nvmem/core.c           | 25 +++++++++++++++++++++++++
- include/linux/nvmem-consumer.h |  7 +++++++
- 2 files changed, 32 insertions(+)
+This patch series introduces the Power State Change Reasons (PSCR)
+tracking framework and its related components into the kernel. The PSCR
+framework is designed for systems where traditional methods of storing
+power state change reasons, like PMICs or watchdogs, are inadequate. It
+provides a structured way to store reasons for system shutdowns and
+reboots, such as under-voltage or software-triggered events, in
+non-volatile hardware storage.
 
-diff --git a/drivers/nvmem/core.c b/drivers/nvmem/core.c
-index bf42b7e826db..6c5b785b804b 100644
---- a/drivers/nvmem/core.c
-+++ b/drivers/nvmem/core.c
-@@ -1753,6 +1753,31 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len)
- 
- EXPORT_SYMBOL_GPL(nvmem_cell_write);
- 
-+/**
-+ * nvmem_cell_get_size() - Get the size of a given nvmem cell
-+ * @cell: nvmem cell to be queried.
-+ * @bytes: Pointer to store the size of the cell in bytes. Can be NULL.
-+ * @bits: Pointer to store the size of the cell in bits. Can be NULL.
-+ *
-+ * Return: 0 on success or negative on failure.
-+ */
-+int nvmem_cell_get_size(struct nvmem_cell *cell, size_t *bytes, size_t *bits)
-+{
-+	struct nvmem_cell_entry *entry = cell->entry;
-+
-+	if (!entry->nvmem)
-+		return -EINVAL;
-+
-+	if (bytes)
-+		*bytes = entry->bytes;
-+
-+	if (bits)
-+		*bits = entry->nbits;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(nvmem_cell_get_size);
-+
- static int nvmem_cell_read_common(struct device *dev, const char *cell_id,
- 				  void *val, size_t count)
- {
-diff --git a/include/linux/nvmem-consumer.h b/include/linux/nvmem-consumer.h
-index 6ec4b9743e25..a174b05514b4 100644
---- a/include/linux/nvmem-consumer.h
-+++ b/include/linux/nvmem-consumer.h
-@@ -56,6 +56,7 @@ void nvmem_cell_put(struct nvmem_cell *cell);
- void devm_nvmem_cell_put(struct device *dev, struct nvmem_cell *cell);
- void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len);
- int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
-+int nvmem_cell_get_size(struct nvmem_cell *cell, size_t *bytes, size_t *bits);
- int nvmem_cell_read_u8(struct device *dev, const char *cell_id, u8 *val);
- int nvmem_cell_read_u16(struct device *dev, const char *cell_id, u16 *val);
- int nvmem_cell_read_u32(struct device *dev, const char *cell_id, u32 *val);
-@@ -127,6 +128,12 @@ static inline int nvmem_cell_write(struct nvmem_cell *cell,
- 	return -EOPNOTSUPP;
- }
- 
-+static inline int nvmem_cell_get_size(struct nvmem_cell *cell, size_t *bytes,
-+				      size_t *bits)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
- static inline int nvmem_cell_read_u8(struct device *dev,
- 				     const char *cell_id, u8 *val)
- {
+These changes are critical for systems requiring detailed postmortem
+analysis and where immediate power-down scenarios limit traditional
+storage options. The framework also assists bootloaders and early-stage
+system components in making informed recovery decisions.
+
+Oleksij Rempel (7):
+  dt-bindings: power: reset: add generic PSCR binding trackers
+  power: reset: Introduce PSCR Tracking Framework for Non-Volatile
+    Storage
+  dt-bindings: power: reset: add bindings for NVMEM hardware storing
+    PSCR Data
+  nvmem: provide consumer access to cell size metrics
+  power: reset: add PSCR NVMEM Driver for Storing Power State Change
+    Reasons
+  regulator: set Power State Change Reason before
+    hw_protection_shutdown()
+  thermal: core: set Power State Change Reason before
+    hw_protection_shutdown()
+
+ .../bindings/power/reset/pscr-nvmem.yaml      |  54 ++++
+ .../devicetree/bindings/power/reset/pscr.yaml |  51 ++++
+ drivers/nvmem/core.c                          |  25 ++
+ drivers/power/reset/Kconfig                   |  30 ++
+ drivers/power/reset/Makefile                  |   2 +
+ drivers/power/reset/pscr-nvmem.c              | 100 +++++++
+ drivers/power/reset/pscr.c                    | 259 ++++++++++++++++++
+ drivers/regulator/core.c                      |   6 +
+ drivers/thermal/thermal_core.c                |   2 +
+ include/linux/nvmem-consumer.h                |   7 +
+ include/linux/pscr.h                          |  40 +++
+ 11 files changed, 576 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/pscr-nvmem.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/reset/pscr.yaml
+ create mode 100644 drivers/power/reset/pscr-nvmem.c
+ create mode 100644 drivers/power/reset/pscr.c
+ create mode 100644 include/linux/pscr.h
+
 -- 
 2.39.2
 
