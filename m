@@ -1,76 +1,128 @@
-Received: from a.peacevolution.org (a.peacevolution.org [206.189.193.133])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF8C8358B6;
-	Sun, 21 Jan 2024 01:49:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=206.189.193.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98ACB364C1
+	for <linux-pm@vger.kernel.org>; Sun, 21 Jan 2024 06:56:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705801752; cv=none; b=s6BPpm1547FagIbUqAI//7jV4rZkPyP5cvYXMUtqAcQ4ofD44xBd4k7Lj0csy1nZJtypO2byuxKBAEMGGuKB5vjNMp423ArVOVcHPcCLD58Gro/suPKStIlVBDeueJ8JB3LhxT3rJekuxu7C/PTzblimUljHYAkpyMcNBPyv87g=
+	t=1705820196; cv=none; b=tLfS4UfPdoR5ctVPAVeV3VPIpoWhauL9vnnkBoPHmBHOdQaSn8Zogj2ZKFTmt59DJfLSG0N4PE4+FY00fU+EIr85XLjrA4EQ9DXJucfbxpeAxIvW0QigHQRkIoZZqVAgQ9c9+hdIb4m6AGOkdilrBdC+JIjbNlQmivJ8nRPn3pE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705801752; c=relaxed/simple;
-	bh=lFIqsnnmUm8gQKiSj2GC3PO1blzYyWDVthX2nkDrJt8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=PIOCS6YtmFtnG6Xjc7EgBd00DwJoOYGLeROLxM4KxJwkEwFWK0J66yUR7bQAYoh4e3pK/zDrFzNUpevSIcDf3W5CYS6chxiMovkBvjh/R2uHl3vcNiGqmo8ivdDYDja0/KKIbQmalQ3mugDaFgS6XXuTJrofE6ihm2OAVRFpPsQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=peacevolution.org; spf=pass smtp.mailfrom=peacevolution.org; dkim=pass (1024-bit key) header.d=peacevolution.org header.i=@peacevolution.org header.b=ZR9JZhk2; arc=none smtp.client-ip=206.189.193.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=peacevolution.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=peacevolution.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=peacevolution.org header.i=@peacevolution.org header.b="ZR9JZhk2"
-Received: from authenticated-user (PRIMARY_HOSTNAME [PUBLIC_IP])
-	by a.peacevolution.org (Postfix) with ESMTPA id C2CAC461AA;
-	Sun, 21 Jan 2024 01:43:36 +0000 (UTC)
-From: Aren Moynihan <aren@peacevolution.org>
-To: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>,
-	=?UTF-8?q?Ond=C5=99ej=20Jirman?= <megi@xff.cz>,
-	Aren Moynihan <aren@peacevolution.org>,
-	Chen-Yu Tsai <wens@csie.org>,
-	Quentin Schulz <quentin.schulz@bootlin.com>,
-	Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH 0/3] power: supply: axp20x_usb_power: prepare for external power delivery negotiation
-Date: Sat, 20 Jan 2024 20:39:58 -0500
-Message-ID: <20240121014057.1042466-1-aren@peacevolution.org>
+	s=arc-20240116; t=1705820196; c=relaxed/simple;
+	bh=H4D65o2qgKezV17qXXj1tv+dOT754Db1R0b4ZWq3T0g=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TAFWY4XiR9sWhAGfxVwfDKnSOZRzrFw6qpu0WUF/daAvIQpNUmHLXvrt1+oZ/5enkpMceNqYQJ/VBL9qHLtyT8ZEmngTmNt04r+BIPIgEP2DtfW0X/e2pOpMHgCBlbFRtZw6/av35Xnw+M6LG2y162Dak5iLsBUyDkL5LkfnRhA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ore@pengutronix.de>)
+	id 1rRRka-0006vJ-6d; Sun, 21 Jan 2024 07:56:12 +0100
+Received: from [2a0a:edc0:2:b01:1d::c0] (helo=ptx.whiteo.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ore@pengutronix.de>)
+	id 1rRRkY-001JDN-4I; Sun, 21 Jan 2024 07:56:10 +0100
+Received: from ore by ptx.whiteo.stw.pengutronix.de with local (Exim 4.92)
+	(envelope-from <ore@pengutronix.de>)
+	id 1rRRkY-000zga-1K; Sun, 21 Jan 2024 07:56:10 +0100
+Date: Sun, 21 Jan 2024 07:56:10 +0100
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+	kernel@pengutronix.de, linux-kernel@vger.kernel.org,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+	=?utf-8?B?U8O4cmVu?= Andersen <san@skov.dk>
+Subject: Re: [RFC PATCH v1 0/7] Introduction of PSCR Framework and Related
+ Components
+Message-ID: <20240121065610.GC163482@pengutronix.de>
+References: <20240119132521.3609945-1-o.rempel@pengutronix.de>
+ <7gadkjffeljjwb2cgcmg6ixco3xtg4t4hrxtetfnjyzuxvfsjt@ze7u4glqnerb>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Spamd-Bar: /
-Authentication-Results: auth=pass smtp.auth=aren@peacevolution.org smtp.mailfrom=aren@peacevolution.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=peacevolution.org;
-	s=dkim; t=1705801417;
-	h=from:subject:date:message-id:to:cc:mime-version:content-type:content-transfer-encoding;
-	bh=SUQPnMTPVVJvLjAXL1KekIRGdmuwaL5YumbY1tWBkMk=;
-	b=ZR9JZhk2/blbXE/e6m+mphDfCN5nw4cC9HX5H8uEcJmbx2YTYeyPzowmvHIBFx1qnO3mDN
-	HPomL04xccYct0+qqciKHFLT4lUYMA02vGW3rzKsv/oEc1H1ha55S8E5sLqLGyapsk6DpY
-	LY57b5qGCZ8PX0oPB0HezauxU1dQZnQ=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <7gadkjffeljjwb2cgcmg6ixco3xtg4t4hrxtetfnjyzuxvfsjt@ze7u4glqnerb>
+X-Sent-From: Pengutronix Hildesheim
+X-URL: http://www.pengutronix.de/
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ore@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Being able to set the input current limit will be necessary to implement
-usb power delivery on the Pine64 PinePhone. The PinePhone has a separate
-chip (anx7688) that handles usb power delivery (among other things), so
-we will need a way to apply the current limit which that negotiates.
+Hi,
 
-The first two patches were originally based on code Ondřej Jirman
-wrote[1], but I have almost completely rewritten them.
+On Sat, Jan 20, 2024 at 12:19:09AM +0100, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Fri, Jan 19, 2024 at 02:25:14PM +0100, Oleksij Rempel wrote:
+> > This patch series introduces the Power State Change Reasons (PSCR)
+> > tracking framework and its related components into the kernel. The PSCR
+> > framework is designed for systems where traditional methods of storing
+> > power state change reasons, like PMICs or watchdogs, are inadequate. It
+> > provides a structured way to store reasons for system shutdowns and
+> > reboots, such as under-voltage or software-triggered events, in
+> > non-volatile hardware storage.
+> > 
+> > These changes are critical for systems requiring detailed postmortem
+> > analysis and where immediate power-down scenarios limit traditional
+> > storage options. The framework also assists bootloaders and early-stage
+> > system components in making informed recovery decisions.
+> 
+> A couple of things come to my mind:
+> 
+> 1. Do we need the DT based reason-string-to-integer mapping? Can we
+>    just use a fixed mapping instead? It simplifies the binding a
+>    lot. With that the generic part could be dropped completely.
 
-While working on this, I also discovered that the axp803 pmic sets a
-current limit of 3A on the usb port without any negotiation if it
-doesn't detect a battery.
+The project I'm working is using RTC for storage. The RTC device in
+question provides 8 bits, 3 bits are assigned for PSCR.
+Currently all reasons provided in this patch set would fit int to 3 bits,
+but soon or later it may expand.
 
-1: https://xff.cz/git/linux/commit/?h=axp-6.7&id=3dcd33dfd1ae58db159427365dcb6d0d2b12f06d
+> 2. I would expect the infrastructure to read and clear the reason
+>    during boot. If e.g. a watchdog triggers a reset you will otherwise
+>    get an incorrect value.
 
+Hm.. good point. I'll set a value on the boot that there is currently no
+attempt to shutdown at all. PSCR works only for software assisted
+shutdown/reboot. It should extend, not replace PMIC or watchdog detected
+reasons.
 
-Aren Moynihan (3):
-  power: supply: axp20x_usb_power: add input current limit
-  power: supply: axp20x_usb_power: enable usb_type reporting
-  power: supply: axp20x_usb_power: set input current limit in probe
+> 3. The reason is only stored, but not used? We have a sysfs ABI to
+>    expose the reboot reason to userspace since half a year ago, see
+>    d40befed9a58 (power: reset: at91-reset: add sysfs interface to
+>    the power on reason).
 
- drivers/power/supply/axp20x_usb_power.c | 192 +++++++++++++++++++++++-
- 1 file changed, 190 insertions(+), 2 deletions(-)
+ACK. I'll add sysfs support.
+For my use case, the user is the bootloader. The is one of reasons why
+DT is used for mappings, this is the stable ABI between this systems.
 
+> 4. Available options should be synced with the list in
+>    include/linux/power/power_on_reason.h
+
+ACK
+
+Regards,
+Oleksij
 -- 
-2.43.0
-
+Pengutronix e.K.                           |                             |
+Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
+31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
