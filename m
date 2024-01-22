@@ -1,34 +1,34 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9460C3A1BD;
-	Mon, 22 Jan 2024 11:44:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E5263CF58;
+	Mon, 22 Jan 2024 11:44:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705923872; cv=none; b=o3AtZW7AP+dDF5biAOnqDx+oia0MO9qfgtFRx2RSeR/1De8VRJwQt192xYOZVcuxAyWtYymUdRY+VVEYHLIKQd33KRjLhWIBOAXrQWobkibOowkMslez7PYwVbn4wlvhhpZlG+s0g1FKXb3mX7r3p5X08gaf0BHa42ZPWPHPf0Q=
+	t=1705923873; cv=none; b=Fz4O6sx0QUS5eHzAX2Ds2EVrHZtYqtvcg6g5R1j0dhUx02e3Y7eUyCr4BUdUDFnwNEF3DFWM+KopUBN3DdIQIxSk335kbktdD7Tt2wZZOHPhSCEhuBPfElItJXFl3zjED10+mqW/zA6OM+wzE4bEUfDMth8IcuAUrS5U/DtH/G4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705923872; c=relaxed/simple;
-	bh=fw+tx0QLXKQOvFgAfYfyFRwUUJeuGesaym5awIhseJo=;
+	s=arc-20240116; t=1705923873; c=relaxed/simple;
+	bh=jydXufZGYcpgz4WEsMMBaaJhEjPprcdtdbjiT+OAzHA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=eOe+ifPrbmI4NCx7svsdzijU/9pzn8tj8cZCRQXkcRVuHyvNTWPQv+6W4MeF0cQLDqLgphjNpWy8FbOqmsAoPOPfbQoLnjvlJE+FBFph25tkYMSwNd7qXtbR8+OrsXT//9/B55MOBfVwrGC0btD+D5+AFNa4SjEgFAKf/7PbMs8=
+	 MIME-Version:Content-Type; b=ti1Wc8LMp1P6SMnqyyGpl/bdemXlyQyuH0dAy8NZ4NKhyWWC2ggGwZIuRxYiEFCC35kZKeRzrelegyAeCtMaYZzmkk91zafoOEGy3zPclCyhcPUSQ1cEMXtLtc/1QtJq9thSl7HpQibT9BSEDfpnorc/o4O2zqh8Ze6edOjJ2Qw=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
- id c437ba25a9c7dce7; Mon, 22 Jan 2024 12:44:23 +0100
+ id 8af684c178176ffb; Mon, 22 Jan 2024 12:44:28 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 0D45D669540;
-	Mon, 22 Jan 2024 12:44:23 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 9D8E1669540;
+	Mon, 22 Jan 2024 12:44:27 +0100 (CET)
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
-Subject: [PATCH v1 09/12] PM: sleep: stats: Log errors right after running suspend callbacks
-Date: Mon, 22 Jan 2024 12:35:32 +0100
-Message-ID: <9237520.CDJkKcVGEf@kreacher>
+Subject: [PATCH v1 03/12] PM: sleep: stats: Use array of suspend step names
+Date: Mon, 22 Jan 2024 12:25:45 +0100
+Message-ID: <2183940.irdbgypaU6@kreacher>
 In-Reply-To: <5760158.DvuYhMxLoT@kreacher>
 References: <5760158.DvuYhMxLoT@kreacher>
 Precedence: bulk
@@ -47,142 +47,125 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The error logging and failure statistics updates are carried out in two
-places in each system-wide device suspend phase, which is unnecessary
-code duplication, so do that in one place in each phase, right after
-invoking device suspend callbacks.
+Replace suspend_step_name() in the suspend statistics code with an array
+of suspend step names which has fewer lines of code and less overhead.
 
-While at it, add "noirq" or "late" to the "async" string printed when
-the failing device callback in the "noirq" or "late" suspend phase,
-respectively, was run asynchronously.
+While at it, remove two unnecessary line breaks in suspend_stats_show()
+for a more consistent code layout.
+
+No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/base/power/main.c |   49 ++++++++++++----------------------------------
- 1 file changed, 13 insertions(+), 36 deletions(-)
+ include/linux/suspend.h |    3 ++-
+ kernel/power/main.c     |   48 +++++++++++++++++-------------------------------
+ 2 files changed, 19 insertions(+), 32 deletions(-)
 
-Index: linux-pm/drivers/base/power/main.c
+Index: linux-pm/include/linux/suspend.h
 ===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -1244,6 +1244,8 @@ Run:
- 	error = dpm_run_callback(callback, dev, state, info);
- 	if (error) {
- 		async_error = error;
-+		dpm_save_failed_dev(dev_name(dev));
-+		pm_dev_err(dev, state, async ? " async noirq" : " noirq", error);
- 		goto Complete;
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -41,7 +41,8 @@ typedef int __bitwise suspend_state_t;
+ #define PM_SUSPEND_MAX		((__force suspend_state_t) 4)
+ 
+ enum suspend_stat_step {
+-	SUSPEND_FREEZE = 1,
++	SUSPEND_NONE = 0,
++	SUSPEND_FREEZE,
+ 	SUSPEND_PREPARE,
+ 	SUSPEND_SUSPEND,
+ 	SUSPEND_SUSPEND_LATE,
+Index: linux-pm/kernel/power/main.c
+===================================================================
+--- linux-pm.orig/kernel/power/main.c
++++ linux-pm/kernel/power/main.c
+@@ -319,25 +319,17 @@ static ssize_t pm_test_store(struct kobj
+ power_attr(pm_test);
+ #endif /* CONFIG_PM_SLEEP_DEBUG */
+ 
+-static char *suspend_step_name(enum suspend_stat_step step)
+-{
+-	switch (step) {
+-	case SUSPEND_FREEZE:
+-		return "freeze";
+-	case SUSPEND_PREPARE:
+-		return "prepare";
+-	case SUSPEND_SUSPEND:
+-		return "suspend";
+-	case SUSPEND_SUSPEND_NOIRQ:
+-		return "suspend_noirq";
+-	case SUSPEND_RESUME_NOIRQ:
+-		return "resume_noirq";
+-	case SUSPEND_RESUME:
+-		return "resume";
+-	default:
+-		return "";
+-	}
+-}
++static const char * const suspend_step_names[] = {
++	[SUSPEND_NONE] = "",
++	[SUSPEND_FREEZE] = "freeze",
++	[SUSPEND_PREPARE] = "prepare",
++	[SUSPEND_SUSPEND] = "suspend",
++	[SUSPEND_SUSPEND_LATE] = "suspend_late",
++	[SUSPEND_SUSPEND_NOIRQ] = "suspend_noirq",
++	[SUSPEND_RESUME_NOIRQ] = "resume_noirq",
++	[SUSPEND_RESUME_EARLY] = "resume_early",
++	[SUSPEND_RESUME] = "resume",
++};
+ 
+ #define suspend_attr(_name, format_str)				\
+ static ssize_t _name##_show(struct kobject *kobj,		\
+@@ -392,16 +384,14 @@ static struct kobj_attribute last_failed
+ static ssize_t last_failed_step_show(struct kobject *kobj,
+ 		struct kobj_attribute *attr, char *buf)
+ {
+-	int index;
+ 	enum suspend_stat_step step;
+-	char *last_failed_step = NULL;
++	int index;
+ 
+ 	index = suspend_stats.last_failed_step + REC_FAILED_NUM - 1;
+ 	index %= REC_FAILED_NUM;
+ 	step = suspend_stats.failed_steps[index];
+-	last_failed_step = suspend_step_name(step);
+ 
+-	return sprintf(buf, "%s\n", last_failed_step);
++	return sprintf(buf, "%s\n", suspend_step_names[step]);
+ }
+ static struct kobj_attribute last_failed_step = __ATTR_RO(last_failed_step);
+ 
+@@ -477,26 +467,22 @@ static int suspend_stats_show(struct seq
+ 	for (i = 1; i < REC_FAILED_NUM; i++) {
+ 		index = last_dev + REC_FAILED_NUM - i;
+ 		index %= REC_FAILED_NUM;
+-		seq_printf(s, "\t\t\t%-s\n",
+-			suspend_stats.failed_devs[index]);
++		seq_printf(s, "\t\t\t%-s\n", suspend_stats.failed_devs[index]);
+ 	}
+ 	seq_printf(s,	"  last_failed_errno:\t%-d\n",
+ 			suspend_stats.errno[last_errno]);
+ 	for (i = 1; i < REC_FAILED_NUM; i++) {
+ 		index = last_errno + REC_FAILED_NUM - i;
+ 		index %= REC_FAILED_NUM;
+-		seq_printf(s, "\t\t\t%-d\n",
+-			suspend_stats.errno[index]);
++		seq_printf(s, "\t\t\t%-d\n", suspend_stats.errno[index]);
+ 	}
+ 	seq_printf(s,	"  last_failed_step:\t%-s\n",
+-			suspend_step_name(
+-				suspend_stats.failed_steps[last_step]));
++		   suspend_step_names[suspend_stats.failed_steps[last_step]]);
+ 	for (i = 1; i < REC_FAILED_NUM; i++) {
+ 		index = last_step + REC_FAILED_NUM - i;
+ 		index %= REC_FAILED_NUM;
+ 		seq_printf(s, "\t\t\t%-s\n",
+-			suspend_step_name(
+-				suspend_stats.failed_steps[index]));
++			   suspend_step_names[suspend_stats.failed_steps[index]]);
  	}
  
-@@ -1273,14 +1275,8 @@ Complete:
- static void async_suspend_noirq(void *data, async_cookie_t cookie)
- {
- 	struct device *dev = data;
--	int error;
--
--	error = __device_suspend_noirq(dev, pm_transition, true);
--	if (error) {
--		dpm_save_failed_dev(dev_name(dev));
--		pm_dev_err(dev, pm_transition, " async", error);
--	}
- 
-+	__device_suspend_noirq(dev, pm_transition, true);
- 	put_device(dev);
- }
- 
-@@ -1312,12 +1308,8 @@ static int dpm_noirq_suspend_devices(pm_
- 
- 		mutex_lock(&dpm_list_mtx);
- 
--		if (error) {
--			pm_dev_err(dev, state, " noirq", error);
--			dpm_save_failed_dev(dev_name(dev));
--		} else if (!list_empty(&dev->power.entry)) {
-+		if (!error && !list_empty(&dev->power.entry))
- 			list_move(&dev->power.entry, &dpm_noirq_list);
--		}
- 
- 		mutex_unlock(&dpm_list_mtx);
- 
-@@ -1437,6 +1429,8 @@ Run:
- 	error = dpm_run_callback(callback, dev, state, info);
- 	if (error) {
- 		async_error = error;
-+		dpm_save_failed_dev(dev_name(dev));
-+		pm_dev_err(dev, state, async ? " async late" : " late", error);
- 		goto Complete;
- 	}
- 	dpm_propagate_wakeup_to_parent(dev);
-@@ -1453,13 +1447,8 @@ Complete:
- static void async_suspend_late(void *data, async_cookie_t cookie)
- {
- 	struct device *dev = data;
--	int error;
- 
--	error = __device_suspend_late(dev, pm_transition, true);
--	if (error) {
--		dpm_save_failed_dev(dev_name(dev));
--		pm_dev_err(dev, pm_transition, " async", error);
--	}
-+	__device_suspend_late(dev, pm_transition, true);
- 	put_device(dev);
- }
- 
-@@ -1500,11 +1489,6 @@ int dpm_suspend_late(pm_message_t state)
- 		if (!list_empty(&dev->power.entry))
- 			list_move(&dev->power.entry, &dpm_late_early_list);
- 
--		if (error) {
--			pm_dev_err(dev, state, " late", error);
--			dpm_save_failed_dev(dev_name(dev));
--		}
--
- 		mutex_unlock(&dpm_list_mtx);
- 
- 		put_device(dev);
-@@ -1719,8 +1703,11 @@ static int __device_suspend(struct devic
- 	dpm_watchdog_clear(&wd);
- 
-  Complete:
--	if (error)
-+	if (error) {
- 		async_error = error;
-+		dpm_save_failed_dev(dev_name(dev));
-+		pm_dev_err(dev, state, async ? " async" : "", error);
-+	}
- 
- 	complete_all(&dev->power.completion);
- 	TRACE_SUSPEND(error);
-@@ -1730,14 +1717,8 @@ static int __device_suspend(struct devic
- static void async_suspend(void *data, async_cookie_t cookie)
- {
- 	struct device *dev = data;
--	int error;
--
--	error = __device_suspend(dev, pm_transition, true);
--	if (error) {
--		dpm_save_failed_dev(dev_name(dev));
--		pm_dev_err(dev, pm_transition, " async", error);
--	}
- 
-+	__device_suspend(dev, pm_transition, true);
- 	put_device(dev);
- }
- 
-@@ -1778,12 +1759,8 @@ int dpm_suspend(pm_message_t state)
- 
- 		mutex_lock(&dpm_list_mtx);
- 
--		if (error) {
--			pm_dev_err(dev, state, "", error);
--			dpm_save_failed_dev(dev_name(dev));
--		} else if (!list_empty(&dev->power.entry)) {
-+		if (!error && !list_empty(&dev->power.entry))
- 			list_move(&dev->power.entry, &dpm_suspended_list);
--		}
- 
- 		mutex_unlock(&dpm_list_mtx);
- 
+ 	return 0;
 
 
 
