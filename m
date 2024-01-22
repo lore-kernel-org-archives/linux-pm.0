@@ -1,123 +1,113 @@
-Received: from mail-qv1-f53.google.com (mail-qv1-f53.google.com [209.85.219.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8163155769;
-	Mon, 22 Jan 2024 18:03:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D51A53FE20;
+	Mon, 22 Jan 2024 18:12:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705946633; cv=none; b=m0KmqlLQghRNEXDewsogkOIUMCFgHCBnXSM6ia7mJDb6mtcaxnjSdqym3OU+oBoFT7P/0g8oB4zN5nlwevKMuTOD6oU6JRWEuEu8E8I40x3deC59gCIWuaE7mPS/CJBOU20bHkEgXNCtfDKNWXFqbta092g6hXjYqRySriResLE=
+	t=1705947128; cv=none; b=Bl2++bUxbMKsSyPrvQWX1g3sLpW8g8s3dJ3r2h6CdrP2q+xa7KizlHKNylpUtjPaG1snWjLnYlmQBRJNlOBXusiZyPN549IQ2iKdRl7s7JlJh9G2FEtCBfZ2pxa7+blHCpkkE96y+N1vMfSkkKou4UWZbG6SeubZ/T/BES8k+L8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705946633; c=relaxed/simple;
-	bh=Fh6Mfh+ZfjN747uqw1yJY2/Biltz7BVQb6iuhi4PHr8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rtYADGuDh0NnJf/KSD0EaVAZwzDP+83qmyrNq3aJbF6eaaL4zEHzuUOBidWZEHKK/FuussvfY1sMjZQQKETkS0R1RqfmQcrhQuE5xbQOiXUxVnM7a2pwlIxiP6UVOI/rPJbviGnkIq1v5O8BuInAHhnRzcnulglq3Jv0xPHmU1Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.219.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-qv1-f53.google.com with SMTP id 6a1803df08f44-68197b99138so219246d6.1;
-        Mon, 22 Jan 2024 10:03:52 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705946631; x=1706551431;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=s26G0NnkppbXguh7peNPWPJ5jelauHZoMn0Xk4NSQUw=;
-        b=f9sj8dapz8X8s4X3rV7CprJ4yVeGEoaicBNlidoCaSjayweKFDw/PcvRUBrg/YCxmi
-         a+rpuUJYG3ww7Tx71XUdvnDc+IHZ1UIltCJM38MJzu6ACo1VbbFBz3hQUPvoXJgRVtdm
-         +Duv+eDNfM9T1ILJmxw3/p/26plcEi8Ums4q43FDoD/YPhnW1+La3M2la2iSAHWfUres
-         BGz/iiWlr4lGOQwwjbBwLrLIsvNyr5Ysj+qQYg86jmvBmIxsBOp0clHXDDB3mH1iaWDz
-         SmcR4vaTtgHc/S8updpLDKvE0HmyemNypUaJewLmInX+1YNwdh8irNp9j0fQHwUn0hVw
-         hizw==
-X-Gm-Message-State: AOJu0YzpKSZgMLO8owwP/NzVyChGP+JCTvPwJk7rJh7QVSnjZaC68sV5
-	Ofp8gX/ZrAQWnZ27ua6C5rk3IOTIQfe9P70ZQsBG8GnWKFwqkZezKhpIcwIiF8bqUoCYGSSdJ+y
-	F/qM9B7On8XvDtCou/+FbN1VApeiPS5Zjyos=
-X-Google-Smtp-Source: AGHT+IHydxkoIcTGgPnithAm3ZZ3Lbs6GLo4uCDeUNHWYMYJDcQ7kkQEBWJsEM9NkDfdwTNwYrCyeGF8yf+5uFu9gbc=
-X-Received: by 2002:a4a:cb87:0:b0:599:9e03:68da with SMTP id
- y7-20020a4acb87000000b005999e0368damr789760ooq.0.1705946610762; Mon, 22 Jan
- 2024 10:03:30 -0800 (PST)
+	s=arc-20240116; t=1705947128; c=relaxed/simple;
+	bh=X7GfhZVrnsTjbrFniNSElkwaarUNiRIasEFIuqkBbsc=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=XpiI4M86cWTacKbd+mR2FtRLgqklB7SvgHVIf8Jv06zoSoDlskFNdTSDMWkxc+MAA5/S7RN8ULrkHAnkcQVJ95+TYhWApD/8t+1cc9pcF5cBwfCdC+AmLE4Hg7SW+xkZpukFcL3o55269DKWGofUbskb0SbjJ2gSS/h8zgcZ4Jw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RD8iuvLT; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RD8iuvLT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24E09C433C7;
+	Mon, 22 Jan 2024 18:12:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1705947127;
+	bh=X7GfhZVrnsTjbrFniNSElkwaarUNiRIasEFIuqkBbsc=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=RD8iuvLT4Sv4aBKpW/AH0z/cICipgVW1lAjoC1YM1SyiKLBhrgz3HpvzH1fu0nXxq
+	 vQj2C7z9nKhUhA7/137/0FAZ1UBUIJEqX2EfctHJRDcwwbF0B3eM2QUwSTO0EFM+S8
+	 Yg16Li20dF9C76zTt/31v+fnBYVns0Nfn05p0rt7gygIitxU3Bb83OBnj1axDQ0+VJ
+	 EZwq7+GP7yVeDXZO1XkZwJDVdbVocBqnaLtJc502siNpXTksX+/aFBCBazIDD38kBZ
+	 t4xqOKiSwtjFP4ljsbSdg9zoGDHylXjw2ljwv+rHUHDX1WLpXQ1t5goVu8GYMzXfC7
+	 VPLhQabcjhzIA==
+Date: Mon, 22 Jan 2024 12:12:05 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Sakari Ailus <sakari.ailus@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+	linux-pci@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	Jaroslav Kysela <perex@perex.cz>,
+	Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
+	laurent.pinchart@ideasonboard.com, David Airlie <airlied@gmail.com>,
+	Paul Elder <paul.elder@ideasonboard.com>,
+	linux-media@vger.kernel.org,
+	Thomas =?utf-8?Q?Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+	intel-gfx@lists.freedesktop.org,
+	Lucas De Marchi <lucas.demarchi@intel.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	intel-xe@lists.freedesktop.org,
+	Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+	Alex Elder <elder@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-sound@vger.kernel.org, Takashi Iwai <tiwai@suse.com>,
+	Daniel Vetter <daniel@ffwll.ch>, netdev@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] pm: runtime: Simplify pm_runtime_get_if_active()
+ usage
+Message-ID: <20240122181205.GA275751@bhelgaas>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <ZXmn46ptis59F0CO@shell.armlinux.org.uk> <E1rDOg7-00Dvjq-VZ@rmk-PC.armlinux.org.uk>
- <CAJZ5v0je=-oVnSumZs=dzcyVuVUeVeTgO7yOnjGg1igyrS7EHQ@mail.gmail.com> <20240122174449.00002f78@Huawei.com>
-In-Reply-To: <20240122174449.00002f78@Huawei.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 22 Jan 2024 19:03:19 +0100
-Message-ID: <CAJZ5v0gePAsbRecOXDZ+q-Ds+nsoSBq6VU89ikuQoxds7TeQ3g@mail.gmail.com>
-Subject: Re: [PATCH RFC v3 04/21] ACPI: processor: Register all CPUs from acpi_processor_get_info()
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Russell King <rmk+kernel@armlinux.org.uk>, 
-	linux-pm@vger.kernel.org, loongarch@lists.linux.dev, 
-	linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, kvmarm@lists.linux.dev, x86@kernel.org, 
-	acpica-devel@lists.linuxfoundation.org, linux-csky@vger.kernel.org, 
-	linux-doc@vger.kernel.org, linux-ia64@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, Salil Mehta <salil.mehta@huawei.com>, 
-	Jean-Philippe Brucker <jean-philippe@linaro.org>, jianyong.wu@arm.com, justin.he@arm.com, 
-	James Morse <james.morse@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240122114121.56752-2-sakari.ailus@linux.intel.com>
 
-On Mon, Jan 22, 2024 at 6:44=E2=80=AFPM Jonathan Cameron
-<Jonathan.Cameron@huawei.com> wrote:
->
-> On Mon, 18 Dec 2023 21:30:50 +0100
-> "Rafael J. Wysocki" <rafael@kernel.org> wrote:
->
-> > On Wed, Dec 13, 2023 at 1:49=E2=80=AFPM Russell King <rmk+kernel@armlin=
-ux.org.uk> wrote:
-> > >
-> > > From: James Morse <james.morse@arm.com>
-> > >
-> > > To allow ACPI to skip the call to arch_register_cpu() when the _STA
-> > > value indicates the CPU can't be brought online right now, move the
-> > > arch_register_cpu() call into acpi_processor_get_info().
-> >
-> > This kind of looks backwards to me and has a potential to become
-> > super-confusing.
-> >
-> > I would instead add a way for the generic code to ask the platform
-> > firmware whether or not the given CPU is enabled and so it can be
-> > registered.
->
-> Hi Rafael,
->
-> The ACPI interpreter isn't up at this stage so we'd need to pull that
-> forwards. I'm not sure if we can pull the interpreter init early enough.
+On Mon, Jan 22, 2024 at 01:41:21PM +0200, Sakari Ailus wrote:
+> There are two ways to opportunistically increment a device's runtime PM
+> usage count, calling either pm_runtime_get_if_active() or
+> pm_runtime_get_if_in_use(). The former has an argument to tell whether to
+> ignore the usage count or not, and the latter simply calls the former with
+> ign_usage_count set to false. The other users that want to ignore the
+> usage_count will have to explitly set that argument to true which is a bit
+> cumbersome.
 
-Well, this patch effectively defers the AP registration to the time
-when acpi_processor_get_info() runs and the interpreter is up and
-running then.
+s/explitly/explicitly/
 
-For consistency, it would be better to defer the AP registration in
-general to that point.
+> To make this function more practical to use, remove the ign_usage_count
+> argument from the function. The main implementation is renamed as
+> pm_runtime_get_conditional().
+> 
+> Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+> Reviewed-by: Alex Elder <elder@linaro.org> # drivers/net/ipa/ipa_smp2p.c
+> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Acked-by: Takashi Iwai <tiwai@suse.de> # sound/
+> Reviewed-by: Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com> # drivers/accel/ivpu/
+> Acked-by: Rodrigo Vivi <rodrigo.vivi@intel.com> # drivers/gpu/drm/i915/
+> Reviewed-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
 
-> Perhaps pushing the registration back in all cases is the way to go?
-> Given the acpi interpretter is initialized via subsys_initcall() it would
-> need to be after that - I tried pushing cpu_dev_register_generic()
-> immediately after acpi_bus_init() and that seems fine.
+Acked-by: Bjorn Helgaas <bhelgaas@google.com> # drivers/pci/
 
-Sounds promising.
+> -EXPORT_SYMBOL_GPL(pm_runtime_get_if_active);
+> +EXPORT_SYMBOL_GPL(pm_runtime_get_conditional);
 
-> We can't leave the rest of cpu_dev_init() that late because a bunch
-> of other stuff relies on it (CPU freq blows up first as a core_init()
-> on my setup).
+If pm_runtime_get_conditional() is exported, shouldn't it also be
+documented in Documentation/power/runtime_pm.rst?
 
-I see.
+But I'm dubious about exporting it because
+__intel_runtime_pm_get_if_active() is the only caller, and you end up
+with the same pattern there that we have before this series in the PM
+core.  Why can't intel_runtime_pm.c be updated to use
+pm_runtime_get_if_active() or pm_runtime_get_if_in_use() directly, and
+make pm_runtime_get_conditional() static?
 
-> So to make this work we need it to always move the registration later
-> than the necessary infrastructure, perhaps to subsys_initcall_sync()
-> as is done for missing CPUs (we'd need to combine the two given that
-> needs to run after this, or potentially just stop checking for acpi_disab=
-led
-> and don't taint the kernel!).  I think this is probably the most consiste=
-nt
-> option on basis it at least moves the registration to the same point
-> whatever is going on and can easily use the arch callback you suggest
-> to hide away the logic on deciding if a CPU is there or not.
+> +++ b/drivers/gpu/drm/i915/intel_runtime_pm.c
+> @@ -246,7 +246,7 @@ static intel_wakeref_t __intel_runtime_pm_get_if_active(struct intel_runtime_pm
+>  		 * function, since the power state is undefined. This applies
+>  		 * atm to the late/early system suspend/resume handlers.
+>  		 */
+> -		if (pm_runtime_get_if_active(rpm->kdev, ignore_usecount) <= 0)
+> +		if (pm_runtime_get_conditional(rpm->kdev, ignore_usecount) <= 0)
+>  			return 0;
+>  	}
 
-I agree.
+Bjorn
