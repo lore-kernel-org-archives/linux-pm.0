@@ -1,34 +1,34 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B60ED3BB2D;
-	Mon, 22 Jan 2024 11:44:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 849913C48D;
+	Mon, 22 Jan 2024 11:44:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705923870; cv=none; b=Xjk4nnVX2ZXwGjvX4AECHr2+Qae4LluQc+5To6GazjmWxePYhLOcjUaTI6ZoZqHMqQAs02K4Y2QH1fwMBq0H3dK2cc3s/pYM7vaXbtln8p/wQVMWeiCv6YpnaK/Pqoun5BDoSEj+FDLwVzt2T/QkwxyxjBf5gWW/D9URxyIGKdk=
+	t=1705923871; cv=none; b=Y+vkmrjaVx39iSU53KNIjKRwjmNZrK1nCTt0VcnFBPifly2CpPZhA0MrXh5OsMKZGzYrsvmziFZCQZ9IWWT5SJgEcrBKXNjjumb1HTOV/H4nLhTGTFfYIoFC2ao6Fz4WJq9JcBjiTv7TpiWnZp7Lo3DSsqUqfm8KuRWXdENweoM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705923870; c=relaxed/simple;
-	bh=CxPWEItIqkP3rza59OPyafonJL7J+WNzKVFT4RdtkXE=;
+	s=arc-20240116; t=1705923871; c=relaxed/simple;
+	bh=7eySJOq/vVh2sQLWmwb6KJeThhebMt/tVZTV26u+S6Q=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RCPfzATFjD7jzZu0iFqwxU3L6LqW1U6Ky7Xsare5ocgDjIwCKqqP8vKtEcwzyST0EpTshhliPFMPGBk+plJe5D/4GGfbn3apIPQeCFjqCnSSqjfAz7vPFJX5YTzD8ZRLjjzFxX4e+acZiL3D87BOakJ6maFZeT2YCIfxAHPKfnk=
+	 MIME-Version:Content-Type; b=cjOJru8Q5nYs/gC39YCjzlya/qZCkqD0GbScpbEzQmoLnT1dTgbIkavnOgxrpR1JrOFu6TNFJ5unVQbsxHKmN4adtBFhV4yE939UohI0waXK3u+gf5ahwyB/F7aODhxsv3Gxrs3aoz7EaWWENpllDasUUuX5FEgk4yI0SMbLUnw=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
- id 9756b4d4305953bb; Mon, 22 Jan 2024 12:44:24 +0100
+ id 3c9ee59df0d63310; Mon, 22 Jan 2024 12:44:25 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 086D6669540;
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id B9DF2669540;
 	Mon, 22 Jan 2024 12:44:24 +0100 (CET)
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
-Subject: [PATCH v1 08/12] PM: sleep: stats: Use locking in dpm_save_failed_dev()
-Date: Mon, 22 Jan 2024 12:33:53 +0100
-Message-ID: <3798847.kQq0lBPeGt@kreacher>
+Subject: [PATCH v1 07/12] PM: sleep: stats: Call dpm_save_failed_step() at most once per phase
+Date: Mon, 22 Jan 2024 12:32:46 +0100
+Message-ID: <22171159.EfDdHjke4D@kreacher>
 In-Reply-To: <5760158.DvuYhMxLoT@kreacher>
 References: <5760158.DvuYhMxLoT@kreacher>
 Precedence: bulk
@@ -47,40 +47,100 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Because dpm_save_failed_dev() may be called simultaneously by multiple
-failing device PM functions, the state of the suspend_stats fields
-updated by it may become inconsistent.
+If the handling of two or more devices fails in one suspend-resume
+phase, it should be counted once in the statistics which is not
+guaranteed to happen during system-wide resume of devices due to
+the possible asynchronous execution of device callbacks.
 
-Prevent that from happening by using a lock in dpm_save_failed_dev().
+Address this by using the async_error static variable during system-wide
+device resume to indicate that there has been a device resume error and
+the given suspend-resume phase should be counted as failing.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/power/main.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/base/power/main.c |   20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
 
-Index: linux-pm/kernel/power/main.c
+Index: linux-pm/drivers/base/power/main.c
 ===================================================================
---- linux-pm.orig/kernel/power/main.c
-+++ linux-pm/kernel/power/main.c
-@@ -323,13 +323,18 @@ struct suspend_stats {
- };
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -685,7 +685,7 @@ Out:
+ 	TRACE_RESUME(error);
  
- static struct suspend_stats suspend_stats;
-+static DEFINE_MUTEX(suspend_stats_lock);
+ 	if (error) {
+-		dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
++		async_error = error;
+ 		dpm_save_failed_dev(dev_name(dev));
+ 		pm_dev_err(dev, state, async ? " async noirq" : " noirq", error);
+ 	}
+@@ -705,6 +705,9 @@ static void dpm_noirq_resume_devices(pm_
+ 	ktime_t starttime = ktime_get();
  
- void dpm_save_failed_dev(const char *name)
- {
-+	mutex_lock(&suspend_stats_lock);
+ 	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, true);
 +
- 	strscpy(suspend_stats.failed_devs[suspend_stats.last_failed_dev],
- 		name, sizeof(suspend_stats.failed_devs[0]));
- 	suspend_stats.last_failed_dev++;
- 	suspend_stats.last_failed_dev %= REC_FAILED_NUM;
++	async_error = 0;
 +
-+	mutex_unlock(&suspend_stats_lock);
+ 	mutex_lock(&dpm_list_mtx);
+ 	pm_transition = state;
+ 
+@@ -734,6 +737,9 @@ static void dpm_noirq_resume_devices(pm_
+ 	mutex_unlock(&dpm_list_mtx);
+ 	async_synchronize_full();
+ 	dpm_show_time(starttime, state, 0, "noirq");
++	if (async_error)
++		dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
++
+ 	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, false);
  }
  
- void dpm_save_failed_step(enum suspend_stat_step step)
+@@ -815,7 +821,7 @@ Out:
+ 	complete_all(&dev->power.completion);
+ 
+ 	if (error) {
+-		dpm_save_failed_step(SUSPEND_RESUME_EARLY);
++		async_error = error;
+ 		dpm_save_failed_dev(dev_name(dev));
+ 		pm_dev_err(dev, state, async ? " async early" : " early", error);
+ 	}
+@@ -839,6 +845,9 @@ void dpm_resume_early(pm_message_t state
+ 	ktime_t starttime = ktime_get();
+ 
+ 	trace_suspend_resume(TPS("dpm_resume_early"), state.event, true);
++
++	async_error = 0;
++
+ 	mutex_lock(&dpm_list_mtx);
+ 	pm_transition = state;
+ 
+@@ -868,6 +877,9 @@ void dpm_resume_early(pm_message_t state
+ 	mutex_unlock(&dpm_list_mtx);
+ 	async_synchronize_full();
+ 	dpm_show_time(starttime, state, 0, "early");
++	if (async_error)
++		dpm_save_failed_step(SUSPEND_RESUME_EARLY);
++
+ 	trace_suspend_resume(TPS("dpm_resume_early"), state.event, false);
+ }
+ 
+@@ -971,7 +983,7 @@ static void device_resume(struct device
+ 	TRACE_RESUME(error);
+ 
+ 	if (error) {
+-		dpm_save_failed_step(SUSPEND_RESUME);
++		async_error = error;
+ 		dpm_save_failed_dev(dev_name(dev));
+ 		pm_dev_err(dev, state, async ? " async" : "", error);
+ 	}
+@@ -1030,6 +1042,8 @@ void dpm_resume(pm_message_t state)
+ 	mutex_unlock(&dpm_list_mtx);
+ 	async_synchronize_full();
+ 	dpm_show_time(starttime, state, 0, NULL);
++	if (async_error)
++		dpm_save_failed_step(SUSPEND_RESUME);
+ 
+ 	cpufreq_resume();
+ 	devfreq_resume();
 
 
 
