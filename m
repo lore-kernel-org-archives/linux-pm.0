@@ -1,133 +1,79 @@
-Received: from mail-m17207.xmail.ntesmail.com (mail-m17207.xmail.ntesmail.com [45.195.17.207])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16BED3D3A7;
-	Mon, 22 Jan 2024 20:50:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.195.17.207
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74EEB48780
+	for <linux-pm@vger.kernel.org>; Mon, 22 Jan 2024 21:46:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705956653; cv=none; b=gya9l4RRfZ00NaEavug8WjTpzCSa8hYYebPide7mqTWrOSxictC7EpTnzr6PxykK0IuWwfTaz8+9J/+vf4i5QJFTISm/6aOsE2RYp2rIlp03Wjz1AvhyHBUQBBSbOUi1ePr3xTBGUod1meZH7230uTTC1Twv08u+BerhPjkDLx8=
+	t=1705960016; cv=none; b=BTQfL5sshLjp55av5YYYwO9lflK1MyhfmgCv09WY6Z05yEYoMOm6SslZzR0M3Et2FYfZ+uBQWlVoEa5SNyAen9C4hwc/0aD4FaDL+YdO5rJL1yz4+cEgPgRwkyDnzL4d9BLyWfzn4+WAfw7HHdHL9OPHvNdL/vS70EawPyAM2hA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705956653; c=relaxed/simple;
-	bh=iKziXW5nSbJLL99tAPoPAh//iFGA+h98wNVjisnajQ8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Dl9GIyy5hiovh0IHBjuJx2JB8BpCj/ahoLGtbq/2qrifQKQUKHHTFN2Fh5xw+AF/iNp3ohHPkepf5wgIjGn9RL6NDR66eoiLeemgxkgQ7Sv9h0ZntLSKV8HGshxsZU76Hlm0IJgp0dE75CDGCgE8QxSXGuAwDDMn2RIkF4mTUtk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=link.tyut.edu.cn; spf=pass smtp.mailfrom=link.tyut.edu.cn; arc=none smtp.client-ip=45.195.17.207
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=link.tyut.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=link.tyut.edu.cn
-Received: from [192.168.2.76] (unknown [113.251.4.85])
-	by mail-m121145.qiye.163.com (Hmail) with ESMTPA id 3AD9F80010E;
-	Tue, 23 Jan 2024 01:11:59 +0800 (CST)
-Message-ID: <b8823223-e735-4d5a-b90e-6e2f2a6cd104@link.tyut.edu.cn>
-Date: Tue, 23 Jan 2024 01:11:58 +0800
+	s=arc-20240116; t=1705960016; c=relaxed/simple;
+	bh=MzaydCUlCqhLhboECIUpZ+C4q3tGr0uWQzxsjzXKAOo=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=u9w91cdWssk5/OThOY2175L3O2ozMM+B0H1Zhw3h4ypQRoviZv/mOGs8lf49v06EagxdQ8K4IY/kUXNCuv47yXvslTSYIdBvfm46jnNOA+JF5no5JnyJhuQ2DARX1fCYtbttTqW0kKwz9kZjY0GJmbLhkgMZYt+gwvlf921GI14=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GoPR9ZxQ; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GoPR9ZxQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C6F43C43394
+	for <linux-pm@vger.kernel.org>; Mon, 22 Jan 2024 21:46:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1705960015;
+	bh=MzaydCUlCqhLhboECIUpZ+C4q3tGr0uWQzxsjzXKAOo=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=GoPR9ZxQzmW6vLwfaXLYnHoidiWw2aXeWy/qFBY2naHQsOX31D+QmN5acrsDJwEXg
+	 VRW2tkhhJDUJ0OmvUPvc63t+oW4IZNoy9Ls4j4WOvy0yuNMS5qb50Ql9sGc212DaOh
+	 IrgvTpzNVAHzyYyTeP31Tm6UhSm41mZNIe3VAkyCICybBgLMTnlnUgh3VMvo6uz1zI
+	 ZxIKmdBwBEfmvPgcA0RODEGIU9iL0FVXXoSwiqN5xt3wgib414UXkvTNXM4pNAM7V3
+	 rl7t6sV5TvilQ112zgV0Av/87rul1KuR5GZq51getGu7s5u7WEaape/UNszwsx+jsT
+	 DBCD+wv9wxI5w==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id AE397C53BD2; Mon, 22 Jan 2024 21:46:55 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 217931] amd-pstate lacks crucial features: CPU frequency and
+ boost control
+Date: Mon, 22 Jan 2024 21:46:55 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: high
+X-Bugzilla-Who: alex.delorenzo@gmail.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-217931-137361-2JVO0ZMn6B@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-217931-137361@https.bugzilla.kernel.org/>
+References: <bug-217931-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] Documentation: power: Use kcalloc() instead of
- kzalloc()
-Content-Language: en-US
-To: Erick Archer <erick.archer@gmx.com>, Viresh Kumar <vireshk@kernel.org>,
- Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>,
- Pavel Machek <pavel@ucw.cz>, Alex Shi <alexs@kernel.org>,
- Yanteng Si <siyanteng@loongson.cn>, Jonathan Corbet <corbet@lwn.net>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-hardening@vger.kernel.org
-References: <20240121104344.5001-1-erick.archer@gmx.com>
-From: Hu Haowen <2023002089@link.tyut.edu.cn>
-In-Reply-To: <20240121104344.5001-1-erick.archer@gmx.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWS1ZQUlXWQ8JGhUIEh9ZQVkZS0pPVkhOTBkeTEoYGh5CSlUTARMWGhIXJBQOD1
-	lXWRgSC1lBWUpKSFVJTkpVT1VDTllXWRYaDxIVHRRZQVlPS0hVSkpLSEpDVUpLS1VLWQY+
-X-HM-Tid: 0a8d32285244b03akuuu3ad9f80010e
-X-HM-MType: 10
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6N0k6Eww*EDwZPg4yAU4JUS0R
-	Tg8KCzFVSlVKTEtOQk9ITklLSENLVTMWGhIXVUlLSUhLS0lLQ0I7FxIVEFUPAg4PVR4fDlUYFUVZ
-	V1kSC1lBWUpKSFVJTkpVT1VDTllXWQgBWUFPQkhINwY+
+
+https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
+
+--- Comment #38 from AlexDeLorenzo.dev (alex.delorenzo@gmail.com) ---
+It's been ~2 days and haven't run into this issue once while using the patc=
+h.
+I've also used ryzenadj without issue during that time.=20
 
 
-在 2024/1/21 18:43, Erick Archer 写道:
-> As noted in the "Deprecated Interfaces, Language Features, Attributes,
-> and Conventions" documentation [1], size calculations (especially
-> multiplication) should not be performed in memory allocator (or similar)
-> function arguments due to the risk of them overflowing. This could lead
-> to values wrapping around and a smaller allocation being made than the
-> caller was expecting. Using those allocations could lead to linear
-> overflows of heap memory and other misbehaviors.
->
-> So, in the example code use the purpose specific kcalloc() function
-> instead of the argument size * count in the kzalloc() function.
->
-> At the same time, modify the translations accordingly.
->
-> Link: https://www.kernel.org/doc/html/next/process/deprecated.html#open-coded-arithmetic-in-allocator-arguments [1]
-> Link: https://github.com/KSPP/linux/issues/162
-> Signed-off-by: Erick Archer <erick.archer@gmx.com>
-> ---
-> Hi,
->
-> This patch is a merger of two previous ones [1] [2].
-> As Hu Haowen and Jonathan Corbet suggested, the translation change
-> only makes sense if the original file is modified. So, with this
-> v2 version the original file and the translations are modified at
-> the same time.
->
-> [1] https://lore.kernel.org/linux-hardening/20240120120527.3866-1-erick.archer@gmx.com/
-> [2] https://lore.kernel.org/linux-hardening/20240120122204.4287-1-erick.archer@gmx.com/
->
-> Thanks,
-> Erick
-> ---
->   Documentation/power/opp.rst                    | 2 +-
->   Documentation/translations/zh_CN/power/opp.rst | 2 +-
->   2 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/power/opp.rst b/Documentation/power/opp.rst
-> index a7c03c470980..1b7f1d854f14 100644
-> --- a/Documentation/power/opp.rst
-> +++ b/Documentation/power/opp.rst
-> @@ -305,7 +305,7 @@ dev_pm_opp_get_opp_count
->   	 {
->   		/* Do things */
->   		num_available = dev_pm_opp_get_opp_count(dev);
-> -		speeds = kzalloc(sizeof(u32) * num_available, GFP_KERNEL);
-> +		speeds = kcalloc(num_available, sizeof(u32), GFP_KERNEL);
->   		/* populate the table in increasing order */
->   		freq = 0;
->   		while (!IS_ERR(opp = dev_pm_opp_find_freq_ceil(dev, &freq))) {
-> diff --git a/Documentation/translations/zh_CN/power/opp.rst b/Documentation/translations/zh_CN/power/opp.rst
-> index 8d6e3f6f6202..7470fa2d4c43 100644
-> --- a/Documentation/translations/zh_CN/power/opp.rst
-> +++ b/Documentation/translations/zh_CN/power/opp.rst
-> @@ -274,7 +274,7 @@ dev_pm_opp_get_opp_count
->   	 {
->   		/* 做一些事情 */
->   		num_available = dev_pm_opp_get_opp_count(dev);
-> -		speeds = kzalloc(sizeof(u32) * num_available, GFP_KERNEL);
-> +		speeds = kcalloc(num_available, sizeof(u32), GFP_KERNEL);
+Pretty sure it's the fix to this issue entirely.
 
+--=20
+You may reply to this email to add a comment.
 
-For the zh_CN translation,
-
-Reviewed-by: Hu Haowen <2023002089@link.tyut.edu.cn>
-
-
-Thanks,
-
-Hu Haowen
-
-
->   		/* 按升序填充表 */
->   		freq = 0;
->   		while (!IS_ERR(opp = dev_pm_opp_find_freq_ceil(dev, &freq))) {
-> --
-> 2.25.1
->
->
->
+You are receiving this mail because:
+You are the assignee for the bug.=
