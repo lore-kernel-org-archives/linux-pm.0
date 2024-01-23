@@ -1,46 +1,46 @@
-Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58F548003D;
-	Tue, 23 Jan 2024 16:45:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.249
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97B82811EF;
+	Tue, 23 Jan 2024 16:45:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706028336; cv=none; b=TawQK+V3hpAxeegbL2M3t9IE+oLDgUuzVx/y+d+XvzQ3tc0sg705bGPRoICz7mPrM8qmaZ+nV7hOtuLuzJXq2920nqx17q1a+qE5mToZnHRTO3+L+VoF81aFnijTIGgUEX40FdLsqZUpk2ux3iDM9Vun5ex94FNSoAKBNEuOaDs=
+	t=1706028339; cv=none; b=poM5ZNnSRn8aJHJ+diMqDo0pZbidrryQ4fxnbv3uyuHrEr3C9GxGoYpuv83BzXYbH78bB8spTfVlswWx3zFejcpT+B+DCI2B8WzYCqYEe7IfevvPDYquoLzRt/XVHpm7ZU259MdvOd+a8nOWFd8Qi3jSIgOM9jHegQw6H5+gPGU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706028336; c=relaxed/simple;
-	bh=8LjL26PYrPwCrvs/xSN0nyOOCGfpd558CyvkBVEVt2M=;
+	s=arc-20240116; t=1706028339; c=relaxed/simple;
+	bh=6DBAlHKtgTdDUg9RwXBHxBhu0U9svjp5OINIPB4+uQg=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mJKRLYUWmd+pJ+edJtnNMI4ifMfT11Eh9q4VdK+fYOhqROC/3rL6RRhhqzTROo7pW/hp/OfpN/4jkNOEbhvbAPMDme5WRNqNyys1f7xhdLlGw7kGOVwM2ZU5LJpXI63kmgCm0e3GlmTPy58lv9BiyQjHapUaNVi6qNkkIp1ETPA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=aRu2NBH+; arc=none smtp.client-ip=198.47.23.249
+	 MIME-Version:Content-Type; b=RzNS7wW1E3X85BaLZA7eNxXz+rg4Nv/V2ETlYRHi5JLMYNBCfRfZ+lPdj3UQ1cK6RE/jwhBw0S1YOlU+Y6QjEfAWJcFFQZAVFcLB7cSK/4scIOAATyOi4vRFLeowMim09o1Keya2ia0H+23kSqkT11DIhVoUdNxfP9r17DXBxmU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=P32C4sWd; arc=none smtp.client-ip=198.47.19.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="aRu2NBH+"
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-	by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGimmf101836;
-	Tue, 23 Jan 2024 10:44:48 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="P32C4sWd"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGikgJ078231;
+	Tue, 23 Jan 2024 10:44:46 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706028288;
-	bh=6OrX3DPXnzALpnhReuLUjIJGvye7DyNGb/CoW91+Q9Y=;
+	s=ti-com-17Q1; t=1706028286;
+	bh=OWBMIAYGqql0wAgfbGIt4Wt5E8wAkJwz4O3xabNraz0=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=aRu2NBH+Jl34untySgYsJ01x94ByIoIEXYUbivOB09rHgr91C1x3H10BrGV/WTgaN
-	 vjfxeS3UWpG+j6SPnK/fTdcYOgsuYivuoRPIM0QgP9VAbLKYoLj/kcFu0rTEg2BVEN
-	 /LXH3crLEaSPXs1UEN0suP5rAaFW876Mhopb5Xdw=
-Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
-	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGimBu011494
+	b=P32C4sWd5ISMqmsIw2A7ZleCJwNam9rf6cShR4bRElMrHQfghWuwC3/ybPjlCvhY0
+	 3SM7OkUHwJejJHGom32T7hS8W5ECrSCI0pGuQs804DqdvZiknOyRJ/zA2Ux5eqpznw
+	 TxdzgfJy3hf+IZ70As4HtYiocvQjrD5LkRaBC7ng=
+Received: from DFLE113.ent.ti.com (dfle113.ent.ti.com [10.64.6.34])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGikBi008941
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 23 Jan 2024 10:44:48 -0600
-Received: from DLEE106.ent.ti.com (157.170.170.36) by DLEE114.ent.ti.com
- (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
+	Tue, 23 Jan 2024 10:44:46 -0600
+Received: from DFLE115.ent.ti.com (10.64.6.36) by DFLE113.ent.ti.com
+ (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:44:48 -0600
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE106.ent.ti.com
- (157.170.170.36) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2024 10:44:46 -0600
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DFLE115.ent.ti.com
+ (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:44:48 -0600
+ Frontend Transport; Tue, 23 Jan 2024 10:44:46 -0600
 Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGiiKJ022038;
-	Tue, 23 Jan 2024 10:44:47 -0600
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGiiKG022038;
+	Tue, 23 Jan 2024 10:44:45 -0600
 From: Andrew Davis <afd@ti.com>
 To: Mark Rutland <mark.rutland@arm.com>,
         Lorenzo Pieralisi
@@ -62,9 +62,9 @@ CC: <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
         <linux-pm@vger.kernel.org>, <linux-spi@vger.kernel.org>,
         Andrew Davis
 	<afd@ti.com>
-Subject: [PATCH 4/4] firmware: ti_sci: Use devm_register_restart_handler()
-Date: Tue, 23 Jan 2024 10:44:43 -0600
-Message-ID: <20240123164443.394642-5-afd@ti.com>
+Subject: [PATCH 1/4] kernel/reboot: Deprecate register_restart_handler()
+Date: Tue, 23 Jan 2024 10:44:40 -0600
+Message-ID: <20240123164443.394642-2-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240123164443.394642-1-afd@ti.com>
 References: <20240123164443.394642-1-afd@ti.com>
@@ -78,60 +78,63 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Use device life-cycle managed register function to simplify probe.
+There are now two ways to add a handler to the restart_handler_list.
+Two ways to do the same thing is bad design, so let's unify on using
+the new method register_sys_off_handler() everywhere.
+
+Reasons:
+ * The other register_*_handler functions take a callback, this old
+   API takes a notifier_block, which makes it confusing with the
+   register_*_notifier class of functions.
+ * register_sys_off_handler (new API) is a more unified API allowing for
+   registering several system off types.
+ * The new API has more helpers built around it now, including devm and
+   platform helpers.
+ * The new API manages the struct notifier_block for us, simplifying using
+   code.
+
+Mark register_restart_handler() as deprecated to try to warn off new users
+while we finish converting the remaining existing users.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/firmware/ti_sci.c | 14 +++++---------
- 1 file changed, 5 insertions(+), 9 deletions(-)
+ include/linux/reboot.h | 8 ++++++--
+ kernel/reboot.c        | 3 +++
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/firmware/ti_sci.c b/drivers/firmware/ti_sci.c
-index 8b9a2556de16d..16501aa0b84cf 100644
---- a/drivers/firmware/ti_sci.c
-+++ b/drivers/firmware/ti_sci.c
-@@ -103,7 +103,6 @@ struct ti_sci_desc {
+diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+index abcdde4df6979..186291e9bf3bb 100644
+--- a/include/linux/reboot.h
++++ b/include/linux/reboot.h
+@@ -46,8 +46,12 @@ extern int unregister_reboot_notifier(struct notifier_block *);
+ 
+ extern int devm_register_reboot_notifier(struct device *, struct notifier_block *);
+ 
+-extern int register_restart_handler(struct notifier_block *);
+-extern int unregister_restart_handler(struct notifier_block *);
++/*
++ * This function is deprecated, use register_sys_off_handler(SYS_OFF_MODE_RESTART)
++ * or devm_register_restart_handler() instead.
++ */
++extern int __deprecated register_restart_handler(struct notifier_block *);
++extern int __deprecated unregister_restart_handler(struct notifier_block *);
+ extern void do_kernel_restart(char *cmd);
+ 
+ /*
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index 22c16e2564cca..38d6933fe892e 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -197,6 +197,9 @@ static ATOMIC_NOTIFIER_HEAD(restart_handler_list);
+  *
+  *	Currently always returns zero, as atomic_notifier_chain_register()
+  *	always returns zero.
++ *
++ *	This function is deprecated, use register_sys_off_handler(SYS_OFF_MODE_RESTART)
++ *	or devm_register_restart_handler() instead.
   */
- struct ti_sci_info {
- 	struct device *dev;
--	struct notifier_block nb;
- 	const struct ti_sci_desc *desc;
- 	struct dentry *d;
- 	void __iomem *debug_region;
-@@ -122,7 +121,6 @@ struct ti_sci_info {
- 
- #define cl_to_ti_sci_info(c)	container_of(c, struct ti_sci_info, cl)
- #define handle_to_ti_sci_info(h) container_of(h, struct ti_sci_info, handle)
--#define reboot_to_ti_sci_info(n) container_of(n, struct ti_sci_info, nb)
- 
- #ifdef CONFIG_DEBUG_FS
- 
-@@ -3254,10 +3252,9 @@ devm_ti_sci_get_resource(const struct ti_sci_handle *handle, struct device *dev,
- }
- EXPORT_SYMBOL_GPL(devm_ti_sci_get_resource);
- 
--static int tisci_reboot_handler(struct notifier_block *nb, unsigned long mode,
--				void *cmd)
-+static int tisci_reboot_handler(struct sys_off_data *data)
+ int register_restart_handler(struct notifier_block *nb)
  {
--	struct ti_sci_info *info = reboot_to_ti_sci_info(nb);
-+	struct ti_sci_info *info = data->cb_data;
- 	const struct ti_sci_handle *handle = &info->handle;
- 
- 	ti_sci_cmd_core_reboot(handle);
-@@ -3400,10 +3397,9 @@ static int ti_sci_probe(struct platform_device *pdev)
- 	ti_sci_setup_ops(info);
- 
- 	if (reboot) {
--		info->nb.notifier_call = tisci_reboot_handler;
--		info->nb.priority = 128;
--
--		ret = register_restart_handler(&info->nb);
-+		ret = devm_register_restart_handler(dev,
-+						    tisci_reboot_handler,
-+						    info);
- 		if (ret) {
- 			dev_err(dev, "reboot registration fail(%d)\n", ret);
- 			goto out;
 -- 
 2.39.2
 
