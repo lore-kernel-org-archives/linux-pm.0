@@ -1,46 +1,46 @@
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB1FC81AB8;
-	Tue, 23 Jan 2024 16:37:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3DCE811F0;
+	Tue, 23 Jan 2024 16:37:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706027829; cv=none; b=dVmeCl6uBxdvLGMTUtbFq6ACCcDbpRnblR6N17QxRFkUnfqwOgtlec1jV3UPhdYtqwLxYLvXvnrJilabLLlzAwbRyUHda4OlEKWFx1Bp1KazswDKqbB7fBzZHN30UWD1ubEozhIf2R6LNoFFJsT+H2AuQ8ILOeUCzHPLBOSb4oI=
+	t=1706027829; cv=none; b=TKrN5nsQ+Ss8yF/O+VjCBf6irDkDfCh8WFIyLaGpeOvSnY/dYtoXCUuL5vMYNJIcPQYqYxQ6eLfUelUbuSbX7qp+lw3eD62quRmk9eOKmOFv0IbIThiiAaiCDco6KIVaQvrAltDU/EGXHxt3T0MiDQN4wLlk8lsv9R0c5Dc3ZyI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706027829; c=relaxed/simple;
-	bh=sr2Vyb1EOHE0YZHeGvfTOHoxjt5lsn89GNkUPtiXd84=;
+	bh=k7Zat9ihsdYcIrX3WmyfcTU3YEIt3v7FOQBP7PuRDtE=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=dIS8QKCH/tDY2k9w44jq0NsTLBxvbWEnmB1fDGqbi/ApC0fUIEXRCpLbFS4A52/3JldLllRbn6+6DGUS0iLY0T5QYJVzM2VSAB88daixncWAnLqyKi5fJMxzJHHmni+u40ydMS3JBrjzihtybmOkN7UDb7PDebjnUEHe9BRtMH0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=xuQuj3Gl; arc=none smtp.client-ip=198.47.23.248
+	 MIME-Version:Content-Type; b=GhnPgArV5c1jIfK88UYTAdcQKUgvu1Wmcw6hNTQfh1zMqOLbP1JphAFSqQilDTDuuvPwGY+/n3XnvBZOWECIPPxaUDrGALY+X1Izw9XuZRc+l+ZP9lLs5/gtGZ5xawA4UIKJACRjxyCyZDybIsHU8mHM64mjv00ncArd6GW0T14=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=sj02YRbE; arc=none smtp.client-ip=198.47.19.142
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="xuQuj3Gl"
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGavD4049963;
-	Tue, 23 Jan 2024 10:36:57 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="sj02YRbE"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGb0tj094147;
+	Tue, 23 Jan 2024 10:37:00 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706027817;
-	bh=2SMklRBcdhC+e02hBGW+GTz+VKdDCFtjMgA9tyn8QQI=;
+	s=ti-com-17Q1; t=1706027820;
+	bh=cvG+uaN/7N2Dit5c/n8AJ+cABCuXl9sFCTAkKuB72r0=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=xuQuj3GluL2HEf4VLZUTa9+5RxFLp6x6gUDfYzhz44sZLooO/cGZnICYqBjVo2gB4
-	 kDmyj02jLExMBNOeMPiFlbeyuIwbSQYSdNiB5p2/O0S/ocDjV6DsyKbY+ktR9tQ2ib
-	 T2d1BsXgRXVFgLM4dIUH1Hb89/I09NB+gbiGoGZI=
-Received: from DLEE110.ent.ti.com (dlee110.ent.ti.com [157.170.170.21])
-	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGavrC119705
+	b=sj02YRbExzLvuKsK+4ULS9bVZrrARaNgzsM2ezYrdS/7OgsyanB8cD4D6ubZRC2qx
+	 KAUvtzEe8q66a/n2iuafnnvwFUEVo1tkIz4oMfM8aKX1geRWMt+KsjTKC1SYO4RDxi
+	 BgZaf+z6dEiLOP7ZvI2zd6rpWNho4WJKtiM+38D4=
+Received: from DLEE109.ent.ti.com (dlee109.ent.ti.com [157.170.170.41])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGb0Np000624
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 23 Jan 2024 10:36:57 -0600
-Received: from DLEE111.ent.ti.com (157.170.170.22) by DLEE110.ent.ti.com
- (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
+	Tue, 23 Jan 2024 10:37:00 -0600
+Received: from DLEE104.ent.ti.com (157.170.170.34) by DLEE109.ent.ti.com
+ (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:36:57 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE111.ent.ti.com
- (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2024 10:37:00 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE104.ent.ti.com
+ (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:36:57 -0600
+ Frontend Transport; Tue, 23 Jan 2024 10:37:00 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGarrv123403;
-	Tue, 23 Jan 2024 10:36:57 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGars7123403;
+	Tue, 23 Jan 2024 10:37:00 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Support Opensource
@@ -52,9 +52,9 @@ To: Sebastian Reichel <sre@kernel.org>,
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Andrew Davis
 	<afd@ti.com>
-Subject: [PATCH 09/21] power: supply: max8925: Use devm_power_supply_register() helper
-Date: Tue, 23 Jan 2024 10:36:41 -0600
-Message-ID: <20240123163653.384385-10-afd@ti.com>
+Subject: [PATCH 19/21] power: supply: rx51: Use devm_power_supply_register() helper
+Date: Tue, 23 Jan 2024 10:36:51 -0600
+Message-ID: <20240123163653.384385-20-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240123163653.384385-1-afd@ti.com>
 References: <20240123163653.384385-1-afd@ti.com>
@@ -74,74 +74,52 @@ forgetting to unregister on error paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/supply/max8925_power.c | 36 ++++++++--------------------
- 1 file changed, 10 insertions(+), 26 deletions(-)
+ drivers/power/supply/rx51_battery.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/power/supply/max8925_power.c b/drivers/power/supply/max8925_power.c
-index 4a2d6894f94ee..29ce6c5bfe0e6 100644
---- a/drivers/power/supply/max8925_power.c
-+++ b/drivers/power/supply/max8925_power.c
-@@ -528,25 +528,19 @@ static int max8925_power_probe(struct platform_device *pdev)
- 	psy_cfg.supplied_to = pdata->supplied_to;
- 	psy_cfg.num_supplicants = pdata->num_supplicants;
+diff --git a/drivers/power/supply/rx51_battery.c b/drivers/power/supply/rx51_battery.c
+index d532c670661b6..7cdcd415e8684 100644
+--- a/drivers/power/supply/rx51_battery.c
++++ b/drivers/power/supply/rx51_battery.c
+@@ -197,8 +197,6 @@ static int rx51_battery_probe(struct platform_device *pdev)
+ 	if (!di)
+ 		return -ENOMEM;
  
--	info->ac = power_supply_register(&pdev->dev, &ac_desc, &psy_cfg);
--	if (IS_ERR(info->ac)) {
--		ret = PTR_ERR(info->ac);
--		goto out;
--	}
-+	info->ac = devm_power_supply_register(&pdev->dev, &ac_desc, &psy_cfg);
-+	if (IS_ERR(info->ac))
-+		return PTR_ERR(info->ac);
- 	info->ac->dev.parent = &pdev->dev;
+-	platform_set_drvdata(pdev, di);
+-
+ 	di->dev = &pdev->dev;
+ 	di->bat_desc.name = "rx51-battery";
+ 	di->bat_desc.type = POWER_SUPPLY_TYPE_BATTERY;
+@@ -220,20 +218,13 @@ static int rx51_battery_probe(struct platform_device *pdev)
+ 	if (IS_ERR(di->channel_vbat))
+ 		return PTR_ERR(di->channel_vbat);
  
--	info->usb = power_supply_register(&pdev->dev, &usb_desc, &psy_cfg);
--	if (IS_ERR(info->usb)) {
--		ret = PTR_ERR(info->usb);
--		goto out_unregister_ac;
--	}
-+	info->usb = devm_power_supply_register(&pdev->dev, &usb_desc, &psy_cfg);
-+	if (IS_ERR(info->usb))
-+		return PTR_ERR(info->usb);
- 	info->usb->dev.parent = &pdev->dev;
+-	di->bat = power_supply_register(di->dev, &di->bat_desc, &psy_cfg);
++	di->bat = devm_power_supply_register(di->dev, &di->bat_desc, &psy_cfg);
+ 	if (IS_ERR(di->bat))
+ 		return PTR_ERR(di->bat);
  
--	info->battery = power_supply_register(&pdev->dev, &battery_desc, NULL);
--	if (IS_ERR(info->battery)) {
--		ret = PTR_ERR(info->battery);
--		goto out_unregister_usb;
--	}
-+	info->battery = devm_power_supply_register(&pdev->dev, &battery_desc, NULL);
-+	if (IS_ERR(info->battery))
-+		return PTR_ERR(info->battery);
- 	info->battery->dev.parent = &pdev->dev;
- 
- 	info->batt_detect = pdata->batt_detect;
-@@ -558,24 +552,14 @@ static int max8925_power_probe(struct platform_device *pdev)
- 
- 	max8925_init_charger(chip, info);
  	return 0;
--out_unregister_usb:
--	power_supply_unregister(info->usb);
--out_unregister_ac:
--	power_supply_unregister(info->ac);
--out:
--	return ret;
  }
  
- static void max8925_power_remove(struct platform_device *pdev)
- {
- 	struct max8925_power_info *info = platform_get_drvdata(pdev);
+-static void rx51_battery_remove(struct platform_device *pdev)
+-{
+-	struct rx51_device_info *di = platform_get_drvdata(pdev);
+-
+-	power_supply_unregister(di->bat);
+-}
+-
+ #ifdef CONFIG_OF
+ static const struct of_device_id n900_battery_of_match[] = {
+ 	{.compatible = "nokia,n900-battery", },
+@@ -244,7 +235,6 @@ MODULE_DEVICE_TABLE(of, n900_battery_of_match);
  
--	if (info) {
--		power_supply_unregister(info->ac);
--		power_supply_unregister(info->usb);
--		power_supply_unregister(info->battery);
-+	if (info)
- 		max8925_deinit_charger(info);
--	}
- }
- 
- static struct platform_driver max8925_power_driver = {
+ static struct platform_driver rx51_battery_driver = {
+ 	.probe = rx51_battery_probe,
+-	.remove_new = rx51_battery_remove,
+ 	.driver = {
+ 		.name = "rx51-battery",
+ 		.of_match_table = of_match_ptr(n900_battery_of_match),
 -- 
 2.39.2
 
