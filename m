@@ -1,46 +1,46 @@
-Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
+Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE5487FBCD;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E91E87FBC4;
 	Tue, 23 Jan 2024 16:37:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.249
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706027826; cv=none; b=bK694AXz9Lxp4XuM0YydFjbVkL2HROcxzO1XtrQTTy1mgErxelkNwesn6ZtfXSqPclKIX+WYWmosN2Gb/cno6vwYfLcSiL5eZ1TfOE5TB8a864weJBDV4gip4BSTro0jGCIOxnySmY9v535xnpHHD7FHikFDPo79/sg423VbUHk=
+	t=1706027826; cv=none; b=Ke8rgoniTtxt5o9YRg6GDODowY2fDmTggrBqzVfRWhVFf4XQ7R605iF04B9ZphqWGIVgDiWrrvfhPOE9hD8MeCzrSdzFitXs6KJyeO02kzXWCYTaHf/1Q/6ttWzlOgVkBwosOgLLJ8LT3qZH9u2rNQ6m7PJUwDge0pa+YM8jwYQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706027826; c=relaxed/simple;
-	bh=1/jYUyeGxOHiqO1t9Fn7Rz8hO0B1uSm3eptRNSnnwpA=;
+	bh=o/7DG4vBlzbT1FI27QNYk7vmJrSbn/8TuaSa9UDe3C0=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=n4aahRFs4Iph+rp+VKA6saYv/CFMpd3OJaHHaO88+rh4Vg8pURuRCvu2Y/pEhGjMa82BGXmnqKVofTpCl65JPIkI6nO9YRBXRteZ4dgwsTQwgnJM1gOZaPmGZX/9qcNqnrdbuiw6yLdE3oD0+GEXwFY3MpRhwyaU+xa9adXIFLQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=ySRq0O9w; arc=none smtp.client-ip=198.47.23.249
+	 MIME-Version:Content-Type; b=b80rw+7O8ZBWmc2/Pvh/cRG1wOoXlSPA6PHAoZ4qOyBjmsv52JmgMPBzS4wHHsOo/N8fl3fq9cSYdS9n/GeIK+jGnbpGMXgF5PvkVD637gfcQ9NAUZzQiX39yRbsMv8qpj1SdZfb4OzDba4GQvX6j07eDVG7aA0T9Pt/y8Dgn7E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=n9OE0G72; arc=none smtp.client-ip=198.47.23.248
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="ySRq0O9w"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="n9OE0G72"
 Received: from lelv0265.itg.ti.com ([10.180.67.224])
-	by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGatiq095559;
-	Tue, 23 Jan 2024 10:36:55 -0600
+	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGavTO049967;
+	Tue, 23 Jan 2024 10:36:57 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706027815;
-	bh=flf2OlhoLXg5wbdQwQ0WLCNrY2rfsuebbogRln7SRDo=;
+	s=ti-com-17Q1; t=1706027817;
+	bh=8VQ1S7LYK+8NKpjBZbOiLIVCGSw9MxS0HGGM8ySLLdo=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=ySRq0O9w+YTNjzg/jUq8KBOsl6qGh+T3xcZEQotkdUDsNnYalsuhaBNeqBShq6Dgt
-	 FBzaaeo6FW2uY3AIvVvdkJ9AKoLxGAqB2esZkmPQ0cJK3Tnpge2847FiHfAB3ZaZa4
-	 VmS50cbGm1/hQMFufKh+GvkpfNLgrTe2cFe9PxaQ=
-Received: from DFLE109.ent.ti.com (dfle109.ent.ti.com [10.64.6.30])
-	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGatr7000549
+	b=n9OE0G72O6wRJ/XypFIUG8rM1NjlNa5kzdfmbGYd7zAGfxOS8sey+IJdjSs5RocbF
+	 /XNOcqmiJrjzLM3xYqqfspkNoC5A22TdMXgpqZSqG0BTdvk8qKqY+7frSCD7JBCWtE
+	 UpTQyNfCbQ4CFqDg+twN1LZDHguyuZtrD0uzL2Ko=
+Received: from DFLE114.ent.ti.com (dfle114.ent.ti.com [10.64.6.35])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGavU8000588
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 23 Jan 2024 10:36:55 -0600
-Received: from DFLE100.ent.ti.com (10.64.6.21) by DFLE109.ent.ti.com
- (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
+	Tue, 23 Jan 2024 10:36:57 -0600
+Received: from DFLE111.ent.ti.com (10.64.6.32) by DFLE114.ent.ti.com
+ (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:36:54 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE100.ent.ti.com
- (10.64.6.21) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2024 10:36:57 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE111.ent.ti.com
+ (10.64.6.32) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:36:55 -0600
+ Frontend Transport; Tue, 23 Jan 2024 10:36:57 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGarro123403;
-	Tue, 23 Jan 2024 10:36:54 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGarrw123403;
+	Tue, 23 Jan 2024 10:36:57 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Support Opensource
@@ -52,9 +52,9 @@ To: Sebastian Reichel <sre@kernel.org>,
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Andrew Davis
 	<afd@ti.com>
-Subject: [PATCH 02/21] power: supply: da9052: Use devm_power_supply_register() helper
-Date: Tue, 23 Jan 2024 10:36:34 -0600
-Message-ID: <20240123163653.384385-3-afd@ti.com>
+Subject: [PATCH 10/21] power: supply: pcf50633: Use devm_power_supply_register() helper
+Date: Tue, 23 Jan 2024 10:36:42 -0600
+Message-ID: <20240123163653.384385-11-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240123163653.384385-1-afd@ti.com>
 References: <20240123163653.384385-1-afd@ti.com>
@@ -74,31 +74,64 @@ forgetting to unregister on error paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/supply/da9052-battery.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/power/supply/pcf50633-charger.c | 23 +++++++++--------------
+ 1 file changed, 9 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/power/supply/da9052-battery.c b/drivers/power/supply/da9052-battery.c
-index 6f7c58a41e918..0d84c42c624e0 100644
---- a/drivers/power/supply/da9052-battery.c
-+++ b/drivers/power/supply/da9052-battery.c
-@@ -622,7 +622,7 @@ static s32 da9052_bat_probe(struct platform_device *pdev)
- 		}
+diff --git a/drivers/power/supply/pcf50633-charger.c b/drivers/power/supply/pcf50633-charger.c
+index 950e30917c638..0e980522fee51 100644
+--- a/drivers/power/supply/pcf50633-charger.c
++++ b/drivers/power/supply/pcf50633-charger.c
+@@ -404,9 +404,9 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
+ 	psy_cfg.drv_data		= mbc;
+ 
+ 	/* Create power supplies */
+-	mbc->adapter = power_supply_register(&pdev->dev,
+-					     &pcf50633_mbc_adapter_desc,
+-					     &psy_cfg);
++	mbc->adapter = devm_power_supply_register(&pdev->dev,
++						  &pcf50633_mbc_adapter_desc,
++						  &psy_cfg);
+ 	if (IS_ERR(mbc->adapter)) {
+ 		dev_err(mbc->pcf->dev, "failed to register adapter\n");
+ 		return PTR_ERR(mbc->adapter);
+@@ -415,20 +415,19 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
+ 	usb_psy_cfg = psy_cfg;
+ 	usb_psy_cfg.attr_grp = pcf50633_mbc_sysfs_groups;
+ 
+-	mbc->usb = power_supply_register(&pdev->dev, &pcf50633_mbc_usb_desc,
+-					 &usb_psy_cfg);
++	mbc->usb = devm_power_supply_register(&pdev->dev,
++					      &pcf50633_mbc_usb_desc,
++					      &usb_psy_cfg);
+ 	if (IS_ERR(mbc->usb)) {
+ 		dev_err(mbc->pcf->dev, "failed to register usb\n");
+-		power_supply_unregister(mbc->adapter);
+ 		return PTR_ERR(mbc->usb);
  	}
  
--	bat->psy = power_supply_register(&pdev->dev, &psy_desc, &psy_cfg);
-+	bat->psy = devm_power_supply_register(&pdev->dev, &psy_desc, &psy_cfg);
- 	if (IS_ERR(bat->psy)) {
- 		ret = PTR_ERR(bat->psy);
- 		goto err;
-@@ -644,8 +644,6 @@ static void da9052_bat_remove(struct platform_device *pdev)
+-	mbc->ac = power_supply_register(&pdev->dev, &pcf50633_mbc_ac_desc,
+-					&psy_cfg);
++	mbc->ac = devm_power_supply_register(&pdev->dev,
++					     &pcf50633_mbc_ac_desc,
++					     &psy_cfg);
+ 	if (IS_ERR(mbc->ac)) {
+ 		dev_err(mbc->pcf->dev, "failed to register ac\n");
+-		power_supply_unregister(mbc->adapter);
+-		power_supply_unregister(mbc->usb);
+ 		return PTR_ERR(mbc->ac);
+ 	}
  
- 	for (i = 0; i < ARRAY_SIZE(da9052_bat_irqs); i++)
- 		da9052_free_irq(bat->da9052, da9052_bat_irq_bits[i], bat);
+@@ -449,10 +448,6 @@ static void pcf50633_mbc_remove(struct platform_device *pdev)
+ 	/* Remove IRQ handlers */
+ 	for (i = 0; i < ARRAY_SIZE(mbc_irq_handlers); i++)
+ 		pcf50633_free_irq(mbc->pcf, mbc_irq_handlers[i]);
 -
--	power_supply_unregister(bat->psy);
+-	power_supply_unregister(mbc->usb);
+-	power_supply_unregister(mbc->adapter);
+-	power_supply_unregister(mbc->ac);
  }
  
- static struct platform_driver da9052_bat_driver = {
+ static struct platform_driver pcf50633_mbc_driver = {
 -- 
 2.39.2
 
