@@ -1,73 +1,217 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id CD8465A0EB;
-	Tue, 23 Jan 2024 10:15:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 275655A0EB
+	for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2024 10:15:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706004930; cv=none; b=OaII2NXuE9AgSP0iFaMsojEHhE+F5mX1bhYUUjzZC/AmvRQXiaoH1Dub3jWW+IUcMDIhxuOkFY9K+c2BRk6ix14UmbsPemqfR5IOthjKDE/GOd50B9K5U0LNsWjJLV44RLFq7auLYJK2byMm+Bu+TmJeCC9T1rAUw9y7ba4JTYo=
+	t=1706004938; cv=none; b=oNkcEB4U9I75ou1JJWfnv5J9xHsVaSGoPQOzieDLhQ5uJAqv7mYwAlAhaJBbQxZyHTh7NtLnCwL49KxJzg/kqyzdFLccZhZDUi/c4O2Te0OsHO/WzgNq/D4l/8kTmGj5ZxAVHp71Wsrz50Dt8hlwOn6ss79RJaAKqPl5afY6Yj4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706004930; c=relaxed/simple;
-	bh=qgJAvwjqadOAFVHNp00pGGzUi/Sz+qHJ/cHPAJhKjYg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YY5scCwMnIdiKwjp198DU7j5Zwu611RY0Bjhv6ctFR9kYHHIaH6f8XoaC2fvJ0BySsLNIILYKkUVReE1yTUf400w3Jj4kwh5jhnHS52WfisEnb/Xx1dkCA0Mwz+bYrE3B2CaVrncihcZN9usxuwVbtBm6tZnWy1CtJkQwwKUtkw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 778521FB;
-	Tue, 23 Jan 2024 02:16:06 -0800 (PST)
-Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3F35F3F5A1;
-	Tue, 23 Jan 2024 02:15:19 -0800 (PST)
-Date: Tue, 23 Jan 2024 10:15:16 +0000
-From: Sudeep Holla <sudeep.holla@arm.com>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sibi Sankar <quic_sibis@quicinc.com>, cristian.marussi@arm.com,
-	rafael@kernel.org, morten.rasmussen@arm.com,
-	Sudeep Holla <sudeep.holla@arm.com>, dietmar.eggemann@arm.com,
-	lukasz.luba@arm.com, sboyd@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, quic_mdtipton@quicinc.com,
-	linux-arm-msm@vger.kernel.org, nm@ti.com
-Subject: Re: [PATCH 0/3] cpufreq: scmi: Add boost frequency support
-Message-ID: <Za-RtBrSxI-j4Jdx@bogus>
-References: <20240117110443.2060704-1-quic_sibis@quicinc.com>
- <20240123060827.a3vszziftj6pszt3@vireshk-i7>
+	s=arc-20240116; t=1706004938; c=relaxed/simple;
+	bh=VsAKzQTjWrB/fdWeMlJRwIxVXlZHOl6RR8fK5n41VXE=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=Ij4e/vnHQaysGP4bWXAqUfUJfg3cZ279zvTnAMIPszigicvHGdgpZPyCw76j+s4Tb2LczKcRph8oPGQ9ppwbJfGkVhQEBlZ5SyHCGa/ncPav4+2e9l+j8a7h8V/H4CittTp/STLsV4rFHpUc6KjMOiVHamWE0Vv6BB04Kd82nmM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=dPoIB39a; arc=none smtp.client-ip=198.175.65.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="dPoIB39a"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1706004938; x=1737540938;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=VsAKzQTjWrB/fdWeMlJRwIxVXlZHOl6RR8fK5n41VXE=;
+  b=dPoIB39aRzOu39mIlIa5Am2Q10srf496okDqwzSI8znPIv9bufon4qMB
+   kDazjQkEG7lZWZGLyq+GAyieM74NyT76GN/cmkKn34HEDx4krgpTdZjY1
+   t561/gTlXsqdbsxpEC58s/OcP80tuGhfMUoYY9jYQpNaVS8KNz6nJ2GaL
+   19YHn+9LOiKXIhEtk8gQTHltdDyhvA28W0KIxGEKvpEHGBwncytU/rB6p
+   RfS/PVYr7qIdDkeIDzRDpd0Set1jh2Ec9FzHh2cfA6fsS/DEvW82VKiiF
+   NdZHeE2EcM5aX3gcRix0XhTtnSbqXlOkUBAJbRc0nfvf+RRiCEtISWS9T
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10961"; a="14828949"
+X-IronPort-AV: E=Sophos;i="6.05,214,1701158400"; 
+   d="scan'208";a="14828949"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jan 2024 02:15:37 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10961"; a="1117206787"
+X-IronPort-AV: E=Sophos;i="6.05,214,1701158400"; 
+   d="scan'208";a="1117206787"
+Received: from turnipsi.fi.intel.com (HELO kekkonen.fi.intel.com) ([10.237.72.44])
+  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jan 2024 02:15:31 -0800
+Received: from svinhufvud.ger.corp.intel.com (localhost [IPv6:::1])
+	by kekkonen.fi.intel.com (Postfix) with ESMTP id 3795611FC49;
+	Tue, 23 Jan 2024 11:58:24 +0200 (EET)
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	laurent.pinchart@ideasonboard.com,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+	David Airlie <airlied@gmail.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	intel-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH v4 2/3] pm: runtime: Make pm_runtime_get_if_conditional() private
+Date: Tue, 23 Jan 2024 11:58:23 +0200
+Message-Id: <20240123095823.97346-1-sakari.ailus@linux.intel.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240123095642.97303-1-sakari.ailus@linux.intel.com>
+References: <20240123095642.97303-1-sakari.ailus@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240123060827.a3vszziftj6pszt3@vireshk-i7>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Jan 23, 2024 at 11:38:27AM +0530, Viresh Kumar wrote:
-> On 17-01-24, 16:34, Sibi Sankar wrote:
-> > This series adds provision to mark dynamic opps as boost capable and adds
-> > boost frequency support to the scmi cpufreq driver.
-> > 
-> > Depends on:
-> > HW pressure v4: https://patchwork.kernel.org/project/linux-arm-msm/cover/20240109164655.626085-1-vincent.guittot@linaro.org/
-> > scmi notification v2: https://patchwork.kernel.org/project/linux-arm-msm/cover/20240117104116.2055349-1-quic_sibis@quicinc.com/
-> > 
-> > Sibi Sankar (3):
-> >   OPP: Extend dev_pm_opp_data with turbo support
-> >   firmware: arm_scmi: Add support for marking certain frequencies as
-> >     boost
-> >   cpufreq: scmi: Enable boost support
-> 
-> Sudeep, please lemme know if you are okay with the changes. Will apply
-> them.
+Stop offering pm_runtime_get_if_conditional() API function for drivers,
+instead require them to use pm_runtime_get_if_{active,in_use}. Also
+convert the only user, the i915 driver, to use the said functions.
 
-I was planning to look at it once Lukasz/Dietmar confirm that this concept
-doesn't change anything fundamental in the way EAS related changes work
-today. I know I suggested the change as that seem to be right way to do
-but I haven't analysed if this has any negative impact on the existing
-features as this change will impact all the existing platform with OPPs
-above sustained performance/frequency advertised from the SCMI platform
-firmware.
+Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+---
+ drivers/base/power/runtime.c            | 34 ++++++++++++++++++++--
+ drivers/gpu/drm/i915/intel_runtime_pm.c |  5 +++-
+ include/linux/pm_runtime.h              | 38 ++-----------------------
+ 3 files changed, 38 insertions(+), 39 deletions(-)
 
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 83e0cd2a19e7..d2c17e29567d 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1197,7 +1197,7 @@ EXPORT_SYMBOL_GPL(__pm_runtime_resume);
+  * The caller is responsible for decrementing the runtime PM usage counter of
+  * @dev after this function has returned a positive value for it.
+  */
+-int pm_runtime_get_conditional(struct device *dev, bool ign_usage_count)
++static int pm_runtime_get_conditional(struct device *dev, bool ign_usage_count)
+ {
+ 	unsigned long flags;
+ 	int retval;
+@@ -1218,7 +1218,37 @@ int pm_runtime_get_conditional(struct device *dev, bool ign_usage_count)
+ 
+ 	return retval;
+ }
+-EXPORT_SYMBOL_GPL(pm_runtime_get_conditional);
++
++/**
++ * pm_runtime_get_if_active - Bump up runtime PM usage counter if the device is
++ *			      in active state
++ * @dev: Target device.
++ *
++ * Increment the runtime PM usage counter of @dev if its runtime PM status is
++ * %RPM_ACTIVE, in which case it returns 1. If the device is in a different
++ * state, 0 is returned. -EINVAL is returned if runtime PM is disabled for the
++ * device.
++ */
++int pm_runtime_get_if_active(struct device *dev)
++{
++	return pm_runtime_get_conditional(dev, true);
++}
++EXPORT_SYMBOL_GPL(pm_runtime_get_if_active);
++
++/**
++ * pm_runtime_get_if_in_use - Conditionally bump up runtime PM usage counter.
++ * @dev: Target device.
++ *
++ * Increment the runtime PM usage counter of @dev if its runtime PM status is
++ * %RPM_ACTIVE and its runtime PM usage counter is greater than 0, in which case
++ * it returns 1. If the device is in a different state or its usage_count is 0,
++ * 0 is returned. -EINVAL is returned if runtime PM is disabled for the device.
++ */
++int pm_runtime_get_if_in_use(struct device *dev)
++{
++	return pm_runtime_get_conditional(dev, false);
++}
++EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_use);
+ 
+ /**
+  * __pm_runtime_set_status - Set runtime PM status of a device.
+diff --git a/drivers/gpu/drm/i915/intel_runtime_pm.c b/drivers/gpu/drm/i915/intel_runtime_pm.c
+index b5f8abd2a22b..d4e844128826 100644
+--- a/drivers/gpu/drm/i915/intel_runtime_pm.c
++++ b/drivers/gpu/drm/i915/intel_runtime_pm.c
+@@ -246,7 +246,10 @@ static intel_wakeref_t __intel_runtime_pm_get_if_active(struct intel_runtime_pm
+ 		 * function, since the power state is undefined. This applies
+ 		 * atm to the late/early system suspend/resume handlers.
+ 		 */
+-		if (pm_runtime_get_conditional(rpm->kdev, ignore_usecount) <= 0)
++		if ((ignore_usecount &&
++		     pm_runtime_get_if_active(rpm->kdev) <= 0) ||
++		    (!ignore_usecount &&
++		     pm_runtime_get_if_in_use(rpm->kdev) <= 0))
+ 			return 0;
+ 	}
+ 
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index a212b3008ade..436baa167498 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -72,8 +72,8 @@ extern int pm_runtime_force_resume(struct device *dev);
+ extern int __pm_runtime_idle(struct device *dev, int rpmflags);
+ extern int __pm_runtime_suspend(struct device *dev, int rpmflags);
+ extern int __pm_runtime_resume(struct device *dev, int rpmflags);
+-extern int pm_runtime_get_conditional(struct device *dev,
+-					bool ign_usage_count);
++extern int pm_runtime_get_if_active(struct device *dev);
++extern int pm_runtime_get_if_in_use(struct device *dev);
+ extern int pm_schedule_suspend(struct device *dev, unsigned int delay);
+ extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
+ extern int pm_runtime_barrier(struct device *dev);
+@@ -95,35 +95,6 @@ extern void pm_runtime_release_supplier(struct device_link *link);
+ 
+ extern int devm_pm_runtime_enable(struct device *dev);
+ 
+-/**
+- * pm_runtime_get_if_active - Bump up runtime PM usage counter if the device is
+- *			      in active state
+- * @dev: Target device.
+- *
+- * Increment the runtime PM usage counter of @dev if its runtime PM status is
+- * %RPM_ACTIVE, in which case it returns 1. If the device is in a different
+- * state, 0 is returned. -EINVAL is returned if runtime PM is disabled for the
+- * device.
+- */
+-static inline int pm_runtime_get_if_active(struct device *dev)
+-{
+-	return pm_runtime_get_conditional(dev, true);
+-}
+-
+-/**
+- * pm_runtime_get_if_in_use - Conditionally bump up runtime PM usage counter.
+- * @dev: Target device.
+- *
+- * Increment the runtime PM usage counter of @dev if its runtime PM status is
+- * %RPM_ACTIVE and its runtime PM usage counter is greater than 0, in which case
+- * it returns 1. If the device is in a different state or its usage_count is 0,
+- * 0 is returned. -EINVAL is returned if runtime PM is disabled for the device.
+- */
+-static inline int pm_runtime_get_if_in_use(struct device *dev)
+-{
+-	return pm_runtime_get_conditional(dev, false);
+-}
+-
+ /**
+  * pm_suspend_ignore_children - Set runtime PM behavior regarding children.
+  * @dev: Target device.
+@@ -297,11 +268,6 @@ static inline int pm_runtime_get_if_active(struct device *dev)
+ {
+ 	return -EINVAL;
+ }
+-static inline int pm_runtime_get_conditional(struct device *dev,
+-					     bool ign_usage_count)
+-{
+-	return -EINVAL;
+-}
+ static inline int __pm_runtime_set_status(struct device *dev,
+ 					    unsigned int status) { return 0; }
+ static inline int pm_runtime_barrier(struct device *dev) { return 0; }
 -- 
-Regards,
-Sudeep
+2.39.2
+
