@@ -1,46 +1,46 @@
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 155FF7FBAC;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 153237F7E2;
 	Tue, 23 Jan 2024 16:37:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706027825; cv=none; b=pAJQ0e0SpziMVTNNlnQfB+/2qNEBvSUgj5c8Q7EVCugN7rkaeHhu7O+9befIKNqsQpLPvuOg6HkAGYhqhsxByS+ZSzD7wkqcfkwxNTKI4POmXXojcx2lqxUmlBRrMiVWQIGEoZ9WIavahaHit0/7u2XTnW8RfN8gnQ4BFtq5rqc=
+	t=1706027825; cv=none; b=NQ2Ux2oExXWp++FRZv1WzAYc4VUKnl6hx1G6v2zOXmrVV18nvM7JVziJg5cp3eyEQlFnPIu8bslfcR1xcOIFJ1qrqz0NW34p8nXJN0uxA7a1U3+IQwr4WcE4CDeeZVNdZYcCwPBferT0VFAibHBSUQ0/1esKyhUg/6/m2yVYKLE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706027825; c=relaxed/simple;
-	bh=6EbfTxVZTsZcDz6soZJ7jpZfyhuxH4m975EW/o+lIBk=;
+	bh=OY2361TGwrkXPrQ1UsenLqUtBgbOE0Azmm4BwfLansg=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=FCAQ9U1gKoaMvnvuyn54zF5+SRptV3b2gXg9vNasbuVejI9n0dO5POD2BWtUwOS9E2drKYh5oz0aaXMfXOgEu2INTHbBYrMlbnNnC12Xa9r2E1CCVoroFmnvrbeJTMDfsQeOFP/ET6qELkUpQqOEoSX/nkJogM4nTJNylP51P44=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=V+y8O77G; arc=none smtp.client-ip=198.47.19.141
+	 MIME-Version:Content-Type; b=kOSQzyd/55s/YZSjgZ7dXkl7Zvz8a07PqyvRX/t5CazK6SQtkCg2UrC0+M9FROAuyz0u1/gP+l6Oeu6ogL1H/oyGKmbQj35RudoMXZzI5pXs++qTGBLGagK0sFCv8Nh9rGOw2L5wV7IPgl4NyRh7XKAfJSkNuDcQrIg8nex+Z4k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=YhJCOtRC; arc=none smtp.client-ip=198.47.23.248
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="V+y8O77G"
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGawJN077092;
-	Tue, 23 Jan 2024 10:36:58 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="YhJCOtRC"
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGatk2049949;
+	Tue, 23 Jan 2024 10:36:55 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706027818;
-	bh=bgvmGI1WvRaGQtO6cF0xR2F5H/hltWKL+Ey04aoYvK0=;
+	s=ti-com-17Q1; t=1706027815;
+	bh=kY60sQE2O0mWnnL7W1my2Lgy6WoutICMhmnbxu89kcA=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=V+y8O77GeCqoZo7qKU7dU2fAtoC1NawLPUp+WHvRsv8TSwZCSBMjMb9itjMmNNRwF
-	 SUdXSVUF8VfDitIHB67sFP3vjemrTIwp2KTihVvXhoLnQAk6dWOxgRgVM3HFrRCNQa
-	 65gzY1QNJ2rZQhFvTacPG7qIiVreUWS44UV/Ody8=
+	b=YhJCOtRCdPuqytKsPHHQo9zyjvkAqoOHUcWNfmezYI1V8ft+l3nIKTaKt4uCci1lt
+	 Pd1G7JlLLw9rXw7wLzcVnEIuqud/y3hxz1cTD3inGCts6FLMBl40bvjYeW3A7ZmDcm
+	 D2LdiCvcXyX6tXwemYHky7+2dZls4ph3xayMZOyY=
 Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
-	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGaw8v119722
+	by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGathg033944
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 23 Jan 2024 10:36:58 -0600
-Received: from DLEE110.ent.ti.com (157.170.170.21) by DLEE114.ent.ti.com
+	Tue, 23 Jan 2024 10:36:55 -0600
+Received: from DLEE115.ent.ti.com (157.170.170.26) by DLEE114.ent.ti.com
  (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:36:57 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE110.ent.ti.com
- (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2024 10:36:55 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE115.ent.ti.com
+ (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:36:57 -0600
+ Frontend Transport; Tue, 23 Jan 2024 10:36:55 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGarrx123403;
-	Tue, 23 Jan 2024 10:36:57 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGarrp123403;
+	Tue, 23 Jan 2024 10:36:55 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Support Opensource
@@ -52,9 +52,9 @@ To: Sebastian Reichel <sre@kernel.org>,
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Andrew Davis
 	<afd@ti.com>
-Subject: [PATCH 11/21] power: supply: rt5033: Use devm_power_supply_register() helper
-Date: Tue, 23 Jan 2024 10:36:43 -0600
-Message-ID: <20240123163653.384385-12-afd@ti.com>
+Subject: [PATCH 03/21] power: supply: ds2760: Use devm_power_supply_register() helper
+Date: Tue, 23 Jan 2024 10:36:35 -0600
+Message-ID: <20240123163653.384385-4-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240123163653.384385-1-afd@ti.com>
 References: <20240123163653.384385-1-afd@ti.com>
@@ -74,51 +74,38 @@ forgetting to unregister on error paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/supply/rt5033_battery.c | 14 +++-----------
- 1 file changed, 3 insertions(+), 11 deletions(-)
+ drivers/power/supply/ds2760_battery.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/power/supply/rt5033_battery.c b/drivers/power/supply/rt5033_battery.c
-index d90b96df8e73d..32eafe2c00af5 100644
---- a/drivers/power/supply/rt5033_battery.c
-+++ b/drivers/power/supply/rt5033_battery.c
-@@ -159,12 +159,12 @@ static int rt5033_battery_probe(struct i2c_client *client)
- 		return -EINVAL;
- 	}
+diff --git a/drivers/power/supply/ds2760_battery.c b/drivers/power/supply/ds2760_battery.c
+index 40fba31be1744..7cf4ea06b5003 100644
+--- a/drivers/power/supply/ds2760_battery.c
++++ b/drivers/power/supply/ds2760_battery.c
+@@ -739,7 +739,7 @@ static int w1_ds2760_add_slave(struct w1_slave *sl)
+ 	if (current_accum)
+ 		ds2760_battery_set_current_accum(di, current_accum);
  
--	i2c_set_clientdata(client, battery);
- 	psy_cfg.of_node = client->dev.of_node;
- 	psy_cfg.drv_data = battery;
+-	di->bat = power_supply_register(dev, &di->bat_desc, &psy_cfg);
++	di->bat = devm_power_supply_register(dev, &di->bat_desc, &psy_cfg);
+ 	if (IS_ERR(di->bat)) {
+ 		dev_err(di->dev, "failed to register battery\n");
+ 		retval = PTR_ERR(di->bat);
+@@ -762,7 +762,6 @@ static int w1_ds2760_add_slave(struct w1_slave *sl)
+ 	goto success;
  
--	battery->psy = power_supply_register(&client->dev,
--					     &rt5033_battery_desc, &psy_cfg);
-+	battery->psy = devm_power_supply_register(&client->dev,
-+						  &rt5033_battery_desc,
-+						  &psy_cfg);
- 	if (IS_ERR(battery->psy))
- 		return dev_err_probe(&client->dev, PTR_ERR(battery->psy),
- 				     "Failed to register power supply\n");
-@@ -172,13 +172,6 @@ static int rt5033_battery_probe(struct i2c_client *client)
- 	return 0;
+ workqueue_failed:
+-	power_supply_unregister(di->bat);
+ batt_failed:
+ di_alloc_failed:
+ success:
+@@ -777,7 +776,6 @@ static void w1_ds2760_remove_slave(struct w1_slave *sl)
+ 	cancel_delayed_work_sync(&di->monitor_work);
+ 	cancel_delayed_work_sync(&di->set_charged_work);
+ 	destroy_workqueue(di->monitor_wqueue);
+-	power_supply_unregister(di->bat);
  }
  
--static void rt5033_battery_remove(struct i2c_client *client)
--{
--	struct rt5033_battery *battery = i2c_get_clientdata(client);
--
--	power_supply_unregister(battery->psy);
--}
--
- static const struct i2c_device_id rt5033_battery_id[] = {
- 	{ "rt5033-battery", },
- 	{ }
-@@ -197,7 +190,6 @@ static struct i2c_driver rt5033_battery_driver = {
- 		.of_match_table = rt5033_battery_of_match,
- 	},
- 	.probe = rt5033_battery_probe,
--	.remove = rt5033_battery_remove,
- 	.id_table = rt5033_battery_id,
- };
- module_i2c_driver(rt5033_battery_driver);
+ #ifdef CONFIG_OF
 -- 
 2.39.2
 
