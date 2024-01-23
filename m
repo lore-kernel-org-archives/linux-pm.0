@@ -1,46 +1,45 @@
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B500D7FBA7;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C49487FBA9;
 	Tue, 23 Jan 2024 16:37:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706027825; cv=none; b=oLs12gCA0BiPekZADWRl48MzLH9qKSbkphYo0LF3Me9JKT/lCuPbusw9vz4sq5d7rZjwRNglwEK8VGKwzJuS3sOFwQMtlhRndfQIXq4p7rGrB9Wb0TivueMIHkHbwbJ1fbpCXuDUktoAEP/FvQJa0+vMuZYLvX8F+pz3GeTfxUI=
+	t=1706027825; cv=none; b=qIyq+a8vRJq7JY40EXciq4cYeDZd2fsxeyeepNq1C+AQALEiTpElLUgY4pYr+lbsaOoP8+LHRT07SrnhlmM7wMZciHaBGs4bJkduLXZa5hT4OPT0SXd8yjWJ6swWULVTCKfAb6V7mVH4w6npiGae/3kZmcXo5h3g0S5XdzLwZmA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706027825; c=relaxed/simple;
-	bh=myx2MpLW0BLIIV1WjqQSWc7I22jNcepmPeZLJ9LmvD4=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=bQFMgMfJB3zxzDr0gJUisjnQYNq8LhhFy+KFDbjwc2QnXjy8qumdiP/N1wPKDJfbw0RurA7T8TZrEgTouA1R7igqpxXcVe0Vsxfr0EAgUqlvzH20VtKPvXANcikjWDLwmA3QYdB3jCjR6AOeREwRp24twnmQ6wVOfkJhtHPj2YM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=fMzDX2z0; arc=none smtp.client-ip=198.47.23.248
+	bh=pWH8NAHtrCvFVSYAPVsf9lKe7zVZF7vWQZ1xReqHAuY=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=AQ84sQhtPJYqNoMslH2dP/qsQqrHwHyg+/qHGoh0I3u3kgqMLEpTqUTtmY976Ml1mJ1sq8eLBfdIt4YEkn1PdUumHJqIxJwPOqy5zLcSkEkriN550Y2XhjTSE+vZNUa7xefKZ7bLlng3lSyhwXOZ1jQbdbiXPL4xrxPVL7DxqJg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=V5Zeaq+W; arc=none smtp.client-ip=198.47.19.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="fMzDX2z0"
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGatNd049954;
-	Tue, 23 Jan 2024 10:36:55 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="V5Zeaq+W"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGasLk077073;
+	Tue, 23 Jan 2024 10:36:54 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706027816;
-	bh=s6LdQ0CqE6bsag94Q3BFy5Co7g4aAv5Nxljjo9epZBY=;
-	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=fMzDX2z0GAJwHAoBUe6Ike2S1/Ie+Vco4c1s3f0hciGHKUQVnvJMVzu9sH29IrFY4
-	 ssTDxTp9z7/Lhr0zuZNOQ16qoCcYrUYzhdW9grQJW2yzTqs3zAdG1yVE/+eL7iANMJ
-	 WX4ETDOQ9ixCMVbghM7Z21sfomiytP7v6HEZMKg8=
-Received: from DFLE114.ent.ti.com (dfle114.ent.ti.com [10.64.6.35])
-	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGatvx004183
+	s=ti-com-17Q1; t=1706027814;
+	bh=q7pRp5x0RG+L6or32Q9nmMCN27zczX+N7SM2pF7W3VM=;
+	h=From:To:CC:Subject:Date;
+	b=V5Zeaq+WPMJp9Zw0v/NXFVWhBsUpMgB0ankkefCZPSaH5bKFd156fx3V2SYT/9v/4
+	 /f2ckNyaCkNIAxuJ2PA5pIlxZeN8HI963n5y3HLyXit7jKIWkuNtn8Ea9v9jslLRvS
+	 AfOvNsoOjqYdf0jEFKwIhydGWeamoblA5Ph5C79I=
+Received: from DFLE112.ent.ti.com (dfle112.ent.ti.com [10.64.6.33])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGasnq000545
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 23 Jan 2024 10:36:55 -0600
-Received: from DFLE103.ent.ti.com (10.64.6.24) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
+	Tue, 23 Jan 2024 10:36:54 -0600
+Received: from DFLE108.ent.ti.com (10.64.6.29) by DFLE112.ent.ti.com
+ (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:36:55 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE103.ent.ti.com
- (10.64.6.24) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2024 10:36:54 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE108.ent.ti.com
+ (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:36:55 -0600
+ Frontend Transport; Tue, 23 Jan 2024 10:36:54 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGarrq123403;
-	Tue, 23 Jan 2024 10:36:55 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGarrm123403;
+	Tue, 23 Jan 2024 10:36:54 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Support Opensource
@@ -52,12 +51,10 @@ To: Sebastian Reichel <sre@kernel.org>,
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Andrew Davis
 	<afd@ti.com>
-Subject: [PATCH 04/21] power: supply: goldfish: Use devm_power_supply_register() helper
-Date: Tue, 23 Jan 2024 10:36:36 -0600
-Message-ID: <20240123163653.384385-5-afd@ti.com>
+Subject: [PATCH 00/21] Power supply register with devm
+Date: Tue, 23 Jan 2024 10:36:32 -0600
+Message-ID: <20240123163653.384385-1-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240123163653.384385-1-afd@ti.com>
-References: <20240123163653.384385-1-afd@ti.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -68,66 +65,60 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Use the device lifecycle managed register function. This helps prevent
-mistakes like unregistering out of order in cleanup functions and
-forgetting to unregister on error paths.
+Hello all,
 
-Signed-off-by: Andrew Davis <afd@ti.com>
----
- drivers/power/supply/goldfish_battery.c | 24 +++++++-----------------
- 1 file changed, 7 insertions(+), 17 deletions(-)
+This is a semi-automated series converting several drivers
+under power/supply over to using devm_power_supply_register().
+The more trivial cases are first, the last 3 drivers needed
+a little pre-work to convert their IIO uses over to devm before
+power_supply_register() could be switched.
 
-diff --git a/drivers/power/supply/goldfish_battery.c b/drivers/power/supply/goldfish_battery.c
-index 8bb645ad1e5d5..479195e35d734 100644
---- a/drivers/power/supply/goldfish_battery.c
-+++ b/drivers/power/supply/goldfish_battery.c
-@@ -232,31 +232,22 @@ static int goldfish_battery_probe(struct platform_device *pdev)
- 
- 	psy_cfg.drv_data = data;
- 
--	data->ac = power_supply_register(&pdev->dev, &ac_desc, &psy_cfg);
-+	data->ac = devm_power_supply_register(&pdev->dev,
-+					      &ac_desc,
-+					      &psy_cfg);
- 	if (IS_ERR(data->ac))
- 		return PTR_ERR(data->ac);
- 
--	data->battery = power_supply_register(&pdev->dev, &battery_desc,
--						&psy_cfg);
--	if (IS_ERR(data->battery)) {
--		power_supply_unregister(data->ac);
-+	data->battery = devm_power_supply_register(&pdev->dev,
-+						   &battery_desc,
-+						   &psy_cfg);
-+	if (IS_ERR(data->battery))
- 		return PTR_ERR(data->battery);
--	}
--
--	platform_set_drvdata(pdev, data);
- 
- 	GOLDFISH_BATTERY_WRITE(data, BATTERY_INT_ENABLE, BATTERY_INT_MASK);
- 	return 0;
- }
- 
--static void goldfish_battery_remove(struct platform_device *pdev)
--{
--	struct goldfish_battery_data *data = platform_get_drvdata(pdev);
--
--	power_supply_unregister(data->battery);
--	power_supply_unregister(data->ac);
--}
--
- static const struct of_device_id goldfish_battery_of_match[] = {
- 	{ .compatible = "google,goldfish-battery", },
- 	{},
-@@ -273,7 +264,6 @@ MODULE_DEVICE_TABLE(acpi, goldfish_battery_acpi_match);
- 
- static struct platform_driver goldfish_battery_device = {
- 	.probe		= goldfish_battery_probe,
--	.remove_new	= goldfish_battery_remove,
- 	.driver = {
- 		.name = "goldfish-battery",
- 		.of_match_table = goldfish_battery_of_match,
+Thanks,
+Andrew
+
+Andrew Davis (21):
+  power: supply: da9030: Use devm_power_supply_register() helper
+  power: supply: da9052: Use devm_power_supply_register() helper
+  power: supply: ds2760: Use devm_power_supply_register() helper
+  power: supply: goldfish: Use devm_power_supply_register() helper
+  power: supply: lp8727: Use devm_power_supply_register() helper
+  power: supply: lp8788: Use devm_power_supply_register() helper
+  power: supply: max14577: Use devm_power_supply_register() helper
+  power: supply: max77693: Use devm_power_supply_register() helper
+  power: supply: max8925: Use devm_power_supply_register() helper
+  power: supply: pcf50633: Use devm_power_supply_register() helper
+  power: supply: rt5033: Use devm_power_supply_register() helper
+  power: supply: tps65090: Use devm_power_supply_register() helper
+  power: supply: wm831x: Use devm_power_supply_register() helper
+  power: supply: wm831x: Use devm_power_supply_register() helper
+  power: supply: wm8350: Use devm_power_supply_register() helper
+  power: supply: da9150: Use devm_iio_channel_get() helper
+  power: supply: da9150: Use devm_power_supply_register() helper
+  power: supply: rx51: Use devm_iio_channel_get() helper
+  power: supply: rx51: Use devm_power_supply_register() helper
+  power: supply: twl4030_madc: Use devm_iio_channel_get() helper
+  power: supply: twl4030_madc: Use devm_power_supply_register() helper
+
+ drivers/power/supply/da9030_battery.c       |  6 +-
+ drivers/power/supply/da9052-battery.c       |  4 +-
+ drivers/power/supply/da9150-charger.c       | 72 ++++++---------------
+ drivers/power/supply/ds2760_battery.c       |  4 +-
+ drivers/power/supply/goldfish_battery.c     | 24 ++-----
+ drivers/power/supply/lp8727_charger.c       | 35 ++--------
+ drivers/power/supply/lp8788-charger.c       | 21 ++----
+ drivers/power/supply/max14577_charger.c     |  6 +-
+ drivers/power/supply/max77693_charger.c     |  8 +--
+ drivers/power/supply/max8925_power.c        | 36 +++--------
+ drivers/power/supply/pcf50633-charger.c     | 23 +++----
+ drivers/power/supply/rt5033_battery.c       | 14 +---
+ drivers/power/supply/rx51_battery.c         | 57 ++++------------
+ drivers/power/supply/tps65090-charger.c     | 18 ++----
+ drivers/power/supply/twl4030_madc_battery.c | 59 ++++-------------
+ drivers/power/supply/wm831x_backup.c        | 13 +---
+ drivers/power/supply/wm831x_power.c         | 24 +++----
+ drivers/power/supply/wm8350_power.c         | 29 ++-------
+ 18 files changed, 121 insertions(+), 332 deletions(-)
+
 -- 
 2.39.2
 
