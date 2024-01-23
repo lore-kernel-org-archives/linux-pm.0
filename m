@@ -1,140 +1,105 @@
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97B82811EF;
-	Tue, 23 Jan 2024 16:45:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A4437FBA8;
+	Tue, 23 Jan 2024 17:24:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706028339; cv=none; b=poM5ZNnSRn8aJHJ+diMqDo0pZbidrryQ4fxnbv3uyuHrEr3C9GxGoYpuv83BzXYbH78bB8spTfVlswWx3zFejcpT+B+DCI2B8WzYCqYEe7IfevvPDYquoLzRt/XVHpm7ZU259MdvOd+a8nOWFd8Qi3jSIgOM9jHegQw6H5+gPGU=
+	t=1706030666; cv=none; b=gRZK9yJv0zGbgWFE+YB8ldNr0mVfg3txcBC7coR7kR8nArXej6rBtHkovJB/ap3XSe96P5NIaEXmcUlTRIjAZ7loHaWXcJq8ivt+Q6Ex5/ncXNro3h9welsj2rb6WAZtUm4PVSCtyYbiPb4wH6d2er3CWHymyKCG9BkvVa5R/1s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706028339; c=relaxed/simple;
-	bh=6DBAlHKtgTdDUg9RwXBHxBhu0U9svjp5OINIPB4+uQg=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RzNS7wW1E3X85BaLZA7eNxXz+rg4Nv/V2ETlYRHi5JLMYNBCfRfZ+lPdj3UQ1cK6RE/jwhBw0S1YOlU+Y6QjEfAWJcFFQZAVFcLB7cSK/4scIOAATyOi4vRFLeowMim09o1Keya2ia0H+23kSqkT11DIhVoUdNxfP9r17DXBxmU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=P32C4sWd; arc=none smtp.client-ip=198.47.19.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	s=arc-20240116; t=1706030666; c=relaxed/simple;
+	bh=Oyao+3/Ux6TZycEPX8L/CtZdSt0adFVr9KdQJvVkrTM=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=bdfmiHotMcJwCEalqx6XJULQBJdFTXgwfX9s/hhgPNt6pQQj0C8mRJsZOLpn3wO3oywJ8OcLYE3R9O7hzAtWVdC7smdWQiycEp0iyvSRsOd5fx6JWU2IkTsTnzaKhIIuuLV3jxLbjZmEWgEkuSi7ut9u+Qe+kepmRT5OTuWk5Rc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WeSfU2Sm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="P32C4sWd"
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGikgJ078231;
-	Tue, 23 Jan 2024 10:44:46 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706028286;
-	bh=OWBMIAYGqql0wAgfbGIt4Wt5E8wAkJwz4O3xabNraz0=;
-	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=P32C4sWd5ISMqmsIw2A7ZleCJwNam9rf6cShR4bRElMrHQfghWuwC3/ybPjlCvhY0
-	 3SM7OkUHwJejJHGom32T7hS8W5ECrSCI0pGuQs804DqdvZiknOyRJ/zA2Ux5eqpznw
-	 TxdzgfJy3hf+IZ70As4HtYiocvQjrD5LkRaBC7ng=
-Received: from DFLE113.ent.ti.com (dfle113.ent.ti.com [10.64.6.34])
-	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGikBi008941
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 23 Jan 2024 10:44:46 -0600
-Received: from DFLE115.ent.ti.com (10.64.6.36) by DFLE113.ent.ti.com
- (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:44:46 -0600
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DFLE115.ent.ti.com
- (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:44:46 -0600
-Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGiiKG022038;
-	Tue, 23 Jan 2024 10:44:45 -0600
-From: Andrew Davis <afd@ti.com>
-To: Mark Rutland <mark.rutland@arm.com>,
-        Lorenzo Pieralisi
-	<lpieralisi@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Karol Gugala
-	<kgugala@antmicro.com>,
-        Mateusz Holenko <mholenko@antmicro.com>,
-        Gabriel
- Somlo <gsomlo@gmail.com>, Joel Stanley <joel@jms.id.au>,
-        Mark Brown
-	<broonie@kernel.org>, Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang
-	<baolin.wang@linux.alibaba.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>, Lee
- Jones <lee@kernel.org>,
-        Dmitry Osipenko <dmitry.osipenko@collabora.com>
-CC: <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-spi@vger.kernel.org>,
-        Andrew Davis
-	<afd@ti.com>
-Subject: [PATCH 1/4] kernel/reboot: Deprecate register_restart_handler()
-Date: Tue, 23 Jan 2024 10:44:40 -0600
-Message-ID: <20240123164443.394642-2-afd@ti.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240123164443.394642-1-afd@ti.com>
-References: <20240123164443.394642-1-afd@ti.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WeSfU2Sm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70157C433C7;
+	Tue, 23 Jan 2024 17:24:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1706030665;
+	bh=Oyao+3/Ux6TZycEPX8L/CtZdSt0adFVr9KdQJvVkrTM=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=WeSfU2SmF+MThNV+FwS3jNLbx/lbHqp3O8rGmEOzabcSnXEgrwMlsQB9X+zP4Dj5G
+	 wd1fgHH0A7R0Tmo1hzTqTwsERG+4Gn3Cx5lBeFm5nnKu5zpyTImNwviF1z+B9Bs+B5
+	 FDxtofh709s2gjhWj2TwrRefwkgnofaBeH2IOycUb4sAH6b1twJSE7eTOxL5ZpB136
+	 XW94cTSytbK36zuZLvfHBZJyLBwQtXSssVanGsGSNlbp69amctnSVmvxMuZ0ytbIUw
+	 x0q8WUofOp/tNMPpmUcwMX0JnwNQI0b6OZ1iN5n7Qvk/bytqBMVrKlnALAAEsYlcQ0
+	 7dIeV9ibAJhkg==
+Date: Tue, 23 Jan 2024 11:24:23 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Sakari Ailus <sakari.ailus@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+	linux-pci@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	Jaroslav Kysela <perex@perex.cz>,
+	Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
+	laurent.pinchart@ideasonboard.com, David Airlie <airlied@gmail.com>,
+	Paul Elder <paul.elder@ideasonboard.com>,
+	linux-media@vger.kernel.org,
+	Thomas =?utf-8?Q?Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+	intel-gfx@lists.freedesktop.org,
+	Lucas De Marchi <lucas.demarchi@intel.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	intel-xe@lists.freedesktop.org,
+	Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+	Alex Elder <elder@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-sound@vger.kernel.org, Takashi Iwai <tiwai@suse.com>,
+	Daniel Vetter <daniel@ffwll.ch>, netdev@vger.kernel.org
+Subject: Re: [PATCH v4 1/3] pm: runtime: Simplify pm_runtime_get_if_active()
+ usage
+Message-ID: <20240123172423.GA317147@bhelgaas>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240123095642.97303-2-sakari.ailus@linux.intel.com>
 
-There are now two ways to add a handler to the restart_handler_list.
-Two ways to do the same thing is bad design, so let's unify on using
-the new method register_sys_off_handler() everywhere.
+On Tue, Jan 23, 2024 at 11:56:42AM +0200, Sakari Ailus wrote:
+> There are two ways to opportunistically increment a device's runtime PM
+> usage count, calling either pm_runtime_get_if_active() or
+> pm_runtime_get_if_in_use(). The former has an argument to tell whether to
+> ignore the usage count or not, and the latter simply calls the former with
+> ign_usage_count set to false. The other users that want to ignore the
+> usage_count will have to explitly set that argument to true which is a bit
+> cumbersome.
+> 
+> To make this function more practical to use, remove the ign_usage_count
+> argument from the function. The main implementation is renamed as
+> pm_runtime_get_conditional().
+> 
+> Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+> Reviewed-by: Alex Elder <elder@linaro.org> # drivers/net/ipa/ipa_smp2p.c
+> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Acked-by: Takashi Iwai <tiwai@suse.de> # sound/
+> Reviewed-by: Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com> # drivers/accel/ivpu/
+> Acked-by: Rodrigo Vivi <rodrigo.vivi@intel.com> # drivers/gpu/drm/i915/
+> Reviewed-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
 
-Reasons:
- * The other register_*_handler functions take a callback, this old
-   API takes a notifier_block, which makes it confusing with the
-   register_*_notifier class of functions.
- * register_sys_off_handler (new API) is a more unified API allowing for
-   registering several system off types.
- * The new API has more helpers built around it now, including devm and
-   platform helpers.
- * The new API manages the struct notifier_block for us, simplifying using
-   code.
+Acked-by: Bjorn Helgaas <bhelgaas@google.com> # drivers/pci/
 
-Mark register_restart_handler() as deprecated to try to warn off new users
-while we finish converting the remaining existing users.
+- Previous PM history uses "PM: " in the subject lines (not "pm: ").
 
-Signed-off-by: Andrew Davis <afd@ti.com>
----
- include/linux/reboot.h | 8 ++++++--
- kernel/reboot.c        | 3 +++
- 2 files changed, 9 insertions(+), 2 deletions(-)
+- I don't know whether it's feasible, but it would be nice if the
+  intel_pm_runtime_pm.c rework could be done in one shot instead of
+  being split between patches 1/3 and 2/3.
 
-diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index abcdde4df6979..186291e9bf3bb 100644
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -46,8 +46,12 @@ extern int unregister_reboot_notifier(struct notifier_block *);
- 
- extern int devm_register_reboot_notifier(struct device *, struct notifier_block *);
- 
--extern int register_restart_handler(struct notifier_block *);
--extern int unregister_restart_handler(struct notifier_block *);
-+/*
-+ * This function is deprecated, use register_sys_off_handler(SYS_OFF_MODE_RESTART)
-+ * or devm_register_restart_handler() instead.
-+ */
-+extern int __deprecated register_restart_handler(struct notifier_block *);
-+extern int __deprecated unregister_restart_handler(struct notifier_block *);
- extern void do_kernel_restart(char *cmd);
- 
- /*
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index 22c16e2564cca..38d6933fe892e 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -197,6 +197,9 @@ static ATOMIC_NOTIFIER_HEAD(restart_handler_list);
-  *
-  *	Currently always returns zero, as atomic_notifier_chain_register()
-  *	always returns zero.
-+ *
-+ *	This function is deprecated, use register_sys_off_handler(SYS_OFF_MODE_RESTART)
-+ *	or devm_register_restart_handler() instead.
-  */
- int register_restart_handler(struct notifier_block *nb)
- {
--- 
-2.39.2
+  Maybe it could be a preliminary patch that uses the existing
+  if_active/if_in_use interfaces, followed by the trivial if_active
+  updates in this patch.  I think that would make the history easier
+  to read than having the transitory pm_runtime_get_conditional() in
+  the middle.
 
+- Similarly, it would be nice if pm_runtime_get_conditional() never
+  had to be published in pm_runtime.h, instead of being temporarily
+  added there by this patch and then immediately made private by 2/3.
+  Maybe that's not practical, I dunno.
+
+Bjorn
