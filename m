@@ -1,45 +1,45 @@
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7FC880038;
-	Tue, 23 Jan 2024 16:37:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FBBB80046;
+	Tue, 23 Jan 2024 16:37:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706027829; cv=none; b=muLM04dG9ZyZ9qD3ARCrpQf+O5lqjQRyE8oeJGGKfVk7R2A4qf7KwE26LsR8tGoE03D0w7U0vpa5Ot4fHbk6CPQBnaILgzCKcwxHfTOuiAjlOdzCMp+MGJ0Z6Cql3QOJT1asI4L8fZbYvQY7XSBlZ/f5MCi6IBjBeknOpZjGxW8=
+	t=1706027829; cv=none; b=P6eKtePJbOun7wXPcd16AETVBr9Otl42VQMD+H3FXlVyoYryFHTCAmOFgASxri5zBSTKiz5fH6psdXNCko3E/MIWXM9UipsGK5Wy6N51sEKE/a5j4Ox54CQbhq1YnmKRge7XrR/ysaJUsvo3GH5OefzI/zGi/NP8TcnYheGIN24=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706027829; c=relaxed/simple;
-	bh=sib0TkQvj3S1W9ly1E0oQa1xEeBpUynhGEbm7l/cqP0=;
+	bh=AOscs8QIG573GTnqalFMMwHtcQ8ONmRuwieK8uqlR40=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=DSJZVOAuxu4prtb1mPQmfjd66+kcgcWG3CaKEJCrXTpWe9jtKbxLM2RKXIayGbpGA5KvXXKP1m6tIHff3j+umZTbVahTek4ZpG6CfMtun9bGUNrndss2in+NjW7qKdZjysO2nl8I4jD3z/qhv+yY/zAV+oN+8j55NVOIxcocVvE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=iMP9XgPc; arc=none smtp.client-ip=198.47.23.248
+	 MIME-Version:Content-Type; b=ryqcfJRfO5cYPeOLlz/ywwwWi/HdvmSoGxVTM+mRVyTwvSuKJNvmtAtLZJxot1vYfvp8tMPj7HLm7BhWH3wXFR0QLwWPuKWoGCpX2+PDot84eCqcfX+XyyuEXJdOogkSGG1kF0Ml7N9AIgmIH5Bc9e4VHGwYF8gY4qp4ocOqwKs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=En/XbSYb; arc=none smtp.client-ip=198.47.19.142
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="iMP9XgPc"
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGawJX049972;
-	Tue, 23 Jan 2024 10:36:58 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="En/XbSYb"
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGax8N094134;
+	Tue, 23 Jan 2024 10:36:59 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706027818;
-	bh=JWMUjBOZcHQ/24fksWKYvgsQX4RI/NkJvEhshUgeviA=;
+	s=ti-com-17Q1; t=1706027819;
+	bh=NynlMJZVVWmFK6HEqJQ06332dhB5iMXyjOa26cOux3g=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=iMP9XgPcygy6EiGrxD0BBYR+Q66grASUHjj7wJQZTduVIEkieRLTHqNaClS5nMPHV
-	 JOPAtYUEjtswQLAm4XVw4b3YpS4Bq7hZ54uqYXmOFgMaurG2/I87Ukqq6hgVEJAbBM
-	 aE/8IzTpPNvmhP8409Z7HxrT7qb3l3AT4OQB7Puw=
-Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
-	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGawP1004249
+	b=En/XbSYbkpAcJ6Xir3CNLJiY1RSv1Tblem41AtTRy3eVfDAYyubRm40jysHFe5o5e
+	 yR7dxzI1qPLHTXBJQ5jwyiTPbYEe/0eYi8DXg4GB4tIi4PfEnV8nFwypqppuesg6CP
+	 6i/sCNkGkSQt4pv5UKakL8dTC5VASwYwq1MsjC+g=
+Received: from DFLE111.ent.ti.com (dfle111.ent.ti.com [10.64.6.32])
+	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGaxU5119736
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 23 Jan 2024 10:36:58 -0600
-Received: from DLEE101.ent.ti.com (157.170.170.31) by DLEE113.ent.ti.com
- (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
+	Tue, 23 Jan 2024 10:36:59 -0600
+Received: from DFLE109.ent.ti.com (10.64.6.30) by DFLE111.ent.ti.com
+ (10.64.6.32) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:36:58 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE101.ent.ti.com
- (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2024 10:36:59 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE109.ent.ti.com
+ (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:36:58 -0600
+ Frontend Transport; Tue, 23 Jan 2024 10:36:59 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGars1123403;
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGars3123403;
 	Tue, 23 Jan 2024 10:36:58 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
@@ -52,9 +52,9 @@ To: Sebastian Reichel <sre@kernel.org>,
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Andrew Davis
 	<afd@ti.com>
-Subject: [PATCH 13/21] power: supply: wm831x: Use devm_power_supply_register() helper
-Date: Tue, 23 Jan 2024 10:36:45 -0600
-Message-ID: <20240123163653.384385-14-afd@ti.com>
+Subject: [PATCH 15/21] power: supply: wm8350: Use devm_power_supply_register() helper
+Date: Tue, 23 Jan 2024 10:36:47 -0600
+Message-ID: <20240123163653.384385-16-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240123163653.384385-1-afd@ti.com>
 References: <20240123163653.384385-1-afd@ti.com>
@@ -74,46 +74,67 @@ forgetting to unregister on error paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/supply/wm831x_backup.c | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+ drivers/power/supply/wm8350_power.c | 29 +++++++----------------------
+ 1 file changed, 7 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/power/supply/wm831x_backup.c b/drivers/power/supply/wm831x_backup.c
-index 1a7265660adeb..9673fcf7f3afb 100644
---- a/drivers/power/supply/wm831x_backup.c
-+++ b/drivers/power/supply/wm831x_backup.c
-@@ -171,7 +171,6 @@ static int wm831x_backup_probe(struct platform_device *pdev)
- 		return -ENOMEM;
+diff --git a/drivers/power/supply/wm8350_power.c b/drivers/power/supply/wm8350_power.c
+index f23b4f5343bc1..9b0010b28cafc 100644
+--- a/drivers/power/supply/wm8350_power.c
++++ b/drivers/power/supply/wm8350_power.c
+@@ -540,22 +540,17 @@ static int wm8350_power_probe(struct platform_device *pdev)
+ 	struct wm8350_charger_policy *policy = power->policy;
+ 	int ret;
  
- 	devdata->wm831x = wm831x;
--	platform_set_drvdata(pdev, devdata);
+-	power->ac = power_supply_register(&pdev->dev, &wm8350_ac_desc, NULL);
++	power->ac = devm_power_supply_register(&pdev->dev, &wm8350_ac_desc, NULL);
+ 	if (IS_ERR(power->ac))
+ 		return PTR_ERR(power->ac);
  
- 	/* We ignore configuration failures since we can still read
- 	 * back the status without enabling the charger (which may
-@@ -191,22 +190,14 @@ static int wm831x_backup_probe(struct platform_device *pdev)
- 	devdata->backup_desc.properties = wm831x_backup_props;
- 	devdata->backup_desc.num_properties = ARRAY_SIZE(wm831x_backup_props);
- 	devdata->backup_desc.get_property = wm831x_backup_get_prop;
--	devdata->backup = power_supply_register(&pdev->dev,
--						&devdata->backup_desc, NULL);
-+	devdata->backup = devm_power_supply_register(&pdev->dev,
-+						     &devdata->backup_desc, NULL);
+-	power->battery = power_supply_register(&pdev->dev, &wm8350_battery_desc,
+-					       NULL);
+-	if (IS_ERR(power->battery)) {
+-		ret = PTR_ERR(power->battery);
+-		goto battery_failed;
+-	}
++	power->battery = devm_power_supply_register(&pdev->dev, &wm8350_battery_desc, NULL);
++	if (IS_ERR(power->battery))
++		return PTR_ERR(power->battery);
  
- 	return PTR_ERR_OR_ZERO(devdata->backup);
+-	power->usb = power_supply_register(&pdev->dev, &wm8350_usb_desc, NULL);
+-	if (IS_ERR(power->usb)) {
+-		ret = PTR_ERR(power->usb);
+-		goto usb_failed;
+-	}
++	power->usb = devm_power_supply_register(&pdev->dev, &wm8350_usb_desc, NULL);
++	if (IS_ERR(power->usb))
++		return PTR_ERR(power->usb);
+ 
+ 	ret = device_create_file(&pdev->dev, &dev_attr_charger_state);
+ 	if (ret < 0)
+@@ -569,13 +564,6 @@ static int wm8350_power_probe(struct platform_device *pdev)
+ 		wm8350_reg_lock(wm8350);
+ 	}
+ 
+-	return ret;
+-
+-usb_failed:
+-	power_supply_unregister(power->battery);
+-battery_failed:
+-	power_supply_unregister(power->ac);
+-
+ 	return ret;
  }
  
--static void wm831x_backup_remove(struct platform_device *pdev)
--{
--	struct wm831x_backup *devdata = platform_get_drvdata(pdev);
--
--	power_supply_unregister(devdata->backup);
--}
--
- static struct platform_driver wm831x_backup_driver = {
- 	.probe = wm831x_backup_probe,
--	.remove_new = wm831x_backup_remove,
- 	.driver = {
- 		.name = "wm831x-backup",
- 	},
+@@ -586,9 +574,6 @@ static void wm8350_power_remove(struct platform_device *pdev)
+ 
+ 	free_charger_irq(wm8350);
+ 	device_remove_file(&pdev->dev, &dev_attr_charger_state);
+-	power_supply_unregister(power->battery);
+-	power_supply_unregister(power->ac);
+-	power_supply_unregister(power->usb);
+ }
+ 
+ static struct platform_driver wm8350_power_driver = {
 -- 
 2.39.2
 
