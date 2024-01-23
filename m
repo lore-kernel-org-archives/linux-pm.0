@@ -1,45 +1,46 @@
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 387517F7D0;
-	Tue, 23 Jan 2024 16:45:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42E147F7DC;
+	Tue, 23 Jan 2024 16:45:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706028314; cv=none; b=ASAQ7rtFaKKAXHdRqVNCFKBAtU+NB7WF1JLNEjiGbOZs56AoYNrEY6lrfEWpEZzXhcoB4yZwtB0UIkxrON2YEh6OkMHuqLwQlemTX4YdDRO8XmRSHjkV57WggToMy/bxXx0Q51JIrz+oHYSwd+s3mnkLl+5ZM8uyNmUv4w52zz8=
+	t=1706028317; cv=none; b=c3Cr298QWxiHVHoIUEB3fuYd4xppwO8I8HpTVvVKt0ywEyfqRN2u87frysXJt1FtLRqt02C6gXODKPMnKtWhcGOibe5Wf3BghEQaVX9bHpfeepmh70wWLU0KsOC2kgGdXWOxCGIpXo+sAOkNF5EwNvK6Mq9yrteE56Yi90QLZvk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706028314; c=relaxed/simple;
-	bh=SbwaXJ2LokzxJeyXqmR0gOIwPNDrZ4SnI/C0mtmoAho=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=RmCMOfaC2xr//0mvNNcqFmBFdH57ieI57zyAD4N3Iv1QxRScuqh4KuDHEow6ZF89efC4/mW5kNtM2CdDKY5Uu8lGw2rScGaLviKaUEdiXyCJvn7RlXbSG74EjsrqReYIVEPN2sc2Y3QCWI74d7Q9gleedV6tjXgXtruG+vWHf2Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=CcUkZJOd; arc=none smtp.client-ip=198.47.23.248
+	s=arc-20240116; t=1706028317; c=relaxed/simple;
+	bh=pKm6K3qlmS/hE0NSSbEJSQGcka7r+08244krdMyxaY8=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=OBgd1BSAhwcmSUUExKV0fsHmaUUc8QPQ98vxQ3PdJVOD+e8CkF74gYflPhlAkg184ADUF0Csx85tTrEo4xIRWChp/8KZXp5I9ZsgVpTgFODWbux3U3DvAkYlrxALpbXgvq67b5dnhc53rZhMNveT2B9fzKlFrShS4UCBoMo5hYo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=NmnmDc/D; arc=none smtp.client-ip=198.47.19.142
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="CcUkZJOd"
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGijEM051145;
-	Tue, 23 Jan 2024 10:44:45 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="NmnmDc/D"
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGilHP095275;
+	Tue, 23 Jan 2024 10:44:47 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706028285;
-	bh=FYhKHSteNkiUQ1HlpJw9fATm7aWNU1ENmrjsQkgidq0=;
-	h=From:To:CC:Subject:Date;
-	b=CcUkZJOdU/U3GWFgIZsAoORx6jXbs4kRKUHMIqvAALxN/7Xc1KeHQuVuKNVUxY1BI
-	 MQlFcT3J9LWaKxKFZUl5msk0yEcN7dIfjeTF0OYlp8jXrhiPliwmvKEzKA5QtttoMD
-	 inq5fN9k3Qr4Vu1/THV9zBbN35PhiiKwAhW5AvbQ=
-Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
-	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGijPQ011478
+	s=ti-com-17Q1; t=1706028287;
+	bh=Cq6GMsgXSjuAInYO12ihGfj7M9z8z7eyXvTjfe/OzM0=;
+	h=From:To:CC:Subject:Date:In-Reply-To:References;
+	b=NmnmDc/DpHx4WzsmFPvkU2GJqmp0uvfBwhSGcsB8nurUq9nGOGbmaKA90daEp/UPL
+	 BkaHWG55C1/uB//MFQIbdGR7TuOIrhQLu6KL9wlXn9ZYNffrkb1zmu0q/C6HWN7/iH
+	 sr2fqbNI3ty86u7BGscQYEqSFnPaCiG9c9PzLAzw=
+Received: from DLEE111.ent.ti.com (dlee111.ent.ti.com [157.170.170.22])
+	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGilKm127516
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 23 Jan 2024 10:44:45 -0600
-Received: from DLEE101.ent.ti.com (157.170.170.31) by DLEE113.ent.ti.com
- (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
+	Tue, 23 Jan 2024 10:44:47 -0600
+Received: from DLEE107.ent.ti.com (157.170.170.37) by DLEE111.ent.ti.com
+ (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:44:45 -0600
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE101.ent.ti.com
- (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2024 10:44:46 -0600
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE107.ent.ti.com
+ (157.170.170.37) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:44:45 -0600
+ Frontend Transport; Tue, 23 Jan 2024 10:44:46 -0600
 Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGiiKF022038;
-	Tue, 23 Jan 2024 10:44:44 -0600
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGiiKH022038;
+	Tue, 23 Jan 2024 10:44:46 -0600
 From: Andrew Davis <afd@ti.com>
 To: Mark Rutland <mark.rutland@arm.com>,
         Lorenzo Pieralisi
@@ -61,10 +62,12 @@ CC: <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
         <linux-pm@vger.kernel.org>, <linux-spi@vger.kernel.org>,
         Andrew Davis
 	<afd@ti.com>
-Subject: [PATCH 0/4] Deprecate register_restart_handler()
-Date: Tue, 23 Jan 2024 10:44:39 -0600
-Message-ID: <20240123164443.394642-1-afd@ti.com>
+Subject: [PATCH 2/4] drivers/soc/litex: Use devm_register_restart_handler()
+Date: Tue, 23 Jan 2024 10:44:41 -0600
+Message-ID: <20240123164443.394642-3-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240123164443.394642-1-afd@ti.com>
+References: <20240123164443.394642-1-afd@ti.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -75,34 +78,72 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Hello all,
+Use device life-cycle managed register function to simplify probe error
+path and eliminate need for explicit remove function.
 
-Explanation is in patch #1.
-
-The rest of this series is a set of representative examples of converting
-away from the old API. They should be valid and can be taken by their
-respective maintainers even if patch #1 doesn't find acceptance.
-
-Thanks,
-Andrew
-
-Changes from RFC:
- - Add Reviewed-by tag
- - Rebase on v6.8-rc1 and drop taken patch
-
-Andrew Davis (4):
-  kernel/reboot: Deprecate register_restart_handler()
-  drivers/soc/litex: Use devm_register_restart_handler()
-  firmware: psci: Use register_sys_off_handler(SYS_OFF_MODE_RESTART)
-  firmware: ti_sci: Use devm_register_restart_handler()
-
- drivers/firmware/psci/psci.c       | 10 ++--------
- drivers/firmware/ti_sci.c          | 14 +++++---------
+Signed-off-by: Andrew Davis <afd@ti.com>
+Reviewed-by: Gabriel Somlo <gsomlo@gmail.com>
+---
  drivers/soc/litex/litex_soc_ctrl.c | 23 +++++------------------
- include/linux/reboot.h             |  8 ++++++--
- kernel/reboot.c                    |  3 +++
- 5 files changed, 21 insertions(+), 37 deletions(-)
+ 1 file changed, 5 insertions(+), 18 deletions(-)
 
+diff --git a/drivers/soc/litex/litex_soc_ctrl.c b/drivers/soc/litex/litex_soc_ctrl.c
+index 10813299aa106..7a0096d93c73d 100644
+--- a/drivers/soc/litex/litex_soc_ctrl.c
++++ b/drivers/soc/litex/litex_soc_ctrl.c
+@@ -69,14 +69,11 @@ static int litex_check_csr_access(void __iomem *reg_addr)
+ 
+ struct litex_soc_ctrl_device {
+ 	void __iomem *base;
+-	struct notifier_block reset_nb;
+ };
+ 
+-static int litex_reset_handler(struct notifier_block *this, unsigned long mode,
+-			       void *cmd)
++static int litex_reset_handler(struct sys_off_data *data)
+ {
+-	struct litex_soc_ctrl_device *soc_ctrl_dev =
+-		container_of(this, struct litex_soc_ctrl_device, reset_nb);
++	struct litex_soc_ctrl_device *soc_ctrl_dev = data->cb_data;
+ 
+ 	litex_write32(soc_ctrl_dev->base + RESET_REG_OFF, RESET_REG_VALUE);
+ 	return NOTIFY_DONE;
+@@ -107,11 +104,9 @@ static int litex_soc_ctrl_probe(struct platform_device *pdev)
+ 	if (error)
+ 		return error;
+ 
+-	platform_set_drvdata(pdev, soc_ctrl_dev);
+-
+-	soc_ctrl_dev->reset_nb.notifier_call = litex_reset_handler;
+-	soc_ctrl_dev->reset_nb.priority = 128;
+-	error = register_restart_handler(&soc_ctrl_dev->reset_nb);
++	error = devm_register_restart_handler(&pdev->dev,
++					      litex_reset_handler,
++					      soc_ctrl_dev);
+ 	if (error) {
+ 		dev_warn(&pdev->dev, "cannot register restart handler: %d\n",
+ 			 error);
+@@ -120,20 +115,12 @@ static int litex_soc_ctrl_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static void litex_soc_ctrl_remove(struct platform_device *pdev)
+-{
+-	struct litex_soc_ctrl_device *soc_ctrl_dev = platform_get_drvdata(pdev);
+-
+-	unregister_restart_handler(&soc_ctrl_dev->reset_nb);
+-}
+-
+ static struct platform_driver litex_soc_ctrl_driver = {
+ 	.driver = {
+ 		.name = "litex-soc-controller",
+ 		.of_match_table = of_match_ptr(litex_soc_ctrl_of_match)
+ 	},
+ 	.probe = litex_soc_ctrl_probe,
+-	.remove_new = litex_soc_ctrl_remove,
+ };
+ 
+ module_platform_driver(litex_soc_ctrl_driver);
 -- 
 2.39.2
 
