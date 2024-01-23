@@ -1,46 +1,46 @@
 Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8E168005D;
-	Tue, 23 Jan 2024 16:37:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B76480040;
+	Tue, 23 Jan 2024 16:37:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706027830; cv=none; b=OMRVzw+bxBwWh/X9Oj2Oq3p6gp5+uW1KSz896DMBH9tP8H1A4+FJ3O46SM+QaIQDg10+Ut28QzZ8HoBRC52KDFiwJekEwRxRFR0eys/3GTc5AFqbnZB4SPh8ctZ8qhQMjmLbrU1IzTtzzeGkq6V4I/tcwbNOL2vQuLE6tOP754o=
+	t=1706027830; cv=none; b=GYrUFBPrTibK6Wgp+0fqU0sleqStR9PML1X/jkiSoqG+iunyTmi4j8GtdF55s5wTTa/n3dxS1i3heceSsqn6OuGG6ybVH2yfIFNdp0SMa8ukMFkjkZTXpAFfGu0yjHd6Mhd7QCtWJFtictVhgfWD3ay57JNkGiZBH69KeKBchTE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706027830; c=relaxed/simple;
-	bh=HqyDbZstUWJOaMyZ4TiG/oEUrlUvngFXfqf5DbMzNi0=;
+	bh=Y4r6QN/JrItjnEuYXVICeF7hVAsCe7GxvqIcOJz5MA0=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qJCghWFqF33X0A00TtI0mfSidHCQVHESKOkowL6VA5nNa2cxV5hqf6811YkEGoDsK04WXOJY0mJM/QWyTHGtgOQvadecwD+B7KuDWCCWFTkY5JQqSxSK8o2ZKKT/kOqJ+nxTXsQ3KUXUDP3IE9hh9lS8UPHy3YXXqsl69+QiEpI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=Z4imqtNS; arc=none smtp.client-ip=198.47.19.142
+	 MIME-Version:Content-Type; b=IYFftkUckHAVXB2OgODC1vgf6HcYnSgQYCmsEo9Vdi6S680Xy2U5plYmH10Q7V+5dMNmyYI0aT0yNZodqFDpQdFSbk+dXDTClYGWUnmAwezPwu6PF9UpYrON5EA95TUspAhrzXkRLeivIPyPHTIzxaQmP6w0TSRA5oVn43NljlM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=WP53bTYp; arc=none smtp.client-ip=198.47.19.142
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="Z4imqtNS"
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGb0s0094139;
-	Tue, 23 Jan 2024 10:37:00 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="WP53bTYp"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGaufv094120;
+	Tue, 23 Jan 2024 10:36:56 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706027820;
-	bh=kVXImxDJPM4A7YrQnUDOEbJIk29vaGvEJQGgWRehcUA=;
+	s=ti-com-17Q1; t=1706027816;
+	bh=K1WNi8+Cbrepl/ifkNTZDPIJo8q3+SEk0jaxrVvGu8M=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=Z4imqtNSh7hFg4AmEfTGwNX1/h8bMgvjZZEjwc3EiKeniyaKolR/dqfW4j+KgEkaA
-	 tGx+/pafkNm1MkAdG8xrLFrsmXSDbUD6uIrHRzuFYTFpks6l1rKQ8kQPDwjrVnh8/Z
-	 1VQn9ht3Vh6taqfgNbMC2WHP2vcLFJcdT88FTem0=
-Received: from DFLE112.ent.ti.com (dfle112.ent.ti.com [10.64.6.33])
-	by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGb0IK034013
+	b=WP53bTYpTvwZNl8tyFD/A1GAlt/IJvDTgNCEckVKQ2XK3xcjmB1XD0G3uuyu5000u
+	 9mMkb7HwJrhOJJ7cigBOsCuGsQaLEp7u42Ip/DVzZUtdhNvRQo++nHctpUR+vL9X7O
+	 GZDaVG7feolbIOAWsTGxgzfNcHPCh07Fy+CdLAKw=
+Received: from DLEE115.ent.ti.com (dlee115.ent.ti.com [157.170.170.26])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGau9M000562
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 23 Jan 2024 10:37:00 -0600
-Received: from DFLE108.ent.ti.com (10.64.6.29) by DFLE112.ent.ti.com
- (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
+	Tue, 23 Jan 2024 10:36:56 -0600
+Received: from DLEE100.ent.ti.com (157.170.170.30) by DLEE115.ent.ti.com
+ (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:36:59 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE108.ent.ti.com
- (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2024 10:36:55 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE100.ent.ti.com
+ (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:36:59 -0600
+ Frontend Transport; Tue, 23 Jan 2024 10:36:55 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGars4123403;
-	Tue, 23 Jan 2024 10:36:59 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGarrr123403;
+	Tue, 23 Jan 2024 10:36:55 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Support Opensource
@@ -52,9 +52,9 @@ To: Sebastian Reichel <sre@kernel.org>,
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Andrew Davis
 	<afd@ti.com>
-Subject: [PATCH 16/21] power: supply: da9150: Use devm_iio_channel_get() helper
-Date: Tue, 23 Jan 2024 10:36:48 -0600
-Message-ID: <20240123163653.384385-17-afd@ti.com>
+Subject: [PATCH 05/21] power: supply: lp8727: Use devm_power_supply_register() helper
+Date: Tue, 23 Jan 2024 10:36:37 -0600
+Message-ID: <20240123163653.384385-6-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240123163653.384385-1-afd@ti.com>
 References: <20240123163653.384385-1-afd@ti.com>
@@ -68,103 +68,82 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Use the device lifecycle managed get function. This helps prevent
-mistakes like releasing out of order in cleanup functions and
-forgetting to release on error paths.
+Use the device lifecycle managed register function. This helps prevent
+mistakes like unregistering out of order in cleanup functions and
+forgetting to unregister on error paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/supply/da9150-charger.c | 57 +++++++--------------------
- 1 file changed, 14 insertions(+), 43 deletions(-)
+ drivers/power/supply/lp8727_charger.c | 35 ++++++---------------------
+ 1 file changed, 7 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/power/supply/da9150-charger.c b/drivers/power/supply/da9150-charger.c
-index 37db9e4ed7f30..77e2d42382e45 100644
---- a/drivers/power/supply/da9150-charger.c
-+++ b/drivers/power/supply/da9150-charger.c
-@@ -521,36 +521,26 @@ static int da9150_charger_probe(struct platform_device *pdev)
- 	charger->dev = dev;
+diff --git a/drivers/power/supply/lp8727_charger.c b/drivers/power/supply/lp8727_charger.c
+index 0875391f7ac6b..34548a4da90b2 100644
+--- a/drivers/power/supply/lp8727_charger.c
++++ b/drivers/power/supply/lp8727_charger.c
+@@ -453,39 +453,20 @@ static int lp8727_register_psy(struct lp8727_chg *pchg)
+ 	psy_cfg.supplied_to = battery_supplied_to;
+ 	psy_cfg.num_supplicants = ARRAY_SIZE(battery_supplied_to);
  
- 	/* Acquire ADC channels */
--	charger->ibus_chan = iio_channel_get(dev, "CHAN_IBUS");
--	if (IS_ERR(charger->ibus_chan)) {
--		ret = PTR_ERR(charger->ibus_chan);
--		goto ibus_chan_fail;
--	}
-+	charger->ibus_chan = devm_iio_channel_get(dev, "CHAN_IBUS");
-+	if (IS_ERR(charger->ibus_chan))
-+		return PTR_ERR(charger->ibus_chan);
+-	psy->ac = power_supply_register(pchg->dev, &lp8727_ac_desc, &psy_cfg);
++	psy->ac = devm_power_supply_register(pchg->dev, &lp8727_ac_desc, &psy_cfg);
+ 	if (IS_ERR(psy->ac))
+-		goto err_psy_ac;
++		return -EPERM;
  
--	charger->vbus_chan = iio_channel_get(dev, "CHAN_VBUS");
--	if (IS_ERR(charger->vbus_chan)) {
--		ret = PTR_ERR(charger->vbus_chan);
--		goto vbus_chan_fail;
--	}
-+	charger->vbus_chan = devm_iio_channel_get(dev, "CHAN_VBUS");
-+	if (IS_ERR(charger->vbus_chan))
-+		return PTR_ERR(charger->vbus_chan);
+-	psy->usb = power_supply_register(pchg->dev, &lp8727_usb_desc,
+-					 &psy_cfg);
++	psy->usb = devm_power_supply_register(pchg->dev, &lp8727_usb_desc,
++					      &psy_cfg);
+ 	if (IS_ERR(psy->usb))
+-		goto err_psy_usb;
++		return -EPERM;
  
--	charger->tjunc_chan = iio_channel_get(dev, "CHAN_TJUNC");
--	if (IS_ERR(charger->tjunc_chan)) {
--		ret = PTR_ERR(charger->tjunc_chan);
--		goto tjunc_chan_fail;
--	}
-+	charger->tjunc_chan = devm_iio_channel_get(dev, "CHAN_TJUNC");
-+	if (IS_ERR(charger->tjunc_chan))
-+		return PTR_ERR(charger->tjunc_chan);
+-	psy->batt = power_supply_register(pchg->dev, &lp8727_batt_desc, NULL);
++	psy->batt = devm_power_supply_register(pchg->dev, &lp8727_batt_desc, NULL);
+ 	if (IS_ERR(psy->batt))
+-		goto err_psy_batt;
++		return -EPERM;
  
--	charger->vbat_chan = iio_channel_get(dev, "CHAN_VBAT");
--	if (IS_ERR(charger->vbat_chan)) {
--		ret = PTR_ERR(charger->vbat_chan);
--		goto vbat_chan_fail;
--	}
-+	charger->vbat_chan = devm_iio_channel_get(dev, "CHAN_VBAT");
-+	if (IS_ERR(charger->vbat_chan))
-+		return PTR_ERR(charger->vbat_chan);
- 
- 	/* Register power supplies */
- 	charger->usb = power_supply_register(dev, &usb_desc, NULL);
--	if (IS_ERR(charger->usb)) {
--		ret = PTR_ERR(charger->usb);
--		goto usb_fail;
--	}
-+	if (IS_ERR(charger->usb))
-+		return PTR_ERR(charger->usb);
- 
- 	charger->battery = power_supply_register(dev, &battery_desc, NULL);
- 	if (IS_ERR(charger->battery)) {
-@@ -619,19 +609,6 @@ static int da9150_charger_probe(struct platform_device *pdev)
- battery_fail:
- 	power_supply_unregister(charger->usb);
- 
--usb_fail:
--	iio_channel_release(charger->vbat_chan);
+ 	return 0;
 -
--vbat_chan_fail:
--	iio_channel_release(charger->tjunc_chan);
+-err_psy_batt:
+-	power_supply_unregister(psy->usb);
+-err_psy_usb:
+-	power_supply_unregister(psy->ac);
+-err_psy_ac:
+-	return -EPERM;
+-}
 -
--tjunc_chan_fail:
--	iio_channel_release(charger->vbus_chan);
+-static void lp8727_unregister_psy(struct lp8727_chg *pchg)
+-{
+-	struct lp8727_psy *psy = pchg->psy;
 -
--vbus_chan_fail:
--	iio_channel_release(charger->ibus_chan);
+-	if (!psy)
+-		return;
 -
--ibus_chan_fail:
- 	return ret;
+-	power_supply_unregister(psy->ac);
+-	power_supply_unregister(psy->usb);
+-	power_supply_unregister(psy->batt);
  }
  
-@@ -659,12 +636,6 @@ static void da9150_charger_remove(struct platform_device *pdev)
+ #ifdef CONFIG_OF
+@@ -583,7 +564,6 @@ static int lp8727_probe(struct i2c_client *cl)
+ 	ret = lp8727_setup_irq(pchg);
+ 	if (ret) {
+ 		dev_err(pchg->dev, "irq handler err: %d", ret);
+-		lp8727_unregister_psy(pchg);
+ 		return ret;
+ 	}
  
- 	power_supply_unregister(charger->battery);
- 	power_supply_unregister(charger->usb);
--
--	/* Release ADC channels */
--	iio_channel_release(charger->ibus_chan);
--	iio_channel_release(charger->vbus_chan);
--	iio_channel_release(charger->tjunc_chan);
--	iio_channel_release(charger->vbat_chan);
+@@ -595,7 +575,6 @@ static void lp8727_remove(struct i2c_client *cl)
+ 	struct lp8727_chg *pchg = i2c_get_clientdata(cl);
+ 
+ 	lp8727_release_irq(pchg);
+-	lp8727_unregister_psy(pchg);
  }
  
- static struct platform_driver da9150_charger_driver = {
+ static const struct of_device_id lp8727_dt_ids[] __maybe_unused = {
 -- 
 2.39.2
 
