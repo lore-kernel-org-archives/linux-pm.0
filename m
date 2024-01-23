@@ -1,46 +1,46 @@
 Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3DCE811F0;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8E168005D;
 	Tue, 23 Jan 2024 16:37:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706027829; cv=none; b=TKrN5nsQ+Ss8yF/O+VjCBf6irDkDfCh8WFIyLaGpeOvSnY/dYtoXCUuL5vMYNJIcPQYqYxQ6eLfUelUbuSbX7qp+lw3eD62quRmk9eOKmOFv0IbIThiiAaiCDco6KIVaQvrAltDU/EGXHxt3T0MiDQN4wLlk8lsv9R0c5Dc3ZyI=
+	t=1706027830; cv=none; b=OMRVzw+bxBwWh/X9Oj2Oq3p6gp5+uW1KSz896DMBH9tP8H1A4+FJ3O46SM+QaIQDg10+Ut28QzZ8HoBRC52KDFiwJekEwRxRFR0eys/3GTc5AFqbnZB4SPh8ctZ8qhQMjmLbrU1IzTtzzeGkq6V4I/tcwbNOL2vQuLE6tOP754o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706027829; c=relaxed/simple;
-	bh=k7Zat9ihsdYcIrX3WmyfcTU3YEIt3v7FOQBP7PuRDtE=;
+	s=arc-20240116; t=1706027830; c=relaxed/simple;
+	bh=HqyDbZstUWJOaMyZ4TiG/oEUrlUvngFXfqf5DbMzNi0=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=GhnPgArV5c1jIfK88UYTAdcQKUgvu1Wmcw6hNTQfh1zMqOLbP1JphAFSqQilDTDuuvPwGY+/n3XnvBZOWECIPPxaUDrGALY+X1Izw9XuZRc+l+ZP9lLs5/gtGZ5xawA4UIKJACRjxyCyZDybIsHU8mHM64mjv00ncArd6GW0T14=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=sj02YRbE; arc=none smtp.client-ip=198.47.19.142
+	 MIME-Version:Content-Type; b=qJCghWFqF33X0A00TtI0mfSidHCQVHESKOkowL6VA5nNa2cxV5hqf6811YkEGoDsK04WXOJY0mJM/QWyTHGtgOQvadecwD+B7KuDWCCWFTkY5JQqSxSK8o2ZKKT/kOqJ+nxTXsQ3KUXUDP3IE9hh9lS8UPHy3YXXqsl69+QiEpI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=Z4imqtNS; arc=none smtp.client-ip=198.47.19.142
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="sj02YRbE"
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGb0tj094147;
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="Z4imqtNS"
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40NGb0s0094139;
 	Tue, 23 Jan 2024 10:37:00 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
 	s=ti-com-17Q1; t=1706027820;
-	bh=cvG+uaN/7N2Dit5c/n8AJ+cABCuXl9sFCTAkKuB72r0=;
+	bh=kVXImxDJPM4A7YrQnUDOEbJIk29vaGvEJQGgWRehcUA=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=sj02YRbExzLvuKsK+4ULS9bVZrrARaNgzsM2ezYrdS/7OgsyanB8cD4D6ubZRC2qx
-	 KAUvtzEe8q66a/n2iuafnnvwFUEVo1tkIz4oMfM8aKX1geRWMt+KsjTKC1SYO4RDxi
-	 BgZaf+z6dEiLOP7ZvI2zd6rpWNho4WJKtiM+38D4=
-Received: from DLEE109.ent.ti.com (dlee109.ent.ti.com [157.170.170.41])
-	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGb0Np000624
+	b=Z4imqtNSh7hFg4AmEfTGwNX1/h8bMgvjZZEjwc3EiKeniyaKolR/dqfW4j+KgEkaA
+	 tGx+/pafkNm1MkAdG8xrLFrsmXSDbUD6uIrHRzuFYTFpks6l1rKQ8kQPDwjrVnh8/Z
+	 1VQn9ht3Vh6taqfgNbMC2WHP2vcLFJcdT88FTem0=
+Received: from DFLE112.ent.ti.com (dfle112.ent.ti.com [10.64.6.33])
+	by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40NGb0IK034013
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
 	Tue, 23 Jan 2024 10:37:00 -0600
-Received: from DLEE104.ent.ti.com (157.170.170.34) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
+Received: from DFLE108.ent.ti.com (10.64.6.29) by DFLE112.ent.ti.com
+ (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 23
- Jan 2024 10:37:00 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE104.ent.ti.com
- (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2024 10:36:59 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE108.ent.ti.com
+ (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 23 Jan 2024 10:37:00 -0600
+ Frontend Transport; Tue, 23 Jan 2024 10:36:59 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGars7123403;
-	Tue, 23 Jan 2024 10:37:00 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40NGars4123403;
+	Tue, 23 Jan 2024 10:36:59 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Support Opensource
@@ -52,9 +52,9 @@ To: Sebastian Reichel <sre@kernel.org>,
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Andrew Davis
 	<afd@ti.com>
-Subject: [PATCH 19/21] power: supply: rx51: Use devm_power_supply_register() helper
-Date: Tue, 23 Jan 2024 10:36:51 -0600
-Message-ID: <20240123163653.384385-20-afd@ti.com>
+Subject: [PATCH 16/21] power: supply: da9150: Use devm_iio_channel_get() helper
+Date: Tue, 23 Jan 2024 10:36:48 -0600
+Message-ID: <20240123163653.384385-17-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240123163653.384385-1-afd@ti.com>
 References: <20240123163653.384385-1-afd@ti.com>
@@ -68,58 +68,103 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Use the device lifecycle managed register function. This helps prevent
-mistakes like unregistering out of order in cleanup functions and
-forgetting to unregister on error paths.
+Use the device lifecycle managed get function. This helps prevent
+mistakes like releasing out of order in cleanup functions and
+forgetting to release on error paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/supply/rx51_battery.c | 12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+ drivers/power/supply/da9150-charger.c | 57 +++++++--------------------
+ 1 file changed, 14 insertions(+), 43 deletions(-)
 
-diff --git a/drivers/power/supply/rx51_battery.c b/drivers/power/supply/rx51_battery.c
-index d532c670661b6..7cdcd415e8684 100644
---- a/drivers/power/supply/rx51_battery.c
-+++ b/drivers/power/supply/rx51_battery.c
-@@ -197,8 +197,6 @@ static int rx51_battery_probe(struct platform_device *pdev)
- 	if (!di)
- 		return -ENOMEM;
+diff --git a/drivers/power/supply/da9150-charger.c b/drivers/power/supply/da9150-charger.c
+index 37db9e4ed7f30..77e2d42382e45 100644
+--- a/drivers/power/supply/da9150-charger.c
++++ b/drivers/power/supply/da9150-charger.c
+@@ -521,36 +521,26 @@ static int da9150_charger_probe(struct platform_device *pdev)
+ 	charger->dev = dev;
  
--	platform_set_drvdata(pdev, di);
+ 	/* Acquire ADC channels */
+-	charger->ibus_chan = iio_channel_get(dev, "CHAN_IBUS");
+-	if (IS_ERR(charger->ibus_chan)) {
+-		ret = PTR_ERR(charger->ibus_chan);
+-		goto ibus_chan_fail;
+-	}
++	charger->ibus_chan = devm_iio_channel_get(dev, "CHAN_IBUS");
++	if (IS_ERR(charger->ibus_chan))
++		return PTR_ERR(charger->ibus_chan);
+ 
+-	charger->vbus_chan = iio_channel_get(dev, "CHAN_VBUS");
+-	if (IS_ERR(charger->vbus_chan)) {
+-		ret = PTR_ERR(charger->vbus_chan);
+-		goto vbus_chan_fail;
+-	}
++	charger->vbus_chan = devm_iio_channel_get(dev, "CHAN_VBUS");
++	if (IS_ERR(charger->vbus_chan))
++		return PTR_ERR(charger->vbus_chan);
+ 
+-	charger->tjunc_chan = iio_channel_get(dev, "CHAN_TJUNC");
+-	if (IS_ERR(charger->tjunc_chan)) {
+-		ret = PTR_ERR(charger->tjunc_chan);
+-		goto tjunc_chan_fail;
+-	}
++	charger->tjunc_chan = devm_iio_channel_get(dev, "CHAN_TJUNC");
++	if (IS_ERR(charger->tjunc_chan))
++		return PTR_ERR(charger->tjunc_chan);
+ 
+-	charger->vbat_chan = iio_channel_get(dev, "CHAN_VBAT");
+-	if (IS_ERR(charger->vbat_chan)) {
+-		ret = PTR_ERR(charger->vbat_chan);
+-		goto vbat_chan_fail;
+-	}
++	charger->vbat_chan = devm_iio_channel_get(dev, "CHAN_VBAT");
++	if (IS_ERR(charger->vbat_chan))
++		return PTR_ERR(charger->vbat_chan);
+ 
+ 	/* Register power supplies */
+ 	charger->usb = power_supply_register(dev, &usb_desc, NULL);
+-	if (IS_ERR(charger->usb)) {
+-		ret = PTR_ERR(charger->usb);
+-		goto usb_fail;
+-	}
++	if (IS_ERR(charger->usb))
++		return PTR_ERR(charger->usb);
+ 
+ 	charger->battery = power_supply_register(dev, &battery_desc, NULL);
+ 	if (IS_ERR(charger->battery)) {
+@@ -619,19 +609,6 @@ static int da9150_charger_probe(struct platform_device *pdev)
+ battery_fail:
+ 	power_supply_unregister(charger->usb);
+ 
+-usb_fail:
+-	iio_channel_release(charger->vbat_chan);
 -
- 	di->dev = &pdev->dev;
- 	di->bat_desc.name = "rx51-battery";
- 	di->bat_desc.type = POWER_SUPPLY_TYPE_BATTERY;
-@@ -220,20 +218,13 @@ static int rx51_battery_probe(struct platform_device *pdev)
- 	if (IS_ERR(di->channel_vbat))
- 		return PTR_ERR(di->channel_vbat);
- 
--	di->bat = power_supply_register(di->dev, &di->bat_desc, &psy_cfg);
-+	di->bat = devm_power_supply_register(di->dev, &di->bat_desc, &psy_cfg);
- 	if (IS_ERR(di->bat))
- 		return PTR_ERR(di->bat);
- 
- 	return 0;
+-vbat_chan_fail:
+-	iio_channel_release(charger->tjunc_chan);
+-
+-tjunc_chan_fail:
+-	iio_channel_release(charger->vbus_chan);
+-
+-vbus_chan_fail:
+-	iio_channel_release(charger->ibus_chan);
+-
+-ibus_chan_fail:
+ 	return ret;
  }
  
--static void rx51_battery_remove(struct platform_device *pdev)
--{
--	struct rx51_device_info *di = platform_get_drvdata(pdev);
--
--	power_supply_unregister(di->bat);
--}
--
- #ifdef CONFIG_OF
- static const struct of_device_id n900_battery_of_match[] = {
- 	{.compatible = "nokia,n900-battery", },
-@@ -244,7 +235,6 @@ MODULE_DEVICE_TABLE(of, n900_battery_of_match);
+@@ -659,12 +636,6 @@ static void da9150_charger_remove(struct platform_device *pdev)
  
- static struct platform_driver rx51_battery_driver = {
- 	.probe = rx51_battery_probe,
--	.remove_new = rx51_battery_remove,
- 	.driver = {
- 		.name = "rx51-battery",
- 		.of_match_table = of_match_ptr(n900_battery_of_match),
+ 	power_supply_unregister(charger->battery);
+ 	power_supply_unregister(charger->usb);
+-
+-	/* Release ADC channels */
+-	iio_channel_release(charger->ibus_chan);
+-	iio_channel_release(charger->vbus_chan);
+-	iio_channel_release(charger->tjunc_chan);
+-	iio_channel_release(charger->vbat_chan);
+ }
+ 
+ static struct platform_driver da9150_charger_driver = {
 -- 
 2.39.2
 
