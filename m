@@ -1,16 +1,15 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6570F634F5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6580B634F9
 	for <linux-pm@vger.kernel.org>; Wed, 24 Jan 2024 12:22:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706098950; cv=none; b=PHWtJ+MNowufh4ObxLgORDhIMiwf1F7gieIjUa4p3M7A1qfsFBrKUIlBQqSU+ecnTJNghwHL2Be5IozxSYv903F3WzDIe0FXZj/pF5oOp7MmGxSzcpmnd42zamQIaRoVH2AVHKONcrBdrIZagwQcmwkurmEz7+Yhil2XqZGRoDg=
+	t=1706098950; cv=none; b=HEQFtWJfNMkTH+qKdlmKtIZeY7IgYuQrmu+C7ZLwBDkSWg3QgniTkzpk2XXUjmrm7tnz9InMysSl1JnWKo4DmGMu7xsKyJNKbIn0nZbhU4yI+fiE2oSF2lKqEzQpn/uy5Hn4HQI+HHSPllfMdzJnFI5MIUOPoeQGefxIxfDmInA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706098950; c=relaxed/simple;
-	bh=HHxbDfRuHjBw0BBMrvLJdWgyYMSpJ3v1+tlxqNpDDsA=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=hjHEkfo8jvjusqMbQE4ML0KDkUkPylKxHNh/8i3i+a7sc6Kill/ElWfv1GrSjQhwaCVUVFu3op8WgI+VfhzDTPbJFf4u/BkOZCJFtuYLnd7K2gwRFv+6YOVM4i8qfXkKtIDrWOEZD/BOjxX+Z0DGECg5GDgELqmdsdsmKrNUmNw=
+	bh=FYcpkMKnrRzDedyJnvEJ1/ALEy2O6Va6jd02INm4+pI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=I5SQecMV/AskGLM8N5toYMsclnuYgNxVj+jsslyoL3v7jBl3PAvkCKkOGFbFX27gDmLrj20rTIr20XD6pddiXqWo6zGRnJV/ujlE84YcyhA1Yi8HNnob37f/Icd7HREFtQ4nVpb+2l/z2zxghwsn0eecroPk3m8O1OySS4xL0H8=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,15 +17,15 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rScGd-0007o8-1C; Wed, 24 Jan 2024 13:22:07 +0100
+	id 1rScGd-0007o4-1C; Wed, 24 Jan 2024 13:22:07 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rScGc-0023Ze-1P; Wed, 24 Jan 2024 13:22:06 +0100
+	id 1rScGb-0023Za-UQ; Wed, 24 Jan 2024 13:22:05 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rScGb-00341O-34;
+	id 1rScGb-00340k-2p;
 	Wed, 24 Jan 2024 13:22:05 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Sebastian Reichel <sre@kernel.org>,
@@ -46,12 +45,10 @@ Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>
-Subject: [PATCH v2 4/8] dt-bindings: power: reset: add bindings for NVMEM hardware storing PSCR Data
-Date: Wed, 24 Jan 2024 13:22:00 +0100
-Message-Id: <20240124122204.730370-5-o.rempel@pengutronix.de>
+Subject: [RFC PATCH v1 0/8] Introduction of PSCR Framework and Related Components
+Date: Wed, 24 Jan 2024 13:21:56 +0100
+Message-Id: <20240124122204.730370-1-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240124122204.730370-1-o.rempel@pengutronix.de>
-References: <20240124122204.730370-1-o.rempel@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -64,75 +61,63 @@ X-SA-Exim-Mail-From: ore@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Add device tree bindings that describe hardware implementations of
-Non-Volatile Memory (NVMEM) used for storing Power State Change Reasons
-(PSCR).
+changes v2:
+- rename the framework from PSCR to PSCRR (last R is for Recorder)
+- extend power on reason header and use it to show detected reason on
+  system start and in sysfs.
+- remove "unknow" reason
+- rebase on top of v6.8-rc1
+- yaml fixes
+- zero reason state on boot
 
-Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
----
- .../bindings/power/reset/pscrr-nvmem.yaml     | 53 +++++++++++++++++++
- 1 file changed, 53 insertions(+)
+Hello all,
+
+This patch series introduces the Power State Change Reasons (PSCR)
+tracking framework and its related components into the kernel. The PSCR
+framework is designed for systems where traditional methods of storing
+power state change reasons, like PMICs or watchdogs, are inadequate. It
+provides a structured way to store reasons for system shutdowns and
+reboots, such as under-voltage or software-triggered events, in
+non-volatile hardware storage.
+
+These changes are critical for systems requiring detailed postmortem
+analysis and where immediate power-down scenarios limit traditional
+storage options. The framework also assists bootloaders and early-stage
+system components in making informed recovery decisions.
+
+Oleksij Rempel (8):
+  power: Extend power_on_reason.h for upcoming PSCRR framework
+  dt-bindings: power: reset: add generic PSCRR binding trackers
+  power: reset: Introduce PSCR Recording Framework for Non-Volatile
+    Storage
+  dt-bindings: power: reset: add bindings for NVMEM hardware storing
+    PSCR Data
+  nvmem: provide consumer access to cell size metrics
+  power: reset: add PSCR NVMEM Driver for Recording Power State Change
+    Reasons
+  regulator: set Power State Change Reason before
+    hw_protection_shutdown()
+  thermal: core: Record PSCR before hw_protection_shutdown()
+
+ .../bindings/power/reset/pscrr-nvmem.yaml     |  53 +++
+ .../bindings/power/reset/pscrr.yaml           |  44 +++
+ drivers/nvmem/core.c                          |  25 ++
+ drivers/power/reset/Kconfig                   |  30 ++
+ drivers/power/reset/Makefile                  |   2 +
+ drivers/power/reset/pscrr-nvmem.c             | 121 ++++++
+ drivers/power/reset/pscrr.c                   | 353 ++++++++++++++++++
+ drivers/regulator/core.c                      |   6 +
+ drivers/thermal/thermal_core.c                |   3 +
+ include/linux/nvmem-consumer.h                |   7 +
+ include/linux/power/power_on_reason.h         |   3 +
+ include/linux/pscrr.h                         |  73 ++++
+ 12 files changed, 720 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/reset/pscrr-nvmem.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/reset/pscrr.yaml
+ create mode 100644 drivers/power/reset/pscrr-nvmem.c
+ create mode 100644 drivers/power/reset/pscrr.c
+ create mode 100644 include/linux/pscrr.h
 
-diff --git a/Documentation/devicetree/bindings/power/reset/pscrr-nvmem.yaml b/Documentation/devicetree/bindings/power/reset/pscrr-nvmem.yaml
-new file mode 100644
-index 000000000000..779920dea283
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/pscrr-nvmem.yaml
-@@ -0,0 +1,53 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/reset/pscrr-nvmem.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Generic NVMEM Power State Change Reason Recorder
-+
-+maintainers:
-+  - Oleksij Rempel <o.rempel@pengutronix.de>
-+
-+description: This binding describes the Non-Volatile Memory (NVMEM) hardware
-+  that stores Power State Change Reasons (PSCR).
-+
-+allOf:
-+  - $ref: pscrr.yaml#
-+
-+properties:
-+  compatible:
-+    const: pscrr-nvmem
-+
-+  nvmem-cells:
-+    description: |
-+      A phandle pointing to the nvmem-cells node where the power state change
-+      reasons are stored.
-+    maxItems: 1
-+
-+  nvmem-cell-names:
-+    items:
-+      - const: pscr
-+
-+  pscr-under-voltage: true
-+  pscr-over-current: true
-+  pscr-regulator-failure: true
-+  pscr-over-temperature: true
-+
-+required:
-+  - compatible
-+  - nvmem-cells
-+  - nvmem-cell-names
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    power-state-change-reason {
-+      compatible = "pscrr-nvmem";
-+      nvmem-cells = <&pscr_cell>;
-+      nvmem-cell-names = "pscr";
-+      pscr-under-voltage = <1>;
-+      pscr-over-temperature = <2>;
-+    };
-+...
 -- 
 2.39.2
 
