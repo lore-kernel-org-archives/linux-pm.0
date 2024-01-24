@@ -1,16 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F51763503
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6572D634F6
 	for <linux-pm@vger.kernel.org>; Wed, 24 Jan 2024 12:22:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706098950; cv=none; b=pQQd88fG9+xd5gVaHK3vYIfot0N7cVGWZdckc6PUEICQl8zpN3QYStHljnrXCJyCtHyyLd5bjM3Q61EvGqlIpibwbikUJvblSDHnDMrFBXCbDzrGpBA8DVhTfdxc8yPcLbfplyexhgX5rpkRfA6m8AtBLxauj2mbZQhopSk46yk=
+	t=1706098950; cv=none; b=XDgA5m50PM0zoe1gpbzRwr3RxodXsWWGr3j/DBOCBmUIzn3TNZY9gO/iiWGCFrW5lTAvKn8WL3IfGI4/K2MVkiVinyLt3A2afUz137gacy7EUO0jrshs+QZiQ6p91u2QP0xNLeak2h8HlA+I1Jl1Am2bekVVOCOrEVEFVYaemq0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706098950; c=relaxed/simple;
-	bh=viEuHOnCMvFs1FiV9peHFb17kutxKUU/HIZcjaimZ5g=;
+	bh=HDAeY4bWfoe9Y+7OHDYHhF+4G8dpj+H9p3pWeswLx5k=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=o65p2TnrsaU0nsWcRBIu1XaF1zKT1pMRHWNpDqfFs6/siCd5B7gM1acYysef2YwtH1qlKUt41Z1KCkj1SRTtOBuOjV4CYaQO5/cI+rcFFLeBq65bZZKGazBUhpQZKJK1XsUIvXpM2Lk6bgQuC6JdKOsxpeUUm+gqXzu/1ly5iVs=
+	 MIME-Version; b=P110x6owebO3FguGtxMXp0U1cMXu3bnooUXypEyW/suttZ7NdW+9xd71ovkQbyQlu11QHGEWLYGsHtmlyiqU46Ujeop9A7MfBE1rjn0tVIE8sEM1ygHuLjUCcG3SJpP8WFke9xnoj6f/PPEyjrYVIiPKzE9BBFtdWBqEXxGdgqE=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,16 +18,16 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rScGd-0007o9-1C; Wed, 24 Jan 2024 13:22:07 +0100
+	id 1rScGd-0007oC-1C; Wed, 24 Jan 2024 13:22:07 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rScGc-0023Zg-2a; Wed, 24 Jan 2024 13:22:06 +0100
+	id 1rScGc-0023Zn-46; Wed, 24 Jan 2024 13:22:06 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rScGb-00341Y-37;
-	Wed, 24 Jan 2024 13:22:05 +0100
+	id 1rScGc-003424-03;
+	Wed, 24 Jan 2024 13:22:06 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Sebastian Reichel <sre@kernel.org>,
 	Rob Herring <robh+dt@kernel.org>,
@@ -46,9 +46,9 @@ Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>
-Subject: [PATCH v2 5/8] nvmem: provide consumer access to cell size metrics
-Date: Wed, 24 Jan 2024 13:22:01 +0100
-Message-Id: <20240124122204.730370-6-o.rempel@pengutronix.de>
+Subject: [PATCH v2 8/8] thermal: core: Record PSCR before hw_protection_shutdown()
+Date: Wed, 24 Jan 2024 13:22:04 +0100
+Message-Id: <20240124122204.730370-9-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240124122204.730370-1-o.rempel@pengutronix.de>
 References: <20240124122204.730370-1-o.rempel@pengutronix.de>
@@ -64,77 +64,46 @@ X-SA-Exim-Mail-From: ore@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Add nvmem_cell_get_size() function to provide access to cell size
-metrics. In some cases we may get cell size less as consumer would
-expect it. So, nvmem_cell_write() would fail with incorrect buffer size.
+Enhance the thermal core to record the Power State Change Reason (PSCR)
+prior to invoking hw_protection_shutdown(). This change integrates the
+PSCR framework with the thermal subsystem, ensuring that reasons for
+power state changes, such as overtemperature events, are stored in a
+dedicated non-volatile memory (NVMEM) cell.
+
+This 'black box' recording is crucial for post-mortem analysis, enabling
+a deeper understanding of system failures and abrupt shutdowns,
+especially in scenarios where PMICs or watchdog timers are incapable of
+logging such events.  The recorded data can be utilized during system
+recovery routines in the bootloader or early kernel stages of subsequent
+boots, significantly enhancing system diagnostics, reliability, and
+debugging capabilities.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
 ---
- drivers/nvmem/core.c           | 25 +++++++++++++++++++++++++
- include/linux/nvmem-consumer.h |  7 +++++++
- 2 files changed, 32 insertions(+)
+ drivers/thermal/thermal_core.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/nvmem/core.c b/drivers/nvmem/core.c
-index 980123fb4dde..a21e5649fcda 100644
---- a/drivers/nvmem/core.c
-+++ b/drivers/nvmem/core.c
-@@ -1790,6 +1790,31 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len)
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index dfaa6341694a..0511d82351c5 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -16,6 +16,7 @@
+ #include <linux/kdev_t.h>
+ #include <linux/idr.h>
+ #include <linux/thermal.h>
++#include <linux/pscrr.h>
+ #include <linux/reboot.h>
+ #include <linux/string.h>
+ #include <linux/of.h>
+@@ -329,6 +330,8 @@ static void thermal_zone_device_halt(struct thermal_zone_device *tz, bool shutdo
  
- EXPORT_SYMBOL_GPL(nvmem_cell_write);
+ 	dev_emerg(&tz->device, "%s: critical temperature reached\n", tz->type);
  
-+/**
-+ * nvmem_cell_get_size() - Get the size of a given nvmem cell
-+ * @cell: nvmem cell to be queried.
-+ * @bytes: Pointer to store the size of the cell in bytes. Can be NULL.
-+ * @bits: Pointer to store the size of the cell in bits. Can be NULL.
-+ *
-+ * Return: 0 on success or negative on failure.
-+ */
-+int nvmem_cell_get_size(struct nvmem_cell *cell, size_t *bytes, size_t *bits)
-+{
-+	struct nvmem_cell_entry *entry = cell->entry;
++	set_power_state_change_reason(PSCR_OVERTEMPERATURE);
 +
-+	if (!entry->nvmem)
-+		return -EINVAL;
-+
-+	if (bytes)
-+		*bytes = entry->bytes;
-+
-+	if (bits)
-+		*bits = entry->nbits;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(nvmem_cell_get_size);
-+
- static int nvmem_cell_read_common(struct device *dev, const char *cell_id,
- 				  void *val, size_t count)
- {
-diff --git a/include/linux/nvmem-consumer.h b/include/linux/nvmem-consumer.h
-index 34c0e58dfa26..bcb0e17e415d 100644
---- a/include/linux/nvmem-consumer.h
-+++ b/include/linux/nvmem-consumer.h
-@@ -56,6 +56,7 @@ void nvmem_cell_put(struct nvmem_cell *cell);
- void devm_nvmem_cell_put(struct device *dev, struct nvmem_cell *cell);
- void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len);
- int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
-+int nvmem_cell_get_size(struct nvmem_cell *cell, size_t *bytes, size_t *bits);
- int nvmem_cell_read_u8(struct device *dev, const char *cell_id, u8 *val);
- int nvmem_cell_read_u16(struct device *dev, const char *cell_id, u16 *val);
- int nvmem_cell_read_u32(struct device *dev, const char *cell_id, u32 *val);
-@@ -128,6 +129,12 @@ static inline int nvmem_cell_write(struct nvmem_cell *cell,
- 	return -EOPNOTSUPP;
- }
- 
-+static inline int nvmem_cell_get_size(struct nvmem_cell *cell, size_t *bytes,
-+				      size_t *bits)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
- static inline int nvmem_cell_read_u8(struct device *dev,
- 				     const char *cell_id, u8 *val)
- {
+ 	if (shutdown)
+ 		hw_protection_shutdown(msg, poweroff_delay_ms);
+ 	else
 -- 
 2.39.2
 
