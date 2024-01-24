@@ -1,16 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 657A2634F8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6614C634FC
 	for <linux-pm@vger.kernel.org>; Wed, 24 Jan 2024 12:22:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706098950; cv=none; b=PO0XTp0GIp7sgvSwtjr/Kwq2+MSkYFC87IlAJWHKGbTz++oBbPAj7IYDn72TZXFqEa1oClV7SdirUVm5tp0rg6z1jLk55D7JnIxWeZHATjUY+3KM5IC95xcvER5IsHmL1ufICxNan/PLHGh9fLBvulZkL9LnbNecXngtx+sqr3A=
+	t=1706098950; cv=none; b=OV3IDmZV+8320RGChtbYsAgEKD3DgbHStpBZAuQho1/q+CLVLyb42waHc+1OrJphMaLn+oiZ3RjDcntKuKbOhgfpz2bPu/0TNINsjLFiQcMhgTzY49dDWdE+rrFpeqWh6szvQ7RtqjWEP5snnioivWEw7Ag+YtMfl7iOZh3Fttk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706098950; c=relaxed/simple;
-	bh=qJyZABOkVgOrJuobub1GO0uw86ox/Ky9FOo5Kw77m4E=;
+	bh=aGoYIr6WP6qwdiccu6/EeWFB5o3ysjwmHOnTwOOjDkQ=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=FsVEYxBm+7i2Abx5m3pZsevu33qTRuYitOzddTP9eRqacP25FK95Ac/8SuVNRslNH0t1RiOrcaCCobcPl7aXWhBGJ4bjAQnOANuW0hVivij96VHWenVWLzlJKsgr9TovoWYjUuU7t/vu1Xwzf9T7AIOjY8Epz/IpYOrjcnif6RI=
+	 MIME-Version; b=gj17KBUjK3Ijbw2LSRYqCyEvKFLMW4Aha0ceClTJ6uPLMvBUkvXjOW7Vk9wIkbiC2cmLYGyURhmDB3JQOlCO8H+xVebBBnC5Nc0gmVw9usIG4Z6f2cpWNLj7PEX7Bj8kH1KCe942KCgaGr9O8oNfKPXLrOymQwoduE+oKePwbIc=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,16 +18,16 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rScGd-0007o5-1B; Wed, 24 Jan 2024 13:22:07 +0100
+	id 1rScGd-0007oB-1C; Wed, 24 Jan 2024 13:22:07 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rScGb-0023Zb-Ux; Wed, 24 Jan 2024 13:22:05 +0100
+	id 1rScGc-0023Zk-2z; Wed, 24 Jan 2024 13:22:06 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1rScGb-00340u-2t;
-	Wed, 24 Jan 2024 13:22:05 +0100
+	id 1rScGc-00341u-00;
+	Wed, 24 Jan 2024 13:22:06 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Sebastian Reichel <sre@kernel.org>,
 	Rob Herring <robh+dt@kernel.org>,
@@ -35,10 +35,10 @@ To: Sebastian Reichel <sre@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
 	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
 Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
+	Mark Brown <broonie@kernel.org>,
 	kernel@pengutronix.de,
 	linux-kernel@vger.kernel.org,
 	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>,
 	Zhang Rui <rui.zhang@intel.com>,
@@ -46,9 +46,9 @@ Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>
-Subject: [PATCH v2 1/8] power: Extend power_on_reason.h for upcoming PSCRR framework
-Date: Wed, 24 Jan 2024 13:21:57 +0100
-Message-Id: <20240124122204.730370-2-o.rempel@pengutronix.de>
+Subject: [PATCH v2 7/8] regulator: set Power State Change Reason before hw_protection_shutdown()
+Date: Wed, 24 Jan 2024 13:22:03 +0100
+Message-Id: <20240124122204.730370-8-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240124122204.730370-1-o.rempel@pengutronix.de>
 References: <20240124122204.730370-1-o.rempel@pengutronix.de>
@@ -64,31 +64,57 @@ X-SA-Exim-Mail-From: ore@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Prepare for the introduction of the Power State Change Reason Recorder
-(PSCRR)  framework by expanding the power_on_reason.h header. This
-extension includes new power-on reasons:
-- POWER_ON_REASON_OVER_CURRENT for over-current conditions.
-- POWER_ON_REASON_REGULATOR_FAILURE for regulator failures.
-- POWER_ON_REASON_OVERTEMPERATURE for over temperature situations.
+Store the state change reason to some black box, for later
+investigation.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
+Reviewed-by: Mark Brown <broonie@kernel.org>
 ---
- include/linux/power/power_on_reason.h | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/regulator/core.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/include/linux/power/power_on_reason.h b/include/linux/power/power_on_reason.h
-index 95a1ec0c403c..f2446cece277 100644
---- a/include/linux/power/power_on_reason.h
-+++ b/include/linux/power/power_on_reason.h
-@@ -15,5 +15,8 @@
- #define POWER_ON_REASON_XTAL_FAIL "crystal oscillator failure"
- #define POWER_ON_REASON_BROWN_OUT "brown-out reset"
- #define POWER_ON_REASON_UNKNOWN "unknown reason"
-+#define POWER_ON_REASON_OVER_CURRENT "over current"
-+#define POWER_ON_REASON_REGULATOR_FAILURE "regulator failure"
-+#define POWER_ON_REASON_OVERTEMPERATURE "overtemperature"
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index a968dabb48f5..a811a5ff2273 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -19,6 +19,7 @@
+ #include <linux/delay.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/of.h>
++#include <linux/pscrr.h>
+ #include <linux/reboot.h>
+ #include <linux/regmap.h>
+ #include <linux/regulator/of_regulator.h>
+@@ -5095,6 +5096,7 @@ EXPORT_SYMBOL_GPL(regulator_bulk_free);
+ static void regulator_handle_critical(struct regulator_dev *rdev,
+ 				      unsigned long event)
+ {
++	enum pscr pscr;
+ 	const char *reason = NULL;
  
- #endif /* POWER_ON_REASON_H */
+ 	if (!rdev->constraints->system_critical)
+@@ -5103,17 +5105,21 @@ static void regulator_handle_critical(struct regulator_dev *rdev,
+ 	switch (event) {
+ 	case REGULATOR_EVENT_UNDER_VOLTAGE:
+ 		reason = "System critical regulator: voltage drop detected";
++		pscr = PSCR_UNDER_VOLTAGE;
+ 		break;
+ 	case REGULATOR_EVENT_OVER_CURRENT:
+ 		reason = "System critical regulator: over-current detected";
++		pscr = PSCR_OVER_CURRENT;
+ 		break;
+ 	case REGULATOR_EVENT_FAIL:
+ 		reason = "System critical regulator: unknown error";
++		pscr = PSCR_REGULATOR_FAILURE;
+ 	}
+ 
+ 	if (!reason)
+ 		return;
+ 
++	set_power_state_change_reason(pscr);
+ 	hw_protection_shutdown(reason,
+ 			       rdev->constraints->uv_less_critical_window_ms);
+ }
 -- 
 2.39.2
 
