@@ -1,137 +1,116 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f174.google.com (mail-oi1-f174.google.com [209.85.167.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05C60BE74;
-	Wed, 24 Jan 2024 04:25:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45878FBEE
+	for <linux-pm@vger.kernel.org>; Wed, 24 Jan 2024 05:56:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706070358; cv=none; b=BbcRbNPmQajuBKznUxcCJvaZFzgPaKU4yD30JSWI64Da0u8ubGqUjEFjd/t5v6TjaKBUkJVzZQvxZJSDKlY5SWpYwX0BXattvqtxQUQz9oxzwZU4Th7FLaxFbkXOwScMfkS2jAAvTCL8wfHcUKI4AAxlddGulMuobI0/zoZ/B4k=
+	t=1706075784; cv=none; b=mb1c3cmuwB1TY8/5zWSTCIf/t0ir9LhhiIiKYpsGWN/1JW0o9nE8ol6UI0mVKNmPDn6Pi0SGuntPOkXQI+iRyEk+NuygzOJDsHBHGPBmRwPAawrHFCNysknVWSBRIo+HnTkE71yk/PyWuqGmRKsMJgnMmERGJNJVsPg8KE449ZM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706070358; c=relaxed/simple;
-	bh=7ZWW+8qHDNDoQXk/hD+0GuH82VHOG4uW2aOnjSqYjh0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=NkBvf5dMOwmF5Piq4wbax5lLh7TkXTjck5YS9/g5F0gpLtHhfAVwdwThxTKZOTlabHwAM4Q1SNnhdpHJb+qC+6LojMuw4zLglxgtCOcCklvSiPS7XBZ14N4Jr1oQSzHCknVKITPAqMsk14NDgNCh912HCk8kcAbl0/AnKa/Ger0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=oT7qZipJ; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1706075784; c=relaxed/simple;
+	bh=3n6qbepBC/quy189WMpUt5s0sJ7FlfcHVamtdO7egM8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lIRqxsizWD53iyFtGtqVW6fDNzikhhbERWwNhNKpTbJrTw0vA8JQRj0MfYI8rzJ4nGokPZW9Uphju3vOI+Wi2xj1yC+Rfn8cGCO7bgABQPlPQ4DB3YzaVsVXuxgEcBxVNZ7YkNN2chyT3XziXeKL8fvnqzC3sBZxwUIjnSnlSFE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=CQUPI0Gy; arc=none smtp.client-ip=209.85.167.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="oT7qZipJ"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 40O41Y6p020644;
-	Wed, 24 Jan 2024 04:25:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	from:date:subject:mime-version:content-type
-	:content-transfer-encoding:message-id:references:in-reply-to:to
-	:cc; s=qcppdkim1; bh=vtJobCucxjhRKCLo3qeZp87nG4VsdWwAweQjG0KAvcE
-	=; b=oT7qZipJnO6R855AUZhdV5jx1Ga9e19xKIwIwgswa554p7uXTZl7kzpHK+g
-	SC2CVP+5Wag0AO9lOtNS+hHZHDMi+NWgGndvyt794oMhEDYmw3anRJGwuzDtGn6v
-	luCP4wOcL0yI5uJ+/BTbBDrnr0qHK+Bp/ggciLc5usUGbN5Z2fBGwAzTq+OdKuCX
-	vJ79ys46QiqlOLEyKt6fnWWcMrza/Lrv8OB/DekwZBjoxasUmWbFIgP0y0yGg3xV
-	V4cHyK/5wm5YdPgOu2IX4HFGviczTKF3UkJAheGk0jO+u3gH8/NrD9ipkMCTryfy
-	zAPjYAUyfiXb41e1ZeJOC4CktOA==
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3vtmmegqr6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 24 Jan 2024 04:25:17 +0000 (GMT)
-Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-	by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 40O4PGQe030413
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 24 Jan 2024 04:25:16 GMT
-Received: from [169.254.0.1] (10.49.16.6) by nalasex01c.na.qualcomm.com
- (10.47.97.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.40; Tue, 23 Jan
- 2024 20:25:16 -0800
-From: Bjorn Andersson <quic_bjorande@quicinc.com>
-Date: Tue, 23 Jan 2024 20:25:16 -0800
-Subject: [PATCH v3 2/8] clk: qcom: gdsc: Enable supply reglator in GPU GX
- handler
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CQUPI0Gy"
+Received: by mail-oi1-f174.google.com with SMTP id 5614622812f47-3bd7c5b2439so2970920b6e.1
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2024 21:56:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1706075782; x=1706680582; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=F7SahGLtspE/3Wi9Cd+JOw7KlfpX4OF2RIxiyIP7SV0=;
+        b=CQUPI0Gyf7iMVcA10t0J6r04j6YDF4Q6PiMRKcRAEg+WVj6KxdR5iSjMSH9izVJw1I
+         eWEctJIUL9aPKNRO8yJ0lyN7bSV/jDY1WG9r8EcyShbbGJe/c5xN79ViXN+JORHMajDY
+         3lVFKRVel0lAAFxssdot+ARQPurXeBX6M9tre1yECT9ZrE3S4aN4izbkIobsxqrD+gB2
+         PqqDggyVIjCgWAll2xtReuBmYA/XAr4VvzisMbLenDYR0AcUbxsn+W6KD51fBPCjDLml
+         IzviHy1wIPcxQkBILW8Wy4+qLFo6TwfpiR4yy3p0elIznif5BQuoB2TOGUB6aIO6pp1h
+         gYeQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1706075782; x=1706680582;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=F7SahGLtspE/3Wi9Cd+JOw7KlfpX4OF2RIxiyIP7SV0=;
+        b=V+YewejaEM+0g2PBNOhXhYwsgQmFWmIWhAB+SlYUn8z0IDPt6nNSmdH7eSzppF5rML
+         85mT/zqitpwRjj0JYNN9ayRdnn9WL7IUaflBoVpsusDh932qDUTWAyCa9uq/j21e26ZE
+         wsaSXoym89NwNkEKJAuaO37CUxrRjBX0bd96uuGUz7ABBIjSkySSZbDmjuwzh/sqWiUJ
+         gKIWwrScS1ZcxYSSE19ullM0UaSaU1xAFJxK0zaNiDBYGrYjuJ+aoBQP5aonO+uxPoAW
+         Cf8rzb5GlfQBaEc7yoyPHO3Gvpu+f+cztI5xZsnkZqlKDQ8gdZU9hBhSvxQhD4Vi6UyH
+         J0eA==
+X-Gm-Message-State: AOJu0YyH7giJPLfsWcseajqOUqYDYeM60hAQvp8vzN1+J2BBgEKHnA7T
+	hXv/iWaivMg7/jFNgKEiN71S3S7N1YAdPTpCjACCnM4G/i99gHgpoVSp4An0+1c=
+X-Google-Smtp-Source: AGHT+IGiCI/sj/mAtB23fTMLULvqgI87+dSZUJXZCXN7hV/stz02CWQa7d9iE2R5I1NHRIlUItj1Gw==
+X-Received: by 2002:a05:6808:10c2:b0:3bd:a6ea:1c6c with SMTP id s2-20020a05680810c200b003bda6ea1c6cmr1180274ois.116.1706075782222;
+        Tue, 23 Jan 2024 21:56:22 -0800 (PST)
+Received: from localhost ([122.172.81.83])
+        by smtp.gmail.com with ESMTPSA id ko18-20020a056a00461200b006dab0d72cd0sm12721062pfb.214.2024.01.23.21.56.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 23 Jan 2024 21:56:20 -0800 (PST)
+Date: Wed, 24 Jan 2024 11:26:18 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konrad.dybcio@linaro.org>,
+	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+	Banajit Goswami <bgoswami@quicinc.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Frank Rowand <frowand.list@gmail.com>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	linux-arm-msm@vger.kernel.org, alsa-devel@alsa-project.org,
+	linux-sound@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 2/6] cpufreq: do not open-code of_phandle_args_equal()
+Message-ID: <20240124055618.5xppexdpvwnv6zng@vireshk-i7>
+References: <20240123141311.220505-1-krzysztof.kozlowski@linaro.org>
+ <20240123141311.220505-3-krzysztof.kozlowski@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20240123-sa8295p-gpu-v3-2-d5b4474c8f33@quicinc.com>
-References: <20240123-sa8295p-gpu-v3-0-d5b4474c8f33@quicinc.com>
-In-Reply-To: <20240123-sa8295p-gpu-v3-0-d5b4474c8f33@quicinc.com>
-To: Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio
-	<konrad.dybcio@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
-        "Krzysztof
- Kozlowski" <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley
-	<conor+dt@kernel.org>,
-        Taniya Das <quic_tdas@quicinc.com>,
-        Johan Hovold
-	<johan+linaro@kernel.org>
-CC: <linux-arm-msm@vger.kernel.org>, <linux-clk@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-        "Bjorn
- Andersson" <quic_bjorande@quicinc.com>
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1706070315; l=1360;
- i=quic_bjorande@quicinc.com; s=20230915; h=from:subject:message-id;
- bh=7ZWW+8qHDNDoQXk/hD+0GuH82VHOG4uW2aOnjSqYjh0=;
- b=Ytv5aKLPjCbdZqOMtasS50BWZ4k4OZvAlWurSVggSYMUGJkOBm9KJN7NJA5JKc8RFi9JUo6MZ
- XQZHm7rvW8cCuTijAmK/fj5R/wI0SqYNTqq/OLsqJqOiRAHy+NNa5qg
-X-Developer-Key: i=quic_bjorande@quicinc.com; a=ed25519;
- pk=VkhObtljigy9k0ZUIE1Mvr0Y+E1dgBEH9WoLQnUtbIM=
-X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
- nalasex01c.na.qualcomm.com (10.47.97.35)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: WfxGJpnezKWqMoEl91iD932uD15vmf-I
-X-Proofpoint-ORIG-GUID: WfxGJpnezKWqMoEl91iD932uD15vmf-I
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-01-24_01,2024-01-23_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 bulkscore=0
- phishscore=0 lowpriorityscore=0 suspectscore=0 mlxscore=0 adultscore=0
- clxscore=1015 priorityscore=1501 spamscore=0 mlxlogscore=937
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2401190000 definitions=main-2401240029
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240123141311.220505-3-krzysztof.kozlowski@linaro.org>
 
-The GX GDSC is modelled to aid the GMU in powering down the GPU in the
-event that the GPU crashes, so that it can be restarted again. But in
-the event that the power-domain is supplied through a dedicated
-regulator (in contrast to being a subdomin of another power-domain),
-something needs to turn that regulator on, both to make sure things are
-powered and to match the operation in gdsc_disable().
+On 23-01-24, 15:13, Krzysztof Kozlowski wrote:
+> Use newly added of_phandle_args_equal() helper to compare two
+> of_phandle_args.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> 
+> ---
+> 
+> Depends on previous of change.
+> ---
+>  include/linux/cpufreq.h | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index afda5f24d3dd..3cd06dafb04b 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -1149,8 +1149,7 @@ static inline int of_perf_domain_get_sharing_cpumask(int pcpu, const char *list_
+>  		if (ret < 0)
+>  			continue;
+>  
+> -		if (pargs->np == args.np && pargs->args_count == args.args_count &&
+> -		    !memcmp(pargs->args, args.args, sizeof(args.args[0]) * args.args_count))
+> +		if (of_phandle_args_equal(pargs, &args))
+>  			cpumask_set_cpu(cpu, cpumask);
+>  
+>  		of_node_put(args.np);
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
----
- drivers/clk/qcom/gdsc.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
-index 5358e28122ab..e7a4068b9f39 100644
---- a/drivers/clk/qcom/gdsc.c
-+++ b/drivers/clk/qcom/gdsc.c
-@@ -557,7 +557,15 @@ void gdsc_unregister(struct gdsc_desc *desc)
-  */
- int gdsc_gx_do_nothing_enable(struct generic_pm_domain *domain)
- {
--	/* Do nothing but give genpd the impression that we were successful */
--	return 0;
-+	struct gdsc *sc = domain_to_gdsc(domain);
-+	int ret = 0;
-+
-+	/* Enable the parent supply, when controlled through the regulator framework. */
-+	if (sc->rsupply)
-+		ret = regulator_enable(sc->rsupply);
-+
-+	/* Do nothing with the GDSC itself */
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(gdsc_gx_do_nothing_enable);
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-2.25.1
-
+viresh
