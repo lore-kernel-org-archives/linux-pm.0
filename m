@@ -1,78 +1,214 @@
-Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [195.130.132.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3366A6EB76;
-	Thu, 25 Jan 2024 15:16:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6753D6EB7A
+	for <linux-pm@vger.kernel.org>; Thu, 25 Jan 2024 15:34:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706195805; cv=none; b=enX7TxHHWpH/r7bVhWyW8eDKJc//J2Nit2x0XTpYxH2GjHyfiSPhuBFwWyA4SnGb8uPFsQHuZNsoi4bIZ1fOIodRsR+HtPjX5juXff5r/Rpz1E36mfIn5pX6VoLk24hiHxAG9cMK6gaDCo1jV+aT2KGc7sWlHzfvhZzRtm/v4xM=
+	t=1706196900; cv=none; b=l1I/EmYdxYuBOccAvdwRma8GlFLhtt55tt5KSW9kDgn+x20YSVWXVGRDFLz+5BWB8Io26heFFgOfLt7QzJrTHmWhrhFZ4KXxUCkLf/n7v3JaOygq/rNJPxc5eAa6ZyQ8jdjLKQCLfIS4Uj6V5wE30/5bD0JYXBb/wC2tijq1LtI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706195805; c=relaxed/simple;
-	bh=ppQpkqkS5Pk9g2RveAtMZHsPA5svTY4M06OVIx8lVU4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DpmuEZ8hRB1DU/i0Iw+wzROOuGgWhPGGVMJPZLiXm+lIT5Rj4NfRoSwI7A7Op9Xu2XCX4u2oVkDM7ucH07mW6QxUrN6P1Y5qCgHvGUDSWnnZEaiHVyWmwoBD2jQwJFZTpwms7u4Vypy82lFp522S3NoDbmcay2t9Zw3JG++pNIA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.161.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-59584f41f1eso896319eaf.1;
-        Thu, 25 Jan 2024 07:16:43 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706195803; x=1706800603;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ppQpkqkS5Pk9g2RveAtMZHsPA5svTY4M06OVIx8lVU4=;
-        b=XhclgRZeKJazbGk03RK1S+sOuxqRaIxNPpm/pfAUB2hm0KIxhRY5aMUceL+E7aeQwI
-         wyJ2pTNfjtafBeRC92YQEb3t1UwT5mGAohiEpvadg5kRldU5oNxCm6zVG+MP/gj1wnR6
-         VZi39SuJ/K9c3uyPHzba9VhkGUIzkWYPHN1bYd075r+KQaQszsOVqK1mvtr2pZg9mCv1
-         00UV0JovdyvvBoYUaeLyrtkJF12Q6OD+ulyK6zQBq7eDE5RBqZWHXGdCXCi6YCpLyXVP
-         Ezeqf4XC50swe6cRhrmJvsFMMbrZJEasXHpV8aau5OfJ7Z2bXWd2oEYI7MH8bEtuVxPT
-         Al0A==
-X-Gm-Message-State: AOJu0YwZjv6kc7C018jucQqJgQsxho0CIg9XO02gw+m+TjQcstBpl7+F
-	vYZ4CILeQoQE2u+7AwAkGVHCv9+LJOgSBAbbbybh0wzr9dFgvYseU9jFxv9eKqNXjLsJyw+MowU
-	e3E3mLqRjCCRhQY9kGxXO2YPwfa8=
-X-Google-Smtp-Source: AGHT+IH8IUNVDZ3DGx4u1lJeFJmLJJs3jg2F+GuFGgcnqs9XT6iZ5JelvP0oePboWk5xd2R2jLiJYd7422hsG62DvZM=
-X-Received: by 2002:a05:6820:26c9:b0:599:2b86:993 with SMTP id
- da9-20020a05682026c900b005992b860993mr1911512oob.0.1706195803136; Thu, 25 Jan
- 2024 07:16:43 -0800 (PST)
+	s=arc-20240116; t=1706196900; c=relaxed/simple;
+	bh=Eur2rkOIf6kFZcP6Zrtp15/cO6YVofM69aRwlAEX3BU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=MfQGiK6ECcdFhR8dKUDl6riLKa2RETuZEevggA1+t/f95Ah/PEA7z9npmhoDeb0L3tH2sUxhOml2M+R1m2e5kH3n7+VSUbTKCVLg+bbaFpTcer6zIlzXAD56FfNiK0mNaHJitUhJZ0S9BtHFwvtAyDcr3wVGKhqOWVqAb5/4pc0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:bc9e:fcb8:8aa3:5dc0])
+	by andre.telenet-ops.be with bizsmtp
+	id f3am2B00R58agq2013amKe; Thu, 25 Jan 2024 16:34:56 +0100
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1rT1jo-00GUwG-97;
+	Thu, 25 Jan 2024 16:34:46 +0100
+Received: from geert by rox.of.borg with local (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1rT1kc-00Fs3F-8Z;
+	Thu, 25 Jan 2024 16:34:46 +0100
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Cong Dang <cong.dang.xn@renesas.com>,
+	Duy Nguyen <duy.nguyen.rh@renesas.com>,
+	Hai Pham <hai.pham.ud@renesas.com>,
+	Linh Phung <linh.phung.jy@renesas.com>,
+	linux-renesas-soc@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2 13/15] arm64: dts: renesas: Add Renesas R8A779H0 SoC support
+Date: Thu, 25 Jan 2024 16:34:41 +0100
+Message-Id: <4107bc3d7c31932da29e671ddf4b1564ba38a84c.1706194617.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1706194617.git.geert+renesas@glider.be>
+References: <cover.1706194617.git.geert+renesas@glider.be>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com> <88356fdc-91f4-4f43-97a5-3da0ce455515@oracle.com>
-In-Reply-To: <88356fdc-91f4-4f43-97a5-3da0ce455515@oracle.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 25 Jan 2024 16:16:31 +0100
-Message-ID: <CAJZ5v0iPEuzwcko2gr+uprKvuGe48GgavB2Q2w3ZQ6E=Lg_g5A@mail.gmail.com>
-Subject: Re: [PATCH v2] Enable haltpoll for arm64
-To: Mihai Carabas <mihai.carabas@oracle.com>
-Cc: linux-arm-kernel@lists.infradead.org, 
-	Peter Zijlstra <peterz@infradead.org>, kvm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, catalin.marinas@arm.com, will@kernel.org, 
-	tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org, 
-	hpa@zytor.com, pbonzini@redhat.com, wanpengli@tencent.com, 
-	vkuznets@redhat.com, rafael@kernel.org, daniel.lezcano@linaro.org, 
-	akpm@linux-foundation.org, pmladek@suse.com, dianders@chromium.org, 
-	npiggin@gmail.com, rick.p.edgecombe@intel.com, joao.m.martins@oracle.com, 
-	juerg.haefliger@canonical.com, mic@digikod.net, arnd@arndb.de, 
-	ankur.a.arora@oracle.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi,
+From: Hai Pham <hai.pham.ud@renesas.com>
 
-On Thu, Jan 25, 2024 at 3:40=E2=80=AFPM Mihai Carabas <mihai.carabas@oracle=
-.com> wrote:
->
-> Hello,
->
-> How can we move this patchset forward?
+Add initial support for the Renesas R-Car V4M (R8A779H0) SoC.
 
-There have been some comments and a tag has been given.
+Signed-off-by: Hai Pham <hai.pham.ud@renesas.com>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v2:
+  - Add vendor-prefixes to DT binding definition header files.
 
-Update the series (to address the comments and add the tag where
-applicable) and resend.
+Changes compared to the BSP:
+  - Add "-clk" suffix to clock node names,
+  - Rename "pmu_a76" node to "pmu-a76",
+  - Drop bogus CPU masks from GICv3 PPI interrupt specifiers,
+  - Drop hscif0 dmas and dma-names placeholder,
+  - Add missing hypervisor virtual timer IRQ to timer node.
+---
+ arch/arm64/boot/dts/renesas/r8a779h0.dtsi | 121 ++++++++++++++++++++++
+ 1 file changed, 121 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/renesas/r8a779h0.dtsi
 
-Thanks!
+diff --git a/arch/arm64/boot/dts/renesas/r8a779h0.dtsi b/arch/arm64/boot/dts/renesas/r8a779h0.dtsi
+new file mode 100644
+index 0000000000000000..a082e2d06b696019
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/r8a779h0.dtsi
+@@ -0,0 +1,121 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++/*
++ * Device Tree Source for the R-Car V4M (R8A779H0) SoC
++ *
++ * Copyright (C) 2023 Renesas Electronics Corp.
++ */
++
++#include <dt-bindings/clock/renesas,r8a779h0-cpg-mssr.h>
++#include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/power/renesas,r8a779h0-sysc.h>
++
++/ {
++	compatible = "renesas,r8a779h0";
++	#address-cells = <2>;
++	#size-cells = <2>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		a76_0: cpu@0 {
++			compatible = "arm,cortex-a76";
++			reg = <0>;
++			device_type = "cpu";
++			power-domains = <&sysc R8A779H0_PD_A1E0D0C0>;
++		};
++	};
++
++	extal_clk: extal-clk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		/* This value must be overridden by the board */
++		clock-frequency = <0>;
++	};
++
++	extalr_clk: extalr-clk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		/* This value must be overridden by the board */
++		clock-frequency = <0>;
++	};
++
++	pmu-a76 {
++		compatible = "arm,cortex-a76-pmu";
++		interrupts-extended = <&gic GIC_PPI 7 IRQ_TYPE_LEVEL_LOW>;
++	};
++
++	/* External SCIF clock - to be overridden by boards that provide it */
++	scif_clk: scif-clk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <0>;
++	};
++
++	soc: soc {
++		compatible = "simple-bus";
++		interrupt-parent = <&gic>;
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		cpg: clock-controller@e6150000 {
++			compatible = "renesas,r8a779h0-cpg-mssr";
++			reg = <0 0xe6150000 0 0x4000>;
++			clocks = <&extal_clk>, <&extalr_clk>;
++			clock-names = "extal", "extalr";
++			#clock-cells = <2>;
++			#power-domain-cells = <0>;
++			#reset-cells = <1>;
++		};
++
++		rst: reset-controller@e6160000 {
++			compatible = "renesas,r8a779h0-rst";
++			reg = <0 0xe6160000 0 0x4000>;
++		};
++
++		sysc: system-controller@e6180000 {
++			compatible = "renesas,r8a779h0-sysc";
++			reg = <0 0xe6180000 0 0x4000>;
++			#power-domain-cells = <1>;
++		};
++
++		hscif0: serial@e6540000 {
++			compatible = "renesas,hscif-r8a779h0",
++				     "renesas,rcar-gen4-hscif", "renesas,hscif";
++			reg = <0 0xe6540000 0 0x60>;
++			interrupts = <GIC_SPI 246 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg CPG_MOD 514>,
++				 <&cpg CPG_CORE R8A779H0_CLK_SASYNCPERD1>,
++				 <&scif_clk>;
++			clock-names = "fck", "brg_int", "scif_clk";
++			power-domains = <&sysc R8A779H0_PD_ALWAYS_ON>;
++			resets = <&cpg 514>;
++			status = "disabled";
++		};
++
++		gic: interrupt-controller@f1000000 {
++			compatible = "arm,gic-v3";
++			#interrupt-cells = <3>;
++			#address-cells = <0>;
++			interrupt-controller;
++			reg = <0x0 0xf1000000 0 0x20000>,
++			      <0x0 0xf1060000 0 0x110000>;
++			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
++		};
++
++		prr: chipid@fff00044 {
++			compatible = "renesas,prr";
++			reg = <0 0xfff00044 0 4>;
++		};
++	};
++
++	timer {
++		compatible = "arm,armv8-timer";
++		interrupts-extended = <&gic GIC_PPI 13 IRQ_TYPE_LEVEL_LOW>,
++				      <&gic GIC_PPI 14 IRQ_TYPE_LEVEL_LOW>,
++				      <&gic GIC_PPI 11 IRQ_TYPE_LEVEL_LOW>,
++				      <&gic GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>,
++				      <&gic GIC_PPI 12 IRQ_TYPE_LEVEL_LOW>;
++	};
++};
+-- 
+2.34.1
+
