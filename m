@@ -1,61 +1,47 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA51813BE80;
-	Thu, 25 Jan 2024 21:05:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8119B131E4F;
+	Thu, 25 Jan 2024 21:56:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706216725; cv=none; b=ISZJmUNOYZLPOIYgthpq4Qxv0AK8rNKaste+1MIiKXbA/6226Bqp0CQ0frUxFem6LVI+pOuJd8fOvj9IzGbsn16jWEsaCSs07U2TpHcz529rsmbVlnkJol7UexNPjR6YN6oj/S27zvq+1QpMOeo3G/2GDJ9CJDDSN3Ebvti1XLg=
+	t=1706219802; cv=none; b=dF7yIvVs7PO2z0eUBJYuCRX21ES8jkAi/KX+6jwIuZaCmwXqVA0BQIOPo60kJwoeWn0gBp/FGl8w+t67QLSI3MW9ZR2WXyD1puXwvKM5EEfRK3jSnVFayslfDUGS7HpXGsoRDVcWVgsQK7F2nT2eph3v80CedUYUCCA4++HaV5g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706216725; c=relaxed/simple;
-	bh=ZTKXdewTHXfouTjQ0Arv96vvn/OKx+KOghE2Ix6ESHM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=duTwIRvyyNh/twngeEmqEL3Uq8B0RJa315d/wQujZOqTyvMIU05ag7W5rBY85uszgGYEckeoeYqUpVe3N8YKj/BRV5DXaQ3fnHaeSnB4q5zCLsj+OqpRum4YCXMg2HI76rFykwguYA+68g3TVPhceOIz2aK32BG7qJrLHkYjvEw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=L884OJCD; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1706219802; c=relaxed/simple;
+	bh=cYFh6DjzhH4jld3C3WqVrzKThz5M18vad5QHxvxcs18=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BmtvZOaX3hJmRlYgUhYP8waKbrhB/MEfYKUbQ80mhGqzpZ5rGmy0OszFNjyfVGyybXs7kxhWsZDU5hmcyNT2VEbS/xzmi2z1o8BZM7DGGZpRecv6vkSV0vnNHvCqtgg+s70jdS15we3zwSLqfkf7i5zCK4yypW1QueFKmUv43vg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=ZdJeUvlU; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="L884OJCD"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 40PKXElb019065;
-	Thu, 25 Jan 2024 21:05:14 GMT
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="ZdJeUvlU"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 40PKXrBG003195;
+	Thu, 25 Jan 2024 21:56:34 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	from:date:subject:mime-version:content-type
-	:content-transfer-encoding:message-id:references:in-reply-to:to
-	:cc; s=qcppdkim1; bh=5R+nRAa0STmKw167yqehBeM3EkmBG/KPqSZqvIFA3mk
-	=; b=L884OJCDQtZY6U27xbVzTsHK0iBPP+qawEJjnFX6+mydBRuIUAwC778deHq
-	DVtX/FOuNNu52z16NmzLXW/wyJFUSr71F+YV2gIvGd8+k4aFNA+VTMpmlgww2198
-	EKxyiYoJA1ESwCUNSW+cBWPkUNXuWpCI64F4vDKTUrWujf82Sbu/8nUpE5BIN1l7
-	qKWJPk0vny5sQuOfu4fPNhtMzNas8b+9LvEVWQ9EKrT5lc7myeWlM7CFPkzuZWv1
-	dP+oHWDzmF2zCAeajcOMBH8e7RXqEFe8FyDeMVincFR49nA3T1Tvqfxx8daM+lpC
-	ygFCzLClHn1uStGhL30K7RYRpug==
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3vumf79wj3-1
+	date:from:to:cc:subject:message-id:references:mime-version
+	:content-type:in-reply-to; s=qcppdkim1; bh=MNIFjg7KPSS9mtkOLKuGF
+	aB7m22e0JPWn0h7OZRAp+s=; b=ZdJeUvlUWnastTQpUi+xXJnndzb0TEgFajPp4
+	6b5M7eTKwK3ixbHe4ImnqK5NO827ASabOhh309g5ePU0J2eKWlgJTKRlRn/6FTyj
+	R1+O0hTbaasGRKTbGXO91SWX6d2UyuVlEVdqQFVLdunR6LETpm/iUqkoNt2f4Al2
+	pryQxzHjY9XRKsE2LMDXebgrDV0OZtBX/wnTbyFZTjOce/hBRvlKMccr6PTP14ci
+	WFI1LdY4dKqtzvybWCLgCyce2YJLjmcQ1PbHxiZ8rHWw8XmuYy3NyMoTyZZmgAs4
+	IEYMQwZVNL7cRAWoKRAOp5omV0oR1K8P4Ul9jViAo7F1CwtBQ==
+Received: from nalasppmta02.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3vumynhux0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 25 Jan 2024 21:05:13 +0000 (GMT)
+	Thu, 25 Jan 2024 21:56:33 +0000 (GMT)
 Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-	by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 40PL5C9x031694
+	by NALASPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 40PLuWaI013022
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 25 Jan 2024 21:05:12 GMT
-Received: from [169.254.0.1] (10.49.16.6) by nalasex01c.na.qualcomm.com
- (10.47.97.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.40; Thu, 25 Jan
- 2024 13:05:11 -0800
+	Thu, 25 Jan 2024 21:56:32 GMT
+Received: from hu-bjorande-lv.qualcomm.com (10.49.16.6) by
+ nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.40; Thu, 25 Jan 2024 13:56:32 -0800
+Date: Thu, 25 Jan 2024 13:56:31 -0800
 From: Bjorn Andersson <quic_bjorande@quicinc.com>
-Date: Thu, 25 Jan 2024 13:05:07 -0800
-Subject: [PATCH v4 1/8] dt-bindings: clock: qcom: Allow VDD_GFX supply to
- GX
-Precedence: bulk
-X-Mailing-List: linux-pm@vger.kernel.org
-List-Id: <linux-pm.vger.kernel.org>
-List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
-List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20240125-sa8295p-gpu-v4-1-7011c2a63037@quicinc.com>
-References: <20240125-sa8295p-gpu-v4-0-7011c2a63037@quicinc.com>
-In-Reply-To: <20240125-sa8295p-gpu-v4-0-7011c2a63037@quicinc.com>
 To: Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio
 	<konrad.dybcio@linaro.org>,
@@ -71,68 +57,98 @@ To: Bjorn Andersson <andersson@kernel.org>,
 CC: <linux-arm-msm@vger.kernel.org>, <linux-clk@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-        "Bjorn
- Andersson" <quic_bjorande@quicinc.com>
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1706216711; l=1114;
- i=quic_bjorande@quicinc.com; s=20230915; h=from:subject:message-id;
- bh=ZTKXdewTHXfouTjQ0Arv96vvn/OKx+KOghE2Ix6ESHM=;
- b=w2m3qdB32VTfY8yOMvxfwcMu3RZRVmTJPgegE0ri0xKZ+LdbCG956BmUbTkZJaiCqiZI9ZtkC
- xB3AXLQ4pbZBUNJkPAlTy4kB4q6NxejjRCNvLMJOa2KOcXSDRgMUNnS
-X-Developer-Key: i=quic_bjorande@quicinc.com; a=ed25519;
- pk=VkhObtljigy9k0ZUIE1Mvr0Y+E1dgBEH9WoLQnUtbIM=
+        "Dmitry
+ Baryshkov" <dmitry.baryshkov@linaro.org>,
+        Ulf Hansson
+	<ulf.hansson@linaro.org>
+Subject: Re: [PATCH v4 0/8] arm64: dts: qcom: sa8295p: Enable GPU
+Message-ID: <20240125215631.GM2936378@hu-bjorande-lv.qualcomm.com>
+References: <20240125-sa8295p-gpu-v4-0-7011c2a63037@quicinc.com>
+Precedence: bulk
+X-Mailing-List: linux-pm@vger.kernel.org
+List-Id: <linux-pm.vger.kernel.org>
+List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20240125-sa8295p-gpu-v4-0-7011c2a63037@quicinc.com>
 X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
  nalasex01c.na.qualcomm.com (10.47.97.35)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: zOVmWQc9VVwFA_SORDPsSaQ5YgzHhJES
-X-Proofpoint-ORIG-GUID: zOVmWQc9VVwFA_SORDPsSaQ5YgzHhJES
+X-Proofpoint-GUID: 3cWWsYCb9dtHrLwtMGqhnrF6IpoQMnGb
+X-Proofpoint-ORIG-GUID: 3cWWsYCb9dtHrLwtMGqhnrF6IpoQMnGb
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-01-25_13,2024-01-25_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxscore=0
- adultscore=0 mlxlogscore=999 clxscore=1015 spamscore=0 priorityscore=1501
- suspectscore=0 malwarescore=0 impostorscore=0 lowpriorityscore=0
+ definitions=2024-01-25_14,2024-01-25_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ mlxlogscore=927 adultscore=0 spamscore=0 lowpriorityscore=0 clxscore=1015
+ impostorscore=0 priorityscore=1501 suspectscore=0 bulkscore=0 mlxscore=0
  phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2401190000 definitions=main-2401250152
+ engine=8.19.0-2401190000 definitions=main-2401250158
 
-In some designs the SoC's VDD_GFX pads are supplied by an external
-regulator, rather than a power-domain. Allow this to be described in the
-GPU clock controller binding.
+On Thu, Jan 25, 2024 at 01:05:06PM -0800, Bjorn Andersson wrote:
+> Due to the different PMIC configuration found in the SA8295P platform,
+> compared to SC8280XP, the VDD_GFX pads are supplied by an dedicated
+> MAX20411 LDO.
+> 
+> Support for expressing the regulator supply is added to the binding, the
+> support for enabling the parent supply for GX is added, the missing
+> gfx.lvl power-domain is dropped, and the DeviceTree is wired up to
+> enable the GPU in this configuration.
+> 
+> Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
 
-Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
----
- Documentation/devicetree/bindings/clock/qcom,gpucc.yaml | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Sorry, I forgot to change the subject prefix of the rpmhpd patch, and
+pick up Konrad's two r-b.
 
-diff --git a/Documentation/devicetree/bindings/clock/qcom,gpucc.yaml b/Documentation/devicetree/bindings/clock/qcom,gpucc.yaml
-index f369fa34e00c..f57aceddac6b 100644
---- a/Documentation/devicetree/bindings/clock/qcom,gpucc.yaml
-+++ b/Documentation/devicetree/bindings/clock/qcom,gpucc.yaml
-@@ -53,6 +53,9 @@ properties:
-   power-domains:
-     maxItems: 1
- 
-+  vdd-gfx-supply:
-+    description: Regulator supply for the VDD_GFX pads
-+
-   '#clock-cells':
-     const: 1
- 
-@@ -74,6 +77,12 @@ required:
-   - '#reset-cells'
-   - '#power-domain-cells'
- 
-+# Require that power-domains and vdd-gfx-supply are not both present
-+not:
-+  required:
-+    - power-domains
-+    - vdd-gfx-supply
-+
- additionalProperties: false
- 
- examples:
+Regards,
+Bjorn
 
--- 
-2.25.1
-
+> ---
+> Changes in v4:
+> - Updated qcom,gpucc.yaml binding check that both power-domains and
+>   vdd-gfx-supply isn't used together. Updated related comment as well.
+> - Link to v3: https://lore.kernel.org/r/20240123-sa8295p-gpu-v3-0-d5b4474c8f33@quicinc.com
+> 
+> Changes in v3:
+> - Removed one unnecessary empty line in DT node
+> - Rebased series to v6.8-rc1
+> - Link to v2: https://lore.kernel.org/r/20231220-sa8295p-gpu-v2-0-4763246b72c0@quicinc.com
+> 
+> Changes in v2:
+> - Made gpucc binding accept either power-domain or vdd-gfx-supply
+> - Updated comment in gdsc_gx_do_nothing_enable()
+> - Added a comment for the /delete-property/ power-domains
+> - Fixed node and property sort order in dts
+> - Switched zap firmware to use mbn file
+> - Link to v1: https://lore.kernel.org/r/20231220-sa8295p-gpu-v1-0-d8cdf2257f97@quicinc.com
+> 
+> ---
+> Bjorn Andersson (8):
+>       dt-bindings: clock: qcom: Allow VDD_GFX supply to GX
+>       clk: qcom: gdsc: Enable supply reglator in GPU GX handler
+>       clk: qcom: gpucc-sc8280xp: Add external supply for GX gdsc
+>       soc: qcom: rpmhpd: Drop SA8540P gfx.lvl
+>       arm64: dts: qcom: sa8540p: Drop gfx.lvl as power-domain for gpucc
+>       arm64: dts: qcom: sa8295p-adp: add max20411
+>       arm64: dts: qcom: sa8295p-adp: Enable GPU
+>       arm64: defconfig: Enable MAX20411 regulator driver
+> 
+>  .../devicetree/bindings/clock/qcom,gpucc.yaml      |  9 +++
+>  arch/arm64/boot/dts/qcom/sa8295p-adp.dts           | 68 ++++++++++++++++++++++
+>  arch/arm64/boot/dts/qcom/sa8540p.dtsi              |  3 +
+>  arch/arm64/configs/defconfig                       |  1 +
+>  drivers/clk/qcom/gdsc.c                            | 12 +++-
+>  drivers/clk/qcom/gpucc-sc8280xp.c                  |  1 +
+>  drivers/pmdomain/qcom/rpmhpd.c                     |  1 -
+>  7 files changed, 92 insertions(+), 3 deletions(-)
+> ---
+> base-commit: 6613476e225e090cc9aad49be7fa504e290dd33d
+> change-id: 20231220-sa8295p-gpu-51c5f343e3ec
+> 
+> Best regards,
+> -- 
+> Bjorn Andersson <quic_bjorande@quicinc.com>
+> 
