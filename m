@@ -1,30 +1,30 @@
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [195.130.132.52])
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [195.130.137.90])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B1666EB71
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D97973175
 	for <linux-pm@vger.kernel.org>; Thu, 25 Jan 2024 15:34:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.52
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.90
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706196900; cv=none; b=UEqRRllk8V5B2/5QY8YW5l4zvCqJtZMEcIiwBzuWiIoJM2JW0o5aRQYNMj1xT3yXhwkdSNsKdqBdHxZqcIeG7S4JYG/jKCbKl06Bk7oFOSdUb8gEWpDQiqK/skZhE35SegyP0opsaIkSXcv93OHbF/Rz7UEaNsVm1RabKwn0i3U=
+	t=1706196903; cv=none; b=qrf7vi+8BK9tl2V8PDjiL3w9R6hHozcTBlj3MffultSBeLjsWsDuAwQha5hBWuSuOdB547AELh9lA6J+hDDAV3N9P9sa4zvpGPn+5U1LYq1SnpXBMVwyxNNdUYv2pPHI2DJfjL/mdk024rHrfN0blMzx8l7Wy/WX9/9pYrxqDqc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706196900; c=relaxed/simple;
-	bh=/AvJGwQgX6dcvpaIBXSgcqhgJjIVJ4v8vhMLFY6UuLs=;
+	s=arc-20240116; t=1706196903; c=relaxed/simple;
+	bh=PrGLmOdB4gT9pV6Vw4tAfL7M/IXCcsXdVseJO1BoioI=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=jMTGdV9Uc5bZz7o03yhw46mDy3LpIOspAE4wGTtwWRCVxT8jk+MKTIVRhDUPMqIQSiqSDnSszbNlG0IH15llaliDQPKPCbC+i4oB+tyul7mB/98Lp7B+tFKsrzurt+4EVBwQsqAoJ6iLjaojfyFD9tdJxL/hMx2dY/oO61O7uhU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.52
+	 MIME-Version; b=CfG/fE2QJkv23YaGR74Xi6y1VX/rIlLj2kH0JFfL2JV1QBpMn+hn5juj7RHj3tUwwmzd+kd9CPlkC+Vo7rEGmIe9ySsVjOw3PJFvDD/mSeWZ1jEjm937ILKvOQtVdFwP81Uj3WfSv23S7AaQQsaiAOmN6CYDjeJV2QtMxQRbefk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.90
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:bc9e:fcb8:8aa3:5dc0])
-	by xavier.telenet-ops.be with bizsmtp
-	id f3am2B00958agq2013amcP; Thu, 25 Jan 2024 16:34:56 +0100
+	by albert.telenet-ops.be with bizsmtp
+	id f3am2B00M58agq2063am9X; Thu, 25 Jan 2024 16:34:56 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rT1jo-00GUw1-5z;
+	id 1rT1jo-00GUwK-9n;
 	Thu, 25 Jan 2024 16:34:46 +0100
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rT1kc-00Fs2w-5N;
+	id 1rT1kc-00Fs3K-9J;
 	Thu, 25 Jan 2024 16:34:46 +0100
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Michael Turquette <mturquette@baylibre.com>,
@@ -47,9 +47,9 @@ Cc: Cong Dang <cong.dang.xn@renesas.com>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 09/15] pmdomain: renesas: r8a779h0-sysc: Add r8a779h0 support
-Date: Thu, 25 Jan 2024 16:34:37 +0100
-Message-Id: <eed6faa02c628d32676ab8ea0eee636b4ffd6c47.1706194617.git.geert+renesas@glider.be>
+Subject: [PATCH v2 14/15] arm64: dts: renesas: Add Gray Hawk Single board support
+Date: Thu, 25 Jan 2024 16:34:42 +0100
+Message-Id: <b657402113267acd57aece0b4c681b707e704455.1706194617.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1706194617.git.geert+renesas@glider.be>
 References: <cover.1706194617.git.geert+renesas@glider.be>
@@ -61,147 +61,96 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Duy Nguyen <duy.nguyen.rh@renesas.com>
+Add initial support for the Renesas Gray Hawk Single board, which is
+based on the R-Car V4M (R8A779H0) SoC:
+  - Memory,
+  - Crystal oscillators,
+  - Serial console.
 
-Add support for R-Car V4M (R8A779H0) SoC power areas to the R-Car SYSC
-driver.
+Based on the White Hawk Single DTS, and on a patch for the Gray Hawk
+board stack in the BSP by Hai Pham.
 
-Signed-off-by: Duy Nguyen <duy.nguyen.rh@renesas.com>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v2:
-  - Add vendor-prefix to DT binding definition header file.
-
-Changes compared to the BSP:
-  - Move from drivers/soc/renesas/ to drivers/pmdomain/renesas/,
-  - Include rcar-gen4-sysc glue from "soc: renesas: rcar-gen4-sysc:
-    Introduce R-Car Gen4 SYSC driver",
-  - Remove unneeded includes,
-  - Align second column,
-  - Fix names of "a33dga" and "a23dgb" domains,
-  - Add missing "a3cr[012]" domains.
+  - Add SoC name to top-level comment.
 ---
- drivers/pmdomain/renesas/Kconfig          |  4 ++
- drivers/pmdomain/renesas/Makefile         |  1 +
- drivers/pmdomain/renesas/r8a779h0-sysc.c  | 55 +++++++++++++++++++++++
- drivers/pmdomain/renesas/rcar-gen4-sysc.c |  3 ++
- drivers/pmdomain/renesas/rcar-gen4-sysc.h |  1 +
- 5 files changed, 64 insertions(+)
- create mode 100644 drivers/pmdomain/renesas/r8a779h0-sysc.c
+ arch/arm64/boot/dts/renesas/Makefile          |  2 +
+ .../dts/renesas/r8a779h0-gray-hawk-single.dts | 52 +++++++++++++++++++
+ 2 files changed, 54 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts
 
-diff --git a/drivers/pmdomain/renesas/Kconfig b/drivers/pmdomain/renesas/Kconfig
-index 80bf2cf8b60e6f63..54acb4b1ec7c4892 100644
---- a/drivers/pmdomain/renesas/Kconfig
-+++ b/drivers/pmdomain/renesas/Kconfig
-@@ -71,6 +71,10 @@ config SYSC_R8A779G0
- 	bool "System Controller support for R-Car V4H" if COMPILE_TEST
- 	select SYSC_RCAR_GEN4
+diff --git a/arch/arm64/boot/dts/renesas/Makefile b/arch/arm64/boot/dts/renesas/Makefile
+index 1d7d69657a1f0559..4c5ac5f02829ff58 100644
+--- a/arch/arm64/boot/dts/renesas/Makefile
++++ b/arch/arm64/boot/dts/renesas/Makefile
+@@ -86,6 +86,8 @@ dtb-$(CONFIG_ARCH_R8A779G0) += r8a779g0-white-hawk-ard-audio-da7212.dtbo
+ r8a779g0-white-hawk-ard-audio-da7212-dtbs := r8a779g0-white-hawk.dtb r8a779g0-white-hawk-ard-audio-da7212.dtbo
+ dtb-$(CONFIG_ARCH_R8A779G0) += r8a779g0-white-hawk-ard-audio-da7212.dtb
  
-+config SYSC_R8A779H0
-+	bool "System Controller support for R-Car V4M" if COMPILE_TEST
-+	select SYSC_RCAR_GEN4
++dtb-$(CONFIG_ARCH_R8A779H0) += r8a779h0-gray-hawk-single.dtb
 +
- config SYSC_RMOBILE
- 	bool "System Controller support for R-Mobile" if COMPILE_TEST
- 
-diff --git a/drivers/pmdomain/renesas/Makefile b/drivers/pmdomain/renesas/Makefile
-index e306e396fc8c10e3..89180f19c23be732 100644
---- a/drivers/pmdomain/renesas/Makefile
-+++ b/drivers/pmdomain/renesas/Makefile
-@@ -24,6 +24,7 @@ obj-$(CONFIG_SYSC_R8A77995)	+= r8a77995-sysc.o
- obj-$(CONFIG_SYSC_R8A779A0)	+= r8a779a0-sysc.o
- obj-$(CONFIG_SYSC_R8A779F0)	+= r8a779f0-sysc.o
- obj-$(CONFIG_SYSC_R8A779G0)	+= r8a779g0-sysc.o
-+obj-$(CONFIG_SYSC_R8A779H0)     += r8a779h0-sysc.o
- # Family
- obj-$(CONFIG_SYSC_RCAR)		+= rcar-sysc.o
- obj-$(CONFIG_SYSC_RCAR_GEN4)	+= rcar-gen4-sysc.o
-diff --git a/drivers/pmdomain/renesas/r8a779h0-sysc.c b/drivers/pmdomain/renesas/r8a779h0-sysc.c
+ dtb-$(CONFIG_ARCH_R8A77951) += r8a779m1-salvator-xs.dtb
+ r8a779m1-salvator-xs-panel-aa104xd12-dtbs := r8a779m1-salvator-xs.dtb salvator-panel-aa104xd12.dtbo
+ dtb-$(CONFIG_ARCH_R8A77951) += r8a779m1-salvator-xs-panel-aa104xd12.dtb
+diff --git a/arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts b/arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts
 new file mode 100644
-index 0000000000000000..ce2a82183ba8c9ab
+index 0000000000000000..1ed404712d823871
 --- /dev/null
-+++ b/drivers/pmdomain/renesas/r8a779h0-sysc.c
-@@ -0,0 +1,55 @@
-+// SPDX-License-Identifier: GPL-2.0
++++ b/arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts
+@@ -0,0 +1,52 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +/*
-+ * Renesas R-Car V4M System Controller
++ * Device Tree Source for the R-Car V4M Gray Hawk Single board
 + *
-+ * Copyright (C) 2016-2017 Glider bvba
-+ * Copyright (C) 2023 Renesas Electronics Corp
++ * Copyright (C) 2023 Renesas Electronics Corp.
++ * Copyright (C) 2024 Glider bv
 + */
 +
-+#include <linux/kernel.h>
++/dts-v1/;
++#include "r8a779h0.dtsi"
 +
-+#include <dt-bindings/power/renesas,r8a779h0-sysc.h>
++/ {
++	model = "Renesas Gray Hawk Single board based on r8a779h0";
++	compatible = "renesas,gray-hawk-single", "renesas,r8a779h0";
 +
-+#include "rcar-gen4-sysc.h"
++	aliases {
++		serial0 = &hscif0;
++	};
 +
-+static struct rcar_gen4_sysc_area r8a779h0_areas[] __initdata = {
-+	{ "always-on",	R8A779H0_PD_ALWAYS_ON, -1, PD_ALWAYS_ON },
-+	{ "c4",		R8A779H0_PD_C4, R8A779H0_PD_ALWAYS_ON },
-+	{ "a2e0d0",	R8A779H0_PD_A2E0D0, R8A779H0_PD_C4, PD_SCU },
-+	{ "a1e0d0c0",	R8A779H0_PD_A1E0D0C0, R8A779H0_PD_A2E0D0, PD_CPU_NOCR },
-+	{ "a1e0d0c1",	R8A779H0_PD_A1E0D0C1, R8A779H0_PD_A2E0D0, PD_CPU_NOCR },
-+	{ "a1e0d0c2",	R8A779H0_PD_A1E0D0C2, R8A779H0_PD_A2E0D0, PD_CPU_NOCR },
-+	{ "a1e0d0c3",	R8A779H0_PD_A1E0D0C3, R8A779H0_PD_A2E0D0, PD_CPU_NOCR },
-+	{ "a3cr0",	R8A779H0_PD_A3CR0, R8A779H0_PD_ALWAYS_ON, PD_CPU_NOCR },
-+	{ "a3cr1",	R8A779H0_PD_A3CR1, R8A779H0_PD_ALWAYS_ON, PD_CPU_NOCR },
-+	{ "a3cr2",	R8A779H0_PD_A3CR2, R8A779H0_PD_ALWAYS_ON, PD_CPU_NOCR },
-+	{ "a33dga",	R8A779H0_PD_A33DGA, R8A779H0_PD_C4 },
-+	{ "a23dgb",	R8A779H0_PD_A23DGB, R8A779H0_PD_A33DGA },
-+	{ "a3vip0",	R8A779H0_PD_A3VIP0, R8A779H0_PD_C4 },
-+	{ "a3vip2",	R8A779H0_PD_A3VIP2, R8A779H0_PD_C4 },
-+	{ "a3dul",	R8A779H0_PD_A3DUL, R8A779H0_PD_C4 },
-+	{ "a3isp0",	R8A779H0_PD_A3ISP0, R8A779H0_PD_C4 },
-+	{ "a2cn0",	R8A779H0_PD_A2CN0, R8A779H0_PD_C4 },
-+	{ "a1cn0",	R8A779H0_PD_A1CN0, R8A779H0_PD_A2CN0 },
-+	{ "a1dsp0",	R8A779H0_PD_A1DSP0, R8A779H0_PD_A2CN0 },
-+	{ "a1dsp1",	R8A779H0_PD_A1DSP1, R8A779H0_PD_A2CN0 },
-+	{ "a2imp01",	R8A779H0_PD_A2IMP01, R8A779H0_PD_C4 },
-+	{ "a2psc",	R8A779H0_PD_A2PSC, R8A779H0_PD_C4 },
-+	{ "a2dma",	R8A779H0_PD_A2DMA, R8A779H0_PD_C4 },
-+	{ "a2cv0",	R8A779H0_PD_A2CV0, R8A779H0_PD_C4 },
-+	{ "a2cv1",	R8A779H0_PD_A2CV1, R8A779H0_PD_C4 },
-+	{ "a2cv2",	R8A779H0_PD_A2CV2, R8A779H0_PD_C4 },
-+	{ "a2cv3",	R8A779H0_PD_A2CV3, R8A779H0_PD_C4 },
-+	{ "a3imr0",	R8A779H0_PD_A3IMR0, R8A779H0_PD_C4 },
-+	{ "a3imr1",	R8A779H0_PD_A3IMR1, R8A779H0_PD_C4 },
-+	{ "a3imr2",	R8A779H0_PD_A3IMR2, R8A779H0_PD_C4 },
-+	{ "a3imr3",	R8A779H0_PD_A3IMR3, R8A779H0_PD_C4 },
-+	{ "a3vc",	R8A779H0_PD_A3VC, R8A779H0_PD_C4 },
-+	{ "a3pci",	R8A779H0_PD_A3PCI, R8A779H0_PD_C4 },
-+	{ "a2pciphy",	R8A779H0_PD_A2PCIPHY, R8A779H0_PD_A3PCI },
++	chosen {
++		bootargs = "ignore_loglevel";
++		stdout-path = "serial0:921600n8";
++	};
++
++	memory@48000000 {
++		device_type = "memory";
++		/* first 128MB is reserved for secure area. */
++		reg = <0x0 0x48000000 0x0 0x78000000>;
++	};
++
++	memory@480000000 {
++		device_type = "memory";
++		reg = <0x4 0x80000000 0x1 0x80000000>;
++	};
 +};
 +
-+const struct rcar_gen4_sysc_info r8a779h0_sysc_info __initconst = {
-+	.areas = r8a779h0_areas,
-+	.num_areas = ARRAY_SIZE(r8a779h0_areas),
++&extal_clk {
++	clock-frequency = <16666666>;
 +};
-diff --git a/drivers/pmdomain/renesas/rcar-gen4-sysc.c b/drivers/pmdomain/renesas/rcar-gen4-sysc.c
-index 9e5e6e077abc081c..728248659a97e8cc 100644
---- a/drivers/pmdomain/renesas/rcar-gen4-sysc.c
-+++ b/drivers/pmdomain/renesas/rcar-gen4-sysc.c
-@@ -284,6 +284,9 @@ static const struct of_device_id rcar_gen4_sysc_matches[] __initconst = {
- #endif
- #ifdef CONFIG_SYSC_R8A779G0
- 	{ .compatible = "renesas,r8a779g0-sysc", .data = &r8a779g0_sysc_info },
-+#endif
-+#ifdef CONFIG_SYSC_R8A779H0
-+	{ .compatible = "renesas,r8a779h0-sysc", .data = &r8a779h0_sysc_info },
- #endif
- 	{ /* sentinel */ }
- };
-diff --git a/drivers/pmdomain/renesas/rcar-gen4-sysc.h b/drivers/pmdomain/renesas/rcar-gen4-sysc.h
-index 388cfa8f8f9fd656..fdf843aa51134f87 100644
---- a/drivers/pmdomain/renesas/rcar-gen4-sysc.h
-+++ b/drivers/pmdomain/renesas/rcar-gen4-sysc.h
-@@ -40,5 +40,6 @@ struct rcar_gen4_sysc_info {
- extern const struct rcar_gen4_sysc_info r8a779a0_sysc_info;
- extern const struct rcar_gen4_sysc_info r8a779f0_sysc_info;
- extern const struct rcar_gen4_sysc_info r8a779g0_sysc_info;
-+extern const struct rcar_gen4_sysc_info r8a779h0_sysc_info;
- 
- #endif /* __SOC_RENESAS_RCAR_GEN4_SYSC_H__ */
++
++&extalr_clk {
++	clock-frequency = <32768>;
++};
++
++&hscif0 {
++	uart-has-rtscts;
++	status = "okay";
++};
++
++&scif_clk {
++	clock-frequency = <24000000>;
++};
 -- 
 2.34.1
 
