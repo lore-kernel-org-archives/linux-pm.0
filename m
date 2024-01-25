@@ -1,99 +1,111 @@
-Received: from michel.telenet-ops.be (michel.telenet-ops.be [195.130.137.88])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABCE7768F8
-	for <linux-pm@vger.kernel.org>; Thu, 25 Jan 2024 15:35:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.88
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB86313473A;
+	Thu, 25 Jan 2024 16:51:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706196909; cv=none; b=roz7VjGVnl03CiMr3LGtpSQcYnOF1maW7llaBpKoE1eIb98rvx18Ivmxy8sdtA2qM8Y2FKOqT5uVbtBt0BAOcsVA9w8VbNwSIl54STbX4tboW+JS0Fb8yTnfI+ZIwBknVkUheKtGwyqSxJfoQqrnkhQCpes8iMi8i00ybT6udwM=
+	t=1706201476; cv=none; b=IhiwDsvvZjH05OwxymxwEdq80OIoONn2QUZrYB9drbt9adPucZacGBDV+IWxcV9OeiD6BrYgvIIZTt3iY9WRp6tVTQIra9qbJ7jX/eXPUrGMucAgbJA4VOlyI/s05Hwov++r6zXf7Jm/J0Ex75itIYntdrfv1NgMCPvM/PrTuYM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706196909; c=relaxed/simple;
-	bh=mZAKkzqSv5O22rMgU9fo+pyx+U1hxKVWTjv6v7XU+iI=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=UD+dfg9ZKN8P7QyzP4I7uAyDH6WVbCkoIf44QVdLQ23/z3fnPqRYpZsu8A3uLbAzEnYDTWu6oNTuMFabwzUu6pAGy5kIjcU1+M4n4De7mX8dXbVnuq5xzkanF3TJPqjLeml35iTzUPJsUuEyqDmLcdLpYVyBZfWcU7OCVvK83wE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.88
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:bc9e:fcb8:8aa3:5dc0])
-	by michel.telenet-ops.be with bizsmtp
-	id f3am2B00258agq2063am9e; Thu, 25 Jan 2024 16:35:00 +0100
-Received: from rox.of.borg ([192.168.97.57])
-	by ramsan.of.borg with esmtp (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1rT1jo-00GUve-0W;
-	Thu, 25 Jan 2024 16:34:46 +0100
-Received: from geert by rox.of.borg with local (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1rT1kb-00Fs2S-VR;
-	Thu, 25 Jan 2024 16:34:45 +0100
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
+	s=arc-20240116; t=1706201476; c=relaxed/simple;
+	bh=nYjwLe0Lvyg1hMkpp/UsWB21LIhFUpPdnQZaz+AhIYY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JF3c6eMtUQjgeMrgl0pCe1EDjhhPR7y8JaXTQpntG0lLErKCjg3gGAFc0gEjeAQX0xh0zPmSRbo+Nl7iSUA03UhkoliZn0VY4H2JSV12UPCVEADa1i6ZFECKsGvPGQhwMcXevnZCDJjMkaFjNKDMwS/61su+t2veD/2zpJdjg7w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=a6T4alu4; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="a6T4alu4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5479C433F1;
+	Thu, 25 Jan 2024 16:51:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1706201476;
+	bh=nYjwLe0Lvyg1hMkpp/UsWB21LIhFUpPdnQZaz+AhIYY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=a6T4alu4t4AH8J60KPnFJ+RWxTMs1rVpTJ9vwhs0MrjuNVi7tDbWsuxrpkwrgqVdq
+	 QmHKgs5tZuc4PVLbyqEp6X+KXNTN5ZCNuph+sfTOaOQMVKs8q06Em6wjXWVgENuj4k
+	 tC1VwNj1BELTvyNtfVNZktKzk3oN334vM9BrN0/g3QYFLhZ2ybU6UsFycqB3uUxE4I
+	 mp5MCzF3j94W5IgkHuaYD2pswBse3rq/6qNiGo6ReGKeM/gY0x5JpAVtq8R+wZrQMu
+	 f4m13oz9eNCWR0sdZR/xKeGOounAfneQyRQbjFfHu/8oWwCkWYcrOSeI/CLeWECuka
+	 8sBfwIvLiqK1A==
+Date: Thu, 25 Jan 2024 16:51:11 +0000
+From: Conor Dooley <conor@kernel.org>
+To: Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
 	Rob Herring <robh+dt@kernel.org>,
 	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
 	Conor Dooley <conor+dt@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Cong Dang <cong.dang.xn@renesas.com>,
-	Duy Nguyen <duy.nguyen.rh@renesas.com>,
-	Hai Pham <hai.pham.ud@renesas.com>,
-	Linh Phung <linh.phung.jy@renesas.com>,
-	linux-renesas-soc@vger.kernel.org,
-	linux-clk@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	=?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH v2 03/15] dt-bindings: power: renesas,rcar-sysc: Document R-Car V4M support
-Date: Thu, 25 Jan 2024 16:34:31 +0100
-Message-Id: <6315cbd0b6e9b92a7914d98f397a2c663ad521c6.1706194617.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1706194617.git.geert+renesas@glider.be>
-References: <cover.1706194617.git.geert+renesas@glider.be>
+	Bjorn Andersson <andersson@kernel.org>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: thermal-zones: Don't require
+ polling-delay(-passive)
+Message-ID: <20240125-wildfowl-confined-25c6b276cdcb@spud>
+References: <20240125-topic-thermal-v1-0-3c9d4dced138@linaro.org>
+ <20240125-topic-thermal-v1-1-3c9d4dced138@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="9G4ehHYANaVFMdfb"
+Content-Disposition: inline
+In-Reply-To: <20240125-topic-thermal-v1-1-3c9d4dced138@linaro.org>
 
-From: Duy Nguyen <duy.nguyen.rh@renesas.com>
 
-Document support for the System Controller (SYSC) in the R-Car V4M
-(R8A779H0) SoC.
+--9G4ehHYANaVFMdfb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Duy Nguyen <duy.nguyen.rh@renesas.com>
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
-v2:
-  - Add Acked-by, Reviewed-by.
----
- Documentation/devicetree/bindings/power/renesas,rcar-sysc.yaml | 1 +
- 1 file changed, 1 insertion(+)
+On Thu, Jan 25, 2024 at 01:11:15PM +0100, Konrad Dybcio wrote:
+> Currently, thermal zones associated with providers that have interrupts
+> for signaling hot/critical trips are required to set a polling-delay
+> of 0 to indicate no polling. This feels a bit backwards.
+>=20
+> Assume 0 (no polling) when these properties are not defined.
+>=20
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 
-diff --git a/Documentation/devicetree/bindings/power/renesas,rcar-sysc.yaml b/Documentation/devicetree/bindings/power/renesas,rcar-sysc.yaml
-index 0720b54881c2c87a..e76fb273490ff588 100644
---- a/Documentation/devicetree/bindings/power/renesas,rcar-sysc.yaml
-+++ b/Documentation/devicetree/bindings/power/renesas,rcar-sysc.yaml
-@@ -45,6 +45,7 @@ properties:
-       - renesas,r8a779a0-sysc # R-Car V3U
-       - renesas,r8a779f0-sysc # R-Car S4-8
-       - renesas,r8a779g0-sysc # R-Car V4H
-+      - renesas,r8a779h0-sysc # R-Car V4M
- 
-   reg:
-     maxItems: 1
--- 
-2.34.1
+I think that makes sense.
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
+Cheers,
+Conor.
+
+> ---
+>  Documentation/devicetree/bindings/thermal/thermal-zones.yaml | 2 --
+>  1 file changed, 2 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml=
+ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> index dbd52620d293..68398e7e8655 100644
+> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> @@ -228,8 +228,6 @@ patternProperties:
+>              additionalProperties: false
+> =20
+>      required:
+> -      - polling-delay
+> -      - polling-delay-passive
+>        - thermal-sensors
+>        - trips
+> =20
+>=20
+> --=20
+> 2.40.1
+>=20
+
+--9G4ehHYANaVFMdfb
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZbKRfwAKCRB4tDGHoIJi
+0pGsAQDca7xs/EsXv3IRvEB/5hgF1s7CAwqVWnSWD29/BZI0zQD8C1KYjqJ2fxIi
+8eGcI7MuIS7od6Hh7oMlYnwvV49k0AY=
+=OSpF
+-----END PGP SIGNATURE-----
+
+--9G4ehHYANaVFMdfb--
