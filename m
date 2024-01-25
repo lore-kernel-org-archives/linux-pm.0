@@ -1,234 +1,227 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f178.google.com (mail-oi1-f178.google.com [209.85.167.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A0143A1B6;
-	Thu, 25 Jan 2024 14:40:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706193636; cv=fail; b=CDcRfhTlwL0+2xcn+4O6SnVpRmOnpt9UHZbZXv9oaDcPmgPcrpoVytC/gdNoZDF51KVIhqv7zF2SVIKSMBHpoE/Gq8Xg5pzvL+Qu1hgp98EtXc5F12YgaUWfbDJmnr2UJ9UKWyyiGEdB5Gc7WGdV3ut4Txl2f2vPyx1lUCjo2nk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706193636; c=relaxed/simple;
-	bh=n5n5UIaAAtKvCad9DcaCS2h+DfPmUhnVL2Z+gX2Tmvs=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=GyhAfh9V78RXEWjCLCELC6aYF4jTMlWQ7hxbrreQGpzDgY4+GxT1o+cfoHQZXXuPl4L4aHrLZQSK3tySwy92WiCD4wB31XC13j046uIp95//SphHXNCETcqd3es+N7BmwWCjCpwv87+2lJfX+TC0GkgDo7v0Eno4ufksH5euKQM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=lzDgOscR; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=yl7TU3Wc; arc=fail smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="lzDgOscR";
-	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="yl7TU3Wc"
-Received: from pps.filterd (m0333521.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40P9xb6O011464;
-	Thu, 25 Jan 2024 14:39:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
- subject : to : cc : references : from : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=corp-2023-11-20;
- bh=Yn48hwIbpxDehRbISBrE7EGXYZaOlL+DfKIsvMnv7Ho=;
- b=lzDgOscRufvE21xIF4+WsEHHy8UA2tshF/6p1464qhnpXURgO7sltbJ2bUFZK+xnrdtk
- CbcLptpsvFuQjFbtsws0HudJCNhloz/DdVye2YXFJXF7DIuUGz3t7wFRl7dBBpRs2GpX
- irwNOCS1wDnR6bqicsxE/UfYLkVlv5E1gsRTyyfLEiGpT1Zh7IwLxD8nUq9MWKFryi6I
- ke6bMr3FdYaAdrSo/AxL3dkVbQLZVkBJD22lwnprIW/oEtGgPPGRfsHeadg57zRUmJfG
- xCi2zUb5iyynxkZYVhTBHE+yVxdYNptYbjgwXDUDhZ+ZUKg6UdVuKWESIz3C+jvISG5L kw== 
-Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.appoci.oracle.com [147.154.114.232])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3vr7cuy9x6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 25 Jan 2024 14:39:43 +0000
-Received: from pps.filterd (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 40PDdp5M030812;
-	Thu, 25 Jan 2024 14:39:29 GMT
-Received: from nam12-bn8-obe.outbound.protection.outlook.com (mail-bn8nam12lp2168.outbound.protection.outlook.com [104.47.55.168])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3vs374yq8s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 25 Jan 2024 14:39:29 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=WgDiBs2RMis9cJP3roeoU9Hy5ek00T/2yls3D9qqDNvXUqzb0AndbwsHyDBTUrHQldtwd0iKUe1ZhBNhe1e0/vcjEgqIaxjZ9f+S1jHvRG1QWG5CCVVaVi7o+56O2mDgxiwuS/lXpHHx1bQ15Y4VGjKt1wiWagrFnlNoybQPwhOUDvi4PqysCys3dbOxppuhOzmlw/DmMRd+cqoyRm7HvilkZIzTbceQwach742/5w828/xiFPjIFVTPVF/meoTVE7HPcszHW4azjQuB361KBKX3XWQwOfj7LesrtFZiBaUdGnAJZiAArpTGZx4by1lFsifR+hL2ff5dHqxDNknNMg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Yn48hwIbpxDehRbISBrE7EGXYZaOlL+DfKIsvMnv7Ho=;
- b=jjmyl5xce6xUBYXCxrOEyqaX9Nph56C5PP6gEBv3VvmFzXDnl+/A8zmbqIx4b91C/NY3Z/dPO64P7S5MEi4UpDkKo4wlq+RgEXy9I7+hjf13tm+aZzHuu11ED8b4STeUAhyV+3ckSNHxIXiLLp0FgirGqkBYq8GPOiTfkH+ayMf/f/FgszOV5hEevwT9MaxL0+nQP1mpbZTZFwa99ivoTIWax1ui32Qo/vPlmQajRPfZKNCB1uvrIVA7eEYA2nxvbT98Cp2Us3tUm11R1U+c8krK8pOfuiVcIaxrykYYxgucpClPX+D9Idh7h0xdXdL6f3l+gMjr6lhxFfMam163Qw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Yn48hwIbpxDehRbISBrE7EGXYZaOlL+DfKIsvMnv7Ho=;
- b=yl7TU3WcJ/Y8IoSS7XLV5hVU/ek7XC/yaSTLK4OW8mbiDHFx2pjKuLSeLjI7n9WgsfEjUAI7kZvxxCU2lku0MN1KPIavHsUzpMJkizHuR1JSPfFFF8rVnp8oEC7XT/K4W0ottIsxK00/+1f7haZ0JtYUMPtNs/24VY7JxgwmDa8=
-Received: from PH0PR10MB5894.namprd10.prod.outlook.com (2603:10b6:510:14b::22)
- by IA0PR10MB6795.namprd10.prod.outlook.com (2603:10b6:208:439::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7228.22; Thu, 25 Jan
- 2024 14:39:25 +0000
-Received: from PH0PR10MB5894.namprd10.prod.outlook.com
- ([fe80::6fec:c8c5:bd31:11db]) by PH0PR10MB5894.namprd10.prod.outlook.com
- ([fe80::6fec:c8c5:bd31:11db%5]) with mapi id 15.20.7228.026; Thu, 25 Jan 2024
- 14:39:25 +0000
-Message-ID: <88356fdc-91f4-4f43-97a5-3da0ce455515@oracle.com>
-Date: Thu, 25 Jan 2024 16:39:17 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] Enable haltpoll for arm64
-Content-Language: ro
-To: linux-arm-kernel@lists.infradead.org,
-        Peter Zijlstra <peterz@infradead.org>
-Cc: kvm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, catalin.marinas@arm.com, will@kernel.org,
-        tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
-        hpa@zytor.com, pbonzini@redhat.com, wanpengli@tencent.com,
-        vkuznets@redhat.com, rafael@kernel.org, daniel.lezcano@linaro.org,
-        akpm@linux-foundation.org, pmladek@suse.com, peterz@infradead.org,
-        dianders@chromium.org, npiggin@gmail.com, rick.p.edgecombe@intel.com,
-        joao.m.martins@oracle.com, juerg.haefliger@canonical.com,
-        mic@digikod.net, arnd@arndb.de, ankur.a.arora@oracle.com
-References: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
-From: Mihai Carabas <mihai.carabas@oracle.com>
-In-Reply-To: <1700488898-12431-1-git-send-email-mihai.carabas@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: FR3P281CA0007.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:1d::6) To PH0PR10MB5894.namprd10.prod.outlook.com
- (2603:10b6:510:14b::22)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21F606E2BE;
+	Thu, 25 Jan 2024 14:42:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.178
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1706193768; cv=none; b=j3r3DXqrfz30ufF3kd/DxqHHFm9HaviolvCyVunL78NRb0FpDDG4fAwOr4y7ggEtcVBrB5P3WDik8qyNDjaxa4lEdF0p/PNpE+OtWBp//gJJMYcPIqTMnOBBqT6U0lr3hz6S3QFoJmwm4L8UxOpnNUifvr4bYrW06gtbE16S45Y=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1706193768; c=relaxed/simple;
+	bh=JaK07Zkj3cT2yhn6Ow34x5ujcw/CKNJtlZf/Ls0PoA8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=pbZslrDJaKPlwZU1G/h2QbxCOX5IXjCYd0FuK7kpCBywYl9zdvdP2GwZmHkKlMDyVqxi2o6lB2TQL2FBbE9LtLoQ2orphGEFRwLn6bk8N4E1S9QAwaLQxLKzh3SkZIbo0RJon7wKVk4STGvKxys8SEIL5WLxkMudBbWKZj+XoF8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.167.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-oi1-f178.google.com with SMTP id 5614622812f47-3bc21303a35so1267870b6e.0;
+        Thu, 25 Jan 2024 06:42:46 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1706193766; x=1706798566;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=WansAIK1kV2qngBkKGzUZEv8a9oLEEFRWHM6D4Yzd+M=;
+        b=IoiMUcqNl7waglleg4DMIDbjGLYPOtueAM47JFRrHhPGkxwxuLLsVS9de59v5QoP9B
+         5Uc5KkUmSuyqw8j1K7AmEDhnU4r287eMQqUbdfVvONklySaCn3eqHmds9fCpNOZUIMEf
+         bMWfE0WQmvEOQ3JtfjtspI4FU9p6H8lllR+/9DfJwge3Lzkzs+mFM8/pl2eUbyx4nZ1o
+         t9m1BHY3hwL4HBI5nMdY2oj8YImSrEwLyosoO/DZ9MB0WhNop5w6Hf2/0nEg1sTiG0gC
+         s7em5sXAcOw5RfiDD//kODRQEDIXIvo7iPyUinOQTFFpFJVzB1j5GDcAFqurlHi4S/er
+         RgTA==
+X-Gm-Message-State: AOJu0YyFgNwgV1M4/ZtQ2OUQEOPW6B+T/bT7jf4AzXMzJusQqhM/5GsG
+	yedihfax1gzKbOeQSJpvXrPLZ+dbTEZWcrOSLDNkyylxlcX9nlcIPwPkztqeyFH7K8ejlVNKHyv
+	uT616HujBtSTzsDE/UQwXwV2W3eg=
+X-Google-Smtp-Source: AGHT+IHrMMS6irD8BFopNOqV65JYF32HklaFUv2M5fjsXBTp38AaiSFl3qoFRWI4K+lpO8xVl3bxSYdmwfq7Su82484=
+X-Received: by 2002:a05:6870:618a:b0:214:dbdd:a173 with SMTP id
+ a10-20020a056870618a00b00214dbdda173mr987239oah.3.1706193766071; Thu, 25 Jan
+ 2024 06:42:46 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR10MB5894:EE_|IA0PR10MB6795:EE_
-X-MS-Office365-Filtering-Correlation-Id: 237f81cd-d509-4cd0-6b37-08dc1db36d7d
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 
-	Zn1Bbyf3dEmhs+HZoz/QnFearIYuEi+WS/Yl1PxR4fnn5qihqYYuBZyOjGbq9IwVSZUEUMXKu+UDC8TuFHN+D9HDQCg/K1jnOOTqVa7A5TuT0fZSlTsQXAYQx22Myh9D4KlZJlPTInfnGHs7WcoDh6djpIXwBDGPwHm7n464FnTpLlzjl+K+cGakqq9RiCyN5CfN7W90LvI4ZrCVumSsF9FQu9Z2TEw+ZUcwVZjsySIN2sebo9TNhlOYgzKvOhpYUBcmyfqBLGv8LXV3e6+H/wV9f39Rwu9H05GDCPhaiANU2ywjsGTLV4+v2cwXNqZDaT1lEFo/+wTu+2EvicHWhk4aw77tFcZE8VeQyzIa+NpjCnvU13+IAgM0u8c04CQHhhEg3HqdJ8U0RdHu3Vju6hKtORfYa2VwZNLYRMRoQFsT3vZV/MQqXk1mtAYDg0T4qcdRPnfrK4DxZvp3C+g/KrQ2PsI4idy+fOuEefVrPH3erTHm1ew3bFrNFLf+IPtgu9iVsd9VELqnVDLjW5KSUfiWZUnmLaljQdPB3+QlCum2FUea4aPrFK2Thm/vvTAqbCaZ7pBd8BxW5u7CGWZ0jONYI4r5Icxa2Vd5iVFAPKDZg+hkZGjlYQ4H8hdKNbztszJQGtihSrlvY6TJBvPMRA==
-X-Forefront-Antispam-Report: 
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB5894.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(396003)(376002)(136003)(366004)(39860400002)(346002)(230922051799003)(64100799003)(451199024)(186009)(1800799012)(8676002)(8936002)(83380400001)(4326008)(66476007)(66556008)(2616005)(66946007)(316002)(6916009)(107886003)(26005)(2906002)(5660300002)(44832011)(7416002)(6666004)(478600001)(6486002)(41300700001)(6512007)(31686004)(86362001)(36756003)(31696002)(6506007)(38100700002)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 
-	=?utf-8?B?ck1MbUZqTit1c0VTWFFCekxNNGk1RXRKZUVwUGdNUDJNdmFneEZGRmVIUWx0?=
- =?utf-8?B?UmZHVEFwbFl1NWkrMEdqNE5CQ3d2RENPRmdNQ3VjUUhvamkybUYzOHBHWWxD?=
- =?utf-8?B?RnhNQjVMV1g1T04rZEIvTmpRSytzb0lxVElNOGQ0R045eThBV052SFZCa09s?=
- =?utf-8?B?ODJ3L2crTEZ5NnU5Q1NTcVFMV3M1MlhzS0RrRmE4Zm93UWdiL0tOLzZZbUxY?=
- =?utf-8?B?bysrS2pRZUhzMVp5VGlFTVcxaUxjbDFtaktuMncwaWNsbFJobnk3Ny8zN0Vw?=
- =?utf-8?B?dFdUbXMzaGRuYmNKQWJZSDg2RDNOazlndjFBencwYWZlOGxyMUYwSGovd0k2?=
- =?utf-8?B?ZytMcmxsWUlXb0xzekc3VlBpcG9EeXhRaldCSGxzKzU3QWRhNnpLZURCTDdF?=
- =?utf-8?B?TTIrNG9JeDQ1SHI2QzYrdmwwdE1lQjN0MlM2TFdXamgrNUZZZGNtLzlTanJO?=
- =?utf-8?B?UmF0cnUzUG1NSDZRL3FLZGw1R01oTUNVL1RtdGwvMmtpYWxvTUZZUXpjVmNC?=
- =?utf-8?B?dHcxbnJObUZZaStCOEUxOWJRZkpiSm1OWEYzZVJxVit2b1o5WVgvRmFmc2hP?=
- =?utf-8?B?VDBFTmdUM0J1K1V3ckRZQS9tTnZlS09rTlh2eVhNUmlqWExEVWU0cFp0K0xt?=
- =?utf-8?B?L2JOODZMeFFBdG91ZUN4cXhreWlxeHM3MCtHZ2RINGNVUjMvcksrclVmeDdP?=
- =?utf-8?B?ME9jWEJmYTlKZDc1VWxsbk5EcXdwNFZCYjZueG9ITG5WdWNSNml2N1RUdlVk?=
- =?utf-8?B?MGhEUmpLWFVkSnIrbG1za3BMWjF3Y3VZenNxZE4vbmVFOTNtTm15MjlRVEdw?=
- =?utf-8?B?a0N6c0RXNXNtMnhDSUFkMU90bnE2UVNpcG1aZDNPVUxIV2RuS21mZzAvL0Nj?=
- =?utf-8?B?VlQybkZvYXhqRlZaSXdNdkMyREFReHc4YzVOKzJKQm5uZmtjUC9LcGxQWXVM?=
- =?utf-8?B?SkxxMlllSmxEQ2IxU0hQaTg1Vlc5NVFqb1pNUS9lOERlREtYbjVVRWx3Sks4?=
- =?utf-8?B?V3d1dlFZVlBzNFh2Wnh4MEJYNGZXWHF1K1pzSU5nUEtrMWRLa3VxS1ZHbkJT?=
- =?utf-8?B?TElvSjEvZHJON05IQ2Z0Q0xjMkJuaDRkeWNRcDdVU1BqKy9Jc3E0YkdHTHkx?=
- =?utf-8?B?ajBDTmNCZFhYUWRoL2RjcFJ5QmVyTkd5a1JqYXJTV29hbjd4TnJnRUZvVC96?=
- =?utf-8?B?d3JkZlJSenZNc0Nic2hDWFRxU0hGb3p0dnZJUkZ4SU9ESkVaSDlxS29XRkNT?=
- =?utf-8?B?ZGtoYnBOTmxGUThHWmw1RUx1bXA1citEVmt3UXFETVV0UGZZVlljV0tLN1Nk?=
- =?utf-8?B?SEYrbFlQaUJlVlRZQk5XSkFjaWZ2ZW0wUzJ1bENDdDllV044RU1oSHVOaDA5?=
- =?utf-8?B?Y3JzVXBKYnNNRmN6MGg4ODJ4dVB3WTNjYVRSZFFmNjdodjM5c1NCYVRzb2Jw?=
- =?utf-8?B?SVhOazV6bmY3R2N1cHl1ZFp5WE1kZnFmSmovSENicDV6ZDVidElmZUNCN3NF?=
- =?utf-8?B?cDVJMjhySWY5bmplejRVbnhVcFV6bHZNYjA1cXhtMkVXd3M4aGppcjIxamVN?=
- =?utf-8?B?QklKbE1sTUNjNXVZY2NvWHpFNVVWVVU4NlVJdmp3a0ExOUtLYWVjQlR0K0RM?=
- =?utf-8?B?UEluRk00TnB2U2M0WHZPaEEvaW9HbkIrTkM5TTU1d080Z3ZFMGhYWktqYXkr?=
- =?utf-8?B?TG9QWlBKVGtIYmZ0R0NFbks1RkVsckZhcmUzUDNUVmtJc3dxRHpER2RRbXJa?=
- =?utf-8?B?Ri8wNkZwU1pDT0ZENm01TDU3L0RkZ1p3em4vbXNsbUVENnNaNVV6VW1OdmtD?=
- =?utf-8?B?N3BoMElNdzQxSFU2VTlhQngvbFJibmhqYWxCNzlRdE9rc2RtakluR2loRTE2?=
- =?utf-8?B?cE15c204WVZyM0RUUlhoNVAyd1grbEJ3NVlEYnVmblI3d2RXdjlPSnF1ak5l?=
- =?utf-8?B?ZjVXdUc4SHRZZzNOT1FWL0RMdE9nMGEraXVRc3gzWGRpUGNQOUo2UG11eHhv?=
- =?utf-8?B?TGZRM053VWZzTmUrb3pSQzhJaEdPSURBOHppeldSaUpVWTdiWXEwOTNsa1Rn?=
- =?utf-8?B?YTIzb0pVRXk4S05vSVhzTW9QSHMwam9mV1cvS2o0eEs3dEFaUlc2U1NSUXJx?=
- =?utf-8?B?TVZSUVduSjFMYm0vWG92Y3FTYmRlRnpSdXl5UHpLTEFZYWV0MVBqZU44MjhQ?=
- =?utf-8?B?Tmc9PQ==?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 
-	3v+NLcTopEYMt5rtY7XP4IiqNjHPime/mL6n8PUYWRyDs4elftYLuMKRc+TUd0za6hsXnq0RuojDhAL7slE1gJ78VDsa9VDq0K02GEwH77ZXtP2KC2qfPak9OkYjL6hJ7n3m0MLFNAl7uf32Y/Ca2GobBe2k91AOhpNFTkqLzH8k4HJ5w3Mox3cLa3xvMFuUayRqS+nTjzJTWr2pE6ZPIoIa14MUMqf2PxUR2e3n4+sMYNziGewIiqpPQk7jETrpZoknvWrkVIV/RklOW15KQxBq4g/d4fzOtF4ROplv6oP8O/lH0a5f38bls9MhcKebUdp07n/fjdhmP0FbdFsNhcvm5X2JDdWXI4WJxB74UsQVsjM9egFF45RtXsXCkbszWyrojwHvHs3Telcm0C/Yc1G00PYM1fFmpP04WFELszKsS8eaFoiPcwgFGjA1vG62trbbwhUe5YPpQS5rQtfYAbptuizNnTFIBgZ+OkpFL6RZcPZTgQorwOC8NlMydLYMxLqa9O6NnoZXwd+0yqh7ur7CcUBG72PLbstgEQ5pm6gtwcmmjOMk4l1jXWQJll8Taoaf7zS/NdlUnyzNm6dLCYeQCM4g59j9sq9yp9r2oro=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 237f81cd-d509-4cd0-6b37-08dc1db36d7d
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB5894.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Jan 2024 14:39:25.6246
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Bq7BJu72wv5CgiIVPbswTQ+QUhTfWdu8NL/DkRqcXDTV04l6mU1Qbd/Cjwnogc8biXSfMg1eYT5mIbFkaoB/wGWBKJW0CkpHFyApXwCSGl0=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR10MB6795
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-01-25_08,2024-01-25_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 mlxlogscore=910
- malwarescore=0 mlxscore=0 phishscore=0 bulkscore=0 suspectscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2401250103
-X-Proofpoint-ORIG-GUID: DBALsFCEFd98AaqlC4EMveNeQYNviGyu
-X-Proofpoint-GUID: DBALsFCEFd98AaqlC4EMveNeQYNviGyu
+References: <ZXmn46ptis59F0CO@shell.armlinux.org.uk> <E1rDOg2-00Dvjk-RI@rmk-PC.armlinux.org.uk>
+ <CAJZ5v0ju1JHgpjuFLHZVs4NZiARG6iBZN_wza6c2e0kDhZjK0w@mail.gmail.com>
+ <ZaURtUvWQyjYfiiO@shell.armlinux.org.uk> <20240122160227.00002d83@Huawei.com>
+ <CAJZ5v0hamuXJ_w-TSmVb=5jGide=Lb7sCjbzzNb_rFuPrvkgxQ@mail.gmail.com>
+ <Za6mHRJVjb6M1mun@shell.armlinux.org.uk> <20240123092725.00004382@Huawei.com> <3A26D95F-7366-4354-A010-318A98660076@oracle.com>
+In-Reply-To: <3A26D95F-7366-4354-A010-318A98660076@oracle.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 25 Jan 2024 15:42:34 +0100
+Message-ID: <CAJZ5v0h1na9BQiT6a4dK==8anmt15S4sArktzuLiSyScvw=bqg@mail.gmail.com>
+Subject: Re: [PATCH RFC v3 03/21] ACPI: processor: Register CPUs that are
+ online, but not described in the DSDT
+To: Miguel Luis <miguel.luis@oracle.com>
+Cc: Jonathan Cameron <jonathan.cameron@huawei.com>, 
+	"Russell King (Oracle)" <linux@armlinux.org.uk>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
+	"loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, 
+	"linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, 
+	"linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
+	"linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, 
+	"kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, "x86@kernel.org" <x86@kernel.org>, 
+	"acpica-devel@lists.linuxfoundation.org" <acpica-devel@lists.linuxfoundation.org>, 
+	"linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, 
+	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, 
+	"linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, 
+	"linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, Salil Mehta <salil.mehta@huawei.com>, 
+	Jean-Philippe Brucker <jean-philippe@linaro.org>, "jianyong.wu@arm.com" <jianyong.wu@arm.com>, 
+	"justin.he@arm.com" <justin.he@arm.com>, James Morse <james.morse@arm.com>, 
+	"vishnu@os.amperecomputing.com" <vishnu@os.amperecomputing.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hello,
+Hi,
 
-How can we move this patchset forward?
+On Thu, Jan 25, 2024 at 2:56=E2=80=AFPM Miguel Luis <miguel.luis@oracle.com=
+> wrote:
+>
+> Hi
+>
+> > On 23 Jan 2024, at 08:27, Jonathan Cameron <jonathan.cameron@huawei.com=
+> wrote:
+> >
+> > On Mon, 22 Jan 2024 17:30:05 +0000
+> > "Russell King (Oracle)" <linux@armlinux.org.uk> wrote:
+> >
+> >> On Mon, Jan 22, 2024 at 05:22:46PM +0100, Rafael J. Wysocki wrote:
+> >>> On Mon, Jan 22, 2024 at 5:02=E2=80=AFPM Jonathan Cameron
+> >>> <Jonathan.Cameron@huawei.com> wrote:
+> >>>>
+> >>>> On Mon, 15 Jan 2024 11:06:29 +0000
+> >>>> "Russell King (Oracle)" <linux@armlinux.org.uk> wrote:
+> >>>>
+> >>>>> On Mon, Dec 18, 2023 at 09:22:03PM +0100, Rafael J. Wysocki wrote:
+> >>>>>> On Wed, Dec 13, 2023 at 1:49=E2=80=AFPM Russell King <rmk+kernel@a=
+rmlinux.org.uk> wrote:
+> >>>>>>>
+> >>>>>>> From: James Morse <james.morse@arm.com>
+> >>>>>>>
+> >>>>>>> ACPI has two descriptions of CPUs, one in the MADT/APIC table, th=
+e other
+> >>>>>>> in the DSDT. Both are required. (ACPI 6.5's 8.4 "Declaring Proces=
+sors"
+> >>>>>>> says "Each processor in the system must be declared in the ACPI
+> >>>>>>> namespace"). Having two descriptions allows firmware authors to g=
+et
+> >>>>>>> this wrong.
+> >>>>>>>
+> >>>>>>> If CPUs are described in the MADT/APIC, they will be brought onli=
+ne
+> >>>>>>> early during boot. Once the register_cpu() calls are moved to ACP=
+I,
+> >>>>>>> they will be based on the DSDT description of the CPUs. When CPUs=
+ are
+> >>>>>>> missing from the DSDT description, they will end up online, but n=
+ot
+> >>>>>>> registered.
+> >>>>>>>
+> >>>>>>> Add a helper that runs after acpi_init() has completed to registe=
+r
+> >>>>>>> CPUs that are online, but weren't found in the DSDT. Any CPU that
+> >>>>>>> is registered by this code triggers a firmware-bug warning and ke=
+rnel
+> >>>>>>> taint.
+> >>>>>>>
+> >>>>>>> Qemu TCG only describes the first CPU in the DSDT, unless cpu-hot=
+plug
+> >>>>>>> is configured.
+> >>>>>>
+> >>>>>> So why is this a kernel problem?
+> >>>>>
+> >>>>> So what are you proposing should be the behaviour here? What this
+> >>>>> statement seems to be saying is that QEMU as it exists today only
+> >>>>> describes the first CPU in DSDT.
+> >>>>
+> >>>> This confuses me somewhat, because I'm far from sure which machines =
+this
+> >>>> is true for in QEMU.  I'm guessing it's a legacy thing with
+> >>>> some old distro version of QEMU - so we'll have to paper over it any=
+way
+> >>>> but for current QEMU I'm not sure it's true.
+> >>>>
+> >>>> Helpfully there are a bunch of ACPI table tests so I've been checkin=
+g
+> >>>> through all the multi CPU cases.
+> >>>>
+> >>>> CPU hotplug not enabled.
+> >>>> pc/DSDT.dimmpxm  - 4x Processor entries.  -smp 4
+> >>>> pc/DSDT.acpihmat - 2x Processor entries.  -smp 2
+> >>>> q35/DSDT.acpihmat - 2x Processor entries. -smp 2
+> >>>> virt/DSDT.acpihmatvirt - 4x ACPI0007 entries -smp 4
+> >>>> q35/DSDT.acpihmat-noinitiator - 4 x Processor () entries -smp 4
+> >>>> virt/DSDT.topology - 8x ACPI0007 entries
+> >>>>
+> >>>> I've also looked at the code and we have various types of
+> >>>> CPU hotplug on x86 but they all build appropriate numbers of
+> >>>> Processor() entries in DSDT.
+> >>>> Arm likewise seems to build the right number of ACPI0007 entries
+> >>>> (and doesn't yet have CPU HP support).
+> >>>>
+> >>>> If anyone can add a reference on why this is needed that would be ve=
+ry
+> >>>> helpful.
+> >>>
+> >>> Yes, it would.
+> >>>
+> >>> Personally, I would prefer to assume that it is not necessary until i=
+t
+> >>> turns out that (1) there is firmware with this issue actually in use
+> >>> and (2) updating the firmware in question to follow the specification
+> >>> is not practical.
+> >>>
+> >>> Otherwise, we'd make it easier to ship non-compliant firmware for no
+> >>> good reason.
+> >>
+> >> If Salil can't come up with a reason, then I'm in favour of dropping
+> >> the patch like already done for patch 2. If the code change serves no
+> >> useful purpose, there's no point in making the change.
+> >>
+> >
+> > Salil's out today, but I've messaged him to follow up later in the week=
+.
+> >
+> > It 'might' be the odd cold plug path where QEMU half comes up, then ext=
+ra
+> > CPUs are added, then it boots. (used by some orchestration frameworks)
+> > I don't have a set up for that and I won't get to creating one today an=
+yway
+> > (we all love start of the year planning workshops!)
+> >
+> > I've +CC'd a few people have run tests on the various iterations of thi=
+s
+> > work in the past.  Maybe one of them can shed some light on this?
+> >
+>
+> IIUC, this patch covers a scenario for non compliant firmware and in whic=
+h my
+> tests for AArch64 using RFC v2 have been unable to trigger its error mess=
+age so
+> far. This does not mean, however, this patch should not be taken forward =
+though.
+>
+> It seems benevolent enough detecting non compliant firmware and still pro=
+ceed
+> while having whoever uses that firmware to get to know that.
 
-Thank you,
-Mihai
+There is one issue with this approach, though.
 
-La 20.11.2023 16:01, Mihai Carabas a scris:
-> This patchset enables the usage of haltpoll governer on arm64. This is
-> specifically interesting for KVM guests by reducing the IPC latencies.
->
-> Here are some benchmarks without/with haltpoll for a KVM guest:
->
-> a) without haltpoll:
-> perf bench sched pipe
-> # Running 'sched/pipe' benchmark:
-> # Executed 1000000 pipe operations between two processes
->
->       Total time: 8.138 [sec]
->
->              8.138094 usecs/op
->               122878 ops/sec
->
-> b) with haltpoll:
-> perf bench sched pipe
-> # Running 'sched/pipe' benchmark:
-> # Executed 1000000 pipe operations between two processes
->
->       Total time: 5.003 [sec]
->
->              5.003085 usecs/op
->               199876 ops/sec
->
-> v2 changes from v1:
-> - added patch 7 where we change cpu_relax with smp_cond_load_relaxed per PeterZ
->    (this improves by 50% at least the CPU cycles consumed in the tests above:
->    10,716,881,137 now vs 14,503,014,257 before)
-> - removed the ifdef from patch 1 per RafaelW
->
->
-> Joao Martins (6):
->    x86: Move ARCH_HAS_CPU_RELAX to arch
->    x86/kvm: Move haltpoll_want() to be arch defined
->    governors/haltpoll: Drop kvm_para_available() check
->    arm64: Select ARCH_HAS_CPU_RELAX
->    arm64: Define TIF_POLLING_NRFLAG
->    cpuidle-haltpoll: ARM64 support
->
-> Mihai Carabas (1):
->    cpuidle/poll_state: replace cpu_relax with smp_cond_load_relaxed
->
->   arch/Kconfig                            |  3 +++
->   arch/arm64/Kconfig                      |  1 +
->   arch/arm64/include/asm/thread_info.h    |  6 ++++++
->   arch/x86/Kconfig                        |  1 +
->   arch/x86/include/asm/cpuidle_haltpoll.h |  1 +
->   arch/x86/kernel/kvm.c                   | 10 ++++++++++
->   drivers/cpuidle/Kconfig                 |  4 ++--
->   drivers/cpuidle/cpuidle-haltpoll.c      |  8 ++------
->   drivers/cpuidle/governors/haltpoll.c    |  5 +----
->   drivers/cpuidle/poll_state.c            | 14 +++++++++-----
->   include/linux/cpuidle_haltpoll.h        |  5 +++++
->   11 files changed, 41 insertions(+), 17 deletions(-)
->
+If this is done by Linux and Linux is used as a main testing vehicle
+for whoever produced that firmware, it may pass the tests and be
+shipped causing a problem for the rest of the industry (because other
+operating systems will not support that firmware and now they will be
+put in an awkward position).
 
+I've seen enough breakage resulting from a similar policy in some
+other OS and with Linux on the receiving end that I'd rather avoid
+doing this to someone else.
+
+So if the firmware is not compliant, the best way to go is to ask
+whoever ships it to please fix their stuff, or if other OSes already
+work around the non-compliance, it's time to update the spec to
+reflect the reality (aka "industry practice").
+
+Thanks!
