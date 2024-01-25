@@ -1,30 +1,30 @@
-Received: from albert.telenet-ops.be (albert.telenet-ops.be [195.130.137.90])
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [195.130.132.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D97973175
-	for <linux-pm@vger.kernel.org>; Thu, 25 Jan 2024 15:34:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.90
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B450273192
+	for <linux-pm@vger.kernel.org>; Thu, 25 Jan 2024 15:35:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706196903; cv=none; b=qrf7vi+8BK9tl2V8PDjiL3w9R6hHozcTBlj3MffultSBeLjsWsDuAwQha5hBWuSuOdB547AELh9lA6J+hDDAV3N9P9sa4zvpGPn+5U1LYq1SnpXBMVwyxNNdUYv2pPHI2DJfjL/mdk024rHrfN0blMzx8l7Wy/WX9/9pYrxqDqc=
+	t=1706196903; cv=none; b=NM3oV4BliC1tQSyX4aeGSzfgAQT0/HoHXzEslJ384fbbKifefdOAXfgn9rxqrEDVTvRJwvDDaHzpgb68DoqYC4C35hx1kWRjyJtb+OuaWGSYYfBpj4xD0sZL8W7DNt9tvUKQbupH0+1g0mfRmxJE7tMNM7PRrJNVK3WEtwr6TkI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706196903; c=relaxed/simple;
-	bh=PrGLmOdB4gT9pV6Vw4tAfL7M/IXCcsXdVseJO1BoioI=;
+	bh=7k0+BPt755vhBCbjrPSf56+yw3Lv4ac5eXyCUnlz+rQ=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=CfG/fE2QJkv23YaGR74Xi6y1VX/rIlLj2kH0JFfL2JV1QBpMn+hn5juj7RHj3tUwwmzd+kd9CPlkC+Vo7rEGmIe9ySsVjOw3PJFvDD/mSeWZ1jEjm937ILKvOQtVdFwP81Uj3WfSv23S7AaQQsaiAOmN6CYDjeJV2QtMxQRbefk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.90
+	 MIME-Version; b=FYTvP0slnrX767QGWsKzXFrjm8DFY9oAU7Nx4SjW7MLKQcMh7UaLNE1tfl1hMHpM+DHG0NFlI5+XxXc95lxmFFw7USfDORIwJrZ77yytGk9m8m5IxHBWnofp06JIo5lVsuCi1Hw8TZpp3f8AVj/VzoKF5KgQXueXijz5YdZXOXg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:bc9e:fcb8:8aa3:5dc0])
-	by albert.telenet-ops.be with bizsmtp
-	id f3am2B00M58agq2063am9X; Thu, 25 Jan 2024 16:34:56 +0100
+	by baptiste.telenet-ops.be with bizsmtp
+	id f3am2B00258agq2013amrl; Thu, 25 Jan 2024 16:34:58 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rT1jo-00GUwK-9n;
+	id 1rT1jo-00GUvq-37;
 	Thu, 25 Jan 2024 16:34:46 +0100
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rT1kc-00Fs3K-9J;
+	id 1rT1kc-00Fs2g-2K;
 	Thu, 25 Jan 2024 16:34:46 +0100
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Michael Turquette <mturquette@baylibre.com>,
@@ -46,10 +46,12 @@ Cc: Cong Dang <cong.dang.xn@renesas.com>,
 	devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 14/15] arm64: dts: renesas: Add Gray Hawk Single board support
-Date: Thu, 25 Jan 2024 16:34:42 +0100
-Message-Id: <b657402113267acd57aece0b4c681b707e704455.1706194617.git.geert+renesas@glider.be>
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>
+Subject: [PATCH v2 06/15] dt-bindings: soc: renesas: Document R-Car V4M Gray Hawk Single
+Date: Thu, 25 Jan 2024 16:34:34 +0100
+Message-Id: <1065a81afb8dbed09b0098b51dc7fb22da421a97.1706194617.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1706194617.git.geert+renesas@glider.be>
 References: <cover.1706194617.git.geert+renesas@glider.be>
@@ -61,96 +63,41 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add initial support for the Renesas Gray Hawk Single board, which is
-based on the R-Car V4M (R8A779H0) SoC:
-  - Memory,
-  - Crystal oscillators,
-  - Serial console.
-
-Based on the White Hawk Single DTS, and on a patch for the Gray Hawk
-board stack in the BSP by Hai Pham.
+Document the compatible values for the Renesas R-Car V4M (R8A779H0) SoC
+and the Renesas Gray Hawk Single development board.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
 v2:
-  - Add SoC name to top-level comment.
----
- arch/arm64/boot/dts/renesas/Makefile          |  2 +
- .../dts/renesas/r8a779h0-gray-hawk-single.dts | 52 +++++++++++++++++++
- 2 files changed, 54 insertions(+)
- create mode 100644 arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts
+  - Add Acked-by, Reviewed-by,
+  - Add "board" to compatible comment.
 
-diff --git a/arch/arm64/boot/dts/renesas/Makefile b/arch/arm64/boot/dts/renesas/Makefile
-index 1d7d69657a1f0559..4c5ac5f02829ff58 100644
---- a/arch/arm64/boot/dts/renesas/Makefile
-+++ b/arch/arm64/boot/dts/renesas/Makefile
-@@ -86,6 +86,8 @@ dtb-$(CONFIG_ARCH_R8A779G0) += r8a779g0-white-hawk-ard-audio-da7212.dtbo
- r8a779g0-white-hawk-ard-audio-da7212-dtbs := r8a779g0-white-hawk.dtb r8a779g0-white-hawk-ard-audio-da7212.dtbo
- dtb-$(CONFIG_ARCH_R8A779G0) += r8a779g0-white-hawk-ard-audio-da7212.dtb
+The Gray Hawk Single board is an integrated variant of the (not yet
+supported) Gray Hawk board stack, which is very similar to the White
+Hawk board stack.
+---
+ Documentation/devicetree/bindings/soc/renesas/renesas.yaml | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/soc/renesas/renesas.yaml b/Documentation/devicetree/bindings/soc/renesas/renesas.yaml
+index 15b9dd52938996f4..1a228dd4822ccda2 100644
+--- a/Documentation/devicetree/bindings/soc/renesas/renesas.yaml
++++ b/Documentation/devicetree/bindings/soc/renesas/renesas.yaml
+@@ -361,6 +361,12 @@ properties:
+           - const: renesas,white-hawk-cpu
+           - const: renesas,r8a779g0
  
-+dtb-$(CONFIG_ARCH_R8A779H0) += r8a779h0-gray-hawk-single.dtb
++      - description: R-Car V4M (R8A779H0)
++        items:
++          - enum:
++              - renesas,gray-hawk-single # Gray Hawk Single board (RTP8A779H0ASKB0F10S)
++          - const: renesas,r8a779h0
 +
- dtb-$(CONFIG_ARCH_R8A77951) += r8a779m1-salvator-xs.dtb
- r8a779m1-salvator-xs-panel-aa104xd12-dtbs := r8a779m1-salvator-xs.dtb salvator-panel-aa104xd12.dtbo
- dtb-$(CONFIG_ARCH_R8A77951) += r8a779m1-salvator-xs-panel-aa104xd12.dtb
-diff --git a/arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts b/arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts
-new file mode 100644
-index 0000000000000000..1ed404712d823871
---- /dev/null
-+++ b/arch/arm64/boot/dts/renesas/r8a779h0-gray-hawk-single.dts
-@@ -0,0 +1,52 @@
-+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+/*
-+ * Device Tree Source for the R-Car V4M Gray Hawk Single board
-+ *
-+ * Copyright (C) 2023 Renesas Electronics Corp.
-+ * Copyright (C) 2024 Glider bv
-+ */
-+
-+/dts-v1/;
-+#include "r8a779h0.dtsi"
-+
-+/ {
-+	model = "Renesas Gray Hawk Single board based on r8a779h0";
-+	compatible = "renesas,gray-hawk-single", "renesas,r8a779h0";
-+
-+	aliases {
-+		serial0 = &hscif0;
-+	};
-+
-+	chosen {
-+		bootargs = "ignore_loglevel";
-+		stdout-path = "serial0:921600n8";
-+	};
-+
-+	memory@48000000 {
-+		device_type = "memory";
-+		/* first 128MB is reserved for secure area. */
-+		reg = <0x0 0x48000000 0x0 0x78000000>;
-+	};
-+
-+	memory@480000000 {
-+		device_type = "memory";
-+		reg = <0x4 0x80000000 0x1 0x80000000>;
-+	};
-+};
-+
-+&extal_clk {
-+	clock-frequency = <16666666>;
-+};
-+
-+&extalr_clk {
-+	clock-frequency = <32768>;
-+};
-+
-+&hscif0 {
-+	uart-has-rtscts;
-+	status = "okay";
-+};
-+
-+&scif_clk {
-+	clock-frequency = <24000000>;
-+};
+       - description: R-Car H3e (R8A779M0)
+         items:
+           - enum:
 -- 
 2.34.1
 
