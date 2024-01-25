@@ -1,56 +1,54 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.93])
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD3B912E54;
-	Thu, 25 Jan 2024 07:40:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.55.52.93
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2292E12E54;
+	Thu, 25 Jan 2024 07:40:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.55.52.120
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706168441; cv=none; b=CLDxvBd2zhZ3bDzlvfv6nDIM22U2u8x6VGvQ5g/FQ2ctvDXuBXr1Plc7f7iACYYzz8ZOMp/QL5CTBHr0k3/K33UczZ0NshW7CMr9/UgQzt7h44MKY7/lHh9hW5tBwevFkCF95JSRSrQIctxxyijOR8wBGqBbUo72LPGm2gWVTJc=
+	t=1706168458; cv=none; b=uQOUsMbciyylHC76ADVHzOYGz0CPSePn3pmuUVcpUK4BA6xo84rgHJhMOaVT4xRvFgq+g5lXUBsKnMWQSzN/khmkY4bk5f3HqYPR02qxRQZ0oZfF+A5td8FC99KpXjKQeWLmM3+3l2N92S9jUAwZ7+Qn8TuYSXwfDJKxinvmV1o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706168441; c=relaxed/simple;
-	bh=DjqqEralO9zXx1N2wUxK/UMU/WyHK+u1IMpeXUrRQIk=;
+	s=arc-20240116; t=1706168458; c=relaxed/simple;
+	bh=r3JtH1Ui6kSD1qodWct9HfimeEcB9akkZ4WQUOcpEMY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bPaIlkZT0zOX3rFBhBV9kTShdzgsjLgTeYra5O3FiCLoIt8n6mlRhp0iQk00kFTRaOkmJN509LPtxhHzeXKc4bbKeD5Lt1oAYpt7njcYBBnhdZiHnQJy3+76LChu2B0T+2U79/h0cH02jh77tStBtPkq4mO7pdNybR39ecJbAOw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=db10bK8Z; arc=none smtp.client-ip=192.55.52.93
+	 Content-Type:Content-Disposition:In-Reply-To; b=BiIxHD2azegZkJTrBP7ICOSsfPjZBj7QXhagoka2kggfaXIvsYRR8z1HxM5DC0kfB3ZVasF3bc9Y3N4g2hDAAIgy6EEbuBRClZheoNQ9vAhS5cbAsmSxiNCkaDKP78fW+84IdreMPU/lQxysWvEAQko7+Ekt3pOM+FsDtWBvSd4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=LxBMI6Ow; arc=none smtp.client-ip=192.55.52.120
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="db10bK8Z"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="LxBMI6Ow"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1706168439; x=1737704439;
+  t=1706168456; x=1737704456;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=DjqqEralO9zXx1N2wUxK/UMU/WyHK+u1IMpeXUrRQIk=;
-  b=db10bK8Zx/TPPuKX8garM+ybCPwSAy5YCg4L2P2ltA45+ae3YcxfPUFB
-   V6uwW2RLxZTG/LD1yerxgibm0mpkAjE+t5TSdhB/tIS2mvsezQf5KdWpv
-   pVb8bE7aXEbbqi+eEHWqnqM3wYSwJKjeQRU1SYIrvGAxs/+5io5mMAOtl
-   mpfdm4BFoMs+cts0/dAI8Sacg8eVm1tJQDhv3JeboEpEsYb+NhL3mberE
-   BkojQXgHlSRK5Gg3pZcc7MPTHsB43FkvGLAkZk2QAoVP0x3o3dIzrmvVv
-   nctRU0TOBmfl8ptiMhxb1z8jJICmOtrrELz13+nsLZ0rNRa2rcIUZnK7K
+  bh=r3JtH1Ui6kSD1qodWct9HfimeEcB9akkZ4WQUOcpEMY=;
+  b=LxBMI6Owc5OgGoQoBxMFw0H1Gl6Kj27cBdN4sUMeROQxO/d8z4NOc/yy
+   xoNNy+seFU2mqmE+nWHwsx1LXorHyoyqA5cEMKcxELvrvkvmkENv5vOom
+   V6n6OlL+KM/ndBHU3djkri2ivOoCRORR+6fr/7lVlymE+x310TUggsAB8
+   6NljKd6X9bZZ6b6dTuUMg/CB2XYF2jWq9EbCSqySl8Eser866keCYpHO7
+   CXt3XHkxH6IXMdI58SDpsNqrRUPil2iHEwuDWiEjtaEfPugkj0D7tKmzW
+   LFzeTeTYM4lifXUZ9rEcjfBeLdNO0TxOnnVXuwcXQje8hNWx3+J0l8yrL
    g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10962"; a="399247853"
+X-IronPort-AV: E=McAfee;i="6600,9927,10962"; a="400943284"
 X-IronPort-AV: E=Sophos;i="6.05,216,1701158400"; 
-   d="scan'208";a="399247853"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jan 2024 23:40:38 -0800
+   d="scan'208";a="400943284"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jan 2024 23:40:55 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10962"; a="909917935"
 X-IronPort-AV: E=Sophos;i="6.05,216,1701158400"; 
-   d="scan'208";a="909917935"
+   d="scan'208";a="2137835"
 Received: from sgruszka-mobl.ger.corp.intel.com (HELO localhost) ([10.252.58.119])
-  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jan 2024 23:40:36 -0800
-Date: Thu, 25 Jan 2024 08:40:33 +0100
+  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jan 2024 23:40:54 -0800
+Date: Thu, 25 Jan 2024 08:40:50 +0100
 From: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM <linux-pm@vger.kernel.org>,
 	LKML <linux-kernel@vger.kernel.org>,
 	Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v1 01/12] PM: sleep: Simplify dpm_suspended_list walk in
- dpm_resume()
-Message-ID: <ZbIQcQBpy3Y8lWdH@linux.intel.com>
+Subject: Re: [PATCH v1 02/12] PM: sleep: Relocate two device PM core functions
+Message-ID: <ZbIQgnhstsdzk5/K@linux.intel.com>
 References: <5760158.DvuYhMxLoT@kreacher>
- <4553341.LvFx2qVVIh@kreacher>
+ <4876491.GXAFRqVoOG@kreacher>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -59,71 +57,100 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4553341.LvFx2qVVIh@kreacher>
+In-Reply-To: <4876491.GXAFRqVoOG@kreacher>
 
-On Mon, Jan 22, 2024 at 12:22:38PM +0100, Rafael J. Wysocki wrote:
+On Mon, Jan 22, 2024 at 12:24:21PM +0100, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Notice that devices can be moved to dpm_prepared_list before running
-> their resume callbacks, in analogy with dpm_noirq_resume_devices() and
-> dpm_resume_early(), because doing so will not affect the final ordering
-> of that list.
+> Move is_async() and dpm_async_fn() in the PM core to a more suitable
+> place.
 > 
-> Namely, if a device is the first dpm_suspended_list entry while
-> dpm_list_mtx is held, it has not been removed so far and it cannot be
-> removed until dpm_list_mtx is released, so moving it to dpm_prepared_list
-> at that point is valid.  If it is removed later, while its resume
-> callback is running, it will be deleted from dpm_prepared_list without
-> changing the ordering of the other devices in that list.
-> 
-> Accordingly, rearrange the while () loop in dpm_resume() to move
-> devices to dpm_prepared_list before running their resume callbacks and
-> implify the locking and device reference counting in it.
-> 
-> No intentional functional impact.
+> No functional impact.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Reviewed-by: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
 
 > ---
->  drivers/base/power/main.c |   16 +++++-----------
->  1 file changed, 5 insertions(+), 11 deletions(-)
+>  drivers/base/power/main.c |   58 +++++++++++++++++++++++-----------------------
+>  1 file changed, 29 insertions(+), 29 deletions(-)
 > 
 > Index: linux-pm/drivers/base/power/main.c
 > ===================================================================
 > --- linux-pm.orig/drivers/base/power/main.c
 > +++ linux-pm/drivers/base/power/main.c
-> @@ -1017,25 +1017,19 @@ void dpm_resume(pm_message_t state)
+> @@ -578,6 +578,35 @@ bool dev_pm_skip_resume(struct device *d
+>  	return !dev->power.must_resume;
+>  }
 >  
->  	while (!list_empty(&dpm_suspended_list)) {
->  		dev = to_device(dpm_suspended_list.next);
+> +static bool is_async(struct device *dev)
+> +{
+> +	return dev->power.async_suspend && pm_async_enabled
+> +		&& !pm_trace_is_enabled();
+> +}
+> +
+> +static bool dpm_async_fn(struct device *dev, async_func_t func)
+> +{
+> +	reinit_completion(&dev->power.completion);
+> +
+> +	if (is_async(dev)) {
+> +		dev->power.async_in_progress = true;
+> +
+> +		get_device(dev);
+> +
+> +		if (async_schedule_dev_nocall(func, dev))
+> +			return true;
+> +
+> +		put_device(dev);
+> +	}
+> +	/*
+> +	 * Because async_schedule_dev_nocall() above has returned false or it
+> +	 * has not been called at all, func() is not running and it is safe to
+> +	 * update the async_in_progress flag without extra synchronization.
+> +	 */
+> +	dev->power.async_in_progress = false;
+> +	return false;
+> +}
+> +
+>  /**
+>   * device_resume_noirq - Execute a "noirq resume" callback for given device.
+>   * @dev: Device to handle.
+> @@ -664,35 +693,6 @@ Out:
+>  	}
+>  }
+>  
+> -static bool is_async(struct device *dev)
+> -{
+> -	return dev->power.async_suspend && pm_async_enabled
+> -		&& !pm_trace_is_enabled();
+> -}
+> -
+> -static bool dpm_async_fn(struct device *dev, async_func_t func)
+> -{
+> -	reinit_completion(&dev->power.completion);
+> -
+> -	if (is_async(dev)) {
+> -		dev->power.async_in_progress = true;
 > -
 > -		get_device(dev);
-> +		list_move_tail(&dev->power.entry, &dpm_prepared_list);
->  
->  		if (!dev->power.async_in_progress) {
-> +			get_device(dev);
-> +
->  			mutex_unlock(&dpm_list_mtx);
->  
->  			device_resume(dev, state, false);
->  
-> +			put_device(dev);
-> +
->  			mutex_lock(&dpm_list_mtx);
->  		}
 > -
-> -		if (!list_empty(&dev->power.entry))
-> -			list_move_tail(&dev->power.entry, &dpm_prepared_list);
-> -
-> -		mutex_unlock(&dpm_list_mtx);
+> -		if (async_schedule_dev_nocall(func, dev))
+> -			return true;
 > -
 > -		put_device(dev);
+> -	}
+> -	/*
+> -	 * Because async_schedule_dev_nocall() above has returned false or it
+> -	 * has not been called at all, func() is not running and it is safe to
+> -	 * update the async_in_progress flag without extra synchronization.
+> -	 */
+> -	dev->power.async_in_progress = false;
+> -	return false;
+> -}
 > -
-> -		mutex_lock(&dpm_list_mtx);
->  	}
->  	mutex_unlock(&dpm_list_mtx);
->  	async_synchronize_full();
+>  static void async_resume_noirq(void *data, async_cookie_t cookie)
+>  {
+>  	struct device *dev = data;
+> 
 > 
 > 
 > 
