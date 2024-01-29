@@ -1,91 +1,107 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id ABADE6F067;
-	Mon, 29 Jan 2024 18:16:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1F8076C85;
+	Mon, 29 Jan 2024 19:02:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706552204; cv=none; b=IdmazRUEavphNtMMplqAlicMPiS37hcaKOCSXYe8GO+pLlRZ9KXtmhnKgVk91DQlAQanHC24dv4AHipbYgAog/bN4VmsbnKZ1NAlmFXl3idcArbMFx0MBFwAS1/xj3nPsUdxX7Bd5jMpvSZc7Rvmmm3w7SSDdRpLq7+G3cpRJf8=
+	t=1706554976; cv=none; b=URrXc5mLZTT2jiodzMZWSZbK20DJqJOyg2VoTHbTSTlqNqqc+ht3jLraKebbvZdYVP3EAFlF8J+qn6yAqlhavG1tnfhaBxJryya2ETOc228fZp/TdqcAwPk6gUS8hTqCyD/8mADLU3BMk7wuiD+sY7iH85kag0ITpzVFn4rezSY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706552204; c=relaxed/simple;
-	bh=3K9E1eBaQHZke+ZOLH8M64F3SEbU0rMNrNadqCjf4v8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PWqcnrRARFddwEDHaWS+Oz7RDpRo/BgfGCVAhhofUiXnydimRN0bG3c1AlgjiTKRffMaxcDewVimM0FDQ+s54A1+LioUYCe5kqgz5c6d2P50CvWEL+vKtDSlTrgQz7oz5QxCq+6z3P+n0hm9IOjo+Zz5Afwz6tCmGnZfLNnJm54=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 12FA6DA7;
-	Mon, 29 Jan 2024 10:17:26 -0800 (PST)
-Received: from [192.168.178.6] (unknown [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DA8CC3F738;
-	Mon, 29 Jan 2024 10:16:39 -0800 (PST)
-Message-ID: <c6aa3166-ad82-4576-8d77-19232d477c73@arm.com>
-Date: Mon, 29 Jan 2024 19:16:39 +0100
+	s=arc-20240116; t=1706554976; c=relaxed/simple;
+	bh=aSM9wPAyPVDm5b+xfCxQKgaxyvEhEsXdo6zACqRJdGA=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=PcgI3ZXWL+egUN+OqvrF668qRdwYrRmud0cjWKCn6+R6d4c8f2Rn9c/dZ5UBwmgyYoDyTxn2xg9Je3jcfBtyjY7GvAVtfwXeD2uL3QV0DD/sIOccTi3rZSr6XXulJYStiny4nnZY2HsGWuvrT0FRSPjL8GsupqDRMX6GY5GjDv4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=IkQvXPmV; arc=none smtp.client-ip=198.47.19.142
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="IkQvXPmV"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 40TJ2mXE058112;
+	Mon, 29 Jan 2024 13:02:48 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+	s=ti-com-17Q1; t=1706554968;
+	bh=g68VLRGGJy5bz4tZRAxiACWi4FChD3F2OvygDt/12UY=;
+	h=From:To:CC:Subject:Date:In-Reply-To:References;
+	b=IkQvXPmV2HlCmeYbjTjX1f1MuGboDNchJl0arl1p1bfFga+Ig3QsCJEL5FO2oWgL2
+	 iAzMDcG3rkBLlI3aIYX3dEB2yRP4ijkg/Tv6s35kgDL82e1U/EEnhVuMomJ1hA8oMe
+	 BUjr5+aGyyDp3giL4GL6PgIHu6HCCgLoU0wdwwAM=
+Received: from DLEE115.ent.ti.com (dlee115.ent.ti.com [157.170.170.26])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 40TJ2mIL003157
+	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Mon, 29 Jan 2024 13:02:48 -0600
+Received: from DLEE111.ent.ti.com (157.170.170.22) by DLEE115.ent.ti.com
+ (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 29
+ Jan 2024 13:02:48 -0600
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE111.ent.ti.com
+ (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
+ Frontend Transport; Mon, 29 Jan 2024 13:02:48 -0600
+Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 40TJ2ldm003658;
+	Mon, 29 Jan 2024 13:02:47 -0600
+From: Andrew Davis <afd@ti.com>
+To: Sebastian Reichel <sre@kernel.org>,
+        Support Opensource
+	<support.opensource@diasemi.com>,
+        Krzysztof Kozlowski
+	<krzysztof.kozlowski@linaro.org>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Andrew Davis
+	<afd@ti.com>
+Subject: [PATCH v2 1/4] power: supply: max14577: Use devm_power_supply_register() helper
+Date: Mon, 29 Jan 2024 13:02:43 -0600
+Message-ID: <20240129190246.73067-2-afd@ti.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240129190246.73067-1-afd@ti.com>
+References: <20240129190246.73067-1-afd@ti.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 00/23] Introduce runtime modifiable Energy Model
-Content-Language: en-US
-To: Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, rafael@kernel.org
-Cc: rui.zhang@intel.com, amit.kucheria@verdurent.com, amit.kachhap@gmail.com,
- daniel.lezcano@linaro.org, viresh.kumar@linaro.org, len.brown@intel.com,
- pavel@ucw.cz, mhiramat@kernel.org, qyousef@layalina.io, wvw@google.com,
- xuewen.yan94@gmail.com
-References: <20240117095714.1524808-1-lukasz.luba@arm.com>
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-In-Reply-To: <20240117095714.1524808-1-lukasz.luba@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-On 17/01/2024 10:56, Lukasz Luba wrote:
+Use the device lifecycle managed register function. This helps prevent
+mistakes like unregistering out of order in cleanup functions and
+forgetting to unregister on error paths.
 
-[...]
+Signed-off-by: Andrew Davis <afd@ti.com>
+---
+ drivers/power/supply/max14577_charger.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-> Changelog:
-> v7:
-> - dropped em_table_get/put() (Rafael)
-> - renamed memory function to em_table_alloc/free() (Rafael)
-> - use explicit rcu_read_lock/unlock() instead of wrappers and aligned
->   frameworks & drivers using EM (Rafael)
-> - adjusted documentation to the new functions
-> - fixed doxygen comments (Rafael)
-> - renamed 'refcount' to 'kref' (Rafael)
-> - changed patch headers according to comments (Rafael)
-> - rebased on 'next-20240112' to get Ingo's revert affecting energy_model.h
-> v6 [6]:
-> - renamed 'runtime_table' to 'em_table' (Dietmar, Rafael)
-> - dropped kref increment during allocation (Qais)
-> - renamed em_inc/dec_usage() to em_table_inc/dec() (Qais)
-> - fixed comment description and left old comment block with small
->   adjustment in em_cpu_energy() patch 15/23 (Dietmar)
-> - added platform name which was used for speed-up testing (Dietmar)
-> - changed patch header description keep it small not repeating the in-code
->   comment describing 'cost' in em_cpu_energy() patch 15/23 (Dietmar)
-> - added check and warning in em_cpu_energy() about RCU lock held (Qais, Xuewen)
-> - changed nr_perf_states usage in the patch 7/23 (Dietmar)
-> - changed documentation according to comments (Dietmar)
-> - changed in-code comment in patch 11/23 according to comments (Dietmar)
-> - changed example driver function 'ctx' argument in the documentation (Xuewen)
-> - changed the example driver in documentation, dropped module_exit and
->   added em_free_table() explicit in the update function
-> - fixed comments in various patch headers (Dietmar)
-> - fixed Doxygen comment s/@state/@table patch 4/23 (Dietmar)
-> - added information in the cover letter about:
-> -- optimization in EAS hot code path
-> -- follow-up patch set which adds OPP support and modifies EM for Exynos5
-> - rebased on 'next-20240104' to avoid collision with other code touching
->   em_cpu_energy()
+diff --git a/drivers/power/supply/max14577_charger.c b/drivers/power/supply/max14577_charger.c
+index 7c23fa89ea199..b28c04157709a 100644
+--- a/drivers/power/supply/max14577_charger.c
++++ b/drivers/power/supply/max14577_charger.c
+@@ -586,8 +586,9 @@ static int max14577_charger_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	psy_cfg.drv_data = chg;
+-	chg->charger = power_supply_register(&pdev->dev, &max14577_charger_desc,
+-						&psy_cfg);
++	chg->charger = devm_power_supply_register(&pdev->dev,
++						  &max14577_charger_desc,
++						  &psy_cfg);
+ 	if (IS_ERR(chg->charger)) {
+ 		dev_err(&pdev->dev, "failed: power supply register\n");
+ 		ret = PTR_ERR(chg->charger);
+@@ -608,10 +609,7 @@ static int max14577_charger_probe(struct platform_device *pdev)
+ 
+ static void max14577_charger_remove(struct platform_device *pdev)
+ {
+-	struct max14577_charger *chg = platform_get_drvdata(pdev);
+-
+ 	device_remove_file(&pdev->dev, &dev_attr_fast_charge_timer);
+-	power_supply_unregister(chg->charger);
+ }
+ 
+ static const struct platform_device_id max14577_charger_id[] = {
+-- 
+2.39.2
 
-LGTM now. I see that my comments from v5 have been addressed. Minor
-points which still exists for me I commented on in the individual patches.
-
-For the whole series:
-
-Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Tested-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-
-(with a simple test driver updating the EM for CPU0 on Arm64 Juno-r0)
