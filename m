@@ -1,48 +1,48 @@
 Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4636760894;
-	Mon, 29 Jan 2024 11:56:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4639160895;
+	Mon, 29 Jan 2024 11:56:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706529405; cv=none; b=qXumSMViWCH6sxucV6pt3LsjVjPTE4981mKiP/HA32AVl1xF6UCc8fSf5pKOI6362Swa4dN8ulei6AcOc+ayrqcuCmDiBYEA3Tu25+lnQjxjQLtZPaZc5u3chOrdavUF9AFfsMmpVZqvc4+IaLa2H8JbMHvrBCZ9gpP5KCS4oqY=
+	t=1706529406; cv=none; b=ZEM3rju9KCMaWTNi8EUcENtCvA1JQ0t0d8CFVdqWvR2+pt77U10Kv0vfimz6piIpYiXrqfpNGEmKXIn5YQhFp8sC0uXWTdMpiMVxsU/1z9y72OtohxD3sCcoFTuCqPT+fPMhVDCsjya0su/Z5YfVeGqHZHmMpu2fRmZ8u/rOcIY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706529405; c=relaxed/simple;
-	bh=j70rx+VQHeY0jsYZxVvue52ZMDvklrAsMHXOdmSrQVM=;
-	h=From:To:Cc:Subject:Date:Message-Id; b=V4dooTEqLzc8WUGB31L+fhcBwXYgJS6uUnlfHX+0aYfWtQDuPK/4awh3kG0KtgjUbw9T9zaPhfggD6mG9EkZ5YYLxhYPxsxvMfb0smNhkY1GFr8s6dQDlW6icSUQ3milAZ223kj+G8iJmA6yaT3QYkXJ4wqungtQA8haIE263sc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=GxdsCwcy; arc=none smtp.client-ip=205.220.177.32
+	s=arc-20240116; t=1706529406; c=relaxed/simple;
+	bh=Cx1GJ8tb4Rwe9cT5ZQ3JwMc7AvNFn8941Kx/X8gvbD8=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=TFDcgkbZmcCvE5DnF0VxLBpHGsi8Ak+QHbSjS2qKWBXjVSWggvIG2Ild7REBfMWFZYReNxW8gx+CvGamClKDmm8OVCzq5tJoWVQFdeJAKJwBSCZI/i1WhoCZpTacqUsb2stuSUk8/t3B2PclUR7KNWkKYJOpuURjLQVu0eXzJ5M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=hqSVP9IZ; arc=none smtp.client-ip=205.220.177.32
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="GxdsCwcy"
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="hqSVP9IZ"
 Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40T9htgo018239;
-	Mon, 29 Jan 2024 11:55:51 GMT
+	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40T9hsPs018230;
+	Mon, 29 Jan 2024 11:55:57 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id; s=corp-2023-11-20;
- bh=khCABu2u7h0ji9nwNiqkSsP2cO6XtkgpM/puPUnlX54=;
- b=GxdsCwcy6W7KrLSL9Q62IYajfegQuNXie2fefIwLnLJvP8UGfKQZZp+KGhoWOYg+V6q/
- +IOsIAb/ftRQt/2IBW73+uLGqP/zole4RmYYu+GVBeY+3CCb2TpVviDJW4sDO3Cyqyt9
- JEXmGEfZTqpWdq50xV9n7auf4Uh87hYFtqT0JRKj8QQkmJ1WxPSF84paH3DuYR6RMOaj
- KSLsss3KtXt+eDYU2ZBLc9OLglrkTCPCbnkwLE775GpPt3pCPyiYh61qVqkItW1mS89b
- 8Qc9jOz1WsofVlpJj1QuKy/IRqanCSnUrqJ5jdkCEGoOfFULmh1h6JKrFLrBoNjW1IbA nQ== 
+ subject : date : message-id : in-reply-to : references; s=corp-2023-11-20;
+ bh=3CBdIWj34ZRhxUcc3rj18We/Fw9vZjncSXWx3xdqX8c=;
+ b=hqSVP9IZpA55IVek6IxGZrONcsUKQGHODmUbsbu747x8cLxEx71QsVDw9BHKFYCPCzZ2
+ 6HyS1Jzu0vTplAorSzgAcxzIqGSSw2ZrJpHFxjyuDvAzI2YebDntEttJAH13AhOAs1mZ
+ FI7hIyUYWq8zTiB7sXMS+4o/q1jAu4OEh0/ubwKyfk51Cl97cZQA9BT/EiSc9Cu6AGuO
+ L/FboliuBk34d08FXWenHldP/8grWKwzP7V8QuDkP/QKogHQvpNyn+k/w7/F/31ltZ10
+ 8R3BZMABjfE8+bx3kQaxuwgcT+o4tPpYCQD2tzPwaLyK9JOZVwcGQEP87X8RBV2zgTCo LQ== 
 Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3vvr8ebmnu-1
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3vvr8ebmp0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 29 Jan 2024 11:55:51 +0000
+	Mon, 29 Jan 2024 11:55:57 +0000
 Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 40TB1FB3035346;
-	Mon, 29 Jan 2024 11:55:50 GMT
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 40TB2icS035421;
+	Mon, 29 Jan 2024 11:55:56 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3vvr9bhcup-1
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3vvr9bhcxv-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 29 Jan 2024 11:55:50 +0000
+	Mon, 29 Jan 2024 11:55:56 +0000
 Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 40TBtni4038181;
-	Mon, 29 Jan 2024 11:55:49 GMT
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 40TBtniE038181;
+	Mon, 29 Jan 2024 11:55:56 GMT
 Received: from mihai.localdomain (ban25x6uut25.us.oracle.com [10.153.73.25])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3vvr9bhcty-1;
-	Mon, 29 Jan 2024 11:55:49 +0000
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3vvr9bhcty-6;
+	Mon, 29 Jan 2024 11:55:56 +0000
 From: Mihai Carabas <mihai.carabas@oracle.com>
 To: linux-arm-kernel@lists.infradead.org
 Cc: kvm@vger.kernel.org, linux-pm@vger.kernel.org,
@@ -55,84 +55,67 @@ Cc: kvm@vger.kernel.org, linux-pm@vger.kernel.org,
         joao.m.martins@oracle.com, juerg.haefliger@canonical.com,
         mic@digikod.net, mihai.carabas@oracle.com, arnd@arndb.de,
         ankur.a.arora@oracle.com
-Subject: [PATCH v3] Enable haltpoll for arm64
-Date: Mon, 29 Jan 2024 12:40:27 +0200
-Message-Id: <1706524834-11275-1-git-send-email-mihai.carabas@oracle.com>
+Subject: [PATCH v3 5/7] arm64: Define TIF_POLLING_NRFLAG
+Date: Mon, 29 Jan 2024 12:40:32 +0200
+Message-Id: <1706524834-11275-6-git-send-email-mihai.carabas@oracle.com>
 X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1706524834-11275-1-git-send-email-mihai.carabas@oracle.com>
+References: <1706524834-11275-1-git-send-email-mihai.carabas@oracle.com>
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2024-01-29_06,2024-01-29_01,2023-05-22_02
 X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 bulkscore=0 spamscore=0
- phishscore=0 adultscore=0 mlxlogscore=999 suspectscore=0 mlxscore=0
+ phishscore=0 adultscore=0 mlxlogscore=865 suspectscore=0 mlxscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311290000
  definitions=main-2401290086
-X-Proofpoint-ORIG-GUID: wmHlvaEDvTR0tZrspV1ngSlSErMsp9jW
-X-Proofpoint-GUID: wmHlvaEDvTR0tZrspV1ngSlSErMsp9jW
+X-Proofpoint-ORIG-GUID: w4KDuam02VO2JcdZ0ujKc5qyJMf4Ztb4
+X-Proofpoint-GUID: w4KDuam02VO2JcdZ0ujKc5qyJMf4Ztb4
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 
-This patchset enables the usage of haltpoll governer on arm64. This is
-specifically interesting for KVM guests by reducing the IPC latencies.
+From: Joao Martins <joao.m.martins@oracle.com>
 
-Here are some benchmarks without/with haltpoll for a KVM guest:
+The default idle method for arm64 is WFI and it therefore
+unconditionally requires the reschedule interrupt when idle.
 
-a) without haltpoll:
-perf bench sched pipe
-# Running 'sched/pipe' benchmark:
-# Executed 1000000 pipe operations between two processes
+Commit 842514849a61 ("arm64: Remove TIF_POLLING_NRFLAG") had
+reverted it because WFI was the only idle method. ARM64 support
+for haltpoll means that poll_idle() polls for TIF_POLLING_NRFLAG,
+so define on arm64 *only if* haltpoll is built, using the same bit.
 
-     Total time: 8.138 [sec]
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
+Signed-off-by: Mihai Carabas <mihai.carabas@oracle.com>
+---
+ arch/arm64/include/asm/thread_info.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-            8.138094 usecs/op
-             122878 ops/sec
-
-b) with haltpoll:
-perf bench sched pipe
-# Running 'sched/pipe' benchmark:
-# Executed 1000000 pipe operations between two processes
-
-     Total time: 5.003 [sec]
-
-            5.003085 usecs/op
-             199876 ops/sec
-
-v3 changes from v2:
-- fix 1/7 per Petr Mladek - remove ARCH_HAS_CPU_RELAX from arch/x86/Kconfig
-- add Ack-by from Rafael Wysocki on 2/7
-
-v2 changes from v1:
-- added patch 7 where we change cpu_relax with smp_cond_load_relaxed per PeterZ
-  (this improves by 50% at least the CPU cycles consumed in the tests above:
-  10,716,881,137 now vs 14,503,014,257 before)
-- removed the ifdef from patch 1 per RafaelW
-
-Joao Martins (6):
-  x86: Move ARCH_HAS_CPU_RELAX to arch
-  x86/kvm: Move haltpoll_want() to be arch defined
-  governors/haltpoll: Drop kvm_para_available() check
-  arm64: Select ARCH_HAS_CPU_RELAX
-  arm64: Define TIF_POLLING_NRFLAG
-  cpuidle-haltpoll: ARM64 support
-
-Mihai Carabas (1):
-  cpuidle/poll_state: replace cpu_relax with smp_cond_load_relaxed
-
- arch/Kconfig                            |  3 +++
- arch/arm64/Kconfig                      |  1 +
- arch/arm64/include/asm/thread_info.h    |  6 ++++++
- arch/x86/Kconfig                        |  4 +---
- arch/x86/include/asm/cpuidle_haltpoll.h |  1 +
- arch/x86/kernel/kvm.c                   | 10 ++++++++++
- drivers/cpuidle/Kconfig                 |  4 ++--
- drivers/cpuidle/cpuidle-haltpoll.c      |  8 ++------
- drivers/cpuidle/governors/haltpoll.c    |  5 +----
- drivers/cpuidle/poll_state.c            | 14 +++++++++-----
- include/linux/cpuidle_haltpoll.h        |  5 +++++
- 11 files changed, 41 insertions(+), 20 deletions(-)
-
+diff --git a/arch/arm64/include/asm/thread_info.h b/arch/arm64/include/asm/thread_info.h
+index 553d1bc559c6..d3010d0b2988 100644
+--- a/arch/arm64/include/asm/thread_info.h
++++ b/arch/arm64/include/asm/thread_info.h
+@@ -69,6 +69,9 @@ struct thread_info {
+ #define TIF_SYSCALL_TRACEPOINT	10	/* syscall tracepoint for ftrace */
+ #define TIF_SECCOMP		11	/* syscall secure computing */
+ #define TIF_SYSCALL_EMU		12	/* syscall emulation active */
++#if IS_ENABLED(CONFIG_HALTPOLL_CPUIDLE) || IS_ENABLED(CONFIG_HALTPOLL_CPUIDLE_MODULE)
++#define TIF_POLLING_NRFLAG      16      /* poll_idle() polls TIF_NEED_RESCHED */
++#endif
+ #define TIF_MEMDIE		18	/* is terminating due to OOM killer */
+ #define TIF_FREEZE		19
+ #define TIF_RESTORE_SIGMASK	20
+@@ -90,6 +93,9 @@ struct thread_info {
+ #define _TIF_SYSCALL_TRACEPOINT	(1 << TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
+ #define _TIF_SYSCALL_EMU	(1 << TIF_SYSCALL_EMU)
++#if IS_ENABLED(CONFIG_HALTPOLL_CPUIDLE) || IS_ENABLED(CONFIG_HALTPOLL_CPUIDLE_MODULE)
++#define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
++#endif
+ #define _TIF_UPROBE		(1 << TIF_UPROBE)
+ #define _TIF_SINGLESTEP		(1 << TIF_SINGLESTEP)
+ #define _TIF_32BIT		(1 << TIF_32BIT)
 -- 
 1.8.3.1
 
