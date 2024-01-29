@@ -1,25 +1,25 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 389523F9E0;
-	Mon, 29 Jan 2024 18:14:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 09EAC3F9F3;
+	Mon, 29 Jan 2024 18:14:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706552043; cv=none; b=CM1emZ1Zyq8LfPrlCtzwbrXJWcZeRx1jFENDUrf+iRGbt0vZyU+y+K8JA3XU3a86nc0DJ/rhfEUBwFA+h8IVbWgKikxjgXCwcqD4x1OGimX6NUDcgrAk43XSeH0xITswaQaUO1ATiRPW8WOJ1t8wR3SuJcD922lPQpVb/b/1stQ=
+	t=1706552063; cv=none; b=aUm/mJUvs4dkx2FvRrx5kN2tAudDVWdOgaJmX7XVR7J+Y4kv6RSMdk92EjH0eV/sTyxLpvFysKam5Hh3wLcEargkXlPcAqPMJTptQo+CreP0iH0VRcAkmENPMhw5R4rgY26Tj2foAKcesIRlqJYwzl+gO6l7IZBPinExC2nJg1Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706552043; c=relaxed/simple;
-	bh=cJiIMyH6ByLjeu1fDCTdotCd+B6NSDemcnSR3KKmT8M=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=bucGZDhzBZllJ13fUF02MNocu5MylMMIVCFxeu9LbcmGzA7mwuf+I+qiJ2l8/U3yQiFFUpF5O8mZyUdHkK5E7IPvOLqLDq42Vrhp5b4C74rkPEQt4CFfDBwRbhdmlc3Je6NfV85UvMX6aRPv3BN1MBfC2QWVuk9UdAUg0XCkvXI=
+	s=arc-20240116; t=1706552063; c=relaxed/simple;
+	bh=FR/zq4TyESX0ax53xnG03ABJRIASj5fUXtXMj3RQZxo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TbE0jv1P4Wok2IV1N5AzdKIUzpxfoQqGetUwjcy4SHMcio0xtu0lbpn3ihUQnLJUW/+1eFHgQWxT+cMZfjNxLaC2KpR2QnP7KWBLhVonLxAxSOd8SUpdKU4DEbUtPTgc25koDy149V9Ivm//19MplnJXn0dNyOiweDmlZURYDwQ=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 511AADA7;
-	Mon, 29 Jan 2024 10:14:44 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2CF3FDA7;
+	Mon, 29 Jan 2024 10:15:04 -0800 (PST)
 Received: from [192.168.178.6] (unknown [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 945F03F738;
-	Mon, 29 Jan 2024 10:13:57 -0800 (PST)
-Message-ID: <ba1e8112-c82e-458d-b7f7-9a308295d260@arm.com>
-Date: Mon, 29 Jan 2024 19:13:57 +0100
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F2EA63F738;
+	Mon, 29 Jan 2024 10:14:17 -0800 (PST)
+Message-ID: <0dce919b-279d-4a34-8641-09d0acec5cf1@arm.com>
+Date: Mon, 29 Jan 2024 19:14:17 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -27,9 +27,9 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v7 13/23] PM: EM: Add performance field to struct
- em_perf_state and optimize
+Subject: Re: [PATCH v7 16/23] powercap/dtpm_cpu: Use new Energy Model
+ interface to get table
+Content-Language: en-US
 To: Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, rafael@kernel.org
 Cc: rui.zhang@intel.com, amit.kucheria@verdurent.com, amit.kachhap@gmail.com,
@@ -37,83 +37,39 @@ Cc: rui.zhang@intel.com, amit.kucheria@verdurent.com, amit.kachhap@gmail.com,
  pavel@ucw.cz, mhiramat@kernel.org, qyousef@layalina.io, wvw@google.com,
  xuewen.yan94@gmail.com
 References: <20240117095714.1524808-1-lukasz.luba@arm.com>
- <20240117095714.1524808-14-lukasz.luba@arm.com>
-Content-Language: en-US
-In-Reply-To: <20240117095714.1524808-14-lukasz.luba@arm.com>
+ <20240117095714.1524808-17-lukasz.luba@arm.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+In-Reply-To: <20240117095714.1524808-17-lukasz.luba@arm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 17/01/2024 09:57, Lukasz Luba wrote:
+On 17/01/2024 10:57, Lukasz Luba wrote:
 
 [...]
 
->  include/linux/energy_model.h | 24 ++++++++++++------------
->  kernel/power/energy_model.c  | 27 +++++++++++++++++++++++++++
->  2 files changed, 39 insertions(+), 12 deletions(-)
+>  drivers/powercap/dtpm_cpu.c | 39 +++++++++++++++++++++++++++----------
+>  1 file changed, 29 insertions(+), 10 deletions(-)
 > 
-> diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-> index 5ebe9dbec8e1..689d71f6b56f 100644
-> --- a/include/linux/energy_model.h
-> +++ b/include/linux/energy_model.h
-> @@ -13,6 +13,7 @@
+> diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+> index 9193c3b8edeb..ee0d1aa3e023 100644
+> --- a/drivers/powercap/dtpm_cpu.c
+> +++ b/drivers/powercap/dtpm_cpu.c
+> @@ -42,6 +42,7 @@ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
+>  {
+>  	struct dtpm_cpu *dtpm_cpu = to_dtpm_cpu(dtpm);
+>  	struct em_perf_domain *pd = em_cpu_get(dtpm_cpu->cpu);
+> +	struct em_perf_state *table;
+>  	struct cpumask cpus;
+>  	unsigned long freq;
+>  	u64 power;
+> @@ -50,20 +51,22 @@ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
+>  	cpumask_and(&cpus, cpu_online_mask, to_cpumask(pd->cpus));
+>  	nr_cpus = cpumask_weight(&cpus);
 >  
->  /**
->   * struct em_perf_state - Performance state of a performance domain
-> + * @performance:	CPU performance (capacity) at a given frequency
+> +	rcu_read_lock();
+> +	table = em_perf_state_from_pd(pd);
 
-I guess this is what we called the 'current CPU capacity' in older
-Android versions.
-
-[...]
-
-> @@ -260,26 +262,24 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
->  	/*
->  	 * In order to predict the performance state, map the utilization of
->  	 * the most utilized CPU of the performance domain to a requested 
-> -	 * frequency, like schedutil. Take also into account that the real
-> -	 * frequency might be set lower (due to thermal capping). Thus, clamp
-> +	 * performance, like schedutil. Take also into account that the real
-> +	 * performance might be set lower (due to thermal capping). Thus, clamp
->  	 * max utilization to the allowed CPU capacity before calculating
-> -	 * effective frequency.
-> +	 * effective performance.
->  	 */
->  	cpu = cpumask_first(to_cpumask(pd->cpus));
->  	scale_cpu = arch_scale_cpu_capacity(cpu);
-> -	ref_freq = arch_scale_freq_ref(cpu);
->  
->  	max_util = map_util_perf(max_util);
-
-Didn't apply cleanly on tip sched/code for me.
-
-Looks like it's missing:
-
-9c0b4bb7f630 - sched/cpufreq: Rework schedutil governor performance
-estimation (2023-11-23 Vincent Guittot)
-
->  	max_util = min(max_util, allowed_cpu_cap);
-> -	freq = map_util_freq(max_util, ref_freq, scale_cpu);
-
-Since you're removing this here, shouldn't you also remove
-
-* In order to predict the performance state, map the utilization of
-* the most utilized CPU of the performance domain to a requested
-
-Looks like with 9c0b4bb7f630 there is no mapping anymore?
-
-[...]
-
->  static int em_compute_costs(struct device *dev, struct em_perf_state *table,
->  			    struct em_data_callback *cb, int nr_states,
->  			    unsigned long flags)
-> @@ -318,6 +343,8 @@ static int em_create_perf_table(struct device *dev, struct em_perf_domain *pd,
->  		table[i].frequency = prev_freq = freq;
->  	}
->  
-> +	em_init_performance(dev, pd, table, nr_states);
-
-Looks like pd already has 'pd->nr_perf_states' initialized. so just
-passing pd seems to be sufficient. Like for em_table_alloc() and
-em_create_perf_table().
+'table' vs. 'perf state(s)' ... another example (compare to comment in
+12/23).
 
 [...]
