@@ -1,48 +1,48 @@
 Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9E2A60869;
-	Mon, 29 Jan 2024 11:56:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DD7F60868;
+	Mon, 29 Jan 2024 11:56:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.165.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706529400; cv=none; b=qxwp8rhUmNffY9EEfn+smy7zneFljF23RKbrWyUZalY/F1csYZ080ImMX6BzPzypCVgslktyXgk2EEdAX7fLtZiUnqA3n0oQy2Ta+beKwPCT1wxajs7CsDjDjEXNCtz8Kd2cJaFLxoCmEy3JTyDo1qg752P0KFWCg7ZnePHL6KY=
+	t=1706529401; cv=none; b=QxppGypOcBgCcthXfs1S5v8mQlYOjVanEUrBL0YS0asJFa1nLhks6gLhxmWE/LsyIaCrKTm8TpWwMvWWSV38arIKEIJm837smcEQQJFtfOp/utbU1zJltzf4wYuMNlxwJgWhTZFvoZo/Fj1BD3NblVHWUbKWJbAE5CahPlF2Rdg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706529400; c=relaxed/simple;
-	bh=WsC1jzqJt8v0tVnaYxv4ggMXksNSjkzD9+2lyOkYaLE=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=dLqOC2g1NkprWtOArZKKZf17nyuIkFOQoDrffG50PWC5cweaVP9I/my5Q+wwolwvyYgj1CzmopgGXIEnvy7njfewclGIcWsoAL+tDtZ5mQ7U87FyP7xHJrU6pFEVVJ9k9dB2DAWfbTNrmYf5b1RYrsPW/i76/ZAPSEXaFq/1Wtg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=d2vB39I4; arc=none smtp.client-ip=205.220.165.32
+	s=arc-20240116; t=1706529401; c=relaxed/simple;
+	bh=xi7YP0n2K4yFSd2jqDSsLMpbqfYwHLVWBJxbmKyKXX8=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=MlNLfinyUCPovoCx3FGPbcrMMfjZCy97SXTbABqIC3vbETiYSjxglT7eoQK+Nj1yG5ohNF0luF5zK+vLvJfWJrmyObue5hrtq/Nbx5wxFw1o/8fe+4dNXPj86FEsm8nHg+Fm6k5LH/TN7A05zq7ZZ9B0ejwwGFJ1Xicy1n7E2AA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=nBMoaWfX; arc=none smtp.client-ip=205.220.165.32
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="d2vB39I4"
-Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40T9i5rb003224;
-	Mon, 29 Jan 2024 11:56:01 GMT
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="nBMoaWfX"
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40T9iRll015940;
+	Mon, 29 Jan 2024 11:55:54 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references; s=corp-2023-11-20;
- bh=uAhbu4AUajdcQROPp7AvbiHI/LFlFhMVo6VGoxnZCWM=;
- b=d2vB39I4Og0wxCVnADXW1/7MnjlGyD2CUhMp3SC3IT8uGtcqSgDb6v/sZdoKLENxoEfe
- 4n6c2zqynNAZtBYQ7ZzFWa7f4OKN1yIAmJXXuoZMx1DD3IKKTDV2NW3nJ93hJJM1sgFZ
- ImdnnCApsS+0VQidCglEggQp9Tp5Q1lryPNnIMWvUI1wUM/vqqyrWHoGVu1lEboRaYgf
- Myd65CzEyBjg/UNp6qSPMZHnSEOejfkdLzRUMzStmig3OhXqSCBJenSD5NaUf0uL9Lty
- bkc0S3AFI1qFrtQCK6C+yOWl1HkGDgfV9hruFaNq8gAocyQusznCblARVfdaZzH0Uj2D Xg== 
+ bh=Z9qDnSm8OWwlAaxt9Fnk40RHUt26ekA0qcYXgbx3N2g=;
+ b=nBMoaWfXQOwOo7LbAMW6V8tOZKPfKrMMieXrkRf1tVlkxeRGf+Ix4EAEakx03U3o109q
+ JpXuiv/8jSZ0UCmYCglo2kw1RiCn254trrQpD+QpL7xXsa8hS11NRB+AQsY68lTDy1Jm
+ qAmkDThI4QgLMZgrBudZn0G9A+thCt4FPPrrDXz4BDi2NTQVdOxPpsn2cTOEMRHMzZO+
+ eJqshjbeN7f/BKbK7om5XpginGKJPABrl6K7oTK+JgRtUFjtk4DF0H8u9YYbFr2ZPMVX
+ 6IV6Eo0DeF3RLg3XNoiI/DO/jZuwL7Z6c61Ng7/mMvC+t7neBlNGj9h7zD04scWhRtGx 6g== 
 Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3vvre2bpy9-1
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3vvtcuukg6-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 29 Jan 2024 11:56:00 +0000
+	Mon, 29 Jan 2024 11:55:53 +0000
 Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 40TB1FB6035346;
-	Mon, 29 Jan 2024 11:55:59 GMT
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 40TBEgP0035372;
+	Mon, 29 Jan 2024 11:55:52 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3vvr9bhd06-1
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3vvr9bhcvv-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 29 Jan 2024 11:55:59 +0000
+	Mon, 29 Jan 2024 11:55:52 +0000
 Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 40TBtniI038181;
-	Mon, 29 Jan 2024 11:55:58 GMT
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 40TBtni6038181;
+	Mon, 29 Jan 2024 11:55:51 GMT
 Received: from mihai.localdomain (ban25x6uut25.us.oracle.com [10.153.73.25])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3vvr9bhcty-8;
-	Mon, 29 Jan 2024 11:55:58 +0000
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3vvr9bhcty-2;
+	Mon, 29 Jan 2024 11:55:51 +0000
 From: Mihai Carabas <mihai.carabas@oracle.com>
 To: linux-arm-kernel@lists.infradead.org
 Cc: kvm@vger.kernel.org, linux-pm@vger.kernel.org,
@@ -55,9 +55,9 @@ Cc: kvm@vger.kernel.org, linux-pm@vger.kernel.org,
         joao.m.martins@oracle.com, juerg.haefliger@canonical.com,
         mic@digikod.net, mihai.carabas@oracle.com, arnd@arndb.de,
         ankur.a.arora@oracle.com
-Subject: [PATCH v3 7/7] cpuidle/poll_state: replace cpu_relax with smp_cond_load_relaxed
-Date: Mon, 29 Jan 2024 12:40:34 +0200
-Message-Id: <1706524834-11275-8-git-send-email-mihai.carabas@oracle.com>
+Subject: [PATCH v3 1/7] x86: Move ARCH_HAS_CPU_RELAX to arch
+Date: Mon, 29 Jan 2024 12:40:28 +0200
+Message-Id: <1706524834-11275-2-git-send-email-mihai.carabas@oracle.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1706524834-11275-1-git-send-email-mihai.carabas@oracle.com>
 References: <1706524834-11275-1-git-send-email-mihai.carabas@oracle.com>
@@ -68,49 +68,63 @@ X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 bu
  phishscore=0 adultscore=0 mlxlogscore=999 suspectscore=0 mlxscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311290000
  definitions=main-2401290086
-X-Proofpoint-GUID: dQYM6tQD_1vhmUDfI0qPFICGEXTzpN_a
-X-Proofpoint-ORIG-GUID: dQYM6tQD_1vhmUDfI0qPFICGEXTzpN_a
+X-Proofpoint-ORIG-GUID: TIDgASBHJXYtnPx3Vf4e7156qe29GyW2
+X-Proofpoint-GUID: TIDgASBHJXYtnPx3Vf4e7156qe29GyW2
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 
-cpu_relax on ARM64 does a simple "yield". Thus we replace it with
-smp_cond_load_relaxed which basically does a "wfe".
+From: Joao Martins <joao.m.martins@oracle.com>
 
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
+ARM64 is going to use it for haltpoll support (for poll-state)
+so move the definition to be arch-agnostic and allow architectures
+to override it.
+
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
 Signed-off-by: Mihai Carabas <mihai.carabas@oracle.com>
 ---
- drivers/cpuidle/poll_state.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ arch/Kconfig     | 3 +++
+ arch/x86/Kconfig | 4 +---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpuidle/poll_state.c b/drivers/cpuidle/poll_state.c
-index 9b6d90a72601..440cd713e39a 100644
---- a/drivers/cpuidle/poll_state.c
-+++ b/drivers/cpuidle/poll_state.c
-@@ -26,12 +26,16 @@ static int __cpuidle poll_idle(struct cpuidle_device *dev,
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 12d51495caec..626ddd9ba7e0 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -1371,6 +1371,9 @@ config RELR
+ config ARCH_HAS_MEM_ENCRYPT
+ 	bool
  
- 		limit = cpuidle_poll_time(drv, dev);
++config ARCH_HAS_CPU_RELAX
++	bool
++
+ config ARCH_HAS_CC_PLATFORM
+ 	bool
  
--		while (!need_resched()) {
--			cpu_relax();
--			if (loop_count++ < POLL_IDLE_RELAX_COUNT)
--				continue;
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 66bfabae8814..aaca90ba791a 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -72,6 +72,7 @@ config X86
+ 	select ARCH_HAS_CACHE_LINE_SIZE
+ 	select ARCH_HAS_CPU_CACHE_INVALIDATE_MEMREGION
+ 	select ARCH_HAS_CPU_FINALIZE_INIT
++	select ARCH_HAS_CPU_RELAX
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VIRTUAL
+ 	select ARCH_HAS_DEBUG_VM_PGTABLE	if !X86_PAE
+@@ -363,9 +364,6 @@ config ARCH_MAY_HAVE_PC_FDC
+ config GENERIC_CALIBRATE_DELAY
+ 	def_bool y
+ 
+-config ARCH_HAS_CPU_RELAX
+-	def_bool y
 -
-+		for (;;) {
- 			loop_count = 0;
-+
-+			smp_cond_load_relaxed(&current_thread_info()->flags,
-+					      (VAL & _TIF_NEED_RESCHED) ||
-+					      (loop_count++ >= POLL_IDLE_RELAX_COUNT));
-+
-+			if (loop_count < POLL_IDLE_RELAX_COUNT)
-+				break;
-+
- 			if (local_clock_noinstr() - time_start > limit) {
- 				dev->poll_time_limit = true;
- 				break;
+ config ARCH_HIBERNATION_POSSIBLE
+ 	def_bool y
+ 
 -- 
 1.8.3.1
 
