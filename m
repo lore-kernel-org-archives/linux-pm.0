@@ -1,97 +1,123 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from madrid.collaboradmins.com (madrid.collaboradmins.com [46.235.227.194])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43B2A60DC0
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jan 2024 09:51:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B6C5664AE;
+	Tue, 30 Jan 2024 11:13:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.227.194
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706608318; cv=none; b=OFzRg+OOL5brzVJ9qUmeV9ONw3Q5tmYHFF/UTJz2iXf7OEPecTEd7XAnfFdn2oL1WSRZvuw2DnmWcjAWVtl4n3/lcwBxAcwKZ1E0e+3eipvmLzc9EmjsngCRFnfchcUsClX97KU7H3b1Nk20+KMDL82uQ9eOmON2dnbdNCv+D0o=
+	t=1706613197; cv=none; b=ZZTncZ47W62MGa2Wc7ABxCURX8/bdOu1VXiRuE5AbJqknVhiZWxVJnKyi5cTc32JMuFFlnA760DiyqE8TjOhZ83OwCrhGZI1PjZfxZ27ZHgPVAlp3wRHcxEPzI1Q7fARAEmWt932tnbhnKaUdYxkWEZcaQt5qnCLTLddnznG1VI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706608318; c=relaxed/simple;
-	bh=sUNr3myzPwzcEzPZLydh/Sxr+xAwn5eWM0IALXoUSC8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LpRNgEjoaXo9rEovLzXevJNxXSR4n4Y6zFnlpPzhARG2xjXuPmLYTiBuoHC12Dw5ilMzu6dIURypTPV4vcMhe1ubeHVCsWRHcEzvk/qThmPWGL3hE6MUdlXPq1KES9eCqg6IlFRDq9QKTvWxxxs2mH/hH719s4WRwqsifYMZzeE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=uYnXincS; arc=none smtp.client-ip=209.85.128.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1706613197; c=relaxed/simple;
+	bh=NMhqSFdRSjNI1p1vyp5dOffkk1ADZ0MeWiy+ifEvnrE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=a6A+YXIeqtedJSq1x3qSAwDSBg17IFFcZu0iFAc1qPE1fm8iu7FoWRPTrzn8d7GB8bak/k9QxmQtSrJ3LNYtr3tMuDKkxULbL4OW6rVWIESSECkeUb0/neYZQmQTMyH4pV4ldI0fTVLzJYngnDBVTZFm89ECfo4UrZCfjjgU1bU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Qt0nsFEZ; arc=none smtp.client-ip=46.235.227.194
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uYnXincS"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-40eb033c1b0so42408055e9.2
-        for <linux-pm@vger.kernel.org>; Tue, 30 Jan 2024 01:51:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1706608314; x=1707213114; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=UHvebLwHuRfKrhRhx4zUZc+osrZ3cO5ITZcXKlhy5f4=;
-        b=uYnXincSowyG+p9UEdPDnvxIzmU9GOBSzNhyzKWgWRsHxYxJsgmlN8l73pqeqMgJiH
-         W3FLzDp9V1a4NogDlV5H1k248SFmxfaAhFaGXvy+2xX1w0ghHvdHtyUoKilqpwW0kimv
-         irpXAEmjuNAD4/StG/16/I9RtqUQBH7xybZf4x+8WvJiIjR03h7Mg+Ju0ipADKFW0o6Y
-         UtGo5chTuX8tks8DceGJ2nErQ0g305MQvJkl4lTc3CXnzi2Dpd+8g0LSqtlkfRvLQBTa
-         h9yp2/x5R1D6Yus6NsAKqqqL9V7/KOfcBuEEQOWlRt+BxIoW2oB/IMNTXqdGY51W90E5
-         IVaA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706608314; x=1707213114;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=UHvebLwHuRfKrhRhx4zUZc+osrZ3cO5ITZcXKlhy5f4=;
-        b=T7mMVTWsadGafUrvBgl8l+hIOt5Wg9gwNZAxTmEtvohmVSBrSsi007OkXUCnDruWOl
-         sR0LTM03BduY3UtNKzxdVLV96QnnycClZdSMWveZLTHJLBvd6VxTucIXnznZgpmdyhcz
-         7uszx16vZs6Plft8U0drjJTVN1/tLWOyY+0R0Hj+R7T/QgqCxAhLFoCudbmLUXPNStHS
-         8DOCJNZTk3Ckm32CoiTKPZd1LMkAclezfnjMQxe4HuklOX3BQ1hmCsw0BBcJbTHavjGv
-         uJP0B9XcaAcglH1Dlq6X4ZFn/jEmCw9xrZ02W1h4DMU1fGoYqYbBNCYD44JjVPGf+dR4
-         WoKg==
-X-Gm-Message-State: AOJu0YygciUqCF1RAYg8KwoYW+GGQ6r5dcJHp0cqIXf1JhwtNQkBYbXx
-	yAnXozGXcIKikGLkhv53WIRaYJntVe/cXLC/e9E51YgNlDALDICCSX5eocrpqi0=
-X-Google-Smtp-Source: AGHT+IF38u7/UMq2Ehe06B1hdRlnUG7cUccj6aYmXDUSxOCpUZXxCEPO+lNn+j1151l0KXe8fxwwHw==
-X-Received: by 2002:a05:600c:4d96:b0:40e:d319:4792 with SMTP id v22-20020a05600c4d9600b0040ed3194792mr6064680wmp.22.1706608314364;
-        Tue, 30 Jan 2024 01:51:54 -0800 (PST)
-Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.googlemail.com with ESMTPSA id u7-20020a05600c138700b0040d8ff79fd8sm12646748wmf.7.2024.01.30.01.51.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 30 Jan 2024 01:51:54 -0800 (PST)
-Message-ID: <57a5ca95-9d79-45cb-89dd-fa7a3a6ad228@linaro.org>
-Date: Tue, 30 Jan 2024 10:51:53 +0100
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Qt0nsFEZ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1706613192;
+	bh=NMhqSFdRSjNI1p1vyp5dOffkk1ADZ0MeWiy+ifEvnrE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Qt0nsFEZO5QpPc8PT9E0Lm/cgu375vY8D/mR9k7Z3W1Wv+myVR0nC/5GsZAjx1uOg
+	 IOPezeLBWscheyDiOgrc/qZAVxW2SIrVUutDo7DZ63z9zUaXkaOq4XWiQV+cYY6Cb/
+	 a6gCdWmh3IEA5qY5GYnH3bdWQBTID73s0OeKIN3eC0naUOfwNSfz1+7Gn+mzXamZZ1
+	 LbYglX3oHMZWJBash/KF827A8A2VN09xGuA48AaHftWY8fjbotKGMviiOHH6Ui9Wl9
+	 +4O3dOIUxOrUpnxr2lKSbzRngscGghNZAZQNMEs9YlAtIaUx9luxx0GphbKNcEdKnI
+	 Xff/+eqNdXpPA==
+Received: from IcarusMOD.eternityproject.eu (cola.collaboradmins.com [195.201.22.229])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by madrid.collaboradmins.com (Postfix) with ESMTPSA id F116F37811F4;
+	Tue, 30 Jan 2024 11:13:09 +0000 (UTC)
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+To: daniel.lezcano@linaro.org
+Cc: miquel.raynal@bootlin.com,
+	rafael@kernel.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	support.opensource@diasemi.com,
+	shawnguo@kernel.org,
+	s.hauer@pengutronix.de,
+	kernel@pengutronix.de,
+	festevam@gmail.com,
+	linux-imx@nxp.com,
+	andersson@kernel.org,
+	konrad.dybcio@linaro.org,
+	amitk@kernel.org,
+	thara.gopinath@gmail.com,
+	niklas.soderlund@ragnatech.se,
+	srinivas.pandruvada@linux.intel.com,
+	angelogioacchino.delregno@collabora.com,
+	baolin.wang@linux.alibaba.com,
+	u.kleine-koenig@pengutronix.de,
+	hayashi.kunihiko@socionext.com,
+	d-gole@ti.com,
+	linus.walleij@linaro.org,
+	DLG-Adam.Ward.opensource@dm.renesas.com,
+	error27@gmail.com,
+	heiko@sntech.de,
+	hdegoede@redhat.com,
+	jernej.skrabec@gmail.com,
+	f.fainelli@gmail.com,
+	bchihi@baylibre.com,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	kernel@collabora.com
+Subject: [PATCH v1 01/18] thermal: core: Change governor name to const char pointer
+Date: Tue, 30 Jan 2024 12:12:33 +0100
+Message-ID: <20240130111250.185718-2-angelogioacchino.delregno@collabora.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240130111250.185718-1-angelogioacchino.delregno@collabora.com>
+References: <20240130111250.185718-1-angelogioacchino.delregno@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] thermal/drivers/mediatek/lvts_thermal: Fix a memory leak
- in an error handling path
-Content-Language: en-US
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Matthias Brugger
- <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Balsam CHIHI <bchihi@baylibre.com>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
-References: <481d345233862d58c3c305855a93d0dbc2bbae7e.1706431063.git.christophe.jaillet@wanadoo.fr>
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <481d345233862d58c3c305855a93d0dbc2bbae7e.1706431063.git.christophe.jaillet@wanadoo.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-On 28/01/2024 09:38, Christophe JAILLET wrote:
-> If devm_krealloc() fails, then 'efuse' is leaking.
-> So free it to avoid a leak.
-> 
-> Fixes: f5f633b18234 ("thermal/drivers/mediatek: Add the Low Voltage Thermal Sensor driver")
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
+All users are already assigning a const char * to the `governor_name`
+member of struct thermal_zone_params and to the `name` member of
+struct thermal_governor.
+Even if users are technically wrong, it just makes more sense to change
+this member to be a const char pointer instead of doing the other way
+around.
 
-Applied, thanks
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ include/linux/thermal.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index b7a3deb372fd..65d8f92a9a0d 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -214,7 +214,7 @@ struct thermal_zone_device {
+  * @governor_list:	node in thermal_governor_list (in thermal_core.c)
+  */
+ struct thermal_governor {
+-	char name[THERMAL_NAME_LENGTH];
++	const char *name;
+ 	int (*bind_to_tz)(struct thermal_zone_device *tz);
+ 	void (*unbind_from_tz)(struct thermal_zone_device *tz);
+ 	int (*throttle)(struct thermal_zone_device *tz,
+@@ -226,7 +226,7 @@ struct thermal_governor {
+ 
+ /* Structure to define Thermal Zone parameters */
+ struct thermal_zone_params {
+-	char governor_name[THERMAL_NAME_LENGTH];
++	const char *governor_name;
+ 
+ 	/*
+ 	 * a boolean to indicate if the thermal to hwmon sysfs interface
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.43.0
 
