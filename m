@@ -1,46 +1,46 @@
-Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
+Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4D0712E1ED;
-	Thu,  1 Feb 2024 18:01:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.249
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C77A112B159;
+	Thu,  1 Feb 2024 18:01:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706810502; cv=none; b=qnnyfaE/QcqQqG7rFaPfUdBTLE+fdrlqZlX/cANwK+nO0+0ktmUrerVm3jGlOjE8DVq4rKv1EPfeGFINpNkBvx9lbIWJb9n404G5QbQjj/VmKx6QWlsxmCAeM35LZ1+ppTw78jqVgQkAQIze4A9Pyfz94adHUkCAZaKGNcR5xBc=
+	t=1706810506; cv=none; b=SULwPvAo6ZC8A8cqrHKhYGBtg+xYIv7hkVS20UJZPoNpDW3vVta1FsSmHIBimuTuuC79+ScjxBePVSMhLeNn0qWwjNQezqpJZ0O9VifItLAgEMP+5eoIwSL3WI24xTad1RxlMyERaM/o/9YYd6h+d9LlQoRHetSDOqdhrzJGHGM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706810502; c=relaxed/simple;
-	bh=piMJuCp6Oyf7VRRgvElf9jQlTaTY6OoJDvy6PpEE/uE=;
+	s=arc-20240116; t=1706810506; c=relaxed/simple;
+	bh=XmOFZVJS2nbpGNUIJRoCh2m3rWFsAgRF8B1pZ3UaoOo=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=MKzF0EDq367etnYP5OoVEyHfVtPHDyZx0cEShMtK9f21QF3bsXMbOXxL2aHt9C4cB1dAM9Tu0yfV6K+Z64e4FRPZ9AxUhKMsD6fpzUOsWuYZz51it4t5n+Bm3O8WIuyWBMMWz90qFVSlvqoQpEesHzeEjSPIXR5QLf5iNSd+Jk8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=UyO5EnnD; arc=none smtp.client-ip=198.47.23.249
+	 MIME-Version:Content-Type; b=d97bJCTXFG+IlJQrCIlUDP/StuyibuGTxC80bzGgGPecbCx3rl3OXhXWwoOGXWA1nx2xc6ye5JCfNmYrx+qsuNKxkwqELRwQoyGzuPbLuYOn1+K/efyg52sfhUbGier6kdi8AMapubAfCnOYhY/AF0lYTO0TPB4A7JPTPkB60I4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=rm1XIA5e; arc=none smtp.client-ip=198.47.23.248
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="UyO5EnnD"
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-	by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I1C0e127793;
-	Thu, 1 Feb 2024 12:01:12 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="rm1XIA5e"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I1ELM051733;
+	Thu, 1 Feb 2024 12:01:14 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706810472;
-	bh=psW+zR+255VuGRBEiZa3qV2ZSoJCA9HDeWGIZlh4BNU=;
+	s=ti-com-17Q1; t=1706810474;
+	bh=NIThW8dvWRvWMprZfYkUcAv9QvAIjazC0Wh9+WTdW/k=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=UyO5EnnDRngm9H5SGH1A+jEgO7wkevXIJJ227pxDcUetRFvBS9480xEhg15nfp+R+
-	 nj4Su04MrkyrG0saepA77HVR2LW/DreMBTJ1KaHdr9Oo5AsU5avhRdjIixfbcnDmGI
-	 snG8ICoQK2Ebi8klQh3Udfc9/3St+CDi3QE8n4v0=
-Received: from DLEE111.ent.ti.com (dlee111.ent.ti.com [157.170.170.22])
-	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I1Ctb047604
+	b=rm1XIA5e4Rd+MaKMZD53SqGG1cTPvCemTrgkowPC2TgVVIYHMHHtJS0ad9yi9KOeb
+	 +tfC+54rcrgXtKzhqOZN0rv/Uf5rfNYE5TuSras9Ff6Qljz95lgsORpI4ZRRY61NYW
+	 4ov56vN26Wgga0dm5uhiXV/+HhxaKBnHfDrHFGHQ=
+Received: from DFLE115.ent.ti.com (dfle115.ent.ti.com [10.64.6.36])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I1Ec2004657
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 1 Feb 2024 12:01:12 -0600
-Received: from DLEE115.ent.ti.com (157.170.170.26) by DLEE111.ent.ti.com
- (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
+	Thu, 1 Feb 2024 12:01:14 -0600
+Received: from DFLE107.ent.ti.com (10.64.6.28) by DFLE115.ent.ti.com
+ (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 1
- Feb 2024 12:01:12 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE115.ent.ti.com
- (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2024 12:01:14 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE107.ent.ti.com
+ (10.64.6.28) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Thu, 1 Feb 2024 12:01:12 -0600
+ Frontend Transport; Thu, 1 Feb 2024 12:01:14 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gs117221;
-	Thu, 1 Feb 2024 12:01:11 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gw117221;
+	Thu, 1 Feb 2024 12:01:13 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Manivannan Sadhasivam
@@ -62,9 +62,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH 14/18] power: reset: as3722-poweroff: Use devm_register_sys_off_handler(POWER_OFF)
-Date: Thu, 1 Feb 2024 12:00:58 -0600
-Message-ID: <20240201180102.70395-15-afd@ti.com>
+Subject: [PATCH 18/18] power: reset: syscon-poweroff: Use devm_register_sys_off_handler(POWER_OFF)
+Date: Thu, 1 Feb 2024 12:01:02 -0600
+Message-ID: <20240201180102.70395-19-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240201180102.70395-1-afd@ti.com>
 References: <20240201180102.70395-1-afd@ti.com>
@@ -83,81 +83,89 @@ exit paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/as3722-poweroff.c | 30 ++++++++++-----------------
- 1 file changed, 11 insertions(+), 19 deletions(-)
+ drivers/power/reset/syscon-poweroff.c | 34 ++++++++++++---------------
+ 1 file changed, 15 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/power/reset/as3722-poweroff.c b/drivers/power/reset/as3722-poweroff.c
-index ab3350ce2d621..bb26fa6fa67ca 100644
---- a/drivers/power/reset/as3722-poweroff.c
-+++ b/drivers/power/reset/as3722-poweroff.c
-@@ -11,6 +11,7 @@
- #include <linux/module.h>
+diff --git a/drivers/power/reset/syscon-poweroff.c b/drivers/power/reset/syscon-poweroff.c
+index 4899a019256e8..203936f4c544f 100644
+--- a/drivers/power/reset/syscon-poweroff.c
++++ b/drivers/power/reset/syscon-poweroff.c
+@@ -13,6 +13,7 @@
  #include <linux/of.h>
  #include <linux/platform_device.h>
+ #include <linux/pm.h>
 +#include <linux/reboot.h>
- #include <linux/slab.h>
+ #include <linux/regmap.h>
  
- struct as3722_poweroff {
-@@ -18,22 +19,18 @@ struct as3722_poweroff {
- 	struct as3722 *as3722;
+ struct syscon_poweroff_data {
+@@ -22,23 +23,30 @@ struct syscon_poweroff_data {
+ 	u32 mask;
  };
  
--static struct as3722_poweroff *as3722_pm_poweroff;
+-static struct syscon_poweroff_data *data;
 -
--static void as3722_pm_power_off(void)
-+static int as3722_pm_power_off(struct sys_off_data *data)
+-static void syscon_poweroff(void)
++static int syscon_poweroff(struct sys_off_data *off_data)
  {
-+	struct as3722_poweroff *as3722_pm_poweroff = data->cb_data;
- 	int ret;
++	struct syscon_poweroff_data *data = off_data->cb_data;
++
+ 	/* Issue the poweroff */
+ 	regmap_update_bits(data->map, data->offset, data->mask, data->value);
  
--	if (!as3722_pm_poweroff) {
--		pr_err("AS3722 poweroff is not initialised\n");
--		return;
--	}
--
- 	ret = as3722_update_bits(as3722_pm_poweroff->as3722,
- 		AS3722_RESET_CONTROL_REG, AS3722_POWER_OFF, AS3722_POWER_OFF);
- 	if (ret < 0)
- 		dev_err(as3722_pm_poweroff->dev,
- 			"RESET_CONTROL_REG update failed, %d\n", ret);
+ 	mdelay(1000);
+ 
+ 	pr_emerg("Unable to poweroff system\n");
 +
 +	return NOTIFY_DONE;
  }
  
- static int as3722_poweroff_probe(struct platform_device *pdev)
-@@ -54,18 +51,14 @@ static int as3722_poweroff_probe(struct platform_device *pdev)
+ static int syscon_poweroff_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
++	struct syscon_poweroff_data *data;
+ 	int mask_err, value_err;
  
- 	as3722_poweroff->as3722 = dev_get_drvdata(pdev->dev.parent);
- 	as3722_poweroff->dev = &pdev->dev;
--	as3722_pm_poweroff = as3722_poweroff;
--	if (!pm_power_off)
--		pm_power_off = as3722_pm_power_off;
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
+ 	data->map = syscon_regmap_lookup_by_phandle(dev->of_node, "regmap");
+ 	if (IS_ERR(data->map)) {
+ 		data->map = syscon_node_to_regmap(dev->parent->of_node);
+@@ -69,21 +77,10 @@ static int syscon_poweroff_probe(struct platform_device *pdev)
+ 		data->mask = 0xFFFFFFFF;
+ 	}
  
+-	if (pm_power_off) {
+-		dev_err(dev, "pm_power_off already claimed for %ps",
+-			pm_power_off);
+-		return -EBUSY;
+-	}
+-
+-	pm_power_off = syscon_poweroff;
+-
 -	return 0;
 -}
-+	return devm_register_sys_off_handler(as3722_poweroff->dev,
+-
+-static void syscon_poweroff_remove(struct platform_device *pdev)
+-{
+-	if (pm_power_off == syscon_poweroff)
+-		pm_power_off = NULL;
++	return devm_register_sys_off_handler(&pdev->dev,
 +					     SYS_OFF_MODE_POWER_OFF,
 +					     SYS_OFF_PRIO_DEFAULT,
-+					     as3722_pm_power_off,
-+					     as3722_poweroff);
- 
--static void as3722_poweroff_remove(struct platform_device *pdev)
--{
--	if (pm_power_off == as3722_pm_power_off)
--		pm_power_off = NULL;
--	as3722_pm_poweroff = NULL;
-+	return 0;
++					     syscon_poweroff, data);
  }
  
- static struct platform_driver as3722_poweroff_driver = {
-@@ -73,7 +66,6 @@ static struct platform_driver as3722_poweroff_driver = {
- 		.name = "as3722-power-off",
- 	},
- 	.probe = as3722_poweroff_probe,
--	.remove_new = as3722_poweroff_remove,
- };
+ static const struct of_device_id syscon_poweroff_of_match[] = {
+@@ -93,7 +90,6 @@ static const struct of_device_id syscon_poweroff_of_match[] = {
  
- module_platform_driver(as3722_poweroff_driver);
+ static struct platform_driver syscon_poweroff_driver = {
+ 	.probe = syscon_poweroff_probe,
+-	.remove_new = syscon_poweroff_remove,
+ 	.driver = {
+ 		.name = "syscon-poweroff",
+ 		.of_match_table = syscon_poweroff_of_match,
 -- 
 2.39.2
 
