@@ -1,46 +1,46 @@
 Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3A8084FA8;
-	Thu,  1 Feb 2024 18:01:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2202F84047;
+	Thu,  1 Feb 2024 18:01:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706810488; cv=none; b=urEAeRyAz3hBhsYcdbjutL0vErzbzxOnl7TTD5b2hBvu2AYgzgpADRo4CEOFWuTLLKXaiIlO0cNIdkgsTmO4wG/fN7H4HUxQFmdW9eOWl8FiJytILRlbkpHgoxWgQ265gRVCRsw8gC7wCpsds3+Xx1oOjEs/HEDcdcJh0ITv8YU=
+	t=1706810489; cv=none; b=J1SVuDmYl0OAV8gZs5cAR6nIm8hbctOHep1MaS/y7GyyApZDGT/6cg1kX1vishsAPd2Y80vOHeDB38h9lks8yt1QCCFXP2lZ14SlWRCmisgtDlGABLcG+f/M4gMrK5swCsK3TB5jz4A+zzcRCq3zyoeg1qRmDl6+zffvMeEBMU8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706810488; c=relaxed/simple;
-	bh=bDDsP6FtSJ5wVZ0CYHdodnlun3i/+w7VsSjbcJGnQeI=;
+	s=arc-20240116; t=1706810489; c=relaxed/simple;
+	bh=BvK8IwqnEFboy699PAEmSTVNPQ3C5pW/mK6yHdKKsaA=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=q26H5LTxg+JrFHDkcXX6+q3U6aGj/66sdzsK0cEV4FPUdoJYj0HyriSG3rBNTDqm5SzoaWnUaiOFRdEraaV7QJ75xs0Y0uLSujd08tahqHBgBAm8L5KTyn6ZufQFOR78FCuPSi7La3+Lhptx+7H5tWr+5efbRt3ko4K22rszqtU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=BhjY8BID; arc=none smtp.client-ip=198.47.19.141
+	 MIME-Version:Content-Type; b=piitROrhq1hWX02Z9noM1+WJdz+BKzpND+pWpnnE37ah4TtdzDc03vCNVBr4Ht5BlZnqPzOcgVos6x4cdcUgfCyao3yOmNdiksfGro/O3Uo0W20izaFy2n7U8cMshLJc6McGeEjnW36Y6dtNr4CDQjLp5xpAAl69eAwJJQh0nEA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=tyMEeCj1; arc=none smtp.client-ip=198.47.19.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="BhjY8BID"
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I17wO049584;
-	Thu, 1 Feb 2024 12:01:07 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="tyMEeCj1"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I1Boq049613;
+	Thu, 1 Feb 2024 12:01:11 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706810467;
-	bh=b1ggeAlqOeW6cDM2I0g1Lrz7ya2O6mo0S8OfUg915BU=;
+	s=ti-com-17Q1; t=1706810471;
+	bh=+iboSw0kHr/XQ2F6mUqPjCZdFfbDSD+ql6zjttiLFSU=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=BhjY8BIDCh34TqTsuxsNCp59BD1rh4Iiu3NvrhnJGpkouoZ0xzRgSAoNY4vAPZdPZ
-	 gs+ymMss+pkmQL/x6MLDYhVTdPO2FLT5r0jJqXPVt4NO3l0ep76M+kHielPchllER4
-	 fMTgVca4uiNbwX7Om2ggWGKxfTBw0mKtGGw4C28g=
-Received: from DFLE109.ent.ti.com (dfle109.ent.ti.com [10.64.6.30])
-	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I17n2029189
+	b=tyMEeCj1fPmmpSRTUugtA3JXIw2BLd3voyMAK+H1o1ri8TRYBSGil6K6Pph/3LzDr
+	 3B8RWfZGnEqLzaYhsUCFx3bbSEwjfowhTX7Ox25oF48u6IdQRLrobxcUM61Dr15ER4
+	 3OwoQL4VnZGHXtznw3cPfhjvTlLE4AywOaqNCDjA=
+Received: from DLEE110.ent.ti.com (dlee110.ent.ti.com [157.170.170.21])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I1BuU004593
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 1 Feb 2024 12:01:07 -0600
-Received: from DFLE108.ent.ti.com (10.64.6.29) by DFLE109.ent.ti.com
- (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
+	Thu, 1 Feb 2024 12:01:11 -0600
+Received: from DLEE110.ent.ti.com (157.170.170.21) by DLEE110.ent.ti.com
+ (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 1
- Feb 2024 12:01:07 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE108.ent.ti.com
- (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2024 12:01:10 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE110.ent.ti.com
+ (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Thu, 1 Feb 2024 12:01:07 -0600
+ Frontend Transport; Thu, 1 Feb 2024 12:01:10 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gk117221;
-	Thu, 1 Feb 2024 12:01:06 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gp117221;
+	Thu, 1 Feb 2024 12:01:09 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Manivannan Sadhasivam
@@ -62,9 +62,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH 06/18] power: reset: brcm-kona-reset: Use devm_register_sys_off_handler(RESTART)
-Date: Thu, 1 Feb 2024 12:00:50 -0600
-Message-ID: <20240201180102.70395-7-afd@ti.com>
+Subject: [PATCH 11/18] power: reset: msm-poweroff: Use devm_register_sys_off_handler(POWER_OFF)
+Date: Thu, 1 Feb 2024 12:00:55 -0600
+Message-ID: <20240201180102.70395-12-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240201180102.70395-1-afd@ti.com>
 References: <20240201180102.70395-1-afd@ti.com>
@@ -78,56 +78,43 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Use device life-cycle managed register function to simplify probe.
+Use this helper to register sys_off handler. Drivers should move away from
+setting pm_power_off directly as it only allows for one handler. The new
+way allows for trying multiple if the first one doesn't work.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/brcm-kona-reset.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ drivers/power/reset/msm-poweroff.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/reset/brcm-kona-reset.c b/drivers/power/reset/brcm-kona-reset.c
-index d05728b1db097..4bb956c8f24f8 100644
---- a/drivers/power/reset/brcm-kona-reset.c
-+++ b/drivers/power/reset/brcm-kona-reset.c
-@@ -13,11 +13,10 @@
- #define RSTMGR_WR_PASSWORD_SHIFT	8
- #define RSTMGR_WR_ACCESS_ENABLE		1
+diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
+index d96d248a6e25b..bcf04491e7022 100644
+--- a/drivers/power/reset/msm-poweroff.c
++++ b/drivers/power/reset/msm-poweroff.c
+@@ -28,9 +28,11 @@ static struct notifier_block restart_nb = {
+ 	.priority = 128,
+ };
  
--static void __iomem *kona_reset_base;
--
--static int kona_reset_handler(struct notifier_block *this,
--				unsigned long mode, void *cmd)
-+static int kona_reset_handler(struct sys_off_data *data)
+-static void do_msm_poweroff(void)
++static int do_msm_poweroff(struct sys_off_data *data)
  {
-+	void __iomem *kona_reset_base = data->cb_data;
+ 	deassert_pshold(&restart_nb, 0, NULL);
 +
- 	/*
- 	 * A soft reset is triggered by writing a 0 to bit 0 of the soft reset
- 	 * register. To write to that register we must first write the password
-@@ -31,18 +30,17 @@ static int kona_reset_handler(struct notifier_block *this,
- 	return NOTIFY_DONE;
++	return NOTIFY_DONE;
  }
  
--static struct notifier_block kona_reset_nb = {
--	.notifier_call = kona_reset_handler,
--	.priority = 128,
--};
--
- static int kona_reset_probe(struct platform_device *pdev)
- {
-+	void __iomem *kona_reset_base;
-+
- 	kona_reset_base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(kona_reset_base))
- 		return PTR_ERR(kona_reset_base);
+ static int msm_restart_probe(struct platform_device *pdev)
+@@ -41,7 +43,9 @@ static int msm_restart_probe(struct platform_device *pdev)
  
--	return register_restart_handler(&kona_reset_nb);
-+	return devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_RESTART,
-+					     128, kona_reset_handler,
-+					     kona_reset_base);
+ 	register_restart_handler(&restart_nb);
+ 
+-	pm_power_off = do_msm_poweroff;
++	devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_POWER_OFF,
++				      SYS_OFF_PRIO_DEFAULT, do_msm_poweroff,
++				      msm_ps_hold);
+ 
+ 	return 0;
  }
- 
- static const struct of_device_id of_match[] = {
 -- 
 2.39.2
 
