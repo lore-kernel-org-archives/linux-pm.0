@@ -1,46 +1,46 @@
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0510127B60;
-	Thu,  1 Feb 2024 18:01:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D332127B76;
+	Thu,  1 Feb 2024 18:01:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706810493; cv=none; b=W2c44K41sy2yfwvHeAW3n1MbRc1j6pSe1QLmOPMyoM0qhDyX7ChGqHiWiJMWBtoRz7tWJZrepTIYBWXxuoGr9s9j9cohKhOuvI4Nvo0gLHfOAt/Jxz73Z6XmZjvlLoRgnTJBuWyeIWxAOCve7XTrxwUwMz83+MLOIHz1DzhJq34=
+	t=1706810494; cv=none; b=uVU5kAT5lirYZpjnhBVM4WLzhS1x0jMfUcu1DbG/xk9ArQrpnLbNWsVo8vjzK3d2A8M5/6HuuT1ks2J228pdso6/7BS7DISX7P6wLCOZLaolQfQLPeRyJlUGRs2rL6CjvIFSKnWsqDRvyDAP5XPR9bqw+npiH2tZTXVIqkKKi5E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706810493; c=relaxed/simple;
-	bh=4I1vc+9qiFHbkF+qYQtdPfpYZxXqQl61oW4rBcSj/cM=;
+	s=arc-20240116; t=1706810494; c=relaxed/simple;
+	bh=HDoP9l78EFZDdW16hNeR9IATxUCA5uyr6j+jeh40ipg=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RzmaMZNDD74xEra4MuI9AOZDNozSKzIWfnV4qsXJqMlzRN3fNidp5nNkcSXkTzwftzUlItPprw6WA4KGxETYy2J5ekekywX4Hrj+w3yPAVn25eSFEyCdX3+ou4g128JPHnKdiMxcPLhPUN70mbiYOUgZhW/vEhA1l+x+WYHiSvk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=alGgElcI; arc=none smtp.client-ip=198.47.19.141
+	 MIME-Version:Content-Type; b=PWEJW+NOHhqvz7+YC+ajAs77ks7HzIa4QTsOVOiJx4p99WJJmr/m9c8KWqFOzi6sNiVXDfuQAyrj0ZBH/uMUfVS9X+E2UYuk+Rt86+4l/haOz8BFIwb3modU2YyVusjct2xGSz7JoVeCnVs7eRojnIhzapKscQapADRsMiRuIZQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=rVR3s6B8; arc=none smtp.client-ip=198.47.19.142
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="alGgElcI"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="rVR3s6B8"
 Received: from lelv0265.itg.ti.com ([10.180.67.224])
-	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I1EiX049636;
-	Thu, 1 Feb 2024 12:01:14 -0600
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I1Dio065886;
+	Thu, 1 Feb 2024 12:01:13 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706810474;
-	bh=rjOs3HQelK8dD7ON+CKELNocYhGYtTpRb3RjtcpZp+M=;
+	s=ti-com-17Q1; t=1706810473;
+	bh=WzOWw71XNiTDn9UhRVmQ1YL+kbl79QddxFr5AngwFzk=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=alGgElcIFoxueD1e1sbl7KER0iExHsEMJHWdamR5M0QH+QPfnKGNyvhDBrQOFecGG
-	 q4tGqqYwHJuILBQ2p7m+Nb9aQ6idMYzD3XqDbK5fLuP7sESOqM50+c4uM4ZhuVTuqL
-	 XlckU/hX0u7tdX0M2Hm96ueyrhr8Qd7PoM5Djv08=
+	b=rVR3s6B8tKTCDfJU3grYmIf8QM7v+xDBZBRxj8SPo9VevKcyHwm+NLzJeATY6XLQ8
+	 3+p0B9aiXn0MrAHFAniOIead1A55Vbb2pU/04hqbtOdg3WYiIDdOY9C6UOri1LpUS+
+	 +Eq5RPK3ubkc5BRzcJ2BRS3j2OZ5oqbHnGlhdV+A=
 Received: from DLEE110.ent.ti.com (dlee110.ent.ti.com [157.170.170.21])
-	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I1Eko004643
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I1Dq6004634
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 1 Feb 2024 12:01:14 -0600
-Received: from DLEE105.ent.ti.com (157.170.170.35) by DLEE110.ent.ti.com
+	Thu, 1 Feb 2024 12:01:13 -0600
+Received: from DLEE110.ent.ti.com (157.170.170.21) by DLEE110.ent.ti.com
  (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 1
- Feb 2024 12:01:14 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE105.ent.ti.com
- (157.170.170.35) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2024 12:01:12 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE110.ent.ti.com
+ (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Thu, 1 Feb 2024 12:01:13 -0600
+ Frontend Transport; Thu, 1 Feb 2024 12:01:12 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gv117221;
-	Thu, 1 Feb 2024 12:01:13 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gt117221;
+	Thu, 1 Feb 2024 12:01:12 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Manivannan Sadhasivam
@@ -62,9 +62,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH 17/18] power: reset: syscon-poweroff: Move device data into a struct
-Date: Thu, 1 Feb 2024 12:01:01 -0600
-Message-ID: <20240201180102.70395-18-afd@ti.com>
+Subject: [PATCH 15/18] power: reset: gemini-poweroff: Use devm_register_sys_off_handler(POWER_OFF)
+Date: Thu, 1 Feb 2024 12:00:59 -0600
+Message-ID: <20240201180102.70395-16-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240201180102.70395-1-afd@ti.com>
 References: <20240201180102.70395-1-afd@ti.com>
@@ -78,91 +78,55 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Currently all these device data elements are top level global variables.
-Move these into a struct. This will be used in the next patch when
-the global variable usage is removed. Doing this in two steps makes
-the patches easier to read.
+Use device life-cycle managed register function to simplify probe.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/syscon-poweroff.c | 36 +++++++++++++++------------
- 1 file changed, 20 insertions(+), 16 deletions(-)
+ drivers/power/reset/gemini-poweroff.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/power/reset/syscon-poweroff.c b/drivers/power/reset/syscon-poweroff.c
-index 1b2ce7734260c..4899a019256e8 100644
---- a/drivers/power/reset/syscon-poweroff.c
-+++ b/drivers/power/reset/syscon-poweroff.c
-@@ -15,15 +15,19 @@
- #include <linux/pm.h>
- #include <linux/regmap.h>
+diff --git a/drivers/power/reset/gemini-poweroff.c b/drivers/power/reset/gemini-poweroff.c
+index d309b610142ce..06d6992dec892 100644
+--- a/drivers/power/reset/gemini-poweroff.c
++++ b/drivers/power/reset/gemini-poweroff.c
+@@ -70,12 +70,9 @@ static irqreturn_t gemini_powerbutton_interrupt(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
  
--static struct regmap *map;
--static u32 offset;
--static u32 value;
--static u32 mask;
-+struct syscon_poweroff_data {
-+	struct regmap *map;
-+	u32 offset;
-+	u32 value;
-+	u32 mask;
-+};
-+
-+static struct syscon_poweroff_data *data;
- 
- static void syscon_poweroff(void)
+-/* This callback needs this static local as it has void as argument */
+-static struct gemini_powercon *gpw_poweroff;
+-
+-static void gemini_poweroff(void)
++static int gemini_poweroff(struct sys_off_data *data)
  {
- 	/* Issue the poweroff */
--	regmap_update_bits(map, offset, mask, value);
-+	regmap_update_bits(data->map, data->offset, data->mask, data->value);
+-	struct gemini_powercon *gpw = gpw_poweroff;
++	struct gemini_powercon *gpw = data->cb_data;
+ 	u32 val;
  
- 	mdelay(1000);
+ 	dev_crit(gpw->dev, "Gemini power off\n");
+@@ -86,6 +83,8 @@ static void gemini_poweroff(void)
+ 	val &= ~GEMINI_CTRL_ENABLE;
+ 	val |= GEMINI_CTRL_SHUTDOWN;
+ 	writel(val, gpw->base + GEMINI_PWC_CTRLREG);
++
++	return NOTIFY_DONE;
+ }
  
-@@ -35,22 +39,22 @@ static int syscon_poweroff_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	int mask_err, value_err;
+ static int gemini_poweroff_probe(struct platform_device *pdev)
+@@ -148,8 +147,11 @@ static int gemini_poweroff_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
  
--	map = syscon_regmap_lookup_by_phandle(dev->of_node, "regmap");
--	if (IS_ERR(map)) {
--		map = syscon_node_to_regmap(dev->parent->of_node);
--		if (IS_ERR(map)) {
-+	data->map = syscon_regmap_lookup_by_phandle(dev->of_node, "regmap");
-+	if (IS_ERR(data->map)) {
-+		data->map = syscon_node_to_regmap(dev->parent->of_node);
-+		if (IS_ERR(data->map)) {
- 			dev_err(dev, "unable to get syscon");
--			return PTR_ERR(map);
-+			return PTR_ERR(data->map);
- 		}
- 	}
+-	pm_power_off = gemini_poweroff;
+-	gpw_poweroff = gpw;
++	ret = devm_register_sys_off_handler(dev, SYS_OFF_MODE_POWER_OFF,
++					    SYS_OFF_PRIO_DEFAULT,
++					    gemini_poweroff, gpw);
++	if (ret)
++		return ret;
  
--	if (of_property_read_u32(dev->of_node, "offset", &offset)) {
-+	if (of_property_read_u32(dev->of_node, "offset", &data->offset)) {
- 		dev_err(dev, "unable to read 'offset'");
- 		return -EINVAL;
- 	}
+ 	dev_info(dev, "Gemini poweroff driver registered\n");
  
--	value_err = of_property_read_u32(dev->of_node, "value", &value);
--	mask_err = of_property_read_u32(dev->of_node, "mask", &mask);
-+	value_err = of_property_read_u32(dev->of_node, "value", &data->value);
-+	mask_err = of_property_read_u32(dev->of_node, "mask", &data->mask);
- 	if (value_err && mask_err) {
- 		dev_err(dev, "unable to read 'value' and 'mask'");
- 		return -EINVAL;
-@@ -58,11 +62,11 @@ static int syscon_poweroff_probe(struct platform_device *pdev)
- 
- 	if (value_err) {
- 		/* support old binding */
--		value = mask;
--		mask = 0xFFFFFFFF;
-+		data->value = data->mask;
-+		data->mask = 0xFFFFFFFF;
- 	} else if (mask_err) {
- 		/* support value without mask*/
--		mask = 0xFFFFFFFF;
-+		data->mask = 0xFFFFFFFF;
- 	}
- 
- 	if (pm_power_off) {
 -- 
 2.39.2
 
