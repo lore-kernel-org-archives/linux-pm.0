@@ -1,129 +1,126 @@
-Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EC0843AC7;
-	Thu,  1 Feb 2024 19:52:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE10E85278
+	for <linux-pm@vger.kernel.org>; Thu,  1 Feb 2024 19:56:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706817129; cv=none; b=iNXZbCq815JhDAzz4Wvj1CDZFmhjy370wFoz47rk8lMBQuXXKYbmkmHqJGuQTYIElqRxfnsO8WEEjy3BBUvhGDacQJtaDizTNSFDZTbQy3zDXmTs9rWyYlpJxYk0k1fG93v6j+Isfr8oLc72Y69AeafykfUJZysbNaLXM0OA1qs=
+	t=1706817377; cv=none; b=W2YRzMs9m251kVrdWuu/qHgW1pV2ABYwbD/DzeqZzbEsaBwJqx66kSee9zwt1scBNwdb4li/sWujcpLpLDb+vyGDn+6dUh+g/Zr3ebVavPalxYcgkr1w4BbVZ9zS45Y2RX1hh2JANlzW0fOjIB479D/eEsvlxlGS5V6JQSfWA98=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706817129; c=relaxed/simple;
-	bh=Xew4gfla9jXfDUHncBpGBh9XjFEK7ZSm6CBMFGhAqEA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=m37LC7QVhCxkQzfCNuMPT1lkNcXeHkq4I+Nnz6k4+VnQ/nfAsCBJ5Wfij6HkSAQNUiURX/qkWStFroctgYjT9RvrisKzXPV8T1B4+oMiozrL+WPj0++scjo5iMHeok0eHtkTnw1RCL57h0hOeu702uxYxj2TXhXMB168G9zCBkM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.161.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-5958b9cda7aso277826eaf.0;
-        Thu, 01 Feb 2024 11:52:07 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706817127; x=1707421927;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=wBl5ou+TD9Mfvm1lNPShNlGf1pFR7KSH1sVazZHfCoo=;
-        b=TNNH+viGuZzgzeZCrGkeHKnAVu2odmk3BtRhzeh3LmS06uvU2seKKDZLz3sQc3tbsF
-         bcttPTPeYiaeeJTqLVN+vvrUcrAO6iDBH8fRzff6fMS1SmgnemkgqViG7GtjWtBizUgN
-         8chO3mWbXgHlsxtcGnS1WGVfjxTimpj5X5it6dJ3iyjUaMKfNXgwS3kBt07vR10J0AqH
-         Qooz/pTzSF5XwsN5sAaallTLkD38ENyxtHMvb4AqvTVYT6K5b15nZdZOAzrqIB+UomZq
-         kESozfZWjfV2GDN8FxPwYMR3sgSFFxJGCvBzq57ONbwmad++Xss3d3Y21FbQDn+xWPgK
-         5d4w==
-X-Gm-Message-State: AOJu0YzfCVH1BzQ348nm/xSrSzysAv969o1xlbLbju7Y0aQ1SnlZmLNN
-	siQ6lpJUCQsP3wA5q1NjvlKVgOArFOF5mPso00GhOARWCirOGq/Bsn+pfncJkK71YMM8VJJZ1jy
-	hzmgXjSnmsGOSLTvHpuRR1GOf+eY=
-X-Google-Smtp-Source: AGHT+IGIX57rgCOZHcRSzGZQRMQVAH2ftzlN0hg9CMRZtySZdlSrx6EQamzGXxueyqs1l1rdkWQ36d9/JVVygPbihns=
-X-Received: by 2002:a05:6820:2c8a:b0:59a:bfb:f556 with SMTP id
- dx10-20020a0568202c8a00b0059a0bfbf556mr3738842oob.0.1706817127183; Thu, 01
- Feb 2024 11:52:07 -0800 (PST)
+	s=arc-20240116; t=1706817377; c=relaxed/simple;
+	bh=TyvARfG5cdiLS3Lx957Ua1EFLe1TpBHS0WmMWNXQHGg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=InTWaVbt+IAU+dWdH8qX+H8Ug1nMQx1oK8UBjp31EyFXsnkZmATUuNAwC0ooC/V4fRHlFbBIWxWrU0jjmrF5x2eI3aD4pYWDAa5fHPmDaKmjo2MpvP7MHkM/TOQcdpVd/2HNG7Q8hCRaRgZWGtYsbILtcKmLvnD1OT0traoCVSA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=DTRQ4Hna; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="DTRQ4Hna"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1706817374;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=iN9wTYAiEZqmVZSRGp3IE12Ur++dFYxvXqv8nbWcyFg=;
+	b=DTRQ4Hnaubahspwx54qtR7ubNcdJwXU4sKmDD/SKuTVJ92bACyRN2QF/mLHMqCxK+X8sFm
+	+5hoDjhjXOUgzDAirYLhJoUp9DydRg7ncYio7FxVq8nrBmZJen7XkEh21adiZ6WKM+k+t6
+	elDp2D1qSB9OdS3AJgQCoDQauTbkWiw=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-518-2hoVCHGRMSqXp1LTv0T2SA-1; Thu, 01 Feb 2024 14:56:11 -0500
+X-MC-Unique: 2hoVCHGRMSqXp1LTv0T2SA-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id E92FF8489F7;
+	Thu,  1 Feb 2024 19:56:10 +0000 (UTC)
+Received: from tpad.localdomain (unknown [10.96.133.5])
+	by smtp.corp.redhat.com (Postfix) with ESMTPS id B007A2026D66;
+	Thu,  1 Feb 2024 19:56:10 +0000 (UTC)
+Received: by tpad.localdomain (Postfix, from userid 1000)
+	id CA31C402492AA; Thu,  1 Feb 2024 15:45:01 -0300 (-03)
+Date: Thu, 1 Feb 2024 15:45:01 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Parshuram Sangle <parshuram.sangle@intel.com>
+Cc: rafael@kernel.org, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, jaishankar.rajendran@intel.com
+Subject: Re: [PATCH] cpuidle: do not shrink guest poll_limit_ns below
+ grow_start
+Message-ID: <ZbvmrdBkeOK71KGg@tpad>
+References: <20240111135950.17016-1-parshuram.sangle@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240130111250.185718-1-angelogioacchino.delregno@collabora.com> <20240130111250.185718-9-angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20240130111250.185718-9-angelogioacchino.delregno@collabora.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 1 Feb 2024 20:51:56 +0100
-Message-ID: <CAJZ5v0ifn7eg9WrpNF2_PB62gE_BzV2Vx5_k7ebOoZWdQNVWaQ@mail.gmail.com>
-Subject: Re: [PATCH v1 08/18] thermal: intel: pch_thermal: Migrate to thermal_zone_device_register()
-To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: daniel.lezcano@linaro.org, miquel.raynal@bootlin.com, rafael@kernel.org, 
-	rui.zhang@intel.com, lukasz.luba@arm.com, support.opensource@diasemi.com, 
-	shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, 
-	festevam@gmail.com, linux-imx@nxp.com, andersson@kernel.org, 
-	konrad.dybcio@linaro.org, amitk@kernel.org, thara.gopinath@gmail.com, 
-	niklas.soderlund@ragnatech.se, srinivas.pandruvada@linux.intel.com, 
-	baolin.wang@linux.alibaba.com, u.kleine-koenig@pengutronix.de, 
-	hayashi.kunihiko@socionext.com, d-gole@ti.com, linus.walleij@linaro.org, 
-	DLG-Adam.Ward.opensource@dm.renesas.com, error27@gmail.com, heiko@sntech.de, 
-	hdegoede@redhat.com, jernej.skrabec@gmail.com, f.fainelli@gmail.com, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, kernel@collabora.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240111135950.17016-1-parshuram.sangle@intel.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.4
 
-On Tue, Jan 30, 2024 at 12:13=E2=80=AFPM AngeloGioacchino Del Regno
-<angelogioacchino.delregno@collabora.com> wrote:
->
-> The thermal API has a new thermal_zone_device_register() function which
-> is deprecating the older thermal_zone_device_register_with_trips() and
-> thermal_tripless_zone_device_register().
->
-> Migrate to the new thermal zone device registration function.
->
-> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@coll=
-abora.com>
+On Thu, Jan 11, 2024 at 07:29:50PM +0530, Parshuram Sangle wrote:
+> While adjusting guest halt poll limit, grow block starts at
+> guest_halt_poll_grow_start without taking intermediate values.
+> Similar behavior is expected while shrinking the value. This
+> avoids short interval values which are really not required.
+> 
+> VCPU1 trace (guest_halt_poll_shrink equals 2):
+> 
+> VCPU1 grow 10000
+> VCPU1 shrink 5000
+> VCPU1 shrink 2500
+> VCPU1 shrink 1250
+> VCPU1 shrink 625
+> VCPU1 shrink 312
+> VCPU1 shrink 156
+> VCPU1 shrink 78
+> VCPU1 shrink 39
+> VCPU1 shrink 19
+> VCPU1 shrink 9
+> VCPU1 shrink 4
+> 
+> Similar change is done in KVM halt poll flow with below patch:
+> Link: https://lore.kernel.org/kvm/20211006133021.271905-3-sashal@kernel.org/
+> 
+> Co-developed-by: Rajendran Jaishankar <jaishankar.rajendran@intel.com>
+> Signed-off-by: Rajendran Jaishankar <jaishankar.rajendran@intel.com>
+> Signed-off-by: Parshuram Sangle <parshuram.sangle@intel.com>
 > ---
->  drivers/thermal/intel/intel_pch_thermal.c | 12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/=
-intel/intel_pch_thermal.c
-> index b3905e34c507..73d7c2ac7dbc 100644
-> --- a/drivers/thermal/intel/intel_pch_thermal.c
-> +++ b/drivers/thermal/intel/intel_pch_thermal.c
-> @@ -160,6 +160,7 @@ static int intel_pch_thermal_probe(struct pci_dev *pd=
-ev,
->                                    const struct pci_device_id *id)
->  {
->         enum pch_board_ids board_id =3D id->driver_data;
-> +       struct thermal_zone_device_params tzdp;
->         struct pch_thermal_device *ptd;
->         int nr_trips =3D 0;
->         u16 trip_temp;
-> @@ -233,10 +234,13 @@ static int intel_pch_thermal_probe(struct pci_dev *=
-pdev,
->
->         nr_trips +=3D pch_wpt_add_acpi_psv_trip(ptd, nr_trips);
->
-> -       ptd->tzd =3D thermal_zone_device_register_with_trips(board_names[=
-board_id],
-> -                                                          ptd->trips, nr=
-_trips,
-> -                                                          0, ptd, &tzd_o=
-ps,
-> -                                                          NULL, 0, 0);
-> +       tzdp.tzp.type =3D board_names[board_id];
-> +       tzdp.tzp.devdata =3D ptd;
-> +       tzdp.tzp.trips =3D ptd->trips;
-> +       tzdp.tzp.num_trips =3D nr_trips;
-> +       tzdp.tzp.ops =3D &tzd_ops;
+>  drivers/cpuidle/governors/haltpoll.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/governors/haltpoll.c b/drivers/cpuidle/governors/haltpoll.c
+> index 1dff3a52917d..663b7f164d20 100644
+> --- a/drivers/cpuidle/governors/haltpoll.c
+> +++ b/drivers/cpuidle/governors/haltpoll.c
+> @@ -98,10 +98,15 @@ static void adjust_poll_limit(struct cpuidle_device *dev, u64 block_ns)
+>  		unsigned int shrink = guest_halt_poll_shrink;
+>  
+>  		val = dev->poll_limit_ns;
+> -		if (shrink == 0)
+> +		if (shrink == 0) {
+>  			val = 0;
+> -		else
+> +		} else {
+>  			val /= shrink;
+> +			/* Reset value to 0 if shrunk below grow_start */
+> +			if (val < guest_halt_poll_grow_start)
+> +				val = 0;
+> +		}
 > +
-> +       ptd->tzd =3D thermal_zone_device_register(&tzdp);
+>  		trace_guest_halt_poll_ns_shrink(val, dev->poll_limit_ns);
+>  		dev->poll_limit_ns = val;
+>  	}
+> -- 
+> 2.17.1
+> 
+> 
+> 
 
-IMV, this should be
+Looks good.
 
-ptd->tzd =3D thermal_zone_device_register(board_names[board_id],
-ptd->trips, nr_trips, &tzd_ops, ptd, NULL);
+Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
 
-and the tzdp variable is not necessary even.
-
-Analogously in the rest of the series (ie. patches [4-18/18]).
-
->         if (IS_ERR(ptd->tzd)) {
->                 dev_err(&pdev->dev, "Failed to register thermal zone %s\n=
-",
->                         board_names[board_id]);
-> --
