@@ -1,46 +1,46 @@
-Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
+Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A758127B56;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2C7012880C;
 	Thu,  1 Feb 2024 18:01:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.249
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706810496; cv=none; b=J7UbgCs0clyrzdvL2u7mC3LVf/HOMJUnCWcfWxQw7+jtAjMPxKJ9apBwpZS/IK1PKjjSL8phV+P9D8AATZG/61sWcro17Ig6vJXz0pz5U01dxyqyix1Uw+pBkj0yeE6He4GIQ+j3Ar50krjbM4Gg4iwnCp3axxNdhYs0T2w/9Mw=
+	t=1706810496; cv=none; b=jR+clYl4utEf15MzrClt+GT51w7VJDKaSfz61g+PH3RoFnR8F9wTPu1VDIdLing3FejzIyOEpocESR9wOfD1rWw/kzfPpzJfQszVxRdHf47q3hnjMsAx6/HpcQM0w+cd4+DCY9dI2Xl5G/5rVwQbroQdjJt3DBJ+WUI9lTsCATw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706810496; c=relaxed/simple;
-	bh=JSE5uhznoPyN+QLY+7zV8P38mPel3szrDdKbhqYd4Dg=;
+	bh=wOijXjJjHUtVV5dF2aD/1HsDkNeACwTKkwSZrl92nVA=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=cBxxhHie+XpPtfx43Ll2eUXelZY+BpIGaj9hiiRW0+xbjiy/gwUpYLwOJ3Ne4l5+Q9SMRBjN9HKoE4QHKhiBi39pVhnBK6wW+htmV46enoYmknjbr/CfOYBr036Rz3GTrHxpKuBTEhThXPtjPnmWg09/olye4dYFH2MJRMysBKc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=ZUTao+ON; arc=none smtp.client-ip=198.47.23.249
+	 MIME-Version:Content-Type; b=GSyx2j54IwjhOaXUfRVG3YfwT9eKLJuAMA+ddSDUCDP1tT5T5SeACagRWGL+xSJaFU8HEGobgvGVdSDL6O9i5AdAe16+tXP53KZ3HYj82aY8Jr2SGHlnxWsh8f1NkTE6T50WUKOS8AEA5T4rVmia91gVDo2B1rYF+wsMz7QzKgY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=TkMHSo1B; arc=none smtp.client-ip=198.47.23.248
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="ZUTao+ON"
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-	by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I15Ww127741;
-	Thu, 1 Feb 2024 12:01:05 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="TkMHSo1B"
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I199X051703;
+	Thu, 1 Feb 2024 12:01:09 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706810465;
-	bh=COOyqqru2hxz+S/Tw5V0x98XNKrZiamgLSe8wHDYh14=;
+	s=ti-com-17Q1; t=1706810469;
+	bh=+6oayEskVPsQjbi/C7/hq7hBkB4TpvJeAVLuE/xrEZs=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=ZUTao+ON9CWb0zgC3QleK6FgjoBGaePcjIH1rqYG741ILwUOVJ5EPuu1x7fRDozW/
-	 KhssLyZRFRkz13rNM4UuQXysuBo7g2w11hWdsMcXYClMGnNT0NipIfMZb9m6AteHwX
-	 AgYM+Q18l6fGcV0NnJi889mkmA7JSH1MPJe2wSok=
-Received: from DLEE110.ent.ti.com (dlee110.ent.ti.com [157.170.170.21])
-	by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I151w120338
+	b=TkMHSo1BMyKoOIbCWU3HX8M28fj0T0x3o3StVz6DcodkPqNOgrTa8GWGnzto05G1T
+	 it5cLq9uOej23dW0hC4TOpK3HF215DWpczQB7yt0qw4HW/KjMOwQpPQ6MXblpItdsC
+	 gAMSfCetLVILORJaDa6kR2UokQIXzowQPIEi5RVI=
+Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
+	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I19DL047540
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 1 Feb 2024 12:01:05 -0600
-Received: from DLEE114.ent.ti.com (157.170.170.25) by DLEE110.ent.ti.com
- (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
+	Thu, 1 Feb 2024 12:01:09 -0600
+Received: from DLEE107.ent.ti.com (157.170.170.37) by DLEE113.ent.ti.com
+ (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 1
- Feb 2024 12:01:05 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE114.ent.ti.com
- (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2024 12:01:09 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE107.ent.ti.com
+ (157.170.170.37) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Thu, 1 Feb 2024 12:01:05 -0600
+ Frontend Transport; Thu, 1 Feb 2024 12:01:09 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gh117221;
-	Thu, 1 Feb 2024 12:01:04 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gn117221;
+	Thu, 1 Feb 2024 12:01:08 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Manivannan Sadhasivam
@@ -62,9 +62,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH 03/18] power: reset: xgene-reboot: Use devm_register_sys_off_handler(RESTART)
-Date: Thu, 1 Feb 2024 12:00:47 -0600
-Message-ID: <20240201180102.70395-4-afd@ti.com>
+Subject: [PATCH 09/18] power: reset: rmobile-reset: Use devm_register_sys_off_handler(RESTART)
+Date: Thu, 1 Feb 2024 12:00:53 -0600
+Message-ID: <20240201180102.70395-10-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240201180102.70395-1-afd@ti.com>
 References: <20240201180102.70395-1-afd@ti.com>
@@ -78,47 +78,80 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Use device life-cycle managed register function to simplify probe.
+Use device life-cycle managed register function to simplify probe and
+exit paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/xgene-reboot.c | 13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+ drivers/power/reset/rmobile-reset.c | 25 ++++++++-----------------
+ 1 file changed, 8 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
-index c2e5a99940d37..5c923ab838a55 100644
---- a/drivers/power/reset/xgene-reboot.c
-+++ b/drivers/power/reset/xgene-reboot.c
-@@ -24,15 +24,11 @@ struct xgene_reboot_context {
- 	struct device *dev;
- 	void *csr;
- 	u32 mask;
--	struct notifier_block restart_handler;
- };
+diff --git a/drivers/power/reset/rmobile-reset.c b/drivers/power/reset/rmobile-reset.c
+index 29c17ed2d4de9..41e98ff33a3c3 100644
+--- a/drivers/power/reset/rmobile-reset.c
++++ b/drivers/power/reset/rmobile-reset.c
+@@ -19,12 +19,9 @@
+ /* Reset Control Register 2 */
+ #define RESCNT2_PRES	0x80000000	/* Soft power-on reset */
  
--static int xgene_restart_handler(struct notifier_block *this,
+-static void __iomem *sysc_base2;
+-
+-static int rmobile_reset_handler(struct notifier_block *this,
 -				 unsigned long mode, void *cmd)
-+static int xgene_restart_handler(struct sys_off_data *data)
++static int rmobile_reset_handler(struct sys_off_data *data)
  {
--	struct xgene_reboot_context *ctx =
--		container_of(this, struct xgene_reboot_context,
--			     restart_handler);
-+	struct xgene_reboot_context *ctx = data->cb_data;
+-	pr_debug("%s %lu\n", __func__, mode);
++	void __iomem *sysc_base2 = data->cb_data;
  
- 	/* Issue the reboot */
- 	writel(ctx->mask, ctx->csr);
-@@ -64,9 +60,8 @@ static int xgene_reboot_probe(struct platform_device *pdev)
- 		ctx->mask = 0xFFFFFFFF;
+ 	/* Let's assume we have acquired the HPB semaphore */
+ 	writel(RESCNT2_PRES, sysc_base2 + RESCNT2);
+@@ -32,20 +29,20 @@ static int rmobile_reset_handler(struct notifier_block *this,
+ 	return NOTIFY_DONE;
+ }
  
- 	ctx->dev = dev;
--	ctx->restart_handler.notifier_call = xgene_restart_handler;
--	ctx->restart_handler.priority = 128;
--	err = register_restart_handler(&ctx->restart_handler);
-+	err = devm_register_sys_off_handler(dev, SYS_OFF_MODE_RESTART, 128,
-+					    xgene_restart_handler, ctx);
- 	if (err) {
- 		iounmap(ctx->csr);
- 		dev_err(dev, "cannot register restart handler (err=%d)\n", err);
+-static struct notifier_block rmobile_reset_nb = {
+-	.notifier_call = rmobile_reset_handler,
+-	.priority = 192,
+-};
+-
+ static int rmobile_reset_probe(struct platform_device *pdev)
+ {
++	void __iomem *sysc_base2;
+ 	int error;
+ 
+ 	sysc_base2 = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(sysc_base2))
+ 		return PTR_ERR(sysc_base2);
+ 
+-	error = register_restart_handler(&rmobile_reset_nb);
++	error = devm_register_sys_off_handler(&pdev->dev,
++					      SYS_OFF_MODE_RESTART,
++					      SYS_OFF_PRIO_HIGH,
++					      rmobile_reset_handler,
++					      sysc_base2);
+ 	if (error) {
+ 		dev_err(&pdev->dev,
+ 			"cannot register restart handler (err=%d)\n", error);
+@@ -55,11 +52,6 @@ static int rmobile_reset_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static void rmobile_reset_remove(struct platform_device *pdev)
+-{
+-	unregister_restart_handler(&rmobile_reset_nb);
+-}
+-
+ static const struct of_device_id rmobile_reset_of_match[] = {
+ 	{ .compatible = "renesas,sysc-rmobile", },
+ 	{ /* sentinel */ }
+@@ -68,7 +60,6 @@ MODULE_DEVICE_TABLE(of, rmobile_reset_of_match);
+ 
+ static struct platform_driver rmobile_reset_driver = {
+ 	.probe = rmobile_reset_probe,
+-	.remove_new = rmobile_reset_remove,
+ 	.driver = {
+ 		.name = "rmobile_reset",
+ 		.of_match_table = rmobile_reset_of_match,
 -- 
 2.39.2
 
