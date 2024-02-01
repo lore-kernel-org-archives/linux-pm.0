@@ -1,46 +1,46 @@
 Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2C7012880C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2C9112880D;
 	Thu,  1 Feb 2024 18:01:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706810496; cv=none; b=jR+clYl4utEf15MzrClt+GT51w7VJDKaSfz61g+PH3RoFnR8F9wTPu1VDIdLing3FejzIyOEpocESR9wOfD1rWw/kzfPpzJfQszVxRdHf47q3hnjMsAx6/HpcQM0w+cd4+DCY9dI2Xl5G/5rVwQbroQdjJt3DBJ+WUI9lTsCATw=
+	t=1706810496; cv=none; b=c+1mssqe+PX2Bzoa5P6hjwwaUrx33f0hT1AMdf+n73a2u5ky2p56ucgPCOrPpLsGm7cPTgMz9TKwMeqLYv6QKX714Q93r5ntMlG85xN/+A14yIqZ9xwgFJY56h/61zWN4Xa+JXyKVJKYeJkqq6XYS9RV9RycxDlFc0A+ZdQHhnM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706810496; c=relaxed/simple;
-	bh=wOijXjJjHUtVV5dF2aD/1HsDkNeACwTKkwSZrl92nVA=;
+	bh=Lm8ufyWOJHp/dqvPwPh3Hgph+gKZYEOGeH+5IYuik28=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=GSyx2j54IwjhOaXUfRVG3YfwT9eKLJuAMA+ddSDUCDP1tT5T5SeACagRWGL+xSJaFU8HEGobgvGVdSDL6O9i5AdAe16+tXP53KZ3HYj82aY8Jr2SGHlnxWsh8f1NkTE6T50WUKOS8AEA5T4rVmia91gVDo2B1rYF+wsMz7QzKgY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=TkMHSo1B; arc=none smtp.client-ip=198.47.23.248
+	 MIME-Version:Content-Type; b=HosUPeUq5egMGxU8Ja2uOdxNPHJ1jO4OBh/HcidiihpXsImA8RcdxK+3D/6SVZ5R/UwjDDJZovSKKyEBLLtFwaTihaRQuZXRf4BJsRCn5AUV8TuncOFA4SzOVUGzVo6ugYVKI/w/IvRv2n5tvATYa2Axo2mgzjXE2Da9uaiE4Hk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=XoHZm5N/; arc=none smtp.client-ip=198.47.23.248
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="TkMHSo1B"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="XoHZm5N/"
 Received: from fllv0035.itg.ti.com ([10.64.41.0])
-	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I199X051703;
-	Thu, 1 Feb 2024 12:01:09 -0600
+	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 411I16gG051694;
+	Thu, 1 Feb 2024 12:01:06 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1706810469;
-	bh=+6oayEskVPsQjbi/C7/hq7hBkB4TpvJeAVLuE/xrEZs=;
+	s=ti-com-17Q1; t=1706810466;
+	bh=WrDlA3MVIblMNMt/x1ENZcDUaj6UX9hq3LACckiD2VI=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=TkMHSo1BMyKoOIbCWU3HX8M28fj0T0x3o3StVz6DcodkPqNOgrTa8GWGnzto05G1T
-	 it5cLq9uOej23dW0hC4TOpK3HF215DWpczQB7yt0qw4HW/KjMOwQpPQ6MXblpItdsC
-	 gAMSfCetLVILORJaDa6kR2UokQIXzowQPIEi5RVI=
-Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
-	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I19DL047540
+	b=XoHZm5N/ksa0p7K2CmREBkZyvQFkZMj1GRRjzXAkXLbury1bHz/F7KJqOZgtCiz9/
+	 fr4LdPZv3HeBTuzcoz8j9hZdN3sFkMtZ82gJTC1t0hH+CeC9L15jhJ8UUSobDUceTb
+	 PoQyhtR6SMnUQOhGOp904Xpl4e7umsV3nNpcw34g=
+Received: from DLEE108.ent.ti.com (dlee108.ent.ti.com [157.170.170.38])
+	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 411I16D5047472
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 1 Feb 2024 12:01:09 -0600
-Received: from DLEE107.ent.ti.com (157.170.170.37) by DLEE113.ent.ti.com
- (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
+	Thu, 1 Feb 2024 12:01:06 -0600
+Received: from DLEE113.ent.ti.com (157.170.170.24) by DLEE108.ent.ti.com
+ (157.170.170.38) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 1
- Feb 2024 12:01:09 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE107.ent.ti.com
- (157.170.170.37) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2024 12:01:06 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE113.ent.ti.com
+ (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Thu, 1 Feb 2024 12:01:09 -0600
+ Frontend Transport; Thu, 1 Feb 2024 12:01:05 -0600
 Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gn117221;
-	Thu, 1 Feb 2024 12:01:08 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 411I12Gi117221;
+	Thu, 1 Feb 2024 12:01:05 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Manivannan Sadhasivam
@@ -62,9 +62,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH 09/18] power: reset: rmobile-reset: Use devm_register_sys_off_handler(RESTART)
-Date: Thu, 1 Feb 2024 12:00:53 -0600
-Message-ID: <20240201180102.70395-10-afd@ti.com>
+Subject: [PATCH 04/18] power: reset: tps65086-restart: Use devm_register_sys_off_handler(RESTART)
+Date: Thu, 1 Feb 2024 12:00:48 -0600
+Message-ID: <20240201180102.70395-5-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240201180102.70395-1-afd@ti.com>
 References: <20240201180102.70395-1-afd@ti.com>
@@ -83,75 +83,82 @@ exit paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/rmobile-reset.c | 25 ++++++++-----------------
- 1 file changed, 8 insertions(+), 17 deletions(-)
+ drivers/power/reset/tps65086-restart.c | 35 ++++++--------------------
+ 1 file changed, 7 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/power/reset/rmobile-reset.c b/drivers/power/reset/rmobile-reset.c
-index 29c17ed2d4de9..41e98ff33a3c3 100644
---- a/drivers/power/reset/rmobile-reset.c
-+++ b/drivers/power/reset/rmobile-reset.c
-@@ -19,12 +19,9 @@
- /* Reset Control Register 2 */
- #define RESCNT2_PRES	0x80000000	/* Soft power-on reset */
+diff --git a/drivers/power/reset/tps65086-restart.c b/drivers/power/reset/tps65086-restart.c
+index ee8e9f4b837ea..82d7a761a0385 100644
+--- a/drivers/power/reset/tps65086-restart.c
++++ b/drivers/power/reset/tps65086-restart.c
+@@ -10,15 +10,12 @@
+ #include <linux/reboot.h>
  
--static void __iomem *sysc_base2;
--
--static int rmobile_reset_handler(struct notifier_block *this,
--				 unsigned long mode, void *cmd)
-+static int rmobile_reset_handler(struct sys_off_data *data)
+ struct tps65086_restart {
+-	struct notifier_block handler;
+ 	struct device *dev;
+ };
+ 
+-static int tps65086_restart_notify(struct notifier_block *this,
+-				   unsigned long mode, void *cmd)
++static int tps65086_restart_notify(struct sys_off_data *data)
  {
--	pr_debug("%s %lu\n", __func__, mode);
-+	void __iomem *sysc_base2 = data->cb_data;
+-	struct tps65086_restart *tps65086_restart =
+-		container_of(this, struct tps65086_restart, handler);
++	struct tps65086_restart *tps65086_restart = data->cb_data;
+ 	struct tps65086 *tps65086 = dev_get_drvdata(tps65086_restart->dev->parent);
+ 	int ret;
  
- 	/* Let's assume we have acquired the HPB semaphore */
- 	writel(RESCNT2_PRES, sysc_base2 + RESCNT2);
-@@ -32,20 +29,20 @@ static int rmobile_reset_handler(struct notifier_block *this,
- 	return NOTIFY_DONE;
- }
+@@ -46,13 +43,13 @@ static int tps65086_restart_probe(struct platform_device *pdev)
+ 	if (!tps65086_restart)
+ 		return -ENOMEM;
  
--static struct notifier_block rmobile_reset_nb = {
--	.notifier_call = rmobile_reset_handler,
--	.priority = 192,
--};
+-	platform_set_drvdata(pdev, tps65086_restart);
 -
- static int rmobile_reset_probe(struct platform_device *pdev)
- {
-+	void __iomem *sysc_base2;
- 	int error;
+-	tps65086_restart->handler.notifier_call = tps65086_restart_notify;
+-	tps65086_restart->handler.priority = 192;
+ 	tps65086_restart->dev = &pdev->dev;
  
- 	sysc_base2 = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(sysc_base2))
- 		return PTR_ERR(sysc_base2);
- 
--	error = register_restart_handler(&rmobile_reset_nb);
-+	error = devm_register_sys_off_handler(&pdev->dev,
-+					      SYS_OFF_MODE_RESTART,
-+					      SYS_OFF_PRIO_HIGH,
-+					      rmobile_reset_handler,
-+					      sysc_base2);
- 	if (error) {
- 		dev_err(&pdev->dev,
- 			"cannot register restart handler (err=%d)\n", error);
-@@ -55,11 +52,6 @@ static int rmobile_reset_probe(struct platform_device *pdev)
+-	ret = register_restart_handler(&tps65086_restart->handler);
++	ret = devm_register_sys_off_handler(&pdev->dev,
++					    SYS_OFF_MODE_RESTART,
++					    SYS_OFF_PRIO_HIGH,
++					    tps65086_restart_notify,
++					    tps65086_restart);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "%s: cannot register restart handler: %d\n",
+ 			__func__, ret);
+@@ -62,23 +59,6 @@ static int tps65086_restart_probe(struct platform_device *pdev)
  	return 0;
  }
  
--static void rmobile_reset_remove(struct platform_device *pdev)
+-static void tps65086_restart_remove(struct platform_device *pdev)
 -{
--	unregister_restart_handler(&rmobile_reset_nb);
+-	struct tps65086_restart *tps65086_restart = platform_get_drvdata(pdev);
+-	int ret;
+-
+-	ret = unregister_restart_handler(&tps65086_restart->handler);
+-	if (ret) {
+-		/*
+-		 * tps65086_restart_probe() registered the restart handler. So
+-		 * unregistering should work fine. Checking the error code
+-		 * shouldn't be needed, still doing it for completeness.
+-		 */
+-		dev_err(&pdev->dev, "%s: cannot unregister restart handler: %d\n",
+-			__func__, ret);
+-	}
 -}
 -
- static const struct of_device_id rmobile_reset_of_match[] = {
- 	{ .compatible = "renesas,sysc-rmobile", },
+ static const struct platform_device_id tps65086_restart_id_table[] = {
+ 	{ "tps65086-reset", },
  	{ /* sentinel */ }
-@@ -68,7 +60,6 @@ MODULE_DEVICE_TABLE(of, rmobile_reset_of_match);
- 
- static struct platform_driver rmobile_reset_driver = {
- 	.probe = rmobile_reset_probe,
--	.remove_new = rmobile_reset_remove,
- 	.driver = {
- 		.name = "rmobile_reset",
- 		.of_match_table = rmobile_reset_of_match,
+@@ -90,7 +70,6 @@ static struct platform_driver tps65086_restart_driver = {
+ 		.name = "tps65086-restart",
+ 	},
+ 	.probe = tps65086_restart_probe,
+-	.remove_new = tps65086_restart_remove,
+ 	.id_table = tps65086_restart_id_table,
+ };
+ module_platform_driver(tps65086_restart_driver);
 -- 
 2.39.2
 
