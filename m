@@ -1,234 +1,116 @@
-Received: from madrid.collaboradmins.com (madrid.collaboradmins.com [46.235.227.194])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f182.google.com (mail-oi1-f182.google.com [209.85.167.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C20B1487D9;
-	Fri,  2 Feb 2024 17:04:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.227.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E95BF7E0E5;
+	Fri,  2 Feb 2024 17:13:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706893468; cv=none; b=l/1Fv94F1wKM5XDx2VrThXvLt5SsQJQtPeA6ceGbcMGhTxQURfnDj8o8jCOZnCungkZSy5eFY0XUf3mSTaLF3BjlwWr9fQzMYeUbgIzVjyyK+omPI8gAqR9IxJN2FnoIhSE9VSb7fIIV1fo6hWOWSYqvuBWwxOny0S536D00pM8=
+	t=1706894035; cv=none; b=s8+0izKH3SfPnkaTnI7AREI94M9dV4F9IAosaS2xuRk8QthBJ6iEB/qHHQW+YuZVjh/LBys+L/+0iTN8FxoJYHV9KbXTfeho8GdxE2CqvsAtTLlIjiYaKNYVwtxkJMCEzqcZY9PBXyV5IIiUtdPDPKclSNk5t5IzzRLsvFET9bU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706893468; c=relaxed/simple;
-	bh=MnvLEjR4ovDLXXBbq+Nz/JHsV5WbpDGbzzKIEnAHaGw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=f131WF5zLf+QtVhi4pE2tFkCDyw/ECAL4HfSomkMjZFsDhXMbccVnjXjLsnE/p45bljpvTBXva1ankr3KRo3FRv4l31rXQKn8wCb54qZ/QNLK/oqCZzWO30hnT/WK56GmU8ZQbv3eMUv7/SZSoC0xY8Zov5UWoPMOzMJwxS4C1g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=RSpUTje5; arc=none smtp.client-ip=46.235.227.194
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="RSpUTje5"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1706893465;
-	bh=MnvLEjR4ovDLXXBbq+Nz/JHsV5WbpDGbzzKIEnAHaGw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=RSpUTje5YoTTrL+THcV1sFyefprReWs8nZZUn10e9gpQT4ZkXNnGvBuiBvV3EpDWy
-	 asJ/P8gVWaaAo6NPSsxeKLSSThRdrbsfcxhGEbGUahShXeO58NOMETD78SLl+8AWvI
-	 8z0AW7zpPzR9jeB59new8pHPazYMIetP0vUAAVBYH9YljpfkFLhNtbUdUIuR9v9q89
-	 vQ6ORSjCj9QRQopTqgGoyfCYkg0345oL4ckDRyf2jvptH0UhD+YgxvvRCkKim52cbx
-	 mw/Ek9lR+ZX17cM/RI2DQC/+ZkhpEpzlzOHOee+4emvH089CbAgqVqjU4f5NUKwMxr
-	 mu4pMXt34LMnA==
-Received: from mercury (cola.collaboradmins.com [195.201.22.229])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: sre)
-	by madrid.collaboradmins.com (Postfix) with ESMTPSA id C53A03780A0B;
-	Fri,  2 Feb 2024 17:04:24 +0000 (UTC)
-Received: by mercury (Postfix, from userid 1000)
-	id 0E96B10611A5; Fri,  2 Feb 2024 18:04:13 +0100 (CET)
-Date: Fri, 2 Feb 2024 18:04:12 +0100
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Nishanth Menon <nm@ti.com>
-Cc: Andrew Davis <afd@ti.com>, Tero Kristo <kristo@kernel.org>, 
-	Santosh Shilimkar <ssantosh@kernel.org>, Rob Herring <robh+dt@kernel.org>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Vignesh Raghavendra <vigneshr@ti.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 03/12] power: reset: Add TI-SCI reboot driver
-Message-ID: <xdrdaasaosjagr35ftb56yszwlrcf5bzpsnui5crut2ii7nu7n@apxciqrwluwr>
-References: <20240131221957.213717-1-afd@ti.com>
- <20240131221957.213717-4-afd@ti.com>
- <20240201211534.dv6qu7ila54vqykn@cheating>
+	s=arc-20240116; t=1706894035; c=relaxed/simple;
+	bh=lElrpzwWJ9AuDSU49aGfPnpNn4ZjuzEqbifxayOHxU4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Eb9B1zMOB/wan6nHnoai2paWh7+KlYx3eESlvjUG81amC/Zq1dSJ9uHUU5Xcw2AJ90SCvYxyaa/n18fZBEc9IzjLgrpP4sCyjHeM5brVvgxSBBqsr13RhXN3VKCfo/OjcWS9uPTNWEqdFkK5Jt0sLHgFhMt/bQnRGS05721JSj4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.167.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-oi1-f182.google.com with SMTP id 5614622812f47-3bfc3c3edf9so137282b6e.0;
+        Fri, 02 Feb 2024 09:13:53 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1706894033; x=1707498833;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=tui4ONM6FO3m81h+gr+b8rlOuprFlUgn1iNa4A24rug=;
+        b=htndbv4dW5aqztWhiCgq7zLlgT4wlqqYSxsNdzLuQYmldbAQqU8T9tK4gbSYCcbTFT
+         4IPXvG+O7rAqbXR/kxJg8lXu/5pCohv0ZUhIfO6SWUIQGFf/8buEfLkXYRw9X8DOhnVb
+         Dza7Dr+A76BJhwCUWkdPfYTsRgoC796kng/Mwink6XjpIuPF+tPfgKzJPitRYvDI7x30
+         iUOp/agJybGeKZAV51zbnp7oYg1DMxF7piTYL+nm2+H/DCQio7PbC2eY9lhO21eJNUwT
+         agTKhALb1/bRGaUMlfijuEDgQK3O39edq871bxaWR2ToLktZDOgyXXzhXFw73/K9kCxW
+         kfVQ==
+X-Forwarded-Encrypted: i=0; AJvYcCXEAFgLIg2ackZti+ZZ2gJqpHEJ+DuIyMCSLuJLwb4y2XNHYeSnbJTLY5ldnpImOU9mt/FClTK5W5st55nZatAffxrXxpSsVP0lpZzLjfeoMLXutx0hOHrCWy8psJJWaw//WIoYHTZFZXrrXUhcu56Iffqa93+HY9tV6N6S6UIDnxhlkspcBIaPhfRBJrNUbM0WCNvd/7azNauurv9lOr1rMV1Ytn/VP3A=
+X-Gm-Message-State: AOJu0Yygin2NlM5As1pZtYZpGBL36Bt1hwNI5ruhGvhBiZ8TeiFG/seF
+	ywmTlkPndQCjmPilZ+xlSc4/k6MrcUmBuCyyvpz4MS/3i5Q/kNY+nihhBpTqFfS/v0c8miWawHo
+	vyxrgOQ4b1UEQ3oer/e5eiMUwYxI=
+X-Google-Smtp-Source: AGHT+IHReUBWsbjaof+2NHOSlscw9WGDiPwNeGPaYtmtsmeEBJ9/doqIvqDTOL45dhxxuUb70/N262o7qJoS9Spb41U=
+X-Received: by 2002:a05:6870:c79b:b0:219:2a72:1c6d with SMTP id
+ dy27-20020a056870c79b00b002192a721c6dmr1276418oab.0.1706894032878; Fri, 02
+ Feb 2024 09:13:52 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="pzni7lzp76a4ycxf"
-Content-Disposition: inline
-In-Reply-To: <20240201211534.dv6qu7ila54vqykn@cheating>
-
-
---pzni7lzp76a4ycxf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+References: <20240130111250.185718-1-angelogioacchino.delregno@collabora.com>
+ <20240130111250.185718-3-angelogioacchino.delregno@collabora.com>
+ <CAJZ5v0jzaGpK8LnsFDtjuPoURrwrUgM1Z2QfZhK_FUzDeK3wcw@mail.gmail.com> <e4359d2c-e686-4a97-9d21-d10908e9df61@moroto.mountain>
+In-Reply-To: <e4359d2c-e686-4a97-9d21-d10908e9df61@moroto.mountain>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 2 Feb 2024 18:13:41 +0100
+Message-ID: <CAJZ5v0iYNPB2v7ZCynEOvWy+gz4DQUhuoJ8e7F1MXz13m_d7rw@mail.gmail.com>
+Subject: Re: [PATCH v1 02/18] thermal: Add new structures and thermal_zone_device_register()
+To: Dan Carpenter <dan.carpenter@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, daniel.lezcano@linaro.org, 
+	miquel.raynal@bootlin.com, rui.zhang@intel.com, lukasz.luba@arm.com, 
+	support.opensource@diasemi.com, shawnguo@kernel.org, s.hauer@pengutronix.de, 
+	kernel@pengutronix.de, festevam@gmail.com, linux-imx@nxp.com, 
+	andersson@kernel.org, konrad.dybcio@linaro.org, amitk@kernel.org, 
+	thara.gopinath@gmail.com, niklas.soderlund@ragnatech.se, 
+	srinivas.pandruvada@linux.intel.com, baolin.wang@linux.alibaba.com, 
+	u.kleine-koenig@pengutronix.de, hayashi.kunihiko@socionext.com, d-gole@ti.com, 
+	linus.walleij@linaro.org, DLG-Adam.Ward.opensource@dm.renesas.com, 
+	error27@gmail.com, heiko@sntech.de, hdegoede@redhat.com, 
+	jernej.skrabec@gmail.com, f.fainelli@gmail.com, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
+	kernel@collabora.com
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Fri, Feb 2, 2024 at 9:47=E2=80=AFAM Dan Carpenter <dan.carpenter@linaro.=
+org> wrote:
+>
+> On Thu, Feb 01, 2024 at 08:24:15PM +0100, Rafael J. Wysocki wrote:
+> > On Tue, Jan 30, 2024 at 12:13=E2=80=AFPM AngeloGioacchino Del Regno
+> > > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > > index 65d8f92a9a0d..7a540b746703 100644
+> > > --- a/include/linux/thermal.h
+> > > +++ b/include/linux/thermal.h
+> > > @@ -149,7 +149,8 @@ struct thermal_cooling_device {
+> > >                         passive trip point.
+> > >   * @need_update:       if equals 1, thermal_zone_device_update needs=
+ to be invoked.
+> > >   * @ops:       operations this &thermal_zone_device supports
+> > > - * @tzp:       thermal zone parameters
+> > > + * @tzp:               Thermal zone parameters
+> > > + * @tgp:               Thermal zone governor parameters
+> > >   * @governor:  pointer to the governor for this thermal zone
+> > >   * @governor_data:     private pointer for governor data
+> > >   * @thermal_instances: list of &struct thermal_instance of this ther=
+mal zone
+> > > @@ -184,7 +185,8 @@ struct thermal_zone_device {
+> > >         int prev_high_trip;
+> > >         atomic_t need_update;
+> > >         struct thermal_zone_device_ops *ops;
+> > > -       struct thermal_zone_params *tzp;
+> > > +       struct thermal_zone_platform_params *tzp;
+> > > +       struct thermal_governor_params *tgp;
+> >
+> > I agree with doing a split here, but I'm not sure about moving items
+> > from the arg list to struct thermal_zone_platform_params (as mentioned
+> > above).
+> >
+> > Also the naming is quite inconsistent.  IMO it would be better to call
+> > the first pointer "tzpp", rename struct thermal_governor_params to
+> > struct thermal_zone_governor_params and call the second pointer
+> > "tzgp".
+> >
+>
+> The names "tzgp" and "tzpp" look almost identical at first glance.
+> Could we increase the hamming distance somehow?
 
-On Thu, Feb 01, 2024 at 03:15:34PM -0600, Nishanth Menon wrote:
-> On 16:19-20240131, Andrew Davis wrote:
-> > This reboot driver calls into firmware using TI-SCI to reboot the syste=
-m.
-> > We register the handler with low priority as we want PSCI to remain the
-> > main way these devices are rebooted. This driver acts as a fallback if
-> > PSCI is not able to reboot the system.
-> >=20
-> > Signed-off-by: Andrew Davis <afd@ti.com>
-> > ---
-> >  MAINTAINERS                         |  1 +
-> >  drivers/power/reset/Kconfig         |  7 ++++
-> >  drivers/power/reset/Makefile        |  1 +
-> >  drivers/power/reset/ti-sci-reboot.c | 63 +++++++++++++++++++++++++++++
-> >  4 files changed, 72 insertions(+)
-> >  create mode 100644 drivers/power/reset/ti-sci-reboot.c
-> >=20
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 45983bb174fe4..ee67ea497fc56 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -21758,6 +21758,7 @@ F:	drivers/clk/keystone/sci-clk.c
-> >  F:	drivers/firmware/ti_sci*
-> >  F:	drivers/irqchip/irq-ti-sci-inta.c
-> >  F:	drivers/irqchip/irq-ti-sci-intr.c
-> > +F:	drivers/power/reset/ti-sci-reboot.c
-> >  F:	drivers/reset/reset-ti-sci.c
-> >  F:	drivers/soc/ti/ti_sci_inta_msi.c
-> >  F:	drivers/pmdomain/ti/ti_sci_pm_domains.c
-> > diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> > index fece990af4a75..d3e91e54cae24 100644
-> > --- a/drivers/power/reset/Kconfig
-> > +++ b/drivers/power/reset/Kconfig
-> > @@ -205,6 +205,13 @@ config POWER_RESET_ST
-> >  	help
-> >  	  Reset support for STMicroelectronics boards.
-> > =20
-> > +config POWER_RESET_TI_SCI
-> > +	tristate "TI System Control Interface (TI-SCI) reboot driver"
-> > +	depends on TI_SCI_PROTOCOL
-> > +	help
-> > +	  This enables the reboot driver support over TI System Control
-> > +	  Interface available on some TI's SoCs.
-> > +
-> >  config POWER_RESET_TPS65086
-> >  	bool "TPS65086 restart driver"
-> >  	depends on MFD_TPS65086
-> > diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> > index a95d1bd275d18..881ca58a43b9c 100644
-> > --- a/drivers/power/reset/Makefile
-> > +++ b/drivers/power/reset/Makefile
-> > @@ -23,6 +23,7 @@ obj-$(CONFIG_POWER_RESET_QNAP) +=3D qnap-poweroff.o
-> >  obj-$(CONFIG_POWER_RESET_REGULATOR) +=3D regulator-poweroff.o
-> >  obj-$(CONFIG_POWER_RESET_RESTART) +=3D restart-poweroff.o
-> >  obj-$(CONFIG_POWER_RESET_ST) +=3D st-poweroff.o
-> > +obj-$(CONFIG_POWER_RESET_TI_SCI) +=3D ti-sci-reboot.o
-> >  obj-$(CONFIG_POWER_RESET_TPS65086) +=3D tps65086-restart.o
-> >  obj-$(CONFIG_POWER_RESET_VERSATILE) +=3D arm-versatile-reboot.o
-> >  obj-$(CONFIG_POWER_RESET_VEXPRESS) +=3D vexpress-poweroff.o
-> > diff --git a/drivers/power/reset/ti-sci-reboot.c b/drivers/power/reset/=
-ti-sci-reboot.c
-> > new file mode 100644
-> > index 0000000000000..400bd5d740f8b
-> > --- /dev/null
-> > +++ b/drivers/power/reset/ti-sci-reboot.c
-> > @@ -0,0 +1,63 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +/*
-> > + * Texas Instrument's System Control Interface (TI-SCI) reboot driver
-> > + *
-> > + * Copyright (C) 2024 Texas Instruments Incorporated - https://www.ti.=
-com/
-> > + *	Andrew Davis <afd@ti.com>
-> > + */
-> > +
-> > +#include <linux/mod_devicetable.h>
-> > +#include <linux/module.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/reboot.h>
-> > +
-> > +#include <linux/soc/ti/ti_sci_protocol.h>
-> > +
-> > +static int ti_sci_reboot_handler(struct sys_off_data *data)
-> > +{
-> > +	const struct ti_sci_handle *sci =3D data->cb_data;
-> > +	const struct ti_sci_core_ops *core_ops =3D &sci->ops.core_ops;
-> > +
-> > +	core_ops->reboot_device(sci);
-> > +
-> > +	return NOTIFY_DONE;
-> > +}
-> > +
-> > +static int ti_sci_reboot_probe(struct platform_device *pdev)
-> > +{
-> > +	const struct ti_sci_handle *sci;
-> > +	int err;
-> > +
-> > +	sci =3D devm_ti_sci_get_handle(&pdev->dev);
-> > +	if (IS_ERR(sci))
-> > +		return PTR_ERR(sci);
-> > +
-> > +	err =3D devm_register_sys_off_handler(&pdev->dev,
-> > +					    SYS_OFF_MODE_RESTART,
-> > +					    SYS_OFF_PRIO_LOW,
-> > +					    ti_sci_reboot_handler,
-> > +					    (void *)sci);
-> > +	if (err)
-> > +		return dev_err_probe(&pdev->dev, err, "Cannot register restart handl=
-er\n");
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static const struct of_device_id ti_sci_reboot_of_match[] =3D {
-> > +	{ .compatible =3D "ti,sci-reboot", },
-> > +	{ /* sentinel */ },
-> > +};
-> > +MODULE_DEVICE_TABLE(of, ti_sci_reboot_of_match);
-> > +
-> > +static struct platform_driver ti_sci_reboot_driver =3D {
-> > +	.probe =3D ti_sci_reboot_probe,
-> > +	.driver =3D {
-> > +		.name =3D "ti-sci-reboot",
-> > +		.of_match_table =3D ti_sci_reboot_of_match,
-> > +	},
-> > +};
-> > +module_platform_driver(ti_sci_reboot_driver);
-> > +
-> > +MODULE_AUTHOR("Andrew Davis <afd@ti.com>");
-> > +MODULE_DESCRIPTION("TI System Control Interface (TI SCI) Reboot driver=
-");
-> > +MODULE_LICENSE("GPL");
-> > --=20
-> > 2.39.2
->=20
-> Will assume the patch to go via Sebastien. Will be good for the dts to
-> go via SoC tree. So hoping Sebastien will just pick the driver and
-> bindings.
+Good point.
 
-I will wait for the DT binding discussion to have settled. The
-driver itself LGTM.
-
--- Sebastian
-
---pzni7lzp76a4ycxf
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmW9IIMACgkQ2O7X88g7
-+poPVhAAhZtyxfQ0GDuYExpKNvR0PJYXbvA6n9jzOfg5v8ocwQoWCAEHxB0Stujq
-W/hnOMJqQ7mPtDTmX3YAvGjak0ZZO8uBU4duj2ygS7szoJ0cOaOGSyDjDgvV2OnH
-Tq+dv1s4P/Ex7bvs+jedaz8HFNK+Bq9YGyc58liCEv8OBWQ9dIkuQ37sA8Bf3HnL
-V32FKMfW/Y640MIJ7J4EvteQPNWgb/UnobKLLQdoXgMHCkdoze3y0RNbDgdbuFvy
-Amo+d/Y5Sachm21BoKKgrrw9/cVjiYl6LDcmPZoRCfNDA39d1HEI2gYovx8oet1z
-eJAkLIA7nYPEKRPYYNObfeYFDSmxlYqE+mx1CGkieDh9qrlYo20bHxrZcjuWhTDV
-ThMUw1wTAw0TwJZPgO4F2X53mmFf5bO5yebayCq0wUawVFqUdePj/KIjZRJCdVjL
-dyhR1djDstBSdOwUCyv1KXltvFDhwrUx4GOFn7HUEmXqwM4kfuy0DeKZKFoagrdY
-RnZaTcXKHof60XZJhkorunklTGMQAese+v8KKlaO+2GvyfD91Cm5BHtecL4nUt1n
-ZVa5mPy+gYX6QcFjQYfwHn5RtApsX195b62wCV6fsZ0m5HxScyvDaClNEaGGqCdH
-2k+f4aNCSyRb52HdgRAf7bajqWe3o6PTfLvxFsnJpIb1s+7RhZw=
-=Qr8y
------END PGP SIGNATURE-----
-
---pzni7lzp76a4ycxf--
+They may as well be gov_params and platform_params AFAIAC.
