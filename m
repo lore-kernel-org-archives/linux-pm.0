@@ -1,103 +1,192 @@
-Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1ABC51468E7
-	for <linux-pm@vger.kernel.org>; Fri,  2 Feb 2024 16:57:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FA8E148FF0;
+	Fri,  2 Feb 2024 17:04:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706893062; cv=none; b=qMfNgeZ5ss0aHix7Ud/n73JtvU/XET8MSkpRKMWbuS0rp2+DbzJZ8ZaijA8Xzss/hxqz5lahEmTRxjKEQtqh79QstYAnLOsunKKaByZ1Zvit0VqR289SSnv7NhEHqg9ivpw8MekpNOgK/4uQRjza+GaSi2zHWjvOg4frO1Dw6yk=
+	t=1706893461; cv=none; b=VsdUsCftPhVRBYsewDY7aKRD2pBliwUZFx/brhk6kU9uwbslADsXTbwXFTUkt2mYH6a22gaDEhGTMSc19/M+bFw5KOAmjk11xBzVI2nBW2Om11aR3vKEdDE1aFWkIx08QNF99p2yrxE0ACUXOMhj0+x3MHSEEIqCSc2rRnermE8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706893062; c=relaxed/simple;
-	bh=BTsigi4db6wzD2KxV1kjIqZyumwhMxK2PLRCX71n8lQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NuTVs2UwYoPiP4Lw+iEDFF3Iu7TFK8SFwz8MQxZrwycbb/zqjwGYE7EREYkIhpSLan745yGLxmjH3f74hOOavppB1Hchqpnjlx+CCVojjF0U0a+4/+lJZtiECST8Se8VCe8Q6omie9LYI8BtyfPMbforp/2YnyaoaryzoRr5Y/U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=iUpUeVEn; arc=none smtp.client-ip=209.85.218.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iUpUeVEn"
-Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-a29c4bbb2f4so288523366b.1
-        for <linux-pm@vger.kernel.org>; Fri, 02 Feb 2024 08:57:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1706893059; x=1707497859; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=pOMmKU2ojRpucv2LvIq5EXqCC2JsZUhlB+SBvo1nc0g=;
-        b=iUpUeVEn1HbE1Sc9LDcHFgMLAzT0Isyx3//JSbFBrfOKOmj+LxUBfvq3UbimJFeUNK
-         FBuFukXs9YTWlFYgXNkx2dPV72ICo7hZ6VEWaEQVMDkEMPdsqnY5CeEGkgmGviIuMu/t
-         BGSMRoUTsD1lcMnqorCJve2GV9eIuE6CaI3hR34msw8fT3NHbH93BfmqZ0sic9fD+Acx
-         0brvc1nnBaL3/1StzXlF5wBxZn255kwS5pXccu02KMli164TOs5z2Ng3yl+Br3eVQvCP
-         uRpYz4Y5q3zgE25jZXq9FFx33D0oIUqO9MkpOqTOFZI5fiIrGKXPTTBlszqZBy0CWr/A
-         mGjg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706893059; x=1707497859;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pOMmKU2ojRpucv2LvIq5EXqCC2JsZUhlB+SBvo1nc0g=;
-        b=kVcuqN9TS9cPvqIKlARCbFVAgmLfgS/Cl74c60S5yMCD2KvZjHzHQYxK7GO/SvoptU
-         HmEFfWyIWBpZH6nkfQ/zNkQyVvAiQ97JKKxXRGGZwIhhkp3Lv8AMtP2B3V0sjwdgwAjM
-         DsDjXPDZ1LmUZDxAMOGlP7tWkPrGZKzqZVVfl49/jCqg/OnnWsqu3vp45Y+RhTrfdCMx
-         dOv7BVkRjSWzWOcq5qhTL1YPZx1aVUv0hymTijHNCPpM/isW+6TFJVvqXb0Du19dnWhd
-         GpmCUw+hmvDiZo0NyApb62yYmJGyoP68iAkiJy/h+EjoBF0tBBeHN/QmXONgujUQEMbV
-         qkyQ==
-X-Gm-Message-State: AOJu0Yx+qLZhaXJ1olG/SoeGMeTVchAgD4IBH9tB41dnXnWCbk1nG0eU
-	5iFfavSvu/Vnku3jVRHRgLJN9gb/NOPmlAJsd6x164Vr7nCCtxBmpEev/e0yqbU=
-X-Google-Smtp-Source: AGHT+IGrVNwLvQ7Qd2H25HKvVgps2pgoVubc0Ao0qrH4dAW2aOxdnQVXdvSLRHFLk6kH2p2hCaFBMw==
-X-Received: by 2002:a17:906:6857:b0:a35:5b6:1e0f with SMTP id a23-20020a170906685700b00a3505b61e0fmr6339017ejs.71.1706893059324;
-        Fri, 02 Feb 2024 08:57:39 -0800 (PST)
-X-Forwarded-Encrypted: i=0; AJvYcCVfrK/V22UF7mLDeAOiCdHIwfUXdKosWBUWCt4q+cZHOIa01WXuHFSjk5yfqdMDUcYBUOWGKOE2WHaIF/jq4KG7QamhuYr+SKJuThfrjl6ScPNl4eHX8O4kGwHwxCFgnArSyQLOMWG+rAtyWhEVWyOypIXREN2cTqjHRqxJbSZafEoO8yCh5mQxgmwNyy0RqhlwityX+YM7R46CPq1FIJLljgPbGJ+HyUh4erULI2RB2jlCdEBYsKjwjjNJiWAlWtwfDOdbZSDIpggWjeZ/ZDo+gs8RVK2k1HJJnqgd4lyj+jVvW8uyovOjoeHIJAvbMtWamA0sljEqkbEG+7Y+5LI=
-Received: from linaro.org ([62.231.97.49])
-        by smtp.gmail.com with ESMTPSA id tb11-20020a1709078b8b00b00a370d76b0b4sm734523ejc.71.2024.02.02.08.57.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 02 Feb 2024 08:57:38 -0800 (PST)
-Date: Fri, 2 Feb 2024 18:57:37 +0200
-From: Abel Vesa <abel.vesa@linaro.org>
-To: Mike Tipton <quic_mdtipton@quicinc.com>
-Cc: andersson@kernel.org, konrad.dybcio@linaro.org, djakov@kernel.org,
-	neil.armstrong@linaro.org, quic_rjendra@quicinc.com,
-	quic_sibis@quicinc.com, linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] interconnect: qcom: x1e80100: Add missing ACV
- enable_mask
-Message-ID: <Zb0fASo+PsmAaXaS@linaro.org>
-References: <20240202014806.7876-1-quic_mdtipton@quicinc.com>
- <20240202014806.7876-3-quic_mdtipton@quicinc.com>
+	s=arc-20240116; t=1706893461; c=relaxed/simple;
+	bh=+6PX3jMjQrHTOGNXA5nPZT3qkryf5lBqoyw4ViAwdas=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=qMJNc3ggIgSTtivM/VQGoBlUKanWt+y3otX2f/FbG6Vx839/D/GcS5nSZh4f0hTniBFw8FAzs0qnwhMmsDcQOUN7sH1qKP/WndVtA6GkcD9VSk1+cZsSxzt5OaBDP34Waib2aoN8Vvhjnx8pUvvkDoBvJ/TJJZGGYmrdHO7nZ6c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.186.216])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4TRMV93hsYz6J9h8;
+	Sat,  3 Feb 2024 01:00:49 +0800 (CST)
+Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
+	by mail.maildlp.com (Postfix) with ESMTPS id 69A141400CD;
+	Sat,  3 Feb 2024 01:04:15 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.35; Fri, 2 Feb
+ 2024 17:04:14 +0000
+Date: Fri, 2 Feb 2024 17:04:13 +0000
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>
+CC: <linux-pm@vger.kernel.org>, <loongarch@lists.linux.dev>,
+	<linux-acpi@vger.kernel.org>, <linux-arch@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-riscv@lists.infradead.org>, <kvmarm@lists.linux.dev>,
+	<x86@kernel.org>, <acpica-devel@lists.linuxfoundation.org>,
+	<linux-csky@vger.kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-ia64@vger.kernel.org>, <linux-parisc@vger.kernel.org>, Salil Mehta
+	<salil.mehta@huawei.com>, Jean-Philippe Brucker <jean-philippe@linaro.org>,
+	<jianyong.wu@arm.com>, <justin.he@arm.com>, James Morse
+	<james.morse@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH RFC v4 14/15] arm64: document virtual CPU hotplug's
+ expectations
+Message-ID: <20240202170413.0000154e@Huawei.com>
+In-Reply-To: <E1rVDnU-0027Zf-GF@rmk-PC.armlinux.org.uk>
+References: <Zbp5xzmFhKDAgHws@shell.armlinux.org.uk>
+	<E1rVDnU-0027Zf-GF@rmk-PC.armlinux.org.uk>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240202014806.7876-3-quic_mdtipton@quicinc.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
 
-On 24-02-01 17:48:06, Mike Tipton wrote:
-> The ACV BCM is voted using bitmasks. Add the proper mask for this
-> target.
+On Wed, 31 Jan 2024 16:50:48 +0000
+Russell King (Oracle) <rmk+kernel@armlinux.org.uk> wrote:
+
+> From: James Morse <james.morse@arm.com>
 > 
-> Fixes: 9f196772841e ("interconnect: qcom: Add X1E80100 interconnect provider driver")
-> Signed-off-by: Mike Tipton <quic_mdtipton@quicinc.com>
+> Add a description of physical and virtual CPU hotplug, explain the
+> differences and elaborate on what is required in ACPI for a working
+> virtual hotplug system.
+> 
+> Signed-off-by: James Morse <james.morse@arm.com>
+> Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Signed-off-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk>
+> ---
+> Outstanding comment:
+>  https://lore.kernel.org/r/20230914174137.00000a62@Huawei.com
 
-Tested-by: Abel Vesa <abel.vesa@linaro.org>
+Outstanding but an ACPI Spec question rather than one about this description.
+I've finally regained access to Mantis etc so can follow that up at some point.
+
+If we get clarify on how to tell that CPUs that are present and enabled at boot
+can be removed later we can relax this text to allow for that.
+
+
+>  https://lore.kernel.org/r/20231215170428.00000d81@Huawei.com
+That's a comment on the above comment to say I'm fine with it as is :)
+
+This @Huawei guy is really annoying ;)
+
+Jonathan
 
 > ---
->  drivers/interconnect/qcom/x1e80100.c | 1 +
->  1 file changed, 1 insertion(+)
+>  Documentation/arch/arm64/cpu-hotplug.rst | 79 ++++++++++++++++++++++++
+>  Documentation/arch/arm64/index.rst       |  1 +
+>  2 files changed, 80 insertions(+)
+>  create mode 100644 Documentation/arch/arm64/cpu-hotplug.rst
 > 
-> diff --git a/drivers/interconnect/qcom/x1e80100.c b/drivers/interconnect/qcom/x1e80100.c
-> index 5b2de9c3a1d6..281295a9a077 100644
-> --- a/drivers/interconnect/qcom/x1e80100.c
-> +++ b/drivers/interconnect/qcom/x1e80100.c
-> @@ -1372,6 +1372,7 @@ static struct qcom_icc_node qns_aggre_usb_south_snoc = {
->  
->  static struct qcom_icc_bcm bcm_acv = {
->  	.name = "ACV",
-> +	.enable_mask = BIT(3),
->  	.num_nodes = 1,
->  	.nodes = { &ebi },
->  };
-> -- 
-> 2.17.1
-> 
+> diff --git a/Documentation/arch/arm64/cpu-hotplug.rst b/Documentation/arch/arm64/cpu-hotplug.rst
+> new file mode 100644
+> index 000000000000..76ba8d932c72
+> --- /dev/null
+> +++ b/Documentation/arch/arm64/cpu-hotplug.rst
+> @@ -0,0 +1,79 @@
+> +.. SPDX-License-Identifier: GPL-2.0
+> +.. _cpuhp_index:
+> +
+> +====================
+> +CPU Hotplug and ACPI
+> +====================
+> +
+> +CPU hotplug in the arm64 world is commonly used to describe the kernel taking
+> +CPUs online/offline using PSCI. This document is about ACPI firmware allowing
+> +CPUs that were not available during boot to be added to the system later.
+> +
+> +``possible`` and ``present`` refer to the state of the CPU as seen by linux.
+> +
+> +
+> +CPU Hotplug on physical systems - CPUs not present at boot
+> +----------------------------------------------------------
+> +
+> +Physical systems need to mark a CPU that is ``possible`` but not ``present`` as
+> +being ``present``. An example would be a dual socket machine, where the package
+> +in one of the sockets can be replaced while the system is running.
+> +
+> +This is not supported.
+> +
+> +In the arm64 world CPUs are not a single device but a slice of the system.
+> +There are no systems that support the physical addition (or removal) of CPUs
+> +while the system is running, and ACPI is not able to sufficiently describe
+> +them.
+> +
+> +e.g. New CPUs come with new caches, but the platform's cache toplogy is
+> +described in a static table, the PPTT. How caches are shared between CPUs is
+> +not discoverable, and must be described by firmware.
+> +
+> +e.g. The GIC redistributor for each CPU must be accessed by the driver during
+> +boot to discover the system wide supported features. ACPI's MADT GICC
+> +structures can describe a redistributor associated with a disabled CPU, but
+> +can't describe whether the redistributor is accessible, only that it is not
+> +'always on'.
+> +
+> +arm64's ACPI tables assume that everything described is ``present``.
+> +
+> +
+> +CPU Hotplug on virtual systems - CPUs not enabled at boot
+> +---------------------------------------------------------
+> +
+> +Virtual systems have the advantage that all the properties the system will
+> +ever have can be described at boot. There are no power-domain considerations
+> +as such devices are emulated.
+> +
+> +CPU Hotplug on virtual systems is supported. It is distinct from physical
+> +CPU Hotplug as all resources are described as ``present``, but CPUs may be
+> +marked as disabled by firmware. Only the CPU's online/offline behaviour is
+> +influenced by firmware. An example is where a virtual machine boots with a
+> +single CPU, and additional CPUs are added once a cloud orchestrator deploys
+> +the workload.
+> +
+> +For a virtual machine, the VMM (e.g. Qemu) plays the part of firmware.
+> +
+> +Virtual hotplug is implemented as a firmware policy affecting which CPUs can be
+> +brought online. Firmware can enforce its policy via PSCI's return codes. e.g.
+> +``DENIED``.
+> +
+> +The ACPI tables must describe all the resources of the virtual machine. CPUs
+> +that firmware wishes to disable either from boot (or later) should not be
+> +``enabled`` in the MADT GICC structures, but should have the ``online capable``
+> +bit set, to indicate they can be enabled later. The boot CPU must be marked as
+> +``enabled``.  The 'always on' GICR structure must be used to describe the
+> +redistributors.
+> +
+> +CPUs described as ``online capable`` but not ``enabled`` can be set to enabled
+> +by the DSDT's Processor object's _STA method. On virtual systems the _STA method
+> +must always report the CPU as ``present``. Changes to the firmware policy can
+> +be notified to the OS via device-check or eject-request.
+> +
+> +CPUs described as ``enabled`` in the static table, should not have their _STA
+> +modified dynamically by firmware. Soft-restart features such as kexec will
+> +re-read the static properties of the system from these static tables, and
+> +may malfunction if these no longer describe the running system. Linux will
+> +re-discover the dynamic properties of the system from the _STA method later
+> +during boot.
+> diff --git a/Documentation/arch/arm64/index.rst b/Documentation/arch/arm64/index.rst
+> index d08e924204bf..78544de0a8a9 100644
+> --- a/Documentation/arch/arm64/index.rst
+> +++ b/Documentation/arch/arm64/index.rst
+> @@ -13,6 +13,7 @@ ARM64 Architecture
+>      asymmetric-32bit
+>      booting
+>      cpu-feature-registers
+> +    cpu-hotplug
+>      elf_hwcaps
+>      hugetlbpage
+>      kdump
+
