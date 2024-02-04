@@ -1,111 +1,96 @@
-Received: from fgw20-7.mail.saunalahti.fi (fgw20-7.mail.saunalahti.fi [62.142.5.81])
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EB9524A04
-	for <linux-pm@vger.kernel.org>; Sun,  4 Feb 2024 17:04:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.142.5.81
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28B82249EA;
+	Sun,  4 Feb 2024 17:27:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707066249; cv=none; b=hYGHkSGbvi1kPEbz/47wMLL36Cj6GUIzIhan1IdTZVsuqJpMT9W6g7m7FoIDqNEBaOLz9OgEUtGOFR03UTitxsXf+7wwo/gg+JxqeGMGUdwyUNmTeOvWFNHiwBqJNWSLZYO4cCsnbTr5kROwvFyeMajrhcXEcUBXcLAb502pDm8=
+	t=1707067628; cv=none; b=jPCQTbjwN7rblAPDmUbd5r7dZdncOTNRdlYGb3xPg7rRmvXBGfhFvaIoWQi4lB232/mtOXLlQ0mPD/xtE/7minYXAEhPThO56MUt18ABENK1Q7rppb0YbfkC7AAzd770ag2fNROctgHVM5XHUIrAjWQ/iwaVfZpNt45wGIDFYtM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707066249; c=relaxed/simple;
-	bh=Hc9tUiOGoKDix4zY3uj/vZxzd566MMLdtIeaQ+DJ8F0=;
-	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nNK4auJVW+1St+5eLv4cBHeI0VINTBMqlU/FrG5GLWPgN+Ns95EdQpXIf6RJYvpV38G++hIXoPfECo0UE8z2cW098onCv/a/RPxLS/u89MAUtinmlWmjNvbx8FmQ76HIuQLGAWVu910L+1/LSgPNn6/doDT3TfCmL3vNEeZ7mnA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com; spf=fail smtp.mailfrom=gmail.com; arc=none smtp.client-ip=62.142.5.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=gmail.com
-Received: from localhost (88-113-26-30.elisa-laajakaista.fi [88.113.26.30])
-	by fgw20.mail.saunalahti.fi (Halon) with ESMTP
-	id 61aa5fc3-c37f-11ee-b3cf-005056bd6ce9;
-	Sun, 04 Feb 2024 19:03:58 +0200 (EET)
-From: andy.shevchenko@gmail.com
-Date: Sun, 4 Feb 2024 19:03:56 +0200
-To: Nikita Shubin <nikita.shubin@maquefel.me>
-Cc: Hartley Sweeten <hsweeten@visionengravers.com>,
-	Alexander Sverdlin <alexander.sverdlin@gmail.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Lukasz Majewski <lukma@denx.de>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Andy Shevchenko <andy@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>,
-	Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	Mark Brown <broonie@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Sergey Shtylyov <s.shtylyov@omp.ru>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	Ralf Baechle <ralf@linux-mips.org>,
-	"Wu, Aaron" <Aaron.Wu@analog.com>, Lee Jones <lee@kernel.org>,
-	Olof Johansson <olof@lixom.net>, Niklas Cassel <cassel@kernel.org>,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-gpio@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-	dmaengine@vger.kernel.org, linux-watchdog@vger.kernel.org,
-	linux-pwm@vger.kernel.org, linux-spi@vger.kernel.org,
-	netdev@vger.kernel.org, linux-mtd@lists.infradead.org,
-	linux-ide@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-sound@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-	Andy Shevchenko <andriy.shevchenko@intel.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Andrew Lunn <andrew@lunn.ch>,
-	Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v7 00/39] ep93xx device tree conversion
-Message-ID: <Zb_DfISgoNyTKWMp@surfacebook.localdomain>
-References: <20240118-ep93xx-v7-0-d953846ae771@maquefel.me>
+	s=arc-20240116; t=1707067628; c=relaxed/simple;
+	bh=2bfpIaHPb+FVKiLlqv6onKrx8jugClAtzAL49QT9tj8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=KiK54Rv1wCQuV2Cy5JWhv8TdcjTW3Oan3d46V8y/USJaJ/YpGnOkfcu5NQWjVOfs2YNIAwMvLqyiPnRb+RCADtJ8AgvoSzGv2OH6/6LZ63/l/+0fho+yHnGY+YTTeuMLVW3vfbDqeGPs4YLVgWOEWP0IJ5w8UJxyJ65s9eZEjNY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=fhMew4Ad; arc=none smtp.client-ip=159.69.126.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="fhMew4Ad"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1707067616;
+	bh=2bfpIaHPb+FVKiLlqv6onKrx8jugClAtzAL49QT9tj8=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=fhMew4AdtulXYoY2VpXWRvQfvCaONA9fIk0LjMdi2qR/prFTX4jXe/5paqNJRUXoT
+	 Ofa50BkT4C7yjQdfSZ2q3CFDq5AVxx+TpEOwXRu5Vj8y+9xbcll7Gjz1A8vP7PV+oj
+	 r0rb5D5DBG64iNSuJVBX64a1iWFdMce2R4x2dZpo=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Sun, 04 Feb 2024 18:26:49 +0100
+Subject: [PATCH 3/4] power: supply: mm8013: implement
+ POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR_AVAILABLE
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240118-ep93xx-v7-0-d953846ae771@maquefel.me>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20240204-power_supply-charge_behaviour_prop-v1-3-06a20c958f96@weissschuh.net>
+References: <20240204-power_supply-charge_behaviour_prop-v1-0-06a20c958f96@weissschuh.net>
+In-Reply-To: <20240204-power_supply-charge_behaviour_prop-v1-0-06a20c958f96@weissschuh.net>
+To: Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, 
+ Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.12.4
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1707067615; l=1478;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=2bfpIaHPb+FVKiLlqv6onKrx8jugClAtzAL49QT9tj8=;
+ b=YAQ1hO1l8kQ2VYBnblYST3jQhV0wwQngktbNHMJepEyv1/a45AjNO688GAhvqu6GTPruwmRT6
+ WJKAK1usPsRCQSUvaXcHAkVVdbH8TBXgd/RbKNCcpOKqPQVfpGM2BS8
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Thu, Jan 18, 2024 at 11:20:43AM +0300, Nikita Shubin kirjoitti:
-> The goal is to recieve ACKs for all patches in series to merge it via Arnd branch.
-> 
-> No major changes since last version (v6) all changes are cometic.
-> 
-> Following patches require attention from Stephen Boyd, as they were converted to aux_dev as suggested:
-> 
-> - ARM: ep93xx: add regmap aux_dev
-> - clk: ep93xx: add DT support for Cirrus EP93xx
-> 
-> Following patches require attention from Vinod Koul:
-> 
-> - dma: cirrus: Convert to DT for Cirrus EP93xx
-> - dma: cirrus: remove platform code
-> 
-> Following patches are dropped:
-> - dt-bindings: wdt: Add ts72xx (pulled requested by Wim Van Sebroeck)
-> 
-> Big Thanks to Andy Shevchenko once again.
+The sysfs is documented to report both the current and all available
+behaviours. For this POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR_AVAILABLE needs
+to be implemented.
 
-You're welcome!
+Note that this changes the format of the sysfs file
+(to the documented format):
 
-I have a few minor comments, I believe if you send a new version it will be
-final (at least from my p.o.v.).
+Before: "auto"
+After:  "[auto] inhibit-charge"
+
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+---
+ drivers/power/supply/mm8013.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/power/supply/mm8013.c b/drivers/power/supply/mm8013.c
+index caa272b03564..695df8bd6cb0 100644
+--- a/drivers/power/supply/mm8013.c
++++ b/drivers/power/supply/mm8013.c
+@@ -72,6 +72,7 @@ static int mm8013_checkdevice(struct mm8013_chip *chip)
+ static enum power_supply_property mm8013_battery_props[] = {
+ 	POWER_SUPPLY_PROP_CAPACITY,
+ 	POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR,
++	POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR_AVAILABLE,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_CHARGE_NOW,
+@@ -113,6 +114,10 @@ static int mm8013_get_property(struct power_supply *psy,
+ 		else
+ 			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
+ 		break;
++	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR_AVAILABLE:
++		val->intval = BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO)
++			    | BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE);
++		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
+ 		ret = regmap_read(chip->regmap, REG_FULL_CHARGE_CAPACITY, &regval);
+ 		if (ret < 0)
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.43.0
 
