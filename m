@@ -1,162 +1,229 @@
-Received: from mail-oo1-f54.google.com (mail-oo1-f54.google.com [209.85.161.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED07513AA55;
-	Mon,  5 Feb 2024 21:00:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F4BC4F889;
+	Mon,  5 Feb 2024 21:21:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707166859; cv=none; b=A5/bUK6JprjAYGWLPfRKtLUv/fBF8C86j0c2mnUOe89h6Avjh4z5QJ+us8QCwELJc5BFqGXDTzoqR4ndkGynNT6LvVEMSDR8io8LfifaoXcOno7cqBGMRwuYo5CY07+luuxMjlFW/TU6Ptucy2rV1W6/7Ou/i0UhN83e4thrbQA=
+	t=1707168077; cv=none; b=CKR8lsruKGpTsYue9s3m6qJyzE2wQ9ZaBgajIHGv0E7kd7gXLSm4HR6LzeHM0mXaNQMr80WjUos5MfR6D022Ej7/NLZf2e3/lUjiG2YmgpnzUYl0S3zyxQIOUBomaW5ZZitCtuQZgNkfZcediHd0SAvRAoJ+FiRit58KudhR1R8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707166859; c=relaxed/simple;
-	bh=l7FKlQD4v/fJVXaU/OVBxRPRgbK/LzZpdgmDxiaFLwo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=HnltEvniwnq+5KwNs3UNzh2dFB0adQKaxATvSARBlyXNhBYN/dHyd/5tWdk5oBT3HcQPjDBHoUNxfkl2KybN29WQYYsJJe6+w9Z9T3j+Yx9+UnCV1JrWCqvEhQrKhBm++PfOcy5GUeYAd4O8pfZ6plTOKQwB6ilKgAuqnTFXB/g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.161.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-oo1-f54.google.com with SMTP id 006d021491bc7-5958d3f2d8aso2105291eaf.1;
-        Mon, 05 Feb 2024 13:00:57 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707166857; x=1707771657;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=jku9UYOIfNdVYt5yPuZzKf2+d2g+eXjQefMhJuaJpZk=;
-        b=rYmrftu/ak0yufSz9fauIU4UWe/Nf6N+TYlvQN0SlNPkwlc8CFrQfYZ1YyFJf+6+IW
-         UGr+fDhgAo5lnf/c2jkC/hzekPS6mbtT+Qk57Joq1qYzFoiwsFtMe8u1/G/nd9riRQJE
-         AZmDGSTa9XabQc0tyleog5oF8Zvba7visC3Wq3P0I6TEbge2w8CofWx+pLBFE2fP4NPX
-         CDBUHgZHOrRw2GbgrVVYSeHY+5KtQDsNkPtfO496XjKCmZcdio9W9GTpJ7djrhkJRIPp
-         G5IHrgYBSagvMIWTioW4acFQgRbldaliVTTi8yg37iadHy78hsld7NhXkyEjgSzHw1Tj
-         AsQA==
-X-Gm-Message-State: AOJu0YwblCZzeukdLggOgvf5Wk+nio4XgLS0Sz2GvpmqY15jLRkF9V+E
-	KqiNVjVVMZuNGva/nm20cRGYocJDX96KCk8KA581IDgQ05KQL6Lb7Duf0PJBv9/CNoYM82DrZcz
-	BTry81NbCijOYbKv46eiiQNE4JzM=
-X-Google-Smtp-Source: AGHT+IFVPUaP3KcFrhXuLa4e8qtunVlUE77Cz+Kusnj4//X+Z/lkQj/jHV5Q37e9yZUd+69EaQ8Ec4FLGSPxGNbGLMU=
-X-Received: by 2002:a05:6871:5310:b0:218:f6be:b097 with SMTP id
- hx16-20020a056871531000b00218f6beb097mr825641oac.5.1707166856790; Mon, 05 Feb
- 2024 13:00:56 -0800 (PST)
+	s=arc-20240116; t=1707168077; c=relaxed/simple;
+	bh=jZ9uXCD64qH50wsZKP5sbI/TyNCKkopgUzIG8xh5LwI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=N5KOEVUbz041YPOYJ+YC9lEd2eFAGqH3ukxaQ1fGMki/24j4bbWGbvNlBns4+a+N6UyxH9WM/Se0ag3u7Fjwc3Oorg90JneEaoLmNf+O/gPkeTFJmqXJm0/W5qDRVwoxeP74LOzVOtfXfynYT3I2UuIRMjfPuKVNJzg4kLSnoY0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
+ id a17c3d19a7b546d0; Mon, 5 Feb 2024 22:21:06 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 60918669A1B;
+	Mon,  5 Feb 2024 22:21:05 +0100 (CET)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
+ LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>,
+ Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Subject:
+ [PATCH v1 6/6] thermal: intel: Adjust ops handling during thermal zone
+ registration
+Date: Mon, 05 Feb 2024 22:20:32 +0100
+Message-ID: <3284830.aeNJFYEL58@kreacher>
+In-Reply-To: <2728491.mvXUDI8C0e@kreacher>
+References: <2728491.mvXUDI8C0e@kreacher>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240123090016.281252-1-stanislaw.gruszka@linux.intel.com>
- <20240130001436.GA488226@bhelgaas> <ZbtmB2GXPIwW1fLl@linux.intel.com>
- <CAJZ5v0gsojXKwQk4CL9ZpENcFs7X9pywfwNG-_ech5_G8pHRVw@mail.gmail.com> <ZcE0wWb6/CGFTKi/@linux.intel.com>
-In-Reply-To: <ZcE0wWb6/CGFTKi/@linux.intel.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 5 Feb 2024 22:00:45 +0100
-Message-ID: <CAJZ5v0hLXS1EJZgUPn_i6Sp1RNJ2tH1oJ6AKvAQAM4Um_bwHPA@mail.gmail.com>
-Subject: Re: [RFC] PCI/AER: Block runtime suspend when handling errors
-To: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-	"Oliver O'Halloran" <oohall@gmail.com>, 
-	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvkedrfedvuddgheehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepledprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=9 Fuz1=9
 
-On Mon, Feb 5, 2024 at 9:11=E2=80=AFPM Stanislaw Gruszka
-<stanislaw.gruszka@linux.intel.com> wrote:
->
-> On Thu, Feb 01, 2024 at 03:10:35PM +0100, Rafael J. Wysocki wrote:
-> > On Thu, Feb 1, 2024 at 10:36=E2=80=AFAM Stanislaw Gruszka
-> > <stanislaw.gruszka@linux.intel.com> wrote:
-> > >
-> > > On Mon, Jan 29, 2024 at 06:14:36PM -0600, Bjorn Helgaas wrote:
-> > > > On Tue, Jan 23, 2024 at 10:00:16AM +0100, Stanislaw Gruszka wrote:
-> > > > > PM runtime can be done simultaneously with AER error handling.
-> > > > > Avoid that by using pm_runtime_get_sync() just after pci_dev_get(=
-)
-> > > > > and pm_runtime_put() just before pci_dev_put() in AER recovery
-> > > > > procedures.
-> > > >
-> > > > I guess there must be a general rule here, like "PCI core must use
-> > > > pm_runtime_get_sync() whenever touching the device asynchronously,
-> > > > i.e., when it's doing something unrelated to a call from the driver=
-"?
-> > >
-> > > Clear rules would be nice, that's for sure.
-> > >
-> > > > Probably would apply to all subsystem cores, not just PCI.
-> > >
-> > > If they have something similar like AER.
-> > >
-> > > > > I'm not sure about DPC case since I do not see get/put there. It
-> > > > > just call pci_do_recovery() from threaded irq dcd_handler().
-> > > > > I think pm_runtime* should be added to this handler as well.
-> > > >
-> > > > s/dcd_handler/dpc_handler/
-> > > >
-> > > > I'm guessing the "threaded" part really doesn't matter; just the fa=
-ct
-> > > > that this is in response to an interrupt, not something directly
-> > > > called by a driver?
-> > >
-> > > Yes. I added "threaded" just to emphasis that it's safe to add sleepi=
-ng
-> > > functions there. In context of possible solution, not related to
-> > > the problem itself.
-> > >
-> > > > > pm_runtime_get_sync() will increase dev->power.usage_count counte=
-r to
-> > > > > prevent any rpm actives. When there is suspending pending, it wil=
-l wait
-> > > > > for it and do the rpm resume. Not sure if that problem, on my tes=
-ting
-> > > > > I did not encounter issues with that.
-> > > >
-> > > > Sorry, I didn't catch your meaning here.
-> > > I tired to write two things:
-> > >
-> > > First, pm_runtime_get_sync() after exit prevents possibility of
-> > > runtime suspend, so we are sure device will not be powered off
-> > >
-> > > Second, if during pm_runtime_get_sync(), there is pending attempt
-> > > to suspend device, it will be synchronized and device will
-> > > be resumed.
-> >
-> > Not exactly.  pm_runtime_get_sync() will resume the device
-> > synchronously no matter what.
-> >
-> > > This can be problematic as device is in error state.
-> >
-> > If this is a real possibility (I mean, device in a low-power state and
-> > in an error state at the same time), it would be better to call
-> > __pm_runtime_disable(dev, false) instead of pm_runtime_get_sync(), as
-> > that would prevent runtime PM from changing the device state.
->
-> __pm_runtime_disable(dev, false) does not work as reliable in my
-> test as pm_runtime_get_sync(), the
->
-> igc 0000:02:00.0: Unable to change power state from D3hot to D0, device i=
-naccessible
->
-> message disappears, but sill have:
->
-> igc 0000:02:00.0: not ready 65535ms after bus reset; giving up
-> pcieport 0000:00:1c.2: AER: Root Port link has been reset (-25)
-> pcieport 0000:00:1c.2: AER: subordinate device reset failed
-> pcieport 0000:00:1c.2: AER: device recovery fail
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-But what exactly do you do?
+Because thermal zone operations are now stored directly in struct
+thermal_zone_device, thermal zone creators can discard the operations
+structure after the zone registration is complete, or it can be made
+read-only.
 
-(1) __pm_runtime_disable(dev, false)
-(2) Check power state
-     (a) If D0 (and device runtime-active), proceed
-     (b) If > D0, remove power (if possible) and put into D0
+Accordingly, make int340x_thermal_zone_add() use a local variable to
+represent thermal zone operations, so it is freed automatically upon the
+function exit, and make the other Intel thermal drivers use const zone
+operations structures.
 
-or something else?
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c         |   26 ++--------
+ drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.h         |    1 
+ drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c |    2 
+ drivers/thermal/intel/intel_pch_thermal.c                            |    2 
+ drivers/thermal/intel/intel_quark_dts_thermal.c                      |    2 
+ drivers/thermal/intel/intel_soc_dts_iosf.c                           |    2 
+ drivers/thermal/intel/x86_pkg_temp_thermal.c                         |    2 
+ 7 files changed, 11 insertions(+), 26 deletions(-)
 
-> > > But at least from software perspective we should end in device
-> > > being in active state and then we can perform reset of it.
-> >
-> > I'm not sure about this.  It may be better to power-cycle the device
-> > in D3hot instead of attempting to put it into D0 beforehand.
->
-> Me nigher, but in pci_reset_function() and similar resetting
-> procedures we always call pci_dev_save_and_disable() before
-> actual reset and it set device in D0, so I think it's ok to do so.
+Index: linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
++++ linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+@@ -61,12 +61,6 @@ static void int340x_thermal_critical(str
+ 	dev_dbg(&zone->device, "%s: critical temperature reached\n", zone->type);
+ }
+ 
+-static struct thermal_zone_device_ops int340x_thermal_zone_ops = {
+-	.get_temp       = int340x_thermal_get_zone_temp,
+-	.set_trip_temp	= int340x_thermal_set_trip_temp,
+-	.critical	= int340x_thermal_critical,
+-};
+-
+ static inline void *int_to_trip_priv(int i)
+ {
+ 	return (void *)(long)i;
+@@ -126,6 +120,11 @@ static struct thermal_zone_params int340
+ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
+ 						     int (*get_temp) (struct thermal_zone_device *, int *))
+ {
++	const struct thermal_zone_device_ops zone_ops = {
++		.set_trip_temp = int340x_thermal_set_trip_temp,
++		.critical = int340x_thermal_critical,
++		.get_temp = get_temp ? get_temp : int340x_thermal_get_zone_temp,
++	};
+ 	struct int34x_thermal_zone *int34x_zone;
+ 	struct thermal_trip *zone_trips;
+ 	unsigned long long trip_cnt = 0;
+@@ -140,16 +139,6 @@ struct int34x_thermal_zone *int340x_ther
+ 
+ 	int34x_zone->adev = adev;
+ 
+-	int34x_zone->ops = kmemdup(&int340x_thermal_zone_ops,
+-				   sizeof(int340x_thermal_zone_ops), GFP_KERNEL);
+-	if (!int34x_zone->ops) {
+-		ret = -ENOMEM;
+-		goto err_ops_alloc;
+-	}
+-
+-	if (get_temp)
+-		int34x_zone->ops->get_temp = get_temp;
+-
+ 	status = acpi_evaluate_integer(adev->handle, "PATC", NULL, &trip_cnt);
+ 	if (ACPI_SUCCESS(status)) {
+ 		int34x_zone->aux_trip_nr = trip_cnt;
+@@ -185,7 +174,7 @@ struct int34x_thermal_zone *int340x_ther
+ 							acpi_device_bid(adev),
+ 							zone_trips, trip_cnt,
+ 							trip_mask, int34x_zone,
+-							int34x_zone->ops,
++							&zone_ops,
+ 							&int340x_thermal_params,
+ 							0, 0);
+ 	kfree(zone_trips);
+@@ -205,8 +194,6 @@ err_enable:
+ err_thermal_zone:
+ 	acpi_lpat_free_conversion_table(int34x_zone->lpat_table);
+ err_trips_alloc:
+-	kfree(int34x_zone->ops);
+-err_ops_alloc:
+ 	kfree(int34x_zone);
+ 	return ERR_PTR(ret);
+ }
+@@ -216,7 +203,6 @@ void int340x_thermal_zone_remove(struct
+ {
+ 	thermal_zone_device_unregister(int34x_zone->zone);
+ 	acpi_lpat_free_conversion_table(int34x_zone->lpat_table);
+-	kfree(int34x_zone->ops);
+ 	kfree(int34x_zone);
+ }
+ EXPORT_SYMBOL_GPL(int340x_thermal_zone_remove);
+Index: linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.h
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.h
++++ linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.h
+@@ -22,7 +22,6 @@ struct int34x_thermal_zone {
+ 	struct acpi_device *adev;
+ 	int aux_trip_nr;
+ 	struct thermal_zone_device *zone;
+-	struct thermal_zone_device_ops *ops;
+ 	void *priv_data;
+ 	struct acpi_lpat_conversion_table *lpat_table;
+ };
+Index: linux-pm/drivers/thermal/intel/intel_pch_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/intel_pch_thermal.c
++++ linux-pm/drivers/thermal/intel/intel_pch_thermal.c
+@@ -131,7 +131,7 @@ static void pch_critical(struct thermal_
+ 		thermal_zone_device_type(tzd));
+ }
+ 
+-static struct thermal_zone_device_ops tzd_ops = {
++static const struct thermal_zone_device_ops tzd_ops = {
+ 	.get_temp = pch_thermal_get_temp,
+ 	.critical = pch_critical,
+ };
+Index: linux-pm/drivers/thermal/intel/intel_quark_dts_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/intel_quark_dts_thermal.c
++++ linux-pm/drivers/thermal/intel/intel_quark_dts_thermal.c
+@@ -292,7 +292,7 @@ static int sys_change_mode(struct therma
+ 	return ret;
+ }
+ 
+-static struct thermal_zone_device_ops tzone_ops = {
++static const struct thermal_zone_device_ops tzone_ops = {
+ 	.get_temp = sys_get_curr_temp,
+ 	.set_trip_temp = sys_set_trip_temp,
+ 	.change_mode = sys_change_mode,
+Index: linux-pm/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
++++ linux-pm/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+@@ -233,7 +233,7 @@ static int get_trip_temp(struct proc_the
+ 	return temp;
+ }
+ 
+-static struct thermal_zone_device_ops tzone_ops = {
++static const struct thermal_zone_device_ops tzone_ops = {
+ 	.get_temp = sys_get_curr_temp,
+ 	.set_trip_temp	= sys_set_trip_temp,
+ };
+Index: linux-pm/drivers/thermal/intel/intel_soc_dts_iosf.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/intel_soc_dts_iosf.c
++++ linux-pm/drivers/thermal/intel/intel_soc_dts_iosf.c
+@@ -168,7 +168,7 @@ static int sys_get_curr_temp(struct ther
+ 	return 0;
+ }
+ 
+-static struct thermal_zone_device_ops tzone_ops = {
++static const struct thermal_zone_device_ops tzone_ops = {
+ 	.get_temp = sys_get_curr_temp,
+ 	.set_trip_temp = sys_set_trip_temp,
+ };
+Index: linux-pm/drivers/thermal/intel/x86_pkg_temp_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/x86_pkg_temp_thermal.c
++++ linux-pm/drivers/thermal/intel/x86_pkg_temp_thermal.c
+@@ -166,7 +166,7 @@ sys_set_trip_temp(struct thermal_zone_de
+ }
+ 
+ /* Thermal zone callback registry */
+-static struct thermal_zone_device_ops tzone_ops = {
++static const struct thermal_zone_device_ops tzone_ops = {
+ 	.get_temp = sys_get_curr_temp,
+ 	.set_trip_temp = sys_set_trip_temp,
+ };
 
-OK
+
+
