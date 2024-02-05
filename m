@@ -1,46 +1,46 @@
 Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 818A167C73;
-	Mon,  5 Feb 2024 19:45:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCFEB6A359;
+	Mon,  5 Feb 2024 19:45:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707162304; cv=none; b=UAvKAMGSnNLrPhW1k5IjUFpLVfKa+koWOrDqjMDLKwaNbndDr09nWZ1KaY9yHTuxBbi0sNTuqoOyXmKk3By8o+MBtQVoCV+Gjw01Rz/kNV5iqJvg9O9uu/M4zbyz8EAD1TAbNWDvgWe8BZGy8C3/bbtRrLNQR28A3hnr4WvAUFo=
+	t=1707162306; cv=none; b=LUp1l/7YhiC4h0SmVW7qz8+ajMHQtpYDQFDkDFXC9urmKBlAsiorgvP+IzoNe+jq8oRPBj9qtpgVnqqDzK07oUnRuMZxCOVY519+oGTZd+uKdqFvy3Xlzn+vgdZhNXR+6ke3uN2dGV3aq/PQFhedDIyLyY9PSnl4rq13gvuNV+I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707162304; c=relaxed/simple;
-	bh=b1HCM6PNhU5iOFP0yy2ZAE2FiVY5BYt6sfsBzt/lauQ=;
+	s=arc-20240116; t=1707162306; c=relaxed/simple;
+	bh=QekKnIF+GkovKO7gb14ZkIhecaU+qacpUcgS7SjOB24=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=D7xjpDQz0MIu1Xc1uZtqymacYCAiEELYl+W8Na0DvoQqX2MM1Q83Z+tEqIW82V6Ng9RWNWtI/y4+nB2EixZxfO+O2WIXjtbXSeIm+DBThhye2xwxPhn0M2xU51nnRboqZuTmMIx0cdhZ5JVi1Kq9DwxgziTPnH3P+OD/KRCdCc4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=F9iI/LUd; arc=none smtp.client-ip=198.47.19.141
+	 MIME-Version:Content-Type; b=dTLUqypC4Yd8Oje/qYuP3LWyajqg4dlRozDBH0M+zq7wS45YA2qZs8ObLTWNYkQF62LMzjCXnotKvDOADjlGNj/xQxHonGemqn/tk3G6o4SI5VVmt+BteA6WkcktifCouGSjHnB8On3C1KCuSCVb9Lf0ovvwXF3B710gc/8oou8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=fVK6Jrdp; arc=none smtp.client-ip=198.47.19.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="F9iI/LUd"
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 415Jim2e010991;
-	Mon, 5 Feb 2024 13:44:48 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="fVK6Jrdp"
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 415Jiiou010948;
+	Mon, 5 Feb 2024 13:44:44 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1707162288;
-	bh=+yoH0oyAcvSMYuuy/HNbc6iZw+avNZNinJT/iIL/4IE=;
+	s=ti-com-17Q1; t=1707162284;
+	bh=2TI8f8x/5Y4Kr2Vxqhq6Wi5Pu8tSR0ICKXsQgkmtu64=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=F9iI/LUd62aO4jAa5xw0Msug8EiYAOLBWp7QTaKA02TbzRmqYHEkJpjkya+uSv0q3
-	 5uKlMIABgZXPUh60SVK4wZCVVdekaBR3EAqm6kisPeH5DyLEUqUf7ptfYi36jVRx3R
-	 A/2jNOmItuKLr9HIwyCUfv5V7YWNoa+5hQNTc/UU=
-Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
-	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 415Jimbi073209
+	b=fVK6JrdpM2cJwetj/TG79ucMkxYwOcYhcSwbRobFnWuCJmLSCg3tfNl3Lvvas86H+
+	 oMQCCdRDquJRW45mGtVxR66h8DW38oJ6JGE0UbeuranOEKBDAG7um9DpGPvRSMC5mB
+	 TBmFHyOYh7GYSL6XtqQ8Ro+SRfBR/l5k3PLC8Quo=
+Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
+	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 415Jii1p090637
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Mon, 5 Feb 2024 13:44:48 -0600
-Received: from DLEE112.ent.ti.com (157.170.170.23) by DLEE113.ent.ti.com
- (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
+	Mon, 5 Feb 2024 13:44:44 -0600
+Received: from DLEE110.ent.ti.com (157.170.170.21) by DLEE114.ent.ti.com
+ (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 5
- Feb 2024 13:44:48 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE112.ent.ti.com
- (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2024 13:44:44 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE110.ent.ti.com
+ (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Mon, 5 Feb 2024 13:44:48 -0600
+ Frontend Transport; Mon, 5 Feb 2024 13:44:44 -0600
 Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 415JicQb028467;
-	Mon, 5 Feb 2024 13:44:47 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 415JicQV028467;
+	Mon, 5 Feb 2024 13:44:43 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Manivannan Sadhasivam
@@ -62,9 +62,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH v2 14/19] power: reset: regulator-poweroff: Use devm_register_sys_off_handler(POWER_OFF)
-Date: Mon, 5 Feb 2024 13:44:32 -0600
-Message-ID: <20240205194437.180802-15-afd@ti.com>
+Subject: [PATCH v2 08/19] power: reset: axxia-reset: Use devm_register_sys_off_handler(RESTART)
+Date: Mon, 5 Feb 2024 13:44:26 -0600
+Message-ID: <20240205194437.180802-9-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240205194437.180802-1-afd@ti.com>
 References: <20240205194437.180802-1-afd@ti.com>
@@ -78,89 +78,58 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Use device life-cycle managed register function to simplify probe and
-exit paths.
+Use device life-cycle managed register function to simplify probe.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/regulator-poweroff.c | 36 +++++++++---------------
- 1 file changed, 13 insertions(+), 23 deletions(-)
+ drivers/power/reset/axxia-reset.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/power/reset/regulator-poweroff.c b/drivers/power/reset/regulator-poweroff.c
-index 15160809c423a..fed4978e38580 100644
---- a/drivers/power/reset/regulator-poweroff.c
-+++ b/drivers/power/reset/regulator-poweroff.c
-@@ -13,18 +13,15 @@
- #include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/pm.h>
-+#include <linux/reboot.h>
- #include <linux/regulator/consumer.h>
+diff --git a/drivers/power/reset/axxia-reset.c b/drivers/power/reset/axxia-reset.c
+index 24946766760c3..797bf6773860e 100644
+--- a/drivers/power/reset/axxia-reset.c
++++ b/drivers/power/reset/axxia-reset.c
+@@ -26,11 +26,10 @@
+ #define SC_EFUSE_INT_STATUS	0x180c
+ #define   EFUSE_READ_DONE	(1<<31)
  
- #define TIMEOUT_MS 3000
- 
--/*
-- * Hold configuration here, cannot be more than one instance of the driver
-- * since pm_power_off itself is global.
-- */
--static struct regulator *cpu_regulator;
+-static struct regmap *syscon;
 -
--static void regulator_poweroff_do_poweroff(void)
-+static int regulator_poweroff_do_poweroff(struct sys_off_data *data)
+-static int axxia_restart_handler(struct notifier_block *this,
+-				 unsigned long mode, void *cmd)
++static int axxia_restart_handler(struct sys_off_data *data)
  {
-+	struct regulator *cpu_regulator = data->cb_data;
++	struct regmap *syscon = data->cb_data;
 +
- 	if (cpu_regulator && regulator_is_enabled(cpu_regulator))
- 		regulator_force_disable(cpu_regulator);
- 
-@@ -32,30 +29,24 @@ static void regulator_poweroff_do_poweroff(void)
- 	mdelay(TIMEOUT_MS);
- 
- 	WARN_ON(1);
-+
-+	return NOTIFY_DONE;
+ 	/* Access Key (0xab) */
+ 	regmap_write(syscon, SC_CRIT_WRITE_KEY, 0xab);
+ 	/* Select internal boot from 0xffff0000 */
+@@ -44,14 +43,10 @@ static int axxia_restart_handler(struct notifier_block *this,
+ 	return NOTIFY_DONE;
  }
  
- static int regulator_poweroff_probe(struct platform_device *pdev)
- {
--	/* If a pm_power_off function has already been added, leave it alone */
--	if (pm_power_off != NULL) {
--		dev_err(&pdev->dev,
--			"%s: pm_power_off function already registered\n",
--			__func__);
--		return -EBUSY;
--	}
-+	struct regulator *cpu_regulator;
- 
- 	cpu_regulator = devm_regulator_get(&pdev->dev, "cpu");
- 	if (IS_ERR(cpu_regulator))
- 		return PTR_ERR(cpu_regulator);
- 
--	pm_power_off = &regulator_poweroff_do_poweroff;
--	return 0;
--}
+-static struct notifier_block axxia_restart_nb = {
+-	.notifier_call = axxia_restart_handler,
+-	.priority = 128,
+-};
 -
--static void regulator_poweroff_remove(struct platform_device *pdev)
--{
--	if (pm_power_off == &regulator_poweroff_do_poweroff)
--		pm_power_off = NULL;
-+	/* Set this handler to low priority to not override an existing handler */
-+	return devm_register_sys_off_handler(&pdev->dev,
-+					     SYS_OFF_MODE_POWER_OFF,
-+					     SYS_OFF_PRIO_LOW,
-+					     regulator_poweroff_do_poweroff,
-+					     cpu_regulator);
- }
+ static int axxia_reset_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
++	struct regmap *syscon;
+ 	int err;
  
- static const struct of_device_id of_regulator_poweroff_match[] = {
-@@ -66,7 +57,6 @@ MODULE_DEVICE_TABLE(of, of_regulator_poweroff_match);
+ 	syscon = syscon_regmap_lookup_by_phandle(dev->of_node, "syscon");
+@@ -60,7 +55,8 @@ static int axxia_reset_probe(struct platform_device *pdev)
+ 		return PTR_ERR(syscon);
+ 	}
  
- static struct platform_driver regulator_poweroff_driver = {
- 	.probe = regulator_poweroff_probe,
--	.remove_new = regulator_poweroff_remove,
- 	.driver = {
- 		.name = "poweroff-regulator",
- 		.of_match_table = of_regulator_poweroff_match,
+-	err = register_restart_handler(&axxia_restart_nb);
++	err = devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_RESTART,
++					    128, axxia_restart_handler, syscon);
+ 	if (err)
+ 		dev_err(dev, "cannot register restart handler (err=%d)\n", err);
+ 
 -- 
 2.39.2
 
