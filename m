@@ -1,46 +1,46 @@
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6209745C9;
-	Mon,  5 Feb 2024 19:45:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99437745E0;
+	Mon,  5 Feb 2024 19:45:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.249
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707162309; cv=none; b=pUOCo+IxV2DxRQJZT6iLhRIy0LunZzCybhF6cPw/N+mWb/3Rlny5WztcLD4gkauS8BM3M5lr3Z3QWmCbb6RNvea7+q3kd38fmarvsPaLgtT4qrR9KAwBsIyWJZcIqMOHbY9SQ5qKiQaq/wgLHA3ocna/Wp88M3cT4XzTZz9ipA4=
+	t=1707162310; cv=none; b=pDM5swpaM6/p/8n5jV7MUyI5tmkxYXEjPYgGIywYzq4vyOvsdbe5Ab8iB8raS+4EaOKMswiNiH+AXtaqhOUsyhITvLRByH8jHlSaaPOVBut+jp8jTC6nZLTvE+h6qOth0o3IvoZebCBRLG3IVnbu+k8KWR9O23ZGYKjaP/AjkY8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707162309; c=relaxed/simple;
-	bh=iZTSGfwsAJGOr5392OKEepblMvBqT/YAcpCjzijmjmg=;
+	s=arc-20240116; t=1707162310; c=relaxed/simple;
+	bh=XmOFZVJS2nbpGNUIJRoCh2m3rWFsAgRF8B1pZ3UaoOo=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=vEmH6zNdXOBBIngGC54xIBrHGQ8c+MQ74J4NmvjPdbaF11a5g0iQMIOjb3d2/5maizlCWASpB3sIGg46WbpkvcmuYcTlWr7xmmberyC+OqzUN1yu6URDBijkJ+N+GUR4Axluu8FCHfoIseg2241lOgJ0czhbfMg+vZ4GjD7mUko=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=sTliSK7m; arc=none smtp.client-ip=198.47.19.141
+	 MIME-Version:Content-Type; b=sy2QDPcpE4SHAKty750eEafSStxSqA1Qt63dTXFeXV1SfrQ/c3Ams4ZfsmU6hL3TTcPPtzbR/4+rp98eV3t31/XX34EXckcLITYRAcreh0PJP6t9FiR0M88P7sPHcQFvVuSQ7KlS+EIsmV1LVBLWHHCUu6Ozp4expNNpGoHSQaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=U/TDTDZe; arc=none smtp.client-ip=198.47.23.249
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="sTliSK7m"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="U/TDTDZe"
 Received: from fllv0034.itg.ti.com ([10.64.40.246])
-	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 415Jihlm010943;
-	Mon, 5 Feb 2024 13:44:43 -0600
+	by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 415JipUM101215;
+	Mon, 5 Feb 2024 13:44:51 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1707162283;
-	bh=iOS81LCWivcsA7Ov+uMTe+f7Pr/kqVip8XQZGb4u/UM=;
+	s=ti-com-17Q1; t=1707162291;
+	bh=NIThW8dvWRvWMprZfYkUcAv9QvAIjazC0Wh9+WTdW/k=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=sTliSK7mrwvqgEzQR9fDWcHHW1JpaRAuFnBoxmmM2B49apTADPxOEVOqs6Lwq++px
-	 5IMSiUr+9NP7vKk6jR1MrZaqIhq0/wrecr07Nv2EotEwPGb1qFsaflKw+QuNQYad9d
-	 3L+/n8yDsSeIYUYDXXDPhv8x8L+yNjmqnE4KCYv0=
-Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
-	by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 415JiheV071026
+	b=U/TDTDZe48TOZlXKa2/P5bsRemvEkpBf2zyycXeCvsfYIdO+o9EUhYrflRA9TzKi7
+	 ojOnTHFu3wGQ41vLoQCyPhBK4d1tw0pk93aOPmp5SttYKOV3URTAH2ZrJBH0Y0K7SC
+	 gSqacdWWQu2J0Q+d1zPa59WE9cTXWcxMLozZqblg=
+Received: from DLEE111.ent.ti.com (dlee111.ent.ti.com [157.170.170.22])
+	by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 415JipKS071105
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Mon, 5 Feb 2024 13:44:43 -0600
-Received: from DLEE115.ent.ti.com (157.170.170.26) by DLEE114.ent.ti.com
- (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
+	Mon, 5 Feb 2024 13:44:51 -0600
+Received: from DLEE103.ent.ti.com (157.170.170.33) by DLEE111.ent.ti.com
+ (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 5
- Feb 2024 13:44:43 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE115.ent.ti.com
- (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2024 13:44:51 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE103.ent.ti.com
+ (157.170.170.33) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Mon, 5 Feb 2024 13:44:43 -0600
+ Frontend Transport; Mon, 5 Feb 2024 13:44:51 -0600
 Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 415JicQU028467;
-	Mon, 5 Feb 2024 13:44:43 -0600
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 415JicQg028467;
+	Mon, 5 Feb 2024 13:44:50 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Manivannan Sadhasivam
@@ -62,9 +62,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH v2 07/19] power: reset: brcm-kona-reset: Use devm_register_sys_off_handler(RESTART)
-Date: Mon, 5 Feb 2024 13:44:25 -0600
-Message-ID: <20240205194437.180802-8-afd@ti.com>
+Subject: [PATCH v2 19/19] power: reset: syscon-poweroff: Use devm_register_sys_off_handler(POWER_OFF)
+Date: Mon, 5 Feb 2024 13:44:37 -0600
+Message-ID: <20240205194437.180802-20-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240205194437.180802-1-afd@ti.com>
 References: <20240205194437.180802-1-afd@ti.com>
@@ -78,48 +78,94 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Use device life-cycle managed register function to simplify probe.
+Use device life-cycle managed register function to simplify probe and
+exit paths.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/brcm-kona-reset.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ drivers/power/reset/syscon-poweroff.c | 34 ++++++++++++---------------
+ 1 file changed, 15 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/power/reset/brcm-kona-reset.c b/drivers/power/reset/brcm-kona-reset.c
-index d05728b1db097..ee3f1bb976530 100644
---- a/drivers/power/reset/brcm-kona-reset.c
-+++ b/drivers/power/reset/brcm-kona-reset.c
-@@ -15,8 +15,7 @@
+diff --git a/drivers/power/reset/syscon-poweroff.c b/drivers/power/reset/syscon-poweroff.c
+index 4899a019256e8..203936f4c544f 100644
+--- a/drivers/power/reset/syscon-poweroff.c
++++ b/drivers/power/reset/syscon-poweroff.c
+@@ -13,6 +13,7 @@
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm.h>
++#include <linux/reboot.h>
+ #include <linux/regmap.h>
  
- static void __iomem *kona_reset_base;
+ struct syscon_poweroff_data {
+@@ -22,23 +23,30 @@ struct syscon_poweroff_data {
+ 	u32 mask;
+ };
  
--static int kona_reset_handler(struct notifier_block *this,
--				unsigned long mode, void *cmd)
-+static int kona_reset_handler(struct sys_off_data *data)
- {
- 	/*
- 	 * A soft reset is triggered by writing a 0 to bit 0 of the soft reset
-@@ -31,18 +30,14 @@ static int kona_reset_handler(struct notifier_block *this,
- 	return NOTIFY_DONE;
- }
- 
--static struct notifier_block kona_reset_nb = {
--	.notifier_call = kona_reset_handler,
--	.priority = 128,
--};
+-static struct syscon_poweroff_data *data;
 -
- static int kona_reset_probe(struct platform_device *pdev)
+-static void syscon_poweroff(void)
++static int syscon_poweroff(struct sys_off_data *off_data)
  {
- 	kona_reset_base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(kona_reset_base))
- 		return PTR_ERR(kona_reset_base);
++	struct syscon_poweroff_data *data = off_data->cb_data;
++
+ 	/* Issue the poweroff */
+ 	regmap_update_bits(data->map, data->offset, data->mask, data->value);
  
--	return register_restart_handler(&kona_reset_nb);
-+	return devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_RESTART,
-+					     128, kona_reset_handler, NULL);
+ 	mdelay(1000);
+ 
+ 	pr_emerg("Unable to poweroff system\n");
++
++	return NOTIFY_DONE;
  }
  
- static const struct of_device_id of_match[] = {
+ static int syscon_poweroff_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
++	struct syscon_poweroff_data *data;
+ 	int mask_err, value_err;
+ 
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
+ 	data->map = syscon_regmap_lookup_by_phandle(dev->of_node, "regmap");
+ 	if (IS_ERR(data->map)) {
+ 		data->map = syscon_node_to_regmap(dev->parent->of_node);
+@@ -69,21 +77,10 @@ static int syscon_poweroff_probe(struct platform_device *pdev)
+ 		data->mask = 0xFFFFFFFF;
+ 	}
+ 
+-	if (pm_power_off) {
+-		dev_err(dev, "pm_power_off already claimed for %ps",
+-			pm_power_off);
+-		return -EBUSY;
+-	}
+-
+-	pm_power_off = syscon_poweroff;
+-
+-	return 0;
+-}
+-
+-static void syscon_poweroff_remove(struct platform_device *pdev)
+-{
+-	if (pm_power_off == syscon_poweroff)
+-		pm_power_off = NULL;
++	return devm_register_sys_off_handler(&pdev->dev,
++					     SYS_OFF_MODE_POWER_OFF,
++					     SYS_OFF_PRIO_DEFAULT,
++					     syscon_poweroff, data);
+ }
+ 
+ static const struct of_device_id syscon_poweroff_of_match[] = {
+@@ -93,7 +90,6 @@ static const struct of_device_id syscon_poweroff_of_match[] = {
+ 
+ static struct platform_driver syscon_poweroff_driver = {
+ 	.probe = syscon_poweroff_probe,
+-	.remove_new = syscon_poweroff_remove,
+ 	.driver = {
+ 		.name = "syscon-poweroff",
+ 		.of_match_table = syscon_poweroff_of_match,
 -- 
 2.39.2
 
