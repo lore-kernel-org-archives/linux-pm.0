@@ -1,136 +1,150 @@
-Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99036745DB;
-	Mon,  5 Feb 2024 19:45:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.249
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 645B712883C;
+	Mon,  5 Feb 2024 20:11:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707162311; cv=none; b=gC8Au7Lujk8wWMFjp+tbTln0zyU9V2MmIZIXu2uo9zAHFuBGfvIBGOdQgyHmCUV9QZG1fiyJ6lsu6ncuFk4RVnzBFygObIdfcNzcUHOQ0K9RBqy1wI93B/MfHxJJcyrCDbBY5MUFYIcHKvsJBa8ZCmmNQEFJt07inPLIr4hPg08=
+	t=1707163913; cv=none; b=TrN5fgCdCnmbZHcYk4vbGQFWYnpX5CNmOIMVa9vGWGbxUntRbVHVl9u/QEqU+ucKzI1DavdMz9KP2b0RO9J7iIex9cp7n6nY1i741MO7hcq9TVQ4QEYAoc7/+ME42vpWJyEpxFrZGJcGvFs2lZqwcw6rkHGEQ/h0H8gQTCPduqo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707162311; c=relaxed/simple;
-	bh=TcZggvWPAiMNrDjTaYr88pR3WYNyYJDkk6qpMPNTC3Y=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=iqqY/Meyxxzmc64S719MeOYrEHpFrqJWLlNVJkKiN68+fxp1IUuPzvZrY8Rs7DLWn5Gr88GHbbR8B+igOjEXQsk/cUuhgoSj2cEU1NyqBD3IJdv2HY6fYIMyAQ5i3XCBtsSgnSf8OelL0FsbKBwmLuI7OY1331QKxfyfQJVVy3s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=Qw5q5B3k; arc=none smtp.client-ip=198.47.23.249
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	s=arc-20240116; t=1707163913; c=relaxed/simple;
+	bh=uWZISSb6UUEmeVSZKhEDphqB5Yyr7UXl927wI8zD6I8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=h9fO+4dfrWt7vqxBPUYPtYwib7cYjitqJiO7MTP8N3ejAuTdCmp0kxRYBl7iJLRdKzeaePr/BryTJQ0Nxs/tv/kcVOEdrdNBrR2+16yLj5qKGA1zaWDdjWKBYdAC4ipwXeTClxmzfou+zBjM6MHjuokUDs0YQCFUOKx8B9ZVIwE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Qv3k5tOT; arc=none smtp.client-ip=198.175.65.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="Qw5q5B3k"
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-	by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 415JilnK101200;
-	Mon, 5 Feb 2024 13:44:47 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1707162287;
-	bh=5a2BDxvry/mDEJhidMjtTRkucrmFZYMP54rfoZVMxFg=;
-	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=Qw5q5B3keTde63yHWlZpQ7EVk4tQF9AphT2TKbB0uVKzxcP46i9J1hxwiPkvnhfU6
-	 yx3v/eLF1zvt5mKdeJM+rw+fQHl9Lon2LkZyUxz6YoDK+bNLBBZrYfXipnLDENW0Ig
-	 9naCSq3dVPMP2uMY58c+MhSsfrUKANATzLTuHB0w=
-Received: from DFLE115.ent.ti.com (dfle115.ent.ti.com [10.64.6.36])
-	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 415JilEK073197
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Mon, 5 Feb 2024 13:44:47 -0600
-Received: from DFLE102.ent.ti.com (10.64.6.23) by DFLE115.ent.ti.com
- (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 5
- Feb 2024 13:44:47 -0600
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE102.ent.ti.com
- (10.64.6.23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Mon, 5 Feb 2024 13:44:47 -0600
-Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 415JicQa028467;
-	Mon, 5 Feb 2024 13:44:46 -0600
-From: Andrew Davis <afd@ti.com>
-To: Sebastian Reichel <sre@kernel.org>,
-        Manivannan Sadhasivam
-	<manivannan.sadhasivam@linaro.org>,
-        Cristian Ciocaltea
-	<cristian.ciocaltea@gmail.com>,
-        Florian Fainelli
-	<florian.fainelli@broadcom.com>,
-        Ray Jui <rjui@broadcom.com>, Scott Branden
-	<sbranden@broadcom.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad
- Dybcio <konrad.dybcio@linaro.org>,
-        Sean Wang <sean.wang@mediatek.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno
-	<angelogioacchino.delregno@collabora.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH v2 13/19] power: reset: msm-poweroff: Use devm_register_sys_off_handler(RESTART)
-Date: Mon, 5 Feb 2024 13:44:31 -0600
-Message-ID: <20240205194437.180802-14-afd@ti.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240205194437.180802-1-afd@ti.com>
-References: <20240205194437.180802-1-afd@ti.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Qv3k5tOT"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1707163912; x=1738699912;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=uWZISSb6UUEmeVSZKhEDphqB5Yyr7UXl927wI8zD6I8=;
+  b=Qv3k5tOTrWl4IV8WjHHTIU4R2BBhfON7C+xh3EUJgKp+CDwxMMNu3ve+
+   OcnrheWqhcvRZenB3KzzVxrKo4aZ8aupWpyh4+/LnlYTllfZvkk6dNlYN
+   0M8PBC1l4E8YeWy8GjhzX094PG4wWSkFlefIrug//Sa6sP5dGP8N6iTXK
+   Jtmm1MR4U/j6m38W95hUtdtqhzikQycqx9wb6WiVarVe9g6eM0NUJGAgq
+   pl4dprbNZXb1yOJ9URCWh4UTObqoV1PWkYKH+gPPzR9uCG/+L5ogYJv3M
+   yxNBC/Gglgn8kB+aiVPQKhFWlt2IDhJ0z1sDb2KinRYfG685K/QmC//PZ
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10975"; a="4479514"
+X-IronPort-AV: E=Sophos;i="6.05,245,1701158400"; 
+   d="scan'208";a="4479514"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Feb 2024 12:11:51 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.05,245,1701158400"; 
+   d="scan'208";a="5417128"
+Received: from sgruszka-mobl.ger.corp.intel.com (HELO localhost) ([10.252.41.223])
+  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Feb 2024 12:11:48 -0800
+Date: Mon, 5 Feb 2024 20:19:29 +0100
+From: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: Re: [RFC] PCI/AER: Block runtime suspend when handling errors
+Message-ID: <ZcE0wWb6/CGFTKi/@linux.intel.com>
+References: <20240123090016.281252-1-stanislaw.gruszka@linux.intel.com>
+ <20240130001436.GA488226@bhelgaas>
+ <ZbtmB2GXPIwW1fLl@linux.intel.com>
+ <CAJZ5v0gsojXKwQk4CL9ZpENcFs7X9pywfwNG-_ech5_G8pHRVw@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+In-Reply-To: <CAJZ5v0gsojXKwQk4CL9ZpENcFs7X9pywfwNG-_ech5_G8pHRVw@mail.gmail.com>
 
-Use device life-cycle managed register function to simplify probe.
+On Thu, Feb 01, 2024 at 03:10:35PM +0100, Rafael J. Wysocki wrote:
+> On Thu, Feb 1, 2024 at 10:36 AM Stanislaw Gruszka
+> <stanislaw.gruszka@linux.intel.com> wrote:
+> >
+> > On Mon, Jan 29, 2024 at 06:14:36PM -0600, Bjorn Helgaas wrote:
+> > > On Tue, Jan 23, 2024 at 10:00:16AM +0100, Stanislaw Gruszka wrote:
+> > > > PM runtime can be done simultaneously with AER error handling.
+> > > > Avoid that by using pm_runtime_get_sync() just after pci_dev_get()
+> > > > and pm_runtime_put() just before pci_dev_put() in AER recovery
+> > > > procedures.
+> > >
+> > > I guess there must be a general rule here, like "PCI core must use
+> > > pm_runtime_get_sync() whenever touching the device asynchronously,
+> > > i.e., when it's doing something unrelated to a call from the driver"?
+> >
+> > Clear rules would be nice, that's for sure.
+> >
+> > > Probably would apply to all subsystem cores, not just PCI.
+> >
+> > If they have something similar like AER.
+> >
+> > > > I'm not sure about DPC case since I do not see get/put there. It
+> > > > just call pci_do_recovery() from threaded irq dcd_handler().
+> > > > I think pm_runtime* should be added to this handler as well.
+> > >
+> > > s/dcd_handler/dpc_handler/
+> > >
+> > > I'm guessing the "threaded" part really doesn't matter; just the fact
+> > > that this is in response to an interrupt, not something directly
+> > > called by a driver?
+> >
+> > Yes. I added "threaded" just to emphasis that it's safe to add sleeping
+> > functions there. In context of possible solution, not related to
+> > the problem itself.
+> >
+> > > > pm_runtime_get_sync() will increase dev->power.usage_count counter to
+> > > > prevent any rpm actives. When there is suspending pending, it will wait
+> > > > for it and do the rpm resume. Not sure if that problem, on my testing
+> > > > I did not encounter issues with that.
+> > >
+> > > Sorry, I didn't catch your meaning here.
+> > I tired to write two things:
+> >
+> > First, pm_runtime_get_sync() after exit prevents possibility of
+> > runtime suspend, so we are sure device will not be powered off
+> >
+> > Second, if during pm_runtime_get_sync(), there is pending attempt
+> > to suspend device, it will be synchronized and device will
+> > be resumed.
+> 
+> Not exactly.  pm_runtime_get_sync() will resume the device
+> synchronously no matter what.
+> 
+> > This can be problematic as device is in error state.
+> 
+> If this is a real possibility (I mean, device in a low-power state and
+> in an error state at the same time), it would be better to call
+> __pm_runtime_disable(dev, false) instead of pm_runtime_get_sync(), as
+> that would prevent runtime PM from changing the device state.
 
-Signed-off-by: Andrew Davis <afd@ti.com>
----
- drivers/power/reset/msm-poweroff.c | 23 ++++++-----------------
- 1 file changed, 6 insertions(+), 17 deletions(-)
+__pm_runtime_disable(dev, false) does not work as reliable in my
+test as pm_runtime_get_sync(), the
 
-diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
-index bcf04491e7022..c5831c46f69e2 100644
---- a/drivers/power/reset/msm-poweroff.c
-+++ b/drivers/power/reset/msm-poweroff.c
-@@ -13,35 +13,24 @@
- #include <linux/reboot.h>
- #include <linux/pm.h>
- 
--static void __iomem *msm_ps_hold;
--static int deassert_pshold(struct notifier_block *nb, unsigned long action,
--			   void *data)
-+static int do_msm_poweroff(struct sys_off_data *data)
- {
-+	void __iomem *msm_ps_hold = data->cb_data;
-+
- 	writel(0, msm_ps_hold);
- 	mdelay(10000);
- 
- 	return NOTIFY_DONE;
- }
- 
--static struct notifier_block restart_nb = {
--	.notifier_call = deassert_pshold,
--	.priority = 128,
--};
--
--static int do_msm_poweroff(struct sys_off_data *data)
--{
--	deassert_pshold(&restart_nb, 0, NULL);
--
--	return NOTIFY_DONE;
--}
--
- static int msm_restart_probe(struct platform_device *pdev)
- {
--	msm_ps_hold = devm_platform_ioremap_resource(pdev, 0);
-+	void __iomem *msm_ps_hold = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(msm_ps_hold))
- 		return PTR_ERR(msm_ps_hold);
- 
--	register_restart_handler(&restart_nb);
-+	devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_RESTART,
-+				      128, do_msm_poweroff, msm_ps_hold);
- 
- 	devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_POWER_OFF,
- 				      SYS_OFF_PRIO_DEFAULT, do_msm_poweroff,
--- 
-2.39.2
+igc 0000:02:00.0: Unable to change power state from D3hot to D0, device inaccessible
 
+message disappears, but sill have:
+
+igc 0000:02:00.0: not ready 65535ms after bus reset; giving up
+pcieport 0000:00:1c.2: AER: Root Port link has been reset (-25)
+pcieport 0000:00:1c.2: AER: subordinate device reset failed
+pcieport 0000:00:1c.2: AER: device recovery fail
+
+> > But at least from software perspective we should end in device
+> > being in active state and then we can perform reset of it.
+> 
+> I'm not sure about this.  It may be better to power-cycle the device
+> in D3hot instead of attempting to put it into D0 beforehand.
+
+Me nigher, but in pci_reset_function() and similar resetting 
+procedures we always call pci_dev_save_and_disable() before
+actual reset and it set device in D0, so I think it's ok to do so.
+
+Regards
+Stanislaw
