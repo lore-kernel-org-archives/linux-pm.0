@@ -1,73 +1,71 @@
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2081.outbound.protection.outlook.com [40.107.237.81])
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E756E7E58D;
-	Tue,  6 Feb 2024 04:35:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.237.81
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707194117; cv=fail; b=Ipe2ockk9fRbMkIvlEG+HcDa9etySKXldI3UBaIA9VB1tyemd6jNSjJZXilhfGNu50JuROWYWu/fUMqAihjebbwNn6FoTJEzU+H0YyJpCFJyqAsC1zWWTyE3LC0ZGVN5quM+T6uNX5sorILVf/fvqHZgtriuTxjNyOUhoQbk1GY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707194117; c=relaxed/simple;
-	bh=yFZGkb+nRoq0JoaT8GKqmAGB/Kd+cT88vdHLdm4yW3U=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=o3AY430x1sAYHfm7SR59+pLOOSaKuCtMjgiZ0+0Pc4zRv3OeIyE8aQzIkjV7Hn9tuu5aqm3p87WDpebA1hBfUakIDMMr40I3Psf2jMCqDHOHeFxmeDMWsUY0/f6JIdiNiaLEQY4/YafLnoKiquW5LQlmr2P0xL67Wee692d6kZQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=QYs2xghh; arc=fail smtp.client-ip=40.107.237.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 078AC77F00
+	for <linux-pm@vger.kernel.org>; Tue,  6 Feb 2024 05:40:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.254.224.24
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1707198051; cv=none; b=ktQl5kQ3cSL/l/ss5CLlpg9Yhx2tr4rrb+IyPnqJ3/u/hEcFDWKRd3axPr7IYZ0nuAlGZF5sex9JJ0IaLziwUw2TNnBldRQL8sks996NhccF1WkQ1aTwdJrl3F5CUD0aC/E/FfdS9cn+WVuDmGNjWiR6EmzpDUTteeCq8vbClt8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1707198051; c=relaxed/simple;
+	bh=7kqaAO5rz0MEVvOXWXpuWW96op5KATV3atJvwKX3jyE=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:MIME-Version:
+	 Content-Type:References; b=NC7V4a3zdjJ4kj+9X4mBJ5RYz9PxTCi+qO0pmpdQDU3U0ViuprKxnkPvx1GRoVupsmVkMrahvPGdAwW6EzEiC2bsGVgW7PW4hg+t/TtjuyudfSxqLf4ATp8ogrLLEh5Xb5N9HFhTaYhHFMHWvbKWlXAEukvYXfp2WVgAmVli3Ow=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=fqmBHa2e; arc=none smtp.client-ip=203.254.224.24
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="QYs2xghh"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=FaCGlJybLIYuG+NoE3KqX5vu0rc3hEorGna4yeywjblvidI1n+jtCJpRuq4igojSBEy9W49PTpC38NPmZ7nUnreJwOmaWCdO92VKfyZknnfDCUEkhdIKsCMexXaBxzfaEB9qnYufta0RbRR9vfvmpHsx2seXFofjaGykyjHgglQyiWYx9NK9lRh2S4Xvj/wt+fSonCNeBOJ9wXbKBn8twnF5I8iS4GLNBUjAxFwWBK3mPSf82J70t5gyowKi1oao+/CISr1HGm73jZq0SfGU5Bt14q0z8g12TDFOZkIzysf7peCnze5qaMMqqwpCnKD7bD91++SmZ3cJ1nhw535dHA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=d43De3TJ6JcZtU9BWyXSYwH8Lq9zu3gPn5XD/lIBskA=;
- b=oWoTIt3BLnqoMez3c3++0N98wwXVyFH6/qz0wbvfGDZXtruICiSiGRWHjO9U/07tgPXAGkqruHF6wa/Lz+auJsrSd+20IHBPd+hAjDodMIiWVh9IMJMIMWlfZT9lgvJFoqOnZxxJDGzHg6rsYfT5tgxyQ4BpFrSG6WSEftE/dDrABQ3PZ6f+ZzBbScyaeIlNKWvMQDg6+3aZ4wHZI9G1ovfok09DGoj/5sfhkM9okfrTa4LaWN7AEF2+mceSfcvo6I+WwAjbFzmZFeqfjDW0EobngOq6kr+qPDdlC5+Ub98hfCo4Em5hDnD4BkmT8Ol7/Enq/OqJmbYYHPQvtfuBRg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=d43De3TJ6JcZtU9BWyXSYwH8Lq9zu3gPn5XD/lIBskA=;
- b=QYs2xghho6aAFAgu7YOYg3PUdsEtNjHCrxQ3/B9SNX4sksjv8AFIyyw8E0U/mnk6antR6mgXEesRxvfw9ZYXtoZINjpS7wnNs6rqWVbDKi8T2HTL6hSaHx/wdINKqY9TNmKLsdhG6aWwRLqPRb5LWHKuZ0PgjBnHIQnmk/j8zUY=
-Received: from BN9P221CA0024.NAMP221.PROD.OUTLOOK.COM (2603:10b6:408:10a::23)
- by BN9PR12MB5081.namprd12.prod.outlook.com (2603:10b6:408:132::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7270.17; Tue, 6 Feb
- 2024 04:35:12 +0000
-Received: from BN1PEPF00004684.namprd03.prod.outlook.com
- (2603:10b6:408:10a:cafe::c) by BN9P221CA0024.outlook.office365.com
- (2603:10b6:408:10a::23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7249.36 via Frontend
- Transport; Tue, 6 Feb 2024 04:35:12 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BN1PEPF00004684.mail.protection.outlook.com (10.167.243.90) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.7249.19 via Frontend Transport; Tue, 6 Feb 2024 04:35:12 +0000
-Received: from pyuan-Chachani-VN.amd.com (10.180.168.240) by
- SATLEXMB04.amd.com (10.181.40.145) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.34; Mon, 5 Feb 2024 22:35:09 -0600
-From: Perry Yuan <perry.yuan@amd.com>
-To: <rafael.j.wysocki@intel.com>, <Mario.Limonciello@amd.com>,
-	<viresh.kumar@linaro.org>, <Ray.Huang@amd.com>, <gautham.shenoy@amd.com>,
-	<Borislav.Petkov@amd.com>
-CC: <Alexander.Deucher@amd.com>, <Xinmei.Huang@amd.com>,
-	<Xiaojian.Du@amd.com>, <Li.Meng@amd.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: [PATCH v4 6/6] cpufreq:amd-pstate: add quirk for the pstate CPPC capabilities missing
-Date: Tue, 6 Feb 2024 12:33:59 +0800
-Message-ID: <4626a4aff50921be3b7a0345ae51e5aa246504d0.1707193566.git.perry.yuan@amd.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1707193566.git.perry.yuan@amd.com>
-References: <cover.1707193566.git.perry.yuan@amd.com>
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="fqmBHa2e"
+Received: from epcas5p3.samsung.com (unknown [182.195.41.41])
+	by mailout1.samsung.com (KnoxPortal) with ESMTP id 20240206054046epoutp0121df51e18959baac4707d6b86a3fff06~xL5QaM4C52876428764epoutp01T
+	for <linux-pm@vger.kernel.org>; Tue,  6 Feb 2024 05:40:46 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20240206054046epoutp0121df51e18959baac4707d6b86a3fff06~xL5QaM4C52876428764epoutp01T
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1707198046;
+	bh=CC2djjTAEnwzIDHn32zkRPNrPPr+7uiinCUTrzq6knI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=fqmBHa2eqPQRK4hP6YyVGHLO8kfqovIkqZwKXQS4Qi4IXt7WubXGGwtAW9kBBV9T2
+	 kE+zxwWgJl9+78nxH38ZZnowFuI77aIeduDJJZ/22eTOXp4DNqxW/cOgPC34P9IXkS
+	 uW0ZvCCTYCV5xGmEh1VKTO4kYujDwsh0rfTF9WvA=
+Received: from epsmges5p2new.samsung.com (unknown [182.195.42.74]) by
+	epcas5p1.samsung.com (KnoxPortal) with ESMTP id
+	20240206054046epcas5p17a49d75ee048c41f92d09fea50eae215~xL5PwKSX-1405414054epcas5p1M;
+	Tue,  6 Feb 2024 05:40:46 +0000 (GMT)
+Received: from epcas5p1.samsung.com ( [182.195.41.39]) by
+	epsmges5p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
+	C1.14.10009.E56C1C56; Tue,  6 Feb 2024 14:40:46 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+	epcas5p2.samsung.com (KnoxPortal) with ESMTPA id
+	20240206051402epcas5p2ae3737fc0d71ba1d7a7f8bee90438ff2~xLh6J0uhi2514425144epcas5p2j;
+	Tue,  6 Feb 2024 05:14:02 +0000 (GMT)
+Received: from epsmgmcp1.samsung.com (unknown [182.195.42.82]) by
+	epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+	20240206051402epsmtrp1e846e1dc8329b4db9a0c630751b964a5~xLh6IkgN_1680416804epsmtrp1G;
+	Tue,  6 Feb 2024 05:14:02 +0000 (GMT)
+X-AuditID: b6c32a4a-261fd70000002719-f4-65c1c65e2b6f
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+	epsmgmcp1.samsung.com (Symantec Messaging Gateway) with SMTP id
+	67.64.18939.A10C1C56; Tue,  6 Feb 2024 14:14:02 +0900 (KST)
+Received: from localhost.localdomain (unknown [107.109.224.44]) by
+	epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20240206051358epsmtip2d28793c007873284be3cf44a8dffc8e0~xLh2oJEDX1683016830epsmtip2E;
+	Tue,  6 Feb 2024 05:13:58 +0000 (GMT)
+From: Onkarnarth <onkarnath.1@samsung.com>
+To: rafael@kernel.org, lenb@kernel.org, bhelgaas@google.com,
+	viresh.kumar@linaro.org, mingo@redhat.com, peterz@infradead.org,
+	juri.lelli@redhat.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+	rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+	bristot@redhat.com, vschneid@redhat.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+	r.thapliyal@samsung.com, maninder1.s@samsung.com, Onkarnath
+	<onkarnath.1@samsung.com>
+Subject: [PATCH 2/2] kernel: sched: print errors with %pe for better
+ readability of logs
+Date: Tue,  6 Feb 2024 10:41:20 +0530
+Message-Id: <20240206051120.4173475-2-onkarnath.1@samsung.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240206051120.4173475-1-onkarnath.1@samsung.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -75,178 +73,71 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN1PEPF00004684:EE_|BN9PR12MB5081:EE_
-X-MS-Office365-Filtering-Correlation-Id: 92c55f9e-6c1b-4e32-88fd-08dc26cd021a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info:
-	T/3+VZP7exaBvwMgbHhivHO2Eduj6fp5spj4kgupEXzESj3B+JyEqXErLWc4P/qTObaPES5RLkG/LkLUwK9I7KtZs+QkoKWNi1bWrkdgpFvDydfxc/Q6e7CkOsdOJdQ64o9Ga89F0JQmuzILjc/6yIrsMGtRuSc0CNmC/qI8inOC5oDYDIJTWDe+BX89B+8R7TAKMPnfZ3MmWAfGa95kkUry2PCFSuXI4PcrYTTiHYoIj/+Xvf4Zitvl7iKU/ezIc7r+R0vwJd9/Rq4bwRcW1F/RcMvl6S1jy/MwR2TP49RCo2cGmU2eAW5Iq9c9Bxn9S2VcLYCwWaywmb1Vc4s/CUC61kx9y5PhwdLCe1jvtDdFkIUctXAg4CDD7Uhxgu0MgU2fHeoKYjtJh56cg9JC1VhOdnqkjsb6mZXX6SYQyC4VRuFQkKz9cL1yTamZ+M6a0zvWzWiTZaIvGK/+Ol/CFxngpc9kTyDhlSMWsditPOikunSOCnywXXFudGVzvCUYVbnSH07BdDSR+n81lejtcxcbX9yCiK7+JOMITIn4ID/PazxQ0ZV8sb/yOxnc8JM7LaQyrJ5kBscTxzamikif9Tv2jnFaksgli2yazhU+BWA+Y4+J/nVmR6kHucUjum4PjTvHeYPOu0mxcfKjjUW1PFkTf2u/15DVmk/T+iH3pAPIEYbvWN2A1HdNLGcE870zHvfgXfffnFtBki0TWPHBtUfR6DI4GEYxEfzckUGGcwdPUbMDtnIyOuIAYZAjmuaX7mLyhVw9pptjkhYD4T2ssg==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(396003)(136003)(346002)(39860400002)(376002)(230922051799003)(1800799012)(82310400011)(186009)(451199024)(64100799003)(46966006)(36840700001)(40470700004)(70206006)(40480700001)(40460700003)(41300700001)(6666004)(2616005)(36860700001)(6636002)(316002)(478600001)(26005)(16526019)(7696005)(54906003)(47076005)(426003)(336012)(70586007)(110136005)(83380400001)(44832011)(82740400003)(81166007)(2906002)(8676002)(8936002)(36756003)(356005)(86362001)(5660300002)(4326008)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Feb 2024 04:35:12.4743
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 92c55f9e-6c1b-4e32-88fd-08dc26cd021a
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BN1PEPF00004684.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN9PR12MB5081
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrFKsWRmVeSWpSXmKPExsWy7bCmum7csYOpBie6OSyWNGVYXHp8lc1i
+	+stGFounE7YyW9ztn8pisfPhWzaL5fv6GS0u75rDZnF23nE2i8+9RxgtDs9vY7GY/O4Zo8Wl
+	AwuYLFb0fGC1ON57gMli471si7lfpjJb7Ot4wGTRceQbs8XGrx4WW49+Z3cQ9Vgzbw2jR8u+
+	W+weCzaVemxeoeWxaVUnm8eda3vYPN7vu8rm0bdlFaPH5tPVHp83yQVwRXHZpKTmZJalFunb
+	JXBlnN/qUfCEreL7hPUsDYy3WbsYOTgkBEwkrl8s6GLk4hAS2M0o8WbbFeYuRk4g5xOjxLLF
+	LhAJIPvboUVsIAmQholPu6GKdjJK/NpoA1H0hVHi8+1VLCAJNgEtiRl3DjCBJEQEtjBJLLl0
+	kB3EYRY4xyhxY/IWsN3CAlESZzZEgzSwCKhKnJuwhB3E5hWwk3jzo4EFYpu8xMxL39lByjkF
+	7CWmbuaEKBGUODnzCVgJM1BJ89bZzCDjJQSecEj8v/sP6lIXiW27/rFD2MISr45vgbKlJF72
+	t0HZ+RIts2cxQ4KiRuLqU1WIsL3Ek4sLwa5kFtCUWL9LHyIsKzH11DomiLV8Er2/nzBBxHkl
+	dsyDsVUlfk2ZCnW9tMT933OhrvGQ6Lx9mA0SVpMYJf4ufMM2gVFhFpJ3ZiF5ZxbC6gWMzKsY
+	JVMLinPTU4tNC4zyUsv1ihNzi0vz0vWS83M3MYKTo5bXDsaHDz7oHWJk4mA8xCjBwawkwmu2
+	40CqEG9KYmVValF+fFFpTmrxIUZpDhYlcd7XrXNThATSE0tSs1NTC1KLYLJMHJxSDUz+/oey
+	ZfLaHs1JMhJedTm/jPvymd9Fkdt1djSsPlz0UdHByqKhIzxO91LKI1bTqalJ7fXnF1m1qiny
+	vWaQW7j21/a+Qvk7+oEL5NYnZ2vwmratPv353jTRpyuuSMruEXikyVwVeLFHQWTiwTNX/1za
+	KT7JPVQyo/a6kuWkvdZ5n8r+/204/Hs9c8+2tGMvdhxJfsc/9XyGaVbGTedpknUbatfc4Jt7
+	/uXy9dMPV0pw7fed9OsD998lecvefN23vfSFd3Dt60QdN1tGn16+ngV1LpJMYTybe1bvjtA7
+	Zbt9W9kUh6Rl/nXTLKsPyE00+cXjbSj5hv8n1xwtyfnrWnw3/prCePfIme/RMst/8bgosRRn
+	JBpqMRcVJwIAiVfevf0DAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprNIsWRmVeSWpSXmKPExsWy7bCSvK7UgYOpBif+CFgsacqwuPT4KpvF
+	9JeNLBZPJ2xltrjbP5XFYufDt2wWy/f1M1pc3jWHzeLsvONsFp97jzBaHJ7fxmIx+d0zRotL
+	BxYwWazo+cBqcbz3AJPFxnvZFnO/TGW22NfxgMmi48g3ZouNXz0sth79zu4g6rFm3hpGj5Z9
+	t9g9Fmwq9di8Qstj06pONo871/awebzfd5XNo2/LKkaPzaerPT5vkgvgiuKySUnNySxLLdK3
+	S+DKOL/Vo+AJW8X3CetZGhhvs3YxcnJICJhITHzazQxiCwlsZ5Q42qoIEZeW+HR5DjuELSyx
+	8t9zIJsLqOYTo8SjmxvZQBJsAloSM+4cYAJJiAgcY5KY1r+RBcRhFrjCKDHr9DawKmGBCIkD
+	S54zgdgsAqoS5yYsARvLK2An8eZHAwvECnmJmZe+A8U5ODgF7CWmbuaEuMhOovfqNKhyQYmT
+	M5+AlTMDlTdvnc08gVFgFpLULCSpBYxMqxhFUwuKc9NzkwsM9YoTc4tL89L1kvNzNzGC408r
+	aAfjsvV/9Q4xMnEwHmKU4GBWEuE123EgVYg3JbGyKrUoP76oNCe1+BCjNAeLkjivck5nipBA
+	emJJanZqakFqEUyWiYNTqoEpq/NmM5OftMz/pw867l7Kf3x/1fwlpgmF+9fZexnp65TnXOjc
+	0re8VGTX61yT/J3dW7J/TM3U7fl6/WbgjZexYnuNrq6pbBCUD2HZkGa7rtF9WbTjo2QJ6Zat
+	l4u/385/oDAx665bPuORBdvj3M2/Kqxm57eTmZVzyMlxxr3FaRtVF/8Skfcs1j+xS31azuae
+	DXnveAzktzxmY3c+8PSJ47ur20/ObFU+dl8y8YH//Kmf/0ie6Y4TbQpWW++30vmb9DRXycD+
+	M2tbPimmdzvqOPfoVktfEWxn9f7b/vXQGuZnW//GHFpeUt+m9LdVPqaraErArEXr89bEP995
+	4da3xvT+r39FBOLeLp/x+kOnEktxRqKhFnNRcSIANHpWqC4DAAA=
+X-CMS-MailID: 20240206051402epcas5p2ae3737fc0d71ba1d7a7f8bee90438ff2
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: REQ_APPROVE
+CMS-TYPE: 105P
+X-CMS-RootMailID: 20240206051402epcas5p2ae3737fc0d71ba1d7a7f8bee90438ff2
+References: <20240206051120.4173475-1-onkarnath.1@samsung.com>
+	<CGME20240206051402epcas5p2ae3737fc0d71ba1d7a7f8bee90438ff2@epcas5p2.samsung.com>
 
-Add quirks table to get CPPC capabilities issue fixed by providing
-correct perf or frequency values while driver loading.
+From: Onkarnath <onkarnath.1@samsung.com>
 
-If CPPC capabilities are not defined in the ACPI tables or wrongly
-defined by platform firmware, it needs to use quick to get those
-issues fixed with correct workaround values to make pstate driver
-can be loaded even though there are CPPC capabilities errors.
+instead of printing errros as a number(%ld), it's better to print in string
+format for better readability of logs.
 
-The workaround will match the broken BIOS which lack of CPPC capabilities
-nominal_freq and lowest_freq definition in the ACPI table.
-
-$ cat /sys/devices/system/cpu/cpu0/acpi_cppc/lowest_freq
-0
-$ cat /sys/devices/system/cpu/cpu0/acpi_cppc/nominal_freq
-0
-
-Signed-off-by: Perry Yuan <perry.yuan@amd.com>
+Signed-off-by: Onkarnath <onkarnath.1@samsung.com>
 ---
- drivers/cpufreq/amd-pstate.c | 59 ++++++++++++++++++++++++++++++++++--
- include/linux/amd-pstate.h   |  6 ++++
- 2 files changed, 63 insertions(+), 2 deletions(-)
+ kernel/sched/cpufreq_schedutil.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 77effc3caf6c..874d8b663790 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -67,6 +67,7 @@ static struct cpufreq_driver amd_pstate_epp_driver;
- static int cppc_state = AMD_PSTATE_UNDEFINED;
- static bool cppc_enabled;
- static bool amd_pstate_prefcore = true;
-+static struct quirk_entry *quirks;
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index eece6244f9d2..2c42eaa56fa3 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -671,7 +671,7 @@ static int sugov_kthread_create(struct sugov_policy *sg_policy)
+ 				"sugov:%d",
+ 				cpumask_first(policy->related_cpus));
+ 	if (IS_ERR(thread)) {
+-		pr_err("failed to create sugov thread: %ld\n", PTR_ERR(thread));
++		pr_err("failed to create sugov thread: %pe\n", thread);
+ 		return PTR_ERR(thread);
+ 	}
  
- /*
-  * AMD Energy Preference Performance (EPP)
-@@ -111,6 +112,43 @@ static unsigned int epp_values[] = {
- 
- typedef int (*cppc_mode_transition_fn)(int);
- 
-+static struct quirk_entry quirk_amd_7k62 = {
-+	.nominal_freq = 2600,
-+	.lowest_freq = 550,
-+};
-+
-+static int __init dmi_matched_7k62_bios_bug(const struct dmi_system_id *dmi)
-+{
-+	/**
-+	 * match the broken bios for family 17h, model 31h processor
-+	 * broken BIOS lack of nominal_freq and lowest_freq capabilities
-+	 * definition in ACPI tables
-+	 */
-+	if (boot_cpu_data.x86 == 0x17 && boot_cpu_data.x86_model == 0x31 &&
-+			boot_cpu_has(X86_FEATURE_ZEN2)) {
-+		quirks = dmi->driver_data;
-+		pr_info("hardware type %s found\n", dmi->ident);
-+		return 1;
-+	}
-+
-+
-+	return 0;
-+}
-+
-+static const struct dmi_system_id amd_pstate_quirks_table[] __initconst = {
-+	{
-+		.callback = dmi_matched_7k62_bios_bug,
-+		.ident = "AMD EPYC 7K62",
-+		.matches = {
-+			DMI_MATCH(DMI_BIOS_VERSION, "5.14"),
-+			DMI_MATCH(DMI_BIOS_RELEASE, "12/12/2019"),
-+		},
-+		.driver_data = &quirk_amd_7k62,
-+	},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(dmi, amd_pstate_quirks_table);
-+
- static inline int get_mode_idx_from_str(const char *str, size_t size)
- {
- 	int i;
-@@ -600,13 +638,19 @@ static void amd_pstate_adjust_perf(unsigned int cpu,
- static int amd_get_min_freq(struct amd_cpudata *cpudata)
- {
- 	struct cppc_perf_caps cppc_perf;
-+	u32 lowest_freq;
- 
- 	int ret = cppc_get_perf_caps(cpudata->cpu, &cppc_perf);
- 	if (ret)
- 		return ret;
- 
-+	if (quirks && quirks->lowest_freq)
-+		lowest_freq = quirks->lowest_freq;
-+	else
-+		lowest_freq = cppc_perf.lowest_freq;
-+
- 	/* Switch to khz */
--	return cppc_perf.lowest_freq * 1000;
-+	return lowest_freq * 1000;
- }
- 
- static int amd_get_max_freq(struct amd_cpudata *cpudata)
-@@ -635,12 +679,18 @@ static int amd_get_max_freq(struct amd_cpudata *cpudata)
- static int amd_get_nominal_freq(struct amd_cpudata *cpudata)
- {
- 	struct cppc_perf_caps cppc_perf;
-+	u32 nominal_freq;
- 
- 	int ret = cppc_get_perf_caps(cpudata->cpu, &cppc_perf);
- 	if (ret)
- 		return ret;
- 
--	return cppc_perf.nominal_freq;
-+	if (quirks && quirks->nominal_freq)
-+		nominal_freq = quirks->nominal_freq;
-+	else
-+		nominal_freq = cppc_perf.nominal_freq;
-+
-+	return nominal_freq;
- }
- 
- static int amd_get_lowest_nonlinear_freq(struct amd_cpudata *cpudata)
-@@ -1672,6 +1722,11 @@ static int __init amd_pstate_init(void)
- 	if (cpufreq_get_current_driver())
- 		return -EEXIST;
- 
-+	quirks = NULL;
-+
-+	/* check if this machine need CPPC quirks */
-+	dmi_check_system(amd_pstate_quirks_table);
-+
- 	switch (cppc_state) {
- 	case AMD_PSTATE_UNDEFINED:
- 		/* Disable on the following configs by default:
-diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
-index d21838835abd..7b2cbb892fd9 100644
---- a/include/linux/amd-pstate.h
-+++ b/include/linux/amd-pstate.h
-@@ -124,4 +124,10 @@ static const char * const amd_pstate_mode_string[] = {
- 	[AMD_PSTATE_GUIDED]      = "guided",
- 	NULL,
- };
-+
-+struct quirk_entry {
-+	u32 nominal_freq;
-+	u32 lowest_freq;
-+};
-+
- #endif /* _LINUX_AMD_PSTATE_H */
 -- 
-2.34.1
+2.25.1
 
