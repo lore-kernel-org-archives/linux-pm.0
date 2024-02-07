@@ -1,141 +1,140 @@
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2056.outbound.protection.outlook.com [40.107.237.56])
+Received: from prime.voidband.net (prime.voidband.net [199.247.17.104])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E58922323;
-	Wed,  7 Feb 2024 09:22:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.237.56
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707297778; cv=fail; b=jQ1X0rfpde8mQ5d3iT9sj09YEsNq6eKlbtaW/hQeLf4TNlI7/fXDxgvhe1QBPe8t2ePVsU5vbs9aNgyWyIju0yJuCk9gvOkV9nQFxOP0l2mNiI4aU6qQGvm//aiBwNIVVoPWe8cYvaVBo3HGBEz5zkRt3z9ZgaaOEjd9QQeBheg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707297778; c=relaxed/simple;
-	bh=uAfvgz28dDSg9yIY0HdANuXRN494fB5lKk5vDyKyq2Y=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=iNSxK9+HLQXPB/keFMLgoVuHkg0Dbkg975TlPMw0dAVn8hAd+a1Qc4eSW1pmIHV3gdFvhXKfJ45tlKKQ0IINLXwseHptwDaon/4qaqOXDQnC5glYRjYo3MAggohs0tQN2HUkE4ZXalvdJngc8tSGOQLI1vaqezyWl5aPLII0w2g=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=1csYY+Xz; arc=fail smtp.client-ip=40.107.237.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 334D924B2A;
+	Wed,  7 Feb 2024 10:11:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.247.17.104
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1707300678; cv=none; b=ldXa7Fp0ZdIpjHVqdQi/J4xK6pWdqs7KEMt+R8Q8TAEQvQfYY5aL7TS4dy0/znlTVXPcsqEJtP0ur8uszkV/NfPwR9vBMaQZ4UZtFQQMnDxL7RH5yQXdmt/xo9pQwoVha7DeY6R4mrzs/BnlxPafvUaanx4Sp47YoFuxaqAW7Ec=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1707300678; c=relaxed/simple;
+	bh=fy0MuGEeBqq0yRk9q1POmHQUTTNM7NnZ5ogEzRYEj/I=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=GsWIaYsBulZX1olSOvNYrC4Yoqci3oSRWcJFkFLEMlPaAbQHVMEqaAod0M5BIWHhQ02O4kvJhLfRFjQYHCaqf8DKxJyAcX8XcpT29j8nFqSS1I7gUO/hMCrzj7fU4MNcPdJK+jeGQnUfBibCIsfO92KheOH6vET266IzOZx9q20=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=natalenko.name; spf=pass smtp.mailfrom=natalenko.name; dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b=KyL7oM7i; arc=none smtp.client-ip=199.247.17.104
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=natalenko.name
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=natalenko.name
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="1csYY+Xz"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=SfxGHobp7jYbaQodvlFdgGeXkhBhDcn6h+RLLx+JcMPdY0/rH77/2xZwFPKXohTZFUz7ezpUCCykPUZP0Wv22K6mlPH5u9nmNCgVgbf33KLyp9cqoLhT/6x9Kxlvb9ji/pBPY2XRi97f/mqDp6y0yTIroDaK5Ty4zyt7Ob25wlu6MrEhU13DyfdE64Yak7V0etVEhN8xKEFcyzGa55ebGH+LeapgDtY99RPDJHv/gPXLFX7Vc8BaF+YHeaLWDKbAdmVbKLWXEim4fyA5sAUGuT6fZ5dLkWASfczPX4rNgVa8lozDXRPQLzCRKswViqiCACJPsIC0ZmAiebt8/3P0OA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Kyu4cTOLR0GWzUT2ptQ7PupidvWOS6sQztS7R6U6U1E=;
- b=eGsctP0myys0zR3m8OGSRsrRNLvGRh5XLWJkhe/PEthPRIE3XA4TE7qFcC9S7Wf5U34ZkIe0+bhz4DZ9RfNsLC4mYuzHNBlkGN0etgLqyvYAnJSQ9R1xvZoXH6GvwKnNGdU4fX/O7zxFi0Qp0hoNjlka/OVpe/WsQEAbOuska8EhNf/3AEuTRrIQpZ/Yg7LUDYrGm+8Vritx/Um1jY/brHEB9Xb6khrRiB5nzwozmIVUpsjnTZwSgzHOBSdkNDjypgKcIx2Mso7mOBcTxcJOVi2eQEwjnKXvUk6AC15eRBx+xYhsy6dMCUSQQg8J2ak9jClz/N9/TFeHjzu2dIqiFA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Kyu4cTOLR0GWzUT2ptQ7PupidvWOS6sQztS7R6U6U1E=;
- b=1csYY+XzAFIceMMyMprYKpAtSign/ECdtX33xSKUr/gcKB7Lfq1vPI2HsazWgHm7Z4TDaSKgC/QY1YVF0Jdb4f7vEcVXCWnB9tCGRrwhc+KIkXlv/+PG1Ge1EnHwlMplx5m/SaMKTSdkmlce7Flex7cgGNfobmRHYf32wjKMCi4=
-Received: from BN9PR03CA0104.namprd03.prod.outlook.com (2603:10b6:408:fd::19)
- by PH7PR12MB6858.namprd12.prod.outlook.com (2603:10b6:510:1b4::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7270.17; Wed, 7 Feb
- 2024 09:22:51 +0000
-Received: from BN1PEPF00004684.namprd03.prod.outlook.com
- (2603:10b6:408:fd:cafe::4d) by BN9PR03CA0104.outlook.office365.com
- (2603:10b6:408:fd::19) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7249.36 via Frontend
- Transport; Wed, 7 Feb 2024 09:22:51 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BN1PEPF00004684.mail.protection.outlook.com (10.167.243.90) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.7249.19 via Frontend Transport; Wed, 7 Feb 2024 09:22:51 +0000
-Received: from pyuan-Chachani-VN.amd.com (10.180.168.240) by
- SATLEXMB04.amd.com (10.181.40.145) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.34; Wed, 7 Feb 2024 03:22:47 -0600
-From: Perry Yuan <perry.yuan@amd.com>
-To: <rafael.j.wysocki@intel.com>, <Mario.Limonciello@amd.com>,
-	<viresh.kumar@linaro.org>, <Ray.Huang@amd.com>, <gautham.shenoy@amd.com>,
-	<Borislav.Petkov@amd.com>
-CC: <Alexander.Deucher@amd.com>, <Xinmei.Huang@amd.com>,
-	<Xiaojian.Du@amd.com>, <Li.Meng@amd.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 6/7] cpufreq: amd-pstate: remove legacy set_boost callback for passive mode
-Date: Wed, 7 Feb 2024 17:21:57 +0800
-Message-ID: <fb14f6e7748f1b872f68eb2549d4e6033f0facbc.1707297581.git.perry.yuan@amd.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1707297581.git.perry.yuan@amd.com>
-References: <cover.1707297581.git.perry.yuan@amd.com>
+	dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b="KyL7oM7i"
+Received: from spock.localnet (unknown [94.142.239.106])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by prime.voidband.net (Postfix) with ESMTPSA id D1D67635B069;
+	Wed,  7 Feb 2024 11:11:05 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=natalenko.name;
+	s=dkim-20170712; t=1707300666;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qk89De6FrqTdMkAJYqG4hQmTMMefgxmhKdx6js2QarM=;
+	b=KyL7oM7iafK7DSybwDFdAZAMiJ3ehUyp+BRzcCbLYde4BRADgMdlGp3/4m3KvueGghizKu
+	T0CBG9kR9OpEUCFUfp22+dQ1cirlFfG0ekAzHWklbRNhWJLx1n4TrPnGeXmeCokEA72M6M
+	CNT5dMy4P44VGic0SsjSOmoIvXjKcFo=
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+To: rafael.j.wysocki@intel.com, Mario.Limonciello@amd.com,
+ viresh.kumar@linaro.org, Ray.Huang@amd.com, gautham.shenoy@amd.com,
+ Borislav.Petkov@amd.com, Perry Yuan <perry.yuan@amd.com>
+Cc: Alexander.Deucher@amd.com, Xinmei.Huang@amd.com, Xiaojian.Du@amd.com,
+ Li.Meng@amd.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject:
+ Re: [PATCH v3 6/7] cpufreq: amd-pstate: remove legacy set_boost callback for
+ passive mode
+Date: Wed, 07 Feb 2024 11:10:52 +0100
+Message-ID: <2887380.mvXUDI8C0e@natalenko.name>
+In-Reply-To:
+ <fb14f6e7748f1b872f68eb2549d4e6033f0facbc.1707297581.git.perry.yuan@amd.com>
+References:
+ <cover.1707297581.git.perry.yuan@amd.com>
+ <fb14f6e7748f1b872f68eb2549d4e6033f0facbc.1707297581.git.perry.yuan@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN1PEPF00004684:EE_|PH7PR12MB6858:EE_
-X-MS-Office365-Filtering-Correlation-Id: 90f26a81-8f7b-4103-17aa-08dc27be5bc2
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info:
-	KXBkW3ZOime8q5D6zybN4IgTDjtGiQwU8xJT3KkYqSgJdIQ7cqM6a/Iz6uPJae5Wk61WqOK2dtWTT3R/ehpY/fBSmWsvj3tP6QYvWT5rfkIdb7PrXSiR9tDNBOz+ZmafpZZISEUQW0gEtRZQIJcJV2MgjFUaNmmpWnuejmoyN6TyPnqU3T0IwFyMhJ3960NHo5c2Uhx/s+X+DMWQVmZagAoiO4zwetr4gFWixgNckIrBoPKYMu2a2jEph4qqmNN3jR3Wgnj2+Czbcyfjby3uiUcU9DWcorhlviPG9g0AQNwjh1Yab59SLatwhn5HXCmhW9ua1FSnk7afI+DJM2ODjUJ92QRmSwSk+9UQM7Q/Gi75JFQcywOgnaoOceHY3aol7xzYn4fT7lLNqgj71JnsQFO5vuYc/B9BgQqWMMwknCsQuxtL5U6iIULE00BBSLLXJW3U/lWz7bo1XumEzdGhav6LrbVhsf22sgRlAl/Iv/HfaG4w2e/gw4wc0W/W6t5CJzXm1Zt0iOdKQMoR7eqSeBHec0U155gbRh6lp8EZ6dmoDIK7opqnEIojgQdVPZLWy5+EH/obIAATRYONM/x6gv426IixhSh7bDZVfh8lnVOw60a3oCL9Lojrk2Dw1JfhPbdTXe9IR/iM6eERZQmtUbad/srOEkpHSnn6ONbTP28B9Pvs58qUj7SSJ33NlbOuDyjBtNOdjO3CX9nWhv6l6VljYdAPywvS2TKM4tfX9fdcSEBX/DRy0e5RWxEV8izXRE9ubvPVfLDqiAfcC5h4pQ==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(396003)(39860400002)(376002)(136003)(346002)(230922051799003)(451199024)(64100799003)(82310400011)(186009)(1800799012)(36840700001)(46966006)(40470700004)(86362001)(4326008)(8936002)(8676002)(36756003)(81166007)(70206006)(47076005)(316002)(6636002)(70586007)(2906002)(44832011)(5660300002)(54906003)(41300700001)(36860700001)(356005)(82740400003)(110136005)(478600001)(7696005)(83380400001)(16526019)(336012)(6666004)(2616005)(26005)(426003)(40460700003)(40480700001)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Feb 2024 09:22:51.6015
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 90f26a81-8f7b-4103-17aa-08dc27be5bc2
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BN1PEPF00004684.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6858
+Content-Type: multipart/signed; boundary="nextPart12544814.O9o76ZdvQC";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
 
-With new freqency boost interface supported, legacy boost control
-doesn't make sense any more which only support passive mode.
-so it can remove the legacy set_boost interface from amd-pstate driver
-in case of there is conflict with new boost control logic.
+--nextPart12544814.O9o76ZdvQC
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"; protected-headers="v1"
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+Date: Wed, 07 Feb 2024 11:10:52 +0100
+Message-ID: <2887380.mvXUDI8C0e@natalenko.name>
+MIME-Version: 1.0
 
-Signed-off-by: Perry Yuan <perry.yuan@amd.com>
----
- drivers/cpufreq/amd-pstate.c | 1 -
- include/linux/amd-pstate.h   | 1 -
- 2 files changed, 2 deletions(-)
+Hello.
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 35791efc6e88..1dd523db3871 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -1675,7 +1675,6 @@ static struct cpufreq_driver amd_pstate_driver = {
- 	.exit		= amd_pstate_cpu_exit,
- 	.suspend	= amd_pstate_cpu_suspend,
- 	.resume		= amd_pstate_cpu_resume,
--	.set_boost	= amd_pstate_set_boost,
- 	.update_limits	= amd_pstate_update_limits,
- 	.name		= "amd-pstate",
- 	.attr		= amd_pstate_attr,
-diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
-index 465e9295a60c..ab7ca26974da 100644
---- a/include/linux/amd-pstate.h
-+++ b/include/linux/amd-pstate.h
-@@ -93,7 +93,6 @@ struct amd_cpudata {
- 	struct amd_aperf_mperf prev;
- 
- 	u64	freq;
--	bool	boost_supported;
- 	bool	hw_prefcore;
- 
- 	/* EPP feature related attributes*/
--- 
-2.34.1
+On st=C5=99eda 7. =C3=BAnora 2024 10:21:57 CET Perry Yuan wrote:
+> With new freqency boost interface supported, legacy boost control
+> doesn't make sense any more which only support passive mode.
+> so it can remove the legacy set_boost interface from amd-pstate driver
+> in case of there is conflict with new boost control logic.
+>=20
+> Signed-off-by: Perry Yuan <perry.yuan@amd.com>
+> ---
+>  drivers/cpufreq/amd-pstate.c | 1 -
+>  include/linux/amd-pstate.h   | 1 -
+>  2 files changed, 2 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 35791efc6e88..1dd523db3871 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -1675,7 +1675,6 @@ static struct cpufreq_driver amd_pstate_driver =3D {
+>  	.exit		=3D amd_pstate_cpu_exit,
+>  	.suspend	=3D amd_pstate_cpu_suspend,
+>  	.resume		=3D amd_pstate_cpu_resume,
+> -	.set_boost	=3D amd_pstate_set_boost,
+>  	.update_limits	=3D amd_pstate_update_limits,
+>  	.name		=3D "amd-pstate",
+>  	.attr		=3D amd_pstate_attr,
+> diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
+> index 465e9295a60c..ab7ca26974da 100644
+> --- a/include/linux/amd-pstate.h
+> +++ b/include/linux/amd-pstate.h
+> @@ -93,7 +93,6 @@ struct amd_cpudata {
+>  	struct amd_aperf_mperf prev;
+> =20
+>  	u64	freq;
+> -	bool	boost_supported;
+
+As a result of this removal the kernel-doc for this struct should be amende=
+d too because even after this patch is applied the `boost_supported` field =
+remains documented.
+
+>  	bool	hw_prefcore;
+> =20
+>  	/* EPP feature related attributes*/
+>=20
+
+
+=2D-=20
+Oleksandr Natalenko (post-factum)
+--nextPart12544814.O9o76ZdvQC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEZUOOw5ESFLHZZtOKil/iNcg8M0sFAmXDVywACgkQil/iNcg8
+M0usJA/8DvFsv4pQV0fQtw4hJh2XYcd5dI7x9P7ACTWNem6eWk5h8r8E50qAAj/i
+mhw1eZ7XKEALojhZPehAs4FBkFSZDKwfj7mO4crwDvBtX4sN+zKQI92YAmxY08fu
+jWzGSL607lbFJosXKQ5AUwj4oFLbntWt3I8sYgY9/7LqiaUbyGf376QIDr2+1aNQ
+i3kcCrALsnN0mFmCXmyc7mJLMDRy41v859TBNVpjprq7GUxdhmp42uLl8n49B3uN
+3P4McJLQ1UGc+mOB64MGMypZcBpPGQdGOF+a+0ijNOuUnLKvGm8vxc4vmZFn/lwF
+HVqhnDdFG5e0i4recu3ExN3n43Ji28pcfFYhfBNlu+ro8b4fypF1ija184fl5w44
+POv5QVTLELrLBGE+lzvigTZip/afLojug6VSGVq+PwSAc6UzB0akJTRXO4p5vNyl
+F1l8wcEhKN0flzJkp0q18hIKDLKr9n+Ja3pr+EDkZPQ3W8Fu3dXBHOg4IDWvyvEC
+C5V5UyU1KDF7S3bEIDj1hgDuHG2rGtCNp5UWhCeIxR5GnI4KXgEU1flOu3Yp3VN8
+f4rTaKJHgwZCC1vmK3QejH762nTxqLuAmQXe728nEjEO9Kbs0pPuY9FUQhLRjf6z
+YRDiGifZxWVomkZbz1ueePf5U3zwH1QtnyZbgVUeTWcyftSGC0w=
+=B1Jv
+-----END PGP SIGNATURE-----
+
+--nextPart12544814.O9o76ZdvQC--
+
+
 
