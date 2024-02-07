@@ -1,91 +1,101 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71AB71B275;
-	Wed,  7 Feb 2024 11:26:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id A67F719BBA;
+	Wed,  7 Feb 2024 11:40:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707305190; cv=none; b=aveJyfA8nEN0VXBmDIJzbOJvB8sQU6sDoV6F8RkfKfsun71WT4QG/HTKYqU9e5ubHuaxISWznceLPV0jdebLvUXfLs7aL4FYI4UwvBgBEdOg1ZKZthodylF227Gyz5Dr9hHqJkWpGVVlAZ6ZCiAl5Ue6o+m/oU1UlYVWvHkTeYY=
+	t=1707306015; cv=none; b=CKV/gds3KbB1VeZAnd5goStomhwAs4jdqdiJcMMffMNlK9Ih7HJYxwwv8+meRFaowyG57Jy9a1FvEVJJupG7yDP4FY7tq+L6v0r24Xdm0xhWDbwJLym3lDXmjTLokq2Z7Aiq0MNiicFnDCL69tokAI0M+e1gkhOc26khoiwQie0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707305190; c=relaxed/simple;
-	bh=JfYBzih6S6mvSYeUfR3TJzJyamqjVFjhY7RxM4mbHeg=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=OaW9B6uo0WBqirn3WpJWqcQcPd5liK1F1jV0dso/jtjrOxWAXPdR2/Xvgp1nnjsoDWrihNwOhBFdVq5onPNm2tHl57NTO/S0SFbJgZjibGKWmKSl+gp2KB8A6I4tPvh1QOEgJbRQ+GOHzREbmxkXvcl78bA7GYeCbXDI5Zf8m7s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=rVs+jf/Y; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=hLYCgGrH; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="rVs+jf/Y";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="hLYCgGrH"
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1707305187;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jdCIcHY3HFLAduHPxS6ZbiHVayvEt7hL0AjwboJZzHk=;
-	b=rVs+jf/YT/rRqYGCZt6/RMrx/PA95qNfki/mh0TL7LHCe5jje8ceLJGry2F2qmIhT0UfCE
-	1i5afSBU/iLIxigCi5jSKDtuwUrNVppdKQDL/EXL1rni/H3hqaONZS0j6kJtG8GHWls5fi
-	c5zF8kbHH8ZtbtCopwbBBYRNz0Q0J96hEUFEusm3ypMUkLwfFDvLg2YB6N66Gwd1H4Uca5
-	aOtfa5ISa2a2k5DaEPjscbIE3poLkqDj+0gJQPgXAbgqNlNXiRJq/fv8Dj8q6ZVasWUgMo
-	cQ+K3+Y8uqwhM1yHetql7mwu179TPYbiwjsQjTfTdykO2tWs9rcgxA3gYIO89g==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1707305187;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jdCIcHY3HFLAduHPxS6ZbiHVayvEt7hL0AjwboJZzHk=;
-	b=hLYCgGrHKz53r5YQVdNWW5ahRCIfoL61j/VjkJJCHFGfjzVDyqugAEdGVti6IhSUFz0EOy
-	ZJIcdFpN8SXeBTCA==
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Pranav Prasad
- <pranavpp@google.com>
-Cc: rafael@kernel.org, pavel@ucw.cz, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, krossmo@google.com, jstultz@google.com
-Subject: Re: [PATCH] alarmtimer, PM: suspend: Expose a function from
-In-Reply-To: <CAJZ5v0gXsCuVvqynDeuf_NZtyAJ07umx1NUqfFZb25vjNABAfw@mail.gmail.com>
-References: <20240131191317.2191421-1-pranavpp@google.com>
- <CAJZ5v0gXsCuVvqynDeuf_NZtyAJ07umx1NUqfFZb25vjNABAfw@mail.gmail.com>
-Date: Wed, 07 Feb 2024 12:26:26 +0100
-Message-ID: <87msscms65.ffs@tglx>
+	s=arc-20240116; t=1707306015; c=relaxed/simple;
+	bh=3RxULCQqTCej+mKyEk8otgcgo4i+w98owSqN13Hn9aQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=kwfvRJqkzbWwuy6WLxLxIP/6t75Rj0kdrRbx4lLumYeV4DjDcs3di2Hww3fD+QIJIO3KV6K1BQJmnfEA12phl/Qu2agRf9nPuHQyROOooolMpE3t4jTn7sDPUwAleY2fxuxnt/9L6Xp+aAziOQFt4JWjrtaTAd+69QHMOlo102Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8802A1FB;
+	Wed,  7 Feb 2024 03:40:48 -0800 (PST)
+Received: from [10.1.30.29] (e133649.arm.com [10.1.30.29])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4F5803F762;
+	Wed,  7 Feb 2024 03:40:04 -0800 (PST)
+Message-ID: <8e969ccb-888d-43c8-a9a2-d46bad4bf5e8@arm.com>
+Date: Wed, 7 Feb 2024 11:40:03 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 15/23] PM: EM: Optimize em_cpu_energy() and remove
+ division
+To: Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, rafael@kernel.org
+Cc: dietmar.eggemann@arm.com, rui.zhang@intel.com,
+ amit.kucheria@verdurent.com, amit.kachhap@gmail.com,
+ daniel.lezcano@linaro.org, viresh.kumar@linaro.org, len.brown@intel.com,
+ pavel@ucw.cz, mhiramat@kernel.org, qyousef@layalina.io, wvw@google.com,
+ xuewen.yan94@gmail.com
+References: <20240117095714.1524808-1-lukasz.luba@arm.com>
+ <20240117095714.1524808-16-lukasz.luba@arm.com>
+Content-Language: en-US
+From: Hongyan Xia <hongyan.xia2@arm.com>
+In-Reply-To: <20240117095714.1524808-16-lukasz.luba@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 31 2024 at 21:10, Rafael J. Wysocki wrote:
-> On Wed, Jan 31, 2024 at 8:13=E2=80=AFPM Pranav Prasad <pranavpp@google.co=
-m> wrote:
->> @@ -564,6 +565,8 @@ static int enter_state(suspend_state_t state)
->>  #endif
->>         } else if (!valid_state(state)) {
->>                 return -EINVAL;
->> +       } else if (time_check_suspend_fail()) {
->> +               return -ETIME;
->
-> This causes a function defined in modular code to be called from
-> non-modular code which is an obvious mistake.
->
-> It also makes the generic suspend code call a function defined in a
-> random driver, which is a total no-go as far as I am concerned.
+On 17/01/2024 09:57, Lukasz Luba wrote:
+> The Energy Model (EM) can be modified at runtime which brings new
+> possibilities. The em_cpu_energy() is called by the Energy Aware Scheduler
+> (EAS) in its hot path. The energy calculation uses power value for
+> a given performance state (ps) and the CPU busy time as percentage for that
+> given frequency.
+> 
+> It is possible to avoid the division by 'scale_cpu' at runtime, because
+> EM is updated whenever new max capacity CPU is set in the system.
+> 
+> Use that feature and do the needed division during the calculation of the
+> coefficient 'ps->cost'. That enhanced 'ps->cost' value can be then just
+> multiplied simply by utilization:
+> 
+> pd_nrg = ps->cost * \Sum cpu_util
+> 
+> to get the needed energy for whole Performance Domain (PD).
+> 
+> With this optimization and earlier removal of map_util_freq(), the
+> em_cpu_energy() should run faster on the Big CPU by 1.43x and on the Little
+> CPU by 1.69x (RockPi 4B board).
+> 
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>   include/linux/energy_model.h | 54 ++++++++++--------------------------
+>   kernel/power/energy_model.c  |  7 ++---
+>   2 files changed, 17 insertions(+), 44 deletions(-)
+> 
+> diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
+> index 689d71f6b56f..aabfc26fcd31 100644
+> --- a/include/linux/energy_model.h
+> +++ b/include/linux/energy_model.h
+> [...]
+> @@ -208,8 +206,9 @@ static int em_compute_costs(struct device *dev, struct em_perf_state *table,
+>   				return -EINVAL;
+>   			}
+>   		} else {
+> -			power_res = table[i].power;
+> -			cost = div64_u64(fmax * power_res, table[i].frequency);
+> +			/* increase resolution of 'cost' precision */
+> +			power_res = table[i].power * 10;
 
-Alarmtimers is built-in core infrastructure and not a random modular
-driver, but nevertheless:
+NIT: Does this have to be 10, or something simple like << 3 (* 8) also 
+does the job?
 
-> Why don't you instead define a PM notifier in the alarmtimer driver
-> and check if it is going to trigger shortly from there?  PM notifiers
-> run before the tasks freezer, so there would be a little difference
-> timing-wise and you can return whatever error code you like from
-> there.  As an additional benefit, you'd be able to handle hibernation
-> in the same way.
+Although compiler these days often are clever enough to convert x * 10 
+into (x << 3) + (x << 1), and this is not on the hot path anyway, so 
+just a NIT.
 
-Makes sense.
+> +			cost = power_res / table[i].performance;
+>   		}
+>   
+>   		table[i].cost = cost;
 
-Thanks,
-
-        tglx
+Reviewed-by: Hongyan Xia <hongyan.xia2@arm.com>
