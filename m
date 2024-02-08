@@ -1,72 +1,47 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B04271B32
-	for <linux-pm@vger.kernel.org>; Thu,  8 Feb 2024 10:51:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 301F66EB51;
+	Thu,  8 Feb 2024 11:56:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707389473; cv=none; b=fvN0RtmbgKF6MrEsRp1Legw4rlqQX+aCozhSna1M6wqoo/WfPuSI+Foe4fsM6RJm4GSsjIUGjnd1shyFXE1EEHI4pD09sCV/BdaRlifV3W4vOfZCksmo80nC1ZUtpEt9TlK0iIV2CihkQfr6DxNYqrVOixOrVsqRmpFGvPKd+tw=
+	t=1707393371; cv=none; b=HYemXiI0La8kkNixRt+Z74q1hwZeRj/QsvQ7AK8Mv9SHbdHVxpULwzLjMss5YuoaQsE3t9K++fONQkG/iUEH5Csj17PvMGDrB7MOsEJmJXCwSR/4wuic8Sr1/+1q2ruNYb4ZpdAHMGThvFndl/we2kSgP5agqZ55wxW55O2KSJY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707389473; c=relaxed/simple;
-	bh=xJfnEJ+zVsCbj3Czpg60LPhMDPo5+HXP6lXubKlhf+E=;
+	s=arc-20240116; t=1707393371; c=relaxed/simple;
+	bh=8DMwt8yyB/AH6UsoAjLC//3tT+olnUYsZlQ9JSoRWMQ=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=GtV0OfFgVBDDad1ppVXuxJL00VvZBnoJZTZgJwHLYFWD8ovGwkGnamvzrvVCqU9Qcup6UhSWvgwx5FoL53BRgCunPdQBK36dqQHzVO2ytKdGIdtzEsc39YLMx22Csl2y1n1sZhOaDa7jMXUvD/sOnkfjIMkQLdLeGS46vme/gMs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=WnZep+P1; arc=none smtp.client-ip=209.85.128.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WnZep+P1"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-4102f273c46so6450665e9.2
-        for <linux-pm@vger.kernel.org>; Thu, 08 Feb 2024 02:51:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1707389469; x=1707994269; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=lkWzwIjo/uZaIYjgKgDNcnhcc1cwlKLdvZXvoZJLBm8=;
-        b=WnZep+P1F4+Nsn24SCC7jw8PnKUaajsse5HmxzZGZUM6Ye058QFnSXydVHVWcUkFax
-         oZhe5S/sPfWSN6QKYmUtDnBQIZJnEs4Z4f5kWGxSWSYvyfFyqCx/sF6w4NL4AsObpgJ+
-         wMvRChH86mLXAsEQkayxx8GYVc7DXOiad3/aDRH06NA/S6BAB7GIdCv2ZF6046n+d2CP
-         XeGzLpH434DX3b6Gq6/NnY38f69jBjBCsL9ndwZUhPlYZNaTOTtwdpE5S1GORK1BgHZr
-         eQwT3O9zc9xG4FncJbSRIn3D/UiEGo0zwPq/pqN+sFd3L1a0VnS0dXHbmEs4oZxwfQgn
-         l79g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707389469; x=1707994269;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=lkWzwIjo/uZaIYjgKgDNcnhcc1cwlKLdvZXvoZJLBm8=;
-        b=AF/1vpLc6nyr8LkPUweHTio8UDF45JlIn4dpW6I5Wb+xPwzivEdEtIqaYaeDflveGL
-         Oq9cTVQSDayWv+GiegNfxCbTMoSh12yq6ijwGFzyJPE0rPyNSzgvO7SAKhGvOZz43oSE
-         z0RFsVlPwUNIC3RzkUHZkiLQB41fnu1gXxt1X+lZCZEd4uNcm1uAy/aBHH2r2FwchMTm
-         VkJQNno9ARS0kKUekuS9J1A0Ya30tSQuFiZp+DMKarOZ4YoK713fi982nQfVsnKM+41G
-         xYFaFoNDgMA4Dq8i7VwNCYbfsCbh4GEMpx9UY9IMVA/eOCfQs0Nnfj1tsawp+H8FMGq8
-         7Wxg==
-X-Forwarded-Encrypted: i=1; AJvYcCVho2t3PMX0IKd0BnD0Q47VWh7jNel9CBEYXNyBNpQG5+JON0neo90GIBMAKOLZ3DEfJASENoKBZ0/e6ipTR5UbITZx+nSiH5M=
-X-Gm-Message-State: AOJu0YzLqQC+V96Pl7P1HPY+xf8kXRbCC1jMjYgh9jEDRpewutMjTmoc
-	s+cnxXU7MBW1VrRNjvqB292Z0yJ6bflgiG3k/hvtG1JTU3iamZZIHv+5iGCh2xM=
-X-Google-Smtp-Source: AGHT+IEDQm5VMj88QgMa7T2443WaR0z1L0cupYZAj6nJd5Y/yuIH6Y5K3aV/K/rbrptqrKJPbyMfpw==
-X-Received: by 2002:adf:a3d0:0:b0:33b:2100:3a44 with SMTP id m16-20020adfa3d0000000b0033b21003a44mr5785649wrb.39.1707389469321;
-        Thu, 08 Feb 2024 02:51:09 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXXdJz84ovdU6pVqpNw60wd7HVwL15lYcM+n6oKgtk++P2/cWs0wiEm4kCDeoSC295ABHv6ze6F0PqI/Vog2Kl9f5nws8pWwqCTIDOdU3oqLsabsMlEJt3WF7y93IGweLBiR6AAK3/44S/b9d9jJwhVUl0Gwp1olFjo978YBfnrMyvovgy4r9By/4HqInf/JKChViz9WnRTL4m5SbOAmlSP1O+CicgzP78T8B9TiCk/JRJ8
-Received: from krzk-bin.. ([178.197.222.62])
-        by smtp.gmail.com with ESMTPSA id s1-20020a5d69c1000000b0033b4719eb6esm3308283wrw.27.2024.02.08.02.51.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Feb 2024 02:51:08 -0800 (PST)
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To: Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Georgi Djakov <djakov@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
+	 MIME-Version; b=WKnfBiCmA1HgEiLNVQe4qcRWX6talPygQWMp4cPoLcazqKZ8gnHnl8Z072WW5qrt4Eg6YiGA7gBK3uasREEtjMW6w65fsvltGuXWd41Cs7yIaEW8xs8Z8VpQh03EH8Syxj+IojgmWCL80OQoI1uPhu13I2b3RrwPPvvARjtPVPI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A6494DA7;
+	Thu,  8 Feb 2024 03:56:50 -0800 (PST)
+Received: from e129166.arm.com (unknown [10.57.8.23])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 994823F5A1;
+	Thu,  8 Feb 2024 03:56:05 -0800 (PST)
+From: Lukasz Luba <lukasz.luba@arm.com>
+To: linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH 6/6] interconnect: qcom: x1e80100: constify pointer to qcom_icc_bcm
-Date: Thu,  8 Feb 2024 11:50:56 +0100
-Message-Id: <20240208105056.128448-7-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240208105056.128448-1-krzysztof.kozlowski@linaro.org>
-References: <20240208105056.128448-1-krzysztof.kozlowski@linaro.org>
+	rafael@kernel.org
+Cc: lukasz.luba@arm.com,
+	dietmar.eggemann@arm.com,
+	rui.zhang@intel.com,
+	amit.kucheria@verdurent.com,
+	amit.kachhap@gmail.com,
+	daniel.lezcano@linaro.org,
+	viresh.kumar@linaro.org,
+	len.brown@intel.com,
+	pavel@ucw.cz,
+	mhiramat@kernel.org,
+	qyousef@layalina.io,
+	wvw@google.com,
+	xuewen.yan94@gmail.com,
+	Hongyan Xia <hongyan.xia2@arm.com>
+Subject: [PATCH v8 01/23] PM: EM: Add missing newline for the message log
+Date: Thu,  8 Feb 2024 11:55:35 +0000
+Message-Id: <20240208115557.1273962-2-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240208115557.1273962-1-lukasz.luba@arm.com>
+References: <20240208115557.1273962-1-lukasz.luba@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -75,71 +50,29 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Pointers to struct qcom_icc_bcm are const.
+Fix missing newline for the string long in the error code path.
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Hongyan Xia <hongyan.xia2@arm.com>
+Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Tested-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/interconnect/qcom/x1e80100.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ kernel/power/energy_model.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/interconnect/qcom/x1e80100.c b/drivers/interconnect/qcom/x1e80100.c
-index 281295a9a077..99824675ee3f 100644
---- a/drivers/interconnect/qcom/x1e80100.c
-+++ b/drivers/interconnect/qcom/x1e80100.c
-@@ -1542,7 +1542,7 @@ static struct qcom_icc_bcm bcm_sn4 = {
- 	.nodes = { &qnm_usb_anoc },
- };
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index 7b44f5b89fa1..8b9dd4a39f63 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -250,7 +250,7 @@ static void em_cpufreq_update_efficiencies(struct device *dev)
  
--static struct qcom_icc_bcm *aggre1_noc_bcms[] = {
-+static struct qcom_icc_bcm * const aggre1_noc_bcms[] = {
- };
+ 	policy = cpufreq_cpu_get(cpumask_first(em_span_cpus(pd)));
+ 	if (!policy) {
+-		dev_warn(dev, "EM: Access to CPUFreq policy failed");
++		dev_warn(dev, "EM: Access to CPUFreq policy failed\n");
+ 		return;
+ 	}
  
- static struct qcom_icc_node * const aggre1_noc_nodes[] = {
-@@ -1730,7 +1730,7 @@ static const struct qcom_icc_desc x1e80100_gem_noc = {
- 	.num_bcms = ARRAY_SIZE(gem_noc_bcms),
- };
- 
--static struct qcom_icc_bcm *lpass_ag_noc_bcms[] = {
-+static struct qcom_icc_bcm * const lpass_ag_noc_bcms[] = {
- };
- 
- static struct qcom_icc_node * const lpass_ag_noc_nodes[] = {
-@@ -1871,7 +1871,7 @@ static const struct qcom_icc_desc x1e80100_pcie_north_anoc = {
- 	.num_bcms = ARRAY_SIZE(pcie_north_anoc_bcms),
- };
- 
--static struct qcom_icc_bcm *pcie_south_anoc_bcms[] = {
-+static struct qcom_icc_bcm * const pcie_south_anoc_bcms[] = {
- };
- 
- static struct qcom_icc_node * const pcie_south_anoc_nodes[] = {
-@@ -1890,7 +1890,7 @@ static const struct qcom_icc_desc x1e80100_pcie_south_anoc = {
- 	.num_bcms = ARRAY_SIZE(pcie_south_anoc_bcms),
- };
- 
--static struct qcom_icc_bcm *system_noc_bcms[] = {
-+static struct qcom_icc_bcm * const system_noc_bcms[] = {
- 	&bcm_sn0,
- 	&bcm_sn2,
- 	&bcm_sn3,
-@@ -1928,7 +1928,7 @@ static const struct qcom_icc_desc x1e80100_usb_center_anoc = {
- 	.num_bcms = ARRAY_SIZE(usb_center_anoc_bcms),
- };
- 
--static struct qcom_icc_bcm *usb_north_anoc_bcms[] = {
-+static struct qcom_icc_bcm * const usb_north_anoc_bcms[] = {
- };
- 
- static struct qcom_icc_node * const usb_north_anoc_nodes[] = {
-@@ -1944,7 +1944,7 @@ static const struct qcom_icc_desc x1e80100_usb_north_anoc = {
- 	.num_bcms = ARRAY_SIZE(usb_north_anoc_bcms),
- };
- 
--static struct qcom_icc_bcm *usb_south_anoc_bcms[] = {
-+static struct qcom_icc_bcm * const usb_south_anoc_bcms[] = {
- };
- 
- static struct qcom_icc_node * const usb_south_anoc_nodes[] = {
 -- 
-2.34.1
+2.25.1
 
