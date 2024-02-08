@@ -1,46 +1,46 @@
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
+Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF77682D61;
-	Thu,  8 Feb 2024 17:04:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B609382D84;
+	Thu,  8 Feb 2024 17:04:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707411879; cv=none; b=XQWaqbP3ugVCiNSgfh+HTrABlUrhe9mzUvgjd3kvfUvfac9la/hoQ8IrgwFurHu7BDUq9jAW/0deYmEB3Ve5WGro6yZ6OKi+lGOPaxVY0goE9Q/vOTDMhGBUG7haDS9yhZSVU0wtDZhHNupHNtz5xTTsg8X6LFdKmLhJ7Ipu5Ps=
+	t=1707411879; cv=none; b=g7EkK//uuJZ8rRH1YnM1hR4MXDhBjQV6ZRYjxIbK+rnK02/sWibDhVYeEh4jgTWvnzgnekgAQmk63ZDd52Pvnb7VilRm74J/ubys7wzmIw601iQeYRzxuDyxYPTaFIttG5yl9VmBp7mqkpAZYHU00JiJhfH9+fsqCYB59QcO/fY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1707411879; c=relaxed/simple;
-	bh=TcZggvWPAiMNrDjTaYr88pR3WYNyYJDkk6qpMPNTC3Y=;
+	bh=HDoP9l78EFZDdW16hNeR9IATxUCA5uyr6j+jeh40ipg=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=T3IY1w2mWIwORxnet9uPtV0R9awDzekdCEVQjcO7N2ZHAlw0D21s1NhEyApMEbhqeTp829rkE/S5rWNcBXSf7iCfuBc9AC297A2lPPh3UscMD15YJpGcq93WTacQTGIYceJBmQITaSr4j0jnNViLzDG4w0cEIyqhBcvTtHWirKs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=Nn2d1Jqb; arc=none smtp.client-ip=198.47.19.142
+	 MIME-Version:Content-Type; b=dkt25HuXHVIXcWAVWKm2e/gSyp3LPgIvdEab2LH37B1NR6GR4WnOkIAC+2ib7CSYKUocRsVjLKR+dIIuS7W4wW0B8Pmr8gXHMgdtSH36H11GCum0Gzb84sem75CThTWYnr7A+2p/tM6aBw9fDT1p+FsQN3i5v8V8L6V3qBL9c0o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=FFWITdHo; arc=none smtp.client-ip=198.47.23.248
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="Nn2d1Jqb"
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 418H4LT3051777;
-	Thu, 8 Feb 2024 11:04:21 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="FFWITdHo"
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 418H4N30018180;
+	Thu, 8 Feb 2024 11:04:23 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1707411861;
-	bh=5a2BDxvry/mDEJhidMjtTRkucrmFZYMP54rfoZVMxFg=;
+	s=ti-com-17Q1; t=1707411863;
+	bh=WzOWw71XNiTDn9UhRVmQ1YL+kbl79QddxFr5AngwFzk=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=Nn2d1JqbkmwolD9eOlmJ4M35dV5MKx16BW64juGbDGBzox+jz/3tFBGxnbgSTI347
-	 WzBCV+ccNDq6AEUwDc7dEVy4iSHkctSWeMUawVFVF9IY7mV0pbUC8fiO8ClwkzgS5p
-	 Ita4IL7d/SmY/SbNqKgzvrfL89P0JKhNlCuE7gF8=
-Received: from DFLE114.ent.ti.com (dfle114.ent.ti.com [10.64.6.35])
-	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 418H4L8M054137
+	b=FFWITdHo0BdV2CFmQNlXBS6gqu3VbRAgn1fajWZ9PxxNEPibvR/OJxfM2S6k68PVs
+	 VVJZJnmF/uQ3T1GY251ts/5vNSx1oafnOj7q1cHgU40Ugzy4qd2FiW3DC/fCQD9J56
+	 nrJaxDkkurkZW37mYcyy2dhOEHItXcIWsR7eDY/M=
+Received: from DLEE112.ent.ti.com (dlee112.ent.ti.com [157.170.170.23])
+	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 418H4NgW042486
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 8 Feb 2024 11:04:21 -0600
-Received: from DFLE113.ent.ti.com (10.64.6.34) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
+	Thu, 8 Feb 2024 11:04:23 -0600
+Received: from DLEE115.ent.ti.com (157.170.170.26) by DLEE112.ent.ti.com
+ (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 8
- Feb 2024 11:04:20 -0600
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DFLE113.ent.ti.com
- (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2024 11:04:23 -0600
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE115.ent.ti.com
+ (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Thu, 8 Feb 2024 11:04:20 -0600
+ Frontend Transport; Thu, 8 Feb 2024 11:04:22 -0600
 Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 418H4B6F091006;
-	Thu, 8 Feb 2024 11:04:20 -0600
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 418H4B6I091006;
+	Thu, 8 Feb 2024 11:04:22 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Manivannan Sadhasivam
@@ -62,9 +62,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH v3 13/19] power: reset: msm-poweroff: Use devm_register_sys_off_handler(RESTART)
-Date: Thu, 8 Feb 2024 11:04:04 -0600
-Message-ID: <20240208170410.67975-14-afd@ti.com>
+Subject: [PATCH v3 16/19] power: reset: gemini-poweroff: Use devm_register_sys_off_handler(POWER_OFF)
+Date: Thu, 8 Feb 2024 11:04:07 -0600
+Message-ID: <20240208170410.67975-17-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240208170410.67975-1-afd@ti.com>
 References: <20240208170410.67975-1-afd@ti.com>
@@ -82,55 +82,51 @@ Use device life-cycle managed register function to simplify probe.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/msm-poweroff.c | 23 ++++++-----------------
- 1 file changed, 6 insertions(+), 17 deletions(-)
+ drivers/power/reset/gemini-poweroff.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
-index bcf04491e7022..c5831c46f69e2 100644
---- a/drivers/power/reset/msm-poweroff.c
-+++ b/drivers/power/reset/msm-poweroff.c
-@@ -13,35 +13,24 @@
- #include <linux/reboot.h>
- #include <linux/pm.h>
- 
--static void __iomem *msm_ps_hold;
--static int deassert_pshold(struct notifier_block *nb, unsigned long action,
--			   void *data)
-+static int do_msm_poweroff(struct sys_off_data *data)
- {
-+	void __iomem *msm_ps_hold = data->cb_data;
-+
- 	writel(0, msm_ps_hold);
- 	mdelay(10000);
- 
- 	return NOTIFY_DONE;
+diff --git a/drivers/power/reset/gemini-poweroff.c b/drivers/power/reset/gemini-poweroff.c
+index d309b610142ce..06d6992dec892 100644
+--- a/drivers/power/reset/gemini-poweroff.c
++++ b/drivers/power/reset/gemini-poweroff.c
+@@ -70,12 +70,9 @@ static irqreturn_t gemini_powerbutton_interrupt(int irq, void *data)
+ 	return IRQ_HANDLED;
  }
  
--static struct notifier_block restart_nb = {
--	.notifier_call = deassert_pshold,
--	.priority = 128,
--};
+-/* This callback needs this static local as it has void as argument */
+-static struct gemini_powercon *gpw_poweroff;
 -
--static int do_msm_poweroff(struct sys_off_data *data)
--{
--	deassert_pshold(&restart_nb, 0, NULL);
--
--	return NOTIFY_DONE;
--}
--
- static int msm_restart_probe(struct platform_device *pdev)
+-static void gemini_poweroff(void)
++static int gemini_poweroff(struct sys_off_data *data)
  {
--	msm_ps_hold = devm_platform_ioremap_resource(pdev, 0);
-+	void __iomem *msm_ps_hold = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(msm_ps_hold))
- 		return PTR_ERR(msm_ps_hold);
+-	struct gemini_powercon *gpw = gpw_poweroff;
++	struct gemini_powercon *gpw = data->cb_data;
+ 	u32 val;
  
--	register_restart_handler(&restart_nb);
-+	devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_RESTART,
-+				      128, do_msm_poweroff, msm_ps_hold);
+ 	dev_crit(gpw->dev, "Gemini power off\n");
+@@ -86,6 +83,8 @@ static void gemini_poweroff(void)
+ 	val &= ~GEMINI_CTRL_ENABLE;
+ 	val |= GEMINI_CTRL_SHUTDOWN;
+ 	writel(val, gpw->base + GEMINI_PWC_CTRLREG);
++
++	return NOTIFY_DONE;
+ }
  
- 	devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_POWER_OFF,
- 				      SYS_OFF_PRIO_DEFAULT, do_msm_poweroff,
+ static int gemini_poweroff_probe(struct platform_device *pdev)
+@@ -148,8 +147,11 @@ static int gemini_poweroff_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	pm_power_off = gemini_poweroff;
+-	gpw_poweroff = gpw;
++	ret = devm_register_sys_off_handler(dev, SYS_OFF_MODE_POWER_OFF,
++					    SYS_OFF_PRIO_DEFAULT,
++					    gemini_poweroff, gpw);
++	if (ret)
++		return ret;
+ 
+ 	dev_info(dev, "Gemini poweroff driver registered\n");
+ 
 -- 
 2.39.2
 
