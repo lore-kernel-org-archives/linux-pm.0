@@ -1,22 +1,23 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 172AA5427E;
-	Thu,  8 Feb 2024 11:56:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 097146F539;
+	Thu,  8 Feb 2024 11:56:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707393372; cv=none; b=S6eqB31XcjTazsOwA8+h7QAy+p6tsfec+mmtxJfTyUexwVZ9FJjMXg26ywMbmD682XB2RBvesn/8tibVrHtm7ipl6JCOLa6f0OXYuvvM+wxvx2i3FWeBTk1T6XBpDtKP0CQqhmaHLz+rWTmPpRsPu7yyC23EAsOsImVT1S0TrV0=
+	t=1707393374; cv=none; b=buPSAkS4IWGv/Va7gUoj5EVww2HuYSoD740uREPxqCDeSMENlHYTranK+7jeu2hZvI0BfiHuo2tYm1Lj/FGKygi1vRSN1blRGE0tdjesY+AltgfwENNUxfZ3Z5tAp61QuCmbn5eYM6ieVDeP518L5hkIxhs4R4yQxkcBdV6hRWo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707393372; c=relaxed/simple;
-	bh=CsOx6NKwax+VaEWEmQmqc9aiC7B8s4RH8d2Cd/o8B2A=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=MUo6488d0SlT7v91x4t0hrqrUx0zVo55+hoAgfFuqifkvbt+Ltzvh1O+vH9RR6PlzPC1J1q1INz7oPxWK67EVHb1Z1YE5hitjKST9/7KonzNxPz6WKObMDO8FLQ21C3Bzx293DAN2QdrQ2Jn33qu1La53HtaIZ0dJeUTwBMEN8Y=
+	s=arc-20240116; t=1707393374; c=relaxed/simple;
+	bh=3JyBDbzGvfBhPotIs1tob8kBWsx0vCf+QiqaU2yqhXI=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=QCDOTfLlwkCoo7z7JqreCrMP5TaHHlIOsESR85/btC5G1LnJhaVw8eLY2DXHVCCYRqLJHaG1y5/VptsocjbTub/mD7gnr2/LOuIDIeQ8fXn22Zq3CDZhdXoV4cmg7MTTBN8R2sRfQ8uF0RqXzY+RyD90F8bK+GMYlGk1QfE3aNo=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 848DE1FB;
-	Thu,  8 Feb 2024 03:56:47 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BEA411515;
+	Thu,  8 Feb 2024 03:56:53 -0800 (PST)
 Received: from e129166.arm.com (unknown [10.57.8.23])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id A2E5F3F5A1;
-	Thu,  8 Feb 2024 03:56:02 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id BA42B3F5A1;
+	Thu,  8 Feb 2024 03:56:08 -0800 (PST)
 From: Lukasz Luba <lukasz.luba@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
@@ -33,11 +34,14 @@ Cc: lukasz.luba@arm.com,
 	mhiramat@kernel.org,
 	qyousef@layalina.io,
 	wvw@google.com,
-	xuewen.yan94@gmail.com
-Subject: [PATCH v8 00/23] Introduce runtime modifiable Energy Model
-Date: Thu,  8 Feb 2024 11:55:34 +0000
-Message-Id: <20240208115557.1273962-1-lukasz.luba@arm.com>
+	xuewen.yan94@gmail.com,
+	Hongyan Xia <hongyan.xia2@arm.com>
+Subject: [PATCH v8 02/23] PM: EM: Extend em_cpufreq_update_efficiencies() argument list
+Date: Thu,  8 Feb 2024 11:55:36 +0000
+Message-Id: <20240208115557.1273962-3-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240208115557.1273962-1-lukasz.luba@arm.com>
+References: <20240208115557.1273962-1-lukasz.luba@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,173 +50,62 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hi all,
+In order to prepare the code for the modifiable EM perf_state table,
+make em_cpufreq_update_efficiencies() take a pointer to the EM table
+as its second argument and modify it to use that new argument instead
+of the 'table' member of dev->em_pd.
 
-This patch set adds a new feature which allows to modify Energy Model (EM)
-power values at runtime. It will allow to better reflect power model of
-a recent SoCs and silicon. Different characteristics of the power usage
-can be leveraged and thus better decisions made during task placement in EAS.
+No functional impact.
 
-It also optimizes the EAS code hot path, by removing 2 division and 1
-multiplication operations in the em_cpu_energy(). Speed-up results:
-the em_cpu_energy() should run faster on the Big CPU by 1.43x and on the
-Little CPU by 1.69x (mainline board RockPi 4B).
+Reviewed-by: Hongyan Xia <hongyan.xia2@arm.com>
+Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Tested-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ kernel/power/energy_model.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-This patch set is part of feature set known as Dynamic Energy Model. It has been
-presented and discussed recently at OSPM2023 [3].
-
-
-The concepts:
-1. The CPU power usage can vary due to the workload that it's running or due
-to the temperature of the SoC. The same workload can use more power when the
-temperature of the silicon has increased (e.g. due to hot GPU or ISP).
-In such situation the EM can be adjusted and reflect the fact of increased
-power usage. That power increase is due to static power
-(sometimes called simply: leakage). The CPUs in recent SoCs are different.
-We have heterogeneous SoCs with 3 (or even 4) different microarchitectures.
-They are also built differently with High Performance (HP) cells or
-Low Power (LP) cells. They are affected by the temperature increase
-differently: HP cells have bigger leakage. The SW model can leverage that
-knowledge.
-
-2. It is also possible to change the EM to better reflect the currently
-running workload. Usually the EM is derived from some average power values
-taken from experiments with benchmark (e.g. Dhrystone). The model derived
-from such scenario might not represent properly the workloads usually running
-on the device. Therefore, runtime modification of the EM allows to switch to
-a different model, when there is a need.
-
-3. The EM can be adjusted after boot, when all the modules are loaded and
-more information about the SoC is available e.g. chip binning. This would help
-to better reflect the silicon characteristics. Thus, this EM modification
-API allows it now. It wasn't possible in the past and the EM had to be
-'set in stone'.
-
-Example of such runtime modification after boot can be found in a follow-up
-patch set. It adds the OPP API and usage in Exynos5 SoC driver after the
-voltage values has been adjusted and power changes [5].
-
-More detailed explanation and background can be found in presentations
-during LPC2022 [1][2] or in the documentation patches.
-
-Some test results:
-The EM can be updated to fit better the workload type. In the case below the EM
-has been updated for the Jankbench test on Pixel6 (running v5.18 w/ mainline backports
-for the scheduler bits). The Jankbench was run 10 times for those two configurations,
-to get more reliable data.
-
-1. Janky frames percentage
-+--------+-----------------+---------------------+-------+-----------+
-| metric |    variable     |       kernel        | value | perc_diff |
-+--------+-----------------+---------------------+-------+-----------+
-| gmean  | jank_percentage | EM_default          |  2.0  |   0.0%    |
-| gmean  | jank_percentage | EM_modified_runtime |  1.3  |  -35.33%  |
-+--------+-----------------+---------------------+-------+-----------+
-
-2. Avg frame render time duration
-+--------+---------------------+---------------------+-------+-----------+
-| metric |      variable       |       kernel        | value | perc_diff |
-+--------+---------------------+---------------------+-------+-----------+
-| gmean  | mean_frame_duration | EM_default          | 10.5  |   0.0%    |
-| gmean  | mean_frame_duration | EM_modified_runtime |  9.6  |  -8.52%   |
-+--------+---------------------+---------------------+-------+-----------+
-
-3. Max frame render time duration
-+--------+--------------------+---------------------+-------+-----------+
-| metric |      variable      |       kernel        | value | perc_diff |
-+--------+--------------------+---------------------+-------+-----------+
-| gmean  | max_frame_duration | EM_default          | 251.6 |   0.0%    |
-| gmean  | max_frame_duration | EM_modified_runtime | 115.5 |  -54.09%  |
-+--------+--------------------+---------------------+-------+-----------+
-
-4. OS overutilized state percentage (when EAS is not working)
-+--------------+---------------------+------+------------+------------+
-|    metric    |       wa_path       | time | total_time | percentage |
-+--------------+---------------------+------+------------+------------+
-| overutilized | EM_default          | 1.65 |   253.38   |    0.65    |
-| overutilized | EM_modified_runtime | 1.4  |   277.5    |    0.51    |
-+--------------+---------------------+------+------------+------------+
-
-5. All CPUs (Little+Mid+Big) power values in mW
-+------------+--------+---------------------+-------+-----------+
-|  channel   | metric |       kernel        | value | perc_diff |
-+------------+--------+---------------------+-------+-----------+
-|    CPU     | gmean  | EM_default          | 142.1 |   0.0%    |
-|    CPU     | gmean  | EM_modified_runtime | 131.8 |  -7.27%   |
-+------------+--------+---------------------+-------+-----------+
-
-The time cost to update the EM decreased in this v5 vs v4:
-big: 5us vs 2us -> 2.6x faster
-mid: 9us vs 3us -> 3x faster
-little: 16us vs 16us -> no change
-
-We still have to update the inefficiency in the cpufreq framework, thus
-a bit of overhead will be there.
-
-These series is based on linux next tree, tag 'v6.8-rc3'.
-
-Changelog:
-v8:
-- addressed cosmetic comments (Hongyan, Dietmar)
-- collected all reviewed-by and tested-by tags (Hongyan, Dietmar)
-- re-based on top of v6.8-rc3 (Rafael)
-v7 [6]:
-- dropped em_table_get/put() (Rafael)
-- renamed memory function to em_table_alloc/free() (Rafael)
-- use explicit rcu_read_lock/unlock() instead of wrappers and aligned
-  frameworks & drivers using EM (Rafael)
-- adjusted documentation to the new functions
-- fixed doxygen comments (Rafael)
-- renamed 'refcount' to 'kref' (Rafael)
-- changed patch headers according to comments (Rafael)
-- rebased on 'next-20240112' to get Ingo's revert affecting energy_model.h
-v6 can be found here [4]
-
-Regards,
-Lukasz Luba
-
-[1] https://lpc.events/event/16/contributions/1341/attachments/955/1873/Dynamic_Energy_Model_to_handle_leakage_power.pdf
-[2] https://lpc.events/event/16/contributions/1194/attachments/1114/2139/LPC2022_Energy_model_accuracy.pdf
-[3] https://www.youtube.com/watch?v=2C-5uikSbtM&list=PL0fKordpLTjKsBOUcZqnzlHShri4YBL1H
-[4] https://lore.kernel.org/lkml/20240104171553.2080674-1-lukasz.luba@arm.com/
-[5] https://lore.kernel.org/lkml/20231220110339.1065505-1-lukasz.luba@arm.com/
-[6] https://lore.kernel.org/lkml/20240117095714.1524808-1-lukasz.luba@arm.com/
-
-Lukasz Luba (23):
-  PM: EM: Add missing newline for the message log
-  PM: EM: Extend em_cpufreq_update_efficiencies() argument list
-  PM: EM: Find first CPU active while updating OPP efficiency
-  PM: EM: Refactor em_pd_get_efficient_state() to be more flexible
-  PM: EM: Introduce em_compute_costs()
-  PM: EM: Check if the get_cost() callback is present in
-    em_compute_costs()
-  PM: EM: Split the allocation and initialization of the EM table
-  PM: EM: Introduce runtime modifiable table
-  PM: EM: Use runtime modified EM for CPUs energy estimation in EAS
-  PM: EM: Add functions for memory allocations for new EM tables
-  PM: EM: Introduce em_dev_update_perf_domain() for EM updates
-  PM: EM: Add em_perf_state_from_pd() to get performance states table
-  PM: EM: Add performance field to struct em_perf_state and optimize
-  PM: EM: Support late CPUs booting and capacity adjustment
-  PM: EM: Optimize em_cpu_energy() and remove division
-  powercap/dtpm_cpu: Use new Energy Model interface to get table
-  powercap/dtpm_devfreq: Use new Energy Model interface to get table
-  drivers/thermal/cpufreq_cooling: Use new Energy Model interface
-  drivers/thermal/devfreq_cooling: Use new Energy Model interface
-  PM: EM: Change debugfs configuration to use runtime EM table data
-  PM: EM: Remove old table
-  PM: EM: Add em_dev_compute_costs()
-  Documentation: EM: Update with runtime modification design
-
- Documentation/power/energy-model.rst | 183 ++++++++++-
- drivers/powercap/dtpm_cpu.c          |  39 ++-
- drivers/powercap/dtpm_devfreq.c      |  34 +-
- drivers/thermal/cpufreq_cooling.c    |  45 ++-
- drivers/thermal/devfreq_cooling.c    |  49 ++-
- include/linux/energy_model.h         | 166 ++++++----
- kernel/power/energy_model.c          | 474 +++++++++++++++++++++++----
- 7 files changed, 821 insertions(+), 169 deletions(-)
-
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index 8b9dd4a39f63..8c373b151875 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -237,15 +237,15 @@ static int em_create_pd(struct device *dev, int nr_states,
+ 	return 0;
+ }
+ 
+-static void em_cpufreq_update_efficiencies(struct device *dev)
++static void
++em_cpufreq_update_efficiencies(struct device *dev, struct em_perf_state *table)
+ {
+ 	struct em_perf_domain *pd = dev->em_pd;
+-	struct em_perf_state *table;
+ 	struct cpufreq_policy *policy;
+ 	int found = 0;
+ 	int i;
+ 
+-	if (!_is_cpu_device(dev) || !pd)
++	if (!_is_cpu_device(dev))
+ 		return;
+ 
+ 	policy = cpufreq_cpu_get(cpumask_first(em_span_cpus(pd)));
+@@ -254,8 +254,6 @@ static void em_cpufreq_update_efficiencies(struct device *dev)
+ 		return;
+ 	}
+ 
+-	table = pd->table;
+-
+ 	for (i = 0; i < pd->nr_perf_states; i++) {
+ 		if (!(table[i].flags & EM_PERF_STATE_INEFFICIENT))
+ 			continue;
+@@ -397,7 +395,7 @@ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
+ 
+ 	dev->em_pd->flags |= flags;
+ 
+-	em_cpufreq_update_efficiencies(dev);
++	em_cpufreq_update_efficiencies(dev, dev->em_pd->table);
+ 
+ 	em_debug_create_pd(dev);
+ 	dev_info(dev, "EM: created perf domain\n");
 -- 
 2.25.1
 
