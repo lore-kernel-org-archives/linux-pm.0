@@ -1,46 +1,46 @@
-Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BF198289D;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF7D082D93;
 	Thu,  8 Feb 2024 17:04:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.249
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707411878; cv=none; b=rWpy7MKXS/NRyZoEK1oc/L4fFwVilHKoJrWT/OjLqK1C9BLWiHn0dhItzzBAV5mhC7VyT+B6KHco90iVAagDhDE+ETwhrbyOaY4GP7ZN6rkA+wzOaWp1z8FP86Djxd7Ad/Si4eKFiG7b2DPLwwhWJAO/1NAcbWFYtmcioZZvQ10=
+	t=1707411879; cv=none; b=iPiQrUe2oQW9ntibEdeNUlhO2UalA17O/P47G6u/zlEQ9TFPLXwFFJrGzpRo00B8F6kfF/EhOzsWTGTAUbjvnQ1sWyAEp1HQRi4WDy1JB2s2vAFYNMAOMDfp55PMCh+GRkiB5kRUwhbA9daZHkW8lNMWoq8zyRS/fvGwbM57tN8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707411878; c=relaxed/simple;
-	bh=QekKnIF+GkovKO7gb14ZkIhecaU+qacpUcgS7SjOB24=;
+	s=arc-20240116; t=1707411879; c=relaxed/simple;
+	bh=ilhrdoWUjxQAw/qNLh+VKGDKCDBwtm1fe8dEPR5edio=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=H3p0K7FIsCvfSo5we9YHKa3Ez+9S+bYlsJwhloLRyhPLXtRW7o4Y7gKOFBPF8FTvn6nEPMsdwIMFZHCVf0ynX+/SUfdAzOkOvcXy2vUI7Sm7Y2QcqnvkLake8UzXnlznSb1c/wpYkXBI9X1xmNLyTbiDiMNyYKyh+2Gg8WOHhfk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=lUW4NAlk; arc=none smtp.client-ip=198.47.23.249
+	 MIME-Version:Content-Type; b=mcv9LVDCAicd9ceFZHjyp4KvCH2gZ7e49zA2ApLeRXmyRuKMD2m3aKuZAsRj7CYe/e80ER50rnq7V1J//GitD0z1UZtpxljXEHh+TrqF6eecIX/pxKa8npYGENJhYjv7FqMxIMYEjR/tcZ/L7t2W1SC/FBmO+AbqXdVgIbgYTmQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=GUXPeyO+; arc=none smtp.client-ip=198.47.19.142
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="lUW4NAlk"
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-	by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 418H4Hj8095459;
-	Thu, 8 Feb 2024 11:04:17 -0600
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="GUXPeyO+"
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 418H4ELp051751;
+	Thu, 8 Feb 2024 11:04:14 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1707411857;
-	bh=2TI8f8x/5Y4Kr2Vxqhq6Wi5Pu8tSR0ICKXsQgkmtu64=;
+	s=ti-com-17Q1; t=1707411854;
+	bh=DM5F+CDTYAkATD9JuxoEYM5J5TLXMlR0cMppKdmlkcg=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=lUW4NAlkPsJuI6D1P8bsYr+Ts/dbS0Y7PTS+OtwWD6hHYJpmfBG6gsZu0wTHJAF5x
-	 nUU8aMKtSTpEQBZCDN8vVDTdZFH/IxH5KpKkxKxbOIy1LMgWB6xDLTW2+CeFlup7n6
-	 XqVMPLUBwHSJOUplpIgNERCBALN4tL9UKlCU9y70=
-Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
-	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 418H4HY1023350
+	b=GUXPeyO+bMgIyzoRA4DNuzMmb2GvYNBZkAtVpx9T6Eo5ZhXpQt3jT8JkCdjdrVojD
+	 BjMsS5vMKERPMJPrP4XyhT9J4xg8LaZtxFmzYMc9xVg3ZM1bl+/++udSoVVXYqrinI
+	 Q1ApFsATvr3VJzKuaqd3wQMjOeisG0EVNXXyoCTs=
+Received: from DFLE112.ent.ti.com (dfle112.ent.ti.com [10.64.6.33])
+	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 418H4ErV042386
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 8 Feb 2024 11:04:17 -0600
-Received: from DLEE101.ent.ti.com (157.170.170.31) by DLEE113.ent.ti.com
- (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
+	Thu, 8 Feb 2024 11:04:14 -0600
+Received: from DFLE106.ent.ti.com (10.64.6.27) by DFLE112.ent.ti.com
+ (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 8
- Feb 2024 11:04:17 -0600
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE101.ent.ti.com
- (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2024 11:04:14 -0600
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DFLE106.ent.ti.com
+ (10.64.6.27) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Thu, 8 Feb 2024 11:04:17 -0600
+ Frontend Transport; Thu, 8 Feb 2024 11:04:14 -0600
 Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 418H4B6A091006;
-	Thu, 8 Feb 2024 11:04:16 -0600
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 418H4B65091006;
+	Thu, 8 Feb 2024 11:04:13 -0600
 From: Andrew Davis <afd@ti.com>
 To: Sebastian Reichel <sre@kernel.org>,
         Manivannan Sadhasivam
@@ -62,9 +62,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
-Subject: [PATCH v3 08/19] power: reset: axxia-reset: Use devm_register_sys_off_handler(RESTART)
-Date: Thu, 8 Feb 2024 11:03:59 -0600
-Message-ID: <20240208170410.67975-9-afd@ti.com>
+Subject: [PATCH v3 03/19] power: reset: xgene-reboot: Use devm_platform_ioremap_resource() helper
+Date: Thu, 8 Feb 2024 11:03:54 -0600
+Message-ID: <20240208170410.67975-4-afd@ti.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240208170410.67975-1-afd@ti.com>
 References: <20240208170410.67975-1-afd@ti.com>
@@ -78,58 +78,50 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Use device life-cycle managed register function to simplify probe.
+Use device life-cycle managed ioremap function to simplify probe and
+exit paths.
+
+While here add __iomem to the returned pointer to fix a sparse warning.
 
 Signed-off-by: Andrew Davis <afd@ti.com>
 ---
- drivers/power/reset/axxia-reset.c | 16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
+ drivers/power/reset/xgene-reboot.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/reset/axxia-reset.c b/drivers/power/reset/axxia-reset.c
-index 24946766760c3..797bf6773860e 100644
---- a/drivers/power/reset/axxia-reset.c
-+++ b/drivers/power/reset/axxia-reset.c
-@@ -26,11 +26,10 @@
- #define SC_EFUSE_INT_STATUS	0x180c
- #define   EFUSE_READ_DONE	(1<<31)
+diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
+index c2e5a99940d37..6b545a83d8889 100644
+--- a/drivers/power/reset/xgene-reboot.c
++++ b/drivers/power/reset/xgene-reboot.c
+@@ -22,7 +22,7 @@
  
--static struct regmap *syscon;
--
--static int axxia_restart_handler(struct notifier_block *this,
--				 unsigned long mode, void *cmd)
-+static int axxia_restart_handler(struct sys_off_data *data)
- {
-+	struct regmap *syscon = data->cb_data;
-+
- 	/* Access Key (0xab) */
- 	regmap_write(syscon, SC_CRIT_WRITE_KEY, 0xab);
- 	/* Select internal boot from 0xffff0000 */
-@@ -44,14 +43,10 @@ static int axxia_restart_handler(struct notifier_block *this,
- 	return NOTIFY_DONE;
- }
+ struct xgene_reboot_context {
+ 	struct device *dev;
+-	void *csr;
++	void __iomem *csr;
+ 	u32 mask;
+ 	struct notifier_block restart_handler;
+ };
+@@ -54,7 +54,7 @@ static int xgene_reboot_probe(struct platform_device *pdev)
+ 	if (!ctx)
+ 		return -ENOMEM;
  
--static struct notifier_block axxia_restart_nb = {
--	.notifier_call = axxia_restart_handler,
--	.priority = 128,
--};
--
- static int axxia_reset_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-+	struct regmap *syscon;
- 	int err;
- 
- 	syscon = syscon_regmap_lookup_by_phandle(dev->of_node, "syscon");
-@@ -60,7 +55,8 @@ static int axxia_reset_probe(struct platform_device *pdev)
- 		return PTR_ERR(syscon);
- 	}
- 
--	err = register_restart_handler(&axxia_restart_nb);
-+	err = devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_RESTART,
-+					    128, axxia_restart_handler, syscon);
- 	if (err)
+-	ctx->csr = of_iomap(dev->of_node, 0);
++	ctx->csr = devm_platform_ioremap_resource(pdev, 0);
+ 	if (!ctx->csr) {
+ 		dev_err(dev, "can not map resource\n");
+ 		return -ENODEV;
+@@ -67,10 +67,8 @@ static int xgene_reboot_probe(struct platform_device *pdev)
+ 	ctx->restart_handler.notifier_call = xgene_restart_handler;
+ 	ctx->restart_handler.priority = 128;
+ 	err = register_restart_handler(&ctx->restart_handler);
+-	if (err) {
+-		iounmap(ctx->csr);
++	if (err)
  		dev_err(dev, "cannot register restart handler (err=%d)\n", err);
+-	}
  
+ 	return err;
+ }
 -- 
 2.39.2
 
