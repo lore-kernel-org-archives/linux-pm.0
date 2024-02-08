@@ -1,65 +1,152 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C7048002C;
-	Thu,  8 Feb 2024 17:03:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A2FA77F33;
+	Thu,  8 Feb 2024 17:04:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707411807; cv=none; b=LiXspCG8E/CwdKl+HN868X/hmu+lGi4xpGg98cYVs7J7fK+eVbjFRZ9mH7urtr9Rifvh/riZeidBp7ktVKAvseJ0lYIPpFWzkq8Q3DLIVxEndNLcaMeUBf/c++pBEhliFKOhZUGLiWgaBY5QFFiVOtDulnhtZX7C2O6nGlSy24g=
+	t=1707411870; cv=none; b=sUPZfsf8VKtxZrVEUw/5NEb9HCk3SCedNEO3PvqMkxEsedOLFhO+j6aRfIOtD9+5n30Fy8bOYuMjpU6BtK/kjqoeZb6ps+0G8RiY/STgYmTS54m98iEL+lGolXrQQUfq560b8qk3lTdYo5Quw43Yno4OPpT+nMuUDfgmP8LyyUs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707411807; c=relaxed/simple;
-	bh=EwFD4KJxeu0ZL/NCu3s0G5gqCU2g+oX3eJxt7Iddfmg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=q9cxbBxItrH08fYNrPW2HZmof53wKGbFt9QLfAK06HUNaBMsZ9TP6xokh6H8672hzOcBN7WOQ0SFBLb1znYSewIUhgkcIl45dKMsBbY7KSMKid4lNZj/TfmvjEteu6xqBFFjp/zrId2ofkb06V47VN1hTT75wCPt0IuJX5fan9Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Tb9Rnp1n; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1707411870; c=relaxed/simple;
+	bh=cM1cFjnSzQs76i3u0egboaHOZ+8JvQ6u6lgJc80Opuw=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Z+bfqvmWGMmI/pMGLAXFTYmEfYLRc+f+KkRunOlrTJ2zoe2jgEmthqjr8Qe0iA4GN+HSoGJRKLRChfStqMZmVoCDV50OO6/xWCC5UcNJrsVgYjDoeDax8IdcqpB5S0Y1cd8BsvTaKb+aquD8MbvmlPmd3SmIe+sCc4lyOYmD22o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=kcj8dII9; arc=none smtp.client-ip=198.47.19.142
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tb9Rnp1n"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47ED5C433C7;
-	Thu,  8 Feb 2024 17:03:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1707411806;
-	bh=EwFD4KJxeu0ZL/NCu3s0G5gqCU2g+oX3eJxt7Iddfmg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Tb9Rnp1nKxm9F8zc2OVEPYN2/HUCrZ/i1GOxJWFWwEggLwgvcatx5p3OPgBO3ZwcB
-	 Wy4+WH/clsLMOSk9Qf99vssfuR3J70ULVg003+Ny2wlYND/g7ZwY3K1RClA4JSi8kd
-	 7oQeUwsyZbIwzd54M/vkuf6Y+G0lKfe9sluSUl2U9cerHfyYVIlFrqSn2JPEDljxPJ
-	 J4PZMxBpznU+3D23h7kP25Ams9Els/YDv57w/90kvLRrEDPDZpwmxRTSvQoA+tEVgZ
-	 F4YEMLLlTw5MMIva+gzP1Q4V+/TtrTazrcYeXZxlxKPH9Fi5XHdWhPga+eQCzUtV02
-	 KSifvNhuq9EOg==
-Date: Thu, 8 Feb 2024 18:03:23 +0100
-From: Frederic Weisbecker <frederic@kernel.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>
-Subject: Re: [PATCH 6/7] cpuidle: Handle TIF_NR_POLLING on behalf of
- CPUIDLE_FLAG_POLLING_HARD states
-Message-ID: <ZcUJW2UynuEsxT9-@localhost.localdomain>
-References: <20231124223226.24249-1-frederic@kernel.org>
- <20231124223226.24249-7-frederic@kernel.org>
- <CAJZ5v0gUp9DrzSnSdDYq36YGqKGTc3-fu1PN74WSC8-6fj3rKw@mail.gmail.com>
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="kcj8dII9"
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 418H4G01051761;
+	Thu, 8 Feb 2024 11:04:16 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+	s=ti-com-17Q1; t=1707411856;
+	bh=awh4L/FvuKTUk4LCovxuQcQcm/YmAlMhgCuKLpIU3pA=;
+	h=From:To:CC:Subject:Date:In-Reply-To:References;
+	b=kcj8dII9QoOlZVJGFigZCr9UIY50auj4ATVfaBhVmO84SjDZC5UAyju7eTilQ21Ft
+	 szYI7O5h67Lbsvt4UztSC/YbYjHIcw9PnXTWs97NhHmBM2HvKP7jzDjoBAqmnzJfsh
+	 DGtm4g+bbhEWmdFNgaLPj1ws3uZbFhhSMxFLk+mc=
+Received: from DLEE110.ent.ti.com (dlee110.ent.ti.com [157.170.170.21])
+	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 418H4GSo054075
+	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Thu, 8 Feb 2024 11:04:16 -0600
+Received: from DLEE114.ent.ti.com (157.170.170.25) by DLEE110.ent.ti.com
+ (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 8
+ Feb 2024 11:04:16 -0600
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE114.ent.ti.com
+ (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
+ Frontend Transport; Thu, 8 Feb 2024 11:04:16 -0600
+Received: from lelvsmtp5.itg.ti.com ([10.249.42.149])
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 418H4B68091006;
+	Thu, 8 Feb 2024 11:04:15 -0600
+From: Andrew Davis <afd@ti.com>
+To: Sebastian Reichel <sre@kernel.org>,
+        Manivannan Sadhasivam
+	<manivannan.sadhasivam@linaro.org>,
+        Cristian Ciocaltea
+	<cristian.ciocaltea@gmail.com>,
+        Florian Fainelli
+	<florian.fainelli@broadcom.com>,
+        Ray Jui <rjui@broadcom.com>, Scott Branden
+	<sbranden@broadcom.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad
+ Dybcio <konrad.dybcio@linaro.org>,
+        Sean Wang <sean.wang@mediatek.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno
+	<angelogioacchino.delregno@collabora.com>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-actions@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>, Andrew Davis <afd@ti.com>
+Subject: [PATCH v3 06/19] power: reset: tps65086-restart: Remove unneeded device data struct
+Date: Thu, 8 Feb 2024 11:03:57 -0600
+Message-ID: <20240208170410.67975-7-afd@ti.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240208170410.67975-1-afd@ti.com>
+References: <20240208170410.67975-1-afd@ti.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0gUp9DrzSnSdDYq36YGqKGTc3-fu1PN74WSC8-6fj3rKw@mail.gmail.com>
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Le Tue, Dec 12, 2023 at 02:21:52PM +0100, Rafael J. Wysocki a écrit :
-> On Fri, Nov 24, 2023 at 11:32 PM Frederic Weisbecker
-> > -}
-> > -
-> > -static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-> > -                     int next_state)
-> 
-> Since you are removing call_cpuidle(), you may as well remove
-> call_cpuidle_s2idle() which only has one caller anyway.
+We only need one member of the struct tps65086_restart, pass that
+tps65086_restart_notify() directly. Remove that struct and its
+allocation.
 
-Doing so in a seperate patch. Thanks!
+Signed-off-by: Andrew Davis <afd@ti.com>
+---
+ drivers/power/reset/tps65086-restart.c | 35 ++++++--------------------
+ 1 file changed, 8 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/power/reset/tps65086-restart.c b/drivers/power/reset/tps65086-restart.c
+index 82d7a761a0385..6976dbcac74fa 100644
+--- a/drivers/power/reset/tps65086-restart.c
++++ b/drivers/power/reset/tps65086-restart.c
+@@ -9,19 +9,14 @@
+ #include <linux/platform_device.h>
+ #include <linux/reboot.h>
+ 
+-struct tps65086_restart {
+-	struct device *dev;
+-};
+-
+ static int tps65086_restart_notify(struct sys_off_data *data)
+ {
+-	struct tps65086_restart *tps65086_restart = data->cb_data;
+-	struct tps65086 *tps65086 = dev_get_drvdata(tps65086_restart->dev->parent);
++	struct tps65086 *tps65086 = data->cb_data;
+ 	int ret;
+ 
+ 	ret = regmap_write(tps65086->regmap, TPS65086_FORCESHUTDN, 1);
+ 	if (ret) {
+-		dev_err(tps65086_restart->dev, "%s: error writing to tps65086 pmic: %d\n",
++		dev_err(tps65086->dev, "%s: error writing to tps65086 pmic: %d\n",
+ 			__func__, ret);
+ 		return NOTIFY_DONE;
+ 	}
+@@ -36,27 +31,13 @@ static int tps65086_restart_notify(struct sys_off_data *data)
+ 
+ static int tps65086_restart_probe(struct platform_device *pdev)
+ {
+-	struct tps65086_restart *tps65086_restart;
+-	int ret;
+-
+-	tps65086_restart = devm_kzalloc(&pdev->dev, sizeof(*tps65086_restart), GFP_KERNEL);
+-	if (!tps65086_restart)
+-		return -ENOMEM;
+-
+-	tps65086_restart->dev = &pdev->dev;
+-
+-	ret = devm_register_sys_off_handler(&pdev->dev,
+-					    SYS_OFF_MODE_RESTART,
+-					    SYS_OFF_PRIO_HIGH,
+-					    tps65086_restart_notify,
+-					    tps65086_restart);
+-	if (ret) {
+-		dev_err(&pdev->dev, "%s: cannot register restart handler: %d\n",
+-			__func__, ret);
+-		return -ENODEV;
+-	}
++	struct tps65086 *tps65086 = dev_get_drvdata(pdev->dev.parent);
+ 
+-	return 0;
++	return devm_register_sys_off_handler(&pdev->dev,
++					     SYS_OFF_MODE_RESTART,
++					     SYS_OFF_PRIO_HIGH,
++					     tps65086_restart_notify,
++					     tps65086);
+ }
+ 
+ static const struct platform_device_id tps65086_restart_id_table[] = {
+-- 
+2.39.2
+
