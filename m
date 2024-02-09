@@ -1,115 +1,157 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oo1-f48.google.com (mail-oo1-f48.google.com [209.85.161.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E6967AE4A;
-	Fri,  9 Feb 2024 14:14:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2C6266B4D;
+	Fri,  9 Feb 2024 14:17:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707488094; cv=none; b=LgHLn2rTK/gkS/22ClL3IsXyKR4ekiDKK2nVjlRL9bSkseBFpPcxAag/wEonezkuVL+AA4+jsRHcYVOV+51euABvvrUhF2UWS4R4wwegfoU5AET1P8THerocx/P9zy1J5e/SorbYlHKZzBsPY7LaeL4wVDschJEXpQitH4Xzq8Q=
+	t=1707488222; cv=none; b=gvYmZ8sLq8IkfmK2xODCxPC8n7UBcPte6BHIj8abSo3MrPquUCj0/JpPHhytW7RgUXmNbJw4p1KUcOT0l12PyEDggvo/EMxuKp97ow6IoxbV/d8uep+89UMyTmDv2R9LD1Bjy06DLGzUswwcafe/GMl5cLlXLWpz+jIkyPEIHss=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707488094; c=relaxed/simple;
-	bh=Fdyr0vbCOxxml792JxhFekjDRwIaFLknFjO9gt91Sd0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=hAYGNcokSn3KVqZR4vovQg9xynfSn2/zVBBN+xunvX8vENhtyciQpyJG34OVcev5bHGNCDzAnD6gMm720RI3mf4I8AJ2EXXgRsryKQj7xRp3nZ9jKOkM/39RDLbmLI1VlsbsbKo1//wn0wEbY5xJbvvO/2qDBHBk+4hYSFYgeVc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
- id c430e78c73a3d589; Fri, 9 Feb 2024 15:14:49 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 04D75669C4D;
-	Fri,  9 Feb 2024 15:14:49 +0100 (CET)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Zhang Rui <rui.zhang@intel.com>, netdev@vger.kernel.org,
- Ido Schimmel <idosch@nvidia.com>, Petr Machata <petrm@nvidia.com>,
- Miri Korenblit <miriam.rachel.korenblit@intel.com>,
- linux-wireless@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>,
- Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
-Subject: [PATCH v1 0/9] thermal: Writable trip points handling rework
-Date: Fri, 09 Feb 2024 15:02:23 +0100
-Message-ID: <3232442.5fSG56mABF@kreacher>
+	s=arc-20240116; t=1707488222; c=relaxed/simple;
+	bh=r2L5UFSd7ihDVr6WY6Nn3RvqyS3h+3YX2PpnjXQ2u1I=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ZGynaafmKBlOj1t/LMizOQF7HBVQANgjFlBebMWaHCnQvPnD/jKL8MWolYnrE2ZTdFZ7NObzu3wC39WwY2dw4uZkQxdqazWEI6Hc8naEBKBAhqmh6cPu3mFswqylEuDElT8/cURb6HV/8tWVNzO91iplT02YTzRCGI0Rcf9rq9o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.161.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-oo1-f48.google.com with SMTP id 006d021491bc7-59ceb5a0593so47573eaf.0;
+        Fri, 09 Feb 2024 06:17:00 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1707488220; x=1708093020;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5ZFtzVDJeA3dXQeotyrRokt7aIBqRFpzQ2NPuZqc8Cg=;
+        b=AaO8kyC6D/9VudfOyb7RQvyjgi4HuFRwEQTLFKjZftao9gRpT6xf9ScuDJNWgy8nxJ
+         6VnBJyUCfVu1gUoIR2ly0t2bmyy+VyWy4+HdN5c9vWs6/YVF7EOMzXmzS7DGpPl/tUgg
+         +4gQasJ6EPDjKceT8nlWPhksOoKWyh0kDe3I0+RuZaNEHlqxk1UkO87xHyKQlGGZnQci
+         xWsltf3ugRX/hyRXKdwojryDwiDNhqEyviYf1mPpNj9YDiA5g00LdDVScmXUQiLWJY6i
+         BeTY8JZkZqqWWgIC4UMCjQ3scGg05QZzM4AHdKz9PMyf3RyjVxLMkY0ZkjiiqYzA5Vy+
+         TIeQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWnxrwl24V+nA5Lxa+8bDlnyy9wsG8qUVpARj1nDJEjc4994MStGQkZI5B75z1Sh9Z6PcwXGuifskROeY5NDT74UqJypfmbDi2t2Pa2xC17U59N4UVDi5nbWXolkORVSaTcCXw=
+X-Gm-Message-State: AOJu0YzCoEgtgt7rZtQQ/jczvKvU1KXh9aAxY4ZgVfqP9UOUJj4qyI0D
+	hBYByYBLLOrohQBI4cZBHnZYkhKufe8VWkstnaFioDjj6L/Eb4vrlIWq5UbIoFonP9oBxgmx5w5
+	3UYKeJYb9fJveGTpblg94cSa4I9o=
+X-Google-Smtp-Source: AGHT+IES8oMBC7z9SX5lHvXAdCfvAtoat1O2cdMxhFYh3XDaUgtvCmSsL1ClJTNvAyk+uYZxXgjOsLULZz5TrFOfRbM=
+X-Received: by 2002:a05:6820:1b87:b0:59a:bfb:f556 with SMTP id
+ cb7-20020a0568201b8700b0059a0bfbf556mr2540992oob.0.1707488219804; Fri, 09 Feb
+ 2024 06:16:59 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20240209140841.1854711-1-stanislaw.gruszka@linux.intel.com>
+In-Reply-To: <20240209140841.1854711-1-stanislaw.gruszka@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 9 Feb 2024 15:16:48 +0100
+Message-ID: <CAJZ5v0g5iPVYtU-L=ZPwVf3gHpmJZMJ7ubQFkE=NFrJHZ4nEwQ@mail.gmail.com>
+Subject: Re: [PATCH] PCI/AER: Block runtime suspend when handling errors
+To: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+	"Oliver O'Halloran" <oohall@gmail.com>, 
+	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrtdeigdeitdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepudeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtohepshhtrghnihhslhgrfidrghhruhhsiihkrgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=16 Fuz1=16 Fuz2=16
+Content-Transfer-Encoding: quoted-printable
 
-Hi Everyone,
+On Fri, Feb 9, 2024 at 3:09=E2=80=AFPM Stanislaw Gruszka
+<stanislaw.gruszka@linux.intel.com> wrote:
+>
+> PM runtime can be done simultaneously with AER error handling.
+> Avoid that by using pm_runtime_get_sync() before and pm_runtime_put()
+> after reset in pcie_do_recovery() for all recovering devices.
+>
+> pm_runtime_get_sync() will increase dev->power.usage_count counter
+> to prevent any possible future request to runtime suspend a device,
+> as well as resume device is was in D3hot state.
+>
+> I tested with igc device by doing simultaneous aer_inject and
+> rpm suspend/resume via /sys/bus/pci/devices/PCI_ID/power/control
+> and can reproduce:
+>
+> igc 0000:02:00.0: not ready 65535ms after bus reset; giving up
+> pcieport 0000:00:1c.2: AER: Root Port link has been reset (-25)
+> pcieport 0000:00:1c.2: AER: subordinate device reset failed
+> pcieport 0000:00:1c.2: AER: device recovery failed
+> igc 0000:02:00.0: Unable to change power state from D3hot to D0, device i=
+naccessible
+>
+> The problem disappears when applied this patch.
+>
+> Signed-off-by: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
 
-The purpose of this patch series is to allow thermal zone creators
-to specify which properties (temperature or hysteresis) of which
-trip points can be set from user space via sysfs on a per-trip basis
-instead of passing writable trips masks to the thermal zone registration
-function which is both cumbersome and error prone and it doesn't even
-allow to request different treatment of different trip properties.
+Looks reasonable to me:
 
-The writable trip masks used today only affect trip temperatures (that is, if
-a trip point is in a writable trips mask, its temperature can be set via
-sysfs) and they only take effect if the CONFIG_THERMAL_WRITABLE_TRIPS kernel
-configuration option is set, which appears to be assumed by at least some
-of the drivers using writable trips masks.  Some other drivers using them
-simply select CONFIG_THERMAL_WRITABLE_TRIPS which pretty much defeats its
-purpose (and imx even sets this option in its defconfig).
+Acked-by: Rafael J. Wysocki <rafael@kernel.org>
 
-For this reasons, patch [1/9] removes CONFIG_THERMAL_WRITABLE_TRIPS and makes
-the writable trips masks always work.
-
-Moreover, trip hysteresis, which is not affected either by the writable trips
-masks or by CONFIG_THERMAL_WRITABLE_TRIPS, can only be set via sysfs if the
-.set_trip_hyst() operation is provided by the given thermal zone, but currently
-this thermal zone operation is used by no one, so effectively trip hysteresis
-cannot be set via sysfs at all.  This is not a problem for the majority of
-drivers that want trip temperatures to be set via sysfs, because they also
-don't want trip hysteresis to be changed for any trips (at least as far as I
-can say), but there are use cases in which it is desirable to be able to
-update trip hysteresis as well as trip temperature (for example see
-https://lore.kernel.org/linux-pm/20240106191502.29126-1-quic_manafm@quicinc.com/).
-Those use cases are not addressed here directly, but after this series
-addressing them should be relatively straightforward.
-
-Namely, patch [2/9] adds flags to struct thermal_trip and defines two of them
-to indicate whether or not setting the temperature or hysteresis of the given
-trip via sysfs is allowed.  If a writable trips mask is passed to
-thermal_zone_device_register_with_trips(), is it is used to set the
-"writable temperature" flag for the trips covered by it and that flag is
-then consulted by the thermal sysfs code.  The "writable hysteresis" trip
-flag is also taken into account by the thermal sysfs code, but it is not set
-automatically in any case.
-
-Patch [3/9] is based on the observation that the .set_trip_hyst() thermal zone
-operation is never used - it simply drops that callback from struct
-thermal_zone_device_ops and adjusts the code checking its presence.
-
-Patches [4-8/9] update drivers using writable trips masks to set the new
-"writable temperature" flag directly instead and some of them are simplified
-a bit as a result.  After these patches, all of the callers of
-thermal_zone_device_register_with_trips() pass a zero writable trips mask
-to it, so patch [9/9] drops that mask from the functions argument list and
-adjusts all of its callers accordingly.
-
-After all of the changes in this series, allowing the hysteresis value to be
-set via sysfs for a given trip is a matter of setting its "writable
-hysteresis" flag (and analogously for trip temperature).
-
-Thanks!
-
-
-
+> ---
+> RFC -> v1:
+>  add runtime callbacks to pcie_do_recovery(), this covers DPC case
+>  as well as case of recovering multiple devices under same port.
+>
+>  drivers/pci/pcie/err.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+>
+> diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
+> index 59c90d04a609..705893b5f7b0 100644
+> --- a/drivers/pci/pcie/err.c
+> +++ b/drivers/pci/pcie/err.c
+> @@ -13,6 +13,7 @@
+>  #define dev_fmt(fmt) "AER: " fmt
+>
+>  #include <linux/pci.h>
+> +#include <linux/pm_runtime.h>
+>  #include <linux/module.h>
+>  #include <linux/kernel.h>
+>  #include <linux/errno.h>
+> @@ -85,6 +86,18 @@ static int report_error_detected(struct pci_dev *dev,
+>         return 0;
+>  }
+>
+> +static int pci_pm_runtime_get_sync(struct pci_dev *pdev, void *data)
+> +{
+> +       pm_runtime_get_sync(&pdev->dev);
+> +       return 0;
+> +}
+> +
+> +static int pci_pm_runtime_put(struct pci_dev *pdev, void *data)
+> +{
+> +       pm_runtime_put(&pdev->dev);
+> +       return 0;
+> +}
+> +
+>  static int report_frozen_detected(struct pci_dev *dev, void *data)
+>  {
+>         return report_error_detected(dev, pci_channel_io_frozen, data);
+> @@ -207,6 +220,8 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev=
+,
+>         else
+>                 bridge =3D pci_upstream_bridge(dev);
+>
+> +       pci_walk_bridge(bridge, pci_pm_runtime_get_sync, NULL);
+> +
+>         pci_dbg(bridge, "broadcast error_detected message\n");
+>         if (state =3D=3D pci_channel_io_frozen) {
+>                 pci_walk_bridge(bridge, report_frozen_detected, &status);
+> @@ -251,10 +266,15 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *d=
+ev,
+>                 pcie_clear_device_status(dev);
+>                 pci_aer_clear_nonfatal_status(dev);
+>         }
+> +
+> +       pci_walk_bridge(bridge, pci_pm_runtime_put, NULL);
+> +
+>         pci_info(bridge, "device recovery successful\n");
+>         return status;
+>
+>  failed:
+> +       pci_walk_bridge(bridge, pci_pm_runtime_put, NULL);
+> +
+>         pci_uevent_ers(bridge, PCI_ERS_RESULT_DISCONNECT);
+>
+>         /* TODO: Should kernel panic here? */
+> --
+> 2.34.1
+>
