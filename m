@@ -1,137 +1,139 @@
-Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [85.215.255.80])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75E865A4CB;
-	Sun, 11 Feb 2024 11:21:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=85.215.255.80
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707650490; cv=pass; b=TCQAkBz2loOX21dKdI7FLI/LQjRqzeeu3OAtKJaIGLxpGVy0aUtx8cnBeIe32n4zyt3Rg2NVU48HagNIAoTxeDn9JvfvHyy5ceODaY6/VwcquuY+ZNvpZQDGNU7S2HY2XMnYcyObArBMeN4E/1xpXJG4qdoUC3iWysr7PvOGEjU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707650490; c=relaxed/simple;
-	bh=6GEspL1NI/n7BUNEbTZV7J7Ca1ti6T3eGL6KpastI+s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RmFsQTwW2LKuOXr3Ddz6pqcjYwB/7lwkmV0nDu+6nnztn1olDkQ/kECslSbYHwlWf2oXfU58XNDA5C3YhKwbOfsvXXKH1Spm12HJPExiGl1OGdUklGHR657/IynVCeoqjGZ0e1wXp7Cs8NhOkko1AcAwyTPZmHp8sf7FDOh38QU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gerhold.net; spf=none smtp.mailfrom=gerhold.net; dkim=pass (2048-bit key) header.d=gerhold.net header.i=@gerhold.net header.b=J6vZ5afd; dkim=permerror (0-bit key) header.d=gerhold.net header.i=@gerhold.net header.b=YtPqEZjE; arc=pass smtp.client-ip=85.215.255.80
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gerhold.net
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=gerhold.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D1335A795
+	for <linux-pm@vger.kernel.org>; Sun, 11 Feb 2024 12:17:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1707653877; cv=none; b=bRw8Rboqvs+5WIlkUOX9K0IMGDOKJ9q1r0qnzwznsEmrYn8lSR2kQNk4um6/3tX1bKlFSEs1m/sYfcvNlEKvJxdAPDx7xqzGyIWrC8HyjdB7bn6nS81TMc2avB+1SPLRDbJdnQ7Ckme1RzVk0JRHesKqYQseGZXD0nnZnT7VYNk=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1707653877; c=relaxed/simple;
+	bh=5lUkj6rY+4oKlNNAcSANf15C69NNpNSgeAy997Khml4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ZYy+Fw5xzvax56/BxrT3oD44YgDrOwr6dt0/dSsVgogN+7P5dZw6AbKNolBlJ2ViUxSVuowRovBOfd3J4Byu+qGvIu6fH16FnrOywnlB+LQ9FI9oNOjtdEXmMRnhvcFQ6e5MyUaqhSIFMW04R7nVtmx+nAdNCMftX0jQqzWMIiE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=uvZkOLVB; arc=none smtp.client-ip=209.85.128.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gerhold.net header.i=@gerhold.net header.b="J6vZ5afd";
-	dkim=permerror (0-bit key) header.d=gerhold.net header.i=@gerhold.net header.b="YtPqEZjE"
-ARC-Seal: i=1; a=rsa-sha256; t=1707649397; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=eO/IoGfXJno/1sOUVSi/OV6NtBotF9pz56/zjtMQJMv7twuQRj9UwIqykSoLoepF+L
-    PaqAHDEoh2WontcEGEe0m4QSzXQAoytP10MJ4W7UfSZhdkIhl1whXU+8RjX0TlKGiXCL
-    eVueAL99iSLQG1m9gBwX07uU/2xlWYRzOH26aXR1Kee/RVH96hokoH7qAFhe988qyyZV
-    HX9k4CxH3lRlIKHXYzsE6TeBlPbZDJhFTAsFxQb4ty/cEF7FE9e+QLGnAE5+XQuxakJS
-    y8xsfCja126jUaqFq7hftU7N9C6TobVUlM8uTDhelGYu9wmIibBGmo/D/DUZP401370/
-    SE7w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1707649397;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=9fYpYs2cE7Gjxr6/SXF6Klx/xF/lAbV9phvzIj3g7E0=;
-    b=hmkDtzNlKZaQ6RkI1eOzezspmTWa69XVydvmfib+6l4tqMRDvltTDJvO3dCj5b6qjv
-    vSACN/RNHsglg2IwqGBtKt6JQPJcXZafn550MSxpPcDmIhoh2l5FftavTomLcFsDSs7v
-    k7kEkZFKuhgj4XSmleBDMIBbkfp/qi6wx61o75hNpiSFVjpWoh9WYvA8EXsep1cKBq1j
-    yKiK0jTBHi1UQL8bpNiew1MkCkYQir73wwzWHVz7RLZavWY2fzeaNm9/xGjquOiH4AZY
-    bf2Tk+ysETPUi7olJdrBXCFcepBSjkFbbdlnLiOzmBy3xMYRLOcwUgmTB2ToX/+el89d
-    01wA==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo02
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1707649397;
-    s=strato-dkim-0002; d=gerhold.net;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=9fYpYs2cE7Gjxr6/SXF6Klx/xF/lAbV9phvzIj3g7E0=;
-    b=J6vZ5afd9d4s69yvyad15+P419Klsuf/FEISHad3en3zWPq4doB7b+C6ZRoSIQB6rG
-    czOJEyTooL0cV/CRuRo3KLE0Mk0yCIS6Wb/58Ijf/oHLP4FfHAUDkfu9IK7XnliF6xh9
-    GrqPwAt/V3+Cdfs+xrIqtG4qTAbRxYQE1CmYsmbCS6EEeWBWgv5MqUe+4tcD+956Huy5
-    A5qQ4i+AGI5lYwUp9mJj4HQsVPMmaJHagvN7uVyG5PfUO30wkp5KEvmrcqTgM3ZenTZ7
-    o2XI4lyve8Q9JP2npLW8vw2tEKGIvmiEYGLZvAM3bKr2cmJxNrnBOlQI9m4IG08W8mZA
-    K/6w==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1707649397;
-    s=strato-dkim-0003; d=gerhold.net;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=9fYpYs2cE7Gjxr6/SXF6Klx/xF/lAbV9phvzIj3g7E0=;
-    b=YtPqEZjEZ/YiVu0Jl8bT5up39lSIh4apJLDhHHYqALKhlXxFNgyOMYc20L/sWmbbsp
-    UFAHooXNOaAacZ9vXYBQ==
-X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u261EJF5OxJD4peA8Z/h"
-Received: from gerhold.net
-    by smtp.strato.de (RZmta 49.11.2 DYNA|AUTH)
-    with ESMTPSA id ze34f101BB3GwyG
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Sun, 11 Feb 2024 12:03:16 +0100 (CET)
-Date: Sun, 11 Feb 2024 12:03:15 +0100
-From: Stephan Gerhold <stephan@gerhold.net>
-To: Luca Weiss <luca@z3ntu.xyz>
-Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Matti =?iso-8859-1?Q?Lehtim=E4ki?= <matti.lehtimaki@gmail.com>,
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 1/3] dt-bindings: power: rpmpd: Add MSM8974 power
- domains
-Message-ID: <Zcipcz70vEPWLAFg@gerhold.net>
-References: <20240210-msm8974-rpmpd-v2-0-595e2ff80ea1@z3ntu.xyz>
- <20240210-msm8974-rpmpd-v2-1-595e2ff80ea1@z3ntu.xyz>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uvZkOLVB"
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-410cb9315f6so986965e9.2
+        for <linux-pm@vger.kernel.org>; Sun, 11 Feb 2024 04:17:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1707653873; x=1708258673; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=d0jW5neqnla//MKmuGLjHvxBXYvbGMfPZLm6LzCSLcQ=;
+        b=uvZkOLVBPOZkCLAG0oXJh2VWCC709/tcbvw6MgsXs8b68cjKA/tQ5m/Mrpe+KO0Orq
+         B1uRRFzCGcOW68V0oUar3+kEZwIW0MqVxITtOf8ySe6HEbLlcAPW98y7ZEbl72ivKqzf
+         Qyd4gLal/h9wc9ONDXHRMHdfKWdTM6KpRCdD9Q288Vj9Zeh/Pn7sFR3BcbvUoEJGF85P
+         jlfKMaDruc7c5e0Pl+Ubu5wHRK+IZ8wHx4pVPrKTGHiWtENzF6/lZWCcjlVLJf9hxCpo
+         Q9gWWH4G4Om1fmMg9ZCsaUilAXClm2SJOCeZ9b4QbVN8tO110G6XaZH5SNGe0M21XdTU
+         0CCg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1707653873; x=1708258673;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=d0jW5neqnla//MKmuGLjHvxBXYvbGMfPZLm6LzCSLcQ=;
+        b=kI8e29sUM6mDDeEHAcwIg32wZhBhiQVBRpxP2aanaeHYUUG0nJ08/HjzLHAAiM4arI
+         LkFZUU11U6a8ssDVQk0L7+4EhJe7kTKzFRG43IxFfrJhrs8nvjSeK/3TDAWvKWX7Yt3z
+         os9Eu/z+2/mMzXtaiPJPOLe8xT7Q8CSOVmfxWFsTYrGvfdtiMayr1Re0opf6yCHmd6b1
+         GsZ7PopHRg4A9/MK1C+vFG6Igv/Rx9nWztsrbp/m4Law2osuHukvwhP/8yeD9i5CVnLB
+         5MbAT3gVTrcV91u7wivrDdjdiHCjSyVMJrc2nej+ruzDHLkKvqkPihIiEzhnYwSyxDED
+         AEiQ==
+X-Gm-Message-State: AOJu0YwcyJNyssqp6fp2nXY187HJmbwWL2BtGWE3nNuwXah3n6QECWLc
+	a8JLzHsW6Msujo6q6O6S2RtcgfbRMmCC1qu3gDis9twVtCIoSkh0ULKTWx9YKi0=
+X-Google-Smtp-Source: AGHT+IEeA2nVbNYHqaeVNvwkjjkpxzwwpgQOqSf2DrcIOVAI0+LTYTzeVtzFtcSuke5Jslqn0LHmfw==
+X-Received: by 2002:a05:600c:5011:b0:410:c740:e771 with SMTP id n17-20020a05600c501100b00410c740e771mr712374wmr.7.1707653873238;
+        Sun, 11 Feb 2024 04:17:53 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCXYtfgL7AXsbqrpN97ONcd13Hg8AxBmdDYH9c0wD3j058Wl9CPEkNZmac1GwOnTISo8siH9LmcBFDKsLrAq6tCh+KXWpv+RXAd0aDf4nZMrEXUtVbVjJG8nydWKiTA5szdsKV771mpPcWUoXN5a1iMAoemJe0fHLF+71LfBx97Gad1lJrx37tRct5CzVPOIrLIOIrx8SJcX0/Uzgwgeo00I/qx06P/m5Fe+5480XS9HXeLRM6cuqXYuh2fHPlpjjlpFsBWhNv69WeOP20B5M0bSK3ulOueUAW+deN1Uy4axMvQu0aZuR3uM+R1TYpPPh2milc5Cn5RFafFHiAsM3sbJ3+iC3z2Od5UrfNnfrjXR81VPWDry3iFG5b8Qf3986dk8+ZGMQIafHnZwc9KCOJUmtpnW+QN3hQAu/60QFA0s6fXHIC+D6SzH4zzOCSMsUNDD5tBR2+KalmQ94+IkdFy5ZXzkJX3bhoW6AdkZVUV4jOTHM59xdM+HVSucyPuNLUqWYCL+in6T3CKV
+Received: from [192.168.1.20] ([178.197.223.6])
+        by smtp.gmail.com with ESMTPSA id fs20-20020a05600c3f9400b00410232ffb2csm5708021wmb.25.2024.02.11.04.17.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 11 Feb 2024 04:17:52 -0800 (PST)
+Message-ID: <b81abbef-9612-4137-bc3d-7ddfb7a0cf3d@linaro.org>
+Date: Sun, 11 Feb 2024 13:17:50 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/3] dt-bindings: power: rpmpd: Add MSM8974 power
+ domains
+To: Luca Weiss <luca@z3ntu.xyz>, ~postmarketos/upstreaming@lists.sr.ht,
+ phone-devel@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konrad.dybcio@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Stephan Gerhold <stephan@gerhold.net>,
+ =?UTF-8?Q?Matti_Lehtim=C3=A4ki?= <matti.lehtimaki@gmail.com>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20240210-msm8974-rpmpd-v2-0-595e2ff80ea1@z3ntu.xyz>
+ <20240210-msm8974-rpmpd-v2-1-595e2ff80ea1@z3ntu.xyz>
+Content-Language: en-US
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Autocrypt: addr=krzysztof.kozlowski@linaro.org; keydata=
+ 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
+ D2GYIS41Kv4Isx2dEFh+/Q==
 In-Reply-To: <20240210-msm8974-rpmpd-v2-1-595e2ff80ea1@z3ntu.xyz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On Sat, Feb 10, 2024 at 05:38:56PM +0100, Luca Weiss wrote:
+On 10/02/2024 17:38, Luca Weiss wrote:
 > Add the compatibles and indexes for the rpmpd in MSM8974, both with the
 > standard PM8841+PM8941 PMICs but also devices found with PMA8084.
 > 
 > Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
 > ---
->  Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 2 ++
->  include/dt-bindings/power/qcom-rpmpd.h                  | 7 +++++++
->  2 files changed, 9 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-> index 2ff246cf8b81..929b7ef9c1bc 100644
-> --- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-> +++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-> @@ -24,6 +24,8 @@ properties:
->            - qcom,msm8917-rpmpd
->            - qcom,msm8939-rpmpd
->            - qcom,msm8953-rpmpd
-> +          - qcom,msm8974-rpmpd
-> +          - qcom,msm8974pro-pma8084-rpmpd
->            - qcom,msm8976-rpmpd
->            - qcom,msm8994-rpmpd
->            - qcom,msm8996-rpmpd
 
-This is maybe more something for the DT reviewers to decide but I wonder
-if it is a bit confusing/misleading to describe one particular PMIC with
-a generic compatible, and the other with a more specific one. Perhaps it
-would be clearer to include the PMIC name in both compatibles, i.e.
-"qcom,msm8974-pm8941-rpmpd" instead of "qcom,msm8974-rpmpd".
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-The "qcom,msm8974-rpmpd" compatible could be maybe added as fallback.
-While it wouldn't be used for matching in the (Linux) driver the DT
-binding itself *is* "compatible" between the two PMICs because they both
-have the same power domain indexes.
+Best regards,
+Krzysztof
 
-i.e.
-	compatible = "qcom,msm8974-pm8941-rpmpd", "qcom,msm8974-rpmpd";
-	compatible = "qcom,msm8974pro-pma8084-rpmpd", "qcom,msm8974-rpmpd";
-
-Thanks,
-Stephan
