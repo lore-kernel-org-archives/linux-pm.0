@@ -1,159 +1,97 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ot1-f48.google.com (mail-ot1-f48.google.com [209.85.210.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A5223B189;
-	Mon, 12 Feb 2024 14:36:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AD723B782;
+	Mon, 12 Feb 2024 14:57:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707748604; cv=none; b=IhjG2Ol7jyW7KsDGv015jtOXI+qie04AJgbl5B88UbyFXstZiJLbhvlSaywE1ptZH0sy2YDAtyUm+c843rLKnQhNZVl2bH/oMerfE4BY3W044d/kkw5gEWI8wKrYmD4EiPV9BKwiaPvqwhC5dwtdjG8Kegcd6onjNQ8n+yNf0AU=
+	t=1707749855; cv=none; b=SKjYt1M0E8CZEc7iBCNJao1Dr5bdhhFPJme6nDTPEGw8wim9wh69kzW+S6RNM9Os1QoUiybiLe57N1/bu8tXFFRzEJNxai8xiDZCc9uCepcdYDh3rkunhqhUyjNYd+Tgyvd79/BB0hzVqKuEUDPOXltdxqzox6PWKTeVnj3ixFY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707748604; c=relaxed/simple;
-	bh=b8pt0/3786l/uac5Hp7coU7axC73eUNinUyy/qZ+804=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=kBR75qrKVWSgCt8+QOfLAyApabRXlyLRo+bDYmO3hLpCQ79mUtY9X8vY2m6dhzQhNtwQc+WQ8OKAFlisEMV7DTNyEM+u2MxtEcmJ3xlHZVu3WxHGBkbCjLho80ZjV/DncxXShT9O+XkN8GhOQtm4u+HHTkmWTUi+WkGUOeqj04o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Xdu0P9MN; arc=none smtp.client-ip=192.198.163.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Xdu0P9MN"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1707748602; x=1739284602;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=b8pt0/3786l/uac5Hp7coU7axC73eUNinUyy/qZ+804=;
-  b=Xdu0P9MNkDveOKKFys9m2f19W5O+KrIkoO8RzNUP2Re9EY+WBsgnf+eS
-   tkITH9X9CTpISov2PV/lVFCk1FlnY/dpdRYi7HnBmXJjWwuap0UQsricq
-   Mn5xE7UFhjEDD0CiU7DYHAH7WOT1kH4CvudA0eB04LYDf+UO8gJeTHzib
-   V5jpsSvIC3PBHHp8i0GO3CqOG/CR7RGIevvMH4wGnEl8Ls593TpzRo2Pt
-   XC1lt+3F/Mm+a/WzL2xjJ4ynhPkNQngSfnlrTAQ8S/TbOeZqTLZN48wit
-   5CABO680m/ye9Mgt/Eb08GOeFv0P17El7dSAw5RL91ZHnAOv+ciVYFz6H
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="13101316"
-X-IronPort-AV: E=Sophos;i="6.06,264,1705392000"; 
-   d="scan'208";a="13101316"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2024 06:36:40 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10981"; a="935084054"
-X-IronPort-AV: E=Sophos;i="6.06,264,1705392000"; 
-   d="scan'208";a="935084054"
-Received: from oelagadx-mobl2.ger.corp.intel.com (HELO localhost) ([10.252.44.2])
-  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2024 06:36:38 -0800
-From: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
-To: Bjorn Helgaas <helgaas@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-pci@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Subject: [PATCH v3] PCI/AER: Block runtime suspend when handling errors
-Date: Mon, 12 Feb 2024 13:01:35 +0100
-Message-Id: <20240212120135.146068-1-stanislaw.gruszka@linux.intel.com>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1707749855; c=relaxed/simple;
+	bh=dB6h7vjL83xsxisp6w5d1sjXMpb1xlAf6QjbQZNLPNQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=NJ2PxUUId5dpTHjt09jRZRW+ZYdIudIkMt3bvzcKooF2BIfeOd/PtDjhKeU9NimDu+JDtbcANnmSqgW7mkeH+Nvitb4vVF0RqYBeHVHML1uKGsCt/iwpjY2rrmwykyde6q7VJ6ypOZynxefiH85xFfNa8NmFI++RBSrQ8Owt8WA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ot1-f48.google.com with SMTP id 46e09a7af769-6e2e74e34a7so15735a34.1;
+        Mon, 12 Feb 2024 06:57:33 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1707749853; x=1708354653;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ZoJgXTdG93XMCXcdtwqy8JUV2GOmXd3e2IuGvT55Kog=;
+        b=TUf415e5hhybLfRZiTSy7xs1gaG9tlW5aU0nSFalMeM+Q/U8Bd+L6c5lyGK2lN7AyF
+         mHBifHOBSlySRGIln5NwcHFQdA1AA8SMao90rbRz+Lw3KrHJTS89W3kFzkXlQijJ2Rm5
+         bVfHskhIzr8vWvR+pds5PucebyEw8u8IrgkpjhslXyq4a1WrbOYDwGMMyHNppwYUlKLG
+         sAmVkK8kf7KalS15VkMc+pnCa9WTcGgZlM/uKu1wFK9LoQ91XW7WIbLmDiFrC1NJgeJg
+         1baz0M1O2KRU5HkMwmBG51mSSeur7tl71To4tS8A45Ycv97sivj8Feq09wxJGw4NTUJc
+         S1Cg==
+X-Forwarded-Encrypted: i=1; AJvYcCXiQhbJ75QlPV9d0xFPGJbqqqzf/i4ffDHPYfTmkBCbl0Dj8kzT9L1RoRcLOm0SN9JDCotfTDqgBQqwoGeAcmgREY+n79nhi88CSPj5Lbg3JEefp0QmOH3fZgRRPNvIlUDUfIiGIMs=
+X-Gm-Message-State: AOJu0YyfhR37YB4pZqFoquLxyzmwlxVT99yzGVACYMpFYYyuElYj4e/r
+	zemlmKbEpJQSBaLH1aqbKA0nobOEe2rt/Y10YkDJMdTrMfbQRGYEKSw3ZrHzJk4HsJFReVzJ80h
+	HQoIwsmZweLL2ZtzT7HWXuftcagQ=
+X-Google-Smtp-Source: AGHT+IGZyCv9xBolB0ZZzsJS3NKRaugRZdOdRxfO04espInS7VgyDrePxjvrQB0cqpt140aNEefh6SV/6bmblcWD+Pc=
+X-Received: by 2002:a4a:ca0d:0:b0:599:e8ff:66d9 with SMTP id
+ w13-20020a4aca0d000000b00599e8ff66d9mr5112472ooq.1.1707749852925; Mon, 12 Feb
+ 2024 06:57:32 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <4a043533-009f-4db9-b107-c8374be28d2b@samsung.com>
+ <CAJZ5v0hDmwaFEtLc8yDc4cXn2wODXAqATe0+_Hpm9QPODUPMQw@mail.gmail.com>
+ <ZcOyW_Q1FC35oxob@slm.duckdns.org> <2f125955-8c7c-465c-938c-8768f7ca360b@samsung.com>
+ <ZcPSuUBoL_EDvcTF@slm.duckdns.org> <ZcPelerpp3Rr5YFW@slm.duckdns.org>
+ <b4ceab79-3208-419b-9a79-f34540db3f70@samsung.com> <CGME20240207213600eucas1p1615e189e07dd1e96b001c7a187854fce@eucas1p1.samsung.com>
+ <ZcP3uiapKGZqw0q5@slm.duckdns.org> <8c468452-1b00-438a-b634-eeccc35d9a41@samsung.com>
+ <ZcVvxbKOlrWmmyhS@slm.duckdns.org>
+In-Reply-To: <ZcVvxbKOlrWmmyhS@slm.duckdns.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 12 Feb 2024 15:57:21 +0100
+Message-ID: <CAJZ5v0iLZ_U92q_Jt-91StZhUPdeZRD05MpDLxmaGaAa2-v1KQ@mail.gmail.com>
+Subject: Re: [PATCH v1] PM: sleep: Restore asynchronous device resume optimization
+To: Tejun Heo <tj@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	"Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, 
+	Ulf Hansson <ulf.hansson@linaro.org>, Nathan Chancellor <nathan@kernel.org>, 
+	LKML <linux-kernel@vger.kernel.org>, 
+	Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>, Lai Jiangshan <jiangshanlai@gmail.com>, 
+	Naohiro.Aota@wdc.com, kernel-team@meta.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-PM runtime can be done simultaneously with AER error handling.
-Avoid that by using pm_runtime_get_sync() before and pm_runtime_put()
-after reset in pcie_do_recovery() for all recovering devices.
+Hi,
 
-pm_runtime_get_sync() will increase dev->power.usage_count counter
-to prevent any possible future request to runtime suspend a device.
-It will also resume a device, if it was previously in D3hot state.
+On Fri, Feb 9, 2024 at 1:20=E2=80=AFAM Tejun Heo <tj@kernel.org> wrote:
+>
+> Hello,
+>
+> On Thu, Feb 08, 2024 at 08:47:12AM +0100, Marek Szyprowski wrote:
+> > I've tried to get drgn running on the test target, but then I've notice=
+d
+> > that it is not possible to run it on ARM 32bit target, as it requires
+> > PROC_KCORE support, which is 'Visible if: PROC_FS [=3Dy] && MMU [=3Dy] =
+&&
+> > !ARM [=3Dy]' for some reasons.
+>
+> Bummer. I instrumented code on my test setup (x86) and couldn't repro usa=
+ge
+> of the dfl_pwq, unfortuantely.
 
-I tested with igc device by doing simultaneous aer_inject and
-rpm suspend/resume via /sys/bus/pci/devices/PCI_ID/power/control
-and can reproduce:
+On x86 there are fewer device links representing dependencies between
+devices, because it doesn't use fw_devlink which is used on ARM
+platforms (and other DT-based), so on x86 it is less likely to
+reproduce this.
 
-igc 0000:02:00.0: not ready 65535ms after bus reset; giving up
-pcieport 0000:00:1c.2: AER: Root Port link has been reset (-25)
-pcieport 0000:00:1c.2: AER: subordinate device reset failed
-pcieport 0000:00:1c.2: AER: device recovery failed
-igc 0000:02:00.0: Unable to change power state from D3hot to D0, device inaccessible
+> Independent of understanding what's going on with the system_unbound_wq, =
+the
+> correct solution seems like using a dedicated workqueue with raised
+> min_active. Just posted the patchset to do that:
+>
+>   http://lkml.kernel.org/r/ZcVtzJvJCRV5OLM-@slm.duckdns.org
 
-The problem disappears when applied this patch.
-
-Cc: stable@vger.kernel.org
-Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Acked-by: Rafael J. Wysocki <rafael@kernel.org>
-Signed-off-by: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
----
- drivers/pci/pcie/err.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
-
-RFC -> v1:
- add runtime callbacks to pcie_do_recovery(), this covers DPC case
- as well as case of recovering multiple devices under same port.
-
-v1 -> v2:
- - add R-b, A-b, cc-stable tags
- - tweak commit message
-
-v2 -> v3:
- - fix mangled commit message
-
-diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-index 59c90d04a609..705893b5f7b0 100644
---- a/drivers/pci/pcie/err.c
-+++ b/drivers/pci/pcie/err.c
-@@ -13,6 +13,7 @@
- #define dev_fmt(fmt) "AER: " fmt
- 
- #include <linux/pci.h>
-+#include <linux/pm_runtime.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -85,6 +86,18 @@ static int report_error_detected(struct pci_dev *dev,
- 	return 0;
- }
- 
-+static int pci_pm_runtime_get_sync(struct pci_dev *pdev, void *data)
-+{
-+	pm_runtime_get_sync(&pdev->dev);
-+	return 0;
-+}
-+
-+static int pci_pm_runtime_put(struct pci_dev *pdev, void *data)
-+{
-+	pm_runtime_put(&pdev->dev);
-+	return 0;
-+}
-+
- static int report_frozen_detected(struct pci_dev *dev, void *data)
- {
- 	return report_error_detected(dev, pci_channel_io_frozen, data);
-@@ -207,6 +220,8 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
- 	else
- 		bridge = pci_upstream_bridge(dev);
- 
-+	pci_walk_bridge(bridge, pci_pm_runtime_get_sync, NULL);
-+
- 	pci_dbg(bridge, "broadcast error_detected message\n");
- 	if (state == pci_channel_io_frozen) {
- 		pci_walk_bridge(bridge, report_frozen_detected, &status);
-@@ -251,10 +266,15 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
- 		pcie_clear_device_status(dev);
- 		pci_aer_clear_nonfatal_status(dev);
- 	}
-+
-+	pci_walk_bridge(bridge, pci_pm_runtime_put, NULL);
-+
- 	pci_info(bridge, "device recovery successful\n");
- 	return status;
- 
- failed:
-+	pci_walk_bridge(bridge, pci_pm_runtime_put, NULL);
-+
- 	pci_uevent_ers(bridge, PCI_ERS_RESULT_DISCONNECT);
- 
- 	/* TODO: Should kernel panic here? */
--- 
-2.34.1
-
+LGTM, thanks!
