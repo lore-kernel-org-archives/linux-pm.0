@@ -1,102 +1,102 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 076CD3A8C9;
-	Mon, 12 Feb 2024 12:44:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-oo1-f44.google.com (mail-oo1-f44.google.com [209.85.161.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 838D84D138;
+	Mon, 12 Feb 2024 13:14:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707741888; cv=none; b=q3SRjbgp+CR0RT9eBUSe+l1rFia/3qGyRJlqlKNibODMBiYOKVbVEgEMk5HSJsF+w0cnl/VIM+G0F5imvuQpmxgBGpMLLsZ+0TsyfLvNdUw2KhUJ1Kh31FQwE4U8Nbsz/47hJkYHUUej2pLnd6NntqK94i07mz3YNLzTARW7xtE=
+	t=1707743680; cv=none; b=EJT/dnIEq9yZLQ+fSQ0x/9EWVYlmLYEcjtQuErMHdwCbaAI6YS7xWTl4CsEF8u7AreQBqjWUOhwOmWfuX9ubdGtqNi44pzy275IcAhkjji5M6m/mIprL6orJcTVncGU5o/6eDaWg2PhGXGcUonr/gLVSEm9cmGS5symbPHPUmA0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707741888; c=relaxed/simple;
-	bh=l/7dfJGxFN1vuiXcbvnIb03xHav/j11oYSN+cyDnLuI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CNMPqfjzVXH2XXlmkc9uvgqVe7ZKYFvCyD1qBzVWDIP74v9DDLpMq77VnC8g+KmFuhZSitylATIAvPJoZTAbZgFKm074ou3Qh7Fpli3QQhx6zG+isNN/BaByFaEu3A0NtoXpGF3aWEOdnVP85HiJosIZdhK+wqu/9HnSg9J9jHk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B275EDA7;
-	Mon, 12 Feb 2024 04:45:27 -0800 (PST)
-Received: from pluto (unknown [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A2CE33F7BD;
-	Mon, 12 Feb 2024 04:44:44 -0800 (PST)
-Date: Mon, 12 Feb 2024 12:44:42 +0000
-From: Cristian Marussi <cristian.marussi@arm.com>
-To: Sudeep Holla <sudeep.holla@arm.com>,
-	Sibi Sankar <quic_sibis@quicinc.com>
-Cc: viresh.kumar@linaro.org, morten.rasmussen@arm.com, rafael@kernel.org,
-	dietmar.eggemann@arm.com, lukasz.luba@arm.com,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, quic_mdtipton@quicinc.com,
-	linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH V2 1/4] firmware: arm_scmi: Add perf_notify_support
- interface
-Message-ID: <ZcoSuv7qwexbXy-9@pluto>
-References: <20240117104116.2055349-1-quic_sibis@quicinc.com>
- <20240117104116.2055349-2-quic_sibis@quicinc.com>
- <ZbfJN1c9viiLhO1L@pluto>
- <ZbfhdqBBpjyf3IRI@pluto>
- <20240131112854.24euh6c6xgljsj6c@bogus>
+	s=arc-20240116; t=1707743680; c=relaxed/simple;
+	bh=xLrubvOXIWaG5ypIlIgyoaUmN6jnod09uqn4rzwa6HI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Xl1uvLV9JY6ZwRt9SFL5QDVmyHT6Rn5yhi86siXalFZ+0WPKSOUXQhwblMg9o0SgO2AYNx10MOO2Mb5Z3Ez6DObibhb23kYQK0z0b6yW/+QF1aGLbRO0buZ77c349N00to+ex2eaXddb/e51nN6mC25xkHmB4WH1QsWUnGjWFTc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.161.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-oo1-f44.google.com with SMTP id 006d021491bc7-59cbf204d52so224232eaf.1;
+        Mon, 12 Feb 2024 05:14:38 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1707743677; x=1708348477;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Pxvkc38U9s3DcZdB/JiCA8P1fxWR4fG0EKloHutaJ/Q=;
+        b=Z2qXjNsCX2qDvQpg9VrzGeRcJrRh8nDXa4lj2hZFwXkZ/xaCy2EkjTpDsoQh00hBNF
+         EavS6UQ9B7dsb7ohFn7E+TF5P4hyzUVLnSRG5Fp9AZ2RfyOPa9W9hjR47HMLNqCwRMwf
+         Y7/AHenxOvylJZgGvCST5AWOoPrhBP6bF8Ks62gfvrK6nt3kYdw7zgwCLSt+F0KSnWXu
+         VwNCrr6WBuL4MTiVOt/n7oeuEyXgM06TgDEWiwp6FRM39kmfm9WwOYOc5S2d3rgA+25r
+         nq6k6Ucg8odeQSvLbesXgd1lnnFqYBze6TmanGkQn4uD/JCz3LV69p2FGxsL4R1y2MZu
+         g34A==
+X-Gm-Message-State: AOJu0YyQSa+BoQ8Ra5psznuzb4DXqy4wni4t2sRuNxZ0J4cln9F680Rt
+	C1TTxymxugJpfmeySxKehg5ukgb0UVLW8xG/MzkZBzMOS7dn1RFo1Yc9ocdg7WJy2EKIX3mmTKM
+	RWnABRiPP760Y9fszsqKiet9EyE6iktQK
+X-Google-Smtp-Source: AGHT+IGapQqegXlSqDCpTcHwaawdnbFBDRDPO60i3uPd2gLv3x7/jAKo5OyG5JdMpwm36eD3JU1HFtZkSzzAOHkJX7U=
+X-Received: by 2002:a4a:ce94:0:b0:59a:bfb:f556 with SMTP id
+ f20-20020a4ace94000000b0059a0bfbf556mr5298057oos.0.1707743677486; Mon, 12 Feb
+ 2024 05:14:37 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240131112854.24euh6c6xgljsj6c@bogus>
+References: <20240207020923.4720-1-di.shen@unisoc.com>
+In-Reply-To: <20240207020923.4720-1-di.shen@unisoc.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 12 Feb 2024 14:14:25 +0100
+Message-ID: <CAJZ5v0jTY+_YYfeTzf0vNKogGAd334pUH5-W1xXiDL2REroViA@mail.gmail.com>
+Subject: Re: [RESEND][PATCH V2] thermal: power_allocator: Avoid overwriting
+ PID coefficients from setup time
+To: Di Shen <di.shen@unisoc.com>
+Cc: lukasz.luba@arm.com, rafael@kernel.org, daniel.lezcano@linaro.org, 
+	rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	xuewen.yan@unisoc.com, zhanglyra@gmail.com, orsonzhai@gmail.com, 
+	cindygm567@gmail.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jan 31, 2024 at 11:28:54AM +0000, Sudeep Holla wrote:
-> On Mon, Jan 29, 2024 at 05:33:42PM +0000, Cristian Marussi wrote:
+On Wed, Feb 7, 2024 at 3:09=E2=80=AFAM Di Shen <di.shen@unisoc.com> wrote:
+>
+> When the PID coefficients k_* are set via sysfs before the IPA
+> algorithm is triggered then the coefficients would be overwritten after
+> IPA throttle() is called. The old configuration values might be
+> different than the new values estimated by the IPA internal algorithm.
+>
+> There might be a time delay when this overwriting happens. It
+> depends on the thermal zone temperature value. The temperature value
+> needs to cross the first trip point value then IPA algorithms start
+> operating. Although, the PID coefficients setup time should not be
+> affected or linked to any later operating phase and values must not be
+> overwritten.
+>
+> This patch initializes params->sustainable_power when the governor
+> binds to thermal zone to avoid overwriting k_*. The basic function won't
+> be affected, as the k_* still can be estimated if the sustainable_power
+> is modified.
+>
+> Signed-off-by: Di Shen <di.shen@unisoc.com>
+> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  drivers/thermal/gov_power_allocator.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_=
+power_allocator.c
+> index 81e061f183ad..1b17dc4c219c 100644
+> --- a/drivers/thermal/gov_power_allocator.c
+> +++ b/drivers/thermal/gov_power_allocator.c
+> @@ -711,6 +711,8 @@ static int power_allocator_bind(struct thermal_zone_d=
+evice *tz)
+>
+>         if (!tz->tzp->sustainable_power)
+>                 dev_warn(&tz->device, "power_allocator: sustainable_power=
+ will be estimated\n");
+> +       else
+> +               params->sustainable_power =3D tz->tzp->sustainable_power;
+>
+>         estimate_pid_constants(tz, tz->tzp->sustainable_power,
+>                                params->trip_switch_on,
+> --
 
-Hi Sibi,
-
-> > On Mon, Jan 29, 2024 at 03:50:20PM +0000, Cristian Marussi wrote:
-> > > On Wed, Jan 17, 2024 at 04:11:13PM +0530, Sibi Sankar wrote:
-> > > > Add a new perf_notify_support interface to the existing perf_ops to export
-> > > > info regarding limit/level change notification support.
-> > > > 
-> > > 
-> > > Hi Sibi,
-> > > 
-> > > as I mentioned previously, in order not to add a needless stream of SCMI
-> > > Perf accessors I posted this:
-> > > 
-> > > https://lore.kernel.org/linux-arm-kernel/20240129151002.1215333-1-cristian.marussi@arm.com/T/#u
-> > > 
-> > > to expose all the Perf domains infos via the usual info_get(), similarly
-> > > to how other SCMI protocols do already.
-> > > 
-> > > I think that reworking this series on that, you can certainly drop this patch and just
-> > > check the _notify booleans on the retrieved domain info.
-> > 
-> > Sorry, but hold on with this change, I will probably post an updated version
-> > my patch above.
-> > 
-> 
-> As discussed in private, I would prefer to avoid exposing all the internals
-> to the users of SCMI perf. At the same time may we can do better if we can
-> check the availability of notification as part of notification enablement
-> from the SCMI driver, I need to think the details yet.
-> 
-
-as previously mentioned, after speaking with Sudeep, I posted a new
-series at [1], that aims to solve your problem with registering
-notifications and looking up reported Perf frequencies in a new way.
-
-Using the changes at [1] you should be able to:
-
-- register your notifier without caring to check if the notification
-  is supported, since the SCMI core will take care of checking that and
-  report an error if not supported, without sending any unneeded
-  attempted notification enable message  (so you can drop 1/4 in this
-  series)
-
-- retrieve the pre-calculated OPPs frequencies from the new extended
-  Perf notifications reports no matter if the system if operating in
-  level_indexing_mode or not. (so you can drop 2/4 in this series)
-
-Thanks,
-Cristian
-
-[1]: https://lore.kernel.org/linux-arm-kernel/20240212123233.1230090-1-cristian.marussi@arm.com/T/#ma68cefd753e34ba3e1f2d4392e978026a87e1bf8
-
+Applied as 6.9 material, thanks!
