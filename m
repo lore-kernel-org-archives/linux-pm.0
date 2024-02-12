@@ -1,123 +1,130 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CCC34C63D;
-	Mon, 12 Feb 2024 18:42:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E42345BEF;
+	Mon, 12 Feb 2024 19:04:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707763359; cv=none; b=Q5hehO6TQprwc6rU8k/4Qk88AfmDvTf4j4R+XE7mGO2gKwLaWxqf1fCMYDnaPsX4or2sr3PrhpDaFK3X2bfIfvwBAbsbTDpz5Fc32kVGKf5p3EU8MGgbLWTHU3xiGD1JE4FdoK87ZTYakHCEpuEPB7LXeAJ/QLigAqxuVyUZ9Uc=
+	t=1707764675; cv=none; b=pjjKeRT+IV/oogQq9WlF09xQmS7aNx/Riun856CNALVXYScdcfZsFzyNWF1Ee0mt/2FJlWyRwEe0zagmWLPSpwm8vJZYiicEqMs8rUk0TV21qIl/BifrO4glql7rQL4+QOJ6ujB4wgAHO/lKBl6ObQdtsY73U84YGdK/e3W9Mpo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707763359; c=relaxed/simple;
-	bh=AZVaCsAriHLBfg1CD2bjELKhsNVl1DMTTJvKn6jlgmo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ecPSuY2QrzaeCpWXtaD0ZprFUpWRQdd1LdpA8ClWmny4IIXKu2N/Agu8yx+kl337DgXp4iYQVkVnaHeu8mV1gMVHW4m7wVqC7H0dylGAk8k7dsHwfzSrBWNI5UUHFt2NAKWVGarpHI0hY4EDvv2D42WAU80zaLMciCJHb2CaOco=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
- id eb00a7d99c467735; Mon, 12 Feb 2024 19:42:34 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id EE0EA669CF2;
-	Mon, 12 Feb 2024 19:42:33 +0100 (CET)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Zhang Rui <rui.zhang@intel.com>, netdev@vger.kernel.org,
- Ido Schimmel <idosch@nvidia.com>, Petr Machata <petrm@nvidia.com>,
- Miri Korenblit <miriam.rachel.korenblit@intel.com>,
- linux-wireless@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>,
- Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
-Subject: [PATCH v2 0/9] thermal: Writable trip points handling rework
-Date: Mon, 12 Feb 2024 19:25:03 +0100
-Message-ID: <6017196.lOV4Wx5bFT@kreacher>
+	s=arc-20240116; t=1707764675; c=relaxed/simple;
+	bh=vI89LdebZecrlsHELjk1qJUqW5p9P9BrNUGhawfpPSU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=YFtTIOGnWMTDdxYaiHR4eXfwWVNbWd5+7i0aQva8M7R/wp8a3cb3YRpZJPTM9efghlv5b8P99QaJ1lXGjgBq++GpDWddwHbjaXFKJi23gTykLvxtPw4qIBIJzltUUFkb38HwSo+aX+XexjWVVkN7aIVMl1atAEmkkLlnv2klUDE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=y3aN71zO; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="y3aN71zO"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=x5eMkKunWvdfI72+MG0lH8Jec7gbENd3muJV5uM1De0=; b=y3aN71zOtbdIcZhOcHgfVyfHuh
+	kxAQlkrQKV5+2NliW8lMtGXMiwFAOMe9gjKTihd0XwqbGg0RMtfjH5qkM18zyJG7YdsNILmuQcLgU
+	97HVkD0WhM8UocuhGgTMOZ9QIEMfzGcugF962N4X12BhkZUR3U74tVlTac4eL3Qke2ynOT7Z+Cr70
+	uCJmv5wrTrKoNEWi7jKIURrfDQuO9llohhldBCaN/1+RjDcF3y3CIV4u95AgG/xvt9EUTeF/LGPYv
+	9MS4v4m8XdfvUnhI4FYdEWdhuWE8KMH3W2j8/mrLd+Enlnra5r79bDyHD9EQIVcoQY2LhDNCjDVhs
+	RZg/oH3A==;
+Received: from [50.53.50.0] (helo=[192.168.254.15])
+	by bombadil.infradead.org with esmtpsa (Exim 4.97.1 #2 (Red Hat Linux))
+	id 1rZbbO-00000006iYa-1OtD;
+	Mon, 12 Feb 2024 19:04:26 +0000
+Message-ID: <1d12e130-d3db-4eb5-a1d0-bc994c97a175@infradead.org>
+Date: Mon, 12 Feb 2024 11:04:24 -0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudefgdduudegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeduiedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsthgrnhhishhlrgifrdhgrhhushiikhgrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=16 Fuz1=16 Fuz2=16
-
-Hi Everyone,
-
-This is an update of
-
-https://lore.kernel.org/linux-pm/3232442.5fSG56mABF@kreacher/
-
-fixing a few bugs and renaming the new trip point flags introduced by it.
-
-The original description of the patch series is still applicable:
-
-"The purpose of this patch series is to allow thermal zone creators
- to specify which properties (temperature or hysteresis) of which
- trip points can be set from user space via sysfs on a per-trip basis
- instead of passing writable trips masks to the thermal zone registration
- function which is both cumbersome and error prone and it doesn't even
- allow to request different treatment of different trip properties.
-
- The writable trip masks used today only affect trip temperatures (that is, if
- a trip point is in a writable trips mask, its temperature can be set via
- sysfs) and they only take effect if the CONFIG_THERMAL_WRITABLE_TRIPS kernel
- configuration option is set, which appears to be assumed by at least some
- of the drivers using writable trips masks.  Some other drivers using them
- simply select CONFIG_THERMAL_WRITABLE_TRIPS which pretty much defeats its
- purpose (and imx even sets this option in its defconfig).
-
- For this reasons, patch [1/9] removes CONFIG_THERMAL_WRITABLE_TRIPS and makes
- the writable trips masks always work.
-
- Moreover, trip hysteresis, which is not affected either by the writable trips
- masks or by CONFIG_THERMAL_WRITABLE_TRIPS, can only be set via sysfs if the
- .set_trip_hyst() operation is provided by the given thermal zone, but currently
- this thermal zone operation is used by no one, so effectively trip hysteresis
- cannot be set via sysfs at all.  This is not a problem for the majority of
- drivers that want trip temperatures to be set via sysfs, because they also
- don't want trip hysteresis to be changed for any trips (at least as far as I
- can say), but there are use cases in which it is desirable to be able to
- update trip hysteresis as well as trip temperature (for example see
- https://lore.kernel.org/linux-pm/20240106191502.29126-1-quic_manafm@quicinc.com/).
- Those use cases are not addressed here directly, but after this series
- addressing them should be relatively straightforward.
-
- Namely, patch [2/9] adds flags to struct thermal_trip and defines two of them
- to indicate whether or not setting the temperature or hysteresis of the given
- trip via sysfs is allowed.  If a writable trips mask is passed to
- thermal_zone_device_register_with_trips(), is it is used to set the
- "writable temperature" flag for the trips covered by it and that flag is
- then consulted by the thermal sysfs code.  The "writable hysteresis" trip
- flag is also taken into account by the thermal sysfs code, but it is not set
- automatically in any case.
-
- Patch [3/9] is based on the observation that the .set_trip_hyst() thermal zone
- operation is never used - it simply drops that callback from struct
- thermal_zone_device_ops and adjusts the code checking its presence.
-
- Patches [4-8/9] update drivers using writable trips masks to set the new
- "writable temperature" flag directly instead and some of them are simplified
- a bit as a result.  After these patches, all of the callers of
- thermal_zone_device_register_with_trips() pass a zero writable trips mask
- to it, so patch [9/9] drops that mask from the functions argument list and
- adjusts all of its callers accordingly.
-
- After all of the changes in this series, allowing the hysteresis value to be
- set via sysfs for a given trip is a matter of setting its "writable
- hysteresis" flag (and analogously for trip temperature)."
-
-Thanks!
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] PM: hibernate: Support to select compression algorithm
+Content-Language: en-US
+To: Nikhil V <quic_nprakash@quicinc.com>, Pavel Machek <pavel@ucw.cz>,
+ Len Brown <len.brown@intel.com>, Jonathan Corbet <corbet@lwn.net>,
+ "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Paul E. McKenney" <paulmck@kernel.org>, Tejun Heo <tj@kernel.org>,
+ Yan-Jie Wang <yanjiewtw@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+ "Steven Rostedt (Google)" <rostedt@goodmis.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ quic_pkondeti@quicinc.com, quic_kprasan@quicinc.com,
+ quic_mpilaniy@quicinc.com, quic_shrekk@quicinc.com,
+ mpleshivenkov@google.com, ericyin@google.com
+References: <3776355f920c1af44490e076072f93bafdf128cc.1707740870.git.quic_nprakash@quicinc.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <3776355f920c1af44490e076072f93bafdf128cc.1707740870.git.quic_nprakash@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
 
 
+On 2/12/24 04:32, Nikhil V wrote:
+> Currently the default compression algorithm is selected based on
+> compile time options. Introduce a module parameter "hibernate.compressor"
+> to override this behaviour.
+> 
+> Different compression algorithms have different characteristics and
+> hibernation may benefit when it uses any of these algorithms, especially
+> when a secondary algorithm(LZ4) offers better decompression speeds over a
+> default algorithm(LZO), which in turn reduces hibernation image restore
+> time.
+> 
+> Users can override the default algorithm in two ways:
+>  1) Passing "hibernate.compressor" as kernel command line parameter.
+>     Usage:
+>     	LZO: hibernate.compressor=lzo
+>     	LZ4: hibernate.compressor=lz4
+> 
+>  2) Specifying the algorithm at runtime.
+>     Usage:
+> 	LZO: echo lzo > /sys/module/hibernate/parameters/compressor
+> 	LZ4: echo lz4 > /sys/module/hibernate/parameters/compressor
+> 
+> Currently LZO and LZ4 are the supported algorithms. LZO is the default
+> compression algorithm used with hibernation.
+> 
+> Signed-off-by: Nikhil V <quic_nprakash@quicinc.com>
+> ---
+> This patch is dependent on the patch series, [1] (patches 1/4 to 3/4).
+> This is picked in linux-next, [2].
+>  [1] https://lore.kernel.org/all/cover.1705927916.git.quic_nprakash@quicinc.com/
+>  [2] https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/log/kernel/power?h=next-20240212
+> 
+>  .../admin-guide/kernel-parameters.txt         | 10 ++++
+>  kernel/power/hibernate.c                      | 57 ++++++++++++++++++-
+>  2 files changed, 64 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index 31b3a25680d0..522155056645 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -1748,6 +1748,16 @@
+>  				(that will set all pages holding image data
+>  				during restoration read-only).
+>  
+
+Hi,
+Please add something like:
+
+
+> +	hibernate.compressor= 	[HIBERNATION] Compression algorithm to be
+> +				used with hibernation.
+> +				Format: { lzo | lz4 }
+				Default: lzo
+> +
+> +				lzo: Select LZO compression algorithm to
+> +				compress/decompress hibernation image.
+> +
+> +				lz4: Select LZ4 compression algorithm to
+> +				compress/decompress hibernation image.
+> +
+>  	highmem=nn[KMG]	[KNL,BOOT] forces the highmem zone to have an exact
+>  			size of <nn>. This works even on boxes that have no
+>  			highmem otherwise. This also works to reduce highmem
+
+
+thanks.
+-- 
+#Randy
