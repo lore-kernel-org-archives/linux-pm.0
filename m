@@ -1,151 +1,176 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77D6E171AF;
-	Tue, 13 Feb 2024 08:03:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8AC34225CF
+	for <linux-pm@vger.kernel.org>; Tue, 13 Feb 2024 08:20:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.254.224.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707811420; cv=none; b=V0ydjkwoi3E3inDW07bC2IOL5SZqQJ5ysnzlnxdLVUTH0sGzzdGZQMa5BrFIDk0LXN78105xEk2Ssf6w4xdOCXHPTW6vhq1zRem7NLncFzruOPYhvsWrvwspC5U/fCQ6YaFp0jRxPPTeob6sFlgWLFMnUrY3gNAd3XJRDkwtq9g=
+	t=1707812450; cv=none; b=Q01EjTvLCH1Wcq5asPMNgGxJG9Z3ajqw3lELd7d6tg4vy/h5T+eAC+iFUvuVCFCQmPMBkpcAJ/QFkuKoMfbk3sX+CuXHxqKQ2jIUXKL4shH7y8HwD2P5Nv0bOLwkWvWKaBgtuGpW2z8bJzVSkEcoPEkEj1UQF28h01lI/BTLNpU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707811420; c=relaxed/simple;
-	bh=r087+GB79p23FR6tfcM56d6lnCI+rGfHLqR9nzg6yPw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=hxUq4zfXgnH001Tsu5dTIrqRwtZFkGMkIFSDbp7AsUGsBEZ8ibJVtOlHK3raYmN7RAzl80at0Sp/D1MqA96Hb6iEBi0yuYbl4B+VLbFRmhsgzxLi0Vnds570wGSUQnYFIcEFXd6C2NbuBS2dpRSEvVKeRvPugrKXmTSboEmt2dA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=E9OdbRPj; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1707812450; c=relaxed/simple;
+	bh=T83TRgd0Cjf5ynLdLQ0SWNVs+GGT60Q/tSZKRDeff98=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type:
+	 References; b=e/xvAapWN/Pl9hTucODS2+yOEluTmK0m/X0IO5XdYIrW9/kh7xcBZpXK6CTZg/w2Umi4VdcZdibXJlZoXgEtrf1Z9HrVkFs43+07JZO4hGexkPtS3rFA19i+A6KB96TI3cpO/uta91hsuAvWRQ/6RXMWkdsf96OFiW8zOWB5dr0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=pvGFJWeB; arc=none smtp.client-ip=203.254.224.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="E9OdbRPj"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 41D7l4fg014541;
-	Tue, 13 Feb 2024 08:03:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	message-id:date:mime-version:subject:to:cc:references:from
-	:in-reply-to:content-type:content-transfer-encoding; s=
-	qcppdkim1; bh=LwcWrrBeGMk5PEnK2mar74GZ06ybPxBuCLBEY2vNIzw=; b=E9
-	OdbRPj9ys91T2HS1X5SSlhanUJf2H1SAaNaG31o+WVNimb30XnE6uzkfT3xLPbwq
-	9w5Sm+CcW3/p3eknvoxLn7uW040ZR292D39ZIwwdcSf2TxXYtyBIyHNK4F4BHxFw
-	jxT9fwt/41X7I9SrAaaBm8GhoFwjODg2Y7iJFmfFOQr7U5H/ZaRyfaoZ6zu/bvno
-	DbdptlX6K+24tEBiReh4/N19XzqVwNIGqWtRw7EehOfs/zHHCfy7Nwpk33WE/FS+
-	GjftW13tx4DDV3p0mlzOa2wz06O0vbx93QYeT11crliGu7Uq0LlS79pLineilb8n
-	bMaDc08l519H3bm1rn8w==
-Received: from nalasppmta05.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3w7gvjjf60-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Feb 2024 08:03:26 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 41D83PrE013449
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Feb 2024 08:03:25 GMT
-Received: from [10.131.33.37] (10.80.80.8) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.40; Tue, 13 Feb
- 2024 00:03:21 -0800
-Message-ID: <64fdfa4d-f7ec-a5eb-bfbc-ee35d9cd4722@quicinc.com>
-Date: Tue, 13 Feb 2024 13:33:18 +0530
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="pvGFJWeB"
+Received: from epcas5p1.samsung.com (unknown [182.195.41.39])
+	by mailout4.samsung.com (KnoxPortal) with ESMTP id 20240213082046epoutp04d2d1bea66a446a0eaed3fa0534827c97~zXl8uZgGR3234932349epoutp04i
+	for <linux-pm@vger.kernel.org>; Tue, 13 Feb 2024 08:20:46 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20240213082046epoutp04d2d1bea66a446a0eaed3fa0534827c97~zXl8uZgGR3234932349epoutp04i
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1707812446;
+	bh=tP9U4WVHKg76vR7mUi19VCVh+QzhgevyK2/XdTYMSMk=;
+	h=From:To:Cc:Subject:Date:References:From;
+	b=pvGFJWeBVVk02TIDmRM+Jiu4VI3h0nJDZK9jYNHOhr3WQTdmvSazZtN47/eP9iF2y
+	 txOEF0cS0hNvhjBo/8g6L/xtE6zJsabH/qm2MRjqqi4GShGSe0BX227NhWmzbLXWrg
+	 5ehKL4DjZQUdNxU8utBp3u6HAxHOsObpYT16KTY4=
+Received: from epsmges5p1new.samsung.com (unknown [182.195.42.73]) by
+	epcas5p1.samsung.com (KnoxPortal) with ESMTP id
+	20240213082045epcas5p1532ea50b9e7d9d32b141088ae8e36953~zXl8CS_iD2381423814epcas5p1V;
+	Tue, 13 Feb 2024 08:20:45 +0000 (GMT)
+Received: from epcas5p3.samsung.com ( [182.195.41.41]) by
+	epsmges5p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+	05.E3.09634.D562BC56; Tue, 13 Feb 2024 17:20:45 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+	epcas5p4.samsung.com (KnoxPortal) with ESMTPA id
+	20240213074430epcas5p4c520bf2cce121cf5fa970eed429231a8~zXGR3T-aL0248002480epcas5p4o;
+	Tue, 13 Feb 2024 07:44:30 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+	epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+	20240213074430epsmtrp18dab30bc2dd3525cec43a89f50c1a5b6~zXGR0nU2X1967419674epsmtrp1X;
+	Tue, 13 Feb 2024 07:44:30 +0000 (GMT)
+X-AuditID: b6c32a49-eebff700000025a2-0c-65cb265d3e08
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+	epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+	D8.B1.08755.EDD1BC56; Tue, 13 Feb 2024 16:44:30 +0900 (KST)
+Received: from localhost.localdomain (unknown [107.109.224.44]) by
+	epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20240213074426epsmtip2c1e6479e8e49708f262c952e3296c5d6~zXGOAdNaV1017610176epsmtip2Z;
+	Tue, 13 Feb 2024 07:44:25 +0000 (GMT)
+From: Onkarnarth <onkarnath.1@samsung.com>
+To: rafael@kernel.org, lenb@kernel.org, bhelgaas@google.com,
+	viresh.kumar@linaro.org, mingo@redhat.com, peterz@infradead.org,
+	juri.lelli@redhat.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+	rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+	bristot@redhat.com, vschneid@redhat.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+	r.thapliyal@samsung.com, maninder1.s@samsung.com, helgaas@kernel.org,
+	Onkarnath <onkarnath.1@samsung.com>, Stanislaw Gruszka
+	<stanislaw.gruszka@linux.intel.com>
+Subject: [PATCH v3 1/2] ACPI: use %pe for better readability of errors while
+ printing
+Date: Tue, 13 Feb 2024 13:14:15 +0530
+Message-Id: <20240213074416.2169929-1-onkarnath.1@samsung.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH 2/3] firmware: arm_scmi: Add support for marking certain
- frequencies as boost
-Content-Language: en-US
-To: Sudeep Holla <sudeep.holla@arm.com>,
-        Pierre Gondois
-	<pierre.gondois@arm.com>
-CC: <cristian.marussi@arm.com>, <linux-arm-kernel@lists.infradead.org>,
-        <sboyd@kernel.org>, <lukasz.luba@arm.com>, <dietmar.eggemann@arm.com>,
-        <morten.rasmussen@arm.com>, <viresh.kumar@linaro.org>,
-        <rafael@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <quic_mdtipton@quicinc.com>,
-        <linux-arm-msm@vger.kernel.org>, <nm@ti.com>
-References: <20240117110443.2060704-1-quic_sibis@quicinc.com>
- <20240117110443.2060704-3-quic_sibis@quicinc.com>
- <e3abe1ab-064f-4a6a-a91d-fe8c91574600@arm.com>
- <20240131160848.662dhaoiov3trt4i@bogus>
-From: Sibi Sankar <quic_sibis@quicinc.com>
-In-Reply-To: <20240131160848.662dhaoiov3trt4i@bogus>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: -UksrDOFRADqZzuw6MQ93VX6tSjWhXt0
-X-Proofpoint-ORIG-GUID: -UksrDOFRADqZzuw6MQ93VX6tSjWhXt0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-02-13_04,2024-02-12_03,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 phishscore=0
- suspectscore=0 spamscore=0 mlxscore=0 lowpriorityscore=0
- priorityscore=1501 impostorscore=0 mlxlogscore=828 adultscore=0
- bulkscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2401310000 definitions=main-2402130061
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrPKsWRmVeSWpSXmKPExsWy7bCmpm6s2ulUg5WLdS2WNGVYXHp8lc1i
+	+stGFounE7YyW7w6s5bN4m7/VBaLnQ/fslks39fPaHF51xw2i7PzjrNZfO49wmhxeH4bi8Xk
+	d88YLS4dWMBksaLnA6vF8d4DTBYb72VbzP0yldliX8cDJouPezYwWnQc+cZssfGrh8XWo9/Z
+	HcQ91sxbw+jRsu8Wu8eCTaUem1doeWxa1cnmcefaHjaPeScDPd7vu8rm0bdlFaPH5tPVHp83
+	yQVwR3HZpKTmZJalFunbJXBlbLvewFTwQLDiYdMn1gbGFv4uRk4OCQETiYa1z9hAbCGB3YwS
+	pzbFdjFyAdmfGCWeXX/BBuF8Y5RoeH+AHabj16y9TBAdexkltm3JgCj6wigx8eMTFpAEm4CW
+	xIw7B5hAEiICW5gkllw6yA7iMAvMZpJY9+07WJWwQLjEkpUTwGwWAVWJ3jVXwcbyCthJ7Fs8
+	DWqdvMTMS9/ZIeKCEidnQmxgBoo3b53NDDJUQuANh0TfznnMEA0uEiv/TmSEsIUlXh3fAjVI
+	SuJlfxuUnS/RMnsWUD0HkF0jcfWpKkTYXuLJxYWsIGFmAU2J9bv0IcKyElNPrWOCWMsn0fv7
+	CRNEnFdixzwYW1Xi15SpLBC2tMT933PZIGwPiQ/Ht7JDQitW4tWTVpYJjPKzkHwzC8k3sxA2
+	L2BkXsUomVpQnJueWmxaYJiXWq5XnJhbXJqXrpecn7uJEZwmtTx3MN598EHvECMTB+MhRgkO
+	ZiUR3kszTqQK8aYkVlalFuXHF5XmpBYfYpTmYFES533dOjdFSCA9sSQ1OzW1ILUIJsvEwSnV
+	wLT8oO0xtqurN2nM/P0z2HJCjZP9ek2+4JMuJV9OVly9W7GjSkz2w6bimDXSOzgEPhgYp+xe
+	MLMgaW/AX0W3c5/7tqr4bK/x9C5x/iNzXmeCw9E58t1XG64L/+le7Dih/51m41afyTtvrd5y
+	caIgk9rf9GpXZ0GlI05pcZ9z31Qc9ZwjmKA/waZi6slMpc0Ht4iuma9es6ff0b6h1yErr/Nb
+	0LsJ9jMfxLVclsrj0YjnecfD8bn014LNh5O3H3p1MPF7Z8aSaakf3WfN+vvm5qplL1V6mf3v
+	xv/YOOmq765GgVWiL+wvfDOeNM1+rYmkZI5zg7/qobb8ZVyxXsvMoo5d0zU4/rO9xtfXqeqd
+	xVQlluKMREMt5qLiRAAK7N2/AgQAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprBIsWRmVeSWpSXmKPExsWy7bCSvO492dOpBt+vs1ssacqwuPT4KpvF
+	9JeNLBZPJ2xltnh1Zi2bxd3+qSwWOx++ZbNYvq+f0eLyrjlsFmfnHWez+Nx7hNHi8Pw2FovJ
+	754xWlw6sIDJYkXPB1aL470HmCw23su2mPtlKrPFvo4HTBYf92xgtOg48o3ZYuNXD4utR7+z
+	O4h7rJm3htGjZd8tdo8Fm0o9Nq/Q8ti0qpPN4861PWwe804Gerzfd5XNo2/LKkaPzaerPT5v
+	kgvgjuKySUnNySxLLdK3S+DK2Ha9ganggWDFw6ZPrA2MLfxdjJwcEgImEr9m7WXqYuTiEBLY
+	zSjx4v1CNoiEtMSny3PYIWxhiZX/nrNDFH1ilLh6eC4rSIJNQEtixp0DYN0iAseYJKb1b2QB
+	cZgFFjNJbOxewAhSJSwQKvH1+AcWEJtFQFWid81VJhCbV8BOYt/iaVAr5CVmXvrODhEXlDg5
+	8wlYPTNQvHnrbOYJjHyzkKRmIUktYGRaxSiZWlCcm55bbFhgmJdarlecmFtcmpeul5yfu4kR
+	HHlamjsYt6/6oHeIkYmD8RCjBAezkgjvpRknUoV4UxIrq1KL8uOLSnNSiw8xSnOwKInzir/o
+	TRESSE8sSc1OTS1ILYLJMnFwSjUwZU25Z3BOoaygeWmLvFyr0SXmU6uXzzFKsnmgtUXq3cUt
+	Dzdz/nu/LTlla3na42tqa8+p33pg9WHWU3e9BwXVpenz0hS6l7K+/XNw/uUeAU8PuVNnZCJ7
+	zl3h2HLv8aw1XIwXg6UvRdcyl2e+b5P7d/3yhOyvXzb/LdnQUvpgXtmBSb+VdmZvvrDcR4vP
+	c9mHf2y7NIwV22TWZvgVPj5/RWdNuJbw3ymONzh/+06Nu5nGtv3+3OiXU++3qt04bbFnS+wW
+	Xa5mpj2VLvqnWO2Njmxybuus+/NH5d/2mYZKuy/VmFdnG+15Jrt/8+HHSR8Ult4JCUi/2S69
+	bN7klWvS86s6xIvEvq5/v3PxT00eDx4lluKMREMt5qLiRAAGccV1KwMAAA==
+X-CMS-MailID: 20240213074430epcas5p4c520bf2cce121cf5fa970eed429231a8
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: REQ_APPROVE
+CMS-TYPE: 105P
+X-CMS-RootMailID: 20240213074430epcas5p4c520bf2cce121cf5fa970eed429231a8
+References: <CGME20240213074430epcas5p4c520bf2cce121cf5fa970eed429231a8@epcas5p4.samsung.com>
 
+From: Onkarnath <onkarnath.1@samsung.com>
 
+As %pe is already introduced, it's better to use it in place of (%ld) for
+printing errors in logs. It would enhance readability of logs.
 
-On 1/31/24 21:38, Sudeep Holla wrote:
-> On Wed, Jan 31, 2024 at 03:29:43PM +0100, Pierre Gondois wrote:
->> Hello Sibi,
->>
->> On 1/17/24 12:04, Sibi Sankar wrote:
->>> All opps above the sustained level/frequency are treated as boost, so mark
->>> them accordingly.
->>>
+Signed-off-by: Maninder Singh <maninder1.s@samsung.com>
+Signed-off-by: Onkarnath <onkarnath.1@samsung.com>
+Reviewed-by: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
+---
+v1 -> v2: Updated subject line as per file history & corrected spellings
+in description.
+v2 -> v3: Updated Reviewed-by tag.
 
-Sudeep/Pierre,
+ drivers/acpi/acpi_processor.c | 2 +-
+ drivers/acpi/acpi_watchdog.c  | 2 +-
+ drivers/acpi/pci_slot.c       | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-Thanks for taking time to review the series.
+diff --git a/drivers/acpi/acpi_processor.c b/drivers/acpi/acpi_processor.c
+index 4fe2ef54088c..2ddd36a21850 100644
+--- a/drivers/acpi/acpi_processor.c
++++ b/drivers/acpi/acpi_processor.c
+@@ -161,7 +161,7 @@ static void cpufreq_add_device(const char *name)
+ 
+ 	pdev = platform_device_register_simple(name, PLATFORM_DEVID_NONE, NULL, 0);
+ 	if (IS_ERR(pdev))
+-		pr_info("%s device creation failed: %ld\n", name, PTR_ERR(pdev));
++		pr_info("%s device creation failed: %pe\n", name, pdev);
+ }
+ 
+ #ifdef CONFIG_X86
+diff --git a/drivers/acpi/acpi_watchdog.c b/drivers/acpi/acpi_watchdog.c
+index 8e9e001da38f..14b24157799c 100644
+--- a/drivers/acpi/acpi_watchdog.c
++++ b/drivers/acpi/acpi_watchdog.c
+@@ -179,7 +179,7 @@ void __init acpi_watchdog_init(void)
+ 	pdev = platform_device_register_simple("wdat_wdt", PLATFORM_DEVID_NONE,
+ 					       resources, nresources);
+ 	if (IS_ERR(pdev))
+-		pr_err("Device creation failed: %ld\n", PTR_ERR(pdev));
++		pr_err("Device creation failed: %pe\n", pdev);
+ 
+ 	kfree(resources);
+ 
+diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
+index d6cb2c27a23b..741bcc9d6d6a 100644
+--- a/drivers/acpi/pci_slot.c
++++ b/drivers/acpi/pci_slot.c
+@@ -111,7 +111,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 	snprintf(name, sizeof(name), "%llu", sun);
+ 	pci_slot = pci_create_slot(pci_bus, device, name, NULL);
+ 	if (IS_ERR(pci_slot)) {
+-		pr_err("pci_create_slot returned %ld\n", PTR_ERR(pci_slot));
++		pr_err("pci_create_slot returned %pe\n", pci_slot);
+ 		kfree(slot);
+ 		return AE_OK;
+ 	}
+-- 
+2.25.1
 
->>> Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
->>> Signed-off-by: Sibi Sankar <quic_sibis@quicinc.com>
->>> ---
->>>    drivers/firmware/arm_scmi/perf.c | 11 ++++++++++-
->>>    1 file changed, 10 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
->>> index e286f04ee6e3..d3fb8c804b3d 100644
->>> --- a/drivers/firmware/arm_scmi/perf.c
->>> +++ b/drivers/firmware/arm_scmi/perf.c
->>> @@ -811,7 +811,7 @@ static int scmi_dvfs_device_opps_add(const struct scmi_protocol_handle *ph,
->>>    				     struct device *dev, u32 domain)
->>>    {
->>>    	int idx, ret;
->>> -	unsigned long freq;
->>> +	unsigned long freq, sustained_freq;
->>>    	struct dev_pm_opp_data data = {};
->>>    	struct perf_dom_info *dom;
->>> @@ -819,12 +819,21 @@ static int scmi_dvfs_device_opps_add(const struct scmi_protocol_handle *ph,
->>>    	if (IS_ERR(dom))
->>>    		return PTR_ERR(dom);
->>> +	if (!dom->level_indexing_mode)
->>> +		sustained_freq = dom->sustained_perf_level * dom->mult_factor;
->>> +	else
->>> +		sustained_freq = dom->sustained_freq_khz * dom->mult_factor;
->>> +
->>>    	for (idx = 0; idx < dom->opp_count; idx++) {
->>>    		if (!dom->level_indexing_mode)
->>>    			freq = dom->opp[idx].perf * dom->mult_factor;
->>>    		else
->>>    			freq = dom->opp[idx].indicative_freq * dom->mult_factor;
->>> +		/* All opps above the sustained level/frequency are treated as boost */
->>> +		if (sustained_freq && freq > sustained_freq)
->>
->> It seems the sustained_freq is not optional since SCMI v1.0,
->> is it necessary to check that (sustained_freq != 0) ?
->>
-> 
-> Technically correct, we don't have to. But since day 1, we checked and
-> handled 0 for perf_level specifically to avoid division by zero. I am
-> just worried if there are any platforms in the wild with these values as
-> 0. We can start without the check and add it if someone complains perhaps ?
-
-sure will drop the check in the re-spin.
-
--Sibi
-
-> 
