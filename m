@@ -1,205 +1,106 @@
-Received: from mail-lj1-f177.google.com (mail-lj1-f177.google.com [209.85.208.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from madrid.collaboradmins.com (madrid.collaboradmins.com [46.235.227.194])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C8261552E9
-	for <linux-pm@vger.kernel.org>; Fri, 16 Feb 2024 20:33:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39BBD38DFE;
+	Fri, 16 Feb 2024 23:07:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.227.194
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708115625; cv=none; b=CSEoKJRCuoqCqY36KB+j1t/BViAVx4eDQi9loyk+pJx+z1tf08EmZ5W+eHXt6V4/OTMHKjkmWokCVuOD/MaKNgrL3s/ueeD0OajFw7PzWvZ56EsSf8LSIyPwMpue8qgGolQpqvifqVGxTwQlX8/iLqCGboavctnZLgaBT/tdQQo=
+	t=1708124880; cv=none; b=ggxjUrU2uI/eAL4iSlMAC4PBilJlHJEdEXVNbwAp0IqFcWqoG3snLS07JSsVjYf6pCNYWIvvjmVk7+n5zeBRqP5QKXrrg0GXfDvyQEijoDM/gfQOkj0pGKxZ1/tYAbc26XwYbD7mJsw7qbpcB3kxw5k5h7UBMln75EUdyOYc5Rw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708115625; c=relaxed/simple;
-	bh=uljvXxVDpjLWioO7DI8DpfhUCiBQy2gqLlZzbqfC6rk=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=IlY34Zpkh80GpsOD7qNx6cD6odf5ouCQsZ9ceePc6VtluIiPYebc/6nt6OgUTJvb3zBUkpllUJhY7cuXO7ipbn1C9yGHvo/ihk1Bqy6e1BS3y4nqnQq1qo6BOyT+hNlNukkI8fdVMuTyqBUnySs1CmX7kgQesforGBBVgFa9U2g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=V+le+COp; arc=none smtp.client-ip=209.85.208.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
+	s=arc-20240116; t=1708124880; c=relaxed/simple;
+	bh=q7ADwbeBXwmo7E9aTVnbzqVj7QgPJRlOcrrBDZiAmdo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KLHxhlfFONj69pD2mkf0b9zdLiYzMEPMG1dFiuHuFKQCSs+0xnq3z1Mv3ETIdtSmLx772Xp60/OrcSrTlkxSdHBHbbj4yThh38rx7mLOzT2CFtSm1cAKigB2+ferBeKNBjyWIKvfXZqpKXQLW6hGW5MsrjxS+qB7O0HAqy+JmVA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Ps4L3dEf; arc=none smtp.client-ip=46.235.227.194
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="V+le+COp"
-Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-2d0d7985dfdso34410941fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 16 Feb 2024 12:33:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1708115618; x=1708720418; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=0uwXThQ+QNJ1YUcFKYkH+xTMKxSP1HSsH1gWvVHVIOI=;
-        b=V+le+COpES3rzhzVkrdn4DxtzXuOAw0tE8JdWra0ezkowznSetxsc6HeplrfocJW3m
-         1ZP6ZL1oY8BKpW1yfY1VqifVkhhLXTAcw+dFeKVcskePCazEzV/ysTSMBzfjRdZfMhtO
-         lIKtosZX71EB32XBCC2XYDGobjcLO6xoJGFw8I9/bK3qHLdWjKYHIYvT4Lx9KJqJ+Bzb
-         vUqQpahzE4iv4VdI/tfEEBhDEqTevGR6sL96gohZpeQ6XaQ1VrAF9DqC0omUU2PbIgwk
-         Clk6Dq+UKJ5MWcDzf3f2HSUHvvwW/ZQIulpmI3vHefhtqQ/e5E3KHrU3+nDAIbxQJwI7
-         7+HQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1708115618; x=1708720418;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=0uwXThQ+QNJ1YUcFKYkH+xTMKxSP1HSsH1gWvVHVIOI=;
-        b=xMOj4FeRR/ExWYjnmdfYfsBL2TuJEhG0lGt63Ejs0dEV9VHV+bd3D275z+NGPhutV7
-         Wpcz0hL+UBCQsKYdvfDocDAmui4K3WdIBdLasra+9EJLTLKlCcTzysxNFz2sUjJTMXHI
-         HDyN+Jo0JHxqUsROnwWc+wWMp21L5PA+tYWAPqxzxOrlJzfxGsWoSieiQQ+gbEOYOprp
-         Rw5NtcRP76G65/YelZ3gUvkDm6zvejRKQFqBajM0+VxwNIBSOq14A+FT0ro17OA9QM7O
-         +k5pxVz/pFS3fCtAp0HeD8TiXBUXs74cs36sxK/wsLSOH/5HCetET/YPxGTwCxQZd2lG
-         +U9A==
-X-Forwarded-Encrypted: i=1; AJvYcCXtI+Gtjac02LuVs81RAvfMiK2ceszKmxfU+cWKQ4u7zVs7IjqHwFelgxWtL6+c12vZwDHpFfdza1WErH6fJJgI5Msika2bkTE=
-X-Gm-Message-State: AOJu0Yzh4bEEazInMvnn4CCS/HM+6r5rIjYUF7sjgspalil/zV6Zfr1y
-	bEcOv4UHKFwDHJlz2RPUCBAmu3OCT/mKlO9W1lnZYmQ5zErDOqvDw3TnshJR6jU=
-X-Google-Smtp-Source: AGHT+IF7BFIzhFkzuOLkmprDQ2Up8MWLKknrN8msVe4koNW57AcePamcT2Ya3gh+sU9bXgW3MuxO5g==
-X-Received: by 2002:a2e:a36a:0:b0:2d0:ffe3:db07 with SMTP id i10-20020a2ea36a000000b002d0ffe3db07mr4323626ljn.25.1708115618351;
-        Fri, 16 Feb 2024 12:33:38 -0800 (PST)
-Received: from brgl-uxlite.home ([2a01:cb1d:334:ac00:7758:12d:16:5f19])
-        by smtp.gmail.com with ESMTPSA id m5-20020a05600c4f4500b0041253d0acd6sm1420528wmq.47.2024.02.16.12.33.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 16 Feb 2024 12:33:37 -0800 (PST)
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-To: Marcel Holtmann <marcel@holtmann.org>,
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-	"David S . Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Kalle Valo <kvalo@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Saravana Kannan <saravanak@google.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Alex Elder <elder@linaro.org>,
-	Srini Kandagatla <srinivas.kandagatla@linaro.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Abel Vesa <abel.vesa@linaro.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Lukas Wunner <lukas@wunner.de>,
-	Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Cc: linux-bluetooth@vger.kernel.org,
-	netdev@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-wireless@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-pci@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Subject: [PATCH v5 17/18] Bluetooth: qca: use the power sequencer for QCA6390
-Date: Fri, 16 Feb 2024 21:32:14 +0100
-Message-Id: <20240216203215.40870-18-brgl@bgdev.pl>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20240216203215.40870-1-brgl@bgdev.pl>
-References: <20240216203215.40870-1-brgl@bgdev.pl>
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Ps4L3dEf"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1708124877;
+	bh=q7ADwbeBXwmo7E9aTVnbzqVj7QgPJRlOcrrBDZiAmdo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Ps4L3dEfm8WT/rFjNO3i1cLkclFgUjDwjhKEpFI4fdjWkTmR0JyWaMtjMpYDsXY9l
+	 75Ba7sjCDEp/va0JXt8iaCpyYlXyZrze2ZSKbd3wWQeVdtXroVEMW4DZa0IY8oye7X
+	 fE6QTQbq+Y+7VzbEjjQFzdpKsApI+dEfyJm4m/AuIaj0YrfnpCcpxT359Ujq4inYAV
+	 3lgRo5JBA97/J4Q6asiF4iR2tpU2euJqhJi41ow2b6mPSXeYn4qrdfyxKb+L3jAsks
+	 ZmyWtTUizHFjgjvy1rgw2pHjVAWHQ+lB6xbK0Qsl4CDFn7e0zQTEgYlyE7bMSPmEta
+	 GpBTocr4QPcgA==
+Received: from mercury (cola.collaboradmins.com [195.201.22.229])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: sre)
+	by madrid.collaboradmins.com (Postfix) with ESMTPSA id 3A8783782042;
+	Fri, 16 Feb 2024 23:07:57 +0000 (UTC)
+Received: by mercury (Postfix, from userid 1000)
+	id B61D71061C38; Sat, 17 Feb 2024 00:07:56 +0100 (CET)
+Date: Sat, 17 Feb 2024 00:07:56 +0100
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Bhavin Sharma <bhavin.sharma@siliconsignals.io>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, 
+	"krzysztof.kozlowski+dt@linaro.org" <krzysztof.kozlowski+dt@linaro.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>, 
+	Hardevsinh Palaniya <hardevsinh.palaniya@siliconsignals.io>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 1/2] power: supply: Add STC3117 fuel gauge unit driver
+Message-ID: <ed5vkqpi2vipycdpy6fwszowiuk37ltuurqpe6t3yuekxynidc@ad7zvejmu5v5>
+References: <20240205051321.4079933-1-bhavin.sharma@siliconsignals.io>
+ <eccj4u6ewr33mlp4xqwx5medeysrjuwof7ntwhm6vypmmkss73@qjbpyw5hj3t7>
+ <MAZPR01MB6957FE701F89D83DF57F7402F24C2@MAZPR01MB6957.INDPRD01.PROD.OUTLOOK.COM>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="ksq33adg27c6w63k"
+Content-Disposition: inline
+In-Reply-To: <MAZPR01MB6957FE701F89D83DF57F7402F24C2@MAZPR01MB6957.INDPRD01.PROD.OUTLOOK.COM>
 
-From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-Use the pwrseq subsystem's consumer API to run the power-up sequence for
-the Bluetooth module of the QCA6390 package.
+--ksq33adg27c6w63k
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
----
- drivers/bluetooth/hci_qca.c | 31 +++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
+Hi,
 
-diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-index edd2a81b4d5e..6e747db30492 100644
---- a/drivers/bluetooth/hci_qca.c
-+++ b/drivers/bluetooth/hci_qca.c
-@@ -29,6 +29,7 @@
- #include <linux/of.h>
- #include <linux/acpi.h>
- #include <linux/platform_device.h>
-+#include <linux/pwrseq/consumer.h>
- #include <linux/regulator/consumer.h>
- #include <linux/serdev.h>
- #include <linux/mutex.h>
-@@ -215,6 +216,7 @@ struct qca_power {
- 	struct regulator_bulk_data *vreg_bulk;
- 	int num_vregs;
- 	bool vregs_on;
-+	struct pwrseq_desc *pwrseq;
- };
- 
- struct qca_serdev {
-@@ -1792,6 +1794,11 @@ static int qca_power_on(struct hci_dev *hdev)
- 		ret = qca_regulator_init(hu);
- 		break;
- 
-+	case QCA_QCA6390:
-+		qcadev = serdev_device_get_drvdata(hu->serdev);
-+		ret = pwrseq_power_on(qcadev->bt_power->pwrseq);
-+		break;
-+
- 	default:
- 		qcadev = serdev_device_get_drvdata(hu->serdev);
- 		if (qcadev->bt_en) {
-@@ -2170,6 +2177,10 @@ static void qca_power_shutdown(struct hci_uart *hu)
- 		}
- 		break;
- 
-+	case QCA_QCA6390:
-+		pwrseq_power_off(qcadev->bt_power->pwrseq);
-+		break;
-+
- 	default:
- 		gpiod_set_value_cansleep(qcadev->bt_en, 0);
- 	}
-@@ -2308,12 +2319,25 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 	case QCA_WCN6750:
- 	case QCA_WCN6855:
- 	case QCA_WCN7850:
-+	case QCA_QCA6390:
- 		qcadev->bt_power = devm_kzalloc(&serdev->dev,
- 						sizeof(struct qca_power),
- 						GFP_KERNEL);
- 		if (!qcadev->bt_power)
- 			return -ENOMEM;
-+		break;
-+	default:
-+		break;
-+	}
- 
-+	switch (qcadev->btsoc_type) {
-+	case QCA_WCN3988:
-+	case QCA_WCN3990:
-+	case QCA_WCN3991:
-+	case QCA_WCN3998:
-+	case QCA_WCN6750:
-+	case QCA_WCN6855:
-+	case QCA_WCN7850:
- 		qcadev->bt_power->dev = &serdev->dev;
- 		err = qca_init_regulators(qcadev->bt_power, data->vregs,
- 					  data->num_vregs);
-@@ -2354,6 +2378,13 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 		}
- 		break;
- 
-+	case QCA_QCA6390:
-+		qcadev->bt_power->pwrseq = devm_pwrseq_get(&serdev->dev,
-+							   "bluetooth");
-+		if (IS_ERR(qcadev->bt_power->pwrseq))
-+			return PTR_ERR(qcadev->bt_power->pwrseq);
-+		fallthrough;
-+
- 	default:
- 		qcadev->bt_en = devm_gpiod_get_optional(&serdev->dev, "enable",
- 					       GPIOD_OUT_LOW);
--- 
-2.40.1
+On Fri, Feb 16, 2024 at 01:34:11PM +0000, Bhavin Sharma wrote:
+> I apologize if I'm mistaken, but I noticed other minimal drivers
+> in the codebase.
 
+Please point me to a driver, which just exposes the voltage.
+
+> My understanding is that using a minimal driver shouldn't cause
+> any issues. Additionally, we can easily update this driver at any
+> time, as we're actively updating all other drivers.
+
+So why are you not doing it now? Adding current, state of charge,
+temperature and OCV is trivial. I'm not talking about supporting
+every feature of the chip, but just the bits that are a simple
+mapping between standard power supply properties and a chip
+register.
+
+-- Sebastian
+
+--ksq33adg27c6w63k
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmXP6sAACgkQ2O7X88g7
++po5vg//XQHEu60f6Sq5WXycuGpwD2Rrwky4z2q70+qOWfZlOx02RIoQVRPpivS7
+AhINrWWioIm6NeRXCKwpG+6GDCRYnn0fUjM/cIgdRG1rMBClZB2aqeJ+3VdZ51H6
+f+212OtdSeKoHcblWbiHbwAJ4xr0fiV0iKxrAplJUy83l0WMykOjbAnuS5HDymXI
+6JuReyWIdjG/4NfWqGAEOOw6GdQCRBNl/u/BgkWkpKA+stJUcjK7h+2NSkfHdk+y
+zQRX0OUI0wyHA8uMSzk6MxbbWALkvm4o9IYhY36q84iekKG4W+qa6Kzpxk2n96Nq
+9bfmKQbWVEMSQz2ES2sNTjXcE+YO8LyQWZBf6D9MVtlvune4pb30nWFkIkdbd8fV
+YwheuZybikIIpfAmbOiSO2NbCH0l9iHaNcyyTXhpnIh9zylgely8La1EoQsDFwnJ
+w9zhIO/3RSMJITgAvi1nc7Z0rC2nppEMLeTV0tS3lvLU8ioiHbGR57lSMNsA7Shk
+1jF2ebCFHCHG7bZLx3kPtOByJtv/Ln8UiNXQfeNJub3xikQP/ilQbGsVnqr4wly5
+4gEdkXg+5kj4Wub1OafAwYAnVDAqJwVxK5RhUwZ9EK6r/GoH61nyOceby+tk7KL9
+omnEO+kFeYarmfYDirMkj4k43legzBrAozWg8m5zIYL1CpjnlyM=
+=B5bh
+-----END PGP SIGNATURE-----
+
+--ksq33adg27c6w63k--
