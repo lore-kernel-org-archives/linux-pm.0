@@ -1,117 +1,198 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E59CA7BAE7;
-	Sat, 17 Feb 2024 13:57:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A36B7AE76
+	for <linux-pm@vger.kernel.org>; Sat, 17 Feb 2024 14:14:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708178255; cv=none; b=Fkb4YJsKaMPNiF4uPNuEC6+o2v7/pyR6iPeVa5whM/EoCyGzGh5hjtFKHAeGSzRS5NrkFj2Dowy/VW1VSQNePzPu73UlAFVjYmWbFLdxs5wsHC6LCljh0iefpetJsZPfwU9gaMMVnuhLFL7ik/IPNCrLpjj6tjsWl6L3LXk3HzA=
+	t=1708179241; cv=none; b=qnP1JsDocXWuDTXFIqynBhXXKl5iQ8AoVjKKatgONDbjyCZLOEuFAGJMLUtc/9teog/QITRqJz5syyr/yirkjPR3ZLldGmPCu8NEQnpop3eqmxbJLen1nfjMSJDdSR71ij/I26btLr835025v2501DyArL8E8RDrzPTv75GJ+9I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708178255; c=relaxed/simple;
-	bh=aWT50lJuEyLuBC6bdjZcLVcVbSSAd/hYVo+Ldw2RS48=;
-	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=OK/Id1cK4gee6SWhLDXaKUe+QhWaPfBKD3EJu+PwUKkkqxjzuTcGGM7h9OrsPBlgekeU/zQMY0OMLtHq8+CIyZux9mMTWKAALWHbYrksP3E667eirYdzQe0BZtGwAFUxA5lDOZloH3EsNQ+86a4f5Iy0RK/3QIeHZsCPktVh1o4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=Fb0Y7NJg; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1708179241; c=relaxed/simple;
+	bh=+wZP7vHYk/NnK6kFbVDTg8yyh97qvUTtJQ7tdP43nk8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QB8FPTzWBO+tolIbyEgaLbyl8lhZv1ZuBoGYPdpUmbkd5h9x5THLAhKYWoNKNp6xDeTgVt+j3s8nKDO0DNhrOwToXJn7HYoOfVyEkjxYf3c3oSjuw1Wb8dUITWMyst1sT1gHgJczNmZ9FlNx/L9lWrUTahmKXCG5vF0jOdTeAAo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=QqNgnpV2; arc=none smtp.client-ip=209.85.208.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="Fb0Y7NJg"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 41HDfZ9D031770;
-	Sat, 17 Feb 2024 13:57:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	from:subject:date:message-id:mime-version:content-type
-	:content-transfer-encoding:to:cc; s=qcppdkim1; bh=h9VFo0bcfKDSpl
-	pfPaeC5cxtTrFf/cuxr3uw/279Q5E=; b=Fb0Y7NJgeUgd5t3bQl2lHK+UPsyH/Q
-	2XXA0IdU4SHsZXnK4MrYeIT79LCpflgYOvdc2T4zAYEy2kI7FBpuQgGx7Xwdw7Eo
-	XKWO165mpIS2108oz2mqlbioft4xndBKEf/teOBh2GbCAwGdACS5K+OidxVrVzsQ
-	h+AFqSmKqjgaEBXhpxXJUQSEzHHNe9j39D1T4647B5WXq54jyFADuuG0DydsNK/y
-	US2B+3Ij62tHcQsPTIdtvqR6Z8lzp3eXJtuaoOIwLNn4e0hJbT77uC6aXaN2wvrs
-	UsOgjyAxCPRPEt+Q/op/igLdZq2uZgwar1oyp/z5BttI/2KH5rtLQfkg==
-Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3waqmdrd27-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 17 Feb 2024 13:57:14 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 41HDvDgr017266
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 17 Feb 2024 13:57:13 GMT
-Received: from hu-mkshah-hyd.qualcomm.com (10.80.80.8) by
- nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Sat, 17 Feb 2024 05:57:09 -0800
-From: Maulik Shah <quic_mkshah@quicinc.com>
-Subject: [PATCH 0/2] Update init level for cmd-db, rpmh-rsc and psci
- cpuidle domains
-Date: Sat, 17 Feb 2024 19:27:06 +0530
-Message-ID: <20240217-init_level-v1-0-bde9e11f8317@quicinc.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QqNgnpV2"
+Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-5643ae47cd3so187647a12.3
+        for <linux-pm@vger.kernel.org>; Sat, 17 Feb 2024 06:13:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1708179238; x=1708784038; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=8uTOVln7B9LCW+XhdWPc2Gjzczfr4Yu7an/52ckhWw4=;
+        b=QqNgnpV24PRGE7rOQ32M1Gtc5JGI3+a+Jhysf+5zteoqfKZlsnRbj349tt++38Ag5Y
+         PMxAEHHvFjoqALbeeGRNRzp4bYfXnzuKAxOyeC+rhA54LmueBltR6SHBwLdNnleU8S6V
+         3P0n2yElwhjhuPI6fkVje0SVFTWTCFN0mjw9g1HCVVriYvvo0qpL5RueZ/8BRF01BcIf
+         UMI3hsOvjD8sFiF7/qha7TfwhYz2iKnilM8oyH1IoyYgPrq3wsFmbFa5ph96swB1y+ws
+         U+0QhGLWEskpws5v7JwTs9BV8hOZ4McVbHD1Gb7ONF8lkCxx7QCJpYeN238+xFsOXx4h
+         KFxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1708179238; x=1708784038;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=8uTOVln7B9LCW+XhdWPc2Gjzczfr4Yu7an/52ckhWw4=;
+        b=lpSstII32WVoBjTbQYbD/l4TgHEUcGlZ42yUTuCPgjOlATsSU8+hizlCZG1U2HyINV
+         Uoy89MI2cKgAVjcpj+xfTXnlRUYmWcsrTtdmsPlhWrpz20YbHtp52sVzg8gNYxjYCYK8
+         8TR0wjuEN5MTAclI4joLl2LNWRDV4i4FnSZjGxygotLtBxs759YlIB5lEAQCpZxFMwXI
+         K3ZM1Q8ZaQIHdnRg3ftHX3iEps9Ndao/sg4Pff4qM1zzHsmIx4JpqpxSd0CwAxqpLYe1
+         hKLUvBVg/zoZWozv9b0cxkgsx99Vlrl6iF73R6WA2BIE0n2Xw61IGkuHIArRDonQF9Gf
+         7g1g==
+X-Forwarded-Encrypted: i=1; AJvYcCW3llIdS846aS4K/54ElGVkUxYdT0YXIeteecPjpW0Z5RVhirR/c6LdIcmmIfOLHOGJpjCpD2P01emrSC9mTGs9Jo/VTzOD9f0=
+X-Gm-Message-State: AOJu0Yz4vl7U9JhOclrqhERXvHrJSkU1b+eLG474G9zrSrWTdAyAjygt
+	EZioSsMQteQNW8ZxNYkDUYtf7p4dXGj1wsTGLdYpU8o3ZHtrWvUZ+4kyFqm7Q4KLITJCbENHRM3
+	A
+X-Google-Smtp-Source: AGHT+IEMqq2OOqfNnyYtkZ0A9BgvXFEj64X+pAlq9aoLXx2vdSY1XySLj9qsXAn7vJma7clpn5N9pg==
+X-Received: by 2002:aa7:c48a:0:b0:563:8df4:1b2a with SMTP id m10-20020aa7c48a000000b005638df41b2amr5082857edq.39.1708179238480;
+        Sat, 17 Feb 2024 06:13:58 -0800 (PST)
+Received: from [192.168.0.22] ([78.10.207.130])
+        by smtp.gmail.com with ESMTPSA id g13-20020aa7d1cd000000b00563ec73bbafsm912809edp.46.2024.02.17.06.13.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 17 Feb 2024 06:13:57 -0800 (PST)
+Message-ID: <f52b2d5e-b2b4-48ae-a6a6-fc00c89662d2@linaro.org>
+Date: Sat, 17 Feb 2024 15:13:55 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/3] dt-bindings: iio: adc: Add support for QCOM PMIC5
+ Gen3 ADC
+Content-Language: en-US
+To: Jishnu Prakash <quic_jprakash@quicinc.com>, jic23@kernel.org,
+ robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+ andersson@kernel.org, konrad.dybcio@linaro.org, lee@kernel.org,
+ andriy.shevchenko@linux.intel.com, daniel.lezcano@linaro.org,
+ dmitry.baryshkov@linaro.org
+Cc: lars@metafoo.de, luca@z3ntu.xyz, marijn.suijten@somainline.org,
+ agross@kernel.org, sboyd@kernel.org, rafael@kernel.org, rui.zhang@intel.com,
+ lukasz.luba@arm.com, linus.walleij@linaro.org, quic_subbaram@quicinc.com,
+ quic_collinsd@quicinc.com, quic_amelende@quicinc.com,
+ quic_kamalw@quicinc.com, kernel@quicinc.com, linux-kernel@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, cros-qcom-dts-watchers@chromium.org
+References: <20231231171237.3322376-1-quic_jprakash@quicinc.com>
+ <20231231171237.3322376-3-quic_jprakash@quicinc.com>
+ <3f812ffa-ec33-448e-b72a-ce698618a8c1@linaro.org>
+ <13f2b558-a50d-44d3-85de-38e230212732@quicinc.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Autocrypt: addr=krzysztof.kozlowski@linaro.org; keydata=
+ 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
+ D2GYIS41Kv4Isx2dEFh+/Q==
+In-Reply-To: <13f2b558-a50d-44d3-85de-38e230212732@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIADK70GUC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIxMDI0Nz3cy8zJL4nNSy1BzdpNQksxRzE4MUixQjJaCGgqLUtMwKsGHRsbW
- 1AHwjxKtcAAAA
-To: Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio
-	<konrad.dybcio@linaro.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        "Rafael J.
- Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-CC: <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-        <quic_lsrao@quicinc.com>, Maulik Shah <quic_mkshah@quicinc.com>
-X-Mailer: b4 0.12.5-dev-2aabd
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1708178229; l=1020;
- i=quic_mkshah@quicinc.com; s=20240109; h=from:subject:message-id;
- bh=aWT50lJuEyLuBC6bdjZcLVcVbSSAd/hYVo+Ldw2RS48=;
- b=NwilpH+Ii+ckIRaRbv4O6V62Z9Yh3Hn/dAEEEcEy7BivZ0UhYrdKagy4w5v/v8LrKn0qf7SEh
- ZmVNgJyOVGvCd1qPl2DXZ79M2JZOGy9BQVC7wl9IuABEtTBaNT4mVzJ
-X-Developer-Key: i=quic_mkshah@quicinc.com; a=ed25519;
- pk=bd9h5FIIliUddIk8p3BlQWBlzKEQ/YW5V+fe759hTWQ=
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: p3_jVyjRySa_Gq2nBMHJZ2gvULuXLcDD
-X-Proofpoint-ORIG-GUID: p3_jVyjRySa_Gq2nBMHJZ2gvULuXLcDD
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-02-17_10,2024-02-16_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- lowpriorityscore=0 suspectscore=0 mlxscore=0 phishscore=0 adultscore=0
- spamscore=0 impostorscore=0 bulkscore=0 clxscore=1011 mlxlogscore=755
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2401310000 definitions=main-2402170113
 
-cmd-db and rpmh-rsc are used by clients like regulators, interconnects and
-clocks for resource voting. These clients are in core_initcall() while
-cmd-db and rpmh-rsc are in arch_initcall(). Update init level for these
-drivers also to core_initcall() to avoid unnecessary probe defer during
-boot up.
+On 16/02/2024 11:39, Jishnu Prakash wrote:
+> Hi Krzysztof,
+> 
+> On 1/4/2024 1:48 PM, Krzysztof Kozlowski wrote:
+>> On 31/12/2023 18:12, Jishnu Prakash wrote:
+>>> For the PMIC5-Gen3 type PMICs, ADC peripheral is present in HW for the
+>>> following PMICs: PMK8550, PM8550, PM8550B and PM8550VX PMICs.
+>>>
+>>> It is similar to PMIC5-Gen2, with SW communication to ADCs on all PMICs
+>>> going through PBS(Programmable Boot Sequence) firmware through a single
+>>> register interface. This interface is implemented on an SDAM (Shared
+>>> Direct Access Memory) peripheral on the master PMIC PMK8550 rather
+>>> than a dedicated ADC peripheral.
+>>>
+>>> Add documentation for PMIC5 Gen3 ADC and macro definitions for ADC
+>>> channels and virtual channels (combination of ADC channel number and
+>>> PMIC SID number) per PMIC, to be used by clients of this device.
+>>>
+>>> Changes since v2:
+>>> - Moved ADC5 Gen3 documentation into a separate new file.
+>> Changelog goes under ---.
+>>
+>> Why did you do this? What is the rationale? Sorry, this patchset goes
+>> nowhere.
+> 
+> 
+> I'll elaborate this more in the next patchset. There are two main 
+> reasons for adding this documentation in a new file:
 
-Similarly psci cpuidle psci power domains are used by rpmh-rsc driver and
-they are in subsys_initcall(). Update it to core_initcall().
+This was more than a month ago? You reply to my comment with 1.5 months
+delay?
 
-Signed-off-by: Maulik Shah <quic_mkshah@quicinc.com>
----
-Maulik Shah (2):
-      soc: qcom: Update init level to core_initcall() for cmd-db and rpmh-rsc
-      cpuidle: psci: Update init level to core_initcall()
+Sorry, I am not in the context and I am not going back to it. I have
+many other emails where my questions are addressed faster than 1.5 months.
 
- drivers/cpuidle/cpuidle-psci-domain.c | 2 +-
- drivers/soc/qcom/cmd-db.c             | 2 +-
- drivers/soc/qcom/rpmh-rsc.c           | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
----
-base-commit: d37e1e4c52bc60578969f391fb81f947c3e83118
-change-id: 20240217-init_level-beb6d740d8d2
+The patch is not even in my mailbox, long gone.
+Why you are making it so difficult for reviewers?
+
+You will get answers like I am not in context, sorry. Next time don't
+respond after 1.5 months.
+
+
+> 
+> 1.This device is not exactly like the existing QCOM VADC drivers as it 
+> now combines VADC functionality (reading ADC channel on client request) 
+> with ADC_TM functionality (thermal threshold monitoring).
+
+Does no explain touching bindings. Your drivers don't matter for bindings.
+
+> 
+> 2.Adding this device's bindings in the existing qcom,spmi-vadc.yaml file 
+
+No rationale was provided in commit msg.
+
+> is not possible as it would require updating some of the existing 
+> top-level constraints. (for the older devices in that file, "reg" and 
+> "interrupts" can have at most one item, while this device can have more 
+> than one item under these properties.)
+
+How is this a problem?
+
 
 Best regards,
--- 
-Maulik Shah <quic_mkshah@quicinc.com>
+Krzysztof
 
