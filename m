@@ -1,111 +1,178 @@
-Received: from fallback18.i.mail.ru (fallback18.i.mail.ru [79.137.243.73])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D64A01E4A7;
-	Sun, 18 Feb 2024 18:47:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.137.243.73
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A79E1E4A7
+	for <linux-pm@vger.kernel.org>; Sun, 18 Feb 2024 18:52:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708282062; cv=none; b=fW4j3BnQcXEiEDSPzs4Jo9w7LCe8N7gqYrhmj+i6rqk/zbNzyo/fuhm4wFVQT7AbAbixGPoRoA/0IdNI2FSYDwL5ncFJlpCSfwJyh46KD393uHA6aI4GuZCzwRmNYFecaRsdiLSyREwTPnJOvpUNNeNJlaeMmE8lMiuja/4brmw=
+	t=1708282329; cv=none; b=gf2gnVDz7mC0ieURbwRRIRXNLfYbCQ9YFgBebTqmS5GR8BrASJLZ8UgiKfVz06N+K9Nyx92r8NzjsIvtE89m+P4R65ZGzdGCPLr8WLSTpVvNCRscohn07/IT8DFnp9pb2xfeYZ4/Gs/6IvnUKZliSHAP2UNhmdXYO+YKG54B3HI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708282062; c=relaxed/simple;
-	bh=ZzpDwJa4K3+r41sklRhJMsnSJw7DbIBjHFPOcVs5fcY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JlhMSIHRsIKJNSb5GDxIP8vWxkti+oIc1hYfU1+dxXSBMhK+oE+iG5csKnT5MhHBtIJnrBQhTICwFhSONKhlgouRWdIdKjHvYTHfyHHYegoM3m6OEQI1SY6EjhF9fu7db2n4aVOpLYRW5uAe1J6fw2agZTVviFcZhjhof3Uc5c8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jiaxyga.com; spf=pass smtp.mailfrom=jiaxyga.com; dkim=pass (1024-bit key) header.d=jiaxyga.com header.i=@jiaxyga.com header.b=QaGkIg5n; dkim=pass (1024-bit key) header.d=jiaxyga.com header.i=@jiaxyga.com header.b=Y8ltRv6E; arc=none smtp.client-ip=79.137.243.73
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jiaxyga.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jiaxyga.com
+	s=arc-20240116; t=1708282329; c=relaxed/simple;
+	bh=WIqJZbaPkUeaZ6fzw7naKrgrDKBnwdRF/57LdtYivCM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ODLTY1W7tqUHUIRZsDC0Rr4+EjPdkkfjl2gJgsVz0+CYKUK5xIzoQOdD+pQpT7g5xOXnv2H2RDeua2sxZDEz9UlTVGUlL4D9fulY48Yee4//VtsBopxa567TVgul18hjn19azg99tiZ77c+TwWvOTeMjyXVgGdb2v96ixrcHKl0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Mh+xjTXW; arc=none smtp.client-ip=209.85.221.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=jiaxyga.com header.i=@jiaxyga.com header.b="QaGkIg5n";
-	dkim=pass (1024-bit key) header.d=jiaxyga.com header.i=@jiaxyga.com header.b="Y8ltRv6E"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=jiaxyga.com; s=mailru;
-	h=Content-Transfer-Encoding:MIME-Version:Message-ID:Date:Subject:Cc:To:From:From:Subject:Content-Type:Content-Transfer-Encoding:To:Cc; bh=oJ4HI3fXNLVifEKRkv+30ROKoxZ8SdDtjau/By6D28U=;
-	t=1708282060;x=1708372060; 
-	b=QaGkIg5no8JOga4WGwnYd7lvTxLNZoDn3bMkwFroUUi4wEGRYV11afKm5e4gKFWEQdsa3lVVnILQFLDyshSEPpNRNUkbguPtRPjtP4HJCNCuE3r8SgGFp2wHdwEMP+dOhUpm2IlCylL0KKcd8Eg2rNI/825bkJse6zh/0dz6gew=;
-Received: from [10.12.4.36] (port=57416 helo=smtp59.i.mail.ru)
-	by fallback18.i.mail.ru with esmtp (envelope-from <danila@jiaxyga.com>)
-	id 1rblyH-002TRW-Hw; Sun, 18 Feb 2024 21:33:01 +0300
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=jiaxyga.com
-	; s=mailru; h=Content-Transfer-Encoding:MIME-Version:Message-ID:Date:Subject:
-	Cc:To:From:From:Sender:Reply-To:To:Cc:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
-	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive:
-	X-Cloud-Ids:Disposition-Notification-To;
-	bh=oJ4HI3fXNLVifEKRkv+30ROKoxZ8SdDtjau/By6D28U=; t=1708281181; x=1708371181; 
-	b=Y8ltRv6Ee3lonjn5UAjJGBVGylNjtOGQhdtJr2YomFs9UAEsjajH5PX2scHM6/AvhP0J6CCrKuH
-	rG4KgEdfE89Q2vd7hKdozKj11w2FqktAuusS75MVCD/6xl6rize3vlxGgzM34nlfBkf/dI/dw+hj8
-	nsrE0E+B54hYWBvaWuo=;
-Received: by smtp59.i.mail.ru with esmtpa (envelope-from <danila@jiaxyga.com>)
-	id 1rbly2-00000001iw9-246d; Sun, 18 Feb 2024 21:32:47 +0300
-From: Danila Tikhonov <danila@jiaxyga.com>
-To: andersson@kernel.org,
-	konrad.dybcio@linaro.org,
-	djakov@kernel.org,
-	robh@kernel.org,
-	krzysztof.kozlowski+dt@linaro.org,
-	conor+dt@kernel.org
-Cc: linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Danila Tikhonov <danila@jiaxyga.com>
-Subject: [PATCH 0/2] Add interconnect support for SM7150 SoC
-Date: Sun, 18 Feb 2024 21:32:37 +0300
-Message-ID: <20240218183239.85319-1-danila@jiaxyga.com>
-X-Mailer: git-send-email 2.43.2
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Mh+xjTXW"
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-3394b892691so2083306f8f.1
+        for <linux-pm@vger.kernel.org>; Sun, 18 Feb 2024 10:52:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1708282326; x=1708887126; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=wNBEOVVb/rP1qaF97WrZeJwt+wEqX59IP8EY5F5M0uM=;
+        b=Mh+xjTXWVAWLomdgkOXG/7uHRYmHcrO6OItQW3iHb3terVhC9zlX+fnHZXqr7qC59k
+         XSC+46qZM5ipAPbabYEoM03fpb1y0jrQZxSIPMr+QtgkAZNxhnz4Lh7bNFsmcPBysVbn
+         hYj9M2aTv4f5UI/AYbVpg4OgVAUuQ10dAJeGY0XBxvtO6xUHkCj28wFYIze/G9vaTSQm
+         hpMzMGgGttCbrWh+lAgNMnSuoyFY+HyqmidmFzk9zNPGBxGq8PRXZaBzDbrwCsSXSSE5
+         NkfVG3YRdCDdK664XaYTbwQ+QgYQzy/Rqu73/X/zziq1+wekyhe7rUraoN/jVxUiTwNi
+         y9ZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1708282326; x=1708887126;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=wNBEOVVb/rP1qaF97WrZeJwt+wEqX59IP8EY5F5M0uM=;
+        b=SZYG8CSBNlshVwItJerupc1FHC7R3Za5syF6OTJtQKvTCA+DVIUjl2XlqlangrFbHY
+         kgAn9YY+25x7dc8PtLdBPFcxbQfwUYHQAk1PFZ5yuG3+boSaVTD6DaFi2a95PBDObHdo
+         HuMNZaL2s2SHirDgUtKab/NhWdteV6f9KSTYpuWkARGxLwuu84Wtf7P1uSy8Z0j5A5EY
+         dCrWZGr1NDSgZDhcC16lPyaJsV5bk4IKag7Ffl9SVjuQ3IbS9c12MjlPDZB1XVXa7WsM
+         gbWcLrsztXX83cTvKRV8BPoKxHlElB6mqp3FozvgrfcuzFzGv1qbVy5oHL9z2gaGfKfI
+         p79w==
+X-Forwarded-Encrypted: i=1; AJvYcCUc5vHrINxUphZN5PrQzzYPihai6WZFwFQewqHC4jjl8FPDXbCZhfJQ38+hedH/YTizdIf3bG9YQChd0Sf6fKRMZnW0XDH/0QQ=
+X-Gm-Message-State: AOJu0Yw5R3CKQAIsFQgwL12QEl8rv81k5lIArSR1nqFg4oWaXzLb+Xx+
+	+d0ZxH1NOjUsW6VWkRIRJLzQWFkZJay8qDNuL9DPASjTrHz58DVYDsDjp8Hrk1A=
+X-Google-Smtp-Source: AGHT+IEG1WdiR3eQwnrb//cEfiT0Sx0t9LAhVUuGI6WXwfKCIpNTnZnU9e9ScPsT8AfU5RS2bUrM7A==
+X-Received: by 2002:a5d:570b:0:b0:33d:47c6:24fe with SMTP id a11-20020a5d570b000000b0033d47c624femr1113697wrv.12.1708282325670;
+        Sun, 18 Feb 2024 10:52:05 -0800 (PST)
+Received: from [192.168.1.20] ([178.197.222.116])
+        by smtp.gmail.com with ESMTPSA id r8-20020adfe688000000b0033cf5094fcesm8026214wrm.36.2024.02.18.10.52.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 18 Feb 2024 10:52:05 -0800 (PST)
+Message-ID: <d3a4c6f9-e24a-446c-acbf-75519f6782fb@linaro.org>
+Date: Sun, 18 Feb 2024 19:52:03 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailru-Src: smtp
-X-7564579A: 78E4E2B564C1792B
-X-77F55803: 4F1203BC0FB41BD9001F8F2F6BAD2021F4B2298ADA324AF81BB1825BF5AE0A1600894C459B0CD1B98C9EBD09D8BDACF3C7109C2D567B645AB2B869AB8C39342FF215CD5087B8A2F965B98BC17AE4ABE7
-X-7FA49CB5: FF5795518A3D127A4AD6D5ED66289B5278DA827A17800CE7A179494B5629353BEA1F7E6F0F101C67BD4B6F7A4D31EC0BCC500DACC3FED6E28638F802B75D45FF8AA50765F79006370D3D68FCEFFDD9EA8638F802B75D45FF36EB9D2243A4F8B5A6FCA7DBDB1FC311F39EFFDF887939037866D6147AF826D85E6ECE5FBCF80ABBF545006DEB2F19AEF66D7B8855061AF7CC7F00164DA146DAFE8445B8C89999728AA50765F790063773DCDF0198120BE8389733CBF5DBD5E9C8A9BA7A39EFB766F5D81C698A659EA7CC7F00164DA146DA9985D098DBDEAEC8744B801E316CB65FF6B57BC7E6449061A352F6E88A58FB86F5D81C698A659EA73AA81AA40904B5D9A18204E546F3947C0085B890FD2717DA6136E347CC761E074AD6D5ED66289B523666184CF4C3C14F6136E347CC761E07725E5C173C3A84C3B8066AFCF2BB2551BA3038C0950A5D36B5C8C57E37DE458B330BD67F2E7D9AF16D1867E19FE14079C09775C1D3CA48CFED8438A78DFE0A9E1DD303D21008E298D5E8D9A59859A8B6B372FE9A2E580EFC725E5C173C3A84C31BC2FD6A5287AC5335872C767BF85DA2F004C90652538430E4A6367B16DE6309
-X-C1DE0DAB: 0D63561A33F958A5EBC449AC771117205002B1117B3ED69619A38FAB5AA2C3660E58516B1639A14B823CB91A9FED034534781492E4B8EEADF4F3DF47829F65C7C79554A2A72441328621D336A7BC284946AD531847A6065A535571D14F44ED41
-X-C8649E89: 1C3962B70DF3F0ADE00A9FD3E00BEEDF77DD89D51EBB7742D3581295AF09D3DF87807E0823442EA2ED31085941D9CD0AF7F820E7B07EA4CF05F377F6E0C1461EB10DBCCD48361BBEFA0CB07EC5489145AFDCBFFE1E75A92B760962882471415B34E84B500378195FBCE35CC6DDD33EE04C37877C5488D6FE914199AC9651CD60AF108DC32EA72A8402C26D483E81D6BE72B480F99247062FEE42F474E8A1C6FD34D382445848F2F3
-X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5ycPtXkTV4k65bRjmOUUP8cvGozZ33TWg5HZplvhhXbhDGzqmQDTd6OAevLeAnq3Ra9uf7zvY2zzsIhlcp/Y7m53TZgf2aB4JOg4gkr2bioj3ZJ49a6yxuuN11JQCrtBHw==
-X-Mailru-Sender: 9EB879F2C80682A09F26F806C739498103638563C1357B8A459FBC39F2FFFE83B33547D50490C739EA4BE9FE96A283482C62728BC403A049225EC17F3711B6CF1A6F2E8989E84EC137BFB0221605B344978139F6FA5A77F05FEEDEB644C299C0ED14614B50AE0675
-X-Mras: Ok
-X-7564579A: 646B95376F6C166E
-X-77F55803: 6242723A09DB00B4A77971E4CF73965D9E271BDE2CCB4C0C90205846E38A0579049FFFDB7839CE9E8F5A60B08382AFE37B48B0B2F3D55BE30B510F342DFFD572D0817233229BD881
-X-7FA49CB5: 0D63561A33F958A57A2B3967897D26BDBC493CD0BEA3941A68C4D234F0F740FA8941B15DA834481FA18204E546F3947CA14973FBE0621AE5F6B57BC7E64490618DEB871D839B7333395957E7521B51C2DFABB839C843B9C08941B15DA834481F8AA50765F7900637C1C2752E44B586D5389733CBF5DBD5E9B5C8C57E37DE458BD96E472CDF7238E0725E5C173C3A84C36153467CB5E707FD35872C767BF85DA2F004C90652538430E4A6367B16DE6309
-X-87b9d050: 1
-X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5ycPtXkTV4k65bRjmOUUP8cvGozZ33TWg5HZplvhhXbhDGzqmQDTd6OAevLeAnq3Ra9uf7zvY2zzsIhlcp/Y7m53TZgf2aB4JOg4gkr2bioj3ZJ49a6yxuvSU2GOb5vijQ==
-X-Mailru-MI: 8000000000000800
-X-Mras: Ok
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] dt-bindings: interconnect: Add Qualcomm SM7150 DT
+ bindings
+Content-Language: en-US
+To: Danila Tikhonov <danila@jiaxyga.com>, andersson@kernel.org,
+ konrad.dybcio@linaro.org, djakov@kernel.org, robh@kernel.org,
+ krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20240218183239.85319-1-danila@jiaxyga.com>
+ <20240218183239.85319-2-danila@jiaxyga.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Autocrypt: addr=krzysztof.kozlowski@linaro.org; keydata=
+ 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
+ D2GYIS41Kv4Isx2dEFh+/Q==
+In-Reply-To: <20240218183239.85319-2-danila@jiaxyga.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Add dtbindings and driver support for the Qualcomm SM7150 SoC.
+On 18/02/2024 19:32, Danila Tikhonov wrote:
+> The Qualcomm SM7150 platform has several bus fabrics that could be
+> controlled and tuned dynamically according to the bandwidth demand.
+> 
+> Signed-off-by: Danila Tikhonov <danila@jiaxyga.com>
+> ---
+>  .../interconnect/qcom,sm7150-rpmh.yaml        |  88 ++++++++++
+>  .../interconnect/qcom,sm7150-rpmh.h           | 150 ++++++++++++++++++
+>  2 files changed, 238 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sm7150-rpmh.yaml
+>  create mode 100644 include/dt-bindings/interconnect/qcom,sm7150-rpmh.h
+> 
+> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sm7150-rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,sm7150-rpmh.yaml
+> new file mode 100644
+> index 000000000000..604822ed4adc
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/interconnect/qcom,sm7150-rpmh.yaml
+> @@ -0,0 +1,88 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/interconnect/qcom,sm7150-rpmh.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Qualcomm RPMh Network-On-Chip Interconnect on SM7150
+> +
+> +maintainers:
+> +  - Danila Tikhonov <danila@jiaxyga.com>
+> +
+> +description: |
+> +  RPMh interconnect providers support system bandwidth requirements through
+> +  RPMh hardware accelerators known as Bus Clock Manager (BCM).
+> +
+> +  See also:: include/dt-bindings/interconnect/qcom,sm7150-rpmh.h
+> +
+> +allOf:
+> +  - $ref: qcom,rpmh-common.yaml#
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - qcom,sm7150-aggre1-noc
+> +      - qcom,sm7150-aggre2-noc
+> +      - qcom,sm7150-compute-noc
+> +      - qcom,sm7150-config-noc
+> +      - qcom,sm7150-dc-noc
+> +      - qcom,sm7150-gem-noc
+> +      - qcom,sm7150-mc-virt
+> +      - qcom,sm7150-mmss-noc
+> +      - qcom,sm7150-system-noc
 
-To: Bjorn Andersson <andersson@kernel.org>
-To: Konrad Dybcio <konrad.dybcio@linaro.org>
-To: Georgi Djakov <djakov@kernel.org>
-To: Rob Herring <robh@kernel.org>
-To: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-To: Conor Dooley <conor+dt@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Danila Tikhonov <danila@jiaxyga.com>
+I don't see how you resolved the warning we talked about on IRC.
 
-Danila Tikhonov (2):
-  dt-bindings: interconnect: Add Qualcomm SM7150 DT bindings
-  interconnect: qcom: Add SM7150 driver support
-
- .../interconnect/qcom,sm7150-rpmh.yaml        |   88 +
- drivers/interconnect/qcom/Kconfig             |    9 +
- drivers/interconnect/qcom/Makefile            |    2 +
- drivers/interconnect/qcom/sm7150.c            | 1753 +++++++++++++++++
- drivers/interconnect/qcom/sm7150.h            |  140 ++
- .../interconnect/qcom,sm7150-rpmh.h           |  150 ++
- 6 files changed, 2142 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sm7150-rpmh.yaml
- create mode 100644 drivers/interconnect/qcom/sm7150.c
- create mode 100644 drivers/interconnect/qcom/sm7150.h
- create mode 100644 include/dt-bindings/interconnect/qcom,sm7150-rpmh.h
-
--- 
-2.43.2
+Best regards,
+Krzysztof
 
