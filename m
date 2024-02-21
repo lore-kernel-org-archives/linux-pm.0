@@ -1,112 +1,205 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35D6938F9A
-	for <linux-pm@vger.kernel.org>; Wed, 21 Feb 2024 03:14:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD85E39ADD;
+	Wed, 21 Feb 2024 05:36:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708485247; cv=none; b=lqBNRuVACF/uFOBxScqP93wYVSsCLoTR5r2S5RI2GzTJyCwWZbNLptJgyK+7yM9lVYWPt/4wm4n2gMTNoJDWlqQhUqxdiT6Ft7OWdLvtWHx6htxhwJgmfAIyiGE05biBZL8uR9BokIPAhofpk+I8NEdXGOPHMUjPSP0RMg4Ml5A=
+	t=1708493810; cv=none; b=G3EfME8hhV2k5TRmA4vV6Az8YJS3twJkuXQNut6gXle43zaEmt2i9dvjWJxI762GFQq9xDqY/fgm1JwmzEPXguszxgJXMV8WupWRZOmLgpXO+877xGdBw6JhVH3jALjDpfHwYOlFurbmNuS2/TuNRJCCkMgM7AGv0vng6UryyWQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708485247; c=relaxed/simple;
-	bh=c5veOUgzEGr1H0DDpUsfahWYnZRf5VlkErHFjpbfm3E=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=q+OPPmhIJSUfsMx+Zgc61u9O6rfdXW6ckpkQHkued8A+6B+/0TJnDHAj+vxuPDXVynBPiWvfU01griH6bVq+qauPCR8w95XG0LqKS1IWGGLEpbCQiSN1qmm1Vjyo/l04PMPgNaa9wCyBz3apgyRFpeqdQEb+9CuHDHSbshk4VZs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZhePMXFV; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1708493810; c=relaxed/simple;
+	bh=h/VjfafKWnZdt701kQi9hEaeMSuYAmya+J9erv+EEuM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=IQ5U1Z3X/g7VApyNW81FVq+3M86IBWYaC1KUglVnbvUduzuAr9bh8w1+pjL50MXHsgI1w6JRsBX0MPUVUE2SSRcSplMkZbc8YkwJN0U2616I2c14YGXyd9Gvqv4iRuWhzCkgMDue1FzZzaJFAU2j/VCf5+anfHLPqUW5dRCaUTE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=csqpwUFz; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZhePMXFV"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B7C81C433A6
-	for <linux-pm@vger.kernel.org>; Wed, 21 Feb 2024 03:14:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1708485246;
-	bh=c5veOUgzEGr1H0DDpUsfahWYnZRf5VlkErHFjpbfm3E=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=ZhePMXFVJdmoI73SnOApVMqFEPho9VJ4NFF9K5MVy8AmXI3neoFBttv3sDErUxwNd
-	 ZI/+HQiNrKRJGmtqirKW3ydFYcvhpHC7MfmWEdOA3Ip4AG4CTuJtpuJ65/sr4eLzgX
-	 4sI0B9rETR05vs0vgqyXYw985F7ANY4yNSLKmqloI+Qs1gt/NA9lO544KVNrtV7Rqv
-	 2aqHfhGKI3ucCcltBV/8UY7f3iSNBNTMBw2HxqRIZjFH6+CfgPeoswInErrSPef81H
-	 VNaBo6tw28HcB+qHZgPH8Wql4BpgYX9L2z6WpJEcD6h47LYp1VwY/NtihKtRJBm0M+
-	 Xf2Rp4NcAwjXA==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id A2F3CC53BD5; Wed, 21 Feb 2024 03:14:06 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 217931] amd-pstate lacks crucial features: CPU frequency and
- boost control
-Date: Wed, 21 Feb 2024 03:14:06 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: high
-X-Bugzilla-Who: Perry.Yuan@amd.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-217931-137361-C5gHAgRHWx@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-217931-137361@https.bugzilla.kernel.org/>
-References: <bug-217931-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="csqpwUFz"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 41L1jdSL030713;
+	Wed, 21 Feb 2024 05:36:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	message-id:date:mime-version:subject:to:cc:references:from
+	:in-reply-to:content-type:content-transfer-encoding; s=
+	qcppdkim1; bh=S5n/WpV8JcN0mx2fE3uU/d+OZrGuwRrR1d3N//9CiFA=; b=cs
+	qpwUFzcl29oiOj+cr6STCjwPDDiknXqXp+BiwsKat9U3dEcTGj5KLCoLVseOafAy
+	1W1jatIWVkw+PUhTbQOimI693MkpC89cxcVvDZUWN3NUq4D0Zb9gkgO6Xer4m8EI
+	ALJuHSVKkF78jjz7xUrvWtDk7RWS9150zMExJmc3AfsSKDIxWNc3qpUFYKl3RiYm
+	RtnWvktckBz9gHcfsGNN0fEe9lGCTlrxeRSKJ5jlpbeO3WKa7rPKO0rBJB59uIpx
+	ax7IycEeJcNWjVCDKPkuqRjrAEwpoytBSQ+xePQTKMl31kXHH+oBzkDj595/zVQF
+	yXBXHBIjbJxMSF/xm4pQ==
+Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3wd21s924s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 21 Feb 2024 05:36:23 +0000 (GMT)
+Received: from nalasex01b.na.qualcomm.com (nalasex01b.na.qualcomm.com [10.47.209.197])
+	by NALASPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 41L5aMKl003639
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 21 Feb 2024 05:36:22 GMT
+Received: from [10.218.16.59] (10.80.80.8) by nalasex01b.na.qualcomm.com
+ (10.47.209.197) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.40; Tue, 20 Feb
+ 2024 21:36:11 -0800
+Message-ID: <0b9e807d-e0ca-411c-9a2b-3d804bdf168c@quicinc.com>
+Date: Wed, 21 Feb 2024 11:06:07 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/3] dt-bindings: iio: adc: Add support for QCOM PMIC5
+ Gen3 ADC
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, <jic23@kernel.org>,
+        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
+        <conor+dt@kernel.org>, <andersson@kernel.org>,
+        <konrad.dybcio@linaro.org>, <lee@kernel.org>,
+        <andriy.shevchenko@linux.intel.com>, <daniel.lezcano@linaro.org>,
+        <dmitry.baryshkov@linaro.org>
+CC: <lars@metafoo.de>, <luca@z3ntu.xyz>, <marijn.suijten@somainline.org>,
+        <agross@kernel.org>, <sboyd@kernel.org>, <rafael@kernel.org>,
+        <rui.zhang@intel.com>, <lukasz.luba@arm.com>,
+        <linus.walleij@linaro.org>, <quic_subbaram@quicinc.com>,
+        <quic_collinsd@quicinc.com>, <quic_amelende@quicinc.com>,
+        <quic_kamalw@quicinc.com>, <kernel@quicinc.com>,
+        <linux-kernel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <linux-arm-msm-owner@vger.kernel.org>, <linux-iio@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <cros-qcom-dts-watchers@chromium.org>
+References: <20231231171237.3322376-1-quic_jprakash@quicinc.com>
+ <20231231171237.3322376-3-quic_jprakash@quicinc.com>
+ <3f812ffa-ec33-448e-b72a-ce698618a8c1@linaro.org>
+ <13f2b558-a50d-44d3-85de-38e230212732@quicinc.com>
+ <f52b2d5e-b2b4-48ae-a6a6-fc00c89662d2@linaro.org>
+Content-Language: en-US
+From: Jishnu Prakash <quic_jprakash@quicinc.com>
+In-Reply-To: <f52b2d5e-b2b4-48ae-a6a6-fc00c89662d2@linaro.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nalasex01b.na.qualcomm.com (10.47.209.197)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: fGcC1wH5IHx3LPFKis3LhLj_W6R4ZpCQ
+X-Proofpoint-GUID: fGcC1wH5IHx3LPFKis3LhLj_W6R4ZpCQ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-20_06,2024-02-20_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 impostorscore=0
+ priorityscore=1501 adultscore=0 spamscore=0 lowpriorityscore=0 bulkscore=0
+ clxscore=1015 mlxscore=0 suspectscore=0 mlxlogscore=999 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2402120000
+ definitions=main-2402210039
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
+Hi Krzysztof,
 
---- Comment #55 from Perry Yuan(AMD) (Perry.Yuan@amd.com) ---
-(In reply to Sjoer van der Ploeg from comment #54)
-> (In reply to Perry Yuan(AMD) from comment #53)
-> > How about the output of "lscpu -ae"?
->=20
-> Sorry for the late reply:
->=20
-> CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ
->   0    0      0    0 0:0:0:0          yes 4550.0000 550.0000 3569.5090
->   1    0      0    1 1:1:1:0          yes 4550.0000 550.0000 3552.6860
->   2    0      0    2 2:2:2:0          yes 4550.0000 550.0000 3559.3779
->   3    0      0    3 3:3:3:0          yes 4550.0000 550.0000 3854.7759
->   4    0      0    4 4:4:4:0          yes 4550.0000 550.0000 3590.6599
->   5    0      0    5 5:5:5:0          yes 4550.0000 550.0000 3552.8989
->   6    0      0    6 6:6:6:0          yes 4550.0000 550.0000 3840.7690
->   7    0      0    7 7:7:7:0          yes 4550.0000 550.0000 3584.2910
->   8    0      0    0 0:0:0:0          yes 4550.0000 550.0000 3546.3811
->   9    0      0    1 1:1:1:0          yes 4550.0000 550.0000 3551.5229
->  10    0      0    2 2:2:2:0          yes 4550.0000 550.0000 3591.2500
->  11    0      0    3 3:3:3:0          yes 4550.0000 550.0000 3594.0801
->  12    0      0    4 4:4:4:0          yes 4550.0000 550.0000 3552.0400
->  13    0      0    5 5:5:5:0          yes 4550.0000 550.0000 3572.1050
->  14    0      0    6 6:6:6:0          yes 4550.0000 550.0000 4124.7349
->  15    0      0    7 7:7:7:0          yes 4550.0000 550.0000 3583.7170
+On 2/17/2024 7:43 PM, Krzysztof Kozlowski wrote:
+> On 16/02/2024 11:39, Jishnu Prakash wrote:
+>> Hi Krzysztof,
+>>
+>> On 1/4/2024 1:48 PM, Krzysztof Kozlowski wrote:
+>>> On 31/12/2023 18:12, Jishnu Prakash wrote:
+>>>> For the PMIC5-Gen3 type PMICs, ADC peripheral is present in HW for the
+>>>> following PMICs: PMK8550, PM8550, PM8550B and PM8550VX PMICs.
+>>>>
+>>>> It is similar to PMIC5-Gen2, with SW communication to ADCs on all PMICs
+>>>> going through PBS(Programmable Boot Sequence) firmware through a single
+>>>> register interface. This interface is implemented on an SDAM (Shared
+>>>> Direct Access Memory) peripheral on the master PMIC PMK8550 rather
+>>>> than a dedicated ADC peripheral.
+>>>>
+>>>> Add documentation for PMIC5 Gen3 ADC and macro definitions for ADC
+>>>> channels and virtual channels (combination of ADC channel number and
+>>>> PMIC SID number) per PMIC, to be used by clients of this device.
+>>>>
+>>>> Changes since v2:
+>>>> - Moved ADC5 Gen3 documentation into a separate new file.
+>>> Changelog goes under ---.
+>>>
+>>> Why did you do this? What is the rationale? Sorry, this patchset goes
+>>> nowhere.
+>>
+>>
+>> I'll elaborate this more in the next patchset. There are two main
+>> reasons for adding this documentation in a new file:
+> 
+> This was more than a month ago? You reply to my comment with 1.5 months
+> delay?
+> 
+> Sorry, I am not in the context and I am not going back to it. I have
+> many other emails where my questions are addressed faster than 1.5 months.
+> 
+> The patch is not even in my mailbox, long gone.
+> Why you are making it so difficult for reviewers?
+> 
+> You will get answers like I am not in context, sorry. Next time don't
+> respond after 1.5 months.
+> 
 
-The max frequency value is correct to be 4.55GHZ on your system by the CPPC
-capabilities reported by your firmware.
-4.55GHZ is boost frequency which cannot maintain long time, it can try EPP =
-mode
-& performance profile, and run some lighter workload, the freq will be reac=
-hing
-to max freq.=20
+You're right - I'll do my best to get back to review comments in a 
+reasonable time frame.
 
->  14    0      0    6 6:6:6:0          yes 4550.0000 550.0000 4124.7349
+> 
+>>
+>> 1.This device is not exactly like the existing QCOM VADC drivers as it
+>> now combines VADC functionality (reading ADC channel on client request)
+>> with ADC_TM functionality (thermal threshold monitoring).
+> 
+> Does no explain touching bindings. Your drivers don't matter for bindings.
+> 
+>>
+>> 2.Adding this device's bindings in the existing qcom,spmi-vadc.yaml file
+> 
+> No rationale was provided in commit msg.
+> 
+>> is not possible as it would require updating some of the existing
+>> top-level constraints. (for the older devices in that file, "reg" and
+>> "interrupts" can have at most one item, while this device can have more
+>> than one item under these properties.)
+> 
 
-seeing from this, the freq is close to 4.5GHz, please try the EPP and
-performance profile on your system.=20
-then check the lscpu -ae output to confirm if it can reach 4.5GHz as well.
+> How is this a problem?
 
-Perry.
+In qcom,spmi-vadc.yaml, we have the following top-level constraints for 
+the "reg" and "interrupts" properties:
 
---=20
-You may reply to this email to add a comment.
+   reg:
+     maxItems: 1
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+   interrupts:
+     maxItems: 1
+
+For the ADC5 Gen3 device being added now, these constraints cannot be 
+followed always, as there may be more than one peripheral under one 
+device instance, each with a corresponding interrupt. For example, the 
+above properties could be like this for a ADC5 Gen3 device:
+
+     reg = <0x9000>, <0x9100>;
+     interrupts = <0x0 0x90 0x1 IRQ_TYPE_EDGE_RISING>,
+                  <0x0 0x91 0x1 IRQ_TYPE_EDGE_RISING>;
+
+
+I could not overwrite the top-level constraints for the new device 
+"qcom,spmi-adc5-gen3" alone in qcom,spmi-vadc.yaml, so I tried to remove 
+the constraints from the top level and add them back conditionally for 
+all the device types separately, but you told me not to remove them 
+(full message: 
+https://lore.kernel.org/linux-iio/832053f4-bd5d-4e58-81bb-1a8188e7f364@linaro.org/)
+
+Since these constraints cannot be modified for a specific new device or 
+removed, I think the only way to accommodate this new device is to add 
+it in its own new file.
+
+Is this a sufficient justification for adding this documentation in a 
+new file or do you have any other suggestions?
+
+Thanks,
+Jishnu
+
+> 
+> 
+> Best regards,
+> Krzysztof
+> 
