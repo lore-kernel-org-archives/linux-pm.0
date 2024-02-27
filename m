@@ -1,34 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2EAE15CB;
-	Tue, 27 Feb 2024 00:55:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17E1A2916;
+	Tue, 27 Feb 2024 01:45:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708995306; cv=none; b=maMytcflrA7LcBeQhyEBjyps3/msuuFN3nFbS+o10ni2D0rYjcqAGRhczPMkMFfQZI9f+B6/56hBQ6beXmiKIj8r4XyUKtMzq31H66TGOCC2TYzZeIfv9tHznaKS+lje8V+0WRlflNsCgEgwHPlnYJ2aWEFHnPn+eYKSEYz6hg4=
+	t=1708998349; cv=none; b=o/yMwPzMqufWkUzk/rjBp6W2M44mlXauMqRiTdTKy3bUtZVnHCk9CJJ+3Y8Ia0dYe1MWQpTa8DK/CQx3Xk7K83++FX6uy0LP99NG6K1C/Cpkx+S3fJQacJMkdRi9hgC9OZW8nVUcay+rOetq1JnPK7I78M7VepbbVBwzWFTogOM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708995306; c=relaxed/simple;
-	bh=ss8VwZn4a5t6mx/5BWpuy9l0XPO5ja2ql+oKmi1naJg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=gn6I7LgSjY85MxzJxaPJyXEYVgzlJRHGuqG5EmW2WHWODkrlxelDIPiKHCWdtV+XgvVbHUIMFm/g/CsL4KR/s8YxWWolFiqQwvKsAvpE89pCYhWTswp5lDhxmAj56yFqUy9A71vrt3FBAbwyuMWPCQuEqf05YEfkVRuMHlit/y8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g3EtBjPw; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1708998349; c=relaxed/simple;
+	bh=SCXTahozD0TxiPX08IBsjicUaCXkNVF/+0u0TFeGY0I=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=gFVcC15jdQlKc9qpygUl5zHFTgUy2K3GwCz2IoYj1PxGT4yiC2dExQxOVidKn8eSsBBSU1sAR0ZZ1r/SiI0xx8PRE0xRp4KRLKzxXgPqOjUdjuJMN5+RpzpATo0K1HSd8s7wo0gxovmvbSipjgrdBnAIyIQwHtLhhYGa4TDZYwU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T5VWn8dP; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g3EtBjPw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 965FDC433F1;
-	Tue, 27 Feb 2024 00:55:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T5VWn8dP"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 91AB6C433F1;
+	Tue, 27 Feb 2024 01:45:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1708995305;
-	bh=ss8VwZn4a5t6mx/5BWpuy9l0XPO5ja2ql+oKmi1naJg=;
-	h=From:Date:Subject:To:Cc:From;
-	b=g3EtBjPw9BkQf1JaTfipWe2RSvJN+FjTxpHl8mmlomdAhvj/4Y1I2Le0T24DZkNBe
-	 7uk3pXy0MTVHwvHFRzs7JSSUUMXDH+i/wTKyexaAn7wxlGJ9lZJUIPpG8WJoXBdSHu
-	 vhIPL0hEmbbIZNyJ/JjsIA7RU/VU2g3JeYNcwTE4wxGeT48sRMl0ehhNGoXR6X72ar
-	 0aYHU/vZuK+gX59lsGbNcbxnk8hf0csOhnV2Zafj1V3Y+vYn7hnYbqiWFwCdXRP0BK
-	 NXHQOWaDKZJdDbpD35VdzgUQ7AT1fsONlOzG9uJFec+F3sCRXHnOR+v8MmoIrC2u/a
-	 MLXdWgVVYvKIg==
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Mon, 26 Feb 2024 17:54:58 -0700
-Subject: [PATCH] thermal: core: Move initial num_trips assignment before
- memcpy()
+	s=k20201202; t=1708998348;
+	bh=SCXTahozD0TxiPX08IBsjicUaCXkNVF/+0u0TFeGY0I=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=T5VWn8dPeHK/BBBoReSynEEv2vsnw2mgT+50PP5WMZn5QWRppdg3qhNAtJWbVG8mw
+	 K2qZXAuICBrlc4chwCrYja/aWcxhztOBun55O6kdCGDPnt7nMywIX2xe0/Ev8KzFyA
+	 TzxH9xeeNsFGfC6+U0jBvGZzWPiSubayJsafM68G3BYVg9a5uq6ePqLOVmhb2YKDMz
+	 ZoXpx7xEF4SQghz8q/x5yxByMhwaWi+7/vlRfTlnrXZFQeoIPiDM3a+8OPn9bLivfU
+	 qyN123mGd6GlLAcE7qiKGbUNiE2GptW8L82QXeisl4DEuraUijFLwkK7la6UE/2Nwy
+	 dCq5Wgr7oNZuw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75FB0C48BF6;
+	Tue, 27 Feb 2024 01:45:48 +0000 (UTC)
+From:
+ Bjorn Andersson via B4 Relay <devnull+quic_bjorande.quicinc.com@kernel.org>
+Date: Mon, 26 Feb 2024 17:49:57 -0800
+Subject: [PATCH] pmdomain: qcom: rpmhpd: Fix enabled_corner aggregation
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -37,71 +40,107 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240226-thermal-fix-fortify-panic-num_trips-v1-1-accc12a341d7@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAOIy3WUC/x2N0QqDMAwAf0XyvEBXO6H7lTFG5xINaC1pJ4r47
- yt7PDjuDsikQhnuzQFKq2RZYoXrpYF+DHEglE9lsMY6Y22HZSSdw4QsG/KiRXjHFKL0GL/zq6i
- kjDf2znjHb9+1UEtJqer/y+N5nj++m9k2dQAAAA==
-To: rafael@kernel.org, daniel.lezcano@linaro.org
-Cc: rui.zhang@intel.com, lukasz.luba@arm.com, keescook@chromium.org, 
- gustavoars@kernel.org, morbo@google.com, justinstitt@google.com, 
- stanislaw.gruszka@linux.intel.com, linux-pm@vger.kernel.org, 
- linux-hardening@vger.kernel.org, llvm@lists.linux.dev, 
- patches@lists.linux.dev, Nathan Chancellor <nathan@kernel.org>
-X-Mailer: b4 0.14-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1946; i=nathan@kernel.org;
- h=from:subject:message-id; bh=ss8VwZn4a5t6mx/5BWpuy9l0XPO5ja2ql+oKmi1naJg=;
- b=owGbwMvMwCUmm602sfCA1DTG02pJDKl3jV6EfCpn4bv2/K1+5c1nAcxxSgyTMxkc86IDc135G
- vZsYrjeUcrCIMbFICumyFL9WPW4oeGcs4w3Tk2CmcPKBDKEgYtTACYirsHwP07kle3h+3G7nt9R
- Xxc1u6p7a2rBnMfPf16Z5zkrX0R52ylGhrfmh1R3rCtTf/OTYcnvOQa/3ihM7Z07N39DYI9s/2H
- XDDYA
-X-Developer-Key: i=nathan@kernel.org; a=openpgp;
- fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
+Message-Id: <20240226-rpmhpd-enable-corner-fix-v1-1-68c004cec48c@quicinc.com>
+X-B4-Tracking: v=1; b=H4sIAMQ/3WUC/x2MwQqDMBAFf0X27EIMbWz9FfEQ40tdaGPYgBTEf
+ zd4nIGZgwpUUGhoDlLsUmRLFbq2obD69AHLUpmssQ9jrWPNvzUvjOTnLzhsmqAc5c/hCdNH9PP
+ 75ajmWVH1vR6n87wAZf/r0WoAAAA=
+To: Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konrad.dybcio@linaro.org>, 
+ Ulf Hansson <ulf.hansson@linaro.org>, Stephen Boyd <swboyd@chromium.org>, 
+ Johan Hovold <johan+linaro@kernel.org>, 
+ Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>, 
+ stable@vger.kernel.org, Bjorn Andersson <quic_bjorande@quicinc.com>
+X-Mailer: b4 0.12.4
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3004;
+ i=quic_bjorande@quicinc.com; h=from:subject:message-id;
+ bh=8TOgtVhYO01rdpfAVMwK9WI6pflXIuB4DQQcEbm8Zmw=;
+ b=owEBgwJ8/ZANAwAIAQsfOT8Nma3FAcsmYgBl3T/r3KXQprzkHna4SseXUKD0ooMTxVhZKDW9m
+ mWQ0+8CJmiJAkkEAAEIADMWIQQF3gPMXzXqTwlm1SULHzk/DZmtxQUCZd0/6xUcYW5kZXJzc29u
+ QGtlcm5lbC5vcmcACgkQCx85Pw2ZrcUW4w//YlZS5dc2FBsqrTddOHzidbibnEQwzDs1tWPmyqH
+ jKcngixr+2OP4XYmR/HEBprSaEe/UXls884Ema6ucg5EQtpOIrMqfxWHEptQljfkVwuhHxiav5y
+ hR9pSDgBfIkmZYnlp+AI8VM+pQyqQB3nTZ0mgu1YTxtEIomgOZ8ifzTXMPvSrtWtU0pEXDpzE8y
+ amaeZShoEQMs238EpgfWhbFTKWqPlUKCdVmjyjIZ/TAnE4haRDpKnCInDvpGaTXJSeK+X1cdzAu
+ Iduu4QSFutGx/mTaLJF3I4UqWzUrFmEy/apAtGhOGnpNTkrAjR/euygJQY9OREp0OEvM+FEfjzj
+ yn0Xi/zNqMBnEzn5vd7340NM6wSq6oHBJp9dmzLyIAimCcN9A5z769c8SZ+hacWXEZlNqdizJ34
+ Wv8iaWi/Rkzc7XUG/Tlx+jtdEqS1313uA1f3HPDfr3VtQ+mN4t7Ex3z4qLFKaslXbunA4AEBLK9
+ INzGCitwuDBUSh2NtR0fu5ZOAiQCb7g+gIMON1aDQcD39lbnwfX8rMxYv9zNYZvtnr7z4NbUkAF
+ 0G/5IeNCRrIoQ42hHlRhVCkG5WnjZRGZbgLEIxHyxLHVUnNPXs+bCCftycKzr4BIUDfIK9W4TGz
+ /ltQREquxuqJMmPH8tYwmHjE2s2CdDyeBQHzWutRavxA=
+X-Developer-Key: i=quic_bjorande@quicinc.com; a=openpgp;
+ fpr=05DE03CC5F35EA4F0966D5250B1F393F0D99ADC5
+X-Endpoint-Received:
+ by B4 Relay for quic_bjorande@quicinc.com/default with auth_id=118
+X-Original-From: Bjorn Andersson <quic_bjorande@quicinc.com>
+Reply-To: <quic_bjorande@quicinc.com>
 
-When booting a CONFIG_FORTIFY_SOURCE=y kernel compiled with a toolchain
-that supports __counted_by() (such as clang-18 and newer), there is a
-panic on boot:
+From: Bjorn Andersson <quic_bjorande@quicinc.com>
 
-  [    2.913770] memcpy: detected buffer overflow: 72 byte write of buffer size 0
-  [    2.920834] WARNING: CPU: 2 PID: 1 at lib/string_helpers.c:1027 __fortify_report+0x5c/0x74
-  ...
-  [    3.039208] Call trace:
-  [    3.041643]  __fortify_report+0x5c/0x74
-  [    3.045469]  __fortify_panic+0x18/0x20
-  [    3.049209]  thermal_zone_device_register_with_trips+0x4c8/0x4f8
+Commit 'e3e56c050ab6 ("soc: qcom: rpmhpd: Make power_on actually enable
+the domain")' aimed to make sure that a power-domain that is being
+enabled without any particular performance-state requested will at least
+turn the rail on, to avoid filling DeviceTree with otherwise unnecessary
+required-opps properties.
 
-This panic occurs because trips is counted by num_trips but num_trips is
-assigned after the call to memcpy(), so the fortify checks think the
-buffer size is zero because tz was allocated with kzalloc().
+But in the event that aggregation happens on a disabled power-domain, with
+an enabled peer without performance-state, both the local and peer
+corner are 0. The peer's enabled_corner is not considered, with the
+result that the underlying (shared) resource is disabled.
 
-Move the num_trips assignment before the memcpy() to resolve the panic
-and ensure that the fortify checks work properly.
+One case where this can be observed is when the display stack keeps mmcx
+enabled (but without a particular performance-state vote) in order to
+access registers and sync_state happens in the rpmhpd driver. As mmcx_ao
+is flushed the state of the peer (mmcx) is not considered and mmcx_ao
+ends up turning off "mmcx.lvl" underneath mmcx. This has been observed
+several times, but has been painted over in DeviceTree by adding an
+explicit vote for the lowest non-disabled performance-state.
 
-Fixes: 9b0a62758665 ("thermal: core: Store zone trips table in struct thermal_zone_device")
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+Fixes: e3e56c050ab6 ("soc: qcom: rpmhpd: Make power_on actually enable the domain")
+Reported-by: Johan Hovold <johan@kernel.org>
+Closes: https://lore.kernel.org/linux-arm-msm/ZdMwZa98L23mu3u6@hovoldconsulting.com/
+Cc:  <stable@vger.kernel.org>
+Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
 ---
- drivers/thermal/thermal_core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This issue is the root cause of a display regression on SC8280XP boards,
+resulting in the system often resetting during boot. It was exposed by
+the refactoring of the DisplayPort driver in v6.8-rc1.
+---
+ drivers/pmdomain/qcom/rpmhpd.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index bb21f78b4bfa..1eabc8ebe27d 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1354,8 +1354,8 @@ thermal_zone_device_register_with_trips(const char *type,
+diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhpd.c
+index 3078896b1300..47df910645f6 100644
+--- a/drivers/pmdomain/qcom/rpmhpd.c
++++ b/drivers/pmdomain/qcom/rpmhpd.c
+@@ -692,6 +692,7 @@ static int rpmhpd_aggregate_corner(struct rpmhpd *pd, unsigned int corner)
+ 	unsigned int active_corner, sleep_corner;
+ 	unsigned int this_active_corner = 0, this_sleep_corner = 0;
+ 	unsigned int peer_active_corner = 0, peer_sleep_corner = 0;
++	unsigned int peer_enabled_corner;
  
- 	tz->device.class = thermal_class;
- 	tz->devdata = devdata;
--	memcpy(tz->trips, trips, num_trips * sizeof(*trips));
- 	tz->num_trips = num_trips;
-+	memcpy(tz->trips, trips, num_trips * sizeof(*trips));
+ 	if (pd->state_synced) {
+ 		to_active_sleep(pd, corner, &this_active_corner, &this_sleep_corner);
+@@ -701,9 +702,11 @@ static int rpmhpd_aggregate_corner(struct rpmhpd *pd, unsigned int corner)
+ 		this_sleep_corner = pd->level_count - 1;
+ 	}
  
- 	thermal_set_delay_jiffies(&tz->passive_delay_jiffies, passive_delay);
- 	thermal_set_delay_jiffies(&tz->polling_delay_jiffies, polling_delay);
+-	if (peer && peer->enabled)
+-		to_active_sleep(peer, peer->corner, &peer_active_corner,
++	if (peer && peer->enabled) {
++		peer_enabled_corner = max(peer->corner, peer->enable_corner);
++		to_active_sleep(peer, peer_enabled_corner, &peer_active_corner,
+ 				&peer_sleep_corner);
++	}
+ 
+ 	active_corner = max(this_active_corner, peer_active_corner);
+ 
 
 ---
-base-commit: a85739c8c6894c3b9ff860e79e91db44cb59bd63
-change-id: 20240226-thermal-fix-fortify-panic-num_trips-5f94094fb963
+base-commit: b401b621758e46812da61fa58a67c3fd8d91de0d
+change-id: 20240226-rpmhpd-enable-corner-fix-c5e07fe7b986
 
 Best regards,
 -- 
-Nathan Chancellor <nathan@kernel.org>
+Bjorn Andersson <quic_bjorande@quicinc.com>
 
