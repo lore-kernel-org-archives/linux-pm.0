@@ -1,24 +1,24 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1598C5EE68;
-	Fri,  1 Mar 2024 22:58:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B6F25EE9B;
+	Fri,  1 Mar 2024 22:59:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709333940; cv=none; b=M3ijNDkJSFd7r5KSEIwyrktayLU9sRuVdKN9mIyM7GSVkpwV6FwN4oLk4LQDekI2BZvKpotM59+JXCCTkrVK1oaiNcEpguL6f/1k5ihInsXCnHUARphQo9FjNjeSwUf6uEMnlQBz03uRVl4em9jVaqmEODzoF3sdrXY+TRrtdxU=
+	t=1709333941; cv=none; b=VCoRroxSO+V+eM9pIJfQCQYpuK68kIsE4a+X+EPdON6GYksa+3SSkReBrHforWuwlidlloK5NaEU8uJPIaJCYNZgqr0nUxUpRwJUTmZ+SzefWMxlWHBOEvno9eiixLIK+F++xD8oQmpRIOOcfn7Qr3PiruONBI0fEPPz5Yz1d3w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709333940; c=relaxed/simple;
-	bh=sUNQXNzk7A9AAczsx1WMa7txCzYIhocc+2J70qriY6Y=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=KCY6Hi2IzOcrUQlC0R28wUY23cofhRxVUgQaz0QU3MMnuyH8BB3y94bn33aePQ54k4QEybI/3JWEm1GEtalks/NovioXNIZRds6xDO25MT2iUD7IzrNnjDi+zHb4jBZYv9G4rgrMLgo9OLGofg7dI8Jl5F2PjuU/gapOpxapxIg=
+	s=arc-20240116; t=1709333941; c=relaxed/simple;
+	bh=JL8wKNHOdoEnADynpbW3pJQDwz790tyACZpDiAY2J+I=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=PCHAFiyB7u0SWRUhO5ilsORiwf63Vwb7cUc5wiTRFTWIRskEe9cmy8ZYixScOZ64+/xAuth/h68dAjN6w5Ib2rBQ/JqlFjItOYWMn88JlKZQ2xOhDDDh1Stf7Y9Fmn2yBefZhjhT7dNO/e9A1JhTTzwD0kszWFPfTUo4GGwkgvw=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CF31C43390;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF543C43399;
 	Fri,  1 Mar 2024 22:58:59 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id C5E5210633B9; Fri,  1 Mar 2024 23:58:56 +0100 (CET)
+	id C970410633E3; Fri,  1 Mar 2024 23:58:56 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCH 0/2] power: supply: core: class cleanups
-Date: Fri, 01 Mar 2024 23:58:25 +0100
-Message-Id: <20240301-psy-class-cleanup-v1-0-aebe8c4b6b08@collabora.com>
+Date: Fri, 01 Mar 2024 23:58:27 +0100
+Subject: [PATCH 2/2] power: supply: core: simplify power_supply_class_init
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -27,56 +27,65 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAJFd4mUC/x2MywqAIBAAfyX2nKA9qV+JDotutRAmLkUh/XvSZ
- WAOMwmEIpPAWCSIdLHw4bOYsgC7oV9JscsOla4aXWujgjzK7iiSSejPoDrqemNcO7SIkLsQaeH
- 7f07z+37yQ9fPYwAAAA==
+Message-Id: <20240301-psy-class-cleanup-v1-2-aebe8c4b6b08@collabora.com>
+References: <20240301-psy-class-cleanup-v1-0-aebe8c4b6b08@collabora.com>
+In-Reply-To: <20240301-psy-class-cleanup-v1-0-aebe8c4b6b08@collabora.com>
 To: Linus Walleij <linus.walleij@linaro.org>, 
  "Ricardo B. Marliere" <ricardo@marliere.net>, 
  Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Sebastian Reichel <sebastian.reichel@collabora.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=983;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1020;
  i=sebastian.reichel@collabora.com; h=from:subject:message-id;
- bh=sUNQXNzk7A9AAczsx1WMa7txCzYIhocc+2J70qriY6Y=;
- b=owEBbQKS/ZANAwAKAdju1/PIO/qaAcsmYgBl4l2mMtNMnw/BcD4dXzRYXDs4StwkHxeBcH7Zr
- Lg7LDjEnfmJAjMEAAEKAB0WIQTvZg0HRj+Lcmp5VBPY7tfzyDv6mgUCZeJdpgAKCRDY7tfzyDv6
- mtV7D/9eG8lLNklmAPl615dGtgGA3CbvHXyMuIyLhoZKoU1iatSzpxYOmKLkcI8aTbOwFXb6oC8
- MpbHbq/ZGEqUVx+PJLZH9FIo7zYjsmCH5mOzVRG+mTFMBjAyUrrRmTdmWx+ikq035RgC4ETf3A+
- 8uql3k9CKhmXHW04Q9CwRBSBN0vqjRHFERZI0/iCgpkAMMqgSqQvDHplRMMh55vCo+3edb/GVH8
- UKT9FWHeJ0vWzs1B2q6VKw57CE8/WMGiBTSlKQllJHsJuwxZWspT95gKmY8j/p9Wbq2YJbLP2w1
- l8IuubGoDoL1EhRv5A426AU3vzhd98OD2qT7W2bw3JrwfHlnwGT19HF1/sSjO3T5goXMivIBeaB
- unneyS/LIQv4KK2Z741C5MYur1wPu3viujAzN/MKcEsnQzjdc9k+cz9h87Tfct2Q9DIvye74pUp
- 3u1U5V3K0OPLrCL74bGkgCQLPZewFup7EHCFWfqEg1F6QjnydCZVvUrCMpvVaO3znwyWbO+fgl6
- +yh3HI8XnSyq78VwdjobPRXKMeR8va7o1KsolRnhjj7lXO41xeOU4ykAqqye8zZWXEerVaPOrPJ
- usXM+uPIluX0eZke4keaGtebKD2UWIThbjroz4gYNaFCl9FvXiyvZ6rvlp/0nZkKWWq5JZY7SlM
- NljyWLjtYrFZeqg==
+ bh=JL8wKNHOdoEnADynpbW3pJQDwz790tyACZpDiAY2J+I=;
+ b=owEBbQKS/ZANAwAKAdju1/PIO/qaAcsmYgBl4l2wOC2K0zlJ0WXtxRjoKQH6jaqgh2vg7sb+p
+ 1/KPpzB8dSJAjMEAAEKAB0WIQTvZg0HRj+Lcmp5VBPY7tfzyDv6mgUCZeJdsAAKCRDY7tfzyDv6
+ miZDD/98H5jw/LKNW4WYCHdko9enIu7PuopK372YXad3d24M8zGqE+aSnlS6So0ltFyHia7XwWY
+ o3bih/n88uDuh4O1Le/a8BkFewDJOeBCWZrYkLd3FmJmWj9jEiuchPzdmAXh9kd6vdZoas4+W3+
+ XpRNpooBmYjZmEgb4PIupMGvp8Z0LVc8rTqm3oezwIm5yNObky2fRE59kNl1Z6fh+Ni5IuieFEf
+ OoT7ColKRy7aA9KMetWQxIUY7a9n8kQTopu6M2Tlr1yLO7u10t3CqTxv+WOfzelq7a3+08M6LgJ
+ emZyNU6R9aKnYFIgoCfnSe2SiNSZcxcgdIUue618bSb2/el3uw58Q8u7+sIe5usDZ94/500QtlO
+ z3nVl+fi/B7J5jRP3jPl2146Wne/Ue3cTT7W1WXooA2u6YCoV3m4DebtNG11QCRT5iYAfdH6MsS
+ 0hCsn+34torvdqlURPcMRLbK0QsDiAB0Yir9fkMlNQL6VSvhayaAcOmWzK+FaYVCdEZIC/eA1GR
+ qZAd8/DhMdlCxCPedPar5IF/p0XRNA9YoXgHFQ6ouv+0C9BZW4Yfceo2jQ89BL6UcmZQM0t2jem
+ 06QANGMtEWDihNFmSCRgR17KvBF6qjku7EdPjLGVZRBvL4fvaN0agIj3MeHS9AAnHCRov5Ucyyx
+ ZWRLOOflaclaZdg==
 X-Developer-Key: i=sebastian.reichel@collabora.com; a=openpgp;
  fpr=EF660D07463F8B726A795413D8EED7F3C83BFA9A
 
-I noticed some further possible cleanups when reviewing
-and applying Ricardo's patch to make power_supply_class
-constant.
+Technically the sysfs attributes should be initialized
+before the class is registered, since that will use them.
+As a nice side effect this nicely simplifies the code,
+since it allows dropping the helper variable.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
-Sebastian Reichel (2):
-      power: supply: core: add power_supply_for_each_device()
-      power: supply: core: simplify power_supply_class_init
+ drivers/power/supply/power_supply_core.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
- drivers/power/supply/ab8500_btemp.c      |  3 +--
- drivers/power/supply/ab8500_chargalg.c   |  3 +--
- drivers/power/supply/ab8500_charger.c    |  3 +--
- drivers/power/supply/ab8500_fg.c         |  3 +--
- drivers/power/supply/apm_power.c         |  3 +--
- drivers/power/supply/power_supply_core.c | 43 +++++++++++++-------------------
- include/linux/power_supply.h             |  3 +--
- 7 files changed, 23 insertions(+), 38 deletions(-)
----
-base-commit: 71c2cc5cbf686c2397f43cbcb51a31589bdcee7b
-change-id: 20240301-psy-class-cleanup-6e6711d595aa
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 0eb8a57dda70..4daea6ed8f1d 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -1622,15 +1622,8 @@ EXPORT_SYMBOL_GPL(power_supply_get_drvdata);
+ 
+ static int __init power_supply_class_init(void)
+ {
+-	int err;
+-
+-	err = class_register(&power_supply_class);
+-	if (err)
+-		return err;
+-
+ 	power_supply_init_attrs();
+-
+-	return 0;
++	return class_register(&power_supply_class);
+ }
+ 
+ static void __exit power_supply_class_exit(void)
 
-Best regards,
 -- 
-Sebastian Reichel <sebastian.reichel@collabora.com>
+2.43.0
 
