@@ -1,109 +1,101 @@
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92941BE5D
-	for <linux-pm@vger.kernel.org>; Sun,  3 Mar 2024 12:22:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47DED67C43;
+	Sun,  3 Mar 2024 15:31:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709468565; cv=none; b=P/hk6u4eWrVzWj7xlabghqfC8EvFL3wujbNp+h3OqGEN6eKh4FFzbXglau73iVgLOyoW82ySQERFB4ODbJ4zysr9qEk9bEjBWN3XoPsyVI9qTc5utUE4li83ym8w0gDA3LEz3qSARX6gR+2/S9DSchTmgft4OejxOSKr9YFu+zM=
+	t=1709479892; cv=none; b=ZwbDIymB/V9P9p0EH8Y2zydrKiIVZz1ix/wCOZiicGfZSNLHr6gG6Nu260CHEeOkwo8ciEf1ky+Uut7AHKdp4CBHU6GiDhrjcVM9m615N0zPBChZixDtPO6UudN0uL7Zc2VSBJQ5e6dENgah52qJeOEuE9YGVOeRgXPwtbo22zE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709468565; c=relaxed/simple;
-	bh=AgQGKG1txHLWS8ImEhfnYrC9R9R6mULK4U8TwmPHZL8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LUHnxGwH6rdl9Zhm+FeJvzbQwR15LleK7j4IDPRDbMv8Sc0yv9noMvbr4XaC2tf6ERyzjXoZCP7qssakErqdUcsF5hlT5RYihMG4fMWxSAHc+KRH0Sog6M9qV4uFpoNH5YPPZfX7Cq/LmpOT58tOszXU0B+NGCUlsu90YPp8ZZ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tuxon.dev; spf=pass smtp.mailfrom=tuxon.dev; dkim=pass (2048-bit key) header.d=tuxon.dev header.i=@tuxon.dev header.b=ZP5U4kxE; arc=none smtp.client-ip=209.85.221.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tuxon.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=tuxon.dev
+	s=arc-20240116; t=1709479892; c=relaxed/simple;
+	bh=vO0wi2by1WM0BWnFkPRqBVKMUBA1OoHp/KPmP50MDPk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=cDHoCX/y3a7You53ezbFYQdnH4Vz0Ay6osBKDEljqKN919zLo6uOgbMgh1wD8VRJH5yVRo+4OXtqyLf4BVr07TPQIi82nG38CmBQd/wvK5UTGSPbv3rgCWS9lm/XBJP4oAkmAH8+wPeyNOmhQEwldah/4JZ1dI0sobZ80DXk68g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=STo5rBOq; arc=none smtp.client-ip=159.69.126.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=tuxon.dev header.i=@tuxon.dev header.b="ZP5U4kxE"
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-33dcd8dec88so2196655f8f.1
-        for <linux-pm@vger.kernel.org>; Sun, 03 Mar 2024 04:22:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=tuxon.dev; s=google; t=1709468562; x=1710073362; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=LeuiFF7R2tbAvv2UiI2PaXeJiriCJov3tu3mur7RTtA=;
-        b=ZP5U4kxEzdGczoHSJKE09oWCgmVV3ZluyAyDipgaxpKMHyrDq20im/Q/dHQqoNc/zL
-         dEd4s5ZQNiKQ9KEU2mOF3Osiz4t6TvRCQgtHGFH6j5Yx1eHhcCHuqC7xaksKxHz5LCSx
-         78HyPP2g8aiXYiHzSUO/CR++spE0Mcn7+D4Uc3ChGFR9afzaYzdxG0GBLCe3sOIjKklx
-         zAsEoTyhtdAl4Bl6Z8e6zdXIPtKBUs0wARlco69aLJi2DzCcniVKLjwWUPAHyypu26M+
-         JwVhZOkngpOYEq8HSGhvf1RKTAQaleW0XgnIy5V2vBHiIu4ueCDXE4p5YEI0A776l9uq
-         RUUA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709468562; x=1710073362;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=LeuiFF7R2tbAvv2UiI2PaXeJiriCJov3tu3mur7RTtA=;
-        b=MUhdJ+UVX9I63N7Y++TPWOI9MT9DMQWBubamkDb45oq5dCV88EzWJsh32TSlaHdoxJ
-         UDnWv9vsfz9QPJhRDLauRZhBHNj0XtyPDVCPTbtBRAQbF9s9y7NRdv5/gpBaW2OBGu+M
-         KKNeMlzkjpdQf/hr+VsHsUS+Vocc5MuLciDgrn/v04kXXbghifu4YCjxqXUY/leMM8Ca
-         O9666dVOlyXG5vzOuqFF3phGWPXcuMqyWuMTOxh3mu5bD/Fh/OizjGy9d208Z3n2F9iC
-         S6EYVIkQhxPoF+jOnkF1pybJsPihmi+q4nMrGe9L8Ptasn8fUy6od71dwFDkX5zazelM
-         5l5w==
-X-Forwarded-Encrypted: i=1; AJvYcCV+ZjTg47hag2DZQlAoYBGj8bvMh04ofPvN/Vguvf2TELF/YRTeO5x74W1iaw0yuGH8HG7g4OkHfVAGGNgON3AD7Tf4h/yoA4o=
-X-Gm-Message-State: AOJu0Yy6IwUpM/HmaVJv0DY8CEIZY/+x2A1wWB7DpyEJVDhds9uC2gNS
-	9UZyJbe875JpjzgIEeiTZnPy5TXv4pbDrmDPfZhNmqQNiDhF4pwggOUQyLaazco=
-X-Google-Smtp-Source: AGHT+IF20EOBE7aJ/x79yakSrTL0/aE5yoWoNlwT5Z0ESnkPtvvcc9ML76lCqjtFRth7j+EnygarBw==
-X-Received: by 2002:a5d:4150:0:b0:33e:164d:c8c3 with SMTP id c16-20020a5d4150000000b0033e164dc8c3mr4775457wrq.31.1709468561818;
-        Sun, 03 Mar 2024 04:22:41 -0800 (PST)
-Received: from [192.168.50.4] ([82.78.167.38])
-        by smtp.gmail.com with ESMTPSA id dw2-20020a0560000dc200b0033ddfba0c67sm9477927wrb.41.2024.03.03.04.22.40
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 03 Mar 2024 04:22:41 -0800 (PST)
-Message-ID: <c4e00fb5-3124-4b2d-a096-11f6e5b86758@tuxon.dev>
-Date: Sun, 3 Mar 2024 14:22:40 +0200
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="STo5rBOq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1709479880;
+	bh=vO0wi2by1WM0BWnFkPRqBVKMUBA1OoHp/KPmP50MDPk=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=STo5rBOqunq7z5IG7wu5dKvIA21c5NhAPYn8+cuq24n/Jhmfbey52WnUd3saXvOib
+	 lmFqOc0+d6dojbXEDmVKLFlriXFtVfStoMX7D/euAS4ubVg79IbwHhQfxNc28sfB3C
+	 lKlB7Js9uLTD4BntdbzoS2fbU5Vf/V3dGNaI1avQ=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Sun, 03 Mar 2024 16:31:14 +0100
+Subject: [PATCH v2 2/4] power: supply: core: ease special formatting
+ implementations
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 30/39] power: reset: at91-poweroff: lookup for proper
- pmc dt node for sam9x7
-Content-Language: en-US
-To: Varshini Rajendran <varshini.rajendran@microchip.com>, sre@kernel.org,
- nicolas.ferre@microchip.com, alexandre.belloni@bootlin.com,
- linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org
-Cc: Sebastian Reichel <sebastian.reichel@collabora.com>
-References: <20240223171342.669133-1-varshini.rajendran@microchip.com>
- <20240223172920.673110-1-varshini.rajendran@microchip.com>
-From: claudiu beznea <claudiu.beznea@tuxon.dev>
-In-Reply-To: <20240223172920.673110-1-varshini.rajendran@microchip.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20240303-power_supply-charge_behaviour_prop-v2-2-8ebb0a7c2409@weissschuh.net>
+References: <20240303-power_supply-charge_behaviour_prop-v2-0-8ebb0a7c2409@weissschuh.net>
+In-Reply-To: <20240303-power_supply-charge_behaviour_prop-v2-0-8ebb0a7c2409@weissschuh.net>
+To: Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, 
+ Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1709479879; l=1698;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=vO0wi2by1WM0BWnFkPRqBVKMUBA1OoHp/KPmP50MDPk=;
+ b=a4Tl17+Sqj9JWs4YaN8gTyUAG/AsZ3gSSPoZt8UeygTkJQEzuF9NsdqZb1pGUJMgoyw2rQ7Tg
+ Zn8LkgaBgGiBhXTaqmL8u+iil5YwHxL5grGwjfDu4HtLuCyrnXTJjEd
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
+By moving the conditional into the default-branch of the switch new
+additions to the switch won't have to bypass the conditional.
 
+This makes it easier to implement those special cases like the upcoming
+change to the formatting of "charge_behaviour".
 
-On 23.02.2024 19:29, Varshini Rajendran wrote:
-> Use sam9x7 pmc's compatible to lookup for in the SHDWC driver.
-> 
-> Signed-off-by: Varshini Rajendran <varshini.rajendran@microchip.com>
-> Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> ---
-> Changes in v4:
-> - Updated Acked-by tag
-> ---
->  drivers/power/reset/at91-sama5d2_shdwc.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/power/reset/at91-sama5d2_shdwc.c b/drivers/power/reset/at91-sama5d2_shdwc.c
-> index 959ce0dbe91d..2121d7e74e12 100644
-> --- a/drivers/power/reset/at91-sama5d2_shdwc.c
-> +++ b/drivers/power/reset/at91-sama5d2_shdwc.c
-> @@ -326,6 +326,7 @@ static const struct of_device_id at91_pmc_ids[] = {
->  	{ .compatible = "atmel,sama5d2-pmc" },
->  	{ .compatible = "microchip,sam9x60-pmc" },
->  	{ .compatible = "microchip,sama7g5-pmc" },
-> +	{ .compatible = "microchip,sam9x7-pmc" },
+Suggested-by: Hans de Goede <hdegoede@redhat.com>
+Link: https://lore.kernel.org/lkml/53082075-852f-4698-b354-ed30e7fd2683@redhat.com/
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+---
+ drivers/power/supply/power_supply_sysfs.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Maybe would be better to add a phandle in DT instead of continuing
-populating this array. But then the backward compatibility should be
-preserved. I leave this to Sebastian.
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 977611e16373..10fec411794b 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -298,11 +298,6 @@ static ssize_t power_supply_show_property(struct device *dev,
+ 		}
+ 	}
+ 
+-	if (ps_attr->text_values_len > 0 &&
+-	    value.intval < ps_attr->text_values_len && value.intval >= 0) {
+-		return sysfs_emit(buf, "%s\n", ps_attr->text_values[value.intval]);
+-	}
+-
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_USB_TYPE:
+ 		ret = power_supply_show_usb_type(dev, psy->desc,
+@@ -312,7 +307,12 @@ static ssize_t power_supply_show_property(struct device *dev,
+ 		ret = sysfs_emit(buf, "%s\n", value.strval);
+ 		break;
+ 	default:
+-		ret = sysfs_emit(buf, "%d\n", value.intval);
++		if (ps_attr->text_values_len > 0 &&
++				value.intval < ps_attr->text_values_len && value.intval >= 0) {
++			ret = sysfs_emit(buf, "%s\n", ps_attr->text_values[value.intval]);
++		} else {
++			ret = sysfs_emit(buf, "%d\n", value.intval);
++		}
+ 	}
+ 
+ 	return ret;
 
->  	{ /* Sentinel. */ }
->  };
->  
+-- 
+2.44.0
+
