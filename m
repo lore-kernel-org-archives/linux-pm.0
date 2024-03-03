@@ -1,32 +1,32 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47DED67C43;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3485A679F8;
 	Sun,  3 Mar 2024 15:31:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709479892; cv=none; b=ZwbDIymB/V9P9p0EH8Y2zydrKiIVZz1ix/wCOZiicGfZSNLHr6gG6Nu260CHEeOkwo8ciEf1ky+Uut7AHKdp4CBHU6GiDhrjcVM9m615N0zPBChZixDtPO6UudN0uL7Zc2VSBJQ5e6dENgah52qJeOEuE9YGVOeRgXPwtbo22zE=
+	t=1709479892; cv=none; b=sTfwoPt9cHpOj0p4O2zhAWmvt8rsY7xPHuIrmAiy80k5PzSRVvUoxTrNWNQR9eAdq9Jc1ofJhONjdh++g59Y8m0hgWlteIAAkLugnQpj5CHVyTtzaaDQ66V0ceA2ACR4PscNxLqsNjzYWEkzPRJiFPrAcVOcpd+uPh/XGE0huZc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1709479892; c=relaxed/simple;
-	bh=vO0wi2by1WM0BWnFkPRqBVKMUBA1OoHp/KPmP50MDPk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=cDHoCX/y3a7You53ezbFYQdnH4Vz0Ay6osBKDEljqKN919zLo6uOgbMgh1wD8VRJH5yVRo+4OXtqyLf4BVr07TPQIi82nG38CmBQd/wvK5UTGSPbv3rgCWS9lm/XBJP4oAkmAH8+wPeyNOmhQEwldah/4JZ1dI0sobZ80DXk68g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=STo5rBOq; arc=none smtp.client-ip=159.69.126.157
+	bh=BMCjTdC0Fu2nH2LhHAv4BwNh5+V6v1koWf/3R/NO2HY=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=L/cnQlvWZLsrbUY15qItfiyxJj4iLCh/3KIX85DZLy08Y1EgGHcrB0HeLq19Gp8RFQfQDzMBY6fhlksQ63AZepDGww+m50FquzFySkYWKx7B7tNp0AHGc0g/5bQuP1f9mJCySa0JOPESaBKHoVUgKvDw6ASZHgAUh54LzoDhz2s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=ajFz9f3+; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="STo5rBOq"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="ajFz9f3+"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1709479880;
-	bh=vO0wi2by1WM0BWnFkPRqBVKMUBA1OoHp/KPmP50MDPk=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=STo5rBOqunq7z5IG7wu5dKvIA21c5NhAPYn8+cuq24n/Jhmfbey52WnUd3saXvOib
-	 lmFqOc0+d6dojbXEDmVKLFlriXFtVfStoMX7D/euAS4ubVg79IbwHhQfxNc28sfB3C
-	 lKlB7Js9uLTD4BntdbzoS2fbU5Vf/V3dGNaI1avQ=
+	bh=BMCjTdC0Fu2nH2LhHAv4BwNh5+V6v1koWf/3R/NO2HY=;
+	h=From:Subject:Date:To:Cc:From;
+	b=ajFz9f3+epov5O4TR5sYDNHUIyCrVUL29B8ronMM4c5yFRIOgarIy+RJmcv1rQVyb
+	 Jdz8FlQVKuHqWjzOR++3gPzSLKQSiOYeECcgFi1mnAP1Dbzt36kBWp02TclihwW6ug
+	 ncPInUdrOyKg2+RQwBYq1ecQpcapPR7MCY2PtO/o=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sun, 03 Mar 2024 16:31:14 +0100
-Subject: [PATCH v2 2/4] power: supply: core: ease special formatting
- implementations
+Subject: [PATCH v2 0/4] power: supply: core: align charge_behaviour format
+ with docs
+Date: Sun, 03 Mar 2024 16:31:12 +0100
+Message-Id: <20240303-power_supply-charge_behaviour_prop-v2-0-8ebb0a7c2409@weissschuh.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,67 +35,65 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240303-power_supply-charge_behaviour_prop-v2-2-8ebb0a7c2409@weissschuh.net>
-References: <20240303-power_supply-charge_behaviour_prop-v2-0-8ebb0a7c2409@weissschuh.net>
-In-Reply-To: <20240303-power_supply-charge_behaviour_prop-v2-0-8ebb0a7c2409@weissschuh.net>
+X-B4-Tracking: v=1; b=H4sIAMCX5GUC/42NQQ6CMBBFr0K6tmao2FhX3sMQgmWgkxjadKBIC
+ He3eAKX7+fnvU0wRkIW92ITERMx+TGDOhXCunYcUFKXWShQFzDKyOAXjA3PIbxXmS9xwOaFrk3
+ k59iE6IMswdq+M7rVWossChF7+vwizzqzI558XH/NVB7roa9AQfWPPpUSJOhWgTXXW2/0Y0FiZ
+ utmdx5xEvW+719gbi9P2QAAAA==
 To: Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, 
  Konrad Dybcio <konradybcio@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Sebastian Reichel <sebastian.reichel@collabora.com>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1709479879; l=1698;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1709479879; l=1906;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=vO0wi2by1WM0BWnFkPRqBVKMUBA1OoHp/KPmP50MDPk=;
- b=a4Tl17+Sqj9JWs4YaN8gTyUAG/AsZ3gSSPoZt8UeygTkJQEzuF9NsdqZb1pGUJMgoyw2rQ7Tg
- Zn8LkgaBgGiBhXTaqmL8u+iil5YwHxL5grGwjfDu4HtLuCyrnXTJjEd
+ bh=BMCjTdC0Fu2nH2LhHAv4BwNh5+V6v1koWf/3R/NO2HY=;
+ b=NWAd8gl8NdXAXW/y8qaCv+zgnHRRG382XqOuVLW5lOlIiHDcmx9h56SiH8dC+3uzGWNI5uFg6
+ 1iPIwDrn7wEBvPcHQNr821G+DnXFhR+tLW+wBxo0sTYRu1oVYqsWWHi
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-By moving the conditional into the default-branch of the switch new
-additions to the switch won't have to bypass the conditional.
+The original submission of the charge_behaviour property did not
+implement proper formatting in the default formatting handler in
+power_supply_sysfs.c.
 
-This makes it easier to implement those special cases like the upcoming
-change to the formatting of "charge_behaviour".
+At that time it was not a problem because the only provider of the UAPI,
+thinkpad_acpi, did its own formatting.
 
-Suggested-by: Hans de Goede <hdegoede@redhat.com>
-Link: https://lore.kernel.org/lkml/53082075-852f-4698-b354-ed30e7fd2683@redhat.com/
+Now there is an in-tree driver, mm8013, and out-of-tree driver which use
+the normal power-supply properties and are affected by the wrong
+formatting.
+In this revision the handling of CHARGE_BEHAVIOUR in mm8013 is dropped
+as it is not the correct API for it to use.
+That change was not tested by me as I don't have the hardware.
+
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/power_supply_sysfs.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+Changes in v2:
+- Simplify the backwards-compatibility logic (adds a preparatory patch)
+- Extend test-power to also handle writing of charge_behaviour
+- Drop incorrect CHARGE_BEHAVIOUR from mm8013 driver
+- Replace special CHARGE_BEHAVIOUR_AVAILABLE property with bitmask in
+  struct power_supply_desc
+- Link to v1: https://lore.kernel.org/r/20240204-power_supply-charge_behaviour_prop-v1-0-06a20c958f96@weissschuh.net
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 977611e16373..10fec411794b 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -298,11 +298,6 @@ static ssize_t power_supply_show_property(struct device *dev,
- 		}
- 	}
- 
--	if (ps_attr->text_values_len > 0 &&
--	    value.intval < ps_attr->text_values_len && value.intval >= 0) {
--		return sysfs_emit(buf, "%s\n", ps_attr->text_values[value.intval]);
--	}
--
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_USB_TYPE:
- 		ret = power_supply_show_usb_type(dev, psy->desc,
-@@ -312,7 +307,12 @@ static ssize_t power_supply_show_property(struct device *dev,
- 		ret = sysfs_emit(buf, "%s\n", value.strval);
- 		break;
- 	default:
--		ret = sysfs_emit(buf, "%d\n", value.intval);
-+		if (ps_attr->text_values_len > 0 &&
-+				value.intval < ps_attr->text_values_len && value.intval >= 0) {
-+			ret = sysfs_emit(buf, "%s\n", ps_attr->text_values[value.intval]);
-+		} else {
-+			ret = sysfs_emit(buf, "%d\n", value.intval);
-+		}
- 	}
- 
- 	return ret;
+---
+Thomas Weißschuh (4):
+      power: supply: mm8013: fix "not charging" detection
+      power: supply: core: ease special formatting implementations
+      power: supply: core: fix charge_behaviour formatting
+      power: supply: test-power: implement charge_behaviour property
 
+ drivers/power/supply/mm8013.c             | 13 ++-----------
+ drivers/power/supply/power_supply_sysfs.c | 32 +++++++++++++++++++++++++------
+ drivers/power/supply/test_power.c         | 31 ++++++++++++++++++++++++++++++
+ include/linux/power_supply.h              |  1 +
+ 4 files changed, 60 insertions(+), 17 deletions(-)
+---
+base-commit: 04b8076df2534f08bb4190f90a24e0f7f8930aca
+change-id: 20230929-power_supply-charge_behaviour_prop-10ccfd96a666
+
+Best regards,
 -- 
-2.44.0
+Thomas Weißschuh <linux@weissschuh.net>
 
