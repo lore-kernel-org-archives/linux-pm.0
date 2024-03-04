@@ -1,16 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 748A4482DA
-	for <linux-pm@vger.kernel.org>; Mon,  4 Mar 2024 21:29:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E21D1200A9
+	for <linux-pm@vger.kernel.org>; Mon,  4 Mar 2024 21:29:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709587748; cv=none; b=TajP8UzkGii6qUZF5mff3Z4si/Kh5+1nrfgicXsjBVopKZp+yJH0S9sWdh2if6tmMMWx9bEDDVZRKgn33R2aW3NnThjwnHptH1JyX/lX9V6LvYfV8TD9xOJQpk7rVm14EaHSZmm3uJ3CIxXEM/yt5+QDQElFyTJ2KiF12gfW9uE=
+	t=1709587749; cv=none; b=ZsUx4RUQLBUPvi24lJJ3NLnsGphXwCyb6d9kPs79kc6CwC068JbggiFLIe/lxw5A7lV8v0SiyvJq/l+1ciWCPXlubKFolUXp/ejb6jIIrmczA25rYOUGTFZAAN30aWv2X5jfQOpYqPxeNte7Sk1M9c6QhBhrVFY8u6JpGosPzZY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709587748; c=relaxed/simple;
-	bh=PBrEihezR5AA0ClQxijXvIVfy7IrlYrl4T4cYnc+AtQ=;
+	s=arc-20240116; t=1709587749; c=relaxed/simple;
+	bh=0GTgiI9XNwKLwdfdM0l4i/fGODkeH75DZ0pc7W7YrQ8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=pZ8dwBgxvGOh3l0s/x/SExCPXrjXUwRqlZZ1dB5ANScF7Ggv7FYQCkJV1zRYI6kRff0RQ0Fe6AnmwIhyZ40BpjijSN4HMxfO1BzfilXnOmltCNmheUU1r5AgKP4kbX2Y/owLtMtR8cSabVLpJVQvanGCbRmhmCSLiR6Bf5lf8gc=
+	 MIME-Version:Content-Type; b=ZHRAONrX4OMhpxo+17zBnEBR/cI7d27s50gUCdz84YcDAKrRoE7hkFIIFF8PlFNkO661eb4I3RRuWf7sMTo1i+pVUKiUIbdCzr8Q/4eO0blfhAHC+YXUKz8tgf9gn8JAgFdeJbRoeSJJWZc8tM5uXT2coAOTod0yaZiJ67GCUpo=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,30 +18,29 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1rhFrm-0002hx-4i; Mon, 04 Mar 2024 22:28:58 +0100
+	id 1rhFrl-0002hb-4Q; Mon, 04 Mar 2024 22:28:57 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1rhFrk-004QhY-W6; Mon, 04 Mar 2024 22:28:57 +0100
+	id 1rhFrk-004QhM-2A; Mon, 04 Mar 2024 22:28:56 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1rhFrk-00H4uV-2u;
-	Mon, 04 Mar 2024 22:28:56 +0100
+	id 1rhFrj-00H4uF-3A;
+	Mon, 04 Mar 2024 22:28:55 +0100
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Chen-Yu Tsai <wens@csie.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>,
+To: Chanwoo Choi <cw00.choi@samsung.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
 	linux-pm@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
-	linux-sunxi@lists.linux.dev,
+	linux-samsung-soc@vger.kernel.org,
 	kernel@pengutronix.de
-Subject: [PATCH 5/5] PM / devfreq: sun8i-a33-mbus: Convert to platform remove callback returning void
-Date: Mon,  4 Mar 2024 22:28:43 +0100
-Message-ID:  <0ca3f35bdf9549ccda7c6c10a476f28350d987df.1709587301.git.u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 1/5] PM / devfreq: exynos-nocp: Convert to platform remove callback returning void
+Date: Mon,  4 Mar 2024 22:28:39 +0100
+Message-ID:  <8385454855ae5899a4db7655e7a57629855157d8.1709587301.git.u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1709587301.git.u.kleine-koenig@pengutronix.de>
 References: <cover.1709587301.git.u.kleine-koenig@pengutronix.de>
@@ -52,7 +51,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2083; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=PBrEihezR5AA0ClQxijXvIVfy7IrlYrl4T4cYnc+AtQ=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBl5j0Nd/4vLbyJrlXlBYNLAsGnaqFmZKtQd7jX+ srJRfHCOFqJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZeY9DQAKCRCPgPtYfRL+ TlM6CACbzzNWmx8B9+BCzK0no3gbBhtyaxUgC5dVdB5//xc7v2zhLurgFAbxXxysS/W3uJaFJ20 uDPXWRhb0pck20FRdiFPTu2laILpgow/u97a76d8Qch1dZUeLLgG3X61Y59PhP67Yb2eizO/92M vsV2a7bGLIK7g6+HXU0DhLbRYjemnmX2Wem8Ob6e1MXcVW05E25E3b7mvC8CHjlkIrduImVWYth X9ic/6CeF/54+KUL2LYdSLYH0UV3nPNpHBEwjMZhfdz/r0hkoOW29227mwb3GBTOM4O0vBC9pfT E73seSaecZz8dKy5CFKqs8hwHHseEra4F4MYorwHXI/o6j7D
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1674; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=0GTgiI9XNwKLwdfdM0l4i/fGODkeH75DZ0pc7W7YrQ8=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBl5j0IAzLtKlpzTiHhWfwGAM2RoJHs3l7fVAgvJ 3RuwWqj5UKJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZeY9CAAKCRCPgPtYfRL+ TpoKB/93Yq8l627M/Q1v+xnPyLEA3as2YGI1ineGJcEWTWPQbYY031YgDzhZsGULV10dpNbF0xU LxsY1kSWt2tKBqxkq0JtjdYuBkc/2yc5DMx6uoRSFbsF5IvShjv4v8BRFqq647mVVJsAoFpo3gs E15REVIFsTsxvR8IK6md3OPDuq5yDTBSglXbL06zbbBMe4sEX7CWUQgP0ABWE8Mkjd0zHGiKu+f ew72rMZrvjtzyYhdO6XdYAdPpA9ll9IqZa+Mnrz1H38rg7xdp/NupLiozyTMVr1uoxhn4i6wdoi ajKGup2aDg/yzE4YI/Tsa55qhpqazRAkwsezFHOznnK0xJ0E
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -75,40 +74,34 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/devfreq/sun8i-a33-mbus.c | 6 ++----
+ drivers/devfreq/event/exynos-nocp.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/devfreq/sun8i-a33-mbus.c b/drivers/devfreq/sun8i-a33-mbus.c
-index 13d32213139f..bcf654f4ff96 100644
---- a/drivers/devfreq/sun8i-a33-mbus.c
-+++ b/drivers/devfreq/sun8i-a33-mbus.c
-@@ -458,7 +458,7 @@ static int sun8i_a33_mbus_probe(struct platform_device *pdev)
- 	return dev_err_probe(dev, ret, err);
+diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
+index c1cc23bcb995..5edc522f715c 100644
+--- a/drivers/devfreq/event/exynos-nocp.c
++++ b/drivers/devfreq/event/exynos-nocp.c
+@@ -275,18 +275,16 @@ static int exynos_nocp_probe(struct platform_device *pdev)
+ 	return 0;
  }
  
--static int sun8i_a33_mbus_remove(struct platform_device *pdev)
-+static void sun8i_a33_mbus_remove(struct platform_device *pdev)
+-static int exynos_nocp_remove(struct platform_device *pdev)
++static void exynos_nocp_remove(struct platform_device *pdev)
  {
- 	struct sun8i_a33_mbus *priv = platform_get_drvdata(pdev);
- 	unsigned long initial_freq = priv->profile.initial_freq;
-@@ -475,8 +475,6 @@ static int sun8i_a33_mbus_remove(struct platform_device *pdev)
- 	clk_rate_exclusive_put(priv->clk_mbus);
- 	clk_rate_exclusive_put(priv->clk_dram);
- 	clk_disable_unprepare(priv->clk_bus);
+ 	struct exynos_nocp *nocp = platform_get_drvdata(pdev);
+ 
+ 	clk_disable_unprepare(nocp->clk);
 -
 -	return 0;
  }
  
- static const struct sun8i_a33_mbus_variant sun50i_a64_mbus = {
-@@ -497,7 +495,7 @@ static SIMPLE_DEV_PM_OPS(sun8i_a33_mbus_pm_ops,
- 
- static struct platform_driver sun8i_a33_mbus_driver = {
- 	.probe	= sun8i_a33_mbus_probe,
--	.remove	= sun8i_a33_mbus_remove,
-+	.remove_new = sun8i_a33_mbus_remove,
- 	.driver	= {
- 		.name		= "sun8i-a33-mbus",
- 		.of_match_table	= sun8i_a33_mbus_of_match,
+ static struct platform_driver exynos_nocp_driver = {
+ 	.probe	= exynos_nocp_probe,
+-	.remove	= exynos_nocp_remove,
++	.remove_new = exynos_nocp_remove,
+ 	.driver = {
+ 		.name	= "exynos-nocp",
+ 		.of_match_table = exynos_nocp_id_match,
 -- 
 2.43.0
 
