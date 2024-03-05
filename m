@@ -1,107 +1,127 @@
-Received: from mail-oo1-f41.google.com (mail-oo1-f41.google.com [209.85.161.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F363B29CE9;
-	Tue,  5 Mar 2024 11:41:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1767E54910;
+	Tue,  5 Mar 2024 11:45:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709638890; cv=none; b=CrB9zHIEk4lV5712Q85AHhMpJFo18O30S2b5jbiCm/PiZzoTA15/P1TKqC0mfqxpdNp/tPTc6f2nsYMlUWuaPK7c+lOiCyll8Dn9AwhK0Ix3qCd8rRql/+bMNWFordi661KwPEhUi/qRDSb7N7n1m2nHwcQc9m5KcGkDQQc/CqU=
+	t=1709639144; cv=none; b=SPHPNDmEoIFklrYV7mKzq4QTyA32ARNy0t5Ke2pZDstdb0Bjdg0edr/5hKU7vvdpNNLo3sE0iCLsacFANyDjOMeWNOXNDNdQxg4qvHQhKDRtsvSUPVebXedsl9LExXWxHhZ+5TM64uL56n+4PhA0rvKEybWKA33JLINPShh6Xhs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709638890; c=relaxed/simple;
-	bh=tQtogeCkIHDDEnVG1cGYdwDp0nwyyUrX6V4UtNFlljQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Eu8H5Xj9Tm3uzt6x2H/gh7+T5phvegR6TQOyv8nTOawwfrdFd7Kc9rEZdwsenk/SIHHpIaTB5e96+z0mXckZc7nFV7Wg6SCI/ESagwBVjIFiTzQeyQWbRFghX8Qa19lkx2OtPxIo6jm+Epef9Q2metJmLd2EvDwkiUcsjgKeZZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.161.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-oo1-f41.google.com with SMTP id 006d021491bc7-5a1358e7e16so546546eaf.0;
-        Tue, 05 Mar 2024 03:41:28 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709638888; x=1710243688;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=y0v7RjgmO/yDuWlF3/kTo+sHgoivtGNOWfDVn+nq/Ik=;
-        b=ZRvN+1LQyPgl/8G8Kuj1r/r2YNcHSJhcB0y5tLWTB3iuTSAd28FpmBSijRbnE0OyBb
-         9xn6QZUChw/uFHgIBT76FC7P/JXVasxJEsd35XYibMCywksjuZQZOg87MLanWr3uB78o
-         bYUU8VAzLK/HIk8+j+Q9tTkWzDB94Rz/lhfm1CZsKfJbYTyDjkUavsKRCSuL8ntx1DRV
-         nq3XqzNedeKfIgdHpQs3is3C6NeFPaV41osKNdBPd63UUlXc2VQcRBYciVqpfQB4WTdm
-         oChirUimjYkYTC4//wCifazBzMx/tgUx/ljJdkN1SAevGcOPRBHXh8k00GrNCqjCN9ey
-         p6Ng==
-X-Forwarded-Encrypted: i=1; AJvYcCXKPeG4ejE+i0QV48l/dy2iDLUuQf1SJKjTl9uEVEX6IoY4mM3XiEadKOlklWni4YCYPdHstfrwHDWEwiMDYeTDYhuCNz9aOXqHDtv1qrIeqce4H5BfKXl9V9XWvKbqEzf9472CdB4=
-X-Gm-Message-State: AOJu0YyHxC+xvHeWchKMx+HnOlQWVyMpcs4V/HfaN+UbhiWApTbxYAgv
-	4ISJJd+ky3YjdIP4qcnlTuwfA9MIQiyCBr7QYUWhDzX1TFDulVOcnYl8cLAZBfEBj+rQVAnXmZI
-	e0tQ7j65yx0GPWgeM5FIGH2Wn2+4=
-X-Google-Smtp-Source: AGHT+IHF4dBKyk4hRdjM6vf7T079M6yi9lKk8JmaNs0S9UveuRzmmaiok7o5fr454KPibdMqlJlfLpZYpB8AMdLmm0k=
-X-Received: by 2002:a4a:d4d4:0:b0:5a1:31a1:7f75 with SMTP id
- r20-20020a4ad4d4000000b005a131a17f75mr154574oos.1.1709638888053; Tue, 05 Mar
- 2024 03:41:28 -0800 (PST)
+	s=arc-20240116; t=1709639144; c=relaxed/simple;
+	bh=FHUHlLigDUUjjEfAgynun0/iQyt0bpAOryZ/isN6/Cw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=c+R0ilkiRV8QabhzyksteLNI7vN/2u5XOchkPGBkM1TCpyyPi+HBbVEG3OqUZ44X7Bi1rKj1AifOBidqyfRZVQU1SjQCHzfpCnbbB5LZr0ysTDPnyCA/1TXKN5d72prR8ruYZJv2H8QiZM6s8RnMl7des0Nxz7657Ouekc8Mm3s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ZmY4lgUL reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ZmY4lgUL"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
+ id 774bf1c7206d9c9b; Tue, 5 Mar 2024 11:45:39 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id D152C66AA0C;
+	Tue,  5 Mar 2024 11:45:38 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1709635539;
+	bh=FHUHlLigDUUjjEfAgynun0/iQyt0bpAOryZ/isN6/Cw=;
+	h=From:To:Cc:Subject:Date;
+	b=ZmY4lgULCHBNmKGSZrEKSFDn7qZkfBnuwQiT6SudrIYceXh7lJpAlIWnOpyP4yqx8
+	 Q9YiCUEYFjcEMaKdnD6M4F8LDPyfGDm/uBy/F/MqDL9S7wHKSfL4XLyHuYTB5akHM6
+	 TeTBuWaet63AqwC328mM1yA0KPr4tFkDxCuBH+FXfeJLD7XkHvFwTd/MNirNM0K0yc
+	 b6mbgbv97F9I+UHX7Twkhp8O8R2BgpFNKNJEjQe8pgJ68TpVl3izmc8CqQFYAoPltY
+	 7SPMHmNm2OhTe5GVrZ37bPR05fxHkDwlj7pMfPvyRZo1oi4FRae0r38KA2yreDogsp
+	 Rv9IY9yYHZgtw==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Ricky Wu <ricky_wu@realtek.com>, Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject:
+ [PATCH v1] PM: runtime: PCI: Drain runtime-idle callbacks before driver
+ removal
+Date: Tue, 05 Mar 2024 11:45:38 +0100
+Message-ID: <5761426.DvuYhMxLoT@kreacher>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240301092657.15528-1-qingliang.li@mediatek.com> <ZeXmcl4ngEm1RccW@hovoldconsulting.com>
-In-Reply-To: <ZeXmcl4ngEm1RccW@hovoldconsulting.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 5 Mar 2024 12:41:16 +0100
-Message-ID: <CAJZ5v0ifq_ZsrQnq3b4LSUJxAVMO55=m7tL+L3nNP7ixBb9yHA@mail.gmail.com>
-Subject: Re: [PATCH v2] PM: sleep: wakeirq: fix wake irq warning in system suspend
-To: Johan Hovold <johan@kernel.org>, Qingliang Li <qingliang.li@mediatek.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Johan Hovold <johan+linaro@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-mediatek@lists.infradead.org, Dhruva Gole <d-gole@ti.com>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrheelgdduiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepkedprhgtphhtthhopehlihhnuhigqdhptghisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohephhgvlhhgrggrsheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehgrhgvghhkhheslhhinhhugihfohhunhgurghtihhonhdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 
-On Mon, Mar 4, 2024 at 4:19=E2=80=AFPM Johan Hovold <johan@kernel.org> wrot=
-e:
->
-> On Fri, Mar 01, 2024 at 05:26:57PM +0800, Qingliang Li wrote:
-> > When driver uses pm_runtime_force_suspend() as the system suspend callb=
-ack
-> > function and registers the wake irq with reverse enable ordering, the w=
-ake
-> > irq will be re-enabled when entering system suspend, triggering an
-> > 'Unbalanced enable for IRQ xxx' warning. In this scenario, the call
-> > sequence during system suspend is as follows:
-> >   suspend_devices_and_enter()
-> >     -> dpm_suspend_start()
-> >       -> dpm_run_callback()
-> >         -> pm_runtime_force_suspend()
-> >           -> dev_pm_enable_wake_irq_check()
-> >           -> dev_pm_enable_wake_irq_complete()
-> >
-> >     -> suspend_enter()
-> >       -> dpm_suspend_noirq()
-> >         -> device_wakeup_arm_wake_irqs()
-> >           -> dev_pm_arm_wake_irq()
-> >
-> > To fix this issue, complete the setting of WAKE_IRQ_DEDICATED_ENABLED f=
-lag
-> > in dev_pm_enable_wake_irq_complete() to avoid redundant irq enablement.
-> >
-> > Reviewed-by: Dhruva Gole <d-gole@ti.com>
-> > Signed-off-by: Qingliang Li <qingliang.li@mediatek.com>
->
-> Thanks for the fix. Looks correct to me:
->
-> Reviewed-by: Johan Hovold <johan+linaro@kernel.org>
->
-> I think you should add back the Fixes tag from v1 and CC stable as well:
->
-> Fixes: 8527beb12087 ("PM: sleep: wakeirq: fix wake irq arming")
-> Cc: stable@vger.kernel.org      # 5.16
->
-> Note that WAKE_IRQ_DEDICATED_REVERSE was added in 5.16 by commit
-> 259714100d98 ("PM / wakeirq: support enabling wake-up irq after
-> runtime_suspend called") so no need to try to backport any further than
-> that.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Applied as 6.9 material, tags added as suggested above.
+A race condition between the .runtime_idle() callback and the .remove()
+callback in the rtsx_pcr PCI driver leads to a kernel crash due to an
+unhandled page fault [1].
 
-Thanks!
+The problem is that rtsx_pci_runtime_idle() is not expected to be
+running after pm_runtime_get_sync() has been called, but the latter
+doesn't really guarantee that.  It only guarantees that the suspend
+and resume callbacks will not be running when it returns.
+
+However, if a .runtime_idle() callback is already running when
+pm_runtime_get_sync() is called, the latter will notice that the
+runtime PM status of the device is RPM_ACTIVE and it will return right
+away without waiting for the former to complete.  In fact, it cannot
+wait for .runtime_idle() to complete because it may be called from that
+callback (it arguably does not make much sense to do that, but it is not
+strictly prohibited).
+
+Thus in general, whoever is providing a .runtime_idle() callback, they
+need to protect it from running in parallel with whatever code runs
+after pm_runtime_get_sync().  [Note that .runtime_idle() will not start
+after pm_runtime_get_sync() has returned, but it may continue running
+then if it has started earlier already.]
+
+One way to address that race condition is to call pm_runtime_barrier()
+after pm_runtime_get_sync() (not before it, because a nonzero value of
+the runtime PM usage counter is necessary to prevent runtime PM
+callbacks from being invoked) to wait for the runtime-idle callback to
+complete should it be running at that point.  A suitable place for
+doing that is in pci_device_remove() which calls pm_runtime_get_sync()
+before removing the driver, so it may as well call pm_runtime_barrier()
+subsequently, which will prevent the race in question from occurring,
+not just in the rtsx_pcr driver, but in any PCI drivers providing
+runtime-idle callbacks.
+
+Link: https://lore.kernel.org/lkml/20240229062201.49500-1-kai.heng.feng@canonical.com/ # [1]
+Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Tested-by: Ricky Wu <ricky_wu@realtek.com>
+Cc: All applicable <stable@vger.kernel.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/pci-driver.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -473,6 +473,13 @@ static void pci_device_remove(struct dev
+ 
+ 	if (drv->remove) {
+ 		pm_runtime_get_sync(dev);
++		/*
++		 * If the driver provides a .runtime_idle() callback and it has
++		 * started to run already, it may continue to run in parallel
++		 * with the code below, so wait until all of the runtime PM
++		 * activity has completed.
++		 */
++		pm_runtime_barrier(dev);
+ 		drv->remove(pci_dev);
+ 		pm_runtime_put_noidle(dev);
+ 	}
+
+
+
