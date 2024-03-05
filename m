@@ -1,127 +1,68 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1767E54910;
-	Tue,  5 Mar 2024 11:45:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7CD865676D;
+	Tue,  5 Mar 2024 11:46:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709639144; cv=none; b=SPHPNDmEoIFklrYV7mKzq4QTyA32ARNy0t5Ke2pZDstdb0Bjdg0edr/5hKU7vvdpNNLo3sE0iCLsacFANyDjOMeWNOXNDNdQxg4qvHQhKDRtsvSUPVebXedsl9LExXWxHhZ+5TM64uL56n+4PhA0rvKEybWKA33JLINPShh6Xhs=
+	t=1709639199; cv=none; b=cY+KVBysX8JL0gmMqUX18yRBVCS4RTJoOaM3RZTxwQKZTyFDe9VPYmadSHeRxj+bZCm4BY/LMqHHKPvCs+TrSCurtYTYoQUpPzHr31YBPYP0l6CBJ95b6IxIhoUSxK0V478yZSznxfUSLu9FuCTuNSptjyJw6XYRBURsu8PLf/c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709639144; c=relaxed/simple;
-	bh=FHUHlLigDUUjjEfAgynun0/iQyt0bpAOryZ/isN6/Cw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=c+R0ilkiRV8QabhzyksteLNI7vN/2u5XOchkPGBkM1TCpyyPi+HBbVEG3OqUZ44X7Bi1rKj1AifOBidqyfRZVQU1SjQCHzfpCnbbB5LZr0ysTDPnyCA/1TXKN5d72prR8ruYZJv2H8QiZM6s8RnMl7des0Nxz7657Ouekc8Mm3s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ZmY4lgUL reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ZmY4lgUL"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.4.0)
- id 774bf1c7206d9c9b; Tue, 5 Mar 2024 11:45:39 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id D152C66AA0C;
-	Tue,  5 Mar 2024 11:45:38 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1709635539;
-	bh=FHUHlLigDUUjjEfAgynun0/iQyt0bpAOryZ/isN6/Cw=;
-	h=From:To:Cc:Subject:Date;
-	b=ZmY4lgULCHBNmKGSZrEKSFDn7qZkfBnuwQiT6SudrIYceXh7lJpAlIWnOpyP4yqx8
-	 Q9YiCUEYFjcEMaKdnD6M4F8LDPyfGDm/uBy/F/MqDL9S7wHKSfL4XLyHuYTB5akHM6
-	 TeTBuWaet63AqwC328mM1yA0KPr4tFkDxCuBH+FXfeJLD7XkHvFwTd/MNirNM0K0yc
-	 b6mbgbv97F9I+UHX7Twkhp8O8R2BgpFNKNJEjQe8pgJ68TpVl3izmc8CqQFYAoPltY
-	 7SPMHmNm2OhTe5GVrZ37bPR05fxHkDwlj7pMfPvyRZo1oi4FRae0r38KA2yreDogsp
-	 Rv9IY9yYHZgtw==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Ricky Wu <ricky_wu@realtek.com>, Kai-Heng Feng <kai.heng.feng@canonical.com>
-Subject:
- [PATCH v1] PM: runtime: PCI: Drain runtime-idle callbacks before driver
- removal
-Date: Tue, 05 Mar 2024 11:45:38 +0100
-Message-ID: <5761426.DvuYhMxLoT@kreacher>
+	s=arc-20240116; t=1709639199; c=relaxed/simple;
+	bh=K+s3gas02e9E4iUjXjT/64GP8DZNwtmwcELjrkLGz0k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JRfcq1hb3Byljld32AhZ7oZY7FRNo5abWCRdsyCjRuNk01jxuoiv5HdOy7DE/r/d0Tyk3Mz0A5jSlyi9mN+VpC3gpt+jjx8eltCc6bprPeH7jI5k7ZgPsvek9UUHLXjqw/N7skaNkAW8SXhBIFB6dpChlW9wqIRUnubi//MSgCk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 40D631FB;
+	Tue,  5 Mar 2024 03:47:13 -0800 (PST)
+Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EDE4D3F762;
+	Tue,  5 Mar 2024 03:46:34 -0800 (PST)
+Date: Tue, 5 Mar 2024 11:46:32 +0000
+From: Sudeep Holla <sudeep.holla@arm.com>
+To: Pierre Gondois <pierre.gondois@arm.com>
+Cc: linux-kernel@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	Christian Loehle <christian.loehle@arm.com>,
+	Ionela Voinescu <ionela.voinescu@arm.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/3] firmware: arm_scmi: Populate fast channel rate_limit
+Message-ID: <ZecGGJrgJ2857FYW@bogus>
+References: <20240222135702.2005635-1-pierre.gondois@arm.com>
+ <20240222135702.2005635-3-pierre.gondois@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrheelgdduiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepkedprhgtphhtthhopehlihhnuhigqdhptghisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohephhgvlhhgrggrsheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehgrhgvghhkhheslhhinhhugihfohhunhgurghtihhonhdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240222135702.2005635-3-pierre.gondois@arm.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Feb 22, 2024 at 02:57:00PM +0100, Pierre Gondois wrote:
+> Arm SCMI spec. v3.2, s4.5.3.12 PERFORMANCE_DESCRIBE_FASTCHANNEL
+> defines a per-domain rate_limit for performance requests:
+> """
+> Rate Limit in microseconds, indicating the minimum time
+> required between successive requests. A value of 0
+> indicates that this field is not applicable or supported
+> on the platform.
+> """"
+> The field is first defined in SCMI v2.0.
+> 
+> Add support to fetch this value and advertise it through
+> a fast_switch_rate_limit() callback.
+>
 
-A race condition between the .runtime_idle() callback and the .remove()
-callback in the rtsx_pcr PCI driver leads to a kernel crash due to an
-unhandled page fault [1].
+I did a quick check and these changes doesn't conflict with -next SCMI
+content. So if Viresh is happy to pick them up for v6.9,
 
-The problem is that rtsx_pci_runtime_idle() is not expected to be
-running after pm_runtime_get_sync() has been called, but the latter
-doesn't really guarantee that.  It only guarantees that the suspend
-and resume callbacks will not be running when it returns.
+Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 
-However, if a .runtime_idle() callback is already running when
-pm_runtime_get_sync() is called, the latter will notice that the
-runtime PM status of the device is RPM_ACTIVE and it will return right
-away without waiting for the former to complete.  In fact, it cannot
-wait for .runtime_idle() to complete because it may be called from that
-callback (it arguably does not make much sense to do that, but it is not
-strictly prohibited).
-
-Thus in general, whoever is providing a .runtime_idle() callback, they
-need to protect it from running in parallel with whatever code runs
-after pm_runtime_get_sync().  [Note that .runtime_idle() will not start
-after pm_runtime_get_sync() has returned, but it may continue running
-then if it has started earlier already.]
-
-One way to address that race condition is to call pm_runtime_barrier()
-after pm_runtime_get_sync() (not before it, because a nonzero value of
-the runtime PM usage counter is necessary to prevent runtime PM
-callbacks from being invoked) to wait for the runtime-idle callback to
-complete should it be running at that point.  A suitable place for
-doing that is in pci_device_remove() which calls pm_runtime_get_sync()
-before removing the driver, so it may as well call pm_runtime_barrier()
-subsequently, which will prevent the race in question from occurring,
-not just in the rtsx_pcr driver, but in any PCI drivers providing
-runtime-idle callbacks.
-
-Link: https://lore.kernel.org/lkml/20240229062201.49500-1-kai.heng.feng@canonical.com/ # [1]
-Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Tested-by: Ricky Wu <ricky_wu@realtek.com>
-Cc: All applicable <stable@vger.kernel.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/pci/pci-driver.c |    7 +++++++
- 1 file changed, 7 insertions(+)
-
-Index: linux-pm/drivers/pci/pci-driver.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -473,6 +473,13 @@ static void pci_device_remove(struct dev
- 
- 	if (drv->remove) {
- 		pm_runtime_get_sync(dev);
-+		/*
-+		 * If the driver provides a .runtime_idle() callback and it has
-+		 * started to run already, it may continue to run in parallel
-+		 * with the code below, so wait until all of the runtime PM
-+		 * activity has completed.
-+		 */
-+		pm_runtime_barrier(dev);
- 		drv->remove(pci_dev);
- 		pm_runtime_put_noidle(dev);
- 	}
-
-
-
+-- 
+Regards,
+Sudeep
