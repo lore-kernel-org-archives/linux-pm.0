@@ -1,97 +1,214 @@
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [195.130.132.52])
+Received: from mail-oa1-f51.google.com (mail-oa1-f51.google.com [209.85.160.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B176276022
-	for <linux-pm@vger.kernel.org>; Wed,  6 Mar 2024 10:56:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 604677FBAE;
+	Wed,  6 Mar 2024 12:02:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709722577; cv=none; b=hLu4IKykuohmPmiiHGZGR2Oig4pbYRmxEJF3H7kclWBk9JjuaSG4NG2yzaiHi1d9PVD0eiY0k4rGXQAzxCMa4hliHPn0HJLiji2jfT5IJXO/v9TNUqWyMd+eVDAsAbvBDm8rkuSKy5TCm1hJIK0yihtfXJIT4b01VRYrERpkOvA=
+	t=1709726580; cv=none; b=dpTyfAp5pUV6nZlBZJ7QFL9FRmB+h0XsIc0PW6gCBQB01pzuSy25Q7AY+5Jc9/BUPk0giPAXoPXV6x6aTE/yuh0iLTHfOvaCyO6In2ae7vA+RJTTssA8yWfT5+j8lzwf6bl59/HlaP93ieHKb2pQNaN+E7zTPy4TZZOhc85E/gs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709722577; c=relaxed/simple;
-	bh=TJ24aG+kXCjYheKsA0o5PbfPeY9Fd1hO9Wj5VYe2+Hw=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=uB0Q4YN2Np9ysSep1CjrzFfGIpW6OuOBg7WnkbkTgUlMGYI3yDWZ/wQeYgSe64tDo5OyD/27wwymS6aASmVpi+8B69/GpdnxcWfVvc6yigzwGPJlREzi/4TeKUjUDbmaJAEwR7N2axvUWdW7ZRRMjoyztbrwjT55ixkdHJwYrR8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
-Received: from ramsan.of.borg ([84.195.187.55])
-	by xavier.telenet-ops.be with bizsmtp
-	id vNw42B00T1C8whw01Nw4R6; Wed, 06 Mar 2024 11:56:08 +0100
-Received: from rox.of.borg ([192.168.97.57])
-	by ramsan.of.borg with esmtp (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1rhowB-002Y8k-1m;
-	Wed, 06 Mar 2024 11:56:04 +0100
-Received: from geert by rox.of.borg with local (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1rhowO-00EMJg-8n;
-	Wed, 06 Mar 2024 11:56:04 +0100
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: linux-renesas-soc@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	Duy Nguyen <duy.nguyen.rh@renesas.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 1/2] dt-bindings: thermal: rcar-gen3-thermal: Add r8a779h0 support
-Date: Wed,  6 Mar 2024 11:56:02 +0100
-Message-Id: <b3d135f8b63b9fe2d0f0aa2e48c8a2211b2e947e.1709722342.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1709722342.git.geert+renesas@glider.be>
-References: <cover.1709722342.git.geert+renesas@glider.be>
+	s=arc-20240116; t=1709726580; c=relaxed/simple;
+	bh=ygOUcxcRpUINHsb9d9oL2323fFjzJsOlLgRBp5SVIVY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TQvtpoz8mHqMNaibxC+GkjNCmPIUeGED+Y1tNL+Lnwp7Bp5X9S2e/fEoZo4ExRgmuF4RtUsO3YwsmDMw01Z1ExOYuTMhSZIyTeKwY/zqrrMz7Hzj4axDXOF+nVT8eOPoabwPrD3AQbWOa5gtUwHf4xTo/RbdHAFtx9X6FShHRY4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.160.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-oa1-f51.google.com with SMTP id 586e51a60fabf-21f10aae252so735106fac.0;
+        Wed, 06 Mar 2024 04:02:58 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1709726577; x=1710331377;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=wGkv/Y4Ut4vTGw3rcpL6a48vgfRCwr0jO5gV/dxwk4I=;
+        b=KLFt0akeThbOisMBSLftHT9KUMOf+cW9MTt45+atWKlEzuxx5MMqBk0LWpTB9u12g9
+         kD1S/jVb9LbFLaX3fcmvE7zLjjr2SL41hO/5o1rTLns78f17RbybkwI6euYe8cAav4Y3
+         GgsOze17K/E3nQNDvesKpyy2LxsJv8/kWxsr1vCBUp1ne44F88jMdmlRhHmtEIDr2UyB
+         8flblyKakUyiSNK3I7lrtiVYyms5qW4db8vBPpOSBGVarMoJiMAjAROFFjOVTAzHVJDw
+         5lIHxNTEvWqIwN3ZRXuz1Is7wwy+2bvGH8gVM+RqAqSw0Bx32MsybZmGauq+VLtSbl0o
+         i9AQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUwPGm6h9neV5AQG/S0froefPj1E6Na1P4/GQVs8gh8M3EVAAyAfaYUIE/a4Uzp1q8U6NSPLGF1mtmt6fvVPwi8pRk6WG7h+9sf7YPFWVNyQbmT+Re+Mufi1mUbyUY8SZl8tS2xI5s=
+X-Gm-Message-State: AOJu0YxZ32y67S+ZjYeLdaiaBnD/9jqIrAPKaOSWCssFXvNZPD7kJHPr
+	hupvklKK5Im+BrVkO8LE3eau0k6bh6gD7Y3v+XJ40M9joYDtA6SYYiUo/elUYzLEZ7wef9m7ujs
+	KT7leANX02obp7QTV90EOdiG1mVE=
+X-Google-Smtp-Source: AGHT+IFnaboa01aFQV5lPR30HlGfY/+Il5mmcq+JaTPaMIvwVPJBshCCIa27lGDlV0b/Uqzmcdc68nhgL+dmu42frE8=
+X-Received: by 2002:a05:6870:b507:b0:21f:cd7d:9904 with SMTP id
+ v7-20020a056870b50700b0021fcd7d9904mr3487536oap.4.1709726577329; Wed, 06 Mar
+ 2024 04:02:57 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20240306085428.88011-1-daniel.lezcano@linaro.org>
+In-Reply-To: <20240306085428.88011-1-daniel.lezcano@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 6 Mar 2024 13:02:45 +0100
+Message-ID: <CAJZ5v0jAn2F-GH=fguX0+3bG38vyAxfufadtFiBUfg=EjTBh6Q@mail.gmail.com>
+Subject: Re: [RFC PATCH] thermal/core: Fix trip point crossing events ordering
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Duy Nguyen <duy.nguyen.rh@renesas.com>
+On Wed, Mar 6, 2024 at 9:54=E2=80=AFAM Daniel Lezcano <daniel.lezcano@linar=
+o.org> wrote:
+>
+> Let's assume the following setup:
+>
+>  - trip 0 =3D 65=C2=B0C
+>  - trip 1 =3D 70=C2=B0C
+>  - trip 2 =3D 75=C2=B0C
+>
+> The current temperature is 35=C2=B0C.
+>
+> The interrupt is setup to fire at 65=C2=B0C. If the thermal capacity is
+> saturated it is possible the temperature jumps to 72=C2=B0c when reading
+> the temperature after the interrupt fired when 65=C2=B0C was crossed. Tha=
+t
+> means we should have two events notified to userspace. The first one
+> for trip 0 and the second one for trip 1.
+>
+> When the function thermal_zone_update() is called from the threaded
+> interrupt, it will read the temperature and then call for_each_trip()
+> which in turns call handle_trip_point().
+>
+> This function will check:
+>
+>      if (tz->last_temperature < trip->temperature &&
+>         tz->temperature >=3D trip->temperature)
+>                         thermal_notify_tz_trip_up()
 
-Document support for the Thermal Sensor/Chip Internal Voltage
-Monitor/Core Voltage Monitor (THS/CIVM/CVM) on the Renesas R-Car V4M
-(R8A779H0) SoC.
+For the mainline:
 
-Just like on other R-Car Gen4 SoCs, interrupts are not routed to the
-INTC-AP (GIC) but to the Error Control Module (ECM).
+$ git grep handle_trip_point | cat
+$
 
-Signed-off-by: Duy Nguyen <duy.nguyen.rh@renesas.com>
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Changes compared to the BSP:
-  - No interrupts property, as interrupts are routed to the ECM.
----
- .../devicetree/bindings/thermal/rcar-gen3-thermal.yaml          | 2 ++
- 1 file changed, 2 insertions(+)
+Do you mean handle_thermal_trip()?
 
-diff --git a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml
-index ecf276fd155cfb27..6a81cb6e11bc1e14 100644
---- a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml
-@@ -29,6 +29,7 @@ properties:
-       - renesas,r8a779a0-thermal # R-Car V3U
-       - renesas,r8a779f0-thermal # R-Car S4-8
-       - renesas,r8a779g0-thermal # R-Car V4H
-+      - renesas,r8a779h0-thermal # R-Car V4M
- 
-   reg: true
- 
-@@ -90,6 +91,7 @@ else:
-             enum:
-               - renesas,r8a779f0-thermal
-               - renesas,r8a779g0-thermal
-+              - renesas,r8a779h0-thermal
-   then:
-     required:
-       - interrupts
--- 
-2.34.1
+But it doesn't do the above in the mainline.  It does (comments omitted)
 
+if (tz->last_temperature < trip->threshold) {
+   if (tz->temperature >=3D trip->temperature) {
+        thermal_notify_tz_trip_up(tz, trip);
+        thermal_debug_tz_trip_up(tz, trip);
+        trip->threshold =3D trip->temperature - trip->hysteresis;
+    } else {
+        trip->threshold =3D trip->temperature;
+    }
+}
+
+>
+> So here, we will call this function with trip0 followed by trip1. That
+> will result in an event for each trip point, reflecting the trip point
+> being crossed the way up with a temperature raising. So far, so good.
+>
+> Usually the sensors have an interrupt when the temperature is crossed
+> the way up but not the way down, so there an extra delay corresponding
+> to the passive polling where the temperature could have dropped and
+> crossed more than one trip point. This scenario is likely to happen
+> more often when multiple trip points are specified. So considering the
+> same setup after crossing the trip 2, we stop the workload responsible
+> of the heat and the temperature drops suddenly to 62=C2=B0C. In this case=
+,
+> the next polling will call thermal_zone_device_update(), then
+> for_each_trip() and handle_trip_point().
+>
+> This function will check:
+>
+>      if (tz->last_temperature >=3D trip->temperature &&
+>         tz->temperature < trip->temperature - trip->hysteresis)
+>                         thermal_notify_tz_trip_down()
+
+Again, assuming that you mean handle_thermal_trip(), the above is not
+the current mainline code, which is (comments omitted)
+
+if (tz->last_temperature >=3D trip->threshold) {
+    if (tz->temperature < trip->temperature - trip->hysteresis) {
+         thermal_notify_tz_trip_down(tz, trip);
+         thermal_debug_tz_trip_down(tz, trip);
+         trip->threshold =3D trip->temperature;
+    } else {
+        trip->threshold =3D trip->temperature - trip->hysteresis;
+    }
+}
+
+I guess this doesn't matter here?
+
+> The loop for_each_trip() will call trip0, 1 and 2. That will result in
+> generating the events for trip0, 1 and 2, in the wrong order. That is
+> not reflecting the thermal dynamic and puzzles the userspace
+> monitoring the temperature.
+
+Only if the trips are ordered in a specific way, but they don't need
+to be ordered in any way.
+
+> Fix this by inspecting the trend of the temperature. If it is raising,
+> then we browse the trip point in the ascending order, if it is falling
+> then we browse in the descending order.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/thermal/thermal_core.c | 8 ++++++--
+>  drivers/thermal/thermal_core.h | 3 +++
+>  2 files changed, 9 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
+e.c
+> index dfaa6341694a..abb8ee5c9afe 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -473,8 +473,12 @@ void __thermal_zone_device_update(struct thermal_zon=
+e_device *tz,
+>
+>         tz->notify_event =3D event;
+>
+> -       for_each_trip(tz, trip)
+> -               handle_thermal_trip(tz, trip);
+> +       if (tz->last_temperature < tz->temperature)
+> +               for_each_trip(tz, trip)
+> +                       handle_thermal_trip(tz, trip);
+> +       else
+> +               for_each_trip_reverse(tz, trip)
+> +                       handle_thermal_trip(tz, trip);
+
+This works assuming a "proper" ordering of the trips.
+
+>
+>         monitor_thermal_zone(tz);
+>  }
+> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_cor=
+e.h
+> index e9c099ecdd0f..0072b3d4039e 100644
+> --- a/drivers/thermal/thermal_core.h
+> +++ b/drivers/thermal/thermal_core.h
+> @@ -123,6 +123,9 @@ void thermal_governor_update_tz(struct thermal_zone_d=
+evice *tz,
+>  #define for_each_trip(__tz, __trip)    \
+>         for (__trip =3D __tz->trips; __trip - __tz->trips < __tz->num_tri=
+ps; __trip++)
+>
+> +#define for_each_trip_reverse(__tz, __trip)    \
+> +       for (__trip =3D &__tz->trips[__tz->num_trips - 1]; __trip >=3D __=
+tz->trips ; __trip--)
+> +
+>  void __thermal_zone_set_trips(struct thermal_zone_device *tz);
+>  int thermal_zone_trip_id(const struct thermal_zone_device *tz,
+>                          const struct thermal_trip *trip);
+> --
+
+Generally speaking, this is a matter of getting alignment on the
+expectations between the kernel and user space.
+
+It looks like user space expects to get the notifications in the order
+of either growing or falling temperatures, depending on the direction
+of the temperature change.  Ordering the trips in the kernel is not
+practical, but the notifications can be ordered in principle.  Is this
+what you'd like to do?
+
+Or can user space be bothered with recognizing that it may get the
+notifications for different trips out of order?
