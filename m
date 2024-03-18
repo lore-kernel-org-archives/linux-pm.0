@@ -1,127 +1,173 @@
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oo1-f51.google.com (mail-oo1-f51.google.com [209.85.161.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E33661CA89;
-	Mon, 18 Mar 2024 07:09:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A86C726AD8
+	for <linux-pm@vger.kernel.org>; Mon, 18 Mar 2024 08:42:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710745771; cv=none; b=DNBbtI3J41DcqyrsNLUFNQ/4wK5GEBDw6parujusd4sPKv71xDJAEJ3u+59PG2Pkejoj6l0XXxrouyWecjS7ChV052JV5Icx0YSBImf50LyJMC8rE5W7yEBxXsXj64gO1SyTL73HVI8WvPFuUs2CEu/meRhV847LrM7XubgKRhg=
+	t=1710751375; cv=none; b=Rlj+AxWYT/h4OylrUHnjbEgKZdIyebDjWdPWxLP3Jvwb4nM4Xmskr+3Qz6SF0brnBciPZ/uAiyyEWnWzAbgUzKi673cnwPCM5dCWGM6bnNjOz/W1mzNoe4vVk5qADd42Bh+IiF6KuwIlnWqNoNqd/96q71t6FBw1tZE3ew0Q0uw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710745771; c=relaxed/simple;
-	bh=uuwFTLvyMNqlpKTyNz8SdpNe0H6SFIIuVGNRpJwqqGc=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YcR1UTTBG77dSKEY9RwEyxbdza8G8TaWfkFQKETB8I541JIVsVK6sQg+GRNOcYH7mUTbbkOgJPeWbK5IIZg8zygD1iVJEZf9K7ENjmgDSCePzCuI9qxu8Xd1xcBGzcnZubrgRjD5xEeBelK/MVEXCt1/sM/EUYsMfUkWPyAgyvs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=YSB4ad8t; arc=none smtp.client-ip=198.47.19.142
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	s=arc-20240116; t=1710751375; c=relaxed/simple;
+	bh=4imErLRYet+QfkxRAvS09su/X9kUrEy0w1teZSmQDnQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=acS2jsQ7vXPpulJiZrPs0oxoBG8usTsWLs8WwqWIoJEdCkIg52Ynux8AR+D3X749/KjAn/NuESiQbyX2gzN8eZlm14Ta9xcMF3UlJO+AohH4ydpJHtpbaiWh1fq+M/BKXQMWcbN6X3CaDwCznWvzoCon4aMKTRL0lr/Hk3MSNzs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ventanamicro.com; spf=pass smtp.mailfrom=ventanamicro.com; dkim=pass (2048-bit key) header.d=ventanamicro.com header.i=@ventanamicro.com header.b=MvvLJnbf; arc=none smtp.client-ip=209.85.161.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ventanamicro.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ventanamicro.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="YSB4ad8t"
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 42I63EYF085045;
-	Mon, 18 Mar 2024 01:03:14 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1710741794;
-	bh=eb0Ccz7HpZ5APiazpAPXMBC/gybVlUfHgyxFsx8OJ5c=;
-	h=Date:From:To:CC:Subject:References:In-Reply-To;
-	b=YSB4ad8t69Xt6z8Q9rUY7EPVPxlrBq3REXebtcGlwp2Xm9RDgJhWweHPSkviZerXB
-	 sECEHphpbqVd6gYcEzGnykTJsRuqoFIEyjiUgvEoZmz51wvOS+gqLTJH9eanEIJrXb
-	 51pd1marzgijpu8vVM65WjCMxGNME2Yx2hb6+A9o=
-Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
-	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 42I63EkG002963
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Mon, 18 Mar 2024 01:03:14 -0500
-Received: from DLEE111.ent.ti.com (157.170.170.22) by DLEE113.ent.ti.com
- (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 18
- Mar 2024 01:03:14 -0500
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE111.ent.ti.com
- (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Mon, 18 Mar 2024 01:03:14 -0500
-Received: from localhost (dhruva.dhcp.ti.com [172.24.227.68])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 42I63DLB033059;
-	Mon, 18 Mar 2024 01:03:14 -0500
-Date: Mon, 18 Mar 2024 11:33:12 +0530
-From: Dhruva Gole <d-gole@ti.com>
-To: Jagadeesh Kona <quic_jkona@quicinc.com>
-CC: "Rafael J . Wysocki" <rafael@kernel.org>,
-        Kevin Hilman
-	<khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek
-	<pavel@ucw.cz>,
-        Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman
-	<gregkh@linuxfoundation.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad
- Dybcio <konrad.dybcio@linaro.org>,
-        Michael Turquette
-	<mturquette@baylibre.com>,
-        Andy Gross <agross@kernel.org>, Stephen Boyd
-	<sboyd@kernel.org>,
-        Stanimir Varbanov <stanimir.k.varbanov@gmail.com>,
-        Vikash
- Garodia <quic_vgarodia@quicinc.com>,
-        "Bryan O'Donoghue"
-	<bryan.odonoghue@linaro.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Abel Vesa
-	<abel.vesa@linaro.org>, Taniya Das <quic_tdas@quicinc.com>,
-        <linux-arm-msm@vger.kernel.org>, <linux-clk@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-media@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, Imran Shaik <quic_imrashai@quicinc.com>,
-        Ajit
- Pandey <quic_ajipan@quicinc.com>
-Subject: Re: [PATCH V5 1/5] PM: domains: Allow devices attached to genpd to
- be managed by HW
-Message-ID: <20240318060312.z5pk4roz6uqhwosc@dhruva>
-References: <20240315111046.22136-1-quic_jkona@quicinc.com>
- <20240315111046.22136-2-quic_jkona@quicinc.com>
+	dkim=pass (2048-bit key) header.d=ventanamicro.com header.i=@ventanamicro.com header.b="MvvLJnbf"
+Received: by mail-oo1-f51.google.com with SMTP id 006d021491bc7-5a46b28a77dso2291484eaf.1
+        for <linux-pm@vger.kernel.org>; Mon, 18 Mar 2024 01:42:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ventanamicro.com; s=google; t=1710751372; x=1711356172; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Rhgy0BV44U6MUS0edSkG0zSRuqtl0wS2Ryu/bpwa4dY=;
+        b=MvvLJnbfTvKgEu+SUZlScJfk7lnv+32MAQzPmqy28LsMUp0VhLsnoFRXfsHrXFWU2o
+         Fuo4ztOxagudsELJYVststUSBev4WVEE8Kim8YZAe0tsw+3VdT8UkmbPxetiDOKK2C/7
+         Yw+R9L4j5xdga42R/IuU5TyjnVFV15KxePMw1qpbEoki2uWOqqRRQS6W8tlgnxSa0mRc
+         lXSwHYps6RlE0fNtxs4C47JOk8BsNAtpIGuVV3e1ZugaqyaZAp5D/iz3tuE+crOQh/9v
+         4ED/72c48qiRQamcSBWIXR1y3yrr4wOTZjV9YR7FeiJqpb3mgYGqrgsZu0RS38TNH80k
+         8gig==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710751372; x=1711356172;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Rhgy0BV44U6MUS0edSkG0zSRuqtl0wS2Ryu/bpwa4dY=;
+        b=peePGuu4xfN1gUbv3x8pBpi40OXnGGZwtvSs9nGPPxuMGdtb027d1ZjuEe2N5aECNs
+         JSwuyBzERFTpOAJfu/Dh7wuFc+aeRdpGhfoK7cXbqiy6a05oJRwJy++6SbCpLGW8KM+C
+         KmgeTCCdHZaFmSIp/itKlz8eSG1LPFCJQywPH7N8Xnd1pMi62CDeba397fZ+ESwsyBcX
+         D8LhtYxdx0SDRurp2nieewIUI40fbhkc1/SdqqWvGztKzOPKC2h5A5V00uxeDn6t8fp4
+         IeSzJOClUaevXeD5cg9JTIemD6NwBd+JeI1GLTBnrxvUuBO5shBGhe17kzkvMCvkT9e8
+         aA+w==
+X-Gm-Message-State: AOJu0YyK0aPliu4tV1A2UKEwz7FXHQnm83A/8IAgENk6Ag35nKILsQp5
+	412ztnHLMsf2kAZuPcdrhm5XYN+QORS3ocie5Xd3a1Hcmt9eXPtw2nuzUqgPZsc=
+X-Google-Smtp-Source: AGHT+IFlSDxV8XzLOTRRVV3EN50EyisCs0aw6Fd1xv9UX9glizAj5J9bSHq2YCmhdXfVceAmMS4uMw==
+X-Received: by 2002:a05:6820:a0a:b0:5a4:b8df:43fb with SMTP id ch10-20020a0568200a0a00b005a4b8df43fbmr1427769oob.4.1710751371782;
+        Mon, 18 Mar 2024 01:42:51 -0700 (PDT)
+Received: from sunil-laptop ([106.51.185.90])
+        by smtp.gmail.com with ESMTPSA id bw18-20020a056820021200b005a1401bd081sm1849250oob.10.2024.03.18.01.42.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 Mar 2024 01:42:51 -0700 (PDT)
+Date: Mon, 18 Mar 2024 14:12:41 +0530
+From: Sunil V L <sunilvl@ventanamicro.com>
+To: Drew Fustini <drew@pdp7.com>
+Cc: linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@ucw.cz>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Len Brown <lenb@kernel.org>,
+	Anup Patel <anup@brainfault.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Atish Kumar Patra <atishp@rivosinc.com>
+Subject: Re: [PATCH v3 -next 2/3] ACPI: RISC-V: Add LPI driver
+Message-ID: <Zff+ga6khpPOWSVz@sunil-laptop>
+References: <20240118062930.245937-1-sunilvl@ventanamicro.com>
+ <20240118062930.245937-3-sunilvl@ventanamicro.com>
+ <ZffSG6LKCjkX+/vO@x1>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240315111046.22136-2-quic_jkona@quicinc.com>
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+In-Reply-To: <ZffSG6LKCjkX+/vO@x1>
 
-On Mar 15, 2024 at 16:40:42 +0530, Jagadeesh Kona wrote:
-> From: Ulf Hansson <ulf.hansson@linaro.org>
+On Sun, Mar 17, 2024 at 10:33:15PM -0700, Drew Fustini wrote:
+> On Thu, Jan 18, 2024 at 11:59:29AM +0530, Sunil V L wrote:
+> > Enable Low Power Idle (LPI) based cpuidle driver for RISC-V platforms.
+> > It depends on SBI HSM calls for idle state transitions.
+> > 
+> > Signed-off-by: Sunil V L <sunilvl@ventanamicro.com>
+> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  drivers/acpi/riscv/Makefile  |  3 +-
+> >  drivers/acpi/riscv/cpuidle.c | 81 ++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 83 insertions(+), 1 deletion(-)
+> >  create mode 100644 drivers/acpi/riscv/cpuidle.c
+> > 
+> > diff --git a/drivers/acpi/riscv/Makefile b/drivers/acpi/riscv/Makefile
+> > index 8b3b126e0b94..7309d92dd477 100644
+> > --- a/drivers/acpi/riscv/Makefile
+> > +++ b/drivers/acpi/riscv/Makefile
+> > @@ -1,2 +1,3 @@
+> >  # SPDX-License-Identifier: GPL-2.0-only
+> > -obj-y 	+= rhct.o
+> > +obj-y					+= rhct.o
+> > +obj-$(CONFIG_ACPI_PROCESSOR_IDLE)	+= cpuidle.o
+> > diff --git a/drivers/acpi/riscv/cpuidle.c b/drivers/acpi/riscv/cpuidle.c
+> > new file mode 100644
+> > index 000000000000..624f9bbdb58c
+> > --- /dev/null
+> > +++ b/drivers/acpi/riscv/cpuidle.c
+> > @@ -0,0 +1,81 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +/*
+> > + * Copyright (C) 2024, Ventana Micro Systems Inc
+> > + *	Author: Sunil V L <sunilvl@ventanamicro.com>
+> > + *
+> > + */
+> > +
+> > +#include <linux/acpi.h>
+> > +#include <acpi/processor.h>
+> > +#include <linux/cpu_pm.h>
+> > +#include <linux/cpuidle.h>
+> > +#include <linux/suspend.h>
+> > +#include <asm/cpuidle.h>
+> > +#include <asm/sbi.h>
+> > +#include <asm/suspend.h>
+> > +
+> > +#define RISCV_FFH_LPI_TYPE_MASK	GENMASK_ULL(63, 60)
+> > +#define RISCV_FFH_LPI_RSVD_MASK	GENMASK_ULL(59, 32)
+> > +
+> > +#define RISCV_FFH_LPI_TYPE_SBI	BIT_ULL(60)
+> > +
+> > +static int acpi_cpu_init_idle(unsigned int cpu)
+> > +{
+> > +	int i;
+> > +	struct acpi_lpi_state *lpi;
+> > +	struct acpi_processor *pr = per_cpu(processors, cpu);
+> > +
+> > +	if (unlikely(!pr || !pr->flags.has_lpi))
+> > +		return -EINVAL;
+> > +
+> > +	if (!riscv_sbi_hsm_is_supported())
+> > +		return -ENODEV;
+> > +
+> > +	if (pr->power.count <= 1)
+> > +		return -ENODEV;
+> > +
+> > +	for (i = 1; i < pr->power.count; i++) {
+> > +		u32 state;
+> > +
+> > +		lpi = &pr->power.lpi_states[i];
+> > +
+> > +		/*
+> > +		 * Validate Entry Method as per FFH spec.
+> > +		 * bits[63:60] should be 0x1
+> > +		 * bits[59:32] should be 0x0
+> > +		 * bits[31:0] represent a SBI power_state
+> > +		 */
+> > +		if (((lpi->address & RISCV_FFH_LPI_TYPE_MASK) != RISCV_FFH_LPI_TYPE_SBI) ||
+> > +		    (lpi->address & RISCV_FFH_LPI_RSVD_MASK)) {
+> > +			pr_warn("Invalid LPI entry method %#llx\n", lpi->address);
+> > +			return -EINVAL;
+> > +		}
+> > +
+> > +		state = lpi->address;
 > 
-> Some power-domains may be capable of relying on the HW to control the power
-> for a device that's hooked up to it. Typically, for these kinds of
-> configurations the consumer driver should be able to change the behavior of
-> power domain at runtime, control the power domain in SW mode for certain
-> configurations and handover the control to HW mode for other usecases.
+> It seems that acpi_lpi_state.address is u64, so shouldn't state be u64
+> instead of u32?
 > 
-> To allow a consumer driver to change the behaviour of the PM domain for its
-> device, let's provide a new function, dev_pm_genpd_set_hwmode(). Moreover,
-> let's add a corresponding optional genpd callback, ->set_hwmode_dev(),
-> which the genpd provider should implement if it can support switching
-> between HW controlled mode and SW controlled mode. Similarly, add the
-> dev_pm_genpd_get_hwmode() to allow consumers to read the current mode and
-> its corresponding optional genpd callback, ->get_hwmode_dev(), which the
-> genpd provider can also implement to synchronize the initial HW mode
-> state in genpd_add_device() by reading back the mode from the hardware.
-> 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
-> Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
-> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-> ---
->  drivers/pmdomain/core.c   | 64 +++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_domain.h | 17 +++++++++++
->  2 files changed, 81 insertions(+)
-> 
+SBI suspend state is only 32 bits represented by lower 32 bits of
+lpi->address.
 
-LGTM!
-
-Reviewed-by: Dhruva Gole <d-gole@ti.com>
-
--- 
-Best regards,
-Dhruva
+Thanks,
+Sunil
