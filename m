@@ -1,146 +1,127 @@
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1148922EE0;
-	Mon, 18 Mar 2024 06:06:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E33661CA89;
+	Mon, 18 Mar 2024 07:09:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710742014; cv=none; b=diEss45mhLaf+upXgrMSDiosLHZMJtEm/zfqwC1bqlUmD5GjA1bZnVNRQxQsOtptMcRvEHFmUJ2nUSySOUKIJU2+P/vQ0KGugN/G89Bh8UPRJGGijbeVYXu2pMXV/TGjjYTJVOcX9zfuZaG/ysG4EP56wcO4mlF4tzDzsToVKQE=
+	t=1710745771; cv=none; b=DNBbtI3J41DcqyrsNLUFNQ/4wK5GEBDw6parujusd4sPKv71xDJAEJ3u+59PG2Pkejoj6l0XXxrouyWecjS7ChV052JV5Icx0YSBImf50LyJMC8rE5W7yEBxXsXj64gO1SyTL73HVI8WvPFuUs2CEu/meRhV847LrM7XubgKRhg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710742014; c=relaxed/simple;
-	bh=jaZkv8i6NdJT+wHMF9ub75fSWECjyHOvXBytAWOA6+I=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=S+DaVBAABvcQYH7NZnf7yQcTJ4VZKHXmn+ARvgtM7NggLcsRTA+3JLEIcc4ti3LHQ8cej34RaRE+S9dmGSec4w8xQjTE1A7vbryo2qdP5JgXkiIAZWP8dEzIHS0Iy4VRlE1BXVZ1X/WxXzRSCMpW1d+4tJs57Uw1KnVM5Pi2Ge0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=W35K4ywy; arc=none smtp.client-ip=198.47.23.248
+	s=arc-20240116; t=1710745771; c=relaxed/simple;
+	bh=uuwFTLvyMNqlpKTyNz8SdpNe0H6SFIIuVGNRpJwqqGc=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YcR1UTTBG77dSKEY9RwEyxbdza8G8TaWfkFQKETB8I541JIVsVK6sQg+GRNOcYH7mUTbbkOgJPeWbK5IIZg8zygD1iVJEZf9K7ENjmgDSCePzCuI9qxu8Xd1xcBGzcnZubrgRjD5xEeBelK/MVEXCt1/sM/EUYsMfUkWPyAgyvs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=YSB4ad8t; arc=none smtp.client-ip=198.47.19.142
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="W35K4ywy"
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 42I5tVCW053441;
-	Mon, 18 Mar 2024 00:55:31 -0500
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="YSB4ad8t"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 42I63EYF085045;
+	Mon, 18 Mar 2024 01:03:14 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1710741331;
-	bh=IIMeYQhVJsMjHJOrO1EdAXLf7xCV4g1QUz3hfpcGY/A=;
-	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=W35K4ywypteT3P3yrYzqpECRvbU8xZwd+e/ZAmGW/bc8CCfEK8vtTd48hP1gNPyfq
-	 oR4OTqJ4ZuVw7Fgmk3TxxMfDNiA+LYmNl/TH1EXrgSd5fMqK7VuTI606pbbwof4fPm
-	 c9U7T7JAQR1zGA5C6aE6f4S4ZAzUmh3swquGUlYs=
-Received: from DLEE101.ent.ti.com (dlee101.ent.ti.com [157.170.170.31])
-	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 42I5tVNx016614
+	s=ti-com-17Q1; t=1710741794;
+	bh=eb0Ccz7HpZ5APiazpAPXMBC/gybVlUfHgyxFsx8OJ5c=;
+	h=Date:From:To:CC:Subject:References:In-Reply-To;
+	b=YSB4ad8t69Xt6z8Q9rUY7EPVPxlrBq3REXebtcGlwp2Xm9RDgJhWweHPSkviZerXB
+	 sECEHphpbqVd6gYcEzGnykTJsRuqoFIEyjiUgvEoZmz51wvOS+gqLTJH9eanEIJrXb
+	 51pd1marzgijpu8vVM65WjCMxGNME2Yx2hb6+A9o=
+Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 42I63EkG002963
 	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Mon, 18 Mar 2024 00:55:31 -0500
-Received: from DLEE105.ent.ti.com (157.170.170.35) by DLEE101.ent.ti.com
- (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
+	Mon, 18 Mar 2024 01:03:14 -0500
+Received: from DLEE111.ent.ti.com (157.170.170.22) by DLEE113.ent.ti.com
+ (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 18
- Mar 2024 00:55:30 -0500
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE105.ent.ti.com
- (157.170.170.35) with Microsoft SMTP Server (version=TLS1_2,
+ Mar 2024 01:03:14 -0500
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE111.ent.ti.com
+ (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Mon, 18 Mar 2024 00:55:30 -0500
-Received: from dhruva.dhcp.ti.com (dhruva.dhcp.ti.com [172.24.227.68])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 42I5tKiF082113;
-	Mon, 18 Mar 2024 00:55:27 -0500
+ Frontend Transport; Mon, 18 Mar 2024 01:03:14 -0500
+Received: from localhost (dhruva.dhcp.ti.com [172.24.227.68])
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 42I63DLB033059;
+	Mon, 18 Mar 2024 01:03:14 -0500
+Date: Mon, 18 Mar 2024 11:33:12 +0530
 From: Dhruva Gole <d-gole@ti.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>,
-        "Rafael J. Wysocki"
-	<rafael@kernel.org>,
-        Adrian Hunter <adrian.hunter@intel.com>
-CC: Tony Lindgren <tony@atomide.com>, Len Brown <len.brown@intel.com>,
-        Pavel
- Machek <pavel@ucw.cz>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, <theo.lebrun@bootlin.com>,
-        Dhruva
- Gole <d-gole@ti.com>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-mmc@vger.kernel.org>
-Subject: [PATCH 1/3] PM: wakeup: make device_wakeup_disable return void
-Date: Mon, 18 Mar 2024 11:20:52 +0530
-Message-ID: <20240318055054.1564696-2-d-gole@ti.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240318055054.1564696-1-d-gole@ti.com>
-References: <20240318055054.1564696-1-d-gole@ti.com>
+To: Jagadeesh Kona <quic_jkona@quicinc.com>
+CC: "Rafael J . Wysocki" <rafael@kernel.org>,
+        Kevin Hilman
+	<khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek
+	<pavel@ucw.cz>,
+        Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman
+	<gregkh@linuxfoundation.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad
+ Dybcio <konrad.dybcio@linaro.org>,
+        Michael Turquette
+	<mturquette@baylibre.com>,
+        Andy Gross <agross@kernel.org>, Stephen Boyd
+	<sboyd@kernel.org>,
+        Stanimir Varbanov <stanimir.k.varbanov@gmail.com>,
+        Vikash
+ Garodia <quic_vgarodia@quicinc.com>,
+        "Bryan O'Donoghue"
+	<bryan.odonoghue@linaro.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Abel Vesa
+	<abel.vesa@linaro.org>, Taniya Das <quic_tdas@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-clk@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-media@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, Imran Shaik <quic_imrashai@quicinc.com>,
+        Ajit
+ Pandey <quic_ajipan@quicinc.com>
+Subject: Re: [PATCH V5 1/5] PM: domains: Allow devices attached to genpd to
+ be managed by HW
+Message-ID: <20240318060312.z5pk4roz6uqhwosc@dhruva>
+References: <20240315111046.22136-1-quic_jkona@quicinc.com>
+ <20240315111046.22136-2-quic_jkona@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20240315111046.22136-2-quic_jkona@quicinc.com>
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-The device_wakeup_disable call only returns an error if no dev exists
-however there's not much a user can do at that point.
-Rather make this function return void.
+On Mar 15, 2024 at 16:40:42 +0530, Jagadeesh Kona wrote:
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+> 
+> Some power-domains may be capable of relying on the HW to control the power
+> for a device that's hooked up to it. Typically, for these kinds of
+> configurations the consumer driver should be able to change the behavior of
+> power domain at runtime, control the power domain in SW mode for certain
+> configurations and handover the control to HW mode for other usecases.
+> 
+> To allow a consumer driver to change the behaviour of the PM domain for its
+> device, let's provide a new function, dev_pm_genpd_set_hwmode(). Moreover,
+> let's add a corresponding optional genpd callback, ->set_hwmode_dev(),
+> which the genpd provider should implement if it can support switching
+> between HW controlled mode and SW controlled mode. Similarly, add the
+> dev_pm_genpd_get_hwmode() to allow consumers to read the current mode and
+> its corresponding optional genpd callback, ->get_hwmode_dev(), which the
+> genpd provider can also implement to synchronize the initial HW mode
+> state in genpd_add_device() by reading back the mode from the hardware.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+> Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
+> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> ---
+>  drivers/pmdomain/core.c   | 64 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h | 17 +++++++++++
+>  2 files changed, 81 insertions(+)
+> 
 
-Signed-off-by: Dhruva Gole <d-gole@ti.com>
----
- drivers/base/power/wakeup.c | 11 +++++++----
- include/linux/pm_wakeup.h   |  5 ++---
- 2 files changed, 9 insertions(+), 7 deletions(-)
+LGTM!
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index a917219feea6..752b417e8129 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -451,16 +451,15 @@ static struct wakeup_source *device_wakeup_detach(struct device *dev)
-  * Detach the @dev's wakeup source object from it, unregister this wakeup source
-  * object and destroy it.
-  */
--int device_wakeup_disable(struct device *dev)
-+void device_wakeup_disable(struct device *dev)
- {
- 	struct wakeup_source *ws;
- 
- 	if (!dev || !dev->power.can_wakeup)
--		return -EINVAL;
-+		return;
- 
- 	ws = device_wakeup_detach(dev);
- 	wakeup_source_unregister(ws);
--	return 0;
- }
- EXPORT_SYMBOL_GPL(device_wakeup_disable);
- 
-@@ -502,7 +501,11 @@ EXPORT_SYMBOL_GPL(device_set_wakeup_capable);
-  */
- int device_set_wakeup_enable(struct device *dev, bool enable)
- {
--	return enable ? device_wakeup_enable(dev) : device_wakeup_disable(dev);
-+	if (enable)
-+		return device_wakeup_enable(dev);
-+
-+	device_wakeup_disable(dev);
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
- 
-diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-index 6eb9adaef52b..428803eed798 100644
---- a/include/linux/pm_wakeup.h
-+++ b/include/linux/pm_wakeup.h
-@@ -107,7 +107,7 @@ extern void wakeup_sources_read_unlock(int idx);
- extern struct wakeup_source *wakeup_sources_walk_start(void);
- extern struct wakeup_source *wakeup_sources_walk_next(struct wakeup_source *ws);
- extern int device_wakeup_enable(struct device *dev);
--extern int device_wakeup_disable(struct device *dev);
-+extern void device_wakeup_disable(struct device *dev);
- extern void device_set_wakeup_capable(struct device *dev, bool capable);
- extern int device_set_wakeup_enable(struct device *dev, bool enable);
- extern void __pm_stay_awake(struct wakeup_source *ws);
-@@ -154,10 +154,9 @@ static inline int device_wakeup_enable(struct device *dev)
- 	return 0;
- }
- 
--static inline int device_wakeup_disable(struct device *dev)
-+static inline void device_wakeup_disable(struct device *dev)
- {
- 	dev->power.should_wakeup = false;
--	return 0;
- }
- 
- static inline int device_set_wakeup_enable(struct device *dev, bool enable)
+Reviewed-by: Dhruva Gole <d-gole@ti.com>
+
 -- 
-2.34.1
-
+Best regards,
+Dhruva
