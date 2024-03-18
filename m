@@ -1,147 +1,69 @@
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 632F04F1E3;
-	Mon, 18 Mar 2024 15:19:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 27DE218029;
+	Mon, 18 Mar 2024 16:40:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710775181; cv=none; b=HzBMgg2iww/XVw2Mt7PpNf9Y+EfV7ixXlS4Gjf1zXRf7g0BPh6A4Cv9VJUfpZzhzfviRNwptIc4rAyDJsntlBK+MyYkbw74c+a/CHGTB4aC+1lXLYFwDPwl+puethenMSQrz96q95s5e5h+SFAoK/XSnQdLIj5bXN0Q9vC2/tfk=
+	t=1710780043; cv=none; b=Cr4x+G/8nQF2OWcyeDYzgAAGs+erMzRxB/KIdH/hmk5bXHRXGG/AZ8bSkaNy2Mu4dYxU60Og4sOUGPg1tnXB7VtorT5OMKpoaQb+0njxUejQ2TiaIDUdbCtluF4D6BJxZSlyeRHQZzVg6JGA+MOxm5OhTezuWJxNEpUDbX/Y44Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710775181; c=relaxed/simple;
-	bh=T+1c5Voa9wbuk82qx7Y34egGfh1pJlqoVUfmJFJTlGU=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=a5zWT0lzHqgR3LU94w5NtEx4sR1gbjn3+akObPyWc9xN6y9J2pUXMbzgJPkdghEhKllFB3hYBm/Qwq0Cy2P8+XWkOmP9UBjRYd8pvc4xCXSd7dvGdmZJ4/uVpzfW1cHXwNIxBMjfGj5lV56IUpvpTJ7IunNUaejkjRnUw8gwmIk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=DDpHEA37; arc=none smtp.client-ip=198.47.19.142
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="DDpHEA37"
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 42IFJRTe095056;
-	Mon, 18 Mar 2024 10:19:27 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1710775167;
-	bh=toWyhbxvvkbbZKZQvW5MzxVDodxPwYT4N7QorbVGF+U=;
-	h=Date:From:To:CC:Subject:References:In-Reply-To;
-	b=DDpHEA371pnTqG2oaKZbQ1VKxjNWFU71Km/Z9ML+iKzJ1kch7LDr+/0C1KXF45daf
-	 NuswVTs5mW8Z57Dsry/wOJcpc6dfeWl5P9MqwiL6IWU6HKCyqL3l8KL659K+MSXWRJ
-	 Fu5xCJBX7MehXAPVkyfJJF9Cx2IptBQzbVEKv5Vs=
-Received: from DFLE114.ent.ti.com (dfle114.ent.ti.com [10.64.6.35])
-	by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 42IFJRqk111282
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Mon, 18 Mar 2024 10:19:27 -0500
-Received: from DFLE104.ent.ti.com (10.64.6.25) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 18
- Mar 2024 10:19:27 -0500
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DFLE104.ent.ti.com
- (10.64.6.25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Mon, 18 Mar 2024 10:19:26 -0500
-Received: from localhost (dhruva.dhcp.ti.com [172.24.227.68])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 42IFJQQK098058;
-	Mon, 18 Mar 2024 10:19:26 -0500
-Date: Mon, 18 Mar 2024 20:49:25 +0530
-From: Dhruva Gole <d-gole@ti.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-CC: Ulf Hansson <ulf.hansson@linaro.org>,
-        Adrian Hunter
-	<adrian.hunter@intel.com>,
-        Tony Lindgren <tony@atomide.com>, Len Brown
-	<len.brown@intel.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        Greg Kroah-Hartman
-	<gregkh@linuxfoundation.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, <theo.lebrun@bootlin.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-mmc@vger.kernel.org>
-Subject: Re: [PATCH 1/3] PM: wakeup: make device_wakeup_disable return void
-Message-ID: <20240318151925.l5fcnbr7qcww7diw@dhruva>
-References: <20240318055054.1564696-1-d-gole@ti.com>
- <20240318055054.1564696-2-d-gole@ti.com>
- <CAJZ5v0giafbnGFHgT7pZm+o6KzKznxVDJvc04K6XvP1ShG2YKw@mail.gmail.com>
+	s=arc-20240116; t=1710780043; c=relaxed/simple;
+	bh=Os9aEBxep6Ro2bkZKu8nIVUYR+o95VcsB1ChCPHzA9Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DIGUpKL0yQ16EtnqPtFYL7MRurTeVVuM3CgczG3JrxoJt0WheM2DVDQnHK0xf+0MxV3Wz8mVITK0ZRZ23E674z3DKop71wNNr4hN1Ue4udIwP1xNZKmH+wkAIVmrRCWpzy+xeHCBlyaCCbett6iDByuBtLAt0IFuhGnlyNs6+AI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0F79C1FB;
+	Mon, 18 Mar 2024 09:41:14 -0700 (PDT)
+Received: from [10.1.30.38] (e133047.arm.com [10.1.30.38])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6F86B3F67D;
+	Mon, 18 Mar 2024 09:40:35 -0700 (PDT)
+Message-ID: <5060c335-e90a-430f-bca5-c0ee46a49249@arm.com>
+Date: Mon, 18 Mar 2024 16:40:33 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 2/2] cpufreq/schedutil: Remove iowait boost
+Content-Language: en-US
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
+ juri.lelli@redhat.com, mingo@redhat.com, dietmar.eggemann@arm.com,
+ vschneid@redhat.com, vincent.guittot@linaro.org, Johannes.Thumshirn@wdc.com,
+ adrian.hunter@intel.com, ulf.hansson@linaro.org, andres@anarazel.de,
+ asml.silence@gmail.com, linux-pm@vger.kernel.org,
+ linux-block@vger.kernel.org, io-uring@vger.kernel.org
+References: <20240304201625.100619-1-christian.loehle@arm.com>
+ <20240304201625.100619-3-christian.loehle@arm.com>
+ <CAJZ5v0gMni0QJTBJXoVOav=kOtQ9W--NyXAgq+dXA+m-bciG8w@mail.gmail.com>
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <CAJZ5v0gMni0QJTBJXoVOav=kOtQ9W--NyXAgq+dXA+m-bciG8w@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0giafbnGFHgT7pZm+o6KzKznxVDJvc04K6XvP1ShG2YKw@mail.gmail.com>
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-On Mar 18, 2024 at 14:47:45 +0100, Rafael J. Wysocki wrote:
-> On Mon, Mar 18, 2024 at 6:55 AM Dhruva Gole <d-gole@ti.com> wrote:
-> >
-> > The device_wakeup_disable call only returns an error if no dev exists
-> > however there's not much a user can do at that point.
-> > Rather make this function return void.
-> >
-> > Signed-off-by: Dhruva Gole <d-gole@ti.com>
-> > ---
-> >  drivers/base/power/wakeup.c | 11 +++++++----
-> >  include/linux/pm_wakeup.h   |  5 ++---
-> >  2 files changed, 9 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> > index a917219feea6..752b417e8129 100644
-> > --- a/drivers/base/power/wakeup.c
-> > +++ b/drivers/base/power/wakeup.c
-> > @@ -451,16 +451,15 @@ static struct wakeup_source *device_wakeup_detach(struct device *dev)
-> >   * Detach the @dev's wakeup source object from it, unregister this wakeup source
-> >   * object and destroy it.
-> >   */
-> > -int device_wakeup_disable(struct device *dev)
-> > +void device_wakeup_disable(struct device *dev)
-> >  {
-> >         struct wakeup_source *ws;
-> >
-> >         if (!dev || !dev->power.can_wakeup)
-> > -               return -EINVAL;
-> > +               return;
-> >
-> >         ws = device_wakeup_detach(dev);
-> >         wakeup_source_unregister(ws);
-> > -       return 0;
-> >  }
-> >  EXPORT_SYMBOL_GPL(device_wakeup_disable);
-> >
-> > @@ -502,7 +501,11 @@ EXPORT_SYMBOL_GPL(device_set_wakeup_capable);
-> >   */
-> >  int device_set_wakeup_enable(struct device *dev, bool enable)
-> >  {
-> > -       return enable ? device_wakeup_enable(dev) : device_wakeup_disable(dev);
-> > +       if (enable)
-> > +               return device_wakeup_enable(dev);
-> > +
-> > +       device_wakeup_disable(dev);
-> > +       return 0;
-> >  }
-> >  EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
-> >
-> > diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-> > index 6eb9adaef52b..428803eed798 100644
-> > --- a/include/linux/pm_wakeup.h
-> > +++ b/include/linux/pm_wakeup.h
-> > @@ -107,7 +107,7 @@ extern void wakeup_sources_read_unlock(int idx);
-> >  extern struct wakeup_source *wakeup_sources_walk_start(void);
-> >  extern struct wakeup_source *wakeup_sources_walk_next(struct wakeup_source *ws);
-> >  extern int device_wakeup_enable(struct device *dev);
-> > -extern int device_wakeup_disable(struct device *dev);
-> > +extern void device_wakeup_disable(struct device *dev);
+On 18/03/2024 14:07, Rafael J. Wysocki wrote:
+> On Mon, Mar 4, 2024 at 9:17 PM Christian Loehle
+> <christian.loehle@arm.com> wrote:
+>>
+>> The previous commit provides a new cpu_util_cfs_boost_io interface for
+>> schedutil which uses the io boosted utilization of the per-task
+>> tracking strategy. Schedutil iowait boosting is therefore no longer
+>> necessary so remove it.
 > 
-> This change will introduce a build error in sdhci-pci-core.c AFAICS,
-> so you need to modify this file in the same patch to avoid bisection
-> breakage.
+> I'm wondering about the cases when schedutil is used without EAS.
+> 
+> Are they still going to be handled as before after this change?
 
-Alright, I have respinned the series and fixed up the first patch
-itself.
+Well they should still get boosted (under the new conditions) and according
+to my tests that does work. Anything in particular you're worried about?
 
-Thanks!
+So in terms of throughput I see similar results with EAS and CAS+sugov.
+I'm happy including numbers in the cover letter for future versions, too.
+So far my intuition was that nobody would care enough to include them
+(as long as it generally still works).
 
-
--- 
-Best regards,
-Dhruva Gole <d-gole@ti.com>
+Kind Regards,
+Christian
