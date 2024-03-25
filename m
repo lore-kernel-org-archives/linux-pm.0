@@ -1,165 +1,153 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2286F10940;
-	Mon, 25 Mar 2024 20:04:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E20C150248;
+	Mon, 25 Mar 2024 20:31:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711397061; cv=none; b=pAKuCscD2od867yhXbdUTsPEzIQ2KuUitpZ2I4+z15m4ZPxdZmQhdXem1kXKvDPokCjYvjYIuW8rUS4O9XuPWk6MF976PiJ3luq3bJMBqinuMy/ZsH3K9CFLyfo7q3CD20xK9rT5r8m2j1M7AGgsV7zhu29pWNwJroIfXsLmV1k=
+	t=1711398696; cv=none; b=hdiD54K+p3xXi74cDDT262L651tJo2Hg0vbdtSQi7FYoP3ZOR1Q5RKVDdiP6YzsA0B3RZhpP4/da7L2McLovRssFRNK5czGwj0ljdydFZkKosSD3e2NYxUsWKRyd2m6HgsUhughhp8BYwXGbFaVSp5S1/zBEP2V/JJsS1kpiYsQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711397061; c=relaxed/simple;
-	bh=7LbosvrRoSaOFVXQNHiQGzHq/d1asJ/LAmMmK1qoAOY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=uZ9XpgQ9agVbCYDc8NnSxR6j8tAmnLIdp2L/j+/nAEVWi0rhWFuQHVgAx74p2sMSQdkhV3wgnXx4qzZRZ0xoS49VZpYnLtmaz4tOXRHzbKjlHe4+E9LCQvLZFbAN/AdqNSeDq93Hm3xce/JW4rPIwBt4P5H2ac6EHCqVLNGKgWs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=SomlfL+H; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1711398696; c=relaxed/simple;
+	bh=DYghL9pZeMuFoPTUQ7r7nDGpxRHkRWpT1XtCuqFkBDA=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=k5M/ep0QdALkZ9Epu8/0t36zEuQBOTJa9pzmNPaXD3vCj8FRJASmieoQrJvpJ4goZKwcH8HETnkPrCcPIbFytkqtnbGYSSm22Yss/cd162kTdfq+deihjtcjLUi80dk5ubiKmNZXv15g1/YohreF/zdxxyCzCBcOSZ4nMVaUV7g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=baJEeXcn; arc=none smtp.client-ip=198.47.23.248
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="SomlfL+H"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 42PIuBuO017962;
-	Mon, 25 Mar 2024 20:03:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	message-id:date:mime-version:subject:to:cc:references:from
-	:in-reply-to:content-type:content-transfer-encoding; s=
-	qcppdkim1; bh=h+1UxwxuvCslZU2aNyiMM9f3pn/NiRqoN5yz+kk6g5M=; b=So
-	mlfL+HDTZJC1n3IMkgeXNeqt1HUmnWw6VJ03VK+CJ6SDIWdofyQdB9DoVuaCtpYK
-	7vFB/JC803KoaRTgSGWX1PJrR6FAH7tVfAEW5P6mOmjtmu6hmFjcuSrFwfQywpnN
-	RQK760jtY3C0n+qV4AD+ynWyNzoyfO1HezeRJ9KeCu85B2OOyzAGXSmFXF4pXLmV
-	p72il8IfVsl8zz9S/Nnq2E5fkKfa/htkMcJqBAMoM2CO0cQey3CyKWlsdXcDmfRY
-	yN7HzpZZCmfhlKOnNEEjbEQdExAP+22NBvOsX6U/K+lP5bqkGR5SmdyB5VmsclXM
-	DOtgk/Dph0FZOJpqh08A==
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3x34hssqwf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 25 Mar 2024 20:03:48 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 42PK3lQt002408
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 25 Mar 2024 20:03:47 GMT
-Received: from [10.227.110.203] (10.80.80.8) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.40; Mon, 25 Mar
- 2024 13:03:45 -0700
-Message-ID: <8019f005-efaa-4b31-90d7-fdefd5f6191e@quicinc.com>
-Date: Mon, 25 Mar 2024 13:03:44 -0700
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="baJEeXcn"
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 42PKVVb8105464;
+	Mon, 25 Mar 2024 15:31:31 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+	s=ti-com-17Q1; t=1711398691;
+	bh=GSrThxlZYIsRYc848usB0nxv1T6WYirHxZ4wQHT5oBI=;
+	h=From:To:CC:Subject:Date:In-Reply-To:References;
+	b=baJEeXcnnEmRjzmscM13yLMBqfbgPKT6GrPbh3k9IZRKUcS9gd5ljyB4OT7V/lIJ9
+	 sMd0lOkwydCS17GcauuPcWxXet/Nt1YSTICacGxnLfnRGGLV8145Rk7oFUmzVU/ekj
+	 OjGQT8wQQewAI4J15f/DA37c9VrjqPIWKxN0l3JQ=
+Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
+	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 42PKVVcF067464
+	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Mon, 25 Mar 2024 15:31:31 -0500
+Received: from DLEE106.ent.ti.com (157.170.170.36) by DLEE114.ent.ti.com
+ (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 25
+ Mar 2024 15:31:31 -0500
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DLEE106.ent.ti.com
+ (157.170.170.36) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
+ Frontend Transport; Mon, 25 Mar 2024 15:31:31 -0500
+Received: from lelvsmtp6.itg.ti.com ([10.249.42.149])
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 42PKVUHd004442;
+	Mon, 25 Mar 2024 15:31:31 -0500
+From: Andrew Davis <afd@ti.com>
+To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
+        Sebastian Reichel
+	<sre@kernel.org>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Andrew Davis
+	<afd@ti.com>
+Subject: [PATCH 2/6] power: supply: bq27xxx: Move time reading out of update loop
+Date: Mon, 25 Mar 2024 15:31:25 -0500
+Message-ID: <20240325203129.150030-2-afd@ti.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240325203129.150030-1-afd@ti.com>
+References: <20240325203129.150030-1-afd@ti.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 04/16] dt-bindings: net: wireless: qcom,ath11k:
- describe the ath11k on QCA6390
-Content-Language: en-US
-To: Bartosz Golaszewski <brgl@bgdev.pl>, Kalle Valo <kvalo@kernel.org>
-CC: Marcel Holtmann <marcel@holtmann.org>,
-        Luiz Augusto von Dentz
-	<luiz.dentz@gmail.com>,
-        "David S . Miller" <davem@davemloft.net>,
-        Eric
- Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni
-	<pabeni@redhat.com>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski
-	<krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio
-	<konrad.dybcio@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>, Mark Brown
-	<broonie@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon
-	<will@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
-        Saravana Kannan
-	<saravanak@google.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Arnd
- Bergmann <arnd@arndb.de>,
-        Neil Armstrong <neil.armstrong@linaro.org>,
-        Marek
- Szyprowski <m.szyprowski@samsung.com>,
-        Alex Elder <elder@linaro.org>,
-        Srini
- Kandagatla <srinivas.kandagatla@linaro.org>,
-        Greg Kroah-Hartman
-	<gregkh@linuxfoundation.org>,
-        Abel Vesa <abel.vesa@linaro.org>,
-        Manivannan
- Sadhasivam <mani@kernel.org>,
-        Lukas Wunner <lukas@wunner.de>,
-        Dmitry
- Baryshkov <dmitry.baryshkov@linaro.org>,
-        <linux-bluetooth@vger.kernel.org>, <netdev@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-wireless@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pci@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>,
-        Bartosz Golaszewski
-	<bartosz.golaszewski@linaro.org>
-References: <20240325131624.26023-1-brgl@bgdev.pl>
- <20240325131624.26023-5-brgl@bgdev.pl> <87r0fy8lde.fsf@kernel.org>
- <CAMRc=Mc2Tc8oHr5NVo=aHAADkJtGCDAVvJs+7V-19m2zGi-vbw@mail.gmail.com>
-From: Jeff Johnson <quic_jjohnson@quicinc.com>
-In-Reply-To: <CAMRc=Mc2Tc8oHr5NVo=aHAADkJtGCDAVvJs+7V-19m2zGi-vbw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: amv7YH_YeBwotbXxq6Rf_df94OWD9htV
-X-Proofpoint-GUID: amv7YH_YeBwotbXxq6Rf_df94OWD9htV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-03-25_18,2024-03-21_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 adultscore=0
- spamscore=0 phishscore=0 lowpriorityscore=0 mlxscore=0 bulkscore=0
- impostorscore=0 clxscore=1011 mlxlogscore=999 malwarescore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2403210001 definitions=main-2403250121
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-On 3/25/2024 7:09 AM, Bartosz Golaszewski wrote:
-> On Mon, Mar 25, 2024 at 2:57 PM Kalle Valo <kvalo@kernel.org> wrote:
->>
->> Bartosz Golaszewski <brgl@bgdev.pl> writes:
->>
->>> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
->>>
->>> Add a PCI compatible for the ATH11K module on QCA6390 and describe the
->>> power inputs from the PMU that it consumes.
->>>
->>> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
->>
->> [...]
->>
->>> +allOf:
->>> +  - if:
->>> +      properties:
->>> +        compatible:
->>> +          contains:
->>> +            const: pci17cb,1101
->>> +    then:
->>> +      required:
->>> +        - vddrfacmn-supply
->>> +        - vddaon-supply
->>> +        - vddwlcx-supply
->>> +        - vddwlmx-supply
->>> +        - vddrfa0p8-supply
->>> +        - vddrfa1p2-supply
->>> +        - vddrfa1p7-supply
->>> +        - vddpcie0p9-supply
->>> +        - vddpcie1p8-supply
->>
->> I don't know DT well enough to know what the "required:" above means,
->> but does this take into account that there are normal "plug&play" type
->> of QCA6390 boards as well which don't need any DT settings?
->>
-> 
-> Do they require a DT node though for some reason?
+Most of the functions that read values return a status and put the value
+itself in an a function parameter. Update time reading to match.
 
-I would not expect the "PC" flavor of the card to require DT.
-The "mobile" and "automotive" flavors would probably require it.
+As time is not checked for changes as part of the update loop, remove
+the read of the this from the periodic update loop. This saves
+I2C/1W bandwidth. It also means we do not have to cache it, fresh
+values are read when requested.
+
+Signed-off-by: Andrew Davis <afd@ti.com>
+---
+ drivers/power/supply/bq27xxx_battery.c | 20 ++++++++------------
+ include/linux/power/bq27xxx_battery.h  |  3 ---
+ 2 files changed, 8 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 00b2a56039ac0..dcfe3c10e7ed3 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -1696,7 +1696,8 @@ static int bq27xxx_battery_read_cyct(struct bq27xxx_device_info *di)
+  * Read a time register.
+  * Return < 0 if something fails.
+  */
+-static int bq27xxx_battery_read_time(struct bq27xxx_device_info *di, u8 reg)
++static int bq27xxx_battery_read_time(struct bq27xxx_device_info *di, u8 reg,
++				     union power_supply_propval *val)
+ {
+ 	int tval;
+ 
+@@ -1710,7 +1711,9 @@ static int bq27xxx_battery_read_time(struct bq27xxx_device_info *di, u8 reg)
+ 	if (tval == 65535)
+ 		return -ENODATA;
+ 
+-	return tval * 60;
++	val->intval = tval * 60;
++
++	return 0;
+ }
+ 
+ /*
+@@ -1857,13 +1860,6 @@ static void bq27xxx_battery_update_unlocked(struct bq27xxx_device_info *di)
+ 	if ((cache.flags & 0xff) == 0xff)
+ 		cache.flags = -1; /* read error */
+ 	if (cache.flags >= 0) {
+-		if (di->regs[BQ27XXX_REG_TTE] != INVALID_REG_ADDR)
+-			cache.time_to_empty = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTE);
+-		if (di->regs[BQ27XXX_REG_TTECP] != INVALID_REG_ADDR)
+-			cache.time_to_empty_avg = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTECP);
+-		if (di->regs[BQ27XXX_REG_TTF] != INVALID_REG_ADDR)
+-			cache.time_to_full = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTF);
+-
+ 		cache.charge_full = bq27xxx_battery_read_fcc(di);
+ 		cache.capacity = bq27xxx_battery_read_soc(di);
+ 		if (di->regs[BQ27XXX_REG_AE] != INVALID_REG_ADDR)
+@@ -2046,13 +2042,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+ 		ret = bq27xxx_battery_read_temperature(di, val);
+ 		break;
+ 	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW:
+-		ret = bq27xxx_simple_value(di->cache.time_to_empty, val);
++		ret = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTE, val);
+ 		break;
+ 	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
+-		ret = bq27xxx_simple_value(di->cache.time_to_empty_avg, val);
++		ret = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTECP, val);
+ 		break;
+ 	case POWER_SUPPLY_PROP_TIME_TO_FULL_NOW:
+-		ret = bq27xxx_simple_value(di->cache.time_to_full, val);
++		ret = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTF, val);
+ 		break;
+ 	case POWER_SUPPLY_PROP_TECHNOLOGY:
+ 		if (di->opts & BQ27XXX_O_MUL_CHEM)
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index 64b2749d9562b..e89ef989a5752 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -47,9 +47,6 @@ struct bq27xxx_access_methods {
+ };
+ 
+ struct bq27xxx_reg_cache {
+-	int time_to_empty;
+-	int time_to_empty_avg;
+-	int time_to_full;
+ 	int charge_full;
+ 	int cycle_count;
+ 	int capacity;
+-- 
+2.39.2
 
