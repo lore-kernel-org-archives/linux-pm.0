@@ -1,108 +1,149 @@
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E87D146D40;
-	Mon, 25 Mar 2024 12:19:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=60.244.123.138
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id C654A5A10E;
+	Mon, 25 Mar 2024 12:24:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711369165; cv=none; b=Pvo7uhRrKf3MoKDUHKF1eLUWd3muCG/ircSsFUj3Sbjo3Dl1c6r9mnhzIhpjSLMF27nTAPajvhbCzSLpJCT29ohUBVexh9Q/1kZQwwJMpG+SFI0qdXheiYf+rHrVevFKgJx6UkpsQ2dfN+qzgK7QWOynrv/7fCzIpBYaRnUubxc=
+	t=1711369451; cv=none; b=IP9Cqcok2yKSLv9HmCqxF4KEDE49zGXx3aGeqvYzuNLREc8e05cZ3cC19HNLA8M17/zTYdgbstKEPRbV1YRPkzAa9n7fJsBPLIPLOHMtetijeTdlC04vCjcQ/9S4UjH3JEKWCie6O9z2LyQ8ywT2rN79Hl+13HzJTyyq+JwDAxw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711369165; c=relaxed/simple;
-	bh=GIZSh66U6z+v0FZReaLZ5gUmsUuxR/pzA9kedxsUGSk=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=gRqqP5uUkirFoEbHc7dhwTkF/SYH91bgAZp7XuycjGl8OqIE6wSoEbM2xK2UGjpgGD0/JCw/JEy6SRrn9R/eqCpoxMa82zflhttny7pZNPg6FPhU9Hggq/7OKZ+kP0GvnKP33NFEvdGUmSZePoVHxe6JEWK8tu7j60O8uJeUPlc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=gpHywCdi; arc=none smtp.client-ip=60.244.123.138
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mediatek.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="gpHywCdi"
-X-UUID: e5dd499eeaa111eeb8927bc1f75efef4-20240325
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-	h=Content-Type:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=lmpuo9I0bbZzu8NWnzQ5XfVCX4DjRHWuUIyZfU8/iiM=;
-	b=gpHywCdiRo2Ru6odRRrjEEEzxmAXxLRLDQtrrgIWXORUu+skFjGiNFvxEX60TyyiznLF4cACZRUQcVeS6vFuXmtceP6qGDg1mrcJJE1FtFve3rrNIfjlC/mwaWEazyXoOmGdSXWSVLgJwNY+AjCoofV6hVogTDoldn4U/1sYOhE=;
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.37,REQID:bbb19d4c-fd55-4fbb-9d95-1ec1d7888c50,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:6f543d0,CLOUDID:e8466885-8d4f-477b-89d2-1e3bdbef96d1,B
-	ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
-	RL:1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,
-	SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
-X-CID-BVR: 0
-X-CID-BAS: 0,_,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
-X-UUID: e5dd499eeaa111eeb8927bc1f75efef4-20240325
-Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
-	(envelope-from <yu-chang.lee@mediatek.com>)
-	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-	with ESMTP id 335187936; Mon, 25 Mar 2024 20:19:16 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- MTKMBS14N2.mediatek.inc (172.21.101.76) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.26; Mon, 25 Mar 2024 20:19:14 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
- mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.1118.26 via Frontend Transport; Mon, 25 Mar 2024 20:19:14 +0800
-From: yu-chang.lee <yu-chang.lee@mediatek.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>, Matthias Brugger
-	<matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
-	<angelogioacchino.delregno@collabora.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-mediatek@lists.infradead.org>,
-	<Project_Global_Chrome_Upstream_Group@mediatek.com>,
-	<mandyjh.liu@mediatek.com>, <fan.chen@mediatek.com>,
-	<xiufeng.li@mediatek.com>, <yu-chang.lee@mediatek.com>
-Subject: [PATCH 0/2] soc: mediatek: pm-domains: solve power domain glitch issue
-Date: Mon, 25 Mar 2024 20:19:06 +0800
-Message-ID: <20240325121908.3958-1-yu-chang.lee@mediatek.com>
-X-Mailer: git-send-email 2.18.0
+	s=arc-20240116; t=1711369451; c=relaxed/simple;
+	bh=WLZLZRzN8/OLDT6OPOMADL/GkziHijAZbwkxBipU9Is=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gM2dkmBJj/zT37+Mv9BgwZzy3AgLGXJjo+/EHJ1njkdzKL9MOroSYJ6THD4tTjnpSZjgcYJtFtD9MpC5Rbve8isuoLmwg7oUReqKEu3wYCESL9ZgFqvbOjeFAFKdBLvtVJnLnMRBdtFo9M8M4jZrQbWGzeliDHqht6wrCIc97ek=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A2DD01FB;
+	Mon, 25 Mar 2024 05:24:41 -0700 (PDT)
+Received: from [10.1.25.33] (e133047.arm.com [10.1.25.33])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B245F3F67D;
+	Mon, 25 Mar 2024 05:24:04 -0700 (PDT)
+Message-ID: <92ecab7f-6e35-4e23-a8b7-097a9c26f551@arm.com>
+Date: Mon, 25 Mar 2024 12:24:02 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-Product-Ver: SMEX-14.0.0.3152-9.1.1006-23728.005
-X-TM-AS-Result: No-10--7.339100-8.000000
-X-TMASE-MatchedRID: u0D5i0POlXiYvtVftxNfQUvrB8UvzFr4BdebOqawiLuCsBeCv8CM/Sse
-	9qdFFe49mI8EBZ3uTGtSzpXv5ekotFrgS5K/qcaqDko+EYiDQxFQCOsAlaxN7w6QlBHhBZuwkwm
-	4GnFKyckb7ifYusSVqcMHFIKAT3DiXSJ4c3nT+QcZXJLztZviXLLiLKO9VZOiXCmcAC8DBrOekk
-	V1yzofFtYn7aUb4In+oFW8SPM0GkIfE8yM4pjsDwtuKBGekqUpOlxBO2IcOBYegoblg+i7rGCnQ
-	UssYJ15MlFYtzBbKQ1vcglu/p3CKKy2KbCWZSoB
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
-X-TMASE-Result: 10--7.339100-8.000000
-X-TMASE-Version: SMEX-14.0.0.3152-9.1.1006-23728.005
-X-TM-SNTS-SMTP:
-	9765538F42BCE3697C87BD1816866E3CD6EB2C80F0C481004623D67ED9900FF22000:8
-X-MTK: N
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 0/2] Introduce per-task io utilization boost
+Content-Language: en-US
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
+ juri.lelli@redhat.com, mingo@redhat.com, rafael@kernel.org,
+ dietmar.eggemann@arm.com, vschneid@redhat.com, Johannes.Thumshirn@wdc.com,
+ adrian.hunter@intel.com, ulf.hansson@linaro.org, andres@anarazel.de,
+ asml.silence@gmail.com, linux-pm@vger.kernel.org,
+ linux-block@vger.kernel.org, io-uring@vger.kernel.org
+References: <20240304201625.100619-1-christian.loehle@arm.com>
+ <CAKfTPtDcTXBosFpu6vYW_cXLGwnqJqYCUW19XyxRmAc233irqA@mail.gmail.com>
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <CAKfTPtDcTXBosFpu6vYW_cXLGwnqJqYCUW19XyxRmAc233irqA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi,
+On 22/03/2024 18:08, Vincent Guittot wrote:
+> Hi Christian,
+Hi Vincent,
+thanks for taking a look.
 
-This series aims to solve power-off failures and occasional SMI hang issues that
-occur during camera stress tests. The issue arises because, when MTCMOS powers on
-or off, signal glitches are sometimes produced. This is fairly normal, but the 
-software must address it to avoid mistaking the glitch for a transaction signal.
+> 
+> On Mon, 4 Mar 2024 at 21:17, Christian Loehle <christian.loehle@arm.com> wrote:
+>>
+>> There is a feature inside of both schedutil and intel_pstate called
+>> iowait boosting which tries to prevent selecting a low frequency
+>> during IO workloads when it impacts throughput.
+>> The feature is implemented by checking for task wakeups that have
+>> the in_iowait flag set and boost the CPU of the rq accordingly
+>> (implemented through cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT)).
+>>
+>> The necessity of the feature is argued with the potentially low
+>> utilization of a task being frequently in_iowait (i.e. most of the
+>> time not enqueued on any rq and cannot build up utilization).
+>>
+>> The RFC focuses on the schedutil implementation.
+>> intel_pstate frequency selection isn't touched for now, suggestions are
+>> very welcome.
+>> Current schedutil iowait boosting has several issues:
+>> 1. Boosting happens even in scenarios where it doesn't improve
+>> throughput. [1]
+>> 2. The boost is not accounted for in EAS: a) feec() will only consider
+>>  the actual utilization for task placement, but another CPU might be
+>>  more energy-efficient at that capacity than the boosted one.)
+>>  b) When placing a non-IO task while a CPU is boosted compute_energy()
+>>  will not consider the (potentially 'free') boosted capacity, but the
+>>  one it would have without the boost (since the boost is only applied
+>>  in sugov).
+>> 3. Actual IO heavy workloads are hardly distinguished from infrequent
+>> in_iowait wakeups.
+>> 4. The boost isn't associated with a task, it therefore isn't considered
+>> for task placement, potentially missing out on higher capacity CPUs on
+>> heterogeneous CPU topologies.
+>> 5. The boost isn't associated with a task, it therefore lingers on the
+>> rq even after the responsible task has migrated / stopped.
+>> 6. The boost isn't associated with a task, it therefore needs to ramp
+>> up again when migrated.
+>> 7. Since schedutil doesn't know which task is getting woken up,
+>> multiple unrelated in_iowait tasks might lead to boosting.
+>>
+>> We attempt to mitigate all of the above by reworking the way the
+>> iowait boosting (io boosting from here on) works in two major ways:
+>> - Carry the boost in task_struct, so it is a per-task attribute and
+>> behaves similar to utilization of the task in some ways.
+>> - Employ a counting-based tracking strategy that only boosts as long
+>> as it sees benefits and returns to no boosting dynamically.
+> 
+> Thanks for working on improving IO boosting. I have started to read
+> your patchset and have few comments about your proposal:
+> 
+> The main one is that the io boosting decision should remain a cpufreq
+> governor decision and so the io boosting value should be applied by
+> the governor like in sugov_effective_cpu_perf() as an example instead
+> of everywhere in the scheduler code
+Having it move into the scheduler is to enable it for EAS (e.g. boosting
+a LITTLE to it's highest OPP often being much less energy-efficient than
+having a higher cap CPU at a lower OPP) and to enable higher capacities
+reachable on other CPUs, too.
+I guess for you the first one is the more interesting one.
 
-The solutions in these patches can be summarized as follows:
+> 
+> Then, the algorithm to track the right interval bucket and the mapping
+> of intervals into utilization really looks like a policy which has
+> been defined with heuristics and as a result further seems to be a
+> governor decision
 
-1. Disable the sub-common port after turning off the Larb CG and before turning 
-   off the Larb MTCMOS.
-2. Use CLAMP to disable/enable the SMI common port.
-3. Implement an AXI reset.
-For previous discussion on the direction of the code modifications, please refer
-to: https://lore.kernel.org/linux-arm-kernel/c476cc48-17ec-4e14-98d8-35bdffb5d296@collabora.com/
+I did have a comparable thing as a governor decision, but the entire
+"Test if util boost increases iowaits seen per interval and only boost
+accordingly" really only works if the interval is long enough, my proposed
+starting length of 25ms really being the lower limit for the storage devices
+we want to cover (IO latency not being constant and therefore iowaits per
+interval being somewhat noisy).
+Given that the IO tasks will be enqueued/dequeued very frequently it just
+isn't credible to expect them to land on the same CPU for many intervals,
+unless your system is very bare-bones and idle, but even on an idle Android
+I see any interval above 50ms to be unusable and not provide any throughput
+improvement.
+The idea of tracking the iowaits I do find the best option in this vague and
+noisy environment of "iowait wakeups" and definitely worth having, so that's
+why I opted for it being in the scheduler code, but I'd love to hear your
+thoughts/alternatives.
+I'd also like an improvement on the definition of iowait or some more separate
+flag for boostable IO, the entire "boost on any iowait wakeup" is groping in
+the dark which I'm trying to combat, but it's somewhat out of scope here.
 
+> 
+> Finally adding some atomic operation in the fast path is not really desirable
+Agreed, I'll look into it, for now I wanted as much feedback on the two major
+changes:
+- iowait boost now per-task
+- boosting based upon iowaits seen per interval
 
-yu-chang.lee (2):
-  soc: mediatek: pm-domains: add smi_larb_reset function when power on
-  soc: mediatek: pm-domains: support smi clamp protection
+> 
+> I will continue to review your patchset
 
- drivers/pmdomain/mediatek/mt8188-pm-domains.h |  69 +++++-
- drivers/pmdomain/mediatek/mtk-pm-domains.c    | 206 +++++++++++++++---
- drivers/pmdomain/mediatek/mtk-pm-domains.h    |  13 ++
- 3 files changed, 255 insertions(+), 33 deletions(-)
+Thank you, looking forward to seeing your review.
 
--- 
-2.18.0
-
+>>[snip]
+Kind Regards,
+Christian
