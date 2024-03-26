@@ -1,89 +1,130 @@
-Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com [209.85.219.178])
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E377613D2B2
-	for <linux-pm@vger.kernel.org>; Tue, 26 Mar 2024 20:14:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3107D13D880
+	for <linux-pm@vger.kernel.org>; Tue, 26 Mar 2024 20:32:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711484097; cv=none; b=FSOLHWTmVw4jmqKLyGh4h+82L98M+/k6v1gp7VpXZXsQ0lDO8A2j8ASofkYR0CFhWtxCF19C3qvz3w6g84B0+RJRJfaF3ikVpyTpq5e786Fe3/u1og/c1UsGADOy/qMxvhx/eBQuAO7FDb0NHZ7QqLurop1Vj1/2WvHeeKPWqSA=
+	t=1711485140; cv=none; b=HZKxSoh4AvGykMBoU3Sm1RBv0s+YZJnDh7hV1CjTVmlK5bbS+45RX8Za110cK9jutv2EuETxCqSkwtZOex5rDWDJPrUru/owk5jRTKctt8+QdmNTiEouGC35xx7YUzFToNniZR1fAXPTiqx0jCreTi9gOZm3uoyWbxR27UDu7R4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711484097; c=relaxed/simple;
-	bh=yjbveC3/sVvc0YuwNullMml87tRF1pHPon8KDzUdJq0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=edxveVy+yYM1lb7H5fcNsk5woCWlXE/WF8tFVvVyyNcy9puBVUw3h2hif+4q5XZXhuoYh68Syhm2/R4I1qnbe+YaAb/AyVLpeoAdyzzLKqE/dVyuPOoYNDOIWVkQWSDYkBu0k2SrcB2o4iUAKuEvIYtIHObT2A1z9HFPBR9VPmY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=xOqibT+o; arc=none smtp.client-ip=209.85.219.178
+	s=arc-20240116; t=1711485140; c=relaxed/simple;
+	bh=VgCPJU44QLSg2GKIOQSZ5MrtRTt0B2rcrRTt5IW/eKo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EuOq96+Er6/vhCklc7MnmbW6Kek3dLMCcQdtr6ew2bgQMNmERY2AzT8ZC99IakbaTNtBvfs3RK9LZnHe2p7A0SMa4mQZX8SYCq5Ht/ARSF7iGZf8g/7VZbn884JNixqVMtkpK+L4JO41U550p44fFexNghBy/AblbRxVU5E+nr4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=BmqphAjS; arc=none smtp.client-ip=209.85.218.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xOqibT+o"
-Received: by mail-yb1-f178.google.com with SMTP id 3f1490d57ef6-ddaebc9d6c9so2036428276.0
-        for <linux-pm@vger.kernel.org>; Tue, 26 Mar 2024 13:14:54 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BmqphAjS"
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-a450bedffdfso696749366b.3
+        for <linux-pm@vger.kernel.org>; Tue, 26 Mar 2024 13:32:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1711484094; x=1712088894; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=FmPgefE26rhr79NqXAgIqb/l9m7Ev6xlwT5t75HGYd8=;
-        b=xOqibT+o+0KGb+IHjBavY+bFV2qymYgZPOt/0BZ5Akk90DsTPY953v6LH/Db37J06K
-         E+jvbKNfMh0YtydRaDGDkVr0XtpZZojiyb73JgKe5Ubw08bKFAm0N8PGPgpvnsHJleCk
-         cGLsNPEzMxPbC7QStH03NQ37t2nwD+Y8Snj+JLuekgYB44uqWzMjW3IkEQJ9kJh67HW3
-         dXOHxpVxZYwZ6nSqFqX7XXmWb6769EEsaCJEZ3FCADEsPrBQANnEj/le0yS+A7pl1v9q
-         t/T0xoChks1YKNKQdC/SprfhGcygZcdDw80L3udAF40YkQXLUdTjC4XF/h1jI+HAQwov
-         J3uw==
+        d=linaro.org; s=google; t=1711485137; x=1712089937; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=6VDCXcE5QdWHR9kG4pOhacMN9bewYQsjsFRjYTaqxso=;
+        b=BmqphAjSruJsmV55Jv1x5BFQzBs5AFEGs8aHf9dkyqCDtIjDBl3L1yqu8kz5bDjQvk
+         U6C7YS8Ml1r9tGSKAPSM6aQy05CwAXkSyX8THki0j8pAhqYFA1VO2tNbxsahjSnAmIhJ
+         NAG24yJ3/Ci7vUlpWIVkQrXzJ2W3j8lMTf6kQCDf/JvwfYKP3hYkeVurQNTFnKY9x6FK
+         MLfAYwccPk3QUw5MsQ7L9PydTVBUn0MWuYHLLuZ7pSrDMj612gHmY9lqY9lmqWioG0nm
+         IZu2ujkSQ4fuhCz97/jK+XvCz4c8pAAJ0PI6aAVZ8d+DZFOuyR92cn7HlEbjougbIHiU
+         xfRQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711484094; x=1712088894;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=FmPgefE26rhr79NqXAgIqb/l9m7Ev6xlwT5t75HGYd8=;
-        b=B2P2xKNwaWdRH0N7fLNV+mYZfUjcaeJJJu1csMH/bPYZV+qfEBmLHK8XHGPQ8hgWTb
-         0bFh3Z4Scbw+L2iU/S/N2399P7J5m0rcazFVACzQNVzWkpwb555yM2h4hoW91qlxQhOu
-         Oi7k1482JxPCpOHttYWw3UA1j/lw2eRLlBPjJLQhiXINgTPQSQ9q1LpDPUJo7raORaqR
-         yxQ/Sm5BhcVi7cjUCQlpUb/jXayef6CNiEgJHCu5JQdtdXLSqq/zy9nHaQ4yAGlBlZ1a
-         GhIwpE+NItV3SHy1G5hDWL5S6TOFZjEgBA1UcUnXn2Q/MTuomPMvdJqj4fuhB6fq2q0G
-         xwVQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWpKe0+PnXoA2L86bBz1p4HcOybYu+mHd21qu+eAyyx/D9c5yGYPhYKWPXUvsYlnB06HEmByJcSsbJajl+QioN0GXkfgAEIMl0=
-X-Gm-Message-State: AOJu0YwbwCnukShg1GJDvb2G1pjBQ3USfBF+megRC8cAi2+DBxm+wXaY
-	LKMxxTxDEmd3Q6at7BsnZ9VVolPhEZrTVWapPODkJujWkKZidTrJIy7N4A8l+Ccy6HQeXIbG/MA
-	HwhzMZebsJMm4Fs5347J3joJ652KV19cX8N6PwA==
-X-Google-Smtp-Source: AGHT+IEgqefmBkcJJP+48bvWirN9imUigtJZiRJWcEvqUkXtLAjkJ0dlr5Paor1wjIVn1yDprWfj9TE7zMxuEes/6vU=
-X-Received: by 2002:a25:ef52:0:b0:dcc:eb38:199c with SMTP id
- w18-20020a25ef52000000b00dcceb38199cmr790117ybm.56.1711484093804; Tue, 26 Mar
- 2024 13:14:53 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1711485137; x=1712089937;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=6VDCXcE5QdWHR9kG4pOhacMN9bewYQsjsFRjYTaqxso=;
+        b=k6zXBJ4yLRKvOJsEJWGRrx/NhHeNhFwsKkAl/yCs/ZAel4M//jrwSok1ASkhMqIRzg
+         QLgUoPZNlKoeR50+vAGchpxe76GRfIh2/4x7UGS/1Idq6+ptHlW8ad8170SdWpI2yqoJ
+         ZerLHUBYIkUsi2ArIv3tP594AIseZtft+lM+y0EIHCXXwJRcmmjk9JEkOn+Ld/r2PeNE
+         4xICDU4w2pkWtgO2TJTbNasXuYMfki7204Ifw0PwIIsMjcY3kjj/hlaOMJC3amPEZ8F4
+         KQL0TiiqMV7Z7vqq7qDt2Snr/MzgPA0b337q/7dWqDwwxgF1hfz4WXp3KbdjexVkl9oF
+         Y5xQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWIjg4OhXeQ2sJq95wujmzV5N2YTr9wpg9b7e0MmNXw+mVSRcQjb+Jl9+DPmknaR/1JIbAik/YdlqYRHRTbNZtAXMGoFzKsDwU=
+X-Gm-Message-State: AOJu0YzcSd6pifXONWGeXJFziCv+lOdcMu0624Dsr8yXxJ8PmMk+iYhW
+	QRDz+EtMEwUxlmyfma82Lpl+ZodTkjSMQHXt6QEMJlsXw2l2bDRyakr4DK1edI0=
+X-Google-Smtp-Source: AGHT+IFOlD0xK8onRUJ9yqR9hLHwwtbhpRKjqRY+8LEBATvXBmdrFXwlqk/rYHKgRAJSLR25QhUOtQ==
+X-Received: by 2002:a17:906:4a0e:b0:a46:8c40:7a3a with SMTP id w14-20020a1709064a0e00b00a468c407a3amr1692821eju.26.1711485137449;
+        Tue, 26 Mar 2024 13:32:17 -0700 (PDT)
+Received: from [192.168.92.47] (078088045141.garwolin.vectranet.pl. [78.88.45.141])
+        by smtp.gmail.com with ESMTPSA id lb25-20020a170907785900b00a3d11feb32esm4583167ejc.186.2024.03.26.13.32.15
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 26 Mar 2024 13:32:17 -0700 (PDT)
+Message-ID: <a789fc45-f689-4fd7-94d3-7da37aab340b@linaro.org>
+Date: Tue, 26 Mar 2024 21:32:15 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240326-topic-rpm_icc_qos_cleanup-v1-0-357e736792be@linaro.org> <20240326-topic-rpm_icc_qos_cleanup-v1-3-357e736792be@linaro.org>
-In-Reply-To: <20240326-topic-rpm_icc_qos_cleanup-v1-3-357e736792be@linaro.org>
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date: Tue, 26 Mar 2024 22:14:43 +0200
-Message-ID: <CAA8EJppT5P+CPZg-=8jyxebFHoOUCAGK7tm-_u0zB275ZjHaAA@mail.gmail.com>
-Subject: Re: [PATCH 3/4] interconnect: qcom: icc-rpm: Make simple functions
- return void
-To: Konrad Dybcio <konrad.dybcio@linaro.org>
-Cc: Bjorn Andersson <andersson@kernel.org>, Georgi Djakov <djakov@kernel.org>, 
-	Shawn Guo <shawn.guo@linaro.org>, Marijn Suijten <marijn.suijten@somainline.org>, 
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Stephan Gerhold <stephan@gerhold.net>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/4] interconnect: qcom: sm6115: Unspaghettify SNoC QoS
+ port numbering
+To: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc: Bjorn Andersson <andersson@kernel.org>, Georgi Djakov
+ <djakov@kernel.org>, Shawn Guo <shawn.guo@linaro.org>,
+ Marijn Suijten <marijn.suijten@somainline.org>,
+ linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Stephan Gerhold <stephan@gerhold.net>
+References: <20240326-topic-rpm_icc_qos_cleanup-v1-0-357e736792be@linaro.org>
+ <20240326-topic-rpm_icc_qos_cleanup-v1-1-357e736792be@linaro.org>
+ <CAA8EJpo=JScW9ksFtq_rzvJKue_1bVcK2oiA5ZfjpyD=F3wNZA@mail.gmail.com>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@linaro.org>
+Autocrypt: addr=konrad.dybcio@linaro.org; keydata=
+ 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
+ izWDgYvmBE8=
+In-Reply-To: <CAA8EJpo=JScW9ksFtq_rzvJKue_1bVcK2oiA5ZfjpyD=F3wNZA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Tue, 26 Mar 2024 at 21:43, Konrad Dybcio <konrad.dybcio@linaro.org> wrote:
->
-> Register accesses can't just randomly fail. Change the return type of
-> functions that only do that to void.
->
-> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-> ---
->  drivers/interconnect/qcom/icc-rpm.c | 110 +++++++++++++++---------------------
->  1 file changed, 47 insertions(+), 63 deletions(-)
+On 26.03.2024 9:13 PM, Dmitry Baryshkov wrote:
+> On Tue, 26 Mar 2024 at 21:43, Konrad Dybcio <konrad.dybcio@linaro.org> wrote:
+>>
+>> When I was creating this driver, my bright mind overlooked the existence
+>> of desc->qos_offset and decided to make up for the difference it made by
+>> adding 21 (0x15) to the port index on SNoC and its downstream buses.
+>>
+>> Undo this mistake to make the indices actually mean something.
+> 
+> So, what is the meaning of qos_port?
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+"The index of the [data?] port that we're applying the QoS settings to"
 
-
-
-
--- 
-With best wishes
-Dmitry
+Konrad
