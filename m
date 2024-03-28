@@ -1,44 +1,44 @@
 Received: from mx1.sberdevices.ru (mx2.sberdevices.ru [45.89.224.132])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D79E080639;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57EB280020;
 	Thu, 28 Mar 2024 13:45:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.89.224.132
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711633514; cv=none; b=IRkG7wz/VVB9HZUfShE+mGyrL49qQc4BMNmINq6RdlQDhdF/18eKZavu8NAvNZ8Ns3t7IZVmjxL25beKCZarj3vJVPTy5EQvqvhaBeaYqc4YyJmeVci2WH3ieOKszkIRWwSsNa1ym4FpkP/17DBmkMhLrLFz/ODO4DkxxYlaMiA=
+	t=1711633515; cv=none; b=DSnhsRYsn4H+vB9vXd9VT9k2lgS4Z2dW4PAlJU8AOxZlgeZ02cgBtQg/FTZNRnxPEAYBmyJ3QbLM2LHopBZUVpbYPkTwVlozWF2vAaI+6Doh1iiDMKTrgF8+7HlpXgVH7TOTM8sp6vP1JH/OmeJAJ7NJYpFnuqsE7OI3k/eG2C8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711633514; c=relaxed/simple;
-	bh=vwSFSGR9bfNDcThzkOUIaAgtD60B7Pss7f2WlcQz124=;
+	s=arc-20240116; t=1711633515; c=relaxed/simple;
+	bh=LVzxer7s9277ehEMmyUnT5VmyJJg36W5o0W6ff5vltE=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=XRoaZCUZmVRkYq7y7j9f6K+T97BU6T+zfXckZ646jdX3quOmJBAkdpeb03RkRYaWvNVhbAPn4mMwltcd1RftQ6ATuz6oJPTH+rTpRRkiitZmFjzk49aQWRwcsAZvuzzOYLJP+1mQlSJVHHzeQAc+cTob4OcACSm8NDLF4+KJIuI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com; spf=pass smtp.mailfrom=salutedevices.com; dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b=Go1erYTu; arc=none smtp.client-ip=45.89.224.132
+	 MIME-Version:Content-Type; b=O/lQhZQbuLu/FeYr0TuDDZ0QKntiNTNd5fmIPwFV7kOonflx9SOOzo3xpAHSL2148iOfhQYCMxP7uLG4J1OqNQ0UsPJLq9uDpV315bvSa+m0o0OIrkUgQhXHPulKxJs2z0lDyrOCgD8Ftzqe8uLse3xq4HrVqyDgfEmp70dC27U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com; spf=pass smtp.mailfrom=salutedevices.com; dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b=r5/F/Qpv; arc=none smtp.client-ip=45.89.224.132
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=salutedevices.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b="Go1erYTu"
+	dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b="r5/F/Qpv"
 Received: from p-infra-ksmg-sc-msk02 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id DEACD120016;
-	Thu, 28 Mar 2024 16:45:10 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru DEACD120016
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 8A926120014;
+	Thu, 28 Mar 2024 16:45:09 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 8A926120014
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1711633510;
-	bh=9CPwvn2kpzZJnAOi5N/hirprKnzIWIB81uV2cDqMcbY=;
+	s=mail; t=1711633509;
+	bh=alTHRPO0LGNebBF6T3fPf9W0ODRjVLoVALcMlvKEm/4=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=Go1erYTunGWvX7kXxUqgYWpokLxLg2Tn8v944gydddoaNTsIwlux/pfO3yf2jM6G8
-	 f0szahcr3BbVsjl4colW11N77vk4J08U8ZCJJ2KQ9/pnpRv781I4iH511Nvgr75Qtx
-	 CPvbAKlfdlrwQYUVkRdm2qquXjc5ialGip84yKm9+QL5UBTL0KJScZHM2zzWv4nc02
-	 CzjzMRfWlF+2w1HUDy+tEAAklu34YVcUlv1tVQS1HwsrpL4tkiyraaiH0xorb/f847
-	 scbGmi7MNCvB16CPhmHoP10yiUPiGBLS5BtbOV8rKG3C8oF780j0uT0DcJXX8NxJYr
-	 IY65bM50ih6rg==
+	b=r5/F/Qpv9EosPGAmsl8HhhtXnKByoZ3VZeu3+T8iCbcbHQQdCyklja+PrIuoEq/jK
+	 /5dkOyeaVf+Zip/Evl27g73xOzv3pq0Wh9g6aneooKcXV4BxJaYz8wHpck3kc7mHk0
+	 CGvrDqo3hEfrYQ9ek8Qy3kVwYlSS+3gWu4d7EqO9s4Yow5h6JvK7qnOWMV2gruYVlF
+	 RGyD/j43pNmvkunrpFI6ps0N9t2ZPUV9njdnRb6TPwrPJV7YX/jUsdkQFoo1gEMwgS
+	 e6MtvjJZ1o86MEjyQxQxrY/Stc4nnpfJF3TsJYQuPIyAejO9bxyIXBPUF7WJQWejq2
+	 q8jtDXue6HLcw==
 Received: from smtp.sberdevices.ru (p-i-exch-sc-m02.sberdevices.ru [172.16.192.103])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Thu, 28 Mar 2024 16:45:10 +0300 (MSK)
+	Thu, 28 Mar 2024 16:45:09 +0300 (MSK)
 Received: from CAB-WSD-L081021.sberdevices.ru (100.64.160.123) by
  p-i-exch-sc-m02.sberdevices.ru (172.16.192.103) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Thu, 28 Mar 2024 16:45:10 +0300
+ 15.2.1118.40; Thu, 28 Mar 2024 16:45:08 +0300
 From: Dmitry Rokosov <ddrokosov@salutedevices.com>
 To: <neil.armstrong@linaro.org>, <jbrunet@baylibre.com>,
 	<mturquette@baylibre.com>, <khilman@baylibre.com>,
@@ -51,9 +51,9 @@ CC: <kernel@salutedevices.com>, <rockosov@gmail.com>,
 	<linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, Dmitry Rokosov
 	<ddrokosov@salutedevices.com>
-Subject: [PATCH v1 3/3] arm64: dts: amlogic: ad402: setup thermal-zones
-Date: Thu, 28 Mar 2024 16:44:39 +0300
-Message-ID: <20240328134459.18446-4-ddrokosov@salutedevices.com>
+Subject: [PATCH v1 1/3] arm64: dts: amlogic: a1: add cooling-cells for DVFS feature
+Date: Thu, 28 Mar 2024 16:44:37 +0300
+Message-ID: <20240328134459.18446-2-ddrokosov@salutedevices.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240328134459.18446-1-ddrokosov@salutedevices.com>
 References: <20240328134459.18446-1-ddrokosov@salutedevices.com>
@@ -84,77 +84,36 @@ X-KSMG-LinksScanning: Clean
 X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2024/03/28 10:33:00 #24492761
 X-KSMG-AntiVirus-Status: Clean, skipped
 
-There is one thermal zone with 3 trip points: soc_passive, soc_hot, and
-soc_critical, as well as two cooling maps.
+It's used for CPU with DVFS feature to specify minimum and maximum
+cooling state used in the reference.
+Without these values DVFS will not work and dtbs_check will raise the
+error.
 
 Signed-off-by: Dmitry Rokosov <ddrokosov@salutedevices.com>
 ---
- .../arm64/boot/dts/amlogic/meson-a1-ad402.dts | 45 +++++++++++++++++++
- 1 file changed, 45 insertions(+)
+ arch/arm64/boot/dts/amlogic/meson-a1.dtsi | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/amlogic/meson-a1-ad402.dts b/arch/arm64/boot/dts/amlogic/meson-a1-ad402.dts
-index 6c02301840ff..2d22e8b45c6d 100644
---- a/arch/arm64/boot/dts/amlogic/meson-a1-ad402.dts
-+++ b/arch/arm64/boot/dts/amlogic/meson-a1-ad402.dts
-@@ -7,6 +7,7 @@
- /dts-v1/;
- 
- #include "meson-a1.dtsi"
-+#include <dt-bindings/thermal/thermal.h>
- 
- #include <dt-bindings/gpio/gpio.h>
- 
-@@ -177,6 +178,50 @@ codec {
- 			};
+diff --git a/arch/arm64/boot/dts/amlogic/meson-a1.dtsi b/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
+index fbee986421f1..f65d4a77ee52 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
+@@ -32,6 +32,7 @@ cpu0: cpu@0 {
+ 			reg = <0x0 0x0>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&l2>;
++			#cooling-cells = <2>;
  		};
- 	};
-+
-+	thermal-zones {
-+		soc_thermal: soc_thermal {
-+			polling-delay = <1000>;
-+			polling-delay-passive = <100>;
-+			sustainable-power = <130>;
-+
-+			thermal-sensors = <&cpu_temp>;
-+
-+			trips {
-+				soc_passive: soc-passive {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				soc_hot: soc-hot {
-+					temperature = <85000>;
-+					hysteresis = <5000>;
-+					type = "hot";
-+				};
-+
-+				soc_critical: soc-critical {
-+					temperature = <110000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			soc_cooling_maps: cooling-maps {
-+				map0 {
-+					trip = <&soc_passive>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+
-+				map1 {
-+					trip = <&soc_hot>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+	};
- };
  
- /* Bluetooth HCI H4 */
+ 		cpu1: cpu@1 {
+@@ -40,6 +41,7 @@ cpu1: cpu@1 {
+ 			reg = <0x0 0x1>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&l2>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		l2: l2-cache0 {
 -- 
 2.43.0
 
