@@ -1,310 +1,112 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from mail.lichtvoll.de (lichtvoll.de [89.58.27.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2FFF15B99A;
-	Tue,  2 Apr 2024 19:04:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2EF115B972;
+	Tue,  2 Apr 2024 19:43:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.27.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712084695; cv=none; b=ZyzTuBw9ys8gCwW3s2MFXo7c05dIe03E2Qii1xwPzT/7SimoEOx98Tx+ar7j4Pmh/zVc5sYFKiqy5ce4iFj6n8o4x8PIBYfchS+8QFiFN8YgUG1+uXkUsz1TjVgVKRWZE/UvnBNdvb6ZI6fSllKW4T0/hIJ3RYlKKb1TTCAYu3A=
+	t=1712086982; cv=none; b=RsAb8MnltWq7mkajqHf7Tt+tmot9uH355Vr5gWD87xy4AfK4ICPgVUbPds0SvdRdulwR0U6WyibgtphMAe/VEUEUq5dyFL0BJC/Pq8yn2upjrO1zZ2hwynn8/YyfvSSNsD69Gh6ZoTQh6LYJmMXX8D1eG2qWLERqsmWmqR9t29o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712084695; c=relaxed/simple;
-	bh=wzIsy3VQDlBGw+7uW7g3iVZulK0Nu3N12kfqV3jCw8Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=p1wtw7R51n7wxsOySVa/JEB4EmP6VMQXMxaiwzFK4pPYY1Fmaxrc49hzVYUEHDGQprF8NQikG2I8Y66SOrhax7OTdCGMLNemxW6wJexinEqfYrOAq24TW/6hm8iZFl4dhiQmzXRTgOULq0tL3wcUWjkhv/cgSqkeCvPd0Oo6Jco=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=w+fVfbyT reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="w+fVfbyT"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id f4ddfa00e9c9d763; Tue, 2 Apr 2024 21:04:44 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
+	s=arc-20240116; t=1712086982; c=relaxed/simple;
+	bh=T2zD/3mEbZDKBbyeVef0lMlUrsq/eZAor3kTjCaqZq8=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=uHEal2uDs/WWdopDYkExoij2S3seS8Rd9RHOOryK7j/iEn4MranTT9MzWuRtU9D11ulMLBHQL7efW5z7+qNsW4YryQFRB//ExbtDBeSX58iLfk9NETU8EByZTSR3e26paPFkKdAq5gXgH6CjdgZbVyJYtEZFE66xPkvHTwKTpc8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lichtvoll.de; spf=pass smtp.mailfrom=lichtvoll.de; arc=none smtp.client-ip=89.58.27.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lichtvoll.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lichtvoll.de
+Received: from 127.0.0.1 (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (secp384r1) server-digest SHA384)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 26B8166C5C5;
-	Tue,  2 Apr 2024 21:04:44 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1712084684;
-	bh=wzIsy3VQDlBGw+7uW7g3iVZulK0Nu3N12kfqV3jCw8Q=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=w+fVfbyTxkgRk+xS9a61K46CWTpB3y04BmozmEuJysA75l8Zcpu3UV8ZWcS4uPT8u
-	 q5D9J/kReRV74B0oP3pyNMMyoZhYCqYVn9wEw163rI3ZkZ/SYaqM1go7og2qIwtGO/
-	 anjMjiL0qAZLFQ38p3ezbyphg3TdOAe/age9hwRgf0nXxMLTYt51PmWokl6UvSLaXY
-	 pGOmKTypGdJxANeprGJ2bqoulkOtslvXmFgAApgNTki1Yx3RRr7wAXvDZKD9aYt4pk
-	 3UBqCTRfTnmXpPy1bOjkaEzWiedmpCz+J7NP35rqzY/MmvK5PV3Uk+5BpS5gcUl75O
-	 Nxr6Tgx8jzT6g==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Lukasz Luba <lukasz.luba@arm.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+	by mail.lichtvoll.de (Postfix) with ESMTPSA id A96EA872F;
+	Tue,  2 Apr 2024 19:42:58 +0000 (UTC)
+Authentication-Results: mail.lichtvoll.de;
+	auth=pass smtp.auth=martin@lichtvoll.de smtp.mailfrom=martin@lichtvoll.de
+From: Martin Steigerwald <martin@lichtvoll.de>
+To: linux-pm@vger.kernel.org, regressions@lists.linux.dev,
+ linux-kernel@vger.kernel.org,
+ Linux regressions mailing list <regressions@lists.linux.dev>
 Subject:
- [PATCH v3 2/6] thermal: core: Make struct thermal_zone_device definition
- internal
-Date: Tue, 02 Apr 2024 20:57:57 +0200
-Message-ID: <13485814.uLZWGnKmhe@kreacher>
-In-Reply-To: <4558251.LvFx2qVVIh@kreacher>
-References: <4558251.LvFx2qVVIh@kreacher>
+ Re: [regression] 6.8.1: fails to hibernate with
+ pm_runtime_force_suspend+0x0/0x120 returns -16
+Date: Tue, 02 Apr 2024 21:42:58 +0200
+Message-ID: <22240355.EfDdHjke4D@lichtvoll.de>
+In-Reply-To: <be5a7213-78b3-4917-b95b-ec31cd2350e4@leemhuis.info>
+References:
+ <2325246.ElGaqSPkdT@lichtvoll.de> <12401263.O9o76ZdvQC@lichtvoll.de>
+ <be5a7213-78b3-4917-b95b-ec31cd2350e4@leemhuis.info>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudefvddgudefvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopegrnhhgvghlohhgihhorggttghhihhnohdruggvlhhrvghgnhhosegtohhllhgrsghorhgrrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Thorsten, hi,
 
-Move the definitions of struct thermal_trip_desc and struct
-thermal_zone_device to an internal header file in the thermal core,
-as they don't need to be accessible to any code other than the thermal
-core and so they don't need to be present in a global header.
+Linux regression tracking (Thorsten Leemhuis) - 19.03.24, 09:40:06 CEST:
+> On 16.03.24 17:12, Martin Steigerwald wrote:
+> > Martin Steigerwald - 16.03.24, 17:02:44 CET:
+> >> ThinkPad T14 AMD Gen 1 fails to hibernate with self-compiled 6.8.1.
+> >> Hibernation works correctly with self-compiled 6.7.9.
+> >=20
+> > Apparently 6.8.1 does not even reboot correctly anymore. runit on
+> > Devuan. It says it is doing the system reboot but then nothing
+> > happens.
+> >=20
+> > As for hibernation the kernel cancels the attempt and returns back to
+> > user space desktop session.
+> >=20
+> >> Trying to use "no_console_suspend" to debug next. Will not do bisect
+> >> between major kernel releases on a production machine.
+>=20
+> FWIW, without a bisection I guess no developer will take a closer look
+> (but I might be wrong and you lucky here!), as any change in those
+> hundreds of drivers used on that machine can possibly lead to problems
+> like yours. So without a bisection we are likely stuck here, unless
+> someone else runs into the same problem and bisects or fixes it. Sorry,
+> but that's just how it is.
 
-No intentional functional impact.
+I have been asked this repeatedly with previous bug reports. My issue
+with bisecting between major kernel versions is this:
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+When I look around here I see no second ThinkPad T14 AMD Gen 1 here I=20
+could use for testing. Also doing a kernel bisect using a GRML live iso=E2=
+=80=A6=20
+not really.
 
-v2 -> v3: Minor changelog update
+The one I reported this from is a production machine with a 4 TB NVMe
+SSD which contains a lot of data. I am not willing to risk data loss or
+(silent) file system corruption by bisecting between major kernel
+releases. Bisecting between major kernel releases in my understanding
+would require to test various releases between in this example 6.7 and
+6.8 and even between 6.7 and 6.8-rc1. At least in my understand anything=20
+between 6.7 and 6.8-rc1 is not guaranteed to be even be somewhat stable. I=
+=20
+am not usually installing an rc1 kernel on a production machine, but=20
+rather wait for at least rc2/3 nowadays. Its a balanced risk calculation.=20
+And rc2/3 or later appears to be a risk I am willing to take. But=20
+something between stable and rc1? Nope.
 
-v1 -> v2: No changes
+It is not even that rare. 6.7 some rc failed with hibernation as well.=20
+With exactly the same machine. I refused to do a bisect as well in that=20
+case. At some later time the issue was fixed without me doing anything=20
+more.
 
----
- drivers/thermal/thermal_core.h  |   85 +++++++++++++++++++++++++++++++++++++++
- drivers/thermal/thermal_trace.h |    2 
- include/linux/thermal.h         |   87 ----------------------------------------
- 3 files changed, 89 insertions(+), 85 deletions(-)
+Now my question is this: Without me willing to bisect in that case, is
+a bug report even useful? Otherwise I may just switch this last machine
+to distribution kernels. It would save a lot of time for me. This private=20
+and freelancer production machine is the last left-over machine with self-
+compiled kernels.
 
-Index: linux-pm/drivers/thermal/thermal_core.h
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.h
-+++ linux-pm/drivers/thermal/thermal_core.h
-@@ -15,6 +15,91 @@
- #include "thermal_netlink.h"
- #include "thermal_debugfs.h"
- 
-+struct thermal_trip_desc {
-+	struct thermal_trip trip;
-+	int threshold;
-+};
-+
-+/**
-+ * struct thermal_zone_device - structure for a thermal zone
-+ * @id:		unique id number for each thermal zone
-+ * @type:	the thermal zone device type
-+ * @device:	&struct device for this thermal zone
-+ * @removal:	removal completion
-+ * @trip_temp_attrs:	attributes for trip points for sysfs: trip temperature
-+ * @trip_type_attrs:	attributes for trip points for sysfs: trip type
-+ * @trip_hyst_attrs:	attributes for trip points for sysfs: trip hysteresis
-+ * @mode:		current mode of this thermal zone
-+ * @devdata:	private pointer for device private data
-+ * @num_trips:	number of trip points the thermal zone supports
-+ * @passive_delay_jiffies: number of jiffies to wait between polls when
-+ *			performing passive cooling.
-+ * @polling_delay_jiffies: number of jiffies to wait between polls when
-+ *			checking whether trip points have been crossed (0 for
-+ *			interrupt driven systems)
-+ * @temperature:	current temperature.  This is only for core code,
-+ *			drivers should use thermal_zone_get_temp() to get the
-+ *			current temperature
-+ * @last_temperature:	previous temperature read
-+ * @emul_temperature:	emulated temperature when using CONFIG_THERMAL_EMULATION
-+ * @passive:		1 if you've crossed a passive trip point, 0 otherwise.
-+ * @prev_low_trip:	the low current temperature if you've crossed a passive
-+			trip point.
-+ * @prev_high_trip:	the above current temperature if you've crossed a
-+			passive trip point.
-+ * @need_update:	if equals 1, thermal_zone_device_update needs to be invoked.
-+ * @ops:	operations this &thermal_zone_device supports
-+ * @tzp:	thermal zone parameters
-+ * @governor:	pointer to the governor for this thermal zone
-+ * @governor_data:	private pointer for governor data
-+ * @thermal_instances:	list of &struct thermal_instance of this thermal zone
-+ * @ida:	&struct ida to generate unique id for this zone's cooling
-+ *		devices
-+ * @lock:	lock to protect thermal_instances list
-+ * @node:	node in thermal_tz_list (in thermal_core.c)
-+ * @poll_queue:	delayed work for polling
-+ * @notify_event: Last notification event
-+ * @suspended: thermal zone suspend indicator
-+ * @trips:	array of struct thermal_trip objects
-+ */
-+struct thermal_zone_device {
-+	int id;
-+	char type[THERMAL_NAME_LENGTH];
-+	struct device device;
-+	struct completion removal;
-+	struct attribute_group trips_attribute_group;
-+	struct thermal_attr *trip_temp_attrs;
-+	struct thermal_attr *trip_type_attrs;
-+	struct thermal_attr *trip_hyst_attrs;
-+	enum thermal_device_mode mode;
-+	void *devdata;
-+	int num_trips;
-+	unsigned long passive_delay_jiffies;
-+	unsigned long polling_delay_jiffies;
-+	int temperature;
-+	int last_temperature;
-+	int emul_temperature;
-+	int passive;
-+	int prev_low_trip;
-+	int prev_high_trip;
-+	atomic_t need_update;
-+	struct thermal_zone_device_ops ops;
-+	struct thermal_zone_params *tzp;
-+	struct thermal_governor *governor;
-+	void *governor_data;
-+	struct list_head thermal_instances;
-+	struct ida ida;
-+	struct mutex lock;
-+	struct list_head node;
-+	struct delayed_work poll_queue;
-+	enum thermal_notify_event notify_event;
-+	bool suspended;
-+#ifdef CONFIG_THERMAL_DEBUGFS
-+	struct thermal_debugfs *debugfs;
-+#endif
-+	struct thermal_trip_desc trips[] __counted_by(num_trips);
-+};
-+
- /* Default Thermal Governor */
- #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
- #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
-Index: linux-pm/include/linux/thermal.h
-===================================================================
---- linux-pm.orig/include/linux/thermal.h
-+++ linux-pm/include/linux/thermal.h
-@@ -73,17 +73,14 @@ struct thermal_trip {
- 	void *priv;
- };
- 
--struct thermal_trip_desc {
--	struct thermal_trip trip;
--	int threshold;
--};
--
- #define THERMAL_TRIP_FLAG_RW_TEMP	BIT(0)
- #define THERMAL_TRIP_FLAG_RW_HYST	BIT(1)
- 
- #define THERMAL_TRIP_FLAG_RW	(THERMAL_TRIP_FLAG_RW_TEMP | \
- 				 THERMAL_TRIP_FLAG_RW_HYST)
- 
-+struct thermal_zone_device;
-+
- struct thermal_zone_device_ops {
- 	int (*bind) (struct thermal_zone_device *,
- 		     struct thermal_cooling_device *);
-@@ -130,86 +127,6 @@ struct thermal_cooling_device {
- };
- 
- /**
-- * struct thermal_zone_device - structure for a thermal zone
-- * @id:		unique id number for each thermal zone
-- * @type:	the thermal zone device type
-- * @device:	&struct device for this thermal zone
-- * @removal:	removal completion
-- * @trip_temp_attrs:	attributes for trip points for sysfs: trip temperature
-- * @trip_type_attrs:	attributes for trip points for sysfs: trip type
-- * @trip_hyst_attrs:	attributes for trip points for sysfs: trip hysteresis
-- * @mode:		current mode of this thermal zone
-- * @devdata:	private pointer for device private data
-- * @num_trips:	number of trip points the thermal zone supports
-- * @passive_delay_jiffies: number of jiffies to wait between polls when
-- *			performing passive cooling.
-- * @polling_delay_jiffies: number of jiffies to wait between polls when
-- *			checking whether trip points have been crossed (0 for
-- *			interrupt driven systems)
-- * @temperature:	current temperature.  This is only for core code,
-- *			drivers should use thermal_zone_get_temp() to get the
-- *			current temperature
-- * @last_temperature:	previous temperature read
-- * @emul_temperature:	emulated temperature when using CONFIG_THERMAL_EMULATION
-- * @passive:		1 if you've crossed a passive trip point, 0 otherwise.
-- * @prev_low_trip:	the low current temperature if you've crossed a passive
--			trip point.
-- * @prev_high_trip:	the above current temperature if you've crossed a
--			passive trip point.
-- * @need_update:	if equals 1, thermal_zone_device_update needs to be invoked.
-- * @ops:	operations this &thermal_zone_device supports
-- * @tzp:	thermal zone parameters
-- * @governor:	pointer to the governor for this thermal zone
-- * @governor_data:	private pointer for governor data
-- * @thermal_instances:	list of &struct thermal_instance of this thermal zone
-- * @ida:	&struct ida to generate unique id for this zone's cooling
-- *		devices
-- * @lock:	lock to protect thermal_instances list
-- * @node:	node in thermal_tz_list (in thermal_core.c)
-- * @poll_queue:	delayed work for polling
-- * @notify_event: Last notification event
-- * @suspended: thermal zone suspend indicator
-- * @trips:	array of struct thermal_trip objects
-- */
--struct thermal_zone_device {
--	int id;
--	char type[THERMAL_NAME_LENGTH];
--	struct device device;
--	struct completion removal;
--	struct attribute_group trips_attribute_group;
--	struct thermal_attr *trip_temp_attrs;
--	struct thermal_attr *trip_type_attrs;
--	struct thermal_attr *trip_hyst_attrs;
--	enum thermal_device_mode mode;
--	void *devdata;
--	int num_trips;
--	unsigned long passive_delay_jiffies;
--	unsigned long polling_delay_jiffies;
--	int temperature;
--	int last_temperature;
--	int emul_temperature;
--	int passive;
--	int prev_low_trip;
--	int prev_high_trip;
--	atomic_t need_update;
--	struct thermal_zone_device_ops ops;
--	struct thermal_zone_params *tzp;
--	struct thermal_governor *governor;
--	void *governor_data;
--	struct list_head thermal_instances;
--	struct ida ida;
--	struct mutex lock;
--	struct list_head node;
--	struct delayed_work poll_queue;
--	enum thermal_notify_event notify_event;
--	bool suspended;
--#ifdef CONFIG_THERMAL_DEBUGFS
--	struct thermal_debugfs *debugfs;
--#endif
--	struct thermal_trip_desc trips[] __counted_by(num_trips);
--};
--
--/**
-  * struct thermal_governor - structure that holds thermal governor information
-  * @name:	name of the governor
-  * @bind_to_tz: callback called when binding to a thermal zone.  If it
-Index: linux-pm/drivers/thermal/thermal_trace.h
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_trace.h
-+++ linux-pm/drivers/thermal/thermal_trace.h
-@@ -9,6 +9,8 @@
- #include <linux/thermal.h>
- #include <linux/tracepoint.h>
- 
-+#include "thermal_core.h"
-+
- TRACE_DEFINE_ENUM(THERMAL_TRIP_CRITICAL);
- TRACE_DEFINE_ENUM(THERMAL_TRIP_HOT);
- TRACE_DEFINE_ENUM(THERMAL_TRIP_PASSIVE);
+So far I still thought I would somehow be contributing to Linux kernel
+quality with detailed bug reports that take time to write, but apparently=20
+I am not. Can you clarify?
 
+Ciao,
+=2D-=20
+Martin
 
 
