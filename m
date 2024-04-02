@@ -1,103 +1,127 @@
-Received: from smtp-fw-80006.amazon.com (smtp-fw-80006.amazon.com [99.78.197.217])
+Received: from pb-smtp2.pobox.com (pb-smtp2.pobox.com [64.147.108.71])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A788A7E6;
-	Tue,  2 Apr 2024 02:30:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=99.78.197.217
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8210E2C9E;
+	Tue,  2 Apr 2024 03:27:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=64.147.108.71
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712025040; cv=none; b=Vdx6e9uxaSrPz6YJ27DJ1YUv2KWjNsoXqspR3cAWm/krsBkgC1Jm18zRQR8Uhbv7G4Zn3RNNQhMrJszX/lRDMps7qZNmrB7qEDOuO81z2GR303lom6tk4eAoMTmL/0gOyNrOIHdGify/9/TaN+4im6W62AYpoVNrdbjftbvDPaE=
+	t=1712028470; cv=none; b=XKlb0UhJ+qWMEzNzboP6ipar5oMeoabH8CknhP8ytiT+JNKujh4YxvVnCtXzymuh4EJTHQb7jssRqgUSFShyN4jjxTsFoAk6a6lFjgtG/Zk1M5pvRJZUTh38xg3RYVZD06V0g9U8MuyLiaYRUZOb3wa9NWqROk6vNJAk88pZg1c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712025040; c=relaxed/simple;
-	bh=PpSXo1QhcMevwm7I+K7iRFo96h88oIV/8+9o9/wUcnU=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=nV5gSzlyiCxLTPW78rXLDGTTNT09MgeiynIkgDCoAFnHBKvbCRnolYxdO26C7CUouGk3C2kVoyuO2vq9kTfcdy1w9C4xUJpSPXShFGSSw2jrdt+68VP41/MCOmxsZR3cLTEXU3qRs46jpUvsIkTPBKYbr7EkfrcP5d/6rfUQkSs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com; spf=pass smtp.mailfrom=amazon.com; dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b=h1uzAWgw; arc=none smtp.client-ip=99.78.197.217
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amazon.com
+	s=arc-20240116; t=1712028470; c=relaxed/simple;
+	bh=ODM27AWbi/WoPUM8CtduNdu60hE5B64Y6ULqzglTfp4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=YGCj4mRUbUB9hQbosLI1bXBcQdcmCThj8w3UoKZk4jMcluJlWK84hY2UeWhOa0zPYoDGwU8RpLcHsiO84RbdveSmt0qhM2/IRQXSYau0e1mzjxcxQnmHyvh6l55bYUUsqRllpS2bAjlD1w445+3qVjfkL5bBAKMwsr85X6qPBHA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net; spf=pass smtp.mailfrom=fluxnic.net; dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b=BGylCQtc; dkim=fail (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b=xfxowGnN reason="signature verification failed"; arc=none smtp.client-ip=64.147.108.71
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="h1uzAWgw"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1712025039; x=1743561039;
-  h=from:to:cc:subject:date:message-id:references:
-   in-reply-to:content-id:content-transfer-encoding:
-   mime-version;
-  bh=PpSXo1QhcMevwm7I+K7iRFo96h88oIV/8+9o9/wUcnU=;
-  b=h1uzAWgwI7ITpOhT1CRD4wRPpUbXcgkHo67+ubu1QKQHgMiWTMjBtnxM
-   Y2dOnwtdyoTycs2mj/ikSs+6sutqF/WoAlbuAEkBf3UoE+2YkD546Amca
-   EI61fL54lysqTAWIxOqK6vzbhqMKrN/4/5cQizBPZXCX07906zIkheJ59
-   M=;
-X-IronPort-AV: E=Sophos;i="6.07,173,1708387200"; 
-   d="scan'208";a="284455721"
-Received: from pdx4-co-svc-p1-lb2-vlan3.amazon.com (HELO smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.25.36.214])
-  by smtp-border-fw-80006.pdx80.corp.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Apr 2024 02:30:33 +0000
-Received: from EX19MTAUWC002.ant.amazon.com [10.0.38.20:38275]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.56.234:2525] with esmtp (Farcaster)
- id b76e8157-aec4-494c-8c62-9b3ebbe5bb57; Tue, 2 Apr 2024 02:30:24 +0000 (UTC)
-X-Farcaster-Flow-ID: b76e8157-aec4-494c-8c62-9b3ebbe5bb57
-Received: from EX19D002UWA002.ant.amazon.com (10.13.138.246) by
- EX19MTAUWC002.ant.amazon.com (10.250.64.143) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1258.28; Tue, 2 Apr 2024 02:30:24 +0000
-Received: from EX19D001UWA003.ant.amazon.com (10.13.138.211) by
- EX19D002UWA002.ant.amazon.com (10.13.138.246) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.28;
- Tue, 2 Apr 2024 02:30:24 +0000
-Received: from EX19D001UWA003.ant.amazon.com ([fe80::256a:26de:3ee6:48a2]) by
- EX19D001UWA003.ant.amazon.com ([fe80::256a:26de:3ee6:48a2%7]) with mapi id
- 15.02.1258.028; Tue, 2 Apr 2024 02:30:24 +0000
-From: "Okanovic, Haris" <harisokn@amazon.com>
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-assembly@vger.kernel.org" <linux-assembly@vger.kernel.org>
-CC: "peterz@infradead.org" <peterz@infradead.org>, "Saidi, Ali"
-	<alisaidi@amazon.com>, "Blake, Geoff" <blakgeof@amazon.com>, "Silver, Brian"
-	<silverbr@amazon.com>
-Subject: Re: [PATCH 3/3] arm64: cpuidle: Add arm_poll_idle
-Thread-Topic: [PATCH 3/3] arm64: cpuidle: Add arm_poll_idle
-Thread-Index: AQHahJ/D8+a2/m+FEk+Q2bqBNHXo/LFUQbcA
-Date: Tue, 2 Apr 2024 02:30:23 +0000
-Message-ID: <738769693c52ed23e35850325ee414ab131a06ea.camel@amazon.com>
-References: <20240402014706.3969151-1-harisokn@amazon.com>
-	 <20240402014706.3969151-3-harisokn@amazon.com>
-In-Reply-To: <20240402014706.3969151-3-harisokn@amazon.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <A5B816E60B1093468C4B39A6876BD3EC@amazon.com>
-Content-Transfer-Encoding: base64
+	dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b="BGylCQtc";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="xfxowGnN"
+Received: from pb-smtp2.pobox.com (unknown [127.0.0.1])
+	by pb-smtp2.pobox.com (Postfix) with ESMTP id 572EA1DBD78;
+	Mon,  1 Apr 2024 23:27:47 -0400 (EDT)
+	(envelope-from nico@fluxnic.net)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=pobox.com; h=from:to:cc
+	:subject:date:message-id:in-reply-to:references:mime-version
+	:content-transfer-encoding; s=sasl; bh=ODM27AWbi/WoPUM8CtduNdu60
+	hE5B64Y6ULqzglTfp4=; b=BGylCQtcUPq5HrGQyLEhxDCa9a2tDru1g4KyCfJyE
+	04KBLK49z/KKwnJG6LuxZPc6hFUBcVCJgDOriv+chJ6Y/tT+hluq9SNzDHi3DIWl
+	xoHrRt3t7rtnwNDOOn5/YLO0DNixq1GwW5NuCRlG91PzxlgEVfQT8tDD8zfIVuQe
+	2Y=
+Received: from pb-smtp2.nyi.icgroup.com (unknown [127.0.0.1])
+	by pb-smtp2.pobox.com (Postfix) with ESMTP id 4D5761DBD77;
+	Mon,  1 Apr 2024 23:27:47 -0400 (EDT)
+	(envelope-from nico@fluxnic.net)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=fluxnic.net;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references:mime-version:content-transfer-encoding; s=2016-12.pbsmtp; bh=ROuDOPudaTnBIpzyth6id2zKJSaeiMGerblNaABRxDo=; b=xfxowGnNIiKzDpZYe0N6McbP2TG7hfRwnLsnI4eugSjK6vV2nY2TY38/mCTHPNLFq2Xv7slmgdE1wHivUGxpXqb4NgxNVS0piqZe6XF2RKxRoqbCejn9nyjGwX2OmeWcJQ97WZ54bbL6nXXPgrVlHNWWA4O7T6cbA8AkRhjrC4Q=
+Received: from yoda.fluxnic.net (unknown [24.201.101.36])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by pb-smtp2.pobox.com (Postfix) with ESMTPSA id BE77B1DBD76;
+	Mon,  1 Apr 2024 23:27:46 -0400 (EDT)
+	(envelope-from nico@fluxnic.net)
+Received: from xanadu.lan (OpenWrt.lan [192.168.1.1])
+	by yoda.fluxnic.net (Postfix) with ESMTPSA id E7B95C1CECF;
+	Mon,  1 Apr 2024 23:27:44 -0400 (EDT)
+From: Nicolas Pitre <nico@fluxnic.net>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>,
+	linux-pm@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	devicetree@vger.kernel.org
+Cc: Nicolas Pitre <npitre@baylibre.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Subject: [PATCH v2 06/15] dt-bindings: thermal: mediatek: Add LVTS thermal controller definition for MT8186
+Date: Mon,  1 Apr 2024 23:25:40 -0400
+Message-ID: <20240402032729.2736685-7-nico@fluxnic.net>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240402032729.2736685-1-nico@fluxnic.net>
+References: <20240402032729.2736685-1-nico@fluxnic.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+X-Pobox-Relay-ID:
+ F9980906-F0A0-11EE-8E76-25B3960A682E-78420484!pb-smtp2.pobox.com
+Content-Transfer-Encoding: quoted-printable
 
-T24gTW9uLCAyMDI0LTA0LTAxIGF0IDIwOjQ3IC0wNTAwLCBIYXJpcyBPa2Fub3ZpYyB3cm90ZToK
-PiArc3RhdGljIGludCBfX2NwdWlkbGUgYXJtX2lkbGVfd2ZlX3BvbGwoc3RydWN0IGNwdWlkbGVf
-ZGV2aWNlICpkZXYsCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYsIGludCBpZHgp
-Cj4gK3sKPiArwqDCoMKgwqDCoMKgwqB1NjQgdGltZV9zdGFydCwgdGltZV9saW1pdDsKPiArCj4g
-K8KgwqDCoMKgwqDCoMKgdGltZV9zdGFydCA9IGxvY2FsX2Nsb2NrKCk7Cj4gK8KgwqDCoMKgwqDC
-oMKgZGV2LT5wb2xsX3RpbWVfbGltaXQgPSBmYWxzZTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgbG9j
-YWxfaXJxX2VuYWJsZSgpOwoKUmUgdGhpcyBjb21tZW50IGZyb20gUGV0ZXIgWmlqbHN0cmEgWzFd
-LCBzaG91bGQgSSB1c2UKcmF3X2xvY2FsX2lycV9lbmFibGUoKSBpbnN0ZWFkPyBJIHNlZSBleGFt
-cGxlcyBvZiBib3RoIHVuZGVyCmRyaXZlcnMvY3B1aWRsZS8uCgpbMV0KaHR0cHM6Ly9lbGl4aXIu
-Ym9vdGxpbi5jb20vbGludXgvdjYuOS1yYzIvc291cmNlL2luY2x1ZGUvbGludXgvY3B1aWRsZS5o
-I0wxMTkKCj4gKwo+ICvCoMKgwqDCoMKgwqDCoGlmIChjdXJyZW50X3NldF9wb2xsaW5nX2FuZF90
-ZXN0KCkpCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGdvdG8gZW5kOwo+ICsKPiAr
-wqDCoMKgwqDCoMKgwqB0aW1lX2xpbWl0ID0gY3B1aWRsZV9wb2xsX3RpbWUoZHJ2LCBkZXYpOwo+
-ICsKPiArwqDCoMKgwqDCoMKgwqBkbyB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oC8vIGV4Y2x1c2l2ZSByZWFkIGFybXMgdGhlIG1vbml0b3IgZm9yIHdmZQo+ICvCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqBpZiAoX19SRUFEX09OQ0VfRVgoY3VycmVudF90aHJlYWRfaW5m
-bygpLT5mbGFncykgJgo+IF9USUZfTkVFRF9SRVNDSEVEKQo+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZ290byBlbmQ7Cj4gKwo+ICvCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqAvLyBtYXkgZXhpdCBwcmVtYXR1cmVseSwgc2VlIEFSTV9BUkNIX1RJ
-TUVSX0VWVFNUUkVBTQo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB3ZmUoKTsKPiAr
-wqDCoMKgwqDCoMKgwqB9IHdoaWxlIChsb2NhbF9jbG9jaygpIC0gdGltZV9zdGFydCA8IHRpbWVf
-bGltaXQpOwo+ICsKPiArwqDCoMKgwqDCoMKgwqBkZXYtPnBvbGxfdGltZV9saW1pdCA9IHRydWU7
-Cj4gKwo+ICtlbmQ6Cj4gK8KgwqDCoMKgwqDCoMKgY3VycmVudF9jbHJfcG9sbGluZygpOwo+ICvC
-oMKgwqDCoMKgwqDCoHJldHVybiBpZHg7Cj4gK30KPiArCgpUaGFua3MsCkhhcmlzIE9rYW5vdmlj
-Cgo=
+From: Nicolas Pitre <npitre@baylibre.com>
+
+Add LVTS thermal controller definition for MT8186.
+
+Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
+---
+ .../bindings/thermal/mediatek,lvts-thermal.yaml        |  2 ++
+ include/dt-bindings/thermal/mediatek,lvts-thermal.h    | 10 ++++++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/thermal/mediatek,lvts-ther=
+mal.yaml b/Documentation/devicetree/bindings/thermal/mediatek,lvts-therma=
+l.yaml
+index e6665af52e..4173bae530 100644
+--- a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yam=
+l
++++ b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yam=
+l
+@@ -19,6 +19,7 @@ properties:
+   compatible:
+     enum:
+       - mediatek,mt7988-lvts-ap
++      - mediatek,mt8186-lvts
+       - mediatek,mt8192-lvts-ap
+       - mediatek,mt8192-lvts-mcu
+       - mediatek,mt8195-lvts-ap
+@@ -75,6 +76,7 @@ allOf:
+         compatible:
+           contains:
+             enum:
++              - mediatek,mt8186-lvts
+               - mediatek,mt8195-lvts-ap
+               - mediatek,mt8195-lvts-mcu
+     then:
+diff --git a/include/dt-bindings/thermal/mediatek,lvts-thermal.h b/includ=
+e/dt-bindings/thermal/mediatek,lvts-thermal.h
+index 997e2f5512..433d298826 100644
+--- a/include/dt-bindings/thermal/mediatek,lvts-thermal.h
++++ b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
+@@ -16,6 +16,16 @@
+ #define MT7988_ETHWARP_0	6
+ #define MT7988_ETHWARP_1	7
+=20
++#define MT8186_LITTLE_CPU0	0
++#define MT8186_LITTLE_CPU1	1
++#define MT8186_LITTLE_CPU2	2
++#define MT8186_CAM		3
++#define MT8186_BIG_CPU0	4
++#define MT8186_BIG_CPU1	5
++#define MT8186_NNA		6
++#define MT8186_ADSP		7
++#define MT8186_MFG		8
++
+ #define MT8195_MCU_BIG_CPU0     0
+ #define MT8195_MCU_BIG_CPU1     1
+ #define MT8195_MCU_BIG_CPU2     2
+--=20
+2.44.0
+
