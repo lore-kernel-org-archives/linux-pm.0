@@ -1,48 +1,48 @@
-Received: from pb-smtp21.pobox.com (pb-smtp21.pobox.com [173.228.157.53])
+Received: from pb-smtp2.pobox.com (pb-smtp2.pobox.com [64.147.108.71])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56B7A1758D;
-	Tue,  2 Apr 2024 03:28:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=173.228.157.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E36FC17731;
+	Tue,  2 Apr 2024 03:34:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=64.147.108.71
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712028482; cv=none; b=lAooITxsQ72JFBgc7fkqjv8WOzgL8SbcDsV08XhQXBuEmKR2usXM4yKLOTF64iQnMtEpb8xdjeJO+zWNhyN1/rDW7gtoXeKxL+fPxo+jZUNT0B9ZEBtWVqh1CwC52W6By7dGa5m7CQFMk+0SM3R+yNNo9k3A8zFG6EyyIU1v6tU=
+	t=1712028865; cv=none; b=ARq5hI0LGUmtJarBSZvFlgXyW1A9DiE96oiK38YNJEmppDYAPUYjGApk+PKtR/sfi6eu5ElB7VsbYvzSM367rpUKz5QBxU9CEbphTlJMhLZRayepRjsWmoiuzhLOafpUGXYRXbwQe7wuUEam2krkc2zz03d9PZJna4qqpXf7yQ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712028482; c=relaxed/simple;
-	bh=LDX0rqkLLVP9V/sDmVl/fCI94iqNeaqPZhDHNWQCN4c=;
+	s=arc-20240116; t=1712028865; c=relaxed/simple;
+	bh=QMOwqjxnZseTdo4gaCCD68XT906ZpR/cOYPc5z1rVOc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ukhAFTI3OBsAgREYnxQ44sAL8RW5Xm5jFducaPVEzQJ6ZrovQmPdkNhTeY7KDf41wHQeuZ47Wv9wA3+lRFANhlhMGbXBmKr8w3dFtsp/POv+4Ey+LxwXTHZVKSHOubb1Cenv8+cKIjzQeO7I3cJGxZWq2Tl4gn/ZDHUWyNS2gic=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net; spf=pass smtp.mailfrom=fluxnic.net; dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b=Y8AWlnih; dkim=fail (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b=io8qi8Fu reason="signature verification failed"; arc=none smtp.client-ip=173.228.157.53
+	 MIME-Version; b=ofVbigXzTurhqF3bLPA5/ZhzD9HjP3CRbAle+uG4m5UaNYB1+CPNBJGZ07P7ediSbbe6t6GnBlkpMA/iw8r2rLsrTgukDW0CadujDrb0tl7KRjXe04/ygp+AK+Nl187pdDf4yxvm8dFA2+AyRdsn6E4CPy9k0XLCSgrkSK7hZ0w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net; spf=pass smtp.mailfrom=fluxnic.net; dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b=DIwk83uf; dkim=fail (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b=P1Xe8lrR reason="signature verification failed"; arc=none smtp.client-ip=64.147.108.71
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b="Y8AWlnih";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="io8qi8Fu"
-Received: from pb-smtp21.pobox.com (unknown [127.0.0.1])
-	by pb-smtp21.pobox.com (Postfix) with ESMTP id 31573219E4;
-	Mon,  1 Apr 2024 23:27:55 -0400 (EDT)
+	dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b="DIwk83uf";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="P1Xe8lrR"
+Received: from pb-smtp2.pobox.com (unknown [127.0.0.1])
+	by pb-smtp2.pobox.com (Postfix) with ESMTP id DA6AF1DBE48;
+	Mon,  1 Apr 2024 23:34:22 -0400 (EDT)
 	(envelope-from nico@fluxnic.net)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=pobox.com; h=from:to:cc
 	:subject:date:message-id:in-reply-to:references:mime-version
-	:content-transfer-encoding; s=sasl; bh=LDX0rqkLLVP9V/sDmVl/fCI94
-	iqNeaqPZhDHNWQCN4c=; b=Y8AWlnihw4ASRCyKuVRdAv9kZSFLJ65ROF+WQN9TT
-	Pz/g79CavpAU8qYou9+avXAGCkC1L6U4VD/YEz1ac+KKfDURoQfZfPySQvnLOhxj
-	3X7W9vq1O0UkDXaYk1BnbEuuECZMBmClTPJPDoQ7WHB0B3A06ts2ggp5APt/9xBp
-	3Y=
-Received: from pb-smtp21.sea.icgroup.com (unknown [127.0.0.1])
-	by pb-smtp21.pobox.com (Postfix) with ESMTP id 28166219E3;
-	Mon,  1 Apr 2024 23:27:55 -0400 (EDT)
+	:content-transfer-encoding; s=sasl; bh=QMOwqjxnZseTdo4gaCCD68XT9
+	06ZpR/cOYPc5z1rVOc=; b=DIwk83uf276YMgVgLkNnV4qepOkOS0oMndYURUxdR
+	p808nquf3OglmslwhU82lnrNkcgoU+zyehBBChBMHieR3gD+vmeEAcZbxDFCTMGD
+	JqT2A94sijIKmTaFnFGn1c0PsZ8XtNASQeXA1VLKb/8nbfTgbDNewq0Z/hiI530H
+	rg=
+Received: from pb-smtp2.nyi.icgroup.com (unknown [127.0.0.1])
+	by pb-smtp2.pobox.com (Postfix) with ESMTP id D2B3F1DBE47;
+	Mon,  1 Apr 2024 23:34:22 -0400 (EDT)
 	(envelope-from nico@fluxnic.net)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=fluxnic.net;
- h=from:to:cc:subject:date:message-id:in-reply-to:references:mime-version:content-transfer-encoding; s=2016-12.pbsmtp; bh=zKfWCe1Z/qKYc7AfNNNNh/gcTI3D9+3V/4Lyp8NTrys=; b=io8qi8FulZV8R04HVJYyHHKYNJcknNakWF3hYphyQpRLIHjsJIqyJe6lLrq6bPwx96y2NWbX/NczVQJ0PSQW9PlUFcg/ixFDilody4lpUydyaoCJc9VtakjOtYrSbfULP82wdSNa/6C2DuybI8y5I4DvEmQ42d6+kx7iI6EAqwA=
+ h=from:to:cc:subject:date:message-id:in-reply-to:references:mime-version:content-transfer-encoding; s=2016-12.pbsmtp; bh=z9sLPxyc4NMA8XRGQCFGghPoIcaO7E+YbcLd4Xx7mVs=; b=P1Xe8lrRVtgeyzXwv0kaSDJVmX1JFnvgHi8hsEWhytZPguKTbPiiLcHiLsYL6dlzjEt4oegOLVeJ+ZMwXPxLDnLRKNE1bKYX1MPkw7VfWkcSfnkHhmsbbSGoAPje/QYpccnYdVMgAn++xNHki7tAtjexzJ45gT2klENvl+5rev4=
 Received: from yoda.fluxnic.net (unknown [24.201.101.36])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by pb-smtp21.pobox.com (Postfix) with ESMTPSA id F34F6219D5;
-	Mon,  1 Apr 2024 23:27:47 -0400 (EDT)
+	by pb-smtp2.pobox.com (Postfix) with ESMTPSA id 34EA01DBE44;
+	Mon,  1 Apr 2024 23:34:22 -0400 (EDT)
 	(envelope-from nico@fluxnic.net)
 Received: from xanadu.lan (OpenWrt.lan [192.168.1.1])
-	by yoda.fluxnic.net (Postfix) with ESMTPSA id CF354C1CECD;
-	Mon,  1 Apr 2024 23:27:44 -0400 (EDT)
+	by yoda.fluxnic.net (Postfix) with ESMTPSA id 145F4C1CEDA;
+	Mon,  1 Apr 2024 23:27:46 -0400 (EDT)
 From: Nicolas Pitre <nico@fluxnic.net>
 To: Daniel Lezcano <daniel.lezcano@linaro.org>,
 	linux-pm@vger.kernel.org,
@@ -50,9 +50,9 @@ To: Daniel Lezcano <daniel.lezcano@linaro.org>,
 	devicetree@vger.kernel.org
 Cc: Nicolas Pitre <npitre@baylibre.com>,
 	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Subject: [PATCH v2 05/15] thermal/drivers/mediatek/lvts_thermal: guard against efuse data buffer overflow
-Date: Mon,  1 Apr 2024 23:25:39 -0400
-Message-ID: <20240402032729.2736685-6-nico@fluxnic.net>
+Subject: [PATCH v2 14/15] thermal/drivers/mediatek/lvts_thermal: add MT8188 support
+Date: Mon,  1 Apr 2024 23:25:48 -0400
+Message-ID: <20240402032729.2736685-15-nico@fluxnic.net>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240402032729.2736685-1-nico@fluxnic.net>
 References: <20240402032729.2736685-1-nico@fluxnic.net>
@@ -63,59 +63,150 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-Pobox-Relay-ID:
- FA51920E-F0A0-11EE-A8F0-A19503B9AAD1-78420484!pb-smtp21.pobox.com
+ E54B4084-F0A1-11EE-9BBD-25B3960A682E-78420484!pb-smtp2.pobox.com
 Content-Transfer-Encoding: quoted-printable
 
 From: Nicolas Pitre <npitre@baylibre.com>
 
-We don't want to silently fetch garbage past the actual buffer.
+Various values extracted from the vendor's kernel driver.
 
 Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
 ---
- drivers/thermal/mediatek/lvts_thermal.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/thermal/mediatek/lvts_thermal.c | 96 +++++++++++++++++++++++++
+ 1 file changed, 96 insertions(+)
 
 diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/me=
 diatek/lvts_thermal.c
-index 6edb858acf..03ef5b627c 100644
+index ae0c8f265b..03ff5d12e5 100644
 --- a/drivers/thermal/mediatek/lvts_thermal.c
 +++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -672,7 +672,8 @@ static int lvts_sensor_init(struct device *dev, struc=
-t lvts_ctrl *lvts_ctrl,
-  */
- static int lvts_calibration_init(struct device *dev, struct lvts_ctrl *l=
-vts_ctrl,
- 					const struct lvts_ctrl_data *lvts_ctrl_data,
--					u8 *efuse_calibration)
-+					u8 *efuse_calibration,
-+					size_t calib_len)
- {
- 	int i;
+@@ -1439,6 +1439,84 @@ static const struct lvts_ctrl_data mt8186_lvts_dat=
+a_ctrl[] =3D {
+ 	}
+ };
 =20
-@@ -680,6 +681,11 @@ static int lvts_calibration_init(struct device *dev,=
- struct lvts_ctrl *lvts_ctrl
- 		const struct lvts_sensor_data *sensor =3D
- 					&lvts_ctrl_data->lvts_sensor[i];
-=20
-+		if (sensor->cal_offsets[0] >=3D calib_len ||
-+		    sensor->cal_offsets[1] >=3D calib_len ||
-+		    sensor->cal_offsets[2] >=3D calib_len)
-+			return -EINVAL;
++static const struct lvts_ctrl_data mt8188_lvts_mcu_data_ctrl[] =3D {
++	{
++		.lvts_sensor =3D {
++			{ .dt_id =3D MT8188_MCU_LITTLE_CPU0,
++			  .cal_offsets =3D { 22, 23, 24 } },
++			{ .dt_id =3D MT8188_MCU_LITTLE_CPU1,
++			  .cal_offsets =3D { 25, 26, 27 } },
++			{ .dt_id =3D MT8188_MCU_LITTLE_CPU2,
++			  .cal_offsets =3D { 28, 29, 30 } },
++			{ .dt_id =3D MT8188_MCU_LITTLE_CPU3,
++			  .cal_offsets =3D { 31, 32, 33 } },
++		},
++		VALID_SENSOR_MAP(1, 1, 1, 1),
++		.offset =3D 0x0,
++		.mode =3D LVTS_MSR_FILTERED_MODE,
++	},
++	{
++		.lvts_sensor =3D {
++			{ .dt_id =3D MT8188_MCU_BIG_CPU0,
++			  .cal_offsets =3D { 34, 35, 36 } },
++			{ .dt_id =3D MT8188_MCU_BIG_CPU1,
++			  .cal_offsets =3D { 37, 38, 39 } },
++		},
++		VALID_SENSOR_MAP(1, 1, 0, 0),
++		.offset =3D 0x100,
++		.mode =3D LVTS_MSR_FILTERED_MODE,
++	}
++};
 +
- 		lvts_ctrl->calibration[i] =3D
- 			(efuse_calibration[sensor->cal_offsets[0]] << 0) +
- 			(efuse_calibration[sensor->cal_offsets[1]] << 8) +
-@@ -789,7 +795,8 @@ static int lvts_ctrl_init(struct device *dev, struct =
-lvts_domain *lvts_td,
++static const struct lvts_ctrl_data mt8188_lvts_ap_data_ctrl[] =3D {
++	{
++		.lvts_sensor =3D {
++
++			{ /* unused */ },
++			{ .dt_id =3D MT8188_AP_APU,
++			  .cal_offsets =3D { 40, 41, 42 } },
++		},
++		VALID_SENSOR_MAP(0, 1, 0, 0),
++		.offset =3D 0x0,
++		.mode =3D LVTS_MSR_FILTERED_MODE,
++	},
++	{
++		.lvts_sensor =3D {
++			{ .dt_id =3D MT8188_AP_GPU1,
++			  .cal_offsets =3D { 43, 44, 45 } },
++			{ .dt_id =3D MT8188_AP_GPU2,
++			  .cal_offsets =3D { 46, 47, 48 } },
++			{ .dt_id =3D MT8188_AP_SOC1,
++			  .cal_offsets =3D { 49, 50, 51 } },
++		},
++		VALID_SENSOR_MAP(1, 1, 1, 0),
++		.offset =3D 0x100,
++		.mode =3D LVTS_MSR_FILTERED_MODE,
++	},
++	{
++		.lvts_sensor =3D {
++			{ .dt_id =3D MT8188_AP_SOC2,
++			  .cal_offsets =3D { 52, 53, 54 } },
++			{ .dt_id =3D MT8188_AP_SOC3,
++			  .cal_offsets =3D { 55, 56, 57 } },
++		},
++		VALID_SENSOR_MAP(1, 1, 0, 0),
++		.offset =3D 0x200,
++		.mode =3D LVTS_MSR_FILTERED_MODE,
++	},
++	{
++		.lvts_sensor =3D {
++			{ .dt_id =3D MT8188_AP_CAM1,
++			  .cal_offsets =3D { 58, 59, 60 } },
++			{ .dt_id =3D MT8188_AP_CAM2,
++			  .cal_offsets =3D { 61, 62, 63 } },
++		},
++		VALID_SENSOR_MAP(1, 1, 0, 0),
++		.offset =3D 0x300,
++		.mode =3D LVTS_MSR_FILTERED_MODE,
++	}
++};
++
+ static const struct lvts_ctrl_data mt8192_lvts_mcu_data_ctrl[] =3D {
+ 	{
+ 		.lvts_sensor =3D {
+@@ -1622,6 +1700,22 @@ static const struct lvts_data mt8186_lvts_data =3D=
+ {
+ 	.gt_calib_bit_offset =3D 24,
+ };
 =20
- 		ret =3D lvts_calibration_init(dev, &lvts_ctrl[i],
- 					    &lvts_data->lvts_ctrl[i],
--					    lvts_td->calib);
-+					    lvts_td->calib,
-+					    lvts_td->calib_len);
- 		if (ret)
- 			return ret;
-=20
++static const struct lvts_data mt8188_lvts_mcu_data =3D {
++	.lvts_ctrl	=3D mt8188_lvts_mcu_data_ctrl,
++	.num_lvts_ctrl	=3D ARRAY_SIZE(mt8188_lvts_mcu_data_ctrl),
++	.temp_factor	=3D LVTS_COEFF_A_MT8195,
++	.temp_offset	=3D LVTS_COEFF_B_MT8195,
++	.gt_calib_bit_offset =3D 20,
++};
++
++static const struct lvts_data mt8188_lvts_ap_data =3D {
++	.lvts_ctrl	=3D mt8188_lvts_ap_data_ctrl,
++	.num_lvts_ctrl	=3D ARRAY_SIZE(mt8188_lvts_ap_data_ctrl),
++	.temp_factor	=3D LVTS_COEFF_A_MT8195,
++	.temp_offset	=3D LVTS_COEFF_B_MT8195,
++	.gt_calib_bit_offset =3D 20,
++};
++
+ static const struct lvts_data mt8192_lvts_mcu_data =3D {
+ 	.lvts_ctrl	=3D mt8192_lvts_mcu_data_ctrl,
+ 	.num_lvts_ctrl	=3D ARRAY_SIZE(mt8192_lvts_mcu_data_ctrl),
+@@ -1653,6 +1747,8 @@ static const struct lvts_data mt8195_lvts_ap_data =3D=
+ {
+ static const struct of_device_id lvts_of_match[] =3D {
+ 	{ .compatible =3D "mediatek,mt7988-lvts-ap", .data =3D &mt7988_lvts_ap_=
+data },
+ 	{ .compatible =3D "mediatek,mt8186-lvts", .data =3D &mt8186_lvts_data }=
+,
++	{ .compatible =3D "mediatek,mt8188-lvts-mcu", .data =3D &mt8188_lvts_mc=
+u_data },
++	{ .compatible =3D "mediatek,mt8188-lvts-ap", .data =3D &mt8188_lvts_ap_=
+data },
+ 	{ .compatible =3D "mediatek,mt8192-lvts-mcu", .data =3D &mt8192_lvts_mc=
+u_data },
+ 	{ .compatible =3D "mediatek,mt8192-lvts-ap", .data =3D &mt8192_lvts_ap_=
+data },
+ 	{ .compatible =3D "mediatek,mt8195-lvts-mcu", .data =3D &mt8195_lvts_mc=
+u_data },
 --=20
 2.44.0
 
