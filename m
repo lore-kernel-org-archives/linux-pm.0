@@ -1,48 +1,48 @@
-Received: from pb-smtp2.pobox.com (pb-smtp2.pobox.com [64.147.108.71])
+Received: from pb-smtp20.pobox.com (pb-smtp20.pobox.com [173.228.157.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A845B14AB7;
-	Tue,  2 Apr 2024 03:27:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=64.147.108.71
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45D442C9E;
+	Tue,  2 Apr 2024 03:27:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=173.228.157.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712028471; cv=none; b=qkDG0ZolT7Ok/NIK62UEOvktKi29g1tUYj8V5JPvQJVsNGffPpXOevYLgc0c6iAw1zSnWYcBXKPnQsmJ5cXCqDMQpJUaZuGS0sjl6zkkLOzvy5JF0bW3veZoAUHk9MiuJMKQwWo/dmtQl3QIBh6xCpaMCDfASnxZ1lduUdhY9Ug=
+	t=1712028472; cv=none; b=loerdRdpw+gPQC82Pl1sB0OY6veXdE5/S6fMYWLDtA1YPHguckMAzJyAChzYhKEeB7VknxXifc4skoWvAO3Tis51i+3DosvTVJE6QsLb3e0sV6Wv4e1FKd+mHG83v+xxtC8OJsSAeaORkgZA7jMbaSkgtzGpJzVhLCZo7l59b5A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712028471; c=relaxed/simple;
-	bh=ScwN+eL5Iy7BALIJYLXFDSBD9VouoWmZ+JLjnDMkDm8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=qD0XPuuZisddP7lxbS2Dz5X7vpbj2AdOaPERNYDiO/EgkHBiNiDqj2qbMqbFAMrZmJ2X7IDoXBucPDX8JzLgEQDimZjMJZ4GEw0RFMNUhDXG6X/+0BQyMkERqkKs5UDXlk/kfZtVXo25gw92uA3rO6hq5G3wvKTN3qBLS1YHicg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net; spf=pass smtp.mailfrom=fluxnic.net; dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b=lFgisjo0; dkim=fail (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b=V7d3ojbu reason="signature verification failed"; arc=none smtp.client-ip=64.147.108.71
+	s=arc-20240116; t=1712028472; c=relaxed/simple;
+	bh=Y6jvOzEouXNWKuWy3ccTjj476XMGHanXU+3TO3ClnKg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=egbhL77VqsKhIh6q1e4MmU3NwfKtCm3cKzFQYydev814Po0VAoQulwHdjTwzQuURb1EDsLjK+FR7eV/CSfMfVVJ86lPNMNeMAM2vsQg8H7b1eJ3EMt4oi9m3/HblzC2mzQmZrqnIPmFtadt6t3fdbBpdDgyQ6DsutDPAsMwtQxE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net; spf=pass smtp.mailfrom=fluxnic.net; dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b=Yc05Gq9Q; dkim=fail (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b=rGs9S7c5 reason="signature verification failed"; arc=none smtp.client-ip=173.228.157.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b="lFgisjo0";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="V7d3ojbu"
-Received: from pb-smtp2.pobox.com (unknown [127.0.0.1])
-	by pb-smtp2.pobox.com (Postfix) with ESMTP id 7FC961DBD7C;
-	Mon,  1 Apr 2024 23:27:48 -0400 (EDT)
+	dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com header.b="Yc05Gq9Q";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="rGs9S7c5"
+Received: from pb-smtp20.pobox.com (unknown [127.0.0.1])
+	by pb-smtp20.pobox.com (Postfix) with ESMTP id 929B325040;
+	Mon,  1 Apr 2024 23:27:50 -0400 (EDT)
 	(envelope-from nico@fluxnic.net)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=pobox.com; h=from:to:cc
-	:subject:date:message-id:in-reply-to:references:mime-version
-	:content-transfer-encoding; s=sasl; bh=ScwN+eL5Iy7BALIJYLXFDSBD9
-	VouoWmZ+JLjnDMkDm8=; b=lFgisjo0MgDYa83l0yluEPrlyMffFxrXuFxD+4BcN
-	JeFwxQWmiIadb8sRRR5BztCyJIVrtigk84MBJIaw07ndRMThZ67nmLR+rWLr0D65
-	S4zvDPNOV/4k2O73vTuGE2rNGm1SP31alNIMeqRM8y0NeaRGo3IWp6MdSirUeliU
-	Q0=
-Received: from pb-smtp2.nyi.icgroup.com (unknown [127.0.0.1])
-	by pb-smtp2.pobox.com (Postfix) with ESMTP id 760A01DBD7B;
-	Mon,  1 Apr 2024 23:27:48 -0400 (EDT)
+	:subject:date:message-id:mime-version:content-transfer-encoding;
+	 s=sasl; bh=Y6jvOzEouXNWKuWy3ccTjj476XMGHanXU+3TO3ClnKg=; b=Yc05
+	Gq9Q4s+S4T8ijXt4ByAH2vn0T9sWQinjDx0KDB9iZ4yaLIRz0Yr4mArCGoVdw4N5
+	PqVrlHe5jv1igraG7vjHtF5P7Zf6d1Pw6VPGy1vKz8JxIKah24EpD/RTf0xoi7nM
+	+8RVPPFT//es9w6lDVvHqctpGs685cgHzHgr+78=
+Received: from pb-smtp20.sea.icgroup.com (unknown [127.0.0.1])
+	by pb-smtp20.pobox.com (Postfix) with ESMTP id 8AD122503F;
+	Mon,  1 Apr 2024 23:27:50 -0400 (EDT)
 	(envelope-from nico@fluxnic.net)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=fluxnic.net;
- h=from:to:cc:subject:date:message-id:in-reply-to:references:mime-version:content-transfer-encoding; s=2016-12.pbsmtp; bh=KRLolNlFAREnWbcdTG3kKhk4k/XmV5J2nlwZY29mbd4=; b=V7d3ojbug0JFrc1ZbiXTyb7i/1TJfogRInYQ9QgYFOwAVkaCG5+YvX82kvlko9wFqRcoc/vBojeJqzg511b1XiSr7Kpuhf7N5/5pLFNUiDuCOr+My9GlRaypZvvHZHE6lj5Ray4Y0KZfP+lB/zPy4VGhYHll1+rwfc2jRKnAfwA=
+ h=from:to:cc:subject:date:message-id:mime-version:content-transfer-encoding;
+ s=2016-12.pbsmtp; bh=Y6jvOzEouXNWKuWy3ccTjj476XMGHanXU+3TO3ClnKg=;
+ b=rGs9S7c5Q0bvvz5g4tDLqISdgaZ+uFHhu/hvls5t2MQJLlLELiUj5GWWqrZKtsW7ql3p3yOQ/MrXaBzUGuOG02YmH1LTTwPlTfdbrL8ZPv1tnh6QMIDroITGXF0JAc9FrxGAc8tqkf5xn53uNvT6nWSe84shCXRxkCivcTuK5+o=
 Received: from yoda.fluxnic.net (unknown [24.201.101.36])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by pb-smtp2.pobox.com (Postfix) with ESMTPSA id EB8411DBD7A;
-	Mon,  1 Apr 2024 23:27:47 -0400 (EDT)
+	by pb-smtp20.pobox.com (Postfix) with ESMTPSA id 8736E2503D;
+	Mon,  1 Apr 2024 23:27:46 -0400 (EDT)
 	(envelope-from nico@fluxnic.net)
 Received: from xanadu.lan (OpenWrt.lan [192.168.1.1])
-	by yoda.fluxnic.net (Postfix) with ESMTPSA id 10DDFC1CED0;
-	Mon,  1 Apr 2024 23:27:45 -0400 (EDT)
+	by yoda.fluxnic.net (Postfix) with ESMTPSA id 3F48BC1CEC6;
+	Mon,  1 Apr 2024 23:27:44 -0400 (EDT)
 From: Nicolas Pitre <nico@fluxnic.net>
 To: Daniel Lezcano <daniel.lezcano@linaro.org>,
 	linux-pm@vger.kernel.org,
@@ -50,12 +50,10 @@ To: Daniel Lezcano <daniel.lezcano@linaro.org>,
 	devicetree@vger.kernel.org
 Cc: Nicolas Pitre <npitre@baylibre.com>,
 	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Subject: [PATCH v2 07/15] arm64: dts: mediatek: mt8186: add lvts definitions
-Date: Mon,  1 Apr 2024 23:25:41 -0400
-Message-ID: <20240402032729.2736685-8-nico@fluxnic.net>
+Subject: [PATCH v3 00/15] Mediatek thermal sensor driver support for MT8186 and MT8188
+Date: Mon,  1 Apr 2024 23:25:34 -0400
+Message-ID: <20240402032729.2736685-1-nico@fluxnic.net>
 X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240402032729.2736685-1-nico@fluxnic.net>
-References: <20240402032729.2736685-1-nico@fluxnic.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,58 +61,45 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-Pobox-Relay-ID:
- FA4CA5A0-F0A0-11EE-85E4-25B3960A682E-78420484!pb-smtp2.pobox.com
+ F974D08A-F0A0-11EE-A764-F515D2CDFF5E-78420484!pb-smtp20.pobox.com
 Content-Transfer-Encoding: quoted-printable
 
-From: Nicolas Pitre <npitre@baylibre.com>
+This is a bunch of patches to support the MT8186 and MT8188 thermal
+sensor configurations. Several changes are needed to cope with oddities
+these SOCs implement.
 
-Values extracted from vendor source tree.
+All values (calibration data offsets, etc.) were lifted and adapted from
+the vendor driver source code.
 
-Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
----
- arch/arm64/boot/dts/mediatek/mt8186.dtsi | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+Changes from v2:
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8186.dtsi b/arch/arm64/boot/d=
-ts/mediatek/mt8186.dtsi
-index 2fec6fd1c1..cef8244007 100644
---- a/arch/arm64/boot/dts/mediatek/mt8186.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8186.dtsi
-@@ -1355,6 +1355,18 @@ spi0: spi@1100a000 {
- 			status =3D "disabled";
- 		};
-=20
-+		lvts: thermal-sensor@1100b000 {
-+			compatible =3D "mediatek,mt8186-lvts";
-+			#thermal-sensor-cells =3D <1>;
-+			reg =3D <0 0x1100b000 0 0x1000>;
-+			interrupts =3D <GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH 0>;
-+			clocks =3D <&infracfg_ao CLK_INFRA_AO_THERM>;
-+			clock-names =3D "lvts_clk";
-+			resets =3D <&infracfg_ao MT8186_INFRA_THERMAL_CTRL_RST>;
-+			nvmem-cells =3D <&lvts_e_data1 &lvts_e_data2>;
-+			nvmem-cell-names =3D "e_data1","e_data2";
-+		};
-+
- 		pwm0: pwm@1100e000 {
- 			compatible =3D "mediatek,mt8186-disp-pwm", "mediatek,mt8183-disp-pwm"=
-;
- 			reg =3D <0 0x1100e000 0 0x1000>;
-@@ -1668,6 +1680,14 @@ efuse: efuse@11cb0000 {
- 			#address-cells =3D <1>;
- 			#size-cells =3D <1>;
-=20
-+			lvts_e_data1: data1 {
-+				reg =3D <0x1cc 0x14>;
-+			};
-+
-+			lvts_e_data2: data1-1 {
-+				reg =3D <0x2f8 0x14>;
-+			};
-+
- 			gpu_speedbin: gpu-speedbin@59c {
- 				reg =3D <0x59c 0x4>;
- 				bits =3D <0 3>;
---=20
-2.44.0
+ - use meaningful name for binding index definitions
+ - reuse LVTS_COEFF_*_MT7988 on MT8186 per reviewer request
+ - do similarly for MT8188 that now reuses LVTS_COEFF_*_MT8195
+ - use thermal zone names the svs driver wants
+ - adjust some DT node names and iospace length
+ - remove variable .hw_tshut_temp as it is constant across all SOCs
 
+Version 2 can be found here:
+
+ https://lore.kernel.org/all/20240318212428.3843952-1-nico@fluxnic.net/
+
+Changes from v1:
+
+ - renamed CPU cluster thermal zones in DT
+ - fixed logic to cope with empty controller slots at the beginning
+ - isolated bindings to their own patches
+ - added MT8188 default thermal zones
+
+Version 1 can be found here:
+
+ https://lore.kernel.org/all/20240111223020.3593558-1-nico@fluxnic.net/T/
+
+diffstat:
+
+ .../thermal/mediatek,lvts-thermal.yaml        |   6 +
+ arch/arm64/boot/dts/mediatek/mt8186.dtsi      | 256 +++++++++++
+ arch/arm64/boot/dts/mediatek/mt8188.dtsi      | 383 ++++++++++++++++
+ drivers/thermal/mediatek/lvts_thermal.c       | 434 +++++++++++++-----
+ .../thermal/mediatek,lvts-thermal.h           |  26 ++
+ 5 files changed, 987 insertions(+), 118 deletions(-)
