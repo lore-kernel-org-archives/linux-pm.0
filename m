@@ -1,135 +1,219 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E812142E82;
-	Wed,  3 Apr 2024 11:34:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 075E9134CCA;
+	Wed,  3 Apr 2024 12:02:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712144093; cv=none; b=fxZwwF0HcvXNETtj45+2HOvLZi33vUuhNi+AAwt7k08u/2OabGfjPVGSSAcW+M9uBAsA/Kd636L93jAQ0ZEZjFE3eZNBn2Srbm3AIcFN5UU5oUGn00XG+bDICtyzWHZgqgA/nTE4byYG/b+uMwr5TW2rsM/yPm2y4XY9iWmdWpM=
+	t=1712145754; cv=none; b=POW+VnB4HhS3daBV13fxrVOd2OsUcboo8lJW2IxHn+RIcyg8dFFcp+iqBBIJDhqchqrMq7tF/J+JzzZMKh1WUGReT/KICoQz/NOve5up/ZQV777XVD/bA7RTqog5vJMm3gJAllXIOA4qcBQqSn+dyCVD46S4tZvCxbR/ovFi8ZI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712144093; c=relaxed/simple;
-	bh=UDYQPhlA5eM2YlkU/4jxQmmyMYA7pLirv/wkMA+a+Ho=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mPu4lze0biA072mb/yoKE2axXywKHX5AnPf41PVFYMKc07rDO9ltYoBRg3+XN4idhsyyid+vB4fspFfaNtP4mSpnNQOiZdF9SPgWCyfKl2WnyXQiteAK3BUkYMvexXxY+SqSxmIsaSeJsdEaZX0wYNPZFAivjEfWYklMNHwq+TY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gHpTDr9J; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1712145754; c=relaxed/simple;
+	bh=MIjlzCP1Z9ehRzIIXpDe3raQA7sAPJ0M61/wEYcg7/s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=pjj1obuyqROJJIec3Oj2hT8xVAMER9ThYa5P4NkAzwC8++P6jVYixOqzJLqUxo7Cvben3xDi1nx4ttE72JhlTSFEVnXCyNC8XFP/OzmpMsyvivq11B2LHsFmbNVuVthDzfYoYBPO0EsfR6xGtmnxaic3sDQZW3yIHW1dtXy9R4w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b=nrmmy/zs; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gHpTDr9J"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id BA40CC43390;
-	Wed,  3 Apr 2024 11:34:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712144092;
-	bh=UDYQPhlA5eM2YlkU/4jxQmmyMYA7pLirv/wkMA+a+Ho=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=gHpTDr9J4ABLAfofTIZdmHgcF4X53E+MsA6Kyy0gCDir23w+XUVIYdfO+3xBKjEpU
-	 Xbp9VqWa+vLSSl+HkQPE13x5tjw1UYmm/5USbToax6j4AR6S0Cs2aK84zm20xJ5gaB
-	 IWtpyV016XByzp5mRTBWI1rWgs20lywAc2gnkCF4SymrFD3Z0pFEt/s3hot2gkxMgr
-	 cWgVBJWFiARaE2fy5folobdM26YrABLFjQSkbBVuI7AH261LjHDgL32bwg4KKo0a2+
-	 nLBeTFQSjmzHCOi2gX9ejTwsgj0oWGC1mCJaodOIVeGPNrRKXToFga+gbauU3XLHQ3
-	 y3cgia0J9i4NQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAEEFCD128A;
-	Wed,  3 Apr 2024 11:34:52 +0000 (UTC)
-From: Nikita Travkin via B4 Relay <devnull+nikita.trvn.ru@kernel.org>
-Date: Wed, 03 Apr 2024 16:31:41 +0500
-Subject: [PATCH v2 2/3] thermal: gov_power_allocator: Allow binding without
- trip points
+	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b="nrmmy/zs"
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 4A955352D4;
+	Wed,  3 Apr 2024 12:02:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1712145751; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=t2Hnk77vjkotvAO37I/a2KOyOgPIBZ2Mq+MuEdRqQKg=;
+	b=nrmmy/zsneWTeL++5/D9B2Y0Ll8wNr1h4y1OcBKbzxxAa3w+x6B5a3WrzWOY7ihqsnRvnj
+	8QXs7vq++BB08smCjZwoqVuLc9qWMJSmeLYkMm4KloSdvgTsNU+wCUTk4xgmdL9P9tBXHJ
+	E93kGqd5umuaEbHIHpQSg3BQxcqavNM=
+Authentication-Results: smtp-out1.suse.de;
+	none
+Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 329991331E;
+	Wed,  3 Apr 2024 12:02:31 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap2.dmz-prg2.suse.org with ESMTPSA
+	id zqkpDFdFDWbALQAAn2gu4w
+	(envelope-from <mkoutny@suse.com>); Wed, 03 Apr 2024 12:02:31 +0000
+Date: Wed, 3 Apr 2024 14:02:22 +0200
+From: Michal =?utf-8?Q?Koutn=C3=BD?= <mkoutny@suse.com>
+To: Waiman Long <longman@redhat.com>
+Cc: Tejun Heo <tj@kernel.org>, Zefan Li <lizefan.x@bytedance.com>, 
+	Johannes Weiner <hannes@cmpxchg.org>, Thomas Gleixner <tglx@linutronix.de>, 
+	Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Shuah Khan <shuah@kernel.org>, 
+	linux-kernel@vger.kernel.org, cgroups@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org, Frederic Weisbecker <frederic@kernel.org>, 
+	"Paul E. McKenney" <paulmck@kernel.org>, Ingo Molnar <mingo@kernel.org>, 
+	Valentin Schneider <vschneid@redhat.com>, Anna-Maria Behnsen <anna-maria@linutronix.de>, 
+	Alex Shi <alexs@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Barry Song <song.bao.hua@hisilicon.com>
+Subject: Re: Re: [PATCH 1/2] cgroup/cpuset: Make cpuset hotplug processing
+ synchronous
+Message-ID: <u3naomgv34t5rnc7pmyy4zjppgf36skeo45orss2xnqcvtrcez@m74tsl2ws76f>
+References: <20240401145858.2656598-1-longman@redhat.com>
+ <20240401145858.2656598-2-longman@redhat.com>
+ <kce74bx6aafxfuw5yovaschym4ze4kommfk74eq5totojytest@mdxnfvl2kdol>
+ <548efd52-e45f-41fa-a477-bc5112d7b00c@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240403-gpa-no-cooling-devs-v2-2-79bdd8439449@trvn.ru>
-References: <20240403-gpa-no-cooling-devs-v2-0-79bdd8439449@trvn.ru>
-In-Reply-To: <20240403-gpa-no-cooling-devs-v2-0-79bdd8439449@trvn.ru>
-To: Lukasz Luba <lukasz.luba@arm.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Nikita Travkin <nikitos.tr@gmail.com>, Nikita Travkin <nikita@trvn.ru>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2101; i=nikita@trvn.ru;
- h=from:subject:message-id;
- bh=aX3XyiCHA+n2cubW1L4ZLcOrqQkfy11LKyh/4X5tJVw=;
- b=owEBbQKS/ZANAwAIAUMc7O4oGb91AcsmYgBmDT7aDjJW3qq1rSoA7iBt+c+AS53Nu9qzgj6L+
- e0DzRUDI5yJAjMEAAEIAB0WIQTAhK9UUj+qg34uxUdDHOzuKBm/dQUCZg0+2gAKCRBDHOzuKBm/
- dcvlD/0VZ9HatTS7LP55/Kje6FO3xvMn0crj+CRHX3Z1csFoUDnlTFaJsyFONaS5LvROuIutiJK
- gObneneKf2549moPVUtubHdi/vHQTdf2MWmxxSjhqyh+cNskIQk8WoRDpYVPrPY1Vma8858G4fb
- uhtSt4ygEXqClScqki9DlizOcWv1qqy3yMPMG/qR/Mi5C+s8rky9kbXaeN57QODSqtweVGD9Egw
- x027zgNdA0z8Tge29DlydmPAug6dAXHNWcSzhge48pXUjyoDTxIqfbxZGcgyV8meRB2nMCJSjXp
- SpJzRltV4m1uMirSDvEpoTrMrjZ1FL4he3D/0iQEcpBkBJTXfJTHiWSmlvsF5y/MFeknm8k6esu
- /2sW2+sD+5YY7h1nf1gPY+rVp+RPh3f10tYGLFvpLaO+6EtOFDxWPeUJJi4OAz2MQNZJbGtA7Sm
- J9uor6qK1GdCY8NYd1aMFRQCk6yytDi/XAkOKCQxQUsqmTPg3R9deMGLwJL5Wu3H98n+2vlWiMP
- lAYXs5mseKe8PKi08v0eWBmXPSmYL8ooqmv2P4nkKAmb9tqSRM/CZWDcHvFDqMLlnjaXGUm1vEY
- Ovppz7SH/mDIs0uu4Se0Exvel+IKYx7GV/ZvxVBI2kfE4zb7PfVLLc9CePlsPv1uzPxD0s6qcrq
- cvLXDNfkIfKxeFg==
-X-Developer-Key: i=nikita@trvn.ru; a=openpgp;
- fpr=C084AF54523FAA837E2EC547431CECEE2819BF75
-X-Endpoint-Received: by B4 Relay for nikita@trvn.ru/default with
- auth_id=151
-X-Original-From: Nikita Travkin <nikita@trvn.ru>
-Reply-To: nikita@trvn.ru
-
-From: Nikita Travkin <nikita@trvn.ru>
-
-IPA probe function was recently refactored to perform extra error checks
-and make sure the thermal zone has trip points necessary for the IPA
-operation. With this change, if a thermal zone is probed such that it
-has no trip points that IPA can use, IPA will fail and the TZ won't be
-created. This is the case if a platform defines a TZ without cooling
-devices and only with "hot"/"critical" trip points, often found on some
-Qualcomm devices [1].
-
-Documentation across IPA code (notably get_governor_trips() kerneldoc)
-suggests that IPA is supposed to handle such TZ even if it won't
-actually do anything.
-
-This commit partially reverts the previous change to allow IPA to bind
-to such "empty" thermal zones.
-
-[1] arch/arm64/boot/dts/qcom/sc7180.dtsi#n4776
-
-Fixes: e83747c2f8e3 ("thermal: gov_power_allocator: Set up trip points earlier")
-Signed-off-by: Nikita Travkin <nikita@trvn.ru>
----
- drivers/thermal/gov_power_allocator.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index ec637071ef1f..e25e48d76aa7 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -679,11 +679,6 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 		return -ENOMEM;
- 
- 	get_governor_trips(tz, params);
--	if (!params->trip_max) {
--		dev_warn(&tz->device, "power_allocator: missing trip_max\n");
--		kfree(params);
--		return -EINVAL;
--	}
- 
- 	ret = check_power_actors(tz, params);
- 	if (ret < 0) {
-@@ -714,9 +709,10 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 	else
- 		params->sustainable_power = tz->tzp->sustainable_power;
- 
--	estimate_pid_constants(tz, tz->tzp->sustainable_power,
--			       params->trip_switch_on,
--			       params->trip_max->temperature);
-+	if (params->trip_max)
-+		estimate_pid_constants(tz, tz->tzp->sustainable_power,
-+				       params->trip_switch_on,
-+				       params->trip_max->temperature);
- 
- 	reset_pid_controller(params);
- 
-
--- 
-2.44.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="hasfuqktmb566gtt"
+Content-Disposition: inline
+In-Reply-To: <548efd52-e45f-41fa-a477-bc5112d7b00c@redhat.com>
+X-Spam-Score: -5.90
+X-Spamd-Result: default: False [-5.90 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 MIME_GOOD(-0.20)[multipart/signed,text/plain];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.com:s=susede1];
+	 NEURAL_HAM_SHORT(-0.20)[-0.992];
+	 RCPT_COUNT_TWELVE(0.00)[22];
+	 SIGNED_PGP(-2.00)[];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+,1:+,2:~];
+	 MID_RHS_NOT_FQDN(0.50)[];
+	 RCVD_TLS_ALL(0.00)[];
+	 BAYES_HAM(-3.00)[100.00%]
+X-Spam-Level: 
+X-Spam-Flag: NO
 
 
+--hasfuqktmb566gtt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Apr 02, 2024 at 11:30:11AM -0400, Waiman Long <longman@redhat.com> =
+wrote:
+> Yes, there is a potential that a cpus_read_lock() may be called leading to
+> deadlock. So unless we reverse the current cgroup_mutex --> cpu_hotplug_l=
+ock
+> ordering, it is not safe to call cgroup_transfer_tasks() directly.
+
+I see that cgroup_transfer_tasks() has the only user -- cpuset. What
+about bending it for the specific use like:
+
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index 34aaf0e87def..64deb7212c5c 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -109,7 +109,7 @@ struct cgroup *cgroup_get_from_fd(int fd);
+ struct cgroup *cgroup_v1v2_get_from_fd(int fd);
+=20
+ int cgroup_attach_task_all(struct task_struct *from, struct task_struct *);
+-int cgroup_transfer_tasks(struct cgroup *to, struct cgroup *from);
++int cgroup_transfer_tasks_locked(struct cgroup *to, struct cgroup *from);
+=20
+ int cgroup_add_dfl_cftypes(struct cgroup_subsys *ss, struct cftype *cfts);
+ int cgroup_add_legacy_cftypes(struct cgroup_subsys *ss, struct cftype *cft=
+s);
+diff --git a/kernel/cgroup/cgroup-v1.c b/kernel/cgroup/cgroup-v1.c
+index 520a11cb12f4..f97025858c7a 100644
+--- a/kernel/cgroup/cgroup-v1.c
++++ b/kernel/cgroup/cgroup-v1.c
+@@ -91,7 +91,8 @@ EXPORT_SYMBOL_GPL(cgroup_attach_task_all);
+  *
+  * Return: %0 on success or a negative errno code on failure
+  */
+-int cgroup_transfer_tasks(struct cgroup *to, struct cgroup *from)
++int cgroup_transfer_tasks_locked(struct cgroup *to, struct cgroup *from)
+ {
+ 	DEFINE_CGROUP_MGCTX(mgctx);
+ 	struct cgrp_cset_link *link;
+@@ -106,9 +106,11 @@ int cgroup_transfer_tasks(struct cgroup *to, struct cg=
+roup *from)
+ 	if (ret)
+ 		return ret;
+=20
+-	cgroup_lock();
+-
+-	cgroup_attach_lock(true);
++	/* The locking rules serve specific purpose of v1 cpuset hotplug
++	 * migration, see hotplug_update_tasks_legacy() and
++	 * cgroup_attach_lock() */
++	lockdep_assert_held(&cgroup_mutex);
++	lockdep_assert_cpus_held();
++	percpu_down_write(&cgroup_threadgroup_rwsem);
+=20
+ 	/* all tasks in @from are being moved, all csets are source */
+ 	spin_lock_irq(&css_set_lock);
+@@ -144,8 +146,7 @@ int cgroup_transfer_tasks(struct cgroup *to, struct cgr=
+oup *from)
+ 	} while (task && !ret);
+ out_err:
+ 	cgroup_migrate_finish(&mgctx);
+-	cgroup_attach_unlock(true);
+-	cgroup_unlock();
++	percpu_up_write(&cgroup_threadgroup_rwsem);
+ 	return ret;
+ }
+=20
+diff --git a/kernel/cgroup/cpuset.c b/kernel/cgroup/cpuset.c
+index 13d27b17c889..94fb8b26f038 100644
+--- a/kernel/cgroup/cpuset.c
++++ b/kernel/cgroup/cpuset.c
+@@ -4331,7 +4331,7 @@ static void remove_tasks_in_empty_cpuset(struct cpuse=
+t *cs)
+ 			nodes_empty(parent->mems_allowed))
+ 		parent =3D parent_cs(parent);
+=20
+-	if (cgroup_transfer_tasks(parent->css.cgroup, cs->css.cgroup)) {
++	if (cgroup_transfer_tasks_locked(parent->css.cgroup, cs->css.cgroup)) {
+ 		pr_err("cpuset: failed to transfer tasks out of empty cpuset ");
+ 		pr_cont_cgroup_name(cs->css.cgroup);
+ 		pr_cont("\n");
+@@ -4376,21 +4376,9 @@ hotplug_update_tasks_legacy(struct cpuset *cs,
+=20
+ 	/*
+ 	 * Move tasks to the nearest ancestor with execution resources,
+-	 * This is full cgroup operation which will also call back into
+-	 * cpuset. Execute it asynchronously using workqueue.
+ 	 */
+-	if (is_empty && css_tryget_online(&cs->css)) {
+-		struct cpuset_remove_tasks_struct *s;
+-
+-		s =3D kzalloc(sizeof(*s), GFP_KERNEL);
+-		if (WARN_ON_ONCE(!s)) {
+-			css_put(&cs->css);
+-			return;
+-		}
+-
+-		s->cs =3D cs;
+-		INIT_WORK(&s->work, cpuset_migrate_tasks_workfn);
+-		schedule_work(&s->work);
++	if (is_empty)
++		remove_tasks_in_empty_cpuset(cs);
+ 	}
+ }
+=20
+
+--hasfuqktmb566gtt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQQpEWyjXuwGT2dDBqAGvrMr/1gcjgUCZg1FSwAKCRAGvrMr/1gc
+jrAhAP9EAPzvP9ut5Lv9vhE3zzjDfzz7OiWPnQ20fgbULZsGqQEA5zpBHRFrppA/
+1N8N9HiJAV3pbeOdaHR/ZDy7Cg6Qjwg=
+=GFHO
+-----END PGP SIGNATURE-----
+
+--hasfuqktmb566gtt--
