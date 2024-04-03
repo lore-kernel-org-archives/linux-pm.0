@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E7371420BC;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E7AB142E75;
 	Wed,  3 Apr 2024 11:34:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712144093; cv=none; b=uXvam9Zpr/ZB7mTGzLAgScoum1U874gR87tFE/P1BllUxfz+m+T83yzWUbugsuavx45XHIayLHG0/8FqY5JQXhrWBnoG6+afEPjZiq0g6hWDgNIlaWwyN1IuTob0mbNRamyNu2TpPV/BUQfskjHIs1P8s9wU7a74HolyZ9C4up0=
+	t=1712144093; cv=none; b=CJOevTUBWGvdcwGEmvg9ZWyUNgyO0Ir5O8DsraUA5K2J+qCj7I1JrdUMYTz5Yo5cTS7tOnpp7RmntUcqIPGngM+rWQhNg5TQaV5iCe9DrEAwnt8B7cbcopAD8hoNwJgKZy7n5IDN+K0+E0Xus0RemSSnqUvvNe+YjdDcATdn17c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1712144093; c=relaxed/simple;
-	bh=/cAO8r1QYGwr2S/rVs04YoQy4x022R0HsRlCwXhwDy8=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=ZPrZOTzzmcQCtW5E2iBRA3A+sXQ5l3bALLbVK4M2hWuh2UlX7xCFQ0Tt7gZEmjKmaSZke1zzUUqNeTnHhR0m1GVluGrLneFJ0gRRtAAnz4+rncPNcfT6MBenpbPISmwX/LT12XbsdNQFmrbiRVS/O6TVCySkBDtPWJgMenZK50Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c5cyU6hy; arc=none smtp.client-ip=10.30.226.201
+	bh=9758iPN/JC97kvoDw1mamVXOKflxBHmJlpHg9S7rrE4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=I5b/BT26Jg4v+QVSot2zXezXUM1nAVTdpeUF0GV5s91JmioPiEZ7ddZgRPGJLoG9reSt3pBrvvkJbDFcUWywvhL0otl33TBObNbDVp5wRV4JwiLnJmJ/50XMjir9ZQKuQiQU6ouhqt3U6Ea7s3Gnvt8ZpsHV8kJ6jVDa+H033Bg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=f2vn7QmH; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c5cyU6hy"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A11A4C433F1;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="f2vn7QmH"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C2BF3C433A6;
 	Wed,  3 Apr 2024 11:34:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1712144092;
-	bh=/cAO8r1QYGwr2S/rVs04YoQy4x022R0HsRlCwXhwDy8=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=c5cyU6hyZjlCQa99pLKwXQquNKOXu/KjzX0biLYaYlj5vXsjZtbKynHJSsK34s63C
-	 lWtZzIq8RkUSQAOZ3aEKrK+IaX6Lc8fvIRt1dDPo31qw9JmFNAtifCU0/tEBBMHwtD
-	 NbF8oIhJXltGEKI7ctrZg+v4SLw++FDQ2xlw6pvxmSJb3oFq0bFdLLYp0kJS4HqPO1
-	 arRvd+fhUYeKV8eaVp5Lr49NS/PDH6taereUrUftGvtkEhSJnCW//WXl/WJwdDl4Vq
-	 WM3aRVEL2lJrQhsOYktuDQEl0uAKnrjt/VC/56YeNKb0A0NUCV6mQBGg7GllzGkCdw
-	 7BwIxnpcigREA==
+	bh=9758iPN/JC97kvoDw1mamVXOKflxBHmJlpHg9S7rrE4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=f2vn7QmHwXQ8S+xD1N0fPX0NzPWSSvRNLF5lINARbs8A11BBpw0JH5Z/OUm2tJeRm
+	 gj3sdslr/9HBzxOPQfGTSJuRBfDRJek83Bh9a5DMjDbcisARDNrCYGubU5ushMnTKN
+	 7YtBu13wzUeN5s5bnYtInW/9FgrlhxF2mwyDPMqnt7gDBw4FkMAbTlxxaYzQY4c9VY
+	 fRTlctlooO1tLICiEc1XAEjQc5qqhBBqxtt32gNd+89mdC5j7VjcP2Cc0ycDnSWYY0
+	 q6Iz5LkrkkJ9ieAIw8/eA6MYepbpp9DI2keIQtfrCh8AuZOBSh1Sh2FlhOOBd5Rhq+
+	 v/GSRVWr0r2Kw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92412CD1294;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B586DCD1299;
 	Wed,  3 Apr 2024 11:34:52 +0000 (UTC)
 From: Nikita Travkin via B4 Relay <devnull+nikita.trvn.ru@kernel.org>
-Subject: [PATCH v2 0/3] gov_power_allocator: Allow binding before cooling
- devices
-Date: Wed, 03 Apr 2024 16:31:39 +0500
-Message-Id: <20240403-gpa-no-cooling-devs-v2-0-79bdd8439449@trvn.ru>
+Date: Wed, 03 Apr 2024 16:31:42 +0500
+Subject: [PATCH v2 3/3] thermal: gov_power_allocator: Suppress
+ sustainable_power warning without trip_points
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,9 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIABs+DWYC/32NQQ6CMBBFr0Jm7Zh2KgqsvIdhQcoAk5iWtNhoS
- O9u5QAu30v++ztEDsIRumqHwEmieFeAThXYZXAzo4yFgRRdlCGN8zqg82i9f4qbceQU0d5aZkN
- NY6iGslwDT/I+qo++8CJx8+FznCT9s/97SaPG2raseCJ1Jb5vIblzeEGfc/4CTDoJDrQAAAA=
+Message-Id: <20240403-gpa-no-cooling-devs-v2-3-79bdd8439449@trvn.ru>
+References: <20240403-gpa-no-cooling-devs-v2-0-79bdd8439449@trvn.ru>
+In-Reply-To: <20240403-gpa-no-cooling-devs-v2-0-79bdd8439449@trvn.ru>
 To: Lukasz Luba <lukasz.luba@arm.com>, 
  "Rafael J. Wysocki" <rafael@kernel.org>, 
  Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>
@@ -51,21 +51,21 @@ Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
  linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Nikita Travkin <nikitos.tr@gmail.com>, Nikita Travkin <nikita@trvn.ru>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1696; i=nikita@trvn.ru;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1262; i=nikita@trvn.ru;
  h=from:subject:message-id;
- bh=/cAO8r1QYGwr2S/rVs04YoQy4x022R0HsRlCwXhwDy8=;
- b=owEBbQKS/ZANAwAIAUMc7O4oGb91AcsmYgBmDT7a2ZJ+6h2UyGUMDWmTJw5594rvcAqSVYhhI
- mm25hiSTV+JAjMEAAEIAB0WIQTAhK9UUj+qg34uxUdDHOzuKBm/dQUCZg0+2gAKCRBDHOzuKBm/
- dS4zEACIvT69tLK+to/i9P4Tafv+2U2+Adq/PdVRoSvU9CCFSgPmtX4pAv6TDgUiCrQ9XpT+Del
- tnr/E9mcN4eONS3zbiWwPwGqffrcbNTj5rBFLymizi3kRx3dM9kIF+SXPu7p7fb4PFNDdkB9OjI
- gZR+WACVbkAIigvjmJsfFMVzku9yXdyAhqzEvKifhBWGQaYlldmK2MZcOti5IydO8TO/BVPJzz5
- iNBsLmUY7gE9DfMaMxROEUQcXVrqgUxk+PRuon6QzAC5t2/iEhEh6jOY2aAl2NYeF7X3qXFQ5++
- F1SOe6f90qgmmxSIduk7lJGf8LEu/SztXbtEAwE8pos8jvBvpyNs7om3lnGl7ers4oGYQi9MMO9
- ZYAZnNHlNY8bYJW7/w8b7X47Hk/l39P73akKE98lgm4eoKPxh6/Z6MysrCce1tBC1jlK4H688KO
- wHNSX0BIoku3sPoiX265pS4oupZkhJTPNfLMwS5WI6nrjMUqN7xcPAMkuLx0uttfsju/v2L79N6
- 3LVWrk5+OTIkjZWUMFwsJGKzPQnCJmpR+TBtCuwFVEKmlvAEpPP+cHrnzpKjHAWlKjAz+fSwXfS
- mr5nycga8HXYydB0/4U8v92Lb+oD0FutJ/Nvlife/FNLzY8XqEacbq9kct1eOh7wNC7dDiatWPF
- YAZ1Qf1aUl6VmKg==
+ bh=gQ/lCJyqNkEYXe64V1azuLWqhZDrPtWfWIzY6a+krrM=;
+ b=owEBbQKS/ZANAwAIAUMc7O4oGb91AcsmYgBmDT7a1s4sHI60htO7JPYtLc7eKRvDv6ApO1t84
+ n+JQrinvFmJAjMEAAEIAB0WIQTAhK9UUj+qg34uxUdDHOzuKBm/dQUCZg0+2gAKCRBDHOzuKBm/
+ damjD/9nikGP8u0SyJYkb8/hRI+pmOTDJA6BZr9vFr3xFe9n8VUXi/uAQCG6N6g0/DMZZe1wHwD
+ n7SObRXMQBQ8p6G7XxIbkEKqVyQgczzrt2q878TJ9utGt9JTGSlSKKVnslumOQ5brXm9Ykywd9D
+ S+O4JveQ5TS1yFPEb4y9G/Y9BmP/URNMt2Y1smsu4E7PwbfFylfM/UUv30MhfXMK62wgQ9lecmf
+ lj4KPmxY0DkmV5LTOZDB0WLz75bHQ/7z2ubYtv8FCZJHyZjIVeWCjr7XxDz7fmb2tZc1nmuEZAG
+ zdSWk2wr3i/4kc2CY9FTNzqJ9Go6cLlWvMB7xNp7rx8oCSo4YBE/ifUVGncff3gVgTx96HmdyBR
+ r3StSRE0Ss8Iz6Clwsi0bexqXEMJWDBryOIuu4h38WVUshRaYP/XAam/9bfWaPiad8CeIVGx+Eg
+ RrgzNMB4AyKLeWqUjNwWQwoz7NQQXr1rcB/bIx2JY8T7MGlCdgTKNwjIfRGXna44VmTDwmFClpo
+ 77Nx6AAFdDkHjdpTCSEpzgvT+9i1p9kgfFEPK+tSDZn5bGu68pMmzJjlVmRb0TUWjxBpqn9cYmb
+ gmbdl/egKr5zgMwp2p32obMQq9/w2kMubA2wXhBBHKPWu3iJy8m8A10uMbm9AAJJj6fxinf7NX8
+ pL7h1RbIlz0xjtw==
 X-Developer-Key: i=nikita@trvn.ru; a=openpgp;
  fpr=C084AF54523FAA837E2EC547431CECEE2819BF75
 X-Endpoint-Received: by B4 Relay for nikita@trvn.ru/default with
@@ -73,48 +73,40 @@ X-Endpoint-Received: by B4 Relay for nikita@trvn.ru/default with
 X-Original-From: Nikita Travkin <nikita@trvn.ru>
 Reply-To: nikita@trvn.ru
 
-Recent changes in IPA made it fail probing if the TZ has no cooling
-devices attached on probe or no trip points defined.
+From: Nikita Travkin <nikita@trvn.ru>
 
-This series restores prior behavior to:
+IPA warns if the thermal zone it was attached to doesn't define
+sustainable_power value. In some cases though IPA may be bound to an
+"empty" TZ, in which case the lack of sustainable_power doesn't matter.
 
-- allow IPA to probe before cooling devices have attached;
-- allow IPA to probe when the TZ has no passive/active trip points.
-
-I've noticed that all thermal zones fail probing with -EINVAL on my
-sc7180 based Acer Aspire 1 since 6.8. This series allows me to bring
-them back.
-
-Additionally there is a commit that supresses the "sustainable_power
-will be estimated" warning on TZ that have no trip points (and thus IPA
-will not be able to do anything for them anyway). This allowed me to
-notice that some of the TZ with cooling_devices on my platform actually
-lack the sustainable_power value.
+Suppress the warning in case when IPA is bound to an empty TZ to make it
+easier to see the warnings that actually matter.
 
 Signed-off-by: Nikita Travkin <nikita@trvn.ru>
 ---
-Changes in v2:
-- Split to two changes (Lukasz)
-- Return 0 in allocate_actors_buffer() instead of suppressing -EINVAL
-  (Lukasz)
-- Add a change to supress "sustainable_power will be estimated" warning
-  on "empty" TZ
-- Link to v1: https://lore.kernel.org/r/20240321-gpa-no-cooling-devs-v1-1-5c9e0ef2062e@trvn.ru
 
+I've decided to add this along to supress those warnings for some TZ on
+sc7180. Feel free to drop this patch if you think the warning should
+always appear.
 ---
-Nikita Travkin (3):
-      thermal: gov_power_allocator: Allow binding without cooling devices
-      thermal: gov_power_allocator: Allow binding without trip points
-      thermal: gov_power_allocator: Suppress sustainable_power warning without trip_points
+ drivers/thermal/gov_power_allocator.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/thermal/gov_power_allocator.c | 16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
----
-base-commit: 727900b675b749c40ba1f6669c7ae5eb7eb8e837
-change-id: 20240321-gpa-no-cooling-devs-c79ee3288325
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index e25e48d76aa7..05a40f6b5928 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -704,7 +704,7 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+ 		params->allocated_tzp = true;
+ 	}
+ 
+-	if (!tz->tzp->sustainable_power)
++	if (!tz->tzp->sustainable_power && params->trip_max)
+ 		dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
+ 	else
+ 		params->sustainable_power = tz->tzp->sustainable_power;
 
-Best regards,
 -- 
-Nikita Travkin <nikita@trvn.ru>
+2.44.0
 
 
