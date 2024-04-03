@@ -1,106 +1,103 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E904C16089C;
-	Wed,  3 Apr 2024 17:19:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 947611534E4;
+	Wed,  3 Apr 2024 18:12:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712164770; cv=none; b=sVscr/rB1ENgdeMLxgaCJ46q3Uu53tNOkqDrrPBOQ4Aak+e25wk3BputD08gg3bWywfZdcLVFZ6nBne/lHfTVmQtqEoelRh2uq6QSACj/ziUaKW63r4kNRwDK84evygLsrLSn3iF6EE2dk3ZPDE6Oiyol3rL0vdZncnK4HbLT2Q=
+	t=1712167933; cv=none; b=FZEZHeFQbUj7k0A6o8nBcHfaKnKMSlBA1gMhZTZhIOULnHgWovjCKhTaVdwdBwFJrlmWI31p6POrbxxYClZR6pe5WH1W8Rv8o4VdFiwTMhMmrdJBbSf+hX+BkispEMTS45MxiuLwkGEj9ls86vgxUg0OlK8eGmioQW41zJthVeM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712164770; c=relaxed/simple;
-	bh=+molO8qQbX4QeS0LNGvlr/5BUWpD3H1OZtd27L7winI=;
+	s=arc-20240116; t=1712167933; c=relaxed/simple;
+	bh=fycaxtzLFd7HApnTntQU05w3Bn4wrwYw7izu3q5Vzd8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=tN3jsZlAu7uUSs7ymi259pheYAlSmjVzzsgszu+2PsAYSNMcOcCYaGO8+d17oXoVbBvwodzKeeRPYoKcAtFhAm5mDZ27lXgPI04zBzd3Kb8inZDxWrm2exV7yZ+7wQnhsYVzGZwuf7ke3ikDXmd3xgcDOwsGKNIR9h9qd0d8NpM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=N4tfyX95; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=pEsg2an9kGgBhDpZ7alr587hTtl/SZ4OZSBxTAPbgnN5AvMwNPkphk4wAYcxNYj0f/4Ytk12I+TfZchQ3Fsd9QYMPW2vqpgCTW34llt6TCIOEsPYhwZhh8Q1VG8xmM4zfOj6w3UPU1vtOATWCgRo7DOM6FtcOlRcMcHEaAAEp5I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=udlbv5Rt reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="N4tfyX95"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 74BCAC43601;
-	Wed,  3 Apr 2024 17:19:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712164769;
-	bh=+molO8qQbX4QeS0LNGvlr/5BUWpD3H1OZtd27L7winI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=N4tfyX9523InZf76ZS28KGIE7ScybkYQvu3ioScsFkk+7C+11r+xPxbqFlufi9C8a
-	 3hrdIHCVlWbV1XtT3jRFFKcYjSE0ra6GSOEpKBUXAUuOEgHjH/JmmiirGJf0rxtvke
-	 PUd1cl3nzxUGDaLZDflBU96Rm3wdAvJG3Yor2UYfpwQkD7T3oi4VHK/1OK/g3Gcwto
-	 4NiVK3jEvogR0n7DSuB20kPJbEnI/HxQKtF6+6xrx9ZiSI1+ufTW/kPVGh0LSqSHCn
-	 w0mWhD7veOmpaQZVnCBc1MB5coaO86sngLunZ8p5eBtHzOMkIxrih4UOB9VLbZQjpa
-	 IC2UroOmmP+gA==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Sasha Levin <sashal@kernel.org>,
-	rafael@kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 09/15] thermal/of: Assume polling-delay(-passive) 0 when absent
-Date: Wed,  3 Apr 2024 13:18:53 -0400
-Message-ID: <20240403171909.345570-9-sashal@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240403171909.345570-1-sashal@kernel.org>
-References: <20240403171909.345570-1-sashal@kernel.org>
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="udlbv5Rt"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
+ id 2ecd91c500791d1f; Wed, 3 Apr 2024 20:12:07 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 2AE67662F36;
+	Wed,  3 Apr 2024 20:12:07 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1712167927;
+	bh=fycaxtzLFd7HApnTntQU05w3Bn4wrwYw7izu3q5Vzd8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=udlbv5Rt7XeSzRzVO4ud4zDbZ5ktxh1uhvc2U4AVF5jCDCpdqTJxSfb84LGr1eQmU
+	 aIe48HycsV1F2P3rHvWnYEHfxfHMD81LECLF4tuOxUN95JM/dTdXLrTN1R+pwId2Og
+	 tcsPk609HpqvYhZYcTCJtNOBTH7+QupE5/VgeMDOkEpz8iR9Mm4a2VVVfpLXE4N9er
+	 usDXA6jHHDHDY64APGyP4EPopbsg+gttv9d9U+KZ0gX9kyxltJ7hcuhAxyESWFbaDb
+	 QXD+se7uPyhNxljeb91Cg5P/ekR4a4yPVPyBbmPTKEs8GQ+yfrS96RicRujtLZcAyi
+	 WWyTc9FvGTMpA==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject:
+ [PATCH v1 2/2] thermal: gov_step_wise: Simplify checks related to passive
+ trips
+Date: Wed, 03 Apr 2024 20:12:02 +0200
+Message-ID: <2318465.ElGaqSPkdT@kreacher>
+In-Reply-To: <5766468.DvuYhMxLoT@kreacher>
+References: <5766468.DvuYhMxLoT@kreacher>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.1.84
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudefiedgjeekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepgedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 
-From: Konrad Dybcio <konrad.dybcio@linaro.org>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-[ Upstream commit 488164006a281986d95abbc4b26e340c19c4c85b ]
+Make it more clear from the code flow that the passive polling status
+updates only take place for passive trip points.
 
-Currently, thermal zones associated with providers that have interrupts
-for signaling hot/critical trips are required to set a polling-delay
-of 0 to indicate no polling. This feels a bit backwards.
+No intentional functional impact.
 
-Change the code such that "no polling delay" also means "no polling".
-
-Suggested-by: Bjorn Andersson <andersson@kernel.org>
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Reviewed-by: Bjorn Andersson <andersson@kernel.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20240125-topic-thermal-v1-2-3c9d4dced138@linaro.org
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_of.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/thermal/gov_step_wise.c |   14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 4104743dbc17e..202dce0d2e309 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -337,14 +337,18 @@ static int thermal_of_monitor_init(struct device_node *np, int *delay, int *pdel
- 	int ret;
+Index: linux-pm/drivers/thermal/gov_step_wise.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/gov_step_wise.c
++++ linux-pm/drivers/thermal/gov_step_wise.c
+@@ -92,15 +92,13 @@ static void thermal_zone_trip_update(str
+ 		if (instance->initialized && old_target == instance->target)
+ 			continue;
  
- 	ret = of_property_read_u32(np, "polling-delay-passive", pdelay);
--	if (ret < 0) {
--		pr_err("%pOFn: missing polling-delay-passive property\n", np);
-+	if (ret == -EINVAL) {
-+		*pdelay = 0;
-+	} else if (ret < 0) {
-+		pr_err("%pOFn: Couldn't get polling-delay-passive: %d\n", np, ret);
- 		return ret;
- 	}
+-		if (old_target == THERMAL_NO_TARGET &&
+-		    instance->target != THERMAL_NO_TARGET) {
+-			/* Activate a passive thermal instance */
+-			if (trip->type == THERMAL_TRIP_PASSIVE)
++		if (trip->type == THERMAL_TRIP_PASSIVE) {
++			/* If needed, update the status of passive polling. */
++			if (old_target == THERMAL_NO_TARGET &&
++			    instance->target != THERMAL_NO_TARGET)
+ 				tz->passive++;
+-		} else if (old_target != THERMAL_NO_TARGET &&
+-			   instance->target == THERMAL_NO_TARGET) {
+-			/* Deactivate a passive thermal instance */
+-			if (trip->type == THERMAL_TRIP_PASSIVE)
++			else if (old_target != THERMAL_NO_TARGET &&
++				 instance->target == THERMAL_NO_TARGET)
+ 				tz->passive--;
+ 		}
  
- 	ret = of_property_read_u32(np, "polling-delay", delay);
--	if (ret < 0) {
--		pr_err("%pOFn: missing polling-delay property\n", np);
-+	if (ret == -EINVAL) {
-+		*delay = 0;
-+	} else if (ret < 0) {
-+		pr_err("%pOFn: Couldn't get polling-delay: %d\n", np, ret);
- 		return ret;
- 	}
- 
--- 
-2.43.0
+
+
 
