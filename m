@@ -1,25 +1,25 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 52CC7143869;
-	Wed,  3 Apr 2024 12:07:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id DB4BB143869;
+	Wed,  3 Apr 2024 12:07:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712146073; cv=none; b=tqx0ArNencF0PjN50Y2OSaYErOvPSMLIpHJAaicWy5MYsZ7sGA1xNyPys9MuXIjFFkb0ZsVW/HCSnJw/4fYHl5WUrnB7NF2gYHVsb5c1yCMeAN1pjC28iTvC9Jg3P18snEquprjNpawkz+sUrsOxlYr+tR5HThpLvjsQynqb93k=
+	t=1712146079; cv=none; b=F2mhf0apcBGieFFgAm2mZmm4aMnkrWLUwiwbqUC5oeRrW/pom5R6qOdOdHSje5Q3F3ejUg7j9ZiaI4QaBrK89jDXrohcWbjK6GgUldW9pN9Rk/LH8SY3S8I9eBQc5KTdKRmw+tEaNHh1ZEAFftMPvwNAHn+k+6dhDUWSiRcwi9M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712146073; c=relaxed/simple;
-	bh=Y/ag3P9VuxJJwnLSBZ99yt8RVJaw8Rj9An0Jv5ji+Ck=;
+	s=arc-20240116; t=1712146079; c=relaxed/simple;
+	bh=EwpnPCGxmMvv8rA/eff2h/LdO5QZDZn+k3W+wcBdnEU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=K9sYxDunosEZNxlhtG0ZipYKq2/jIcRHbftm8fbhpRZyzta2DZ3/Ck56MUswUrcWC0b7PBsHjUjeM4pq0v+Ba8ZZB1lPvVrnmNfLbsjh0BDvETWkJiKjs2IxCw5FODxVN8lcvGp3c2DUkQq7G5LR5RT0C68e3XBk5nGjiNugoWQ=
+	 In-Reply-To:Content-Type; b=bBnSfWQqsKv5+QTGXXURQ6F7EGLy54va0VDNZhakMp84MgDYPuXOe5CmOIANXqzXIqcPji6Bmzzsd1R3iWD15NmXT6bc9DKfzPqS1Vr9cVlK0gENjOSkP3iyTzQMdw2LABC06uFsTnrLyJ1UEKPnk7vDk1d7zoCWo3YzJpA3oqs=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC70B1007;
-	Wed,  3 Apr 2024 05:08:22 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 659001007;
+	Wed,  3 Apr 2024 05:08:28 -0700 (PDT)
 Received: from [192.168.178.6] (unknown [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3DB613F64C;
-	Wed,  3 Apr 2024 05:07:49 -0700 (PDT)
-Message-ID: <03834bb6-c5dc-4be6-8244-fafb4080d5ac@arm.com>
-Date: Wed, 3 Apr 2024 14:07:49 +0200
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 503973F64C;
+	Wed,  3 Apr 2024 05:07:55 -0700 (PDT)
+Message-ID: <6445e850-fe24-4eb2-86f0-217b62b9001d@arm.com>
+Date: Wed, 3 Apr 2024 14:07:55 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -27,8 +27,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/4] OPP: OF: Export dev_opp_pm_calc_power() for usage
- from EM
+Subject: Re: [PATCH v4 4/4] soc: samsung: exynos-asv: Update Energy Model
+ after adjusting voltage
 Content-Language: en-US
 To: Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, rafael@kernel.org
@@ -37,9 +37,9 @@ Cc: linux-arm-kernel@lists.infradead.org, sboyd@kernel.org, nm@ti.com,
  viresh.kumar@linaro.org, krzysztof.kozlowski@linaro.org,
  alim.akhtar@samsung.com, m.szyprowski@samsung.com, mhiramat@kernel.org
 References: <20240402155822.505491-1-lukasz.luba@arm.com>
- <20240402155822.505491-2-lukasz.luba@arm.com>
+ <20240402155822.505491-5-lukasz.luba@arm.com>
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-In-Reply-To: <20240402155822.505491-2-lukasz.luba@arm.com>
+In-Reply-To: <20240402155822.505491-5-lukasz.luba@arm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
@@ -47,13 +47,23 @@ On 02/04/2024 17:58, Lukasz Luba wrote:
 
 [...]
 
-> @@ -539,6 +541,12 @@ static inline void dev_pm_opp_of_unregister_em(struct device *dev)
->  {
->  }
+> @@ -97,9 +98,17 @@ static int exynos_asv_update_opps(struct exynos_asv *asv)
+>  			last_opp_table = opp_table;
 >  
-> +static inline int dev_pm_opp_calc_power(struct device *dev, unsigned long *uW,
-> +			  unsigned long *kHz)
+>  			ret = exynos_asv_update_cpu_opps(asv, cpu);
+> -			if (ret < 0)
+> +			if (!ret) {
+> +				/*
+> +				 * When the voltage for OPPs could be changed,
+> +				 * make sure to update the EM power values, to
+> +				 * reflect the reality and not use stale data.
+> +				 */
 
-This looks like a weird alignment comparing to the adjacent functions.
+Maybe shorter?
+
+                                /*
+                                 * Update EM power values since OPP
+                                 * voltage values may have changed.
+                                 */
 
 [...]
