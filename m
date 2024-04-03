@@ -1,131 +1,160 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com [209.85.210.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 947AB1534E6;
-	Wed,  3 Apr 2024 18:12:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61ECD1534F2;
+	Wed,  3 Apr 2024 18:26:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712167933; cv=none; b=KQ+6qTjVgkiZcCZN2Cdm0zfuGCIhGHWZ70rRN6gvULefsKD0K2//b+ueDMWhP6mpwnOU6G4HWSH4DUxIhMArb+k06p8l+QzVCnW6q36VCUkiHfF5C8dAKmpT9zaij7Wz/GdbeoN8LmB+yfy2Hu4m/t2bfsBARyOvA9XwlZY4RxU=
+	t=1712168773; cv=none; b=DTApOn8Hb4rOy9Rgc53dZHhtBDSrg9JySX7DcgVCRJ+XAFPGO6dDEm/Cx1nWr+uFr/yv4n20fWD+z38Lu/VtCGaRv+UpuLQp5aoEia+yDKpm/cUwQYHA86F1Fb8pARjk+0U7kyAAS/N7wYkQn1dCOpTwVwYu5zMk/GjYYz5Hy9Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712167933; c=relaxed/simple;
-	bh=qGMeKA42r0NipAvaOzYcoKIIUuiGOzHMBG4lHVRRTO4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=OY6RxDVVoqaUt/XXQ/MYYQRYF8BmFhNdWTL5bGytin9deuKIaG65GW4/ZX8q6tFaRFb/7MeXtZXmWU2aQnnk6PlwPlFCFCYRXGTVj7qOyF3zyEplxWqFOKGMoQn8aMcmwA1luChX8RrMOY5+TDX/tpPLMpValscvZDgWBhsoTg8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=cArjfyC4; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1712168773; c=relaxed/simple;
+	bh=j+GDCCfyjwSvNi5L8u2NngjgwDzCFOTm7r8SKvYlO/M=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KmDsCU1cXNsaD2L9OIVn4wGbwZgoM1VlgqNAgdXMhBkYYBbOvu4B5bvPzpeflwE9p//oHqiPSIgH7y7i4QxAxceptdBnZTTY8qt5MVTdQNHZtPdk9xD2jKOBIFqoQ4Wyz6bXj5lulD7OBkvxCDUC2f1hsJcmgUCk29CeEz9/3GA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ARUmcN4s; arc=none smtp.client-ip=209.85.210.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="cArjfyC4"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id 170218018de553b5; Wed, 3 Apr 2024 20:12:08 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 1116E662F36;
-	Wed,  3 Apr 2024 20:12:08 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1712167928;
-	bh=qGMeKA42r0NipAvaOzYcoKIIUuiGOzHMBG4lHVRRTO4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=cArjfyC4p1Hp7lYMOPDDhzdiJ9aRbpvRjafjZzB5FL40/2m6Uj0vYS4TAam6cd8Ls
-	 Af2+o60s6d6xd8qUDjeTAX+cmE84OtyC9fOAj5ko3c7O7leBo1aQnpjEgpl3YuFv56
-	 5vsPyuK+Tl3a3lFfVcYGmgjBEs6V+ecEeqiS35hym+uaq8m7Wb7ao0KwtuXL25mIsY
-	 pxII73qxJjTWPihE32WeF5xtAdgU7qhWO8+aqbudh3dK1HJRpz6oPsK3z0Qf8ehy+h
-	 cSWxXsuw2yp51G1Y2Ph/MH/F7D64dUn1J8PRrom45y0IhGXJT7BV69uQvKOcuW5mVB
-	 QNXDOJVAltLbQ==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH v1 1/2] thermal: gov_step_wise: Simplify get_target_state()
-Date: Wed, 03 Apr 2024 20:11:10 +0200
-Message-ID: <4907519.31r3eYUQgx@kreacher>
-In-Reply-To: <5766468.DvuYhMxLoT@kreacher>
-References: <5766468.DvuYhMxLoT@kreacher>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ARUmcN4s"
+Received: by mail-pf1-f182.google.com with SMTP id d2e1a72fcca58-6eaf7c97738so74615b3a.2;
+        Wed, 03 Apr 2024 11:26:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1712168772; x=1712773572; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=+KM0sALA3G00DhEkgIr0nJ9/xgi6K5DMXyrZsidqXcY=;
+        b=ARUmcN4sjSXBs/SDZpYv8dF7r7JIxIaKll1A1PbPkDxYbetiZHOav0oRD546xi5b1H
+         bMu8QRCYc+yXu1/mSRWJj+9h4IMs+Yce1BmMZlCU3BgA9/TV2FtQQHHqKBFLQZg8Rd+Z
+         r09t+ag9g/pFAQHI5vF4e+J3Zfz2wPwJ6Mj9+93JEB9nll1AiCeAByyp9roZmTB1CtS6
+         1OHPjYjLcZbo2wYzUXufaMSFZ8evZmwhf+aNRHGD+YP/tgdOQVFYQkK2maF2S8PcfV0k
+         kSo8uijvLn53gXOQPv9ARvfktKg91LLZHn4tb+2N5sUpUKfDW2l5lKEEYiDjoXyOrDWg
+         wkBA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1712168772; x=1712773572;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=+KM0sALA3G00DhEkgIr0nJ9/xgi6K5DMXyrZsidqXcY=;
+        b=CAjorjgr+vpVHF+AeBRSIC5ybYwdLSitFqJV2AIHEWog20x5LgD+R6+8P2ZkGKFtGK
+         C0i/4yy/4a3Cm87c8YUzXnTUmEHKSaW7zirf2fuac/fthLstVLJF2TIOK6JkYp1Mqm+q
+         RM7ZNQIuBif8yTRaKuyfe+bO5U6l6KhaeJG1tKqZ8aTBQ9Ll4A1aR83cA2kwviu6n8mr
+         g0KuF1NHIl5RACpXikZI3McZTTKTDqD4bEP5qubl/uILYRl9P7b8JEaBDDv+EBL6iCgh
+         wAbmhz/2stsempb7gypnNKjk3WZlqbri7UfYo4tz6ERaksgR5uplVsZGY2QmgIyUUv0o
+         ZAVw==
+X-Forwarded-Encrypted: i=1; AJvYcCWF7oTSfI5tWr6lLclYdEJu5Sxr6koTAOseTnZQnzbo14p4vdOPZmwJH8II3LNEyKrVE19FyNSwB5/233Qseu2dXN3yMwkBMFifGkZW26RFhC5NmjrJOEA7E3F2K89DGdgE5zUcWL3eXmHKgVZ12j8urcR/5OgYPyb1kUvbIPpj6/aeUGAaH9Slog==
+X-Gm-Message-State: AOJu0YyRAeYlX7UpaBupwTB2EKzU95K8pMaOV/G4yHBl4xPyi+sbgytd
+	BHDL/jJyMcFVUHwsoKp9bwVBVlHGIBiSmZe9XwzQFvW14m5te9Zz
+X-Google-Smtp-Source: AGHT+IHyw8jSWtpDO8BrX3kYROr9rl6m4q+INmfSxI61JhQchpPQy8VC9DOn8KqfulZFH4T3VzoTnw==
+X-Received: by 2002:a05:6a20:a125:b0:1a7:2e6f:e5d3 with SMTP id q37-20020a056a20a12500b001a72e6fe5d3mr590280pzk.3.1712168771615;
+        Wed, 03 Apr 2024 11:26:11 -0700 (PDT)
+Received: from localhost.localdomain ([113.30.217.222])
+        by smtp.gmail.com with ESMTPSA id kq10-20020a056a004b0a00b006eae3aac040sm10609776pfb.31.2024.04.03.11.26.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 Apr 2024 11:26:11 -0700 (PDT)
+From: Anand Moon <linux.amoon@gmail.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>
+Cc: Anand Moon <linux.amoon@gmail.com>,
+	linux-pm@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/2] PM / devfreq: exynos: Use Use devm_clk_get_enabled() helpers
+Date: Wed,  3 Apr 2024 23:45:04 +0530
+Message-ID: <20240403181517.5993-1-linux.amoon@gmail.com>
+X-Mailer: git-send-email 2.44.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudefiedgjeekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepgedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
+Content-Transfer-Encoding: 8bit
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The devm_clk_get_enabled() helpers:
+    - call devm_clk_get()
+    - call clk_prepare_enable() and register what is needed in order to
+     call clk_disable_unprepare() when needed, as a managed resource.
 
-The step-wise governor's get_target_state() function contains redundant
-braces, redundant parens and a redundant next_target local variable, so
-get rid of all that stuff.
+This simplifies the code and avoids the calls to clk_disable_unprepare().
 
-No intentional functional impact.
+While at it, use dev_err_probe consistently, and use its return value
+to return the error code.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Anand Moon <linux.amoon@gmail.com>
 ---
- drivers/thermal/gov_step_wise.c |   27 ++++++++++-----------------
- 1 file changed, 10 insertions(+), 17 deletions(-)
+v2: no changes
+---
+ drivers/devfreq/exynos-bus.c | 21 ++++-----------------
+ 1 file changed, 4 insertions(+), 17 deletions(-)
 
-Index: linux-pm/drivers/thermal/gov_step_wise.c
-===================================================================
---- linux-pm.orig/drivers/thermal/gov_step_wise.c
-+++ linux-pm/drivers/thermal/gov_step_wise.c
-@@ -32,7 +32,6 @@ static unsigned long get_target_state(st
- {
- 	struct thermal_cooling_device *cdev = instance->cdev;
- 	unsigned long cur_state;
--	unsigned long next_target;
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index 245898f1a88e..153340b6685f 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -160,7 +160,6 @@ static void exynos_bus_exit(struct device *dev)
+ 	platform_device_unregister(bus->icc_pdev);
  
- 	/*
- 	 * We keep this instance the way it is by default.
-@@ -40,32 +39,26 @@ static unsigned long get_target_state(st
- 	 * cdev in use to determine the next_target.
- 	 */
- 	cdev->ops->get_cur_state(cdev, &cur_state);
--	next_target = instance->target;
- 	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
- 
- 	if (!instance->initialized) {
--		if (throttle) {
--			next_target = clamp((cur_state + 1), instance->lower, instance->upper);
--		} else {
--			next_target = THERMAL_NO_TARGET;
--		}
-+		if (throttle)
-+			return clamp(cur_state + 1, instance->lower, instance->upper);
- 
--		return next_target;
-+		return THERMAL_NO_TARGET;
- 	}
- 
- 	if (throttle) {
- 		if (trend == THERMAL_TREND_RAISING)
--			next_target = clamp((cur_state + 1), instance->lower, instance->upper);
--	} else {
--		if (trend == THERMAL_TREND_DROPPING) {
--			if (cur_state <= instance->lower)
--				next_target = THERMAL_NO_TARGET;
--			else
--				next_target = clamp((cur_state - 1), instance->lower, instance->upper);
--		}
-+			return clamp(cur_state + 1, instance->lower, instance->upper);
-+	} else if (trend == THERMAL_TREND_DROPPING) {
-+		if (cur_state <= instance->lower)
-+			return THERMAL_NO_TARGET;
-+
-+		return clamp(cur_state - 1, instance->lower, instance->upper);
- 	}
- 
--	return next_target;
-+	return instance->target;
+ 	dev_pm_opp_of_remove_table(dev);
+-	clk_disable_unprepare(bus->clk);
+ 	dev_pm_opp_put_regulators(bus->opp_token);
  }
  
- static void thermal_zone_trip_update(struct thermal_zone_device *tz,
-
-
+@@ -171,7 +170,6 @@ static void exynos_bus_passive_exit(struct device *dev)
+ 	platform_device_unregister(bus->icc_pdev);
+ 
+ 	dev_pm_opp_of_remove_table(dev);
+-	clk_disable_unprepare(bus->clk);
+ }
+ 
+ static int exynos_bus_parent_parse_of(struct device_node *np,
+@@ -247,23 +245,15 @@ static int exynos_bus_parse_of(struct device_node *np,
+ 	int ret;
+ 
+ 	/* Get the clock to provide each bus with source clock */
+-	bus->clk = devm_clk_get(dev, "bus");
+-	if (IS_ERR(bus->clk)) {
+-		dev_err(dev, "failed to get bus clock\n");
+-		return PTR_ERR(bus->clk);
+-	}
+-
+-	ret = clk_prepare_enable(bus->clk);
+-	if (ret < 0) {
+-		dev_err(dev, "failed to get enable clock\n");
+-		return ret;
+-	}
++	bus->clk = devm_clk_get_enabled(dev, "bus");
++	if (IS_ERR(bus->clk))
++		return dev_err_probe(dev, PTR_ERR(bus->clk), "failed to get bus clock\n");
+ 
+ 	/* Get the freq and voltage from OPP table to scale the bus freq */
+ 	ret = dev_pm_opp_of_add_table(dev);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to get OPP table\n");
+-		goto err_clk;
++		return ret;
+ 	}
+ 
+ 	rate = clk_get_rate(bus->clk);
+@@ -281,8 +271,6 @@ static int exynos_bus_parse_of(struct device_node *np,
+ 
+ err_opp:
+ 	dev_pm_opp_of_remove_table(dev);
+-err_clk:
+-	clk_disable_unprepare(bus->clk);
+ 
+ 	return ret;
+ }
+@@ -453,7 +441,6 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 
+ err:
+ 	dev_pm_opp_of_remove_table(dev);
+-	clk_disable_unprepare(bus->clk);
+ err_reg:
+ 	dev_pm_opp_put_regulators(bus->opp_token);
+ 
+-- 
+2.44.0
 
