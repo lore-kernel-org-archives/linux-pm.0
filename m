@@ -1,112 +1,141 @@
-Received: from mx1.t-argos.ru (mx1.t-argos.ru [109.73.34.58])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38B1D15F300;
-	Fri,  5 Apr 2024 09:41:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.73.34.58
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8A57161332
+	for <linux-pm@vger.kernel.org>; Fri,  5 Apr 2024 09:52:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712310121; cv=none; b=kkkAl7YqyyYyZPyD05uYEjgkKRtjcc3ZuCPrqo45cztPEdF0rO7c8CXLvdUlV7xH0EhjqhVSoXaLDGfIWgL8IJK9N6dkNdVjXYV3jjqilSPxjP75A8WE8QQmTtbuyNY8EdbYOeNQx88E0rlVmITUGr2XEK4ZiwZFJaEHGzlglBk=
+	t=1712310768; cv=none; b=no8sohOH9WyN2OXY2kK4jjRyBUh3dcCauvZhQTsBQnPljkIYz9VnStjM9wWjs2R8je6CX++ZwQvUgmFdAmYNR8XzKwSlRxMEOURImu+35MnAME9bA0RY0QG1BBhQvH7eFfjRUdwnnOQEBZdcJD6NHRjrgSVfvelXas1fi7+EeiA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712310121; c=relaxed/simple;
-	bh=ZcOerhmDTyl3W/0mikjVoprKLaRbhLbMr5B5dPhdLbQ=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=E5tcuHwiqu/IxIU0zyVfSrhFZnl63L7ZQHKLnF7zkvQ3L6b26tjd4ge0uqSb3MoxAoCPKMP2VN7n51JRnJS3ijyQCQafnG5NfhSOZPycWbTECnvxGVmvRKhZaqJ2p1d/XCGnKI3C4eR7wSrz76IHeyVdvZUUNEgbuB4lsO3Lz5I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=t-argos.ru; spf=pass smtp.mailfrom=t-argos.ru; dkim=pass (2048-bit key) header.d=t-argos.ru header.i=@t-argos.ru header.b=rVEFTvJV; arc=none smtp.client-ip=109.73.34.58
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=t-argos.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=t-argos.ru
+	s=arc-20240116; t=1712310768; c=relaxed/simple;
+	bh=Xao3XwnnM8VJVYj/1S47nAYhy7EFIIHCmB1TEMBpw1M=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ZU0KaM9rL3HaU/MQLWDWogYhBo0UIFtW25q6FqDXNZ7rXFdlt0c3aSn4AKVxOGn7Ds1Dj9+1pvnSAA7p4mgiX6nAu6kq76ZFS+dzz7MNweUwwNBABSeDyPxR3K+hQf4IYkKEo9Acpu41uiPHnChM7cLeHJiNqZRi1aeuIHkGqaw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=067XdQO4; arc=none smtp.client-ip=209.85.208.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=t-argos.ru header.i=@t-argos.ru header.b="rVEFTvJV"
-Received: from mx1.t-argos.ru (localhost [127.0.0.1])
-	by mx1.t-argos.ru (Postfix) with ESMTP id EBDBE100002;
-	Fri,  5 Apr 2024 12:41:37 +0300 (MSK)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=t-argos.ru; s=mail;
-	t=1712310098; bh=exxj3SM6SDla62q2JnE6KpTdEW+tLbPYFoaJcDDjiCk=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type;
-	b=rVEFTvJVYuBk8YQaTZ+E40GhNjXrfT8k6cuAWc0TqZ1FXgkxUIJD44+EjJYoOm4TJ
-	 raiil9rNugUF5L9NAehigNcJ55coI413o7d9Ml2Nhuwtg8FIvB8LANWbQ3kmYuAqPz
-	 wBdlCSjkp6GP38gN+Hz7B6vgCYVZzrhMccZrVo9/OVRFFJ8FIXE8krzV4OwWZGvfjd
-	 VUmj2IkfHLNoY8iH0dnQuiJ19YYtGiB+z62dAGgPFGk4zfxNMflCYaAPZbzUh1AJbB
-	 Cw4VkYi7EARXvsWigIv0R0OICSsGv/9HsK1dpI8r8KmtUjXVigl0whxxPu5aYcyPeW
-	 fqZDy1GLijIsg==
-Received: from mx1.t-argos.ru.ru (ta-mail-02.ta.t-argos.ru [172.17.13.212])
-	by mx1.t-argos.ru (Postfix) with ESMTP;
-	Fri,  5 Apr 2024 12:40:19 +0300 (MSK)
-Received: from localhost.localdomain (172.17.215.6) by ta-mail-02
- (172.17.13.212) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Fri, 5 Apr 2024
- 12:40:13 +0300
-From: Aleksandr Mishin <amishin@t-argos.ru>
-To: Ionela Voinescu <ionela.voinescu@arm.com>
-CC: Aleksandr Mishin <amishin@t-argos.ru>, "Rafael J. Wysocki"
-	<rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
-	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<lvc-project@linuxtesting.org>
-Subject: [PATCH] cppc_cpufreq: Fix possible null pointer dereference
-Date: Fri, 5 Apr 2024 12:40:05 +0300
-Message-ID: <20240405094005.18545-1-amishin@t-argos.ru>
-X-Mailer: git-send-email 2.30.2
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="067XdQO4"
+Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-2d86e6908ecso2132621fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 05 Apr 2024 02:52:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1712310764; x=1712915564; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PFQ1aSQ/yPIndJu3aWFACdTAkwcoKeyAYdYv4GNLQA8=;
+        b=067XdQO4gHy787IaZVrU8QShIADjal3eIQAV1yIyz3d2M0JyTqEeCwT3//IhbBXZ8x
+         rgjEviEgwF/s3BizSqRls0C4Nd18WqWoerjO1cJFM1m8saO0kL8fd7ig2b91ZU77KEep
+         rC8cSXdPPjLJaWBJDZFvmcYW6aKBRZ5IAm0Nc0PFKLGwV2r2vW+eKpzS3tXNfVLo+IlG
+         UAg1syHt4qpuv/xnsRfWCat3aHYibZ9VHbB/jdgSdRiEA8jwOb7FUCQNOzC5D2xWvl1L
+         Mb0AxneDB0LYVM8AyRDcCIuE2Dgift4Mijs7lAYUrJpOm3QZAfa/UpdY01KBF1B5ltFo
+         lKmg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1712310764; x=1712915564;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=PFQ1aSQ/yPIndJu3aWFACdTAkwcoKeyAYdYv4GNLQA8=;
+        b=S3mEbKjS8p5z4gtMLGEtlZbn6YArJ++Bw8tUOFFdwBz6Ersd1mh1CrhxmkMv93Xs8c
+         X7vh9PJ45oOAFIpaPTt4eBCHdZ66quAwFPUMA+uFftp/kV+axlltaofatG5pBfATXmNF
+         RaXMf4p5cETf90CSAgIvr3W2jraphDF8Zo0LKoZILxeY54sLP5jiLD+CHjdc7erkn/2U
+         20GMUssASlvfD5ZwKoti0YsTBSawz3VFfI0iObJu6d6aa61hOYVuW64oFYC0cXz6AueC
+         Vx/VZHWf1H7VQgR6/mtzF1iCVdQ8ujNkVmvpFt8gaIrUQegScRGPjXH4DmFCnbSx0sNs
+         KqtQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVOVPO5hSsPe11zTXYRQ7TgS0b2B6sIdPCqwfhFbmSoYoEnqtdhZdIfBNNyo1HsndRjjOmjPmpu8+1HSP/WHjHPA2P873M5N3Y=
+X-Gm-Message-State: AOJu0Yw8EzsT7mBUDuU+yPEiZqhdYPFng9758FaXFRIb89IA4uAM1E2U
+	tbcEpy215J6riHL2jfjtxLkV0qtXfuBGXh8W3rA0WXVL0RMQk++lSLjBDmo+6at0UyLsuasyPDQ
+	6RZXjj65ZvMaHcly0pC8wyrAVRjJF/dCP7DcYUg==
+X-Google-Smtp-Source: AGHT+IHFTvgH2ZminO6meSynk+MyIvOEGXYwM8talY5AqWje/YbfLVqUjdVH/aXaf1x5eKBDfACdQBDX+FEmTYh5vE4=
+X-Received: by 2002:a2e:7d17:0:b0:2d8:3e07:5651 with SMTP id
+ y23-20020a2e7d17000000b002d83e075651mr1024297ljc.34.1712310763809; Fri, 05
+ Apr 2024 02:52:43 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: ta-mail-02.ta.t-argos.ru (172.17.13.212) To ta-mail-02
- (172.17.13.212)
-X-KSMG-Rule-ID: 1
-X-KSMG-Message-Action: clean
-X-KSMG-AntiSpam-Lua-Profiles: 184599 [Apr 05 2024]
-X-KSMG-AntiSpam-Version: 6.1.0.4
-X-KSMG-AntiSpam-Envelope-From: amishin@t-argos.ru
-X-KSMG-AntiSpam-Rate: 0
-X-KSMG-AntiSpam-Status: not_detected
-X-KSMG-AntiSpam-Method: none
-X-KSMG-AntiSpam-Auth: dkim=none
-X-KSMG-AntiSpam-Info: LuaCore: 15 0.3.15 adb41f89e2951eb37b279104a7abb8e79494a5e7, {Tracking_from_domain_doesnt_match_to}, mx1.t-argos.ru.ru:7.1.1;t-argos.ru:7.1.1;127.0.0.199:7.1.2;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1, FromAlignment: s
-X-MS-Exchange-Organization-SCL: -1
-X-KSMG-AntiSpam-Interceptor-Info: scan successful
-X-KSMG-AntiPhishing: Clean, bases: 2024/04/05 09:29:00
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 1.1.2.30, bases: 2024/04/05 07:02:00 #24662400
-X-KSMG-AntiVirus-Status: Clean, skipped
+References: <20240325131624.26023-1-brgl@bgdev.pl> <20240325131624.26023-6-brgl@bgdev.pl>
+ <87msqm8l6q.fsf@kernel.org> <CAMRc=MeCjNn7QdDrcQMuj32JFYoemQ6A8WOYcwKJo1YhDTfY+Q@mail.gmail.com>
+ <87cyr440hr.fsf@kernel.org>
+In-Reply-To: <87cyr440hr.fsf@kernel.org>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Fri, 5 Apr 2024 11:52:32 +0200
+Message-ID: <CAMRc=MdzhGxLNcNLWvRfqr0S9pey-iw964=AcYx_yDXgyDDjMA@mail.gmail.com>
+Subject: Re: [PATCH v6 05/16] dt-bindings: net: wireless: describe the ath12k
+ PCI module
+To: Kalle Valo <kvalo@kernel.org>
+Cc: Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
+	"David S . Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konrad.dybcio@linaro.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Saravana Kannan <saravanak@google.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Arnd Bergmann <arnd@arndb.de>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, 
+	Alex Elder <elder@linaro.org>, Srini Kandagatla <srinivas.kandagatla@linaro.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Abel Vesa <abel.vesa@linaro.org>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Lukas Wunner <lukas@wunner.de>, 
+	Dmitry Baryshkov <dmitry.baryshkov@linaro.org>, linux-bluetooth@vger.kernel.org, 
+	netdev@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-cppc_cpufreq_get_rate() and hisi_cppc_cpufreq_get_rate() can be called from
-different places with various parameters. So cpufreq_cpu_get() can return
-null as 'policy' in some circumstances.
-Fix this bug by adding null return check.
+On Fri, Apr 5, 2024 at 11:34=E2=80=AFAM Kalle Valo <kvalo@kernel.org> wrote=
+:
+>
+> Bartosz Golaszewski <brgl@bgdev.pl> writes:
+>
+> > On Mon, Mar 25, 2024 at 3:01=E2=80=AFPM Kalle Valo <kvalo@kernel.org> w=
+rote:
+> >>
+> >> Bartosz Golaszewski <brgl@bgdev.pl> writes:
+> >>
+> >> > From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> >> >
+> >> > +
+> >> > +maintainers:
+> >> > +  - Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> >>
+> >> IMHO it would be better to have just driver maintainers listed here.
+> >>
+> >
+> > Why? What's wrong with having the author of the bindings in the Cc list=
+?
+>
+> If you want follow the ath12k development and review patches then you
+> can join the ath12k list. I'm not fond of having too many maintainers,
+> it's not really helping anything and just extra work to periodically
+> cleanup the silent maintainers.
+>
+> I would ask the opposite question: why add you as the maintainer?
+> There's not even a single ath12k patch from you, nor I haven't seen you
+> doing any patch review or otherwise helping others related to ath12k.
+> Don't get me wrong, I value the work you do with this important powerseq
+> feature and hopefully we get it into the tree soon. But I don't see
+> adding you as a maintainer at this point.
+>
 
-Found by Linux Verification Center (linuxtesting.org) with SVACE.
+In addition to what Krzysztof already said about you seamingly
+confusing the maintenance of the driver vs maintenance of the
+device-tree bindings (IOW: structured hardware description) and in
+response to your question: I don't see any functional change to any
+dt-bindings neither from you nor from Jeff. Are you convinced you can
+maintain and properly review any changes?
 
-Fixes: a28b2bfc099c ("cppc_cpufreq: replace per-cpu data array with a list")
-Signed-off-by: Aleksandr Mishin <amishin@t-argos.ru>
----
- drivers/cpufreq/cppc_cpufreq.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+If so, I don't really care, I can drop myself and have less work.
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 64420d9cfd1e..5f7e04e8497b 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -741,6 +741,9 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
- {
- 	struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-+	if (!policy)
-+		return -ENODEV;
-+
- 	struct cppc_cpudata *cpu_data = policy->driver_data;
- 	u64 delivered_perf;
- 	int ret;
-@@ -822,6 +825,9 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
- static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-+	if (!policy)
-+		return -ENODEV;
-+
- 	struct cppc_cpudata *cpu_data = policy->driver_data;
- 	u64 desired_perf;
- 	int ret;
--- 
-2.30.2
+Bartosz
 
+> --
+> https://patchwork.kernel.org/project/linux-wireless/list/
+>
+> https://wireless.wiki.kernel.org/en/developers/documentation/submittingpa=
+tches
