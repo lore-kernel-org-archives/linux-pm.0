@@ -1,25 +1,28 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9756050A62;
-	Tue,  9 Apr 2024 14:48:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from devico.uberspace.de (devico.uberspace.de [185.26.156.185])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0D6250275
+	for <linux-pm@vger.kernel.org>; Tue,  9 Apr 2024 14:48:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.26.156.185
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712674099; cv=none; b=ljS02200U3/2JsGoDqjmrjlOowSWzbFtTkdJJIsPb+Ujsjo3RGs1o6Q8fzvv7bYcmKAoWvjzmBjTZYzzOyAkAsS//2BzLvreKPPcJZm9cpxSlN7Yhmqv+AdNkieJUzE2frv7VCiyaAdLVmTA1y44EkD300LbKDppplQe3Nw3sdk=
+	t=1712674130; cv=none; b=d+cUtoe05J+WF6mcoHRaTUmsLmfxJcfuDbzVK8J0x4vwcbRLED24lpkizlfny99/ScQBTwOU8ALmxlP2c/csXuoJof2vH6jXHiloOWujYllJrwiE6nyRs4KM0AwziWFSH8giZ5aoGedZsvhEP7yh6zkov6NwvPEkeb4Xuor8zmg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712674099; c=relaxed/simple;
-	bh=sn5l4qk+TszXiL1PZ/62r7T17X8+sQejtuKb+d32hN8=;
+	s=arc-20240116; t=1712674130; c=relaxed/simple;
+	bh=bSBMOSEIwri42I+EM+PyX9ZK5/mVrNAM53JMXpJiGrY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BGSqHdlH+ckrEyCGzxLxihX0WYNtRupzvYoO7oKZvDFG8Yjy8Epp9//CNRefFkLpiUAmmDtwOKLL+BM7IzNmbRsGRcZx32wsrw6tD95XepEB7cDAYyiu3LiUOkf4cQSt/yI7eDdGRWrMYNOklpomQUU4e2ZcCkhX14fvwQ1RUwM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1E354139F;
-	Tue,  9 Apr 2024 07:48:47 -0700 (PDT)
-Received: from [10.57.19.31] (unknown [10.57.19.31])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 48B533F766;
-	Tue,  9 Apr 2024 07:48:15 -0700 (PDT)
-Message-ID: <08bff6ab-dcdc-42b6-b8ad-5938f0119385@arm.com>
-Date: Tue, 9 Apr 2024 15:47:56 +0100
+	 In-Reply-To:Content-Type; b=pAT/N0gKPMY/+vxT53UFiZ8ds5pkkoNfX5yfrNxvg98OBLpszTP7Nh+52ZhnmObGICngxMgX1KJKkJ1Jh0yIXaSBto4sQ5C0FQrPqYYME1XBmQT6mpBX1f8Tvh9KwFf8yO1NF5JB6cK1uHA8s5HtJjoXBMGF/M5Q1gaQ/HhwdK8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lausen.nl; spf=pass smtp.mailfrom=lausen.nl; dkim=fail (0-bit key) header.d=lausen.nl header.i=@lausen.nl header.b=YX28zyeO reason="key not found in DNS"; arc=none smtp.client-ip=185.26.156.185
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lausen.nl
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lausen.nl
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=lausen.nl header.i=@lausen.nl header.b="YX28zyeO"
+Received: (qmail 31281 invoked by uid 990); 9 Apr 2024 14:42:05 -0000
+Authentication-Results: devico.uberspace.de;
+	auth=pass (plain)
+Received: from unknown (HELO unkown) (::1)
+	by devico.uberspace.de (Haraka/3.0.1) with ESMTPSA; Tue, 09 Apr 2024 16:42:04 +0200
+Message-ID: <18a16fcd-3ae1-48af-94ed-72700a656e8e@lausen.nl>
+Date: Tue, 9 Apr 2024 10:41:59 -0400
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -27,91 +30,91 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] PM: EM: Add min/max available performance state
- limits
-To: Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Cc: dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org,
- sudeep.holla@arm.com, cristian.marussi@arm.com,
- linux-samsung-soc@vger.kernel.org, rafael@kernel.org,
- viresh.kumar@linaro.org, quic_sibis@quicinc.com
-References: <20240403162315.1458337-1-lukasz.luba@arm.com>
- <20240403162315.1458337-2-lukasz.luba@arm.com>
+Subject: Re: [PATCH v2 0/3] gov_power_allocator: Allow binding before cooling
+ devices
 Content-Language: en-US
-From: Hongyan Xia <hongyan.xia2@arm.com>
-In-Reply-To: <20240403162315.1458337-2-lukasz.luba@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: nikita@trvn.ru, Lukasz Luba <lukasz.luba@arm.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Nikita Travkin <nikitos.tr@gmail.com>
+References: <20240403-gpa-no-cooling-devs-v2-0-79bdd8439449@trvn.ru>
+From: Leonard Lausen <leonard@lausen.nl>
+In-Reply-To: <20240403-gpa-no-cooling-devs-v2-0-79bdd8439449@trvn.ru>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Bar: +
+X-Rspamd-Report: SUSPICIOUS_RECIPS(1.5) BAYES_HAM(-0.348686) XM_UA_NO_VERSION(0.01) MIME_GOOD(-0.1)
+X-Rspamd-Score: 1.061313
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lausen.nl; s=uberspace;
+	h=from:to:cc:subject:date;
+	bh=bSBMOSEIwri42I+EM+PyX9ZK5/mVrNAM53JMXpJiGrY=;
+	b=YX28zyeOtVRG3iXskkpsZdlPIRqBHVYU6I9cNBc3xLfDDE33JZLNx6dw+qLb8GvYKmgv711jor
+	+QGFuFRR0+cGrngBvCKAnLs+kgzAsKk4vXkJJNRjWgrM4DZIVPS8ZUZ0/kzCBZAHjLkbWDCYYd/T
+	a66wcx6AFaW4geAPdDOVjf2XvrZMj3UmZS1H076oT0/Ro4G3Etz3Zr7LTg8bxlbRpW2hQeYEZlov
+	MbbTPyUAapELfJIGPLL8ZFAjlDB+Kbw6iuGfKE03QV5IbtzVLt0ITYiKHAgjpck2xIk/JJu6c3qf
+	sH3LfY/6hjeEuytbmU/PFn/GZx4DujcrAsEtL5YgQDdphl5pS+CAAzZW1jRFviZjzDUHVE+LXkod
+	YeKhJ+ch+cIZfVZfdoLxSkt0l87oLPO94LSQwbHJa+Y/wEq19q7g3eE6eaU807uZQCAqWSCkbEJJ
+	dLBOQ/XnAgElQb5it2xk8Ea3qz4z2AnDK+DrN/gLwGEeETepW5AwJclqvsgP4rimCuDVVKZIGcRZ
+	wkKHDaT2eaCWx2Rq77++IqwPJPbqx+XaroVgA1CbIIwGrWziCtaCzgsyZmqtC2BW7UemqJmLjWBT
+	eWIxbFMSWSejefQzjqExPUM6/h4599p0e1/+fg0RKrV5JS48xRsswn3JIcQvfgsFLj+d3E0kntey
+	U=
 
-On 03/04/2024 17:23, Lukasz Luba wrote:
-> [...]
->
-> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-> index 927cc55ba0b3d..1a8b394251cb2 100644
-> --- a/kernel/power/energy_model.c
-> +++ b/kernel/power/energy_model.c
-> @@ -628,6 +628,8 @@ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
->   		goto unlock;
->   
->   	dev->em_pd->flags |= flags;
-> +	dev->em_pd->min_ps = 0;
-> +	dev->em_pd->max_ps = nr_states - 1;
->   
->   	em_cpufreq_update_efficiencies(dev, dev->em_pd->em_table->state);
->   
-> @@ -856,3 +858,49 @@ int em_dev_update_chip_binning(struct device *dev)
->   	return em_recalc_and_update(dev, pd, em_table);
->   }
->   EXPORT_SYMBOL_GPL(em_dev_update_chip_binning);
-> +
-> +
-> +/**
-> + * em_update_performance_limits() - Update Energy Model with performance
-> + *				limits information.
-> + * @pd			: Performance Domain with EM that has to be updated.
-> + * @freq_min_khz	: New minimum allowed frequency for this device.
-> + * @freq_max_khz	: New maximum allowed frequency for this device.
-> + *
-> + * This function allows to update the EM with information about available
-> + * performance levels. It takes the minimum and maximum frequency in kHz
-> + * and does internal translation to performance levels.
-> + * Returns 0 on success or -EINVAL when failed.
-> + */
-> +int em_update_performance_limits(struct em_perf_domain *pd,
-> +		unsigned long freq_min_khz, unsigned long freq_max_khz)
-> +{
-> +	struct em_perf_state *table;
-> +	int min_ps = -1;
-> +	int max_ps = -1;
-> +	int i;
-> +
-> +	if (!pd)
-> +		return -EINVAL;
-> +
-> +	rcu_read_lock();
-> +	table = em_perf_state_from_pd(pd);
-> +
-> +	for (i = 0; i < pd->nr_perf_states; i++) {
-> +		if (freq_min_khz == table[i].frequency)
-> +			min_ps = i;
-> +		if (freq_max_khz == table[i].frequency)
-> +			max_ps = i;
-> +	}
-> +	rcu_read_unlock();
-> +
-> +	/* Only update when both are found and sane */
-> +	if (min_ps < 0 || max_ps < 0 || max_ps < min_ps)
-> +		return -EINVAL;
-> +
-> +	pd->min_ps = min_ps;
-> +	pd->max_ps = max_ps;
+Hi Nikita, Hi Łukasz,
 
-Are we sure we are protected against multiple simultaneous updates? Or 
-is this a concern for the caller?
+thank you for fixing the e83747c2f8e3 ("thermal: gov_power_allocator: Set up trip points earlier") and 912e97c67cc3 ("thermal: gov_power_allocator: Move memory allocation out of throttle()") regressions as part of v6.9-rc3. As the regression was introduced in v6.8, would it be possible to include the fix in a v6.8 patch release?
 
-The rest of the patch LGTM.
+Thank you
+Leonard
 
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(em_update_performance_limits);
+#regzbot introduced: 912e97c67cc3f333c4c5df8f51498c651792e658
+#regzbot fixed-by: 1057c4c36ef8b236a2e28edef301da0801338c5f
+
+
+#regzbot introduced: e83747c2f8e3cc5e284e37a8921099f1901d79d8
+#regzbot fixed-by: da781936e7c301e6197eb6513775748e79fb2575
+
+On 4/3/24 07:31, Nikita Travkin via B4 Relay wrote:
+> Recent changes in IPA made it fail probing if the TZ has no cooling
+> devices attached on probe or no trip points defined.
+> 
+> This series restores prior behavior to:
+> 
+> - allow IPA to probe before cooling devices have attached;
+> - allow IPA to probe when the TZ has no passive/active trip points.
+> 
+> I've noticed that all thermal zones fail probing with -EINVAL on my
+> sc7180 based Acer Aspire 1 since 6.8. This series allows me to bring
+> them back.
+> 
+> Additionally there is a commit that supresses the "sustainable_power
+> will be estimated" warning on TZ that have no trip points (and thus IPA
+> will not be able to do anything for them anyway). This allowed me to
+> notice that some of the TZ with cooling_devices on my platform actually
+> lack the sustainable_power value.
+> 
+> Signed-off-by: Nikita Travkin <nikita@trvn.ru>
+> ---
+> Changes in v2:
+> - Split to two changes (Lukasz)
+> - Return 0 in allocate_actors_buffer() instead of suppressing -EINVAL
+>   (Lukasz)
+> - Add a change to supress "sustainable_power will be estimated" warning
+>   on "empty" TZ
+> - Link to v1: https://lore.kernel.org/r/20240321-gpa-no-cooling-devs-v1-1-5c9e0ef2062e@trvn.ru
+> 
+> ---
+> Nikita Travkin (3):
+>       thermal: gov_power_allocator: Allow binding without cooling devices
+>       thermal: gov_power_allocator: Allow binding without trip points
+>       thermal: gov_power_allocator: Suppress sustainable_power warning without trip_points
+> 
+>  drivers/thermal/gov_power_allocator.c | 16 ++++++----------
+>  1 file changed, 6 insertions(+), 10 deletions(-)
+> ---
+> base-commit: 727900b675b749c40ba1f6669c7ae5eb7eb8e837
+> change-id: 20240321-gpa-no-cooling-devs-c79ee3288325
+> 
+> Best regards,
