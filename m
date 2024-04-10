@@ -1,152 +1,90 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FAE51779B6;
-	Wed, 10 Apr 2024 16:06:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 843391791FB
+	for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 16:08:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712765162; cv=none; b=OpTS7KzUcJCwJf/VqHXvK2DTkd28re5/2RCGvW/bKZkz9jSGASlyTD1NrWOi08thUiaHekKlvXvk5xkkxtMy+MuXxl8KqYBnxCCtFtyosebCmYitaouio9E/o5ZUvSSBNxZ5qhfvVGxuHekZOte2usV+CeMg/L4njj2Z83K1CTg=
+	t=1712765288; cv=none; b=nRuudagh9w7NBO3f01aXwWzwt2TXRFAaibrlV/JY9MIRAHzntyQHpKPfuFwr9vY16h5T0okx2eASroAE9Uk7E6r+PvlDJ9dPj5Dwm4nhej0PhGMx2sQVWOigDdIHmscQbqNmnGbTkLSqmCbTjVVjpJnEdzWP0hz3izSW1eV3slk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712765162; c=relaxed/simple;
-	bh=piq+aZgljrVoCDKhCfSkoGK2WF2WNTFw7ziQ5tAjdOc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=Lc8Ox9B9x8w7XPCLcLfCcVjyI54QwnThiRi3Jetn7rh+Bc2I46DOsfCHJI5sct4jW8p5Ku3jfL3FgOtOzR7JPJBG4zhoKAynlnaZmbHMQ3HI3fV6TZtLWYjUfF2vUEfvCsE9QfO9qoPes1KUY8vGBmzqDrTkHCaE+0mvFjI3DWg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=ZthO1lbM; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1712765288; c=relaxed/simple;
+	bh=1oyNBwADwsj3pc9LEqW8/oUb9mcGaoQswCyC+xHqoV8=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=j4kT4je5PGtDKnnJflVy95t8tHFhDy/uaqZ/i5pZUKL8clXga2gi960m4GsZZQ+sA4e2YPrN5+1e64Z6gVmxbqHucS9ml5BcMphc5SxToCGazGiItNYN6THwgCgFmJAwQbSs46860zXAmxsn9bT9admmGc1QirVsP8grqFRtPfA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qLpbw9Ly; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="ZthO1lbM"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 43AFr5a9030162;
-	Wed, 10 Apr 2024 16:05:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	message-id:date:mime-version:subject:to:cc:references:from
-	:in-reply-to:content-type:content-transfer-encoding; s=
-	qcppdkim1; bh=gofH+p75A2H6MwZ+LcSc2nUNvgwMF53ULI8Ss/9g+q4=; b=Zt
-	hO1lbMnlBlYM6pnlELChyEfOLMh6lvk+6K4hFEz7irHMPx5GRtqr6QJL8OHa4STH
-	oY2274kPX9yaO21fipOT6y3smAhYzPP6GRS/B3aLVLAftOCeGcbeugvhU/G7yK29
-	05SlUnMnkyOMoDEzkj2dQ/8cr08q9dNwIbh/yvuEkLnP6wbKlqYmpXtMd9h/m2du
-	ui1PMRupXHY6oDfb2oMbIKBVK9Zl4o9ukJmcptWLKV/xFDZIsIyyxjPUTswV841P
-	1Jy+QeZYF7p3HG0g7Xb0a/Q2QTLXpZ5Cu4gXcK9WwsPFkTaadMR3vIQNdILQQ/IG
-	jFrXvEZsUHa3880I6uYQ==
-Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3xdskjha29-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 16:05:30 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 43AG5T7f022079
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 16:05:29 GMT
-Received: from [10.110.37.144] (10.80.80.8) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.4; Wed, 10 Apr
- 2024 09:05:27 -0700
-Message-ID: <c128cf9b-de30-49f1-9adb-8b03b61f4d51@quicinc.com>
-Date: Wed, 10 Apr 2024 09:05:26 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qLpbw9Ly"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 652C8C43390
+	for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 16:08:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1712765288;
+	bh=1oyNBwADwsj3pc9LEqW8/oUb9mcGaoQswCyC+xHqoV8=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=qLpbw9Lyl5ZfJpucq26TWsngZPY4f0bzXLZIXT3XnegEqHAJUfX/rZE52UlPpAqlv
+	 IwpIYnmmb7tGGIaoUU70V3DUdc6ufSFk5jq65gES5JRXJQt2SXIB9xMoTvyiHbscor
+	 f4E0AUY2MGp27knOkbsJ4MShzFBIHr7gZiU7vavmczrclwa0JeTPyTUUdj/iA6eC3a
+	 wTX0ktrF7z7tuWJLZR7zqJnvf8tNBHYiaA133aZrPpmQjAqUy2Q6pLfW50fsEPk2Rw
+	 IxKsiEhEaYauHlqiA5lA3wqmYZ1m/ZFsbYaYXVSFprwtA5mMviSg4tWMVKg0MFfWVO
+	 wi0Y3hDBeeozQ==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 5BA26C53BD3; Wed, 10 Apr 2024 16:08:08 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 218686] Fail to set energy_performance_preference of amd
+ processor on asus ga403uv
+Date: Wed, 10 Apr 2024 16:08:08 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: mario.limonciello@amd.com
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: DOCUMENTED
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_status resolution
+Message-ID: <bug-218686-137361-2YfcpWROUu@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-218686-137361@https.bugzilla.kernel.org/>
+References: <bug-218686-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 16/16] PCI/pwrctl: add a PCI power control driver for
- power sequenced devices
-Content-Language: en-US
-To: Bartosz Golaszewski <brgl@bgdev.pl>,
-        Marcel Holtmann
-	<marcel@holtmann.org>,
-        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        "David
- S . Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>, Jakub
- Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>, Rob Herring
-	<robh@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, Kalle Valo <kvalo@kernel.org>,
-        Bjorn
- Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
-        Catalin
- Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>, Bjorn
- Helgaas <bhelgaas@google.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Geert
- Uytterhoeven <geert+renesas@glider.be>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Neil
- Armstrong <neil.armstrong@linaro.org>,
-        Marek Szyprowski
-	<m.szyprowski@samsung.com>,
-        Alex Elder <elder@linaro.org>,
-        Srini Kandagatla
-	<srinivas.kandagatla@linaro.org>,
-        Greg Kroah-Hartman
-	<gregkh@linuxfoundation.org>,
-        Abel Vesa <abel.vesa@linaro.org>,
-        Manivannan
- Sadhasivam <mani@kernel.org>,
-        Lukas Wunner <lukas@wunner.de>,
-        Dmitry
- Baryshkov <dmitry.baryshkov@linaro.org>,
-        Amit Pundir
-	<amit.pundir@linaro.org>, Xilin Wu <wuxilin123@gmail.com>
-CC: <linux-bluetooth@vger.kernel.org>, <netdev@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-wireless@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pci@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>,
-        Bartosz Golaszewski
-	<bartosz.golaszewski@linaro.org>
-References: <20240410124628.171783-1-brgl@bgdev.pl>
- <20240410124628.171783-17-brgl@bgdev.pl>
-From: Jeff Johnson <quic_jjohnson@quicinc.com>
-In-Reply-To: <20240410124628.171783-17-brgl@bgdev.pl>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: DT7Wv9f2L7fktC3xWXbBoB4QdMNzyLRm
-X-Proofpoint-ORIG-GUID: DT7Wv9f2L7fktC3xWXbBoB4QdMNzyLRm
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-04-10_04,2024-04-09_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 spamscore=0
- clxscore=1015 adultscore=0 priorityscore=1501 lowpriorityscore=0
- mlxscore=0 phishscore=0 impostorscore=0 bulkscore=0 malwarescore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2404010003 definitions=main-2404100117
 
-On 4/10/2024 5:46 AM, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> 
-> Add a PCI power control driver that's capable of correctly powering up
-> devices using the power sequencing subsystem. The first user of this
-> driver is the ath11k module on QCA6390.
-[...]
-> +config PCI_PWRCTL_PWRSEQ
-> +	tristate "PCI Power Control driver using the Power Sequencing subsystem"
-> +	select POWER_SEQUENCING
-> +	select PCI_PWRCTL
-> +	default m if (ATH11K_PCI && ARCH_QCOM)
-[...]
-> +static const struct of_device_id pci_pwrctl_pwrseq_of_match[] = {
-> +	{
-> +		/* ATH11K in QCA6390 package. */
-> +		.compatible = "pci17cb,1101",
-> +		.data = "wlan",
-> +	},
-> +	{
-> +		/* ATH12K in WCN7850 package. */
-> +		.compatible = "pci17cb,1107",
-> +		.data = "wlan",
+https://bugzilla.kernel.org/show_bug.cgi?id=3D218686
 
-since you are adding both ath11k and ath12k packages, should you update the
-commit text and the config "default m if" condition to include ath12k?
+Mario Limonciello (AMD) (mario.limonciello@amd.com) changed:
 
-/jeff
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+         Resolution|---                         |DOCUMENTED
+
+--- Comment #24 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
+As this is caused by a BIOS issue that we can't do anything about in Linux,
+closing the issue.
+
+FWIW if you're getting resistance from ASUS in fixing it you can try to
+reproduce it in Windows.  AFAICT HWinfo64 will report whether CPPC is worki=
+ng
+or not.
+
+https://www.hwinfo.com/forum/threads/how-does-hwinfo-query-the-cppc-preferr=
+ed-cores-data.7927/
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
