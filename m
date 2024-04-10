@@ -1,23 +1,23 @@
 Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E83BA156881;
-	Wed, 10 Apr 2024 09:49:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id DB172156F23;
+	Wed, 10 Apr 2024 09:49:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=114.242.206.163
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712742567; cv=none; b=Vqt4LrHpFLQW2xmz179O5ORhu29nq6GyshjbCV+IZDgDr4llob027iZ6x1rNUaUbF4xjhsgO+J/x+HYsMzKRqwI7YaEm39dT3Njf7DPvJUEv7dtKpRxFEpGUbQJMgbtMMS+r+AiX2yC2PknfStJckAvujF4zYr+JF8JZJXz0x2E=
+	t=1712742568; cv=none; b=hhkRTi0R/UVpz73fEcrlS/6NWg7UxFkyRpDnD++5ylpjt5JPNxz4v3E6k+d9iB01tv6ESFnSXdGoI98wDC2EL59W/JwYHwho3IVisafGsccdjeZIPlMYiT9cTmgvm6JB7lQSP5T+z29UW5UIVm/KlBwbjo7W0i8G+Q1Bju2pI/U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712742567; c=relaxed/simple;
-	bh=F/P2HI1X8mKyj+MWVME6cB1q17xL5qnLb8qZ2Lplcls=;
+	s=arc-20240116; t=1712742568; c=relaxed/simple;
+	bh=dCh7wsYn/sidy+QkhPu5sh5AobkM9piAescsjCjTvjo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=L/WrqC08NKFOscDtYfMp3lViTU8mmXZy5GWRgGAA4gJanJYqKVbbS19WLvOnZiIzTTWVsmhceWGIXst/MJuJsdq3oVr9/CoPqBzAgMfxxb5+4teFc2jqKDW3L5XfhZg9VA0OKtJxF8CmZmWM1ia6L0+QCEF61Pl3NLRUKSGUBK0=
+	 MIME-Version; b=MNcl5wbU0SWmc2ZFcJi4Tj5kBDUcUQLum58f7RSyF23zx6x9WUEOphciWZwMAlQtqf0EcCL+5qeAEco2QBhJINVv5PN6blwgM3MkH9+JHEkEPGYo7+dRQl17h7U6M7b0Ti2tWKUySwZyq9b3TDMvSxy4ZJVkHNx/v810uy76Aq0=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn; spf=pass smtp.mailfrom=loongson.cn; arc=none smtp.client-ip=114.242.206.163
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
 Received: from loongson.cn (unknown [112.20.109.80])
-	by gateway (Coremail) with SMTP id _____8DxK+mcYBZmEC8lAA--.1612S3;
-	Wed, 10 Apr 2024 17:49:16 +0800 (CST)
+	by gateway (Coremail) with SMTP id _____8DxOLqeYBZmIS8lAA--.4244S3;
+	Wed, 10 Apr 2024 17:49:18 +0800 (CST)
 Received: from localhost.localdomain (unknown [112.20.109.80])
-	by localhost.localdomain (Coremail) with SMTP id AQAAf8AxSRKZYBZmXlV3AA--.21925S3;
-	Wed, 10 Apr 2024 17:49:15 +0800 (CST)
+	by localhost.localdomain (Coremail) with SMTP id AQAAf8AxSRKZYBZmXlV3AA--.21925S5;
+	Wed, 10 Apr 2024 17:49:17 +0800 (CST)
 From: Binbin Zhou <zhoubinbin@loongson.cn>
 To: Binbin Zhou <zhoubb.aaron@gmail.com>,
 	Huacai Chen <chenhuacai@loongson.cn>,
@@ -36,9 +36,9 @@ Cc: Huacai Chen <chenhuacai@kernel.org>,
 	WANG Xuerui <git@xen0n.name>,
 	loongarch@lists.linux.dev,
 	Binbin Zhou <zhoubinbin@loongson.cn>
-Subject: [PATCH 1/4] thermal: loongson2: Trivial code style adjustment
-Date: Wed, 10 Apr 2024 17:49:00 +0800
-Message-ID: <b86904eb8ec46aa374b69678ec2996589c1f98f1.1712733065.git.zhoubinbin@loongson.cn>
+Subject: [PATCH 3/4] dt-bindings: thermal: loongson,ls2k-thermal: Fix incorrect compatible definition
+Date: Wed, 10 Apr 2024 17:49:02 +0800
+Message-ID: <217ce2745a8787c504bbda1d085daba7e9cb2f70.1712733065.git.zhoubinbin@loongson.cn>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1712733065.git.zhoubinbin@loongson.cn>
 References: <cover.1712733065.git.zhoubinbin@loongson.cn>
@@ -49,165 +49,90 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:AQAAf8AxSRKZYBZmXlV3AA--.21925S3
+X-CM-TRANSID:AQAAf8AxSRKZYBZmXlV3AA--.21925S5
 X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/
-X-Coremail-Antispam: 1Uk129KBj93XoWxJF1DGF48Ar18Jr1xGF18CrX_yoW7Gr17p3
-	yxA3y3KrWDXr4xuw1UZrn5WrWYkr17tasxZFs7Gw1rWr43t343XryqqF1fJryfCFZrJFy3
-	Z3yq9F48CayDX3gCm3ZEXasCq-sJn29KB7ZKAUJUUUUx529EdanIXcx71UUUUU7KY7ZEXa
+X-Coremail-Antispam: 1Uk129KBj93XoW7Ar1DCFyDur1DArW8Jr4DJrc_yoW8Cr4kpF
+	sxCa15Kr1kKF17C39xAFWkCwsYvr93tanrXFs2kF1Ygws8G34av345KF1Yqa1fCry0qFyU
+	Zr10kr4UCayDC3gCm3ZEXasCq-sJn29KB7ZKAUJUUUUx529EdanIXcx71UUUUU7KY7ZEXa
 	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUUB2b4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	0xBIdaVrnRJUUUBab4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
 	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
 	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
-	xVWxJr0_GcWln4kS14v26r126r1DM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12
-	xvs2x26I8E6xACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1q
-	6rW5McIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64
-	vIr41lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_
-	Jr0_Gr1l4IxYO2xFxVAFwI0_JF0_Jw1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8Gjc
-	xK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIYrxkI7VAKI48JMIIF0xvE2Ix0
-	cI8IcVAFwI0_Gr0_Xr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8V
-	AvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWxJwCI42IY6I8E87Iv6xkF7I0E
-	14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxU4YLvDUUUU
+	0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAF
+	wI0_Cr1j6rxdM2kKe7AKxVWUAVWUtwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
+	AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
+	tVWrXwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7V
+	AKI48JMxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY
+	6r1j6r4UMxCIbckI1I0E14v26r1q6r43MI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7
+	xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xII
+	jxv20xvE14v26ryj6F1UMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWxJVW8Jr1lIxAIcVCF04
+	k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r4j6F4UMIIF0xvEx4A2jsIEc7Cj
+	xVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x07jr9NsUUUUU=
 
-Here are some minor code style adjustment. Such as fix whitespace code
-style; align function call arguments to opening parenthesis, and add
-devm_thermal_add_hwmon_sysfs() return value checking.
+The temperature output register of the Loongson-2K2000 is defined in the
+chip configuration domain, which is different from the Loongson-2K1000,
+so it can't be fallbacked.
 
+We need to use two groups of registers to describe it: the first group
+is the high and low temperature threshold setting register; the second
+group is the temperature output register.
+
+It is true that this fix will cause ABI corruption, but it is necessary
+otherwise the Loongson-2K2000 temperature sensor will not work properly.
+
+Fixes: 72684d99a854 ("thermal: dt-bindings: add loongson-2 thermal")
+Cc: Yinbo Zhu <zhuyinbo@loongson.cn>
 Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
 ---
- drivers/thermal/loongson2_thermal.c | 69 +++++++++++++++--------------
- 1 file changed, 35 insertions(+), 34 deletions(-)
+ .../thermal/loongson,ls2k-thermal.yaml        | 22 +++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loongson2_thermal.c
-index 0f475fe46bc9..d77d829c8b55 100644
---- a/drivers/thermal/loongson2_thermal.c
-+++ b/drivers/thermal/loongson2_thermal.c
-@@ -16,45 +16,49 @@
- #include <linux/units.h>
- #include "thermal_hwmon.h"
+diff --git a/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+index 9748a479dcd4..a25b42702788 100644
+--- a/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+@@ -18,14 +18,15 @@ properties:
+     oneOf:
+       - enum:
+           - loongson,ls2k1000-thermal
++          - loongson,ls2k2000-thermal
+       - items:
+           - enum:
+               - loongson,ls2k0500-thermal
+-              - loongson,ls2k2000-thermal
+           - const: loongson,ls2k1000-thermal
  
--#define LOONGSON2_MAX_SENSOR_SEL_NUM			3
-+#define LOONGSON2_MAX_SENSOR_SEL_NUM	3
+   reg:
+-    maxItems: 1
++    minItems: 1
++    maxItems: 2
  
--#define LOONGSON2_THSENS_CTRL_HI_REG			0x0
--#define LOONGSON2_THSENS_CTRL_LOW_REG			0x8
--#define LOONGSON2_THSENS_STATUS_REG			0x10
--#define LOONGSON2_THSENS_OUT_REG			0x14
-+#define LOONGSON2_THSENS_CTRL_HI_REG	0x0
-+#define LOONGSON2_THSENS_CTRL_LOW_REG	0x8
-+#define LOONGSON2_THSENS_STATUS_REG	0x10
-+#define LOONGSON2_THSENS_OUT_REG	0x14
+   interrupts:
+     maxItems: 1
+@@ -41,6 +42,23 @@ required:
  
--#define LOONGSON2_THSENS_INT_LO				BIT(0)
--#define LOONGSON2_THSENS_INT_HIGH			BIT(1)
--#define LOONGSON2_THSENS_OUT_MASK			0xFF
-+#define LOONGSON2_THSENS_INT_LO		BIT(0)
-+#define LOONGSON2_THSENS_INT_HIGH	BIT(1)
-+#define LOONGSON2_THSENS_INT_EN		(LOONGSON2_THSENS_INT_LO | \
-+					 LOONGSON2_THSENS_INT_HIGH)
-+#define LOONGSON2_THSENS_OUT_MASK	0xFF
+ unevaluatedProperties: false
  
- struct loongson2_thermal_chip_data {
--	unsigned int	thermal_sensor_sel;
-+	unsigned int thermal_sensor_sel;
- };
- 
- struct loongson2_thermal_data {
--	void __iomem	*regs;
-+	void __iomem *regs;
- 	const struct loongson2_thermal_chip_data *chip_data;
- };
- 
--static int loongson2_thermal_set(struct loongson2_thermal_data *data,
--					int low, int high, bool enable)
-+static void loongson2_set_ctrl_regs(struct loongson2_thermal_data *data,
-+				    int ctrl_data, bool low, bool enable)
- {
--	u64 reg_ctrl = 0;
--	int reg_off = data->chip_data->thermal_sensor_sel * 2;
-+	int reg_ctrl = 0;
-+	int reg_off  = data->chip_data->thermal_sensor_sel * 2;
-+	int ctrl_reg = low ? LOONGSON2_THSENS_CTRL_LOW_REG :
-+		       LOONGSON2_THSENS_CTRL_HI_REG;
++if:
++  properties:
++    compatible:
++      contains:
++        enum:
++          - loongson,ls2k2000-thermal
 +
-+	reg_ctrl = ctrl_data + HECTO;
-+	reg_ctrl |= enable ? 0x100 : 0;
-+	writew(reg_ctrl, data->regs + ctrl_reg + reg_off);
-+}
- 
-+static int loongson2_thermal_set(struct loongson2_thermal_data *data,
-+				 int low, int high, bool enable)
-+{
- 	low = clamp(-40, low, high);
- 	high = clamp(125, low, high);
- 
--	low += HECTO;
--	high += HECTO;
--
--	reg_ctrl = low;
--	reg_ctrl |= enable ? 0x100 : 0;
--	writew(reg_ctrl, data->regs + LOONGSON2_THSENS_CTRL_LOW_REG + reg_off);
--
--	reg_ctrl = high;
--	reg_ctrl |= enable ? 0x100 : 0;
--	writew(reg_ctrl, data->regs + LOONGSON2_THSENS_CTRL_HI_REG + reg_off);
-+	loongson2_set_ctrl_regs(data, low, true, enable);
-+	loongson2_set_ctrl_regs(data, high, false, enable);
- 
- 	return 0;
- }
-@@ -75,15 +79,15 @@ static irqreturn_t loongson2_thermal_irq_thread(int irq, void *dev)
- 	struct thermal_zone_device *tzd = dev;
- 	struct loongson2_thermal_data *data = thermal_zone_device_priv(tzd);
- 
--	writeb(LOONGSON2_THSENS_INT_LO | LOONGSON2_THSENS_INT_HIGH, data->regs +
--		LOONGSON2_THSENS_STATUS_REG);
-+	writeb(LOONGSON2_THSENS_INT_EN, data->regs + LOONGSON2_THSENS_STATUS_REG);
- 
- 	thermal_zone_device_update(tzd, THERMAL_EVENT_UNSPECIFIED);
- 
- 	return IRQ_HANDLED;
- }
- 
--static int loongson2_thermal_set_trips(struct thermal_zone_device *tz, int low, int high)
-+static int loongson2_thermal_set_trips(struct thermal_zone_device *tz,
-+				       int low, int high)
- {
- 	struct loongson2_thermal_data *data = thermal_zone_device_priv(tz);
- 
-@@ -116,14 +120,13 @@ static int loongson2_thermal_probe(struct platform_device *pdev)
- 	if (irq < 0)
- 		return irq;
- 
--	writeb(LOONGSON2_THSENS_INT_LO | LOONGSON2_THSENS_INT_HIGH, data->regs +
--		LOONGSON2_THSENS_STATUS_REG);
-+	writeb(LOONGSON2_THSENS_INT_EN, data->regs + LOONGSON2_THSENS_STATUS_REG);
- 
- 	loongson2_thermal_set(data, 0, 0, false);
- 
- 	for (i = 0; i <= LOONGSON2_MAX_SENSOR_SEL_NUM; i++) {
- 		tzd = devm_thermal_of_zone_register(dev, i, data,
--			&loongson2_of_thermal_ops);
-+						    &loongson2_of_thermal_ops);
- 
- 		if (!IS_ERR(tzd))
- 			break;
-@@ -135,13 +138,11 @@ static int loongson2_thermal_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = devm_request_threaded_irq(dev, irq, NULL, loongson2_thermal_irq_thread,
--			IRQF_ONESHOT, "loongson2_thermal", tzd);
-+					IRQF_ONESHOT, "loongson2_thermal", tzd);
- 	if (ret < 0)
- 		return dev_err_probe(dev, ret, "failed to request alarm irq\n");
- 
--	devm_thermal_add_hwmon_sysfs(dev, tzd);
--
--	return 0;
-+	return devm_thermal_add_hwmon_sysfs(dev, tzd);
- }
- 
- static const struct loongson2_thermal_chip_data loongson2_thermal_ls2k1000_data = {
++then:
++  properties:
++    reg:
++      maxItems: 2
++
++else:
++  properties:
++    reg:
++      maxItems: 1
++
+ examples:
+   - |
+     #include <dt-bindings/interrupt-controller/irq.h>
 -- 
 2.43.0
 
