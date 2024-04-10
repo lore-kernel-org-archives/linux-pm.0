@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3207517F39D;
-	Wed, 10 Apr 2024 17:44:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9D51180A89;
+	Wed, 10 Apr 2024 17:45:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712771103; cv=none; b=t/f5I0FsXDy8gH90PR7Z7Aq4RQVv/2aSSPj6Oag5TIwjv10IhtcOJkvRwYmJPC2avXkY8swqZ+S4V8ZTaGr7VvQSM0PzUPWF6YWROvF7whMnptL7Fgu4eshdo3I7RQUejBh+QyLf6Mcd5+5hRh9OmSiUD57WRnTxNaIgRUkjAjc=
+	t=1712771103; cv=none; b=UM6Is3ScioyErxZy5F2ytcuyLUN2XL1931i6PhMhNHg1ltJkp0puo2cRatofZMnMxzH/Ktqq7baIDdtnu2Co35KJkXr+7fpEY/GHj3mjxzAES16HFUvgLTdqu+GYxvmLLf/j0UriapEqheFd/oFY8dMY5laPkIz+oSCFK9Pkxtk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1712771103; c=relaxed/simple;
-	bh=CifjVrjUKG+0XiMiN+5J1c80gqRxTGj0TWQ+VlD1gpY=;
+	bh=hkMWHvHYQS4MmSqAa11HxBZKh9J4WE9vRTr50DrZTx8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mxa1H4VvwcWlecHJxsw5+4pczpTwTwl3lwhALm6QBCHUzA0pPt2sR2Os6nwwWL5wmIGGeB+KiBEmEZRu1ISUegt+pKL2UOZqWVTLal6xZJASuIwD93wMU6VzFclNESqzjrRgCY6JFUUg+9q/YeaQN2TUOhBAn6xuAVBOhP3R828=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=XlQ7hpRB reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=Z+z3pqWogAfb3tvuOX/YcrPnFLpT3ZnKpqrzFPIHDOp5byS3PCn5G7Dx8odAtdJzE3m7yA1spajaqTSqfjjrA5V903yIepAYkY74Q6uS7O5tdgDJ9yUxAlzzH5Y9g+rp4PqwsScRC8guRXLB6w+NRhl6bS0RSOK9+fmATSv0h4U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=JB1bdQVy reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="XlQ7hpRB"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="JB1bdQVy"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id 7f3fb694b8305f10; Wed, 10 Apr 2024 19:44:51 +0200
+ id 0bff15c04255a154; Wed, 10 Apr 2024 19:44:53 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 17AB566C66F;
-	Wed, 10 Apr 2024 19:44:51 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id CE5D266C66F;
+	Wed, 10 Apr 2024 19:44:52 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1712771091;
-	bh=CifjVrjUKG+0XiMiN+5J1c80gqRxTGj0TWQ+VlD1gpY=;
+	s=dkim; t=1712771093;
+	bh=hkMWHvHYQS4MmSqAa11HxBZKh9J4WE9vRTr50DrZTx8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=XlQ7hpRB3aaato4ZrW3UEMBhSR3zgyzYkSR3z0FfTX9J3mfCPfsSxsiq48K1qKaTk
-	 GGIOk7L5XTDBcwqgK3vqhJTCOCHnWMionLjtcAewNCve7GLBeqnoJ6+eej3bAsF1c5
-	 9qwdLj3JOV+IURbJfc+UOV9I8bNYCgPJMmmsJ4EgU99HsFICyJ12JtCukOhwgnwBb+
-	 tudBy84msFDYgBJuPA5uGGWFISVDK/7IAfbYdTE2Crn+cDyBHmJrK9oIxk1VK7PNu5
-	 hxwSEUhusjbWO+dYMw4bf8h9+udNZpkmgvI+SJYMXmIcpPnOBE9aBfhEBfsVOAQ1Xr
-	 FZNnBL0D9Fqjw==
+	b=JB1bdQVyscMohZm2b4QioU75sZupLKylO+Qlo0SXjEHip3qbw46CKJC+HCSwGqPCR
+	 xZdnsrKiBXh2btNr3BlczB5m5+ORwDnUBq3ANXsvgPKZ/w/K8xZv7lLqbh5NKk3+L8
+	 fUlc/bpbMbBIj3lVQdAnU3uRMAZNxc7wXjGclxFs+O10BBM2g1LvX5CK4FRoO+YWV1
+	 fjSH0NXHpVYIK2rN1jpI2mz+yfeZ8eXNhLf9el0/iip8hf8Q0xA89SJJrFlE92kqmS
+	 W5PokYwXC9gaLZgJSnSK6uGWANVUuNq7urs76hmSUzWBLjSIDWUjiF/Qe/9U8rzD8k
+	 kw6pbu/pOcYjg==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -42,10 +42,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Lukasz Luba <lukasz.luba@arm.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Subject:
- [PATCH v1 12/16] thermal: gov_fair_share: Use trip thresholds instead of trip
- temperatures
-Date: Wed, 10 Apr 2024 18:58:56 +0200
-Message-ID: <5484095.Sb9uPGUboI@kreacher>
+ [PATCH v1 10/16] thermal: gov_step_wise: Clean up thermal_zone_trip_update()
+Date: Wed, 10 Apr 2024 18:44:14 +0200
+Message-ID: <1883063.atdPhlSkOF@kreacher>
 In-Reply-To: <13515747.uLZWGnKmhe@kreacher>
 References: <13515747.uLZWGnKmhe@kreacher>
 Precedence: bulk
@@ -64,60 +63,65 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In principle, the Fair Share governor should take trip hystereses
-into account.  After all, once a trip has been crossed on the way up,
-mitigation is still needed until it is crossed on the way down.
+Do some assorted cleanups in thermal_zone_trip_update():
 
-For this reason, make it use trip thresholds that are computed by
-the core when trips are crossed, so as to apply mitigations if the
-zone temperature is in a hysteresis rage of one or more trips that
-were crossed on the way up, but have not been crossed on the way
-down yet.
+ * Compute the trend value upfront.
+ * Move old_target definition to the block where it is used.
+ * Adjust white space around diagnositc messages and locking.
+ * Use suitable field formatting in a message to avoid an explicit
+   cast to int.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/gov_fair_share.c |   14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ drivers/thermal/gov_step_wise.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Index: linux-pm/drivers/thermal/gov_fair_share.c
+Index: linux-pm/drivers/thermal/gov_step_wise.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/gov_fair_share.c
-+++ linux-pm/drivers/thermal/gov_fair_share.c
-@@ -17,28 +17,26 @@
- 
- static int get_trip_level(struct thermal_zone_device *tz)
+--- linux-pm.orig/drivers/thermal/gov_step_wise.c
++++ linux-pm/drivers/thermal/gov_step_wise.c
+@@ -65,13 +65,10 @@ static void thermal_zone_trip_update(str
+ 				     const struct thermal_trip *trip,
+ 				     int trip_threshold)
  {
--	const struct thermal_trip *level_trip = NULL;
-+	const struct thermal_trip_desc *level_td = NULL;
- 	const struct thermal_trip_desc *td;
- 	int trip_level = -1;
- 
- 	for_each_trip_desc(tz, td) {
--		const struct thermal_trip *trip = &td->trip;
++	enum thermal_trend trend = get_tz_trend(tz, trip);
+ 	int trip_id = thermal_zone_trip_id(tz, trip);
+-	enum thermal_trend trend;
+ 	struct thermal_instance *instance;
+ 	bool throttle = false;
+-	int old_target;
 -
--		if (trip->temperature >= tz->temperature)
-+		if (td->threshold > tz->temperature)
+-	trend = get_tz_trend(tz, trip);
+ 
+ 	if (tz->temperature >= trip_threshold) {
+ 		throttle = true;
+@@ -82,13 +79,16 @@ static void thermal_zone_trip_update(str
+ 		trip_id, trip->type, trip_threshold, trend, throttle);
+ 
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
++		int old_target;
++
+ 		if (instance->trip != trip)
  			continue;
  
- 		trip_level++;
+ 		old_target = instance->target;
+ 		instance->target = get_target_state(instance, trend, throttle);
+-		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
+-					old_target, (int)instance->target);
++
++		dev_dbg(&instance->cdev->device, "old_target=%d, target=%ld\n",
++			old_target, instance->target);
  
--		if (!level_trip || trip->temperature > level_trip->temperature)
--			level_trip = trip;
-+		if (!level_td || td->threshold > level_td->threshold)
-+			level_td = td;
- 	}
+ 		if (instance->initialized && old_target == instance->target)
+ 			continue;
+@@ -104,6 +104,7 @@ static void thermal_zone_trip_update(str
+ 		}
  
- 	/*  Bail out if the temperature is not greater than any trips. */
- 	if (trip_level < 0)
- 		return 0;
- 
--	trace_thermal_zone_trip(tz, thermal_zone_trip_id(tz, level_trip),
--				level_trip->type);
-+	trace_thermal_zone_trip(tz, thermal_zone_trip_id(tz, &level_td->trip),
-+				level_td->trip.type);
- 
- 	return trip_level;
- }
+ 		instance->initialized = true;
++
+ 		mutex_lock(&instance->cdev->lock);
+ 		instance->cdev->updated = false; /* cdev needs update */
+ 		mutex_unlock(&instance->cdev->lock);
 
 
 
