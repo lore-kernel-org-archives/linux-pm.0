@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5CA017F36C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 107E817F36E;
 	Wed, 10 Apr 2024 17:44:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712771099; cv=none; b=JGgUYnHO5R2qhbLSEG9AzsbtFKqGHMybKKfZAhwANkmdSNV5s94DxwqGCSJXWN5WEqEWxd/J/AKCJYtX2L1bqaaNwIH3cpkNJLheOSoBATMEudydLPiDJA08I8DeX/YMykQxfVZaJ6qqrbPH5j6SJb3OEBqwI6rupeiSL3U8y2Y=
+	t=1712771099; cv=none; b=Ly7+vT1VZbb4OWP6t1VvGxXCOud8BNKKToPugf8/yS0k/7oB1+dZOzNfubBIAf1HFFXlMZ2Sa0H+jzEpQnhJOpYBM1K+sY2Z9oaocFI8CIBbjRZiCLav9GlFO9RJZzByQGvsCMYU+2Sf441q5X5S5PcyTsQxlWqvHudGvl1Nx9s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1712771099; c=relaxed/simple;
-	bh=Y9txkjDSbtFrAISOZH1vpS6A74vk4UuwMFg9JEKjUSM=;
+	bh=NA5yrW51H85dk5WAOZypgvfcgjWO3737t7jPzppEXU4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=th2kH5q4xrCKIP1SOYsDyL6zF0V1d7tCXH9Prwyt4bwymcuxLA4UPjDf43y711DL9x62hdORXsB8EpWJ9oXSOHAGT1UYF2QBjcM1WbJlAK5BJkI+Fa1nUIhp7z0S1p6tdFhFu85+NrRESvY81IqZrOJyL6dlQH1E4wmp6DjqN08=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Xvva4Fug reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=RSdXkQ0I2YAypFvhGLiYVGp2YyZDXf5RniMsSPLxs/mXLOKQ6yMYZF/lp4+JFRHDYgGcnhgqX2/UTIJK3eihmYiB/jV7mh9zyswrCNNgIfugUCWcF4RZCkKcNauljQzd2zehTrcuvW8TdH0Md9cJb6kj7JqNw9GAVbR3Xi4JiXM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=s6bQKZwO reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Xvva4Fug"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="s6bQKZwO"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id 2595fb2821a297ed; Wed, 10 Apr 2024 19:44:48 +0200
+ id 28e78abd95b63886; Wed, 10 Apr 2024 19:44:55 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 34CA866C66F;
-	Wed, 10 Apr 2024 19:44:48 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 7676066C66F;
+	Wed, 10 Apr 2024 19:44:54 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1712771088;
-	bh=Y9txkjDSbtFrAISOZH1vpS6A74vk4UuwMFg9JEKjUSM=;
+	s=dkim; t=1712771094;
+	bh=NA5yrW51H85dk5WAOZypgvfcgjWO3737t7jPzppEXU4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Xvva4FugISWys5Xza+5eU2r9epAW26a5L+sOmS0/GiHyNnXo+3OF/o3j3ixHlpxAy
-	 3Va9NOd4BVEuJ16BLIze/Ps4YK01urHuc6BOw1vx5w7XhFPI+c5O/0sEGsXY2dINx3
-	 hR0XOipLgMxS9uWpsm71P12sFzyYtjsXYRndtnBCaAkffajjbhi2LReD7BO0+p2+bZ
-	 Sgb/LuZu92aE6dVWn97zBT9r3GtDStYHbsTGm8U/AU0cXyANYkLlZiF789d2CC6XXV
-	 pzzzEJD1WEtjwA6M80GWrlefQppuy16T0Ond5gqTFO2fO7/ZrUDze6b9P8TjuUsAmo
-	 aI0EUcke1vkqg==
+	b=s6bQKZwOpEprs7BFpzU29yApt4Qr/EV78+9DKe7LPrVIXeFB5mOEsRdtmU6Skq+gl
+	 J10Jy+ifbUlQtVEBrYKoG0tzIguMt410tgDHkHXhHbKeMhtE7N5ASTpDebe9T+lmuO
+	 F6gHd1twOj8Vr3NhHobW9U4otfth7f5W2up5RpY8WZY3FGrQVpjB2/id1DtKeZ8ZTB
+	 rlCbSQ0u1YNDE6+O8xC/Job1GBKl1eW+1gsfwIxrqGazkABOzRXVMbFMEdMS+dEBph
+	 cnlpFZaFR4vLGs9iiQizM8aIkQrlTtcb42qmzV1lUjolnua24PLLbFh026ZE2uXPqk
+	 pnuNHDoJwe0Dg==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -42,9 +42,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Lukasz Luba <lukasz.luba@arm.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Subject:
- [PATCH v1 15/16] thermal: core: Drop the .throttle() governor callback
-Date: Wed, 10 Apr 2024 19:42:35 +0200
-Message-ID: <2701448.BddDVKsqQX@kreacher>
+ [PATCH v1 08/16] thermal: gov_step_wise: Use .manage() callback instead of
+ .throttle()
+Date: Wed, 10 Apr 2024 18:13:55 +0200
+Message-ID: <2628456.Lt9SDvczpP@kreacher>
 In-Reply-To: <13515747.uLZWGnKmhe@kreacher>
 References: <13515747.uLZWGnKmhe@kreacher>
 Precedence: bulk
@@ -58,72 +59,84 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudehiedguddufecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeehpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudehiedguddugecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeehpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Since all of the governors in the tree have been switched over to using
-the new callbacks, either .trip_crossed() or .manage(), the .throttle()
-governor callback is not used any more, so drop it.
+Make the Step-Wise governor use the new .manage() callback instead of
+.throttle().
+
+Even though using .throttle() is not particularly problematic for the
+Step-Wise governor, using .manage() instead still allows it to reduce
+overhead by updating all of the colling devices once after setting
+target values for all of the thermal instances.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c |   11 -----------
- drivers/thermal/thermal_core.h |    4 ----
- 2 files changed, 15 deletions(-)
+ drivers/thermal/gov_step_wise.c |   39 +++++++++++++++++++++------------------
+ 1 file changed, 21 insertions(+), 18 deletions(-)
 
-Index: linux-pm/drivers/thermal/thermal_core.c
+Index: linux-pm/drivers/thermal/gov_step_wise.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -310,15 +310,6 @@ static struct thermal_governor *thermal_
- 	return def_governor;
+--- linux-pm.orig/drivers/thermal/gov_step_wise.c
++++ linux-pm/drivers/thermal/gov_step_wise.c
+@@ -109,34 +109,37 @@ static void thermal_zone_trip_update(str
+ 	}
  }
  
--static void handle_non_critical_trips(struct thermal_zone_device *tz,
--				      const struct thermal_trip *trip)
--{
--	struct thermal_governor *governor = thermal_get_tz_governor(tz);
--
--	if (governor->throttle)
--		governor->throttle(tz, trip);
--}
--
- void thermal_governor_update_tz(struct thermal_zone_device *tz,
- 				enum thermal_notify_event reason)
+-/**
+- * step_wise_throttle - throttles devices associated with the given zone
+- * @tz: thermal_zone_device
+- * @trip: trip point
+- *
+- * Throttling Logic: This uses the trend of the thermal zone to throttle.
+- * If the thermal zone is 'heating up' this throttles all the cooling
+- * devices associated with the zone and its particular trip point, by one
+- * step. If the zone is 'cooling down' it brings back the performance of
+- * the devices by one step.
+- */
+-static int step_wise_throttle(struct thermal_zone_device *tz,
+-			      const struct thermal_trip *trip)
++static void step_wise_manage(struct thermal_zone_device *tz)
  {
-@@ -418,8 +409,6 @@ static void handle_thermal_trip(struct t
++	const struct thermal_trip_desc *td;
+ 	struct thermal_instance *instance;
  
- 	if (trip->type == THERMAL_TRIP_CRITICAL || trip->type == THERMAL_TRIP_HOT)
- 		handle_critical_trips(tz, trip);
--	else
--		handle_non_critical_trips(tz, trip);
+ 	lockdep_assert_held(&tz->lock);
+ 
+-	thermal_zone_trip_update(tz, trip);
++	/*
++	 * Throttling Logic: Use the trend of the thermal zone to throttle.
++	 * If the thermal zone is 'heating up', throttle all of the cooling
++	 * devices associated with each trip point by one step. If the zone
++	 * is 'cooling down', it brings back the performance of the devices
++	 * by one step.
++	 */
++	for_each_trip_desc(tz, td) {
++		const struct thermal_trip *trip = &td->trip;
++
++		if (trip->temperature == THERMAL_TEMP_INVALID ||
++		    trip->type == THERMAL_TRIP_CRITICAL ||
++		    trip->type == THERMAL_TRIP_HOT)
++			continue;
++
++		thermal_zone_trip_update(tz, trip);
++	}
+ 
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node)
+ 		thermal_cdev_update(instance->cdev);
+-
+-	return 0;
  }
  
- static void update_temperature(struct thermal_zone_device *tz)
-Index: linux-pm/drivers/thermal/thermal_core.h
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.h
-+++ linux-pm/drivers/thermal/thermal_core.h
-@@ -32,8 +32,6 @@ struct thermal_trip_desc {
-  *			thermal zone.
-  * @trip_crossed:	called for trip points that have just been crossed
-  * @manage:	called on thermal zone temperature updates
-- * @throttle:	callback called for every trip point even if temperature is
-- *		below the trip point temperature
-  * @update_tz:	callback called when thermal zone internals have changed, e.g.
-  *		thermal cooling instance was added/removed
-  * @governor_list:	node in thermal_governor_list (in thermal_core.c)
-@@ -46,8 +44,6 @@ struct thermal_governor {
- 			     const struct thermal_trip *trip,
- 			     bool crossed_up);
- 	void (*manage)(struct thermal_zone_device *tz);
--	int (*throttle)(struct thermal_zone_device *tz,
--			const struct thermal_trip *trip);
- 	void (*update_tz)(struct thermal_zone_device *tz,
- 			  enum thermal_notify_event reason);
- 	struct list_head	governor_list;
+ static struct thermal_governor thermal_gov_step_wise = {
+-	.name		= "step_wise",
+-	.throttle	= step_wise_throttle,
++	.name	= "step_wise",
++	.manage	= step_wise_manage,
+ };
+ THERMAL_GOVERNOR_DECLARE(thermal_gov_step_wise);
 
 
 
