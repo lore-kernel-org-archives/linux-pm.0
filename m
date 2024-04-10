@@ -1,264 +1,120 @@
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
+Received: from mail-pl1-f172.google.com (mail-pl1-f172.google.com [209.85.214.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2819D1649DA
-	for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 12:47:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43FA915991C
+	for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 13:03:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712753241; cv=none; b=SBMgGa0HY7yLWbYwLHI19rZ0cGfFsRNDz29gGs+R7QUrJdk6IashkUYFCrPiVXLuzdvv1NEtsdLpadlCEXdNNF9cI1sV72v/9nOceFPjB2j9160Hf3otUtQTeI3QXxhG0p2vSOTFrMbwivJFOn8DOq1ZbV3RCaH8Fboep3KvK5Q=
+	t=1712754183; cv=none; b=L1EbvRHpRnyEgp25wS/tYaRH/Uap44Xljo/jwBpOTTCM38jnY3I0zWacVhkhv/eE9Y0OeWlNNGu//H2yRl1EK2XoghVqpDrAYCHRC35UK6XUEt9tMuibiia7igbBAoYR1bz460Dk+5GlF1CkIZ1ftJYEeDYxPssLgVUVPn+NesI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712753241; c=relaxed/simple;
-	bh=Zu9qHogsjwwvS76RuRykV3Cyl3hZFd1eYZO5KYwA5Tk=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Z3hvOABPOkUQ2sokv2gmHh5oiwHPNBPZmtr7DM0xXHuOkI05AmhrNjsAb45goQB0jgAlMSoNcpAQNjYq3h7fO33OrDBQx6ryZ6ZpG2tJ6hCj1kZSEDpDu7WgnMosBBWBrayXuBCRQEb+9TTWX6Nk+PIflxLavRnzY+92SGtHDWc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=Tv20W+/b; arc=none smtp.client-ip=209.85.167.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
+	s=arc-20240116; t=1712754183; c=relaxed/simple;
+	bh=Mzy1RLChKpTXckeRfOn3L90L6pWcJRlTrF3gU8yBosw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Ah8gAqj2VfrN3TMyw9tfFmZNciEGVLGPqPtURdX1L9d6AeK+lfzCUFhPpCMwLwy4E02p8VhwFhztGzHHnujzNaGQyY9pRgfuBxg7R/ydiQGetwbFa7jTHDL5LDlgnWeW5/TfH6FCFiKBRXsaU2PGJMR5eV1xtj7k189a5XYN/J0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=HV2v4aCO; arc=none smtp.client-ip=209.85.214.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="Tv20W+/b"
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5171a529224so3996518e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 05:47:14 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="HV2v4aCO"
+Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-1e411e339b8so25299125ad.3
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 06:03:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1712753233; x=1713358033; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=z6NUiX8vyJKElOCOKE+vXKfTmxYyyFPuN3p6ttUZMX0=;
-        b=Tv20W+/bdTWpaQ8+SOwWRs2I7/NQhQSTMKI4Nb5iHwzf7XDNs3lV+V/SCR0YTo+Kv1
-         q4l/uSCicYBZAv1tl2NJ3xSo6LaLDAFf+VsETVnDeCTsV6t808s+pHsB0qqvI+VeNPbL
-         /pGhvx5BoOokkFX5aXdSDM9f+EM8NXLmGWdev9yWI83VczS1Qe1wrzHH7mqDqBMNw3mC
-         G0R3E0TL87gTKJME91tOVFt7KpF5bRtG9ipxxmCkTFtCQ7mq3qE87AkKCjA7WTF4De/b
-         sZGiZwop6HFgwtVU/Kr8+X/0OQ+kxPP8FhJGhvE6gMo+wPyS4GbGJuuOvWUYBYEPWNvE
-         Csaw==
+        d=chromium.org; s=google; t=1712754181; x=1713358981; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=x3Y56dDS984KsDzs2nzTKgy6adBy9joM/agCd66RARo=;
+        b=HV2v4aCOwl3k/clrmZQFBqxbjXAfywP+A1nfAEERh1oEHpPCE7lp29TZeR2QRva8Zk
+         FuSULnBwlZSZOJTBnZblK6yDWkepeoEH9aVcnMgI3+d4tW/aEutjpsuxgZOxMv3meflG
+         bF4foDQoigW1EGhuGL5wJOYjtaIXmq6njJ5GA=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712753233; x=1713358033;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=z6NUiX8vyJKElOCOKE+vXKfTmxYyyFPuN3p6ttUZMX0=;
-        b=pTBvDgQRM8u3kPFO2kNKNHqR87VWXK6ubEZEHb0d8YdBqPKrdYwexsGInUbxBH6yrh
-         0fW3ZulRZtosA/bubY5eYf2EnqhtiegxYyZIuKXnFZ/6QdExM7Iml4znBe55mXkPwO39
-         HRYo94T+HRcZElzW9MkmwVB+N5VcjmI689/jedDTzvbiWhtlPc1hGGauzZx7RXjz8mGs
-         1mXUHYYLbGSAU/nwT5ObC6KQxNgmgz0ibrKHCTXoXyCbQ/sd5fZ1KJc9ZLAUf1JzGBq1
-         4uvzqhPkSlGBgR6+pmJcqBjBv5HJlwBovAKI/8sPMB1mXonxUZVZBTvxjDnW/H/DkI7+
-         PxeQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVO79nRNM/H2EFZLXCrIu/ZCrWL2EQd5SYWJ/BQm9UBPfKHSXTjzkEfvRXpVrSAENhQcH45Qt5Imk1fRPb0+iVjj7W/ymqdX+4=
-X-Gm-Message-State: AOJu0YwPD57itsLQdCnaDkq4Xyz+kTcwCkpPH+qe21ZK0q73Jo06OriG
-	ybVOnN70YLfqj0fQITb3WWD0TkDE9qct21YT/DCm76277Ql/jmQNy19JJs+EiIQ=
-X-Google-Smtp-Source: AGHT+IGfrJ7OaZz+PXCCgv0qoGYu9zPEdDb58BFa1E8ouRgU2iFIk8ebIdAkp2W60bcgcXxT6W6Flw==
-X-Received: by 2002:a19:6912:0:b0:513:d884:7aac with SMTP id e18-20020a196912000000b00513d8847aacmr1460918lfc.21.1712753232925;
-        Wed, 10 Apr 2024 05:47:12 -0700 (PDT)
-Received: from brgl-uxlite.home ([2a01:cb1d:75a:e000:6908:7e99:35c9:d585])
-        by smtp.gmail.com with ESMTPSA id v13-20020a05600c444d00b0041663450a4asm2150929wmn.45.2024.04.10.05.47.11
+        d=1e100.net; s=20230601; t=1712754181; x=1713358981;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=x3Y56dDS984KsDzs2nzTKgy6adBy9joM/agCd66RARo=;
+        b=EJekbfO7VAHyaefyIPHzE7b519zA6HwqEnEjx6LhFJpywaYaS5lg+jN8Gx78G59eCm
+         udy4r82eJ9/r9zc8PGlY3YNd56vxlK7iY7S7rRACsnsqkkXUTXIuGMzWp33j8wCeUm2i
+         5k9cpTYlnRjfwdi9eNJtWNAEff7a8fRVCSOPKh9mUA+NvnzNwStA+XlckJKOlBFZmx+e
+         tkK4+8qvOiE0jgMnImaqRcwHynZcksTHNOzgMbm2IE7k3rU0VdScvzDlP+qSncWOSNMo
+         UIwTABeXonQ/rT7c310R3MA55W5OnnLBZseWGIukczO1L7N/tHaFweCYevM4dW1i3X0K
+         4UwQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUF9GA7x4JOBWSdM+tvf1QAgjK1QpTqsGv39AI5i2Kb5t3+B1lusZJFDMB8p6BxFo88JyNsZ5JBReRT3VB2fTGyupiHkDOz56c=
+X-Gm-Message-State: AOJu0Yz1/KGn4g2BIq0rdu2ZqQqeKEhWpJlaUFkT05TTwa9pll+zi0tC
+	kYSiMxcMeRT4PjPJsETV2AbKFyE4KyRGf8Y42E+73cKZQxctlt2Mz1d6Oa2YMA==
+X-Google-Smtp-Source: AGHT+IHqZzwYa8MxtXFxj041lgd7J88+1a1m5BQKJBRqUvFpLKeI9bdlPRTEzn2uQM5glqcDtWs7AQ==
+X-Received: by 2002:a17:902:fc48:b0:1e4:10d9:5dfb with SMTP id me8-20020a170902fc4800b001e410d95dfbmr3179942plb.38.1712754181302;
+        Wed, 10 Apr 2024 06:03:01 -0700 (PDT)
+Received: from yuanhsinte1.c.googlers.com (88.216.124.34.bc.googleusercontent.com. [34.124.216.88])
+        by smtp.gmail.com with ESMTPSA id kq12-20020a170903284c00b001e29acb2d18sm10726341plb.4.2024.04.10.06.02.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Apr 2024 05:47:12 -0700 (PDT)
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-To: Marcel Holtmann <marcel@holtmann.org>,
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-	"David S . Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Kalle Valo <kvalo@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Saravana Kannan <saravanak@google.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Alex Elder <elder@linaro.org>,
-	Srini Kandagatla <srinivas.kandagatla@linaro.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Abel Vesa <abel.vesa@linaro.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Lukas Wunner <lukas@wunner.de>,
-	Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-	Amit Pundir <amit.pundir@linaro.org>,
-	Xilin Wu <wuxilin123@gmail.com>
-Cc: linux-bluetooth@vger.kernel.org,
-	netdev@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-wireless@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-pci@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Subject: [PATCH v7 15/16] Bluetooth: qca: use the power sequencer for QCA6390
-Date: Wed, 10 Apr 2024 14:46:27 +0200
-Message-Id: <20240410124628.171783-16-brgl@bgdev.pl>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20240410124628.171783-1-brgl@bgdev.pl>
-References: <20240410124628.171783-1-brgl@bgdev.pl>
+        Wed, 10 Apr 2024 06:03:00 -0700 (PDT)
+From: Hsin-Te Yuan <yuanhsinte@chromium.org>
+Date: Wed, 10 Apr 2024 13:02:48 +0000
+Subject: [PATCH v2] thermal/drivers/mediatek/lvts_thermal: Add coeff for
+ mt8192
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240410-lvts_thermal-v2-1-621cb7c07a32@chromium.org>
+X-B4-Tracking: v=1; b=H4sIAPeNFmYC/3XMQQ6CMBCF4auQWVvTFgrqynsYYrBM6SRAzRQbD
+ eHuVvYu/5e8b4WITBjhUqzAmChSmHPoQwHWd/OAgvrcoKWuZKWkGNMS74tHnrpRlH1Zm1PVdNY
+ 5yJcno6P3zt3a3J7iEviz60n91j9QUkIJRCMf+mxVY+qr9Rwmek3HwAO027Z9AUg9I3KrAAAA
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ =?utf-8?q?N=C3=ADcolas_F=2E_R=2E_A=2E_Prado?= <nfraprado@collabora.com>, 
+ =?utf-8?q?Bernhard_Rosenkr=C3=A4nzer?= <bero@baylibre.com>, 
+ Balsam CHIHI <bchihi@baylibre.com>
+Cc: Alexandre Mergnat <amergnat@baylibre.com>, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-mediatek@lists.infradead.org, Hsin-Te Yuan <yuanhsinte@chromium.org>
+X-Mailer: b4 0.12.4
 
-From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+In order for lvts_raw_to_temp to function properly on mt8192,
+temperature coefficients for mt8192 need to be added.
 
-Use the pwrseq subsystem's consumer API to run the power-up sequence for
-the Bluetooth module of the QCA6390 package.
-
-Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Fixes: 288732242db4 ("thermal/drivers/mediatek/lvts_thermal: Add mt8192 support")
+Signed-off-by: Hsin-Te Yuan <yuanhsinte@chromium.org>
 ---
- drivers/bluetooth/hci_qca.c | 74 +++++++++++++++++++++++++++++--------
- 1 file changed, 59 insertions(+), 15 deletions(-)
+Changes in v2:
+- Reusing mt8195 coeff instead of creating duplicate definitions
+- Link to v1: https://lore.kernel.org/r/20240410-lvts_thermal-v1-1-ee50b29c1756@chromium.org
+---
+ drivers/thermal/mediatek/lvts_thermal.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-index 8a60ad7acd70..d31dcea650c1 100644
---- a/drivers/bluetooth/hci_qca.c
-+++ b/drivers/bluetooth/hci_qca.c
-@@ -29,6 +29,7 @@
- #include <linux/of.h>
- #include <linux/acpi.h>
- #include <linux/platform_device.h>
-+#include <linux/pwrseq/consumer.h>
- #include <linux/regulator/consumer.h>
- #include <linux/serdev.h>
- #include <linux/mutex.h>
-@@ -215,6 +216,7 @@ struct qca_power {
- 	struct regulator_bulk_data *vreg_bulk;
- 	int num_vregs;
- 	bool vregs_on;
-+	struct pwrseq_desc *pwrseq;
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+index fd4bd650c77a6..4e5c213a89225 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -1530,11 +1530,15 @@ static const struct lvts_data mt7988_lvts_ap_data = {
+ static const struct lvts_data mt8192_lvts_mcu_data = {
+ 	.lvts_ctrl	= mt8192_lvts_mcu_data_ctrl,
+ 	.num_lvts_ctrl	= ARRAY_SIZE(mt8192_lvts_mcu_data_ctrl),
++	.temp_factor	= LVTS_COEFF_A_MT8195,
++	.temp_offset	= LVTS_COEFF_B_MT8195,
  };
  
- struct qca_serdev {
-@@ -1682,6 +1684,27 @@ static bool qca_wakeup(struct hci_dev *hdev)
- 	return wakeup;
- }
+ static const struct lvts_data mt8192_lvts_ap_data = {
+ 	.lvts_ctrl	= mt8192_lvts_ap_data_ctrl,
+ 	.num_lvts_ctrl	= ARRAY_SIZE(mt8192_lvts_ap_data_ctrl),
++	.temp_factor	= LVTS_COEFF_A_MT8195,
++	.temp_offset	= LVTS_COEFF_B_MT8195,
+ };
  
-+static int qca_port_reopen(struct hci_uart *hu)
-+{
-+	int ret;
-+
-+	/* Now the device is in ready state to communicate with host.
-+	 * To sync host with device we need to reopen port.
-+	 * Without this, we will have RTS and CTS synchronization
-+	 * issues.
-+	 */
-+	serdev_device_close(hu->serdev);
-+	ret = serdev_device_open(hu->serdev);
-+	if (ret) {
-+		bt_dev_err(hu->hdev, "failed to open port");
-+		return ret;
-+	}
-+
-+	hci_uart_set_flow_control(hu, false);
-+
-+	return 0;
-+}
-+
- static int qca_regulator_init(struct hci_uart *hu)
- {
- 	enum qca_btsoc_type soc_type = qca_soc_type(hu);
-@@ -1750,21 +1773,7 @@ static int qca_regulator_init(struct hci_uart *hu)
- 		break;
- 	}
- 
--	/* Now the device is in ready state to communicate with host.
--	 * To sync host with device we need to reopen port.
--	 * Without this, we will have RTS and CTS synchronization
--	 * issues.
--	 */
--	serdev_device_close(hu->serdev);
--	ret = serdev_device_open(hu->serdev);
--	if (ret) {
--		bt_dev_err(hu->hdev, "failed to open port");
--		return ret;
--	}
--
--	hci_uart_set_flow_control(hu, false);
--
--	return 0;
-+	return qca_port_reopen(hu);
- }
- 
- static int qca_power_on(struct hci_dev *hdev)
-@@ -1792,6 +1801,17 @@ static int qca_power_on(struct hci_dev *hdev)
- 		ret = qca_regulator_init(hu);
- 		break;
- 
-+	case QCA_QCA6390:
-+		qcadev = serdev_device_get_drvdata(hu->serdev);
-+		ret = pwrseq_power_on(qcadev->bt_power->pwrseq);
-+		if (ret)
-+			return ret;
-+
-+		ret = qca_port_reopen(hu);
-+		if (ret)
-+			return ret;
-+		break;
-+
- 	default:
- 		qcadev = serdev_device_get_drvdata(hu->serdev);
- 		if (qcadev->bt_en) {
-@@ -2170,6 +2190,10 @@ static void qca_power_shutdown(struct hci_uart *hu)
- 		}
- 		break;
- 
-+	case QCA_QCA6390:
-+		pwrseq_power_off(qcadev->bt_power->pwrseq);
-+		break;
-+
- 	default:
- 		gpiod_set_value_cansleep(qcadev->bt_en, 0);
- 	}
-@@ -2308,12 +2332,25 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 	case QCA_WCN6750:
- 	case QCA_WCN6855:
- 	case QCA_WCN7850:
-+	case QCA_QCA6390:
- 		qcadev->bt_power = devm_kzalloc(&serdev->dev,
- 						sizeof(struct qca_power),
- 						GFP_KERNEL);
- 		if (!qcadev->bt_power)
- 			return -ENOMEM;
-+		break;
-+	default:
-+		break;
-+	}
- 
-+	switch (qcadev->btsoc_type) {
-+	case QCA_WCN3988:
-+	case QCA_WCN3990:
-+	case QCA_WCN3991:
-+	case QCA_WCN3998:
-+	case QCA_WCN6750:
-+	case QCA_WCN6855:
-+	case QCA_WCN7850:
- 		qcadev->bt_power->dev = &serdev->dev;
- 		err = qca_init_regulators(qcadev->bt_power, data->vregs,
- 					  data->num_vregs);
-@@ -2354,6 +2391,13 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 		}
- 		break;
- 
-+	case QCA_QCA6390:
-+		qcadev->bt_power->pwrseq = devm_pwrseq_get(&serdev->dev,
-+							   "bluetooth");
-+		if (IS_ERR(qcadev->bt_power->pwrseq))
-+			return PTR_ERR(qcadev->bt_power->pwrseq);
-+		fallthrough;
-+
- 	default:
- 		qcadev->bt_en = devm_gpiod_get_optional(&serdev->dev, "enable",
- 					       GPIOD_OUT_LOW);
+ static const struct lvts_data mt8195_lvts_mcu_data = {
+
+---
+base-commit: 20cb38a7af88dc40095da7c2c9094da3873fea23
+change-id: 20240410-lvts_thermal-3d365847acff
+
+Best regards,
 -- 
-2.40.1
+Hsin-Te Yuan <yuanhsinte@chromium.org>
 
