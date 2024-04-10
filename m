@@ -1,57 +1,57 @@
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DC9815ECE2
-	for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 12:47:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3ECC016DEAB
+	for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 12:47:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712753227; cv=none; b=BTaMTUiaSVRpi2KZgSr+qTHdmPdfk9up/5CNB75Px1XROXNo+4tkRFxz4EszLTTOOosrXFGZodr1BOKJ2HIY0mBKCUuA1wuSl10UQvfsESMUYhPAYxMAp2LqW8eK4D1lvOhmjJeYmXjFCoH+twvooz3edPx6sFeRr7LoIsFmVkY=
+	t=1712753230; cv=none; b=i3Nv+r6GCF/18BH9nVI3XQd/YUW0GVHIk+ra+45zYb47uJ8ktlIy6IBEtNQqIdsUe1Zzzehc3GxGzwGB4nRR9viZ7DcOn478UUIlg7Qz+xm2XFh0L/3hz9VEycDl7THN1pDifPOi8dnkwga0iM1wVh0QBgS2Z2H1ezpbcgMnKJk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712753227; c=relaxed/simple;
-	bh=l1oNGeBpXWbiN0HWItKMdUKpXzwyplVNNxsp1rBMazA=;
+	s=arc-20240116; t=1712753230; c=relaxed/simple;
+	bh=iWQpZyVUYNR0FgdTLJWWfXolJLly1aZ0q2sdWcfiADU=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=NiwvuLizqta2eLYchyv7e51fKV+iU4zqprjq0b1TGPJ9p4nMA2cGa/XvKH9ioCpp+sT2Wv5nnJlIxrlB0aEDLfRCQBQ+z1OAj1yUHYMqkPFcMD/kdmqPpL2cR06in/gnllE/BN83/NhlsjBS0IDqwnu48ukgt1aMeB+GXifgyBI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=j/z4TbG7; arc=none smtp.client-ip=209.85.221.48
+	 MIME-Version; b=TyfctuRs9XatAzzG9i7Rpt3pOoMN2uOFE5FZ0ofwcJUF3PoEmGhyIzOqlRDyvIFw/djrl8EL4QqdlB9r9h7Z33WzaqWHSL/L/fCywTMPzU7oK5cJsrtNkWF70yHKs3csY4cscz1smONwjEuft7FyOyEBsECfw0LvDFB9t427A0M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=yJ+2cRDh; arc=none smtp.client-ip=209.85.128.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="j/z4TbG7"
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-34388753650so2800588f8f.3
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 05:47:03 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="yJ+2cRDh"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-416b7f372b3so9111655e9.3
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 05:47:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1712753222; x=1713358022; darn=vger.kernel.org;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1712753225; x=1713358025; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=31I2bObQrFIIaCAs32ptdMnoN+M29q3IZ8UHiUSqu6s=;
-        b=j/z4TbG7+i/CgkjSav7j7mSC50B1nLcuEoT0O9NxEtb078tMGWR3M/K7Uuva6IDv7e
-         Ay7pmoHHrC/Knrfr6WFnZczyEGgvq8B7FYzaJrzixiWhjbn/MHiLkILHDFsepyPjIqwB
-         G1F7VCPVuLVu4YIiGG8GI0hQX7ZKX/gUZ+01LNESKdNLe7oO3PFY2GfNjBH6uoYsKHaB
-         rlN0FWxFNNIo5NAvx9MY/ycQx/smoj0axxcxCBQe0PYLEWa0Afu6vwZnD4ZUoVPHZ8Ze
-         ZTkSF9Ofo5UBCR5fLzvueffJSlluiFYLNZmDrHH+xnCVIP7xAMfYqmKX4iFGFyg/2oSl
-         9B1w==
+        bh=VPKtETY44L+sLLhmL3uaX4nFnllKG+8eyvkbzTNtgX4=;
+        b=yJ+2cRDhM8SYEcwNo18IZzI5FMBWN0Weuq80hH7gC1b60LUQaNNZ+6AFxfoJS7jHvu
+         VY+bykXPg5BtG28sxBziM7ByiC3t/sMhEpnGGpnM68UCK4oC5e6ccFX8VJ73qRXAPBaU
+         TqCho7cZhmkrf+bXoj0fI74CrQa7vD3SdlWXSeGcQ8JtaHdLLqchriVXpfSs/NML/6L5
+         jr87pX+RfQWXxwPH04uizRAn5tbI3DaoJcaTnqQD3awCS7wuRH73oIdJs0rHs3gQIgOP
+         7mtmODY9Jtyoxtv4+PGTlh96Kj11Y0sZM5z18Wmsh8yaVvcys/6rjdZP5qXlAe7yJyFb
+         oIGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712753222; x=1713358022;
+        d=1e100.net; s=20230601; t=1712753225; x=1713358025;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=31I2bObQrFIIaCAs32ptdMnoN+M29q3IZ8UHiUSqu6s=;
-        b=jcK3TYzgdyDVPfAYRNgPU8AbKd0g0DvpeSeIYYfL7laIvTH1eQUZ8eXH25OcO9oSbj
-         6784mNJPUrm7KfD+sWGcVJlzo1Fy5z1vI7L02cix0r4j+toWm35rl5zDf+aLImuL2R3f
-         oOB1dYvQ2mhUc953N2M6ipP+JmwX2mDZxI/3DnLRAgoQ37fFQ3Fw2feNBhPfiVk0ZEIJ
-         cDU6Gpi+P3jntasEsEi9fNGNs6ONS+aSWI5lNH9iEFENOunQ+2QGCAsW/JdnVGCjtuvw
-         9Bq8X9Y2MYPRW30ODEOPTbtb0f1Z8zI9dmY7rvzjWjMoTBjZqfx47HOcVivdjooCWI9f
-         sOwQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWO8kURW0z2AoGIKUZrdSnQMmhd6lCHrPeVdNtqFTCkTl4S/izMBcF8h9d6U2Dy7L/kjE2wh/q3+Z24tzSGOJ7vwOXUWuouyh0=
-X-Gm-Message-State: AOJu0Yxw1j468qcbCOA5xcRUoO83W3a+YmtnuofN6iuaOQMJwVbTDSm7
-	QsGtG5K/H+aAgaf8lKU6XWjPZJ7Ps5VqkO+ZM0TX/owpS4+ZRD/QSFiUQEoK8YA=
-X-Google-Smtp-Source: AGHT+IFkQrJf1jUX7E/uhhbr+LM8MTai2T/8Bbr0XMxlOP9KKo6ZrvfLHbM5eCD5c+wPMHg+0KiyYg==
-X-Received: by 2002:adf:fb83:0:b0:343:74da:bc7a with SMTP id a3-20020adffb83000000b0034374dabc7amr1747191wrr.47.1712753222342;
-        Wed, 10 Apr 2024 05:47:02 -0700 (PDT)
+        bh=VPKtETY44L+sLLhmL3uaX4nFnllKG+8eyvkbzTNtgX4=;
+        b=jL77SKsgq3C7P2WpMsoEzbvZ1MSHk851e4ckkZ4Ov1pgLHynqeH5H9mrDwDiAujzqm
+         /MQPbS2dETkhdotKAXvqcXagM7O1rGcp9U/8R6PYyN2LPR7uy4Y9mR02KwEhrEaKeY+x
+         zCT8evjXt7uyXnTKTZ1EBy9aPQq4TkEcAoOH1azyap31s4LWfeqP6MmIZuhI7kJRZRrT
+         Fa4d/PObv0KpFtuyYcHDepOOJsKMaqrSVyqZJLBJYU6fJlA3kvDEEyz1mTsGo5B+87FG
+         WpaRHaWfy4T5Ti5EfB1OYXT7RMQjoigDC7umyUgg9NcPPkiVXRT3SnWE7UKHWkImHQQI
+         vi1w==
+X-Forwarded-Encrypted: i=1; AJvYcCXoWnTcKGeINuDgybknGXkbx75vmyS5Fm3i9O476ooqLBvsnvFaH99GvnJqidJ2AM2tOTvRLD7N+lgA2dVm/QfUWP36ORhMGfw=
+X-Gm-Message-State: AOJu0YwmmGTxc+g8mAdatTJuj1iuyvOv7MA9nDdw0wfwpG10tKBenU/6
+	f1WnJPoWCyDW5oMX4eaL8GIHYuMRI/mVGooXZ43nY8kGqhq93p/3IcRZRvlgkwg=
+X-Google-Smtp-Source: AGHT+IEJEixdHehBfMp+jzL2CRJ1R/XZVbko53cUIaZrL4a3OQkcOBk74DAFhpPjF+7rdj1jqQT+Wg==
+X-Received: by 2002:a05:600c:1913:b0:416:9c95:b712 with SMTP id j19-20020a05600c191300b004169c95b712mr1689271wmq.20.1712753225367;
+        Wed, 10 Apr 2024 05:47:05 -0700 (PDT)
 Received: from brgl-uxlite.home ([2a01:cb1d:75a:e000:6908:7e99:35c9:d585])
-        by smtp.gmail.com with ESMTPSA id v13-20020a05600c444d00b0041663450a4asm2150929wmn.45.2024.04.10.05.47.00
+        by smtp.gmail.com with ESMTPSA id v13-20020a05600c444d00b0041663450a4asm2150929wmn.45.2024.04.10.05.47.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Apr 2024 05:47:01 -0700 (PDT)
+        Wed, 10 Apr 2024 05:47:05 -0700 (PDT)
 From: Bartosz Golaszewski <brgl@bgdev.pl>
 To: Marcel Holtmann <marcel@holtmann.org>,
 	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
@@ -95,9 +95,9 @@ Cc: linux-bluetooth@vger.kernel.org,
 	linux-pci@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Subject: [PATCH v7 08/16] arm64: dts: qcom: qrb5165-rb5: add the Wifi node
-Date: Wed, 10 Apr 2024 14:46:20 +0200
-Message-Id: <20240410124628.171783-9-brgl@bgdev.pl>
+Subject: [PATCH v7 10/16] PCI/pwrctl: reuse the OF node for power controlled devices
+Date: Wed, 10 Apr 2024 14:46:22 +0200
+Message-Id: <20240410124628.171783-11-brgl@bgdev.pl>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20240410124628.171783-1-brgl@bgdev.pl>
 References: <20240410124628.171783-1-brgl@bgdev.pl>
@@ -111,173 +111,63 @@ Content-Transfer-Encoding: 8bit
 
 From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-Add a node for the PMU module of the QCA6391 present on the RB5 board.
-Assign its LDO power outputs to the existing Bluetooth module. Add a
-node for the PCIe port to sm8250.dtsi and define the WLAN node on it in
-the board's .dts and also make it consume the power outputs of the PMU.
+With PCI power control we deal with two struct device objects bound to
+two different drivers but consuming the same OF node. We must not bind
+the pinctrl twice. To that end: before setting the OF node of the newly
+instantiated PCI device, check if a platform device consuming the same
+OF node doesn't already exist on the platform bus and - if so - mark the
+PCI device as reusing the OF node.
 
 Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/qrb5165-rb5.dts | 103 ++++++++++++++++++++---
- arch/arm64/boot/dts/qcom/sm8250.dtsi     |  10 +++
- 2 files changed, 102 insertions(+), 11 deletions(-)
+ drivers/pci/of.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/qrb5165-rb5.dts b/arch/arm64/boot/dts/qcom/qrb5165-rb5.dts
-index cd0db4f31d4a..24f528fc741f 100644
---- a/arch/arm64/boot/dts/qcom/qrb5165-rb5.dts
-+++ b/arch/arm64/boot/dts/qcom/qrb5165-rb5.dts
-@@ -108,6 +108,67 @@ lt9611_3v3: lt9611-3v3 {
- 		regulator-always-on;
- 	};
+diff --git a/drivers/pci/of.c b/drivers/pci/of.c
+index 51e3dd0ea5ab..b908fe1ae951 100644
+--- a/drivers/pci/of.c
++++ b/drivers/pci/of.c
+@@ -6,6 +6,7 @@
+  */
+ #define pr_fmt(fmt)	"PCI: OF: " fmt
  
-+	qca6390-pmu {
-+		compatible = "qcom,qca6390-pmu";
-+
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&bt_en_state>, <&wlan_en_state>;
-+
-+		vddaon-supply = <&vreg_s6a_0p95>;
-+		vddpmu-supply = <&vreg_s2f_0p95>;
-+		vddrfa0p95-supply = <&vreg_s2f_0p95>;
-+		vddrfa1p3-supply = <&vreg_s8c_1p3>;
-+		vddrfa1p9-supply = <&vreg_s5a_1p9>;
-+		vddpcie1p3-supply = <&vreg_s8c_1p3>;
-+		vddpcie1p9-supply = <&vreg_s5a_1p9>;
-+		vddio-supply = <&vreg_s4a_1p8>;
-+
-+		wlan-enable-gpios = <&tlmm 20 GPIO_ACTIVE_HIGH>;
-+		bt-enable-gpios = <&tlmm 21 GPIO_ACTIVE_HIGH>;
-+
-+		regulators {
-+			vreg_pmu_rfa_cmn: ldo0 {
-+				regulator-name = "vreg_pmu_rfa_cmn";
-+			};
-+
-+			vreg_pmu_aon_0p59: ldo1 {
-+				regulator-name = "vreg_pmu_aon_0p59";
-+			};
-+
-+			vreg_pmu_wlcx_0p8: ldo2 {
-+				regulator-name = "vreg_pmu_wlcx_0p8";
-+			};
-+
-+			vreg_pmu_wlmx_0p85: ldo3 {
-+				regulator-name = "vreg_pmu_wlmx_0p85";
-+			};
-+
-+			vreg_pmu_btcmx_0p85: ldo4 {
-+				regulator-name = "vreg_pmu_btcmx_0p85";
-+			};
-+
-+			vreg_pmu_rfa_0p8: ldo5 {
-+				regulator-name = "vreg_pmu_rfa_0p8";
-+			};
-+
-+			vreg_pmu_rfa_1p2: ldo6 {
-+				regulator-name = "vreg_pmu_rfa_1p2";
-+			};
-+
-+			vreg_pmu_rfa_1p7: ldo7 {
-+				regulator-name = "vreg_pmu_rfa_1p7";
-+			};
-+
-+			vreg_pmu_pcie_0p9: ldo8 {
-+				regulator-name = "vreg_pmu_pcie_0p9";
-+			};
-+
-+			vreg_pmu_pcie_1p8: ldo9 {
-+				regulator-name = "vreg_pmu_pcie_1p8";
-+			};
-+		};
-+	};
-+
- 	thermal-zones {
- 		conn-thermal {
- 			polling-delay-passive = <0>;
-@@ -734,6 +795,23 @@ &pcie0_phy {
- 	vdda-pll-supply = <&vreg_l9a_1p2>;
- };
++#include <linux/cleanup.h>
+ #include <linux/irqdomain.h>
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+@@ -13,6 +14,7 @@
+ #include <linux/of_irq.h>
+ #include <linux/of_address.h>
+ #include <linux/of_pci.h>
++#include <linux/platform_device.h>
+ #include "pci.h"
  
-+&pcieport0 {
-+	wifi@0 {
-+		compatible = "pci17cb,1101";
-+		reg = <0x10000 0x0 0x0 0x0 0x0>;
-+
-+		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
-+		vddaon-supply = <&vreg_pmu_aon_0p59>;
-+		vddwlcx-supply = <&vreg_pmu_wlcx_0p8>;
-+		vddwlmx-supply = <&vreg_pmu_wlmx_0p85>;
-+		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
-+		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
-+		vddrfa1p7-supply = <&vreg_pmu_rfa_1p7>;
-+		vddpcie0p9-supply = <&vreg_pmu_pcie_0p9>;
-+		vddpcie1p8-supply = <&vreg_pmu_pcie_1p8>;
-+	};
-+};
-+
- &pcie1 {
- 	status = "okay";
- };
-@@ -1303,6 +1381,14 @@ sdc2_card_det_n: sd-card-det-n-state {
- 		function = "gpio";
- 		bias-pull-up;
- 	};
-+
-+	wlan_en_state: wlan-default-state {
-+		pins = "gpio20";
-+		function = "gpio";
-+		drive-strength = <16>;
-+		output-low;
-+		bias-pull-up;
-+	};
- };
- 
- &uart6 {
-@@ -1311,17 +1397,12 @@ &uart6 {
- 	bluetooth {
- 		compatible = "qcom,qca6390-bt";
- 
--		pinctrl-names = "default";
--		pinctrl-0 = <&bt_en_state>;
+ #ifdef CONFIG_PCI
+@@ -25,16 +27,20 @@
+  */
+ int pci_set_of_node(struct pci_dev *dev)
+ {
+-	struct device_node *node;
 -
--		enable-gpios = <&tlmm 21 GPIO_ACTIVE_HIGH>;
--
--		vddio-supply = <&vreg_s4a_1p8>;
--		vddpmu-supply = <&vreg_s2f_0p95>;
--		vddaon-supply = <&vreg_s6a_0p95>;
--		vddrfa0p9-supply = <&vreg_s2f_0p95>;
--		vddrfa1p3-supply = <&vreg_s8c_1p3>;
--		vddrfa1p9-supply = <&vreg_s5a_1p9>;
-+		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
-+		vddaon-supply = <&vreg_pmu_aon_0p59>;
-+		vddbtcmx-supply = <&vreg_pmu_btcmx_0p85>;
-+		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
-+		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
-+		vddrfa1p7-supply = <&vreg_pmu_rfa_1p7>;
- 	};
- };
+ 	if (!dev->bus->dev.of_node)
+ 		return 0;
  
-diff --git a/arch/arm64/boot/dts/qcom/sm8250.dtsi b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-index 7f2333c9d17d..06decf15a2d3 100644
---- a/arch/arm64/boot/dts/qcom/sm8250.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-@@ -2203,6 +2203,16 @@ pcie0: pcie@1c00000 {
- 			dma-coherent;
+-	node = of_pci_find_child_device(dev->bus->dev.of_node, dev->devfn);
++	struct device_node *node __free(device_node) =
++		of_pci_find_child_device(dev->bus->dev.of_node, dev->devfn);
+ 	if (!node)
+ 		return 0;
  
- 			status = "disabled";
+-	device_set_node(&dev->dev, of_fwnode_handle(node));
++	struct device *pdev __free(put_device) =
++		bus_find_device_by_of_node(&platform_bus_type, node);
++	if (pdev)
++		dev->bus->dev.of_node_reused = true;
 +
-+			pcieport0: pcie@0 {
-+				device_type = "pci";
-+				reg = <0x0 0x0 0x0 0x0 0x0>;
-+				#address-cells = <3>;
-+				#size-cells = <2>;
-+				ranges;
-+
-+				bus-range = <0x01 0xff>;
-+			};
- 		};
++	device_set_node(&dev->dev, of_fwnode_handle(no_free_ptr(node)));
+ 	return 0;
+ }
  
- 		pcie0_phy: phy@1c06000 {
 -- 
 2.40.1
 
