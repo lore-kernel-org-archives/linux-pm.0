@@ -1,52 +1,54 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0989911713;
-	Wed, 10 Apr 2024 04:55:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52806168D0;
+	Wed, 10 Apr 2024 04:55:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712724915; cv=none; b=Hp4PQ7GmjOrAiwKmekAns+0ku8nTwVChSNaHs8IzSitBnI79KiOFjkFyYYrkRCEYfH3U6iftU42nlU9/xCzilhaiT12TKw66GMiPzNKe9mZITwNKR0rJqeJQJUH9Y+Lj33P97tDDKkBwrtqBByFxjXCkUmtXFihh9GLpNBPEoLM=
+	t=1712724915; cv=none; b=tmA51vWjREOg7KG3iTaXMv9wFF2JAAvoz96zk/BlhTQgA4FGfyatchuWhUD0I7MDe+v5rhVDG1zW5hpelY9nH6lnnKaxbTtm64V3iXFRZ4salqj8PMx/fE422GRpMkpUrAYjx5STJlAVlndnFO5WElCdDAIOmjwI9dsbt10zzfU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1712724915; c=relaxed/simple;
-	bh=EymDDOM4U7Eq9581iU4DK9ZxodSx0ThuWFQ3yOhEpM0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=tzud5mfJNMUfIHAmtNVolUT8KnRDF78MwwarTZDCxI5v4n3zxE8VtHX2/nWz5UMZJmpx+V9HKEsaXi6mygvFRYF4SoqrNlQYAvY4axvMoup7rxjqbq8VJw59v4Ke2OTpzjgFLPdVFIZr295516gj16h9dao4pqnI2wDSIPLOJj4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=WhYfVjFS; arc=none smtp.client-ip=205.220.168.131
+	bh=sWswXJyjBQ2nkPehb6b9OC8FpWgmJGhvn+kM9/2mJR8=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=uW+JSiNqJ49k2I62ycuIaRIuVNMbBf8j6dXbWl2oT3bVh9yOWCBJhVPQqvk91m43PORMkpM7FAppbh1avvV8cIhX3W2gKpsYmw9S9JCvxFN0N0VqbiD1pmsnuwOjjN/ioA754f4WfIs6QJD1zwQVUBu6HNb1ch0kz+t4gs4FvLI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=dFrBOjdy; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="WhYfVjFS"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 43A32v1G009559;
-	Wed, 10 Apr 2024 04:54:27 GMT
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="dFrBOjdy"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 43A4YjSN032480;
+	Wed, 10 Apr 2024 04:54:28 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	from:to:cc:subject:date:message-id:mime-version
-	:content-transfer-encoding; s=qcppdkim1; bh=zrLyM2KDpJlv26X+wZ35
-	AVRZebtf4oNSrtFPpgKuyHI=; b=WhYfVjFSbsltcgTfwwH2BUFpp+ZKv6XVJlgw
-	/FzfkNv9ou2OoaTScLKJCoUM6/23DaTodD6hDs3j26U7HUSW2uDeRh2cxCvW4KNx
-	wWIMolTB0xe0U9jmGaO2TcuhhEVzQ8iebPf6kEu6W8Wu4zSNQub4Rp581CQLiLst
-	vZop5zwsb5qFm46WSXVXZqS8p8OMr4zWubWtnPR6snkgLJWwIlMmUJefVivrIsTi
-	One92XrghZwWLtzSsdZDvhyZ4Gv/R+QmKQla6O+Q2MtvsAVkCgfa6eD0Zv4Vt6Ce
-	2mABUDaQhyzALtpbq6HHfwL+U0ATMQjvuMTXnrfB9cup5tU1VQ==
+	from:to:cc:subject:date:message-id:in-reply-to:references
+	:mime-version:content-transfer-encoding; s=qcppdkim1; bh=6bXVQP/
+	MeTp7czzAt3VhgRTeKtkth59inoNPfKrnrMs=; b=dFrBOjdyR5pQFBNOnUvDqum
+	NkjuTz+5d4YBdYGCBO0QbwCayMBnZAusrGGEKfjnLJD3vyiYyAXoEluHokAvEUu+
+	+gyO4V3itdmllJ3BYVSGr2MgBeFdSwhBYG86zaFrcJ3o4E+unHecrqaBPhZNNEYp
+	6F3apK0IdiQkrpbqCzSiFIh87UXGZTZy1+5k98SVItgLIb1V3GQKom1bIwxVrcF8
+	mLF5yzxeYzBCcQlqru2zxu91Dvpm1DC4o0lU7jRZ/TaFGzpW4EgOvoEETVwfRICe
+	/HBKF8FuhlEi5ZqL4TyoeE1MQ3YAhBhpJvf10c107CVrLZNiPO5SQxl5kHG6HDA=
+	=
 Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3xddqvhr20-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3xdkv8g3r2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 04:54:26 +0000 (GMT)
+	Wed, 10 Apr 2024 04:54:27 +0000 (GMT)
 Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 43A4sMSC019647;
-	Wed, 10 Apr 2024 04:54:22 GMT
+	by APBLRPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 43A4sMSD019647;
+	Wed, 10 Apr 2024 04:54:24 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 3xayfm2ybb-1
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 3xayfm2ybr-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 04:54:22 +0000
+	Wed, 10 Apr 2024 04:54:24 +0000
 Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43A4sMwl019641;
-	Wed, 10 Apr 2024 04:54:22 GMT
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43A4sO9x019669;
+	Wed, 10 Apr 2024 04:54:24 GMT
 Received: from hu-maiyas-hyd.qualcomm.com (hu-atulpant-hyd.qualcomm.com [10.213.109.143])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 43A4sM1F019638
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 43A4sOJn019667
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 04:54:22 +0000
+	Wed, 10 Apr 2024 04:54:24 +0000
 Received: by hu-maiyas-hyd.qualcomm.com (Postfix, from userid 3869597)
-	id D70CF24ED9; Wed, 10 Apr 2024 10:24:20 +0530 (+0530)
+	id 5EB3F24ED9; Wed, 10 Apr 2024 10:24:23 +0530 (+0530)
 From: Atul Pant <quic_atulpant@quicinc.com>
 To: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
@@ -55,10 +57,12 @@ To: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
         daniel.lezcano@linaro.org
 Cc: Atul Pant <quic_atulpant@quicinc.com>, kernel@quicinc.com,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [RFC PATCH 0/2] Disable RT-throttling for idle-inject threads
-Date: Wed, 10 Apr 2024 10:24:15 +0530
-Message-Id: <20240410045417.3048209-1-quic_atulpant@quicinc.com>
+Subject: [RFC PATCH 2/2] sched/idle: Add a description for play_idle_precise
+Date: Wed, 10 Apr 2024 10:24:17 +0530
+Message-Id: <20240410045417.3048209-3-quic_atulpant@quicinc.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240410045417.3048209-1-quic_atulpant@quicinc.com>
+References: <20240410045417.3048209-1-quic_atulpant@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -70,41 +74,42 @@ X-QCInternal: smtphost
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: yti_1A-0u2cUFOxd5_yFR6TJcaMsZZIQ
-X-Proofpoint-GUID: yti_1A-0u2cUFOxd5_yFR6TJcaMsZZIQ
+X-Proofpoint-ORIG-GUID: U7yqdkGZSK0GOvPgfZ2Kfn9OPH6130Zh
+X-Proofpoint-GUID: U7yqdkGZSK0GOvPgfZ2Kfn9OPH6130Zh
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2024-04-09_12,2024-04-09_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 phishscore=0
- bulkscore=0 spamscore=0 priorityscore=1501 malwarescore=0 mlxlogscore=837
- clxscore=1015 impostorscore=0 suspectscore=0 adultscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2404010003 definitions=main-2404100034
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 adultscore=0
+ clxscore=1015 suspectscore=0 priorityscore=1501 spamscore=0 phishscore=0
+ malwarescore=0 lowpriorityscore=0 mlxlogscore=982 impostorscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2404010003 definitions=main-2404100033
 
-We are trying to implement a solution for thermal mitigation by using
-idle injection on CPUs.  However we face some limitations with the
-current idle-inject framework. As per our need, we want to start
-injecting idle cycles on a cpu for indefinite time (until the
-temperature/power of the CPU falls below a threshold). This will allow
-to keep the hot CPUs in the sleep state until we see improvement in
-temperature/power. If we set idle duration to a large value or have an
-idle-injection ratio of 100%,  then the idle-inject RT thread suffers
-from RT throttling. This results in the CPU exiting from the sleep state
-and consume some power.
+Since runtime accounting of any RT idle thread is prevented, add a
+description about this function that it runs idle loops on a cpu
+without these threads being preempted due to RT throttling.
 
-To solve this limitation, we propose a solution to disable RT-throttling
-whenever idle-inject threads run. We achieve this by not accounting the
-runtime for the idle-inject threads.
-
-Atul Pant (2):
-  sched/rt: Disable runtime accounting for idle threads with SCHED_FIFO
-    policy
-  sched/idle: Add a description for play_idle_precise
-
+Signed-off-by: Atul Pant <quic_atulpant@quicinc.com>
+---
  kernel/sched/idle.c | 5 +++++
- kernel/sched/rt.c   | 4 +++-
- 2 files changed, 8 insertions(+), 1 deletion(-)
+ 1 file changed, 5 insertions(+)
 
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index 5007b25c5bc6..7aaf3679f50a 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -334,6 +334,11 @@ static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *timer)
+ 	return HRTIMER_NORESTART;
+ }
+ 
++/*
++ * This function runs idle loops on a cpu, whose policy is set as SCHED_FIFO.
++ * Despite being a rt thread, runtime for it is not accounted, thus preventing
++ * its preemption due to rt-throttling
++ */
+ void play_idle_precise(u64 duration_ns, u64 latency_ns)
+ {
+ 	struct idle_timer it;
 -- 
 2.25.1
 
