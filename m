@@ -1,680 +1,142 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.2])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id DAA0D158D76;
-	Wed, 10 Apr 2024 13:26:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.2
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9744315ADA2;
+	Wed, 10 Apr 2024 13:28:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712755616; cv=none; b=DevxFbiK+LXRm7ckh3sZY8ekjZYRLmaa+zZQgHMFm3hluLgkubKNWuu3Vl+227AbIJhdhq9l0YFYBVV8rP1gMD8eC8BFpiYY1w2JgAele+3Tv+gjY4TMfWds3LzVdt+Fo17qa+BEqG/TrdRE89QCDlp0yoJ8pM8skvaLJwScn+4=
+	t=1712755711; cv=none; b=O/M9uf7vji4Ave9amjru6NyNlQA3EDkla8qZGZQMb5iUwoYIS3kUat4RrLUZEijh9HdvxrA/LdSZgn2tH7vqus6dGqpPXt4P02Eyehr3pADBkNVuDeUszF9ijQAWDIco1g6FE4DMuhXZbTvqTB7wBzfykeUFwjGGbrIJoOn0f5s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712755616; c=relaxed/simple;
-	bh=Km74g6LMKfH+zqrYFsIQW6Z1f2bpHSbSyit5M/p4XXo=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=FL01xZ+Wy9iMnVRtPsBHzujBwriRoeKH8KSd0IWRMlAG68Wvud0LR5UUd5Q0eiLtPm/ngYfJBv9UIbrmHC3/azFXtLcFQmhdxiE1K4WzXSlFTRnRzN45EVKZdslDyo9+vh8zX+CcZZILdrgw0u1H57IZuA9VNneVplucjGqiHhE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=ZAtfnjHH; arc=none smtp.client-ip=220.197.31.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1712755711; c=relaxed/simple;
+	bh=vG/etX9uFWDRMQyM96dxgcCHcoWyYgwQIb4SGb4iHUc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Milf5EHTOqdLYwAyKHZTQlTSuq938u+2iRPrWIp907ZhHSVBK8dudVj1Ln19aZDvvyYa7+i72OuVNnl2wLWHHZL+tiYq1XRNemPygq2JXgu1G8ozB9f3Rx3KDIjB5uUiQEr8zuA7y8qvqkrPk63fp5tWLo3F6n6w7d5ORUSu9g4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iubVYXfK; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="ZAtfnjHH"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=0k9vD
-	y3IhLXKl1/oPUacgobANip3sPaFSxC+sZynpEs=; b=ZAtfnjHHXPSjAYMgeE5As
-	oEorvp1cnCmONXS9I7yt+O8y+vUhsPUV+i4sBETUDOwf6yd96abr/tmkE7sgwBfA
-	kaokf5MITki6RIoVELqJDQsJHSmzZkKGuPM5qM6DkHGV35t/IvK0orGarfIO5chD
-	PmFKDwkSbkrVa0JPcfCoi0=
-Received: from localhost.localdomain (unknown [101.86.11.106])
-	by gzga-smtp-mta-g2-1 (Coremail) with SMTP id _____wDnN9+3khZm9NnPAg--.11748S4;
-	Wed, 10 Apr 2024 21:23:27 +0800 (CST)
-From: Lizhe <sensor1010@163.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	ray.huang@amd.com,
-	marcan@marcan.st,
-	sven@svenpeter.dev,
-	alyssa@rosenzweig.io,
-	mmayer@broadcom.com,
-	bcm-kernel-feedback-list@broadcom.com,
-	srinivas.pandruvada@linux.intel.com,
-	lenb@kernel.org,
-	khilman@kernel.org,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	aneesh.kumar@kernel.org,
-	naveen.n.rao@linux.ibm.com,
-	andersson@kernel.org,
-	konrad.dybcio@linaro.org,
-	sudeep.holla@arm.com,
-	cristian.marussi@arm.com,
-	thierry.reding@gmail.com,
-	jonathanh@nvidia.com,
-	matthias.bgg@gmail.com,
-	angelogioacchino.delregno@collabora.com
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	asahi@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-omap@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-tegra@vger.kernel.org,
-	linux-mediatek@lists.infradead.org,
-	Lizhe <sensor1010@163.com>
-Subject: [PATCH] cpufreq: Covert to exit callback returning void
-Date: Wed, 10 Apr 2024 06:22:47 -0700
-Message-Id: <20240410132247.3587-1-sensor1010@163.com>
-X-Mailer: git-send-email 2.25.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iubVYXfK"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 420B6C43390;
+	Wed, 10 Apr 2024 13:28:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1712755711;
+	bh=vG/etX9uFWDRMQyM96dxgcCHcoWyYgwQIb4SGb4iHUc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=iubVYXfK6JPDhhN9TmRS0x6QzxNaToPZCeVJnHP93bzsfQkb7YaWzUGU5fvosdVlK
+	 1iYtCJ+3WmeWgXErCaKKoO8GwwKCAVsPQSeaDEZwvjhLCuOC89oo5gQpo6M/afAEAy
+	 4yeMyJV1phaU5H/syWUh2fS6hJ6AmMPbK9BuOo+0TU6FA/S11ekIIS3LR1gsLiMZaG
+	 mJvEUbFS4EnjHWHw0mmkVeePQ3ozflixNW+Mf7PgkbFPaNxs5zDRXrhRsUvsJ6qIwh
+	 nvaEhh/w7672EUsnJyENttVNo1/Exy/MsDqmdMXp6iyLxGelAPVwHWr0EhfXbeuCBH
+	 DtboMbnFmvheg==
+Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-22f0429c1ebso185206fac.0;
+        Wed, 10 Apr 2024 06:28:31 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUUcst/lEX0TrGqaZcggeqiPU+99cGmB4KLjRYNj6ZHx6CvmX/0iux/PHrv9BkgPQhexl4/cAYo0E0X+DFH2SO8qCqp2crdxsi365sCWaHER2kck0+6g38wJ68p4wvsVU4wZT2We0W5OpCOLe1es/4Y0h+vrO6jFdicgDUpj+xm3oC4hjBUAvc8D3wJav6dc5iwuiE/ycdF7RYhFpQjNAnJYiIh0S3CkHKextzPzsYbdHoQT1k7ZVZ9F50NXJiTN65baYuCYKMgUrhNTHSCxxLDlmL7vtAhwlgXEi7p0zvSAxOgh7W85X18LeMstJ2xREHVhvyR5CjdsUHC9hNm/xV5hPn9JnO0Bu5osE2rLGHH
+X-Gm-Message-State: AOJu0YzEIW7zi+uQ3p6nnF2pVZwTJrnvJ+NcJT5qcWoP830PtPnIukE+
+	MFAibq2RZZXmrqB0AcDGutcTJsd2vyDnkNo9oEkBzx7IKMfLSyj18pTebcrb5MZhaaedunYN+o3
+	kUeOk+d8GCg4/+1GbCQBzvGyTeUs=
+X-Google-Smtp-Source: AGHT+IFL5SftybRh1r8JWNftMLn5Ll2W8+pkIYo7YlzdluWnaIUYaO6UpMp9mGVfMWaTjUBfbyWqBLpc+8TxlkLduX4=
+X-Received: by 2002:a05:6871:a00a:b0:22d:fb4b:9d11 with SMTP id
+ vp10-20020a056871a00a00b0022dfb4b9d11mr2534660oab.4.1712755710509; Wed, 10
+ Apr 2024 06:28:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wDnN9+3khZm9NnPAg--.11748S4
-X-Coremail-Antispam: 1Uf129KBjvAXoWfXw47Cw45Gr1fZr45GFWfKrg_yoW8uw18Xo
-	WfXFyrG3W8Gryxtw1DAa1xtFZrZanFk3Z5Jws8XFs0gasFyF17XrZrtr45JF1fWay5KrWx
-	Z3Wjgwn3Ar4xGr1Un29KB7ZKAUJUUUU8529EdanIXcx71UUUUU7v73VFW2AGmfu7bjvjm3
-	AaLaJ3UbIYCTnIWIevJa73UjIFyTuYvjTRCHqcDUUUU
-X-CM-SenderInfo: 5vhq20jurqiii6rwjhhfrp/1tbiKA+8q2XAk1Y-GgAAs1
+References: <Zbp5xzmFhKDAgHws@shell.armlinux.org.uk> <E1rVDmU-0027YP-Jz@rmk-PC.armlinux.org.uk>
+ <CAJZ5v0iiJpUWq5GMSnKFWQTzn_bdwoQz9m=hDaXNg4Lj_ePF4g@mail.gmail.com>
+ <20240322185327.00002416@Huawei.com> <20240410134318.0000193c@huawei.com>
+In-Reply-To: <20240410134318.0000193c@huawei.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 10 Apr 2024 15:28:18 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0ggD042sfz3jDXQVDUxQZu_AWaF2ox-Me8CvFeRB8nczw@mail.gmail.com>
+Message-ID: <CAJZ5v0ggD042sfz3jDXQVDUxQZu_AWaF2ox-Me8CvFeRB8nczw@mail.gmail.com>
+Subject: Re: [PATCH RFC v4 02/15] ACPI: processor: Register all CPUs from acpi_processor_get_info()
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Russell King <rmk+kernel@armlinux.org.uk>, 
+	linux-pm@vger.kernel.org, loongarch@lists.linux.dev, 
+	linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, kvmarm@lists.linux.dev, x86@kernel.org, 
+	acpica-devel@lists.linuxfoundation.org, linux-csky@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-ia64@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, Salil Mehta <salil.mehta@huawei.com>, 
+	Jean-Philippe Brucker <jean-philippe@linaro.org>, jianyong.wu@arm.com, justin.he@arm.com, 
+	James Morse <james.morse@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-For the exit() callback function returning an int type value.
-this leads many driver authors mistakenly believing that error
-handling can be performed by returning an error code. However.
-the returned value is ignore, and to improve this situation.
-it is proposed to modify the return type of the exit() callback
-function to void
+On Wed, Apr 10, 2024 at 2:43=E2=80=AFPM Jonathan Cameron
+<Jonathan.Cameron@huawei.com> wrote:
+>
+> > >
+> > > > diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+> > > > index 47de0f140ba6..13d052bf13f4 100644
+> > > > --- a/drivers/base/cpu.c
+> > > > +++ b/drivers/base/cpu.c
+> > > > @@ -553,7 +553,11 @@ static void __init cpu_dev_register_generic(vo=
+id)
+> > > >  {
+> > > >         int i, ret;
+> > > >
+> > > > -       if (!IS_ENABLED(CONFIG_GENERIC_CPU_DEVICES))
+> > > > +       /*
+> > > > +        * When ACPI is enabled, CPUs are registered via
+> > > > +        * acpi_processor_get_info().
+> > > > +        */
+> > > > +       if (!IS_ENABLED(CONFIG_GENERIC_CPU_DEVICES) || !acpi_disabl=
+ed)
+> > > >                 return;
+> > >
+> > > Honestly, this looks like a quick hack to me and it absolutely
+> > > requires an ACK from the x86 maintainers to go anywhere.
+> > Will address this separately.
+> >
+>
+> So do people prefer this hack, or something along lines of the following?
+>
+> static int __init cpu_dev_register_generic(void)
+> {
+>         int i, ret =3D 0;
+>
+>         for_each_online_cpu(i) {
+>                 if (!get_cpu_device(i)) {
+>                         ret =3D arch_register_cpu(i);
+>                         if (ret)
+>                                 pr_warn("register_cpu %d failed (%d)\n", =
+i, ret);
+>                 }
+>         }
+>         //Probably just eat the error.
+>         return 0;
+> }
+> subsys_initcall_sync(cpu_dev_register_generic);
 
-Signed-off-by: Lizhe <sensor1010@163.com>
----
- drivers/cpufreq/acpi-cpufreq.c         | 4 +---
- drivers/cpufreq/amd-pstate.c           | 7 ++-----
- drivers/cpufreq/apple-soc-cpufreq.c    | 4 +---
- drivers/cpufreq/bmips-cpufreq.c        | 4 +---
- drivers/cpufreq/cppc_cpufreq.c         | 3 +--
- drivers/cpufreq/cpufreq-dt.c           | 3 +--
- drivers/cpufreq/e_powersaver.c         | 3 +--
- drivers/cpufreq/intel_pstate.c         | 4 +---
- drivers/cpufreq/mediatek-cpufreq-hw.c  | 4 +---
- drivers/cpufreq/mediatek-cpufreq.c     | 4 +---
- drivers/cpufreq/omap-cpufreq.c         | 3 +--
- drivers/cpufreq/pasemi-cpufreq.c       | 6 ++----
- drivers/cpufreq/powernow-k6.c          | 3 +--
- drivers/cpufreq/powernow-k7.c          | 3 +--
- drivers/cpufreq/powernow-k8.c          | 4 +---
- drivers/cpufreq/powernv-cpufreq.c      | 4 +---
- drivers/cpufreq/ppc_cbe_cpufreq.c      | 3 +--
- drivers/cpufreq/qcom-cpufreq-hw.c      | 4 +---
- drivers/cpufreq/qoriq-cpufreq.c        | 4 +---
- drivers/cpufreq/scmi-cpufreq.c         | 4 +---
- drivers/cpufreq/scpi-cpufreq.c         | 4 +---
- drivers/cpufreq/sh-cpufreq.c           | 4 +---
- drivers/cpufreq/sparc-us2e-cpufreq.c   | 3 +--
- drivers/cpufreq/sparc-us3-cpufreq.c    | 3 +--
- drivers/cpufreq/speedstep-centrino.c   | 4 +---
- drivers/cpufreq/tegra194-cpufreq.c     | 4 +---
- drivers/cpufreq/vexpress-spc-cpufreq.c | 3 +--
- 27 files changed, 29 insertions(+), 74 deletions(-)
+I would prefer something like the above.
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 37f1cdf46d29..33f18140e9a4 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -906,7 +906,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return result;
- }
- 
--static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+static void acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 
-@@ -919,8 +919,6 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- 	free_cpumask_var(data->freqdomain_cpus);
- 	kfree(policy->freq_table);
- 	kfree(data);
--
--	return 0;
- }
- 
- static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 2015c9fcc3c9..60b3d20d5939 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -919,7 +919,7 @@ static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
- 	return ret;
- }
- 
--static int amd_pstate_cpu_exit(struct cpufreq_policy *policy)
-+static void amd_pstate_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct amd_cpudata *cpudata = policy->driver_data;
- 
-@@ -927,8 +927,6 @@ static int amd_pstate_cpu_exit(struct cpufreq_policy *policy)
- 	freq_qos_remove_request(&cpudata->req[0]);
- 	policy->fast_switch_possible = false;
- 	kfree(cpudata);
--
--	return 0;
- }
- 
- static int amd_pstate_cpu_resume(struct cpufreq_policy *policy)
-@@ -1376,10 +1374,9 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 	return ret;
- }
- 
--static int amd_pstate_epp_cpu_exit(struct cpufreq_policy *policy)
-+static void amd_pstate_epp_cpu_exit(struct cpufreq_policy *policy)
- {
- 	pr_debug("CPU %d exiting\n", policy->cpu);
--	return 0;
- }
- 
- static void amd_pstate_epp_update_limit(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
-index 021f423705e1..af34c22fa273 100644
---- a/drivers/cpufreq/apple-soc-cpufreq.c
-+++ b/drivers/cpufreq/apple-soc-cpufreq.c
-@@ -305,7 +305,7 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
- 	return ret;
- }
- 
--static int apple_soc_cpufreq_exit(struct cpufreq_policy *policy)
-+static void apple_soc_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct apple_cpu_priv *priv = policy->driver_data;
- 
-@@ -313,8 +313,6 @@ static int apple_soc_cpufreq_exit(struct cpufreq_policy *policy)
- 	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
- 	iounmap(priv->reg_base);
- 	kfree(priv);
--
--	return 0;
- }
- 
- static struct cpufreq_driver apple_soc_cpufreq_driver = {
-diff --git a/drivers/cpufreq/bmips-cpufreq.c b/drivers/cpufreq/bmips-cpufreq.c
-index 39221a9a187a..17a4c174553d 100644
---- a/drivers/cpufreq/bmips-cpufreq.c
-+++ b/drivers/cpufreq/bmips-cpufreq.c
-@@ -121,11 +121,9 @@ static int bmips_cpufreq_target_index(struct cpufreq_policy *policy,
- 	return 0;
- }
- 
--static int bmips_cpufreq_exit(struct cpufreq_policy *policy)
-+static void bmips_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	kfree(policy->freq_table);
--
--	return 0;
- }
- 
- static int bmips_cpufreq_init(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 64420d9cfd1e..dccb9c1f087d 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -688,7 +688,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return ret;
- }
- 
--static int cppc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+static void cppc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct cppc_cpudata *cpu_data = policy->driver_data;
- 	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
-@@ -705,7 +705,6 @@ static int cppc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- 			 caps->lowest_perf, cpu, ret);
- 
- 	cppc_cpufreq_put_cpu_data(policy);
--	return 0;
- }
- 
- static inline u64 get_delta(u64 t1, u64 t0)
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 2d83bbc65dd0..eaf02579ea74 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -166,10 +166,9 @@ static int cpufreq_offline(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int cpufreq_exit(struct cpufreq_policy *policy)
-+static void cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	clk_put(policy->clk);
--	return 0;
- }
- 
- static struct cpufreq_driver dt_cpufreq_driver = {
-diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
-index ab93bce8ae77..6e958b09e1b5 100644
---- a/drivers/cpufreq/e_powersaver.c
-+++ b/drivers/cpufreq/e_powersaver.c
-@@ -360,14 +360,13 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int eps_cpu_exit(struct cpufreq_policy *policy)
-+static void eps_cpu_exit(struct cpufreq_policy *policy)
- {
- 	unsigned int cpu = policy->cpu;
- 
- 	/* Bye */
- 	kfree(eps_cpu[cpu]);
- 	eps_cpu[cpu] = NULL;
--	return 0;
- }
- 
- static struct cpufreq_driver eps_driver = {
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index dbbf299f4219..aa435d24c20e 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2731,13 +2731,11 @@ static int intel_pstate_cpu_offline(struct cpufreq_policy *policy)
- 	return intel_cpufreq_cpu_offline(policy);
- }
- 
--static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
-+static void intel_pstate_cpu_exit(struct cpufreq_policy *policy)
- {
- 	pr_debug("CPU %d exiting\n", policy->cpu);
- 
- 	policy->fast_switch_possible = false;
--
--	return 0;
- }
- 
- static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/mediatek-cpufreq-hw.c b/drivers/cpufreq/mediatek-cpufreq-hw.c
-index 8d097dcddda4..8925e096d5b9 100644
---- a/drivers/cpufreq/mediatek-cpufreq-hw.c
-+++ b/drivers/cpufreq/mediatek-cpufreq-hw.c
-@@ -260,7 +260,7 @@ static int mtk_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int mtk_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
-+static void mtk_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct mtk_cpufreq_data *data = policy->driver_data;
- 	struct resource *res = data->res;
-@@ -270,8 +270,6 @@ static int mtk_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
- 	writel_relaxed(0x0, data->reg_bases[REG_FREQ_ENABLE]);
- 	iounmap(base);
- 	release_mem_region(res->start, resource_size(res));
--
--	return 0;
- }
- 
- static void mtk_cpufreq_register_em(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index a0a61919bc4c..aba34fb7948e 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -599,13 +599,11 @@ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
-+static void mtk_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct mtk_cpu_dvfs_info *info = policy->driver_data;
- 
- 	dev_pm_opp_free_cpufreq_table(info->cpu_dev, &policy->freq_table);
--
--	return 0;
- }
- 
- static struct cpufreq_driver mtk_cpufreq_driver = {
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index 895690856665..3458d5cc9b7f 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -135,11 +135,10 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int omap_cpu_exit(struct cpufreq_policy *policy)
-+static void omap_cpu_exit(struct cpufreq_policy *policy)
- {
- 	freq_table_free();
- 	clk_put(policy->clk);
--	return 0;
- }
- 
- static struct cpufreq_driver omap_driver = {
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 039a66bbe1be..ee925b53b6b9 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -204,21 +204,19 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return err;
- }
- 
--static int pas_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+static void pas_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	/*
- 	 * We don't support CPU hotplug. Don't unmap after the system
- 	 * has already made it to a running state.
- 	 */
- 	if (system_state >= SYSTEM_RUNNING)
--		return 0;
-+		return;
- 
- 	if (sdcasr_mapbase)
- 		iounmap(sdcasr_mapbase);
- 	if (sdcpwr_mapbase)
- 		iounmap(sdcpwr_mapbase);
--
--	return 0;
- }
- 
- static int pas_cpufreq_target(struct cpufreq_policy *policy,
-diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-index 41eefef95d87..156bec6c5420 100644
---- a/drivers/cpufreq/powernow-k6.c
-+++ b/drivers/cpufreq/powernow-k6.c
-@@ -219,7 +219,7 @@ static int powernow_k6_cpu_init(struct cpufreq_policy *policy)
- }
- 
- 
--static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
-+static void powernow_k6_cpu_exit(struct cpufreq_policy *policy)
- {
- 	unsigned int i;
- 
-@@ -237,7 +237,6 @@ static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
- 			break;
- 		}
- 	}
--	return 0;
- }
- 
- static unsigned int powernow_k6_get(unsigned int cpu)
-diff --git a/drivers/cpufreq/powernow-k7.c b/drivers/cpufreq/powernow-k7.c
-index 5d515fc34836..4271446c8725 100644
---- a/drivers/cpufreq/powernow-k7.c
-+++ b/drivers/cpufreq/powernow-k7.c
-@@ -644,7 +644,7 @@ static int powernow_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int powernow_cpu_exit(struct cpufreq_policy *policy)
-+static void powernow_cpu_exit(struct cpufreq_policy *policy)
- {
- #ifdef CONFIG_X86_POWERNOW_K7_ACPI
- 	if (acpi_processor_perf) {
-@@ -655,7 +655,6 @@ static int powernow_cpu_exit(struct cpufreq_policy *policy)
- #endif
- 
- 	kfree(powernow_table);
--	return 0;
- }
- 
- static struct cpufreq_driver powernow_driver = {
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index b10f7a1b77f1..5e663c3a6736 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -1089,7 +1089,7 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
- 	return -ENODEV;
- }
- 
--static int powernowk8_cpu_exit(struct cpufreq_policy *pol)
-+static void powernowk8_cpu_exit(struct cpufreq_policy *pol)
- {
- 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
- 	int cpu;
-@@ -1104,8 +1104,6 @@ static int powernowk8_cpu_exit(struct cpufreq_policy *pol)
- 	/* pol->cpus will be empty here, use related_cpus instead. */
- 	for_each_cpu(cpu, pol->related_cpus)
- 		per_cpu(powernow_data, cpu) = NULL;
--
--	return 0;
- }
- 
- static void query_values_on_cpu(void *_err)
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index fddbd1ea1635..50c62929f7ca 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -874,7 +874,7 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+static void powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct powernv_smp_call_data freq_data;
- 	struct global_pstate_info *gpstates = policy->driver_data;
-@@ -886,8 +886,6 @@ static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- 		del_timer_sync(&gpstates->timer);
- 
- 	kfree(policy->driver_data);
--
--	return 0;
- }
- 
- static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-index 88afc49941b7..5ee4c7bfdcc5 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -113,10 +113,9 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int cbe_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+static void cbe_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	cbe_cpufreq_pmi_policy_exit(policy);
--	return 0;
- }
- 
- static int cbe_cpufreq_target(struct cpufreq_policy *policy,
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index 70b0f21968a0..bb818111162d 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -573,7 +573,7 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 	return qcom_cpufreq_hw_lmh_init(policy, index);
- }
- 
--static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
-+static void qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct device *cpu_dev = get_cpu_device(policy->cpu);
- 	struct qcom_cpufreq_data *data = policy->driver_data;
-@@ -583,8 +583,6 @@ static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
- 	qcom_cpufreq_hw_lmh_exit(data);
- 	kfree(policy->freq_table);
- 	kfree(data);
--
--	return 0;
- }
- 
- static void qcom_cpufreq_ready(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 0aecaecbb0e6..3519bf34d397 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -225,7 +225,7 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return -ENODEV;
- }
- 
--static int qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+static void qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct cpu_data *data = policy->driver_data;
- 
-@@ -233,8 +233,6 @@ static int qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- 	kfree(data->table);
- 	kfree(data);
- 	policy->driver_data = NULL;
--
--	return 0;
- }
- 
- static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-index 3b4f6bfb2f4c..bf5f17f0dfb1 100644
---- a/drivers/cpufreq/scmi-cpufreq.c
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -308,7 +308,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
- 	return ret;
- }
- 
--static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
-+static void scmi_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct scmi_data *priv = policy->driver_data;
- 
-@@ -316,8 +316,6 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
- 	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
- 	free_cpumask_var(priv->opp_shared_cpus);
- 	kfree(priv);
--
--	return 0;
- }
- 
- static void scmi_cpufreq_register_em(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index d33be56983ed..8d73e6e8be2a 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -167,7 +167,7 @@ static int scpi_cpufreq_init(struct cpufreq_policy *policy)
- 	return ret;
- }
- 
--static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
-+static void scpi_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct scpi_data *priv = policy->driver_data;
- 
-@@ -175,8 +175,6 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
- 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
- 	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
- 	kfree(priv);
--
--	return 0;
- }
- 
- static struct cpufreq_driver scpi_cpufreq_driver = {
-diff --git a/drivers/cpufreq/sh-cpufreq.c b/drivers/cpufreq/sh-cpufreq.c
-index b8704232c27b..aa74036d0420 100644
---- a/drivers/cpufreq/sh-cpufreq.c
-+++ b/drivers/cpufreq/sh-cpufreq.c
-@@ -135,14 +135,12 @@ static int sh_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int sh_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+static void sh_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	unsigned int cpu = policy->cpu;
- 	struct clk *cpuclk = &per_cpu(sh_cpuclk, cpu);
- 
- 	clk_put(cpuclk);
--
--	return 0;
- }
- 
- static struct cpufreq_driver sh_cpufreq_driver = {
-diff --git a/drivers/cpufreq/sparc-us2e-cpufreq.c b/drivers/cpufreq/sparc-us2e-cpufreq.c
-index 2783d3d55fce..8a0cd5312a59 100644
---- a/drivers/cpufreq/sparc-us2e-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us2e-cpufreq.c
-@@ -296,10 +296,9 @@ static int us2e_freq_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int us2e_freq_cpu_exit(struct cpufreq_policy *policy)
-+static void us2e_freq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	us2e_freq_target(policy, 0);
--	return 0;
- }
- 
- static struct cpufreq_driver cpufreq_us2e_driver = {
-diff --git a/drivers/cpufreq/sparc-us3-cpufreq.c b/drivers/cpufreq/sparc-us3-cpufreq.c
-index 6c3657679a88..b50f9d13e6d2 100644
---- a/drivers/cpufreq/sparc-us3-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us3-cpufreq.c
-@@ -140,10 +140,9 @@ static int us3_freq_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int us3_freq_cpu_exit(struct cpufreq_policy *policy)
-+static void us3_freq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	us3_freq_target(policy, 0);
--	return 0;
- }
- 
- static struct cpufreq_driver cpufreq_us3_driver = {
-diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
-index 75b10ecdb60f..28e65bcf7242 100644
---- a/drivers/cpufreq/speedstep-centrino.c
-+++ b/drivers/cpufreq/speedstep-centrino.c
-@@ -400,7 +400,7 @@ static int centrino_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int centrino_cpu_exit(struct cpufreq_policy *policy)
-+static void centrino_cpu_exit(struct cpufreq_policy *policy)
- {
- 	unsigned int cpu = policy->cpu;
- 
-@@ -408,8 +408,6 @@ static int centrino_cpu_exit(struct cpufreq_policy *policy)
- 		return -ENODEV;
- 
- 	per_cpu(centrino_model, cpu) = NULL;
--
--	return 0;
- }
- 
- /**
-diff --git a/drivers/cpufreq/tegra194-cpufreq.c b/drivers/cpufreq/tegra194-cpufreq.c
-index 59865ea455a8..07ea7ed61b68 100644
---- a/drivers/cpufreq/tegra194-cpufreq.c
-+++ b/drivers/cpufreq/tegra194-cpufreq.c
-@@ -551,14 +551,12 @@ static int tegra194_cpufreq_offline(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int tegra194_cpufreq_exit(struct cpufreq_policy *policy)
-+static void tegra194_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct device *cpu_dev = get_cpu_device(policy->cpu);
- 
- 	dev_pm_opp_remove_all_dynamic(cpu_dev);
- 	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
--
--	return 0;
- }
- 
- static int tegra194_cpufreq_set_target(struct cpufreq_policy *policy,
-diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
-index 9ac4ea50b874..b2a42cdb9582 100644
---- a/drivers/cpufreq/vexpress-spc-cpufreq.c
-+++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
-@@ -447,7 +447,7 @@ static int ve_spc_cpufreq_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int ve_spc_cpufreq_exit(struct cpufreq_policy *policy)
-+static void ve_spc_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct device *cpu_dev;
- 
-@@ -459,7 +459,6 @@ static int ve_spc_cpufreq_exit(struct cpufreq_policy *policy)
- 	}
- 
- 	put_cluster_clk_and_freq_table(cpu_dev, policy->related_cpus);
--	return 0;
- }
- 
- static struct cpufreq_driver ve_spc_cpufreq_driver = {
--- 
-2.25.1
+I actually thought that arch_register_cpu() might return something
+like -EPROBE_DEFER when it cannot determine whether or not the CPU is
+really available.
 
+Then, the ACPI processor enumeration path may take care of registering
+CPU that have not been registered so far and in the more-or-less the
+same way regardless of the architecture (modulo some arch-specific
+stuff).
+
+In the end, it should be possible to avoid changing the behavior of
+x86 and loongarch in this series.
+
+> Which may look familiar at it's effectively patch 3 from v3 which was dea=
+ling
+> with CPUs missing from DSDT (something we think doesn't happen).
+>
+> It might be possible to elide the arch_register_cpu() in
+> make_present() but that will mean we use different flows in this patch se=
+t
+> for the hotplug and initially present cases which is a bit messy.
+>
+> I've tested this lightly on arm64 and x86 ACPI + DT booting and it "seems=
+" fine.
+
+Sounds promising.
+
+Thanks!
