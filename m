@@ -1,320 +1,128 @@
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
+Received: from mail-ot1-f43.google.com (mail-ot1-f43.google.com [209.85.210.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E5A5161325
-	for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 13:20:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B5051607B6;
+	Wed, 10 Apr 2024 13:24:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712755214; cv=none; b=Nw+ZoCxtIpOzbQ0msInexJUf8PNyfMZV0HHiaCylmZk8GUwGvq3nUBnXoE7naeRI/6hxBm6FbweQ7EGlpMBoAiagRGdRhwklrH+Hc/ab+29mNamfal6QqYa3RkKs2suYJsk+/E9Kn9PZC2wsFZgoVOOskW1srm+dBWBwSSmwYz8=
+	t=1712755473; cv=none; b=eb7sHXQyMD50KbqnU/3k4DZZO1WlX7I37aEnT/y9yJa8fb9V67UazOjHpUBsyGTLEGtGbhYRtD8R+/Je6UuiCjMLIoffrLMkOXW+JZs9/BgA1slLpO5gIg5eFySSZztIWeZbd7QWNhV2x5Iv6oOW0jSZPl+WDFTtPjAGS5gvuak=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712755214; c=relaxed/simple;
-	bh=X887HemCG+eyK7JH8Zd7i/QBE26b6bKfH+zZbSx/NXg=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Cvw4JZyqa4+i1g7s1hHuQo7/pN9BDVKhvve31XfjGfA8B4fQaD5rLYKkVPeR9+kLcHrvGTszEi7xudfhISHunUTA//ge/aResakMboun5JMVDI/61NKz5JSvsShVZPU8mS/X3mGPHMphLQrK6dJmLIezkXUtnExCiKTV8HrXQAg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BMYMvEcr; arc=none smtp.client-ip=209.85.128.172
+	s=arc-20240116; t=1712755473; c=relaxed/simple;
+	bh=t9jkfk8XACYeLJXoE1wrqULFC+XfVk5LexGcFzggemo=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=EXdd/CwKwH2BSKoAB6pMXd9u2jhSw1X7rt+u03EmG9WCjZZlNHuHbeTUXXKrXjbd540Tg/vdMiEm2AREIaiZmN3oAUDvms5YrUjXPFrouDc5Fr4+T2ztNu2hx1WgMC2F4r/p6k41o89ILUrAfis7QOIvdMYMLsn/ql+GbKWX9sk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BMYMvEcr"
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-617e6c873f3so46210457b3.2
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 06:20:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1712755211; x=1713360011; darn=vger.kernel.org;
-        h=content-transfer-encoding:organization:reply-to:mime-version
-         :references:in-reply-to:message-id:date:subject:cc:to:from:sender
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=oqX1Rbo124TpDubklxmnunkvyYyx3GcO6VcqeCzHs78=;
-        b=BMYMvEcrZQTUHcpOS4pn7TDNuIC+dHU1fjnx5NYSBJkK+vxXx6+VRoynUpwknbG3Rv
-         XTJHKDLG4oKaSFHhEek/47Ea0/7UhAwrpPbwXe24+Ge2bq1n+Y5q7ueV7YFEotLV8ZBC
-         s3rOQJXlfoA3Uo1CUXXSYOznH0a7nyvqeyp6Buo7QJjsBkCwr4xMr3e7uDjCNh+Q8fWk
-         XTIBz0bpj0HtcrpvFGgjfEjfz/Tr2TpjTB1h9tdpr7MSP/h4W/ZW++a0F60Yo3x7DR8t
-         hnGXpCWFSOZolBU80gW7/cmlmvFPcrLbtHh92b3aEbkRK4YV8+2iGuivA3HxWvhWvOkW
-         6Lsg==
+Received: by mail-ot1-f43.google.com with SMTP id 46e09a7af769-6ea1189de94so2446876a34.0;
+        Wed, 10 Apr 2024 06:24:31 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712755211; x=1713360011;
-        h=content-transfer-encoding:organization:reply-to:mime-version
-         :references:in-reply-to:message-id:date:subject:cc:to:from:sender
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=oqX1Rbo124TpDubklxmnunkvyYyx3GcO6VcqeCzHs78=;
-        b=bQD8fc7a7msJo0+vmPs5LnnrsW3omg2j5UisehM+cx1gXOuuS5Z743la6yAC3JRAdW
-         bpbwEPdD3tsfHxIrco3K6mLqQIYDc5vBwHauTzcdM8mA5dpvPXEp3C510AkYkF7wmhIk
-         B71Tl3mDSeJn03rhlCNuKaDitV/lA2bnmXcR7nUZ87SWDac2kJeqPR/x+X9MyKi9+hmN
-         dlml9xUx61LqV9NVrCQS0oME/xFlqBYG8enWAY6SHIqSpQJEZ45FigLs7E4U4f5JYvTv
-         YZWcgRqrSOrO/HvQn5+iZ0aLNLSeb1BTbflFQmuZtZxN69n03D7yW2ZmWD3xb4cYp4RK
-         yhJQ==
-X-Gm-Message-State: AOJu0YxIcF75mkr0kwF6AU3A1qeXo0vMpVRUboiXLaTwKfoU+skiMzfz
-	NG0g5X7m2313xuT9JsOZ62pIEkDDLzbFNGMGWK+IOhVBOBqWww0yBCPqnHyh
-X-Google-Smtp-Source: AGHT+IFKhjc2mHWwjcTS6moZAWAP1NmDxjbAMUmZ1/nJjNQ7GWB7ZvB+SogMMR3T4476hlx2uZSVPQ==
-X-Received: by 2002:a81:d251:0:b0:609:af49:7995 with SMTP id m17-20020a81d251000000b00609af497995mr2743081ywl.50.1712755210953;
-        Wed, 10 Apr 2024 06:20:10 -0700 (PDT)
-Received: from lenb-Intel-NUC8i7HVKVA.search.charter.net (2603-9000-9f01-67cf-b580-a474-89e0-3bb1.inf6.spectrum.com. [2603:9000:9f01:67cf:b580:a474:89e0:3bb1])
-        by smtp.gmail.com with ESMTPSA id x66-20020a0dd545000000b006143d243915sm2700864ywd.10.2024.04.10.06.20.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Apr 2024 06:20:10 -0700 (PDT)
-Sender: Len Brown <lenb417@gmail.com>
-From: Len Brown <lenb@kernel.org>
-To: linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
-Subject: [PATCH 26/26] tools/power turbostat: v2024.04.10
-Date: Wed, 10 Apr 2024 09:19:49 -0400
-Message-Id: <3ab7296a7e6aa34634dcc2926af933107a117996.1712754901.git.len.brown@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <e5f4e68eed85fa8495d78cd966eecc2b27bb9e53.1712754901.git.len.brown@intel.com>
-References: <e5f4e68eed85fa8495d78cd966eecc2b27bb9e53.1712754901.git.len.brown@intel.com>
+        d=1e100.net; s=20230601; t=1712755470; x=1713360270;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=UtaYETGaEYlrDsdbImdt57cidjxrz0+GyNKetr9EE3U=;
+        b=nvPp2yDT2Wg8UcQDZZ444FfxZS6yNtgWCfiBANWUs1XFUSw3e2JzPyoBfq+aqwF69O
+         o7c0xa26BeidI7SUMCwhzUTAqnaxVFIvhWz6Mr3gOujqmBCb5AtDRTbt7XG4gUkngubF
+         PSLN+WxnP+Kuhoj/AFkG4eiiOcXnZxZgC/T0kqTy4VIM83N7ApQuquvHyC4rkhtlR/yp
+         11V4xlWZvk0CxFs824dHVic94a8u6GYyLzASvfp7/goo9/oyA8kXzqC8RgjN5MjEd+41
+         cbBjAMS4/3Jnfi26XvfU0ec9QthpZwDV58GiXfwTD8TJtI3uB7/c+JQwsVv39EXJiAyQ
+         cZyg==
+X-Forwarded-Encrypted: i=1; AJvYcCUWuTr7N4rD62XpYNbOE6Shhg4oCIjmWaVG4+by4N4YI/t0be5c4hsb8xbEYSbCyL4+tWWHSfABViZLdfC2ZUjkfjeBjSSPS9QbqneQ
+X-Gm-Message-State: AOJu0YxuT4sOt96PZW/n9qdWNQHnAQFhI8vv8j16mW/4+VIaTMo1UsgA
+	XWl4PCj8/vvAF/N/DvMlYYkd1hR0grZCbldZgw3raUpjTuC4p0KduaaEo4dF1/4w9a8v7xnbIuC
+	cCOuLZfipyhcnPdDihuU2saava8ZAF9KSHV4=
+X-Google-Smtp-Source: AGHT+IG2WNvalWON7mCKZlXjytpV7RH6vRtGhizlJEjNAsAgPrhFb2y5eaL1suG5Lx/MdcmQZ0Tza6SxC+YRwVUcUR0=
+X-Received: by 2002:a05:6870:505:b0:22e:9574:6121 with SMTP id
+ j5-20020a056870050500b0022e95746121mr2847536oao.14.1712755470671; Wed, 10 Apr
+ 2024 06:24:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Reply-To: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-Content-Transfer-Encoding: 8bit
+From: Len Brown <lenb@kernel.org>
+Date: Wed, 10 Apr 2024 09:24:19 -0400
+Message-ID: <CAJvTdKmK_U7nChpm=MzaDyw3T9V6hSua-6C89WCjo828vxm+yw@mail.gmail.com>
+Subject: [GIT PULL] turbostat 2024.04.10
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-From: Len Brown <len.brown@intel.com>
+Hi Linus,
 
-Much of turbostat can now run with perf, rather than using the MSR driver
+The following changes since commit 0dd3ee31125508cd67f7e7172247f05b7fd1753a:
 
-Some of turbostat can now run as a regular non-root user.
+  Linux 6.7 (2024-01-07 12:18:38 -0800)
 
-Add some new output columns for some new GFX hardware.
+are available in the Git repository at:
 
-[This patch updates the version, but otherwise changes no function;
- it touches up some checkpatch issues from previous patches]
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git
+tags/turbostat-2024.04.10
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- MAINTAINERS                                   |  1 +
- tools/power/x86/turbostat/turbostat.c         | 41 ++++++++++++-------
- .../testing/selftests/turbostat/defcolumns.py |  1 +
- 3 files changed, 28 insertions(+), 15 deletions(-)
+for you to fetch changes up to 3ab7296a7e6aa34634dcc2926af933107a117996:
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a7c4cf8201e0..b8582a466128 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -22116,6 +22116,7 @@ Q:	https://patchwork.kernel.org/project/linux-pm/list/
- B:	https://bugzilla.kernel.org
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
- F:	tools/power/x86/turbostat/
-+F:	tools/testing/selftests/turbostat/
- 
- TW5864 VIDEO4LINUX DRIVER
- M:	Bluecherry Maintainers <maintainers@bluecherrydvr.com>
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index bc103851df70..98256468e248 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -3,7 +3,7 @@
-  * turbostat -- show CPU frequency and C-state residency
-  * on modern Intel and AMD processors.
-  *
-- * Copyright (c) 2023 Intel Corporation.
-+ * Copyright (c) 2024 Intel Corporation.
-  * Len Brown <len.brown@intel.com>
-  */
- 
-@@ -1360,6 +1360,7 @@ struct sys_counters {
- void free_sys_counters(void)
- {
- 	struct msr_counter *p = sys.tp, *pnext = NULL;
-+
- 	while (p) {
- 		pnext = p->next;
- 		free(p);
-@@ -1979,6 +1980,7 @@ int dump_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p
- 
- 		const unsigned long long energy_value = c->core_energy.raw_value * c->core_energy.scale;
- 		const double energy_scale = c->core_energy.scale;
-+
- 		if (c->core_energy.unit == RAPL_UNIT_JOULES)
- 			outp += sprintf(outp, "Joules: %0llX (scale: %lf)\n", energy_value, energy_scale);
- 
-@@ -3153,7 +3155,7 @@ static unsigned int read_perf_counter_info_n(const char *const path, const char
- 	return v;
- }
- 
--static unsigned read_msr_type(void)
-+static unsigned int read_msr_type(void)
- {
- 	const char *const path = "/sys/bus/event_source/devices/msr/type";
- 	const char *const format = "%u";
-@@ -3161,7 +3163,7 @@ static unsigned read_msr_type(void)
- 	return read_perf_counter_info_n(path, format);
- }
- 
--static unsigned read_aperf_config(void)
-+static unsigned int read_aperf_config(void)
- {
- 	const char *const path = "/sys/bus/event_source/devices/msr/events/aperf";
- 	const char *const format = "event=%x";
-@@ -3169,7 +3171,7 @@ static unsigned read_aperf_config(void)
- 	return read_perf_counter_info_n(path, format);
- }
- 
--static unsigned read_mperf_config(void)
-+static unsigned int read_mperf_config(void)
- {
- 	const char *const path = "/sys/bus/event_source/devices/msr/events/mperf";
- 	const char *const format = "event=%x";
-@@ -3177,7 +3179,7 @@ static unsigned read_mperf_config(void)
- 	return read_perf_counter_info_n(path, format);
- }
- 
--static unsigned read_perf_type(const char *subsys)
-+static unsigned int read_perf_type(const char *subsys)
- {
- 	const char *const path_format = "/sys/bus/event_source/devices/%s/type";
- 	const char *const format = "%u";
-@@ -3188,7 +3190,7 @@ static unsigned read_perf_type(const char *subsys)
- 	return read_perf_counter_info_n(path, format);
- }
- 
--static unsigned read_rapl_config(const char *subsys, const char *event_name)
-+static unsigned int read_rapl_config(const char *subsys, const char *event_name)
- {
- 	const char *const path_format = "/sys/bus/event_source/devices/%s/events/%s";
- 	const char *const format = "event=%x";
-@@ -3199,7 +3201,7 @@ static unsigned read_rapl_config(const char *subsys, const char *event_name)
- 	return read_perf_counter_info_n(path, format);
- }
- 
--static unsigned read_perf_rapl_unit(const char *subsys, const char *event_name)
-+static unsigned int read_perf_rapl_unit(const char *subsys, const char *event_name)
- {
- 	const char *const path_format = "/sys/bus/event_source/devices/%s/events/%s.unit";
- 	const char *const format = "%s";
-@@ -3235,7 +3237,7 @@ static struct amperf_group_fd open_amperf_fd(int cpu)
- 	const unsigned int msr_type = read_msr_type();
- 	const unsigned int aperf_config = read_aperf_config();
- 	const unsigned int mperf_config = read_mperf_config();
--	struct amperf_group_fd fds = {.aperf = -1,.mperf = -1 };
-+	struct amperf_group_fd fds = {.aperf = -1, .mperf = -1 };
- 
- 	fds.aperf = open_perf_counter(cpu, msr_type, aperf_config, -1, PERF_FORMAT_GROUP);
- 	fds.mperf = open_perf_counter(cpu, msr_type, mperf_config, fds.aperf, PERF_FORMAT_GROUP);
-@@ -3277,6 +3279,7 @@ static int read_aperf_mperf_tsc_perf(struct thread_data *t, int cpu)
- 	t->tsc = rdtsc();
- 
- 	const int n = read(fd_amperf, &cnt.as_array[0], sizeof(cnt.as_array));
-+
- 	if (n != sizeof(cnt.as_array))
- 		return -2;
- 
-@@ -3371,7 +3374,7 @@ int get_rapl_counters(int cpu, int domain, struct core_data *c, struct pkg_data
- 	struct rapl_counter_info_t *rci = &rapl_counter_info_perdomain[domain];
- 
- 	if (debug)
--		fprintf(stderr, "get_rapl_counters: cpu%d domain%d\n", cpu, domain);
-+		fprintf(stderr, "%s: cpu%d domain%d\n", __func__, cpu, domain);
- 
- 	assert(rapl_counter_info_perdomain);
- 
-@@ -3382,8 +3385,9 @@ int get_rapl_counters(int cpu, int domain, struct core_data *c, struct pkg_data
- 		size_t num_perf_counters = rapl_counter_info_count_perf(rci);
- 		const ssize_t expected_read_size = (num_perf_counters + 1) * sizeof(unsigned long long);
- 		const ssize_t actual_read_size = read(rci->fd_perf, &perf_data[0], sizeof(perf_data));
-+
- 		if (actual_read_size != expected_read_size)
--			err(-1, "get_rapl_counters: failed to read perf_data (%zu %zu)", expected_read_size,
-+			err(-1, "%s: failed to read perf_data (%zu %zu)", __func__, expected_read_size,
- 			    actual_read_size);
- 	}
- 
-@@ -3454,7 +3458,7 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- 	int status;
- 
- 	if (cpu_migrate(cpu)) {
--		fprintf(outf, "get_counters: Could not migrate to CPU %d\n", cpu);
-+		fprintf(outf, "%s: Could not migrate to CPU %d\n", __func__, cpu);
- 		return -1;
- 	}
- 
-@@ -6411,15 +6415,17 @@ int add_rapl_perf_counter_(int cpu, struct rapl_counter_info_t *rci, const struc
- 		return -1;
- 
- 	const double scale = read_perf_rapl_scale(cai->perf_subsys, cai->perf_name);
-+
- 	if (scale == 0.0)
- 		return -1;
- 
- 	const enum rapl_unit unit = read_perf_rapl_unit(cai->perf_subsys, cai->perf_name);
-+
- 	if (unit == RAPL_UNIT_INVALID)
- 		return -1;
- 
--	const unsigned rapl_type = read_perf_type(cai->perf_subsys);
--	const unsigned rapl_energy_pkg_config = read_rapl_config(cai->perf_subsys, cai->perf_name);
-+	const unsigned int rapl_type = read_perf_type(cai->perf_subsys);
-+	const unsigned int rapl_energy_pkg_config = read_rapl_config(cai->perf_subsys, cai->perf_name);
- 
- 	const int fd_counter =
- 	    open_perf_counter(cpu, rapl_type, rapl_energy_pkg_config, rci->fd_perf, PERF_FORMAT_GROUP);
-@@ -6441,7 +6447,7 @@ int add_rapl_perf_counter(int cpu, struct rapl_counter_info_t *rci, const struct
- 	int ret = add_rapl_perf_counter_(cpu, rci, cai, scale, unit);
- 
- 	if (debug)
--		fprintf(stderr, "add_rapl_perf_counter: %d (cpu: %d)\n", ret, cpu);
-+		fprintf(stderr, "%s: %d (cpu: %d)\n", __func__, ret, cpu);
- 
- 	return ret;
- }
-@@ -6462,6 +6468,7 @@ void linux_perf_init(void)
- 	}
- 
- 	const bool aperf_required = is_aperf_access_required();
-+
- 	if (aperf_required && has_aperf && amperf_source == AMPERF_SOURCE_PERF) {
- 		fd_amperf_percpu = calloc(topo.max_cpu_num + 1, sizeof(*fd_amperf_percpu));
- 		if (fd_amperf_percpu == NULL)
-@@ -6483,6 +6490,7 @@ void rapl_perf_init(void)
- 	 */
- 	for (int domain_id = 0; domain_id < num_domains; ++domain_id) {
- 		struct rapl_counter_info_t *rci = &rapl_counter_info_perdomain[domain_id];
-+
- 		rci->fd_perf = -1;
- 		for (size_t i = 0; i < NUM_RAPL_COUNTERS; ++i) {
- 			rci->data[i] = 0;
-@@ -7296,6 +7304,7 @@ static void set_amperf_source(void)
- 	amperf_source = AMPERF_SOURCE_PERF;
- 
- 	const bool aperf_required = is_aperf_access_required();
-+
- 	if (no_perf || !aperf_required || !has_amperf_access_via_perf())
- 		amperf_source = AMPERF_SOURCE_MSR;
- 
-@@ -7373,10 +7382,12 @@ void check_msr_access(void)
- void check_perf_access(void)
- {
- 	const bool intrcount_required = BIC_IS_ENABLED(BIC_IPC);
-+
- 	if (no_perf || !intrcount_required || !has_instr_count_access())
- 		bic_enabled &= ~BIC_IPC;
- 
- 	const bool aperf_required = is_aperf_access_required();
-+
- 	if (!aperf_required || !has_amperf_access()) {
- 		bic_enabled &= ~BIC_Avg_MHz;
- 		bic_enabled &= ~BIC_Busy;
-@@ -7486,7 +7497,7 @@ int get_and_dump_counters(void)
- 
- void print_version()
- {
--	fprintf(outf, "turbostat version 2023.11.07 - Len Brown <lenb@kernel.org>\n");
-+	fprintf(outf, "turbostat version 2024.04.08 - Len Brown <lenb@kernel.org>\n");
- }
- 
- #define COMMAND_LINE_SIZE 2048
-diff --git a/tools/testing/selftests/turbostat/defcolumns.py b/tools/testing/selftests/turbostat/defcolumns.py
-index 70d3b7780311..d9b042097da7 100755
---- a/tools/testing/selftests/turbostat/defcolumns.py
-+++ b/tools/testing/selftests/turbostat/defcolumns.py
-@@ -1,4 +1,5 @@
- #!/bin/env python3
-+# SPDX-License-Identifier: GPL-2.0
- 
- import subprocess
- from shutil import which
--- 
-2.40.1
+  tools/power turbostat: v2024.04.10 (2024-04-10 09:07:57 -0400)
 
+----------------------------------------------------------------
+Turbostat version 2024.04.10
+
+Use of the CPU MSR driver is now optional.
+Perf is now preferred for many counters.
+
+Non-root users can now execute turbostat, though with limited function.
+
+Add counters for some new GFX hardware.
+
+Minor fixes.
+
+----------------------------------------------------------------
+Chen Yu (1):
+      tools/power turbostat: Do not print negative LPI residency
+
+Doug Smythies (1):
+      tools/power turbostat: Fix added raw MSR output
+
+Justin Ernst (1):
+      tools/power/turbostat: Fix uncore frequency file string
+
+Len Brown (4):
+      tools/power turbostat: Expand probe_intel_uncore_frequency()
+      tools/power turbostat: Fix warning upon failed /dev/cpu_dma_latency read
+      tools/power turbostat: enhance -D (debug counter dump) output
+      tools/power turbostat: v2024.04.10
+
+Patryk Wlazlyn (11):
+      tools/power turbostat: Print ucode revision only if valid
+      tools/power turbostat: Read base_hz and bclk from CPUID.16H if available
+      tools/power turbostat: Add --no-msr option
+      tools/power turbostat: Add --no-perf option
+      tools/power turbostat: Add reading aperf and mperf via perf API
+      tools/power turbostat: detect and disable unavailable BICs at runtime
+      tools/power turbostat: add early exits for permission checks
+      tools/power turbostat: Clear added counters when in no-msr mode
+      tools/power turbostat: Add proper re-initialization for perf
+file descriptors
+      tools/power turbostat: read RAPL counters via perf
+      tools/power turbostat: Add selftests
+
+Peng Liu (1):
+      tools/power turbostat: Fix Bzy_MHz documentation typo
+
+Wyes Karny (1):
+      tools/power turbostat: Increase the limit for fd opened
+
+Zhang Rui (6):
+      tools/power/turbostat: Enable MSR_CORE_C1_RES support for ICX
+      tools/power/turbostat: Cache graphics sysfs path
+      tools/power/turbostat: Unify graphics sysfs snapshots
+      tools/power/turbostat: Introduce BIC_SAM_mc6/BIC_SAMMHz/BIC_SAMACTMHz
+      tools/power/turbostat: Add support for new i915 sysfs knobs
+      tools/power/turbostat: Add support for Xe sysfs knobs
+
+ MAINTAINERS                                     |    1 +
+ tools/power/x86/turbostat/turbostat.8           |   18 +-
+ tools/power/x86/turbostat/turbostat.c           | 2201 ++++++++++++++++++-----
+ tools/testing/selftests/turbostat/defcolumns.py |   60 +
+ 4 files changed, 1819 insertions(+), 461 deletions(-)
+ create mode 100755 tools/testing/selftests/turbostat/defcolumns.py
