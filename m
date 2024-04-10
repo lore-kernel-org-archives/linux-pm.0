@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C0071802A6;
-	Wed, 10 Apr 2024 17:44:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FDC017F39C;
+	Wed, 10 Apr 2024 17:44:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712771102; cv=none; b=n8mir+mOFZbHrrbkRmtvESucd0Zk7Ke8NB56sb4lYSeuIlpfJwwIVDEcqSkcQUStX8nsAqcFj1DkAPbLhdmVvd8KHxtnvEklWrrskOMb8Npp6Vg9hb30FUmHaJPaEu9d/OOC2Z5VssjJzBVV7P9OeMqJWjotyZVUuDF17v7XKQU=
+	t=1712771102; cv=none; b=b5KB+iA9t0hzUewgUh1QuSgtoSOJ61cLTzcSqonivDDZhi1MSpEYtrHLKrpy1NnqJmKtFvD33kni1hVMmX7euN8SP3hlRtCDn6UKacdtOiU/171sQGHtOpCk/+92h2yeh+tRC9KT69aP0g6340wOKsO6v6v40Vv/mtlNKcGICpE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1712771102; c=relaxed/simple;
-	bh=tWSbL77Uu0S5xnOIRWaaVpbSPmpL1rxRn22rKE+1/l0=;
+	bh=x/rTmZAzWqW+xMwWax6HbPC4NnWFSCmVjfuyEhUoQpQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=daWPaZ6KBQGWunPGlkQLPc0iSrIsD39AWe8mcHqUukWIYaqwrve7sFGgS0mKaZOhvLv8DqiL4660b572T4qSnetZ+89sN243/WbIDfSEXxJfwEYppySBJfBvvEVc2OuINe33zuppEgJXkhHmf9eGX8quJhTfDpt1kTnfms6U8zg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=RTi7gH0F reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=YzMeB1k97l7095JkChtg6+f0PHF4tD0EHy+OA5Sqe3o4L595JUzRzRcbLhpjN1YmnSCpZKykyIYwWpHU8nbXEj1q1fEqY5RQJx6cJwgIYvIoK09uvexIr4huGI5YJ7nlVWS+P7hPn1AGe221nb7IhSzWCUTVtL5o55qX0jKmcoI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=BICP+tk1 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="RTi7gH0F"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="BICP+tk1"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id c0eaaeb4e1f813d6; Wed, 10 Apr 2024 19:44:57 +0200
+ id 8c375ef2b1d9d543; Wed, 10 Apr 2024 19:44:50 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id E7AE066C66F;
-	Wed, 10 Apr 2024 19:44:56 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 2C7A566C66F;
+	Wed, 10 Apr 2024 19:44:50 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1712771097;
-	bh=tWSbL77Uu0S5xnOIRWaaVpbSPmpL1rxRn22rKE+1/l0=;
+	s=dkim; t=1712771090;
+	bh=x/rTmZAzWqW+xMwWax6HbPC4NnWFSCmVjfuyEhUoQpQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=RTi7gH0F4xSRi/fFkU5LLFrH6B3DNjpvQIyraxTGxqWY8tqvgab4n3V8YESzzApZK
-	 eZYeeEYixNeeOpyg66FszDzmpWvrg9cYoHeO/A5M0V3PsFmAp5ybkLJQRM0UxRsd+o
-	 sR41GWYXTdZzPuJEUhjGU2ropgltJdPkf8INSPWIyT+e7R/iQeTfnpvJfyyRxe2H2y
-	 aoHMsWwvmpvWOSQrlydvizRz8ofZ0Cx4GwBgqwg+YWqYlf7dp0OcCxRxwhajH+4mA8
-	 N8yhsOMaNHCGCZECuNFCAxdgvMyI/ytwLwtLjIEPYg+3m9/+BFT8ZQnkfoKr0v8Th+
-	 VNr3eEi0VCkdA==
+	b=BICP+tk1ODnlcoY2xZjSZvNG/vvHmv5Hvvb5kCuzE5Bdy1XdZoCzLNPix8FBpqTd/
+	 bJS3mq9U3iyGf4wvBrKM2+ZoqH00liiJ221Mt8v6TBmuWaUqEwtyhIlfvvNszuHaVv
+	 eZKsxyQi/12gDu3+yrG/5+umwDMij7xq9lfOleSpX3OQKq65YSIc1VFHm4cyJmI91D
+	 HH2aH/ppt++BNAV8EizuM1NS5X20dOWbsFSsLmN60b3Ebl9dUcgMhkWrJaxxP8BErr
+	 kjFHgkUqGOktKDdhjOhU5kWmwOBy4iM2pNoAGJctPdCRyGVzId8Y6BsI8JBpqgekdi
+	 JkcYT1usIaC0w==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -42,10 +42,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Lukasz Luba <lukasz.luba@arm.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Subject:
- [PATCH v1 06/16] thermal: gov_power_allocator: Use .manage() callback instead
- of .throttle()
-Date: Wed, 10 Apr 2024 18:10:14 +0200
-Message-ID: <1815410.VLH7GnMWUR@kreacher>
+ [PATCH v1 13/16] thermal: gov_fair_share: Eliminate unnecessary integer
+ divisions
+Date: Wed, 10 Apr 2024 19:00:10 +0200
+Message-ID: <2170379.OBFZWjSADL@kreacher>
 In-Reply-To: <13515747.uLZWGnKmhe@kreacher>
 References: <13515747.uLZWGnKmhe@kreacher>
 Precedence: bulk
@@ -64,94 +64,91 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The Power Allocator governor really only wants to be called once per
-thermal zone update and it does a special check to skip the extra,
-from its perspective, invocations of the .throttle() callback.
+The computations carried out by fair_share_throttle() for each trip
+point include at least one redundant integer division which introduces
+superfluous rounding errors.  Also the multiplications by 100 in it are
+not really necessary and can be eliminated.
 
-Make it use .manage() instead of .throttle().
+Rearrange fair_share_throttle() to carry out only one integer division per
+trip and only as many integer multiplications as necessary and rename one
+variable in it (while at it).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/gov_power_allocator.c |   24 +++++++-----------------
- 1 file changed, 7 insertions(+), 17 deletions(-)
+ drivers/thermal/gov_fair_share.c |   32 +++++++++++++++-----------------
+ 1 file changed, 15 insertions(+), 17 deletions(-)
 
-Index: linux-pm/drivers/thermal/gov_power_allocator.c
+Index: linux-pm/drivers/thermal/gov_fair_share.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/gov_power_allocator.c
-+++ linux-pm/drivers/thermal/gov_power_allocator.c
-@@ -395,7 +395,7 @@ static void divvy_up_power(struct power_
- 	}
+--- linux-pm.orig/drivers/thermal/gov_fair_share.c
++++ linux-pm/drivers/thermal/gov_fair_share.c
+@@ -41,12 +41,6 @@ static int get_trip_level(struct thermal
+ 	return trip_level;
  }
  
--static int allocate_power(struct thermal_zone_device *tz, int control_temp)
-+static void allocate_power(struct thermal_zone_device *tz, int control_temp)
- {
- 	struct power_allocator_params *params = tz->governor_data;
- 	unsigned int num_actors = params->num_actors;
-@@ -410,7 +410,7 @@ static int allocate_power(struct thermal
- 	int i = 0, ret;
- 
- 	if (!num_actors)
--		return -ENODEV;
-+		return;
- 
- 	/* Clean all buffers for new power estimations */
- 	memset(power, 0, params->buffer_size);
-@@ -471,8 +471,6 @@ static int allocate_power(struct thermal
- 				      num_actors, power_range,
- 				      max_allocatable_power, tz->temperature,
- 				      control_temp - tz->temperature);
+-static long get_target_state(struct thermal_zone_device *tz,
+-		struct thermal_cooling_device *cdev, int percentage, int level)
+-{
+-	return (long)(percentage * level * cdev->max_state) / (100 * tz->num_trips);
+-}
 -
--	return 0;
- }
- 
  /**
-@@ -745,40 +743,32 @@ static void power_allocator_unbind(struc
- 	tz->governor_data = NULL;
- }
- 
--static int power_allocator_throttle(struct thermal_zone_device *tz,
--				    const struct thermal_trip *trip)
-+static void power_allocator_manage(struct thermal_zone_device *tz)
+  * fair_share_throttle - throttles devices associated with the given zone
+  * @tz: thermal_zone_device
+@@ -58,7 +52,7 @@ static long get_target_state(struct ther
+  *
+  * Parameters used for Throttling:
+  * P1. max_state: Maximum throttle state exposed by the cooling device.
+- * P2. percentage[i]/100:
++ * P2. weight[i]/total_weight:
+  *	How 'effective' the 'i'th device is, in cooling the given zone.
+  * P3. trip_level/max_no_of_trips:
+  *	This describes the extent to which the devices should be throttled.
+@@ -72,30 +66,34 @@ static void fair_share_throttle(struct t
  {
- 	struct power_allocator_params *params = tz->governor_data;
-+	const struct thermal_trip *trip = params->trip_switch_on;
- 	bool update;
+ 	struct thermal_instance *instance;
+ 	int total_weight = 0;
+-	int total_instance = 0;
++	int nr_instances = 0;
  
- 	lockdep_assert_held(&tz->lock);
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+ 		if (instance->trip != trip)
+ 			continue;
  
--	/*
--	 * We get called for every trip point but we only need to do
--	 * our calculations once
--	 */
--	if (trip != params->trip_max)
--		return 0;
--
--	trip = params->trip_switch_on;
- 	if (trip && tz->temperature < trip->temperature) {
- 		update = tz->passive;
- 		tz->passive = 0;
- 		reset_pid_controller(params);
- 		allow_maximum_power(tz, update);
--		return 0;
-+		return;
+ 		total_weight += instance->weight;
+-		total_instance++;
++		nr_instances++;
  	}
  
- 	tz->passive = 1;
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+-		int percentage;
+ 		struct thermal_cooling_device *cdev = instance->cdev;
++		u64 dividend;
++		u32 divisor;
  
--	return allocate_power(tz, params->trip_max->temperature);
-+	allocate_power(tz, params->trip_max->temperature);
- }
+ 		if (instance->trip != trip)
+ 			continue;
  
- static struct thermal_governor thermal_gov_power_allocator = {
- 	.name		= "power_allocator",
- 	.bind_to_tz	= power_allocator_bind,
- 	.unbind_from_tz	= power_allocator_unbind,
--	.throttle	= power_allocator_throttle,
-+	.manage		= power_allocator_manage,
- 	.update_tz	= power_allocator_update_tz,
- };
- THERMAL_GOVERNOR_DECLARE(thermal_gov_power_allocator);
+-		if (!total_weight)
+-			percentage = 100 / total_instance;
+-		else
+-			percentage = (instance->weight * 100) / total_weight;
+-
+-		instance->target = get_target_state(tz, cdev, percentage,
+-						    trip_level);
++		dividend = trip_level;
++		dividend *= cdev->max_state;
++		divisor = tz->num_trips;
++		if (total_weight) {
++			dividend *= instance->weight;
++			divisor *= total_weight;
++		} else {
++			divisor *= nr_instances;
++		}
++		instance->target = div_u64(dividend, divisor);
+ 
+ 		mutex_lock(&cdev->lock);
+ 		__thermal_cdev_update(cdev);
 
 
 
