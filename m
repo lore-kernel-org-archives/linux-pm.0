@@ -1,85 +1,113 @@
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C125D268
-	for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2024 04:38:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D5EB1095C;
+	Wed, 10 Apr 2024 04:55:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712723905; cv=none; b=lRB6cqnqiMV3lKJtamqcbtsWrmSsmln+jyPxSiUECqZG4yi6aIAxKbsUyp2F+7XW/hYdT7YIaph1gfQr5ADJDkwx4cjetguFbdcxl1BySWyNX4ZaNgHDLwUaOAOd28UB/XbYa+KLRwXGt2P9F/Q0mjMyBnzpBf6Ynp60FUM/jL4=
+	t=1712724911; cv=none; b=Vq0bQuOTMTy7XIagm97ZbEy7Mt5wA+p1z2xDzP5ayHVR0Kq+VPB0KZa8V0XiODoYYXLD/eEblX+ubBtjvgwEToLGTsFINAwkh2iKEYEipPTbuQSg/EFsxKNUr1E0DyfqKzHGJ47UqQb3EPsTGJDtKad94u6//TG0HXHOxFO4A7U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712723905; c=relaxed/simple;
-	bh=GhLfFhswyuT6yatVhkdfTmGtXJIemf7JS4rdcw6A2kg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=owy9bivxxBB2BrlOCUEAyzmW2Azn5dBwgFH+7uQXFgT2t5F4xu8NH65oXrDAwgfn8BjE+0wTum+Q/yYWdXkKKoQVxv4mqpJWNNy7N9XpUahdR5PXSPMZ8tXqEICYECpoEwbOHORFN2+PGC9l+jy4QSJT6ep1AphJG6kCha+7AV4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=CG27sSJQ; arc=none smtp.client-ip=209.85.167.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	s=arc-20240116; t=1712724911; c=relaxed/simple;
+	bh=yK8f1jxgs495YTTLvbM/C7XA1mY/3/19W61ulgiWL/w=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=FKslkIZ2ljn/0h7wXyVwtEhCO0zBluIgt7nOysbzO6hbI/iDGMmmLz9CToKXjjb4NwWAi5FdDFSApz5GwpXSlyAGtrJIS5z66jcsfE/OjGJFBWNW83df0MudODoL7M9djmwIDDxboDbnvK1N0Bmacb7deR4MsxNCEyDxMGP91yA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=DyBHstwL; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="CG27sSJQ"
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-516d3a470d5so6002860e87.3
-        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2024 21:38:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1712723902; x=1713328702; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8TKJkBRRRuNaS92klijTOM4fdg+X+Lbr2orTtPNdiy8=;
-        b=CG27sSJQeoQ3cBwZde3cgTHEEf1WZppaVMy/IvFaOL7R/mBCmTojZEk/o89BIzJoxV
-         9GAb2/1IN6M3uhPOuL4PTvTvd/taRC/HpYaVyvNE/kBiBYm/TYye3YuF7TrRxT9imniy
-         U7SqFhjvKigGtr054+fFGdiTQ3VTJ0M4xG+tw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712723902; x=1713328702;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8TKJkBRRRuNaS92klijTOM4fdg+X+Lbr2orTtPNdiy8=;
-        b=N8P+yLg7YJ0702m6+lb1AitAqb6rW37wvUi00PIZEEQMU7BIevp6jL9iNxqnKuWhdt
-         gjs2Qj5h1mYmGdOtumv8TZsgKNYoc8HoTodEW8gnJvLmZjLNg8tZtpu4jcVvlktig52h
-         plcnY0FiB+bjmlAeNLI/jOuWeQuNeHmtgd1ZpqHcFQeohgjKjfcpTNwH39rbAg83LQRq
-         yawKM6YE1ygAF0HaC9B3uz5HZ6Ch2E39ObLrCqUgE48OYOV4QlW9w7mShwPXzVHMTLxZ
-         FhR32yG6VREkxOA7aSPfziFB6blayBWq/H4dSsfPpx/j4vzDk0WgzPoo5uAQaIcwM+Je
-         9tRw==
-X-Forwarded-Encrypted: i=1; AJvYcCXAjNCH7ItQrUJsAOTmO8oH9LMJQ9pECo7FDdDo794/4Kbz9q75REuNepnjQMw58Q0/QNuOXMxTXdDdWYIbVkc+/f5JNRKy/p0=
-X-Gm-Message-State: AOJu0YwvTzqh2xQvGZds2Mja2J9ebE5gNUWvtQrVqOWVyLxyj/8ZCPBl
-	gaN21wy6c631fCPad0mLfzHBMZsErSPWEmnfJNDBCaeZFz28mg/uK5ZHOBRKB2QzC/FvqW5zIcg
-	j+HoQ/s/N3oPXH8M+47yM6YfeOCO8ftUHGmWt
-X-Google-Smtp-Source: AGHT+IEfhT9L1lVwha8NF93s8qNR0rQx1xZquNhLUkjAkkjDod/md17HI/TEr2fAp5m3WSO3Hk99DnE+Z0bxhgjxKDo=
-X-Received: by 2002:a19:3852:0:b0:516:be41:5092 with SMTP id
- d18-20020a193852000000b00516be415092mr1096245lfj.13.1712723902339; Tue, 09
- Apr 2024 21:38:22 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="DyBHstwL"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 43A2QLfX008440;
+	Wed, 10 Apr 2024 04:54:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	from:to:cc:subject:date:message-id:in-reply-to:references
+	:mime-version:content-transfer-encoding; s=qcppdkim1; bh=XrVSXz+
+	m7FPVYUyZI8pEtJeMZrOr8S8k3iyBAYboSvs=; b=DyBHstwLu7gFxQCDv1+CPfl
+	5tTfLy/mkOKU4bEGJf65xrPFadWJCLJrTqCvVxa21nTrhaMWME5kxfGyP7V4Usym
+	QQsfVZier39wjtJ7UfAUvdt4Doff7j3EEwtVlEz5mXhnjgdZP2vCOK1Q7fIjwim2
+	2lsHORjGYZm/Eco00m8/S29INwEBR0JOAIa1ZSCq7FLxZNckO67caqX6NfKXjnhV
+	bContcuI7nDutTSdtMQXdkM3x0hwdYRWILjoKAmDaDi7R8I5CmPP+HGOaF5b05J0
+	OPbTI6zytv3bOR0GrYugRZ9PCI8Z3hbT/dVTw87TWcDQ1GQPCjC/BnaMtvkvvog=
+	=
+Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3xdh6qgwcp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Apr 2024 04:54:26 +0000 (GMT)
+Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 43A4sNqs019658;
+	Wed, 10 Apr 2024 04:54:23 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 3xayfm2ybg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Apr 2024 04:54:23 +0000
+Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43A4sNJS019652;
+	Wed, 10 Apr 2024 04:54:23 GMT
+Received: from hu-maiyas-hyd.qualcomm.com (hu-atulpant-hyd.qualcomm.com [10.213.109.143])
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 43A4sM67019651
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Apr 2024 04:54:23 +0000
+Received: by hu-maiyas-hyd.qualcomm.com (Postfix, from userid 3869597)
+	id E292124EF9; Wed, 10 Apr 2024 10:24:21 +0530 (+0530)
+From: Atul Pant <quic_atulpant@quicinc.com>
+To: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+        bristot@redhat.com, vschneid@redhat.com, rafael@kernel.org,
+        daniel.lezcano@linaro.org
+Cc: Atul Pant <quic_atulpant@quicinc.com>, kernel@quicinc.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [RFC PATCH 1/2] sched/rt: Disable runtime accounting for idle threads with SCHED_FIFO policy
+Date: Wed, 10 Apr 2024 10:24:16 +0530
+Message-Id: <20240410045417.3048209-2-quic_atulpant@quicinc.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240410045417.3048209-1-quic_atulpant@quicinc.com>
+References: <20240410045417.3048209-1-quic_atulpant@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240410000730.628043-1-treapking@chromium.org>
-In-Reply-To: <20240410000730.628043-1-treapking@chromium.org>
-From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Wed, 10 Apr 2024 12:38:11 +0800
-Message-ID: <CAGXv+5ETAPVRuWaLDFJChpa55tYDACNzXQdE_-ubSjL=L8tpVg@mail.gmail.com>
-Subject: Re: [PATCH] thermal/drivers/mediatek/lvts_thermal: Remove redundant
- code in lvts_ctrl_configure
-To: Pin-yen Lin <treapking@chromium.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Minjie Du <duminjie@vivo.com>, 
-	=?UTF-8?B?TsOtY29sYXMgRiAuIFIgLiBBIC4gUHJhZG8=?= <nfraprado@collabora.com>, 
-	Alexandre Mergnat <amergnat@baylibre.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, Balsam CHIHI <bchihi@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: uZ-cX8wRYDdJstkfkFu54lXR_P_62BxA
+X-Proofpoint-ORIG-GUID: uZ-cX8wRYDdJstkfkFu54lXR_P_62BxA
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-04-09_12,2024-04-09_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ impostorscore=0 adultscore=0 malwarescore=0 suspectscore=0 spamscore=0
+ mlxlogscore=969 phishscore=0 mlxscore=0 lowpriorityscore=0 clxscore=1011
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2404010003 definitions=main-2404100033
 
-On Wed, Apr 10, 2024 at 8:07=E2=80=AFAM Pin-yen Lin <treapking@chromium.org=
-> wrote:
->
-> The removed variable assignment is never written to the register, so it
-> has no effect on the device behavior.  Mediatek has confirmed that it
-> is not required to initialize this register for current platforms, so
-> remove this segment to avoid confusion.
->
-> Signed-off-by: Pin-yen Lin <treapking@chromium.org>
+To prevent the throttling of RT idle threads, like the idle-inject
+threads, skip accounting of runtime for these threads.
 
-Reviewed-by: Chen-Yu Tsai <wenst@chromium.org>
+Signed-off-by: Atul Pant <quic_atulpant@quicinc.com>
+---
+ kernel/sched/rt.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+index 4ac36eb4cdee..d20999270e75 100644
+--- a/kernel/sched/rt.c
++++ b/kernel/sched/rt.c
+@@ -1075,7 +1075,9 @@ static void update_curr_rt(struct rq *rq)
+ 		struct rt_rq *rt_rq = rt_rq_of_se(rt_se);
+ 		int exceeded;
+ 
+-		if (sched_rt_runtime(rt_rq) != RUNTIME_INF) {
++		if (sched_rt_runtime(rt_rq) != RUNTIME_INF &&
++				!(curr->policy == SCHED_FIFO &&
++					curr->flags & PF_IDLE)) {
+ 			raw_spin_lock(&rt_rq->rt_runtime_lock);
+ 			rt_rq->rt_time += delta_exec;
+ 			exceeded = sched_rt_runtime_exceeded(rt_rq);
+-- 
+2.25.1
+
