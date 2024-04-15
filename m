@@ -1,93 +1,161 @@
-Received: from madrid.collaboradmins.com (madrid.collaboradmins.com [46.235.227.194])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02DE941C66;
-	Mon, 15 Apr 2024 18:37:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.227.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67B2884D24;
+	Mon, 15 Apr 2024 19:03:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713206279; cv=none; b=B00aEgu7IXGQegkKtHvc4JHbGFa3/5qAPqWeLgf17iXlupuXaCCMvD6tEakwzb95gDD2SIbmzAV8uDHTFpPyqqIF77RHypeTdEUR4rLRwBUO/zBZymLLRCaQN4HWINXc2PtmcoefHtdeK6kUIm1cXr9cHyj3jUASR9mUO5QTN+Q=
+	t=1713207803; cv=none; b=TMeqPJah9IjtCfrwR+wtuTZJNNu04GvDRwTEpMoZeEVmmZP2+WbD8W2wjDahZxd0fl0LW4DHaH7E9zos4nNBkFwNbFJCrvToFY6Oph/GyOcEO/vE7Bw3MyZ5ol/xixi0iILYUOrp476cFpVxVoHUMmsX7nuJeTqIHJvsycPowb0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713206279; c=relaxed/simple;
-	bh=U29sDrgbhhdXj+npBt1jlHxYJTm07oduug5LWw9LWsU=;
-	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=Ui3zK6B7hXImESGtMPr5l9E3udaBpA/uM/Yp2rAk4IuDSIHA0g+Yblo9w/7mUBAiYs6JSygPl2TSKfi7woJTIVJGfDHG6a65WEoy6Cv3bgqkyEPFntPkaXRho9TIXMF8kzWZ3u/8eMfgdNbBqQRI3oU6k8HmpubGW/F4u7TUHe8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=QdWD1EKV; arc=none smtp.client-ip=46.235.227.194
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1713207803; c=relaxed/simple;
+	bh=CQNI1NZ7g4v/dwm4IEXv3eA8nBv8ecvnI47e7IY43ks=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=k/6n9pdD/3sl6kq6hOO+Vz9mBDV+3rKclldxvIc/zaHdNUDVY6/39ZBM2afJ4/htyTlDDRX5COUD05T5iC7ILQm3uJFw/XERHJ6tH+wVYh8FxXneLl3CmQImLba15XLZ0vgk+s4yyInO93GpbES42IKF52V/vsm3uFxUO1YqVUQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=M9EGh4hO reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="QdWD1EKV"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1713206276;
-	bh=U29sDrgbhhdXj+npBt1jlHxYJTm07oduug5LWw9LWsU=;
-	h=Date:Cc:Subject:To:References:From:In-Reply-To:From;
-	b=QdWD1EKVTObBT2wXUT8lnEtSx9LXzcJYzfDirIso9e+V2B3BAnLOae0svdRihqC8t
-	 EQXyFBqlA5DD+hNEctLOlMdxDBkbwxb39cJYshUjVkycsxTu/RSUOEDORweWMJVt2B
-	 iZU8vEBb9GEM15dJUTjrBEzvZiP3qQ1lJnzKATDxseIYPZfOd6M3bLC2RB4XZAiovD
-	 uRpJxdm/26pM9DIDzpQuw8oNMevbXimZfth+9hMVJ0J4Yrm0bD3AjRSUOhvNMTVm6u
-	 UAPOmswX4Dcmx6Da+ehimEAAf34zk4PDFax5jJFZobC5yNQ+gi8MubJUhVvLwOuEhV
-	 VS67pw1BuZO5A==
-Received: from [10.193.1.1] (broslavsky.collaboradmins.com [68.183.210.73])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="M9EGh4hO"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
+ id e37f4f2d11543fe6; Mon, 15 Apr 2024 21:03:12 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	(Authenticated sender: usama.anjum)
-	by madrid.collaboradmins.com (Postfix) with ESMTPSA id 334C13781107;
-	Mon, 15 Apr 2024 18:37:51 +0000 (UTC)
-Message-ID: <01247791-7841-4530-bde3-5db3fbd1770d@collabora.com>
-Date: Mon, 15 Apr 2024 23:38:28 +0500
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 8A69D66CF45;
+	Mon, 15 Apr 2024 21:03:11 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1713207792;
+	bh=CQNI1NZ7g4v/dwm4IEXv3eA8nBv8ecvnI47e7IY43ks=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=M9EGh4hODnGqxqAYnNjSiv101bCMaZIlxWdb/zEp7XiWTnyPnayIMso9Yg8faJ9M3
+	 r57uiL/FBfHoDW99iReGstfc/qItdgnx8rXzg/N++/zuJUXE1UtODq4AgZQIEPMYS1
+	 xw28c7SbtnFpkVMcPKkRVfHv7NMav3jYXQnR9khHutNr7g17Cx/PTX+48/ZYN1rMUa
+	 5LK2pvFWa81nmqDJ8cbqXxiJN5dKcYilPwr7jcT1q4QAP62Klw8fXMj7QtWhaX62G4
+	 0hiyjWlRqfRqvk95h+slHnhKITQ20lIKONSNoNhJ4Lg9FRChX+80svF0l7W7Dwg8Y/
+	 AQSGkIo0ekqDA==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject:
+ [PATCH v1 2/2] thermal/debugfs: Add helper function for trip stats updates
+Date: Mon, 15 Apr 2024 21:03:06 +0200
+Message-ID: <2321994.ElGaqSPkdT@kreacher>
+In-Reply-To: <12418263.O9o76ZdvQC@kreacher>
+References: <12418263.O9o76ZdvQC@kreacher>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Cc: Muhammad Usama Anjum <usama.anjum@collabora.com>,
- Sebastian Reichel <sre@kernel.org>, Mike Looijmans
- <mike.looijmans@topic.nl>, kernel@collabora.com,
- linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject: Re: [PATCH 2/2] selftests: power_supply: Make it POSIX-compliant
-To: =?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= <nfraprado@collabora.com>,
- Shuah Khan <shuah@kernel.org>
-References: <20240415-supply-selftest-posix-sh-v1-0-328f008d698d@collabora.com>
- <20240415-supply-selftest-posix-sh-v1-2-328f008d698d@collabora.com>
-Content-Language: en-US
-From: Muhammad Usama Anjum <usama.anjum@collabora.com>
-In-Reply-To: <20240415-supply-selftest-posix-sh-v1-2-328f008d698d@collabora.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudejvddgudeffecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeegpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 
-On 4/15/24 8:32 PM, Nícolas F. R. A. Prado wrote:
-> There is one use of bash specific syntax in the script. Change it to the
-> equivalent POSIX syntax. This doesn't change functionality and allows
-> the test to be run on shells other than bash.
-> 
-> Reported-by: Mike Looijmans <mike.looijmans@topic.nl>
-> Closes: https://lore.kernel.org/all/efae4037-c22a-40be-8ba9-7c1c12ece042@topic.nl/
-> Fixes: 4a679c5afca0 ("selftests: Add test to verify power supply properties")
-> Signed-off-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
-Reviewed-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> ---
->  tools/testing/selftests/power_supply/test_power_supply_properties.sh | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/tools/testing/selftests/power_supply/test_power_supply_properties.sh b/tools/testing/selftests/power_supply/test_power_supply_properties.sh
-> index df272dfe1d2a..a66b1313ed88 100755
-> --- a/tools/testing/selftests/power_supply/test_power_supply_properties.sh
-> +++ b/tools/testing/selftests/power_supply/test_power_supply_properties.sh
-> @@ -23,7 +23,7 @@ count_tests() {
->  	total_tests=0
->  
->  	for i in $SUPPLIES; do
-> -		total_tests=$(("$total_tests" + "$NUM_TESTS"))
-> +		total_tests=$((total_tests + NUM_TESTS))
->  	done
->  
->  	echo "$total_tests"
-> 
+The code updating a trip_stats entry in thermal_debug_tz_trip_up()
+and thermal_debug_update_temp() is almost entirely duplicate, so move
+it to a new helper function that will be called from both these places.
 
--- 
-BR,
-Muhammad Usama Anjum
+While at it, drop a redundant tz_dbg->nr_trips check and a label related
+to it from thermal_debug_update_temp().
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/thermal_debugfs.c |   42 +++++++++++++++++---------------------
+ 1 file changed, 19 insertions(+), 23 deletions(-)
+
+Index: linux-pm/drivers/thermal/thermal_debugfs.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_debugfs.c
++++ linux-pm/drivers/thermal/thermal_debugfs.c
+@@ -539,6 +539,19 @@ static struct tz_episode *thermal_debugf
+ 	return tze;
+ }
+ 
++static struct trip_stats *update_tz_episode(struct tz_debugfs *tz_dbg,
++					    int trip_id, int temperature)
++{
++	struct tz_episode *tze = list_first_entry(&tz_dbg->tz_episodes,
++						  struct tz_episode, node);
++	struct trip_stats *trip_stats = &tze->trip_stats[trip_id];
++
++	trip_stats->max = max(trip_stats->max, temperature);
++	trip_stats->min = min(trip_stats->min, temperature);
++	trip_stats->avg += (temperature - trip_stats->avg) / ++trip_stats->count;
++	return trip_stats;
++}
++
+ void thermal_debug_tz_trip_up(struct thermal_zone_device *tz,
+ 			      const struct thermal_trip *trip)
+ {
+@@ -547,6 +560,7 @@ void thermal_debug_tz_trip_up(struct the
+ 	struct thermal_debugfs *thermal_dbg = tz->debugfs;
+ 	int temperature = tz->temperature;
+ 	int trip_id = thermal_zone_trip_id(tz, trip);
++	struct trip_stats *trip_stats;
+ 	ktime_t now = ktime_get();
+ 
+ 	if (!thermal_dbg)
+@@ -612,14 +626,8 @@ void thermal_debug_tz_trip_up(struct the
+ 	 */
+ 	tz_dbg->trips_crossed[tz_dbg->nr_trips++] = trip_id;
+ 
+-	tze = list_first_entry(&tz_dbg->tz_episodes, struct tz_episode, node);
+-	tze->trip_stats[trip_id].timestamp = now;
+-	tze->trip_stats[trip_id].max = max(tze->trip_stats[trip_id].max, temperature);
+-	tze->trip_stats[trip_id].min = min(tze->trip_stats[trip_id].min, temperature);
+-	tze->trip_stats[trip_id].count++;
+-	tze->trip_stats[trip_id].avg = tze->trip_stats[trip_id].avg +
+-		(temperature - tze->trip_stats[trip_id].avg) /
+-		tze->trip_stats[trip_id].count;
++	trip_stats = update_tz_episode(tz_dbg, trip_id, temperature);
++	trip_stats->timestamp = now;
+ 
+ unlock:
+ 	mutex_unlock(&thermal_dbg->lock);
+@@ -686,9 +694,8 @@ out:
+ void thermal_debug_update_temp(struct thermal_zone_device *tz)
+ {
+ 	struct thermal_debugfs *thermal_dbg = tz->debugfs;
+-	struct tz_episode *tze;
+ 	struct tz_debugfs *tz_dbg;
+-	int trip_id, i;
++	int i;
+ 
+ 	if (!thermal_dbg)
+ 		return;
+@@ -697,20 +704,9 @@ void thermal_debug_update_temp(struct th
+ 
+ 	tz_dbg = &thermal_dbg->tz_dbg;
+ 
+-	if (!tz_dbg->nr_trips)
+-		goto out;
++	for (i = 0; i < tz_dbg->nr_trips; i++)
++		update_tz_episode(tz_dbg, tz_dbg->trips_crossed[i], tz->temperature);
+ 
+-	for (i = 0; i < tz_dbg->nr_trips; i++) {
+-		trip_id = tz_dbg->trips_crossed[i];
+-		tze = list_first_entry(&tz_dbg->tz_episodes, struct tz_episode, node);
+-		tze->trip_stats[trip_id].count++;
+-		tze->trip_stats[trip_id].max = max(tze->trip_stats[trip_id].max, tz->temperature);
+-		tze->trip_stats[trip_id].min = min(tze->trip_stats[trip_id].min, tz->temperature);
+-		tze->trip_stats[trip_id].avg = tze->trip_stats[trip_id].avg +
+-			(tz->temperature - tze->trip_stats[trip_id].avg) /
+-			tze->trip_stats[trip_id].count;
+-	}
+-out:
+ 	mutex_unlock(&thermal_dbg->lock);
+ }
+ 
+
+
+
