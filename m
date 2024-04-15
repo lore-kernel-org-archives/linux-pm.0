@@ -1,184 +1,211 @@
-Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2127.outbound.protection.outlook.com [40.107.22.127])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD971381A4
-	for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2024 08:04:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.52
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713168254; cv=none; b=IED+xtpdCT32n1YoR3rh6Fe9DhCiSpxEHp++1j8wqBNfuCXjCxXwwgDwRip74A0Ct6n5eRjTPT6blffCXz/Y50kXJmzU+cAwOGW6MmFKwhzmEPD8h/XhGKTFS2VQpLalL/MvpzrSf9Vf2F44ysA77mTAx4QH5pmrZ328/E2/gmY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713168254; c=relaxed/simple;
-	bh=UiNTy/XwQFjuHdHX/PXrqr/7gdd3eNWdYnpHroTPiKg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WgBVildpD9LW1uotXdnxXVHRbFc9C7XOWfGaPX9LgYnRdKk/KUvou+1l/62VVX8T+Ghf1f7FU+i90xxgyHeQbURGLSU7XahIl5/4akzi4hm80sEpGzSraLTtD/JklwSkj6wITn3AWquW+UgJU1N6CPSYJqmKmBliOnfvXa1iBVo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=lbSLJUK2; arc=none smtp.client-ip=209.85.218.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2CE2383B0;
+	Mon, 15 Apr 2024 08:13:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.22.127
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1713168806; cv=fail; b=tkrKY1P8UStoRCLzNdXtQX7fA2vBTzKAZDZCkuQBOmnN+ct2PmL4ZnHkg+WXzFD6n4LirfcEbSjBiSwtFvcrbUEL/psmvLehvP7+RfVTTOQ4HJhpjqZio3etKqx2pyBOio4t2CbAZ9fM98l0t13r5l9DIZVVy3tHeNTGU2vqwFo=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1713168806; c=relaxed/simple;
+	bh=Y2H6dOGBf2pkftSVAP8GOMZcx7D2R5boo/6ugyeLpFc=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=dz5xVkb6+YEIcB7NOFTAwzm2yvDxa+gzMS1dwfKkmlXdCfYqIV8rmpvRqutqk9OgONLPKtBf2bLEMA60VBky6U53rSUPTUs6sF5KwoS7ZbGUQIXJs71neZ5TJTS56TiMJ0Vjiez6XemsK8c/Msn0ar+OFvXL25UfXJwpvveNfuA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=topic.nl; spf=pass smtp.mailfrom=topic.nl; dkim=pass (2048-bit key) header.d=topic.nl header.i=@topic.nl header.b=Bts71gga; arc=fail smtp.client-ip=40.107.22.127
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=topic.nl
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=topic.nl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lbSLJUK2"
-Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-a55323f2ef9so15040666b.1
-        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2024 01:04:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1713168250; x=1713773050; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=Wo/Ov/gBkdZgWyMrIJS5//z4aGUdM8HoDmUePeCASCE=;
-        b=lbSLJUK2g/tNvnWuxE00430IJWvnS6kQZnSUYYNqbEenxWSMpxqzXLH/fZoVhE7O4S
-         mgMnR8Snn1kAAaenXjTo+NQhqtul8cbLdvC9YvCbp39vDojgW57BUh/tknLAe1GvSZgx
-         tVKeli8rQ5/j6II1+7UBgQJMeMrdbLnyk0QyQeF0g3wIIHegnnujJ4UtsGAiIxUqlD3Y
-         yE0I71d8gfqge849WKMKynYWnMPC0b7CS4DclSxikh9e20Ic+GbiWSLf+5XW3coh7EbF
-         NruzHfCVbRnUxtlTZbDvHigxxNN5xjsigx0sPGPq00Hhs5aP266QiiOsv1KWskONOtKH
-         Hn7Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713168250; x=1713773050;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Wo/Ov/gBkdZgWyMrIJS5//z4aGUdM8HoDmUePeCASCE=;
-        b=v+2h0rlkhnrN730QjABXroFrDB1B9kfZWWP/zIz4ru6DiZ1DQMZzpyjOEgEGd0G9qn
-         Ru14B4CXpV+aY1n1O8pXTtlfNPgDrFE61MvjOol1dpV2wpmIq9GCRhesY60/14XngxPu
-         6K3gSb6HkHSXgctABA0XXOOmsXH6LldX+MzAAN3MrXWwj1Cux22dw7vDOA338M3vOKmk
-         ixu7rt4vcykV7hk3UhR818MvcBTljmDe4osiNeUjvFx8KQxG12Gu6zkD2/zXy8e2ijuT
-         wcR352i5I0v2rXnG2r6f1MvhoPj4ZVNkmmWd0aRzAaF7CXG7lAuuqocRvBYOt0WDSSTT
-         gCKQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWtLGpip9RtyJZ6m+h/rRVAsdmeBMeEpxtxKKhCfnBLKeBQqdnVSO4UAnhIpL5A677bQIplG2B+3xafaJjqbHLYRsoqYEn/5oA=
-X-Gm-Message-State: AOJu0YyKLGbVcAtKN68bayLIP0nu3niLp3zmkSWTRJwMIg3zk03oVKGL
-	yk4EEYGmIRegl2MfFtL4/SkVR1Vqougk0Kgdo7FkJ+pjnJP6j6uUiLHDmHNm4U4=
-X-Google-Smtp-Source: AGHT+IHVldk4+xIRPwEmOh9J1yYwenVSk+L7iaf0VYldevR5MT01e7rR3HVWmGUNHTQFjpvT0HM6nw==
-X-Received: by 2002:a17:906:1355:b0:a4e:4278:8a01 with SMTP id x21-20020a170906135500b00a4e42788a01mr5524245ejb.11.1713168250025;
-        Mon, 15 Apr 2024 01:04:10 -0700 (PDT)
-Received: from [10.230.170.72] (46-253-189-43.dynamic.monzoon.net. [46.253.189.43])
-        by smtp.gmail.com with ESMTPSA id mm10-20020a170906cc4a00b00a524531a580sm3205855ejb.152.2024.04.15.01.04.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 15 Apr 2024 01:04:09 -0700 (PDT)
-Message-ID: <7396c6d4-878f-4b07-9b7f-bc793bebe4bd@linaro.org>
-Date: Mon, 15 Apr 2024 10:04:08 +0200
+	dkim=pass (2048-bit key) header.d=topic.nl header.i=@topic.nl header.b="Bts71gga"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Ap4WWKjhP6Ub+Fh2CNMrxZeHaw9MDdnaiUfE5crQgh+YZHvKDdLRY8MCtRc9cv71GIDSBG0HywzBLcLo2Q1k+KuA4njzxeWwvEaEtwsKxrpy6X6XrqVcnfhaIeWx1gKmB4gizmrj6c+tF3FDD2JbrpV7SDXSl08/B1wSYcAs6BAe1uNddQZJGK3/DjFWDsVagCJH+QJC5UshQ6ugfUw4WDWMSWEzANNfChTY3+NDfAWKA8d/Q3RkpCX0I4QHuCQK3HpWbnndSSnQpVwVWzmltC6m9ElFGt7lEzgG+8t/kYBYT2KepLYXYC+lcRit1k34AX+HSjdIXQpX4clifOVfmw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=2PxWi/d1gN0YGmptaDaIN+rhdlEdWzrSX4jllpSdXX4=;
+ b=TCUllCBtJm+ByfEmmugdscY9XswebzKPYzXTtV+TB49LV2YHEgXGX6RSbQjhnvqUeMUMvV055NZ42m1pwvi+OmEdRIfpjDxTM8b3tJqBsti8W5rbvwet9bNiq5h6FRxG8kl8VerwsBRQEsw3p/h3uWUjtId+kldkAfFiF4+dJg1dMKTKUiJUNoOZ5U0i9jIZtKbmuRqRb452AqAVhQyf3VnBJe6zZ3PgqIBJwpcnxWaaJlPw1Qj/3TNm6P2Sz6/N/ERu/ms+GGntmsf3K/iAdm3/drs4Tirfd0tKgC0EOnu6I1wxFirSB6YQ79lU7VDbfbc8nbL84AO2kcBuUbuQpA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 40.69.19.60) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=topic.nl;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=topic.nl;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=topic.nl; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=2PxWi/d1gN0YGmptaDaIN+rhdlEdWzrSX4jllpSdXX4=;
+ b=Bts71gga8vBm5rk2uBEkio0wLxS6GHzaTMeMlcl93XuoDjsGWKakZAgSmvDjyVb01B6w+l1pk5fGKsW9d1Xb/ogkOHoKPTTe8M2m/CJDTEmO2Z1Ck1R+T78xjaPXxbTiWNoF3D/EW+Ce1NDtqxeH2Q/K2Ht+p7C7raFj7tEyJ64dN0ttECS4CCuizlBiz+RKYYwjsD0Jyqy0sQAMyts4YpmZw7oqUMO/s3SWEPRSfWaTqH6pMm5LZBXrZfsDx7gCWBTkX32rdQFQnbpOWS1K1CueF+yZTrxc2+8CvAEE89mT0ohwpbvVloiRwJY+lb33iv/4TxKuCxdh8KnGiXcKHw==
+Received: from AS9PR05CA0102.eurprd05.prod.outlook.com (2603:10a6:20b:498::27)
+ by DB8PR04MB7049.eurprd04.prod.outlook.com (2603:10a6:10:fc::23) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7452.50; Mon, 15 Apr
+ 2024 08:13:20 +0000
+Received: from AMS1EPF0000004D.eurprd04.prod.outlook.com
+ (2603:10a6:20b:498:cafe::b9) by AS9PR05CA0102.outlook.office365.com
+ (2603:10a6:20b:498::27) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7472.33 via Frontend
+ Transport; Mon, 15 Apr 2024 08:13:19 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 40.69.19.60)
+ smtp.mailfrom=topic.nl; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=topic.nl;
+Received-SPF: Pass (protection.outlook.com: domain of topic.nl designates
+ 40.69.19.60 as permitted sender) receiver=protection.outlook.com;
+ client-ip=40.69.19.60; helo=westeu100-emailsignatures-cloud.codetwo.com; pr=C
+Received: from westeu100-emailsignatures-cloud.codetwo.com (40.69.19.60) by
+ AMS1EPF0000004D.mail.protection.outlook.com (10.167.16.138) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7452.22 via Frontend Transport; Mon, 15 Apr 2024 08:13:19 +0000
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (104.47.18.104) by westeu100-emailsignatures-cloud.codetwo.com with CodeTwo SMTP Server (TLS12) via SMTP; Mon, 15 Apr 2024 08:13:18 +0000
+Authentication-Results-Original: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=topic.nl;
+Received: from AS8PR04MB8644.eurprd04.prod.outlook.com (2603:10a6:20b:42b::12)
+ by PAXPR04MB8288.eurprd04.prod.outlook.com (2603:10a6:102:1bc::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7452.50; Mon, 15 Apr
+ 2024 08:13:12 +0000
+Received: from AS8PR04MB8644.eurprd04.prod.outlook.com
+ ([fe80::e86d:f110:534e:480a]) by AS8PR04MB8644.eurprd04.prod.outlook.com
+ ([fe80::e86d:f110:534e:480a%4]) with mapi id 15.20.7452.049; Mon, 15 Apr 2024
+ 08:13:12 +0000
+From: Mike Looijmans <mike.looijmans@topic.nl>
+To: linux-pm@vger.kernel.org
+CC: Mike Looijmans <mike.looijmans@topic.nl>,
+	Sebastian Reichel <sre@kernel.org>,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v4 2/5] power: supply: core: Add POWER_SUPPLY_TECHNOLOGY_CAPACITOR
+Date: Mon, 15 Apr 2024 10:13:02 +0200
+Message-ID: <20240415081305.316107-2-mike.looijmans@topic.nl>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240415081305.316107-1-mike.looijmans@topic.nl>
+References: <20240415081305.316107-1-mike.looijmans@topic.nl>
+ <1b153bce-a66a-45ee-a5c6-963ea6fb1c82.949ef384-8293-46b8-903f-40a477c056ae.0aecd676-868f-4018-bb2f-56c7fe7c18ff@emailsignatures365.codetwo.com>
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+X-ClientProxiedBy: AS4P195CA0029.EURP195.PROD.OUTLOOK.COM
+ (2603:10a6:20b:5d6::19) To AS8PR04MB8644.eurprd04.prod.outlook.com
+ (2603:10a6:20b:42b::12)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/4] dt-bindings: thermal: loongson,ls2k-thermal: Fix
- incorrect compatible definition
-To: Binbin Zhou <zhoubinbin@loongson.cn>, Binbin Zhou
- <zhoubb.aaron@gmail.com>, Huacai Chen <chenhuacai@loongson.cn>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria
- <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Rob Herring <robh+dt@kernel.org>,
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
- Conor Dooley <conor+dt@kernel.org>
-Cc: Huacai Chen <chenhuacai@kernel.org>, loongson-kernel@lists.loongnix.cn,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- Yinbo Zhu <zhuyinbo@loongson.cn>, WANG Xuerui <git@xen0n.name>,
- loongarch@lists.linux.dev
-References: <cover.1713147645.git.zhoubinbin@loongson.cn>
- <9d2132d4713321a83cdeef3cdc8887b7d39340e6.1713147645.git.zhoubinbin@loongson.cn>
-Content-Language: en-US
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Autocrypt: addr=krzysztof.kozlowski@linaro.org; keydata=
- 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
- D2GYIS41Kv4Isx2dEFh+/Q==
-In-Reply-To: <9d2132d4713321a83cdeef3cdc8887b7d39340e6.1713147645.git.zhoubinbin@loongson.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-MS-TrafficTypeDiagnostic:
+	AS8PR04MB8644:EE_|PAXPR04MB8288:EE_|AMS1EPF0000004D:EE_|DB8PR04MB7049:EE_
+X-MS-Office365-Filtering-Correlation-Id: f5f5e1ad-f09b-4318-4867-08dc5d23e93b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam-Untrusted: BCL:0;
+X-Microsoft-Antispam-Message-Info-Original:
+ e/9WCkdrxhl57fk/qgnQJyi/4RjgQR0IZQ34V+F6AWrvy/atyJ5ZGjAdlmsPihKuK7CzKcr+In3wGT7DWFHDtoZ2OW0+mtilFQ2zoSFonl0oSFBRgc/J3SLAzo0R8E2CqLAr6tHOA2oK1AMgUdMng8Fe8QQnek6X9YUekhDE6SrbVpoeuPaFJIxTCTYW2ecxF9tmzcdYGvW4HdA39VjwC5R8cLpqCb4vvwNvdI+0920GmvvSW1UNEHJoap3mfXjUrqHAub0vu3fkd2f/HO7vfqLIkdVvk8/CjaLzLnFKZoFq8mj5dSfeQiw/CSDgoEZex6FweO5fb2mtXvy1NiDjjY622a1viHCDTpMakM9alF4YRkG/iL4KN3MN7UgtyCWBb4QBsxJUL/E/l5DbJtxv2eIWy7yv6ht1ETv1pnyckIjemezgRWvdro6+0TiLL+iKJKyV49tJybM1fzbySPi3RaLSJ26QKttgkPsG0U38I/xWOF16jWRx9cWnO2QFCvtyIP8nd34Hp4AKYLscl1JGsSF2FBLggq5zEV9TkfRzYiXmzljXZQNlghxjX0ZE+JIIZr4pvbhKpQGcEqCgTIIWlmB8A9qAfmpb/tV2doSGyKvDYS+K9yVtf5ShMax5ss5L2iP8vlLEYmwL/7fH1s2XEaXkw99XGIfcWVlyynk6ruMkyZ7vtjBHmoF4/O3mocV6bCkkCNvu3Pn2F3Xa1Jc7vQSQkqzR//GNTyJesPEOVpY=
+X-Forefront-Antispam-Report-Untrusted:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR04MB8644.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(1800799015)(52116005)(376005)(366007)(38350700005);DIR:OUT;SFP:1102;
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8288
+X-CodeTwo-MessageID: 2614c8f6-768a-453d-b1a5-76a247684cf2.20240415081318@westeu100-emailsignatures-cloud.codetwo.com
+X-CodeTwoProcessed: true
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:
+ AMS1EPF0000004D.eurprd04.prod.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id-Prvs:
+	f4cb233c-113a-4010-893c-08dc5d23e486
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+	kYqIk8YT/hAbztdy/Dukl9U9oEGUF7nbWXBE2LtqpT2xAX9qzHbuVJJ3oikFo69l0no2+CpmdqLrBKWcfp+RINssQWFPQeeMqB9VZXPvwyQgKG/7e2G1n/BZ+LtJCAGAb8mANlkGn9lBz8qPL8j9OaT0mtX8UhBO3CH7KFybF9C5Ml9MLdEmAbdthrX0H/XK0E0DxDXziJaLBGL3Rk8WjpVDaI40kVWTgIXsfJCxokSVYEXeVzC+nia48Pbq0j5Quuo6PBeRybYngtba/7h3OqUGxO6KutA3dV4vtf9UvQlQNd32XyWo40/MpKCOtLxVQM3HogFI2VMux/E7Z8JuowtJLotPTiKM0WXjKExd/1nLuDJ0euRpIzaqAebynsEcINfsfe9lDTfkMCAXkhvQ2XvzrCrTsgO536Ndy/5TJdM1iwRPJvyMPmeaUYrCh6P+rauCTeCTQd3jfZrdvVclyoQT5PhjEyi5hiQYvEn6aHQcQAtwZcE5uGGQk8CTSxeSkPUTtl4D97fn6REQfw1rvYFlvyDvvKGazCmnpGmTPzSdbjr6G8unVa7T2DVp9WTkxp/UIuzJZpuq4V/zYDshYYrOsIIJHwccm5oBwWqFNJixatU4w+NfeaJ1pPNtX9ZfU3ZOTEuyOqheyu3la+cVxoaGcJICqqOk6ydciO48CkaBvgb76IRT3qUYllx4GBQjncM7AKgw1lTOmeuQ7jW0DQ==
+X-Forefront-Antispam-Report:
+	CIP:40.69.19.60;CTRY:IE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:westeu100-emailsignatures-cloud.codetwo.com;PTR:westeu100-emailsignatures-cloud.codetwo.com;CAT:NONE;SFS:(13230031)(376005)(1800799015)(36860700004)(82310400014);DIR:OUT;SFP:1102;
+X-OriginatorOrg: topic.nl
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Apr 2024 08:13:19.7201
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: f5f5e1ad-f09b-4318-4867-08dc5d23e93b
+X-MS-Exchange-CrossTenant-Id: 449607a5-3517-482d-8d16-41dd868cbda3
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=449607a5-3517-482d-8d16-41dd868cbda3;Ip=[40.69.19.60];Helo=[westeu100-emailsignatures-cloud.codetwo.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	AMS1EPF0000004D.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB8PR04MB7049
 
-On 15/04/2024 04:31, Binbin Zhou wrote:
-> The temperature output register of the Loongson-2K2000 is defined in the
-> chip configuration domain, which is different from the Loongson-2K1000,
-> so it can't be fallbacked.
-> 
-> We need to use two groups of registers to describe it: the first group
-> is the high and low temperature threshold setting register; the second
-> group is the temperature output register.
-> 
-> It is true that this fix will cause ABI corruption, but it is necessary
-> otherwise the Loongson-2K2000 temperature sensor will not work properly.
-> 
-> Fixes: 72684d99a854 ("thermal: dt-bindings: add loongson-2 thermal")
-> Cc: Yinbo Zhu <zhuyinbo@loongson.cn>
-> Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
-> ---
->  .../thermal/loongson,ls2k-thermal.yaml        | 23 +++++++++++++++++--
->  1 file changed, 21 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
-> index 9748a479dcd4..fac6f64d6c67 100644
-> --- a/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
-> @@ -18,14 +18,15 @@ properties:
->      oneOf:
->        - enum:
->            - loongson,ls2k1000-thermal
-> +          - loongson,ls2k2000-thermal
->        - items:
->            - enum:
->                - loongson,ls2k0500-thermal
-> -              - loongson,ls2k2000-thermal
->            - const: loongson,ls2k1000-thermal
->  
->    reg:
-> -    maxItems: 1
-> +    minItems: 1
-> +    maxItems: 2
->  
->    interrupts:
->      maxItems: 1
-> @@ -41,6 +42,24 @@ required:
->  
->  unevaluatedProperties: false
->  
-> +if:
+Another technology to store energy is a (super)capacitor.
 
-This goes before unevaluatedProperties, just like in example schema.
+Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
+---
+
+(no changes since v1)
+
+ Documentation/ABI/testing/sysfs-class-power | 2 +-
+ drivers/power/supply/power_supply_core.c    | 2 ++
+ drivers/power/supply/power_supply_sysfs.c   | 1 +
+ include/linux/power_supply.h                | 1 +
+ 4 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/AB=
+I/testing/sysfs-class-power
+index 7c81f0a25a48..1f6a04a17c81 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -488,7 +488,7 @@ Description:
+=20
+ 		Valid values:
+ 			      "Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe",
+-			      "NiCd", "LiMn"
++			      "NiCd", "LiMn", "Capacitor"
+=20
+=20
+ What:		/sys/class/power_supply/<supply_name>/voltage_avg,
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/suppl=
+y/power_supply_core.c
+index fefe938c9342..6d1327e16ff6 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -686,6 +686,8 @@ int power_supply_get_battery_info(struct power_supply *=
+psy,
+ 			info->technology =3D POWER_SUPPLY_TECHNOLOGY_LiFe;
+ 		else if (!strcmp("lithium-ion-manganese-oxide", value))
+ 			info->technology =3D POWER_SUPPLY_TECHNOLOGY_LiMn;
++		else if (!strcmp("capacitor", value))
++			info->technology =3D POWER_SUPPLY_TECHNOLOGY_CAPACITOR;
+ 		else
+ 			dev_warn(&psy->dev, "%s unknown battery type\n", value);
+ 	}
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supp=
+ly/power_supply_sysfs.c
+index 0d2c3724d0bc..9d8540ce1f7e 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -119,6 +119,7 @@ static const char * const POWER_SUPPLY_TECHNOLOGY_TEXT[=
+] =3D {
+ 	[POWER_SUPPLY_TECHNOLOGY_LiFe]		=3D "LiFe",
+ 	[POWER_SUPPLY_TECHNOLOGY_NiCd]		=3D "NiCd",
+ 	[POWER_SUPPLY_TECHNOLOGY_LiMn]		=3D "LiMn",
++	[POWER_SUPPLY_TECHNOLOGY_CAPACITOR]	=3D "Capacitor",
+ };
+=20
+ static const char * const POWER_SUPPLY_CAPACITY_LEVEL_TEXT[] =3D {
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 8e5705a56b85..af5a4e700881 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -78,6 +78,7 @@ enum {
+ 	POWER_SUPPLY_TECHNOLOGY_LiFe,
+ 	POWER_SUPPLY_TECHNOLOGY_NiCd,
+ 	POWER_SUPPLY_TECHNOLOGY_LiMn,
++	POWER_SUPPLY_TECHNOLOGY_CAPACITOR,
+ };
+=20
+ enum {
+--=20
+2.34.1
 
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Best regards,
-Krzysztof
-
+Met vriendelijke groet / kind regards,=0A=
+=0A=
+Mike Looijmans=0A=
+System Expert=0A=
+=0A=
+=0A=
+TOPIC Embedded Products B.V.=0A=
+Materiaalweg 4, 5681 RJ Best=0A=
+The Netherlands=0A=
+=0A=
+T: +31 (0) 499 33 69 69=0A=
+E: mike.looijmans@topic.nl=0A=
+W: www.topic.nl=0A=
+=0A=
+Please consider the environment before printing this e-mail=0A=
