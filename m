@@ -1,70 +1,114 @@
-Received: from mail-oi1-f177.google.com (mail-oi1-f177.google.com [209.85.167.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from madrid.collaboradmins.com (madrid.collaboradmins.com [46.235.227.194])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D364312C550
-	for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2024 14:02:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6716B1CAA6;
+	Tue, 16 Apr 2024 14:32:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.227.194
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713276160; cv=none; b=Shkvj+EjsdSabhDkG6eHuD+rb5dEBge3QvQ5AJwj46zPjkVwBfqi5VPHYiZZg0uIxRfo6jib0Oe0nC5hNPqZW+z0RF0O5Gt2DbpHwVZ+dzJ6Pag2yUQaalTG73rUu74hJXjMHrzXtvHZpWa4ZEA8Qoq6TBh/x8UJzYWk8uAqBBw=
+	t=1713277936; cv=none; b=XbiRmG/hWkHFxRD7z/dyGcIsRtCfAkWKasDda9Kdwm1QG4xW/lG/fzAXT3sFmTc6OXr1Z40YJ9UQzr1y+zsD8E7oliAquQwXJMaAYrToRm6TuE8ZZ6dtVMtPFKrOt6IXkSP7o4e2i3M0Uo+rhdJwL5BSy6iFmWg7ZGsFFNITPXA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713276160; c=relaxed/simple;
-	bh=Pn/PAfrTMoBkehcNTeO+zx3SAvKkhPvc7Z2U9JYUOY8=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Content-Type; b=WU5k9oNsIh2T4GfwQEGJiPPclmDnugK3xRThFJfNbcXvCJrgFgGj4wUSMdymrK4oIf2/m89voOHEP8jqWiQV7XT7HPm8ny+tURYxWsu0efGNCAER1y8JvS1ldozksr3Eind/Ku5PUoiJeqcZj6g9pFpZl3cRzGPTYGNV31FuyyE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=leR1eEhX; arc=none smtp.client-ip=209.85.167.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1713277936; c=relaxed/simple;
+	bh=xwtOX3huVgNQWdzLmjX+ow6uv3bTrZuFvMHF8dtE9a4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mQOZMRfrqZyiI7U1v1kI/LI03UE/NngahIGrfgfwHle30Xe9c+dsA7AgRNpYanYrwgyqKWj+WPOoB27ZzZkd/Md+zEbiv9QPm8MVOYIVpJA0mK8oQvWVALFZgdlqrQbsY4icz37x0ZwvxIxVXU4RomWnizZD6Vq5KBb2MvXK7bM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=CRyCJdk9; arc=none smtp.client-ip=46.235.227.194
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="leR1eEhX"
-Received: by mail-oi1-f177.google.com with SMTP id 5614622812f47-3c72508fa3aso89816b6e.0
-        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2024 07:02:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1713276158; x=1713880958; darn=vger.kernel.org;
-        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=Pn/PAfrTMoBkehcNTeO+zx3SAvKkhPvc7Z2U9JYUOY8=;
-        b=leR1eEhXSwPeyO1+s3h9HPPtWVMcrVL74xm1JKL/ncTmdrNjjA65XTleXW8Jd0cC4o
-         V5xZQrdhY03qyk5ZCwolcomTZB9KobXxOt7v79Qvqty/WzP0qyV6HqstQgDqsd7z4vjg
-         //GJCQc77uqbv5r9ErnNcmsBRiytJofEnVxATWB6fFit+gV0mBWi+NRS0negpuuhU33N
-         f4vldBqv9uMweIJBcua6at+bWG4875mDkipV35QsOye66HNRVFTckEQ8nnPSlT0dweUt
-         DLj95KilUMRmKAweoDcEJF0CB2OgcLp8eZcHWAw1e2LArA7A6Nj5LZQU26XZYBgOw/az
-         PUvw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713276158; x=1713880958;
-        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Pn/PAfrTMoBkehcNTeO+zx3SAvKkhPvc7Z2U9JYUOY8=;
-        b=V3BAATE7N2oGZC70ewFPDz4mCo7kCiJQ86oQ7ImAlp/pHzjldpxm+BbgPdWHG6XKkQ
-         lqHJ3orSebKPabuUG/gYoULnJApTvT3ySTNFK4m8rMhpQEmM7Up/uX0OAdTDUBYWkAPX
-         1TtLde1LxbVisdFDRElzx8CuHhA/MLUS2j3i2w0SUfz2/VadfPM8BEL+Q+FGQnDwaSbJ
-         7jIgbuTAMYbsFdKXs5g/jgoi0PBI6I8LcU3owbVdSM9urWY7VSnIMbp8d00mPaRczSAr
-         7NgEOO3oX1fESnkp5M5TwZnPSG+I+GlypUn/3i5x/wf4kR5xRderwYp31RVmvwEBjsWm
-         Z6vQ==
-X-Gm-Message-State: AOJu0YyJjXdohPGDEFJlHbBZhuudvuz7Wqi7KvltcJ7SKGfK0j60tlS7
-	5GjSPMVJUjH8SpA28m8CjeBnq70LWm1in/Z5z4B8KTCHEgTlOY4+YqYZbgS4/knM4Ybb9dqMkw/
-	4nWT4AKgiQouasjmABmqQYF/dmxwLd063
-X-Google-Smtp-Source: AGHT+IERSwZbQLrxOmBSuMNvwrZVXORMom33U3OXBcJIrv2RsbM1Ol/mObNvd6Agk++lBfaBUZz7BhYx37Oa/35qGV4=
-X-Received: by 2002:a05:6808:2914:b0:3c7:88f:4e87 with SMTP id
- ev20-20020a056808291400b003c7088f4e87mr10044811oib.1.1713276157654; Tue, 16
- Apr 2024 07:02:37 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="CRyCJdk9"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1713277933;
+	bh=xwtOX3huVgNQWdzLmjX+ow6uv3bTrZuFvMHF8dtE9a4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=CRyCJdk9BPM0d4kzXLOxXz4EylR0wqZhxNbJR89AC3uCDb+7PEoZ1pPCcQJx25jvv
+	 Y2xbXdD9hj6+yPwoulIB5puWXkEf21/Ba8OUxyvR1D4MoQ7Dy1ykkmLitxLXJ5IT0M
+	 4VOz6S+m74p/WqkxE45AX5HPwEYY32SePcmYjfHnm7Ce43lB6zI8pWwksZNl18SWQ3
+	 XwfqRnj/OzxJZpKmwEo3RtDoZRaoKV75oiN5BEAemk4n45cftF8PPO3QJxrWl5nlyf
+	 zCRAGkMR/9TUPCrcEJBCbeDQ7jXs24jTw9XtgqWHlssOyY4vQUSiaBqfaPPFrZQyg7
+	 wt8X90IFgqitw==
+Received: from notapiano (zone.collabora.co.uk [167.235.23.81])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: nfraprado)
+	by madrid.collaboradmins.com (Postfix) with ESMTPSA id B6BCE37820F9;
+	Tue, 16 Apr 2024 14:32:12 +0000 (UTC)
+Date: Tue, 16 Apr 2024 10:32:10 -0400
+From: =?utf-8?B?TsOtY29sYXMgRi4gUi4gQS4=?= Prado <nfraprado@collabora.com>
+To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: Sebastian Reichel <sre@kernel.org>, kernel@collabora.com,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] power: supply: sbs-battery: Handle unsupported
+ PROP_TIME_TO_EMPTY_NOW
+Message-ID: <9f805ec3-1611-4682-831e-9499ba8284d5@notapiano>
+References: <20240415-sbs-time-empty-now-error-v2-1-32d8a747e308@collabora.com>
+ <9ba1b4df-78dc-4f24-bb61-d7b168da18f8@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Dzmitry Sankouski <dsankouski@gmail.com>
-Date: Tue, 16 Apr 2024 17:02:26 +0300
-Message-ID: <CABTCjFCPRkd80DOWozhWAZa6UrEcbf1ZgTLXqsMjC5G_BEnAjA@mail.gmail.com>
-Subject: Should I add INPUT_CURRENT_NOW attribute in power_supply.h?
-To: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <9ba1b4df-78dc-4f24-bb61-d7b168da18f8@collabora.com>
 
-Charge ICs typically can measure actual input current.
-For example, bq25710 has ADCIINCMPIN register,
-which holds input current measurement.
-power_supply.h has INPUT_CURRENT_LIMIT attribute, but
-it's said to be for `current limit programmed by charger`, i.e. not measured.
+On Tue, Apr 16, 2024 at 09:46:56AM +0200, AngeloGioacchino Del Regno wrote:
+> Il 15/04/24 21:05, Nícolas F. R. A. Prado ha scritto:
+[..]
+> > +
+> > +static void sbs_update_quirks(struct sbs_info *chip)
+> > +{
+> > +	const char *model;
+> > +	const char *manufacturer;
+> > +	unsigned int i = 0;
+> 
+> Please reorder:
+> 
+> 	const char *manufacturer;
+> 	const char *model;
+> 	unsigned int i;
+> 
+> ...and please remove (like shown, of course) the double initialization of the
+> `i` variable, as you're initializing it again later in your for loop.
 
-So should I add a new attribute for input current measurement?
-If not, what's the correct way to provide actual charger input current
-to userspace?
+Ack.
+
+> 
+> > +
+> > +	/* reset quirks from battery before the hot-plug event */
+> > +	chip->quirks = 0;
+> > +
+> > +	manufacturer = sbs_get_constant_string(chip, POWER_SUPPLY_PROP_MANUFACTURER);
+> > +	model = sbs_get_constant_string(chip, POWER_SUPPLY_PROP_MODEL_NAME);
+> > +	if (IS_ERR(manufacturer) || IS_ERR(model)) {
+> > +		dev_warn(&chip->client->dev, "Couldn't read manufacturer and model to set quirks\n");
+> > +		return;
+> > +	}
+> > +
+> > +	for (i = 0; i < ARRAY_SIZE(sbs_quirks); i++) {
+> > +		if (strcmp(manufacturer, sbs_quirks[i].manufacturer))
+> > +			continue;
+> > +		if (strcmp(model, sbs_quirks[i].model))
+> > +			continue;
+> > +		chip->quirks |= sbs_quirks[i].flags;
+> > +	}
+> > +
+> > +	if (chip->quirks & SBS_QUIRK_BROKEN_TTE_NOW)
+> > +		dev_info(&chip->client->dev, "Added quirk disabling TIME_TO_EMPTY_NOW\n");
+> 
+> I don't really expect many quirks, but having a dev_info() print for every
+> quirk that gets set would make this driver too chatty, IMO.
+> 
+> Please, either turn that into a dev_dbg() or print a mask of the quirks .. or both.
+
+I wouldn't make this debug as it's pretty important information to be
+reported. I'd be ok with having a single message listing all the quirks, but at
+the same time I feel like this would be trying to fix a problem that we don't
+know will ever exist (one SBS battery that has many quirks). I propose we keep
+it the way it is - a nice clear message of what has happened - and adapt in the
+future if it turns out to be too much information.
+
+Thanks,
+Nícolas
