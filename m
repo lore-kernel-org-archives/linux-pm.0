@@ -1,191 +1,119 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [195.130.137.90])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E638213BC28;
-	Wed, 17 Apr 2024 09:35:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30D483F9F9
+	for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2024 10:31:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.90
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713346528; cv=none; b=U14URK7++9IWJ/iMhBTBlYZlAcXaLJEQq4cCDzq6y/d+g8ctVqCZzjEoZriqtSRGCLc3cowCBpXWtb8SLQQjrav19CnIHrPKVWaxae/o2u8zkbsghzJFFWlvTnsY1/liejS28nLvBOx9qTlsnNWRpoRnvwITIQf8g0P91nFx3LA=
+	t=1713349868; cv=none; b=Wk3wCZ953z5TST8y0qYibWOoZ1t9xekXMZVXEVxRmxrZDaQ9eWiQJ4eKM4/qE8GBS0qvP5/JaQNR/lgN9OpXuwwvZQQkwTH1I9TKornFdPwzTgTZ4gpJsGozYdf+cs77oAswJLsiuhFmfWSm8sUP4+AIqJ1HZRxjr+jslRNUpUg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713346528; c=relaxed/simple;
-	bh=FVTM6Kq9u0py4mW5xT/qLozNIRGPXJJY/cN+xZqdqPE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IYP+YM58XZGpx22OAeP8rVT6E6Z5vpC0z2O/ljPBT3Wq5LiWXfBmNNHBqO15vZLxTGoVwdSA9tzx2vUiKxNFYE52siEpS4+YVjFEwObdqA7GZOVmNyD3Mu5hLL1ML2QmYYTjqM6IO+Kr1BOe3/BX3xk0w0zjXmoAU0WvcfowlSA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mXWXgxxX; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mXWXgxxX"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B006EC32781;
-	Wed, 17 Apr 2024 09:35:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713346527;
-	bh=FVTM6Kq9u0py4mW5xT/qLozNIRGPXJJY/cN+xZqdqPE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=mXWXgxxXAMV/Qma2Tys3Aqa6TkeUWDgc/PrwREmIXe2w1sVFlMGlPTNHpHfbRxGJk
-	 b9AoKqVMI2Xy5py3LOPt/P2daoHbWs0mnzt/a3kcHau1mVvnBcU9xzYzI89O9Kiejs
-	 zdjMfdeq6AIU9rxLIT0Mnja314Hsqhmpsyy/JnvI/Cl8GicU2iLWrVl9s1PNCu4FSo
-	 jOUFoOH8sue3hiUMY+1b0N3c1BDkAua+0lflZWh37YNdc/fc13IL5xji5eygeVZ+Az
-	 4eQgWqzkInh96BkRUmD7WtFciu/lIV1jKQucRtAUnPnwpwT8Rn4uuuabTXYiQmVTTP
-	 /O2PtB34BxKJA==
-Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-6eba841d83cso61420a34.2;
-        Wed, 17 Apr 2024 02:35:27 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWLgKT8ka+7GwNjDiWarj4tU2HUOHSzbnEK8J+rM9sMR3fjN6OM7328CVyUWi7iCG9DhfCCVMyVNbnmP4ZHTLNMgVOwTnm3C3Qr0lo1
-X-Gm-Message-State: AOJu0YyRnHmY3HCE7GPpuasYtNZqp1nQdXmQFTVqayA7WpqBMRekeB6H
-	0oB8Sh7aoJhblj7uA/dwUhnolhGgnHcH24gWK0FycVPjfbGYhWj7mTmHPJmrOYBGkMrIML5BMCo
-	6lQKEvXY+5oA2LJlLn2Ec2z9SgD4=
-X-Google-Smtp-Source: AGHT+IHbjIQrHMFg/9QgbHO4ibNWIcvoVbY99/A0PKxpNe1lvnBUE8+TY59QReoRzR+WLbkg2bHfyV9B7ktxuHMwxdg=
-X-Received: by 2002:a4a:bb18:0:b0:5aa:14ff:4128 with SMTP id
- f24-20020a4abb18000000b005aa14ff4128mr15953452oop.1.1713346526956; Wed, 17
- Apr 2024 02:35:26 -0700 (PDT)
+	s=arc-20240116; t=1713349868; c=relaxed/simple;
+	bh=JmN3ov/nWWxkMqZnFvvpCKbxW2JVrc7zlR+YNMFMDVk=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=gLxt1CSAmS23AM7f4p+ad/371IchJ15l9ScMZGJSxoveaDeIPmWp3CEXfXxxpGceWwGU96l+8Mfweo5IA3Tikm3iI+N7SNog+AdvYDrplzm4lP91LKeJlRVgAb+oP1bgBTMQtrMIFYNGUnVgidkCDbnCEARSzP6Qt7L+/EuYWXE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.90
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:76d0:2bff:fec8:549])
+	by albert.telenet-ops.be with bizsmtp
+	id CAX32C00P0SSLxL06AX3Va; Wed, 17 Apr 2024 12:31:04 +0200
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1rx2Yd-009LE9-M6;
+	Wed, 17 Apr 2024 12:31:03 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1rx2Xe-00FLSF-Fd;
+	Wed, 17 Apr 2024 12:29:26 +0200
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 4/4] pmdomain: renesas: rcar-sysc: Add R-Car M3-W power-off delay quirk
+Date: Wed, 17 Apr 2024 12:29:25 +0200
+Message-Id: <ecbc3465c598084c904dd3714e2894463094ed9a.1713348705.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1713348705.git.geert+renesas@glider.be>
+References: <cover.1713348705.git.geert+renesas@glider.be>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <12418263.O9o76ZdvQC@kreacher> <2321994.ElGaqSPkdT@kreacher>
-In-Reply-To: <2321994.ElGaqSPkdT@kreacher>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 17 Apr 2024 11:35:15 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hK0M=84Yn_ZZLPrz9pbD7MrSoUpu_F4fzvq9A8cM2vNQ@mail.gmail.com>
-Message-ID: <CAJZ5v0hK0M=84Yn_ZZLPrz9pbD7MrSoUpu_F4fzvq9A8cM2vNQ@mail.gmail.com>
-Subject: Re: [PATCH v1 2/2] thermal/debugfs: Add helper function for trip
- stats updates
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Mon, Apr 15, 2024 at 9:03=E2=80=AFPM Rafael J. Wysocki <rjw@rjwysocki.ne=
-t> wrote:
->
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> The code updating a trip_stats entry in thermal_debug_tz_trip_up()
-> and thermal_debug_update_temp() is almost entirely duplicate, so move
-> it to a new helper function that will be called from both these places.
->
-> While at it, drop a redundant tz_dbg->nr_trips check and a label related
-> to it from thermal_debug_update_temp().
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+R-Car M3-W needs a delay of 1 µs before powering off the A3IR and A3VC
+power domains.  Add support for this using a new flag, which indicates
+that a power area is subject to this quirk.
 
-In the meantime I realized that thermal_debug_update_temp() made
-false-positive updates of trips involved in the current mitigation
-episode in the cases when they were crossed on the way down.
+Inspired by a patch in the BSP by Dien Pham.
 
-Namely, in that case the zone temperature is already below the low
-temperature of the trip, but that is only recorded by
-thermal_debug_tz_trip_down() that is called after
-thermal_debug_update_temp().
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Changes compared to the BSP:
+  - Use a new flag in the SoC-specific area description instead of
+    comparing PM Domain names (which applied the quirk to all SoCs),
+  - Support for R-Car H3 ES1.x was dropped in v6.4, so it no longer
+    needs handling.
+---
+ drivers/pmdomain/renesas/r8a77960-sysc.c | 6 ++++--
+ drivers/pmdomain/renesas/rcar-sysc.c     | 4 ++++
+ drivers/pmdomain/renesas/rcar-sysc.h     | 1 +
+ 3 files changed, 9 insertions(+), 2 deletions(-)
 
-For this reason, I'm withdrawing this patch and I will send
-replacement patches later today.
+diff --git a/drivers/pmdomain/renesas/r8a77960-sysc.c b/drivers/pmdomain/renesas/r8a77960-sysc.c
+index e6f2c3f961255f40..2ab3f565d2b0f889 100644
+--- a/drivers/pmdomain/renesas/r8a77960-sysc.c
++++ b/drivers/pmdomain/renesas/r8a77960-sysc.c
+@@ -32,12 +32,14 @@ static const struct rcar_sysc_area r8a77960_areas[] __initconst = {
+ 	{ "ca53-cpu3",	0x200, 3, R8A7796_PD_CA53_CPU3,	R8A7796_PD_CA53_SCU,
+ 	  PD_CPU_NOCR },
+ 	{ "cr7",	0x240, 0, R8A7796_PD_CR7,	R8A7796_PD_ALWAYS_ON },
+-	{ "a3vc",	0x380, 0, R8A7796_PD_A3VC,	R8A7796_PD_ALWAYS_ON },
++	{ "a3vc",	0x380, 0, R8A7796_PD_A3VC,	R8A7796_PD_ALWAYS_ON,
++	  PD_OFF_DELAY },
+ 	{ "a2vc0",	0x3c0, 0, R8A7796_PD_A2VC0,	R8A7796_PD_A3VC },
+ 	{ "a2vc1",	0x3c0, 1, R8A7796_PD_A2VC1,	R8A7796_PD_A3VC },
+ 	{ "3dg-a",	0x100, 0, R8A7796_PD_3DG_A,	R8A7796_PD_ALWAYS_ON },
+ 	{ "3dg-b",	0x100, 1, R8A7796_PD_3DG_B,	R8A7796_PD_3DG_A },
+-	{ "a3ir",	0x180, 0, R8A7796_PD_A3IR,	R8A7796_PD_ALWAYS_ON },
++	{ "a3ir",	0x180, 0, R8A7796_PD_A3IR,	R8A7796_PD_ALWAYS_ON,
++	  PD_OFF_DELAY },
+ };
+ 
+ 
+diff --git a/drivers/pmdomain/renesas/rcar-sysc.c b/drivers/pmdomain/renesas/rcar-sysc.c
+index a9d92e38fcee902c..b99326917330f5f1 100644
+--- a/drivers/pmdomain/renesas/rcar-sysc.c
++++ b/drivers/pmdomain/renesas/rcar-sysc.c
+@@ -90,6 +90,10 @@ static int rcar_sysc_pwr_on_off(const struct rcar_sysc_pd *pd, bool on)
+ 	if (ret)
+ 		return -EAGAIN;
+ 
++	/* Power-off delay quirk */
++	if (!on && (pd->flags & PD_OFF_DELAY))
++		udelay(1);
++
+ 	/* Submit power shutoff or power resume request */
+ 	iowrite32(BIT(pd->chan_bit), rcar_sysc_base + pd->chan_offs + reg_offs);
+ 
+diff --git a/drivers/pmdomain/renesas/rcar-sysc.h b/drivers/pmdomain/renesas/rcar-sysc.h
+index 8c4ec36ed7da2f9d..07ffce310686b2ce 100644
+--- a/drivers/pmdomain/renesas/rcar-sysc.h
++++ b/drivers/pmdomain/renesas/rcar-sysc.h
+@@ -16,6 +16,7 @@
+ #define PD_CPU		BIT(0)	/* Area contains main CPU core */
+ #define PD_SCU		BIT(1)	/* Area contains SCU and L2 cache */
+ #define PD_NO_CR	BIT(2)	/* Area lacks PWR{ON,OFF}CR registers */
++#define PD_OFF_DELAY	BIT(3)	/* Area is subject to power-off delay quirk */
+ 
+ #define PD_CPU_CR	PD_CPU		  /* CPU area has CR (R-Car H1) */
+ #define PD_CPU_NOCR	PD_CPU | PD_NO_CR /* CPU area lacks CR (R-Car Gen2/3) */
+-- 
+2.34.1
 
-Thanks!
-
-> ---
->  drivers/thermal/thermal_debugfs.c |   42 +++++++++++++++++--------------=
--------
->  1 file changed, 19 insertions(+), 23 deletions(-)
->
-> Index: linux-pm/drivers/thermal/thermal_debugfs.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/drivers/thermal/thermal_debugfs.c
-> +++ linux-pm/drivers/thermal/thermal_debugfs.c
-> @@ -539,6 +539,19 @@ static struct tz_episode *thermal_debugf
->         return tze;
->  }
->
-> +static struct trip_stats *update_tz_episode(struct tz_debugfs *tz_dbg,
-> +                                           int trip_id, int temperature)
-> +{
-> +       struct tz_episode *tze =3D list_first_entry(&tz_dbg->tz_episodes,
-> +                                                 struct tz_episode, node=
-);
-> +       struct trip_stats *trip_stats =3D &tze->trip_stats[trip_id];
-> +
-> +       trip_stats->max =3D max(trip_stats->max, temperature);
-> +       trip_stats->min =3D min(trip_stats->min, temperature);
-> +       trip_stats->avg +=3D (temperature - trip_stats->avg) / ++trip_sta=
-ts->count;
-> +       return trip_stats;
-> +}
-> +
->  void thermal_debug_tz_trip_up(struct thermal_zone_device *tz,
->                               const struct thermal_trip *trip)
->  {
-> @@ -547,6 +560,7 @@ void thermal_debug_tz_trip_up(struct the
->         struct thermal_debugfs *thermal_dbg =3D tz->debugfs;
->         int temperature =3D tz->temperature;
->         int trip_id =3D thermal_zone_trip_id(tz, trip);
-> +       struct trip_stats *trip_stats;
->         ktime_t now =3D ktime_get();
->
->         if (!thermal_dbg)
-> @@ -612,14 +626,8 @@ void thermal_debug_tz_trip_up(struct the
->          */
->         tz_dbg->trips_crossed[tz_dbg->nr_trips++] =3D trip_id;
->
-> -       tze =3D list_first_entry(&tz_dbg->tz_episodes, struct tz_episode,=
- node);
-> -       tze->trip_stats[trip_id].timestamp =3D now;
-> -       tze->trip_stats[trip_id].max =3D max(tze->trip_stats[trip_id].max=
-, temperature);
-> -       tze->trip_stats[trip_id].min =3D min(tze->trip_stats[trip_id].min=
-, temperature);
-> -       tze->trip_stats[trip_id].count++;
-> -       tze->trip_stats[trip_id].avg =3D tze->trip_stats[trip_id].avg +
-> -               (temperature - tze->trip_stats[trip_id].avg) /
-> -               tze->trip_stats[trip_id].count;
-> +       trip_stats =3D update_tz_episode(tz_dbg, trip_id, temperature);
-> +       trip_stats->timestamp =3D now;
->
->  unlock:
->         mutex_unlock(&thermal_dbg->lock);
-> @@ -686,9 +694,8 @@ out:
->  void thermal_debug_update_temp(struct thermal_zone_device *tz)
->  {
->         struct thermal_debugfs *thermal_dbg =3D tz->debugfs;
-> -       struct tz_episode *tze;
->         struct tz_debugfs *tz_dbg;
-> -       int trip_id, i;
-> +       int i;
->
->         if (!thermal_dbg)
->                 return;
-> @@ -697,20 +704,9 @@ void thermal_debug_update_temp(struct th
->
->         tz_dbg =3D &thermal_dbg->tz_dbg;
->
-> -       if (!tz_dbg->nr_trips)
-> -               goto out;
-> +       for (i =3D 0; i < tz_dbg->nr_trips; i++)
-> +               update_tz_episode(tz_dbg, tz_dbg->trips_crossed[i], tz->t=
-emperature);
->
-> -       for (i =3D 0; i < tz_dbg->nr_trips; i++) {
-> -               trip_id =3D tz_dbg->trips_crossed[i];
-> -               tze =3D list_first_entry(&tz_dbg->tz_episodes, struct tz_=
-episode, node);
-> -               tze->trip_stats[trip_id].count++;
-> -               tze->trip_stats[trip_id].max =3D max(tze->trip_stats[trip=
-_id].max, tz->temperature);
-> -               tze->trip_stats[trip_id].min =3D min(tze->trip_stats[trip=
-_id].min, tz->temperature);
-> -               tze->trip_stats[trip_id].avg =3D tze->trip_stats[trip_id]=
-.avg +
-> -                       (tz->temperature - tze->trip_stats[trip_id].avg) =
-/
-> -                       tze->trip_stats[trip_id].count;
-> -       }
-> -out:
->         mutex_unlock(&thermal_dbg->lock);
->  }
->
->
->
->
->
