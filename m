@@ -1,30 +1,30 @@
-Received: from albert.telenet-ops.be (albert.telenet-ops.be [195.130.137.90])
+Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [195.130.137.89])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30D483F9F9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A8E513BC00
 	for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2024 10:31:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.90
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.89
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713349868; cv=none; b=Wk3wCZ953z5TST8y0qYibWOoZ1t9xekXMZVXEVxRmxrZDaQ9eWiQJ4eKM4/qE8GBS0qvP5/JaQNR/lgN9OpXuwwvZQQkwTH1I9TKornFdPwzTgTZ4gpJsGozYdf+cs77oAswJLsiuhFmfWSm8sUP4+AIqJ1HZRxjr+jslRNUpUg=
+	t=1713349868; cv=none; b=mFNGnESX0f2bg6XApFWLzS+82DLaFcq4XjPbmsrOkKhKyE9tcFVTyEw19Gl1vVSJQRnBxLFP+xJIp1fi/kDhIOc8pUK9+Da2mW1UzYFF5jmg+jNuCEjD+T1XQRF2MdYNH5BFRZu5ptXcyRys4zVgqHC9WyLzJ6QPz0tsp2cE6iU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1713349868; c=relaxed/simple;
-	bh=JmN3ov/nWWxkMqZnFvvpCKbxW2JVrc7zlR+YNMFMDVk=;
+	bh=oo7aLJcvguP5C6Fr2kTmcD7Omy+Ka45JByP2fpqa2KY=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=gLxt1CSAmS23AM7f4p+ad/371IchJ15l9ScMZGJSxoveaDeIPmWp3CEXfXxxpGceWwGU96l+8Mfweo5IA3Tikm3iI+N7SNog+AdvYDrplzm4lP91LKeJlRVgAb+oP1bgBTMQtrMIFYNGUnVgidkCDbnCEARSzP6Qt7L+/EuYWXE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.90
+	 MIME-Version; b=exxohf9sgnSNRee9ki/ex6rsyS2S/oWyPgDpKmH9B++kuczVbRbHMze/35ANj68oAckPLKU5vmzZYOC0lTzJdqzJ4P6DDp9qvpDUYJcTgGX8pf0MywbUne/FtiPZHNebRZWYhas40UnodATLUyN/ZfL0HQL0ZfjlPf0o5n/JE2o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.89
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:76d0:2bff:fec8:549])
-	by albert.telenet-ops.be with bizsmtp
-	id CAX32C00P0SSLxL06AX3Va; Wed, 17 Apr 2024 12:31:04 +0200
+	by laurent.telenet-ops.be with bizsmtp
+	id CAX32C00E0SSLxL01AX3wF; Wed, 17 Apr 2024 12:31:04 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rx2Yd-009LE9-M6;
+	id 1rx2Yd-009LEC-OA;
 	Wed, 17 Apr 2024 12:31:03 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1rx2Xe-00FLSF-Fd;
+	id 1rx2Xe-00FLSA-Eb;
 	Wed, 17 Apr 2024 12:29:26 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ulf Hansson <ulf.hansson@linaro.org>
@@ -32,9 +32,9 @@ Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 4/4] pmdomain: renesas: rcar-sysc: Add R-Car M3-W power-off delay quirk
-Date: Wed, 17 Apr 2024 12:29:25 +0200
-Message-Id: <ecbc3465c598084c904dd3714e2894463094ed9a.1713348705.git.geert+renesas@glider.be>
+Subject: [PATCH 3/4] pmdomain: renesas: rcar-sysc: Remove rcar_sysc_nullify() helper
+Date: Wed, 17 Apr 2024 12:29:24 +0200
+Message-Id: <ad61b09283cc8a9cf93a5ea9fffd1cb283b9db92.1713348705.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1713348705.git.geert+renesas@glider.be>
 References: <cover.1713348705.git.geert+renesas@glider.be>
@@ -44,76 +44,57 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-R-Car M3-W needs a delay of 1 µs before powering off the A3IR and A3VC
-power domains.  Add support for this using a new flag, which indicates
-that a power area is subject to this quirk.
-
-Inspired by a patch in the BSP by Dien Pham.
+There are no more users left of the rcar_sysc_nullify() helper, so it
+can be removed.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Changes compared to the BSP:
-  - Use a new flag in the SoC-specific area description instead of
-    comparing PM Domain names (which applied the quirk to all SoCs),
-  - Support for R-Car H3 ES1.x was dropped in v6.4, so it no longer
-    needs handling.
----
- drivers/pmdomain/renesas/r8a77960-sysc.c | 6 ++++--
- drivers/pmdomain/renesas/rcar-sysc.c     | 4 ++++
- drivers/pmdomain/renesas/rcar-sysc.h     | 1 +
- 3 files changed, 9 insertions(+), 2 deletions(-)
+ drivers/pmdomain/renesas/rcar-sysc.c | 12 ------------
+ drivers/pmdomain/renesas/rcar-sysc.h |  8 --------
+ 2 files changed, 20 deletions(-)
 
-diff --git a/drivers/pmdomain/renesas/r8a77960-sysc.c b/drivers/pmdomain/renesas/r8a77960-sysc.c
-index e6f2c3f961255f40..2ab3f565d2b0f889 100644
---- a/drivers/pmdomain/renesas/r8a77960-sysc.c
-+++ b/drivers/pmdomain/renesas/r8a77960-sysc.c
-@@ -32,12 +32,14 @@ static const struct rcar_sysc_area r8a77960_areas[] __initconst = {
- 	{ "ca53-cpu3",	0x200, 3, R8A7796_PD_CA53_CPU3,	R8A7796_PD_CA53_SCU,
- 	  PD_CPU_NOCR },
- 	{ "cr7",	0x240, 0, R8A7796_PD_CR7,	R8A7796_PD_ALWAYS_ON },
--	{ "a3vc",	0x380, 0, R8A7796_PD_A3VC,	R8A7796_PD_ALWAYS_ON },
-+	{ "a3vc",	0x380, 0, R8A7796_PD_A3VC,	R8A7796_PD_ALWAYS_ON,
-+	  PD_OFF_DELAY },
- 	{ "a2vc0",	0x3c0, 0, R8A7796_PD_A2VC0,	R8A7796_PD_A3VC },
- 	{ "a2vc1",	0x3c0, 1, R8A7796_PD_A2VC1,	R8A7796_PD_A3VC },
- 	{ "3dg-a",	0x100, 0, R8A7796_PD_3DG_A,	R8A7796_PD_ALWAYS_ON },
- 	{ "3dg-b",	0x100, 1, R8A7796_PD_3DG_B,	R8A7796_PD_3DG_A },
--	{ "a3ir",	0x180, 0, R8A7796_PD_A3IR,	R8A7796_PD_ALWAYS_ON },
-+	{ "a3ir",	0x180, 0, R8A7796_PD_A3IR,	R8A7796_PD_ALWAYS_ON,
-+	  PD_OFF_DELAY },
- };
- 
- 
 diff --git a/drivers/pmdomain/renesas/rcar-sysc.c b/drivers/pmdomain/renesas/rcar-sysc.c
-index a9d92e38fcee902c..b99326917330f5f1 100644
+index a60ce08e7d3b09cb..a9d92e38fcee902c 100644
 --- a/drivers/pmdomain/renesas/rcar-sysc.c
 +++ b/drivers/pmdomain/renesas/rcar-sysc.c
-@@ -90,6 +90,10 @@ static int rcar_sysc_pwr_on_off(const struct rcar_sysc_pd *pd, bool on)
- 	if (ret)
- 		return -EAGAIN;
+@@ -439,18 +439,6 @@ static int __init rcar_sysc_pd_init(void)
+ }
+ early_initcall(rcar_sysc_pd_init);
  
-+	/* Power-off delay quirk */
-+	if (!on && (pd->flags & PD_OFF_DELAY))
-+		udelay(1);
-+
- 	/* Submit power shutoff or power resume request */
- 	iowrite32(BIT(pd->chan_bit), rcar_sysc_base + pd->chan_offs + reg_offs);
- 
+-void __init rcar_sysc_nullify(struct rcar_sysc_area *areas,
+-			      unsigned int num_areas, u8 id)
+-{
+-	unsigned int i;
+-
+-	for (i = 0; i < num_areas; i++)
+-		if (areas[i].isr_bit == id) {
+-			areas[i].name = NULL;
+-			return;
+-		}
+-}
+-
+ #ifdef CONFIG_ARCH_R8A7779
+ static int rcar_sysc_power_cpu(unsigned int idx, bool on)
+ {
 diff --git a/drivers/pmdomain/renesas/rcar-sysc.h b/drivers/pmdomain/renesas/rcar-sysc.h
-index 8c4ec36ed7da2f9d..07ffce310686b2ce 100644
+index 266c599a0a9b9198..8c4ec36ed7da2f9d 100644
 --- a/drivers/pmdomain/renesas/rcar-sysc.h
 +++ b/drivers/pmdomain/renesas/rcar-sysc.h
-@@ -16,6 +16,7 @@
- #define PD_CPU		BIT(0)	/* Area contains main CPU core */
- #define PD_SCU		BIT(1)	/* Area contains SCU and L2 cache */
- #define PD_NO_CR	BIT(2)	/* Area lacks PWR{ON,OFF}CR registers */
-+#define PD_OFF_DELAY	BIT(3)	/* Area is subject to power-off delay quirk */
+@@ -71,12 +71,4 @@ extern const struct rcar_sysc_info r8a77980_sysc_info;
+ extern const struct rcar_sysc_info r8a77990_sysc_info;
+ extern const struct rcar_sysc_info r8a77995_sysc_info;
  
- #define PD_CPU_CR	PD_CPU		  /* CPU area has CR (R-Car H1) */
- #define PD_CPU_NOCR	PD_CPU | PD_NO_CR /* CPU area lacks CR (R-Car Gen2/3) */
+-
+-    /*
+-     * Helpers for fixing up power area tables depending on SoC revision
+-     */
+-
+-extern void rcar_sysc_nullify(struct rcar_sysc_area *areas,
+-			      unsigned int num_areas, u8 id);
+-
+ #endif /* __SOC_RENESAS_RCAR_SYSC_H__ */
 -- 
 2.34.1
 
