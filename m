@@ -1,206 +1,103 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com [209.85.219.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE6D415B0E6;
-	Thu, 18 Apr 2024 09:24:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3349E1CA92;
+	Thu, 18 Apr 2024 09:27:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713432279; cv=none; b=lGjajdRCxI3ShvqAnUfombuoZGDsm7oNlEBqU/nnqshc7vImZepb/x228qer0nE/8o1EgMePoKW5D2RLfQ2tbKgKf/qWOzTgzbMww0lvHRexrJAY3exg7Xd4SWhQbIcbNpzt0nIfrT6Niq3d3boGgFgpodS1prBzduZut0wkHf0=
+	t=1713432436; cv=none; b=DvqPVgaP2k01Adz9ES5JWVz6vpiczxQ8yMD3YScflnf/xF8cF2A6wpJKf8nYGFdQRuI6Z/Rq0ftO5ELwIp8ECJ2VneekPkJjI3GRyEVexsz/iNDEjVssGeh7nvoI3W0lety+7X27DnUu8QqQl3LQq8Pg6cU5CfEvaF8MbTOV5oE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713432279; c=relaxed/simple;
-	bh=TI+Duxp2EJGVJ4LdDfnyodpBJpXYgGGAd/jITQiOpN0=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=czn4y7/rJl/M0aeC2rmneQ2w/Xnh+UKCaifIt9oT/w8nrqluPEf3KAlYzGbqxBmDKX8fqmU7lkHWihwwrtk2w40hDII3xflwVXNQrTeji6FqyGTw7mryHimENE27E151tTcVpcDD/rxJrPDZjmgABXEOIuHMIWNzK85aF+nISbs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=ZPidlU95; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="ZPidlU95"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 43I6JibM007521;
-	Thu, 18 Apr 2024 09:24:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	from:to:subject:date:message-id:in-reply-to:references
-	:mime-version:content-transfer-encoding:content-type; s=
-	qcppdkim1; bh=bTD3rZD1+ix+HL2KnDkU+hVfMXeUhq9jJbKM8O/mw78=; b=ZP
-	idlU95whYITm5uDhrjfUteG63zAj5mwLtkWJk8BJiTi1PrpYaacLZAiwDioQsvwV
-	Uu6M9qpXS5OtV9Q1R2JvuQIiHxB+nkmZ7uBcbSmG4IkyjKlLF9gzrHp0bs7cJqEi
-	sIfPKbqixw5rfX2Re8b9JWUJPI8qTK6nLyjBtVkHMdpEI0wL1byxWq94ZTt306n3
-	InG/d/ZTPmJXM6odJdtE5YEJUHQQNBwIe99ttESbp2lX5ljC4oO2bBgrEUWNyE/0
-	ieVGTu40k7TsLA8ZbBt6+Mi7OIgmc523S8DE80z3heefLul5sa6HovSB5Q8l7CoC
-	5Loim04Q0qzZhDdpEugw==
-Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3xjx54gdar-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 18 Apr 2024 09:24:34 +0000 (GMT)
-Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-	by NASANPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 43I9NslX012822
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 18 Apr 2024 09:23:54 GMT
-Received: from hu-varada-blr.qualcomm.com (10.80.80.8) by
- nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Thu, 18 Apr 2024 02:23:49 -0700
-From: Varadarajan Narayanan <quic_varada@quicinc.com>
-To: <andersson@kernel.org>, <mturquette@baylibre.com>, <sboyd@kernel.org>,
-        <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
-        <konrad.dybcio@linaro.org>, <djakov@kernel.org>,
-        <quic_varada@quicinc.com>, <dmitry.baryshkov@linaro.org>,
-        <quic_anusha@quicinc.com>, <linux-arm-msm@vger.kernel.org>,
-        <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH v9 4/6] clk: qcom: common: Add interconnect clocks support
-Date: Thu, 18 Apr 2024 14:53:03 +0530
-Message-ID: <20240418092305.2337429-5-quic_varada@quicinc.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240418092305.2337429-1-quic_varada@quicinc.com>
-References: <20240418092305.2337429-1-quic_varada@quicinc.com>
+	s=arc-20240116; t=1713432436; c=relaxed/simple;
+	bh=hqxluRsi3qaCAmHk6Qx6Senn1Pgk/ulJLCDIeSKH/Xo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nVSm3Szt/W6AcPLPA7BuQ4x7JDwjxxiu9oLtxVFAmuWGSkXJ8+qixHiIrqdDxcLS2ttGp69I0gv93bQwTIkYV+kAu/7XrdzyhaVpyGR1NW7zZcXA/u2zYsaGUauDmzMy0rZ/DNBoYEWgxwkZAm3Q8Kn77b8VymMcsen9nbw6KL4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.219.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-yb1-f172.google.com with SMTP id 3f1490d57ef6-de466c64161so474064276.3;
+        Thu, 18 Apr 2024 02:27:14 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1713432434; x=1714037234;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=/CP6t4OVSGkEimMqG3qVA2gUXQRTEs1wglu72p8zwBo=;
+        b=evP5o4UnVmJ+ATIFgQR1S5zwekNo6+t0Oz02GgUN7qjloWzMeKViWiSnKTqVn63rOS
+         3wYhpOqo/78NP7MVgcuNnyOmMyTG05sXeLmkyR2uYLORaFV/zD00/hOMeurWqZVZY2w5
+         VxjRNfoSc2AKouzf8m0v3+9eQWh+COU7lTBq7CudsAdyY9v3Tl2ZrEB6Kg/k0dLHSRCz
+         dDqMOkj2dD1+OwdU7E72VKFjpDfLZFrpFH/Rs/OrHXOaaHGaDiC8i65ulv5OJFOIgPqg
+         pNVOo/h0uew7JL79qe8tJDfKSKtp04m9IOnrGxtmTiWkGc1PvLxn0O7ySoiOImBoY7Rv
+         KGUg==
+X-Forwarded-Encrypted: i=1; AJvYcCVsPAGes8Nlfkp8lwFd8Sy9LBRoi9Vn6synm4f3SHexWoGjf489Sdb6D1kvG+G1IqWB3XwU0YcfFTIpTDpJgqD9AYJty4e77sNnifhHTOsT3sXz0YCJdNIn27KHwyMzhNdMELhm8tq7EzBzOQ==
+X-Gm-Message-State: AOJu0YyaFpCjKVi7O4UVtvDhMEZglrz1OafsA/u1ezF8SlayX7q4MRXl
+	rqKH7sdnfPBYBWShhUGeymGHvqIqjMcke6fD2g0XhlYoBIT0RwJZ4k2mchVdViY=
+X-Google-Smtp-Source: AGHT+IGLuKOUttzZ/G/LKyb7veKXegKYBbCLNdNmzAg4urDzc7/bd4VCR4cLp1/10th+j3Kmi1Uvvg==
+X-Received: by 2002:a25:c70e:0:b0:dcc:76a0:503b with SMTP id w14-20020a25c70e000000b00dcc76a0503bmr2240532ybe.13.1713432433776;
+        Thu, 18 Apr 2024 02:27:13 -0700 (PDT)
+Received: from mail-yb1-f176.google.com (mail-yb1-f176.google.com. [209.85.219.176])
+        by smtp.gmail.com with ESMTPSA id cj15-20020a056902188f00b00de3cb766aecsm272302ybb.54.2024.04.18.02.27.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 18 Apr 2024 02:27:13 -0700 (PDT)
+Received: by mail-yb1-f176.google.com with SMTP id 3f1490d57ef6-de466c64161so474051276.3;
+        Thu, 18 Apr 2024 02:27:13 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXCOxa/RX0TdM9w9gom3Z8akVO/ank8hzHKU383becOA1xPKImJkY1UDKomco7ffsrPdTY31J+gbmrf2IDMdlbpKZdY2klf2q2v3uskkmDG9qBvCKpeInsatPy1o05/3As8gBFEGsf8Pi5SyQ==
+X-Received: by 2002:a25:8e0b:0:b0:dcd:59e4:620c with SMTP id
+ p11-20020a258e0b000000b00dcd59e4620cmr2203016ybl.49.1713432433247; Thu, 18
+ Apr 2024 02:27:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: j5yO9rlF3iYdUpt2CiCh0iVNw2cpMJ5G
-X-Proofpoint-ORIG-GUID: j5yO9rlF3iYdUpt2CiCh0iVNw2cpMJ5G
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-04-18_08,2024-04-17_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxscore=0
- suspectscore=0 malwarescore=0 phishscore=0 mlxlogscore=999 bulkscore=0
- impostorscore=0 spamscore=0 lowpriorityscore=0 priorityscore=1501
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2404010003 definitions=main-2404180066
+References: <20240327133013.3982199-1-niklas.soderlund+renesas@ragnatech.se> <20240327133013.3982199-2-niklas.soderlund+renesas@ragnatech.se>
+In-Reply-To: <20240327133013.3982199-2-niklas.soderlund+renesas@ragnatech.se>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 18 Apr 2024 11:27:01 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVW1a2OUs8At3549QvK1LOGstSd_EjzXbjW+4qQwq8YQA@mail.gmail.com>
+Message-ID: <CAMuHMdVW1a2OUs8At3549QvK1LOGstSd_EjzXbjW+4qQwq8YQA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] thermal: rcar_gen3: Move Tj_T storage to shared
+ private data
+To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Unlike MSM platforms that manage NoC related clocks and scaling
-from RPM, IPQ SoCs dont involve RPM in managing NoC related
-clocks and there is no NoC scaling.
+On Wed, Mar 27, 2024 at 2:30=E2=80=AFPM Niklas S=C3=B6derlund
+<niklas.soderlund+renesas@ragnatech.se> wrote:
+> The calculated Tj_T constant is calculated from the PTAT data either
+> read from the first TSC zone on the device if calibration data is fused,
+> or from fallback values in the driver itself. The value calculated is
+> shared among all TSC zones.
+>
+> Move the Tj_T constant to the shared private data structure instead of
+> duplicating it in each TSC private data. This requires adding a pointer
+> to the shared data to the TSC private data structure. This back pointer
+> make it easier to further rework the temperature conversion logic.
+>
+> Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.=
+se>
+> ---
+> * Changes since v1
+> - Insert tj_t member in struct rcar_gen3_thermal_priv in reverse
+>   Christmas-tree ordering.
+> - Only calculate Tj_T once, instead of once for each TSC zone.
+> - Fix misspelling in commit message.
 
-However, there is a requirement to enable some NoC interface
-clocks for accessing the peripheral controllers present on
-these NoCs. Though exposing these as normal clocks would work,
-having a minimalistic interconnect driver to handle these clocks
-would make it consistent with other Qualcomm platforms resulting
-in common code paths. This is similar to msm8996-cbf's usage of
-icc-clk framework.
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
----
-v9: Remove HWS_DATA macro
-v8: Explicitly set master and slave ids
-v7: Restore clk_get
-v6: first_id -> icc_first_node_id
-    Remove clock get so that the peripheral that uses the clock
-    can do the clock get
-v5: Split changes in common.c to separate patch
-    Fix error handling
-    Use devm_icc_clk_register instead of icc_clk_register
-v4: Use clk_hw instead of indices
-    Do icc register in qcom_cc_probe() call stream
-    Add icc clock info to qcom_cc_desc structure
-v3: Use indexed identifiers here to avoid confusion
-    Fix error messages and move to common.c
-v2: Move DTS to separate patch
-    Update commit log
-    Auto select CONFIG_INTERCONNECT & CONFIG_INTERCONNECT_CLK to fix build error
----
- drivers/clk/qcom/common.c | 35 ++++++++++++++++++++++++++++++++++-
- drivers/clk/qcom/common.h |  9 +++++++++
- 2 files changed, 43 insertions(+), 1 deletion(-)
+Gr{oetje,eeting}s,
 
-diff --git a/drivers/clk/qcom/common.c b/drivers/clk/qcom/common.c
-index 75f09e6e057e..a6410b1828ca 100644
---- a/drivers/clk/qcom/common.c
-+++ b/drivers/clk/qcom/common.c
-@@ -8,6 +8,7 @@
- #include <linux/regmap.h>
- #include <linux/platform_device.h>
- #include <linux/clk-provider.h>
-+#include <linux/interconnect-clk.h>
- #include <linux/reset-controller.h>
- #include <linux/of.h>
- 
-@@ -234,6 +235,38 @@ static struct clk_hw *qcom_cc_clk_hw_get(struct of_phandle_args *clkspec,
- 	return cc->rclks[idx] ? &cc->rclks[idx]->hw : NULL;
- }
- 
-+static int qcom_cc_icc_register(struct device *dev,
-+				const struct qcom_cc_desc *desc)
-+{
-+	struct icc_clk_data *icd;
-+	struct clk_hw *hws;
-+	int i;
-+
-+	if (!IS_ENABLED(CONFIG_INTERCONNECT_CLK))
-+		return 0;
-+
-+	if (!desc->icc_hws)
-+		return 0;
-+
-+	icd = devm_kcalloc(dev, desc->num_icc_hws, sizeof(*icd), GFP_KERNEL);
-+	if (!icd)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < desc->num_icc_hws; i++) {
-+		icd[i].master_id = desc->icc_hws[i].master_id;
-+		icd[i].slave_id = desc->icc_hws[i].slave_id;
-+		hws = &desc->clks[desc->icc_hws[i].clk_id]->hw;
-+		icd[i].clk = devm_clk_hw_get_clk(dev, hws, "icc");
-+		if (!icd[i].clk)
-+			return dev_err_probe(dev, -ENOENT,
-+					     "(%d) clock entry is null\n", i);
-+		icd[i].name = clk_hw_get_name(hws);
-+	}
-+
-+	return devm_icc_clk_register(dev, desc->icc_first_node_id,
-+						     desc->num_icc_hws, icd);
-+}
-+
- int qcom_cc_really_probe(struct platform_device *pdev,
- 			 const struct qcom_cc_desc *desc, struct regmap *regmap)
- {
-@@ -303,7 +336,7 @@ int qcom_cc_really_probe(struct platform_device *pdev,
- 	if (ret)
- 		return ret;
- 
--	return 0;
-+	return qcom_cc_icc_register(dev, desc);
- }
- EXPORT_SYMBOL_GPL(qcom_cc_really_probe);
- 
-diff --git a/drivers/clk/qcom/common.h b/drivers/clk/qcom/common.h
-index 9c8f7b798d9f..ea96b2ca3cac 100644
---- a/drivers/clk/qcom/common.h
-+++ b/drivers/clk/qcom/common.h
-@@ -19,6 +19,12 @@ struct clk_hw;
- #define PLL_VOTE_FSM_ENA	BIT(20)
- #define PLL_VOTE_FSM_RESET	BIT(21)
- 
-+struct qcom_icc_hws_data {
-+	int master_id;
-+	int slave_id;
-+	int clk_id;
-+};
-+
- struct qcom_cc_desc {
- 	const struct regmap_config *config;
- 	struct clk_regmap **clks;
-@@ -29,6 +35,9 @@ struct qcom_cc_desc {
- 	size_t num_gdscs;
- 	struct clk_hw **clk_hws;
- 	size_t num_clk_hws;
-+	struct qcom_icc_hws_data *icc_hws;
-+	size_t num_icc_hws;
-+	unsigned int icc_first_node_id;
- };
- 
- /**
--- 
-2.34.1
+                        Geert
 
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
