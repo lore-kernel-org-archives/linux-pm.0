@@ -1,59 +1,59 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7724315357B
-	for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2024 16:12:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 066BE153581
+	for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2024 16:20:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713802348; cv=none; b=tfxDWhdsIU3pGpCjz5iu0BoYJoDQ1CgY2w9+LeUttIMiZ47LJvtWlZOJTD7pwELLAr6Ub19mF6zxSsNouRkng1HyJJ6zoi7Bt9L08/5gdk0/tL965/J1Tioov8fSNTIgq0aGJmpUAgkxp2vc80p1w+n8nx3T6oguW7LG1TBcc6k=
+	t=1713802843; cv=none; b=I3Xy3oJjEigCCN6iH2lhRBMTx4Rj7gjjvrzmxt/SAdeAYVedVtfrUos7ICgpnn5muxYf7ks04bvmyqVwFVsak9NERuYreBFi5qdDsZQZLCLYKDHJK2PoRyzD5No9ES6D6Pr011ZtczUwAyEpezikkAoXuo7d/km93P7yTAtcaUw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713802348; c=relaxed/simple;
-	bh=pyespoIenYOvwr+vFAWDKTKpySEFKhKzEmeVBB6ayjU=;
+	s=arc-20240116; t=1713802843; c=relaxed/simple;
+	bh=1RVmdqoNjPvhMddsjlY+Xa3pKKSVN/+WNm0VO+799Qw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=d7+h+58kMiMA9T1FTz2mjBRWIoSxDlUqEdKQgcqcgnd9vopgZYW62pEqfAqbNKiiCYxllWKBy+LpxsIFHtQhXamJbK3/MnZDo7NPglPkyW1FJfVvem9O9QzFMjPPUo9DdC+z9FnVXOH+ksGbRsYpAn8tidVpatWtkKEHJm4cj9E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=gvPQGwEr; arc=none smtp.client-ip=209.85.128.42
+	 In-Reply-To:Content-Type; b=tn/g2ipEd9sybhqIDsnPhFYOIreujv/eQwWUUllkl8l9FE21N4tObIObvoPP1jxsm258eLnvIF2fAqWlYbuXJG2UC6/o7do8MdypJpEzOapsfbKAhyBOSwOlA18Ck3Iypw6/P6huWyV9WsJpCwuldb9HpBRHIVIbjCfWGuHTHWs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=qMxp9/Cb; arc=none smtp.client-ip=209.85.128.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gvPQGwEr"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-418c2bf2f55so31283085e9.2
-        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2024 09:12:26 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qMxp9/Cb"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-41a4f291f60so9096965e9.3
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2024 09:20:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1713802345; x=1714407145; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1713802840; x=1714407640; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=PnFFhvINgBkGoeGxt72lLRxIj0jus3I5w0uDFrtanEw=;
-        b=gvPQGwErFwllCkbn3pU4ylHAktTYu3QKFDkqJT/+hHGLEgFPUxS/nPxMXCuhS6pILp
-         o4z5UHtjnhaT8G9kdcaHEq583d1OgaqoTit0w3t4kzCFF3tq3NyCuZRkIo57EmPIDVcn
-         OUzDG5WecjuzyvO6WnpDVU3COv/rNFRiGFS+1rpdYyYPZYcNrDLlweiX8olkJWbDaYR4
-         KPUOr1V33UWn+2MxNz96gQWrbw6Ej7qXhXm4eewwxTEiSRAk107q06gVs9NMVa5Q+VEr
-         6u/5grM9tzGlrEk76WQROD1v8ToIVdoP50c1jeUP4SFfANIuHmjLsua2vx3tnRAFKKh5
-         0SlA==
+        bh=X18imHTv2CCCHmqGW/+6bF3p/ote05AGlg/ZRuYja/w=;
+        b=qMxp9/CbAifSXDricfddLb4xc+2kKW/TS88uxuopIwdRY4SrCJtDkP9Y8H25LXKW+x
+         yw2y/BF29LAFcxC19zM+Yl4dgV10e9dr7qRJBsnBEL9l9o/nMjMzcZix1wE497VJklTY
+         LEnObtGe5xxxGZDXBDvfi3Sa3QPwSylJ2719zDv3nkYlVBGGakuv/q+Os5nMNlVUeb3n
+         jZZsxnB5SocaCSedfDFmcMwUT1E7xE69mhhuCTMEdngmbrQ/6XdYFI5xf+UmprWtKbdc
+         yi/sdBTBvVE9vvgTlNHd8t0fDYoJErPAh/zOsyK48WPrcn9WCrfFE/KqXC6+HawJ0Vim
+         xGfQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713802345; x=1714407145;
+        d=1e100.net; s=20230601; t=1713802840; x=1714407640;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=PnFFhvINgBkGoeGxt72lLRxIj0jus3I5w0uDFrtanEw=;
-        b=neIetN2WRk1jlW0jZ65gaxth6AZQfxqzb7HWrzkFsSgcWUCvh9rl7zNbFP005K0wOZ
-         ORqLuwwVbKkiZqpj3TkvSodM238rw9i0F6qMdxQRq8HJN+qyyXuHcNmTo8T+dDVfNapT
-         labnDA6lrRgRLokaOAzZ8jpV/xfuHZRosRQ2FKx86xjrbHALWl9qCjyg2vtelHLqBulG
-         z6VvqcnEksw/jtHzI45M3UZ0Ldc6z63GuswKUxBfNRHVObHInbD/yiQdB+aGEGnbEqyA
-         Q2B3VDxFJIIt6Gwo/TqLzIDodyKnykeCw/6ad6xma2a36Q7PsIVCmDa40dfkIEgvee83
-         kq0A==
-X-Forwarded-Encrypted: i=1; AJvYcCXunXCctvWFYAg1I1KoLFkWZpft8u9mPpPdylMYBKisFzlESQ2EYtYPokQ/GVa8EfZwpoU2v6klQHaL/TI//FnPlCDBmWL+dQo=
-X-Gm-Message-State: AOJu0Yzd4eqGqqHdlijxxEiM9i0cdP4dQPCzVjJ/BKgM74Tog7+0mzjS
-	fFngECCSS1zLZdruDJtqDbBbdD0iOQ5G7AuhfQRk5V0poQ4seXAYnkD/Kv7ZJQQ=
-X-Google-Smtp-Source: AGHT+IHr5ZN8Vuq2/rI8TUkOzEMqB0i773L+TnbVRnQcQznM1VMn2gKZ7tsYNkoxi+P2H8/Ew24caA==
-X-Received: by 2002:a05:600c:1547:b0:418:e08c:817 with SMTP id f7-20020a05600c154700b00418e08c0817mr7012270wmg.32.1713802344362;
-        Mon, 22 Apr 2024 09:12:24 -0700 (PDT)
+        bh=X18imHTv2CCCHmqGW/+6bF3p/ote05AGlg/ZRuYja/w=;
+        b=vIl+0lYnRZ6foPs4IBlh5iyMfIdKyLS7IRpHl3X9MrNCLJDkDPht85PMQYhXswL+2Y
+         Vpa1JXYQzBazgWEJ8hMkvkAJVKOu2n0j7/IbiwGBstd9/0NZhBfkFypPOL1u6DnAaQnn
+         xcXmUExKRas33v9d+vgC2xwGhTpLPa42B2YTuvewi7rGcf17C5MZVAYHFNOghCWNuPXC
+         KNBJjI9cx2ZxC75TkFb+AgMPqZkxrKL4eIWPeQKqYq5h3bO2AAZcZKbyMzZjFUK7B+0R
+         cZbwwI2XULgnoX5A/YzPo1hKuwiDgvv8QsL9XXHEfQkp0TtQdJLOLlE/Eu1ZNBlvfxLM
+         LGYg==
+X-Forwarded-Encrypted: i=1; AJvYcCUvfLYzSJJz/+mht+F3q0ECx1RjTj4NlB7OQLjqVKM9vLRzTydMp3GPN5t6HbYG/OJzsIvUzfV/9v7ICJ8UutgP+yxKcBLm2Q8=
+X-Gm-Message-State: AOJu0Yw6buLa2lWbwMsPQb04/+3bQNXBr7XBtprTNjE8/+a/6JDrR02b
+	uDPyKT7cWMk2TKm8Ejg/3HwYg+yoeAq+J374T1it0EGPhRoTLD+v6AmZ8kZ2wnM=
+X-Google-Smtp-Source: AGHT+IHPk9adqP6eJkbR/7Nl+/mXtpqukJJpRa60kXcBIC6/iAGnc2ywKkthA/KqVFBeuTaE/5dV8g==
+X-Received: by 2002:a05:600c:3d8f:b0:41a:9cb2:752e with SMTP id bi15-20020a05600c3d8f00b0041a9cb2752emr527200wmb.27.1713802840285;
+        Mon, 22 Apr 2024 09:20:40 -0700 (PDT)
 Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.googlemail.com with ESMTPSA id v3-20020adfa1c3000000b0034b61423d54sm22412wrv.106.2024.04.22.09.12.23
+        by smtp.googlemail.com with ESMTPSA id hg12-20020a05600c538c00b00415dfa709dasm17032958wmb.15.2024.04.22.09.20.39
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 22 Apr 2024 09:12:24 -0700 (PDT)
-Message-ID: <2acea3c3-5c8f-4f3c-a275-743c3fbfd2e6@linaro.org>
-Date: Mon, 22 Apr 2024 18:12:23 +0200
+        Mon, 22 Apr 2024 09:20:39 -0700 (PDT)
+Message-ID: <b61cf974-8ab8-461f-9318-d5fc31aa59e7@linaro.org>
+Date: Mon, 22 Apr 2024 18:20:38 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,45 +61,37 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 0/3] thermal/debugfs: Fix and clean up trip point
- statistics updates
+Subject: Re: [PATCH v2] drivers: thermal: tsens: Fix null pointer dereference
 Content-Language: en-US
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, "Rafael J. Wysocki"
- <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
- Linux PM <linux-pm@vger.kernel.org>
-References: <4918025.31r3eYUQgx@kreacher>
- <3a8f1978-c5df-40d6-91ca-276431bb01e1@arm.com>
- <e8193798-4c02-423a-a9d8-63d29ebd7faa@linaro.org>
- <CAJZ5v0i2pvTLwj7jTzwhoQMap_cvjvNnK2Beuje2COo+F4hBzA@mail.gmail.com>
+To: Aleksandr Mishin <amishin@t-argos.ru>,
+ Christian Marangi <ansuelsmth@gmail.com>
+Cc: Amit Kucheria <amitk@kernel.org>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konrad.dybcio@linaro.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ lvc-project@linuxtesting.org
+References: <20240411114021.12203-1-amishin@t-argos.ru>
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <CAJZ5v0i2pvTLwj7jTzwhoQMap_cvjvNnK2Beuje2COo+F4hBzA@mail.gmail.com>
+In-Reply-To: <20240411114021.12203-1-amishin@t-argos.ru>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-On 22/04/2024 17:48, Rafael J. Wysocki wrote:
-> On Mon, Apr 22, 2024 at 5:34 PM Daniel Lezcano
-
-[ ... ]
-
->> or we should expect at least the residency to be showed even if the
->> mitigation state is not closed ?
+On 11/04/2024 13:40, Aleksandr Mishin wrote:
+> compute_intercept_slope() is called from calibrate_8960() (in tsens-8960.c)
+> as compute_intercept_slope(priv, p1, NULL, ONE_PT_CALIB) which lead to null
+> pointer dereference (if DEBUG or DYNAMIC_DEBUG set).
+> Fix this bug by adding null pointer check.
 > 
-> Well, in fact the device has already been in that state for some time
-> and the mitigation can continue for a while.
+> Found by Linux Verification Center (linuxtesting.org) with SVACE.
+> 
+> Fixes: dfc1193d4dbd ("thermal/drivers/tsens: Replace custom 8960 apis with generic apis")
+> Signed-off-by: Aleksandr Mishin <amishin@t-argos.ru>
+> ---
 
-Yes, but when to update the residency time ?
-
-When we cross a trip point point ?
-
-or
-
-When we read the information ?
-
-The former is what we are currently doing AFAIR and the latter must add 
-the delta between the last update and the current time for the current 
-state, right ?
-
+Applied, thanks
 
 -- 
 <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
