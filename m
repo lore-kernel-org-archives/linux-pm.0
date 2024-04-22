@@ -1,42 +1,43 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EEB2176FC3;
-	Mon, 22 Apr 2024 23:57:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EEF61586CB;
+	Mon, 22 Apr 2024 23:57:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713830252; cv=none; b=UTiahN8wlAvv73FkCsXSW2jsU7fVw/urBNuokV7ydV/i48jsP5cwbp4BTabVnaQh1iyj6uA2gsIXLdOnuhg3HbTbsRySold/OOPklS/nesHkOttq98MB+wRaLvIRfnxPbEr+JLMw061dU42H/BQXnRJdSPMgjx1xUI31iNlEg3I=
+	t=1713830272; cv=none; b=WnX/mFugaP8wmkEBXJrM1XX64DHM+3TziFsyS3Zna6O7N/QANC83+eqAcdkWLwza+5a6xobfNLJRDrm1FeEw1nwLEIDJm9IGEWkfoRyRuRpGIxw8W1urQUvutiBzlcfHvrX2badHzAeFYesD86kofn44Fnkjpu/pOsLKvKd2SvM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713830252; c=relaxed/simple;
-	bh=Ahr8/zYK+zZs32yVTptNcG2uRJYuvk3bfshcRfebxmo=;
+	s=arc-20240116; t=1713830272; c=relaxed/simple;
+	bh=3Gq8cBSaJ1JSVPhkNb8fPVSOPXXQ3PW7K3PXZdpUft0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=S/nCJshCNfJ2tPHWK72tcYWlmBFavsftYh1srEX6SzuxL67BRrV+zDXmex3jUmFqKxvkJe/6SFe6AcAPMB58i0FRdTOkKFdpBHyNsvAAfjWKLDS+QM8JkL3cAIgr0sudNa44w18YUHoNGznGqzGIoL+7tefVgwHnq7DIZ5lvX34=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PfoiByLh; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=G4OLdtiribRNEagTmoS2lAGhtULbgRGgPSBiYYM+pYO0/Pil/IKOXTMQlTq3M7lkaH/H2hxNqBz0WGfEP0H0ODm6qH0F88nJSsEQh4Zp5FcgsKUVtZYtt53+5aF/8yWPj/8kKO7Uc5K7ok/6ezQ7rqaCvMbvdNHeAXqGWz7qXNc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FBlMio5y; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PfoiByLh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA6AEC2BD11;
-	Mon, 22 Apr 2024 23:57:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FBlMio5y"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25CDCC113CC;
+	Mon, 22 Apr 2024 23:57:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713830250;
-	bh=Ahr8/zYK+zZs32yVTptNcG2uRJYuvk3bfshcRfebxmo=;
+	s=k20201202; t=1713830272;
+	bh=3Gq8cBSaJ1JSVPhkNb8fPVSOPXXQ3PW7K3PXZdpUft0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=PfoiByLhbgs7r76GR5H8cYdNJj7VpR8LBXFxRYj2FwmNdv3+9ikdl/B1p3g7RDVL2
-	 RzF7owp//zxi3bCS1x6qKMf2qcsS4ZzvQCtVFVRvN6TF7SIq+8o5i8HvAA1vZMm617
-	 vxHI47BIuggHf/b8yE80nqqD3ZN+T+/HD6ePYLy2Y/xXlEQ+1338pX8QxOCxw4UKqo
-	 inSQOsDstcBgU8DPH8KhBb91HL8yqTCMc+fXqasFl79njdLT4nO+g0VpdwEIqAzDAt
-	 PE3j0DPoH9HQChbFI0fQK6U5n+gvD1D4aZ34WorbsM9Cqo1+OuDRppN/Rc1fkV9xjN
-	 vQOxyZgrUqOBQ==
+	b=FBlMio5yWR+Ow59Gwya1eRL4dfe4JMxjNEtn9Dvs97PavH0KEn7GMw1q3YvIA7pjT
+	 6w6LFz41R1YGDhkPp18ybu1h0Sp16LpI26gzLQIVKjmo6Iu0CxMF27S0hEGtyDJlvJ
+	 k5wIOnVAS5rZY2jXJt+fEFvG0fH4n90Wggr8wPKaZ5jjnCxZ7k8AE/esl6BFV1YVBX
+	 8pyT5id49jBsFF/TSoVpzP7ti3dDAe00gKBoyi6Qv3/OVxPE1Oqf3dUXP+C9S/m5R7
+	 /hGrbBD7UUs8ZtUVcA4ReIlTzAwmvhbo9yPs/g8L/D9wsbDukkGPXuEu6TW6EpqL9B
+	 KhLqhIUFsOSgQ==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Cc: Peng Liu <liupeng17@lenovo.com>,
+Cc: Justin Ernst <justin.ernst@hpe.com>,
+	Thomas Renninger <trenn@suse.de>,
 	Len Brown <len.brown@intel.com>,
 	Sasha Levin <sashal@kernel.org>,
 	lenb@kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 03/19] tools/power turbostat: Fix Bzy_MHz documentation typo
-Date: Mon, 22 Apr 2024 19:18:17 -0400
-Message-ID: <20240422231845.1607921-3-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 13/19] tools/power/turbostat: Fix uncore frequency file string
+Date: Mon, 22 Apr 2024 19:18:27 -0400
+Message-ID: <20240422231845.1607921-13-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240422231845.1607921-1-sashal@kernel.org>
 References: <20240422231845.1607921-1-sashal@kernel.org>
@@ -51,33 +52,51 @@ X-Patchwork-Hint: Ignore
 X-stable-base: Linux 6.1.87
 Content-Transfer-Encoding: 8bit
 
-From: Peng Liu <liupeng17@lenovo.com>
+From: Justin Ernst <justin.ernst@hpe.com>
 
-[ Upstream commit 0b13410b52c4636aacb6964a4253a797c0fa0d16 ]
+[ Upstream commit 60add818ab2543b7e4f2bfeaacf2504743c1eb50 ]
 
-The code calculates Bzy_MHz by multiplying TSC_delta * APERF_delta/MPERF_delta
-The man page erroneously showed that TSC_delta was divided.
+Running turbostat on a 16 socket HPE Scale-up Compute 3200 (SapphireRapids) fails with:
+turbostat: /sys/devices/system/cpu/intel_uncore_frequency/package_010_die_00/current_freq_khz: open failed: No such file or directory
 
-Signed-off-by: Peng Liu <liupeng17@lenovo.com>
+We observe the sysfs uncore frequency directories named:
+...
+package_09_die_00/
+package_10_die_00/
+package_11_die_00/
+...
+package_15_die_00/
+
+The culprit is an incorrect sprintf format string "package_0%d_die_0%d" used
+with each instance of reading uncore frequency files. uncore-frequency-common.c
+creates the sysfs directory with the format "package_%02d_die_%02d". Once the
+package value reaches double digits, the formats diverge.
+
+Change each instance of "package_0%d_die_0%d" to "package_%02d_die_%02d".
+
+[lenb: deleted the probe part of this patch, as it was already fixed]
+
+Signed-off-by: Justin Ernst <justin.ernst@hpe.com>
+Reviewed-by: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- tools/power/x86/turbostat/turbostat.8 | 2 +-
+ tools/power/x86/turbostat/turbostat.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index 3e1a4c4be001a..7112d4732d287 100644
---- a/tools/power/x86/turbostat/turbostat.8
-+++ b/tools/power/x86/turbostat/turbostat.8
-@@ -370,7 +370,7 @@ below the processor's base frequency.
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index a674500e7e63d..a41bad8e653bb 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -1969,7 +1969,7 @@ unsigned long long get_uncore_mhz(int package, int die)
+ {
+ 	char path[128];
  
- Busy% = MPERF_delta/TSC_delta
+-	sprintf(path, "/sys/devices/system/cpu/intel_uncore_frequency/package_0%d_die_0%d/current_freq_khz", package,
++	sprintf(path, "/sys/devices/system/cpu/intel_uncore_frequency/package_%02d_die_%02d/current_freq_khz", package,
+ 		die);
  
--Bzy_MHz = TSC_delta/APERF_delta/MPERF_delta/measurement_interval
-+Bzy_MHz = TSC_delta*APERF_delta/MPERF_delta/measurement_interval
- 
- Note that these calculations depend on TSC_delta, so they
- are not reliable during intervals when TSC_MHz is not running at the base frequency.
+ 	return (snapshot_sysfs_counter(path) / 1000);
 -- 
 2.43.0
 
