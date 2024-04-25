@@ -1,102 +1,76 @@
-Received: from mail-40131.protonmail.ch (mail-40131.protonmail.ch [185.70.40.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 881B212B156;
-	Thu, 25 Apr 2024 15:51:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.40.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E01C2D60A
+	for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2024 16:21:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714060302; cv=none; b=i7BcfNXO5DdZPZ4QGTtyvHrrBiZwbydFlHvZBr+Zcb1ovNWBB43mnbNfFhvpwjsNDoh+XSayEvt7ibMdDl0gWa/rsN5lo1U30NjAe32ZR2Xftag1NwyajrSyrtUbwcBkml447tQ8JODz4gluk5DZ3rkh6VZzskQtEmV016xFI9M=
+	t=1714062065; cv=none; b=qp7BwbAxcTOLtrqGCcPqLLOnOzed2jStKMPEFQUjVjSQXfzG2kGM2Cd+c1tIpwmW8MMHZ/ZWvNk3aOgY3bs+rv+KHJqAcKIv8Bq5b3LI7z8FVFoNMRcv1GXpL90VVTC5aREJMz195pv3BParf0EwZJ66wFMPmu5LZqXZEQsK9xI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714060302; c=relaxed/simple;
-	bh=JnNuiwEjp88T0SxNSyjjxPwL8xwkm7/welwhj9Mm3fU=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ju87+G1RaxgroRRaTjWTQj3Gm+Du0kK6HvQQEAwS6adZaax7+E9bAkmm2jfqtIGmtXytisg4n2ojWg2ZNiUNTHcB2Rlou+HbK39fMgoKk6ctXkXHjBc8olMQ72gx4qSwPESrdClP65A6qEmgkV3ohPde8PgGex6UeQUcuYq7tcw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=Mzei7UZm; arc=none smtp.client-ip=185.70.40.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
+	s=arc-20240116; t=1714062065; c=relaxed/simple;
+	bh=E+VKUdaq0FUCZfeiJyLi3Y4KMq2RJPywiHyAZXQ7FQA=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=RRgSJEv5jOAyoUc5BEJmF4hs0UDcPpH87tfp4Nr1aUNmlrsIMh5vUE77JeKIkaX4nV4oHR9Rg50exhSMDEca3wi5PObHRTbwoC9/qJmFJ/C/jFZtqHz14KVjfXRAcEpAN5QENzSvZvGJReoFg0L/a0kH6CV3GFD2p2u/LXKYNPo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IAzpVdfb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="Mzei7UZm"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
-	s=protonmail; t=1714060292; x=1714319492;
-	bh=kVfecRLul1bWESph5bgI+QIEjsAZi68hrnU3YEYNhsU=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=Mzei7UZmRTxq/ydowLnAD+P4ThggwXzpEPGgfRubUFcYtbOKJnxjGIMfuem/SQvIM
-	 +yHk5RLEQPGxp+XREUAiXeGMGWjrGprT0VJ1jj3MH2/b55hvKujgkxco0T7WQlpbLl
-	 yPxwxkPq84udniaYcvemwXAOle5lSAnfzBosSNAQMUWpgB6Oo1uOvo+sd1txeZ8Lo0
-	 qlw+gEwwul2Yo1FzC1OSiwBt1AO7mDOp2atcdcPijyM+M4Cc/lpspQTR5Z11ul9dZS
-	 I4JOWa/3ugKXcZuGKnhA+0u1LyjFwzPZr0Zwj4vKDZ4TvjMVk6Odt2wCipuVBPI8PT
-	 GgiMeTOM3/kZw==
-Date: Thu, 25 Apr 2024 15:51:29 +0000
-To: Viresh Kumar <viresh.kumar@linaro.org>
-From: Benno Lossin <benno.lossin@proton.me>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, Wedson Almeida Filho <wedsonaf@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, =?utf-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, Andreas Hindborg <a.hindborg@samsung.com>, Alice Ryhl <aliceryhl@google.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, rust-for-linux@vger.kernel.org, Manos Pitsidianakis <manos.pitsidianakis@linaro.org>, Erik Schilling <erik.schilling@linaro.org>, =?utf-8?Q?Alex_Benn=C3=A9e?= <alex.bennee@linaro.org>, Joakim Bech <joakim.bech@linaro.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 1/3] rust: Add bindings for OPP framework
-Message-ID: <5a6542d6-4644-4083-99e4-73de7038fe92@proton.me>
-In-Reply-To: <20240422102415.xvmuja6bdfxgl4pv@vireshk-i7>
-References: <cover.1712314032.git.viresh.kumar@linaro.org> <06bb914eae00671a69b393bf86bb01ddec86c16f.1712314032.git.viresh.kumar@linaro.org> <ff6c7d5e-d6e9-4331-b8cc-eab139160e59@proton.me> <20240422102415.xvmuja6bdfxgl4pv@vireshk-i7>
-Feedback-ID: 71780778:user:proton
-X-Pm-Message-ID: 50e695419f6a03950bbc639587da801f21c5bfea
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IAzpVdfb"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id AB53FC113CE
+	for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2024 16:21:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1714062064;
+	bh=E+VKUdaq0FUCZfeiJyLi3Y4KMq2RJPywiHyAZXQ7FQA=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=IAzpVdfbE0ge3PHT7/Gg+pwrkh2iwztILLopzgPQ1bLq9kPzjPt4epEGZbq63pmkl
+	 Pg3PsFnjxjLXSpFGHKDOL/PbdaqiTGgaDAgAqmMNt7v/wtPJJkIQqymmupxd+umxpl
+	 dkiKORqMBAqzQuDyKhR2NX7BpBdzltte4qBxH4tnGsXCbo2klRR7b7W9D3rAD7xkCB
+	 x48a3350GIXFySFOMFDDFfpsPloXldHd4GOOburbNaH0KhUv4ftp4RplA2VvwbjmSa
+	 PiE2DDu91pngm3QdMTDKxW0vlAqDBoe9kLkGQklwi5PhBtEo8sTcADnJFxe/sv7M75
+	 ULCTN3A2wlEJA==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 9FE66C433E5; Thu, 25 Apr 2024 16:21:04 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 218759] 6.9-rc kernels - with Ryzen 7840HS CPU single core
+ never boosts to max frequency
+Date: Thu, 25 Apr 2024 16:21:04 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: mario.limonciello@amd.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-218759-137361-lYhOmQQobj@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-218759-137361@https.bugzilla.kernel.org/>
+References: <bug-218759-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
 
-On 22.04.24 12:24, Viresh Kumar wrote:
-> Thanks for the review Benno. I was waiting for more review comments to
-> come in and hence didn't reply earlier with an update.
->=20
-> On 07-04-24, 09:54, Benno Lossin wrote:
->> On 05.04.24 13:09, Viresh Kumar wrote:
->>> +    clk_names: Option<Pin<Vec<CString>>>,
->>
->> Why are you using `Pin<Vec<_>>`? The vector may reallocate the backing
->> storage at any point in time.
->=20
->>> +    /// Sets the configuration with the OPP core.
->>> +    pub fn set(&mut self, dev: &Device) -> Result<()> {
->>> +        // Already configured.
->>> +        if self.token.is_some() {
->>
->> Why does the config hold onto this token? Would it make sense to consume
->> the config and return a `Handle` or `Token` abstraction? Then you don't
->> need to check if the config has been "used" before.
->=20
->>> +#[repr(transparent)]
->>> +pub struct OPP(*mut bindings::dev_pm_opp);
->>
->> I think you should use the `ARef` pattern instead:
->>
->>       #[repr(transparent)]
->>       pub struct OPP(Opaque<bindings::dev_pm_opp>);
->>
->>       unsafe impl AlwaysRefCounted for OPP {
->>           // ...
->>       }
->>
->> Then you can use `ARef<OPP>` everywhere you use `OPP` currently.
->=20
-> All these comments look good to me. Updated the code with them (not
-> reposting them for now)
+https://bugzilla.kernel.org/show_bug.cgi?id=3D218759
 
-I currently do not have a lot of time, so I will re-review it when you
-post a new version.
+--- Comment #8 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
+Can you please try with preferred core disabled?
 
-> -------------------------8<-------------------------
->=20
->  rust/bindings/bindings_helper.h |   1 +
->  rust/kernel/lib.rs              |   2 +
->  rust/kernel/opp.rs              | 888 ++++++++++++++++++++++++++++++++
-
-One other nice thing that you could do would be to split this patch into
-multiple smaller ones. That makes understanding the pieces a lot easier.
+amd_prefcore=3Ddisable
 
 --=20
-Cheers,
-Benno
+You may reply to this email to add a comment.
 
+You are receiving this mail because:
+You are the assignee for the bug.=
