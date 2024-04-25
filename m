@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE0572943C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E18E929D05
 	for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2024 03:36:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714016212; cv=none; b=KFuJjBTdFRmVgLe9wRE9NOd/8EkaIH9FM4zSBNXktqbGITeMg2C1nKtYLMiZlK2/b+VkjYqD6RVSwnGry5bQi4WXRJ3qGAj4eK39I/LqKjUn0y36wxoyZFKEQqLvGvhuDNmdEbXC4vlYJeGQNzRZSEL+sG6/CYixdviHWNgr7yU=
+	t=1714016213; cv=none; b=D2zE/9KQRblTE5AvQvwvkNF2IfRScaLqvcOm7r3v4W5ETkHmONp3GyGB8guArysZLhY6GEMkIa41k6+95vMlaLBm09YEJjs60K2IkM8LSAP3sf73XnkTmgQgHewgfgq6iSLUvvY61bPpnxHgPabYHg83TNKcT+HWaEBuiV1/fv0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714016212; c=relaxed/simple;
-	bh=Yb8YcX2X6xucKUl0217/JKy+FombzZRwFIbe/sVg2yY=;
+	s=arc-20240116; t=1714016213; c=relaxed/simple;
+	bh=aGnlyO1Wu0uBf/TTxRsA62ODOxRQ0Jxa03wOOkVqzOY=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=QBUk/OKSIyUN/g1Yl42kCljvFUozUffP1NjRHVuji5dquvujDLd6fwQB/u8W5xgXfhDkzk9rmu3yNMXLaAVtSrDhwtg5dkymh+NLXAjzaa33+t00ckDf4iVXBDcSPZo6vJrJIiNUlxPI3UQCn5hTQ362aooZJyCOeTjUM8ZGpwU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XwK0NTxB; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:MIME-Version; b=mXcuX4VZdDDyDf1T4vsOZ283cXTOz0wwL/c+hts+o8N1+oSl8HOY6LeMYV8o3skSwqYGQTUWf0bJdtWXAVVvAhvxD+O1TB99f8XDbTWLtNV7SS8yYt/wWj0n4XMB4J5CA0ZnK9om4aQAyPzUlEQkpWsH4Kq6G6g2fkfpWaoi88k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kM6crt5Z; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XwK0NTxB"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 5F069C2BD10
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kM6crt5Z"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 76EC2C32783
 	for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2024 03:36:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1714016212;
-	bh=Yb8YcX2X6xucKUl0217/JKy+FombzZRwFIbe/sVg2yY=;
+	bh=aGnlyO1Wu0uBf/TTxRsA62ODOxRQ0Jxa03wOOkVqzOY=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=XwK0NTxBi6H8KD3HPrrn0PGCLcGAtNthG30uODA4AkyrFvGAs14yRNcY8olhBRcPZ
-	 scLC9usiNhVR9fe43rPlmy8e+oAsi7PRRL8ISiKJpLpeq+NKoGPpnYTQE+4+l1SblF
-	 WFge7pD8ENgCxSGmTkamd+osTkCC6n1xyz58J29XoP5B9I3wKO/rV5e8e751qOitMy
-	 Pdfy9Bf68EbgLhWcq7ofwpDdDutink82/4NUMho/RFUV4gLVVkzGp8ym6tVOA3tGNa
-	 CKMgjQqHRUcmTdp721quVJK30Hezb44VJirVFIwpn2QfFSeXDnEJD7+jbKmiK6qO6r
-	 P7iZ1S5UC3Bzg==
+	b=kM6crt5ZEoc0W48oRkbMenODd08aIK6EW+ugnkafggeFFXCXUanyvtewxmHdFf2lV
+	 c5ISF9Mk61PM1CzYFMzEKNAwt2z/1xdyaskkRNQwH3U1ZxKkTnrYCL47MuCR7P3GdQ
+	 pGpvI0YyhXJESYqtRjxh4LBWqELkRUBtvLFtoLW0fDOrZFihVMoz9+p1PqqPbsSqGJ
+	 IlFUSrPVeye512MgjbaaoqXp0d1gh4viCXQ+YqOXS8+83bnxnqdFZm5VbL204nWoC2
+	 m9PkExhc3mSwu4wXcLtpOo7eA+MJ6VOwcol53q3nq6Jmpgm8ldAHE5ZkwUBLCd136u
+	 FNL6W/Z9WdOAg==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 413A1C04222; Thu, 25 Apr 2024 03:36:52 +0000 (UTC)
+	id 6B2D3C433E3; Thu, 25 Apr 2024 03:36:52 +0000 (UTC)
 From: bugzilla-daemon@kernel.org
 To: linux-pm@vger.kernel.org
 Subject: [Bug 218705] amd_pstate fails to load on AMD 5950x with Asus ROG
  CROSSHAIR VIII DARK HERO x570
-Date: Thu, 25 Apr 2024 03:36:51 +0000
+Date: Thu, 25 Apr 2024 03:36:52 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -48,7 +48,7 @@ X-Bugzilla-Priority: P3
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-218705-137361-08aX5RSJ6j@https.bugzilla.kernel.org/>
+Message-ID: <bug-218705-137361-KbGvoekWGI@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-218705-137361@https.bugzilla.kernel.org/>
 References: <bug-218705-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -65,6 +65,24 @@ MIME-Version: 1.0
 https://bugzilla.kernel.org/show_bug.cgi?id=3D218705
 
 --- Comment #6 from Perry Yuan(AMD) (Perry.Yuan@amd.com) ---
+I have confirmed that the CPPC capabilities are valid to enable pstate driv=
+er,
+
+1) sudo nano /etc/default/grub
+2) add ``amd_pstate.dyndbg=3D+p`` to kernel command line.
+3) sudo update-grub
+4) sudo reboot
+
+then share below logs to me.
+
+# dmesg
+# lscpu -ae
+# cd /sys/devices/system/cpu/cpu0/cpufreq
+# grep -R .
+
+Perry.
+
+--- Comment #7 from Perry Yuan(AMD) (Perry.Yuan@amd.com) ---
 I have confirmed that the CPPC capabilities are valid to enable pstate driv=
 er,
 
