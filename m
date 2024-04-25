@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9202838398
-	for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2024 15:27:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B5D514B078
+	for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2024 15:33:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714058875; cv=none; b=P19ubwDmkPhRP1Jgy3lvvmRVuo2+32WORopr04ALiyvLRAxS6tYyG3dCYd3Bu2HvllCdg89E6nPijYP5JtyEVHbpTQN4WnDM3nRD+3DIovqwMjmYFjeumykm9dLDC4R+LJmkMeu3vWKiGkZ3sI/MOhJ/YKqSfdIPGmBfs77TWYs=
+	t=1714059197; cv=none; b=gAz9nAnUZFMzVpJG0W8gi+2UufMpe7JiYJOPet1vHCboub4Vh4U0Gw9nQAffPXIf36h1PVbQyomnqhxRz7h6JXRj8X01pI3O7f6zX7ILW6LpbihgHJI2xPbXsZv5e9AplJPIo6ZQCAPazZlV7lODm15psINBSAz0cWIpg5I4PmA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714058875; c=relaxed/simple;
-	bh=9m8EToH4wUiBqhVSmCS64wMgwupAWOok4G1w46gUdN4=;
+	s=arc-20240116; t=1714059197; c=relaxed/simple;
+	bh=PDX7AcdgIdQrBPM0j9PFyFerAns4PkrRMT1ZyLO672A=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=c3q72d7iFeY+RraqjLtKmH4n6mI4ev/oiskHy3xT4dJG0h/r9EmRXoeUn57j7ztRsuMsXNyr9HIdK32HuDVABW3TeRRvaiC/Sj1SqWbaRajgfhZjeh4YKL47g+ZwVPjDMDL8oGwbZzhq9Q0fF/ibroermoLBsJPS7fHzTdgS5WA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=P0ZTkorL; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:MIME-Version; b=mLwFE5kQsZLjgfVx7KV04CO4bfijj5zmM4jltPe35Jbx/Z6D+9TekCG13wqK6ewqmqm7Lw34kyWAw4PBC7ILcgItVqnVbkhTaEg0r3oyd2gflhji+CeGAKyLx6BmpvQza8h0Fm2zsEGWj/MwBwENd4+tYT1SZ68KAKWTpyJ3ymc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Tl7xkFO8; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="P0ZTkorL"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 71A0DC113CE
-	for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2024 15:27:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tl7xkFO8"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E6683C2BD11
+	for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2024 15:33:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714058875;
-	bh=9m8EToH4wUiBqhVSmCS64wMgwupAWOok4G1w46gUdN4=;
+	s=k20201202; t=1714059196;
+	bh=PDX7AcdgIdQrBPM0j9PFyFerAns4PkrRMT1ZyLO672A=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=P0ZTkorLu7XBTbw74qIzQaP3ZExW/iBrHzJ2o6bgOngR9yKZa9Lpocooznmx7U9Rr
-	 BLOWv7CWBriLLLZ4kSVzr/TeNk3sLBOmUiWEi66FS3pQi/iZRTxEMi2EWLINN9zQId
-	 hUTgLtNAcVsLkdiTdjS3Je3ToO8/H749rit9gpS4hDkyiwtRHvtAjjttxZ/SpL+DV+
-	 yxXUOAu9kakcEsy6lRtLbj3UGyxTPUL01UZLyzg3fmi1xJhyVxTRQfIb1N8aRj0f8b
-	 IQWBoqW9waEpblBUP1gF+TUcDPq3DadNLNyrGJu6u9fyFFeuBpz4Vvwn2hgDdoQ7jV
-	 BUhHd/n4YF3Yw==
+	b=Tl7xkFO8x3yrsNvdepD97cSUxTetn/Ac1pw2BTKYwm9JGNbZhhqA4kILEXiWTbbMq
+	 Mq7gZLDVO/TUMfCJ/4IwFvY70nDxDe4Fa0EU9G0l5+HlDHryIcm4oGQoQ9nBR5zuig
+	 1sWt1pXGqD9lUKHV8mda3hIzF9dK/D2TW6oK3X2eFOARrcDbZJ39EvcurLrjddicpK
+	 k92Tjg2kRALo5wjZXsjv4vRiNRSviejLSMBQlxp3L9vvs1pdAD5rk6CgCRtj2o/XxC
+	 qW0ra0lwhqwNKYDBxrboMn5Ym4tKM44CBQPL3e0JVSprzPkAxJvMNQfABHNIUF5pxh
+	 0Fg8JRCEuZNRw==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 6B9E5C433E5; Thu, 25 Apr 2024 15:27:55 +0000 (UTC)
+	id DD5AAC16A72; Thu, 25 Apr 2024 15:33:16 +0000 (UTC)
 From: bugzilla-daemon@kernel.org
 To: linux-pm@vger.kernel.org
 Subject: [Bug 218705] amd_pstate fails to load on AMD 5950x with Asus ROG
  CROSSHAIR VIII DARK HERO x570
-Date: Thu, 25 Apr 2024 15:27:54 +0000
+Date: Thu, 25 Apr 2024 15:33:16 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -47,8 +47,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P3
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-218705-137361-cvBUqKNUbG@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-218705-137361-uKwTpyJbW9@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-218705-137361@https.bugzilla.kernel.org/>
 References: <bug-218705-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -64,10 +64,23 @@ MIME-Version: 1.0
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D218705
 
---- Comment #14 from Andrei Amuraritei (andamu@posteo.net) ---
-Created attachment 306212
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D306212&action=3Dedit
-lscpu -ae with amd_pstate=3Dactive
+--- Comment #15 from Andrei Amuraritei (andamu@posteo.net) ---
+Hi Perry,
+
+Attached the required output of the commands specified. First files are aft=
+er
+adding amd_pstate.dyndbg=3D+p but there amd_pstate still did not load
+automatically.
+
+Then I also added amd_pstate=3Dactive to the kernel param list and attached=
+ the
+outputs from commands, with "active" in names.
+
+Kernel when opened the bug was 6.8.4-200.fc39.x86_64 and right now it is
+6.8.6-200.fc39.x86_64 as specified in dmesg output.
+
+"Talk" soon.
+Andrei Amuraritei
 
 --=20
 You may reply to this email to add a comment.
