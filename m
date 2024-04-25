@@ -1,119 +1,159 @@
-Received: from msa.smtpout.orange.fr (msa-217.smtpout.orange.fr [193.252.23.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DF86816;
-	Thu, 25 Apr 2024 00:42:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.252.23.217
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47E232599;
+	Thu, 25 Apr 2024 01:20:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714005743; cv=none; b=j/MDqKtBhLDKh/bURHp8/xb0h4OlOHETPDggi6QbIu48AXhAAqk6SPjUWOFKqdcwRWHIwnx+GNdtQsPYQBtMgjnjnQBBcN7HB0h/xetg32mRNkUrNBSXQg7PnLS5M6fCkefx2le8bGdrqYnXRPbk2eChKLVW2D7ahzRNM6a72Qk=
+	t=1714008039; cv=none; b=dNu2qFvD27vmNZQ/YdDmPoIN6pw5xO9OtEP2k2HDJQNug7We9yyJOuyX3nUFmwAgwLh5wEPtq2FqWCdKMiDdJjyHaPfbO5x2JhXXuJZ4a/JjBi0V0L3fwELInkqeP1hgEzlYtClvFcWoIevWITwBH7dwNm+7lIqrxv9h7W1UUJQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714005743; c=relaxed/simple;
-	bh=Hre7W80W6Sa6/1VsF3RTEXPkgnH7ao/VPskpGPGZYhA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TjjDbzIU8G/bnXMbuRAGfs7vPhIi8eK3I6YRw2Nx8mll0fklt5iE+k0LBGLjTPI598pSAHrLsCnPunBRE1HadWSP0cHNc8A1gCB9VgnA5bGfkysfyp2RmwUwGpiSgGoThIVfHK0oTSXAQnioZYZX2XC2VRtC9vJLKnWTckVJMbU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=Rewpzcqr; arc=none smtp.client-ip=193.252.23.217
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="Rewpzcqr"
-Received: from [192.168.1.37] ([86.243.17.157])
-	by smtp.orange.fr with ESMTPA
-	id zZxwrgXWsHa8WzZxwrW7sY; Wed, 24 Apr 2024 12:35:09 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1713954909;
-	bh=h2zecfNezQcLS7/TPEc/i/RBRBH4yoSAoRIJo8Y12us=;
-	h=Message-ID:Date:MIME-Version:Subject:To:From;
-	b=RewpzcqrFLLCX8GSjycSHK/O7YxBxMhCOig8ckghUv80CaJFslEskHhJ1Y8ioT2Hu
-	 tQkdEdydNfFXFCgq/t5JH+UCKBSCRD0QQKPW2FXw53Z3qAQ+i5dCDtotEqjXk5A7Jh
-	 4lmyuc5ygkVRv32F1a528mNyAo+WgSTElkNu4YopJ//yCdVRXZciBexmZeS/kUPJxT
-	 geFAUo18k7wvt00zkCqux9gJGwpUuC1zCh86UOu72UcqLLKBtZvMlfk4Ex0fjgOwH9
-	 6KfIOFqKj2C657lUcx2eEGGMBzSXh6GKymFn0DmcYZNvr6e/ZbgYmcn4MypF44DIfw
-	 3pQZzecB/H2+A==
-X-ME-Helo: [192.168.1.37]
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Wed, 24 Apr 2024 12:35:09 +0200
-X-ME-IP: 86.243.17.157
-Message-ID: <93c12354-2e4d-4b21-bc96-eeb55442e365@wanadoo.fr>
-Date: Wed, 24 Apr 2024 12:35:04 +0200
+	s=arc-20240116; t=1714008039; c=relaxed/simple;
+	bh=zL62D1yctwFMaxehdNJzXgBvgzYkbKTm0HHQpGl9Tf0=;
+	h=Subject:To:CC:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=DxW2UP44elLFzkVpoc12CZW/5IAFWUEAoF56oltxkrUByPP7y1zXfIOHWFU3uuppCXRxBFN0SDh/T/SkeT2J4MehYFHVTx9iUa3eJORZyzXzDPiNyaOIK8cdlaESeQ81kPyQn25zQqrpaH8ovXRb8Szzy1ME1SMvy4r8AXGwYYk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.187
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.19.163.252])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4VPydF6KhCztT1D;
+	Thu, 25 Apr 2024 09:17:21 +0800 (CST)
+Received: from dggpemm500002.china.huawei.com (unknown [7.185.36.229])
+	by mail.maildlp.com (Postfix) with ESMTPS id 4C9A7180080;
+	Thu, 25 Apr 2024 09:20:33 +0800 (CST)
+Received: from [10.174.178.247] (10.174.178.247) by
+ dggpemm500002.china.huawei.com (7.185.36.229) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.35; Thu, 25 Apr 2024 09:20:32 +0800
+Subject: Re: [PATCH v7 04/16] ACPI: processor: Move checks and availability of
+ acpi_processor earlier
+To: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra
+	<peterz@infradead.org>, <linux-pm@vger.kernel.org>,
+	<loongarch@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
+	<linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <kvmarm@lists.linux.dev>,
+	<x86@kernel.org>, Russell King <linux@armlinux.org.uk>, "Rafael J . Wysocki"
+	<rafael@kernel.org>, Miguel Luis <miguel.luis@oracle.com>, James Morse
+	<james.morse@arm.com>, Salil Mehta <salil.mehta@huawei.com>, Jean-Philippe
+ Brucker <jean-philippe@linaro.org>, Catalin Marinas
+	<catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Ingo Molnar
+	<mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+	<dave.hansen@linux.intel.com>, <linuxarm@huawei.com>, <justin.he@arm.com>,
+	<jianyong.wu@arm.com>
+References: <20240418135412.14730-1-Jonathan.Cameron@huawei.com>
+ <20240418135412.14730-5-Jonathan.Cameron@huawei.com>
+ <0cfc4e2d-65ab-0040-2c7d-fad83f32455b@huawei.com>
+ <20240424181857.00000e0f@Huawei.com>
+From: Hanjun Guo <guohanjun@huawei.com>
+Message-ID: <56cdbd13-d7c8-4f02-64f0-216b72847e45@huawei.com>
+Date: Thu, 25 Apr 2024 09:20:31 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 6/7] regulator: Add refactored mtk-dvfsrc-regulator
- driver
-To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: amergnat@baylibre.com, broonie@kernel.org, conor+dt@kernel.org,
- devicetree@vger.kernel.org, djakov@kernel.org, gustavoars@kernel.org,
- henryc.chen@mediatek.com, keescook@chromium.org, kernel@collabora.com,
- krzysztof.kozlowski+dt@linaro.org, lgirdwood@gmail.com,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
- matthias.bgg@gmail.com, robh@kernel.org, wenst@chromium.org
-References: <20240424095416.1105639-1-angelogioacchino.delregno@collabora.com>
- <20240424095416.1105639-7-angelogioacchino.delregno@collabora.com>
-Content-Language: en-MW
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-In-Reply-To: <20240424095416.1105639-7-angelogioacchino.delregno@collabora.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20240424181857.00000e0f@Huawei.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggpemm500002.china.huawei.com (7.185.36.229)
 
-Le 24/04/2024 à 11:54, AngeloGioacchino Del Regno a écrit :
-> The previous driver never worked, and never got even compiled because
-> it was missing the DVFSRC driver entirely, including needed neaders.
+On 2024/4/25 1:18, Jonathan Cameron wrote:
+> On Tue, 23 Apr 2024 19:53:34 +0800
+> Hanjun Guo <guohanjun@huawei.com> wrote:
 > 
-> This is a full (or nearly full) refactoring of the MediaTek DVFSRC
-> controlled Regulators driver, retaining support for the MT6873, MT8183
-> and MT8192 SoC, and adding MT8195.
+>>> @@ -232,6 +263,7 @@ static int acpi_processor_get_info(struct acpi_device *device)
+>>>    	acpi_status status = AE_OK;
+>>>    	static int cpu0_initialized;
+>>>    	unsigned long long value;
+>>> +	int ret;
+>>>    
+>>>    	acpi_processor_errata();
+>>>    
+>>> @@ -316,10 +348,12 @@ static int acpi_processor_get_info(struct acpi_device *device)
+>>>    	 *  because cpuid <-> apicid mapping is persistent now.
+>>>    	 */
+>>>    	if (invalid_logical_cpuid(pr->id) || !cpu_present(pr->id)) {
+>>> -		int ret = acpi_processor_hotadd_init(pr);
+>>> +		ret = acpi_processor_hotadd_init(pr, device);
+>>>    
+>>>    		if (ret)
+>>> -			return ret;
+>>> +			goto err;
+>>> +	} else {
+>>> +		acpi_processor_set_per_cpu(pr, device);
+>>>    	}
+>>>    
+>>>    	/*
+>>> @@ -357,6 +391,10 @@ static int acpi_processor_get_info(struct acpi_device *device)
+>>>    		arch_fix_phys_package_id(pr->id, value);
+>>>    
+>>>    	return 0;
+>>> +
+>>> +err:
+>>> +	per_cpu(processors, pr->id) = NULL;
+>>
+>> ...
+>>
+>>> +	return ret;
+>>>    }
+>>>    
+>>>    /*
+>>> @@ -365,8 +403,6 @@ static int acpi_processor_get_info(struct acpi_device *device)
+>>>     * (cpu_data(cpu)) values, like CPU feature flags, family, model, etc.
+>>>     * Such things have to be put in and set up by the processor driver's .probe().
+>>>     */
+>>> -static DEFINE_PER_CPU(void *, processor_device_array);
+>>> -
+>>>    static int acpi_processor_add(struct acpi_device *device,
+>>>    					const struct acpi_device_id *id)
+>>>    {
+>>> @@ -395,28 +431,6 @@ static int acpi_processor_add(struct acpi_device *device,
+>>>    	if (result) /* Processor is not physically present or unavailable */
+>>>    		return 0;
+>>>    
+>>> -	BUG_ON(pr->id >= nr_cpu_ids);
+>>> -
+>>> -	/*
+>>> -	 * Buggy BIOS check.
+>>> -	 * ACPI id of processors can be reported wrongly by the BIOS.
+>>> -	 * Don't trust it blindly
+>>> -	 */
+>>> -	if (per_cpu(processor_device_array, pr->id) != NULL &&
+>>> -	    per_cpu(processor_device_array, pr->id) != device) {
+>>> -		dev_warn(&device->dev,
+>>> -			"BIOS reported wrong ACPI id %d for the processor\n",
+>>> -			pr->id);
+>>> -		/* Give up, but do not abort the namespace scan. */
+>>> -		goto err;
+>>> -	}
+>>> -	/*
+>>> -	 * processor_device_array is not cleared on errors to allow buggy BIOS
+>>> -	 * checks.
+>>> -	 */
+>>> -	per_cpu(processor_device_array, pr->id) = device;
+>>> -	per_cpu(processors, pr->id) = pr;
+>>
+>> Nit: seems we need to remove the duplicated
+>> per_cpu(processors, pr->id) = NULL; in acpi_processor_add():
+>>
+>> --- a/drivers/acpi/acpi_processor.c
+>> +++ b/drivers/acpi/acpi_processor.c
+>> @@ -446,7 +446,6 @@ static int acpi_processor_add(struct acpi_device
+>> *device,
+>>     err:
+>>           free_cpumask_var(pr->throttling.shared_cpu_map);
+>>           device->driver_data = NULL;
+>> -       per_cpu(processors, pr->id) = NULL;
 > 
-> As part of the refactoring, this driver is now probed using its own
-> devicetree compatible, as this is a child of the main DVFSRC driver
-> and gets probed as a subnode of that.
-> 
-> Reviewed-by: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-> ---
->   drivers/regulator/mtk-dvfsrc-regulator.c | 196 +++++++++++++++++++++++
->   1 file changed, 196 insertions(+)
->   create mode 100644 drivers/regulator/mtk-dvfsrc-regulator.c
-> 
+> I don't follow.  This path is used if processor_get_info() succeeded and
+> we later fail.  I don't see where the the duplication is?
 
-...
+It is! Thanks for the clarification.
 
-> +static int dvfsrc_vcore_regulator_probe(struct platform_device *pdev)
-> +{
-> +	struct regulator_config config = { .dev = &pdev->dev };
-> +	const struct dvfsrc_regulator_pdata *pdata;
-> +	int i;
-> +
-> +	pdata = device_get_match_data(&pdev->dev);
-> +	if (!pdata)
-> +		return -EINVAL;
-> +
-> +	for (i = 0; i < pdata->size; i++) {
-> +		struct regulator_desc *vrdesc = &pdata->descs[i];
-> +		struct regulator_dev *rdev;
-> +
-> +		rdev = devm_regulator_register(&pdev->dev, vrdesc, &config);
-> +		if (IS_ERR(rdev)) {
-> +			dev_err(&pdev->dev, "failed to register %s\n", vrdesc->name);
-> +			return PTR_ERR(rdev);
-
-Hi,
-
-Nit: (in case of v6)
-
-	dev_err_probe()?
-
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-
-...
-
-CJ
-
+Thanks
+Hanjun
