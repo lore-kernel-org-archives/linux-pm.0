@@ -1,49 +1,47 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A9B3149E0E;
-	Thu, 25 Apr 2024 14:05:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 744402AEEA;
+	Thu, 25 Apr 2024 14:07:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714053955; cv=none; b=Tvb538bMe5EB+0kYNiJ+5g2Btjgqisz4RsCVCnnj84W9gWsjXZjAIvurYgMczYxy5+APrlezzbykVnBVUBZRpH8qlh/kZ9x2JGepGLjCbuNiJNKeS9H50OivfDnzbb8bFlKsUReTiHuVjPh54btqtpONWN1ZzoRiy8d9pKBdwAU=
+	t=1714054063; cv=none; b=X8alLITSLM99MnkwM2T/zDojAmWeUe1iSRa7C7hE6NfkW/xaBJaIDTQWOxoPcMnY1LkKtiD1t3yG2lD6otLRmyNujdomNxTu7j/uWfrMEEo3zM9vLbCGbdVJgqqors/+Uw5xSuKmWxjIg89kyuGZTxHSMc33unRy2K/8Dfn0BwU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714053955; c=relaxed/simple;
-	bh=EcBPIfrZC4hXnMGwfCWiJ1NkJ86U3Wp8hSZVK99lyj8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=u+YbsyQxbONLOzinLQv+guJYN9j7S8/XNBuJllP5ip7CGqzfEC4179oZ5iFJxzdQ5MlrPP8tGQDrkz8j3QpEALbXrFdDsUYlliG4vRL+c0rWYT7drDKJnRMCcqHfYGZevNOPfO9YlWwBs//5TGK+6ku1YwFLqwKXIRwhsJ/0VO8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Pi5AMVqZ reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	s=arc-20240116; t=1714054063; c=relaxed/simple;
+	bh=qUJWY3uQuu4A6OgOooiFLifpXiV1Fs2pSsfapJbxAM4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=a5QnCviO3QfHgIAI2K4UKpl8anHXvLcWkYZ4tCe3oC9vm4e+6Zy5hn+xnU9pu+mjWQWJiJ4PgbOBxfgjC7gJ9xf3uT3jd9/oUUi/5DwJ6D9rGZeaYCWAB0gl0PBCplnwBS/lz+7QW0F0fc8ts6acLCzzzOe2GfPHmit1voRdjt0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ZQL4CTRQ; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Pi5AMVqZ"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ZQL4CTRQ"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id 5c5e24a5af2b71c4; Thu, 25 Apr 2024 16:05:51 +0200
+ id 9757c531a07d5360; Thu, 25 Apr 2024 16:07:39 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id CD60866DF23;
-	Thu, 25 Apr 2024 16:05:50 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 26B8166DF23;
+	Thu, 25 Apr 2024 16:07:39 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1714053951;
-	bh=EcBPIfrZC4hXnMGwfCWiJ1NkJ86U3Wp8hSZVK99lyj8=;
+	s=dkim; t=1714054059;
+	bh=qUJWY3uQuu4A6OgOooiFLifpXiV1Fs2pSsfapJbxAM4=;
 	h=From:To:Cc:Subject:Date;
-	b=Pi5AMVqZx2k4DrXG2XkxsLa8sCZwXF2PDxCws3qUSkXk7nx089Qm76OjDyD+lC+Sc
-	 cQlrQwt+WKT4Vyvz+3OW3CZcHb+ZEJj/seUbBCnj/T4KCtdwB7blhGns8whwccWHxp
-	 mVXxywZ+KjCRLY9UVUaqexm/cR0NDNxElcs8XFTqKNXk4b7qLF1zHhzIUGoCUtASG3
-	 JqXediBrSdGWT7bwUVQj7ZBfz43aYqOv0KsB0NCsNm5C+ELJBmd0WDKEC4S6t8ivML
-	 v+qAFvxIRGHcwJhOdDUCXyOA8Sw0G0K/HeGgmOWMnfMbjsM45ZnOaqhRpYXOREV4CJ
-	 lZOJSrznpBPAw==
+	b=ZQL4CTRQ2vTjlf8tWKP1ZonUynq6oSV4oX8nPO1xVuplKOqfEuzz632lDTd87uaxw
+	 2Ff2nESmhQhWtd5MPfeIr+Y4l4D1MGnF2NrN1MvjpjASLeLXv+qtBaWZDMov9wsMR/
+	 elUpgQLaeIVP7yvwEJ5V1mCevyMD+j1bbsylxOmepdG91dllPIJAxLwucO6gD7mNT1
+	 IPLIRI44phy/FbusfpDkkUv8qUnVlEAwFa2T/WLpsxjMP9MqjUH6VkABI2VLrwHMfI
+	 PCetoZU2/bx6hjGt4PJajhAfjKlPyiAoe4pLa0NiUI+hxod9IWKlInS6gNZq3FfGBt
+	 YPTAeDm02X8TQ==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject:
- [PATCH v2 0/3] thermal/debugfs: Fix handling of cdev states and mitigation
- episodes in progress
-Date: Thu, 25 Apr 2024 16:01:48 +0200
-Message-ID: <3297002.44csPzL39Z@kreacher>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
+ LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Lukasz Luba <lukasz.luba@arm.com>
+Subject: [PATCH v1] thermal: trip: Add missing empty code line
+Date: Thu, 25 Apr 2024 16:07:38 +0200
+Message-ID: <3563200.iIbC2pHGDl@kreacher>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,28 +53,30 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudeljedgjedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeehpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudeljedgjedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffffffekgfehheffleetieevfeefvefhleetjedvvdeijeejledvieehueevueffnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhm
 X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
-Hi Everyone,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This is an update of
+Add missing empty line of code to thermal_zone_trip_id().
 
-https://lore.kernel.org/linux-pm/5774279.DvuYhMxLoT@kreacher/
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/thermal_trip.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-and the only non-trivial difference between it and the v1 is a small
-rebase of the second patch (the v1 of which didn't apply).
-
-It generally has been based on top of
-
-https://lore.kernel.org/linux-pm/12427744.O9o76ZdvQC@kreacher/
-
-but it should apply on top of the linux-next branch in linux-pm.git as well.
-
-It is present in the thermal-core-next branch in that tree, along with the
-above series.
-
-Thanks!
+Index: linux-pm/drivers/thermal/thermal_trip.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_trip.c
++++ linux-pm/drivers/thermal/thermal_trip.c
+@@ -138,6 +138,7 @@ int thermal_zone_trip_id(const struct th
+ 	 */
+ 	return trip_to_trip_desc(trip) - tz->trips;
+ }
++
+ void thermal_zone_trip_updated(struct thermal_zone_device *tz,
+ 			       const struct thermal_trip *trip)
+ {
 
 
 
