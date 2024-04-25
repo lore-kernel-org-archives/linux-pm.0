@@ -1,102 +1,88 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C32D1509B1;
-	Thu, 25 Apr 2024 19:06:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8DAB439FCF;
+	Thu, 25 Apr 2024 19:08:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714071985; cv=none; b=KzQELSMhSBTMZ49hgMLmg9hUTYKyoyj/vfkf1aN7thNYOuKK6SJF0xTIA/x5OerIJ3ZrWXr6HpIpaoKFVOWB8OsQRScA3ZUal6b0xMBoQiXake0oA8fxXD6xfSYAE+p1YprzoJn/aSo0Io/LESrUIWtslliWvLX/aQ2kdV5zkbM=
+	t=1714072094; cv=none; b=LHZbVzgFiXUp4jKIdWYr+VWQntKWogwcqhFFWpUGk3ERoOEHXVf9eEaC5iqqkr24Z9djEEN9C/d7d20eV0WmocT0oyS0I6eOSbzLXI7GGykodPPNFCcPfn8Ung7lxGiT7042KarQbvnP+rUkotCoRHo4UO3NBBpMgWvStHjPY/g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714071985; c=relaxed/simple;
-	bh=2Sb71T+xYEBOgO6OWGpiIk60zH773QV7/5n9WrUs7/s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=kTsZAprh/7eZ/PMu0rGjtpxteX52cITcWa5sBUmOUkRkQdzgXbEzTuQHXJG1t/jDRtUb/7lTl0uwULVGiDaZ+7sYOhiVaUfMj/goi/NvTdaV44EA2MbFSy+krbQq3amZfqABp4Dj6QA0cjkJSkt+ElhNJsUucu2RJ1+GSWzsXc8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=CmOp+Lqg reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="CmOp+Lqg"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id 521fcd625bb25de9; Thu, 25 Apr 2024 21:06:21 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id A7BE766DF24;
-	Thu, 25 Apr 2024 21:06:20 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1714071981;
-	bh=2Sb71T+xYEBOgO6OWGpiIk60zH773QV7/5n9WrUs7/s=;
-	h=From:To:Cc:Subject:Date;
-	b=CmOp+LqgZo0qzXZJpaY0bkJjuuztK1RHKCi5MNNbQKaraU13J63gUf+6RjbcAYsC0
-	 mzqPBBRDqMZbJKv/nUaXBH7tJbZO2L741U8sGHM4FXuJlBEl7wEeRwk16bYz4VfvF5
-	 /1UFY78DNBQ5neNOjPU7Ubmw8o9kNbY8GEuVe38RIycThkEAJw5W2t5DHMJI5GomV3
-	 xDS7HLfVrENzwA7+6mOUz1ne9bKy8B3GELgeSigF/bxj5hfoRetW12iJvJptE8/kOv
-	 u9WAqEajEAhLX0oQxWUwhpdG1NfAUBV50wQ97zPXk+GvuOLCfB08fQ735g+8ukS8xA
-	 TQCnSVzcsdImQ==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: x86 Maintainers <x86@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Ricardo Neri <ricardo.neri@intel.com>, Tim Chen <tim.c.chen@intel.com>
-Subject:
- [RFC][PATCH v1 0/3] x86 / intel_pstate: Set asymmetric CPU capacity on hybrid
- systems
-Date: Thu, 25 Apr 2024 21:03:03 +0200
-Message-ID: <7663799.EvYhyI6sBW@kreacher>
+	s=arc-20240116; t=1714072094; c=relaxed/simple;
+	bh=GzIuAu2wdC/XfK35nS2UyFarpW+pmbi1UNViZv7vvlQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=VqfWkE6PFv6INscXwrUIQitRYd+43s4V4cgIPo9yHN6BE4BN/Z7WobG1qZuL4jvhwkvQnqm+lp9AmAbD8h1KkdihZUK56Gc4CbGiD7DuzZjsz30Bseo8mTiZ34lb5Lq0LZiux6pHwaR4WP7eJUho7YEfZtkLm33OoQOs0ODchb8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 47BDE2F;
+	Thu, 25 Apr 2024 12:08:40 -0700 (PDT)
+Received: from [10.57.75.39] (unknown [10.57.75.39])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 17D6E3F793;
+	Thu, 25 Apr 2024 12:08:10 -0700 (PDT)
+Message-ID: <9edd1059-e9ad-466e-a302-8055a44ff56d@arm.com>
+Date: Thu, 25 Apr 2024 20:08:09 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrudeljedgudefgecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeffffffkefgheehffelteeiveeffeevhfelteejvddvieejjeelvdeiheeuveeuffenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopedutddprhgtphhtthhopeigkeeisehkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehtghhlgieslhhinhhuthhrohhnihigrdguvgdprhgtphhtthhopehpvghtvghriiesihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
-
-Hi Everyone,
-
-The purpose of this series is to provide the scheduler with asymmetric CPU
-capacity information on x86 hybrid systems based on Intel hardware.
-
-The asymmetric CPU capacity information is important on hybrid systems as it
-allows utilization to be computed for tasks in a consistent way across all
-CPUs in the system, regardless of their capacity.  This, in turn, allows
-the schedutil cpufreq governor to set CPU performance levels consistently
-in the cases when tasks migrate between CPUs of different capacities.  It
-should also help to improve task placement and load balancing decisions on
-hybrid systems and it is key for anything along the lines of EAS.
-
-The information in question comes from the MSR_HWP_CAPABILITIES register and
-is provided to the scheduler by the intel_pstate driver, as per the changelog
-of patch [3/3].  Patch [2/3] introduces the arch infrastructure needed for
-that (in the form of a per-CPU capacity variable) and patch [1/3] is a
-preliminary code adjustment.
-
-The changes made by patch [2/3] are very simple, which is why this series is
-being sent as an RFC.  Namely, it increases overhead on non-hybrid as well as
-on hybrid systems which may be regarded as objectionable, even though the
-overhead increase is arguably not significant.  The memory overhead is an
-unsigned long variable per CPU which is not a lot IMV and there is also
-additional memory access overhead at each arch_scale_cpu_capacity() call site
-which I'm not expecting to be noticeable, however.  In any case, the extra
-overhead can be avoided at the cost of making the code a bit more complex
-(for example, the additional per-CPU memory can be allocated dynamically
-on hybrid systems only and a static branch can be used for enabling access
-to it when necessary).  I'm just not sure if the extra complexity is really
-worth it, so I'd like to know the x86 maintainers' take on this.  If you'd
-prefer the overhead to be avoided, please let me know.
-
-Of course, any other feedback on the patches is welcome as well.
-
-Thank you!
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/3] thermal/debugfs: Create records for cdev states as
+ they get used
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>
+References: <3297002.44csPzL39Z@kreacher> <10458619.nUPlyArG6x@kreacher>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <10458619.nUPlyArG6x@kreacher>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
 
 
+On 4/25/24 15:03, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Because thermal_debug_cdev_state_update() only creates a duration record
+> for the old state of a cooling device, if its new state is used for the
+> first time, there will be no record for it and cdev_dt_seq_show() will
+> not print the duration information for it even though it contains code
+> to compute the duration value in that case.
+> 
+> Address this by making thermal_debug_cdev_state_update() create a
+> duration record for the new state if there is none.
+> 
+> Fixes: 755113d76786 ("thermal/debugfs: Add thermal cooling device debugfs information")
+> Reported-by: Lukasz Luba <lukasz.luba@arm.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>   drivers/thermal/thermal_debugfs.c |    8 ++++++++
+>   1 file changed, 8 insertions(+)
+> 
+> Index: linux-pm/drivers/thermal/thermal_debugfs.c
+> ===================================================================
+> --- linux-pm.orig/drivers/thermal/thermal_debugfs.c
+> +++ linux-pm/drivers/thermal/thermal_debugfs.c
+> @@ -433,6 +433,14 @@ void thermal_debug_cdev_state_update(con
+>   	}
+>   
+>   	cdev_dbg->current_state = new_state;
+> +
+> +	/*
+> +	 * Create a record for the new state if it is not there, so its
+> +	 * duration will be printed by cdev_dt_seq_show() as expected if it
+> +	 * runs before the next state transition.
+> +	 */
+> +	thermal_debugfs_cdev_record_get(thermal_dbg, cdev_dbg->durations, new_state);
+> +
+>   	transition = (old_state << 16) | new_state;
+>   
+>   	/*
+> 
+> 
+> 
+> 
+
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
