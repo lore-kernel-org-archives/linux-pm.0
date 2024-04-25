@@ -1,50 +1,50 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65DFA17565;
-	Thu, 25 Apr 2024 13:57:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 078051494D2;
+	Thu, 25 Apr 2024 13:57:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714053459; cv=none; b=tAvh8rJRB6xrZYWMf6Ivq6FTwGw9KpjwvBfP7IThTzPla0fGaO3Ajybh3MeGP0vFiuG47oz9G5xGyUkVbiIu76ZUNRK7VdF5gUe7MrowQxTQo9xuK/ekU6akY7oNeOkfgqP+GbHB+wyShYWuADErUXFhVG1faWl+CijQ7IqrADw=
+	t=1714053460; cv=none; b=aaxMpH0N1NpnavG2OIG9jMPi7SMNZ7uyY1eA28bUoVm3WQoKwZOjgFq915B2wKvjQSdR7zwIlAHHPU6nOGjsK5ly+j5ITAQU753eL+u4vAodM1bNbkf35QlhG2QNGIBqeehT+6ZrKKkeVGsleu5OHHFumE0Xek2qFhm3Zc80fEA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714053459; c=relaxed/simple;
-	bh=md7mVEfndKgd7O96TkmoVOmif2jnxJJjZ8nDmaFy5HA=;
+	s=arc-20240116; t=1714053460; c=relaxed/simple;
+	bh=qGv9hKiqXyr11qBSCn4TaTUWz/H334NkfuERNuFWckM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Gubh728yFrlE4YFz/lU8Fv6VpL/DpvxkAGTTo/7K0WeO5HVsnRu9Qk/Ak+eNQfFU7DWHWqasSYs5qvrCfdGhxfSFlAAdpmi4Qie/deMgKNr6VHbDe67Tcn7r+Q894Q1jo2GujN1lRgj6PjkTUiGduBu6FkFPPe9sH0jY5scYdyE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Atb2e8oS reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=YHhQ/GEJVtsSy93wbs7nZJeSMuw0L2UsAj+BrKlkFCY53PGvGWMWWS3c8XXBii1jRHfyLQlIzbzoQe4r8Zn1eF5djH34HfuORYnM6XyRE/agE1PzXuRKbH0Ppou7QuzAdvEc3X9byJKB0dk6/Ias4h2X1yTbnCCAaX8KxlwHtSI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=UG48wMtD reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Atb2e8oS"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="UG48wMtD"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id 5d17d3ac70c195b5; Thu, 25 Apr 2024 15:57:28 +0200
+ id 481c96702fb04be3; Thu, 25 Apr 2024 15:57:30 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 17B8C66DF20;
-	Thu, 25 Apr 2024 15:57:28 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 990FE66DF24;
+	Thu, 25 Apr 2024 15:57:29 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1714053448;
-	bh=md7mVEfndKgd7O96TkmoVOmif2jnxJJjZ8nDmaFy5HA=;
+	s=dkim; t=1714053450;
+	bh=qGv9hKiqXyr11qBSCn4TaTUWz/H334NkfuERNuFWckM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Atb2e8oSdOIO1v499cHwBlzv8QMeWj8u2qYdDVdsTpGUgkcRO9TQuHj2LlIqN9qZ9
-	 iyZ6HEfddJIdfCuQwzpLyP85rCSeMqmo5eZazLlgDT33TJvGzUT9sJPP6zOxmEn8O2
-	 F7AlkxQcC7bq4vrxNbuac8F3pcT1utgsh+PSnXj8WXyKYU/r6ilbAgbJLhumCRfA1d
-	 XynsOiIMykJ4vLasOQ/SAjUeFrtg5/buo0+pJF0rO2FZFjfLbMTPE9D1bW4C0q6vGG
-	 V1AAZhh88oYNdkNyDofmWlJQ+w88pumJbsL6OyASds1I51DnQQM57Qkxep4uDlUTh1
-	 EDWALzr27f31w==
+	b=UG48wMtD2AjVaVHaKyewb4xzlZufoxymBj0aiaPwU8gB767c1QY++XsZhk+xbR9+K
+	 oGITaRPlcAZStK6JOwpWnzAdALGTJsb2NMKgOTcn3CiPWNR84TC9HgEANKMwHh9cCH
+	 Pq4tpLO4a6fgtjDfGH7q6pnJHZVOkkRVbIzLcf/FyUAotoGmKp4lZxJ7Od8pnjCAnS
+	 XMj3P/h2zREyo/jKysdrn57rBgoAciQmwEuESRKALJ9Ali3u5Gt4WGy/ioj7UiLE/n
+	 wwVNJG3J84VuDCmTzBGu0oUNQZP1gr1coOBOkivZeI9hTJcHypHeqPruu2qkdujmIx
+	 XkM789x2MD8JQ==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Lukasz Luba <lukasz.luba@arm.com>,
  Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
  "Rafael J. Wysocki" <rafael@kernel.org>
 Subject:
- [PATCH v1 3/3] thermal/debugfs: Prevent use-after-free from occurring after
- cdev removal
-Date: Thu, 25 Apr 2024 15:57:12 +0200
-Message-ID: <13503555.uLZWGnKmhe@kreacher>
+ [PATCH v1 1/3] thermal/debugfs: Free all thermal zone debug memory on zone
+ removal
+Date: Thu, 25 Apr 2024 15:49:04 +0200
+Message-ID: <4918398.31r3eYUQgx@kreacher>
 In-Reply-To: <12427744.O9o76ZdvQC@kreacher>
 References: <12427744.O9o76ZdvQC@kreacher>
 Precedence: bulk
@@ -63,53 +63,53 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Since thermal_debug_cdev_remove() does not run under cdev->lock, it can
-run in parallel with thermal_debug_cdev_state_update() and it may free
-the struct thermal_debugfs object used by the latter after it has been
-checked against NULL.
+Because thermal_debug_tz_remove() does not free all memory allocated for
+thermal zone diagnostics, some of that memory becomes unreachable after
+freeing the thermal zone's struct thermal_debugfs object.
 
-If that happens, thermal_debug_cdev_state_update() will access memory
-that has been freed already causing the kernel to crash.
+Address this by making thermal_debug_tz_remove() free all of the memory
+in question.
 
-Address this by using cdev->lock in thermal_debug_cdev_remove() around
-the cdev->debugfs value check (in case the same cdev is removed at the
-same time in two differet threads) and its reset to NULL.
-
-Fixes: 755113d76786 ("thermal/debugfs: Add thermal cooling device debugfs information")
+Fixes: 7ef01f228c9f ("thermal/debugfs: Add thermal debugfs information for mitigation episodes")
 Cc :6.8+ <stable@vger.kernel.org> # 6.8+
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_debugfs.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/thermal/thermal_debugfs.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 Index: linux-pm/drivers/thermal/thermal_debugfs.c
 ===================================================================
 --- linux-pm.orig/drivers/thermal/thermal_debugfs.c
 +++ linux-pm/drivers/thermal/thermal_debugfs.c
-@@ -503,15 +503,21 @@ void thermal_debug_cdev_add(struct therm
-  */
- void thermal_debug_cdev_remove(struct thermal_cooling_device *cdev)
+@@ -832,15 +832,28 @@ void thermal_debug_tz_add(struct thermal
+ void thermal_debug_tz_remove(struct thermal_zone_device *tz)
  {
--	struct thermal_debugfs *thermal_dbg = cdev->debugfs;
-+	struct thermal_debugfs *thermal_dbg;
+ 	struct thermal_debugfs *thermal_dbg = tz->debugfs;
++	struct tz_episode *tze, *tmp;
++	struct tz_debugfs *tz_dbg;
++	int *trips_crossed;
  
-+	mutex_lock(&cdev->lock);
-+
-+	thermal_dbg = cdev->debugfs;
  	if (!thermal_dbg)
  		return;
  
-+	cdev->debugfs = NULL;
-+
-+	mutex_unlock(&cdev->lock);
++	tz_dbg = &thermal_dbg->tz_dbg;
 +
  	mutex_lock(&thermal_dbg->lock);
  
- 	thermal_debugfs_cdev_clear(&thermal_dbg->cdev_dbg);
--	cdev->debugfs = NULL;
++	trips_crossed = tz_dbg->trips_crossed;
++
++	list_for_each_entry_safe(tze, tmp, &tz_dbg->tz_episodes, node) {
++		list_del(&tze->node);
++		kfree(tze);
++	}
++
+ 	tz->debugfs = NULL;
  
  	mutex_unlock(&thermal_dbg->lock);
  
+ 	thermal_debugfs_remove_id(thermal_dbg);
++	kfree(trips_crossed);
+ }
 
 
 
