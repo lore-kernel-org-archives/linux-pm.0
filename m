@@ -1,48 +1,50 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65E43149C56;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65DFA17565;
 	Thu, 25 Apr 2024 13:57:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714053459; cv=none; b=RSwh1V5VYyXfbGutBz1J2QrfDk79+jPFdpNo39knklWlQ6cIOU9bHwFzjUq40gpQuVPRhpxR6g1Bh4lzm/KsaMtpRlFlNmHK3Pc7uITJJ1PTAQ6I1p/zmj6m2eIqEXxR4NAjwW1DDSNJxxV0j4hp3aOR7kck6E8asn+7QhOo554=
+	t=1714053459; cv=none; b=tAvh8rJRB6xrZYWMf6Ivq6FTwGw9KpjwvBfP7IThTzPla0fGaO3Ajybh3MeGP0vFiuG47oz9G5xGyUkVbiIu76ZUNRK7VdF5gUe7MrowQxTQo9xuK/ekU6akY7oNeOkfgqP+GbHB+wyShYWuADErUXFhVG1faWl+CijQ7IqrADw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1714053459; c=relaxed/simple;
-	bh=MlMc+m0WCmwrvO4Ai45Pe6nuVtg7C4Cya5AQOAQ5MTs=;
+	bh=md7mVEfndKgd7O96TkmoVOmif2jnxJJjZ8nDmaFy5HA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aBiSnZpoOPVvh2Gu8ngnQjzVcHcBWD1TeFnE6QhP3F0oG8y7LdIQHcllK+ZlHGDKI/VWTbdwJaZ22d/+BUP174aqmmCf8pj07VDdOZFaF34AcWUIgE9MCYVDg0M7gi4DSbhAH5ikltRbbheC/g1+pXCTrlJRUjqzzqjWY0pXiGc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=D9g2zfyP; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=Gubh728yFrlE4YFz/lU8Fv6VpL/DpvxkAGTTo/7K0WeO5HVsnRu9Qk/Ak+eNQfFU7DWHWqasSYs5qvrCfdGhxfSFlAAdpmi4Qie/deMgKNr6VHbDe67Tcn7r+Q894Q1jo2GujN1lRgj6PjkTUiGduBu6FkFPPe9sH0jY5scYdyE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Atb2e8oS reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="D9g2zfyP"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Atb2e8oS"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id 7cbe6bc34e49c28f; Thu, 25 Apr 2024 15:57:29 +0200
+ id 5d17d3ac70c195b5; Thu, 25 Apr 2024 15:57:28 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id D65A766DF20;
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 17B8C66DF20;
 	Thu, 25 Apr 2024 15:57:28 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1714053449;
-	bh=MlMc+m0WCmwrvO4Ai45Pe6nuVtg7C4Cya5AQOAQ5MTs=;
+	s=dkim; t=1714053448;
+	bh=md7mVEfndKgd7O96TkmoVOmif2jnxJJjZ8nDmaFy5HA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=D9g2zfyPDv1O3eUBk4zDl3JIolJ+5NCT0gfBBOM9kKwKvwVs8PEKi4Mr6AZ8x/fqe
-	 /d9Qmul516LYTJoDPNq7ZNQzpfFpZ3dwrcjEQ6MiCxrdNZ8x0aWr341tZ6xBMVdJDp
-	 u1Tx6/cSfpHhEpTSHVmKRfsCsN4Lik6ziRcC3ne0CyBDj+STlU+FODginR4CQZXKrl
-	 pZybLEbe2IDp6a+Ly3jiCH/vgW/0C4ThkQ3j5rj+Nz02oDqHUmLsYYDUwMYDPQFWeh
-	 LPPf+aaVc4iGoeDHmE0dpdSmxenLnlSurt2DOgvxxIpsRc1WNLKpezh/c9NATiQlV3
-	 Zf6vle4Cev4fg==
+	b=Atb2e8oSdOIO1v499cHwBlzv8QMeWj8u2qYdDVdsTpGUgkcRO9TQuHj2LlIqN9qZ9
+	 iyZ6HEfddJIdfCuQwzpLyP85rCSeMqmo5eZazLlgDT33TJvGzUT9sJPP6zOxmEn8O2
+	 F7AlkxQcC7bq4vrxNbuac8F3pcT1utgsh+PSnXj8WXyKYU/r6ilbAgbJLhumCRfA1d
+	 XynsOiIMykJ4vLasOQ/SAjUeFrtg5/buo0+pJF0rO2FZFjfLbMTPE9D1bW4C0q6vGG
+	 V1AAZhh88oYNdkNyDofmWlJQ+w88pumJbsL6OyASds1I51DnQQM57Qkxep4uDlUTh1
+	 EDWALzr27f31w==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Lukasz Luba <lukasz.luba@arm.com>,
  Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
  "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH v1 2/3] thermal/debugfs: Fix thermal zone locking
-Date: Thu, 25 Apr 2024 15:55:45 +0200
-Message-ID: <1888579.tdWV9SEqCh@kreacher>
+Subject:
+ [PATCH v1 3/3] thermal/debugfs: Prevent use-after-free from occurring after
+ cdev removal
+Date: Thu, 25 Apr 2024 15:57:12 +0200
+Message-ID: <13503555.uLZWGnKmhe@kreacher>
 In-Reply-To: <12427744.O9o76ZdvQC@kreacher>
 References: <12427744.O9o76ZdvQC@kreacher>
 Precedence: bulk
@@ -61,215 +63,53 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-With the current thermal zone locking arrangement in the debugfs code,
-user space can open the "mitigations" file for a thermal zone before
-the zone's debugfs pointer is set which will result in a NULL pointer
-dereference in tze_seq_start().
+Since thermal_debug_cdev_remove() does not run under cdev->lock, it can
+run in parallel with thermal_debug_cdev_state_update() and it may free
+the struct thermal_debugfs object used by the latter after it has been
+checked against NULL.
 
-While this could be addressed by putting the creation of the
-"mitigations" file under thermal_dbg->lock, there is still a problem
-with thermal_debug_tz_remove() that is not called under the thermal
-zone lock and can run in parallel with the other functions accessing
-the thermal zone's struct thermal_debugfs object.  Then, it may
-clear tz->debugfs after one of those functions has checked it and the
-struct thermal_debugfs object may be freed prematurely.
+If that happens, thermal_debug_cdev_state_update() will access memory
+that has been freed already causing the kernel to crash.
 
-To address both problems described above at once, use the observation
-that thermal_debug_tz_trip_up(), thermal_debug_tz_trip_down(), and
-thermal_debug_update_trip_stats() all run under the thermal zone
-lock and because they all acquire thermal_dbg->lock for the thermal
-zone's struct thermal_debugfs object, they must wait on that lock if it
-is held while they are running and their callers (holding the thermal
-zone lock) must wait along with them.  This means that tze_seq_start()
-may as well acquire tz->lock instead of thermal_dbg->lock and check the
-struct thermal_debugfs object pointer retrieved from the thermal zone
-against NULL under it.
+Address this by using cdev->lock in thermal_debug_cdev_remove() around
+the cdev->debugfs value check (in case the same cdev is removed at the
+same time in two differet threads) and its reset to NULL.
 
-Then, tz->lock can also be acquired by thermal_debug_tz_add() and
-thermal_debug_tz_remove() to eliminate the race conditions at hand.
-
-Rearrange the code in question accordingly and remove the
-thermal_dbg->lock locking, which is now redundant, from it.
-
-Fixes: 7ef01f228c9f ("thermal/debugfs: Add thermal debugfs information for mitigation episodes")
+Fixes: 755113d76786 ("thermal/debugfs: Add thermal cooling device debugfs information")
 Cc :6.8+ <stable@vger.kernel.org> # 6.8+
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_debugfs.c |   60 +++++++++++++++++---------------------
- 1 file changed, 28 insertions(+), 32 deletions(-)
+ drivers/thermal/thermal_debugfs.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 Index: linux-pm/drivers/thermal/thermal_debugfs.c
 ===================================================================
 --- linux-pm.orig/drivers/thermal/thermal_debugfs.c
 +++ linux-pm/drivers/thermal/thermal_debugfs.c
-@@ -551,8 +551,6 @@ void thermal_debug_tz_trip_up(struct the
- 	if (!thermal_dbg)
- 		return;
- 
--	mutex_lock(&thermal_dbg->lock);
--
- 	tz_dbg = &thermal_dbg->tz_dbg;
- 
- 	/*
-@@ -591,7 +589,7 @@ void thermal_debug_tz_trip_up(struct the
- 	if (!tz_dbg->nr_trips) {
- 		tze = thermal_debugfs_tz_event_alloc(tz, now);
- 		if (!tze)
--			goto unlock;
-+			return;
- 
- 		list_add(&tze->node, &tz_dbg->tz_episodes);
- 	}
-@@ -613,9 +611,6 @@ void thermal_debug_tz_trip_up(struct the
- 
- 	tze = list_first_entry(&tz_dbg->tz_episodes, struct tz_episode, node);
- 	tze->trip_stats[trip_id].timestamp = now;
--
--unlock:
--	mutex_unlock(&thermal_dbg->lock);
- }
- 
- void thermal_debug_tz_trip_down(struct thermal_zone_device *tz,
-@@ -631,8 +626,6 @@ void thermal_debug_tz_trip_down(struct t
- 	if (!thermal_dbg)
- 		return;
- 
--	mutex_lock(&thermal_dbg->lock);
--
- 	tz_dbg = &thermal_dbg->tz_dbg;
- 
- 	/*
-@@ -643,7 +636,7 @@ void thermal_debug_tz_trip_down(struct t
- 	 * no mitigation mechanism yet at boot time.
- 	 */
- 	if (!tz_dbg->nr_trips)
--		goto out;
-+		return;
- 
- 	for (i = tz_dbg->nr_trips - 1; i >= 0; i--) {
- 		if (tz_dbg->trips_crossed[i] == trip_id)
-@@ -651,7 +644,7 @@ void thermal_debug_tz_trip_down(struct t
- 	}
- 
- 	if (i < 0)
--		goto out;
-+		return;
- 
- 	tz_dbg->nr_trips--;
- 
-@@ -671,9 +664,6 @@ void thermal_debug_tz_trip_down(struct t
- 	 */
- 	if (!tz_dbg->nr_trips)
- 		tze->duration = ktime_sub(now, tze->timestamp);
--
--out:
--	mutex_unlock(&thermal_dbg->lock);
- }
- 
- void thermal_debug_update_trip_stats(struct thermal_zone_device *tz)
-@@ -686,12 +676,10 @@ void thermal_debug_update_trip_stats(str
- 	if (!thermal_dbg)
- 		return;
- 
--	mutex_lock(&thermal_dbg->lock);
--
- 	tz_dbg = &thermal_dbg->tz_dbg;
- 
- 	if (!tz_dbg->nr_trips)
--		goto out;
-+		return;
- 
- 	tze = list_first_entry(&tz_dbg->tz_episodes, struct tz_episode, node);
- 
-@@ -704,19 +692,22 @@ void thermal_debug_update_trip_stats(str
- 		trip_stats->avg += (tz->temperature - trip_stats->avg) /
- 					++trip_stats->count;
- 	}
--out:
--	mutex_unlock(&thermal_dbg->lock);
- }
- 
- static void *tze_seq_start(struct seq_file *s, loff_t *pos)
+@@ -503,15 +503,21 @@ void thermal_debug_cdev_add(struct therm
+  */
+ void thermal_debug_cdev_remove(struct thermal_cooling_device *cdev)
  {
- 	struct thermal_zone_device *tz = s->private;
--	struct thermal_debugfs *thermal_dbg = tz->debugfs;
--	struct tz_debugfs *tz_dbg = &thermal_dbg->tz_dbg;
+-	struct thermal_debugfs *thermal_dbg = cdev->debugfs;
 +	struct thermal_debugfs *thermal_dbg;
  
--	mutex_lock(&thermal_dbg->lock);
-+	mutex_lock(&tz->lock);
- 
--	return seq_list_start(&tz_dbg->tz_episodes, *pos);
-+	thermal_dbg = tz->debugfs;
-+	if (!thermal_dbg) {
-+		mutex_unlock(&tz->lock);
-+		return NULL;
-+	}
++	mutex_lock(&cdev->lock);
 +
-+	return seq_list_start(&thermal_dbg->tz_dbg.tz_episodes, *pos);
- }
- 
- static void *tze_seq_next(struct seq_file *s, void *v, loff_t *pos)
-@@ -731,9 +722,8 @@ static void *tze_seq_next(struct seq_fil
- static void tze_seq_stop(struct seq_file *s, void *v)
- {
- 	struct thermal_zone_device *tz = s->private;
--	struct thermal_debugfs *thermal_dbg = tz->debugfs;
- 
--	mutex_unlock(&thermal_dbg->lock);
-+	mutex_unlock(&tz->lock);
- }
- 
- static int tze_seq_show(struct seq_file *s, void *v)
-@@ -826,23 +816,33 @@ void thermal_debug_tz_add(struct thermal
- 
- 	debugfs_create_file("mitigations", 0400, thermal_dbg->d_top, tz, &tze_fops);
- 
-+	mutex_lock(&tz->lock);
-+
- 	tz->debugfs = thermal_dbg;
-+
-+	mutex_unlock(&tz->lock);
- }
- 
- void thermal_debug_tz_remove(struct thermal_zone_device *tz)
- {
--	struct thermal_debugfs *thermal_dbg = tz->debugfs;
-+	struct thermal_debugfs *thermal_dbg;
- 	struct tz_episode *tze, *tmp;
- 	struct tz_debugfs *tz_dbg;
- 	int *trips_crossed;
- 
--	if (!thermal_dbg)
-+	mutex_lock(&tz->lock);
-+
-+	thermal_dbg = tz->debugfs;
-+	if (!thermal_dbg) {
-+		mutex_unlock(&tz->lock);
++	thermal_dbg = cdev->debugfs;
+ 	if (!thermal_dbg)
  		return;
-+	}
  
--	tz_dbg = &thermal_dbg->tz_dbg;
-+	tz->debugfs = NULL;
++	cdev->debugfs = NULL;
++
++	mutex_unlock(&cdev->lock);
++
+ 	mutex_lock(&thermal_dbg->lock);
  
--	mutex_lock(&thermal_dbg->lock);
-+	mutex_unlock(&tz->lock);
+ 	thermal_debugfs_cdev_clear(&thermal_dbg->cdev_dbg);
+-	cdev->debugfs = NULL;
  
-+	tz_dbg = &thermal_dbg->tz_dbg;
- 	trips_crossed = tz_dbg->trips_crossed;
+ 	mutex_unlock(&thermal_dbg->lock);
  
- 	list_for_each_entry_safe(tze, tmp, &tz_dbg->tz_episodes, node) {
-@@ -850,10 +850,6 @@ void thermal_debug_tz_remove(struct ther
- 		kfree(tze);
- 	}
- 
--	tz->debugfs = NULL;
--
--	mutex_unlock(&thermal_dbg->lock);
--
- 	thermal_debugfs_remove_id(thermal_dbg);
- 	kfree(trips_crossed);
- }
 
 
 
