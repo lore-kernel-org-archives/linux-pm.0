@@ -1,175 +1,74 @@
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE3A9148317;
-	Fri, 26 Apr 2024 13:59:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 124F614884C
+	for <linux-pm@vger.kernel.org>; Fri, 26 Apr 2024 13:59:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714139954; cv=none; b=EgzYSxOkuR9ewLV465G2vVIYOzSW1mGHycojR1Gvvj5Ska2OotszrI4VOrwKNhAAwSEc3at6JBgO0X9vK6WwxY+pub/8VjnYh+GXFa7oOJMwyRAUQMbXRvIRNQWwGKVUyPlVu2ttmykF45vM9f1A/hJ00vJYTraBlwrBEYZRXHI=
+	t=1714139957; cv=none; b=VVc69U0f+dU3hTai/1gpdYSRkkeoKI/h8ub/LvgBNmaluyJS3SzzAZRZgi6OPiEMfzzm7GsJguIbNlobDpnSJ9C981UknnJSgHHDuks/W+PWeF11ZHaiY+8E7nosH/T8Tplfm1Sve5ctkjZb1lMn2rxJ2qjOq9XKCGPEOdUX5w4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714139954; c=relaxed/simple;
-	bh=6NXwPHxk3D6KF25H3DXcQaX27WN7qNDBDIfY5ii9Z5M=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BAPRamQVXifu92fgNLZ8iL45Iy924NICRMDJ/RYJJOlloMz090t13Tv/3ZhgiEgt048p83fN73pv7DKrctD5mGRhZt9eAwlDW/FfjE+UBntNDRrKitTEbG/NrmGkI7zuz/Qbc4uzBX8kl3U147pTlQC1dTtSMZsUUvoELKygBbQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.18.186.231])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4VQvR13BKmz6JBCq;
-	Fri, 26 Apr 2024 21:56:45 +0800 (CST)
-Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
-	by mail.maildlp.com (Postfix) with ESMTPS id B1E2A140A70;
-	Fri, 26 Apr 2024 21:59:10 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.35; Fri, 26 Apr 2024 14:59:10 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra
-	<peterz@infradead.org>, <linux-pm@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
-	<linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <kvmarm@lists.linux.dev>,
-	<x86@kernel.org>, Russell King <linux@armlinux.org.uk>, "Rafael J . Wysocki"
-	<rafael@kernel.org>, Miguel Luis <miguel.luis@oracle.com>, James Morse
-	<james.morse@arm.com>, Salil Mehta <salil.mehta@huawei.com>, Jean-Philippe
- Brucker <jean-philippe@linaro.org>, Catalin Marinas
-	<catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Marc Zyngier
-	<maz@kernel.org>, Hanjun Guo <guohanjun@huawei.com>
-CC: Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave
- Hansen <dave.hansen@linux.intel.com>, <linuxarm@huawei.com>,
-	<justin.he@arm.com>, <jianyong.wu@arm.com>, Lorenzo Pieralisi
-	<lpieralisi@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH v8 15/16] arm64: document virtual CPU hotplug's expectations
-Date: Fri, 26 Apr 2024 14:51:25 +0100
-Message-ID: <20240426135126.12802-16-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240426135126.12802-1-Jonathan.Cameron@huawei.com>
-References: <20240426135126.12802-1-Jonathan.Cameron@huawei.com>
+	s=arc-20240116; t=1714139957; c=relaxed/simple;
+	bh=sdoFE/+ADF2ytlFl5A4j0Lkywmby/wJtqWvldYYssPE=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=lA6rNGQyljdb+TZtCvukWYxLBHwKLZbMPVMdqV9dgpz8spbx/oX7b4MHf4wKr+eDcWY8Cv8bN5cZwE54MEp8nwjH37YkjLM+67hYBgTG4bNwKHQZJ7NFDMsv2eBRZFAWZ5cbmjViK4Q7ItiJDPZQReiTBfuH/reotpbChbM2GQ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Bz/REOlR; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Bz/REOlR"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 77D96C4AF09
+	for <linux-pm@vger.kernel.org>; Fri, 26 Apr 2024 13:59:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1714139956;
+	bh=sdoFE/+ADF2ytlFl5A4j0Lkywmby/wJtqWvldYYssPE=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=Bz/REOlRvQeOyip94+MmFK8oJs6Kx71hyaEA55RMqQviBghmw5pJXs3SXuk9rvKth
+	 KN8nbw/J3rye8BcBYSMFSVUaBDaZPVJXDQ45WxigSXX+iYP4IoSx9+9LimLGVi2Bn+
+	 +O4uNzwJ5kfgMURfxm0hWN/FODL/3HeH1riu5LA34A7mPx7H/J/cRVipCTzoJJLLfT
+	 E848gQ83WGlkgQp4UDIfw//y87ft5yKOPN+DthHFIRQD+7BHnA180qgVbx3ZUUemgN
+	 jKRYz2yQ+wGOK4oAhTTlldb7Fihwy9ZlYsLixsEkgggd1DhG7wUduKRL9NFB89NyWu
+	 ggIWmruhwgU8Q==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 64914C43230; Fri, 26 Apr 2024 13:59:16 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 218759] 6.9-rc kernels - with Ryzen 7840HS CPU single core
+ never boosts to max frequency
+Date: Fri, 26 Apr 2024 13:59:16 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: gahabana@gmail.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-218759-137361-yY5SksPOqG@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-218759-137361@https.bugzilla.kernel.org/>
+References: <bug-218759-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: lhrpeml500002.china.huawei.com (7.191.160.78) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
 
-From: James Morse <james.morse@arm.com>
+https://bugzilla.kernel.org/show_bug.cgi?id=3D218759
 
-Add a description of physical and virtual CPU hotplug, explain the
-differences and elaborate on what is required in ACPI for a working
-virtual hotplug system.
+--- Comment #15 from Gaha (gahabana@gmail.com) ---
+:thumbs-up: :)
 
-Signed-off-by: James Morse <james.morse@arm.com>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Signed-off-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk>
-Tested-by: Miguel Luis <miguel.luis@oracle.com>
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
- Documentation/arch/arm64/cpu-hotplug.rst | 79 ++++++++++++++++++++++++
- Documentation/arch/arm64/index.rst       |  1 +
- 2 files changed, 80 insertions(+)
+--=20
+You may reply to this email to add a comment.
 
-diff --git a/Documentation/arch/arm64/cpu-hotplug.rst b/Documentation/arch/arm64/cpu-hotplug.rst
-new file mode 100644
-index 000000000000..76ba8d932c72
---- /dev/null
-+++ b/Documentation/arch/arm64/cpu-hotplug.rst
-@@ -0,0 +1,79 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+.. _cpuhp_index:
-+
-+====================
-+CPU Hotplug and ACPI
-+====================
-+
-+CPU hotplug in the arm64 world is commonly used to describe the kernel taking
-+CPUs online/offline using PSCI. This document is about ACPI firmware allowing
-+CPUs that were not available during boot to be added to the system later.
-+
-+``possible`` and ``present`` refer to the state of the CPU as seen by linux.
-+
-+
-+CPU Hotplug on physical systems - CPUs not present at boot
-+----------------------------------------------------------
-+
-+Physical systems need to mark a CPU that is ``possible`` but not ``present`` as
-+being ``present``. An example would be a dual socket machine, where the package
-+in one of the sockets can be replaced while the system is running.
-+
-+This is not supported.
-+
-+In the arm64 world CPUs are not a single device but a slice of the system.
-+There are no systems that support the physical addition (or removal) of CPUs
-+while the system is running, and ACPI is not able to sufficiently describe
-+them.
-+
-+e.g. New CPUs come with new caches, but the platform's cache toplogy is
-+described in a static table, the PPTT. How caches are shared between CPUs is
-+not discoverable, and must be described by firmware.
-+
-+e.g. The GIC redistributor for each CPU must be accessed by the driver during
-+boot to discover the system wide supported features. ACPI's MADT GICC
-+structures can describe a redistributor associated with a disabled CPU, but
-+can't describe whether the redistributor is accessible, only that it is not
-+'always on'.
-+
-+arm64's ACPI tables assume that everything described is ``present``.
-+
-+
-+CPU Hotplug on virtual systems - CPUs not enabled at boot
-+---------------------------------------------------------
-+
-+Virtual systems have the advantage that all the properties the system will
-+ever have can be described at boot. There are no power-domain considerations
-+as such devices are emulated.
-+
-+CPU Hotplug on virtual systems is supported. It is distinct from physical
-+CPU Hotplug as all resources are described as ``present``, but CPUs may be
-+marked as disabled by firmware. Only the CPU's online/offline behaviour is
-+influenced by firmware. An example is where a virtual machine boots with a
-+single CPU, and additional CPUs are added once a cloud orchestrator deploys
-+the workload.
-+
-+For a virtual machine, the VMM (e.g. Qemu) plays the part of firmware.
-+
-+Virtual hotplug is implemented as a firmware policy affecting which CPUs can be
-+brought online. Firmware can enforce its policy via PSCI's return codes. e.g.
-+``DENIED``.
-+
-+The ACPI tables must describe all the resources of the virtual machine. CPUs
-+that firmware wishes to disable either from boot (or later) should not be
-+``enabled`` in the MADT GICC structures, but should have the ``online capable``
-+bit set, to indicate they can be enabled later. The boot CPU must be marked as
-+``enabled``.  The 'always on' GICR structure must be used to describe the
-+redistributors.
-+
-+CPUs described as ``online capable`` but not ``enabled`` can be set to enabled
-+by the DSDT's Processor object's _STA method. On virtual systems the _STA method
-+must always report the CPU as ``present``. Changes to the firmware policy can
-+be notified to the OS via device-check or eject-request.
-+
-+CPUs described as ``enabled`` in the static table, should not have their _STA
-+modified dynamically by firmware. Soft-restart features such as kexec will
-+re-read the static properties of the system from these static tables, and
-+may malfunction if these no longer describe the running system. Linux will
-+re-discover the dynamic properties of the system from the _STA method later
-+during boot.
-diff --git a/Documentation/arch/arm64/index.rst b/Documentation/arch/arm64/index.rst
-index d08e924204bf..78544de0a8a9 100644
---- a/Documentation/arch/arm64/index.rst
-+++ b/Documentation/arch/arm64/index.rst
-@@ -13,6 +13,7 @@ ARM64 Architecture
-     asymmetric-32bit
-     booting
-     cpu-feature-registers
-+    cpu-hotplug
-     elf_hwcaps
-     hugetlbpage
-     kdump
--- 
-2.39.2
-
+You are receiving this mail because:
+You are the assignee for the bug.=
