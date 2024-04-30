@@ -1,162 +1,134 @@
-Received: from madrid.collaboradmins.com (madrid.collaboradmins.com [46.235.227.194])
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D04AE770F5;
-	Tue, 30 Apr 2024 14:33:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.227.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9136180A70;
+	Tue, 30 Apr 2024 14:33:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714487600; cv=none; b=jrUQ4kLAJYS1j6K99OxJNNxdkBgTGifJxxVP9z5clWh3pMcpK7sQWxIotMbDX3yU7g6ZwYty9GzzH08DQwtYjbpVq/izqOb4OLZ2oW02sxUEyUlGPtdIniElgloTg90TiN09/KnUp50S75NtQ7F0UA1P1Iv8im2vuj269rUlg+o=
+	t=1714487605; cv=none; b=Wvmo22VBcBlwci9hKjEH8vtjO/94OmGjTsWcUNig0hesfaB+j3mVNbq0R+mktsO1UXYB7rCp5IStRIvXYcx+cVBWicc6Jubk76gNREWSmsglIdlPBkSumCofjXmA9ny1YooSPGyqt6zNmnRYljmaMF49w0ovIfei4w1k/VEsbzE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714487600; c=relaxed/simple;
-	bh=ZbofnJTeGEkJkkARV3RauUlYPiv2yoCrwKvOpKsZ05E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=p4gU7Lv3dlENVrO4ndDfHLzqdiFbv04XbN/hk6dtgRf9Qa9T3TTxcp4wb0lJE3umMrbwvBpLpnZus11i3ZMzm4+8XBoWEk2FrEhnISJTXfBinfVmxRhUpHwIyO4ujNkjrBYf8duRN+bmx2FZ+zvwL7HgbPAGkbPsL56GPDSPgfk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=VVNxdNl4; arc=none smtp.client-ip=46.235.227.194
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="VVNxdNl4"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1714487597;
-	bh=ZbofnJTeGEkJkkARV3RauUlYPiv2yoCrwKvOpKsZ05E=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=VVNxdNl4kQe39oj47b3+NyFvudFAZGW59n5BTUf1/DF2H3cviw3Tuiwcgc3kGQLpu
-	 4aT/K0hOh42Fg2vK9bcCSngPs4kAJL8Rf8S29deXyTtgtp8jAuUo9beJ/VY35hNiL+
-	 UphsRomofb7zdUW87scAWAWZDpisn7RdjkM5Afe/n9AWPRaqXWBSKfS2HeaDMGbNuY
-	 QOSu8VFIpqhhzZf5Nf/AvcUa0eCoadqJYoJ8LpUFqhBHTRZF4GWMnN//BT1op4PzCR
-	 gmhSVXEW+tJkp5f+PgTXDiJHlV4e0Un1PJJwlgcny3sFV1hNNGnVe6zvX3541yyvvA
-	 QCgYVUzPdJ1+A==
-Received: from mercury (cola.collaboradmins.com [195.201.22.229])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: sre)
-	by madrid.collaboradmins.com (Postfix) with ESMTPSA id 2844E378212D;
-	Tue, 30 Apr 2024 14:33:17 +0000 (UTC)
-Received: by mercury (Postfix, from userid 1000)
-	id BB1B7106074C; Tue, 30 Apr 2024 16:33:16 +0200 (CEST)
-Date: Tue, 30 Apr 2024 16:33:16 +0200
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Herman van Hazendonk <github.com@herrie.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Ben Wolsieffer <benwolsieffer@gmail.com>, Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] power: supply: max8903: configure USUS as output
-Message-ID: <ujpdv6fahceaatniy3w4z23dy7q4r5swfqzi2mc4dlarcdavo4@x5fvm5oklohx>
-References: <20240417-max8903-v1-1-25d4dbf4ce9b@herrie.org>
+	s=arc-20240116; t=1714487605; c=relaxed/simple;
+	bh=JOtBk0Y4w1pZHwjVrcc+I+akWt3sBbp8f9hSPAgnTME=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=SZQtBmc6wZo6anWdtGt1VFOzWZ/LxwCIBLj6t7jQRmcqFNbtoTJjHTe9D1b4v06H8l9z/rrRzIqGtPpQGJd7X5l8dJVV248d6L/kg53MWCdYrzTZCgsV5JDlleJLWZAGg0Md6LTjy2SMPczLUhlRR8Zr14eNtee0Z2Bop/tDYlc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.186.216])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4VTN0M3QkFz6GD3R;
+	Tue, 30 Apr 2024 22:30:43 +0800 (CST)
+Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
+	by mail.maildlp.com (Postfix) with ESMTPS id B8A08140B2A;
+	Tue, 30 Apr 2024 22:33:20 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.35; Tue, 30 Apr 2024 15:33:20 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra
+	<peterz@infradead.org>, <linux-pm@vger.kernel.org>,
+	<loongarch@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
+	<linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <kvmarm@lists.linux.dev>,
+	<x86@kernel.org>, Russell King <linux@armlinux.org.uk>, "Rafael J . Wysocki"
+	<rafael@kernel.org>, Miguel Luis <miguel.luis@oracle.com>, James Morse
+	<james.morse@arm.com>, Salil Mehta <salil.mehta@huawei.com>, Jean-Philippe
+ Brucker <jean-philippe@linaro.org>, Catalin Marinas
+	<catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Marc Zyngier
+	<maz@kernel.org>, Hanjun Guo <guohanjun@huawei.com>, Gavin Shan
+	<gshan@redhat.com>
+CC: Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave
+ Hansen <dave.hansen@linux.intel.com>, <linuxarm@huawei.com>,
+	<justin.he@arm.com>, <jianyong.wu@arm.com>
+Subject: [PATCH v9 17/19] arm64: Kconfig: Enable hotplug CPU on arm64 if ACPI_PROCESSOR is enabled.
+Date: Tue, 30 Apr 2024 15:24:32 +0100
+Message-ID: <20240430142434.10471-18-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240430142434.10471-1-Jonathan.Cameron@huawei.com>
+References: <20240430142434.10471-1-Jonathan.Cameron@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="243jbcowuncudllz"
-Content-Disposition: inline
-In-Reply-To: <20240417-max8903-v1-1-25d4dbf4ce9b@herrie.org>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
 
+In order to move arch_register_cpu() to be called via the same path
+for initially present CPUs described by ACPI and hotplugged CPUs
+ACPI_HOTPLUG_CPU needs to be enabled.
 
---243jbcowuncudllz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The protection against invalid IDs in acpi_map_cpu() is needed as
+at least one production BIOS is in the wild which reports entries
+in DSDT (with no _STA method, so assumed enabled and present)
+that don't match MADT.
 
-Hi,
+Tested-by: Miguel Luis <miguel.luis@oracle.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-On Wed, Apr 17, 2024 at 03:35:00PM +0200, Herman van Hazendonk wrote:
-> The USUS pin was mistakenly configured as an input, when it should be an
-> output that specifies whether the USB power input is suspended. In additi=
-on
-> to fixing the pin mode, this patch also suspends the USB input when a DC
-> charger is connected, which should result in a slight reduction in USB
-> quiescent current.
->=20
-> Signed-off-by: Ben Wolsieffer <benwolsieffer@gmail.com>
-> Signed-off-by: Herman van Hazendonk <github.com@herrie.org>
-> ---
+---
+V9: No change.
 
-Thanks for your patch. I think this should get
+---
+ arch/arm64/Kconfig       |  1 +
+ arch/arm64/kernel/acpi.c | 22 ++++++++++++++++++++++
+ 2 files changed, 23 insertions(+)
 
-Fixes: 50da8d04ee52 ("power: supply: max8903: Convert to GPIO descriptors")
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 7b11c98b3e84..fed7d0d54179 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -5,6 +5,7 @@ config ARM64
+ 	select ACPI_CCA_REQUIRED if ACPI
+ 	select ACPI_GENERIC_GSI if ACPI
+ 	select ACPI_GTDT if ACPI
++	select ACPI_HOTPLUG_CPU if ACPI_PROCESSOR
+ 	select ACPI_IORT if ACPI
+ 	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
+ 	select ACPI_MCFG if (ACPI && PCI)
+diff --git a/arch/arm64/kernel/acpi.c b/arch/arm64/kernel/acpi.c
+index dba8fcec7f33..fb9368197c74 100644
+--- a/arch/arm64/kernel/acpi.c
++++ b/arch/arm64/kernel/acpi.c
+@@ -29,6 +29,7 @@
+ #include <linux/pgtable.h>
+ 
+ #include <acpi/ghes.h>
++#include <acpi/processor.h>
+ #include <asm/cputype.h>
+ #include <asm/cpu_ops.h>
+ #include <asm/daifflags.h>
+@@ -413,6 +414,27 @@ void arch_reserve_mem_area(acpi_physical_address addr, size_t size)
+ 	memblock_mark_nomap(addr, size);
+ }
+ 
++#ifdef CONFIG_ACPI_HOTPLUG_CPU
++int acpi_map_cpu(acpi_handle handle, phys_cpuid_t physid, u32 apci_id,
++		 int *pcpu)
++{
++	/* If an error code is passed in this stub can't fix it */
++	if (*pcpu < 0) {
++		pr_warn_once("Unable to map CPU to valid ID\n");
++		return *pcpu;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(acpi_map_cpu);
++
++int acpi_unmap_cpu(int cpu)
++{
++	return 0;
++}
++EXPORT_SYMBOL(acpi_unmap_cpu);
++#endif /* CONFIG_ACPI_HOTPLUG_CPU */
++
+ #ifdef CONFIG_ACPI_FFH
+ /*
+  * Implements ARM64 specific callbacks to support ACPI FFH Operation Region as
+-- 
+2.39.2
 
-Also what's going on with the Signed-off-by? Did you forward the
-patch from Ben Wolsieffer (i.e. the author is wrong) or did you
-co-develop it (so there should be a "Co-developed-by: Ben Wolsieffer
-<benwolsieffer@gmail.com>" tag)?
-
->  drivers/power/supply/max8903_charger.c | 14 +++++++++++++-
->  1 file changed, 13 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/max8903_charger.c b/drivers/power/suppl=
-y/max8903_charger.c
-> index e65d0141f260..15dc3a5239e2 100644
-> --- a/drivers/power/supply/max8903_charger.c
-> +++ b/drivers/power/supply/max8903_charger.c
-> @@ -102,6 +102,10 @@ static irqreturn_t max8903_dcin(int irq, void *_data)
->  	if (data->dcm)
->  		gpiod_set_value(data->dcm, ta_in);
-> =20
-> +	/* Set USB-Suspend 1:Suspended 0:Active */
-> +	if (data->usus)
-> +		gpiod_set_value(data->usus, ta_in);
-> +
->  	/* Charger Enable / Disable */
->  	if (data->cen) {
->  		int val;
-> @@ -310,7 +314,15 @@ static int max8903_setup_gpios(struct platform_devic=
-e *pdev)
->  				     "failed to get FLT GPIO");
->  	gpiod_set_consumer_name(data->flt, data->psy_desc.name);
-> =20
-> -	data->usus =3D devm_gpiod_get_optional(dev, "usus", GPIOD_IN);
-> +	/*
-> +	 * Suspend the USB input if the DC charger is connected.
-> +	 *
-> +	 * The USUS line should be marked GPIO_ACTIVE_HIGH in the
-> +	 * device tree. Driving it low will enable the USB charger
-> +	 * input.
-
-I think the above 3 lines should be dropped. They added more
-confusion to me than actually helping and the information is
-already in the DT binding file.
-
-Greetings,
-
--- Sebastian
-
-> +	 */
-> +	flags =3D ta_in ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
-> +	data->usus =3D devm_gpiod_get_optional(dev, "usus", flags);
->  	if (IS_ERR(data->usus))
->  		return dev_err_probe(dev, PTR_ERR(data->usus),
->  				     "failed to get USUS GPIO");
->=20
-> ---
-> base-commit: 96fca68c4fbf77a8185eb10f7557e23352732ea2
-> change-id: 20240417-max8903-ace97d7d3407
->=20
-> Best regards,
-> --=20
-> Herman van Hazendonk <github.com@herrie.org>
->=20
-
---243jbcowuncudllz
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmYxASAACgkQ2O7X88g7
-+po8UxAAp2+KFGesRHzAkUVrYxiu1Exye2LwzJjQdFD69x3N1cchUiGVaebshxIU
-73MwfOssQndZMS/ice/Ed71XJTtb93EA7MtuHkQQ8MEelEoC5T4N0VER+S1q/Irb
-FXHteDS4WDm7pYd6Pf9XQW7eI/WrhqQ2vJMn9BjbQrh79J6XT9GdLCF5XrNgcDdL
-nGUZIlCtnE+xce8Q4vpPZ5t3LNqFrkJTMWBOGFZtl1hOaaPqHS3cuJ40mangaZ3u
-EGBL3yck5fJVFiUz8e1zibFrDow00j6zXI/7aU6c4sFGadTPea2QmCCPUO0gRMSt
-9vTruWzmidtXIIOckrhfcGAlNmN54NFPrl6wibmOdINJ/a/AMixZg3qi33TKHYp5
-xNYxc2KEbw9kELlqABBHVw7fdulS+YCVh+iC8iYmNH3SeoKKAStFlUhgog0Ba4JE
-ZaWkFxcnIBjmJoAkVZDEAJLigV0xaKDJfECal/EXqREBvtfmX9Y8FLJqXSBdLax2
-7QpvmzabW9CRqEGTTBUHinJT4LMuaNuDPdjOlYj0BCALs7is59dVxG4Nc2sCmWL6
-2lHWBssg/IOBFp8OqnOsjEe3aq2fBASE2urGreXFpRCMaBVV5vHXm4xLrUQZ9NF+
-ypqvN/8GcuGc7B7SnjFAXLeZTMFuNhrrU8/DOlF3g9qsDEd7iZg=
-=VF7a
------END PGP SIGNATURE-----
-
---243jbcowuncudllz--
