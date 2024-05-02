@@ -1,84 +1,88 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D94C856B7B;
-	Thu,  2 May 2024 10:54:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B7735D903;
+	Thu,  2 May 2024 11:08:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714647292; cv=none; b=a5VnU6Ilvb5xM73UlvCx+6MhF6Nx80QgL9wQZ9CRNTYmXqlD5oVfg2u9IKPt421PJ7HzwikTZkq5o7cRSDmshmBe6pcS4Tk/O6eXX3ssmyUEIelekcuogNjBbQJn/qgUQ3gmCE4Ldj+bvesZADiIvgyVyzXDxXagc9XUbbu3cW4=
+	t=1714648126; cv=none; b=rxraOPvDiYPxmAAehG7Nfl0sV1YokpkZU9/3zuGXaXVYE/Nt3js0AM7GhafP1tIrSVfcJi0ioWvOdB5iL5e/K01f9fk96+z1gLu5dQDzoDvKJCieBbctfr0SNCqxicZj1PKmTcilwG5zbe//crPDxCqUit6H6LvtqTIwPzMVMQQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714647292; c=relaxed/simple;
-	bh=2zMMgDtblAfRMoupiInjzu+rYzRFbq4eE1vS2UNSkZc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=flq1GG2oDWzpLyEMCpUzYgISR++kOw8iNArFN+8qQNNUueZlekGpJMLtohk4qSPAVzdUePeLcYHRhWr0QDSmXw+FAjF1knaR+S6SoK+B5BFvDloDBc9bXQw7KKCiaOY9h/YiK18ZQKx5P1bSaTlD7JhAw9W6GRytWNwrs+T0580=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ADc83FN/; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1714648126; c=relaxed/simple;
+	bh=8K4ujeYhTAhKF8D1gB1WkqlDa8ad4YIK/nV9mxb+ubU=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=JXuPCBAnnFszEOC/c4P70DAOaTaj2k4e7+hdXzff29wKII+LmbAm8VA3TF/pMcgLD2Sg/bUxnbN+owzARNVTUfze27KRuah18ejAi5eTv9sEMaW0HM90h3WhQKzwF+83+UcijKXft7YtjOPWZz/ZUouK5eCYZbidncoVnsEITOE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Xch1aCry; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ADc83FN/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C37EC4AF1A;
-	Thu,  2 May 2024 10:54:51 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Xch1aCry"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09FB1C32789;
+	Thu,  2 May 2024 11:08:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714647291;
-	bh=2zMMgDtblAfRMoupiInjzu+rYzRFbq4eE1vS2UNSkZc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=ADc83FN/7InmE8+BsUu87A58zfvwNkMsrp3wz4s0jkj9Bz8Y8xvZgmBG+08zIOZ7m
-	 apI9BXdYfadpsKqS9kGAYRY3vRb7rTc+4ZSgiQGBccNjEoaW8vKZ+vNUujHPv8K/gu
-	 D4q0jywmG4+9Q9TL7+AuPq6WAy8blcKI9si5MqOfOQ8iz5AW6eu0eH2n1htpW9PtTg
-	 i1BwW1nJbstqeGLpLBgutAn6vxi8UgImcIwHVjMZy4Njw7eiNANPc0kkd/Xu7JFNgj
-	 hOccUKBDaVyusO8+zX2qKw/qOWq6gyBKBLsunuSyPUXVe0xjDPfFmpvb5MPyr8bH1H
-	 qCSFx28P7c02w==
-Received: by mail-oo1-f53.google.com with SMTP id 006d021491bc7-5b1b03dc01dso360797eaf.3;
-        Thu, 02 May 2024 03:54:51 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUiE4h9xxTsIrpL7lcjDPDbwbGLrEH6m856cdTxkTpbqlaNuNfBAYN6wWI4OGrtVrsuMnZvXKtZWbGXQlokXOz0BAUl4ILC4fd2TfegEpvS3X8NQtkZzdC2XideX2/WXFuUdN04F40=
-X-Gm-Message-State: AOJu0YxGzZ0QwJ3SW/LghhjYNUQoiOuAsoQX48dqEljz1zZJG9SPes1k
-	5+phfGxcg/1Xg24cqVTWZSGS/wBUQAwBpwrxUx4FJmlF+fuWQ6i5RtgdAxM+xAgm/fCPNQDHZd4
-	irTxuL0ah8KZmRzZcjZvP63TgwBY=
-X-Google-Smtp-Source: AGHT+IHTtFLtzAIcPI232H9S3+Qt/XcskxoU14vG/wR76VMfYJzsf+zXY7sqUfPW8wjwo2SXQlV+LiNaIfbgSTg+7og=
-X-Received: by 2002:a4a:2546:0:b0:5a7:db56:915c with SMTP id
- v6-20020a4a2546000000b005a7db56915cmr5724735ooe.1.1714647290569; Thu, 02 May
- 2024 03:54:50 -0700 (PDT)
+	s=k20201202; t=1714648126;
+	bh=8K4ujeYhTAhKF8D1gB1WkqlDa8ad4YIK/nV9mxb+ubU=;
+	h=From:Date:Subject:To:Cc:From;
+	b=Xch1aCryETzgJNn5QhGZcIl+hrYm/8q+8iGpMNSEadG8jdgXj4l8beI0Va8LK+za9
+	 6u6n51Xrji4oNk7v3xY3Hrhvpj/otTcmucJnfftr2ct+s1X2pJSEHYLD7dMUOsCo7j
+	 Yfd3vs6csyzFhdyStor7UThIuuDtW5Mrcs6hLguygfULpyP61PMrwkA0lbbl9dYBY9
+	 7woK1SdHk0yguXtN6Z1jW1tAanAuWmWT/rQo04Q9bUdlv6xIxaR78YJmA86EoZh0PM
+	 PQIPy36ZfU+tTcDO3iesTFsILknaLAV5FVeAjuVZ/XI3p5rsnvcnAuU5WUNg5FcD68
+	 RFZrW7SqGo7DA==
+Received: by mail-oo1-f47.google.com with SMTP id 006d021491bc7-5afbcf21abdso853346eaf.1;
+        Thu, 02 May 2024 04:08:46 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWCqKJSiIehH6/vLGJtFAFkB5A4eMzh8+vL2WarH5Xwzl/V+Rs88lOhGnkHd3AY9ECYc2wlb3rpCrQ+6ZkRH+8zGguhl7Om2UD8p7yY
+X-Gm-Message-State: AOJu0YykXYEZ9HBVXEc6qEhHBXdE7H8Yxad+dgW994WidueBDCVu8kdH
+	VQXozpiMy8qwemtCL06efqnVPFWUxbAEesuDg53sGA9PnwrDy6sYC4kOwj8ArbjzCjXStyy34dx
+	4mTINwam63UYASkn2rg4FruDlEPM=
+X-Google-Smtp-Source: AGHT+IF/nIdqFeA4jayC/Sos9U+g1FOb02A/CEFxDNMAhuoOi3HEctyS0uDfUx3Fc/O8DvAf6b84Dou4PbdImKnUN4s=
+X-Received: by 2002:a4a:9887:0:b0:5aa:3e4f:f01e with SMTP id
+ a7-20020a4a9887000000b005aa3e4ff01emr5105162ooj.1.1714648125193; Thu, 02 May
+ 2024 04:08:45 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240430225826.65289-1-srinivas.pandruvada@linux.intel.com> <ZjNdILvlyei-_Z7A@smile.fi.intel.com>
-In-Reply-To: <ZjNdILvlyei-_Z7A@smile.fi.intel.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 2 May 2024 12:54:36 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gYbn5jGE21RyzfOXCP7onhJSB5_D4fTJKW=Zf=K8zLxA@mail.gmail.com>
-Message-ID: <CAJZ5v0gYbn5jGE21RyzfOXCP7onhJSB5_D4fTJKW=Zf=K8zLxA@mail.gmail.com>
-Subject: Re: [PATCH] thermal: intel: Add missing module description
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: daniel.lezcano@linaro.org, rui.zhang@intel.com, lukasz.luba@arm.com, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 2 May 2024 13:08:31 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gqRGw3NEOVXH4vwERcy-kO+tihXBmP74UJGEhsTMc_BA@mail.gmail.com>
+Message-ID: <CAJZ5v0gqRGw3NEOVXH4vwERcy-kO+tihXBmP74UJGEhsTMc_BA@mail.gmail.com>
+Subject: [GIT PULL] Thermal control fixes for v6.9-rc7
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 2, 2024 at 11:30=E2=80=AFAM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
->
-> On Tue, Apr 30, 2024 at 03:58:25PM -0700, Srinivas Pandruvada wrote:
-> > Fix warnings displayed by "make W=3D1" build:
-> >
-> > WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/thermal/intel=
-/intel_soc_dts_iosf.o
-> > WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/thermal/intel=
-/int340x_thermal/processor_thermal_rapl.o
-> > WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/thermal/intel=
-/int340x_thermal/processor_thermal_rfim.o
-> > WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/thermal/intel=
-/int340x_thermal/processor_thermal_mbox.o
-> > WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/thermal/intel=
-/int340x_thermal/processor_thermal_wt_req.o
-> > WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/thermal/intel=
-/int340x_thermal/processor_thermal_wt_hint.o
-> > WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/thermal/intel=
-/int340x_thermal/processor_thermal_power_floor
->
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
->
-> Thank you!
+Hi Linus,
 
-Applied as 6.10 material, thank you!
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ thermal-6.9-rc7
+
+with top-most commit d351eb0ab04c3e8109895fc33250cebbce9c11da
+
+ thermal/debugfs: Prevent use-after-free from occurring after cdev removal
+
+on top of commit ed30a4a51bb196781c8058073ea720133a65596f
+
+ Linux 6.9-rc5
+
+to receive thermal control fixes for 6.9-rc7.
+
+These fix a memory leak and a few locking issues (that may cause the
+kernel to crash in principle if all goes wrong) in the thermal debug
+code introduced during the 6.8 development cycle.
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (3):
+      thermal/debugfs: Free all thermal zone debug memory on zone removal
+      thermal/debugfs: Fix two locking issues with thermal zone debug
+      thermal/debugfs: Prevent use-after-free from occurring after cdev removal
+
+---------------
+
+ drivers/thermal/thermal_debugfs.c | 59 +++++++++++++++++++++++++++++----------
+ 1 file changed, 45 insertions(+), 14 deletions(-)
