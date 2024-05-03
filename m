@@ -1,158 +1,110 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E541057C84;
-	Fri,  3 May 2024 14:19:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AE2315535B
+	for <linux-pm@vger.kernel.org>; Fri,  3 May 2024 15:35:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714745952; cv=none; b=B+rz3WikZKyFW5WkyTtXpaXww51JikTo4nj2LTalI5DdbNkGoKDwUsKaaRnQcaJgR9GNnQhwFQgEFI65uEkKMK8YdTkzoklfOfwvQgbPJsH4tRDsUGkiamf2imSZdkIuFlTb/k+Jx0pTiQuJK+GnaQaGez5iHH90cPe7vsZcymw=
+	t=1714750524; cv=none; b=nVpN3d746k4SWS4NYX5qsQaSnHnDXv0QS1m4LTXeg9gXpntIifdV4e49H8+IEqz7rpnzG3s1ggKK9gK9RPIU/TzTLOppehTTpDPQy9ED+qD/cH4TiWHqAfT1qnH6dR7ZWpWbnNTfFy15omMKONTThM3pNw2XPMhcMj2Hvf9OBNU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714745952; c=relaxed/simple;
-	bh=J2E2MTOfGKJBQDbXhn2vGGm5jGIDG5H8kR6g4UqiTJ8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=u3CNfHKspo6D6TzCUDBRmXQiYRDKBtodAnex7ZWniy3XDxyr+4S52sYeSwF/kct9Ifergcgc8JfbDGRQpaa793DmvoYECyvBdU9UqHdX/57h/QpwA86lKBTZcMNqdUzIgZ+v73OpEHbwOyfi56d0c/2mNqmS38z4HRYH5n/JcDg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6F15913D5;
-	Fri,  3 May 2024 07:19:35 -0700 (PDT)
-Received: from [10.57.34.89] (unknown [10.57.34.89])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7E7A53F73F;
-	Fri,  3 May 2024 07:19:07 -0700 (PDT)
-Message-ID: <06e3fd1a-a4c0-4be5-840c-e5ba276fe253@arm.com>
-Date: Fri, 3 May 2024 16:19:05 +0200
+	s=arc-20240116; t=1714750524; c=relaxed/simple;
+	bh=SP42j9CgUufiyxU3nQ+lSzjh2IG6/vPluK3RUFWHhsE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=VTED/uhCAYIU5ea6DN4OSuL4YMckJ65jn1AyC/arefmdRp4EnDt100g1gAw8BC/I5L63B4k+tKJWfyiBWETOAMXwqSjDNhUXXozdhBbXYh/KzrVbdFhzLXxAz8+Ay6IxOOLa5eT+2H1NzC/DkBzocjJmTfXbWKiqW7reaHkF1YA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=VeHLohjq; arc=none smtp.client-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="VeHLohjq"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-41bab13ca4eso50308115e9.1
+        for <linux-pm@vger.kernel.org>; Fri, 03 May 2024 08:35:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1714750521; x=1715355321; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=4vEIqX+46YstO49KdzfUit+EY7cLOMRSSqZNN+MC6uM=;
+        b=VeHLohjqRINAl+EDgnGS3iABYNvFrBb9ZZJ4TZyjx+vhIp8gvL9vUbkR2g9PJK5VVR
+         UY2+Fx8ciREYHiEtZ29Rxm8LbezJ/XPgRidktuFfLRes7KQcEVjNJBi6R6w0HGJVczR6
+         4p48TTmYfBpBFh+51FHZEpIJ2jKqFH6zF7kTq3HjHRYW14RCQRznqpUhCOOJlOo+7A5f
+         P6zvpsGUiLfhmv58QHI2DEVw+uPujMlctBMyMfIMU5mVAS92G+pj+Z9U69WVnheNFe30
+         bH3q5Ux37eDnSzOc9Qz+IPl4JVZimcsvEFJ6s0V4b9mkczzniqfpGulGBm6Qsei7Whhg
+         Lp3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1714750521; x=1715355321;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=4vEIqX+46YstO49KdzfUit+EY7cLOMRSSqZNN+MC6uM=;
+        b=Um2mA52vif1cGpjCj49vDOTOwnmjqsSs6JWKB2oAOzjESuBRTcgIe2DBgDere0azj2
+         JD0kHESJc+ZY2evANCLO2FMZ6dXkZSG3h0wTCuyUZ+lVFpOVTWwIkvhhSHzYtDGE4nlU
+         hfyCzRZsGiTzTnFvnwSR7v2xKdyh1E8ZXaLIjgLLZXpSBII0/9B1sAgGj54V+mBfXTSW
+         pzyKATzTcGGl4faoynzRubEfjOYQtKOptzR0SF3PUI/jOi5A+ZyXuwUPjBXljpycXBpw
+         4hhbS99bHcOCrbis6gNCJrx8HmpBwHC17MP3WHdkrr5XdR3sXeWTHpDYhgWBfMuE6gLn
+         IrTg==
+X-Gm-Message-State: AOJu0Yz0LROfvcIiK6BauqxhuU2NJQAi5yqRk4Y9LnH6HOGaHw81sfzO
+	8gLCWCPUtoH7dyuQWfAWK3FKW3poMbcKtCSRM6JMpZtuoiWRO7lwWjQHAzBpoyQ=
+X-Google-Smtp-Source: AGHT+IEeDubyf88dJ1F/c3Og9mfDQHnx2tPeXqImVG53S9rY41X7jlVgH6PBon7anUpjzltE+G0flg==
+X-Received: by 2002:a05:600c:2157:b0:41a:5521:d848 with SMTP id v23-20020a05600c215700b0041a5521d848mr2499549wml.25.1714750520756;
+        Fri, 03 May 2024 08:35:20 -0700 (PDT)
+Received: from [127.0.1.1] ([79.87.205.120])
+        by smtp.gmail.com with ESMTPSA id d10-20020a05600c3aca00b00418e4cc9de7sm9702373wms.7.2024.05.03.08.35.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 03 May 2024 08:35:20 -0700 (PDT)
+From: Julien Panis <jpanis@baylibre.com>
+Date: Fri, 03 May 2024 17:35:13 +0200
+Subject: [PATCH 1/2] thermal/drivers/mediatek/lvts_thermal: Remove unused
+ members from struct lvts_ctrl_data
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq/cppc: changing highest_perf to nominal_perf in
- cppc_cpufreq_cpu_init()
-To: Viresh Kumar <viresh.kumar@linaro.org>, liwei <liwei728@huawei.com>,
- Ionela Voinescu <ionela.voinescu@arm.com>,
- Beata Michalska <beata.michalska@arm.com>,
- Vanshidhar Konda <vanshikonda@os.amperecomputing.com>
-Cc: rafael@kernel.org, al.stone@linaro.org, ashwin.chaugule@linaro.org,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, liwei391@huawei.com,
- liaoyu15@huawei.com
-References: <20240428092852.1588188-1-liwei728@huawei.com>
- <20240429104945.esdukn6ayudgyumc@vireshk-i7>
-Content-Language: en-US
-From: Pierre Gondois <pierre.gondois@arm.com>
-In-Reply-To: <20240429104945.esdukn6ayudgyumc@vireshk-i7>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20240503-mtk-thermal-lvts-ctrl-idx-fix-v1-1-f605c50ca117@baylibre.com>
+References: <20240503-mtk-thermal-lvts-ctrl-idx-fix-v1-0-f605c50ca117@baylibre.com>
+In-Reply-To: <20240503-mtk-thermal-lvts-ctrl-idx-fix-v1-0-f605c50ca117@baylibre.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Nicolas Pitre <npitre@baylibre.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
+ Julien Panis <jpanis@baylibre.com>
+X-Mailer: b4 0.12.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1714750518; l=708;
+ i=jpanis@baylibre.com; s=20230526; h=from:subject:message-id;
+ bh=SP42j9CgUufiyxU3nQ+lSzjh2IG6/vPluK3RUFWHhsE=;
+ b=XEe30h/H6gys1feNgm+rZLzcV5J/Xy1Zpsm4B7NsLcCwZ4+d8iU7BJcBUbsdUPve9xEvBH2uz
+ jqhA/ej8FdcAcU8FzxutsgptICjvq5bkBz5Off897RCh2CtDUcC3LQg
+X-Developer-Key: i=jpanis@baylibre.com; a=ed25519;
+ pk=8eSM4/xkiHWz2M1Cw1U3m2/YfPbsUdEJPCWY3Mh9ekQ=
 
-Hello Liwei,
-The change itself seems ok, but I'm not sure I understand what the
-issue is exactly.
+In struct lvts_ctrl_data, num_lvts_sensor and cal_offset[] are not used.
 
-On 4/29/24 12:49, Viresh Kumar wrote:
-> CC'ing few folks who are working with the driver.
-> 
-> On 28-04-24, 17:28, liwei wrote:
->> When turning on turbo, if frequency configuration takes effect slowly,
->> the updated policy->cur may be equal to the frequency configured in
->> governor->limits(), performance governor will not adjust the frequency,
->> configured frequency will remain at turbo-freq.
->>
->> Simplified call stack looks as follows:
->> cpufreq_register_driver(&cppc_cpufreq_driver)
->> 	...
->> 	cppc_cpufreq_cpu_init()
->> 		cppc_get_perf_caps()
->> 		policy->max = cppc_perf_to_khz(caps, caps->nominal_perf)
->> 			cppc_set_perf(highest_perf) // set highest_perf
->> 			policy->cur = cpufreq_driver->get() // if cur == policy->max
+Signed-off-by: Julien Panis <jpanis@baylibre.com>
+---
+ drivers/thermal/mediatek/lvts_thermal.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-During the driver initialization, we have:
-cppc_cpufreq_cpu_init()
-\-policy->max = cppc_perf_to_khz(caps, caps->nominal_perf)
-\-policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
-\-cpu_data->perf_ctrls.desired_perf = caps->highest_perf;
-\-cppc_set_perf(cpu, &cpu_data->perf_ctrls); // set freq to highest_perf
-so here:
-policy->max = nominal_freq
-policy->cur = highest_freq
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+index 86b2f44355ac..18a796386cd0 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -105,8 +105,6 @@ struct lvts_sensor_data {
+ 
+ struct lvts_ctrl_data {
+ 	struct lvts_sensor_data lvts_sensor[LVTS_SENSOR_MAX];
+-	int cal_offset[LVTS_SENSOR_MAX];
+-	int num_lvts_sensor;
+ 	u8 valid_sensor_mask;
+ 	int offset;
+ 	int mode;
 
+-- 
+2.37.3
 
-And then for the cpufreq framework:
-cpufreq_online()
-// IIUC there is some delay here, so policy->cur = nominal_freq ?
-// i.e. the freq. was requested to change to the highest_freq,
-// but the change is not effective yet ?
-\-policy->cur = cpufreq_driver->get(policy->cpu);
-\-cpufreq_init_policy()
-   \-cpufreq_set_policy()
-     \-cpufreq_start_governor()
-       \-cpufreq_verify_current_freq()
-         \-new_freq = cpufreq_driver->get(policy->cpu); // new_freq = nominal_freq ?
-         \-if (policy->cur != new_freq)
-         \-  cpufreq_out_of_sync()
-           \- policy->cur = new_freq;
-     \-cpufreq_start_governor()
-       \-cpufreq_gov_performance_limits()
-         \-__cpufreq_driver_target(target_freq=policy->max) // with policy->max = nominal_freq ?
-           \-if (target_freq == policy->cur)
-           \-  // do nothing
-
-I am not sure I understand when you are turning the turbo on with:
-# echo 1 > /sys/devices/system/cpu/cpufreq/boost
-
-Or do you mean that turbo is available but not turned on ?
-
-
-Regards,
-Pierre
-
->> 	cpufreq_init_policy()
->> 		...
->> 		cpufreq_start_governor() // governor: performance
->> 			new_freq = cpufreq_driver->get() // if new_freq == policy->max
->> 			if (policy->cur != new_freq)
->> 			cpufreq_out_of_sync(policy, new_freq)
->> 				...
->> 				policy->cur = new_freq
->> 			...
->> 			policy->governor->limits()
->> 				__cpufreq_driver_target(policy->max)
->> 					if (policy->cur==target)
->> 					// generate error, keep set highest_perf
->> 						ret
->> 					cppc_set_perf(target)
->>
->> Fix this by changing highest_perf to nominal_perf in cppc_cpufreq_cpu_init().
->>
->> Fixes: 5477fb3bd1e8 ("ACPI / CPPC: Add a CPUFreq driver for use with CPPC")
->> Signed-off-by: liwei <liwei728@huawei.com>
->> ---
->>   drivers/cpufreq/cppc_cpufreq.c | 8 ++++----
->>   1 file changed, 4 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index 64420d9cfd1e..db04a82b8a97 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -669,14 +669,14 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>   	if (caps->highest_perf > caps->nominal_perf)
->>   		boost_supported = true;
->>   
->> -	/* Set policy->cur to max now. The governors will adjust later. */
->> -	policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
->> -	cpu_data->perf_ctrls.desired_perf =  caps->highest_perf;
->> +	/* Set policy->cur to norm now. */
->> +	policy->cur = cppc_perf_to_khz(caps, caps->nominal_perf);
->> +	cpu_data->perf_ctrls.desired_perf =  caps->nominal_perf;
->>   
->>   	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->>   	if (ret) {
->>   		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
->> -			 caps->highest_perf, cpu, ret);
->> +			 caps->nominal_perf, cpu, ret);
->>   		goto out;
->>   	}
->>   
->> -- 
->> 2.25.1
-> 
