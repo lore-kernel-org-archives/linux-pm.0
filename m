@@ -1,45 +1,45 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A3A75A0FE
-	for <linux-pm@vger.kernel.org>; Sat,  4 May 2024 16:41:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2512F5A0F5
+	for <linux-pm@vger.kernel.org>; Sat,  4 May 2024 16:41:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714840890; cv=none; b=LSopPkqewvYjacWWiCnXkVzh79cb7ERFk0UVSrqjGLBK/5p24NxBorr0nIbaNLeEbb5w9qpecoRcMwSUR3dTgdRXbSagJyobQVNEfyvQWRCx5iXwEkGD4KRA5QWF6UItQUAsa2sp6IjBYxcRVNFmIDucleCXTf8qgEmPV8cXZnA=
+	t=1714840893; cv=none; b=mIgPZF4RnbcufCF8ug6AlMv5TAnucQI4+UVNkKr3DCXK43gwZR5Ok4ts8N17js0znTaA8rAKd6cY8F93rciE4ieP1Chhp9B1IwjOEBTLbn+duN+eY3hMJrjVjwBbqgSqcLNBNhoX5L5Eel0LhSwkz+MooVW6yUZQ+qG+uW2oOWw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714840890; c=relaxed/simple;
-	bh=oAaOX0mFkfF8Lep1L6RVIQKgGo7OyX39Zj3ebHl9mck=;
+	s=arc-20240116; t=1714840893; c=relaxed/simple;
+	bh=a8m+8+e12Ee+CccBOHshe0OQsistjn54NNvnebu/DWA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GJuCK/kt03QxnNvNB+CIeWU404GKNTl0BzdnG698XN+RoA3XzxSuQo0iYhMeB9s+m6Nxc5yA1fib1rFgja6g1lsv+gdDEhyyJKIOxq/aChv7ee2s+XeIUVn/qf97wbsnRGFrtfcd6BFLVWG2UmhLf+VorJk6/AuGy171ntUyYd4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=chp06knC; arc=none smtp.client-ip=170.10.129.124
+	 MIME-Version; b=JwTCiCe8bLA3VTop9PPNwHOHO/3F9+PWzRARnNIRkI+nZ10B6CMy2nx0EuNAMjBsZnarNzhboapZxoCXC/nCFuQlaLJ/s7+0YOQh074tEcbiQm8z03FkJqmtWmHRDCPksICukRSUj9fZ9HQ0DSKRDjDyZ5meDMHmgHK8osWpxO4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Cr+62168; arc=none smtp.client-ip=170.10.133.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="chp06knC"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Cr+62168"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1714840888;
+	s=mimecast20190719; t=1714840891;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vFBingpjpDfRwTxUlurQ7OennTtxWuPwkEFGn/JyEKY=;
-	b=chp06knCNXWR6INDhDf7+WHVwjjyQy7BmEhTUKuJUE9Lqjr1CVFvUt3cKq7SG+DfHeWFUm
-	BZivmMnbLeGQmUZeFo/JlK3dPfKY5Yop8zQv391EKg0VjQTilBVWN1YVqHyTArWfqODznu
-	yAym1s90L35dKSgHBoTTh3l9UoPLZnA=
+	bh=zsUUJqxO2YzjHdqDwi1FpZnhd5na65/RZYeiDHHsZs0=;
+	b=Cr+62168UzWguF+Pt+C9o1EFA9WuVPpLs+9m8NGY6mCQbc0AHfw/63ZN2tR79S59GCpEZd
+	UdDs3G3JZYnN2rDuRmCouwN35owlDa/FhZ21MzyDucu4xBeEA5xOER1KR1X1NKTXojwesn
+	sHC3WTVVRH5uIwhLNRx5CVg+a54WuJA=
 Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
  by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-639-anHJ6G1yMM2kiju7hY5tnA-1; Sat,
- 04 May 2024 12:41:24 -0400
-X-MC-Unique: anHJ6G1yMM2kiju7hY5tnA-1
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-388-KdMSVrE8PuOP6dLXXiuFRA-1; Sat,
+ 04 May 2024 12:41:27 -0400
+X-MC-Unique: KdMSVrE8PuOP6dLXXiuFRA-1
 Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 9D4021C03150;
-	Sat,  4 May 2024 16:41:23 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id E35591C03150;
+	Sat,  4 May 2024 16:41:26 +0000 (UTC)
 Received: from localhost.localdomain (unknown [10.39.192.41])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 32454EC685;
-	Sat,  4 May 2024 16:41:21 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id 73B93EC682;
+	Sat,  4 May 2024 16:41:25 +0000 (UTC)
 From: Hans de Goede <hdegoede@redhat.com>
 To: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
 	Andy Shevchenko <andy@kernel.org>,
@@ -52,10 +52,10 @@ Cc: Hans de Goede <hdegoede@redhat.com>,
 	=?UTF-8?q?Andr=C3=A9=20Apitzsch?= <git@apitzsch.eu>,
 	linux-leds@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Subject: [PATCH v9 4/7] leds: core: Add led_mc_set_brightness() function
-Date: Sat,  4 May 2024 18:41:02 +0200
-Message-ID: <20240504164105.114017-5-hdegoede@redhat.com>
+	Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: [PATCH v9 6/7] power: supply: power-supply-leds: Add charging_orange_full_green trigger for RGB LED
+Date: Sat,  4 May 2024 18:41:04 +0200
+Message-ID: <20240504164105.114017-7-hdegoede@redhat.com>
 In-Reply-To: <20240504164105.114017-1-hdegoede@redhat.com>
 References: <20240504164105.114017-1-hdegoede@redhat.com>
 Precedence: bulk
@@ -67,127 +67,119 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.5
 
-Add a new led_mc_set_brightness() function for in kernel color/brightness
-changing of multi-color LEDs.
+From: Kate Hsuan <hpa@redhat.com>
 
-led-class-multicolor can be build as a module and led_mc_set_brightness()
-will have the builtin callers, so put led_mc_set_brightness() inside
-led-core instead, just like how led_set_brightness() is part of the core
-and not of the led-class object.
+Add a charging_orange_full_green LED trigger and the trigger is based on
+led_mc_trigger_event() which can set an RGB LED when the trigger is
+triggered. The LED will show orange when the battery status is charging.
+The LED will show green when the battery status is full.
 
-This also adds a new LED_MULTI_COLOR led_classdev flag to allow
-led_mc_set_brightness() to verify that it is operating on a multi-color
-LED classdev, avoiding casting the passed in LED classdev to a multi-color
-LED classdev, when it actually is not a multi-color LED.
-
-Reviewed-by: Jacek Anaszewski <jacek.anaszewski@gmail.com>
+Link: https://lore.kernel.org/linux-leds/f40a0b1a-ceac-e269-c2dd-0158c5b4a1ad@gmail.com/
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Signed-off-by: Kate Hsuan <hpa@redhat.com>
 Reviewed-by: Andy Shevchenko <andy@kernel.org>
+[hdegoede@redhat.com change color order to RGB]
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/leds/led-class-multicolor.c |  1 +
- drivers/leds/led-core.c             | 31 +++++++++++++++++++++++++++++
- include/linux/leds.h                | 20 +++++++++++++++++++
- 3 files changed, 52 insertions(+)
+ drivers/power/supply/power_supply_leds.c | 23 +++++++++++++++++++++++
+ include/linux/power_supply.h             |  2 ++
+ 2 files changed, 25 insertions(+)
 
-diff --git a/drivers/leds/led-class-multicolor.c b/drivers/leds/led-class-multicolor.c
-index ec62a4811613..df01c0e66c8b 100644
---- a/drivers/leds/led-class-multicolor.c
-+++ b/drivers/leds/led-class-multicolor.c
-@@ -134,6 +134,7 @@ int led_classdev_multicolor_register_ext(struct device *parent,
- 		return -EINVAL;
- 
- 	led_cdev = &mcled_cdev->led_cdev;
-+	led_cdev->flags |= LED_MULTI_COLOR;
- 	mcled_cdev->led_cdev.groups = led_multicolor_groups;
- 
- 	return led_classdev_register_ext(parent, led_cdev, init_data);
-diff --git a/drivers/leds/led-core.c b/drivers/leds/led-core.c
-index 89c9806cc97f..ef7d1c6767ca 100644
---- a/drivers/leds/led-core.c
-+++ b/drivers/leds/led-core.c
-@@ -8,6 +8,7 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/led-class-multicolor.h>
- #include <linux/leds.h>
- #include <linux/list.h>
- #include <linux/module.h>
-@@ -362,6 +363,36 @@ int led_set_brightness_sync(struct led_classdev *led_cdev, unsigned int value)
- }
- EXPORT_SYMBOL_GPL(led_set_brightness_sync);
- 
-+/*
-+ * This is a led-core function because just like led_set_brightness()
-+ * it is used in the kernel by e.g. triggers.
-+ */
-+void led_mc_set_brightness(struct led_classdev *led_cdev,
-+			   unsigned int *intensity_value, unsigned int num_colors,
-+			   unsigned int brightness)
-+{
-+	struct led_classdev_mc *mcled_cdev;
-+	unsigned int i;
-+
-+	if (!(led_cdev->flags & LED_MULTI_COLOR)) {
-+		dev_err_once(led_cdev->dev, "error not a multi-color LED\n");
-+		return;
-+	}
-+
-+	mcled_cdev = lcdev_to_mccdev(led_cdev);
-+	if (num_colors != mcled_cdev->num_colors) {
-+		dev_err_once(led_cdev->dev, "error num_colors mismatch %u != %u\n",
-+			     num_colors, mcled_cdev->num_colors);
-+		return;
-+	}
-+
-+	for (i = 0; i < mcled_cdev->num_colors; i++)
-+		mcled_cdev->subled_info[i].intensity = intensity_value[i];
-+
-+	led_set_brightness(led_cdev, brightness);
-+}
-+EXPORT_SYMBOL_GPL(led_mc_set_brightness);
-+
- int led_update_brightness(struct led_classdev *led_cdev)
+diff --git a/drivers/power/supply/power_supply_leds.c b/drivers/power/supply/power_supply_leds.c
+index c7db29d5fcb8..73935de844d9 100644
+--- a/drivers/power/supply/power_supply_leds.c
++++ b/drivers/power/supply/power_supply_leds.c
+@@ -22,6 +22,8 @@
+ static void power_supply_update_bat_leds(struct power_supply *psy)
  {
- 	int ret;
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index db6b114bb3d9..e80a185e255a 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -107,6 +107,7 @@ struct led_classdev {
- #define LED_BRIGHT_HW_CHANGED	BIT(21)
- #define LED_RETAIN_AT_SHUTDOWN	BIT(22)
- #define LED_INIT_DEFAULT_TRIGGER BIT(23)
-+#define LED_MULTI_COLOR		BIT(24)
+ 	union power_supply_propval status;
++	unsigned int intensity_green[3] = { 0, 255, 0 };
++	unsigned int intensity_orange[3] = { 255, 128, 0 };
  
- 	/* set_brightness_work / blink_timer flags, atomic, private. */
- 	unsigned long		work_flags;
-@@ -373,6 +374,25 @@ void led_set_brightness(struct led_classdev *led_cdev, unsigned int brightness);
-  */
- int led_set_brightness_sync(struct led_classdev *led_cdev, unsigned int value);
+ 	if (power_supply_get_property(psy, POWER_SUPPLY_PROP_STATUS, &status))
+ 		return;
+@@ -36,12 +38,20 @@ static void power_supply_update_bat_leds(struct power_supply *psy)
+ 		/* Going from blink to LED on requires a LED_OFF event to stop blink */
+ 		led_trigger_event(psy->charging_blink_full_solid_trig, LED_OFF);
+ 		led_trigger_event(psy->charging_blink_full_solid_trig, LED_FULL);
++		led_mc_trigger_event(psy->charging_orange_full_green_trig,
++				     intensity_green,
++				     ARRAY_SIZE(intensity_green),
++				     LED_FULL);
+ 		break;
+ 	case POWER_SUPPLY_STATUS_CHARGING:
+ 		led_trigger_event(psy->charging_full_trig, LED_FULL);
+ 		led_trigger_event(psy->charging_trig, LED_FULL);
+ 		led_trigger_event(psy->full_trig, LED_OFF);
+ 		led_trigger_blink(psy->charging_blink_full_solid_trig, 0, 0);
++		led_mc_trigger_event(psy->charging_orange_full_green_trig,
++				     intensity_orange,
++				     ARRAY_SIZE(intensity_orange),
++				     LED_FULL);
+ 		break;
+ 	default:
+ 		led_trigger_event(psy->charging_full_trig, LED_OFF);
+@@ -49,6 +59,8 @@ static void power_supply_update_bat_leds(struct power_supply *psy)
+ 		led_trigger_event(psy->full_trig, LED_OFF);
+ 		led_trigger_event(psy->charging_blink_full_solid_trig,
+ 			LED_OFF);
++		led_trigger_event(psy->charging_orange_full_green_trig,
++			LED_OFF);
+ 		break;
+ 	}
+ }
+@@ -74,6 +86,11 @@ static int power_supply_create_bat_triggers(struct power_supply *psy)
+ 	if (!psy->charging_blink_full_solid_trig_name)
+ 		goto charging_blink_full_solid_failed;
  
-+/**
-+ * led_mc_set_brightness - set mc LED color intensity values and brightness
-+ * @led_cdev: the LED to set
-+ * @intensity_value: array of per color intensity values to set
-+ * @num_colors: amount of entries in intensity_value array
-+ * @brightness: the brightness to set the LED to
-+ *
-+ * Set a multi-color LED's per color intensity values and brightness.
-+ * If necessary, this cancels the software blink timer. This function is
-+ * guaranteed not to sleep.
-+ *
-+ * Calling this function on a non multi-color led_classdev or with the wrong
-+ * num_colors value is an error. In this case an error will be logged once
-+ * and the call will do nothing.
-+ */
-+void led_mc_set_brightness(struct led_classdev *led_cdev,
-+			   unsigned int *intensity_value, unsigned int num_colors,
-+			   unsigned int brightness);
++	psy->charging_orange_full_green_trig_name = kasprintf(GFP_KERNEL,
++		"%s-charging-orange-full-green", psy->desc->name);
++	if (!psy->charging_orange_full_green_trig_name)
++		goto charging_red_full_green_failed;
 +
- /**
-  * led_update_brightness - update LED brightness
-  * @led_cdev: the LED to query
+ 	led_trigger_register_simple(psy->charging_full_trig_name,
+ 				    &psy->charging_full_trig);
+ 	led_trigger_register_simple(psy->charging_trig_name,
+@@ -82,9 +99,13 @@ static int power_supply_create_bat_triggers(struct power_supply *psy)
+ 				    &psy->full_trig);
+ 	led_trigger_register_simple(psy->charging_blink_full_solid_trig_name,
+ 				    &psy->charging_blink_full_solid_trig);
++	led_trigger_register_simple(psy->charging_orange_full_green_trig_name,
++				    &psy->charging_orange_full_green_trig);
+ 
+ 	return 0;
+ 
++charging_red_full_green_failed:
++	kfree(psy->charging_blink_full_solid_trig_name);
+ charging_blink_full_solid_failed:
+ 	kfree(psy->full_trig_name);
+ full_failed:
+@@ -101,10 +122,12 @@ static void power_supply_remove_bat_triggers(struct power_supply *psy)
+ 	led_trigger_unregister_simple(psy->charging_trig);
+ 	led_trigger_unregister_simple(psy->full_trig);
+ 	led_trigger_unregister_simple(psy->charging_blink_full_solid_trig);
++	led_trigger_unregister_simple(psy->charging_orange_full_green_trig);
+ 	kfree(psy->charging_blink_full_solid_trig_name);
+ 	kfree(psy->full_trig_name);
+ 	kfree(psy->charging_trig_name);
+ 	kfree(psy->charging_full_trig_name);
++	kfree(psy->charging_orange_full_green_trig_name);
+ }
+ 
+ /* Generated power specific LEDs triggers. */
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 8e5705a56b85..c852cc882501 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -319,6 +319,8 @@ struct power_supply {
+ 	char *online_trig_name;
+ 	struct led_trigger *charging_blink_full_solid_trig;
+ 	char *charging_blink_full_solid_trig_name;
++	struct led_trigger *charging_orange_full_green_trig;
++	char *charging_orange_full_green_trig_name;
+ #endif
+ };
+ 
 -- 
 2.44.0
 
