@@ -1,49 +1,32 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E789E2D60A;
-	Sun,  5 May 2024 19:07:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B43CF6DCF5;
+	Sun,  5 May 2024 20:57:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714936048; cv=none; b=o6H1mt1d0QUULQ0NTcxAcYJwYMgnQez/URORiuBpv7HVfHgIyaZnzYY6VJzrZ96gDyAWYdnL5DG+obdtnDjsPoqJDdp6dnsTbWeEAlSr4HWuqDzayD6CYdbS4jFTqyblkf2Mh7s3A6KiOYT+Rr9pNy1ocT8sDGRVkxCuJDhEdmk=
+	t=1714942631; cv=none; b=GIMyGHITKA0hIMdICA/3Y8LxNp2iRII0gVs8slli6YN4+f0qJJdJ/yEvAiCNUHlWM3ktO/Lvpo+B/4ZqoJ9dpHXWlNAvEtCsuHqu0HHF5uy9+INCgb69PpBREVTX5PeK3SxlR9CLm4QzjHf5kc6aooRpABqti0pGwFCe0TYyAp4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714936048; c=relaxed/simple;
-	bh=szmmLD1H/yLONpMiDrT0u1oFFCwgq8o/2sETDaKXb5o=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=jvBLd/vXMY3lYoURH7tcgaopy/D29ciz0qSI+jSmOMhWWiii7vv8ACcwt+1JsBGwz26nRcp1HBb1Wul/SXjfKb2S9EXBy5Z+x4qfJH/dCZuHxiSBV4Aj/ecDNC49XPFfP2xLQO7FeFJiUgEhCGg1AZ123tKDmvZRfGKytmIjh50=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=ByPslHNq; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1714942631; c=relaxed/simple;
+	bh=K/HTrL3dabNlERTmoHaPw5pHxjJqcQ+Gsw+F4RjFMP0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=tJGwgBd0sYHu4WFT/fLl7Udx25RfulzNn10C0o1NPZXZd0rY2aNXSy6n9e51Gb1sgW2TNOn7QBWyuO4Bk42SjXLg8Q9KhDvEye7l3YLRVQCXQdd5NLjyQCxvE5UgxVHDiPs0jworj1Qd1GDV5QTLq0wTaRxPaI9cpXGxTledh+8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=DlRuY0kr; arc=none smtp.client-ip=159.69.126.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="ByPslHNq"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 445J59tw002953;
-	Sun, 5 May 2024 19:07:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	from:date:subject:mime-version:content-type
-	:content-transfer-encoding:message-id:to:cc; s=qcppdkim1; bh=9Pf
-	w+fy0XFrWu040MiyBr71x0qncZZp6Lk8F3FLG2fk=; b=ByPslHNq3jvHcAbZmhM
-	MeF0BC0JJamxQ6iemZtflyznpzm2Ww18DLvwt3LoFRNmLJ8gTR+dzQJGwhwdJ6as
-	nv/rBtBqKYu3zckBcKeLU7akJqDE8HiRynKarwUdTeiFFQ1nHgGXFyj0wXIXC3D4
-	Cvs1SUEYa8HZdlDz3f11qNDhOmPrv+D7/dSxO05+4jPg0aP/g751/2GH7IsFBVVi
-	dwIg7ONvsAEFbgkN6f3ePmO8yZeKbWmffr6v6YWKMCDqDBM01Vn5dhszbPtYqZ9K
-	3Mv2IIORXSxK/mWuhqcVYcjGrFnJ40NzJTb6vaVuRHq4ZnNDqJxVzcANKTirlTku
-	Dig==
-Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3xwd8722eh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 05 May 2024 19:07:14 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 445J7DC7020183
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 5 May 2024 19:07:13 GMT
-Received: from [169.254.0.1] (10.49.16.6) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Sun, 5 May 2024
- 12:07:13 -0700
-From: Jeff Johnson <quic_jjohnson@quicinc.com>
-Date: Sun, 5 May 2024 12:07:12 -0700
-Subject: [PATCH] cpufreq: intel_pstate: fix struct cpudata::epp_cached
- kernel-doc
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="DlRuY0kr"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1714942625;
+	bh=K/HTrL3dabNlERTmoHaPw5pHxjJqcQ+Gsw+F4RjFMP0=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=DlRuY0kruFOFHwKvP0N13UyDTwS3AxmEGenfQA7/GcAiNW89WUOVe9y4kf7KGai9y
+	 69enMtp0qr9LDruumOdm93IYltTXiHit3ydLwQ5hutz976WgppFbwJ6wz84Nd403yI
+	 xIaD7mVR7Hh4+/ozxkbQi4WvGXrwTLsv7vjVDA4E=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Sun, 05 May 2024 22:56:35 +0200
+Subject: [PATCH 2/2] platform/chrome: cros_ec_framework_laptop: implement
+ battery charge thresholds
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -51,61 +34,195 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20240505-epp_cached-kdoc-v1-1-c03800fe0d63@quicinc.com>
-X-B4-Tracking: v=1; b=H4sIAN/YN2YC/x3MQQrCMBBG4auUWTuQtnahVxGR6eSvGcQ0TESE0
- rsbXX6L9zaqcEOlc7eR423V1tzQHzrSJPkOtthMQxiOYQoTo5SbiiZEfsRVWVTCqcc4yiLUquJ
- Y7PM/Xq7Ns1Tw7JI1/T5PqS847fsXqmNeCXoAAAA=
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown
-	<lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar
-	<viresh.kumar@linaro.org>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        Jeff Johnson
-	<quic_jjohnson@quicinc.com>
+Content-Transfer-Encoding: 8bit
+Message-Id: <20240505-cros_ec-framework-v1-2-402662d6276b@weissschuh.net>
+References: <20240505-cros_ec-framework-v1-0-402662d6276b@weissschuh.net>
+In-Reply-To: <20240505-cros_ec-framework-v1-0-402662d6276b@weissschuh.net>
+To: Lee Jones <lee@kernel.org>, Benson Leung <bleung@chromium.org>, 
+ Guenter Roeck <groeck@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>
+Cc: linux-kernel@vger.kernel.org, chrome-platform@lists.linux.dev, 
+ Mario Limonciello <mario.limonciello@amd.com>, 
+ "Dustin L. Howett" <dustin@howett.net>, Sebastian Reichel <sre@kernel.org>, 
+ linux-pm@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.13.0
-X-ClientProxiedBy: nalasex01a.na.qualcomm.com (10.47.209.196) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: W9ipNlg63xv7LTPfCWtzPAjHPyOMC1P2
-X-Proofpoint-GUID: W9ipNlg63xv7LTPfCWtzPAjHPyOMC1P2
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1011,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-05-05_13,2024-05-03_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 spamscore=0
- clxscore=1011 priorityscore=1501 phishscore=0 mlxlogscore=999
- suspectscore=0 impostorscore=0 bulkscore=0 mlxscore=0 malwarescore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2404010003 definitions=main-2405050083
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1714942624; l=4885;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=K/HTrL3dabNlERTmoHaPw5pHxjJqcQ+Gsw+F4RjFMP0=;
+ b=qclKK7GMQPcv8He6mcRlgvXNLOvtIzmaV2pNR/4ps1X7RD1Hy7U0/BTNHLezsHDjaCFfk2tMd
+ Mg7ujhtt64/Ae0d6OGF/53YdoO/4E8BBylcqgUQ9bQZn2a2989pm/pJ
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-make C=1 currently gives the following warning:
+Make use of the non-standard EC command FW_EC_CMD_CHARGE_LIMIT_CONTROL
+to implement the standard sysfs attribute
+"charge_control_end_threshold".
 
-drivers/cpufreq/intel_pstate.c:262: warning: Function parameter or struct member 'epp_cached' not described in 'cpudata'
+Tested on a Framework 13 AMD with firmware version 3.05.
 
-Add the missing ":" to fix the trivial kernel-doc syntax error.
-
-Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/cpufreq/intel_pstate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/platform/chrome/cros_ec_framework_laptop.c | 120 +++++++++++++++++++++
+ 1 file changed, 120 insertions(+)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index dbbf299f4219..7ddf05c9ba88 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -213,7 +213,7 @@ struct global_params {
-  * @epp_policy:		Last saved policy used to set EPP/EPB
-  * @epp_default:	Power on default HWP energy performance
-  *			preference/bias
-- * @epp_cached		Cached HWP energy-performance preference value
-+ * @epp_cached:		Cached HWP energy-performance preference value
-  * @hwp_req_cached:	Cached value of the last HWP Request MSR
-  * @hwp_cap_cached:	Cached value of the last HWP Capabilities MSR
-  * @last_io_update:	Last time when IO wake flag was set
+diff --git a/drivers/platform/chrome/cros_ec_framework_laptop.c b/drivers/platform/chrome/cros_ec_framework_laptop.c
+index 8a8bf039fa9c..2693a80df38f 100644
+--- a/drivers/platform/chrome/cros_ec_framework_laptop.c
++++ b/drivers/platform/chrome/cros_ec_framework_laptop.c
+@@ -4,18 +4,119 @@
+  *
+  *  Copyright (C) 2024 Thomas Weißschuh <linux@weissschuh.net>
+  */
++#include <acpi/battery.h>
+ #include <linux/kernel.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
++#include <linux/platform_data/cros_ec_commands.h>
+ #include <linux/platform_data/cros_ec_proto.h>
+ #include <linux/platform_device.h>
+ 
+ #define DRV_NAME	"cros-ec-framework"
+ 
++#define FW_EC_CMD_CHARGE_LIMIT_CONTROL	0x3E03
++
++#define FW_EC_CHG_LIMIT_DISABLE		BIT(0)
++#define FW_EC_CHG_LIMIT_SET		BIT(1)
++#define FW_EC_CHG_LIMIT_GET		BIT(3)
++#define FW_EC_CHG_LIMIT_OVERRIDE	BIT(7)
++
+ struct cros_fwk_priv {
+ 	struct cros_ec_device *cros_ec;
++	struct acpi_battery_hook battery_hook;
++	struct device_attribute end_threshold;
++};
++
++union cros_fwk_data {
++	struct {
++		u8 modes;
++		u8 max_percentage;
++		u8 min_percentage; /* not implemented in the EC */
++	} __packed req;
++	struct {
++		u8 max_percentage;
++		u8 min_percentage;
++	} __packed resp;
+ };
+ 
++static int cros_fwk_send_cmd(struct cros_ec_device *cros_ec, union cros_fwk_data *arg)
++{
++	int ret;
++	struct {
++		struct cros_ec_command msg;
++		union cros_fwk_data data;
++	} __packed buf = {
++		.msg = {
++			.version = 0,
++			.command = FW_EC_CMD_CHARGE_LIMIT_CONTROL,
++			.insize  = sizeof(arg->resp),
++			.outsize = sizeof(arg->req),
++		},
++		.data.req = arg->req
++	};
++
++	ret = cros_ec_cmd_xfer_status(cros_ec, &buf.msg);
++	if (ret < 0)
++		return ret;
++
++	arg->resp = buf.data.resp;
++
++	return 0;
++}
++
++static ssize_t charge_control_end_threshold_show(struct device *dev, struct device_attribute *attr,
++						 char *buf)
++{
++	struct cros_fwk_priv *priv = container_of(attr, struct cros_fwk_priv, end_threshold);
++	union cros_fwk_data arg = { };
++	int ret;
++
++	arg.req.modes = FW_EC_CHG_LIMIT_GET;
++	ret = cros_fwk_send_cmd(priv->cros_ec, &arg);
++	if (ret < 0)
++		return ret;
++
++	return sysfs_emit(buf, "%u\n", (unsigned int)arg.resp.max_percentage);
++}
++
++static ssize_t charge_control_end_threshold_store(struct device *dev, struct device_attribute *attr,
++						  const char *buf, size_t count)
++{
++	struct cros_fwk_priv *priv = container_of(attr, struct cros_fwk_priv, end_threshold);
++	union cros_fwk_data arg = { };
++	int ret, val;
++
++	ret = kstrtoint(buf, 10, &val);
++	if (ret < 0)
++		return ret;
++	if (val < 1 || val > 100)
++		return -EINVAL;
++
++	arg.req.modes = FW_EC_CHG_LIMIT_SET;
++	arg.req.max_percentage = val;
++	ret = cros_fwk_send_cmd(priv->cros_ec, &arg);
++	if (ret < 0)
++		return ret;
++
++	return count;
++}
++
++static int cros_fwk_add_battery(struct power_supply *battery, struct acpi_battery_hook *hook)
++{
++	struct cros_fwk_priv *priv = container_of(hook, struct cros_fwk_priv, battery_hook);
++
++	return device_create_file(&battery->dev, &priv->end_threshold);
++}
++
++static int cros_fwk_remove_battery(struct power_supply *battery, struct acpi_battery_hook *hook)
++{
++	struct cros_fwk_priv *priv = container_of(hook, struct cros_fwk_priv, battery_hook);
++
++	device_remove_file(&battery->dev, &priv->end_threshold);
++
++	return 0;
++}
++
+ static int cros_fwk_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -28,6 +129,24 @@ static int cros_fwk_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	priv->cros_ec = cros_ec;
++	priv->end_threshold = (struct device_attribute)__ATTR_RW(charge_control_end_threshold);
++
++	priv->battery_hook.name = dev_name(dev),
++	priv->battery_hook.add_battery = cros_fwk_add_battery,
++	priv->battery_hook.remove_battery = cros_fwk_remove_battery,
++
++	battery_hook_register(&priv->battery_hook);
++
++	platform_set_drvdata(pdev, priv);
++
++	return 0;
++}
++
++static int cros_fwk_remove(struct platform_device *pdev)
++{
++	struct cros_fwk_priv *priv = platform_get_drvdata(pdev);
++
++	battery_hook_unregister(&priv->battery_hook);
+ 
+ 	platform_set_drvdata(pdev, priv);
+ 
+@@ -42,6 +161,7 @@ static const struct platform_device_id cros_fwk_id[] = {
+ static struct platform_driver cros_fwk_driver = {
+ 	.driver.name	= DRV_NAME,
+ 	.probe		= cros_fwk_probe,
++	.remove		= cros_fwk_remove,
+ 	.id_table	= cros_fwk_id,
+ };
+ 
 
----
-base-commit: 2c4d8e19cf060744a9db466ffbaea13ab37f25ca
-change-id: 20240505-epp_cached-kdoc-aca091e33afa
+-- 
+2.45.0
 
