@@ -1,47 +1,47 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 124D31A2C12;
-	Wed,  8 May 2024 03:37:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FE0414A9F;
+	Wed,  8 May 2024 03:37:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715139422; cv=none; b=DQvoyUkeAjcvCc40IspHx5OxTsppMpZM2aX6ySZRxYbbcJ1jHq1bydYeD94qK2Bw1grjq19QaUiWIzc5g4zHe3L1k+iwgOkDjQF+LnHO2UZtLRNBR2xlSDbh3RKppNnlQSYKttQ+vF5Uw7fdjeS9/Xey4DCFjdFw7+eFIUbvLKo=
+	t=1715139424; cv=none; b=kzz36w2WIMV1YD5WBuWwDGegfGRXFMDkZzZ5w4WByoS63kb8mFX+9Lv/EcVntO+SG7dCm4ooXf9MW3NVG83cQcyhCSjcbw3pzweYyo9u7IOuXFSefuSVg1mk4+zeGHwJd9cC9CrR+anyQex7Nj8nBRtcOb41Eh2upp8w2hFxqxU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715139422; c=relaxed/simple;
-	bh=kR97mbQ0Rry62elnu9tL23JQRgk/0e+OWskQwenqFE0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=UVAOSJ8wyf7YjMwbu9/xLg2kCFxawTWL+mofK9CJJAMAQh9DuvZ53SyrplMAUSiyDv3G6Z39pBJt/tc2hC6xNy0Q0OGmu7lk+6gL0wuzDWj5XZ/SsM16+RqrLRpVdSMw4Wgxa+5pCg+zpsIQEUZ1SjhXu+C0+nNfJuIPCwOYDYw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ekxUbIjD; arc=none smtp.client-ip=192.198.163.18
+	s=arc-20240116; t=1715139424; c=relaxed/simple;
+	bh=K+HG7L12mRkwMo3ylUVsmFfW2pNh/hN2w+jXyyLa2fE=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=qQAIbkslFMsw1QzGBpKw0baDhxS3pWsirA3QZjbdAg2vqB/5S1Ey72UHqMLjl7f9KnkcHBJIac6vg1CJmLwARisr6RlmlY9EnSSoS+H8U9fktnR1vt6+gQtk0x6MlopFMB5KnNRH9bdSOKf1Cl0EuZGyyseKtFQ7L22dohYceIE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fde7jpnD; arc=none smtp.client-ip=192.198.163.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ekxUbIjD"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fde7jpnD"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1715139421; x=1746675421;
+  t=1715139423; x=1746675423;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=kR97mbQ0Rry62elnu9tL23JQRgk/0e+OWskQwenqFE0=;
-  b=ekxUbIjDqebK5mQi5mQUZxcVWBryOtgnVe7Eba5+fTb6GGK8RG/JSkCN
-   ozWG5wLJ2D80P73eISCZNWTal5Pv8xiomlEtGbvizwuKecaaHcwwDjTtu
-   YzTWoBVuoiGGT4FTS5s+gcQU5QHnX6jpzwFaAA8+Kyc2z0lZzAVaN/X9K
-   nw9ZLFVeA/GwJ9FGM1pOzCha4YXRkq9QwRqFPWUiRmjWTArH59okGQHmD
-   dcl/HDzspttDHisAbb1DR9wFzp4T+rqbgMUqte1Fe9T7B6mdb/l6Mq6IJ
-   pql1dLvjPMb4YIssL16ybBkJKcPUd/q8MHMdQvzdd5xKo0ZgYrc6dLp82
-   A==;
-X-CSE-ConnectionGUID: 8YH2gV0LSNSlbCSCmhWdQg==
-X-CSE-MsgGUID: Ozsttdn8TCahAvDjIZkS1g==
-X-IronPort-AV: E=McAfee;i="6600,9927,11066"; a="10820907"
+  bh=K+HG7L12mRkwMo3ylUVsmFfW2pNh/hN2w+jXyyLa2fE=;
+  b=fde7jpnDp4N09pNphklmarcMSCAKieauw0waH99wgd979x7uv5eh/vbC
+   QbAg/gCZjpTGmX19g+vDGxDwFV0Ur+1h1FM4E9ph8WBghiX8uZA0xQrjz
+   gn/LZPTNsf6c/ddWwxOG3BQmZlu7QsQR/qtZWvDoU4D2g8S/57HvnnVBk
+   bntPt5u4ZG7VIljT4GTI9IN71J1wL3BgvrBgtHtph3xk9WcGrOskDav6F
+   DttqEE7180FmyUh4R5gJj2cW5s81oRLLxjclkL+BB+aKEjywzp/O3PMto
+   0HSJ0tmrigmBZ/YJLW03VqqFRMewxsjtB0j+cGPzm2+xHxw+w8zCZzSK2
+   Q==;
+X-CSE-ConnectionGUID: p76twJoiR9el0vK9PW66kg==
+X-CSE-MsgGUID: 5isWQIReQlOFtBA+hYYelQ==
+X-IronPort-AV: E=McAfee;i="6600,9927,11066"; a="10820911"
 X-IronPort-AV: E=Sophos;i="6.08,144,1712646000"; 
-   d="scan'208";a="10820907"
+   d="scan'208";a="10820911"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2024 20:36:54 -0700
-X-CSE-ConnectionGUID: sPr03TCfQ/mzWXbDwBqnoQ==
-X-CSE-MsgGUID: GsF2qpQeT8aoHHIVck2jwg==
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2024 20:36:55 -0700
+X-CSE-ConnectionGUID: K6MZavhyS/Wv84QMfOZ7uw==
+X-CSE-MsgGUID: 5qRDoizsQuKXKBRfgiCGeQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.08,144,1712646000"; 
-   d="scan'208";a="33551924"
+   d="scan'208";a="33551935"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by orviesa005.jf.intel.com with ESMTP; 07 May 2024 20:36:52 -0700
+  by orviesa005.jf.intel.com with ESMTP; 07 May 2024 20:36:53 -0700
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 Cc: Zhang Rui <rui.zhang@intel.com>,
@@ -51,9 +51,9 @@ Cc: Zhang Rui <rui.zhang@intel.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Ricardo Neri <ricardo.neri@intel.com>
-Subject: [PATCH v2 1/4] thermal: intel: hfi: Rename HFI_UPDATE_INTERVAL
-Date: Tue,  7 May 2024 20:43:49 -0700
-Message-Id: <20240508034352.18414-2-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v2 4/4] thermal: intel: hfi: Increase the number of CPU capabilities per netlink event
+Date: Tue,  7 May 2024 20:43:52 -0700
+Message-Id: <20240508034352.18414-5-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20240508034352.18414-1-ricardo.neri-calderon@linux.intel.com>
 References: <20240508034352.18414-1-ricardo.neri-calderon@linux.intel.com>
@@ -63,11 +63,16 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 
-The name of the constant HFI_UPDATE_INTERVAL is misleading. It is not a
-periodic interval at which HFI updates are processed. It is the delay in
-the processing of an HFI update after the arrival of an HFI interrupt.
+The number of updated CPU capabilities per netlink event is hard-coded to
+16. On systems with more than 16 CPUs (a common case), it takes more than
+one thermal netlink event to relay all the new capabilities after an HFI
+interrupt. This adds unnecessary overhead to both the kernel and user space
+entities.
 
-Acked-by: Zhang Rui <rui.zhang@intel.com>
+Increase the number of CPU capabilities updated per event to 64. Any system
+with 64 CPUs or less can now update all the capabilities in a single
+thermal netlink event.
+
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Cc: Len Brown <len.brown@intel.com>
@@ -77,34 +82,26 @@ Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
-Changes since v1:
- * None
+Changes since v2:
+ * Dropped the debugfs interface. Instead, increased the size of the
+   thermal netlink message size to 64 CPU capabilities.
 ---
- drivers/thermal/intel/intel_hfi.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/thermal/intel/intel_hfi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
-index fbc7f0cd83d7..e2b82d71ab6b 100644
+index c6658f8c5cca..a180a98bb9f1 100644
 --- a/drivers/thermal/intel/intel_hfi.c
 +++ b/drivers/thermal/intel/intel_hfi.c
-@@ -166,7 +166,7 @@ static struct hfi_features hfi_features;
- static DEFINE_MUTEX(hfi_instance_lock);
+@@ -167,7 +167,7 @@ static DEFINE_MUTEX(hfi_instance_lock);
  
  static struct workqueue_struct *hfi_updates_wq;
--#define HFI_UPDATE_INTERVAL		HZ
-+#define HFI_UPDATE_DELAY		HZ
- #define HFI_MAX_THERM_NOTIFY_COUNT	16
+ #define HFI_UPDATE_DELAY_MS		100
+-#define HFI_THERMNL_CAPS_PER_EVENT	16
++#define HFI_THERMNL_CAPS_PER_EVENT	64
  
  static void get_hfi_caps(struct hfi_instance *hfi_instance,
-@@ -322,7 +322,7 @@ void intel_hfi_process_event(__u64 pkg_therm_status_msr_val)
- 	raw_spin_unlock(&hfi_instance->event_lock);
- 
- 	queue_delayed_work(hfi_updates_wq, &hfi_instance->update_work,
--			   HFI_UPDATE_INTERVAL);
-+			   HFI_UPDATE_DELAY);
- }
- 
- static void init_hfi_cpu_index(struct hfi_cpu_info *info)
+ 			 struct thermal_genl_cpu_caps *cpu_caps)
 -- 
 2.34.1
 
