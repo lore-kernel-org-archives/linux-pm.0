@@ -1,290 +1,307 @@
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+Received: from prime.voidband.net (prime.voidband.net [199.247.17.104])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 695FC9476;
-	Wed,  8 May 2024 08:44:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A4A21DFE8;
+	Wed,  8 May 2024 09:39:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.247.17.104
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715157864; cv=none; b=eWsJrTOETcxfyvZBZRLzfDJ+S8/Qp2nD2zcWPvwXIY029nR7SnfbM2oYpFuQ8io5XqB+OfDXNNLFjGk4Sczi7O4sMVhnWfPVO3Lrc2+jmkx27svcn0rA11g1mwFi6oRrRh8idJr6xUmdRqcWEfxD8g0QU1HydoBygf0DDxoMbck=
+	t=1715161176; cv=none; b=lFn/phLzYFZD3wS0X2nQbrKbTfBt9T2+KzVGdvLiypZN4HTUJN97ItHgGYrOiGI0AurAbs8phLCrhen3G4SU6lquLX4qNTXTtRRx9wD96YdX0LUl6seT2VyLxHmJAE4mboIi1AXGeISWYiFSk5asVpQeQxt22vQMw+k8bknwcN8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715157864; c=relaxed/simple;
-	bh=T5zecpj4li0OuIWBMVUt5WCfBkgXJbSbJgxIbR51vqs=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=SRswTxxyLC8rm9PIKjNZp+4cp1VyJ6qoFVNYchE1oZIF5QCfKiXwcpwl1PyLAexLWSFVud7jiqq8OsKCeg4HZji0EmJ5Ughbcj9x1K2hpiZpNUuICauGyl129Q6kxIxuZBMBGeKALhVGBK+C7qKT/y6MOKMQ5w5/wu/oR5Knrb4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.18.186.231])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4VZ7sK1b83z6K6Kl;
-	Wed,  8 May 2024 16:41:09 +0800 (CST)
-Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
-	by mail.maildlp.com (Postfix) with ESMTPS id 44CD0140B54;
-	Wed,  8 May 2024 16:44:14 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Wed, 8 May
- 2024 09:44:13 +0100
-Date: Wed, 8 May 2024 09:44:11 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra
-	<peterz@infradead.org>, <linux-pm@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
-	<linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <kvmarm@lists.linux.dev>,
-	<x86@kernel.org>, Russell King <linux@armlinux.org.uk>, Miguel Luis
-	<miguel.luis@oracle.com>, James Morse <james.morse@arm.com>, Salil Mehta
-	<salil.mehta@huawei.com>, Jean-Philippe Brucker <jean-philippe@linaro.org>,
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
-	Marc Zyngier <maz@kernel.org>, Hanjun Guo <guohanjun@huawei.com>, "Gavin
- Shan" <gshan@redhat.com>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
-	<bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
-	<linuxarm@huawei.com>, <justin.he@arm.com>, <jianyong.wu@arm.com>
-Subject: Re: [PATCH v9 06/19] ACPI: processor: Move checks and availability
- of acpi_processor earlier
-Message-ID: <20240508094411.00001b92@Huawei.com>
-In-Reply-To: <CAJZ5v0g-Aenoj5H+pNPtoqTgV5U7K5RGNjdOnqobqxkyL5NMVQ@mail.gmail.com>
-References: <20240430142434.10471-1-Jonathan.Cameron@huawei.com>
-	<20240430142434.10471-7-Jonathan.Cameron@huawei.com>
-	<CAJZ5v0g-Aenoj5H+pNPtoqTgV5U7K5RGNjdOnqobqxkyL5NMVQ@mail.gmail.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+	s=arc-20240116; t=1715161176; c=relaxed/simple;
+	bh=KH7B+KUi7/uyxY/n5GLOsX5f4dTbd0+EXoloUHOnaWE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=fhMEv5ENyVVHbxxCEYwlmaJTOMQT/x/dCTCZCozCZylaKCp1jGkQxaV8zqbZi035/j+Lvdp3ME2lkNthqBR6BSs8zvhXAxedNXN2dBD7lRZ/IVut4aQAtdmXv7sgTB4I55VBjLLDwcjwz1EDm1bB9B+ywfybnJcimmbi3kjG4u8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=natalenko.name; spf=pass smtp.mailfrom=natalenko.name; dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b=j/xAcfs6; arc=none smtp.client-ip=199.247.17.104
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=natalenko.name
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=natalenko.name
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b="j/xAcfs6"
+Received: from spock.localnet (unknown [94.142.239.106])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by prime.voidband.net (Postfix) with ESMTPSA id A4C1762DD102;
+	Wed, 08 May 2024 11:39:30 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=natalenko.name;
+	s=dkim-20170712; t=1715161170;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=uYimBYoGsy02yIPeW5MHw0nmB/ooXCVrMND+XDBZq/8=;
+	b=j/xAcfs6jkOB87aATp/uUNBdM/ByWYRwcOw/m8gQZccvn5dXCJvefzMjdZ3MQYKO/ZarLu
+	urjZZ8+ru2sQLst2qcu2U9JgrTAOcyogQaimMP8uvGxNBv5M3p6yiRIx3E93mVnBX4i8HX
+	ldlWogz5c2kiTTC2G4m+dyEMeMW98i8=
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+To: rafael.j.wysocki@intel.com, Mario.Limonciello@amd.com,
+ viresh.kumar@linaro.org, Ray.Huang@amd.com, gautham.shenoy@amd.com,
+ Borislav.Petkov@amd.com, Perry Yuan <perry.yuan@amd.com>
+Cc: Alexander.Deucher@amd.com, Xinmei.Huang@amd.com, Xiaojian.Du@amd.com,
+ Li.Meng@amd.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject:
+ Re: [PATCH v10 3/7] cpufreq: amd-pstate: implement cpb_boost sysfs entry for
+ boost control
+Date: Wed, 08 May 2024 11:39:15 +0200
+Message-ID: <4563575.LvFx2qVVIh@natalenko.name>
+In-Reply-To:
+ <90a2bf1607c525a1e5b42d7327dbcfe5dd338549.1715152592.git.perry.yuan@amd.com>
+References:
+ <cover.1715152592.git.perry.yuan@amd.com>
+ <90a2bf1607c525a1e5b42d7327dbcfe5dd338549.1715152592.git.perry.yuan@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; boundary="nextPart2322898.ElGaqSPkdT";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+
+--nextPart2322898.ElGaqSPkdT
 Content-Transfer-Encoding: quoted-printable
-X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
+Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+Date: Wed, 08 May 2024 11:39:15 +0200
+Message-ID: <4563575.LvFx2qVVIh@natalenko.name>
+MIME-Version: 1.0
 
-On Tue, 7 May 2024 21:04:26 +0200
-"Rafael J. Wysocki" <rafael@kernel.org> wrote:
+Hello.
 
-> On Tue, Apr 30, 2024 at 4:27=E2=80=AFPM Jonathan Cameron
-> <Jonathan.Cameron@huawei.com> wrote:
-> >
-> > Make the per_cpu(processors, cpu) entries available earlier so that
-> > they are available in arch_register_cpu() as ARM64 will need access
-> > to the acpi_handle to distinguish between acpi_processor_add()
-> > and earlier registration attempts (which will fail as _STA cannot
-> > be checked).
-> >
-> > Reorder the remove flow to clear this per_cpu() after
-> > arch_unregister_cpu() has completed, allowing it to be used in
-> > there as well.
-> >
-> > Note that on x86 for the CPU hotplug case, the pr->id prior to
-> > acpi_map_cpu() may be invalid. Thus the per_cpu() structures
-> > must be initialized after that call or after checking the ID
-> > is valid (not hotplug path).
-> >
-> > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com> =20
+On st=C5=99eda 8. kv=C4=9Btna 2024 9:21:08, SEL=C4=8C Perry Yuan wrote:
+> From: Perry Yuan <Perry.Yuan@amd.com>
 >=20
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> With this new sysfs entry `cpb_boost`created, user can change CPU boost
+> state dynamically under `active`, `guided` and `passive` modes.
+> And the highest perf and frequency will also be updated as the boost
+> state changing.
 >=20
-> One nit below.
+> 0): check current boost state
+> cat /sys/devices/system/cpu/amd_pstate/cpb_boost
+>=20
+> 1): disable CPU boost
+> sudo bash -c "echo 0 > /sys/devices/system/cpu/amd_pstate/cpb_boost"
+>=20
+> 2): enable CPU boost
+> sudo bash -c "echo 1 > /sys/devices/system/cpu/amd_pstate/cpb_boost"
+>=20
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D217618
+> Signed-off-by: Perry Yuan <Perry.Yuan@amd.com>
+> ---
+>  drivers/cpufreq/amd-pstate-ut.c |   2 +-
+>  drivers/cpufreq/amd-pstate.c    | 114 +++++++++++++++++++++++++++++++-
+>  include/linux/amd-pstate.h      |   1 +
+>  3 files changed, 115 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate=
+=2Dut.c
+> index f04ae67dda37..b3601b0e6dd3 100644
+> --- a/drivers/cpufreq/amd-pstate-ut.c
+> +++ b/drivers/cpufreq/amd-pstate-ut.c
+> @@ -226,7 +226,7 @@ static void amd_pstate_ut_check_freq(u32 index)
+>  			goto skip_test;
+>  		}
+> =20
+> -		if (cpudata->boost_supported) {
+> +		if (amd_pstate_global_params.cpb_boost) {
+>  			if ((policy->max =3D=3D cpudata->max_freq) ||
+>  					(policy->max =3D=3D cpudata->nominal_freq))
+>  				amd_pstate_ut_cases[index].result =3D AMD_PSTATE_UT_RESULT_PASS;
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index f7dab0f7b452..f81fd61dd2a9 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -686,8 +686,10 @@ static int amd_pstate_boost_init(struct amd_cpudata =
+*cpudata)
+>  	}
+> =20
+>  	amd_pstate_global_params.cpb_supported =3D !(boost_val & MSR_K7_HWCR_CP=
+B_DIS);
+> -	if (amd_pstate_global_params.cpb_supported)
+> +	if (amd_pstate_global_params.cpb_supported) {
+>  		current_pstate_driver->boost_enabled =3D true;
+> +		cpudata->boost_state =3D true;
+> +	}
+> =20
+>  	amd_pstate_global_params.cpb_boost =3D amd_pstate_global_params.cpb_sup=
+ported;
+> =20
+> @@ -1293,6 +1295,114 @@ static ssize_t prefcore_show(struct device *dev,
+>  	return sysfs_emit(buf, "%s\n", str_enabled_disabled(amd_pstate_prefcore=
+));
+>  }
+> =20
+> +static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bo=
+ol on)
+> +{
+> +	struct amd_cpudata *cpudata =3D policy->driver_data;
+> +	struct cppc_perf_ctrls perf_ctrls;
+> +	u32 highest_perf, nominal_perf, nominal_freq, max_freq;
+> +	int ret;
+> +
+> +	if (!policy) {
+> +		pr_err("policy is null\n");
+> +		return -ENODATA;
+> +	}
+> +
+> +	highest_perf =3D READ_ONCE(cpudata->highest_perf);
+> +	nominal_perf =3D READ_ONCE(cpudata->nominal_perf);
+> +	nominal_freq =3D READ_ONCE(cpudata->nominal_freq);
+> +	max_freq =3D READ_ONCE(cpudata->max_freq);
+> +
+> +	if (boot_cpu_has(X86_FEATURE_CPPC)) {
+> +		u64 value =3D READ_ONCE(cpudata->cppc_req_cached);
+> +
+> +		value &=3D ~GENMASK_ULL(7, 0);
+> +		value |=3D on ? highest_perf : nominal_perf;
+> +		WRITE_ONCE(cpudata->cppc_req_cached, value);
+> +
+> +		wrmsrl_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, value);
+> +	} else {
+> +		perf_ctrls.max_perf =3D on ? highest_perf : nominal_perf;
+> +		ret =3D cppc_set_epp_perf(cpudata->cpu, &perf_ctrls, 1);
+> +		if (ret) {
+> +			cpufreq_cpu_release(policy);
+> +			pr_debug("failed to set energy perf value (%d)\n", ret);
+> +			return ret;
+> +		}
+> +	}
+> +
+> +	if (on)
+> +		policy->cpuinfo.max_freq =3D max_freq;
+> +	else
+> +		policy->cpuinfo.max_freq =3D nominal_freq * 1000;
+> +
+> +	policy->max =3D policy->cpuinfo.max_freq;
+> +
+> +	if (cppc_state =3D=3D AMD_PSTATE_PASSIVE) {
+> +		ret =3D freq_qos_update_request(&cpudata->req[1],
+> +				      policy->cpuinfo.max_freq);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amd_pstate_cpu_boost(int cpu, bool state)
+> +{
+> +	int ret;
+> +	struct cpufreq_policy *policy =3D cpufreq_cpu_get(cpu);
+> +	struct amd_cpudata *cpudata =3D policy->driver_data;
+> +
+> +	if (!policy) {
+> +		pr_err("policy is NULL\n");
+> +		ret =3D -ENODATA;
+> +		goto err_exit;
+> +	}
+> +
+> +	ret =3D amd_pstate_cpu_boost_update(policy, state);
+> +	refresh_frequency_limits(policy);
+> +	cpudata->boost_state =3D !!state;
+> +
+> +err_exit:
+> +	cpufreq_cpu_put(policy);
+> +	return ret < 0 ? ret : 0;
+> +}
+> +
+> +static ssize_t cpb_boost_show(struct device *dev,
+> +			   struct device_attribute *attr, char *buf)
+> +{
+> +	return sysfs_emit(buf, "%u\n", amd_pstate_global_params.cpb_boost);
+> +}
+> +
+> +static ssize_t cpb_boost_store(struct device *dev, struct device_attribu=
+te *b,
+> +			    const char *buf, size_t count)
+> +{
+> +	bool new_state;
+> +	ssize_t ret;
+> +	int cpu;
+> +
+> +	if (!amd_pstate_global_params.cpb_supported) {
+> +		pr_err("Boost mode is not supported by this processor or SBIOS\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	ret =3D kstrtobool(buf, &new_state);
+> +	if (ret)
+> +		return ret;
+> +
+> +	mutex_lock(&amd_pstate_driver_lock);
+> +	for_each_present_cpu(cpu) {
+> +		ret =3D amd_pstate_cpu_boost(cpu, new_state);
+> +		if (ret < 0) {
+> +			pr_warn("failed to update cpu boost for CPU%d (%d)\n", cpu, ret);
 
-Thanks.  Given timing, this is looking like 6.11 material.
-I'll tidy this up and post a v10 in a couple of weeks (so around
-rc1 time). Maybe we'll pick up some more tags for the ARM
-specific bits in the meantime.
+Note ret is ssize_t, so %d should be %ld (or %z/%zd/%zi?) instead.
 
-Thanks for all your help!
+> +			goto err_exit;
+> +		}
+> +	}
+> +	amd_pstate_global_params.cpb_boost =3D !!new_state;
+> +
+> +err_exit:
+> +	mutex_unlock(&amd_pstate_driver_lock);
+> +	return ret < 0 ? ret : count;
+> +}
+> +
+>  cpufreq_freq_attr_ro(amd_pstate_max_freq);
+>  cpufreq_freq_attr_ro(amd_pstate_lowest_nonlinear_freq);
+> =20
+> @@ -1303,6 +1413,7 @@ cpufreq_freq_attr_rw(energy_performance_preference);
+>  cpufreq_freq_attr_ro(energy_performance_available_preferences);
+>  static DEVICE_ATTR_RW(status);
+>  static DEVICE_ATTR_RO(prefcore);
+> +static DEVICE_ATTR_RW(cpb_boost);
+> =20
+>  static struct freq_attr *amd_pstate_attr[] =3D {
+>  	&amd_pstate_max_freq,
+> @@ -1327,6 +1438,7 @@ static struct freq_attr *amd_pstate_epp_attr[] =3D {
+>  static struct attribute *pstate_global_attributes[] =3D {
+>  	&dev_attr_status.attr,
+>  	&dev_attr_prefcore.attr,
+> +	&dev_attr_cpb_boost.attr,
+>  	NULL
+>  };
+> =20
+> diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
+> index 8ba5dd4d3405..56f616a5cd0f 100644
+> --- a/include/linux/amd-pstate.h
+> +++ b/include/linux/amd-pstate.h
+> @@ -106,6 +106,7 @@ struct amd_cpudata {
+>  	u32	policy;
+>  	u64	cppc_cap1_cached;
+>  	bool	suspended;
+> +	bool	boost_state;
+>  };
+> =20
+>  /*
+>=20
 
-Jonathan
 
->=20
-> > ---
-> > v9: Add back a blank line accidentally removed in code move.
-> >     Fix up error returns so that the new cleanup in processor_add()
-> >     is triggered on detection of the bios bug.
-> >     Combined with the previous 2 patches, should solve the leak
-> >     that Gavin identified.
-> > ---
-> >  drivers/acpi/acpi_processor.c | 80 +++++++++++++++++++++--------------
-> >  1 file changed, 49 insertions(+), 31 deletions(-)
-> >
-> > diff --git a/drivers/acpi/acpi_processor.c b/drivers/acpi/acpi_processo=
-r.c
-> > index 16e36e55a560..4a79b42d649e 100644
-> > --- a/drivers/acpi/acpi_processor.c
-> > +++ b/drivers/acpi/acpi_processor.c
-> > @@ -183,8 +183,38 @@ static void __init acpi_pcc_cpufreq_init(void) {}
-> >  #endif /* CONFIG_X86 */
-> >
-> >  /* Initialization */
-> > +static DEFINE_PER_CPU(void *, processor_device_array);
-> > +
-> > +static bool acpi_processor_set_per_cpu(struct acpi_processor *pr,
-> > +                                      struct acpi_device *device)
-> > +{
-> > +       BUG_ON(pr->id >=3D nr_cpu_ids);
-> > +
-> > +       /*
-> > +        * Buggy BIOS check.
-> > +        * ACPI id of processors can be reported wrongly by the BIOS.
-> > +        * Don't trust it blindly
-> > +        */
-> > +       if (per_cpu(processor_device_array, pr->id) !=3D NULL &&
-> > +           per_cpu(processor_device_array, pr->id) !=3D device) {
-> > +               dev_warn(&device->dev,
-> > +                        "BIOS reported wrong ACPI id %d for the proces=
-sor\n",
-> > +                        pr->id);
-> > +               return false;
-> > +       }
-> > +       /*
-> > +        * processor_device_array is not cleared on errors to allow bug=
-gy BIOS
-> > +        * checks.
-> > +        */
-> > +       per_cpu(processor_device_array, pr->id) =3D device;
-> > +       per_cpu(processors, pr->id) =3D pr;
-> > +
-> > +       return true;
-> > +}
-> > +
-> >  #ifdef CONFIG_ACPI_HOTPLUG_CPU
-> > -static int acpi_processor_hotadd_init(struct acpi_processor *pr)
-> > +static int acpi_processor_hotadd_init(struct acpi_processor *pr,
-> > +                                     struct acpi_device *device)
-> >  {
-> >         int ret;
-> >
-> > @@ -198,8 +228,16 @@ static int acpi_processor_hotadd_init(struct acpi_=
-processor *pr)
-> >         if (ret)
-> >                 goto out;
-> >
-> > +       if (!acpi_processor_set_per_cpu(pr, device)) {
-> > +               ret =3D -EINVAL;
-> > +               acpi_unmap_cpu(pr->id);
-> > +               goto out;
-> > +       }
-> > +
-> >         ret =3D arch_register_cpu(pr->id);
-> >         if (ret) {
-> > +               /* Leave the processor device array in place to detect =
-buggy bios */
-> > +               per_cpu(processors, pr->id) =3D NULL;
-> >                 acpi_unmap_cpu(pr->id);
-> >                 goto out;
-> >         }
-> > @@ -217,7 +255,8 @@ static int acpi_processor_hotadd_init(struct acpi_p=
-rocessor *pr)
-> >         return ret;
-> >  }
-> >  #else
-> > -static inline int acpi_processor_hotadd_init(struct acpi_processor *pr)
-> > +static inline int acpi_processor_hotadd_init(struct acpi_processor *pr,
-> > +                                            struct acpi_device *device)
-> >  {
-> >         return -ENODEV;
-> >  }
-> > @@ -316,10 +355,13 @@ static int acpi_processor_get_info(struct acpi_de=
-vice *device)
-> >          *  because cpuid <-> apicid mapping is persistent now.
-> >          */
-> >         if (invalid_logical_cpuid(pr->id) || !cpu_present(pr->id)) {
-> > -               int ret =3D acpi_processor_hotadd_init(pr);
-> > +               int ret =3D acpi_processor_hotadd_init(pr, device);
-> >
-> >                 if (ret)
-> >                         return ret;
-> > +       } else {
-> > +               if (!acpi_processor_set_per_cpu(pr, device))
-> > +                       return -EINVAL;
-> >         } =20
->=20
-> This looks a bit odd.
->=20
-> I would make acpi_processor_set_per_cpu() return 0 on success and
-> -EINVAL on failure and the above would become
->=20
-> if (invalid_logical_cpuid(pr->id) || !cpu_present(pr->id))
->          ret =3D acpi_processor_hotadd_init(pr, device);
-> else
->         ret =3D acpi_processor_set_per_cpu(pr, device);
->=20
-> if (ret)
->         return ret;
->=20
-> (and of course ret needs to be defined at the beginning of the function).
->=20
-> >
-> >         /*
-> > @@ -365,8 +407,6 @@ static int acpi_processor_get_info(struct acpi_devi=
-ce *device)
-> >   * (cpu_data(cpu)) values, like CPU feature flags, family, model, etc.
-> >   * Such things have to be put in and set up by the processor driver's =
-.probe().
-> >   */
-> > -static DEFINE_PER_CPU(void *, processor_device_array);
-> > -
-> >  static int acpi_processor_add(struct acpi_device *device,
-> >                                         const struct acpi_device_id *id)
-> >  {
-> > @@ -395,28 +435,6 @@ static int acpi_processor_add(struct acpi_device *=
-device,
-> >         if (result) /* Processor is not physically present or unavailab=
-le */
-> >                 goto err_clear_driver_data;
-> >
-> > -       BUG_ON(pr->id >=3D nr_cpu_ids);
-> > -
-> > -       /*
-> > -        * Buggy BIOS check.
-> > -        * ACPI id of processors can be reported wrongly by the BIOS.
-> > -        * Don't trust it blindly
-> > -        */
-> > -       if (per_cpu(processor_device_array, pr->id) !=3D NULL &&
-> > -           per_cpu(processor_device_array, pr->id) !=3D device) {
-> > -               dev_warn(&device->dev,
-> > -                       "BIOS reported wrong ACPI id %d for the process=
-or\n",
-> > -                       pr->id);
-> > -               /* Give up, but do not abort the namespace scan. */
-> > -               goto err_clear_driver_data;
-> > -       }
-> > -       /*
-> > -        * processor_device_array is not cleared on errors to allow bug=
-gy BIOS
-> > -        * checks.
-> > -        */
-> > -       per_cpu(processor_device_array, pr->id) =3D device;
-> > -       per_cpu(processors, pr->id) =3D pr;
-> > -
-> >         dev =3D get_cpu_device(pr->id);
-> >         if (!dev) {
-> >                 result =3D -ENODEV;
-> > @@ -470,10 +488,6 @@ static void acpi_processor_remove(struct acpi_devi=
-ce *device)
-> >         device_release_driver(pr->dev);
-> >         acpi_unbind_one(pr->dev);
-> >
-> > -       /* Clean up. */
-> > -       per_cpu(processor_device_array, pr->id) =3D NULL;
-> > -       per_cpu(processors, pr->id) =3D NULL;
-> > -
-> >         cpu_maps_update_begin();
-> >         cpus_write_lock();
-> >
-> > @@ -481,6 +495,10 @@ static void acpi_processor_remove(struct acpi_devi=
-ce *device)
-> >         arch_unregister_cpu(pr->id);
-> >         acpi_unmap_cpu(pr->id);
-> >
-> > +       /* Clean up. */
-> > +       per_cpu(processor_device_array, pr->id) =3D NULL;
-> > +       per_cpu(processors, pr->id) =3D NULL;
-> > +
-> >         cpus_write_unlock();
-> >         cpu_maps_update_done();
-> >
-> > --
-> > 2.39.2
-> > =20
+=2D-=20
+Oleksandr Natalenko (post-factum)
+--nextPart2322898.ElGaqSPkdT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEZUOOw5ESFLHZZtOKil/iNcg8M0sFAmY7SEMACgkQil/iNcg8
+M0tgIBAA2bvCr4o6vPSrdQN6Iunfu5oZDcI7uElQJ93I/hCYBOi7RWVXKDDggd7M
+lJcxY5xRYQuAAlLsgDd6GMqbdfbki3ham9uj25ALq1Ct11OwSplaFPzWIpN7OS6C
+SjdXlfjwc6X0YmI7q1wzOUqAJjRNVmYcQAAD8c84JGON2/UZ73WqBLrDYV993r6K
+Us+XkC79RdUGPY0aX1v9AGaeZlVvLVzsbbFImWDijaH47Z3SmIfVytHtW/euy5CJ
+1UZ5fmrRaGY4fOXmtd9c9/x9SxCo1B9I99crkSIu9xdbCHtBkrWCDqYGQpBvhw/n
+HUZEM0C1IoFGHm/wdhaJQAYeyj6E7IYOAZXWLfKzAhxpj4BZxUXa7HYHS8V6BcYF
+Bk/zoln7lMlaYFAqNNR2jGYH8+iEptbn+Y8spocnNy5bbqrcvQGXvgx/oe+GOl+x
+fm2OtpHfSAGga1tqsBFsZEOa+4K/Gtk/HiALseF5GGYTReDmTdttMqzugU09Tw33
+6DwSDxTGrW8Pbxctw3mmP9J7b7l4NbhMu4t+2reh+Jx5+sRwPMzZHbTZg3bapu61
+zEBpgxNI6+ycsBU/158S+3zq6FRFzgkDWMsfEK9iNVAMXErmQSwGV3PTZV6qHSP7
+OMD6HThh8FveOklfhJDLLdvXJUN+2WhlDf93KYg0Qco1lQYN184=
+=PK+c
+-----END PGP SIGNATURE-----
+
+--nextPart2322898.ElGaqSPkdT--
+
+
 
