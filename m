@@ -1,165 +1,101 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CD877D3F5;
-	Wed,  8 May 2024 13:48:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8347526291;
+	Wed,  8 May 2024 13:48:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715176125; cv=none; b=Bl8RJnWLY7p9w8nPWPK8QaMaJVMXTWbUf+rPSUe03QIdwP8QBeNjeOJyBz+stIe/7zLM75HpMaS1or09Kb67wxg2HS9AGJNXUpU1UopomIVjbodTEo1YdD1bNcvYLn/sBNvMAdlsb1ju0c9S8/uptIsNER1tM8APg25aeIvvT4A=
+	t=1715176133; cv=none; b=M62kcUh3I5yjdm8r4z7CiZXiTbHZL805nbNTvxdzLP3ck7kT4FBL/3J2g5gYz/uHIdM+pWcDFGSU7vjSwD4jlcq+p3MqF4vrlGbPraFS7jgLkPWcu85eG9S/3CYOXRtxBXO61Dr1vwe85srN/GT/7F6G3EseuyvzLonPwApS1ig=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715176125; c=relaxed/simple;
-	bh=BVjR8kQOCaRR8HeUse8J/wqXd6QjtOPOLht8xEyki8E=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ZqAXH/QwPlxZLHU1uhOSF8HRNGYKds3pkZXCDKZAY5dSVrkS4v1wtOzkRhuVo+6aVySSGrmk8P9+IovenusUMma4E9pcW7O2h9bmwM5uVJLyJmu+8vJR59ixJEu17j69mypyvGgHHHG4iiBvxZqpVqw64ZTDxYLH8CQzuLEzPOs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=LYkBkqYI; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1715176133; c=relaxed/simple;
+	bh=RvBvHR8tpaNSPjpIaQ2S9RFa9Z2xB39+FjDYQky6eZk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=C3YFzg3bbQmrU7c6m40+6O6JO3pQFtugQ6Idq4nPiJeOHe1HvpJJBHV9l08c7Xq3vZFlv4jFVZW8DQcEnhrfaq16gaxCnPw6tHePzg+3zl/XSUQOKn9TKkhlZ1xpIF6p8qPnhTfWPWzbBMmzuwYEUpF6X3RiscBUWLGG5Yc5FSU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PbuEO4zT; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="LYkBkqYI"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1715176124; x=1746712124;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=BVjR8kQOCaRR8HeUse8J/wqXd6QjtOPOLht8xEyki8E=;
-  b=LYkBkqYImGbz95aSARmlH07FGHUakWxsJhG57RAYeSq5PNSJepXLt9Fq
-   1Hi+bqBiMDbl2ZuuztE590ELNeGYfno3XVecknnnzmb0Q06r7d68rWpuI
-   H57WiSuU0TZ51yQmM/3443abv+rgfF16yR5Qlrb+OR/W8VrY+ABRTVdgn
-   EhKhduNgfoOGDk/6dT8nfuim+Cu83N+5mijI7qJhggvWcl6Ms+Shggfza
-   t4f7RhU0YjOb8p4AqqRBcWYPWWkj5klfMKk5foNfWMUdO5Op7cEGJIpN8
-   FDCnvFRwzqdeiFpnxsGObWP+wbgS6OKH39dMEY+b+/47D9l4cTRkG+fNj
-   w==;
-X-CSE-ConnectionGUID: W313VmFdRbKHV/U+4zGbzA==
-X-CSE-MsgGUID: mODxGbbGQTygbBJvGlN/PA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11066"; a="10906472"
-X-IronPort-AV: E=Sophos;i="6.08,145,1712646000"; 
-   d="scan'208";a="10906472"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 May 2024 06:48:43 -0700
-X-CSE-ConnectionGUID: i4G4k7+1QrGSuJ7/+wgkyQ==
-X-CSE-MsgGUID: QuTuY6MET6ydnjbFeVpomw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,145,1712646000"; 
-   d="scan'208";a="29474896"
-Received: from ijarvine-desk1.ger.corp.intel.com (HELO localhost) ([10.245.247.80])
-  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 May 2024 06:48:37 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To: linux-pci@vger.kernel.org,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
-	Lukas Wunner <lukas@wunner.de>,
-	Alexandru Gagniuc <mr.nuke.me@gmail.com>,
-	Krishna chaitanya chundru <quic_krichai@quicinc.com>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Amit Kucheria <amitk@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH v5 3/8] PCI: Refactor pcie_update_link_speed()
-Date: Wed,  8 May 2024 16:47:39 +0300
-Message-Id: <20240508134744.52134-4-ilpo.jarvinen@linux.intel.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240508134744.52134-1-ilpo.jarvinen@linux.intel.com>
-References: <20240508134744.52134-1-ilpo.jarvinen@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PbuEO4zT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 163F4C2BD10;
+	Wed,  8 May 2024 13:48:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1715176133;
+	bh=RvBvHR8tpaNSPjpIaQ2S9RFa9Z2xB39+FjDYQky6eZk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=PbuEO4zTG/fQr9EtiBd28WYhzFjftQQ34gL6zIOG6gE+z4F/hv9FbahMbp6MOZoLj
+	 HMxnib9gYNfB/1nrJbgABcCFJxVPDoXClfewmxTjCRgxr0mS3or9GaK7+Po0P+O+qY
+	 n6KrAFSEHr/4fOwpwuVl6RtFkkma0ZNEjOtPfLj2MS9+MhM2/2prEQIsFzm9LEyDfK
+	 8LIoBFfNUxfh3raq4ylItkX2YNTuFSfWXMtUrxl/Wzlteu3Vu0kkQIbQZZglFa4tiJ
+	 /vXbWAf0J/AQa5UtKMnNkL/KfYOpa+DPddAlKgttERzIeGbjt4nzi2bs/JosoB6824
+	 9Q8wAQ6JAsKDA==
+Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-6ebddef73b5so364943a34.3;
+        Wed, 08 May 2024 06:48:53 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXRnLAIJhVj049UqtEqrKsN/x3kJfAwOfY1gMptgkRF9o/0IVrVFYm7cbT5yQbM5ifgM0NILckHgVk8k9HEY+IJqccuNHMUbsYbqk+3BMU1FSp8MA5bNJVsmZsPGoyOzDwIgVAKTQg=
+X-Gm-Message-State: AOJu0YyC7sT2IU9PRzZ4s29vsqTLubwmzKYXO41MmQcZPFP89p+bt2mG
+	6V0CHwonozp2KOiATVDY0rd04YlsjsNIWzzKbAEkvvND16nR2og3e8BE11XXTzzETCrQD1a2FdR
+	rBBTahYIhVcxK55VGq7XOAe+/qi0=
+X-Google-Smtp-Source: AGHT+IGr2MAiACXNK6aGcyf4S2YJWds6rAoLmuHB46QUDgNNhweh3FGQ88XaQIXu+DsIzFvY8xyxka/qECvChj7PqZc=
+X-Received: by 2002:a4a:3158:0:b0:5b1:ff38:5ee0 with SMTP id
+ 006d021491bc7-5b24d470f6fmr2499685eaf.1.1715176132398; Wed, 08 May 2024
+ 06:48:52 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20240508034352.18414-1-ricardo.neri-calderon@linux.intel.com>
+In-Reply-To: <20240508034352.18414-1-ricardo.neri-calderon@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 8 May 2024 15:48:41 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gV3AB7UjRXm674Yd3O87Q0bFRfe0x8eHoBQ8FQKFUZ3A@mail.gmail.com>
+Message-ID: <CAJZ5v0gV3AB7UjRXm674Yd3O87Q0bFRfe0x8eHoBQ8FQKFUZ3A@mail.gmail.com>
+Subject: Re: [PATCH v2 0/4] thermal: intel: hfi: Update thermal netlink parameters
+To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Zhang Rui <rui.zhang@intel.com>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <len.brown@intel.com>, 
+	Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Ricardo Neri <ricardo.neri@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-pcie_update_link_speed() is passed the Link Status register but not all
-callers have that value at hand nor need the value.
+On Wed, May 8, 2024 at 5:37=E2=80=AFAM Ricardo Neri
+<ricardo.neri-calderon@linux.intel.com> wrote:
+>
+> Hi,
+>
+> This is v2 of a series previously known as "Add debugfs files for tuning"
+> [1].
+>
+> Changes since v1:
+>
+> Rui and Rafael pointed out various problems with using debugfs for tuning
+> how HFI uses thermal netlink. Instead, in this version I attempt to fix
+> the issues that motivated v1 (see the cover letter of v1 for details). I
+> update the two parameters that control how HFI uses thermal netlink: the
+> delay between an HFI interrupt and the thermal netlink event as well as t=
+he
+> size of the message payload.
+>
+> Added Acked-by: tag from Rui on patch 1 (thanks!).
+>
+> These patches apply cleanly on top of the testing branch of Rafael's
+> linux-pm.
+>
+> Thanks and BR,
+> Ricardo
+>
+> [1]. https://lore.kernel.org/linux-pm/20240429234152.16230-1-ricardo.neri=
+-calderon@linux.intel.com/
+>
+> Ricardo Neri (4):
+>   thermal: intel: hfi: Rename HFI_UPDATE_INTERVAL
+>   thermal: intel: hfi: Shorten the thermal netlink event delay to 100ms
+>   thermal: intel: hfi: Rename HFI_MAX_THERM_NOTIFY_COUNT
+>   thermal: intel: hfi: Increase the number of CPU capabilities per
+>     netlink event
+>
+>  drivers/thermal/intel/intel_hfi.c | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
+>
+> --
 
-Refactor pcie_update_link_speed() to include reading the Link Status
-register into pcie_update_link_speed() and create
-__pcie_update_link_speed() which can be used by the hotplug code that
-has the register value at hand beforehand (and needs the value for
-other purposes).
-
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
----
- drivers/pci/hotplug/pciehp_hpc.c |  2 +-
- drivers/pci/pci.h                |  7 ++++++-
- drivers/pci/probe.c              | 12 +++++++-----
- 3 files changed, 14 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
-index b1d0a1b3917d..0d818110af6d 100644
---- a/drivers/pci/hotplug/pciehp_hpc.c
-+++ b/drivers/pci/hotplug/pciehp_hpc.c
-@@ -319,7 +319,7 @@ int pciehp_check_link_status(struct controller *ctrl)
- 		return -1;
- 	}
- 
--	pcie_update_link_speed(ctrl->pcie->port->subordinate, lnk_status);
-+	__pcie_update_link_speed(ctrl->pcie->port->subordinate, lnk_status);
- 
- 	if (!found) {
- 		ctrl_info(ctrl, "Slot(%s): No device found\n",
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 48eae81a0a43..664191768395 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -297,7 +297,12 @@ u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
- 			   enum pcie_link_width *width);
- void __pcie_print_link_status(struct pci_dev *dev, bool verbose);
- void pcie_report_downtraining(struct pci_dev *dev);
--void pcie_update_link_speed(struct pci_bus *bus, u16 link_status);
-+
-+static inline void __pcie_update_link_speed(struct pci_bus *bus, u16 linksta)
-+{
-+	bus->cur_bus_speed = pcie_link_speed[linksta & PCI_EXP_LNKSTA_CLS];
-+}
-+void pcie_update_link_speed(struct pci_bus *bus);
- 
- /* Single Root I/O Virtualization */
- struct pci_sriov {
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 1b08b3f16027..65413d408b3d 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -742,9 +742,13 @@ const char *pci_speed_string(enum pci_bus_speed speed)
- }
- EXPORT_SYMBOL_GPL(pci_speed_string);
- 
--void pcie_update_link_speed(struct pci_bus *bus, u16 linksta)
-+void pcie_update_link_speed(struct pci_bus *bus)
- {
--	bus->cur_bus_speed = pcie_link_speed[linksta & PCI_EXP_LNKSTA_CLS];
-+	struct pci_dev *bridge = bus->self;
-+	u16 linksta;
-+
-+	pcie_capability_read_word(bridge, PCI_EXP_LNKSTA, &linksta);
-+	__pcie_update_link_speed(bus, linksta);
- }
- EXPORT_SYMBOL_GPL(pcie_update_link_speed);
- 
-@@ -827,15 +831,13 @@ static void pci_set_bus_speed(struct pci_bus *bus)
- 
- 	if (pci_is_pcie(bridge)) {
- 		u32 linkcap;
--		u16 linksta;
- 
- 		pcie_capability_read_dword(bridge, PCI_EXP_LNKCAP, &linkcap);
- 		bus->max_bus_speed = pcie_link_speed[linkcap & PCI_EXP_LNKCAP_SLS];
- 		if (bus->max_bus_speed != PCI_SPEED_UNKNOWN)
- 			bus->supported_speeds = PCI_EXP_LNKCAP2_SLS_2_5GB;
- 
--		pcie_capability_read_word(bridge, PCI_EXP_LNKSTA, &linksta);
--		pcie_update_link_speed(bus, linksta);
-+		pcie_update_link_speed(bus);
- 	}
- }
- 
--- 
-2.39.2
-
+Whole series applied (with Rui's ACKs) as 6.10 material, thanks!
