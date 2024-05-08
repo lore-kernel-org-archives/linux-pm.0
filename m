@@ -1,340 +1,326 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+Received: from prime.voidband.net (prime.voidband.net [199.247.17.104])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81B321A2C11;
-	Wed,  8 May 2024 13:49:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E9781272BB;
+	Wed,  8 May 2024 15:11:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.247.17.104
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715176200; cv=none; b=IHITbBpaXt8oXszTDN25izmh/fdT0XbDEBxqq/c5MxvE6DVjq/LgtnJJWAGKlREtIVwN7b/lYA7h/498VSm2+kfftv3vY7csOMxydRtKoh2qjbvg7MVDxcTCVwdo7txHbCRwZhVjJJ6YG3L4BFlALapHtxRgYxP4Q1XKh3Yy064=
+	t=1715181121; cv=none; b=Ip+HxRge5OA5VhlUjXeoO8BmAF5ftob9gSbghzqAgurOa8sZUCYGzY7RNicIBFEhyH2gk3kLmJiTZ5LmmLi4aT85hmXpyPlXUtOHXiAzQOO1imdo6s+SG1eD0xv7mNkx3NHIEencdD1gzrcdTw04XFdnO/0twifUWj4222ERsEw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715176200; c=relaxed/simple;
-	bh=z1bEIZI1MNH9EenT73hgXO8ZkeN9edr3Kn7/hFxax9s=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=A6pFUO7DJ9w9+YI8g4gDlNMblbMoV7aoYQ5+HgQ0C5x95C6uAOqZXoDQJLR2MDPwPS9otpORsfMEWdRpAcT+HhABXvuN9tIvwee2z+MfE3pbrQyp8dG+6NdxZzR9hWUcWHguzMSsr5JPpaODMIhxkIhq+lHr1WeugsIlSNIOGBw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=LIOIDary; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1715181121; c=relaxed/simple;
+	bh=vImjKnxy3rGl7yL+SZpgGb5cYxG4rbforMVAbq2Tycw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=WNcr/Vh+li4AUFElYptDNff20cqfgZu5BVdFjBAAO6RrFNfaQYaSQdlal51sF2Bhvk+ah03a1EJwlR9NI79MGTPD4iggWbnmezkMyZVqXOTLivpwykLYPVxp4dmwlIHTH/YiWcH/MtZ7tY5jrKyOeci4LvBWadXK6d8lpxRxCp0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=natalenko.name; spf=pass smtp.mailfrom=natalenko.name; dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b=I7NodmaO; arc=none smtp.client-ip=199.247.17.104
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=natalenko.name
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=natalenko.name
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="LIOIDary"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1715176198; x=1746712198;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=z1bEIZI1MNH9EenT73hgXO8ZkeN9edr3Kn7/hFxax9s=;
-  b=LIOIDarymB4NiIwh9KfyA/C8mImnq/+AXXvi1FTG7APeM++Y2L2AJNfc
-   hNW0O5Ve0jIOxBci3S/N1K82QoiYT1snPcnIHiV/DIZt17znoYSF6CLBG
-   FM/YpYJiQfZbbQOwT42iVvdkAuKmWWWNIVYasc0Smr7WduQUyx9ygaS6R
-   d8rn9u1GMSjJKh7xfQqvpt7pQ+qIvSKW95Zk0vVZAV8aHvKZ6QoXBMgaX
-   PdsHCjfuCWrjw2Fx+jVWzc0VE/jjayHhUW0ciKEXPBXYeHGAYvvCQPmh8
-   qFk+3EqU6RkTcl3D4LDRI7ncg/wHEiF8i6WiMrc4IEeM0eY9ccYYLG6Ki
-   g==;
-X-CSE-ConnectionGUID: pn8JSyZXQImQCgMN6td/Vg==
-X-CSE-MsgGUID: GbP2u5LsRrS8G+52bBi3yA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11066"; a="10906704"
-X-IronPort-AV: E=Sophos;i="6.08,145,1712646000"; 
-   d="scan'208";a="10906704"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 May 2024 06:49:43 -0700
-X-CSE-ConnectionGUID: YQXKHuBjRF2jRCIHJ8tR9w==
-X-CSE-MsgGUID: C7Lqb68eT8iGRXzNVoD2UA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,145,1712646000"; 
-   d="scan'208";a="28855409"
-Received: from ijarvine-desk1.ger.corp.intel.com (HELO localhost) ([10.245.247.80])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 May 2024 06:49:37 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To: linux-pci@vger.kernel.org,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
-	Lukas Wunner <lukas@wunner.de>,
-	Alexandru Gagniuc <mr.nuke.me@gmail.com>,
-	Krishna chaitanya chundru <quic_krichai@quicinc.com>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	linux-pm@vger.kernel.org,
-	Shuah Khan <shuah@kernel.org>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	linux-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Amit Kucheria <amitk@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH v5 8/8] selftests/pcie_bwctrl: Create selftests
-Date: Wed,  8 May 2024 16:47:44 +0300
-Message-Id: <20240508134744.52134-9-ilpo.jarvinen@linux.intel.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240508134744.52134-1-ilpo.jarvinen@linux.intel.com>
-References: <20240508134744.52134-1-ilpo.jarvinen@linux.intel.com>
+	dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b="I7NodmaO"
+Received: from spock.localnet (unknown [94.142.239.106])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by prime.voidband.net (Postfix) with ESMTPSA id 1194E62DD101;
+	Wed, 08 May 2024 17:11:54 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=natalenko.name;
+	s=dkim-20170712; t=1715181114;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ofZfmqMlM4xbn52ILVyak4iroqJ+0SAVWwfqZlcKwnk=;
+	b=I7NodmaOAQkn6AVVFRJ4kdKJTluqWE6jv5ayazlRD+UoCBQynPecfezN1420tkwlQ76U9n
+	LxRyJVyTJxl+cNt21Iq/n2C5TLLg6ixqvwjKmgXOQrUcQQ1pyJWJKZ6AFcH44p1KtxrSiZ
+	fJBeowGJXqv03XflmvnGfUXdM1o8i2Q=
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+To: rafael.j.wysocki@intel.com, Mario.Limonciello@amd.com,
+ viresh.kumar@linaro.org, Ray.Huang@amd.com, gautham.shenoy@amd.com,
+ Borislav.Petkov@amd.com, Perry Yuan <perry.yuan@amd.com>
+Cc: Alexander.Deucher@amd.com, Xinmei.Huang@amd.com, Xiaojian.Du@amd.com,
+ Li.Meng@amd.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v10 0/7] AMD Pstate Driver Core Performance Boost
+Date: Wed, 08 May 2024 17:11:42 +0200
+Message-ID: <4916526.31r3eYUQgx@natalenko.name>
+In-Reply-To: <cover.1715152592.git.perry.yuan@amd.com>
+References: <cover.1715152592.git.perry.yuan@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="nextPart4563618.LvFx2qVVIh";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
 
-Create selftests for PCIe BW control through the PCIe cooling device
-sysfs interface.
+--nextPart4563618.LvFx2qVVIh
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+Subject: Re: [PATCH v10 0/7] AMD Pstate Driver Core Performance Boost
+Date: Wed, 08 May 2024 17:11:42 +0200
+Message-ID: <4916526.31r3eYUQgx@natalenko.name>
+In-Reply-To: <cover.1715152592.git.perry.yuan@amd.com>
+References: <cover.1715152592.git.perry.yuan@amd.com>
+MIME-Version: 1.0
 
-First, the BW control selftest finds the PCIe Port to test with. By
-default, the PCIe Port with the highest Link Speed is selected but
-another PCIe Port can be provided with -d parameter.
+Hello.
 
-The actual test steps the cur_state of the cooling device one-by-one
-from max_state to what the cur_state was initially. The speed change
-is confirmed by observing the current_link_speed for the corresponding
-PCIe Port.
+On st=C5=99eda 8. kv=C4=9Btna 2024 9:21:05, SEL=C4=8C Perry Yuan wrote:
+> Hi all,
+> The patchset series add core performance boost feature for AMD pstate
+> driver including passisve ,guide and active mode support.
+>=20
+> User can change core frequency boost control with a new sysfs entry:
+>=20
+> "/sys/devices/system/cpu/amd_pstate/cpb_boost"
+>=20
+>=20
+> 1) globally disable core boost:
+> $ sudo bash -c "echo 0 > /sys/devices/system/cpu/amd_pstate/cpb_boost"
+> $ lscpu -ae
+> CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ      MHZ
+>   0    0      0    0 0:0:0:0          yes 4201.0000 400.0000 2983.578
+>   1    0      0    1 1:1:1:0          yes 4201.0000 400.0000 2983.578
+>   2    0      0    2 2:2:2:0          yes 4201.0000 400.0000 2583.855
+>   3    0      0    3 3:3:3:0          yes 4201.0000 400.0000 2983.578
+>   4    0      0    4 4:4:4:0          yes 4201.0000 400.0000 2983.578
+>=20
+> 2) globally enable core boost:
+> $ sudo bash -c "echo 1 > /sys/devices/system/cpu/amd_pstate/cpb_boost"
+> $ lscpu -ae
+>    0    0      0    0 0:0:0:0          yes 5759.0000 400.0000 2983.578
+>   1    0      0    1 1:1:1:0          yes 5759.0000 400.0000 2983.578
+>   2    0      0    2 2:2:2:0          yes 5759.0000 400.0000 2983.578
+>   3    0      0    3 3:3:3:0          yes 5759.0000 400.0000 2983.578
+>   4    0      0    4 4:4:4:0          yes 5759.0000 400.0000 2983.578
+>=20
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D
+> The V9 patches add per CPU boost control, user can enable/disable CPUs bo=
+ost
+> as the below command tested on a laptop system.
+> # before
+>   CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ
+>   0    0      0    0 0:0:0:0          yes 4208.0000 400.0000 1666.7740
+>   1    0      0    0 0:0:0:0          yes 4208.0000 400.0000  400.0000
+>   2    0      0    1 1:1:1:0          yes 4208.0000 400.0000 3386.1260
+>   3    0      0    1 1:1:1:0          yes 4208.0000 400.0000  400.0000
+> $ sudo rdmsr 0xc00102b3 -p 0
+> 10a6
+>=20
+> $ sudo bash -c "echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/boost"
+> # after
+>   CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ
+>     0    0      0    0 0:0:0:0          yes 3501.0000 400.0000  400.0000
+>     1    0      0    0 0:0:0:0          yes 4208.0000 400.0000 1391.0690
+>     2    0      0    1 1:1:1:0          yes 4208.0000 400.0000 3654.4541
+>     3    0      0    1 1:1:1:0          yes 4208.0000 400.0000  400.0000
+> $ sudo rdmsr 0xc00102b3 -p 0
+> 108a
+>=20
+>=20
+> The patches have been tested with the AMD 7950X processor and many users
+> would like to get core boost control enabled for power saving.
+>=20
+> Perry.
+>=20
+>=20
+> Changes from v9:
+>  * change per CPU boost sysfs file name to `boost` (Mario)
+>  * rebased to latest linux-pm/bleeding-edge
+>=20
+> Changes from v8:
+>  * pick RB flag for patch 4 (Mario)
+>  * change boot_cpu_has to cpu_feature_enabled for patch 2 (Boris)
+>  * merge patch 6 into patch 3 (Mario)
+>  * add two patch for per CPU boost control patch 6 & 7(Mario)
+>  * rebased to latest linux-pm/bleeding-edge
+>=20
+> Changes from v7:
+>  * fix the mutext locking issue in the sysfs file update(Ray, Mario)
+>  * pick ack flag from Ray
+>  * use X86_FEATURE_CPB to verify the CPB function in Patch #2(Ray)
+>  * rerun the testing to check function works well
+>  * rebased to linux-pm/bleeding-edge latest
+>=20
+> Changes from v6:
+>  * reword patch 2 commit log (Gautham)
+>  * update cover letter description(Gautham)
+>  * rebase to kernel v6.9-rc5
+>=20
+> Changes from v4:
+>  * drop the legacy boost remove patch, let us keep the legacy interface
+>    in case some applications break.
+>  * rebase to linux-pm/bleeding-edge branch
+>  * rework the patchset base on [PATCH v8 0/8] AMD Pstate Fixes And
+>    Enhancements which has some intial work done there.
+>=20
+> Changes from v4:
+>  * move MSR_K7_HWCR_CPB_DIS_BIT into msr-index.h
+>  * pick RB flag from Gautham R. Shenoy
+>  * add Cc Oleksandr Natalenko <oleksandr@natalenko.name>
+>  * rebase to latest linux-pm/bleeding-edge branch
+>  * rebase the patch set on top of [PATCH v7 0/6] AMD Pstate Fixes And Enh=
+ancements
+>  * update  [PATCH v7 2/6] to use MSR_K7_HWCR_CPB_DIS_BIT
+>=20
+> Changes from v3:
+>  * rebased to linux-pm/bleeding-edge v6.8
+>  * rename global to amd_pstate_global_params(Oleksandr Natalenko)
+>  * remove comments for boot_supported in amd_pstate.h
+>  * fix the compiler warning for amd-pstate-ut.ko
+>  * use for_each_online_cpu in cpb_boost_store which fix the null pointer
+>    error during testing
+>  * fix the max frequency value to be KHz when cpb boost disabled(Gautham =
+R. Shenoy)
+>=20
+> Changes from v2:
+>  * move global struct to amd-pstate.h
+>  * fix the amd-pstate-ut with new cpb control interface
+>=20
+> Changes from v1:
+>  * drop suspend/resume fix patch 6/7 because of the fix should be in
+>    another fix series instead of CPB feature
+>  * move the set_boost remove patch to the last(Mario)
+>  * Fix commit info with "Closes:" (Mario)
+>  * simplified global.cpb_supported initialization(Mario)
+>  * Add guide mode support for CPB control
+>  * Fixed some Doc typos and add guide mode info to Doc as well.
+>=20
+> v1: https://lore.kernel.org/all/cover.1706255676.git.perry.yuan@amd.com/
+> v2: https://lore.kernel.org/lkml/cover.1707047943.git.perry.yuan@amd.com/
+> v3: https://lore.kernel.org/lkml/cover.1707297581.git.perry.yuan@amd.com/
+> v4: https://lore.kernel.org/lkml/cover.1710322310.git.perry.yuan@amd.com/
+> v5: https://lore.kernel.org/lkml/cover.1710473712.git.perry.yuan@amd.com/
+> v6: https://lore.kernel.org/lkml/cover.1710754236.git.perry.yuan@amd.com/
+> v7: https://lore.kernel.org/lkml/cover.1713861200.git.perry.yuan@amd.com/
+> v8: https://lore.kernel.org/lkml/cover.1714112854.git.perry.yuan@amd.com/
+> v9: https://lore.kernel.org/lkml/cover.1714989803.git.perry.yuan@amd.com/
+>=20
+> Perry Yuan (7):
+>   cpufreq: acpi: move MSR_K7_HWCR_CPB_DIS_BIT into msr-index.h
+>   cpufreq: amd-pstate: initialize new core precision boost state
+>   cpufreq: amd-pstate: implement cpb_boost sysfs entry for boost control
+>   cpufreq: amd-pstate: fix the MSR highest perf will be reset issue
+>     while cpb boost off
+>   Documentation: cpufreq: amd-pstate: introduce the new cpu boost
+>     control method
+>   cpufreq: amd-pstate: introduce per CPU frequency boost control
+>   Documentation: cpufreq: amd-pstate: update doc for Per CPU boost
+>     control method
+>=20
+>  Documentation/admin-guide/pm/amd-pstate.rst |  30 ++++
+>  arch/x86/include/asm/msr-index.h            |   2 +
+>  drivers/cpufreq/acpi-cpufreq.c              |   2 -
+>  drivers/cpufreq/amd-pstate-ut.c             |   2 +-
+>  drivers/cpufreq/amd-pstate.c                | 189 ++++++++++++++++++--
+>  include/linux/amd-pstate.h                  |  14 ++
+>  6 files changed, 225 insertions(+), 14 deletions(-)
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
----
- MAINTAINERS                                   |   1 +
- tools/testing/selftests/Makefile              |   1 +
- tools/testing/selftests/pcie_bwctrl/Makefile  |   2 +
- .../pcie_bwctrl/set_pcie_cooling_state.sh     | 122 ++++++++++++++++++
- .../selftests/pcie_bwctrl/set_pcie_speed.sh   |  67 ++++++++++
- 5 files changed, 193 insertions(+)
- create mode 100644 tools/testing/selftests/pcie_bwctrl/Makefile
- create mode 100755 tools/testing/selftests/pcie_bwctrl/set_pcie_cooling_state.sh
- create mode 100755 tools/testing/selftests/pcie_bwctrl/set_pcie_speed.sh
+I've applied this series along with fixes and improvements [1], and I canno=
+t get guided mode to work with my CPU any more.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3a94ae81b13f..5a3b69515256 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -17106,6 +17106,7 @@ S:	Supported
- F:	drivers/pci/pcie/bwctrl.c
- F:	drivers/thermal/pcie_cooling.c
- F:	include/linux/pci-bwctrl.h
-+F:	tools/testing/selftests/pcie_bwctrl/
- 
- PCIE DRIVER FOR AMAZON ANNAPURNA LABS
- M:	Jonathan Chocron <jonnyc@amazon.com>
-diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
-index e1504833654d..ac0bc8af4123 100644
---- a/tools/testing/selftests/Makefile
-+++ b/tools/testing/selftests/Makefile
-@@ -65,6 +65,7 @@ TARGETS += net/openvswitch
- TARGETS += net/tcp_ao
- TARGETS += netfilter
- TARGETS += nsfs
-+TARGETS += pcie_bwctrl
- TARGETS += perf_events
- TARGETS += pidfd
- TARGETS += pid_namespace
-diff --git a/tools/testing/selftests/pcie_bwctrl/Makefile b/tools/testing/selftests/pcie_bwctrl/Makefile
-new file mode 100644
-index 000000000000..3e84e26341d1
---- /dev/null
-+++ b/tools/testing/selftests/pcie_bwctrl/Makefile
-@@ -0,0 +1,2 @@
-+TEST_PROGS = set_pcie_cooling_state.sh
-+include ../lib.mk
-diff --git a/tools/testing/selftests/pcie_bwctrl/set_pcie_cooling_state.sh b/tools/testing/selftests/pcie_bwctrl/set_pcie_cooling_state.sh
-new file mode 100755
-index 000000000000..9df606552af3
---- /dev/null
-+++ b/tools/testing/selftests/pcie_bwctrl/set_pcie_cooling_state.sh
-@@ -0,0 +1,122 @@
-+#!/bin/bash
-+# SPDX-License-Identifier: GPL-2.0-or-later
-+
-+SYSFS=
-+# Kselftest framework requirement - SKIP code is 4.
-+ksft_skip=4
-+retval=0
-+skipmsg="skip all tests:"
-+
-+PCIEPORTTYPE="PCIe_Port_Link_Speed"
-+
-+prerequisite()
-+{
-+	local ports
-+
-+	if [ $UID != 0 ]; then
-+		echo $skipmsg must be run as root >&2
-+		exit $ksft_skip
-+	fi
-+
-+	SYSFS=`mount -t sysfs | head -1 | awk '{ print $3 }'`
-+
-+	if [ ! -d "$SYSFS" ]; then
-+		echo $skipmsg sysfs is not mounted >&2
-+		exit $ksft_skip
-+	fi
-+
-+	if ! ls $SYSFS/class/thermal/cooling_device* > /dev/null 2>&1; then
-+		echo $skipmsg thermal cooling devices missing >&2
-+		exit $ksft_skip
-+	fi
-+
-+	ports=`grep -e "^$PCIEPORTTYPE" $SYSFS/class/thermal/cooling_device*/type | wc -l`
-+	if [ $ports -eq 0 ]; then
-+		echo $skipmsg pcie cooling devices missing >&2
-+		exit $ksft_skip
-+	fi
-+}
-+
-+testport=
-+find_pcie_port()
-+{
-+	local patt="$1"
-+	local pcieports
-+	local max
-+	local cur
-+	local delta
-+	local bestdelta=-1
-+
-+	pcieports=`grep -l -F -e "$patt" /sys/class/thermal/cooling_device*/type`
-+	if [ -z "$pcieports" ]; then
-+		return
-+	fi
-+	pcieports=${pcieports//\/type/}
-+	# Find the port with the highest PCIe Link Speed
-+	for port in $pcieports; do
-+		max=`cat $port/max_state`
-+		cur=`cat $port/cur_state`
-+		delta=$((max-cur))
-+		if [ $delta -gt $bestdelta ]; then
-+			testport="$port"
-+			bestdelta=$delta
-+		fi
-+	done
-+}
-+
-+sysfspcidev=
-+find_sysfs_pci_dev()
-+{
-+	local typefile="$1/type"
-+	local pcidir
-+
-+	pcidir="$SYSFS/bus/pci/devices/`sed -e "s|^${PCIEPORTTYPE}_||g" $typefile`"
-+
-+	if [ -r "$pcidir/current_link_speed" ]; then
-+		sysfspcidev="$pcidir/current_link_speed"
-+	fi
-+}
-+
-+usage()
-+{
-+	echo "Usage $0 [ -d dev ]"
-+	echo -e "\t-d: PCIe port BDF string (e.g., 0000:00:04.0)"
-+}
-+
-+pattern="$PCIEPORTTYPE"
-+parse_arguments()
-+{
-+	while getopts d:h opt; do
-+		case $opt in
-+			h)
-+				usage "$0"
-+				exit 0
-+				;;
-+			d)
-+				pattern="$PCIEPORTTYPE_$OPTARG"
-+				;;
-+			*)
-+				usage "$0"
-+				exit 0
-+				;;
-+		esac
-+	done
-+}
-+
-+parse_arguments "$@"
-+prerequisite
-+find_pcie_port "$pattern"
-+if [ -z "$testport" ]; then
-+	echo $skipmsg "pcie cooling device not found from sysfs" >&2
-+	exit $ksft_skip
-+fi
-+find_sysfs_pci_dev "$testport"
-+if [ -z "$sysfspcidev" ]; then
-+	echo $skipmsg "PCIe port device not found from sysfs" >&2
-+	exit $ksft_skip
-+fi
-+
-+./set_pcie_speed.sh "$testport" "$sysfspcidev"
-+retval=$?
-+
-+exit $retval
-diff --git a/tools/testing/selftests/pcie_bwctrl/set_pcie_speed.sh b/tools/testing/selftests/pcie_bwctrl/set_pcie_speed.sh
-new file mode 100755
-index 000000000000..584596949312
---- /dev/null
-+++ b/tools/testing/selftests/pcie_bwctrl/set_pcie_speed.sh
-@@ -0,0 +1,67 @@
-+#!/bin/bash
-+# SPDX-License-Identifier: GPL-2.0-or-later
-+
-+set -e
-+
-+TESTNAME=set_pcie_speed
-+
-+declare -a PCIELINKSPEED=(
-+	"2.5 GT/s PCIe"
-+	"5.0 GT/s PCIe"
-+	"8.0 GT/s PCIe"
-+	"16.0 GT/s PCIe"
-+	"32.0 GT/s PCIe"
-+	"64.0 GT/s PCIe"
-+)
-+
-+# Kselftest framework requirement - SKIP code is 4.
-+ksft_skip=4
-+retval=0
-+
-+coolingdev="$1"
-+statefile="$coolingdev/cur_state"
-+maxfile="$coolingdev/max_state"
-+linkspeedfile="$2"
-+
-+oldstate=`cat $statefile`
-+maxstate=`cat $maxfile`
-+
-+set_state()
-+{
-+	local state=$1
-+	local linkspeed
-+	local expected_linkspeed
-+
-+	echo $state > $statefile
-+
-+	sleep 1
-+
-+	linkspeed="`cat $linkspeedfile`"
-+	expected_linkspeed=$((maxstate-state))
-+	expected_str="${PCIELINKSPEED[$expected_linkspeed]}"
-+	if [ ! "${expected_str}" = "${linkspeed}" ]; then
-+		echo "$TESTNAME failed: expected: ${expected_str}; got ${linkspeed}"
-+		retval=1
-+	fi
-+}
-+
-+cleanup_skip ()
-+{
-+	set_state $oldstate
-+	exit $ksft_skip
-+}
-+
-+trap cleanup_skip EXIT
-+
-+echo "$TESTNAME: testing states $maxstate .. $oldstate with $coolingdev"
-+for i in $(seq $maxstate -1 $oldstate); do
-+	set_state "$i"
-+done
-+
-+trap EXIT
-+if [ $retval -eq 0 ]; then
-+	echo "$TESTNAME [PASS]"
-+else
-+	echo "$TESTNAME [FAIL]"
-+fi
-+exit $retval
--- 
-2.39.2
+The CPU is:
+
+```
+Vendor ID:                AuthenticAMD
+  Model name:             AMD Ryzen 9 5950X 16-Core Processor
+    CPU family:           25
+    Model:                33
+    Thread(s) per core:   2
+    Core(s) per socket:   16
+    Socket(s):            1
+    Stepping:             2
+```
+
+I've got `amd_pstate=3Dguided` set in the kernel cmdline, but `amd-pstate-e=
+pp` gets loaded anyway. When I try to set `guided` manually via `echo guide=
+d | sudo tee /sys/devices/system/cpu/amd_pstate/status`, the status gets dr=
+opped to `disable`, `tee` errors out with `-ENODEV`, and there's this in th=
+e kernel log:
+
+```
+$ jctl -kb | grep sysfs: | cut -d ' ' -f 5-
+kernel: sysfs: cannot create duplicate filename '/devices/system/cpu/cpufre=
+q/policy0/boost'
+=E2=80=A6
+kernel: sysfs: cannot create duplicate filename '/devices/system/cpu/cpufre=
+q/policy31/boost'
+```
+
+The following is applied on top of v6.9-rc7:
+
+```
+cpufreq: amd-pstate: automatically load pstate driver by default
+cpufreq: amd-pstate: fix the highest frequency issue which limit performance
+cpufreq: amd-pstate: implement heterogeneous core topology for highest perf=
+ormance initialization
+x86/cpufeatures: Add feature bits for AMD heterogeneous processor
+cpufreq: amd-pstate: switch boot_cpu_has() to cpu_feature_enabled()
+Documentation: PM: amd-pstate: add guide mode to the Operation mode
+Documentation: PM: amd-pstate: add debugging section for driver loading fai=
+lure
+Documentation: PM: amd-pstate: introducing recommended reboot requirement d=
+uring driver switch
+cpufreq: amd-pstate: add debug message while CPPC is supported and disabled=
+ by SBIOS
+cpufreq: amd-pstate: show CPPC debug message if CPPC is not supported
+cpufreq: amd-pstate: optimiza the initial frequency values verification
+Documentation: cpufreq: amd-pstate: update doc for Per CPU boost control me=
+thod
+cpufreq: amd-pstate: introduce per CPU frequency boost control
+Documentation: cpufreq: amd-pstate: introduce the new cpu boost control met=
+hod
+cpufreq: amd-pstate: fix the MSR highest perf will be reset issue while cpb=
+ boost off
+cpufreq: amd-pstate: implement cpb_boost sysfs entry for boost control
+cpufreq: amd-pstate: initialize new core precision boost state
+cpufreq: acpi: move MSR_K7_HWCR_CPB_DIS_BIT into msr-index.h
+cpufreq: amd-pstate: remove unused variable lowest_nonlinear_freq
+cpufreq: amd-pstate: fix code format problems
+cpufreq: amd-pstate: Add quirk for the pstate CPPC capabilities missing
+cpufreq: amd-pstate: get transition delay and latency value from ACPI tables
+cpufreq: amd-pstate: Bail out if min/max/nominal_freq is 0
+cpufreq: amd-pstate: Remove amd_get_{min,max,nominal,lowest_nonlinear}_freq=
+()
+cpufreq: amd-pstate: Unify computation of {max,min,nominal,lowest_nonlinear=
+}_freq
+cpufreq: amd-pstate: Document the units for freq variables in amd_cpudata
+cpufreq: amd-pstate: Document *_limit_* fields in struct amd_cpudata
+```
+
+Previously, with your submissions, it was possible to use `guided` mode wit=
+h my Zen 3.
+
+[1] https://lore.kernel.org/lkml/cover.1715065568.git.perry.yuan@amd.com/
+
+=2D-=20
+Oleksandr Natalenko (post-factum)
+--nextPart4563618.LvFx2qVVIh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEZUOOw5ESFLHZZtOKil/iNcg8M0sFAmY7li4ACgkQil/iNcg8
+M0sK4A/8CBR0rRDUlLAqHe4vx/jwLb4E41lEzJ4J/lg1pINR/JNN5p2ZcBlCBeM9
+mJkovc6jhQU8A/IYigK0blZ7OKoJkNl4AQMg8vDF+7lHQBOiRa4iZy4igntpli4G
+puRMzn9wYNUri75zQPe1iubf0GRbX/2eAsnBkOMndr0iHGWBy+2H8LSh+/qJ2eLV
+p6WFvNsUEbDc0VlNdTyY7HEHqltYgXIkVDGNxFdIeMPB0Zer0kTq0qeZFZoDs6Ao
+k1mmzAAroPcDD2h+WmSTrUJoAPYSSFWi0hk5q3IKsfrP21t0UGz1nMQ78yAxOnaf
+Lab1gKHIggoQGBH7OyR6/xFaM8SS5dbw25n4EU50w8vBpjL6I5il8cdWzx2TGMQk
+5X1sGTFZ86OoJpvEbViaQ3eZxA9xhTZaOE52t5+bTtqAyV78SOYHSJwx5dOOZFJx
+MJjV5NDUGnIFBMVfx5H/HpkWYQ/F2BNJRrvhpZ0aY7zVQ3WbJAlXAEO1722RFLqJ
+Wr3bEiqKKkSHb+46QRzURciz8JgJpxjVXz8Ln0RdLJxKCiNTkLWAEDpAMlZyR9jn
+l0ggZtI449rr4xSnaZ74M+kCQGWdw8m9cxJ8q/juE8528yDDbGEUjtrWQxJqCRhX
+VDU0ZlxvIYCxC/+IKpSUC+fOMamd5kZl64OGAKQxroDkAEnYCWY=
+=3nXF
+-----END PGP SIGNATURE-----
+
+--nextPart4563618.LvFx2qVVIh--
+
+
 
