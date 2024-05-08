@@ -1,36 +1,36 @@
 Received: from prime.voidband.net (prime.voidband.net [199.247.17.104])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A4A21DFE8;
-	Wed,  8 May 2024 09:39:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B2551DFE8;
+	Wed,  8 May 2024 09:42:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.247.17.104
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715161176; cv=none; b=lFn/phLzYFZD3wS0X2nQbrKbTfBt9T2+KzVGdvLiypZN4HTUJN97ItHgGYrOiGI0AurAbs8phLCrhen3G4SU6lquLX4qNTXTtRRx9wD96YdX0LUl6seT2VyLxHmJAE4mboIi1AXGeISWYiFSk5asVpQeQxt22vQMw+k8bknwcN8=
+	t=1715161344; cv=none; b=onh4ycT5O1FzqKlEST2ACBpnllUtzV3czkBJCKfN35r3iUwxukXkaFx0SV3uua0UWD5HdDLlWYWU3fu/ynwXNBkTo1Y2MX3ykzOxwr/LRP55fCwS4I3PtCYizc/eQX3OJbr7yuSaC6c8bMgy5wKxp4E+TeM+kMcqD8vUP3NSJhQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715161176; c=relaxed/simple;
-	bh=KH7B+KUi7/uyxY/n5GLOsX5f4dTbd0+EXoloUHOnaWE=;
+	s=arc-20240116; t=1715161344; c=relaxed/simple;
+	bh=tpHBLYwWAXWzFJOiiqPNurkj4onSKHEuQPtc+N0ukQ0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=fhMEv5ENyVVHbxxCEYwlmaJTOMQT/x/dCTCZCozCZylaKCp1jGkQxaV8zqbZi035/j+Lvdp3ME2lkNthqBR6BSs8zvhXAxedNXN2dBD7lRZ/IVut4aQAtdmXv7sgTB4I55VBjLLDwcjwz1EDm1bB9B+ywfybnJcimmbi3kjG4u8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=natalenko.name; spf=pass smtp.mailfrom=natalenko.name; dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b=j/xAcfs6; arc=none smtp.client-ip=199.247.17.104
+	 MIME-Version:Content-Type; b=VfsK94TT9j5ZRhedqF6cA9oH7BBYdpCz2sa6Kk0C2kLLE807oDrwRa3dQqRPnapBSS9DmhLxJXhLl1xz9mwflCxe5uRtNPvGt2sM5LLqFK2FHlwHmfZv6UCH1xY2SB/k5ZoNnHJoewpYNijrWP04YpUpGeB+OJuB2FACaFjBWeM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=natalenko.name; spf=pass smtp.mailfrom=natalenko.name; dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b=C1WtybD9; arc=none smtp.client-ip=199.247.17.104
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=natalenko.name
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=natalenko.name
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b="j/xAcfs6"
+	dkim=pass (1024-bit key) header.d=natalenko.name header.i=@natalenko.name header.b="C1WtybD9"
 Received: from spock.localnet (unknown [94.142.239.106])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by prime.voidband.net (Postfix) with ESMTPSA id A4C1762DD102;
-	Wed, 08 May 2024 11:39:30 +0200 (CEST)
+	by prime.voidband.net (Postfix) with ESMTPSA id BE1EC62DD101;
+	Wed, 08 May 2024 11:34:55 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=natalenko.name;
-	s=dkim-20170712; t=1715161170;
+	s=dkim-20170712; t=1715160896;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=uYimBYoGsy02yIPeW5MHw0nmB/ooXCVrMND+XDBZq/8=;
-	b=j/xAcfs6jkOB87aATp/uUNBdM/ByWYRwcOw/m8gQZccvn5dXCJvefzMjdZ3MQYKO/ZarLu
-	urjZZ8+ru2sQLst2qcu2U9JgrTAOcyogQaimMP8uvGxNBv5M3p6yiRIx3E93mVnBX4i8HX
-	ldlWogz5c2kiTTC2G4m+dyEMeMW98i8=
+	bh=ITaU40SFRGKxHYojpCSGh4eL/ryxiwlKRxY2NrN5Zus=;
+	b=C1WtybD9FCqWeBqrKKxR6GaNxYDNixDpsr8122tNc9qjBkBxdK5+OZSBm8d/iIzRSScW8I
+	aZ2o+kiJy0d3sa3ZgBToBB5vwIe5Hk6WobBHabirTBFjky7OBc17eYz9MGPXAM4RJWnTP+
+	avQsxBdHVgLbQwRtbyM8GLhENTKHRek=
 From: Oleksandr Natalenko <oleksandr@natalenko.name>
 To: rafael.j.wysocki@intel.com, Mario.Limonciello@amd.com,
  viresh.kumar@linaro.org, Ray.Huang@amd.com, gautham.shenoy@amd.com,
@@ -38,270 +38,163 @@ To: rafael.j.wysocki@intel.com, Mario.Limonciello@amd.com,
 Cc: Alexander.Deucher@amd.com, Xinmei.Huang@amd.com, Xiaojian.Du@amd.com,
  Li.Meng@amd.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject:
- Re: [PATCH v10 3/7] cpufreq: amd-pstate: implement cpb_boost sysfs entry for
- boost control
-Date: Wed, 08 May 2024 11:39:15 +0200
-Message-ID: <4563575.LvFx2qVVIh@natalenko.name>
+ Re: [PATCH v10 6/7] cpufreq: amd-pstate: introduce per CPU frequency boost
+ control
+Date: Wed, 08 May 2024 11:34:21 +0200
+Message-ID: <12430678.O9o76ZdvQC@natalenko.name>
 In-Reply-To:
- <90a2bf1607c525a1e5b42d7327dbcfe5dd338549.1715152592.git.perry.yuan@amd.com>
+ <49204c6d4a334c0bfbc589dda79b5cd7c4c28b7c.1715152592.git.perry.yuan@amd.com>
 References:
  <cover.1715152592.git.perry.yuan@amd.com>
- <90a2bf1607c525a1e5b42d7327dbcfe5dd338549.1715152592.git.perry.yuan@amd.com>
+ <49204c6d4a334c0bfbc589dda79b5cd7c4c28b7c.1715152592.git.perry.yuan@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2322898.ElGaqSPkdT";
+Content-Type: multipart/signed; boundary="nextPart5776929.DvuYhMxLoT";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
 
---nextPart2322898.ElGaqSPkdT
+--nextPart5776929.DvuYhMxLoT
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
 From: Oleksandr Natalenko <oleksandr@natalenko.name>
-Date: Wed, 08 May 2024 11:39:15 +0200
-Message-ID: <4563575.LvFx2qVVIh@natalenko.name>
+Date: Wed, 08 May 2024 11:34:21 +0200
+Message-ID: <12430678.O9o76ZdvQC@natalenko.name>
 MIME-Version: 1.0
 
 Hello.
 
-On st=C5=99eda 8. kv=C4=9Btna 2024 9:21:08, SEL=C4=8C Perry Yuan wrote:
-> From: Perry Yuan <Perry.Yuan@amd.com>
+On st=C5=99eda 8. kv=C4=9Btna 2024 9:21:11, SEL=C4=8C Perry Yuan wrote:
+> Add a new sysfs attribute file to support per CPU frequency boost
+> control, allowing individual CPUs to enable or disable CPB separately.
 >=20
-> With this new sysfs entry `cpb_boost`created, user can change CPU boost
-> state dynamically under `active`, `guided` and `passive` modes.
-> And the highest perf and frequency will also be updated as the boost
-> state changing.
+> The new sysfs attribute file is located at below path,
+> `/sys/devices/system/cpu/cpuX/cpufreq/boost`,
+> where `X` represents the CPU number.
 >=20
-> 0): check current boost state
-> cat /sys/devices/system/cpu/amd_pstate/cpb_boost
+> To disable CPB for a specific CPU, you can use the following command:
+> $ sudo bash -c "echo 0 > /sys/devices/system/cpu/cpuX/cpufreq/boost"
 >=20
-> 1): disable CPU boost
-> sudo bash -c "echo 0 > /sys/devices/system/cpu/amd_pstate/cpb_boost"
+> After disabling CPB, the CPU frequency will no longer boost beyond
+> the base frequency for that particular CPU.
 >=20
-> 2): enable CPU boost
-> sudo bash -c "echo 1 > /sys/devices/system/cpu/amd_pstate/cpb_boost"
+> for example:
+> ----------------------------------------------------------------------
+> CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ
+>   0    0      0    0 0:0:0:0          yes 4208.0000 400.0000 1666.7740
+>   1    0      0    0 0:0:0:0          yes 4208.0000 400.0000  400.0000
 >=20
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D217931
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D217618
-> Signed-off-by: Perry Yuan <Perry.Yuan@amd.com>
+> ----------------------------------------------------------------------
+> $ sudo bash -c "echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/boost"
+>=20
+> CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ
+>   0    0      0    0 0:0:0:0          yes 3501.0000 400.0000 4154.3140
+>   1    0      0    0 0:0:0:0          yes 4208.0000 400.0000  400.0000
+>=20
+> Please be aware that modifying the global variable
+> `amd_pstate_global_params.cpb_boost` will overwrite the individual CPU se=
+ttings.
+>=20
+> Signed-off-by: Perry Yuan <perry.yuan@amd.com>
 > ---
->  drivers/cpufreq/amd-pstate-ut.c |   2 +-
->  drivers/cpufreq/amd-pstate.c    | 114 +++++++++++++++++++++++++++++++-
->  include/linux/amd-pstate.h      |   1 +
->  3 files changed, 115 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/amd-pstate.c | 27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
 >=20
-> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate=
-=2Dut.c
-> index f04ae67dda37..b3601b0e6dd3 100644
-> --- a/drivers/cpufreq/amd-pstate-ut.c
-> +++ b/drivers/cpufreq/amd-pstate-ut.c
-> @@ -226,7 +226,7 @@ static void amd_pstate_ut_check_freq(u32 index)
->  			goto skip_test;
->  		}
-> =20
-> -		if (cpudata->boost_supported) {
-> +		if (amd_pstate_global_params.cpb_boost) {
->  			if ((policy->max =3D=3D cpudata->max_freq) ||
->  					(policy->max =3D=3D cpudata->nominal_freq))
->  				amd_pstate_ut_cases[index].result =3D AMD_PSTATE_UT_RESULT_PASS;
 > diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index f7dab0f7b452..f81fd61dd2a9 100644
+> index 11bce2c1db32..cb0055e7c842 100644
 > --- a/drivers/cpufreq/amd-pstate.c
 > +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -686,8 +686,10 @@ static int amd_pstate_boost_init(struct amd_cpudata =
-*cpudata)
->  	}
-> =20
->  	amd_pstate_global_params.cpb_supported =3D !(boost_val & MSR_K7_HWCR_CP=
-B_DIS);
-> -	if (amd_pstate_global_params.cpb_supported)
-> +	if (amd_pstate_global_params.cpb_supported) {
->  		current_pstate_driver->boost_enabled =3D true;
-> +		cpudata->boost_state =3D true;
-> +	}
-> =20
->  	amd_pstate_global_params.cpb_boost =3D amd_pstate_global_params.cpb_sup=
-ported;
-> =20
-> @@ -1293,6 +1295,114 @@ static ssize_t prefcore_show(struct device *dev,
->  	return sysfs_emit(buf, "%s\n", str_enabled_disabled(amd_pstate_prefcore=
-));
+> @@ -1371,6 +1371,30 @@ static int amd_pstate_cpu_boost(int cpu, bool stat=
+e)
+>  	return ret < 0 ? ret : 0;
 >  }
 > =20
-> +static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bo=
-ol on)
+> +static ssize_t show_boost(struct cpufreq_policy *policy, char *buf)
 > +{
 > +	struct amd_cpudata *cpudata =3D policy->driver_data;
-> +	struct cppc_perf_ctrls perf_ctrls;
-> +	u32 highest_perf, nominal_perf, nominal_freq, max_freq;
+> +	bool boost_val;
+> +
+> +	boost_val =3D READ_ONCE(cpudata->boost_state);
+> +
+> +	return sysfs_emit(buf, "%u\n", boost_val);
+> +}
+> +
+> +static ssize_t store_boost(
+> +		struct cpufreq_policy *policy, const char *buf, size_t count)
+> +{
+> +	bool boost_val;
 > +	int ret;
 > +
-> +	if (!policy) {
-> +		pr_err("policy is null\n");
-> +		return -ENODATA;
-> +	}
-> +
-> +	highest_perf =3D READ_ONCE(cpudata->highest_perf);
-> +	nominal_perf =3D READ_ONCE(cpudata->nominal_perf);
-> +	nominal_freq =3D READ_ONCE(cpudata->nominal_freq);
-> +	max_freq =3D READ_ONCE(cpudata->max_freq);
-> +
-> +	if (boot_cpu_has(X86_FEATURE_CPPC)) {
-> +		u64 value =3D READ_ONCE(cpudata->cppc_req_cached);
-> +
-> +		value &=3D ~GENMASK_ULL(7, 0);
-> +		value |=3D on ? highest_perf : nominal_perf;
-> +		WRITE_ONCE(cpudata->cppc_req_cached, value);
-> +
-> +		wrmsrl_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, value);
-> +	} else {
-> +		perf_ctrls.max_perf =3D on ? highest_perf : nominal_perf;
-> +		ret =3D cppc_set_epp_perf(cpudata->cpu, &perf_ctrls, 1);
-> +		if (ret) {
-> +			cpufreq_cpu_release(policy);
-> +			pr_debug("failed to set energy perf value (%d)\n", ret);
-> +			return ret;
-> +		}
-> +	}
-> +
-> +	if (on)
-> +		policy->cpuinfo.max_freq =3D max_freq;
-> +	else
-> +		policy->cpuinfo.max_freq =3D nominal_freq * 1000;
-> +
-> +	policy->max =3D policy->cpuinfo.max_freq;
-> +
-> +	if (cppc_state =3D=3D AMD_PSTATE_PASSIVE) {
-> +		ret =3D freq_qos_update_request(&cpudata->req[1],
-> +				      policy->cpuinfo.max_freq);
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static int amd_pstate_cpu_boost(int cpu, bool state)
-> +{
-> +	int ret;
-> +	struct cpufreq_policy *policy =3D cpufreq_cpu_get(cpu);
-> +	struct amd_cpudata *cpudata =3D policy->driver_data;
-> +
-> +	if (!policy) {
-> +		pr_err("policy is NULL\n");
-> +		ret =3D -ENODATA;
-> +		goto err_exit;
-> +	}
-> +
-> +	ret =3D amd_pstate_cpu_boost_update(policy, state);
-> +	refresh_frequency_limits(policy);
-> +	cpudata->boost_state =3D !!state;
-> +
-> +err_exit:
-> +	cpufreq_cpu_put(policy);
-> +	return ret < 0 ? ret : 0;
-> +}
-> +
-> +static ssize_t cpb_boost_show(struct device *dev,
-> +			   struct device_attribute *attr, char *buf)
-> +{
-> +	return sysfs_emit(buf, "%u\n", amd_pstate_global_params.cpb_boost);
-> +}
-> +
-> +static ssize_t cpb_boost_store(struct device *dev, struct device_attribu=
-te *b,
-> +			    const char *buf, size_t count)
-> +{
-> +	bool new_state;
-> +	ssize_t ret;
-> +	int cpu;
-> +
-> +	if (!amd_pstate_global_params.cpb_supported) {
-> +		pr_err("Boost mode is not supported by this processor or SBIOS\n");
+> +	if (sscanf(buf, "%d", &boost_val) !=3D 1)
+
+This will generate warning. IIUC, sscanf() doesn't work with booleans direc=
+tly, so you'd probably want to read the value into an (unsigned) integer, a=
+nd then cast it to bool.
+
 > +		return -EINVAL;
-> +	}
 > +
-> +	ret =3D kstrtobool(buf, &new_state);
-> +	if (ret)
-> +		return ret;
+> +	ret =3D amd_pstate_cpu_boost(policy->cpu, boost_val);
 > +
-> +	mutex_lock(&amd_pstate_driver_lock);
-> +	for_each_present_cpu(cpu) {
-> +		ret =3D amd_pstate_cpu_boost(cpu, new_state);
-> +		if (ret < 0) {
-> +			pr_warn("failed to update cpu boost for CPU%d (%d)\n", cpu, ret);
-
-Note ret is ssize_t, so %d should be %ld (or %z/%zd/%zi?) instead.
-
-> +			goto err_exit;
-> +		}
-> +	}
-> +	amd_pstate_global_params.cpb_boost =3D !!new_state;
-> +
-> +err_exit:
-> +	mutex_unlock(&amd_pstate_driver_lock);
 > +	return ret < 0 ? ret : count;
 > +}
 > +
->  cpufreq_freq_attr_ro(amd_pstate_max_freq);
->  cpufreq_freq_attr_ro(amd_pstate_lowest_nonlinear_freq);
-> =20
-> @@ -1303,6 +1413,7 @@ cpufreq_freq_attr_rw(energy_performance_preference);
+>  static ssize_t cpb_boost_show(struct device *dev,
+>  			   struct device_attribute *attr, char *buf)
+>  {
+> @@ -1416,6 +1440,7 @@ cpufreq_freq_attr_ro(amd_pstate_prefcore_ranking);
+>  cpufreq_freq_attr_ro(amd_pstate_hw_prefcore);
+>  cpufreq_freq_attr_rw(energy_performance_preference);
 >  cpufreq_freq_attr_ro(energy_performance_available_preferences);
+> +cpufreq_freq_attr_rw(boost);
 >  static DEVICE_ATTR_RW(status);
 >  static DEVICE_ATTR_RO(prefcore);
-> +static DEVICE_ATTR_RW(cpb_boost);
-> =20
->  static struct freq_attr *amd_pstate_attr[] =3D {
->  	&amd_pstate_max_freq,
-> @@ -1327,6 +1438,7 @@ static struct freq_attr *amd_pstate_epp_attr[] =3D {
->  static struct attribute *pstate_global_attributes[] =3D {
->  	&dev_attr_status.attr,
->  	&dev_attr_prefcore.attr,
-> +	&dev_attr_cpb_boost.attr,
->  	NULL
+>  static DEVICE_ATTR_RW(cpb_boost);
+> @@ -1426,6 +1451,7 @@ static struct freq_attr *amd_pstate_attr[] =3D {
+>  	&amd_pstate_highest_perf,
+>  	&amd_pstate_prefcore_ranking,
+>  	&amd_pstate_hw_prefcore,
+> +	&boost,
+>  	NULL,
 >  };
 > =20
-> diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
-> index 8ba5dd4d3405..56f616a5cd0f 100644
-> --- a/include/linux/amd-pstate.h
-> +++ b/include/linux/amd-pstate.h
-> @@ -106,6 +106,7 @@ struct amd_cpudata {
->  	u32	policy;
->  	u64	cppc_cap1_cached;
->  	bool	suspended;
-> +	bool	boost_state;
+> @@ -1437,6 +1463,7 @@ static struct freq_attr *amd_pstate_epp_attr[] =3D {
+>  	&amd_pstate_hw_prefcore,
+>  	&energy_performance_preference,
+>  	&energy_performance_available_preferences,
+> +	&boost,
+>  	NULL,
 >  };
 > =20
->  /*
 >=20
 
 
 =2D-=20
 Oleksandr Natalenko (post-factum)
---nextPart2322898.ElGaqSPkdT
+--nextPart5776929.DvuYhMxLoT
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEZUOOw5ESFLHZZtOKil/iNcg8M0sFAmY7SEMACgkQil/iNcg8
-M0tgIBAA2bvCr4o6vPSrdQN6Iunfu5oZDcI7uElQJ93I/hCYBOi7RWVXKDDggd7M
-lJcxY5xRYQuAAlLsgDd6GMqbdfbki3ham9uj25ALq1Ct11OwSplaFPzWIpN7OS6C
-SjdXlfjwc6X0YmI7q1wzOUqAJjRNVmYcQAAD8c84JGON2/UZ73WqBLrDYV993r6K
-Us+XkC79RdUGPY0aX1v9AGaeZlVvLVzsbbFImWDijaH47Z3SmIfVytHtW/euy5CJ
-1UZ5fmrRaGY4fOXmtd9c9/x9SxCo1B9I99crkSIu9xdbCHtBkrWCDqYGQpBvhw/n
-HUZEM0C1IoFGHm/wdhaJQAYeyj6E7IYOAZXWLfKzAhxpj4BZxUXa7HYHS8V6BcYF
-Bk/zoln7lMlaYFAqNNR2jGYH8+iEptbn+Y8spocnNy5bbqrcvQGXvgx/oe+GOl+x
-fm2OtpHfSAGga1tqsBFsZEOa+4K/Gtk/HiALseF5GGYTReDmTdttMqzugU09Tw33
-6DwSDxTGrW8Pbxctw3mmP9J7b7l4NbhMu4t+2reh+Jx5+sRwPMzZHbTZg3bapu61
-zEBpgxNI6+ycsBU/158S+3zq6FRFzgkDWMsfEK9iNVAMXErmQSwGV3PTZV6qHSP7
-OMD6HThh8FveOklfhJDLLdvXJUN+2WhlDf93KYg0Qco1lQYN184=
-=PK+c
+iQIzBAABCAAdFiEEZUOOw5ESFLHZZtOKil/iNcg8M0sFAmY7Rx0ACgkQil/iNcg8
+M0sozhAAwBKs7R6wasSZh5RwWS9z9V5g2aOMfwlMXNbXWMxVHZsq8E/rncUtUJ5b
+jjjvAYGBFcW4Z+5WWU8OTQr82MpTiXfPs7A5lSz6vbrkuF2dGfWPdrXFmA1xv1Nw
+SrDjQSNkzB7U3/wUFjADu5yyaORBMRrCGCl6CktG4Cnoe6pRi1tLndNqPjp7xiHm
+blZJTNvs7V7KV2tTpMPYgPKAadkuMfEURI7grBqe0kfy8r1z6HHQmkJVHCfoa3RF
+oHiwFcBBZJ3bAUG2ps/V8dsNcStYWvgDQHuKMO1ZGwvx0L3JMhY8hKFIzb92i2El
+51u9zAa81QZEnEr4BjvqRIdRuH+4QkQ07gXjsmfxQwGmhJgpGTlqUoHBLUXNyD6U
+QZpfWsltaKpLf3ilhc/OTXclHe4eg3/hMhNUNTCg1ThKKgSRG/QCLE3vS80F2tdL
+Vc1RehzmUdFfxLPN+6In+w+i9eQqzrKelXME1NGOoETKyLtxu4UvUOxw+Ux8/jTD
+Dh9mRRFAaeiPuKnH+Eu7X1dCoCZ9flByhOJKABZO9Q3LQ3bvNUzJHEHVDsSmiKZ0
+2a0FkEuC/kRwUnr1rARFjHzxoFZh94gMewyqCCehgAH1iB4dYNzHZHkDXJi1z/dD
+IrwctWnfVHmwTLQmx7u/4qXoTwvoxAyf4QDvhcZIlq4D5CYz1g0=
+=SI1r
 -----END PGP SIGNATURE-----
 
---nextPart2322898.ElGaqSPkdT--
+--nextPart5776929.DvuYhMxLoT--
 
 
 
