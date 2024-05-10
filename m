@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C978A12C47F;
-	Fri, 10 May 2024 14:20:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8280D12CD84;
+	Fri, 10 May 2024 14:20:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715350842; cv=none; b=qYtkf3Ad5ZYHcrtJDATpQ1dAnOZOxGL7LVDTPQ6zoBlvo0m3wdGPPZu/PVWg16fYxe+khfYfL8kyjqnxSsJGplBXxn7PLzw3gn0AoX0pMGSQDGkRWj9vSt3UmE7SnW/cu8Fppd8ezM3aOjwqCamkmFY8hnJ13v9kq1yz9p/OsFU=
+	t=1715350843; cv=none; b=sLfJA4LcCza2v9QqmwlLpE5yxytjU/y6caficJtsYy47MFDHP31kZiiuV8H5fp14Pr/R4yPGasn5scz4q6oaCSIWb1C01ZUqwEm+qwJjfNIrg4ORsHUuJxKS4qT1kdsvURPhm89TT5HKG8myZUwE2oT8+ir+6feDr+OQ/0A0Cfg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715350842; c=relaxed/simple;
-	bh=MNyvpEHau6tG2fMo/BWUIa2kNh/gvrjnkt3+CERqIOE=;
+	s=arc-20240116; t=1715350843; c=relaxed/simple;
+	bh=jX8k0sZA/4NpcGMGcCtPRk72afCKR9YSs6kcGWfY9AA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=HOtviy2RGgmvp1JGms+xDF2hitjxDYHjGY0osHKA2sDiF6iY+dQ2GjIG+gVNI6AzLOmgvyLc/zyTuv8dKXJy3NSnk0d1C4PUhNMtC0iqg9ZZGb6j5i/bkGIIMlLaSadO/8YSYZQ8tRLV1rDH0lj3Pn72Dm1SkA5wZhXY8ufb7Fw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=VBq0zP5v reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=ObSEqINBmQLFJkIyK6xVWhESBGvSz/Ihx7Lotold1Grehhu2vBfEaII4aJPOPStBh+FHy3sFQ8ItbG9paRUWPi93PP8nfsAHorMKPE/EBTZ4rE7tSUkekDjX7RqVlNCW+AXy8fXHs9upUztuPB4gmqSy8uCGA2ihBF6aOb7weKw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=gpAKfkfL reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="VBq0zP5v"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="gpAKfkfL"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id c1ac3eeb1b32e183; Fri, 10 May 2024 16:20:38 +0200
+ id 9527010a85f4ad71; Fri, 10 May 2024 16:20:39 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 2B8BA2102F3F;
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id E19892102F3F;
 	Fri, 10 May 2024 16:20:38 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1715350838;
-	bh=MNyvpEHau6tG2fMo/BWUIa2kNh/gvrjnkt3+CERqIOE=;
+	s=dkim; t=1715350839;
+	bh=jX8k0sZA/4NpcGMGcCtPRk72afCKR9YSs6kcGWfY9AA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=VBq0zP5vMlqwfQqOGc48PQGKksnCEZgqZ8YkMJvZZ4T9x1Y0Y6peuWGRbdJ+Oc0hi
-	 /NykKDy/SIn7THGL5urvqHZjiTWO6msUMhZGAvSSkU9SuXkO7s7c1H/IQUm3O4pzOR
-	 7dnjitmJHkjwzem3Ppd8n0xB/K1TAtuDXQXEvrp7htkE1MFZnkm+vwuJFTdQvCUkjG
-	 Zavujo5yZgpCoaawN+Atdl0MxzGeVqFQyM//2/QANR+M68x5M1NYaDUhkq7J+HMo1Y
-	 8WrsarcWPVp8uUjcTcUHmcj4vTBBGTUeNyksJFYNmATo/SSr7oQx13mVi/Mq8aP4CE
-	 KzTHUwPo6eAdA==
+	b=gpAKfkfLAtUDGJnYn4LXEue43eipYfwWyXEopoIggcbuTkVBr46nx7tWs7l5l1bWS
+	 E6ilDz3lDZHjfRgXsnl4mXXjUr+GV6Fs32U+gqbGU0hlYzl3QSajbS59RRUl9+Qi5A
+	 afXH01wQIOiy2rN46RjkYH8gQadBTSyAe741J7jxJvE/IKqML4rGqmEDuHlWprLLdu
+	 J6ClL1qskFFBTcalo/2xkbjGRkwGuxN18gOEV0lMO3x0QkHBhtWyU/CDLJvVUURyHg
+	 jRygbXoP2riaMdoKBeEJZvbmVp1lGGYEoGYriH/j8W7PyeaBH2qjfbyQ2Nm4mVdeCn
+	 LmaYmb7DI99Aw==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -43,10 +43,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
  Zhang Rui <rui.zhang@intel.com>
 Subject:
- [PATCH v1 6/6] thermal: core: Avoid calling .trip_crossed() for critical and
- hot trips
-Date: Fri, 10 May 2024 16:20:25 +0200
-Message-ID: <3229987.5fSG56mABF@kreacher>
+ [PATCH v1 5/6] thermal: gov_bang_bang: Drop unnecessary cooling device target
+ state checks
+Date: Fri, 10 May 2024 16:19:32 +0200
+Message-ID: <3570512.iIbC2pHGDl@kreacher>
 In-Reply-To: <13518388.uLZWGnKmhe@kreacher>
 References: <13518388.uLZWGnKmhe@kreacher>
 Precedence: bulk
@@ -65,29 +65,50 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Invoking the governor .trip_crossed() callback for critical and hot
-trips is pointless because they are handled directly by the core,
-so make thermal_governor_trip_crossed() avoid doing that.
+Some cooling device target state checks in bang_bang_control()
+done before setting the new target state are not necessary after
+recent changes, so drop them.
+
+Also avoid updating the target state before checking it for
+unexpected values.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/thermal/gov_bang_bang.c |   14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
-Index: linux-pm/drivers/thermal/thermal_core.c
+Index: linux-pm/drivers/thermal/gov_bang_bang.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -463,6 +463,9 @@ static void thermal_governor_trip_crosse
- 					  const struct thermal_trip *trip,
- 					  bool crossed_up)
- {
-+	if (trip->type == THERMAL_TRIP_HOT || trip->type == THERMAL_TRIP_CRITICAL)
-+		return;
-+
- 	if (governor->trip_crossed)
- 		governor->trip_crossed(tz, trip, crossed_up);
- }
+--- linux-pm.orig/drivers/thermal/gov_bang_bang.c
++++ linux-pm/drivers/thermal/gov_bang_bang.c
+@@ -57,24 +57,16 @@ static void bang_bang_control(struct the
+ 		if (instance->trip != trip)
+ 			continue;
+ 
+-		if (instance->target == THERMAL_NO_TARGET)
+-			instance->target = 0;
+-
+-		if (instance->target != 0 && instance->target != 1) {
++		if (instance->target != 0 && instance->target != 1 &&
++		    instance->target != THERMAL_NO_TARGET)
+ 			pr_debug("Unexpected state %ld of thermal instance %s in bang-bang\n",
+ 				 instance->target, instance->name);
+ 
+-			instance->target = 1;
+-		}
+-
+ 		/*
+ 		 * Enable the fan when the trip is crossed on the way up and
+ 		 * disable it when the trip is crossed on the way down.
+ 		 */
+-		if (instance->target == 0 && crossed_up)
+-			instance->target = 1;
+-		else if (instance->target == 1 && !crossed_up)
+-			instance->target = 0;
++		instance->target = crossed_up;
+ 
+ 		dev_dbg(&instance->cdev->device, "target=%ld\n", instance->target);
+ 
 
 
 
