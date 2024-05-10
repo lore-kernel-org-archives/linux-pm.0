@@ -1,81 +1,101 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7429B1708A3;
-	Fri, 10 May 2024 14:20:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id BDEF61429A;
+	Fri, 10 May 2024 16:49:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715350847; cv=none; b=niRG0sfXhzkxfm5a/1vZY2CfY2KAPDhdXpN8oO5ZBZaI7pEdPdPpJnAKeSpxuqvTn1zNkiWhPgP6fzVWU750aLcHwIxJC+7R8gWpRz9hQjfrftxHNuBoaFC5up1LwbbZzSIZGnjFI4IpV6YdUed9y3YE+QQrnEeVLQzgylyqxPI=
+	t=1715359786; cv=none; b=Vx0jpzu/yRWfEcoIMokKZo7IyaFxXeJR7NfCWkZ4d8U5/h0keAlQWNQLS86KT5kRq1eiEWBlnQsYCcZUoNcYWfYpYeRAV8ekLHbmPrKGUEuxtaPoQIHSOR+wPWZbhhF2XoYtJQc5TaVsGG3SnlPjPQn7tU1+UD4SNcnfi8metQA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715350847; c=relaxed/simple;
-	bh=lcVUbJpgBRjtlZ1jA0Huac2XwIHQMj0wmWM0G4IfuhE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=CS5BOwNnDEO7QkKqFq1Dwx8MbSCp3ZgDdVBashS73T+uoCnnWNFm0aQKXuWusZWWfem1C9w6keVna/EhSczZ3zTenHJlfaZJa4zy/yUMsxmwBT9D30e61yxwcn6WFlvlF+bc0pXt5FHkfLUwi2ZfrUs/6NMtOlvMR7dhc4l8oiA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=FE9qX8ZW; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="FE9qX8ZW"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.0.0)
- id 4851dcd7d8e39ad0; Fri, 10 May 2024 16:20:43 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id DABA52102F3F;
-	Fri, 10 May 2024 16:20:42 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1715350843;
-	bh=lcVUbJpgBRjtlZ1jA0Huac2XwIHQMj0wmWM0G4IfuhE=;
-	h=From:To:Cc:Subject:Date;
-	b=FE9qX8ZWgmcVM4Y6qeFuuKmFtFEg+ZmW9BgP1+HTLkqhYpUBz4cwbFowFHp3gYihm
-	 2jQKwm60tgKld0OTtd1lH5JZleigXdZOzC5yZP6lHTODjOI0Z3pNjVXPUVyMqxO5o3
-	 gBYGcsWXAgNISTu0Y8EOuMsWllW9hsIoR/Ypd0sZgheowj7daWf8eUkz149Jo7+SHQ
-	 l4uYvuS5hQxiGad13s/CKVgivM9o/DfRkJXmzTBMNko+n1Em+keUsWJzIfO4vBu49W
-	 CPEGfM4MTynMmCwttxpUob3+79NRI5PqpSW6H7HlwSZ0+Du1mo1zQiJozvRebok3SM
-	 mCBbZt0UNlLEQ==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v1 0/6] thermal: core: Assorted improvements for v6.11
-Date: Fri, 10 May 2024 16:11:05 +0200
-Message-ID: <13518388.uLZWGnKmhe@kreacher>
+	s=arc-20240116; t=1715359786; c=relaxed/simple;
+	bh=GbCNIFOQBJPFUW1zv45XMBiGgvlwB+enNPlomZb/ubM=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=VniAdTsPC1j4hkiQ964whJ5oVAHbTU3ZXwomszffxZWWkqWeXTvl0EmuULZL8lsWLzDo+s37Ng7+iQlbSQFS+DkNJWz6FJ/qteyc648sQeqe4d4pFAeX8YFtU1U/nQ05USKirnGJIP3TYSCMF6CTpqPGD1035ZIvxail0bR3joc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 58A4A106F;
+	Fri, 10 May 2024 09:50:07 -0700 (PDT)
+Received: from donnerap.manchester.arm.com (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6F42B3F6A8;
+	Fri, 10 May 2024 09:49:40 -0700 (PDT)
+Date: Fri, 10 May 2024 17:49:37 +0100
+From: Andre Przywara <andre.przywara@arm.com>
+To: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+Cc: Yangtao Li <tiny.windzz@gmail.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen-Yu Tsai
+ <wens@csie.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland
+ <samuel@sholland.org>, Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] cpufreq: sun50i: fix memory leak in
+ dt_has_supported_hw()
+Message-ID: <20240510174937.0a710104@donnerap.manchester.arm.com>
+In-Reply-To: <20240503-sun50i-cpufreq-nvmem-cleanup-v1-1-0a2352cac46b@gmail.com>
+References: <20240503-sun50i-cpufreq-nvmem-cleanup-v1-0-0a2352cac46b@gmail.com>
+	<20240503-sun50i-cpufreq-nvmem-cleanup-v1-1-0a2352cac46b@gmail.com>
+Organization: ARM
+X-Mailer: Claws Mail 3.18.0 (GTK+ 2.24.32; aarch64-unknown-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrvdefkedgjeegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hi Everyone,
+On Fri, 03 May 2024 19:52:32 +0200
+Javier Carrasco <javier.carrasco.cruz@gmail.com> wrote:
 
-This series is for the 6.11 cycle, but since it is ready from my POV,
-here it goes in case people have the time to look at it in the meantime.
+Hi Javier,
 
-The patches in the series address some shortcomings in the thermal
-core code (including the Bang-Bang governor) and clean it up somewhat.
+> The for_each_child_of_node() loop does not decrement the child node
+> refcount before the break instruction, even though the node is no
+> longer required.
 
-Please refer to the individual patch changelogs for details.
+Ah, thanks for spotting this, there is indeed a leak. Sorry for the
+blunder!
 
-This series is independent of the thermal debugfs one posted yesterday:
+> This can be avoided with the new for_each_child_of_node_scoped() macro
+> that removes the need for any of_node_put().
 
-https://lore.kernel.org/linux-pm/12438864.O9o76ZdvQC@kreacher/
+Wow, that's the typical convoluted Linux macro, but it looks correct to me.
+It would call the put even if the loop ends naturally, but there is a NULL
+test in there, so that's fine.
 
-At one point I'm going to put this series on a git branch for easier
-access/testing.
+> Fixes: fa5aec9561cf ("cpufreq: sun50i: Add support for opp_supported_hw")
+> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+
+Reviewed-by: Andre Przywara <andre.przywara@arm.com>
 
 Thanks!
+Andre
 
-
+> ---
+>  drivers/cpufreq/sun50i-cpufreq-nvmem.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+> index 0b882765cd66..ef83e4bf2639 100644
+> --- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+> +++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+> @@ -131,7 +131,7 @@ static const struct of_device_id cpu_opp_match_list[] = {
+>  static bool dt_has_supported_hw(void)
+>  {
+>  	bool has_opp_supported_hw = false;
+> -	struct device_node *np, *opp;
+> +	struct device_node *np;
+>  	struct device *cpu_dev;
+>  
+>  	cpu_dev = get_cpu_device(0);
+> @@ -142,7 +142,7 @@ static bool dt_has_supported_hw(void)
+>  	if (!np)
+>  		return false;
+>  
+> -	for_each_child_of_node(np, opp) {
+> +	for_each_child_of_node_scoped(np, opp) {
+>  		if (of_find_property(opp, "opp-supported-hw", NULL)) {
+>  			has_opp_supported_hw = true;
+>  			break;
+> 
 
