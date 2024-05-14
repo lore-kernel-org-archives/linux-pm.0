@@ -1,22 +1,22 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5221D86130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 561E686134
 	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681942; cv=none; b=Wx+UR7EIUAjb6LKyg03Yq2bZDCexYg83hpsZAkjWfxbcRbj4PpKY7BZ2mKtKCn43qHX+fDl5lrqvX0aV6gYorA2DBDMlYaE7gGc2/SOZkMLWlcAd4zizGj+EHH1KDecMxUt4mlpCPXIt34bj3u5TSqLogJwpktrfcX+egN8lQ+0=
+	t=1715681942; cv=none; b=P8Vgx3x/fZB2fK6e6t6p0YbfBHISGs77uRxZ8ZeBj6F+yYA+E0OMFbHjLZeMijiVRnt3SDywqaXzgpsB3YQTbFxTix3QBJ6ByABGmXmIHy741+70RKzpuvhpSwhdsIOIgCP2r+pR+p/r59z2VVnnoqhI4PaL7QIc+xVG9Jt3BGA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1715681942; c=relaxed/simple;
-	bh=CUu2P4TRJsfe7yqEOYjw/OvNrb2ZVHDEb5fuuk7S0Is=;
+	bh=LW304zCAAtQ6GsothVY94fAn3TA4umpzIc4XLoAbXHQ=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=VisUPeu/UYKwRbfYSWqLDPYEbgarKS3866pGWaYyXeCPADTP95C2ZuIB3j/JBwtqy2mDNb314APdEkutoLZL40xvNrif/+qqjlbC0p/3yK9cMJT84hOikGrcYeEeXRTHG3yEWbVR8taJ4xNtDH0JpctuNF8ciDGdTWxpdEd+urs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=0lcbUX74; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=s7f4ORR3; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=XnUt4RpYIlvJMkA7AQ3db4SjfAponKbkZGRDnKeoXgdwhkDhOX0MYXlPTYD/x+W2kCUUXGolkoLOQwhnA4WNDA5J61q+hJmFYGVezCBWE0JYSL11H95XtfgzuHC34qNGAduyGY4vZeJMs6Q4aaiSPIHkYcpW9ItnGO0zSUIRukQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=4kvqBNAt; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=uW/vvYX4; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="0lcbUX74";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="s7f4ORR3"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="4kvqBNAt";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="uW/vvYX4"
 Date: Tue, 14 May 2024 10:18:54 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1715681934;
@@ -25,12 +25,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=kereudTyL1cfyJtdkR3CfdjNt7A2Vay01OnNRIIZiK0=;
-	b=0lcbUX743oIVWfvFa7rrif6dzjntSLouIbNk4oux5VajNp1xTDx3B+x2uLdNz5abEd9aqU
-	6jG6EklMMPEbxaPExfzmGyCpeMlz2/QjduP1czBiV3NkIkQVHqcGqMkH+rzUNrENm/YPGF
-	jX+dOCss2HtT7NQSR9b79LupswFgBNDD9VBxT32ci9Bl9+R+dD6z0Sjl7vRXDwO9aKnbQa
-	A+yFybAivnnBLr28BVOUyWjvycE7IgTl2xactmdtrd+gXUBofZWu/RLJ7p+IQi6zPMK8qK
-	E+xqO0DDHNEIkUssqL3zGmMjejCoFdjWaOYVX/VlaboaRC4JgPtwcbsm/wwxow==
+	bh=Kg47aVKCuVjybDSeZicgZ/q0i0vF9LwLlp8Xiw4f1e8=;
+	b=4kvqBNAtVOpe8TuN8+KgfXCvPLD0mbNcUCvKyr7GrSIR4ffpVh/fusWD0XtkqLcYEgTlwS
+	IB919FQInri8ccIT/SSMD5vaGFy+1VhqeEnsnO5ECAV+a25cdaE2zhgiO3Hrihy17BLYqs
+	3GqZ7j0VJY2/mpO3SAg40GDiRykHIsqrK38U6k+NEzmIMOmJdwTDnw6LFBa4XEM861xecB
+	hWjpDiQmd9Q7L2I2hEY9VH9RahmTNNYGNiIjAAmfCv89tSIqG6uqVvACCJmPGkI4WuQB8C
+	zkxwS/diOHpr4SxidmuFr4mUYaATB1x9SqLdCI8/tJNmFgmxVC2wfKfKVNGmFQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1715681934;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -38,29 +38,30 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=kereudTyL1cfyJtdkR3CfdjNt7A2Vay01OnNRIIZiK0=;
-	b=s7f4ORR3v3NtocTp4tsRpO+4iCOsZC7IST9VIcj6z1ZRMHtzYs3wt50hT9aklINPelqeF1
-	EiF3uqTSEe7eQfAg==
+	bh=Kg47aVKCuVjybDSeZicgZ/q0i0vF9LwLlp8Xiw4f1e8=;
+	b=uW/vvYX4wbXT/Rpa3L8FGruBoN+Vw4C8tNm0+Ez2pMxC6wfz34KX+q7gXtl8XWNjDa5EWw
+	4kN/OdmTShD/LRCA==
 From: "thermal-bot for Christophe JAILLET" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/fixes] thermal/drivers/k3_bandgap: Remove some
- unused fields in struct k3_bandgap
+Subject: [thermal: thermal/fixes] thermal/drivers/qcom: Remove some unused
+ fields in struct qpnp_tm_chip
 Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ Bjorn Andersson <andersson@kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
  amitk@kernel.org
-In-Reply-To: =?utf-8?q?=3C206d39bed9ec6df9b4d80b1fc064e499389fc7fc=2E17126?=
- =?utf-8?q?87420=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
-References: =?utf-8?q?=3C206d39bed9ec6df9b4d80b1fc064e499389fc7fc=2E171268?=
- =?utf-8?q?7420=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
+In-Reply-To: =?utf-8?q?=3Cd1c3a3c455f485dae46290e3488daf1dcc1d355a=2E17126?=
+ =?utf-8?q?87589=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
+References: =?utf-8?q?=3Cd1c3a3c455f485dae46290e3488daf1dcc1d355a=2E171268?=
+ =?utf-8?q?7589=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193454.10875.14882299042134798669.tip-bot2@tip-bot2>
+Message-ID: <171568193465.10875.14001203984054116212.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
@@ -70,36 +71,37 @@ Content-Transfer-Encoding: 7bit
 
 The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     61fad0a90685d3aaafb05fb6abc1fe39fbb90320
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//61fad0a90685d3aaafb05fb6abc1fe39fbb90320
+Commit-ID:     0a0c8db8843c5d5e22e2ee275c35d6ecd0659414
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//0a0c8db8843c5d5e22e2ee275c35d6ecd0659414
 Author:        Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-AuthorDate:    Tue, 09 Apr 2024 21:56:43 +02:00
+AuthorDate:    Tue, 09 Apr 2024 21:56:34 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Tue, 23 Apr 2024 12:40:29 +02:00
 
-thermal/drivers/k3_bandgap: Remove some unused fields in struct k3_bandgap
+thermal/drivers/qcom: Remove some unused fields in struct qpnp_tm_chip
 
-In "struct k3_bandgap", the 'conf' field is unused.
+In "struct qpnp_tm_chip", the 'prev_stage' field is unused.
 Remove it.
 
 Found with cppcheck, unusedStructMember.
 
 Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Reviewed-by: Bjorn Andersson <andersson@kernel.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/206d39bed9ec6df9b4d80b1fc064e499389fc7fc.1712687420.git.christophe.jaillet@wanadoo.fr
+Link: https://lore.kernel.org/r/d1c3a3c455f485dae46290e3488daf1dcc1d355a.1712687589.git.christophe.jaillet@wanadoo.fr
 ---
- drivers/thermal/k3_bandgap.c | 1 -
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/thermal/k3_bandgap.c b/drivers/thermal/k3_bandgap.c
-index e88192d..2a70377 100644
---- a/drivers/thermal/k3_bandgap.c
-+++ b/drivers/thermal/k3_bandgap.c
-@@ -78,7 +78,6 @@ static const int k3_adc_to_temp[] = {
- 
- struct k3_bandgap {
- 	void __iomem *base;
--	const struct k3_bandgap_data *conf;
- };
- 
- /* common data structures */
+diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+index 78c5cfe..3cd74f6 100644
+--- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+@@ -74,7 +74,6 @@ struct qpnp_tm_chip {
+ 	long				temp;
+ 	unsigned int			thresh;
+ 	unsigned int			stage;
+-	unsigned int			prev_stage;
+ 	unsigned int			base;
+ 	/* protects .thresh, .stage and chip registers */
+ 	struct mutex			lock;
