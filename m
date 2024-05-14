@@ -1,22 +1,22 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A65886248
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A6C986252
 	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681943; cv=none; b=iwtjKUwzE8qD5QVWr8KMsWNfEOVTtezusSQvf8Q51Mjdp9RQfVBFm7Tz46HC/Ua5v14FP4XxRSY+KNllwiVQwPAEISBhRpn6Lsa0mWKrUytGILsf2l4LaIz7sHn0NlfQTiitJfcdRDeo+Sg87gGckG7zC+CwcbCPrhJTQtLaJM4=
+	t=1715681943; cv=none; b=OIo+p4Kmnteu94J9/NbsFR3iNnqV+97WSjUuRwzrt7IzFyxRsvwVgA/fS7jjuOVfdQOP/YrVuPyMNiUfJhjCZrM7bFycD8oncmxsDl+o6RfwUw1Bx+oEw0vnp0M0blJpsG/TwDnnK27Crxa49Ic+qKGMR47Bgx0Wy0suubZd60Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1715681943; c=relaxed/simple;
-	bh=OEJMi0ijNNGEt9osSPtHM8kgXrTrTYsr0Dr0cgWEPYk=;
+	bh=e3pkUqW+y9iM2xDtXxefQZcrAEQGRbXOKqYFFrc+AAQ=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=Jat4NboWNrlytQYrG4HNpW3Lmzi4G6PI/rFHgE9GhzQb/UpXd7p+6Ag91iYqWuSmAUCwpBgsRor5baXjeDkDXUJEYdwPyL+flSULOuLq4sRI3T3wtfEt+vc6nmpX8lgZUpjkwAKTS6xLCrFSAuRcHdKyPXCTaFnexvRu5bPV8+8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=cJuVJgqX; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=iAxf/4I7; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=kBcF8hYX4HkTEF7jhihlnjeCyJAJyXPMYxxEpaf+YijcKiiZTmp0xWLOv2vLE5N8rdhR7+F0aFOD7ee/Rtm9A7om3guTm+Y3yWUufZ87q4+wS42iyu0B0ewQSbdLux3w2I6qOUX2GeqwNY3/oTyCgGHg5pWg2bVHHjZw36QP3pQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=vxCqEhj1; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=yQ9p1cBD; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="cJuVJgqX";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="iAxf/4I7"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="vxCqEhj1";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="yQ9p1cBD"
 Date: Tue, 14 May 2024 10:18:54 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1715681935;
@@ -25,12 +25,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vbk9tCVlcw0f7f8K6FxvEomNbxyDXw1XUvJgJD9dEjg=;
-	b=cJuVJgqXiN5kDFDqPePZCWu4QcCsg7ymEdm6yMubvZxyc0wN2GgtF2Phe3DUCF/7YMGCg7
-	dbcjtIKxP7sDEymsbHMakq/eThwvkex0TPp4TJr9ECir5amtjfnCgatGvi1oyolKrdk41r
-	S2ywNo3EpqfMvyhhmN6LlZCHEu5jNAE67QYn9vi+YvBNMchMY16kU62FKEBqoFkpv7bEwJ
-	KNvDC4tPCXH7XyNiqBUBXgs+YeCIXwXOgCxt0tu8VYf6NmzTXSqZimeOsPNc3tFhzVzDR7
-	XDSSCyOZKYPtTnxumaQy1P54zYYiEabwkpFcbm5kyj3EbsaZp99Wvm2X5L4IuQ==
+	bh=FRlaFW4YRpDw+nQfQtPKLo2nDCwa5aBmAApKz5YPkvY=;
+	b=vxCqEhj1ONc1osHAdc5OjquLVeO5vhlI3ElWmpUY68Sam1U6ViTvIGV3RN4RubG2xKGuL7
+	vlPPkwkFcQIwAASuwfrF1LooEh2cw2s+9UujI11cQMWqbD88SBzCFJ/RSyj4K1K4/TgLMv
+	AeGO6rHHePRP/H6mOsF/a2yiT4ejv8K0WJpEVyP03iU5PfF5igWA6sHd5Tm1aGVFKgGV8U
+	CnPv2Ra/5YZKk1w0yA4+yM1ERTEDGRtyMloh0GYRyuL69WVf6kf1Rynr1ZuqyeNF1QkKt8
+	QLhvVorfBF8CMN+EY4AwC4Hc2mnzKDGQJTaz8KQA8pFK7S/NajM0E2fXLA2BUQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1715681935;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -38,28 +38,28 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vbk9tCVlcw0f7f8K6FxvEomNbxyDXw1XUvJgJD9dEjg=;
-	b=iAxf/4I7tbXrpFzlWPR7dmor6+e6RqBDv6fMxH29dweASN+dHPN9NWnbi0CLbJiajduWre
-	exMLANHMWwuV7DAQ==
-From: "thermal-bot for Hsin-Te Yuan" <tip-bot2@linutronix.de>
+	bh=FRlaFW4YRpDw+nQfQtPKLo2nDCwa5aBmAApKz5YPkvY=;
+	b=yQ9p1cBD9rYNNtBdX/1ljAH3YspGZtZWfFklgL5xN0FC0WuKaDc2MN0nf0YOt6XB3VuvQt
+	qGFynAOSNx2j50Cw==
+From: "thermal-bot for Aleksandr Mishin" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/fixes] thermal/drivers/mediatek/lvts_thermal: Add
- coeff for mt8192
-Cc: "Hsin-Te Yuan" <yuanhsinte@chromium.org>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+Subject:
+ [thermal: thermal/fixes] thermal/drivers/tsens: Fix null pointer dereference
+Cc: Aleksandr Mishin <amishin@t-argos.ru>,
+ Konrad Dybcio <konrad.dybcio@linaro.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
  amitk@kernel.org
-In-Reply-To: <20240416-lvts_thermal-v2-1-f8a36882cc53@chromium.org>
-References: <20240416-lvts_thermal-v2-1-f8a36882cc53@chromium.org>
+In-Reply-To: <20240411114021.12203-1-amishin@t-argos.ru>
+References: <20240411114021.12203-1-amishin@t-argos.ru>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193489.10875.7658757792902521119.tip-bot2@tip-bot2>
+Message-ID: <171568193478.10875.18119058876006595938.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
@@ -69,44 +69,41 @@ Content-Transfer-Encoding: 7bit
 
 The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     7954c92ede882b0dfd52a5db90291a4151b44c1a
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//7954c92ede882b0dfd52a5db90291a4151b44c1a
-Author:        Hsin-Te Yuan <yuanhsinte@chromium.org>
-AuthorDate:    Tue, 16 Apr 2024 07:35:47 
+Commit-ID:     d998ddc86a27c92140b9f7984ff41e3d1d07a48f
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d998ddc86a27c92140b9f7984ff41e3d1d07a48f
+Author:        Aleksandr Mishin <amishin@t-argos.ru>
+AuthorDate:    Thu, 11 Apr 2024 14:40:21 +03:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Tue, 23 Apr 2024 12:40:29 +02:00
 
-thermal/drivers/mediatek/lvts_thermal: Add coeff for mt8192
+thermal/drivers/tsens: Fix null pointer dereference
 
-In order for lvts_raw_to_temp to function properly on mt8192,
-temperature coefficients for mt8192 need to be added.
+compute_intercept_slope() is called from calibrate_8960() (in tsens-8960.c)
+as compute_intercept_slope(priv, p1, NULL, ONE_PT_CALIB) which lead to null
+pointer dereference (if DEBUG or DYNAMIC_DEBUG set).
+Fix this bug by adding null pointer check.
 
-Fixes: 288732242db4 ("thermal/drivers/mediatek/lvts_thermal: Add mt8192 support")
-Signed-off-by: Hsin-Te Yuan <yuanhsinte@chromium.org>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
+
+Fixes: dfc1193d4dbd ("thermal/drivers/tsens: Replace custom 8960 apis with generic apis")
+Signed-off-by: Aleksandr Mishin <amishin@t-argos.ru>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20240416-lvts_thermal-v2-1-f8a36882cc53@chromium.org
+Link: https://lore.kernel.org/r/20240411114021.12203-1-amishin@t-argos.ru
 ---
- drivers/thermal/mediatek/lvts_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/thermal/qcom/tsens.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index fd4bd65..4e5c213 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -1530,11 +1530,15 @@ static const struct lvts_data mt7988_lvts_ap_data = {
- static const struct lvts_data mt8192_lvts_mcu_data = {
- 	.lvts_ctrl	= mt8192_lvts_mcu_data_ctrl,
- 	.num_lvts_ctrl	= ARRAY_SIZE(mt8192_lvts_mcu_data_ctrl),
-+	.temp_factor	= LVTS_COEFF_A_MT8195,
-+	.temp_offset	= LVTS_COEFF_B_MT8195,
- };
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 1c9df4f..e76e230 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -265,7 +265,7 @@ void compute_intercept_slope(struct tsens_priv *priv, u32 *p1,
+ 	for (i = 0; i < priv->num_sensors; i++) {
+ 		dev_dbg(priv->dev,
+ 			"%s: sensor%d - data_point1:%#x data_point2:%#x\n",
+-			__func__, i, p1[i], p2[i]);
++			__func__, i, p1[i], p2 ? p2[i] : 0);
  
- static const struct lvts_data mt8192_lvts_ap_data = {
- 	.lvts_ctrl	= mt8192_lvts_ap_data_ctrl,
- 	.num_lvts_ctrl	= ARRAY_SIZE(mt8192_lvts_ap_data_ctrl),
-+	.temp_factor	= LVTS_COEFF_A_MT8195,
-+	.temp_offset	= LVTS_COEFF_B_MT8195,
- };
- 
- static const struct lvts_data mt8195_lvts_mcu_data = {
+ 		if (!priv->sensor[i].slope)
+ 			priv->sensor[i].slope = SLOPE_DEFAULT;
