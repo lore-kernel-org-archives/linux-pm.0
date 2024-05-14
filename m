@@ -1,57 +1,57 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AFE813F45A
-	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F397D13F457
+	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681945; cv=none; b=GspgkUEVOlqHuJtm0uqyTwpQpv0srmfZt4ZJkHmb8FlzEiGyaBKA5rdOnfLh+HHYWtj4P2VpzsPtBjHWQ6LBaT4aVtRviLfDloTdFyGMdEhGe/Loowq/WOW22IKjBL7VxV0ZodxwrzUXS315PrRYXRmc7YD8EDTNM+iN+/0FHQ8=
+	t=1715681945; cv=none; b=u5lQd4VvKQxXs0O/mDESN06BGRjfUIyM7p5XJQ8NTuSDbCpVV5ECLtserLpEnhFXCACFkgU0holUyROKB6b9xGHpAPpIiE+bo+UYHOEw32jXgXYhu4pliYC4kpJk5ALZG1AdOJGV6PLO7NqxrO1+7vm12ffstE5yHJ1Sr+fw1t0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1715681945; c=relaxed/simple;
-	bh=P/E2ry8Zjpd/ZyvzelKV968TjHn5JrJmFIUoVOBRU/k=;
-	h=Date:From:To:Subject:Cc:MIME-Version:Message-ID:Content-Type; b=YWSBHnAZVLtWmh8vj1tnBJ0kBjebpH9a/9PGuxiZTcLY/JWQMybrqzUarKutyXVRlNT7KUukvV+qz0M7PKYGZUVpi3MkXijXhggE35x+hDlCr/QhdaG8NR7Ljgqoe5J9aRvudnm6FM5+XIgQAPu1HEwo9ZQKOKZlgz4U8ekZL58=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=zcL6pWP8; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=BO1ii77D; arc=none smtp.client-ip=193.142.43.55
+	bh=Y37NvGJNHMXCuilyTrtoM5vJ+ET23UGypFhxqF12nFk=;
+	h=Date:From:To:Subject:Cc:MIME-Version:Message-ID:Content-Type; b=kHXXmH6yp0NtV9UW9LKLa+kombtVFOJ8hMKvZzwuDyKulumaai+iJ6rhGDLLDPVBkzdnQoNVpdxyMncd1tWvDdRCYigJuc2/e0/0FOb6ilbEmQKWzuHx8kCUj3LSYuDIG09npQQuZnjWMlmK+ImcZ7wBnDK8w1Y9yRH7sxKtlWc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=oMn640gB; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=/i0eeb8r; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="zcL6pWP8";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="BO1ii77D"
-Date: Tue, 14 May 2024 10:18:57 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="oMn640gB";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="/i0eeb8r"
+Date: Tue, 14 May 2024 10:18:56 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1715681937;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-	bh=pOwoYt/SLx41Naaem3lEqNEAV/jB+vkT/dQTf97SpnE=;
-	b=zcL6pWP8qsuRJ/752JiBWnLMS+DgHFfCZmX7tUHv8ddxCVh68QWQcpGgK2kqwk1mN6PprA
-	monDs5WwF4++SgQ4FOXWKoi/mFKqMu5nJkPwyKIy78tTY06dWMdAV10wW/Dt3uP55b8j04
-	+NruDl48htA1oEC/HRVIYxUhXqKPxFAwx3WX5KlSuDE9zg27gsej2MfXMKlASAaUs43aMT
-	iYCF1Q7WRFp70UZ2m/sbXdPyJNbk+eba4hKBD6Yg3Ss9odVfPiU6DEkYpI6WYBeGMLDSAS
-	m2M54X5VZsUcVt/bLW5ieXjBReuq/D+YDLZ0iYE2mylN2b7RvQAhwj7PXYQHMQ==
+	bh=hiP+VzDuMvjW/aD8bZ0BVXrspTAL0qJUXX27+VzzwBk=;
+	b=oMn640gBtADBzCIajW0Q3/Z8/A9C8O8ANaljphAKPjP9pQB2rEIJ9RoD1YTCwYskRn0/Qg
+	D2qDazWvb3WdXroMK2P3amvGF3rU4ZAn4TIGy/XV+11YD4XFXzViS2mlhheKcMdJ9CNqKn
+	AFBtc7CWInUlCiskKCw53D+49uwbWydDGY7muhgQ3oDdLy7UPhOE2aLgDUfMn3h1AbO8+P
+	sAc6eLuFNIHGeLRRob+ueejaDkKo9RPoMhB3vtjTrhJrE03tBZaRdjk6LVWNp2X1eg4iFY
+	XHA4eD22fWJ98W/bdguaC+kEd/8GlAh1FDRxqAZKbCun/AYTZxFeCFx8dZ8cRA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1715681937;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-	bh=pOwoYt/SLx41Naaem3lEqNEAV/jB+vkT/dQTf97SpnE=;
-	b=BO1ii77DcpcHg38gPpgkrCC5CxQPOCEkJFG532C2RUVJqQjO+bKhyFagWzhc0XaCEqIm5/
-	l4yhbe04nbLdOyBQ==
+	bh=hiP+VzDuMvjW/aD8bZ0BVXrspTAL0qJUXX27+VzzwBk=;
+	b=/i0eeb8rMLBOdUlgQZvT2hAhzu2O85/cK2TiPfr9MVJaSNN+wpzST8G1X5uuc06SKODRVI
+	j4fQIhR/VWLvP4Ag==
 From: "thermal-bot for Rafael J. Wysocki" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/fixes] thermal: gov_step_wise: Simplify checks
- related to passive trips
+Subject: [thermal: thermal/fixes] thermal: core: Make struct
+ thermal_zone_device definition internal
 Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, rui.zhang@intel.com,
- daniel.lezcano@linaro.org, amitk@kernel.org
+ Lukasz Luba <lukasz.luba@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ rui.zhang@intel.com, amitk@kernel.org
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193709.10875.10665594485985186370.tip-bot2@tip-bot2>
+Message-ID: <171568193681.10875.3713951064776021375.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
@@ -61,49 +61,262 @@ Content-Transfer-Encoding: 7bit
 
 The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     053b852c46626250b5f7da43ba8574da756db022
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//053b852c46626250b5f7da43ba8574da756db022
+Commit-ID:     b1ae92dcfa8ed7d5044c525c3a868fcb4d0f9c0e
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//b1ae92dcfa8ed7d5044c525c3a868fcb4d0f9c0e
 Author:        Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-AuthorDate:    Wed, 03 Apr 2024 20:12:02 +02:00
+AuthorDate:    Tue, 02 Apr 2024 20:57:57 +02:00
 Committer:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-CommitterDate: Mon, 08 Apr 2024 15:57:50 +02:00
+CommitterDate: Mon, 08 Apr 2024 16:01:20 +02:00
 
-thermal: gov_step_wise: Simplify checks related to passive trips
+thermal: core: Make struct thermal_zone_device definition internal
 
-Make it more clear from the code flow that the passive polling status
-updates only take place for passive trip points.
+Move the definitions of struct thermal_trip_desc and struct
+thermal_zone_device to an internal header file in the thermal core,
+as they don't need to be accessible to any code other than the thermal
+core and so they don't need to be present in a global header.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/gov_step_wise.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ drivers/thermal/thermal_core.h      | 85 +++++++++++++++++++++++++++-
+ drivers/thermal/thermal_trace.h     |  2 +-
+ drivers/thermal/thermal_trace_ipa.h |  2 +-
+ include/linux/thermal.h             | 87 +----------------------------
+ 4 files changed, 91 insertions(+), 85 deletions(-)
 
-diff --git a/drivers/thermal/gov_step_wise.c b/drivers/thermal/gov_step_wise.c
-index aad98e0..ee2fb4e 100644
---- a/drivers/thermal/gov_step_wise.c
-+++ b/drivers/thermal/gov_step_wise.c
-@@ -92,15 +92,13 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz,
- 		if (instance->initialized && old_target == instance->target)
- 			continue;
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 4ad9c67..5dd3be5 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -15,6 +15,91 @@
+ #include "thermal_netlink.h"
+ #include "thermal_debugfs.h"
  
--		if (old_target == THERMAL_NO_TARGET &&
--		    instance->target != THERMAL_NO_TARGET) {
--			/* Activate a passive thermal instance */
--			if (trip->type == THERMAL_TRIP_PASSIVE)
-+		if (trip->type == THERMAL_TRIP_PASSIVE) {
-+			/* If needed, update the status of passive polling. */
-+			if (old_target == THERMAL_NO_TARGET &&
-+			    instance->target != THERMAL_NO_TARGET)
- 				tz->passive++;
--		} else if (old_target != THERMAL_NO_TARGET &&
--			   instance->target == THERMAL_NO_TARGET) {
--			/* Deactivate a passive thermal instance */
--			if (trip->type == THERMAL_TRIP_PASSIVE)
-+			else if (old_target != THERMAL_NO_TARGET &&
-+				 instance->target == THERMAL_NO_TARGET)
- 				tz->passive--;
- 		}
++struct thermal_trip_desc {
++	struct thermal_trip trip;
++	int threshold;
++};
++
++/**
++ * struct thermal_zone_device - structure for a thermal zone
++ * @id:		unique id number for each thermal zone
++ * @type:	the thermal zone device type
++ * @device:	&struct device for this thermal zone
++ * @removal:	removal completion
++ * @trip_temp_attrs:	attributes for trip points for sysfs: trip temperature
++ * @trip_type_attrs:	attributes for trip points for sysfs: trip type
++ * @trip_hyst_attrs:	attributes for trip points for sysfs: trip hysteresis
++ * @mode:		current mode of this thermal zone
++ * @devdata:	private pointer for device private data
++ * @num_trips:	number of trip points the thermal zone supports
++ * @passive_delay_jiffies: number of jiffies to wait between polls when
++ *			performing passive cooling.
++ * @polling_delay_jiffies: number of jiffies to wait between polls when
++ *			checking whether trip points have been crossed (0 for
++ *			interrupt driven systems)
++ * @temperature:	current temperature.  This is only for core code,
++ *			drivers should use thermal_zone_get_temp() to get the
++ *			current temperature
++ * @last_temperature:	previous temperature read
++ * @emul_temperature:	emulated temperature when using CONFIG_THERMAL_EMULATION
++ * @passive:		1 if you've crossed a passive trip point, 0 otherwise.
++ * @prev_low_trip:	the low current temperature if you've crossed a passive
++			trip point.
++ * @prev_high_trip:	the above current temperature if you've crossed a
++			passive trip point.
++ * @need_update:	if equals 1, thermal_zone_device_update needs to be invoked.
++ * @ops:	operations this &thermal_zone_device supports
++ * @tzp:	thermal zone parameters
++ * @governor:	pointer to the governor for this thermal zone
++ * @governor_data:	private pointer for governor data
++ * @thermal_instances:	list of &struct thermal_instance of this thermal zone
++ * @ida:	&struct ida to generate unique id for this zone's cooling
++ *		devices
++ * @lock:	lock to protect thermal_instances list
++ * @node:	node in thermal_tz_list (in thermal_core.c)
++ * @poll_queue:	delayed work for polling
++ * @notify_event: Last notification event
++ * @suspended: thermal zone suspend indicator
++ * @trips:	array of struct thermal_trip objects
++ */
++struct thermal_zone_device {
++	int id;
++	char type[THERMAL_NAME_LENGTH];
++	struct device device;
++	struct completion removal;
++	struct attribute_group trips_attribute_group;
++	struct thermal_attr *trip_temp_attrs;
++	struct thermal_attr *trip_type_attrs;
++	struct thermal_attr *trip_hyst_attrs;
++	enum thermal_device_mode mode;
++	void *devdata;
++	int num_trips;
++	unsigned long passive_delay_jiffies;
++	unsigned long polling_delay_jiffies;
++	int temperature;
++	int last_temperature;
++	int emul_temperature;
++	int passive;
++	int prev_low_trip;
++	int prev_high_trip;
++	atomic_t need_update;
++	struct thermal_zone_device_ops ops;
++	struct thermal_zone_params *tzp;
++	struct thermal_governor *governor;
++	void *governor_data;
++	struct list_head thermal_instances;
++	struct ida ida;
++	struct mutex lock;
++	struct list_head node;
++	struct delayed_work poll_queue;
++	enum thermal_notify_event notify_event;
++	bool suspended;
++#ifdef CONFIG_THERMAL_DEBUGFS
++	struct thermal_debugfs *debugfs;
++#endif
++	struct thermal_trip_desc trips[] __counted_by(num_trips);
++};
++
+ /* Default Thermal Governor */
+ #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
+ #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
+diff --git a/drivers/thermal/thermal_trace.h b/drivers/thermal/thermal_trace.h
+index 459c8ce..88a962f 100644
+--- a/drivers/thermal/thermal_trace.h
++++ b/drivers/thermal/thermal_trace.h
+@@ -9,6 +9,8 @@
+ #include <linux/thermal.h>
+ #include <linux/tracepoint.h>
  
++#include "thermal_core.h"
++
+ TRACE_DEFINE_ENUM(THERMAL_TRIP_CRITICAL);
+ TRACE_DEFINE_ENUM(THERMAL_TRIP_HOT);
+ TRACE_DEFINE_ENUM(THERMAL_TRIP_PASSIVE);
+diff --git a/drivers/thermal/thermal_trace_ipa.h b/drivers/thermal/thermal_trace_ipa.h
+index b16b5dd..a82821e 100644
+--- a/drivers/thermal/thermal_trace_ipa.h
++++ b/drivers/thermal/thermal_trace_ipa.h
+@@ -7,6 +7,8 @@
+ 
+ #include <linux/tracepoint.h>
+ 
++#include "thermal_core.h"
++
+ TRACE_EVENT(thermal_power_allocator,
+ 	TP_PROTO(struct thermal_zone_device *tz, u32 total_req_power,
+ 		 u32 total_granted_power, int num_actors, u32 power_range,
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 67bd133..62b1745 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -73,17 +73,14 @@ struct thermal_trip {
+ 	void *priv;
+ };
+ 
+-struct thermal_trip_desc {
+-	struct thermal_trip trip;
+-	int threshold;
+-};
+-
+ #define THERMAL_TRIP_FLAG_RW_TEMP	BIT(0)
+ #define THERMAL_TRIP_FLAG_RW_HYST	BIT(1)
+ 
+ #define THERMAL_TRIP_FLAG_RW	(THERMAL_TRIP_FLAG_RW_TEMP | \
+ 				 THERMAL_TRIP_FLAG_RW_HYST)
+ 
++struct thermal_zone_device;
++
+ struct thermal_zone_device_ops {
+ 	int (*bind) (struct thermal_zone_device *,
+ 		     struct thermal_cooling_device *);
+@@ -130,86 +127,6 @@ struct thermal_cooling_device {
+ };
+ 
+ /**
+- * struct thermal_zone_device - structure for a thermal zone
+- * @id:		unique id number for each thermal zone
+- * @type:	the thermal zone device type
+- * @device:	&struct device for this thermal zone
+- * @removal:	removal completion
+- * @trip_temp_attrs:	attributes for trip points for sysfs: trip temperature
+- * @trip_type_attrs:	attributes for trip points for sysfs: trip type
+- * @trip_hyst_attrs:	attributes for trip points for sysfs: trip hysteresis
+- * @mode:		current mode of this thermal zone
+- * @devdata:	private pointer for device private data
+- * @num_trips:	number of trip points the thermal zone supports
+- * @passive_delay_jiffies: number of jiffies to wait between polls when
+- *			performing passive cooling.
+- * @polling_delay_jiffies: number of jiffies to wait between polls when
+- *			checking whether trip points have been crossed (0 for
+- *			interrupt driven systems)
+- * @temperature:	current temperature.  This is only for core code,
+- *			drivers should use thermal_zone_get_temp() to get the
+- *			current temperature
+- * @last_temperature:	previous temperature read
+- * @emul_temperature:	emulated temperature when using CONFIG_THERMAL_EMULATION
+- * @passive:		1 if you've crossed a passive trip point, 0 otherwise.
+- * @prev_low_trip:	the low current temperature if you've crossed a passive
+-			trip point.
+- * @prev_high_trip:	the above current temperature if you've crossed a
+-			passive trip point.
+- * @need_update:	if equals 1, thermal_zone_device_update needs to be invoked.
+- * @ops:	operations this &thermal_zone_device supports
+- * @tzp:	thermal zone parameters
+- * @governor:	pointer to the governor for this thermal zone
+- * @governor_data:	private pointer for governor data
+- * @thermal_instances:	list of &struct thermal_instance of this thermal zone
+- * @ida:	&struct ida to generate unique id for this zone's cooling
+- *		devices
+- * @lock:	lock to protect thermal_instances list
+- * @node:	node in thermal_tz_list (in thermal_core.c)
+- * @poll_queue:	delayed work for polling
+- * @notify_event: Last notification event
+- * @suspended: thermal zone suspend indicator
+- * @trips:	array of struct thermal_trip objects
+- */
+-struct thermal_zone_device {
+-	int id;
+-	char type[THERMAL_NAME_LENGTH];
+-	struct device device;
+-	struct completion removal;
+-	struct attribute_group trips_attribute_group;
+-	struct thermal_attr *trip_temp_attrs;
+-	struct thermal_attr *trip_type_attrs;
+-	struct thermal_attr *trip_hyst_attrs;
+-	enum thermal_device_mode mode;
+-	void *devdata;
+-	int num_trips;
+-	unsigned long passive_delay_jiffies;
+-	unsigned long polling_delay_jiffies;
+-	int temperature;
+-	int last_temperature;
+-	int emul_temperature;
+-	int passive;
+-	int prev_low_trip;
+-	int prev_high_trip;
+-	atomic_t need_update;
+-	struct thermal_zone_device_ops ops;
+-	struct thermal_zone_params *tzp;
+-	struct thermal_governor *governor;
+-	void *governor_data;
+-	struct list_head thermal_instances;
+-	struct ida ida;
+-	struct mutex lock;
+-	struct list_head node;
+-	struct delayed_work poll_queue;
+-	enum thermal_notify_event notify_event;
+-	bool suspended;
+-#ifdef CONFIG_THERMAL_DEBUGFS
+-	struct thermal_debugfs *debugfs;
+-#endif
+-	struct thermal_trip_desc trips[] __counted_by(num_trips);
+-};
+-
+-/**
+  * struct thermal_governor - structure that holds thermal governor information
+  * @name:	name of the governor
+  * @bind_to_tz: callback called when binding to a thermal zone.  If it
