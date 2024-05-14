@@ -1,22 +1,22 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 364A784E07
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5221D86130
 	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681942; cv=none; b=mCdP6fQRybp/XKeBHdnuhDlERUhk7n73JwqTgmdYK2ILW+2v4fh0dm2dvLOdM+NezxRRD4ynuX718bFN7z5P1kYFhNuQMhSimgz15StRpvyrI+z0aAUAArvYcjGC54PUBG9Q7eFaJ4vBr/20rhVjjb6rwLOqnjnLbWAG54HfToc=
+	t=1715681942; cv=none; b=Wx+UR7EIUAjb6LKyg03Yq2bZDCexYg83hpsZAkjWfxbcRbj4PpKY7BZ2mKtKCn43qHX+fDl5lrqvX0aV6gYorA2DBDMlYaE7gGc2/SOZkMLWlcAd4zizGj+EHH1KDecMxUt4mlpCPXIt34bj3u5TSqLogJwpktrfcX+egN8lQ+0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1715681942; c=relaxed/simple;
-	bh=qnB3kOsJx+LjIBBskfGZuwSC62pWX2rtYfa3mZlPanQ=;
+	bh=CUu2P4TRJsfe7yqEOYjw/OvNrb2ZVHDEb5fuuk7S0Is=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=GLheypvRzs+S0ORxvH6TmzAGVd8pS42XDSBXLq699H6sobyO4UiE1vUXrognCtb01LWly2DPAGtHFzx1sre08Kpl91jZSAuLaixiZJcgMDvJNncdPGDL+V367bvsvoZdvjNillHcbuHdU9EbuswHlk4heKHg2cO+gkAmZcRyWHk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=ABGb3RIN; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=Ef0bT+1H; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=VisUPeu/UYKwRbfYSWqLDPYEbgarKS3866pGWaYyXeCPADTP95C2ZuIB3j/JBwtqy2mDNb314APdEkutoLZL40xvNrif/+qqjlbC0p/3yK9cMJT84hOikGrcYeEeXRTHG3yEWbVR8taJ4xNtDH0JpctuNF8ciDGdTWxpdEd+urs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=0lcbUX74; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=s7f4ORR3; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="ABGb3RIN";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="Ef0bT+1H"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="0lcbUX74";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="s7f4ORR3"
 Date: Tue, 14 May 2024 10:18:54 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1715681934;
@@ -25,12 +25,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=omQ5tKvXy5VdnnBKSs7Y9GRRFeuXBCa+4Xvcw+0/+DY=;
-	b=ABGb3RIN87gGiEibPsVtNxA0X6VCHj9ufwfDYBRNThXJ4eNX+iRl0l3idlvpAv0vp54zvp
-	Ye+3fOfs2PTho5lk2jOOpfD/ym8bhz+LjZOpX8a2Eu1c0aumHlHGb4tNkXd9mPbLosx7dl
-	+797zB+OxolMoGLzf+nC33NZTd2xIrlM5RnumlYMkdZcpFmAu+A5m80GvSBYlCvxPsdTlX
-	V63AfHFbf8xudYI33PqFUB4eC6GonklvNWJfd66mmhGA2MaSMPYjSd3JOsTx7P4IvZq87k
-	z4LoFvE7auMVGlysXf/5A+CrCaxFmkNlxQ4TOSVYAprN3JEzPPY1fixaYFDozw==
+	bh=kereudTyL1cfyJtdkR3CfdjNt7A2Vay01OnNRIIZiK0=;
+	b=0lcbUX743oIVWfvFa7rrif6dzjntSLouIbNk4oux5VajNp1xTDx3B+x2uLdNz5abEd9aqU
+	6jG6EklMMPEbxaPExfzmGyCpeMlz2/QjduP1czBiV3NkIkQVHqcGqMkH+rzUNrENm/YPGF
+	jX+dOCss2HtT7NQSR9b79LupswFgBNDD9VBxT32ci9Bl9+R+dD6z0Sjl7vRXDwO9aKnbQa
+	A+yFybAivnnBLr28BVOUyWjvycE7IgTl2xactmdtrd+gXUBofZWu/RLJ7p+IQi6zPMK8qK
+	E+xqO0DDHNEIkUssqL3zGmMjejCoFdjWaOYVX/VlaboaRC4JgPtwcbsm/wwxow==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1715681934;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -38,27 +38,29 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=omQ5tKvXy5VdnnBKSs7Y9GRRFeuXBCa+4Xvcw+0/+DY=;
-	b=Ef0bT+1H0L9lQGLBeYQEPLJEout393hkrkAePVsvkLlZpG0XxirCAULQPBFwUymXJpf+JQ
-	7HsU0jk5U2uU0ACw==
-From: "thermal-bot for Nicolas Pitre" <tip-bot2@linutronix.de>
+	bh=kereudTyL1cfyJtdkR3CfdjNt7A2Vay01OnNRIIZiK0=;
+	b=s7f4ORR3v3NtocTp4tsRpO+4iCOsZC7IST9VIcj6z1ZRMHtzYs3wt50hT9aklINPelqeF1
+	EiF3uqTSEe7eQfAg==
+From: "thermal-bot for Christophe JAILLET" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject:
- [thermal: thermal/fixes] thermal/drivers/mediatek/lvts_thermal: Move comment
-Cc: Nicolas Pitre <npitre@baylibre.com>,
+Subject: [thermal: thermal/fixes] thermal/drivers/k3_bandgap: Remove some
+ unused fields in struct k3_bandgap
+Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
  Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
  amitk@kernel.org
-In-Reply-To: <20240402032729.2736685-3-nico@fluxnic.net>
-References: <20240402032729.2736685-3-nico@fluxnic.net>
+In-Reply-To: =?utf-8?q?=3C206d39bed9ec6df9b4d80b1fc064e499389fc7fc=2E17126?=
+ =?utf-8?q?87420=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
+References: =?utf-8?q?=3C206d39bed9ec6df9b4d80b1fc064e499389fc7fc=2E171268?=
+ =?utf-8?q?7420=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193434.10875.6225606100873931008.tip-bot2@tip-bot2>
+Message-ID: <171568193454.10875.14882299042134798669.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
@@ -68,57 +70,36 @@ Content-Transfer-Encoding: 7bit
 
 The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     62194e637d16ac9b61eec0bfe6d5f662efcddbe7
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//62194e637d16ac9b61eec0bfe6d5f662efcddbe7
-Author:        Nicolas Pitre <npitre@baylibre.com>
-AuthorDate:    Mon, 01 Apr 2024 23:25:36 -04:00
+Commit-ID:     61fad0a90685d3aaafb05fb6abc1fe39fbb90320
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//61fad0a90685d3aaafb05fb6abc1fe39fbb90320
+Author:        Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+AuthorDate:    Tue, 09 Apr 2024 21:56:43 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Tue, 23 Apr 2024 12:40:29 +02:00
 
-thermal/drivers/mediatek/lvts_thermal: Move comment
+thermal/drivers/k3_bandgap: Remove some unused fields in struct k3_bandgap
 
-Move efuse data interpretation inside lvts_golden_temp_init() alongside
-the actual code retrieving wanted value.
+In "struct k3_bandgap", the 'conf' field is unused.
+Remove it.
 
-Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
+Found with cppcheck, unusedStructMember.
+
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20240402032729.2736685-3-nico@fluxnic.net
+Link: https://lore.kernel.org/r/206d39bed9ec6df9b4d80b1fc064e499389fc7fc.1712687420.git.christophe.jaillet@wanadoo.fr
 ---
- drivers/thermal/mediatek/lvts_thermal.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/thermal/k3_bandgap.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index d266626..0401162 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -734,11 +734,15 @@ static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td
- 	return 0;
- }
+diff --git a/drivers/thermal/k3_bandgap.c b/drivers/thermal/k3_bandgap.c
+index e88192d..2a70377 100644
+--- a/drivers/thermal/k3_bandgap.c
++++ b/drivers/thermal/k3_bandgap.c
+@@ -78,7 +78,6 @@ static const int k3_adc_to_temp[] = {
  
--static int lvts_golden_temp_init(struct device *dev, u32 *value, int temp_offset)
-+static int lvts_golden_temp_init(struct device *dev, u8 *calib, int temp_offset)
- {
- 	u32 gt;
+ struct k3_bandgap {
+ 	void __iomem *base;
+-	const struct k3_bandgap_data *conf;
+ };
  
--	gt = (*value) >> 24;
-+	/*
-+	 * The golden temp information is contained in the 4th byte (index = 3)
-+	 * of efuse data.
-+	 */
-+	gt = calib[3];
- 
- 	if (gt && gt < LVTS_GOLDEN_TEMP_MAX)
- 		golden_temp = gt;
-@@ -762,11 +766,7 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
- 	if (ret)
- 		return ret;
- 
--	/*
--	 * The golden temp information is contained in the first chunk
--	 * of efuse data.
--	 */
--	ret = lvts_golden_temp_init(dev, (u32 *)lvts_td->calib, lvts_data->temp_offset);
-+	ret = lvts_golden_temp_init(dev, lvts_td->calib, lvts_data->temp_offset);
- 	if (ret)
- 		return ret;
- 
+ /* common data structures */
