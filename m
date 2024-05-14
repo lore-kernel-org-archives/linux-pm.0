@@ -1,23 +1,23 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABF961272A7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72E9484D05
 	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681944; cv=none; b=D6maizozBlhXM+4B7MAPAsfOlGzrWyDkZ+3p2T2zpT8ezcB3LT+KMN8Xtam++TYAGBGn/B93pf62GvMRtCTpN+Mviz/+2STAnV+qcUbX6IDN4kOKgcTlugSPqbpy1JtjmCCDUHoIaa9EAKViZ6bWGfTs2VaofpuZWbNfkTjU5eg=
+	t=1715681944; cv=none; b=BbiKi4uV+8nHiuRNW/PrKaIhfGUqNoUK3Cj8SUuC/I09IJex1/eXWkMR7VwmUurkukXb0Lx0OMPuAYZKB6e/MvrCcBeONl78E3cPyeRz1x32OTUeigbjDrNyfNs0yBXoZvj32cuobiYkul+7VK8EN7Xqsk9MH2Y2XK3oL8U92QY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1715681944; c=relaxed/simple;
-	bh=Ed5hAmwKQZdSsVZyZGzGizFoLLw9rLglh78CX5JSd94=;
+	bh=xWPbV795pbGRTgS1vkOgiE61w/OAamoJn5tUUXHlgRo=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=YzDeQ8Jn7zPmtsx7irQMgfHtCTZ+LN2yI8awGLs+e6U/RFPHrjQYBQM7FNUwEXQ3eXoxrZ2kxO2adCUruHhMgeWmkjwJ6069tjRgODkidS+0Ny1K4yfRJEVHRUNjApBmt00XkBUFSaSyzR0XRNd8nUg5moq0Hgh5BXBC5qN1XGA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=Oer5PG/e; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=vCnIQow3; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=IkmMyKoyIEVh5o+KCIWNK4ieZqBJRVCmP8pbOQ4n7y9wmslwbiDDWt7mI1kXbwYNz8tFNJys72mzW7Qqqy7YHuacMX4X3OffRfsEUIKpuGobLxR59jNCkWrHkL5n2J+x1N1R9w8rza6TLhElZt967iJtGeB8g99ud2mRV92HUQs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=Uxjo/8Ec; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=Vgl9vScU; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="Oer5PG/e";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="vCnIQow3"
-Date: Tue, 14 May 2024 10:18:56 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="Uxjo/8Ec";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="Vgl9vScU"
+Date: Tue, 14 May 2024 10:18:55 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1715681936;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -25,12 +25,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=RVE23KpxGk0TZbUb5gNTt9QANV1hfqjZgs73j7M72yE=;
-	b=Oer5PG/eu1N6ag5fci1lQkyEH5Cpv9aJX8VRdUcQpRjInU4C8ZaG05VzIcUp0XrJvRMLpi
-	I0s0rYyYhLuuVvEICs/wguOD8xjhdk1Rriycy5P/ZuiVX//jHtyiwt3Q76yaKLKiS0smIW
-	avO0+KBYTT3NV7R29cKQjTW+qnkIkWAO5oRp7Ad3gF2Njx0eVmcTdlD8SlN2bplaLG377T
-	NmG+gvoL6PJ9pstG+Ui337WM+kaQNap84qwubuT/AuMmJ9wGwOjkgqCmss/6YHC+q5NOoi
-	wvc58oaPpeY501do2BAgWvXi4Vsk3CH2l+8BzBZTKegj0mGWnRfzk5z6tHA71g==
+	bh=6ulvRSNN0jpy52JJM01R1psBefrLoJWspepWC7W4FdI=;
+	b=Uxjo/8EcMb8tb+k3vmG4Fa7GTktWG57Rn3oTHMfCP6Te9TqC0aW/uUweVpBGcT+MgsE5Hj
+	6tm3o8p4R9v9ZUj2ZZ5Bzk3opAxzXqhbpLFTmg0mIr7SjUT9dxgot9vGM3HChlaXc3VXWn
+	+ea5N7LPYGHa5bJdKDeOoV3WF/9+QCZg3ADEu2cYKxgeGMeAQcCSFtyZ1yRbrhyNGpKgaN
+	R3Vpmex/0OKRJABb4TnLL3xkibCkQZNb1H6yybyYRYb5L6znAw4imWrn8vcoGMJ0xz+IBk
+	Q9tVvQyYGsuPboRVTBNT50VrK1zoyATZSC3RALnbXW7EdpBcHMCdW02ohJ1OzQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1715681936;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -38,28 +38,28 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=RVE23KpxGk0TZbUb5gNTt9QANV1hfqjZgs73j7M72yE=;
-	b=vCnIQow3Ut2aCZEjfukeQySN7oljZT3JrcIXD+lU4+CsAw06IqTp8pE7dz0mN2pFHUbJFm
-	DKLpyfPxqanlMSAg==
-From: "thermal-bot for Konrad Dybcio" <tip-bot2@linutronix.de>
+	bh=6ulvRSNN0jpy52JJM01R1psBefrLoJWspepWC7W4FdI=;
+	b=Vgl9vScU6g+cNERwvUnbPqj8um5WwWASirG9+yO2pEgMAYrUsoFJhvje/OPUgRBxl05NZH
+	gMbgnTGmctsYT3AA==
+From: "thermal-bot for Rasmus Villemoes" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Subject:
- [thermal: thermal/fixes] dt-bindings: thermal: lmh: Add QCM2290 compatible
-Cc: Konrad Dybcio <konrad.dybcio@linaro.org>,
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ [thermal: thermal/fixes] thermal/drivers/armada: Simplify name sanitization
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Miquel Raynal <miquel.raynal@bootlin.com>,
  Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
  amitk@kernel.org
-In-Reply-To: <20240308-topic-rb1_lmh-v2-1-bac3914b0fe3@linaro.org>
-References: <20240308-topic-rb1_lmh-v2-1-bac3914b0fe3@linaro.org>
+In-Reply-To: <20240320104940.65031-1-linux@rasmusvillemoes.dk>
+References: <20240320104940.65031-1-linux@rasmusvillemoes.dk>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193618.10875.17828287418776104922.tip-bot2@tip-bot2>
+Message-ID: <171568193595.10875.5143721042252604946.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
@@ -69,45 +69,49 @@ Content-Transfer-Encoding: 7bit
 
 The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     c0f14ec95262cdcf557016f84b87e45f54e0b881
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//c0f14ec95262cdcf557016f84b87e45f54e0b881
-Author:        Konrad Dybcio <konrad.dybcio@linaro.org>
-AuthorDate:    Sat, 09 Mar 2024 14:15:02 +01:00
+Commit-ID:     58b1569244fea51cbf675774fad9423359d76c57
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//58b1569244fea51cbf675774fad9423359d76c57
+Author:        Rasmus Villemoes <linux@rasmusvillemoes.dk>
+AuthorDate:    Wed, 20 Mar 2024 11:49:39 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Tue, 23 Apr 2024 12:40:29 +02:00
 
-dt-bindings: thermal: lmh: Add QCM2290 compatible
+thermal/drivers/armada: Simplify name sanitization
 
-Document the QCM2290 LMH.
+Simplify the code by using the helper we have for doing exactly this.
 
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20240308-topic-rb1_lmh-v2-1-bac3914b0fe3@linaro.org
+Link: https://lore.kernel.org/r/20240320104940.65031-1-linux@rasmusvillemoes.dk
 ---
- Documentation/devicetree/bindings/thermal/qcom-lmh.yaml | 12 +++++---
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/thermal/armada_thermal.c |  9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml b/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
-index 5ff72ce..1175bb3 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
-@@ -17,10 +17,14 @@ description:
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index f783547..fdcb077 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -763,7 +763,6 @@ static void armada_set_sane_name(struct platform_device *pdev,
+ 				 struct armada_thermal_priv *priv)
+ {
+ 	const char *name = dev_name(&pdev->dev);
+-	char *insane_char;
  
- properties:
-   compatible:
--    enum:
--      - qcom,sc8180x-lmh
--      - qcom,sdm845-lmh
--      - qcom,sm8150-lmh
-+    oneOf:
-+      - enum:
-+          - qcom,sc8180x-lmh
-+          - qcom,sdm845-lmh
-+          - qcom,sm8150-lmh
-+      - items:
-+          - const: qcom,qcm2290-lmh
-+          - const: qcom,sm8150-lmh
+ 	if (strlen(name) > THERMAL_NAME_LENGTH) {
+ 		/*
+@@ -781,12 +780,8 @@ static void armada_set_sane_name(struct platform_device *pdev,
+ 	/* Save the name locally */
+ 	strscpy(priv->zone_name, name, THERMAL_NAME_LENGTH);
  
-   reg:
-     items:
+-	/* Then check there are no '-' or hwmon core will complain */
+-	do {
+-		insane_char = strpbrk(priv->zone_name, "-");
+-		if (insane_char)
+-			*insane_char = '_';
+-	} while (insane_char);
++	/* Then ensure there are no '-' or hwmon core will complain */
++	strreplace(priv->zone_name, '-', '_');
+ }
+ 
+ /*
