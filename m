@@ -1,64 +1,64 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A31684D11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D96B084D39
 	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:18:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681940; cv=none; b=WaAGIPzv8FXYcwPML6qHTo9wuvyF6WGU75PAD7F8geMY/YW8kFHKJf6tfsua4syL14nyP+ReVTVG6yyH7fW1teat8zntT9xkWx+ij4oxRLASnBREvBfEleXXigN8CwB+cbIm7wGN/c0y7vbYsa1u+g/Ub4bwCulGrQeOx4vq4Vg=
+	t=1715681940; cv=none; b=qHh/l+QjiqB0NiuNy9Mm5rK4f9V+vcZmAneT6PKdlkZv8W/B8zUQm4MqOZYKhOMCG2eHnTbc1UVCc3R5ZmDNBtOnuviuUQMRB9cZ8B2F6Ase69fA2KNJtRl4KzQvTbOJchEStiRStB/Y0OZORK/NcPm3jRwaTWT+//0co4hZies=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1715681940; c=relaxed/simple;
-	bh=3wkZdBd0EXbocWON57QsNyuBq9Ql3drTBvwetcH4nrU=;
+	bh=DRzawKCnqp5UD1l7Fu4ozzH9MPbpJsOrwxlxCaDWmbs=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=Zq5zvpWfMvbhA2dgGw9sltPLYTyzFwkwyugArrigcyslaqCxbOgfBc7VM/5GSiyekEiZLdNlTcV+aj9WbC6tbTO07FE5T8gj1Glv1BdksrqpsrY/IHBB6tMhvbmtWiXkeUgdNyHcjXc8gkqJaIgSkthxNM0YCcs47U3F/UFV798=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=gEHgiGuB; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=/TapiAef; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=cmRRTEeYMwstBd/DKGbTybfPC5CJja/RXztpE5yfi0vYd6GDtxrbO/y8vfFbJWjuCwRLd69pOE+4+2RxJ5T6ZCs6DSm41oZc0cQ3dZkBbkEq0uqrwRnLT833v20f5baiipIKUOVkSMy8kR8Cjgm2CnROK8fAoJMH5UzdEZE23rM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=iHpkjMTF; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=jSAzIohU; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="gEHgiGuB";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="/TapiAef"
-Date: Tue, 14 May 2024 10:18:53 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="iHpkjMTF";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="jSAzIohU"
+Date: Tue, 14 May 2024 10:18:54 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1715681933;
+	s=2020; t=1715681934;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=xCfwFXPTcrE6IQmWkzew9yoUIZljlVhQiJhNEAMcW/U=;
-	b=gEHgiGuBfOaddHjBi1tm6g/spOQ9ywwr9cVqmozx2CMOF3/JFRiXlOLquU+A49+88kvCfd
-	b71YiG9khmN6QpWD8D5iobUZFk1mMHbf0qWTSMAUh/7yhxzN0nJh7nOHKMGHxIX1/OmBNv
-	ToxNEa9MDCr5Zx7lUNdgeam6onnITtOOdjHrfRG6oJWnGEkW45SyvG6Bxt10gnfOG9sdz8
-	5z6hyf39CjwrdVNs2FSXuo6bJXqCChRjb9IZyH/KdA7F392cJZY3rFzqV2jsajnLVHui5D
-	S+4d7/pnjPZpXPDNvxjs3kM0CFxqWDhXncziEWJy3QSfwX+JMf835vaEFm+4UA==
+	bh=2GWmkZxE56Z924LNU1enmeUi9jnNR9MHZaDt/aLFcyY=;
+	b=iHpkjMTF+0B1GyKZyCG4cb+5k00KMnwsOYjQ96t+CTPpRU4DHuJV5sQYZlrLU7T9TkWbQZ
+	yg1Ep/dbKyq0uItoQZzZTH/kx2b/HJlMFXIAt9rY9mGq+xHNdqyvHoo80+vGn4wPvlkD5b
+	inpjZW5e86U6+uKgS/6UjHwpDOwQx+N3kweJIftY7aW7cFHP6UugMHhspszr4UMrVfUJx3
+	eZpLNJxfaw/74Jbr27fSuvU+od1s+Imk4LGwpMDeolD5XdCnCcHN4GFyEvtzeMUJUKpmfG
+	sOMov2qtWHfKXEKPskvh+w3wIRzGSwd2f5rkWCSg+8hzE98NxcVeHbQJttg5xg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1715681933;
+	s=2020e; t=1715681934;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=xCfwFXPTcrE6IQmWkzew9yoUIZljlVhQiJhNEAMcW/U=;
-	b=/TapiAef6B9tUH7DTTkZgUVoikcpqBm/2KlWSF3Z1bQS3GEtZJ3Ek5NBg96O+u0W8IOlit
-	6aYke/+PFVnYa+Dw==
+	bh=2GWmkZxE56Z924LNU1enmeUi9jnNR9MHZaDt/aLFcyY=;
+	b=jSAzIohUixF/37Fmsk/OM3Wq3gZ27jNpGgHGNxxJzCH2FCWC8flOjyw/3m4B+LC6GSAcbw
+	7Dlyw2ZBoz5UhuBw==
 From: "thermal-bot for Nicolas Pitre" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/fixes] thermal/drivers/mediatek/lvts_thermal: Add
- MT8188 support
+Subject: [thermal: thermal/fixes] thermal/drivers/mediatek/lvts_thermal: Guard
+ against efuse data buffer overflow
 Cc: Nicolas Pitre <npitre@baylibre.com>,
  Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
  amitk@kernel.org
-In-Reply-To: <20240402032729.2736685-15-nico@fluxnic.net>
-References: <20240402032729.2736685-15-nico@fluxnic.net>
+In-Reply-To: <20240402032729.2736685-6-nico@fluxnic.net>
+References: <20240402032729.2736685-6-nico@fluxnic.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193328.10875.4349064640702480076.tip-bot2@tip-bot2>
+Message-ID: <171568193401.10875.1393372785699330172.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
@@ -68,142 +68,57 @@ Content-Transfer-Encoding: 7bit
 
 The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     f4745f546e6077e3ed2bab90e931154519e96ae0
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//f4745f546e6077e3ed2bab90e931154519e96ae0
+Commit-ID:     2cc0b1a2169b0f4af83cc5a52a1693c8ab2e2f1d
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//2cc0b1a2169b0f4af83cc5a52a1693c8ab2e2f1d
 Author:        Nicolas Pitre <npitre@baylibre.com>
-AuthorDate:    Mon, 01 Apr 2024 23:25:48 -04:00
+AuthorDate:    Mon, 01 Apr 2024 23:25:39 -04:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 23 Apr 2024 12:40:30 +02:00
+CommitterDate: Tue, 23 Apr 2024 12:40:29 +02:00
 
-thermal/drivers/mediatek/lvts_thermal: Add MT8188 support
+thermal/drivers/mediatek/lvts_thermal: Guard against efuse data buffer overflow
 
-Various values extracted from the vendor's kernel driver.
+We don't want to silently fetch garbage past the actual buffer.
 
 Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20240402032729.2736685-15-nico@fluxnic.net
+Link: https://lore.kernel.org/r/20240402032729.2736685-6-nico@fluxnic.net
 ---
- drivers/thermal/mediatek/lvts_thermal.c | 96 ++++++++++++++++++++++++-
- 1 file changed, 96 insertions(+)
+ drivers/thermal/mediatek/lvts_thermal.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index ced4fa8..86b2f44 100644
+index 9e6ed8b..1467994 100644
 --- a/drivers/thermal/mediatek/lvts_thermal.c
 +++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -1441,6 +1441,84 @@ static const struct lvts_ctrl_data mt8186_lvts_data_ctrl[] = {
- 	}
- };
+@@ -672,7 +672,8 @@ static int lvts_sensor_init(struct device *dev, struct lvts_ctrl *lvts_ctrl,
+  */
+ static int lvts_calibration_init(struct device *dev, struct lvts_ctrl *lvts_ctrl,
+ 					const struct lvts_ctrl_data *lvts_ctrl_data,
+-					u8 *efuse_calibration)
++					u8 *efuse_calibration,
++					size_t calib_len)
+ {
+ 	int i;
  
-+static const struct lvts_ctrl_data mt8188_lvts_mcu_data_ctrl[] = {
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8188_MCU_LITTLE_CPU0,
-+			  .cal_offsets = { 22, 23, 24 } },
-+			{ .dt_id = MT8188_MCU_LITTLE_CPU1,
-+			  .cal_offsets = { 25, 26, 27 } },
-+			{ .dt_id = MT8188_MCU_LITTLE_CPU2,
-+			  .cal_offsets = { 28, 29, 30 } },
-+			{ .dt_id = MT8188_MCU_LITTLE_CPU3,
-+			  .cal_offsets = { 31, 32, 33 } },
-+		},
-+		VALID_SENSOR_MAP(1, 1, 1, 1),
-+		.offset = 0x0,
-+		.mode = LVTS_MSR_FILTERED_MODE,
-+	},
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8188_MCU_BIG_CPU0,
-+			  .cal_offsets = { 34, 35, 36 } },
-+			{ .dt_id = MT8188_MCU_BIG_CPU1,
-+			  .cal_offsets = { 37, 38, 39 } },
-+		},
-+		VALID_SENSOR_MAP(1, 1, 0, 0),
-+		.offset = 0x100,
-+		.mode = LVTS_MSR_FILTERED_MODE,
-+	}
-+};
-+
-+static const struct lvts_ctrl_data mt8188_lvts_ap_data_ctrl[] = {
-+	{
-+		.lvts_sensor = {
-+
-+			{ /* unused */ },
-+			{ .dt_id = MT8188_AP_APU,
-+			  .cal_offsets = { 40, 41, 42 } },
-+		},
-+		VALID_SENSOR_MAP(0, 1, 0, 0),
-+		.offset = 0x0,
-+		.mode = LVTS_MSR_FILTERED_MODE,
-+	},
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8188_AP_GPU1,
-+			  .cal_offsets = { 43, 44, 45 } },
-+			{ .dt_id = MT8188_AP_GPU2,
-+			  .cal_offsets = { 46, 47, 48 } },
-+			{ .dt_id = MT8188_AP_SOC1,
-+			  .cal_offsets = { 49, 50, 51 } },
-+		},
-+		VALID_SENSOR_MAP(1, 1, 1, 0),
-+		.offset = 0x100,
-+		.mode = LVTS_MSR_FILTERED_MODE,
-+	},
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8188_AP_SOC2,
-+			  .cal_offsets = { 52, 53, 54 } },
-+			{ .dt_id = MT8188_AP_SOC3,
-+			  .cal_offsets = { 55, 56, 57 } },
-+		},
-+		VALID_SENSOR_MAP(1, 1, 0, 0),
-+		.offset = 0x200,
-+		.mode = LVTS_MSR_FILTERED_MODE,
-+	},
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8188_AP_CAM1,
-+			  .cal_offsets = { 58, 59, 60 } },
-+			{ .dt_id = MT8188_AP_CAM2,
-+			  .cal_offsets = { 61, 62, 63 } },
-+		},
-+		VALID_SENSOR_MAP(1, 1, 0, 0),
-+		.offset = 0x300,
-+		.mode = LVTS_MSR_FILTERED_MODE,
-+	}
-+};
-+
- static const struct lvts_ctrl_data mt8192_lvts_mcu_data_ctrl[] = {
- 	{
- 		.lvts_sensor = {
-@@ -1624,6 +1702,22 @@ static const struct lvts_data mt8186_lvts_data = {
- 	.gt_calib_bit_offset = 24,
- };
+@@ -680,6 +681,11 @@ static int lvts_calibration_init(struct device *dev, struct lvts_ctrl *lvts_ctrl
+ 		const struct lvts_sensor_data *sensor =
+ 					&lvts_ctrl_data->lvts_sensor[i];
  
-+static const struct lvts_data mt8188_lvts_mcu_data = {
-+	.lvts_ctrl	= mt8188_lvts_mcu_data_ctrl,
-+	.num_lvts_ctrl	= ARRAY_SIZE(mt8188_lvts_mcu_data_ctrl),
-+	.temp_factor	= LVTS_COEFF_A_MT8195,
-+	.temp_offset	= LVTS_COEFF_B_MT8195,
-+	.gt_calib_bit_offset = 20,
-+};
++		if (sensor->cal_offsets[0] >= calib_len ||
++		    sensor->cal_offsets[1] >= calib_len ||
++		    sensor->cal_offsets[2] >= calib_len)
++			return -EINVAL;
 +
-+static const struct lvts_data mt8188_lvts_ap_data = {
-+	.lvts_ctrl	= mt8188_lvts_ap_data_ctrl,
-+	.num_lvts_ctrl	= ARRAY_SIZE(mt8188_lvts_ap_data_ctrl),
-+	.temp_factor	= LVTS_COEFF_A_MT8195,
-+	.temp_offset	= LVTS_COEFF_B_MT8195,
-+	.gt_calib_bit_offset = 20,
-+};
-+
- static const struct lvts_data mt8192_lvts_mcu_data = {
- 	.lvts_ctrl	= mt8192_lvts_mcu_data_ctrl,
- 	.num_lvts_ctrl	= ARRAY_SIZE(mt8192_lvts_mcu_data_ctrl),
-@@ -1659,6 +1753,8 @@ static const struct lvts_data mt8195_lvts_ap_data = {
- static const struct of_device_id lvts_of_match[] = {
- 	{ .compatible = "mediatek,mt7988-lvts-ap", .data = &mt7988_lvts_ap_data },
- 	{ .compatible = "mediatek,mt8186-lvts", .data = &mt8186_lvts_data },
-+	{ .compatible = "mediatek,mt8188-lvts-mcu", .data = &mt8188_lvts_mcu_data },
-+	{ .compatible = "mediatek,mt8188-lvts-ap", .data = &mt8188_lvts_ap_data },
- 	{ .compatible = "mediatek,mt8192-lvts-mcu", .data = &mt8192_lvts_mcu_data },
- 	{ .compatible = "mediatek,mt8192-lvts-ap", .data = &mt8192_lvts_ap_data },
- 	{ .compatible = "mediatek,mt8195-lvts-mcu", .data = &mt8195_lvts_mcu_data },
+ 		lvts_ctrl->calibration[i] =
+ 			(efuse_calibration[sensor->cal_offsets[0]] << 0) +
+ 			(efuse_calibration[sensor->cal_offsets[1]] << 8) +
+@@ -791,7 +797,8 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
+ 
+ 		ret = lvts_calibration_init(dev, &lvts_ctrl[i],
+ 					    &lvts_data->lvts_ctrl[i],
+-					    lvts_td->calib);
++					    lvts_td->calib,
++					    lvts_td->calib_len);
+ 		if (ret)
+ 			return ret;
+ 
