@@ -1,250 +1,167 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2062.outbound.protection.outlook.com [40.107.22.62])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C14213FD65
-	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681947; cv=none; b=KiR6veC2eEJiwaQ8PWOQGFXPddWTZo534FcTq1mPYsavoLnfuhRfKuV59zK/WTKBzSdMBzWyyFVcp9c8ITfuFyS6zALVT0yVJpQY9UqwQHJVMNC98fOYBGe+xOOt/+56fesIPAe+P9YQWdvEo+yc1Vr0nMNE1eP8uk21Afy9Ibg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715681947; c=relaxed/simple;
-	bh=3sIykLCXLNnQKWPz+Lc42z14/MaVVPql1+nUXJV8ZMM=;
-	h=Date:From:To:Subject:Cc:MIME-Version:Message-ID:Content-Type; b=ddU0rqy+6+VMxaLItXvgwfZaCtIZN7tD4K+rmaiLRftO7Oc5aIoR+McQbz8GLLq8IwMch0eYdQ4JnYTljKkdFbnZ9TWX9CIih9e//rnnsocS5MgzDfmtA2lCwhtDZIgyP/DcezN8GjCXJOIW6IDmguChEUJjCQV7hXyrLYkF+b0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=pLU7lTaz; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=7I+fc7h8; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D54EA55C36;
+	Tue, 14 May 2024 13:10:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.22.62
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1715692250; cv=fail; b=pGnBNNlb8bmAs0+2fHCWHZB0DBnV6BhyCSDz43a9TvTLRGY7qH+hDyDbFOgP/2/K/u7t2INM1zwBwHwPKlkfE7gGrbsgmCI1nV9lgrUQiTfrsgrVoBQxkn4of4GcaTU9fwHTLoy+Q/z9d/qGDk4VdNTJ908zljdW8Q9tS31A3Ps=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1715692250; c=relaxed/simple;
+	bh=6Ct7qLupLfQIBG6j0A/M/foo42EipT2wh6B7Ro+Q8/Y=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=GNBD6cZbmO5MomI1d4arOoTGCgvi6ZAKBVC1sMzBUfuah8GoGB2xjOz3hZ9gCbEG+6K0utRoeY7lZIIpO5cowWprHlCXbNRnLFkcCEgGqwK9UmcFMEliZgrBCHBTSxBRO86KvVPs5zsraJKc0Tf7Su+Hl1RpeqjO8nOC+dSPFzY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (1024-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=EbEwgHmV; arc=fail smtp.client-ip=40.107.22.62
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="pLU7lTaz";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="7I+fc7h8"
-Date: Tue, 14 May 2024 10:18:57 -0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1715681937;
-	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-	bh=V5nqonGXTzg1PTYj2lngB0Uu6BQce0wripvogN6RyrI=;
-	b=pLU7lTazcMf6zlrYytw8uE1BDWsNgC+6lQauXVPSJlYFUrA0j1fVaKbsIPK4cxAUUvaiAk
-	Tdp7dlYrrFb6hc691khSTCLVwxrJ1u4EWPOk6myRQavkIPxyIny1F4jzKNf7PJ+faH/2Vd
-	+D4B6DKlfP/wMIHfCi2XFZy6Kq8oR/W5G/nmxjKNnLBA+10vbLdUCEJkr9AglbQBkW6FuE
-	PU0bQOv/6/c6l07WfrqhOtXh0bAS2aC02Ce/Cb/C5tcBUdSNsWtICpx/8ulREXn0jpD0PY
-	2ZY0IrKqR6H0YFWgi/XsjcFSC3HzdpIKkKcmqFJphb5jeNs2Sqneh0Vn2ruOCQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1715681937;
-	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-	bh=V5nqonGXTzg1PTYj2lngB0Uu6BQce0wripvogN6RyrI=;
-	b=7I+fc7h8z7Yz4BqQoY7p62YqAxPfaycTcRPuiXf7yyC5WzIy//WkL4QVUhMaMs5hXnsSAd
-	EVSHclxIUDbw5VBA==
-From: "thermal-bot for Stanislaw Gruszka" <tip-bot2@linutronix.de>
-Sender: tip-bot2@linutronix.de
-Reply-to: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Subject:
- [thermal: thermal/fixes] thermal: intel: hfi: Enable HFI only when required
-Cc: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, rui.zhang@intel.com,
- daniel.lezcano@linaro.org, amitk@kernel.org
+	dkim=pass (1024-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="EbEwgHmV"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=XfD4I67KLe7U44oOu4EidoVR8pmAnb2cf+EOkWZWI4qqeGlcWf55AKV+Lhj9lxcFcOBe8I2Ey+V15NrYIDEPdDQVPTLlhPuDkC7QVz5VX5NQ99rL+ymKdwogsyCsOa5vMPudrxfNFKwf1jQR8NEHv+u35y27gX9RaXFB4Adk1SH847WMOkif2yaSSxGI3JO4SRl6Z8xgVx3aelLl6M7GBzj5hyiEWtdWiw2Ry1s7H71ZiW70EG45wLV1TQ6DvZjMZYqTO6thK2b83t/rI1bsMNu/5gsMYtJgm9jjYCxWMhmSevIHK2tDyJ1Y32BmI3n9T2FxvUQM0IQD9GelBezHeA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=0eyixh4il75JyrUuKQf9OwfQX5JUsiz+r8HGhD6CFJk=;
+ b=Jg5Kyxxzfdy6joJN4kiuBEHwwyAdzy6Llt0z0PM0YJ09sVbyeI8A0AO4CGXP6MesJFKvfhcVFjNSBs3c3IrD7JqBApoEG5SewoELi+umGAD3ldF7nAZB657sGv5GkCzqQIA0GnvhKsf0gub1mC1xBIGy6n50cSMtvkVOgVT+SjCTxNUHb81AvlGMOX3Y2vHlH/FAhOKF/Ei99cHgsO44metax+UZfwQbGPXxECHlHNfSIiocLQTiGbVX1K1QsK2TeC0WRGDbMOasmKskjY+99xt95Yar2V9mx2pNvQ0RXI/IKIzQItZcf9F2rSy5I1B9GIeeWZlUCra1gHYtttyl+g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector2-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=0eyixh4il75JyrUuKQf9OwfQX5JUsiz+r8HGhD6CFJk=;
+ b=EbEwgHmVV5EyL1V5O+oxftYQQTB5AnGah9cPt/mZ7YDCqx1E8fIYkbA805yrsaV9XAbWtR+wC+NjxzjE6UfDpiJF8RbV78NqkWppFl7XuJG7Cl00BFuISgJUnMHLtwo4vv3lamMpSIG9jvpN7vGAZAuwkS+5Hb7Fx2mIIHTamVs=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from DU0PR04MB9417.eurprd04.prod.outlook.com (2603:10a6:10:358::11)
+ by DU4PR04MB10316.eurprd04.prod.outlook.com (2603:10a6:10:567::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7544.55; Tue, 14 May
+ 2024 13:10:44 +0000
+Received: from DU0PR04MB9417.eurprd04.prod.outlook.com
+ ([fe80::d30b:44e7:e78e:662d]) by DU0PR04MB9417.eurprd04.prod.outlook.com
+ ([fe80::d30b:44e7:e78e:662d%4]) with mapi id 15.20.7544.052; Tue, 14 May 2024
+ 13:10:44 +0000
+From: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+To: sudeep.holla@arm.com,
+	cristian.marussi@arm.com,
+	ulf.hansson@linaro.org
+Cc: linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Peng Fan <peng.fan@nxp.com>
+Subject: [PATCH] pmdomain: arm: scmi_pm_domain: set flag GENPD_FLAG_ACTIVE_WAKEUP
+Date: Tue, 14 May 2024 21:18:33 +0800
+Message-Id: <20240514131833.911703-1-peng.fan@oss.nxp.com>
+X-Mailer: git-send-email 2.37.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SGXP274CA0013.SGPP274.PROD.OUTLOOK.COM (2603:1096:4:b8::25)
+ To DU0PR04MB9417.eurprd04.prod.outlook.com (2603:10a6:10:358::11)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193756.10875.8404713759324928045.tip-bot2@tip-bot2>
-Robot-ID: <tip-bot2@linutronix.de>
-Robot-Unsubscribe:
- Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
-Precedence: bulk
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DU0PR04MB9417:EE_|DU4PR04MB10316:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2be793d4-ebf3-4749-a637-08dc74174346
+X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230031|376005|1800799015|366007|52116005|38350700005;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?WF7msWgTglZcU6T236C/8Mp6bMTeSl4IgUeofOMrlFoJOvC9DaO60uXO/QrX?=
+ =?us-ascii?Q?CFfex+FRKCP8RvtLJBRyMKsmJUB0wLfRmIDVTnJUy+NeBoZpdutXFwlgPCNs?=
+ =?us-ascii?Q?NlJwk5ND1ekFU4BcLiR7dtdCQJeYrLkrnqgMIUFiTfc1SSP95Anx7J9zKqPK?=
+ =?us-ascii?Q?mGnvpJz7O0hR3LwEVngZ4HIsp+j/LC0GB7CBYMCDWrKfuyqKjznQAT/L8eTe?=
+ =?us-ascii?Q?r/c0AqJ4KYvOXRL5e1WZasa/H2HJA7antnzaQuHPWIUioURHwqCFrxt25Nk6?=
+ =?us-ascii?Q?HAxTf/TYk00OEUOZKmIERPBaQVUu8/jRlxQyOZtJdZ4t+Yy6gjBEnyZdaI2a?=
+ =?us-ascii?Q?UfeqkAcli8D0cDEmlFBcz1BqyITmHeqN3veBDD9zWJ2gCyeZWTUbeEnJMnAN?=
+ =?us-ascii?Q?pnMknrhFc+DHTZSr0GcgTarWDki4Fd/odKDixAySZKOshOg5YBz0yF1RJ43u?=
+ =?us-ascii?Q?HinEOqO7EMOpmyAVHOJlxpy2OVTo2RYI02UGHEhc+DqmYnPRQBTqaMysd7hO?=
+ =?us-ascii?Q?GOP/3vxWfiiTlS++QxV/GLpUGLsY4ZKtz6yfISISyjF6UJY7k3pff3HXv+u9?=
+ =?us-ascii?Q?JH45AfL3/zy5wX3EZMYE17riSF5mOHu/6fUR9T2w2tvg7o2aUqJh/l519cbV?=
+ =?us-ascii?Q?gZ8k4db0/D/3SHYsvgfgEUqM0ryeOIrRzNXA7UXCn1SEyz0Kk1S5pI2grcUQ?=
+ =?us-ascii?Q?DvqH5ssoUZAjZuNJ3yeqwaGwVv9OXrc2b9jEVj3UhC6pDjLDyFHH20qDTFdV?=
+ =?us-ascii?Q?yskW0hM2yrFQX0u3HNvsytwOJZwHug/tQxRX816NQPniBNz0fRhbHb5+mbIX?=
+ =?us-ascii?Q?6h5DeDuNKXcGzjnVzS/G5u/lqPQ5og1wbY8WTT2lQlLMjPWRQwo1NB+8Krnp?=
+ =?us-ascii?Q?G6HeHHyL364e3AGPUWoHpDAnSFcYGmkboYjdV2FV+gyaOo44IAgICRXE/jB0?=
+ =?us-ascii?Q?FxsnYHrrh5IM1aunhN5/KoG6KBa2YbJSXdBuoQ0aluNVx5Lqrc0NBVUf0wpd?=
+ =?us-ascii?Q?r6Q7W3QzSOdXivOoSbuBKtUvxNviq627/B2RsyuOxCjGqdcDvtV8/Q9WiurG?=
+ =?us-ascii?Q?P95trRMwNAYnL3eMtrIJpCV2ndoSfWZJGxP7hlYsKS1eyMb9Gbk780iRA7Pg?=
+ =?us-ascii?Q?HEcFGs+wPl9dPh4UQevlnqH1jY3JO1Wiqi93rPR0qCOJ1encRadpqiFVrngZ?=
+ =?us-ascii?Q?3QdwlGrVJfDc8o3wVASs6N2xrF8A6VJheN5gX97a5wY5xeD6RiLpnNdocwQ/?=
+ =?us-ascii?Q?gvpu1Uf3aAj9roYGTzVo7ar1dl0GbBTa+S7HFWvXRBhGIb7XKBzhDYL0BYEk?=
+ =?us-ascii?Q?zEzA2rc1ujw8YnhQv9kIl8UrOJ8p5F7FnOrPffG0gfvolw=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR04MB9417.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376005)(1800799015)(366007)(52116005)(38350700005);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?ge+IDOh95mQ3KfdOAZohLt0uZp1uLpMPsJqoTTfG6fiSyiNcAwWxj9W0wLCE?=
+ =?us-ascii?Q?DeVm5aF+aFNhaXaejZnEihaPkgsiGIO3HrHs5x0SwOmTJNp4YRNLLjwvKdlB?=
+ =?us-ascii?Q?YjUaVcf0AFWqA6WMvgLY1cvxElY8TKePo9riKQjNLdtHBltvAlmPGpbPAF4s?=
+ =?us-ascii?Q?Jq1I18HhyoaR76eTCvhgW1Q4DudYWkBrZya2DlcqgzoQ38RRPNJZ7F7s9taY?=
+ =?us-ascii?Q?4alGm2sR++c5k3F6RBEXWQmRgQNeG86EMR+fXTcvNIDg8OnEkQRcB4qUoBC2?=
+ =?us-ascii?Q?8IjD3mvSzKkuKiXpvCZPCLgOL954gn3GcVr84sD1uQzPDETHyx4t/o5s3Rho?=
+ =?us-ascii?Q?TGU3xIcrJO6WyPCaLRQpdFZCeH6te1ucIclJgYvfFMuAAcEWpCPgNSCTuQMx?=
+ =?us-ascii?Q?fQ66dMJAs1VhE8YAvp4TMNgVf1HYdaQfe3avEhixpZdFAIplsIMRmz1BEhh4?=
+ =?us-ascii?Q?XbCYJTKkVgWvyLTLPyb8YDCNxB+CrZHtZyMPQUBhkaOOZm0xHwI0OhZFWtqB?=
+ =?us-ascii?Q?esAE5QgIRVfg1Il4Mns+pSdnx6KdwDCYNSjTLmTFeeATCxW2u4ho4c/XrMWt?=
+ =?us-ascii?Q?+LfVPMeR1pF4FDjsdz4JwpiSWiIgqGu6I3IwK2SjoyQ+Qn4L6P23Tj5KQUL1?=
+ =?us-ascii?Q?sn823JrA/FqpJTgOih1HQxp5wzhI1c82xouw2yUVFDecXFo96hoSh+/W6qHN?=
+ =?us-ascii?Q?MQZlttel9KtEpSmShfziS4GZGtziNRTqoC+hI+x8QkOJxuXUG1MIqqLL+47l?=
+ =?us-ascii?Q?b6TgYQfjOJ7vYlEFZbiLxfnOuMBPU9TrvoQd4FDqvXbezfQrlywG1okJVvPC?=
+ =?us-ascii?Q?T89Kzmkh/lxfNY2qhyOvV8+vycvjMkGnhc7rflR2flMlgbWokJtCFfCOcggT?=
+ =?us-ascii?Q?wdURSDcfJyCRsrbm6fJSG+YqlOapIYbloyrEYVSZUBqq8HDpHSaeeDDEetuY?=
+ =?us-ascii?Q?x52arDxJiY9QoaxzGw6Cp7s5lCXE9rGSaRO+Jp5OfVMjJxWF6T5R7rwEsAj2?=
+ =?us-ascii?Q?q0RAcd938ROgyE+unoCbZ5RNKdy10mbMzY58hOWXI2ccJ7tOs7Eq5SGFuXIi?=
+ =?us-ascii?Q?C++wupPevN1cSbmwnl96Oar6yXliijGvwdAL73QSBnhgs/dh118QcKtL8roc?=
+ =?us-ascii?Q?VAGmX+0bVcAR4upJTM+9zY4nBmFp1BRlliw5CuN8NJrjaYAEluFqumjia2MO?=
+ =?us-ascii?Q?BtE4KFCufnMxX6rnFZZrdonJC4uwu027i8fRSUBXsV+nnJ28UuV2XRzmzuwB?=
+ =?us-ascii?Q?KgVP7m8lHfmMQFciPsOPInS4JNOUr28SHxP7WyrnKAq4oASFDY8ydb2alvbM?=
+ =?us-ascii?Q?hrtwbzuOO2XAspDYCCgdp5x5mVRo/VYmGc421Yw8luknuhbvWTB/ksBmrKWq?=
+ =?us-ascii?Q?mm0s4a4+6B5Uzc+71EEJ1JxutNIvCrUIayMTQ1cwEY5L8LlNc/3TYMvTml2Z?=
+ =?us-ascii?Q?8gB3QHdZMgohySpqtkHqxeP+ysnEPw/jkk9+rPe7gynFQSgM4fht2Qo4LNCM?=
+ =?us-ascii?Q?Uh+gCSWTqdIJpu89mbICacMk/CZftl6qDau+V4rhBRy/1+/5me2qHd0F2/od?=
+ =?us-ascii?Q?nX84h8VaReYCaVHQ8uNqV7LRoJRgNod09dF8aFTp?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2be793d4-ebf3-4749-a637-08dc74174346
+X-MS-Exchange-CrossTenant-AuthSource: DU0PR04MB9417.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 May 2024 13:10:44.6926
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 8UMlOEz26+I96u/n3EehmrbaPXf2S4i2NnMrufjUEN86D92xxxL8I1ypoObzJXHoCnc29zFF4xHv2vOYpr+mrw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU4PR04MB10316
 
-The following commit has been merged into the thermal/fixes branch of thermal:
+From: Peng Fan <peng.fan@nxp.com>
 
-Commit-ID:     b33f3d2677b8ddd7a3aba2b02497422a1d2c2a01
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//b33f3d2677b8ddd7a3aba2b02497422a1d2c2a01
-Author:        Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
-AuthorDate:    Fri, 23 Feb 2024 16:59:42 +01:00
-Committer:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-CommitterDate: Wed, 27 Mar 2024 14:50:26 +01:00
+Set flag GENPD_FLAG_ACTIVE_WAKEUP to scmi genpd, then when a device
+is set as wakeup source using device_set_wakeup_enable, the power
+domain could be kept on to make sure the device could wakeup the system.
 
-thermal: intel: hfi: Enable HFI only when required
-
-Enable and disable hardware feedback interface (HFI) when user space
-handler is present. For example, enable HFI, when intel-speed-select or
-Intel Low Power daemon is running and subscribing to thermal netlink
-events. When user space handlers exit or remove subscription for
-thermal netlink events, disable HFI.
-
-Summary of changes:
-
- - Register a thermal genetlink notifier
-
- - In the notifier, process THERMAL_NOTIFY_BIND and THERMAL_NOTIFY_UNBIND
-   reason codes to count number of thermal event group netlink multicast
-   clients. If thermal netlink group has any listener enable HFI on all
-   packages. If there are no listener disable HFI on all packages.
-
-- When CPU is online, instead of blindly enabling HFI, check if
-  the thermal netlink group has any listener. This will make sure that
-  HFI is not enabled by default during boot time.
-
-- Actual processing to enable/disable matches what is done in
-  suspend/resume callbacks. Create two functions hfi_enable_instance()
-  and hfi_disable_instance(), which can be called from the netlink
-  notifier callback and suspend/resume callbacks.
-
-Signed-off-by: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Peng Fan <peng.fan@nxp.com>
 ---
- drivers/thermal/intel/intel_hfi.c | 97 +++++++++++++++++++++++++++---
- 1 file changed, 89 insertions(+), 8 deletions(-)
+ drivers/pmdomain/arm/scmi_pm_domain.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
-index 40d664a..fbc7f0c 100644
---- a/drivers/thermal/intel/intel_hfi.c
-+++ b/drivers/thermal/intel/intel_hfi.c
-@@ -159,6 +159,7 @@ struct hfi_cpu_info {
- static DEFINE_PER_CPU(struct hfi_cpu_info, hfi_cpu_info) = { .index = -1 };
+diff --git a/drivers/pmdomain/arm/scmi_pm_domain.c b/drivers/pmdomain/arm/scmi_pm_domain.c
+index 0e05a79de82d..a7784a8bb5db 100644
+--- a/drivers/pmdomain/arm/scmi_pm_domain.c
++++ b/drivers/pmdomain/arm/scmi_pm_domain.c
+@@ -102,6 +102,7 @@ static int scmi_pm_domain_probe(struct scmi_device *sdev)
+ 		scmi_pd->genpd.name = scmi_pd->name;
+ 		scmi_pd->genpd.power_off = scmi_pd_power_off;
+ 		scmi_pd->genpd.power_on = scmi_pd_power_on;
++		scmi_pd->genpd.flags = GENPD_FLAG_ACTIVE_WAKEUP;
  
- static int max_hfi_instances;
-+static int hfi_clients_nr;
- static struct hfi_instance *hfi_instances;
- 
- static struct hfi_features hfi_features;
-@@ -477,8 +478,11 @@ void intel_hfi_online(unsigned int cpu)
- enable:
- 	cpumask_set_cpu(cpu, hfi_instance->cpus);
- 
--	/* Enable this HFI instance if this is its first online CPU. */
--	if (cpumask_weight(hfi_instance->cpus) == 1) {
-+	/*
-+	 * Enable this HFI instance if this is its first online CPU and
-+	 * there are user-space clients of thermal events.
-+	 */
-+	if (cpumask_weight(hfi_instance->cpus) == 1 && hfi_clients_nr > 0) {
- 		hfi_set_hw_table(hfi_instance);
- 		hfi_enable();
- 	}
-@@ -573,18 +577,33 @@ static __init int hfi_parse_features(void)
- 	return 0;
- }
- 
--static void hfi_do_enable(void)
-+/*
-+ * If concurrency is not prevented by other means, the HFI enable/disable
-+ * routines must be called under hfi_instance_lock."
-+ */
-+static void hfi_enable_instance(void *ptr)
-+{
-+	hfi_set_hw_table(ptr);
-+	hfi_enable();
-+}
-+
-+static void hfi_disable_instance(void *ptr)
-+{
-+	hfi_disable();
-+}
-+
-+static void hfi_syscore_resume(void)
- {
- 	/* This code runs only on the boot CPU. */
- 	struct hfi_cpu_info *info = &per_cpu(hfi_cpu_info, 0);
- 	struct hfi_instance *hfi_instance = info->hfi_instance;
- 
- 	/* No locking needed. There is no concurrency with CPU online. */
--	hfi_set_hw_table(hfi_instance);
--	hfi_enable();
-+	if (hfi_clients_nr > 0)
-+		hfi_enable_instance(hfi_instance);
- }
- 
--static int hfi_do_disable(void)
-+static int hfi_syscore_suspend(void)
- {
- 	/* No locking needed. There is no concurrency with CPU offline. */
- 	hfi_disable();
-@@ -593,8 +612,58 @@ static int hfi_do_disable(void)
- }
- 
- static struct syscore_ops hfi_pm_ops = {
--	.resume = hfi_do_enable,
--	.suspend = hfi_do_disable,
-+	.resume = hfi_syscore_resume,
-+	.suspend = hfi_syscore_suspend,
-+};
-+
-+static int hfi_thermal_notify(struct notifier_block *nb, unsigned long state,
-+			      void *_notify)
-+{
-+	struct thermal_genl_notify *notify = _notify;
-+	struct hfi_instance *hfi_instance;
-+	smp_call_func_t func = NULL;
-+	unsigned int cpu;
-+	int i;
-+
-+	if (notify->mcgrp != THERMAL_GENL_EVENT_GROUP)
-+		return NOTIFY_DONE;
-+
-+	if (state != THERMAL_NOTIFY_BIND && state != THERMAL_NOTIFY_UNBIND)
-+		return NOTIFY_DONE;
-+
-+	mutex_lock(&hfi_instance_lock);
-+
-+	switch (state) {
-+	case THERMAL_NOTIFY_BIND:
-+		if (++hfi_clients_nr == 1)
-+			func = hfi_enable_instance;
-+		break;
-+	case THERMAL_NOTIFY_UNBIND:
-+		if (--hfi_clients_nr == 0)
-+			func = hfi_disable_instance;
-+		break;
-+	}
-+
-+	if (!func)
-+		goto out;
-+
-+	for (i = 0; i < max_hfi_instances; i++) {
-+		hfi_instance = &hfi_instances[i];
-+		if (cpumask_empty(hfi_instance->cpus))
-+			continue;
-+
-+		cpu = cpumask_any(hfi_instance->cpus);
-+		smp_call_function_single(cpu, func, hfi_instance, true);
-+	}
-+
-+out:
-+	mutex_unlock(&hfi_instance_lock);
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block hfi_thermal_nb = {
-+	.notifier_call = hfi_thermal_notify,
- };
- 
- void __init intel_hfi_init(void)
-@@ -628,10 +697,22 @@ void __init intel_hfi_init(void)
- 	if (!hfi_updates_wq)
- 		goto err_nomem;
- 
-+	/*
-+	 * Both thermal core and Intel HFI can not be build as modules.
-+	 * As kernel build-in drivers they are initialized before user-space
-+	 * starts, hence we can not miss BIND/UNBIND events when applications
-+	 * add/remove thermal multicast group to/from a netlink socket.
-+	 */
-+	if (thermal_genl_register_notifier(&hfi_thermal_nb))
-+		goto err_nl_notif;
-+
- 	register_syscore_ops(&hfi_pm_ops);
- 
- 	return;
- 
-+err_nl_notif:
-+	destroy_workqueue(hfi_updates_wq);
-+
- err_nomem:
- 	for (j = 0; j < i; ++j) {
- 		hfi_instance = &hfi_instances[j];
+ 		pm_genpd_init(&scmi_pd->genpd, NULL,
+ 			      state == SCMI_POWER_STATE_GENERIC_OFF);
+-- 
+2.37.1
+
