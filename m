@@ -1,47 +1,49 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FD7213FD89
-	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0300213FD83
+	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681946; cv=none; b=Yg9t8zxxIxBR7a+BcuHSyDzMf1cBGT4QJxE3tPxBJ1QMB7YSTi1vSFwNvpTIJZITRjCMNly+tDi3gzWcpe1qqp3dtJAqYat5igA3ZZ1PG/Vl/F3RlsZTCm46TiGlAxTi3CkkLgtPYNtHUSkY2Pwkl2TSAZ+C8X7hKIeRrmmYBUM=
+	t=1715681946; cv=none; b=UJHa1567JwwuC9kwcJvZF8UvF2EZak0oF+Mj9Ui3RY0f2BYtBPVmrL6mtntvsSVrDTty6Hntq8Mq8HhZvq1izSI0pYUvg3wHjzjaaWQWkNNWN01w1liB6yoy8q/QSlM27tKbcvkKkCGEltxP89DMpEb394VHbnFdToZtEFuCSlM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1715681946; c=relaxed/simple;
-	bh=2weViA/Qnnlrxg0O/Y/JsH/2hah4B1+Xq/PG8DR1bCk=;
-	h=Date:From:To:Subject:Cc:MIME-Version:Message-ID:Content-Type; b=gpuRlKVMzhLN3liS+PcUaSvP8BfbboA45LY5umlcwH7ldi2Mf/XCABHRmG7u98RxssFPCkv5ZM0CO43bxfHPdwMk6GoOj037chTKMPAGFSl5UDtCMaM1hG0L4jz3cAoCQR+zffBcZ1XIuXXA+Q4AAQpiH80YpYIquMYdzjm7eYI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=0A7MTGe+; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=oTUs1qbG; arc=none smtp.client-ip=193.142.43.55
+	bh=nPqCDg5Hf/67EuyUXUNro21NvQu0+xhlxN0jlsXZCZ4=;
+	h=Date:From:To:Subject:Cc:MIME-Version:Message-ID:Content-Type; b=UNNIJRX8nvxND7zEoZCd0gTaMUH3EJU+2rm+uX8oZRWlIuBphfJXBT/HR4XWKZScC84OihQTbBLfTQJwracHZMNN0dJpCp+d2fZ1KNhFPdIahS2HuYGi2Yi+uQHGASBdGVLMpP/0J883F+Z5xv5ZJ4UfQyt8KBuScDZp8JOU/Ss=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=RccTblno; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=NqGOq+Mo; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="0A7MTGe+";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="oTUs1qbG"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="RccTblno";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="NqGOq+Mo"
 Date: Tue, 14 May 2024 10:18:57 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1715681937;
+	s=2020; t=1715681938;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-	bh=W7zAWUf4H1sGKiMEZoWZz6t42g5Li+EbCb2U0rp+7Jo=;
-	b=0A7MTGe+Q68DZt4gyHqQ+31W2xqaPM4d7OJUBkR9JC6/l7oE/kn8lfl+ICRD6BgYL+p8L5
-	XpF96ArubM6yOf/IRlyp86HbSc2PqofWQwxYj5b46AjQULE8eLD6wx9doz4hvezmUt18OK
-	GL9dIsnJEJqw337kc6SA5C3Kf+vgG9Q7er7KUYB2XhRm19iMYvRyeKE+R2TTtLRtFki85l
-	a/nE+8S8ZL23NObH477afolPAfFikl8uGRIZt3LBKpvX78eHtkLcb1peojXxWZtTKGMknp
-	QzQGiyHBb8Ae7BMBuQ8Nqep3Mrx/vM27iC9PDBNXT2pbToH3NeQzoBJeNgc3Ug==
+	bh=QdwB/vPZpPWKRayFxqTE5Zzo6gQHAZQpxUblVg/mREQ=;
+	b=RccTblnozEF3I1FK4DnwH1wy67mxpkfK13O2FIw/r68qZtA5iKOeYn3N8FPN2hO59vSI3N
+	vHutgo55x1pbXIQ9CfsoGhsWbnQp+Rub/WWMATGxqPxs/4f1Z4VzVKQ4oJK9KBCewON94S
+	l1Wt+BRezNNA9wNG9Isd33ubHXzNeOOeIW8vpYJTi0Zk4/jxPqCm2jN4CSYPQ0n88vRwpX
+	N2VkoqXdztIMchBVzXLbM3XMBZkYr4QZRHpTSGAPYlu4qC+INvogoqTkfDfMZuu8nn2PnY
+	bebZVdqaYd89m22RyTmlsx/JbatPU4vsQzUDUM2od/5ZngpT1q/6wJnosVbVcw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1715681937;
+	s=2020e; t=1715681938;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-	bh=W7zAWUf4H1sGKiMEZoWZz6t42g5Li+EbCb2U0rp+7Jo=;
-	b=oTUs1qbG9dFcqy+Q81mDSh9vAPAsyENFREUamRHmcFT+mqqcIpbrLUpI6iTT6cL4t02fom
-	9NrEMo68cWTNQ7Dw==
+	bh=QdwB/vPZpPWKRayFxqTE5Zzo6gQHAZQpxUblVg/mREQ=;
+	b=NqGOq+MokwSPyLQ2U8VlanqVZZcr7/zppLKkKQ6rw9aR7Z09/0jwxESoceHnsnNYRwXJ88
+	FEdmBNRX8Z5VX0BA==
 From: "thermal-bot for Stanislaw Gruszka" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/fixes] thermal: netlink: Rename thermal_gnl_family
-Cc: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
+Subject: [thermal: thermal/fixes] thermal: netlink: Add genetlink bind/unbind
+ notifications
+Cc: Jakub Kicinski <kuba@kernel.org>,
+ Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
  "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, rui.zhang@intel.com,
  daniel.lezcano@linaro.org, amitk@kernel.org
 Precedence: bulk
@@ -50,7 +52,7 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193770.10875.17318498581456869530.tip-bot2@tip-bot2>
+Message-ID: <171568193786.10875.3318705779489360767.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
@@ -60,118 +62,166 @@ Content-Transfer-Encoding: 7bit
 
 The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     afdaff3706918b7414e0741c4c5c20a12726a207
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//afdaff3706918b7414e0741c4c5c20a12726a207
+Commit-ID:     cf580ad490514cca4abbfef710fe4099738abfbd
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//cf580ad490514cca4abbfef710fe4099738abfbd
 Author:        Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
-AuthorDate:    Fri, 23 Feb 2024 16:59:41 +01:00
+AuthorDate:    Fri, 23 Feb 2024 16:59:40 +01:00
 Committer:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 CommitterDate: Wed, 27 Mar 2024 14:50:26 +01:00
 
-thermal: netlink: Rename thermal_gnl_family
+thermal: netlink: Add genetlink bind/unbind notifications
 
-Almost all thermal netlink structures use thermal_genl prefix.
-Change thermal_gnl_family name accordingly for consistency.
+Introduce a new feature to the thermal netlink framework, enabling the
+registration of sub drivers to receive events via a notifier mechanism.
+Specifically, implement genetlink family bind and unbind callbacks to send
+BIND and UNBIND events.
 
-No functional impact.
+The primary purpose of this enhancement is to facilitate the tracking of
+user-space consumers by the Intel HFI driver. By leveraging these
+notifications, the driver can determine when consumers are present
+or absent.
 
+Suggested-by: Jakub Kicinski <kuba@kernel.org>
 Signed-off-by: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_netlink.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ drivers/thermal/thermal_netlink.c | 40 ++++++++++++++++++++++++++----
+ drivers/thermal/thermal_netlink.h | 26 ++++++++++++++++++++-
+ 2 files changed, 61 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/thermal/thermal_netlink.c b/drivers/thermal/thermal_netlink.c
-index d407130..bef14ce 100644
+index 76a231a..d407130 100644
 --- a/drivers/thermal/thermal_netlink.c
 +++ b/drivers/thermal/thermal_netlink.c
-@@ -70,12 +70,12 @@ struct param {
+@@ -7,17 +7,13 @@
+  * Generic netlink for thermal management framework
+  */
+ #include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/kernel.h>
+ #include <net/genetlink.h>
+ #include <uapi/linux/thermal.h>
  
+ #include "thermal_core.h"
+ 
+-enum thermal_genl_multicast_groups {
+-	THERMAL_GENL_SAMPLING_GROUP = 0,
+-	THERMAL_GENL_EVENT_GROUP = 1,
+-};
+-
+ static const struct genl_multicast_group thermal_genl_mcgrps[] = {
+ 	[THERMAL_GENL_SAMPLING_GROUP] = { .name = THERMAL_GENL_SAMPLING_GROUP_NAME, },
+ 	[THERMAL_GENL_EVENT_GROUP]  = { .name = THERMAL_GENL_EVENT_GROUP_NAME,  },
+@@ -75,6 +71,7 @@ struct param {
  typedef int (*cb_t)(struct param *);
  
--static struct genl_family thermal_gnl_family;
-+static struct genl_family thermal_genl_family;
- static BLOCKING_NOTIFIER_HEAD(thermal_genl_chain);
+ static struct genl_family thermal_gnl_family;
++static BLOCKING_NOTIFIER_HEAD(thermal_genl_chain);
  
  static int thermal_group_has_listeners(enum thermal_genl_multicast_groups group)
  {
--	return genl_has_listeners(&thermal_gnl_family, &init_net, group);
-+	return genl_has_listeners(&thermal_genl_family, &init_net, group);
+@@ -645,6 +642,27 @@ out_free_msg:
+ 	return ret;
  }
  
- /************************** Sampling encoding *******************************/
-@@ -92,7 +92,7 @@ int thermal_genl_sampling_temp(int id, int temp)
- 	if (!skb)
- 		return -ENOMEM;
- 
--	hdr = genlmsg_put(skb, 0, 0, &thermal_gnl_family, 0,
-+	hdr = genlmsg_put(skb, 0, 0, &thermal_genl_family, 0,
- 			  THERMAL_GENL_SAMPLING_TEMP);
- 	if (!hdr)
- 		goto out_free;
-@@ -105,7 +105,7 @@ int thermal_genl_sampling_temp(int id, int temp)
- 
- 	genlmsg_end(skb, hdr);
- 
--	genlmsg_multicast(&thermal_gnl_family, skb, 0, THERMAL_GENL_SAMPLING_GROUP, GFP_KERNEL);
-+	genlmsg_multicast(&thermal_genl_family, skb, 0, THERMAL_GENL_SAMPLING_GROUP, GFP_KERNEL);
- 
- 	return 0;
- out_cancel:
-@@ -279,7 +279,7 @@ static int thermal_genl_send_event(enum thermal_genl_event event,
- 		return -ENOMEM;
- 	p->msg = msg;
- 
--	hdr = genlmsg_put(msg, 0, 0, &thermal_gnl_family, 0, event);
-+	hdr = genlmsg_put(msg, 0, 0, &thermal_genl_family, 0, event);
- 	if (!hdr)
- 		goto out_free_msg;
- 
-@@ -289,7 +289,7 @@ static int thermal_genl_send_event(enum thermal_genl_event event,
- 
- 	genlmsg_end(msg, hdr);
- 
--	genlmsg_multicast(&thermal_gnl_family, msg, 0, THERMAL_GENL_EVENT_GROUP, GFP_KERNEL);
-+	genlmsg_multicast(&thermal_genl_family, msg, 0, THERMAL_GENL_EVENT_GROUP, GFP_KERNEL);
- 
- 	return 0;
- 
-@@ -590,7 +590,7 @@ static int thermal_genl_cmd_dumpit(struct sk_buff *skb,
- 	int ret;
- 	void *hdr;
- 
--	hdr = genlmsg_put(skb, 0, 0, &thermal_gnl_family, 0, cmd);
-+	hdr = genlmsg_put(skb, 0, 0, &thermal_genl_family, 0, cmd);
- 	if (!hdr)
- 		return -EMSGSIZE;
- 
-@@ -622,7 +622,7 @@ static int thermal_genl_cmd_doit(struct sk_buff *skb,
- 		return -ENOMEM;
- 	p.msg = msg;
- 
--	hdr = genlmsg_put_reply(msg, info, &thermal_gnl_family, 0, cmd);
-+	hdr = genlmsg_put_reply(msg, info, &thermal_genl_family, 0, cmd);
- 	if (!hdr)
- 		goto out_free_msg;
- 
-@@ -691,7 +691,7 @@ static const struct genl_small_ops thermal_genl_ops[] = {
- 	},
++static int thermal_genl_bind(int mcgrp)
++{
++	struct thermal_genl_notify n = { .mcgrp = mcgrp };
++
++	if (WARN_ON_ONCE(mcgrp > THERMAL_GENL_MAX_GROUP))
++		return -EINVAL;
++
++	blocking_notifier_call_chain(&thermal_genl_chain, THERMAL_NOTIFY_BIND, &n);
++	return 0;
++}
++
++static void thermal_genl_unbind(int mcgrp)
++{
++	struct thermal_genl_notify n = { .mcgrp = mcgrp };
++
++	if (WARN_ON_ONCE(mcgrp > THERMAL_GENL_MAX_GROUP))
++		return;
++
++	blocking_notifier_call_chain(&thermal_genl_chain, THERMAL_NOTIFY_UNBIND, &n);
++}
++
+ static const struct genl_small_ops thermal_genl_ops[] = {
+ 	{
+ 		.cmd = THERMAL_GENL_CMD_TZ_GET_ID,
+@@ -679,6 +697,8 @@ static struct genl_family thermal_gnl_family __ro_after_init = {
+ 	.version	= THERMAL_GENL_VERSION,
+ 	.maxattr	= THERMAL_GENL_ATTR_MAX,
+ 	.policy		= thermal_genl_policy,
++	.bind		= thermal_genl_bind,
++	.unbind		= thermal_genl_unbind,
+ 	.small_ops	= thermal_genl_ops,
+ 	.n_small_ops	= ARRAY_SIZE(thermal_genl_ops),
+ 	.resv_start_op	= THERMAL_GENL_CMD_CDEV_GET + 1,
+@@ -686,6 +706,16 @@ static struct genl_family thermal_gnl_family __ro_after_init = {
+ 	.n_mcgrps	= ARRAY_SIZE(thermal_genl_mcgrps),
  };
  
--static struct genl_family thermal_gnl_family __ro_after_init = {
-+static struct genl_family thermal_genl_family __ro_after_init = {
- 	.hdrsize	= 0,
- 	.name		= THERMAL_GENL_FAMILY_NAME,
- 	.version	= THERMAL_GENL_VERSION,
-@@ -718,10 +718,10 @@ int thermal_genl_unregister_notifier(struct notifier_block *nb)
- 
++int thermal_genl_register_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&thermal_genl_chain, nb);
++}
++
++int thermal_genl_unregister_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&thermal_genl_chain, nb);
++}
++
  int __init thermal_netlink_init(void)
  {
--	return genl_register_family(&thermal_gnl_family);
-+	return genl_register_family(&thermal_genl_family);
+ 	return genl_register_family(&thermal_gnl_family);
+diff --git a/drivers/thermal/thermal_netlink.h b/drivers/thermal/thermal_netlink.h
+index 93a927e..e01221e 100644
+--- a/drivers/thermal/thermal_netlink.h
++++ b/drivers/thermal/thermal_netlink.h
+@@ -10,6 +10,19 @@ struct thermal_genl_cpu_caps {
+ 	int efficiency;
+ };
+ 
++enum thermal_genl_multicast_groups {
++	THERMAL_GENL_SAMPLING_GROUP = 0,
++	THERMAL_GENL_EVENT_GROUP = 1,
++	THERMAL_GENL_MAX_GROUP = THERMAL_GENL_EVENT_GROUP,
++};
++
++#define THERMAL_NOTIFY_BIND	0
++#define THERMAL_NOTIFY_UNBIND	1
++
++struct thermal_genl_notify {
++	int mcgrp;
++};
++
+ struct thermal_zone_device;
+ struct thermal_trip;
+ struct thermal_cooling_device;
+@@ -18,6 +31,9 @@ struct thermal_cooling_device;
+ #ifdef CONFIG_THERMAL_NETLINK
+ int __init thermal_netlink_init(void);
+ void __init thermal_netlink_exit(void);
++int thermal_genl_register_notifier(struct notifier_block *nb);
++int thermal_genl_unregister_notifier(struct notifier_block *nb);
++
+ int thermal_notify_tz_create(const struct thermal_zone_device *tz);
+ int thermal_notify_tz_delete(const struct thermal_zone_device *tz);
+ int thermal_notify_tz_enable(const struct thermal_zone_device *tz);
+@@ -48,6 +64,16 @@ static inline int thermal_notify_tz_create(const struct thermal_zone_device *tz)
+ 	return 0;
  }
  
- void __init thermal_netlink_exit(void)
++static inline int thermal_genl_register_notifier(struct notifier_block *nb)
++{
++	return 0;
++}
++
++static inline int thermal_genl_unregister_notifier(struct notifier_block *nb)
++{
++	return 0;
++}
++
+ static inline int thermal_notify_tz_delete(const struct thermal_zone_device *tz)
  {
--	genl_unregister_family(&thermal_gnl_family);
-+	genl_unregister_family(&thermal_genl_family);
- }
+ 	return 0;
