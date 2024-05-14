@@ -1,57 +1,65 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0146F127B73
-	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F33F126F1E
+	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681944; cv=none; b=L5vi5lOJVRyIQ1SNLQnkfLrFgHvqxYwJj++Ag26n+5txPMYJ4AesN9tw1BzgAW4KA8RC8P+Ur0WYWPUTn13Lqq1FW67YoEzBYVu5AqKx4kMP2Qs4j3xfOYKK2O+oulAxRtivTkkTN7brNS09KSLeJaCLOglD4Ka6RfK+/DwR2sQ=
+	t=1715681945; cv=none; b=UAUFGofoKAL45AhutfxnmhmBNThJ3UNLvuSRKlQ/l9L8jga3ChAxR/y+T2NwKmPN9SIPlW4i8kSQzITefY4nHHspsTszLicxfQsuTwoEfvrnC6O7N7773m6RkRXgA7YAonHTTFu6w5kZFIOQ4tTUJ+U/bau8f792dzxZ36uJCGg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715681944; c=relaxed/simple;
-	bh=TtAMb0W8nXdHBa5KVp0Y+Fc2GpO5/QkLf4Z20dUqIBc=;
-	h=Date:From:To:Subject:Cc:MIME-Version:Message-ID:Content-Type; b=qZhWQNoMOULBjHs/dzAffV78XhoTlXXnB7XtPtQ0rmFvMGAJdTQCy5zfXQCYJe5haIpTkAaqakZfO499MoqSGtjhyu7Ia8NtD1yRhcQDFzs05LkvzZ9TcBLKz9Pq1b09DuIpZxdfFQY1A1kWWOgBP3Mr2x8gPXBVIhl+kqhQiN0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=WkdCsbva; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=ZKH0f5P5; arc=none smtp.client-ip=193.142.43.55
+	s=arc-20240116; t=1715681945; c=relaxed/simple;
+	bh=B5QichSlxattKgtKVimpN5V37HEqkFVd3NDEBbMnBZU=;
+	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
+	 Message-ID:Content-Type; b=iAMof9U38XmKd+0SF9aAqO5jcNQcWoU8rRnZtYGj0JyihRNIYtT9u8e2DIg5Z8eq9O6YOy6Dbutr7WlUcjsrihHIl5gu9bPsyN+zndqsPxiLep0gh1ycCxAdylP+RtHXWpt1S1ntWYGArqFRIkEJLvmENrzE2ZlVdreIMm+Evtk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=rU+gmuFG; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=61RO9kn2; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="WkdCsbva";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="ZKH0f5P5"
-Date: Tue, 14 May 2024 10:18:56 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="rU+gmuFG";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="61RO9kn2"
+Date: Tue, 14 May 2024 10:18:55 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1715681936;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-	bh=UYfGhPtP15SMyjr18jaec5dX69N0pClZ4si8UU4d5xc=;
-	b=WkdCsbvabe//D0sXwRiPcAqcSqcu/2n+N0Ny4WdkVmFzRMK9m/ELvOJOu+ptS+zeARdVfy
-	nSip+TAsnCBzHEtkkl3CHzw2stXsJbRo47P6/DybSzCHr1176B1Ny9/zu6c5DmOWDme1yP
-	V0oL+vCJLTdPz8e53Sw24J+j77CX4szRIZ180eABowLlmdtrtUH1GLV7NtXcLfb4pm+v3H
-	+Eq7s3EbvDMGheibjPr8kaO8YDK6+jtQI6+TziORq+AaZ8iUzSxQ3L+RYlRiV6vlBx8HxK
-	FaJoY+rhglk6nCErOjBrnP/Ia2vH8zUNdypG91TtkMBhWDTnp1Knqr5a93GUKA==
+	 content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cLM/bz9elEuQlwow0Efo6E4qRhTnI5wiWPPAIEKhX24=;
+	b=rU+gmuFGuh5RI68yCH43h3OnvoBhC9TEZIzyquRi76HXzryybOzz2pvNCpwsXDjGhtLZ4D
+	EKX2S7mjSa7vF83baccMUKoqtBS6g3cHLX0ogdb61aeM+FJf5r4J1igTgXGdTlXqoAdY2A
+	nJWywI7tEPWUVzIhQXhAmpbySfL59kaxpLjua4QWZkOfRxK7dlmhfVA7IhKdOtkO8ybzyz
+	Q+X1fSq7P+sz4Bskaj7jdlGJ2d3IejFnoBYfe9b3WuCbEIac+IclsSTz+MuJaMQqbQMzfB
+	3QywAgVGJYJ7791pjM/RinvDfbT1mc7OMAdcu4sap5cHGLNrWXpmtzDDo7b4yQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1715681936;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-	bh=UYfGhPtP15SMyjr18jaec5dX69N0pClZ4si8UU4d5xc=;
-	b=ZKH0f5P52CAy/ryv8lcDqkIevoHl9Nh770C4/K91iDbAAUKJMa1UunEhGbNxojmnNB4Jrd
-	cr1AWxas1a4eP0AA==
-From: "thermal-bot for Rafael J. Wysocki" <tip-bot2@linutronix.de>
+	 content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cLM/bz9elEuQlwow0Efo6E4qRhTnI5wiWPPAIEKhX24=;
+	b=61RO9kn2JUC1NZF59qhC1tcbvC+BY621CVT6JTYEnKWsXayMh+ZGVfe3vaCbfb/7Sh4DLX
+	lcUP+Sa9IKSOveCw==
+From: "thermal-bot for Raphael Gallais-Pou" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/fixes] thermal: core: Send trip crossing
- notifications at init time if needed
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, rui.zhang@intel.com,
- daniel.lezcano@linaro.org, amitk@kernel.org
+Subject: [thermal: thermal/fixes] dt-bindings: thermal: convert
+ st,stih407-thermal to DT schema
+Cc: "Raphael Gallais-Pou" <rgallaispou@gmail.com>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
+ amitk@kernel.org
+In-Reply-To: <20240320-thermal-v3-1-700296694c4a@gmail.com>
+References: <20240320-thermal-v3-1-700296694c4a@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193652.10875.3576256474516014171.tip-bot2@tip-bot2>
+Message-ID: <171568193580.10875.18236363448511526020.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
@@ -61,92 +69,131 @@ Content-Transfer-Encoding: 7bit
 
 The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     9ad18043fb35feb1d82c1e594575346f16d47dc7
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//9ad18043fb35feb1d82c1e594575346f16d47dc7
-Author:        Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-AuthorDate:    Tue, 02 Apr 2024 21:02:10 +02:00
-Committer:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-CommitterDate: Mon, 08 Apr 2024 16:01:20 +02:00
+Commit-ID:     ff96922d33dfeb3cfe7c4fac051267155722c1ae
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//ff96922d33dfeb3cfe7c4fac051267155722c1ae
+Author:        Raphael Gallais-Pou <rgallaispou@gmail.com>
+AuthorDate:    Wed, 20 Mar 2024 22:33:48 +01:00
+Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
+CommitterDate: Tue, 23 Apr 2024 12:40:29 +02:00
 
-thermal: core: Send trip crossing notifications at init time if needed
+dt-bindings: thermal: convert st,stih407-thermal to DT schema
 
-If a trip point is already exceeded by the zone temperature at the
-initialization time, no trip crossing notification is send regarding
-this even though mitigation should be started then.
+'st,passive_colling_temp' does not appear in the device-tree, 'reg' and
+'#thermal-sensor-cells' are also missing in the device description.
 
-Address this by rearranging the code in handle_thermal_trip() to
-send a trip crossing notification for trip points already exceeded
-by the zone temperature initially which also allows to reduce its
-size by using the observation that the initialization and regular
-trip crossing on the way up become the same case then.
+Convert st,stih407-thermal binding to DT schema format in order to clean
+unused 'st,passive_cooling_temp' and add missing properties.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Link: https://lore.kernel.org/r/20240320-thermal-v3-1-700296694c4a@gmail.com
 ---
- drivers/thermal/thermal_core.c | 37 ++++++++++++++-------------------
- 1 file changed, 16 insertions(+), 21 deletions(-)
+ Documentation/devicetree/bindings/thermal/st,stih407-thermal.yaml | 58 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Documentation/devicetree/bindings/thermal/st-thermal.txt          | 32 --------------------------------
+ 2 files changed, 58 insertions(+), 32 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/st,stih407-thermal.yaml
+ delete mode 100644 Documentation/devicetree/bindings/thermal/st-thermal.txt
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index c4bc797..28f5d9b 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -364,6 +364,7 @@ static void handle_thermal_trip(struct thermal_zone_device *tz,
- 				struct thermal_trip_desc *td)
- {
- 	const struct thermal_trip *trip = &td->trip;
-+	int old_threshold;
- 
- 	if (trip->temperature == THERMAL_TEMP_INVALID)
- 		return;
-@@ -375,25 +376,11 @@ static void handle_thermal_trip(struct thermal_zone_device *tz,
- 	 * is what needs to be compared with the previous zone temperature
- 	 * to decide which action to take.
- 	 */
--	if (tz->last_temperature == THERMAL_TEMP_INVALID) {
--		/* Initialization. */
--		td->threshold = trip->temperature;
--		if (tz->temperature >= td->threshold)
--			td->threshold -= trip->hysteresis;
--	} else if (tz->last_temperature < td->threshold) {
--		/*
--		 * There is no mitigation under way, so it needs to be started
--		 * if the zone temperature exceeds the trip one.  The new
--		 * threshold is then set to the low temperature of the trip.
--		 */
--		if (tz->temperature >= trip->temperature) {
--			thermal_notify_tz_trip_up(tz, trip);
--			thermal_debug_tz_trip_up(tz, trip);
--			td->threshold = trip->temperature - trip->hysteresis;
--		} else {
--			td->threshold = trip->temperature;
--		}
--	} else {
-+	old_threshold = td->threshold;
-+	td->threshold = trip->temperature;
+diff --git a/Documentation/devicetree/bindings/thermal/st,stih407-thermal.yaml b/Documentation/devicetree/bindings/thermal/st,stih407-thermal.yaml
+new file mode 100644
+index 0000000..9f6fc5c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/st,stih407-thermal.yaml
+@@ -0,0 +1,58 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/st,stih407-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+	if (tz->last_temperature >= old_threshold &&
-+	    tz->last_temperature != THERMAL_TEMP_INVALID) {
- 		/*
- 		 * Mitigation is under way, so it needs to stop if the zone
- 		 * temperature falls below the low temperature of the trip.
-@@ -402,10 +389,18 @@ static void handle_thermal_trip(struct thermal_zone_device *tz,
- 		if (tz->temperature < trip->temperature - trip->hysteresis) {
- 			thermal_notify_tz_trip_down(tz, trip);
- 			thermal_debug_tz_trip_down(tz, trip);
--			td->threshold = trip->temperature;
- 		} else {
--			td->threshold = trip->temperature - trip->hysteresis;
-+			td->threshold -= trip->hysteresis;
- 		}
-+	} else if (tz->temperature >= trip->temperature) {
-+		/*
-+		 * There is no mitigation under way, so it needs to be started
-+		 * if the zone temperature exceeds the trip one.  The new
-+		 * threshold is then set to the low temperature of the trip.
-+		 */
-+		thermal_notify_tz_trip_up(tz, trip);
-+		thermal_debug_tz_trip_up(tz, trip);
-+		td->threshold -= trip->hysteresis;
- 	}
- 
- 	if (trip->type == THERMAL_TRIP_CRITICAL || trip->type == THERMAL_TRIP_HOT)
++title: STMicroelectronics STi digital thermal sensor (DTS)
++
++maintainers:
++  - Patrice Chotard <patrice.chotard@foss.st.com>
++  - Lee Jones <lee@kernel.org>
++
++allOf:
++  - $ref: thermal-sensor.yaml
++
++properties:
++  compatible:
++    const: st,stih407-thermal
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  clock-names:
++    items:
++      - const: thermal
++
++  interrupts:
++    description:
++      For thermal sensors for which no interrupt has been defined, a polling
++      delay of 1000ms will be used to read the temperature from device.
++    maxItems: 1
++
++  '#thermal-sensor-cells':
++    const: 0
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - clock-names
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    temperature-sensor@91a0000 {
++        compatible = "st,stih407-thermal";
++        reg = <0x91a0000 0x28>;
++        clock-names = "thermal";
++        clocks = <&CLK_SYSIN>;
++        interrupts = <GIC_SPI 205 IRQ_TYPE_EDGE_RISING>;
++        #thermal-sensor-cells = <0>;
++    };
++...
+diff --git a/Documentation/devicetree/bindings/thermal/st-thermal.txt b/Documentation/devicetree/bindings/thermal/st-thermal.txt
+deleted file mode 100644
+index a2f9391..0000000
+--- a/Documentation/devicetree/bindings/thermal/st-thermal.txt
++++ /dev/null
+@@ -1,32 +0,0 @@
+-Binding for Thermal Sensor driver for STMicroelectronics STi series of SoCs.
+-
+-Required parameters:
+--------------------
+-
+-compatible : 	Should be "st,stih407-thermal"
+-
+-clock-names : 	Should be "thermal".
+-		  See: Documentation/devicetree/bindings/resource-names.txt
+-clocks : 	Phandle of the clock used by the thermal sensor.
+-		  See: Documentation/devicetree/bindings/clock/clock-bindings.txt
+-
+-Optional parameters:
+--------------------
+-
+-reg : 		For non-sysconf based sensors, this should be the physical base
+-		address and length of the sensor's registers.
+-interrupts :	Standard way to define interrupt number.
+-		  NB: For thermal sensor's for which no interrupt has been
+-		  defined, a polling delay of 1000ms will be used to read the
+-		  temperature from device.
+-
+-Example:
+-
+-	temp0@91a0000 {
+-		compatible = "st,stih407-thermal";
+-		reg = <0x91a0000 0x28>;
+-		clock-names = "thermal";
+-		clocks = <&CLK_SYSIN>;
+-		interrupts = <GIC_SPI 205 IRQ_TYPE_EDGE_RISING>;
+-		st,passive_cooling_temp = <110>;
+-	};
