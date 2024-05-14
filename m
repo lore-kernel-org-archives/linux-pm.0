@@ -1,288 +1,245 @@
-Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [217.70.183.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-il1-f175.google.com (mail-il1-f175.google.com [209.85.166.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 329ED12B72;
-	Tue, 14 May 2024 13:20:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8BE9144D3B
+	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 14:23:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715692813; cv=none; b=ZPMpCT5G+RWrODwRMEs/LvEBoN2JMF+TLggDaRghsVSeFL3vNDY65nMQXOpWYQKOzxqc0yKM3PN24aVVIW28TP1At7QZfBHtQS9ir7JynCUmRrkqPCSV4ACaWPcAXZ9KhlPr05oGcx7wMaNs9BxXrHzW34QJWzeBRr9Wc/9OgI4=
+	t=1715696636; cv=none; b=tMgRoC/SWR0PAmpgAc0vxVGJgvFyOCKCqnikkuiCsIvH06GQsT7ZK63m0YU75LZPgJwivn8ObWGCxNN3k/1bFrydI+B+Tzcr9HtyYRCMfDmKNSFJk6pA7e1FLp61wuFJbGMngQ/+jF7IDkBRxuMkLR0HmnN3v5drwEZjbgOXop0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715692813; c=relaxed/simple;
-	bh=hvvQETWMetj+N3pO8WbrIS73ipYxo50gX7RfK7LF3vM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hwYlZ61Z6ZfVCvpTwY5UGTiCkiwdWGbe29GXlMjt9Uz8r4WAYoS0Oe/qWLu9WJLs0gpN37ZS0GZ43rplbV5/pgb66hB0y8fy7EeLhD2ahtavZ7zNdNQz55Ms14OJtnXKisncrh8Td86u/PO3Nv94jWbP0Rsiped+pKveAYpWetg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=MKInXMmc; arc=none smtp.client-ip=217.70.183.201
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1715696636; c=relaxed/simple;
+	bh=MJNL3swls7/XFSBkIMHCbTJs1e4qifE3acRWRujrkd0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Rxnze3GrIpp8dQGJw7KacM1iS/bxu2t/l9dhtRKG/yMk0W7dhB4DHZrF1H3nmGUqsFqRIrbw1kMUTkGBK16Ie/BTmvkgYyZxjezRCb0VpMNNG+9O2lFKerEkdLMw3r65vD1GRNQR65oP2m29amr2CRIOzbSJemPKr1xVUPLwGwo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=brainfault.org; spf=none smtp.mailfrom=brainfault.org; dkim=pass (2048-bit key) header.d=brainfault-org.20230601.gappssmtp.com header.i=@brainfault-org.20230601.gappssmtp.com header.b=fAypVu8V; arc=none smtp.client-ip=209.85.166.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=brainfault.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=brainfault.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="MKInXMmc"
-Received: by mail.gandi.net (Postfix) with ESMTPSA id D08881BF205;
-	Tue, 14 May 2024 13:20:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1715692809;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=phG0rMRQAjMUN9aqigoztyM2/6+7Kcz69rOYfUkJiXY=;
-	b=MKInXMmcdSdJliN4APfC/oUDPXGJberVCUaE02yktzmhCDG9/8qhtWIpDQoA17ATvSfLiZ
-	iH6CsbjZTST3e0KHOAQFn4pbUDYlh2btXsg+Hume3aB3Ed3eqbZKlyuLKK5LsadZaaTgrw
-	cxFuJcb7wYqfPn3DPgdbQCkrQDc5XfANcVDXRqKtimHsolbLmuaL1a9uKq0p+I9Nu8uMue
-	es6abvJeDzfP+rvg2Zf5MUEGQPmcGL5IPp+/xFyOMTzW1VHB9Y1ooGWmi2THQy9P22oLLL
-	yUQhz1lJ9MTyzDbDw9Kobj0iR78NNLlhRvfmSBihaaKEaSxeqi0ycctM3Kvdiw==
-Message-ID: <9ba0e257-91fa-485f-b903-04ef08307970@bootlin.com>
-Date: Tue, 14 May 2024 15:20:07 +0200
+	dkim=pass (2048-bit key) header.d=brainfault-org.20230601.gappssmtp.com header.i=@brainfault-org.20230601.gappssmtp.com header.b="fAypVu8V"
+Received: by mail-il1-f175.google.com with SMTP id e9e14a558f8ab-36c8f521122so24879065ab.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 07:23:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1715696633; x=1716301433; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=9YWn5jiV2rbv9bUfRPQn5PpR5vLXDPL+5w2PCpg75zY=;
+        b=fAypVu8V/SeQH3bpbDn4mLqOr2E6nr+3FvDXMFfFdmosYOM9Uc5eO9htG8U/YuMOdA
+         FYFi5+LI6O0It2OqTXoeB75ncjcDTGmdqOwBa8L/+mtaMRJmGPefFfkR15qvqyg7kJeX
+         eslF5to2A8m6lJtPoOBGbZRs4kfUMtLS0LGmnqySU+tc8tq/hWLXzOGCpiIKOLlH3+DA
+         vSJvRNSMWjy7xcSSedT1qgJGx5WaavaDhMVCdnxBkdObwbl9QCheS8fcpbZzJgUXmFNY
+         /5POWOWbTeTLMSRIfZ1m2gtSVvTiaxnEjuz9nv8SyUiKTvhR8zFk7rYF13y5xrd7YPSx
+         KDEQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1715696633; x=1716301433;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=9YWn5jiV2rbv9bUfRPQn5PpR5vLXDPL+5w2PCpg75zY=;
+        b=oCH9Q9GXCF0P51PkOd50GooJxqs/AfifiKymOpIM2OSe2XtY2qvfGB+lHB4KBuB9At
+         3xbSeTQ0Z1sWvwJ6285CcKEJBqqmvHKekRQHdMO5ii+Kz9VpdDC2z7dGEGmZsGezdJye
+         NpoomEeNZnuDUlhziShia1ebCey56eI7NfyWA2rlL6VDKQE0bz9rHjkpERvkrUtIaO0z
+         2E0HnmRSjb98j/r4NWyAu5fmCYuHXMv6GsHUAkhj80gFSp7M7HhltEdOTPFM1WbA1Kg4
+         iHhP4esTazRQ4Ul8g5N5W05g5/qIp3mBG/eafnn+5xji9pnOY8S3nvGnfZxW9d4eK8/R
+         juFA==
+X-Forwarded-Encrypted: i=1; AJvYcCWBdKZpdWiOtqb25jdTqAq+6kvsRmbfmPm0r18mxwvzylu2LPFMjsck1PjydROOCd1ZK09eoBIov+YTGuQFrp0MizF7KvIwrGc=
+X-Gm-Message-State: AOJu0Yx1GjylmmjqFs/WD4Cg/QXk6hOo1l/UgCKL1u6jfjOMo3TlsH1F
+	sw8dyjH16FbByoxLABxkv2UrXxzfS05QI3r5xLgk6ouGv6p2RcWFoBmI2BTVK3gQ9Morv63YBE7
+	H1yd2/SfV7A1OwNEzGRRMGMO4p3bIHbFDjHoOGg==
+X-Google-Smtp-Source: AGHT+IENHPgioCtyM7FQlXlQjrWZgq2dBdxVmW4+FCsDRQU7f9qoVwX+EnLVyxiIZV6uiDPiZpVti8QA6Ck39cfMdCc=
+X-Received: by 2002:a05:6e02:1a46:b0:36d:ae10:3f83 with SMTP id
+ e9e14a558f8ab-36dae103fe3mr21276645ab.11.1715696632801; Tue, 14 May 2024
+ 07:23:52 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4] thermal: k3_j72xx_bandgap: implement suspend/resume
- support
-To: rafael@kernel.org, daniel.lezcano@linaro.org
-Cc: rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, gregory.clement@bootlin.com,
- thomas.petazzoni@bootlin.com, theo.lebrun@bootlin.com, u-kumar1@ti.com,
- j-keerthy@ti.com
-References: <20240425153238.498750-1-thomas.richard@bootlin.com>
-Content-Language: en-US
-From: Thomas Richard <thomas.richard@bootlin.com>
-In-Reply-To: <20240425153238.498750-1-thomas.richard@bootlin.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: thomas.richard@bootlin.com
+References: <20240226065113.1690534-1-nick.hu@sifive.com> <CAPDyKFph3WsZMmALnzBQKE4S_80Ji5h386Wi0vHda37QUsjMtg@mail.gmail.com>
+ <CAKddAkDcdaXKzpcKN=LCCx9S4Trv+joLX2s=nyhzaRtM5HorqA@mail.gmail.com>
+ <CAKddAkC6N=Cfo0z+F8herKTuJzCyt_MA0vWNbLCr6CbQnj0y8g@mail.gmail.com>
+ <CAPDyKFr_M0NDH0gaunBpybnALOFfz4LpX4_JW2GCUxjwGzdZsg@mail.gmail.com> <CAKddAkC5CRX+ZTh=MgzPYU72SY13+AQYhknhV_CC+=XX9=DKyg@mail.gmail.com>
+In-Reply-To: <CAKddAkC5CRX+ZTh=MgzPYU72SY13+AQYhknhV_CC+=XX9=DKyg@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 14 May 2024 19:53:40 +0530
+Message-ID: <CAAhSdy1SDd=VUqDQA0T5n9LwHo=3uGzFq1dUcbDFcB3aBdaioA@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: riscv-sbi: Add cluster_pm_enter()/exit()
+To: Nick Hu <nick.hu@sifive.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, palmer@dabbelt.com, rafael@kernel.org, 
+	daniel.lezcano@linaro.org, paul.walmsley@sifive.com, linux-pm@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	zong.li@sifive.com, Cyan Yang <cyan.yang@sifive.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 4/25/24 17:32, Thomas Richard wrote:
-> From: Théo Lebrun <theo.lebrun@bootlin.com>
-> 
-> This add suspend-to-ram support.
+Hi Nick,
 
-Gentle ping.
-Do you have any comments for this v4 ?
+On Tue, May 14, 2024 at 3:20=E2=80=AFPM Nick Hu <nick.hu@sifive.com> wrote:
+>
+> Hi Ulf,
+>
+> Thank you for your valuable suggestion.
+> I sincerely apologize for the delay in responding to your message. We
+> have diligently worked on experimenting with the suggestion you
+> provided.
+>
+> As per your recommendation, we have incorporated the "power-domains=3D<>
+> property" into the consumer's node, resulting in modifications to the
+> DTS as illustrated below:
+>
+> cpus {
+>     ...
+>      domain-idle-states {
+>            CLUSTER_SLEEP:cluster-sleep {
+>                         compatible =3D "domain-idle-state";
+>                         ...
+>             }
+>      }
+>      power-domains {
+>             ...
+>             ...
+>             CLUSTER_PD: clusterpd {
+>                     domain-idle-states =3D <&CLUSTER_SLEEP>;
+>             };
+>      }
+> }
+> soc {
+>       deviceA@xxx{
+>              ...
+>              power-domains =3D <&CLUSTER_PD>;
+>              ...
+>       }
+> }
+>
+> However, this adjustment has led to an issue where the probe for
+> 'deviceA' is deferred by 'device_links_check_suppliers()' within
+> 'really_probe()'. In an attempt to mitigate this issue, we
+> experimented with a workaround by adding the attribute
+> "status=3D"disabled"" to the 'CLUSTER_PD' node. This action aimed to
+> prevent the creation of a device link between 'deviceA' and
+> 'CLUSTER_PD'. Nevertheless, we remain uncertain about the
+> appropriateness of this solution.
+>
+> Do you have suggestions on how to effectively address this issue?
 
-Best Regards,
+I totally missed this email since I was not CC'ed sorry about that. Please
+use get_maintainers.pl when sending patches.
 
-Thomas
+The genpd_add_provider() (called by of_genpd_add_provider_simple())
+does mark the power-domain DT node as initialized (fwnode_dev_initialized()=
+)
+so after the cpuidle-riscv-sbi driver is probed the 'deviceA' dependency is
+resolved and 'deviceA' should be probed unless there are other unmet
+dependencies.
 
-> 
-> The derived_table is kept-as is, so the resume is only about
-> pm_runtime_* calls and restoring the same registers as the probe.
-> 
-> Extract the hardware initialization procedure to a function called at
-> both probe-time & resume-time.
-> 
-> The probe-time loop is split in two to ensure doing the hardware
-> initialization before registering thermal zones. That ensures our
-> callbacks cannot be called while in bad state.
-> 
-> The 100ms delay in the hardware initialization sequence was removed.
-> It was initially added to be sure the thresholds are programmed before
-> enabling the interrupt, but in fact it's not needed (tested on J7200
-> platform).
-> 
-> Signed-off-by: Théo Lebrun <theo.lebrun@bootlin.com>
-> Acked-by: Keerthy <j-keerthy@ti.com>
-> Signed-off-by: Thomas Richard <thomas.richard@bootlin.com>
-> ---
-> 
-> v4:
->  - Remove the 100ms delay in the hardware initialization sequence
-> v3:
->  - Remove __maybe_unused attributes and use the magic of PTR_IF()
-> v2:
->  - Fix warnings/errors reported by kernel test robot
-> 
->  drivers/thermal/k3_j72xx_bandgap.c | 111 ++++++++++++++++++++---------
->  1 file changed, 78 insertions(+), 33 deletions(-)
-> 
-> diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
-> index c74094a86982..9bc279ac131a 100644
-> --- a/drivers/thermal/k3_j72xx_bandgap.c
-> +++ b/drivers/thermal/k3_j72xx_bandgap.c
-> @@ -178,6 +178,7 @@ struct k3_j72xx_bandgap {
->  	void __iomem *base;
->  	void __iomem *cfg2_base;
->  	struct k3_thermal_data *ts_data[K3_VTM_MAX_NUM_TS];
-> +	int cnt;
->  };
->  
->  /* common data structures */
-> @@ -338,24 +339,52 @@ static void print_look_up_table(struct device *dev, int *ref_table)
->  		dev_dbg(dev, "%d       %d %d\n", i, derived_table[i], ref_table[i]);
->  }
->  
-> +static void k3_j72xx_bandgap_init_hw(struct k3_j72xx_bandgap *bgp)
-> +{
-> +	struct k3_thermal_data *data;
-> +	int id, high_max, low_temp;
-> +	u32 val;
-> +
-> +	for (id = 0; id < bgp->cnt; id++) {
-> +		data = bgp->ts_data[id];
-> +		val = readl(bgp->cfg2_base + data->ctrl_offset);
-> +		val |= (K3_VTM_TMPSENS_CTRL_MAXT_OUTRG_EN |
-> +			K3_VTM_TMPSENS_CTRL_SOC |
-> +			K3_VTM_TMPSENS_CTRL_CLRZ | BIT(4));
-> +		writel(val, bgp->cfg2_base + data->ctrl_offset);
-> +	}
-> +
-> +	/*
-> +	 * Program TSHUT thresholds
-> +	 * Step 1: set the thresholds to ~123C and 105C WKUP_VTM_MISC_CTRL2
-> +	 * Step 2: WKUP_VTM_TMPSENS_CTRL_j set the MAXT_OUTRG_EN  bit
-> +	 *         This is already taken care as per of init
-> +	 * Step 3: WKUP_VTM_MISC_CTRL set the ANYMAXT_OUTRG_ALERT_EN  bit
-> +	 */
-> +	high_max = k3_j72xx_bandgap_temp_to_adc_code(MAX_TEMP);
-> +	low_temp = k3_j72xx_bandgap_temp_to_adc_code(COOL_DOWN_TEMP);
-> +
-> +	writel((low_temp << 16) | high_max, bgp->cfg2_base + K3_VTM_MISC_CTRL2_OFFSET);
-> +	writel(K3_VTM_ANYMAXT_OUTRG_ALERT_EN, bgp->cfg2_base + K3_VTM_MISC_CTRL_OFFSET);
-> +}
-> +
->  struct k3_j72xx_bandgap_data {
->  	const bool has_errata_i2128;
->  };
->  
->  static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
->  {
-> -	int ret = 0, cnt, val, id;
-> -	int high_max, low_temp;
-> -	struct resource *res;
-> +	const struct k3_j72xx_bandgap_data *driver_data;
-> +	struct thermal_zone_device *ti_thermal;
->  	struct device *dev = &pdev->dev;
-> +	bool workaround_needed = false;
->  	struct k3_j72xx_bandgap *bgp;
->  	struct k3_thermal_data *data;
-> -	bool workaround_needed = false;
-> -	const struct k3_j72xx_bandgap_data *driver_data;
-> -	struct thermal_zone_device *ti_thermal;
-> -	int *ref_table;
->  	struct err_values err_vals;
->  	void __iomem *fuse_base;
-> +	int ret = 0, val, id;
-> +	struct resource *res;
-> +	int *ref_table;
->  
->  	const s64 golden_factors[] = {
->  		-490019999999999936,
-> @@ -422,10 +451,10 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
->  
->  	/* Get the sensor count in the VTM */
->  	val = readl(bgp->base + K3_VTM_DEVINFO_PWR0_OFFSET);
-> -	cnt = val & K3_VTM_DEVINFO_PWR0_TEMPSENS_CT_MASK;
-> -	cnt >>= __ffs(K3_VTM_DEVINFO_PWR0_TEMPSENS_CT_MASK);
-> +	bgp->cnt = val & K3_VTM_DEVINFO_PWR0_TEMPSENS_CT_MASK;
-> +	bgp->cnt >>= __ffs(K3_VTM_DEVINFO_PWR0_TEMPSENS_CT_MASK);
->  
-> -	data = devm_kcalloc(bgp->dev, cnt, sizeof(*data), GFP_KERNEL);
-> +	data = devm_kcalloc(bgp->dev, bgp->cnt, sizeof(*data), GFP_KERNEL);
->  	if (!data) {
->  		ret = -ENOMEM;
->  		goto err_alloc;
-> @@ -449,8 +478,8 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
->  	else
->  		init_table(3, ref_table, pvt_wa_factors);
->  
-> -	/* Register the thermal sensors */
-> -	for (id = 0; id < cnt; id++) {
-> +	/* Precompute the derived table & fill each thermal sensor struct */
-> +	for (id = 0; id < bgp->cnt; id++) {
->  		data[id].bgp = bgp;
->  		data[id].ctrl_offset = K3_VTM_TMPSENS0_CTRL_OFFSET + id * 0x20;
->  		data[id].stat_offset = data[id].ctrl_offset +
-> @@ -470,13 +499,13 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
->  		else if (id == 0 && !workaround_needed)
->  			memcpy(derived_table, ref_table, TABLE_SIZE * 4);
->  
-> -		val = readl(data[id].bgp->cfg2_base + data[id].ctrl_offset);
-> -		val |= (K3_VTM_TMPSENS_CTRL_MAXT_OUTRG_EN |
-> -			K3_VTM_TMPSENS_CTRL_SOC |
-> -			K3_VTM_TMPSENS_CTRL_CLRZ | BIT(4));
-> -		writel(val, data[id].bgp->cfg2_base + data[id].ctrl_offset);
-> -
->  		bgp->ts_data[id] = &data[id];
-> +	}
-> +
-> +	k3_j72xx_bandgap_init_hw(bgp);
-> +
-> +	/* Register the thermal sensors */
-> +	for (id = 0; id < bgp->cnt; id++) {
->  		ti_thermal = devm_thermal_of_zone_register(bgp->dev, id, &data[id],
->  							   &k3_of_thermal_ops);
->  		if (IS_ERR(ti_thermal)) {
-> @@ -486,21 +515,7 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
->  		}
->  	}
->  
-> -	/*
-> -	 * Program TSHUT thresholds
-> -	 * Step 1: set the thresholds to ~123C and 105C WKUP_VTM_MISC_CTRL2
-> -	 * Step 2: WKUP_VTM_TMPSENS_CTRL_j set the MAXT_OUTRG_EN  bit
-> -	 *         This is already taken care as per of init
-> -	 * Step 3: WKUP_VTM_MISC_CTRL set the ANYMAXT_OUTRG_ALERT_EN  bit
-> -	 */
-> -	high_max = k3_j72xx_bandgap_temp_to_adc_code(MAX_TEMP);
-> -	low_temp = k3_j72xx_bandgap_temp_to_adc_code(COOL_DOWN_TEMP);
-> -
-> -	writel((low_temp << 16) | high_max, data[0].bgp->cfg2_base +
-> -	       K3_VTM_MISC_CTRL2_OFFSET);
-> -	mdelay(100);
-> -	writel(K3_VTM_ANYMAXT_OUTRG_ALERT_EN, data[0].bgp->cfg2_base +
-> -	       K3_VTM_MISC_CTRL_OFFSET);
-> +	platform_set_drvdata(pdev, bgp);
->  
->  	print_look_up_table(dev, ref_table);
->  	/*
-> @@ -527,6 +542,35 @@ static void k3_j72xx_bandgap_remove(struct platform_device *pdev)
->  	pm_runtime_disable(&pdev->dev);
->  }
->  
-> +static int k3_j72xx_bandgap_suspend(struct device *dev)
-> +{
-> +	pm_runtime_put_sync(dev);
-> +	pm_runtime_disable(dev);
-> +	return 0;
-> +}
-> +
-> +static int k3_j72xx_bandgap_resume(struct device *dev)
-> +{
-> +	struct k3_j72xx_bandgap *bgp = dev_get_drvdata(dev);
-> +	int ret;
-> +
-> +	pm_runtime_enable(dev);
-> +	ret = pm_runtime_get_sync(dev);
-> +	if (ret < 0) {
-> +		pm_runtime_put_noidle(dev);
-> +		pm_runtime_disable(dev);
-> +		return ret;
-> +	}
-> +
-> +	k3_j72xx_bandgap_init_hw(bgp);
-> +
-> +	return 0;
-> +}
-> +
-> +static DEFINE_SIMPLE_DEV_PM_OPS(k3_j72xx_bandgap_pm_ops,
-> +				k3_j72xx_bandgap_suspend,
-> +				k3_j72xx_bandgap_resume);
-> +
->  static const struct k3_j72xx_bandgap_data k3_j72xx_bandgap_j721e_data = {
->  	.has_errata_i2128 = true,
->  };
-> @@ -554,6 +598,7 @@ static struct platform_driver k3_j72xx_bandgap_sensor_driver = {
->  	.driver = {
->  		.name = "k3-j72xx-soc-thermal",
->  		.of_match_table	= of_k3_j72xx_bandgap_match,
-> +		.pm = pm_sleep_ptr(&k3_j72xx_bandgap_pm_ops),
->  	},
->  };
->  
--- 
-Thomas Richard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Try adding "#define DEBUG" before all includes in drivers/core/base.c
+and add "loglevel=3D8" in kernel parameters, this will print producer-consu=
+mer
+linkage of all devices.
 
+Marking the power-domain DT node as "disabled" is certainly not the
+right way.
+
+Regards,
+Anup
+
+>
+> Regards,
+> Nick
+>
+> On Tue, Apr 30, 2024 at 4:13=E2=80=AFPM Ulf Hansson <ulf.hansson@linaro.o=
+rg> wrote:
+> >
+> > On Mon, 29 Apr 2024 at 18:26, Nick Hu <nick.hu@sifive.com> wrote:
+> > >
+> > > On Tue, Apr 30, 2024 at 12:22=E2=80=AFAM Nick Hu <nick.hu@sifive.com>=
+ wrote:
+> > > >
+> > > > Hi Ulf
+> > > >
+> > > > On Mon, Apr 29, 2024 at 10:32=E2=80=AFPM Ulf Hansson <ulf.hansson@l=
+inaro.org> wrote:
+> > > > >
+> > > > > On Mon, 26 Feb 2024 at 07:51, Nick Hu <nick.hu@sifive.com> wrote:
+> > > > > >
+> > > > > > When the cpus in the same cluster are all in the idle state, th=
+e kernel
+> > > > > > might put the cluster into a deeper low power state. Call the
+> > > > > > cluster_pm_enter() before entering the low power state and call=
+ the
+> > > > > > cluster_pm_exit() after the cluster woken up.
+> > > > > >
+> > > > > > Signed-off-by: Nick Hu <nick.hu@sifive.com>
+> > > > >
+> > > > > I was not cced this patch, but noticed that this patch got queued=
+ up
+> > > > > recently. Sorry for not noticing earlier.
+> > > > >
+> > > > > If not too late, can you please drop/revert it? We should really =
+move
+> > > > > away from the CPU cluster notifiers. See more information below.
+> > > > >
+> > > > > > ---
+> > > > > >  drivers/cpuidle/cpuidle-riscv-sbi.c | 24 +++++++++++++++++++++=
++--
+> > > > > >  1 file changed, 22 insertions(+), 2 deletions(-)
+> > > > > >
+> > > > > > diff --git a/drivers/cpuidle/cpuidle-riscv-sbi.c b/drivers/cpui=
+dle/cpuidle-riscv-sbi.c
+> > > > > > index e8094fc92491..298dc76a00cf 100644
+> > > > > > --- a/drivers/cpuidle/cpuidle-riscv-sbi.c
+> > > > > > +++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
+> > > > > > @@ -394,6 +394,7 @@ static int sbi_cpuidle_pd_power_off(struct =
+generic_pm_domain *pd)
+> > > > > >  {
+> > > > > >         struct genpd_power_state *state =3D &pd->states[pd->sta=
+te_idx];
+> > > > > >         u32 *pd_state;
+> > > > > > +       int ret;
+> > > > > >
+> > > > > >         if (!state->data)
+> > > > > >                 return 0;
+> > > > > > @@ -401,6 +402,10 @@ static int sbi_cpuidle_pd_power_off(struct=
+ generic_pm_domain *pd)
+> > > > > >         if (!sbi_cpuidle_pd_allow_domain_state)
+> > > > > >                 return -EBUSY;
+> > > > > >
+> > > > > > +       ret =3D cpu_cluster_pm_enter();
+> > > > > > +       if (ret)
+> > > > > > +               return ret;
+> > > > >
+> > > > > Rather than using the CPU cluster notifiers, consumers of the gen=
+pd
+> > > > > can register themselves to receive genpd on/off notifiers.
+> > > > >
+> > > > > In other words, none of this should be needed, right?
+> > > > >
+> > > > Thanks for the feedback!
+> > > > Maybe I miss something, I'm wondering about a case like below:
+> > > > If we have a shared L2 cache controller inside the cpu cluster powe=
+r
+> > > > domain and we add this controller to be a consumer of the power
+> > > > domain, Shouldn't the genpd invoke the domain idle only after the
+> > > > shared L2 cache controller is suspended?
+> > > > Is there a way that we can put the L2 cache down while all cpus in =
+the
+> > > > same cluster are idle?
+> > > > > [...]
+> > > Sorry, I made some mistake in my second question.
+> > > Update the question here:
+> > > Is there a way that we can save the L2 cache states while all cpus in=
+ the
+> > > same cluster are idle and the cluster could be powered down?
+> >
+> > If the L2 cache is a consumer of the cluster, the consumer driver for
+> > the L2 cache should register for genpd on/off notifiers.
+> >
+> > The device representing the L2 cache needs to be enabled for runtime
+> > PM, to be taken into account correctly by the cluster genpd. In this
+> > case, the device should most likely remain runtime suspended, but
+> > instead rely on the genpd on/off notifiers to understand when
+> > save/restore of the cache states should be done.
+> >
+> > Kind regards
+> > Uffe
