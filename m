@@ -1,23 +1,23 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A6C986252
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCA5A86AEE
 	for <linux-pm@vger.kernel.org>; Tue, 14 May 2024 10:19:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715681943; cv=none; b=OIo+p4Kmnteu94J9/NbsFR3iNnqV+97WSjUuRwzrt7IzFyxRsvwVgA/fS7jjuOVfdQOP/YrVuPyMNiUfJhjCZrM7bFycD8oncmxsDl+o6RfwUw1Bx+oEw0vnp0M0blJpsG/TwDnnK27Crxa49Ic+qKGMR47Bgx0Wy0suubZd60Q=
+	t=1715681943; cv=none; b=RoGeLS9loIOPD98aLtMwBHpSNY6Ku4s+5gqU03ZIgtVucXqqpnOYXjx/rAzW5gOi1fsC0Ti6eu1IHvRQYZJ6JKYUW/ZqIrt+ev2/BmQUSPwfEqfro++S7WBpYSpkPpaU3dyYwBkxiyMFUKKBtWntUvTosoz+CinQqrMkEP6+bq4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1715681943; c=relaxed/simple;
-	bh=e3pkUqW+y9iM2xDtXxefQZcrAEQGRbXOKqYFFrc+AAQ=;
+	bh=9rErEuln4y191cMzjN3JuvF+EeU2Bd+PIEmJcZ4O4fQ=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=kBcF8hYX4HkTEF7jhihlnjeCyJAJyXPMYxxEpaf+YijcKiiZTmp0xWLOv2vLE5N8rdhR7+F0aFOD7ee/Rtm9A7om3guTm+Y3yWUufZ87q4+wS42iyu0B0ewQSbdLux3w2I6qOUX2GeqwNY3/oTyCgGHg5pWg2bVHHjZw36QP3pQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=vxCqEhj1; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=yQ9p1cBD; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=FQdi78K+gfNLxEVhs9z87F16z3EWImLwx1o+Xjt8m7P3JLySGL8x2M2i/SkbsJuJvzSkpu55bZ8CuUlIyO7a/4QdsjOg6hlg2zE9hRKHO+iqgAGnP/lP6WRtNSPm8eCPx5bosbUA7kLX07Xj//bQdqN499e86auDAIHFys5nzKo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=QiX0W+fR; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=NM+t7ENq; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="vxCqEhj1";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="yQ9p1cBD"
-Date: Tue, 14 May 2024 10:18:54 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="QiX0W+fR";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="NM+t7ENq"
+Date: Tue, 14 May 2024 10:18:55 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1715681935;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -25,12 +25,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=FRlaFW4YRpDw+nQfQtPKLo2nDCwa5aBmAApKz5YPkvY=;
-	b=vxCqEhj1ONc1osHAdc5OjquLVeO5vhlI3ElWmpUY68Sam1U6ViTvIGV3RN4RubG2xKGuL7
-	vlPPkwkFcQIwAASuwfrF1LooEh2cw2s+9UujI11cQMWqbD88SBzCFJ/RSyj4K1K4/TgLMv
-	AeGO6rHHePRP/H6mOsF/a2yiT4ejv8K0WJpEVyP03iU5PfF5igWA6sHd5Tm1aGVFKgGV8U
-	CnPv2Ra/5YZKk1w0yA4+yM1ERTEDGRtyMloh0GYRyuL69WVf6kf1Rynr1ZuqyeNF1QkKt8
-	QLhvVorfBF8CMN+EY4AwC4Hc2mnzKDGQJTaz8KQA8pFK7S/NajM0E2fXLA2BUQ==
+	bh=Hk5CgS6B5oyNLclqCex58cIw6ZWGR4IQZAog646r55s=;
+	b=QiX0W+fRyLI24UNxTCRlKLXBh34K/L4jhVKkM4Y56u8DOMKamON2uKnkywcXIVkEqEXT+O
+	Nf8E5n3ErNqp50jsjGDDIFAO+vBSTJOlBwHJRVTPz5Ez4nu9V0qSv/L56ZrDM2vGjbBj+N
+	ODU60LVOpQdADGkXRQ6uUI6A4Sm0MprYZczqeBTJLaiSMXeYgW+hr9sNcfjy/n0deBSqDb
+	HgX8cka7s2ZBfMzzSZlH46+67exUfwSG60wfbH/eVGu5w5NA/lbsqd4KtD7noN0cQGQa6D
+	dMY0YLjMGuFFXtiOuwOtNvqY8IpnTNXDJNUof2o/IwyHj0ZZKSkPeygj16kiCw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1715681935;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -38,28 +38,28 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=FRlaFW4YRpDw+nQfQtPKLo2nDCwa5aBmAApKz5YPkvY=;
-	b=yQ9p1cBD9rYNNtBdX/1ljAH3YspGZtZWfFklgL5xN0FC0WuKaDc2MN0nf0YOt6XB3VuvQt
-	qGFynAOSNx2j50Cw==
-From: "thermal-bot for Aleksandr Mishin" <tip-bot2@linutronix.de>
+	bh=Hk5CgS6B5oyNLclqCex58cIw6ZWGR4IQZAog646r55s=;
+	b=NM+t7ENqjF9e8dfqDMUL/OeGCY1LpUXUeKD7ykUuFQce/1zXCT7HPd/qfMc8F3i83zXLno
+	KTAAPyFobhlT3XAg==
+From: "thermal-bot for Dmitry Rokosov" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject:
- [thermal: thermal/fixes] thermal/drivers/tsens: Fix null pointer dereference
-Cc: Aleksandr Mishin <amishin@t-argos.ru>,
- Konrad Dybcio <konrad.dybcio@linaro.org>,
+Subject: [thermal: thermal/fixes] thermal/drivers/amlogic: Support A1 SoC
+ family Thermal Sensor controller
+Cc: Dmitry Rokosov <ddrokosov@salutedevices.com>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
  amitk@kernel.org
-In-Reply-To: <20240411114021.12203-1-amishin@t-argos.ru>
-References: <20240411114021.12203-1-amishin@t-argos.ru>
+In-Reply-To: <20240328191322.17551-3-ddrokosov@salutedevices.com>
+References: <20240328191322.17551-3-ddrokosov@salutedevices.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <171568193478.10875.18119058876006595938.tip-bot2@tip-bot2>
+Message-ID: <171568193533.10875.6369416976926253190.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
@@ -69,41 +69,52 @@ Content-Transfer-Encoding: 7bit
 
 The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     d998ddc86a27c92140b9f7984ff41e3d1d07a48f
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d998ddc86a27c92140b9f7984ff41e3d1d07a48f
-Author:        Aleksandr Mishin <amishin@t-argos.ru>
-AuthorDate:    Thu, 11 Apr 2024 14:40:21 +03:00
+Commit-ID:     7fcd7dfa5ec29afe0b3fe8ad6a5f42c19e71d6be
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//7fcd7dfa5ec29afe0b3fe8ad6a5f42c19e71d6be
+Author:        Dmitry Rokosov <ddrokosov@salutedevices.com>
+AuthorDate:    Thu, 28 Mar 2024 22:13:11 +03:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Tue, 23 Apr 2024 12:40:29 +02:00
 
-thermal/drivers/tsens: Fix null pointer dereference
+thermal/drivers/amlogic: Support A1 SoC family Thermal Sensor controller
 
-compute_intercept_slope() is called from calibrate_8960() (in tsens-8960.c)
-as compute_intercept_slope(priv, p1, NULL, ONE_PT_CALIB) which lead to null
-pointer dereference (if DEBUG or DYNAMIC_DEBUG set).
-Fix this bug by adding null pointer check.
+In comparison to other Amlogic chips, there is one key difference.
+The offset for the sec_ao base, also known as u_efuse_off, is special,
+while other aspects remain the same.
 
-Found by Linux Verification Center (linuxtesting.org) with SVACE.
-
-Fixes: dfc1193d4dbd ("thermal/drivers/tsens: Replace custom 8960 apis with generic apis")
-Signed-off-by: Aleksandr Mishin <amishin@t-argos.ru>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Signed-off-by: Dmitry Rokosov <ddrokosov@salutedevices.com>
+Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20240411114021.12203-1-amishin@t-argos.ru
+Link: https://lore.kernel.org/r/20240328191322.17551-3-ddrokosov@salutedevices.com
 ---
- drivers/thermal/qcom/tsens.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/amlogic_thermal.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 1c9df4f..e76e230 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -265,7 +265,7 @@ void compute_intercept_slope(struct tsens_priv *priv, u32 *p1,
- 	for (i = 0; i < priv->num_sensors; i++) {
- 		dev_dbg(priv->dev,
- 			"%s: sensor%d - data_point1:%#x data_point2:%#x\n",
--			__func__, i, p1[i], p2[i]);
-+			__func__, i, p1[i], p2 ? p2[i] : 0);
+diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
+index df7a5ed..cd4776a 100644
+--- a/drivers/thermal/amlogic_thermal.c
++++ b/drivers/thermal/amlogic_thermal.c
+@@ -220,6 +220,12 @@ static const struct amlogic_thermal_data amlogic_thermal_g12a_ddr_param = {
+ 	.regmap_config = &amlogic_thermal_regmap_config_g12a,
+ };
  
- 		if (!priv->sensor[i].slope)
- 			priv->sensor[i].slope = SLOPE_DEFAULT;
++static const struct amlogic_thermal_data amlogic_thermal_a1_cpu_param = {
++	.u_efuse_off = 0x114,
++	.calibration_parameters = &amlogic_thermal_g12a,
++	.regmap_config = &amlogic_thermal_regmap_config_g12a,
++};
++
+ static const struct of_device_id of_amlogic_thermal_match[] = {
+ 	{
+ 		.compatible = "amlogic,g12a-ddr-thermal",
+@@ -229,6 +235,10 @@ static const struct of_device_id of_amlogic_thermal_match[] = {
+ 		.compatible = "amlogic,g12a-cpu-thermal",
+ 		.data = &amlogic_thermal_g12a_cpu_param,
+ 	},
++	{
++		.compatible = "amlogic,a1-cpu-thermal",
++		.data = &amlogic_thermal_a1_cpu_param,
++	},
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(of, of_amlogic_thermal_match);
