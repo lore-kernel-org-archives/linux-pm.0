@@ -1,50 +1,49 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 765AD3FE55;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 765733D0D9;
 	Wed, 15 May 2024 23:10:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715814629; cv=none; b=UQ+O7JorX7v4rxDdydINV6JyIqluIHKPWuGZxbS2ABKjtju0KIQoxEI5+nOvCs+je0IMg8z7KW4s4jZYcZP0XllEh8p5+wKvsSgazfdVcpRGCba1BTfzWc6A0UxSSiKPfh96eysNGAChHEWJhsqTWgItd25m5PfXLM0VfHye+hg=
+	t=1715814630; cv=none; b=G9PsS3a7aUh9l+/bnN0htQnHmPz+c1gSgnZmYjygu0+TT38TW8DdBHiX5QUy5uW1jp7Rpij9TR+Ka/2AOAqfvNQi8GEXtPXU9hvaShw12lOT+42p40wBA9arwIfpWZOb7re8BmhD7gY3rDc4+KKbdfeKJ/Li/yJnfhmktpsHRUM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715814629; c=relaxed/simple;
-	bh=Zz68c0r5mB2HJA3QHS2x1gOeC+u9VHtVrSEwwbMzEME=;
+	s=arc-20240116; t=1715814630; c=relaxed/simple;
+	bh=exyom48ovg1S06YQn+J4tGsF6IhG12QD7s73ZCP9N8Q=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=g3FJQmt9G/C8ftIGtHp7pvtKGlPNR3SaY0KzCqw+MEl6cAJwMDtUr31cW6JnNt2N5pZA4vsSoEkv2VVl6sTj0jB90JEYnCscje0Ow7mRgrzZeCh6ncyivK4DJ+ox5g2DITJ70P/iOzvy7rfYwvH4/aWQ++TJRXE1Fo1wwUd6Bfc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=aBV6qp/t; arc=none smtp.client-ip=205.220.180.131
+	 In-Reply-To:To:CC; b=nGmGd6qYqisSnfmXOVgsAIEHFB77MiTrm/WR+SJ7KPhmR42/HQNDDIcHNZqyfltPeZ0pVwCTVmQQsO+A/jO2tOXcF/seM36qdHrFWds2k6XFlpyIKJgP1iIqGnAzN34DZLR3bBNzqbc6u8NLDk7zHyxnUl6/JjeqkkBqwmSEMjM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=bEonlMn+; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="aBV6qp/t"
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="bEonlMn+"
 Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 44FK5r7b007487;
-	Wed, 15 May 2024 23:10:07 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 44FJTpnY007616;
+	Wed, 15 May 2024 23:10:08 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
 	from:date:subject:mime-version:content-type
 	:content-transfer-encoding:message-id:references:in-reply-to:to
-	:cc; s=qcppdkim1; bh=kAZI2h+kQAy/9os7bUIy5NuQ21T7ryEOiCZ/BvXPBOs
-	=; b=aBV6qp/tiTW1uhGHhBZhhOY1erx/eClIgbK69U1xOz+isLEMkSfcr+9Q3Co
-	ofJ7PZ5ECyS5ixUJ7YngiHzW8T1MzoK6r5AusPCsfDdPgq8Zt+qeeYe7Ak5cRX3k
-	b3BxX37ol/PrSQQSPrWNIt5eHQoRpX81yFbUKGq9zWHbfEQnhJpzkjmaOZxkOcVp
-	nT4M/sjEEgc/j2t9C0QwTN8ZQcI93VvG2LHK/LQD3bpAtcUG+xojseV8By5n+ks9
-	63XMjW2OfSYcKLZeD06MBExJgHrrLQZlfKXnNtgCC9Ay5H41tUecwFKX+1ODbW3F
-	UdTeCZv40l/6m/5YtmloslciuIA==
-Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3y47f443pt-1
+	:cc; s=qcppdkim1; bh=XfQC9TZ2vaqTNvtQrzcKrZYFw5orkw7UQaSoOnyiV6k
+	=; b=bEonlMn+u+mjrptxQfAr0X1eA7JqoKVHLbkM3digGYPggfcqXcur8N7fkof
+	k27VCxoZ74wKgLYZaX0MdjHKuIHWfk6kBIHO+hHdZqHLxQeEbONo7Tcl1jB+uyIu
+	3ylzrTLcYilCCunmMY66tl+sUKh30AQDgN5gbDx2XWkieCtCyLjl2rt0brUigHlK
+	nVOTJwFNVjoHVFy3bviyuXELCNXwQWkCtvn5iKyUg8x4AIW0I1W2FO7Hn5A5MgLu
+	Qv3xS99TVi1qsYbGphNr3+qCBjdS7NaAKQc0VL76kkOC9zP+yHpOPfGXJqYIYPbt
+	BkfGU5C8XA9sj+Fmn0IGFvk9KUg==
+Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3y47f443pu-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 15 May 2024 23:10:07 +0000 (GMT)
+	Wed, 15 May 2024 23:10:08 +0000 (GMT)
 Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-	by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 44FNA6n5008254
+	by NASANPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 44FNA7CX030155
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 15 May 2024 23:10:06 GMT
+	Wed, 15 May 2024 23:10:07 GMT
 Received: from hu-eberman-lv.qualcomm.com (10.49.16.6) by
  nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Wed, 15 May 2024 16:10:05 -0700
+ 15.2.1544.9; Wed, 15 May 2024 16:10:06 -0700
 From: Elliot Berman <quic_eberman@quicinc.com>
-Date: Wed, 15 May 2024 16:09:44 -0700
-Subject: [PATCH v3 1/4] dt-bindings: power: reset: Convert mode-.*
- properties to array
+Date: Wed, 15 May 2024 16:09:46 -0700
+Subject: [PATCH v3 3/4] firmware: psci: Read and use vendor reset types
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -53,7 +52,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20240515-arm-psci-system_reset2-vendor-reboots-v3-1-16dd4f9c0ab4@quicinc.com>
+Message-ID: <20240515-arm-psci-system_reset2-vendor-reboots-v3-3-16dd4f9c0ab4@quicinc.com>
 References: <20240515-arm-psci-system_reset2-vendor-reboots-v3-0-16dd4f9c0ab4@quicinc.com>
 In-Reply-To: <20240515-arm-psci-system_reset2-vendor-reboots-v3-0-16dd4f9c0ab4@quicinc.com>
 To: Bjorn Andersson <andersson@kernel.org>,
@@ -85,105 +84,177 @@ X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
  nasanex01b.na.qualcomm.com (10.46.141.250)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: GaYIvjh5J8B_prHUQHBuuggWYDfWxDdp
-X-Proofpoint-ORIG-GUID: GaYIvjh5J8B_prHUQHBuuggWYDfWxDdp
+X-Proofpoint-GUID: _9r_VOBZE1mJIu-9pDbZovRW6Zm1e2KH
+X-Proofpoint-ORIG-GUID: _9r_VOBZE1mJIu-9pDbZovRW6Zm1e2KH
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
  definitions=2024-05-15_14,2024-05-15_01,2023-05-22_02
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- phishscore=0 bulkscore=0 clxscore=1011 malwarescore=0 adultscore=0
+ phishscore=0 bulkscore=0 clxscore=1015 malwarescore=0 adultscore=0
  lowpriorityscore=0 impostorscore=0 suspectscore=0 mlxlogscore=999
  mlxscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2405010000 definitions=main-2405150164
 
-PSCI reboot mode will map a mode name to multiple magic values instead
-of just one. Convert the mode-.* property to an array. Users of the
-reboot-mode schema will need to specify the maxItems of the mode-.*
-properties. Existing users will all be 1.
+SoC vendors have different types of resets and are controlled through
+various registers. For instance, Qualcomm chipsets can reboot to a
+"download mode" that allows a RAM dump to be collected. Another example
+is they also support writing a cookie that can be read by bootloader
+during next boot. PSCI offers a mechanism, SYSTEM_RESET2, for these
+vendor reset types to be implemented without requiring drivers for every
+register/cookie.
+
+Add support in PSCI to statically map reboot mode commands from
+userspace to a vendor reset and cookie value using the device tree.
+
+A separate initcall is needed to parse the devicetree, instead of using
+psci_dt_init because mm isn't sufficiently set up to allocate memory.
+
+Reboot mode framework is close but doesn't quite fit with the
+design and requirements for PSCI SYSTEM_RESET2. Some of these issues can
+be solved but doesn't seem reasonable in sum:
+ 1. reboot mode registers against the reboot_notifier_list, which is too
+    early to call SYSTEM_RESET2. PSCI would need to remember the reset
+    type from the reboot-mode framework callback and use it
+    psci_sys_reset.
+ 2. reboot mode assumes only one cookie/parameter is described in the
+    device tree. SYSTEM_RESET2 uses 2: one for the type and one for
+    cookie.
+ 3. psci cpuidle driver already registers a driver against the
+    arm,psci-1.0 compatible. Refactoring would be needed to have both a
+    cpuidle and reboot-mode driver.
 
 Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
 ---
- .../devicetree/bindings/power/reset/nvmem-reboot-mode.yaml |  4 ++++
- .../devicetree/bindings/power/reset/qcom,pon.yaml          |  4 ++++
- .../devicetree/bindings/power/reset/reboot-mode.yaml       | 14 ++++++++++++--
- .../bindings/power/reset/syscon-reboot-mode.yaml           |  4 ++++
- 4 files changed, 24 insertions(+), 2 deletions(-)
+ drivers/firmware/psci/psci.c | 92 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 92 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
-index 627f8a6078c2..03b3b9be36de 100644
---- a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
-@@ -30,6 +30,10 @@ properties:
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index d9629ff87861..e672b33b71d1 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -29,6 +29,8 @@
+ #include <asm/smp_plat.h>
+ #include <asm/suspend.h>
  
- allOf:
-   - $ref: reboot-mode.yaml#
-+  - patternProperties:
-+      "^mode-.*$":
-+        items:
-+          maxItems: 1
++#define REBOOT_PREFIX "mode-"
++
+ /*
+  * While a 64-bit OS can make calls with SMC32 calling conventions, for some
+  * calls it is necessary to use SMC64 to pass or return 64-bit values.
+@@ -79,6 +81,14 @@ struct psci_0_1_function_ids get_psci_0_1_function_ids(void)
+ static u32 psci_cpu_suspend_feature;
+ static bool psci_system_reset2_supported;
  
- required:
-   - compatible
-diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-index fc8105a7b9b2..95964e04d5d6 100644
---- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-@@ -68,6 +68,10 @@ allOf:
-     then:
-       allOf:
-         - $ref: reboot-mode.yaml#
-+        - patternProperties:
-+            "^mode-.*$":
-+              items:
-+                maxItems: 1
++struct psci_reset_param {
++	const char *mode;
++	u32 reset_type;
++	u32 cookie;
++};
++static struct psci_reset_param *psci_reset_params;
++static size_t num_psci_reset_params;
++
+ static inline bool psci_has_ext_power_state(void)
+ {
+ 	return psci_cpu_suspend_feature &
+@@ -305,9 +315,29 @@ static int get_set_conduit_method(const struct device_node *np)
+ 	return 0;
+ }
  
-       properties:
-         reg:
-diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
-index ad0a0b95cec1..feb70609bb5f 100644
---- a/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
-@@ -28,13 +28,23 @@ description: |
++static void psci_vendor_sys_reset2(unsigned long action, void *data)
++{
++	const char *cmd = data;
++	unsigned long ret;
++	size_t i;
++
++	for (i = 0; i < num_psci_reset_params; i++) {
++		if (!strcmp(psci_reset_params[i].mode, cmd)) {
++			ret = invoke_psci_fn(PSCI_FN_NATIVE(1_1, SYSTEM_RESET2),
++					     psci_reset_params[i].reset_type,
++					     psci_reset_params[i].cookie, 0);
++			pr_err("failed to perform reset \"%s\": %ld\n",
++				cmd, (long)ret);
++		}
++	}
++}
++
+ static int psci_sys_reset(struct notifier_block *nb, unsigned long action,
+ 			  void *data)
+ {
++	if (data && num_psci_reset_params)
++		psci_vendor_sys_reset2(action, data);
++
+ 	if ((reboot_mode == REBOOT_WARM || reboot_mode == REBOOT_SOFT) &&
+ 	    psci_system_reset2_supported) {
+ 		/*
+@@ -748,6 +778,68 @@ static const struct of_device_id psci_of_match[] __initconst = {
+ 	{},
+ };
  
- properties:
-   mode-normal:
--    $ref: /schemas/types.yaml#/definitions/uint32
-+    $ref: "#/patternProperties/^mode-.*$"
-     description:
-       Default value to set on a reboot if no command was provided.
- 
- patternProperties:
-   "^mode-.*$":
--    $ref: /schemas/types.yaml#/definitions/uint32
-+    $ref: /schemas/types.yaml#/definitions/uint32-matrix
-+    # Limit to 1 outer cell, e.g. no mode-normal = <0>, <1>;
-+    maxItems: 1
-+    # Note: to reference this schema, the allOf should include hint about
-+    # maxItems for the inner cell
-+    # allOf:
-+    # - $ref: /schemas/power/reset/reboot-mode.yaml#
-+    # - patternProperties:
-+    #     "^mode-.*$":
-+    #       items:
-+    #         maxItems: 1
- 
- additionalProperties: true
- 
-diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
-index b6acff199cde..bf6d68355e7f 100644
---- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
-@@ -31,6 +31,10 @@ properties:
- 
- allOf:
-   - $ref: reboot-mode.yaml#
-+  - patternProperties:
-+      "^mode-.*$":
-+        items:
-+          maxItems: 1
- 
- unevaluatedProperties: false
- 
++static int __init psci_init_system_reset2_modes(void)
++{
++	const size_t len = strlen(REBOOT_PREFIX);
++	struct psci_reset_param *param;
++	struct device_node *psci_np __free(device_node) = NULL;
++	struct device_node *np __free(device_node) = NULL;
++	struct property *prop;
++	size_t count = 0;
++	u32 magic[2];
++	int num;
++
++	if (!psci_system_reset2_supported)
++		return 0;
++
++	psci_np = of_find_matching_node(NULL, psci_of_match);
++	if (!psci_np)
++		return 0;
++
++	np = of_find_node_by_name(psci_np, "reset-types");
++	if (!np)
++		return 0;
++
++	for_each_property_of_node(np, prop) {
++		if (strncmp(prop->name, REBOOT_PREFIX, len))
++			continue;
++		num = of_property_count_elems_of_size(np, prop->name, sizeof(magic[0]));
++		if (num != 1 && num != 2)
++			continue;
++
++		count++;
++	}
++
++	param = psci_reset_params = kcalloc(count, sizeof(*psci_reset_params), GFP_KERNEL);
++	if (!psci_reset_params)
++		return -ENOMEM;
++
++	for_each_property_of_node(np, prop) {
++		if (strncmp(prop->name, REBOOT_PREFIX, len))
++			continue;
++
++		param->mode = kstrdup_const(prop->name + len, GFP_KERNEL);
++		if (!param->mode)
++			continue;
++
++		num = of_property_read_variable_u32_array(np, prop->name, magic, 1, 2);
++		if (num < 0) {
++			pr_warn("Failed to parse vendor reboot mode %s\n", param->mode);
++			kfree_const(param->mode);
++			continue;
++		}
++
++		/* Force reset type to be in vendor space */
++		param->reset_type = PSCI_1_1_RESET_TYPE_VENDOR_START | magic[0];
++		param->cookie = num == 2 ? magic[1] : 0;
++		param++;
++		num_psci_reset_params++;
++	}
++
++	return 0;
++}
++arch_initcall(psci_init_system_reset2_modes);
++
+ int __init psci_dt_init(void)
+ {
+ 	struct device_node *np;
 
 -- 
 2.34.1
