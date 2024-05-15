@@ -1,131 +1,190 @@
-Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FECA446AC;
-	Wed, 15 May 2024 19:17:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=37.18.73.165
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 765AD3FE55;
+	Wed, 15 May 2024 23:10:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715800636; cv=none; b=XOtDbixheeAHo2rwNOJFE9Q4hRJQvz74lktCpK5R9ro4hyYOLMIZgvd5fy8wEe1p97bB5jrppnF45ZTABgIOE/jWSYGa2pEympLG+3CsW77qX0TVlgOA1D/SXJRf7uqpzqNuW5J0OIQTxLqNcnTzpRvEBFt2SWE2l6aa3PhRDEw=
+	t=1715814629; cv=none; b=UQ+O7JorX7v4rxDdydINV6JyIqluIHKPWuGZxbS2ABKjtju0KIQoxEI5+nOvCs+je0IMg8z7KW4s4jZYcZP0XllEh8p5+wKvsSgazfdVcpRGCba1BTfzWc6A0UxSSiKPfh96eysNGAChHEWJhsqTWgItd25m5PfXLM0VfHye+hg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715800636; c=relaxed/simple;
-	bh=V6B1o7vP2U1mB+39DQXD0JAC2U9kKIj4ljLZL1FbBX8=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BrcEUo/S4PU0HPUVxkzHMyhkLnugnsXJ/1xHx4+4KzfVvyFmjioalISWU8OgHHZTvzfbBdAIDdGXywEf1DiPTw2rw0KXFg2VZcvh74hsfg5d0MrvyFAQomM5Cktxd1Cm4gPWb2BlTTy5yrCB2Wa+Fg0C2UUIdKYmfvVsowXPdoU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com; spf=pass smtp.mailfrom=salutedevices.com; dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b=REkKWhWu; arc=none smtp.client-ip=37.18.73.165
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=salutedevices.com
+	s=arc-20240116; t=1715814629; c=relaxed/simple;
+	bh=Zz68c0r5mB2HJA3QHS2x1gOeC+u9VHtVrSEwwbMzEME=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=g3FJQmt9G/C8ftIGtHp7pvtKGlPNR3SaY0KzCqw+MEl6cAJwMDtUr31cW6JnNt2N5pZA4vsSoEkv2VVl6sTj0jB90JEYnCscje0Ow7mRgrzZeCh6ncyivK4DJ+ox5g2DITJ70P/iOzvy7rfYwvH4/aWQ++TJRXE1Fo1wwUd6Bfc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=aBV6qp/t; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b="REkKWhWu"
-Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 7888B10002F;
-	Wed, 15 May 2024 22:17:12 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 7888B10002F
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1715800632;
-	bh=0753sID6h0JKAX7uW58+tc82AGYS+dbom4wraQwXJOU=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-	b=REkKWhWurHkxfjqqLrnnr+zsQd9y9VC1UnwvBMKYK7xIKSIr1+XAGpvMK7HDH62bN
-	 c0jYuV963J2dT1XvTQgJwqCsKLP7aM4E+KE9A2DoQcb7706m19AMxvfnKNtfSNTPWc
-	 0azZeDbWEzUfUKEOcf28OlThCiCg9+gqzI577WpaEIqlZQSJhQ19YFjbFk/1Ep/8c0
-	 3D49RcCwzW1nDY/K9mjoCgNrXlcPdIXcIe+vQ7rtta06WIG2Nbn79B7qiy2jXXa9yP
-	 O5PzxUJMfYoJtCkVCCWtRj5ahX+jCGE30OxGG8B6ryh+T7qGpRZhUdLZLQO07ghoeX
-	 omxh0ktXh66sA==
-Received: from smtp.sberdevices.ru (p-i-exch-sc-m02.sberdevices.ru [172.16.192.103])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Wed, 15 May 2024 22:17:12 +0300 (MSK)
-Received: from localhost (100.64.160.123) by p-i-exch-sc-m02.sberdevices.ru
- (172.16.192.103) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.40; Wed, 15 May
- 2024 22:17:11 +0300
-Date: Wed, 15 May 2024 22:17:11 +0300
-From: Dmitry Rokosov <ddrokosov@salutedevices.com>
-To: <neil.armstrong@linaro.org>
-CC: <jbrunet@baylibre.com>, <mturquette@baylibre.com>, <khilman@baylibre.com>,
-	<martin.blumenstingl@googlemail.com>, <glaroque@baylibre.com>,
-	<rafael@kernel.org>, <daniel.lezcano@linaro.org>, <rui.zhang@intel.com>,
-	<lukasz.luba@arm.com>, <robh+dt@kernel.org>,
-	<krzysztof.kozlowski+dt@linaro.org>, <conor+dt@kernel.org>,
-	<kernel@salutedevices.com>, <rockosov@gmail.com>,
-	<linux-amlogic@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH v2 0/3] arm64: dts: amlogic: a1: introduce thermal setup
-Message-ID: <20240515191711.3bltbh536pntnvdg@CAB-WSD-L081021>
-References: <20240328192645.20914-1-ddrokosov@salutedevices.com>
- <20240503184222.cqka6nmjxhezfhtg@CAB-WSD-L081021>
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="aBV6qp/t"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 44FK5r7b007487;
+	Wed, 15 May 2024 23:10:07 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	from:date:subject:mime-version:content-type
+	:content-transfer-encoding:message-id:references:in-reply-to:to
+	:cc; s=qcppdkim1; bh=kAZI2h+kQAy/9os7bUIy5NuQ21T7ryEOiCZ/BvXPBOs
+	=; b=aBV6qp/tiTW1uhGHhBZhhOY1erx/eClIgbK69U1xOz+isLEMkSfcr+9Q3Co
+	ofJ7PZ5ECyS5ixUJ7YngiHzW8T1MzoK6r5AusPCsfDdPgq8Zt+qeeYe7Ak5cRX3k
+	b3BxX37ol/PrSQQSPrWNIt5eHQoRpX81yFbUKGq9zWHbfEQnhJpzkjmaOZxkOcVp
+	nT4M/sjEEgc/j2t9C0QwTN8ZQcI93VvG2LHK/LQD3bpAtcUG+xojseV8By5n+ks9
+	63XMjW2OfSYcKLZeD06MBExJgHrrLQZlfKXnNtgCC9Ay5H41tUecwFKX+1ODbW3F
+	UdTeCZv40l/6m/5YtmloslciuIA==
+Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3y47f443pt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 May 2024 23:10:07 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 44FNA6n5008254
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 May 2024 23:10:06 GMT
+Received: from hu-eberman-lv.qualcomm.com (10.49.16.6) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Wed, 15 May 2024 16:10:05 -0700
+From: Elliot Berman <quic_eberman@quicinc.com>
+Date: Wed, 15 May 2024 16:09:44 -0700
+Subject: [PATCH v3 1/4] dt-bindings: power: reset: Convert mode-.*
+ properties to array
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20240503184222.cqka6nmjxhezfhtg@CAB-WSD-L081021>
-User-Agent: NeoMutt/20220415
-X-ClientProxiedBy: p-i-exch-sc-m02.sberdevices.ru (172.16.192.103) To
- p-i-exch-sc-m02.sberdevices.ru (172.16.192.103)
-X-KSMG-Rule-ID: 10
-X-KSMG-Message-Action: clean
-X-KSMG-AntiSpam-Lua-Profiles: 185260 [May 15 2024]
-X-KSMG-AntiSpam-Version: 6.1.0.4
-X-KSMG-AntiSpam-Envelope-From: ddrokosov@salutedevices.com
-X-KSMG-AntiSpam-Rate: 0
-X-KSMG-AntiSpam-Status: not_detected
-X-KSMG-AntiSpam-Method: none
-X-KSMG-AntiSpam-Auth: dkim=none
-X-KSMG-AntiSpam-Info: LuaCore: 20 0.3.20 743589a8af6ec90b529f2124c2bbfc3ce1d2f20f, {Tracking_uf_ne_domains}, {Track_E25351}, {Tracking_from_domain_doesnt_match_to}, salutedevices.com:7.1.1;smtp.sberdevices.ru:7.1.1,5.0.1;127.0.0.199:7.1.2;100.64.160.123:7.1.2;lore.kernel.org:7.1.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1, FromAlignment: s, ApMailHostAddress: 100.64.160.123
-X-MS-Exchange-Organization-SCL: -1
-X-KSMG-AntiSpam-Interceptor-Info: scan successful
-X-KSMG-AntiPhishing: Clean, bases: 2024/05/15 12:35:00
-X-KSMG-LinksScanning: Clean, bases: 2024/05/15 18:39:00
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2024/05/15 13:12:00 #25231738
-X-KSMG-AntiVirus-Status: Clean, skipped
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20240515-arm-psci-system_reset2-vendor-reboots-v3-1-16dd4f9c0ab4@quicinc.com>
+References: <20240515-arm-psci-system_reset2-vendor-reboots-v3-0-16dd4f9c0ab4@quicinc.com>
+In-Reply-To: <20240515-arm-psci-system_reset2-vendor-reboots-v3-0-16dd4f9c0ab4@quicinc.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio
+	<konrad.dybcio@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>, Rob Herring
+	<robh@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+        Andy Yan
+	<andy.yan@rock-chips.com>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        "Mark
+ Rutland" <mark.rutland@arm.com>,
+        Bartosz Golaszewski
+	<bartosz.golaszewski@linaro.org>
+CC: Satya Durga Srinivasu Prabhala <quic_satyap@quicinc.com>,
+        Melody Olvera
+	<quic_molvera@quicinc.com>,
+        Shivendra Pratap <quic_spratap@quicinc.com>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        Florian Fainelli
+	<florian.fainelli@broadcom.com>,
+        <linux-pm@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        Elliot Berman <quic_eberman@quicinc.com>
+X-Mailer: b4 0.13.0
+X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: GaYIvjh5J8B_prHUQHBuuggWYDfWxDdp
+X-Proofpoint-ORIG-GUID: GaYIvjh5J8B_prHUQHBuuggWYDfWxDdp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
+ definitions=2024-05-15_14,2024-05-15_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ phishscore=0 bulkscore=0 clxscore=1011 malwarescore=0 adultscore=0
+ lowpriorityscore=0 impostorscore=0 suspectscore=0 mlxlogscore=999
+ mlxscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2405010000 definitions=main-2405150164
 
-Hello Neil,
+PSCI reboot mode will map a mode name to multiple magic values instead
+of just one. Convert the mode-.* property to an array. Users of the
+reboot-mode schema will need to specify the maxItems of the mode-.*
+properties. Existing users will all be 1.
 
-Excuse me, pls ping.
+Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
+---
+ .../devicetree/bindings/power/reset/nvmem-reboot-mode.yaml |  4 ++++
+ .../devicetree/bindings/power/reset/qcom,pon.yaml          |  4 ++++
+ .../devicetree/bindings/power/reset/reboot-mode.yaml       | 14 ++++++++++++--
+ .../bindings/power/reset/syscon-reboot-mode.yaml           |  4 ++++
+ 4 files changed, 24 insertions(+), 2 deletions(-)
 
-On Fri, May 03, 2024 at 09:42:22PM +0300, Dmitry Rokosov wrote:
-> Hello Neil,
-> 
-> A1 Thermal Sensor was applied to linux-pm for v6.10-rc1:
-> 
-> https://lore.kernel.org/all/89a02410-87c8-47c6-aa50-04dad5b4e585@linaro.org/
-> 
-> Could you please advise if it's enough to proceed with this series? Or
-> do I need to do something more?
-> 
-> On Thu, Mar 28, 2024 at 10:26:34PM +0300, Dmitry Rokosov wrote:
-> > This patch series introduces thermal sensor declaration to the Meson A1
-> > common dtsi file. It also sets up thermal zones for the AD402 reference
-> > board. It depends on the series with A1 thermal support at [1].
-> > 
-> > Changes v2 since v1 at [2]:
-> >     - provide Neil RvB for cooling-cells dts patch
-> >     - purge unnecessary 'amlogic,a1-thermal' fallback
-> > 
-> > Links:
-> > [1] - https://lore.kernel.org/all/20240328191322.17551-1-ddrokosov@salutedevices.com/
-> > [2] - https://lore.kernel.org/all/20240328134459.18446-1-ddrokosov@salutedevices.com/
-> > 
-> > Signed-off-by: Dmitry Rokosov <ddrokosov@salutedevices.com>
-> > 
-> > Dmitry Rokosov (3):
-> >   arm64: dts: amlogic: a1: add cooling-cells for DVFS feature
-> >   arm64: dts: amlogic: a1: introduce cpu temperature sensor
-> >   arm64: dts: amlogic: ad402: setup thermal-zones
-> > 
-> >  .../arm64/boot/dts/amlogic/meson-a1-ad402.dts | 45 +++++++++++++++++++
-> >  arch/arm64/boot/dts/amlogic/meson-a1.dtsi     | 13 ++++++
-> >  2 files changed, 58 insertions(+)
-> 
-> -- 
-> Thank you,
-> Dmitry
+diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
+index 627f8a6078c2..03b3b9be36de 100644
+--- a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
++++ b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
+@@ -30,6 +30,10 @@ properties:
+ 
+ allOf:
+   - $ref: reboot-mode.yaml#
++  - patternProperties:
++      "^mode-.*$":
++        items:
++          maxItems: 1
+ 
+ required:
+   - compatible
+diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+index fc8105a7b9b2..95964e04d5d6 100644
+--- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
++++ b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+@@ -68,6 +68,10 @@ allOf:
+     then:
+       allOf:
+         - $ref: reboot-mode.yaml#
++        - patternProperties:
++            "^mode-.*$":
++              items:
++                maxItems: 1
+ 
+       properties:
+         reg:
+diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
+index ad0a0b95cec1..feb70609bb5f 100644
+--- a/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
++++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
+@@ -28,13 +28,23 @@ description: |
+ 
+ properties:
+   mode-normal:
+-    $ref: /schemas/types.yaml#/definitions/uint32
++    $ref: "#/patternProperties/^mode-.*$"
+     description:
+       Default value to set on a reboot if no command was provided.
+ 
+ patternProperties:
+   "^mode-.*$":
+-    $ref: /schemas/types.yaml#/definitions/uint32
++    $ref: /schemas/types.yaml#/definitions/uint32-matrix
++    # Limit to 1 outer cell, e.g. no mode-normal = <0>, <1>;
++    maxItems: 1
++    # Note: to reference this schema, the allOf should include hint about
++    # maxItems for the inner cell
++    # allOf:
++    # - $ref: /schemas/power/reset/reboot-mode.yaml#
++    # - patternProperties:
++    #     "^mode-.*$":
++    #       items:
++    #         maxItems: 1
+ 
+ additionalProperties: true
+ 
+diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
+index b6acff199cde..bf6d68355e7f 100644
+--- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
++++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
+@@ -31,6 +31,10 @@ properties:
+ 
+ allOf:
+   - $ref: reboot-mode.yaml#
++  - patternProperties:
++      "^mode-.*$":
++        items:
++          maxItems: 1
+ 
+ unevaluatedProperties: false
+ 
 
 -- 
-Thank you,
-Dmitry
+2.34.1
+
