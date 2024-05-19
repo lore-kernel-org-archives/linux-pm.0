@@ -1,74 +1,78 @@
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1783F9450;
-	Sun, 19 May 2024 05:32:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.237.130.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95A6D14006;
+	Sun, 19 May 2024 07:50:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716096771; cv=none; b=BrDYgMDAqPvwpASrwHwhxCi0Sf7gm/78b4eNXlSxw7arVtszkcwed+zKniK0EhIVmQdXJZb10kVOKTc8tk92mm8qs1fTuUH+NsFSs0PWaN48iYTdfdGaWqjp8A77plY8HKXkJ6v+8VnNb5JTJmvc1P9qFmfyZ3xrUxxsIuNZseE=
+	t=1716105051; cv=none; b=CXw90NIiw6cApBOpV5y1VIgvvoO5wEIhRMW241axGLeZDl/rScFeMWe/kWInv4aQ+wielmi6dLu6D9IffszRW/afeIgoU7xyloJydm40PKkZq2LLF3TsB/KEokUz7gn5Wq7rxx6GkwR+3ItFtO/rTCuCUky9ipDkXzr56JHEbQ4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716096771; c=relaxed/simple;
-	bh=Xkll09NzcXRMEDvaUMAQDVObEDOYOIOCqOZFJSdiRRM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ENcfSXgu1lQP2Q59LRWwV7i2AIS4G/cD4XjT08MCvRHggfsx/X0xJsIXu47TOuI8LBs5o+FSv6YY9q3XKIXd4e7T7/h2Iryd++rM3W7/6H2U/kneCbjLHxLhXBCpkx4bWd2+ffvvOPPaOPpzyFygyArIDXfeG6NxUaMXwSphDE4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=iyzWNVs3; arc=none smtp.client-ip=80.237.130.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
+	s=arc-20240116; t=1716105051; c=relaxed/simple;
+	bh=jkN9s/UCfqcwcO60sG82AdVMCLkIhP/ZxGRMxoGJvNY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=BSSeq+FeEgxpVdzptd3X4zPh+Ff/5gSyaVNHsPI8XgEMchdPKJFa+GTsDdGy3PWY8ThOFdZBfghgTqUMdeDXwBwHhvoC/McRNYlsEeRPuYYAwwvr7KEw2v2nry007W07tF78i5f8BAd+yNE9STE8m8Ar9k5E0Xohc7wBf4LBE34=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=N/q3aO5L; arc=none smtp.client-ip=159.69.126.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="iyzWNVs3"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=leemhuis.info; s=he214686; h=Content-Transfer-Encoding:Content-Type:
-	In-Reply-To:Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:From:Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:
-	Content-Type:Content-Transfer-Encoding:Content-ID:Content-Description:
-	In-Reply-To:References; bh=Xkll09NzcXRMEDvaUMAQDVObEDOYOIOCqOZFJSdiRRM=;
-	t=1716096769; x=1716528769; b=iyzWNVs3/WRHnF5ipGL1O+iembIf6lYZM71+rTuV0PUqMR9
-	ZCFCXTsGGthU2DT0JYuV8i9tjs3sRHhvOXMyHIQWjv7klZSdZtgboPPjnY1t2LZ76iVcuqzhxJyFq
-	pwjn7vJY3oYfIFKKuSmQTtp+gjinTPwLZPghYA+4CKR9xukw40Vbw6kzD9JckV5wYE+PsAuXgnow+
-	nrM0iXqnx3XFziCY33ZHa3nL2wQkQikfd4rqUdrRWfqSDdoNsUUeFvOMwdwMa/1OuvfYB+vLdd31g
-	V8wHd3rh1jRL4qGH5zazZKW+qI5Z/J4ySh+oDXIUkUzJI/4eQxpPvVyaas3sq2Ow==;
-Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
-	by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
-	id 1s8ZA6-0003gZ-7X; Sun, 19 May 2024 07:32:46 +0200
-Message-ID: <7ed1e3ca-2160-4c52-a19e-8b5f2a90a0ff@leemhuis.info>
-Date: Sun, 19 May 2024 07:32:45 +0200
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="N/q3aO5L"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1716105046;
+	bh=jkN9s/UCfqcwcO60sG82AdVMCLkIhP/ZxGRMxoGJvNY=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=N/q3aO5L67HYc0Qxj5I/En2FlSEjRWleBkFJgkdEvhG7K8aToJy+IZai/ddJTxGhU
+	 +mlvuaPa9dJxjh7VAqoOohCAlTr8xOoNfhGoKcUfKXzNVSmzYnpRsyIoGvH9chGG2Q
+	 uufYH9vgiLvklNEyO0GqE5Rsz4h4oaO8u4Egrspk=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Sun, 19 May 2024 09:50:21 +0200
+Subject: [PATCH 3/3] mfd: cros_ec: Register charge control subdevice
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: amd-pstate: fix the highest frequency issue
- which limit performance
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
- stable@vger.kernel.org
-Cc: rafael.j.wysocki@intel.com, Mario.Limonciello@amd.com,
- viresh.kumar@linaro.org, Ray.Huang@amd.com, gautham.shenoy@amd.com,
- Borislav.Petkov@amd.com, Alexander.Deucher@amd.com, Xinmei.Huang@amd.com,
- Xiaojian.Du@amd.com, Li.Meng@amd.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Perry Yuan <perry.yuan@amd.com>
-References: <20240508054703.3728337-1-perry.yuan@amd.com>
- <4212df0b-5797-42a8-9c64-3e03851293b5@t-8ch.de>
-From: "Linux regression tracking (Thorsten Leemhuis)"
- <regressions@leemhuis.info>
-Content-Language: en-US, de-DE
-Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
-In-Reply-To: <4212df0b-5797-42a8-9c64-3e03851293b5@t-8ch.de>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1716096769;d0a3a4cb;
-X-HE-SMSGID: 1s8ZA6-0003gZ-7X
+Message-Id: <20240519-cros_ec-charge-control-v1-3-baf305dc79b8@weissschuh.net>
+References: <20240519-cros_ec-charge-control-v1-0-baf305dc79b8@weissschuh.net>
+In-Reply-To: <20240519-cros_ec-charge-control-v1-0-baf305dc79b8@weissschuh.net>
+To: Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, 
+ Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas@weissschuh.net>
+Cc: chrome-platform@lists.linux.dev, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Mario Limonciello <mario.limonciello@amd.com>, 
+ Dustin Howett <dustin@howett.net>, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1716105045; l=701;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=jkN9s/UCfqcwcO60sG82AdVMCLkIhP/ZxGRMxoGJvNY=;
+ b=d/Xu0dphsEUz2K3zV15gzzcBWA+HAFvbHnpG9ZKAeDysndbIkVaCkAdx7xSdDSYr9PV2A5L34
+ lBGrnU4Oo1FDRyuleOw+i1p4Ka4EIq1jGRdSPSMiYS5y44Ncdf308KG
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-On 19.05.24 00:07, Thomas Weißschuh wrote:
+Add ChromeOS EC-based charge control as EC subdevice.
 
-> Please backport the mainline commit
-> bf202e654bfa ("cpufreq: amd-pstate: fix the highest frequency issue which limits performance")
-> to the 6.9 stable series.
-> [...]
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+---
+ drivers/mfd/cros_ec_dev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-FWIW, that commit already queued, as can be seen here:
+diff --git a/drivers/mfd/cros_ec_dev.c b/drivers/mfd/cros_ec_dev.c
+index a52d59cc2b1e..c571cbc642c7 100644
+--- a/drivers/mfd/cros_ec_dev.c
++++ b/drivers/mfd/cros_ec_dev.c
+@@ -89,6 +89,7 @@ static const struct mfd_cell cros_ec_sensorhub_cells[] = {
+ static const struct mfd_cell cros_usbpd_charger_cells[] = {
+ 	{ .name = "cros-usbpd-charger", },
+ 	{ .name = "cros-usbpd-logger", },
++	{ .name = "cros-charge-control", },
+ };
+ 
+ static const struct mfd_cell cros_usbpd_notify_cells[] = {
 
-https://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git/tree/queue-6.9
+-- 
+2.45.1
 
-Ciao, Thorsten
