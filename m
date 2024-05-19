@@ -1,137 +1,63 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9441611CB8;
-	Sun, 19 May 2024 07:50:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 968A86E61A;
+	Sun, 19 May 2024 19:36:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716105051; cv=none; b=TwEU3W/shZbf15o9Qk2RbWoHiCCyl/j4iYotH91/7rDQwTCUFnW8jp+Xs9jC88km8xV3xzwip9JiXizZsOKnUBv48qYfsWyQxbwmMqn0R3xgVMVAVu9zp8m2wZSLc8kEc8gYftu+pyKEsog8AQXhUZnU7vABPmGRo5WuGTadk7Q=
+	t=1716147417; cv=none; b=P+W60z/4QjuYafJB4+aKBuNIAMFeF/F0HcDtuYXplWTez1zoheYhwgOg77OH2iuri+6QEFVaLpyGPAGmRNQrKsFICrcgh5Lbl4dpnWyWFjMp8ruoMRKPZ7bp7awxhYecjlZgZQPWa4wT4pc55H/GVvRermPXu+qp+97TgXuM8xA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716105051; c=relaxed/simple;
-	bh=8zoXWW/KCYUKh14/dNRlyIaqgaRJX+6Od+vCBRNCh/c=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hisaJKtcTRFqDsmcmomhQfIOJSssLrQxxdgTrv03gsmsWBgZ3DNQEX98O0W9s9c6DwFgITAElvqOptr3fBEGyE0J/D7PGOkiz6Xsabi8WabJnGAOJnp0iVvpdVeyNG849Va3o6EmV9T7NEp6PSAqUa9sT9CUBgP4aOq0+hmNmgc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=nl6VUzoc; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	s=arc-20240116; t=1716147417; c=relaxed/simple;
+	bh=YEgeFgOE7zY5OBbYvBi1KKhLjKSOsdLUG+jQ+L5T8JM=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=hENhoSwY4+cQb7jiIZHbWSGEpSIvHbeNabW+VeIlPpoBtpoWdbRqdcpnPfxcsXJVW8yFAUI/UKMs1XhdRHDviwYbGKd8EYXXbYhyCQWT26XiS850z/gMAT9/j9t/YKXDhgZ8j5sf4qJDOeBEpjiFnhpJ4R+Mm5q5mp0i17NYYSg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JYIH4C9h; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="nl6VUzoc"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1716105046;
-	bh=8zoXWW/KCYUKh14/dNRlyIaqgaRJX+6Od+vCBRNCh/c=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=nl6VUzocFU4nYWYUKV8Nv5kQBo2QwFbPajhJpSbp6FmyOiIl8kJclGGCS/5ByWNVJ
-	 MbIIh5Mis/gM0JQ7EwRAHAg76vkABVODkaIAUvx+RcxY/FhIL2ThaYr/O3z6+DOFNu
-	 Vwvc19cdws+yCjcOF/nekdBPUnPWM0WRW4ae7J0Q=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sun, 19 May 2024 09:50:19 +0200
-Subject: [PATCH 1/3] platform/chrome: Update binary interface for EC-based
- charge control
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JYIH4C9h"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 777F0C4AF0F;
+	Sun, 19 May 2024 19:36:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1716147417;
+	bh=YEgeFgOE7zY5OBbYvBi1KKhLjKSOsdLUG+jQ+L5T8JM=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=JYIH4C9hZXdxv9W554YKPwzDDtspYZb5DG2q651AqgKWXI2pldw24fsSQ2FklY9Iq
+	 9U0WtyGDh7O+P7fjvbGQMBwPuRRQJjynx6xEEds7bIYzJe8Dd/qZiJs5Lm1DIjLEmw
+	 YMnBqdyJ4hsAYgSuUi6lpzN9NzGE7UAuxxGVA6BXidR9EdkHWTJ/0osmNZlUYeMkEV
+	 pAlDGbBCyAAjX460N1R+g0dgeGnRVVf/zOrehvWkVuvdg54hoEPtGeYtBht17vAXkt
+	 NUFv9B87Wz+ZPtyrVUgdHL0QWZAoTNC4Hm7MEWAytbkyzm7QiNO/VEPf5oR2ovREKz
+	 zciAcgi5XJjKw==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 6EEBCC54BB2;
+	Sun, 19 May 2024 19:36:57 +0000 (UTC)
+Subject: Re: [GIT PULL] Turbostat 2024.05.10 for Linux-6.10-merge
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <CAJvTdKmgOCBUX=O4VvuVZfnXVpZcm5vDU6DtAYykuhBH7+-7ow@mail.gmail.com>
+References: <CAJvTdKmgOCBUX=O4VvuVZfnXVpZcm5vDU6DtAYykuhBH7+-7ow@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJvTdKmgOCBUX=O4VvuVZfnXVpZcm5vDU6DtAYykuhBH7+-7ow@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git tags/turbostat-for-Linux-6.10-merge-window
+X-PR-Tracked-Commit-Id: 256d218ec6aea99855dc5c54af550fcff96fc732
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: a90f1cd105c6c5c246f07ca371d873d35b78c7d9
+Message-Id: <171614741745.6582.271007367077030497.pr-tracker-bot@kernel.org>
+Date: Sun, 19 May 2024 19:36:57 +0000
+To: Len Brown <lenb@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20240519-cros_ec-charge-control-v1-1-baf305dc79b8@weissschuh.net>
-References: <20240519-cros_ec-charge-control-v1-0-baf305dc79b8@weissschuh.net>
-In-Reply-To: <20240519-cros_ec-charge-control-v1-0-baf305dc79b8@weissschuh.net>
-To: Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, 
- Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas@weissschuh.net>
-Cc: chrome-platform@lists.linux.dev, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, Mario Limonciello <mario.limonciello@amd.com>, 
- Dustin Howett <dustin@howett.net>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1716105045; l=2666;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=8zoXWW/KCYUKh14/dNRlyIaqgaRJX+6Od+vCBRNCh/c=;
- b=zBLC3ct47lR3zGCZw7jl1ii/wPZuSphkaefJSTbaB8d3ObqpdkEyhFabMSV746kRlr04fQSVS
- nUJ/pm8hMtwCLXKXSlojkYOmF4jXsrwPiS6j0P/KY6fkDkmCvaFFzn2
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The charge-control command v2 is more featureful than v1, it
-additionally supports charge thresholds.
+The pull request you sent on Sat, 18 May 2024 11:56:57 -0400:
 
-While v3 is also defined, it is very recent and not implemented widely.
+> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git tags/turbostat-for-Linux-6.10-merge-window
 
-The definitions were imported from ChromeOS EC commit
-9de7e85d14fb ("test/timer: Increase sleep time error for Helipilot"),
-which is the commit just before the introduction of v3 of the protocol.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/a90f1cd105c6c5c246f07ca371d873d35b78c7d9
 
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
- include/linux/platform_data/cros_ec_commands.h | 44 ++++++++++++++++++++++++--
- 1 file changed, 42 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/platform_data/cros_ec_commands.h b/include/linux/platform_data/cros_ec_commands.h
-index ecc47d5fe239..75521e2b9bb4 100644
---- a/include/linux/platform_data/cros_ec_commands.h
-+++ b/include/linux/platform_data/cros_ec_commands.h
-@@ -3809,16 +3809,56 @@ struct ec_params_i2c_write {
-  * discharge the battery.
-  */
- #define EC_CMD_CHARGE_CONTROL 0x0096
--#define EC_VER_CHARGE_CONTROL 1
-+#define EC_VER_CHARGE_CONTROL 2
- 
- enum ec_charge_control_mode {
- 	CHARGE_CONTROL_NORMAL = 0,
- 	CHARGE_CONTROL_IDLE,
- 	CHARGE_CONTROL_DISCHARGE,
-+	/* Add no more entry below. */
-+	CHARGE_CONTROL_COUNT,
-+};
-+
-+#define EC_CHARGE_MODE_TEXT                               \
-+	{                                                 \
-+		[CHARGE_CONTROL_NORMAL] = "NORMAL",       \
-+		[CHARGE_CONTROL_IDLE] = "IDLE",           \
-+		[CHARGE_CONTROL_DISCHARGE] = "DISCHARGE", \
-+	}
-+
-+enum ec_charge_control_cmd {
-+	EC_CHARGE_CONTROL_CMD_SET = 0,
-+	EC_CHARGE_CONTROL_CMD_GET,
- };
- 
- struct ec_params_charge_control {
--	uint32_t mode;  /* enum charge_control_mode */
-+	uint32_t mode; /* enum charge_control_mode */
-+
-+	/* Below are the fields added in V2. */
-+	uint8_t cmd; /* enum ec_charge_control_cmd. */
-+	uint8_t reserved;
-+	/*
-+	 * Lower and upper thresholds for battery sustainer. This struct isn't
-+	 * named to avoid tainting foreign projects' name spaces.
-+	 *
-+	 * If charge mode is explicitly set (e.g. DISCHARGE), battery sustainer
-+	 * will be disabled. To disable battery sustainer, set mode=NORMAL,
-+	 * lower=-1, upper=-1.
-+	 */
-+	struct {
-+		int8_t lower; /* Display SoC in percentage. */
-+		int8_t upper; /* Display SoC in percentage. */
-+	} sustain_soc;
-+} __ec_align4;
-+
-+/* Added in v2 */
-+struct ec_response_charge_control {
-+	uint32_t mode; /* enum charge_control_mode */
-+	struct { /* Battery sustainer thresholds */
-+		int8_t lower;
-+		int8_t upper;
-+	} sustain_soc;
-+	uint16_t reserved;
- } __ec_align4;
- 
- /*****************************************************************************/
+Thank you!
 
 -- 
-2.45.1
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
