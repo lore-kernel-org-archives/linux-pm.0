@@ -1,424 +1,243 @@
-Received: from mail-oo1-f45.google.com (mail-oo1-f45.google.com [209.85.161.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2071.outbound.protection.outlook.com [40.107.243.71])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E9573EA66
-	for <linux-pm@vger.kernel.org>; Thu, 23 May 2024 03:26:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.45
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716434812; cv=none; b=HsTe+rNEqxHqYoNpvFtmusfoPSRogshBaUccSpRthViNC/lMTwmrvGJh/fQ3J7ebKMR/v8PXRShW9VqWpqAOtP1iq7sK0ZOO1yosVMA3v9FAerLcCpPOg85VYh7PCY5hOhahH94cp3ytUtOwUlh5x5n7od25eDDx3qEDfN1p6AA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716434812; c=relaxed/simple;
-	bh=kOSJ5343ZgD6KXVJTDj3JIky3M/+oxREycPHACuh6ik=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=C+yg+wkj08aCfCSK8Rh+e3i0U27UM3YD3+Wl2CCQQ9nlnYh5R9wt2z3Yt/ZvvP0UwREaRejI3HdXUVXmCXmAiI8YBqmY8rF+rK52J32fCbN+N4mKYoW0o+fMKoP6ADRBidrtPXS7URxmA9S4ubugNfuosyhI+wg6EDe5z3lyXsY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=sifive.com; spf=pass smtp.mailfrom=sifive.com; dkim=pass (2048-bit key) header.d=sifive.com header.i=@sifive.com header.b=Pw/PW1/U; arc=none smtp.client-ip=209.85.161.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=sifive.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sifive.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B665187F;
+	Thu, 23 May 2024 06:17:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.243.71
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1716445059; cv=fail; b=UtqtanVkzwGs3l1SKC4swalmTkJikIl9IQGD6Livk7kR6c/7oUD6lZYiEfab+AXSPLWXB8GZMKk7pAz+a9VrXKMkxLqgjfRG4FlY1cno9wVtSJXa2U4VfHnZhctDJ/f3+dF58wIfZrtMUWWzQQxSXBSBwakmpG/TwWWYJx8fyfc=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1716445059; c=relaxed/simple;
+	bh=5W450A4OA/tDPi8v3Hq/hsuNj6aqeScgGT/+R0I2qe4=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=FtbbhwqtndEh0LJOjr4VmpdyhfT4xVCSnCXysy0dWdrel2TpukdmEjMGY7Rw2OuaJPooABZd5HNlVfvqN0YLuwJStKlGwy4sITXPloK7rcC5pHj1L5yfyI/dqkMQqZR069onsyTvEHIz0afo3OofcO2eDCGmP+qtYY6k7UUmTuk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=z/iOTbsN; arc=fail smtp.client-ip=40.107.243.71
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sifive.com header.i=@sifive.com header.b="Pw/PW1/U"
-Received: by mail-oo1-f45.google.com with SMTP id 006d021491bc7-5b2e942171cso3137688eaf.3
-        for <linux-pm@vger.kernel.org>; Wed, 22 May 2024 20:26:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1716434809; x=1717039609; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=c7zTuP2XgCofoIWKacpr34bMlGlhPX3lpxrhBKwjHqo=;
-        b=Pw/PW1/UJKe5HYwiCzPETJv+yNRutwa/nB+YBS8rni2AhlrKOv18GoFbzsVoBEduCO
-         gP8eC15FNJ6T31rCr7QrPZMRlEKOd83DsbHqEmRQFnmj1P2FnRXGfrD6LeCTNLf9FeVw
-         qi4JraER+4g4CksWgpRpb7tX508byqMtqEfXi1qf+xJ1z2jTeB33W9TqiBzJ+6iOyalH
-         kLzsDiWs5Po4C/4JBzZ1Z6pS1FgswHOz1aK9IPsW3Cw+PrrVPgDeOnBpgjPUg2U6CWpj
-         BSsRkr6ywwWVwROStRjymcHSkT1YZ6QFlOn9oRuRWIYmS8GcZvTOHgpSVUVG6/C2QPul
-         4l6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716434809; x=1717039609;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=c7zTuP2XgCofoIWKacpr34bMlGlhPX3lpxrhBKwjHqo=;
-        b=u7gaJj78LIGUDOOoOTWemjrRt/zfAC3PiPkGIxYSRmhG+EZ5HdwGQDGWQ0NlMQsQP7
-         amlYDqQUCATvHWyH8dONjgEzvBRSaQAtuDfupaZMDavtylSPm0VTXRK5rOeUpI34LMy0
-         kt24/BQ8xdE0Y/Ub+l3zqW6PZAPcURTam0lwDsTEkHN1DlUCTwImKpQ81rDG1AG9E8vT
-         1cYWJqHwZc1M6cSC+WBfsILsFcfOJFmp3SEbOU0VdCBaT63R9f4MltDKldzT3x8vqkhT
-         TAeWu8rScPy8WmpivtkLg/Iu191muMOHOV5K7d+n0L5rVTrCfhjopzOxT49N+th5DsWv
-         JwxQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUtxs98z1Qe49LwPbaaQar+pZvczT78HZgPziFHf/IIL2w4p7chiyteNqbKilWpyFv8hxkry10qmly0zSYHNfWXRL4+SfYGl14=
-X-Gm-Message-State: AOJu0YxrgSBhJoiivndbkra1ie27s6Z1yxXk+ROtbNPBzWtkXJ1aMtTY
-	7AyGd0nFjykAFyvo48iHnU8IekzurQnor+Q+OLWw0vboCgNh6Aypk2bGgpu+TvKMtTpmImSXAXM
-	a01kWUDRsmv5qB/04e1qzxK+BmDJFwwHdAJ/EPg==
-X-Google-Smtp-Source: AGHT+IGGpf1SUcygd521wlQp1GkYsu1Ml5R8D8AIaZD4u1+YTualMlPhYztsm7Qk6u1pKSqTcEtgsPAy5CbvGXxqUPA=
-X-Received: by 2002:a05:6820:821:b0:5b2:3f04:8d03 with SMTP id
- 006d021491bc7-5b6a4123352mr3639833eaf.7.1716434809075; Wed, 22 May 2024
- 20:26:49 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="z/iOTbsN"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=hjdoBZmAflTMaU3yOpemGrSl4RfGtnK67fpleL8ffaad/1QEnmWnqr2juZqUutp35tN9jeKqI5MAo9KeRxmQtIiE5Vjb6fXoCHpWJwrCJFn9KJ4ud8alOGrF5QVeGpxL/3fZqX6mcf3R2yV4oOsiBtDwWDBtSvScsrFYkfslrSm+jD9f+/4w5WnG7nHjkoeyRLw+cix8fA2z3mWJRyCG4aeYGBGsV4ne4AiLjepxqpq/KcdPaUJxwd4RYAre2n31MviIn/iq4bzFmb8AYyQZ5EuBj8C9VDOYn5YQyoR1EZuKxxHzk6G3WGHHeVL6w2xpqNKsZSGBmQVjaiHd+Ex4LA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=sYADc4a0EGMHe4KFR/rNv9z2oEHxbArNMIpqnfe4MIM=;
+ b=adyvz+aj/Pl8/2Cmb6achzcvjBwxGXVN/x7vrhiozGJkGgZl07HyZiEec+nsjK+GJLS+eWWpTqcsL1ViDnQOCZOFEbRh9CFutfqCm0a8d2pbXawDIw6QBcpuzT6KG0kGJ32nyO4nggDvbIjQk83+6Om7Ydb7wQsjL6v+svcrjbK4MA0P0sbyTHBaIkFdSXN9bMEFZAtmi0A6m4TPbX43XPGawnFhgK2HRWQnECtyx2lcoLiMRblZIEbPCtOQi8iB1LAdm3grWgHIcLdrBxKwX+SbFg71n1A4DkpcXzkezATlz6UPK70YyxduGqhRhyIMrTGLO8snS72kZi24nwNcPg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=sYADc4a0EGMHe4KFR/rNv9z2oEHxbArNMIpqnfe4MIM=;
+ b=z/iOTbsNZkKzJDAPScIJMsU36g38B5rz35V+bCw1w9lSWx0E4t5wxSVGCRAo32ONvw6hhtwi17NCi8AHQGr4dRCNr52cn9vuc5XwrzmxWdNSCwNPB7ND96nsIvBAzMsR7rBMn6z1SrYx/lWQx3DrJAfa8WSIKOdF3EMshrhVuwQ=
+Received: from SA0PR11CA0118.namprd11.prod.outlook.com (2603:10b6:806:d1::33)
+ by DS7PR12MB6216.namprd12.prod.outlook.com (2603:10b6:8:94::7) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7587.37; Thu, 23 May 2024 06:17:34 +0000
+Received: from SN1PEPF00036F40.namprd05.prod.outlook.com
+ (2603:10b6:806:d1:cafe::b) by SA0PR11CA0118.outlook.office365.com
+ (2603:10b6:806:d1::33) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7519.24 via Frontend
+ Transport; Thu, 23 May 2024 06:17:34 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ SN1PEPF00036F40.mail.protection.outlook.com (10.167.248.24) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.7611.14 via Frontend Transport; Thu, 23 May 2024 06:17:34 +0000
+Received: from jenkins-amdgpu-chagall.amd.com (10.180.168.240) by
+ SATLEXMB04.amd.com (10.181.40.145) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Thu, 23 May 2024 01:17:28 -0500
+From: Xiaojian Du <Xiaojian.Du@amd.com>
+To: <linux-kernel@vger.kernel.org>, <x86@kernel.org>,
+	<linux-pm@vger.kernel.org>
+CC: <tglx@linutronix.de>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <hpa@zytor.com>,
+	<daniel.sneddon@linux.intel.com>, <jpoimboe@kernel.org>,
+	<pawan.kumar.gupta@linux.intel.com>, <sandipan.das@amd.com>,
+	<kai.huang@intel.com>, <ray.huang@amd.com>, <rafael@kernel.org>,
+	<Perry.Yuan@amd.com>, <gautham.shenoy@amd.com>, <Borislav.Petkov@amd.com>,
+	<mario.limonciello@amd.com>, Xiaojian Du <Xiaojian.Du@amd.com>, Perry Yuan
+	<perry.yuan@amd.com>
+Subject: [PATCH v3 2/2] cpufreq: amd-pstate: change cpu freq transition delay for some models
+Date: Thu, 23 May 2024 14:16:58 +0800
+Message-ID: <1754107f24b1dd0167069d6c8a7ae9e5e12994a3.1716444920.git.Xiaojian.Du@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <691ec6cf79788e6db919965f787505434b072fac.1716444920.git.Xiaojian.Du@amd.com>
+References: <691ec6cf79788e6db919965f787505434b072fac.1716444920.git.Xiaojian.Du@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240226065113.1690534-1-nick.hu@sifive.com> <CAPDyKFph3WsZMmALnzBQKE4S_80Ji5h386Wi0vHda37QUsjMtg@mail.gmail.com>
- <CAKddAkDcdaXKzpcKN=LCCx9S4Trv+joLX2s=nyhzaRtM5HorqA@mail.gmail.com>
- <CAKddAkC6N=Cfo0z+F8herKTuJzCyt_MA0vWNbLCr6CbQnj0y8g@mail.gmail.com>
- <CAPDyKFr_M0NDH0gaunBpybnALOFfz4LpX4_JW2GCUxjwGzdZsg@mail.gmail.com>
- <CAKddAkC5CRX+ZTh=MgzPYU72SY13+AQYhknhV_CC+=XX9=DKyg@mail.gmail.com>
- <CAAhSdy1SDd=VUqDQA0T5n9LwHo=3uGzFq1dUcbDFcB3aBdaioA@mail.gmail.com>
- <CAAhSdy33DcNw+pbDRrR=hBH86kwvu3xZbomQby8XhRXcc-exqQ@mail.gmail.com>
- <CAKddAkBrP2iQBC+aY1Xw5pssBpiQZe4V-6ww5m8hbKP6V0jzLg@mail.gmail.com>
- <CAAhSdy12-_Hdb-WVrs8kyfCy_OQA0p27DS6TOV87dh9HODrU_Q@mail.gmail.com>
- <CAKddAkCQOvnci-bzKx1pBUJh5t1uPT-wNXGH1WyqDyb5qR_Scg@mail.gmail.com> <CAK9=C2V2xYwi4wK2+e=z7NF8Ph7+LxvWh4J4TmQrbVfSfpO-Ag@mail.gmail.com>
-In-Reply-To: <CAK9=C2V2xYwi4wK2+e=z7NF8Ph7+LxvWh4J4TmQrbVfSfpO-Ag@mail.gmail.com>
-From: Nick Hu <nick.hu@sifive.com>
-Date: Thu, 23 May 2024 11:26:38 +0800
-Message-ID: <CAKddAkA6ghz3LmVwkdCJ8n+JeF-67pZi07NuPWfron46NLpKoQ@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle: riscv-sbi: Add cluster_pm_enter()/exit()
-To: Anup Patel <apatel@ventanamicro.com>
-Cc: Anup Patel <anup@brainfault.org>, Ulf Hansson <ulf.hansson@linaro.org>, palmer@dabbelt.com, 
-	rafael@kernel.org, daniel.lezcano@linaro.org, paul.walmsley@sifive.com, 
-	linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, zong.li@sifive.com, 
-	Cyan Yang <cyan.yang@sifive.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SN1PEPF00036F40:EE_|DS7PR12MB6216:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7ea71ccc-67aa-4665-e85b-08dc7af00918
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230031|82310400017|36860700004|376005|7416005|1800799015;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?REmcCOOE4eWfJNARmnOMk3mwAq1mGc+lD61F7W/5U3awqtr/QzA015gCIEC5?=
+ =?us-ascii?Q?t+pQKnXiuOlkONQ1NEoflwYLAsUaOt909FejEZoE14um33O/8k8GUtt8C/8v?=
+ =?us-ascii?Q?fOyqNVbYL4RkKKgYvciP/9AkN9RuNTEsneuzI6FcPOUYffI9McksJdZz4aFd?=
+ =?us-ascii?Q?8iKX2dlUM7/S24fNpJRHrXthObemOFtNe+J/iuqmzXqDDTr5Z/B5FwJfIw0W?=
+ =?us-ascii?Q?8L1qnXOqaI62O8P+PxJVNnvGOFIK4Zy7XHmPe+9KPFzy3Ekf4387GbBraufz?=
+ =?us-ascii?Q?KJ6mwrgpgdwb4KfgMhPaZiwClYYCqbceWeflGV9sUe4T8ipR0tNHot/VpG4l?=
+ =?us-ascii?Q?f8OTZd2z9hlyVXkDV1Qx19IdLjpwUygneKW2n+l0dTPgKIgelbFbz22cXfr+?=
+ =?us-ascii?Q?Sudp8Q0ag4W8EuazUTRDQ25ogpmkpdC41BtdSg9lWfLlQFRVDvtW3LqEONwG?=
+ =?us-ascii?Q?1n/ecbphiBvkrF2GU/ypwZ+LY2h6S8cm8wU7MZyGSssrXfq9MgOev5Q06KPm?=
+ =?us-ascii?Q?R6nrqGI4yWmgP3+n7pqx/u/BfbEhXLY9eA+01k8OPMYp1xhr+clW3AXM50ou?=
+ =?us-ascii?Q?aX+J1spnFvjOQkThnXOd1oRQORBynMAjjtr6aVfQbeis0815jm+T1LohCedQ?=
+ =?us-ascii?Q?Ggt0aI4IQgctb8+Zr+itojmGdKEYPqMO5eghWTsV/q1thieFxomhGxqYaHZ+?=
+ =?us-ascii?Q?3eySHQyuK8Xqw24gTq4VXQduDr3tHf/YocF+5wh5Cmh4rwYbcx9ZD8MhFDEK?=
+ =?us-ascii?Q?P4Bim4/cdy0inAXFXC3Wicjc7KpPpn+z1HrvJGDoTlnGqidJJ0ZwO4X38f03?=
+ =?us-ascii?Q?BWgZqudwcGCIwwS7Gc849/lrX4BVQ3S5LecWnDpegPcEkXta80W+DjTCPF/8?=
+ =?us-ascii?Q?SNBkg4APvqDEjOF84juw2BBn/ORHsYLQpQBcmwxWPFZZZXT6H2DFCby8wTWd?=
+ =?us-ascii?Q?BUXVBgPIaYCx+trNs+xvp/EErpsZ+TwKfdDEwnA8m2tIXoXNeXdCYuD9AYgT?=
+ =?us-ascii?Q?ozXwKAAUITsewO58nj6NK6gpBDI1I5EnLkXssyNEZJfa/o5VaHLsQxi0ZmCq?=
+ =?us-ascii?Q?s0oMGPuS+b5wHhToO/uNPS0ruOpqQv8yXB/9uX5rFgnvlPKEN3LAvpDyXMPx?=
+ =?us-ascii?Q?o8ptj+ainY9qEpTO+s9dYDMBVnUBaTJQlG179cFf+TpkrsCTEpwM3WWHng8G?=
+ =?us-ascii?Q?ezSr/CT4d4C73yjru2p8xEHaUfYmwLu0QQEDTxPTVYRSiIUvLDyvLKh1Lxu/?=
+ =?us-ascii?Q?agzeQ4Kfc+CxHKAUdL701gSYa/FlJL5iLb3Q+/GZAiF0WE12AYZiH7/qIJ7H?=
+ =?us-ascii?Q?93Hx/oMfjSG6xxfF/RGnXSln75uPZilayjgSoydl0Rpm0kba/i9PAQABMcOd?=
+ =?us-ascii?Q?gLzjflc=3D?=
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(82310400017)(36860700004)(376005)(7416005)(1800799015);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 May 2024 06:17:34.2509
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7ea71ccc-67aa-4665-e85b-08dc7af00918
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SN1PEPF00036F40.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB6216
 
-Hi Anup,
+Some of AMD ZEN4 APU/CPU have support for adjusting the CPU core
+clock more quickly and presicely according to CPU work loading.
+This is advertised by the Fast CPPC x86 feature.
+This change will only be effective in the *passive mode* of
+AMD pstate driver. From the test results of different
+transition delay values, 600us is chosen to make a balance
+between performance and power consumption.
 
-On Fri, May 17, 2024 at 12:39=E2=80=AFPM Anup Patel <apatel@ventanamicro.co=
-m> wrote:
->
-> On Thu, May 16, 2024 at 9:40=E2=80=AFAM Nick Hu <nick.hu@sifive.com> wrot=
-e:
-> >
-> > Hi Anup
-> >
-> > On Wed, May 15, 2024 at 9:46=E2=80=AFPM Anup Patel <anup@brainfault.org=
-> wrote:
-> > >
-> > > Hi Nick,
-> > >
-> > > On Wed, May 15, 2024 at 5:45=E2=80=AFPM Nick Hu <nick.hu@sifive.com> =
-wrote:
-> > > >
-> > > > Hi Anup,
-> > > >
-> > > > Thank you for your guidance.
-> > > > After enabling the debug message, we found a way to solve the probl=
-em
-> > > > by the following steps:
-> > > > 1. Add a compatible string in 'power-domains' node otherwise it won=
-'t
-> > > > be the supplier of the consumers. (See of_link_to_phandle())
-> > >
-> > > Hmm, requiring a compatible string is odd. Where should we document
-> > > this compatible string ?
-> > >
-> > Sorry, this is my fault. I didn't include some updates in
-> > of_link_to_phandle(). This led some misunderstandings here.
-> > You are right, we don't need it.
-> > The supplier will be linked to the CLUSTER_PD node.
-> >
-> > > > 2. Move the 'power-domains' node outside the 'cpus' node otherwise =
-it
-> > > > won't be added to the device hierarchy by device_add().
-> > > > 3. Update the cpuidle-riscv-sbi driver to get the pds_node from
-> > > > '/power-domains'.
-> > >
-> > > By adding a compatible string and moving the "power-domains" node
-> > > outside, you are simply forcing the OF framework to populate devices.
-> > >
-> > > How about manually creating platform_device for each power-domain
-> > > DT node using of_platform_device_create() in sbi_pd_init() ?
-> > >
-> > Thanks for the suggestion! We have test the solution and it could work.
-> > We was wondering if it's feasible for us to relocate the
-> > 'power-domains' node outside of the /cpus? The CLUSTER_PD might
-> > encompass not only the CPUs but also other components within the
-> > cluster.
->
-> The cpuidle-riscv-sbi driver expects "power-domains" DT node
-> under "/cpus" DT node because this driver only deals with power
-> domains related to CPU cluster or CPU cache-hierarchy. It does
-> make sense to define L2/L3 power domains under
-> "/cpus/power-domain" since these are related to CPUs.
->
-> Moving the CPU "power-domains" DT node directly under "/" or
-> somewhere else would mean that it covers system-wide power
-> domains which is not true.
->
-> I suggest we continue using "/cpus/power-domains" DT node
-> only for power domains related to CPU clusters or CPU
-> cache-hierarchy.
->
-> For system wide power domains of SoC devices, we can either:
-> 1) Use device power domains through the SBI MPXY extension
->     via different driver
-> 2) Use a platform specific driver
->
-Thank you for your valuable feedback. We will continue to use the
-"/cpus/power-domains".
+Some test results on AMD Ryzen 7840HS(Phoenix) APU:
 
-> >
-> > We also look at cpuidle_psci_domain driver and it seems Arm doesn't
-> > create the devices for each subnode of psci domain.
-> > Is there any reason that they don't need it?
->
-> Existing ARM DTS files under arch/arm64/boot/dts, use device
-> power domains through SCMI (or platform specific mechanism)
-> which are already populated as devices by Linux DD framework.
->
-> Regards,
-> Anup
->
-Thank you for the explanation!
+1. Tbench
+(Energy less is better, Throughput more is better,
+PPW--Performance per Watt more is better)
+============= =================== ============== =============== ============== =============== ============== =============== ===============
+ Trans Delay   Tbench              governor:schedutil, 3-iterations average
+============= =================== ============== =============== ============== =============== ============== =============== ===============
+ 1000us        Clients             1              2               4              8              12             16              32
+               Energy/Joules       2010           2804            8768           17171          16170          15132           15027
+               Throughput/(MB/s)   114            259             1041           3010           3135           4851            4605
+               PPW                 0.0567         0.0923          0.1187         0.1752         0.1938         0.3205          0.3064
+ 600us         Clients             1              2               4              8              12             16              32
+               Energy/Joules       2115  (5.22%)  2388  (-14.84%) 10700(22.03%)  16716 (-2.65%) 15939 (-1.43%) 15053 (-0.52%)  15083 (0.37% )
+               Throughput/(MB/s)   122   (7.02%)  234   (-9.65% ) 1188 (14.12%)  3003  (-0.23%) 3143  (0.26% ) 4842  (-0.19%)  4603  (-0.04%)
+               PPW                 0.0576(1.59%)  0.0979(6.07%  ) 0.111(-6.49%)  0.1796(2.51% ) 0.1971(1.70% ) 0.3216(0.34% )  0.3051(-0.42%)
+============= =================== ============== ================ ============= =============== ============== =============== ===============
 
-Regards,
-Nick
+2.Dbench
+(Energy less is better, Throughput more is better,
+PPW--Performance per Watt more is better)
+============= =================== ============== =============== ============== =============== ============== =============== ===============
+ Trans Delay   Dbench              governor:schedutil, 3-iterations average
+============= =================== ============== =============== ============== =============== ============== =============== ===============
+ 1000us        Clients             1             2               4              8               12             16              32
+               Energy/Joules       4890          3779            3567           5157            5611           6500            8163
+               Throughput/(MB/s)   327           167             220            577             775            938             1397
+               PPW                 0.0668        0.0441          0.0616         0.1118          0.1381         0.1443          0.1711
+ 600us         Clients             1             2               4              8               12             16              32
+               Energy/Joules       4915  (0.51%) 4912  (29.98%)  3506  (-1.71%) 4907  (-4.85% ) 5011 (-10.69%) 5672  (-12.74%) 8141  (-0.27%)
+               Throughput/(MB/s)   348   (6.42%) 284   (70.06%)  220   (0.00% ) 518   (-10.23%) 712  (-8.13% ) 854   (-8.96% ) 1475  (5.58% )
+               PPW                 0.0708(5.99%) 0.0578(31.07%)  0.0627(1.79% ) 0.1055(-5.64% ) 0.142(2.82%  ) 0.1505(4.30%  ) 0.1811(5.84% )
+============= =================== ============== =============== ============== =============== ============== =============== ===============
 
+3.Hackbench(less time is better)
+============= =========================== ==========================
+  hackbench     governor:schedutil
+============= =========================== ==========================
+  Trans Delay   Process Mode Ave time(s)  Thread Mode Ave time(s)
+  1000us        14.484                      14.484
+  600us         14.418(-0.46%)              15.41(+6.39%)
+============= =========================== ==========================
 
-> >
-> > > >
-> > > > So the DTS will be like:
-> > > > cpus {
-> > > >     ...
-> > > >      domain-idle-states {
-> > > >            CLUSTER_SLEEP:cluster-sleep {
-> > > >                         compatible =3D "domain-idle-state";
-> > > >                         ...
-> > > >             }
-> > > >      }
-> > > > }
-> > > > power-domains {
-> > > >             compatible =3D "riscv,sbi-power-domains"
-> > > >             ...
-> > > >             ...
-> > > >             CLUSTER_PD: clusterpd {
-> > > >                     domain-idle-states =3D <&CLUSTER_SLEEP>;
-> > > >             };
-> > > > }
-> > > > soc {
-> > > >       deviceA@xxx{
-> > > >              ...
-> > > >              power-domains =3D <&CLUSTER_PD>;
-> > > >              ...
-> > > >       }
-> > > > }
-> > >
-> > > Regards,
-> > > Anup
-> > >
-> > > >
-> > > > Regards,
-> > > > Nick
-> > > >
-> > > > On Tue, May 14, 2024 at 10:54=E2=80=AFPM Anup Patel <anup@brainfaul=
-t.org> wrote:
-> > > > >
-> > > > > On Tue, May 14, 2024 at 7:53=E2=80=AFPM Anup Patel <anup@brainfau=
-lt.org> wrote:
-> > > > > >
-> > > > > > Hi Nick,
-> > > > > >
-> > > > > > On Tue, May 14, 2024 at 3:20=E2=80=AFPM Nick Hu <nick.hu@sifive=
-.com> wrote:
-> > > > > > >
-> > > > > > > Hi Ulf,
-> > > > > > >
-> > > > > > > Thank you for your valuable suggestion.
-> > > > > > > I sincerely apologize for the delay in responding to your mes=
-sage We
-> > > > > > > have diligently worked on experimenting with the suggestion y=
-ou
-> > > > > > > provided.
-> > > > > > >
-> > > > > > > As per your recommendation, we have incorporated the "power-d=
-omains=3D<>
-> > > > > > > property" into the consumer's node, resulting in modification=
-s to the
-> > > > > > > DTS as illustrated below:
-> > > > > > >
-> > > > > > > cpus {
-> > > > > > >     ...
-> > > > > > >      domain-idle-states {
-> > > > > > >            CLUSTER_SLEEP:cluster-sleep {
-> > > > > > >                         compatible =3D "domain-idle-state";
-> > > > > > >                         ...
-> > > > > > >             }
-> > > > > > >      }
-> > > > > > >      power-domains {
-> > > > > > >             ...
-> > > > > > >             ...
-> > > > > > >             CLUSTER_PD: clusterpd {
-> > > > > > >                     domain-idle-states =3D <&CLUSTER_SLEEP>;
-> > > > > > >             };
-> > > > > > >      }
-> > > > > > > }
-> > > > > > > soc {
-> > > > > > >       deviceA@xxx{
-> > > > > > >              ...
-> > > > > > >              power-domains =3D <&CLUSTER_PD>;
-> > > > > > >              ...
-> > > > > > >       }
-> > > > > > > }
-> > > > > > >
-> > > > > > > However, this adjustment has led to an issue where the probe =
-for
-> > > > > > > 'deviceA' is deferred by 'device_links_check_suppliers()' wit=
-hin
-> > > > > > > 'really_probe()'. In an attempt to mitigate this issue, we
-> > > > > > > experimented with a workaround by adding the attribute
-> > > > > > > "status=3D"disabled"" to the 'CLUSTER_PD' node. This action a=
-imed to
-> > > > > > > prevent the creation of a device link between 'deviceA' and
-> > > > > > > 'CLUSTER_PD'. Nevertheless, we remain uncertain about the
-> > > > > > > appropriateness of this solution.
-> > > > > > >
-> > > > > > > Do you have suggestions on how to effectively address this is=
-sue?
-> > > > > >
-> > > > > > I totally missed this email since I was not CC'ed sorry about t=
-hat. Please
-> > > > > > use get_maintainers.pl when sending patches.
-> > > > >
-> > > > > I stand corrected. This patch had landed in the "spam" folder. I =
-don't know why.
-> > > > >
-> > > > > Regards,
-> > > > > Anup
-> > > > >
-> > > > > >
-> > > > > > The genpd_add_provider() (called by of_genpd_add_provider_simpl=
-e())
-> > > > > > does mark the power-domain DT node as initialized (fwnode_dev_i=
-nitialized())
-> > > > > > so after the cpuidle-riscv-sbi driver is probed the 'deviceA' d=
-ependency is
-> > > > > > resolved and 'deviceA' should be probed unless there are other =
-unmet
-> > > > > > dependencies.
-> > > > > >
-> > > > > > Try adding "#define DEBUG" before all includes in drivers/core/=
-basec
-> > > > > > and add "loglevel=3D8" in kernel parameters, this will print pr=
-oducer-consumer
-> > > > > > linkage of all devices.
-> > > > > >
-> > > > > > Marking the power-domain DT node as "disabled" is certainly not=
- the
-> > > > > > right way.
-> > > > > >
-> > > > > > Regards,
-> > > > > > Anup
-> > > > > >
-> > > > > > >
-> > > > > > > Regards,
-> > > > > > > Nick
-> > > > > > >
-> > > > > > > On Tue, Apr 30, 2024 at 4:13=E2=80=AFPM Ulf Hansson <ulf.hans=
-son@linaro.org> wrote:
-> > > > > > > >
-> > > > > > > > On Mon, 29 Apr 2024 at 18:26, Nick Hu <nick.hu@sifive.com> =
-wrote:
-> > > > > > > > >
-> > > > > > > > > On Tue, Apr 30, 2024 at 12:22=E2=80=AFAM Nick Hu <nick.hu=
-@sifive.com> wrote:
-> > > > > > > > > >
-> > > > > > > > > > Hi Ulf
-> > > > > > > > > >
-> > > > > > > > > > On Mon, Apr 29, 2024 at 10:32=E2=80=AFPM Ulf Hansson <u=
-lf.hansson@linaro.org> wrote:
-> > > > > > > > > > >
-> > > > > > > > > > > On Mon, 26 Feb 2024 at 07:51, Nick Hu <nick.hu@sifive=
-.com> wrote:
-> > > > > > > > > > > >
-> > > > > > > > > > > > When the cpus in the same cluster are all in the id=
-le state, the kernel
-> > > > > > > > > > > > might put the cluster into a deeper low power state=
-. Call the
-> > > > > > > > > > > > cluster_pm_enter() before entering the low power st=
-ate and call the
-> > > > > > > > > > > > cluster_pm_exit() after the cluster woken up.
-> > > > > > > > > > > >
-> > > > > > > > > > > > Signed-off-by: Nick Hu <nick.hu@sifive.com>
-> > > > > > > > > > >
-> > > > > > > > > > > I was not cced this patch, but noticed that this patc=
-h got queued up
-> > > > > > > > > > > recently. Sorry for not noticing earlier.
-> > > > > > > > > > >
-> > > > > > > > > > > If not too late, can you please drop/revert it? We sh=
-ould really move
-> > > > > > > > > > > away from the CPU cluster notifiers. See more informa=
-tion below.
-> > > > > > > > > > >
-> > > > > > > > > > > > ---
-> > > > > > > > > > > >  drivers/cpuidle/cpuidle-riscv-sbi.c | 24 +++++++++=
-+++++++++++++--
-> > > > > > > > > > > >  1 file changed, 22 insertions(+), 2 deletions(-)
-> > > > > > > > > > > >
-> > > > > > > > > > > > diff --git a/drivers/cpuidle/cpuidle-riscv-sbi.c b/=
-drivers/cpuidle/cpuidle-riscv-sbi.c
-> > > > > > > > > > > > index e8094fc92491..298dc76a00cf 100644
-> > > > > > > > > > > > --- a/drivers/cpuidle/cpuidle-riscv-sbi.c
-> > > > > > > > > > > > +++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
-> > > > > > > > > > > > @@ -394,6 +394,7 @@ static int sbi_cpuidle_pd_power=
-_off(struct generic_pm_domain *pd)
-> > > > > > > > > > > >  {
-> > > > > > > > > > > >         struct genpd_power_state *state =3D &pd->st=
-ates[pd->state_idx];
-> > > > > > > > > > > >         u32 *pd_state;
-> > > > > > > > > > > > +       int ret;
-> > > > > > > > > > > >
-> > > > > > > > > > > >         if (!state->data)
-> > > > > > > > > > > >                 return 0;
-> > > > > > > > > > > > @@ -401,6 +402,10 @@ static int sbi_cpuidle_pd_powe=
-r_off(struct generic_pm_domain *pd)
-> > > > > > > > > > > >         if (!sbi_cpuidle_pd_allow_domain_state)
-> > > > > > > > > > > >                 return -EBUSY;
-> > > > > > > > > > > >
-> > > > > > > > > > > > +       ret =3D cpu_cluster_pm_enter();
-> > > > > > > > > > > > +       if (ret)
-> > > > > > > > > > > > +               return ret;
-> > > > > > > > > > >
-> > > > > > > > > > > Rather than using the CPU cluster notifiers, consumer=
-s of the genpd
-> > > > > > > > > > > can register themselves to receive genpd on/off notif=
-iers.
-> > > > > > > > > > >
-> > > > > > > > > > > In other words, none of this should be needed, right?
-> > > > > > > > > > >
-> > > > > > > > > > Thanks for the feedback!
-> > > > > > > > > > Maybe I miss something, I'm wondering about a case like=
- below:
-> > > > > > > > > > If we have a shared L2 cache controller inside the cpu =
-cluster power
-> > > > > > > > > > domain and we add this controller to be a consumer of t=
-he power
-> > > > > > > > > > domain, Shouldn't the genpd invoke the domain idle only=
- after the
-> > > > > > > > > > shared L2 cache controller is suspended?
-> > > > > > > > > > Is there a way that we can put the L2 cache down while =
-all cpus in the
-> > > > > > > > > > same cluster are idle?
-> > > > > > > > > > > [...]
-> > > > > > > > > Sorry, I made some mistake in my second question.
-> > > > > > > > > Update the question here:
-> > > > > > > > > Is there a way that we can save the L2 cache states while=
- all cpus in the
-> > > > > > > > > same cluster are idle and the cluster could be powered do=
-wn?
-> > > > > > > >
-> > > > > > > > If the L2 cache is a consumer of the cluster, the consumer =
-driver for
-> > > > > > > > the L2 cache should register for genpd on/off notifiers.
-> > > > > > > >
-> > > > > > > > The device representing the L2 cache needs to be enabled fo=
-r runtime
-> > > > > > > > PM, to be taken into account correctly by the cluster genpd=
-. In this
-> > > > > > > > case, the device should most likely remain runtime suspende=
-d, but
-> > > > > > > > instead rely on the genpd on/off notifiers to understand wh=
-en
-> > > > > > > > save/restore of the cache states should be done.
-> > > > > > > >
-> > > > > > > > Kind regards
-> > > > > > > > Uffe
-> >
+4.Perf_sched_bench(less time is better)
+============= =================== ============== ============== ============== =============== =============== =============
+ Trans Delay  perf_sched_bench    governor:schedutil
+============= =================== ============== ============== ============== =============== =============== =============
+  1000us        Groups             1             2              4              8               12              24
+                AveTime(s)        1.64          2.851          5.878          11.636          16.093          26.395
+  600us         Groups             1             2              4              8               12              24
+                AveTime(s)        1.69(3.05%)   2.845(-0.21%)  5.843(-0.60%)  11.576(-0.52%)  16.092(-0.01%)  26.32(-0.28%)
+============= ================== ============== ============== ============== =============== =============== ==============
+
+5.Sysbench(higher is better)
+============= ================== ============== ================= ============== ================ =============== =================
+  Sysbench    governor:schedutil
+============= ================== ============== ================= ============== ================ =============== =================
+  1000us      Thread             1               2                4              8                12               24
+              Ave events         6020.98         12273.39         24119.82       46171.57         47074.37         47831.72
+  600us       Thread             1               2                4              8                12               24
+              Ave events         6154.82(2.22%)  12271.63(-0.01%) 24392.5(1.13%) 46117.64(-0.12%) 46852.19(-0.47%) 47678.92(-0.32%)
+============= ================== ============== ================= ============== ================ =============== =================
+
+In conclusion, a shorter transition delay
+of cpu clock will make a quite positive effect to improve PPW
+on Dbench test, in the meanwhile, keep stable performance
+on Tbench, Hackbench, Perf_sched_bench and Sysbench.
+
+Signed-off-by: Xiaojian Du <Xiaojian.Du@amd.com>
+Reviewed-by: Perry Yuan <perry.yuan@amd.com>
+Acked-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+ drivers/cpufreq/amd-pstate.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 6a342b0c0140..aa157c2b8ba2 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -50,6 +50,7 @@
+ 
+ #define AMD_PSTATE_TRANSITION_LATENCY	20000
+ #define AMD_PSTATE_TRANSITION_DELAY	1000
++#define AMD_PSTATE_FAST_CPPC_TRANSITION_DELAY 600
+ #define CPPC_HIGHEST_PERF_PERFORMANCE	196
+ #define CPPC_HIGHEST_PERF_DEFAULT	166
+ 
+@@ -817,8 +818,12 @@ static u32 amd_pstate_get_transition_delay_us(unsigned int cpu)
+ 	u32 transition_delay_ns;
+ 
+ 	transition_delay_ns = cppc_get_transition_latency(cpu);
+-	if (transition_delay_ns == CPUFREQ_ETERNAL)
+-		return AMD_PSTATE_TRANSITION_DELAY;
++	if (transition_delay_ns == CPUFREQ_ETERNAL) {
++		if (cpu_feature_enabled(X86_FEATURE_FAST_CPPC))
++			return AMD_PSTATE_FAST_CPPC_TRANSITION_DELAY;
++		else
++			return AMD_PSTATE_TRANSITION_DELAY;
++	}
+ 
+ 	return transition_delay_ns / NSEC_PER_USEC;
+ }
+-- 
+2.34.1
+
