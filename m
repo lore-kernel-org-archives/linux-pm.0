@@ -1,113 +1,146 @@
-Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
+Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [195.130.137.89])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B93615DBC0
-	for <linux-pm@vger.kernel.org>; Mon, 27 May 2024 12:26:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8623215E5A9
+	for <linux-pm@vger.kernel.org>; Mon, 27 May 2024 12:41:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.89
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716812803; cv=none; b=NyYIbgVZd7HrWHfEsVXREjXnDZRmQR06ZJnQ5FNRPZ5aLaZzzxVyoefkLUpMZG1rHWjhsElBoh93s207NtCIKkW4YEjnzT5LNF2K/2JwZWjKyXK2UoD4jxcWc+vyI7myXKdFVmck7ldDWkKMERtjOESZyTMW+3vC2v2g4qlIu0A=
+	t=1716813684; cv=none; b=Gv6k/ZR8/KpzWoKts4B3TZJHvX347BYyMnGuzGu3zv5vGUx38Hw/u0GwNuJqOKY0XczewUIvqRKvAFqCZPg5NzUUmHB8u2Ut4ICWvm6bD2BJhGTJ+SRDhr9Lml1Ki1/vpGpLsEOaO+rCTvZtRv7NxLTmOFr2Yf6vueTE/x6G4+E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716812803; c=relaxed/simple;
-	bh=uEBh5knVxjgMQ2FRyTCSQ4x+NhsByRN32pPubCK078Q=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RjRMy4CM+pwmp9bhuRER910JMcF+gd1KTn//QT7mofmOzsWdiQFO3sqgq2vp+mwcOn5MnQG2rHaqbSKwj0/cCVGtbRVpjTUlRYpHLuPKFFmvzrxg55FnmLe++5bdhHzbUbDHmV+yHZRS/LXXw53Co1UvyBC0W5TZBdDj8hYxmug=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=NQA7PTxb; arc=none smtp.client-ip=209.85.218.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="NQA7PTxb"
-Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-a6302bdb54aso87239766b.0
-        for <linux-pm@vger.kernel.org>; Mon, 27 May 2024 05:26:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1716812799; x=1717417599; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=+Z0jYksGWYDCzEC0W0rvVy6TJouZUOtG78WV9BnuANE=;
-        b=NQA7PTxbCPG0ilvX5Jmqt9nVvq7Q9khn1iJbRYalCvF8/5AF3M0Vc7K5j2wDUY0Q5X
-         bi4LLvY41IHuf1Fu5WQNOQKFlmlUHIrFucZS394h00CW8cZz6aEtwEQGBj2LBeJJXLIA
-         zOCBJjXbVBcNzz+9QNqFkVv+b0Qmm0GuBuADFSnU2qxCRSxnTiZXUQ7GLTPFJG8c/j2F
-         0tTc5qGV0SpG6KuB+eGCohUSIRDiphWhEjJto/z7A6iJ+ygJrBi78zNNF6UTqiQKdMKl
-         bS75WclvfdTksam1E4TmvTcOIKlVJlZ9BspwboQNQ4BbvrF5Lx2IuHUZEVpbwl1subnV
-         ZZSw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716812799; x=1717417599;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=+Z0jYksGWYDCzEC0W0rvVy6TJouZUOtG78WV9BnuANE=;
-        b=qDTLEMTZEgHY11Z1yf/wNYQ5+yVn//mF+v+KZFheQKG17nJoYq/PB0j0yYyFpVm6FO
-         SC7UkST/+C0Szh/R1P8s0cY5qCUqjzawQur00Z2ltlNxk9v83nk8WLwXm2jr2Wpb0n/j
-         +0HnJvqWmD0HNU2l5T12Yl3uJvhUlPEifceKSN/fgQX4zf1LKkPjHcxqu52BqO+++Wsy
-         eStg4t9hDmRogAzjnRU5ELm47W3HDok/xY4dXDROA/sOrDe7yy8seU3KuiEv+2wP9zbW
-         sxRV2vPs5oOd0HuMIsZad/JNKElisx+hz4qxKv/uHnbm/ApfL+jJmo2hxxQ73pQ0M50g
-         35MQ==
-X-Gm-Message-State: AOJu0YyNWhO0IIvI8xIgjhyoDJzyadz3cIfYonUlfAlj6LLrFTkmQcAK
-	M8qiupIVj+9H1ycxKwWHqAIarwLufsXUW4pu2Umtwi4oRoBLEhMoLcA9kDWTjTs=
-X-Google-Smtp-Source: AGHT+IGdiAI18N5SLWq542WfS9dm3HTYqjqz0CDg1sVYs7nLcvCMNTWyAiOq78S1awvR6RQ9LsxoIA==
-X-Received: by 2002:a17:906:478c:b0:a5a:7a1:5d9c with SMTP id a640c23a62f3a-a6265146984mr646663766b.62.1716812799534;
-        Mon, 27 May 2024 05:26:39 -0700 (PDT)
-Received: from ?IPV6:2001:a61:139b:bf01:e8eb:4d8f:8770:df82? ([2001:a61:139b:bf01:e8eb:4d8f:8770:df82])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a626c817bffsm488121266b.32.2024.05.27.05.26.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 27 May 2024 05:26:39 -0700 (PDT)
-Message-ID: <ceb1f7b3-2787-4166-846f-2427b44b3e62@suse.com>
-Date: Mon, 27 May 2024 14:26:36 +0200
+	s=arc-20240116; t=1716813684; c=relaxed/simple;
+	bh=EIepfrHfmhIc9MJ0QvPBLJEXp/OzidtfVr/2NHCOLWI=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=Q+MB6k/wvJ/EPA492BdeUlFly8NxUKQFS5u1Cx/hf5J1q5BFqp5EHMaGJ2dHQ1qUoe6oSIah+udheZK42SlOQIO62RQVeR/6S4Js9FDl6u25o34ImrwkfORsBed7UENN9cFrTaFHP+kVLUQY/Oze7X0SMYUoEqzS8+grQmKFj5c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.89
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:c993:5573:f894:7353])
+	by laurent.telenet-ops.be with bizsmtp
+	id UChF2C0022nC7mg01ChFPu; Mon, 27 May 2024 14:41:19 +0200
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1sBZeD-00CfTe-4S;
+	Mon, 27 May 2024 14:41:14 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1sBZf8-003hdZ-Sf;
+	Mon, 27 May 2024 14:41:14 +0200
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Ulf Hansson <ulf.hansson@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@google.com>
+Cc: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>,
+	Peng Fan <peng.fan@nxp.com>,
+	linux-pm@vger.kernel.org,
+	linux-serial@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC 1/3] earlycon: Export clock and PM Domain info from FDT
+Date: Mon, 27 May 2024 14:41:11 +0200
+Message-Id: <efd9397662ff743f95298ca6aad4efdfa0ba1962.1716811405.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1716811405.git.geert+renesas@glider.be>
+References: <cover.1716811405.git.geert+renesas@glider.be>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 4/6] power: supply: lenovo_yoga_c630_battery: add
- Lenovo C630 driver
-To: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
- Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
- Hans de Goede <hdegoede@redhat.com>,
- =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
- Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Konrad Dybcio <konrad.dybcio@linaro.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- Nikita Travkin <nikita@trvn.ru>
-References: <20240527-yoga-ec-driver-v3-0-327a9851dad5@linaro.org>
- <20240527-yoga-ec-driver-v3-4-327a9851dad5@linaro.org>
-Content-Language: en-US
-From: Oliver Neukum <oneukum@suse.com>
-In-Reply-To: <20240527-yoga-ec-driver-v3-4-327a9851dad5@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 27.05.24 12:03, Dmitry Baryshkov wrote:
+Earlycon relies on the serial port to be initialized by the firmware
+and/or bootloader.  Linux is not aware of any hardware dependencies that
+must be met to keep the port working, and thus cannot guarantee they
+stay met, until the full serial driver takes over.
 
-Hi,
+E.g. all unused clocks and unused PM Domains are disabled in a late
+initcall.  As this happens after the full serial driver has taken over,
+the serial port's clock and/or PM Domain are no longer deemed unused,
+and this is typically not a problem.
 
-> +struct yoga_c630_psy {
-> +	struct yoga_c630_ec *ec;
-> +	struct device *dev;
-> +	struct device_node *of_node;
-> +	struct notifier_block nb;
-> +	struct mutex lock;
-> +
-> +	struct power_supply *adp_psy;
-> +	struct power_supply *bat_psy;
-> +
-> +	unsigned long last_status_update;
-> +
-> +	bool adapter_online;
-> +
-> +	bool unit_mA;
-> +
-> +	unsigned int scale;
+However, if the serial port's clock or PM Domain is shared with another
+device, and that other device is runtime-suspended before the full
+serial driver has probed, the serial port's clock and/or PM Domain will
+be disabled inadvertently.  Any subsequent serial console output will
+cause a crash or system lock-up.
 
-why do you store unit_mA and scale? This looks redundant and like a source
-of confusion to me.
+Provide a mechanism to let the clock and/or PM Domain subsystem or
+drivers handle this, by exporting the clock and PM Domain dependencies
+for the serial port, as available in the system's device tree.
+Note that as this is done during early boot-up, the device_node
+structure pointing to the earlycon console is not yet created, so this
+has to resort to raw property data.
 
-	Regards
-		Oliver
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/tty/serial/earlycon.c | 14 +++++++++++++-
+ include/linux/serial_core.h   | 10 ++++++++++
+ 2 files changed, 23 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/tty/serial/earlycon.c b/drivers/tty/serial/earlycon.c
+index a5fbb6ed38aed681..abe4831d9685e2b8 100644
+--- a/drivers/tty/serial/earlycon.c
++++ b/drivers/tty/serial/earlycon.c
+@@ -250,11 +250,14 @@ early_param("earlycon", param_setup_earlycon);
+ 
+ #ifdef CONFIG_OF_EARLY_FLATTREE
+ 
++const __be32 *earlycon_clocks, *earlycon_power_domains;
++int earlycon_clocks_ncells, earlycon_power_domains_ncells;
++
+ int __init of_setup_earlycon(const struct earlycon_id *match,
+ 			     unsigned long node,
+ 			     const char *options)
+ {
+-	int err;
++	int err, size;
+ 	struct uart_port *port = &early_console_dev.port;
+ 	const __be32 *val;
+ 	bool big_endian;
+@@ -309,6 +312,15 @@ int __init of_setup_earlycon(const struct earlycon_id *match,
+ 	if (val)
+ 		port->uartclk = be32_to_cpu(*val);
+ 
++	earlycon_clocks = of_get_flat_dt_prop(node, "clocks", &size);
++	if (earlycon_clocks)
++		earlycon_clocks_ncells = size / sizeof(u32);
++
++	earlycon_power_domains = of_get_flat_dt_prop(node, "power-domains",
++						     &size);
++	if (earlycon_power_domains)
++		earlycon_power_domains_ncells = size / sizeof(u32);
++
+ 	if (options) {
+ 		early_console_dev.baud = simple_strtoul(options, NULL, 0);
+ 		strscpy(early_console_dev.options, options,
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 8cb65f50e830c8d4..70689a3363951dac 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -954,6 +954,16 @@ static const bool earlycon_acpi_spcr_enable EARLYCON_USED_OR_UNUSED;
+ static inline int setup_earlycon(char *buf) { return 0; }
+ #endif
+ 
++#ifdef CONFIG_OF_EARLY_FLATTREE
++extern const __be32 *earlycon_clocks, *earlycon_power_domains;
++extern int earlycon_clocks_ncells, earlycon_power_domains_ncells;
++#else
++#define earlycon_clocks			NULL
++#define earlycon_clocks_ncells		0
++#define earlycon_power_domains		NULL
++#define earlycon_power_domains_ncells	0
++#endif
++
+ /* Variant of uart_console_registered() when the console_list_lock is held. */
+ static inline bool uart_console_registered_locked(struct uart_port *port)
+ {
+-- 
+2.34.1
+
