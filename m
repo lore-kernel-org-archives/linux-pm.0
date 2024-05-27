@@ -1,93 +1,144 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from cantor.telenet-ops.be (cantor.telenet-ops.be [195.130.132.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 501484D5A2;
-	Mon, 27 May 2024 12:49:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 697724D5A2
+	for <linux-pm@vger.kernel.org>; Mon, 27 May 2024 12:50:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716814190; cv=none; b=lAvBW5Nkalq+dHCoKMbe54Yc6fRY9hDm1ER3RGG575FJbGevmw4O4wjp8DwEj1ov0BsSbAfYRpd/nZIoDSQ6htkEjhDyOOnglowDm6x/xOyr+p4ozWtFgaD0uRAOnAODDDdo23NaJa183qMegUxQygUHLr8YbjR24A3bEMTWR1g=
+	t=1716814207; cv=none; b=T5u4e25xQFioYOKwy07Hwv5dkosaltCdQVadqlli8+EkeVj9cDkvXtHkMeecMacSjMloNscRGt/KXmmI1ZQAu/Fp9d0qrUdD3/mlJnIyh9S6JgVVx8vUMTlEya3Wc1+/Mej/pOUNR5b9JMdIVOvvxxz1ENxG64PqFtYnHVTOp/A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716814190; c=relaxed/simple;
-	bh=kO9wIg+CtwT+6heTucB0udl6EgeL1JvmQsaJlESS0TU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XgAeHwrk6jKtNV6ESFbki9+OcEweBiH00U7qY7jflVgLQB6c7YggvcJsAtN68lce7s1IEhEgwSqkU83fZo+DfY3lc8OR8ZClfnOyojUdYFMf++aaiA/NBN/0vdKwuN8Z8fJ3SmQ8x54hF1lYkfxU251/OIIsX0anGRYgBJ6AshQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=n1IaD3ke; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="n1IaD3ke"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 58186C2BBFC;
-	Mon, 27 May 2024 12:49:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1716814189;
-	bh=kO9wIg+CtwT+6heTucB0udl6EgeL1JvmQsaJlESS0TU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=n1IaD3ke/1U9fQO7YdI8TsMSLanSmv+uyhSacUc/+ri475UKL25Jb4wR+C+JenB/y
-	 5q8RbYOz9pjYTFAg1cb7pjjEAbNbCP4g2ddLMf6XxckbIqVkYymyAcPkmHtPJp0v1s
-	 AVOMAFuTUF8jDJKVwo5Fmx+ymbynbXx9QnYqB2d4AQ9Ji+ixTTAarLwRbVmgh9vzgI
-	 1B4v7cWarbmPVk9+6pV8ITgfRXjRetwVte51AChQ97U1OIvN1ttJ1+4Q9HIcFyPhZ2
-	 HBeNfEZ+gs8qBIKoagkIVNWwNf5BNCM8Jkp/LBm8MVPFikQ63Ur9Ht3XHyV1MoXSb9
-	 WZqxGOZ6gBjbA==
-Date: Mon, 27 May 2024 13:49:42 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, heiko@sntech.de,
-	u.kleine-koenig@pengutronix.de, geert+renesas@glider.be,
-	rafael@kernel.org, linux-pm@vger.kernel.org, abelvesa@kernel.org,
-	peng.fan@nxp.com, mturquette@baylibre.com, sboyd@kernel.org,
-	shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
-	festevam@gmail.com, imx@lists.linux.dev, shengjiu.wang@gmail.com,
-	frank.li@nxp.com, mkl@pengutronix.de, linus.walleij@linaro.org,
-	linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] pmdomain: imx: gpcv2: Add delay after power up
- handshake
-Message-ID: <a04b3939-081a-49e0-a063-5b50d3321ca7@sirena.org.uk>
-References: <1715396125-3724-1-git-send-email-shengjiu.wang@nxp.com>
- <CAPDyKFp4V8f0iyeRASSEu4YaCSz0m56=8ssBJ9ogSvqG1dzMZA@mail.gmail.com>
+	s=arc-20240116; t=1716814207; c=relaxed/simple;
+	bh=8hdldazWVA2zqxn3teJVpbzPafUsFkhaXGXuAlZegCc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=K6fSMRnRKHEKNEKilljG+0UxIU/KB+qIogOBP+flwphmpREksG2r1Tj7I12zQMGXzNTlrzqQDQT2Wf5SuYU9ft4fJ/+meiOyUKRv6pm6D5Z3BymWMqlz90ATsQPwXbgMdHrStNDa4FvlH+8nBZO7hR2365XAtqOGubKNtn/nDfo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
+	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4VnwHq2Drmz4x7kb
+	for <linux-pm@vger.kernel.org>; Mon, 27 May 2024 14:41:27 +0200 (CEST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:c993:5573:f894:7353])
+	by andre.telenet-ops.be with bizsmtp
+	id UChF2C0032nC7mg01ChF7d; Mon, 27 May 2024 14:41:19 +0200
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1sBZeD-00CfTd-4Q;
+	Mon, 27 May 2024 14:41:14 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1sBZf8-003hdW-RS;
+	Mon, 27 May 2024 14:41:14 +0200
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Ulf Hansson <ulf.hansson@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@google.com>
+Cc: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>,
+	Peng Fan <peng.fan@nxp.com>,
+	linux-pm@vger.kernel.org,
+	linux-serial@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC 0/3] pmdomain: renesas: rmobile-sysc: Remove serial console handling
+Date: Mon, 27 May 2024 14:41:10 +0200
+Message-Id: <cover.1716811405.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Oj5O7UC7qaae2W5K"
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFp4V8f0iyeRASSEu4YaCSz0m56=8ssBJ9ogSvqG1dzMZA@mail.gmail.com>
-X-Cookie: The Moral Majority is neither.
+Content-Transfer-Encoding: 8bit
 
+	Hi all,
 
---Oj5O7UC7qaae2W5K
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Since commit a47cf07f60dcb02d ("serial: core: Call
+device_set_awake_path() for console port"), the serial driver properly
+handles the case where the serial console is part of the awake path, and
+it looked like we could start removing special serial console handling
+from PM Domain drivers like the R-Mobile SYSC PM Domain driver.
+Unfortunately the devil is in the details, as usual...
 
-On Tue, May 21, 2024 at 12:22:41PM +0200, Ulf Hansson wrote:
-> On Sat, 11 May 2024 at 05:15, Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
+Earlycon relies on the serial port to be initialized by the firmware
+and/or bootloader.  Linux is not aware of any hardware dependencies that
+must be met to keep the port working, and thus cannot guarantee they
+stay met, until the full serial driver takes over.
 
-> > The BLK-CTL module needs to add delay to wait for a handshake request finished.
-> > For some BLK-CTL module (eg. AudioMix on i.MX8MP) doesn't have BUS clk-en
-> > bit, it is better to add delay in this driver, as the BLK-CTL module doesn't
-> > need to care about how it is powered up.
+E.g. all unused clocks and unused PM Domains are disabled in a late
+initcall.  As this happens after the full serial driver has taken over,
+the serial port's clock and/or PM Domain are no longer deemed unused,
+and this is typically not a problem.
 
-> Sorry for the delay!
+However, if the serial port's clock or PM Domain is shared with another
+device, and that other device is runtime-suspended before the full
+serial driver has probed, the serial port's clock and/or PM Domain will
+be disabled inadvertently.  Any subsequent serial console output will
+cause a crash or system lock-up.  E.g. on R/SH-Mobile SoCs, the serial
+ports share their PM Domain with several other I/O devices.  After the
+use of pwm (Armadillo-800-EVA) or i2c (KZM-A9-GT) during early boot,
+before the full serial driver takes over, the PM Domain containing the
+early serial port is powered down, causing a lock-up when booted with
+"earlycon".
 
-> Applied for fixes, thanks!
+This RFC patch series aims to provide a mechanism for handling this, and
+to fix it for the PM Domain case:
+  1. The first patch provides a mechanism to let the clock and/or PM
+     Domain subsystem or drivers handle this, by exporting the clock and
+     PM Domain dependencies for the serial port, as available in the
+     system's device tree,
+  2. The second patch introduces a new flag to handle a PM domain that
+     must be kept powered-on during early boot, and by setting this flag
+     if the PM Domain contains the serial console (originally I handled
+     this inside rmobile-sysc, but it turned out to be easy to
+     generalize this to other platforms in the core PM Domain code).
+  3. The third patch removes the no longer needed special console
+     handling from the R-Mobile SYSC PM Domain driver.
 
-I see this is in -next but mainline is currently broken for i.MX8
-platforms - could we get it in for -rc2?
+I did not fix the similar clock issue, as it is more complex (there can
+be multiple clocks, and each clock provider can have its own value of
+#clock-cells), and I do not need it for Renesas ARM platforms.
 
---Oj5O7UC7qaae2W5K
-Content-Type: application/pgp-signature; name="signature.asc"
+This has been tested on the APE6-EVM, Armadillo-800-EVA, and KZM-A9-GT
+development boards, with and without earlycon, including s2ram with and
+without no_console_suspend.
 
------BEGIN PGP SIGNATURE-----
+Notes:
+  - This should not be needed on RZ/G3S, where each serial port device
+    has its own PM Domain,
+  - drivers/clk/imx/clk.c and drivers/pmdomain/imx/scu-pd.c have special
+    handling for the of_stdout device, but is probably not affected, as
+    each serial port seems to share its PM Domain only with the serial
+    port's clock controller.
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmZUgWUACgkQJNaLcl1U
-h9CSQQf+Mt9Bm1J3SOUbg3E3YrGKe269u9XMPX2/8mjaeJaQ4JKJOwfRqxjeiayG
-zthEIjLn5LqjBsaPDa7CgLfYSxfXOdpUmJ/DkebqpiUag367dyoxubuz8AizQass
-E4jD+KxnfFQR0KIo3WbQsgCJSiEmAVuwZvba8BA/DCLFe4QKXwv0g4j3J0zyqIWO
-PqWekRXAONlr0LF42HC9+dj+Y4hQvxaWCNL95ipKvTKKSJTPo6MIH/5Jt5S7OUQ9
-QqTMceS9gH90lhFt37utufxqQKEGPYR4qeceIlymtl2Ce0GqL/Nzd17VO7kCU13i
-6E9s7rzLOTFU9/eH1N87gf4Z0XnDfw==
-=u0Mu
------END PGP SIGNATURE-----
+Thanks for your comments!
 
---Oj5O7UC7qaae2W5K--
+Geert Uytterhoeven (3):
+  earlycon: Export clock and PM Domain info from FDT
+  pmdomain: core: Avoid earlycon power-down
+  pmdomain: renesas: rmobile-sysc: Remove serial console handling
+
+ drivers/pmdomain/core.c                 | 24 ++++++++++++++++--
+ drivers/pmdomain/renesas/rmobile-sysc.c | 33 +------------------------
+ drivers/tty/serial/earlycon.c           | 14 ++++++++++-
+ include/linux/pm_domain.h               |  4 +++
+ include/linux/serial_core.h             | 10 ++++++++
+ 5 files changed, 50 insertions(+), 35 deletions(-)
+
+-- 
+2.34.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
