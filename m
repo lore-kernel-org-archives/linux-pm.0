@@ -1,60 +1,61 @@
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 126E817DE2A
-	for <linux-pm@vger.kernel.org>; Tue, 28 May 2024 19:04:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C36E1180A7E
+	for <linux-pm@vger.kernel.org>; Tue, 28 May 2024 19:04:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716923044; cv=none; b=RdmAv3+EURBQAK2qPCasbrER2IVqCTWxvGBjaTiQLqMrcD4dn/FytrOOIBBwDHH7fqAGShKcatsLLeAqaHG/cez6h1lqA3ztY5Z9uEFiD+JAcDOoi99+DRAvP5z287MLxCtnf+v6XGV3XeNG+L+9NHQwAUaWtD5VPmId1TewWbc=
+	t=1716923048; cv=none; b=OWlTPfSwfcZIEcqXOrOvPWCxdtOYsabynMccvSufXUcrnlMwkjmtyEmnbZH23riDrLK60yDZ9YKkOXh2vjeDlYIlY5N7bskTuHbrype/lT2uRHUmCB3EAI3QdPMcAgNIdbrAhAf71IxNFssicpHUxbKBtgSGYk9EXBuN+RfrmvA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716923044; c=relaxed/simple;
-	bh=v6bmxVza0xjPTI+/FgQNjpyh/NQXAsf+yGHXNfo1hss=;
+	s=arc-20240116; t=1716923048; c=relaxed/simple;
+	bh=oGqCjZoMtSrCwf8xbipdg0QeegidLEYbNGeloSkNMkY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=oDZ2xKP93ro7vmDHS5mn0rMr7OLj+6kG6F8zyAioXX4Umv+PZFiHLEki+ZnPSYut480/pcAFML6aGELmvQTymSQ+wOn3RKz7ehWM+/GowMEfwExLAS5ouhLFxQ6vUSkLg9gsE2dfvV5B7BudEglRNLa6dIixLpGY8MRr+pz5t+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=WZr9jf/P; arc=none smtp.client-ip=209.85.221.45
+	 In-Reply-To:To:Cc; b=ShKRj6gF5xPH3fbB6ew0dC4+kIH2SHPoFAUDszl/0jOB/lO/zfH91y6MqyPOrgMAUDbTi+phg1O5512AMd3kwNmGht9AwFz05rLffB+qmLkS20TuSKK9Awrj8SZYAvVc8Hl9s+7SRIJZnK3oH2ybU0BC7BUdzdaJBHs5oUGtPnY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=R38BqZDh; arc=none smtp.client-ip=209.85.128.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="WZr9jf/P"
-Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-354b722fe81so923908f8f.3
-        for <linux-pm@vger.kernel.org>; Tue, 28 May 2024 12:04:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="R38BqZDh"
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-420180b59b7so10227375e9.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 May 2024 12:04:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1716923040; x=1717527840; darn=vger.kernel.org;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1716923044; x=1717527844; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=uuYPl47KIQ9VqY872Xqe+kTgcrB2o5A+grbMagkLOSo=;
-        b=WZr9jf/P36AIX/6Y5uym++jmaReavmef/2ruSxLYZJMN02jB2hp6WTDmHCAVyYPhQ9
-         2O1QTqB9XuRPEPkAKIc5RX2CGIzmtsprMtNrClsvTn4fj4Leij1LDwVLHTH2M9/E+7XT
-         hBkiEiDbh7MYZm33qmuaDKwh+e7Eolv2Kw2GvsRhfnXY1ZcUTKIB/7BN1E53XlgiLh/V
-         ESm7htNC0DSAoSguf5m0aGOJJmH7Qk/1MPj6mQTxe29uyT4LZQZdd/VworDyHvxhmpWU
-         VUUY/8uRhQvBpxAf92dWEprwqNbHS+W4EwYm9x1H6Jv+OUgyGi81CWfV/LAV/G/dl4YW
-         Q+DA==
+        bh=gFU0fFDLXBVTpEVhQ1putOMYxJzP0S29Lv1LacuJjZ8=;
+        b=R38BqZDhYNvR2rKNSmV0hLmvuMnuSYa1+tsiCVZyA63IxmjdJzuvLuqQuFtzLNn+XE
+         wEcngCulIRJz1lVeu0uMvJFkv0qngFax3d9huS2AsegvZ9yuPjYKvhUzNtK2jNWv1aCh
+         Tm35LZsDIce8vGMRm6JyYZjD0YQRk48MeqgQuX+eEe02UlrEwt+oMMfuTNc5VL9KlfX0
+         xoIFM/zUreqABkUuMexDadEtMHymoD8YleZ7VmyOo0CDl5GXG8c3UDouIBbqAylMdrwd
+         8Iv47hoF7h+whHEwp+CqNie1vidWQoWhgG0vSYEPiiuD6NWtDGchZMkaQ7PCpar4HP2o
+         FkPQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716923040; x=1717527840;
+        d=1e100.net; s=20230601; t=1716923044; x=1717527844;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=uuYPl47KIQ9VqY872Xqe+kTgcrB2o5A+grbMagkLOSo=;
-        b=igso6iuxDUCq2AHEbheDUaGrY1u/A0UMVhAe3uznYbVRWmQ4W9Eb2tVabILmG+oG7e
-         mQTLZf48DvMQDCnJVhgKnavIeDpmBWcj5NHpuAHGU9OJiVT0uUrCJguytxtXag0Igkql
-         MIP+AbGk5/YtJ1CbTxDvy5OiyIUOlFvT/ZMzdSXBRPVXw6SjtLKkq2CQFTWj9jV8ONw8
-         cr3ZwHV1+qfCGRCWQGLr9WyzMQyX/OBPtVSN/5/8zCM8a/DoSqEv5vTqp79q/WVufph9
-         mEp6m9FYdGop7nP/+1M9ESHzMeqTcnHDrK8pM4O+gbvr8pAB14TNdtoJepxmo5G3ghTk
-         Rd6g==
-X-Forwarded-Encrypted: i=1; AJvYcCXZ9BCOKx0uajRgNEV1OTimN7/NisYyFmNAmhiJitoCTzHhn6fmRU75GqKBoxUfskmQnVc51AQTe6EHLGPdRJ/KBiyS5GgQUvM=
-X-Gm-Message-State: AOJu0Yw64M0yk5ECcbQ1TIV/NBCh14g8MfBIlobIsbTlI580m6487Auv
-	DLklHpCIFl85BGIDHj/y7002BSAVSAmysuE/S5lcKppZlXm82UrNXJlSIdJBWqE=
-X-Google-Smtp-Source: AGHT+IHuM/tFylSDmfQEbP2mgVrrRlps+nMqHvCZC6tgXDtzYJQLq8BaRAZ5E2wY5ZobApECS56FsA==
-X-Received: by 2002:adf:f183:0:b0:354:f5f2:198b with SMTP id ffacd0b85a97d-3552fdc828bmr9373160f8f.46.1716923039935;
-        Tue, 28 May 2024 12:03:59 -0700 (PDT)
+        bh=gFU0fFDLXBVTpEVhQ1putOMYxJzP0S29Lv1LacuJjZ8=;
+        b=B182oUe8vbLkB44Pgaui+EDBYA1iRUnorMVm17pV2QlPCGAxjIqj9lYAHte+pbr0Ur
+         5+oB99cqcRhwmeeVVCIkHTzOQuCI2DT5mBRA+XbQE34UfRac+oimEyqlAfvgPooO6QXa
+         ELqZcCHw8vqOSHE6LbtX2rK1K3uk7/3yfHpWUPbYuZVTH2cKV8v3ROoF5VnnZLYhh148
+         PbfVnNX9erQslbOXkExN+cLXXZIdoROgjjZWde+f/V8KqnzYWxzx1RSJUUa0PCZHzbU0
+         0jUgwpojB+6njjepquwvIJPDdbzV4KDA53SThZZG2dikxUdTYgEozO23UAz5tcqHw3aZ
+         bOzA==
+X-Forwarded-Encrypted: i=1; AJvYcCXhRdIVYLtJzbhfRrDaQqClUi4WbEEpeZZmzJZsvLLYpATLQlz5P6ERmsyLFPUz8vHxj4g5iaMR56nNQcDcf5bYROwdqdZJE1Q=
+X-Gm-Message-State: AOJu0Yz2L4kWv4Eg23FigA9HE+AgqxcdayzMkkRDW9EKQV7D0vCuJ/NM
+	koEZ9AkMFPKM0Jpm4sI0a3fCNu4r+0a/L13+NsWSpzcGhxg9hEqQjIDeJvNONdg=
+X-Google-Smtp-Source: AGHT+IG6B6kXReUvfOK7G13iUYw63mXLE+oQ5Xs7Zu/A92odTJ2Gt2f1pgs9Npx0RVH6n2yeZy3ueQ==
+X-Received: by 2002:a05:600c:5719:b0:420:173f:e1e9 with SMTP id 5b1f17b1804b1-421089e97bcmr91269195e9.21.1716923044209;
+        Tue, 28 May 2024 12:04:04 -0700 (PDT)
 Received: from [127.0.1.1] ([2a01:cb1d:75a:e000:93eb:927a:e851:8a2f])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-42100ee954bsm183895415e9.4.2024.05.28.12.03.58
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-42100ee954bsm183895415e9.4.2024.05.28.12.04.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 May 2024 12:03:59 -0700 (PDT)
+        Tue, 28 May 2024 12:04:03 -0700 (PDT)
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 28 May 2024 21:03:17 +0200
-Subject: [PATCH v8 09/17] arm64: dts: qcom: qrb5165-rb5: add the Wifi node
+Date: Tue, 28 May 2024 21:03:20 +0200
+Subject: [PATCH v8 12/17] PCI: hold the rescan mutex when scanning for the
+ first time
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,7 +64,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240528-pwrseq-v8-9-d354d52b763c@linaro.org>
+Message-Id: <20240528-pwrseq-v8-12-d354d52b763c@linaro.org>
 References: <20240528-pwrseq-v8-0-d354d52b763c@linaro.org>
 In-Reply-To: <20240528-pwrseq-v8-0-d354d52b763c@linaro.org>
 To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
@@ -89,187 +90,54 @@ Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
  ath11k@lists.infradead.org, Jeff Johnson <quic_jjohnson@quicinc.com>, 
  ath12k@lists.infradead.org, linux-pm@vger.kernel.org, 
  linux-pci@vger.kernel.org, 
- Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, kernel@quicinc.com
+ Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, kernel@quicinc.com, 
+ Amit Pundir <amit.pundir@linaro.org>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4464;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=914;
  i=bartosz.golaszewski@linaro.org; h=from:subject:message-id;
- bh=Me7N8ZNN6u3p7zKAmRYczNLdqj65cIP/XYHdl6dlOEY=;
- b=owEBbQKS/ZANAwAKARGnLqAUcddyAcsmYgBmViqONa8eypowxbocTV6FbyeJdEqgaJRdAxEqd
- W+QhVf9AkSJAjMEAAEKAB0WIQQWnetsC8PEYBPSx58Rpy6gFHHXcgUCZlYqjgAKCRARpy6gFHHX
- cnnMD/wIdbFG831RyQxn2MifvFsy5fsypWV+YCMg0dxSNEECFXIWNWqtL82VEKzs1UpAsVYr/ha
- fiuiQnIY6Q7JUbVDU7w5prFt03hniOssQ521Hu8u/5WROSZsVy2QG50ZakRngiMGLw+hkrxyM6N
- hnRnKyALjhbO2YobuRV+JDvR5HnT0W0FOTxaJvz4eRrowOR24V4D+DdQB6hb+dLe6+/dlavYlRS
- Mya8jDaHw+skBNwf6T7Ed5/tdz6YqbvdWleCBuqszBfH7Pim1X7w0p2rBAJFiRP7u2sUGrac2p+
- PgwyDrRv7s/ANaWcAASoK/HGfvu/ZxLk2iXLEh6zc5ztxFSP/ugJ42olasCcDfHgoa+CGxHScyM
- adRDD1Exag5buGhHH5oK/bzMUoXnc7DB8JahKqxwHYJc7b2DsOhD1wYqHVto4cJOmGtq60EErZi
- NVSPO9riuyczhwJv2OAyTaCjf+x724DkWVQZy9KIwxaZIxdwu8n+wWODhIwaI9mw2Bc4G1oZBfJ
- 621lslpJtPtw9wn7OGjJPpQEW0v0NNw9PP94urvxPiKASe9yfrs5+vcKUpM9Snv3edhGdL+Dgmr
- nNmU37j0doofN+vk5tKc7fHVQGkMyvnhyhsbVPOgC/UV8/PDf+Ivz0HnMXNWlroanQoH6pbtTIz
- xcYFSHOGTn5ZeeA==
+ bh=kuyJTCA9fdYhUGDXvoePXqDSaNb9NruStgSbf5wa/1E=;
+ b=owEBbQKS/ZANAwAKARGnLqAUcddyAcsmYgBmViqP/eY7rIuS/eQw4O3UlON8rwdGRoMGUP7rz
+ yzNVdBe65WJAjMEAAEKAB0WIQQWnetsC8PEYBPSx58Rpy6gFHHXcgUCZlYqjwAKCRARpy6gFHHX
+ cvKjD/9WKJ6xrPFHjBRP7ktzwHOQmaTfICHaHJtV3PV0foF3NVt3xBjv/3MfTIoDHxKL/27sUbX
+ AX0c1HDDrhyg+xUEwP3Ldeoi+bmJKHTPpBgTuLU0F9ax8+nQsFBoHyOQwaIFebtMFB0f8GE+xA0
+ jsxo/VePbSMksuxs1v066MNDPpVjKPx/BS6ZmdWbZU/Fhw/PA83vcPyKHyS+gSwR+/a6naEoIDG
+ /r4rQ1fIQMD+/LMFzTJYgTkk5dh96SRuGfQ0HgYSfbWr42EdZUbFyMDhgUiqQceMOBwexPlqd0J
+ BOASeFIGFOYM7lyG+0RBjDGGbtg9P3D8EF5EbrI5IMHMJGEPlOdEEHydvZ3irbtN/FdyTQcps60
+ W3h5F7J/GEci3w5eTef3u2+nLFBD7+v/IzE/U+e/ISniyUz+HOqEMZ2cfKGAqvzBXOFxzAONnzI
+ GUn45522td18GWGJ2IQq6PWkohJhco7ANiMaK/pwgGkemTt34e2f56iqSkaw2hhTnzrI1oaIP7K
+ SsLgff5wn0FMZqpU/xOqN1gUJ6dCL9fQiFa32Acmjqlhp9qs/MVZY6ri19ncKXCEPITAp6Qv/Rm
+ AK96m/GOCFcx5h2BnodJx318PL5gOmyFiDLn7oaEdmqmPq2rpC9akype843qdeE5gZ0F8jt0z/I
+ Tu7x3hngIac7MMA==
 X-Developer-Key: i=bartosz.golaszewski@linaro.org; a=openpgp;
  fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
 
 From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-Add a node for the PMU module of the QCA6391 present on the RB5 board.
-Assign its LDO power outputs to the existing Bluetooth module. Add a
-node for the PCIe port to sm8250.dtsi and define the WLAN node on it in
-the board's .dts and also make it consume the power outputs of the PMU.
+With the introduction of PCI device power control drivers that will be
+able to trigger the port rescan when probing, we need to hold the rescan
+mutex during the initial pci_host_probe() too or the two could get in
+each other's way.
 
+Tested-by: Amit Pundir <amit.pundir@linaro.org>
 Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/qrb5165-rb5.dts | 103 +++++++++++++++++++++++++++----
- arch/arm64/boot/dts/qcom/sm8250.dtsi     |   2 +-
- 2 files changed, 93 insertions(+), 12 deletions(-)
+ drivers/pci/probe.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/qrb5165-rb5.dts b/arch/arm64/boot/dts/qcom/qrb5165-rb5.dts
-index 70036a95cace..135bb00fe9c8 100644
---- a/arch/arm64/boot/dts/qcom/qrb5165-rb5.dts
-+++ b/arch/arm64/boot/dts/qcom/qrb5165-rb5.dts
-@@ -108,6 +108,67 @@ lt9611_3v3: lt9611-3v3 {
- 		regulator-always-on;
- 	};
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 8e696e547565..604fc96b1098 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -3072,7 +3072,9 @@ int pci_host_probe(struct pci_host_bridge *bridge)
+ 	struct pci_bus *bus, *child;
+ 	int ret;
  
-+	qca6390-pmu {
-+		compatible = "qcom,qca6390-pmu";
-+
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&bt_en_state>, <&wlan_en_state>;
-+
-+		vddaon-supply = <&vreg_s6a_0p95>;
-+		vddpmu-supply = <&vreg_s2f_0p95>;
-+		vddrfa0p95-supply = <&vreg_s2f_0p95>;
-+		vddrfa1p3-supply = <&vreg_s8c_1p3>;
-+		vddrfa1p9-supply = <&vreg_s5a_1p9>;
-+		vddpcie1p3-supply = <&vreg_s8c_1p3>;
-+		vddpcie1p9-supply = <&vreg_s5a_1p9>;
-+		vddio-supply = <&vreg_s4a_1p8>;
-+
-+		wlan-enable-gpios = <&tlmm 20 GPIO_ACTIVE_HIGH>;
-+		bt-enable-gpios = <&tlmm 21 GPIO_ACTIVE_HIGH>;
-+
-+		regulators {
-+			vreg_pmu_rfa_cmn: ldo0 {
-+				regulator-name = "vreg_pmu_rfa_cmn";
-+			};
-+
-+			vreg_pmu_aon_0p59: ldo1 {
-+				regulator-name = "vreg_pmu_aon_0p59";
-+			};
-+
-+			vreg_pmu_wlcx_0p8: ldo2 {
-+				regulator-name = "vreg_pmu_wlcx_0p8";
-+			};
-+
-+			vreg_pmu_wlmx_0p85: ldo3 {
-+				regulator-name = "vreg_pmu_wlmx_0p85";
-+			};
-+
-+			vreg_pmu_btcmx_0p85: ldo4 {
-+				regulator-name = "vreg_pmu_btcmx_0p85";
-+			};
-+
-+			vreg_pmu_rfa_0p8: ldo5 {
-+				regulator-name = "vreg_pmu_rfa_0p8";
-+			};
-+
-+			vreg_pmu_rfa_1p2: ldo6 {
-+				regulator-name = "vreg_pmu_rfa_1p2";
-+			};
-+
-+			vreg_pmu_rfa_1p7: ldo7 {
-+				regulator-name = "vreg_pmu_rfa_1p7";
-+			};
-+
-+			vreg_pmu_pcie_0p9: ldo8 {
-+				regulator-name = "vreg_pmu_pcie_0p9";
-+			};
-+
-+			vreg_pmu_pcie_1p8: ldo9 {
-+				regulator-name = "vreg_pmu_pcie_1p8";
-+			};
-+		};
-+	};
-+
- 	thermal-zones {
- 		conn-thermal {
- 			polling-delay-passive = <0>;
-@@ -734,6 +795,23 @@ &pcie0_phy {
- 	vdda-pll-supply = <&vreg_l9a_1p2>;
- };
- 
-+&pcieport0 {
-+	wifi@0 {
-+		compatible = "pci17cb,1101";
-+		reg = <0x10000 0x0 0x0 0x0 0x0>;
-+
-+		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
-+		vddaon-supply = <&vreg_pmu_aon_0p59>;
-+		vddwlcx-supply = <&vreg_pmu_wlcx_0p8>;
-+		vddwlmx-supply = <&vreg_pmu_wlmx_0p85>;
-+		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
-+		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
-+		vddrfa1p7-supply = <&vreg_pmu_rfa_1p7>;
-+		vddpcie0p9-supply = <&vreg_pmu_pcie_0p9>;
-+		vddpcie1p8-supply = <&vreg_pmu_pcie_1p8>;
-+	};
-+};
-+
- &pcie1 {
- 	status = "okay";
- };
-@@ -1303,6 +1381,14 @@ sdc2_card_det_n: sd-card-det-n-state {
- 		function = "gpio";
- 		bias-pull-up;
- 	};
-+
-+	wlan_en_state: wlan-default-state {
-+		pins = "gpio20";
-+		function = "gpio";
-+		drive-strength = <16>;
-+		output-low;
-+		bias-pull-up;
-+	};
- };
- 
- &uart6 {
-@@ -1311,17 +1397,12 @@ &uart6 {
- 	bluetooth {
- 		compatible = "qcom,qca6390-bt";
- 
--		pinctrl-names = "default";
--		pinctrl-0 = <&bt_en_state>;
--
--		enable-gpios = <&tlmm 21 GPIO_ACTIVE_HIGH>;
--
--		vddio-supply = <&vreg_s4a_1p8>;
--		vddpmu-supply = <&vreg_s2f_0p95>;
--		vddaon-supply = <&vreg_s6a_0p95>;
--		vddrfa0p9-supply = <&vreg_s2f_0p95>;
--		vddrfa1p3-supply = <&vreg_s8c_1p3>;
--		vddrfa1p9-supply = <&vreg_s5a_1p9>;
-+		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
-+		vddaon-supply = <&vreg_pmu_aon_0p59>;
-+		vddbtcmx-supply = <&vreg_pmu_btcmx_0p85>;
-+		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
-+		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
-+		vddrfa1p7-supply = <&vreg_pmu_rfa_1p7>;
- 	};
- };
- 
-diff --git a/arch/arm64/boot/dts/qcom/sm8250.dtsi b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-index 759e0822b3ac..b32bd849df44 100644
---- a/arch/arm64/boot/dts/qcom/sm8250.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-@@ -2204,7 +2204,7 @@ pcie0: pcie@1c00000 {
- 
- 			status = "disabled";
- 
--			pcie@0 {
-+			pcieport0: pcie@0 {
- 				device_type = "pci";
- 				reg = <0x0 0x0 0x0 0x0 0x0>;
- 				bus-range = <0x01 0xff>;
++	pci_lock_rescan_remove();
+ 	ret = pci_scan_root_bus_bridge(bridge);
++	pci_unlock_rescan_remove();
+ 	if (ret < 0) {
+ 		dev_err(bridge->dev.parent, "Scanning root bridge failed");
+ 		return ret;
 
 -- 
 2.43.0
