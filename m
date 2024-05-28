@@ -1,132 +1,185 @@
-Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBA4016D9C7
-	for <linux-pm@vger.kernel.org>; Tue, 28 May 2024 14:07:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E22731DA32;
+	Tue, 28 May 2024 14:52:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716905268; cv=none; b=Nf/HtQt+BaBR+ISHZncrgwaRjCVIDlkzvkDOrpNWFcQ+IKZ7KQtOM6+v6BtkxvR7gg62PHq561QgkRnooLcfk/OixgKzEyldqEhvV0iuHWkGd0nIFrnZXB3+ppNcF5EnQ8xJkOgJmliNkWHM27pOPwgyQG+yYcrJKw/yTSgPMuE=
+	t=1716907961; cv=none; b=QkM6rHyefeuhnYXRGb8YY8Rnk/uDG0n35U5VG3VHMjtypZw7l5gxIdWC1veJP637GYTja4f7LmAUsRrBGLBCQWdcmbamCxvpGl6+MmHUboE213ZNvD3urV0GsFflOWwiRkNOe9yGg0sgb6nKcMqcNQUiww6ENnGV1ub0zDyTH5M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716905268; c=relaxed/simple;
-	bh=jdjdppB75uoAt13BI5M5/Jjmnh9buSmpCU+OTqJ0D1k=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=b+9at6JuMwBQyQ0Gi0pmscCi5CrE3KUGRmNRdYsHIHg7WQNE0qPYQSmc+jUL8HJo1pXTSNYNHlzqGicS33xSXyH67I4Av3ZdXtu9/s0D9zHGB/4LUDTW0QajXmp3jeONoJCrrn8t/PbAfYoa/v/oLYPYFsHwPiXScNWX+mT4xyI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=IHI6j8fB; arc=none smtp.client-ip=209.85.210.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1716907961; c=relaxed/simple;
+	bh=lH2MumRnI7l3YLRPeM7BwNfpMOBnQbE+uH7AvcbBSzg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=pboIPhcriS5ei5K73aLwvWy161vLt3mjetZDvcP/sUeSTp0bOBhqVy+fpwCfYanbcM0Vqk1xYHkMYuTJbQWdnGB+c4jV1n+0vdJOkXMSj6qKa6O82ajywLjpXj2FhxHb8rTjKL8Bgdk+YDm1ppFLD94A0YR+aU4Lp3U1BlTkRjE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=lzqO1xNX; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="IHI6j8fB"
-Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-6f850ff30c0so684642b3a.0
-        for <linux-pm@vger.kernel.org>; Tue, 28 May 2024 07:07:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1716905266; x=1717510066; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=KwJrJJBUm5Uf3A9xKcODYfkmrzU5XrykNEQneC58gf8=;
-        b=IHI6j8fBZu0S6hYIvQbK6wSIdMb5m6jpNfbQ/U7MLlW5VdcoqYeYmOsGsgdj61iY4/
-         FqoVb5r4K6p1pf4mfWV5bfr+yqV4VLCtiQ3L7iOOXl3nNh1upzQgaBceSRs5uQy8hkV+
-         k4XzfxGNfMLPTl/shOhGg5nrH3+a0ogCAJ6ab9xzNCoTe3D3D+1srupHacVLVuRWU7MK
-         WUVLnr0srG7WPh51HS6Ubjr6WAuvWue4k+VUPqJKteWoYl0Y5NHx2zRLn9HsGoGlu9Zs
-         iWJ8GYfbmzOw3uY+Vkxc05zEs6eD3uLAHG/8cx1JJKhiGv+5pbhFLDjV3hMO+Zqq9lwA
-         zePA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716905266; x=1717510066;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=KwJrJJBUm5Uf3A9xKcODYfkmrzU5XrykNEQneC58gf8=;
-        b=N1RCqAmeQnv/bQtY1HwDl9UiwQQgjrsNhGs2kzJVv2ab3ERytCG2qMOwkbT8ScG2cJ
-         +pU37UReYARC8PhOweMgoN0Ot4cgYx3cvgm1Q70FmWT1ayvexlv4ULVb2ls5+JurNWm9
-         JrgEGzSjzZTs36cNJiSPb7QEk7TK7NCGIMGBqLF9vYXGe4xMHeho6LROzAnYpIIE3GJ1
-         0K/175AeYuhhGJ7Yv0MkSWsifPw97T5NqXztrdfECSfmpKCVxw0T8F6xiBGpnGiHaxhk
-         iuTaon5/vzeuVTq600gVWEjCdTLuOJW8ebOTMbtJ5kCE0JiQp6b823eSYnk+JH+D1sd/
-         H3Aw==
-X-Forwarded-Encrypted: i=1; AJvYcCXxWceT/VjRnVah5SeXjWVj2t0GgeEgYbEfML/8lHBspScR28wZO/fSvQUIhT9q3Xx+1mcgV20Ulow3RaCctFbN8UvIdaG2xIY=
-X-Gm-Message-State: AOJu0YzzmLSubWsqRLJcbGux4mR0BAJlPwi6YO5VQZzoTA+1ckRCzUki
-	RxzHq29++37Wvnf7fzILCSbOG2kFe+wLPnokJ7kL15DRcYPsyUK67SF6t4ZEvKLUnyUVv0OhzW3
-	RkgngNBUjikCg60yAgYNFuHf6FVHj82pDp0G2pA==
-X-Google-Smtp-Source: AGHT+IEfwlmpC2oQXwwC97Lmjwd4sJMzx+QH6X//LGVcOb6JZk1p/eCzTzAhxtmSsjQTHOqzJmFdujAdomBQnJrwjPk=
-X-Received: by 2002:a17:90b:3641:b0:2bf:5730:1f54 with SMTP id
- 98e67ed59e1d1-2bf5e14b627mr11482907a91.15.1716905266207; Tue, 28 May 2024
- 07:07:46 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="lzqO1xNX"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 44SAUXuZ009025;
+	Tue, 28 May 2024 14:52:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	dWcKuFlpB9O0H+5h3Iazox/MW/EgYPo9bqGQKEr5kUM=; b=lzqO1xNXDXJt9YKE
+	hdiB10isAAW9ccHigQT2WQmnzqTjysTUNgCm2QEo2ykZf1g8rkpGR3RkPUQqMX0W
+	xc7JwTKbYMu7o+9UvpnqadVao/Unpi4EM4eGCzB0AOv3ZYfGvPzaXmi+keFn0W0d
+	RUdL38EibXG8jQz2tIvXOvfX5Hly1GO0oepCyzQSwupbZpYkOKyKiDc1py1TQ7Aw
+	CZwA/0dkqk9kYhGPDvsX9aCSO7MvnHitYFgYINOs8+gpEqtqO8XAhhsU4WoRrJE2
+	Em5kFDnI4Mr69FjClK95qLTKLMo09K0kdgVHpXsOh3K715g8A11AcLSbqo29jCf0
+	CYaEow==
+Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3yba0g6eqh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 28 May 2024 14:52:33 +0000 (GMT)
+Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
+	by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 44SEqWT2007769
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 28 May 2024 14:52:32 GMT
+Received: from [10.50.34.189] (10.80.80.8) by nalasex01c.na.qualcomm.com
+ (10.47.97.35) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Tue, 28 May
+ 2024 07:52:26 -0700
+Message-ID: <434c6cfa-cede-4e62-a785-35a81ae0d30d@quicinc.com>
+Date: Tue, 28 May 2024 20:22:22 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20230105145159.1089531-1-kajetan.puchalski@arm.com>
- <20230105145159.1089531-3-kajetan.puchalski@arm.com> <20230711175814.zfavcn7xn3ia5va4@airbuntu>
- <ZLZ/btJw5LNVxVy8@e126311.manchester.arm.com> <20230718132432.w5xoxbqm54jmu6n5@airbuntu>
- <20230917010516.54dgcmms44wyfrvx@airbuntu> <CAKfTPtA6ZzRR-zMN7sodOW+N_P+GqwNv4tGR+aMB5VXRT2b5bg@mail.gmail.com>
- <d54d6115-a4d6-466b-a4a2-9c064194f06e@arm.com>
-In-Reply-To: <d54d6115-a4d6-466b-a4a2-9c064194f06e@arm.com>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Tue, 28 May 2024 16:07:35 +0200
-Message-ID: <CAKfTPtB21aY9cgi5dSHB0jRp6pE85AfGcHrHjrcpMwi3fJL0FA@mail.gmail.com>
-Subject: Re: [PATCH v6 2/2] cpuidle: teo: Introduce util-awareness
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: Kajetan Puchalski <kajetan.puchalski@arm.com>, rafael@kernel.org, daniel.lezcano@linaro.org, 
-	Dietmar.Eggemann@arm.com, dsmythies@telus.net, yu.chen.surf@gmail.com, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Peter Zijlstra <peterz@infradead.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
-	Qais Yousef <qyousef@layalina.io>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/4] interconnect: qcom: icc-rpmh: Add QoS
+ configuration support
+To: Mike Tipton <quic_mdtipton@quicinc.com>,
+        Konrad Dybcio
+	<konrad.dybcio@linaro.org>
+CC: Bjorn Andersson <andersson@kernel.org>, Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski
+	<krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        "Kees Cook" <keescook@chromium.org>,
+        <cros-qcom-dts-watchers@chromium.org>,
+        "Gustavo A . R . Silva" <gustavoars@kernel.org>,
+        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-hardening@vger.kernel.org>, <quic_rlaggysh@quicinc.com>
+References: <20240325181628.9407-1-quic_okukatla@quicinc.com>
+ <20240325181628.9407-2-quic_okukatla@quicinc.com>
+ <d59896bb-a559-4013-a615-37bb43278b2e@linaro.org>
+ <91f59477-1799-4db6-bcc2-3f0c5225d1c8@quicinc.com>
+ <0a58e05a-7bf5-459a-b202-66d88c095b45@linaro.org>
+ <20240508023716.GD25316@hu-mdtipton-lv.qualcomm.com>
+Content-Language: en-US
+From: Odelu Kukatla <quic_okukatla@quicinc.com>
+In-Reply-To: <20240508023716.GD25316@hu-mdtipton-lv.qualcomm.com>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nalasex01c.na.qualcomm.com (10.47.97.35)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: ht2cKHlyZnYYLulXR3pVrVp17xeQlZIp
+X-Proofpoint-ORIG-GUID: ht2cKHlyZnYYLulXR3pVrVp17xeQlZIp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.12.28.16
+ definitions=2024-05-28_10,2024-05-28_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 suspectscore=0
+ priorityscore=1501 bulkscore=0 phishscore=0 adultscore=0 spamscore=0
+ mlxlogscore=984 malwarescore=0 lowpriorityscore=0 clxscore=1011
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2405170001 definitions=main-2405280111
 
-On Tue, 28 May 2024 at 11:59, Lukasz Luba <lukasz.luba@arm.com> wrote:
->
-> Hi Vincent,
->
-> On 5/28/24 10:29, Vincent Guittot wrote:
-> > Hi All,
-> >
-> > I'm quite late on this thread but this patchset creates a major
-> > regression for psci cpuidle driver when using the OSI mode (OS
-> > initiated mode).  In such a case, cpuidle driver takes care only of
-> > CPUs power state and the deeper C-states ,which includes cluster and
-> > other power domains, are handled with power domain framework. In such
-> > configuration ,cpuidle has only 2 c-states : WFI and cpu off states
-> > and others states that include the clusters, are managed by genpd and
-> > its governor.
-> >
-> > This patch selects cpuidle c-state N-1 as soon as the utilization is
-> > above CPU capacity / 64 which means at most a level of 16 on the big
-> > core but can be as low as 4 on little cores. These levels are very low
-> > and the main result is that as soon as there is very little activity
-> > on a CPU, cpuidle always selects WFI states whatever the estimated
-> > sleep duration and which prevents any deeper states. Another effect is
-> > that it also keeps the tick firing every 1ms in my case.
->
-> Thanks for reporting this.
-> Could you add what regression it's causing, please?
-> Performance or higher power?
+Hi Konrad,
 
-It's not a perf but rather a power regression. I don't have a power
-counter so it's difficult to give figures but I found it while running
-a unitary test below on my rb5:
-run 500us every 19457ms on medium core (uclamp_min: 600).
+On 5/8/2024 8:07 AM, Mike Tipton wrote:
+> On Sat, Apr 13, 2024 at 09:31:47PM +0200, Konrad Dybcio wrote:
+>> On 3.04.2024 10:45 AM, Odelu Kukatla wrote:
+>>>
+>>>
+>>> On 3/27/2024 2:26 AM, Konrad Dybcio wrote:
+>>>> On 25.03.2024 7:16 PM, Odelu Kukatla wrote:
+>>>>> It adds QoS support for QNOC device and includes support for
+>>>>> configuring priority, priority forward disable, urgency forwarding.
+>>>>> This helps in priortizing the traffic originating from different
+>>>>> interconnect masters at NoC(Network On Chip).
+>>>>>
+>>>>> Signed-off-by: Odelu Kukatla <quic_okukatla@quicinc.com>
+>>>>> ---
+>>
+>> [...]
+>>
+>>>>> @@ -70,6 +102,7 @@ struct qcom_icc_node {
+>>>>>  	u64 max_peak[QCOM_ICC_NUM_BUCKETS];
+>>>>>  	struct qcom_icc_bcm *bcms[MAX_BCM_PER_NODE];
+>>>>>  	size_t num_bcms;
+>>>>> +	const struct qcom_icc_qosbox *qosbox;
+>>>>
+>>>> I believe I came up with a better approach for storing this.. see [1]
+>>>>
+>>>> Konrad
+>>>>
+>>>> [1] https://lore.kernel.org/linux-arm-msm/20240326-topic-rpm_icc_qos_cleanup-v1-4-357e736792be@linaro.org/
+> 
+> Note that I replied to this patch series as well. Similar comments here
+> for how that approach would apply to icc-rpmh.
+> 
+>>>>
+>>>
+>>> I see in this series, QoS parameters are moved into struct qcom_icc_desc. 
+>>> Even though we program QoS at Provider/Bus level, it is property of the node/master connected to a Bus/NoC.
+>>
+>> I don't see how it could be the case, we're obviously telling the controller which
+>> endpoints have priority over others, not telling nodes whether the data they
+>> transfer can omit the queue.
+> 
+> The QoS settings tune the priority of data coming out of a specific port
+> on the NOC. The nodes are 1:1 with the ports. Yes, this does tell the
+> NOC which ports have priority over others. But that's done by
+> configuring each port's priority in their own port-specific QoS
+> registers.
+> 
+>>
+>>> It will be easier later to know which master's QoS we are programming if we add in node data.
+>>> Readability point of view,  it might be good to keep QoS parameters in node data.  
+>>
+>> I don't agree here either, with the current approach we've made countless mistakes
+>> when converting the downstream data (I have already submitted some fixes with more
+>> in flight), as there's tons of jumping around the code to find what goes where.
+> 
+> I don't follow why keeping the port's own QoS settings in that port's
+> struct results in more jumping around. It should do the opposite, in
+> fact. If someone wants to know the QoS settings applied to the qhm_qup0
+> port, then they should be able to look directly in the qhm_qup0 struct.
+> Otherwise, if it's placed elsewhere then they'd have to jump elsewhere
+> to find what that logical qhm_qup0-related data is set to.
+> 
+> If it *was* placed elsewhere, then we'd still need some logical way to
+> map between that separate location and the node it's associated with.
+> Which is a problem with your patch for cleaning up the icc-rpm QoS. In
+> its current form, it's impossible to identify which QoS settings apply
+> to which logical node (without detailed knowledge of the NOC register
+> layout).
+> 
+> Keeping this data with the node struct reduces the need for extra layers
+> of mapping between the QoS settings and the node struct. It keeps all
+> the port-related information all together in one place.
+> 
+> I did like your earlier suggestion of using a compound literal to
+> initialize the .qosbox pointers, such that we don't need a separate
+> top-level variable defined for them. They're only ever referenced by a
+> single node, so there's no need for them to be separate variables.
+> 
+> But I don't see the logic in totally separating the QoS data from the
+> port it's associated with.
+> 
+>>
+I will update the patch as per your suggestion of keeping .qosbox initialization inside *qcom_icc_node* structure.
+I will post next version with this update and addressing other comments from v4.
 
-With this use case, the idle time is more than 18ms (the 500us becomes
-1ms as we don't run at max capacity) but the tick fires every 1ms
-while the system is fully idle (all 8 cpus are idle) and as cpuidle
-selects WFI, it prevents the full cluster power down. So even if WFI
-is efficient, the power impact should be significant.
+Thanks,
+Odelu
 
-For a 5 sec test duration, the system doesn't spend any time in
-cluster power down state with this patch but spent 3.9 sec in cluster
-power down state without
-
-
-> Do you have some handy numbers, so we can see the problem size?
->
-> >
-> > IMO, we should at least increase the utilization level
->
-> Something worth to discuss, or make it configurable even.
->
-> Regards,
-> Lukasz
->
-> >
-> > Regards,
-> > Vincent
+>> Konrad
