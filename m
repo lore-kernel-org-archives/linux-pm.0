@@ -1,141 +1,123 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4589C178398;
-	Tue, 28 May 2024 20:05:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05DD0178395;
+	Tue, 28 May 2024 20:05:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716926719; cv=none; b=stAvsiwMeMQ4SrKaEztJux32OhZDn+SlgHkrcGHYFwl5xoN1ExttL5HDNPHGYSN1JqWA5KJzPNu1yvwkHtlCMrpYPsOgztAHD2XVoX4axrwoXbUuz569N65Rp9BhuHmGI2SrT8zARbc0lWqXSMxGUPd3qx4XzAKQaq7CcM4FI4A=
+	t=1716926741; cv=none; b=OyVrTg4UldRDRGEKj9iSkEzFZkjsrWVwBkUQRHt6eZnJGMYJDv4c300wXl7D7jgDP8drFaTFv/G1+BsbBB+EQg5cRmkm089kiPGYk1lx73SSXJ0XHwlJ1BNOkSCCXlX7h2iitEnrzT2h1Zo0MUYnK4+BMeqejG2QMndKRX0v4mY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716926719; c=relaxed/simple;
-	bh=JbYQHnPT7R8bbx48TFbQXDrU5PRM/0uyA9vkGt576is=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=C9l7g8ScWBOraRJXd3UMj5TvTlNaN0X+TJQiMYOwXhxp6k3xh3T1KCUa+aLN0+bWtB1KdpFWRwO2qrX2xXcrkWct8psbXJ4daoC0eaTfipCoscrIxzajh5S+PRal9bwTy59vKDlyZ6LPFcKggG1Tb+bEKeSBoY6Mmv4SidRf+kQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=bLejnAhw; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	s=arc-20240116; t=1716926741; c=relaxed/simple;
+	bh=K427WA9x1O0/8ZynfZWw6aTk3ce73m8Q0shpDlKZ7jo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Ry8cJkxCQOhc2ntghayAWZ26I85LScF6+ZLc8PKKklm/Au8DNC1ePGGv9GZShYaEMbArUghBCgFo2oV5t33fB+Xumi3YsoaSZVqUrZsknvr3PJFnrvTn5EPrSnoPCoKKEdp+XX2AHiokF5cGFFQqG1n3TifCuJdUc1qS+RBAQb4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ubQpDH4e; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="bLejnAhw"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1716926707;
-	bh=JbYQHnPT7R8bbx48TFbQXDrU5PRM/0uyA9vkGt576is=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=bLejnAhw/GmdlkCX4xAaQFhl8q971F5D9s5s2sJfaHP2LYW4EVIsqkszh41oCkAI6
-	 HwRsFZ048LqZmDKk9TdRdG6hjuisKnAV+5Ue/QT0lmqZYDjVku8SgDi2PK3mCV+WJK
-	 xpNH0+PMQq7pe18XRGPrATOtH0MAOzr3US3noDlQ=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 28 May 2024 22:04:10 +0200
-Subject: [PATCH v2 1/3] platform/chrome: Update binary interface for
- EC-based charge control
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ubQpDH4e"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EF32C3277B;
+	Tue, 28 May 2024 20:05:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1716926740;
+	bh=K427WA9x1O0/8ZynfZWw6aTk3ce73m8Q0shpDlKZ7jo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=ubQpDH4eT1mxROtWMAC0av/QM9bjC3USsFEIkAxL1YqWU8twE0zth+mGAtlUrT1Ud
+	 fMbXvNsplD5DqB1c+5OQGYoQ4TS2y34FLVwr2ANvB/cab17exke+YaLFPGJEHiJq50
+	 X0NZcT6EOFIKtOUQZBTOYV+9sxUVPZLFX4KOkWqaAhJ4myCMLHCaPVuxPBuDb+BxQ2
+	 dYmzpp/wUvKOtVnPJsPEdABogyYB3zCw5QE9QBN8PDTeGjUKyr1sh93qmMPzjJ3q8g
+	 oSz5gO9QxggvIvHUsvykgrlIWjB84tkVoZg3Loe64cmfFYlVlZXRN6sitY7pKmkDDj
+	 GlYfi5avYxkxQ==
+Received: by mail-oo1-f47.google.com with SMTP id 006d021491bc7-5b97f09cde3so209434eaf.0;
+        Tue, 28 May 2024 13:05:40 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUBvunMPb4XXgd8r+NwZPXFzuD5QJsQFDq0f3BvfCdrEJmNoY+no+LwH70Vny+/1LPvKoskKBPWebAfiGj880tKK3UqrULB7lA8e722RQhKxtY1W0loeBwvck3mm1mDgifzHXG21p4=
+X-Gm-Message-State: AOJu0YwDPWQYHBE1XPv+QHqtWOAy59viDayDo7/DpMpG/fmf9VHrGq1B
+	u1q1MI7JLbJiG0G3RAAF+lmONbBlgKLkCyeO7DKx42bgypWwsfNeNLzfF04ye4+A1b+l8V1w4XF
+	MyafyMkXSfMI3zcplMoz5VOxlw7c=
+X-Google-Smtp-Source: AGHT+IE39lzzrMCMFgqaGSM1YNGwA5bF3tH7fIP6yHvy4U78ji+WxRUmhTJ+bMVXK2lJvNwP+naGVUgREY+JqvZp5N4=
+X-Received: by 2002:a4a:e6d8:0:b0:5b2:7aa7:7b29 with SMTP id
+ 006d021491bc7-5b96195f885mr13928240eaf.1.1716926739910; Tue, 28 May 2024
+ 13:05:39 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20240528-cros_ec-charge-control-v2-1-81fb27e1cff4@weissschuh.net>
-References: <20240528-cros_ec-charge-control-v2-0-81fb27e1cff4@weissschuh.net>
-In-Reply-To: <20240528-cros_ec-charge-control-v2-0-81fb27e1cff4@weissschuh.net>
-To: Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, 
- Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas@weissschuh.net>
-Cc: chrome-platform@lists.linux.dev, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, Mario Limonciello <mario.limonciello@amd.com>, 
- Dustin Howett <dustin@howett.net>, 
- Stephen Horvath <s.horvath@outlook.com.au>, 
- Rajas Paranjpe <paranjperajas@gmail.com>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1716926706; l=2691;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=JbYQHnPT7R8bbx48TFbQXDrU5PRM/0uyA9vkGt576is=;
- b=LjM+FLqiJVMvC8n7q9IfHO2F4e28kIeTc3GEYi4cjWje8j1BOWTHVBIUy8s+td/vLjUkwO/wf
- RTidBOH6MsWDNekA/woovjb05qm2EtQ4GHn0mnMoK/llBztyUDRsXSM
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
+References: <20240527051128.110091-1-Dhananjay.Ugwekar@amd.com> <929aec0d-690b-4277-90b0-d0b4adb437d3@amd.com>
+In-Reply-To: <929aec0d-690b-4277-90b0-d0b4adb437d3@amd.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 28 May 2024 22:05:29 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hz+RzrtD=JUvf_W7g0vSHTmtfiTcJC23fvVvb_N9AiHg@mail.gmail.com>
+Message-ID: <CAJZ5v0hz+RzrtD=JUvf_W7g0vSHTmtfiTcJC23fvVvb_N9AiHg@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: amd-pstate: Fix the inconsistency in max
+ frequency units
+To: Mario Limonciello <mario.limonciello@amd.com>, 
+	Dhananjay Ugwekar <dhananjay.ugwekar@amd.com>
+Cc: rafael@kernel.org, ray.huang@amd.com, viresh.kumar@linaro.org, 
+	gautham.shenoy@amd.com, ananth.narayan@amd.com, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Perry.Yuan@amd.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The charge-control command v2/v3 is more featureful than v1, it
-additionally supports charge thresholds.
+On Mon, May 27, 2024 at 4:40=E2=80=AFPM Mario Limonciello
+<mario.limonciello@amd.com> wrote:
+>
+> On 5/27/2024 00:11, Dhananjay Ugwekar wrote:
+> > The nominal frequency in cpudata is maintained in MHz whereas all other
+> > frequencies are in KHz. This means we have to convert nominal frequency
+> > value to KHz before we do any interaction with other frequency values.
+> >
+> > In amd_pstate_set_boost(), this conversion from MHz to KHz is missed,
+> > fix that.
+> >
+> > Tested on a AMD Zen4 EPYC server
+> >
+> > Before:
+> > $ cat /sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq | uniq
+> > 2151
+> > $ cat /sys/devices/system/cpu/cpufreq/policy*/cpuinfo_min_freq | uniq
+> > 400000
+> > $ cat /sys/devices/system/cpu/cpufreq/policy*/scaling_cur_freq | uniq
+> > 2151
+> > 409422
+> >
+> > After:
+> > $ cat /sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq | uniq
+> > 2151000
+> > $ cat /sys/devices/system/cpu/cpufreq/policy*/cpuinfo_min_freq | uniq
+> > 400000
+> > $ cat /sys/devices/system/cpu/cpufreq/policy*/scaling_cur_freq | uniq
+> > 2151000
+> > 1799527
+> >
+>
+> Cc: stable@vger.kernel.org
+>
+> > Fixes: ec437d71db77 ("cpufreq: amd-pstate: Introduce a new AMD P-State =
+driver to support future processors")
+> > Signed-off-by: Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>
+>
+> Acked-by: Mario Limonciello <mario.limonciello@amd.com>
 
-The definitions were imported from ChromeOS EC commit
-32870d602317 ("squirtle: modify motionsense rotation matrix")
+Applied as 6.10-rc material, thanks!
 
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
- include/linux/platform_data/cros_ec_commands.h | 49 ++++++++++++++++++++++++--
- 1 file changed, 47 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/platform_data/cros_ec_commands.h b/include/linux/platform_data/cros_ec_commands.h
-index ecc47d5fe239..c35e534e3c3d 100644
---- a/include/linux/platform_data/cros_ec_commands.h
-+++ b/include/linux/platform_data/cros_ec_commands.h
-@@ -3809,16 +3809,61 @@ struct ec_params_i2c_write {
-  * discharge the battery.
-  */
- #define EC_CMD_CHARGE_CONTROL 0x0096
--#define EC_VER_CHARGE_CONTROL 1
-+#define EC_VER_CHARGE_CONTROL 3
- 
- enum ec_charge_control_mode {
- 	CHARGE_CONTROL_NORMAL = 0,
- 	CHARGE_CONTROL_IDLE,
- 	CHARGE_CONTROL_DISCHARGE,
-+	/* Add no more entry below. */
-+	CHARGE_CONTROL_COUNT,
-+};
-+
-+#define EC_CHARGE_MODE_TEXT                               \
-+	{                                                 \
-+		[CHARGE_CONTROL_NORMAL] = "NORMAL",       \
-+		[CHARGE_CONTROL_IDLE] = "IDLE",           \
-+		[CHARGE_CONTROL_DISCHARGE] = "DISCHARGE", \
-+	}
-+
-+enum ec_charge_control_cmd {
-+	EC_CHARGE_CONTROL_CMD_SET = 0,
-+	EC_CHARGE_CONTROL_CMD_GET,
-+};
-+
-+enum ec_charge_control_flag {
-+	EC_CHARGE_CONTROL_FLAG_NO_IDLE = BIT(0),
- };
- 
- struct ec_params_charge_control {
--	uint32_t mode;  /* enum charge_control_mode */
-+	uint32_t mode; /* enum charge_control_mode */
-+
-+	/* Below are the fields added in V2. */
-+	uint8_t cmd; /* enum ec_charge_control_cmd. */
-+	uint8_t flags; /* enum ec_charge_control_flag (v3+) */
-+	/*
-+	 * Lower and upper thresholds for battery sustainer. This struct isn't
-+	 * named to avoid tainting foreign projects' name spaces.
-+	 *
-+	 * If charge mode is explicitly set (e.g. DISCHARGE), battery sustainer
-+	 * will be disabled. To disable battery sustainer, set mode=NORMAL,
-+	 * lower=-1, upper=-1.
-+	 */
-+	struct {
-+		int8_t lower; /* Display SoC in percentage. */
-+		int8_t upper; /* Display SoC in percentage. */
-+	} sustain_soc;
-+} __ec_align4;
-+
-+/* Added in v2 */
-+struct ec_response_charge_control {
-+	uint32_t mode; /* enum charge_control_mode */
-+	struct { /* Battery sustainer thresholds */
-+		int8_t lower;
-+		int8_t upper;
-+	} sustain_soc;
-+	uint8_t flags; /* enum ec_charge_control_flag (v3+) */
-+	uint8_t reserved;
- } __ec_align4;
- 
- /*****************************************************************************/
-
--- 
-2.45.1
-
+> > ---
+> >   drivers/cpufreq/amd-pstate.c | 2 +-
+> >   1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.=
+c
+> > index 1b7e82a0ad2e..cde3b91b4422 100644
+> > --- a/drivers/cpufreq/amd-pstate.c
+> > +++ b/drivers/cpufreq/amd-pstate.c
+> > @@ -669,7 +669,7 @@ static int amd_pstate_set_boost(struct cpufreq_poli=
+cy *policy, int state)
+> >       if (state)
+> >               policy->cpuinfo.max_freq =3D cpudata->max_freq;
+> >       else
+> > -             policy->cpuinfo.max_freq =3D cpudata->nominal_freq;
+> > +             policy->cpuinfo.max_freq =3D cpudata->nominal_freq * 1000=
+;
+> >
+> >       policy->max =3D policy->cpuinfo.max_freq;
+> >
+>
