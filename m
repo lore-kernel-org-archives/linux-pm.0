@@ -1,50 +1,50 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D2C4170848;
-	Tue, 28 May 2024 15:01:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4A4517109D;
+	Tue, 28 May 2024 15:01:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716908473; cv=none; b=EIc8UA6HM0UX9Lze3qHu5lhBOtEsObYviH5rDZvpvpdiQIUA8zDcr8FlW9lmSBDrqvrijrgHzfO3IjT5oOQ2BHh0V5jq7dpvg7ygn/NF3S9FXZaDg4bEJGxiNuWU19dqqRkkXJVGWqfjF4jARmX0SJh5bdqjLtBrib5yCR34aT4=
+	t=1716908474; cv=none; b=WStMTPMi4f6FTKxUYTjwa2P7RUSCxZRGpxNjG3TrT9bOHzhfAX/BXf/uetzHnwk5T6LLvO8s+Ke6+cUWrzD5/N/XkCNm2qxLMgtnlHLlE27OpXyJX77Pim72OLtBO6NitMhgSKZhBdXH9g/WbUQAvuwCCDkuDeIk0eS31jkl3Uk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716908473; c=relaxed/simple;
-	bh=7tfm79MQP2qGW3LgqSBxE0uv7WR1NeIzcGDtBjqkyOw=;
+	s=arc-20240116; t=1716908474; c=relaxed/simple;
+	bh=tJjnmqBkTi8msWgW3IHCxMU/BeR3u3SJ2XDiT6tH350=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=NzjUXx+2DbpRPz1fuO3EYhm5SV6s1Lu8oYhrExnYgLe3FPlZZJ8rsvyIzRn54MjdANYQfkX2OLafWHs6LERAZCdQhyJIXJ64xHEfvRtx+z/As5mX4zxYfK5jfNOzaRs3yh8KYvsBpFFBt1EDjQYPpmyp2DnKbk+3G+o72rRY95M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=CrZWDXBH reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=Rl+uIrpEtQiGeOWK07sEIn6sSIi/0hMX+50lm0wwfPLY6Ceiw3C01cfahKAAyBb6LqHXAirllLhhUXWbgF5/rlOg071phWeQrqteNJpvWyQPIFyBpW10BcejlxXAfOj70VRoax309Pz5LwCrUXwDSXSithD7+Nqog62nFPHfbcs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Wzc5a65+ reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="CrZWDXBH"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Wzc5a65+"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.1.0)
- id 8604d37985fdf45e; Tue, 28 May 2024 17:01:03 +0200
+ id b882543790f2134f; Tue, 28 May 2024 17:01:05 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 5FEC96A5015;
-	Tue, 28 May 2024 17:01:03 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id D94156A5015;
+	Tue, 28 May 2024 17:01:04 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1716908463;
-	bh=7tfm79MQP2qGW3LgqSBxE0uv7WR1NeIzcGDtBjqkyOw=;
+	s=dkim; t=1716908465;
+	bh=tJjnmqBkTi8msWgW3IHCxMU/BeR3u3SJ2XDiT6tH350=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=CrZWDXBHBDbcm+99w/Qrn/dchEVeeQWOfYdH9nUQkxfdBesZyF4lyaL7EfKdmraM5
-	 dLpYDl6S9q3SFbBEEzgTWrCXXEk3XtVcwsw+VacwjS22scWZmGedAvtxOxRap5zYwm
-	 4s0DbJl2CnLvM41aGn0TsNd78iud9iDsUlyeugB6EXSJyz4yD404Cj00d9vgh/Ijnw
-	 P+UGshQ8x1V1leqD1DHtlRjai+4CYXdr6pXAD2DHVwAB/f0z9W8d/kCXdyzvt+5m9n
-	 dCQ7PrxA5nIrnzac+Wx5JLSYTHTvhEk8HkgSWng/xwuZ8ZeqK92+Fyagi6ztvl6ut2
-	 MAFNfvePydwhA==
+	b=Wzc5a65++ay8xCSqAtfBONCkwC7PtfxqUjn96P6fUIP/nyRSIbU4lBC6MaxI1SGEF
+	 /Unn9pzgw9NaB8/hdOgaif/J5qvaIwNuIU4OxRQzkRT0HIu3U622tlNJ1zMZ3iBnaH
+	 nhOPax/aekzIHY9+qod5etqgZ7WQHNle31VrlvqBS0rsxPt8BiitGnGHbuggt40eFj
+	 yMqwY2VVVn8VcKblIAaPHZLOyhf5J1zyF/sk5gV/Gvtw7yy9+99fg3UBD5HYzEfxKK
+	 D/p0QQuno2U8OrSH3FXPTz9Z35F2Lp2BCYattVjrJahvPMdyP5Or0HJpb05KLjoRdM
+	 sPwLETeAn0ojw==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject:
- [PATCH v2 5/8] thermal/debugfs: Adjust check for trips without statistics in
- tze_seq_show()
-Date: Tue, 28 May 2024 16:57:13 +0200
-Message-ID: <8389302.T7Z3S40VBb@kreacher>
+ [PATCH v2 3/8] thermal/debugfs: Print mitigation timestamp value in
+ milliseconds
+Date: Tue, 28 May 2024 16:55:00 +0200
+Message-ID: <1898781.tdWV9SEqCh@kreacher>
 In-Reply-To: <5794974.DvuYhMxLoT@kreacher>
 References: <5794974.DvuYhMxLoT@kreacher>
 Precedence: bulk
@@ -53,55 +53,50 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrvdejkedgheehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehrrghfrggvlheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhg
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrvdejkedgheeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtqhertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnheptddvfeegledvfedvveevhedvteeffeehvdeuiedukeeiledttefgvdeihffgteetnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehrrghfrggvlheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhg
 X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+=46rom: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Initialize the trip_temp field in struct trip_stats to
-THERMAL_TEMP_INVALID and adjust the check for trips without
-statistics in tze_seq_show() to look at that field instead of
-comparing min and max.
+Because mitigation episode duration is printed in milliseconds, there
+is no reason to print timestamp information for mitigation episodes in
+smaller units which also makes it somewhat harder to interpret the
+numbers.
 
-This will mostly be useful to simplify subsequent changes.
-
-No intentional functional impact.
+Print it in milliseconds for consistency.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+=2D--
 
-v1 -> v2: New patch.
+v1 -> v2: Rebase.
 
----
- drivers/thermal/thermal_debugfs.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+=2D--
+ drivers/thermal/thermal_debugfs.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 Index: linux-pm/drivers/thermal/thermal_debugfs.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_debugfs.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=2D-- linux-pm.orig/drivers/thermal/thermal_debugfs.c
 +++ linux-pm/drivers/thermal/thermal_debugfs.c
-@@ -563,6 +563,7 @@ static struct tz_episode *thermal_debugf
- 	tze->duration = KTIME_MIN;
- 
- 	for (i = 0; i < tz->num_trips; i++) {
-+		tze->trip_stats[i].trip_temp = THERMAL_TEMP_INVALID;
- 		tze->trip_stats[i].min = INT_MAX;
- 		tze->trip_stats[i].max = INT_MIN;
+@@ -797,8 +797,8 @@ static int tze_seq_show(struct seq_file
+ 		c =3D '=3D';
  	}
-@@ -818,7 +819,7 @@ static int tze_seq_show(struct seq_file
- 		trip_stats = &tze->trip_stats[trip_id];
- 
- 		/* Skip trips without any stats. */
--		if (trip_stats->min > trip_stats->max)
-+		if (trip_stats->trip_temp == THERMAL_TEMP_INVALID)
- 			continue;
- 
- 		if (trip->type == THERMAL_TRIP_PASSIVE)
+=20
+=2D	seq_printf(s, ",-Mitigation at %lluus, duration%c%llums\n",
+=2D		   ktime_to_us(tze->timestamp), c, duration_ms);
++	seq_printf(s, ",-Mitigation at %llums, duration%c%llums\n",
++		   ktime_to_ms(tze->timestamp), c, duration_ms);
+=20
+ 	seq_printf(s, "| trip |     type | temp(=C2=B0mC) | hyst(=C2=B0mC) |  dur=
+ation   |  avg(=C2=B0mC) |  min(=C2=B0mC) |  max(=C2=B0mC) |\n");
+=20
 
 
 
