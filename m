@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 089493207;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 089A826AD3;
 	Wed, 29 May 2024 03:10:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716952237; cv=none; b=al9PZ52RrAERek03lWzH8pvHHcHrWPTRfnYlx9ogMj2Hh48R5+j9iGEr8MTC0hvTTOOQk5DLLtm6Qhh3uketrkJBxlBIBTL6jc89QM2EZ/QOUaRqQMSHDc7dFPnJboAK7jLIwaUox5NdvBFbhwWMlepKKN4q2/xyMXfct9iNQgg=
+	t=1716952237; cv=none; b=lfl2r63hoO+IGsrWtDmu4yesHmcH5BNxLOo96JDIIwIBjTUqe9aKGkpvT56KVeLlFmi77lO/mpqr7nDHm/wehIPGL6SdmCbQqqO8E+u2QLcidZymNTq4AGVVcVra2xAhplUJeINKWPK3Wm3NLPzABhE/7qEQ0771hWy8CvSgrJc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1716952237; c=relaxed/simple;
-	bh=SCO+SFRXiKHD6gPKSKfr2t0rbWu65yFZpXELTeORBfQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=rUWGr78+/xLyKkQ7uvq1Xe1QgCPgNW7s3lzQJAvgSMgafpCCqo7a1QA5eBr8CQhMAUhoPCOYTRplsnrjESKS24fo4JgOqJ6D/EhVJFxLYXmRmdRj6wyqHwvPzCnHjSFuQGEjhObqjOoep887tEEYKCKm/eRsp+3AfXlEZtjLHZo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c791E4mS; arc=none smtp.client-ip=10.30.226.201
+	bh=IgTEkVYd46Ru6As3hGpXvTy9hURuoQjJ4M75ryPeIBQ=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=BisOGRmFy9/EaTHmnR78fUotZhoQlk3VadEBGosdgknopQBu6BUT4YnjseaQ0e0eeI8qEZB+a0icTILy0SDBcVsxMlREikjDF39F4vdkPWhBVk9pADJuMwaobERI009D6udPdGoCJRr+NaqFUGgaS7AsggYCB+Eu0gLqpC3q1vM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iEjtP2qp; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c791E4mS"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 9FB51C4AF0A;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iEjtP2qp"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 75CD8C2BD10;
 	Wed, 29 May 2024 03:10:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1716952236;
-	bh=SCO+SFRXiKHD6gPKSKfr2t0rbWu65yFZpXELTeORBfQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=c791E4mSbk/7QrN1IGOK2J6AHbaKGmGfJdV/kBtBUqrVFeEsC/zW4uqvBw828CrMx
-	 GsZRG6eFho56ISgMOCTe97uivzEle6dfboIs8t4qgnukbseUUzmZDFQjFsNx4vHzRb
-	 GmKpJLMaJAb0hURj6JbI3xGIPyaWv/1IRJSL5aQWilAZGA31ivQDvMQG1x0Db4JnJu
-	 FbBiT5xhIKUTG7S/PtbQXYKA/WnioEWgdiXSdQmc81fK4iwKtqWILFII058Q0TpJ5v
-	 hHVR/ekj47Hp3BQloU7XRjm7rKhuBfvcDVXs4H2zT6u3zIPG0hTzEZ2nEaQ52YX9pB
-	 r36Pn5DAoyz5g==
+	bh=IgTEkVYd46Ru6As3hGpXvTy9hURuoQjJ4M75ryPeIBQ=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=iEjtP2qpfamyS3nvDrUSSup1aUJp1DCxrxKAQnLjRU3bipLyP9uPtTgQ2BlSXOH7X
+	 VhELVBibjy1+hdD6T2B6q502EG5X+U8nF6lUMHio2aGTnHvBLekQVyBmFKL4AMElKf
+	 7bYsgkaTp8+qy1qVYBltii6CwZE2g3hwWhAmlSDMOPv2rrWTVTw4/o9jILPQqpDPCr
+	 f2ILY7/ObIeJWeud+xb0LfEXuL1/USd6bKLfl9pTCwn7ymAwFSpFzcdTXB3pvIcTUM
+	 cpR74z4XNBRn8fCwii+38+u5pQOV4/GXjssJznC2nexlxT+uy9/KhvlVKGKwFxXi+e
+	 Tl9tO14kBAZYA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92F6BC25B7C;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F6CBC25B78;
 	Wed, 29 May 2024 03:10:36 +0000 (UTC)
 From: Xianwei Zhao via B4 Relay <devnull+xianwei.zhao.amlogic.com@kernel.org>
-Date: Wed, 29 May 2024 11:10:35 +0800
-Subject: [PATCH v2 3/3] arm64: dts: amlogic: a4: add power domain
- controller node
+Subject: [PATCH v2 0/3] Power: A4: add power domain driver
+Date: Wed, 29 May 2024 11:10:32 +0800
+Message-Id: <20240529-a4_secpowerdomain-v2-0-47502fc0eaf3@amlogic.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,9 +40,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240529-a4_secpowerdomain-v2-3-47502fc0eaf3@amlogic.com>
-References: <20240529-a4_secpowerdomain-v2-0-47502fc0eaf3@amlogic.com>
-In-Reply-To: <20240529-a4_secpowerdomain-v2-0-47502fc0eaf3@amlogic.com>
+X-B4-Tracking: v=1; b=H4sIAKicVmYC/32NQQ7CIBBFr9LMWgwg1bYr72EaQ2HaTiLQgKmah
+ ruLPYDL95L//gYJI2GCrtog4kqJgi8gDxWYWfsJGdnCILlUvJYN0+qe0CzhhdEGp8mzGgfO67N
+ q2hOHslsijvTem7e+8EzpGeJnv1jFz/6rrYJxJnVrL3ZsByGbq3aPMJE5muCgzzl/AZKJC2S0A
+ AAA
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, 
  Neil Armstrong <neil.armstrong@linaro.org>, 
@@ -52,13 +52,14 @@ To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  Jianxin Pan <jianxin.pan@amlogic.com>, Ulf Hansson <ulf.hansson@linaro.org>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, Xianwei Zhao <xianwei.zhao@amlogic.com>
+ linux-pm@vger.kernel.org, Xianwei Zhao <xianwei.zhao@amlogic.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1716952234; l=894;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1716952234; l=1048;
  i=xianwei.zhao@amlogic.com; s=20231208; h=from:subject:message-id;
- bh=AmiofDYC3IFCMwy7sO4GQjRfJjCUwOi49fG3NzsnzK4=;
- b=3Bx9xAD4eRBo4zTKnXndZ9mni8Z2V6Ohu2ryGjhp0WUKOdgr0sd2zyuR2P5JOPQ3cObwW2hyM
- smZ8i+VozEdBdtMFmxSbzNCtICyEjW/tjoIEH2qW5BiqBW6Y2XLZCeg
+ bh=IgTEkVYd46Ru6As3hGpXvTy9hURuoQjJ4M75ryPeIBQ=;
+ b=NG8/Fqi40DTnl0o5BZrocIxFVchLkBPLoaxBqkwU1c+QmRw1GofHLrZpide+starD0xgZ4tj8
+ Zw/S3CC56lyAm7+MtKdIyrDDYx5Z2i6Gxtjne3EEM8NHZ1PdjdFaSsW
 X-Developer-Key: i=xianwei.zhao@amlogic.com; a=ed25519;
  pk=o4fDH8ZXL6xQg5h17eNzRljf6pwZHWWjqcOSsj3dW24=
 X-Endpoint-Received: by B4 Relay for xianwei.zhao@amlogic.com/20231208 with
@@ -66,43 +67,32 @@ X-Endpoint-Received: by B4 Relay for xianwei.zhao@amlogic.com/20231208 with
 X-Original-From: Xianwei Zhao <xianwei.zhao@amlogic.com>
 Reply-To: xianwei.zhao@amlogic.com
 
-From: Xianwei Zhao <xianwei.zhao@amlogic.com>
-
-Add power domain controller node for Amlogic A4 SoC
+Add power controller driver support for Amlogic A4 SoC.
 
 Signed-off-by: Xianwei Zhao <xianwei.zhao@amlogic.com>
 ---
- arch/arm64/boot/dts/amlogic/amlogic-a4.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Changes in v2:
+- dts: Move power-controller node to be a child of secure-monitor.
+- dts: Include power head file.
+- Link to v1: https://lore.kernel.org/r/20240528-a4_secpowerdomain-v1-0-2a9d7df9b128@amlogic.com
 
-diff --git a/arch/arm64/boot/dts/amlogic/amlogic-a4.dtsi b/arch/arm64/boot/dts/amlogic/amlogic-a4.dtsi
-index 73ca1d7eed81..de10e7aebf21 100644
---- a/arch/arm64/boot/dts/amlogic/amlogic-a4.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/amlogic-a4.dtsi
-@@ -4,6 +4,7 @@
-  */
- 
- #include "amlogic-a4-common.dtsi"
-+#include <dt-bindings/power/amlogic,a4-pwrc.h>
- / {
- 	cpus {
- 		#address-cells = <2>;
-@@ -37,4 +38,13 @@ cpu3: cpu@3 {
- 			enable-method = "psci";
- 		};
- 	};
-+
-+	sm: secure-monitor {
-+		compatible = "amlogic,meson-gxbb-sm";
-+
-+		pwrc: power-controller {
-+			compatible = "amlogic,a4-pwrc";
-+			#power-domain-cells = <1>;
-+		};
-+	};
- };
+---
+Xianwei Zhao (3):
+      dt-bindings: power: add Amlogic A4 power domains
+      pmdomain: amlogic: Add support for A4 power domains controller
+      arm64: dts: amlogic: a4: add power domain controller node
 
+ .../bindings/power/amlogic,meson-sec-pwrc.yaml     |  1 +
+ arch/arm64/boot/dts/amlogic/amlogic-a4.dtsi        | 10 ++++++++
+ drivers/pmdomain/amlogic/meson-secure-pwrc.c       | 28 ++++++++++++++++++++++
+ include/dt-bindings/power/amlogic,a4-pwrc.h        | 21 ++++++++++++++++
+ 4 files changed, 60 insertions(+)
+---
+base-commit: 456f4f5e6e6d3a2228501068a37ce13fe0b333d4
+change-id: 20240528-a4_secpowerdomain-5eb005648930
+
+Best regards,
 -- 
-2.37.1
+Xianwei Zhao <xianwei.zhao@amlogic.com>
 
 
