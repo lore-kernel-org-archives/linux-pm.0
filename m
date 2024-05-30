@@ -1,161 +1,129 @@
-Received: from JPN01-OS0-obe.outbound.protection.outlook.com (mail-os0jpn01olkn2094.outbound.protection.outlook.com [40.92.98.94])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from sonic302-20.consmr.mail.ir2.yahoo.com (sonic302-20.consmr.mail.ir2.yahoo.com [87.248.110.83])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5ABE112BE91;
-	Thu, 30 May 2024 11:08:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.98.94
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1717067315; cv=fail; b=WxErq2Ry6a3Cj8URweOsXSSZ3QfVS3JJtT4U8I01JZZJEdi/blvao62x0QkoSLgbRYnMIUZzOMaSpsHBJ9BGfFeOPx+SEeq4tS1fBggMokrjlmWYL4ZQQBiDxdc7FEDiuD6SR18tSUkSpi5lftJY8WeHHAsQx2FAEwAljW/i4QY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1717067315; c=relaxed/simple;
-	bh=tNOhYuCilkpJ4guqtujb+Wjf3RdX8WZASUsh3AL0g1I=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=WY2PPPNnfQ6FqHfwcBw9ZTuwP8zWyXF5DU7pHgZveVOKqoswSuoPHr29bKvUm0qsq6CfjegrQJaRW84FXAP4gzJX0GFiEM+KKEly2qCyFNe291WNibVnuUWJuCBxHmXSQQir7hXgzE6sgTJooycIMj1q/C3YhFZVvSEO6pocksg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com; spf=pass smtp.mailfrom=hotmail.com; dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b=SyL7ZB1q; arc=fail smtp.client-ip=40.92.98.94
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hotmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8615412BE91
+	for <linux-pm@vger.kernel.org>; Thu, 30 May 2024 11:10:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=87.248.110.83
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1717067414; cv=none; b=NPdkkDpSPpTERruYTD+wVL13JvRpam/gJPkNMA89NJrWYZ376ZsbVaBAvaZt02EBofxKpAvTwwdugRt3SvVRzeSapyf9/i1EVTNoNmhHOt0SXio+Eo8rmLzHh8KDjfp2VnJ4lW43b3Bgz+gLDQGHYeVJ7cY/LZz4hwokTI8jaB4=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1717067414; c=relaxed/simple;
+	bh=7aybtSefWX7qOkDAv6IB5StKPRuL/tJxPJ6SrdpSMbI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=MhGvNV3SsSH2CEJJQv4sHZwW2zttgU3m9mywqVff/tqKuL5HBYb1gxtWIMS7A2dH7d3SBGzDeShdMTHFeE1CQHj2tf+HHzav6qe5E4fNsjCSXhK3wCNkpjEREGw2qMJSWs3/vevCxsHzg+Ajh8zW2e8fFi5/XK4j2Jx09TMTdVw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.de; spf=pass smtp.mailfrom=yahoo.de; dkim=pass (2048-bit key) header.d=yahoo.de header.i=@yahoo.de header.b=GtVpZpIG; arc=none smtp.client-ip=87.248.110.83
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b="SyL7ZB1q"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=PRDdFGDZE2u8OADTbknj2Lty6fKvML9Sll7Z+ohcU1G/DPGoEJParNd9BLUZMOBy0YZplDVLLMFGiM0wawVSVE1K4XLI6pA3IDUMCeZNDMBK51A4V1IePHcz9qnmioRg1IpSiBQvyPIlUwcXDlGi72JV/tlF02YoMCAvTGnhiY61oiXhlq0nwZE/atr22QET0Vb8E9pO/IY47MFaW8V//RYFeVmebDmveaocx7lKf48j4qjgwRla2RQEWaivSXuqFx2cXuv19sJNUkLq4g8wlYx8A1pLUCyhjGD0CAT5jDjtHQ6K9se+fQPk9N7Ot84pUzlWoKPzPT39z0iqWqtgAw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/uLONIGm63D+1JtXq+GIaNlRgWOx+0L4JfavbHexVdA=;
- b=lZOLN4BZyXaEifxZiBv6Lzkj/iBnY+cEGDS8uVGy0gmbWSa30o5lK0+4u6nP99SCKUzo7Bub5ATzi9HEpkQpJxaGXga8QtCs4edbhQgB8vVaDPZTKsRrPaMZ/2e6LE2ojm1y7xah/4zb0PTR9vZaUkzO3nVYy9++olQPiywtqrYVLoqXCtGrFNgvrYIVesZpkG1r/tQZUG/IhAAfdiukYhoeJw88SQkMMLAyiaDbqj7ozRdQ8ZwS7Q5WDUoWE94BfGukdMGhL3slj/HhyVOlP1JLkmyYhQR16iM6tfToj8Y1becy0Uqy6aet7e2sPjfbCLWUVHIMtcUSthD7jEplBw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/uLONIGm63D+1JtXq+GIaNlRgWOx+0L4JfavbHexVdA=;
- b=SyL7ZB1q2S8bzaMuGZbP8D37VF23yq7J0xQmUSFxRsYaCFVYM5+Rxmd7NH7s/Q/rd4shyHTbGGMJcdiOPXCP3bDjwBlaDdkJkPko1RpNu0taFw/XlI4kD0L3vsQEiCZy5UgS8d2oSircihqKA4tt2Arkl5zFe3hKmUmkTS63omuwYwl5oc8k2xvE1nzZVhDp3ePSAx9KRbHaUXlP0ohzEt8lhD5xCeIEZ5VNr2dWI0ZwadB0C1UdZ32JbdBjb01cHXHoEgCEm4bHKaAG4wDUQcVaO+Vk51iLW/qtqlrcJC2ThKaJhtSVm1tLeZ1AmkLArxYxtl8hm6qn04U9Q8Ly1w==
-Received: from OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM (2603:1096:604:1f1::11)
- by TYCP286MB2383.JPNP286.PROD.OUTLOOK.COM (2603:1096:400:18e::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7633.21; Thu, 30 May
- 2024 11:08:30 +0000
-Received: from OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM
- ([fe80::1167:655a:7fa5:5cef]) by OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM
- ([fe80::1167:655a:7fa5:5cef%4]) with mapi id 15.20.7633.018; Thu, 30 May 2024
- 11:08:30 +0000
-From: Riwen Lu <luriwen@hotmail.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	ionela.voinescu@arm.com,
-	beata.michalska@arm.com,
-	hotran@apm.com,
-	Riwen Lu <luriwen@kylinos.cn>
-Subject: [PATCH v3] cpufreq/cppc: Remove the desired_perf compare when set target
-Date: Thu, 30 May 2024 19:08:15 +0800
-Message-ID:
- <OS3P286MB249076187B3497D1EDD70988B1F32@OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20240530061621.36byo5a2iqc6o2az@vireshk-i7>
-References: <20240530061621.36byo5a2iqc6o2az@vireshk-i7>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-TMN: [eWhWgUQ/6M0+OlXuupQk/mXK8IWIaI4i]
-X-ClientProxiedBy: SG2PR03CA0093.apcprd03.prod.outlook.com
- (2603:1096:4:7c::21) To OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:604:1f1::11)
-X-Microsoft-Original-Message-ID:
- <20240530110815.3124449-1-luriwen@hotmail.com>
+	dkim=pass (2048-bit key) header.d=yahoo.de header.i=@yahoo.de header.b="GtVpZpIG"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.de; s=s2048; t=1717067410; bh=iETrNB+qFsCwf3l9yJ7zi5gWG9hU7iH9KF33EbrTrnc=; h=Date:Subject:To:Cc:References:From:In-Reply-To:From:Subject:Reply-To; b=GtVpZpIG6vEzffPzcSpK0xdtjB9l0sKRXjznL8JRJhUQ/Z1YvSpd2ukRmf/lo4YiQO9+XCElZkSfUyTtbf2oCLlu82H+4K1wavFJYgLs5GC3rBMFGc/j1tQZKoj+afn9Au+LbrNbAye+ueBp3JLds6R/4i6CIe9Sr3nPOSS30MkzblI2YAS+da63hlbmjbKDxDy9mWj/eldiy3wR0h9aEOWbR/mqVn14tVm5HpNseY5JN42HSbFNtD0xExmSMNmUEJXArZjq2dl+nsjJa9dvQ9JiwMbqVOt/U1aZtVw46Y9t7hW4NmbWtdmAkNlno1SNDFjdZtbG7QQSriGx+RUsZA==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1717067410; bh=qN/73ARWOVD7b8JLgBwn8UmN12K/zYv+TSM/mGKLUuw=; h=X-Sonic-MF:Date:Subject:To:From:From:Subject; b=uI4Q6lk5VuJv48NcilSVyJBD2ZrzzvkcjtRvjWyLJ8BuNFgcuc4foWzonqAE5FqdDt8BSv8Btdjmcxb1aQB5yFOw4gyINfIYKzZXG+aQcPUNA8qcg0MoRgDXtRSercjuAPgKHn2HqpQzRsEXvksHSSPYLYUKO3jg0m49j99gsDIFUhggn2cGgBIDg+5URwwZpCA3UPQxINHe/TkVSx7w+a6IUCB8avJ1GtNdf26mrQTjXG1c+9959jOXG/aMwdmv1/tx0lrATW6fWHPo123MoJjsLtt7+HphcV5RWPqNmYxHCiCIzfpYJx1EMgODsFmz92rujkl+Gu9DPRdRWbMOgQ==
+X-YMail-OSG: jPnIlbUVM1kGJcHFvgbED0RbmTTs1gsxA9pBsgR.7GO5JuGivNQxYdwwJcvB7EM
+ 0nOzIplJ5Xg96BJLjK9gvt8IGk2v3XB77CicaN1FzkMxKWY6FnVskGKH8wBg4t8nfUrg7FmnxURA
+ .LS0iEIgVOD84GvWZwGBVhBH2DZRUe7Xp9Wh.44gCG8PuTuwHU_bs8N1b1VszVnexIS_bXUZFBfu
+ _.XjLZHG8DLl6fhFUDCYyxF0lR4EoNmu53bObpy.I4kUBFYyHRHqUfO8gQCFQ1tENUfzZ4RYJN5d
+ Yb.pM1FfmF8UJPJjETtMS5LekawUVKHy2galJ20meJ_9E5G5C4ShQep3mgnhCpALSop5kn5sWKdW
+ zM.IF2FOyxmd8m0cZZczVTmPwcg809CJF8vTHcj9uxCx8HkEt4S541__u9X15SNNogCz9zykJY2b
+ dzOMxrMUSd9OG2aWyKNXUPtIh_8wtaSuCww.hm91YdnW.69aIqjEocNIFt7XZ.NLcYNQG4w.c7Ov
+ _qE9_N1c0GeEjcVchfrJQHFUCCcvbIv7UMvh2hKaE4MPnvWI8ZrH1E7xcSiZJ1yyoDuklQUvDlf7
+ uMkwVdNok0jJFzREALmgMd6oKf1fBxlEtPtjSjvPXPeQFtDQrnOCdlSJIhqvXGStzFOOMYF0gTBe
+ yDIFwQZmdgraoQJDwRw3nFB856ziOPWHDHQiGmnVQFhcA6xZ95XJ6Y3a12xrWb2nqsijzaARZeC7
+ .wGwI8W646x9VQgPDtO0wIC5jRKExiKq3iVsbsC6IcYfPahJzzNXbj4ubIA.HHSq8fJ5xFsRQd6v
+ FKoUsj3WdqlUXF44ys9Ao_G9j3UL41y_8VH99KIT8QO23W84rHkDWhQ_Hs_wXFy4VxgSFQRza8.x
+ Re9cA0vm_bxPyix9lqIGNqdcGuiPAMjNGyegC6U.w.ukiqPM.HybvPmpuApQXTrOdiFvdt.lPNQO
+ X71Q32m3_GPh5e9.JqRcRKhT60ZAJG_MAXmuJoZfKuvc_ZYjB9gPhjfR05vYMIBVR3Ca9N3xapB3
+ ZkZhWPZH4t40zSbUUIUsL0Tu0LtyKP50BgIz_2dXmWjVzc_MCOaqytkGnEUygn9ZUW8ruKD63e.I
+ JjMusee0NV1ZHZ9Op_KVZpS3.wzf0aq9_zPlH7oq6D9W76og.GyKek59abR3E0os7UAy1Kscr0Nb
+ Rh1MWnMrxiytEc.ZxbFxZra4gK5x.O8PbPNZwkKh5b33kNokdN7Ci67qkkjtcwaLzieGHGjcuTp1
+ OMfNRIm2P1rbzbJ7wjiSytQHfgqZtoNnFP39reDUWpIawhGY3PUM2Q1KTiHkjKokb5efGHjbSzm1
+ r1bh4A6S7di6VwkEH8kgn6PWZI2RR1.2GsEgjn6ISsNhR2kws8mVTjLnySGKXtMlfLEqrT6c1u1J
+ j2K_nripyC6wcZxueWuTqD3HTuE5LVyA6MnlESR4kDg0Kg9fzKdNAd9RygZi_SAGArbIVsnwIvNs
+ ac6bDYuv9RTS_Un7IqRpHoR9xWf0FisbUHhFvtEoMnSwPv3AS45d..QNplndD68xkCuyLPzREvB.
+ 7AQbzBwAYoNyb02CexkvTr9.5MJQZ0jwwOkosLtdfdhfBGw4ZqicRLcES.loP5gJcL1HwttNMJsk
+ _uhPPSD8xgM4QBaNbCuWa4tIfyjootj2.lI0Z1WvNF8.xUFg2ckFXE7khrnA1f8OwhsCKlKUUj0A
+ LavwfR8.KD2Juclegt0.33OPjw086LZUSkJerbo64uTFo0092Ke2Hh2ysAKVGDSmfw6oUemiUjsg
+ yRUNRkdWGCeBE9E8Abq4KxHugijQyNr_Gz4EPgcHQDfU2byos8xuSHE9XuBuZvC9VfuDk.oMGPCe
+ olGnNvKl1BgYnJhIkXljLxokGeLYqb7AAoTA8IXsAbHaGb..Baw4tXmuZrhgzeodmD.jH7Hpcg4Z
+ VH78LRQCX1rkqh7E6eG4oA82PXsePZRR98F6NXX5LZEan7D7tIzYrtjcvpWOkStmNWE4xqmIA7zW
+ SXNrSfFe0sMSpDlNSoMUk7n7d4DDDkzF9xauV6Dd5_E7BUxioxXlnBkQmFuD2_y62BWhH08xKOhY
+ 6eoAa9nxA4zYRaMhBxpE434DOyRW2anJs76kZShlFwtsSE_Ky55fnPoQJo1VDtgNXX139pclpSMi
+ 4uQhki2uoJA1Lgl_lwPMQWP8YIKZXdsMuiGwpx4vRMLKaxgi1WpJSEFPmKEU0cQKfJYHGOrdj8Oa
+ .L5Xn_eGK91xqa0W46mApHG67EyvW1iEet_esvZR0MOolmwd8CcUgOao7wRCT
+X-Sonic-MF: <fhortner@yahoo.de>
+X-Sonic-ID: a515d68d-f75a-4e76-824e-73db09aabddf
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic302.consmr.mail.ir2.yahoo.com with HTTP; Thu, 30 May 2024 11:10:10 +0000
+Received: by hermes--production-ir2-7b99fc9bb6-hcsdk (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID d50324578d537739bc53c7e42086909d;
+          Thu, 30 May 2024 10:49:53 +0000 (UTC)
+Message-ID: <a97f9f4d-17f1-44cf-a0f4-634fd38aba2a@yahoo.de>
+Date: Thu, 30 May 2024 12:49:52 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: OS3P286MB2490:EE_|TYCP286MB2383:EE_
-X-MS-Office365-Filtering-Correlation-Id: 60374e02-9486-4ee6-c880-08dc8098d643
-X-Microsoft-Antispam: BCL:0;ARA:14566002|461199019|440099019|3412199016;
-X-Microsoft-Antispam-Message-Info:
-	eORXtyOVU4RRMHIfaiRVVvUSFrYwVcQqE94EDi8rPKpcO5LXGvfqnf5J2tHtxMrzCiTfVvRdw0DlZ/ufc55PgHLVM0Vxyh+eqHBvz8oE1Oh/jOgxta7O0T/0ZqpaEeFXbkXWmQkd37y+LGXq5CQ7rXgzDx5KQlUdwvn3EiiQhc4jxJA4+O6pvnScfUb6ScRYBYJ+zJBzFsSy1lDp0LylzvQOrmEch0SOiAUjgeXW2hqVP3uBx/Oop9kzpNSWgddTwL4zdagUyc4HfD9xkNS+6YwlzFbpsXt32JPE7ahF9w8dZ1i+I+NUznJ9FAi3gncvqLpv2zrLyiUNAje9mzQWiKyWItHT0ENqUdNjVd+/nV5sZyohwXNtNCY3394dORQKrjcTnf8jcoLBP5Bcyb32z5PkfpIx/LmWRxiRMZio7Bz/vKENnmJb/+5Js3vPuiHSmeE7x2Ch21sKFvsWHwwGWpojFsAW6U4bgNplRRMIEEY/mqG3T4CgZTgdpKrwHtZv2RHcyqf5PIQ8QHK9nHKsf6trHsuXvLuyios6qaC+J7ielHRR9QRUZmDVZF1TEuvQ
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?U2X75bL0Uvm/6DH1DXZPAyNbJuqJeZqa0NlzORa8LCqdfxehsszwwz/SZ+HM?=
- =?us-ascii?Q?1xgv8UQe2DZ0x0E0h8Koc4q9Eb9rZ16LmOWO0a8oIp+LtqlTak1Dt08hg6K6?=
- =?us-ascii?Q?bted255zcyJ1Fl6HsdznfSHDgtl+lrDBlnE3fVH1aApfi7AzfjLfvVLJTRxT?=
- =?us-ascii?Q?O9sJL61x6eXBDO2FtgMsBFftEoyLI3b4uQzqrA6PNz7TpalsO3F7fazp5hTH?=
- =?us-ascii?Q?3+aVxZy3DHqrDV/Fu21qYdrCogYtk/2sNUoMffErzbnHhQp8LcJDsCzSaTlg?=
- =?us-ascii?Q?J4Qwtz+eyvS6yHQt6ex/V05fUgteFz2Kbkd0cCDo7/ZO47z+AHC97QNnhaA8?=
- =?us-ascii?Q?yUYU+a1+oeauMuOnM11pyJV94gXN0AT84YQPRE4OOt8tLz34/O0RHuYUG/OH?=
- =?us-ascii?Q?tX7Uo56QHHaQS5jh1tc7U6nrFq3AwzOAY3NxmPOr6Fx4m0QmqNkwIcOAuAuj?=
- =?us-ascii?Q?oZf6hUHcMNzorEaxcdaoGKlAI2cSPyJiVURLaHqWJYFlpDWjb9ES+aVo9MHr?=
- =?us-ascii?Q?glsoDNdg9U380ZHC7ybAoUG1UbQ2S8noYqOliLSavEri6dMdoK3J+hUk8tPz?=
- =?us-ascii?Q?sDgp3NSx6/8Tvhms7r1XjjAhbxxfyE1YweOMqusfzAK2XdZ+kzJYPV7tEQWI?=
- =?us-ascii?Q?Ve6Gs42j9fAfsxgj7jFt6pcY+zI88z9kzSE2juOk80nm8huOJKpYSfgBYHfk?=
- =?us-ascii?Q?mrCRWUz5IvBohdl0NE4RDMqUQj38yWX9bqHupYxKEiHZuNq9P4XAPxt6ijty?=
- =?us-ascii?Q?Vh1sS7UNAZzCJKz0J6SOzdbTCjK1zBLuPCE+vaogwdTZeYGPag2xmDMAdUIg?=
- =?us-ascii?Q?bWb+V0t1XEEIL1AcugAtGfbWnzQ7ct20CIjhEfanqZEabt8OlPWZ+61qMZ4z?=
- =?us-ascii?Q?vH8+VeAyE/AJZ/TudeM1kEnNfT4YWVJadfkDniNizW3eRm9cwSRVNNxPcIe/?=
- =?us-ascii?Q?l7IQd25EH25UTcsNEQ58+RMyOEtJ/6SWG/hFQeuq/UVfSyU6mm4WwQOeqm9H?=
- =?us-ascii?Q?sKUpLpZ9C8Yx2gnFKaTU/DPh6vuOCs1xD7F+umq3kuAmsxljq+92TMimsjyK?=
- =?us-ascii?Q?OgXUVPcujkVgOMTD9gMAZRKEvmn6oE0PzNRe6HRvoY3jnpSAKbqlol4CetYv?=
- =?us-ascii?Q?ko6UHUzVnmvon6sutaVPKgxwece+kFaBbx5IhsHYWI37dhPIjiMU6t5ox9Tg?=
- =?us-ascii?Q?iGsAlNEYuqQLaEQVGw5+wPvh+pOjEj9Dq/j6rdbFCL9lGkrkedhyzemEG/g?=
- =?us-ascii?Q?=3D?=
-X-OriginatorOrg: sct-15-20-4755-11-msonline-outlook-05f45.templateTenant
-X-MS-Exchange-CrossTenant-Network-Message-Id: 60374e02-9486-4ee6-c880-08dc8098d643
-X-MS-Exchange-CrossTenant-AuthSource: OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 May 2024 11:08:30.0469
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYCP286MB2383
+User-Agent: Mozilla Thunderbird
+Subject: Re: Regression, thermal: core: battery reading wrong after wake from
+ S3 [Was: Bug Report according to thermal_core.c]
+To: Linux regressions mailing list <regressions@lists.linux.dev>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <1051df4c-067f-455e-8c7f-9dc47dc8ed00@yahoo.de>
+ <7f4a777b-88f6-4429-b168-d1337d291386@yahoo.de>
+ <435867b5-029b-419f-bb7f-2d4902c62556@leemhuis.info>
+Content-Language: de-CH
+From: "fhortner@yahoo.de" <fhortner@yahoo.de>
+In-Reply-To: <435867b5-029b-419f-bb7f-2d4902c62556@leemhuis.info>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Mailer: WebService/1.1.22356 mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
 
-From: Riwen Lu <luriwen@kylinos.cn>
+Thanks Thorsten for the side note.
 
-There is a case that desired_perf is exactly the same with the old perf,
-but the actual current freq is not.
+I have compiled kernel 6.8.11 with reverted commit 
+5a5efdaffda5d23717d9117cf36cda9eafcf2fae.
 
-This happened in S3 while the cpufreq governor is set to powersave.
-During cpufreq resume process, the booting CPU's new_freq obtained via
-.get() is the highest frequency, while the policy->cur and
-cpu->perf_ctrls.desired_perf are in the lowest level(powersave
-governor). Causing the warning: "CPU frequency out of sync:", and set
-policy->cur to new_freq. Then the governor->limits() calls
-cppc_cpufreq_set_target() to configures the CPU frequency and returns
-directly because the desired_perf converted from target_freq is the
-same with cpu->perf_ctrls.desired_perf and both are the lowest_perf.
-Since target_freq and policy->cur have been compared in
-__cpufreq_driver_target(), there's no need to compare desired_perf
-and cpu->perf_ctrls.desired_perf again in cppc_cpufreq_set_target()
-to ensure that the CPU frequency is properly configured.
+Battery Status works fine now with reverted commit after S3 Sleep and 
+Wake cycles.
 
-Signed-off-by: Riwen Lu <luriwen@kylinos.cn>
+Best, Reinhard
 
----
-v1 -> v2:
- - Update commit message and email.
-v2 -> v3:
- - Update patch subject and commit message.
- - Remove the desired_perf compare logic.
----
- drivers/cpufreq/cppc_cpufreq.c | 3 ---
- 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 15f1d41920a3..337cece61ab5 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -295,9 +295,6 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
- 	int ret = 0;
- 
- 	desired_perf = cppc_khz_to_perf(&cpu_data->perf_caps, target_freq);
--	/* Return if it is exactly the same perf */
--	if (desired_perf == cpu_data->perf_ctrls.desired_perf)
--		return ret;
- 
- 	cpu_data->perf_ctrls.desired_perf = desired_perf;
- 	freqs.old = policy->cur;
--- 
-2.25.1
+Am 30.05.24 um 12:21 schrieb Linux regression tracking (Thorsten Leemhuis):
+> [adding the culprits author, LKML, and the regression mailing list to
+> the list of recipients; changing subject, too]
+>
+> On 29.05.24 21:52, fhortner@yahoo.de wrote:
+>> After bisection I have reported a bug according to thermal_core.c:
+>> After "Resume thermal zones asynchronously" commit: Wrong Battery
+>> Reading after Wake from S3 Sleep - Lenovo Thinkpad P1 Gen2
+>>
+>> https://bugzilla.kernel.org/show_bug.cgi?id=218881
+>> Could you please have a look at it
+>>
+>> I have performed a bisection and the culprit is this commit: Resume
+>> thermal zones asynchronously
+>> git bisect bad 5a5efdaffda5d23717d9117cf36cda9eafcf2fae
+>> # first bad commit: [5a5efdaffda5d23717d9117cf36cda9eafcf2fae] thermal:
+>> core: Resume thermal zones asynchronously
+>>
+>> I have also verified it by compiling a kernel
+> Side note: not critical at all, but would have been good if you had
+> specified which kernel version you build.
+>
+>> without this commit.
+> Thanks for the report. To be sure the issue doesn't fall through the
+> cracks unnoticed, I'm adding it to regzbot, the Linux kernel regression
+> tracking bot:
+>
+> #regzbot ^introduced 5a5efdaffda5d23717d9117cf36cda9eafcf2
+> #regzbot dup: https://bugzilla.kernel.org/show_bug.cgi?id=218881
+> #regzbot title
+> #regzbot ignore-activity
+>
+> Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
+> --
+> Everything you wanna know about Linux kernel regression tracking:
+> https://linux-regtracking.leemhuis.info/about/#tldr
+> That page also explains what to do if mails like this annoy you.
 
