@@ -1,922 +1,447 @@
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
+Received: from mail-lj1-f174.google.com (mail-lj1-f174.google.com [209.85.208.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E690F17C7B6
-	for <linux-pm@vger.kernel.org>; Thu, 30 May 2024 10:47:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40F026F2F2
+	for <linux-pm@vger.kernel.org>; Thu, 30 May 2024 11:02:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1717066027; cv=none; b=JKgBkqeZP3QBqhsaqZpfmNPwsoCFGu9KcR+wD6W9/7VKH39cROKLccfEOCwzLsKsnggM11cyXN9SXYBGHO71rpLmb/Jqm9m3hDV5kVRFGa8lvVsLkbWU4RBAnGmRm6mqJPmq0UFXGHj+j90MG2L8nfAOM5jlHU+YjlrWVYQQSdM=
+	t=1717066966; cv=none; b=GpcmtX556fEi/rlRCeilXGp3InClPI5MdSsZ4WZLZuIY07krT/Hk2gGcWEkAmizSlXjCZsEXbKsD3JeORlfw7qgcZxIZMSwXQV1xB5T8F+ov4Fv5rtxUC3pbGfpMk6Lr425EyZgS8q3M/p1TCi+SeJFL4ztSpA9E7sZHcKOndSQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1717066027; c=relaxed/simple;
-	bh=fpPkHXQK5gLX1+LtTuc2BUpsfU+RicfeevlGZMQYjpg=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=FmlDBCAj8ew+MRfCbBmNNQdkNqaBwuUAfSYdLtI6VqxSw7hFcKdZF9P9SEm5xgPpjzXNPdCXzMcWxpCOdt6oYnYAaCifqgUlSxMSPneivRhC58W2WRLZxfc67AoBlRXdcHMnlqqOgqTnVyy5sdl4DQwHhMMgsrvDMVKW4xS3BdE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b=q0kpfH+r; arc=none smtp.client-ip=209.85.221.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	s=arc-20240116; t=1717066966; c=relaxed/simple;
+	bh=ze99tk+tgTu5+kvB3B+xjJ6rgWHqjZwCG275dnpJOtQ=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=RHhB4JIPdZWP++NQDfrrgGBEwSLFkl3+a2Z/FobLVmQAVbA2z233hIYGIwumZ4XZfJHgOlIAgryviNYGOO0sptjQYJisvW6iu+5UW9Ead1iwSZLDDb/r270hR540iJ//w8jqdxuv+Zuy/KxI2kcJd/C+puhxNyD6hbQ9XMqzdpI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ztf0UMet; arc=none smtp.client-ip=209.85.208.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b="q0kpfH+r"
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-35dc36b107fso711384f8f.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 May 2024 03:47:03 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ztf0UMet"
+Received: by mail-lj1-f174.google.com with SMTP id 38308e7fff4ca-2e95a7545bdso7224051fa.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 May 2024 04:02:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1717066022; x=1717670822; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Gd66fi9Gu6MAFHADfhw9lmH83OBsd6ddRSbMVOfkUug=;
-        b=q0kpfH+rOjZpNQVX/beZYDNgqz6ovp8M9+bUaTNpvwYcQFSzdiOUlUrFmjIIpadL6O
-         JcBMcDuFjzdPxbAWPpmxvivBhUjqtOr+80P8b3L/HVru8ahypznIQd5t6FqEQG6sAZnB
-         iZa5qm7Qva28gUBT0thkpqOWnr9Vy6Rgu3s/VwQaYhvaepZq8K1Ia2wYJda2fnpLSDXn
-         SEcrNh9YBx3TjmSOTf5hGeiA4z644jBUXJYcDE/BwgEhDH35we61BSmqOvjOCdk4HCcZ
-         xeOGfuxA/1E7qgFYQ1WJr72mm/JaK7DgRx7IXUnBP3GSz8gUYYjvQrxTWwbgu99LSEd5
-         k+ag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717066022; x=1717670822;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=linaro.org; s=google; t=1717066962; x=1717671762; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:organization:autocrypt
+         :content-language:references:cc:to:subject:reply-to:from:user-agent
+         :mime-version:date:message-id:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Gd66fi9Gu6MAFHADfhw9lmH83OBsd6ddRSbMVOfkUug=;
-        b=poQcRxbL0/McszWhVrcX9ZA6xeTo2qe2YdE63AndJkcfO3CIuE2MvtYD86W87olq1H
-         BUZ+3UbGNRrnb0gdd3mGoh948wpltsyoGZoTjOhwe8OCgxrC0VBtm+kiBexiKokIZo99
-         WpEoA+cBMaRhXdwpLsx9OI5QpHZwMfN27OLhU9lfF2B9/N/Y9uH9+PY3uiRueLYR/3JZ
-         pM5ZbxQi+Bba4ZHgGim0rbrhgli4rzOIsVLMzT4sVCS9PewxCAg+W6mqOUnC4isFp4TG
-         Y8jz20bLkLd3g0VBQh2mh2OGy37/WL/xzfI/aY+PTkd+VD1c8OCDDqMHffCr0hWfSymH
-         q5ug==
-X-Forwarded-Encrypted: i=1; AJvYcCXE1ZGVvCD+rIr6kPXBUtPFE9HdsOSYSdC4ntyFq2syNXe/GnsI5uFZIwk6H8OCLB6mUCG72jyfR+L4fdV25qyX6g6U+J1Br64=
-X-Gm-Message-State: AOJu0YwMRMV9OfKP9vp/OOLZ+T4fkinmlEZxJN4nB56fT4RGZlTmTiCb
-	9m517nJLx70+cAmZqdwAZskwAe4XI7i9VlA3vmz2b42hRbMmKahUA6Useeu0GnY=
-X-Google-Smtp-Source: AGHT+IE6bUyRcpZkvjHQHmD/wfbUljtSmdhXonjze0RK0s0BXt2zk4jHIKOyB5IW1uuuMUKvhPasbQ==
-X-Received: by 2002:adf:f404:0:b0:354:f48e:dafe with SMTP id ffacd0b85a97d-35dc0087c50mr1282742f8f.8.1717066021721;
-        Thu, 30 May 2024 03:47:01 -0700 (PDT)
-Received: from airbuntu.. (host81-157-90-255.range81-157.btcentralplus.com. [81.157.90.255])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-35579d7d88esm17235188f8f.19.2024.05.30.03.47.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 May 2024 03:47:01 -0700 (PDT)
-From: Qais Yousef <qyousef@layalina.io>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Ingo Molnar <mingo@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Juri Lelli <juri.lelli@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Ben Segall <bsegall@google.com>,
-	Mel Gorman <mgorman@suse.de>,
-	Daniel Bristot de Oliveira <bristot@redhat.com>,
-	Valentin Schneider <vschneid@redhat.com>,
-	Christian Loehle <christian.loehle@arm.com>,
-	Hongyan Xia <hongyan.xia2@arm.com>,
-	John Stultz <jstultz@google.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Qais Yousef <qyousef@layalina.io>
-Subject: [PATCH v5] sched: Consolidate cpufreq updates
-Date: Thu, 30 May 2024 11:46:53 +0100
-Message-Id: <20240530104653.1234004-1-qyousef@layalina.io>
-X-Mailer: git-send-email 2.34.1
+        bh=wdJdpjrFVd2jyJBfi7/1Ypm+QKe5VhIURoGePuM+Fi8=;
+        b=ztf0UMetXZ0g9IScgcxjnFeBmBr7/L8eOw/WkTMRWXeNQuPU/Q0neC0wsqiJtu5v+t
+         9CBR+LUm21lQLZ177DjzcJt+sXK/v3YPJHRNaNcb/60JxmE0uI9YKOXXikHyH3h4I5iW
+         x7J9vPAzS7AWCM9N931lYbaG9Ish5q7+j93JkBRYK7LnuEdbq1EXAst6j/f9kqbbR8Rj
+         ZaJ7nb7/ShLRmPxe0VP4YnU5TDty5Dg+2fOsUhJQ7i4O+Sb/oDyfNFU23YMJ2JHCZ7Jd
+         AIZ+FxfIqSs7GoIRux/4fEGna698XqDY/5+9T9dXypITYokhGSNGzGez5eLc+kweHvcg
+         FrLg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1717066962; x=1717671762;
+        h=content-transfer-encoding:in-reply-to:organization:autocrypt
+         :content-language:references:cc:to:subject:reply-to:from:user-agent
+         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=wdJdpjrFVd2jyJBfi7/1Ypm+QKe5VhIURoGePuM+Fi8=;
+        b=dWyEeZ8AfVZsYaDDdWj+eSEtWot3QlJeZsROK+r7nYlB8/3iN1UJxd2JSieDonh+Uf
+         4J51XY0WMLjurVKI3kPmudT7xvovioqwcVgQL65Ki2M5u1tP4pfB6axjmW1EFgHkv2p+
+         qy7SL64d/KExcymAmrhJX9kYjU/xcPV9Rsx9c3iYKdpyQQmp2vmQuQxgRuquh2eIZwYo
+         UlezDwVBypEtuw0IUDRq5CcX/Xwdi25pECjTOGT/BziDNQFVZbKZ59zdcIzYkNEpJOxB
+         73jMzo0lDQ41ImfmVXLVplauudUbN6T7Iyy879eySyeRa6uifUVHzbtOjRheMHFG3XAY
+         4pfw==
+X-Forwarded-Encrypted: i=1; AJvYcCUN3VLtACN86C0qq6ZJnNWgedEc/JHBFb2GlDmusSvmniq0dbnRLNtbva+pq9RKDITy4lvySIgfxfLvAtm2VXpI6+RJjCd1e2I=
+X-Gm-Message-State: AOJu0Yx9qFxIql7FxsKvthKw1FgX5CFRQBCP61h3p+/mQ3V821q84b26
+	gjdzYS5a84o+L4Oh2vetropRAFlZHU9J+WkFnHBDyIU/e14UkM9SI5SAgY11jQ8=
+X-Google-Smtp-Source: AGHT+IFvRk0G/cssi1T5jykWS+sj3N7w+SJtv/NxzFC1qgP86vHMQCqJ5uR4sfMEFkv8MZ00HcJ33w==
+X-Received: by 2002:a2e:9d89:0:b0:2e5:1dae:1789 with SMTP id 38308e7fff4ca-2ea847f5e1dmr9802301fa.22.1717066962166;
+        Thu, 30 May 2024 04:02:42 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:982:cbb0:6c5:6f34:623a:2f88? ([2a01:e0a:982:cbb0:6c5:6f34:623a:2f88])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-35579d7d88esm17272899f8f.19.2024.05.30.04.02.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 30 May 2024 04:02:41 -0700 (PDT)
+Message-ID: <177a7a7e-9e99-4e2a-9f85-e2994a049892@linaro.org>
+Date: Thu, 30 May 2024 13:02:39 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Reply-To: neil.armstrong@linaro.org
+Subject: Re: [PATCH v8 00/17] power: sequencing: implement the subsystem and
+ add first users
+To: Bartosz Golaszewski <brgl@bgdev.pl>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Marcel Holtmann <marcel@holtmann.org>,
+ Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
+ Rocky Liao <quic_rjliao@quicinc.com>, Kalle Valo <kvalo@kernel.org>,
+ Jeff Johnson <jjohnson@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konrad.dybcio@linaro.org>, Bjorn Helgaas
+ <bhelgaas@google.com>, Srini Kandagatla <srinivas.kandagatla@linaro.org>,
+ Elliot Berman <quic_eberman@quicinc.com>,
+ Caleb Connolly <caleb.connolly@linaro.org>,
+ Dmitry Baryshkov <dmitry.baryshkov@linaro.org>, Alex Elder <elder@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+ netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+ ath11k@lists.infradead.org, Jeff Johnson <quic_jjohnson@quicinc.com>,
+ ath12k@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-pci@vger.kernel.org,
+ Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, kernel@quicinc.com,
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ Amit Pundir <amit.pundir@linaro.org>
+References: <20240528-pwrseq-v8-0-d354d52b763c@linaro.org>
+Content-Language: en-US, fr
+Autocrypt: addr=neil.armstrong@linaro.org; keydata=
+ xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
+ GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
+ BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
+ qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
+ 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
+ AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
+ OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
+ Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
+ YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
+ GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
+ UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
+ GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
+ yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
+ QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
+ SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
+ 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
+ Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
+ oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
+ M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
+ 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
+ KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
+ 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
+ QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
+Organization: Linaro
+In-Reply-To: <20240528-pwrseq-v8-0-d354d52b763c@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Improve the interaction with cpufreq governors by making the
-cpufreq_update_util() calls more intentional.
+On 28/05/2024 21:03, Bartosz Golaszewski wrote:
+> Note: I am resending this series in its entirety once more for
+> discussions and reviews. If there won't be any major objections, I'll
+> then start sending individual bits and pieces to appropriate trees.
+> 
+> Merging strategy: The DT binding and DTS changes are a no-brainer, they
+> can go through the wireless, regulator and arm-msm trees separately. The
+> bluetooth and PCI changes have a build-time dependency on the power
+> sequencing code. The bluetooth changes also have a run-time dependency on
+> the PCI pwrctl part. In order to get it into next I plan to pick up the
+> power sequencing code into my own tree and maintain it. I can then
+> provide an immutable tag for the BT and PCI trees to pull. I wouldn't
+> stress about the BT runtime dependency as it will be fixed once all
+> changes are in next.
+> 
+> The actual cover letter follows:
+> 
+> --
+> 
+> Problem statement #1: Dynamic bus chicken-and-egg problem.
+> 
+> Certain on-board PCI devices need to be powered up before they are can be
+> detected but their PCI drivers won't get bound until the device is
+> powered-up so enabling the relevant resources in the PCI device driver
+> itself is impossible.
+> 
+> Problem statement #2: Sharing inter-dependent resources between devices.
+> 
+> Certain devices that use separate drivers (often on different busses)
+> share resources (regulators, clocks, etc.). Typically these resources
+> are reference-counted but in some cases there are additional interactions
+> between them to consider, for example specific power-up sequence timings.
+> 
+> ===
+> 
+> The reason for tackling both of these problems in a single series is the
+> fact the the platform I'm working on - Qualcomm RB5 - deals with both and
+> both need to be addressed in order to enable WLAN and Bluetooth support
+> upstream.
+> 
+> The on-board WLAN/BT package - QCA6391 - has a Power Management Unit that
+> takes inputs from the host and exposes LDO outputs consumed by the BT and
+> WLAN modules which can be powered-up and down independently. However
+> a delay of 100ms must be respected between enabling the BT- and
+> WLAN-enable GPIOs.
+> 
+> A similar design with a discreet PMU is also employed in other models of
+> the WCN family of chips although we can often do without the delays. With
+> this series we add support for the WCN7850 as well.
+> 
+> ===
+> 
+> We introduce a new subsystem here - the power sequencing framework. The
+> qcom-wcn driver that we add is its first user. It implements the power-up
+> sequences for QCA6390 and WCN7850 chips. However - we only use it to
+> power-up the bluetooth module in the former. We use it to driver the WLAN
+> modules in both. The reason for this is that for WCN7850 we have
+> comprehensive bindings already upstream together with existing DT users.
+> Porting them to using the pwrseq subsystem can be done separately and in
+> an incremental manner once the subsystem itself is upstream. We will also
+> have to ensure backward DT compatibility. To avoid overcomplicating this
+> series, let's leave it out for now.
+> 
+> ===
+> 
+> This series is logically split into several sections. I'll go
+> patch-by-patch and explain each step.
+> 
+> Patches 1/16-5/16:
+> 
+> These contain all relevant DT bindings changes. We add new documents for
+> the QCA6390 & WCN7850 PMUs and ATH12K devices as well as extend the bindings
+> for the Qualcomm Bluetooth and ATH11K modules with regulators used by them
+> in QCA6390.
+> 
+> Patches 6/16-8/16:
+> 
+> These contain changes to device-tree sources for the three platforms we
+> work with in this series. We model the PMUs of the WLAN/BT chips as
+> top-level platform devices on the device tree. In order to limit the scope
+> of this series and not introduce an excessive amount of confusion with
+> deprecating DT bindings, we leave the Bluetooth nodes on sm8650 and sm8550
+> as is (meaning: they continue to consumer the GPIOs and power inputs from
+> the host). As the WCN7850 module doesn't require any specific timings, we can
+> incrementally change that later.
+> 
+> In both cases we add WLAN nodes that consume the power outputs of the PMU.
+> For QCA6390 we also make the Bluetooth node of the RB5 consume the outputs
+> of the PMU - we can do it as the bindings for this chip did not define any
+> supply handles prior to this series meaning we are able to get this correct
+> right away.
+> 
+> Patches 9/16-12/16:
+> 
+> These contain the bulk of the PCI changes for this series. We introduce
+> a simple framework for powering up PCI devices before detecting them on
+> the bus.
+> 
+> The general approach is as follows: PCI devices that need special
+> treatment before they can be powered up, scanned and bound to their PCI
+> drivers must be described on the device-tree as child nodes of the PCI
+> port node. These devices will be instantiated on the platform bus. They
+> will in fact be generic platform devices with the compatible of the form
+> used for PCI devices already upstream ("pci<vendor ID>,<device ID">). We
+> add a new directory under drivers/pci/pwrctl/ that contains PCI pwrctl
+> drivers. These drivers are platform drivers that will now be matched
+> against the devices instantiated from port children just like any other
+> platform pairs.
+> 
+> Both the power control platform device *AND* the associated PCI device
+> reuse the same OF node and have access to the same properties. The goal
+> of the platform driver is to request and bring up any required resources
+> and let the pwrctl framework know that it's now OK to rescan the bus and
+> detect the devices. When the device is bound, we are notified about it
+> by the PCI bus notifier event and can establish a device link between the
+> power control device and the PCI device so that any future extension for
+> power-management will already be able to work with the correct hierachy.
+> 
+> The reusing of the OF node is the reason for the small changes to the PCI
+> OF core: as the bootloader can possibly leave the relevant regulators on
+> before booting linux, the PCI device can be detected before its platform
+> abstraction is probed. In this case, we find that device first and mark
+> its OF node as reused. The pwrctl framework handles the opposite case
+> (when the PCI device is detected only after the platform driver
+> successfully enabled it).
+> 
+> Patch 13/16 - 14/16:
+> 
+> These add a relatively simple power sequencing subsystem and the first
+> driver using it: the pwrseq module for the PMUs on the WCN family of chips.
+> 
+> I'm proposing to add a subsystem that allows different devices to use a shared
+> power sequence split into consumer-specific as well as common "units".
+> 
+> A power sequence provider driver registers a set of units with pwrseq
+> core. Each unit can be enabled and disabled and contains an optional list
+> of other units which must be enabled before it itself can be. A unit
+> represents a discreet chunk of the power sequence.
+> 
+> It also registers a list of targets: a target is an abstraction wrapping
+> a unit which allows consumers to tell pwrseq which unit they want to
+> reach. Real-life example is the driver we're adding here: there's a set
+> of common regulators, two PCIe-specific ones and two enable GPIOs: one
+> for Bluetooth and one for WLAN.
+> 
+> The Bluetooth driver requests a descriptor to the power sequencer and
+> names the target it wants to reach:
+> 
+>      pwrseq = devm_pwrseq_get(dev, "bluetooth");
+> 
+> The pwrseq core then knows that when the driver calls:
+> 
+>      pwrseq_power_on(pwrseq);
+> 
+> It must enable the "bluetooth-enable" unit but it depends on the
+> "regulators-common" unit so this one is enabled first. The provider
+> driver is also in charge of assuring an appropriate delay between
+> enabling the BT and WLAN enable GPIOs. The WLAN-specific resources are
+> handled by the "wlan-enable" unit and so are not enabled until the WLAN
+> driver requests the "wlan" target to be powered on.
+> 
+> Another thing worth discussing is the way we associate the consumer with
+> the relevant power sequencer. DT maintainers have expressed a discontent
+> with the existing mmc pwrseq bindings and have NAKed an earlier
+> initiative to introduce global pwrseq bindings to the kernel[1].
+> 
+> In this approach, we model the existing regulators and GPIOs in DT but
+> the pwrseq subsystem requires each provider to provide a .match()
+> callback. Whenever a consumer requests a power sequencer handle, we
+> iterate over the list of pwrseq drivers and call .match() for each. It's
+> up to the driver to verify in a platform-specific way whether it deals
+> with its consumer and let the core pwrseq code know.
+> 
+> The advantage of this over reusing the regulator or reset subsystem is
+> that it's more generalized and can handle resources of all kinds as well
+> as deal with any kind of power-on sequences: for instance, Qualcomm has
+> a PCI switch they want a driver for but this switch requires enabling
+> some resources first (PCI pwrctl) and then configuring the device over
+> I2C (which can be handled by the pwrseq provider).
+> 
+> Patch 15:
+> 
+> This patch makes the Qualcomm Bluetooth driver get and use the power
+> sequencer for QCA6390.
+> 
+> Patch 16:
+> 
+> While tiny, this patch is possibly the highlight of the entire series.
+> It uses the two abstraction layers we introduced before to create an
+> elegant power sequencing PCI power control driver and supports the ath11k
+> module on QCA6390 and ath12k on WCN7850.
+> 
+> With this series we can now enable BT and WLAN on several new Qualcomm
+> boards upstream.
+> 
+> Tested on RB5, sm8650-qrd, sm8650-hdk and sm8550-qrd.
+> 
+> Changelog:
+> 
+> Since v7:
+> - added DTS changes for sm8650-hdk
+> - added circular dependency detection for pwrseq units
+> - fixed a KASAN reported use-after-free error in remove path
+> - improve Kconfig descriptions
+> - fix typos in bindings and Kconfig
+> - fixed issues reported by smatch
+> - fix the unbind path in PCI pwrctl
+> - lots of minor improvements to the pwrseq core
+> 
+> Since v6:
+> - kernel doc fixes
+> - drop myself from the DT bindings maintainers list for ath12k
+> - wait until the PCI bridge device is fully added before creating the
+>    PCI pwrctl platform devices for its sub-nodes, otherwise we may see
+>    sysfs and procfs attribute failures (due to duplication, we're
+>    basically trying to probe the same device twice at the same time)
+> - I kept the regulators for QCA6390's ath11k as required as they only
+>    apply to this specific Qualcomm package
+> 
+> Since v5:
+> - unify the approach to modelling the WCN WLAN/BT chips by always exposing
+>    the PMU node on the device tree and making the WLAN and BT nodes become
+>    consumers of its power outputs; this includes a major rework of the DT
+>    sources, bindings and driver code; there's no more a separate PCI
+>    pwrctl driver for WCN7850, instead its power-up sequence was moved
+>    into the pwrseq driver common for all WCN chips
+> - don't set load_uA from new regulator consumers
+> - fix reported kerneldoc issues
+> - drop voltage ranges for PMU outputs from DT
+> - many minor tweaks and reworks
+> 
+> v1: Original RFC:
+> 
+> https://lore.kernel.org/lkml/20240104130123.37115-1-brgl@bgdev.pl/T/
+> 
+> v2: First real patch series (should have been PATCH v2) adding what I
+>      referred to back then as PCI power sequencing:
+> 
+> https://lore.kernel.org/linux-arm-kernel/2024021413-grumbling-unlivable-c145@gregkh/T/
+> 
+> v3: RFC for the DT representation of the PMU supplying the WLAN and BT
+>      modules inside the QCA6391 package (was largely separate from the
+>      series but probably should have been called PATCH or RFC v3):
+> 
+> https://lore.kernel.org/all/CAMRc=Mc+GNoi57eTQg71DXkQKjdaoAmCpB=h2ndEpGnmdhVV-Q@mail.gmail.com/T/
+> 
+> v4: Second attempt at the full series with changed scope (introduction of
+>      the pwrseq subsystem, should have been RFC v4)
+> 
+> https://lore.kernel.org/lkml/20240201155532.49707-1-brgl@bgdev.pl/T/
+> 
+> v5: Two different ways of handling QCA6390 and WCN7850:
+> 
+> https://lore.kernel.org/lkml/20240216203215.40870-1-brgl@bgdev.pl/
+> 
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> ---
+> Bartosz Golaszewski (16):
+>        regulator: dt-bindings: describe the PMU module of the QCA6390 package
+>        regulator: dt-bindings: describe the PMU module of the WCN7850 package
+>        dt-bindings: net: bluetooth: qualcomm: describe regulators for QCA6390
+>        dt-bindings: net: wireless: qcom,ath11k: describe the ath11k on QCA6390
+>        dt-bindings: net: wireless: describe the ath12k PCI module
+>        arm64: dts: qcom: sm8550-qrd: add the Wifi node
+>        arm64: dts: qcom: sm8650-qrd: add the Wifi node
+>        arm64: dts: qcom: qrb5165-rb5: add the Wifi node
+>        power: sequencing: implement the pwrseq core
+>        power: pwrseq: add a driver for the PMU module on the QCom WCN chipsets
+>        PCI: hold the rescan mutex when scanning for the first time
+>        PCI/pwrctl: reuse the OF node for power controlled devices
+>        PCI/pwrctl: create platform devices for child OF nodes of the port node
+>        PCI/pwrctl: add PCI power control core code
+>        PCI/pwrctl: add a PCI power control driver for power sequenced devices
+>        Bluetooth: qca: use the power sequencer for QCA6390
+> 
+> Neil Armstrong (1):
+>        arm64: dts: qcom: sm8650-hdk: add the Wifi node
+> 
+>   .../bindings/net/bluetooth/qualcomm-bluetooth.yaml |   17 +
+>   .../bindings/net/wireless/qcom,ath11k-pci.yaml     |   46 +
+>   .../bindings/net/wireless/qcom,ath12k.yaml         |   99 ++
+>   .../bindings/regulator/qcom,qca6390-pmu.yaml       |  185 ++++
+>   MAINTAINERS                                        |    8 +
+>   arch/arm64/boot/dts/qcom/qrb5165-rb5.dts           |  103 +-
+>   arch/arm64/boot/dts/qcom/sm8250.dtsi               |    2 +-
+>   arch/arm64/boot/dts/qcom/sm8550-qrd.dts            |   97 ++
+>   arch/arm64/boot/dts/qcom/sm8550.dtsi               |    2 +-
+>   arch/arm64/boot/dts/qcom/sm8650-hdk.dts            |   89 ++
+>   arch/arm64/boot/dts/qcom/sm8650-qrd.dts            |   89 ++
+>   arch/arm64/boot/dts/qcom/sm8650.dtsi               |    2 +-
+>   drivers/bluetooth/hci_qca.c                        |   74 +-
+>   drivers/pci/Kconfig                                |    1 +
+>   drivers/pci/Makefile                               |    1 +
+>   drivers/pci/bus.c                                  |    9 +
+>   drivers/pci/of.c                                   |   14 +-
+>   drivers/pci/probe.c                                |    2 +
+>   drivers/pci/pwrctl/Kconfig                         |   17 +
+>   drivers/pci/pwrctl/Makefile                        |    6 +
+>   drivers/pci/pwrctl/core.c                          |  137 +++
+>   drivers/pci/pwrctl/pci-pwrctl-pwrseq.c             |   89 ++
+>   drivers/pci/remove.c                               |    3 +-
+>   drivers/power/Kconfig                              |    1 +
+>   drivers/power/Makefile                             |    1 +
+>   drivers/power/sequencing/Kconfig                   |   28 +
+>   drivers/power/sequencing/Makefile                  |    6 +
+>   drivers/power/sequencing/core.c                    | 1105 ++++++++++++++++++++
+>   drivers/power/sequencing/pwrseq-qcom-wcn.c         |  336 ++++++
+>   include/linux/pci-pwrctl.h                         |   51 +
+>   include/linux/pwrseq/consumer.h                    |   56 +
+>   include/linux/pwrseq/provider.h                    |   75 ++
+>   32 files changed, 2717 insertions(+), 34 deletions(-)
+> ---
+> base-commit: 6dc544b66971c7f9909ff038b62149105272d26a
+> change-id: 20240527-pwrseq-76fc025248a2
+> 
+> Best regards,
 
-At the moment we send them when load is updated for CFS, bandwidth for
-DL and at enqueue/dequeue for RT. But this can lead to too many updates
-sent in a short period of time and potentially be ignored at a critical
-moment due to the rate_limit_us in schedutil.
+Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8550-QRD
+Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-QRD
+Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-HDK
 
-For example, simultaneous task enqueue on the CPU where 2nd task is
-bigger and requires higher freq. The trigger to cpufreq_update_util() by
-the first task will lead to dropping the 2nd request until tick. Or
-another CPU in the same policy triggers a freq update shortly after.
-
-Updates at enqueue for RT are not strictly required. Though they do help
-to reduce the delay for switching the frequency and the potential
-observation of lower frequency during this delay. But current logic
-doesn't intentionally (at least to my understanding) try to speed up the
-request.
-
-To help reduce the amount of cpufreq updates and make them more
-purposeful, consolidate them into these locations:
-
-1. context_switch()
-2. task_tick_fair()
-3. update_blocked_averages()
-4. on syscall that changes policy or uclamp values
-
-The update at context switch should help guarantee that DL and RT get
-the right frequency straightaway when they're RUNNING. As mentioned
-though the update will happen slightly after enqueue_task(); though in
-an ideal world these tasks should be RUNNING ASAP and this additional
-delay should be negligible. For fair tasks we need to make sure we send
-a single update for every decay for the root cfs_rq. Any changes to the
-rq will be deferred until the next task is ready to run, or we hit TICK.
-But we are guaranteed the task is running at a level that meets its
-requirements after enqueue.
-
-To guarantee RT and DL tasks updates are never missed, we add a new
-SCHED_CPUFREQ_FORCE_UPDATE to ignore the rate_limit_us. If we are
-already running at the right freq, the governor will end up doing
-nothing, but we eliminate the risk of the task ending up accidentally
-running at the wrong freq due to rate_limit_us.
-
-Similarly for iowait boost, we ignore rate limits. We also handle a case
-of a boost reset prematurely by adding a guard in sugov_iowait_apply()
-to reduce the boost after 1ms which seems iowait boost mechanism relied
-on rate_limit_us and cfs_rq.decay preventing any updates to happen soon
-after iowait boost.
-
-The new SCHED_CPUFREQ_FORCE_UPDATE should not impact the rate limit
-time stamps otherwise we can end up delaying updates for normal
-requests.
-
-As a simple optimization, we avoid sending cpufreq updates when
-switching from RT to another RT as RT tasks run at max freq by default.
-If CONFIG_UCLAMP_TASK is enabled, we can do a simple check to see if
-uclamp_min is different to avoid unnecessary cpufreq update as most RT
-tasks are likely to be running at the same performance level, so we can
-avoid unnecessary overhead of forced updates when there's nothing to do.
-
-We also ensure to ignore cpufreq udpates for sugov workers at context
-switch. It doesn't make sense for the kworker that applies the frequency
-update (which is a DL task) to trigger a frequency update itself.
-
-The update at task_tick_fair will guarantee that the governor will
-follow any updates to load for tasks/CPU or due to new enqueues/dequeues
-to the rq. Since DL and RT always run at constant frequencies and have
-no load tracking, this is only required for fair tasks.
-
-The update at update_blocked_averages() will ensure we decay frequency
-as the CPU becomes idle for long enough.
-
-If the currently running task changes its policy or uclamp values, we
-ensure we follow up with cpufreq update to ensure we follow up with any
-potential new perf requirements based on the new change.
-
-Results of
-
-	taskset 1 perf stat --repeat 10 -e cycles,instructions,task-clock perf bench sched pipe
-
-on AMD 3900X to verify any potential overhead because of the addition at
-context switch against v6.8.7 stable kernel
-
-v6.8.7: schedutil:
-------------------
-
- Performance counter stats for 'perf bench sched pipe' (10 runs):
-
-       850,276,689      cycles:u                  #    0.078 GHz                      ( +-  0.88% )
-        82,724,245      instructions:u            #    0.10  insn per cycle           ( +-  0.00% )
-         10,881.41 msec task-clock:u              #    0.995 CPUs utilized            ( +-  0.12% )
-
-           10.9377 +- 0.0135 seconds time elapsed  ( +-  0.12% )
-
-v6.8.7: performance:
---------------------
-
- Performance counter stats for 'perf bench sched pipe' (10 runs):
-
-       874,154,415      cycles:u                  #    0.080 GHz                      ( +-  0.78% )
-        82,724,420      instructions:u            #    0.10  insn per cycle           ( +-  0.00% )
-         10,916.47 msec task-clock:u              #    0.999 CPUs utilized            ( +-  0.09% )
-
-           10.9308 +- 0.0100 seconds time elapsed  ( +-  0.09% )
-
-v6.8.7+patch: schedutil:
-------------------------
-
- Performance counter stats for 'perf bench sched pipe' (10 runs):
-
-       816,938,281      cycles:u                  #    0.075 GHz                      ( +-  0.84% )
-        82,724,163      instructions:u            #    0.10  insn per cycle           ( +-  0.00% )
-         10,907.62 msec task-clock:u              #    1.004 CPUs utilized            ( +-  0.11% )
-
-           10.8627 +- 0.0121 seconds time elapsed  ( +-  0.11% )
-
-v6.8.7+patch: performance:
---------------------------
-
- Performance counter stats for 'perf bench sched pipe' (10 runs):
-
-       814,038,416      cycles:u                  #    0.074 GHz                      ( +-  1.21% )
-        82,724,356      instructions:u            #    0.10  insn per cycle           ( +-  0.00% )
-         10,886.69 msec task-clock:u              #    0.996 CPUs utilized            ( +-  0.17% )
-
-           10.9298 +- 0.0181 seconds time elapsed  ( +-  0.17% )
-
-Note worthy that we still have the following race condition on systems
-that have shared policy:
-
-* CPUs with shared policy can end up sending simultaneous cpufreq
-  updates requests where the 2nd one will be unlucky and get blocked by
-  the rate_limit_us (schedutil).
-
-We can potentially address this limitation later, but it is out of the
-scope of this patch.
-
-Signed-off-by: Qais Yousef <qyousef@layalina.io>
----
-
-Changes since v4:
-
-	* Fix updating freq when uclamp changes before the dequeue/enqueue
-	  dance. (Hongyan)
-	* Rebased on top of tip/sched/core 6.10-rc1 and resolve some conflicts
-	  due to code shuffling to syscalls.c. Added new function
-	  update_cpufreq_current() to be used outside core.c when
-	  task_current() requires cpufreq update.
-
-Changes since v3:
-
-	* Omit cpufreq updates at attach/detach_entity_load_avg(). They share
-	  the update path from enqueue/dequeue which is not intended to trigger
-	  an update. And task_change_group_fair() is not expected to cause the
-	  root cfs_rq util to change significantly to warrant an immediate
-	  update for enqueued tasks. Better defer for next context switch to
-	  sample the state of the cpu taking all changes into account before
-	  the next task is due to run.
-	  Dietmar also pointed out a bug where we could send more updates vs
-	  without the patch in this path as I wasn't sending the update for
-	  cfs_rq == &rq->cfs.
-
-Changes since v2:
-
-	* Clean up update_cpufreq_ctx_switch() to reduce branches (Peter)
-	* Fix issue with cpufreq updates missed on switching from idle (Vincent)
-	* perf bench sched pipe regressed after fixing the switch from idle,
-	  detect when util_avg has changed when cfs_rq->decayed to fix it
-	* Ensure to issue cpufreq updates when task_current() switches
-	  policy/uclamp values
-
-Changes since v1:
-
-	* Use taskset and measure with performance governor as Ingo suggested
-	* Remove the static key as I found out we always register a function
-	  for cpu_dbs in cpufreq_governor.c; and as Christian pointed out it
-	  trigger a lock debug warning.
-	* Improve detection of sugov workers by using SCHED_FLAG_SUGOV
-	* Guard against NSEC_PER_MSEC instead of TICK_USEC to avoid prematurely
-	  reducing iowait boost as the latter was a NOP and like
-	  sugov_iowait_reset() like Christian pointed out.
-
-v1 discussion: https://lore.kernel.org/all/20240324020139.1032473-1-qyousef@layalina.io/
-v2 discussion: https://lore.kernel.org/lkml/20240505233103.168766-1-qyousef@layalina.io/
-v3 discussion: https://lore.kernel.org/lkml/20240512190018.531820-1-qyousef@layalina.io/
-v4 discussion: https://lore.kernel.org/lkml/20240516204802.846520-1-qyousef@layalina.io/
-
- include/linux/sched/cpufreq.h    |   3 +-
- kernel/sched/core.c              | 100 +++++++++++++++++++++++++++++--
- kernel/sched/cpufreq_schedutil.c |  55 ++++++++++++-----
- kernel/sched/deadline.c          |   4 --
- kernel/sched/fair.c              |  64 +++++---------------
- kernel/sched/rt.c                |   8 +--
- kernel/sched/sched.h             |   9 ++-
- kernel/sched/syscalls.c          |  26 ++++++--
- 8 files changed, 183 insertions(+), 86 deletions(-)
-
-diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
-index bdd31ab93bc5..2d0a45aba16f 100644
---- a/include/linux/sched/cpufreq.h
-+++ b/include/linux/sched/cpufreq.h
-@@ -8,7 +8,8 @@
-  * Interface between cpufreq drivers and the scheduler:
-  */
- 
--#define SCHED_CPUFREQ_IOWAIT	(1U << 0)
-+#define SCHED_CPUFREQ_IOWAIT		(1U << 0)
-+#define SCHED_CPUFREQ_FORCE_UPDATE	(1U << 1) /* ignore transition_delay_us */
- 
- #ifdef CONFIG_CPU_FREQ
- struct cpufreq_policy;
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 5d861b59d737..04cfb403f792 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -153,6 +153,9 @@ const_debug unsigned int sysctl_sched_nr_migrate = SCHED_NR_MIGRATE_BREAK;
- 
- __read_mostly int scheduler_running;
- 
-+static __always_inline void
-+__update_cpufreq_ctx_switch(struct rq *rq, struct task_struct *prev);
-+
- #ifdef CONFIG_SCHED_CORE
- 
- DEFINE_STATIC_KEY_FALSE(__sched_core_enabled);
-@@ -2042,17 +2045,24 @@ inline int task_curr(const struct task_struct *p)
-  * this means any call to check_class_changed() must be followed by a call to
-  * balance_callback().
-  */
--void check_class_changed(struct rq *rq, struct task_struct *p,
-+bool check_class_changed(struct rq *rq, struct task_struct *p,
- 			 const struct sched_class *prev_class,
- 			 int oldprio)
- {
-+	bool class_changed = false;
-+
- 	if (prev_class != p->sched_class) {
- 		if (prev_class->switched_from)
- 			prev_class->switched_from(rq, p);
- 
- 		p->sched_class->switched_to(rq, p);
--	} else if (oldprio != p->prio || dl_task(p))
-+
-+		class_changed = true;
-+	} else if (oldprio != p->prio || dl_task(p)) {
- 		p->sched_class->prio_changed(rq, p, oldprio);
-+	}
-+
-+	return class_changed;
- }
- 
- void wakeup_preempt(struct rq *rq, struct task_struct *p, int flags)
-@@ -4917,6 +4927,77 @@ static inline void __balance_callbacks(struct rq *rq)
- 
- #endif
- 
-+static __always_inline void
-+__update_cpufreq_ctx_switch(struct rq *rq, struct task_struct *prev)
-+{
-+#ifdef CONFIG_CPU_FREQ
-+	/*
-+	 * RT and DL should always send a freq update. But we can do some
-+	 * simple checks to avoid it when we know it's not necessary.
-+	 *
-+	 * iowait_boost will always trigger a freq update too.
-+	 *
-+	 * Fair tasks will only trigger an update if the root cfs_rq has
-+	 * decayed.
-+	 *
-+	 * Everything else should do nothing.
-+	 */
-+	switch (current->policy) {
-+	case SCHED_NORMAL:
-+	case SCHED_BATCH:
-+		if (unlikely(current->in_iowait)) {
-+			cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT | SCHED_CPUFREQ_FORCE_UPDATE);
-+			return;
-+		}
-+
-+#ifdef CONFIG_SMP
-+		if (unlikely(rq->cfs.decayed)) {
-+			rq->cfs.decayed = false;
-+			cpufreq_update_util(rq, 0);
-+			return;
-+		}
-+#endif
-+		return;
-+	case SCHED_FIFO:
-+	case SCHED_RR:
-+		if (prev && rt_policy(prev->policy)) {
-+#ifdef CONFIG_UCLAMP_TASK
-+			unsigned long curr_uclamp_min = uclamp_eff_value(current, UCLAMP_MIN);
-+			unsigned long prev_uclamp_min = uclamp_eff_value(prev, UCLAMP_MIN);
-+
-+			if (curr_uclamp_min == prev_uclamp_min)
-+#endif
-+				return;
-+		}
-+#ifdef CONFIG_SMP
-+		/* Stopper task masquerades as RT */
-+		if (unlikely(current->sched_class == &stop_sched_class))
-+			return;
-+#endif
-+		cpufreq_update_util(rq, SCHED_CPUFREQ_FORCE_UPDATE);
-+		return;
-+	case SCHED_DEADLINE:
-+		if (current->dl.flags & SCHED_FLAG_SUGOV) {
-+			/* Ignore sugov kthreads, they're responding to our requests */
-+			return;
-+		}
-+		cpufreq_update_util(rq, SCHED_CPUFREQ_FORCE_UPDATE);
-+		return;
-+	default:
-+		return;
-+	}
-+#endif
-+}
-+
-+/*
-+ * Call when currently running task had an attribute change that requires
-+ * an immediate cpufreq update.
-+ */
-+void update_cpufreq_current(struct rq *rq)
-+{
-+	__update_cpufreq_ctx_switch(rq, NULL);
-+}
-+
- static inline void
- prepare_lock_switch(struct rq *rq, struct task_struct *next, struct rq_flags *rf)
- {
-@@ -4934,7 +5015,7 @@ prepare_lock_switch(struct rq *rq, struct task_struct *next, struct rq_flags *rf
- #endif
- }
- 
--static inline void finish_lock_switch(struct rq *rq)
-+static inline void finish_lock_switch(struct rq *rq, struct task_struct *prev)
- {
- 	/*
- 	 * If we are tracking spinlock dependencies then we have to
-@@ -4943,6 +5024,11 @@ static inline void finish_lock_switch(struct rq *rq)
- 	 */
- 	spin_acquire(&__rq_lockp(rq)->dep_map, 0, 0, _THIS_IP_);
- 	__balance_callbacks(rq);
-+	/*
-+	 * Request freq update after __balance_callbacks to take into account
-+	 * any changes to rq.
-+	 */
-+	__update_cpufreq_ctx_switch(rq, prev);
- 	raw_spin_rq_unlock_irq(rq);
- }
- 
-@@ -5061,7 +5147,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
- 	perf_event_task_sched_in(prev, current);
- 	finish_task(prev);
- 	tick_nohz_task_switch();
--	finish_lock_switch(rq);
-+	finish_lock_switch(rq, prev);
- 	finish_arch_post_lock_switch();
- 	kcov_finish_switch(current);
- 	/*
-@@ -6920,6 +7006,7 @@ void rt_mutex_setprio(struct task_struct *p, struct task_struct *pi_task)
- 	int prio, oldprio, queued, running, queue_flag =
- 		DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
- 	const struct sched_class *prev_class;
-+	bool class_changed;
- 	struct rq_flags rf;
- 	struct rq *rq;
- 
-@@ -7021,7 +7108,10 @@ void rt_mutex_setprio(struct task_struct *p, struct task_struct *pi_task)
- 	if (running)
- 		set_next_task(rq, p);
- 
--	check_class_changed(rq, p, prev_class, oldprio);
-+	class_changed = check_class_changed(rq, p, prev_class, oldprio);
-+	if (class_changed && running)
-+		update_cpufreq_current(rq);
-+
- out_unlock:
- 	/* Avoid rq from going away on us: */
- 	preempt_disable();
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index eece6244f9d2..e8b65b75e7f3 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -59,7 +59,8 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
- 
- /************************ Governor internals ***********************/
- 
--static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-+static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time,
-+				     unsigned int flags)
- {
- 	s64 delta_ns;
- 
-@@ -87,13 +88,16 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- 		return true;
- 	}
- 
-+	if (unlikely(flags & SCHED_CPUFREQ_FORCE_UPDATE))
-+		return true;
-+
- 	delta_ns = time - sg_policy->last_freq_update_time;
- 
- 	return delta_ns >= sg_policy->freq_update_delay_ns;
- }
- 
- static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
--				   unsigned int next_freq)
-+				   unsigned int next_freq, unsigned int flags)
- {
- 	if (sg_policy->need_freq_update)
- 		sg_policy->need_freq_update = cpufreq_driver_test_flags(CPUFREQ_NEED_UPDATE_LIMITS);
-@@ -101,7 +105,9 @@ static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
- 		return false;
- 
- 	sg_policy->next_freq = next_freq;
--	sg_policy->last_freq_update_time = time;
-+
-+	if (!unlikely(flags & SCHED_CPUFREQ_FORCE_UPDATE))
-+		sg_policy->last_freq_update_time = time;
- 
- 	return true;
- }
-@@ -249,9 +255,10 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
- 			       unsigned int flags)
- {
- 	bool set_iowait_boost = flags & SCHED_CPUFREQ_IOWAIT;
-+	bool forced_update = flags & SCHED_CPUFREQ_FORCE_UPDATE;
- 
- 	/* Reset boost if the CPU appears to have been idle enough */
--	if (sg_cpu->iowait_boost &&
-+	if (sg_cpu->iowait_boost && !forced_update &&
- 	    sugov_iowait_reset(sg_cpu, time, set_iowait_boost))
- 		return;
- 
-@@ -294,17 +301,34 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-  * being more conservative on tasks which does sporadic IO operations.
-  */
- static unsigned long sugov_iowait_apply(struct sugov_cpu *sg_cpu, u64 time,
--			       unsigned long max_cap)
-+			       unsigned long max_cap, unsigned int flags)
- {
-+	bool forced_update = flags & SCHED_CPUFREQ_FORCE_UPDATE;
-+	s64 delta_ns = time - sg_cpu->last_update;
-+
- 	/* No boost currently required */
- 	if (!sg_cpu->iowait_boost)
- 		return 0;
- 
-+	if (forced_update)
-+		goto apply_boost;
-+
- 	/* Reset boost if the CPU appears to have been idle enough */
- 	if (sugov_iowait_reset(sg_cpu, time, false))
- 		return 0;
- 
- 	if (!sg_cpu->iowait_boost_pending) {
-+		/*
-+		 * This logic relied on PELT signal decays happening once every
-+		 * 1ms. But due to changes to how updates are done now, we can
-+		 * end up with more request coming up leading to iowait boost
-+		 * to be prematurely reduced. Make the assumption explicit
-+		 * until we improve the iowait boost logic to be better in
-+		 * general as it is due for an overhaul.
-+		 */
-+		if (delta_ns <= NSEC_PER_MSEC)
-+			goto apply_boost;
-+
- 		/*
- 		 * No boost pending; reduce the boost value.
- 		 */
-@@ -315,6 +339,7 @@ static unsigned long sugov_iowait_apply(struct sugov_cpu *sg_cpu, u64 time,
- 		}
- 	}
- 
-+apply_boost:
- 	sg_cpu->iowait_boost_pending = false;
- 
- 	/*
-@@ -358,10 +383,10 @@ static inline bool sugov_update_single_common(struct sugov_cpu *sg_cpu,
- 
- 	ignore_dl_rate_limit(sg_cpu);
- 
--	if (!sugov_should_update_freq(sg_cpu->sg_policy, time))
-+	if (!sugov_should_update_freq(sg_cpu->sg_policy, time, flags))
- 		return false;
- 
--	boost = sugov_iowait_apply(sg_cpu, time, max_cap);
-+	boost = sugov_iowait_apply(sg_cpu, time, max_cap, flags);
- 	sugov_get_util(sg_cpu, boost);
- 
- 	return true;
-@@ -397,7 +422,7 @@ static void sugov_update_single_freq(struct update_util_data *hook, u64 time,
- 		sg_policy->cached_raw_freq = cached_freq;
- 	}
- 
--	if (!sugov_update_next_freq(sg_policy, time, next_f))
-+	if (!sugov_update_next_freq(sg_policy, time, next_f, flags))
- 		return;
- 
- 	/*
-@@ -449,10 +474,12 @@ static void sugov_update_single_perf(struct update_util_data *hook, u64 time,
- 	cpufreq_driver_adjust_perf(sg_cpu->cpu, sg_cpu->bw_min,
- 				   sg_cpu->util, max_cap);
- 
--	sg_cpu->sg_policy->last_freq_update_time = time;
-+	if (!unlikely(flags & SCHED_CPUFREQ_FORCE_UPDATE))
-+		sg_cpu->sg_policy->last_freq_update_time = time;
- }
- 
--static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
-+static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time,
-+					   unsigned int flags)
- {
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	struct cpufreq_policy *policy = sg_policy->policy;
-@@ -465,7 +492,7 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
- 		struct sugov_cpu *j_sg_cpu = &per_cpu(sugov_cpu, j);
- 		unsigned long boost;
- 
--		boost = sugov_iowait_apply(j_sg_cpu, time, max_cap);
-+		boost = sugov_iowait_apply(j_sg_cpu, time, max_cap, flags);
- 		sugov_get_util(j_sg_cpu, boost);
- 
- 		util = max(j_sg_cpu->util, util);
-@@ -488,10 +515,10 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
- 
- 	ignore_dl_rate_limit(sg_cpu);
- 
--	if (sugov_should_update_freq(sg_policy, time)) {
--		next_f = sugov_next_freq_shared(sg_cpu, time);
-+	if (sugov_should_update_freq(sg_policy, time, flags)) {
-+		next_f = sugov_next_freq_shared(sg_cpu, time, flags);
- 
--		if (!sugov_update_next_freq(sg_policy, time, next_f))
-+		if (!sugov_update_next_freq(sg_policy, time, next_f, flags))
- 			goto unlock;
- 
- 		if (sg_policy->policy->fast_switch_enabled)
-diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
-index b216e6deeac4..8e015e219da8 100644
---- a/kernel/sched/deadline.c
-+++ b/kernel/sched/deadline.c
-@@ -251,8 +251,6 @@ void __add_running_bw(u64 dl_bw, struct dl_rq *dl_rq)
- 	dl_rq->running_bw += dl_bw;
- 	SCHED_WARN_ON(dl_rq->running_bw < old); /* overflow */
- 	SCHED_WARN_ON(dl_rq->running_bw > dl_rq->this_bw);
--	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
--	cpufreq_update_util(rq_of_dl_rq(dl_rq), 0);
- }
- 
- static inline
-@@ -265,8 +263,6 @@ void __sub_running_bw(u64 dl_bw, struct dl_rq *dl_rq)
- 	SCHED_WARN_ON(dl_rq->running_bw > old); /* underflow */
- 	if (dl_rq->running_bw > old)
- 		dl_rq->running_bw = 0;
--	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
--	cpufreq_update_util(rq_of_dl_rq(dl_rq), 0);
- }
- 
- static inline
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 63113dcb8d1a..143be0cae775 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -3988,29 +3988,6 @@ static inline void update_cfs_group(struct sched_entity *se)
- }
- #endif /* CONFIG_FAIR_GROUP_SCHED */
- 
--static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
--{
--	struct rq *rq = rq_of(cfs_rq);
--
--	if (&rq->cfs == cfs_rq) {
--		/*
--		 * There are a few boundary cases this might miss but it should
--		 * get called often enough that that should (hopefully) not be
--		 * a real problem.
--		 *
--		 * It will not get called when we go idle, because the idle
--		 * thread is a different class (!fair), nor will the utilization
--		 * number include things like RT tasks.
--		 *
--		 * As is, the util number is not freq-invariant (we'd have to
--		 * implement arch_scale_freq_capacity() for that).
--		 *
--		 * See cpu_util_cfs().
--		 */
--		cpufreq_update_util(rq, flags);
--	}
--}
--
- #ifdef CONFIG_SMP
- static inline bool load_avg_is_decayed(struct sched_avg *sa)
- {
-@@ -4688,8 +4665,6 @@ static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 
- 	add_tg_cfs_propagate(cfs_rq, se->avg.load_sum);
- 
--	cfs_rq_util_change(cfs_rq, 0);
--
- 	trace_pelt_cfs_tp(cfs_rq);
- }
- 
-@@ -4718,8 +4693,6 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 
- 	add_tg_cfs_propagate(cfs_rq, -se->avg.load_sum);
- 
--	cfs_rq_util_change(cfs_rq, 0);
--
- 	trace_pelt_cfs_tp(cfs_rq);
- }
- 
-@@ -4735,7 +4708,7 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
- {
- 	u64 now = cfs_rq_clock_pelt(cfs_rq);
--	int decayed;
-+	unsigned long prev_util_avg = cfs_rq->avg.util_avg;
- 
- 	/*
- 	 * Track task load average for carrying it to new CPU after migrated, and
-@@ -4744,8 +4717,8 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 	if (se->avg.last_update_time && !(flags & SKIP_AGE_LOAD))
- 		__update_load_avg_se(now, cfs_rq, se);
- 
--	decayed  = update_cfs_rq_load_avg(now, cfs_rq);
--	decayed |= propagate_entity_load_avg(se);
-+	cfs_rq->decayed |= update_cfs_rq_load_avg(now, cfs_rq);
-+	cfs_rq->decayed |= propagate_entity_load_avg(se);
- 
- 	if (!se->avg.last_update_time && (flags & DO_ATTACH)) {
- 
-@@ -4766,12 +4739,19 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 		 */
- 		detach_entity_load_avg(cfs_rq, se);
- 		update_tg_load_avg(cfs_rq);
--	} else if (decayed) {
--		cfs_rq_util_change(cfs_rq, 0);
--
--		if (flags & UPDATE_TG)
--			update_tg_load_avg(cfs_rq);
-+	} else if (cfs_rq->decayed && (flags & UPDATE_TG)) {
-+		update_tg_load_avg(cfs_rq);
- 	}
-+
-+	/*
-+	 * This field is used to indicate whether a trigger of cpufreq update
-+	 * is required. When the CPU is saturated, other load signals could
-+	 * still be changing, but util_avg would have settled down, so ensure
-+	 * that we don't trigger unnecessary updates as from fair policy point
-+	 * of view, nothing has changed to cause a cpufreq update.
-+	 */
-+	if (cfs_rq->decayed && prev_util_avg == cfs_rq->avg.util_avg)
-+		cfs_rq->decayed = false;
- }
- 
- /*
-@@ -5145,7 +5125,6 @@ static inline bool cfs_rq_is_decayed(struct cfs_rq *cfs_rq)
- 
- static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int not_used1)
- {
--	cfs_rq_util_change(cfs_rq, 0);
- }
- 
- static inline void remove_entity_load_avg(struct sched_entity *se) {}
-@@ -6760,14 +6739,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 	 */
- 	util_est_enqueue(&rq->cfs, p);
- 
--	/*
--	 * If in_iowait is set, the code below may not trigger any cpufreq
--	 * utilization updates, so do it here explicitly with the IOWAIT flag
--	 * passed.
--	 */
--	if (p->in_iowait)
--		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
--
- 	for_each_sched_entity(se) {
- 		if (se->on_rq)
- 			break;
-@@ -9357,10 +9328,6 @@ static bool __update_blocked_others(struct rq *rq, bool *done)
- 	unsigned long hw_pressure;
- 	bool decayed;
- 
--	/*
--	 * update_load_avg() can call cpufreq_update_util(). Make sure that RT,
--	 * DL and IRQ signals have been updated before updating CFS.
--	 */
- 	curr_class = rq->curr->sched_class;
- 
- 	hw_pressure = arch_scale_hw_pressure(cpu_of(rq));
-@@ -12691,6 +12658,7 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
- 
- 	update_misfit_status(curr, rq);
- 	check_update_overutilized_status(task_rq(curr));
-+	cpufreq_update_util(rq, 0);
- 
- 	task_tick_core(rq, curr);
- }
-diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
-index 63e49c8ffc4d..92ed373e5b90 100644
---- a/kernel/sched/rt.c
-+++ b/kernel/sched/rt.c
-@@ -555,11 +555,8 @@ static void sched_rt_rq_dequeue(struct rt_rq *rt_rq)
- 
- 	rt_se = rt_rq->tg->rt_se[cpu];
- 
--	if (!rt_se) {
-+	if (!rt_se)
- 		dequeue_top_rt_rq(rt_rq, rt_rq->rt_nr_running);
--		/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
--		cpufreq_update_util(rq_of_rt_rq(rt_rq), 0);
--	}
- 	else if (on_rt_rq(rt_se))
- 		dequeue_rt_entity(rt_se, 0);
- }
-@@ -1064,9 +1061,6 @@ enqueue_top_rt_rq(struct rt_rq *rt_rq)
- 		add_nr_running(rq, rt_rq->rt_nr_running);
- 		rt_rq->rt_queued = 1;
- 	}
--
--	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
--	cpufreq_update_util(rq, 0);
- }
- 
- #if defined CONFIG_SMP
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index cefa27f92bb6..49f0b4938c47 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -634,6 +634,11 @@ struct cfs_rq {
- 		unsigned long	runnable_avg;
- 	} removed;
- 
-+	/*
-+	 * Store whether last update_load_avg() has decayed
-+	 */
-+	bool			decayed;
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 	u64			last_update_tg_load_avg;
- 	unsigned long		tg_load_avg_contrib;
-@@ -3564,10 +3569,12 @@ extern void set_load_weight(struct task_struct *p, bool update_load);
- extern void enqueue_task(struct rq *rq, struct task_struct *p, int flags);
- extern void dequeue_task(struct rq *rq, struct task_struct *p, int flags);
- 
--extern void check_class_changed(struct rq *rq, struct task_struct *p,
-+extern bool check_class_changed(struct rq *rq, struct task_struct *p,
- 				const struct sched_class *prev_class,
- 				int oldprio);
- 
-+extern void update_cpufreq_current(struct rq *rq);
-+
- #ifdef CONFIG_SMP
- extern struct balance_callback *splice_balance_callbacks(struct rq *rq);
- extern void balance_callbacks(struct rq *rq, struct balance_callback *head);
-diff --git a/kernel/sched/syscalls.c b/kernel/sched/syscalls.c
-index ae1b42775ef9..8b1194c39161 100644
---- a/kernel/sched/syscalls.c
-+++ b/kernel/sched/syscalls.c
-@@ -491,7 +491,7 @@ static bool uclamp_reset(const struct sched_attr *attr,
- 	return false;
- }
- 
--static void __setscheduler_uclamp(struct task_struct *p,
-+static bool __setscheduler_uclamp(struct task_struct *p,
- 				  const struct sched_attr *attr)
- {
- 	enum uclamp_id clamp_id;
-@@ -517,7 +517,7 @@ static void __setscheduler_uclamp(struct task_struct *p,
- 	}
- 
- 	if (likely(!(attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)))
--		return;
-+		return false;
- 
- 	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN &&
- 	    attr->sched_util_min != -1) {
-@@ -530,6 +530,8 @@ static void __setscheduler_uclamp(struct task_struct *p,
- 		uclamp_se_set(&p->uclamp_req[UCLAMP_MAX],
- 			      attr->sched_util_max, true);
- 	}
-+
-+	return true;
- }
- 
- #else /* !CONFIG_UCLAMP_TASK: */
-@@ -539,8 +541,11 @@ static inline int uclamp_validate(struct task_struct *p,
- {
- 	return -EOPNOTSUPP;
- }
--static void __setscheduler_uclamp(struct task_struct *p,
--				  const struct sched_attr *attr) { }
-+static bool __setscheduler_uclamp(struct task_struct *p,
-+				  const struct sched_attr *attr)
-+{
-+	return false;
-+}
- #endif
- 
- /*
-@@ -614,6 +619,7 @@ int __sched_setscheduler(struct task_struct *p,
- 	int retval, oldprio, newprio, queued, running;
- 	const struct sched_class *prev_class;
- 	struct balance_callback *head;
-+	bool update_cpufreq;
- 	struct rq_flags rf;
- 	int reset_on_fork;
- 	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
-@@ -796,7 +802,8 @@ int __sched_setscheduler(struct task_struct *p,
- 		__setscheduler_params(p, attr);
- 		__setscheduler_prio(p, newprio);
- 	}
--	__setscheduler_uclamp(p, attr);
-+
-+	update_cpufreq = __setscheduler_uclamp(p, attr);
- 
- 	if (queued) {
- 		/*
-@@ -811,7 +818,14 @@ int __sched_setscheduler(struct task_struct *p,
- 	if (running)
- 		set_next_task(rq, p);
- 
--	check_class_changed(rq, p, prev_class, oldprio);
-+	update_cpufreq |= check_class_changed(rq, p, prev_class, oldprio);
-+
-+	/*
-+	 * Changing class or uclamp value implies requiring to send cpufreq
-+	 * update.
-+	 */
-+	if (update_cpufreq && running)
-+		update_cpufreq_current(rq);
- 
- 	/* Avoid rq from going away on us: */
- 	preempt_disable();
--- 
-2.34.1
-
+Thanks,
+Neil
