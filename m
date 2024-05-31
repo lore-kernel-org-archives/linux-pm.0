@@ -1,43 +1,45 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAD67142642
-	for <linux-pm@vger.kernel.org>; Fri, 31 May 2024 11:41:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D1DA157499
+	for <linux-pm@vger.kernel.org>; Fri, 31 May 2024 11:41:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1717155699; cv=none; b=szw0wrAa50UXwSHDNUSVpY7ElCjj9vdJY0wqs5YRxIL/OMMAlS1Glkuhu5cSSjBrjHMAVtJZpUmET6+Sr5kg3Mk0O2e5Qz2yJv2lRqZGagFNIeSYTTAqZbw89R84+rFc/aY+jh+6zftc8rNxi4Mv/uPH3RmxjMA+k4EVHGYGKso=
+	t=1717155700; cv=none; b=SVPFhBdu0otPRj1exEkTCn/gDy4vZBe6ouhReVzX8Ua9th2TCwPrnMSNASfjXuGyChmiZJPWMSkw0O0P+CVHgf7FIrl+aEMYB66io1OJEKxHnP4r663R+ed3/NVSwheTeILZO/s+hK3KdxR1qJTuh0XO6rrSVKzp400Vx7FA8Dc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1717155699; c=relaxed/simple;
-	bh=Y1m4p/TcgWbBgijIUIAVXXb7JuJ3t/UEeBbhBQZOjl4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ne2wB2Usyfcc9U7J1YnR23QIv8croxmn17ezgdIWlrpuF7tEujc/JisuLzXk4TTOhL/C/zWNuIZaFYpMs+0T/WGYdQdMrg5VE1OMyMDJ9Uk8wKKqv9hewlXh2SPDY/1n3av7xmzgpH0EmqaRvAib6dwtoxiIhlcperFIXtp+t4w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=N4oqvGQ6; arc=none smtp.client-ip=170.10.129.124
+	s=arc-20240116; t=1717155700; c=relaxed/simple;
+	bh=Sp2fk/LWKEXy8T7aNKWh8TAuPw3EfqS0eI2YVI2d8m8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=LosO84GkSigafN+pZCkChrWX7ekD9sF4RV2ZaPVH3VMnfBzZbseixN8Knclx1rSffnNO0huxRqzr8qYWB+jbVpuC1wfZ0Wy9Joo2qzRIOtITNJBFilQq8alsnNKKDa0G+wxGincL39ZilGGVGOGNH+mBG6WS3X6sKkku+/aZ6xo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=IDLJHWF2; arc=none smtp.client-ip=170.10.133.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="N4oqvGQ6"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="IDLJHWF2"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1717155696;
+	s=mimecast20190719; t=1717155698;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=LhaYMn6Ko6UIAVKT86bloZ0sX/E9fzLv8HDDyDq2PMM=;
-	b=N4oqvGQ6ejV9bQv5M4bpul5jRdQ9DSmNZJs/W38VLlYudheWQYFCCTradqbMHT8/gEwWo0
-	XpoXiAw7PiOspl4DvjQDq+g6ikgyz0KMEopLAmhWrOGwFIkte1dZnNBCxAx/OrrooI8+IX
-	+c75Ibj5CpekPnMA54MjoQqKFuNyw58=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6v8hUtIyOm2WJgq154hZETop1FlsLE+UFbP2MSs3ok4=;
+	b=IDLJHWF2QmnDWemOv/K3YunfgU8JrTulD9vgVQ63MK9j/SPFGVYv/QVxiWlDd4vgzzpH5j
+	0wyUnatvM8Xib2MGr4SMx6yBBXZdpFjy6RcnZBDZuuPMMb0yME2dNfECrMxgdojwMZ6yCg
+	+Q3aCKGR8PMAeYNT3yNvz/c05c8ZJXg=
 Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
  by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-359-lxA8LgfqN1WrQlkrCvoi7w-1; Fri,
- 31 May 2024 07:41:33 -0400
-X-MC-Unique: lxA8LgfqN1WrQlkrCvoi7w-1
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-196-Tu1JxxD2Myqd1x3eYoW-Cg-1; Fri,
+ 31 May 2024 07:41:36 -0400
+X-MC-Unique: Tu1JxxD2Myqd1x3eYoW-Cg-1
 Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id BE9503C025AD;
-	Fri, 31 May 2024 11:41:31 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 53E8529AA385;
+	Fri, 31 May 2024 11:41:36 +0000 (UTC)
 Received: from localhost.localdomain (unknown [10.39.192.76])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 62C69740F;
-	Fri, 31 May 2024 11:41:30 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id 04F47740F;
+	Fri, 31 May 2024 11:41:34 +0000 (UTC)
 From: Hans de Goede <hdegoede@redhat.com>
 To: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
 	Andy Shevchenko <andy@kernel.org>,
@@ -50,120 +52,81 @@ Cc: Hans de Goede <hdegoede@redhat.com>,
 	=?UTF-8?q?Andr=C3=A9=20Apitzsch?= <git@apitzsch.eu>,
 	linux-leds@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v10 0/6] KTD2026 indicator LED for X86 Xiaomi Pad2
-Date: Fri, 31 May 2024 13:41:18 +0200
-Message-ID: <20240531114124.45346-1-hdegoede@redhat.com>
+Subject: [PATCH v10 3/6] leds: rgb: leds-ktd202x: Initialize mutex earlier
+Date: Fri, 31 May 2024 13:41:21 +0200
+Message-ID: <20240531114124.45346-4-hdegoede@redhat.com>
+In-Reply-To: <20240531114124.45346-1-hdegoede@redhat.com>
+References: <20240531114124.45346-1-hdegoede@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.5
 
-Hi All,
+The mutex must be initialized before the LED class device is registered
+otherwise there is a race where it may get used before it is initialized:
 
-Here is v10 of Kate's series to add support for Xiaomi Pad2 indicator LED,
-this is unchanged from v9 except for being rebased on top of 6.10-rc1 and
-dropping patch 7/7 since that one has been merged through the pdx86 tree.
+ DEBUG_LOCKS_WARN_ON(lock->magic != lock)
+ WARNING: CPU: 2 PID: 2045 at kernel/locking/mutex.c:587 __mutex_lock
+ ...
+ RIP: 0010:__mutex_lock+0x7db/0xc10
+ ...
+ set_brightness_delayed_set_brightness.part.0+0x17/0x60
+ set_brightness_delayed+0xf1/0x100
+ process_one_work+0x222/0x5a0
 
-Patch 6/6 has an Acked-by from Sebastien for merging this patch through
-the leds tree since it depends on the earlier patches.
+Move the mutex_init() call earlier to avoid this race condition and
+switch to devm_mutex_init() to avoid the need to add error-exit
+cleanup to probe() if probe() fails later on.
 
-I have some further power-supply LED triggers work pending:
-https://lore.kernel.org/linux-pm/20240510194012.138192-1-hdegoede@redhat.com/
-which applies on top of this series. So this is going to either require
-an IB for Sebastian to merge into his tree before applying those, or
-(once ready) that series can be applied through the LEDs tree too. Since this
-follow up series deals with LED triggers I think that either way makes sense.
-
-This work includes:
-1. Migrate the original driver to fwnode to support x86 platforms.
-2. Support for multi-color LED trigger events.
-3. The LED shows orange when charging and the LED shows green when the
-   battery is full.
-
---
-Changes in v10:
-1. Rebased on top of 6.10-rc1
-2. Drop patch 7/7 since that one has been merged through the pdx86 tree
-
+Reviewed-by: Andy Shevchenko <andy@kernel.org>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
 Changes in v9:
-1. Switch to devm_mutex_init()
-2. Add Andy's Reviewed-by to the series
+- Use devm_mutex_init() instead of plain mutex_init()
 
 Changes in v8:
-1. New bugfix: "leds: rgb: leds-ktd202x: Initialize mutex earlier"
-2. Make charging_orange_full_green triggers set the colors in RGB order
-3. Modify the Pad2 ktd202x fwnode to have the colors in RGB order
+- New patch in v8 of this series
+---
+ drivers/leds/rgb/leds-ktd202x.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Changes in v7:
-1. Platform: x86-android-tablets: other: Add swnode for Xiaomi pad2
-   indicator LED was included in Hans' branch.
-2. Included the tags from the previous version in the commit message.
-3. Fixed the comma issue for the structure initialiser.
-
-Changes in v6:
-1. The I2C ID table was moved to a separate patch.
-2. The LED shows orange when charging.
-3. The trigger name was renamed to charging-orange-full-green.
-4. The default trigger of Xiaomi Pad2 is
-   "bq27520-0-charging-orange-full-green".
-
-Changes in v5:
-1. Fix swnode LED color settings.
-2. Improve the driver based on the comments.
-3. Introduce a LED new API- led_mc_trigger_event() to make the LED
-   color can be changed according to the trigger.
-4. Introduced a new trigger "charging-red-full-green". The LED will be
-   red when charging and the LED will be green when the battery is full.
-5. Set the default trigger to "bq27520-0-charging-red-full-green" for
-   Xiaomi Pad2.
-
-Changes in v4:
-1. Fix double casting.
-2. Since force casting a pointer value to int will trigger a compiler
-   warning, the type of num_leds was changed to unsigned long.
-
-Changes in v3:
-1. Drop the patch "leds-ktd202x: Skip regulator settings for Xiaomi
-   pad2"
-
-Changes in v2:
-1. Typo and style fixes.
-2. The patch 0003 skips all the regulator setup for Xiaomi pad2 since
-   KTD2026 on Xiaomi pad2 is already powered by BP25890RTWR. So, the
-   sleep can be removed when removing the module.
-
-Regards,
-
-Hans
-
-
-Hans de Goede (3):
-  leds: rgb: leds-ktd202x: Initialize mutex earlier
-  leds: core: Add led_mc_set_brightness() function
-  leds: trigger: Add led_mc_trigger_event() function
-
-Kate Hsuan (3):
-  leds: rgb: leds-ktd202x: Get device properties through fwnode to
-    support ACPI
-  leds: rgb: leds-ktd202x: I2C ID tables for KTD2026 and 2027
-  power: supply: power-supply-leds: Add charging_orange_full_green
-    trigger for RGB LED
-
- drivers/leds/led-class-multicolor.c      |  1 +
- drivers/leds/led-core.c                  | 31 +++++++++
- drivers/leds/led-triggers.c              | 20 ++++++
- drivers/leds/rgb/Kconfig                 |  1 -
- drivers/leds/rgb/leds-ktd202x.c          | 80 ++++++++++++++----------
- drivers/power/supply/power_supply_leds.c | 23 +++++++
- include/linux/leds.h                     | 26 ++++++++
- include/linux/power_supply.h             |  2 +
- 8 files changed, 149 insertions(+), 35 deletions(-)
-
+diff --git a/drivers/leds/rgb/leds-ktd202x.c b/drivers/leds/rgb/leds-ktd202x.c
+index 60ca6ec34336..d5c442163c46 100644
+--- a/drivers/leds/rgb/leds-ktd202x.c
++++ b/drivers/leds/rgb/leds-ktd202x.c
+@@ -556,6 +556,10 @@ static int ktd202x_probe(struct i2c_client *client)
+ 		return ret;
+ 	}
+ 
++	ret = devm_mutex_init(dev, &chip->mutex);
++	if (ret)
++		return ret;
++
+ 	chip->num_leds = (unsigned long)i2c_get_match_data(client);
+ 
+ 	chip->regulators[0].supply = "vin";
+@@ -584,8 +588,6 @@ static int ktd202x_probe(struct i2c_client *client)
+ 		return ret;
+ 	}
+ 
+-	mutex_init(&chip->mutex);
+-
+ 	return 0;
+ }
+ 
+@@ -594,8 +596,6 @@ static void ktd202x_remove(struct i2c_client *client)
+ 	struct ktd202x *chip = i2c_get_clientdata(client);
+ 
+ 	ktd202x_chip_disable(chip);
+-
+-	mutex_destroy(&chip->mutex);
+ }
+ 
+ static void ktd202x_shutdown(struct i2c_client *client)
 -- 
 2.45.1
 
