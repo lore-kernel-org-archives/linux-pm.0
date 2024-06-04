@@ -1,429 +1,365 @@
-Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01olkn2052.outbound.protection.outlook.com [40.92.107.52])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E27D614882F;
-	Tue,  4 Jun 2024 12:55:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.107.52
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1717505712; cv=fail; b=UD1oQJBFPdOq0o8e0BxWlwBXBuZSoFLoosj05n5zXV6HCjoBvjktJnolKMJPmMnuK62+6tDBF3MKCGdNJoDbNr3sp8erKKNO/OXFw4OKkhGgUisESw13GkPQXB4gge6XDv/2K5mA6fX78kANMePs61lh8bbai/AFixDkuvhq92I=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1717505712; c=relaxed/simple;
-	bh=fmMgQZ/hDO5Zd1bxI8KNLB2IHdOKB0mL6ykts5hE3wI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=RbccTQ58+iP5l/dD/jTaIdsVhtzhXWLXUjL4xtnjcqBCO0VE4Cjnlt/IJ7kZPm0sWlMvdgmUlyVWgVQCvrPkfyt2UKpmjNJayd3anVRUaGzDz624c4HdxZXl+xke4ZxU3Zq+3h1GosSXVgYgAvO6VdXYW9R/Z00R8sMIVmQ3VeY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=iwxAJPpg; arc=fail smtp.client-ip=40.92.107.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC382148300;
+	Tue,  4 Jun 2024 13:41:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1717508492; cv=none; b=jWHhiAegQiwPDlrFtlMFdNOomSeQpYvtgP6YEYbafr4xSFZ8JIdo56RQfohyWzPZTi+E/UvUp+x3J4vWovziN+W95/Hv3ZmOvdCpDf6o9eqOWhIsXkf1oKIim/uNpH/ARXVnT/Ed7xPG5r2M2cu4e2eSl7cqqmcnXaDENYuuCEg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1717508492; c=relaxed/simple;
+	bh=FArcXwplL8wN1ALhCuGpUD+BoCuPOB8+aNe29ijJswU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZeRJ2qvcoFeWuP8tj3Ghd6tq/ax4CdaOGoLw+6/qWX8WcClN85JUMC8LYvqHwEoQY+sXRsY2z+kg6B97KsWFjBsi81qs2XlysFIAeP5LCQOnj8am51OPFnwJyImIQpp0s8T05xB7xMwWo04Erm24GsnJ7XPTWcZFy/RgrLRaHW8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bXYkUdIM; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="iwxAJPpg"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=bg1xs4ZlNJpSGnu0wWUZunPT2whfmoeOvzKAvJ5fOb0C13qrhfzPP9YalekInzaXHrxb8CrGqwdHCSEYyai/AURqiTebo6FPF1+93JiYbkrMQSEXHm8OeCDHbVURGkGPb3ihz5/Va4/rmFtDz8Leo5ACv/PlcFpGuAsKUZswNqYVWWwsuti0xMGBSt+MR7JBjSrtx0YoKfvtbVQwmmHVF3uChYWk07nSeGCi8F61+wHj/aFAwvkRgXByN9aOJnTyHk/cGMnXlomr5ozXdjrbmFD7GrDTBOLx34qILuEqsSZfHVJvBiWuRiHeNKtDiHpg3CxuQlrgaRvF4BVkEinXSA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Kx0aenlAt3/RXr+6nJ9iLWCJYs6e0mTxA+MAS0BA+PA=;
- b=lzFViOQkj0PxKvk/+ip77Dg43bNKi1yMf8XX1cZL3KW92HILoDFiyFr4e6xq+i9WxMpIoC28UeY4Oce99GAHBEV6KnsqAyYcwno4cOxv3yk1E6fkXfditsuSM58Ghngj26cEdbXT4GVhz9vkhpaMTUwgEICWsM2f7g+c0941fbPxiK+uaORuLijUsujOfLmrIj2VQCt03NjWnpREdNUMGTc0vJ1o2l+eQpfACmx72c2+kdrjoW4tm/yOvKnboiXVe0xpWfPbxTJa4K5S2rlPRLux7m3ZMwVO5GOFWP4/KSTvc0cZGJvm9pN3LqQkphQXjBpdTc+2SebIREGYHv+VpQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Kx0aenlAt3/RXr+6nJ9iLWCJYs6e0mTxA+MAS0BA+PA=;
- b=iwxAJPpgNKaIbzdAlpcUvdQkGt593M/D5EklYoZSkb7tVda70dbaTVe01PWFv6ix1i7Y8Q4z1dKoJ64eREn17glqCtdut394jU4nm1vowtxIhxamRXs81Z/c7ufD8RjjMjcOm6poiCu8gyEjSnwEq3UMpTQCnOCyJaWvkuoYVKOrQTeLMBSdq/98j5vGKxvxzpztL9K4L/ljCyoBADrEuaeHlcxOrzVyCkkS/hcb6/pik3Gn8WpyVmM6Vd6drgOuTTRvN1kEQAO6tDhh7wU0q8pHWQ/PmUR9078J2UfxhUpFeerEpzA+C6ffAFan6P7FgJcx2OjXf1ydQjSniecD/Q==
-Received: from SG2PR01MB4218.apcprd01.prod.exchangelabs.com
- (2603:1096:4:1ca::8) by SG2PR01MB4386.apcprd01.prod.exchangelabs.com
- (2603:1096:4:1b5::13) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7633.24; Tue, 4 Jun
- 2024 12:55:03 +0000
-Received: from SG2PR01MB4218.apcprd01.prod.exchangelabs.com
- ([fe80::7155:e92c:291b:fc1c]) by SG2PR01MB4218.apcprd01.prod.exchangelabs.com
- ([fe80::7155:e92c:291b:fc1c%4]) with mapi id 15.20.7633.021; Tue, 4 Jun 2024
- 12:55:03 +0000
-From: Haylen Chu <heylenay@outlook.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Chen Wang <unicorn_wang@outlook.com>,
-	Inochi Amaoto <inochiama@outlook.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Jisheng Zhang <jszhang@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	Haylen Chu <heylenay@outlook.com>
-Subject: [PATCH v2 3/3] thermal: cv180x: Add cv180x thermal driver support
-Date: Tue,  4 Jun 2024 12:54:21 +0000
-Message-ID:
- <SG2PR01MB42187EC277384F84A3126F0DD7F82@SG2PR01MB4218.apcprd01.prod.exchangelabs.com>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <SG2PR01MB4218013241B3EED779D3BAE8D7F82@SG2PR01MB4218.apcprd01.prod.exchangelabs.com>
-References: <SG2PR01MB4218013241B3EED779D3BAE8D7F82@SG2PR01MB4218.apcprd01.prod.exchangelabs.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-TMN: [jYzV8WUlZZem+HhUVIccfPJ2rrcKCb+D]
-X-ClientProxiedBy: SI2PR06CA0011.apcprd06.prod.outlook.com
- (2603:1096:4:186::16) To SG2PR01MB4218.apcprd01.prod.exchangelabs.com
- (2603:1096:4:1ca::8)
-X-Microsoft-Original-Message-ID: <20240604125420.22638-4-heylenay@outlook.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bXYkUdIM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BE38C2BBFC;
+	Tue,  4 Jun 2024 13:41:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1717508491;
+	bh=FArcXwplL8wN1ALhCuGpUD+BoCuPOB8+aNe29ijJswU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=bXYkUdIM5G5RAUoPD7MJYr//S1oqHl+LJ3fxfw7lfSFuBw8JhGTBW9PLufCUqHKjY
+	 OJVFk7K+rOrq9HuH76qkiJL0A/sTi2rTQodn+TKkQocB/tbQHZeZKu3m3G2lM5wcf0
+	 VD97GRCGMBes8MaOHcg8KM5fvFeye/FAQg9SKZN6tpIn5+9U5FE+VZJf0uRZu8AxbF
+	 xrs4Rlqn5YOUS7D0btNT9APFrOK0n1Q8HZ/ji58Sj2kGEhPit3yyT7IaR0HjrbKKbe
+	 82WAiCP1NrKaOO3384inkZ8fhbN5SYnrWSCyMgS7pEXOOMKSO77chS2wlgGdCmIr5c
+	 AAtt4MysOip3g==
+Date: Tue, 4 Jun 2024 14:41:26 +0100
+From: Andi Shyti <andi.shyti@kernel.org>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Corey Minyard <minyard@acm.org>, 
+	Allen Pais <apais@linux.microsoft.com>, Sebastian Reichel <sebastian.reichel@collabora.com>, 
+	Perry Yuan <perry.yuan@amd.com>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>, 
+	Herbert Xu <herbert@gondor.apana.org.au>, Nuno Sa <nuno.sa@analog.com>, Guenter Roeck <linux@roeck-us.net>, 
+	Randy Dunlap <rdunlap@infradead.org>, Heiner Kallweit <hkallweit1@gmail.com>, 
+	Lee Jones <lee@kernel.org>, Samuel Holland <samuel@sholland.org>, 
+	Elad Nachman <enachman@marvell.com>, Arseniy Krasnov <AVKrasnov@sberdevices.ru>, 
+	Johannes Berg <johannes.berg@intel.com>, Gregory Greenman <gregory.greenman@intel.com>, 
+	Benjamin Berg <benjamin.berg@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Robert Richter <rrichter@amd.com>, Vinod Koul <vkoul@kernel.org>, 
+	Chunfeng Yun <chunfeng.yun@mediatek.com>, Linus Walleij <linus.walleij@linaro.org>, 
+	Hans de Goede <hdegoede@redhat.com>, Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, 
+	Nikita Kravets <teackot@gmail.com>, Jiri Slaby <jirislaby@kernel.org>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Stanley Chang <stanley_chang@realtek.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Abdel Alkuor <abdelalkuor@geotab.com>, 
+	Kent Overstreet <kent.overstreet@linux.dev>, Eric Biggers <ebiggers@google.com>, 
+	Kees Cook <keescook@chromium.org>, Ingo Molnar <mingo@kernel.org>, 
+	"Steven Rostedt (Google)" <rostedt@goodmis.org>, Daniel Bristot de Oliveira <bristot@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hughd@google.com>, 
+	Abel Wu <wuyun.abel@bytedance.com>, John Johansen <john.johansen@canonical.com>, 
+	Mimi Zohar <zohar@linux.ibm.com>, Stefan Berger <stefanb@linux.ibm.com>, 
+	Roberto Sassu <roberto.sassu@huawei.com>, Eric Snowberg <eric.snowberg@oracle.com>, 
+	Takashi Iwai <tiwai@suse.de>, Takashi Sakamoto <o-takashi@sakamocchi.jp>, 
+	Jiapeng Chong <jiapeng.chong@linux.alibaba.com>, Mark Brown <broonie@kernel.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	keyrings@vger.kernel.org, linux-crypto@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	linux-ide@vger.kernel.org, openipmi-developer@lists.sourceforge.net, 
+	linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-tegra@vger.kernel.org, 
+	linux-pm@vger.kernel.org, qat-linux@intel.com, dri-devel@lists.freedesktop.org, 
+	intel-gfx@lists.freedesktop.org, intel-xe@lists.freedesktop.org, nouveau@lists.freedesktop.org, 
+	linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org, linux-leds@vger.kernel.org, 
+	linux-sunxi@lists.linux.dev, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, 
+	linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, 
+	linux-pci@vger.kernel.org, linux-mediatek@lists.infradead.org, 
+	linux-phy@lists.infradead.org, linux-gpio@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	linux-bcachefs@vger.kernel.org, linux-hardening@vger.kernel.org, cgroups@vger.kernel.org, 
+	linux-trace-kernel@vger.kernel.org, linux-mm@kvack.org, apparmor@lists.ubuntu.com, 
+	linux-security-module@vger.kernel.org, linux-integrity@vger.kernel.org, alsa-devel@alsa-project.org, 
+	linux-sound@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+	David Howells <dhowells@redhat.com>, "David S. Miller" <davem@davemloft.net>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
+	Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
+	Daniel Scally <djrscally@gmail.com>, Sakari Ailus <sakari.ailus@linux.intel.com>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Heiko Stuebner <heiko@sntech.de>, 
+	Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
+	Mario Limonciello <mario.limonciello@amd.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
+	Daniel Vetter <daniel@ffwll.ch>, Jani Nikula <jani.nikula@linux.intel.com>, 
+	Rodrigo Vivi <rodrigo.vivi@intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, 
+	Tvrtko Ursulin <tursulin@ursulin.net>, Karol Herbst <kherbst@redhat.com>, Lyude Paul <lyude@redhat.com>, 
+	Danilo Krummrich <dakr@redhat.com>, Jean Delvare <jdelvare@suse.com>, 
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Pavel Machek <pavel@ucw.cz>, Chen-Yu Tsai <wens@csie.org>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Tony Lindgren <tony@atomide.com>, 
+	Adrian Hunter <adrian.hunter@intel.com>, Hu Ziji <huziji@marvell.com>, 
+	Ulf Hansson <ulf.hansson@linaro.org>, Miquel Raynal <miquel.raynal@bootlin.com>, 
+	Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
+	Potnuri Bharat Teja <bharat@chelsio.com>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	Miri Korenblit <miriam.rachel.korenblit@intel.com>, Kalle Valo <kvalo@kernel.org>, 
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>, 
+	Kishon Vijay Abraham I <kishon@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, JC Kuo <jckuo@nvidia.com>, Andrew Lunn <andrew@lunn.ch>, 
+	Gregory Clement <gregory.clement@bootlin.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
+	Sebastian Reichel <sre@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Thinh Nguyen <Thinh.Nguyen@synopsys.com>, Helge Deller <deller@gmx.de>, Brian Foster <bfoster@redhat.com>, 
+	Zhihao Cheng <chengzhihao1@huawei.com>, Tejun Heo <tj@kernel.org>, Zefan Li <lizefan.x@bytedance.com>, 
+	Johannes Weiner <hannes@cmpxchg.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Dietmar Eggemann <dietmar.eggemann@arm.com>, Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>, 
+	Daniel Bristot de Oliveira <bristot@redhat.com>, Valentin Schneider <vschneid@redhat.com>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
+	Jason Baron <jbaron@akamai.com>, Jim Cromie <jim.cromie@gmail.com>, 
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
+	"Serge E. Hallyn" <serge@hallyn.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
+	Clemens Ladisch <clemens@ladisch.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v1 1/1] treewide: Align match_string() with
+ sysfs_match_string()
+Message-ID: <3ojs6btxgava4dcasys5tnrg5vsrqlshagcg7otvrdgfcwwje4@lcrd3r6gkfcs>
+References: <20240603211538.289765-1-andriy.shevchenko@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SG2PR01MB4218:EE_|SG2PR01MB4386:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9ec3ca15-df09-4b39-11af-08dc84958d1f
-X-Microsoft-Antispam:
-	BCL:0;ARA:14566002|461199019|440099019|3412199016|1710799017;
-X-Microsoft-Antispam-Message-Info:
-	58g5iBJwMgmXkrklc+q6j3fX8RsEVieO7cie01SKPu6Cdpm6KEOfE7g3A7mre+robF2qBo9Kn0vDurduvipbfUd09x6kah/N6JdqQJuGltmhse+DpWqpmR5dNU6NZC0siRMew5WQBPDhQKTe43Y4hAaeim/oMF6c4+HtYlUT3cLBRGOZUl+/7SRsayeFXJp6T5Sklw/CrOK8BC+EIGW9kzbbeAFqYAZxdR1kPTYKRRCcIPyUJvTd2gxaC7eOMYqXR/JnZgYP9kGHZha03Ml/Hhfk+kGQ39qfMNjtNMKPJSAWKNVzdzd0BGnYAyRBuhf833TqBwVY/iDtLOYyRc5Ok8YyIl8fxUurXjGuE02zOXJGitV3s+oAxUGkvjKHsTxF6lO8bdwuZYPgsRgGJIVEDqYz4FDh5jFDRgX7uvN/giiauFB+B80NZZLkrDKoAMQYBBBKj8P7W3xOnjM3inYXqe95SuBX/saIaa1eOqZ4yIqpvD5/2dlUD7DF1l2rdk8v8yG7dQYpyFntEPqL3VptxrTtcPJQ0FzPv8Bnvf3TfP7rZ7qbKxymcs/BlDmnOyPSdvWH9EGq5HHvZmgBV2xEnkJYgC7vCtABkcVrZVwWI9xmdfHv4hHscXoLJxFRgEsi
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?frDY9DXy5+9hP6k+9MXT8MJtaXkivddU4i2ii69vjnLFU6/jksDSeD78r6Gd?=
- =?us-ascii?Q?anomkX7dXsuQDGW/pxAvfYGvraXO3jHCD+s0I2B0hgXzYefBCJ+m1/jmnbZB?=
- =?us-ascii?Q?i9voVyzd1hU4rxKrsp2PYAn20MsdcrHsE1sOqZcYWB0tx8rKfnRzJEdzWUqr?=
- =?us-ascii?Q?SrE1rfdo2oxPP+DyAMEftq+LT/Z+URhf1vlWz0sVKwX+fgYYAPCxyp02T05h?=
- =?us-ascii?Q?t668sq1vzcTjggrErxQaw0xS03ie3gxtuJeAk5VpLMyg3T0HGZWp4l2NnKMh?=
- =?us-ascii?Q?vUYPxqQuKKycry8AUhDu9M9OA2fMa8scPAXbxjITVnKon6+fEl8yuiquK55v?=
- =?us-ascii?Q?0V6pOwn7EeCM0WjOhS2Xrb6VXurGf5LulnoFc3RC/e3617jE77l9aqEUWWvI?=
- =?us-ascii?Q?c+vo4dhrXQxcczrRjdCaWGXqohQX0wwU3O9rgyhVNJr6VcbJ+K9DHTBZ0hlm?=
- =?us-ascii?Q?lIzOxBEoyJQGjIs4Zj1O5U/ojDuj7HJHySQzREHW2t9N6/PNFPUv06VtHGau?=
- =?us-ascii?Q?z9jBVLsDCLvrWFgtW6CVzoo3jCQOFCp2kZX4jqe8vxifVfJwpEVLSdFKYpF0?=
- =?us-ascii?Q?lsIWIOK+pdjvcykwdIh6ZvEIQi4uZcb+9cKH85ZDfBssdiJmGtclk9uTVIf+?=
- =?us-ascii?Q?xs2Mbg6Ub6LE/Ib7Sg55+UwpMh94XiKS6arIETqnPSxZ1e1Rzp5NU7hdZpVn?=
- =?us-ascii?Q?u24kC0hqgYES6wlVp20/Dt59D2+s4BD13O7rUEmKJToFmoj7iCNlzubmZb/K?=
- =?us-ascii?Q?np4U+czyN3wmcC76/KkOCLPkNt+6bhg99nNpif5Orj/XlC5F6wPM9ODMF2L+?=
- =?us-ascii?Q?BQMpmxdtHOjhcQvZdZCVB045hx6+WnWjNybWos6UjFVztDKbMWzjPNJAmUxC?=
- =?us-ascii?Q?PHmfcDFIRrJk+Ft16vm8AdRuAVu/SMNSGwFf8iU6P/c3w+RP97EBSF1zv9by?=
- =?us-ascii?Q?yM/LnqJcDiHh7GAYWoyi6OY6K4oxf2t9n+MWMNl1TxBcolevi/rpSivzJRi/?=
- =?us-ascii?Q?O3bCezyUF7EfRDw8w6h0j+A80ypYAXtE5gcjtrfVCBYfmF6Pc4yX+0wKidrI?=
- =?us-ascii?Q?yULghcFagfQfk1lIpd2wiskFHLcdYTersdktnBJQejKfAo8QbLjVxzJXBjXN?=
- =?us-ascii?Q?dlVQr70/TWIZW/T8+omI9lRckXHHVV10aOfTR2iGo8vNiKqOhFg5FLZP22ny?=
- =?us-ascii?Q?/QwID4t4mKOEL2GFYdyldmE0Y42+UFGBQKbIymmpQw20oP6aLKavqYZ38p0?=
- =?us-ascii?Q?=3D?=
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9ec3ca15-df09-4b39-11af-08dc84958d1f
-X-MS-Exchange-CrossTenant-AuthSource: SG2PR01MB4218.apcprd01.prod.exchangelabs.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Jun 2024 12:55:03.7176
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SG2PR01MB4386
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240603211538.289765-1-andriy.shevchenko@linux.intel.com>
 
-Add support for cv180x SoCs integrated thermal sensors.
+Hi Andy,
 
-Signed-off-by: Haylen Chu <heylenay@outlook.com>
----
- drivers/thermal/Kconfig          |   6 +
- drivers/thermal/Makefile         |   1 +
- drivers/thermal/cv180x_thermal.c | 262 +++++++++++++++++++++++++++++++
- 3 files changed, 269 insertions(+)
- create mode 100644 drivers/thermal/cv180x_thermal.c
+On Sun, Jun 02, 2024 at 06:57:12PM +0300, Andy Shevchenko wrote:
+> Make two APIs look similar. Hence convert match_string() to be
+> a 2-argument macro. In order to avoid unneeded churn, convert
+> all users as well. There is no functional change intended.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 204ed89a3ec9..f53c973a361d 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -514,4 +514,10 @@ config LOONGSON2_THERMAL
- 	  is higher than the high temperature threshold or lower than the low
- 	  temperature threshold, the interrupt will occur.
- 
-+config CV180X_THERMAL
-+	tristate "Temperature sensor driver for Sophgo CV180X"
-+	help
-+	  If you say yes here you get support for thermal sensor integrated in
-+	  Sophgo CV180X SoCs.
-+
- endif
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 5cdf7d68687f..5b59bde8a579 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -65,3 +65,4 @@ obj-$(CONFIG_AMLOGIC_THERMAL)     += amlogic_thermal.o
- obj-$(CONFIG_SPRD_THERMAL)	+= sprd_thermal.o
- obj-$(CONFIG_KHADAS_MCU_FAN_THERMAL)	+= khadas_mcu_fan.o
- obj-$(CONFIG_LOONGSON2_THERMAL)	+= loongson2_thermal.o
-+obj-$(CONFIG_CV180X_THERMAL)	+= cv180x_thermal.o
-diff --git a/drivers/thermal/cv180x_thermal.c b/drivers/thermal/cv180x_thermal.c
-new file mode 100644
-index 000000000000..89425e2b75a2
---- /dev/null
-+++ b/drivers/thermal/cv180x_thermal.c
-@@ -0,0 +1,262 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2021 Sophgo Inc.
-+ * Copyright (C) 2024 Haylen Chu <heylenay@outlook.com>
-+ */
-+
-+#include <linux/bits.h>
-+#include <linux/clk.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/io.h>
-+#include <linux/thermal.h>
-+
-+#define TEMPSEN_VERSION					0x0
-+#define TEMPSEN_CTRL					0x4
-+#define  TEMPSEN_CTRL_EN				BIT(0)
-+#define  TEMPSEN_CTRL_SEL_MASK				GENMASK(7, 4)
-+#define  TEMPSEN_CTRL_SEL_OFFSET			4
-+#define TEMPSEN_STATUS					0x8
-+#define TEMPSEN_SET					0xc
-+#define  TEMPSEN_SET_CHOPSEL_MASK			GENMASK(5, 4)
-+#define  TEMPSEN_SET_CHOPSEL_OFFSET			4
-+#define  TEMPSEN_SET_CHOPSEL_128T			0
-+#define  TEMPSEN_SET_CHOPSEL_256T			1
-+#define  TEMPSEN_SET_CHOPSEL_512T			2
-+#define  TEMPSEN_SET_CHOPSEL_1024T			3
-+#define  TEMPSEN_SET_ACCSEL_MASK			GENMASK(7, 6)
-+#define  TEMPSEN_SET_ACCSEL_OFFSET			6
-+#define  TEMPSEN_SET_ACCSEL_512T			0
-+#define  TEMPSEN_SET_ACCSEL_1024T			1
-+#define  TEMPSEN_SET_ACCSEL_2048T			2
-+#define  TEMPSEN_SET_ACCSEL_4096T			3
-+#define  TEMPSEN_SET_CYC_CLKDIV_MASK			GENMASK(15, 8)
-+#define  TEMPSEN_SET_CYC_CLKDIV_OFFSET			8
-+#define TEMPSEN_INTR_EN					0x10
-+#define TEMPSEN_INTR_CLR				0x14
-+#define TEMPSEN_INTR_STA				0x18
-+#define TEMPSEN_INTR_RAW				0x1c
-+#define TEMPSEN_RESULT(n)				(0x20 + (n) * 4)
-+#define  TEMPSEN_RESULT_RESULT_MASK			GENMASK(12, 0)
-+#define  TEMPSEN_RESULT_MAX_RESULT_MASK			GENMASK(28, 16)
-+#define  TEMPSEN_RESULT_CLR_MAX_RESULT			BIT(31)
-+#define TEMPSEN_AUTO_PERIOD				0x64
-+#define  TEMPSEN_AUTO_PERIOD_AUTO_CYCLE_MASK		GENMASK(23, 0)
-+#define  TEMPSEN_AUTO_PERIOD_AUTO_CYCLE_OFFSET		0
-+
-+struct cv180x_thermal_zone {
-+	struct device *dev;
-+	void __iomem *base;
-+	struct clk *clk_tempsen;
-+	u32 chop_period;
-+	u32 accum_period;
-+	u32 sample_cycle;
-+};
-+
-+static void cv180x_thermal_init(struct cv180x_thermal_zone *ctz)
-+{
-+	void __iomem *base = ctz->base;
-+	u32 regval;
-+
-+	writel(readl(base + TEMPSEN_INTR_RAW), base + TEMPSEN_INTR_CLR);
-+	writel(TEMPSEN_RESULT_CLR_MAX_RESULT, base + TEMPSEN_RESULT(0));
-+
-+	regval = readl(base + TEMPSEN_SET);
-+	regval &= ~TEMPSEN_SET_CHOPSEL_MASK;
-+	regval &= ~TEMPSEN_SET_ACCSEL_MASK;
-+	regval &= ~TEMPSEN_SET_CYC_CLKDIV_MASK;
-+	regval |= ctz->chop_period << TEMPSEN_SET_CHOPSEL_OFFSET;
-+	regval |= ctz->accum_period << TEMPSEN_SET_ACCSEL_OFFSET;
-+	regval |= 0x31 << TEMPSEN_SET_CYC_CLKDIV_OFFSET;
-+	writel(regval, base + TEMPSEN_SET);
-+
-+	regval = readl(base + TEMPSEN_AUTO_PERIOD);
-+	regval &= ~TEMPSEN_AUTO_PERIOD_AUTO_CYCLE_MASK;
-+	regval |= ctz->sample_cycle << TEMPSEN_AUTO_PERIOD_AUTO_CYCLE_OFFSET;
-+	writel(regval, base + TEMPSEN_AUTO_PERIOD);
-+
-+	regval = readl(base + TEMPSEN_CTRL);
-+	regval &= ~TEMPSEN_CTRL_SEL_MASK;
-+	regval |= 1 << TEMPSEN_CTRL_SEL_OFFSET;
-+	regval |= TEMPSEN_CTRL_EN;
-+	writel(regval, base + TEMPSEN_CTRL);
-+}
-+
-+static void cv180x_thermal_deinit(struct cv180x_thermal_zone *ct)
-+{
-+	void __iomem *base = ct->base;
-+	u32 regval;
-+
-+	regval = readl(base + TEMPSEN_CTRL);
-+	regval &= ~(TEMPSEN_CTRL_SEL_MASK | TEMPSEN_CTRL_EN);
-+	writel(regval, base + TEMPSEN_CTRL);
-+
-+	writel(readl(base + TEMPSEN_INTR_RAW), base + TEMPSEN_INTR_CLR);
-+}
-+
-+/*
-+ *	Raw register value to temperature (mC) formula:
-+ *
-+ *		       read_val * 1000 * 716
-+ *	Temperature = ----------------------- - 273000
-+ *				divider
-+ *
-+ *	where divider should be ticks number of accumulation period,
-+ *	e.g. 2048 for TEMPSEN_CTRL_ACCSEL_2048T
-+ */
-+static int cv180x_calc_temp(struct cv180x_thermal_zone *ctz, u32 result)
-+{
-+	u32 divider = (u32)(512 * int_pow(2, ctz->accum_period));
-+
-+	return (result * 1000) * 716 / divider - 273000;
-+}
-+
-+static int cv180x_get_temp(struct thermal_zone_device *tdev, int *temperature)
-+{
-+	struct cv180x_thermal_zone *ctz = thermal_zone_device_priv(tdev);
-+	void __iomem *base = ctz->base;
-+	u32 result;
-+
-+	result = readl(base + TEMPSEN_RESULT(0)) & TEMPSEN_RESULT_RESULT_MASK;
-+	*temperature = cv180x_calc_temp(ctz, result);
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_device_ops cv180x_thermal_ops = {
-+	.get_temp = cv180x_get_temp,
-+};
-+
-+static const struct of_device_id cv180x_thermal_of_match[] = {
-+	{ .compatible = "sophgo,cv1800-thermal" },
-+	{ .compatible = "sophgo,cv180x-thermal" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, cv180x_thermal_of_match);
-+
-+static int
-+cv180x_parse_dt(struct cv180x_thermal_zone *ctz)
-+{
-+	struct device_node *np = ctz->dev->of_node;
-+
-+	if (of_property_read_u32(np, "accumulation-period",
-+				 &ctz->accum_period)) {
-+		ctz->accum_period = TEMPSEN_SET_ACCSEL_2048T;
-+	} else {
-+		if (ctz->accum_period < TEMPSEN_SET_ACCSEL_512T ||
-+		    ctz->accum_period > TEMPSEN_SET_ACCSEL_4096T) {
-+			dev_err(ctz->dev, "invalid accumulation period %d\n",
-+				ctz->accum_period);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (of_property_read_u32(np, "chop-period", &ctz->chop_period)) {
-+		ctz->chop_period = TEMPSEN_SET_CHOPSEL_1024T;
-+	} else {
-+		if (ctz->chop_period < TEMPSEN_SET_CHOPSEL_128T ||
-+		    ctz->chop_period > TEMPSEN_SET_CHOPSEL_1024T) {
-+			dev_err(ctz->dev, "invalid chop period %d\n",
-+				ctz->chop_period);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (of_property_read_u32(np, "sample-cycle-us", &ctz->sample_cycle))
-+		ctz->sample_cycle = 1000000;
-+
-+	return 0;
-+}
-+
-+static int cv180x_thermal_probe(struct platform_device *pdev)
-+{
-+	struct cv180x_thermal_zone *ctz;
-+	struct thermal_zone_device *tz;
-+	struct resource *res;
-+	int ret;
-+
-+	ctz = devm_kzalloc(&pdev->dev, sizeof(*ctz), GFP_KERNEL);
-+	if (!ctz)
-+		return -ENOMEM;
-+
-+	ctz->dev = &pdev->dev;
-+
-+	ret = cv180x_parse_dt(ctz);
-+	if (ret)
-+		return dev_err_probe(&pdev->dev, ret, "failed to parse dt\n");
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	ctz->base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(ctz->base))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(ctz->base),
-+				     "failed to map tempsen registers\n");
-+
-+	ctz->clk_tempsen = devm_clk_get(&pdev->dev, "clk_tempsen");
-+	if (IS_ERR(ctz->clk_tempsen))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(ctz->clk_tempsen),
-+				     "failed to get clk_tempsen\n");
-+
-+	clk_prepare_enable(ctz->clk_tempsen);
-+
-+	cv180x_thermal_init(ctz);
-+
-+	tz = devm_thermal_of_zone_register(&pdev->dev, 0, ctz,
-+					   &cv180x_thermal_ops);
-+	if (IS_ERR(tz))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(tz),
-+				     "failed to register thermal zone\n");
-+
-+	platform_set_drvdata(pdev, ctz);
-+
-+	return 0;
-+}
-+
-+static int cv180x_thermal_remove(struct platform_device *pdev)
-+{
-+	struct cv180x_thermal_zone *ctz = platform_get_drvdata(pdev);
-+
-+	cv180x_thermal_deinit(ctz);
-+	clk_disable_unprepare(ctz->clk_tempsen);
-+
-+	return 0;
-+}
-+
-+static int __maybe_unused cv180x_thermal_suspend(struct device *dev)
-+{
-+	struct cv180x_thermal_zone *ctz = dev_get_drvdata(dev);
-+
-+	cv180x_thermal_deinit(ctz);
-+	clk_disable_unprepare(ctz->clk_tempsen);
-+
-+	return 0;
-+}
-+
-+static int __maybe_unused cv180x_thermal_resume(struct device *dev)
-+{
-+	struct cv180x_thermal_zone *ctz = dev_get_drvdata(dev);
-+
-+	clk_prepare_enable(ctz->clk_tempsen);
-+	cv180x_thermal_init(ctz);
-+
-+	return 0;
-+}
-+
-+static SIMPLE_DEV_PM_OPS(cv180x_thermal_pm_ops,
-+			 cv180x_thermal_suspend, cv180x_thermal_resume);
-+
-+static struct platform_driver cv180x_thermal_driver = {
-+	.probe = cv180x_thermal_probe,
-+	.remove = cv180x_thermal_remove,
-+	.driver = {
-+		.name = "cv180x-thermal",
-+		.pm = &cv180x_thermal_pm_ops,
-+		.of_match_table = cv180x_thermal_of_match,
-+	},
-+};
-+
-+module_platform_driver(cv180x_thermal_driver);
-+
-+MODULE_DESCRIPTION("Sophgo CV180x thermal driver");
-+MODULE_AUTHOR("Haylen Chu <heylenay@outlook.com>");
-+MODULE_LICENSE("GPL");
--- 
-2.45.2
+nice patch, I checked some (maybe most) of your changes. There
+are a few unrelated changes which I don't mind, but there are two
+errors where the error value changes from ENODEV to EINVAL.
 
+Find the comments through the line.
+
+...
+
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 1b7e82a0ad2e..b6f52f44625f 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -1117,9 +1117,9 @@ static ssize_t store_energy_performance_preference(
+>  	if (ret != 1)
+>  		return -EINVAL;
+>  
+> -	ret = match_string(energy_perf_strings, -1, str_preference);
+> +	ret = __match_string(energy_perf_strings, -1, str_preference);
+>  	if (ret < 0)
+> -		return -EINVAL;
+> +		return ret;
+
+a bit of unrelated changes here, but I guess no one will complain :-)
+
+>  
+>  	mutex_lock(&amd_pstate_limits_lock);
+>  	ret = amd_pstate_set_energy_pref_index(cpudata, ret);
+
+...
+
+> diff --git a/drivers/mmc/host/sdhci-xenon-phy.c b/drivers/mmc/host/sdhci-xenon-phy.c
+> index cc9d28b75eb9..1865e26ae736 100644
+> --- a/drivers/mmc/host/sdhci-xenon-phy.c
+> +++ b/drivers/mmc/host/sdhci-xenon-phy.c
+> @@ -135,15 +135,14 @@ struct xenon_emmc_phy_regs {
+>  	u32 logic_timing_val;
+>  };
+>  
+> -static const char * const phy_types[] = {
+> -	"emmc 5.0 phy",
+> -	"emmc 5.1 phy"
+> -};
+> -
+>  enum xenon_phy_type_enum {
+>  	EMMC_5_0_PHY,
+>  	EMMC_5_1_PHY,
+> -	NR_PHY_TYPES
+> +};
+> +
+> +static const char * const phy_types[] = {
+> +	[EMMC_5_0_PHY] = "emmc 5.0 phy",
+> +	[EMMC_5_1_PHY] = "emmc 5.1 phy",
+>  };
+
+Another unrelated cleanup, but I don't complain
+
+>  enum soc_pad_ctrl_type {
+
+...
+
+> -	tablet_found = match_string(tablet_chassis_types,
+> -				    ARRAY_SIZE(tablet_chassis_types),
+> -				    chassis_type) >= 0;
+> -	if (!tablet_found)
+> -		return -ENODEV;
+> +	ret = match_string(tablet_chassis_types, chassis_type);
+> +	if (ret < 0)
+> +		return ret;
+
+This is a logical change though, because we are changing from
+-ENODEV to -EINVAL. Even if it might look the right thing, but
+still, it's a logical change.
+
+>  
+>  	ret = hp_wmi_perform_query(HPWMI_SYSTEM_DEVICE_MODE, HPWMI_READ,
+>  				   system_device_mode, zero_if_sup(system_device_mode),
+> @@ -490,9 +487,7 @@ static bool is_omen_thermal_profile(void)
+>  	if (!board_name)
+>  		return false;
+>  
+> -	return match_string(omen_thermal_profile_boards,
+> -			    ARRAY_SIZE(omen_thermal_profile_boards),
+> -			    board_name) >= 0;
+> +	return match_string(omen_thermal_profile_boards, board_name) >= 0;
+>  }
+>  
+>  static int omen_get_thermal_policy_version(void)
+
+...
+
+> diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> index e56db75a94fb..dbd176b0fb1f 100644
+> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> @@ -111,7 +111,7 @@ static ssize_t suffix##_show(struct device *dev,\
+>  		match_strs = (const char **)fivr_strings;\
+>  		mmio_regs = tgl_fivr_mmio_regs;\
+>  	} \
+> -	ret = match_string(match_strs, -1, attr->attr.name);\
+> +	ret = __match_string(match_strs, -1, attr->attr.name);\
+>  	if (ret < 0)\
+>  		return ret;\
+>  	reg_val = readl((void __iomem *) (proc_priv->mmio_base + mmio_regs[ret].offset));\
+> @@ -145,7 +145,7 @@ static ssize_t suffix##_store(struct device *dev,\
+>  		mmio_regs = tgl_fivr_mmio_regs;\
+>  	} \
+>  	\
+> -	ret = match_string(match_strs, -1, attr->attr.name);\
+> +	ret = __match_string(match_strs, -1, attr->attr.name);\
+>  	if (ret < 0)\
+>  		return ret;\
+>  	if (mmio_regs[ret].read_only)\
+> diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_wt_req.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_wt_req.c
+> index f298e7442662..57f456befb34 100644
+> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_wt_req.c
+> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_wt_req.c
+> @@ -50,7 +50,7 @@ static ssize_t workload_type_store(struct device *dev,
+>  	if (ret != 1)
+>  		return -EINVAL;
+>  
+> -	ret = match_string(workload_types, -1, str_preference);
+> +	ret = __match_string(workload_types, -1, str_preference);
+
+We could even thing of a "match_string_terminated" (or a better
+name), but maybe it's too much?
+
+>  	if (ret < 0)
+>  		return ret;
+>  
+
+...
+
+> -	c->auth_hash_algo = match_string(hash_algo_name, HASH_ALGO__LAST,
+> -					 c->auth_hash_name);
+> -	if ((int)c->auth_hash_algo < 0) {
+> +	err = __match_string(hash_algo_name, HASH_ALGO__LAST, c->auth_hash_name);
+> +	if (err < 0) {
+>  		ubifs_err(c, "Unknown hash algo %s specified",
+>  			  c->auth_hash_name);
+> -		return -EINVAL;
+> +		return err;
+
+This is correct!
+
+>  	}
+> +	c->auth_hash_algo = err;
+>  
+>  	snprintf(hmac_name, CRYPTO_MAX_ALG_NAME, "hmac(%s)",
+>  		 c->auth_hash_name);
+
+...
+
+> +int __match_string(const char * const *array, size_t n, const char *string);
+> +
+> +/**
+> + * match_string - matches given string in an array
+> + * @_a: array of strings
+> + * @_s: string to match with
+> + *
+> + * Helper for __match_string(). Calculates the size of @a automatically.
+
+/@a/@_a/
+
+> + */
+> +#define match_string(_a, _s) __match_string(_a, ARRAY_SIZE(_a), _s)
+> +
+
+...
+
+> diff --git a/security/apparmor/lsm.c b/security/apparmor/lsm.c
+> index 6239777090c4..e3fc94b4c7e5 100644
+> --- a/security/apparmor/lsm.c
+> +++ b/security/apparmor/lsm.c
+> @@ -1820,9 +1820,9 @@ static int param_set_audit(const char *val, const struct kernel_param *kp)
+>  	if (apparmor_initialized && !aa_current_policy_admin_capable(NULL))
+>  		return -EPERM;
+>  
+> -	i = match_string(audit_mode_names, AUDIT_MAX_INDEX, val);
+> +	i = __match_string(audit_mode_names, AUDIT_MAX_INDEX, val);
+
+pity here... this could have been a match_string, but the
+MAX_INDEX is hardcoded outside the enum.
+
+>  	if (i < 0)
+> -		return -EINVAL;
+> +		return i;
+>  
+>  	aa_g_audit = i;
+>  	return 0;
+
+...
+
+> diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
+> index 16dad4a45443..7064f4cae549 100644
+> --- a/sound/soc/soc-dapm.c
+> +++ b/sound/soc/soc-dapm.c
+> @@ -769,14 +769,13 @@ static int dapm_connect_mux(struct snd_soc_dapm_context *dapm,
+>  		item = 0;
+>  	}
+>  
+> -	i = match_string(e->texts, e->items, control_name);
+> +	i = __match_string(e->texts, e->items, control_name);
+>  	if (i < 0)
+> -		return -ENODEV;
+> +		return i;
+
+Also this return value is wrong.
+
+Andi
+
+>  
+>  	path->name = e->texts[i];
+>  	path->connect = (i == item);
+>  	return 0;
+> -
+>  }
+>  
+>  /* set up initial codec paths */
+> -- 
+> 2.43.0.rc1.1336.g36b5255a03ac
+> 
