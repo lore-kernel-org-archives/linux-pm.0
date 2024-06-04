@@ -1,147 +1,263 @@
-Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01olkn2062.outbound.protection.outlook.com [40.92.107.62])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EB89147C91;
-	Tue,  4 Jun 2024 12:53:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.107.62
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1717505604; cv=fail; b=klcRulsNdd0F8khbDWbR9fr9aUo/3yCia6Y8PgdT2uq3UcIT6tHSTk+4Zc5rA0cxYTTbS7MUfT+cx0lSnMLOI8H93VApwoj3mGoi7uhpTst5y036/OkkJa/fw/l9gCQ7AyQgWB5ArkBzC3KOPY1I/n45hfEsLh+C8zRuIICnKFY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1717505604; c=relaxed/simple;
-	bh=6z6RDZlpP8Ikel/3sNieKU0tNHFYItjerYZWAxSNtvo=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=qFa0m0A4E2Omxxlu+EYr9qQWhcxlyDLc6CgGDzlgkiQD+uwhdfqfM0db2fvmlgdEMNkevu9NT3ogVah6I5s+CbaWH02TFS/QZKCQoMMnH3hGU/s5jSoDGocfiMFfBcGjXywOzzUjcgNq2XvhpdJH5BrPWmXyN8axqliL1tt5s4M=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=U13jcXgb; arc=fail smtp.client-ip=40.92.107.62
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAE7514831E
+	for <linux-pm@vger.kernel.org>; Tue,  4 Jun 2024 12:54:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1717505700; cv=none; b=cRnKHOBdNHPQhmcMuYW3uZKCP13hFd2cf8oDzzk7jyIc9k0f92OvvPUlGavdJEPN6cd5LIMKmlu75mVS0R7799ouL4qr1BE7O+LIUex2kKAHz/xB4Q2/wwY2KzZVRcdMCQ4IxnU6j01rDxUmJr+mCzXtxBCHOsXTb5qqlXNn9rw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1717505700; c=relaxed/simple;
+	bh=OiuQh70/YUd5XDug/IaAeE03hTuEO/69XY1qcgC57RA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=pfft8ZP4J2Ue8H0vz+UdevPFL2KkC+MObf7A5YV0P0FfEHf+omjBgTh2uHHqnoze94gsHpuzCTG892Ne+YlR2EJwHmGmhzwz/TTsfyqzCztmsDRc0PntplHatfxWb8QcKeQphJrqYYAi2uy9qfOLHgUw+qdfW4SKzC4+hRA4xls=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=sXupZSJw; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="U13jcXgb"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=UC9OU/urPwyV47SHq9ZCZA5vnhWSzZOYkJlTf2wv9x+wBLJC5DsvV03/ftnoM7FsXK54i+BDB6RBaZRiXyQS7ncDH/h5nD3KgKJxBycproFI08FXnutvhHloTumOBTuK7yuh05nhTnYYKm1eK5uYmq7k4RAMGfxaRzSmVczGOMWkV710cenEwkiRUULr/ox0tSMCRPe2QV4HRPZWTw3LE64PDav4qN8i/QPWk7WqhZLMQ0pXKRHD6cnDTwGOt8+PmofXT0o+BW48nnCMkGOvIqzKqaxTLSnRPfqWyjNxs4/kfF0hJ1sC87Ea3pzGgyvoaNYkOXXQMgfQ9XHoqZSA/A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=a1cNEbeG1wdPdrghu/oHKokJc7AylRp/n1AT06GG5/s=;
- b=DCDoApOreR9ZQarjCSsUrc6VdBaGa5PxE/Qq/3XGZgrnB+6h1VOLz97zL7A0q6Y5dqJRgo+Cr6LHsHmWRFbbz6FIR4mHXjesxz1xnXbX1c9y8QLy2NE6TdQcLr2IipzjvqXXGCfIqWaeEK4TDpfbI0fEL7LG+Ema/VwPcE1O6e6PR1mCHq8bGE0LcmvZgj1MQa6LM5P/3W01CiGMlyZeb+bCzVRpjfcMwnupBNoBXfk5+/85tO1rSbfxqiBam0ohRmjWa9xLWJ990497QUpJPoaN3MBo0xJuoC4YU5dgLCt2txxUd1TgR8+xC4JqsUfzzqSBf7HNgBWdaOJpVpqCBQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=a1cNEbeG1wdPdrghu/oHKokJc7AylRp/n1AT06GG5/s=;
- b=U13jcXgbqtj6YCIrqjvmq/v0Y0gMh6DWagX1Sn9NBsbGgPfTax8w8CmyK5ed1MIZIa+wy1GENRJb2u2rurO6v4RDheUKeHlyH+NwWXxh9MxcYK3h7KDnV0aV5MRo0Z3yo9vAqGksE9E9/rrIPsycN04Bs8HY5bGv9JZgff11/5PDg6rZKQYy5aXK1jdMll7dIXDqhs52gV0w8ESxQV1p8e46HUFE9CcR+4qlAmWZCYVz5hfUaZQWbrPwn9OZonNSbd4hkOqQiM5KyDh/MfrnF38CpuEK/O6iALnpbobZtUnM6/9NXLwq4U8HnhrYoV2l6mtfqLblb5V2WQ1aahsvgw==
-Received: from SG2PR01MB4218.apcprd01.prod.exchangelabs.com
- (2603:1096:4:1ca::8) by SG2PR01MB4386.apcprd01.prod.exchangelabs.com
- (2603:1096:4:1b5::13) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7633.24; Tue, 4 Jun
- 2024 12:53:12 +0000
-Received: from SG2PR01MB4218.apcprd01.prod.exchangelabs.com
- ([fe80::7155:e92c:291b:fc1c]) by SG2PR01MB4218.apcprd01.prod.exchangelabs.com
- ([fe80::7155:e92c:291b:fc1c%4]) with mapi id 15.20.7633.021; Tue, 4 Jun 2024
- 12:53:12 +0000
-From: Haylen Chu <heylenay@outlook.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Chen Wang <unicorn_wang@outlook.com>,
-	Inochi Amaoto <inochiama@outlook.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Jisheng Zhang <jszhang@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	Haylen Chu <heylenay@outlook.com>
-Subject: [PATCH v2 0/3] riscv: sophgo: add thermal sensor support for cv180x/sg200x SoCs
-Date: Tue,  4 Jun 2024 12:51:43 +0000
-Message-ID:
- <SG2PR01MB4218013241B3EED779D3BAE8D7F82@SG2PR01MB4218.apcprd01.prod.exchangelabs.com>
-X-Mailer: git-send-email 2.45.2
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-TMN: [RGPwRmNW0xhNYHbvPyk+wFYN+hsaXf/g]
-X-ClientProxiedBy: SI1PR02CA0049.apcprd02.prod.outlook.com
- (2603:1096:4:1f5::18) To SG2PR01MB4218.apcprd01.prod.exchangelabs.com
- (2603:1096:4:1ca::8)
-X-Microsoft-Original-Message-ID: <20240604125142.22298-2-heylenay@outlook.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="sXupZSJw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F8CCC4AF09
+	for <linux-pm@vger.kernel.org>; Tue,  4 Jun 2024 12:54:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1717505699;
+	bh=OiuQh70/YUd5XDug/IaAeE03hTuEO/69XY1qcgC57RA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=sXupZSJwUi7DY3tWU+ADft2HWl3+L321sPhxsKTix/XJJt33AtHCgu/gvTtm+AV8P
+	 2j1uF6WYjXQFR0qqCdYfMhLTB7YuWnVDuknDnDtys0w1fppe4RDXLzVYvW+1R/2GcJ
+	 5R/NVSvqCreUyA9m7rHYyVu2pmXqYedbTq58yoCHL84sTFBdC+8ixYHV1lKymVPXsL
+	 8WaVS9nrPNgUzTOOeZ99LIhIITagPXaI/iDMqUGmhbSkhCMaY8QUaJFMsqN+1KdPD8
+	 LnaeYzV7XIok8Bj7HmEgXf8QCo9lIUlzNH2y6byEyjTcz07yAWUZ5BTtQMQTQ49r9G
+	 Vuc827NWcQdzA==
+Received: by mail-oi1-f176.google.com with SMTP id 5614622812f47-3d1b8bacf67so511000b6e.2
+        for <linux-pm@vger.kernel.org>; Tue, 04 Jun 2024 05:54:59 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVI0OI5N1UwHqx5N2l9F+avamwCd/jQZyIjS2SCRsVtBDw6Pg76m9+JKsPLsXTh+qcn0Z8LNk21wWpa5yB7F2AL2AKllH82D7o=
+X-Gm-Message-State: AOJu0YyeC4ORLkjyHdQUaU3BE75gk4mI5iIO/ayWd60hBZbVntGAzMlE
+	MoX1EiNMDnOTri64rDkIUGUd4fHopWjcBT9icufOuWOdtmA1ExQfjCow7FMLc7Yyy/QAY+Am69a
+	3f0A+x08I8HF/srCPjAMTPX6uJxo=
+X-Google-Smtp-Source: AGHT+IFHTg7hdRV3SycqSlvBssI0xB6jAc6+4MYNGBOIjGME5ZqpFHNvGU9jzrYKfzqsCshdOtaVCJqF80piXmpfY9w=
+X-Received: by 2002:a4a:e20a:0:b0:5b2:f29:93f0 with SMTP id
+ 006d021491bc7-5ba059614f9mr12774894eaf.0.1717505698655; Tue, 04 Jun 2024
+ 05:54:58 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SG2PR01MB4218:EE_|SG2PR01MB4386:EE_
-X-MS-Office365-Filtering-Correlation-Id: f0e5a0d3-632f-483e-01d6-08dc849548b4
-X-Microsoft-Antispam:
-	BCL:0;ARA:14566002|461199019|440099019|3412199016|1710799017;
-X-Microsoft-Antispam-Message-Info:
-	5Eal7oXGwZhiFIcnZ13C+bnHkFrB3GrkxHuPG7slUya0OItEDUTTaJKrd1NGaUVQB34NYOHHBTS//Lf7SKrW3vXYlFfEty+20ux5CeKM2kvVvXFHDpiYsVr63ZTy/Z8MdmRkIwBEv0EPypvADGKg1gGu4odzzdhviY5C+MUQTBvoZ6P/jnTlteqiEstUC93utnueaasYSdcml4aMPUCtMWwAlCFCFU0fAE7uKQBPV8GdkHf2zh8Zq843LhI3Q/4poMbThG+ysicpTJ/NfAMEnTCNowDbEOieeGoE4cSp229LJIyhVmJ9hC1LYohjKLrBHvX5tUt2qjThos9/GLmfRW0fhB0i+feWqti4hIEWKFFNbRr2XqoVm/sd8RK/RTx4F7BbNcyAksgo/ROSQu3E6X/uvFcoOAJEfYO4A60cCV+ucb2nAMpN6680dGnyMQmloqzqNPCrBqnjfGA7DG5ZDrhmSgao3/1XVtjoixTYJmWCoOagTy4Y5vpocgZ++rGbYeHNAlLv1R52i19Xxr3Li02/oG/sNGLBYRyxewWka/XJggVCwApSlEbsg5K2Q7tMBGgSh3jyVkpceDDs/yXHZyu6tdr/vbwhcy9qb/cru3A=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?coSOwDVY2DyVawXXANUPCeCo5vuaMlgTpYESkhG+wVHjSOQJXhA+HoKKLbpm?=
- =?us-ascii?Q?sB/zpjiFl9BIOOUB5P27+vsasimunoXaVqsTxCyUuviWP4m0hWdyO6E1ODKI?=
- =?us-ascii?Q?VQaCST9JIYSGEmPwH/YRgX3ywNoUYuEzpvNALyngkzbAGx6qyQnS8MQDIWL8?=
- =?us-ascii?Q?UdTwHTtw8+FzRtOjEOW252NPFcA604sobrMgpsg3O47ZQfnzpaU1d3wCpUJk?=
- =?us-ascii?Q?S+Kibrgq3jAHNlqd5G1hidUrjdgnzme9uzSBAdwG+1n5d4JPtxA5uZbY1y4F?=
- =?us-ascii?Q?IiMc88jciIByLdT9vvyKgkJ4M3Jd5LGzdiDN1kd7PHxdosNEQIbEWUAsoNO5?=
- =?us-ascii?Q?y69Z/7rH9Yen52laauhT/sBHyMb3OQViBVTaxDBu05MTdYyDIjZpzMljqwPa?=
- =?us-ascii?Q?CwUC6/AHJ2Dxo0ny5pogoAIm+M2E7lI9PXHIhF9OtMR3QmdQacniyIVohz0Q?=
- =?us-ascii?Q?peL7MJL3paRVwfuPzxE5r2yN2dCY8YfqZRhywc3sM5NUmm58vzMC/Rud/6JT?=
- =?us-ascii?Q?ToK4n5ZNyUgAsytvzeypiwG3VM0oI/ASL47txqhlO1EQ+rEejtjQghrOzW/x?=
- =?us-ascii?Q?6zVVSGzcqNNLjRyxbajdea0WWjZ5t428NjiqZAwDNVVJCgou3q+dPGw6szkI?=
- =?us-ascii?Q?jepWtugwm8unqpvrLfNOoLDqkkxKDjEc6UV8NC0bw4b48ZmZjR7ZSjtOnG5k?=
- =?us-ascii?Q?kX41t55m8WGJFXAjTr2fjHnBRG2rU7Ge//vyP7BbO+MqyH2TTRVFViACCV8J?=
- =?us-ascii?Q?yWIcR33CBxAVR/XjygxhTwR+rrwIYI8KYA9tdpzap+58nbFHzx4Sd/KpWFf2?=
- =?us-ascii?Q?LIzvfirRdtFPd12HCikKi5iZc3HSMk6y6NrdXgGcF/50SVT+UxmXB1lB96VG?=
- =?us-ascii?Q?w21CA274ETvi/QBa+aDqsOPukaf4vvjnUDsbnBiDBqh50hvy27X1t5ZFANNz?=
- =?us-ascii?Q?ndvenzqEW0U/+JnqM1GRwRV2/2rRJQBaVpFHwR1DNR6oeHKhzyEnOS0wmiAX?=
- =?us-ascii?Q?HxZ1oCb+pjSn1tuz1ajX1mWAN61ISuiQ69LwyL6jxxUFvjvXePIIS2kN0yyl?=
- =?us-ascii?Q?XRZb7KwmBgrE1tcYzxba5WJjN0KZcix9UH3jQNxY1J22kq+e7ZOqCCXTzSXL?=
- =?us-ascii?Q?8rZoyGRXlgIn3WK26RDNV2l3rq5HVW++/NLsAaD+PL54jjTdYGmwQiFpz2/O?=
- =?us-ascii?Q?L2IvPOdXekAiYRwwBpGqTZojyXrgHGM822pK4H3QpFL0hv3pZopM4YFhkaE?=
- =?us-ascii?Q?=3D?=
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f0e5a0d3-632f-483e-01d6-08dc849548b4
-X-MS-Exchange-CrossTenant-AuthSource: SG2PR01MB4218.apcprd01.prod.exchangelabs.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Jun 2024 12:53:12.0980
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SG2PR01MB4386
+References: <3f71747b-f852-4ee0-b384-cf46b2aefa3f@gmx.com> <CAJZ5v0i2GHh6xYH14G0pX7kBsamEM6eyAKCCj26VxH9aqFthzw@mail.gmail.com>
+ <ed3c5b1e-795c-48d4-8983-ce1620d10c3d@gmx.com>
+In-Reply-To: <ed3c5b1e-795c-48d4-8983-ce1620d10c3d@gmx.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 4 Jun 2024 14:54:47 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g9DE=MrtJn12d9NJa1gdO7vqtMuatR924_iQu8ar8BQA@mail.gmail.com>
+Message-ID: <CAJZ5v0g9DE=MrtJn12d9NJa1gdO7vqtMuatR924_iQu8ar8BQA@mail.gmail.com>
+Subject: Re: Bisected regression, maximum frequency drops after sleep
+To: Billes Tibor <tbilles@gmx.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org
+Content-Type: multipart/mixed; boundary="00000000000011d3b7061a0ff5ba"
 
-This series implements driver for Sophgo cv180x/sg200x on-chip thermal
-sensor and adds thermal zones for CV1800B SoCs.
+--00000000000011d3b7061a0ff5ba
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Changed from v1:
-1. style and code improvements
-2. make sample parameters configurable
-3. generalize document temperature calculating formula
+On Mon, Jun 3, 2024 at 9:48=E2=80=AFPM Billes Tibor <tbilles@gmx.com> wrote=
+:
+>
+> On 6/3/24 19:39, Rafael J. Wysocki wrote:
+> >Hi,
+> >
+> >On Thu, May 30, 2024 at 9:40=E2=80=AFPM Billes Tibor <tbilles@gmx.com> w=
+rote:
+> >>
+> >> Hi,
+> >>
+> >> I noticed an issue, that with every sleep-wake cycle, the maximum freq=
+uency of
+> >> the CPU drops further down. For example, my CPU has a maximum (turbo) =
+frequency
+> >> of 3.5 Ghz, on first boot, this is the case. I put the laptop to sleep=
+, wake it
+> >> up later, and now it reports only 2.1 Ghz as maximum frequency. After =
+the next
+> >> cycle it reports 1.4 Ghz. A reboot restores the original maximum frequ=
+ency.
+> >>
+> >> Details:
+> >> My CPU is an Intel Core i7-4710HQ. On bootup the
+> >> "grep -H . /sys/devices/system/cpu/cpufreq/policy0/*" command tell me =
+this:
+> >> /sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0
+> >> /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:3500000
+> >> /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:800000
+> >> /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:200=
+00
+> >> /sys/devices/system/cpu/cpufreq/policy0/related_cpus:0
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:co=
+nservative ondemand userspace powersave performance schedutil
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:900000
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_driver:intel_cpufreq
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_governor:ondemand
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:3500000
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:800000
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported>
+> >>
+> >> After sleep:
+> >> /sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0
+> >> /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:3500000
+> >> /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:800000
+> >> /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:200=
+00
+> >> /sys/devices/system/cpu/cpufreq/policy0/related_cpus:0
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:co=
+nservative ondemand userspace powersave performance schedutil
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:904557
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_driver:intel_cpufreq
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_governor:ondemand
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:2100000
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:800000
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported>
+> >>
+> >> Notice the scaling_max_freq file says different frequencies. I tried w=
+riting
+> >> the scaling_max_freq file, it allows me to lower the maximum available
+> >> frequency, does not allow to raise back to 3.5 Ghz, it only raises bac=
+k to
+> >> 2.1 Ghz (in this case).
+> >>
+> >> If I keep repeating this sleep-wake cycle, the scaling_max_freq reache=
+s its
+> >> minimum at 1.4 Ghz, but the actual available frequency continues to dr=
+op, in
+> >> the following example to around 550 Mhz which is even below scaling_mi=
+n_freq.
+> >> This was taken under full load, notice the value of scaling_cur_freq:
+> >>
+> >> /sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0
+> >> /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:3500000
+> >> /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:800000
+> >> /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:200=
+00
+> >> /sys/devices/system/cpu/cpufreq/policy0/related_cpus:0
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:co=
+nservative ondemand userspace powersave performance schedutil
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:553861
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_driver:intel_cpufreq
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_governor:ondemand
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:1400000
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:800000
+> >> /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported>
+> >>
+> >>
+> >> I first noticed this when updating my kernel from 6.6.12 to 6.7.1. Sin=
+ce then
+> >> I've been trying to bisecting it, after a few failed attempts I think =
+I came
+> >> reasonably close, this commit came out as the first bad one:
+> >>
+> >> commit 950210887670cbb7d2eb9af6fb743b70f1a1ebdc (refs/bisect/bad)
+> >> Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> Date:   Tue Sep 19 20:54:37 2023 +0200
+> >>
+> >>     thermal: core: Drop trips_disabled bitmask
+> >>
+> >>     After recent changes, thermal_zone_get_trip() cannot fail, as invo=
+ked
+> >>     from thermal_zone_device_register_with_trips(), so the only role o=
+f
+> >>     the trips_disabled bitmask is struct thermal_zone_device is to mak=
+e
+> >>     handle_thermal_trip() skip trip points whose temperature was initi=
+ally
+> >>     zero.  However, since the unit of temperature in the thermal core =
+is
+> >>     millicelsius, zero may very well be a valid temperature value at l=
+east
+> >>     in some usage scenarios and the trip temperature may as well chang=
+e
+> >>     later.  Thus there is no reason to permanently disable trip points
+> >>     with initial temperature equal to zero.
+> >>
+> >>     Accordingly, drop the trips_disabled bitmask along with the code
+> >>     related to it.
+> >>
+> >>     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>     Tested-by: Ido Schimmel <idosch@nvidia.com>
+> >>     Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >>
+> >> I also tested a recent stable kernel, 6.9.2 and it is still dropping t=
+he maximum
+> >> frequency after sleep.
+> >>
+> >> Can someone help me find the cause of this issue? Is there something I=
+ can do to
+> >> help debug this?
+> >
+> >It looks like one of the thermal zones on this system has a trip point
+> >whose temperature is initialized to 0 which used to be disabled before
+> >the change above and now it is not and it is processed during resume
+> >from system sleep.
+> >
+> >If this is the case, the thermal zone in question needs to be
+> >identified and its driver adjusted to set the trip point's temperature
+> >to invalid to start with.
+> >
+> >Please send the output of the following two commands from your system:
+> >
+> >$ grep '.*' /sys/class/thermal/thermal_zone*/type
+> >$ grep '.*' /sys/class/thermal/thermal_zone*/trip_point_*
+> >
+>
+> Here it is:
 
-Haylen Chu (3):
-  dt-bindings: thermal: sophgo,cv180x-thermal: Add Sophgo CV180x thermal
-  riscv: dts: sophgo: cv18xx: Add sensor device and thermal zone
-  thermal: cv180x: Add cv180x thermal driver support
+Thanks!
 
- .../thermal/sophgo,cv180x-thermal.yaml        |  82 ++++++
- arch/riscv/boot/dts/sophgo/cv1800b.dtsi       |  30 ++
- arch/riscv/boot/dts/sophgo/cv18xx.dtsi        |   8 +
- drivers/thermal/Kconfig                       |   6 +
- drivers/thermal/Makefile                      |   1 +
- drivers/thermal/cv180x_thermal.c              | 262 ++++++++++++++++++
- 6 files changed, 389 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/sophgo,cv180x-thermal.yaml
- create mode 100644 drivers/thermal/cv180x_thermal.c
+> /sys/class/thermal/thermal_zone0/type:acpitz
+> /sys/class/thermal/thermal_zone1/type:x86_pkg_temp
+>
+> /sys/class/thermal/thermal_zone0/trip_point_0_hyst:0
+> /sys/class/thermal/thermal_zone0/trip_point_0_temp:127000
+> /sys/class/thermal/thermal_zone0/trip_point_0_type:critical
+> /sys/class/thermal/thermal_zone0/trip_point_1_hyst:0
+> /sys/class/thermal/thermal_zone0/trip_point_1_temp:127000
+> /sys/class/thermal/thermal_zone0/trip_point_1_type:hot
+> /sys/class/thermal/thermal_zone0/trip_point_2_hyst:0
+> /sys/class/thermal/thermal_zone0/trip_point_2_temp:0
+> /sys/class/thermal/thermal_zone0/trip_point_2_type:passive
+> /sys/class/thermal/thermal_zone1/trip_point_0_hyst:0
+> /sys/class/thermal/thermal_zone1/trip_point_0_temp:-274000
+> /sys/class/thermal/thermal_zone1/trip_point_0_type:passive
+> /sys/class/thermal/thermal_zone1/trip_point_1_hyst:0
+> /sys/class/thermal/thermal_zone1/trip_point_1_temp:-274000
+> /sys/class/thermal/thermal_zone1/trip_point_1_type:passive
+>
+> So are we looking for thermal_zone0/trip_point_2 from the acpitz driver?
 
--- 
-2.45.2
+I think so.
 
+The attached patch should restore the previous behavior of disabling
+trip points with 0 temperature in the ACPI thermal zone driver.
+Please try it and let me know if it helps.
+
+Thanks!
+
+--00000000000011d3b7061a0ff5ba
+Content-Type: text/x-patch; charset="US-ASCII"; name="acpi-thermal-temp-conv.patch"
+Content-Disposition: attachment; filename="acpi-thermal-temp-conv.patch"
+Content-Transfer-Encoding: base64
+Content-ID: <f_lx0eh5ra0>
+X-Attachment-Id: f_lx0eh5ra0
+
+LS0tCiBkcml2ZXJzL2FjcGkvdGhlcm1hbC5jIHwgICAgOCArKysrKysrLQogMSBmaWxlIGNoYW5n
+ZWQsIDcgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQoKSW5kZXg6IGxpbnV4LXBtL2RyaXZl
+cnMvYWNwaS90aGVybWFsLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtcG0ub3JpZy9kcml2ZXJzL2Fj
+cGkvdGhlcm1hbC5jCisrKyBsaW51eC1wbS9kcml2ZXJzL2FjcGkvdGhlcm1hbC5jCkBAIC0xNjgs
+MTEgKzE2OCwxNyBAQCBzdGF0aWMgaW50IGFjcGlfdGhlcm1hbF9nZXRfcG9sbGluZ19mcmVxCiAK
+IHN0YXRpYyBpbnQgYWNwaV90aGVybWFsX3RlbXAoc3RydWN0IGFjcGlfdGhlcm1hbCAqdHosIGlu
+dCB0ZW1wX2RlY2lfaykKIHsKKwlpbnQgdGVtcDsKKwogCWlmICh0ZW1wX2RlY2lfayA9PSBUSEVS
+TUFMX1RFTVBfSU5WQUxJRCkKIAkJcmV0dXJuIFRIRVJNQUxfVEVNUF9JTlZBTElEOwogCi0JcmV0
+dXJuIGRlY2lfa2VsdmluX3RvX21pbGxpY2Vsc2l1c193aXRoX29mZnNldCh0ZW1wX2RlY2lfaywK
+Kwl0ZW1wID0gZGVjaV9rZWx2aW5fdG9fbWlsbGljZWxzaXVzX3dpdGhfb2Zmc2V0KHRlbXBfZGVj
+aV9rLAogCQkJCQkJICAgICAgIHR6LT5rZWx2aW5fb2Zmc2V0KTsKKwlpZiAodGVtcCA8PSAwKQor
+CQlyZXR1cm4gVEhFUk1BTF9URU1QX0lOVkFMSUQ7CisKKwlyZXR1cm4gdGVtcDsKIH0KIAogc3Rh
+dGljIGJvb2wgYWNwaV90aGVybWFsX3RyaXBfdmFsaWQoc3RydWN0IGFjcGlfdGhlcm1hbF90cmlw
+ICphY3BpX3RyaXApCg==
+--00000000000011d3b7061a0ff5ba--
