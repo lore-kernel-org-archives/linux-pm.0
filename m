@@ -1,32 +1,32 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BF9A1A2550;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E7441A254D;
 	Thu,  6 Jun 2024 14:51:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1717685470; cv=none; b=I3GWlLNiOJjjsIgC4QGDZLsIgFTBHjUEP2KcNkuD5M/RvOeJtltZO7EZUd5/PhpCqcPHg6SeoMDiR2yHdeJ+D2+Ug945EaoHWFrgCOk849ucI4qxHXA48V3rXex6AdZYFfp1AHHQujeHuyTppX99T7wftvgHimgUPzbFV8+4gMA=
+	t=1717685470; cv=none; b=Gvl3e6N6YsTltKo5PicOp25S7hmt8Ebf3SfpypG2c27IUGmEKkSiT4rAL+VH3OTrrl+VI9uysYu6pdw6CFVdST9JZ1ncnl0K8Kj+IKsBi+p9CDGcs00+jb3/3r8LRpxfFPjAAimngFVU5sRJeXNLEShitsUBIpyIACnEUrpHmoQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1717685470; c=relaxed/simple;
-	bh=AWI2uk7badd/hUC4297caKc5NtjQlqqUKCxfXKFVIU8=;
+	bh=vwWqc2ww6qRY4a64w7AUc9FhU7/PBgP1tS+sCDjXi0Y=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=uxRDglt9ebC5xkCAO7Ljj4If5ZCSgDRkJfo8ke25Nko6pmudTkN3/m1KhgmYHdm2ercu4xKon3O0qoJTlVtOTqQpBs8mPmxed4HhSsC5xpOwJTBvoqN/CX8yGCSq6YZwlssCmDaTZ6fM2+jlheJw2HKDO24wMQnDwaDGZ8beyqE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=eovFnlwp; arc=none smtp.client-ip=159.69.126.157
+	 In-Reply-To:To:Cc; b=O0I0liuJTuwk/CTr3zYm+F1tbC4RymFw9nfMlen7kGoN4p1TOJ74KeQlwRAbzyVFI4QRjFWNbJrjdorzyf3E2FtCIor+LinxgUYULfQLZ9PViYsa67qRVold/YB6ZKO+jT25FOQRZ47oeZrD5GklvBURcnMTGZHo0ZmtH6svXG0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=AnIErl2o; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="eovFnlwp"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="AnIErl2o"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1717685463;
-	bh=AWI2uk7badd/hUC4297caKc5NtjQlqqUKCxfXKFVIU8=;
+	bh=vwWqc2ww6qRY4a64w7AUc9FhU7/PBgP1tS+sCDjXi0Y=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=eovFnlwpvI6uwrpTB8a2qkDcxOr0KglMSmQoXNoMme3dNdamlwCsKIrGzU0EKA3Ms
-	 gPWuTWXJWXYATI/dSetER3HkxbANlCrbv5mWli2txy+6rMgco0mfBW79e683GLFZN+
-	 HfUKiO53BmhR9D14vWihNXdUULLEq00AzXTX9PSw=
+	b=AnIErl2oMBeAR4e77l1N7JLEO5uFcj11YtqpwtJckWzBh3/1YNPKA0GUr86xkyInv
+	 tJsUoJUT31Kf6hORuqCmBxAdC45Ez2OsJhCLZkcjCQsgqUkKv51FQKz1vUPxG4/3rR
+	 ypNHbVUsuNALruun0GQ74N1tdn7kefp8xc6WHuDs=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Thu, 06 Jun 2024 16:50:58 +0200
-Subject: [PATCH RFC 4/6] power: supply: core: add locking around extension
- access
+Date: Thu, 06 Jun 2024 16:50:56 +0200
+Subject: [PATCH RFC 2/6] power: supply: core: avoid iterating properties
+ directly
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240606-power-supply-extensions-v1-4-b45669290bdc@weissschuh.net>
+Message-Id: <20240606-power-supply-extensions-v1-2-b45669290bdc@weissschuh.net>
 References: <20240606-power-supply-extensions-v1-0-b45669290bdc@weissschuh.net>
 In-Reply-To: <20240606-power-supply-extensions-v1-0-b45669290bdc@weissschuh.net>
 To: Sebastian Reichel <sre@kernel.org>, Jeremy Soller <jeremy@system76.com>, 
@@ -46,240 +46,191 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  platform-driver-x86@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1717685463; l=8061;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1717685463; l=6729;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=AWI2uk7badd/hUC4297caKc5NtjQlqqUKCxfXKFVIU8=;
- b=II7dmk6ur4eLxXY6hNllwIAjb77cbZIJkV0I0YZAC9hBQ9d+uPQcXMuNagnqJ+Ht8Y2aSN7JM
- KreRqpzlw1zDRK6npalNgY50gDr+4cBB0w2oar49k9cBfyqwx/rJcmW
+ bh=vwWqc2ww6qRY4a64w7AUc9FhU7/PBgP1tS+sCDjXi0Y=;
+ b=AKhHlOHxhchn70B7VvsUdf3SzA2iNKVbOy/YkVzmZnUxt1KaprueymAKEJUGrwPm4uH7ZpX48
+ jwcsQHVH/IBBZAqn+5N7bJwOv8uxhPKiL+W10aAQA7xvNrm6yaei+wf
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
+With the introduction of power supply extension, it will not be enough
+to iterate the properties on the struct power_supply directly.
+Instead introduce a helper power_supply_has_property() which ill handle
+properties added by extensions.
+
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/power_supply.h       |  6 ++-
- drivers/power/supply/power_supply_core.c  | 65 +++++++++++++++++++++++++------
- drivers/power/supply/power_supply_sysfs.c | 22 ++++++-----
- include/linux/power_supply.h              |  2 +
- 4 files changed, 73 insertions(+), 22 deletions(-)
+ drivers/power/supply/power_supply.h       |  3 ++
+ drivers/power/supply/power_supply_core.c  | 10 +++----
+ drivers/power/supply/power_supply_hwmon.c | 48 +++++++++++++++----------------
+ drivers/power/supply/power_supply_sysfs.c | 14 +++------
+ 4 files changed, 36 insertions(+), 39 deletions(-)
 
 diff --git a/drivers/power/supply/power_supply.h b/drivers/power/supply/power_supply.h
-index 7f9e139064cc..b469a9719045 100644
+index 3cbafc58bdad..622be1f0a180 100644
 --- a/drivers/power/supply/power_supply.h
 +++ b/drivers/power/supply/power_supply.h
-@@ -13,10 +13,14 @@ struct device;
+@@ -13,6 +13,9 @@ struct device;
  struct device_type;
  struct power_supply;
  
--bool power_supply_has_property(const struct power_supply *psy,
-+bool power_supply_has_property(struct power_supply *psy,
- 			       enum power_supply_property psp);
-+bool power_supply_has_property_nolock(struct power_supply *psy,
++extern bool power_supply_has_property(const struct power_supply_desc *psy_desc,
 +				      enum power_supply_property psp);
- bool power_supply_ext_has_property(const struct power_supply_ext *psy_ext,
- 				   enum power_supply_property psp);
-+int power_supply_property_is_writeable_nolock(struct power_supply *psy,
-+					      enum power_supply_property psp);
- 
++
  #ifdef CONFIG_SYSFS
  
+ extern void power_supply_init_attrs(void);
 diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index b32bbca9a848..ded9748be550 100644
+index fefe938c9342..d57ecdd966e0 100644
 --- a/drivers/power/supply/power_supply_core.c
 +++ b/drivers/power/supply/power_supply_core.c
-@@ -1218,14 +1218,26 @@ bool power_supply_ext_has_property(const struct power_supply_ext *psy_ext,
- 	return found;
+@@ -1183,8 +1183,8 @@ bool power_supply_battery_bti_in_range(struct power_supply_battery_info *info,
  }
+ EXPORT_SYMBOL_GPL(power_supply_battery_bti_in_range);
  
--bool power_supply_has_property(const struct power_supply *psy,
--			       enum power_supply_property psp)
-+bool power_supply_has_property_nolock(struct power_supply *psy,
-+				      enum power_supply_property psp)
- {
-+	lockdep_assert_held(&psy->ext_lock);
-+
- 	if (power_supply_ext_has_property(psy->ext, psp))
- 		return true;
- 	return psy_desc_has_property(psy->desc, psp);
- }
- 
-+bool power_supply_has_property(struct power_supply *psy,
+-static bool psy_has_property(const struct power_supply_desc *psy_desc,
+-			     enum power_supply_property psp)
++bool power_supply_has_property(const struct power_supply_desc *psy_desc,
 +			       enum power_supply_property psp)
-+{
-+	scoped_guard(rwsem_read, &psy->ext_lock) {
-+		if (power_supply_ext_has_property(psy->ext, psp))
-+			return true;
-+	}
-+	return psy_desc_has_property(psy->desc, psp);
-+}
-+
- int power_supply_get_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val)
-@@ -1236,9 +1248,12 @@ int power_supply_get_property(struct power_supply *psy,
+ {
+ 	bool found = false;
+ 	int i;
+@@ -1209,7 +1209,7 @@ int power_supply_get_property(struct power_supply *psy,
  		return -ENODEV;
  	}
  
--	if (power_supply_ext_has_property(psy->ext, psp))
--		return psy->ext->get_property(psy, psp, val);
--	else if (psy_desc_has_property(psy->desc, psp))
-+	scoped_guard(rwsem_read, &psy->ext_lock) {
-+		if (power_supply_ext_has_property(psy->ext, psp))
-+			return psy->ext->get_property(psy, psp, val);
-+	}
-+
-+	if (psy_desc_has_property(psy->desc, psp))
+-	if (psy_has_property(psy->desc, psp))
++	if (power_supply_has_property(psy->desc, psp))
  		return psy->desc->get_property(psy, psp, val);
  	else if (power_supply_battery_info_has_prop(psy->battery_info, psp))
  		return power_supply_battery_info_get_prop(psy->battery_info, psp, val);
-@@ -1254,11 +1269,13 @@ int power_supply_set_property(struct power_supply *psy,
- 	if (atomic_read(&psy->use_cnt) <= 0)
- 		return -ENODEV;
+@@ -1308,7 +1308,7 @@ static int psy_register_thermal(struct power_supply *psy)
+ 		return 0;
  
--	if (power_supply_ext_has_property(psy->ext, psp)) {
--		if (psy->ext->set_property)
--			return psy->ext->set_property(psy, psp, val);
--		else
--			return -ENODEV;
-+	scoped_guard(rwsem_read, &psy->ext_lock) {
-+		if (power_supply_ext_has_property(psy->ext, psp)) {
-+			if (psy->ext->set_property)
-+				return psy->ext->set_property(psy, psp, val);
-+			else
-+				return -ENODEV;
-+		}
+ 	/* Register battery zone device psy reports temperature */
+-	if (psy_has_property(psy->desc, POWER_SUPPLY_PROP_TEMP)) {
++	if (power_supply_has_property(psy->desc, POWER_SUPPLY_PROP_TEMP)) {
+ 		/* Prefer our hwmon device and avoid duplicates */
+ 		struct thermal_zone_params tzp = {
+ 			.no_hwmon = IS_ENABLED(CONFIG_POWER_SUPPLY_HWMON)
+@@ -1361,7 +1361,7 @@ __power_supply_register(struct device *parent,
+ 		pr_warn("%s: Expected proper parent device for '%s'\n",
+ 			__func__, desc->name);
+ 
+-	if (psy_has_property(desc, POWER_SUPPLY_PROP_USB_TYPE) &&
++	if (power_supply_has_property(desc, POWER_SUPPLY_PROP_USB_TYPE) &&
+ 	    (!desc->usb_types || !desc->num_usb_types))
+ 		return ERR_PTR(-EINVAL);
+ 
+diff --git a/drivers/power/supply/power_supply_hwmon.c b/drivers/power/supply/power_supply_hwmon.c
+index c97893d4c25e..2ecbe4a74c25 100644
+--- a/drivers/power/supply/power_supply_hwmon.c
++++ b/drivers/power/supply/power_supply_hwmon.c
+@@ -8,6 +8,8 @@
+ #include <linux/power_supply.h>
+ #include <linux/slab.h>
+ 
++#include "power_supply.h"
++
+ struct power_supply_hwmon {
+ 	struct power_supply *psy;
+ 	unsigned long *props;
+@@ -324,9 +326,26 @@ static const struct hwmon_chip_info power_supply_hwmon_chip_info = {
+ 	.info = power_supply_hwmon_info,
+ };
+ 
++static const enum power_supply_property power_supply_hwmon_props[] = {
++	POWER_SUPPLY_PROP_CURRENT_AVG,
++	POWER_SUPPLY_PROP_CURRENT_MAX,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++	POWER_SUPPLY_PROP_TEMP,
++	POWER_SUPPLY_PROP_TEMP_MAX,
++	POWER_SUPPLY_PROP_TEMP_MIN,
++	POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
++	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
++	POWER_SUPPLY_PROP_TEMP_AMBIENT,
++	POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN,
++	POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX,
++	POWER_SUPPLY_PROP_VOLTAGE_AVG,
++	POWER_SUPPLY_PROP_VOLTAGE_MIN,
++	POWER_SUPPLY_PROP_VOLTAGE_MAX,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++};
++
+ int power_supply_add_hwmon_sysfs(struct power_supply *psy)
+ {
+-	const struct power_supply_desc *desc = psy->desc;
+ 	struct power_supply_hwmon *psyhw;
+ 	struct device *dev = &psy->dev;
+ 	struct device *hwmon;
+@@ -352,30 +371,11 @@ int power_supply_add_hwmon_sysfs(struct power_supply *psy)
+ 		goto error;
  	}
  
- 	if (!psy->desc->set_property)
-@@ -1274,6 +1291,28 @@ int power_supply_property_is_writeable(struct power_supply *psy,
- 	if (atomic_read(&psy->use_cnt) <= 0)
- 		return -ENODEV;
- 
-+	scoped_guard(rwsem_read, &psy->ext_lock) {
-+		if (power_supply_ext_has_property(psy->ext, psp)) {
-+			if (psy->ext->property_is_writeable)
-+				return psy->ext->property_is_writeable(psy, psp);
-+			else
-+				return -ENODEV;
-+		}
-+	}
+-	for (i = 0; i < desc->num_properties; i++) {
+-		const enum power_supply_property prop = desc->properties[i];
+-
+-		switch (prop) {
+-		case POWER_SUPPLY_PROP_CURRENT_AVG:
+-		case POWER_SUPPLY_PROP_CURRENT_MAX:
+-		case POWER_SUPPLY_PROP_CURRENT_NOW:
+-		case POWER_SUPPLY_PROP_TEMP:
+-		case POWER_SUPPLY_PROP_TEMP_MAX:
+-		case POWER_SUPPLY_PROP_TEMP_MIN:
+-		case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
+-		case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+-		case POWER_SUPPLY_PROP_TEMP_AMBIENT:
+-		case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN:
+-		case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX:
+-		case POWER_SUPPLY_PROP_VOLTAGE_AVG:
+-		case POWER_SUPPLY_PROP_VOLTAGE_MIN:
+-		case POWER_SUPPLY_PROP_VOLTAGE_MAX:
+-		case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++	for (i = 0; i < ARRAY_SIZE(power_supply_hwmon_props); i++) {
++		const enum power_supply_property prop = power_supply_hwmon_props[i];
 +
-+	if (!psy->desc->property_is_writeable)
-+		return -ENODEV;
-+
-+	return psy->desc->property_is_writeable(psy, psp);
-+}
-+EXPORT_SYMBOL_GPL(power_supply_property_is_writeable);
-+
-+int power_supply_property_is_writeable_nolock(struct power_supply *psy,
-+					      enum power_supply_property psp)
-+{
-+	if (atomic_read(&psy->use_cnt) <= 0)
-+		return -ENODEV;
-+
- 	if (power_supply_ext_has_property(psy->ext, psp)) {
- 		if (psy->ext->property_is_writeable)
- 			return psy->ext->property_is_writeable(psy, psp);
-@@ -1286,7 +1325,6 @@ int power_supply_property_is_writeable(struct power_supply *psy,
- 
- 	return psy->desc->property_is_writeable(psy, psp);
- }
--EXPORT_SYMBOL_GPL(power_supply_property_is_writeable);
- 
- void power_supply_external_power_changed(struct power_supply *psy)
- {
-@@ -1315,6 +1353,8 @@ static int power_supply_update_groups(struct power_supply *psy)
- 
- int power_supply_register_extension(struct power_supply *psy, const struct power_supply_ext *ext)
- {
-+	guard(rwsem_write)(&psy->ext_lock);
-+
- 	if (psy->ext)
- 		return -EEXIST;
- 
-@@ -1325,6 +1365,8 @@ EXPORT_SYMBOL_GPL(power_supply_register_extension);
- 
- void power_supply_unregister_extension(struct power_supply *psy, const struct power_supply_ext *ext)
- {
-+	guard(rwsem_write)(&psy->ext_lock);
-+
- 	if (psy->ext != ext)
- 		dev_warn(&psy->dev, "Trying to unregister invalid extension");
- 
-@@ -1492,6 +1534,7 @@ __power_supply_register(struct device *parent,
++		if (power_supply_has_property(psy->desc, prop))
+ 			set_bit(prop, psyhw->props);
+-			break;
+-		default:
+-			break;
+-		}
  	}
  
- 	spin_lock_init(&psy->changed_lock);
-+	init_rwsem(&psy->ext_lock);
- 	rc = device_add(dev);
- 	if (rc)
- 		goto device_add_failed;
+ 	name = psy->desc->name;
 diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 3487f161e9bf..d47804cbb500 100644
+index 3e63d165b2f7..abd44ebfe6fe 100644
 --- a/drivers/power/supply/power_supply_sysfs.c
 +++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -378,8 +378,8 @@ static umode_t power_supply_attr_is_visible(struct kobject *kobj,
+@@ -367,7 +367,6 @@ static umode_t power_supply_attr_is_visible(struct kobject *kobj,
+ 	struct device *dev = kobj_to_dev(kobj);
+ 	struct power_supply *psy = dev_get_drvdata(dev);
+ 	umode_t mode = S_IRUSR | S_IRGRP | S_IROTH;
+-	int i;
+ 
+ 	if (!power_supply_attrs[attrno].prop_name)
+ 		return 0;
+@@ -375,15 +374,10 @@ static umode_t power_supply_attr_is_visible(struct kobject *kobj,
  	if (attrno == POWER_SUPPLY_PROP_TYPE)
  		return mode;
  
--	if (power_supply_has_property(psy, attrno)) {
--		if (power_supply_property_is_writeable(psy, attrno) > 0)
-+	if (power_supply_has_property_nolock(psy, attrno)) {
-+		if (power_supply_property_is_writeable_nolock(psy, attrno) > 0)
- 			mode |= S_IWUSR;
- 		return mode;
- 	}
-@@ -458,7 +458,7 @@ static int add_prop_uevent(const struct device *dev, struct kobj_uevent_env *env
- 
- int power_supply_uevent(const struct device *dev, struct kobj_uevent_env *env)
- {
--	const struct power_supply *psy = dev_get_drvdata(dev);
-+	struct power_supply *psy = dev_get_drvdata(dev);
- 	const enum power_supply_property *battery_props =
- 		power_supply_battery_info_properties;
- 	unsigned long psy_drv_properties[POWER_SUPPLY_ATTR_CNT /
-@@ -490,13 +490,15 @@ int power_supply_uevent(const struct device *dev, struct kobj_uevent_env *env)
- 	if (ret)
- 		goto out;
- 
--	if (psy->ext) {
--		for (j = 0; j < psy->ext->num_properties; j++) {
--			set_bit(psy->ext->properties[j], psy_drv_properties);
--			ret = add_prop_uevent(dev, env, psy->ext->properties[j],
--					      prop_buf);
--			if (ret)
--				goto out;
-+	scoped_guard(rwsem_read, &psy->ext_lock) {
-+		if (psy->ext) {
-+			for (j = 0; j < psy->ext->num_properties; j++) {
-+				set_bit(psy->ext->properties[j], psy_drv_properties);
-+				ret = add_prop_uevent(dev, env, psy->ext->properties[j],
-+						      prop_buf);
-+				if (ret)
-+					goto out;
-+			}
- 		}
+-	for (i = 0; i < psy->desc->num_properties; i++) {
+-		int property = psy->desc->properties[i];
+-
+-		if (property == attrno) {
+-			if (power_supply_property_is_writeable(psy, property) > 0)
+-				mode |= S_IWUSR;
+-
+-			return mode;
+-		}
++	if (power_supply_has_property(psy->desc, attrno)) {
++		if (power_supply_property_is_writeable(psy, attrno) > 0)
++			mode |= S_IWUSR;
++		return mode;
  	}
  
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 0c1e23081d2a..6bba7e6ab161 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -15,6 +15,7 @@
- #include <linux/device.h>
- #include <linux/workqueue.h>
- #include <linux/leds.h>
-+#include <linux/rwsem.h>
- #include <linux/spinlock.h>
- #include <linux/notifier.h>
- 
-@@ -306,6 +307,7 @@ struct power_supply {
- 	size_t num_supplies;
- 	struct device_node *of_node;
- 
-+	struct rw_semaphore ext_lock;
- 	const struct power_supply_ext *ext;
- 
- 	/* Driver private data */
+ 	if (power_supply_battery_info_has_prop(psy->battery_info, attrno))
 
 -- 
 2.45.2
