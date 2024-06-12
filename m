@@ -1,48 +1,50 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C375F21360;
-	Wed, 12 Jun 2024 21:30:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65A9241A84;
+	Wed, 12 Jun 2024 23:17:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718227821; cv=none; b=GTSOlty0xPi88qFGforQq0Dshez58FwOhBvxOCVBjrirJ+XyNV+MxxTO2bLxG96eg2qpJuQ94++e8SQxIzEa28R14ulDVcbOsXAwBWmMNkrbFAkHp7CF2pH7yyFinRZ2O2OIRRj3R7uen0KYbHdUAd8cUZDbkGDaOFSjekmquvs=
+	t=1718234272; cv=none; b=jn+JvX20s9nSt/dVmziKJ/OYwiZ6EtCgt5TstqhSRGFLlLoaZPpsOGNJODiPqCSqecU6RR0aRLMnYQzQYe7deSaKjGbD04/ziey0Ds+z8MJ5CKaGc2T0+aSk22lLS7qjOhvuBb5yjLiArywRWyh0lC3+3sODAF6KF3aN9eFh5/o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718227821; c=relaxed/simple;
-	bh=7oi+Dxn3vPmuBX3GF+LezGlD7Ns+idrg1dOvb8SD5k0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=RcSBZRI6+/Yd+hKAPRZCjV/lw3mwmAeOrL/2u2l8GtN7SNdQJbbn5gxco4rh43tGksYoaUF/08pA3TLUEwZbuJYe5gTfgNSaB8oC8vu4Da5x9dJ5Z2yJ5bwC7CgtOuscKB+jtY5guT6TnLQ+gAAzhr4opEeIJLBORj7cLFfByTs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=Mmgj2EO0; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1718234272; c=relaxed/simple;
+	bh=5ZIzRsZmwLkhF+loYV2ldRFY5KvqeljcAs10mUbNVqc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=T1aMmVXCqLUV25GD5JYZlPzPpIGbWv+hTyj3QsVDbT7R1k6NzTrI9DHTTtGNbW62uXJ5E+BIghl4YuDfCoUsagDwrsooUOMlxbepDffav9qRb01QitL9do3ymLWqSi8LDvu6a2FRChelDOgEOJWDQqOAyi77SOrpCwZAZVoiMLg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=BKFarr7P; arc=none smtp.client-ip=198.47.19.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="Mmgj2EO0"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45CKnLup021461;
-	Wed, 12 Jun 2024 21:30:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=IvQCOazXZ/AL5r1TiWeTRP
-	39ZBZboAl6gzkFzp6H2II=; b=Mmgj2EO0UkYiXJvOEQq7NMKrtuJ75PgJtZWnEj
-	Se/1qv951rqc3LzFLQSvbc+qWL3SHMVd4XF2cbHiNVBYDWXrS3+hKhDC3RUOi+vu
-	dWl9BC4O6ZbmGd0rcXz1iai2ePtyjglBE5prI9UcMlz9dVR7peEOR4nh2pvak8ZF
-	1tO9g2sy1JhuXkj20/rU8yCH3PU3dEGshfoKWMcyoxcFK2yuJ0jw4Q0G8283kzf8
-	ZfmT+ZSR1YePN0wJ3e5zylXMu5szeNRQFkbrNAGb2FQH6QgB88Odgu89bW2N2dzZ
-	4G4DO2Tx6IG+4yDsNExVzPz5RFSt1rZEgbQ+xQSdnUfK26KA==
-Received: from nalasppmta05.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ype9153u0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 12 Jun 2024 21:30:16 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA05.qualcomm.com (8.17.1.19/8.17.1.19) with ESMTPS id 45CLUFbt015143
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 12 Jun 2024 21:30:15 GMT
-Received: from [169.254.0.1] (10.80.80.8) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Wed, 12 Jun
- 2024 14:30:14 -0700
-From: Jeff Johnson <quic_jjohnson@quicinc.com>
-Date: Wed, 12 Jun 2024 14:30:13 -0700
-Subject: [PATCH] interconnect: qcom: add missing MODULE_DESCRIPTION()
- macros
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="BKFarr7P"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 45CNHfSm000523;
+	Wed, 12 Jun 2024 18:17:41 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+	s=ti-com-17Q1; t=1718234261;
+	bh=URgkmHjG21+8HcgxUeOPH9cIZItkVgbPT4MMG7nYknU=;
+	h=From:Date:Subject:References:In-Reply-To:To:CC;
+	b=BKFarr7P9CjOphZENYKMINdVt/ZiylS4HRmgdAunbuy/tDRvihaMSZvBgK8r2KOPE
+	 NlUmHkzVTG0onNzMklr1PmdOsRXp4/dZDPW+Td+KbEDZu39g6PtYSy9tlhBKVMXzfF
+	 dDZ/tJVR55oTIduiHU+1Rh/lRbSXpgR00BkjgiOg=
+Received: from DFLE101.ent.ti.com (dfle101.ent.ti.com [10.64.6.22])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 45CNHe8x017773
+	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Wed, 12 Jun 2024 18:17:40 -0500
+Received: from DFLE108.ent.ti.com (10.64.6.29) by DFLE101.ent.ti.com
+ (10.64.6.22) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Wed, 12
+ Jun 2024 18:17:40 -0500
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE108.ent.ti.com
+ (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
+ Frontend Transport; Wed, 12 Jun 2024 18:17:40 -0500
+Received: from localhost (bb.dhcp.ti.com [128.247.81.12])
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 45CNHebo023165;
+	Wed, 12 Jun 2024 18:17:40 -0500
+From: Bryan Brattlof <bb@ti.com>
+Date: Wed, 12 Jun 2024 18:17:36 -0500
+Subject: [PATCH v2 3/5] dt-bindings: mfd: syscon: add TI's opp table
+ compatible
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -51,65 +53,64 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20240612-md-drivers-interconnect-qcom-v1-1-da0462d6301b@quicinc.com>
-X-B4-Tracking: v=1; b=H4sIAGUTamYC/x3MwQrCMAwA0F8ZORvYik7wV8RDl2YuYFNNtjEY+
- 3erx3d5OzibsMOt2cF4FZeiFd2pAZqiPhklVUNow7ntu4A5YTJZ2RxFZzYqqkwzfqhkpJGHSNf
- +koigFm/jUbZ/f39UD9EZB4tK0y99iS4b5uj1geP4AjIDTzqNAAAA
-To: Georgi Djakov <djakov@kernel.org>
-CC: <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>,
-        "Jeff
- Johnson" <quic_jjohnson@quicinc.com>
+Message-ID: <20240612-ti-opp-updates-v2-3-422b6747a254@ti.com>
+References: <20240612-ti-opp-updates-v2-0-422b6747a254@ti.com>
+In-Reply-To: <20240612-ti-opp-updates-v2-0-422b6747a254@ti.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar
+	<viresh.kumar@linaro.org>, Lee Jones <lee@kernel.org>,
+        Rob Herring
+	<robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+	<conor+dt@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Vignesh Raghavendra
+	<vigneshr@ti.com>,
+        Tero Kristo <kristo@kernel.org>
+CC: Vibhore Vardhan <vibhore@ti.com>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>, Bryan Brattlof <bb@ti.com>
 X-Mailer: b4 0.13.0
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: HAhboqsiavfmPmU6s1l8Y8y0xcHiRM5R
-X-Proofpoint-ORIG-GUID: HAhboqsiavfmPmU6s1l8Y8y0xcHiRM5R
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-06-12_10,2024-06-12_02,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0 mlxscore=0
- adultscore=0 priorityscore=1501 malwarescore=0 phishscore=0 bulkscore=0
- clxscore=1015 mlxlogscore=982 impostorscore=0 suspectscore=0 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2405170001
- definitions=main-2406120152
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1058; i=bb@ti.com;
+ h=from:subject:message-id; bh=5ZIzRsZmwLkhF+loYV2ldRFY5KvqeljcAs10mUbNVqc=;
+ b=owNCWmg5MUFZJlNZ1nwjXQAAZP////btV+PvS1uft+l7dbL3DrX3/e/ev39b//sd3r359e6wA
+ RswHamjEDQGg0ADEADQAAAABoABtRoyANA0NAaDQwmJoZMhoBk0aYE/U9UQANA0MgaBo00BoaDQ
+ yepo0DEBoaDQ0aPSADTQ0GanqDTJtI000NGjQ0NDJo00YQAcJ6RpiAyYjTQAA0yZDEZDTQANNAB
+ kwhpkDQMgxANDQGjQaZMgB6mmjE0AAAFAurNQKQCG8xkJEdEBNjkxaTFa92CNlKOzNiQRxIgElQ
+ esJfnQ+Le6EvSiQqJeypCNqenjI1tv9hs/YNr9gnG1RzdOdqHh2VLHiREsx6EUMLahFkeZADdS2
+ 1Fz+8Jbk07UO0zV93/QwYbig1XUUhSA+6Px0gD4JsAsxKmgqdIFJzom3eC2R1Hpi29tnb6PpSpx
+ pkYTdAnIrK/aRTyi00meoRpGJSryzfsK7pXvAhWoa5O3p1JlM2TI1aQYY9K9fGMkBqiUALmCgop
+ QgbkO7+8B6cayaFjqsjSwIh7jwpxwxcMlX2VQNjOTVpWoaouwWIlyIUtvcEFw+Z1gC0B+dXuaki
+ UoMcJqxIS+lwTnX4jmghpGbFOsBGq1YEeMv2eGYciEC7NZNMwjpl9JoW4FQFAQB5FWkxXWtyIfc
+ 6ATx/RC8A/xdyRThQkNZ8I10A==
+X-Developer-Key: i=bb@ti.com; a=openpgp;
+ fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-With ARCH=arm64, make allmodconfig && make W=1 C=1 reports:
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/interconnect/qcom/interconnect_qcom.o
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/interconnect/qcom/icc-rpmh.o
+The JTAG_USER_ID_USERCODE efuse address, which is located inside the
+WKUP_CTRL_MMR0 range holds information to identify the speed grades of
+various components on TI's K3 SoCs. Add a compatible to allow the
+cpufreq driver to obtain the data to limit the maximum frequency for the
+CPUs under Linux control.
 
-Add the missing invocations of the MODULE_DESCRIPTION() macro.
-
-Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
+Signed-off-by: Bryan Brattlof <bb@ti.com>
 ---
- drivers/interconnect/qcom/icc-common.c | 1 +
- drivers/interconnect/qcom/icc-rpmh.c   | 1 +
- 2 files changed, 2 insertions(+)
+ Documentation/devicetree/bindings/mfd/syscon.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/interconnect/qcom/icc-common.c b/drivers/interconnect/qcom/icc-common.c
-index 9b9ee113f172..9b8a9c69e0cb 100644
---- a/drivers/interconnect/qcom/icc-common.c
-+++ b/drivers/interconnect/qcom/icc-common.c
-@@ -35,4 +35,5 @@ struct icc_node_data *qcom_icc_xlate_extended(const struct of_phandle_args *spec
- }
- EXPORT_SYMBOL_GPL(qcom_icc_xlate_extended);
- 
-+MODULE_DESCRIPTION("Qualcomm interconnect common functions");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
-index c1aa265c1f4e..4c5aa342e013 100644
---- a/drivers/interconnect/qcom/icc-rpmh.c
-+++ b/drivers/interconnect/qcom/icc-rpmh.c
-@@ -262,4 +262,5 @@ void qcom_icc_rpmh_remove(struct platform_device *pdev)
- }
- EXPORT_SYMBOL_GPL(qcom_icc_rpmh_remove);
- 
-+MODULE_DESCRIPTION("Qualcomm RPMh interconnect driver");
- MODULE_LICENSE("GPL v2");
+diff --git a/Documentation/devicetree/bindings/mfd/syscon.yaml b/Documentation/devicetree/bindings/mfd/syscon.yaml
+index 7ed12a938baa3..ab1fcbe2148f7 100644
+--- a/Documentation/devicetree/bindings/mfd/syscon.yaml
++++ b/Documentation/devicetree/bindings/mfd/syscon.yaml
+@@ -88,6 +88,7 @@ properties:
+               - rockchip,rv1126-qos
+               - starfive,jh7100-sysmain
+               - ti,am62-usb-phy-ctrl
++              - ti,am62-opp-efuse-table
+               - ti,am62p-cpsw-mac-efuse
+               - ti,am654-dss-oldi-io-ctrl
+               - ti,am654-serdes-ctrl
 
----
-base-commit: 83a7eefedc9b56fe7bfeff13b6c7356688ffa670
-change-id: 20240612-md-drivers-interconnect-qcom-cfebac765dcc
+-- 
+2.45.2
 
