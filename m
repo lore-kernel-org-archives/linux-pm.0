@@ -1,18 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C56E9167D8C;
-	Wed, 12 Jun 2024 06:42:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A573F13BC05;
+	Wed, 12 Jun 2024 06:42:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718174545; cv=none; b=S9SLLHNY9TtpoZPA1RfNoW5w4lOJl0TvnlX2nxxHhSZbl8zZ1inrra29F+YY6h4Fwtng1i3s+ja2H1q88gCGUOU/yjC3xyyiqDoW/ce2ADhkPGGGm9hDkjejKuxMN3e82WhdvxEwoOQvxBlGD1gBXbp8sr2pVFDdGoTQPzpI6y8=
+	t=1718174557; cv=none; b=KyH4gzljmhKrQFaR7EfpUXL6DZo+A8fodsN10ReLkFMAhSfbwHGFf7aYycT/Rh00rKESHjrw9tigx2a9pPMLSjO50aKpjzySigCLQLQjdWPodkf7xNOffwFOEcS5uaD2VIeQKWaS1LEG+9C5imO05fCTKOyblqK0LoCHCMKjrT4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718174545; c=relaxed/simple;
-	bh=RcAPvdzHOGsOEcRiAfdTxAtZg7Z6FWjeH51tsxct3yY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=XkxBOiMej6a3Nj1uNMymo1xxH9fky3kY1zengstKt1dSZ44yvMFkwUHWfiepkHN1YSDLz+EKnlqPFB0KMTw5Dj/0Theb4D0nulhC3v5EsDOsSpnfonpMed7QiWaF6d9NPJOUkKNFjzEX1G+PaKA7Nv6ES5goq0zW2CjaifCF2u0=
+	s=arc-20240116; t=1718174557; c=relaxed/simple;
+	bh=XVpNvv7dutfr0NAL/LUAO2hwYx4PCPDqIKIqQ42xaXM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=cyL03mMu56dUwHt3vGwFiXlXREo/ZFuE4nCpfWXqkLPHVRqQ4JVFTPTX3EPzHnukdEtz6bG3BOOZ9dPITUmEPDc6slBH/Pns+v24N5zTmZ7q4loxkRbaFOwJNpSGwCd3ARsbKUXsYdpeQ9mKmfPrV6dqKzLOlEEsauV1bfYR024=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 268D9C32786;
-	Wed, 12 Jun 2024 06:42:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8747C32786;
+	Wed, 12 Jun 2024 06:42:34 +0000 (UTC)
 From: Huacai Chen <chenhuacai@loongson.cn>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>,
@@ -22,11 +23,14 @@ Cc: loongarch@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	Xuerui Wang <kernel@xen0n.name>,
 	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Huacai Chen <chenhuacai@loongson.cn>
-Subject: [PATCH 0/2] LoongArch: Add Loongson-3 CPUFreq driver support
-Date: Wed, 12 Jun 2024 14:42:03 +0800
-Message-ID: <20240612064205.2041548-1-chenhuacai@loongson.cn>
+	Huacai Chen <chenhuacai@loongson.cn>,
+	Binbin Zhou <zhoubinbin@loongson.cn>
+Subject: [PATCH 1/2] LoongArch: Add architectural preparation for CPUFreq
+Date: Wed, 12 Jun 2024 14:42:04 +0800
+Message-ID: <20240612064205.2041548-2-chenhuacai@loongson.cn>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240612064205.2041548-1-chenhuacai@loongson.cn>
+References: <20240612064205.2041548-1-chenhuacai@loongson.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,18 +39,78 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series add architectural preparation and CPUFreq driver for
-Loongson-3 (based on LoongArch).
+Add architectural preparation for CPUFreq driver, including: Kconfig,
+register definition and platform device registration.
 
 Some of LoongArch processors support DVFS, their IOCSR.FEATURES has
 IOCSRF_FREQSCALE set. And they has a micro-core in the package called
 SMC (System Management Controller) to scale frequency, voltage, etc.
 
-Huacai Chen(2):
- LoongArch: Add architectural preparation for CPUFreq.
- cpufreq: Add Loongson-3 CPUFreq driver support.
-
+Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
 Signed-off-by: Huacai Chen <chenhuacai@loongson.cn>
 ---
-2.27.0
+ arch/loongarch/Kconfig                 |  1 +
+ arch/loongarch/include/asm/loongarch.h |  3 +++
+ arch/loongarch/power/platform.c        | 15 +++++++++++++++
+ 3 files changed, 19 insertions(+)
+
+diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
+index e38139c576ee..dffa9c454123 100644
+--- a/arch/loongarch/Kconfig
++++ b/arch/loongarch/Kconfig
+@@ -696,6 +696,7 @@ config ARCH_HIBERNATION_POSSIBLE
+ 
+ source "kernel/power/Kconfig"
+ source "drivers/acpi/Kconfig"
++source "drivers/cpufreq/Kconfig"
+ 
+ endmenu
+ 
+diff --git a/arch/loongarch/include/asm/loongarch.h b/arch/loongarch/include/asm/loongarch.h
+index eb09adda54b7..7d89b2ecf2c2 100644
+--- a/arch/loongarch/include/asm/loongarch.h
++++ b/arch/loongarch/include/asm/loongarch.h
+@@ -1053,11 +1053,14 @@
+ #define LOONGARCH_IOCSR_NODECNT		0x408
+ 
+ #define LOONGARCH_IOCSR_MISC_FUNC	0x420
++#define  IOCSR_MISC_FUNC_SOFT_INT	BIT_ULL(10)
+ #define  IOCSR_MISC_FUNC_TIMER_RESET	BIT_ULL(21)
+ #define  IOCSR_MISC_FUNC_EXT_IOI_EN	BIT_ULL(48)
+ 
+ #define LOONGARCH_IOCSR_CPUTEMP		0x428
+ 
++#define LOONGARCH_IOCSR_SMCMBX		0x51c
++
+ /* PerCore CSR, only accessible by local cores */
+ #define LOONGARCH_IOCSR_IPI_STATUS	0x1000
+ #define LOONGARCH_IOCSR_IPI_EN		0x1004
+diff --git a/arch/loongarch/power/platform.c b/arch/loongarch/power/platform.c
+index 3ea8e07aa225..a19353f7d1b0 100644
+--- a/arch/loongarch/power/platform.c
++++ b/arch/loongarch/power/platform.c
+@@ -34,6 +34,21 @@ void enable_pci_wakeup(void)
+ 		acpi_write_bit_register(ACPI_BITREG_PCIEXP_WAKE_DISABLE, 0);
+ }
+ 
++static struct platform_device loongson3_cpufreq_device = {
++	.name = "loongson3_cpufreq",
++	.id = -1,
++};
++
++static int __init loongson_cpufreq_init(void)
++{
++	if (!cpu_has_scalefreq)
++		return -ENODEV;
++
++	return platform_device_register(&loongson3_cpufreq_device);
++}
++
++arch_initcall(loongson_cpufreq_init);
++
+ static int __init loongson3_acpi_suspend_init(void)
+ {
+ #ifdef CONFIG_ACPI
+-- 
+2.43.0
 
