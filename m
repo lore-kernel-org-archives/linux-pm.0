@@ -1,648 +1,400 @@
-Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03BB816E89F
-	for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2024 09:59:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA90016D9D7;
+	Wed, 12 Jun 2024 10:28:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718186384; cv=none; b=O+4+lnz915JL4g/nchMDtrNGVupzBrU1yUi7LaUlN9OPGNTyW0TK/YRGGWmAUa/SBY6/mEe5Qph39JlSDivP5IziegzyOrSYLDIAoJ/d28tCdM90Ims3g9xS82lwX3WxVZFls9lxGskbeOhWYjj+U3WkprXu52/pQhAkXD0d44k=
+	t=1718188120; cv=none; b=BFfYO7U7FmIOAaLP+xFJutnAuTksgg3FGIeIqfj2w3H7qha9/U3iGER4VDs3YmaocEYrt2EbfVilO7jYTIG4mWQv2kqOXAPnQD48Y2Q7lhmr1YIla8o7eY5hLHCQhJsR6jsiYDPyoJM4Afm3ywUlbzDqC9lVMCor0o6hnukkawk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718186384; c=relaxed/simple;
-	bh=kjiRR/aTqwtnPBdziJVOFsjsB2oelRJFCXGyR0bGHuo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Vty/UcaDESNlA3PTuE99NP4g3wOPMhCB1ox0uC+kK3PsINx4HofKV85+OdXWvRHzo+7eBiDzxUvCxnaz0zg0LVFA0Ur5K9CLUYAiK4I9yXCjTaepL5WnbBM/lpPs+TP35t9ifQJMVCKO/000nrsrbOIBZ20Up3Nl/VAVEiKbcOI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Ixh0K4/Q; arc=none smtp.client-ip=209.85.208.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1718188120; c=relaxed/simple;
+	bh=DqDmBfyPccLDacPbh+TeEIUHPb11wuDh/LGPb58lvC8=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hjhRH8gvmiSXQlVAFmcJWyTjx3NFBbbUXySFFYpl/d4UbLq+ZemmRRnXv41KuGN5JpN5QzRgp2jkKMYGDQnKBfVF/0zYfCa8DypIyd+ygRekhFvbomB+NSheWvwWI+3dadyi92P4/RwZY+sD0zaryAkB30FCfEfhH/S/+XsnfUk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=OOZo2BLi; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Ixh0K4/Q"
-Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-2eaae2a6dc1so129633781fa.0
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2024 02:59:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1718186378; x=1718791178; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=SGOHmSlS5KUbXp4q4upOjoea9Ddg/UJrl7ZqS3zOIXU=;
-        b=Ixh0K4/QcaEeA5f5nzUbcBmpfqNRNJJZfetUQaWCF438Bf5exj8co3B5Mi63weVagr
-         ttxU29plVpQkcCY8oDtFQc/lzM23qtIR6PZx+yjv/6LZZcG7ZOaF5Day3GAAGICZKVWI
-         teXn5hqN+NlK7TsiVEP8D/Htcmh0akXlRr3XIE3ZLuHCoNLfEVnUNTxkGTv90lv+cl23
-         5YMDzCiEe0XBhxFVVBckqhKQ6R0c8d3Dl4w0KmAh7Wyph510NCDZKmcAwvB06yoPSP1w
-         LVZzkT1YyjGTDbbI9JtqjVm5PeteDwpgS4My3lZsIOrUmKR+ReWYPeYSQijGhonLOmIs
-         QAqg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718186378; x=1718791178;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=SGOHmSlS5KUbXp4q4upOjoea9Ddg/UJrl7ZqS3zOIXU=;
-        b=WxAUXZbZ16lFi4FY+yUsuAbeTJe0/XgxHhNBXjvG2xFbK9DDdNK6KjWjPmLyb6W2VI
-         mA3qbzTgk7AsAnhyeWTy0e1i35wZ0OwoPgOAxRCcT3ccLm339CiC4iyWBoj35TGG9IX3
-         PeRYMBAEwGrO5MFPO+CoTNbK6PRQa3QNRhrZdYKeS1+ej3RigflDV3ah3DbCZRlxQ4H5
-         JbP+LiWzMsKlEt9fjjeJB27CK/eQ25Uc8lhcb0gwWzudYXGIG2Pka4SzRpGynwE3rZGY
-         nYVk2kFTUGSjLGEUKKDNBuLsNJ3k6z6UGtOhSc+bojwKgSUZ4HELqfU1pOY2BwzOUJdP
-         +c5A==
-X-Gm-Message-State: AOJu0YxK1uPoqOH2skt2EI+ZKH7n/uTRW/QiN0vdd9hfVEFBjwu1tvuG
-	sf72JXmYQstsFcrIi0Zi4NsrGtFbpw8nDZL1Ta1JLoZ6kQL1XcFYoZC9CV+5M0g=
-X-Google-Smtp-Source: AGHT+IEyaAKOfNn2XZMMDTmW5MmIM0+oDS+Ybim4M8nJJQBxQiNybCeP8Zi1AuWy3W43nGsj5K6vrw==
-X-Received: by 2002:ac2:4181:0:b0:52c:95d3:8f6a with SMTP id 2adb3069b0e04-52c9a3e23a1mr1039956e87.30.1718186377722;
-        Wed, 12 Jun 2024 02:59:37 -0700 (PDT)
-Received: from umbar.lan ([192.130.178.91])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-52c8907dae9sm1408095e87.129.2024.06.12.02.59.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Jun 2024 02:59:37 -0700 (PDT)
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date: Wed, 12 Jun 2024 12:59:35 +0300
-Subject: [PATCH v6 4/6] power: supply: lenovo_yoga_c630_battery: add Lenovo
- C630 driver
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="OOZo2BLi"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45C1ub3b009732;
+	Wed, 12 Jun 2024 10:28:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=madimlA9iBPfjtpX9TuxWdHY
+	1DKpi5ag8HsBR+wtnVY=; b=OOZo2BLiF9eeK4d6ZILTT9Mu0BgqvNGq86nkm32q
+	ONip/osxKpueMJD45jL/7FvbQ/HCWgGQ0CFg6p7rJOXooTi0yAE7+yM09ZIP+m94
+	tbL+AeFPmLUgHlRvbALIelclARi9wnhaS0U5bUJgVDed42ByGGx2T3Cs2LLVx2+p
+	ZqbYsKPeR/kAHqnIiUwECINF3aJeep7KWBDyUdE3nW182mtSRpWJM1gB9eM7247f
+	vT6xKKSnezaEoSS+X8Wy5VD6n7ITvGTPoDpU9cDZyjP2NsyEiok+aM8lvX30myA0
+	pOvkpU027Sesg88MLQdbEmGXJ9WqxjJwSWxGUk2OlCYcrA==
+Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ype913y2y-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Jun 2024 10:28:32 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA04.qualcomm.com (8.17.1.19/8.17.1.19) with ESMTPS id 45CASUTf000347
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Jun 2024 10:28:30 GMT
+Received: from hu-varada-blr.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Wed, 12 Jun 2024 03:28:25 -0700
+Date: Wed, 12 Jun 2024 15:58:21 +0530
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+To: Georgi Djakov <djakov@kernel.org>
+CC: Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Dmitry Baryshkov
+	<dmitry.baryshkov@linaro.org>,
+        <andersson@kernel.org>, <mturquette@baylibre.com>, <sboyd@kernel.org>,
+        <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
+        <quic_anusha@quicinc.com>, <linux-arm-msm@vger.kernel.org>,
+        <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v9 6/6] arm64: dts: qcom: ipq9574: Add icc provider
+ ability to gcc
+Message-ID: <Zml4RQ5R5s3mVMnI@hu-varada-blr.qualcomm.com>
+References: <27f4f3dd-9375-40cf-8c8f-1c4edf66e31b@linaro.org>
+ <ZjNdTmmXucjtRxJt@hu-varada-blr.qualcomm.com>
+ <c015b3a5-2213-4ebd-b960-d97ed1fe7062@kernel.org>
+ <ZjshR0ekcn0gxwOa@hu-varada-blr.qualcomm.com>
+ <CAA8EJpqENsojPQmCbma_nQLEZq8nK1fz1K0JdtvLd=kPrH_DBw@mail.gmail.com>
+ <1a08ef42-b52f-4c97-90d7-e7fdee7725b4@linaro.org>
+ <Zmgb+OjdBNw71sC1@hu-varada-blr.qualcomm.com>
+ <176137e5-6312-4d46-97b6-c4494bc1c61b@kernel.org>
+ <ZmlAdETV0+6Md8HC@hu-varada-blr.qualcomm.com>
+ <e24cfd23-6f77-46a0-b020-9cb3daef6930@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240612-yoga-ec-driver-v6-4-8e76ba060439@linaro.org>
-References: <20240612-yoga-ec-driver-v6-0-8e76ba060439@linaro.org>
-In-Reply-To: <20240612-yoga-ec-driver-v6-0-8e76ba060439@linaro.org>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
- Hans de Goede <hdegoede@redhat.com>, 
- =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
- Bryan O'Donoghue <bryan.odonoghue@linaro.org>, 
- Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Konrad Dybcio <konrad.dybcio@linaro.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
- linux-usb@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- Nikita Travkin <nikita@trvn.ru>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=16012;
- i=dmitry.baryshkov@linaro.org; h=from:subject:message-id;
- bh=kjiRR/aTqwtnPBdziJVOFsjsB2oelRJFCXGyR0bGHuo=;
- b=owEBbQGS/pANAwAKAYs8ij4CKSjVAcsmYgBmaXGFQqSRbsUdU2TDsx8qmRL9GxhDeb1cvaNox
- wLDPz8eBY+JATMEAAEKAB0WIQRMcISVXLJjVvC4lX+LPIo+Aiko1QUCZmlxhQAKCRCLPIo+Aiko
- 1ZMZB/9eZi/nE+lYTJ3qbkstk8yUHN8oEqcYCZS6r84tqgXutd0qdUfarWWfbn5iu+QRiydh2sx
- lT7YUGvND0QVmujBg1McMZ+ZgtoCfz4qnCWja6MJW0bcvnL6Q8xClfJCiiawGXKyUL9HXS2OuvN
- amjcurRQNkLJ+j+pxEbm/cpSewarW52P+hVNzlhH5GLIQC3Vbzij6Q0ECk29mtqvd+MwPVipagr
- l1jvBWgK5fasqMMO4+V151k3wGMCdsB9K4r3lJP3ILVsEYBEz9+/fh8LoIe5J/Stt63TmvAL2mE
- wzdZJHMGeXRqOdpotFq2fMu0p8uQlH0+DqpsMy3ECtmXEgtU
-X-Developer-Key: i=dmitry.baryshkov@linaro.org; a=openpgp;
- fpr=8F88381DD5C873E4AE487DA5199BF1243632046A
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <e24cfd23-6f77-46a0-b020-9cb3daef6930@kernel.org>
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: UJjWuV05zfhtyUYc1s0wJoZwO7b2A1aH
+X-Proofpoint-ORIG-GUID: UJjWuV05zfhtyUYc1s0wJoZwO7b2A1aH
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-06-12_06,2024-06-11_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0 mlxscore=0
+ adultscore=0 priorityscore=1501 malwarescore=0 phishscore=0 bulkscore=0
+ clxscore=1015 mlxlogscore=999 impostorscore=0 suspectscore=0 spamscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2405170001
+ definitions=main-2406120075
 
-On the Lenovo Yoga C630 WOS laptop the EC provides access to the adapter
-and battery status. Add the driver to read power supply status on the
-laptop.
+On Wed, Jun 12, 2024 at 11:48:17AM +0300, Georgi Djakov wrote:
+> On 12.06.24 9:30, Varadarajan Narayanan wrote:
+> > On Tue, Jun 11, 2024 at 02:29:48PM +0300, Georgi Djakov wrote:
+> > > On 11.06.24 12:42, Varadarajan Narayanan wrote:
+> > > > On Thu, Jun 06, 2024 at 04:06:01PM +0200, Konrad Dybcio wrote:
+> > > > > On 8.05.2024 10:10 AM, Dmitry Baryshkov wrote:
+> > > > > > On Wed, 8 May 2024 at 09:53, Varadarajan Narayanan
+> > > > > > <quic_varada@quicinc.com> wrote:
+> > > > > > >
+> > > > > > > On Fri, May 03, 2024 at 04:51:04PM +0300, Georgi Djakov wrote:
+> > > > > > > > Hi Varada,
+> > > > > > > >
+> > > > > > > > Thank you for your work on this!
+> > > > > > > >
+> > > > > > > > On 2.05.24 12:30, Varadarajan Narayanan wrote:
+> > > > > > > > > On Tue, Apr 30, 2024 at 12:05:29PM +0200, Konrad Dybcio wrote:
+> > > > > > > > > > On 25.04.2024 12:26 PM, Varadarajan Narayanan wrote:
+> > > > > > > > > > > On Tue, Apr 23, 2024 at 02:58:41PM +0200, Konrad Dybcio wrote:
+> > > > > > > > > > > >
+> > > > > > > > > > > >
+> > > > > > > > > > > > On 4/18/24 11:23, Varadarajan Narayanan wrote:
+> > > > > > > > > > > > > IPQ SoCs dont involve RPM in managing NoC related clocks and
+> > > > > > > > > > > > > there is no NoC scaling. Linux itself handles these clocks.
+> > > > > > > > > > > > > However, these should not be exposed as just clocks and align
+> > > > > > > > > > > > > with other Qualcomm SoCs that handle these clocks from a
+> > > > > > > > > > > > > interconnect provider.
+> > > > > > > > > > > > >
+> > > > > > > > > > > > > Hence include icc provider capability to the gcc node so that
+> > > > > > > > > > > > > peripherals can use the interconnect facility to enable these
+> > > > > > > > > > > > > clocks.
+> > > > > > > > > > > > >
+> > > > > > > > > > > > > Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> > > > > > > > > > > > > Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+> > > > > > > > > > > > > ---
+> > > > > > > > > > > >
+> > > > > > > > > > > > If this is all you do to enable interconnect (which is not the case,
+> > > > > > > > > > > > as this patch only satisfies the bindings checker, the meaningful
+> > > > > > > > > > > > change happens in the previous patch) and nothing explodes, this is
+> > > > > > > > > > > > an apparent sign of your driver doing nothing.
+> > > > > > > > > > >
+> > > > > > > > > > > It appears to do nothing because, we are just enabling the clock
+> > > > > > > > > > > provider to also act as interconnect provider. Only when the
+> > > > > > > > > > > consumers are enabled with interconnect usage, this will create
+> > > > > > > > > > > paths and turn on the relevant NOC clocks.
+> > > > > > > > > >
+> > > > > > > > > > No, with sync_state it actually does "something" (sets the interconnect
+> > > > > > > > > > path bandwidths to zero). And *this* patch does nothing functionally,
+> > > > > > > > > > it only makes the dt checker happy.
+> > > > > > > > >
+> > > > > > > > > I understand.
+> > > > > > > > >
+> > > > > > > > > > > This interconnect will be used by the PCIe and NSS blocks. When
+> > > > > > > > > > > those patches were posted earlier, they were put on hold until
+> > > > > > > > > > > interconnect driver is available.
+> > > > > > > > > > >
+> > > > > > > > > > > Once this patch gets in, PCIe for example will make use of icc.
+> > > > > > > > > > > Please refer to https://lore.kernel.org/linux-arm-msm/20230519090219.15925-5-quic_devipriy@quicinc.com/.
+> > > > > > > > > > >
+> > > > > > > > > > > The 'pcieX' nodes will include the following entries.
+> > > > > > > > > > >
+> > > > > > > > > > >           interconnects = <&gcc MASTER_ANOC_PCIE0 &gcc SLAVE_ANOC_PCIE0>,
+> > > > > > > > > > >                           <&gcc MASTER_SNOC_PCIE0 &gcc SLAVE_SNOC_PCIE0>;
+> > > > > > > > > > >           interconnect-names = "pcie-mem", "cpu-pcie";
+> > > > > > > > > >
+> > > > > > > > > > Okay. What about USB that's already enabled? And BIMC/MEMNOC?
+> > > > > > > > >
+> > > > > > > > > For USB, the GCC_ANOC_USB_AXI_CLK is enabled as part of the iface
+> > > > > > > > > clock. Hence, interconnect is not specified there.
+> > > > > > > > >
+> > > > > > > > > MEMNOC to System NOC interfaces seem to be enabled automatically.
+> > > > > > > > > Software doesn't have to turn on or program specific clocks.
+> > > > > > > > >
+> > > > > > > > > > > > The expected reaction to "enabling interconnect" without defining the
+> > > > > > > > > > > > required paths for your hardware would be a crash-on-sync_state, as all
+> > > > > > > > > > > > unused (from Linux's POV) resources ought to be shut down.
+> > > > > > > > > > > >
+> > > > > > > > > > > > Because you lack sync_state, the interconnects silently retain the state
+> > > > > > > > > > > > that they were left in (which is not deterministic), and that's precisely
+> > > > > > > > > > > > what we want to avoid.
+> > > > > > > > > > >
+> > > > > > > > > > > I tried to set 'sync_state' to icc_sync_state to be invoked and
+> > > > > > > > > > > didn't see any crash.
+> > > > > > > > > >
+> > > > > > > > > > Have you confirmed that the registers are actually written to, and with
+> > > > > > > > > > correct values?
+> > > > > > > > >
+> > > > > > > > > I tried the following combinations:-
+> > > > > > > > >
+> > > > > > > > > 1. Top of tree linux-next + This patch set
+> > > > > > > > >
+> > > > > > > > >       * icc_sync_state called
+> > > > > > > > >       * No crash or hang observed
+> > > > > > > > >       * From /sys/kernel/debug/clk/clk_summary can see the
+> > > > > > > > >         relevant clocks are set to the expected rates (compared
+> > > > > > > > >         with downstream kernel)
+> > > > > > > > >
+> > > > > > > > > 2. Top of tree linux-next + This patch set + PCIe enablement
+> > > > > > > > >
+> > > > > > > > >       * icc_sync_state NOT called
+> > > > > > > >
+> > > > > > > > If sync_state() is not being called, that usually means that there
+> > > > > > > > are interconnect consumers that haven't probed successfully (PCIe?)
+> > > > > > > > or their dependencies. That can be checked in /sys/class/devlink/.../status
+> > > > > > > > But i am not sure how this works for PCI devices however.
+> > > > > > > >
+> > > > > > > > You can also manually force a call to sync_state by writing "1" to
+> > > > > > > > the interconnect provider's /sys/devices/.../state_synced
+> > > > > > > >
+> > > > > > > > Anyway, the question is if PCIe and NSS work without this driver?
+> > > > > > >
+> > > > > > > No.
+> > > > > > >
+> > > > > > > > If they work, is this because the clocks are turned on by default
+> > > > > > > > or by the boot loader?
+> > > > > > >
+> > > > > > > Initially, the PCIe/NSS driver enabled these clocks directly
+> > > > > > > by having them in their DT nodes itself. Based on community
+> > > > > > > feedback this was removed and after that PCIe/NSS did not work.
+> > > > > > >
+> > > > > > > > Then if an interconnect path (clock) gets disabled either when we
+> > > > > > > > reach a sync_state (with no bandwidth requests) or we explicitly
+> > > > > > > > call icc_set_bw() with 0 bandwidth values, i would expect that
+> > > > > > > > these PCIe and NSS devices would not function anymore (it might
+> > > > > > > > save some power etc) and if this is unexpected we should see a
+> > > > > > > > a crash or hang...
+> > > > > > > >
+> > > > > > > > Can you confirm this?
+> > > > > > >
+> > > > > > > With ICC enabled, icc_set_bw (with non-zero values) is called by
+> > > > > > > PCIe and NSS drivers. Haven't checked with icc_set_bw with zero
+> > > > > > > values.
+> > > > > > >
+> > > > > > > PCIe:   qcom_pcie_probe -> qcom_pcie_icc_init -> icc_set_bw
+> > > > > > > NSS:    ppe_icc_init -> icc_set_bw
+> > > > > > >
+> > > > > > > I believe sync_state is not getting called since there is a
+> > > > > > > non-zero set bandwidth request. Which seems to be aligned with
+> > > > > > > your explanation.
+> > > > > >
+> > > > > > This doesn't look correct. sync_state is being called once all
+> > > > > > consumers are probed. It doesn't matter whether those consumers have
+> > > > > > non-zero bandwidth requests or no.
+> > > > >
+> > > > > /sys/kernel/debug/devices_deferred may have some useful info, too
+> > > >
+> > > > /sys/kernel/debug/devices_deferred seems to be empty
+> > > >
+> > > > 	# mount | grep -w debugfs
+> > > > 	none on /sys/kernel/debug type debugfs (rw,relatime)
+> > > >
+> > > > 	# cat /sys/kernel/debug/devices_deferred  | wc -l
+> > > > 	0
+> > > >
+> > > > Added the following print to icc_sync_state,
+> > > >
+> > > > 	@@ -1096,6 +1096,7 @@ void icc_sync_state(struct device *dev)
+> > > > 		struct icc_node *n;
+> > > > 		static int count;
+> > > >
+> > > > 	+	printk("--> %s: %d %d\n", __func__, providers_count, count);
+> > > > 		count++;
+> > > >
+> > > > 		if (count < providers_count)
+> > > > 			return;
+> > > >
+> > > > icc_sync_state seems to be called once,
+> > > >
+> > > > 	# dmesg | grep icc_sync_state
+> > > > 	[   12.260544] --> icc_sync_state: 2 0
+> > > >
+> > > > Since 'providers_count' is greated than 'count' icc_sync_state
+> > > > seems to return before doing anything.
+> > >
+> > > Is there also another interconnect provider on this platform, other
+> > > than the gcc? Check for DT nodes that have the #interconnect-cells
+> > > property.
+> >
+> > Yes there are two interconnect providers
+> >
+> > 	# find /proc/device-tree/ -name '#interconnect-cells'
+> > 	/proc/device-tree/soc@0/clock-controller@1800000/#interconnect-cells
+> > 	/proc/device-tree/soc@0/clock-controller@39b00000/#interconnect-cells
+> >
+> > 	Note:	gcc => clock-controller@1800000
+> > 		nsscc => clock-controller@39b00000
+> >
+> > > Are all providers probing successfully?
+> >
+> > Yes. I printed the return value of their probe functions...
+> >
+> > 	# dmesg | grep probe:
+> > 	[    0.037815] --> gcc_ipq9574_probe: return 0
+> > 	[    2.078215] --> nss_cc_ipq9574_probe: return 0
+> >
+> >
+> > > All providers must probe, as there might be paths that cross multiple
+> > > providers and we can't get into sync-state with a topology that is
+> > > only partially initialized.
+> >
+> > It does look like both the providers' probe has completed. And,
+> > there aren't any paths that cross providers
+> >
+> > 	interconnects = <&gcc MASTER_ANOC_PCIE1 &gcc SLAVE_ANOC_PCIE1>,
+> > 			<&gcc MASTER_SNOC_PCIE1 &gcc SLAVE_SNOC_PCIE1>;
+> >
+> > 	interconnects = <&gcc MASTER_ANOC_PCIE3 &gcc SLAVE_ANOC_PCIE3>,
+> > 			<&gcc MASTER_SNOC_PCIE3 &gcc SLAVE_SNOC_PCIE3>;
+> >
+> > 	interconnects = <&gcc MASTER_ANOC_PCIE2 &gcc SLAVE_ANOC_PCIE2>,
+> > 			<&gcc MASTER_SNOC_PCIE2 &gcc SLAVE_SNOC_PCIE2>;
+> >
+> > 	interconnects = <&gcc MASTER_ANOC_PCIE0 &gcc SLAVE_ANOC_PCIE0>,
+> > 			<&gcc MASTER_SNOC_PCIE0 &gcc SLAVE_SNOC_PCIE0>;
+> >
+> > 	interconnects = <&nsscc MASTER_NSSNOC_PPE &nsscc SLAVE_NSSNOC_PPE>,
+> > 			<&nsscc MASTER_NSSNOC_PPE_CFG &nsscc SLAVE_NSSNOC_PPE_CFG>,
+> > 			<&gcc MASTER_NSSNOC_QOSGEN_REF &gcc SLAVE_NSSNOC_QOSGEN_REF>,
+> > 			<&gcc MASTER_NSSNOC_TIMEOUT_REF &gcc SLAVE_NSSNOC_TIMEOUT_REF>,
+> > 			<&gcc MASTER_MEM_NOC_NSSNOC &gcc SLAVE_MEM_NOC_NSSNOC>,
+> > 			<&gcc MASTER_NSSNOC_MEMNOC &gcc SLAVE_NSSNOC_MEMNOC>,
+> > 			<&gcc MASTER_NSSNOC_MEM_NOC_1 &gcc SLAVE_NSSNOC_MEM_NOC_1>;
+>
+> Are the above consumers also probing successfully? Especially the one with
+> the nsscc paths? Is nss_cc_ipq9574 also using icc_sync_state? Sync state
+> will be called when all consumers of the specific provider are probed.
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
----
- drivers/power/supply/Kconfig                    |   9 +
- drivers/power/supply/Makefile                   |   1 +
- drivers/power/supply/lenovo_yoga_c630_battery.c | 500 ++++++++++++++++++++++++
- 3 files changed, 510 insertions(+)
+nsscc_ipq9574 was not using icc_sync_state. After adding that, I
+can see the following messages printed from icc_sync_state. I
+also added a print to confirm if 'p->set(n, n);' is called.
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 3e31375491d5..55ab8e90747d 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -167,6 +167,15 @@ config BATTERY_LEGO_EV3
- 	help
- 	  Say Y here to enable support for the LEGO MINDSTORMS EV3 battery.
- 
-+config BATTERY_LENOVO_YOGA_C630
-+	tristate "Lenovo Yoga C630 battery"
-+	depends on OF && EC_LENOVO_YOGA_C630
-+	help
-+	  This driver enables battery support on the Lenovo Yoga C630 laptop.
-+
-+	  To compile the driver as a module, choose M here: the module will be
-+	  called lenovo_yoga_c630_battery.
-+
- config BATTERY_PMU
- 	tristate "Apple PMU battery"
- 	depends on PPC32 && ADB_PMU
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 58b567278034..8ebbdcf92dac 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -32,6 +32,7 @@ obj-$(CONFIG_BATTERY_DS2782)	+= ds2782_battery.o
- obj-$(CONFIG_BATTERY_GAUGE_LTC2941)	+= ltc2941-battery-gauge.o
- obj-$(CONFIG_BATTERY_GOLDFISH)	+= goldfish_battery.o
- obj-$(CONFIG_BATTERY_LEGO_EV3)	+= lego_ev3_battery.o
-+obj-$(CONFIG_BATTERY_LENOVO_YOGA_C630) += lenovo_yoga_c630_battery.o
- obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
- obj-$(CONFIG_BATTERY_QCOM_BATTMGR)	+= qcom_battmgr.o
- obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
-diff --git a/drivers/power/supply/lenovo_yoga_c630_battery.c b/drivers/power/supply/lenovo_yoga_c630_battery.c
-new file mode 100644
-index 000000000000..0013994a22a0
---- /dev/null
-+++ b/drivers/power/supply/lenovo_yoga_c630_battery.c
-@@ -0,0 +1,500 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) 2022-2024, Linaro Ltd
-+ * Authors:
-+ *    Bjorn Andersson
-+ *    Dmitry Baryshkov
-+ */
-+#include <linux/auxiliary_bus.h>
-+#include <linux/bits.h>
-+#include <linux/delay.h>
-+#include <linux/jiffies.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/notifier.h>
-+#include <linux/power_supply.h>
-+#include <linux/platform_data/lenovo-yoga-c630.h>
-+
-+struct yoga_c630_psy {
-+	struct yoga_c630_ec *ec;
-+	struct device *dev;
-+	struct fwnode_handle *fwnode;
-+	struct notifier_block nb;
-+
-+	/* guards all battery properties and registration of power supplies */
-+	struct mutex lock;
-+
-+	struct power_supply *adp_psy;
-+	struct power_supply *bat_psy;
-+
-+	unsigned long last_status_update;
-+
-+	bool adapter_online;
-+
-+	bool unit_mA;
-+
-+	bool bat_present;
-+	unsigned int bat_status;
-+	unsigned int design_capacity;
-+	unsigned int design_voltage;
-+	unsigned int full_charge_capacity;
-+
-+	unsigned int capacity_now;
-+	unsigned int voltage_now;
-+
-+	int current_now;
-+	int rate_now;
-+};
-+
-+#define LENOVO_EC_CACHE_TIME		(10 * HZ)
-+
-+#define LENOVO_EC_ADPT_STATUS		0xa3
-+#define LENOVO_EC_ADPT_STATUS_PRESENT		BIT(7)
-+#define LENOVO_EC_BAT_ATTRIBUTES	0xc0
-+#define LENOVO_EC_BAT_ATTRIBUTES_UNIT_IS_MA	BIT(1)
-+#define LENOVO_EC_BAT_STATUS		0xc1
-+#define LENOVO_EC_BAT_STATUS_DISCHARGING	BIT(0)
-+#define LENOVO_EC_BAT_STATUS_CHARGING		BIT(1)
-+#define LENOVO_EC_BAT_REMAIN_CAPACITY	0xc2
-+#define LENOVO_EC_BAT_VOLTAGE		0xc6
-+#define LENOVO_EC_BAT_DESIGN_VOLTAGE	0xc8
-+#define LENOVO_EC_BAT_DESIGN_CAPACITY	0xca
-+#define LENOVO_EC_BAT_FULL_CAPACITY	0xcc
-+#define LENOVO_EC_BAT_CURRENT		0xd2
-+#define LENOVO_EC_BAT_FULL_FACTORY	0xd6
-+#define LENOVO_EC_BAT_PRESENT		0xda
-+#define LENOVO_EC_BAT_PRESENT_IS_PRESENT	BIT(0)
-+#define LENOVO_EC_BAT_FULL_REGISTER	0xdb
-+#define LENOVO_EC_BAT_FULL_REGISTER_IS_FACTORY	BIT(0)
-+
-+/* the mutex should already be locked */
-+static int yoga_c630_psy_update_bat_info(struct yoga_c630_psy *ecbat)
-+{
-+	struct yoga_c630_ec *ec = ecbat->ec;
-+	int val;
-+
-+	val = yoga_c630_ec_read8(ec, LENOVO_EC_BAT_PRESENT);
-+	if (val < 0)
-+		return val;
-+	ecbat->bat_present = !!(val & LENOVO_EC_BAT_PRESENT_IS_PRESENT);
-+	if (!ecbat->bat_present)
-+		return val;
-+
-+	val = yoga_c630_ec_read8(ec, LENOVO_EC_BAT_ATTRIBUTES);
-+	if (val < 0)
-+		return val;
-+	ecbat->unit_mA = val & LENOVO_EC_BAT_ATTRIBUTES_UNIT_IS_MA;
-+
-+	val = yoga_c630_ec_read16(ec, LENOVO_EC_BAT_DESIGN_CAPACITY);
-+	if (val < 0)
-+		return val;
-+	ecbat->design_capacity = val * 1000;
-+
-+	/*
-+	 * DSDT has delays after most of EC reads in these methods.
-+	 * Having no documentation for the EC we have to follow and sleep here.
-+	 */
-+	msleep(50);
-+
-+	val = yoga_c630_ec_read16(ec, LENOVO_EC_BAT_DESIGN_VOLTAGE);
-+	if (val < 0)
-+		return val;
-+	ecbat->design_voltage = val;
-+
-+	msleep(50);
-+
-+	val = yoga_c630_ec_read8(ec, LENOVO_EC_BAT_FULL_REGISTER);
-+	if (val < 0)
-+		return val;
-+	val = yoga_c630_ec_read16(ec,
-+				  val & LENOVO_EC_BAT_FULL_REGISTER_IS_FACTORY ?
-+				  LENOVO_EC_BAT_FULL_FACTORY :
-+				  LENOVO_EC_BAT_FULL_CAPACITY);
-+	if (val < 0)
-+		return val;
-+
-+	ecbat->full_charge_capacity = val * 1000;
-+
-+	if (!ecbat->unit_mA) {
-+		ecbat->design_capacity *= 10;
-+		ecbat->full_charge_capacity *= 10;
-+	}
-+
-+	return 0;
-+}
-+
-+static int yoga_c630_psy_maybe_update_bat_status(struct yoga_c630_psy *ecbat)
-+{
-+	struct yoga_c630_ec *ec = ecbat->ec;
-+	int current_mA;
-+	int val;
-+
-+	scoped_guard(mutex, &ecbat->lock) {
-+		if (time_before(jiffies, ecbat->last_status_update + LENOVO_EC_CACHE_TIME))
-+			return 0;
-+
-+		val = yoga_c630_ec_read8(ec, LENOVO_EC_BAT_STATUS);
-+		if (val < 0)
-+			return val;
-+		ecbat->bat_status = val;
-+
-+		msleep(50);
-+
-+		val = yoga_c630_ec_read16(ec, LENOVO_EC_BAT_REMAIN_CAPACITY);
-+		if (val < 0)
-+			return val;
-+		ecbat->capacity_now = val * 1000;
-+
-+		msleep(50);
-+
-+		val = yoga_c630_ec_read16(ec, LENOVO_EC_BAT_VOLTAGE);
-+		if (val < 0)
-+			return val;
-+		ecbat->voltage_now = val * 1000;
-+
-+		msleep(50);
-+
-+		val = yoga_c630_ec_read16(ec, LENOVO_EC_BAT_CURRENT);
-+		if (val < 0)
-+			return val;
-+		current_mA = sign_extend32(val, 15);
-+		ecbat->current_now = current_mA * 1000;
-+		ecbat->rate_now = current_mA * (ecbat->voltage_now / 1000);
-+
-+		msleep(50);
-+
-+		if (!ecbat->unit_mA)
-+			ecbat->capacity_now *= 10;
-+
-+		ecbat->last_status_update = jiffies;
-+	}
-+
-+	return 0;
-+}
-+
-+static int yoga_c630_psy_update_adapter_status(struct yoga_c630_psy *ecbat)
-+{
-+	struct yoga_c630_ec *ec = ecbat->ec;
-+	int val;
-+
-+	scoped_guard(mutex, &ecbat->lock) {
-+		val = yoga_c630_ec_read8(ec, LENOVO_EC_ADPT_STATUS);
-+		if (val < 0)
-+			return val;
-+
-+		ecbat->adapter_online = !!(val & LENOVO_EC_ADPT_STATUS_PRESENT);
-+	}
-+
-+	return 0;
-+}
-+
-+static bool yoga_c630_psy_is_charged(struct yoga_c630_psy *ecbat)
-+{
-+	if (ecbat->bat_status != 0)
-+		return false;
-+
-+	if (ecbat->full_charge_capacity <= ecbat->capacity_now)
-+		return true;
-+
-+	if (ecbat->design_capacity <= ecbat->capacity_now)
-+		return true;
-+
-+	return false;
-+}
-+
-+static int yoga_c630_psy_bat_get_property(struct power_supply *psy,
-+					 enum power_supply_property psp,
-+					 union power_supply_propval *val)
-+{
-+	struct yoga_c630_psy *ecbat = power_supply_get_drvdata(psy);
-+	int rc = 0;
-+
-+	if (!ecbat->bat_present && psp != POWER_SUPPLY_PROP_PRESENT)
-+		return -ENODEV;
-+
-+	rc = yoga_c630_psy_maybe_update_bat_status(ecbat);
-+	if (rc)
-+		return rc;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		if (ecbat->bat_status & LENOVO_EC_BAT_STATUS_DISCHARGING)
-+			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
-+		else if (ecbat->bat_status & LENOVO_EC_BAT_STATUS_CHARGING)
-+			val->intval = POWER_SUPPLY_STATUS_CHARGING;
-+		else if (yoga_c630_psy_is_charged(ecbat))
-+			val->intval = POWER_SUPPLY_STATUS_FULL;
-+		else
-+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval = ecbat->bat_present;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-+		val->intval = ecbat->design_voltage;
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
-+		val->intval = ecbat->design_capacity;
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL:
-+	case POWER_SUPPLY_PROP_ENERGY_FULL:
-+		val->intval = ecbat->full_charge_capacity;
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_NOW:
-+	case POWER_SUPPLY_PROP_ENERGY_NOW:
-+		val->intval = ecbat->capacity_now;
-+		break;
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		val->intval = ecbat->current_now;
-+		break;
-+	case POWER_SUPPLY_PROP_POWER_NOW:
-+		val->intval = ecbat->rate_now;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		val->intval = ecbat->voltage_now;
-+		break;
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
-+		break;
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		val->strval = "PABAS0241231";
-+		break;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval = "Compal";
-+		break;
-+	case POWER_SUPPLY_PROP_SCOPE:
-+		val->intval = POWER_SUPPLY_SCOPE_SYSTEM;
-+		break;
-+	default:
-+		rc = -EINVAL;
-+		break;
-+	}
-+
-+	return rc;
-+}
-+
-+static enum power_supply_property yoga_c630_psy_bat_mA_properties[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CHARGE_FULL,
-+	POWER_SUPPLY_PROP_CHARGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_POWER_NOW,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_TECHNOLOGY,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_SCOPE,
-+};
-+
-+static enum power_supply_property yoga_c630_psy_bat_mWh_properties[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
-+	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_ENERGY_FULL,
-+	POWER_SUPPLY_PROP_ENERGY_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_POWER_NOW,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_TECHNOLOGY,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_SCOPE,
-+};
-+
-+static const struct power_supply_desc yoga_c630_psy_bat_psy_desc_mA = {
-+	.name = "yoga-c630-battery",
-+	.type = POWER_SUPPLY_TYPE_BATTERY,
-+	.properties = yoga_c630_psy_bat_mA_properties,
-+	.num_properties = ARRAY_SIZE(yoga_c630_psy_bat_mA_properties),
-+	.get_property = yoga_c630_psy_bat_get_property,
-+};
-+
-+static const struct power_supply_desc yoga_c630_psy_bat_psy_desc_mWh = {
-+	.name = "yoga-c630-battery",
-+	.type = POWER_SUPPLY_TYPE_BATTERY,
-+	.properties = yoga_c630_psy_bat_mWh_properties,
-+	.num_properties = ARRAY_SIZE(yoga_c630_psy_bat_mWh_properties),
-+	.get_property = yoga_c630_psy_bat_get_property,
-+};
-+
-+static int yoga_c630_psy_adpt_get_property(struct power_supply *psy,
-+					  enum power_supply_property psp,
-+					  union power_supply_propval *val)
-+{
-+	struct yoga_c630_psy *ecbat = power_supply_get_drvdata(psy);
-+	int ret = 0;
-+
-+	ret = yoga_c630_psy_update_adapter_status(ecbat);
-+	if (ret < 0)
-+		return ret;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval = ecbat->adapter_online;
-+		break;
-+	case POWER_SUPPLY_PROP_USB_TYPE:
-+		val->intval = POWER_SUPPLY_USB_TYPE_C;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static enum power_supply_property yoga_c630_psy_adpt_properties[] = {
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_USB_TYPE,
-+};
-+
-+static const enum power_supply_usb_type yoga_c630_psy_adpt_usb_type[] = {
-+	POWER_SUPPLY_USB_TYPE_C,
-+};
-+
-+static const struct power_supply_desc yoga_c630_psy_adpt_psy_desc = {
-+	.name = "yoga-c630-adapter",
-+	.type = POWER_SUPPLY_TYPE_USB,
-+	.usb_types = yoga_c630_psy_adpt_usb_type,
-+	.num_usb_types = ARRAY_SIZE(yoga_c630_psy_adpt_usb_type),
-+	.properties = yoga_c630_psy_adpt_properties,
-+	.num_properties = ARRAY_SIZE(yoga_c630_psy_adpt_properties),
-+	.get_property = yoga_c630_psy_adpt_get_property,
-+};
-+
-+static int yoga_c630_psy_register_bat_psy(struct yoga_c630_psy *ecbat)
-+{
-+	struct power_supply_config bat_cfg = {};
-+
-+	bat_cfg.drv_data = ecbat;
-+	bat_cfg.fwnode = ecbat->fwnode;
-+	ecbat->bat_psy = power_supply_register_no_ws(ecbat->dev,
-+						     ecbat->unit_mA ?
-+						     &yoga_c630_psy_bat_psy_desc_mA :
-+						     &yoga_c630_psy_bat_psy_desc_mWh,
-+						     &bat_cfg);
-+	if (IS_ERR(ecbat->bat_psy)) {
-+		dev_err(ecbat->dev, "failed to register battery supply\n");
-+		return PTR_ERR(ecbat->bat_psy);
-+	}
-+
-+	return 0;
-+}
-+
-+static void yoga_c630_ec_refresh_bat_info(struct yoga_c630_psy *ecbat)
-+{
-+	bool current_unit;
-+
-+	scoped_guard(mutex, &ecbat->lock) {
-+		current_unit = ecbat->unit_mA;
-+
-+		yoga_c630_psy_update_bat_info(ecbat);
-+
-+		if (current_unit != ecbat->unit_mA) {
-+			power_supply_unregister(ecbat->bat_psy);
-+			yoga_c630_psy_register_bat_psy(ecbat);
-+		}
-+	}
-+}
-+
-+static int yoga_c630_psy_notify(struct notifier_block *nb,
-+				unsigned long action, void *data)
-+{
-+	struct yoga_c630_psy *ecbat = container_of(nb, struct yoga_c630_psy, nb);
-+
-+	switch (action) {
-+	case LENOVO_EC_EVENT_BAT_INFO:
-+		yoga_c630_ec_refresh_bat_info(ecbat);
-+		break;
-+	case LENOVO_EC_EVENT_BAT_ADPT_STATUS:
-+		power_supply_changed(ecbat->adp_psy);
-+		fallthrough;
-+	case LENOVO_EC_EVENT_BAT_STATUS:
-+		power_supply_changed(ecbat->bat_psy);
-+		break;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static int yoga_c630_psy_probe(struct auxiliary_device *adev,
-+				   const struct auxiliary_device_id *id)
-+{
-+	struct yoga_c630_ec *ec = adev->dev.platform_data;
-+	struct power_supply_config adp_cfg = {};
-+	struct device *dev = &adev->dev;
-+	struct yoga_c630_psy *ecbat;
-+	int ret;
-+
-+	ecbat = devm_kzalloc(&adev->dev, sizeof(*ecbat), GFP_KERNEL);
-+	if (!ecbat)
-+		return -ENOMEM;
-+
-+	ecbat->ec = ec;
-+	ecbat->dev = dev;
-+	mutex_init(&ecbat->lock);
-+	ecbat->fwnode = adev->dev.parent->fwnode;
-+	ecbat->nb.notifier_call = yoga_c630_psy_notify;
-+
-+	auxiliary_set_drvdata(adev, ecbat);
-+
-+	adp_cfg.drv_data = ecbat;
-+	adp_cfg.fwnode = ecbat->fwnode;
-+	adp_cfg.supplied_to = (char **)&yoga_c630_psy_bat_psy_desc_mA.name;
-+	adp_cfg.num_supplicants = 1;
-+	ecbat->adp_psy = devm_power_supply_register_no_ws(dev, &yoga_c630_psy_adpt_psy_desc, &adp_cfg);
-+	if (IS_ERR(ecbat->adp_psy)) {
-+		dev_err(dev, "failed to register AC adapter supply\n");
-+		return PTR_ERR(ecbat->adp_psy);
-+	}
-+
-+	scoped_guard(mutex, &ecbat->lock) {
-+		ret = yoga_c630_psy_update_bat_info(ecbat);
-+		if (ret)
-+			goto err_unreg_bat;
-+
-+		ret = yoga_c630_psy_register_bat_psy(ecbat);
-+		if (ret)
-+			goto err_unreg_bat;
-+	}
-+
-+	ret = yoga_c630_ec_register_notify(ecbat->ec, &ecbat->nb);
-+	if (ret)
-+		goto err_unreg_bat;
-+
-+	return 0;
-+
-+err_unreg_bat:
-+	power_supply_unregister(ecbat->bat_psy);
-+	return ret;
-+}
-+
-+static void yoga_c630_psy_remove(struct auxiliary_device *adev)
-+{
-+	struct yoga_c630_psy *ecbat = auxiliary_get_drvdata(adev);
-+
-+	yoga_c630_ec_unregister_notify(ecbat->ec, &ecbat->nb);
-+	power_supply_unregister(ecbat->bat_psy);
-+}
-+
-+static const struct auxiliary_device_id yoga_c630_psy_id_table[] = {
-+	{ .name = YOGA_C630_MOD_NAME "." YOGA_C630_DEV_PSY, },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(auxiliary, yoga_c630_psy_id_table);
-+
-+static struct auxiliary_driver yoga_c630_psy_driver = {
-+	.name = YOGA_C630_DEV_PSY,
-+	.id_table = yoga_c630_psy_id_table,
-+	.probe = yoga_c630_psy_probe,
-+	.remove = yoga_c630_psy_remove,
-+};
-+
-+module_auxiliary_driver(yoga_c630_psy_driver);
-+
-+MODULE_DESCRIPTION("Lenovo Yoga C630 psy");
-+MODULE_LICENSE("GPL");
+	[   12.260138] --> icc_sync_state: 2 2
+--->	[   12.260166] qcom,gcc-ipq9574 1800000.clock-controller: interconnect provider is in synced state
+	[   12.262429] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_pcie0_1lane_m_clk_master)
+	[   12.271206] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_pcie0_1lane_m_clk_slave)
+	[   12.281225] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_pcie0_1lane_s_clk_master)
+	[   12.291118] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_pcie0_1lane_s_clk_slave)
+	[   12.300902] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_pcie1_1lane_m_clk_master)
+	[   12.310797] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_pcie1_1lane_m_clk_slave)
+	[   12.320596] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_pcie1_1lane_s_clk_master)
+	[   12.330494] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_pcie1_1lane_s_clk_slave)
+	[   12.340299] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_pcie2_2lane_m_clk_master)
+	[   12.350224] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_pcie2_2lane_m_clk_slave)
+	[   12.360013] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_pcie2_2lane_s_clk_master)
+	[   12.369904] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_pcie2_2lane_s_clk_slave)
+	[   12.379709] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_pcie3_2lane_m_clk_master)
+	[   12.389616] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_pcie3_2lane_m_clk_slave)
+	[   12.399415] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_pcie3_2lane_s_clk_master)
+	[   12.409312] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_pcie3_2lane_s_clk_slave)
+	[   12.419119] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_usb_clk_master)
+	[   12.429017] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_snoc_usb_clk_slave)
+	[   12.437781] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_usb_axi_clk_master)
+	[   12.446813] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_anoc_usb_axi_clk_slave)
+	[   12.456098] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_nsscc_clk_master)
+	[   12.465474] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_nsscc_clk_slave)
+	[   12.474767] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_snoc_clk_master)
+	[   12.484138] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_snoc_clk_slave)
+	[   12.493424] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_snoc_1_clk_master)
+	[   12.502713] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_snoc_1_clk_slave)
+	[   12.512261] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_pcnoc_1_clk_master)
+	[   12.521379] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_pcnoc_1_clk_slave)
+	[   12.531098] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_qosgen_ref_clk_master)
+	[   12.540651] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_qosgen_ref_clk_slave)
+	[   12.550456] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_timeout_ref_clk_master)
+	[   12.559922] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_timeout_ref_clk_slave)
+	[   12.569986] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_xo_dcd_clk_master)
+	[   12.579886] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_xo_dcd_clk_slave)
+	[   12.589344] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_atb_clk_master)
+	[   12.598466] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_atb_clk_slave)
+	[   12.607834] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_mem_noc_nssnoc_clk_master)
+	[   12.617039] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_mem_noc_nssnoc_clk_slave)
+	[   12.626497] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_memnoc_clk_master)
+	[   12.636049] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_memnoc_clk_slave)
+	[   12.645507] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_mem_noc_1_clk_master)
+	[   12.654668] qcom,gcc-ipq9574 1800000.clock-controller: Calling icc_clk_set(gcc_nssnoc_mem_noc_1_clk_slave)
+--->	[   12.664354] qcom,nsscc-ipq9574 39b00000.clock-controller: interconnect provider is in synced state
+	[   12.674069] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_ppe_clk_master)
+	[   12.683012] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_ppe_clk_slave)
+	[   12.692646] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_ppe_cfg_clk_master)
+	[   12.702369] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_ppe_cfg_clk_slave)
+	[   12.712349] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_nss_csr_clk_master)
+	[   12.722431] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_nss_csr_clk_slave)
+	[   12.732404] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_imem_qsb_clk_master)
+	[   12.742473] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_imem_qsb_clk_slave)
+	[   12.752801] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_imem_ahb_clk_master)
+	[   12.762611] qcom,nsscc-ipq9574 39b00000.clock-controller: Calling icc_clk_set(nss_cc_nssnoc_imem_ahb_clk_slave)
 
--- 
-2.39.2
+> The idea of sync state is to allow all consumers to probe and to request
+> their paths. Only after that, the framework will take into account the
+> bandwidth values that has been requested from consumers and disable unused
+> paths.
+>
+> Sorry, but i am doing a bit of guessing here as i am missing the complete
+> picture. So you add interconnect-cells to nsscc, but what is this DT node
+> that requests the nss and gcc paths? I am failing to find these on the
+> mailing lists.
 
+The gcc based interconnect paths are referenced by PCIe controller
+nodes. Please refer to this patch
+
+	[PATCH V5 4/6] arm64: dts: qcom: ipq9574: Add PCIe PHYs and controller nodes
+	https://lore.kernel.org/linux-arm-msm/20240512082858.1806694-5-quic_devipriy@quicinc.com/
+
+Sorry, did not post the nsscc related patches since this base ICC
+patch hasn't reached closure. The nsscc patches are very similar
+to this gcc based series. Wanted to gather the issues raised in
+this and address them in nsscc so that it is in a more acceptable
+shape.
+
+Thanks
+Varada
