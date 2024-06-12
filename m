@@ -1,128 +1,200 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3C24516D9B4;
-	Wed, 12 Jun 2024 09:16:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5104416DEDA
+	for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2024 09:59:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718183820; cv=none; b=cWmYsVi6czMUZCMtT8JKgYEyfJIY8TjX0UJaQgcZGRDhniRZVk7UAnp1he3vjQ3H9K0XGy19Hs1BJIcGew6lzb9Rf/kN6cVvo+M8euElFJWgRirXns7SiScGlami6V7ACqnFtnHXIEDdOQc7EWEojw2tBhRqam86SGbL6QMyd38=
+	t=1718186380; cv=none; b=pw59k5TkrQtmga1R2LJOK1x8X3nPFplVuM0qoZ8/U8/bk/6K2Zm0cVw6086k/wINB9eYm+iCGqbQp3wfvYVu/MdwxZyPjDjm/PwFq4qLgkpHne4t5e0daoLz9psgZ6EUdLQsyvbou/moBkLCg6Flzx9tNZX9Wn/l7LSiBN/+bbE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718183820; c=relaxed/simple;
-	bh=dPtpzMUg9r4ZGtEGnGWWRzJdU22xe0lzZMle/MKPde0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oJAR40sGh3Bb2UeDjdKfc66SBEmKKxniO5BV48Lu1IlhIy3fTYOI+7KoKkXxx0xjZhP+Mo/uV7thlIOu1eB0KPy23234wkGzXcmPS7QPoiZMByWJIh9JAkiTV/xv6cSGBDch3j8p3l9DU4ZfwpKzyX+Z09iDkd9+SMVFxWPYsc8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0286D1595;
-	Wed, 12 Jun 2024 02:17:22 -0700 (PDT)
-Received: from [10.57.72.106] (unknown [10.57.72.106])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8F2A43F64C;
-	Wed, 12 Jun 2024 02:16:55 -0700 (PDT)
-Message-ID: <7ba09d9e-61dc-4d36-a401-0f89915fadfb@arm.com>
-Date: Wed, 12 Jun 2024 10:17:04 +0100
+	s=arc-20240116; t=1718186380; c=relaxed/simple;
+	bh=lzuWmQsRHevIFSOU8fqsv8TO85dYE8vzaNEi5gArVS8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=IANQSBxduwTk+4Nr0/gzkGpzuKMq5f+SHp3FYvXOR6FrrFLgHNi7Vob2rZA1+YjtkzkIDsFrbY3CnLK/tEtENl7Pl5GUcgC8oO6qvLK9Tnjjb56HIShdiE/zfn7wJAkZlZ+Bo/aZkeA7e8XlFk7AgT3AB+JMzIFOfbmmu4LpF4M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=kmrRb7l3; arc=none smtp.client-ip=209.85.167.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kmrRb7l3"
+Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5295e488248so7297038e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2024 02:59:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1718186375; x=1718791175; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=sp42j2u8rigijiuxzVvZ7hagCwbbwAjC3ss3o2b1CDw=;
+        b=kmrRb7l38KsZqpfWUJNIjU0ghLQhukEut0linJHuTc2BZgzppQmWsBLUBB85qU13ch
+         twCNYCljVR5UMJ/8nshzJ3Li/Wu9OYrnwqbmrAxaO8hJtyYNXgsI1H6HAxjhsyT+F+bo
+         l3qXsltUEIU62RHYwFfhd+7kUwrLjmfGA4dGkz4hu/jqbDNeEf1JSNlsbvr63mvuDZ+S
+         BDoLksB4V/dk1h/En+2d16gCkMEUTXjNXjbuIcZUJ8qH46DEFc2YDtuTV9ZcF8D9vsH4
+         xR36AfahTDiYpDhY0S2DqG/T0k+UTvu/D0+8NawRSuLNR7gT4ERwgpvqSfcyTkuV9iZZ
+         5cpQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1718186375; x=1718791175;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=sp42j2u8rigijiuxzVvZ7hagCwbbwAjC3ss3o2b1CDw=;
+        b=I4TRcJuQiK+EU7O/HlxX7pcs2djiBfWQpKr26wWmvRSh8ogUC0Ay+SZ3AyzBB18StG
+         yAav02qGF8c5mKiDth8w6GZ5Y/uPYS6BdrRMuPztgBTMqDptYyirttKSMhivU1Ei1n0Z
+         iJiIptjn9pOnteTjPCZoHRYi7qpsnimpae862BJ/IssHzofOyNNZ53Jqfb1DKmUNm7Cu
+         HR9+ntH5tClwMQC3y11bvSLhk6hNudvadttEcbgz+1EjZkowBR1U+cNEZHobhi8LcU52
+         5WCgvll80/wv4N+lgx5JTs9rm65WPWtzitxbzNeNIER2aBSn2+PLgBJjKYjNiynTtdqC
+         aK8g==
+X-Gm-Message-State: AOJu0YxkVbuckiGy/37Dud3NwZnnGk8S3ISv3BfIoJyTBuVvc0cTjUPB
+	5Udd2y4/c4/kb5jIkdbG+z7fsTQYw1OreCSXqLnZhPC5HgWk60SDqiuBb/Gawz8=
+X-Google-Smtp-Source: AGHT+IEDa7kb32fgkJfPo5ReIlwBIVgibQAKT4zkUPAxRXpdDcs3pt/afX/PBq3eBew4IroPkWM/5g==
+X-Received: by 2002:a05:6512:3130:b0:52c:9468:c991 with SMTP id 2adb3069b0e04-52c9a3b794bmr758824e87.14.1718186375541;
+        Wed, 12 Jun 2024 02:59:35 -0700 (PDT)
+Received: from umbar.lan ([192.130.178.91])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-52c8907dae9sm1408095e87.129.2024.06.12.02.59.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 12 Jun 2024 02:59:35 -0700 (PDT)
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Wed, 12 Jun 2024 12:59:32 +0300
+Subject: [PATCH v6 1/6] dt-bindings: platform: Add Lenovo Yoga C630 EC
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 2/2] cpuidle: teo: Introduce util-awareness
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Kajetan Puchalski <kajetan.puchalski@arm.com>, rafael@kernel.org,
- daniel.lezcano@linaro.org, Dietmar.Eggemann@arm.com, dsmythies@telus.net,
- yu.chen.surf@gmail.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, Qais Yousef <qyousef@layalina.io>
-References: <20230105145159.1089531-1-kajetan.puchalski@arm.com>
- <20230105145159.1089531-3-kajetan.puchalski@arm.com>
- <20230711175814.zfavcn7xn3ia5va4@airbuntu>
- <ZLZ/btJw5LNVxVy8@e126311.manchester.arm.com>
- <20230718132432.w5xoxbqm54jmu6n5@airbuntu>
- <20230917010516.54dgcmms44wyfrvx@airbuntu>
- <CAKfTPtA6ZzRR-zMN7sodOW+N_P+GqwNv4tGR+aMB5VXRT2b5bg@mail.gmail.com>
- <d54d6115-a4d6-466b-a4a2-9c064194f06e@arm.com>
- <CAKfTPtB21aY9cgi5dSHB0jRp6pE85AfGcHrHjrcpMwi3fJL0FA@mail.gmail.com>
- <286d4cf8-814b-41a2-8d5f-2673dc737f45@arm.com>
- <CAKfTPtBh6ZDv7=1Tst1kjQjD=UjDG1DAaQOUCXvzP4ZhD94iTg@mail.gmail.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <CAKfTPtBh6ZDv7=1Tst1kjQjD=UjDG1DAaQOUCXvzP4ZhD94iTg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20240612-yoga-ec-driver-v6-1-8e76ba060439@linaro.org>
+References: <20240612-yoga-ec-driver-v6-0-8e76ba060439@linaro.org>
+In-Reply-To: <20240612-yoga-ec-driver-v6-0-8e76ba060439@linaro.org>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+ Hans de Goede <hdegoede@redhat.com>, 
+ =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+ Bryan O'Donoghue <bryan.odonoghue@linaro.org>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+ linux-usb@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+ Nikita Travkin <nikita@trvn.ru>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2676;
+ i=dmitry.baryshkov@linaro.org; h=from:subject:message-id;
+ bh=C9Lg3cE1aC1zyYeo+0Q2DO6EQOTcK4wvIXQyDKOKakY=;
+ b=owEBbQGS/pANAwAKAYs8ij4CKSjVAcsmYgBmaXGFPHjMU3q0TrL2Mx4I+pTs8YCISncfWVhKJ
+ VlZnOacUO+JATMEAAEKAB0WIQRMcISVXLJjVvC4lX+LPIo+Aiko1QUCZmlxhQAKCRCLPIo+Aiko
+ 1TEDB/0UqCtGC8LEtWypIkYCwbJtdw2FoYkGk7eXkL5c1Qm7XThJfAwsLhCZ5R0pVYfr2VSIyig
+ WR3RjZAjC2Q3odxD+TPd/TdOZz4YPt3fSq8bzrMCjbs569sPjuDQtv+WWfrycY/el7xUedx8KOw
+ umU6Sigj5gpc0meXgnVnK5ZXWDnWNkSiQc+AUSP1EVaXwEGNMi46g0j9UFs5zxx2e+nrkX1ML7o
+ 2dPSjf0LMgwJ/mu7KORHcBrD5Vc7pwRMOo0JjHTSG5/BmtmujPlmhhNoLMpL+jyBG0bPK/vejrj
+ 14AVhbi8/iSG3YxqGiRFPp0L3x1JYQzWFdirDaHuILXZOHXy
+X-Developer-Key: i=dmitry.baryshkov@linaro.org; a=openpgp;
+ fpr=8F88381DD5C873E4AE487DA5199BF1243632046A
 
+From: Bjorn Andersson <andersson@kernel.org>
 
+Add binding for the Embedded Controller found in the Qualcomm
+Snapdragon-based Lenovo Yoga C630.
 
-On 6/12/24 10:04, Vincent Guittot wrote:
-> On Wed, 12 Jun 2024 at 09:25, Lukasz Luba <lukasz.luba@arm.com> wrote:
->>
->> Hi Vincent,
->>
->> My apologies for delay, I was on sick leave.
->>
->> On 5/28/24 15:07, Vincent Guittot wrote:
->>> On Tue, 28 May 2024 at 11:59, Lukasz Luba <lukasz.luba@arm.com> wrote:
->>>>
->>>> Hi Vincent,
->>>>
->>>> On 5/28/24 10:29, Vincent Guittot wrote:
->>>>> Hi All,
->>>>>
->>>>> I'm quite late on this thread but this patchset creates a major
->>>>> regression for psci cpuidle driver when using the OSI mode (OS
->>>>> initiated mode).  In such a case, cpuidle driver takes care only of
->>>>> CPUs power state and the deeper C-states ,which includes cluster and
->>>>> other power domains, are handled with power domain framework. In such
->>>>> configuration ,cpuidle has only 2 c-states : WFI and cpu off states
->>>>> and others states that include the clusters, are managed by genpd and
->>>>> its governor.
->>>>>
->>>>> This patch selects cpuidle c-state N-1 as soon as the utilization is
->>>>> above CPU capacity / 64 which means at most a level of 16 on the big
->>>>> core but can be as low as 4 on little cores. These levels are very low
->>>>> and the main result is that as soon as there is very little activity
->>>>> on a CPU, cpuidle always selects WFI states whatever the estimated
->>>>> sleep duration and which prevents any deeper states. Another effect is
->>>>> that it also keeps the tick firing every 1ms in my case.
->>>>
->>>> Thanks for reporting this.
->>>> Could you add what regression it's causing, please?
->>>> Performance or higher power?
->>>
->>> It's not a perf but rather a power regression. I don't have a power
->>> counter so it's difficult to give figures but I found it while running
->>> a unitary test below on my rb5:
->>> run 500us every 19457ms on medium core (uclamp_min: 600).
->>
->> Mid cores are built differently, they have low static power (leakage).
->> Therefore, for them the residency in deeper idle state should be
->> longer than for Big CPU. When you power off the CPU you loose your
->> cache data/code. The data needs to be stored in the L3 or
->> further memory. When the cpu is powered on again, it needs code & data.
->> Thus, it will transfer that data/code from L3 or from DDR. That
->> information transfer has energy cost (it's not for free). The cost
->> of data from DDR is very high.
->> Then we have to justify if the energy lost while sleeping in shallower
->> idle state can be higher than loading data/code from outside.
->> For different CPU it would be different.
-> 
-> I'm aware of these points and the residency time of an idle state is
-> set to reflect this cost. In my case, the idle time is far above the
-> residency time which means that we should get some energy saving.
-> cpu off 4.488ms
-> cluster off 9.987ms
-> vs
-> sleep duration 18.000ms
-> 
-> Also, the policy of selecting a shallower idle state than the final
-> selected one doesn't work with PSCI OSI because cpuidle is only aware
-> of per CPU idle states but it is not aware of the cluster or
-> deeper/wider idle states so cpuidle doesn't know what will be the
-> final selected idle state. This is a major problem, in addition to
-> keep the tick firing
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ .../bindings/platform/lenovo,yoga-c630-ec.yaml     | 83 ++++++++++++++++++++++
+ 1 file changed, 83 insertions(+)
 
-I think we are aligned with this.
-Something has to change in this implementation of idle gov.
+diff --git a/Documentation/devicetree/bindings/platform/lenovo,yoga-c630-ec.yaml b/Documentation/devicetree/bindings/platform/lenovo,yoga-c630-ec.yaml
+new file mode 100644
+index 000000000000..3180ce1a22d4
+--- /dev/null
++++ b/Documentation/devicetree/bindings/platform/lenovo,yoga-c630-ec.yaml
+@@ -0,0 +1,83 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/platform/lenovo,yoga-c630-ec.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Lenovo Yoga C630 Embedded Controller.
++
++maintainers:
++  - Bjorn Andersson <andersson@kernel.org>
++
++description:
++  The Qualcomm Snapdragon-based Lenovo Yoga C630 has an Embedded Controller
++  (EC) which handles things such as battery and USB Type-C. This binding
++  describes the interface, on an I2C bus, to this EC.
++
++properties:
++  compatible:
++    const: lenovo,yoga-c630-ec
++
++  reg:
++    const: 0x70
++
++  '#address-cells':
++    const: 1
++
++  '#size-cells':
++    const: 0
++
++  interrupts:
++    maxItems: 1
++
++patternProperties:
++  '^connector@[01]$':
++    $ref: /schemas/connector/usb-connector.yaml#
++
++    properties:
++      reg:
++        maxItems: 1
++
++    unevaluatedProperties: false
++
++required:
++  - compatible
++  - reg
++  - interrupts
++
++additionalProperties: false
++
++examples:
++  - |+
++    #include <dt-bindings/interrupt-controller/irq.h>
++    i2c1 {
++        clock-frequency = <400000>;
++
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        embedded-controller@70 {
++            compatible = "lenovo,yoga-c630-ec";
++            reg = <0x70>;
++
++            interrupts-extended = <&tlmm 20 IRQ_TYPE_LEVEL_HIGH>;
++
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            connector@0 {
++                compatible = "usb-c-connector";
++                reg = <0>;
++                power-role = "source";
++                data-role = "host";
++            };
++
++            connector@1 {
++                compatible = "usb-c-connector";
++                reg = <1>;
++                power-role = "source";
++                data-role = "host";
++            };
++        };
++    };
++...
 
-I'm a bit more skeptical about your second point with PSCI.
-That standard might be to strong to change.
+-- 
+2.39.2
+
