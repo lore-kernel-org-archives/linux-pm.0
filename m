@@ -1,230 +1,179 @@
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75F5712DD87;
-	Wed, 12 Jun 2024 23:17:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35DC1824A6;
+	Thu, 13 Jun 2024 03:49:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718234277; cv=none; b=dCwirjCOgzpI0RpF2nlxW3vaQPgmDeghG2/jwuBjjOcFp7OS7hh2XQxevpemEzGJAtzL1sHDKICwVATO/RxU6oH8s2cv6sbPvDpbiaMAgAyOe0/gbCqw/NBEKajc/1K/3PCBvJVFTdsTinp6uKxw+l/pKDAtG9UQjxpteYX8XEE=
+	t=1718250569; cv=none; b=FvAX6lc8SeTeuRB32CE68yVEWM4nZvcThDg2/Piq0nyYgP5cMG8+fSWNua8q2FyaJjhmltZBFYk8Tx5hiQGuJeR/7LxajI0PbLJyF+3XV/TA6+LtF8Q6bhuiZ8hXHSGo5S0n12DZOfloavq8XZ4IAhteAGelTdIzJel2Qk1l8DM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718234277; c=relaxed/simple;
-	bh=bsU/uSufwYkHHioRdRIW2VKG45iABEGGxk+o7JmN7xk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=KLP+A58M3me1pS/WnpPkZEzA2lprAhr9h0sM0R4OmdcTSBU21sNRkd7X6KSI29tS2wZs2H3BejWALvcXOuCs5NW/E8mwLX1iyPLMYLNtv9W59dA3M8xY56VHtvaI+r1UIIWrc32t90MP5BYWYelUvqgbuMHxXi0hnKQMOKC+QNM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=T/AwurQL; arc=none smtp.client-ip=198.47.19.142
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	s=arc-20240116; t=1718250569; c=relaxed/simple;
+	bh=aTM+ZGKPc+0UXpkUyqCKqKBRBKgG0dNkkwyTtKDnnNs=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CL1lAF9PooTUWm4H/T5c2K841/I+Z+XYBzRK19+vu2f6+clASM4RCZRXAsnN3ENY3kaUNspHp2OqEw+QUHTJhiJjtUJrMKbM/0L42p0nRIHttiv+/DfVFA2h0tVfzRVlN9Ghv/QtXjqloDaMA0BGfZ9HRq6HVwLRPvTjswijomg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=novo6Gl5; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="T/AwurQL"
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 45CNHekZ098450;
-	Wed, 12 Jun 2024 18:17:40 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1718234260;
-	bh=41la4WrGvritz6KJ0djgZf2nYLv9pbYtJnXCQHs8xKk=;
-	h=From:Date:Subject:References:In-Reply-To:To:CC;
-	b=T/AwurQLI/EdLs8BzPgC5DBr4IaPUMyGihbK6pKyHgL+KLLUiXM1ofK4YT04BxOVm
-	 P04vsViwoIU6R54YfRcEmneotrF1wwpvx9gkgL1cmO70ptkRSg60jtcRT8nsY1IFHu
-	 QBmXvBagv92WU3niv2VdGMn2Y13k4bOJmSDgjads=
-Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
-	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 45CNHeFn017770
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Wed, 12 Jun 2024 18:17:40 -0500
-Received: from DLEE112.ent.ti.com (157.170.170.23) by DLEE113.ent.ti.com
- (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Wed, 12
- Jun 2024 18:17:40 -0500
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE112.ent.ti.com
- (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Wed, 12 Jun 2024 18:17:40 -0500
-Received: from localhost (bb.dhcp.ti.com [128.247.81.12])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 45CNHeZV019515;
-	Wed, 12 Jun 2024 18:17:40 -0500
-From: Bryan Brattlof <bb@ti.com>
-Date: Wed, 12 Jun 2024 18:17:37 -0500
-Subject: [PATCH v2 4/5] DONOTMERGE: arm64: dts: ti: k3-am62p: add in opp
- tables
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="novo6Gl5"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45CKnA51022989;
+	Thu, 13 Jun 2024 03:49:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=aC8FrLlkS7YLtoM7H04GSiYi
+	coAQ1XP4KZU2VFc6b2c=; b=novo6Gl5SCzwFjvYxQxFY33jiKlTxTt4atIXxV7j
+	lfL9nbVegBRyv3yn4AjexaRqJU41mFt8HgE6zDekaKUNoq+8rxU6ahqKH+IjR8om
+	/3Pl8GFUmzV75QJ1D9BY+rtb8HXfe6AcQ1rGVYdvLEbZzhfQFFMn0Rc8vY4mjXgy
+	wXBtg7cPNBxvo0xnKBSGDwwbH0U0ow7TsacKC8Zbrg16sXp642t/fAWC1Ek8EpcP
+	h6Y6PMo7K5lZ8KIUoE11fgxp6cyrx7P6qz+//IyLpB0lEGNsTUHT+WiWuP1gPlDe
+	lokwsIrnU6v1/1M7ayA+YYyUJaGh2glRblYTrpOkwYtSfg==
+Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ypmjawgwj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 13 Jun 2024 03:49:22 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA03.qualcomm.com (8.17.1.19/8.17.1.19) with ESMTPS id 45D3nLW0009867
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 13 Jun 2024 03:49:21 GMT
+Received: from hu-varada-blr.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Wed, 12 Jun 2024 20:49:17 -0700
+Date: Thu, 13 Jun 2024 09:19:13 +0530
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+To: Georgi Djakov <djakov@kernel.org>
+CC: Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Dmitry Baryshkov
+	<dmitry.baryshkov@linaro.org>,
+        <andersson@kernel.org>, <mturquette@baylibre.com>, <sboyd@kernel.org>,
+        <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
+        <quic_anusha@quicinc.com>, <linux-arm-msm@vger.kernel.org>,
+        <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v9 6/6] arm64: dts: qcom: ipq9574: Add icc provider
+ ability to gcc
+Message-ID: <ZmpsOdsl9AMTSH88@hu-varada-blr.qualcomm.com>
+References: <c015b3a5-2213-4ebd-b960-d97ed1fe7062@kernel.org>
+ <ZjshR0ekcn0gxwOa@hu-varada-blr.qualcomm.com>
+ <CAA8EJpqENsojPQmCbma_nQLEZq8nK1fz1K0JdtvLd=kPrH_DBw@mail.gmail.com>
+ <1a08ef42-b52f-4c97-90d7-e7fdee7725b4@linaro.org>
+ <Zmgb+OjdBNw71sC1@hu-varada-blr.qualcomm.com>
+ <176137e5-6312-4d46-97b6-c4494bc1c61b@kernel.org>
+ <ZmlAdETV0+6Md8HC@hu-varada-blr.qualcomm.com>
+ <e24cfd23-6f77-46a0-b020-9cb3daef6930@kernel.org>
+ <Zml4RQ5R5s3mVMnI@hu-varada-blr.qualcomm.com>
+ <8e32a8be-dbbf-49ca-92a1-2fe3c8bfb571@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20240612-ti-opp-updates-v2-4-422b6747a254@ti.com>
-References: <20240612-ti-opp-updates-v2-0-422b6747a254@ti.com>
-In-Reply-To: <20240612-ti-opp-updates-v2-0-422b6747a254@ti.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar
-	<viresh.kumar@linaro.org>, Lee Jones <lee@kernel.org>,
-        Rob Herring
-	<robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
-	<conor+dt@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Vignesh Raghavendra
-	<vigneshr@ti.com>,
-        Tero Kristo <kristo@kernel.org>
-CC: Vibhore Vardhan <vibhore@ti.com>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, Bryan Brattlof <bb@ti.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3899; i=bb@ti.com;
- h=from:subject:message-id; bh=bsU/uSufwYkHHioRdRIW2VKG45iABEGGxk+o7JmN7xk=;
- b=owNCWmg5MUFZJlNZ5zM9KwAAaP////95f+82717Rrffpf9Ffb+b3/k293XftV/6s2Vndrt6wA
- RmYIeoAA09Ro0ANPUDIAaAekNADRoDRoAGgAA0PUaAaADIANGj0BMmj0J41RAANDTINAMg0AAAy
- GIaNGIAMgyAGjNTQDDUMQ0NB6R+pNNMTRoyepkBoGQZCekZABo0GIGmCDTTQBmk0GhoBgmQNBiP
- UAD1BkxGhppoaAB6gAMmgDTQBBxoRKPYVgMTywsXQiztOYIXskQYI+eHEJxgB9+3zeoZmMbEIMx
- XiD7oLwGUUm5kAyi9yj8nXcUtNiZbihC4u241PbrQfnBxka6CEAYgQJmXfrD5kJFZdN5bfwMnEZ
- hhfFfzc+Qj61oCSZGiKLkQYm9fzI/cX/msYb/s0I9w6QXxShOTorhSOSpJdvEk4TVvhwcHlcEw/
- OvsCwRzxl1KRncE1xgVq6cAnJD2qCXlS8R/+Am4Qr32Jg2JpAQHkKlK5YcZ1roP1CXzVC08GFBL
- GwzpJlqRbJoewYnVqHzZJwBMhXlgUek1yRHlKCwEp2gHMvSNVSlngBzSLEjoXaOYv9yNymw40VU
- KsJLBY60XMXqGqQgQIT9CRpWwbdXcaJgIzXOM1YM49zxSAUw5RqJ4pfICss31l8QQwF4PUcr6TY
- 3+LuSKcKEhzmZ6VgA==
-X-Developer-Key: i=bb@ti.com; a=openpgp;
- fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <8e32a8be-dbbf-49ca-92a1-2fe3c8bfb571@kernel.org>
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: nS2B1HDPmkmi_KaZUDeK3HPSMD89fvdJ
+X-Proofpoint-ORIG-GUID: nS2B1HDPmkmi_KaZUDeK3HPSMD89fvdJ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-06-12_12,2024-06-13_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 malwarescore=0
+ clxscore=1015 mlxscore=0 impostorscore=0 mlxlogscore=999
+ lowpriorityscore=0 spamscore=0 phishscore=0 bulkscore=0 priorityscore=1501
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2405170001 definitions=main-2406130024
 
-To help reduce power consumption, reduce the frequency of the CPU cores
-when they sit idle by specifying their supported OPP entries.
+On Wed, Jun 12, 2024 at 03:52:51PM +0300, Georgi Djakov wrote:
+> On 12.06.24 13:28, Varadarajan Narayanan wrote:
+> > On Wed, Jun 12, 2024 at 11:48:17AM +0300, Georgi Djakov wrote:
+> > > On 12.06.24 9:30, Varadarajan Narayanan wrote:
+> > > > On Tue, Jun 11, 2024 at 02:29:48PM +0300, Georgi Djakov wrote:
+> > > > > On 11.06.24 12:42, Varadarajan Narayanan wrote:
+> > > > > > On Thu, Jun 06, 2024 at 04:06:01PM +0200, Konrad Dybcio wrote:
+> > > > > > > On 8.05.2024 10:10 AM, Dmitry Baryshkov wrote:
+> > > > > > > > On Wed, 8 May 2024 at 09:53, Varadarajan Narayanan
+> > > > > > > > <quic_varada@quicinc.com> wrote:
+> > > > > > > > >
+> > > > > > > > > On Fri, May 03, 2024 at 04:51:04PM +0300, Georgi Djakov wrote:
+> > > > > > > > > > Hi Varada,
+> > > > > > > > > >
+> > > > > > > > > > Thank you for your work on this!
+> > > > > > > > > >
+> > > > > > > > > > On 2.05.24 12:30, Varadarajan Narayanan wrote:
+> > > > > > > > > > > On Tue, Apr 30, 2024 at 12:05:29PM +0200, Konrad Dybcio wrote:
+> > > > > > > > > > > > On 25.04.2024 12:26 PM, Varadarajan Narayanan wrote:
+> > > > > > > > > > > > > On Tue, Apr 23, 2024 at 02:58:41PM +0200, Konrad Dybcio wrote:
+> > > > > > > > > > > > > >
+> > > > > > > > > > > > > >
+> > > > > > > > > > > > > > On 4/18/24 11:23, Varadarajan Narayanan wrote:
+> > > > > > > > > > > > > > > IPQ SoCs dont involve RPM in managing NoC related clocks and
+> > > > > > > > > > > > > > > there is no NoC scaling. Linux itself handles these clocks.
+> > > > > > > > > > > > > > > However, these should not be exposed as just clocks and align
+> > > > > > > > > > > > > > > with other Qualcomm SoCs that handle these clocks from a
+> > > > > > > > > > > > > > > interconnect provider.
+> > > > > > > > > > > > > > >
+> > > > > > > > > > > > > > > Hence include icc provider capability to the gcc node so that
+> > > > > > > > > > > > > > > peripherals can use the interconnect facility to enable these
+> > > > > > > > > > > > > > > clocks.
+> > > > > > > > > > > > > > >
+> > > > > > > > > > > > > > > Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> > > > > > > > > > > > > > > Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+> > > > > > > > > > > > > > > ---
+> > > > > > > > > > > > > >
+> > > > > > > > > > > > > > If this is all you do to enable interconnect (which is not the case,
+> > > > > > > > > > > > > > as this patch only satisfies the bindings checker, the meaningful
+> > > > > > > > > > > > > > change happens in the previous patch) and nothing explodes, this is
+> > > > > > > > > > > > > > an apparent sign of your driver doing nothing.
+> > > > > > > > > > > > >
+> > > > > > > > > > > > > It appears to do nothing because, we are just enabling the clock
+> > > > > > > > > > > > > provider to also act as interconnect provider. Only when the
+> > > > > > > > > > > > > consumers are enabled with interconnect usage, this will create
+> > > > > > > > > > > > > paths and turn on the relevant NOC clocks.
+> > > > > > > > > > > >
+> > > > > > > > > > > > No, with sync_state it actually does "something" (sets the interconnect
+> > > > > > > > > > > > path bandwidths to zero). And *this* patch does nothing functionally,
+> > > > > > > > > > > > it only makes the dt checker happy.
+> > > > > > > > > > >
+>
+> [..]
+>
+> >
+> > nsscc_ipq9574 was not using icc_sync_state. After adding that, I
+> > can see the following messages printed from icc_sync_state. I
+> > also added a print to confirm if 'p->set(n, n);' is called.
+>
+> Ok, that's good! So now when all providers are using sync_state, we
+> can go back to the initial comment from Konrad. I think you should
+> re-check the tests that you did, as the current results just lead to
+> more questions than answers. Maybe it was just the sync-state that
+> was missing, or there is some other issue.
 
-Signed-off-by: Bryan Brattlof <bb@ti.com>
----
- arch/arm64/boot/dts/ti/k3-am62p-wakeup.dtsi |  6 ++++
- arch/arm64/boot/dts/ti/k3-am62p5-sk.dts     |  9 ++++++
- arch/arm64/boot/dts/ti/k3-am62p5.dtsi       | 47 +++++++++++++++++++++++++++++
- 3 files changed, 62 insertions(+)
+Georgi,
 
-diff --git a/arch/arm64/boot/dts/ti/k3-am62p-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-wakeup.dtsi
-index c71d9624ea277..8392c8cde2cd4 100644
---- a/arch/arm64/boot/dts/ti/k3-am62p-wakeup.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-am62p-wakeup.dtsi
-@@ -19,6 +19,11 @@ chipid: chipid@14 {
- 			bootph-all;
- 		};
- 
-+		opp_efuse_table: syscon@18 {
-+			compatible = "ti,am62-opp-efuse-table", "syscon";
-+			reg = <0x18 0x4>;
-+		};
-+
- 		usb0_phy_ctrl: syscon@4008 {
- 			compatible = "ti,am62-usb-phy-ctrl", "syscon";
- 			reg = <0x4008 0x4>;
-@@ -28,6 +33,7 @@ usb1_phy_ctrl: syscon@4018 {
- 			compatible = "ti,am62-usb-phy-ctrl", "syscon";
- 			reg = <0x4018 0x4>;
- 		};
-+
- 	};
- 
- 	wkup_uart0: serial@2b300000 {
-diff --git a/arch/arm64/boot/dts/ti/k3-am62p5-sk.dts b/arch/arm64/boot/dts/ti/k3-am62p5-sk.dts
-index 6983ec1b57cbd..08956ac1eaead 100644
---- a/arch/arm64/boot/dts/ti/k3-am62p5-sk.dts
-+++ b/arch/arm64/boot/dts/ti/k3-am62p5-sk.dts
-@@ -128,6 +128,15 @@ led-0 {
- 		};
- 	};
- 
-+	opp-table {
-+		/* Add 1.4GHz OPP for am62p5-sk board. Requires VDD_CORE at 0v85 */
-+		opp-1400000000 {
-+			opp-hz = /bits/ 64 <1400000000>;
-+			opp-supported-hw = <0x01 0x0004>;
-+			clock-latency-ns = <6000000>;
-+		};
-+	};
-+
- 	tlv320_mclk: clk-0 {
- 		#clock-cells = <0>;
- 		compatible = "fixed-clock";
-diff --git a/arch/arm64/boot/dts/ti/k3-am62p5.dtsi b/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
-index 41f479dca4555..140587d02e88e 100644
---- a/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
-@@ -47,6 +47,7 @@ cpu0: cpu@0 {
- 			d-cache-line-size = <64>;
- 			d-cache-sets = <128>;
- 			next-level-cache = <&l2_0>;
-+			operating-points-v2 = <&a53_opp_table>;
- 			clocks = <&k3_clks 135 0>;
- 		};
- 
-@@ -62,6 +63,7 @@ cpu1: cpu@1 {
- 			d-cache-line-size = <64>;
- 			d-cache-sets = <128>;
- 			next-level-cache = <&l2_0>;
-+			operating-points-v2 = <&a53_opp_table>;
- 			clocks = <&k3_clks 136 0>;
- 		};
- 
-@@ -77,6 +79,7 @@ cpu2: cpu@2 {
- 			d-cache-line-size = <64>;
- 			d-cache-sets = <128>;
- 			next-level-cache = <&l2_0>;
-+			operating-points-v2 = <&a53_opp_table>;
- 			clocks = <&k3_clks 137 0>;
- 		};
- 
-@@ -92,10 +95,54 @@ cpu3: cpu@3 {
- 			d-cache-line-size = <64>;
- 			d-cache-sets = <128>;
- 			next-level-cache = <&l2_0>;
-+			operating-points-v2 = <&a53_opp_table>;
- 			clocks = <&k3_clks 138 0>;
- 		};
- 	};
- 
-+	a53_opp_table: opp-table {
-+		compatible = "operating-points-v2-ti-cpu";
-+		opp-shared;
-+		syscon = <&opp_efuse_table>;
-+
-+		opp-200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			opp-supported-hw = <0x01 0x0007>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-supported-hw = <0x01 0x0007>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-600000000 {
-+			opp-hz = /bits/ 64 <600000000>;
-+			opp-supported-hw = <0x01 0x0007>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-800000000 {
-+			opp-hz = /bits/ 64 <800000000>;
-+			opp-supported-hw = <0x01 0x0007>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-1000000000 {
-+			opp-hz = /bits/ 64 <1000000000>;
-+			opp-supported-hw = <0x01 0x0006>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-1250000000 {
-+			opp-hz = /bits/ 64 <1250000000>;
-+			opp-supported-hw = <0x01 0x0004>;
-+			clock-latency-ns = <6000000>;
-+			opp-suspend;
-+		};
-+	};
-+
- 	l2_0: l2-cache0 {
- 		compatible = "cache";
- 		cache-unified;
+Thanks very much for the clarifications. Will re-test the patches
+and update the thread.
 
--- 
-2.45.2
+-Varada
 
+> [..]
+> >
+> > The gcc based interconnect paths are referenced by PCIe controller
+> > nodes. Please refer to this patch
+> >
+> > 	[PATCH V5 4/6] arm64: dts: qcom: ipq9574: Add PCIe PHYs and controller nodes
+> > 	https://lore.kernel.org/linux-arm-msm/20240512082858.1806694-5-quic_devipriy@quicinc.com/
+> >
+> > Sorry, did not post the nsscc related patches since this base ICC
+> > patch hasn't reached closure. The nsscc patches are very similar
+> > to this gcc based series. Wanted to gather the issues raised in
+> > this and address them in nsscc so that it is in a more acceptable
+> > shape.
+> >
+> > Thanks
+> > Varada
+>
