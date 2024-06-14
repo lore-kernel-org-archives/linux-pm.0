@@ -1,181 +1,93 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F161415FA96;
-	Fri, 14 Jun 2024 15:26:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1868C3B1AB
+	for <linux-pm@vger.kernel.org>; Fri, 14 Jun 2024 15:30:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718378804; cv=none; b=acIUPJ/zfILVQJrJiRpt+J7VVcFZi8mVr/9mTEvSyrD9gtmBMvxg/kpzsXqNPygVP/gUpvna8rFQuol4BZLT9K6vMwFZYsAcj1KRmxm2gbvdzvCZ3rEe7TSy9fYYI+fDoP/19zHyCXyxd3z+O6MGNri/4vP2xPndaUcMn6WXj/s=
+	t=1718379007; cv=none; b=ItpwgK6wHE78Zfhz5raKkdqYEpRorsAZNSLP54/2huriVbhEu5DKAbbmSC9Cbl3ChK+2I3S/6vgWNWQddURP9BrdwiArr5m9MCXxe6ssxzqPzwSP92vjMKYrMHcNQKXF0fWIk0mGHc8ZN8PhARf+L1NThk2/zoLKeCgh5eyfUZ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718378804; c=relaxed/simple;
-	bh=xkm7TOfE+0Lij82Nq9O/l46tHzduMTcUqYKjBJC6MeQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jiI4aLsCh0/2Xmv8mwluj3ve9yTpm7CDBfS/QqP2IE72JL4iUbOXXm8+9v+eUcX3wFi0fRf+Bcd97C0RtdAZMwJucWe50MROy0fgyVjPSRyxqN2Kx/pPfYBSLpIeRjzdVZFabsbswEFASRclLizESgAvs8h9oYI+NsT5Esj7meg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=VZJkEp42 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1718379007; c=relaxed/simple;
+	bh=INYaHGQZsDSr1w19/9z+7V91Pvd9XYP417oIMYNM03I=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ZNic1CZLQ3Yz7luexrGr9hq6VBxoZ5dUNylRyqTv9jr9dGfXvN/54Pq5j1oOmQ4Y6t9Z8eHy71wt8d2nhQ+Q2l91UuO5AWoEd+PfNBRorJHW/zmKfGeJimuWeQ5X/dtHN9bZvLlva7YfPcAHq8HF/fACZ/8jXXXrmxr9M5bVMBg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uirsK12G; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="VZJkEp42"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 6ef55ecccd86ff32; Fri, 14 Jun 2024 17:26:34 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 1FAF16A741D;
-	Fri, 14 Jun 2024 17:26:33 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1718378793;
-	bh=xkm7TOfE+0Lij82Nq9O/l46tHzduMTcUqYKjBJC6MeQ=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=VZJkEp42w9TC/S8Rmws36AZO7ucAbv4I8RhKoVaPLOX7BDIG+Mr9YTAypBQU4veyD
-	 9WJjfoWId0GpByicz++c5PTi7NdE9lzFfMjMEXd9NpisXBUcBjNX4ltB9R0BGz5Wjh
-	 9qrHh8aWQ06RXhvOiZamqWexjK6qG1Ka9LBsIjwy/usdSTu1LBIryaVf3vlKjmtVkc
-	 1tcvw66mXV58JbHrCsWBmL1/E/d/T1G9WI3diB/AY+wMS/cpQjvGN8N5aZWkkA27+z
-	 i5ai4+PJF7Tla2ZfyVO1TBauaYEwLlm4Dfyk0dN380RLv1yBZA+G9rBT/niano/afB
-	 8ZeAcJq91hzfg==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
- LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Zhang Rui <rui.zhang@intel.com>
-Subject:
- [PATCH v1 1/2] thermal: core: Synchronize suspend-prepare and post-suspend
- actions
-Date: Fri, 14 Jun 2024 17:22:25 +0200
-Message-ID: <2202941.irdbgypaU6@kreacher>
-In-Reply-To: <6070114.lOV4Wx5bFT@kreacher>
-References: <6070114.lOV4Wx5bFT@kreacher>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uirsK12G"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90C3AC2BD10
+	for <linux-pm@vger.kernel.org>; Fri, 14 Jun 2024 15:30:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1718379006;
+	bh=INYaHGQZsDSr1w19/9z+7V91Pvd9XYP417oIMYNM03I=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=uirsK12GQSvouoNTiRpx2LPAx0Ho6uNdPw10XdrppIa4rL2UqG2IE2aNBSs3SQWoh
+	 xqz029CncHpgJKA1Ipgk0Q8Pii7nSLXkEfoiEQd1FLgS2orAVYDduyS1hajgQ+P/0w
+	 o7AtmyaRKcZmA/URty70wHPHNEPkzyVIHLmPUJ18uA4lJmWL7oEeXGWpowDjBFn9zw
+	 QPhATJDzDhMacFIngUDFz9fwL7aOuBYk32J6jpCYdPDxqEkcpUvWg+hkoZPZg+kAq3
+	 hD3pZ4J97BPVAw6WaC2azPmkwfipnQZOCWrJPZ+PLRI6aj667XOAz+3s0yODnv5xVP
+	 0SYG+T+2nV6XQ==
+Received: by mail-oo1-f52.google.com with SMTP id 006d021491bc7-5bb10cfe7daso191996eaf.2
+        for <linux-pm@vger.kernel.org>; Fri, 14 Jun 2024 08:30:06 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXcsL84jvqhEbBNFj+Uhy4nCHd/CHpeIkXa+niQKOG1t7Wfl6pc3awTBuD7aoAl+WnYGc0aRgSLgP1RldWFe2vUV2ti3iPb96c=
+X-Gm-Message-State: AOJu0YxGL6CJ23mfq2/M3Aq9l8caLV1vdbFK+oUc309Jqsl55Zhj7Z8k
+	FFHh0yJ4F8E8B5KdWR6NXQV8liUgXwdcaWTW73rfs94+SE8P9c3Xz1Cupvhse0IFlz2j29O7hVd
+	ug7GeF4mq19iwDbMt68AgjHWKlHM=
+X-Google-Smtp-Source: AGHT+IEabitnZUzKvTtIZHCsRaQv56Ufzwk1bVoHI+1GtKyJdy+4iw73VflTRawr3LcUTzZKXc4FaxuiySZBuoz6+/Y=
+X-Received: by 2002:a4a:c482:0:b0:5bd:ad72:15d3 with SMTP id
+ 006d021491bc7-5bdadc0905fmr3201463eaf.1.1718379005922; Fri, 14 Jun 2024
+ 08:30:05 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <d8de3761-6fa1-477e-8ed8-71abf115eb60@amd.com>
+In-Reply-To: <d8de3761-6fa1-477e-8ed8-71abf115eb60@amd.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 14 Jun 2024 17:29:54 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jw5_pSoutfvTOrMjQOzcFkiKGvwOPpuJXModbSue6eSw@mail.gmail.com>
+Message-ID: <CAJZ5v0jw5_pSoutfvTOrMjQOzcFkiKGvwOPpuJXModbSue6eSw@mail.gmail.com>
+Subject: Re: AMD-Pstate new content for v6.11 (2024-06-11)
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrfeduledgkeeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepiedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
+Content-Transfer-Encoding: quoted-printable
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, Jun 11, 2024 at 11:36=E2=80=AFPM Mario Limonciello
+<mario.limonciello@amd.com> wrote:
+>
+> The following changes since commit 83a7eefedc9b56fe7bfeff13b6c7356688ffa6=
+70:
+>
+>    Linux 6.10-rc3 (2024-06-09 14:19:43 -0700)
+>
+> are available in the Git repository at:
+>
+>
+> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git
+> tags/amd-pstate-v6.11-2024-06-11
+>
+> for you to fetch changes up to c00d476cbcef4cbcf0c7db8944df7e98a36bdbfa:
+>
+>    cpufreq: amd-pstate: change cpu freq transition delay for some models
+> (2024-06-11 16:12:12 -0500)
+>
+> ----------------------------------------------------------------
+> Add support for "Fast CPPC" which allows some CPUs to operate a tighter
+> loop for passive mode.
+>
+> ----------------------------------------------------------------
+> Perry Yuan (1):
+>        x86/cpufeatures: Add AMD FAST CPPC feature flag
+>
+> Xiaojian Du (1):
+>        cpufreq: amd-pstate: change cpu freq transition delay for some mod=
+els
+>
+>   arch/x86/include/asm/cpufeatures.h | 1 +
+>   arch/x86/kernel/cpu/scattered.c    | 1 +
+>   drivers/cpufreq/amd-pstate.c       | 9 +++++++--
+>   3 files changed, 9 insertions(+), 2 deletions(-)
 
-After commit 5a5efdaffda5 ("thermal: core: Resume thermal zones
-asynchronously") it is theoretically possible that, if a system suspend
-starts immediately after a system resume, thermal_zone_device_resume()
-spawned by the thermal PM notifier for one of the thermal zones at the
-end of the system resume will run after the PM thermal notifier for the
-suspend-prepare action.  If that happens, tz->suspended set by the latter
-will be reset by the former which may lead to unexpected consequences.
-
-To avoid that race, synchronize thermal_zone_device_resume() with the
-suspend-prepare thermal PM notifier with the help of additional bool
-field and completion in struct thermal_zone_device.
-
-Note that this also ensures running __thermal_zone_device_update() at
-least once for each thermal zone between system resume and the following
-system suspend in case it is needed to start thermal mitigation.
-
-Fixes: 5a5efdaffda5 ("thermal: core: Resume thermal zones asynchronously")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/thermal/thermal_core.c |   21 +++++++++++++++++++++
- drivers/thermal/thermal_core.h |    4 ++++
- 2 files changed, 25 insertions(+)
-
-Index: linux-pm/drivers/thermal/thermal_core.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -1406,6 +1406,7 @@ thermal_zone_device_register_with_trips(
- 	ida_init(&tz->ida);
- 	mutex_init(&tz->lock);
- 	init_completion(&tz->removal);
-+	init_completion(&tz->resume);
- 	id = ida_alloc(&thermal_tz_ida, GFP_KERNEL);
- 	if (id < 0) {
- 		result = id;
-@@ -1652,6 +1653,9 @@ static void thermal_zone_device_resume(s
- 	thermal_zone_device_init(tz);
- 	__thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
- 
-+	complete(&tz->resume);
-+	tz->resuming = false;
-+
- 	mutex_unlock(&tz->lock);
- }
- 
-@@ -1669,6 +1673,20 @@ static int thermal_pm_notify(struct noti
- 		list_for_each_entry(tz, &thermal_tz_list, node) {
- 			mutex_lock(&tz->lock);
- 
-+			if (tz->resuming) {
-+				/*
-+				 * thermal_zone_device_resume() queued up for
-+				 * this zone has not acquired the lock yet, so
-+				 * release it to let the function run and wait
-+				 * util it has done the work.
-+				 */
-+				mutex_unlock(&tz->lock);
-+
-+				wait_for_completion(&tz->resume);
-+
-+				mutex_lock(&tz->lock);
-+			}
-+
- 			tz->suspended = true;
- 
- 			mutex_unlock(&tz->lock);
-@@ -1686,6 +1704,9 @@ static int thermal_pm_notify(struct noti
- 
- 			cancel_delayed_work(&tz->poll_queue);
- 
-+			reinit_completion(&tz->resume);
-+			tz->resuming = true;
-+
- 			/*
- 			 * Replace the work function with the resume one, which
- 			 * will restore the original work function and schedule
-Index: linux-pm/drivers/thermal/thermal_core.h
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.h
-+++ linux-pm/drivers/thermal/thermal_core.h
-@@ -55,6 +55,7 @@ struct thermal_governor {
-  * @type:	the thermal zone device type
-  * @device:	&struct device for this thermal zone
-  * @removal:	removal completion
-+ * @resume:	resume completion
-  * @trip_temp_attrs:	attributes for trip points for sysfs: trip temperature
-  * @trip_type_attrs:	attributes for trip points for sysfs: trip type
-  * @trip_hyst_attrs:	attributes for trip points for sysfs: trip hysteresis
-@@ -89,6 +90,7 @@ struct thermal_governor {
-  * @poll_queue:	delayed work for polling
-  * @notify_event: Last notification event
-  * @suspended: thermal zone suspend indicator
-+ * @resuming:	indicates whether or not thermal zone resume is in progress
-  * @trips:	array of struct thermal_trip objects
-  */
- struct thermal_zone_device {
-@@ -96,6 +98,7 @@ struct thermal_zone_device {
- 	char type[THERMAL_NAME_LENGTH];
- 	struct device device;
- 	struct completion removal;
-+	struct completion resume;
- 	struct attribute_group trips_attribute_group;
- 	struct thermal_attr *trip_temp_attrs;
- 	struct thermal_attr *trip_type_attrs;
-@@ -123,6 +126,7 @@ struct thermal_zone_device {
- 	struct delayed_work poll_queue;
- 	enum thermal_notify_event notify_event;
- 	bool suspended;
-+	bool resuming;
- #ifdef CONFIG_THERMAL_DEBUGFS
- 	struct thermal_debugfs *debugfs;
- #endif
-
-
-
+Pulled and added to the linux-next branch in linux-pm.git, thanks!
