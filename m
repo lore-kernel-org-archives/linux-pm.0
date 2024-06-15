@@ -1,186 +1,167 @@
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14F1A3D60;
-	Sat, 15 Jun 2024 06:38:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.254.224.33
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C00571803E
+	for <linux-pm@vger.kernel.org>; Sat, 15 Jun 2024 08:03:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718433489; cv=none; b=TIm32EBYSwS4i7xNjk7zcUuB4csIIXOL2vPoOtR5ILmqEDrUAjnNA0n3JgneaTf0OIGUMVLyGszkjXyQqictNrTeYl+Mm/vLwjXZnIrdEwfq2cIXW1gtL46h7ELSYVCvAgVs6na7MH3lqhJ+J8PpI3httV4gPvHDgbM3YhsuxrU=
+	t=1718438594; cv=none; b=PGeyeSCYhecrUcW4Hm8IQSgcUUUmxKo9UL1H/aU0X85QDjQiXhbrblA9RuqpHZ56YFzavZDWfcZQ3yUUY4RSKMEnfoGjshB3TxFGAWgIrSVmGgRnIWbJiee2p84vpN9mHLJMAM0WB3phzjKCIWWm89XvXhH+d5wXnx40vonTdt0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718433489; c=relaxed/simple;
-	bh=3KCfEoLSbRk49SE6hTMUSazt4vE30jZwifvmCko0MxI=;
-	h=From:To:Cc:In-Reply-To:Subject:Date:Message-ID:MIME-Version:
-	 Content-Type:References; b=J+HkJrq66N69ray4HfiFjLl1eJtCjoNJtPwN3JOZ7SP+LNH6RBI6OqCLY+Ink1JZHffHoKDStDSqDK/rIUyAm+ixGx3P0lxE/llgdAOHnhTRAU5BvjmC+OG+EXvfaXPfNavOiUPh/QCO3H+xbqsxK+/OMGuDDyjHOqA638Q4ZIw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=ZqRx9WEW; arc=none smtp.client-ip=203.254.224.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
+	s=arc-20240116; t=1718438594; c=relaxed/simple;
+	bh=zh8wFqlkhu1LOYUvNSAdvMQzn9efxj16Mc5cp9NZux4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nUAdJt/1kVSGzzoMEA9KOulv4J/D02l3Y+fpayxd8DDw0hatViEn6EQZC6mLiwF1abfOOS1Kp7Qg3rfIzpUH7bVWVi24SAKMeYOMrqO5fy6xgy6bPYXzbZJGOtP71L6unFrqAHbUj+PmsGJxsbxkBQHDDwtURJaE6LLoJ/N7bxI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=jX5LQ8Ae; arc=none smtp.client-ip=209.85.208.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="ZqRx9WEW"
-Received: from epcas5p4.samsung.com (unknown [182.195.41.42])
-	by mailout3.samsung.com (KnoxPortal) with ESMTP id 20240615063802epoutp03937665879767c7bb38a494fd9922b629~ZGiW7zCER1672516725epoutp03U;
-	Sat, 15 Jun 2024 06:38:02 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20240615063802epoutp03937665879767c7bb38a494fd9922b629~ZGiW7zCER1672516725epoutp03U
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1718433482;
-	bh=vIwSYtTFXPS3sO38FNNQ6oJ71Y0bLvlrMHrlSuad46E=;
-	h=From:To:Cc:In-Reply-To:Subject:Date:References:From;
-	b=ZqRx9WEWTrFB0xPY+AKKfrl5bDsclQ3TWzUHUdAxvTY441omquggL+KXasoOMm0vb
-	 TT+Pz6KIgcBpV+kxr0393uI0VDMBX9ZwbarTNJXaWh2vxCh9xsvWvGFQaMHx8xlyGI
-	 iz4oghNbkk5GDaB2b8OoCpIX7Wn+XVPM7Cal+B2Q=
-Received: from epsnrtp4.localdomain (unknown [182.195.42.165]) by
-	epcas5p1.samsung.com (KnoxPortal) with ESMTP id
-	20240615063801epcas5p14a1910659716b444f56195a7b2ec983b~ZGiWWyQ_Y0633306333epcas5p1F;
-	Sat, 15 Jun 2024 06:38:01 +0000 (GMT)
-Received: from epcpadp4 (unknown [182.195.40.18]) by epsnrtp4.localdomain
-	(Postfix) with ESMTP id 4W1RKj3gpKz4x9Px; Sat, 15 Jun 2024 06:38:01 +0000
-	(GMT)
-Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
-	epcas5p1.samsung.com (KnoxPortal) with ESMTPA id
-	20240614142920epcas5p15f5887136072ebf6c2e23275dd872861~Y5Uk66YwW0344703447epcas5p15;
-	Fri, 14 Jun 2024 14:29:20 +0000 (GMT)
-Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
-	epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-	20240614142920epsmtrp2e40951f54cedb283a63bd26a75890a5d~Y5Uk39wd62550925509epsmtrp2Y;
-	Fri, 14 Jun 2024 14:29:20 +0000 (GMT)
-X-AuditID: b6c32a2a-73fff70000004a71-de-666c53c04e95
-Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
-	epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
-	FD.07.19057.0C35C666; Fri, 14 Jun 2024 23:29:20 +0900 (KST)
-Received: from INBRO002756 (unknown [107.122.12.5]) by epsmtip1.samsung.com
-	(KnoxPortal) with ESMTPA id
-	20240614142913epsmtip17b1c18bda36c53de5d30099c1e4afd13~Y5UeC7Xu-3016230162epsmtip1U;
-	Fri, 14 Jun 2024 14:29:13 +0000 (GMT)
-From: "Alim Akhtar" <alim.akhtar@samsung.com>
-To: "'Krzysztof Kozlowski'" <krzysztof.kozlowski@linaro.org>, "'Daniel
- Lezcano'" <daniel.lezcano@linaro.org>, "'Zhang Rui'" <rui.zhang@intel.com>,
-	"'Lukasz Luba'" <lukasz.luba@arm.com>, "'Rob Herring'" <robh@kernel.org>,
-	"'Conor Dooley'" <conor+dt@kernel.org>, "'Guillaume La Roque'"
-	<glaroque@baylibre.com>, "'Krzysztof Kozlowski'" <krzk+dt@kernel.org>,
-	"'Vasily Khoruzhick'" <anarsoul@gmail.com>, "'Chen-Yu Tsai'"
-	<wens@csie.org>, "'Jernej Skrabec'" <jernej.skrabec@gmail.com>, "'Samuel
- Holland'" <samuel@sholland.org>, "'Shawn Guo'" <shawnguo@kernel.org>,
-	"'Sascha Hauer'" <s.hauer@pengutronix.de>, "'Pengutronix	Kernel Team'"
-	<kernel@pengutronix.de>, "'Fabio Estevam'" <festevam@gmail.com>, "'Anson
- Huang'" <Anson.Huang@nxp.com>, "'Thierry Reding'"
-	<thierry.reding@gmail.com>, "'Jonathan Hunter'" <jonathanh@nvidia.com>,
-	"'Dmitry	Baryshkov'" <dmitry.baryshkov@linaro.org>, "'Amit Kucheria'"
-	<amitk@kernel.org>, =?utf-8?Q?'Niklas_S=C3=B6derlund'?=
-	<niklas.soderlund@ragnatech.se>, "'Heiko	Stuebner'" <heiko@sntech.de>,
-	"'Biju Das'" <biju.das.jz@bp.renesas.com>, "'Orson	Zhai'"
-	<orsonzhai@gmail.com>, "'Baolin Wang'" <baolin.wang@linux.alibaba.com>,
-	"'Chunyan Zhang'" <zhang.lyra@gmail.com>, "'Alexandre Torgue'"
-	<alexandre.torgue@foss.st.com>, "'Pascal Paillet'" <p.paillet@foss.st.com>,
-	"'Keerthy'" <j-keerthy@ti.com>, "'Broadcom internal kernel review list'"
-	<bcm-kernel-feedback-list@broadcom.com>, "'Florian Fainelli'"
-	<florian.fainelli@broadcom.com>, "'Scott Branden'" <sbranden@broadcom.com>,
-	"'zhanghongchen'" <zhanghongchen@loongson.cn>, "'Matthias Brugger'"
-	<matthias.bgg@gmail.com>, "'AngeloGioacchino Del Regno'"
-	<angelogioacchino.delregno@collabora.com>, "'Bjorn Andersson'"
-	<andersson@kernel.org>, "'Geert Uytterhoeven'" <geert+renesas@glider.be>
-Cc: <linux-pm@vger.kernel.org>, <linux-samsung-soc@vger.kernel.org>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, <linux-amlogic@lists.infradead.org>,
-	<linux-sunxi@lists.linux.dev>, <imx@lists.linux.dev>,
-	<linux-tegra@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-	<linux-renesas-soc@vger.kernel.org>, <linux-rockchip@lists.infradead.org>,
-	<linux-stm32@st-md-mailman.stormreply.com>, "'Florian Fainelli'"
-	<f.fainelli@gmail.com>, <linux-rpi-kernel@lists.infradead.org>,
-	<linux-mediatek@lists.infradead.org>, <cpgs@samsung.com>
-In-Reply-To: <20240614-dt-bindings-thermal-allof-v1-1-30b25a6ae24e@linaro.org>
-Subject: RE: [PATCH 01/22] dt-bindings: thermal: samsung,exynos: specify
- cells
-Date: Fri, 14 Jun 2024 19:59:11 +0530
-Message-ID: <1891546521.01718433481489.JavaMail.epsvc@epcpadp4>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="jX5LQ8Ae"
+Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-57a1fe6392eso3772484a12.0
+        for <linux-pm@vger.kernel.org>; Sat, 15 Jun 2024 01:03:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1718438591; x=1719043391; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=zOGB4ty0lN3NCNyIJ260rYDoej6YMyuL1DkilGLprq4=;
+        b=jX5LQ8AeBhA4W+2km7luY6Sixj9wKzjIEvWeYfkepTIGjA9eeGDqxR+WCuwszdcB8o
+         l/DCIvsqFa6WDwW1BFUqMXbzQrahZscIJ3YsdtQNDH/OMRRWZ2H8NUOJlySbDeKjg446
+         AQsxcgloWLZK9qtp+wyUrzAhOTTZnRIZgOYvB6PhfYUDLKj0NkLLi7e9s6J6cUhq1O9G
+         wYs7lG5MR9GgonV41hd/b4i4yVmYuWN6+a53cDy/tEvWj2J3n9IFVjzwCgPPgcGW1S3G
+         ooEnl4w+V22zwywAoWXhtZUzI4HuWcGzTyghygRxfaYvK6vm/lhilvwTVuB2iVYxeCtL
+         nINg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1718438591; x=1719043391;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=zOGB4ty0lN3NCNyIJ260rYDoej6YMyuL1DkilGLprq4=;
+        b=ZeENAHeP4dWXY24Alm3g5OfmrfP5K+V5+Xi3ZJIlsutrbYF8DRunD3z9lt+JK8Awv8
+         VWnc4nyYipewYN69hQWvtB2BsV5tCnaH4KtiaF+0u0bb7fka6QegJyXf3erOwGpQYrqk
+         s9KZETXmCjZ98sCmtTGD6XxOu0lI21uKofW91k41NnkqPol+QxRlqiYHllNZu+0sEyVd
+         A3dq7WduyCUFotrryKSVpPaIihWfQuZklMxSjDGODyA/uKbm178jgF7jcmqbW6pD3vUt
+         vExXL3YWuESdpWc2WXPsC+367zb8j4pzYE1D+2KSsKefM8GX2bUGrHE+QayQktRayhyF
+         4ngg==
+X-Forwarded-Encrypted: i=1; AJvYcCWLM3dP9bIHMvW7vgrtIlpuoYJzW1/dmeRhwmNFias6N85z8NIz1qbXnmZhXBEleROhRDSWYsum3DAVOIF/qAoxvKrpslH2fi8=
+X-Gm-Message-State: AOJu0YzkjXbIDzfCqdSiVY6+yALllh/kZXAztml74kRUa0+9M9oh9vJD
+	tdWyUc/nhDQ1/4mJ/2SHDwIvecqXmycdQAoLh7QFgOraDurYFgvfi23B+vKkLrQ=
+X-Google-Smtp-Source: AGHT+IGcUqmW23OJOLctm0PilyvalwSahHFmwbkA/ty941zZUuGnFSGlIjdG0pmdv62CKNXHzx2K1Q==
+X-Received: by 2002:a50:a456:0:b0:57c:73fc:a8d7 with SMTP id 4fb4d7f45d1cf-57cbd69dd0dmr2882939a12.14.1718438591096;
+        Sat, 15 Jun 2024 01:03:11 -0700 (PDT)
+Received: from [192.168.0.18] ([78.10.206.163])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-57cb72daa67sm3310438a12.38.2024.06.15.01.03.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 15 Jun 2024 01:03:10 -0700 (PDT)
+Message-ID: <54dcddce-bd31-4e04-8fa3-ecca9b0162f8@linaro.org>
+Date: Sat, 15 Jun 2024 10:03:08 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Mailer: Microsoft Outlook 16.0
-Thread-Index: AQGhCdcVAXQc0tvKk5x9QOKQ/J0WewGh/L0BAiWHCW6yHH4lsA==
-Content-Language: en-us
-X-Brightmail-Tracker: H4sIAAAAAAAAA02SbUxTdxTG97+9vbfQ1ZSXyQUFTaPZgJXBNtlxGLLgy+6mEYxzyUwUGriC
-	jJbaikPjMuhaMmA4wAn2dhRQxgoUcDBoQd5Sist0QMTZzTgQkAJdE/BtaN2gA7otfPudc57n
-	OefD4XF89UQQ77jsJKOQSTJEhDfe3i8KEfcdzDgWWdPnAy5HGYL+ymzQXJtG0P7FDhipo8Ck
-	TQZ39zUEjUUDOOjNCxgYu4cwcFhCQf84GCqtQ1woGXYR8HzOSsLE7Xhoah/jQIWuFEH1+QoC
-	3JNOLmjHNARcN6kwmKlsQqBmL+FQf6EDBwc7RkC3s42EKh0fWu7bltN6B0m41fkNAbc+v4ng
-	cZEVQZtjDoNH424OlNy9QsLF4R4MCmxTXPi6p5OA/CcsAdUqNQkq9RvwY9k5LpQ/0CHos5/H
-	wd1lJmFq4hwBi6YWHGYm8wmYa5hCMPtDALg69Ti4LMMYfDfeScKCzcR55y3aqDciev43DUnX
-	zepImr03SNDm0RpEX5ls4NL2r9pIumRQTHewoyR9ucuB0S31+QT9u62LoDsmttOtNZ/Rs61a
-	ROeqLmEJQYe9d6QwGcdPMYrXYpO80yomj8ivCrK1PY2cHKTmFyAvHiV8kypW9RMr7Cu8iqie
-	waOe/gbq1++LSQ/7UXVLM8vsvayZRlRtccmqgRCKKfPlPGJl4C80rqOeOn9eLTjCP3Cqdc7A
-	9VgmEPW3NhdfsXgJ91P6R2pshf1WuHBqtY8Lt1JLzabVfQLhdupGo/Zf9qF+0no0HGE4Zb9j
-	/59rq50cz32bKZe9dnkZb/mMOCq3GfNIAijHgJUsRn7smiR2TRK7JoldY6lCeD0KZORKaapU
-	GSV/XcZ8EqGUSJVZstSI5ExpC1p94bAwM+qqfxBhQRgPWRDF44j8BWx1+jFfQYrk9BlGkZmo
-	yMpglBa0gYeLAgQLzqIUX2Gq5CTzMcPIGcV/U4znFZSDiQsTbvzlGnCM2y9aXnSx3dh6d7D6
-	thR921tqijm4N6r29FhDsnSbIeTILxttWXuHN/Gt9HO+7NShkS7/P63vvvrpfLugPjXOp9v8
-	5QvwbGuVMyx8PPSjs+u8AqufGD7Aoj8M7Y8/Ec8e2FnObrHmtRXMzHTwRfO2QEfMdHJ4+qH7
-	0YbBhUneotEwlLfNELm060xp2tMmjbJVoyPfbiu7uSt9T8zRVyLxu2HiskJL9Nl7vUEJUnq9
-	vfA6P1E8nXnBbizdnb14J5jYJHsWm4UnvfRQRJa35ry/f+dS/3ujMXHNcjIEP6yPzdVAxImR
-	Lfucs/LNOvW+AxUPX87anZS4MUOEK9MkUWEchVLyD7bfoqExBAAA
-X-CMS-MailID: 20240614142920epcas5p15f5887136072ebf6c2e23275dd872861
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-CMS-TYPE: 105P
-X-CPGSPASS: Y
-X-Hop-Count: 3
-X-CMS-RootMailID: 20240614094638epcas5p115d52130f45e130652b6f1d946358d19
-References: <20240614-dt-bindings-thermal-allof-v1-0-30b25a6ae24e@linaro.org>
-	<CGME20240614094638epcas5p115d52130f45e130652b6f1d946358d19@epcas5p1.samsung.com>
-	<20240614-dt-bindings-thermal-allof-v1-1-30b25a6ae24e@linaro.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] dt-bindings: drop stale Anson Huang from maintainers
+To: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Abel Vesa <abelvesa@kernel.org>,
+ Peng Fan <peng.fan@nxp.com>, Frank Li <Frank.Li@nxp.com>,
+ devicetree@vger.kernel.org, imx@lists.linux.dev,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
+ linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-pwm@vger.kernel.org, linux-spi@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org
+References: <20240614095927.88762-1-krzysztof.kozlowski@linaro.org>
+ <20240614170123.00002e0f@Huawei.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Content-Language: en-US
+Autocrypt: addr=krzysztof.kozlowski@linaro.org; keydata=
+ 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
+ D2GYIS41Kv4Isx2dEFh+/Q==
+In-Reply-To: <20240614170123.00002e0f@Huawei.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi Krzysztof,
+On 14/06/2024 18:01, Jonathan Cameron wrote:
+> On Fri, 14 Jun 2024 11:59:27 +0200
+> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+> 
+>> Emails to Anson Huang bounce:
+>>
+>>   Diagnostic-Code: smtp; 550 5.4.1 Recipient address rejected: Access denied.
+>>
+>> Add IMX platform maintainers for bindings which would become orphaned.
+> That doesn't make much sense for the magnetometer which has nothing to do with
+> imx.
+> 
+> Make that one my problem under my jic23@kernel.org address.
+> 
+> Thanks,
+> 
+> Jonathan
+> 
+> 
+>>
+>> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> 
+>> diff --git a/Documentation/devicetree/bindings/iio/magnetometer/fsl,mag3110.yaml b/Documentation/devicetree/bindings/iio/magnetometer/fsl,mag3110.yaml
+>> index 6b54d32323fc..467002a5da43 100644
+>> --- a/Documentation/devicetree/bindings/iio/magnetometer/fsl,mag3110.yaml
+>> +++ b/Documentation/devicetree/bindings/iio/magnetometer/fsl,mag3110.yaml
+>> @@ -7,7 +7,9 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
+> 
+> Not sure the new maintainers make sense here.
+> 
+> Flip it to me if no one else volunteers.
 
-> -----Original Message-----
-> From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Sent: Friday, June 14, 2024 3:16 PM
-> To: Daniel Lezcano <daniel.lezcano@linaro.org
-.stormreply.com;
-> Subject: [PATCH 01/22] dt-bindings: thermal: samsung,exynos: specify cell=
-s
->=20
-> All Samsung Exynos SoCs Thermal Management Units have only one sensor, so
-> make '#thermal-sensor-cells' fixed at 0.
->=20
-This is not entirely true, there are SoCs which have multiple temp sensors.
-It is true that currently only one sensor support is added though.
+Indeed, too much automation. I'll do that for v2.
 
-So we can leave this as is or you suggest to make it to support only one se=
-nsor
-(to match the current DT support), and later (in near future) change it aga=
-in to
-match what HW actually support?
-
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
->  Documentation/devicetree/bindings/thermal/samsung,exynos-thermal.yaml | =
-3
-> ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/thermal/samsung,exynos-
-> thermal.yaml b/Documentation/devicetree/bindings/thermal/samsung,exynos-
-> thermal.yaml
-> index 1344df708e2d..29a08b0729ee 100644
-> --- a/Documentation/devicetree/bindings/thermal/samsung,exynos-
-> thermal.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/samsung,exynos-thermal.y
-> +++ aml
-> @@ -61,7 +61,8 @@ properties:
->            TRIMINFO at 0x10068000 contains data for TMU channel 2
->      minItems: 1
->=20
-> -  '#thermal-sensor-cells': true
-> +  '#thermal-sensor-cells':
-> +    const: 0
->=20
->    vtmu-supply:
->      description: The regulator node supplying voltage to TMU.
->=20
-> --
-> 2.43.0
-
-
+Best regards,
+Krzysztof
 
