@@ -1,96 +1,115 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 739E21993BE;
-	Mon, 17 Jun 2024 18:13:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69B2319D076;
+	Mon, 17 Jun 2024 18:13:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718648001; cv=none; b=jRzqnuJ1nF9eCUQySdDh7qAFVrPR79CX+Z784jOywT24orh0aKONvJst4EWOF6kqeTmFv3aFuPqHgDEoqkOrxwhdKikJLGj21htvf/oYqmudGzZpJmtzQDnXBbATMlMdsVI/I1q1yq3g61QYcBHG603S7Lz7kscddT7ahCbjqyM=
+	t=1718648005; cv=none; b=rSSwsL9bQG8Icl56XIjsQC7wDFR2G38d2nn9sOghzNNQ+gOx5DWmVtf/CfWuDBfd17OAqhWhpvdVWndyFeVlWd9jbHD4gIH/yzTcmkpbE2T0C+jUO9ZrAg70FaLOShYlUPc9CmS3LrqO3E1hYBMxW94TW4Vofa2AsS8MhpJrW6o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718648001; c=relaxed/simple;
-	bh=oZqVWvku/3wzgM7EoqTwvP3AdUcWOcwhRu6vy9hsujw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=puzBqwrZU2u91BCFlrRK15Nysk8N7kKhB3viNTfgeUgsy27FQ5d9thiNX5O7E6Sa5atvVYEVpvZVP/mnZJ62GKxoA6ZtwQeUqOhEZ2h+yBnlW2YFiqSLQhx1jKHvFTauc0dUFa7W/JDuXxbPCDx3ecpjIJpSLsib2//YuvHPuNE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=IaNjVhRy reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1718648005; c=relaxed/simple;
+	bh=ojRbcXMAcD1hhCMCV6YEMc1FKR66O4C+wbO5n22upEU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=pzfvEi1TvNmXWjmRj5o78rhZ3BHV81qzIdUM/pWK7YM8fgPfnsdr37NA+hAak4oDjqw3/9bl9ApyrG5Pgu8fqn2skjRkP1PLA0Qa8wMkHKc0aIsejfq2DmRX0FyTHzox9s0Vh5dP8FiUTzC4iVZ1jKkdNwJD4IzIxpbUmElyDVI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=iA5WsBDv; arc=none smtp.client-ip=192.198.163.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="IaNjVhRy"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 238e5fc1c563fd29; Mon, 17 Jun 2024 20:13:16 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 0F8C516606FD;
-	Mon, 17 Jun 2024 20:13:16 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1718647996;
-	bh=oZqVWvku/3wzgM7EoqTwvP3AdUcWOcwhRu6vy9hsujw=;
-	h=From:To:Cc:Subject:Date;
-	b=IaNjVhRykSBMld0JSQ76dZuThhBHX0affopQxzMJMH5KF5xCk3dQzdMGHTe0vT6Lw
-	 DO8gNoBDf8XXCBZPIzz5l1B9py/rQjgu2LxKeBlEQ1W52YTleM0gJp6qh7KpapUQe1
-	 0a3466vbpGtKft4OMNLE4u3uecPeCMLoRa/lT5vV3n/PN+rUojyREl626RJq9VGznz
-	 oiD7z3Bhpc2bnE/nt2t5SyB29P1y1W7XkvBxGQz8UMC+wyqYsdkgi5qRsNKW18nF8c
-	 7OuaoCzRIPHDN2pGq+RKPYFD6q8AcAqi8J9qP3722GhScuIuSAPajRIVNmLgAqERDP
-	 ZufN8cim6+WsA==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawnguo@kernel.org>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Thara Gopinath <thara.gopinath@gmail.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>, linux-wireless@vger.kernel.org,
- linux-tegra@vger.kernel.org
-Subject:
- [PATCH v1 00/14] thermal: Eliminate trip IDs from thermal driver interface
-Date: Mon, 17 Jun 2024 19:41:25 +0200
-Message-ID: <8409966.T7Z3S40VBb@kreacher>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="iA5WsBDv"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1718648003; x=1750184003;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=ojRbcXMAcD1hhCMCV6YEMc1FKR66O4C+wbO5n22upEU=;
+  b=iA5WsBDvbCd0v6GHdpZJtgZPz6/aKbxzKwbRkjvrC8Zeezp/qYMOh3Zq
+   KoMb231+4xrPFwN9aJwsQS7ybwnz6t3emF0XC4O+1V+4FLz53ofjpRTnj
+   kkoiJBM6ZmRZi8DlU8LK9AG7ouW+3MjMm4foiGk1Mplx8HGNqk1i10WCR
+   HxT+Jq4ggpr06PYhFpaqfq7juAhbcmuDvXss3NLyOsOe5EuZLEEC7h+mb
+   2U5BxI59bfJR+Xg6cN5F5lhh+jTE2fBkEfTHkILMi8JVKJ1BkUnO6aPdo
+   +lS2ZDvhAIHFq4/97NwAyHBfzMkej/W2A0cNUJPmE9oxITFQL67f+8iB6
+   A==;
+X-CSE-ConnectionGUID: tX0XyucpRYKLWTtyNMicaw==
+X-CSE-MsgGUID: oSfoTl6DT2mgv+HTSOdxNQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11106"; a="15259712"
+X-IronPort-AV: E=Sophos;i="6.08,245,1712646000"; 
+   d="scan'208";a="15259712"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jun 2024 11:13:22 -0700
+X-CSE-ConnectionGUID: iJ6LKUecRfOwivxKplNFyg==
+X-CSE-MsgGUID: 6FEFvl53TWS0tVisgxPUog==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.08,245,1712646000"; 
+   d="scan'208";a="41145570"
+Received: from mshehzad-mobl.amr.corp.intel.com (HELO desk) ([10.209.21.13])
+  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jun 2024 11:13:22 -0700
+Date: Mon, 17 Jun 2024 11:13:15 -0700
+From: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+To: Andrew Cooper <andrew.cooper3@citrix.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	daniel.sneddon@linux.intel.com, tony.luck@intel.com,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-perf-users@vger.kernel.org,
+	Josh Poimboeuf <jpoimboe@kernel.org>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+	"Liang, Kan" <kan.liang@linux.intel.com>
+Subject: Re: [PATCH PATCH 8/9] x86/bugs: Declutter vulnerable CPU list
+Message-ID: <20240617181315.z3mbmv6hv5frtu6a@desk>
+References: <20240617-add-cpu-type-v1-0-b88998c01e76@linux.intel.com>
+ <20240617-add-cpu-type-v1-8-b88998c01e76@linux.intel.com>
+ <14d5ed1b-db72-4676-bce2-1ff3637a7e56@citrix.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvledrfedvhedguddvvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepudegpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=14 Fuz1=14 Fuz2=14
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <14d5ed1b-db72-4676-bce2-1ff3637a7e56@citrix.com>
 
-Hi Everyone,
+On Mon, Jun 17, 2024 at 10:38:32AM +0100, Andrew Cooper wrote:
+[...]
+> > +	VULNBL_INTEL(IVYBRIDGE,		SRBDS),
+> > +	VULNBL_INTEL(HASWELL,		SRBDS),
+> > +	VULNBL_INTEL(HASWELL_L,		SRBDS),
+> > +	VULNBL_INTEL(HASWELL_G,		SRBDS),
+> > +	VULNBL_INTEL(HASWELL_X,		MMIO),
+> > +	VULNBL_INTEL(BROADWELL_D,	MMIO),
+> > +	VULNBL_INTEL(BROADWELL_G,	SRBDS),
+> > +	VULNBL_INTEL(BROADWELL_X,	MMIO),
+> > +	VULNBL_INTEL(BROADWELL,		SRBDS),
+> > +	VULNBL_INTEL(SKYLAKE_X,		MMIO | RETBLEED | GDS),
+> > +	VULNBL_INTEL(SKYLAKE_L,		MMIO | RETBLEED | GDS | SRBDS),
+> > +	VULNBL_INTEL(SKYLAKE,		MMIO | RETBLEED | GDS | SRBDS),
+> > +	VULNBL_INTEL(KABYLAKE_L,	MMIO | RETBLEED | GDS | SRBDS),
+> > +	VULNBL_INTEL(KABYLAKE,		MMIO | RETBLEED | GDS | SRBDS),
+> > +	VULNBL_INTEL(CANNONLAKE_L,	RETBLEED),
+> > +	VULNBL_INTEL(ICELAKE_L,		MMIO | MMIO_SBDS | RETBLEED | GDS),
+> > +	VULNBL_INTEL(ICELAKE_D,		MMIO | GDS),
+> > +	VULNBL_INTEL(ICELAKE_X,		MMIO | GDS),
+> > +	VULNBL_INTEL(COMETLAKE,		MMIO | MMIO_SBDS | RETBLEED | GDS),
+> > +	VULNBL_INTEL(TIGERLAKE_L,	GDS),
+> > +	VULNBL_INTEL(TIGERLAKE,		GDS),
+> > +	VULNBL_INTEL(LAKEFIELD,		MMIO | MMIO_SBDS | RETBLEED),
+> > +	VULNBL_INTEL(ROCKETLAKE,	MMIO | RETBLEED | GDS),
+> > +	VULNBL_INTEL(ALDERLAKE,		RFDS),
+> > +	VULNBL_INTEL(ALDERLAKE_L,	RFDS),
+> > +	VULNBL_INTEL(RAPTORLAKE,	RFDS),
+> > +	VULNBL_INTEL(RAPTORLAKE_P,	RFDS),
+> > +	VULNBL_INTEL(RAPTORLAKE_S,	RFDS),
+> > +	VULNBL_INTEL(ATOM_GRACEMONT,	RFDS),
+> > +	VULNBL_INTEL(ATOM_TREMONT,	MMIO | MMIO_SBDS | RFDS),
+> > +	VULNBL_INTEL(ATOM_TREMONT_D,	MMIO | RFDS),
+> > +	VULNBL_INTEL(ATOM_TREMONT_L,	MMIO | MMIO_SBDS | RFDS),
+> > +	VULNBL_INTEL(ATOM_GOLDMONT,	RFDS),
+> > +	VULNBL_INTEL(ATOM_GOLDMONT_D,	RFDS),
+> > +	VULNBL_INTEL(ATOM_GOLDMONT_PLUS, RFDS),
+> 
+> Take the opportunity to realign and fix this ?
 
-Trip IDs, which should be internal to the thermal core, are still used in the
-thermal driver interface in some places, but fortunately it does not take too
-much effort to get rid of them.
-
-First of all, the .set_trip_temp() zone callback uses a trip ID as one of its
-arguments, but this isn't really necessary and there are a few weaknesses
-related to doing that.  Please see the changelog of patch [04/14] for details.
-
-Apart from that, several drivers use the thermal_zone_get_trip() helper
-function for trip point lookup which can be differently.  Patches [06-12/14]
-address those cases (please see the individual patch changelogs for details).
-
-The remaining patches in the series are preliminary changes or cleanups.
-
-The series is based on the two cleanup series posted previously:
-
-https://lore.kernel.org/linux-pm/5794974.DvuYhMxLoT@kreacher/T/#t
-https://lore.kernel.org/linux-pm/12458899.O9o76ZdvQC@kreacher/T/#t
-
-that have been included into the linux-next thermal material.
-
-This series is available from the thermal-core-experimental branch
-in linux-pm.git.
-
-Thanks!
-
-
-
+I assume by also adding a tab to all the other entries?
