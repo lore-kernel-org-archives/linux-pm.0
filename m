@@ -1,190 +1,146 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0A8F16CD10;
-	Mon, 17 Jun 2024 17:19:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6488E16EB56;
+	Mon, 17 Jun 2024 17:29:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718644742; cv=none; b=THqyhmFeVMPqRlKerNTPt9JWky5+46ZVEeVa/kzf7NETeumCCQBhobYKMdJ8bUhlyt5SNDCtbFYRp5rvsNAqMUmWlny8DwsOBH7kGxisj2TWFNE7N6rLS9ghMJIQmTuvw2zkOGz7iJLj/QLbRm9GzR5VLotQsRhSFEYEphsxxms=
+	t=1718645383; cv=none; b=uONDwdYsnEhmbHJeVnwG6gAYItish/PRWQN3UsbAL1a6qMcrm/r8VA49NVWWrHegepGnv6BOo9DHDpYK6oY3AsMpT7b+xWG16qcJlaEaEA7viDKOPaoUizGQFxZP5DMi+Cb7ht+UoGQDk4LsbF2IxLi8r5NAnH0+cyOrZlgtups=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718644742; c=relaxed/simple;
-	bh=V2VNcGF/ITh8lvOdDdWBKd9rCbC2loen37eN3HOFN6M=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=OnuPehRkR5rhQfZcfFyoyXpqs2qGU0EiX6uPJroZrZWhDMeeqBzTxi3OdiSZUrZIjEA8f7q1Al6Qk1akk6EGdKqKbpiRCL+E+taZoIJWGofMS+6XmU9ZR0P8ZEtX+B08jlEAHYwaQv693zq/mhRpDrpZHWChWop16sy6Jj5MxEI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=kHDOISyx; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1718645383; c=relaxed/simple;
+	bh=kbW/gR+NRs7jHRgq3FS7wDstTPhoeqGbtN28unwmbg0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mwbmAp+uGPAe17NaR082qtYQX9qe8or+RRKoPPnmUP23sdzRtwg2EuqSq11C6sQ4FDSKjWIB3uneY3aKrpXbDQ5ZrMRqdZ8bcshiZiT1nvNKO2CDD2uMBvxI93NBpN2nssPELySIpwC4Xk0WO6RjB3Z0Zp93bDSwKBBu4JySWqo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WGCUiSVe; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="kHDOISyx"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45HEhuJu030652;
-	Mon, 17 Jun 2024 17:18:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	0NyaR8ZYRcTKsVa4WgtyTIpbWfaOxMlFbz4ZtR0JJZA=; b=kHDOISyxbWk0RqjY
-	96QQtqtKNv083NPT//6OMFl3zA/3wro3kqc2qAhfamwBzceoTojLf6raaTKyBqwo
-	O8qxxp8mNFySH56SqDoNU3H1h9/LkoVdINrRs/S4sKi9iopam3obBujOsmCLrjgk
-	+G3uf7FgYp7mMHUEjdaqe3Xwq2RLhvaAdgj886ud5jcJLDX7NhcO3/rsUa6C7l2S
-	ugixhxWvG73xjqTEyQQR9kz1BkpPMIv7LRW5toqVi1tvzB8TfC9MfhBwnTXXeyXY
-	lPufnE3klImBiLAjO9Adg6t2OP1rCbaCWBX0lMcTxgZ8g1W631MieL2cHRrkkKyV
-	P6aL4A==
-Received: from nasanppmta02.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ytfut1fpg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Jun 2024 17:18:31 +0000 (GMT)
-Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-	by NASANPPMTA02.qualcomm.com (8.17.1.19/8.17.1.19) with ESMTPS id 45HHIUcl007979
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Jun 2024 17:18:30 GMT
-Received: from hu-eberman-lv.qualcomm.com (10.80.80.8) by
- nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Mon, 17 Jun 2024 10:18:29 -0700
-From: Elliot Berman <quic_eberman@quicinc.com>
-Date: Mon, 17 Jun 2024 10:18:07 -0700
-Subject: [PATCH v5 1/4] dt-bindings: power: reset: Convert mode-.*
- properties to array
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WGCUiSVe"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA4D3C2BD10;
+	Mon, 17 Jun 2024 17:29:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1718645382;
+	bh=kbW/gR+NRs7jHRgq3FS7wDstTPhoeqGbtN28unwmbg0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=WGCUiSVehiciSz7Ww0nqIsyJsddAw+NFMrcR0rUTInw2TLrVUDQfXowSruEy+Rv0N
+	 phvU/pBbYQJfsKKOg2KDjmSEf3ID0/V8eYNxfquJ08XYOM4WJ4hwd9tTQibYuUTHXh
+	 iSAqVN3Gw/CNnlSBB/ERj/K9aKDzMFVvB2b3QN51MHkRbnVKtcC5cQJUgNw1uA9ueG
+	 6l31PRZp4T4eABb+8ql21aSnJ24bDgy0Oy25/U50fVIiYcPcr+3vlBxhAovn2Stwrp
+	 ksQrzUethG+Isvx4i5Y/z9a7dicg+yjvXzZd8lCRY1mPR6ozpLrzPZECoMjnGwKAji
+	 WGKlrerbS9/jw==
+Message-ID: <c9070805-3432-41f8-af1e-dc5e6f81df5c@kernel.org>
+Date: Mon, 17 Jun 2024 19:29:36 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/2] dt-bindings: power: supply: add support for
+ MAX17201/MAX17205 fuel gauge
+To: Dimitri Fedrau <dima.fedrau@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20240615203352.164234-1-dima.fedrau@gmail.com>
+ <20240615203352.164234-2-dima.fedrau@gmail.com>
+ <ee0cd414-206c-48c9-aee2-06e24e0b981c@kernel.org>
+ <20240617125955.GA292946@debian>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
+ cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
+ JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
+ gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
+ J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
+ NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
+ BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
+ vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
+ Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
+ TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
+ S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGVBBMBCgA/AhsDBgsJCAcDAgYVCAIJCgsE
+ FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJgPO8PBQkUX63hAAoJEBuTQ307
+ QWKbBn8P+QFxwl7pDsAKR1InemMAmuykCHl+XgC0LDqrsWhAH5TYeTVXGSyDsuZjHvj+FRP+
+ gZaEIYSw2Yf0e91U9HXo3RYhEwSmxUQ4Fjhc9qAwGKVPQf6YuQ5yy6pzI8brcKmHHOGrB3tP
+ /MODPt81M1zpograAC2WTDzkICfHKj8LpXp45PylD99J9q0Y+gb04CG5/wXs+1hJy/dz0tYy
+ iua4nCuSRbxnSHKBS5vvjosWWjWQXsRKd+zzXp6kfRHHpzJkhRwF6ArXi4XnQ+REnoTfM5Fk
+ VmVmSQ3yFKKePEzoIriT1b2sXO0g5QXOAvFqB65LZjXG9jGJoVG6ZJrUV1MVK8vamKoVbUEe
+ 0NlLl/tX96HLowHHoKhxEsbFzGzKiFLh7hyboTpy2whdonkDxpnv/H8wE9M3VW/fPgnL2nPe
+ xaBLqyHxy9hA9JrZvxg3IQ61x7rtBWBUQPmEaK0azW+l3ysiNpBhISkZrsW3ZUdknWu87nh6
+ eTB7mR7xBcVxnomxWwJI4B0wuMwCPdgbV6YDUKCuSgRMUEiVry10xd9KLypR9Vfyn1AhROrq
+ AubRPVeJBf9zR5UW1trJNfwVt3XmbHX50HCcHdEdCKiT9O+FiEcahIaWh9lihvO0ci0TtVGZ
+ MCEtaCE80Q3Ma9RdHYB3uVF930jwquplFLNF+IBCn5JRzsFNBFVDXDQBEADNkrQYSREUL4D3
+ Gws46JEoZ9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLue
+ MNsWLJBvBaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6ei
+ OMheesVS5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wA
+ GldWsRxbf3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA
+ 6z6lBZn0WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9
+ YegxWKvXXHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt
+ 91pFzBSOIpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gU
+ BLHFTg2hYnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/
+ JoFzZ4B0p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu
+ 4vXVFBYIGmpyNPYzRm0QPwARAQABwsF8BBgBCgAmAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtB
+ YpsFAmA872oFCRRflLYACgkQG5NDfTtBYpvScw/9GrqBrVLuJoJ52qBBKUBDo4E+5fU1bjt0
+ Gv0nh/hNJuecuRY6aemU6HOPNc2t8QHMSvwbSF+Vp9ZkOvrM36yUOufctoqON+wXrliEY0J4
+ ksR89ZILRRAold9Mh0YDqEJc1HmuxYLJ7lnbLYH1oui8bLbMBM8S2Uo9RKqV2GROLi44enVt
+ vdrDvo+CxKj2K+d4cleCNiz5qbTxPUW/cgkwG0lJc4I4sso7l4XMDKn95c7JtNsuzqKvhEVS
+ oic5by3fbUnuI0cemeizF4QdtX2uQxrP7RwHFBd+YUia7zCcz0//rv6FZmAxWZGy5arNl6Vm
+ lQqNo7/Poh8WWfRS+xegBxc6hBXahpyUKphAKYkah+m+I0QToCfnGKnPqyYIMDEHCS/RfqA5
+ t8F+O56+oyLBAeWX7XcmyM6TGeVfb+OZVMJnZzK0s2VYAuI0Rl87FBFYgULdgqKV7R7WHzwD
+ uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
+ 7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
+ 5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
+In-Reply-To: <20240617125955.GA292946@debian>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <20240617-arm-psci-system_reset2-vendor-reboots-v5-1-086950f650c8@quicinc.com>
-References: <20240617-arm-psci-system_reset2-vendor-reboots-v5-0-086950f650c8@quicinc.com>
-In-Reply-To: <20240617-arm-psci-system_reset2-vendor-reboots-v5-0-086950f650c8@quicinc.com>
-To: Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio
-	<konrad.dybcio@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>, Rob Herring
-	<robh@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>,
-        Andy Yan
-	<andy.yan@rock-chips.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        "Mark
- Rutland" <mark.rutland@arm.com>,
-        Bartosz Golaszewski
-	<bartosz.golaszewski@linaro.org>
-CC: Satya Durga Srinivasu Prabhala <quic_satyap@quicinc.com>,
-        Melody Olvera
-	<quic_molvera@quicinc.com>,
-        Shivendra Pratap <quic_spratap@quicinc.com>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        Florian Fainelli
-	<florian.fainelli@broadcom.com>,
-        <linux-pm@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        Elliot Berman <quic_eberman@quicinc.com>
-X-Mailer: b4 0.13.0
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: 7RfhUrd-MRB1D75jGkZU693Rv7sBs_E7
-X-Proofpoint-GUID: 7RfhUrd-MRB1D75jGkZU693Rv7sBs_E7
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-06-17_14,2024-06-17_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxlogscore=999
- suspectscore=0 priorityscore=1501 impostorscore=0 phishscore=0 mlxscore=0
- adultscore=0 clxscore=1015 spamscore=0 lowpriorityscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2405170001
- definitions=main-2406170134
 
-PSCI reboot mode will map a mode name to multiple magic values instead
-of just one. Convert the mode-.* property to an array. Users of the
-reboot-mode schema will need to specify the maxItems of the mode-.*
-properties. Existing users will all be 1.
+On 17/06/2024 14:59, Dimitri Fedrau wrote:
+> Am Sun, Jun 16, 2024 at 09:27:21AM +0200 schrieb Krzysztof Kozlowski:
+>> On 15/06/2024 22:33, Dimitri Fedrau wrote:
+>>> Adding documentation for MAXIMs MAX17201/MAX17205 fuel gauge.
+>>>
+>>
+>> Three patchsets within 30 minutes. No changelog et all.
+>>
+> Sorry, had to fix my mail address in the commit message. Changelog was
+> in the cover letter. Anyway, could have fixed that in a later version.
 
-Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
----
- .../devicetree/bindings/power/reset/nvmem-reboot-mode.yaml         | 4 ++++
- Documentation/devicetree/bindings/power/reset/qcom,pon.yaml        | 7 +++++++
- Documentation/devicetree/bindings/power/reset/reboot-mode.yaml     | 4 ++--
- .../devicetree/bindings/power/reset/syscon-reboot-mode.yaml        | 4 ++++
- 4 files changed, 17 insertions(+), 2 deletions(-)
+There was no cover letter attached to this patchset. If you do not send
+cover letter to interested parties, then it does not count.
 
-diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
-index 627f8a6078c2..7f5f94673e9c 100644
---- a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
-@@ -31,6 +31,10 @@ properties:
- allOf:
-   - $ref: reboot-mode.yaml#
- 
-+patternProperties:
-+  "^mode-.*$":
-+    maxItems: 1
-+
- required:
-   - compatible
-   - nvmem-cells
-diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-index fc8105a7b9b2..3da3d02a6690 100644
---- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-@@ -54,6 +54,10 @@ required:
-   - compatible
-   - reg
- 
-+patternProperties:
-+  "^mode-.*$":
-+    maxItems: 1
-+
- unevaluatedProperties: false
- 
- allOf:
-@@ -75,6 +79,9 @@ allOf:
-         reg-names:
-           items:
-             - const: pon
-+    else:
-+      patternProperties:
-+        "^mode-.*$": false
- 
-     # Special case for pm8941, which doesn't store reset mode
-   - if:
-diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
-index ad0a0b95cec1..3ddac06cec72 100644
---- a/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
-@@ -28,13 +28,13 @@ description: |
- 
- properties:
-   mode-normal:
--    $ref: /schemas/types.yaml#/definitions/uint32
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-     description:
-       Default value to set on a reboot if no command was provided.
- 
- patternProperties:
-   "^mode-.*$":
--    $ref: /schemas/types.yaml#/definitions/uint32
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
- 
- additionalProperties: true
- 
-diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
-index b6acff199cde..79ffc78b23ea 100644
---- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
-@@ -32,6 +32,10 @@ properties:
- allOf:
-   - $ref: reboot-mode.yaml#
- 
-+patternProperties:
-+  "^mode-.*$":
-+    maxItems: 1
-+
- unevaluatedProperties: false
- 
- required:
+> 
+>> Slow down (one posting per 24h) to give people chances to review. Then
+>> provide changelog under --- and describe what happened.
+>>
+> [...]
+>>> +maintainers:
+>>> +  - Dimitri Fedrau <dima.fedrau@gmail.com>
+>>> +
+>>> +properties:
+>>> +      - description: ModelGauge m5 registers
+>>> +      - description: Nonvolatile registers
+>>> +
+>>> +  reg-names:
+>>> +    items:
+>>> +      - const: m5
+>>> +      - const: nvmem
+>>> +
+>>> +  interrupts:
+>>> +    maxItems: 1
+>>
+>> This is incomplete. Missing battery and probably more... Look how other
+>> bindings are written.
+>>
+> Some fuel gauges used monitored-battery and/or power-supplies others none
+> of them(mitsumi,mm8013.yaml). I'm not sure when to use them.
 
--- 
-2.34.1
+Look at your hardware, datasheet if it is available. Then look at
+monitored battery properties. If you see anything in common, then that's
+a sign.
+
+I did not get your driver changes, so I cannot help here. Kind of your call.
+
+Best regards,
+Krzysztof
 
