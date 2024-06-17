@@ -1,59 +1,66 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f179.google.com (mail-lj1-f179.google.com [209.85.208.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A11D192B89;
-	Mon, 17 Jun 2024 09:30:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77850190053
+	for <linux-pm@vger.kernel.org>; Mon, 17 Jun 2024 09:32:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718616630; cv=none; b=I+flLY5sty3R0yG13UpUVRwWQnvfqfs6e9Ucen1EV/8Q36+kGfYbucX7XMT6sIKm8UjAZWH6RZhRvqDa8jTEpQlYAVsV3PLiI4J4CW1j6j84ffSRsLceOmGQ5MUWFVzpJi20dBVDJVRg8VJTfcr6WEhNM1nFn+/9tW77Eo1I1Cs=
+	t=1718616747; cv=none; b=BlOqnUzYLZ98tvqqMXV2YJM/mCI9xkOZ9EFoUNh32hOK6uW1RVt51BIEfBa2fCVRt5lg6YKrz0BVCWSE5drDZzxOuM8F4f3X8MRKkXfXEwH7uJDangKscbdkuQ7i0Fys4L58CXdPc0tFL1WkJwRTnzw1BRkHSPhYtdr2Ghea1cI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718616630; c=relaxed/simple;
-	bh=iUCBdlDmmb+nqxTj4dotDfey/IiKx/n1xfkM7M9qntU=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qmnVtSvVgYCnPAeB9f/5+DHHt/2hnc+i4eAo1HxchCGgVLSanMwWf5DJWtOCpjAcQ/JVgag+jMpTwS+nYBkh6MrBnYVvtqsxBxGMD9IRMR9W4jdMRDDIaht4vCJjEx+i/M8L5cfHWcbrJiRdRjlPmxBF8nJZk2riSxA5lfpE6PA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=ATOquYO5; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1718616747; c=relaxed/simple;
+	bh=LNpuMpWjAfWkh2SBYhoHHVU/hSaGGKXWVCOL+iHaXFA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:Message-ID:
+	 MIME-Version:Content-Type; b=hyuzASzVN313rsq6BAE54X6hJP2XcFXZbmfsJHUtaRZKhsIIO725tLTKNfFBEb9DNARw7NPItEwCXOD54inVCYFkjw9rypJx0I1JXBnrQTPX7SkUsAQcGbwqOgYbzImj4wVCN5WHreqvDuQtiGlygwRLTn7Mi6PlEWP8QSa2EEs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=NsA2sAEk; arc=none smtp.client-ip=209.85.208.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="ATOquYO5"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45GNdmIq010949;
-	Mon, 17 Jun 2024 09:30:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	KKp2Tcgz4byEiMIaGTwhjSTwZLE9rDd6TB5GY0oAGiQ=; b=ATOquYO59oVFxAz/
-	gn2BYRTpdMc2zQUhc/8seESvatrJfg+A5Z7vJ5AoDvHlA5hFR8wRQUiDbDQqf8/L
-	wVzWKHo6kYDeNuBHxnqbsBGo88fsifzTZV7/OMtZbBn9YPq9e57wPU5DRAEzvMna
-	drq7j+qc7jceo+G50JZ4x21R/Z+VYWHUXC8DghC9mqV1JbnR0DCFCEhxsm+/BYT+
-	IMeHeA4mf/lOd0uKPIxUA0zb2Rj/ZvSzJ73gSPKSuOYIznNHjzvTbFpGy2ITMIaM
-	v2vhaa48uzrWm/KXZnOVydEMEbK5r6qGdAMJT+lHb1Pyr/LQFoltl13qYCkISntQ
-	ocddfQ==
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ys1wr38hk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Jun 2024 09:30:25 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA04.qualcomm.com (8.17.1.19/8.17.1.19) with ESMTPS id 45H9U8rJ013883
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Jun 2024 09:30:08 GMT
-Received: from tengfan-gv.qualcomm.com (10.80.80.8) by
- nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Mon, 17 Jun 2024 02:30:02 -0700
-From: Tengfei Fan <quic_tengfan@quicinc.com>
-To: <krzysztof.kozlowski@linaro.org>, <djakov@kernel.org>, <robh@kernel.org>,
-        <conor+dt@kernel.org>, <andersson@kernel.org>,
-        <konrad.dybcio@linaro.org>
-CC: <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <kernel@quicinc.com>, Tengfei Fan <quic_tengfan@quicinc.com>
-Subject: [RFC PATCH 2/2] arm64: dts: qcom: sa8775p: Add CPU and LLCC BWMON
-Date: Mon, 17 Jun 2024 17:29:40 +0800
-Message-ID: <20240617092940.1724962-3-quic_tengfan@quicinc.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20240617092940.1724962-1-quic_tengfan@quicinc.com>
-References: <20240617092940.1724962-1-quic_tengfan@quicinc.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NsA2sAEk"
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-2ebd421a931so40408741fa.1
+        for <linux-pm@vger.kernel.org>; Mon, 17 Jun 2024 02:32:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1718616744; x=1719221544; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:in-reply-to
+         :references:user-agent:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=Vn7FXPTC3oDopyoLncz961C4PZuJpHX/UbBJ99RzoDs=;
+        b=NsA2sAEk71wuHm5WFsAbG7POHkdrQsEtiQrg1pd8RQ+gECuIZVHIL/zTDinJLfiC5k
+         62HmjDWpAR1qifJd3N45gIuRwuLxb+M6kk3y0Qvbs/1mSkMQ0TxEDf1fywIqfRVVKm2u
+         kCnM6tBYKAwhgpG/iorbYxQ26hDHwmBlRbx0QgYCRZy8xwX0Fi2LY2NojrE3XabJYPNm
+         WCQesg/Kv63+9JW36AWikHRc8ZcZaUSxAnXZ+PFlRlopzT5MZG6Lo0YiJJ9Ug58GeCnB
+         b2695PPR6qsCWQX4iMRm5kSxiDzvrLCD38TIut0GGLO5Yzg3MTHynbzcHKEZSbcUqi2w
+         /7Bg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1718616744; x=1719221544;
+        h=content-transfer-encoding:mime-version:message-id:in-reply-to
+         :references:user-agent:subject:cc:to:from:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Vn7FXPTC3oDopyoLncz961C4PZuJpHX/UbBJ99RzoDs=;
+        b=EAnHAZNXiMMv3qHbM/HlRWekfyYA9m6fFKAwfUUSLesO0J+/iCeIpkKA1A5HqdvqAx
+         CDPoR3QMeURkXg51CkYmTEsDD5o7ECOXmBbZu9G6iwcwK2h9Wbc8QtHUVtTO3foA1Uht
+         7kqIC0JrtmCCqHK4ZUck4Yg6CQsDCA2UN7m342yL+tGkttQ28arm/L3afNGBYMpYoCUg
+         jUQl4o87oEtlTghahKymFe3N8cGWaSGB/XCEN6ZGT8cVaQyDm/hstbReseUu9yDAwcY8
+         Ec3/W5+nN+DelVBCfHKFaVD5ApCIXHEQZbo1IxGjbwcV2PpxefDHXhDYKQbVPB9Xwoau
+         IXFQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXvXnd6q4BTW98YdyBSDcAtucQdJRQig1zFA77UlBwU8rrIl2bWL5YTvNSe2c+pDq29AUe7tTRwKr/LxzWM+c03nBc42RoZHZk=
+X-Gm-Message-State: AOJu0Yx0VuY1HwRM467+moz+rsHDDlZewEFSnYADHlqSPJqdhaFrFLVW
+	Jp3h1mDPGnZDHlA1wylsVKGfoVmmJqaFiWml6Utm7uo1hqoJTTJAWdkvdfOm35w=
+X-Google-Smtp-Source: AGHT+IERhDJHkxzaQFPoFIV6vwAY64N/UErLLjS6cy8dGj9JTOjmTCXvGH8sSNVbXMq4F7qYoO+BSg==
+X-Received: by 2002:a2e:be05:0:b0:2ec:eee:f198 with SMTP id 38308e7fff4ca-2ec0eeef74emr70338751fa.1.1718616743544;
+        Mon, 17 Jun 2024 02:32:23 -0700 (PDT)
+Received: from meli-email.org (adsl-33.109.242.225.tellas.gr. [109.242.225.33])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-36075104b45sm11408120f8f.109.2024.06.17.02.32.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 17 Jun 2024 02:32:23 -0700 (PDT)
+Date: Mon, 17 Jun 2024 12:23:12 +0300
+From: Manos Pitsidianakis <manos.pitsidianakis@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, Wedson Almeida Filho <wedsonaf@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, Bj=?UTF-8?B?w7Y=?= rn Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin <benno.lossin@proton.me>, Andreas Hindborg <a.hindborg@samsung.com>, Alice Ryhl <aliceryhl@google.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, rust-for-linux@vger.kernel.org, Manos Pitsidianakis <manos.pitsidianakis@linaro.org>, Erik Schilling <erik.schilling@linaro.org>, Alex Benn=?UTF-8?B?w6k=?= e <alex.bennee@linaro.org>, Joakim Bech <joakim.bech@linaro.org>, Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH V2 4/8] rust: Add initial bindings for cpufreq framework
+User-Agent: meli 0.8.6
+References: <cover.1717750631.git.viresh.kumar@linaro.org> <8a53d1e0bf52f02027ff4be2296bf59088bbd163.1717750631.git.viresh.kumar@linaro.org>
+In-Reply-To: <8a53d1e0bf52f02027ff4be2296bf59088bbd163.1717750631.git.viresh.kumar@linaro.org>
+Message-ID: <f7x5x.0h3ihwj957m@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,159 +68,20 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: ekKIriM3Su_5dhI88FyXeQJzAWSoxnSV
-X-Proofpoint-ORIG-GUID: ekKIriM3Su_5dhI88FyXeQJzAWSoxnSV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-06-17_08,2024-06-14_03,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 bulkscore=0
- lowpriorityscore=0 mlxlogscore=810 adultscore=0 spamscore=0 suspectscore=0
- priorityscore=1501 malwarescore=0 mlxscore=0 phishscore=0 clxscore=1015
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2405170001
- definitions=main-2406170073
+Content-Type: text/plain; charset=utf-8; format=flowed
 
-Add CPU and LLCC BWMON nodes and their corresponding opp tables for
-SA8775p SoC.
-SA8775p has two cpu clusters, with each cluster having a set of
-CPU-to-LLCC BWMON registers. Consequently, there are two sets of
-CPU-to-LLCC registers.
+On Fri, 07 Jun 2024 12:12, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>This commit adds initial Rust bindings for the cpufreq core. This adds
+>basic bindings for cpufreq flags, relations and cpufreq table.
+>
+>Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>---
+> rust/bindings/bindings_helper.h |   1 +
+> rust/helpers.c                  |  15 ++
+> rust/kernel/cpufreq.rs          | 251 ++++++++++++++++++++++++++++++++
+> rust/kernel/lib.rs              |   2 +
+> 4 files changed, 269 insertions(+)
+> create mode 100644 rust/kernel/cpufreq.rs
+>
 
-Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
----
- arch/arm64/boot/dts/qcom/sa8775p.dtsi | 115 ++++++++++++++++++++++++++
- 1 file changed, 115 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
-index 3808fafd6bec..32dd9fc7c532 100644
---- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
-@@ -2885,6 +2885,121 @@ serdes1: phy@8902000 {
- 			status = "disabled";
- 		};
- 
-+		pmu@9091000 {
-+			compatible = "qcom,sa8775p-llcc-bwmon", "qcom,sc7280-llcc-bwmon";
-+			reg = <0x0 0x9091000 0x0 0x1000>;
-+			interrupts = <GIC_SPI 620 IRQ_TYPE_LEVEL_HIGH>;
-+			interconnects = <&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>;
-+
-+			operating-points-v2 = <&llcc_bwmon_opp_table>;
-+
-+			llcc_bwmon_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-0 {
-+					opp-peak-kBps = <762000>;
-+				};
-+
-+				opp-1 {
-+					opp-peak-kBps = <1720000>;
-+				};
-+
-+				opp-2 {
-+					opp-peak-kBps = <2086000>;
-+				};
-+
-+				opp-3 {
-+					opp-peak-kBps = <2601000>;
-+				};
-+
-+				opp-4 {
-+					opp-peak-kBps = <2929000>;
-+				};
-+
-+				opp-5 {
-+					opp-peak-kBps = <5931000>;
-+				};
-+
-+				opp-6 {
-+					opp-peak-kBps = <6515000>;
-+				};
-+
-+				opp-7 {
-+					opp-peak-kBps = <7984000>;
-+				};
-+
-+				opp-8 {
-+					opp-peak-kBps = <10437000>;
-+				};
-+
-+				opp-9 {
-+					opp-peak-kBps = <12195000>;
-+				};
-+			};
-+		};
-+
-+		pmu@90b5400 {
-+			compatible = "qcom,sa8775p-cpu-bwmon", "qcom,sdm845-bwmon";
-+			reg = <0x0 0x90b5400 0x0 0x600>;
-+			interrupts = <GIC_SPI 581 IRQ_TYPE_LEVEL_HIGH>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>;
-+
-+			operating-points-v2 = <&cpu_cluster0_bwmon_opp_table>;
-+
-+			cpu_cluster0_bwmon_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-0 {
-+					opp-peak-kBps = <9155000>;
-+				};
-+
-+				opp-1 {
-+					opp-peak-kBps = <12298000>;
-+				};
-+
-+				opp-2 {
-+					opp-peak-kBps = <14236000>;
-+				};
-+
-+				opp-3 {
-+					opp-peak-kBps = <16265000>;
-+				};
-+			};
-+
-+		};
-+
-+		pmu@90b6400 {
-+			compatible = "qcom,sa8775p-cpu-bwmon", "qcom,sdm845-bwmon";
-+			reg = <0x0 0x90b6400 0x0 0x600>;
-+			interrupts = <GIC_SPI 581 IRQ_TYPE_LEVEL_HIGH>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>;
-+
-+			operating-points-v2 = <&cpu_cluster1_bwmon_opp_table>;
-+
-+			cpu_cluster1_bwmon_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-0 {
-+					opp-peak-kBps = <9155000>;
-+				};
-+
-+				opp-1 {
-+					opp-peak-kBps = <12298000>;
-+				};
-+
-+				opp-2 {
-+					opp-peak-kBps = <14236000>;
-+				};
-+
-+				opp-3 {
-+					opp-peak-kBps = <16265000>;
-+				};
-+			};
-+		};
-+
- 		llcc: system-cache-controller@9200000 {
- 			compatible = "qcom,sa8775p-llcc";
- 			reg = <0x0 0x09200000 0x0 0x80000>,
--- 
-2.25.1
-
+Reviewed-by: Manos Pitsidianakis <manos.pitsidianakis@linaro.org>
