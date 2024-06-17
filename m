@@ -1,151 +1,139 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from JPN01-OS0-obe.outbound.protection.outlook.com (mail-os0jpn01olkn2043.outbound.protection.outlook.com [40.92.98.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82E5B69D31
-	for <linux-pm@vger.kernel.org>; Mon, 17 Jun 2024 07:05:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718607925; cv=none; b=uv43biYIF6SZ1qs98lZbDs0vq/VlkSiCpjrtCwQnpVgbWD0/pjV40stuCeLrlTy+en7oKa/o1cUpRdrumsIu5qZfyc03BqYOc2kAjaI5h1jSJ/qypBZWe75ueJ55AFMTkLOBPr/0PUPXTLTL6yGM+MS0h8zP8J4e/b6byh+6iV4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718607925; c=relaxed/simple;
-	bh=V68FWbPBGLT2wuq2J9n6nHZkUz98CobWvg0eAsq/r5k=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Rs7YHZRqVQGiT313uyjH/yTW2qOpOirlVa4zMvNUkdZ289LxPGaBWgexOceUlLwkkc4idY5xTP96P5sV2+mPGhK/9/yoVvHq4E43YOjQ+ActdlqczxRJD+/aP1TV1uTOIAeLHpBC1wA+hyuLTgfK12hl1zK1MTvggWFDzPGQHoY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 74ce1d662c7611ef9305a59a3cc225df-20240617
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.38,REQID:82bfb657-58ea-4380-94f6-48b397b72933,IP:20,
-	URL:0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTI
-	ON:release,TS:5
-X-CID-INFO: VERSION:1.1.38,REQID:82bfb657-58ea-4380-94f6-48b397b72933,IP:20,UR
-	L:0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-	:release,TS:5
-X-CID-META: VersionHash:82c5f88,CLOUDID:317974d0b8ac6e5d771e1385d7407c4e,BulkI
-	D:240617145436OFKZLWQO,BulkQuantity:0,Recheck:0,SF:24|17|19|44|64|66|38|10
-	2,TC:nil,Content:0,EDM:-3,IP:-2,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:
-	nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
-X-CID-BVR: 0,NGT
-X-CID-BAS: 0,NGT,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_FSI
-X-UUID: 74ce1d662c7611ef9305a59a3cc225df-20240617
-Received: from node4.com.cn [(39.156.73.12)] by mailgw.kylinos.cn
-	(envelope-from <xiongxin@kylinos.cn>)
-	(Generic MTA)
-	with ESMTP id 1010945154; Mon, 17 Jun 2024 14:54:34 +0800
-Received: from node4.com.cn (localhost [127.0.0.1])
-	by node4.com.cn (NSMail) with SMTP id 7676C16002082;
-	Mon, 17 Jun 2024 14:54:34 +0800 (CST)
-X-ns-mid: postfix-666FDDAA-401713378
-Received: from [10.42.116.201] (unknown [10.42.116.201])
-	by node4.com.cn (NSMail) with ESMTPA id 14A3316002082;
-	Mon, 17 Jun 2024 06:54:33 +0000 (UTC)
-Message-ID: <d30cb05e-63cb-4ad4-ae2a-4359e89d48e1@kylinos.cn>
-Date: Mon, 17 Jun 2024 14:54:33 +0800
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B594D18C320;
+	Mon, 17 Jun 2024 07:28:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.98.43
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1718609301; cv=fail; b=P14ZnLq/eFO8C1fciYowfbxQt7QvGEOZ1zjRADk3yR1/l1q0b/ei235Tuj5uqtczqfn3vU1GSC7LCSSFbdzlUTszgZOuBPeM+cFuTu3DYGLKcHDn6Vz4ITeQesXCpx9UfCu61xbLACXLIVCOi1GmxcbVwTLw0ifJmWs6ECQH8r0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1718609301; c=relaxed/simple;
+	bh=OFJeS/PP8zKTuCZvwf6nMKmxU3pRGd0lVmckNBH0Rcs=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=H91tftwGz/csFzRUCU8NmY5+oE+Z7ja7s90qlWWCX/rWqRULbn7ZmBuf6bcweTBMjwL9fURaok1qkFo76beK16ed4NRj4PUzuEgk6X0JFxtabR9GEiaq3yJ/yHzuW1BnlL6mVtZiUAjZYMC3FjxkoUCxcEOsBCQfr2Hg25ZCeC0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com; spf=pass smtp.mailfrom=hotmail.com; dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b=tXw8S+bD; arc=fail smtp.client-ip=40.92.98.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hotmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b="tXw8S+bD"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ADsKOcLpiMVFfuuUDiVZZ28ntwDbgRyKdFATWTo8621OV4KzD/IDP7+pLjSKBQyqU03xcEhN9v2dMVhE14EerVUFSV66dH7nuSC4CUsZKMTQkW4KwFONL83dZpx1qN4QaMOrkFzhNzyLFZbatLrUf3GWWT3lxzku/Q4RY+r/B9rm4CjuNAshV1bFxoBCiaEQPYyd+Hnx64JKfgVrHL7eFeKMKWHrvrMAH6xaNiq+L9TlA8lh84x3jdhrlzsCa2LawghpnJqbybp9VpwvEM2s90Qqw/bx3Hot5vg0tr1MWC2A9Ns299jTaniyzKcoLyJG4qaB1IjBY6NBFSbwFRMipg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/kHmj+FF9DMq8xevOJbv/EWOkP8C4vSDTmV+2ZqxW84=;
+ b=Y4WFJRRHm+9JhxkGpt4RehdGnaAH0WqvRo/UakYTdWxGY/lheZjMIW84x8AIPgtSoPKrXIChjszLJBRGC6Xhs3snmed+tO384E7Hz9hwXjeKpehcqvkL9X9p1tu9Y0kJJbrdfA3u+yff8MH4dBIY6rwHahO+6uVfEyANaimCmt1rDVczZDezqgSQkUjZf/DUHt+GNVPgsurWIV3cecVGmdQlb/1GGwbl9lNMjUGphMV30nYqh0F5dfcLYgMOkg9rnj9kFJv1MW1W8Lr02WYHbNviAQ4PHI26oqqD8wOR2PzQa5Lu4uKIiOpXm1q54Hj1zMSuLDdrIsp4JPEBlB93Zg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=/kHmj+FF9DMq8xevOJbv/EWOkP8C4vSDTmV+2ZqxW84=;
+ b=tXw8S+bDklSYUgk64FKtV6yhWlf2Qom2eFUO8Pq0qWl+uQeXoXBEi3Qbf2HA0esz9TmzqLC7flgLtmUhmQQ7QZ9alE5awsy9lSEbcuOTUV+N6DqQTQTNaq0sohf/kHjwmUNu/OApsgtHmWJM1dxGlM2FTXqdACSLbIBhF9INamBXjFTYVzIuf7tInvIB/SaQ9+QCsHsvxy+uvDBvbhp3geJDmybPNBxP29n0uGyVeb0IcpSbHZw2JhhYEv+fLY6ERMZDhEA/3ApUm0u2IgIMkoy8rgcJba/s3Yg0BwN0JM7zWR9UEJU+9XLczZ4Umq8Y+JQHEleZ0jpt2jva7YJzXA==
+Received: from OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM (2603:1096:604:1f1::11)
+ by OSZP286MB2442.JPNP286.PROD.OUTLOOK.COM (2603:1096:604:15d::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7677.30; Mon, 17 Jun
+ 2024 07:28:17 +0000
+Received: from OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM
+ ([fe80::1167:655a:7fa5:5cef]) by OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM
+ ([fe80::1167:655a:7fa5:5cef%4]) with mapi id 15.20.7677.030; Mon, 17 Jun 2024
+ 07:28:17 +0000
+From: Riwen Lu <luriwen@hotmail.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org
+Cc: ionela.voinescu@arm.com,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Riwen Lu <luriwen@kylinos.cn>
+Subject: [PATCH v1] cpufreq/cppc: Remove desired_perf temporary variable
+Date: Mon, 17 Jun 2024 15:28:05 +0800
+Message-ID:
+ <OS3P286MB249037D0472F6BCCFFD162D1B1CD2@OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM>
+X-Mailer: git-send-email 2.25.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TMN: [qcsB02YZagS/W9WSDM8XD1z1JRQOzLu4]
+X-ClientProxiedBy: SG2PR04CA0200.apcprd04.prod.outlook.com
+ (2603:1096:4:187::15) To OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM
+ (2603:1096:604:1f1::11)
+X-Microsoft-Original-Message-ID: <20240617072805.19407-1-luriwen@hotmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] PM: sleep: Optimize the pm_debug_messages_should_print()
- function
-To: Mario Limonciello <mario.limonciello@amd.com>, rafael@kernel.org
-Cc: linux-pm@vger.kernel.org
-References: <20240422093619.118278-1-xiongxin@kylinos.cn>
- <20240423081723.412237-1-xiongxin@kylinos.cn>
- <2f07ea21-c89b-49dc-a7b6-8c4e207d1af7@amd.com>
- <408bbf09-58ef-4d55-ba89-a64dbce25085@kylinos.cn>
- <2b4930ea-c8c9-4743-aa46-f387056f2a1f@amd.com>
- <e30df16c-1af1-4d66-97cc-c0e6620764a6@kylinos.cn>
- <1714698149088349.0.seg@mailgw.kylinos.cn>
-Content-Language: en-US
-From: xiongxin <xiongxin@kylinos.cn>
-In-Reply-To: <1714698149088349.0.seg@mailgw.kylinos.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: OS3P286MB2490:EE_|OSZP286MB2442:EE_
+X-MS-Office365-Filtering-Correlation-Id: 5d5486f2-8173-4c06-bd18-08dc8e9f0e0e
+X-Microsoft-Antispam: BCL:0;ARA:14566002|461199025|3412199022|440099025;
+X-Microsoft-Antispam-Message-Info:
+	L8BjiQKKg9bfEf7se3a2ANiGcvMdazBynqTGWw3Ck5AAhOt+5m2Cq4EyvnKXcjNvwHQnFPX3ipQvvterziHu1Ihrg9ZLU8EUrvAln1u8nqBNmJtae7ZH+9n0RW7uPBw/5N52jtTXRB1avBfipKmO/+8N71wlegf+YBcAtR6qA/pWIejyZhH/eAGVpSxzYfNKAEyCzJnHUV8xvD0Pa6NNOR+urC+eOzG50c5zdwzkGULY+zwlRNeoDMbRM306jbXkfvE1VJLkqOLZYl0Nl67qgkUxc9Wy0LWeG7bddph8D/EPIJUZ9jwz4UgOqScaV+bAe8c4F5u1yj6yBXfr7QeqEmcH4/jidZooD8Rm37bJICKVsSBRzpZo05ARQW3WH4na8XXp1H+LN8zW7XGS0MeXi+rfIhxnzBeAsyid70Ila9m+9X9j86igAV5l1TkwNcZwxa2ZzbNUpZgqos937k2QKfjguIN8NUX56xmnp4MDkGf4YWLRkxRsgzIwyeVtuJqE8GP61/uuktsKxPSpcgzOBSOBrX51683ZdG8B4ZO4WteOcxm3RPBxyGf1mcflQmbb
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?kSZ5e3W/3/cCS8OjlFnk+mVkrNBEo8gxuDaR/qIx5v4IVwcyp/G3j4kOUyzK?=
+ =?us-ascii?Q?FSavk/3+902PMhNKtL3byuCKO4TU3obEPY5rbNY5IACghnUXx+U7lPUlZ55E?=
+ =?us-ascii?Q?/bhI4Y1aqWeJaCY3VXfLl5X0nuVJYBWBYtZFWWX/GOEKsFirx1pCeRxrmiQ5?=
+ =?us-ascii?Q?erI+rv4GLKzwcKN1qYy+ITonEPqPGL9IfBVmNWLGZbvPK/OdBzUEbr9+MBTe?=
+ =?us-ascii?Q?kLb7SoJE+rbPCDuUwNQza+0a8+xjZoYpZ+7ee/Nt44Zkz8M4SfNmHWNYeWst?=
+ =?us-ascii?Q?UjUNL6m+ED7pXoiS37tss9x309A0b8mQQquDK0pAv6XLYRwXS/wiJBjyg20I?=
+ =?us-ascii?Q?OCxpSWsUyx/LH7tR29fWXNl1nFnIHd77JyBEALPpZ1kJeLSgsF67mA0re65G?=
+ =?us-ascii?Q?HYqZ4TuryjM74/IABvXLuPNmymBGCG7iJrIbeOsWitvQEA+aoN5B3gQ6eS1f?=
+ =?us-ascii?Q?w96063RUVAknkvOGRBbElVXaPds0+OymFlB6KCKYOfGSYreap2nAyt1n61Tg?=
+ =?us-ascii?Q?sEHDqnJCswrSkQroOMT5HXaRDT667JCIIBFuBnxytQ4O+LPkR9ae+o45t+RG?=
+ =?us-ascii?Q?T6SUXoQ0HxIG1MLIrBgQdcXpKGB5nWw2tJmYhA3mpLKHgo27knh5a76y4Bp6?=
+ =?us-ascii?Q?a4fQ21k5LyZv+B7r3y7lfIwaMI58RoJJHEEQ3rthFo9N9MREhsvr/gOLWCqc?=
+ =?us-ascii?Q?4Ylj6q9utbuyIcgrz3Coi5p9oRojAELAYWoH55Zd6pSHyN5IduSwa6yOif5d?=
+ =?us-ascii?Q?h1SDjvqH2keHjo9rivckNa1r3itjWRnWGDRwJ0FyfQ0Jb2lXsMj0JNOEEm80?=
+ =?us-ascii?Q?nPu6G+fcXCS4PIvoe3xewM3xuq9H3CRVjph5qiWNY44ir2UlaAwUAnj+4eRA?=
+ =?us-ascii?Q?BxH7f+0+f67bMNDL6nQWKjk7EwBdFprBwgldeIdJfhzFVemjS3dEZHADKuYw?=
+ =?us-ascii?Q?u2FatC2aSgFqIeZlq7ikT5G2IIowdGXNCe5i8t2ld0C1iwgcXMuZsEaA6iiH?=
+ =?us-ascii?Q?aWayppItZXKgQOC2ATDjJl33zUjgxL8dmdxvkFEqSjCkHKKBB1E4q5hpUVJ9?=
+ =?us-ascii?Q?a1ntFf9K/wLO3JkGGuGDtEV+oYq3qfDftuCldougAwH82/aN81KdTke8IoBL?=
+ =?us-ascii?Q?StEnxW0Fwu478L1RlAMNbnCzloheBuk23B1lyOhBjnw6dbWtq69YqxNburQa?=
+ =?us-ascii?Q?3+yjrM72qh++eeOrADb9TIHHZpFpuxKLp15RDtCbiH/GhHB1TvIvODRnhLk?=
+ =?us-ascii?Q?=3D?=
+X-OriginatorOrg: sct-15-20-4755-11-msonline-outlook-05f45.templateTenant
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5d5486f2-8173-4c06-bd18-08dc8e9f0e0e
+X-MS-Exchange-CrossTenant-AuthSource: OS3P286MB2490.JPNP286.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jun 2024 07:28:16.9861
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
+	00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: OSZP286MB2442
 
-On 2024/5/3 03:04, Mario Limonciello wrote:
->=20
->>>> Can I change pm_pr_dbg() in amd_pmc_idlemask_read() to pr_debug()=20
->>>> based on
->>>>
->>>> pm_debug_messages_on condition?
->>>>
->>>> I suggest not adding a new variable to this.
->>>>
->>>
->>> I don't understand the opposition to the new variable.
->>>
->>> The whole point of /sys/power/pm_debug_messages is so that it's a one=
-=20
->>> stop shop to turn on power management related debugging at power=20
->>> state but nothing more.
->>>
->>> You turn that on and you can get messages from the core and also any=20
->>> drivers that want to emit messages during that time.
->>>
->>> If changing drivers back to pr_debug that means that users and=20
->>> software need to manually turn on BOTH /sys/power/pm_debug_messages=20
->>> as well as dynamic debug for any power management related messages.
->>>
->>> Whereas if just adding another variable for a condition then just=20
->>> turn on the sysfs file for any hibernate or suspend debugging.
->>
->> Your patch makes the output of pm_pr_dbg() based on the values of=20
->> pm_debug_messages_on and pm_suspend_target_state; However,=20
->> pm_suspend_target_state's impact domain does not include enter_state()=
-=20
->> and hibernate processes;
->>
->> The patch affects the output of the sleep mainline debug log, which is=
-=20
->> very unfriendly to others developers, and it is even more troublesome
->> to add a new variable based on your suggestion.
->=20
-> Why is adding a new variable more troublesome?=C2=A0 We're talking abou=
-t a=20
-> one line change and then it can run in more power management situations=
-.
->=20
->>
->> The kernel already has a log output solution based on the value of=20
->> pm_suspend_target_state. I will issue a repair patch as follows in
->> amd_pmc_idlemask_read():
->>
->> if (dev && pm_suspend_target_state !=3D PM_SUSPEND_ON)
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pr_info("SMU idlemask s0i3: 0x%x\n", val=
-);
->=20
-> But then this is going to be really noisy still for the general purpose=
-=20
-> users.
->=20
-> The point of pm_pr_dbg() is that it only outputs the debugging message=20
-> when /sys/power/pm_debug_messages is set.
->=20
-> 99% of people don't need this message, but when someone comes to say "i=
-t=20
-> doesn't work!" changing one sysfs file gets me a lot more data about=20
-> /why/ it doesn't work without compromising everyone else's logs.
+From: Riwen Lu <luriwen@kylinos.cn>
 
-Hi Rafael.
+There's no need of the desired_perf temporary variable in
+cppc_cpufreq_fast_switch(), remove it to simplify code.
 
-Can pm_suspend_target_state be extended to the state_store() function?=20
-Change the value of the variable as soon as suspend or hibernate=20
-processes begin. For the invoke process in kernel/power/user.c, ensure=20
-that pm_suspend_target_state is set before invoking=20
-suspend_devices_and_enter().
+Signed-off-by: Riwen Lu <luriwen@kylinos.cn>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-However, many drivers do some operations based on the=20
-pm_suspend_target_state variable, and it is not clear whether expanding=20
-the scope of the variable will cause other exceptions.
-
-Or re-implement a local variable based on state_store() and judge the=20
-variable in pm_debug_messages_should_print(), so that pm_pr_dbg() can be=20
-called directly by other drivers. And only suspend or hibernate=20
-processes print logs.
-
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 9095fd5f8c2d..9a5af756e447 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -314,11 +314,10 @@ static unsigned int cppc_cpufreq_fast_switch(struct cpufreq_policy *policy,
+ {
+ 	struct cppc_cpudata *cpu_data = policy->driver_data;
+ 	unsigned int cpu = policy->cpu;
+-	u32 desired_perf;
+ 	int ret;
+ 
+-	desired_perf = cppc_khz_to_perf(&cpu_data->perf_caps, target_freq);
+-	cpu_data->perf_ctrls.desired_perf = desired_perf;
++	cpu_data->perf_ctrls.desired_perf =
++			cppc_khz_to_perf(&cpu_data->perf_caps, target_freq);
+ 	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
+ 
+ 	if (ret) {
+-- 
+2.25.1
 
