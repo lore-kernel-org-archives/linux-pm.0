@@ -1,83 +1,126 @@
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4ECF190691
-	for <linux-pm@vger.kernel.org>; Mon, 17 Jun 2024 09:23:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FF6919148E;
+	Mon, 17 Jun 2024 09:27:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718616187; cv=none; b=DJlFKrBFcw2K7YudMBdt+rph6RuJynPe+7ppNzxkmKPlnRMV3ceyYh23b0UoM23vo28p9u/7LYa8d8l5UfrKHna0RFXc0xxSunD/99qGpORLF7pOJZRpR9yEQklqDYlOVB2FeN+f6/RPiVWsDj+SBsKFzEgnPAMS/WkxNYDKqbg=
+	t=1718616463; cv=none; b=i3jEi8marcAffE5uLTsTPE7Ena9hEr88KpQIwAxp28O5qedDButdzfRYdtjkNjlwQFq8BGC3Y4SiCAf+QH5J1zLtd8zeUWGgd8+Htsof23VpNtdXRPSwdZFd63izEJFAnA9YQl5s1pJO5XcsI1//7Z5c6OjCBmCISc/wdk9COX4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718616187; c=relaxed/simple;
-	bh=PJorj6pZybZCRAmgMBh4ooMcrMxupHMGQPqA/q11VUA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:Message-ID:
-	 MIME-Version:Content-Type; b=qt12w4omfHM7kvqgTcm5Gl8qXB6mEXQiV6UxQtdRWbL/eVj0lbJb+1L5NdieBzzhRzGBLfSzE52TEnr0dHmIUYqifMbSXU0vB2PbO3d9t0Sw1apbxZ1KPtAQs1+zq/iJoC2fBP6lNJKbaaxBRRvjTFbZWr0vXm1VMaE76GHDj04=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=QMmixxYJ; arc=none smtp.client-ip=209.85.128.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1718616463; c=relaxed/simple;
+	bh=dnFgPeAyWOcc/aC0MiFnCnbaJLtLBh5cDDDyNhkDw1k=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=OtJyWdWFEWAEsNsrmRQeS59iroBrpKq4eYG+cDGWyqK7PTfypLdvQBb2MHcBiVIspwZEb1aiEVHfpxQYVf9EeHxHuXgjCVBGJhwtBuM7l5zcwbf/yGhzv/ZANkga+Hh30w1FTWkSspXEqMvWouWgCsUfajcFnKf/BoGdVga6XkE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=KQeWwUel; arc=none smtp.client-ip=198.175.65.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QMmixxYJ"
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-421cd1e5f93so29046545e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 17 Jun 2024 02:23:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1718616184; x=1719220984; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:in-reply-to
-         :references:user-agent:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=PJorj6pZybZCRAmgMBh4ooMcrMxupHMGQPqA/q11VUA=;
-        b=QMmixxYJV02w5jGsjaYPK8uw8ATgnsghF9FuhA/pR5z6LSPx5Yp0VH+XA7Ectd+eWI
-         MYKVqZSeQwyHb9Oi64Tzm/kpOOg4wtky1ErU0NQXazVuquhtDbjgh2H3JqTfrWci6yMM
-         xCNYkvY4zV/kROI8cJ9fVSfB5Q08v0NaBPNH/ekl8hrHepZH8VxYw7qNhiOMRQ9MYIqP
-         z2VmWnV8bR5t07hU0AGVC13eCgbSD+ZFWmgKzHOcecE1Waw1chVScOiZBsaHxfqE3L/y
-         Nhib8sTqPx+K2SODDlpEtqjKO974pznUsspuKiixZLSZICSQWVBMKCG1SsUjt5mYXPVh
-         skgg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718616184; x=1719220984;
-        h=content-transfer-encoding:mime-version:message-id:in-reply-to
-         :references:user-agent:subject:cc:to:from:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=PJorj6pZybZCRAmgMBh4ooMcrMxupHMGQPqA/q11VUA=;
-        b=DWhH9IN3GJElM7U5mPeiB8t7qT//QAdQh4TPfgRiQ+nH/dPR7rlf+o0h69BFRgGGHd
-         k5I05beAV9a7P3wdJImZ1+MZIHSO8F8NdqI7Ti8D9Y/Uw4T03jp3JzlmzIBRC8E/bS3D
-         kIDa+uoK1FI7sxDiTjQWmUb2ZnE0s7QXYoGFVff14wS/uNH3rr61hy02lTXUvLY3wbCG
-         kaBU10Suy5FnnSTokT+Odp3u7H+OOm41ctF+OHa0oVr3ugBS6WrMbxKRaNuyszRvUkLH
-         KeJkcPj7YQUCo9/0vKrsMMqXTL2A50XmaWGC/GW3pyz9m691zdQPENrQsjfytI3axZR6
-         tayg==
-X-Forwarded-Encrypted: i=1; AJvYcCX3KTyygcmzG116EQAZyvJ9sTAmu13h35zZTeW1WkAE/6FgR23GISveCtO3h0kd+qpaCKSQuuoLwL9LTAKeT/9mG/DoT86+ZQI=
-X-Gm-Message-State: AOJu0Yzt5sfmH6vKaxTKvVIwUiN1Af63lZKHhprE9A4YjtD06ZhDnJVJ
-	NC/cAGC2b4dRuA1r8AC7hXXXi6b0gxEp/MfmqJR6Ik/bKld7Yu6hS6nPt7RyLCs=
-X-Google-Smtp-Source: AGHT+IFfL3Bs1KrLYPlq1k0cwv3eyK8lsf0inS3DFHb4TVzuMMGvXRsZ3JYsj7XJdNFeaX26ROtE2A==
-X-Received: by 2002:a05:600c:1d1b:b0:421:65a4:2936 with SMTP id 5b1f17b1804b1-423048240b6mr85210755e9.12.1718616184294;
-        Mon, 17 Jun 2024 02:23:04 -0700 (PDT)
-Received: from meli-email.org (adsl-33.109.242.225.tellas.gr. [109.242.225.33])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-422869d4f2esm192148015e9.0.2024.06.17.02.23.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Jun 2024 02:23:04 -0700 (PDT)
-Date: Mon, 17 Jun 2024 12:02:57 +0300
-From: Manos Pitsidianakis <manos.pitsidianakis@linaro.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, rust-for-linux@vger.kernel.org, Manos Pitsidianakis <manos.pitsidianakis@linaro.org>, Erik Schilling <erik.schilling@linaro.org>, Alex Benn=?UTF-8?B?w6k=?= e <alex.bennee@linaro.org>, Joakim Bech <joakim.bech@linaro.org>, Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, Wedson Almeida Filho <wedsonaf@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, Bj=?UTF-8?B?w7Y=?= rn Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin <benno.lossin@proton.me>, Andreas Hindborg <a.hindborg@samsung.com>, Alice Ryhl <aliceryhl@google.com>
-Subject: Re: [RFC PATCH V2 3/8] rust: Extend OPP bindings for the configuration options
-User-Agent: meli 0.8.6
-References: <cover.1717750631.git.viresh.kumar@linaro.org> <37bdd7ee7b74292830dd9977154b08ebcf08a138.1717750631.git.viresh.kumar@linaro.org>
-In-Reply-To: <37bdd7ee7b74292830dd9977154b08ebcf08a138.1717750631.git.viresh.kumar@linaro.org>
-Message-ID: <f7wqe.d5i9jcj6qgw@linaro.org>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="KQeWwUel"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1718616463; x=1750152463;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=dnFgPeAyWOcc/aC0MiFnCnbaJLtLBh5cDDDyNhkDw1k=;
+  b=KQeWwUelYuhRFpUcUgf6hcPFF/0HPqpKI6p1nC+zeQPWqLGivB14962k
+   bQHREfxdYGEogSbgIhyOxqPwcMwh1wgAWy11WU0lIOHwaq7biIR8t2uGA
+   GGZJd9RL/Ogmzi7I7NPTciyZE4VCQJUCKy/ymBR3/A3CyTAHJ6z0aDods
+   ov+8e8C3vdWcK3KPyOGCYUe/yvG41SngHI938zthV1Lyi+9Gjv/hHgalC
+   bA9GVjKfjwGoZIbJerfXAhcEswcNQV7SSKAy9qoVmvkaCItfbW+7YCklw
+   VNGIt92jjqGO+Va8sd+xulLPQkiaB8H50HpsvZEtQn6nXpaVduCC8cWUP
+   w==;
+X-CSE-ConnectionGUID: TYbi6O7TTcGifbvYBaXkgQ==
+X-CSE-MsgGUID: vp1ga7BTRUK/ZJjsTG6MIQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11105"; a="26010571"
+X-IronPort-AV: E=Sophos;i="6.08,244,1712646000"; 
+   d="scan'208";a="26010571"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jun 2024 02:27:42 -0700
+X-CSE-ConnectionGUID: kfn5WqeBQmqSeExi4ReZgQ==
+X-CSE-MsgGUID: 7jS773L6SgCRP3hyk+Dcbw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.08,244,1712646000"; 
+   d="scan'208";a="64337246"
+Received: from varadarp-mobl.gar.corp.intel.com ([10.213.94.8])
+  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jun 2024 02:27:31 -0700
+Message-ID: <27018603c7ed574451520aeeae405f7b1fcd6c4e.camel@linux.intel.com>
+Subject: Re: [PATCH PATCH 2/9] cpufreq: intel_pstate: Use
+ topology_cpu_type() to get cpu-type
+From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, Thomas Gleixner
+	 <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+	 <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org
+Cc: daniel.sneddon@linux.intel.com, tony.luck@intel.com, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-perf-users@vger.kernel.org, Josh Poimboeuf <jpoimboe@kernel.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Ricardo Neri
+ <ricardo.neri-calderon@linux.intel.com>,  "Liang, Kan"
+ <kan.liang@linux.intel.com>, Andrew Cooper <andrew.cooper3@citrix.com>
+Date: Mon, 17 Jun 2024 02:27:02 -0700
+In-Reply-To: <20240617-add-cpu-type-v1-2-b88998c01e76@linux.intel.com>
+References: <20240617-add-cpu-type-v1-0-b88998c01e76@linux.intel.com>
+	 <20240617-add-cpu-type-v1-2-b88998c01e76@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.50.0-1 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset=utf-8; format=flowed
 
-On Fri, 07 Jun 2024 12:12, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->This extends OPP bindings with the bindings for the OPP core
->configuration options.
->
->Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->---
-> rust/kernel/opp.rs | 305 ++++++++++++++++++++++++++++++++++++++++++++-
-> 1 file changed, 303 insertions(+), 2 deletions(-)
->
+On Mon, 2024-06-17 at 02:11 -0700, Pawan Gupta wrote:
+> Intel pstate driver uses hybrid_get_type() to get the cpu-type of a
+> given
+> CPU. It uses smp_call_function_single() which is sub-optimal and can
+> be
+> avoided as cpu-type is also available in the per-cpu topology
+> structure.
+>=20
+> Use topology_cpu_type() to get the cpu-type.
+>=20
+> Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Reviewed-by: Manos Pitsidianakis <manos.pitsidianakis@linaro.org>
+> ---
+> =C2=A0drivers/cpufreq/intel_pstate.c | 14 +++-----------
+> =C2=A01 file changed, 3 insertions(+), 11 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/intel_pstate.c
+> b/drivers/cpufreq/intel_pstate.c
+> index 65d3f79104bd..40f5e5b0b45e 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1951,24 +1951,16 @@ static int knl_get_turbo_pstate(int cpu)
+> =C2=A0	return ret;
+> =C2=A0}
+> =C2=A0
+> -static void hybrid_get_type(void *data)
+> -{
+> -	u8 *cpu_type =3D data;
+> -
+> -	*cpu_type =3D get_this_hybrid_cpu_type();
+> -}
+> -
+> =C2=A0static int hwp_get_cpu_scaling(int cpu)
+> =C2=A0{
+> -	u8 cpu_type =3D 0;
+> +	u8 cpu_type =3D topology_cpu_type(cpu);
+> =C2=A0
+> -	smp_call_function_single(cpu, hybrid_get_type, &cpu_type,
+> 1);
+> =C2=A0	/* P-cores have a smaller perf level-to-freqency scaling
+> factor. */
+> -	if (cpu_type =3D=3D 0x40)
+> +	if (cpu_type =3D=3D X86_CPU_TYPE_INTEL_CORE)
+> =C2=A0		return hybrid_scaling_factor;
+> =C2=A0
+> =C2=A0	/* Use default core scaling for E-cores */
+> -	if (cpu_type =3D=3D 0x20)
+> +	if (cpu_type =3D=3D X86_CPU_TYPE_INTEL_ATOM)
+> =C2=A0		return core_get_scaling();
+> =C2=A0
+> =C2=A0	/*
+>=20
+
