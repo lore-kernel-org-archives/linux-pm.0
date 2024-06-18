@@ -1,96 +1,148 @@
-Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com [209.85.167.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from forward502b.mail.yandex.net (forward502b.mail.yandex.net [178.154.239.146])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8826A45BE4
-	for <linux-pm@vger.kernel.org>; Tue, 18 Jun 2024 16:02:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6879274070;
+	Tue, 18 Jun 2024 16:21:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.146
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718726542; cv=none; b=dTheCHUoIsm+6wfPuFpelfTPvOxaQHVIU1ji+uyDrniO0tPr/hiw9eq05TIfGCy6lzA9bVw/JLAlReaF3g3LcK8hu8VUrFPtDE3weas6kH7eVHqGNX5CfDEdHGXm6xGDZ9V8MMFYocNh+fOQXoxUE6x8R7jjWTDu/YqJTB/BaI0=
+	t=1718727685; cv=none; b=VoGA4FuZOzDWgQ0l0bZg3fYHuUviVdZ6jndsygfUqeWYuyVVdrKyldDgMLGhAGkGpHZlpnicjgZKj9IhEDFkpIKs7sNbiBwHEHm4xT5UVAXiiC3RGcFgYYGKek6VPLyAdilFZfrc5OKL1P50aDG2HTBfuHwX5TqqjlfzxHmNB0A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718726542; c=relaxed/simple;
-	bh=x2PiSU9LX7PP8SgWlE3EbW7kJbvIktv1zVvHYBCMABM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QqTUl5UaW4QkuLLrizgDGdWSnbBrGZQqKuOrHBrzbCJ0t1DaC83U5SLtFVEjV3CnKw+ZxTqi9TR/T/QeTIaHXZB+erHzwd4ZR0ZSGzSDUbpqJ8EWQSH+jg2x+/5mrPz6DXn6rXh27fdTh4HVcSxZdffHQmbE31bc9ZjgK+xAz9s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=NqgYgMbC; arc=none smtp.client-ip=209.85.167.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1718727685; c=relaxed/simple;
+	bh=3ZVPPTGo8cq6QNmgKbHqK8ZqZExCe+h2ikFe65E6vfw=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=C+cVVwJFl2dTdkeSdzCDsYdoI8HTsIbtSgyYGAJEqrCvaEN9r5tm+eg5U9YMwM6GJTELLp0sCA01+xYm8kR6RgG72gmwNN62OQ9peIxi5CpghJ2w16BAGcWHz1O1l5YIMJGRJbefCcDphWQkkE1allMdRIvnN5F6njlRybDzvvY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=maquefel.me; spf=pass smtp.mailfrom=maquefel.me; dkim=pass (1024-bit key) header.d=maquefel.me header.i=@maquefel.me header.b=puzpn+qw; arc=none smtp.client-ip=178.154.239.146
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=maquefel.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=maquefel.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NqgYgMbC"
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-52bc121fb1eso6579638e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 18 Jun 2024 09:02:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1718726538; x=1719331338; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=752RRs86IaRqV5X/Zk2O6e+xuNg1lXOleBt1pgXq+cM=;
-        b=NqgYgMbCmtl7nAdAV5xOv+RloRJ8xu0Jv3KAYLTBwD7Ci28rkjj80GIQouhYBp6iQE
-         CAt7I6aOC89MIaM9RcHSkOyll+KAnK003xvQjwCza3Fk0lQg6ttJztTH+2Wh5eoBNLDa
-         2gS3DzF78vv3xM3hxFRCN7MniXrbC9JEQHKVRxg7Ruc2NWooPtRh5eVW7zkgEP4Rh5oA
-         ajOSN6ZVPUlDvTrefivqFn0pWsD/RB0V0QegxGSGT1Km1+cYG7v1/ff7fsQ5fi5Ko4Q+
-         ppXEVGS7hbd9P3pxEULF5j5Xm+yEv1ZqKDIr0lRnjA8JeR92UuxuCDmXg/wEITa8QJrF
-         3Ybg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718726538; x=1719331338;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=752RRs86IaRqV5X/Zk2O6e+xuNg1lXOleBt1pgXq+cM=;
-        b=IfPvXxq3yGguLo6lHnYWp6sjdAzcA1YNxcVYzenVY509lpByhQYK0z8FYIfh2iphvX
-         zM4u6daeWTi+BdzQq786syjGQC2I12vx71tKnS8YgGsd7oWFLNCeqpFVyVy8ab5PtGnl
-         arfxCEmMNIyU32ri7aFZtj17HQ0T898tYiG81Oz9aTclcQs5D011NH9vQ/3C6vhx4fvN
-         Eks+RMB+wh8chXu203axPEnjVqITakmFFbK4TFgLfVbTAlwFvhIqr38YG0RG2UA3X6ft
-         tcCX3oDktNc3YzlofKUU9Ftj20yBA4gOW9xhGdjZeCg0Ryz8sQoWB//m0Chjet1A4/cW
-         f9jg==
-X-Forwarded-Encrypted: i=1; AJvYcCVx405P72bIlOiTJZ5PrKRYCGs5vhVgM6f0kv19aqdNO+zgtJ7HOPXxSpz2J1dVVjWUK5bJFdIXVtcvmkK+I4Z4vQTqAYYDOz0=
-X-Gm-Message-State: AOJu0YxFZWSsJqyPXizrZtZBgiem4os1rHgQhazLmwekaSw7Qp98OOH6
-	aA7Hr8kA0O0qC17MOT2FdeuA+0JUP8q7rmkHlYfWDmjtmujYRgHpFpXD7fLZfhk=
-X-Google-Smtp-Source: AGHT+IFI6pzMjgCbLBoQAWrp4XZXRVfgnVptha58SDpLfkJeq9xe2VdrhCoCQ5WsAeY36aPV7rhK5A==
-X-Received: by 2002:a05:6512:70:b0:52c:8932:27bd with SMTP id 2adb3069b0e04-52ccaa38052mr32213e87.41.1718726537649;
-        Tue, 18 Jun 2024 09:02:17 -0700 (PDT)
-Received: from ?IPV6:2a00:f41:9028:9df3:9346:6881:423d:1381? ([2a00:f41:9028:9df3:9346:6881:423d:1381])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-52ca2888c2esm1551297e87.300.2024.06.18.09.02.15
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 18 Jun 2024 09:02:17 -0700 (PDT)
-Message-ID: <d09aa84c-dc75-48c6-b91e-c0dbe3d2e06f@linaro.org>
-Date: Tue, 18 Jun 2024 18:02:14 +0200
+	dkim=pass (1024-bit key) header.d=maquefel.me header.i=@maquefel.me header.b="puzpn+qw"
+Received: from mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net [IPv6:2a02:6b8:c16:2014:0:640:2712:0])
+	by forward502b.mail.yandex.net (Yandex) with ESMTPS id CAAFA5F059;
+	Tue, 18 Jun 2024 19:21:08 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id xKLHl69CYiE0-BWlTE6hu;
+	Tue, 18 Jun 2024 19:21:06 +0300
+X-Yandex-Fwd: 1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=maquefel.me; s=mail;
+	t=1718727666; bh=3ZVPPTGo8cq6QNmgKbHqK8ZqZExCe+h2ikFe65E6vfw=;
+	h=References:Date:In-Reply-To:Cc:To:From:Subject:Message-ID;
+	b=puzpn+qwZpDWr34Mz2VDbCLKw+CF3X4x7FJmlcrAAYOz4Dezeyqid/LQR6ZMsxokZ
+	 7Lly2NZd33KM9/c+ruY7aecmDl3Muygsbv231bG9Mdy1tKuDl4h48bTcb1nYvZrRgL
+	 GDbEpeWFZbA42dWJbNJtICRIsfhgB5fX4MxOwzTY=
+Authentication-Results: mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net; dkim=pass header.i=@maquefel.me
+Message-ID: <48c242838c77034485a9e667dc0e867207c5beed.camel@maquefel.me>
+Subject: Re: [PATCH v10 00/38] ep93xx device tree conversion
+From: Nikita Shubin <nikita.shubin@maquefel.me>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>, Arnd Bergmann
+ <arnd@arndb.de>,  Stephen Boyd <sboyd@kernel.org>, Vinod Koul
+ <vkoul@kernel.org>
+Cc: Hartley Sweeten <hsweeten@visionengravers.com>, Alexander Sverdlin
+ <alexander.sverdlin@gmail.com>, Russell King <linux@armlinux.org.uk>,
+ Lukasz Majewski <lukma@denx.de>, Linus Walleij <linus.walleij@linaro.org>,
+ Bartosz Golaszewski <brgl@bgdev.pl>, Andy Shevchenko <andy@kernel.org>,
+ Michael Turquette <mturquette@baylibre.com>, Sebastian Reichel
+ <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski
+ <krzysztof.kozlowski+dt@linaro.org>,  Conor Dooley <conor+dt@kernel.org>,
+ Vinod Koul <vkoul@kernel.org>, Wim Van Sebroeck <wim@linux-watchdog.org>, 
+ Guenter Roeck <linux@roeck-us.net>, Thierry Reding
+ <thierry.reding@gmail.com>, Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?=
+ <u.kleine-koenig@pengutronix.de>, Mark Brown <broonie@kernel.org>, "David
+ S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub
+ Kicinski <kuba@kernel.org>,  Paolo Abeni <pabeni@redhat.com>, Miquel Raynal
+ <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Vignesh
+ Raghavendra <vigneshr@ti.com>, Damien Le Moal <dlemoal@kernel.org>, Sergey
+ Shtylyov <s.shtylyov@omp.ru>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Ralf Baechle <ralf@linux-mips.org>,  "Wu,
+ Aaron" <Aaron.Wu@analog.com>, Lee Jones <lee@kernel.org>, Olof Johansson
+ <olof@lixom.net>, Niklas Cassel <cassel@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ linux-gpio@vger.kernel.org, linux-clk@vger.kernel.org,
+ linux-pm@vger.kernel.org,  devicetree@vger.kernel.org,
+ dmaengine@vger.kernel.org,  linux-watchdog@vger.kernel.org,
+ linux-pwm@vger.kernel.org,  linux-spi@vger.kernel.org,
+ netdev@vger.kernel.org, linux-mtd@lists.infradead.org, 
+ linux-ide@vger.kernel.org, linux-input@vger.kernel.org, 
+ linux-sound@vger.kernel.org, Bartosz Golaszewski
+ <bartosz.golaszewski@linaro.org>,  Krzysztof Kozlowski
+ <krzysztof.kozlowski@linaro.org>, Andy Shevchenko
+ <andriy.shevchenko@linux.intel.com>, Andrew Lunn <andrew@lunn.ch>
+Date: Tue, 18 Jun 2024 19:20:58 +0300
+In-Reply-To: <CAHp75VfSC9gAD9ipeWRPdQOxUp4FXqYYei-cJTs38nbz0cHpkg@mail.gmail.com>
+References: <20240617-ep93xx-v10-0-662e640ed811@maquefel.me>
+	 <CAHp75VfSC9gAD9ipeWRPdQOxUp4FXqYYei-cJTs38nbz0cHpkg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.48.4 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V2 1/3] dt-bindings: interconnect: qcom,msm8998-bwmon: Add
- X1E80100 BWMON instances
-To: Sibi Sankar <quic_sibis@quicinc.com>, andersson@kernel.org,
- djakov@kernel.org, robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
- srinivas.kandagatla@linaro.org
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
- quic_rgottimu@quicinc.com, quic_kshivnan@quicinc.com, conor+dt@kernel.org,
- dmitry.baryshkov@linaro.org, abel.vesa@linaro.org
-References: <20240618154306.279637-1-quic_sibis@quicinc.com>
- <20240618154306.279637-2-quic_sibis@quicinc.com>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@linaro.org>
-In-Reply-To: <20240618154306.279637-2-quic_sibis@quicinc.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+
+Hello Andy!
+On Mon, 2024-06-17 at 12:58 +0200, Andy Shevchenko wrote:
+> On Mon, Jun 17, 2024 at 11:38=E2=80=AFAM Nikita Shubin via B4 Relay
+> <devnull+nikita.shubin.maquefel.me@kernel.org> wrote:
+> >=20
+> > The goal is to recieve ACKs for all patches in series to merge it
+> > via Arnd branch.
+>=20
+> 'receive'
+>=20
+> > Unfortunately, CLK subsystem suddenly went silent on clk portion of
+> > series V2 reroll,
+> > tried to ping them for about a month but no luck.
+> >=20
+> > Link:
+> > https://lore.kernel.org/r/20240408-ep93xx-clk-v2-1-adcd68c13753@maquefe=
+l.me
+> >=20
+> > Some changes since last version (v9) - see "Changes in v10", mostly
+> > cosmetic.
+>=20
+> ...
+>=20
+> > Patches should be formated with '--histogram'
+>=20
+> 'formatted'
+>=20
+> ...
+>=20
+> > Changes in v10:
+> >=20
+> > Reordered SoB tags to make sure they appear before Rb and Acked
+> > tags.
+>=20
+> This is not required. The importance is only the order of SoBs
+> themselves. If they are interleaved with other tags, it's fine.
+
+Ah - ok. Just saw someone was complaining about b4 reordering them.=20
+
+>=20
+> ...
+>=20
+>=20
+> Hopefully to see this series being eventually applied soon.
+> Arnd? (Do we have all necessary subsystem maintainers' tags, btw?)
+>=20
+>=20
+
+As i see from my perspective only three left:
+
+Clk subsystem:
+
+- clk: ep93xx: add DT support for Cirrus EP93xx
+
+DMA subsystem (but the only request from Vinod, as far as i remember,
+was fixing commits titles):
+
+- dmaengine: cirrus: Convert to DT for Cirrus EP93xx
+- dmaengine: cirrus: remove platform code
+
+Beside that tags missing on platform code removal (which can be Acked
+by Arnd himself i believe) and dtsi/dts files (same ?).
 
 
 
-On 6/18/24 17:43, Sibi Sankar wrote:
-> Document X1E80100 BWMONs, which has multiple (one per cluster) BWMONv4
-> instances for the CPU->LLCC path and one BWMONv5 instance for LLCC->DDR
-> path. Also make the opp-table optional for the X1E cpu-bwmon instances,
-> since they use the same opp-table between them.
-> 
-> Signed-off-by: Sibi Sankar <quic_sibis@quicinc.com>
-> ---
 
-I think we can just drop the opp-table child node from required altogether,
-bindings shouldn't care about where the OPP table (which is referenced in
-the operating-points-v2 property) comes from
-
-Konrad
