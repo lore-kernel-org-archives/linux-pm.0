@@ -1,172 +1,111 @@
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E949FC1F;
-	Wed, 19 Jun 2024 05:43:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EB0461FDD;
+	Wed, 19 Jun 2024 05:58:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718775832; cv=none; b=LLonIjg9C4fn8tTCYqnBLdKEFyL3WGCOtmUkf6rRWWvfYpc4+ssZdOWi2sEdFFu5QPLrjeJRUgDZ7RHuhYduyWLdkdsOnZsfu3rOvkqS+VLm45oLX9+CW/NvZQqbYa4WJNi8iL261B0JiDusHq+oHaYxZBXAP3K3aZ3mrt8shrI=
+	t=1718776694; cv=none; b=UgeB9TSj8oFAOOezS8raAYeK6jel/MRlw6A45OyobWBPnonT6Yp9JtrJ9kVb9kA3q+cDBGR0T+AAM2joMGbq3R8dtLOLr8NTK9JNv+glboNAwBiFx+tHPEN2c6lzEYwKzXZjPEJxIm+cczkb+5he6FQMzEj08mjId838My2Er0g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718775832; c=relaxed/simple;
-	bh=1MWDSgrROFhu76DSyxYy7yjYvYvBvDjlXn+sMPQhZZw=;
-	h=From:To:Subject:Date:CC:Message-ID:MIME-Version:Content-Type; b=Evnw5XHOZoma2hrw5O1IDaSecuHobR6zmJ3sHe9IyF1uGgB/NrmOhpFJ+DtdXqWH7mpLX+NO2VHswakbgzs5zdepycncrHaqNwdL8FHqAtyAEnfYy86fYduCGm/ZeS9caNCHgopZ70FVTQ/v2LRlidTE+sUebuZNCtlJFDBEhWw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LXwZQEU7; arc=none smtp.client-ip=209.85.214.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1718776694; c=relaxed/simple;
+	bh=a5vxgGfrOPyJE5Lw7K9sjW1/VAPz4y4qyKH6LAzXlU0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=sQfLKNp6zqREGPr1YIpNASy6wp5/+glVw3MmO/72Ybvk8tVgT4NvtD7TXTzMWqtQ/eSx8FY6McBCixsTR2TWuCLScwPDc9ChJptDSPbGOhY84PNG1s9WTMFlhpu8cD4lpGSD6wyh6DlKW9BQejIKsUc9ZPdaNFqgLQcI4+fWEEQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XMPQI7gR; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LXwZQEU7"
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-1f64ecb1766so44747175ad.1;
-        Tue, 18 Jun 2024 22:43:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1718775830; x=1719380630; darn=vger.kernel.org;
-        h=mime-version:message-id:cc:date:subject:to:from:user-agent:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=1MWDSgrROFhu76DSyxYy7yjYvYvBvDjlXn+sMPQhZZw=;
-        b=LXwZQEU7SCYtcv2Dv+2yCz21W/i1lOlr4jmI0JqSSdSLZrcv6l7c+dABXHlMxRuZ2Y
-         hD1eRaLzVKsG/g8KO1Sj7pbmuHPv2gkzc52ntgNXYDK9LqHzMJmepGndpP0hutovCeI0
-         oHu6Zz96HHOrVtm5yHVnUl7AA8ikPu3XjEoY5UUZZHTnNGZsook2G7IYXenWShoWN/mv
-         tx/ZOtNKOdu2oUqkWfLAUtwQfQc4+BklJBKamqqflJ8QWsxdw5wfB7yrZqnUJofgVJ6f
-         1QQ39EIbEZ03o2wEqqnQo0yB8ZVFuM1Jz6yhHhrkid9Lkv2ruytwm1O6jCSlHh8OLO8v
-         XnEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718775830; x=1719380630;
-        h=mime-version:message-id:cc:date:subject:to:from:user-agent
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1MWDSgrROFhu76DSyxYy7yjYvYvBvDjlXn+sMPQhZZw=;
-        b=qFD6be3VC6FzkfXBYoPzaPsSGVwoMc4ex+CnGes8u5ThaNDq7oV/T+xFaxgqsXnDDG
-         Ka6V+Xn9HGCuEMYoSkA/kv91Vmt4nHYCL/a1xoifYI9XSrhXoysN8ZP4ugcFXb1X5akn
-         debpw5W/wIVreINdVLNM4ouNMOhRkQz4KyY7DWNeo80VAWzaCuQL19xlyduFLRotPRlb
-         ZwcdzCoe5FmPSRgeoG8ZrJxtCX1O+Rc8nvjlMHufVZAdsROBmk51n2m9Zc87mIdwAnRq
-         WntNahJz/Tk2e9XlDUseDflh+i5G8v8Ng/n/x9dvOXEF5dkt6vXV8G5nR2950HEWutL9
-         /fUw==
-X-Gm-Message-State: AOJu0YxGGqyVUQ3epsjdCvZM89Tcfz0eYNK4BQJpYqfOiHD4JqwKSRI8
-	TjX+M8ppbxxB8dmO9Op0G+Yo5NwdXZ754O0GPTGBciBH1sC2RNtw
-X-Google-Smtp-Source: AGHT+IG4cfqY0r085GVp78gHD0WvEwQnaNKB8ctJdXB3EzIEPfgwgJ/alDtu38pkvaE8lUWvr11uPA==
-X-Received: by 2002:a17:903:40c7:b0:1f7:1cbc:184b with SMTP id d9443c01a7336-1f9aa3c362cmr17571975ad.20.1718775829404;
-        Tue, 18 Jun 2024 22:43:49 -0700 (PDT)
-Received: from terra ([122.171.16.135])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-1f855e704desm107512475ad.75.2024.06.18.22.43.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Jun 2024 22:43:48 -0700 (PDT)
-User-agent: Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101
- Thunderbird/38.1.0 Lightning/4.0.2
-From: Forty Five <mathewegeorge@gmail.com>
-To: linux-wireless@vger.kernel.org
-Subject: [REGRESSION] Freeze on resume from S3 (bisected)
-Date: Wed, 19 Jun 2024 10:09:03 +0530
-CC: linux-pm@vger.kernel.org,phhuang@realtek.com,pkshih@realtek.com,kvalo@kernel.org,regressions@lists.linux.dev
-Message-ID: <87tthpwkqf.fsf@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XMPQI7gR"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0E16C2BBFC;
+	Wed, 19 Jun 2024 05:58:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1718776694;
+	bh=a5vxgGfrOPyJE5Lw7K9sjW1/VAPz4y4qyKH6LAzXlU0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=XMPQI7gRWco4XkS2Ej95fCPDGB1oqpXbjiSK0fv9C1APYe6Jg8BvWHbLdAgnt1HYJ
+	 7+yPL8wq8985HlVG1ljRK+oKOKOCUq+wX7d/6kskXQWL1SGJ2tzUhHi/9r6VWGNgf+
+	 BRdQt6q1AL8MqHQs/arZP0IXVY+FX4iw7SFuRBsssuLDnDCEvPjVN2RvCAiykF5m/V
+	 jVPBNeHsQxb7wNnZZngblEaACXGN0gASlNog+Mr1ZE1CF9l2WlSoP6eBmlH9SNl3Jr
+	 6V+/l+NdDabaknP9XCOk19G9lXC9FeHrq39G4R2XH+dNHAoaJCUfg7dLMXoOeCpH8W
+	 ROR/aeV9/Un9Q==
+Message-ID: <466f4167-4763-4c31-b6d1-6e7ac136138e@kernel.org>
+Date: Wed, 19 Jun 2024 07:58:08 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4] dt-bindings: thermal: convert hisilicon-thermal.txt to
+ dt-schema
+To: Abdulrasaq Lawani <abdulrasaqolawani@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: skhan@linuxfoundation.org, javier.carrasco.cruz@gmail.com,
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20240618-hisilicon-thermal-dt-bindings-conversion-v4-1-7eba97fbe6d0@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <20240618-hisilicon-thermal-dt-bindings-conversion-v4-1-7eba97fbe6d0@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+On 19/06/2024 04:31, Abdulrasaq Lawani wrote:
+> Convert the hisilicon SoCs tsensor txt bindings to dt-schema
+> 
+> Signed-off-by: Abdulrasaq Lawani <abdulrasaqolawani@gmail.com>
+> ---
+> Changes in v4:
+> - Update the indentation for 'examples'.
 
 
-I've been experiencing system freezes that require a hard reset with the
-power button, starting from v6.8-rc1. The warnings produced suggest a
-wireless-related issue, and the bisection seems to confirm this.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-The freezes usually occur right after resuming from S3 (suspend). To
-reproduce the issue, I just suspend (`sudo systemctl suspend`) and
-resume (press any key on keyboard) a few times until the freeze happens.
-It takes 4-5 cycles of this most of the time, though it varies a lot.
+Best regards,
+Krzysztof
 
-The upshot of all of this is that S3 (and S4 as well, see below) are
-pretty much unusable for me, due to the risk of losing work due to a
-freeze.
-
-Since a hard reset causes the systemd journal to be dropped, I set up
-[kdumpst](https://gitlab.freedesktop.org/gpiccoli/kdumpst) so that I
-could record dmesg output at the time of the freeze. I've linked to the
-crash logs produced by that tool for every bad commit in the bisection
-(except in cases where I couldn't get the kdump to happen - see the
-comments in the bisection log below), as well as a crash log triggered
-by SysRq (Alt+SysRq+c) on a good commit for comparison.
-
-I've already submitted this as an Arch Linux bug report:
-https://gitlab.archlinux.org/archlinux/packaging/packages/linux/-/issues/61
-
-The freezes have also occurred (seemingly) at random times, although
-this is quite rare. They do seem to be more likely to occur after the
-system has been hibernated, although I don't really have any way to
-confirm this.
-
-
-Git bisect log:
-
-git bisect start
-# status: waiting for both good and bad commits
-# bad: [83a7eefedc9b56fe7bfeff13b6c7356688ffa670] Linux 6.10-rc3
-git bisect bad 83a7eefedc9b56fe7bfeff13b6c7356688ffa670
-# good: [e8f897f4afef0031fe618a8e94127a0934896aba] Linux 6.8
-git bisect good e8f897f4afef0031fe618a8e94127a0934896aba
-# bad: [445e60303883950161f67e18b9f048b18d7fb706] Merge branch '1GbE' of git://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue
-git bisect bad 445e60303883950161f67e18b9f048b18d7fb706
-# bad: [e5e038b7ae9da96b93974bf072ca1876899a01a3] Merge tag 'fs_for_v6.9-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs
-# this one froze on the first suspend/resume
-git bisect bad e5e038b7ae9da96b93974bf072ca1876899a01a3
-# good: [1f440397665f4241346e4cc6d93f8b73880815d1] Merge tag 'docs-6.9' of git://git.lwn.net/linux
-git bisect good 1f440397665f4241346e4cc6d93f8b73880815d1
-# bad: [a2f24c8a955c8f941d6ac08dd7f401f54eef4627] Merge branch 'mptcp-some-clean-up-patches'
-git bisect bad a2f24c8a955c8f941d6ac08dd7f401f54eef4627
-# bad: [26f4dac11775a1ca24e2605cb30e828d4dbdea93] netfilter: x_tables: Use unsafe_memcpy() for 0-sized destination
-# This one was very hard to reproduce - it must have taken 25-30 cycles total, and I hibernated the system twice
-git bisect bad 26f4dac11775a1ca24e2605cb30e828d4dbdea93
-# good: [4f5e5092fdbf5cec6bedc19fbe69cce4f5f08372] Merge tag 'net-6.8-rc5' of git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
-git bisect good 4f5e5092fdbf5cec6bedc19fbe69cce4f5f08372
-# good: [b4e8ae5c8c41355791a99fdf2fcac16deace1e79] net: add napi_busy_loop_rcu()
-git bisect good b4e8ae5c8c41355791a99fdf2fcac16deace1e79
-# bad: [20ea9327c2fd545d6b96e998727bcd724290694d] net: dccp: Simplify the allocation of slab caches in dccp_ackvec_init
-git bisect bad 20ea9327c2fd545d6b96e998727bcd724290694d
-# bad: [92046e83c07b064ca65ac4ae7660a540016bdfc1] Merge tag 'for-netdev' of https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next
-git bisect bad 92046e83c07b064ca65ac4ae7660a540016bdfc1
-# bad: [b54846da45942bbe4e5ebc59d497e4a48525ba5a] Merge tag 'wireless-next-2024-01-25' of git://git.kernel.org/pub/scm/linux/kernel/git/wireless/wireless-next
-git bisect bad b54846da45942bbe4e5ebc59d497e4a48525ba5a
-# good: [3832a9c40b356500c5b85a6fdf9577c590fcd637] wifi: rtw89: fw: extend JOIN H2C command to support WiFi 7 chips
-git bisect good 3832a9c40b356500c5b85a6fdf9577c590fcd637
-# bad: [5ba45ba77616637e554d66a57ef0334e5cc2efe4] wifi: rtw89: fix disabling concurrent mode TX hang issue
-# I see the same kernel warnings here as with the other bad commits.
-# However, there is no crash after a few suspend/resume cycles - instead
-# the system simply restarts when I trigger the nth suspend. I'm not
-# able to trigger a crash with SysRq either (Alt+SysRq+c) - again, the
-# system restarts. This is the case with all bad commits after this.
-git bisect bad 5ba45ba77616637e554d66a57ef0334e5cc2efe4
-# good: [85da8f71aaa7b83ea7ef0e89182e0cd47e16d465] wifi: brcmfmac: Demote vendor-specific attach/detach messages to info
-git bisect good 85da8f71aaa7b83ea7ef0e89182e0cd47e16d465
-# good: [295304040d9f6f350b68652acd99650c7e16d0a8] wifi: rtw89: 8922a: add TX power related ops
-git bisect good 295304040d9f6f350b68652acd99650c7e16d0a8
-# good: [7cf6b6764b2f665d317ba0f91c247437019a2f4c] wifi: rtw89: Set default CQM config if not present
-git bisect good 7cf6b6764b2f665d317ba0f91c247437019a2f4c
-# good: [7e11a2966f51695c0af0b1f976a32d64dee243b2] wifi: rtw89: fix null pointer access when abort scan
-git bisect good 7e11a2966f51695c0af0b1f976a32d64dee243b2
-# bad: [f59a98c82534e986b06615ba94e060aa3129b08b] wifi: rtw89: fix HW scan timeout due to TSF sync issue
-git bisect bad f59a98c82534e986b06615ba94e060aa3129b08b
-# bad: [bcbefbd032df6bfe925e6afeca82eb9d2cc0cb23] wifi: rtw89: add wait/completion for abort scan
-git bisect bad bcbefbd032df6bfe925e6afeca82eb9d2cc0cb23
-# first bad commit: [bcbefbd032df6bfe925e6afeca82eb9d2cc0cb23] wifi: rtw89: add wait/completion for abort scan
-
-
-#regzbot introduced: bcbefbd032df6bfe925e6afeca82eb9d2cc0cb23
-
-
-Logs produced by kdumpst:
-
-[kdumpst-e5e038b7ae9da96b93974bf072ca1876899a01a3.zip](https://gitlab.archlinux.org/archlinux/packaging/packages/linux/uploads/b925cb5e9c6cfb6b224993c017ba61f5/kdumpst-e5e038b7ae9da96b93974bf072ca1876899a01a3.zip)
-
-[kdumpst-b54846da45942bbe4e5ebc59d497e4a48525ba5a.zip](https://gitlab.archlinux.org/archlinux/packaging/packages/linux/uploads/e1610c3ae26971a890121d3a5eb8fa9e/kdumpst-b54846da45942bbe4e5ebc59d497e4a48525ba5a.zip)
-
-[kdumpst-a2f24c8a955c8f941d6ac08dd7f401f54eef4627.zip](https://gitlab.archlinux.org/archlinux/packaging/packages/linux/uploads/34171a87da304987cc8ce5066fc35dd5/kdumpst-a2f24c8a955c8f941d6ac08dd7f401f54eef4627.zip)
-
-[kdumpst-92046e83c07b064ca65ac4ae7660a540016bdfc1.zip](https://gitlab.archlinux.org/archlinux/packaging/packages/linux/uploads/67d756f963ffafd0b332c88701286a30/kdumpst-92046e83c07b064ca65ac4ae7660a540016bdfc1.zip)
-
-[kdumpst-445e60303883950161f67e18b9f048b18d7fb706.zip](https://gitlab.archlinux.org/archlinux/packaging/packages/linux/uploads/f75f91d127050a327114bf904f335087/kdumpst-445e60303883950161f67e18b9f048b18d7fb706.zip)
-
-[kdumpst-26f4dac11775a1ca24e2605cb30e828d4dbdea93.zip](https://gitlab.archlinux.org/archlinux/packaging/packages/linux/uploads/f3d26fc4187c8b8854386fed6f15c972/kdumpst-26f4dac11775a1ca24e2605cb30e828d4dbdea93.zip)
-
-[kdumpst-20ea9327c2fd545d6b96e998727bcd724290694d.zip](https://gitlab.archlinux.org/archlinux/packaging/packages/linux/uploads/8618207aff0eb92413ce0c2994c7888f/kdumpst-20ea9327c2fd545d6b96e998727bcd724290694d.zip)
-
-Good commit: [kdumpst-e8f897f4afef0031fe618a8e94127a0934896aba.zip](https://gitlab.archlinux.org/archlinux/packaging/packages/linux/uploads/b13b3914e50fc85548c77a4163dec383/kdumpst-e8f897f4afef0031fe618a8e94127a0934896aba.zip)
---
