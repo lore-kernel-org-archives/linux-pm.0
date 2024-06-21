@@ -1,167 +1,196 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF80210A39;
-	Fri, 21 Jun 2024 16:17:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD37EDDC4;
+	Fri, 21 Jun 2024 16:39:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.249
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718986641; cv=none; b=FPHYBhw6hWtFeE2LKhfWhWp9y+fSXvzQIZmiJkYT/SQ1lrzX+Q4RSCDdGgA9c7CTWFIcRZH3LmkevxqYXQm0LbRF9DAimi9I27ZmBnJrB8YYVqSQMp7wBERd58rwnrBflBjBTc7Q635JMcBK90oLBIgu6XFD51K91LKvh/k2nM8=
+	t=1718987995; cv=none; b=Zsx+XN539MAPoWIzaSXqAXog5/cEcaSneawYgkJniarGPMefNLCleBHiOtl98mEUGlY91H3mrCgS9lT+AW9CCfV164dNGS35zgtf3R+OW48YgH0hDqNm5BYzNE8HQeAUHeQt/v54xqckKQWVCbbq92fSPc1t+NVHziiUXb9fk3U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718986641; c=relaxed/simple;
-	bh=+Fxx6Sx301djtEaBC0yUcjU4BqsqCf6HkSgOkb8DcPk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=svshcKo8c+MxLPHCIOLnbRti5/LUfsoclwMfD9GEZ9ekOs5mAR5TUFD9Tf650KnUkHJkkEZgT8ORlGxJN6HPohMw++rPy9vsEueKY2DBoQ91ZTuTzAC8GC7iPX7un6QEE9LTUv5ds2h8iJN51e2cjPQVvBz0ZawdBo3zaX7cISw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=R7ypmpXw; arc=none smtp.client-ip=198.175.65.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1718987995; c=relaxed/simple;
+	bh=aa/UAapxLYnd05XCY2z3WEmwO81o6wpHMQ8kV6F0g0I=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=CnE8UgawjOgv7oAmTVPz/maf6rJlb58so5Aq1USfl7ACL0RH9s24hwC8izPjZ3iMVi3QeQgv6DyVLkOMGlb94opwGkqEWhuOTt9ig3WvD0wiVwIsZ2cq6XWuzWbweNcb55J+TkQBNnxmfVSQ/n+kK0PryJfsfVUW8odrGKndTjI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=xXqMOJbQ; arc=none smtp.client-ip=198.47.23.249
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="R7ypmpXw"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1718986640; x=1750522640;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=+Fxx6Sx301djtEaBC0yUcjU4BqsqCf6HkSgOkb8DcPk=;
-  b=R7ypmpXwXDNF/p83FdyaLh/0g1cjCXj/G8OtzvvNbC1JSH38s4/ptFDa
-   7LPQKSni8OKTwdKlvj7UyqUrSOyz/TrXx0li2RftArLNumEVFuyUVrFqS
-   URcdzQlRDc2isPbEXgzHLFn6fcePTSPb5wuQpk/WzPA9bVf4tgDC2++sS
-   T0ElcqJ5mW5yuHDr/VLacLsaAioQylEidDui7AmZu3vnUrZTnmzU2NFXO
-   wk8JqMWVFmBaaGBs9oX1XOnuqwP1TozEIGW1/NzcQckpzo85/j2OmNFDl
-   31suEpE7tvQyCW3sWEQVJTJ4Zw4aJoUi/leRwM/jhRln4SPEXwroNiCLN
-   Q==;
-X-CSE-ConnectionGUID: VZtd603tSmKnAux4yErCcA==
-X-CSE-MsgGUID: QmJwelXgQBKrlOSc9xRAUw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11110"; a="16156307"
-X-IronPort-AV: E=Sophos;i="6.08,255,1712646000"; 
-   d="scan'208";a="16156307"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2024 09:17:19 -0700
-X-CSE-ConnectionGUID: GMnlQ7Z/R/acySIjDxt19w==
-X-CSE-MsgGUID: 1L4S/m1VTmS4FwAsgUW4jQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,255,1712646000"; 
-   d="scan'208";a="43077647"
-Received: from lkp-server01.sh.intel.com (HELO 68891e0c336b) ([10.239.97.150])
-  by orviesa006.jf.intel.com with ESMTP; 21 Jun 2024 09:17:12 -0700
-Received: from kbuild by 68891e0c336b with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1sKgwn-0008kC-2J;
-	Fri, 21 Jun 2024 16:17:09 +0000
-Date: Sat, 22 Jun 2024 00:16:38 +0800
-From: kernel test robot <lkp@intel.com>
-To: Dzmitry Sankouski <dsankouski@gmail.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Jessica Zhang <quic_jesszhan@quicinc.com>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Chanwoo Choi <cw00.choi@samsung.com>, phone-devel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	devicetree@vger.kernel.org
-Subject: Re: [PATCH v3 12/23] mfd: Add new driver for MAX77705 PMIC
-Message-ID: <202406220025.tZN8mAeW-lkp@intel.com>
-References: <20240618-starqltechn_integration_upstream-v3-12-e3f6662017ac@gmail.com>
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="xXqMOJbQ"
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+	by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 45LGdkmQ051111;
+	Fri, 21 Jun 2024 11:39:46 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+	s=ti-com-17Q1; t=1718987986;
+	bh=Nbx1zYtIRV0RSr575R1x17x1xodoPxpczYOw9GvbXdY=;
+	h=From:Date:Subject:References:In-Reply-To:To:CC;
+	b=xXqMOJbQJClgv/d1+xH7wJtUFANyVqkZLr4j39TBGQgDKefWjoMYblFPMobY7HLET
+	 RqyDnNtoUnl4nTo9UCn5RBke4EuF3G/zNOX035twyxZW1fuySGiPif4h3o4/N1+Qb5
+	 /lY05TGlQY6jpzeKB97Ife0KxsI6+I7utdT5k5jE=
+Received: from DFLE100.ent.ti.com (dfle100.ent.ti.com [10.64.6.21])
+	by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 45LGdkap085566
+	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Fri, 21 Jun 2024 11:39:46 -0500
+Received: from DFLE100.ent.ti.com (10.64.6.21) by DFLE100.ent.ti.com
+ (10.64.6.21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Fri, 21
+ Jun 2024 11:39:46 -0500
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DFLE100.ent.ti.com
+ (10.64.6.21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
+ Frontend Transport; Fri, 21 Jun 2024 11:39:46 -0500
+Received: from localhost (bb.dhcp.ti.com [128.247.81.12])
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 45LGdkvI080074;
+	Fri, 21 Jun 2024 11:39:46 -0500
+From: Bryan Brattlof <bb@ti.com>
+Date: Fri, 21 Jun 2024 11:39:37 -0500
+Subject: [PATCH v3 1/5] cpufreq: ti: update OPP table for AM62Ax SoCs
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240618-starqltechn_integration_upstream-v3-12-e3f6662017ac@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20240621-ti-opp-updates-v3-1-d857be6dac8b@ti.com>
+References: <20240621-ti-opp-updates-v3-0-d857be6dac8b@ti.com>
+In-Reply-To: <20240621-ti-opp-updates-v3-0-d857be6dac8b@ti.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar
+	<viresh.kumar@linaro.org>, Lee Jones <lee@kernel.org>,
+        Rob Herring
+	<robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+	<conor+dt@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Vignesh Raghavendra
+	<vigneshr@ti.com>,
+        Tero Kristo <kristo@kernel.org>
+CC: Vibhore Vardhan <vibhore@ti.com>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>, Bryan Brattlof <bb@ti.com>,
+        Dhruva
+ Gole <d-gole@ti.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3367; i=bb@ti.com;
+ h=from:subject:message-id; bh=aa/UAapxLYnd05XCY2z3WEmwO81o6wpHMQ8kV6F0g0I=;
+ b=owNCWmg5MUFZJlNZ9e+uwwAAZn///n99sz/8P2+td14f/+v3Hv96++bzr+9//J25ijr2//wwA
+ Rs2g7UGQGgAAAAAA0aaAAepoAAAAGgaaDQyABo0DQAADR6jIeKaeGp6oc0hiBpiZNNBkaGjI0G1
+ ABpoNNDQBpk0yDQZAADTRpkyAMjQGEBkaBk00DRoY7UP1NJkYQHqD1BhBkaBoMjIDQ00ANNBkDI
+ AAANAAaZADIDIGQyGmgDRgAdI+kHh3gCL0SBNmoYPlwqCePNVt8TaCPoyFFZBEUtK3iEYk07LWg
+ UYbX5KF7SanEYIWJ8GMWqM3qbBHyaHcAtfJSjGSyrGNgcG2s7mO4EdezwyVAW0VrciHt+r5OM/G
+ p453nwjvrnpPJuk/+sVZjj7/HhYSNOwRdJpZffjjkWmI9ACqT5w61TiIFuzpLUXuPt6qbCdCNab
+ VnObohPlSpRr4q6/gDD3FYA1XylrJcr8Wdiaj8sWsEn9XscZTMX1a3FPCcAcmDEl+tnKm/zbZc3
+ O49DiL3mRTgSYoM8Ugv/x1+uSTirm2Ws/VU1+yoVOQv8C/obAGRkbRnfyO/Wif3hIT+6eYfJ0Tp
+ ZwpkoLQsQXDphJViuos51JbGImpYlHmA12bjPWSd8anjHsAJAzABzFCgxgnNiECU8EQLlQgClpB
+ d4P+LuSKcKEh699dhg=
+X-Developer-Key: i=bb@ti.com; a=openpgp;
+ fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 
-Hi Dzmitry,
+As the AM62Ax SoC family matures more speed grades are being defined.
+These new grades unfortunately no longer align with the AM62x SoC
+family. Define a new table with new OPP speed grade limits for the
+AM62Ax
 
-kernel test robot noticed the following build errors:
+Reviewed-by: Dhruva Gole <d-gole@ti.com>
+Signed-off-by: Bryan Brattlof <bb@ti.com>
+---
+ drivers/cpufreq/ti-cpufreq.c | 59 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 58 insertions(+), 1 deletion(-)
 
-[auto build test ERROR on 6906a84c482f098d31486df8dc98cead21cce2d0]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Dzmitry-Sankouski/power-supply-add-undervoltage-health-status-property/20240618-222456
-base:   6906a84c482f098d31486df8dc98cead21cce2d0
-patch link:    https://lore.kernel.org/r/20240618-starqltechn_integration_upstream-v3-12-e3f6662017ac%40gmail.com
-patch subject: [PATCH v3 12/23] mfd: Add new driver for MAX77705 PMIC
-config: mips-allmodconfig (https://download.01.org/0day-ci/archive/20240622/202406220025.tZN8mAeW-lkp@intel.com/config)
-compiler: mips-linux-gcc (GCC) 13.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240622/202406220025.tZN8mAeW-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202406220025.tZN8mAeW-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   In file included from drivers/mfd/max77705-core.c:20:
->> include/linux/mfd/max77705-private.h:243:26: error: 'MAX77705_USBC_REG_END' undeclared here (not in a function); did you mean 'MAX77705_PMIC_REG_END'?
-     243 |         u8 reg_muic_dump[MAX77705_USBC_REG_END];
-         |                          ^~~~~~~~~~~~~~~~~~~~~
-         |                          MAX77705_PMIC_REG_END
-
-
-vim +243 include/linux/mfd/max77705-private.h
-
-   216	
-   217	struct max77705_dev {
-   218		struct device *dev;
-   219		struct i2c_client *i2c; /* 0xCC; Haptic, PMIC */
-   220		struct i2c_client *charger; /* 0xD2; Charger */
-   221		struct i2c_client *fuelgauge; /* 0x6C; Fuelgauge */
-   222		struct i2c_client *muic; /* 0x4A; MUIC */
-   223		struct i2c_client *debug; /* 0xC4; Debug */
-   224		struct mutex i2c_lock;
-   225	
-   226		struct regmap *regmap;
-   227		struct regmap *regmap_fg;
-   228		struct regmap *regmap_charger;
-   229		struct regmap *regmap_leds;
-   230	
-   231		int type;
-   232	
-   233		int irq;
-   234		int irq_base;
-   235		int irq_masks_cur[MAX77705_IRQ_GROUP_NR];
-   236		int irq_masks_cache[MAX77705_IRQ_GROUP_NR];
-   237		bool wakeup;
-   238		struct mutex irqlock;
-   239	
-   240	#ifdef CONFIG_HIBERNATION
-   241		/* For hibernation */
-   242		u8 reg_pmic_dump[MAX77705_PMIC_REG_END];
- > 243		u8 reg_muic_dump[MAX77705_USBC_REG_END];
-   244		u8 reg_led_dump[MAX77705_LED_REG_END];
-   245	#endif
-   246	
-   247		/* pmic VER/REV register */
-   248		u8 pmic_rev;	/* pmic Rev */
-   249		u8 pmic_ver;	/* pmic version */
-   250	
-   251		u8 cc_booting_complete;
-   252	
-   253		wait_queue_head_t queue_empty_wait_q;
-   254		int doing_irq;
-   255		int is_usbc_queue;
-   256	
-   257		struct max77705_platform_data *pdata;
-   258	};
-   259	
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index 714ed53753fa5..51cac31f776f5 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -47,6 +47,28 @@
+ #define AM625_SUPPORT_S_MPU_OPP			BIT(1)
+ #define AM625_SUPPORT_T_MPU_OPP			BIT(2)
+ 
++enum {
++	AM62A7_EFUSE_M_MPU_OPP =		13,
++	AM62A7_EFUSE_N_MPU_OPP,
++	AM62A7_EFUSE_O_MPU_OPP,
++	AM62A7_EFUSE_P_MPU_OPP,
++	AM62A7_EFUSE_Q_MPU_OPP,
++	AM62A7_EFUSE_R_MPU_OPP,
++	AM62A7_EFUSE_S_MPU_OPP,
++	/*
++	 * The V, U, and T speed grade numbering is out of order
++	 * to align with the AM625 more uniformly. I promise I know
++	 * my ABCs ;)
++	 */
++	AM62A7_EFUSE_V_MPU_OPP,
++	AM62A7_EFUSE_U_MPU_OPP,
++	AM62A7_EFUSE_T_MPU_OPP,
++};
++
++#define AM62A7_SUPPORT_N_MPU_OPP		BIT(0)
++#define AM62A7_SUPPORT_R_MPU_OPP		BIT(1)
++#define AM62A7_SUPPORT_V_MPU_OPP		BIT(2)
++
+ #define VERSION_COUNT				2
+ 
+ struct ti_cpufreq_data;
+@@ -112,6 +134,32 @@ static unsigned long omap3_efuse_xlate(struct ti_cpufreq_data *opp_data,
+ 	return BIT(efuse);
+ }
+ 
++static unsigned long am62a7_efuse_xlate(struct ti_cpufreq_data *opp_data,
++					unsigned long efuse)
++{
++	unsigned long calculated_efuse = AM62A7_SUPPORT_N_MPU_OPP;
++
++	switch (efuse) {
++	case AM62A7_EFUSE_V_MPU_OPP:
++	case AM62A7_EFUSE_U_MPU_OPP:
++	case AM62A7_EFUSE_T_MPU_OPP:
++	case AM62A7_EFUSE_S_MPU_OPP:
++		calculated_efuse |= AM62A7_SUPPORT_V_MPU_OPP;
++		fallthrough;
++	case AM62A7_EFUSE_R_MPU_OPP:
++	case AM62A7_EFUSE_Q_MPU_OPP:
++	case AM62A7_EFUSE_P_MPU_OPP:
++	case AM62A7_EFUSE_O_MPU_OPP:
++		calculated_efuse |= AM62A7_SUPPORT_R_MPU_OPP;
++		fallthrough;
++	case AM62A7_EFUSE_N_MPU_OPP:
++	case AM62A7_EFUSE_M_MPU_OPP:
++		calculated_efuse |= AM62A7_SUPPORT_N_MPU_OPP;
++	}
++
++	return calculated_efuse;
++}
++
+ static unsigned long am625_efuse_xlate(struct ti_cpufreq_data *opp_data,
+ 				       unsigned long efuse)
+ {
+@@ -234,6 +282,15 @@ static struct ti_cpufreq_soc_data am625_soc_data = {
+ 	.multi_regulator = false,
+ };
+ 
++static struct ti_cpufreq_soc_data am62a7_soc_data = {
++	.efuse_xlate = am62a7_efuse_xlate,
++	.efuse_offset = 0x0,
++	.efuse_mask = 0x07c0,
++	.efuse_shift = 0x6,
++	.rev_offset = 0x0014,
++	.multi_regulator = false,
++};
++
+ /**
+  * ti_cpufreq_get_efuse() - Parse and return efuse value present on SoC
+  * @opp_data: pointer to ti_cpufreq_data context
+@@ -337,7 +394,7 @@ static const struct of_device_id ti_cpufreq_of_match[] = {
+ 	{ .compatible = "ti,omap34xx", .data = &omap34xx_soc_data, },
+ 	{ .compatible = "ti,omap36xx", .data = &omap36xx_soc_data, },
+ 	{ .compatible = "ti,am625", .data = &am625_soc_data, },
+-	{ .compatible = "ti,am62a7", .data = &am625_soc_data, },
++	{ .compatible = "ti,am62a7", .data = &am62a7_soc_data, },
+ 	{ .compatible = "ti,am62p5", .data = &am625_soc_data, },
+ 	/* legacy */
+ 	{ .compatible = "ti,omap3430", .data = &omap34xx_soc_data, },
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.45.2
+
