@@ -1,61 +1,60 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6928C1369B6;
-	Tue, 25 Jun 2024 21:33:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80BC217DE31;
+	Tue, 25 Jun 2024 21:33:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719351198; cv=none; b=OVsczrtNAVCs9AZdoXbxSXzLOk7GOC9Eul326mkrbU8Qh77qU51RK+Q1n2l5OeyWgdkX3oJ5dGs40k9wIOXMTwIYZrCevoiGkoGUBtnbNVz8xK8sEeCv4HeIS5F+e36bRfEPAiC6nhFFQ9asO8AVEXLJitOSMydSwURU0eobKuo=
+	t=1719351199; cv=none; b=mIdiKOQYJl9Cc3ShBp1v4QIrsbBuYSqvX5wn84QWROXosS3MY9f3Y1E1qrzlTjASulj1HlQXdKNIQJEK3qqMDfGaLuniaiCO1aE9ALAaA7znl9mvqCSZl+V3fSTWghxeV/hwIFLpjOBDmSZ383M3ozeF3thwiDRsUotfUacSwV4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719351198; c=relaxed/simple;
-	bh=vF378iF9/szJSAJWna+ftEYzp+8iuC0Xg1MQKdgKe6k=;
+	s=arc-20240116; t=1719351199; c=relaxed/simple;
+	bh=4vCRzl6qgQmsj5uuos6q/9cqMkVQ+6J87WAp5hpMHN4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ovG4tcgRpJZVje5SNs6iE7i+uC/5QXcMhaWbQoPZSIbEX5gQza6EmN8P2jztBILa861pjhYcBXztyFZ3geeKEEunepqDENSktQGintCZySO95Oeu5Y3VAciSSzdwVuMl5IJlBj4wS4JinoDbk8K/zBGN3ooLgrIUhuDCq2VmTks=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=l/DwY2r7; arc=none smtp.client-ip=209.85.128.43
+	 In-Reply-To:To:Cc; b=qCwIUGgTD1pZG1Kr/GuqDAQsjCgPMMBxL2ZRw3KIQhmi5b1pWz20pI7HnD5i3lLHZkXMwtXeI/wCVcUnMEN2zRS3Ac9uiyJYVQ+DJQkbZzLqXbfj94+f0ckX6plmURNS1zPYXl5R3Mw2PN2XpuAGeShQIsyPM3x5BukUP8550nk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NLdl6CAH; arc=none smtp.client-ip=209.85.221.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l/DwY2r7"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-421cd1e5f93so45241725e9.0;
-        Tue, 25 Jun 2024 14:33:16 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NLdl6CAH"
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-3620ee2cdf7so3737900f8f.3;
+        Tue, 25 Jun 2024 14:33:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1719351195; x=1719955995; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1719351196; x=1719955996; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=wOp5UqGNK/+aHc+mtLWt/FVtlNV3iPD/WbMrczGg2CE=;
-        b=l/DwY2r7o16YrvCNI9ccXLe99VRGhjnsEF7rS13gi091qryxG+8IMnrU8lVIzjFUmC
-         kXloNHLt97RqP0FMX6NOsXCrIWVQbtaqeZRNosWytvm7MAOUWJ2xHzco1+VLMVV7FCho
-         oLg8TRwKGNRv816QS2mHSWD6EBYdJ95YeAZZWzL1zsIodAAjhbusfriXSUDkzyOeZWz5
-         5+pEulaFZJYNGXFCvIuvicWk626BTtoFw0BePF94nwBXdPdezTm0hK55Y9+80sRpjr/3
-         qTFCshna8K+3e22eYypQufWnvpheoWtinitUTOQmo+CAxf2IH/ZDjdyUdTHLbjYrXJEt
-         AlRw==
+        bh=VUkVIkbscryFzLdHAGkO+1ya2/2312ktRzQgqWxaXtI=;
+        b=NLdl6CAHGoUHHhsip89UccBLy01Z8TozcgTSr2Ok6pE0jxhKgL/ofogaJ+yVZpnKq/
+         Y1JP8YAIBFfB7xm0bq6OCxcfJl1TKfO9R/xCQ05W2pBKms5xIreDktnaHozxQN7HH326
+         mAGVJpmH9ViZu8j/hi8N6CehsFoU/IF0guiZWnFFHI2svre+6Cegob+Dhq2DfP9D4Tmu
+         CwvDNhBh9j+RkbRHQ4PczzY8b6NRxhgY7Qx1XuqjC/+qA+0A4BztPk76JtqfpRGKV1Ld
+         p0wCM5d1ccjTMpCXf8It1cpHqkZ0drQ35QBTOiXEsajzHBjho0+LJE+ltFgXguMK9koi
+         3Glw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1719351195; x=1719955995;
+        d=1e100.net; s=20230601; t=1719351196; x=1719955996;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=wOp5UqGNK/+aHc+mtLWt/FVtlNV3iPD/WbMrczGg2CE=;
-        b=gI6WwwTA1MwcePA+1yxdCVqLwzFZI6hlSRm2ZNfxqYhMUMTt//QVj2fIgvZpbvP/LV
-         Y/dVtPOM4dT76rcffz5ago/mn4efXTGYm5DORDdNFchVoGCJF3mQ2MAQ6rVoSdMWpOOi
-         XWzzq6/tPXbO8iORqQxCSjdaxNxVJK3oEOz0GghCM1iEu6/QRdFKB0E1OtsekcyTcK+M
-         3rZTj9YvAk55z1ejsZS3EFn5k1vbF3ow6vs0H1rlaCCIvg8h+WMrQc1b0ITkCLjT4rjh
-         +NjezT6P45BPfjdsA4628qVBKv7Nwur85HePOjP40doy/TcNLIL+FCuwPlZCGWDcGmFk
-         XYMw==
-X-Forwarded-Encrypted: i=1; AJvYcCUqp5RnaptBJKtOiK76nL1Miua+WmI+71BmenmkyoUYiXWJA9oE6ew7ktVY4O0oBXlaiSuuPaREOWO2NMiFm5foQgdOzznLVTM/qhMnNcrkT+GX8jtU6/FpyYVbj8s6XMlqHHx3ElPh7Q==
-X-Gm-Message-State: AOJu0YwNhFaSSfT+XUVr+PHct0nGkMq8Mubk0acX5FWRXRxJhm0fs8Rr
-	bFSaeAJs7Dzqsy6lyZrN1IMFg0j5c0JOgWbMJCA/mvUtF4YV+3KO
-X-Google-Smtp-Source: AGHT+IHM8lLa8Kw/PfBSHM/pQpWPKRg70VziGzuKcSwEmlPeW/23VjI1c7PTAH1z3JhKQC5WZ+U1BQ==
-X-Received: by 2002:a5d:518c:0:b0:360:9175:2c33 with SMTP id ffacd0b85a97d-366e9461f67mr6558659f8f.8.1719351193778;
-        Tue, 25 Jun 2024 14:33:13 -0700 (PDT)
+        bh=VUkVIkbscryFzLdHAGkO+1ya2/2312ktRzQgqWxaXtI=;
+        b=Xra7KUylEiOpfl5HbLCDFwT1Y8KHzoTtkNIo6H1vuYjLO45vSXkb+vyLrvdcG3U5yG
+         mk1e+Iy+zdjrd/BRXqdlW4sNhPKerCIdoXcfYRTBdHb2FZRfUpEAbCQJhsoGZOdLEMO/
+         Hb0z/7sQLvSt79u/Kg20NkMlMgCqSF6lxwVAUvsuHld1DHv7J0KEsvDqUlWy1rTtqVOk
+         EXs40p2XUaKPB30Kv5C6kj4Wj8uxBbyPoJbKQCuA/WCd8gr+CEwI8FNf9X1T+s0xWKyW
+         wRJ9uD4UIdJyjkF/NAt4DbBOUljJdt06O3+nQMn+76HgOaXKjqPbQAH3kMIxJzyzBpMJ
+         nhdw==
+X-Forwarded-Encrypted: i=1; AJvYcCXeg/D4+CiLs3n1N4RRvdpmX9xZjzv7Vs/TQlq39Ol2AtNMM9ORSbQwJ7BT4yPwVJB3vyrxWwYK9htvEgjr2Vq8Fspudsdghl1+25WQGfad5a8jqZZuKwktaGUsujx8y880ldSq//QbWw==
+X-Gm-Message-State: AOJu0Yys9r05gaC/u7yyeocN6wRWMoEhoguWC5wTZUI4oeI4pBUn4P78
+	00JpTmvKYijaJ7KaJkHyvkIuA27VjKVkVVAgI0mEIYNoWtaaU7/o
+X-Google-Smtp-Source: AGHT+IF1vNOVtlSl9cFErkZZ3gZeIrjKfVDkNDpF40NXHmyTCzK4OuWl8NqNcyOSM/LpMW3SCCIssA==
+X-Received: by 2002:adf:fa4c:0:b0:35d:c106:2db8 with SMTP id ffacd0b85a97d-366e7a63802mr7040004f8f.57.1719351195202;
+        Tue, 25 Jun 2024 14:33:15 -0700 (PDT)
 Received: from localhost ([2001:861:3385:e20:6384:4cf:52c5:3194])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-366389b861bsm13854978f8f.29.2024.06.25.14.33.13
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-36647e7eb4fsm13959262f8f.18.2024.06.25.14.33.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Jun 2024 14:33:13 -0700 (PDT)
+        Tue, 25 Jun 2024 14:33:15 -0700 (PDT)
 From: Raphael Gallais-Pou <rgallaispou@gmail.com>
-Date: Tue, 25 Jun 2024 23:32:40 +0200
-Subject: [PATCH v2 1/3] thermal: st: switch from CONFIG_PM_SLEEP guards to
- pm_sleep_ptr()
+Date: Tue, 25 Jun 2024 23:32:42 +0200
+Subject: [PATCH v2 3/3] ARM: dts: sti: add thermal-zones support on stih418
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -64,7 +63,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240625-thermal-v2-1-bf8354ed51ee@gmail.com>
+Message-Id: <20240625-thermal-v2-3-bf8354ed51ee@gmail.com>
 References: <20240625-thermal-v2-0-bf8354ed51ee@gmail.com>
 In-Reply-To: <20240625-thermal-v2-0-bf8354ed51ee@gmail.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
@@ -80,90 +79,139 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 X-Mailer: b4 0.14.0
 
-Letting the compiler remove these functions when the kernel is built
-without CONFIG_PM_SLEEP support is simpler and less error prone than the
-use of #ifdef based kernel configuration guards.
+Add a 'thermal-zones' node for stih418.
 
-Remove those guards on every ST thermal related drivers.
+A thermal-zone needs three components:
+  - thermal sensors, described in an earlier commit[1]
+  - cooling devices, specified for each CPU
+  - a thermal zone, describing the overall behavior.
+
+The thermal zone needs references to both CPUs and thermal sensors,
+which phandle are also added. The thermal management will then be
+achieved on CPUs using the cpufreq framework.
+
+[1] https://lore.kernel.org/lkml/20240320-thermal-v3-2-700296694c4a@gmail.com/
 
 Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
 Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
 ---
- drivers/thermal/st/st_thermal.c        | 4 +---
- drivers/thermal/st/st_thermal_memmap.c | 2 +-
- drivers/thermal/st/stm_thermal.c       | 8 +++-----
- 3 files changed, 5 insertions(+), 9 deletions(-)
+ arch/arm/boot/dts/st/stih407-family.dtsi |  6 +++--
+ arch/arm/boot/dts/st/stih418.dtsi        | 41 +++++++++++++++++++++++++++++---
+ 2 files changed, 42 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/st/st_thermal.c b/drivers/thermal/st/st_thermal.c
-index 2a105409864e..5f33543a3a54 100644
---- a/drivers/thermal/st/st_thermal.c
-+++ b/drivers/thermal/st/st_thermal.c
-@@ -236,7 +236,6 @@ void st_thermal_unregister(struct platform_device *pdev)
- }
- EXPORT_SYMBOL_GPL(st_thermal_unregister);
+diff --git a/arch/arm/boot/dts/st/stih407-family.dtsi b/arch/arm/boot/dts/st/stih407-family.dtsi
+index 29302e74aa1d..35a55aef7f4b 100644
+--- a/arch/arm/boot/dts/st/stih407-family.dtsi
++++ b/arch/arm/boot/dts/st/stih407-family.dtsi
+@@ -33,7 +33,7 @@ delta_reserved: rproc@44000000 {
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		cpu@0 {
++		cpu0: cpu@0 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <0>;
+@@ -52,8 +52,9 @@ cpu@0 {
+ 			clock-latency = <100000>;
+ 			cpu0-supply = <&pwm_regulator>;
+ 			st,syscfg = <&syscfg_core 0x8e0>;
++			#cooling-cells = <2>;
+ 		};
+-		cpu@1 {
++		cpu1: cpu@1 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <1>;
+@@ -66,6 +67,7 @@ cpu@1 {
+ 					    1200000 0
+ 					    800000  0
+ 					    500000  0>;
++			#cooling-cells = <2>;
+ 		};
+ 	};
  
--#ifdef CONFIG_PM_SLEEP
- static int st_thermal_suspend(struct device *dev)
- {
- 	struct st_thermal_sensor *sensor = dev_get_drvdata(dev);
-@@ -265,9 +264,8 @@ static int st_thermal_resume(struct device *dev)
+diff --git a/arch/arm/boot/dts/st/stih418.dtsi b/arch/arm/boot/dts/st/stih418.dtsi
+index b35b9b7a7ccc..6622ffa8ecfa 100644
+--- a/arch/arm/boot/dts/st/stih418.dtsi
++++ b/arch/arm/boot/dts/st/stih418.dtsi
+@@ -6,23 +6,26 @@
+ #include "stih418-clock.dtsi"
+ #include "stih407-family.dtsi"
+ #include "stih410-pinctrl.dtsi"
++#include <dt-bindings/thermal/thermal.h>
+ / {
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		cpu@2 {
++		cpu2: cpu@2 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <2>;
+ 			/* u-boot puts hpen in SBC dmem at 0xa4 offset */
+ 			cpu-release-addr = <0x94100A4>;
++			#cooling-cells = <2>;
+ 		};
+-		cpu@3 {
++		cpu3: cpu@3 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <3>;
+ 			/* u-boot puts hpen in SBC dmem at 0xa4 offset */
+ 			cpu-release-addr = <0x94100A4>;
++			#cooling-cells = <2>;
+ 		};
+ 	};
  
- 	return 0;
- }
--#endif
+@@ -44,6 +47,38 @@ usb2_picophy2: phy3 {
+ 		reset-names = "global", "port";
+ 	};
  
--SIMPLE_DEV_PM_OPS(st_thermal_pm_ops, st_thermal_suspend, st_thermal_resume);
-+DEFINE_SIMPLE_DEV_PM_OPS(st_thermal_pm_ops, st_thermal_suspend, st_thermal_resume);
- EXPORT_SYMBOL_GPL(st_thermal_pm_ops);
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			polling-delay-passive = <250>;  /* 250ms */
++			polling-delay = <1000>;         /* 1000ms */
++
++			thermal-sensors = <&thermal>;
++
++			trips {
++				cpu_crit: cpu-crit {
++					temperature = <95000>;  /* 95C */
++					hysteresis = <2000>;
++					type = "critical";
++				};
++				cpu_alert: cpu-alert {
++					temperature = <85000>;  /* 85C */
++					hysteresis = <2000>;
++					type = "passive";
++				};
++			};
++
++			cooling-maps {
++				map {
++					trip = <&cpu_alert>;
++					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
++		};
++	};
++
+ 	soc {
+ 		rng11: rng@8a8a000 {
+ 			status = "disabled";
+@@ -107,7 +142,7 @@ mmc0: sdhci@9060000 {
+ 			assigned-clock-rates = <200000000>;
+ 		};
  
- MODULE_AUTHOR("STMicroelectronics (R&D) Limited <ajitpal.singh@st.com>");
-diff --git a/drivers/thermal/st/st_thermal_memmap.c b/drivers/thermal/st/st_thermal_memmap.c
-index 29c2269b0fb3..28b380013956 100644
---- a/drivers/thermal/st/st_thermal_memmap.c
-+++ b/drivers/thermal/st/st_thermal_memmap.c
-@@ -180,7 +180,7 @@ static void st_mmap_remove(struct platform_device *pdev)
- static struct platform_driver st_mmap_thermal_driver = {
- 	.driver = {
- 		.name	= "st_thermal_mmap",
--		.pm     = &st_thermal_pm_ops,
-+		.pm     = pm_sleep_ptr(&st_thermal_pm_ops),
- 		.of_match_table = st_mmap_thermal_of_match,
- 	},
- 	.probe		= st_mmap_probe,
-diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-index 34785b9276fc..ffd988600ed6 100644
---- a/drivers/thermal/st/stm_thermal.c
-+++ b/drivers/thermal/st/stm_thermal.c
-@@ -440,7 +440,6 @@ static int stm_thermal_prepare(struct stm_thermal_sensor *sensor)
- 	return ret;
- }
- 
--#ifdef CONFIG_PM_SLEEP
- static int stm_thermal_suspend(struct device *dev)
- {
- 	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
-@@ -466,10 +465,9 @@ static int stm_thermal_resume(struct device *dev)
- 
- 	return 0;
- }
--#endif /* CONFIG_PM_SLEEP */
- 
--static SIMPLE_DEV_PM_OPS(stm_thermal_pm_ops,
--			 stm_thermal_suspend, stm_thermal_resume);
-+static DEFINE_SIMPLE_DEV_PM_OPS(stm_thermal_pm_ops,
-+				stm_thermal_suspend, stm_thermal_resume);
- 
- static const struct thermal_zone_device_ops stm_tz_ops = {
- 	.get_temp	= stm_thermal_get_temp,
-@@ -580,7 +578,7 @@ static void stm_thermal_remove(struct platform_device *pdev)
- static struct platform_driver stm_thermal_driver = {
- 	.driver = {
- 		.name	= "stm_thermal",
--		.pm     = &stm_thermal_pm_ops,
-+		.pm     = pm_sleep_ptr(&stm_thermal_pm_ops),
- 		.of_match_table = stm_thermal_of_match,
- 	},
- 	.probe		= stm_thermal_probe,
+-		thermal@91a0000 {
++		thermal: thermal@91a0000 {
+ 			compatible = "st,stih407-thermal";
+ 			reg = <0x91a0000 0x28>;
+ 			clock-names = "thermal";
 
 -- 
 2.45.2
