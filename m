@@ -1,122 +1,130 @@
-Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1DFE18F2FB;
-	Wed, 26 Jun 2024 16:45:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4A74770EC;
+	Wed, 26 Jun 2024 17:18:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.109.113.108
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719420326; cv=none; b=EeYqtLXuwdkzuyKBitcEmT1KTbcggpv76ZWubStdAXj4tB8m4J9bwSXY7zlYLa05rj0ko0RFhLMKZjRDmXsjyPPt83fm20iRtr3ky2WGPSj3X0MjVm5Sgnk7JGqUkon3DNgocG1D3Zz1I9WfxvY/5EAIPTDZk+QIX1Hj5DnVYFo=
+	t=1719422315; cv=none; b=KM52UOO0Qn9LXaz7on0faZ8P6cDwWGAVZPQVjNlqozPhpHf5WbqPE7+L0CYYQkf1S3NgnWWRGHg1hr1zxCwGrcPWo0X4kaYv5KWqC+BJMOwCQRwpzlocBOrny0BFhXkDnayGd2Lq36X6ajE2LRi9g7k6WYNFETWE67JJFJ7guag=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719420326; c=relaxed/simple;
-	bh=2Uzn37QnW/sB+xogUrcLf3O9WMjn2ZQf2EU2y2FpU0o=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=JkKzR5MeREqFOGQiDPdIuq7CgqzZidVTobKrLIUgGRHqai2jkXMZ0KJL4B9yeyIIV8EtvvzhaqDT65JeWp4qz4LNjSsl8VARvHVqEk43W/iMS4bV6ZgbcaUiVj5mZ+gCto4PAZqVvjkjK+mST2z9T2l3IFwG/jpXkXk9XvEzpEY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jWA5VqzL; arc=none smtp.client-ip=209.85.218.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1719422315; c=relaxed/simple;
+	bh=SexFv5uvmCnWZaonBJUzyDrpCZDiC/KDCHgeqXmYB70=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=uwAZ9VoY63Z6WSvHKO2HJCimUWiQD9oCbZYy3H7JH/B/Doa8dAaR9YKkojfnv1xhAr5kUh74Nds3f7XK3EAW1wK0LsbXIRQBhT4xpJ/5dGg4bC+XaReEZF/7xhfY6l412aEMmErfYW/W1XlnvVHvb3FgZeaQMvlnMEqG403c5hA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de; spf=pass smtp.mailfrom=alien8.de; dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b=ZjhWgtUc; arc=none smtp.client-ip=65.109.113.108
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alien8.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jWA5VqzL"
-Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-a724598cfe3so582508266b.1;
-        Wed, 26 Jun 2024 09:45:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1719420323; x=1720025123; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=DpdLLGkG+TIt8lLvN2sr4YidzuKVAO190LfJyAXBO6E=;
-        b=jWA5VqzLEZMdaJqRGjtgiR7xCOXRKxTzXlTPP62kFrUZMgUZZtU3J4bP87nemP2MKK
-         WZD7lc0B/YVVXy+PrWNZbXHrwckCHTqr9Ds5zat1tMOfwD6lyeczwJ6lAC7J6yBLZvIj
-         wACeQk7+HkTwrOFMVwE/m0oKZun4aBMCh+EE6Gp1IUETtMISoy14KQj36DehGfYjuQGR
-         S4qkJUJCXCwT1HA/GD4ntiYdBIRF0RuXdjcfGI/A3JKKPqErhhvCqcuIPkSU7WRDUMa4
-         ZXz7dLD3/eRHNX3190gAGAXRvULA5jYpEfDmkeK1yWtgAAnNk/AGFbvQRHFhXaodslsH
-         6wfg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1719420323; x=1720025123;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=DpdLLGkG+TIt8lLvN2sr4YidzuKVAO190LfJyAXBO6E=;
-        b=gDvVLqAl5S3MMGF+8sMhdAUebFuAtCEfG0zBQ7OWGcLawmHaheOvfZNmQtSI4w0iXJ
-         thfnz2UVE6/zj8ga+0YPHFi2JWTQi+e7rccBrTAKRtMkWv3bH/Zsn7oDcl1q5/bt0xk7
-         wX9urbKtj5vqnRyc7iVD6h7bPgu5V0p/AuYZHCqlXsjlCE+SJOqQU8N52wH6DJdXmGrG
-         pE+Dn6WiM0l6e2GfiIt9gFE0EMrH0r6htgstOHmzI+iKOXhx3otjkxephe6sm/xgzxgM
-         LEOBC+rGjz0nIaV5Uj6WdtpkbWYDcJfJN9hzXERJ3eAjNpiKWy/E9g0qMLx7gNsMWlR+
-         gjWg==
-X-Forwarded-Encrypted: i=1; AJvYcCXHnfMIjRt24VtXAtc4EG0v2HBciOwSKXP2VZ2OREQZvFHMIKNw+m2eaPEjJ6pT8BDxfXGBTByGy/fLdaR6+0PwKSnT06Sn0BBsVvP9
-X-Gm-Message-State: AOJu0YzGtDA3nrDcktTkdRvTCLAPXIW+XNVEk/CNcLMfjItb5eqYEnxA
-	tOaDqIsf8kLGzXsDZLKny61o+qv3lFSIWnV0F+EUSYLM6/CDRFTq
-X-Google-Smtp-Source: AGHT+IG/CSAouP4IJG+hBEjoPTqguJSobv59Lf4z4OxCLmpyxQZTUQE/vqFO9BkhT0uyablhjvvtVw==
-X-Received: by 2002:a17:907:104c:b0:a72:455f:e8b with SMTP id a640c23a62f3a-a724599a00cmr851759266b.0.1719420322789;
-        Wed, 26 Jun 2024 09:45:22 -0700 (PDT)
-Received: from [127.0.1.1] (31-179-0-202.dynamic.chello.pl. [31.179.0.202])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a7258814940sm302889966b.7.2024.06.26.09.45.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 26 Jun 2024 09:45:22 -0700 (PDT)
-From: Roman Storozhenko <romeusmeister@gmail.com>
-Date: Wed, 26 Jun 2024 18:45:17 +0200
-Subject: [PATCH] cpupower: Disable direct build of the 'bench' subproject
+	dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b="ZjhWgtUc"
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id 287FB40E01D6;
+	Wed, 26 Jun 2024 17:18:30 +0000 (UTC)
+X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
+Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
+	header.d=alien8.de
+Received: from mail.alien8.de ([127.0.0.1])
+	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id DavOxnawIa1E; Wed, 26 Jun 2024 17:18:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
+	t=1719422306; bh=7B8XJHM0RLyNMSzggydaxYMecePsxUD/trZ6AyYpoXk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ZjhWgtUc6GU0pO03XDfJZDa3F40IM8FPCkiO5RxdYKV0/BfoOdHbya5QTjzsJDihz
+	 uo9jssPDUxUUm0e2xbKwqMngXUAyxcGyABYzmjdc3V8yCBrzCrP6U3Kq8456moTO8c
+	 CIUB5kkobih26gMMJm1RZk4veMOZRuHv9q1Qp8Zrp2nEUNNWQ1aR56nUPru+q7qYng
+	 1ZAGxWWM/eZD5YiszOhTJc7XK5MBEusGwPSySEbf3cBaMjUOar7lWVyYSlL1I1WRVL
+	 z9558Fp5ksAxtPbEogC+a/FEvm9qfFEG9e1SRaGSn6NWqWvasv4zrDjjNfDzWphAKa
+	 dlcO8uGuzRt0UbyufioeP8CJFtNKBexkqcVgW3gEgeWSUdaiAGY6X+xouZM1aPUxmg
+	 WB89zXNeWPSGtyDCwMqKZGkMFsmMZb9yUIwsUtIkHgdjeyIh+RRy8kGCbgLWQXVXWU
+	 4sULKimP3RJd1vCrpyfnIZwkg5dAWuXMZ/INtVYnP6EQA7rNGL6Vfu/i14MFu5IgMg
+	 W7xA+Km5b6l8xOmUO0SZQCo8/sbscbiBtFv/+hdGsPqnh9lLGeB3E61of0V0V8Ol6u
+	 wvcx2qqVMk85dyMsDvEO+rE+pPoGqXJ09Pa/LXwkpYmFI1zEET5oEfK8LirEGI5vfI
+	 J4r4B5ApwCwLDZpxvrRaleko=
+Received: from zn.tnic (p5de8ee85.dip0.t-ipconnect.de [93.232.238.133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
+	(No client certificate requested)
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id D821440E021D;
+	Wed, 26 Jun 2024 17:18:10 +0000 (UTC)
+Date: Wed, 26 Jun 2024 19:18:09 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: "Gautham R . Shenoy" <gautham.shenoy@amd.com>,
+	Perry Yuan <perry.yuan@amd.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
+	"H . Peter Anvin" <hpa@zytor.com>, Huang Rui <ray.huang@amd.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Nikolay Borisov <nik.borisov@suse.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	"open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <linux-kernel@vger.kernel.org>,
+	"open list:AMD PSTATE DRIVER" <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH 2/2] cpufreq: amd-pstate: Use amd_get_highest_perf() to
+ lookup perf values
+Message-ID: <20240626171809.GSZnxNUd4tcRT4IB_k@fat_crate.local>
+References: <20240626042043.2410-1-mario.limonciello@amd.com>
+ <20240626042043.2410-3-mario.limonciello@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240626-fix_bench_compilation-v1-1-d039bd5fa551@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAJxFfGYC/x2M0QpAQBAAf0X77OqsS/gV6TpnscXRnaTk320ep
- 2bmgUSRKUGbPRDp4sR7ECjyDPziwkyKR2FAjUZXWKmJbztQ8Iv1+3bw6k4plEOqG2zK2pcGpD0
- iifh/u/59PyOZtAlnAAAA
-To: Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>, 
- Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Roman Storozhenko <romeusmeister@gmail.com>
-X-Mailer: b4 0.14.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20240626042043.2410-3-mario.limonciello@amd.com>
 
-Execution of the 'make' command in the 'bench' subfolder causes the
-following error:
+On Tue, Jun 25, 2024 at 11:20:43PM -0500, Mario Limonciello wrote:
+> +	/*
+> +	 * For AMD CPUs with Family ID 19H and Model ID range 0x70 to 0x7f,
+> +	 * the highest performance level is set to 196.
+> +	 * https://bugzilla.kernel.org/show_bug.cgi?id=218759
+> +	 */
+> +	if (cpu_feature_enabled(X86_FEATURE_ZEN4)) {
+> +		switch (c->x86_model) {
+> +		case 0x70 ... 0x7f:
 
-$ make O=cpupower/build/ DESTDIR=cpupower/install/ -j8
-"  CC      " cpupower/build//main.o
-"  CC      " cpupower/build//parse.o
-/bin/sh: 1: "  CC      "cpupower/build//system.o
-  CC      : not found
-  make: *** [Makefile:21: cpupower/build//main.o] Error 127
-  make: *** Waiting for unfinished jobs....
-  /bin/sh: 1:   CC      : not found
-  /bin/sh: 1:   CC      : not found
-  make: *** [Makefile:21: cpupower/build//parse.o] Error 127
-  make: *** [Makefile:21: cpupower/build//system.o] Error 127
+Aha, so here it is non-inclusive - "<" and not "<=".
 
-The makefile uses variables defined in the main project makefile and it
-is not intended to run standalone. The reason is that 'bench' subproject
-depends on the 'libcpupower' library, see the 'compile-bench' target in
-the main makefile.
-Add a check that prevents standalone execution of the 'bench' makefile.
+So you need to check the model ranges first.
 
-Signed-off-by: Roman Storozhenko <romeusmeister@gmail.com>
----
- tools/power/cpupower/bench/Makefile | 5 +++++
- 1 file changed, 5 insertions(+)
+> +			return CPPC_HIGHEST_PERF_PERFORMANCE;
+> +		default:
+> +			return CPPC_HIGHEST_PERF_DEFAULT;
 
-diff --git a/tools/power/cpupower/bench/Makefile b/tools/power/cpupower/bench/Makefile
-index a4b902f9e1c4..34e5894476eb 100644
---- a/tools/power/cpupower/bench/Makefile
-+++ b/tools/power/cpupower/bench/Makefile
-@@ -1,4 +1,9 @@
- # SPDX-License-Identifier: GPL-2.0
-+ifeq ($(MAKELEVEL),0)
-+$(error This Makefile is not intended to be run standalone, but only as a part \
-+of the  main one in the parent dir)
-+endif
-+
- OUTPUT := ./
- ifeq ("$(origin O)", "command line")
- ifneq ($(O),)
+As for patch 1.
 
----
-base-commit: 0fc4bfab2cd45f9acb86c4f04b5191e114e901ed
-change-id: 20240626-fix_bench_compilation-a2e892938c34
+> +		}
+> +	}
+> +
+> +	return CPPC_HIGHEST_PERF_DEFAULT;
+>  }
+>  EXPORT_SYMBOL_GPL(amd_get_highest_perf);
+>  
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 80eaa58f1405..f468d8562e17 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -52,8 +52,6 @@
+>  #define AMD_PSTATE_TRANSITION_LATENCY	20000
+>  #define AMD_PSTATE_TRANSITION_DELAY	1000
+>  #define AMD_PSTATE_FAST_CPPC_TRANSITION_DELAY 600
+> -#define CPPC_HIGHEST_PERF_PERFORMANCE	196
+> -#define CPPC_HIGHEST_PERF_DEFAULT	166
+>  
+>  #define AMD_CPPC_EPP_PERFORMANCE		0x00
+>  #define AMD_CPPC_EPP_BALANCE_PERFORMANCE	0x80
 
-Best regards,
+This already doesn't apply:
+
+checking file arch/x86/kernel/cpu/amd.c
+checking file drivers/cpufreq/amd-pstate.c
+Hunk #1 FAILED at 52.
+
 -- 
-Roman Storozhenko <romeusmeister@gmail.com>
+Regards/Gruss,
+    Boris.
 
+https://people.kernel.org/tglx/notes-about-netiquette
