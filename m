@@ -1,52 +1,54 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 395D51327E5;
-	Thu, 27 Jun 2024 15:18:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA17D179647;
+	Thu, 27 Jun 2024 15:20:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719501489; cv=none; b=UbYW5CCdXLB1WOOFUKGsVOmy14zh7F48HIglbp40AyCOaMXPF/yJNhw2i5xHXUSXDjWSGCQFofmWbJIEf6I3ZzoyBMxwuRXYMIi5h3yzAWme2pWXgn50x8iIKY094tlxaRRt3O2PDSK8yhfTM2lZOROqK6AP94NqV9POCBVI/Ec=
+	t=1719501658; cv=none; b=jPzKGdSwXEj/Ok9uB8DaxKw/rI09I3UtpaEDBtDrC7okPWL4TuW8R1EhYiLBMc0Z6wXdyZmGSWVnCzGbEZaaQg7GXUhwYQ/HfeIhrjl7eEYZbvZMTLla8Np9zjybY+4sbLvQ20whBMD8OujW9p69jJgIdKo8JKQ8rkytST/lIhI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719501489; c=relaxed/simple;
-	bh=t6wOLVRtPvZOPfLZT8uMNs9TY/BtnLK/3szoxyqDWjM=;
+	s=arc-20240116; t=1719501658; c=relaxed/simple;
+	bh=NkvMMppuUbS6id5yTyzLodQXYpLnaEoYzmCfyXpSxOU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aOrWA6iPYUjJBS8PJWfUX7Rjh+kqOXq5unPb9Bd+GUflwjYDyKPlaGAImgsO6qVLuFYqiuBjRqTRDOwM3mvNZbmbWptL+ZL/9yF/VUUU9alG8hyq7Hx16wSJZY4hNhr41D2oTL5Y+PsSr9jICsIPuaiXQpqZXmaQMKja4Fr8bn4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SPl5dHh/; arc=none smtp.client-ip=198.175.65.20
+	 Content-Type:Content-Disposition:In-Reply-To; b=d7ZEv/HnUfS2UAPuqf89+JfNsDyMiP3YI8d6iMW8TqzuiAfpvtHh4CuuIVxg6s5yARbK4QkhSsvm08YzZBnoD0gIPP3qDVdMKfbXEQhjiRIK5V0V9e0JUeOAa5Qwa5CmuysKaANf1DkIalYOql+xldpjfXslZSw/370x3BA8caU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Q5b4zUYw; arc=none smtp.client-ip=198.175.65.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SPl5dHh/"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Q5b4zUYw"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1719501489; x=1751037489;
+  t=1719501658; x=1751037658;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=t6wOLVRtPvZOPfLZT8uMNs9TY/BtnLK/3szoxyqDWjM=;
-  b=SPl5dHh/h+iSpGc+QFOqD3M3ZJJRex4uxeb8vKLph/88hXCvnYUPPDKu
-   Oj9EDCceYpfKFAyP9feKBYpiGNJgzohxrcCyVw/yIkbicVASjIQxsqDEW
-   zIhqhs2B7PhMfUN4w3Sp0rfa4cuu9knYimzDYPaN+UMvmavmbiFUGBWGr
-   8lAaRGLyZWm9G3MFDQlWyXF0XJ2LhPldBlLnhsNfYRt7ryr+h3CGWqoRF
-   E/jpQRqpCj+0wmnvDnx0UO8xRxo5BcCLr13A6Doh5K5Yfu45NZ9480j0v
-   jOYqj/5nZWwO2bsPrCzyu1QZrX+IX6B9+J0336m24u78lWWTD0PTmghZO
-   A==;
-X-CSE-ConnectionGUID: Y6MxXiwhSGiTQ7YIVQYyHA==
-X-CSE-MsgGUID: NOXhm53DRtGZDkeSEtfKzA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11116"; a="16459575"
+  bh=NkvMMppuUbS6id5yTyzLodQXYpLnaEoYzmCfyXpSxOU=;
+  b=Q5b4zUYwJYVnGwccwyMvrKeodErxBCvwm375jUTlEjmkOtygaXpV3lnp
+   LmiQMi7p637UToz4cbkxsqWF3TdlDUAcOYNvJIK5Oq7ZDqnAbPx3fsqIU
+   fZnxYtclpvR4PYk/1Ko0Bg8B9ZmMUgaQn/43aRRBs/NxWyjdZYjxgKIna
+   18G/9g74rVcsWAskn/UWc5YCKO8dOI4iZr+e3NaYQ3iUnWBmDvbrZ2ZRv
+   h0NIff658P6ND0iNsg08xgk5+GCGC08duV+FUgTSgyhP3YSgkqYXlMNHL
+   CZtFaqKIV4Ulvqp+7rR5h516JGYOgWH/KFNEYbw/raItKyXuridLCyveA
+   w==;
+X-CSE-ConnectionGUID: eUBS5FRVSwK8jIVKpyhM0A==
+X-CSE-MsgGUID: L6eJ8QnVQ+yNKfELxv7PXg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11116"; a="16598246"
 X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; 
-   d="scan'208";a="16459575"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jun 2024 08:16:07 -0700
-X-CSE-ConnectionGUID: TD9i/LBWRNCyaxtUPLZ/6A==
-X-CSE-MsgGUID: lazvx7b7SIi1dmhUrposWg==
+   d="scan'208";a="16598246"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jun 2024 08:20:05 -0700
+X-CSE-ConnectionGUID: laF0R0DCS324PwXm2xKZAA==
+X-CSE-MsgGUID: yXj6WzGcSD6YukqcR3Unrw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; 
-   d="scan'208";a="45064396"
+   d="scan'208";a="49580365"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by orviesa007.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jun 2024 08:16:05 -0700
-Date: Thu, 27 Jun 2024 08:22:11 -0700
+  by orviesa004.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jun 2024 08:20:04 -0700
+Date: Thu, 27 Jun 2024 08:26:09 -0700
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To: Brice Goglin <brice.goglin@gmail.com>
-Cc: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+To: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+Cc: Dave Hansen <dave.hansen@intel.com>,
+	Brice Goglin <brice.goglin@gmail.com>,
+	srinivas pandruvada <srinivas.pandruvada@linux.intel.com>,
 	Thomas Gleixner <tglx@linutronix.de>,
 	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
 	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
@@ -54,16 +56,19 @@ Cc: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
 	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
 	linux-perf-users@vger.kernel.org,
 	Josh Poimboeuf <jpoimboe@kernel.org>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
 	"Liang, Kan" <kan.liang@linux.intel.com>,
 	Andrew Cooper <andrew.cooper3@citrix.com>
 Subject: Re: [PATCH 0/9] Add CPU-type to topology
-Message-ID: <20240627152211.GA5201@ranerica-svr.sc.intel.com>
+Message-ID: <20240627152609.GC5201@ranerica-svr.sc.intel.com>
 References: <20240617-add-cpu-type-v1-0-b88998c01e76@linux.intel.com>
  <8d757ea3-87a3-4663-ac76-66b04e33e6b3@gmail.com>
  <20240619015315.3ei5f6rovzdnxovo@desk>
- <16994d97-0499-4e3b-8890-328e74adc91d@gmail.com>
+ <bc75ff55161671e4470849ed51baa547f619889d.camel@linux.intel.com>
+ <0021f5f2-67c5-4b20-939d-48c9c1c60cdb@gmail.com>
+ <1b99017a-6964-46de-ba3a-09552e7cf072@intel.com>
+ <20240627125154.GA4743@ranerica-svr.sc.intel.com>
+ <20240627132230.hondzls5bt3jspay@desk>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,29 +77,26 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <16994d97-0499-4e3b-8890-328e74adc91d@gmail.com>
+In-Reply-To: <20240627132230.hondzls5bt3jspay@desk>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 
-On Wed, Jun 19, 2024 at 11:22:16PM +0200, Brice Goglin wrote:
-
-[...]
-
-> > There can be many ways to expose this information in sysfs. Like this ...
+On Thu, Jun 27, 2024 at 06:22:30AM -0700, Pawan Gupta wrote:
+> On Thu, Jun 27, 2024 at 05:51:54AM -0700, Ricardo Neri wrote:
+> > ARM gives userspace specific details. This makes more sense to me. Instead
+> > of reading these details, user space would have to infer these details if
+> > a CPU type was given in sysfs.
 > > 
-> > > [1] https://lkml.org/lkml/2020/10/2/1208
-> > ... exposes /sys/devices/system/cpu/types which, in hybrid parts, creates a
-> > subdirectory for each type of CPU. Each subdirectory contains a CPU list
-> > and a CPU map that user space can query.
-> > 
-> > The other way is to expose the CPU-type in a file:
-> > 
-> > 	/sys/devices/system/cpu/cpuN/type
-> > 
-> > that could return the CPU-type of the CPU N. Is there a preference?
+> > Having said that, Intel does have a CPUID leaf that gives the CPU type. Such
+> > leaf also has a "Native Model ID". Exposing only the CPU type may not be
+> > sufficient.
 > 
-> 
-> I'd vote for the former.
+> Do we know if there are applications that would benefit from this information?
 
-+1. With the former you can read all CPUs of a given type in one go whereas
-with the latter you have to iterate over all CPUs. By the time you are done
-CPUs may have gone offline or online.
+Probably not, but exposing it would follow ARM's approach of exposing the
+raw details and let user space consume it as it wishes instead of having
+kernel give an answer that could probably be imcomplete.
+
+> 
+> We agreed to leave sysfs for another series. I will be sending v2 soon.
+
+It is fine, just wanted to express some opinions. :)
