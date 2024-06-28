@@ -1,174 +1,120 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3788A2139D4;
-	Fri, 28 Jun 2024 08:48:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D24A14D2AB;
+	Fri, 28 Jun 2024 08:59:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719564507; cv=none; b=D9M1ux4v/SvU9MNCX/cXOCHr4i4AY1W3+rqgLQIIfBjTk7jxJ41QtsM/JQ46UH2mBaQtL/EW6zcOIEkD6RXfXWMuQ31CmGIphEV4kzro/JCqbaJw+hkIXk3QJh79NyVUG5gHOPij9Uj9sP36J7EfgzcTgQMbdJlqpgERlF/OgOQ=
+	t=1719565168; cv=none; b=KgNOnUtofhLFpzmScEc9DKFUuuocLow3ZvCQ96GPWD2MYCUUlkamkTNwnmUrCpQ84G4ZaVnVzOlpKDy7++Yh9JF2Lxfxqdz+sLNvzX/wfpTD8k+v2V72d7VD9v7u8WeE8AAXns5fokKYxBCt2LFscld0JuENzp/k7ca6h1d2pa4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719564507; c=relaxed/simple;
-	bh=5583eqhtGvPr11ryz4ZpEypX9g+qKSFTog1c7ZcLsuI=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SCNGqQ5AbNKrRs+0Xcc+Ch3Fkii86NEnWdzOspsozATsoSsPMsgGaDHed0MeXW8X6CS8T2jp6FlFmWJ7MIfq+/DFzeQfjUyNygDfn9CI2X+2vEf8LuRt6y/93Jj0u9+y/PzBD2n+p+kM1MiBw33K5TqYn+i5j3pqRwb94brK5SM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=pbf77/b+; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1719565168; c=relaxed/simple;
+	bh=fsn7DgqHae5MMi2nZcdrg3QK9TBqy66uY6pL4EIadqI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Y+4X5Aw70O5s4R7PQUybqzNGMztIn8/q84gEnqtmB0xhCSdKvWAUSI3CIM1g9ZmZRPI9c61Y7ENbAMSD2YjJPgygCgQnzcEdBjOT908PBkXD4zYYkfjdA5aOB4amoBHFyh0Q7EaR3PomZxG7TrAlAx1I1rfVWApk+P41dAqyEm0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=L/cxFALA; arc=none smtp.client-ip=192.198.163.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="pbf77/b+"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45S4wZmK032242;
-	Fri, 28 Jun 2024 08:48:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=xtV+MoUKKNww7l9Qxey8uYdd
-	oo65kVVgk6K8vmnP6EY=; b=pbf77/b+YkkLdSr+qpRBdzeN0QVBQwayXPDHWaZ5
-	iMHofBY1eNve9lpXVnf5uXsRkAMcZ8zTlok8QHWaxs4lfLpBqidxJPQ2PuIHcJlS
-	0wv22HTA1WmCxXt4gD/OkrVbjNf7CnO2nto6/LPaGcno6p0WeZxwVPTanCs9uf+s
-	5RUlPSkTvKvVY4oGcin2+nNiRWDQJf5X3HnjN8lrzl/Ocynn5PiO1Vpk005JuFij
-	ZzDf5v2Wf7z7joPrMbsX+V+nnnPbup7sGhB4mvHqVIGwdMY6HqyUA3k4hg7DF3Nx
-	woBIJSTO/OMSq4glag5k8rTYhbEyT4JVIH/zUQNDtjX3ag==
-Received: from nasanppmta02.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 401pm58m8e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 28 Jun 2024 08:48:16 +0000 (GMT)
-Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-	by NASANPPMTA02.qualcomm.com (8.17.1.19/8.17.1.19) with ESMTPS id 45S8mFaf019395
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 28 Jun 2024 08:48:15 GMT
-Received: from hu-varada-blr.qualcomm.com (10.80.80.8) by
- nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Fri, 28 Jun 2024 01:48:10 -0700
-Date: Fri, 28 Jun 2024 14:18:06 +0530
-From: Varadarajan Narayanan <quic_varada@quicinc.com>
-To: Konrad Dybcio <konrad.dybcio@linaro.org>
-CC: Georgi Djakov <djakov@kernel.org>,
-        Dmitry Baryshkov
-	<dmitry.baryshkov@linaro.org>,
-        <andersson@kernel.org>, <mturquette@baylibre.com>, <sboyd@kernel.org>,
-        <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
-        <quic_anusha@quicinc.com>, <linux-arm-msm@vger.kernel.org>,
-        <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v9 6/6] arm64: dts: qcom: ipq9574: Add icc provider
- ability to gcc
-Message-ID: <Zn54xhM/qfBv58e2@hu-varada-blr.qualcomm.com>
-References: <1a08ef42-b52f-4c97-90d7-e7fdee7725b4@linaro.org>
- <Zmgb+OjdBNw71sC1@hu-varada-blr.qualcomm.com>
- <176137e5-6312-4d46-97b6-c4494bc1c61b@kernel.org>
- <ZmlAdETV0+6Md8HC@hu-varada-blr.qualcomm.com>
- <e24cfd23-6f77-46a0-b020-9cb3daef6930@kernel.org>
- <Zml4RQ5R5s3mVMnI@hu-varada-blr.qualcomm.com>
- <8e32a8be-dbbf-49ca-92a1-2fe3c8bfb571@kernel.org>
- <ZmpsOdsl9AMTSH88@hu-varada-blr.qualcomm.com>
- <ZnKKjomRQtJS2ZgL@hu-varada-blr.qualcomm.com>
- <9938a67b-1f6b-4955-b4c0-a9f78c55f276@linaro.org>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="L/cxFALA"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1719565167; x=1751101167;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=fsn7DgqHae5MMi2nZcdrg3QK9TBqy66uY6pL4EIadqI=;
+  b=L/cxFALAE+uLgcWl/XKi+Nq/H1ICiee0842NypSRqCflKWLTsOZDyCan
+   LDOHNFXlR5Kg7IBVh4Zs05sIxcamihSOhRQAQ2gMpCTaoCfwsgKpSxRjg
+   mdID4kIrvs8cSdESTfDOO0IwYrbdcCc7RaLzQvxfsASIciSzIaLGL642Q
+   DHgrLMvG7ZlwMOLbNrQ0HQwuGmz93cD+qHeNDAt/Ey/jCsOdVDg+SO7JO
+   /i+ytQJ58VKnm/EgQdZE1R10CCXkXv8xmHxOrrKZY5gH6HGqOply9gqRG
+   82Sk0g/u0EcLb+jZ+KYKW9OsbH1E6MAJhGQzbVF1Ab6k3J0jlgzeCwe5e
+   Q==;
+X-CSE-ConnectionGUID: ysVfkcyKRoC7Bi2q0cBoSg==
+X-CSE-MsgGUID: 8cryBuhgTmaWNNL9aaG61A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11116"; a="16964150"
+X-IronPort-AV: E=Sophos;i="6.09,168,1716274800"; 
+   d="scan'208";a="16964150"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jun 2024 01:59:26 -0700
+X-CSE-ConnectionGUID: a2q1RSkxRcSf3SQPaf8/7g==
+X-CSE-MsgGUID: nm1Jb91lS9S6fqU3fDhm8Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.09,168,1716274800"; 
+   d="scan'208";a="49278962"
+Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.232.203]) ([10.124.232.203])
+  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jun 2024 01:59:22 -0700
+Message-ID: <09000f4e-f373-448f-afef-35d2a413929f@linux.intel.com>
+Date: Fri, 28 Jun 2024 16:59:18 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <9938a67b-1f6b-4955-b4c0-a9f78c55f276@linaro.org>
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: lLyucKUWU34WsxEbmbU0wbWK5G-MyKc0
-X-Proofpoint-ORIG-GUID: lLyucKUWU34WsxEbmbU0wbWK5G-MyKc0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-06-28_04,2024-06-28_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 mlxscore=0
- priorityscore=1501 phishscore=0 adultscore=0 suspectscore=0 spamscore=0
- malwarescore=0 lowpriorityscore=0 bulkscore=0 impostorscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2406140001 definitions=main-2406280064
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH PATCH v2 3/9] perf/x86/intel: Use topology_hw_cpu_type()
+To: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ x86@kernel.org
+Cc: daniel.sneddon@linux.intel.com, tony.luck@intel.com,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, Josh Poimboeuf <jpoimboe@kernel.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+ "Liang, Kan" <kan.liang@linux.intel.com>,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Brice Goglin <brice.goglin@gmail.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Perry Yuan <Perry.Yuan@amd.com>
+References: <20240627-add-cpu-type-v2-0-f927bde83ad0@linux.intel.com>
+ <20240627-add-cpu-type-v2-3-f927bde83ad0@linux.intel.com>
+Content-Language: en-US
+From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
+In-Reply-To: <20240627-add-cpu-type-v2-3-f927bde83ad0@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 27, 2024 at 12:00:35AM +0200, Konrad Dybcio wrote:
-> On 19.06.2024 9:36 AM, Varadarajan Narayanan wrote:
+
+On 6/28/2024 4:44 AM, Pawan Gupta wrote:
+> get_this_hybrid_cpu_type() misses a case when cpu-type is populated
+> regardless of X86_FEATURE_HYBRID_CPU. This is particularly true for hybrid
+> variants that have P or E cores fused off.
 >
-> [...]
+> Instead use topology_hw_cpu_type() as it does not rely on hybrid feature to
+> enumerate cpu-type. This can also help avoid the model-specific fixup
+> get_hybrid_cpu_type().
 >
+> Suggested-by: Dave Hansen <dave.hansen@linux.intel.com>
+> Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+> ---
+>  arch/x86/events/intel/core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> > Tested the patches with both gcc and nsscc providers having
-> > 'sync_state' set to icc_sync_state.
-> >
-> > 	# dmesg | grep synced
-> > 	[    3.029820] qcom,gcc-ipq9574 1800000.clock-controller: interconnect provider is in synced state
-> > 	[    3.470106] qcom,nsscc-ipq9574 39b00000.clock-controller: interconnect provider is in synced state
-> >
-> > I can see that icc_sync_state is getting called and clocks
-> > related to paths with zero bandwidth are getting disabled.
-> >
-> > Will post the NSSCC patches to get the full picture.
+> diff --git a/arch/x86/events/intel/core.c b/arch/x86/events/intel/core.c
+> index 38c1b1f1deaa..0da1fd14b0ea 100644
+> --- a/arch/x86/events/intel/core.c
+> +++ b/arch/x86/events/intel/core.c
+> @@ -4753,7 +4753,7 @@ static void intel_pmu_check_hybrid_pmus(struct x86_hybrid_pmu *pmu)
+>  
+>  static struct x86_hybrid_pmu *find_hybrid_pmu_for_cpu(void)
+>  {
+> -	u8 cpu_type = get_this_hybrid_cpu_type();
+> +	u8 cpu_type = topology_hw_cpu_type(smp_processor_id());
+
+As Kan said, ARL-H would have two different atom uarchs, so we have to use
+the extra native model id to identify them for PMU enabling. I'm not sure
+if we need a similar helper topology_hw_cpu_native_id(), it may depend on
+if the native id needs to be exposed to user space? such as whether there
+are different vulnerabilities between these two atom uarchs?
+
+For PMU enabling, we don't need to expose the native model ID to user
+space, so we define a new helper get_this_hybrid_cpu_native_id() and
+leverage it to identify the atom uarch.
+
+
+>  	int i;
+>  
+>  	/*
 >
-> Going back to the original question, does removing interconnects = from
-> things like PCIe now make them not work / crash the device, which would
-> indicate the NoC clocks were indeed gated?
-
-Yes. With and without 'interconnects =', the following behaviour
-is same
-	* Boot completes
-	* PCIe devices were probed succesfully and can be
-	  seen in /proc/bus/pci/devices.
-	* icc_sync_state is called. The system has 4 pcie nodes
-	  in the DT, out of which pcie0 is not enabled.
-
-The difference is seen in icc_sync_state
-
-    With 'interconnects ='
-
-	* During icc_sync_state, the following 2 clocks
-	  corresponding to the interconnects of 'pcie0' get
-	  disabled.
-
-	[    2.986356] ---> clk_core_disable_lock: gcc_anoc_pcie0_1lane_m_clk
-	[    3.012486] ---> clk_core_disable_lock: gcc_snoc_pcie0_1lane_s_clk
-
-	* System shutdown also completes without issues
-
-    Without the 'interconnects =',
-
-	* During icc_sync_state, the following clocks
-	  corresponding to the interconnects of all the 4 PCIe
-	  nodes get disabled.
-
-	[    2.887860] ---> clk_core_disable_lock: gcc_anoc_pcie0_1lane_m_clk
-	[    2.913988] ---> clk_core_disable_lock: gcc_snoc_pcie0_1lane_s_clk
-	[    2.939857] ---> clk_core_disable_lock: gcc_anoc_pcie1_1lane_m_clk
-	[    2.965725] ---> clk_core_disable_lock: gcc_snoc_pcie1_1lane_s_clk
-	[    2.991594] ---> clk_core_disable_lock: gcc_anoc_pcie2_2lane_m_clk
-	[    3.017463] ---> clk_core_disable_lock: gcc_snoc_pcie2_2lane_s_clk
-	[    3.043328] ---> clk_core_disable_lock: gcc_anoc_pcie3_2lane_m_clk
-	[    3.069201] ---> clk_core_disable_lock: gcc_snoc_pcie3_2lane_s_clk
-
-	* System shutdown hangs (possibly due to un-clocked
-	  access of PCIe register) in pcie_pme_interrupt_enable
-
-		[   10.773134]  dump_stack+0x18/0x24
-		[   10.776779]  pcie_pme_remove+0x2c/0x88
-		[   10.780078]  pcie_port_remove_service+0x50/0x74
-		[   10.783725]  device_remove+0x12c/0x148
-		[   10.788151]  __device_release_driver+0x65c/0x8cc
-		[   10.791972]  device_release_driver+0x2c/0x44
-		[   10.796746]  bus_remove_device+0xcc/0x10c
-		[   10.800999]  device_del+0x14c/0x400
-		[   10.804904]  device_unregister+0x18/0x34
-		[   10.808203]  remove_iter+0x2c/0x3c
-		[   10.812369]  device_for_each_child+0x60/0xb4
-		[   10.815583]  pcie_portdrv_shutdown+0x34/0x90
-		[   10.820009]  pci_device_shutdown+0x34/0x74
-		[   10.824263]  device_shutdown+0x150/0x258
-		[   10.828169]  kernel_restart_prepare+0x98/0xbc
-		[   10.832249]  kernel_restart+0x44/0x110
-		[   10.836502]  __do_sys_reboot+0x18c/0x304
-
-I believe, this is confirms NOC clocks getting disabled by
-icc_sync_state.
-
-Thanks
-Varada
