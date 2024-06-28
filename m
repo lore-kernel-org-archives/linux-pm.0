@@ -1,56 +1,42 @@
-Received: from out203-205-221-205.mail.qq.com (out203-205-221-205.mail.qq.com [203.205.221.205])
+Received: from out30-110.freemail.mail.aliyun.com (out30-110.freemail.mail.aliyun.com [115.124.30.110])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 774A27347B;
-	Fri, 28 Jun 2024 09:01:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.205.221.205
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A203A14F98;
+	Fri, 28 Jun 2024 09:15:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.110
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719565285; cv=none; b=KXiIyEWTmKXePTxk48rLTNDxtnZ5ow5vh6dDsmiQ9miy7bWxYfbYj8cmJNOdUx+fivUdxhfswJiro2UB3J2UZGu2VOq8UGvI4HIm5LpNb+mAx5+IMK2O63dqObzhqClISD5A86EFOXWoKvKv6ewi6cU6gggaBs6lru8CwVarhkc=
+	t=1719566103; cv=none; b=QwOm/ZJfYGXgdFAQKb1wi+WfQX55R14kXYcccV/vLIAcWMIHOV3Wh30TQrTnYsntWqUIJ5stXOEvGVhIMLBiDtqkR0Xhy2GdR75nv2OMTc4On4Njd4R1e2f9AyzdxCCuWNpPbOfxAjSO5sClud+42uh3/cB5HCCuO7AHrfIE4Zc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719565285; c=relaxed/simple;
-	bh=t6E3YyEOBf2I57/ODAt4w7a2zijQZIz76U604qLgUMY=;
-	h=Message-ID:From:To:Cc:Subject:Date:MIME-Version; b=fygSisCJYkRCbMpMI8cuFJjW47NvbxAfXUQ3JzIYdEGyBiZIWjcFXN+lzAIWOgfdVoRCB+P5VJzcgW94TyZpgrjm4qxei2zQu/qbZzHmyMulbOp+4zv4PWngmzo0ooVG7dz3uzCgYJwYVSOPY02lfOdo5ouw3dDc7ZCCo3kWBt0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; spf=pass smtp.mailfrom=qq.com; dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b=hgJdHlnT; arc=none smtp.client-ip=203.205.221.205
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
+	s=arc-20240116; t=1719566103; c=relaxed/simple;
+	bh=r/Th9O2aZMMXbfIiW1waqw9GyrYxm3TKoU3/NIhFZ0Y=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZcYkZwfKPIMH1Geth31FF02ykJ6dt1iZbycfsomjrl7TePhwTIxJpmYE13eBFBiv9eTqO5Ue/ADwEull4XNzOskUXwN+h4CYugQS/8px1NwJeFnls1+bjttzIGNGoY801WSEjgf7WQpejlbRNLh4CgRcBxe0Vb7LTbxHL5ZsNfY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=vUwcSCP9; arc=none smtp.client-ip=115.124.30.110
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b="hgJdHlnT"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1719564976; bh=k3xkOZZAZTnOpfeg6oi7bd7/Sd8fmJuPwEsMntl666A=;
-	h=From:To:Cc:Subject:Date;
-	b=hgJdHlnT7zwpiIxcijQAykz1IWaJw7jZxfStkymoKUaXmlYcdHJ4JXMpZMELFoh3x
-	 e7rd0ce4MO6pLtmtI/mQMXFaJodCGYKwU4c2h/F7VjjH4eCbtYujcrIS2WOEIrIuMR
-	 8Cy3szulA7JLnsVm8bpFMtnFiXqaunqTDncrsH2w=
-Received: from iZ2ze0ccts00nkjy9wuyo6Z.localdomain ([101.201.76.96])
-	by newxmesmtplogicsvrszc13-0.qq.com (NewEsmtp) with SMTP
-	id C4495684; Fri, 28 Jun 2024 16:49:04 +0800
-X-QQ-mid: xmsmtpt1719564544tww7kpsch
-Message-ID: <tencent_2ACBECB5B8EF2442CE608CE48F8E6131CC09@qq.com>
-X-QQ-XMAILINFO: MR/iVh5QLeieE0DHHvt6z9zbR8n+svGXHWYIZDrXyjTPPjKJvuBEkArYgBmCZT
-	 OhN9FXtqOCpWMOocaSmZnGpvuNw65hRWtW0CEuAdKmbI+BzLuYn1DYy7dlAt8Zyf4bMDZTKyCX4Q
-	 2ChFqHsuCtmcgzAH8y7RY9vTYOCnIVavry+10A3OwxNJMORo6CMYqCOhL5J0dOTGgTKlCyHCizNT
-	 AvrJwezbawCFM1jDNPiRk51mDjZnCVjvZZMiwA2Zi3d/5DO6zMIhX/Q7SwEzPiUH1VwZPZFUKohT
-	 2gghTjuYZLQzG5GMJG0veffmuUgA7DIk84ZzQbS5vsC1Rqwl5Vubs8qozfOxAfXBeQF8MMnf5cno
-	 vl6PVGtkfeF04dH6vHR14ablfERIcRpgd7d/oBCd/XgEbh0j123ePDHXdjXKBxnLUntkJZxARsOo
-	 QCpdsgY+gd4vFw4b0wvS+InGgS/vPAK2H0AYAyitsByVul1vfjiGejBUIOvyzY8Fc6y5+McHYB8g
-	 iMDQMXAiXPZjRWRjPBBX3/N97eTu8+/jiKvvkKrZ5AKuChMl1/PFB/sI0r5EmlcbrwfL5G/XZcHv
-	 0yVZ5eoniPiKzLZ1gdEpUp8q9Xr4IwWw5l7MKaThSMy0SxHPpw9dEf/ZexvhlL/18R5s15s9EzrD
-	 H4N5UOM0buNS87K45lB0am74PXrPBWsNBq8qViOLwMuJS0+ykLCbP0OjWHERbtCCkeAp9nxtsSd2
-	 +CEgIGdtLle2Qs6rCbiL+4QUujDfOyApkmMFm2dkFlaQT+8dQD5krIw7IrnGiA7ev0AsmHjcmX73
-	 ij6eJ1veqh16Ng7oNwGwXsHxlVANw0ksxPR6n5awO3VDz06imGtj8Yxh5hPbjDTWTkf4HFCvVmvx
-	 5TYbmT2/PUNDEERaptlTgfdots5zJ6p72BSXrufPgjccoIm5eo4qNpAnMUxjraUZRIEfIpwVm9ra
-	 7rS60i+lWA0aIneaibFP7dujULExUp
-X-QQ-XMRINFO: OD9hHCdaPRBwq3WW+NvGbIU=
-From: ysay <570260087@qq.com>
-To: rafael@kernel.org
-Cc: daniel.lezcano@linaro.org,
+	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="vUwcSCP9"
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1719566098; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=OtRDW3ZfujA0yUx2njQc+axApfTNdD+9gaRETBCWkEI=;
+	b=vUwcSCP9wWg4SsiNUoUQSAzO1VU9mlqags2NfYTy1CDORgkV53TyxgkJAEcEFAPzbj+0BZX8cNxTkJ6zbUxK9gCBy9y4NE4KYuXTPpALE9ZRhvxHDVMEZHtyDoUqqUWomDLswepmsVUy7rFjLRfr30WjVCQnyKHvgg0JB7nA3ys=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R341e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045046011;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=8;SR=0;TI=SMTPD_---0W9PrlmV_1719566097;
+Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0W9PrlmV_1719566097)
+          by smtp.aliyun-inc.com;
+          Fri, 28 Jun 2024 17:14:57 +0800
+From: Yang Li <yang.lee@linux.alibaba.com>
+To: mingo@redhat.com
+Cc: rafael@kernel.org,
+	tglx@linutronix.de,
+	pavel@ucw.cz,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	ysay <ysaydong@gmail.com>
-Subject: [PATCH] drivers/cpuidle: Fix guest_halt_poll_ns failed to take effect
-Date: Fri, 28 Jun 2024 16:49:02 +0800
-X-OQ-MSGID: <20240628084902.57897-1-570260087@qq.com>
-X-Mailer: git-send-email 2.43.5
+	Yang Li <yang.lee@linux.alibaba.com>,
+	Abaci Robot <abaci@linux.alibaba.com>
+Subject: [PATCH -next] mm/treewide: Add missing kernel-doc function comments.
+Date: Fri, 28 Jun 2024 17:14:56 +0800
+Message-Id: <20240628091456.57301-1-yang.lee@linux.alibaba.com>
+X-Mailer: git-send-email 2.20.1.7.g153144c
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -59,77 +45,45 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: ysay <ysaydong@gmail.com>
+Add kernel-doc style comments for the pfn_is_nosave and
+arch_hibernation_header_save functions.
 
-When guest_halt_poll_allow_shrink=N,setting guest_halt_poll_ns
-from a large value to 0 does not reset the CPU polling time,
-despite guest_halt_poll_ns being intended as a mandatory maximum
-time limit.
-
-The problem was situated in the adjust_poll_limit() within
-drivers/cpuidle/governors/haltpoll.c:79.
-
-Specifically, when guest_halt_poll_allow_shrink was set to N,
-resetting guest_halt_poll_ns to zero did not lead to executing any
-section of code that adjusts dev->poll_limit_ns.
-
-The issue has been resolved by relocating the check and assignment for
-dev->poll_limit_ns outside of the conditional block.
-This ensures that every modification to guest_halt_poll_ns
-properly influences the CPU polling time.
-
-Signed-off-by: ysay <ysaydong@gmail.com>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Closes: https://bugzilla.openanolis.cn/show_bug.cgi?id=9453
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 ---
- drivers/cpuidle/governors/haltpoll.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/x86/power/hibernate.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpuidle/governors/haltpoll.c b/drivers/cpuidle/governors/haltpoll.c
-index 663b7f164..99c6260d7 100644
---- a/drivers/cpuidle/governors/haltpoll.c
-+++ b/drivers/cpuidle/governors/haltpoll.c
-@@ -78,26 +78,22 @@ static int haltpoll_select(struct cpuidle_driver *drv,
- 
- static void adjust_poll_limit(struct cpuidle_device *dev, u64 block_ns)
- {
--	unsigned int val;
-+	unsigned int val = dev->poll_limit_ns;
- 
- 	/* Grow cpu_halt_poll_us if
- 	 * cpu_halt_poll_us < block_ns < guest_halt_poll_us
- 	 */
- 	if (block_ns > dev->poll_limit_ns && block_ns <= guest_halt_poll_ns) {
--		val = dev->poll_limit_ns * guest_halt_poll_grow;
-+		val *= guest_halt_poll_grow;
- 
- 		if (val < guest_halt_poll_grow_start)
- 			val = guest_halt_poll_grow_start;
--		if (val > guest_halt_poll_ns)
--			val = guest_halt_poll_ns;
- 
- 		trace_guest_halt_poll_ns_grow(val, dev->poll_limit_ns);
--		dev->poll_limit_ns = val;
- 	} else if (block_ns > guest_halt_poll_ns &&
- 		   guest_halt_poll_allow_shrink) {
- 		unsigned int shrink = guest_halt_poll_shrink;
- 
--		val = dev->poll_limit_ns;
- 		if (shrink == 0) {
- 			val = 0;
- 		} else {
-@@ -108,8 +104,12 @@ static void adjust_poll_limit(struct cpuidle_device *dev, u64 block_ns)
- 		}
- 
- 		trace_guest_halt_poll_ns_shrink(val, dev->poll_limit_ns);
--		dev->poll_limit_ns = val;
- 	}
-+
-+	if (val > guest_halt_poll_ns)
-+		val = guest_halt_poll_ns;
-+
-+	dev->poll_limit_ns = val;
- }
+diff --git a/arch/x86/power/hibernate.c b/arch/x86/power/hibernate.c
+index 5b81d19cd114..90f682ff63b1 100644
+--- a/arch/x86/power/hibernate.c
++++ b/arch/x86/power/hibernate.c
+@@ -41,7 +41,8 @@ unsigned long temp_pgt __visible;
+ unsigned long relocated_restore_code __visible;
  
  /**
+- *	pfn_is_nosave - check if given pfn is in the 'nosave' section
++ * pfn_is_nosave - check if given pfn is in the 'nosave' section
++ * @pfn: The Page Frame Number to check
+  */
+ int pfn_is_nosave(unsigned long pfn)
+ {
+@@ -84,9 +85,11 @@ static inline u32 compute_e820_crc32(struct e820_table *table)
+ #endif
+ 
+ /**
+- *	arch_hibernation_header_save - populate the architecture specific part
+- *		of a hibernation image header
+- *	@addr: address to save the data at
++ * arch_hibernation_header_save - populate the architecture specific part
++ * of a hibernation image header
++ * @addr: address to save the data at
++ * @max_size: the maximum size of the data to save
++ *
+  */
+ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+ {
 -- 
-2.43.5
+2.20.1.7.g153144c
 
