@@ -1,38 +1,38 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 061A0156967;
-	Sun, 30 Jun 2024 15:37:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5842413CFB8;
+	Sun, 30 Jun 2024 16:53:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719761877; cv=none; b=jpFKpnfGDrIab0QmUl411fAybccERJUpxBqBq+ysQxN/6k9GOtHG5VpJ4TDXHWwbqjPufL+BE3pTRRy62uOqMuKB0iUnBrVmqQnQgo12dKGcP0crCwNBy7hka+84P3miUwQuUC26XPdT+GcCRBY9F+Z+534pTzADVooBO/8Xrdo=
+	t=1719766442; cv=none; b=KbzySNF46Z8iiIitffMi+0+klZSaTUff/zO2A/xOM9COaZJf1EyTTiUUThCN+msIrkV/Hb0mGA4SROPX6KqTE2q6qKfCiO/ptTdYMmp9FojTuYQClEudD1VcCzSgeI2aiDRRymztPba9Fbe4fl9zG7kv9VUiTafqAgkVCFVCk6k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719761877; c=relaxed/simple;
-	bh=Z/y0IFADfKfJvFiNwnyAj1kXb+3X4rxM/FOzZQk6XVw=;
+	s=arc-20240116; t=1719766442; c=relaxed/simple;
+	bh=IDz8sfG2rJ2XDtyV9KlADYXg9I6EzDZ4IZkpSVQew7o=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=X7dEhntk67cEfwC9n2ElcPFdgUU2EmG3o76169GviC6EgCjrdytLpAu0lSURN/D7iQQbHXIIWYLq7N13abx9GUf5uryRZrUQIwfaFn1BIF9NMYJC4oK7wjK42qKKoHYS3ImnG8afEBooniCB4xDUlKnN89o6iRL5/uTeAHpE9ZM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=Gpf1//3s; arc=none smtp.client-ip=212.227.15.18
+	 MIME-Version; b=IDDWRlrdtwEG1tQ9hMm36bTL6nHkjVQ9cbHFPUoA4ZCTAa7pD1i7XnyOHw3M1p8kqoVP6zVpw9Gc5JdqScNCmt9znHQugd1sj6eSinQ6eU34QBczAV9TIZtJoJTegpEUJHYebCQjWtxmtcuPJ1LqtBFO8QAHGYkyZcnwC1zjTbI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=co+khgJL; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="Gpf1//3s"
+	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="co+khgJL"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.net;
-	s=s31663417; t=1719761844; x=1720366644; i=wahrenst@gmx.net;
-	bh=lCFQBeBlbmpUg9EyXUyqn5DC7Bbo3JN2mDc4pQ7TCIw=;
+	s=s31663417; t=1719766404; x=1720371204; i=wahrenst@gmx.net;
+	bh=x6X/JBGaDbXhfz2zCdgdBC9Xbw9KpBWry+heZSf/vYw=;
 	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-Id:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding:cc:
 	 content-transfer-encoding:content-type:date:from:message-id:
 	 mime-version:reply-to:subject:to;
-	b=Gpf1//3sptoh0BqAY9+K8DWuGeBmw+14AW5vGaMnqtdrUtrC60rP9HwuSjH1nEq2
-	 tZjNmkjPkCQCVY/FwfeTawoESM8K2FlwLo2aszffrrayuQu7Rp6L8z3WrPMVEfscV
-	 aI/SuHreY7rXStZY+T+VNyIgNIJvbJrVV5fo86kgPZfwHq5KVCN8xhTF4YQyAgruF
-	 MNTtarpzEYfcKuThXAZ4QelWbD6n+1lbxJYkG51dKwPeK+ro7nEH+C9yM3P2fJXh8
-	 FIcpAptoxrmAcTSDvQs+3GGUE4UrNB0vppZxNjumCGCLmkiYoQsY+vvAmiFLNRla1
-	 9QYMcbfMC8rclpxwIg==
+	b=co+khgJLL3I35VMjh/AKMVnmw3JPmoSsHTQRnoawNenZfKo4FyiEzMwGWe1Sy5ww
+	 hR6AIrhO3oh4hFkXrLHHIVlDKTHomfo+fUc9AghNyCeJ9vhJOlIY+y4cEWcsYXoKN
+	 jJbugRnYLl3ly/aZKQDKzTEYtRCDlHfOntQcuuyl6f5rbhfgOLi8pvDqJomIT+rIN
+	 rFJ0n/l1jY4QzzL+QQQYkR7VMcTigBfxsxmffxDjXVcLlK1pXB6B2Ap5yPDs1pt6O
+	 gxTquMIZsvzELOGK3xlLE2qJiFGQqMyLJs8dMXlWkq+zpeE2nf/ZQnNSWhPr3O/q8
+	 73J0RYsy35yFwRUTzw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from stefanw-SCHENKER ([37.4.248.43]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MFsZ3-1seevT2qMh-00Fv84; Sun, 30
- Jun 2024 17:37:24 +0200
+Received: from stefanw-SCHENKER ([37.4.248.43]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M3lcJ-1sOEv12IFf-002P3U; Sun, 30
+ Jun 2024 18:53:24 +0200
 From: Stefan Wahren <wahrenst@gmx.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Florian Fainelli <florian.fainelli@broadcom.com>,
@@ -59,9 +59,9 @@ Cc: Dave Stevenson <dave.stevenson@raspberrypi.com>,
 	linux-arm-kernel@lists.infradead.org,
 	kernel-list@raspberrypi.com,
 	Stefan Wahren <wahrenst@gmx.net>
-Subject: [PATCH 08/11] usb: dwc2: debugfs: Print parameter no_clock_gating
-Date: Sun, 30 Jun 2024 17:36:49 +0200
-Message-Id: <20240630153652.318882-9-wahrenst@gmx.net>
+Subject: [PATCH RFT 10/11] serial: 8250_bcm2835aux: add PM suspend/resume support
+Date: Sun, 30 Jun 2024 18:53:04 +0200
+Message-Id: <20240630165304.323095-1-wahrenst@gmx.net>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240630153652.318882-1-wahrenst@gmx.net>
 References: <20240630153652.318882-1-wahrenst@gmx.net>
@@ -72,49 +72,78 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:Y2/ydqCyqYHWHavK5/XG4b46LsgTWvQ3AzoHTM5k/IIqoHGxAdu
- YmHJwmsQJKG3BiEcn/lVB63s5ODVPmRQCXvi1v/puqwcPbB9y/BglDKYBDHBcNlySv4Pux8
- Aiv2WHULsE2ioRoX6rVAL9MGN7wv0b+hY9DQIVE8t7jRYaaD3R4y47BjYJtZHz3kf9g40YU
- kCRuybOwyGdQwQf6CYwQw==
+X-Provags-ID: V03:K1:4gFUJsAqzBEe0Ecm192F+EOC5bzkfojzIoxo17BhwwQMZSUayGA
+ aoHR3ququVF0cAZgp0qNUz+67nJI3An977H1iEQn0dvfqUUSZAkNJd0Cge4khmOjgHPODAW
+ 3fxZ+TBPZSHDWvrKdOb4YOn8Fkz6nb9woQGsYOtRjr1UmI7SgLZLatvKan1jOGJjZvJFbI6
+ 7huOwk+6E0lfTHXsikFhg==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:1mr6sDBPqAY=;ZVkIx5NNUR0ZJQM95skTQK9wG9G
- YQ//jV7KGMQwMhiLuozF7iwuXXsavmAxKDlwYcvpTnqcCoQ4cRO7JXS8WvjpeO0CGzkH8/CeZ
- KVwxEH49j4t+hhkiUBoSh0Udkzx8SNT1KQg2pu/qFHDnfYsRY1t5HRznGr3/GZ1ad6gI32WII
- mfDwlCe1hjdKj56Peofvihz41IHFncxcDsOt9SP1pBGjqR9EnDVUJe777Xrx5bEk9Nf+jNEB8
- NtQ5DAFBDZGx+31cDrhg06e59qTg7leiT67FUse0/SQWvvHBRGDSd/fniQSS3YwBs2KJxgUhT
- bH/YZp+tZZjUuMC5XdAXNBANuhFGAFE4YVA/eR81UBc10kVDFfH/cmBREY98OMGdbi58569/X
- lgsygz2Vq0ponplUSfg7M+o3YZG9zxjRhG7aUkJ3dCWPWpxREe00h2Qbd6oXLGmP0y0c3NVQO
- cK8eoYBXpmBm6qUhrpKYvvfQmmM5YEFCPgxNVOQydubkcppzK1MYa+bBSfvZrnODoMEvQ+GMB
- ArEDD2Za/Bsi5Xom854maKOkcXgySDsNHH2pPopgQJQH6jEZU/xwynvwjqFZCHdpk/uO1YM91
- hrdlK8rrbRVH5vs/tVA3e3lz5jlByvi/IQ7zat3EBsVHwzeQBFr1bc+biyxd+e0RPr/aPKcil
- Sy9u6YyxO/gY/or8MPDKihrxH/0N7bad414NbWboObpHEd2Yvb8VP2JbXBTs1xb5rOVxGP3tD
- xvItjcHC7chExI5cbgLJs98U5I4t3QtKlDfUVEt4s3uXrYoGfP6/p1UVQ5307NO1sbYcrCgmc
- /55cQvNWI6q+ZRrzkWJCoJojDh6UMUCt3bm0ZICYtxtpk=
+UI-OutboundReport: notjunk:1;M01:P0:RC+tt6aEpOI=;1EW8hiWdl4BGJhJ4wQfv5AMukc5
+ ZEeVMD/okghGbmPzVHi0APqS3iWRMF1wKmhloRCbelkkAJn1Sm/Vvn98lJFrOzCO8urP9Ygwf
+ gTGkYWjIAoUo8NoZxBxrnGWJ0joi+LCicWuTtMarXVr9yCRFBjr+kbHObjc/yjO+7UKcTz3WZ
+ 0py2ifYsEsJaE/bLO/eRuYgiAQOP6nNhG0gb0vuEwzd5k7VA+lZ0FmqdBtIj5CAI4KqwGpxSb
+ Jyfyb6rmrTvDA9fC59hAa8gIXjwklPT087BiLt5G4Fgv5w1vimzAwe/IoKJbOCSSzGKUhnvVJ
+ XHyjbnG5Pd8CEJzi7YHIxwgNJj57kAYuki3Xkdij4zXwkXmWFKaCPpL/SJJ7gkJAsnGQgKmkF
+ poizMB35wx89493MKT/E+8eV4pOz2sVuvfjBHdNtc1SeeMnVCYrzw+2TIm1ZpTTRixdX4pbuE
+ VUZQl2RvlJXPD1tjKhRxKik0gCjl/T5Hk1YBLRr1c9fwlU0pXl3VhEGLxbcVNEJruDnfezGtQ
+ iqOhszlDM/1ldUPLzejAS8R5LT5rqeIu9FYPuU1okh2BR9ub3faug8JzYAG6IsomotgU2Zmpd
+ ATf0m6AoTiMqz1pzNBy4tvJAdviKXJxbJT56dx1kr+uMEGFpvVI4j2+wce8zFCDtlv/csnJ4h
+ eKP62EVipAK/KdjNrNwXfDPhTxngwEcTpbIrC+pvGnEjeXWTPjYQcTniJfZZ+dDMVzN9cupV4
+ 54a+7MHBLu69HLRnHUiGt6VepISknaHu2CTqbxPxaV8jqRQgv6KmwFuGunm9LdtKqTKcvsbW8
+ 2ku5nTDp+OHzRjSaFTyFL3dYB3fj1Xy2+wJgUs1cWGQnE=
 
-The commit c4a0f7a6ab54 ("usb: dwc2: Skip clock gating on Samsung
-SoCs") introduced a parameter to skip enabling clock gating mode
-even the hardware platform should supports it.
-
-In order to make this more visible also print this in show
-parameters of debugfs.
+This adds suspend/resume support for the 8250_bcm2835aux
+driver to provide power management support on attached
+devices.
 
 Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
 =2D--
- drivers/usb/dwc2/debugfs.c | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/usb/dwc2/debugfs.c b/drivers/usb/dwc2/debugfs.c
-index 7c82ab590401..3116ac72747f 100644
-=2D-- a/drivers/usb/dwc2/debugfs.c
-+++ b/drivers/usb/dwc2/debugfs.c
-@@ -702,6 +702,7 @@ static int params_show(struct seq_file *seq, void *v)
- 	print_param(seq, p, uframe_sched);
- 	print_param(seq, p, external_id_pin_ctl);
- 	print_param(seq, p, power_down);
-+	print_param(seq, p, no_clock_gating);
- 	print_param(seq, p, lpm);
- 	print_param(seq, p, lpm_clock_gating);
- 	print_param(seq, p, besl);
+Since i don't have a RS485 setup, any test feedback would be great.
+
+ drivers/tty/serial/8250/8250_bcm2835aux.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/drivers/tty/serial/8250/8250_bcm2835aux.c b/drivers/tty/seria=
+l/8250/8250_bcm2835aux.c
+index 121a5ce86050..cccd2a09cb6f 100644
+=2D-- a/drivers/tty/serial/8250/8250_bcm2835aux.c
++++ b/drivers/tty/serial/8250/8250_bcm2835aux.c
+@@ -213,11 +213,34 @@ static const struct acpi_device_id bcm2835aux_serial=
+_acpi_match[] =3D {
+ };
+ MODULE_DEVICE_TABLE(acpi, bcm2835aux_serial_acpi_match);
+
++static int __maybe_unused bcm2835aux_suspend(struct device *dev)
++{
++	struct bcm2835aux_data *data =3D dev_get_drvdata(dev);
++
++	serial8250_suspend_port(data->line);
++
++	return 0;
++}
++
++static int __maybe_unused bcm2835aux_resume(struct device *dev)
++{
++	struct bcm2835aux_data *data =3D dev_get_drvdata(dev);
++
++	serial8250_resume_port(data->line);
++
++	return 0;
++}
++
++static const struct dev_pm_ops bcm2835aux_dev_pm_ops =3D {
++	SET_SYSTEM_SLEEP_PM_OPS(bcm2835aux_suspend, bcm2835aux_resume)
++};
++
+ static struct platform_driver bcm2835aux_serial_driver =3D {
+ 	.driver =3D {
+ 		.name =3D "bcm2835-aux-uart",
+ 		.of_match_table =3D bcm2835aux_serial_match,
+ 		.acpi_match_table =3D bcm2835aux_serial_acpi_match,
++		.pm =3D &bcm2835aux_dev_pm_ops,
+ 	},
+ 	.probe  =3D bcm2835aux_serial_probe,
+ 	.remove_new =3D bcm2835aux_serial_remove,
 =2D-
 2.34.1
 
