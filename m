@@ -1,226 +1,133 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 431451BA081;
-	Tue,  2 Jul 2024 14:24:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62B6FBE7F;
+	Tue,  2 Jul 2024 14:44:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719930298; cv=none; b=fWHSZCpRezjk8JLAds93eGCnOnr1pO8BHEXTz6gfJpPLmwKsK3fyDDFfGsZ62nHlkcx8mO9O/s6i1Ikaa845eSOTbaYuhMyfXPJDH0wDZI5MQoyj9GosFGjsBPIdBFXelJTtdOvtMxl5i6ww6A+07xnr1KpJSjJ2X73wnsV+Lns=
+	t=1719931495; cv=none; b=aH4qMpORMYev9NhFGEUX4CeQ7TYgQ/dO3KAM66aUAXc95LD4Sm/zenhay/DcWWB/ROimEVhgg4HEDtI0trKLgYFNjqfinnxXxviWZM/CpLtRvLIFKz9189zvjQW41EJI+4r6Cz8Exs9K40F4WIVAarVtdawWkVwzjvVWr9uP3K4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719930298; c=relaxed/simple;
-	bh=KRo+VTADaqii3BC3HatcoVDFPzZKRCbP13qZos3qpj4=;
+	s=arc-20240116; t=1719931495; c=relaxed/simple;
+	bh=hylGUm911e4WMhiZzXuDXft7cF0yyM6IgOOX8pQZKto=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=CnyyN0i0GAPClAsoliHHZ4PYVX+FVIFRSV/QTnLWJNzV8/aU/9kGOwU3Fs78W8hJOjz91DxElfNqZDOaDFFj3Pz9gwcZNFDqBF1HO/rlXBbAmn9pkLiWk99wAnM9mXbJXxFljpyL0G7pCH3KvS01JzVDvNv0iDQrLooX7R/Hzzw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=i5nDx4WK; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=GQNrkLTyqoTar9DlZKbHHjnhXgyyhNI+X4pE6INZTzIPywR4N5+cHCFAbuWs/VZTCN0qYmDSJfJEU7M/u8QWh+sHMvBbbtFEyLROgTluCrBjAbYFS36YsZAi/7mBqMF/nM3e3KBNTBAiwFn4RBbpnImwFz2RspRt81buVLiJfAw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=YHEOPZXf reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="i5nDx4WK"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 48483C116B1;
-	Tue,  2 Jul 2024 14:24:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1719930298;
-	bh=KRo+VTADaqii3BC3HatcoVDFPzZKRCbP13qZos3qpj4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=i5nDx4WKvXiMLVMGSn3hD/tjgepRUKlKl4we5q0ersHxOzNwwpYxmg6wpU4HJraV/
-	 CjoudyhdpE4vT32jXK6meDNil+4pg78joCTUNJgghl4nJ6aBIedg8oCaYMtAbkJVDA
-	 GiwKBeTiw9QgAOjXFRwLDRzdn1FcVVD1cZDCg39Kw3DKFPzsbsLRhaJ8BdyyA400HO
-	 QRYSdZn5vO0Zyb0v08YwVtxp2v68dpAHuN7mDU6u7K/KB5QO2HWRtn5//Hc8eJfIZz
-	 +NsXj8M1yuez9zbkvv+NOe5xFbaZsv3MRYokOQ/AHwll054DzjTn9qbjeEmpHwSvek
-	 wRvyvH1te9lQg==
-From: "Masami Hiramatsu (Google)" <mhiramat@kernel.org>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@ucw.cz>,
-	Len Brown <len.brown@intel.com>,
-	Randy Dunlap <rdunlap@infradead.org>
-Cc: suleiman@google.com,
-	briannorris@google.com,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v8] PM: sleep: Expose last succeeded resumed timestamp in sysfs
-Date: Tue,  2 Jul 2024 23:24:54 +0900
-Message-ID:  <171993029390.95379.9256588060965749271.stgit@mhiramat.roam.corp.google.com>
-X-Mailer: git-send-email 2.45.2.803.g4e1b14247a-goog
-In-Reply-To:  <171993028355.95379.9391483220285994310.stgit@mhiramat.roam.corp.google.com>
-References:  <171993028355.95379.9391483220285994310.stgit@mhiramat.roam.corp.google.com>
-User-Agent: StGit/0.19
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="YHEOPZXf"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
+ id aed396a62b52ac75; Tue, 2 Jul 2024 16:44:43 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 43444A562AE;
+	Tue,  2 Jul 2024 16:44:43 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1719931483;
+	bh=hylGUm911e4WMhiZzXuDXft7cF0yyM6IgOOX8pQZKto=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=YHEOPZXf+76dohpZb1tqnMCHzzVnxT+Eithjngiq2luwFTK7aUUkjmymASzTAodqH
+	 gHQaFoRKyp3ixiPuj96QCVVz44w9ZM84M7pGewktFATsgAU0jnkVb8zGmjvj/4coJn
+	 keswOV8bywQr5KtTO4PgYZyMZn86loZGqBe598EG/rN6Qk0jQII2ew1xbH0lwvGzrm
+	 K2vNtHcaXRCuz3x2Ah0/LHaxKjG+/z33MZcFxcPQWK2iBuINh4TiXk1Lxj/kz6iWgo
+	 MOG3NppUhThUPI5qppVr1ZgiPAk9SOBRltXONZI4iyP8w5plnAJujoAvKRozOBuGwF
+	 jE/Xtd5Gm7kDg==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawnguo@kernel.org>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>, linux-wireless@vger.kernel.org,
+ linux-tegra@vger.kernel.org
+Subject:
+ [RESEND][PATCH v1 5/5] thermal: trip: Fold __thermal_zone_get_trip() into its
+ caller
+Date: Tue, 02 Jul 2024 16:44:27 +0200
+Message-ID: <22339769.EfDdHjke4D@rjwysocki.net>
+In-Reply-To: <1890956.tdWV9SEqCh@rjwysocki.net>
+References: <1890956.tdWV9SEqCh@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrudehgdejjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopedugedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehrrghfrggvlheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=14 Fuz1=14 Fuz2=14
 
-From: Masami Hiramatsu <mhiramat@kernel.org>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Expose last succeeded resumed timestamp as last_success_resume_time
-attribute of suspend_stats in sysfs so that user can use this time
-stamp as a reference point of resuming user space.
+Because __thermal_zone_get_trip() is only called by thermal_zone_get_trip()
+now, fold the former into the latter.
 
-On some system like the ChromeOS, the system suspend and resume are
-controlled by a power management process. The user-space tasks will be
-noticed the suspend and the resume signal from it.
-To improve the suspend/resume performance and/or to find regressions,
-we would like to know how long the resume processes are taken in kernel
-and in user-space.
-For this purpose, expose the accarate time when the kernel is finished
-to resume so that we can distinguish the duration of kernel resume and
-user space resume.
-
-This suspend_stats attribute is easy to access and only expose the
-timestamp in CLOCK_MONOTONIC. User can find the accarate time when the
-kernel finished to resume its drivers/subsystems and start thawing, and
-measure the elapsed time from the time when the kernel finished the
-resume to a user-space action (e.g. displaying the UI).
-
-Signed-off-by: Masami Hiramatsu (Google) <mhiramat@kernel.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- Changes in v8:
-  - Update against the latest kernel.
-  - Introduce dpm_save_success_time() to update last_succeess_resume_time.
- Changes in v7:
-  - Update patch description.
-  - Update sysfs documentation to say the exact timing.
-  - Update the comment.
- Changes in v6:
-  - Fix to record resume time before thawing user processes.
- Changes in v5:
-  - Just updated for v6.7-rc3.
- Changes in v4.1:
-  - Fix document typo (again).
- Changes in v4:
-  - Update description to add why.
-  - Fix document typo.
- Changes in v3:
-  - Add (unsigned long long) casting for %llu.
-  - Add a line after last_success_resume_time_show().
- Changes in v2:
-  - Use %llu instead of %lu for printing u64 value.
-  - Remove unneeded indent spaces from the last_success_resume_time
-    line in the debugfs suspend_stat file.
----
- Documentation/ABI/testing/sysfs-power |   11 +++++++++++
- kernel/power/main.c                   |   28 ++++++++++++++++++++++++++++
- kernel/power/power.h                  |    1 +
- kernel/power/suspend.c                |    1 +
- 4 files changed, 41 insertions(+)
+ drivers/thermal/thermal_trip.c |   18 ++++--------------
+ include/linux/thermal.h        |    2 --
+ 2 files changed, 4 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-index a3942b1036e2..ee567e7e9d4a 100644
---- a/Documentation/ABI/testing/sysfs-power
-+++ b/Documentation/ABI/testing/sysfs-power
-@@ -442,6 +442,17 @@ Description:
- 		'total_hw_sleep' and 'last_hw_sleep' may not be accurate.
- 		This number is measured in microseconds.
- 
-+What:		/sys/power/suspend_stats/last_success_resume_time
-+Date:		Dec 2023
-+Contact:	Masami Hiramatsu <mhiramat@kernel.org>
-+Description:
-+		The /sys/power/suspend_stats/last_success_resume_time file
-+		contains the timestamp of when the kernel successfully
-+		resumed drivers/subsystems from suspend/hibernate. This is
-+		just before thawing the user processes.
-+		This floating point number is measured in seconds by monotonic
-+		clock.
-+
- What:		/sys/power/sync_on_suspend
- Date:		October 2019
- Contact:	Jonas Meurer <jonas@freesources.org>
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index a9e0693aaf69..d9236bdab42a 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -16,6 +16,7 @@
- #include <linux/seq_file.h>
- #include <linux/suspend.h>
- #include <linux/syscalls.h>
-+#include <linux/timekeeping.h>
- #include <linux/pm_runtime.h>
- 
- #include "power.h"
-@@ -321,6 +322,7 @@ struct suspend_stats {
- 	u64 last_hw_sleep;
- 	u64 total_hw_sleep;
- 	u64 max_hw_sleep;
-+	struct timespec64 last_success_resume_time;
- 	enum suspend_stat_step failed_steps[REC_FAILED_NUM];
- };
- 
-@@ -361,6 +363,17 @@ void dpm_save_errno(int err)
- 	suspend_stats.last_failed_errno %= REC_FAILED_NUM;
+Index: linux-pm/drivers/thermal/thermal_trip.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_trip.c
++++ linux-pm/drivers/thermal/thermal_trip.c
+@@ -114,27 +114,17 @@ void thermal_zone_set_trips(struct therm
+ 		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
  }
  
-+void dpm_save_success_time(int err)
-+{
-+	/*
-+	 * Record last succeeded resume timestamp just before thawing processes.
-+	 * This is for helping users to measure user-space resume performance
-+	 * for improving their programs or finding regressions.
-+	 */
-+	if (!err)
-+		ktime_get_ts64(&suspend_stats.last_success_resume_time);
-+}
-+
- void pm_report_hw_sleep_time(u64 t)
+-int __thermal_zone_get_trip(struct thermal_zone_device *tz, int trip_id,
+-			    struct thermal_trip *trip)
+-{
+-	if (!tz || trip_id < 0 || trip_id >= tz->num_trips || !trip)
+-		return -EINVAL;
+-
+-	*trip = tz->trips[trip_id].trip;
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(__thermal_zone_get_trip);
+-
+ int thermal_zone_get_trip(struct thermal_zone_device *tz, int trip_id,
+ 			  struct thermal_trip *trip)
  {
- 	suspend_stats.last_hw_sleep = t;
-@@ -460,6 +473,17 @@ static ssize_t last_failed_step_show(struct kobject *kobj,
+-	int ret;
++	if (!tz || !trip || trip_id < 0 || trip_id >= tz->num_trips)
++		return -EINVAL;
+ 
+ 	mutex_lock(&tz->lock);
+-	ret = __thermal_zone_get_trip(tz, trip_id, trip);
++	*trip = tz->trips[trip_id].trip;
+ 	mutex_unlock(&tz->lock);
+ 
+-	return ret;
++	return 0;
  }
- static struct kobj_attribute last_failed_step = __ATTR_RO(last_failed_step);
+ EXPORT_SYMBOL_GPL(thermal_zone_get_trip);
  
-+static ssize_t last_success_resume_time_show(struct kobject *kobj,
-+		struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%llu.%llu\n",
-+		(unsigned long long)suspend_stats.last_success_resume_time.tv_sec,
-+		(unsigned long long)suspend_stats.last_success_resume_time.tv_nsec);
-+}
-+
-+static struct kobj_attribute last_success_resume_time =
-+			__ATTR_RO(last_success_resume_time);
-+
- static struct attribute *suspend_attrs[] = {
- 	&success.attr,
- 	&fail.attr,
-@@ -477,6 +501,7 @@ static struct attribute *suspend_attrs[] = {
- 	&last_hw_sleep.attr,
- 	&total_hw_sleep.attr,
- 	&max_hw_sleep.attr,
-+	&last_success_resume_time.attr,
- 	NULL,
- };
- 
-@@ -542,6 +567,9 @@ static int suspend_stats_show(struct seq_file *s, void *unused)
- 		seq_printf(s, "\t\t\t%-s\n",
- 			   suspend_step_names[suspend_stats.failed_steps[index]]);
- 	}
-+	seq_printf(s,	"last_success_resume_time:\t%-llu.%llu\n",
-+		   (unsigned long long)suspend_stats.last_success_resume_time.tv_sec,
-+		   (unsigned long long)suspend_stats.last_success_resume_time.tv_nsec);
- 
- 	return 0;
+Index: linux-pm/include/linux/thermal.h
+===================================================================
+--- linux-pm.orig/include/linux/thermal.h
++++ linux-pm/include/linux/thermal.h
+@@ -202,8 +202,6 @@ static inline void devm_thermal_of_zone_
  }
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index de0e6b1077f2..70726a55a9d1 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -348,3 +348,4 @@ static inline void pm_sleep_enable_secondary_cpus(void)
- }
+ #endif
  
- void dpm_save_errno(int err);
-+void dpm_save_success_time(int err);
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 09f8397bae15..1e561eb6681a 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -601,6 +601,7 @@ static int enter_state(suspend_state_t state)
-  Finish:
- 	events_check_enabled = false;
- 	pm_pr_dbg("Finishing wakeup.\n");
-+	dpm_save_success_time(error);
- 	suspend_finish();
-  Unlock:
- 	mutex_unlock(&system_transition_mutex);
+-int __thermal_zone_get_trip(struct thermal_zone_device *tz, int trip_id,
+-			    struct thermal_trip *trip);
+ int thermal_zone_get_trip(struct thermal_zone_device *tz, int trip_id,
+ 			  struct thermal_trip *trip);
+ int for_each_thermal_trip(struct thermal_zone_device *tz,
+
+
 
