@@ -1,162 +1,119 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26A9F173339;
-	Wed,  3 Jul 2024 12:44:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4ADEF1DA32
+	for <linux-pm@vger.kernel.org>; Wed,  3 Jul 2024 14:00:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720010667; cv=none; b=nmK4uL+jzrRRIwcjJA6C6RKHqtN1xAtgcl4mqNmXUcYyC0t6S5xYhSagjY+jcWIxxrN1JXIFUMUc3P7tbmh5HRDtp4AqYM3Kf8b83yfUA8otyC0Be8AKaBQd7HDYIzB78ovlZ16p9XhKwnuIxAblNGEMcbuMrdGEnAwaLaN9sd4=
+	t=1720015236; cv=none; b=bPK/uA5+0YprEgSLcE0R3rZeYTG6lPTd1TBS95lBhRZSUpDQEFD/weCNFwDlfAg4PE16amaUFMphEg0iPy4PtRU+XrH8mwyuL+cbXkngPJgZxkNd2yTCHB8O3zoCaGOs61Q8B/9QxBvBvV1JHwr5q/HIPzJSVm13Ihh4gGcL+LE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720010667; c=relaxed/simple;
-	bh=2jbQ4+bRVEE0MODicf7UTdRBm68QrQUJU5Ei7evh/is=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=VUjDpX9xbCiRSiDOo7rtifIYoO+/VsEV3yCD6nhEe6c62/IoLG6B15430bl6eF5AOiQACuvkTAfT0x/2f4mWZGWFbkpUObD7seI/OpUN53oF2jnR1uhspAMK5Wqb6X3o1ILcKxgbRfo8ISLYyI750ESDPd7pOsxOgkI32qjBcCY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ao1OxWLp; arc=none smtp.client-ip=198.175.65.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1720015236; c=relaxed/simple;
+	bh=gtHg+fhWTCT5t00ym5mQRgobrrouh6//u8ADJqModEI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Ldf+hMbqmoJOIW8t/9oynIyqs6s+yAVp5w+O2k2erb2etHzBFIv6kr9Wjb+eHNs/a8FtNV98oUWjDT/7vNDO5HTCmggLgrKYhWk+HTn3ZFkDm8lLSbVBK5Cs48I37pfuT0kHb+57F30g77/qWgRrEpkRaI+lmWIHWzfho7oXyLc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=w1o63krl; arc=none smtp.client-ip=209.85.221.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ao1OxWLp"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1720010664; x=1751546664;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=2jbQ4+bRVEE0MODicf7UTdRBm68QrQUJU5Ei7evh/is=;
-  b=ao1OxWLp8QtEZ8tJ3SJF1+x5lW6GEhL2/hwuoBQcLNO1CD1Ii+xUoQX+
-   0SuXFtb/IWwutZQFTP786flzfN0bIii02Q/GZhNZLQuko5HEAvPxlui+x
-   Z9VurJcWklnHMxd2gPAReKyrN7uqWjzjCcqxVcLPptdRw6UN15Os3Nm2D
-   yPZ+1BFhXSGG7Je98I6GOzIup9z9JOKz4ItabVXmYEUaVpSaNEyRfaJnM
-   iDAv0jpvDIwdR4oyWkcddfOymTDVFcRG+WGXGSvYTAzOCA/0yIliwEpbW
-   KQF7lWJQE93vt6XXP0twbUuAAHgzRp+UrsH/DW3ZYCk5mI57u5CWg80rd
-   A==;
-X-CSE-ConnectionGUID: oylho2bpS/SsgjCzntlgBQ==
-X-CSE-MsgGUID: uX8Qbjy+SDWfgsdxZfbz7w==
-X-IronPort-AV: E=McAfee;i="6700,10204,11121"; a="17355632"
-X-IronPort-AV: E=Sophos;i="6.09,182,1716274800"; 
-   d="scan'208";a="17355632"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jul 2024 05:44:24 -0700
-X-CSE-ConnectionGUID: 2eTjDtrCTTqOSAiWUY7d2g==
-X-CSE-MsgGUID: N6sVDhVbRwyrM7jh6o/jvA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,182,1716274800"; 
-   d="scan'208";a="46668790"
-Received: from lkp-server01.sh.intel.com (HELO 68891e0c336b) ([10.239.97.150])
-  by orviesa006.jf.intel.com with ESMTP; 03 Jul 2024 05:44:22 -0700
-Received: from kbuild by 68891e0c336b with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1sOzLP-000PiP-1O;
-	Wed, 03 Jul 2024 12:44:19 +0000
-Date: Wed, 3 Jul 2024 20:43:25 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
-	devel@acpica.org, linux-pm@vger.kernel.org,
-	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [rafael-pm:bleeding-edge 136/137]
- drivers/thermal/uniphier_thermal.c:269:13: warning: unused variable 'i'
-Message-ID: <202407032000.Lvc01b58-lkp@intel.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="w1o63krl"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-362f62ae4c5so428607f8f.1
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jul 2024 07:00:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1720015234; x=1720620034; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Umv9yiRU+omL+0ilB9pN8nKbjgKXfIcuYwrR5A3ZEYc=;
+        b=w1o63krlvTm/JG9KTaGNTeIyYlEWaFFpMSxLsGZRh64YuDC0UBJRi80+wYJ5HrgQOO
+         QraLHQkVWFA2OZlILXXnOkjlEX2FPRX0D0SM/ThGuuHvaKsODr+j751AXpc+hurIehKC
+         J0II9MJMY/URFxJ+tEb0SEISwXCnD24+OJp+n0fCYJ+9gbbIu0AnwrffPbNC5d7Rh8Om
+         hKEdP2t7DSWVGGLmWshyvLqfhwqH7cR/J1OwqsA61W1xwXQqUcmrxe5m8F6HBQzwISOJ
+         UsTmvTJuiE6wLoUn3Cwi09m8k7j0wslf0QNpKmIO/ptUNDA5J4iYofdBShMQGGpBEhDb
+         /Tsg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1720015234; x=1720620034;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Umv9yiRU+omL+0ilB9pN8nKbjgKXfIcuYwrR5A3ZEYc=;
+        b=vBYRlp5s2KvzL6djxYR27ZvsOBzgzjLiDmiA5diLZNXx5J805TBsZplqJTAHfvXuAZ
+         4RmMbICUN3bWHRhWyCVQucwjm10wUYVZJSSyLSnCDyYGE4j91CAZo54Yyh4WtLi7QFfM
+         4zfAVAzfouuGOzQZYayGn3CNXRW5ihQ/lV77WmRhMzqrbQH7qsZqou/Jpnbz8EmRd2sw
+         43VY1xjIOtuTIDbaS1L0t3ih4wcAc6m1rfIE7a660NZNEw47nd0R1QTrIsu93M5u4IFr
+         ItLx/cMQq2lUqczipmwVIh9qzWPCFiREow3f+2e2GUAPyKimOpT66o2cASlJFQvVVcWt
+         KyTw==
+X-Forwarded-Encrypted: i=1; AJvYcCWOi/b3r3ZsvyPuHgclBZSKfa9A9ZjPk4bpmiYyL9NVFEk4GZQksi3M55rwlik2oDWLIAvkpduLk1H/Ug/zwG/44Sb/dIKaT00=
+X-Gm-Message-State: AOJu0Ywqb0jycj41FEPIVQXXzLwjazdWH50wt8w14MJ6pzp87HsXFUFE
+	bIC3GTgeZy8bLZLfUFXHGj6hC0ZbrXDaeHbFj/iE1HerdDQPd0kO3wLo44pmdfU=
+X-Google-Smtp-Source: AGHT+IGMQ9qtNvPvtq/beeHsghJ67tCO2WfXdsV6AnqIVKFFGTng3VkPBI3s0SPGnhqQieqd24h1WA==
+X-Received: by 2002:a5d:4705:0:b0:367:9048:e952 with SMTP id ffacd0b85a97d-367947a3744mr1454176f8f.18.1720015233635;
+        Wed, 03 Jul 2024 07:00:33 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:c49e:e1a5:3210:b8c0? ([2a05:6e02:1041:c10:c49e:e1a5:3210:b8c0])
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3675a0cd6e5sm16003812f8f.4.2024.07.03.07.00.32
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 03 Jul 2024 07:00:33 -0700 (PDT)
+Message-ID: <15b67ce6-3238-435d-ad28-7c06efbe9153@linaro.org>
+Date: Wed, 3 Jul 2024 16:00:32 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] thermal: core: Call monitor_thermal_zone() if zone
+ temperature is invalid
+To: neil.armstrong@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Zhang Rui <rui.zhang@intel.com>,
+ linux-arm-msm <linux-arm-msm@vger.kernel.org>
+References: <2764814.mvXUDI8C0e@rjwysocki.net>
+ <2ed4c630-204a-4f80-a37f-f2ca838eb455@linaro.org>
+ <8d91a3c1-018f-495b-83be-979b795b5548@linaro.org>
+ <12c5c133-9519-4a26-b9a3-2da1d3466e94@linaro.org>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <12c5c133-9519-4a26-b9a3-2da1d3466e94@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-head:   afefac1395033609973da997224eceaece6dadf5
-commit: 9b418d5c9b5a55f320ee2fef00825ec9a8cf582f [136/137] thermal: uniphier: Use thermal_zone_for_each_trip() for walking trip points
-config: i386-buildonly-randconfig-002-20240703 (https://download.01.org/0day-ci/archive/20240703/202407032000.Lvc01b58-lkp@intel.com/config)
-compiler: gcc-13 (Ubuntu 13.2.0-4ubuntu3) 13.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240703/202407032000.Lvc01b58-lkp@intel.com/reproduce)
+On 03/07/2024 14:43, neil.armstrong@linaro.org wrote:
+> Hi,
+> 
+> On 03/07/2024 14:25, Daniel Lezcano wrote:
+>>
+>> Hi Neil,
+>>
+>> it seems there is something wrong with the driver actually.
+>>
+>> There can be a moment where the sensor is not yet initialized for 
+>> different reason, so reading the temperature fails. The routine will 
+>> just retry until the sensor gets ready.
+>>
+>> Having these errors seem to me that the sensor for this specific 
+>> thermal zone is never ready which may be the root cause of your issue. 
+>> The change is spotting this problem IMO.
+> 
+> Probably, but it gets printed every second until system shutdown, but 
+> only for a single thermal_zone.
+> 
+> Using v1 of Rafael's patch makes the message disappear completely.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202407032000.Lvc01b58-lkp@intel.com/
+Yes, because you have probably the thermal zone polling delay set to 
+zero, thus it fails the first time and does no longer try to set it up 
+again. The V1 is an incomplete fix.
 
-All warnings (new ones prefixed by >>):
+Very likely the problem is in the sensor platform driver, or in the 
+thermal zone description in the device tree which describes a non 
+functional thermal zone.
 
-   drivers/thermal/uniphier_thermal.c: In function 'uniphier_tm_probe':
->> drivers/thermal/uniphier_thermal.c:269:13: warning: unused variable 'i' [-Wunused-variable]
-     269 |         int i, ret, irq;
-         |             ^
-
-
-vim +/i +269 drivers/thermal/uniphier_thermal.c
-
-   261	
-   262	static int uniphier_tm_probe(struct platform_device *pdev)
-   263	{
-   264		struct trip_walk_data twd = { .crit_temp = INT_MAX, .index = 0 };
-   265		struct device *dev = &pdev->dev;
-   266		struct regmap *regmap;
-   267		struct device_node *parent;
-   268		struct uniphier_tm_dev *tdev;
- > 269		int i, ret, irq;
-   270	
-   271		tdev = devm_kzalloc(dev, sizeof(*tdev), GFP_KERNEL);
-   272		if (!tdev)
-   273			return -ENOMEM;
-   274		tdev->dev = dev;
-   275	
-   276		tdev->data = of_device_get_match_data(dev);
-   277		if (WARN_ON(!tdev->data))
-   278			return -EINVAL;
-   279	
-   280		irq = platform_get_irq(pdev, 0);
-   281		if (irq < 0)
-   282			return irq;
-   283	
-   284		/* get regmap from syscon node */
-   285		parent = of_get_parent(dev->of_node); /* parent should be syscon node */
-   286		regmap = syscon_node_to_regmap(parent);
-   287		of_node_put(parent);
-   288		if (IS_ERR(regmap)) {
-   289			dev_err(dev, "failed to get regmap (error %ld)\n",
-   290				PTR_ERR(regmap));
-   291			return PTR_ERR(regmap);
-   292		}
-   293		tdev->regmap = regmap;
-   294	
-   295		ret = uniphier_tm_initialize_sensor(tdev);
-   296		if (ret) {
-   297			dev_err(dev, "failed to initialize sensor\n");
-   298			return ret;
-   299		}
-   300	
-   301		ret = devm_request_threaded_irq(dev, irq, uniphier_tm_alarm_irq,
-   302						uniphier_tm_alarm_irq_thread,
-   303						0, "thermal", tdev);
-   304		if (ret)
-   305			return ret;
-   306	
-   307		platform_set_drvdata(pdev, tdev);
-   308	
-   309		tdev->tz_dev = devm_thermal_of_zone_register(dev, 0, tdev,
-   310							     &uniphier_of_thermal_ops);
-   311		if (IS_ERR(tdev->tz_dev)) {
-   312			dev_err(dev, "failed to register sensor device\n");
-   313			return PTR_ERR(tdev->tz_dev);
-   314		}
-   315	
-   316		/* set alert temperatures */
-   317		twd.tdev = tdev;
-   318		thermal_zone_for_each_trip(tdev->tz_dev, uniphier_tm_trip_walk_cb, &twd);
-   319	
-   320		if (twd.crit_temp > CRITICAL_TEMP_LIMIT) {
-   321			dev_err(dev, "critical trip is over limit(>%d), or not set\n",
-   322				CRITICAL_TEMP_LIMIT);
-   323			return -EINVAL;
-   324		}
-   325	
-   326		uniphier_tm_enable_sensor(tdev);
-   327	
-   328		return 0;
-   329	}
-   330	
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
