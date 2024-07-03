@@ -1,230 +1,162 @@
-Received: from mail-lj1-f171.google.com (mail-lj1-f171.google.com [209.85.208.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0935B173339
-	for <linux-pm@vger.kernel.org>; Wed,  3 Jul 2024 12:43:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26A9F173339;
+	Wed,  3 Jul 2024 12:44:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720010640; cv=none; b=b0YI/b6zpVtqVIGXRfbZ7SK6efIyF6uAKJvLrW8Ak2+xkizepIood9RNILMtB6Kh45lKn+egtp6Rk9LbZ8qnjlbUS0wWC8e6S3PIsiXEq0dOHoMwltkuwjAy2tAVTeHQR8j/kePTkEirEuzMXmRa1p6ZsbJGb58BMHCqiwJi2VY=
+	t=1720010667; cv=none; b=nmK4uL+jzrRRIwcjJA6C6RKHqtN1xAtgcl4mqNmXUcYyC0t6S5xYhSagjY+jcWIxxrN1JXIFUMUc3P7tbmh5HRDtp4AqYM3Kf8b83yfUA8otyC0Be8AKaBQd7HDYIzB78ovlZ16p9XhKwnuIxAblNGEMcbuMrdGEnAwaLaN9sd4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720010640; c=relaxed/simple;
-	bh=VdRfPzAthl7DMawkwBV/SuNa8f44jOlg5OX6ORSz6BI=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=OXkgdoiHH5rOcG4ArNke/ZjpMDyPCBToDNO2Co/JSc+9LZUP9XmVQt0ypQYPyHRM6Z8mbttM9h5a6wlLeKE+Uv1xo9yoCd3cj705Bg0KHp41cIwONKRSReDl/kmsWhWDphgXmb434WqkAPvN1PlSK2PpIHs4SSI9qxWa2wrANfg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Qv67i7uS; arc=none smtp.client-ip=209.85.208.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1720010667; c=relaxed/simple;
+	bh=2jbQ4+bRVEE0MODicf7UTdRBm68QrQUJU5Ei7evh/is=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=VUjDpX9xbCiRSiDOo7rtifIYoO+/VsEV3yCD6nhEe6c62/IoLG6B15430bl6eF5AOiQACuvkTAfT0x/2f4mWZGWFbkpUObD7seI/OpUN53oF2jnR1uhspAMK5Wqb6X3o1ILcKxgbRfo8ISLYyI750ESDPd7pOsxOgkI32qjBcCY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ao1OxWLp; arc=none smtp.client-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Qv67i7uS"
-Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-2ee88c4443eso3223151fa.3
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jul 2024 05:43:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1720010637; x=1720615437; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :content-language:references:cc:to:subject:reply-to:from:user-agent
-         :mime-version:date:message-id:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=l3HgH1hvKo0FY8JZsGAA6bC1vvxBJE11DO7UMAUzFq0=;
-        b=Qv67i7uSx35gz3ytcVBmquEtpVRgqD+ssSoCvMAc2fK7og0j1H2UcJk8/DMKH6t8Zc
-         ADsOEFpk2QuFZofSQaQFTZ3KCDBlepyPSEVJVqEWJ0haOrdSfJCDE84kQ7niMFPHijPM
-         n3dMiWnNuasXkNwRo4GyMSuiAh6xUSQtLxeoM6nn57Jv0G3nSSXwPrlvmpHHl9m9+kAv
-         gcO2QcwKw3do2JpkhkkDZ8eknqlq5Eg3g0X46BafppBkOBahr5toWfyCDOz2WdrwNQbl
-         rU1PNyscuPBovlxPwQDHeHL8JuNskQ1nfqXaUMqN1C/lyTmMLP1EV1K1GDzlvThyx5ey
-         Ehlw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1720010637; x=1720615437;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :content-language:references:cc:to:subject:reply-to:from:user-agent
-         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=l3HgH1hvKo0FY8JZsGAA6bC1vvxBJE11DO7UMAUzFq0=;
-        b=QLntvvcFMbSTcdd6vDDf0Urh+F/LSHO+h1vuITK0tMhz7pApC9p9QSF1HfzANDVHpB
-         WfO16DSpVK6qGdtYycI04lHPxZbQuR5+bggjybqMk5ACvrguTGckLd3UwlEpnqqgIsrA
-         9YD7Ri3aJoy3I6luUpYhZpL0Ce+QvorLZPXon+cZjTI5lBSOYyXkB60RQkVVC7EJEaI7
-         K/JpzKPB/dRgj+oVp8U+KNKaGKMbU1DYWbrfW6LU+NgVeF+UBQ4NIvc6javMP03+J+bD
-         GQlzNv+sgIGtgoNEtjVq0N0iT7wfNkALkpw3ag2haPdfsicCKQ7lY342dgjFF83ydV1m
-         H+WQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVVhBNU0u+QywCnQ35j5bzumbmTZQRYoGs9V/mLzZS9eC2PeojesIj3QtDXh82bABSIXpcq/DzjcUHl04A5rkwXhpcAFE/OupI=
-X-Gm-Message-State: AOJu0YzTiG+p6+8cYxwRTLov/G6pbxJMcuITGvGnbhFsHjEfTG/ONap0
-	9jzXxcNPGrBzBkc83VvEPCf2Dk/pgl1+nMKFVORkHZAY1aEL57KYMysznPep92o=
-X-Google-Smtp-Source: AGHT+IHap25tUcl2feO5Gid55wz2EuEoXF9uI1mSdT2acRF9XJ3Tb5QEU9rHXqKUwVaFOWBXfgmR9g==
-X-Received: by 2002:a2e:87c9:0:b0:2ec:5811:edd4 with SMTP id 38308e7fff4ca-2ee5e3c35dbmr84168551fa.31.1720010636932;
-        Wed, 03 Jul 2024 05:43:56 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:982:cbb0:ef03:73b5:7503:ee71? ([2a01:e0a:982:cbb0:ef03:73b5:7503:ee71])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-36796bae9ecsm786492f8f.38.2024.07.03.05.43.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 03 Jul 2024 05:43:56 -0700 (PDT)
-Message-ID: <fdbdfdc3-d87c-4b95-8fc9-7b2331d1b684@linaro.org>
-Date: Wed, 3 Jul 2024 14:43:55 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ao1OxWLp"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1720010664; x=1751546664;
+  h=date:from:to:cc:subject:message-id:mime-version;
+  bh=2jbQ4+bRVEE0MODicf7UTdRBm68QrQUJU5Ei7evh/is=;
+  b=ao1OxWLp8QtEZ8tJ3SJF1+x5lW6GEhL2/hwuoBQcLNO1CD1Ii+xUoQX+
+   0SuXFtb/IWwutZQFTP786flzfN0bIii02Q/GZhNZLQuko5HEAvPxlui+x
+   Z9VurJcWklnHMxd2gPAReKyrN7uqWjzjCcqxVcLPptdRw6UN15Os3Nm2D
+   yPZ+1BFhXSGG7Je98I6GOzIup9z9JOKz4ItabVXmYEUaVpSaNEyRfaJnM
+   iDAv0jpvDIwdR4oyWkcddfOymTDVFcRG+WGXGSvYTAzOCA/0yIliwEpbW
+   KQF7lWJQE93vt6XXP0twbUuAAHgzRp+UrsH/DW3ZYCk5mI57u5CWg80rd
+   A==;
+X-CSE-ConnectionGUID: oylho2bpS/SsgjCzntlgBQ==
+X-CSE-MsgGUID: uX8Qbjy+SDWfgsdxZfbz7w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11121"; a="17355632"
+X-IronPort-AV: E=Sophos;i="6.09,182,1716274800"; 
+   d="scan'208";a="17355632"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jul 2024 05:44:24 -0700
+X-CSE-ConnectionGUID: 2eTjDtrCTTqOSAiWUY7d2g==
+X-CSE-MsgGUID: N6sVDhVbRwyrM7jh6o/jvA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.09,182,1716274800"; 
+   d="scan'208";a="46668790"
+Received: from lkp-server01.sh.intel.com (HELO 68891e0c336b) ([10.239.97.150])
+  by orviesa006.jf.intel.com with ESMTP; 03 Jul 2024 05:44:22 -0700
+Received: from kbuild by 68891e0c336b with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1sOzLP-000PiP-1O;
+	Wed, 03 Jul 2024 12:44:19 +0000
+Date: Wed, 3 Jul 2024 20:43:25 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
+	devel@acpica.org, linux-pm@vger.kernel.org,
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Subject: [rafael-pm:bleeding-edge 136/137]
+ drivers/thermal/uniphier_thermal.c:269:13: warning: unused variable 'i'
+Message-ID: <202407032000.Lvc01b58-lkp@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: neil.armstrong@linaro.org
-Reply-To: neil.armstrong@linaro.org
-Subject: Re: [PATCH v2] thermal: core: Call monitor_thermal_zone() if zone
- temperature is invalid
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux PM <linux-pm@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Zhang Rui <rui.zhang@intel.com>,
- linux-arm-msm <linux-arm-msm@vger.kernel.org>
-References: <2764814.mvXUDI8C0e@rjwysocki.net>
- <2ed4c630-204a-4f80-a37f-f2ca838eb455@linaro.org>
- <CAJZ5v0ghYd28H5eX8b68PSABMm8vTbeSpMxUsQ5mpVOXRPZ3RA@mail.gmail.com>
-Content-Language: en-US, fr
-Autocrypt: addr=neil.armstrong@linaro.org; keydata=
- xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
- GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
- BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
- qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
- 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
- AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
- OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
- Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
- YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
- GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
- UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
- GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
- yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
- QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
- SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
- 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
- Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
- oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
- M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
- 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
- KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
- 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
- QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
-Organization: Linaro
-In-Reply-To: <CAJZ5v0ghYd28H5eX8b68PSABMm8vTbeSpMxUsQ5mpVOXRPZ3RA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Hi,
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+head:   afefac1395033609973da997224eceaece6dadf5
+commit: 9b418d5c9b5a55f320ee2fef00825ec9a8cf582f [136/137] thermal: uniphier: Use thermal_zone_for_each_trip() for walking trip points
+config: i386-buildonly-randconfig-002-20240703 (https://download.01.org/0day-ci/archive/20240703/202407032000.Lvc01b58-lkp@intel.com/config)
+compiler: gcc-13 (Ubuntu 13.2.0-4ubuntu3) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240703/202407032000.Lvc01b58-lkp@intel.com/reproduce)
 
-On 03/07/2024 13:29, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> On Wed, Jul 3, 2024 at 1:04 PM Neil Armstrong <neil.armstrong@linaro.org> wrote:
->>
->> Hi,
->>
->> On 28/06/2024 14:10, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> Commit 202aa0d4bb53 ("thermal: core: Do not call handle_thermal_trip()
->>> if zone temperature is invalid") caused __thermal_zone_device_update()
->>> to return early if the current thermal zone temperature was invalid.
->>>
->>> This was done to avoid running handle_thermal_trip() and governor
->>> callbacks in that case which led to confusion.  However, it went too
->>> far because monitor_thermal_zone() still needs to be called even when
->>> the zone temperature is invalid to ensure that it will be updated
->>> eventually in case thermal polling is enabled and the driver has no
->>> other means to notify the core of zone temperature changes (for example,
->>> it does not register an interrupt handler or ACPI notifier).
->>>
->>> Also if the .set_trips() zone callback is expected to set up monitoring
->>> interrupts for a thermal zone, it has to be provided with valid
->>> boundaries and that can only happen if the zone temperature is known.
->>>
->>> Accordingly, to ensure that __thermal_zone_device_update() will
->>> run again after a failing zone temperature check, make it call
->>> monitor_thermal_zone() regardless of whether or not the zone
->>> temperature is valid and make the latter schedule a thermal zone
->>> temperature update if the zone temperature is invalid even if
->>> polling is not enabled for the thermal zone.
->>>
->>> Fixes: 202aa0d4bb53 ("thermal: core: Do not call handle_thermal_trip() if zone temperature is invalid")
->>> Reported-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> ---
->>>    drivers/thermal/thermal_core.c |    5 ++++-
->>>    drivers/thermal/thermal_core.h |    6 ++++++
->>>    2 files changed, 10 insertions(+), 1 deletion(-)
->>>
->>> Index: linux-pm/drivers/thermal/thermal_core.c
->>> ===================================================================
->>> --- linux-pm.orig/drivers/thermal/thermal_core.c
->>> +++ linux-pm/drivers/thermal/thermal_core.c
->>> @@ -300,6 +300,8 @@ static void monitor_thermal_zone(struct
->>>                thermal_zone_device_set_polling(tz, tz->passive_delay_jiffies);
->>>        else if (tz->polling_delay_jiffies)
->>>                thermal_zone_device_set_polling(tz, tz->polling_delay_jiffies);
->>> +     else if (tz->temperature == THERMAL_TEMP_INVALID)
->>> +             thermal_zone_device_set_polling(tz, msecs_to_jiffies(THERMAL_RECHECK_DELAY_MS));
->>>    }
->>>
->>>    static struct thermal_governor *thermal_get_tz_governor(struct thermal_zone_device *tz)
->>> @@ -514,7 +516,7 @@ void __thermal_zone_device_update(struct
->>>        update_temperature(tz);
->>>
->>>        if (tz->temperature == THERMAL_TEMP_INVALID)
->>> -             return;
->>> +             goto monitor;
->>>
->>>        tz->notify_event = event;
->>>
->>> @@ -536,6 +538,7 @@ void __thermal_zone_device_update(struct
->>>
->>>        thermal_debug_update_trip_stats(tz);
->>>
->>> +monitor:
->>>        monitor_thermal_zone(tz);
->>>    }
->>>
->>> Index: linux-pm/drivers/thermal/thermal_core.h
->>> ===================================================================
->>> --- linux-pm.orig/drivers/thermal/thermal_core.h
->>> +++ linux-pm/drivers/thermal/thermal_core.h
->>> @@ -133,6 +133,12 @@ struct thermal_zone_device {
->>>        struct thermal_trip_desc trips[] __counted_by(num_trips);
->>>    };
->>>
->>> +/*
->>> + * Default delay after a failing thermal zone temperature check before
->>> + * attempting to check it again.
->>> + */
->>> +#define THERMAL_RECHECK_DELAY_MS     100
->>> +
->>>    /* Default Thermal Governor */
->>>    #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
->>>    #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
->>>
->>>
->>>
->>>
->>
->> This patch on next-20240702 makes Qualcomm HDK8350, HDK8450, QRD8550, HDK8560, QRD8650 & HDK8650 output in loop:
->>
->> thermal thermal_zoneXX: failed to read out thermal zone (-19)
-> 
-> Is the loop endless?  If not, how many times does the message get printed?
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202407032000.Lvc01b58-lkp@intel.com/
 
-It get printed indefinitely
+All warnings (new ones prefixed by >>):
 
-> 
-> If I'm not mistaken, it would be printed at least once without the
-> commit in question.  Can you please check that?
-> 
-> Also, can you check the previous version of the patch in question:
-> 
-> https://lore.kernel.org/linux-pm/2745114.mvXUDI8C0e@rjwysocki.net/
-> 
-> and see if it has the same problem (just apply it instead of the $subject one).
+   drivers/thermal/uniphier_thermal.c: In function 'uniphier_tm_probe':
+>> drivers/thermal/uniphier_thermal.c:269:13: warning: unused variable 'i' [-Wunused-variable]
+     269 |         int i, ret, irq;
+         |             ^
 
-I reverted this one a applied v1 and the message disappeared completely.
 
-Neil
+vim +/i +269 drivers/thermal/uniphier_thermal.c
 
-> 
-> Thanks!
+   261	
+   262	static int uniphier_tm_probe(struct platform_device *pdev)
+   263	{
+   264		struct trip_walk_data twd = { .crit_temp = INT_MAX, .index = 0 };
+   265		struct device *dev = &pdev->dev;
+   266		struct regmap *regmap;
+   267		struct device_node *parent;
+   268		struct uniphier_tm_dev *tdev;
+ > 269		int i, ret, irq;
+   270	
+   271		tdev = devm_kzalloc(dev, sizeof(*tdev), GFP_KERNEL);
+   272		if (!tdev)
+   273			return -ENOMEM;
+   274		tdev->dev = dev;
+   275	
+   276		tdev->data = of_device_get_match_data(dev);
+   277		if (WARN_ON(!tdev->data))
+   278			return -EINVAL;
+   279	
+   280		irq = platform_get_irq(pdev, 0);
+   281		if (irq < 0)
+   282			return irq;
+   283	
+   284		/* get regmap from syscon node */
+   285		parent = of_get_parent(dev->of_node); /* parent should be syscon node */
+   286		regmap = syscon_node_to_regmap(parent);
+   287		of_node_put(parent);
+   288		if (IS_ERR(regmap)) {
+   289			dev_err(dev, "failed to get regmap (error %ld)\n",
+   290				PTR_ERR(regmap));
+   291			return PTR_ERR(regmap);
+   292		}
+   293		tdev->regmap = regmap;
+   294	
+   295		ret = uniphier_tm_initialize_sensor(tdev);
+   296		if (ret) {
+   297			dev_err(dev, "failed to initialize sensor\n");
+   298			return ret;
+   299		}
+   300	
+   301		ret = devm_request_threaded_irq(dev, irq, uniphier_tm_alarm_irq,
+   302						uniphier_tm_alarm_irq_thread,
+   303						0, "thermal", tdev);
+   304		if (ret)
+   305			return ret;
+   306	
+   307		platform_set_drvdata(pdev, tdev);
+   308	
+   309		tdev->tz_dev = devm_thermal_of_zone_register(dev, 0, tdev,
+   310							     &uniphier_of_thermal_ops);
+   311		if (IS_ERR(tdev->tz_dev)) {
+   312			dev_err(dev, "failed to register sensor device\n");
+   313			return PTR_ERR(tdev->tz_dev);
+   314		}
+   315	
+   316		/* set alert temperatures */
+   317		twd.tdev = tdev;
+   318		thermal_zone_for_each_trip(tdev->tz_dev, uniphier_tm_trip_walk_cb, &twd);
+   319	
+   320		if (twd.crit_temp > CRITICAL_TEMP_LIMIT) {
+   321			dev_err(dev, "critical trip is over limit(>%d), or not set\n",
+   322				CRITICAL_TEMP_LIMIT);
+   323			return -EINVAL;
+   324		}
+   325	
+   326		uniphier_tm_enable_sensor(tdev);
+   327	
+   328		return 0;
+   329	}
+   330	
 
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
