@@ -1,252 +1,304 @@
-Received: from NAM04-MW2-obe.outbound.protection.outlook.com (mail-mw2nam04on2040.outbound.protection.outlook.com [40.107.101.40])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CA121DA336;
-	Wed,  3 Jul 2024 06:31:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.101.40
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719988289; cv=fail; b=df/ZwazWZT1gsTJRjGoi3hvbgQ5hf+jqn4jySXXyDD/yx0suiOiwZNVA0Hl0t9ChoqBM8V0sit7ODZXZe4WbMwL2DWkmhvsCOSZ9/ly+h+zoupudLMNB795sg/0ZmajMkGqTVyC+ga9uhT6Qo0VShrJTLXsN32ui0k92fN6qtCo=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719988289; c=relaxed/simple;
-	bh=koaYCl4HG58p6B1p1at1IwFHw9OzY1xHfxjz2LhdW4k=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=p0pbLbnNbHjAlPkX0BoZ0URxkPEV2Xjn+IBiX2JDTgIILLaby0XuwQ+pzSKZP9090J1/bwnpZ5Cmc0lyxF+vBxA8q8MUJvT2X5w8RYoTOo9/kX7azc5kkXedPXLAiV+opGm2dEb+xXvqfi+vPLmMHAwnC6xOSzozJq/AdCvokUI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=HxItF8eO; arc=fail smtp.client-ip=40.107.101.40
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F186135A5B;
+	Wed,  3 Jul 2024 07:16:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1719991000; cv=none; b=BKv8qUUoDf2R34sIfM/pWbyK/P/StY0kalHjrEEJ5t95nuS5HC+QSYoEjW3pcmgtcgYufgp9DZDRXXhhsVAMtQV+z9uv4MocajTOzXdWvDZTRcASl/GlVGcsPXZwTVwlXt4t73iDGER+UX9LJqKvLBJMkKElIoH6uRWEm0jw0jI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1719991000; c=relaxed/simple;
+	bh=Jnn7HRX+w2X1FfG/ozQi4PUqTF2VQIuM9En9tHDhNG0=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mLbI77JbenQxx2tP60sAyJy6K8lJCGd0JxTtlUA078++PNr8R/CkPoaMMh/+s/R70jXvVsFM3bTYjobnTVSuSlWvXkWOwdrfXMBzjDo/bGkBg7QDe9JUI77vJfz9S0uwr1HtJKtFH5Xy6PXKwWvrt4hANgmOW5rRmbUci68lNsY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=GbKq6viF; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="HxItF8eO"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=dnsg+hVcArA4Jd5L8jvSn7EanxodW2Sy1uL3DqkTN/spORt73JxjIpLBLxpAPjKu3comqr6WTqzy0gH/7ddd4oZn+SUVclG5bLOQCr2z9H68HKHVTiAum+ub4pwnbVLZzgkYFxDTcdLDVmKi8pMdvXDEv6orSn0sXcAvhB/co6A7AD7bbRlXtav4xIqJW1j3yPFDUexhPJfDTONOQGku8gaFcbbjM3kOP/fIiZt0Ue/vRs0pwABEw9hcryho+ggqtyx1ZiWmfdmNrqLsAuD9kDHrSSWWtJtDUgaeCeeloec7cR/OAcGQlLu3F+o42mpGmX5xP0KOuCeN9tqtlQaYnA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ru09ClkvcenfdEXRYaoz0nnuCNlNx0dxqo1vRbHSSgA=;
- b=ThVgfzV/z98C6JVDs4Vrdqllsz8h0AjG3796cnfUzLPOlbMt9cceVgTKI4nEqk1KgCIMBcFP4jX0SMLtvshZGsIl5G5IOjd3VDAFULU7NM5Tgb/GePIN1upoMtKKhxBtf5nIiwvwzB0A3A3gNApXyajPQ2MZvI70D7j74HDSmuLOw61ck/3xyd4VRwBxHY1eEIPL2BxQPYKNO58eMVxqQMhHUcAb6tQH7U/6bWAnJC9eUDzWRRwqtMGYvf1uK5rYGpDJLCXhycws/eduQR9hUzRcoHhhHGNNlBkMW6dNHgBTr7FZ6IVSch4eSiVBPnq7y7X3XrxJ70/9CrAN/RBCaQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ru09ClkvcenfdEXRYaoz0nnuCNlNx0dxqo1vRbHSSgA=;
- b=HxItF8eOb5LG+cqNKX8IAXLuTm3JiCym7pySkcK3P6dpx4RkcUQCWnO5Do299z7iKgSytSzDKWQPeEB+iC8ZcCq+rjFXgzuaw/uHFfU6+P2RKKNHdztCx9kIg1F1Nw4omFShLsQCqVIbE97aaMdlpl2h6SQ/hDMQc79qBkYaC5U=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from LV8PR12MB9207.namprd12.prod.outlook.com (2603:10b6:408:187::15)
- by DS0PR12MB8318.namprd12.prod.outlook.com (2603:10b6:8:f6::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7741.26; Wed, 3 Jul
- 2024 06:31:23 +0000
-Received: from LV8PR12MB9207.namprd12.prod.outlook.com
- ([fe80::3a37:4bf4:a21:87d9]) by LV8PR12MB9207.namprd12.prod.outlook.com
- ([fe80::3a37:4bf4:a21:87d9%7]) with mapi id 15.20.7741.017; Wed, 3 Jul 2024
- 06:31:23 +0000
-Message-ID: <9f99286e-b840-4c50-8ff4-a25f2d2fdc67@amd.com>
-Date: Wed, 3 Jul 2024 12:01:10 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 08/10] perf/x86/rapl: Modify the generic variable names
- to *_pkg*
-To: "Zhang, Rui" <rui.zhang@intel.com>,
- "peterz@infradead.org" <peterz@infradead.org>
-Cc: "gautham.shenoy@amd.com" <gautham.shenoy@amd.com>,
- "alexander.shishkin@linux.intel.com" <alexander.shishkin@linux.intel.com>,
- "ananth.narayan@amd.com" <ananth.narayan@amd.com>,
- "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
- "ravi.bangoria@amd.com" <ravi.bangoria@amd.com>,
- "Hunter, Adrian" <adrian.hunter@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "oleksandr@natalenko.name" <oleksandr@natalenko.name>,
- "irogers@google.com" <irogers@google.com>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "gustavoars@kernel.org" <gustavoars@kernel.org>,
- "kan.liang@linux.intel.com" <kan.liang@linux.intel.com>,
- "kees@kernel.org" <kees@kernel.org>,
- "sandipan.das@amd.com" <sandipan.das@amd.com>,
- "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
- "linux-hardening@vger.kernel.org" <linux-hardening@vger.kernel.org>,
- "bp@alien8.de" <bp@alien8.de>, "acme@kernel.org" <acme@kernel.org>,
- "kprateek.nayak@amd.com" <kprateek.nayak@amd.com>,
- "jolsa@kernel.org" <jolsa@kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, "namhyung@kernel.org"
- <namhyung@kernel.org>
-References: <20240624055907.7720-1-Dhananjay.Ugwekar@amd.com>
- <20240624055907.7720-9-Dhananjay.Ugwekar@amd.com>
- <20240701130845.GI20127@noisy.programming.kicks-ass.net>
- <477c33a2949793d2a8692c925179bc4f1feb7942.camel@intel.com>
- <35ab02da-861a-4271-986f-f4271637f5fc@amd.com>
- <738e2dcc26926ce948bc7647cf17d83ed5d637b7.camel@intel.com>
-Content-Language: en-US
-From: Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>
-In-Reply-To: <738e2dcc26926ce948bc7647cf17d83ed5d637b7.camel@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MA0PR01CA0011.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:80::9) To LV8PR12MB9207.namprd12.prod.outlook.com
- (2603:10b6:408:187::15)
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="GbKq6viF"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 462JHddG031391;
+	Wed, 3 Jul 2024 07:16:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=/sACPhImwWUed1O1qusp4XbK
+	WCHzdJchPgYvl42r6lU=; b=GbKq6viFhVIdDb/ENBp71K6HZMoT150paza7QfQE
+	7KJn4MOcDClDefdg0tSiOJN0e+CJPKFU5DmQ/S+3WyvX4wPuXjcVHwisheMJZMxi
+	bdw+Cf9FFws74XWkP+f2t/cr+uINS+eHwbYn5VaWTmEXOis+mJ+yBvtCiW2Haov+
+	DDjnkgmP+rv1gKcccXOIQ0PV7zbDMInoIXobvJ3IwvlrvzjTcFsx0krV7E1SrXIh
+	WJmYcZTYfJluxKg4Gn2ExgfOIhxSQAIxRrIdM4WwopkJCycbX4GFMmaZYwVtwzEu
+	Lo2NigvzHf/AluNsNV8Ezma9qVnR20et4/4sgIt0lx9UdQ==
+Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 402bj8aj9k-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 03 Jul 2024 07:16:25 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA05.qualcomm.com (8.17.1.19/8.17.1.19) with ESMTPS id 4637GO4c017837
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 3 Jul 2024 07:16:24 GMT
+Received: from hu-varada-blr.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Wed, 3 Jul 2024 00:16:17 -0700
+Date: Wed, 3 Jul 2024 12:46:12 +0530
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+To: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+CC: <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
+        <angelogioacchino.delregno@collabora.com>, <andersson@kernel.org>,
+        <konrad.dybcio@linaro.org>, <mturquette@baylibre.com>,
+        <sboyd@kernel.org>, <ilia.lin@kernel.org>, <rafael@kernel.org>,
+        <viresh.kumar@linaro.org>, <ulf.hansson@linaro.org>,
+        <quic_sibis@quicinc.com>, <otto.pflueger@abscue.de>,
+        <neil.armstrong@linaro.org>, <luca@z3ntu.xyz>, <abel.vesa@linaro.org>,
+        <danila@jiaxyga.com>, <quic_ipkumar@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v3 2/9] cpufreq: qcom-nvmem: Add genpd names to
+ match_data_kryo
+Message-ID: <ZoT6vBAipbkfdh11@hu-varada-blr.qualcomm.com>
+References: <20240626104002.420535-1-quic_varada@quicinc.com>
+ <20240626104002.420535-3-quic_varada@quicinc.com>
+ <za7t6ltttq2o5qwahfrzftsb7xfzbzdtg4zx3bvnf3fewhfeqf@vjrq7na5ioqm>
+ <Zn5ZEI1m4jImz/Wp@hu-varada-blr.qualcomm.com>
+ <kcgqm3ywdzdttllk357szirjdvdddsrcznfuwux6y237ncjnwb@3ots4rqreznu>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV8PR12MB9207:EE_|DS0PR12MB8318:EE_
-X-MS-Office365-Filtering-Correlation-Id: aabb6d97-c56d-4eb6-0ca6-08dc9b29c224
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|7416014|376014;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?SGRJNXJ2MVNKek1oNHBDM3N1dWZMcjdXUCtJeExwOWhWT1hpZHA3b1MwdFJr?=
- =?utf-8?B?b0N6SHFVSk9MNzVlMzV2WFhTUnFSV3BCOEQ2TU9nbk0zUHVvLzdVNUd5RVRD?=
- =?utf-8?B?YUxlT1RJb1ljZGdJT2p2WU5KNlc2b05MVENoV3MzbktTWmRrcWJDVHlqSFN0?=
- =?utf-8?B?V3pyRmMySFQ4bFY4VjljRy8yMHJ5SnUyNFZjYW90dWVjVVZ0dFkzWms0NDBi?=
- =?utf-8?B?TnJwSDZ3UHVmaXVHV00yeXkrKzlWbkdncFNPRldTMHY1U3lpUHhFaEttSmlR?=
- =?utf-8?B?UXlYUHZXMDkzakFzOWU0VEJ0YjBQOTlqVEpFOFBPWnJscy9ENWdPZWNaMW5B?=
- =?utf-8?B?OXRjWWZUNXRueGN2V1pVYXkzd1JiS1lTbzJ0T3p6ejRVaE1CdFhadVpkR01m?=
- =?utf-8?B?cS9VUm9DLzNkWlMwTXRDL3ZQd3BNRjZkNEpBWFcxZDljcEcyQy9VcHdGaWda?=
- =?utf-8?B?VURQV0RQeG0za0pULzlNMUlxeU5lakhDQzlCY0U3Nm4wSHVzdCsyd0E5MkFv?=
- =?utf-8?B?ZklQWlFYK3pSeGo0VVpQTXFuZGVFM3NBOTdJdkNYUm1JL016ZHkxVlZmdWp2?=
- =?utf-8?B?d2traUtrRGRnRlVNMGE1S08zaUlQY2tVMzkzYjJrRGYzamd0dWhacld4L3Uw?=
- =?utf-8?B?bWhIWTUwYWt3eXp4aFlnN0ZWNUMxSHk3YllyUFEvSEtZaExuQVc4Q0JRbVJF?=
- =?utf-8?B?a2JaOElpMVRBbUxaS2ErYVg0R3lpWVVGdDYyRk1tTjhtVTNZOFBkOGZjRWE1?=
- =?utf-8?B?ditlOTBMK0ttcUFVWUduUWg4T0l0QjZZZ3VnY3prRCtCd0Fnd0M3a0ttM28y?=
- =?utf-8?B?MWJ5ZVZ0YWNGdmo4S0xIRWQ5T0lsM3BncmUxVlV1azc3U2VQS1pSY0ZLM0dy?=
- =?utf-8?B?VHEzNWZhODhad05qNk44dUt4M0VDdldGRHBwRmUzbEpRMXplNTJyOHRueWJK?=
- =?utf-8?B?VjZXRS9yZW4rSHRkZ2VPVGE1ZjVsRFcrVWlOMXp2Rm5BbkFmYm9QK25CeGF3?=
- =?utf-8?B?azYyK1R0S3J0anc4NzFKNUdXK3VFVHk0ZWpEMHpiVnByY3A2UjhnSWZUTzFM?=
- =?utf-8?B?ZWRKSG1hdHZQU3lWRlZOL2RHQTlhanhlZGFxVVRDTVkwZEM0QmQrZGVsNlFP?=
- =?utf-8?B?eUZjR2EvemVWQU0yU0lEMGxVM0hiaWh4M3BFa1lmSXlJak1zKzJLa1FycHQx?=
- =?utf-8?B?QU5CaUplUElNV2hYZDhCRW15UkRacDZkRDdOVjhrT0Jpa2JrNHF4NEV3TldV?=
- =?utf-8?B?eDZjbHhpQk1LZ25LUjlyUXh3dkZGNGV2dXhxcWhnQUpIWFZHVjQwVitMb3ZW?=
- =?utf-8?B?Z2xEeUxnUGg0M1p4eFFjc2tkQlBHMWx0RG15bWtSYll3U0xpbFNsM1FZak9i?=
- =?utf-8?B?bHc3UU81djc0U1Nkb3NIdS9hMVdGOGdhMUlERzdiVmJkU1RrMEtkQlVzV1BU?=
- =?utf-8?B?NStGaHBycUVOZWFiU1pWQjZNdzFkUjVmNk5pZmxhaXBlZ2JoaDN2NFF5N3NK?=
- =?utf-8?B?YlhCZkpuVU1UWGtkTi95cnhZQkNCNGN5OVJWcjc3M0ZVdkVkUGkxSWRZWDl4?=
- =?utf-8?B?TEt0S0FmcU51VktsMllSSUpIQi9WQmtORS9sUFoxS0E5WWh3a2s0a210blJK?=
- =?utf-8?B?alpNS1NEUlUrTVAyREM2eEc3eFNmalZKMkQ2OFFXckFodkhpd0p0UnYxQ29y?=
- =?utf-8?B?WjczendGT0U3cFE3YXZCMU5Nd3g4Y2diejkyQ1ZMQnlWT2pkOXFicDN3RklP?=
- =?utf-8?B?cjhqNGt3RTZlZERLcm1aR2RpNVI4NHB1TzhHT0ZtbUw2T2t4TGpIZFFneTFi?=
- =?utf-8?B?N1ZEQThGS0N4U3h1bEwvUT09?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9207.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?ZzZvL3JJbnYzT2poUW1CZjBNcXdmUDNSMExKQW5SQlAxYncyRUVMTDlkWWN3?=
- =?utf-8?B?VDJUR0ZueHZPVzZ1ejRxTGFyUGdkd05CRWFZRnAxOVdrTGdLdWtaSWRzOG5V?=
- =?utf-8?B?V21UTzVNWWdqQ2ZscE9zWEpLUHNHb3lON1Z0TlA4ZXV1eU1DT3pLVElPS1VD?=
- =?utf-8?B?QXQ4MlVia09qb0p2byszNjV0RGNGTGNyUTlRMFc1NFBrMVgraVJVMk8rSE1u?=
- =?utf-8?B?Q3h0K3JxMEg2UTdXK0s5WXQ2anhKaEVIbER2Y2tNRG9QN2xnL3lpZ3NZN0ZZ?=
- =?utf-8?B?OFlYSlpTTHFzRCtJN2NKd3dEUCt3U1hnaEQ2VUdaSGZGeG53dW5ZUEJBK3lS?=
- =?utf-8?B?T1IwZ2tyMXJabHVpVzdIRFFsVHQxTWxXL1hNc1pDbUZub09DeU1tblF1RUxT?=
- =?utf-8?B?VElDVVFGanR2OTBsRXMvdGtoL2FLMTNYMHFDZDRlS3ZtYlRGV21qNVprSGIx?=
- =?utf-8?B?S3d6T2R3dDdoMEtEaVJKYmFXVndMakFQdlVrVXU4TWtXajJmMXkwb01wK0hN?=
- =?utf-8?B?WEhzQm8zdTNMd1ZEamRqUGJ4ZFhMZW1jSy91WWh2MWxUR3dsZ2NUUW5ITHI3?=
- =?utf-8?B?bGd6UXo5WU5GSDVSVWhwK2tBK0lUTVF4cTIrcWp3dTQ2U0VKdXBsRHQ0dzJU?=
- =?utf-8?B?ZkppTjhzQnRjZU9XNGwxb0h5QUhNandMQk54RERJRW5jbWpvemlhSXNnd3Uz?=
- =?utf-8?B?N0FPblp2VGtraStxSDBKaFVsbXVmcER1RS9MOVRUR0U5MHFUZVhuR21KZHVD?=
- =?utf-8?B?L1VsYlpyOGNjbTY3UThaRU12WjdYd0tGc3IxU2RnTThYcmpqZVhGOVpjQlVJ?=
- =?utf-8?B?aVViRzVGZmxjeS91OVB6djRtQ2Z4V0wvdEMybGVMUVZwMlFpc21QRzIvNE9I?=
- =?utf-8?B?c0tMU3ZWdDhJT0lXTEptd1RsV09wTnhlZ2xQcGFycGxoYjh1R3N4azI1b0tK?=
- =?utf-8?B?VWQ3akJqTGM1RlhDbm9FclRWREh5ZjlhVGVabGw3cE1PRDlJSHVVZ3NTTEwz?=
- =?utf-8?B?TUoyS1AybjVNMURPZGZIWEtLTVdvOXpucE8vMWtZY3pKYm84WUwwT0VONUQz?=
- =?utf-8?B?Vk1yUmxDUHlyMW5LVWtIQldaU1NJZUZ2NDY4TVBzVThBVE5uRTkyaEZZMmdp?=
- =?utf-8?B?T0t1TElYa045bFd6MHRJWXBpQjkzZSs1MCtyYUZtTXdvR1VRWEkrcndCRmFv?=
- =?utf-8?B?UzRPajB3cXN2SjB2TlB4TS9jcmMzeGYrZEtCRHNHbGx0T0s4NVQ3Y0IrdGx5?=
- =?utf-8?B?NjVRTDBUTG05ZlFPT2laUFVGaUVocndzaVZJN214bnVyVGwxaU5HYWMvQWVs?=
- =?utf-8?B?OGtRV1N5dEVjNWp3WU90YjNuTVgraXZveGhhSUNzMXJ1c2ZkQzZ1cDJERzVC?=
- =?utf-8?B?cFdxRnI2dXUvTEczNWQ3OFMyNDc0OThiYkNmeS9oNG5mRUliQi9temRBakhi?=
- =?utf-8?B?dTRZTUw0bXhDMlN4MXRscjNrUVdXc2xKQit4c2RqV3NXby9EMGRtcndIQklW?=
- =?utf-8?B?Mm5DaTIzN1JSSEpPSlY2WW9KLzF2eDlzcFh0dU9nVXFBMU80WkJWNC9xZXh4?=
- =?utf-8?B?dzlmcE9WNEJWbTJyN0RFUHB1YklZZjBHU3JLTmdlQktCakRrVS9PSThJQ2Uy?=
- =?utf-8?B?VGE0aGxsaFE4aVFpaXNyYm1XUHRrZjJ2R0dqTkNwMVdzQ2tIMmd2NkJ0TERG?=
- =?utf-8?B?L0VqUG04ZXhKRkZ4SnBrVTljMHdlVEUvR2hDRndVcDRmT3AxUlJNVS96K1FN?=
- =?utf-8?B?bjEyYndxb01xd1R0TUFNVEhVWWwwU2w1T3JzZXZBdFF2NmU3K3FVSjJHc0F1?=
- =?utf-8?B?c05iZDg1dDdTS0xtVmc1UVl1cVBwVjFDeTZUcmJ2Z1RWYmcxN1ZXNWg4MW9J?=
- =?utf-8?B?c0VvdWVzSXp6U2swa0VaejdERFJMN21TOHg5MjVoQUExcmJhTGZ4RGtEODNU?=
- =?utf-8?B?d01LNVRhMlVXR1BsdVFJQ0wzVUFGazk1RXZBNlpCQkZkVnpCVEpKUWV1ZlUr?=
- =?utf-8?B?N2h0bmRJZytkNHBFekM2ZTNieU5NN3dpVHRDeGVIVHJWOGU2elNkcVhVbWhP?=
- =?utf-8?B?ZE02VmdUeXBlTnZqVWIzTTFwNTltaEpxVW9VQlZPYi9lYjMwSmRHZ0thanN6?=
- =?utf-8?Q?+h/ew5et4En+yObc9CdELu4xr?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: aabb6d97-c56d-4eb6-0ca6-08dc9b29c224
-X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9207.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Jul 2024 06:31:23.6213
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Dc0yufwNTHcjFuNFemV6quuNi8LEtdwB3phTJjn6vCmgBvRaaKMFF/WKSMC277XzvCpJXQ2EiYV142oOdzAanA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8318
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <kcgqm3ywdzdttllk357szirjdvdddsrcznfuwux6y237ncjnwb@3ots4rqreznu>
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: QAcsVQlZX_EfFTXbYG5ElCoxJ3YLrwsN
+X-Proofpoint-GUID: QAcsVQlZX_EfFTXbYG5ElCoxJ3YLrwsN
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-07-03_03,2024-07-02_02,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 impostorscore=0
+ spamscore=0 suspectscore=0 mlxlogscore=999 mlxscore=0 priorityscore=1501
+ malwarescore=0 adultscore=0 bulkscore=0 phishscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2406140001
+ definitions=main-2407030052
 
-Hi Rui,
+On Fri, Jun 28, 2024 at 10:40:23AM +0300, Dmitry Baryshkov wrote:
+> On Fri, Jun 28, 2024 at 12:02:48PM GMT, Varadarajan Narayanan wrote:
+> > On Wed, Jun 26, 2024 at 09:23:17PM +0300, Dmitry Baryshkov wrote:
+> > > On Wed, Jun 26, 2024 at 04:09:55PM GMT, Varadarajan Narayanan wrote:
+> > > > This is used for tying up the cpu@N nodes with the power domains.
+> > > > Without this, 'cat /sys/kernel/debug/qcom_cpr3/thread0'
+> > > > crashes with NULL pointer access.
+> > >
+> > > Add the interesting part of the backtrace, please.
 
-On 7/3/2024 9:37 AM, Zhang, Rui wrote:
-> On Tue, 2024-07-02 at 15:50 +0530, Dhananjay Ugwekar wrote:
->>
->>>
->>> For Intel products, we have
->>> 1. Casecadelake-AP which has multi-die per package and has per-die
->>> RAPL
->>> MSRs
->>> 2. all other platforms which has single-die per package, so its
->>> RAPL
->>> MSRs can be considered as either package-scope or die-scope
->>> This applies to Thermal MSRs as well.
->>>
->>> so for these MSRs, we can treat them as
->>> 1. always die-scope for all existing platforms
->>> or
->>> 2. package-scope with the exception of Casecadelake-ap
->>> And current kernel code follows rule 1.
->>>
->>> I propose we switch to rule 2 for these code because rule 1 can be
->>> broke on future multi-die systems (This is already true for Thermal
->>> MSRs).
->>
->> I have a doubt about this, won't the future Intel multi-die systems 
->> have die-scope for the RAPL PMU like Casecadelake-AP?
-> 
-> For future multi-die systems that I know, the RAPL is still package
-> scope 
+Sure.
 
-I think in that case we can go with rule 2, it would be future proof
-for Intel systems. If you agree, I can make the change in next version.
+> >
+> >         if (thread->drv->desc->cpr_type < CTRL_TYPE_CPRH) {
+> >                 seq_printf(s, "current_volt = %d uV\n", thread->drv->last_uV);
+> >                 seq_printf(s, "requested voltage: %d uV\n", thread->corner->last_uV);
+> >         }
+> >
+> > thread->corner is NULL in the second printf above.
+> >
+> > 	# cat /sys/kernel/debug/qcom_cpr3/thread0
+> > 	[   16.965241] Unable to handle kernel NULL pointer dereference at virtual address 000000000000000c
+> > 	[   16.965270] Mem abort info:
+> > 	[   16.973181]   ESR = 0x0000000096000004
+> > 	[   16.975607]   EC = 0x25: DABT (current EL), IL = 32 bits
+> > 	[   16.979425]   SET = 0, FnV = 0
+> > 	[   16.984889]   EA = 0, S1PTW = 0
+> > 	[   16.987756]   FSC = 0x04: level 0 translation fault
+> > 	[   16.990792] Data abort info:
+> > 	[   16.995652]   ISV = 0, ISS = 0x00000004, ISS2 = 0x00000000
+> > 	[   16.998779]   CM = 0, WnR = 0, TnD = 0, TagAccess = 0
+> > 	[   17.004074]   GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0
+> > 	[   17.009196] user pgtable: 4k pages, 48-bit VAs, pgdp=00000000481b1000
+> > 	[   17.014579] [000000000000000c] pgd=0000000000000000, p4d=0000000000000000
+> > 	[   17.020919] Internal error: Oops: 0000000096000004 [#1] PREEMPT SMP
+> > 	[   17.020921] Modules linked in:
+> > 	[   17.020926] CPU: 0 UID: 0 PID: 118 Comm: cat Not tainted 6.10.0-rc4-next-20240620-00020-g125eb3184fc1-dirty #9
+> > 	[   17.020931] Hardware name: Qualcomm Technologies, Inc. IPQ9574/AP-AL02-C7 (DT)
+> > 	[   17.020933] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+> > 	[   17.020936] pc : cpr3_debug_info_show+0x3a0/0x3ac
+> > 	[   17.020945] lr : cpr3_debug_info_show+0x390/0x3ac
+> > 	[   17.020948] sp : ffff800086293b90
+> > 	[   17.020949] x29: ffff800086293b90 x28: ffff0000034ae038 x27: 0000000000400cc0
+> > 	[   17.020953] x26: 000000007ffff000 x25: ffff0000034ae028 x24: 0000000000000000
+> > 	[   17.020957] x23: ffff800086293c80 x22: ffff000002399880 x21: ffff000002a8fa80
+> > 	[   17.020960] x20: ffff0000034ae000 x19: 0000000000000000 x18: ffffffffffffffff
+> > 	[   17.020964] x17: 0000000000000000 x16: 0000000000000000 x15: ffff800086293a40
+> > 	[   17.020967] x14: ffff000002913000 x13: ffff00000291200f x12: 0000000000000000
+> > 	[   17.020970] x11: 0000000000000000 x10: 0000000000000000 x9 : ffff0000034a9000
+> > 	[   17.020973] x8 : 000000000a567520 x7 : 0000000000000001 x6 : 000000000a567520
+> > 	[   17.020976] x5 : ffff000002912014 x4 : ffff800080e1f3a5 x3 : 0000000000000014
+> > 	[   17.020979] x2 : 0000000000000000 x1 : ffff800080e1f848 x0 : ffff0000034ae000
+> > 	[   17.020983] Call trace:
+> > 	[   17.020984]  cpr3_debug_info_show+0x3a0/0x3ac
+> > 	[   17.020987]  seq_read_iter+0xe0/0x45c
+> > 	[   17.020993]  seq_read+0xec/0x130
+> > 	[   17.020996]  full_proxy_read+0x60/0xb4
+> > 	[   17.020999]  vfs_read+0xc0/0x31c
+> > 	[   17.021003]  ksys_read+0x70/0x104
+> > 	[   17.021006]  __arm64_sys_read+0x1c/0x28
+> > 	[   17.021008]  invoke_syscall+0x48/0x114
+> > 	[   17.021014]  el0_svc_common+0x3c/0xe8
+> > 	[   17.021017]  do_el0_svc+0x20/0x2c
+> > 	[   17.021020]  el0_svc+0x34/0xd8
+> > 	[   17.021024]  el0t_64_sync_handler+0x120/0x12c
+> > 	[   17.021027]  el0t_64_sync+0x190/0x194
+> > 	[   17.021031] Code: f94012c2 aa1403e0 b0004701 91212021 (b9400c42)
+> > 	[   17.021033] ---[ end trace 0000000000000000 ]---
+> > 	Segmentation fault
+>
+> Well, I asked to add it, so please drop the timestamps and registers and
+> include it into the commit message. While you are at it, please review
+> Documentation/process/submitting-patches.rst and change the commit
+> message to follow the guidelines.
+>
+> While doing so (and while responding to a comment below) you will notice
+> that this change should not be applied to the generic match_data_kryo
+> instance. Instead you should add a device-specific entry into match
+> table and use struct qcom_cpufreq_match_data instance that has
+> .genpd_names set.
 
-Something like below?,
+Ok, will add a new match data for IPQ9574.
 
--#define rapl_pmu_is_pkg_scope()                         \
--        (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||  \                                                                                                                                                                  
--	 boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
+> > > > Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+> > > > ---
+> > > >  drivers/cpufreq/qcom-cpufreq-nvmem.c | 1 +
+> > > >  1 file changed, 1 insertion(+)
+> > > >
+> > > > diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+> > > > index 939702dfa73f..5e6525c7788c 100644
+> > > > --- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
+> > > > +++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+> > > > @@ -399,6 +399,7 @@ static const char *generic_genpd_names[] = { "perf", NULL };
+> > > >
+> > > >  static const struct qcom_cpufreq_match_data match_data_kryo = {
+> > > >  	.get_version = qcom_cpufreq_kryo_name_version,
+> > > > +	.genpd_names = generic_genpd_names,
+> > >
+> > > This forces that every Kryo SoC has "perf" genpd, which obviously isn't
+> > > corret (at least from the upstream support point of view).
 
-+#define rapl_pmu_is_die_scope()			\
-+	(boot_cpu_data.x86_model_id == CASCADELAKE)
+Understand, will have a different match data for IPQ9574.
 
-Regards,
-Dhananjay
+> > While trying to get the above backtrace, randomly during boot
+> > I see the following BUG too.
+>
+> This isn't a response to my comment.
 
-but it is just lucky that RAPL control is not exposed via the
-> MSRs so rule 1 is not actually broke for RAPL PMU (while it is indeed
-> broken for other drivers like thermal).
-> 
-> In short, if we stick with rule 1, the RAPL PMU still works. Switching> to rule 2 to be consistent with the other drivers is also a choice IMV.> 
-> thanks,
-> rui
->>
->> If yes, then rule 1 above seems better.
->>
->> Regards,
->> Dhananjay
->>
->>>
->>> In this sense, I think it is okay to call it pkg level rapl for
->>> both
->>> Intel and AMD.
->>>
->>> thanks,
->>> rui
->>>
-> 
+Sorry, felt that genpd_names would be needed for kryo CPUs too
+and wanted to bring this BUG() to your attention. Was wondering
+how kryo CPUs didn't face the following BUG(). Since this BUG()
+was hitting occasionally, assumed it could be some boot time
+driver probe order/timing related race that was getting masked in
+kryo CPUs but occuring in IQP9574.
+
+> > 	[    1.562847] ------------[ cut here ]------------
+> > 	[    1.574342] kernel BUG at drivers/cpufreq/cpufreq.c:1542!
+> > 	[    1.579203] Internal error: Oops - BUG: 00000000f2000800 [#1] PREEMPT SMP
+> > 	[    1.579209] Modules linked in:
+> > 	[    1.579217] CPU: 2 UID: 0 PID: 11 Comm: kworker/u16:0 Not tainted 6.10.0-rc4-next-20240620-00020-g125eb3184fc1-dirty #10
+> > 	[    1.579227] Hardware name: Qualcomm Technologies, Inc. IPQ9574/AP-AL02-C7 (DT)
+> > 	[    1.579232] Workqueue: events_unbound deferred_probe_work_func
+> > 	[    1.579249] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+> > 	[    1.579257] pc : cpufreq_online+0x938/0x954
+> > 	[    1.579271] lr : cpufreq_online+0x788/0x954
+> > 	[    1.579281] sp : ffff8000817c3520
+> > 	[    1.579283] x29: ffff8000817c3520 x28: ffff0000029efa50 x27: 0000000000000001
+> > 	[    1.579294] x26: 0000000000000001 x25: ffff8000814d8da0 x24: 0000000000000000
+> > 	[    1.579303] x23: ffff0000029ef9d0 x22: ffff800081735000 x21: 0000000000000000
+> > 	[    1.579312] x20: 00000000000c15c0 x19: ffff0000029ef800 x18: ffff00000183481c
+> > 	[    1.579321] x17: ffff8000818a3638 x16: 0000000000000000 x15: ffff8000818a3670
+> > 	[    1.579330] x14: 0000000000000003 x13: ffff00000192b140 x12: ffff8000814d8c58
+> > 	[    1.579338] x11: ffff00000192b140 x10: 00000000000009b0 x9 : ffff8000817c3240
+> > 	[    1.579347] x8 : ffff00000192bad0 x7 : 0000000000000001 x6 : ffff8000814d8da0
+> > 	[    1.579355] x5 : ffff8000812c32d0 x4 : 0000000000000000 x3 : 0000000000000000
+> > 	[    1.579363] x2 : 0000000000000000 x1 : 0000000000000000 x0 : 00000000fffffff0
+> > 	[    1.579372] Call trace:
+> > 	[    1.579375]  cpufreq_online+0x938/0x954
+> > 	[    1.579386]  cpufreq_add_dev+0x80/0x98
+> > 	[    1.579395]  subsys_interface_register+0x100/0x130
+> > 	[    1.579404]  cpufreq_register_driver+0x150/0x244
+> > 	[    1.579413]  dt_cpufreq_probe+0x8c/0x440
+> > 	[    1.579420]  platform_probe+0x68/0xc8
+> > 	[    1.579430]  really_probe+0xbc/0x29c
+> > 	[    1.579438]  __driver_probe_device+0x78/0x12c
+> > 	[    1.579446]  driver_probe_device+0xd8/0x15c
+> > 	[    1.579454]  __device_attach_driver+0xb8/0x134
+> > 	[    1.579463]  bus_for_each_drv+0x84/0xe0
+> > 	[    1.579470]  __device_attach+0x9c/0x188
+> > 	[    1.579478]  device_initial_probe+0x14/0x20
+> > 	[    1.579487]  bus_probe_device+0xac/0xb0
+> > 	[    1.579494]  device_add+0x55c/0x720
+> > 	[    1.579500]  platform_device_add+0x1b8/0x244
+> > 	[    1.579510]  platform_device_register_full+0xfc/0x184
+> > 	[    1.579516]  platform_device_register_resndata.constprop.0+0x5c/0x8c
+> > 	[    1.579524]  qcom_cpufreq_probe+0x1e4/0x498
+> > 	[    1.579531]  platform_probe+0x68/0xc8
+> > 	[    1.579540]  really_probe+0xbc/0x29c
+> > 	[    1.579548]  __driver_probe_device+0x78/0x12c
+> > 	[    1.579556]  driver_probe_device+0xd8/0x15c
+> > 	[    1.579564]  __device_attach_driver+0xb8/0x134
+> > 	[    1.579573]  bus_for_each_drv+0x84/0xe0
+> > 	[    1.579580]  __device_attach+0x9c/0x188
+> > 	[    1.579588]  device_initial_probe+0x14/0x20
+> > 	[    1.579596]  bus_probe_device+0xac/0xb0
+> > 	[    1.579603]  deferred_probe_work_func+0x88/0xc0
+> > 	[    1.579611]  process_one_work+0x148/0x28c
+> > 	[    1.579623]  worker_thread+0x2e8/0x3f8
+> > 	[    1.579633]  kthread+0x110/0x114
+> > 	[    1.579641]  ret_from_fork+0x10/0x20
+> > 	[    1.579653] Code: aa1703e0 52800021 97e38ed5 17ffffea (d4210000)
+> > 	[    1.579657] ---[ end trace 0000000000000000 ]---
+> > 	[    1.851078] note: kworker/u16:0[11] exited with irqs disabled
+> > 	[    1.855791] note: kworker/u16:0[11] exited with preempt_count 1
+> > 	[    1.861586] ------------[ cut here ]------------
+> >
+> > Randomly, the following call seems to return -EBUSY causing
+> > the above BUG().
+> >
+> > 	ret = __cpufreq_driver_target(policy, old_freq - 1,
+> > 				      CPUFREQ_RELATION_L);
+> >
+> > 	/*
+> > 	 * Reaching here after boot in a few seconds may not
+> > 	 * mean that system will remain stable at "unknown"
+> > 	 * frequency for longer duration. Hence, a BUG_ON().
+> > 	 */
+> > 	BUG_ON(ret);
+> >
+> > Not sure why this does not happen in every boot, and how it
+> > is tied to genpd_names. Will debug and update.
+
+qcom_cpufreq_probe invokes dev_pm_opp_set_config if either
+genpd_names or get_version is set in qcom_cpufreq_match_data.
+If genpd_names is available, dev_pm_opp_set_config calls
+_opp_attach_genpd giving genpd_names as an input. This in turn
+calls dev_pm_domain_attach_by_name and binds the CPU device with
+the OPP tables etc. Sometimes, the pm_domain driver is probed by
+this time and sometimes it is not. When it is not probed,
+qcom_cpufreq_probe is also held back via the EPROBE_DEFER
+mechanism. This in turn holds back the cpufreq driver probe.
+
+When genpd_names is not set in match_data_kryo,
+dev_pm_opp_set_config doesn't call _opp_attach_genpd. Hence,
+regardless of pm_domain driver's probe status, qcom_cpufreq_probe
+completes. This allows the cpufreq driver's probe to proceed. The
+cpufreq driver tries to set some frequency based on the
+opp-tables. At this point if pm_domain driver is probed, the
+frequency change goes through. If pm_domain is not probed yet,
+the above BUG() happens.
+
+Will post the next version shortly with this and the other
+comments addressed. Please take a look.
+
+Thanks
+Varada
