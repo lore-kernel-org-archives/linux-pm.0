@@ -1,76 +1,100 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32858175558;
-	Fri,  5 Jul 2024 19:41:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B78681E;
+	Fri,  5 Jul 2024 19:46:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720208485; cv=none; b=SZo+yw9oQ//R+853Dn8AU560Hsv+iyQwDa1ALPI0L/hyJy9xxx2XMQOMxIZkOESvOuJBEJrDdDFPrhmSpQUdQ9KxUyMz58N6JnKjPeMRO97qGwDzwY4Vwfa7SVUspjx3Ht+c9j1L9/mODs8sM0JwC38Iw0Uy0P/pBoi2SsJubKg=
+	t=1720208797; cv=none; b=Yo//TvCg2L3XMGF/AKhXckSmb2H4yx0upm591eIipworz5dpN0XO+tYqBBcv3rMLcDB6rQM/Vagxk1v8dmYHL8zQZVZDfYyrDm0GMtkrNql16mHOIuzY5IAzOZyQFl8/RoeEmlzCxDlIdnsPTk/cKiwzU01qPDsySz6sD0k5d40=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720208485; c=relaxed/simple;
-	bh=vv1Tpqm5QmUNe0ZQOWYzf5dxYr4UKCCoEL93djyVPBE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PF9kEao+8/04CEm6b2RKSl731NONwpTpxs89sjpu0h6nSiTBgAbiMQLDVkqsGfitutLOWWN6wbb/lhnE3BVapbpmVyPgBWTDsL/Tt1xgO7nNl4KWhBekFNGY6sCqC6jozuDeheAo3fbJPJQH1b758mTjjTHqZ+LqhVylThZCH1A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SdV0iyvc; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1720208797; c=relaxed/simple;
+	bh=+Hnc0W3VFjT04dRzb+V+EIXQp3/8mibNcLKXb6XAYuk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=SoIUFwdOn1YPHocW8yTwMxP7CHmC1X2IA4wjzPMD25mKXJrg6ICAS1DaizLYWlTNuCRqFad1xDyC61H6mc6r3sNa8AJBBBtGd9ssvFoZwNxhtLxMSd3+NTol7i1zuz0eihd0t+Eb21esoGzMFV8a901oDoLVdXdG8RudfSlF2as=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Fdx95Ees reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SdV0iyvc"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1331AC116B1;
-	Fri,  5 Jul 2024 19:41:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1720208485;
-	bh=vv1Tpqm5QmUNe0ZQOWYzf5dxYr4UKCCoEL93djyVPBE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=SdV0iyvczvjevvxKgRuHwb/p5DVxEwi6fHP5+gq4G0Eub7FHA+2T/bBRYzG9vdIa9
-	 fRoqak2sQcAt/nSyNq12IqB91B7qwg4+o752lrM0OUE9HgRilLNiRQVZPr4XiBu1bs
-	 zAzkQqr6CnIEO5ufHSqL694v/O2vk8xUP7mpPTmNeLCxKBi/gUOr36LvW4PSN1Wvy3
-	 KynB7f3dL9HG1Ba/hxIpQk2FvbTbvDXCQHIhYH486bTdjhm+YbxtlsRuTFGh0kO5bs
-	 33lhnGh5IPNRXYssrpLWmvU71ikbVSBuz9l2j1Jons5I6KPPxTF1JhmVH3hfsOUZ1h
-	 BqJWcMMh1YtYA==
-Received: by mail-oo1-f41.google.com with SMTP id 006d021491bc7-5c665fb40f7so1203eaf.0;
-        Fri, 05 Jul 2024 12:41:25 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUg2Mo9BgUC6fgL8nGzn6uH/eAdCHtp9/iC5pLsxb+PsPYnZZuvsLzRCGiuD5GNjfZOa8psbs8rsEPfiYgqYGdAQD1D0M035sWPFBb7
-X-Gm-Message-State: AOJu0Yz+dBX4/eF+YYxUwOPpAvOGitrilXfdVCGurZjdA5C6YW8nwPW4
-	c7v64vRSnnzBV8+LP9kt0tpSkhMg/+A8NqpCkTSNxIMGzsQhiJsXCfs1Pb+r9cmaF/3q7xriWRL
-	8iRYONijJVWslI9F0itsBcXZAB+Q=
-X-Google-Smtp-Source: AGHT+IHhf5lue9PlQBJ+TEGrv4IYmQXq88rwEYo/5G6puxCxFYYJX4/nXyuEvlR7zYck6XP96wWR2uMz+IhFlANggtM=
-X-Received: by 2002:a05:6820:228a:b0:5c4:7895:93b8 with SMTP id
- 006d021491bc7-5c646ecb3c8mr7297664eaf.1.1720208484379; Fri, 05 Jul 2024
- 12:41:24 -0700 (PDT)
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Fdx95Ees"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
+ id 512e5ef9af243a9b; Fri, 5 Jul 2024 21:46:33 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 91CB27F5774;
+	Fri,  5 Jul 2024 21:46:32 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1720208793;
+	bh=+Hnc0W3VFjT04dRzb+V+EIXQp3/8mibNcLKXb6XAYuk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Fdx95EesRkYkh3+t2/+muioHxJMN3+RXFdvWR1waKCe7FSL6WDa6wjMqTYkXrIsbw
+	 w5XULUwxQsrOORKTOz7PZZV+apYHSTdP921CwHCzrxVRsACkf0heX0GiiQSLeeRzEt
+	 RNPE+O7oOoOsw3G7c6Usq5S4y4GTXa7LcDaCHVitB+YJxNF0NtoKzc5L3UV5Iv2vp7
+	 OJE0IbLWJRn7LIT2ZVhDB7xVv1zYNra4EcsycIJQ+4QL30jwql6b1zCcPtbjcIyA3V
+	 lYSaDo/bhKbEOc6hGPouDi8UumIrsB2jbt6Dn8PMPX1hrogRxxb3rBvLNIWVMw7tUb
+	 YDwY/bhlsVJjA==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
+ LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
+Subject:
+ [PATCH v2 2/2] thermal: core: Add sanity check for polling_delay and
+ passive_delay
+Date: Fri, 05 Jul 2024 21:46:26 +0200
+Message-ID: <4940808.31r3eYUQgx@rjwysocki.net>
+In-Reply-To: <2746673.mvXUDI8C0e@rjwysocki.net>
+References: <2746673.mvXUDI8C0e@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <4585590.LvFx2qVVIh@rjwysocki.net> <13555515.uLZWGnKmhe@rjwysocki.net>
-In-Reply-To: <13555515.uLZWGnKmhe@rjwysocki.net>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 5 Jul 2024 21:41:13 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iV8LNyh+-N4PSqDa3uiHgEj4-nfATQw9dkCy7uDr=x1Q@mail.gmail.com>
-Message-ID: <CAJZ5v0iV8LNyh+-N4PSqDa3uiHgEj4-nfATQw9dkCy7uDr=x1Q@mail.gmail.com>
-Subject: Re: [PATCH v1 2/2] thermal: core: Add sanity check for polling_delay
- and passive_delay
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, LKML <linux-kernel@vger.kernel.org>, 
-	Lukasz Luba <lukasz.luba@arm.com>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: spam:low
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrvddugddugedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepgedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 
-On Fri, Jul 5, 2024 at 9:34=E2=80=AFPM Rafael J. Wysocki <rjw@rjwysocki.net=
-> wrote:
->
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> If polling_delay is nonzero and passive_delay is 0, the thermal zone
-> will use polling except when tz->passive is nonzero, which does not make
-> sense.
->
-> Also if polling_delay is nonzero and passive_delay is greater than
-> polling_delay, the thermal zone temperature will be updated less often
-> when tz->passive is nonzero.  This does not make sense either.
->
-> Ensure that none of the above will happen.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Well, the changelog is OK, but the patch is not.  I'll send a v2 shortly.
+If polling_delay is nonzero and passive_delay is 0, the thermal zone
+will use polling except when tz->passive is nonzero, which does not make
+sense.
+
+Also if polling_delay is nonzero and passive_delay is greater than
+polling_delay, the thermal zone temperature will be updated less often
+when tz->passive is nonzero.  This does not make sense either.
+
+Ensure that none of the above will happen.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+v1 -> v2: The patch actually matches the changelog
+
+---
+ drivers/thermal/thermal_core.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+Index: linux-pm/drivers/thermal/thermal_core.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -1440,6 +1440,9 @@ thermal_zone_device_register_with_trips(
+ 		td->threshold = INT_MAX;
+ 	}
+ 
++	if (polling_delay && (passive_delay > polling_delay || !passive_delay))
++		passive_delay = polling_delay;
++
+ 	thermal_set_delay_jiffies(&tz->passive_delay_jiffies, passive_delay);
+ 	thermal_set_delay_jiffies(&tz->polling_delay_jiffies, polling_delay);
+ 
+
+
+
