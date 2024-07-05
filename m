@@ -1,51 +1,46 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03F292F32;
-	Fri,  5 Jul 2024 19:46:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C3B181E;
+	Fri,  5 Jul 2024 19:48:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720208797; cv=none; b=EihuE0c2GTbSf4JBowFFWHQhoDASfA5Nj/6IQEM5CySG4J+6eu/WUc83PqZep9SSzG5h93ZCjJqCNcZdteqxdUrC2CkTSat1EEZoPvK3F1GaXBQ65PBB8K8wIxmvGvEoyvRLBswo1fKvku8cqS3ptfTYagIOOKsS11uNmPRqw1g=
+	t=1720208884; cv=none; b=TJVz+gUt4TGZFWegTSLavvuGJV/Yj/F5gJIHtSE2P99QUnENKUT86k0zyAVoml+EU1Xn73xeweTuvEN9JSeFNtIklwKr3TJh5ftI3ZSOtnPD0u6ckAacatig5UKQVXSxWyNywiA+Wi6crXSlggSZ2zslHfEZHElcx4Nogi8mNtA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720208797; c=relaxed/simple;
-	bh=olMcH7Vu2JbYhOr3EfFfi8edH85Gj5CbkImkJOKWW+Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=byiQG2+xFPpIeUTY+bUnEz6MGqM1RPE131TukX3HLuX4qU20OG7dR7oXJJMq+LCIbb/O4f7AVw/dT1pa+PPE/oT4INf44HCR09wzVPFfB4ijRA8h/U1FmyknKhqwkhfXpJzpjbJupj+R2u+o5zXnf5qmWvieuODDDbOAEzZC/78=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=CT5HS0pg reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	s=arc-20240116; t=1720208884; c=relaxed/simple;
+	bh=xr2Rs3ik0o/ko8vTcT4/0UWvMxgQr1eWmVVC5TUP+oQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DJBHdrFgykjLdEHDRfg+xMCeLPcL4AGu+kkUMKXylLYOfP8gcBp48gV7O22eMFzmJgrGMqrdCcBkH0RfDZZPUXQekF0G6Atudhq2wrm6+sPLQqirEkv5FMY3L+AGinnx8nK2V0vH9R9/j0e6J8F53GaoiHezUpt3vJGjGIUn7Vg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=X4Dsrhds; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="CT5HS0pg"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="X4Dsrhds"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 4dc6d72d5972aa83; Fri, 5 Jul 2024 21:46:33 +0200
+ id d4ab92f077c671ea; Fri, 5 Jul 2024 21:48:00 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 63AA27F5774;
-	Fri,  5 Jul 2024 21:46:33 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 0C2067F5774;
+	Fri,  5 Jul 2024 21:48:00 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1720208793;
-	bh=olMcH7Vu2JbYhOr3EfFfi8edH85Gj5CbkImkJOKWW+Y=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=CT5HS0pg7OiNMOOt3juGxUpEBA889eDECVs3pSg9/83YWQbLwjtuUuhJJ7rnuQ1S5
-	 NAq5CU9tctgTaQEI/Z5wg3WwtH3PL3K7FGUyNQBmgk8Hr1YdPjkKjzym39yvRb6+MA
-	 Y7gAaqfqhCrP8vj6Tvic3irwzeUe5NAGtlmL0OckfoBFy0MarNc/+zHg0OamzpXqCa
-	 KFP9ryEUqL/vxGF2P2U6oQxUOhVPIQjLxyNT3TMScZWQpHS+tJywS+Urcp3n2+zOs2
-	 bQAc0bOx0mlVq9SV9a25l/Nte1miMxiHfCp+JpWvkUJKMPs2tTvODliuKBW+xLHhU/
-	 0Z7pzpNVUO5zw==
+	s=dkim; t=1720208880;
+	bh=xr2Rs3ik0o/ko8vTcT4/0UWvMxgQr1eWmVVC5TUP+oQ=;
+	h=From:To:Cc:Subject:Date;
+	b=X4Dsrhdsb7MZCJrmx17Cpx25XaefkmuO9If4302MGLRQhC0rtjnrmvF4FdVvcMMzV
+	 XoLBkf0nnTyv3tI5mUJ/yZ2SbB0OVT1FjfC6btNjAdSh+2HrOW5StU/9nInWCKwdlo
+	 jcjGc6O2+q+NjwxUPzvsY9XixB+b5Ex0Np/LZL32Dv/yweELSOO3XVHGDu7ddTfAkW
+	 CFwOyUQ2fMQQgOkll2d0e+TMaWLAzHO7JI0IFowrlHYUZp1NCRK++vE2QQ0XF9kG9O
+	 kaichiWhZeo0c9rVscPGvKHkJcx3BAgyrQZFrgnQo0J47yMRAvToClQbconDTurnte
+	 OfRTCsv7FMjrg==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
  LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
-Subject:
- [PATCH v2 1/2] thermal: core: Change passive_delay and polling_delay data
- type
-Date: Fri, 05 Jul 2024 21:44:50 +0200
-Message-ID: <5803791.DvuYhMxLoT@rjwysocki.net>
-In-Reply-To: <2746673.mvXUDI8C0e@rjwysocki.net>
-References: <2746673.mvXUDI8C0e@rjwysocki.net>
+Subject: [PATCH v2 0/2] thermal: core: Sanitize polling delay values
+Date: Fri, 05 Jul 2024 21:43:30 +0200
+Message-ID: <2746673.mvXUDI8C0e@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -57,58 +52,28 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrvddugddugedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepgedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrvddugddugedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucfuphgrmhfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeegpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=16 Fuz1=16 Fuz2=16
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Everyone,
 
-It is better to use unsigned int as the data type for the passive_delay
-and polling_delay arguments of thermal_zone_device_register_with_trips()
-because they are implicitly cast to unsigned int anyway in
-thermal_set_delay_jiffies() and if they happen to be negative at that
-point, the resulting behavior may not be as desired.
+This is a v2 of
 
-Update the thermal_zone_device_register_with_trips() definition
-accordingly.
+https://lore.kernel.org/linux-pm/4585590.LvFx2qVVIh@rjwysocki.net/
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+which is being sent because the second patch in the v2 was incorrect.
 
-v1 -> v2: No changes
+These 2 patches deal with issues that may arise if the polling delay value used
+for passive polling is at odds with the polling delay values used otherwise.
 
----
- drivers/thermal/thermal_core.c |    3 ++-
- include/linux/thermal.h        |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+The first patch simply eliminates the need to worry about possible negative
+polling delay values by changing the data type used for representing them
+to unsigend int.
 
-Index: linux-pm/drivers/thermal/thermal_core.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -1359,7 +1359,8 @@ thermal_zone_device_register_with_trips(
- 					int num_trips, void *devdata,
- 					const struct thermal_zone_device_ops *ops,
- 					const struct thermal_zone_params *tzp,
--					int passive_delay, int polling_delay)
-+					unsigned int passive_delay,
-+					unsigned int polling_delay)
- {
- 	const struct thermal_trip *trip = trips;
- 	struct thermal_zone_device *tz;
-Index: linux-pm/include/linux/thermal.h
-===================================================================
---- linux-pm.orig/include/linux/thermal.h
-+++ linux-pm/include/linux/thermal.h
-@@ -221,7 +221,8 @@ struct thermal_zone_device *thermal_zone
- 					int num_trips, void *devdata,
- 					const struct thermal_zone_device_ops *ops,
- 					const struct thermal_zone_params *tzp,
--					int passive_delay, int polling_delay);
-+					unsigned int passive_delay,
-+					unsigned int polling_delay);
- 
- struct thermal_zone_device *thermal_tripless_zone_device_register(
- 					const char *type,
+The other patch adds a sanity check to ensure that "passive" polling will not
+be less frequent than "regular" polling.
+
+Thanks!
 
 
 
