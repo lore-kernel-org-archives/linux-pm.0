@@ -1,35 +1,35 @@
-Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
+Received: from mx1.sberdevices.ru (mx2.sberdevices.ru [45.89.224.132])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FFC714A60C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C78E14B09E;
 	Mon,  8 Jul 2024 19:48:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=37.18.73.165
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.89.224.132
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720468103; cv=none; b=cvsNDo+eKiLIW6lyw939PWImnuoasAx0qNhZeyLnt/mTbPmFp9+hLYVrPrPpVTZ29RfEFDmLf+S7PHCr6SwtC04jkHHKikyg0Nvg4Wqhxc3sHmu3KJASiw0/lu2/H+a385erwbSm8k4xTqUM+Bn6SOcy8vGsrDtTXB+BS0yuIjY=
+	t=1720468103; cv=none; b=X7dg8aHGEr+rGPyyOg1XmYkJJsALKzCqUHesxx8PX3Wnptm0Lo3mmj30NksEGyYhmj3DWTWBFMv1N70G8I42FSj4YC+8/r5ieiT3YN+thz+DXcp+bDKkx9oa1r1obkFGOrQCceKuEMIZqj8pciy3VAJcwq/wD03Cxrv6gboAk6Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1720468103; c=relaxed/simple;
-	bh=0YvSrffggSKkTKLLmzLGfbPXG6CTOahbO/4DN9Qum1g=;
+	bh=YHoCWP0idcg6l6M4oUDp8f+1XG7eHy48jeJFhTAAj8k=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=oqx46qYZTyL4SarMgFh48NGqFDyHgNGYTT/1iOVhYOtgkz4bPYnGV9I6wA+mkhp+M/Wy+0WUGZzd90FV/4/XHrgeIIwOjZbGweaN9Qv6YE5EToUzFN4KqFkbh5UROCBDn0z7skanTtae+cpy+74GLux9Aja4aUqRN0j6RWdLEY0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com; spf=pass smtp.mailfrom=salutedevices.com; dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b=CQjlXO7n; arc=none smtp.client-ip=37.18.73.165
+	 MIME-Version:Content-Type; b=qHlGYv5l2Y3WZlyKv65uVPthUit5hAYZLJIPTmL98gB1SYq984kd9kc/WpJoFN7s5t3PsYZynaWzAcExdR04So435HAiu++KTsBO/TGsWrm1jDZbYClH9c2pI7YJIpo8U5TZ7V61zGh55EIWsGFg/awGPUqcW5MVjaLAWv/pnJQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com; spf=pass smtp.mailfrom=salutedevices.com; dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b=k/ZYvHij; arc=none smtp.client-ip=45.89.224.132
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=salutedevices.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b="CQjlXO7n"
-Received: from p-infra-ksmg-sc-msk01.sberdevices.ru (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 573F3100008;
-	Mon,  8 Jul 2024 22:48:16 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 573F3100008
+	dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b="k/ZYvHij"
+Received: from p-infra-ksmg-sc-msk02.sberdevices.ru (localhost [127.0.0.1])
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 15264120009;
+	Mon,  8 Jul 2024 22:48:17 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 15264120009
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1720468096;
-	bh=4pw3BIb7UkYmI26H52edi0SuBLQRphrtybtYpFnSD/I=;
+	s=mail; t=1720468097;
+	bh=IoalWO5CwiNil7FYL/DMHEzj0S1zxI7MgZa/AXwCx+c=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=CQjlXO7nvTTKO2ZWZdTc0wDSsPXzv8AAv4RgHv5hfoEyWr2gQVvwsgLjpIMcnd/zO
-	 NhrEUrZ1IBqTPA333iIjp1UCt1UBhzicESCV0x821YeWnlhx6b6wdZJ+3aw3CK129c
-	 9B0xZCjP1pK7pEMqnHEwNH2/yJjaTeBGqLAHXS6BSCDJAPuOSw50TYdIClfUklaTVU
-	 cNoN02KvrnlLxvsmAIVqxnhtoPGksKnkQGMdlpfq+jmuayoVqAjsECSVONgoUCkyqB
-	 u8sLFOrZRNzG6JikG4M0sgIpJxpeWC14gshOhIuTRT/Kn/zd325Loik7geSZorh+6B
-	 gYT5ou/cx280g==
+	b=k/ZYvHijSyaxjVd6FjyDk2b9Q+nrSpnhEQfYB2s9SVf5L6/Ksy319BkAuL9yEIcbE
+	 cla0ec1AiC7uch8Tzv4gM5TlUbxJrD6eufVhFtQPwglv5Y2KoyN3WfLCVA+HuXl1up
+	 +9clovB1wnQ+d6W0PzAEE6V3XsGP4sSYwqioEFDCSVh7c6bxt3vBfCQ0mFD60WlBF5
+	 /PpBbfvcceyvitt/5f+62j9OFxU7sHnqqPBUTI032xIbgAVocgC7heF+LouzYt50gH
+	 V+DYF85kYs+Y4GPZIpaMAbvIZ/4v92v+BNJxgwZ5NpbHUsf1vEo3JFxb3qQPzavC4/
+	 ZnfRL0/uqUQ6A==
 Received: from smtp.sberdevices.ru (p-i-exch-sc-m02.sberdevices.ru [172.16.192.103])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
@@ -38,7 +38,7 @@ Received: from smtp.sberdevices.ru (p-i-exch-sc-m02.sberdevices.ru [172.16.192.1
 Received: from work.sberdevices.ru (100.64.160.123) by
  p-i-exch-sc-m02.sberdevices.ru (172.16.192.103) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Mon, 8 Jul 2024 22:48:15 +0300
+ 15.2.1118.40; Mon, 8 Jul 2024 22:48:16 +0300
 From: George Stark <gnstark@salutedevices.com>
 To: <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
 	<neil.armstrong@linaro.org>, <khilman@baylibre.com>, <jbrunet@baylibre.com>,
@@ -51,9 +51,9 @@ CC: <linux-i2c@vger.kernel.org>, <linux-spi@vger.kernel.org>,
 	<linux-amlogic@lists.infradead.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kernel@vger.kernel.org>, <kernel@salutedevices.com>, George Stark
 	<gnstark@salutedevices.com>
-Subject: [PATCH 1/4] dt-bindings: spi: amlogic,a1-spifc: make power-domains required
-Date: Mon, 8 Jul 2024 22:48:05 +0300
-Message-ID: <20240708194808.1819185-2-gnstark@salutedevices.com>
+Subject: [PATCH 4/4] arm64: dts: meson: a1: bind power domain to temperature sensor
+Date: Mon, 8 Jul 2024 22:48:08 +0300
+Message-ID: <20240708194808.1819185-5-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240708194808.1819185-1-gnstark@salutedevices.com>
 References: <20240708194808.1819185-1-gnstark@salutedevices.com>
@@ -76,46 +76,34 @@ X-KSMG-AntiSpam-Rate: 0
 X-KSMG-AntiSpam-Status: not_detected
 X-KSMG-AntiSpam-Method: none
 X-KSMG-AntiSpam-Auth: dkim=none
-X-KSMG-AntiSpam-Info: LuaCore: 23 0.3.23 8881c50ebb08f9085352475be251cf18bb0fcfdd, {Tracking_from_domain_doesnt_match_to}, smtp.sberdevices.ru:7.1.1,5.0.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;salutedevices.com:7.1.1;100.64.160.123:7.1.2;127.0.0.199:7.1.2, FromAlignment: s, ApMailHostAddress: 100.64.160.123
+X-KSMG-AntiSpam-Info: LuaCore: 23 0.3.23 8881c50ebb08f9085352475be251cf18bb0fcfdd, {Tracking_from_domain_doesnt_match_to}, 127.0.0.199:7.1.2;100.64.160.123:7.1.2;salutedevices.com:7.1.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;smtp.sberdevices.ru:5.0.1,7.1.1, FromAlignment: s, ApMailHostAddress: 100.64.160.123
 X-MS-Exchange-Organization-SCL: -1
 X-KSMG-AntiSpam-Interceptor-Info: scan successful
 X-KSMG-AntiPhishing: Clean
 X-KSMG-LinksScanning: Clean
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2024/07/08 19:07:00 #25919740
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2024/07/08 16:01:00 #25918429
 X-KSMG-AntiVirus-Status: Clean, skipped
 
-SPI Flash Controller has dedicated power domain so make the
-corresponding property required.
+Meson A1 temperature sensor has dedicated power domain so bind it
+to the device node.
 
 Signed-off-by: George Stark <gnstark@salutedevices.com>
 ---
- Documentation/devicetree/bindings/spi/amlogic,a1-spifc.yaml | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm64/boot/dts/amlogic/meson-a1.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/spi/amlogic,a1-spifc.yaml b/Documentation/devicetree/bindings/spi/amlogic,a1-spifc.yaml
-index 043879b434ac..e704aff8a862 100644
---- a/Documentation/devicetree/bindings/spi/amlogic,a1-spifc.yaml
-+++ b/Documentation/devicetree/bindings/spi/amlogic,a1-spifc.yaml
-@@ -30,15 +30,19 @@ required:
-   - compatible
-   - reg
-   - clocks
-+  - power-domains
+diff --git a/arch/arm64/boot/dts/amlogic/meson-a1.dtsi b/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
+index dd5695963caa..86d77f51c25c 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
+@@ -919,6 +919,7 @@ cpu_temp: temperature-sensor@4c00 {
+ 				assigned-clock-rates = <500000>;
+ 				#thermal-sensor-cells = <0>;
+ 				amlogic,ao-secure = <&sec_AO>;
++				power-domains = <&pwrc PWRC_I2C_ID>;
+ 			};
  
- unevaluatedProperties: false
- 
- examples:
-   - |
-+    #include <dt-bindings/power/meson-a1-power.h>
-+
-     spi@fd000400 {
-         compatible = "amlogic,a1-spifc";
-         reg = <0xfd000400 0x290>;
-         clocks = <&clkc_clkid_spifc>;
-         #address-cells = <1>;
-         #size-cells = <0>;
-+        power-domains = <&pwrc PWRC_SPIFC_ID>;
-     };
+ 			hwrng: rng@5118 {
 -- 
 2.25.1
 
