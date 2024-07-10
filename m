@@ -1,35 +1,35 @@
 Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 403BB14C5A1;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A209E14F9EB;
 	Wed, 10 Jul 2024 22:32:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=37.18.73.165
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720650752; cv=none; b=A65lUScfLemabl9koGPZ2eLp1SVIc7Oz7WfoDkI9uIDY5WgyIfPD+ScYBBe/vIwZdsrCBfq7/0Ru7p8Iz9jbvG3tW//5zQplAsOWP+TGeibYTQF8Akftm00othuH4dycO3Nq6RRo28xDcbQe86yEa2JXmfzlH94GMKolSBLlwfs=
+	t=1720650756; cv=none; b=R2zzFuacezoGq6N9pUGxM5jEjXPMz9aGGYxtrOPb++QuzJHF1IRGNkI2sicCVgK1VWe66+KjlsMy2vf8Ezf5UOjLywED0M6wkKZlu6dg4ZaqBuCrRtj2CDC+XGIfbSHkKe1aPaNkbHDO2rcXgj/Rw/uHIhvSFm+m6lZFo68m5DA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720650752; c=relaxed/simple;
-	bh=3ogu7u5vZuj5p1AAc4tepTW7NlFeh95r6IAcIoRhSg4=;
+	s=arc-20240116; t=1720650756; c=relaxed/simple;
+	bh=1TyNBh/3TdKVwXcfxotgwKE1mWxZRiJWxiKbkfBSuo0=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=OVm9xjEoaZlggHOe9uNxy0yS6wxgm8hwktICd/IRPqKbYckApvj3Nahy4v93haX1Ie285me/sTvjzpaty8sUT2JRaPJFlldCpNUe3oCthNonjDs9GOgQt2zxfYStd8ghzY1Fk1kZFBu4Johrk+DuLZFVUlPlz4Z17BfknmYHh8c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com; spf=pass smtp.mailfrom=salutedevices.com; dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b=JgDAXpSB; arc=none smtp.client-ip=37.18.73.165
+	 MIME-Version:Content-Type; b=t6ZMhHDBuPE1jNjeEiGywyvXHN1OYsxtsXIRF/5WOOe/iZev/l6LrBejstOCYeNemLJhlGCzKDYgPqwLP/YaecCWClAB0PxdpFseKJr1lV5Z0zkSmJBBneCkEWemL4CaHkkURf0hCcI3kO43f0m0DlVto1tzwtTXWbfTO8SX304=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com; spf=pass smtp.mailfrom=salutedevices.com; dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b=Rk3h/63J; arc=none smtp.client-ip=37.18.73.165
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=salutedevices.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=salutedevices.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b="JgDAXpSB"
+	dkim=pass (2048-bit key) header.d=salutedevices.com header.i=@salutedevices.com header.b="Rk3h/63J"
 Received: from p-infra-ksmg-sc-msk01.sberdevices.ru (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 4D4F9100029;
+	by mx1.sberdevices.ru (Postfix) with ESMTP id D91E110002F;
 	Thu, 11 Jul 2024 01:32:22 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 4D4F9100029
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru D91E110002F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
 	s=mail; t=1720650742;
-	bh=ln9wX7yvXW/OQnGFsQF3yqKcqupzlBpLXXCYFm54FjM=;
+	bh=hfI/ofSEp+yYAlRKoLDJJ07qjeCsQBjJxdJc5MY1PJc=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=JgDAXpSBIujl/6Aw050WAts4mHV0Gf+2ui43qNShClvUadvRY2SjY6D1pcV8+49mB
-	 OZy1ee2CGkjOXY3ziGWdfJJFA7DJ7qDHfHFOJg40sVBFP66+m+leS1EuTvKj0cO9nO
-	 DlB6OssLi7fI9Mae5+XON5aveVHs7yLIUs6ds5Fq29zrWOXkJojGzmTWBe7misIGbp
-	 y8/62+cO3oCSK7kPl5KQL0Wu9nj+gAgJGiwyGsxciLSExaq1UP92icmKVWCijMVoVd
-	 mERGvZfKEc4Jzo8WN+9XKzT1r9VUvrh+hMMxbSDSU6793sUJE9523skkVqpHX821mm
-	 1B5QDcBaib8Ng==
+	b=Rk3h/63JlkS9lq9+Ix0C2KPOAKT8iUx3ok3tdG1d06r0bER+7Jng3VRUuBwf+5vn8
+	 R/xgm3Fr9F7lbzZFdgQ7t/T+mTngHHV90a9hm7af0z+8BMuUOuTrxJpT8qDTEZGDgV
+	 PvVi69DcVitV2yPvdvJ2sk4Fhje47AL21Rp0jZL5/T7nt1WjmWgYsUuFhxkqpEt1XM
+	 sB4u36oiQko56Oc5qPdjoXxoC48QSRk52PJro5mbccyYlhwHXkjeaCDH2A5NALrWRb
+	 I3t3PQ5PhZXbOWohUvcYdmLVctwY0KvSY9lupbLoMvtkqraUEVaMO5G+2vVP55PhfN
+	 7zGndYRTUfUXw==
 Received: from smtp.sberdevices.ru (p-i-exch-sc-m02.sberdevices.ru [172.16.192.103])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
@@ -38,7 +38,7 @@ Received: from smtp.sberdevices.ru (p-i-exch-sc-m02.sberdevices.ru [172.16.192.1
 Received: from work.sberdevices.ru (100.64.160.123) by
  p-i-exch-sc-m02.sberdevices.ru (172.16.192.103) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Thu, 11 Jul 2024 01:32:21 +0300
+ 15.2.1118.40; Thu, 11 Jul 2024 01:32:22 +0300
 From: George Stark <gnstark@salutedevices.com>
 To: <andi.shyti@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
 	<conor+dt@kernel.org>, <neil.armstrong@linaro.org>, <khilman@baylibre.com>,
@@ -50,9 +50,9 @@ CC: <linux-i2c@vger.kernel.org>, <linux-pm@vger.kernel.org>,
 	<devicetree@vger.kernel.org>, <linux-amlogic@lists.infradead.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
 	<kernel@salutedevices.com>, George Stark <gnstark@salutedevices.com>
-Subject: [PATCH v2 1/3] dt-bindings: i2c: amlogic,meson6-i2c: add optional power-domains
-Date: Thu, 11 Jul 2024 01:32:12 +0300
-Message-ID: <20240710223214.2348418-2-gnstark@salutedevices.com>
+Subject: [PATCH v2 3/3] arm64: dts: meson: a1: bind power domain to temperature sensor
+Date: Thu, 11 Jul 2024 01:32:14 +0300
+Message-ID: <20240710223214.2348418-4-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240710223214.2348418-1-gnstark@salutedevices.com>
 References: <20240710223214.2348418-1-gnstark@salutedevices.com>
@@ -83,31 +83,27 @@ X-KSMG-LinksScanning: Clean
 X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2024/07/10 21:42:00 #25942395
 X-KSMG-AntiVirus-Status: Clean, skipped
 
-On newer SoCs, the I2C hardware can require a power domain to operate.
-Since the same compatible is used for older and newer SoCs make
-power-domains property optional.
+Meson A1 temperature sensor has dedicated power domain so bind it
+to the device node.
 
 Signed-off-by: George Stark <gnstark@salutedevices.com>
 Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 ---
- Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm64/boot/dts/amlogic/meson-a1.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml b/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml
-index 26bed558c6b8..c4cc8af18280 100644
---- a/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml
-+++ b/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml
-@@ -30,6 +30,9 @@ properties:
-   clocks:
-     minItems: 1
+diff --git a/arch/arm64/boot/dts/amlogic/meson-a1.dtsi b/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
+index dd5695963caa..86d77f51c25c 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
+@@ -919,6 +919,7 @@ cpu_temp: temperature-sensor@4c00 {
+ 				assigned-clock-rates = <500000>;
+ 				#thermal-sensor-cells = <0>;
+ 				amlogic,ao-secure = <&sec_AO>;
++				power-domains = <&pwrc PWRC_I2C_ID>;
+ 			};
  
-+  power-domains:
-+    maxItems: 1
-+
- required:
-   - compatible
-   - reg
+ 			hwrng: rng@5118 {
 -- 
 2.25.1
 
