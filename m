@@ -1,131 +1,117 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com [209.85.219.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A45F12C530;
-	Wed, 10 Jul 2024 13:34:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 408EB193067
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jul 2024 13:52:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720618481; cv=none; b=TAf/QT6dGlnECRNPkYG1jSp3gzA5ptXjPE0S81ww8La/sucqGjee3TJLy9BAtKrYcGBx//2XkWFfYzYbEhO24Mqby/26SUGvs/cVpDqh1GncCfLjvLVn23RQbBQ5Arhye+3dGhVka9wIZY6QeGI6QYAWIRuahA1pLdzfmlkyhHM=
+	t=1720619534; cv=none; b=Y1Gt9jBBNd8f5+27xPH4ipTxUFqGLMDgMtesrxUwlAjhjqKc3pD+doynbAKBBEwvK78DoKd0zwKuHeKNg5scgTgVuNOpe3PfRFjudVbskPk6TxceEATYK/VPWGPNWoglJHSsCPPG6xbrqF8mMl/N1vuAN4loMv/nChG2rQqInO8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720618481; c=relaxed/simple;
-	bh=KHzmV6iQeN0ga/s2PWtC2cr6j5Xn1gW9AyxeuXWnzNM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=e5XnRZT8dBTBu8NW+sWwUVPI0XIS/XQxG4OEnNhpYOL/9DS6cg0N7Rqocuhok0CohQ1dGl6PUb6BwUQCHtixOFlvDgDplMlxgbdyF1CaNmv2phZmBTHmvGCspDMRjFPQIP83wegjG19oH9dAVjJMcMyyi90lhm3prMky1bLJZuo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=Yty8WZIB; arc=none smtp.client-ip=212.227.17.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.net
+	s=arc-20240116; t=1720619534; c=relaxed/simple;
+	bh=3WiWOBn7pHdmhx9iPoez08ScqRj7WvY9UsQuBoxjbvQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=igAN99tJxAaOTVZk5dCorRnqMyvQgIcf07SGf9Gezs8+lK5MILQReXlRO1ZPFGmNAenlSB6xsIeIOSfdJDHc5L7CuREKzHWTr2zz97q3i71JVuOUKrTXjdP4B7lGp9jiL7FLUeh7YLzBjm3Q75lQujTDdmscLiUj/qNPQL8q6xs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=I/YRcBEf; arc=none smtp.client-ip=209.85.219.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="Yty8WZIB"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.net;
-	s=s31663417; t=1720618442; x=1721223242; i=wahrenst@gmx.net;
-	bh=+3tUuSexjnpG44HlEeCMDYkMDHwEt8wqzMLss58tItk=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=Yty8WZIBncC6TRsiVPWwLLzEUluGlOV5HTyvD35ojHzE9TkvDt2+MJmwkODumCz4
-	 MUEdwgdtylDqbUKZpDfbF4S1kfHUt6IdBEdzTJ8Fdhzr9bOMLyFFoc3fMeYugJnld
-	 mnaTBBFOXKxnWqOjgVenbNf2/YnlhqygfDlhMSl8F4Km3xNYpo6Ilj/5LBZs5GSRZ
-	 MbcLWB1zjIESTsc2F0c8r9xOUWv3qKPGpfmt/2oaqFc+wAk2UJjAQwAtMCwHxn/aZ
-	 oGaDibQ+DCUK7l/TnenQ9AIUkorF3s1d+6LL9cvaZat610cNNKGEGSf8G1CXNrgmc
-	 jWdhnkZD9UR4gwVmhw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.1.127] ([37.4.248.43]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MfYLQ-1ruPZ40HDk-00qV0p; Wed, 10
- Jul 2024 15:34:02 +0200
-Message-ID: <8dd6def7-58b7-4578-b427-281aab70645a@gmx.net>
-Date: Wed, 10 Jul 2024 15:33:58 +0200
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="I/YRcBEf"
+Received: by mail-yb1-f172.google.com with SMTP id 3f1490d57ef6-e03a8955ae3so6265321276.1
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jul 2024 06:52:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1720619532; x=1721224332; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=s6ihtFgMXol2238V4wCVG6CHvKqmNcnW+Q3HHUXDtbg=;
+        b=I/YRcBEff5PrvIhr8gqO5kZjyjr1Cb4kNaAidhFvpiOXYlphQF2XBfcEnxEeEo2a2a
+         fVPYFO9VaKoanXiEB8wFOSRK8lzhUFSXn1h/08HFQEULyVj7CVH2ZQfJbuT4RJ4kNleX
+         Wuf6pV2vbCBd+OQFoVtY4TrCQ0e7q3l8+Bk1x9UA4KxuyOcRAsnO4h9KFiXrADD8s6Fl
+         izhrQRn3XhMhCMscVDvootI8LWke5iGTYCOI543vCh9OTV+E0IbDS/Mcc0+zyb9F0xG7
+         Rr7MkHzUiTr724g9b4O+tGn97C9QdqSitWoiV3TNVUNE5bBSO1vOkEel6BqrahftsjC6
+         NquA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1720619532; x=1721224332;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=s6ihtFgMXol2238V4wCVG6CHvKqmNcnW+Q3HHUXDtbg=;
+        b=tcbBFvyMAjHKsvQr8Tme3nB2Lm/iFR4CKomELyp6/ZhKEj/gXaBDnpJExv/yLdd58y
+         w0TP3bDtccBclnLMOM4OUxyVA5Kx1tu1l3py8ODeTLSTLLYddP66ov3p5MIW1ufUyLT6
+         qvSZs5HDQ9q67gpgZa+V/xAE34HQlxsjOEH5xkeNhzzoswKI93d/1mZKzci36dE2NecP
+         AwNzwfPJMVdr/7sQ54bOofKh7Ae0VwOUDZd5vimoCV+7KPu9VAqesCG8cMTZ5FLm8vyY
+         i+TNrldEqQnqgG8FXv7OQ9sTIKjOkFpJvVBJ7yF7NbIDGPLkhsWUwc4iWCnU4mwSYGpe
+         UM2g==
+X-Forwarded-Encrypted: i=1; AJvYcCU93MUYQokNVSIW2eV/8MqWuqvqjHo2eFphaIYXyxYDcAGF6Om8nb9PFkqhV5Z0NmMY3C0PWcdwVM+tomaRAU88F/VOqiuxo14=
+X-Gm-Message-State: AOJu0YyPYiRboYoNRNsP+Je/3+PsttdEi9gnStQLENFsQjAKv+EMNPvV
+	1W+ZxzqmzPtc+TW2Micvf77JiDcL7x/A2U4yzv0gt1t6XY1mFipdZphkTEdHaLWJ+jDLeW0omEQ
+	NW3CCvq3ePNhglmpixyByYwY6O6IkQgPJ/YUzEw==
+X-Google-Smtp-Source: AGHT+IEgGhImB1CZ9V2zyPwOjbF7xu90LRXOFMyWlUsr33fZ9RPD7FcjB6nD790/e/8piCgrefZcj52pseUw7tQZ7qs=
+X-Received: by 2002:a25:bc8a:0:b0:e03:4ddd:49f0 with SMTP id
+ 3f1490d57ef6-e041b22a2c7mr6248368276.57.1720619532289; Wed, 10 Jul 2024
+ 06:52:12 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 09/11] usb: dwc2: Skip clock gating on Broadcom SoCs
-To: Lukas Wunner <lukas@wunner.de>, Jeremy Linton <jeremy.linton@arm.com>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
- Minas Harutyunyan <hminas@synopsys.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ray Jui
- <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Jassi Brar <jassisinghbrar@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>,
- Jiri Slaby <jirislaby@kernel.org>,
- Dave Stevenson <dave.stevenson@raspberrypi.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
- Daniel Vetter <daniel@ffwll.ch>, Peter Robinson <pbrobinson@gmail.com>,
- dri-devel@lists.freedesktop.org, bcm-kernel-feedback-list@broadcom.com,
- linux-pm@vger.kernel.org, linux-serial@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- kernel-list@raspberrypi.com
-References: <20240630153652.318882-1-wahrenst@gmx.net>
- <20240630153652.318882-10-wahrenst@gmx.net>
- <95762956-b46a-4dfa-b22f-bccbfa39558d@broadcom.com>
- <ZoezRpXBgB1B5WjB@wunner.de> <4502d826-d80c-4a98-a889-da7badfa698e@gmx.net>
- <ZogLXYopViQO11ta@wunner.de> <43fa421c-5e5b-40a6-a546-d80e753586e3@gmx.net>
- <38e46b44-6248-45e8-bdf9-66008a2fe290@arm.com> <ZohiJgyaDwAoGtAx@wunner.de>
-Content-Language: en-US
-From: Stefan Wahren <wahrenst@gmx.net>
-In-Reply-To: <ZohiJgyaDwAoGtAx@wunner.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:dviN9n5mJNy5LcG+dhLGDfMtO1l0d0odq4AVYBIUuTcOGdBVkbZ
- CQP2qJF5WQHb8YNJbsitIYBk2IsAJNvaxAV+HpXanK0ElZtDncslaoxv3nMsMVLo0xNFhv3
- PwdDhrZ7r63ll9+Ag9kDc5oq8wPxguGNg3KKVs8+uJmCSRK3JZuyNUa+naUr+ufZvbDcGVM
- jlP1915LEhg8OB/OYByLw==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Yq/sCgCsZM8=;BqY06MQMuRa21r/LEhc0tIsTBaf
- LAUQiaC9WWtNMVJhX5wq7hL9w6UQye8vO6Xe+hbggCrl69p/UIzBFApWQquDStybs17EE0Rb/
- pHcb+9tGC02gKSMxQkokQ5+V7+W3CtmS4I1hwSPPKQocEK4/WU08cWfjoYhAD0uxtWB5UQwDz
- yrG3nf1j/mLAg5h+hM6B3kfh1d+KMqyjg6EAtigDxOYIF4WgnZe79yuA1h09mYwIth39WKdTk
- LFiLNXkGG8bC+RnP+uablmhQhmHNkDlUW4JkuDPSlh47eWp6B6VHOxDT8CXLLmCTC1UolbKUR
- +w9gK2JXQ0p9jQk1VRcJKiW0SJm9ufJj/TJQAJS7JlJGlfr5joIDwUDSDFerUqCN6rXP1fk5C
- HlVeBWQcuDc6S//lOPDuYzf2PrBOurW22Rz1m0r18QkG9v8gKlhx6Ql/1vM3UMwalzUOVDYKA
- 6L/aIpSiFF+4ks+7eq0Hrp9DUMaIwoUMIOpEOoyS2RoFQCmywgNDh/8UNhVLI6SFQTp/QgoO1
- YBibO7veRgglwLfJPv/3EyG4xg6AZ6WXYy5TQkRdMjhZy4rNm7yPake2vWSPEh/U3LsHQVqZM
- TPVmuQHqranmx3CSrR026vHSSd6trXeBtH0TZz/P5ge1b5J4SJrsWc5Spz589XuG6R8Y2sORZ
- meWmgNCSbucAkRij9VRovAFDQpCjL9RPQJfC8FtCbXpPeYi/oeF6vvZyGxwc9Fz0EJxgMmA+P
- Eg7syDNhbeQP0tU/5q48/SEdrlS2qau8EetjGry9xGWT+t3NgBzwwUwO17yLSYoCYzeL4tdx/
- F19utBxHvwa3tjHksyuhLX8A==
+References: <20240618155013.323322-1-ulf.hansson@linaro.org>
+ <20240625105425.pkociumt4biv4j36@vireshk-i7> <CAPDyKFpLfBjozpcOzKp4jngkYenqSdpmejvCK37XvE1-WbBY2g@mail.gmail.com>
+ <20240701114748.hodf6pngk7opx373@vireshk-i7> <20240702051526.hyqhvmxnywofsjp2@vireshk-i7>
+In-Reply-To: <20240702051526.hyqhvmxnywofsjp2@vireshk-i7>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Wed, 10 Jul 2024 15:51:35 +0200
+Message-ID: <CAPDyKFoA9O5a6xZ+948QOzYqsRjk_0jJaSxeYRwx=76YsLHzXQ@mail.gmail.com>
+Subject: Re: [PATCH] OPP: Fix support for required OPPs for multiple PM domains
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Nikunj Kela <nkela@quicinc.com>, Prasad Sodagudi <psodagud@quicinc.com>, linux-pm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linux-tegra@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Am 05.07.24 um 23:14 schrieb Lukas Wunner:
-> On Fri, Jul 05, 2024 at 12:16:14PM -0500, Jeremy Linton wrote:
->>> Am 05.07.24 um 17:03 schrieb Lukas Wunner:
->>>> Careful there, the patch vaguely says...
->>>>
->>>>      With that added and identified as "BCM2848",
->>>>      an id in use by other OSs for this device, the dw2
->>>>      controller on the BCM2711 will work.
->>>>
->>>> ...which sounds like they copy-pasted the BCM2848 id from somewhere e=
-lse.
->>>> I would assume that BCM2848 is really a different SoC and not just
->>>> a different name for the BCM2835, but hopefully BroadCom folks will
->>>> be able to confirm or deny this (and thus the necessity of the quirk
->>>> on BCM2848 and not just on BCM2835).
->> This id comes from the edk2-platforms ACPI tables and is currently used=
- by
->> both the rpi3 and rpi4, and AFAIK nothing else as the rpi5-dev work is
->> currently only exposing XHCI.
->>
->> The ID is strictly the USB controller not the SoC. Its a bit confusingl=
-y
->> named, but something we inherited from the much older windows/edk2 port=
-,
->> where it appears that the peripheral HID's were just picked in numerica=
-l
->> order.
->>
->> [0] https://github.com/tianocore/edk2-platforms/blob/12f68d29abdc9d703f=
-67bd743fdec23ebb1e966e/Platform/RaspberryPi/AcpiTables/GpuDevs.asl#L15
-> So BCM2848, BCM2849, BCM2850 and so on are just made-up IDs
-> for a Windows/EDK2 port that got cargo-culted into the kernel?
-> Yikes!
+On Tue, 2 Jul 2024 at 07:15, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> Has anyone checked whether they collide with actual Broadcom products?
-Using public available information like this [1], I wasn't able to find
-any collision.
+> On 01-07-24, 17:17, Viresh Kumar wrote:
+> > What about this patch instead ?
+> >
+> > diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> > index 5f4598246a87..2086292f8355 100644
+> > --- a/drivers/opp/core.c
+> > +++ b/drivers/opp/core.c
+> > @@ -1091,7 +1091,8 @@ static int _set_required_opps(struct device *dev, struct opp_table *opp_table,
+> >               if (devs[index]) {
+> >                       required_opp = opp ? opp->required_opps[index] : NULL;
+> >
+> > -                     ret = dev_pm_opp_set_opp(devs[index], required_opp);
+> > +                     /* Set required OPPs forcefully */
+> > +                     ret = dev_pm_opp_set_opp_forced(devs[index], required_opp, true);
+>
+> Maybe better to do just this instead:
+>
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index 5f4598246a87..9484acbeaa66 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -1386,7 +1386,12 @@ int dev_pm_opp_set_opp(struct device *dev, struct dev_pm_opp *opp)
+>                 return PTR_ERR(opp_table);
+>         }
+>
+> -       ret = _set_opp(dev, opp_table, opp, NULL, false);
+> +       /*
+> +        * For a genpd's OPP table, we always want to set the OPP (and
+> +        * performance level) and let the genpd core take care of aggregating
+> +        * the votes. Set `forced` to true for a genpd here.
+> +        */
+> +       ret = _set_opp(dev, opp_table, opp, NULL, opp_table->is_genpd);
+>         dev_pm_opp_put_opp_table(opp_table);
 
-[1] - https://github.com/anholt/linux/wiki/Devices-with-Videocore-graphics
+I think this should work, but in this case we seem to need a similar
+thing for dev_pm_opp_set_rate().
+
+Another option is to let _set_opp() check "opp_table->is_genpd" and
+enforce the opp to be set in that case. Whatever you prefer, I can
+re-spin the patch.
+
+Kind regards
+Uffe
