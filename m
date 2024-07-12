@@ -1,104 +1,113 @@
-Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
+Received: from mail-ot1-f47.google.com (mail-ot1-f47.google.com [209.85.210.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D982171075
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jul 2024 14:51:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2087172BB6
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jul 2024 14:59:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720795895; cv=none; b=H6dCqGCrNgvEWl/LP6mNJ5mrqJCRjsbVtGcK2zUe41k7yaifEoDQ11NXBNHLGieh8s9BNdrg7AlKmfRZQ95DNJc4pj7of94DcxGzpcC1cHfamL3Fv/JgoiiOSDv03aB5ZVSxN6DhL1VUIgYdd8sD6qePfq1ydYbvointfAFZufs=
+	t=1720796352; cv=none; b=Hu+SqwvQuudmKOCX9TCtJbs0nXTRBNNBqwmECCbRyML+imiMEAPbW1g9qo7XTAEg1d1mYEaiYIqMbgiFmprOD3C2XJRnbDhfZOmZ5IcfPRqnNJ6pgDFaVufRm8Ghpjo+RMjlyAmkzz5kJYFcJ0VIkrybWgwhu4CSvmDvsTBISfQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720795895; c=relaxed/simple;
-	bh=6Xme/fG7NEewAT3iCDuDM/s9b4eHsxK5bexy9nMN6Ew=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=bbH8hOmn7o0u7m50X9kEXj4OzyvKTOjQfyK2LYsqp8RUCj1Kw/dAmWUKnz/l1aEwd7FLnMQNKBPz1Qqkt+Q1S16yJifr0sjdD05sCo/eZoLjDbk7xcWETvXV0sWHR10gW4CMCO0PXcRR/yUcfMnfygaIVxQilWoSgss4F/Z2zMY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hVaarWED; arc=none smtp.client-ip=209.85.167.44
+	s=arc-20240116; t=1720796352; c=relaxed/simple;
+	bh=bnDm4S2Cb8WIqgRpBHv1PQKSZ2P5W0wICQYPYNaTzAk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QHDR+diQDBXfC1rtWp1/+B+zfsenrDeTeB8wztY6fwaD/ez3LHIm67x4h8OwzZH1p/43VbJJ7+wKIjHDNl0uVjMxWeK+sdXtNxQQ2VDYHaWeQqJ42RNUDMIuR3GNefO9fk4NEubMaNdK1EVMUljf7voxPHdKRhNfzpoab2+nS/c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=zhH2Spde; arc=none smtp.client-ip=209.85.210.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hVaarWED"
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-52ea5765e75so2481951e87.0
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jul 2024 07:51:34 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zhH2Spde"
+Received: by mail-ot1-f47.google.com with SMTP id 46e09a7af769-704473c0698so1008690a34.3
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jul 2024 07:59:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1720795892; x=1721400692; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ky4WPChWhIsghhn+5sM672ORVDTwy7ezIsC/I8SFrEU=;
-        b=hVaarWEDDueA/zJa+Cm7+u7dGK2+rjWsj5TcwJNC6L1+frYzbzOX7PpVqqKWldUHs/
-         470yi0V3WlaNEYc2k4YHiaz6zUO6eD/Kk+BXO4R9etzAxufrmhfTIiZDkYjTTUAkCyoj
-         H1i1dm9yfbg+ztG0W7XcRRyMuN8XmyJjb6eqyCoLQStwK5EbFCPucmRPhGtx1skO4kEr
-         sQeHoL1cCMcJTw5wHO0OQgqkMofVk2OxI+gJmEf4jOGrcH8naJc8KO09KcLA9NaMR4tK
-         FaQHgcE3gytyPLuHaarcTWaeVyxIzwGqg6vicrcABM6xFzIYr9hD773YR9Jq3mj3t6KR
-         NwMg==
+        d=linaro.org; s=google; t=1720796349; x=1721401149; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=27BnZNX+yLuK2i/gV97YiqGwQq9nRR1z4pbXBmit8bk=;
+        b=zhH2SpdeAhDzbWELn+9D6SZR6Qt5pOKQLuzeNE1XBnXsuBfNMyoY1heihqvYW+houz
+         f0lrTi6ODi18tHIq0vIcXstLVxmUzg+puljUY04y9dwv7DC6ioebSqlX1ZWUb5W3XIc9
+         zB5rcmxZZvHILrctluSsUuqsAJfHyMUd+Ep3KPefMn3PiCfGof+/KgUQiRWvqoNQFtkq
+         kp9UrtYujkG7kgDFqYA7IFFmxU3+quOpolRSJlg23EFexhXydY693HYdAUlMO//4oonj
+         nNrt0Pdi+hEoMi3UezAHUFV4eqnZWQ5NGDLu4gmJH6HjGfUf3D6RDESkXqnkHsdQ3uj2
+         OcKQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1720795892; x=1721400692;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ky4WPChWhIsghhn+5sM672ORVDTwy7ezIsC/I8SFrEU=;
-        b=NrzLg08J2riozdkoUGRQVxJEY85h4XzReR7mHHZtdtmtYausNy+clgW+l0E0mMufHU
-         ps4GVkvtQBQxd29wRyMaQgV4PWzwcgMDBkzV5yTnsN6ftn1iCNR3rCXWZ2R5ZTVQeAlZ
-         y+W9ZOpnolVNyejYB/+0xsCZH6E56/enJ62Fzl+UFrrJdOyb+1MR9Sd2KW7bAh9y7hC/
-         V3FlMyN85V9to8FJigQH+796+uWirIT58Iyrvj1q7N8fYj7vOjYVp4Degtl7mVIlBkdn
-         /j/mBXKQyGmpBQGxwbDswLhlQuHEm8hMho8RtYeZpCrLZiEzKR/pSHoqQIC3vNYG3Wt4
-         AuDw==
-X-Forwarded-Encrypted: i=1; AJvYcCUoU5c0XL970P3C3UoUaLmk4k8Dy+GWc92sZlfNiVkN/iA09FTXdOqXT7IXWphjWxVpp36Qn/u+D2uhIrC69VRo6JS7c0j5HSI=
-X-Gm-Message-State: AOJu0YzFUVCY/mXnEFUaXoT/aO9406pKejjswaf1DQueVNbQYJGjybCE
-	hGRz7DSQj0B2BlEMW/xzRzl2IdH6DHEXsPKWpzna2wqDOZdr7VOqbkD/CgfvYicSPCnse752+3F
-	8
-X-Google-Smtp-Source: AGHT+IE2vju82VfTfF5Xrs+6WtBUZDSZ/EBYY7uH6eZlCo/ZT85PKn9f8YK9Az7B5XqPdDfnn4EbmA==
-X-Received: by 2002:a05:6512:3a8a:b0:52e:954d:359a with SMTP id 2adb3069b0e04-52eb99d1eabmr8889644e87.43.1720795892533;
-        Fri, 12 Jul 2024 07:51:32 -0700 (PDT)
-Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-52eb8e3454bsm1316600e87.61.2024.07.12.07.51.31
+        d=1e100.net; s=20230601; t=1720796349; x=1721401149;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=27BnZNX+yLuK2i/gV97YiqGwQq9nRR1z4pbXBmit8bk=;
+        b=sN0oPiIXB87MClVFHuHTGSrLcwQ4CW66QFTEbj9cPCoGmwxPncMMFLOhcCqYvT4LDJ
+         kZlrbFI8cbLl/H0NjD83RMofLpOAqBmPRljfixawUYCEOXOn/5xknYJuGgumuKaVStvW
+         dRecRMaxYZcFAcoulq4au7FZ5M3ZsaZYyj9XnRL0vmxy+TxoneWsY1bGfdDCTx+GERok
+         Como8Ti4GFDXbrnzRs08NsT9cAtjNOp6q9hWBrL/kdgtUgPgXZwa0nWHHgyUSRLoPuUD
+         l86FG3j8uKN65CDml9FeJ2MyV560av00ef5DdU+N+MEKMkSHH+Y4M5MDLkOwlvSMjs9V
+         Sckw==
+X-Forwarded-Encrypted: i=1; AJvYcCXCnBAIlFXhJojxNQa6ucfzcaOnMZDIP2M6W+2pCKsXur1z9qT8zWdhwhrBGs2/Yac34QeTxKUWp7Z0xx0msAH3jKMGktGiuHk=
+X-Gm-Message-State: AOJu0YwBkVFpahceZqKpGtXRgxdEIHTtfvfkLfokf5NO9bmTRhiO58Qy
+	LQEsIoWmgFGad4aONta/hVcJy7+AsUDdefW6N68bSDGkkgNvANnlKFthsiQDXpws+qLrqNotKj4
+	o
+X-Google-Smtp-Source: AGHT+IEySt5aniXAFHyit5L3MDRAKT8uumq8Iirp+NMgW+MLVMKSDjwcdEa4X0nZ0XaR5xE8qRd8mA==
+X-Received: by 2002:a05:6870:55cc:b0:260:3fb2:b718 with SMTP id 586e51a60fabf-2603fb32ba6mr4193638fac.41.1720796348681;
+        Fri, 12 Jul 2024 07:59:08 -0700 (PDT)
+Received: from localhost ([2603:8080:b800:f700::17c0])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-25eaa0783dbsm2254075fac.32.2024.07.12.07.59.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Jul 2024 07:51:32 -0700 (PDT)
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Linus <torvalds@linux-foundation.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>,
-	linux-arm-kernel@lists.infradead.org
-Subject: [GIT PULL] pmdomain fixes for v6.10-rc8
-Date: Fri, 12 Jul 2024 16:51:31 +0200
-Message-Id: <20240712145131.169802-1-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.34.1
+        Fri, 12 Jul 2024 07:59:08 -0700 (PDT)
+Date: Fri, 12 Jul 2024 09:59:06 -0500
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Subject: Re: [PATCH] power: sequencing: fix NULL-pointer dereference in error
+ path
+Message-ID: <7d7dcc46-2042-439b-a744-49ae4b507839@suswa.mountain>
+References: <20240712144546.222119-1-brgl@bgdev.pl>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240712144546.222119-1-brgl@bgdev.pl>
 
-Hi Linus,
+On Fri, Jul 12, 2024 at 04:45:46PM +0200, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> 
+> We may call pwrseq_target_free() on a target without the final unit
+> assigned yet. In this case pwrseq_unit_put() will dereference
+> a NULL-pointer. Add a check to the latter function.
+> 
+> Fixes: 249ebf3f65f8 ("power: sequencing: implement the pwrseq core")
+> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+> Closes: https://lore.kernel.org/linux-pm/62a3531e-9927-40f8-b587-254a2dfa47ef@stanley.mountain/
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> ---
+>  drivers/power/sequencing/core.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/sequencing/core.c b/drivers/power/sequencing/core.c
+> index 9c32b07a55e7..fe07100e4b33 100644
+> --- a/drivers/power/sequencing/core.c
+> +++ b/drivers/power/sequencing/core.c
+> @@ -119,7 +119,8 @@ static void pwrseq_unit_release(struct kref *ref);
+>  
+>  static void pwrseq_unit_put(struct pwrseq_unit *unit)
+>  {
+> -	kref_put(&unit->ref, pwrseq_unit_release);
+> +	if (unit)
 
-Here's a PR with a pmdomain fixe intended for v6.10-rc8. Details about
-the highlights are as usual found in the signed tag.
+I was wondering where you would put the check.  But it needs to be:
 
-Please pull this in!
+	if (!IS_ERR_OR_NULL(unit))
 
-Kind regards
-Ulf Hansson
+regards,
+dan carpenter
 
-
-The following changes since commit c3f38fa61af77b49866b006939479069cd451173:
-
-  Linux 6.10-rc2 (2024-06-02 15:44:56 -0700)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v6.10-rc2
-
-for you to fetch changes up to ddab91f4b2de5c5b46e312a90107d9353087d8ea:
-
-  pmdomain: qcom: rpmhpd: Skip retention level for Power Domains (2024-07-09 12:47:46 +0200)
-
-----------------------------------------------------------------
-pmdomain providers:
- - qcom: Skip retention level for rpmhpd's
-
-----------------------------------------------------------------
-Taniya Das (1):
-      pmdomain: qcom: rpmhpd: Skip retention level for Power Domains
-
- drivers/pmdomain/qcom/rpmhpd.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+> +		kref_put(&unit->ref, pwrseq_unit_release);
+>  }
+>  
+>  /**
+> -- 
+> 2.43.0
