@@ -1,30 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36ED014F9EE;
-	Fri, 26 Jul 2024 22:39:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5004C15099D;
+	Fri, 26 Jul 2024 22:39:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722033557; cv=none; b=Y2lR/tZTDPEh7oBGJcjlh8xcXurmOIYw1/tRm69uL8P9DZCh4hX3C6Ir8eyF4w6dj0H+IepYsyPC0/BP1yDA7g+clj6Nf7errOd1eThBQP9C6RnElPzX8Id+rsK1lDi+Gzaif7GNXN5Kv6XdHZCo91K8B0UuJ0UX2/bxio41xYk=
+	t=1722033557; cv=none; b=MYJPcbva8iM+UiVJ8Qwn9JFeRV5S6YdPNVHgHjLJIdY/QZLTK3YekBePgfsFM+8zs8i55NobwhTLkbBWHwwUHClBZ22wjfv9MQX/Ht8XiUUzbj1iFip+bc3JNgx8eNZrWXBQVzevL9jiW2VXO8WaA3EPt1ZhE21xNzOgmfH91UM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1722033557; c=relaxed/simple;
-	bh=zeojFsQiHDX4XmNxWccT0AR/xon04OLn1RGYQ8D2Tas=;
+	bh=Bu5UslRBZq44O0sqBkTIKfN+TgpcyydLs8owUsPUz8w=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=dQHh7rEtyLWW8sQN828dM+ld+TfkDBM/ZCz0SrLztLy3sw5odcxAErFL/TqhlcH73XdN0flmJjFcDgNvjLPZiUWEilYDCDp0nYkkJVl4KuknLsFfQmpd8zPpAAV691iRj+3GT+Dw2KcqYtA+Om5JNNNwkzTRXgBXtrk3kQDV1JU=
+	 MIME-Version:Content-Type; b=M466wzzR+rlZh/3fyC+S1Q3r5y9AbOBEW/QzeLu4pUzOfJtmmwD4dSrKIRb4HQRZ2VcbfqYsNZZ6go0LCjNcVeZEKW6iK0VSWTNn8EmtpybDI3NAISuEYOczkN/B3mGdV38MLq1bUNOnVn2n2Mz44gch1h6nIzSdQfS4QxEAkzc=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E803CC4AF0B;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7141C32782;
 	Fri, 26 Jul 2024 22:39:16 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 67D5E106097F; Sat, 27 Jul 2024 00:39:14 +0200 (CEST)
+	id 6CB721060980; Sat, 27 Jul 2024 00:39:14 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>
-Cc: Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, 
+To: Sebastian Reichel <sre@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, 
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-msm@vger.kernel.org, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  stable@vger.kernel.org
-In-Reply-To: <20240717200333.56669-1-hdegoede@redhat.com>
-References: <20240717200333.56669-1-hdegoede@redhat.com>
-Subject: Re: [PATCH 1/2] power: supply: axp288_charger: Fix
- constant_charge_voltage writes
-Message-Id: <172203355435.246603.3475606894803303467.b4-ty@collabora.com>
+In-Reply-To: <20240715-topic-sm8x50-upstream-fix-battmgr-temp-tz-warn-v1-1-16e842ccead7@linaro.org>
+References: <20240715-topic-sm8x50-upstream-fix-battmgr-temp-tz-warn-v1-1-16e842ccead7@linaro.org>
+Subject: Re: [PATCH] power: supply: qcom_battmgr: return EAGAIN when
+ firmware service is not up
+Message-Id: <172203355443.246603.13662219731890792931.b4-ty@collabora.com>
 Date: Sat, 27 Jul 2024 00:39:14 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -37,22 +41,23 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.13.0
 
 
-On Wed, 17 Jul 2024 22:03:32 +0200, Hans de Goede wrote:
-> info->max_cv is in millivolts, divide the microvolt value being written
-> to constant_charge_voltage by 1000 *before* clamping it to info->max_cv.
+On Mon, 15 Jul 2024 14:57:06 +0200, Neil Armstrong wrote:
+> The driver returns -ENODEV when the firmware battmrg service hasn't
+> started yet, while per-se -ENODEV is fine, we usually use -EAGAIN to
+> tell the user to retry again later. And the power supply core uses
+> -EGAIN when the device isn't initialized, let's use the same return.
 > 
-> Before this fix the code always tried to set constant_charge_voltage
-> to max_cv / 1000 = 4 millivolt, which ends up in setting it to 4.1V
-> which is the lowest supported value.
+> This notably causes an infinite spam of:
+> thermal thermal_zoneXX: failed to read out thermal zone (-19)
+> because the thermal core doesn't understand -ENODEV, but only
+> considers -EAGAIN as a non-fatal error.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/2] power: supply: axp288_charger: Fix constant_charge_voltage writes
-      commit: b34ce4a59cfe9cd0d6f870e6408e8ec88a964585
-[2/2] power: supply: axp288_charger: Round constant_charge_voltage writes down
-      commit: 81af7f2342d162e24ac820c10e68684d9f927663
+[1/1] power: supply: qcom_battmgr: return EAGAIN when firmware service is not up
+      commit: bf9d5cb588755ee41ac12a8976dccf44ae18281b
 
 Best regards,
 -- 
