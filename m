@@ -1,71 +1,110 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f182.google.com (mail-oi1-f182.google.com [209.85.167.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56EF4186E46;
-	Mon, 29 Jul 2024 16:27:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88B4A15ECFD
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2024 16:35:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722270470; cv=none; b=PV89FMfRGWKvYTdviz/x5/iQhi24Q3WOYeKpxQeOVl4qMSci8TveXPLZyMKwxKpDgf9TttOcwPlB7AOeQkoFiyxeRxHRJI2zFaE+6ASi3NgBZZXCX8G5Ro+3QbYtoUwTyRp5F3LAaa5aT/FcWOFjpjpk+PFh4cCckY9HiHPwyAQ=
+	t=1722270916; cv=none; b=Cko1OWrMvXd2+yg1Gcv26SkjKzw7lpnh0qKs1IagbhlXnO3nbKEglub4RT7GFkM1QeErwXgtNkwuhuZBCkoy5n98/K6bNsK9oJfOSRuXiNsgrvYVR5ejinp2cn+gdwheCnpljiwWxNkFMiHJfxBhlLAfeuB7gqTPTsBja1ntB7Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722270470; c=relaxed/simple;
-	bh=XXKQhSlrPr0msb++fBrVIUxJyyToBAblG0wxzgLhInU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fM6GsJMhg8sHvkhcDGwFLs7UDy3fH4yrR8lVtfijRdWyOWXy5iDEdYG5TL8pGe7IQElddsgQsAOm7403UZtZvUbyzpPKXMf2E1iTScrAbosR2qvUgu4+7le2gV53nchXocy38HjIPdPOGdsaOAQB0Ro1c9JwRbyiqB+gt39PdQQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=fYNcVWsC reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1722270916; c=relaxed/simple;
+	bh=YivJhrS46E/GMBdB3MPzAIrHwOVuwiVqrlMsjU1mbgE=;
+	h=Message-ID:Date:MIME-Version:To:From:Subject:Content-Type; b=E91HiXKnUpIe+h6Fz3AB9dmF2zZeaNH3x3SuzprY0opCZsKV5MlmqXOeWe7McEf10U09oZlswUa2g/6py6EyTagBoD7o/KjJluUgm14rfW7f5ukXlLV5JMT5vu3M3YEMDMawXgtruG2rmzv8p5raq/dVIfRdw9ne50w6N2qzWOo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Nh/61DJg; arc=none smtp.client-ip=209.85.167.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="fYNcVWsC"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 071fa75fd5c660ca; Mon, 29 Jul 2024 18:27:46 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id D270677357F;
-	Mon, 29 Jul 2024 18:27:45 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1722270466;
-	bh=XXKQhSlrPr0msb++fBrVIUxJyyToBAblG0wxzgLhInU=;
-	h=From:To:Cc:Subject:Date;
-	b=fYNcVWsCJDfsN1FR2rokihx1N8gzyvqgRFcuVg8XaxbqnQYyZniwr/v2U3cHEy7hk
-	 0FdI8z81YQ67sNU4uIbgaLOOjFp9xltKg7nxRrxbd0mScmstGXO6PqHqXmimblJBYw
-	 /hIzoHjGmXm2sY0HbX/76GWr73sQOgSkkyc7T9uCy4B9m81cwWu7WI/jBq2GbBanBU
-	 e2+2L/Wp6T6Vb7g/+K3KPL9Cc5LYhGhue4i+AuVL9dcTsjSsPHFeyocav6gNnW92As
-	 qv/D2lIZR7kiEMpDA3Nwebb707jW5h4ZdiHK3Sa2gUWRZKzeQGqQb4OAam7Kd7RquB
-	 xzehvBnf0ONug==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>
-Subject:
- [PATCH v1 0/3] thermal: sysfs: Get to trip attributes via the attribute
- argument of show/store
-Date: Mon, 29 Jul 2024 18:24:02 +0200
-Message-ID: <1960840.taCxCBeP46@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Nh/61DJg"
+Received: by mail-oi1-f182.google.com with SMTP id 5614622812f47-3d9e13ef9aaso2442784b6e.1
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2024 09:35:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1722270913; x=1722875713; darn=vger.kernel.org;
+        h=content-transfer-encoding:subject:from:to:content-language
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=F7/CXCNfNGG1B7dfzfqv7Kqbq6aGcDQ7TbuaG3In5pk=;
+        b=Nh/61DJgmevi3wt8eu1Jo1KhCd9lwOb7DGfzbG0eIbuj3B2evMsBCt8qz9U4Xd3V3P
+         2RaQGk2wVbcnxNRu0QykqTmaLh+g9j1md+jwwIU0frTXhFQJO2iY7uI3tjQV0f8cyCyg
+         lC6No7AgKQ8IwQ7ZESwV4B9Eljow7kLu+pA9cTV7RGz9eC7lHfjjGixQSXN/tQoUneAF
+         WCLo67q0A3GEiQ2kYDUWPVlfojQaZn4YtF36lkUbPG4Lot/MweKihaUCsYPhl5YBOevi
+         XmkS+pE5T/GfFuXkS/pbJHMLyVHu3QrgjchbMMkHCrBE03mI+m25L13u2L/xpWJhJv63
+         HNhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1722270913; x=1722875713;
+        h=content-transfer-encoding:subject:from:to:content-language
+         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=F7/CXCNfNGG1B7dfzfqv7Kqbq6aGcDQ7TbuaG3In5pk=;
+        b=XqzAZVd2ESzhtdl/vKWPqWcZhZJJM0+2zGNTblowQ9vx8QrV3fipGU+UTg+GaiXDFx
+         eW5WvxjroMRQs5xF9oPvMlv3y4q3dp+adYYl0YSIlfvfSJxmaDyI2GzC+r55/IbSG4Em
+         /jLjzI3YN7F4efHIf6Hj9U4+arQ2HoZ8R3WUOWuaWngoNFmldMfmphG9l/wgejgE/5YM
+         ZFVfffHQo3GWxEqDEh4H/RieO/S4YgJougLunCSPL6UsDfwV5ypfSNPgjb9kPfxQaGqX
+         GsLmNmXwd8L+MiKkAT/135vyop1bNR4sYHGnW1r3ALXFhED0Cwzkj0iAzk9vMBf6dwD1
+         uYHw==
+X-Gm-Message-State: AOJu0Ywd0bC/xf+P3vdNFBNTqDGjkhDSI/vbMiXrumXTGJJvqVGfjY2a
+	vZA6E40BtYixn6CYNvpIuwGo3SAs16X8S9opX9kWpwEMeUtoyl6lFd2erV1S
+X-Google-Smtp-Source: AGHT+IGnnGNHZwUnMsSqRJbWQbOFqHS9kJPL2JJmlAF6P44fTPU/YsGyY77kv18UJ7kv2ZXnD/MycQ==
+X-Received: by 2002:a05:6808:ecb:b0:3da:a6b7:47f3 with SMTP id 5614622812f47-3db2389b4a4mr12539830b6e.1.1722270913385;
+        Mon, 29 Jul 2024 09:35:13 -0700 (PDT)
+Received: from ?IPV6:2401:4900:1c7e:e419:4505:26ee:7c64:b4ed? ([2401:4900:1c7e:e419:4505:26ee:7c64:b4ed])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7a9f8753ce7sm6337317a12.41.2024.07.29.09.35.12
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 29 Jul 2024 09:35:13 -0700 (PDT)
+Message-ID: <872ea739-632a-4344-9e3d-49f8fb846f8a@gmail.com>
+Date: Mon, 29 Jul 2024 22:05:10 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjedvgddutddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffffffekgfehheffleetieevfeefvefhleetjedvvdeijeejledvieehueevueffnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepgedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: linux-pm@vger.kernel.org
+From: Anish Rashinkar <rashinkar.anish@gmail.com>
+Subject: Need help setting asynchronous CPU frequencies.
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Hi Everyone,
-
-This series reworks the trip point sysfs interface to get to trips via the
-attribute argument of show/store instead of using the attribute name to get
-a trip ID and look up a trip using it.
-
-It also adds a small cleanup (the last patch) for a good measure.
-
-Thanks!
+Sorry, I am really not sure if this is the correct place to ask this, 
+but I have tried almost everywhere but to no success.
 
 
+In short, one of my cores in my processor is defective/degraded. It 
+can't run at max frequency or else it will crash. Either I have to lock 
+down the frequency of all the cores to a lower value, or set that core 
+offline.
 
+Access to turbo ratio limits is restricted by the firmware, or otherwise 
+it would have been easy to set the working cores to max frequency while 
+keeping the defective core to a lower speed. Voltage controls are also 
+locked, which could have fixed the problem, and I have already put a lot 
+of time trying to gain the access, but it's too risky (firmware modding).
+
+It's an HP Elitebook 840 G5 laptop, with an Intel Core i5 8350U. 4 cores 
+with 8 logical threads, It boosts up to 3600 MHz. I have to lock the 
+whole processor frequency to around 3 - 3.1 GHz, but it is getting worse 
+and might crash on that as well. Or if I choose to disable the core, I 
+have to disable CPUs 2 and 6, which is the third core. I have noticed 
+that disabling idle states (C states) gives me a bit more stability so I 
+can probably raise the frequency a bit more.
+
+All I want to know is if there is a way to run the 3 cores at max 
+frequency, while running that one core at a lower 3 GHz frequency?
+
+All my attempts included trying to get the userspace governor working, 
+but it is a big mess. Using tools like cpupower or cpufreq 
+(cpufrequtils), I can't load the userspace governor directly. The 
+userspace governor loads if I disable intel_pstate or put it to passive 
+mode, but it doesn't seem to have any effect. After loading it, any 
+frequency I set using cpupower/cpufreq doesn't apply. I also tried with 
+intel_pstate hwp on/off. And I of course tried manually choosing the 
+core in cpufreq but either the changes don't apply, or it gets applied 
+to all cores. I also kind of tried manually setting the frequencies in 
+the kernel files (/sys and those), but they didn't really work. I also 
+tried "intel_pstate=per_cpu_perf_limits" kernel parameter, but that 
+didn't really help (I couldn't get the intel_pstate folder under all 
+CPUs, and instead I still got it under .../cpu/ like always).
+
+I am currently running Ubuntu 24.04 LTS.
