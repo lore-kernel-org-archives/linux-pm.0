@@ -1,51 +1,51 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC3EB16C874;
-	Mon, 29 Jul 2024 17:12:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE6D417F394;
+	Mon, 29 Jul 2024 17:13:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722273182; cv=none; b=H1gOr3c99INYSSChKDNYNelQd2JQP2rqquHaPDOhk/ST5UqZZzFgToet6O3wFSkf8o0eYPF6o1uioSyiIVnn8sDO5a+a8zS4lHNeN/LzKNru1m937pce/djzJVW0A1IHLMBQQF4RUVwwpVLl5IhI+AHvW7i7Zy9DE6eg8O6WU4E=
+	t=1722273182; cv=none; b=TA8QcFxEErAqRMLZJo3QRyI7DyN1gRgsBSU9UGdEaVutEVbCoby7vixvGrP/gJrJsYOCSlYCxYgGRTls305ZkLKXRMmhF8D95m64O7QKZQvR3eZ1biC3humiuxOksK5ZjDRItEqkXC/FyN3ul9EBgAk/xUbP9f+elk5DuV0W5GA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1722273182; c=relaxed/simple;
-	bh=3tq0jW6brYY3/HGAO1RtDy2uMyLGqloBMMnB3QkGNgY=;
+	bh=W9fxztWsY8J/qfCGKxRWZcy5TPOKWcH2KjAkhuUjsuU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ZTzSFwr7Fm/q9tEuvuapZAFKNWB/XLKs3BMfGT1XnX6muYAKJAfvysZT2ZYoMz58jQeOpU2f+gbQBuY7qMKGSaqs5TF7EfeQ2ZV/K1BUCOC6Lw8Fe4m2+lbXAaubPVA2Qr+Y6UEDIppIvexPfvJ28he3JV5t/skuB0yaUXACh9M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=YXFoVlyK reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=N+ROkmsAVuWbpIEhFFWWBRj5WjSipBTGEmLc8prOZdqyLeBwUbLf4waO/f9qx/fb0OyDyGRHKXi8AXVzQ2ANkywRL0k9I4OcBYsOoPXjv6Xrqa0lsChJ2zuFFnc3I8cPGybAyyb0PN4UqBCwniu3RH5TBDRRhnKdq+C628jCPo0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ANtMhLSo reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="YXFoVlyK"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ANtMhLSo"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id abcc63eda9c4f667; Mon, 29 Jul 2024 18:12:58 +0200
+ id 3d90b8d4e605a3e6; Mon, 29 Jul 2024 18:12:59 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 11A4077357F;
-	Mon, 29 Jul 2024 18:12:58 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 2233E77357F;
+	Mon, 29 Jul 2024 18:12:59 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1722269578;
-	bh=3tq0jW6brYY3/HGAO1RtDy2uMyLGqloBMMnB3QkGNgY=;
+	s=dkim; t=1722269579;
+	bh=W9fxztWsY8J/qfCGKxRWZcy5TPOKWcH2KjAkhuUjsuU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=YXFoVlyKpzjZYTlrKoOKzzPrVe7z4+oLi3Vb3NRMf+EvemadDeVVwUo1MVMMMjPKs
-	 vwfudqmVRDi0QpXi7DWtG8jfA5JQG6vWgak3y7BCj3u2rBse/QTvADCcQnOossQdit
-	 Gk6MlKlv38VBCWZ5GYLwyEQv5R2H6GonO1Wj+ggtlvETpN1gOQS8kRwAaCtqLtBMQa
-	 3BDSDSyAY8FJZhJdpbz5VJa63+VY7fkzWnp0yKjz+p/qHfCJFFEOiURCWHWcycGWNl
-	 W8BETbU++tMm7uTvaoXMMnvBgR/FRhxJP6lX65mApf/dAcgw9zWr9gD/lt2CeQM0lS
-	 fU+4fFK2SJcCA==
+	b=ANtMhLSoPiWkIt2DQJy6WWHeSS/ix0qM4jikJrFVYExarcGtv2NMTrNiB3fn1qZ3H
+	 fnDmAWEpKmola6w7sodaGUQNmvsX9eDCdoAdz55c0JxzXxKxXv4gq4LAJgRfgYa19v
+	 rVUHgj8HsZ3oYy6cy4yI7hNKhc3EnWfCTV6ikcgSvqMJHL4yHZv9k8Ckf1thU6TRS3
+	 +4LYZIB/kqOYBZ3cPDyt4hZcOxDdhGyWBLjFHobGQKB+YNxdd7OhjNUAk51eWCTwkT
+	 UbMGWoTrYZ53hQx+QPu5ZOyUQcWnuvRwVqrjeUeoL4yVhr6KAjLm6fOjOQU+2iElOk
+	 8YnQ0A5grk3Ug==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
  LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org
+ Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>,
+ linux-arm-msm@vger.kernel.org
 Subject:
- [RESEND][PATCH v1 4/8] thermal: tegra: Introduce struct trip_temps for
- critical and hot trips
-Date: Mon, 29 Jul 2024 18:02:22 +0200
-Message-ID: <9333090.CDJkKcVGEf@rjwysocki.net>
+ [RESEND][PATCH v1 3/8] thermal: qcom: Use thermal_zone_get_crit_temp() in
+ qpnp_tm_init()
+Date: Mon, 29 Jul 2024 17:58:56 +0200
+Message-ID: <7712228.EvYhyI6sBW@rjwysocki.net>
 In-Reply-To: <2211925.irdbgypaU6@rjwysocki.net>
 References: <2211925.irdbgypaU6@rjwysocki.net>
 Precedence: bulk
@@ -59,19 +59,15 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjedvgdellecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedunecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepthhhihgvrhhrhidrrhgvughinhhgsehgmhgrihhlrdgtohhmpdhrtghpthhtohepjhhonhgrthhhrghnhhesnhhvihguihgrrdgtohhmpdhrtghpthhtoheplhhinhhugidqthgvghhrrgesvhhgvghrrdhkvghrnhgvlhdrohhrgh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjedvgdellecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheprghmihhtkheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepthhhrghrrgdrghhophhinhgrthhhsehgmhgrihhlrdgtohhmpdhrtghpthhtoheplhhinhhugidqrghrmhdqmhhsmhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Introduce a helper structure, struct trip_temps, for storing the
-temperatures of the critical and hot trip points.
-
-This helps to make the code in tegra_tsensor_get_hw_channel_trips()
-somewhat cleaner and will be useful subsequently in eliminating
-iteration over trip indices from the driver.
-
-No intentional functional impact.
+Modify qpnp_tm_init() to use thermal_zone_get_crit_temp() to get the
+critical trip temperature instead of iterating over trip indices and
+using thermal_zone_get_trip() to get a struct thermal_trip pointer
+from a trip index until it finds the critical one.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
@@ -79,107 +75,49 @@ Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 This patch does not depend on the previous patch(es) in the series.
 
 ---
- drivers/thermal/tegra/tegra30-tsensor.c |   34 ++++++++++++++++++--------------
- 1 file changed, 20 insertions(+), 14 deletions(-)
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c |   22 +++-------------------
+ 1 file changed, 3 insertions(+), 19 deletions(-)
 
-Index: linux-pm/drivers/thermal/tegra/tegra30-tsensor.c
+Index: linux-pm/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/tegra/tegra30-tsensor.c
-+++ linux-pm/drivers/thermal/tegra/tegra30-tsensor.c
-@@ -303,8 +303,13 @@ stop_channel:
- 	return 0;
+--- linux-pm.orig/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
++++ linux-pm/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+@@ -291,24 +291,6 @@ static irqreturn_t qpnp_tm_isr(int irq,
+ 	return IRQ_HANDLED;
  }
  
-+struct trip_temps {
-+	int hot_trip;
-+	int crit_trip;
-+};
-+
- static void tegra_tsensor_get_hw_channel_trips(struct thermal_zone_device *tzd,
--					       int *hot_trip, int *crit_trip)
-+					       struct trip_temps *temps)
- {
- 	unsigned int i;
+-static int qpnp_tm_get_critical_trip_temp(struct qpnp_tm_chip *chip)
+-{
+-	struct thermal_trip trip;
+-	int i, ret;
+-
+-	for (i = 0; i < thermal_zone_get_num_trips(chip->tz_dev); i++) {
+-
+-		ret = thermal_zone_get_trip(chip->tz_dev, i, &trip);
+-		if (ret)
+-			continue;
+-
+-		if (trip.type == THERMAL_TRIP_CRITICAL)
+-			return trip.temperature;
+-	}
+-
+-	return THERMAL_TEMP_INVALID;
+-}
+-
+ /*
+  * This function initializes the internal temp value based on only the
+  * current thermal stage and threshold. Setup threshold control and
+@@ -343,7 +325,9 @@ static int qpnp_tm_init(struct qpnp_tm_c
  
-@@ -312,8 +317,8 @@ static void tegra_tsensor_get_hw_channel
- 	 * 90C is the maximal critical temperature of all Tegra30 SoC variants,
- 	 * use it for the default trip if unspecified in a device-tree.
- 	 */
--	*hot_trip  = 85000;
--	*crit_trip = 90000;
-+	temps->hot_trip  = 85000;
-+	temps->crit_trip = 90000;
+ 	mutex_unlock(&chip->lock);
  
- 	for (i = 0; i < thermal_zone_get_num_trips(tzd); i++) {
+-	crit_temp = qpnp_tm_get_critical_trip_temp(chip);
++	ret = thermal_zone_get_crit_temp(chip->tz_dev, &crit_temp);
++	if (ret)
++		crit_temp = THERMAL_TEMP_INVALID;
  
-@@ -322,14 +327,14 @@ static void tegra_tsensor_get_hw_channel
- 		thermal_zone_get_trip(tzd, i, &trip);
+ 	mutex_lock(&chip->lock);
  
- 		if (trip.type == THERMAL_TRIP_HOT)
--			*hot_trip = trip.temperature;
-+			temps->hot_trip = trip.temperature;
- 
- 		if (trip.type == THERMAL_TRIP_CRITICAL)
--			*crit_trip = trip.temperature;
-+			temps->crit_trip = trip.temperature;
- 	}
- 
- 	/* clamp hardware trips to the calibration limits */
--	*hot_trip = clamp(*hot_trip, 25000, 90000);
-+	temps->hot_trip = clamp(temps->hot_trip, 25000, 90000);
- 
- 	/*
- 	 * Kernel will perform a normal system shut down if it will
-@@ -338,7 +343,7 @@ static void tegra_tsensor_get_hw_channel
- 	 * shut down gracefully before sending signal to the Power
- 	 * Management controller.
- 	 */
--	*crit_trip = clamp(*crit_trip + 5000, 25000, 90000);
-+	temps->crit_trip = clamp(temps->crit_trip + 5000, 25000, 90000);
- }
- 
- static int tegra_tsensor_enable_hw_channel(const struct tegra_tsensor *ts,
-@@ -346,7 +351,8 @@ static int tegra_tsensor_enable_hw_chann
- {
- 	const struct tegra_tsensor_channel *tsc = &ts->ch[id];
- 	struct thermal_zone_device *tzd = tsc->tzd;
--	int err, hot_trip = 0, crit_trip = 0;
-+	struct trip_temps temps = { 0 };
-+	int err;
- 	u32 val;
- 
- 	if (!tzd) {
-@@ -357,24 +363,24 @@ static int tegra_tsensor_enable_hw_chann
- 		return 0;
- 	}
- 
--	tegra_tsensor_get_hw_channel_trips(tzd, &hot_trip, &crit_trip);
-+	tegra_tsensor_get_hw_channel_trips(tzd, &temps);
- 
- 	dev_info_once(ts->dev, "ch%u: PMC emergency shutdown trip set to %dC\n",
--		      id, DIV_ROUND_CLOSEST(crit_trip, 1000));
-+		      id, DIV_ROUND_CLOSEST(temps.crit_trip, 1000));
- 
--	hot_trip  = tegra_tsensor_temp_to_counter(ts, hot_trip);
--	crit_trip = tegra_tsensor_temp_to_counter(ts, crit_trip);
-+	temps.hot_trip  = tegra_tsensor_temp_to_counter(ts, temps.hot_trip);
-+	temps.crit_trip = tegra_tsensor_temp_to_counter(ts, temps.crit_trip);
- 
- 	/* program LEVEL2 counter threshold */
- 	val = readl_relaxed(tsc->regs + TSENSOR_SENSOR0_CONFIG1);
- 	val &= ~TSENSOR_SENSOR0_CONFIG1_TH2;
--	val |= FIELD_PREP(TSENSOR_SENSOR0_CONFIG1_TH2, hot_trip);
-+	val |= FIELD_PREP(TSENSOR_SENSOR0_CONFIG1_TH2, temps.hot_trip);
- 	writel_relaxed(val, tsc->regs + TSENSOR_SENSOR0_CONFIG1);
- 
- 	/* program LEVEL3 counter threshold */
- 	val = readl_relaxed(tsc->regs + TSENSOR_SENSOR0_CONFIG2);
- 	val &= ~TSENSOR_SENSOR0_CONFIG2_TH3;
--	val |= FIELD_PREP(TSENSOR_SENSOR0_CONFIG2_TH3, crit_trip);
-+	val |= FIELD_PREP(TSENSOR_SENSOR0_CONFIG2_TH3, temps.crit_trip);
- 	writel_relaxed(val, tsc->regs + TSENSOR_SENSOR0_CONFIG2);
- 
- 	/*
 
 
 
