@@ -1,42 +1,65 @@
-Received: from mx1.zhaoxin.com (MX1.ZHAOXIN.COM [210.0.225.12])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F32013A869
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2024 09:14:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.0.225.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A7CD78C9A
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2024 10:03:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722244500; cv=none; b=QN0CHaKBxFdbIBs8MSUrrZqcAGyywP0HN1IATs/GOCtgHNtqQxsBFKQOuC3bLr1EAwwOpn82IXWUjqZQYIZEhQ+OFuILwZZ1LGA3zTBy/Cu18xwV7hX99ja2USTq2gfkrlxFcnCka9/EGmZuzMhTzJqQLIo6s4J0l2GlKA3Nl8Y=
+	t=1722247389; cv=none; b=lhU/BxGmbUudtFFqxq0RUuFNjSqgoZjIVOJT0Chi2tySjnlDA3a0sj6qiGY4Em+Opr0qq3xV+SNE5DYmFSo7XHSxI2pyhq7XeuAT1cQy8ky504xMu0Kc4a/X2tExvpifa0wKKkNe19qlj1CFzfzRPKH2Y4MXckVai0emYP13nRw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722244500; c=relaxed/simple;
-	bh=DVd6J0b2Rm9wNLScvbIT5tcsqZC6MS/5YiCCLp9tjfQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ss7Gc6KqfFyNWnMDcASDunrfnsansWhhSHTM9AI8f3L4uUCNZDQid9/0AKNaj6R7wUiggGZykMIO29PwiwA4/CRq2NeDzvCx2SrZKLSNfazFy3LNUqve/bUNEgO4O2S3aQfebyza2S4icYtv0Xzg7ogc5Hi+26+48Y5MOMRRa2A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com; spf=pass smtp.mailfrom=zhaoxin.com; arc=none smtp.client-ip=210.0.225.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zhaoxin.com
-X-ASG-Debug-ID: 1722244486-086e23393c4dc50001-MQbzy6
-Received: from ZXSHMBX2.zhaoxin.com (ZXSHMBX2.zhaoxin.com [10.28.252.164]) by mx1.zhaoxin.com with ESMTP id hAFHemZNY407UGy9 (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO); Mon, 29 Jul 2024 17:14:46 +0800 (CST)
-X-Barracuda-Envelope-From: TonyWWang-oc@zhaoxin.com
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.164
-Received: from zxbjmbx1.zhaoxin.com (10.29.252.163) by ZXSHMBX2.zhaoxin.com
- (10.28.252.164) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Mon, 29 Jul
- 2024 17:14:46 +0800
-Received: from ZXSHMBX1.zhaoxin.com (10.28.252.163) by zxbjmbx1.zhaoxin.com
- (10.29.252.163) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Mon, 29 Jul
- 2024 17:14:45 +0800
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.164
-Received: from ZXSHMBX1.zhaoxin.com ([fe80::dcd1:d46d:263:77e]) by
- ZXSHMBX1.zhaoxin.com ([fe80::dcd1:d46d:263:77e%7]) with mapi id
- 15.01.2507.039; Mon, 29 Jul 2024 17:14:45 +0800
-X-Barracuda-RBL-Trusted-Forwarder: 10.29.252.163
-Received: from [10.32.57.247] (10.32.57.247) by ZXBJMBX03.zhaoxin.com
- (10.29.252.7) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Fri, 26 Jul
- 2024 19:35:09 +0800
-Message-ID: <529ae3fd-7392-4470-9404-552cf5a5494e@zhaoxin.com>
-Date: Fri, 26 Jul 2024 19:35:03 +0800
+	s=arc-20240116; t=1722247389; c=relaxed/simple;
+	bh=pznMhmfkFIdmxqFBGr7jNdzY/njoycvNI+HOgpa6XZM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=sUr8j/ByGDsrJKpl6ecPVFB8AF5OHlXAV9nDEQvAaz5UPvi8zu20vFjhrxLDCdKQpqphMhkInjtCBO3DL+MsjzeogOLa9qeEZ+IpVz3A4Kxbs4fRA241DaZ3bFq3fCX4kRHdSskUwNxQ1/iV3WK3TnQ8aFoJWqfUzdJrdWVXDDI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=AMdnVwej; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="AMdnVwej"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1722247384;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=+VfSwGGC4AN4fOtZQZ7pK4YQ803b3GCd+JVUAciynug=;
+	b=AMdnVwejbFh7mOBiZMoEuSpLzk/H+upenpdtjX2BCByAyewYaZZ7s6pgRs2xXcDyBRTYcf
+	3m5SpKB3I6cwbIg0AcDykcjktTRVN2TFSituwXFy/F/xyZp7ep/qpkJrSM9gKuwxiUHzUD
+	BJdvDvXJ6nlOP7yLM/UlwymZSC/jhww=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-644-7raW5RziPvuu6aGG-BWtnA-1; Mon, 29 Jul 2024 06:03:03 -0400
+X-MC-Unique: 7raW5RziPvuu6aGG-BWtnA-1
+Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-3684638af70so656430f8f.1
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2024 03:03:03 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1722247382; x=1722852182;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=+VfSwGGC4AN4fOtZQZ7pK4YQ803b3GCd+JVUAciynug=;
+        b=HAD96ekAd+nV8rFX1qHkubTGju8VA0d4XnjbLTWHWnHNFRmD4vbMi8i9xA1NLVwGY0
+         /BzWg3intisHnlTMVnNKc1VIt1P+MnRM2g3rVQlg9all1RAIllDEvz0jWbjz6PNQnixM
+         JakHk8QD1cUPbKi3FmBLrIYpUjYXqXaYRsV2gBDk+31Zt5ysnz5j9hYkUjFE7yP6IJss
+         pKsp8rcX6v0kxKKz4l/z4ZU5XuNut3oibAyzwxkvYqtrfjYEkfB2FBXE04V97trLeuin
+         XrZzzW2evjeFHHRzyRZzpiA434ElY8HXhzqTsp2Eel0zNdXuQsU9wcjtkT1WbqLuslzX
+         ooNw==
+X-Forwarded-Encrypted: i=1; AJvYcCXOYPoYcwmu44t8SZr4mTSFI5MUHmxB9rW2Wtyw3tfDQzhecXLcqtJi+MSnK8nzSSgNMvmnJJoEBCHWPdJ9WTM9NlF4S1nzJUs=
+X-Gm-Message-State: AOJu0YyG9lbYtis11tu0aGy9odTc5Umsjdol1OW+BPKAyFNerHrgs8UL
+	hcXZZ2E76SmJjLRpezQg1vK7tDA86jo7erCSqsuFAxnC3eghXAiq2sBCOQv6UdhWh5Q6yU1kTcZ
+	N/bab0Sb0koOcY+kycfEtUt+8gErb1OrrpZ/Yf47TT3zY7Vghe/0fUvHl
+X-Received: by 2002:a5d:554a:0:b0:368:6633:c550 with SMTP id ffacd0b85a97d-36b5d09c34bmr4219701f8f.52.1722247382065;
+        Mon, 29 Jul 2024 03:03:02 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEMWezcmDYhCoMXVEJ6RgBqRDpRGDY1zP+ylERJvEEBvjuVCBkWoadLoTpv9/RZAGIqFQ3Ogg==
+X-Received: by 2002:a5d:554a:0:b0:368:6633:c550 with SMTP id ffacd0b85a97d-36b5d09c34bmr4219681f8f.52.1722247381612;
+        Mon, 29 Jul 2024 03:03:01 -0700 (PDT)
+Received: from [172.18.228.53] (ip-185-104-138-47.ptr.icomera.net. [185.104.138.47])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-36b3685810csm11810241f8f.71.2024.07.29.03.02.59
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 29 Jul 2024 03:03:01 -0700 (PDT)
+Message-ID: <148efb2f-ef26-4759-98d3-5f6687c3cf12@redhat.com>
+Date: Mon, 29 Jul 2024 12:02:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -44,254 +67,477 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: Unknown NMI after S4 resume
-To: Pavel Machek <pavel@ucw.cz>
-X-ASG-Orig-Subj: Re: Unknown NMI after S4 resume
-CC: <rafael@kernel.org>, <len.brown@intel.com>, <linux-pm@vger.kernel.org>,
-	<akpm@linux-foundation.org>, <dianders@chromium.org>, <tglx@linutronix.de>,
-	<song@kernel.org>, <liusong@linux.alibaba.com>, <yaoma@linux.alibaba.com>,
-	<kjlx@templeofstupid.com>, <lizhe.67@bytedance.com>, <linux@weissschuh.net>,
-	<j.granados@samsung.com>, <linux-kernel@vger.kernel.org>,
-	"CobeChen@zhaoxin.com" <CobeChen@zhaoxin.com>, "TimGuo@zhaoxin.com"
-	<TimGuo@zhaoxin.com>, <SilviaZhao@zhaoxin.com>, "Linda Chai(BJ-RD)"
-	<LindaChai@zhaoxin.com>, <Felixzhang@zhaoxin.com>
-References: <14cf0b83-7030-4ec5-97b1-40c90424fe3f@zhaoxin.com>
- <ZqIMWDWn5W9+9RMA@duo.ucw.cz>
+Subject: Re: [PATCH] platform/x86:dell-laptop: Add knobs to change battery
+ charge settings
+To: Andres Salomon <dilinger@queued.net>, linux-kernel@vger.kernel.org
+Cc: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
+ platform-driver-x86@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+ Sebastian Reichel <sre@kernel.org>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ linux-pm@vger.kernel.org, Dell.Client.Kernel@dell.com
+References: <20240720012220.26d62a54@5400>
 Content-Language: en-US
-From: Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>
-In-Reply-To: <ZqIMWDWn5W9+9RMA@duo.ucw.cz>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: ZXSHCAS2.zhaoxin.com (10.28.252.162) To
- ZXBJMBX03.zhaoxin.com (10.29.252.7)
-X-Moderation-Data: 7/29/2024 5:14:43 PM
-X-Barracuda-Connect: ZXSHMBX2.zhaoxin.com[10.28.252.164]
-X-Barracuda-Start-Time: 1722244486
-X-Barracuda-Encrypted: ECDHE-RSA-AES128-GCM-SHA256
-X-Barracuda-URL: https://10.28.252.35:4443/cgi-mod/mark.cgi
-X-Virus-Scanned: by bsmtpd at zhaoxin.com
-X-Barracuda-Scan-Msg-Size: 6787
-X-Barracuda-BRTS-Status: 1
-X-Barracuda-Bayes: INNOCENT GLOBAL 0.0000 1.0000 -2.0210
-X-Barracuda-Spam-Score: -2.02
-X-Barracuda-Spam-Status: No, SCORE=-2.02 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=9.0 tests=
-X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.3.128281
-	Rule breakdown below
-	 pts rule name              description
-	---- ---------------------- --------------------------------------------------
+From: Hans de Goede <hdegoede@redhat.com>
+In-Reply-To: <20240720012220.26d62a54@5400>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+Hi,
 
-
-On 2024/7/25 16:27, Pavel Machek wrote:
+On 7/20/24 7:22 AM, Andres Salomon wrote:
 > 
-> Yes, please.
+> The Dell BIOS allows you to set custom charging modes, which is useful
+> in particular for extending battery life. This adds support for tweaking
+> those various settings from Linux via sysfs knobs. One might, for
+> example, have their laptop plugged into power at their desk the vast
+> majority of the time and choose fairly aggressive battery-saving
+> settings (only charging once the battery drops to 50% and only charging
+> up to 80%). When leaving for a trip, they might want to switch those
+> settings to charge to 100% and charge any time power is available;
+> rebooting into the BIOS to change those settings is a hassle.
 > 
-> The watchdog driver should get suspend/resume hooks, and probably do
-> same init on boot and on resume.
+> For the Custom charging type mode, we reuse the common
+> charge_control_{start,end}_threshold sysfs power_supply entries. The
+> BIOS also has a bunch of other charging modes with varying levels of
+> usefulness, so this adds a new Dell-specific sysfs entry called
+> 'charge_type' that's documented in sysfs-class-power-dell (and looks a
+> lot like sysfs-class-power-wilco).
 > 
+> This work is based on a patch by Perry Yuan <perry_yuan@dell.com> and
+> Limonciello Mario <Mario_Limonciello@Dell.com> submitted back in 2020:
+> https://lore.kernel.org/all/20200729065424.12851-1-Perry_Yuan@Dell.com/
+> Both of their email addresses bounce, so I'm assuming they're no longer
+> with the company. I've reworked most of the patch to make it smaller and
+> cleaner.
+> 
+> Signed-off-by: Andres Salomon <dilinger@queued.net>
 
-Two patch methods were tried and the results are as follows:
+Thank you for working on this and it is great to see the discussion
+to improve the code between you and Pali going on.
 
-Patch 1:
-diff -aNur linux-6.10/kernel/watchdog.c linux-6.10_test/kernel/watchdog.c
---- linux-6.10/kernel/watchdog.c	2024-07-15 06:43:32.000000000 +0800
-+++ linux-6.10_test/kernel/watchdog.c	2024-07-26 18:38:16.442600567 +0800
-@@ -25,6 +25,7 @@
-  #include <linux/stop_machine.h>
-  #include <linux/sysctl.h>
-  #include <linux/tick.h>
-+#include <linux/syscore_ops.h>
+One concern which I have is that work is underway for both upower
+and GNOME to add support for
+/sys/class/power_supply/*/charge_[start|stop]_threshold
 
-  #include <linux/sched/clock.h>
-  #include <linux/sched/debug.h>
-@@ -1264,3 +1265,35 @@
+to gnome-control-center.
 
-  	lockup_detector_setup();
-  }
-+
-+static int watchdog_suspend(void)
-+{
-+        if (cpumask_test_cpu(0, &watchdog_allowed_mask))
-+                watchdog_hardlockup_disable(0);
-+
-+        lockup_detector_cleanup();
-+
-+        return 0;
-+}
-+
-+static void watchdog_resume(void)
-+{
-+        if (cpumask_test_cpu(0, &watchdog_allowed_mask)
-+        && (watchdog_enabled & WATCHDOG_HARDLOCKUP_ENABLED))
-+                watchdog_hardlockup_enable(0);
-+}
-+
-+static struct syscore_ops watchdog_syscore_ops = {
-+        .resume = watchdog_resume,
-+        .suspend = watchdog_suspend,
-+};
-+
-+static int __init init_watchdog_sysfs(void)
-+{
-+        register_syscore_ops(&watchdog_syscore_ops);
-+
-+        return 0;
-+}
-+
-+late_initcall(init_watchdog_sysfs);
-+
+But if I understand things correctly then these limits will only
+be honored when the charging-type is set to custom.
 
-Patch 1 result is: There is no unknown NMI after S4 resume, but this 
-patch introduces the following warning:
+So we need to do something to avoid userspace exposing those
+controls when the charging-type is not custom.
 
-[    8.994619] ------------[ cut here ]------------
-[    8.999205] Interrupts enabled after watchdog_suspend+0x0/0x50
-[    9.005011] WARNING: CPU: 0 PID: 219 at drivers/base/syscore.c:68 
-syscore_suspend+0x17c/0x290
-[    9.013463] Modules linked in: uas usb_storage i2c_hid_acpi i2c_hid 
-r8169 via_rng crc32_pclmul ahci drm xhci_pci psmouse libahci 
-xhci_pci_renesas realtek hid video wmi
-[    9.028289] CPU: 0 PID: 219 Comm: sh Not tainted 6.10.0 #2
-[    9.033726] Hardware name: Shanghai Zhaoxin Semiconductor Co., Ltd. 
-ZXE CRB/HX005EZ, BIOS 47.00 06/19/2024
-[    9.043289] RIP: 0010:syscore_suspend+0x17c/0x290
-[    9.047953] Code: 80 fc 01 0f 87 0f 06 5f 00 41 83 e4 01 0f 85 1a ff 
-ff ff 48 8b 73 10 48 c7 c7 0e c8 81 b0 c6 05 06 d4 48 01 01 e8 a4 de 5a 
-ff <0f> 0b e9 fc fe ff ff 65 8b 05 f2 5e 6e 50 48 0f a3 05 7e 04 4e 01
-[    9.066546] RSP: 0018:ffffbabf8073fbe8 EFLAGS: 00010246
-[    9.071723] RAX: 0000000000000000 RBX: ffffffffb0bf29e0 RCX: 
-0000000000000000
-[    9.078792] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 
-0000000000000000
-[    9.085864] RBP: ffffbabf8073fbf8 R08: 0000000000000000 R09: 
-0000000000000000
-[    9.092933] R10: 0000000000000000 R11: 0000000000000000 R12: 
-0000000000000000
-[    9.100000] R13: fffffffffffffff2 R14: ffff8edd5106e000 R15: 
-0000000000000004
-[    9.107070] FS:  000070a4a2ac3740(0000) GS:ffff8ee06fa00000(0000) 
-knlGS:0000000000000000
-[    9.115086] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[    9.120779] CR2: 00005d4095519bd8 CR3: 00000001030e8002 CR4: 
-0000000000770ef0
-[    9.127849] PKRU: 55555554
-[    9.130534] Call Trace:
-[    9.132961]  <TASK>
-[    9.135042]  ? show_regs+0x71/0x90
-[    9.138416]  ? __warn+0x88/0x140
-[    9.141617]  ? syscore_suspend+0x17c/0x290
-[    9.145678]  ? report_bug+0x1ab/0x1c0
-[    9.149313]  ? console_unlock+0x77/0x120
-[    9.153204]  ? handle_bug+0x46/0x90
-[    9.156665]  ? exc_invalid_op+0x19/0x80
-[    9.160464]  ? asm_exc_invalid_op+0x1b/0x20
-[    9.164614]  ? syscore_suspend+0x17c/0x290
-[    9.168674]  ? syscore_suspend+0x17c/0x290
-......
+I think it would be best to not have the charge_[start|stop]_threshold
+attributes visible when the charging mode is not custom.
 
-Patch 2:
-diff -aNur linux-6.10/include/linux/nmi.h 
-linux-6.10_test/include/linux/nmi.h
---- linux-6.10/include/linux/nmi.h	2024-07-15 06:43:32.000000000 +0800
-+++ linux-6.10_test/include/linux/nmi.h	2024-07-25 18:57:38.886105105 +0800
-@@ -19,6 +19,9 @@
-  void lockup_detector_soft_poweroff(void);
-  void lockup_detector_cleanup(void);
+Regards,
 
-+extern int nmi_watchdog_bsp_suspend(void);
-+extern void nmi_watchdog_bsp_resume(void);
-+
-  extern int watchdog_user_enabled;
-  extern int watchdog_thresh;
-  extern unsigned long watchdog_enabled;
-diff -aNur linux-6.10/kernel/power/hibernate.c 
-linux-6.10_test/kernel/power/hibernate.c
---- linux-6.10/kernel/power/hibernate.c	2024-07-15 06:43:32.000000000 +0800
-+++ linux-6.10_test/kernel/power/hibernate.c	2024-07-25 
-19:07:16.470095318 +0800
-@@ -313,6 +313,8 @@
-  	if (error || hibernation_test(TEST_PLATFORM))
-  		goto Platform_finish;
+Hans
 
-+	nmi_watchdog_bsp_suspend();
-+
-  	error = pm_sleep_disable_secondary_cpus();
-  	if (error || hibernation_test(TEST_CPUS))
-  		goto Enable_cpus;
-@@ -356,7 +358,9 @@
 
-   Enable_cpus:
-  	pm_sleep_enable_secondary_cpus();
--
-+	
-+	nmi_watchdog_bsp_resume();
-+	
-  	/* Allow architectures to do nosmt-specific post-resume dances */
-  	if (!in_suspend)
-  		error = arch_resume_nosmt();
-@@ -481,6 +485,8 @@
 
-  	cpuidle_pause();
+> ---
+>  .../ABI/testing/sysfs-class-power-dell        |  31 +++
+>  drivers/platform/x86/dell/Kconfig             |   1 +
+>  drivers/platform/x86/dell/dell-laptop.c       | 263 ++++++++++++++++++
+>  drivers/platform/x86/dell/dell-smbios.h       |  17 ++
+>  4 files changed, 312 insertions(+)
+>  create mode 100644 Documentation/ABI/testing/sysfs-class-power-dell
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-class-power-dell b/Documentation/ABI/testing/sysfs-class-power-dell
+> new file mode 100644
+> index 000000000000..ef72c5f797ce
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-class-power-dell
+> @@ -0,0 +1,31 @@
+> +What:		/sys/class/power_supply/<supply_name>/charge_type
+> +Date:		July 2024
+> +KernelVersion:	6.11
+> +Contact:	linux-pm@vger.kernel.org
+> +Description:
+> +		Select the charging algorithm to use for the (primary)
+> +		battery.
+> +
+> +		Standard:
+> +			Fully charge the battery at a moderate rate.
+> +		ExpressCharge™:
+> +			Quickly charge the battery using fast-charge
+> +			technology. This is harder on the battery than
+> +			standard charging and may lower its lifespan.
+> +		Primarily AC Use:
+> +			Users who primarily operate the system while
+> +			plugged into an external power source can extend
+> +			battery life with this mode.
+> +		Adaptive:
+> +			Automatically optimize battery charge rate based
+> +			on typical usage.
+> +		Custom:
+> +			Use the charge_control_* properties to determine
+> +			when to start and stop charging. Advanced users
+> +			can use this to drastically extend battery life.
+> +
+> +		Access: Read, Write
+> +		Valid values:
+> +			      "standard", "express", "primarily_ac",
+> +			      "adaptive", "custom"
+> +
+> diff --git a/drivers/platform/x86/dell/Kconfig b/drivers/platform/x86/dell/Kconfig
+> index 85a78ef91182..02405793163c 100644
+> --- a/drivers/platform/x86/dell/Kconfig
+> +++ b/drivers/platform/x86/dell/Kconfig
+> @@ -49,6 +49,7 @@ config DELL_LAPTOP
+>  	default m
+>  	depends on DMI
+>  	depends on BACKLIGHT_CLASS_DEVICE
+> +	depends on ACPI_BATTERY
+>  	depends on ACPI_VIDEO || ACPI_VIDEO = n
+>  	depends on RFKILL || RFKILL = n
+>  	depends on DELL_WMI || DELL_WMI = n
+> diff --git a/drivers/platform/x86/dell/dell-laptop.c b/drivers/platform/x86/dell/dell-laptop.c
+> index 6552dfe491c6..54f47b685a46 100644
+> --- a/drivers/platform/x86/dell/dell-laptop.c
+> +++ b/drivers/platform/x86/dell/dell-laptop.c
+> @@ -22,11 +22,13 @@
+>  #include <linux/io.h>
+>  #include <linux/rfkill.h>
+>  #include <linux/power_supply.h>
+> +#include <linux/sysfs.h>
+>  #include <linux/acpi.h>
+>  #include <linux/mm.h>
+>  #include <linux/i8042.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/seq_file.h>
+> +#include <acpi/battery.h>
+>  #include <acpi/video.h>
+>  #include "dell-rbtn.h"
+>  #include "dell-smbios.h"
+> @@ -98,6 +100,14 @@ static struct rfkill *wwan_rfkill;
+>  static bool force_rfkill;
+>  static bool micmute_led_registered;
+>  static bool mute_led_registered;
+> +static enum battery_charging_mode bat_chg_current = DELL_BAT_MODE_NONE;
+> +static const char * const battery_state[DELL_BAT_MODE_MAX] = {
+> +	[DELL_BAT_MODE_STANDARD] = "standard",
+> +	[DELL_BAT_MODE_EXPRESS] = "express",
+> +	[DELL_BAT_MODE_PRIMARILY_AC] = "primarily_ac",
+> +	[DELL_BAT_MODE_ADAPTIVE] = "adaptive",
+> +	[DELL_BAT_MODE_CUSTOM] = "custom",
+> +};
+>  
+>  module_param(force_rfkill, bool, 0444);
+>  MODULE_PARM_DESC(force_rfkill, "enable rfkill on non whitelisted models");
+> @@ -2183,6 +2193,256 @@ static struct led_classdev mute_led_cdev = {
+>  	.default_trigger = "audio-mute",
+>  };
+>  
+> +static int dell_battery_read_req(const int type, int *val)
+> +{
+> +	struct calling_interface_buffer buffer;
+> +	struct calling_interface_token *token;
+> +	int err;
+> +
+> +	token = dell_smbios_find_token(type);
+> +	if (!token)
+> +		return -ENODEV;
+> +
+> +	dell_fill_request(&buffer, token->location, 0, 0, 0);
+> +	err = dell_send_request(&buffer, CLASS_TOKEN_READ, SELECT_TOKEN_STD);
+> +	if (!err)
+> +		*val = buffer.output[1];
+> +
+> +	return err;
+> +}
+> +
+> +static int dell_battery_write_req(const int type, int val)
+> +{
+> +	struct calling_interface_buffer buffer;
+> +	struct calling_interface_token *token;
+> +
+> +	token = dell_smbios_find_token(type);
+> +	if (!token)
+> +		return -ENODEV;
+> +
+> +	dell_fill_request(&buffer, token->location, val, 0, 0);
+> +	return dell_send_request(&buffer,
+> +			CLASS_TOKEN_WRITE, SELECT_TOKEN_STD);
+> +}
+> +
+> +/* The rules: the minimum start charging value is 50%. The maximum
+> + * start charging value is 95%. The minimum end charging value is
+> + * 55%. The maximum end charging value is 100%. And finally, there
+> + * has to be at least a 5% difference between start & end values.
+> + */
+> +#define CHARGE_START_MIN	50
+> +#define CHARGE_START_MAX	95
+> +#define CHARGE_END_MIN		55
+> +#define CHARGE_END_MAX		100
+> +#define CHARGE_MIN_DIFF		5
+> +
+> +static int dell_battery_custom_set(const int type, int val)
+> +{
+> +	if (type == BAT_CUSTOM_CHARGE_START) {
+> +		int end = CHARGE_END_MAX;
+> +
+> +		if (val < CHARGE_START_MIN)
+> +			val = CHARGE_START_MIN;
+> +		else if (val > CHARGE_START_MAX)
+> +			val = CHARGE_START_MAX;
+> +
+> +		dell_battery_read_req(BAT_CUSTOM_CHARGE_END, &end);
+> +		if ((end - val) < CHARGE_MIN_DIFF)
+> +			val = end - CHARGE_MIN_DIFF;
+> +	} else if (type == BAT_CUSTOM_CHARGE_END) {
+> +		int start = CHARGE_START_MIN;
+> +
+> +		if (val < CHARGE_END_MIN)
+> +			val = CHARGE_END_MIN;
+> +		else if (val > CHARGE_END_MAX)
+> +			val = CHARGE_END_MAX;
+> +
+> +		dell_battery_read_req(BAT_CUSTOM_CHARGE_START, &start);
+> +		if ((val - start) < CHARGE_MIN_DIFF)
+> +			val = start + CHARGE_MIN_DIFF;
+> +	}
+> +
+> +	return dell_battery_write_req(type, val);
+> +}
+> +
+> +static int battery_charging_mode_set(enum battery_charging_mode mode)
+> +{
+> +	int err;
+> +
+> +	switch (mode) {
+> +	case DELL_BAT_MODE_STANDARD:
+> +		err = dell_battery_write_req(BAT_STANDARD_MODE_TOKEN, mode);
+> +		break;
+> +	case DELL_BAT_MODE_EXPRESS:
+> +		err = dell_battery_write_req(BAT_EXPRESS_MODE_TOKEN, mode);
+> +		break;
+> +	case DELL_BAT_MODE_PRIMARILY_AC:
+> +		err = dell_battery_write_req(BAT_PRI_AC_MODE_TOKEN, mode);
+> +		break;
+> +	case DELL_BAT_MODE_ADAPTIVE:
+> +		err = dell_battery_write_req(BAT_ADAPTIVE_MODE_TOKEN, mode);
+> +		break;
+> +	case DELL_BAT_MODE_CUSTOM:
+> +		err = dell_battery_write_req(BAT_CUSTOM_MODE_TOKEN, mode);
+> +		break;
+> +	default:
+> +		err = -EINVAL;
+> +	}
+> +
+> +	return err;
+> +}
+> +
+> +static ssize_t charge_type_show(struct device *dev,
+> +		struct device_attribute *attr,
+> +		char *buf)
+> +{
+> +	enum battery_charging_mode mode;
+> +	ssize_t count = 0;
+> +
+> +	for (mode = DELL_BAT_MODE_STANDARD; mode < DELL_BAT_MODE_MAX; mode++) {
+> +		if (battery_state[mode]) {
+> +			count += sysfs_emit_at(buf, count,
+> +				mode == bat_chg_current ? "[%s] " : "%s ",
+> +				battery_state[mode]);
+> +		}
+> +	}
+> +
+> +	/* convert the last space to a newline */
+> +	count--;
+> +	count += sysfs_emit_at(buf, count, "\n");
+> +
+> +	return count;
+> +}
+> +
+> +static ssize_t charge_type_store(struct device *dev,
+> +		struct device_attribute *attr,
+> +		const char *buf, size_t size)
+> +{
+> +	enum battery_charging_mode mode;
+> +	const char *label;
+> +	int ret = -EINVAL;
+> +
+> +	for (mode = DELL_BAT_MODE_STANDARD; mode < DELL_BAT_MODE_MAX; mode++) {
+> +		label = battery_state[mode];
+> +		if (label && sysfs_streq(label, buf))
+> +			break;
+> +	}
+> +
+> +	if (mode > DELL_BAT_MODE_NONE && mode < DELL_BAT_MODE_MAX) {
+> +		ret = battery_charging_mode_set(mode);
+> +		if (!ret) {
+> +			bat_chg_current = mode;
+> +			ret = size;
+> +		}
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static ssize_t charge_control_start_threshold_show(struct device *dev,
+> +		struct device_attribute *attr,
+> +		char *buf)
+> +{
+> +	int ret, start;
+> +
+> +	ret = dell_battery_read_req(BAT_CUSTOM_CHARGE_START, &start);
+> +	if (!ret)
+> +		ret = sysfs_emit(buf, "%d\n", start);
+> +
+> +	return ret;
+> +}
+> +
+> +static ssize_t charge_control_start_threshold_store(struct device *dev,
+> +		struct device_attribute *attr,
+> +		const char *buf, size_t size)
+> +{
+> +	int ret, start;
+> +
+> +	ret = kstrtoint(buf, 10, &start);
+> +	if (!ret)
+> +		ret = dell_battery_custom_set(BAT_CUSTOM_CHARGE_START, start);
+> +	if (!ret)
+> +		ret = size;
+> +
+> +	return ret;
+> +}
+> +
+> +static ssize_t charge_control_end_threshold_show(struct device *dev,
+> +		struct device_attribute *attr,
+> +		char *buf)
+> +{
+> +	int ret, end;
+> +
+> +	ret = dell_battery_read_req(BAT_CUSTOM_CHARGE_END, &end);
+> +	if (!ret)
+> +		ret = sysfs_emit(buf, "%d\n", end);
+> +
+> +	return ret;
+> +}
+> +
+> +static ssize_t charge_control_end_threshold_store(struct device *dev,
+> +		struct device_attribute *attr,
+> +		const char *buf, size_t size)
+> +{
+> +	int ret, end;
+> +
+> +	ret = kstrtouint(buf, 10, &end);
+> +	if (!ret)
+> +		ret = dell_battery_custom_set(BAT_CUSTOM_CHARGE_END, end);
+> +	if (!ret)
+> +		ret = size;
+> +
+> +	return ret;
+> +}
+> +
+> +static DEVICE_ATTR_RW(charge_control_start_threshold);
+> +static DEVICE_ATTR_RW(charge_control_end_threshold);
+> +static DEVICE_ATTR_RW(charge_type);
+> +
+> +static struct attribute *dell_battery_attrs[] = {
+> +	&dev_attr_charge_control_start_threshold.attr,
+> +	&dev_attr_charge_control_end_threshold.attr,
+> +	&dev_attr_charge_type.attr,
+> +	NULL,
+> +};
+> +ATTRIBUTE_GROUPS(dell_battery);
+> +
+> +static int dell_battery_add(struct power_supply *battery,
+> +		struct acpi_battery_hook *hook)
+> +{
+> +	return device_add_groups(&battery->dev, dell_battery_groups);
+> +}
+> +
+> +static int dell_battery_remove(struct power_supply *battery,
+> +		struct acpi_battery_hook *hook)
+> +{
+> +	device_remove_groups(&battery->dev, dell_battery_groups);
+> +	return 0;
+> +}
+> +
+> +static struct acpi_battery_hook dell_battery_hook = {
+> +	.add_battery = dell_battery_add,
+> +	.remove_battery = dell_battery_remove,
+> +	.name = "Dell Primary Battery Extension",
+> +};
+> +
+> +static void __init dell_battery_init(struct device *dev)
+> +{
+> +	enum battery_charging_mode current_mode = DELL_BAT_MODE_NONE;
+> +
+> +	dell_battery_read_req(BAT_CUSTOM_MODE_TOKEN, (int *) &current_mode);
+> +	if (current_mode != DELL_BAT_MODE_NONE) {
+> +		bat_chg_current = current_mode;
+> +		battery_hook_register(&dell_battery_hook);
+> +	}
+> +}
+> +
+> +static void __exit dell_battery_exit(void)
+> +{
+> +	if (bat_chg_current != DELL_BAT_MODE_NONE)
+> +		battery_hook_unregister(&dell_battery_hook);
+> +}
+> +
+>  static int __init dell_init(void)
+>  {
+>  	struct calling_interface_token *token;
+> @@ -2219,6 +2479,7 @@ static int __init dell_init(void)
+>  		touchpad_led_init(&platform_device->dev);
+>  
+>  	kbd_led_init(&platform_device->dev);
+> +	dell_battery_init(&platform_device->dev);
+>  
+>  	dell_laptop_dir = debugfs_create_dir("dell_laptop", NULL);
+>  	debugfs_create_file("rfkill", 0444, dell_laptop_dir, NULL,
+> @@ -2293,6 +2554,7 @@ static int __init dell_init(void)
+>  	if (mute_led_registered)
+>  		led_classdev_unregister(&mute_led_cdev);
+>  fail_led:
+> +	dell_battery_exit();
+>  	dell_cleanup_rfkill();
+>  fail_rfkill:
+>  	platform_device_del(platform_device);
+> @@ -2311,6 +2573,7 @@ static void __exit dell_exit(void)
+>  	if (quirks && quirks->touchpad_led)
+>  		touchpad_led_exit();
+>  	kbd_led_exit();
+> +	dell_battery_exit();
+>  	backlight_device_unregister(dell_backlight_device);
+>  	if (micmute_led_registered)
+>  		led_classdev_unregister(&micmute_led_cdev);
+> diff --git a/drivers/platform/x86/dell/dell-smbios.h b/drivers/platform/x86/dell/dell-smbios.h
+> index ea0cc38642a2..f7c07b4d72e3 100644
+> --- a/drivers/platform/x86/dell/dell-smbios.h
+> +++ b/drivers/platform/x86/dell/dell-smbios.h
+> @@ -33,11 +33,28 @@
+>  #define KBD_LED_AUTO_50_TOKEN	0x02EB
+>  #define KBD_LED_AUTO_75_TOKEN	0x02EC
+>  #define KBD_LED_AUTO_100_TOKEN	0x02F6
+> +#define BAT_PRI_AC_MODE_TOKEN	0x0341
+> +#define BAT_ADAPTIVE_MODE_TOKEN	0x0342
+> +#define BAT_CUSTOM_MODE_TOKEN	0x0343
+> +#define BAT_STANDARD_MODE_TOKEN	0x0346
+> +#define BAT_EXPRESS_MODE_TOKEN	0x0347
+> +#define BAT_CUSTOM_CHARGE_START	0x0349
+> +#define BAT_CUSTOM_CHARGE_END	0x034A
+>  #define GLOBAL_MIC_MUTE_ENABLE	0x0364
+>  #define GLOBAL_MIC_MUTE_DISABLE	0x0365
+>  #define GLOBAL_MUTE_ENABLE	0x058C
+>  #define GLOBAL_MUTE_DISABLE	0x058D
+>  
+> +enum battery_charging_mode {
+> +	DELL_BAT_MODE_NONE = 0,
+> +	DELL_BAT_MODE_STANDARD,
+> +	DELL_BAT_MODE_EXPRESS,
+> +	DELL_BAT_MODE_PRIMARILY_AC,
+> +	DELL_BAT_MODE_ADAPTIVE,
+> +	DELL_BAT_MODE_CUSTOM,
+> +	DELL_BAT_MODE_MAX,
+> +};
+> +
+>  struct notifier_block;
+>  
+>  struct calling_interface_token {
 
-+	nmi_watchdog_bsp_suspend();
-+
-  	error = hibernate_resume_nonboot_cpu_disable();
-  	if (error)
-  		goto Enable_cpus;
-@@ -526,6 +532,8 @@
-   Enable_cpus:
-  	pm_sleep_enable_secondary_cpus();
-
-+	nmi_watchdog_bsp_resume();
-+
-   Cleanup:
-  	platform_restore_cleanup(platform_mode);
-
-diff -aNur linux-6.10/kernel/watchdog.c linux-6.10_test/kernel/watchdog.c
---- linux-6.10/kernel/watchdog.c	2024-07-15 06:43:32.000000000 +0800
-+++ linux-6.10_test/kernel/watchdog.c	2024-07-26 09:53:04.579979589 +0800
-@@ -1249,6 +1249,36 @@
-  }
-  late_initcall_sync(lockup_detector_check);
-
-+int bsp_watchdog_enable(void *data)
-+{
-+        if (cpumask_test_cpu(smp_processor_id(), &watchdog_allowed_mask))
-+                watchdog_hardlockup_enable(smp_processor_id());
-+        return 0;
-+}
-+int bsp_watchdog_disable(void *data)
-+{
-+        if (cpumask_test_cpu(smp_processor_id(), &watchdog_allowed_mask))
-+                watchdog_hardlockup_disable(smp_processor_id());
-+        return 0;
-+}
-+
-+int nmi_watchdog_bsp_suspend(void)
-+{
-+        smp_call_on_cpu(0,bsp_watchdog_disable,NULL,false);
-+        return 0;
-+}
-+EXPORT_SYMBOL(nmi_watchdog_bsp_suspend);
-+
-+void nmi_watchdog_bsp_resume(void)
-+{
-+        /* Enable the perf event */
-+        if (watchdog_enabled & WATCHDOG_HARDLOCKUP_ENABLED){
-+               smp_call_on_cpu(0,bsp_watchdog_enable,NULL,false);
-+        }
-+        return;
-+}
-+EXPORT_SYMBOL(nmi_watchdog_bsp_resume);
-+
-  void __init lockup_detector_init(void)
-  {
-  	if (tick_nohz_full_enabled())
-
-Patch 2 result is: There is no unknown NMI after S4 resume, and the 
-results of multiple tests are ok.
-
-Can patch 2 be used to fix this problem?
-
-BRs!
-TonyWWang-oc
