@@ -1,121 +1,174 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from smtp-fw-52005.amazon.com (smtp-fw-52005.amazon.com [52.119.213.156])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7AC9186E25;
-	Mon, 29 Jul 2024 17:13:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D7B615ECD0;
+	Mon, 29 Jul 2024 17:20:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.119.213.156
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722273183; cv=none; b=EO6Ti7HTGb6f9WYXI6Eb63hg/LmrCk5tr4avB2qnA44bpNaReZwKVE0kVWLvLObnPe3sWEhl3n1roc3NrY6IS55vi3oK6+ye3rdET2T87Dnw/9JKd20aLJtZF01wfs3b0SgdJ+Q8DiACd71bfY5kbX81vCljEWskX7LKq0KSMiI=
+	t=1722273653; cv=none; b=OfEsyhCnmLXMVs4U7gxpRi2tQRYCSCZpV/HiEZS14hDFp4gyO+PTFCrV8rh2TrEji0cIoIYAd/gZd06zi820wcFxL3VeHTpDyJHvHi9u0oF9YlSfPmPeJBfDJObAs9TdLOuqBUwr43t8cg/ETWCTS7C8zDslA4BXD/wHl55COzc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722273183; c=relaxed/simple;
-	bh=ZZKCTLMFaqW5qBxAc1zMCNcho/0TG2FZHdzOjo/7dMg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=lL1C8vQFKb8vzBrofJ7NjkOnmXdFalZrNsaV6jZGondGbwJkdyTsTJrbkDupE/jGIEzpHSr9p+1Ocm0EkTWxdBn9/ti72/O2Tr2QmFwjSohFVMsjD/iXy3N8fI+tVOlkC6ODnTb8DuwnU6wkTDcJUCCL1ydYAxrlm4I20xyWfPs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=vtjKYPT7 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1722273653; c=relaxed/simple;
+	bh=Sv4G657aeIIdPBA0+w3PRvoZkj774KyzLd398JdiGlo=;
+	h=Subject:From:To:CC:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=hco2e2PGzrNLByOpVO5fH8nzyN7DlktyO9S6GNY7+DxZ4ruTqC4iE+xz1pPVuV5+plrgVrzx03wtv0t8MPvFLLSDMyvYcFV/7rpDDi4KSfXJF7ocxXQ3cDozwkbPRRHQEm7Euj2AjyrrYv0/rsxaxR76XhC5qX2Ic7wpKw4oAqM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com; spf=pass smtp.mailfrom=amazon.com; dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b=CfrSkF6H; arc=none smtp.client-ip=52.119.213.156
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amazon.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="vtjKYPT7"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 87802f5981a8ec7d; Mon, 29 Jul 2024 18:13:00 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 3043B77357F;
-	Mon, 29 Jul 2024 18:13:00 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1722269580;
-	bh=ZZKCTLMFaqW5qBxAc1zMCNcho/0TG2FZHdzOjo/7dMg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=vtjKYPT7S39ixFQNj1eBjBzzblns6ywb1ETEu36xW8gM0lZVTIB5vN7f79uPJIH3K
-	 THww4F6g6035YBsF+z6EErkXC5jTq3MgWbPcFH5Dbb2fCPgDWTpQa4X7tzksFjrNl2
-	 o+Cw1k4akKm/ARji8dBeqUPdtQ+Vo1CZSQjoqxGQgXm7HkkkdQ0uNkKcxSDXnN+9aL
-	 v+9KjJYqEd4jKS8svtSLdqanYMDYQN3jZme/+B3cZ+m3DOUC1E20OyObmH7pZDAJlN
-	 uaW5y8D9cM/e1Z2/itDwHhvNMFi90abf9V6Gf2Q5n6TZwk7FaGNzv9iy19q/FcUox6
-	 PyUhsfAe7Hwsg==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
- LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
-Subject:
- [RESEND][PATCH v1 2/8] thermal: hisi: Use thermal_zone_for_each_trip() in
- hisi_thermal_register_sensor()
-Date: Mon, 29 Jul 2024 17:56:25 +0200
-Message-ID: <1994088.PYKUYFuaPT@rjwysocki.net>
-In-Reply-To: <2211925.irdbgypaU6@rjwysocki.net>
-References: <2211925.irdbgypaU6@rjwysocki.net>
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="CfrSkF6H"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1722273649; x=1753809649;
+  h=from:to:cc:date:message-id:references:in-reply-to:
+   content-id:content-transfer-encoding:mime-version:subject;
+  bh=Sv4G657aeIIdPBA0+w3PRvoZkj774KyzLd398JdiGlo=;
+  b=CfrSkF6HKRln20tJTwEUTC8SmpLb6UVsOcw7T3zjdYeGQXxzyDSQ5yzj
+   +CFIHaPCw1UZ4rv0Y5Dr/zQemKbrnk/fniz9Te+a1lhj0wPHrYWT17rWq
+   S1mqI+u+MvWfhhkzJwoULDw8N9nIz1/Ghi2/gq+xbwc8f9NmI8SxozuCC
+   I=;
+X-IronPort-AV: E=Sophos;i="6.09,246,1716249600"; 
+   d="scan'208";a="670731969"
+Subject: Re: [PATCH v6 09/10] arm64: support cpuidle-haltpoll
+Thread-Topic: [PATCH v6 09/10] arm64: support cpuidle-haltpoll
+Received: from iad12-co-svc-p1-lb1-vlan3.amazon.com (HELO smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.43.8.6])
+  by smtp-border-fw-52005.iad7.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jul 2024 17:20:45 +0000
+Received: from EX19MTAUWB002.ant.amazon.com [10.0.21.151:44279]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.49.198:2525] with esmtp (Farcaster)
+ id e0981944-4dff-42ca-8f3a-c47f62744bc1; Mon, 29 Jul 2024 17:20:44 +0000 (UTC)
+X-Farcaster-Flow-ID: e0981944-4dff-42ca-8f3a-c47f62744bc1
+Received: from EX19D001UWA003.ant.amazon.com (10.13.138.211) by
+ EX19MTAUWB002.ant.amazon.com (10.250.64.231) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.34;
+ Mon, 29 Jul 2024 17:20:44 +0000
+Received: from EX19D001UWA003.ant.amazon.com (10.13.138.211) by
+ EX19D001UWA003.ant.amazon.com (10.13.138.211) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.34;
+ Mon, 29 Jul 2024 17:20:44 +0000
+Received: from EX19D001UWA003.ant.amazon.com ([fe80::256a:26de:3ee6:48a2]) by
+ EX19D001UWA003.ant.amazon.com ([fe80::256a:26de:3ee6:48a2%7]) with mapi id
+ 15.02.1258.034; Mon, 29 Jul 2024 17:20:44 +0000
+From: "Okanovic, Haris" <harisokn@amazon.com>
+To: "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "kvm@vger.kernel.org"
+	<kvm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"ankur.a.arora@oracle.com" <ankur.a.arora@oracle.com>
+CC: "joao.m.martins@oracle.com" <joao.m.martins@oracle.com>,
+	"boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>,
+	"dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+	"konrad.wilk@oracle.com" <konrad.wilk@oracle.com>, "wanpengli@tencent.com"
+	<wanpengli@tencent.com>, "cl@gentwo.org" <cl@gentwo.org>, "mingo@redhat.com"
+	<mingo@redhat.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+	"pbonzini@redhat.com" <pbonzini@redhat.com>, "tglx@linutronix.de"
+	<tglx@linutronix.de>, "misono.tomohiro@fujitsu.com"
+	<misono.tomohiro@fujitsu.com>, "daniel.lezcano@linaro.org"
+	<daniel.lezcano@linaro.org>, "arnd@arndb.de" <arnd@arndb.de>,
+	"lenb@kernel.org" <lenb@kernel.org>, "will@kernel.org" <will@kernel.org>,
+	"hpa@zytor.com" <hpa@zytor.com>, "peterz@infradead.org"
+	<peterz@infradead.org>, "vkuznets@redhat.com" <vkuznets@redhat.com>,
+	"bp@alien8.de" <bp@alien8.de>, "Okanovic, Haris" <harisokn@amazon.com>,
+	"rafael@kernel.org" <rafael@kernel.org>, "sudeep.holla@arm.com"
+	<sudeep.holla@arm.com>, "mtosatti@redhat.com" <mtosatti@redhat.com>,
+	"x86@kernel.org" <x86@kernel.org>, "mark.rutland@arm.com"
+	<mark.rutland@arm.com>
+Thread-Index: AQHa35mLdhQH4qvBikqC1hweZwAegbIN988A
+Date: Mon, 29 Jul 2024 17:20:44 +0000
+Message-ID: <5ba1e9b9bba7cafcd3cc831ff5f2407d81409632.camel@amazon.com>
+References: <20240726201332.626395-1-ankur.a.arora@oracle.com>
+	 <20240726202134.627514-1-ankur.a.arora@oracle.com>
+	 <20240726202134.627514-7-ankur.a.arora@oracle.com>
+In-Reply-To: <20240726202134.627514-7-ankur.a.arora@oracle.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <338444219319FC438F56EE1DDAE69CFB@amazon.com>
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjedvgdellecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeegpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Modify hisi_thermal_register_sensor() to use thermal_zone_for_each_trip()
-for walking trip points instead of iterating over trip indices and using
-thermal_zone_get_trip() to get a struct thermal_trip pointer from a trip
-index.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-This patch does not depend on the previous patch(es) in the series.
-
----
- drivers/thermal/hisi_thermal.c |   22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
-
-Index: linux-pm/drivers/thermal/hisi_thermal.c
-===================================================================
---- linux-pm.orig/drivers/thermal/hisi_thermal.c
-+++ linux-pm/drivers/thermal/hisi_thermal.c
-@@ -465,6 +465,18 @@ static irqreturn_t hisi_thermal_alarm_ir
- 	return IRQ_HANDLED;
- }
- 
-+static int hisi_trip_walk_cb(struct thermal_trip *trip, void *arg)
-+{
-+	struct hisi_thermal_sensor *sensor = arg;
-+
-+	if (trip->type != THERMAL_TRIP_PASSIVE)
-+		return 0;
-+
-+	sensor->thres_temp = trip->temperature;
-+	/* Return nonzero to terminate the search. */
-+	return 1;
-+}
-+
- static int hisi_thermal_register_sensor(struct platform_device *pdev,
- 					struct hisi_thermal_sensor *sensor)
- {
-@@ -482,15 +494,7 @@ static int hisi_thermal_register_sensor(
- 		return ret;
- 	}
- 
--	for (i = 0; i < thermal_zone_get_num_trips(sensor->tzd); i++) {
--
--		thermal_zone_get_trip(sensor->tzd, i, &trip);
--
--		if (trip.type == THERMAL_TRIP_PASSIVE) {
--			sensor->thres_temp = trip.temperature;
--			break;
--		}
--	}
-+	thermal_zone_for_each_trip(sensor->tzd, hisi_trip_walk_cb, sensor);
- 
- 	return 0;
- }
-
-
-
+T24gRnJpLCAyMDI0LTA3LTI2IGF0IDEzOjIxIC0wNzAwLCBBbmt1ciBBcm9yYSB3cm90ZToNCj4g
+Q0FVVElPTjogVGhpcyBlbWFpbCBvcmlnaW5hdGVkIGZyb20gb3V0c2lkZSBvZiB0aGUgb3JnYW5p
+emF0aW9uLiBEbyBub3QgY2xpY2sgbGlua3Mgb3Igb3BlbiBhdHRhY2htZW50cyB1bmxlc3MgeW91
+IGNhbiBjb25maXJtIHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQgaXMgc2FmZS4NCj4g
+DQo+IA0KPiANCj4gQWRkIGFyY2hpdGVjdHVyYWwgc3VwcG9ydCBmb3IgY3B1aWRsZS1oYWx0cG9s
+bCBkcml2ZXIgYnkgZGVmaW5pbmcNCj4gYXJjaF9oYWx0cG9sbF8qKCkuDQo+IA0KPiBBbHNvIGRl
+ZmluZSBBUkNIX0NQVUlETEVfSEFMVFBPTEwgdG8gYWxsb3cgY3B1aWRsZS1oYWx0cG9sbCB0byBi
+ZQ0KPiBzZWxlY3RlZCwgYW5kIGdpdmVuIHRoYXQgd2UgaGF2ZSBhbiBvcHRpbWl6ZWQgcG9sbGlu
+ZyBtZWNoYW5pc20NCj4gaW4gc21wX2NvbmRfbG9hZCooKSwgc2VsZWN0IEFSQ0hfSEFTX09QVElN
+SVpFRF9QT0xMLg0KPiANCj4gc21wX2NvbmRfbG9hZCooKSBhcmUgaW1wbGVtZW50ZWQgdmlhIExE
+WFIsIFdGRSwgd2l0aCBMRFhSIGxvYWRpbmcNCj4gYSBtZW1vcnkgcmVnaW9uIGluIGV4Y2x1c2l2
+ZSBzdGF0ZSBhbmQgdGhlIFdGRSB3YWl0aW5nIGZvciBhbnkNCj4gc3RvcmVzIHRvIGl0Lg0KPiAN
+Cj4gSW4gdGhlIGVkZ2UgY2FzZSAtLSBubyBDUFUgc3RvcmVzIHRvIHRoZSB3YWl0ZWQgcmVnaW9u
+IGFuZCB0aGVyZSdzIG5vDQo+IGludGVycnVwdCAtLSB0aGUgZXZlbnQtc3RyZWFtIHdpbGwgcHJv
+dmlkZSB0aGUgdGVybWluYXRpbmcgY29uZGl0aW9uDQo+IGVuc3VyaW5nIHdlIGRvbid0IHdhaXQg
+Zm9yZXZlciwgYnV0IGJlY2F1c2UgdGhlIGV2ZW50LXN0cmVhbSBydW5zIGF0DQo+IGEgZml4ZWQg
+ZnJlcXVlbmN5IChjb25maWd1cmVkIGF0IDEwa0h6KSB3ZSBtaWdodCBzcGVuZCBtb3JlIHRpbWUg
+aW4NCj4gdGhlIHBvbGxpbmcgc3RhZ2UgdGhhbiBzcGVjaWZpZWQgYnkgY3B1aWRsZV9wb2xsX3Rp
+bWUoKS4NCj4gDQo+IFRoaXMgd291bGQgb25seSBoYXBwZW4gaW4gdGhlIGxhc3QgaXRlcmF0aW9u
+LCBzaW5jZSBvdmVyc2hvb3RpbmcgdGhlDQo+IHBvbGxfbGltaXQgbWVhbnMgdGhlIGdvdmVybm9y
+IG1vdmVzIG91dCBvZiB0aGUgcG9sbGluZyBzdGFnZS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEFu
+a3VyIEFyb3JhIDxhbmt1ci5hLmFyb3JhQG9yYWNsZS5jb20+DQo+IC0tLQ0KPiAgYXJjaC9hcm02
+NC9LY29uZmlnICAgICAgICAgICAgICAgICAgICAgICAgfCAxMCArKysrKysrKysrDQo+ICBhcmNo
+L2FybTY0L2luY2x1ZGUvYXNtL2NwdWlkbGVfaGFsdHBvbGwuaCB8ICA5ICsrKysrKysrKw0KPiAg
+YXJjaC9hcm02NC9rZXJuZWwvY3B1aWRsZS5jICAgICAgICAgICAgICAgfCAyMyArKysrKysrKysr
+KysrKysrKysrKysrKw0KPiAgMyBmaWxlcyBjaGFuZ2VkLCA0MiBpbnNlcnRpb25zKCspDQo+ICBj
+cmVhdGUgbW9kZSAxMDA2NDQgYXJjaC9hcm02NC9pbmNsdWRlL2FzbS9jcHVpZGxlX2hhbHRwb2xs
+LmgNCj4gDQo+IGRpZmYgLS1naXQgYS9hcmNoL2FybTY0L0tjb25maWcgYi9hcmNoL2FybTY0L0tj
+b25maWcNCj4gaW5kZXggNWQ5MTI1OWVlN2I1Li5jZjFjNjY4MWViMGEgMTAwNjQ0DQo+IC0tLSBh
+L2FyY2gvYXJtNjQvS2NvbmZpZw0KPiArKysgYi9hcmNoL2FybTY0L0tjb25maWcNCj4gQEAgLTM1
+LDYgKzM1LDcgQEAgY29uZmlnIEFSTTY0DQo+ICAgICAgICAgc2VsZWN0IEFSQ0hfSEFTX01FTUJB
+UlJJRVJfU1lOQ19DT1JFDQo+ICAgICAgICAgc2VsZWN0IEFSQ0hfSEFTX05NSV9TQUZFX1RISVNf
+Q1BVX09QUw0KPiAgICAgICAgIHNlbGVjdCBBUkNIX0hBU19OT05fT1ZFUkxBUFBJTkdfQUREUkVT
+U19TUEFDRQ0KPiArICAgICAgIHNlbGVjdCBBUkNIX0hBU19PUFRJTUlaRURfUE9MTA0KPiAgICAg
+ICAgIHNlbGVjdCBBUkNIX0hBU19QVEVfREVWTUFQDQo+ICAgICAgICAgc2VsZWN0IEFSQ0hfSEFT
+X1BURV9TUEVDSUFMDQo+ICAgICAgICAgc2VsZWN0IEFSQ0hfSEFTX0hXX1BURV9ZT1VORw0KPiBA
+QCAtMjM3Niw2ICsyMzc3LDE1IEBAIGNvbmZpZyBBUkNIX0hJQkVSTkFUSU9OX0hFQURFUg0KPiAg
+Y29uZmlnIEFSQ0hfU1VTUEVORF9QT1NTSUJMRQ0KPiAgICAgICAgIGRlZl9ib29sIHkNCj4gDQo+
+ICtjb25maWcgQVJDSF9DUFVJRExFX0hBTFRQT0xMDQo+ICsgICAgICAgYm9vbCAiRW5hYmxlIHNl
+bGVjdGlvbiBvZiB0aGUgY3B1aWRsZS1oYWx0cG9sbCBkcml2ZXIiDQo+ICsgICAgICAgZGVmYXVs
+dCBuDQo+ICsgICAgICAgaGVscA0KPiArICAgICAgICAgY3B1aWRsZS1oYWx0cG9sbCBhbGxvd3Mg
+Zm9yIGFkYXB0aXZlIHBvbGxpbmcgYmFzZWQgb24NCj4gKyAgICAgICAgIGN1cnJlbnQgbG9hZCBi
+ZWZvcmUgZW50ZXJpbmcgdGhlIGlkbGUgc3RhdGUuDQo+ICsNCj4gKyAgICAgICAgIFNvbWUgdmly
+dHVhbGl6ZWQgd29ya2xvYWRzIGJlbmVmaXQgZnJvbSB1c2luZyBpdC4NCj4gKw0KPiAgZW5kbWVu
+dSAjICJQb3dlciBtYW5hZ2VtZW50IG9wdGlvbnMiDQo+IA0KPiAgbWVudSAiQ1BVIFBvd2VyIE1h
+bmFnZW1lbnQiDQo+IGRpZmYgLS1naXQgYS9hcmNoL2FybTY0L2luY2x1ZGUvYXNtL2NwdWlkbGVf
+aGFsdHBvbGwuaCBiL2FyY2gvYXJtNjQvaW5jbHVkZS9hc20vY3B1aWRsZV9oYWx0cG9sbC5oDQo+
+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+IGluZGV4IDAwMDAwMDAwMDAwMC4uNjVmMjg5NDA3YTZj
+DQo+IC0tLSAvZGV2L251bGwNCj4gKysrIGIvYXJjaC9hcm02NC9pbmNsdWRlL2FzbS9jcHVpZGxl
+X2hhbHRwb2xsLmgNCj4gQEAgLTAsMCArMSw5IEBADQo+ICsvKiBTUERYLUxpY2Vuc2UtSWRlbnRp
+ZmllcjogR1BMLTIuMCAqLw0KPiArI2lmbmRlZiBfQVJDSF9IQUxUUE9MTF9IDQo+ICsjZGVmaW5l
+IF9BUkNIX0hBTFRQT0xMX0gNCj4gKw0KPiArc3RhdGljIGlubGluZSB2b2lkIGFyY2hfaGFsdHBv
+bGxfZW5hYmxlKHVuc2lnbmVkIGludCBjcHUpIHsgfQ0KPiArc3RhdGljIGlubGluZSB2b2lkIGFy
+Y2hfaGFsdHBvbGxfZGlzYWJsZSh1bnNpZ25lZCBpbnQgY3B1KSB7IH0NCj4gKw0KPiArYm9vbCBh
+cmNoX2hhbHRwb2xsX3dhbnQoYm9vbCBmb3JjZSk7DQo+ICsjZW5kaWYNCj4gZGlmZiAtLWdpdCBh
+L2FyY2gvYXJtNjQva2VybmVsL2NwdWlkbGUuYyBiL2FyY2gvYXJtNjQva2VybmVsL2NwdWlkbGUu
+Yw0KPiBpbmRleCBmMzcyMjk1MjA3ZmIuLjMzNGRmODJhMGVhYyAxMDA2NDQNCj4gLS0tIGEvYXJj
+aC9hcm02NC9rZXJuZWwvY3B1aWRsZS5jDQo+ICsrKyBiL2FyY2gvYXJtNjQva2VybmVsL2NwdWlk
+bGUuYw0KPiBAQCAtNzIsMyArNzIsMjYgQEAgX19jcHVpZGxlIGludCBhY3BpX3Byb2Nlc3Nvcl9m
+ZmhfbHBpX2VudGVyKHN0cnVjdCBhY3BpX2xwaV9zdGF0ZSAqbHBpKQ0KPiAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBscGktPmluZGV4LCBzdGF0ZSk7DQo+ICB9
+DQo+ICAjZW5kaWYNCj4gKw0KPiArI2lmIElTX0VOQUJMRUQoQ09ORklHX0hBTFRQT0xMX0NQVUlE
+TEUpDQo+ICsNCj4gKyNpbmNsdWRlIDxhc20vY3B1aWRsZV9oYWx0cG9sbC5oPg0KPiArDQo+ICti
+b29sIGFyY2hfaGFsdHBvbGxfd2FudChib29sIGZvcmNlKQ0KPiArew0KPiArICAgICAgIC8qDQo+
+ICsgICAgICAgICogRW5hYmxpbmcgaGFsdHBvbGwgcmVxdWlyZXMgdHdvIHRoaW5nczoNCj4gKyAg
+ICAgICAgKg0KPiArICAgICAgICAqIC0gRXZlbnQgc3RyZWFtIHN1cHBvcnQgdG8gcHJvdmlkZSBh
+IHRlcm1pbmF0aW5nIGNvbmRpdGlvbiB0byB0aGUNCj4gKyAgICAgICAgKiAgIFdGRSBpbiB0aGUg
+cG9sbCBsb29wLg0KPiArICAgICAgICAqDQo+ICsgICAgICAgICogLSBLVk0gc3VwcG9ydCBmb3Ig
+YXJjaF9oYWx0cG9sbF9lbmFibGUoKSwgYXJjaF9oYWx0cG9sbF9lbmFibGUoKS4NCg0KdHlwbzog
+ImFyY2hfaGFsdHBvbGxfZW5hYmxlIiBhbmQgImFyY2hfaGFsdHBvbGxfZW5hYmxlIg0KDQo+ICsg
+ICAgICAgICoNCj4gKyAgICAgICAgKiBHaXZlbiB0aGF0IHRoZSBzZWNvbmQgaXMgbWlzc2luZywg
+YWxsb3cgaGFsdHBvbGwgdG8gb25seSBiZSBmb3JjZQ0KPiArICAgICAgICAqIGxvYWRlZC4NCj4g
+KyAgICAgICAgKi8NCj4gKyAgICAgICByZXR1cm4gKGFyY2hfdGltZXJfZXZ0c3RybV9hdmFpbGFi
+bGUoKSAmJiBmYWxzZSkgfHwgZm9yY2U7DQoNClRoaXMgc2hvdWxkIGFsd2F5cyBldmFsdWF0ZSBm
+YWxzZSB3aXRob3V0IGZvcmNlLiBQZXJoYXBzIHlvdSBtZWFudA0Kc29tZXRoaW5nIGxpa2UgdGhp
+cz8NCg0KYGBgDQotICAgICAgIHJldHVybiAoYXJjaF90aW1lcl9ldnRzdHJtX2F2YWlsYWJsZSgp
+ICYmIGZhbHNlKSB8fCBmb3JjZTsNCisgICAgICAgcmV0dXJuIGFyY2hfdGltZXJfZXZ0c3RybV9h
+dmFpbGFibGUoKSB8fCBmb3JjZTsNCmBgYA0KDQpSZWdhcmRzLA0KSGFyaXMgT2thbm92aWMNCg0K
+PiArfQ0KPiArDQo+ICtFWFBPUlRfU1lNQk9MX0dQTChhcmNoX2hhbHRwb2xsX3dhbnQpOw0KPiAr
+I2VuZGlmDQo+IC0tDQo+IDIuNDMuNQ0KPiANCg0K
