@@ -1,47 +1,50 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EABE156676;
-	Mon, 29 Jul 2024 16:13:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7150038B;
+	Mon, 29 Jul 2024 16:27:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722269586; cv=none; b=alP/xSfIayKw/WBaMVvi3mqpIWXen+d5QlfR6rlZyXhQunjUyuboK4EYvHNYf3071nKhxy/detOrgOfOsjI+XK7Rb2580AbNBPjuvEgKQG0B1rTdWk1dEU7bqwT/9Uv779+L/X7ZJAIrijb0m5x9mXZMU7LWQs4F17lF1+k721U=
+	t=1722270467; cv=none; b=GHQ4J4AerBrnAoMMu33EGgunJ8hTMhIe5bTZD+XbIUYyWVqW1UP26H53eOqsdMaSUjaFEMl0QlxU4tIvZ8dXGxIoyFCynzcHgq3ugoEfSv/eG9qh8qnGk71LKwJnZa3/ZDCGKe0harcZH83LfLplkwHCFJWdWmLl7MAkBFpOcNE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722269586; c=relaxed/simple;
-	bh=tQvnktlYNtV73GLPQxba0oBknnBfSrU0fQY2mTF/++A=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=W0AMxiRPrZsU8ALLE+f+KGqJHINhULKZPJ5HRAup9gUC8WCWYqI5vkNWwH7DzV8Ih7oGXm9gQBgyy4Ho2Q8R+xSyYXoOldW2d8deRVe7L6lkbb1rIXoVVQMYbeG0ppjispzF1nsIEyF4tFB14XPqlHLitKicIUawZ82LNdvUxk8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Us/RCRCE reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	s=arc-20240116; t=1722270467; c=relaxed/simple;
+	bh=GMOU0nWXi1RZGZDpMeeNhQfdCnLFvO8S3h1WIqsGnV0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=GZ2gMSZN26XSkLk0tH6/hoTs+XSiR6ybOl4b2QKP7CAq+Js3fl+6kfKWKVjXtn9qKqdiTk/tPMT6iamDp+EdtTnAPTQYcWjO5/varU76Cy2srs6GtwxZD0m5UPM/+xmnq3a1zliL/Gsc1PNQM0Wi47wH2vrECDsgyOGKja1/YS8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=aLpAgmYr reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Us/RCRCE"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="aLpAgmYr"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 3d3f70d0e1cfbe22; Mon, 29 Jul 2024 18:13:02 +0200
+ id 2a6812c7d9d45ca8; Mon, 29 Jul 2024 18:27:43 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 05CD777357F;
-	Mon, 29 Jul 2024 18:13:02 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id E675E77357F;
+	Mon, 29 Jul 2024 18:27:42 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1722269582;
-	bh=tQvnktlYNtV73GLPQxba0oBknnBfSrU0fQY2mTF/++A=;
-	h=From:To:Cc:Subject:Date;
-	b=Us/RCRCEMq9GwvtUg1LN5CydiLDCOd6q6urhgF0hg8PfG/ynkAvdQCkcEFgM/3me1
-	 b14SJfYbHmo/QE18wd3bY7cJT7ywwYhoyVQNmbGnlqw4rah1KmCgwFUdoNAB5rBmH6
-	 NnYpWDMF6MldCCQs+nGTcrr66kz7Ea2GrGeFCLEanV0UxYj0kmSpsgvT4uiM5cxCgd
-	 YMWDT7T4DZea5OO+HQ2kw687lnAHa6AverwM7yYc0tVBNwzPvxxad8KyowCVPAiyu8
-	 4W6hCfab7Ofx4EcPxv2WdeLAvXFmW95J8x1EgxmPKI1Qde8rJ7G0wvz16bF3TjbIuM
-	 ro8Sl2BTy77Xg==
+	s=dkim; t=1722270463;
+	bh=GMOU0nWXi1RZGZDpMeeNhQfdCnLFvO8S3h1WIqsGnV0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=aLpAgmYrUj0s5Ulor8+Y1CmjWDCqIQoeLwCBw1bySVEcWRN558/gemYRn/rylH7AX
+	 pIHoiDNmP3DORR2/MhJ1rVXgQosI0j9gwSzl4j6Bv1yNZgafd2sTh9Hb6kf0Ulp0QP
+	 mEW4T43MHG5bRrg2ie2xRBA3AwB4yJX7vOxmSlfviWLwh69QF8qo+KBuCPLODYCGbQ
+	 akRJYSOEu9jYsLQ5YdvhorbQB3wi9LLFl9zEdYuQHZLYo+780WtOwQbV7f+McJ4SEt
+	 FoVcKc6wRyWut3sNm/RO/7lgeO10y6FT/Penx3eTjJQPPhuGcvyJ8lBcHb4WsoCJSk
+	 wy0YlK/PAx22A==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
- LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>
 Subject:
- [RESEND][PATCH v1 0/8] thermal: Use trip pointers in thermal driver interface
-Date: Mon, 29 Jul 2024 17:50:44 +0200
-Message-ID: <2211925.irdbgypaU6@rjwysocki.net>
+ [PATCH v1 3/3] thermal: sysfs: Refine the handling of trip hysteresis changes
+Date: Mon, 29 Jul 2024 18:27:25 +0200
+Message-ID: <5508466.Sb9uPGUboI@rjwysocki.net>
+In-Reply-To: <1960840.taCxCBeP46@rjwysocki.net>
+References: <1960840.taCxCBeP46@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -53,28 +56,77 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjedvgdellecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepgedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjedvgddutddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepgedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4
 
-Hi Everyone,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This material has been sent already:
+Change trip_point_hyst_store() and replace thermal_zone_trip_updated()
+with thermal_zone_set_trip_hyst() to follow the trip_point_temp_store()
+code pattern for more consistency.
 
-https://lore.kernel.org/linux-pm/8409966.T7Z3S40VBb@kreacher/
+No intentional functional impact.
 
-but it has not got any traction, so resending it and I will assume no concerns
-if there is still no response.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/thermal_core.h  |    4 ++--
+ drivers/thermal/thermal_sysfs.c |    4 ++--
+ drivers/thermal/thermal_trip.c  |    6 +++---
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-This series modifies a few drivers to stop using trip IDs in its
-interactions with the core, which requires making assumptions
-regarding trip ordering that may not be met in the future, and
-there are other ways to do so that are preferred.
-
-Having done that, it removes a few core functions that have no more users.
-
-Thanks!
-
-
+Index: linux-pm/drivers/thermal/thermal_core.h
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.h
++++ linux-pm/drivers/thermal/thermal_core.h
+@@ -258,11 +258,11 @@ const char *thermal_trip_type_name(enum
+ void thermal_zone_set_trips(struct thermal_zone_device *tz);
+ int thermal_zone_trip_id(const struct thermal_zone_device *tz,
+ 			 const struct thermal_trip *trip);
+-void thermal_zone_trip_updated(struct thermal_zone_device *tz,
+-			       const struct thermal_trip *trip);
+ int __thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
+ void thermal_zone_trip_down(struct thermal_zone_device *tz,
+ 			    const struct thermal_trip *trip);
++void thermal_zone_set_trip_hyst(struct thermal_zone_device *tz,
++				struct thermal_trip *trip, int hyst);
+ 
+ /* sysfs I/F */
+ int thermal_zone_create_device_groups(struct thermal_zone_device *tz);
+Index: linux-pm/drivers/thermal/thermal_sysfs.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_sysfs.c
++++ linux-pm/drivers/thermal/thermal_sysfs.c
+@@ -153,9 +153,9 @@ trip_point_hyst_store(struct device *dev
+ 	mutex_lock(&tz->lock);
+ 
+ 	if (hyst != trip->hysteresis) {
+-		WRITE_ONCE(trip->hysteresis, hyst);
++		thermal_zone_set_trip_hyst(tz, trip, hyst);
+ 
+-		thermal_zone_trip_updated(tz, trip);
++		__thermal_zone_device_update(tz, THERMAL_TRIP_CHANGED);
+ 	}
+ 
+ 	mutex_unlock(&tz->lock);
+Index: linux-pm/drivers/thermal/thermal_trip.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_trip.c
++++ linux-pm/drivers/thermal/thermal_trip.c
+@@ -118,11 +118,11 @@ int thermal_zone_trip_id(const struct th
+ 	return trip_to_trip_desc(trip) - tz->trips;
+ }
+ 
+-void thermal_zone_trip_updated(struct thermal_zone_device *tz,
+-			       const struct thermal_trip *trip)
++void thermal_zone_set_trip_hyst(struct thermal_zone_device *tz,
++				struct thermal_trip *trip, int hyst)
+ {
++	WRITE_ONCE(trip->hysteresis, hyst);
+ 	thermal_notify_tz_trip_change(tz, trip);
+-	__thermal_zone_device_update(tz, THERMAL_TRIP_CHANGED);
+ }
+ 
+ void thermal_zone_set_trip_temp(struct thermal_zone_device *tz,
 
 
 
