@@ -1,173 +1,135 @@
-Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fallback16.i.mail.ru (fallback16.i.mail.ru [79.137.243.71])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A3A4187875
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2024 19:38:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEB0818F2EB;
+	Mon, 29 Jul 2024 20:19:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.137.243.71
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722281920; cv=none; b=YHTnPp/iKL2FMv1RCctdyo/W6PAU4c/aRGGE0YWX7C1A4WHuyDqgOpUavbF/ZR7htqcjkG21Y+eVunuxoLNwfkt+o40daNI+6GK+cDKz7jhK5FWA19Ro08RK4mkWe7QnAxOfsS8Msido424ka+rfUD/nKvDzE2H2U9dxkpIjWec=
+	t=1722284378; cv=none; b=eThByjLQqYgZlKoM107EVN1AtisvQQSYIyvqKUSIT7rBuBaB0hRg0CkMfupHi8SVSCJGGc7XdcMteY3vLjAc1ixT8cv+PCtGwiu1oU4ldsuuIRPvi/f/Dzq3ZbWSvMVO8ZlNGL8I+GqALybpLwlugFAeGJ4ENlGj5LdFxW+LxPk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722281920; c=relaxed/simple;
-	bh=ZML8mLFuS8VLP/FG5rg8wzzubBlaOqUijIW6Mopnh+E=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AJMF3799xtyxQxsY2IllN/XButX61YkISzPgIhAjvx4vncZBgLpHA5rdcZKSJnOeUuLHxRvRWuibXsl7NlXom60fuulaERND6KLCOlWorRguO3l18VbZXi4XRM+u8I/E98fg4irPWhFcIw7PhtOv5czgMWEe2mPCnEzrsxWn1no=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NwtGSoif; arc=none smtp.client-ip=209.85.216.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1722284378; c=relaxed/simple;
+	bh=02zmu4QGqEIJ9BZlLAlY9ysjTaK07RL+tKCwmB+40+g=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=olGWGFhqsopSdtI1SO/pEbeThwMGeER8T+y0VzFw2NuSfrVrCA4tFQKjC70N3LMu7BVD5bLr8F1V6MZv//gJNYoQUcSW9HHIeRqDf53nxBeVxjk6jh2vjEsFzYCYJgJ44dO/DnNR1JIv/v1vLIGuXrI4Xg15XlyxIOsRv3+C1Hg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jiaxyga.com; spf=pass smtp.mailfrom=jiaxyga.com; dkim=pass (1024-bit key) header.d=jiaxyga.com header.i=@jiaxyga.com header.b=e8K2pUDQ; dkim=pass (1024-bit key) header.d=jiaxyga.com header.i=@jiaxyga.com header.b=Am9580LH; arc=none smtp.client-ip=79.137.243.71
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jiaxyga.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jiaxyga.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NwtGSoif"
-Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-2cb5789297eso2153001a91.3
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2024 12:38:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1722281918; x=1722886718; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ZML8mLFuS8VLP/FG5rg8wzzubBlaOqUijIW6Mopnh+E=;
-        b=NwtGSoif/VWvFAS5lg5xwMQ5CXjWalIIy/PTOtcDRfYdxQqQxU+l+yLr/s/qLg57wo
-         yKecWJ7V4VUGeRe/63139B9C6Uz4wrHCSo7JRCmYfScgTL3d9dEEKhsv5nqDGqGgry4d
-         eiH/mpU1/WsKUbBcu88OD+TnwE7l+zfHjCh3kqKLtsaN3iVM4cDuu9QCJStNJrHsoHGg
-         xy3GFyEHuJEndR7qsqHsQYwDODziwHVRHyqCz/wkobgI9IqjqDuRj/N6oNnxOivhsxpV
-         C10enowS+1bExJdsiMrK5+IF9ia3fUP94LOp428UxNcU+ZZj1VjdSRWi+7xxQxBwO3pm
-         gI/Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1722281918; x=1722886718;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ZML8mLFuS8VLP/FG5rg8wzzubBlaOqUijIW6Mopnh+E=;
-        b=bHuZY1IvtY0QKzQh9ezktOjNbhWB4mg9fChST+ZIlY+6p12lac3pHRNcAPS7i4CayW
-         5qNgIqZ7yHNirv0jRFjk18q/CuAeU9nZJHyPJwePMAOjeRCe+gFWUmcNq/Tsu5xYKqhi
-         0vP9Gq/MLBHu/N7/HJLp1mqPwG5hymp6Y6E1qyRqsvj/0N63hQnkSThAhRGy7nif26Hx
-         4FTJgu2bYwJpECzvqDptxQeLW3wxz//rK1+BH5zIqpq3wdAv6iOekto1lUMop2B8iJmb
-         seVeDbChBvWVxOJR5FJ5KeSzTmrL2r3U+t7O7hMj3Lf3QqsAVjtNZd4CQGxyGjkkrsD2
-         SJ5w==
-X-Gm-Message-State: AOJu0YzX1PRLYtSuFpTrsmXVS1C6zm2OAlkMJBhb539HTJE31fUY97iH
-	z5xkqH/1KnAHry8shZz8VePNGJW0yX4Jrl5UF0a/382vlkhr+/H3bDZjdkbucHZrf7jz6IRsEQf
-	u9w6O4ezAluUQINXeaoHLxnuV+BoQRHy76RM=
-X-Google-Smtp-Source: AGHT+IFGwERtnLOWYQJevblcn4xqy27kqWiDm6AFtglnCHVgBvwRucqf6UjmCUErq2/GCcFkCHc3UrzxQBxmQFpXkaE=
-X-Received: by 2002:a17:90b:1282:b0:2c9:7e9d:8424 with SMTP id
- 98e67ed59e1d1-2cf7e5f50f8mr6353270a91.30.1722281918394; Mon, 29 Jul 2024
- 12:38:38 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=jiaxyga.com header.i=@jiaxyga.com header.b="e8K2pUDQ";
+	dkim=pass (1024-bit key) header.d=jiaxyga.com header.i=@jiaxyga.com header.b="Am9580LH"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=jiaxyga.com; s=mailru;
+	h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:From:Subject:Content-Type:Content-Transfer-Encoding:To:Cc; bh=xMFsu2kH/oDLzBeUKz4QeUQTwOlMOGENjz2MGaejVzg=;
+	t=1722284376;x=1722374376; 
+	b=e8K2pUDQ2AM7PTvOQ/F4a3diCf2mGjoqPTEsHBLOf2d70sMWOEc/sInN4gk8pN2eH1kaYR+X9zKcuQNusYu5CGVTHzdQOD0qtKD/zw4a2CaIWfCJS1ZrxhWkiwUpcowDBeHy7ApTsmmHPpELpE/Ch/RRzdR2bZ8S+7lIBpER440=;
+Received: from [10.12.4.14] (port=54164 helo=smtp39.i.mail.ru)
+	by fallback16.i.mail.ru with esmtp (envelope-from <danila@jiaxyga.com>)
+	id 1sYWq8-002EvE-7I; Mon, 29 Jul 2024 23:19:28 +0300
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=jiaxyga.com
+	; s=mailru; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:From:Sender:Reply-To:To:Cc:Content-Type:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive:
+	X-Cloud-Ids:Disposition-Notification-To;
+	bh=xMFsu2kH/oDLzBeUKz4QeUQTwOlMOGENjz2MGaejVzg=; t=1722284368; x=1722374368; 
+	b=Am9580LHkwQKGL6MdFghiYYsJ//Pa+o+H2NxAC2XxtqUEH4h0xWPBwSGs9zNvgj6vITFTDsSy4t
+	DACrD9yi1VmvdHNCudBrGIQdeoIrbvx/teDd2gCGb1fmPdum1Qu+G/CnOQnB73veQNZaIRC3rcaxW
+	n2bPZn93cOr94EmLFwo=;
+Received: by exim-smtp-868bf69f6c-8kchf with esmtpa (envelope-from <danila@jiaxyga.com>)
+	id 1sYWpm-00000000CoU-41yt; Mon, 29 Jul 2024 23:19:07 +0300
+From: Danila Tikhonov <danila@jiaxyga.com>
+To: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	andersson@kernel.org,
+	konrad.dybcio@linaro.org,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	heikki.krogerus@linux.intel.com,
+	gregkh@linuxfoundation.org,
+	kees@kernel.org,
+	tony.luck@intel.com,
+	gpiccoli@igalia.com,
+	sudeep.holla@arm.com,
+	quic_rjendra@quicinc.com,
+	andre.przywara@arm.com,
+	ulf.hansson@linaro.org,
+	davidwronek@gmail.com,
+	neil.armstrong@linaro.org,
+	heiko.stuebner@cherry.de,
+	rafal@milecki.pl,
+	macromorgan@hotmail.com,
+	linus.walleij@linaro.org,
+	dmitry.baryshkov@linaro.org,
+	johan+linaro@kernel.org,
+	javier.carrasco.cruz@gmail.com,
+	quic_kriskura@quicinc.com,
+	lpieralisi@kernel.org,
+	fekz115@gmail.com
+Cc: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	linux-hardening@vger.kernel.org,
+	linux@mainlining.org,
+	Danila Tikhonov <danila@jiaxyga.com>
+Subject: [PATCH 02/11] soc: qcom: socinfo: Add Soc IDs for SM7325 family
+Date: Mon, 29 Jul 2024 23:18:09 +0300
+Message-ID: <20240729201843.142918-3-danila@jiaxyga.com>
+X-Mailer: git-send-email 2.45.2
+In-Reply-To: <20240729201843.142918-1-danila@jiaxyga.com>
+References: <20240729201843.142918-1-danila@jiaxyga.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <872ea739-632a-4344-9e3d-49f8fb846f8a@gmail.com> <CAJZ5v0hD+6YR9HvtrSu_bDGZKMr2D2c1FKmDiDPwqDWV7wc_WA@mail.gmail.com>
-In-Reply-To: <CAJZ5v0hD+6YR9HvtrSu_bDGZKMr2D2c1FKmDiDPwqDWV7wc_WA@mail.gmail.com>
-From: Anish Rashinkar <rashinkar.anish@gmail.com>
-Date: Tue, 30 Jul 2024 01:08:26 +0530
-Message-ID: <CAOESE2QC2mUEQGZjsQq4Fe=AmUxTKG6=aqS==ykbowqTCGOyaQ@mail.gmail.com>
-Subject: Re: Need help setting asynchronous CPU frequencies.
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Mailru-Src: smtp
+X-4EC0790: 10
+X-7564579A: B8F34718100C35BD
+X-77F55803: 4F1203BC0FB41BD9000B6812E77BE1C6854AF46E97D2152892C6A59DA105ADB3182A05F538085040B8ABAA5C580993D83DE06ABAFEAF6705954007E54438538B9EC546CAE4A36CAC16B5ACA2CA2E2F10
+X-7FA49CB5: FF5795518A3D127A4AD6D5ED66289B5278DA827A17800CE716FAD50E497B9C14EA1F7E6F0F101C67BD4B6F7A4D31EC0BCC500DACC3FED6E28638F802B75D45FF8AA50765F7900637E16D8B060A9A23898638F802B75D45FF36EB9D2243A4F8B5A6FCA7DBDB1FC311F39EFFDF887939037866D6147AF826D8AFAA5D22035B4804580E18DF0DBB563DBA77BF50F16291B7CC7F00164DA146DAFE8445B8C89999728AA50765F7900637D0FEED2715E18529389733CBF5DBD5E9C8A9BA7A39EFB766F5D81C698A659EA7CC7F00164DA146DA9985D098DBDEAEC8B861051D4BA689FCF6B57BC7E6449061A352F6E88A58FB86F5D81C698A659EA73AA81AA40904B5D9A18204E546F3947C4B6F6234D9065C976E0066C2D8992A164AD6D5ED66289B523666184CF4C3C14F6136E347CC761E07725E5C173C3A84C302DEEDFCC97348C4BA3038C0950A5D36B5C8C57E37DE458B330BD67F2E7D9AF16D1867E19FE14079C09775C1D3CA48CF3D321E7403792E342EB15956EA79C166A417C69337E82CC275ECD9A6C639B01B78DA827A17800CE74F0F518E68DBD4F843847C11F186F3C59DAA53EE0834AAEE
+X-C1DE0DAB: 0D63561A33F958A5EFA8F4968A493E435002B1117B3ED696256586B6C84C5F8319AC5B239BAD4335823CB91A9FED034534781492E4B8EEAD220496FFA5CD4785C79554A2A72441328621D336A7BC284946AD531847A6065A535571D14F44ED41
+X-C8649E89: 1C3962B70DF3F0ADE00A9FD3E00BEEDF3FED46C3ACD6F73ED3581295AF09D3DF87807E0823442EA2ED31085941D9CD0AF7F820E7B07EA4CF524F6EC23856C4E0875A53886354E6736C0578DFD32527A35C66AE413C21C3ECD917AD9EEFBA970E67C7AAC6E25A2086C15A8E95E874BBCD633D7FB3044967C2BC71DB4567420C8061A41C79C593F3F002C26D483E81D6BE72B480F99247062FEE42F474E8A1C6FD34D382445848F2F3
+X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5ycPtXkTV4k65bRjmOUUP8cvGozZ33TWg5HZplvhhXbhDGzqmQDTd6OAevLeAnq3Ra9uf7zvY2zzsIhlcp/Y7m53TZgf2aB4JOg4gkr2biojX2k8aL79D6VEtr452/yI2Q==
+X-Mailru-Sender: 9EB879F2C80682A09F26F806C73949811F832B91E20AE7E24825860F061DF21452521A2B93C10F15113C06E07DA8AC682C62728BC403A049225EC17F3711B6CF1A6F2E8989E84EC137BFB0221605B344978139F6FA5A77F05FEEDEB644C299C0ED14614B50AE0675
+X-Mras: Ok
+X-7564579A: B8F34718100C35BD
+X-77F55803: 6242723A09DB00B431B8944160407DD0B313328ABEDFD6F43944198D198D480C68F3CF0E9FE49B69543DADA4AE4E3247B4326F77E427F336479B2EAC155EFDE2DD6EEBEDD7AC8187
+X-7FA49CB5: 0D63561A33F958A591B612254AA1B903E77F14220E91F7D53D055AAF7A6EEE438941B15DA834481FA18204E546F3947CAD7102AF51AFB197F6B57BC7E64490618DEB871D839B7333395957E7521B51C2DFABB839C843B9C08941B15DA834481F8AA50765F790063794CA976D7634B470389733CBF5DBD5E9B5C8C57E37DE458BD96E472CDF7238E0725E5C173C3A84C3C839A5C92C19B5C335872C767BF85DA2F004C90652538430E4A6367B16DE6309
+X-87b9d050: 1
+X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5ycPtXkTV4k65bRjmOUUP8cvGozZ33TWg5HZplvhhXbhDGzqmQDTd6OAevLeAnq3Ra9uf7zvY2zzsIhlcp/Y7m53TZgf2aB4JOg4gkr2biojX2k8aL79D6WIFy39HdQshA==
+X-Mailru-MI: 8000000000000800
+X-Mras: Ok
 
-Thank you for the reply.
+Add Soc ID table entries for Qualcomm SM7325 family.
 
-Yes, I already do keep CPUs 2 and 6 offline, but I would really like
-the performance of a whole additional core as well.
+Signed-off-by: Danila Tikhonov <danila@jiaxyga.com>
+---
+ drivers/soc/qcom/socinfo.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-I am working on a script which will help me automatically switch
-between 3 cores max frequency, and 4 cores at lower frequency when
-needed for example when I need the multithreaded performance or if my
-laptop is thermal throttling. But I would still really like to get
-that core running.
+diff --git a/drivers/soc/qcom/socinfo.c b/drivers/soc/qcom/socinfo.c
+index d7359a235e3c..f4e5f7a62206 100644
+--- a/drivers/soc/qcom/socinfo.c
++++ b/drivers/soc/qcom/socinfo.c
+@@ -401,11 +401,13 @@ static const struct soc_id soc_id[] = {
+ 	{ qcom_board_id(SA8540P) },
+ 	{ qcom_board_id(QCM4290) },
+ 	{ qcom_board_id(QCS4290) },
++	{ qcom_board_id(SM7325) },
+ 	{ qcom_board_id_named(SM8450_2, "SM8450") },
+ 	{ qcom_board_id_named(SM8450_3, "SM8450") },
+ 	{ qcom_board_id(SC7280) },
+ 	{ qcom_board_id(SC7180P) },
+ 	{ qcom_board_id(QCM6490) },
++	{ qcom_board_id(SM7325P) },
+ 	{ qcom_board_id(IPQ5000) },
+ 	{ qcom_board_id(IPQ0509) },
+ 	{ qcom_board_id(IPQ0518) },
+-- 
+2.45.2
 
-You didn't specifically try to mention the solution of my problem,
-which would be being able to set different clock speeds on different
-cores. With whatever knowledge I have, I don't think that it is
-impossible to achieve this. If I am monitoring correctly, then
-different clock speeds are being set on different cores all the time
-based on the current power profile. So based on this, is there really
-no way to limit the maximum frequency allowed for a certain core/CPUs?
-
-If the hardware way is not possible, what about just pure software
-simulation? Like the kernel, manually injecting a few hundred million
-NOP instructions every second on a CPU? I don't think this will work
-as I have also tried isolating CPUs 2 and 6 using isolcpus parameter,
-and so running them at 100% halt, but that still causes the crash.
-
- And I have also heard that the kernel also takes care of the voltage
-scaling? Is it really possible to tweak the voltages of the CPU
-through only software methods (access to FIVR is locked by the
-firmware)?
-
-Thank you for your time.
-
-
-On Mon, Jul 29, 2024 at 11:55=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.o=
-rg> wrote:
->
-> On Mon, Jul 29, 2024 at 6:35=E2=80=AFPM Anish Rashinkar
-> <rashinkar.anish@gmail.com> wrote:
-> >
-> > Sorry, I am really not sure if this is the correct place to ask this,
-> > but I have tried almost everywhere but to no success.
->
-> No worries.
->
-> > In short, one of my cores in my processor is defective/degraded. It
-> > can't run at max frequency or else it will crash. Either I have to lock
-> > down the frequency of all the cores to a lower value, or set that core
-> > offline.
-> >
-> > Access to turbo ratio limits is restricted by the firmware, or otherwis=
-e
-> > it would have been easy to set the working cores to max frequency while
-> > keeping the defective core to a lower speed. Voltage controls are also
-> > locked, which could have fixed the problem, and I have already put a lo=
-t
-> > of time trying to gain the access, but it's too risky (firmware modding=
-).
-> >
-> > It's an HP Elitebook 840 G5 laptop, with an Intel Core i5 8350U. 4 core=
-s
-> > with 8 logical threads, It boosts up to 3600 MHz. I have to lock the
-> > whole processor frequency to around 3 - 3.1 GHz, but it is getting wors=
-e
-> > and might crash on that as well. Or if I choose to disable the core, I
-> > have to disable CPUs 2 and 6, which is the third core. I have noticed
-> > that disabling idle states (C states) gives me a bit more stability so =
-I
-> > can probably raise the frequency a bit more.
-> >
-> > All I want to know is if there is a way to run the 3 cores at max
-> > frequency, while running that one core at a lower 3 GHz frequency?
->
-> If the processor is not capable of controlling frequency per-core,
-> which is very unlikely for a laptop one, then no.
->
-> The problem is that all cores share one voltage regulator that is
-> necessary to raise the voltage in accordance with the frequency you
-> want to run at.
->
-> In that case, the best you can do is to either take the defective core
-> offline (which requires taking CPUs 2 and 6 offline if I understand
-> the above correctly) and run the other cores at higher frequencies (if
-> you care about single-thread performance more than about the ability
-> to run 8 threads in parallel), or run all cores at lower frequencies
-> (if running more threads in parallel us more desirable).
->
-> > All my attempts included trying to get the userspace governor working,
-> > but it is a big mess. Using tools like cpupower or cpufreq
-> > (cpufrequtils), I can't load the userspace governor directly. The
-> > userspace governor loads if I disable intel_pstate or put it to passive
-> > mode, but it doesn't seem to have any effect. After loading it, any
-> > frequency I set using cpupower/cpufreq doesn't apply. I also tried with
-> > intel_pstate hwp on/off. And I of course tried manually choosing the
-> > core in cpufreq but either the changes don't apply, or it gets applied
-> > to all cores. I also kind of tried manually setting the frequencies in
-> > the kernel files (/sys and those), but they didn't really work. I also
-> > tried "intel_pstate=3Dper_cpu_perf_limits" kernel parameter, but that
-> > didn't really help (I couldn't get the intel_pstate folder under all
-> > CPUs, and instead I still got it under .../cpu/ like always).
-> >
-> > I am currently running Ubuntu 24.04 LTS.
->
-> The distribution and kernel version do not matter here.
->
-> Thanks!
