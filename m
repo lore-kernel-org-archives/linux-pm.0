@@ -1,95 +1,116 @@
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com [209.85.167.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39F7912C7FD;
-	Mon, 29 Jul 2024 07:09:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.154.123
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC846137775
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2024 08:12:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722236994; cv=none; b=ToTnv2eT00hFy3LIon1qdF6yCCd9PXwOAcQKac6s6N4OxjYbPQlUd8e5nZxHERISWm9/r9ESzrsVL53Ky7yxUTlKXL7TFqPD4uSCfX5plx3NRz+anxuSIK7sEJ/+tPlBQ5dW8RtulJOF6aGVRIsDkNdF4A5f14N1kc989HgvM9Q=
+	t=1722240762; cv=none; b=bAGLhuqVUoJCfRwGUrd9Kgg9N3Z0VToFgTnZTX9X833hqtYIKldh5lym6R7dgxJvaE4EZ3iwZxv7Zn+rMWoLFLI4XO7QSM8OrjW/IQuMekccP9r+3JEMCiXVKapKvrcp20jJumSIqcxScAsX6yeqEpKeBZP8NiURCt0da1BECao=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722236994; c=relaxed/simple;
-	bh=flQEluk5hLljQfPymWhZA5C4pdYlqlYSYYtSaCbnjQ8=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=h1ePLnPf29MXUeIjHCkyHykGZFb6B8tOeF+V7/Lq3rZ1KFhnQkzJWEzGfH+BPRDDvJqCaVBq4A04YM0RM625emVcv53LIWvQ8gEMneXxMYDu88X1s5tjeh3s4FZLQIyor6sW+V0WDgHB0H7XUGS60xaG413idjOFT1L5zwupsH4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=FNHd2VhA; arc=none smtp.client-ip=68.232.154.123
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
+	s=arc-20240116; t=1722240762; c=relaxed/simple;
+	bh=vmbCOUmKZ1dFjF8DwS4l7Dx84hYJKYmzgXMywQQNOdM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=jzxRzhg07igOH1tU9eCrhrIpNMTrAWYiR2axaochmBteZDDZ/LvmxSXE2cRjGu4T8Wb6mX611FkdykTiwqa08AeV1Sv0WPISstCKROFtavUtYJE5typwjCtdnzftUu6Y8zMwUeZ5Lwo04J/c8IozGcOLxzyCLbbcoc9fIgItNP0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=TyGFGQ/Z; arc=none smtp.client-ip=209.85.167.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="FNHd2VhA"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1722236993; x=1753772993;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=flQEluk5hLljQfPymWhZA5C4pdYlqlYSYYtSaCbnjQ8=;
-  b=FNHd2VhAyJr4uZwhs6jGEawpZdkcuHSERBnC3DcoHizbPieqCu4GQfB8
-   80aBN2BvT7d9+lGqQT/PP+Nx65YxmO41ZnY/LlXt1jO82N3zRkcaUlE06
-   fKKVITViqBjXlAAV7WX4CgB1BkbD5qwB1XKmrVdXQ9+AE6SH181qfVkNQ
-   CWQV5lV4pj2WS5G7f9fojysaeDrhl88LOC6hfBAh77hBgLJSDgTsuCQ7M
-   PYyY8AQcqjBn8phLMiU1AlWqBWi3kHp6apGSBZ95WF3VjUGToIeA3g2vT
-   g10OHVA7K9XYBqW3FoTRYAXiBKjhlze3GHcOgB1Cs7pp2WXoZakiag7Tl
-   w==;
-X-CSE-ConnectionGUID: YmCZXuD3Tai4yHyg8vJh5A==
-X-CSE-MsgGUID: htNuK+SpS2CqwLB2J77/3w==
-X-IronPort-AV: E=Sophos;i="6.09,245,1716274800"; 
-   d="scan'208";a="30454179"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa2.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 29 Jul 2024 00:09:52 -0700
-Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Mon, 29 Jul 2024 00:09:16 -0700
-Received: from che-lt-i67070.microchip.com (10.10.85.11) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server id
- 15.1.2507.35 via Frontend Transport; Mon, 29 Jul 2024 00:09:11 -0700
-From: Varshini Rajendran <varshini.rajendran@microchip.com>
-To: <claudiu.beznea@tuxon.dev>, <sre@kernel.org>, <robh@kernel.org>,
-	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <nicolas.ferre@microchip.com>,
-	<alexandre.belloni@bootlin.com>, <linux-pm@vger.kernel.org>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>
-CC: <varshini.rajendran@microchip.com>, Krzysztof Kozlowski
-	<krzysztof.kozlowski@linaro.org>, Sebastian Reichel
-	<sebastian.reichel@collabora.com>
-Subject: [PATCH v6 22/27] dt-bindings: power: reset: atmel,sama5d2-shdwc: add sam9x7
-Date: Mon, 29 Jul 2024 12:39:07 +0530
-Message-ID: <20240729070907.1991321-1-varshini.rajendran@microchip.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20240729065603.1986074-1-varshini.rajendran@microchip.com>
-References: <20240729065603.1986074-1-varshini.rajendran@microchip.com>
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="TyGFGQ/Z"
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-52f01613acbso3692303e87.1
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2024 01:12:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1722240759; x=1722845559; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=mgbLi1WuzrWYkt+kvg6tYyooxYHTBlvpYn0Wnr6oVFM=;
+        b=TyGFGQ/ZcGpOSXwZb+5zdr1hjNZtCMyGR6bVXN8St4b2J7PJ/NbwTkjbIAHE9wLyCH
+         DQ9/irDa+4IKrTV0SGoa7fUa6i9XMoivJ27aJNTgtFgw4fqHLp8NlxMt7WcMOt96EiGL
+         TUtou8NZ3GHs+VBg8AdUy5DwT8CSFbDq0tvFZaxMc9LKi0571xEEOC3XZPZ6zvmNH3rH
+         wAqREpBivm4GLboWAsacuygmvM06McLLRQEVx7XPhwYW9WVAFAEkqu2FFJ+5pGU+I/8E
+         UZS4KvY6io79902C5YSO7J7hfq2Ij5fZgjyIH9YPEAG6vSSend0ab9ppIO5ihLDaiqB/
+         8rfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1722240759; x=1722845559;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=mgbLi1WuzrWYkt+kvg6tYyooxYHTBlvpYn0Wnr6oVFM=;
+        b=IxwYtv0CivHGJheE/wEzfXq45Bh/Cjh9L3Si2G0zNneCt7d0oUkEbkhxI+TpGVkobb
+         My5bjFxUrwZPvNmJhGu3pqBFTNvciK33AxDrKEQ8o+adI3jj3o2SzEcWSVwl+MeY3x66
+         VHaYxWe9vGS/vLwamtPMDxyAKczhA6DGxPCxJVOJSEYxynD/JWS7e+LImJ2BA1zQisT8
+         NvvRBJXuHYU9HOZw9NNs5IMxWHpW02xQ1Xul+un0Hshz6R11/uGKxDFK/WyQbmtpUSoP
+         medqAQP33Lyb7jU2wSIOr/LW6oqM/FH4RGupLU1pefHq6nTGCzwGEtRNjdYu8AEDAot1
+         MfYg==
+X-Forwarded-Encrypted: i=1; AJvYcCUd0s3FeNbEv2ODWwfRLw0/3HSvNy2IAuunk+fQHdL8t4hKB8nYCZ8CIFFXjvfV/GbeotdUvXUY7K+wLdYBgAhPQBwNCEZW3+o=
+X-Gm-Message-State: AOJu0Yza/Cpf2Wmrojbhb98mjLryh6OzhaihwNTFJ5myk7/5D2+7VJQL
+	6H6FhRU29mH0bGDFxnhTNRRJmadYT9fSgvccJFju5XTyJzajJVV+ZAg7VEdAz3paRvUlvsSFvMx
+	8ehKbya6NYjepfJeazXzOGz2jQkZj+3JAOxG6Tg==
+X-Google-Smtp-Source: AGHT+IEpYgo+6X9lNxr1Sp8ZEgqfjm0yra5DVMaSzynDm065fn1Hei1MMr6+kuuUK8+GhzuRQj4R6RUR/dmGI8kwNY4=
+X-Received: by 2002:ac2:46e9:0:b0:52c:d7d9:9ba4 with SMTP id
+ 2adb3069b0e04-5309b720abfmr1414105e87.31.1722240758621; Mon, 29 Jul 2024
+ 01:12:38 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+References: <20240725-pwrseq-wcn-config-v1-1-021dce9f2513@redhat.com>
+In-Reply-To: <20240725-pwrseq-wcn-config-v1-1-021dce9f2513@redhat.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 29 Jul 2024 10:12:27 +0200
+Message-ID: <CAMRc=Mcop3+00G3kZo+dazpemuj0PjXNc_3+EiyFukLevBGd_A@mail.gmail.com>
+Subject: Re: [PATCH] power: sequencing: pwrseq-qcom-wcn: Depend on WCN36XX
+To: Andrew Halaney <ahalaney@redhat.com>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, 
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add shutdown controller DT bindings.
+On Thu, Jul 25, 2024 at 6:28=E2=80=AFPM Andrew Halaney <ahalaney@redhat.com=
+> wrote:
+>
+> This driver does sequencing for the hardware driven by WCN36XX, let's
+> make it depend on that. Without WCN36XX, we're sequencing power for
+> nothing.
+>
+> Fixes: 2f1630f437df ("power: pwrseq: add a driver for the PMU module on t=
+he QCom WCN chipsets")
+> Signed-off-by: Andrew Halaney <ahalaney@redhat.com>
+> ---
+> I *think* this makes sense, but if you disagree please let me know. I
+> was sorting out configs in fedora and noticed this was being asked for
+> builds that didn't have WCN36XX enabled, which seems odd to me at least.
+> ---
+>  drivers/power/sequencing/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/power/sequencing/Kconfig b/drivers/power/sequencing/=
+Kconfig
+> index c9f1cdb665248..a4765cb33a80e 100644
+> --- a/drivers/power/sequencing/Kconfig
+> +++ b/drivers/power/sequencing/Kconfig
+> @@ -16,6 +16,7 @@ if POWER_SEQUENCING
+>  config POWER_SEQUENCING_QCOM_WCN
+>         tristate "Qualcomm WCN family PMU driver"
+>         default m if ARCH_QCOM
+> +       depends on WCN36XX
+>         help
+>           Say Y here to enable the power sequencing driver for Qualcomm
+>           WCN Bluetooth/WLAN chipsets.
+>
+> ---
+> base-commit: 2347b4c79f5e6cd3f4996e80c2d3c15f53006bf5
+> change-id: 20240725-pwrseq-wcn-config-0b6668b5c620
+>
+> Best regards,
+> --
+> Andrew Halaney <ahalaney@redhat.com>
+>
 
-Signed-off-by: Varshini Rajendran <varshini.rajendran@microchip.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- .../devicetree/bindings/power/reset/atmel,sama5d2-shdwc.yaml   | 3 +++
- 1 file changed, 3 insertions(+)
+What if we want to disable the WLAN driver but keep the Bluetooth
+driver enabled?
 
-diff --git a/Documentation/devicetree/bindings/power/reset/atmel,sama5d2-shdwc.yaml b/Documentation/devicetree/bindings/power/reset/atmel,sama5d2-shdwc.yaml
-index 8c58e12cdb60..0735ceb7c103 100644
---- a/Documentation/devicetree/bindings/power/reset/atmel,sama5d2-shdwc.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/atmel,sama5d2-shdwc.yaml
-@@ -22,6 +22,9 @@ properties:
-       - enum:
-           - atmel,sama5d2-shdwc
-           - microchip,sam9x60-shdwc
-+      - items:
-+          - const: microchip,sam9x7-shdwc
-+          - const: microchip,sam9x60-shdwc
- 
-   reg:
-     maxItems: 1
--- 
-2.25.1
-
+Bart
