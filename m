@@ -1,51 +1,49 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE6D417F394;
-	Mon, 29 Jul 2024 17:13:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7AC9186E25;
+	Mon, 29 Jul 2024 17:13:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722273182; cv=none; b=TA8QcFxEErAqRMLZJo3QRyI7DyN1gRgsBSU9UGdEaVutEVbCoby7vixvGrP/gJrJsYOCSlYCxYgGRTls305ZkLKXRMmhF8D95m64O7QKZQvR3eZ1biC3humiuxOksK5ZjDRItEqkXC/FyN3ul9EBgAk/xUbP9f+elk5DuV0W5GA=
+	t=1722273183; cv=none; b=EO6Ti7HTGb6f9WYXI6Eb63hg/LmrCk5tr4avB2qnA44bpNaReZwKVE0kVWLvLObnPe3sWEhl3n1roc3NrY6IS55vi3oK6+ye3rdET2T87Dnw/9JKd20aLJtZF01wfs3b0SgdJ+Q8DiACd71bfY5kbX81vCljEWskX7LKq0KSMiI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722273182; c=relaxed/simple;
-	bh=W9fxztWsY8J/qfCGKxRWZcy5TPOKWcH2KjAkhuUjsuU=;
+	s=arc-20240116; t=1722273183; c=relaxed/simple;
+	bh=ZZKCTLMFaqW5qBxAc1zMCNcho/0TG2FZHdzOjo/7dMg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=N+ROkmsAVuWbpIEhFFWWBRj5WjSipBTGEmLc8prOZdqyLeBwUbLf4waO/f9qx/fb0OyDyGRHKXi8AXVzQ2ANkywRL0k9I4OcBYsOoPXjv6Xrqa0lsChJ2zuFFnc3I8cPGybAyyb0PN4UqBCwniu3RH5TBDRRhnKdq+C628jCPo0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ANtMhLSo reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=lL1C8vQFKb8vzBrofJ7NjkOnmXdFalZrNsaV6jZGondGbwJkdyTsTJrbkDupE/jGIEzpHSr9p+1Ocm0EkTWxdBn9/ti72/O2Tr2QmFwjSohFVMsjD/iXy3N8fI+tVOlkC6ODnTb8DuwnU6wkTDcJUCCL1ydYAxrlm4I20xyWfPs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=vtjKYPT7 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ANtMhLSo"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="vtjKYPT7"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 3d90b8d4e605a3e6; Mon, 29 Jul 2024 18:12:59 +0200
+ id 87802f5981a8ec7d; Mon, 29 Jul 2024 18:13:00 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 2233E77357F;
-	Mon, 29 Jul 2024 18:12:59 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 3043B77357F;
+	Mon, 29 Jul 2024 18:13:00 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1722269579;
-	bh=W9fxztWsY8J/qfCGKxRWZcy5TPOKWcH2KjAkhuUjsuU=;
+	s=dkim; t=1722269580;
+	bh=ZZKCTLMFaqW5qBxAc1zMCNcho/0TG2FZHdzOjo/7dMg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=ANtMhLSoPiWkIt2DQJy6WWHeSS/ix0qM4jikJrFVYExarcGtv2NMTrNiB3fn1qZ3H
-	 fnDmAWEpKmola6w7sodaGUQNmvsX9eDCdoAdz55c0JxzXxKxXv4gq4LAJgRfgYa19v
-	 rVUHgj8HsZ3oYy6cy4yI7hNKhc3EnWfCTV6ikcgSvqMJHL4yHZv9k8Ckf1thU6TRS3
-	 +4LYZIB/kqOYBZ3cPDyt4hZcOxDdhGyWBLjFHobGQKB+YNxdd7OhjNUAk51eWCTwkT
-	 UbMGWoTrYZ53hQx+QPu5ZOyUQcWnuvRwVqrjeUeoL4yVhr6KAjLm6fOjOQU+2iElOk
-	 8YnQ0A5grk3Ug==
+	b=vtjKYPT7S39ixFQNj1eBjBzzblns6ywb1ETEu36xW8gM0lZVTIB5vN7f79uPJIH3K
+	 THww4F6g6035YBsF+z6EErkXC5jTq3MgWbPcFH5Dbb2fCPgDWTpQa4X7tzksFjrNl2
+	 o+Cw1k4akKm/ARji8dBeqUPdtQ+Vo1CZSQjoqxGQgXm7HkkkdQ0uNkKcxSDXnN+9aL
+	 v+9KjJYqEd4jKS8svtSLdqanYMDYQN3jZme/+B3cZ+m3DOUC1E20OyObmH7pZDAJlN
+	 uaW5y8D9cM/e1Z2/itDwHhvNMFi90abf9V6Gf2Q5n6TZwk7FaGNzv9iy19q/FcUox6
+	 PyUhsfAe7Hwsg==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
- LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>,
- linux-arm-msm@vger.kernel.org
+ LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
 Subject:
- [RESEND][PATCH v1 3/8] thermal: qcom: Use thermal_zone_get_crit_temp() in
- qpnp_tm_init()
-Date: Mon, 29 Jul 2024 17:58:56 +0200
-Message-ID: <7712228.EvYhyI6sBW@rjwysocki.net>
+ [RESEND][PATCH v1 2/8] thermal: hisi: Use thermal_zone_for_each_trip() in
+ hisi_thermal_register_sensor()
+Date: Mon, 29 Jul 2024 17:56:25 +0200
+Message-ID: <1994088.PYKUYFuaPT@rjwysocki.net>
 In-Reply-To: <2211925.irdbgypaU6@rjwysocki.net>
 References: <2211925.irdbgypaU6@rjwysocki.net>
 Precedence: bulk
@@ -59,15 +57,15 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjedvgdellecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheprghmihhtkheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepthhhrghrrgdrghhophhinhgrthhhsehgmhgrihhlrdgtohhmpdhrtghpthhtoheplhhinhhugidqrghrmhdqmhhsmhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjedvgdellecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeegpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Modify qpnp_tm_init() to use thermal_zone_get_crit_temp() to get the
-critical trip temperature instead of iterating over trip indices and
-using thermal_zone_get_trip() to get a struct thermal_trip pointer
-from a trip index until it finds the critical one.
+Modify hisi_thermal_register_sensor() to use thermal_zone_for_each_trip()
+for walking trip points instead of iterating over trip indices and using
+thermal_zone_get_trip() to get a struct thermal_trip pointer from a trip
+index.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
@@ -75,49 +73,49 @@ Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 This patch does not depend on the previous patch(es) in the series.
 
 ---
- drivers/thermal/qcom/qcom-spmi-temp-alarm.c |   22 +++-------------------
- 1 file changed, 3 insertions(+), 19 deletions(-)
+ drivers/thermal/hisi_thermal.c |   22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
 
-Index: linux-pm/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+Index: linux-pm/drivers/thermal/hisi_thermal.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-+++ linux-pm/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-@@ -291,24 +291,6 @@ static irqreturn_t qpnp_tm_isr(int irq,
+--- linux-pm.orig/drivers/thermal/hisi_thermal.c
++++ linux-pm/drivers/thermal/hisi_thermal.c
+@@ -465,6 +465,18 @@ static irqreturn_t hisi_thermal_alarm_ir
  	return IRQ_HANDLED;
  }
  
--static int qpnp_tm_get_critical_trip_temp(struct qpnp_tm_chip *chip)
--{
--	struct thermal_trip trip;
--	int i, ret;
++static int hisi_trip_walk_cb(struct thermal_trip *trip, void *arg)
++{
++	struct hisi_thermal_sensor *sensor = arg;
++
++	if (trip->type != THERMAL_TRIP_PASSIVE)
++		return 0;
++
++	sensor->thres_temp = trip->temperature;
++	/* Return nonzero to terminate the search. */
++	return 1;
++}
++
+ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+ 					struct hisi_thermal_sensor *sensor)
+ {
+@@ -482,15 +494,7 @@ static int hisi_thermal_register_sensor(
+ 		return ret;
+ 	}
+ 
+-	for (i = 0; i < thermal_zone_get_num_trips(sensor->tzd); i++) {
 -
--	for (i = 0; i < thermal_zone_get_num_trips(chip->tz_dev); i++) {
+-		thermal_zone_get_trip(sensor->tzd, i, &trip);
 -
--		ret = thermal_zone_get_trip(chip->tz_dev, i, &trip);
--		if (ret)
--			continue;
--
--		if (trip.type == THERMAL_TRIP_CRITICAL)
--			return trip.temperature;
+-		if (trip.type == THERMAL_TRIP_PASSIVE) {
+-			sensor->thres_temp = trip.temperature;
+-			break;
+-		}
 -	}
--
--	return THERMAL_TEMP_INVALID;
--}
--
- /*
-  * This function initializes the internal temp value based on only the
-  * current thermal stage and threshold. Setup threshold control and
-@@ -343,7 +325,9 @@ static int qpnp_tm_init(struct qpnp_tm_c
++	thermal_zone_for_each_trip(sensor->tzd, hisi_trip_walk_cb, sensor);
  
- 	mutex_unlock(&chip->lock);
- 
--	crit_temp = qpnp_tm_get_critical_trip_temp(chip);
-+	ret = thermal_zone_get_crit_temp(chip->tz_dev, &crit_temp);
-+	if (ret)
-+		crit_temp = THERMAL_TEMP_INVALID;
- 
- 	mutex_lock(&chip->lock);
- 
+ 	return 0;
+ }
 
 
 
