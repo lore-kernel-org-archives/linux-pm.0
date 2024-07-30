@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB807184547
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jul 2024 17:56:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E6EC189BB6
+	for <linux-pm@vger.kernel.org>; Tue, 30 Jul 2024 18:09:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722362215; cv=none; b=qRlphH8icRKSEe6iPRILCZ4LPVh8wVCJITIFWLM4JpbGAx1buD+s0th1P3jkV95iiLjPIuYbLFbQO7TxAq/Df8CBne+xyXMtxrB6LJPrGYnTxnm5JG+W6nIwJND2P9SDT1Qk4Yt/gEFH6x1F2SWJvxHGE5M+pypzZjqBY29LH+c=
+	t=1722362961; cv=none; b=MPt5tBvmHDnrY3Sd2KaCr2oaKgZ1cnygCO5e1LGXbNSDInm2p6LAhJPxs4DKrwFmimxVutRJAmPfwJaSG9ATIizInHTdAVmngCuXawtPxi7B96ijYAbcxrPDq+sEy37xNBMbj1Ee+aYwRKXCoKewID+fIAyTJ1ygl2AQY0eC47c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722362215; c=relaxed/simple;
-	bh=JvyDQFnZYgVodhqs9kLo5JgNbcgxvI+YSkVfA1gh418=;
+	s=arc-20240116; t=1722362961; c=relaxed/simple;
+	bh=BOE3VORB6ia2yrKuWO/Pcmtm7k+QcUKcZkhKb04y7EQ=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=iuvhGE4U/1r6PuupJyQS878Bd4GTD7HGUNGj07gxAj/a6zO1xmjXLnj4rjzBgWnDzSGqLrDsbnjaMzDur6mMZstc0OIwjQOaRLXEVljsAlU1q/ieADcc0XhKtm7P0fCdhQy2bYDqWG1ASTp+1Q/8d7eEv7sVOCpvatl5x+zUPmQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZzdW7+Vk; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:MIME-Version; b=oXNsMNvjH2Cotj83CzYoHUSdjvQs+Zqs9AW3EBAMOmrEYd1u1GnWgym48cUnwowNqZyI5vSDXCRdKe28Au8uJilOepH/QO2XDnhVj/Cp4MTPL8uO8Ql6s9yZJUzblF7QFiA4JNRph+yS8TKUthIn9i07iob9ofCJjYCavHlqBd0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jiUQn0lV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZzdW7+Vk"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4291FC32782
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jul 2024 17:56:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jiUQn0lV"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id DC0F4C4AF0E
+	for <linux-pm@vger.kernel.org>; Tue, 30 Jul 2024 18:09:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1722362215;
-	bh=JvyDQFnZYgVodhqs9kLo5JgNbcgxvI+YSkVfA1gh418=;
+	s=k20201202; t=1722362960;
+	bh=BOE3VORB6ia2yrKuWO/Pcmtm7k+QcUKcZkhKb04y7EQ=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=ZzdW7+Vk7d6AZvO7kcko8UX9TyxhsHhPS9v9mpJRFl4uCRqBREL9gGiOdRt4/HG2W
-	 Vc9YzD583e9LO0zG+7eUmPUHbUT50gmyTJT4grrEWQ/g9uz/X+Adkh18ejhUmXs3Ke
-	 Y/lSpCvkbT5uWrBLfD+Pu67Hz0rEXdEcR1efjdH6ZvWtwl5LnVKdKihHQx9M6GlkoM
-	 rnrTgLjaL3AGDRTH9Z2mUKxX+RO3Sbp3zdRoEG/BOG7Qsar6OUcdycxt2KRo2AAQPH
-	 WZYMswAf0AbiajtIj+nx98guDTYB5nA3LXoYYEsyK4FFTmfN8tZe8wYsA9/GQJD5Z9
-	 Lnw5xZTULY+eQ==
+	b=jiUQn0lVGHGtnSEEwqglqxRncNm+nwRJW3jVQcZqRC6yYY0N5AJtQXa9NctxO69p2
+	 jZHpI8M3UgZ/zLtGmZ8y9kqX2e4InsjqWtNv5R+iAk5HrOoeN/rH94VDN3DUDm7FLY
+	 mcoGA2y8ES6hP5fqDLj8nfTtNPxIehKkhnvOVtM8LVYOi05pUDsTUluN7amqwYZmW1
+	 8fsUFdctiwq3+T0XB4d6LmMP/d6P1kVsOwd9fDIKK1EhXSFbi488BtsWEGb0Jg37RI
+	 s7C6E6XdR4SoN4Q6QKXBMddz4WgK1H50lvz2MUXtmjEgrfNeprOQh3XwWGIxLjQzkU
+	 YN7LkUTTc7lVA==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 394D8C53B7F; Tue, 30 Jul 2024 17:56:55 +0000 (UTC)
+	id CA533C53B73; Tue, 30 Jul 2024 18:09:20 +0000 (UTC)
 From: bugzilla-daemon@kernel.org
 To: linux-pm@vger.kernel.org
 Subject: [Bug 219110] amd-pstate's balance_performance
  energy_performance_preference doesn't survive suspend resume
-Date: Tue, 30 Jul 2024 17:56:55 +0000
+Date: Tue, 30 Jul 2024 18:09:20 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -41,14 +41,14 @@ X-Bugzilla-Component: cpufreq
 X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
-X-Bugzilla-Who: xiaojian.du@amd.com
+X-Bugzilla-Who: aros@gmx.com
 X-Bugzilla-Status: NEW
 X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P3
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-219110-137361-2HU4tw9onH@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-219110-137361-6sEYCVgqop@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-219110-137361@https.bugzilla.kernel.org/>
 References: <bug-219110-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -64,21 +64,32 @@ MIME-Version: 1.0
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D219110
 
-xiaojian.du@amd.com changed:
+--- Comment #2 from Artem S. Tashkinov (aros@gmx.com) ---
+(In reply to xiaojian.du from comment #1)
+> So you do one suspend cycle on your device?
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |xiaojian.du@amd.com
+I have to set/restore energy_performance_preference on every resume.
 
---- Comment #1 from xiaojian.du@amd.com ---
-So you do one suspend cycle on your device?
-I think CPU power status is reset after one suspend cycle.
-Yes, it should be a function to restore CPU power register status and gover=
-nor
-status after s3/s4/s2idle.
-For you case, i think add one more shell script will fix this problem, you
-know, you are setting cpu enegy policy during booting, then your can add one
-same action during suspend, any chance for this?
+> I think CPU power status is reset after one suspend cycle.
+> Yes, it should be a function to restore CPU power register status and
+> governor status after s3/s4/s2idle.
+> For you case, i think add one more shell script will fix this problem, you
+> know, you are setting cpu enegy policy during booting, then your can add =
+one
+> same action during suspend, any chance for this?
+
+I can certainly do that, but with acpi-cpufreq you didn't have to do that :=
+-(
+
+You set performance/powersave/ondemand and it perfectly survives
+suspend/resume.
+
+I wonder why amd-pstate cannot. A kernel module can keep this state as a si=
+mple
+variable and restore the energy preference on resume.
+
+And secondly it's quite misleading that it reports a wrong value after
+resuming.
 
 --=20
 You may reply to this email to add a comment.
