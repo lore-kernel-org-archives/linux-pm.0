@@ -1,81 +1,196 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp.smtpout.orange.fr (smtp-17.smtpout.orange.fr [80.12.242.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A928A33999
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jul 2024 18:10:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D48CE18A6C7;
+	Tue, 30 Jul 2024 18:12:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722363006; cv=none; b=TFPGnRYpTElVfa95fxq8rL4Od9X6MIauGY3a+qV1zJ6ajdsfRo3+H1lrhJkkPmNunu5BRmkfPpN+n5PQEf5STPNaDlPeQxg5rjPEfO6HANJ4zHDJ+bCIdXalRgHRFXfXTr/pwGf3vr0K9dAirXn0mtZzIju+TFHH1kZhF7sbZL4=
+	t=1722363129; cv=none; b=Tb1QC3SzKbUhkFL7GD0MzxNuGC/FWSrn0PPhwBRqjiF4oxnd80mzrXkvGeuPJarz6SdUjjQgz3OH4yArw/kPRxrEjutSz+0AQfjKRmN0OyMKrZ50OLDZDclRIzldJu/q9fivsDL+oTHY9BjLj/RdqrxuxYYHkfIG+V1vQTab+nc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722363006; c=relaxed/simple;
-	bh=JQCDJDZKMaMWHHzl/TsiWVv0F5qrYCj6VCeQ558r8oc=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=OA79Qu1qbxWvXxeTSPHPUZLj+SQTtbCaBP0h9pi9nFMiPO6GDjnko6HOvO0FV7RIy1af7fpHh7C17Xl84JLrblyLOytpXtI9M764upKqtIEnC+D0nSaWQyJ+vy9B2wyWD0iyXw40iabNpSJ/2lFnreQv9qZRcsB+pVqxqU2xfq8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LqNsgUiy; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1722363129; c=relaxed/simple;
+	bh=VWN1tIXLNda64hbVwWCXnMXbhG116dkLDNVeCqm+PSk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NySt+rRLhX+mv+qpsM+PqJseQCLASmcFIiJ+G+/K02zGRMwJoYdcOzw+7xOgCR7kF5bijT7wXQvC2l2OjbM7ehbtJzFduDptsL6MDFt0jhtsUFRyuKCEMn2vv3IUlbmjQeLgjSVQTvqnZtlX9J0+beIDQqAJYKtBSkPdsGw46AU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=bhx+qYuv; arc=none smtp.client-ip=80.12.242.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LqNsgUiy"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 33F2FC4AF0F
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jul 2024 18:10:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1722363006;
-	bh=JQCDJDZKMaMWHHzl/TsiWVv0F5qrYCj6VCeQ558r8oc=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=LqNsgUiyLMjO16OsuDDo6xabZgpBLTo/FEF3qWIur3Pat71qV3rT3nLs/a+CJSrQ6
-	 8vAb55KfjjhUcDZxQlFDnr2kC1XvZHpj7uYDNweXZ6QhnKb+hyYKNB5l/3SeJ/mQTZ
-	 n/G67d68b/OfOroKqfFD5OvOyA5GQ3tDJ4D83yU/n23hJVCp5TFTzFgTXqyIt73HTl
-	 2Jb5/24dbo3KHDQ1j3ft5vI7IuQP0VKaFEU6SfgWwzMQVNNUUFNSdSvtuDoW3luFJw
-	 Etm2kKmDAO8qAZRZmVCXfFP3RFb+6/UqQK3XbbDCncmyJ6TuCg8F+bDkHBUhIwkrg7
-	 E0REQ/u1zQ1zg==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 2D7BCC53B7F; Tue, 30 Jul 2024 18:10:06 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 218686] Fail to set energy_performance_preference of amd
- processor on asus ga403uv
-Date: Tue, 30 Jul 2024 18:10:05 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: xiaojian.du@amd.com
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: DOCUMENTED
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-218686-137361-NV93Fg3wOr@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-218686-137361@https.bugzilla.kernel.org/>
-References: <bug-218686-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="bhx+qYuv"
+Received: from [192.168.1.37] ([90.11.132.44])
+	by smtp.orange.fr with ESMTPA
+	id YpeWs2SrGVHKTYpeWssKuf; Tue, 30 Jul 2024 18:24:52 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
+	s=t20230301; t=1722356692;
+	bh=/UuxgnKYhFfTRoiZZZUFb1OSY49shSXv/0adgAuChfo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:From;
+	b=bhx+qYuvMyayPX3PzsdM/kwX04bNqKDwbC3KI6dvg0YaaxlkB25kQmOaWMbQIx0qp
+	 P9MwwqXQ6TkMi2qR4rtR5yWa6enlRD8X1bESm4va59k5gcZdFTN/EeUVd7aHio9U2L
+	 k2yjvnf+BAFr17HWM55dcayChqb7nsMake4fmlTjLkvdgavTKXTjspgGJynfQmCzMU
+	 uqgPyTW9ciO42Fnnq1h3vrFd4CIKhFFePx6thFyiWqeKNuNXhCqJLtT5O9hfkvhIsK
+	 q4pRc5+ntuciwF93wlMSFpwgsBmyj8AsZeLlrX6mgKUR8wpdz6lK5ciNb2ZMwOICeo
+	 YmRhgkR611fKw==
+X-ME-Helo: [192.168.1.37]
+X-ME-Auth: bWFyaW9uLmphaWxsZXRAd2FuYWRvby5mcg==
+X-ME-Date: Tue, 30 Jul 2024 18:24:52 +0200
+X-ME-IP: 90.11.132.44
+Message-ID: <7ed56f10-99f9-41b9-9d82-45797914f3d1@wanadoo.fr>
+Date: Tue, 30 Jul 2024 18:24:44 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RESEND PATCH 2/2] PM: Use sysfs_emit() and sysfs_emit_at() in
+ "show" functions
+To: Xueqin Luo <luoxueqin@kylinos.cn>, rafael@kernel.org, pavel@ucw.cz,
+ len.brown@intel.com
+Cc: linux-pm@vger.kernel.org, xiongxin@kylinos.cn,
+ linux-kernel@vger.kernel.org
+References: <20240730065454.2096296-1-luoxueqin@kylinos.cn>
+ <20240730065454.2096296-3-luoxueqin@kylinos.cn>
+Content-Language: en-US, fr-FR
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+In-Reply-To: <20240730065454.2096296-3-luoxueqin@kylinos.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D218686
+Le 30/07/2024 à 08:54, Xueqin Luo a écrit :
+> As Documentation/filesystems/sysfs.rst suggested,
+> show() should only use sysfs_emit() or sysfs_emit_at() when formatting
+> the value to be returned to user space.
+> 
+> No functional change intended.
+> 
+> Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
+> ---
 
---- Comment #59 from xiaojian.du@amd.com ---
+Hi,
 
-For this output info:
+> @@ -149,17 +149,17 @@ static ssize_t mem_sleep_show(struct kobject *kobj, struct kobj_attribute *attr,
+>   			const char *label = mem_sleep_states[i];
+>   
+>   			if (mem_sleep_current == i)
+> -				s += sprintf(s, "[%s] ", label);
+> +				sz += sysfs_emit_at(buf, sz, "[%s] ", label);
+>   			else
+> -				s += sprintf(s, "%s ", label);
+> +				sz += sysfs_emit_at(buf, sz, "%s ", label);
+>   		}
+>   	}
+>   
+>   	/* Convert the last space to a newline if needed. */
+> -	if (s != buf)
+> -		*(s-1) = '\n';
 
-> CPU 14:
->    0x80000008 0x00: eax=3D0x00003030 ebx=3D0x111ef257 ecx=3D0x0000400f
-> edx=3D0x00010000
+The goal here is to remove the trailing space. So you slightly change 
+the behavior.
+Not sure if it matters or not (this was not done in disk_show() in patch 
+1/2).
 
-Fn80000008_EBX bit27[CPPC] =3D 0, it remains "0", means CPPC is disabled.
+Maybe an (ugly)
+	if (sz)
+		sz += sysfs_emit_at(buf, sz - 1, "\n");
 
---=20
-You may reply to this email to add a comment.
+or something like:
+	if (sz) {
+		sz--;
+		sz += sysfs_emit_at(buf, sz, "\n");
+	}
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+> +	if (sz)
+> +		sz += sysfs_emit_at(buf, sz, "\n");
+>   
+> -	return (s - buf);
+> +	return sz;
+>   }
+>   
+>   static suspend_state_t decode_suspend_state(const char *buf, size_t n)
+
+...
+
+> @@ -257,22 +257,22 @@ static const char * const pm_tests[__TEST_AFTER_LAST] = {
+>   static ssize_t pm_test_show(struct kobject *kobj, struct kobj_attribute *attr,
+>   				char *buf)
+>   {
+> -	char *s = buf;
+>   	int level;
+> +	size_t sz = 0;
+>   
+>   	for (level = TEST_FIRST; level <= TEST_MAX; level++)
+>   		if (pm_tests[level]) {
+>   			if (level == pm_test_level)
+> -				s += sprintf(s, "[%s] ", pm_tests[level]);
+> +				sz += sysfs_emit_at(buf, sz, "[%s] ", pm_tests[level]);
+>   			else
+> -				s += sprintf(s, "%s ", pm_tests[level]);
+> +				sz += sysfs_emit_at(buf, sz, "%s ", pm_tests[level]);
+>   		}
+>   
+> -	if (s != buf)
+> +	if (sz)
+>   		/* convert the last space to a newline */
+> -		*(s-1) = '\n';
+> +		sz += sysfs_emit_at(buf, sz, "\n");
+
+Same here.
+
+>   
+> -	return (s - buf);
+> +	return sz;
+>   }
+>   
+>   static ssize_t pm_test_store(struct kobject *kobj, struct kobj_attribute *attr,
+> @@ -390,7 +390,7 @@ static const char * const suspend_step_names[] = {
+>   static ssize_t _name##_show(struct kobject *kobj,		\
+>   		struct kobj_attribute *attr, char *buf)		\
+>   {								\
+> -	return sprintf(buf, format_str, suspend_stats._name);	\
+> +	return sysfs_emit(buf, format_str, suspend_stats._name);	\
+
+Maybe 1 tab should be removed?
+
+>   }								\
+>   static struct kobj_attribute _name = __ATTR_RO(_name)
+>   
+
+...
+
+> @@ -668,21 +668,21 @@ struct kobject *power_kobj;
+>   static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
+>   			  char *buf)
+>   {
+> -	char *s = buf;
+> +	ssize_t sz = 0;
+>   #ifdef CONFIG_SUSPEND
+>   	suspend_state_t i;
+>   
+>   	for (i = PM_SUSPEND_MIN; i < PM_SUSPEND_MAX; i++)
+>   		if (pm_states[i])
+> -			s += sprintf(s,"%s ", pm_states[i]);
+> +			sz += sysfs_emit_at(buf, sz, "%s ", pm_states[i]);
+>   
+>   #endif
+>   	if (hibernation_available())
+> -		s += sprintf(s, "disk ");
+> -	if (s != buf)
+> +		sz += sysfs_emit_at(buf, sz, "disk ");
+> +	if (sz)
+>   		/* convert the last space to a newline */
+> -		*(s-1) = '\n';
+> -	return (s - buf);
+> +		sz += sysfs_emit_at(buf, sz, "\n");
+
+Same here
+
+> +	return sz;
+>   }
+>   
+>   static suspend_state_t decode_state(const char *buf, size_t n)
+
+...
+
+CJ
+
+
