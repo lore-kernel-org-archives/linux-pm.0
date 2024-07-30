@@ -1,53 +1,51 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 866751482F3;
-	Tue, 30 Jul 2024 18:51:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D7CA18A6A6;
+	Tue, 30 Jul 2024 18:53:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722365514; cv=none; b=eMMz6lAcE+F6821iTGnpFjWx8JShiQUSWIF6xa1u/i2VAxCf1OGm3hOXAtBNcIwFr98YJwvTb8sPtNgpKSmyffI/t9JYgmilokNgfpFpeG8UNfd+5lnSrRxP+1AvuwTE19FHLECLcAWpxuI2mnOQZx2ZrSB9XaeXeR/6vbAXOfo=
+	t=1722365636; cv=none; b=kLMzjdm3TFaYq61Xq17+rOtI9bI9RtPdS68oszbbhRL9Ky1/RKgqtth840apU+lFa+S4wIGbAZGm8qgHKzU1A6t4pi/YdOf9PxMrjYpQTK5VJuEVVU06ESC5WiMDrzCfwKXafUMeTN0KLmWB6Kwpau+awebNf4bMrwfYt+KIcQs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722365514; c=relaxed/simple;
-	bh=023Azlu1DI442Ymcg7kgk1I0rNVmUPxN4UuHlX4xVqA=;
+	s=arc-20240116; t=1722365636; c=relaxed/simple;
+	bh=I5wrTjPzvOPUuHHWt55opVDedTaKn57CVQVNchCQhtI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=LE0IhU4gzmIBAZNQj0O33cRr1STJkSe+0hiYVUtF1ytbD2jWX5DArndgS91HmLQOzL6EN1UTZXr74ttAEcs7eMUiLxGmhq2hCp0GUQJ7gY0rGk/qy5eb7gDtPfrQKKFju6WxJYI9SHu1SzW+iCzIRa3F/niCb/i3Wfe81mtODrc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=dl0WFUu5 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=X1KHXTssELxjRKKFktZgs1D0lcR+1VtzgwmgoYOWvLRZ1zO3PJirlK5QXwgQwLEKjVShaDaOMTOwOQ2MSp8UISOmrZthDzyS7Fl3f7Ssfxg39DelbcNy0xJuhh9w4DwFobde9ciysap63+OmHONalzZ2vyQpG4RbJ54MxNO5oZU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=h37in00x reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="dl0WFUu5"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="h37in00x"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id a883f994f995aa59; Tue, 30 Jul 2024 20:51:50 +0200
+ id 699ee15891400e5b; Tue, 30 Jul 2024 20:53:52 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id E356B956ED0;
-	Tue, 30 Jul 2024 20:51:49 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id D7558956ED0;
+	Tue, 30 Jul 2024 20:53:51 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1722365510;
-	bh=023Azlu1DI442Ymcg7kgk1I0rNVmUPxN4UuHlX4xVqA=;
+	s=dkim; t=1722365632;
+	bh=I5wrTjPzvOPUuHHWt55opVDedTaKn57CVQVNchCQhtI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=dl0WFUu5aAhMh02l+PaQ1TmqkgVQvvFu5I5Ey13zfldej6N7bqNeaz4wVyk/9ahru
-	 8XF5mvg82HpCUhpficsBfK0R7BOSmNcJkZoG4DEUnwIIkwulHuDnBtzivJxH6VoO1E
-	 2ptK/w9wJ2lgzVGxV22dBho6RMILhUvDHirLxNf+BXDooYFE/6rRW8oyHT3MUHkKiM
-	 ESx3cj7qUP/8RzQuFKoJVO/cf42jLeCAhT08Niv1lHMcRBv/4Lu1CSPZhPKdzE/J83
-	 ruZqAWinjTJB5gWQou5KlBWIYsDbXMDfFbuZh2DpZfWdZ+aS6frOJgfPJ5Dt83czpP
-	 t2ns/fOTKd0kQ==
+	b=h37in00xKY3fBMT6E03gqcGGdwDXkncI5CwOvv+JYto0ZMQUS4FAxs3Txbia5SDPi
+	 s/XdVpxm9Wjttoy0XDCqt14wcka26IiZZ+2UN1QO2FY51fFASUbD0naQn+3tLNRCBQ
+	 q1WlhsAancbZ3/ViJ+UqoY6pLVG1YWndsx0bP+Qmsn29zbGHa8RKI3GTqblRDonyOI
+	 ztygvZe9HsXgl7X9gANrQz+QI/tCqMPAgpLKxBF1lxyPhJRqsseNltsEZeHNRtsjCU
+	 uLzN+a7iwXFn+EI62YndNYhgHZ+ZcpZFM5st04flV62Ae8KEnsutEQ/MnpIesIuTnw
+	 IIWPfJdcjn7sw==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Linux ACPI <linux-acpi@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
- Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>
+ Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
 Subject:
- [PATCH v1 11/17] thermal: imx: Use the .should_bind() thermal zone callback
-Date: Tue, 30 Jul 2024 20:31:07 +0200
-Message-ID: <7860434.lvqk35OSZv@rjwysocki.net>
+ [PATCH v1 15/17] thermal: core: Drop unused bind/unbind functions and
+ callbacks
+Date: Tue, 30 Jul 2024 20:53:51 +0200
+Message-ID: <39176179.J2Yia2DhmK@rjwysocki.net>
 In-Reply-To: <1922131.tdWV9SEqCh@rjwysocki.net>
 References: <1922131.tdWV9SEqCh@rjwysocki.net>
 Precedence: bulk
@@ -61,67 +59,245 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjeeggddufedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepuddtpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehshhgrfihnghhuoheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshdrhhgruhgvrhesphgvnhhguhhtrhhonhhigidruggv
-X-DCC--Metrics: v370.home.net.pl 1024; Body=50 Fuz1=50 Fuz2=50
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjeeggddufedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepiedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=36 Fuz1=36 Fuz2=36
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Make the imx_thermal driver use the .should_bind() thermal zone callback
-to provide the thermal core with the information on whether or not to
-bind the given cooling device to the given trip point in the given
-thermal zone.  If it returns 'true', the thermal core will bind the
-cooling device to the trip and the corresponding unbinding will be
-taken care of automatically by the core on the removal of the involved
-thermal zone or cooling device.
+There are no more callers of thermal_zone_bind_cooling_device() and
+thermal_zone_unbind_cooling_device(), so drop them along with all of
+the corresponding headers, code and documentation.
 
-In the imx_thermal case, it only needs to return 'true' for the passive
-trip point and it will match any cooling device passed to it, in
-analogy with the old-style imx_bind() callback function.
+Moreover, because the .bind() and .unbind() thermal zone callbacks would
+only be used when the above functions, respectively, were called, drop
+them as well along with all of the code related to them.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ Documentation/driver-api/thermal/sysfs-api.rst |   52 -----------------
+ drivers/thermal/thermal_core.c                 |   75 +------------------------
+ include/linux/thermal.h                        |   10 ---
+ 3 files changed, 3 insertions(+), 134 deletions(-)
 
-This patch only depends on patch [09/17].
-
----
- drivers/thermal/imx_thermal.c |   20 ++++++--------------
- 1 file changed, 6 insertions(+), 14 deletions(-)
-
-Index: linux-pm/drivers/thermal/imx_thermal.c
+Index: linux-pm/drivers/thermal/thermal_core.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/imx_thermal.c
-+++ linux-pm/drivers/thermal/imx_thermal.c
-@@ -353,24 +353,16 @@ static int imx_set_trip_temp(struct ther
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -884,28 +884,6 @@ free_mem:
+ 	return result;
+ }
+ 
+-int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+-				     int trip_index,
+-				     struct thermal_cooling_device *cdev,
+-				     unsigned long upper, unsigned long lower,
+-				     unsigned int weight)
+-{
+-	int ret;
+-
+-	if (trip_index < 0 || trip_index >= tz->num_trips)
+-		return -EINVAL;
+-
+-	mutex_lock(&tz->lock);
+-
+-	ret = thermal_bind_cdev_to_trip(tz, &tz->trips[trip_index].trip, cdev,
+-					upper, lower, weight);
+-
+-	mutex_unlock(&tz->lock);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(thermal_zone_bind_cooling_device);
+-
+ /**
+  * thermal_unbind_cdev_from_trip - unbind a cooling device from a thermal zone.
+  * @tz:		pointer to a struct thermal_zone_device.
+@@ -954,25 +932,6 @@ free:
  	return 0;
  }
  
--static int imx_bind(struct thermal_zone_device *tz,
--		    struct thermal_cooling_device *cdev)
-+static bool imx_should_bind(struct thermal_zone_device *tz,
-+			    const struct thermal_trip *trip,
-+			    struct thermal_cooling_device *cdev,
-+			    struct cooling_spec *c)
- {
--	return thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
--						THERMAL_NO_LIMIT,
--						THERMAL_NO_LIMIT,
--						THERMAL_WEIGHT_DEFAULT);
--}
--
--static int imx_unbind(struct thermal_zone_device *tz,
--		      struct thermal_cooling_device *cdev)
+-int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
+-				       int trip_index,
+-				       struct thermal_cooling_device *cdev)
 -{
--	return thermal_zone_unbind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev);
-+	return trip->type == THERMAL_TRIP_PASSIVE;
+-	int ret;
+-
+-	if (trip_index < 0 || trip_index >= tz->num_trips)
+-		return -EINVAL;
+-
+-	mutex_lock(&tz->lock);
+-
+-	ret = thermal_unbind_cdev_from_trip(tz, &tz->trips[trip_index].trip, cdev);
+-
+-	mutex_unlock(&tz->lock);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(thermal_zone_unbind_cooling_device);
+-
+ static void thermal_release(struct device *dev)
+ {
+ 	struct thermal_zone_device *tz;
+@@ -1001,14 +960,8 @@ void print_bind_err_msg(struct thermal_z
+ 			const struct thermal_trip *trip,
+ 			struct thermal_cooling_device *cdev, int ret)
+ {
+-	if (trip) {
+-		dev_err(&tz->device, "binding cdev %s to trip %d failed: %d\n",
+-			cdev->type, thermal_zone_trip_id(tz, trip), ret);
+-		return;
+-	}
+-
+-	dev_err(&tz->device, "binding zone %s with cdev %s failed:%d\n",
+-		tz->type, cdev->type, ret);
++	dev_err(&tz->device, "binding cdev %s to trip %d failed: %d\n",
++		cdev->type, thermal_zone_trip_id(tz, trip), ret);
  }
  
- static struct thermal_zone_device_ops imx_tz_ops = {
--	.bind = imx_bind,
--	.unbind = imx_unbind,
-+	.should_bind = imx_should_bind,
- 	.get_temp = imx_get_temp,
- 	.change_mode = imx_change_mode,
- 	.set_trip_temp = imx_set_trip_temp,
+ static void thermal_zone_cdev_binding(struct thermal_zone_device *tz,
+@@ -1017,18 +970,6 @@ static void thermal_zone_cdev_binding(st
+ 	struct thermal_trip_desc *td;
+ 	int ret;
+ 
+-	/*
+-	 * Old-style binding. The .bind() callback is expected to call
+-	 * thermal_bind_cdev_to_trip() under the thermal zone lock.
+-	 */
+-	if (tz->ops.bind) {
+-		ret = tz->ops.bind(tz, cdev);
+-		if (ret)
+-			print_bind_err_msg(tz, NULL, cdev, ret);
+-
+-		return;
+-	}
+-
+ 	if (!tz->ops.should_bind)
+ 		return;
+ 
+@@ -1355,15 +1296,6 @@ static void thermal_zone_cdev_unbinding(
+ {
+ 	struct thermal_trip_desc *td;
+ 
+-	/*
+-	 * Old-style unbinding.  The .unbind callback is expected to call
+-	 * thermal_unbind_cdev_from_trip() under the thermal zone lock.
+-	 */
+-	if (tz->ops.unbind) {
+-		tz->ops.unbind(tz, cdev);
+-		return;
+-	}
+-
+ 	mutex_lock(&tz->lock);
+ 
+ 	for_each_trip_desc(tz, td)
+@@ -1497,8 +1429,7 @@ thermal_zone_device_register_with_trips(
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	if (!ops || !ops->get_temp || (ops->should_bind && ops->bind) ||
+-	    (ops->should_bind && ops->unbind)) {
++	if (!ops || !ops->get_temp) {
+ 		pr_err("Thermal zone device ops not defined or invalid\n");
+ 		return ERR_PTR(-EINVAL);
+ 	}
+Index: linux-pm/include/linux/thermal.h
+===================================================================
+--- linux-pm.orig/include/linux/thermal.h
++++ linux-pm/include/linux/thermal.h
+@@ -91,10 +91,6 @@ struct cooling_spec {
+ };
+ 
+ struct thermal_zone_device_ops {
+-	int (*bind) (struct thermal_zone_device *,
+-		     struct thermal_cooling_device *);
+-	int (*unbind) (struct thermal_zone_device *,
+-		       struct thermal_cooling_device *);
+ 	bool (*should_bind) (struct thermal_zone_device *,
+ 			     const struct thermal_trip *,
+ 			     struct thermal_cooling_device *,
+@@ -246,12 +242,6 @@ const char *thermal_zone_device_type(str
+ int thermal_zone_device_id(struct thermal_zone_device *tzd);
+ struct device *thermal_zone_device(struct thermal_zone_device *tzd);
+ 
+-int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
+-				     struct thermal_cooling_device *,
+-				     unsigned long, unsigned long,
+-				     unsigned int);
+-int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
+-				       struct thermal_cooling_device *);
+ void thermal_zone_device_update(struct thermal_zone_device *,
+ 				enum thermal_notify_event);
+ 
+Index: linux-pm/Documentation/driver-api/thermal/sysfs-api.rst
+===================================================================
+--- linux-pm.orig/Documentation/driver-api/thermal/sysfs-api.rst
++++ linux-pm/Documentation/driver-api/thermal/sysfs-api.rst
+@@ -251,56 +251,6 @@ temperature) and throttle appropriate de
+     It deletes the corresponding entry from /sys/class/thermal folder and
+     unbinds itself from all the thermal zone devices using it.
+ 
+-1.3 interface for binding a thermal zone device with a thermal cooling device
+------------------------------------------------------------------------------
+-
+-    ::
+-
+-	int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+-		int trip, struct thermal_cooling_device *cdev,
+-		unsigned long upper, unsigned long lower, unsigned int weight);
+-
+-    This interface function binds a thermal cooling device to a particular trip
+-    point of a thermal zone device.
+-
+-    This function is usually called in the thermal zone device .bind callback.
+-
+-    tz:
+-	  the thermal zone device
+-    cdev:
+-	  thermal cooling device
+-    trip:
+-	  indicates which trip point in this thermal zone the cooling device
+-	  is associated with.
+-    upper:
+-	  the Maximum cooling state for this trip point.
+-	  THERMAL_NO_LIMIT means no upper limit,
+-	  and the cooling device can be in max_state.
+-    lower:
+-	  the Minimum cooling state can be used for this trip point.
+-	  THERMAL_NO_LIMIT means no lower limit,
+-	  and the cooling device can be in cooling state 0.
+-    weight:
+-	  the influence of this cooling device in this thermal
+-	  zone.  See 1.4.1 below for more information.
+-
+-    ::
+-
+-	int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
+-				int trip, struct thermal_cooling_device *cdev);
+-
+-    This interface function unbinds a thermal cooling device from a particular
+-    trip point of a thermal zone device. This function is usually called in
+-    the thermal zone device .unbind callback.
+-
+-    tz:
+-	the thermal zone device
+-    cdev:
+-	thermal cooling device
+-    trip:
+-	indicates which trip point in this thermal zone the cooling device
+-	is associated with.
+-
+ 1.4 Thermal Zone Parameters
+ ---------------------------
+ 
+@@ -371,8 +321,6 @@ Thermal cooling device sys I/F, created
+ 
+ Then next two dynamic attributes are created/removed in pairs. They represent
+ the relationship between a thermal zone and its associated cooling device.
+-They are created/removed for each successful execution of
+-thermal_zone_bind_cooling_device/thermal_zone_unbind_cooling_device.
+ 
+ ::
+ 
 
 
 
