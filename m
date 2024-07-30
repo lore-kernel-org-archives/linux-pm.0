@@ -1,51 +1,53 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 079731AA3D7;
-	Tue, 30 Jul 2024 18:45:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 866751482F3;
+	Tue, 30 Jul 2024 18:51:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722365127; cv=none; b=i7oaZOU0H0aOh7bF6s8rUD0fG6j/AhB0bmtB3Fdx23nNSP5EMJlSgojrJSRjiumRHRytZolkeT7CgjFhiN8Rt8da/cpoRAj8pgsoPnnQIsB3/5XUhZdwciC4fc+lnWy6ha8MaSjy0qNt4WRjXMMIWI/Ci8a9Sq3UChMNy2pjn5o=
+	t=1722365514; cv=none; b=eMMz6lAcE+F6821iTGnpFjWx8JShiQUSWIF6xa1u/i2VAxCf1OGm3hOXAtBNcIwFr98YJwvTb8sPtNgpKSmyffI/t9JYgmilokNgfpFpeG8UNfd+5lnSrRxP+1AvuwTE19FHLECLcAWpxuI2mnOQZx2ZrSB9XaeXeR/6vbAXOfo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722365127; c=relaxed/simple;
-	bh=9n3sj/htmxTFmOWrdZYtljJoFQ7q9bBq4d373ID9rxU=;
+	s=arc-20240116; t=1722365514; c=relaxed/simple;
+	bh=023Azlu1DI442Ymcg7kgk1I0rNVmUPxN4UuHlX4xVqA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=i3dHHMaII41Lu2hWIY/xuIMZOQfonNwhIc7roj+KSKPOH2kP7kiVaBWNGME09tLE51tEXm+3r76ONIEH2zlkRXImC9wynVfrghJzXrDwdEigbZm4zJmVy53/2o5saTf2FCvr9LULup47G8U3KoiS43RuiqV3BmTpcQHDtNRf9+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=eIddPz1q reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=LE0IhU4gzmIBAZNQj0O33cRr1STJkSe+0hiYVUtF1ytbD2jWX5DArndgS91HmLQOzL6EN1UTZXr74ttAEcs7eMUiLxGmhq2hCp0GUQJ7gY0rGk/qy5eb7gDtPfrQKKFju6WxJYI9SHu1SzW+iCzIRa3F/niCb/i3Wfe81mtODrc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=dl0WFUu5 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="eIddPz1q"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="dl0WFUu5"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 24eb596f75ef3048; Tue, 30 Jul 2024 20:45:23 +0200
+ id a883f994f995aa59; Tue, 30 Jul 2024 20:51:50 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 93473956ED0;
-	Tue, 30 Jul 2024 20:45:22 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id E356B956ED0;
+	Tue, 30 Jul 2024 20:51:49 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1722365123;
-	bh=9n3sj/htmxTFmOWrdZYtljJoFQ7q9bBq4d373ID9rxU=;
+	s=dkim; t=1722365510;
+	bh=023Azlu1DI442Ymcg7kgk1I0rNVmUPxN4UuHlX4xVqA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=eIddPz1qN22MdMozvW9jSvdsYlCEooVoDch7IlmTFQ4PkOD6ywHViX49gppj8i0XZ
-	 7gQF/xo2MI8qWMLJ0MDi+gaGF4GSHhM6SLpMqlTRFYn1kNx2XC94quqREfPRZYdWcw
-	 Mp/9yxNT9VYEeD6pCXh8Jyrm+1p5Bw4rA2yUCmC2lUJNgUTy6+uQVqEe3x6y0Qy5h7
-	 dxlGnCOxQvo90QLKGHCqUK6/wMnq5CF0vnoO93vv2wwWOSlO50uwdI7D44ub7Wlh/j
-	 xyfFdlr2ENCylgtOKwAqyy3Ys191P/0CeIMfKk33weI5ARPJYIQPsV3UQ8w0Z2toRi
-	 OLl1wGWSL2jZA==
+	b=dl0WFUu5aAhMh02l+PaQ1TmqkgVQvvFu5I5Ey13zfldej6N7bqNeaz4wVyk/9ahru
+	 8XF5mvg82HpCUhpficsBfK0R7BOSmNcJkZoG4DEUnwIIkwulHuDnBtzivJxH6VoO1E
+	 2ptK/w9wJ2lgzVGxV22dBho6RMILhUvDHirLxNf+BXDooYFE/6rRW8oyHT3MUHkKiM
+	 ESx3cj7qUP/8RzQuFKoJVO/cf42jLeCAhT08Niv1lHMcRBv/4Lu1CSPZhPKdzE/J83
+	 ruZqAWinjTJB5gWQou5KlBWIYsDbXMDfFbuZh2DpZfWdZ+aS6frOJgfPJ5Dt83czpP
+	 t2ns/fOTKd0kQ==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Linux ACPI <linux-acpi@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
- Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
+ Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>
 Subject:
- [PATCH v1 02/17] thermal: core: Rearrange checks in
- thermal_bind_cdev_to_trip()
-Date: Tue, 30 Jul 2024 20:45:22 +0200
-Message-ID: <15273675.JCcGWNJJiE@rjwysocki.net>
+ [PATCH v1 11/17] thermal: imx: Use the .should_bind() thermal zone callback
+Date: Tue, 30 Jul 2024 20:31:07 +0200
+Message-ID: <7860434.lvqk35OSZv@rjwysocki.net>
 In-Reply-To: <1922131.tdWV9SEqCh@rjwysocki.net>
 References: <1922131.tdWV9SEqCh@rjwysocki.net>
 Precedence: bulk
@@ -59,63 +61,67 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjeeggddufedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepiedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=36 Fuz1=36 Fuz2=36
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrjeeggddufedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepuddtpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehshhgrfihnghhuoheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshdrhhgruhgvrhesphgvnhhguhhtrhhonhhigidruggv
+X-DCC--Metrics: v370.home.net.pl 1024; Body=50 Fuz1=50 Fuz2=50
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It is not necessary to look up the thermal zone and the cooling device
-in the respective global lists to check whether or not they are
-registered.  It is sufficient to check whether or not their respective
-list nodes are empty for this purpose.
+Make the imx_thermal driver use the .should_bind() thermal zone callback
+to provide the thermal core with the information on whether or not to
+bind the given cooling device to the given trip point in the given
+thermal zone.  If it returns 'true', the thermal core will bind the
+cooling device to the trip and the corresponding unbinding will be
+taken care of automatically by the core on the removal of the involved
+thermal zone or cooling device.
 
-Use the above observation to simplify thermal_bind_cdev_to_trip().  In
-addition, eliminate an unnecessary ternary operator from it.
-
-Moreover, add lockdep_assert_held() for thermal_list_lock to it because
-that lock must be held by its callers when it is running.
-
-No intentional functional impact.
+In the imx_thermal case, it only needs to return 'true' for the passive
+trip point and it will match any cooling device passed to it, in
+analogy with the old-style imx_bind() callback function.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c |   16 ++++------------
- 1 file changed, 4 insertions(+), 12 deletions(-)
 
-Index: linux-pm/drivers/thermal/thermal_core.c
+This patch only depends on patch [09/17].
+
+---
+ drivers/thermal/imx_thermal.c |   20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
+
+Index: linux-pm/drivers/thermal/imx_thermal.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -781,25 +781,17 @@ int thermal_bind_cdev_to_trip(struct the
+--- linux-pm.orig/drivers/thermal/imx_thermal.c
++++ linux-pm/drivers/thermal/imx_thermal.c
+@@ -353,24 +353,16 @@ static int imx_set_trip_temp(struct ther
+ 	return 0;
+ }
+ 
+-static int imx_bind(struct thermal_zone_device *tz,
+-		    struct thermal_cooling_device *cdev)
++static bool imx_should_bind(struct thermal_zone_device *tz,
++			    const struct thermal_trip *trip,
++			    struct thermal_cooling_device *cdev,
++			    struct cooling_spec *c)
  {
- 	struct thermal_instance *dev;
- 	struct thermal_instance *pos;
--	struct thermal_zone_device *pos1;
--	struct thermal_cooling_device *pos2;
- 	bool upper_no_limit;
- 	int result;
+-	return thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
+-						THERMAL_NO_LIMIT,
+-						THERMAL_NO_LIMIT,
+-						THERMAL_WEIGHT_DEFAULT);
+-}
+-
+-static int imx_unbind(struct thermal_zone_device *tz,
+-		      struct thermal_cooling_device *cdev)
+-{
+-	return thermal_zone_unbind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev);
++	return trip->type == THERMAL_TRIP_PASSIVE;
+ }
  
--	list_for_each_entry(pos1, &thermal_tz_list, node) {
--		if (pos1 == tz)
--			break;
--	}
--	list_for_each_entry(pos2, &thermal_cdev_list, node) {
--		if (pos2 == cdev)
--			break;
--	}
-+	lockdep_assert_held(&thermal_list_lock);
- 
--	if (tz != pos1 || cdev != pos2)
-+	if (list_empty(&tz->node) || list_empty(&cdev->node))
- 		return -EINVAL;
- 
- 	/* lower default 0, upper default max_state */
--	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
-+	if (lower == THERMAL_NO_LIMIT)
-+		lower = 0;
- 
- 	if (upper == THERMAL_NO_LIMIT) {
- 		upper = cdev->max_state;
+ static struct thermal_zone_device_ops imx_tz_ops = {
+-	.bind = imx_bind,
+-	.unbind = imx_unbind,
++	.should_bind = imx_should_bind,
+ 	.get_temp = imx_get_temp,
+ 	.change_mode = imx_change_mode,
+ 	.set_trip_temp = imx_set_trip_temp,
 
 
 
