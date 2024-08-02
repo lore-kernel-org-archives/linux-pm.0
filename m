@@ -1,46 +1,55 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DA531537A3;
-	Fri,  2 Aug 2024 18:05:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 865F515C150;
+	Fri,  2 Aug 2024 18:22:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722621924; cv=none; b=fgQG3hy/GaqNcoStOUEyTEfvGCvxt0t/hDXVz0PtQk47u0jbTQ5rSlbyfq8j4LesRse98ZqOY4bEHCAQdZ5hn8W59wikosRzlNcyCXOc6+s5TtQS1k+IgHS5vS8wlvxjfkVNYu4KIinDvggNXujk6FO02RoJGi7VrGgzD2/cfHc=
+	t=1722622925; cv=none; b=o7ZhguSy5WawZabj+GFffsrt2NEVd+kWH0bvT8r+JlS1GyVQeHfBb0TxjeuRYdKBHItXvV2WN+9CqrFr8Bk8m0QVsv/qhLoMGcmeDUDpcZ/D9M6zK/GPZomtkNB/iv9vGRL4ibmb9fxZipUOgvwJWhOcpfwq5ZWZw5oAQGCbpUQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722621924; c=relaxed/simple;
-	bh=9MwyrPH0K+ij8DIY11QXXJjikxwVcrIG054NVN+XUdc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=P7AtLNvAt6DiAz1g7wcOwYX4UJKGqDv949nbpmpg5AdlqptQdSWkDtz2Tua3mIBiwVJwFHvxUBUfb59fEo3EEzmiUBw/9eksUCBMT1erkFTppgexC8TyE3PmSmaT1TnQeWvvD+1bhyCjYhQ4gfTBvUg5eqItqlUxBRC/4lfmmaQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=tjxppv62; arc=none smtp.client-ip=79.96.170.134
+	s=arc-20240116; t=1722622925; c=relaxed/simple;
+	bh=fvuYgD8w/6ITvJyml+9ZvATHC3zmBGQA7HDOSPxODIw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=NleMiCx3rqtYpnPE5Wpe7VzNWTR0jNr42p/bos3MqXGHuOBicvEYaTx55/kGBqBQGy4CWWD2G/maVgTHTInFlQp2fibM/O9HmZ4kcMsqCPNqY9GWLSXSbRefpGNpR3rgs47/2YyGLEBskBGyibmefWNKEPyY+AEhBn8aLoMItk0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=p1Ih+8MV reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="tjxppv62"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="p1Ih+8MV"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id efaced6ae34c55cc; Fri, 2 Aug 2024 20:05:11 +0200
+ id 25e1e61871fd8b66; Fri, 2 Aug 2024 20:22:00 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 9EA9373B540;
-	Fri,  2 Aug 2024 20:05:08 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id D236B73B540;
+	Fri,  2 Aug 2024 20:21:59 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1722621909;
-	bh=9MwyrPH0K+ij8DIY11QXXJjikxwVcrIG054NVN+XUdc=;
-	h=From:To:Cc:Subject:Date;
-	b=tjxppv62yjJiryAVkX1rBD0Y8Q8Y7gIfMFcZ82HEwqZ4KiTiUDnecWHlzQ11qidAv
-	 nJOhlQVhBkacZjDcLm5MZxico6pyMJLX+Soy/1zbUtMkZqiduEpBFiznctPwuZzMWN
-	 ZLSjDOnWQJISl3Pf2uYI/ps8mYe/VTZxI4gb7sMqLr2a64B6IeHwhgo3mZca0Ss/ct
-	 6Ch6Uy0umxdlQ0KzIuY7uNclbUeZxqAltx1y7UePVl+4Lm2hhG+8OANpiVgKHpgnga
-	 UT9DnQbI+YmmgsEbHj1bPGHveOQRDegeExQlCcHaq53wuMzHUieP1bGlFInRs2z9j5
-	 GgF3IpujIglOA==
+	s=dkim; t=1722622920;
+	bh=fvuYgD8w/6ITvJyml+9ZvATHC3zmBGQA7HDOSPxODIw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=p1Ih+8MVLAbYBhpt3OAukITF0VfNWOFAGK77v54ogUJbiOtSSkaHENXX6EH7x0pe4
+	 4xJY0nHwyfT1Ux0CplYFH+URdADJJTlfRMSXa1buKnEc0DYSvqrVdJowlR91wjaY3N
+	 61VRjRdu9PApPtZkVNfy+e/V35p2R00FlrHrOXyQ7QfsIuUVndyfTMoGKWQh2lTBea
+	 7JxvisCXAfZhyOvIVMvmSYmM/VgVWWm463zRE/y4SO7n6VAqf+b2bLAOvKf5fjKTnF
+	 gw6eGcAVSyoNj7BIJ+prQtmhST8UhWrA5aXHjzsJEd3M4aNSrEc3tJoY8HwTv/Wiej
+	 Zf7gyqHg3gDEg==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH v1] thermal: Introduce a debugfs-based testing facility
-Date: Fri, 02 Aug 2024 20:05:03 +0200
-Message-ID: <6065927.lOV4Wx5bFT@rjwysocki.net>
+To: x86 Maintainers <x86@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Ricardo Neri <ricardo.neri@intel.com>, Tim Chen <tim.c.chen@intel.com>
+Subject:
+ [PATCH v1 3/3] cpufreq: intel_pstate: Set asymmetric CPU capacity on hybrid
+ systems
+Date: Fri, 02 Aug 2024 20:21:44 +0200
+Message-ID: <10504155.nUPlyArG6x@rjwysocki.net>
+In-Reply-To: <4908113.GXAFRqVoOG@rjwysocki.net>
+References: <4908113.GXAFRqVoOG@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -52,803 +61,384 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrkedtgdduudelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepudfggedtjefhjeffhfdvtddujedtuedvveegkeetjeffveejgfdugeelveelgeejnecuffhomhgrihhnpehthhgvrhhmrghlqdhtvghsthhinhhgrdhlshenucfkphepudelhedrudefiedrudelrdelgeenucfuphgrmhfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeegpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrkedtgdduvdefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepuddtpdhrtghpthhtohepgiekieeskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepthhglhigsehlihhnuhhtrhhonhhigidruggvpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehrrghfrggvlheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepughivghtmhgrrhdrvghgghgvmhgrnhhnsegrrhhmrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Introduce a facility allowing the thermal core functionality to be
-exercised in a controlled way in order to verify its behavior, without
-affecting its regular users noticeably.
+Make intel_pstate use the HWP_HIGHEST_PERF values from
+MSR_HWP_CAPABILITIES to set asymmetric CPU capacity information
+via the previously introduced arch_set_cpu_capacity() on hybrid
+systems without SMT.
 
-It is based on the idea of preparing thermal zone templates along with
-their trip points by writing to files in debugfs.  When ready, those
-templates can be used for registering test thermal zones with the
-thermal core.
+Setting asymmetric CPU capacity is generally necessary to allow the
+scheduler to compute task sizes in a consistent way across all CPUs
+in a system where they differ by capacity.  That, in turn, should help
+to improve scheduling decisions.  It is also necessary for the schedutil
+cpufreq governor to operate as expected on hybrid systems where tasks
+migrate between CPUs of different capacities.
 
-The temperature of a test thermal zone created this way can be adjusted
-via debugfs, which also triggers a __thermal_zone_device_update() call
-for it.  By manipulating the temperature of a test thermal zone, one can
-check if the thermal core reacts to the changes of it as expected.
+The underlying observation is that intel_pstate already uses
+MSR_HWP_CAPABILITIES to get CPU performance information which is
+exposed by it via sysfs and CPU performance scaling is based on it.
+Thus using this information for setting asymmetric CPU capacity is
+consistent with what the driver has been doing already.  Moreover,
+HWP_HIGHEST_PERF reflects the maximum capacity of a given CPU including
+both the instructions-per-cycle (IPC) factor and the maximum turbo
+frequency and the units in which that value is expressed are the same
+for all CPUs in the system, so the maximum capacity ratio between two
+CPUs can be obtained by computing the ratio of their HWP_HIGHEST_PERF
+values.  Of course, in principle that capacity ratio need not be
+directly applicable at lower frequencies, so using it for providing the
+asymmetric CPU capacity information to the scheduler is a rough
+approximation, but it is as good as it gets.  Also, measurements
+indicate that this approximation is not too bad in practice.
 
-Concise "howto" documentation is included in one of the source files.
+If the given system is hybrid and non-SMT, the new code disables ITMT
+support in the scheduler (because it may get in the way of asymmetric CPU
+capacity code in the scheduler that automatically gets enabled by setting
+asymmetric CPU capacity) after initializing all online CPUs and finds
+the one with the maximum HWP_HIGHEST_PERF value.  Next, it computes the
+capacity number for each (online) CPU by dividing the product of its
+HWP_HIGHEST_PERF and SCHED_CAPACITY_SCALE by the maximum HWP_HIGHEST_PERF.
+
+When a CPU goes offline, its capacity is reset to SCHED_CAPACITY_SCALE
+and if it is the one with the maximum HWP_HIGHEST_PERF value, the
+capacity numbers for all of the other online CPUs are recomputed.  This
+also takes care of a cleanup during driver operation mode changes.
+
+Analogously, when a new CPU goes online, its capacity number is updated
+and if its HWP_HIGHEST_PERF value is greater than the current maximum
+one, the capacity numbers for all of the other online CPUs are
+recomputed.
+
+The case when the driver is notified of a CPU capacity change, either
+through the HWP interrupt or through an ACPI notification, is handled
+similarly to the CPU online case above, except that if the target CPU
+is the current highest-capacity one and its capacity is reduced, the
+capacity numbers for all of the other online CPUs need to be recomputed
+either.
+
+If the driver's "no_trubo" sysfs attribute is updated, all of the CPU
+capacity information is computed from scratch to reflect the new turbo
+status.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ drivers/cpufreq/intel_pstate.c |  210 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 206 insertions(+), 4 deletions(-)
 
-In its current form, this is quite limited, but still quite useful at
-least for me.  In the future, it can be extended to allow "mock" test
-cooling devices to be registered and bound to trip points in "mock"
-test thermal zones, so that governor response can be tested at least
-in some scenarios.  On top of that, a test scripts can be developed
-for automated testing of the thermal core.  IOW, it's just a start.
-
----
- drivers/thermal/Kconfig                   |    9 
- drivers/thermal/Makefile                  |    1 
- drivers/thermal/testing/Makefile          |    7 
- drivers/thermal/testing/command.c         |  221 ++++++++++++++
- drivers/thermal/testing/thermal_testing.h |   11 
- drivers/thermal/testing/zone.c            |  469 ++++++++++++++++++++++++++++++
- 6 files changed, 718 insertions(+)
-
-Index: linux-pm/drivers/thermal/Kconfig
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/Kconfig
-+++ linux-pm/drivers/thermal/Kconfig
-@@ -40,6 +40,15 @@ config THERMAL_DEBUGFS
- 	  Say Y to allow the thermal subsystem to collect diagnostic
- 	  information that can be accessed via debugfs.
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -16,6 +16,7 @@
+ #include <linux/tick.h>
+ #include <linux/slab.h>
+ #include <linux/sched/cpufreq.h>
++#include <linux/sched/smt.h>
+ #include <linux/list.h>
+ #include <linux/cpu.h>
+ #include <linux/cpufreq.h>
+@@ -215,6 +216,7 @@ struct global_params {
+  * @hwp_req_cached:	Cached value of the last HWP Request MSR
+  * @hwp_cap_cached:	Cached value of the last HWP Capabilities MSR
+  * @last_io_update:	Last time when IO wake flag was set
++ * @capacity_perf:	Highest perf used for scale invariance
+  * @sched_flags:	Store scheduler flags for possible cross CPU update
+  * @hwp_boost_min:	Last HWP boosted min performance
+  * @suspended:		Whether or not the driver has been suspended.
+@@ -253,6 +255,7 @@ struct cpudata {
+ 	u64 hwp_req_cached;
+ 	u64 hwp_cap_cached;
+ 	u64 last_io_update;
++	unsigned int capacity_perf;
+ 	unsigned int sched_flags;
+ 	u32 hwp_boost_min;
+ 	bool suspended;
+@@ -295,6 +298,7 @@ static int hwp_mode_bdw __ro_after_init;
+ static bool per_cpu_limits __ro_after_init;
+ static bool hwp_forced __ro_after_init;
+ static bool hwp_boost __read_mostly;
++static bool hwp_is_hybrid;
  
-+config THERMAL_CORE_TESTING
-+	tristate "Thermal core testing facility"
-+	depends on DEBUG_FS
-+	help
-+	  Say Y to add a debugfs-based thermal core testing facility.
-+	  It allows test thermal zones to be created and populated
-+	  with trip points in order to exercise the thermal core
-+	  functionality in a controlled way.
-+
- config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
- 	int "Emergency poweroff delay in milli-seconds"
- 	default 0
-Index: linux-pm/drivers/thermal/Makefile
-===================================================================
---- linux-pm.orig/drivers/thermal/Makefile
-+++ linux-pm/drivers/thermal/Makefile
-@@ -63,3 +63,4 @@ obj-$(CONFIG_AMLOGIC_THERMAL)     += aml
- obj-$(CONFIG_SPRD_THERMAL)	+= sprd_thermal.o
- obj-$(CONFIG_KHADAS_MCU_FAN_THERMAL)	+= khadas_mcu_fan.o
- obj-$(CONFIG_LOONGSON2_THERMAL)	+= loongson2_thermal.o
-+obj-$(CONFIG_THERMAL_CORE_TESTING)	+= testing/
-Index: linux-pm/drivers/thermal/testing/Makefile
-===================================================================
---- /dev/null
-+++ linux-pm/drivers/thermal/testing/Makefile
-@@ -0,0 +1,7 @@
-+# SPDX-License-Identifier: GPL-2.0
-+#
-+# Thermal core testing facility.
-+
-+obj-$(CONFIG_THERMAL_CORE_TESTING) += thermal-testing.o
-+
-+thermal-testing-y := command.o zone.o
-Index: linux-pm/drivers/thermal/testing/command.c
-===================================================================
---- /dev/null
-+++ linux-pm/drivers/thermal/testing/command.c
-@@ -0,0 +1,221 @@
-+// SPDX-License-Identifier: GPL-2.0
+ static struct cpufreq_driver *intel_pstate_driver __read_mostly;
+ 
+@@ -934,6 +938,106 @@ static struct freq_attr *hwp_cpufreq_att
+ 	NULL,
+ };
+ 
++static struct cpudata *hybrid_max_perf_cpu __read_mostly;
 +/*
-+ * Copyright 2024, Intel Corporation
-+ *
-+ * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+ *
-+ * Thermal subsystem testing facility.
-+ *
-+ * This facility allows the thermal core functionality to be exercised in a
-+ * controlled way in order to verify its behavior.
-+ *
-+ * It resides in the "thermal-testing" directory under the debugfs root and
-+ * starts with a single file called "command" which can be written a string
-+ * representing a thermal testing facility command.
-+ *
-+ * The currently supported commands are listed in the tt_commands enum below.
-+ *
-+ * The "addtz" command causes a new test thermal zone template to be created,
-+ * for example:
-+ *
-+ * # echo addtz > /sys/kernel/debug/thermal-testing/command
-+ *
-+ * That template will be represented as a subdirectory in the "thermal-testing"
-+ * directory, for example
-+ *
-+ * # ls /sys/kernel/debug/thermal-testing/
-+ * command tz0
-+ *
-+ * The thermal zone template can be populated with trip points with the help of
-+ * the "tzaddtrip" command, for example:
-+ *
-+ * # echo tzaddtrip:0 > /sys/kernel/debug/thermal-testing/command
-+ *
-+ * which causes a trip point template to be added to the test thermal zone
-+ * template 0 (represented by the tz0 subdirectory in "thermal-testing").
-+ *
-+ * # ls /sys/kernel/debug/thermal-testing/tz0
-+ * init_temp temp trip_0_temp trip_0_hyst
-+ *
-+ * The temperature of a trip point template is initially THERMAL_TEMP_INVALID
-+ * and its hysteresis is initially 0.  They can be adjusted by writing to the
-+ * "trip_x_temp" and "trip_x_hyst" files correspoinding to that trip point
-+ * template, respectively.
-+ *
-+ * The initial temperature of a thermal zone based on a template can be set by
-+ * writing to the "init_temp" file in its directory under "thermal-testing", for
-+ * example:
-+ *
-+ * echo 50000 > /sys/kernel/debug/thermal-testing/tz0/init_temp
-+ *
-+ * When ready, "tzreg" command can be used for registering and enabling a
-+ * thermal zone based on a given template with the thermal core, for example
-+ *
-+ * # echo tzreg:0 > /sys/kernel/debug/thermal-testing/command
-+ *
-+ * In this case, test thermal zone template 0 is used for registering a new
-+ * thermal zone and the set of trip point templates associated with it is used
-+ * for populating the new thermal zone's trip points table.  The type of the new
-+ * thermal zone is "test_tz".
-+ *
-+ * The temperature and hysteresis of all of the trip points in that new thermal
-+ * zone are adjustable via sysfs, so they can be updated at any time.
-+ *
-+ * The current temperature of the new thermal zone can be set by writing to the
-+ * "temp" file in the corresponding thermal zone template's directory under
-+ * "thermal-testing", for example
-+ *
-+ * echo 10000 > /sys/kernel/debug/thermal-testing/tz0/temp
-+ *
-+ * which will also trigger a temperature update for this zone in the thermal
-+ * core, including checking its trip points, sending notifications to user space
-+ * if any of them have been crossed and so on.
-+ *
-+ * When it is not needed any more, a test thermal zone template can be deleted
-+ * with the help of the "deltz" command, for example
-+ *
-+ * # echo deltz:0 > /sys/kernel/debug/thermal-testing/command
-+ *
-+ * which will also unregister the thermal zone based on it, if present.
++ * Protects hybrid_max_perf_cpu, the capacity_perf fields in struct cpudata,
++ * and the x86 arch scale-invariance information from concurrent updates.
 + */
++static DEFINE_MUTEX(hybrid_capacity_lock);
 +
-+#define pr_fmt(fmt) "thermal-testing: " fmt
-+
-+#include <linux/debugfs.h>
-+#include <linux/module.h>
-+
-+#include "thermal_testing.h"
-+
-+struct dentry *d_testing;
-+
-+#define TT_COMMAND_SIZE		16
-+
-+enum tt_commands {
-+	TT_CMD_ADDTZ,
-+	TT_CMD_DELTZ,
-+	TT_CMD_TZADDTRIP,
-+	TT_CMD_TZREG,
-+	TT_CMD_TZUNREG,
-+};
-+
-+static const char *tt_command_strings[] = {
-+	[TT_CMD_ADDTZ] = "addtz",
-+	[TT_CMD_DELTZ] = "deltz",
-+	[TT_CMD_TZADDTRIP] = "tzaddtrip",
-+	[TT_CMD_TZREG] = "tzreg",
-+	[TT_CMD_TZUNREG] = "tzunreg",
-+};
-+
-+static int tt_command_exec(int index, const char *arg)
++static void hybrid_set_cpu_capacity(struct cpudata *cpu)
 +{
-+	int ret;
++	arch_set_cpu_capacity(cpu->cpu, cpu->capacity_perf,
++			      hybrid_max_perf_cpu->capacity_perf,
++			      cpu->capacity_perf,
++			      cpu->pstate.max_pstate_physical);
 +
-+	switch (index) {
-+	case TT_CMD_ADDTZ:
-+		ret = tt_add_tz();
-+		break;
-+
-+	case TT_CMD_DELTZ:
-+		ret = tt_del_tz(arg);
-+		break;
-+
-+	case TT_CMD_TZADDTRIP:
-+		ret = tt_zone_add_trip(arg);
-+		break;
-+
-+	case TT_CMD_TZREG:
-+		ret = tt_zone_reg(arg);
-+		break;
-+
-+	case TT_CMD_TZUNREG:
-+		ret = tt_zone_unreg(arg);
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	return ret;
++	pr_debug("CPU%d: perf = %u, max. perf = %u, base perf = %d\n", cpu->cpu,
++		 cpu->capacity_perf, hybrid_max_perf_cpu->capacity_perf,
++		 cpu->pstate.max_pstate_physical);
 +}
 +
-+static ssize_t tt_command_process(struct dentry *dentry, const char __user *user_buf,
-+				  size_t count)
++static void hybrid_clear_cpu_capacity(unsigned int cpunum)
 +{
-+	char *buf __free(kfree);
-+	char *arg;
-+	int i;
-+
-+	buf = kmalloc(count + 1, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	if (copy_from_user(buf, user_buf, count))
-+		return -EFAULT;
-+
-+	buf[count] = '\0';
-+	strim(buf);
-+
-+	arg = strstr(buf, ":");
-+	if (arg) {
-+		*arg = '\0';
-+		arg++;
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(tt_command_strings); i++) {
-+		if (!strcmp(buf, tt_command_strings[i]))
-+			return tt_command_exec(i, arg);
-+	}
-+
-+	return -EINVAL;
++	arch_set_cpu_capacity(cpunum, 1, 1, 1, 1);
 +}
 +
-+static ssize_t tt_command_write(struct file *file, const char __user *user_buf,
-+				size_t count, loff_t *ppos)
++static void hybrid_get_capacity_perf(struct cpudata *cpu)
 +{
-+	struct dentry *dentry = file->f_path.dentry;
-+	ssize_t ret;
-+
-+	if (*ppos)
-+		return -EINVAL;
-+
-+	if (count + 1 > TT_COMMAND_SIZE)
-+		return -E2BIG;
-+
-+	ret = debugfs_file_get(dentry);
-+	if (unlikely(ret))
-+		return ret;
-+
-+	ret = tt_command_process(dentry, user_buf, count);
-+	if (ret)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static const struct file_operations tt_command_fops = {
-+	.write = tt_command_write,
-+	.open =	 simple_open,
-+	.llseek = default_llseek,
-+};
-+
-+static int __init thermal_testing_init(void)
-+{
-+	d_testing = debugfs_create_dir("thermal-testing", NULL);
-+	if (d_testing)
-+		debugfs_create_file("command", 0200, d_testing, NULL,
-+				    &tt_command_fops);
-+
-+	return 0;
-+}
-+module_init(thermal_testing_init);
-+
-+static void __exit thermal_testing_exit(void)
-+{
-+	debugfs_remove(d_testing);
-+	tt_zone_cleanup();
-+}
-+module_exit(thermal_testing_exit);
-+
-+MODULE_DESCRIPTION("Thermal core testing facility");
-+MODULE_LICENSE("GPL v2");
-Index: linux-pm/drivers/thermal/testing/thermal_testing.h
-===================================================================
---- /dev/null
-+++ linux-pm/drivers/thermal/testing/thermal_testing.h
-@@ -0,0 +1,11 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+extern struct dentry *d_testing;
-+
-+int tt_add_tz(void);
-+int tt_del_tz(const char *arg);
-+int tt_zone_add_trip(const char *arg);
-+int tt_zone_reg(const char *arg);
-+int tt_zone_unreg(const char *arg);
-+
-+void tt_zone_cleanup(void);
-Index: linux-pm/drivers/thermal/testing/zone.c
-===================================================================
---- /dev/null
-+++ linux-pm/drivers/thermal/testing/zone.c
-@@ -0,0 +1,469 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright 2024, Intel Corporation
-+ *
-+ * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+ *
-+ * Thermal zone tempalates handling for thermal core testing.
-+ */
-+
-+#define pr_fmt(fmt) "thermal-testing: " fmt
-+
-+#include <linux/debugfs.h>
-+#include <linux/idr.h>
-+#include <linux/list.h>
-+#include <linux/thermal.h>
-+#include <linux/workqueue.h>
-+
-+#include "thermal_testing.h"
-+
-+#define TT_MAX_FILE_NAME_LENGTH		16
-+
-+/**
-+ * struct tt_thermal_zone - Testing thermal zone template
-+ *
-+ * Represents a template of a thermal zone that can be used for registering
-+ * a test thermal zone with the thermal core.
-+ *
-+ * @list_node: Node in the list of all testing thermal zone templates.
-+ * @trips: List of trip point templates for this thermal zone template.
-+ * @d_tt_zone: Directory in debugfs representing this template.
-+ * @tz: Test thermal zone based on this template, if present.
-+ * @lock: Mutex for synchronizing changes of this template.
-+ * @ida: IDA for trip point IDs.
-+ * @id: The ID of this template for the debugfs interface.
-+ * @temp: Temperature value.
-+ * @tz_temp: Current thermal zone temperature (after registration).
-+ * @num_trips: Number of trip points in the @trips list.
-+ * @refcont: Reference counter for usage and removal synchronization.
-+ */
-+struct tt_thermal_zone {
-+	struct list_head list_node;
-+	struct list_head trips;
-+	struct dentry *d_tt_zone;
-+	struct thermal_zone_device *tz;
-+	struct mutex lock;
-+	struct ida ida;
-+	int id;
-+	int temp;
-+	int tz_temp;
-+	unsigned int num_trips;
-+	unsigned int refcount;
-+};
-+
-+DEFINE_GUARD(tt_zone, struct tt_thermal_zone *, mutex_lock(&_T->lock), mutex_unlock(&_T->lock))
-+
-+/**
-+ * struct tt_trip - Testing trip point template
-+ *
-+ * Represents a template of a trip point to be used for populating a trip point
-+ * during the registration of a thermal zone based on a given zone template.
-+ *
-+ * @list_node: Node in the list of all trip template in @tt_zone.
-+ * @tt_zone: Zone template this trip template belongs to.
-+ * @trip: Trip point data to use for thernal zone registration.
-+ * @id: The ID of this trip template for the debugfs interface.
-+ */
-+struct tt_trip {
-+	struct list_head list_node;
-+	struct thermal_trip trip;
-+	int id;
-+};
-+
-+/*
-+ * It is both questionable and potentially problematic from the sychnronization
-+ * perspective to attempt to manipulate debugfs from within a debugfs file
-+ * "write" operation, so auxiliary work items are used for that.  The majority
-+ * of zone-related command functions have a part that runs from a workqueue and
-+ * make changes in debugs, among other things.
-+ */
-+struct tt_work {
-+	struct work_struct work;
-+	struct tt_thermal_zone *tt_zone;
-+	struct tt_trip *tt_trip;
-+};
-+
-+static inline struct tt_work *tt_work_of_work(struct work_struct *work)
-+{
-+	return container_of(work, struct tt_work, work);
-+}
-+
-+static LIST_HEAD(tt_thermal_zones);
-+static DEFINE_IDA(tt_thermal_zones_ida);
-+static DEFINE_MUTEX(tt_thermal_zones_lock);
-+
-+static int tt_int_get(void *data, u64 *val)
-+{
-+	*val = *(int *)data;
-+	return 0;
-+}
-+static int tt_int_set(void *data, u64 val)
-+{
-+	if ((int)val < THERMAL_TEMP_INVALID)
-+		return -EINVAL;
-+
-+	*(int *)data = val;
-+	return 0;
-+}
-+DEFINE_DEBUGFS_ATTRIBUTE_SIGNED(tt_int_attr, tt_int_get, tt_int_set, "%lld\n");
-+DEFINE_DEBUGFS_ATTRIBUTE(tt_unsigned_int_attr, tt_int_get, tt_int_set, "%llu\n");
-+
-+static int tt_zone_tz_temp_get(void *data, u64 *val)
-+{
-+	struct tt_thermal_zone *tt_zone = data;
-+
-+	guard(tt_zone)(tt_zone);
-+
-+	if (!tt_zone->tz)
-+		return -EBUSY;
-+
-+	*val = tt_zone->tz_temp;
-+
-+	return 0;
-+}
-+static int tt_zone_tz_temp_set(void *data, u64 val)
-+{
-+	struct tt_thermal_zone *tt_zone = data;
-+
-+	guard(tt_zone)(tt_zone);
-+
-+	if (!tt_zone->tz)
-+		return -EBUSY;
-+
-+	WRITE_ONCE(tt_zone->tz_temp, val);
-+	thermal_zone_device_update(tt_zone->tz, THERMAL_EVENT_TEMP_SAMPLE);
-+
-+	return 0;
-+}
-+DEFINE_DEBUGFS_ATTRIBUTE_SIGNED(tt_zone_tz_temp_attr, tt_zone_tz_temp_get,
-+				tt_zone_tz_temp_set, "%lld\n");
-+
-+static void tt_zone_free_trips(struct tt_thermal_zone *tt_zone)
-+{
-+	struct tt_trip *tt_trip, *aux;
-+
-+	list_for_each_entry_safe(tt_trip, aux, &tt_zone->trips, list_node) {
-+		list_del(&tt_trip->list_node);
-+		ida_free(&tt_zone->ida, tt_trip->id);
-+		kfree(tt_trip);
-+	}
-+}
-+
-+static void tt_zone_free(struct tt_thermal_zone *tt_zone)
-+{
-+	tt_zone_free_trips(tt_zone);
-+	ida_free(&tt_thermal_zones_ida, tt_zone->id);
-+	ida_destroy(&tt_zone->ida);
-+	kfree(tt_zone);
-+}
-+
-+static void tt_add_tz_work_fn(struct work_struct *work)
-+{
-+	struct tt_work *tt_work = tt_work_of_work(work);
-+	struct tt_thermal_zone *tt_zone = tt_work->tt_zone;
-+	char f_name[TT_MAX_FILE_NAME_LENGTH];
-+
-+	kfree(tt_work);
-+
-+	snprintf(f_name, TT_MAX_FILE_NAME_LENGTH, "tz%d", tt_zone->id);
-+	tt_zone->d_tt_zone = debugfs_create_dir(f_name, d_testing);
-+	if (!tt_zone->d_tt_zone) {
-+		tt_zone_free(tt_zone);
++	if (READ_ONCE(global.no_turbo)) {
++		cpu->capacity_perf = cpu->pstate.max_pstate_physical;
 +		return;
 +	}
 +
-+	debugfs_create_file_unsafe("temp", 0600, tt_zone->d_tt_zone, tt_zone,
-+				   &tt_zone_tz_temp_attr);
-+
-+	debugfs_create_file_unsafe("init_temp", 0600, tt_zone->d_tt_zone,
-+				   &tt_zone->temp, &tt_int_attr);
-+
-+	guard(mutex)(&tt_thermal_zones_lock);
-+
-+	list_add_tail(&tt_zone->list_node, &tt_thermal_zones);
++	cpu->capacity_perf = HWP_HIGHEST_PERF(READ_ONCE(cpu->hwp_cap_cached));
 +}
 +
-+int tt_add_tz(void)
++static void hybrid_set_capacity_of_cpus(void)
 +{
-+	struct tt_thermal_zone *tt_zone __free(kfree);
-+	struct tt_work *tt_work __free(kfree);
-+	int ret;
++	int cpunum;
 +
-+	tt_zone = kzalloc(sizeof(*tt_zone), GFP_KERNEL);
-+	if (!tt_zone)
-+		return -ENOMEM;
++	for_each_online_cpu(cpunum) {
++		struct cpudata *cpu = all_cpu_data[cpunum];
 +
-+	tt_work = kzalloc(sizeof(*tt_work), GFP_KERNEL);
-+	if (!tt_work)
-+		return -ENOMEM;
-+
-+	INIT_LIST_HEAD(&tt_zone->trips);
-+	mutex_init(&tt_zone->lock);
-+	ida_init(&tt_zone->ida);
-+	tt_zone->temp = THERMAL_TEMP_INVALID;
-+
-+	ret = ida_alloc(&tt_thermal_zones_ida, GFP_KERNEL);
-+	if (ret < 0)
-+		return ret;
-+
-+	tt_zone->id = ret;
-+
-+	INIT_WORK(&tt_work->work, tt_add_tz_work_fn);
-+	tt_work->tt_zone = no_free_ptr(tt_zone);
-+	schedule_work(&(no_free_ptr(tt_work)->work));
-+
-+	return 0;
-+}
-+
-+static void tt_del_tz_work_fn(struct work_struct *work)
-+{
-+	struct tt_work *tt_work = tt_work_of_work(work);
-+	struct tt_thermal_zone *tt_zone = tt_work->tt_zone;
-+
-+	kfree(tt_work);
-+
-+	debugfs_remove(tt_zone->d_tt_zone);
-+	tt_zone_free(tt_zone);
-+}
-+
-+static void tt_zone_unregister_tz(struct tt_thermal_zone *tt_zone)
-+{
-+	guard(tt_zone)(tt_zone);
-+
-+	if (tt_zone->tz) {
-+		thermal_zone_device_unregister(tt_zone->tz);
-+		tt_zone->tz = NULL;
++		if (cpu)
++			hybrid_set_cpu_capacity(cpu);
 +	}
 +}
 +
-+int tt_del_tz(const char *arg)
++static void hybrid_update_cpu_scaling(void)
 +{
-+	struct tt_work *tt_work __free(kfree);
-+	struct tt_thermal_zone *tt_zone, *aux;
-+	int ret;
-+	int id;
++	struct cpudata *max_perf_cpu = NULL;
++	unsigned int max_cap_perf = 0;
++	int cpunum;
 +
-+	ret = sscanf(arg, "%d", &id);
-+	if (ret != 1)
-+		return -EINVAL;
++	for_each_online_cpu(cpunum) {
++		struct cpudata *cpu = all_cpu_data[cpunum];
 +
-+	tt_work = kzalloc(sizeof(*tt_work), GFP_KERNEL);
-+	if (!tt_work)
-+		return -ENOMEM;
++		if (!cpu)
++			continue;
 +
-+	guard(mutex)(&tt_thermal_zones_lock);
++		/*
++		 * During initialization, CPU performance at full capacity needs
++		 * to be determined.
++		 */
++		if (!hybrid_max_perf_cpu)
++			hybrid_get_capacity_perf(cpu);
 +
-+	ret = -EINVAL;
-+	list_for_each_entry_safe(tt_zone, aux, &tt_thermal_zones, list_node) {
-+		if (tt_zone->id == id) {
-+			if (tt_zone->refcount) {
-+				ret = -EBUSY;
-+			} else {
-+				list_del(&tt_zone->list_node);
-+				ret = 0;
++		/*
++		 * If hybrid_max_perf_cpu is not NULL at this point, it is
++		 * being replaced, so don't take it into account when looking
++		 * for the new one.
++		 */
++		if (cpu == hybrid_max_perf_cpu)
++			continue;
++
++		if (cpu->capacity_perf > max_cap_perf) {
++			max_cap_perf = cpu->capacity_perf;
++			max_perf_cpu = cpu;
++		}
++	}
++
++	if (max_perf_cpu) {
++		hybrid_max_perf_cpu = max_perf_cpu;
++		hybrid_set_capacity_of_cpus();
++	} else {
++		pr_info("Found no CPUs with nonzero maximum performance\n");
++		/* Revert to the flat CPU capacity structure. */
++		for_each_online_cpu(cpunum)
++			hybrid_clear_cpu_capacity(cpunum);
++	}
++}
++
++static void hybrid_init_cpu_scaling(void)
++{
++	mutex_lock(&hybrid_capacity_lock);
++
++	hybrid_max_perf_cpu = NULL;
++	hybrid_update_cpu_scaling();
++
++	mutex_unlock(&hybrid_capacity_lock);
++}
++
+ static void __intel_pstate_get_hwp_cap(struct cpudata *cpu)
+ {
+ 	u64 cap;
+@@ -962,6 +1066,43 @@ static void intel_pstate_get_hwp_cap(str
+ 	}
+ }
+ 
++static void hybrid_update_capacity(struct cpudata *cpu)
++{
++	unsigned int max_cap_perf;
++
++	mutex_lock(&hybrid_capacity_lock);
++
++	if (!hybrid_max_perf_cpu)
++		goto unlock;
++
++	/*
++	 * The maximum performance of the CPU may have changed, but assume
++	 * that the performance of the other CPUs has not changed.
++	 */
++	max_cap_perf = hybrid_max_perf_cpu->capacity_perf;
++
++	intel_pstate_get_hwp_cap(cpu);
++
++	hybrid_get_capacity_perf(cpu);
++	/* Should hybrid_max_perf_cpu be replaced by this CPU? */
++	if (cpu->capacity_perf > max_cap_perf) {
++		hybrid_max_perf_cpu = cpu;
++		hybrid_set_capacity_of_cpus();
++		goto unlock;
++	}
++
++	/* If this CPU is hybrid_max_perf_cpu, should it be replaced? */
++	if (cpu == hybrid_max_perf_cpu && cpu->capacity_perf < max_cap_perf) {
++		hybrid_update_cpu_scaling();
++		goto unlock;
++	}
++
++	hybrid_set_cpu_capacity(cpu);
++
++unlock:
++	mutex_unlock(&hybrid_capacity_lock);
++}
++
+ static void intel_pstate_hwp_set(unsigned int cpu)
+ {
+ 	struct cpudata *cpu_data = all_cpu_data[cpu];
+@@ -1070,6 +1211,22 @@ static void intel_pstate_hwp_offline(str
+ 		value |= HWP_ENERGY_PERF_PREFERENCE(HWP_EPP_POWERSAVE);
+ 
+ 	wrmsrl_on_cpu(cpu->cpu, MSR_HWP_REQUEST, value);
++
++	mutex_lock(&hybrid_capacity_lock);
++
++	if (!hybrid_max_perf_cpu) {
++		mutex_unlock(&hybrid_capacity_lock);
++
++		return;
++	}
++
++	if (hybrid_max_perf_cpu == cpu)
++		hybrid_update_cpu_scaling();
++
++	mutex_unlock(&hybrid_capacity_lock);
++
++	/* Reset the capacity of the CPU going offline to the initial value. */
++	hybrid_clear_cpu_capacity(cpu->cpu);
+ }
+ 
+ #define POWER_CTL_EE_ENABLE	1
+@@ -1165,21 +1322,41 @@ static void __intel_pstate_update_max_fr
+ static void intel_pstate_update_limits(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = cpufreq_cpu_acquire(cpu);
++	struct cpudata *cpudata;
+ 
+ 	if (!policy)
+ 		return;
+ 
+-	__intel_pstate_update_max_freq(all_cpu_data[cpu], policy);
++	cpudata = all_cpu_data[cpu];
++
++	__intel_pstate_update_max_freq(cpudata, policy);
++
++	/* Prevent the driver from being unregistered now. */
++	mutex_lock(&intel_pstate_driver_lock);
+ 
+ 	cpufreq_cpu_release(policy);
++
++	hybrid_update_capacity(cpudata);
++
++	mutex_unlock(&intel_pstate_driver_lock);
+ }
+ 
+ static void intel_pstate_update_limits_for_all(void)
+ {
+ 	int cpu;
+ 
+-	for_each_possible_cpu(cpu)
+-		intel_pstate_update_limits(cpu);
++	for_each_possible_cpu(cpu) {
++		struct cpufreq_policy *policy = cpufreq_cpu_acquire(cpu);
++
++		if (!policy)
++			continue;
++
++		__intel_pstate_update_max_freq(all_cpu_data[cpu], policy);
++
++		cpufreq_cpu_release(policy);
++	}
++
++	hybrid_init_cpu_scaling();
+ }
+ 
+ /************************** sysfs begin ************************/
+@@ -1618,6 +1795,13 @@ static void intel_pstate_notify_work(str
+ 		__intel_pstate_update_max_freq(cpudata, policy);
+ 
+ 		cpufreq_cpu_release(policy);
++
++		/*
++		 * The driver will not be unregistered while this function is
++		 * running, so update the capacity without acquiring the driver
++		 * lock.
++		 */
++		hybrid_update_capacity(cpudata);
+ 	}
+ 
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_HWP_STATUS, 0);
+@@ -2034,8 +2218,10 @@ static void intel_pstate_get_cpu_pstates
+ 
+ 		if (pstate_funcs.get_cpu_scaling) {
+ 			cpu->pstate.scaling = pstate_funcs.get_cpu_scaling(cpu->cpu);
+-			if (cpu->pstate.scaling != perf_ctl_scaling)
++			if (cpu->pstate.scaling != perf_ctl_scaling) {
+ 				intel_pstate_hybrid_hwp_adjust(cpu);
++				hwp_is_hybrid = true;
 +			}
-+			break;
-+		}
+ 		} else {
+ 			cpu->pstate.scaling = perf_ctl_scaling;
+ 		}
+@@ -2703,6 +2889,8 @@ static int intel_pstate_cpu_online(struc
+ 		 */
+ 		intel_pstate_hwp_reenable(cpu);
+ 		cpu->suspended = false;
++
++		hybrid_update_capacity(cpu);
+ 	}
+ 
+ 	return 0;
+@@ -3143,6 +3331,20 @@ static int intel_pstate_register_driver(
+ 
+ 	global.min_perf_pct = min_perf_pct_min();
+ 
++	/*
++	 * On hybrid systems, use asym capacity instead of ITMT, but because
++	 * the capacity of SMT threads is not deterministic even approximately,
++	 * do not do that when SMT is in use.
++	 */
++	if (hwp_is_hybrid && !sched_smt_active() &&
++	    arch_enable_hybrid_capacity_scale()) {
++		sched_clear_itmt_support();
++
++		hybrid_init_cpu_scaling();
++
++		arch_rebuild_sched_domains();
 +	}
 +
-+	if (ret)
-+		return ret;
-+
-+	tt_zone_unregister_tz(tt_zone);
-+
-+	INIT_WORK(&tt_work->work, tt_del_tz_work_fn);
-+	tt_work->tt_zone = tt_zone;
-+	schedule_work(&(no_free_ptr(tt_work)->work));
-+
-+	return 0;
-+}
-+
-+static struct tt_thermal_zone *tt_get_tt_zone(const char *arg)
-+{
-+	struct tt_thermal_zone *tt_zone;
-+	int ret, id;
-+
-+	ret = sscanf(arg, "%d", &id);
-+	if (ret != 1)
-+		return ERR_PTR(-EINVAL);
-+
-+	guard(mutex)(&tt_thermal_zones_lock);
-+
-+	ret = -EINVAL;
-+	list_for_each_entry(tt_zone, &tt_thermal_zones, list_node) {
-+		if (tt_zone->id == id) {
-+			tt_zone->refcount++;
-+			ret = 0;
-+			break;
-+		}
-+	}
-+
-+	if (ret)
-+		return ERR_PTR(ret);
-+
-+	return tt_zone;
-+}
-+
-+static void tt_put_tt_zone(struct tt_thermal_zone *tt_zone)
-+{
-+	guard(mutex)(&tt_thermal_zones_lock);
-+
-+	tt_zone->refcount--;
-+}
-+
-+static void tt_zone_add_trip_work_fn(struct work_struct *work)
-+{
-+	struct tt_work *tt_work = tt_work_of_work(work);
-+	struct tt_thermal_zone *tt_zone = tt_work->tt_zone;
-+	struct tt_trip *tt_trip = tt_work->tt_trip;
-+	char d_name[TT_MAX_FILE_NAME_LENGTH];
-+
-+	kfree(tt_work);
-+
-+	snprintf(d_name, TT_MAX_FILE_NAME_LENGTH, "trip_%d_temp", tt_trip->id);
-+	debugfs_create_file_unsafe(d_name, 0600, tt_zone->d_tt_zone,
-+				   &tt_trip->trip.temperature, &tt_int_attr);
-+
-+	snprintf(d_name, TT_MAX_FILE_NAME_LENGTH, "trip_%d_hyst", tt_trip->id);
-+	debugfs_create_file_unsafe(d_name, 0600, tt_zone->d_tt_zone,
-+				   &tt_trip->trip.hysteresis, &tt_unsigned_int_attr);
-+
-+	tt_put_tt_zone(tt_zone);
-+}
-+
-+int tt_zone_add_trip(const char *arg)
-+{
-+	struct tt_work *tt_work __free(kfree);
-+	struct tt_trip *tt_trip __free(kfree);
-+	struct tt_thermal_zone *tt_zone;
-+	int id;
-+
-+	tt_work = kzalloc(sizeof(*tt_work), GFP_KERNEL);
-+	if (!tt_work)
-+		return -ENOMEM;
-+
-+	tt_trip = kzalloc(sizeof(*tt_trip), GFP_KERNEL);
-+	if (!tt_trip)
-+		return -ENOMEM;
-+
-+	tt_zone = tt_get_tt_zone(arg);
-+	if (IS_ERR(tt_zone))
-+		return PTR_ERR(tt_zone);
-+
-+	id = ida_alloc(&tt_zone->ida, GFP_KERNEL);
-+	if (id < 0) {
-+		tt_put_tt_zone(tt_zone);
-+		return id;
-+	}
-+
-+	tt_trip->trip.type = THERMAL_TRIP_ACTIVE;
-+	tt_trip->trip.temperature = THERMAL_TEMP_INVALID;
-+	tt_trip->trip.flags = THERMAL_TRIP_FLAG_RW;
-+	tt_trip->id = id;
-+
-+	guard(tt_zone)(tt_zone);
-+
-+	list_add_tail(&tt_trip->list_node, &tt_zone->trips);
-+	tt_zone->num_trips++;
-+
-+	INIT_WORK(&tt_work->work, tt_zone_add_trip_work_fn);
-+	tt_work->tt_zone = tt_zone;
-+	tt_work->tt_trip = no_free_ptr(tt_trip);
-+	schedule_work(&(no_free_ptr(tt_work)->work));
-+
-+	return 0;
-+}
-+
-+static int tt_zone_get_temp(struct thermal_zone_device *tz, int *temp)
-+{
-+	struct tt_thermal_zone *tt_zone = thermal_zone_device_priv(tz);
-+
-+	*temp = READ_ONCE(tt_zone->tz_temp);
-+
-+	if (*temp < THERMAL_TEMP_INVALID)
-+		return -ENODATA;
-+
-+	return 0;
-+}
-+
-+static struct thermal_zone_device_ops tt_zone_ops = {
-+	.get_temp = tt_zone_get_temp,
-+};
-+
-+static int tt_zone_register_tz(struct tt_thermal_zone *tt_zone)
-+{
-+	struct thermal_trip *trips __free(kfree);
-+	struct thermal_zone_device *tz;
-+	struct tt_trip *tt_trip;
-+	int i;
-+
-+	guard(tt_zone)(tt_zone);
-+
-+	if (tt_zone->tz)
-+		return -EINVAL;
-+
-+	trips = kcalloc(sizeof(*trips), tt_zone->num_trips, GFP_KERNEL);
-+	if (!trips)
-+		return -ENOMEM;
-+
-+	i = 0;
-+	list_for_each_entry(tt_trip, &tt_zone->trips, list_node)
-+		trips[i++] = tt_trip->trip;
-+
-+	tt_zone->tz_temp = tt_zone->temp;
-+
-+	tz = thermal_zone_device_register_with_trips("test_tz", trips, i, tt_zone,
-+						     &tt_zone_ops, NULL, 0, 0);
-+	if (IS_ERR(tz))
-+		return PTR_ERR(tz);
-+
-+	tt_zone->tz = tz;
-+
-+	thermal_zone_device_enable(tz);
-+
-+	return 0;
-+}
-+
-+int tt_zone_reg(const char *arg)
-+{
-+	struct tt_thermal_zone *tt_zone;
-+	int ret;
-+
-+	tt_zone = tt_get_tt_zone(arg);
-+	if (IS_ERR(tt_zone))
-+		return PTR_ERR(tt_zone);
-+
-+	ret = tt_zone_register_tz(tt_zone);
-+
-+	tt_put_tt_zone(tt_zone);
-+
-+	return ret;
-+}
-+
-+int tt_zone_unreg(const char *arg)
-+{
-+	struct tt_thermal_zone *tt_zone;
-+
-+	tt_zone = tt_get_tt_zone(arg);
-+	if (IS_ERR(tt_zone))
-+		return PTR_ERR(tt_zone);
-+
-+	tt_zone_unregister_tz(tt_zone);
-+
-+	tt_put_tt_zone(tt_zone);
-+
-+	return 0;
-+}
-+
-+void tt_zone_cleanup(void)
-+{
-+	struct tt_thermal_zone *tt_zone, *aux;
-+
-+	list_for_each_entry_safe(tt_zone, aux, &tt_thermal_zones, list_node) {
-+		tt_zone_unregister_tz(tt_zone);
-+
-+		list_del(&tt_zone->list_node);
-+
-+		tt_zone_free(tt_zone);
-+	}
-+}
+ 	return 0;
+ }
+ 
 
 
 
