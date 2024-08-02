@@ -1,95 +1,91 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DDE51ABEA9;
-	Fri,  2 Aug 2024 18:24:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFB0513633A;
+	Fri,  2 Aug 2024 18:48:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722623048; cv=none; b=T6XOnkIayLvw6nO3HFgdHHH4Xmd4/dQc3ia2amNq0UCklfovQyG7p32M7G+6oCn872+3ic0b6tsp1o3h92TqFXIkHkfy54Whryp2ubK5+LAR/FzCQTTgjsNHO8VNkBMyl5h+Fvk3wiNFRKbxnFvzargMX3Nw1GQjRMdR54wevPg=
+	t=1722624540; cv=none; b=NI94OGOAmevPkbBKFSuRnLtXhlgdkS+nx+X5/Smgg89TBz2rYGMAZyBDXbXOnG6qDu+eqGkmi+KdBG+4utb9qeY3cJ5de2J95M53M4NjOVbET3lnWRxkunePuRjmJ4X8n2dTIXcia8ZYNPd2Z4fhuU+Fa47nh19Id5ciJzrf4lA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722623048; c=relaxed/simple;
-	bh=SGbiGlnwzmqmhpPgTHVszf9CDLsuxBGtN97yKHdTmEs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Sc0SKBiGtLT1pj42cFpDqz5kl3yaSqQYp5dfDxwF8KDm1cIzHCb6k3vKRs05DEk+z7vGNsyPD8uksKHIH02Ri1IYWcrX4YQU++ylDN7jBDePl88kbRReOf5e3CkJd30GR9DOozNvajIKHLi+6FvKXdIXZ+tge9neYewNO8H6pt0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=XVDAqyVx reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1722624540; c=relaxed/simple;
+	bh=iWlQYfhW630YQa0Rs6x9F+5yDlG5LmzZ1x/8Ul5aMmk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nm5CfRCJTMBfRnzz5rV9GJIEhU+4fdKTOn/Yhk9nFemkTP8hxbhgNZlGomsleiHpGgklnYv+FzJyVZz2Dj0htxESySRf+gRhwrJXsNToXY5xLdBSOSS5rNLca7pq/xjl3GmU2n1dqAD4nXOV6l+r8WnYCfGJfWOfQQhiX501gsA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ij9vxw6u; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="XVDAqyVx"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 982c33be547c8fd8; Fri, 2 Aug 2024 20:24:04 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id EB00A73B540;
-	Fri,  2 Aug 2024 20:24:03 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1722623044;
-	bh=SGbiGlnwzmqmhpPgTHVszf9CDLsuxBGtN97yKHdTmEs=;
-	h=From:To:Cc:Subject:Date;
-	b=XVDAqyVxpDhmEQnCtQixsWXc5ZXI24EeOsOkjCzK4m4EWhZg9CPpkBRHzR6T3t+sc
-	 YMtI+R1noyGp6vMVgsSAifsN1JmfxaZbth8bZFSM9e6jgHoTAYhOurimouw5Wtzbyx
-	 QPOGAuN3KsfVeZnvXg6XZdFu0Mjk1SZaxsa3Sf54gndZhCTuGA1OqsuKamTlVcf+xI
-	 szWyXAGEZNyoVZYceAEZwI5UVxt9APSqYdEi/X5IweI6+6xhWydb7Hyssn+W3XuYZm
-	 0tbdjaXadp3wFcWOWEA+UsYicUDYfSEaZPPs/6JJRdX4FgtRecBgd0o4b9vMvD76Wn
-	 El/9j1VK0HloQ==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: x86 Maintainers <x86@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Ricardo Neri <ricardo.neri@intel.com>, Tim Chen <tim.c.chen@intel.com>
-Subject:
- [PATCH v1 0/3] x86 / intel_pstate: Set asymmetric CPU capacity on hybrid
- systems
-Date: Fri, 02 Aug 2024 20:15:10 +0200
-Message-ID: <4908113.GXAFRqVoOG@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ij9vxw6u"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1722624539; x=1754160539;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=iWlQYfhW630YQa0Rs6x9F+5yDlG5LmzZ1x/8Ul5aMmk=;
+  b=ij9vxw6uQlOZvFPPkOlMreyM180weE/KnCPljWsBAXw6gPWA3bgK1eZn
+   O5miQw5AGtb+cM7i3WNjE9Jg1WHKCxusm5VqYjrdLFUMRtRxUTFYxFOue
+   k4TA0Vc7zuycJEoXCI5sK6eTZc9eUDBtwcVqdQJxxX8lCLHPkN//uEMaw
+   rsC45teT7GoE8JKvMSRygGQRTzOD01PAwvJuTgcoDJmFaU9jMIHNsYvck
+   odtrddREtBGPUtCTQq2gbzV3EN2xArskvAPoTuhrwGxZ51fZIIFx6WQLr
+   os617qT/ydNx3qtlB/zoHOUeXUVcOfQgWcOK1WAZDO55ns4+dbBbkwjc/
+   w==;
+X-CSE-ConnectionGUID: uFaWqLiZQfep3r0VOx0cFw==
+X-CSE-MsgGUID: oftHOUx2RsCf2+O0YXcBzw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11152"; a="20792897"
+X-IronPort-AV: E=Sophos;i="6.09,258,1716274800"; 
+   d="scan'208";a="20792897"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Aug 2024 11:48:58 -0700
+X-CSE-ConnectionGUID: S0DADqZIT0OrZL/4gIWV0w==
+X-CSE-MsgGUID: C5ET+3VmTCy6Ls92C0axJA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.09,258,1716274800"; 
+   d="scan'208";a="55566368"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.19])
+  by fmviesa010.fm.intel.com with ESMTP; 02 Aug 2024 11:48:57 -0700
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: srinivas.pandruvada@linux.intel.com,
+	viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: intel_pstate: Support Granite Rapids and Sierra Forest OOB mode
+Date: Fri,  2 Aug 2024 11:48:39 -0700
+Message-ID: <20240802184839.1909091-1-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.45.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrkedtgdduvdefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucfuphgrmhfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopedutddprhgtphhtthhopeigkeeisehkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehtghhlgieslhhinhhuthhrohhnihigrdguvgdprhgtphhtthhopehpvghtvghriiesihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopeguihgvthhmrghrrdgvghhgvghmrghnnhesrghrmhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=30 Fuz1=30 Fuz2=30
+Content-Transfer-Encoding: 8bit
 
-Hi Everyone,
+Prevent intel_pstate from loading when OOB (Out Of Band) P-states mode is
+enabled.
 
-The purpose of this series is to provide the scheduler with asymmetric CPU
-capacity information on x86 hybrid systems based on Intel hardware.
+The OOB identifying bits are same as for the prior generation CPUs like
+Emerald Rapids servers. Add Granite Rapids and Sierra Forest CPU models to
+intel_pstate_cpu_oob_ids[].
 
-The asymmetric CPU capacity information is important on hybrid systems as it
-allows utilization to be computed for tasks in a consistent way across all
-CPUs in the system, regardless of their capacity.  This, in turn, allows
-the schedutil cpufreq governor to set CPU performance levels consistently
-in the cases when tasks migrate between CPUs of different capacities.  It
-should also help to improve task placement and load balancing decisions on
-hybrid systems and it is key for anything along the lines of EAS.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-The information in question comes from the MSR_HWP_CAPABILITIES register and
-is provided to the scheduler by the intel_pstate driver, as per the changelog
-of patch [3/3].  Patch [2/3] introduces the arch infrastructure needed for
-that (in the form of a per-CPU capacity variable) and patch [1/3] is a
-preliminary code adjustment.
-
-This is based on an RFC posted previously
-
-https://lore.kernel.org/linux-pm/7663799.EvYhyI6sBW@kreacher/
-
-but differs from it quite a bit (except for the first patch).  The most
-significant difference is based on the observation that frequency-
-invariance needs to adjusted to the capacity scaling on hybrid systems
-for the complete scale-invariance to work as expected.
-
-Thank you!
-
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 392a8000b238..79b9c3c27dff 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2425,6 +2425,10 @@ static const struct x86_cpu_id intel_pstate_cpu_oob_ids[] __initconst = {
+ 	X86_MATCH(INTEL_ICELAKE_X,		core_funcs),
+ 	X86_MATCH(INTEL_SAPPHIRERAPIDS_X,	core_funcs),
+ 	X86_MATCH(INTEL_EMERALDRAPIDS_X,	core_funcs),
++	X86_MATCH(INTEL_GRANITERAPIDS_D,	core_funcs),
++	X86_MATCH(INTEL_GRANITERAPIDS_X,	core_funcs),
++	X86_MATCH(INTEL_ATOM_CRESTMONT,		core_funcs),
++	X86_MATCH(INTEL_ATOM_CRESTMONT_X,	core_funcs),
+ 	{}
+ };
+ #endif
+-- 
+2.43.0
 
