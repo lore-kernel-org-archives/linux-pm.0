@@ -1,80 +1,128 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D3C520FAA7;
-	Tue,  6 Aug 2024 13:58:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 038BD17AE0D
+	for <linux-pm@vger.kernel.org>; Tue,  6 Aug 2024 14:27:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722952722; cv=none; b=i1ZrypXBnRvbFF/wsKTXYrd+/BHkvNhPmqt4fu16p9R2aVkais2wRs1JJRGpJV/iN6zCzQQSFd5zKCvXMzSBIvju/zLO1c2vcr8A5ptli05q38OteV7Q4kQkWbRqJ0f8VyvVJHdqEB6zixnIpMUlNePfCSpMR0fyX1qkef0CRuk=
+	t=1722954459; cv=none; b=NNH8RJ6QV7KwBPNDm9F8mEWMiaKZhh/rMac+Ohq9H6eYfzUvxM+Wljah1HFkEMiGEBBDytjv9R259fopQ7K7Hw6BhNUlRs1oGEVWyX1burQQWIiLFSC5wX5vj74gdkj073pPaPWckoVr62Isu45q57GRImjlvEgSdcnxtCGX634=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722952722; c=relaxed/simple;
-	bh=QVK/Q63Ty0/vwxPdFAgX18Uk2bo2WKZpj8mNx7zlTHc=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=CSL9eBPcwvLVNcydEX4X03ie7cLGe5cs76Lqq0sQrIG0CpAn/740g3IE7uiZ01adL9rCCM5K0f62qb8V4LDjEB34bkCAlFh6kBeKAn5zLh6HcngXzHjJ/Z4hyvxwhX5PBFpxbFHMUOGxkKlrEw+XZHRLIAQ8wE2Yure9YpWDn8Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jbCYReMc; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1722954459; c=relaxed/simple;
+	bh=7DkUlwgdBNYZks3twBhcfAnB6UkUVPSd4QHTRUMTez4=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=BuN2GmpNX2BNTsmO5ht56tYawGp0Db/8UqNnNcrvc77kv/tVjxNykIt0v551cOuhf/oLR9DHYE8747IRkin1bdQaxp3F6flVlhah0FRAlx9EIulMQ14Gnwcu9ziKTsbAI6KQU/L7pxixm2N/5FdKtFVK6jk0poMckjqhY/nMVpE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VZQabWQk; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jbCYReMc"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94282C4AF0C;
-	Tue,  6 Aug 2024 13:58:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VZQabWQk"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 7263AC4AF16
+	for <linux-pm@vger.kernel.org>; Tue,  6 Aug 2024 14:27:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1722952721;
-	bh=QVK/Q63Ty0/vwxPdFAgX18Uk2bo2WKZpj8mNx7zlTHc=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=jbCYReMcMawvrLpAIbnexeTNTcymVDfvKVkaJwm/Q6k05IkKTjBMAiGl5tfYS97Iw
-	 TAIYX9dNQKL2phosPWx/IDuJeLe5KCqCJJipdY/YFSwnmA3HjSYBUS0HuQeTu8+5uG
-	 P7ESMF0RWFOTkM/OxeSNjA8NCTyb7HUop0bWUqklYfw7iUJXRzgBx7K2UYG87Onu/G
-	 +CtVPglMQVDfxic57yKqPa2C4L2SjT52OPeiaVnz3du2sQbfliIhO/R9lNjwVh8E5/
-	 eevLw9L3uk9sC8aHm998zlBCX833LS2+nhS9xRv+4dlD4nAJfCM1qN9k4DpQTq6jum
-	 Y4p7rszyDraeQ==
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Date: Tue, 06 Aug 2024 07:58:27 -0600
-Subject: [PATCH 6/6] cpufreq: Drop CONFIG_ARM and CONFIG_ARM64 dependency
- on Arm drivers
+	s=k20201202; t=1722954458;
+	bh=7DkUlwgdBNYZks3twBhcfAnB6UkUVPSd4QHTRUMTez4=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=VZQabWQkhwRg70bYQEpe+Q44a4FO0oBIv7iA2i3dkwKq5P7AXaq2pbTfyZEe07N3y
+	 1yC7P1WscPef2DYMEfWAhKEWUv7irTWsHT78gdOn+bRdi0QCa2hZ8AAmPntOaC5ysv
+	 B5BmwXoImcQsaBOVhBqpewBLWkWHGsjY06sl2TYNODebiY5tXfSQh9CWVrzBepv0L8
+	 qPV7JHSmUwpG2XKdXw7lKEnrDI4NALWIOpxCrXpJblTCiSFdEVLpuJPBJOHTvyQ6Mt
+	 txDrQ44DVIJwamx4OBXbkATUnQbpY9yQ6sUprB5AlT/O2PuAoAHQjhk8qkoX7boYl+
+	 4W1ip0/xWOPTw==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 64877C53BA7; Tue,  6 Aug 2024 14:27:38 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 218686] Fail to set energy_performance_preference of amd
+ processor on asus ga403uv
+Date: Tue, 06 Aug 2024 14:27:38 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: chemasanchezgarabito@gmail.com
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: DOCUMENTED
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-218686-137361-nlkJSrzWmC@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-218686-137361@https.bugzilla.kernel.org/>
+References: <bug-218686-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240806-dt-api-cleanups-v1-6-459e2c840e7d@kernel.org>
-References: <20240806-dt-api-cleanups-v1-0-459e2c840e7d@kernel.org>
-In-Reply-To: <20240806-dt-api-cleanups-v1-0-459e2c840e7d@kernel.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Kevin Hilman <khilman@kernel.org>, 
- Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, 
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
- Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org
-X-Mailer: b4 0.15-dev
 
-The CONFIG_ARM and CONFIG_ARM64 dependency is redundant as all the
-drivers have necessary sub-arch dependency and don't depend on the
-architecture support.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D218686
 
-Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
----
- drivers/cpufreq/Kconfig | 2 --
- 1 file changed, 2 deletions(-)
+--- Comment #78 from Chema (chemasanchezgarabito@gmail.com) ---
+(In reply to xiaojian.du from comment #77)
+> (In reply to Chema from comment #75)
+>=20
+> > Thanks for checking
+> >=20
+> > It seems that way, asus has made it work in windows but not in the stan=
+dard
+> > way needed by linux. But either way the amd pstate driver is working, b=
+ut
+> > the epp change is not working.
+> >=20
+> > What could be the easiest to try to solve it from our part, modifying t=
+he
+> > kernel   in some way? If windows is working it should be a workaround to
+> > make it work maybe disable some checks or something like this
+> > https://github.com/archlinux/linux/blob/
+> > b1bc554e009e3aeed7e4cfd2e717c7a34a98c683/arch/x86/kernel/acpi/cppc.c#L1=
+4 or
+> > this
+> > https://github.com/archlinux/linux/blob/
+> > defaf1a2113a22b00dfa1abc0fd2014820eaf065/drivers/acpi/cppc_acpi.c#L1491=
+...?
+> >=20
+> > Cause ASUS has not made any comment about it, I dont know from your par=
+t it
+> > they have internally said something to you.
+> >=20
+> > Thanks
+>=20
+> A simple tricky hack can't solve this problem.
+> From the perspective of amd-pstate driver, it is the most reliable soluti=
+on
+> to check the CPUID register.
+> Any other workaround to enable CPPC feature forcely and load epp mode in
+> Linux OS is ugly and unacceptable.
+> I recommand to wait for further actions from Asus.
+>=20
+> Anyway, acpi-cpu driver still can be the second option for now.
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 10cda6f2fe1d..2561b215432a 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -231,9 +231,7 @@ if X86
- source "drivers/cpufreq/Kconfig.x86"
- endif
- 
--if ARM || ARM64
- source "drivers/cpufreq/Kconfig.arm"
--endif
- 
- if PPC32 || PPC64
- source "drivers/cpufreq/Kconfig.powerpc"
+Thanks
 
--- 
-2.43.0
+But have you any initial idea of how a workaround could work? Obviously for
+developing it my self locally and so people could have some solution while =
+asus
+does something, if ever does, considering they do not support linux
 
+Yes, currently I use acpi-cpu, but powersave governor makes the laptop laggy
+and schedutil that should be a balance makes it hot and drains battery fast=
+er.
+
+So currently for my self linux in this laptop is not much a good option, th=
+at
+why I was wondering if a local workaround would be possible.
+
+Thanks.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
