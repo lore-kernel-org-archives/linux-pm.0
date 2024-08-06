@@ -1,128 +1,86 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 038BD17AE0D
-	for <linux-pm@vger.kernel.org>; Tue,  6 Aug 2024 14:27:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 828321C37A9;
+	Tue,  6 Aug 2024 14:39:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722954459; cv=none; b=NNH8RJ6QV7KwBPNDm9F8mEWMiaKZhh/rMac+Ohq9H6eYfzUvxM+Wljah1HFkEMiGEBBDytjv9R259fopQ7K7Hw6BhNUlRs1oGEVWyX1burQQWIiLFSC5wX5vj74gdkj073pPaPWckoVr62Isu45q57GRImjlvEgSdcnxtCGX634=
+	t=1722955147; cv=none; b=EGXkAKyQeId82VEMnpzc6GB7U+xtMzACvqkFgVg0adfT0OQiBYbs6sCCn8s5kUCD7UYG4RrWPCiZrG53gPNMvHcEzQtZ6QhFuQ+j7a2dnImQ1H3iZZLjD2pB8+T2896CbRkU7cnE7ZsdAjScfJ+CrHOh5SuaRXt0sluICI6Ee1g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722954459; c=relaxed/simple;
-	bh=7DkUlwgdBNYZks3twBhcfAnB6UkUVPSd4QHTRUMTez4=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=BuN2GmpNX2BNTsmO5ht56tYawGp0Db/8UqNnNcrvc77kv/tVjxNykIt0v551cOuhf/oLR9DHYE8747IRkin1bdQaxp3F6flVlhah0FRAlx9EIulMQ14Gnwcu9ziKTsbAI6KQU/L7pxixm2N/5FdKtFVK6jk0poMckjqhY/nMVpE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VZQabWQk; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1722955147; c=relaxed/simple;
+	bh=LlJd0JqfCFMd1ko3jYxgFwtygfqrxveC1OJ2+6g06nY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CahjqVJfnyrLjukLWPobK/lKgm8s2EZrV0mN0ud2C9ZN36j4EFZqin7KmXyeWdQyw/LmFpdZkISNHZI9IiC1+EXMalyTwhLm9CiXi3Rzxv4RO+8GGgpGpVRzFCZ+axvVkSJhZHNm0dYevf/nL73AxyvuqRscuAAkzzJxv0z1SNI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=d3qkA1Xb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VZQabWQk"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7263AC4AF16
-	for <linux-pm@vger.kernel.org>; Tue,  6 Aug 2024 14:27:38 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="d3qkA1Xb"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA88DC4AF09;
+	Tue,  6 Aug 2024 14:39:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1722954458;
-	bh=7DkUlwgdBNYZks3twBhcfAnB6UkUVPSd4QHTRUMTez4=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=VZQabWQkhwRg70bYQEpe+Q44a4FO0oBIv7iA2i3dkwKq5P7AXaq2pbTfyZEe07N3y
-	 1yC7P1WscPef2DYMEfWAhKEWUv7irTWsHT78gdOn+bRdi0QCa2hZ8AAmPntOaC5ysv
-	 B5BmwXoImcQsaBOVhBqpewBLWkWHGsjY06sl2TYNODebiY5tXfSQh9CWVrzBepv0L8
-	 qPV7JHSmUwpG2XKdXw7lKEnrDI4NALWIOpxCrXpJblTCiSFdEVLpuJPBJOHTvyQ6Mt
-	 txDrQ44DVIJwamx4OBXbkATUnQbpY9yQ6sUprB5AlT/O2PuAoAHQjhk8qkoX7boYl+
-	 4W1ip0/xWOPTw==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 64877C53BA7; Tue,  6 Aug 2024 14:27:38 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 218686] Fail to set energy_performance_preference of amd
- processor on asus ga403uv
-Date: Tue, 06 Aug 2024 14:27:38 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: chemasanchezgarabito@gmail.com
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: DOCUMENTED
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-218686-137361-nlkJSrzWmC@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-218686-137361@https.bugzilla.kernel.org/>
-References: <bug-218686-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	s=k20201202; t=1722955147;
+	bh=LlJd0JqfCFMd1ko3jYxgFwtygfqrxveC1OJ2+6g06nY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=d3qkA1XbArqai7eQhaDGl6mj2urFZL6dyjGarkuGqyfZ5pCxxr1RHoYYkp3OLZ8kv
+	 vemAaT5KGTATs+McDjNeb3LJDyHfax5boLJmitgptdsFytXjZcxf4mn0IMEekmDyYU
+	 GEmRKo7qRgqA/QbcDVEwwnEF6xnmj6hx4zlNNDCg9BCPstIX9Hn+KwhkrTeZHv97YP
+	 nZy6YQsiW1FffZR6WhWc663CUxJr0UDA0Q3bMt4KOgCsfqwEdnEIyX/8Ma7cP0/Cxc
+	 OB9NA5NI93UZ6y1ExyOZCbRpgOZ4iFyqWPzrZ56GRB7zO1D+j7vv4nySkRB6u4+CpJ
+	 /UHyhC1pUUF9w==
+Date: Tue, 6 Aug 2024 08:39:05 -0600
+From: Rob Herring <robh@kernel.org>
+To: Mateusz Majewski <m.majewski2@samsung.com>
+Cc: Sam Protsenko <semen.protsenko@linaro.org>, linux-pm@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Anand Moon <linux.amoon@gmail.com>
+Subject: Re: [PATCH v2 6/6] dt-bindings: thermal: samsung,exynos: remove
+ outdated information on trip point count
+Message-ID: <20240806143905.GA1484799-robh@kernel.org>
+References: <CGME20240731211456eucas1p1b15c30b57274ef5837b57e594d061f43@eucas1p1.samsung.com>
+ <20240731211444.59315-1-m.majewski2@samsung.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240731211444.59315-1-m.majewski2@samsung.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D218686
+On Wed, Jul 31, 2024 at 11:14:42PM +0200, Mateusz Majewski wrote:
+> > Do I understand it correctly that the patch actually removes an
+> > outdated description of *driver* implementation, and not outdated
+> > hardware description?
+> 
+> Correct.
+> 
+> > If so, then maybe it makes sense to rework the
+> > patch title and commit message in a way Rob suggests. I.e. rather than
+> > stating that the patch removes an outdated information, instead
+> > mention it removes *software* (driver) description which was
+> > incorrectly added earlier. Because bindings are only meant for
+> > hardware description and should be completely independent of driver's
+> > side of things. Also in that case it probably doesn't make much sense
+> > referencing that commit for using set_trips ops. Just my two cents.
+> 
+> Makes sense, what do you think about this?
+> 
+> dt-bindings: thermal: samsung,exynos: remove driver-specific information
+> 
+> The number of supported trip points was only limited by the driver
+> implementation at the time, which mapped each trip point defined in the
+> devicetree source file to a hardware trip point. An implementation that
+> does not have this limitation is possible; indeed, that is how the
+> driver works currently. Therefore, this information should be removed
+> from the bindings description, which are meant to be independent from
+> the details of the driver implementation.
 
---- Comment #78 from Chema (chemasanchezgarabito@gmail.com) ---
-(In reply to xiaojian.du from comment #77)
-> (In reply to Chema from comment #75)
->=20
-> > Thanks for checking
-> >=20
-> > It seems that way, asus has made it work in windows but not in the stan=
-dard
-> > way needed by linux. But either way the amd pstate driver is working, b=
-ut
-> > the epp change is not working.
-> >=20
-> > What could be the easiest to try to solve it from our part, modifying t=
-he
-> > kernel   in some way? If windows is working it should be a workaround to
-> > make it work maybe disable some checks or something like this
-> > https://github.com/archlinux/linux/blob/
-> > b1bc554e009e3aeed7e4cfd2e717c7a34a98c683/arch/x86/kernel/acpi/cppc.c#L1=
-4 or
-> > this
-> > https://github.com/archlinux/linux/blob/
-> > defaf1a2113a22b00dfa1abc0fd2014820eaf065/drivers/acpi/cppc_acpi.c#L1491=
-...?
-> >=20
-> > Cause ASUS has not made any comment about it, I dont know from your par=
-t it
-> > they have internally said something to you.
-> >=20
-> > Thanks
->=20
-> A simple tricky hack can't solve this problem.
-> From the perspective of amd-pstate driver, it is the most reliable soluti=
-on
-> to check the CPUID register.
-> Any other workaround to enable CPPC feature forcely and load epp mode in
-> Linux OS is ugly and unacceptable.
-> I recommand to wait for further actions from Asus.
->=20
-> Anyway, acpi-cpu driver still can be the second option for now.
-
-Thanks
-
-But have you any initial idea of how a workaround could work? Obviously for
-developing it my self locally and so people could have some solution while =
-asus
-does something, if ever does, considering they do not support linux
-
-Yes, currently I use acpi-cpu, but powersave governor makes the laptop laggy
-and schedutil that should be a balance makes it hot and drains battery fast=
-er.
-
-So currently for my self linux in this laptop is not much a good option, th=
-at
-why I was wondering if a local workaround would be possible.
-
-Thanks.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
+LGTM
