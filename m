@@ -1,16 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD6DE185E6A
-	for <linux-pm@vger.kernel.org>; Thu,  8 Aug 2024 06:13:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9138780C13
+	for <linux-pm@vger.kernel.org>; Thu,  8 Aug 2024 06:14:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723097591; cv=none; b=rcJQEfRzLAdaTTTw/mkLzJxp7Gfm3zWoDlD5ae6Hvvg210Z/vKXvBj76w2h8BwNtHSKLdULIXIbqgVNg3A6j1mWp0fG+2D/MM8a3DZCHiJlC+KL9ro76RiR5e2gg2CshEYjPRoH1uzLeukQKtAlSarfGpMfzLuTq/fL/BXFxn2A=
+	t=1723097660; cv=none; b=LLHwHPPZgGkeKDptqaXYvxK8++EM+rcjDjKKJxD4aVdTqfLnt++IC0PXu4pb/tjZnISDEJg2ckld9kB8mLHEa/Dzt1akbAO78xlBkAMrR+BjJdaATqcvVI3UPumt5qt/pRPSMcob/M2bdrsMDfopoCU2y9/Z/UDWV6Qq6XdXMR4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723097591; c=relaxed/simple;
-	bh=RGoNUZAq1rAxdFEKc7Y+MG0dLsPdw0cpAkDwQDL82uE=;
+	s=arc-20240116; t=1723097660; c=relaxed/simple;
+	bh=dyLsuPqyeZzNUJbhqvbGSbaM4TIzEGc6CNQB3Rd3Ps4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qSx4DkRcjfMOLUdZqN5n1FVCWaZXIQoHteSr6txWNV3SmaqplOUewK0MXERfulDKXaKC8ssKpYlnkltgqCizGptatx02vu6iqYpAsE9l/Jcr6d4kPwg7ZU3n3Su3aqPnTBnWIlYjTkw3qHGiREiVpD1mlhaE/C+GE1D/rp50uEk=
+	 Content-Type:Content-Disposition:In-Reply-To; b=AWlKubcSzDD+3lt374Z4yQ9DMWgNPozCTtitBDEeyYYl2zQIjPTciD5QkdXwYY6XJUnNyC3UkLIfhtIgdXHbJ41iA6ZmZiV4Hi6ek3HTzGg6mPqzLeTiYPal6SrzHd5blmWgCSQdHbbAXla+0w07BDekpOXyJGw1nvv078EGeBo=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,17 +18,17 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <mfe@pengutronix.de>)
-	id 1sbwOG-0001TY-8q; Thu, 08 Aug 2024 08:12:48 +0200
+	id 1sbwPT-0001mE-IF; Thu, 08 Aug 2024 08:14:03 +0200
 Received: from [2a0a:edc0:2:b01:1d::c5] (helo=pty.whiteo.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <mfe@pengutronix.de>)
-	id 1sbwOD-005MVB-Hs; Thu, 08 Aug 2024 08:12:45 +0200
+	id 1sbwPR-005MVO-Of; Thu, 08 Aug 2024 08:14:01 +0200
 Received: from mfe by pty.whiteo.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <mfe@pengutronix.de>)
-	id 1sbwOD-008kuJ-1L;
-	Thu, 08 Aug 2024 08:12:45 +0200
-Date: Thu, 8 Aug 2024 08:12:45 +0200
+	id 1sbwPR-008kur-24;
+	Thu, 08 Aug 2024 08:14:01 +0200
+Date: Thu, 8 Aug 2024 08:14:01 +0200
 From: Marco Felsch <m.felsch@pengutronix.de>
 To: Ma Ke <make24@iscas.ac.cn>
 Cc: ulf.hansson@linaro.org, shawnguo@kernel.org, s.hauer@pengutronix.de,
@@ -38,7 +38,7 @@ Cc: ulf.hansson@linaro.org, shawnguo@kernel.org, s.hauer@pengutronix.de,
 	stable@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Subject: Re: [PATCH] soc: imx: imx8m-blk-ctrl: Fix NULL pointer dereference
-Message-ID: <20240808061245.szz5lq6hx2qwi2ja@pengutronix.de>
+Message-ID: <20240808061401.eanpuelc4evnll5m@pengutronix.de>
 References: <20240808042858.2768309-1-make24@iscas.ac.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -56,8 +56,6 @@ X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
 Hi Ma,
 
-thank you for the patch.
-
 On 24-08-08, Ma Ke wrote:
 > Check bc->bus_power_dev = dev_pm_domain_attach_by_name() return value using
 > IS_ERR_OR_NULL() instead of plain IS_ERR(), and fail if bc->bus_power_dev 
@@ -67,16 +65,12 @@ On 24-08-08, Ma Ke wrote:
 > described in DT, dev_pm_domain_attach_by_name() returns NULL, which is
 > then used, which leads to NULL pointer dereference.
 
-Argh.. there are other users of this API getting this wrong too. This
-make me wonder why dev_pm_domain_attach_by_name() return NULL instead of
-the error code returned by of_property_match_string().
-
-IMHO to fix once and for all users we should fix the return code of
-dev_pm_domain_attach_by_name().
+the same comment I wrote previously applies to this patch.
 
 Regards,
   Marco
 
+> 
 > Found by code review.
 > 
 > Cc: stable@vger.kernel.org
