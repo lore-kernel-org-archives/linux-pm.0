@@ -1,86 +1,72 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30DB516F0E6;
-	Mon, 12 Aug 2024 12:42:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6872170A1C
+	for <linux-pm@vger.kernel.org>; Mon, 12 Aug 2024 13:05:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723466535; cv=none; b=MYrgbZ+TK37I3/Z+15QMHNGYF9989LODGier5vBy+8Vup1GW09dph+qrU5jb3Z4DKxXzbp3E40Kc3dhKijf16Ih6X1BsOZirtzE9/aiN08EbPUFBpyyy3Y0PhnOdwunLEI6wnctYWBAyql9X3mv2zeiQwd43WV1PGdzrod21qys=
+	t=1723467940; cv=none; b=dKnSyG3ENMrn3pLOjg29PoAemQxamBIqrqeFRcYnc5n9jkxL9bMQW5ZNb2tR4AU2yrl8kqNMo/oEj1ltX9liaIMaK1wppnbDGPcamW0yBlo4z9SPppzYLLOar1ZnclwH6ATGH0ZC64qUC1lUCY9ZQmBH84g/ZRTEs28o1vJIe+A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723466535; c=relaxed/simple;
-	bh=xiYozym11rlBjc/daSc9DA/XWQH2VVg2UBUkV1MHm1w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YKeFETioU0dLc5izrsDdRwW/XQ+ktlJGDFqsyxjghtH1gT8aW9edV9+A6DRIQhD69NGcDV0UhjrxkpuPRUrkpKNREUZpFzAXY/6Xod6FCDiPg/GvGsaefLWHzETui6KNgCukmFdVNShIW3+RlchWd88ABLu84kcjz+IBfcgrOvk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=c0jsvWeA; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="c0jsvWeA"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8216EC32782;
-	Mon, 12 Aug 2024 12:42:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1723466531;
-	bh=xiYozym11rlBjc/daSc9DA/XWQH2VVg2UBUkV1MHm1w=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=c0jsvWeA84+D38Vp+03s7j8vU17DqyCMRi8kNYkaryM2SmSLp9Iq+Hpj9uGVF7C3/
-	 c9JaWo//BkXHqIo+LkSO9Qf8xOCHnFF+6NN8wVcJcHufDXhSNFXEKDt/TvUOduvTsh
-	 zcqTYum4i2zEV7jOZ3d6DsxSwCCIpFHS5c8x+JZY=
-Date: Mon, 12 Aug 2024 14:42:08 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, stable@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	vincent.guittot@linaro.org, qyousef@layalina.io,
-	peterz@infradead.org, daniel.lezcano@linaro.org,
-	ulf.hansson@linaro.org, anna-maria@linutronix.de,
-	dsmythies@telus.net, kajetan.puchalski@arm.com, lukasz.luba@arm.com,
-	dietmar.eggemann@arm.com
-Subject: Re: [PATCH 6.1.y] cpuidle: teo: Remove recent intercepts metric
-Message-ID: <2024081236-entourage-matter-37c6@gregkh>
-References: <20240628095955.34096-1-christian.loehle@arm.com>
- <CAJZ5v0jPyy0HgtQcSt=7ZO-khSGex2uAxL1x6HZFkFbvpbxcmA@mail.gmail.com>
- <9bbf6989-f41f-4533-a7c8-b274744663cd@arm.com>
- <181bb5c2-5790-41bf-9ed8-3d3164b8697d@arm.com>
+	s=arc-20240116; t=1723467940; c=relaxed/simple;
+	bh=3YZGrATrWGMLpL8Yt8zup8dGYkARJRmgRgZIhZd885w=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=tFpRS5D8OyGlk45loJHJ5YvBFSUSU0DpXfIADsSNSr/JbWNRSufoA7fS/RXf8MfUJGqR8AvPWIeQp5vACGsZvJU1xt1n1bO0CurAPn5pIbsyfE2yJxJc4OhSSjKUl4veULetFTnhTk3zCjlRJ110mKqOqrKc7QWF4DD5IX5FlpU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.19.163.44])
+	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4WjF3q4Thyz2CmdS;
+	Mon, 12 Aug 2024 21:00:07 +0800 (CST)
+Received: from kwepemf500003.china.huawei.com (unknown [7.202.181.241])
+	by mail.maildlp.com (Postfix) with ESMTPS id 2D05014035E;
+	Mon, 12 Aug 2024 21:04:57 +0800 (CST)
+Received: from huawei.com (10.175.112.208) by kwepemf500003.china.huawei.com
+ (7.202.181.241) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 12 Aug
+ 2024 21:04:56 +0800
+From: Zhang Zekun <zhangzekun11@huawei.com>
+To: <edubezval@gmail.com>, <j-keerthy@ti.com>, <rui.zhang@intel.com>,
+	<lukasz.luba@arm.com>, <linux-pm@vger.kernel.org>
+CC: <zhangzekun11@huawei.com>
+Subject: [PATCH] thermal: ti-soc-thermal: Remove unused declarations
+Date: Mon, 12 Aug 2024 20:52:10 +0800
+Message-ID: <20240812125210.94280-1-zhangzekun11@huawei.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <181bb5c2-5790-41bf-9ed8-3d3164b8697d@arm.com>
+Content-Type: text/plain
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ kwepemf500003.china.huawei.com (7.202.181.241)
 
-On Mon, Aug 05, 2024 at 03:58:09PM +0100, Christian Loehle wrote:
-> commit 449914398083148f93d070a8aace04f9ec296ce3 upstream.
-> 
-> The logic for recent intercepts didn't work, there is an underflow
-> of the 'recent' value that can be observed during boot already, which
-> teo usually doesn't recover from, making the entire logic pointless.
-> Furthermore the recent intercepts also were never reset, thus not
-> actually being very 'recent'.
-> 
-> Having underflowed 'recent' values lead to teo always acting as if
-> we were in a scenario were expected sleep length based on timers is
-> too high and it therefore unnecessarily selecting shallower states.
-> 
-> Experiments show that the remaining 'intercept' logic is enough to
-> quickly react to scenarios in which teo cannot rely on the timer
-> expected sleep length.
-> 
-> See also here:
-> https://lore.kernel.org/lkml/0ce2d536-1125-4df8-9a5b-0d5e389cd8af@arm.com/
-> 
-> Fixes: 77577558f25d ("cpuidle: teo: Rework most recent idle duration values treatment")
-> Link: https://patch.msgid.link/20240628095955.34096-3-christian.loehle@arm.com
-> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpuidle/governors/teo.c | 79 ++++++---------------------------
->  1 file changed, 14 insertions(+), 65 deletions(-)
+The functions definition of ti_bandgap_read_thot(),
+ti_bandgap_write_thot(), ti_bandgap_read_tcold() and
+ti_bandgap_write_tcold() has been removed since commit 9bebf3485c6a
+("thermal: ti-soc-thermal: remove dead code"), remain the declarations
+untouched in the header files. So, clean up this unused declarations.
 
-We can't just take a 6.1.y backport without newer kernels also having
-this fix.  Can you resend this as backports for all relevant kernels
-please?
+Signed-off-by: Zhang Zekun <zhangzekun11@huawei.com>
+---
+ drivers/thermal/ti-soc-thermal/ti-bandgap.h | 4 ----
+ 1 file changed, 4 deletions(-)
 
-thanks,
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+index 1f4bbaf31675..46263c1da8b6 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+@@ -336,10 +336,6 @@ struct ti_bandgap_data {
+ 	struct ti_temp_sensor		sensors[];
+ };
+ 
+-int ti_bandgap_read_thot(struct ti_bandgap *bgp, int id, int *thot);
+-int ti_bandgap_write_thot(struct ti_bandgap *bgp, int id, int val);
+-int ti_bandgap_read_tcold(struct ti_bandgap *bgp, int id, int *tcold);
+-int ti_bandgap_write_tcold(struct ti_bandgap *bgp, int id, int val);
+ int ti_bandgap_read_update_interval(struct ti_bandgap *bgp, int id,
+ 				    int *interval);
+ int ti_bandgap_write_update_interval(struct ti_bandgap *bgp, int id,
+-- 
+2.17.1
 
-greg k-h
