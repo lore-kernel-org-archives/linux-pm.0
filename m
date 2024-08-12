@@ -1,79 +1,86 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 502631547EA;
-	Mon, 12 Aug 2024 11:48:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30DB516F0E6;
+	Mon, 12 Aug 2024 12:42:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723463299; cv=none; b=k7nlsyBJrlx3urKz50P3fv8mm1aQzJtglXup6ZVFjQLVimgQrMYR1A422BRagSi058V6yFKf70yrsvzpo5+SLiolpp9yE+0pGOaQKQ63gVHtkr5AH3OMLbNYh9VoJ3c44WHGhts0e6MSD3ROkr4CNnKilU7cjuLnAyxe96Mk9/A=
+	t=1723466535; cv=none; b=MYrgbZ+TK37I3/Z+15QMHNGYF9989LODGier5vBy+8Vup1GW09dph+qrU5jb3Z4DKxXzbp3E40Kc3dhKijf16Ih6X1BsOZirtzE9/aiN08EbPUFBpyyy3Y0PhnOdwunLEI6wnctYWBAyql9X3mv2zeiQwd43WV1PGdzrod21qys=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723463299; c=relaxed/simple;
-	bh=Napc90aktE/QuypSDHJKVOFzOHDipFwPsvcMXXd1YqM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=itYxe5ZIeQ4K6dl6PjSzaJaWC6LINQmTFYuMlfatLbUE7J6nspv8a6ufuFz+rGjzG1VpS+f3MLLHHWgMSnQtXYgQUkJSlrXUi6fjLJRI/WaFitjnSqo+klk9gdW6gvNhWKdpNsNdm8YALZ4a5dNB/HPC0BlgSX7JC6ukGjjLeyU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rOM2K2I7; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1723466535; c=relaxed/simple;
+	bh=xiYozym11rlBjc/daSc9DA/XWQH2VVg2UBUkV1MHm1w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YKeFETioU0dLc5izrsDdRwW/XQ+ktlJGDFqsyxjghtH1gT8aW9edV9+A6DRIQhD69NGcDV0UhjrxkpuPRUrkpKNREUZpFzAXY/6Xod6FCDiPg/GvGsaefLWHzETui6KNgCukmFdVNShIW3+RlchWd88ABLu84kcjz+IBfcgrOvk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=c0jsvWeA; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rOM2K2I7"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10909C4AF0F;
-	Mon, 12 Aug 2024 11:48:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1723463299;
-	bh=Napc90aktE/QuypSDHJKVOFzOHDipFwPsvcMXXd1YqM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=rOM2K2I790JrIr456SMxJrgfz2kZ3cEv1I8W0gQtlroZsL5sc3YHtKBHJOdzJRPN8
-	 E1ToZdHSs2UreW0v0wkyHxahjIkTVl/UAN4IUw8B87cuWTTSdr9o2YILGrauhn6kVV
-	 PD+GQbo4YahogMAS8UlhKaOtRHKWsCeQhLeApJh1dYxa5IB5GvAnvIjueD3rVchUSr
-	 DgHnyrRPVl7EyP+iX9xRZeifnLLmfWX5CMhHKVCGKJzJjaY4XcXxj7T4ie5lhrE0pz
-	 cKdOEyV80lD1vUO4FjwHZUOu2kc7n/4qizeQg0pwx1IPxhwaoB3yhnHg1IRwPJbeLc
-	 m9a45m0yUVgzQ==
-Received: by mail-ot1-f53.google.com with SMTP id 46e09a7af769-7093e583913so344012a34.2;
-        Mon, 12 Aug 2024 04:48:19 -0700 (PDT)
-X-Gm-Message-State: AOJu0YzFbFaCAh038wzY6uhNzTuVoqdisiM59CFGw4i5G082oNEuozhn
-	hdC2eBnsJSGh6pZx/4dBP4VPi/MUkzXFx4wDPA+KURxVBU46uN5oklmueZkOSe6NfEzZA/IZ+r3
-	ECpt7kTspqmEYuZ4L1vEDHZzNSPI=
-X-Google-Smtp-Source: AGHT+IFIXZr7aG3vnivowVZqpiVqQtOBNWoxXpSdf0tK7uzKA0D60HpySoFGHhj/rE3BYE4vLv95VaxZxlXcT4+WKnE=
-X-Received: by 2002:a4a:e9aa:0:b0:5cd:8f2:5c8d with SMTP id
- 006d021491bc7-5da6897d40fmr60373eaf.2.1723463298367; Mon, 12 Aug 2024
- 04:48:18 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="c0jsvWeA"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8216EC32782;
+	Mon, 12 Aug 2024 12:42:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1723466531;
+	bh=xiYozym11rlBjc/daSc9DA/XWQH2VVg2UBUkV1MHm1w=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=c0jsvWeA84+D38Vp+03s7j8vU17DqyCMRi8kNYkaryM2SmSLp9Iq+Hpj9uGVF7C3/
+	 c9JaWo//BkXHqIo+LkSO9Qf8xOCHnFF+6NN8wVcJcHufDXhSNFXEKDt/TvUOduvTsh
+	 zcqTYum4i2zEV7jOZ3d6DsxSwCCIpFHS5c8x+JZY=
+Date: Mon, 12 Aug 2024 14:42:08 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Christian Loehle <christian.loehle@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, stable@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	vincent.guittot@linaro.org, qyousef@layalina.io,
+	peterz@infradead.org, daniel.lezcano@linaro.org,
+	ulf.hansson@linaro.org, anna-maria@linutronix.de,
+	dsmythies@telus.net, kajetan.puchalski@arm.com, lukasz.luba@arm.com,
+	dietmar.eggemann@arm.com
+Subject: Re: [PATCH 6.1.y] cpuidle: teo: Remove recent intercepts metric
+Message-ID: <2024081236-entourage-matter-37c6@gregkh>
+References: <20240628095955.34096-1-christian.loehle@arm.com>
+ <CAJZ5v0jPyy0HgtQcSt=7ZO-khSGex2uAxL1x6HZFkFbvpbxcmA@mail.gmail.com>
+ <9bbf6989-f41f-4533-a7c8-b274744663cd@arm.com>
+ <181bb5c2-5790-41bf-9ed8-3d3164b8697d@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <1960840.taCxCBeP46@rjwysocki.net>
-In-Reply-To: <1960840.taCxCBeP46@rjwysocki.net>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 12 Aug 2024 13:48:07 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0h8t1wAYenPPE2vZAerTJSrHnOuY=jqaLAQ+wNooJEduw@mail.gmail.com>
-Message-ID: <CAJZ5v0h8t1wAYenPPE2vZAerTJSrHnOuY=jqaLAQ+wNooJEduw@mail.gmail.com>
-Subject: Re: [PATCH v1 0/3] thermal: sysfs: Get to trip attributes via the
- attribute argument of show/store
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>, 
-	"Rafael J. Wysocki" <rjw@rjwysocki.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <181bb5c2-5790-41bf-9ed8-3d3164b8697d@arm.com>
 
-Hi Everyone,
+On Mon, Aug 05, 2024 at 03:58:09PM +0100, Christian Loehle wrote:
+> commit 449914398083148f93d070a8aace04f9ec296ce3 upstream.
+> 
+> The logic for recent intercepts didn't work, there is an underflow
+> of the 'recent' value that can be observed during boot already, which
+> teo usually doesn't recover from, making the entire logic pointless.
+> Furthermore the recent intercepts also were never reset, thus not
+> actually being very 'recent'.
+> 
+> Having underflowed 'recent' values lead to teo always acting as if
+> we were in a scenario were expected sleep length based on timers is
+> too high and it therefore unnecessarily selecting shallower states.
+> 
+> Experiments show that the remaining 'intercept' logic is enough to
+> quickly react to scenarios in which teo cannot rely on the timer
+> expected sleep length.
+> 
+> See also here:
+> https://lore.kernel.org/lkml/0ce2d536-1125-4df8-9a5b-0d5e389cd8af@arm.com/
+> 
+> Fixes: 77577558f25d ("cpuidle: teo: Rework most recent idle duration values treatment")
+> Link: https://patch.msgid.link/20240628095955.34096-3-christian.loehle@arm.com
+> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpuidle/governors/teo.c | 79 ++++++---------------------------
+>  1 file changed, 14 insertions(+), 65 deletions(-)
 
-On Mon, Jul 29, 2024 at 6:33=E2=80=AFPM Rafael J. Wysocki <rjw@rjwysocki.ne=
-t> wrote:
->
-> Hi Everyone,
->
-> This series reworks the trip point sysfs interface to get to trips via th=
-e
-> attribute argument of show/store instead of using the attribute name to g=
-et
-> a trip ID and look up a trip using it.
->
-> It also adds a small cleanup (the last patch) for a good measure.
+We can't just take a 6.1.y backport without newer kernels also having
+this fix.  Can you resend this as backports for all relevant kernels
+please?
 
-This material should not be controversial (which I also gather from
-the lack of responses) and it is a clear improvement IMV in terms of
-code flow simplifications and the reduction of its size, so I'm going
-to move it to my linux-next branch as 6.12-candidate.
+thanks,
 
-Thanks!
+greg k-h
