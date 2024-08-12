@@ -1,49 +1,50 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B85B17C230;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D88617C7B9;
 	Mon, 12 Aug 2024 13:59:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723471181; cv=none; b=lHEOBGUfELFW6Tfm58bNpmIS+xgCiUKtCYffZ3KcVGI4l7rk3SK/uViQGYpO5gP1MxnQ0cUHaCUNy7cLFeUQB3nPDPAhmqZV+fc1itJSNrTOuRGLW3z1Of6FvtSGI0Lcsu2Mcf1pdrNqvjuKO4QO8HDj96QiNPD9OophVIE1pAA=
+	t=1723471182; cv=none; b=W7NfCRP9XGHcfFkkDbbzbJwqcifFwDfv3/jqGet+4fyoixwRIAb5i3kA9u8lFP92S3vP/WMulxkj+B23wieG9wwaZnhtatsr2iwHJCXP6lpd4YDRHtJImffhVuqBlWK0mQbo4DPIhgbURfXki4uvK73IJ9gohGgQ5fPiYoJzNlI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723471181; c=relaxed/simple;
-	bh=+LDp9pftu1CyEMR+OQOK9+1vnYCGty270st7d2AvTEc=;
+	s=arc-20240116; t=1723471182; c=relaxed/simple;
+	bh=PQZfqROqtpDTEWyeo1BsXJCb+xzrICxEm9yickmYEKY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=gOejxZaxKSoQ7Y9nvUvjIaNCyLuHlzcMTYt9UxlNf+8peHcR5j64yjtMiuQ0iOin1o5ZgVBvPVywN7cDm1QiBkuWx1NyQBkeku7NndBhJHtuEwPrNmQl1KgnGGmHGpfvZ+c8AM/G3x1MZ7mxFgAGjaIRVn/QlgTcqk5noOy3/2I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=i94VqTM2 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=lL4myXs8QFCoBW9a6vf+8gl42z0AxzaeGi6mlWywCkLL2KGm0A075AWEKDq3X3a4iYKd98/cF1ic0mdHjpRCTAvcVM9er6iwHA+KkEdOOQ/qN/jvSyz0fE7bmQg9QSIWpl8DjWZLnbyaE4R5gSa6Yv/XjRcjI930I3/CoXGx2KM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=gzDCXpcF reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="i94VqTM2"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="gzDCXpcF"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 93076ac956817fa7; Mon, 12 Aug 2024 15:59:37 +0200
+ id 02ca37e7f5719184; Mon, 12 Aug 2024 15:59:38 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 04A216F0D63;
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id C0C136F0D63;
 	Mon, 12 Aug 2024 15:59:37 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1723471177;
-	bh=+LDp9pftu1CyEMR+OQOK9+1vnYCGty270st7d2AvTEc=;
+	s=dkim; t=1723471178;
+	bh=PQZfqROqtpDTEWyeo1BsXJCb+xzrICxEm9yickmYEKY=;
 	h=From:Subject:Date;
-	b=i94VqTM2R21uwP8Eaq91y5y4ifOgMBpGDFjv9mlyqMl8nEaIU1qsPJAyOePol5RUE
-	 Jy2nXSt2EPcLzPEVQlZsmNO0RWpLMxzmRUa1cn/NMbBY560f+vT8gKtgJiWq0NzIed
-	 h/Z2xg0k3s61dsbWOS7Ll2XrDvsLi6azXqzHqMvosaCJxzvL/JKUHShE8cFRjnSYt6
-	 5vQ8BmPFCU7T3atwpPHRQdAYOn2Xqoclp1UghEiGvsXWYIfk5f1VRCLEq3KSUOlsML
-	 cTvd/oadEXS6OJ0MpUonqM8HNuZJNmYo2hOpisH+IhZjRcab1UaErC6tPO790ix3TH
-	 ju6GrchvqcGhg==
+	b=gzDCXpcFA1e9jQycMZijghwJ/fy0eVez37+T6OnkOhFogBRMbGkREOn5dCcqHPLF/
+	 Xp3CD+tI5gtHlLSwxU1Xq7YZsl1KbIwiz5z8wAhy/JwDlGH4QJ+HeZso0a4h6VhKNU
+	 UlyLCJ/8ezd4U5inFpJ2Ww8qIKGKzm+l2K+F3ywyQ9dGHrksqTBgbVKK1+qoVJ2ulX
+	 wOarn8jLpNbzZo1Pbyox1Ui5m1IaDGvb3qFHlUzs3ZPWb+wUZqtjl2OIaU3eNvBfDz
+	 gec+cm/Bp/OuBcWvueLT2cbuzlDY+8xQnTXMmLc0qRUQnpXabkcMNslxeKyOXPeosy
+	 zDumjmCpv1acA==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
 Subject:
- [PATCH v2 03/17] thermal: core: Drop redundant thermal instance checks
-Date: Mon, 12 Aug 2024 15:54:36 +0200
-Message-ID: <2157531.OBFZWjSADL@rjwysocki.net>
+ [PATCH v2 02/17] thermal: core: Rearrange checks in
+ thermal_bind_cdev_to_trip()
+Date: Mon, 12 Aug 2024 15:53:06 +0200
+Message-ID: <5491953.Sb9uPGUboI@rjwysocki.net>
 In-Reply-To: <114901234.nniJfEyVGO@rjwysocki.net>
 References: <114901234.nniJfEyVGO@rjwysocki.net>
 Precedence: bulk
@@ -57,49 +58,67 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddruddttddgjedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddruddttddgjeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
 X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Because the trip and cdev pointers are sufficient to identify a thermal
-instance holding them unambiguously, drop the additional thermal zone
-checks from two loops walking the list of thermal instances in a
-thermal zone.
+It is not necessary to look up the thermal zone and the cooling device
+in the respective global lists to check whether or not they are
+registered.  It is sufficient to check whether or not their respective
+list nodes are empty for this purpose.
+
+Use the above observation to simplify thermal_bind_cdev_to_trip().  In
+addition, eliminate an unnecessary ternary operator from it.
+
+Moreover, add lockdep_assert_held() for thermal_list_lock to it because
+that lock must be held by its callers when it is running.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-v1 -> v2: Fix typo in the changelog
+v1 -> v2: No changes
 
 ---
- drivers/thermal/thermal_core.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/thermal/thermal_core.c |   16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
 
 Index: linux-pm/drivers/thermal/thermal_core.c
 ===================================================================
 --- linux-pm.orig/drivers/thermal/thermal_core.c
 +++ linux-pm/drivers/thermal/thermal_core.c
-@@ -850,7 +850,7 @@ int thermal_bind_cdev_to_trip(struct the
- 	mutex_lock(&tz->lock);
- 	mutex_lock(&cdev->lock);
- 	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
--		if (pos->tz == tz && pos->trip == trip && pos->cdev == cdev) {
-+		if (pos->trip == trip && pos->cdev == cdev) {
- 			result = -EEXIST;
- 			break;
- 		}
-@@ -915,7 +915,7 @@ int thermal_unbind_cdev_from_trip(struct
- 	mutex_lock(&tz->lock);
- 	mutex_lock(&cdev->lock);
- 	list_for_each_entry_safe(pos, next, &tz->thermal_instances, tz_node) {
--		if (pos->tz == tz && pos->trip == trip && pos->cdev == cdev) {
-+		if (pos->trip == trip && pos->cdev == cdev) {
- 			list_del(&pos->tz_node);
- 			list_del(&pos->cdev_node);
+@@ -781,25 +781,17 @@ int thermal_bind_cdev_to_trip(struct the
+ {
+ 	struct thermal_instance *dev;
+ 	struct thermal_instance *pos;
+-	struct thermal_zone_device *pos1;
+-	struct thermal_cooling_device *pos2;
+ 	bool upper_no_limit;
+ 	int result;
  
+-	list_for_each_entry(pos1, &thermal_tz_list, node) {
+-		if (pos1 == tz)
+-			break;
+-	}
+-	list_for_each_entry(pos2, &thermal_cdev_list, node) {
+-		if (pos2 == cdev)
+-			break;
+-	}
++	lockdep_assert_held(&thermal_list_lock);
+ 
+-	if (tz != pos1 || cdev != pos2)
++	if (list_empty(&tz->node) || list_empty(&cdev->node))
+ 		return -EINVAL;
+ 
+ 	/* lower default 0, upper default max_state */
+-	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
++	if (lower == THERMAL_NO_LIMIT)
++		lower = 0;
+ 
+ 	if (upper == THERMAL_NO_LIMIT) {
+ 		upper = cdev->max_state;
 
 
 
