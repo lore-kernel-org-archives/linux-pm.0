@@ -1,192 +1,160 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FC6819D06E
-	for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2024 13:57:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F27BE19D085;
+	Tue, 13 Aug 2024 14:29:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723557438; cv=none; b=KBbPGKGmKRMoKcHLQHxYkgxA+A7qFlZcsRMtuSkJBC3pXeULi9TR3iZvNyO7eaz6Q1JiR1SCC18sR2pCkXkiFiGFUPNEf0IvjnWv3wy1MkuhqvzldIYjxAWOA4nK+rx/SSTJ+44T2fRnOKG6MZdFC1U4oHFGgK6G1TtxbcLYEZU=
+	t=1723559377; cv=none; b=LEF3yNFYB8OkGoiL2uQfoZm31nOCWLhb1IHqQP7Ly7xUmXnRBGobHvJ3N5P9JndUQl8uL1tEVbXU5IUlmitR94k1eNXU7QDAxe8IZO7Wo724va5cLgmwoFJT86Uypyp7K62qymMmnnkGkT/BAIxv19b/DEW8W8BenhdTz54XrYc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723557438; c=relaxed/simple;
-	bh=RcMqqTEfTSLr+++tDYyI0Q1bjZz9OT1eaU6LMXSMTm0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pDpeh67rZ3YXqfq8FIVmTZeLOXn5fMQHYoMUXGdNTyXeIOvyVYhfZ8Gg6RbxXWpdaJsijt8zgFIs1UBnCxPeKzcGtO2Eb2+u6Sws+YVoopnW6jOiM9rexB9nAXRv/fEJsz92w6ICwvhbtLrmoiBc/52TW00KrYFn4ZldCBrxLhc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=VU5R7IC9; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1723559377; c=relaxed/simple;
+	bh=vyM2fA16LJrP9OVcGZqbYqkThW+wMsHSi2s0W/9M4BI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=bOG/JRK8sJxruAKYMt1L6MaEB7WsgnlnqwlPnHrRRHo1aZ5D7DRbSwZNLfcby0Sx/TcpWGvb8ASn9olvdiE+trmbYjBXZc0n2AuCWEAbghtfsnTGAc/k8Toe4yI2VHQXOoP+5ABQkDuzuYRBbv0tqQdopPBGpXFiXicGHIYHED4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Gvkp1tcb reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="VU5R7IC9"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1723557435;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vabtoVHWKvV/1SG/be91JzWWAjd+sf4Dx+EYtZWiLoc=;
-	b=VU5R7IC9pqYOG8wHHSH3nkrJIUow64vXIIEXT5cETVy+TA13qi6VqdNpzK2bsynA2LYny5
-	wyFgCifYgG/jYddW9cbZAH8JcMWlhwpfpMMk+Ca1NZrLoJ62iM558tC8wxUrw0KpklAYsc
-	OeonwY4Bp4vA203UflJQq+LCb8gWsCY=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-554-RrwdTZNPNUKDIyH9okmd_w-1; Tue, 13 Aug 2024 09:57:09 -0400
-X-MC-Unique: RrwdTZNPNUKDIyH9okmd_w-1
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-429c224d9edso32551605e9.1
-        for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2024 06:57:09 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1723557428; x=1724162228;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vabtoVHWKvV/1SG/be91JzWWAjd+sf4Dx+EYtZWiLoc=;
-        b=G0wZkwiE/KYJCq46e9tQ0Zd7zt12VBUKbIs0J2TOxLRtNkkaLUQaCca3VAPDm0fHI5
-         KAGsZCB4ypwFjydBtqNHeAvJGgLCUvZQUDcEXnc4izfqE5feVL3IEvO+XpYkKeWaTprN
-         GQRHn9q123Z6AGkjTC3UIc/v9RQHeosHvsUTwmGu7Dm2rzHLQ9aCBE5K4ZyRE8gYLRCt
-         vcnI15HFebbSNQRfuS6jdqeYHZpAUYCvHtGjmMMEiO2FDrynTKjc8o/l+U3kkLQKOz+X
-         dtqSe5UtojQ0pqIG9p5gZ9YYpxcqHVJxTwsL35zgMChI/fAsdui//fw11+0gk3DEuLQc
-         wb2w==
-X-Forwarded-Encrypted: i=1; AJvYcCUehRmlXejlOs+78VnxGoYtH3YifwzrTQJ2QkXZEWwmlKT/xl2a7hpWxD44fYcY1RXhnaJkep+8rBpXIGYkLYynrNM3YQrUJ+0=
-X-Gm-Message-State: AOJu0YydVUk5Rvx4uYeAuSmJUtuquG99lktjl3zC1q8jqtjX57kaE1pm
-	1bSDqWlB1/j/MjcIm9+JPQg9nK7tFk0+RzKEp0hA5yuJu0rHdzuDAN0t+xHPnLvLrZq1WZPJ5CW
-	vtG70ZGPD6ocBcJ9RSnGYkR0lXn/4nc/b7itMQsbo+W8xqPKbR9ae32bZ
-X-Received: by 2002:a05:600c:4ed2:b0:429:a3e:c785 with SMTP id 5b1f17b1804b1-429d481e867mr26475035e9.21.1723557428435;
-        Tue, 13 Aug 2024 06:57:08 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGGE61Ix61B1P0ouSqVuqS620H57DJ6X6CEjFHpczsLuKHS/td3xxFMWW04FQ2c39NHm585rw==
-X-Received: by 2002:a05:600c:4ed2:b0:429:a3e:c785 with SMTP id 5b1f17b1804b1-429d481e867mr26474815e9.21.1723557427872;
-        Tue, 13 Aug 2024 06:57:07 -0700 (PDT)
-Received: from jlelli-thinkpadt14gen4.remote.csb ([2a00:23c6:4a1d:e001:d365:918d:a79e:2a1c])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4290c7a38a6sm228324985e9.42.2024.08.13.06.57.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Aug 2024 06:57:07 -0700 (PDT)
-Date: Tue, 13 Aug 2024 14:57:05 +0100
-From: Juri Lelli <juri.lelli@redhat.com>
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>,
-	Qais Yousef <qyousef@layalina.io>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	linux-pm@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] sched/cpufreq: Use USEC_PER_SEC for deadline task
-Message-ID: <ZrtmMcU1405Niiks@jlelli-thinkpadt14gen4.remote.csb>
-References: <3c726cf5-0c94-4cc6-aff0-a453d840d452@arm.com>
- <20240809012410.marjxrio3sjequnn@airbuntu>
- <ZrXIb7BFOWY11DKt@jlelli-thinkpadt14gen4.remote.csb>
- <CAKfTPtD_QzYVeTbQ-j2mOsKmCcjUaxo403M_HYCWbT2RjjGb7w@mail.gmail.com>
- <25da50cb-776f-42db-9821-e86a441259c0@arm.com>
- <ZrtdYXW2VullBiop@jlelli-thinkpadt14gen4.remote.csb>
- <459ae1ee-d114-4fdc-b728-33bde5d08e24@arm.com>
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Gvkp1tcb"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
+ id 04688625b4e6996d; Tue, 13 Aug 2024 16:29:26 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 3506C6A89B8;
+	Tue, 13 Aug 2024 16:29:26 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1723559366;
+	bh=vyM2fA16LJrP9OVcGZqbYqkThW+wMsHSi2s0W/9M4BI=;
+	h=From:Subject:Date;
+	b=Gvkp1tcbQ657HG2RBh4wWa2tRf4gI5g+2C2bqtrPvjWBjXzU9DY2XKDhhG3kQVbKa
+	 XQ9cjopxSgE0QlPJEtvAQyUctQfDmzjU+t/xbkLcUzppN0PxbEAZcw/kZDJi2bnOju
+	 89eYROzrTgRPYLvYENtzYb7z1+lOD60VaEPZjjuuiNwfLP3fSkmRIlYNo8rRAnT23W
+	 yj+znvNx25KPp40xywZhRo2kWsfbZd3c5zKMJOn9M8yM7tTduegKMmSQGjvZdXa5u3
+	 b5rTeK3MzderIuBK63ojIguucMaLl4Fv88emMqRq21lwauCADse2ONhNJ72YTXCqYH
+	 WhNsDpeOL5JSQ==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Peter =?ISO-8859-1?Q?K=E4stle?= <peter@piie.net>
+Subject:
+ [PATCH v1 4/4] thermal: gov_bang_bang: Use governor_data to reduce overhead
+Date: Tue, 13 Aug 2024 16:29:11 +0200
+Message-ID: <2285575.iZASKD2KPV@rjwysocki.net>
+In-Reply-To: <1903691.tdWV9SEqCh@rjwysocki.net>
+References: <1903691.tdWV9SEqCh@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <459ae1ee-d114-4fdc-b728-33bde5d08e24@arm.com>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: spam:low
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddruddtvddgjeehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepiedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepphgvthgvrhesphhiihgvrdhnvght
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 
-On 13/08/24 14:34, Christian Loehle wrote:
-> On 8/13/24 14:19, Juri Lelli wrote:
-> > On 13/08/24 11:17, Christian Loehle wrote:
-> >> On 8/13/24 08:54, Vincent Guittot wrote:
-> >>> On Fri, 9 Aug 2024 at 09:42, Juri Lelli <juri.lelli@redhat.com> wrote:
-> >>>>
-> >>>> On 09/08/24 02:24, Qais Yousef wrote:
-> >>>>> Adding more sched folks to CC
-> >>>>>
-> >>>>> On 08/06/24 14:41, Christian Loehle wrote:
-> >>>>>> Convert the sugov deadline task attributes to use the available
-> >>>>>> definitions to make them more readable.
-> >>>>>> No functional change.
-> >>>>>>
-> >>>>>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
-> >>>>>> ---
-> >>>>>>  kernel/sched/cpufreq_schedutil.c | 6 +++---
-> >>>>>>  1 file changed, 3 insertions(+), 3 deletions(-)
-> >>>>>>
-> >>>>>> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> >>>>>> index eece6244f9d2..012b38a04894 100644
-> >>>>>> --- a/kernel/sched/cpufreq_schedutil.c
-> >>>>>> +++ b/kernel/sched/cpufreq_schedutil.c
-> >>>>>> @@ -654,9 +654,9 @@ static int sugov_kthread_create(struct sugov_policy *sg_policy)
-> >>>>>>              * Fake (unused) bandwidth; workaround to "fix"
-> >>>>>>              * priority inheritance.
-> >>>>>>              */
-> >>>>>> -           .sched_runtime  =  1000000,
-> >>>>>> -           .sched_deadline = 10000000,
-> >>>>>> -           .sched_period   = 10000000,
-> >>>>>> +           .sched_runtime  = USEC_PER_SEC,
-> >>>>>> +           .sched_deadline = 10 * USEC_PER_SEC,
-> >>>>>> +           .sched_period   = 10 * USEC_PER_SEC,
-> >>>>>
-> >>>>> I think NSEC_PER_MSEC is the correct one. The units in
-> >>>>> include/uapi/linux/sched/types.h is not specified. Had to look at
-> >>>>> sched-deadline.rst to figure it out.
-> >>
-> >> Huh, that's what I used, see below.
-> >>
-> >>>>
-> >>>> In practice it's the same number :). But, you are correct, we want
-> >>>> 1ms/10ms and unit is nanoseconds, so NSEC_PER_MSEC.
-> >>>
-> >>> Yes NSEC_PER_MSEC is the correct unit
-> >>
-> >> Thank you Qais, Juri and Vincent, but if I'm not missing something we
-> >> have a contradiction.
-> >> This patch should indeed be NSEC_PER_MSEC and I'll send a v2 but:
-> >> - Documentation/scheduler/sched-deadline.rst talks about microseconds:
-> >> SCHED_DEADLINE [18] uses three parameters, named "runtime", "period", and
-> >>  "deadline", to schedule tasks. A SCHED_DEADLINE task should receive
-> >>  "runtime" microseconds of execution time every "period" microseconds, and
-> >>  these "runtime" microseconds are available within "deadline" microseconds
-> >>  from the beginning of the period.
-> >>
-> >> - sched_setattr / sched_getattr manpages talks about nanoseconds:
-> >>        sched_deadline
-> >>               This field specifies the "Deadline" parameter for deadline
-> >>               scheduling.  The value is expressed in nanoseconds.
-> >>
-> >> - include/uapi/linux/sched/types.h doesn't mention any unit.
-> >> I will add that to the v2 series.
-> >>
-> >> - kernel/sched/deadline.c works with nanoseconds internally (although
-> >> with the precision limitation in microseconds).
-> >>
-> >> No conversion so
-> >> attr->sched_deadline (uapi) == dl_se->dl_deadline (kernel) etc.
-> >> So Documentation/scheduler/sched-deadline.rst is false or what is it that
-> >> I'm missing?
-> >>
-> > 
-> > As you say above, internal resolution is essentially down to 1us
-> > (microsecond) and we also check that parameters are at least 1us or
-> > bigger [1].
-> > 
-> > syscalls and internal mechanics work with nanoseconds, but I don't think
-> > this is a contradiction.
-> > 
-> > 1 - https://elixir.bootlin.com/linux/v6.10.4/source/kernel/sched/deadline.c#L3065
-> > 
-> 
-> All good then you reckon?
-> Still the part about schedtool is wrong:
-> 
-> -->8--
-> 
-> diff --git a/Documentation/scheduler/sched-deadline.rst b/Documentation/scheduler/sched-deadline.rst
-> index 9fe4846079bb..f7475d101e7a 100644
-> --- a/Documentation/scheduler/sched-deadline.rst
-> +++ b/Documentation/scheduler/sched-deadline.rst
-> @@ -759,7 +759,7 @@ Appendix A. Test suite
->    # schedtool -E -t 10000000:100000000 -e ./my_cpuhog_app
->  
->   With this, my_cpuhog_app is put to run inside a SCHED_DEADLINE reservation
-> - of 10ms every 100ms (note that parameters are expressed in microseconds).
-> + of 10ms every 100ms (note that parameters are expressed in nanoseconds).
->   You can also use schedtool to create a reservation for an already running
->   application, given that you know its pid::
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Right. Well, while we are at it, I actually wonder if we want to just rewrite
-the example using chrt (which now supports DEADLINE). :)
+After running once, the for_each_trip_desc() loop in
+bang_bang_manage() is pure needless overhead because it is not going to
+make any changes unless a new cooling device has been bound to one of
+the trips in the thermal zone or the system is resuming from sleep.
+
+For this reason, make bang_bang_manage() set governor_data for the
+thermal zone and check it upfront to decide whether or not it needs to
+do anything.
+
+However, governor_data needs to be reset in some cases to let
+bang_bang_manage() know that it should walk the trips again, so add an
+.update_tz() callback to the governor and make the core additionally
+invoke it during system resume.
+
+To avoid affecting the other users of that callback unnecessarily, add
+a special notification reason for system resume, THERMAL_TZ_RESUME, and
+also pass it to __thermal_zone_device_update() called during system
+resume for consistency.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/gov_bang_bang.c |   18 ++++++++++++++++++
+ drivers/thermal/thermal_core.c  |    3 ++-
+ include/linux/thermal.h         |    1 +
+ 3 files changed, 21 insertions(+), 1 deletion(-)
+
+Index: linux-pm/drivers/thermal/gov_bang_bang.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/gov_bang_bang.c
++++ linux-pm/drivers/thermal/gov_bang_bang.c
+@@ -86,6 +86,10 @@ static void bang_bang_manage(struct ther
+ 	const struct thermal_trip_desc *td;
+ 	struct thermal_instance *instance;
+ 
++	/* If the code below has run already, nothing needs to be done. */
++	if (tz->governor_data)
++		return;
++
+ 	for_each_trip_desc(tz, td) {
+ 		const struct thermal_trip *trip = &td->trip;
+ 
+@@ -107,11 +111,25 @@ static void bang_bang_manage(struct ther
+ 				bang_bang_set_instance_target(instance, 0);
+ 		}
+ 	}
++
++	tz->governor_data = (void *)true;
++}
++
++static void bang_bang_update_tz(struct thermal_zone_device *tz,
++				enum thermal_notify_event reason)
++{
++	/*
++	 * Let bang_bang_manage() know that it needs to walk trips after binding
++	 * a new cdev and after system resume.
++	 */
++	if (reason == THERMAL_TZ_BIND_CDEV || reason == THERMAL_TZ_RESUME)
++		tz->governor_data = NULL;
+ }
+ 
+ static struct thermal_governor thermal_gov_bang_bang = {
+ 	.name		= "bang_bang",
+ 	.trip_crossed	= bang_bang_control,
+ 	.manage		= bang_bang_manage,
++	.update_tz	= bang_bang_update_tz,
+ };
+ THERMAL_GOVERNOR_DECLARE(thermal_gov_bang_bang);
+Index: linux-pm/drivers/thermal/thermal_core.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -1692,7 +1692,8 @@ static void thermal_zone_device_resume(s
+ 
+ 	thermal_debug_tz_resume(tz);
+ 	thermal_zone_device_init(tz);
+-	__thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
++	thermal_governor_update_tz(tz, THERMAL_TZ_RESUME);
++	__thermal_zone_device_update(tz, THERMAL_TZ_RESUME);
+ 
+ 	complete(&tz->resume);
+ 	tz->resuming = false;
+Index: linux-pm/include/linux/thermal.h
+===================================================================
+--- linux-pm.orig/include/linux/thermal.h
++++ linux-pm/include/linux/thermal.h
+@@ -55,6 +55,7 @@ enum thermal_notify_event {
+ 	THERMAL_TZ_BIND_CDEV, /* Cooling dev is bind to the thermal zone */
+ 	THERMAL_TZ_UNBIND_CDEV, /* Cooling dev is unbind from the thermal zone */
+ 	THERMAL_INSTANCE_WEIGHT_CHANGED, /* Thermal instance weight changed */
++	THERMAL_TZ_RESUME, /* Thermal zone is resuming after system sleep */
+ };
+ 
+ /**
+
+
 
