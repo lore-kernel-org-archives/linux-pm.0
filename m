@@ -1,104 +1,67 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAC19125AC;
-	Tue, 13 Aug 2024 14:40:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id ABCD419EEA6;
+	Tue, 13 Aug 2024 14:43:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723560027; cv=none; b=aokd6zmYekn18/I0QaSeZYqtFZW6sXWpcsLGnx47nWgC9T8WINrq7aAkTX4ZHJmaqcIuCZyYU9Q8uULQEDmvqjYhG+cGGD59EKJMR4jhFaOWhGywVzB2v9ZjC1UOuSlkjE2HEg/WiYI72HSeXpmUQtp5gsze/q6eeRXXVDpw5Hk=
+	t=1723560240; cv=none; b=I8GAu+jAs+odAIhxUWWfsblX31s9yHH5EoFkqqO1RkVux99tsVhliKtV2sg++A11SGTMavIDHqxwbxkM97q1kikspdVFSdCv4wFvsE7iNL1BuO/yP618bdQ+GGom7tZ9XvlvERQ6TiBFTEQTH9yOWWSM5VWlAUH3IHgP2VLGg1c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723560027; c=relaxed/simple;
-	bh=VfTachFUIsrZaw4U7xS4CrKA4r4zOSHY9SuORRnXawo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=U/SMg5fq3AlSWDjudJ9j8Gh/U5WmfQRwQLVS9syUc350oV7oCmy7WtlybAJups5K2wNGHx1ppGqe8j00P7h95bD52Y5ko9Mb9XQ+kfV4jVSDoiGC9D0V/7O60uaEmteXK7MdiR1j0CnySnQ6o8MLAnSYNpJu6tP8wxbj8uyrVlo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=L8PNQBb+ reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="L8PNQBb+"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id b30a72e207a3cc2c; Tue, 13 Aug 2024 16:40:22 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 5502E6A89A1;
-	Tue, 13 Aug 2024 16:40:22 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1723560022;
-	bh=VfTachFUIsrZaw4U7xS4CrKA4r4zOSHY9SuORRnXawo=;
-	h=From:Subject:Date;
-	b=L8PNQBb+M4Mk4FQEJHMthV9jLRRqp+Su1xfDmjgnAdzXmodSyQR0iQBlVcUagwm3e
-	 lDbhNL44i8CGhCdy3r/O6S2AlPPrmzu0qJvdhwBy5WUfIt87/ftPgrUK1o3NP7AN50
-	 2hmkX8qSQpW/E7NjU6e1M7jMfGc4Jblqqzb749uKnUMDgJRspvdnOdpWRTPPw4RGLm
-	 naFbp1JbDY0zJd1DxO806PwOH/OQxxKJxJrLMF02XvWl0Ci784PoCfgWjWqe3ienb8
-	 MW/Udf6v7L/4t43Ul3C8BAQYjRzwsLCHOz8jDONLsL4C+uOa/7XZ768kWtMlCnlgw9
-	 m7Be4XdvQpvXg==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
- Peter =?ISO-8859-1?Q?K=E4stle?= <peter@piie.net>
-Subject:
- [PATCH v1 0/4] thermal: gov_bang_bang: Prevent cooling devices from getting
- stuck in the "on" state
-Date: Tue, 13 Aug 2024 16:23:35 +0200
-Message-ID: <1903691.tdWV9SEqCh@rjwysocki.net>
+	s=arc-20240116; t=1723560240; c=relaxed/simple;
+	bh=YNg/KKJ0sSvf3vGZvLY2X31BCdxXV1DKmzobQPyQwDs=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=sgpun8cyjpjRHEICa4miPZygM10kqEg2cTJAvY777Q0ud9qFtIcV7LIsf52LG+goHunEug/QckLkkG920oNWb2PWEBxnfibpGwI7hSt4ZV8DKiSElU420SBdp2AANrm86YOhC4qFApIDSVOUJWVtL5+mSS+pgZofGMi4SqNttog=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C46BB12FC;
+	Tue, 13 Aug 2024 07:44:22 -0700 (PDT)
+Received: from e127648.arm.com (unknown [10.57.84.20])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 3BCCE3F58B;
+	Tue, 13 Aug 2024 07:43:54 -0700 (PDT)
+From: Christian Loehle <christian.loehle@arm.com>
+To: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	rafael@kernel.org
+Cc: vincent.guittot@linaro.org,
+	qyousef@layalina.io,
+	peterz@infradead.org,
+	daniel.lezcano@linaro.org,
+	rostedt@goodmis.org,
+	juri.lelli@redhat.com,
+	dietmar.eggemann@arm.com,
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCH 0/4] sched/deadline: nanoseconds clarifications
+Date: Tue, 13 Aug 2024 15:43:44 +0100
+Message-Id: <20240813144348.1180344-1-christian.loehle@arm.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddruddtvddgjeejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucfuphgrmhfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehpvghtvghrsehpihhivgdrnhgvth
-X-DCC--Metrics: v370.home.net.pl 1024; Body=24 Fuz1=24 Fuz2=24
+Content-Transfer-Encoding: 8bit
 
-Hi Everyone,
+A couple of clarifications about the time units for the deadline
+parameters uncovered in the discussion around
+https://lore.kernel.org/lkml/3c726cf5-0c94-4cc6-aff0-a453d840d452@arm.com/
 
-After changes made in 6.10, the Bang-bang governor has an initialization problem
-on systems where cooling devices start in the "on" state, but the thermal zone
-temperature stays below the corresponding trip points.
+While at it I changed the documentation example to chrt instead
+of the schedtool fork.
 
-Namely, the Bang-bang governor only implements a .trip_crossed() callback which
-only runs when a trip point is crossed.  If the zone temperature is always below
-the trip point, that callback will never be invoked.  Now, if a cooling device
-bound to that trip point starts in the "on" state, the governor has no chance
-to change its state to "off".
+No functional changes.
 
-This currently happens in the acerhdf driver, but it may as well happen elsewhere,
-so I think that it needs to be addressed in the thermal subsystem.
+Christian Loehle (4):
+  sched/deadline: Convert schedtool example to chrt
+  sched/deadline: Clarify nanoseconds in uapi
+  cpufreq/cppc: Use NSEC_PER_MSEC for deadline task
+  sched/cpufreq: Use NSEC_PER_MSEC for deadline task
 
-It can be addressed by adding a .manage() callback to the Bang-bang governor,
-which is done in patch [3/4].  That callback will be invoked every time
-__thermal_zone_device_update() runs, not just when a trip is crossed, so it
-can adjust the states of the cooling devices to the thermal zone temperature.
-However, after running once, it becomes a pure needless overhead because the
-states of cooling devices only need to be fixed up once (modulo some special
-situations like system resume).
+ Documentation/scheduler/sched-deadline.rst | 14 ++++++--------
+ drivers/cpufreq/cppc_cpufreq.c             |  6 +++---
+ include/uapi/linux/sched/types.h           |  6 +++---
+ kernel/sched/cpufreq_schedutil.c           |  6 +++---
+ 4 files changed, 15 insertions(+), 17 deletions(-)
 
-That's addressed in patch [4/4] which uses governor_data to store the information
-on whether or not the states of the cooling devices will need to be adjusted.
-
-Patches [1-2/4] are preliminary, but IMV it is better to make these changes
-separately for clarity, but also in case they turn out to have a functional
-effect which is not expected.
-
-Overall, this series is a fix candidate for 6.11-rc because the change in
-behavior addressed by it can be regarded as a regression with respect to 6.9.
-
-Unfortunately, it affects this series:
-
-https://lore.kernel.org/linux-pm/114901234.nniJfEyVGO@rjwysocki.net/
-
-which will need to be reordered and rebased (slightly), but because I've dropped
-one broken patch from it already, it will need to be changed anyway.
-
-Thanks!
-
-
+--
+2.34.1
 
