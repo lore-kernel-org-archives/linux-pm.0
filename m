@@ -1,121 +1,139 @@
-Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com [209.85.219.178])
+Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com [209.85.219.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 163761B013B
-	for <linux-pm@vger.kernel.org>; Wed, 14 Aug 2024 12:39:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1B51566A
+	for <linux-pm@vger.kernel.org>; Wed, 14 Aug 2024 13:01:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723639143; cv=none; b=RHdmW4CpxeGs14Df3eSXxFggo7vKQahMAXSVxPl1Urkb2ldfVjZsC/W8aC1LCjA+SZ/bNGkMBdeKwxnWEcsjDTtZ/ZlexZPyVoaAwipBp5Dqmn8bcw/V97lpQ/9uChWG2jvXX4cp5i38h1nwkqK7z5IRKhrxAJofilyd2nuIgig=
+	t=1723640493; cv=none; b=NvEjJMwq866K6lMaP6qzMgSr8VaXac6XJ42KCKM5LuKHgsz93tp+Up36D3T1lSZNKGrAXKkbsjSDXH7SysJK7COSVSUP9R9HTLXnlDn2kuAHP4jeBIv2Koj8uLzvcAFRd9JIc/MU5HJi2XVLOV1raubNLQ2qXV0CMcGjvFEWFJU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723639143; c=relaxed/simple;
-	bh=z6829gbtT4yJLMB/tAU+iKzRD0DX8KmC7O9nErKM1Fo=;
+	s=arc-20240116; t=1723640493; c=relaxed/simple;
+	bh=q/uJbkjsZVe1udBwRTk4Z0NblBdsbyD+dlaoHPUzTfY=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gc/+hJ8hYCOTSTErQgeY+aOTc+ZgJFax6cwsG4hsZx2OxFOEO/NO+F/dW9bEGJ1QiTaF2OHIWULXOpw4lomrFx936RW3LQP3pTIgNMJbRrH5DEIXAOBlHSIhoXNDGGuomCMdT0x8gRIp+QFBLEaigxcXxH7mJP/AYlf9ei72fRU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=GXVqUyLM; arc=none smtp.client-ip=209.85.219.178
+	 To:Cc:Content-Type; b=WzQnBR3syAxDGqIwWoa7b/Mz1hOMrycGQiPdCOZ6e9we+O4qlHAyqpJ/B2azeQCzYwUm9AAOgWJutXfLnpvA4wb3p30YXdBDSruRtsErd57tzhH95CbVa88HsG9awtdjhql99mOq/FEF+DH/ZI6lacUHWWfZpdLC5YLiaPni5ro=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=wyq7uAAS; arc=none smtp.client-ip=209.85.219.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GXVqUyLM"
-Received: by mail-yb1-f178.google.com with SMTP id 3f1490d57ef6-e0885b4f1d5so6327279276.1
-        for <linux-pm@vger.kernel.org>; Wed, 14 Aug 2024 05:39:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="wyq7uAAS"
+Received: by mail-yb1-f182.google.com with SMTP id 3f1490d57ef6-e0bf9602db6so6412793276.1
+        for <linux-pm@vger.kernel.org>; Wed, 14 Aug 2024 06:01:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1723639141; x=1724243941; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1723640491; x=1724245291; darn=vger.kernel.org;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=z6829gbtT4yJLMB/tAU+iKzRD0DX8KmC7O9nErKM1Fo=;
-        b=GXVqUyLMNTDiXRus4Oqn0XENhSqiCDwBpDaTia5EjykecDlXYt4xTFuNg+XQ1KoqHC
-         +ivceXJgOCvZlQZPdRuaUpxwIg+giqJmmfY6cTqPL04RbRkwhGwV0Wo8JDylhgFHRNId
-         EPxGR0CYNiQM9Y8wRO96Cxwy3e5pg382eUGH3rYLro3WuvadLqGoPMIbqafw0sojYUuC
-         VzHrd5h/WoK7k345eTXJdqaOVFHS17bWxMcuYlSNwwY8IrhgRUdwljAlSyBpX9Mu3xWR
-         3P3DBsIxsPwHq6YYOV5V/l4BlRtJpIpF0D7FZE/NTOidBc6HcuCg2n0zYmbUEE78qIck
-         elBw==
+        bh=7jfobO0h8PCWvLzZDgipywq+q6ry4w+xtSJdMM8OsI8=;
+        b=wyq7uAASsaengzfHPU49sQat/HWe/WmS1L2lwZ9yYY2j3EedHaQqDLk3ZkuNxcF8ss
+         S5Ob9Cw96H22xFbaLJO/oEPdsESjpW3vc9HvvGzSon8+6KqZ76LDwBr6EdCcHnbhaCwg
+         iNNnAPenqd2k8ECjACCeG1RhuGRm2Siz33T2Zm1B11LrEgLwfNn+mltmnyV5Mcshb1gw
+         A8MlisojbKlFsYNgkcwQAyosiWM0xtm2vugCDrgvPIP/1bO+VxdLJXAQH9qPupM4iM8Z
+         ON0bie1ck1YaWWsPOmAgerNSipCuAsOzcwLiFqYkRP0KmyIz2+avqycYiTzAOCWuqwBs
+         OKgQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1723639141; x=1724243941;
+        d=1e100.net; s=20230601; t=1723640491; x=1724245291;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=z6829gbtT4yJLMB/tAU+iKzRD0DX8KmC7O9nErKM1Fo=;
-        b=oK9N7TtlL2kiXG4IJQHwSmsrvlby/ma71sTuAPigp/UMO7nQWUGoAUlZ26mE8872Zl
-         yaGRG5hLHiSNAVvu6bmS0IpNn/jQOuEsbV6UwTn/n0hYC6+PWplqSFu8/EUu5ls4CSnY
-         gioaQs+wF1uzLaOz+9x4RJscYlqPXZ4kRXTQkxhraojHJ0mxZkb8Yt1wV69H3Zc7FArm
-         isdu+DLLqqHLovQtiNGvFNXLT+Qd8d/UMBvaaQIXvNhMRd/8KLreeewR6+sI/nFJmc5/
-         nLhIXoU7g2JGefI6TUeS+5pFk3LkSTGOewOYZgW0dHJpJVI2qM+Dq14Eyig/2SH5kSEA
-         2xFA==
-X-Forwarded-Encrypted: i=1; AJvYcCVy3NcrxC7GPw+vLbfYhZwjNYLjpN4t86Txr8rPkqykyWpH3uWpMy3siZYCYAlF1DNDBVrfnb9knz+VkmaKfY9hqvxjvkOsNbg=
-X-Gm-Message-State: AOJu0YwdT8G51KrMNhWCD1vI2ScH+FFVTlngM149/ARajBK/3WiYnMDV
-	p/rAtFbuwelhokoVphcXnjOoAuh40sDUJuFK4DP249MV2YGRCjW44tWUPO0TnqEco1gaxKwW6Lf
-	ECTn0EsF7BxSp7FLiMKjylqAFuBv25iauf9khtg==
-X-Google-Smtp-Source: AGHT+IHkkRHVllAhB6FNadDbkbuoZnwmtVCgnklRd2o5H5jpRCX2OPGaEKLjzxOhtnG8i+L32f1vuXQ+Vt3WAf/9toQ=
-X-Received: by 2002:a05:6902:84a:b0:e05:fea8:4c77 with SMTP id
- 3f1490d57ef6-e1155aa39b7mr3207999276.14.1723639141116; Wed, 14 Aug 2024
- 05:39:01 -0700 (PDT)
+        bh=7jfobO0h8PCWvLzZDgipywq+q6ry4w+xtSJdMM8OsI8=;
+        b=KUuUHjg7X+tu5PBS/a6JKkAtwfS+OMUN9XUyJ7HTgHCkdrbQh4jwqPWD0O4Rs7UALD
+         m9XmRW2Mg6WK7TW6OuucBOeDuQa1EJZS6uh5TNzgX4HgJywgeD2YEBD3e2zvGvoHlYpc
+         WTHIk+8l/4a8jBzOeJYfV1Nb+lbIkrAtjvNSwLw/y1bYgTeNk/SC6vkP9Ie9M0CQihVH
+         SP2mqpz/QOuvpFgP4Mh+hRZEjntzORWB/zt5EHqyw5uknk8OU8ELsa1081edOWqXJrfN
+         PaSJ1/LSFRYipNhdhJ5bvuVlm5M04Z5hllOn7qT9j6/nqrN5ifjqHJX0/thynYSXpk+V
+         A5Vg==
+X-Forwarded-Encrypted: i=1; AJvYcCVY068dEcIfZ2I8XRR0O7LjsRsrRlDVnULdymWysCm5DjSUPP1Vw4pCdT7jgc+Ss8YT3GmuHkxODscuRBMDmswDyq5Yts+ZvZM=
+X-Gm-Message-State: AOJu0YwXF7FMVA6Vacyfde3yDM45cm5Kr5lT3X4g8T3IQYCd7Uj81s8f
+	edvLSENNg9jobFKknDL7tgnsWhI9Mhd2s1zX1CI2bvLM8rH05wAr0Ax7suwzXtWgI0klopIXif5
+	aIfuza61iXTU1Vk0CjKOEulPv9EWyednM1nqtDg==
+X-Google-Smtp-Source: AGHT+IHrp4Xh3i1XqddMFLTNR0pu3w38VmxhIBnGcCEYDdONQahxkdZEFtRyur/hzKD2ig6aNbR/s73+CN6uArFqY3M=
+X-Received: by 2002:a05:6902:2201:b0:e0b:c402:b03f with SMTP id
+ 3f1490d57ef6-e1155ae6007mr2993583276.27.1723640489000; Wed, 14 Aug 2024
+ 06:01:29 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240703110741.2668800-1-quic_sibis@quicinc.com>
- <ZoZ6Pk7NSUNDB74i@bogus> <064274c4-3783-c59e-e293-dd53a8595d8e@quicinc.com> <Zofvc31pPU23mjnp@bogus>
-In-Reply-To: <Zofvc31pPU23mjnp@bogus>
+References: <20240814124740.2778952-1-peng.fan@oss.nxp.com>
+In-Reply-To: <20240814124740.2778952-1-peng.fan@oss.nxp.com>
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 14 Aug 2024 14:38:24 +0200
-Message-ID: <CAPDyKFrESupeNS4BO8TPHPGpXFLsNqLPrUEw3xzr8oh8FsLHeA@mail.gmail.com>
-Subject: Re: [PATCH] pmdomain: arm: Fix debugfs node creation failure
-To: Sudeep Holla <sudeep.holla@arm.com>, Sibi Sankar <quic_sibis@quicinc.com>
-Cc: cristian.marussi@arm.com, linux-kernel@vger.kernel.org, 
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	quic_rgottimu@quicinc.com, quic_kshivnan@quicinc.com, johan@kernel.org, 
-	Peng Fan <peng.fan@nxp.com>
+Date: Wed, 14 Aug 2024 15:00:52 +0200
+Message-ID: <CAPDyKFrUyEfSsEdjfXGLX5NJuWaGNBZg1D+kCR=EikG42_eL0w@mail.gmail.com>
+Subject: Re: [PATCH V2] pmdomain: imx: wait SSAR when i.MX93 power domain on
+To: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+Cc: shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, 
+	festevam@gmail.com, imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Peng Fan <peng.fan@nxp.com>, Stable@vger.kernel.org, Jacky Bai <ping.bai@nxp.com>
 Content-Type: text/plain; charset="UTF-8"
 
-+ Peng
+On Wed, 14 Aug 2024 at 14:38, Peng Fan (OSS) <peng.fan@oss.nxp.com> wrote:
+>
+> From: Peng Fan <peng.fan@nxp.com>
+>
+> With "quiet" set in bootargs, there is power domain failure:
+> "imx93_power_domain 44462400.power-domain: pd_off timeout: name:
+>  44462400.power-domain, stat: 4"
+>
+> The current power on opertation takes ISO state as power on finished
+> flag, but it is wrong. Before powering on operation really finishes,
+> powering off comes and powering off will never finish because the last
+> powering on still not finishes, so the following powering off actually
+> not trigger hardware state machine to run. SSAR is the last step when
+> powering on a domain, so need to wait SSAR done when powering on.
+>
+> Since EdgeLock Enclave(ELE) handshake is involved in the flow, enlarge
+> the waiting time to 10ms for both on and off to avoid timeout.
+>
+> Cc: <Stable@vger.kernel.org>
+> Fixes: 0a0f7cc25d4a ("soc: imx: add i.MX93 SRC power domain driver")
+> Reviewed-by: Jacky Bai <ping.bai@nxp.com>
+> Signed-off-by: Peng Fan <peng.fan@nxp.com>
 
-On Fri, 5 Jul 2024 at 15:04, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> On Fri, Jul 05, 2024 at 09:16:29AM +0530, Sibi Sankar wrote:
-> >
-> > On 7/4/24 16:02, Sudeep Holla wrote:
-> > >
-> > > If there are 2 perf domains for a device or group of devices, there must
-> > > be something unique about each of these domains. Why can't the firmware
-> > > specify the uniqueness or the difference via the name?
-> > >
-> > > The example above seems firmware is being just lazy to update it. Also
-> > > for the user/developer/debugger, the unique name might be more useful
-> > > than just this number.
-> > >
-> > > So please use the name(we must now have extended name if 16bytes are less)
-> > > to provide unique names. Please stop working around such silly firmware
-> > > bugs like this, it just makes using debugfs for anything useful harder.
-> >
-> > This is just meant to address firmware that are already out in the wild.
-> > That being said I don't necessarily agree with the patch either since
-> > it's penalizing firmware that actually uses a proper name by appending
-> > something inherently less useful to it. Since, the using of an unique
-> > domain name isn't required by the spec, the need for it goes under the radar
-> > for vendors. Mandating it might be the right thing to do since
-> > the kernel seems inherently expect that.
-> >
->
-> Well I would love if spec authors can agree and mandate this. But this is
-> one of those things I can't argue as I don't necessarily agree with the
-> argument. There are 2 distinct/unique domains but firmware authors ran out
-> of unique names for them or just can't be bothered to care about it.
->
-> They can't run out of characters as well in above examples, firmware can
-> add some useless domain ID in the name if they can't be bothered or creative.
->
-> So I must admit I can't be bothered as well with that honestly.
-
-Sudeep, while I understand your point and I agree with it, it's really
-a simple fix that $subject patch is proposing. As the unique name
-isn't mandated by the SCMI spec, it looks to me that we should make a
-fix for it on the Linux side.
-
-I have therefore decided to queue up $subject patch for fixes. Please
-let me know if you have any other proposals/objections moving forward.
+Applied for fixes, thanks!
 
 Kind regards
 Uffe
+
+> ---
+>
+> V2:
+>  Add Fixes tag and Cc stable (Per Ulf's comment)
+>
+>  drivers/pmdomain/imx/imx93-pd.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/pmdomain/imx/imx93-pd.c b/drivers/pmdomain/imx/imx93-pd.c
+> index 1e94b499c19b..d750a7dc58d2 100644
+> --- a/drivers/pmdomain/imx/imx93-pd.c
+> +++ b/drivers/pmdomain/imx/imx93-pd.c
+> @@ -20,6 +20,7 @@
+>  #define FUNC_STAT_PSW_STAT_MASK                BIT(0)
+>  #define FUNC_STAT_RST_STAT_MASK                BIT(2)
+>  #define FUNC_STAT_ISO_STAT_MASK                BIT(4)
+> +#define FUNC_STAT_SSAR_STAT_MASK       BIT(8)
+>
+>  struct imx93_power_domain {
+>         struct generic_pm_domain genpd;
+> @@ -50,7 +51,7 @@ static int imx93_pd_on(struct generic_pm_domain *genpd)
+>         writel(val, addr + MIX_SLICE_SW_CTRL_OFF);
+>
+>         ret = readl_poll_timeout(addr + MIX_FUNC_STAT_OFF, val,
+> -                                !(val & FUNC_STAT_ISO_STAT_MASK), 1, 10000);
+> +                                !(val & FUNC_STAT_SSAR_STAT_MASK), 1, 10000);
+>         if (ret) {
+>                 dev_err(domain->dev, "pd_on timeout: name: %s, stat: %x\n", genpd->name, val);
+>                 return ret;
+> @@ -72,7 +73,7 @@ static int imx93_pd_off(struct generic_pm_domain *genpd)
+>         writel(val, addr + MIX_SLICE_SW_CTRL_OFF);
+>
+>         ret = readl_poll_timeout(addr + MIX_FUNC_STAT_OFF, val,
+> -                                val & FUNC_STAT_PSW_STAT_MASK, 1, 1000);
+> +                                val & FUNC_STAT_PSW_STAT_MASK, 1, 10000);
+>         if (ret) {
+>                 dev_err(domain->dev, "pd_off timeout: name: %s, stat: %x\n", genpd->name, val);
+>                 return ret;
+> --
+> 2.37.1
+>
