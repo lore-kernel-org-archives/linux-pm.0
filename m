@@ -1,142 +1,197 @@
-Received: from flow8-smtp.messagingengine.com (flow8-smtp.messagingengine.com [103.168.172.143])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53ADB1AC8AC;
-	Thu, 15 Aug 2024 11:11:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.143
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33EC91714DA;
+	Thu, 15 Aug 2024 12:35:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723720278; cv=none; b=FZxbwynd08E88lhgjD8rB1q0Xj86GarggNFTcErDakxpRwd8pQRTLbgtn2zVy05y5JsqnTb/sbMemtA4tUDad7AjYRQWQvLQDqCNSWVjSyg9zzIE0Qfd45dezcNttgTZRSa3UkDYr+YwaHVSZB0UxUQdCV8jDj7+ujH8WPrpMnY=
+	t=1723725332; cv=none; b=OafJZf5xydgQ5+ucau2U0dvPEWy3dR/lsaMFRsz/+DcnzMkeR/6EZ1o8L6qbM41Tuun3ADI8LDyYsvL0G2CO/vhWPdV5R66V9DLm+NZtROTtQp6S4PC8HgKP/6m92uMS4e4032cH0ltYjuD7vMxM57bhUdqXnrfDU+VBVeYgfuA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723720278; c=relaxed/simple;
-	bh=cM/oa+aXFrNIzMB4+mBWw40HctDtv+Aci9IQkyQCuug=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b+oLQYWx8j5va+GZvxrBv7X+PN5WAA0/TGXFVhLnQXzju3PLQRzfUNyJ8fMUJaQV72i1tpENdUB6mfMGG5E2OXigKIfHXDqWGqUxz9yFOvmuIqbVVPVOj5chR+q1Jmndyq1huyGajLbg/NcYnFiekh9ANq1498mZCdERRXxgVS8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com; spf=pass smtp.mailfrom=kroah.com; dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b=iBR1wMYI; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=KVMre4P/; arc=none smtp.client-ip=103.168.172.143
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kroah.com
+	s=arc-20240116; t=1723725332; c=relaxed/simple;
+	bh=dXaBct2Q9fRbnCiEvN+tKUOp34Nt6Wc6xwlzOM0mSXw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SZyEA4jWuxpVTv9tjRpHq2YN1ze9SRNGVNqlC/A1oUrLmZHg3vOHdDp+0OJQW3CVGszG5RSgOf4sUReBPgJVLm3yM0NL3PFZ+EIfCt4lPvRgxHjp2bs4aFPJGyBwBej0ZogrM1dssbmbOjlkFO/eIkUjyeGIDsAyKoOfqP5XaVY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Gv5WchdI; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b="iBR1wMYI";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="KVMre4P/"
-Received: from phl-compute-07.internal (phl-compute-07.nyi.internal [10.202.2.47])
-	by mailflow.nyi.internal (Postfix) with ESMTP id 464B5200A34;
-	Thu, 15 Aug 2024 05:24:26 -0400 (EDT)
-Received: from phl-mailfrontend-01 ([10.202.2.162])
-  by phl-compute-07.internal (MEProxy); Thu, 15 Aug 2024 05:24:26 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=cc
-	:cc:content-type:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:subject
-	:subject:to:to; s=fm3; t=1723713866; x=1723721066; bh=DJrlepPVyE
-	+yZqIgbQ54BkO2ZvNmAfile0WCqAW+g3Q=; b=iBR1wMYIvM5n4U4j9ojUn2xlhC
-	TxvTDAwt/nwgs+2zmiaHQZDMqoqh1T8AGAWcfVi3d5dcZi3Hugw09lt2CFrR2yMG
-	a3VWsCVkCMOsmGZSNweIEkNVa2T3Mi9vFA2VdJ5F03VSiP8uhJ2fGuCccEGMs6g9
-	ENiDFWbPGoL6f7ZGhkknVGz7Fn/trhE+cCNF/6XdM47Jq6uT4zMs7SH/vSdQGY+Q
-	I1Zvf/WWb58YdMlqrCn9x8sKjpUp1oGgr4wcpksLTlzF6ZwgO9X1D2FDZA0iEV7L
-	HPkXEUJgKXP3kjUcNqxZIjr0xAKbP7vAZwFVfMuI+CRNXtOIE5RaHO45qlJg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-	fm3; t=1723713866; x=1723721066; bh=DJrlepPVyE+yZqIgbQ54BkO2ZvNm
-	Afile0WCqAW+g3Q=; b=KVMre4P/zOVhUEqNei7d4gCpmWhHoJ7TMwaIs9mXpkIa
-	8Kr1YzdEg/ucwYT+fTLlcQbuzMD3FMfE9iFyix/6pSVMkEiK46LuO0/kIQGVlLsW
-	L3pxTn5aBuEtPK3kER2Kmt8F+Sfo97p67lWcDkt9hMs/IPEwlS1inU+9dKNtqY7D
-	QwxSs8Z3Kk3g6zcVTe6RS4+uKnlM8EBoJEmoJ0dpyLSgzU1JKAVjIXeX/I/yfhQK
-	eOoJ0DzF25tGyR8gS+PzuWSA3d8b2088lRLRjLlYEAGt3eBn7QsbirBbNZH9I+dT
-	Ep1w/wtpcfCdu47jA0BXbP3/xqQ8ET60I9X7KmE1ug==
-X-ME-Sender: <xms:Scm9Zr44ufvsXsylmy04oXubruVNMTwC_NH8lxtvpjrFxphYCzgp0w>
-    <xme:Scm9Zg759fHIramAPVWZWOcfnaWS7Mgl9BnqTgssZwgk5OExyIiGFiyMBIGTT0RN0
-    jO2WS6ej06Whw>
-X-ME-Received: <xmr:Scm9Zif3xbeEDC2d37bvApihyPYrYAptc7X2PiNnCS1r60iWr1xBOQHZ1GsFLzoDFBkLY70AabKozf82Eq2Qo_ujlVzqrznUFcDJvA>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeftddruddtiedgudegucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggvpdfu
-    rfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnh
-    htshculddquddttddmnecujfgurhepfffhvfevuffkfhggtggujgesthdtredttddtvden
-    ucfhrhhomhepifhrvghgucfmjfcuoehgrhgvgheskhhrohgrhhdrtghomheqnecuggftrf
-    grthhtvghrnhepheegvdevvdeljeeugfdtudduhfekledtiefhveejkeejuefhtdeufefh
-    gfehkeetnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomh
-    epghhrvghgsehkrhhorghhrdgtohhmpdhnsggprhgtphhtthhopeehtddpmhhouggvpehs
-    mhhtphhouhhtpdhrtghpthhtohepphhivghrrhgvrdhgohhnughoihhssegrrhhmrdgtoh
-    hmpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdho
-    rhhgpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhope
-    hlvghnsgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepvhhirhgvshhhrdhkuhhmrghr
-    sehlihhnrghrohdrohhrghdprhgtphhtthhopehrohgsvghrthdrmhhoohhrvgesihhnth
-    gvlhdrtghomhdprhgtphhtthhopehojhgvuggrsehkvghrnhgvlhdrohhrghdprhgtphht
-    thhopegrlhgvgidrghgrhihnohhrsehgmhgrihhlrdgtohhmpdhrtghpthhtohepfigvug
-    hsohhnrghfsehgmhgrihhlrdgtohhm
-X-ME-Proxy: <xmx:Scm9ZsKxLgryY2bIonp-45LEqE5IFULfg2yV1sKSkkOSCR-cf4PBeg>
-    <xmx:Scm9ZvK_saCXo3XcEjOkFk5yNo0CJrsQZSZVCcTVgX2M45Y7G9mXVg>
-    <xmx:Scm9ZlzCIG7C4fIwfrhCpuh07SdtuXzlVJ4FKzCvqmemALBno60U7Q>
-    <xmx:Scm9ZrL6_rnIvDjhmzhOOvu7InSxqGihlTolXs-HCyjcpaijTbm-QA>
-    <xmx:Ssm9ZpTgcQ0NxjHBc_8hQ_LOehZMU26etWUiR8XZL1I9PDF9of7bvgZT>
-Feedback-ID: i787e41f1:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 15 Aug 2024 05:24:24 -0400 (EDT)
-Date: Thu, 15 Aug 2024 11:24:23 +0200
-From: Greg KH <greg@kroah.com>
-To: Pierre Gondois <pierre.gondois@arm.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
-	Robert Moore <robert.moore@intel.com>,
-	Miguel Ojeda <ojeda@kernel.org>,
-	Alex Gaynor <alex.gaynor@gmail.com>,
-	Wedson Almeida Filho <wedsonaf@gmail.com>,
-	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
-	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
-	Benno Lossin <benno.lossin@proton.me>,
-	Andreas Hindborg <a.hindborg@samsung.com>,
-	Alice Ryhl <aliceryhl@google.com>,
-	Martin Rodriguez Reboredo <yakoyoku@gmail.com>,
-	Manos Pitsidianakis <manos.pitsidianakis@linaro.org>,
-	Mika Westerberg <mika.westerberg@linux.intel.com>,
-	FUJITA Tomonori <fujita.tomonori@gmail.com>,
-	Thomas Bertschinger <tahbertschinger@gmail.com>,
-	Danilo Krummrich <dakr@redhat.com>, linux-acpi@vger.kernel.org,
-	linux-pm@vger.kernel.org, acpica-devel@lists.linux.dev,
-	rust-for-linux@vger.kernel.org
-Subject: Re: [RFC PATCH 6/6] rust: cpufreq: Add rust implementation of
- cppc_cpufreq driver
-Message-ID: <2024081519-magenta-giddily-09ad@gregkh>
-References: <20240815082916.1210110-1-pierre.gondois@arm.com>
- <20240815082916.1210110-7-pierre.gondois@arm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Gv5WchdI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC557C32786;
+	Thu, 15 Aug 2024 12:35:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1723725330;
+	bh=dXaBct2Q9fRbnCiEvN+tKUOp34Nt6Wc6xwlzOM0mSXw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=Gv5WchdIfK6YZLQMJsg8SuhNq8qIOAR2nHVj1hrE4Eyr474wVXvV6GnD7vStYyuiz
+	 5H2rFPkVaNn/oaLfAz8uwf2Xt4MDstc4eVmSgWufINK61UXOSIuz5SujWUqUnEf93w
+	 99M/iHgL0FnTpF5IbgbZo10WsjQPJtJJTbOVaDUWBzLBhF/puebScfKf6bqoPjEf5C
+	 ieYezyCmuwNAjPBaeTiU+3VyvFs9Smw3CNvS6uJtgQ93m+PS3DzHseaVI4eIfBndqZ
+	 f0kyHlWso8vBjuhesuA4VTMboQ2DNaOhHYGgvXqmZNVqZydwgs4w6IJFYwTWw+KoH6
+	 jnbwIU3hXB1sA==
+Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-2644f7d0fb2so120799fac.0;
+        Thu, 15 Aug 2024 05:35:30 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCX157CFFZkQKAR6gk0TcWKQiAC+BB90I0v7DwA8sIPhO0o1YOBZE177JIsbXLJf99UNLz3KJMWfSR8BXgY=@vger.kernel.org, AJvYcCXCHZAq6gl8JhqlhJWUkbu7uaVFg8kJo1tWggFu7AIY4VYoCZSys132qYpwFM8AD3IyutFPjX72FAc=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxlBlYRGw+J7xZJrms42iTncMGNaeaW2nMIgMI0hUJkpNBg7sns
+	J2saPWQLCNaUH4TI1W4sQ3AWzt7QbpW7ZK+bhdlDK60QS69/ch52IVOrt16K0fMh5RxTqJPOV+G
+	xUI+fAY82Ns+t1JlQ8rthLvyraSw=
+X-Google-Smtp-Source: AGHT+IG8X5e/cxbJqUe9zIHlPOalxNCTb+siCnJK6pcmYoYz8a5V/XEhW7HvRALv4QzF96PXDxwOpDvDT8A33LWMN0I=
+X-Received: by 2002:a05:6870:9b0d:b0:260:e5e1:2411 with SMTP id
+ 586e51a60fabf-27002a5142cmr1343093fac.6.1723725329985; Thu, 15 Aug 2024
+ 05:35:29 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240815082916.1210110-7-pierre.gondois@arm.com>
+References: <1903691.tdWV9SEqCh@rjwysocki.net> <2285575.iZASKD2KPV@rjwysocki.net>
+ <2f16fd5a59d6655ec9339473d516ac49c89e43f8.camel@intel.com>
+ <CAJZ5v0icxkRyd_1T53JmX3XDQOC6_Ak9nOD65Yx-rhZbDa4Y_w@mail.gmail.com> <6f3c94464ae9c2fd4e4d3c75f7f837aa073517ee.camel@intel.com>
+In-Reply-To: <6f3c94464ae9c2fd4e4d3c75f7f837aa073517ee.camel@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 15 Aug 2024 14:35:18 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jZvOiJMGEt8FwOztQfjfBTGqdrt8_oWug+GeZ4DR6EBw@mail.gmail.com>
+Message-ID: <CAJZ5v0jZvOiJMGEt8FwOztQfjfBTGqdrt8_oWug+GeZ4DR6EBw@mail.gmail.com>
+Subject: Re: [PATCH v1 4/4] thermal: gov_bang_bang: Use governor_data to
+ reduce overhead
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: "rafael@kernel.org" <rafael@kernel.org>, "lukasz.luba@arm.com" <lukasz.luba@arm.com>, 
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, 
+	"peter@piie.net" <peter@piie.net>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Aug 15, 2024 at 10:29:10AM +0200, Pierre Gondois wrote:
-> In an effort to add test/support the cpufreq framework in rust,
-> add a rust implementation of the cppc_cpufreq driver named:
-> `rcppc_cpufreq`.
-> 
-> This implementation doesn't support/implement:
-> - vendor specific workarounds
-> - Frequency Invariance Engine (FIE)
-> - artificial Energy Model (EM)
-> - (struct cpufreq_driver).attr field
-> - QoS requests
-> 
-> Basic support is provided to get/set the frequency on a platform
-> implementing the CPPC section of the ACPI spec.
-> 
-> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
-> ---
->  drivers/cpufreq/Kconfig          |  16 ++
->  drivers/cpufreq/Makefile         |   1 +
->  drivers/cpufreq/rcppc_cpufreq.rs | 333 +++++++++++++++++++++++++++++++
->  3 files changed, 350 insertions(+)
->  create mode 100644 drivers/cpufreq/rcppc_cpufreq.rs
+On Thu, Aug 15, 2024 at 5:26=E2=80=AFAM Zhang, Rui <rui.zhang@intel.com> wr=
+ote:
+>
+> On Wed, 2024-08-14 at 19:26 +0200, Rafael J. Wysocki wrote:
+> > On Wed, Aug 14, 2024 at 8:09=E2=80=AFAM Zhang, Rui <rui.zhang@intel.com=
+>
+> > wrote:
+> > >
+> > > On Tue, 2024-08-13 at 16:29 +0200, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > >
+> > > > After running once, the for_each_trip_desc() loop in
+> > > > bang_bang_manage() is pure needless overhead because it is not
+> > > > going
+> > > > to
+> > > > make any changes unless a new cooling device has been bound to
+> > > > one of
+> > > > the trips in the thermal zone or the system is resuming from
+> > > > sleep.
+> > > >
+> > > > For this reason, make bang_bang_manage() set governor_data for
+> > > > the
+> > > > thermal zone and check it upfront to decide whether or not it
+> > > > needs
+> > > > to
+> > > > do anything.
+> > > >
+> > > > However, governor_data needs to be reset in some cases to let
+> > > > bang_bang_manage() know that it should walk the trips again, so
+> > > > add
+> > > > an
+> > > > .update_tz() callback to the governor and make the core
+> > > > additionally
+> > > > invoke it during system resume.
+> > > >
+> > > > To avoid affecting the other users of that callback
+> > > > unnecessarily,
+> > > > add
+> > > > a special notification reason for system resume,
+> > > > THERMAL_TZ_RESUME,
+> > > > and
+> > > > also pass it to __thermal_zone_device_update() called during
+> > > > system
+> > > > resume for consistency.
+> > > >
+> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > ---
+> > > >  drivers/thermal/gov_bang_bang.c |   18 ++++++++++++++++++
+> > > >  drivers/thermal/thermal_core.c  |    3 ++-
+> > > >  include/linux/thermal.h         |    1 +
+> > > >  3 files changed, 21 insertions(+), 1 deletion(-)
+> > > >
+> > > > Index: linux-pm/drivers/thermal/gov_bang_bang.c
+> > > > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > > > =3D=3D
+> > > > --- linux-pm.orig/drivers/thermal/gov_bang_bang.c
+> > > > +++ linux-pm/drivers/thermal/gov_bang_bang.c
+> > > > @@ -86,6 +86,10 @@ static void bang_bang_manage(struct ther
+> > > >         const struct thermal_trip_desc *td;
+> > > >         struct thermal_instance *instance;
+> > > >
+> > > > +       /* If the code below has run already, nothing needs to be
+> > > > done. */
+> > > > +       if (tz->governor_data)
+> > > > +               return;
+> > > > +
+> > > >         for_each_trip_desc(tz, td) {
+> > > >                 const struct thermal_trip *trip =3D &td->trip;
+> > > >
+> > > > @@ -107,11 +111,25 @@ static void bang_bang_manage(struct ther
+> > > >
+> > > > bang_bang_set_instance_target(instanc
+> > > > e, 0);
+> > > >                 }
+> > > >         }
+> > > > +
+> > > > +       tz->governor_data =3D (void *)true;
+> > > > +}
+> > > > +
+> > > > +static void bang_bang_update_tz(struct thermal_zone_device *tz,
+> > > > +                               enum thermal_notify_event reason)
+> > > > +{
+> > > > +       /*
+> > > > +        * Let bang_bang_manage() know that it needs to walk
+> > > > trips
+> > > > after binding
+> > > > +        * a new cdev and after system resume.
+> > > > +        */
+> > > > +       if (reason =3D=3D THERMAL_TZ_BIND_CDEV || reason =3D=3D
+> > > > THERMAL_TZ_RESUME)
+> > > > +               tz->governor_data =3D NULL;
+> > > >  }
+> > >
+> > > can we do the cdev initialization for BIND_CDEV and RESUME
+> > > notification
+> > > in .update_tz() directly?
+> >
+> > That would be viable if the zone temperature was known at the time
+> > .update_tz() runs, but it isn't.  See this message:
+> >
+> > https://lore.kernel.org/linux-pm/CAJZ5v0ji_7Z-24iCO_Xxu4Zm4jgVFmR9jVp8Q=
+NiCOxzV9gqSnA@mail.gmail.com/
+> >
+> > As long as the zone temperature is not known, it is not clear which
+> > way to initialize the cooling devices.
+>
+> right. Then the patch LGTM.
 
-I'm missing why you want to re-implement an existing driver here.  Why
-are you going to have 2 drivers for the same functionality/hardware?
+Great!
 
-How is the system going to handle switching between the two drivers?
+> BTW, what do you think if we add handling for first temperature read in
+> handle_thermal_trip(), say, some draft code like below,
+>
+> if (tz->last_temperature =3D=3D THERMAL_TEMP_INIT) {
+>         if (tz->temperature < trip->temperature)
+>                 list_add(&td->notify_list_node, way_down_list);
+>         else
+>                 list_add_tail(&td->notify_list_node, way_up_list);
+> }
+>
+> This should handle both the init and the resume case.
 
-thanks,
+I have considered doing something similar, but there are quite a few
+arguments against it.
 
-greg k-h
+First, it would cause spurious notifications to be sent to user space.
+Second, the debug code would need to be modified to take this case
+into account explicitly.  Moreover, this would be extra overhead for
+the other governors.
+
+IMV it's better to limit the impact to the Bang-bang governor where
+the problem is.
