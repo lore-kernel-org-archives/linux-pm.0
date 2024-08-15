@@ -1,118 +1,142 @@
-Received: from mail-yb1-f176.google.com (mail-yb1-f176.google.com [209.85.219.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from flow8-smtp.messagingengine.com (flow8-smtp.messagingengine.com [103.168.172.143])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1A841BB69F
-	for <linux-pm@vger.kernel.org>; Thu, 15 Aug 2024 10:46:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53ADB1AC8AC;
+	Thu, 15 Aug 2024 11:11:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.143
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723718814; cv=none; b=LllIaW87yIdAFGNRDEPb1ejFBDEDxLmKelJpenKduZpOwUrcsARv5qgINWcJrKSBd6a4H/uktmkU7C9qVEIvCX6vq4CO5ijiqid+qFda/0SAXF3w28Pb2Nu5v9RTyG3g/BixyvWeM4MBOdKzpnYJhmjqJENYCsgsTQObKlslcsA=
+	t=1723720278; cv=none; b=FZxbwynd08E88lhgjD8rB1q0Xj86GarggNFTcErDakxpRwd8pQRTLbgtn2zVy05y5JsqnTb/sbMemtA4tUDad7AjYRQWQvLQDqCNSWVjSyg9zzIE0Qfd45dezcNttgTZRSa3UkDYr+YwaHVSZB0UxUQdCV8jDj7+ujH8WPrpMnY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723718814; c=relaxed/simple;
-	bh=aNnphcw6ovD9CeIcwCw8owAs63PXvt0AN73nKw8befo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TaYTGPu8sLpYGS3ICD4ghdrM3KXlb+TYXsNK/qG/8H5bgNVXRc4rq4LNDCBK/pHvA1AiBaG15Ieu8e27TzXtQNxRzmYqaV/VapmaNVkbFlxrMCRJcxtZi6oBx5aQgTCJMvm9fuZS1bf/zJ5+bVzO1MZNPbeDWKsE2xEOfMdAgKg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=FEvMBtTA; arc=none smtp.client-ip=209.85.219.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1723720278; c=relaxed/simple;
+	bh=cM/oa+aXFrNIzMB4+mBWw40HctDtv+Aci9IQkyQCuug=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=b+oLQYWx8j5va+GZvxrBv7X+PN5WAA0/TGXFVhLnQXzju3PLQRzfUNyJ8fMUJaQV72i1tpENdUB6mfMGG5E2OXigKIfHXDqWGqUxz9yFOvmuIqbVVPVOj5chR+q1Jmndyq1huyGajLbg/NcYnFiekh9ANq1498mZCdERRXxgVS8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com; spf=pass smtp.mailfrom=kroah.com; dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b=iBR1wMYI; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=KVMre4P/; arc=none smtp.client-ip=103.168.172.143
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kroah.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FEvMBtTA"
-Received: by mail-yb1-f176.google.com with SMTP id 3f1490d57ef6-e0e76380433so776079276.2
-        for <linux-pm@vger.kernel.org>; Thu, 15 Aug 2024 03:46:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1723718812; x=1724323612; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=aNnphcw6ovD9CeIcwCw8owAs63PXvt0AN73nKw8befo=;
-        b=FEvMBtTAj2WR00DOQPl/fee+0EdzvdAlbZbg1/Q+qsnn9Xpte2GnA3Z8SXuJN1kh5e
-         bd239GTGerwNVk+todb+42JM5YuXgBvnHTBO54aZIzuQLDWtSIvlJwFv3LnV3DGF1lj/
-         YE0932OnjHaBGqSymR4EywhuZjiIiQyQaxJnYURzaWyJllJ4W5IEp7+E5NiO+OiyFl2i
-         zBj5ReB+HP/VO+d0qQs4qPWWlulSiq7FsheyQNPEOTEMHRIXrLZnQ6J3AXhSZGdWIgx5
-         pBNw0Xqe7Byg3bAzElPRzAnHkf4ygkiWxEmlhoebF8cb3ytY55HzWijbc6oaoGLIx/l7
-         onFQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1723718812; x=1724323612;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=aNnphcw6ovD9CeIcwCw8owAs63PXvt0AN73nKw8befo=;
-        b=SOoZ5xS1mHmLpPs6sKT9iYXWAuxtGmyrBfJlwfKJteDgrL/L2AjEh77mCWSPfvRLNw
-         IDINYPOSAQ1z3606IXG5waL1M2nrdiV71J0HSmWrJp4lIvQjWKwmH2yldjjPKj0UOtPp
-         MOdC0kjJaJsn/wgUxLTM7E9d7XFaC+mv4QGr8cSzdoVEeDBm/9HDJuj8vYuUkWjBSDvY
-         Api6LcDGsX9vNSiEXu1z4roYFkSuCkJ5gveeZqaMhi9ZzUnnAAF48CbJOFB2fbxzYDwk
-         Fsa1j+h0xMPIj/ygORwCJwbHY1WBBXmoN0t54D9gf8XWXMw3zyE602ALHaV35lgRtJ3V
-         57IQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWIz6hD59Q1hWZaasUcLYzpgY7Z0pQyZq0z+je2eJKpxbvSi7bQ/8XMbD0duxJEP86cc60p3JvFrnaIaKj5GT6yWZioaCGDNqQ=
-X-Gm-Message-State: AOJu0Yx03+2rk1P5q9flB4jiYsQWMQNeAbOeUzTMWC5aQFd3rC7x/Jxp
-	Nz90yZOTiLGFojt8qArffAm0UVEQMulhGVt3jAi71BDBIbVNfTywXNwb7N64YORYkfRPmb/4c15
-	JOq0G3VaMCoG/GXiLWRQzM/3r0Myj9LyfIGJPiQ==
-X-Google-Smtp-Source: AGHT+IHR5za73VDRCro7qpXpLbNTcfYm0rbfqguQzgbn4WLGm+KGmWjJsguvyGGakAyVo03nrwztDauA9VWHNATK0nQ=
-X-Received: by 2002:a05:6902:2291:b0:e08:7bf9:4d65 with SMTP id
- 3f1490d57ef6-e1155aae058mr6488901276.24.1723718811912; Thu, 15 Aug 2024
- 03:46:51 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b="iBR1wMYI";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="KVMre4P/"
+Received: from phl-compute-07.internal (phl-compute-07.nyi.internal [10.202.2.47])
+	by mailflow.nyi.internal (Postfix) with ESMTP id 464B5200A34;
+	Thu, 15 Aug 2024 05:24:26 -0400 (EDT)
+Received: from phl-mailfrontend-01 ([10.202.2.162])
+  by phl-compute-07.internal (MEProxy); Thu, 15 Aug 2024 05:24:26 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:subject
+	:subject:to:to; s=fm3; t=1723713866; x=1723721066; bh=DJrlepPVyE
+	+yZqIgbQ54BkO2ZvNmAfile0WCqAW+g3Q=; b=iBR1wMYIvM5n4U4j9ojUn2xlhC
+	TxvTDAwt/nwgs+2zmiaHQZDMqoqh1T8AGAWcfVi3d5dcZi3Hugw09lt2CFrR2yMG
+	a3VWsCVkCMOsmGZSNweIEkNVa2T3Mi9vFA2VdJ5F03VSiP8uhJ2fGuCccEGMs6g9
+	ENiDFWbPGoL6f7ZGhkknVGz7Fn/trhE+cCNF/6XdM47Jq6uT4zMs7SH/vSdQGY+Q
+	I1Zvf/WWb58YdMlqrCn9x8sKjpUp1oGgr4wcpksLTlzF6ZwgO9X1D2FDZA0iEV7L
+	HPkXEUJgKXP3kjUcNqxZIjr0xAKbP7vAZwFVfMuI+CRNXtOIE5RaHO45qlJg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+	fm3; t=1723713866; x=1723721066; bh=DJrlepPVyE+yZqIgbQ54BkO2ZvNm
+	Afile0WCqAW+g3Q=; b=KVMre4P/zOVhUEqNei7d4gCpmWhHoJ7TMwaIs9mXpkIa
+	8Kr1YzdEg/ucwYT+fTLlcQbuzMD3FMfE9iFyix/6pSVMkEiK46LuO0/kIQGVlLsW
+	L3pxTn5aBuEtPK3kER2Kmt8F+Sfo97p67lWcDkt9hMs/IPEwlS1inU+9dKNtqY7D
+	QwxSs8Z3Kk3g6zcVTe6RS4+uKnlM8EBoJEmoJ0dpyLSgzU1JKAVjIXeX/I/yfhQK
+	eOoJ0DzF25tGyR8gS+PzuWSA3d8b2088lRLRjLlYEAGt3eBn7QsbirBbNZH9I+dT
+	Ep1w/wtpcfCdu47jA0BXbP3/xqQ8ET60I9X7KmE1ug==
+X-ME-Sender: <xms:Scm9Zr44ufvsXsylmy04oXubruVNMTwC_NH8lxtvpjrFxphYCzgp0w>
+    <xme:Scm9Zg759fHIramAPVWZWOcfnaWS7Mgl9BnqTgssZwgk5OExyIiGFiyMBIGTT0RN0
+    jO2WS6ej06Whw>
+X-ME-Received: <xmr:Scm9Zif3xbeEDC2d37bvApihyPYrYAptc7X2PiNnCS1r60iWr1xBOQHZ1GsFLzoDFBkLY70AabKozf82Eq2Qo_ujlVzqrznUFcDJvA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeftddruddtiedgudegucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggvpdfu
+    rfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnh
+    htshculddquddttddmnecujfgurhepfffhvfevuffkfhggtggujgesthdtredttddtvden
+    ucfhrhhomhepifhrvghgucfmjfcuoehgrhgvgheskhhrohgrhhdrtghomheqnecuggftrf
+    grthhtvghrnhepheegvdevvdeljeeugfdtudduhfekledtiefhveejkeejuefhtdeufefh
+    gfehkeetnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomh
+    epghhrvghgsehkrhhorghhrdgtohhmpdhnsggprhgtphhtthhopeehtddpmhhouggvpehs
+    mhhtphhouhhtpdhrtghpthhtohepphhivghrrhgvrdhgohhnughoihhssegrrhhmrdgtoh
+    hmpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdho
+    rhhgpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhope
+    hlvghnsgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepvhhirhgvshhhrdhkuhhmrghr
+    sehlihhnrghrohdrohhrghdprhgtphhtthhopehrohgsvghrthdrmhhoohhrvgesihhnth
+    gvlhdrtghomhdprhgtphhtthhopehojhgvuggrsehkvghrnhgvlhdrohhrghdprhgtphht
+    thhopegrlhgvgidrghgrhihnohhrsehgmhgrihhlrdgtohhmpdhrtghpthhtohepfigvug
+    hsohhnrghfsehgmhgrihhlrdgtohhm
+X-ME-Proxy: <xmx:Scm9ZsKxLgryY2bIonp-45LEqE5IFULfg2yV1sKSkkOSCR-cf4PBeg>
+    <xmx:Scm9ZvK_saCXo3XcEjOkFk5yNo0CJrsQZSZVCcTVgX2M45Y7G9mXVg>
+    <xmx:Scm9ZlzCIG7C4fIwfrhCpuh07SdtuXzlVJ4FKzCvqmemALBno60U7Q>
+    <xmx:Scm9ZrL6_rnIvDjhmzhOOvu7InSxqGihlTolXs-HCyjcpaijTbm-QA>
+    <xmx:Ssm9ZpTgcQ0NxjHBc_8hQ_LOehZMU26etWUiR8XZL1I9PDF9of7bvgZT>
+Feedback-ID: i787e41f1:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
+ 15 Aug 2024 05:24:24 -0400 (EDT)
+Date: Thu, 15 Aug 2024 11:24:23 +0200
+From: Greg KH <greg@kroah.com>
+To: Pierre Gondois <pierre.gondois@arm.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+	Robert Moore <robert.moore@intel.com>,
+	Miguel Ojeda <ojeda@kernel.org>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Wedson Almeida Filho <wedsonaf@gmail.com>,
+	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
+	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
+	Benno Lossin <benno.lossin@proton.me>,
+	Andreas Hindborg <a.hindborg@samsung.com>,
+	Alice Ryhl <aliceryhl@google.com>,
+	Martin Rodriguez Reboredo <yakoyoku@gmail.com>,
+	Manos Pitsidianakis <manos.pitsidianakis@linaro.org>,
+	Mika Westerberg <mika.westerberg@linux.intel.com>,
+	FUJITA Tomonori <fujita.tomonori@gmail.com>,
+	Thomas Bertschinger <tahbertschinger@gmail.com>,
+	Danilo Krummrich <dakr@redhat.com>, linux-acpi@vger.kernel.org,
+	linux-pm@vger.kernel.org, acpica-devel@lists.linux.dev,
+	rust-for-linux@vger.kernel.org
+Subject: Re: [RFC PATCH 6/6] rust: cpufreq: Add rust implementation of
+ cppc_cpufreq driver
+Message-ID: <2024081519-magenta-giddily-09ad@gregkh>
+References: <20240815082916.1210110-1-pierre.gondois@arm.com>
+ <20240815082916.1210110-7-pierre.gondois@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240703110741.2668800-1-quic_sibis@quicinc.com>
- <ZoZ6Pk7NSUNDB74i@bogus> <064274c4-3783-c59e-e293-dd53a8595d8e@quicinc.com>
- <Zofvc31pPU23mjnp@bogus> <CAPDyKFrESupeNS4BO8TPHPGpXFLsNqLPrUEw3xzr8oh8FsLHeA@mail.gmail.com>
- <Zryxrdodn2Y2xsej@bogus>
-In-Reply-To: <Zryxrdodn2Y2xsej@bogus>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Thu, 15 Aug 2024 12:46:15 +0200
-Message-ID: <CAPDyKFqmV7yvMdLjGhDHJN4CFiUun3FXprEk7uGFV_qmn9vA8Q@mail.gmail.com>
-Subject: Re: [PATCH] pmdomain: arm: Fix debugfs node creation failure
-To: Sudeep Holla <sudeep.holla@arm.com>, Sibi Sankar <quic_sibis@quicinc.com>
-Cc: cristian.marussi@arm.com, linux-kernel@vger.kernel.org, 
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	quic_rgottimu@quicinc.com, quic_kshivnan@quicinc.com, johan@kernel.org, 
-	Peng Fan <peng.fan@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240815082916.1210110-7-pierre.gondois@arm.com>
 
-On Wed, 14 Aug 2024 at 15:31, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> On Wed, Aug 14, 2024 at 02:38:24PM +0200, Ulf Hansson wrote:
-> >
-> > Sudeep, while I understand your point and I agree with it, it's really
-> > a simple fix that $subject patch is proposing. As the unique name
-> > isn't mandated by the SCMI spec, it looks to me that we should make a
-> > fix for it on the Linux side.
-> >
->
-> Yes, I did come to the conclusion that this is inevitable but hadn't
-> thought much on the exact solution. This email and you merging the origin=
-al
-> patch made me think a bit quickly now =F0=9F=98=89
+On Thu, Aug 15, 2024 at 10:29:10AM +0200, Pierre Gondois wrote:
+> In an effort to add test/support the cpufreq framework in rust,
+> add a rust implementation of the cppc_cpufreq driver named:
+> `rcppc_cpufreq`.
+> 
+> This implementation doesn't support/implement:
+> - vendor specific workarounds
+> - Frequency Invariance Engine (FIE)
+> - artificial Energy Model (EM)
+> - (struct cpufreq_driver).attr field
+> - QoS requests
+> 
+> Basic support is provided to get/set the frequency on a platform
+> implementing the CPPC section of the ACPI spec.
+> 
+> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+> ---
+>  drivers/cpufreq/Kconfig          |  16 ++
+>  drivers/cpufreq/Makefile         |   1 +
+>  drivers/cpufreq/rcppc_cpufreq.rs | 333 +++++++++++++++++++++++++++++++
+>  3 files changed, 350 insertions(+)
+>  create mode 100644 drivers/cpufreq/rcppc_cpufreq.rs
 
-Alright, great!
+I'm missing why you want to re-implement an existing driver here.  Why
+are you going to have 2 drivers for the same functionality/hardware?
 
->
-> > I have therefore decided to queue up $subject patch for fixes. Please
-> > let me know if you have any other proposals/objections moving forward.
->
-> The original patch may not work well with the use case Peng presented.
-> As the name and id may also match in their case, I was wondering if we
-> need to add some prefix like perf- or something to avoid the potential
-> clash across power and perf genpds ? I may be missing something still as
-> it is hard to visualise all possible case that can happen with variety
-> of platform and their firmware.
->
-> In short, happy to have some fix for the issue in some form whichever
-> works for wider set of platforms.
+How is the system going to handle switching between the two drivers?
 
-Okay, so I have dropped the $subject patch from my fixes branch for
-now, to allow us and Sibi to come up with an improved approach.
+thanks,
 
-That said, it looks to me that the proper fix needs to involve
-pm_genpd_init() in some way, as this problem with unique device naming
-isn't really limited to SCMI. Normally we use an "ida" to get a unique
-index that we tag on to the device's name, but maybe there is a better
-strategy here!?
-
-Kind regards
-Uffe
+greg k-h
