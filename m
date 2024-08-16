@@ -1,61 +1,61 @@
-Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1302E19E7E9
-	for <linux-pm@vger.kernel.org>; Fri, 16 Aug 2024 10:54:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF16E1AB530
+	for <linux-pm@vger.kernel.org>; Fri, 16 Aug 2024 10:54:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723805694; cv=none; b=hlUtmK7gwySEsrS4NOGza1ec1eUh8UoeDaqkXExASXn36YJxM2TuVZol2IKx09b7j4NVgcNAPT4HvEA6aONT0kYMK7zq/aOyMcFsSp4MAPOQqASoqCCFtvapSpAHE2k9OC7gwkhEuycjfVDbX3cdfdvgFxAsWImL7/U1Sf3IsVo=
+	t=1723805696; cv=none; b=WC+vx8zX3va8JvTxt45H2kME1d31PqHvp9qtL9nEEMbFv2oaL6FwQXMOlXNfd9RfoezvUPgRl0oOKUSsRcK4c6SAl5a12loWWz7FUWy/HiKQqlM9bgLkPrXLqBzJ+Q7gApjn17LfamF05Lv6E4LoC5SePF2Bn9FEzuDTv4D2Ek8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723805694; c=relaxed/simple;
-	bh=vlPrg74sTTRgZv6b3DWpJX4RlTR0m5zTMsyPufQEkhM=;
+	s=arc-20240116; t=1723805696; c=relaxed/simple;
+	bh=G2yPrpxBXb4PKw54ECzRtlVki76Ov9GcRLuKMdvmvH8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=QAV7iFkx6K6EVyqnKejNq0GVQXEXg3k4MHhmnzVy/fH/DZlwYz1fPFEtFnHYNeLul0eUWldCy7LOjUAiLk9i9rtDVggc9jUzU7XogVg5vBSznrW8ColzEtCd9WBBfS924ueiFUo0Bz0t2+EVt3tuiTjj5zIdtK2OOyb7BbN/frY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=h+Oo44s1; arc=none smtp.client-ip=209.85.167.48
+	 In-Reply-To:To:Cc; b=uxUX7fRLnlRJfO0TBD7CtpDbebaZJs+1iTlMjUSXNHL6TbMY2a0jNLIDr20YrQEv3zk2Dh7JEq54vvLHudxfxvEoKgxJBkj/p7AcNImiP9ERHS0ACLadZ/SZoxfhh0iNjgadmBdfFOkHOs0l/2ZyQYRyZxWNySy277bWfhdmo30=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=niBTVg22; arc=none smtp.client-ip=209.85.221.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="h+Oo44s1"
-Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-530e2235688so2002617e87.3
-        for <linux-pm@vger.kernel.org>; Fri, 16 Aug 2024 03:54:51 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="niBTVg22"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-3718eaf4046so758336f8f.3
+        for <linux-pm@vger.kernel.org>; Fri, 16 Aug 2024 03:54:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1723805690; x=1724410490; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1723805693; x=1724410493; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Vjjz5PQxtXSt4zeT/RkSGh8NQkwY8peMKp36Eteyrx8=;
-        b=h+Oo44s1QEpiOLR4SBspq+Nr9rzqshpkzRZ3GINcc956t0HTD22WDPkKpftLsI+384
-         KVN7z1YryNU9IReRxrQ6xLKPbEGvuKmwrhUdSppeprTM1SuU0nfCPb6UGOmZLMWsIcDd
-         qnyBvqjoF0TD2f3vS4E64UCN9XbObh+hm7lAt33gUvWTUOBNnYBcy+DRtcpfd0rRdrCX
-         ICqxA5N3v+MytIUQ/nDW3dhZs8N2kL1M0MlhO8X/7ZVVrF3UQboxyO8X+2IvEZR7BqM4
-         nmfv8nNXpDgJH6H82AUhKCqbf7qbWsT263E/8Zf54Kf4YMnLX7U3iZvNAZ4wvlZem7gu
-         hh+g==
+        bh=7xWelpTr/XRUqKFM91cNQuNNebnp+T2/XDk25EhyUnU=;
+        b=niBTVg22lY9aUZImJgPjv0lk/YKpJ/RapBh9iJBWUSJuPRH7c3nZ47x7DT5wUuEKfj
+         w2VezXX+hT9SPd263L+DOJ8UGRmkVNj8gNpZxDVli4msOgavqZeC1hfSaZAlfWDIH2iC
+         hjl66DusiZAg32ssKROwmmVEvHKPOeBa+gRznn3jmdMn7n6IUW6yl7GyXfg29vFYd8CO
+         50hSbg5vvnN9939P2l7DfIUVA9+iej1uKXSakGaN3Cm97yjTxMn+No843+A79Dvs8w60
+         4LG54cHEFeJHM969yJhJ1LacGZhvfYNJpjYLfUQ32O+Ernj93fKi2kHRmY6hyDSfn7LZ
+         QLVw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1723805690; x=1724410490;
+        d=1e100.net; s=20230601; t=1723805693; x=1724410493;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Vjjz5PQxtXSt4zeT/RkSGh8NQkwY8peMKp36Eteyrx8=;
-        b=ZVHFJnvERiD8pjGb4n8X5x0NKdB2p7jwViceJQKRGWQwFaqe1KT92kMXe/EPLGQRC7
-         SDxjTxmhkBft54/6gdhRZWPuhGQKmteWcNUiZ0iqfRYO7cLc/+zmBNLLGOkUhcmHjQu8
-         JL5/NI3YJdBJz84NgzCWBGQZ7JQh0TLIRL4T1K6RkExluVPr7OKwCGNSwVocs5hqJ9od
-         nF9/9KyFPNpeZQa4bvFiKX/4O1JZOlUzw8/IKHJZEzyfSQ3PA3gbMJAAEpH2yHLKS8i2
-         1ExMQRnNrodYx30f14bQkAG0a+TREtbxPKLyUdhBjkDb2vhEnIB6hj5ubuwp2LVUdtjJ
-         OQyA==
-X-Forwarded-Encrypted: i=1; AJvYcCUNMH0ON9HHDvqLrx9/l0Q0icF5E0PmRsIdXyU7uBd9XVGVc/FddgYekcYag0q9I7ZCkA8fKEvfOw+ihRgArFTG4nN8Pe1hR2c=
-X-Gm-Message-State: AOJu0YxdbCcZCi3AEu+ZfEnX1tp3xe2bZ7DHwyU8AyKESR8KIdChBLdJ
-	+p+/7WF5CiH5lUjUr16NjRPBP3mI+J3Y5H1LSbGUsYvmtspz8Adu2k4oJy2cFL8=
-X-Google-Smtp-Source: AGHT+IF98iCU21qh48ym9eALe83DFj+NaqQe0ww3kus6+d1nOigexYI9Bj36AT3UON4kRaajmBPYkA==
-X-Received: by 2002:a05:6512:b10:b0:52c:859c:91dd with SMTP id 2adb3069b0e04-5331c69592dmr1563994e87.5.1723805689671;
-        Fri, 16 Aug 2024 03:54:49 -0700 (PDT)
+        bh=7xWelpTr/XRUqKFM91cNQuNNebnp+T2/XDk25EhyUnU=;
+        b=M5jdRuYkNLoXl82wJk+NQHk6IQGLOh26R7to6GZcclkH2Iyqb6ac7ru93Pj4rrXoXh
+         MjxXzljaACNeJCWgc10yXGe+TDeIx6yxjvl54ljKzLo2Uh7HeDhopZD/fgDOUlsNNquN
+         H5wDwpTQHpGTxH2xOAJovtF//LxIT8rlqSxhvZtoY3wBpiq22HMqgxau83blQaDA0wVS
+         JihHio/3TgUQr1S7nGMecvZLvKZe81WvAXJZLxjv/iH9VdbJSqk+ot6fToKAM0HyxkEJ
+         6FXYgI5K6CpWa3nAoC84HTvhwd0TSN4hy6q3A/PR27C1AfNgCH/2ENYbw4XKdAgB1rIK
+         4upg==
+X-Forwarded-Encrypted: i=1; AJvYcCWIryCh68MCPDzL9ZoQBHic0ZLbQn/dzrcJa/Q2wDJxlfe2sVmCSbvoffXFrYUg6nahCH2WFYSezQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwUB8V3oTFLyPVC9M5bF8FIOiKYPTAe50zYb8ZWJYbuXoBP3aUM
+	6iVfClgMDj/Kf2yl71QLYr177s53OlAL8Jd7QhHNR9FFzLfz0Uq9Dd9v3M+V9yI=
+X-Google-Smtp-Source: AGHT+IHD6wj7Dw8hXlamLzfXLE0YX9yxmT0kZMl6frJAfF1JNE4GaKBDulB0vb8SdWVJZ+hZ4bUsCA==
+X-Received: by 2002:a05:6000:1368:b0:368:6f64:307c with SMTP id ffacd0b85a97d-371943285e6mr2028271f8f.15.1723805693032;
+        Fri, 16 Aug 2024 03:54:53 -0700 (PDT)
 Received: from [127.0.1.1] ([178.197.215.209])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-429ed7945cesm19461935e9.40.2024.08.16.03.54.48
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-429ed7945cesm19461935e9.40.2024.08.16.03.54.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 16 Aug 2024 03:54:49 -0700 (PDT)
+        Fri, 16 Aug 2024 03:54:52 -0700 (PDT)
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 16 Aug 2024 12:54:27 +0200
-Subject: [PATCH v2 03/13] memory: samsung: exynos5422-dmc: simplify
- dmc->dev usage
+Date: Fri, 16 Aug 2024 12:54:29 +0200
+Subject: [PATCH v2 05/13] memory: stm32-fmc2-ebi: simplify with scoped for
+ each OF child loop
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -64,7 +64,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240816-cleanup-h-of-node-put-memory-v2-3-9eed0ee16b78@linaro.org>
+Message-Id: <20240816-cleanup-h-of-node-put-memory-v2-5-9eed0ee16b78@linaro.org>
 References: <20240816-cleanup-h-of-node-put-memory-v2-0-9eed0ee16b78@linaro.org>
 In-Reply-To: <20240816-cleanup-h-of-node-put-memory-v2-0-9eed0ee16b78@linaro.org>
 To: Krzysztof Kozlowski <krzk@kernel.org>, 
@@ -80,221 +80,87 @@ To: Krzysztof Kozlowski <krzk@kernel.org>,
 Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, 
  linux-stm32@st-md-mailman.stormreply.com, linux-tegra@vger.kernel.org, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
  Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6832;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1947;
  i=krzysztof.kozlowski@linaro.org; h=from:subject:message-id;
- bh=vlPrg74sTTRgZv6b3DWpJX4RlTR0m5zTMsyPufQEkhM=;
- b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBmvy/psDysJ5IZQg/Exa9zRiD8qS7v1C4oWjmAa
- +iF22nhqXyJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCZr8v6QAKCRDBN2bmhouD
- 19SRD/9Hhb+f4qcsW1fTUSeFE2GDuq4WG6xHi1qC4sA05BAgtLQw9EEnWYmjsx1rBvDZPVfUNKG
- X/SKAfHMcVSkpntMyL+q7y3b28SBYUAkR/eGFOXcgaR2yEvn/R0A4uVgSfWQeYhlv1IZVssV4BL
- P3utZVIRzMiF6bFcOdbDNnLBI8ROVgxm6d7Q4Dj9tySZU8efIMiT9UvMAlVUjd9NtZy5dGcdSgS
- NSPvTNVXiTv2Zern8yNwUPlbogkf/qvH9qZj1oA68fS7Eh0n18grGuxS2eOAvxhsrQ5aWiO1ITk
- Va0MrmaBq0d1KoRyu3WAwXSESmwNr+rKFT+S9Zf9xiWho8o3tumEi+eqdnpOPKn8PA3TLfRJqVo
- TD5rZwqPvYaYAlhafcbh5Vd5ZXsUXhHA9hUeNPaYWuRHZFo++Kwqkk32ZE0WliNX42nBWIt1wrJ
- 5UI0O3CT93wzQyoE7ZL4KSw+/xgvOs0+JkS68qR6zw3L+6ikGKUP5XT2mHZiZjfUc53IjHg1QjZ
- kzE8x9RiROA0xwLhEOgmuzmcyAtldA3XDc/Ift3Q9T7n6Ndcq8Eu2y2vrO2nejvebkVFDmdAB7o
- pp3kv7f2TiFlKGkHjkj3WB9dLwByWBYH/vU1b+QiZihk6Q0K4T9HBwvCrNM3xNjDANZkXTde50O
- kAxRJo+pBYUT3sw==
+ bh=G2yPrpxBXb4PKw54ECzRtlVki76Ov9GcRLuKMdvmvH8=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBmvy/rb4znf7Gc13+IjmByAMk6RS/9zPzPfxYqw
+ 7Z6nvJ1sLGJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCZr8v6wAKCRDBN2bmhouD
+ 18MYD/oCLaJmWOWxy5n36CttxJFqbO51zWjtlcst6hRwuUgHToAatzCC4rqdYj6BqW6udSiOq2x
+ MaCjbbXPxz3iOpxzfwcKWbg19No+lmlb1qk/33S3x0U9G2QJPvwticKeSkQ8rVKoCQ0axG/Jk64
+ d59f87Oj+o4vvSe7bsarfpHSoxwEgjUVHG5/GvzVue/zwwfqsjCGsyd4eXS+7TCNWhyCIn5arMy
+ d8Na9fDtC0X96Vjb5Pz/N289yVyYzZMtPrRDhdCQf0mxVKutUKhovg+VIGQwfBYJn8zh/ZGk66X
+ DnuFEXvtDvlbr3h9lprlTzxCx/NRlVE/inFAV0lmj0GkErB0jire5a0G8+2/TMBDPuOTQu67sWA
+ AZbrnvBUiv4vNpo9dtFviLw8KmYvUiZQ9VJCtwrVDwAYjtaKvWwu5pUiODcp98nbefbrm3pI2Rd
+ THvcNlzPdoge696l78CgQUFoI5nxUVT8pPm4jjf82IsTJTWP2SWRg6NIldGL9doI71w+PQe6u+I
+ dn4MAXawWNYuqEYgnvKY6sKASV82gYBZRe+W8jWBdobXx46WliBPxQqeY5WU5WaZe8OQpG7haL8
+ DtnPg9H5b0Fdv+igpVtGJ1c7G6tDzTSUiatX/wgxRi1EO61LToCYLGG6PmXswqAUADLuNbXmpWd
+ 5flfqJkZrR5Iblg==
 X-Developer-Key: i=krzysztof.kozlowski@linaro.org; a=openpgp;
  fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
 
-Store 'dmc->dev' in local 'dev' variable, to make several pieces of code
-using it shorter and easier to read.
+Use scoped for_each_available_child_of_node_scoped() when iterating over
+device nodes to make code a bit simpler.
 
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- drivers/memory/samsung/exynos5422-dmc.c | 61 +++++++++++++++++----------------
- 1 file changed, 31 insertions(+), 30 deletions(-)
+ drivers/memory/stm32-fmc2-ebi.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/drivers/memory/samsung/exynos5422-dmc.c b/drivers/memory/samsung/exynos5422-dmc.c
-index da7ecd921c72..48ef41b8eaa0 100644
---- a/drivers/memory/samsung/exynos5422-dmc.c
-+++ b/drivers/memory/samsung/exynos5422-dmc.c
-@@ -339,19 +339,20 @@ static int exynos5_switch_timing_regs(struct exynos5_dmc *dmc, bool set)
- static int exynos5_init_freq_table(struct exynos5_dmc *dmc,
- 				   struct devfreq_dev_profile *profile)
+diff --git a/drivers/memory/stm32-fmc2-ebi.c b/drivers/memory/stm32-fmc2-ebi.c
+index 1c63eeacd071..7167e1da56d3 100644
+--- a/drivers/memory/stm32-fmc2-ebi.c
++++ b/drivers/memory/stm32-fmc2-ebi.c
+@@ -1573,29 +1573,25 @@ static int stm32_fmc2_ebi_setup_cs(struct stm32_fmc2_ebi *ebi,
+ static int stm32_fmc2_ebi_parse_dt(struct stm32_fmc2_ebi *ebi)
  {
-+	struct device *dev = dmc->dev;
- 	int i, ret;
- 	int idx;
- 	unsigned long freq;
- 
--	ret = devm_pm_opp_of_add_table(dmc->dev);
-+	ret = devm_pm_opp_of_add_table(dev);
- 	if (ret < 0) {
--		dev_err(dmc->dev, "Failed to get OPP table\n");
-+		dev_err(dev, "Failed to get OPP table\n");
- 		return ret;
- 	}
- 
--	dmc->opp_count = dev_pm_opp_get_opp_count(dmc->dev);
-+	dmc->opp_count = dev_pm_opp_get_opp_count(dev);
- 
--	dmc->opp = devm_kmalloc_array(dmc->dev, dmc->opp_count,
-+	dmc->opp = devm_kmalloc_array(dev, dmc->opp_count,
- 				      sizeof(struct dmc_opp_table), GFP_KERNEL);
- 	if (!dmc->opp)
- 		return -ENOMEM;
-@@ -360,7 +361,7 @@ static int exynos5_init_freq_table(struct exynos5_dmc *dmc,
- 	for (i = 0, freq = ULONG_MAX; i < dmc->opp_count; i++, freq--) {
- 		struct dev_pm_opp *opp;
- 
--		opp = dev_pm_opp_find_freq_floor(dmc->dev, &freq);
-+		opp = dev_pm_opp_find_freq_floor(dev, &freq);
- 		if (IS_ERR(opp))
- 			return PTR_ERR(opp);
- 
-@@ -1175,49 +1176,50 @@ static int create_timings_aligned(struct exynos5_dmc *dmc, u32 *reg_timing_row,
- static int of_get_dram_timings(struct exynos5_dmc *dmc)
- {
- 	int ret = 0;
-+	struct device *dev = dmc->dev;
- 	int idx;
- 	struct device_node *np_ddr;
- 	u32 freq_mhz, clk_period_ps;
- 
--	np_ddr = of_parse_phandle(dmc->dev->of_node, "device-handle", 0);
-+	np_ddr = of_parse_phandle(dev->of_node, "device-handle", 0);
- 	if (!np_ddr) {
--		dev_warn(dmc->dev, "could not find 'device-handle' in DT\n");
-+		dev_warn(dev, "could not find 'device-handle' in DT\n");
- 		return -EINVAL;
- 	}
- 
--	dmc->timing_row = devm_kmalloc_array(dmc->dev, TIMING_COUNT,
-+	dmc->timing_row = devm_kmalloc_array(dev, TIMING_COUNT,
- 					     sizeof(u32), GFP_KERNEL);
- 	if (!dmc->timing_row) {
- 		ret = -ENOMEM;
- 		goto put_node;
- 	}
- 
--	dmc->timing_data = devm_kmalloc_array(dmc->dev, TIMING_COUNT,
-+	dmc->timing_data = devm_kmalloc_array(dev, TIMING_COUNT,
- 					      sizeof(u32), GFP_KERNEL);
- 	if (!dmc->timing_data) {
- 		ret = -ENOMEM;
- 		goto put_node;
- 	}
- 
--	dmc->timing_power = devm_kmalloc_array(dmc->dev, TIMING_COUNT,
-+	dmc->timing_power = devm_kmalloc_array(dev, TIMING_COUNT,
- 					       sizeof(u32), GFP_KERNEL);
- 	if (!dmc->timing_power) {
- 		ret = -ENOMEM;
- 		goto put_node;
- 	}
- 
--	dmc->timings = of_lpddr3_get_ddr_timings(np_ddr, dmc->dev,
-+	dmc->timings = of_lpddr3_get_ddr_timings(np_ddr, dev,
- 						 DDR_TYPE_LPDDR3,
- 						 &dmc->timings_arr_size);
- 	if (!dmc->timings) {
--		dev_warn(dmc->dev, "could not get timings from DT\n");
-+		dev_warn(dev, "could not get timings from DT\n");
- 		ret = -EINVAL;
- 		goto put_node;
- 	}
- 
--	dmc->min_tck = of_lpddr3_get_min_tck(np_ddr, dmc->dev);
-+	dmc->min_tck = of_lpddr3_get_min_tck(np_ddr, dev);
- 	if (!dmc->min_tck) {
--		dev_warn(dmc->dev, "could not get tck from DT\n");
-+		dev_warn(dev, "could not get tck from DT\n");
- 		ret = -EINVAL;
- 		goto put_node;
- 	}
-@@ -1254,34 +1256,34 @@ static int of_get_dram_timings(struct exynos5_dmc *dmc)
- static int exynos5_dmc_init_clks(struct exynos5_dmc *dmc)
- {
+ 	struct device *dev = ebi->dev;
+-	struct device_node *child;
+ 	bool child_found = false;
+ 	u32 bank;
  	int ret;
-+	struct device *dev = dmc->dev;
- 	unsigned long target_volt = 0;
- 	unsigned long target_rate = 0;
- 	unsigned int tmp;
  
--	dmc->fout_spll = devm_clk_get(dmc->dev, "fout_spll");
-+	dmc->fout_spll = devm_clk_get(dev, "fout_spll");
- 	if (IS_ERR(dmc->fout_spll))
- 		return PTR_ERR(dmc->fout_spll);
+-	for_each_available_child_of_node(dev->of_node, child) {
++	for_each_available_child_of_node_scoped(dev->of_node, child) {
+ 		ret = of_property_read_u32(child, "reg", &bank);
+ 		if (ret) {
+ 			dev_err(dev, "could not retrieve reg property: %d\n",
+ 				ret);
+-			of_node_put(child);
+ 			return ret;
+ 		}
  
--	dmc->fout_bpll = devm_clk_get(dmc->dev, "fout_bpll");
-+	dmc->fout_bpll = devm_clk_get(dev, "fout_bpll");
- 	if (IS_ERR(dmc->fout_bpll))
- 		return PTR_ERR(dmc->fout_bpll);
+ 		if (bank >= FMC2_MAX_BANKS) {
+ 			dev_err(dev, "invalid reg value: %d\n", bank);
+-			of_node_put(child);
+ 			return -EINVAL;
+ 		}
  
--	dmc->mout_mclk_cdrex = devm_clk_get(dmc->dev, "mout_mclk_cdrex");
-+	dmc->mout_mclk_cdrex = devm_clk_get(dev, "mout_mclk_cdrex");
- 	if (IS_ERR(dmc->mout_mclk_cdrex))
- 		return PTR_ERR(dmc->mout_mclk_cdrex);
+ 		if (ebi->bank_assigned & BIT(bank)) {
+ 			dev_err(dev, "bank already assigned: %d\n", bank);
+-			of_node_put(child);
+ 			return -EINVAL;
+ 		}
  
--	dmc->mout_bpll = devm_clk_get(dmc->dev, "mout_bpll");
-+	dmc->mout_bpll = devm_clk_get(dev, "mout_bpll");
- 	if (IS_ERR(dmc->mout_bpll))
- 		return PTR_ERR(dmc->mout_bpll);
- 
--	dmc->mout_mx_mspll_ccore = devm_clk_get(dmc->dev,
--						"mout_mx_mspll_ccore");
-+	dmc->mout_mx_mspll_ccore = devm_clk_get(dev, "mout_mx_mspll_ccore");
- 	if (IS_ERR(dmc->mout_mx_mspll_ccore))
- 		return PTR_ERR(dmc->mout_mx_mspll_ccore);
- 
--	dmc->mout_spll = devm_clk_get(dmc->dev, "ff_dout_spll2");
-+	dmc->mout_spll = devm_clk_get(dev, "ff_dout_spll2");
- 	if (IS_ERR(dmc->mout_spll)) {
--		dmc->mout_spll = devm_clk_get(dmc->dev, "mout_sclk_spll");
-+		dmc->mout_spll = devm_clk_get(dev, "mout_sclk_spll");
- 		if (IS_ERR(dmc->mout_spll))
- 			return PTR_ERR(dmc->mout_spll);
- 	}
-@@ -1329,38 +1331,37 @@ static int exynos5_dmc_init_clks(struct exynos5_dmc *dmc)
-  */
- static int exynos5_performance_counters_init(struct exynos5_dmc *dmc)
- {
-+	struct device *dev = dmc->dev;
- 	int ret, i;
- 
--	dmc->num_counters = devfreq_event_get_edev_count(dmc->dev,
--							"devfreq-events");
-+	dmc->num_counters = devfreq_event_get_edev_count(dev, "devfreq-events");
- 	if (dmc->num_counters < 0) {
--		dev_err(dmc->dev, "could not get devfreq-event counters\n");
-+		dev_err(dev, "could not get devfreq-event counters\n");
- 		return dmc->num_counters;
- 	}
- 
--	dmc->counter = devm_kcalloc(dmc->dev, dmc->num_counters,
-+	dmc->counter = devm_kcalloc(dev, dmc->num_counters,
- 				    sizeof(*dmc->counter), GFP_KERNEL);
- 	if (!dmc->counter)
- 		return -ENOMEM;
- 
- 	for (i = 0; i < dmc->num_counters; i++) {
- 		dmc->counter[i] =
--			devfreq_event_get_edev_by_phandle(dmc->dev,
--						"devfreq-events", i);
-+			devfreq_event_get_edev_by_phandle(dev, "devfreq-events", i);
- 		if (IS_ERR_OR_NULL(dmc->counter[i]))
- 			return -EPROBE_DEFER;
- 	}
- 
- 	ret = exynos5_counters_enable_edev(dmc);
- 	if (ret < 0) {
--		dev_err(dmc->dev, "could not enable event counter\n");
-+		dev_err(dev, "could not enable event counter\n");
- 		return ret;
- 	}
- 
- 	ret = exynos5_counters_set_event(dmc);
- 	if (ret < 0) {
- 		exynos5_counters_disable_edev(dmc);
--		dev_err(dmc->dev, "could not set event counter\n");
-+		dev_err(dev, "could not set event counter\n");
- 		return ret;
- 	}
- 
+@@ -1603,7 +1599,6 @@ static int stm32_fmc2_ebi_parse_dt(struct stm32_fmc2_ebi *ebi)
+ 			ret = ebi->data->check_rif(ebi, bank + 1);
+ 			if (ret) {
+ 				dev_err(dev, "bank access failed: %d\n", bank);
+-				of_node_put(child);
+ 				return ret;
+ 			}
+ 		}
+@@ -1613,7 +1608,6 @@ static int stm32_fmc2_ebi_parse_dt(struct stm32_fmc2_ebi *ebi)
+ 			if (ret) {
+ 				dev_err(dev, "setup chip select %d failed: %d\n",
+ 					bank, ret);
+-				of_node_put(child);
+ 				return ret;
+ 			}
+ 		}
 
 -- 
 2.43.0
