@@ -1,65 +1,65 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4612A823AC
-	for <linux-pm@vger.kernel.org>; Fri, 16 Aug 2024 08:12:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 134438286F
+	for <linux-pm@vger.kernel.org>; Fri, 16 Aug 2024 08:12:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723795969; cv=none; b=upsq3aaKLiI/MEC7QRYpadMI9vDlYm2nwrsgjK+9weka50BOj6gC53FxIBAPiZ9nz7jVVHcsM5fFIuUwGx8iXexwvjtBopRvaPGwtTay9I5bVw/MHu+2EMLKS6it/IUHRZUwW+1h3G7gJirRcCW6Wq97L3Ztc/xaKMmN3QHvtvM=
+	t=1723795969; cv=none; b=aVnvm6dPUZbFP/rPJp+C+0/hbJUTfkKJCmXvEgX2GrN8s9JXxfdrjxH0x1etq6rTZq9w4wH3sb+i1pxT9r+aw6547TKBVNwm1y7he9Yc64HHjbU1APxYweHUyMpVg2LXxWTFxuMuiQMvgFXu+/GySiUG23B+jY2GR7aYb75VTOg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1723795969; c=relaxed/simple;
-	bh=6ODmSx/BqX1DAmg0Nvvx6v6RGpABj/Zp5OzjuzzjVcc=;
+	bh=PBpHVon8kWXablpkfiURYXZobURffNuvyiVPOf4XR9Q=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XDl9343twvVBjq2edeWQauZfXgvogF0+H75ltX3jYPIqJqb8qKlz7s4DWVLGCAb0Ibh2TeIVjZquDY3ih4LpNcuruqp6zA5FVXWHt7sb+okUB46Gxc4O/Sa46gbXqRFrRYgXqemypOcqUkYoIrAmon/SJOZTesRG4HQnCcs2u70=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=kr3ywX73; arc=none smtp.client-ip=209.85.128.44
+	 MIME-Version; b=te2AHSltENaBbtsDKMyx20E4jsVWtAOOWR27Atu3fgwXmFL82JdPUXjEQvgBsoVCRyUHQX5rYk/+60A3l/7CYe8CJ9+K+Xgd8xOg8Hh/Ogw3QNjDWgS96/5esiox5qCO0103btw56nPtGyxZJpMFx0/I/vFbWADE5Lqlc3+oxvQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=QsGyx8kr; arc=none smtp.client-ip=209.85.128.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kr3ywX73"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-428243f928fso17316665e9.0
-        for <linux-pm@vger.kernel.org>; Fri, 16 Aug 2024 01:12:46 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QsGyx8kr"
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-428243f928cso12258345e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 16 Aug 2024 01:12:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1723795965; x=1724400765; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1723795966; x=1724400766; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=l7YISoiooozOIq4w+X12WtyZF015lSfecgxPxzmXkaM=;
-        b=kr3ywX73MQ8GBbHv5gBgIB4WKHMKa6Cw4EDAt0jKoywqPRmNMWE4HhHoDttjMvAcSN
-         Qq9UiuAeGvvQQCJim0Cc/szVvPgcax2uw1ATRy2OR7CdbyHfeQK75fOhvs1WPVd++Aya
-         0Q+ZG77++CXz11F998VHkzVn+g1POPnj72mehM9fJ7rWV1cKCAYYBhVouq0VvtYtZnhl
-         i8yahlmtitTYgTPmIrit68PNiZrN4WnpHQg8Ps2HoQs864wiJ8PzggZUZVRAkfwfngDC
-         AGtxn7KRgohnHN+HafSulKarSL4wMJE1899nhHM5zHpHzvcFiLkhC9GTtvY3ExgLe8Td
-         POhw==
+        bh=ojcZ/dzBavdmLF5+AL/jn2Lr9czX6kpKLqxAXwjrP2Q=;
+        b=QsGyx8krkySHxZO+UtLhE86UWlgAcO0vMNgxD73zKpilXucu13a256IJg5AlQJFSf1
+         8ZdZ8RrShmcjnBxduPHhDHLsrhmaCar7MM8vl7CrJLmaxbl+m6wpKiY7lo9vnrlvpbio
+         C+Pn8yfH7Z5BS9IruSYJe8nOrE1M36Wu1ifQarmJZ7AoRn0y3A8S1efxalu/Y3R/kinP
+         A9f4tU5UVty85/AGeMLWa85x6/a3nTL3D5nE4ZqzdcFMP80ui2Ph4FabEcznab25/uUx
+         BGpFPLuuJHxY2WL2f0Ur5qvK8+nJLQo0dMp621sG3Py94nBK37aOd7KhkQe3ix0lYZ/X
+         XWlw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1723795965; x=1724400765;
+        d=1e100.net; s=20230601; t=1723795966; x=1724400766;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=l7YISoiooozOIq4w+X12WtyZF015lSfecgxPxzmXkaM=;
-        b=xQK09jlaDVobI3PkF8s2XKJIbRrDOkf8o4m/0W0QmGZsRlJajLDFett8HxFdlyzm+I
-         M03QseECBPYKoUHDaQ8ezTQnS0mS35fCkgCSLD1wfyHpOE6UgRy9Oj6pa1jyvu3HeoKG
-         GRFEgH5SRs6ROF8u6nJDzVcIE7fHTY7baVIdPTYSWhJpGSYXQAd0AxyiDXlwUV3M8Piu
-         YEyGjoCT4rnhs3m2XjnOd53d1J2kAKuDq4+xN0YOfFCplUgipp6dt+lvX6wtH86rPX6T
-         z658wo0JhYnK3FYR/2YdSNOzYWgJxd+46V2hupkJ5SsMIOGwwKjPKVeYR4lDBBP798Vn
-         l8vA==
-X-Gm-Message-State: AOJu0Ywu0DJp2FFkSBy4Sr+Oj2dP4iRaO58C+DJdQDfXW1g6YVqiQNAV
-	48HAy/3FhtmBTGoWWNdsEiHv1hohDCrXTncdJJ1edb9HO2InVmi56MjjgZwqs/s=
-X-Google-Smtp-Source: AGHT+IF+N5KmMjzEAFpZMmAvI8cg8nQMGZEInMqCWMeL9EWr+nlwerecmyeqSUNUGeAT2sYNyaKJLQ==
-X-Received: by 2002:a05:600c:5487:b0:426:61fc:fc1a with SMTP id 5b1f17b1804b1-429ed784142mr15219635e9.3.1723795964780;
-        Fri, 16 Aug 2024 01:12:44 -0700 (PDT)
+        bh=ojcZ/dzBavdmLF5+AL/jn2Lr9czX6kpKLqxAXwjrP2Q=;
+        b=enIVkXZTNCu5TDZcWowMSplRI+Zdp3T7TkbpN8hW/4ZAXx1gg2Y7xwkPXm8rndFPP0
+         3UICNDQIoj6faC9vsbNJ8yijJzpj+yRYMU1QJmzLGFM2xvqRrnGKkkUpXvIuenIjVAQE
+         nKkR74orJWX/spcC26fPp7bR/pVLkCL4j7X+ZGBWFgIzGo/yoHBJGA6SW6VTdia7r4RM
+         ZoaMeqbGMpvMljapr5KFHw3A9FGP8y5vZhqhcVIgFLCmtW8kOjfzlKgDuNzCSF8E6N/m
+         /xqSbClv6Kv5JktOaBbEgh/qB7q8r05GQTEGNQArv/Tcd0yEvIUAI6yxwQ+q58NzQrS+
+         MStg==
+X-Gm-Message-State: AOJu0YwVLm/vi5VVD13TDvGUXFS4PGRhW6sPB5F68aAIzk0BwMQ5Du9S
+	MjoMLxc3psswzk82COP6OWmBemhxKq4Pekod26HNg+os4y1ohLgzCHBvxiYNyVc=
+X-Google-Smtp-Source: AGHT+IFiooSVLGKasJXv5QQqpuG9fGOdqW49NUZw7fb/Sv5/TGuOhq8T4CYzbZGe97Gj0skSrum6Gg==
+X-Received: by 2002:a05:600c:46cf:b0:426:64f4:7793 with SMTP id 5b1f17b1804b1-429ed7af3d8mr14557135e9.22.1723795966184;
+        Fri, 16 Aug 2024 01:12:46 -0700 (PDT)
 Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-429ed6593casm16021205e9.28.2024.08.16.01.12.44
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-429ed6593casm16021205e9.28.2024.08.16.01.12.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 16 Aug 2024 01:12:44 -0700 (PDT)
+        Fri, 16 Aug 2024 01:12:45 -0700 (PDT)
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 To: daniel.lezcano@linaro.org,
 	rafael@kernel.org
 Cc: linux-pm@vger.kernel.org,
 	lukasz.luba@arm.com,
 	quic_manafm@quicinc.com
-Subject: [PATCH v2 1/7] thermal/core: Compute low and high boundaries in thermal_zone_device_update()
-Date: Fri, 16 Aug 2024 10:12:32 +0200
-Message-ID: <20240816081241.1925221-2-daniel.lezcano@linaro.org>
+Subject: [PATCH v2 3/7] thermal/core: Connect the threshold with the core
+Date: Fri, 16 Aug 2024 10:12:34 +0200
+Message-ID: <20240816081241.1925221-4-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240816081241.1925221-1-daniel.lezcano@linaro.org>
 References: <20240816081241.1925221-1-daniel.lezcano@linaro.org>
@@ -71,125 +71,55 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-In order to set the scene for the thresholds support which have to
-manipulate the low and high temperature boundaries for the interrupt
-support, we must pass the low and high values to the incoming
-thresholds routine.
+Initialize, de-initialize and handle the threshold in the same place
+than the trip points.
 
-The variables are set from the thermal_zone_set_trips() where the
-function loops the thermal trips to figure out the next and the
-previous temperatures to set the interrupt to be triggered when they
-are crossed.
-
-These variables will be needed by the function in charge of handling
-the thresholds in the incoming changes but they are local to the
-aforementioned function thermal_zone_set_trips().
-
-Move the low and high boundaries computation out of the function in
-thermal_zone_device_update() so they are accessible from there.
-
-The positive side effect is they are computed in the same loop as
-handle_thermal_trip(), so we remove one loop.
-
-Co-developed-by: Rafael J. Wysocki <rjw@rjwysocki.net>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/thermal_core.c | 12 ++++++++++--
- drivers/thermal/thermal_core.h |  2 +-
- drivers/thermal/thermal_trip.c | 27 +--------------------------
- 3 files changed, 12 insertions(+), 29 deletions(-)
+ drivers/thermal/thermal_core.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 95c399f94744..166f48071487 100644
+index 166f48071487..0a4d7f6e5cf5 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -547,6 +547,7 @@ void __thermal_zone_device_update(struct thermal_zone_device *tz,
- 	struct thermal_trip_desc *td;
- 	LIST_HEAD(way_down_list);
- 	LIST_HEAD(way_up_list);
-+	int low = -INT_MAX, high = INT_MAX;
- 	int temp, ret;
+@@ -591,6 +591,8 @@ void __thermal_zone_device_update(struct thermal_zone_device *tz,
+ 			high = td->threshold;
+ 	}
  
- 	if (tz->suspended)
-@@ -580,10 +581,17 @@ void __thermal_zone_device_update(struct thermal_zone_device *tz,
- 
- 	tz->notify_event = event;
- 
--	for_each_trip_desc(tz, td)
-+	for_each_trip_desc(tz, td) {
- 		handle_thermal_trip(tz, td, &way_up_list, &way_down_list);
- 
--	thermal_zone_set_trips(tz);
-+		if (td->threshold <= tz->temperature && td->threshold > low)
-+			low = td->threshold;
++	thermal_thresholds_handle(tz, &low, &high);
 +
-+		if (td->threshold >= tz->temperature && td->threshold < high)
-+			high = td->threshold;
-+	}
-+
-+	thermal_zone_set_trips(tz, low, high);
+ 	thermal_zone_set_trips(tz, low, high);
  
  	list_sort(NULL, &way_up_list, thermal_trip_notify_cmp);
- 	list_for_each_entry(td, &way_up_list, notify_list_node)
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 4cf2b7230d04..67a09f90eb95 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -259,7 +259,7 @@ void thermal_governor_update_tz(struct thermal_zone_device *tz,
+@@ -1561,6 +1563,10 @@ thermal_zone_device_register_with_trips(const char *type,
+ 			goto unregister;
+ 	}
  
- const char *thermal_trip_type_name(enum thermal_trip_type trip_type);
++	result = thermal_thresholds_init(tz);
++	if (result)
++		goto remove_hwmon;
++
+ 	mutex_lock(&thermal_list_lock);
+ 	mutex_lock(&tz->lock);
+ 	list_add_tail(&tz->node, &thermal_tz_list);
+@@ -1581,6 +1587,8 @@ thermal_zone_device_register_with_trips(const char *type,
  
--void thermal_zone_set_trips(struct thermal_zone_device *tz);
-+void thermal_zone_set_trips(struct thermal_zone_device *tz, int low, int high);
- int thermal_zone_trip_id(const struct thermal_zone_device *tz,
- 			 const struct thermal_trip *trip);
- void thermal_zone_trip_updated(struct thermal_zone_device *tz,
-diff --git a/drivers/thermal/thermal_trip.c b/drivers/thermal/thermal_trip.c
-index 06a0554ddc38..1d43ab52e86a 100644
---- a/drivers/thermal/thermal_trip.c
-+++ b/drivers/thermal/thermal_trip.c
-@@ -61,25 +61,8 @@ int thermal_zone_get_num_trips(struct thermal_zone_device *tz)
- }
- EXPORT_SYMBOL_GPL(thermal_zone_get_num_trips);
+ 	return tz;
  
--/**
-- * thermal_zone_set_trips - Computes the next trip points for the driver
-- * @tz: a pointer to a thermal zone device structure
-- *
-- * The function computes the next temperature boundaries by browsing
-- * the trip points. The result is the closer low and high trip points
-- * to the current temperature. These values are passed to the backend
-- * driver to let it set its own notification mechanism (usually an
-- * interrupt).
-- *
-- * This function must be called with tz->lock held. Both tz and tz->ops
-- * must be valid pointers.
-- *
-- * It does not return a value
-- */
--void thermal_zone_set_trips(struct thermal_zone_device *tz)
-+void thermal_zone_set_trips(struct thermal_zone_device *tz, int low, int high)
- {
--	const struct thermal_trip_desc *td;
--	int low = -INT_MAX, high = INT_MAX;
- 	int ret;
++remove_hwmon:
++	thermal_remove_hwmon_sysfs(tz);
+ unregister:
+ 	device_del(&tz->device);
+ release_device:
+@@ -1669,6 +1677,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
  
- 	lockdep_assert_held(&tz->lock);
-@@ -87,14 +70,6 @@ void thermal_zone_set_trips(struct thermal_zone_device *tz)
- 	if (!tz->ops.set_trips)
- 		return;
+ 	thermal_set_governor(tz, NULL);
  
--	for_each_trip_desc(tz, td) {
--		if (td->threshold <= tz->temperature && td->threshold > low)
--			low = td->threshold;
--
--		if (td->threshold >= tz->temperature && td->threshold < high)
--			high = td->threshold;
--	}
--
- 	/* No need to change trip points */
- 	if (tz->prev_low_trip == low && tz->prev_high_trip == high)
- 		return;
++	thermal_thresholds_exit(tz);
+ 	thermal_remove_hwmon_sysfs(tz);
+ 	ida_free(&thermal_tz_ida, tz->id);
+ 	ida_destroy(&tz->ida);
 -- 
 2.43.0
 
