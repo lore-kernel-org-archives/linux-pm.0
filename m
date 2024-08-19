@@ -1,296 +1,111 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC7B41741FE;
-	Mon, 19 Aug 2024 13:20:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 870A516C857
+	for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2024 13:22:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724073627; cv=none; b=frHKBFo39IjFI0O2otGcfMLHaIdPan4xdL+46b1+eXbkmQQ2Ctp81EztnKMIHr1/G5Kq0JcNYk0iAj5/JvMw4ZbLtkXRK+vs5zORM3cWqU5TXt2PAw80w+XgSXIpdCI+TLY/OX0vOQFgR5LRekgv8IglGDhGNT+FyOfL9xfYzA8=
+	t=1724073778; cv=none; b=LGKZo78yoUMjG0aOL4wCy7CIyHyotQXFm/3sZSg5uldAovG0m+l1ZXi/gIUGmzauRvv1G9igqbdQAcDex8gwFRCmwXDXDuKwCraxkRDG8fVpaQjmro548hXwAQXoK8iMqi5K8OSYqLj4mZZe8Ib1SMelxep6vQ5uSV7+7DmhHIQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724073627; c=relaxed/simple;
-	bh=50I8COzcE/JeGElXTnODDmOHDeO1Gj1w/aX2OmR9j2c=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FIVzbFQ6H2Dp8mi1S1iFUZT41a1dTapaJE4d2JZoML0VHEs0vzm3NjbBmeFT1mQ2Hodqmj03updloMvKeGoNCInU+O+x9An0pPrzgN3QjUcPJWX62D2nMvmlids8O8tORqk30UQkKqYq0SCKFcSl7OUy7r8D7elqhpj5d+FO0ds=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=JCp9+co0; arc=none smtp.client-ip=198.175.65.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1724073778; c=relaxed/simple;
+	bh=O2MwCfLhtuz3WtZXy/MYatQ0Sno9ksR85Gi+1RqITFU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=uWXtz27PDvD7WhFgTNUzlVZ0Q1xs07mAuP/42yspu1N54FhSndF6Lg6w7Mp+vFAsVFLL+0EYhdKAk7vZ7liSAbvE+imYKpaPjJr0YP3I4PLtzRWFRUgkiCdju5KmZeUoTlJBPasoLNR7IvcB87Y5oMjMmimSKdBsLQULXec6Vdo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=yDk/K3A4; arc=none smtp.client-ip=209.85.128.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="JCp9+co0"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1724073626; x=1755609626;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=50I8COzcE/JeGElXTnODDmOHDeO1Gj1w/aX2OmR9j2c=;
-  b=JCp9+co0mds8Co3DaWiU/Ey1NEMR9xLEmT/qZZPxRE6N6Gpx5oWWPCqy
-   rzlEdvHwVQJs7tSuzM/4CgL3xeTqjioIRy7gOiI498iddplsjEOf76Fb2
-   7N99ZXJXS5uyunb6A9qsVcWYUHGQz2DUdXv8JmRg+s8nM5dfWdEX0Sweq
-   B+zvGy5Z+/h79Y49uNkjCz0Yjl9K9mThnOh26agJuMuv1cdGKnWtDG4jK
-   SYxlNTn53ONmExH9QUBnnlFW6y5+XnUC46vCg+F6lF2KoX0Zr8gMCBzLz
-   sByKrAIyQ9hYAxTT1j3dODFvpfPzMUzgegL+MMqJ828i+Et/RUzC+9T7+
-   Q==;
-X-CSE-ConnectionGUID: JpYCyj9XT36pqxPW5B3JEQ==
-X-CSE-MsgGUID: dvq3sOA3Qf2UdSKUFCiIew==
-X-IronPort-AV: E=McAfee;i="6700,10204,11169"; a="44841603"
-X-IronPort-AV: E=Sophos;i="6.10,159,1719903600"; 
-   d="scan'208";a="44841603"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Aug 2024 06:20:09 -0700
-X-CSE-ConnectionGUID: cSOzekq9SCqObRfLMNEFpw==
-X-CSE-MsgGUID: H5Sc6wXtTbSVGkbW6dCZ6Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,159,1719903600"; 
-   d="scan'208";a="60679966"
-Received: from kuha.fi.intel.com ([10.237.72.185])
-  by orviesa006.jf.intel.com with SMTP; 19 Aug 2024 06:20:03 -0700
-Received: by kuha.fi.intel.com (sSMTP sendmail emulation); Mon, 19 Aug 2024 16:20:02 +0300
-Date: Mon, 19 Aug 2024 16:20:02 +0300
-From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-To: Bjorn Andersson <quic_bjorande@quicinc.com>
-Cc: Sebastian Reichel <sre@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Johan Hovold <johan+linaro@kernel.org>,
-	Chris Lew <quic_clew@quicinc.com>,
-	Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-	Stephen Boyd <swboyd@chromium.org>,
-	Amit Pundir <amit.pundir@linaro.org>, linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-usb@vger.kernel.org, Johan Hovold <johan@kernel.org>,
-	stable@vger.kernel.org
-Subject: Re: [PATCH 1/3] soc: qcom: pmic_glink: Fix race during initialization
-Message-ID: <ZsNGgmnZfZs+Z50R@kuha.fi.intel.com>
-References: <20240818-pmic-glink-v6-11-races-v1-0-f87c577e0bc9@quicinc.com>
- <20240818-pmic-glink-v6-11-races-v1-1-f87c577e0bc9@quicinc.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="yDk/K3A4"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-428243f928fso47739465e9.0
+        for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2024 06:22:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1724073775; x=1724678575; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=GuyNk5fVdyh6epV9U4Iq9p9Lvv3ALtYfwMJQqqgo6Yk=;
+        b=yDk/K3A4AZrayhh2VHwN98Zfi9uulq1lRuePuwUVBT92asa1xO/LJXdVWkOy9XUVle
+         g39Tn/s6mXGRNHIgV6hVoLJOBiHkg16ApaSQEi55x2bg/qAwCmcW9UWHzTi1oiS3gppc
+         HUJominY65l9ehZBFDkXuU9UrEDisBKLAs6A95KOerXO9MVVG0UxchEyGawsd95SsubL
+         v4ho8UremKnbYINTxJmtFjreqmrgvcqlCeHqrEbGrPG/rH2uSolLVE67ac+FnxV7jOlX
+         VQ3fvoEwa/x65Zp0OOX+ht4pQL7Sh2DEXlDUGBbH8ZOGFxAuwOvVt+tpbjY3izEkIXtH
+         9QQw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724073775; x=1724678575;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=GuyNk5fVdyh6epV9U4Iq9p9Lvv3ALtYfwMJQqqgo6Yk=;
+        b=FNIFByMNmXpJ1L+vNxpaa9iS0e1DP9MMyEHu9V1w2neMBWcu7lwg7qrBYdjYFEGQU9
+         oz/F6v0Zae446Ty9xu1TcELOvmlEs3He7YrVBFH30ljr+gPS4F00igyA3B0LKoYwRznb
+         seLEYLkU1ozCZaJIRZls2JK3J05DDvV76ImUmsayIR5oqOzdZfZR0WRr+VgNWrCkfCzS
+         VCQ4kvFRtlJ6Nsfu2q3IQimwAfojuri0xgp273CgwU0w+tGuMdqDtTJCiiULPBkaci3n
+         tMPZqoAIXHVgapTE4+mp4X4SHBxcCihQAygzUV/GSJm+umjsGE4e+z5nbkZNtoa1yCqz
+         mnpA==
+X-Forwarded-Encrypted: i=1; AJvYcCXpqy/Mt9YsW4yiNGE478vjADYTkSWgKQiBQlqg/6+0KR5p72xOJXAF0y7pvtVba1qcv6EI/naFLjQvhEKjar3x8S4ItIqKIMU=
+X-Gm-Message-State: AOJu0Yy+SXLRieGMoUoQVLoTOBScpwMZVFSvQUV0vVUcJzyf2VxVgvUP
+	vTiqQJHjlY9LevOEDufILBJlFCGKQghxAStqPWFM25wRZA1S/aSjjmO04aSdmwA=
+X-Google-Smtp-Source: AGHT+IEPz54Ns7DkJpUWWgC/R1C4JWEbFnoSanERwA9Q7te9U+I6z6L41rY0uwvrgLlKgxD0fLi0cg==
+X-Received: by 2002:a05:600c:4753:b0:426:593c:9359 with SMTP id 5b1f17b1804b1-429ed7ed62fmr88977775e9.32.1724073774440;
+        Mon, 19 Aug 2024 06:22:54 -0700 (PDT)
+Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3718985a6d1sm10654962f8f.57.2024.08.19.06.22.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 19 Aug 2024 06:22:53 -0700 (PDT)
+Message-ID: <9e6d817f-1fcf-4d31-b0c5-d68753e1f949@linaro.org>
+Date: Mon, 19 Aug 2024 15:22:53 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240818-pmic-glink-v6-11-races-v1-1-f87c577e0bc9@quicinc.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/3] thermal: of: Fix OF node leak in
+ thermal_of_trips_init() error path
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
+References: <20240814195823.437597-1-krzysztof.kozlowski@linaro.org>
+ <f3d2c104-360a-4da0-8d77-59af89ebda2b@linaro.org>
+ <CAJZ5v0hiR0sqgfR1WiuT=tXx3XRWgAE-j3biEMMaV5FjiSZwbw@mail.gmail.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <CAJZ5v0hiR0sqgfR1WiuT=tXx3XRWgAE-j3biEMMaV5FjiSZwbw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Sun, Aug 18, 2024 at 04:17:37PM -0700, Bjorn Andersson wrote:
-> As pointed out by Stephen Boyd it is possible that during initialization
-> of the pmic_glink child drivers, the protection-domain notifiers fires,
-> and the associated work is scheduled, before the client registration
-> returns and as a result the local "client" pointer has been initialized.
+On 19/08/2024 15:20, Rafael J. Wysocki wrote:
+> On Mon, Aug 19, 2024 at 12:12 PM Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>>
+>> On 14/08/2024 21:58, Krzysztof Kozlowski wrote:
+>>> Terminating for_each_child_of_node() loop requires dropping OF node
+>>> reference, so bailing out after thermal_of_populate_trip() error misses
+>>> this.  Solve the OF node reference leak with scoped
+>>> for_each_child_of_node_scoped().
+>>>
+>>> Fixes: d0c75fa2c17f ("thermal/of: Initialize trip points separately")
+>>> Cc: <stable@vger.kernel.org>
+>>> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+>>> ---
+>>
+>> Applied, thanks for the fixes
 > 
-> The outcome of this is a NULL pointer dereference as the "client"
-> pointer is blindly dereferenced.
+> Is there a place from which I can pull these?
 > 
-> Timeline provided by Stephen:
->  CPU0                               CPU1
->  ----                               ----
->  ucsi->client = NULL;
->  devm_pmic_glink_register_client()
->   client->pdr_notify(client->priv, pg->client_state)
->    pmic_glink_ucsi_pdr_notify()
->     schedule_work(&ucsi->register_work)
->     <schedule away>
->                                     pmic_glink_ucsi_register()
->                                      ucsi_register()
->                                       pmic_glink_ucsi_read_version()
->                                        pmic_glink_ucsi_read()
->                                         pmic_glink_ucsi_read()
->                                          pmic_glink_send(ucsi->client)
->                                          <client is NULL BAD>
->  ucsi->client = client // Too late!
+> It would be good to include them into 6.11 as they are -stable material.
 > 
-> This code is identical across the altmode, battery manager and usci
-> child drivers.
-> 
-> Resolve this by splitting the allocation of the "client" object and the
-> registration thereof into two operations.
-> 
-> This only happens if the protection domain registry is populated at the
-> time of registration, which by the introduction of commit '1ebcde047c54
-> ("soc: qcom: add pd-mapper implementation")' became much more likely.
-> 
-> Reported-by: Amit Pundir <amit.pundir@linaro.org>
-> Closes: https://lore.kernel.org/all/CAMi1Hd2_a7TjA7J9ShrAbNOd_CoZ3D87twmO5t+nZxC9sX18tA@mail.gmail.com/
-> Reported-by: Johan Hovold <johan@kernel.org>
-> Closes: https://lore.kernel.org/all/ZqiyLvP0gkBnuekL@hovoldconsulting.com/
-> Reported-by: Stephen Boyd <swboyd@chromium.org>
-> Closes: https://lore.kernel.org/all/CAE-0n52JgfCBWiFQyQWPji8cq_rCsviBpW-m72YitgNfdaEhQg@mail.gmail.com/
-> Fixes: 58ef4ece1e41 ("soc: qcom: pmic_glink: Introduce base PMIC GLINK driver")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
+> Alternatively, I can pick them up from the list.
 
-Reviewed-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-
-> ---
->  drivers/power/supply/qcom_battmgr.c   | 16 ++++++++++------
->  drivers/soc/qcom/pmic_glink.c         | 28 ++++++++++++++++++----------
->  drivers/soc/qcom/pmic_glink_altmode.c | 17 +++++++++++------
->  drivers/usb/typec/ucsi/ucsi_glink.c   | 16 ++++++++++------
->  include/linux/soc/qcom/pmic_glink.h   | 11 ++++++-----
->  5 files changed, 55 insertions(+), 33 deletions(-)
-> 
-> diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
-> index 49bef4a5ac3f..df90a470c51a 100644
-> --- a/drivers/power/supply/qcom_battmgr.c
-> +++ b/drivers/power/supply/qcom_battmgr.c
-> @@ -1387,12 +1387,16 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
->  					     "failed to register wireless charing power supply\n");
->  	}
->  
-> -	battmgr->client = devm_pmic_glink_register_client(dev,
-> -							  PMIC_GLINK_OWNER_BATTMGR,
-> -							  qcom_battmgr_callback,
-> -							  qcom_battmgr_pdr_notify,
-> -							  battmgr);
-> -	return PTR_ERR_OR_ZERO(battmgr->client);
-> +	battmgr->client = devm_pmic_glink_new_client(dev, PMIC_GLINK_OWNER_BATTMGR,
-> +						     qcom_battmgr_callback,
-> +						     qcom_battmgr_pdr_notify,
-> +						     battmgr);
-> +	if (IS_ERR(battmgr->client))
-> +		return PTR_ERR(battmgr->client);
-> +
-> +	pmic_glink_register_client(battmgr->client);
-> +
-> +	return 0;
->  }
->  
->  static const struct auxiliary_device_id qcom_battmgr_id_table[] = {
-> diff --git a/drivers/soc/qcom/pmic_glink.c b/drivers/soc/qcom/pmic_glink.c
-> index 9ebc0ba35947..58ec91767d79 100644
-> --- a/drivers/soc/qcom/pmic_glink.c
-> +++ b/drivers/soc/qcom/pmic_glink.c
-> @@ -66,15 +66,14 @@ static void _devm_pmic_glink_release_client(struct device *dev, void *res)
->  	spin_unlock_irqrestore(&pg->client_lock, flags);
->  }
->  
-> -struct pmic_glink_client *devm_pmic_glink_register_client(struct device *dev,
-> -							  unsigned int id,
-> -							  void (*cb)(const void *, size_t, void *),
-> -							  void (*pdr)(void *, int),
-> -							  void *priv)
-> +struct pmic_glink_client *devm_pmic_glink_new_client(struct device *dev,
-> +						     unsigned int id,
-> +						     void (*cb)(const void *, size_t, void *),
-> +						     void (*pdr)(void *, int),
-> +						     void *priv)
->  {
->  	struct pmic_glink_client *client;
->  	struct pmic_glink *pg = dev_get_drvdata(dev->parent);
-> -	unsigned long flags;
->  
->  	client = devres_alloc(_devm_pmic_glink_release_client, sizeof(*client), GFP_KERNEL);
->  	if (!client)
-> @@ -85,6 +84,18 @@ struct pmic_glink_client *devm_pmic_glink_register_client(struct device *dev,
->  	client->cb = cb;
->  	client->pdr_notify = pdr;
->  	client->priv = priv;
-> +	INIT_LIST_HEAD(&client->node);
-> +
-> +	devres_add(dev, client);
-> +
-> +	return client;
-> +}
-> +EXPORT_SYMBOL_GPL(devm_pmic_glink_new_client);
-> +
-> +void pmic_glink_register_client(struct pmic_glink_client *client)
-> +{
-> +	struct pmic_glink *pg = client->pg;
-> +	unsigned long flags;
->  
->  	mutex_lock(&pg->state_lock);
->  	spin_lock_irqsave(&pg->client_lock, flags);
-> @@ -95,11 +106,8 @@ struct pmic_glink_client *devm_pmic_glink_register_client(struct device *dev,
->  	spin_unlock_irqrestore(&pg->client_lock, flags);
->  	mutex_unlock(&pg->state_lock);
->  
-> -	devres_add(dev, client);
-> -
-> -	return client;
->  }
-> -EXPORT_SYMBOL_GPL(devm_pmic_glink_register_client);
-> +EXPORT_SYMBOL_GPL(pmic_glink_register_client);
->  
->  int pmic_glink_send(struct pmic_glink_client *client, void *data, size_t len)
->  {
-> diff --git a/drivers/soc/qcom/pmic_glink_altmode.c b/drivers/soc/qcom/pmic_glink_altmode.c
-> index 1e0808b3cb93..e4f5059256e5 100644
-> --- a/drivers/soc/qcom/pmic_glink_altmode.c
-> +++ b/drivers/soc/qcom/pmic_glink_altmode.c
-> @@ -520,12 +520,17 @@ static int pmic_glink_altmode_probe(struct auxiliary_device *adev,
->  			return ret;
->  	}
->  
-> -	altmode->client = devm_pmic_glink_register_client(dev,
-> -							  altmode->owner_id,
-> -							  pmic_glink_altmode_callback,
-> -							  pmic_glink_altmode_pdr_notify,
-> -							  altmode);
-> -	return PTR_ERR_OR_ZERO(altmode->client);
-> +	altmode->client = devm_pmic_glink_new_client(dev,
-> +						     altmode->owner_id,
-> +						     pmic_glink_altmode_callback,
-> +						     pmic_glink_altmode_pdr_notify,
-> +						     altmode);
-> +	if (IS_ERR(altmode->client))
-> +		return PTR_ERR(altmode->client);
-> +
-> +	pmic_glink_register_client(altmode->client);
-> +
-> +	return 0;
->  }
->  
->  static const struct auxiliary_device_id pmic_glink_altmode_id_table[] = {
-> diff --git a/drivers/usb/typec/ucsi/ucsi_glink.c b/drivers/usb/typec/ucsi/ucsi_glink.c
-> index 16c328497e0b..ac53a81c2a81 100644
-> --- a/drivers/usb/typec/ucsi/ucsi_glink.c
-> +++ b/drivers/usb/typec/ucsi/ucsi_glink.c
-> @@ -367,12 +367,16 @@ static int pmic_glink_ucsi_probe(struct auxiliary_device *adev,
->  		ucsi->port_orientation[port] = desc;
->  	}
->  
-> -	ucsi->client = devm_pmic_glink_register_client(dev,
-> -						       PMIC_GLINK_OWNER_USBC,
-> -						       pmic_glink_ucsi_callback,
-> -						       pmic_glink_ucsi_pdr_notify,
-> -						       ucsi);
-> -	return PTR_ERR_OR_ZERO(ucsi->client);
-> +	ucsi->client = devm_pmic_glink_new_client(dev, PMIC_GLINK_OWNER_USBC,
-> +						  pmic_glink_ucsi_callback,
-> +						  pmic_glink_ucsi_pdr_notify,
-> +						  ucsi);
-> +	if (IS_ERR(ucsi->client))
-> +		return PTR_ERR(ucsi->client);
-> +
-> +	pmic_glink_register_client(ucsi->client);
-> +
-> +	return 0;
->  }
->  
->  static void pmic_glink_ucsi_remove(struct auxiliary_device *adev)
-> diff --git a/include/linux/soc/qcom/pmic_glink.h b/include/linux/soc/qcom/pmic_glink.h
-> index fd124aa18c81..aedde76d7e13 100644
-> --- a/include/linux/soc/qcom/pmic_glink.h
-> +++ b/include/linux/soc/qcom/pmic_glink.h
-> @@ -23,10 +23,11 @@ struct pmic_glink_hdr {
->  
->  int pmic_glink_send(struct pmic_glink_client *client, void *data, size_t len);
->  
-> -struct pmic_glink_client *devm_pmic_glink_register_client(struct device *dev,
-> -							  unsigned int id,
-> -							  void (*cb)(const void *, size_t, void *),
-> -							  void (*pdr)(void *, int),
-> -							  void *priv);
-> +struct pmic_glink_client *devm_pmic_glink_new_client(struct device *dev,
-> +						     unsigned int id,
-> +						     void (*cb)(const void *, size_t, void *),
-> +						     void (*pdr)(void *, int),
-> +						     void *priv);
-> +void pmic_glink_register_client(struct pmic_glink_client *client);
->  
->  #endif
+I'll send a PR for fixes only. Let me double check if there are other 
+fixes to go along with those
 
 -- 
-heikki
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
