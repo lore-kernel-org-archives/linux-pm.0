@@ -1,74 +1,80 @@
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C64DB1552FA;
-	Mon, 19 Aug 2024 11:52:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.188
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A35D174EDB;
+	Mon, 19 Aug 2024 13:20:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724068360; cv=none; b=tdo/BIJk/HxgqP/ZpcsnHjRkWz7crOn6Qe9t7BXzDCyBew/QPQg/If0RxSMmEgIigBSsgeE6evJ90+bdKM1dKChdFgK1gRH/cNZ4M093sbEp64Oy6IcO95rHrto21CfFR2n4JEF5dkO833C6Y9Yeq4fqYcZyZ7zgZgYE3vb+AMM=
+	t=1724073625; cv=none; b=n7PIrqxYk/UTBZ1FeBPbRgugnrrMHAC5rjf6qxKgH+xlbF4NoI0SU/iLQ2hywHA4GDOoXygvjjpKTO1B/yiuH9S303XWVUWFC5RLSRLlV1bnk2wJELBzmWMZcPZFWNZUAYmN89gf7AuMzM8wkpRsybBf9hqkb32r+/BMUo/lYQM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724068360; c=relaxed/simple;
-	bh=FQtA+Tv0kyLSVsep2YXkfJzneaN094FWOsFFwVfoDyA=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fkHLN+/5zwO4b6JDEx2W1yIb5ZNK1kwEHulf/45wQZ2gg+N65fxaeLEkbqawR4hlgHwUGRB1586B0Ti05Yz3por/iytbQu5YAgfqIeqZ9nTjaEXzhYm+U0DiCoHYpMDeAInDRgfd8hl9OPTPV3oUg3nJT779a+MlW16JyzrLSEE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.188
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.88.105])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4WnWBz70TmzpTNw;
-	Mon, 19 Aug 2024 19:51:07 +0800 (CST)
-Received: from kwepemh500013.china.huawei.com (unknown [7.202.181.146])
-	by mail.maildlp.com (Postfix) with ESMTPS id 60B0A1401F1;
-	Mon, 19 Aug 2024 19:52:36 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by kwepemh500013.china.huawei.com
- (7.202.181.146) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 19 Aug
- 2024 19:52:35 +0800
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-To: <marcan@marcan.st>, <sven@svenpeter.dev>, <alyssa@rosenzweig.io>,
-	<ulf.hansson@linaro.org>, <p.zabel@pengutronix.de>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-CC: <ruanjinjie@huawei.com>
-Subject: [PATCH -next 2/8] pmdomain: Make apple_pmgr_reset_ops static
-Date: Mon, 19 Aug 2024 19:59:56 +0800
-Message-ID: <20240819115956.3884847-1-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1724073625; c=relaxed/simple;
+	bh=xj7op51M45IqA/PUy/b+1Y6Rjdy7fjY9JLoKVu+9fGM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gs7Hs+x7bV2Z3Jf6QIlsRABzIGm4ODVhKPD4N2aZ/PQ0UuVwD/hoSP+fHArI8eyPXCW5e5f/czIwuSWhj6KXo/HkVnnT5S5DnecnrS8R+bA8bApUpO3i8dQbw7xaF7+IjKIUpdGBn2GjzzJIg7kxCz0GfXHVu+JPAH6WUHr2hJw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gAI7A1gj; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gAI7A1gj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E824C4AF10;
+	Mon, 19 Aug 2024 13:20:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1724073625;
+	bh=xj7op51M45IqA/PUy/b+1Y6Rjdy7fjY9JLoKVu+9fGM=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=gAI7A1gjsxWTE2nIxbuLLzmGTrDULOyEpRn3hvg9hqpqp9M07erwG8ufyzQRa1Wpq
+	 t7Ood3q0ExlpfK4lRVKcmiiO/h55TN+/J4imqOltWIYRYgtEI9fWDKNvH6cw3NgQcM
+	 cMhc8OwalSyWQaOlmsDJxGP1MKNEKEbzHqW65VphMX1KWeUF9QjuJ1EpuKMdn8/Y+d
+	 /w9A1EZF5ZjQUoIxy61jR7wXgifY59dYaQlHca0d4WdcvW+8s7cAP7lkf7bMdEcfpT
+	 46Qgxtk7wQU4yumzXO2HdhRVD6K9/nevyY3cWWGR1y4KlPibo4HKXs8ci1GEsOZWjo
+	 rLSWtykDOXIdA==
+Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-26110765976so589699fac.1;
+        Mon, 19 Aug 2024 06:20:25 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWEJSdVDhxG4pxR45WnxWFwEckdrpJ5HqRUgkjfXkvoMTW56GJhPp0aCw0XBVcdhmDwk32gJYBZVulKPp07Er6nGiSTIRWBo7OqY/z2TGBoiuK8+NpJOTZhGkFBDqax256U8MDW4z9gAirSMSWdmIv9YD3eqGAQa2wO+DwZaK4=
+X-Gm-Message-State: AOJu0YwORhNR+mrFYOl4UC4PIzizgq1Ef/NOjg+VU7x9QB/OP1gH1UUy
+	WQ0BMHm7KBa4N5JeMv1gb/y4lIZ+nkELLsn3qknCSpQR0cwOmex7lpYC/m53az03/yqr1zjrq3F
+	eZ0ufoRiiX0hxolM6SpNL+bzMa44=
+X-Google-Smtp-Source: AGHT+IEv4y6snKL6QJkySVGwP2N+iEGcJHQjH+kFRXSoIMYFYfRWFYvDJCo6nXOPkjHyNvWx9QbwjXO1WM8f0zj3RjM=
+X-Received: by 2002:a05:6870:7b4b:b0:25e:14d9:da27 with SMTP id
+ 586e51a60fabf-2701c0a0273mr5816521fac.0.1724073624437; Mon, 19 Aug 2024
+ 06:20:24 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemh500013.china.huawei.com (7.202.181.146)
+References: <20240814195823.437597-1-krzysztof.kozlowski@linaro.org> <f3d2c104-360a-4da0-8d77-59af89ebda2b@linaro.org>
+In-Reply-To: <f3d2c104-360a-4da0-8d77-59af89ebda2b@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 19 Aug 2024 15:20:10 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hiR0sqgfR1WiuT=tXx3XRWgAE-j3biEMMaV5FjiSZwbw@mail.gmail.com>
+Message-ID: <CAJZ5v0hiR0sqgfR1WiuT=tXx3XRWgAE-j3biEMMaV5FjiSZwbw@mail.gmail.com>
+Subject: Re: [PATCH 1/3] thermal: of: Fix OF node leak in thermal_of_trips_init()
+ error path
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The sparse tool complains as follows:
+On Mon, Aug 19, 2024 at 12:12=E2=80=AFPM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> On 14/08/2024 21:58, Krzysztof Kozlowski wrote:
+> > Terminating for_each_child_of_node() loop requires dropping OF node
+> > reference, so bailing out after thermal_of_populate_trip() error misses
+> > this.  Solve the OF node reference leak with scoped
+> > for_each_child_of_node_scoped().
+> >
+> > Fixes: d0c75fa2c17f ("thermal/of: Initialize trip points separately")
+> > Cc: <stable@vger.kernel.org>
+> > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> > ---
+>
+> Applied, thanks for the fixes
 
-drivers/pmdomain/apple/pmgr-pwrstate.c:180:32: warning:
-	symbol 'apple_pmgr_reset_ops' was not declared. Should it be static:
+Is there a place from which I can pull these?
 
-This symbol is not used outside of pmgr-pwrstate.c, so marks it static.
+It would be good to include them into 6.11 as they are -stable material.
 
-Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
----
- drivers/pmdomain/apple/pmgr-pwrstate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/pmdomain/apple/pmgr-pwrstate.c b/drivers/pmdomain/apple/pmgr-pwrstate.c
-index d62a776c89a1..9467235110f4 100644
---- a/drivers/pmdomain/apple/pmgr-pwrstate.c
-+++ b/drivers/pmdomain/apple/pmgr-pwrstate.c
-@@ -177,7 +177,7 @@ static int apple_pmgr_reset_status(struct reset_controller_dev *rcdev, unsigned
- 	return !!(reg & APPLE_PMGR_RESET);
- }
- 
--const struct reset_control_ops apple_pmgr_reset_ops = {
-+static const struct reset_control_ops apple_pmgr_reset_ops = {
- 	.assert		= apple_pmgr_reset_assert,
- 	.deassert	= apple_pmgr_reset_deassert,
- 	.reset		= apple_pmgr_reset_reset,
--- 
-2.34.1
-
+Alternatively, I can pick them up from the list.
