@@ -1,153 +1,144 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E06F18E0E;
-	Mon, 19 Aug 2024 20:08:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF84749627;
+	Mon, 19 Aug 2024 20:21:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724098121; cv=none; b=toD1B+ZOIfQesnJAuGbRyXAZVf61VL+wI0/aChS61vMsfjDZtVEiZRyR3UxU2YKSC2SBrvcFw0oQmTnLhh8AxZA30lnVlxhtHwzEAoHaKe/bIVF1ok9KvINAICGWvDP4mHOTLutFXJtY9UoRzlAirOVi5h4MhAY0OrYh2P2p2iE=
+	t=1724098921; cv=none; b=KV3OhZQzlFhYeU3GtDp2reMMEfgn4MmnZaloAij3YYryUxK1ouwlplgP35JX0ZDEFxGG6aAcFXfq5ASxBCMx0gQbS48js9sxxA6VHeqmGLFUydsao37NsP1jeFIl59WWfiQn6zMcYU9cMLfSNRbC6cochOijPNLe3j7buNU/xDY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724098121; c=relaxed/simple;
-	bh=2HCYxWf0jM8B0Mt6KGgwSSzmUDx2DPGXcQPeYf6+6TA=;
-	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=HCm/qoRH3zD72tsd+lQQTbdwplf8QK77wgaF19amFhqqMnpjF2KbykQ8sRJoLZUgUYR+B00FmHBuU0doAL3Ytl2HVckLGCwUnFs8gDk2nalQ24lcsdXs4YOQY0JvmZPsRtoUxCDUfao4zVgD7fZ1LxIyRdRef2z6gAF7LBEW0kM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=gzhPeAn/; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1724098921; c=relaxed/simple;
+	bh=YmPOdBHOOhyh3w2DYhiuqYlTkgCyCKlILJ31UvbzFsg=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=n4UY7wI0oS75qqTlS2F9N1sDvEElvw83tMYCXR92JKQ2GBWDWFi7eH4Z3iAtXuSJf0t0KPQNTai1H2BXqxR6E7nmyHHitAd32fgcHx7ZULsNRZEHgz94N/i7Pgn9PNKO9PKGS9SYrumqvl/ZgzytAEKLTsOE+6+/ywvLds9mGxk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KKWVrB1F; arc=none smtp.client-ip=209.85.128.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="gzhPeAn/"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47JATc9L002694;
-	Mon, 19 Aug 2024 20:08:24 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=oOSnHOne6wGKWYRAglUsHf
-	VosEcu5Tx8J8KBurt7o8Q=; b=gzhPeAn/KfnIXbAgtYuAd3f8BQJ9/f3dTuTxxe
-	mgMPKfUnCDiOU8CnHrLXHjLxnmHOQyquY2e9uoN3oYmBqSdPyTYIS/zTAPpf6wUw
-	D2h0zkcfTpDD2qWgRkfbk2m9EWBXTtieQoY+kvSsFAZr7wRfEhDrBFFNFSsRxtQO
-	y6dQuoICw7wkwBEpAs+sip3wMDyH43nrB6Mt3TPKKcMl9hO6Q6tkP21GXA4DDTLo
-	LsJxgpeoCirlOuOkXgtE5Pl57Sea3Kg5J4lsE5UNf8RmbJYdxskPfQ1gXLWacACA
-	kMrgzmKeSA0ktajrbOcRZ9OnyBA2Jy4H/CKVMVhk3Wty7eAw==
-Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 413qxg34cw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 19 Aug 2024 20:08:23 +0000 (GMT)
-Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-	by NALASPPMTA01.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 47JK8MaF030447
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 19 Aug 2024 20:08:22 GMT
-Received: from hu-bjorande-lv.qualcomm.com (10.49.16.6) by
- nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Mon, 19 Aug 2024 13:08:21 -0700
-From: Bjorn Andersson <quic_bjorande@quicinc.com>
-Subject: [PATCH v2 0/3] soc: qcom: pmic_glink: v6.11-rc bug fixes
-Date: Mon, 19 Aug 2024 13:07:44 -0700
-Message-ID: <20240819-pmic-glink-v6-11-races-v2-0-88fe3ab1f0e2@quicinc.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KKWVrB1F"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-428141be2ddso36821985e9.2;
+        Mon, 19 Aug 2024 13:21:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1724098918; x=1724703718; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:from:subject:user-agent:mime-version:date:message-id:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=vaS84ttcu/4010Fv9HBj9GzkRV/n79iBXqj2pli8Tbs=;
+        b=KKWVrB1FEIlj9U7Oyffem9qWdu1FBN7wTvTlBJbBEpD++IsFlaO9qQoWxpOXOQlM1b
+         2fbiOyVpUzM7IioqqtgAsyBlRV3Ikp5P0RYg33LPnCqaIRzYO24VuJuBlw/8f7JImiJi
+         2zXBxkTMBWFRx3qmBwr2TF89EUbKTTMmroEMEB8C5PbvZU8E8AenW/TQ9SYTAOEc8z2N
+         7V3clAjJezXi9dSIQhzCLzNkj9spuLcs3FjgjYlG9EFsAt6KaggZ4WXQN0wUmsi20hiO
+         +FdVjVReephwoQhtM2wvwTH7e/yP80jlSS9ToiTgSh3LTnDG/xdKQ0EMzZcDYlzGiabc
+         Pkrw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724098918; x=1724703718;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:from:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=vaS84ttcu/4010Fv9HBj9GzkRV/n79iBXqj2pli8Tbs=;
+        b=h3USDPnAwIWla/OOYOVCnpyFPPaR5wQjcPQApchzjpIhLHPOOkyx6K4a3f/95D7jde
+         V7/PytPonI3EV9gK9fp95VkinvB8GdLhgs40dKM+vrJETYDk5KP/rYC6fkBy/qBSTM4B
+         djxvR0IRrF8rFMBToRgyNIby1VYkB4mFV753wBbUNB0RijcyJPiizYT00lkYBkRPGOks
+         0AB8eC+1PIEdc6sLtLHQYkSpki83NrXf8GDtEWOmzi0pyR8ezZSj+HKrRU4WEvV/ZY29
+         SIXZjE9Ei8AKYHp0pgdZppa4Vx6eFEmMIkeS+HRIzvfv5qEBPNSf29DSEaZonZ8MVVT2
+         hmgg==
+X-Forwarded-Encrypted: i=1; AJvYcCUZW1whbe6HRlkAfxY1H0GyAwdxD25ZyjTjBokR5AV9RJlIE7OZKIIKDchP1Z8db+VGkiS8ndonhyE6@vger.kernel.org, AJvYcCXFSeW++yPzMgqYF2uNKxIowi4HUKctUDpsPcNO98NqasfxyBtc7FaQZddkFsFw/wzSv8FFGtHrOHWSTtEZ@vger.kernel.org
+X-Gm-Message-State: AOJu0YyzjvgYCbAumgAARdiMc5W8cW0wSjFHDU6LtpwecNbVQQh6CPTp
+	NVUNlSZKWLz0I7h75jBma9AeTp0LmJN22FEqd+KRIXuW6LFB/NC3
+X-Google-Smtp-Source: AGHT+IGSRZAWyt+DnYIwf5njkpB6uItML2uqPjDLE5kTdpFc+m+lKakFrb+klZliHoHggbI0Xsx4Qg==
+X-Received: by 2002:a05:600c:1c0a:b0:429:e6bb:a436 with SMTP id 5b1f17b1804b1-429ed79be6dmr88973655e9.9.1724098917396;
+        Mon, 19 Aug 2024 13:21:57 -0700 (PDT)
+Received: from ?IPV6:2001:861:3385:e20:6384:4cf:52c5:3194? ([2001:861:3385:e20:6384:4cf:52c5:3194])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-429ded35991sm173247315e9.21.2024.08.19.13.21.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 19 Aug 2024 13:21:57 -0700 (PDT)
+Message-ID: <85eedb28-c02f-40ef-9d65-e8689b3f7dbd@gmail.com>
+Date: Mon, 19 Aug 2024 22:21:56 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIABCmw2YC/4WNTQ6CMBBGr0Jm7ZiW8r/yHoYFjgNMlIKtNhrC3
- a1cwOV7yfe+FTw7YQ9NsoLjIF5mGyE9JEBjZwdGuUaGVKWZqnSFyySEw13sDUOBWqPriD2awvR
- 5XWRkTA1xvDju5b2Hz23kUfxzdp/9J+if/ZsMGhX2VUl5WbK6UH16vITE0pHmCdpt275RkSHav
- gAAAA==
-To: Sebastian Reichel <sre@kernel.org>,
-        Bjorn Andersson
-	<andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        "Heikki
- Krogerus" <heikki.krogerus@linux.intel.com>,
-        Greg Kroah-Hartman
-	<gregkh@linuxfoundation.org>,
-        Neil Armstrong <neil.armstrong@linaro.org>
-CC: Johan Hovold <johan+linaro@kernel.org>, Chris Lew <quic_clew@quicinc.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Stephen Boyd
-	<swboyd@chromium.org>,
-        Amit Pundir <amit.pundir@linaro.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-usb@vger.kernel.org>,
-        Bjorn Andersson
-	<quic_bjorande@quicinc.com>,
-        Johan Hovold <johan@kernel.org>, <stable@vger.kernel.org>
-X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1724098101; l=2324;
- i=quic_bjorande@quicinc.com; s=20230915; h=from:subject:message-id;
- bh=2HCYxWf0jM8B0Mt6KGgwSSzmUDx2DPGXcQPeYf6+6TA=;
- b=nSlPKXudz2PHd80dzcRxXlZkHQ+HGAxizHD8iJltKxs4u/suCYiw+9Sw0GnIuYS2erzPHeF9N
- iRXSFLJykobCtK6TkUGSGWfeDXIYFUCY55c8JRBGlOHM8B/nWni7FiY
-X-Developer-Key: i=quic_bjorande@quicinc.com; a=ed25519;
- pk=VkhObtljigy9k0ZUIE1Mvr0Y+E1dgBEH9WoLQnUtbIM=
-X-ClientProxiedBy: nalasex01a.na.qualcomm.com (10.47.209.196) To
- nalasex01c.na.qualcomm.com (10.47.97.35)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: 97sTMK23GBOeR069Yn9WxrlkH85WNnQo
-X-Proofpoint-GUID: 97sTMK23GBOeR069Yn9WxrlkH85WNnQo
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-08-19_16,2024-08-19_03,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- suspectscore=0 mlxlogscore=999 malwarescore=0 spamscore=0
- priorityscore=1501 lowpriorityscore=1 clxscore=1015 bulkscore=1
- adultscore=0 mlxscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2407110000 definitions=main-2408190137
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 0/2] Add thermal management support for STi platform
+From: =?UTF-8?Q?Rapha=C3=ABl_Gallais-Pou?= <rgallaispou@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Patrice Chotard <patrice.chotard@foss.st.com>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+References: <20240716-thermal-v4-0-947b327e165c@gmail.com>
+Content-Language: en-US, fr
+In-Reply-To: <20240716-thermal-v4-0-947b327e165c@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Amit and Johan both reported a NULL pointer dereference in the
-pmic_glink client code during initialization, and Stephen Boyd pointed
-out the problem (race condition).
+Hello,
 
-While investigating, and writing the fix, I noticed that
-ucsi_unregister() is called in atomic context but tries to sleep, and I
-also noticed that the condition for when to inform the pmic_glink client
-drivers when the remote has gone down is just wrong.
+Le 16/07/2024 à 19:34, Raphael Gallais-Pou a écrit :
+> This patch series enhances the st_thermal driver in order to enable
+> support for thermal zones. The changes include:
+> 
+> 1. Replace deprecated PM runtime macros with their updated counterparts.
+> 2. Implementing devm_* based thermal of zone functions within the driver.
+> 3. Updating the stih418 device-tree.
+> 
+> The device-tree patch depends on an earlier patch sent to the mailing
+> list [1].
+> 
+> As it is currently implemented, an alert threshold of 85°C is set to
+> trigger the CPU throttling, and when the temperature exceeds the
+> critical threshold of 95°C, the system shuts down. There is for now no
+> active cooling device on the platform, which explains the use of the
+> cpufreq framework.
+> 
+> [1] https://lore.kernel.org/lkml/20240320-thermal-v3-2-700296694c4a@gmail.com
+> 
+> Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
+> ---
+> Changes in v4:
+> - [2/2] optimize dependencies
+> - [2/2] do not return devm_* exit code
+> - Link to v3: https://lore.kernel.org/r/20240714-thermal-v3-0-88f2489ef7d5@gmail.com
 
-So, let's fix all three.
+Gentle ping on this serie :)
 
-As mentioned in the commit message for the UCSI fix, I have a series in
-the works that makes the GLINK callback happen in a sleepable context,
-which would remove the need for the clients list to be protected by a
-spinlock, and removing the work scheduling. This is however not -rc
-material...
+Thanks for your time,
 
-In addition to the NULL pointer dereference, there is the -ECANCELED
-issue reported here:
-https://lore.kernel.org/all/Zqet8iInnDhnxkT9@hovoldconsulting.com/
-Johan reports that these fixes do not address that issue.
+Regards,
+Raphaël
 
-Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
----
-Changes in v2:
-- Refer to the correct commit in the ucsi_unregister() patch.
-- Updated wording in the same commit message about the new error message
-  in the log.
-- Changed the data type of the introduced state variables, opted to go
-  for a bool as we only represent two states (and I would like to
-  further clean this up going forward)
-- Initialized the spinlock
-- Link to v1: https://lore.kernel.org/r/20240818-pmic-glink-v6-11-races-v1-0-f87c577e0bc9@quicinc.com
-
----
-Bjorn Andersson (3):
-      soc: qcom: pmic_glink: Fix race during initialization
-      usb: typec: ucsi: Move unregister out of atomic section
-      soc: qcom: pmic_glink: Actually communicate with remote goes down
-
- drivers/power/supply/qcom_battmgr.c   | 16 ++++++++-----
- drivers/soc/qcom/pmic_glink.c         | 40 ++++++++++++++++++++++----------
- drivers/soc/qcom/pmic_glink_altmode.c | 17 +++++++++-----
- drivers/usb/typec/ucsi/ucsi_glink.c   | 43 ++++++++++++++++++++++++++---------
- include/linux/soc/qcom/pmic_glink.h   | 11 +++++----
- 5 files changed, 87 insertions(+), 40 deletions(-)
----
-base-commit: 2fd613d27928293eaa87788b10e8befb6805cd42
-change-id: 20240818-pmic-glink-v6-11-races-363f5964c339
-
-Best regards,
--- 
-Bjorn Andersson <quic_bjorande@quicinc.com>
-
+> 
+> Changes in v3:
+> - Fix unmet dependency in [2/2]
+> - Remove no more used variable in [2/2]
+> - Remove already merged patch in soc tree
+> - Link to v2: https://lore.kernel.org/r/20240625-thermal-v2-0-bf8354ed51ee@gmail.com
+> 
+> Changes in v2:
+> - Add Patrice's R-b
+> - Edit patch [2/3] to remove unused struct
+> - Link to v1: https://lore.kernel.org/r/20240518-thermal-v1-0-7dfca3ed454b@gmail.com
+> 
+> ---
+> Raphael Gallais-Pou (2):
+>        thermal: st: switch from CONFIG_PM_SLEEP guards to pm_sleep_ptr()
+>        thermal: sti: depend on THERMAL_OF subsystem
+> 
+>   drivers/thermal/Kconfig                |  2 +-
+>   drivers/thermal/st/st_thermal.c        | 32 ++++++++++++--------------------
+>   drivers/thermal/st/st_thermal_memmap.c |  2 +-
+>   drivers/thermal/st/stm_thermal.c       |  8 +++-----
+>   4 files changed, 17 insertions(+), 27 deletions(-)
+> ---
+> base-commit: 4f40be61af99a67d5580c1448acd9b74c0376389
+> change-id: 20240518-thermal-8f625428acf9
+> 
+> Best regards,
