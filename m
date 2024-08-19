@@ -1,49 +1,43 @@
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E84A16D4EA;
-	Mon, 19 Aug 2024 16:04:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33A4316C874;
+	Mon, 19 Aug 2024 16:11:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724083499; cv=none; b=B+Z47QEtYf/wA0ok7UUopIqziJXUWIEftV7tonhD0RsRLB33BOIbpOwa38seIbApxchryeCT0NtXxO/IFnu8clk78qhh4YxbmsslfGKPDA3IMwhYoiKB/GXsZ5w7rfmC4eKstSA1RZaiork+eIMF5oQZ7T8PUSC4jj0c8AbReh0=
+	t=1724083872; cv=none; b=OW2HggFd56decl0Y8iMoSDRrd05nWJi7uapvCWG5ygUHiAHl2tsR5N/Y3u9wph1K3DTiqFr06aNC5Eivx0zttxSklaG/EnlN7WChdy5oGu1j1Z0IcWYd8+37cJ8wuOCfNwsFmGJ/l1kqeWZ9ESjBenvrH063mNsL/20nu2D/xWo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724083499; c=relaxed/simple;
-	bh=ZXbpyHMAGJYx54LmLaj3gRGrRBxIwYHPWlCzt9IM25M=;
+	s=arc-20240116; t=1724083872; c=relaxed/simple;
+	bh=lsD3l0zy9n7q31pbaGfU5guogshI72B6C37og0kv7yY=;
 	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hdBHiqLrxLHYjTHHu364iA+YRKMpHeVBVlvn82Nhm1nn0zOy9Cc03eahfmoupel68OjbpbPJpH+Xs7C9cO1CYSCY2k2WCbZGuMr9+i84pmkTzFOOHzMo6gZPBn/X9/z1tZGNz0ayBFr1La9j89Rc3CTdwnH05JeH0wQiS3TbO6Q=
+	 MIME-Version:Content-Type; b=th30HNB3KB6fPOfOyfCsLnGvoeBSDsWMOddpPciHSLXEMzghSN/rf46P5lg6w0Wl0GgnX1t5oLJWT/qP5UNmyhH5gRsRlmo0xF13iM3uqq6aMrUmpsJ3xuJL9h9SKR4Es3fy3qaptVAirMa9q5bAXjMvRLOFPR36pvclt6mKIVo=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Received: from mail.maildlp.com (unknown [172.18.186.231])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WncmT5Zx2z67fBs;
-	Tue, 20 Aug 2024 00:02:01 +0800 (CST)
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WncvR3GBnz67MmR;
+	Tue, 20 Aug 2024 00:08:03 +0800 (CST)
 Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
-	by mail.maildlp.com (Postfix) with ESMTPS id 4827B1400DD;
-	Tue, 20 Aug 2024 00:04:55 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 9E4F51400DB;
+	Tue, 20 Aug 2024 00:11:06 +0800 (CST)
 Received: from localhost (10.203.177.66) by lhrpeml500005.china.huawei.com
  (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Mon, 19 Aug
- 2024 17:04:54 +0100
-Date: Mon, 19 Aug 2024 17:04:53 +0100
+ 2024 17:11:06 +0100
+Date: Mon, 19 Aug 2024 17:11:04 +0100
 From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
 To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-CC: Krzysztof Kozlowski <krzk@kernel.org>, Nicolas Ferre
-	<nicolas.ferre@microchip.com>, Alexandre Belloni
-	<alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Lukasz Luba <lukasz.luba@arm.com>, Alim Akhtar <alim.akhtar@samsung.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue
-	<alexandre.torgue@foss.st.com>, Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>, Santosh Shilimkar
-	<ssantosh@kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-	<linux-samsung-soc@vger.kernel.org>,
-	<linux-stm32@st-md-mailman.stormreply.com>, <linux-tegra@vger.kernel.org>
-Subject: Re: [PATCH v2 01/13] memory: atmel-ebi: use scoped device node
- handling to simplify error paths
-Message-ID: <20240819170453.00003da1@Huawei.com>
-In-Reply-To: <20240816-cleanup-h-of-node-put-memory-v2-1-9eed0ee16b78@linaro.org>
-References: <20240816-cleanup-h-of-node-put-memory-v2-0-9eed0ee16b78@linaro.org>
-	<20240816-cleanup-h-of-node-put-memory-v2-1-9eed0ee16b78@linaro.org>
+CC: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki"
+	<rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Anup Patel
+	<anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, "Palmer
+ Dabbelt" <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+	<linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, <linux-riscv@lists.infradead.org>
+Subject: Re: [PATCH 1/4] cpuidle: psci: Simplify with scoped for each OF
+ child loop
+Message-ID: <20240819171104.0000625c@Huawei.com>
+In-Reply-To: <20240816150931.142208-1-krzysztof.kozlowski@linaro.org>
+References: <20240816150931.142208-1-krzysztof.kozlowski@linaro.org>
 Organization: Huawei Technologies Research and Development (UK) Ltd.
 X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 Precedence: bulk
@@ -57,16 +51,56 @@ Content-Transfer-Encoding: 7bit
 X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 
-On Fri, 16 Aug 2024 12:54:25 +0200
+On Fri, 16 Aug 2024 17:09:28 +0200
 Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
 
-> Obtain the device node reference with scoped/cleanup.h to reduce error
-> handling and make the code a bit simpler.
+> Use scoped for_each_child_of_node_scoped() when iterating over device
+> nodes to make code a bit simpler.
 > 
 > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-I'm not entirely keen on the increased scope for which the reference
-is held but doesn't really matter.
-
+Looks fine,
+FWIW
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
->
+If you are bored, the pr_err() at end of here seems like it should be
+
+return dev_err_probe(pdev->dev, ret, "failed to create CPU PM domains\n");
+
+But that's obviously completely unrelated!
+
+
+> ---
+>  drivers/cpuidle/cpuidle-psci-domain.c | 7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
+> index ea28b73ef3fb..146f97068022 100644
+> --- a/drivers/cpuidle/cpuidle-psci-domain.c
+> +++ b/drivers/cpuidle/cpuidle-psci-domain.c
+> @@ -142,7 +142,6 @@ static const struct of_device_id psci_of_match[] = {
+>  static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+>  {
+>  	struct device_node *np = pdev->dev.of_node;
+> -	struct device_node *node;
+>  	bool use_osi = psci_has_osi_support();
+>  	int ret = 0, pd_count = 0;
+>  
+> @@ -153,15 +152,13 @@ static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+>  	 * Parse child nodes for the "#power-domain-cells" property and
+>  	 * initialize a genpd/genpd-of-provider pair when it's found.
+>  	 */
+> -	for_each_child_of_node(np, node) {
+> +	for_each_child_of_node_scoped(np, node) {
+>  		if (!of_property_present(node, "#power-domain-cells"))
+>  			continue;
+>  
+>  		ret = psci_pd_init(node, use_osi);
+> -		if (ret) {
+> -			of_node_put(node);
+> +		if (ret)
+>  			goto exit;
+> -		}
+>  
+>  		pd_count++;
+>  	}
+
