@@ -1,198 +1,135 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F45C16CD25;
-	Mon, 19 Aug 2024 16:12:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70A9F16C87B;
+	Mon, 19 Aug 2024 16:13:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724083982; cv=none; b=QogSiBYw4p6AdNyHptNy3IW+geMnObs4RXuWpgXzxX+tOZrX6yNKpJRC9cp8Jop2+f97Nf6oU4HjT4BvICvg+K1wNihlPqXc6r1EvX/GDX6ys4ji3rsxFEVp7zsL6mgUdccYOy/7p1I7Da8pMow2ZdUqwhl6LVQXjf6dsgGbAM4=
+	t=1724084001; cv=none; b=oq8h4jusaWDxn09K2Ao9cbIo+W0Td6XsRSZdakmFlV+WDCCq/9xGzPHlOcuQlfiXvA8kg9ZnYlQrFrfhI+BuWpIFZxPuGKbdq1DDjculht84FoShpgokpLS7+GUTL7C1hERdgoGTc09ys1PvDdo8XgQ1x7h/FypQfIiEsDOYIfo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724083982; c=relaxed/simple;
-	bh=Y7bWsV025NYXD3jk9dYoYZH4kcEom9wOJTmyjIRXAgA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=sAlylcXLeTLcL0naIE/EXEEXMKgK1SZP4rTJ4YVQCDodRGzDWsYQ0IxUBr6AaJeJa7R6QiwulnzvGw1+xxxYKzZrLTVufFEjFfdjD4s/yuA68sAcZvxsEBg98gmmkjQe2YA3Vm4n/JwnAIQbmkRP5hYigyqN9TIUXNnf3s5twZI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Ilfn3GCR reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Ilfn3GCR"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 3c329492ee2d50a5; Mon, 19 Aug 2024 18:12:52 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 9A9AD73B5D4;
-	Mon, 19 Aug 2024 18:12:51 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1724083972;
-	bh=Y7bWsV025NYXD3jk9dYoYZH4kcEom9wOJTmyjIRXAgA=;
-	h=From:Subject:Date;
-	b=Ilfn3GCRuxgFHNuROMhsissha3vztRdLuJFfGWDGmbkoySya4EypecFL2kLEn/kIx
-	 slCAEI2/51UOaBbwl9KVlHIU4yrIuBhvcCltL5ugGv6oIaXkDcH92XYNiDJGka0AGB
-	 8Pc8UADnSHn9PNk2ve+s/hSUCPrH6Prgp5+a1QTKOU6PtQ0pUNwSjk2gFm+q6DddHE
-	 6M7EHOhfiyuc9bEGzTHE+8Ha17ITacvR867wRLijrQ0i7Ow+kht7CSwRRG97JU+ZLE
-	 ijvqOJa1ubKcISF97Pp59XvuJnAtECXreHO8Ijf+omWDGCVFFJ1jYPLX6yMN+/gJ1s
-	 r+LBeF3MH8X0Q==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
-Subject:
- [PATCH v3 05/14] thermal: core: Move thermal zone locking out of bind/unbind
- functions
-Date: Mon, 19 Aug 2024 17:58:27 +0200
-Message-ID: <3837835.kQq0lBPeGt@rjwysocki.net>
-In-Reply-To: <2205737.irdbgypaU6@rjwysocki.net>
-References: <2205737.irdbgypaU6@rjwysocki.net>
+	s=arc-20240116; t=1724084001; c=relaxed/simple;
+	bh=q6Oz7X2Bvs4xfrEmNDgXRRjpjAiOMMeGtsxMTa4V4Xw=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=i4K0BAMqkzfC9623awVeMezuuaW3jJR92ZFRTejIdOzU7uaA/AudV9mHW2Q4cUoUmQfsTPNIxC5A4XMw6iQQNCR4D7aE/wdVqpx4DYr5mWyudnh+9jZA9WxYLO7RKq/Wnn2uTfLtkZSBliE2D8rHeWHzlnsgE+dNDZF8+c+OD58=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.186.231])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WncxM0V7Rz6J6jB;
+	Tue, 20 Aug 2024 00:09:43 +0800 (CST)
+Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
+	by mail.maildlp.com (Postfix) with ESMTPS id C9AC31400DB;
+	Tue, 20 Aug 2024 00:13:15 +0800 (CST)
+Received: from localhost (10.203.177.66) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Mon, 19 Aug
+ 2024 17:13:15 +0100
+Date: Mon, 19 Aug 2024 17:13:13 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+CC: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki"
+	<rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Anup Patel
+	<anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, "Palmer
+ Dabbelt" <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+	<linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, <linux-riscv@lists.infradead.org>
+Subject: Re: [PATCH 2/4] cpuidle: riscv-sbi: Use scoped device node handling
+ to simplify error paths
+Message-ID: <20240819171313.00004677@Huawei.com>
+In-Reply-To: <20240816150931.142208-2-krzysztof.kozlowski@linaro.org>
+References: <20240816150931.142208-1-krzysztof.kozlowski@linaro.org>
+	<20240816150931.142208-2-krzysztof.kozlowski@linaro.org>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddruddugedgleekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, 16 Aug 2024 17:09:29 +0200
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
 
-Since thermal_bind_cdev_to_trip() and thermal_unbind_cdev_from_trip()
-acquire the thermal zone lock, the locking rules for their callers get
-complicated.  In particular, the thermal zone lock cannot be acquired
-in any code path leading to one of these functions even though it might
-be useful to do so.
+> Obtain the device node reference with scoped/cleanup.h to reduce error
+> handling and make the code a bit simpler.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+The original code looks suspect. See below.
 
-To address this, remove the thermal zone locking from both these
-functions, add lockdep assertions for the thermal zone lock to both
-of them and make their callers acquire the thermal zone lock instead.
+> ---
+>  drivers/cpuidle/cpuidle-riscv-sbi.c | 21 +++++++--------------
+>  1 file changed, 7 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-riscv-sbi.c b/drivers/cpuidle/cpuidle-riscv-sbi.c
+> index a6e123dfe394..5bb3401220d2 100644
+> --- a/drivers/cpuidle/cpuidle-riscv-sbi.c
+> +++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
+> @@ -8,6 +8,7 @@
+>  
+>  #define pr_fmt(fmt) "cpuidle-riscv-sbi: " fmt
+>  
+> +#include <linux/cleanup.h>
+>  #include <linux/cpuhotplug.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/cpumask.h>
+> @@ -236,19 +237,16 @@ static int sbi_cpuidle_dt_init_states(struct device *dev,
+>  {
+>  	struct sbi_cpuidle_data *data = per_cpu_ptr(&sbi_cpuidle_data, cpu);
+>  	struct device_node *state_node;
+> -	struct device_node *cpu_node;
+>  	u32 *states;
+>  	int i, ret;
+>  
+> -	cpu_node = of_cpu_device_node_get(cpu);
+> +	struct device_node *cpu_node __free(device_node) = of_cpu_device_node_get(cpu);
+>  	if (!cpu_node)
+>  		return -ENODEV;
+>  
+>  	states = devm_kcalloc(dev, state_count, sizeof(*states), GFP_KERNEL);
+> -	if (!states) {
+> -		ret = -ENOMEM;
+> -		goto fail;
+> -	}
+> +	if (!states)
+> +		return -ENOMEM;
+>  
+>  	/* Parse SBI specific details from state DT nodes */
+>  	for (i = 1; i < state_count; i++) {
+> @@ -264,10 +262,8 @@ static int sbi_cpuidle_dt_init_states(struct device *dev,
+>  
+>  		pr_debug("sbi-state %#x index %d\n", states[i], i);
+>  	}
+> -	if (i != state_count) {
+> -		ret = -ENODEV;
+> -		goto fail;
+> -	}
+> +	if (i != state_count)
+> +		return -ENODEV;
+>  
+>  	/* Initialize optional data, used for the hierarchical topology. */
+>  	ret = sbi_dt_cpu_init_topology(drv, data, state_count, cpu);
+The handling of error ret from here doesn't free the node.
 
-No intentional functional impact.
+Bug or something subtle I'm missing?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-v2 -> v3: Rebase after dropping patches [04-05/17] from the series
-
-v1 -> v2: No changes
-
----
- drivers/acpi/thermal.c         |    2 +-
- drivers/thermal/thermal_core.c |   30 ++++++++++++++++++++++--------
- 2 files changed, 23 insertions(+), 9 deletions(-)
-
-Index: linux-pm/drivers/thermal/thermal_core.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -785,6 +785,7 @@ int thermal_bind_cdev_to_trip(struct the
- 	int result;
- 
- 	lockdep_assert_held(&thermal_list_lock);
-+	lockdep_assert_held(&tz->lock);
- 
- 	if (list_empty(&tz->node) || list_empty(&cdev->node))
- 		return -EINVAL;
-@@ -847,7 +848,6 @@ int thermal_bind_cdev_to_trip(struct the
- 	if (result)
- 		goto remove_trip_file;
- 
--	mutex_lock(&tz->lock);
- 	mutex_lock(&cdev->lock);
- 	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
- 		if (pos->trip == trip && pos->cdev == cdev) {
-@@ -862,7 +862,6 @@ int thermal_bind_cdev_to_trip(struct the
- 		thermal_governor_update_tz(tz, THERMAL_TZ_BIND_CDEV);
- 	}
- 	mutex_unlock(&cdev->lock);
--	mutex_unlock(&tz->lock);
- 
- 	if (!result)
- 		return 0;
-@@ -886,11 +885,19 @@ int thermal_zone_bind_cooling_device(str
- 				     unsigned long upper, unsigned long lower,
- 				     unsigned int weight)
- {
-+	int ret;
-+
- 	if (trip_index < 0 || trip_index >= tz->num_trips)
- 		return -EINVAL;
- 
--	return thermal_bind_cdev_to_trip(tz, &tz->trips[trip_index].trip, cdev,
--					 upper, lower, weight);
-+	mutex_lock(&tz->lock);
-+
-+	ret = thermal_bind_cdev_to_trip(tz, &tz->trips[trip_index].trip, cdev,
-+					upper, lower, weight);
-+
-+	mutex_unlock(&tz->lock);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(thermal_zone_bind_cooling_device);
- 
-@@ -912,7 +919,8 @@ int thermal_unbind_cdev_from_trip(struct
- {
- 	struct thermal_instance *pos, *next;
- 
--	mutex_lock(&tz->lock);
-+	lockdep_assert_held(&tz->lock);
-+
- 	mutex_lock(&cdev->lock);
- 	list_for_each_entry_safe(pos, next, &tz->thermal_instances, tz_node) {
- 		if (pos->trip == trip && pos->cdev == cdev) {
-@@ -922,12 +930,10 @@ int thermal_unbind_cdev_from_trip(struct
- 			thermal_governor_update_tz(tz, THERMAL_TZ_UNBIND_CDEV);
- 
- 			mutex_unlock(&cdev->lock);
--			mutex_unlock(&tz->lock);
- 			goto unbind;
- 		}
- 	}
- 	mutex_unlock(&cdev->lock);
--	mutex_unlock(&tz->lock);
- 
- 	return -ENODEV;
- 
-@@ -945,10 +951,18 @@ int thermal_zone_unbind_cooling_device(s
- 				       int trip_index,
- 				       struct thermal_cooling_device *cdev)
- {
-+	int ret;
-+
- 	if (trip_index < 0 || trip_index >= tz->num_trips)
- 		return -EINVAL;
- 
--	return thermal_unbind_cdev_from_trip(tz, &tz->trips[trip_index].trip, cdev);
-+	mutex_lock(&tz->lock);
-+
-+	ret = thermal_unbind_cdev_from_trip(tz, &tz->trips[trip_index].trip, cdev);
-+
-+	mutex_unlock(&tz->lock);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(thermal_zone_unbind_cooling_device);
- 
-Index: linux-pm/drivers/acpi/thermal.c
-===================================================================
---- linux-pm.orig/drivers/acpi/thermal.c
-+++ linux-pm/drivers/acpi/thermal.c
-@@ -609,7 +609,7 @@ static int acpi_thermal_bind_unbind_cdev
- 		.thermal = thermal, .cdev = cdev, .bind = bind
- 	};
- 
--	return for_each_thermal_trip(thermal, bind_unbind_cdev_cb, &bd);
-+	return thermal_zone_for_each_trip(thermal, bind_unbind_cdev_cb, &bd);
- }
- 
- static int
+If it's a bug, then fixes tag.
 
 
+> @@ -277,10 +273,7 @@ static int sbi_cpuidle_dt_init_states(struct device *dev,
+>  	/* Store states in the per-cpu struct. */
+>  	data->states = states;
+>  
+> -fail:
+> -	of_node_put(cpu_node);
+> -
+> -	return ret;
+> +	return 0;
+>  }
+>  
+>  static void sbi_cpuidle_deinit_cpu(int cpu)
 
