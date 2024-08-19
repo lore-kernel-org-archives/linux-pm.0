@@ -1,135 +1,132 @@
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70A9F16C87B;
-	Mon, 19 Aug 2024 16:13:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8137D8287D;
+	Mon, 19 Aug 2024 16:14:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724084001; cv=none; b=oq8h4jusaWDxn09K2Ao9cbIo+W0Td6XsRSZdakmFlV+WDCCq/9xGzPHlOcuQlfiXvA8kg9ZnYlQrFrfhI+BuWpIFZxPuGKbdq1DDjculht84FoShpgokpLS7+GUTL7C1hERdgoGTc09ys1PvDdo8XgQ1x7h/FypQfIiEsDOYIfo=
+	t=1724084100; cv=none; b=F2Lxll+8uwysFs/hyOwVPIUNhz2EDGKTv2uXFI288MEbshhiu+kNRu7ZqFFf76UZsCBL/KjyGXtp9uKb8JirURRVIotwsq8DWQ0iHxA4aoxQsvjHR88Vzbe3hkK/+QKGuzj2xEAzaXzhNa5Ayu46ws/YENCL7mBTeweOtc3XzNA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724084001; c=relaxed/simple;
-	bh=q6Oz7X2Bvs4xfrEmNDgXRRjpjAiOMMeGtsxMTa4V4Xw=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=i4K0BAMqkzfC9623awVeMezuuaW3jJR92ZFRTejIdOzU7uaA/AudV9mHW2Q4cUoUmQfsTPNIxC5A4XMw6iQQNCR4D7aE/wdVqpx4DYr5mWyudnh+9jZA9WxYLO7RKq/Wnn2uTfLtkZSBliE2D8rHeWHzlnsgE+dNDZF8+c+OD58=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.18.186.231])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WncxM0V7Rz6J6jB;
-	Tue, 20 Aug 2024 00:09:43 +0800 (CST)
-Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
-	by mail.maildlp.com (Postfix) with ESMTPS id C9AC31400DB;
-	Tue, 20 Aug 2024 00:13:15 +0800 (CST)
-Received: from localhost (10.203.177.66) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Mon, 19 Aug
- 2024 17:13:15 +0100
-Date: Mon, 19 Aug 2024 17:13:13 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-CC: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki"
-	<rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Anup Patel
-	<anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, "Palmer
- Dabbelt" <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
-	<linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, <linux-riscv@lists.infradead.org>
-Subject: Re: [PATCH 2/4] cpuidle: riscv-sbi: Use scoped device node handling
- to simplify error paths
-Message-ID: <20240819171313.00004677@Huawei.com>
-In-Reply-To: <20240816150931.142208-2-krzysztof.kozlowski@linaro.org>
-References: <20240816150931.142208-1-krzysztof.kozlowski@linaro.org>
-	<20240816150931.142208-2-krzysztof.kozlowski@linaro.org>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+	s=arc-20240116; t=1724084100; c=relaxed/simple;
+	bh=yOoHzqLUTBFUQBVMxFx/zG8qRaSxgH7mXRaklGOOfrc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=oK+JcZDSC4swE1WgABqSXukjVK7BmewKBUypzBMzWLtAV3/uIPB/9EmAvQKH2rQWutAGPkOJMWdvcBXcuJDDPQXfNosmDSeHxoHBvqd0P+aoHGXufv200hFAYJ2+74m6EtPtHWJVP3PjapESQl3aphV658HIwr6dHzELYy6L2Jc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=i5IMZkE4 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="i5IMZkE4"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
+ id 85c0a09860a87d52; Mon, 19 Aug 2024 18:14:56 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 0E10C73B5D9;
+	Mon, 19 Aug 2024 18:14:56 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1724084096;
+	bh=yOoHzqLUTBFUQBVMxFx/zG8qRaSxgH7mXRaklGOOfrc=;
+	h=From:Subject:Date;
+	b=i5IMZkE4TczYo9eG/IYN06fUzyEnlUvg/6j3VN+qQMatuY6Kv2EgMwLvUsOl01/Co
+	 dB4/pYsBfQqc2LMeMmbBpooWkHzgqYe7C1hxmVI8F4j369TuVdushgzPXaKo8RDYg3
+	 FQaodTraOmk7ClNrjIXAJCxr76+m67IqdAgDcVjC0wAGkXSXrd0hmvcE+Iw2gwjekq
+	 Ku/fzcar+wiMDMFfReZa8bwq2R6m86k8e5u+4sMLMFOoYHwqKDczXgOiOHQWT7rico
+	 kuvRTc43ynuPJm86IKy9XBieFON5gvOvjB2iJkHpNyICl8iJ7+4iHjh1hHLDFd/Bse
+	 Vgd/PlfAfhXmw==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
+Subject:
+ [PATCH v3 04/14] thermal: sysfs: Use the dev argument in instance-related
+ show/store
+Date: Mon, 19 Aug 2024 17:56:15 +0200
+Message-ID: <1987669.PYKUYFuaPT@rjwysocki.net>
+In-Reply-To: <2205737.irdbgypaU6@rjwysocki.net>
+References: <2205737.irdbgypaU6@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: spam:low
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddruddugedgleekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
 
-On Fri, 16 Aug 2024 17:09:29 +0200
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> Obtain the device node reference with scoped/cleanup.h to reduce error
-> handling and make the code a bit simpler.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-The original code looks suspect. See below.
+Two sysfs show/store functions for attributes representing thermal
+instances, trip_point_show() and weight_store(), retrieve the thermal
+zone pointer from the instance object at hand, but they may also get
+it from their dev argument, which is more consistent with what the
+other thermal sysfs functions do, so make them do so.
 
-> ---
->  drivers/cpuidle/cpuidle-riscv-sbi.c | 21 +++++++--------------
->  1 file changed, 7 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-riscv-sbi.c b/drivers/cpuidle/cpuidle-riscv-sbi.c
-> index a6e123dfe394..5bb3401220d2 100644
-> --- a/drivers/cpuidle/cpuidle-riscv-sbi.c
-> +++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
-> @@ -8,6 +8,7 @@
->  
->  #define pr_fmt(fmt) "cpuidle-riscv-sbi: " fmt
->  
-> +#include <linux/cleanup.h>
->  #include <linux/cpuhotplug.h>
->  #include <linux/cpuidle.h>
->  #include <linux/cpumask.h>
-> @@ -236,19 +237,16 @@ static int sbi_cpuidle_dt_init_states(struct device *dev,
->  {
->  	struct sbi_cpuidle_data *data = per_cpu_ptr(&sbi_cpuidle_data, cpu);
->  	struct device_node *state_node;
-> -	struct device_node *cpu_node;
->  	u32 *states;
->  	int i, ret;
->  
-> -	cpu_node = of_cpu_device_node_get(cpu);
-> +	struct device_node *cpu_node __free(device_node) = of_cpu_device_node_get(cpu);
->  	if (!cpu_node)
->  		return -ENODEV;
->  
->  	states = devm_kcalloc(dev, state_count, sizeof(*states), GFP_KERNEL);
-> -	if (!states) {
-> -		ret = -ENOMEM;
-> -		goto fail;
-> -	}
-> +	if (!states)
-> +		return -ENOMEM;
->  
->  	/* Parse SBI specific details from state DT nodes */
->  	for (i = 1; i < state_count; i++) {
-> @@ -264,10 +262,8 @@ static int sbi_cpuidle_dt_init_states(struct device *dev,
->  
->  		pr_debug("sbi-state %#x index %d\n", states[i], i);
->  	}
-> -	if (i != state_count) {
-> -		ret = -ENODEV;
-> -		goto fail;
-> -	}
-> +	if (i != state_count)
-> +		return -ENODEV;
->  
->  	/* Initialize optional data, used for the hierarchical topology. */
->  	ret = sbi_dt_cpu_init_topology(drv, data, state_count, cpu);
-The handling of error ret from here doesn't free the node.
+No intentional functional impact.
 
-Bug or something subtle I'm missing?
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-If it's a bug, then fixes tag.
+v1 -> v3: No changes (previously [06/17])
+
+---
+ drivers/thermal/thermal_sysfs.c |   15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+Index: linux-pm/drivers/thermal/thermal_sysfs.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_sysfs.c
++++ linux-pm/drivers/thermal/thermal_sysfs.c
+@@ -836,13 +836,12 @@ void thermal_cooling_device_stats_reinit
+ ssize_t
+ trip_point_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
++	struct thermal_zone_device *tz = to_thermal_zone(dev);
+ 	struct thermal_instance *instance;
+ 
+-	instance =
+-	    container_of(attr, struct thermal_instance, attr);
++	instance = container_of(attr, struct thermal_instance, attr);
+ 
+-	return sprintf(buf, "%d\n",
+-		       thermal_zone_trip_id(instance->tz, instance->trip));
++	return sprintf(buf, "%d\n", thermal_zone_trip_id(tz, instance->trip));
+ }
+ 
+ ssize_t
+@@ -858,6 +857,7 @@ weight_show(struct device *dev, struct d
+ ssize_t weight_store(struct device *dev, struct device_attribute *attr,
+ 		     const char *buf, size_t count)
+ {
++	struct thermal_zone_device *tz = to_thermal_zone(dev);
+ 	struct thermal_instance *instance;
+ 	int ret, weight;
+ 
+@@ -868,14 +868,13 @@ ssize_t weight_store(struct device *dev,
+ 	instance = container_of(attr, struct thermal_instance, weight_attr);
+ 
+ 	/* Don't race with governors using the 'weight' value */
+-	mutex_lock(&instance->tz->lock);
++	mutex_lock(&tz->lock);
+ 
+ 	instance->weight = weight;
+ 
+-	thermal_governor_update_tz(instance->tz,
+-				   THERMAL_INSTANCE_WEIGHT_CHANGED);
++	thermal_governor_update_tz(tz, THERMAL_INSTANCE_WEIGHT_CHANGED);
+ 
+-	mutex_unlock(&instance->tz->lock);
++	mutex_unlock(&tz->lock);
+ 
+ 	return count;
+ }
 
 
-> @@ -277,10 +273,7 @@ static int sbi_cpuidle_dt_init_states(struct device *dev,
->  	/* Store states in the per-cpu struct. */
->  	data->states = states;
->  
-> -fail:
-> -	of_node_put(cpu_node);
-> -
-> -	return ret;
-> +	return 0;
->  }
->  
->  static void sbi_cpuidle_deinit_cpu(int cpu)
 
