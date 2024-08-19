@@ -1,128 +1,180 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AF87139578;
-	Mon, 19 Aug 2024 16:19:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA5C9171E40;
+	Mon, 19 Aug 2024 16:19:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724084371; cv=none; b=b8AEBmUafN6uDvIv+gdb8TO3p2GGonF8TcKjreWsTLaDXWr3G9/MiW1S3x/9Q2RuCjyGh4kipV0hZLzAqkfk+UXPBRuWot/L9gWVJcQDjWUx+1mUvzZxg8WqacEDMBrPBdlduJzgHlMf103fFySuU3BaE10jVi80f2CZOUKvah0=
+	t=1724084402; cv=none; b=EIzU3hvHPUE8irTVy9sVDnStzXlC7e58cVhjiUR2fq2tns4F+Gw3F4JVJaE1Z3liFMQHCmdIZOGx1FyFrEGszsHrx5yKcC0QVtji7X8va0J9DT2A09bo0uThYCoQNT0HOVuAzVsSJ0Bcl84hWFoXHze0ndsQ764DD1tzwJ1LJss=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724084371; c=relaxed/simple;
-	bh=3MFHfwfDzx2g6dRLRWIn0vyc3XxIR0akm9KhefoMg0o=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=bw/5mYKXuebT6C/nHAiksFaNMSEKEataHsI/h+UY3VSGKcRWegYlBcyTchFuJfeI1SCY+acvr95LegA3xhgDmJn1TOaQpqRLQAzIQN6W2Oq65LIpj3EAjZA2uHK0bfuIZrrTsMJsfwJzt/hRK02qmOlMa9+GBy5QQzK8LFFK/+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=unGGN8Eg reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="unGGN8Eg"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 2934c9cd07d903aa; Mon, 19 Aug 2024 18:19:27 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 2EB9373B5D4;
-	Mon, 19 Aug 2024 18:19:27 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1724084367;
-	bh=3MFHfwfDzx2g6dRLRWIn0vyc3XxIR0akm9KhefoMg0o=;
-	h=From:Subject:Date;
-	b=unGGN8EgzNH/LntS9cZckoffhKCkhBhTbbUydpjfGfP2VnOMe6nkPj4cgsRfihwJU
-	 8H1I9ldbcejuTR0aUjtxWD7S+53V4ojmgxkoRzJWe0TOtUhxiKcrc7XBXAxrKhJlpj
-	 UvyFINdeIoP6sE1bS23AOnlXcuIrytUKPwKnhBwJIH/6SI/LUFD4MoLA4UIpy+MdrI
-	 +73FdqUArfVkV0TUkTUkhGqrPNCQmfmAlBNYPFXe+8/ZcgwbPlktFAsE70KAShJ7wU
-	 +8MtRATaLvw6CybX8OUjBLCkh9vHCGfV0pbLeLdJYp1P7AJ+LEvABC6J6noTGYEI3k
-	 9JLpRb+Rok5BQ==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
-Subject:
- [PATCH v3 00/14] thermal: Rework binding cooling devices to trip points
-Date: Mon, 19 Aug 2024 17:49:07 +0200
-Message-ID: <2205737.irdbgypaU6@rjwysocki.net>
+	s=arc-20240116; t=1724084402; c=relaxed/simple;
+	bh=5SSV7DkFmOl+bKJkrZT6bYYiWZ6Sy0xh6MTS9UC0VVI=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=hIqDGXO6hyd+EXpssQC2BA8B/lJpQ87fG9jRlPNIe3jKp682wkq/mxc+ZZ24uxd0q6IVLdzNjadn1g2mcSwTLOWklqLiWeiD2dyQ64KF9/8GSxJzJMF3jlSnMWvJMEmv0i4XAkblczcvBIEJLg8p6LH1ZCmG+WymLDqy81yyMzE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.186.231])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Wnd5d3wgkz6K6j4;
+	Tue, 20 Aug 2024 00:16:53 +0800 (CST)
+Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
+	by mail.maildlp.com (Postfix) with ESMTPS id B69C51400DD;
+	Tue, 20 Aug 2024 00:19:56 +0800 (CST)
+Received: from localhost (10.203.177.66) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Mon, 19 Aug
+ 2024 17:19:56 +0100
+Date: Mon, 19 Aug 2024 17:19:54 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+CC: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki"
+	<rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Anup Patel
+	<anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, "Palmer
+ Dabbelt" <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+	<linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, <linux-riscv@lists.infradead.org>
+Subject: Re: [PATCH 2/4] cpuidle: riscv-sbi: Use scoped device node handling
+ to simplify error paths
+Message-ID: <20240819171954.0000600d@Huawei.com>
+In-Reply-To: <20240819171313.00004677@Huawei.com>
+References: <20240816150931.142208-1-krzysztof.kozlowski@linaro.org>
+	<20240816150931.142208-2-krzysztof.kozlowski@linaro.org>
+	<20240819171313.00004677@Huawei.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddruddugedguddttdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnegoufhprghmkfhpucdlfedttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=35 Fuz1=35 Fuz2=35
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
 
-Hi Everyone,
+On Mon, 19 Aug 2024 17:13:13 +0100
+Jonathan Cameron <Jonathan.Cameron@Huawei.com> wrote:
 
-This is one more update of
+> On Fri, 16 Aug 2024 17:09:29 +0200
+> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+> 
+> > Obtain the device node reference with scoped/cleanup.h to reduce error
+> > handling and make the code a bit simpler.
+> > 
+> > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>  
+> The original code looks suspect. See below.
 
-https://lore.kernel.org/linux-pm/3134863.CbtlEUcBR6@rjwysocki.net/#r
+Whilst here...  Why not do similar for state_node to avoid
+the delayed return check.
+Existing code
+	{
+		state_node = of_get_cpu_state_node(cpu_node, i - 1);
+		if (!state_node)
+			break;
 
-the cover letter of which was sent separately by mistake:
+		ret = sbi_dt_parse_state_node(state_node, &states[i]);
+		of_node_put(state_node);
 
-https://lore.kernel.org/linux-pm/CAJZ5v0jo5vh2uD5t4GqBnN0qukMBG_ty33PB=NiEqigqxzBcsw@mail.gmail.com/
+		if (ret)
+			//another bug here on holding cpu_node btw.
+			return ret;
+		pr_debug("sbi-state %#x index %d\n", states[i], i);
+	}
+//I think only path to this is is early break above.
+	if (i != state_count) {
+		ret = -ENODEV;
+		goto fail;
+	}
+Can be something like
 
-and it has been updated once already:
+	{
+		struct device_node *state_node __free(device_node) =
+			= of_get-cpu_State_nod(cpu_node, i - 1);
+	
+		if (!state_node)
+			return -ENODEV;
 
-https://lore.kernel.org/linux-pm/114901234.nniJfEyVGO@rjwysocki.net/
+		ret = sbi_dt_parse_state_node(state_node, &states[i]);
+		if (ret)
+			return ret;
 
-Relative to the v2 above it drops 3 patches, one because it was broken ([04/17
-in the v2), and two more that would need to be rebased significantly, either
-because of dropping the other broken patch or because of the recent Bang-bang
-governor fixes:
+		pr_debug("sbi-state %#x index %d\n", states[i], i);
+	}
+		
 
-https://lore.kernel.org/linux-pm/1903691.tdWV9SEqCh@rjwysocki.net/
+> 
+> > ---
+> >  drivers/cpuidle/cpuidle-riscv-sbi.c | 21 +++++++--------------
+> >  1 file changed, 7 insertions(+), 14 deletions(-)
+> > 
+> > diff --git a/drivers/cpuidle/cpuidle-riscv-sbi.c b/drivers/cpuidle/cpuidle-riscv-sbi.c
+> > index a6e123dfe394..5bb3401220d2 100644
+> > --- a/drivers/cpuidle/cpuidle-riscv-sbi.c
+> > +++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
+> > @@ -8,6 +8,7 @@
+> >  
+> >  #define pr_fmt(fmt) "cpuidle-riscv-sbi: " fmt
+> >  
+> > +#include <linux/cleanup.h>
+> >  #include <linux/cpuhotplug.h>
+> >  #include <linux/cpuidle.h>
+> >  #include <linux/cpumask.h>
+> > @@ -236,19 +237,16 @@ static int sbi_cpuidle_dt_init_states(struct device *dev,
+> >  {
+> >  	struct sbi_cpuidle_data *data = per_cpu_ptr(&sbi_cpuidle_data, cpu);
+> >  	struct device_node *state_node;
+> > -	struct device_node *cpu_node;
+> >  	u32 *states;
+> >  	int i, ret;
+> >  
+> > -	cpu_node = of_cpu_device_node_get(cpu);
+> > +	struct device_node *cpu_node __free(device_node) = of_cpu_device_node_get(cpu);
+> >  	if (!cpu_node)
+> >  		return -ENODEV;
+> >  
+> >  	states = devm_kcalloc(dev, state_count, sizeof(*states), GFP_KERNEL);
+> > -	if (!states) {
+> > -		ret = -ENOMEM;
+> > -		goto fail;
+> > -	}
+> > +	if (!states)
+> > +		return -ENOMEM;
+> >  
+> >  	/* Parse SBI specific details from state DT nodes */
+> >  	for (i = 1; i < state_count; i++) {
+> > @@ -264,10 +262,8 @@ static int sbi_cpuidle_dt_init_states(struct device *dev,
+> >  
+> >  		pr_debug("sbi-state %#x index %d\n", states[i], i);
+> >  	}
+> > -	if (i != state_count) {
+> > -		ret = -ENODEV;
+> > -		goto fail;
+> > -	}
+> > +	if (i != state_count)
+> > +		return -ENODEV;
+> >  
+> >  	/* Initialize optional data, used for the hierarchical topology. */
+> >  	ret = sbi_dt_cpu_init_topology(drv, data, state_count, cpu);  
+> The handling of error ret from here doesn't free the node.
+> 
+> Bug or something subtle I'm missing?
+> 
+> If it's a bug, then fixes tag.
 
-The remaining 14 patches, 2 of which have been slightly rebased and the rest
-is mostly unchanged (except for some very minor subject and changelog fixes),
-is not expected to be controversial and are targeting 6.12, on top of the
-current linux-next material.
-
-The original motivation for this series quoted below has not changed:
-
- The code for binding cooling devices to trip points (and unbinding them from
- trip point) is one of the murkiest pieces of the thermal subsystem.  It is
- convoluted, bloated with unnecessary code doing questionable things, and it
- works backwards.
-
- The idea is to bind cooling devices to trip points in accordance with some
- information known to the thermal zone owner (thermal driver).  This information
- is not known to the thermal core when the thermal zone is registered, so the
- driver needs to be involved, but instead of just asking the driver whether
- or not the given cooling device should be bound to a given trip point, the
- thermal core expects the driver to carry out all of the binding process
- including calling functions specifically provided by the core for this
- purpose which is cumbersome and counter-intuitive.
-
- Because the driver has no information regarding the representation of the trip
- points at the core level, it is forced to walk them (and it has to avoid some
- locking traps while doing this), or it needs to make questionable assumptions
- regarding the ordering of the trips in the core.  There are drivers doing both
- these things.
-
-The first 5 patches in the series are preliminary.
-
-Patch [06/14] introduces a new .should_bind() callback for thermal zones and
-patches [07,09-12/14] modifies drivers to use it instead of the .bind() and
-.unbind() callbacks which allows them to be simplified quite a bit.
-
-The other patches [08,13-14/14] get rid of code that becomes unused after the
-previous changes and do some cleanups on top of that.
-
-The entire series along with 2 patches on top of it (that were present in the
-v2 of this set of patches) is available in the thermal-core-testing git branch:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/log/?h=thermal-core-testing
-
-(note that this branch is going to be rebased shortly on top of 6.11-rc4
-and the thermal control material in linux-next).
-
-Thanks!
-
-
+> 
+> 
+> > @@ -277,10 +273,7 @@ static int sbi_cpuidle_dt_init_states(struct device *dev,
+> >  	/* Store states in the per-cpu struct. */
+> >  	data->states = states;
+> >  
+> > -fail:
+> > -	of_node_put(cpu_node);
+> > -
+> > -	return ret;
+> > +	return 0;
+> >  }
+> >  
+> >  static void sbi_cpuidle_deinit_cpu(int cpu)  
+> 
 
