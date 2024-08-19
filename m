@@ -1,50 +1,49 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2E9E8287D;
-	Mon, 19 Aug 2024 16:12:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC2CA13B5AF;
+	Mon, 19 Aug 2024 16:12:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724083979; cv=none; b=FtTQ01o9FBZTqVziL+rutm1cfKuJTCMWFXi7pJ1zbd11a2UDAVgksHoiaYHUHORbU3OcSVvtzna21UeAFUlwll0ioIfr7CemrOFRx0q0zVARA9G3PE9FOpiSDPNLvzv/mXNjHVuOCS93EX/CXxcKHus42KUoDZoHiLXlODtrsxU=
+	t=1724083980; cv=none; b=sm1cknB20NY3SShsTfmlAuF2ZwtLhzKRk+F2BZNodv3nNMklzwbzlhVZWB79jX60NsY0j6JTs17bA6WqO+TCslQn9byTTS40pgBanwVFCOuzqUJSBwI+qj65nBjQBpOAlCZPElWQpvrNNYOn1Kuwvl8Qcy7xXoW9JrfsOIoWTzw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724083979; c=relaxed/simple;
-	bh=opnKoOemKF8dn1y+j+0t5VxBvo8rIgVyOiVcsuAwSWI=;
+	s=arc-20240116; t=1724083980; c=relaxed/simple;
+	bh=Zb6109j0Bj3H4tOwPJxMq23sSAYxZGF9FEvKaHyjcAg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Fa3HnFIWbXjb1U663NkivWfIMKO/+8OkPG3S22bApZ6Fjd8KaMlEDUyisb26TfK/YOEgMq6ovtYlc0HDN6tEg35GO5wdFT7iAPHgd5Ude+IyZfy4F+Agq0NJQOgHmdbBHrvaZ3163hIlxrKdkgYR7Qdr6SBslRWSbRQWvnz8lEY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=abTHxC65 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=oo9dcX405wEMNWOOxFe+XW1fj+wxQbXDrmkPTrtHjOWK1b7BPxaaliu4skwgLqLXzMs2gbVRjxozUsgxWwlO6ectIpja67PFA4lthUxigG0ONtOKPg/Nay+4IZ0ZPNrlQmm+wj9A63NGQ+5CYvZYKo4hgNv/g7tfmNE+VdFBWJU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=hxLRArNu reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="abTHxC65"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="hxLRArNu"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id af93debbe7a88a5d; Mon, 19 Aug 2024 18:12:49 +0200
+ id 506cac52ca7c0934; Mon, 19 Aug 2024 18:12:50 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id B1AF673B5D4;
-	Mon, 19 Aug 2024 18:12:48 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id B153773B5D4;
+	Mon, 19 Aug 2024 18:12:49 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1724083969;
-	bh=opnKoOemKF8dn1y+j+0t5VxBvo8rIgVyOiVcsuAwSWI=;
+	s=dkim; t=1724083970;
+	bh=Zb6109j0Bj3H4tOwPJxMq23sSAYxZGF9FEvKaHyjcAg=;
 	h=From:Subject:Date;
-	b=abTHxC65cOPvdoezatpbMEu3eKiRqRgu0YfaCnW0zOp0o1MfPLB5FU5OOXVUeRjQR
-	 xSmb4hSvcnXihzYYNOK8uEeH07lwu677wO3SEZ1IYSmCsrKSiSa10IWvZ1fm0m98Gg
-	 eBAPsu5MPt0naKfxemRp/ZtVUVp5BLwprtmoMWVZ/OktsyH3TYXyMXLI6Ncc0dDC5e
-	 UxuhpljM5IxbMdkAdqm/VAXfkxFAjimdQXx+vWxD9FlzUQdlf9LUI0RaIliW6vIWue
-	 4bzRLZ2mPvcMQ8DaF/rpSMq3fURV5uI6TKnMILbJWHjerPSN0tqsfIi6fqlmA83nLB
-	 39kiCwvkRIVuQ==
+	b=hxLRArNugnPTs0sA2YHnYp722sz0QoJEgNh/TQU3zVwobZlMTygmRRwxnENqhMRyC
+	 uKSE7rAY5y4KbFoqwnPL8tJwx2zwTZtjJ0XJ5uWSRTvX1fLK0kn4ErOQfelsDWa0Zh
+	 bNCxTHg2/iB0M85nQGD4NqYlS88oCIFo65l4UgTzLTV6GgVWJZNyeDbcGgP6yr36bH
+	 sZXO8vdCP6OPMPRfDTH61ncNieaVTZm1oXQ7Xj8+Ik+jlGzcEt+Lz5wy+3HtqMheDD
+	 JpV/RkeP9gDusQgic3izBRyrFGMhNOlFDajSInoFWS9C3eRiZOOapjaCRIzQM6uR/1
+	 wdmKCCGdM14KA==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
 Subject:
- [PATCH v3 08/14] thermal: core: Unexport thermal_bind_cdev_to_trip() and
- thermal_unbind_cdev_from_trip()
-Date: Mon, 19 Aug 2024 18:05:00 +0200
-Message-ID: <3512161.QJadu78ljV@rjwysocki.net>
+ [PATCH v3 07/14] thermal: ACPI: Use the .should_bind() thermal zone callback
+Date: Mon, 19 Aug 2024 18:02:44 +0200
+Message-ID: <1812827.VLH7GnMWUR@rjwysocki.net>
 In-Reply-To: <2205737.irdbgypaU6@rjwysocki.net>
 References: <2205737.irdbgypaU6@rjwysocki.net>
 Precedence: bulk
@@ -63,90 +62,121 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Since thermal_bind_cdev_to_trip() and thermal_unbind_cdev_from_trip()
-are only called locally in the thermal core now, they can be static,
-so change their definitions accordingly and drop their headers from
-the global thermal header file.
+Make the ACPI thermal zone driver use the .should_bind() thermal zone
+callback to provide the thermal core with the information on whether or
+not to bind the given cooling device to the given trip point in the
+given thermal zone.  If it returns 'true', the thermal core will bind
+the cooling device to the trip and the corresponding unbinding will be
+taken care of automatically by the core on the removal of the involved
+thermal zone or cooling device.
 
-No intentional functional impact.
+This replaces the .bind() and .unbind() thermal zone callbacks which
+allows the code to be simplified quite significantly while providing
+the same functionality.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-v2 -> v3: Rebase after dropping patches [04-05/17] from the series
+v1 -> v3: No changes (previously [09/17])
 
-v1 -> v2: No changes
+This patch only depends on the previous one introducing the .should_bind()
+thermal zone callback.
 
 ---
- drivers/thermal/thermal_core.c |   10 ++++------
- include/linux/thermal.h        |    8 --------
- 2 files changed, 4 insertions(+), 14 deletions(-)
+ drivers/acpi/thermal.c |   64 ++++++-------------------------------------------
+ 1 file changed, 9 insertions(+), 55 deletions(-)
 
-Index: linux-pm/drivers/thermal/thermal_core.c
+Index: linux-pm/drivers/acpi/thermal.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -773,7 +773,7 @@ struct thermal_zone_device *thermal_zone
-  *
-  * Return: 0 on success, the proper error value otherwise.
-  */
--int thermal_bind_cdev_to_trip(struct thermal_zone_device *tz,
-+static int thermal_bind_cdev_to_trip(struct thermal_zone_device *tz,
- 				     const struct thermal_trip *trip,
- 				     struct thermal_cooling_device *cdev,
- 				     unsigned long upper, unsigned long lower,
-@@ -877,7 +877,6 @@ free_mem:
- 	kfree(dev);
- 	return result;
+--- linux-pm.orig/drivers/acpi/thermal.c
++++ linux-pm/drivers/acpi/thermal.c
+@@ -558,77 +558,31 @@ static void acpi_thermal_zone_device_cri
+ 	thermal_zone_device_critical(thermal);
  }
--EXPORT_SYMBOL_GPL(thermal_bind_cdev_to_trip);
  
- int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
- 				     int trip_index,
-@@ -913,9 +912,9 @@ EXPORT_SYMBOL_GPL(thermal_zone_bind_cool
-  *
-  * Return: 0 on success, the proper error value otherwise.
-  */
--int thermal_unbind_cdev_from_trip(struct thermal_zone_device *tz,
--				  const struct thermal_trip *trip,
--				  struct thermal_cooling_device *cdev)
-+static int thermal_unbind_cdev_from_trip(struct thermal_zone_device *tz,
-+					 const struct thermal_trip *trip,
-+					 struct thermal_cooling_device *cdev)
+-struct acpi_thermal_bind_data {
+-	struct thermal_zone_device *thermal;
+-	struct thermal_cooling_device *cdev;
+-	bool bind;
+-};
+-
+-static int bind_unbind_cdev_cb(struct thermal_trip *trip, void *arg)
++static bool acpi_thermal_should_bind_cdev(struct thermal_zone_device *thermal,
++					  const struct thermal_trip *trip,
++					  struct thermal_cooling_device *cdev,
++					  struct cooling_spec *c)
  {
- 	struct thermal_instance *pos, *next;
+ 	struct acpi_thermal_trip *acpi_trip = trip->priv;
+-	struct acpi_thermal_bind_data *bd = arg;
+-	struct thermal_zone_device *thermal = bd->thermal;
+-	struct thermal_cooling_device *cdev = bd->cdev;
+ 	struct acpi_device *cdev_adev = cdev->devdata;
+ 	int i;
  
-@@ -945,7 +944,6 @@ unbind:
- 	kfree(pos);
- 	return 0;
+ 	/* Skip critical and hot trips. */
+ 	if (!acpi_trip)
+-		return 0;
++		return false;
+ 
+ 	for (i = 0; i < acpi_trip->devices.count; i++) {
+ 		acpi_handle handle = acpi_trip->devices.handles[i];
+-		struct acpi_device *adev = acpi_fetch_acpi_dev(handle);
+-
+-		if (adev != cdev_adev)
+-			continue;
+ 
+-		if (bd->bind) {
+-			int ret;
+-
+-			ret = thermal_bind_cdev_to_trip(thermal, trip, cdev,
+-							THERMAL_NO_LIMIT,
+-							THERMAL_NO_LIMIT,
+-							THERMAL_WEIGHT_DEFAULT);
+-			if (ret)
+-				return ret;
+-		} else {
+-			thermal_unbind_cdev_from_trip(thermal, trip, cdev);
+-		}
++		if (acpi_fetch_acpi_dev(handle) == cdev_adev)
++			return true;
+ 	}
+ 
+-	return 0;
+-}
+-
+-static int acpi_thermal_bind_unbind_cdev(struct thermal_zone_device *thermal,
+-					 struct thermal_cooling_device *cdev,
+-					 bool bind)
+-{
+-	struct acpi_thermal_bind_data bd = {
+-		.thermal = thermal, .cdev = cdev, .bind = bind
+-	};
+-
+-	return thermal_zone_for_each_trip(thermal, bind_unbind_cdev_cb, &bd);
+-}
+-
+-static int
+-acpi_thermal_bind_cooling_device(struct thermal_zone_device *thermal,
+-				 struct thermal_cooling_device *cdev)
+-{
+-	return acpi_thermal_bind_unbind_cdev(thermal, cdev, true);
+-}
+-
+-static int
+-acpi_thermal_unbind_cooling_device(struct thermal_zone_device *thermal,
+-				   struct thermal_cooling_device *cdev)
+-{
+-	return acpi_thermal_bind_unbind_cdev(thermal, cdev, false);
++	return false;
  }
--EXPORT_SYMBOL_GPL(thermal_unbind_cdev_from_trip);
  
- int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
- 				       int trip_index,
-Index: linux-pm/include/linux/thermal.h
-===================================================================
---- linux-pm.orig/include/linux/thermal.h
-+++ linux-pm/include/linux/thermal.h
-@@ -247,18 +247,10 @@ const char *thermal_zone_device_type(str
- int thermal_zone_device_id(struct thermal_zone_device *tzd);
- struct device *thermal_zone_device(struct thermal_zone_device *tzd);
- 
--int thermal_bind_cdev_to_trip(struct thermal_zone_device *tz,
--			      const struct thermal_trip *trip,
--			      struct thermal_cooling_device *cdev,
--			      unsigned long upper, unsigned long lower,
--			      unsigned int weight);
- int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
- 				     struct thermal_cooling_device *,
- 				     unsigned long, unsigned long,
- 				     unsigned int);
--int thermal_unbind_cdev_from_trip(struct thermal_zone_device *tz,
--				  const struct thermal_trip *trip,
--				  struct thermal_cooling_device *cdev);
- int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
- 				       struct thermal_cooling_device *);
- void thermal_zone_device_update(struct thermal_zone_device *,
+ static const struct thermal_zone_device_ops acpi_thermal_zone_ops = {
+-	.bind = acpi_thermal_bind_cooling_device,
+-	.unbind	= acpi_thermal_unbind_cooling_device,
++	.should_bind = acpi_thermal_should_bind_cdev,
+ 	.get_temp = thermal_get_temp,
+ 	.get_trend = thermal_get_trend,
+ 	.hot = acpi_thermal_zone_device_hot,
 
 
 
