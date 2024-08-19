@@ -1,127 +1,188 @@
-Received: from mail-vk1-f169.google.com (mail-vk1-f169.google.com [209.85.221.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C27C15F3ED
-	for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2024 10:12:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 198E71607B2
+	for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2024 10:20:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724062361; cv=none; b=HsSDCy43+D/Ll3vuwvTMk2uSFTosweuL7xrf2/ffnKjkktQpxbqq8lsT3Uy3IJoIR6Y26lUXjbv+9XNu13JsmiblszkaRIoGpgARzZEpsRcEWzGm8eblG1N/QBZp5fhdlUdUFi03O707r7dxVNAxUQQ/VkHK5Oyba9hr8BAmugY=
+	t=1724062812; cv=none; b=o1DY6dVOzznlIqknX4/6QdoL/hrtwzCwQJdkOh9P7hLpIXA6GsX8okbQjdk4jsie2GT3C7a90qnvEl+dya4Kvgs0of029JXBT2F4egxQNEoNlqPN5DeKgWEtSUoCDgXQ4/aj6cNMyayYEetAoqVnFI235kPKdMkNwJW96HUW2Lw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724062361; c=relaxed/simple;
-	bh=vZo2/t11CLRtBFZBAyg1Zxki1cpdcGREz6Qnn+hDfcE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=vEIcN7dF9/HywM3Afh/nGVVEu/E1VIsydTYazDMYj0GRrR66/ecj2eKVSKFARAxUH5soGvBWfcEuE8+XDVP9rRYK//4SssoRkIqWOV0GXd/073RAQwwPcsUlVmO2oBoA7uBShLyHBi2WWtlCuUe5f5EaDPaVhv44YqnYctDVp5Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=BmR8pEPU; arc=none smtp.client-ip=209.85.221.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1724062812; c=relaxed/simple;
+	bh=qaJVMTKX2YN/haWPaprtb5i3CGOYZT09tNmQOMz2HBQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=lJAUYxJDbL0HnfVSHT0I054hOoUcOs241qD7/d+JHa9TVjaIzyL7n/ZNbn4e7fG4bnwruPxTTTDPUfERTJfcHpA7DuTjroNfV37fJD5m8DMZ6u1y7ObjU14S7uRoTYnZ4wmIXHrhTWPFfh32e5Hqw9eBAW0a93bLmAOIaoe5e4M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=eEkC/aRn; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BmR8pEPU"
-Received: by mail-vk1-f169.google.com with SMTP id 71dfb90a1353d-4f6e36ea1ebso1386006e0c.0
-        for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2024 03:12:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1724062358; x=1724667158; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=kEt0b7cjq1QrC31R8bsvHblz1HFMuMei5OYtb8lQy+o=;
-        b=BmR8pEPU1VaogzGC6Z/pQ6JpGZ9grHlNGOh48Ws5+Cs45ynNNrPLJfDjNt8co34Uh5
-         FslywdTU02UImtBCBv8kNDr6bJd2jda48BPHpz4ribqqZ/9XMcwoX69WmU468mql7GIe
-         GZzb716s7J6VDricJch7X5gYOqLirnirpX7MtfmjCICxOUR5rmYuwdbdlTibKTb0z10X
-         uzgSJrF8W2+Rs5fwuMD8k2g/nPyminamEOiH2zuH8dzZEKjCyJLRQKGSEy52NXmhU2iA
-         imfyHDUnhoOohxwOJbojOHI8JEWKQ7dcxfS43duPAn1v4KANgblHtPxODU6RZturkAwG
-         mhtA==
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="eEkC/aRn"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1724062808;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Tt2LYVYKmTVkAnDYFtLFnxYZzUlQbq44aMUMUQ1jAqA=;
+	b=eEkC/aRnytaTwZppAWi9fluNke5e8kkCuBSUZdrF0ziEAIZA+FN7uv2uduQNOlhD6AhTHw
+	Ll43gnjtdvbnSOpyWOsiaUk3dmEO92LsV/6B/h6QqXOFsydVud9BuxYXDIJtu+YRLlG1th
+	yWJBxpgDkV6zCXXzQO/UI387BDZ1jJg=
+Received: from mail-ed1-f70.google.com (mail-ed1-f70.google.com
+ [209.85.208.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-642-aAdLutipN56eC8HTXQMH0w-1; Mon, 19 Aug 2024 06:20:05 -0400
+X-MC-Unique: aAdLutipN56eC8HTXQMH0w-1
+Received: by mail-ed1-f70.google.com with SMTP id 4fb4d7f45d1cf-5bebd3e0eb9so2596817a12.1
+        for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2024 03:20:05 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724062358; x=1724667158;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=kEt0b7cjq1QrC31R8bsvHblz1HFMuMei5OYtb8lQy+o=;
-        b=jETaVcVcHhjR8ONUDUzPPe0Fo4kd8lvH/NY+HGavZ6zvDgCsQk1UyeLzSdrHYpmiDv
-         sJ7JES0awq1QD6Rnvq7sXk6jEjhOL/FGEcJ233+uTtsBdDJhzr2m/t+uLYLwpyYkYDwr
-         0taSXu0/qedIhhFqYhWYN7sARYBA9iFTyhxg1sv4yppfh7ix5MYkguJ8KTeqIJ6y1XNn
-         3L59FEF1Sk4iCWHogBOUt+MMPbUnPFkbwwWt4KsFfdt18yfiiLRViIKOowgBefJI1L6l
-         jCKmVmIiee4zEVqensP2RXbvjyo+Oe6nPIztVoLci0xympv5e0MEusX5MHXuZ/wTPAo0
-         /9Yw==
-X-Forwarded-Encrypted: i=1; AJvYcCVzv8DUDVOyiVhngt2SLxthL9lrLSJN1oL24zXzYURaehlNRC3pwgxi+Pe+TDdxrGZm0pzU6JbPSMnwNcM/41ecntVekpKDx70=
-X-Gm-Message-State: AOJu0YwfA4ptrJsHelj6MlvVAc0GYyhALL6gcyPFO9apAThyruJvzi+U
-	Dmnnoa3vvaRQD6BunBI2ntwB2hCy+AHe1pugXlfynNwmI+VXcAt5ZjLKEVI86HPl5dQgcSyLDWU
-	lbPlQKbM3PoW/g+KB/soSoAEyFV/R5sgpdYn4yA==
-X-Google-Smtp-Source: AGHT+IF2X6KST38O2iXNOkEv4ma2f5ghfmUPtcGSPzix+b5Pd5uLiS8hzIqnRvab+YafaLZfxCL8wAqGZ+nvTGAWzos=
-X-Received: by 2002:a05:6122:4129:b0:4ef:5744:46a with SMTP id
- 71dfb90a1353d-4fc84ad5a54mr8021886e0c.1.1724062358099; Mon, 19 Aug 2024
- 03:12:38 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1724062804; x=1724667604;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Tt2LYVYKmTVkAnDYFtLFnxYZzUlQbq44aMUMUQ1jAqA=;
+        b=eu4Hrqw2oUVY08Fxbe14fXNX5NaEqEUjIZd6krKb5UTNyzxkssNZ3h0oDl96nBoVDR
+         eTbiB/auBnuvDqSPjchsw9QLRRrmZDw2zbAppiNIsuzckGtoMgov9IseQkiVVieVjJE/
+         FPf5od3o4vo7bdlOMpCM5OZyZWUu9f/5RDZgwdIBjK89M1IPbeE9BNBl8t/C+Yuf8UjH
+         xAZgTcVKzPxi0TNDi0vA0z5GVaBpfkfdNZJCkwyhEpz8OwSqkXZanIhs5RQSQ5L26PnB
+         KnD0Y1GZCKvo5RjxLYuUJSm2vHl/DCoeGCzy8J0WVQe7m+zKOjKhoc2/otQ7X1xgWDHB
+         eFHA==
+X-Forwarded-Encrypted: i=1; AJvYcCWo/b0Qh43RUV2zXogc62eNvpCePYgU10NO+vrit5hWHELOMDo18nhCHOMADYxazdJyQhuwzuLqrnCZznPUw9EU7n6AWscDBtg=
+X-Gm-Message-State: AOJu0Ywp9FMlgQwEe752ewTcB1cq55t0mAhB9Dv2+0ZZB/6HDrkzuAoT
+	for5WXE764eewY4mfQkMqcN4UEsZM6uslENSED2Ou9ZKaCMem5e5HhPx8dOiI5tJDeQotpQ5ST/
+	FqiWkmKMNRL6m6qYYxjBq/WNbZm0GySqTJmPJ5HZPfyKb+PJHCbz2PbNv
+X-Received: by 2002:a05:6402:2707:b0:5be:fc44:d16c with SMTP id 4fb4d7f45d1cf-5befc44d688mr1453663a12.21.1724062804466;
+        Mon, 19 Aug 2024 03:20:04 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFVEZBeVDOcw2UccmR/xKwRwclHVYBRUiCGFShuiYXBBn7mzTfH4dJAZxcg/AEp0vLqteaXzA==
+X-Received: by 2002:a05:6402:2707:b0:5be:fc44:d16c with SMTP id 4fb4d7f45d1cf-5befc44d688mr1453649a12.21.1724062803943;
+        Mon, 19 Aug 2024 03:20:03 -0700 (PDT)
+Received: from [10.40.98.157] ([78.108.130.194])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5bebbbe26fcsm5426612a12.5.2024.08.19.03.20.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 19 Aug 2024 03:20:03 -0700 (PDT)
+Message-ID: <32c550ec-d5f7-4422-a1e1-1fa22111d1c5@redhat.com>
+Date: Mon, 19 Aug 2024 12:20:02 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240818-pmic-glink-v6-11-races-v1-0-f87c577e0bc9@quicinc.com>
-In-Reply-To: <20240818-pmic-glink-v6-11-races-v1-0-f87c577e0bc9@quicinc.com>
-From: Amit Pundir <amit.pundir@linaro.org>
-Date: Mon, 19 Aug 2024 15:42:02 +0530
-Message-ID: <CAMi1Hd29PWjsS_kxPpFgpW23xpSq6n6uqL5KKFBvQwe7df0W-w@mail.gmail.com>
-Subject: Re: [PATCH 0/3] soc: qcom: pmic_glink: v6.11-rc bug fixes
-To: Bjorn Andersson <quic_bjorande@quicinc.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konrad.dybcio@linaro.org>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Johan Hovold <johan+linaro@kernel.org>, Chris Lew <quic_clew@quicinc.com>, 
-	Dmitry Baryshkov <dmitry.baryshkov@linaro.org>, Stephen Boyd <swboyd@chromium.org>, 
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
-	Johan Hovold <johan@kernel.org>, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 12/17] platform/x86: acerhdf: Use the .should_bind()
+ thermal zone callback
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba
+ <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
+ Peter Kaestle <peter@piie.net>, platform-driver-x86@vger.kernel.org
+References: <114901234.nniJfEyVGO@rjwysocki.net>
+ <6709311.4vTCxPXJkl@rjwysocki.net>
+Content-Language: en-US
+From: Hans de Goede <hdegoede@redhat.com>
+In-Reply-To: <6709311.4vTCxPXJkl@rjwysocki.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, 19 Aug 2024 at 04:47, Bjorn Andersson <quic_bjorande@quicinc.com> wrote:
->
-> Amit and Johan both reported a NULL pointer dereference in the
-> pmic_glink client code during initialization, and Stephen Boyd pointed
-> out the problem (race condition).
->
-> While investigating, and writing the fix, I noticed that
-> ucsi_unregister() is called in atomic context but tries to sleep, and I
-> also noticed that the condition for when to inform the pmic_glink client
-> drivers when the remote has gone down is just wrong.
->
-> So, let's fix all three.
->
-> As mentioned in the commit message for the UCSI fix, I have a series in
-> the works that makes the GLINK callback happen in a sleepable context,
-> which would remove the need for the clients list to be protected by a
-> spinlock, and removing the work scheduling. This is however not -rc
-> material...
->
-> In addition to the NULL pointer dereference, there is the -ECANCELED
-> issue reported here:
-> https://lore.kernel.org/all/Zqet8iInnDhnxkT9@hovoldconsulting.com/
-> I have not yet been able to either reproduce this or convince myself
-> that this is the same issue.
->
+Hi Rafael,
 
-Thank you for the fixes Bjorn. I'm not able to reproduce that
-pmic_glink kernel panic on SM8550-HDK anymore.
+On 8/12/24 4:19 PM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Make the acerhdf driver use the .should_bind() thermal zone
+> callback to provide the thermal core with the information on whether or
+> not to bind the given cooling device to the given trip point in the
+> given thermal zone.  If it returns 'true', the thermal core will bind
+> the cooling device to the trip and the corresponding unbinding will be
+> taken care of automatically by the core on the removal of the involved
+> thermal zone or cooling device.
+> 
+> The previously existing acerhdf_bind() function bound cooling devices
+> to thermal trip point 0 only, so the new callback needs to return 'true'
+> for trip point 0.  However, it is straightforward to observe that trip
+> point 0 is an active trip point and the only other trip point in the
+> driver's thermal zone is a critical one, so it is sufficient to return
+> 'true' from that callback if the type of the given trip point is
+> THERMAL_TRIP_ACTIVE.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Tested-by: Amit Pundir <amit.pundir@linaro.org>
+I believe it is best to merge this through the thermal(zone0 subsystem
+together with the rest of the series:
 
-> Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
+Acked-by: Hans de Goede <hdegoede@redhat.com>
+
+Regards,
+
+Hans
+
+
 > ---
-> Bjorn Andersson (3):
->       soc: qcom: pmic_glink: Fix race during initialization
->       usb: typec: ucsi: Move unregister out of atomic section
->       soc: qcom: pmic_glink: Actually communicate with remote goes down
->
->  drivers/power/supply/qcom_battmgr.c   | 16 ++++++++-----
->  drivers/soc/qcom/pmic_glink.c         | 40 +++++++++++++++++++++----------
->  drivers/soc/qcom/pmic_glink_altmode.c | 17 +++++++++-----
->  drivers/usb/typec/ucsi/ucsi_glink.c   | 44 ++++++++++++++++++++++++++---------
->  include/linux/soc/qcom/pmic_glink.h   | 11 +++++----
->  5 files changed, 88 insertions(+), 40 deletions(-)
+> 
+> v1 -> v2: No changes
+> 
+> This patch only depends on patch [08/17] introducing .should_bind():
+> 
+> https://lore.kernel.org/linux-pm/2696117.X9hSmTKtgW@rjwysocki.net/
+> 
 > ---
-> base-commit: 296c871d2904cff2b4742702ef94512ab467a8e3
-> change-id: 20240818-pmic-glink-v6-11-races-363f5964c339
->
-> Best regards,
-> --
-> Bjorn Andersson <quic_bjorande@quicinc.com>
->
+>  drivers/platform/x86/acerhdf.c |   33 ++++++---------------------------
+>  1 file changed, 6 insertions(+), 27 deletions(-)
+> 
+> Index: linux-pm/drivers/platform/x86/acerhdf.c
+> ===================================================================
+> --- linux-pm.orig/drivers/platform/x86/acerhdf.c
+> +++ linux-pm/drivers/platform/x86/acerhdf.c
+> @@ -378,33 +378,13 @@ static int acerhdf_get_ec_temp(struct th
+>  	return 0;
+>  }
+>  
+> -static int acerhdf_bind(struct thermal_zone_device *thermal,
+> -			struct thermal_cooling_device *cdev)
+> +static bool acerhdf_should_bind(struct thermal_zone_device *thermal,
+> +				const struct thermal_trip *trip,
+> +				struct thermal_cooling_device *cdev,
+> +				struct cooling_spec *c)
+>  {
+>  	/* if the cooling device is the one from acerhdf bind it */
+> -	if (cdev != cl_dev)
+> -		return 0;
+> -
+> -	if (thermal_zone_bind_cooling_device(thermal, 0, cdev,
+> -			THERMAL_NO_LIMIT, THERMAL_NO_LIMIT,
+> -			THERMAL_WEIGHT_DEFAULT)) {
+> -		pr_err("error binding cooling dev\n");
+> -		return -EINVAL;
+> -	}
+> -	return 0;
+> -}
+> -
+> -static int acerhdf_unbind(struct thermal_zone_device *thermal,
+> -			  struct thermal_cooling_device *cdev)
+> -{
+> -	if (cdev != cl_dev)
+> -		return 0;
+> -
+> -	if (thermal_zone_unbind_cooling_device(thermal, 0, cdev)) {
+> -		pr_err("error unbinding cooling dev\n");
+> -		return -EINVAL;
+> -	}
+> -	return 0;
+> +	return cdev == cl_dev && trip->type == THERMAL_TRIP_ACTIVE;
+>  }
+>  
+>  static inline void acerhdf_revert_to_bios_mode(void)
+> @@ -447,8 +427,7 @@ static int acerhdf_get_crit_temp(struct
+>  
+>  /* bind callback functions to thermalzone */
+>  static struct thermal_zone_device_ops acerhdf_dev_ops = {
+> -	.bind = acerhdf_bind,
+> -	.unbind = acerhdf_unbind,
+> +	.should_bind = acerhdf_should_bind,
+>  	.get_temp = acerhdf_get_ec_temp,
+>  	.change_mode = acerhdf_change_mode,
+>  	.get_crit_temp = acerhdf_get_crit_temp,
+> 
+> 
+> 
+> 
+
