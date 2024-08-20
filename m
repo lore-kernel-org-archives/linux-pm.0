@@ -1,132 +1,130 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF9EE136672;
-	Tue, 20 Aug 2024 05:37:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90F3054652;
+	Tue, 20 Aug 2024 05:57:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724132245; cv=none; b=KhI8E+G4Kpb7sAFo8r2L2NfjKSSKFzxAL80y02IxJ4Gr65d0ECE3HMBhwjpjhdKDnor9oLSleOh6AqgY1KeAxprAjUR0qZef3Y/ZY9Y8r5fMrbabjFkjah7vrVmwFY1rJqpOHQwPKqyMqBrCCE8iC4ZD0sketckHUHDiEXSLYnM=
+	t=1724133461; cv=none; b=Xcq3d7dhjUvktsloj0r8K2tp5hQ6hPOWYQbqI7iELfGfOH/72rD4542vl3EWaUMPE+q59hIdGFzeblQe161AQBnX4gLFwxjOHMKIh53rTpHC5TCF2G2v+yYLEJEd1IIKIuZhuMtIntfYhwaHUEuJDMrI2SCEKs3KOuiluzCEF2o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724132245; c=relaxed/simple;
-	bh=UTDilvLJBoUy3712767wYi1ysEYam3UQ+yO9j2wCBkE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=uQBU7ou/kCtOXxqg1Aumsf+lGlnjYz+i3cXkTr96ylfGTXZwmwE44tLWOtQ3KRzeL5Ze/tdxHhxSaQlV84nVEX55NH1r4YbreprrgrBAgsHYm543/JfSpktNVHt2UlS5uVDXmm+tdwiqXSo0HXT7KryxJOlsu7Mk45uLGL5IHQA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=OSopL9aC; arc=none smtp.client-ip=198.175.65.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1724133461; c=relaxed/simple;
+	bh=u3PgkPYkxe+M2fDj4vH8agpU4hCJnkDsiBPcu2ez/oU=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=dCz5DxjJwiiKnNegCOfTiW3QHSC4Lh9HOJqrRM1GYeNW36gNHED1TJxJXq/GfuXoIfl+j29GmoHDOsPAdI27o1hNIp9wzx6Qnbx7lIflZJvFlbYs+4BOvxN25xnkqTh+vll+mZ8pQA0FjrLOqyB1Aub1DNOL0Khhvcw4Q30LyA4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=l+6qiMXP; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="OSopL9aC"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1724132244; x=1755668244;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=UTDilvLJBoUy3712767wYi1ysEYam3UQ+yO9j2wCBkE=;
-  b=OSopL9aCFIGgn6sVWZtjdpeGNFkDeQJM93oUZ2x02tkSJTSu5hELQ9SF
-   MUpPzuZuIJ2kMYqIestiHIlUMN7b+xj7pjN/ItJvtQmH5cT8QxMPBtnCQ
-   p/y/fiiMpTLW9wD5YVAs1yiweUNU8ZwBa7vhANcMJEl5YNi16OYOrjNpx
-   hVqJ77dKDFI+uXPT7VYOFmfe3KvVJbdVvCRL3qa/UgZY8OSBlTNLVDTbT
-   /LFBHA+n7qlKd/Mu39BR77MEI7J8/F2V1HLbjPcCyReMAbmPadzZq6o6/
-   YYOkfdi3rW+ZX+HO2mk/fLGPfGY9FqAuZmyYVwa18KHXqMKSptYGUHsnc
-   w==;
-X-CSE-ConnectionGUID: dC2a9wiuQFCc2569mQ65ZA==
-X-CSE-MsgGUID: muN1eP99QwaCziufa35HtA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11169"; a="26162045"
-X-IronPort-AV: E=Sophos;i="6.10,161,1719903600"; 
-   d="scan'208";a="26162045"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Aug 2024 22:37:23 -0700
-X-CSE-ConnectionGUID: Y3sTV+jFQUSBHDv1P9yb9w==
-X-CSE-MsgGUID: EyUAhAZNSVWeIzdqbHBRAA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,161,1719903600"; 
-   d="scan'208";a="60756700"
-Received: from lkp-server01.sh.intel.com (HELO 9a732dc145d3) ([10.239.97.150])
-  by fmviesa010.fm.intel.com with ESMTP; 19 Aug 2024 22:37:18 -0700
-Received: from kbuild by 9a732dc145d3 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1sgHYR-0009lQ-26;
-	Tue, 20 Aug 2024 05:37:15 +0000
-Date: Tue, 20 Aug 2024 13:37:02 +0800
-From: kernel test robot <lkp@intel.com>
-To: Chris Morgan <macroalpha82@gmail.com>, linux-sunxi@lists.linux.dev
-Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-	linux-iio@vger.kernel.org, quentin.schulz@free-electrons.com,
-	mripard@kernel.org, tgamblin@baylibre.com,
-	aidanmacdonald.0x0@gmail.com, u.kleine-koenig@pengutronix.de,
-	lee@kernel.org, samuel@sholland.org, jernej.skrabec@gmail.com,
-	sre@kernel.org, wens@csie.org, conor+dt@kernel.org,
-	krzk+dt@kernel.org, robh@kernel.org, lars@metafoo.de,
-	jic23@kernel.org, jonathan.cameron@huawei.com,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Philippe Simons <simons.philippe@gmail.com>
-Subject: Re: [PATCH V3 14/15] power: supply: axp20x_battery: add support for
- AXP717
-Message-ID: <202408201232.lgLOd5Nu-lkp@intel.com>
-References: <20240819164619.556309-15-macroalpha82@gmail.com>
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="l+6qiMXP"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47K0267a015828;
+	Tue, 20 Aug 2024 05:57:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	tF0Cag0dwkBCTl8uDHh4UQ0Mtyhc5zCkQF/9aJe8qQU=; b=l+6qiMXPPkol8zU5
+	9tAmDgxQcw+zhIFXPHyfmKKuu+NERxyZNu+nIWraqqm/9nqJrA/IZK/WFlPNWaSf
+	pKQTnRYfMN5GJhpbClRaCB7aMG06AqhZIOQOtsujbtBd3+Mm8jqC4b6GCBDnSbTe
+	878Nt+kSC2vqzTwgWaEn+PFo5xNo9cgB0a4nFEWdYhw0wAxUrp4PkmWNDz+nkI2N
+	Qf4kRZ8a9FrZCP+AZknsg7ly//qC83kCE7tdbLO8yApVXih4EHraL82EwQbiFkx0
+	K7Jhed4fSNm6FfnkTNtBHf+6eh6pADpUWhpNpP+S4ItCn1YtT2354zRNSLTlxHZD
+	ykQ/1A==
+Received: from nasanppmta02.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 412m876jcm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 20 Aug 2024 05:57:35 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA02.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 47K5vY2S026969
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 20 Aug 2024 05:57:34 GMT
+Received: from hu-varada-blr.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Mon, 19 Aug 2024 22:57:29 -0700
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+To: <andersson@kernel.org>, <konradybcio@kernel.org>, <robh@kernel.org>,
+        <krzk+dt@kernel.org>, <conor+dt@kernel.org>, <mturquette@baylibre.com>,
+        <sboyd@kernel.org>, <ilia.lin@kernel.org>, <rafael@kernel.org>,
+        <viresh.kumar@linaro.org>, <ulf.hansson@linaro.org>,
+        <linux-pm@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-clk@vger.kernel.org>
+CC: Varadarajan Narayanan <quic_varada@quicinc.com>,
+        Konrad Dybcio
+	<konrad.dybcio@linaro.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Subject: [PATCH v7 2/7] cpufreq: qcom-nvmem: Add support for IPQ9574
+Date: Tue, 20 Aug 2024 11:27:00 +0530
+Message-ID: <20240820055705.3922754-3-quic_varada@quicinc.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240820055705.3922754-1-quic_varada@quicinc.com>
+References: <20240820055705.3922754-1-quic_varada@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240819164619.556309-15-macroalpha82@gmail.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: 1ycrRI0fcd9Ei-iaCXiB5zWTckCntCzw
+X-Proofpoint-ORIG-GUID: 1ycrRI0fcd9Ei-iaCXiB5zWTckCntCzw
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-19_16,2024-08-19_03,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
+ mlxlogscore=999 priorityscore=1501 adultscore=0 lowpriorityscore=0
+ clxscore=1015 bulkscore=0 suspectscore=0 spamscore=0 impostorscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2407110000 definitions=main-2408200044
 
-Hi Chris,
+IPQ9574 uses CPR4 power domain to manage core supplies. Use
+device-specific match data for this platform that includes
+genpd_names configuration.
 
-kernel test robot noticed the following build errors:
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Acked-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+---
+v5: add Reviewed-by: Konrad
 
-[auto build test ERROR on sre-power-supply/for-next]
-[also build test ERROR on jic23-iio/togreg lee-mfd/for-mfd-next linus/master v6.11-rc4 next-20240819]
-[cannot apply to lee-mfd/for-mfd-fixes]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+v5: Change commit message and add Acked-by
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Chris-Morgan/iio-adc-axp20x_adc-Add-adc_en1-and-adc_en1-to-axp_data/20240820-005144
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git for-next
-patch link:    https://lore.kernel.org/r/20240819164619.556309-15-macroalpha82%40gmail.com
-patch subject: [PATCH V3 14/15] power: supply: axp20x_battery: add support for AXP717
-config: arc-randconfig-001-20240820 (https://download.01.org/0day-ci/archive/20240820/202408201232.lgLOd5Nu-lkp@intel.com/config)
-compiler: arceb-elf-gcc (GCC) 13.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240820/202408201232.lgLOd5Nu-lkp@intel.com/reproduce)
+v4: Update commit log to include stack trace
+    Introduce qcom_cpufreq_match_data for IPQ9574
+---
+ drivers/cpufreq/qcom-cpufreq-nvmem.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202408201232.lgLOd5Nu-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   drivers/power/supply/axp20x_battery.c: In function 'axp717_get_constant_charge_current':
->> drivers/power/supply/axp20x_battery.c:266:16: error: implicit declaration of function 'FIELD_GET' [-Werror=implicit-function-declaration]
-     266 |         *val = FIELD_GET(AXP717_ICC_CHARGER_LIM_MASK, *val) *
-         |                ^~~~~~~~~
-   cc1: some warnings being treated as errors
-
-
-vim +/FIELD_GET +266 drivers/power/supply/axp20x_battery.c
-
-   256	
-   257	static int axp717_get_constant_charge_current(struct axp20x_batt_ps *axp,
-   258						      int *val)
-   259	{
-   260		int ret;
-   261	
-   262		ret = regmap_read(axp->regmap, AXP717_ICC_CHG_SET, val);
-   263		if (ret)
-   264			return ret;
-   265	
- > 266		*val = FIELD_GET(AXP717_ICC_CHARGER_LIM_MASK, *val) *
-   267			axp->data->ccc_scale;
-   268	
-   269		return 0;
-   270	}
-   271	
-
+diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+index 939702dfa73f..95558586c2e6 100644
+--- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
++++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+@@ -428,6 +428,11 @@ static const struct qcom_cpufreq_match_data match_data_ipq8074 = {
+ 	.get_version = qcom_cpufreq_ipq8074_name_version,
+ };
+ 
++static const struct qcom_cpufreq_match_data match_data_ipq9574 = {
++	.get_version = qcom_cpufreq_kryo_name_version,
++	.genpd_names = generic_genpd_names,
++};
++
+ static void qcom_cpufreq_suspend_virt_devs(struct qcom_cpufreq_drv *drv, unsigned int cpu)
+ {
+ 	const char * const *name = drv->data->genpd_names;
+@@ -621,7 +626,7 @@ static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
+ 	{ .compatible = "qcom,ipq8064", .data = &match_data_ipq8064 },
+ 	{ .compatible = "qcom,ipq8074", .data = &match_data_ipq8074 },
+ 	{ .compatible = "qcom,apq8064", .data = &match_data_krait },
+-	{ .compatible = "qcom,ipq9574", .data = &match_data_kryo },
++	{ .compatible = "qcom,ipq9574", .data = &match_data_ipq9574 },
+ 	{ .compatible = "qcom,msm8974", .data = &match_data_krait },
+ 	{ .compatible = "qcom,msm8960", .data = &match_data_krait },
+ 	{},
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.34.1
+
