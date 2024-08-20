@@ -1,46 +1,46 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4C5214B949;
-	Tue, 20 Aug 2024 05:57:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 852EB156F46;
+	Tue, 20 Aug 2024 05:57:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724133465; cv=none; b=fKkZ14u73gAAVePPg+MP0HX2/6dXj7Xe5tqhDalDPSOzu7WHLFnqvyCMAQAkfdxrnvuqMYMLFQ6dJ1N1zkqRM5csR/h9kku1PRHA7jj6se2+ffY0st3k4a2jFo/MsnpepyJXsDqdx3Jh3TeZN3cMB9AN5z0oIC4M+tAPM7QxwpA=
+	t=1724133467; cv=none; b=u6rzeCKrbZ61NkPSx92grV4XMlRnjhk+zdxhj/7wt86f+3a5vPsjiwx6h+O7tqTSP1LWufhjV5y4vdS83L7FNuMUKUnTuLBJnMBL92981WNFkBSu1tu3hOZjlrU505tELJfXBJ8JIydaxG36z/88Af6quwpyWcssXTcZCJfEvlo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724133465; c=relaxed/simple;
-	bh=8QAiUetgH+uMQr+3WPYPyfbPiCKY4Fxd2pJPqi7I88M=;
+	s=arc-20240116; t=1724133467; c=relaxed/simple;
+	bh=vFRk7/rTQDrTZ8HK/TrY2TGAPfKllCdDSB87qCjJ2fo=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=t5O9ID2H4l/S6GewZRcnS2FXJLIyzKytq85QzfbH492F208LWPokwQosXP03jgOD3AR81Pvl0LkfPAAJf7V7KKZSVMeRnyr92fFZiovMcVQrvjH83vbKgG5ecOJKIFqJrQOfJLuOb5YcV2ZZnHnEm3ik13tcsN29llLDetthGAY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=A1WGTIvE; arc=none smtp.client-ip=205.220.168.131
+	 MIME-Version:Content-Type; b=PAZ3NvLFYPq/cl6rFv/j3e2MWQ1qeX5d6lOoScMPy+2ns11oJ0W/QtpN7nsykVZ/1caEsEFhiA3LV/NULkPBKBcpnVq3Qh9jwz6mdiFDzEORigF/fN2T3daIbT21sixAOCwp/csjtMvvJ37VNNvL7I3bAQ+ImZQmnnefJuXTk34=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=iRYuDQgo; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="A1WGTIvE"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47K1UiXS000449;
-	Tue, 20 Aug 2024 05:57:40 GMT
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="iRYuDQgo"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47K0jEJx007676;
+	Tue, 20 Aug 2024 05:57:30 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	8votFYtWC5ZVkTh4pE34LQoGOOCgrCEPwPBfDeW49Lw=; b=A1WGTIvEoMzMnQwl
-	qpNmGxI0/Ck2Q99BLxa+cZLtfN/mkFV/R/RogGrl0WcDGn+1cu3RGHuIgziYNkL6
-	Idr3IdGs1l6xurM9Iyki4dWncnMGFsc/bzHCcpBML9I6kJOyEQWoUuhtnzafGE6Y
-	xhjxapGS9x4jhz3s+NcZkvGZ2+nrRW2ySRqfvnIUfpnG5MuhEWUKQF2ZW0c+jN8y
-	IPFftSnVo+YqvZhFyhHnC89q6YWQ0dk2bYS4p6mIChIu8VOFy82TcidImOxWEU1f
-	W3MV/DKKRj8KIKbSWfHVrp+mLR0N6FoGbDZqT6q4S5d2ZrbJlFQFjewf3T6wotlJ
-	Fu/8Ww==
-Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 412hjdem2b-1
+	1MvwAaE9Ic1qgTdPu5/tkjDHPI+KygVcOLxNMwan3Rs=; b=iRYuDQgoB6jDer/U
+	aeskgrC5vNfxSlQtjACwZxBb1CoqYNPnKreS8SNWZRHKtlk49nTP2BB4ll4u2UZe
+	OMagLlsNfWfnvmOn7TOhNqaeiSx9SUJ4+OLdCshJfXEcq/AzbqFOy2JQLhNayFKZ
+	0SaUH9utuWBL3w5BF0EYAGdX9G/GFbGA6px6dNj0vKQdFSzA5HclDhGLUEPtgx6o
+	ntegMQymb1ylJryEOgY/Do5U3A/7RsPNrKmOj4WU4E/9SqfItHC7D2h6bnl3GWwn
+	HRH9Cls3FzCe9VOoRfqC7gVWTs2L4WCtbtJVedun5u7xQLMZPY90fB3AO9AD+vMe
+	c7o44Q==
+Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 412mmepau2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Aug 2024 05:57:39 +0000 (GMT)
+	Tue, 20 Aug 2024 05:57:29 +0000 (GMT)
 Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-	by NASANPPMTA03.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 47K5vdvH024213
+	by NASANPPMTA01.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 47K5vTg3005046
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Aug 2024 05:57:39 GMT
+	Tue, 20 Aug 2024 05:57:29 GMT
 Received: from hu-varada-blr.qualcomm.com (10.80.80.8) by
  nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Mon, 19 Aug 2024 22:57:34 -0700
+ 15.2.1544.9; Mon, 19 Aug 2024 22:57:24 -0700
 From: Varadarajan Narayanan <quic_varada@quicinc.com>
 To: <andersson@kernel.org>, <konradybcio@kernel.org>, <robh@kernel.org>,
         <krzk+dt@kernel.org>, <conor+dt@kernel.org>, <mturquette@baylibre.com>,
@@ -49,12 +49,10 @@ To: <andersson@kernel.org>, <konradybcio@kernel.org>, <robh@kernel.org>,
         <linux-pm@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-clk@vger.kernel.org>
-CC: Varadarajan Narayanan <quic_varada@quicinc.com>,
-        Krzysztof Kozlowski
-	<krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v7 3/7] dt-bindings: soc: qcom: cpr3: Add bindings for IPQ9574
-Date: Tue, 20 Aug 2024 11:27:01 +0530
-Message-ID: <20240820055705.3922754-4-quic_varada@quicinc.com>
+CC: Varadarajan Narayanan <quic_varada@quicinc.com>
+Subject: [PATCH v7 1/7] soc: qcom: cpr3: Fix 'acc_desc' usage
+Date: Tue, 20 Aug 2024 11:26:59 +0530
+Message-ID: <20240820055705.3922754-2-quic_varada@quicinc.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240820055705.3922754-1-quic_varada@quicinc.com>
 References: <20240820055705.3922754-1-quic_varada@quicinc.com>
@@ -70,103 +68,68 @@ X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
  nasanex01b.na.qualcomm.com (10.46.141.250)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: HSVl4nBaG8qjBHDcD5ehBfCmMFsQ4XlD
-X-Proofpoint-ORIG-GUID: HSVl4nBaG8qjBHDcD5ehBfCmMFsQ4XlD
+X-Proofpoint-GUID: D0TeAvaiLQabh_lLSPkxPT9lW6rsNuH8
+X-Proofpoint-ORIG-GUID: D0TeAvaiLQabh_lLSPkxPT9lW6rsNuH8
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
  definitions=2024-08-19_16,2024-08-19_03,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- suspectscore=0 phishscore=0 spamscore=0 clxscore=1015 bulkscore=0
- lowpriorityscore=0 malwarescore=0 mlxlogscore=999 adultscore=0 mlxscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 clxscore=1015
+ mlxlogscore=780 priorityscore=1501 bulkscore=0 impostorscore=0
+ adultscore=0 mlxscore=0 malwarescore=0 lowpriorityscore=0 spamscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2407110000 definitions=main-2408200044
 
-Add the bindings for the IPQ9574 CPR3 driver to the documentation.
+cpr3 code assumes that 'acc_desc' is available for SoCs
+implementing CPR version 4 or less. However, IPQ9574 SoC
+implements CPRv4 without ACC. This causes NULL pointer accesses
+resulting in crashes. Hence, check if 'acc_desc' is populated
+before using it.
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
 ---
-v5: Add Reviewed-by
+v6: Changes done in the previous version of this patch got squashed
+    into Konrad's V15
+	- https://lore.kernel.org/lkml/20240708-topic-cpr3h-v15-9-5bc8b8936489@linaro.org/
 
-v4: Change compatible string to cpr4 instead of cprh
-    Not adding Reviewed-By as compatible string changed
+    In v14, cpr_set_acc() was invoked from cpr_pre_voltage() or
+    cpr_post_voltage(). Both of those functions invoked cpr_set_acc()
+    only if drv->tcsr was not NULL (and that implied acc_desc != NULL).
+    In v15, cpr_pre_voltage() & cpr_post_voltage() have been
+    removed and cpr_set_acc() is called even though acc_desc
+    is NULL resulting in NULL pointer access.
+    Hence allow cpr_set_acc() to proceed only if acc_desc is set.
 
-v2: Constrained nvmem-cells and the other variant.
-    Removed unnecessary blank line.
+v5: Add acc_desc check in a different way without breaking other SoC
+
+v4: Undo the acc_desc validation in probe function as that could
+    affect other SoC.
 ---
- .../bindings/soc/qcom/qcom,cpr3.yaml          | 35 +++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ drivers/pmdomain/qcom/cpr3.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
-index 2e6712aa1c58..c00373948901 100644
---- a/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
-+++ b/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
-@@ -24,6 +24,7 @@ properties:
-       - const: qcom,cpr4
-       - items:
-           - enum:
-+              - qcom,ipq9574-cpr4
-               - qcom,msm8998-cprh
-               - qcom,sdm630-cprh
-           - const: qcom,cprh
-@@ -52,9 +53,11 @@ properties:
+diff --git a/drivers/pmdomain/qcom/cpr3.c b/drivers/pmdomain/qcom/cpr3.c
+index de24973978b7..d594bc79be1c 100644
+--- a/drivers/pmdomain/qcom/cpr3.c
++++ b/drivers/pmdomain/qcom/cpr3.c
+@@ -536,12 +536,15 @@ static void cpr_corner_restore(struct cpr_thread *thread,
+ static void cpr_set_acc(struct cpr_drv *drv, int f)
+ {
+ 	const struct acc_desc *desc = drv->acc_desc;
+-	struct reg_sequence *s = desc->settings;
+-	int n = desc->num_regs_per_fuse;
++	struct reg_sequence *s;
++	int n;
  
-   nvmem-cells:
-     description: Cells containing the fuse corners and revision data
-+    minItems: 17
-     maxItems: 32
+-	if (!drv->tcsr)
++	if (!desc || !drv->tcsr)
+ 		return;
  
-   nvmem-cell-names:
-+    minItems: 17
-     maxItems: 32
- 
-   operating-points-v2: true
-@@ -74,6 +77,36 @@ required:
- additionalProperties: false
- 
- allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,ipq9574-cpr4
-+    then:
-+      properties:
-+        nvmem-cells:
-+          maxItems: 17
-+        nvmem-cell-names:
-+          items:
-+            - const: cpr_speed_bin
-+            - const: cpr_fuse_revision
-+            - const: cpr0_quotient1
-+            - const: cpr0_quotient2
-+            - const: cpr0_quotient3
-+            - const: cpr0_quotient4
-+            - const: cpr0_quotient_offset2
-+            - const: cpr0_quotient_offset3
-+            - const: cpr0_quotient_offset4
-+            - const: cpr0_init_voltage1
-+            - const: cpr0_init_voltage2
-+            - const: cpr0_init_voltage3
-+            - const: cpr0_init_voltage4
-+            - const: cpr0_ring_osc1
-+            - const: cpr0_ring_osc2
-+            - const: cpr0_ring_osc3
-+            - const: cpr0_ring_osc4
++	s = desc->settings;
++	n = desc->num_regs_per_fuse;
 +
-   - if:
-       properties:
-         compatible:
-@@ -82,6 +115,8 @@ allOf:
-               - qcom,msm8998-cprh
-     then:
-       properties:
-+        nvmem-cells:
-+          minItems: 32
-         nvmem-cell-names:
-           items:
-             - const: cpr_speed_bin
+ 	if (!s || f == drv->fuse_level_set)
+ 		return;
+ 
 -- 
 2.34.1
 
