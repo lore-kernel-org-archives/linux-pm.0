@@ -1,66 +1,76 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+Received: from mail-lf1-f53.google.com (mail-lf1-f53.google.com [209.85.167.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CE1C29424
-	for <linux-pm@vger.kernel.org>; Tue, 20 Aug 2024 15:39:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A85981AB53E
+	for <linux-pm@vger.kernel.org>; Tue, 20 Aug 2024 16:35:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724168342; cv=none; b=I/UQO6k1LWkAmE3leX2KyDEp6ZkZyr8VuFueOvqepEfaBFiqZuqvVYqbtsvveqy2uuPqSrJnLnP7fATd61ZuAyMn0HZGjS9KL1JfDHY0UQmEV3fdQy1EpyuAPrkYFWvQmim0/TnmMIf+FxjZF2CQ7pQz9qwBi/7IZ6fKnHb6RdU=
+	t=1724171721; cv=none; b=fWVbH8XmMdhppcMrdIbPfvdXG4K5s+5cgKsXjUGP8ApFXLmjbM4eZpBDsxLY7SMDx2Q2N353/AQ9EyJlyF9QAfSaCskRcPWR6zsO42gDkLc47oubzPxvvQJBI0DEnKpgAGvjP8LjJn+/4acX9ueO0vueu1Ln4B0TdyKs1gRbNg4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724168342; c=relaxed/simple;
-	bh=3F3rVSXCrKAuNTX6oBs3ahXRw610MZ40UBdmnu7Vx+E=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=J00Z4dvg9ZPuVR7zc2jyNlab6uz1upRMrxau5AbMAbRRD1fdoAqd/lXcT3Ztn7DOmeWX3O+7TUyejn25IoE98fkyozw5IO6lDnzHguO/7NnlePwe3vjeHBlrbTLpp+PWm2sg8gh8L2S63yhtQHoMl5CuCfSV2e7RmL34UNfGXHY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=tbm1oyua; arc=none smtp.client-ip=209.85.128.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
+	s=arc-20240116; t=1724171721; c=relaxed/simple;
+	bh=zQ47ImMy4Dn1DCDt3xGlBdnPJ6cBUL0LZB3cTsDPnpA=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=oJQ3RWSC0wZsTP4iLJB7YadkapCd/R661fYDNXUcWjA3nZK9VzLwp9gKSAoIgeGP/j9X9DIpometibsUAAeeFxzry/XQBPxngxlsZxlKcWv74YpTaJRzFE0LAtRAWQGcUlujm8UunvIKHTh4DdxDFcj8O0ajeLMU/nOgqmWRbWc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b=B+yMZs56; arc=none smtp.client-ip=209.85.167.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="tbm1oyua"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-428e3129851so46743265e9.3
-        for <linux-pm@vger.kernel.org>; Tue, 20 Aug 2024 08:39:00 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b="B+yMZs56"
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-533462b9428so615027e87.3
+        for <linux-pm@vger.kernel.org>; Tue, 20 Aug 2024 09:35:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1724168338; x=1724773138; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=pmWrqfFuhQb126F6VuYJoB91tyorexZYrj4qScm7E4o=;
-        b=tbm1oyuaZe4q83S47IUWMq/Ny4SU8cFH3j5uIv86kQZwCjr3UW8Q+v5NntMms8IRKk
-         khadXoNeLHkciV0AosDOKSGtSte14vH+/9P8Ma0EcGx0Ofn7hPgv6ri3C5h5Re0KnNcc
-         aHi9ypkyTZj1bQYQLrgwIvIjMiLG2M+u73F3H/1hVftyvBjI/9jeKtUa9HYssP2d6cSu
-         YPmx6j8PlB61eXn/jAJlI6SoO9+1LN/4YWfyFD5RQsxYMftF2QvGekX9uPgRQ/TGGitf
-         07WEJgjUKM3dbKClOhSnK3IdL46ZIQfMbq0Hfw9XZIwWXjLANimXUufs32qBWHN3XPkK
-         /+gQ==
+        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1724171718; x=1724776518; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ALljPJwr4PeLXzf4Mb7jserQc5yvW1LK2jxOSl+dUgk=;
+        b=B+yMZs56DcUH8lwhBw7LjnX1UE4bUz+uXrsRAFZbq2wDl9WIxCE+7bQCJwVAV5dsvD
+         1HsSi9npTs5kShx7/YWBr/EBeHotOA4Dpbfrbr2FRXrBNy60r0xdiA3bwQ1g6i+Y/DNs
+         C/bxMu8u18z+qiYdM/h/tJV3T9vRh/uxJxbCCKC2n9UDjv2RAhlDe9MPXAbNuxxPyfDq
+         bMuW7p4nT+noroAo2WrnYcpYuAjP8ldg5f+Y0le8COnziAh0YLgg4T2nKPUipHxp1kK7
+         dILxGzzGxGrRXuCOJanfpKtPd+YKkTbvX4DuWhHIKs156AogCLT6SJAUMuiXA3HMrzCz
+         U0nA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724168338; x=1724773138;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=pmWrqfFuhQb126F6VuYJoB91tyorexZYrj4qScm7E4o=;
-        b=v7FXclXCYiuNfCaIdZ704lOt09NUrB68PKuYuYrNHA8oblSDC7lPzqHWeMbC8bwEgc
-         e+zoBwiNiCJhxxNsVfpr72rdTU/T1k+dtP0IMX8hUIHiASJBVEeqRyYABkrNzeZLRy5o
-         tiwJMXSdzZh/abag1aE8ruGY/mXil79sbW8Z5snXj9qyC1sQ/YL2MHu2Q0vcVr/sML4W
-         iUzAw/GQpzvNiiiO1v7XstJQyUHX0kyOEcauKKH3YiNM8DHpMzGFy+1eRE0abKeZ74d0
-         X74u0u8UDKds+Hxrx+Kmr1OIoVFPL8FKutdSm2gFWtDkkviu0Q3oMH/aLmqKm6JfwoE/
-         OUTA==
-X-Forwarded-Encrypted: i=1; AJvYcCXukQE32+Az25ml41eSO5gUV8ToykuiTsybxWsfTMUFHpOhbOlLoXpYoJh8eSwrVjezsPPB22hVjCiwpVGYjhGNilOJdxrIf5k=
-X-Gm-Message-State: AOJu0Ywl/OV1hAVFLyNJlyGwdY3kX3vx6gnF2kQgVHpk5UgbdrlkMf1v
-	DmD1NyoOcdEacanMHoBTHg4qUpaMppLnpDBGO9CaCXGhM6jnY2MANXH06Zx7PtFaGUYHIkynTRO
-	90vE=
-X-Google-Smtp-Source: AGHT+IGWX7+eVKrGz832pmkLmKocdhlrcgIWlJERL2tWpVpaUuEH1ET2w4rlxwsOimDYeiDWDcI3yQ==
-X-Received: by 2002:a05:600c:138f:b0:428:2502:75b5 with SMTP id 5b1f17b1804b1-429ed7ba9c0mr92827645e9.11.1724168337929;
-        Tue, 20 Aug 2024 08:38:57 -0700 (PDT)
-Received: from brgl-uxlite.home ([2a01:cb1d:dc:7e00:ddce:8248:19a9:4bf6])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-429ed648f4asm146289025e9.5.2024.08.20.08.38.57
+        d=1e100.net; s=20230601; t=1724171718; x=1724776518;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ALljPJwr4PeLXzf4Mb7jserQc5yvW1LK2jxOSl+dUgk=;
+        b=ZWRbHN5RcuXVBnRzmVHjeMO66m8ZmMiS8JYULkWtYw+Yxu7LY8rp7CBotxN2eHcRbJ
+         T1JOdImrHoSH+6TkIcHp3gkLeUUL2ItctlgS7NSJMw9D+QWytvaSKrVI4+bqPHf1KPEf
+         o+13gfUgK1Lgv7a6ZVaSEc1lT6+gplUQdMitfa29O0RcV6qy/xqRoPXkgo5KrBqqun7g
+         7hdMjxrvCljehVeP8DNqJfOUfwqWTlz+znzwElTcMKPWPmN/+Yk99vR17BOeqlBKk4FV
+         vIMXaCev9X5b2Rv6n+W6bOS5/q55XJenwkuPvjmiF6BF+R+PiuRb/pcZxnjSdRVKJBeb
+         vkvw==
+X-Forwarded-Encrypted: i=1; AJvYcCX4Irp8ISJvo6zl7GgVftOFJv5jMnLd/hUkCJBq1HS4U+0N60TjuIy5h4BlNXV0bQqLkwEqE/WuM94yD3bjL88EZ8oc38ODmtY=
+X-Gm-Message-State: AOJu0Yxk6GCxPue39ff5rHfWy7SWNJMzRFy8+lsuZWbYcMGmPF2br1Dx
+	KXogBnpD9rom2tznnaAHdeEw+r63TPaRCuUeQ98oSxqm78hv+SETCRJuLEAxXiU=
+X-Google-Smtp-Source: AGHT+IGuDVH/ZjqmvSREiN6JjWHaWFgiSgGpgzFBXWMg8TVU1iExwbDmMv1TgZFfKYdZJrbLW1T/7A==
+X-Received: by 2002:a05:6512:1193:b0:533:4620:ebec with SMTP id 2adb3069b0e04-5334620eda4mr942030e87.3.1724171717578;
+        Tue, 20 Aug 2024 09:35:17 -0700 (PDT)
+Received: from airbuntu.. (host81-157-90-255.range81-157.btcentralplus.com. [81.157.90.255])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a83838cfb5esm780728766b.59.2024.08.20.09.35.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 20 Aug 2024 08:38:57 -0700 (PDT)
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+        Tue, 20 Aug 2024 09:35:17 -0700 (PDT)
+From: Qais Yousef <qyousef@layalina.io>
+To: Ingo Molnar <mingo@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Juri Lelli <juri.lelli@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	John Stultz <jstultz@google.com>,
 	linux-pm@vger.kernel.org,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Subject: [PATCH] Documentation: add a driver API doc for the power sequencing subsystem
-Date: Tue, 20 Aug 2024 17:38:55 +0200
-Message-ID: <20240820153855.75412-1-brgl@bgdev.pl>
-X-Mailer: git-send-email 2.43.0
+	linux-kernel@vger.kernel.org,
+	Qais Yousef <qyousef@layalina.io>
+Subject: [RFC PATCH 01/16] sched: cpufreq: Rename map_util_perf to sugov_apply_dvfs_headroom
+Date: Tue, 20 Aug 2024 17:34:57 +0100
+Message-Id: <20240820163512.1096301-2-qyousef@layalina.io>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240820163512.1096301-1-qyousef@layalina.io>
+References: <20240820163512.1096301-1-qyousef@layalina.io>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,147 +79,76 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+We are providing headroom for the utilization to grow until the next
+decision point to pick the next frequency. Give the function a better
+name and give it some documentation. It is not really mapping anything.
 
-Describe what the subsystem does, how the consumers and providers work
-and add API reference generated from kerneldocs.
+Also move it to cpufreq_schedutil.c. This function relies on updating
+util signal appropriately to give a headroom to grow. This is tied to
+schedutil and scheduler and not something that can be shared with other
+governors.
 
-Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Rafael J. Wysocki <rafael@kernel.org>
+Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
+Signed-off-by: Qais Yousef <qyousef@layalina.io>
 ---
- Documentation/driver-api/index.rst  |  1 +
- Documentation/driver-api/pwrseq.rst | 98 +++++++++++++++++++++++++++++
- MAINTAINERS                         |  1 +
- 3 files changed, 100 insertions(+)
- create mode 100644 Documentation/driver-api/pwrseq.rst
+ include/linux/sched/cpufreq.h    |  5 -----
+ kernel/sched/cpufreq_schedutil.c | 20 +++++++++++++++++++-
+ 2 files changed, 19 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/driver-api/index.rst b/Documentation/driver-api/index.rst
-index f10decc2c14b..7f83e05769b4 100644
---- a/Documentation/driver-api/index.rst
-+++ b/Documentation/driver-api/index.rst
-@@ -124,6 +124,7 @@ Subsystem-specific APIs
-    pps
-    ptp
-    pwm
-+   pwrseq
-    regulator
-    reset
-    rfkill
-diff --git a/Documentation/driver-api/pwrseq.rst b/Documentation/driver-api/pwrseq.rst
-new file mode 100644
-index 000000000000..bf82469fcd38
---- /dev/null
-+++ b/Documentation/driver-api/pwrseq.rst
-@@ -0,0 +1,98 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+.. Copyright 2024 Linaro Ltd.
-+
-+====================
-+Power Sequencing API
-+====================
-+
-+:Author: Bartosz Golaszewski
-+
-+Introduction
-+============
-+
-+This framework is designed to abstract complex power-up sequences that are
-+shared between multiple logical devices in the linux kernel.
-+
-+The intention is to allow consumers to obtain a power sequencing handle
-+exposed by the power sequence provider and delegate the actual requesting and
-+control of the underlying resources as well as to allow the provider to
-+mitigate any potential conflicts between multiple users behind the scenes.
-+
-+Glossary
-+--------
-+
-+The power sequencing API uses a number of terms specific to the subsystem:
-+
-+Unit
-+
-+    A unit is a discreet chunk of a power sequence. For instance one unit may
-+    enable a set of regulators, another may enable a specific GPIO. Units can
-+    define dependencies in the form of other units that must be enabled before
-+    it itself can be.
-+
-+Target
-+
-+    A target is a set of units (composed of the "final" unit and its
-+    dependencies) that a consumer selects by its name when requesting a handle
-+    to the power sequencer. Via the dependency system, multiple targets may
-+    share the same parts of a power sequence but ignore parts that are
-+    irrelevant.
-+
-+Descriptor
-+
-+    A handle passed by the pwrseq core to every consumer that serves as the
-+    entry point to the provider layer. It ensures coherence between different
-+    users and keeps reference counting consistent.
-+
-+Consumer interface
-+==================
-+
-+The consumer API is aimed to be as simple as possible. The driver interested in
-+getting a descriptor from the power sequencer should call :c:func:`pwrseq_get()`
-+and specify the name of the target it wants to reach in the sequence after
-+calling :c:func:`pwrseq_power_up()`. The descriptor can be released by calling
-+:c:func:`pwrseq_put()` and the consumer can request the powering down of its
-+target with :c:func:`pwrseq_power_off()`. Note that there is no guarantee that
-+:c:func:`pwrseq_power_off()` will have any effect as there may be multiple users
-+of the underlying resources who may keep them active.
-+
-+Provider interface
-+==================
-+
-+The provider API is admittedly not nearly as straightforward as the one for
-+consumers but it makes up for it in flexibility.
-+
-+Each provider can logically split the power-up sequence into descrete chunks
-+(units) and define their dependencies. They can then expose named targets that
-+consumers may use as the final point in the sequence that they wish to reach.
-+
-+To that end the providers fill out a set of configuration structures and
-+register with the pwrseq subsystem by calling :c:func:`pwrseq_device_register`.
-+
-+Dynamic consumer matching
-+-------------------------
-+
-+The main difference between pwrseq and other linux kernel providers is the
-+mechanism for dynamic matching of consumers and providers. Every power sequence
-+provider driver must implement the `match()` callback and pass it to the pwrseq
-+core when registering with the subsystems.
-+
-+When a client requests a sequencer handle, the core will call this callback for
-+every registered provider and let it flexibly figure out whether the proposed
-+client device is indeed its consumer. For example: if the provider binds to the
-+device-tree node representing a power management unit of a chipset and the
-+consumer driver controls one of its modules, the provider driver may parse the
-+relevant regulator supply properties in device tree and see if they lead from
-+the PMU to the consumer.
-+
-+API reference
-+=============
-+
-+.. kernel-doc:: include/linux/pwrseq/consumer.h
-+   :internal:
-+
-+.. kernel-doc:: include/linux/pwrseq/provider.h
-+   :internal:
-+
-+.. kernel-doc:: drivers/power/sequencing/core.c
-+   :export:
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f328373463b0..5a7500f048bb 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -18204,6 +18204,7 @@ M:	Bartosz Golaszewski <brgl@bgdev.pl>
- L:	linux-pm@vger.kernel.org
- S:	Maintained
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git
-+F:	Documentation/driver-api/pwrseq.rst
- F:	drivers/power/sequencing/
- F:	include/linux/pwrseq/
+diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+index bdd31ab93bc5..d01755d3142f 100644
+--- a/include/linux/sched/cpufreq.h
++++ b/include/linux/sched/cpufreq.h
+@@ -28,11 +28,6 @@ static inline unsigned long map_util_freq(unsigned long util,
+ {
+ 	return freq * util / cap;
+ }
+-
+-static inline unsigned long map_util_perf(unsigned long util)
+-{
+-	return util + (util >> 2);
+-}
+ #endif /* CONFIG_CPU_FREQ */
  
+ #endif /* _LINUX_SCHED_CPUFREQ_H */
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index eece6244f9d2..575df3599813 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -178,12 +178,30 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+ 	return cpufreq_driver_resolve_freq(policy, freq);
+ }
+ 
++/*
++ * DVFS decision are made at discrete points. If CPU stays busy, the util will
++ * continue to grow, which means it could need to run at a higher frequency
++ * before the next decision point was reached. IOW, we can't follow the util as
++ * it grows immediately, but there's a delay before we issue a request to go to
++ * higher frequency. The headroom caters for this delay so the system continues
++ * to run at adequate performance point.
++ *
++ * This function provides enough headroom to provide adequate performance
++ * assuming the CPU continues to be busy.
++ *
++ * At the moment it is a constant multiplication with 1.25.
++ */
++static inline unsigned long sugov_apply_dvfs_headroom(unsigned long util)
++{
++	return util + (util >> 2);
++}
++
+ unsigned long sugov_effective_cpu_perf(int cpu, unsigned long actual,
+ 				 unsigned long min,
+ 				 unsigned long max)
+ {
+ 	/* Add dvfs headroom to actual utilization */
+-	actual = map_util_perf(actual);
++	actual = sugov_apply_dvfs_headroom(actual);
+ 	/* Actually we don't need to target the max performance */
+ 	if (actual < max)
+ 		max = actual;
 -- 
-2.43.0
+2.34.1
 
