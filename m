@@ -1,38 +1,37 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FCD417107F;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31D421779BC;
 	Wed, 21 Aug 2024 21:41:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724276498; cv=none; b=sA9oaMkTrDXywqlh89CUZMK32McJKb5Kbo4ot6RAYgxY7gWY2Wld6A5BHIFdSEQ2+ETkwolLGPL5iRVj6rgVKVOserojDvM/Z5cKRlcDK+IKYacv2TL6jT6IDll57mKUj0Dmgbr7EgCMqMlwveu9uVQSIZA0fTILQ60pCx9iDEk=
+	t=1724276499; cv=none; b=JwjPrsGnRjRPSROQNwL5bECqTFWpb4mJw/oWda7fQdWmo6ytdgS4s9AtfUvoTMM7AoGQ6JcOGegPrns5LCRNdPJK5dCDUr3b7Jxp3x3YlPJmeqpqg3nL/Ox4rTPLyb/H8wit67sEHMYrV1hbu4OmhL9Z2cZk4Q6c3RixAI57bx4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724276498; c=relaxed/simple;
-	bh=B630JWCN4wj2RFpLdMsLhFZMzSq0chD9iXm8ONpS9Us=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=u57P54pmygkYDJ38KH7ELQRArwpv7JdjwY6TvUlenbv6XpDymZiT+J60V9KBwhaTa0XGqGGNQ2YZ2Cj3Vfof13yfaMDHwf0FPMSoLawuZvagFAVnDRNc0H9LjLpPas2B5TenpN7FKKabaI2FVWzV0OnHGDcicwuzCzHmy6em+H4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=B0Vj6K11; arc=none smtp.client-ip=212.227.15.19
+	s=arc-20240116; t=1724276499; c=relaxed/simple;
+	bh=sCb+Pxmy4xDpHR3cs0toZaUGNP47RDFntrKyYlIfFMw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=FLSnLrp2WILQ0+zBlPWSusHiPJrffMY31B7rSyIBP1uPVm6jMW+7PDwpvw88/GjBaytzpHks1b9ekk9aS9IjY1JnVOSo8nZhJMnVFL40xZTvULaxIw8YK7G/UvNP4Qx9dqQBNeMjjGldaqAErukSUgX+xLTJcfLDSrwad06O9h4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=P+K4Xlre; arc=none smtp.client-ip=212.227.15.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="B0Vj6K11"
+	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="P+K4Xlre"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.net;
-	s=s31663417; t=1724276468; x=1724881268; i=wahrenst@gmx.net;
-	bh=E5d+ydriTFmIboTE1234GNA41jHZScpZkZpdLaslxGc=;
-	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-Id:In-Reply-To:
-	 References:MIME-Version:Content-Transfer-Encoding:cc:
+	s=s31663417; t=1724276463; x=1724881263; i=wahrenst@gmx.net;
+	bh=5N3RH8iPiqYqhY0BGlP98QSqLIwGal1ASskCaWkhhn0=;
+	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:cc:
 	 content-transfer-encoding:content-type:date:from:message-id:
 	 mime-version:reply-to:subject:to;
-	b=B0Vj6K11yfhCne6cMwHAQjUf2hLopZGDL+8VEGWEn3mmkL8ft1H6uFnmEGhuzKik
-	 45tOVqW0XZPIIH8tVXX5S5E3viBdwaTFXLNo+4ovRosUXObBUKew9V8G/uqjZfvqf
-	 3xSbJcAxtrZeJWoHC4VhOXKlFLt8yfZYfXkNEVdox7600sTcV/Ej0v1vfKOHNjuy8
-	 xYkx1H4MDSapgjyU4Z9jR3pevYP9c2vRh7xFuFQPeH4e7fMoAfaijTsXVivku4ype
-	 XGcg9kitVgLCjoENdOyBymjFqh1x7cgUyDEBUm43n1/kX9g3Gn3hV7B226kKY7byw
-	 HO2VyB710D490MTd8Q==
+	b=P+K4XlremlDBMfj0znT28BU3Qk/n2y/K8TUDfZrhST95kvzxN7iNj8lw24jed6B7
+	 ZNJTP2yHJNUZjOtGlcnbSUUvajdJYOMDP4fe4iIBIJxxZNs4R7Pc0FpVdibKiT+nP
+	 ohw/HtJxXlXNMYBx62uczaFJrf4ZjRJBPiA0qxwmwl8rvhpwxNeHL7Mubjazhd7RZ
+	 8Rf7ajAsU7OHz+1UMyzhesjWXxdg8ayY3xn8+Vf/zJaSeIcsmAS6h+lFF9H2ARrfg
+	 JYoJuj3LE7WKmEaeLzJ3QMoh6V3O7T+xc38+Iy/KSaswuhr2E2YK5O3kDa21z9z4/
+	 Wt1rtwUExEUhPps++A==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from stefanw-SCHENKER ([37.4.248.43]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1McpJg-1s7H4o0qmI-00bIZY; Wed, 21
- Aug 2024 23:41:08 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MgvvT-1sDZXG2ovN-00fzvf; Wed, 21
+ Aug 2024 23:41:03 +0200
 From: Stefan Wahren <wahrenst@gmx.net>
 To: Russell King <linux@armlinux.org.uk>,
 	Doug Anderson <dianders@chromium.org>,
@@ -59,97 +58,146 @@ Cc: Dave Stevenson <dave.stevenson@raspberrypi.com>,
 	linux-arm-kernel@lists.infradead.org,
 	kernel-list@raspberrypi.com,
 	Stefan Wahren <wahrenst@gmx.net>
-Subject: [PATCH V3 4/9] drm/vc4: hdmi: add PM suspend/resume support
-Date: Wed, 21 Aug 2024 23:40:47 +0200
-Message-Id: <20240821214052.6800-5-wahrenst@gmx.net>
+Subject: [PATCH V3 0/9] ARM: bcm2835: Implement initial S2Idle for Raspberry Pi
+Date: Wed, 21 Aug 2024 23:40:43 +0200
+Message-Id: <20240821214052.6800-1-wahrenst@gmx.net>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240821214052.6800-1-wahrenst@gmx.net>
-References: <20240821214052.6800-1-wahrenst@gmx.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:54aw2OGuAPBp9ClzrfrERn/WHVRUW+y6EidTMSmxvpGyCNUA3EA
- awuZXqRoGC/yiuv4MMmPW32zs8EWBzL/SLLnKesbTwyP1vvsGnWSC1eGmkDfWzku0Jkjsj0
- iommWdZXPagNDd4DvuLaCWV4VKAl1px6m7FQfhqh32x8vGWeUVkxPbQoDzq+dXRjAry23XU
- GTnzMwn5txDh/jDPWq3wg==
+X-Provags-ID: V03:K1:aCzKQUb3XFyxBbC5ls0ydeGzWXL1jSVErWB5ynWFjsaMAtLrJLg
+ gWT9J/fZSA8+fMj5Fk++EZdE5iuyCF0tycySzQYq80Yonv+krIch9+JzofZKNExVRsfOMuN
+ SxvMHr2tQVxMK9AuL3LFmWH8QWkNMYDvs1MEI6IyZ9jCExgAMEY/Ylx5V4HHzSMhJU9Shln
+ RzW9K95SNrkxoWiofMDvw==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:0S+yclBWU4g=;DuKZVZsj9wGu0+m5Lkldz4nsRr3
- DAP5UEYm6d93CCYu70QJjLTshbnkE6FTuiq8fxIM5Tn4DJp+B2EkZExaeFkp0cLQiq/i3kZb1
- AhTnfQhhEVz3Etzu9gBWcFdeqRvH/n5sT/2Sx4t8rgrilqeiytBpy+M3WwiKZ07XX15VkTCwL
- hMw3UQi2hOO9R9pp8hV+58Yq49gfppmuK7sI/kNT+5/Mw8P5Bgvf+oEXiFYFYPH4XPutdirsa
- gog/0hfAn9/fN3R5hXcRl+FDH2d5of/Fh4bZdYD99Rn9sFAFNzK6J14cfOuukxCCFOwFsPbf4
- Qy1zazLfCDqO7sumBnM1dAKhKPcn+bZIcbn0tCjqXgPvqr6AQDeTvf+SX/ahTwszoKjeayqdN
- aOEgMZNqZzJBnNMTbhlEIJn6aR6ZfsV+5Hz0hmcmZvZsnbHNsL8T9rfFyd03jzGZhhOe/qVmT
- I8kkjLVQfnxqsqH+dptmtCx3JEdTJfYKt5VSAAA3212hhUYwOc5ZxeIf3N0yA5oIvrVuDvGv7
- zwGUPp9rfSnFn2e399jC+vtSPDJ70PizRkrF6LYRX1NuS1XjuMW0FjzaS+1CIwCoaOAhfMeCG
- FHt1PRrabJWSSsx0mZtZ23cfBnA1hbIm74OngWg9Gd16KhxfIjz8jRGLdiY841bR/tRnrtJe3
- fTJIUk4o48HIm5l2GP6ImSvIX1xdTTIMQxIBMXLOUwjlXgcGUBn93HEakkN3A+OTYuuZvgvxI
- 2+Vi4IiuXeMCuIsn0cZRslAHHVhkT+RsCyppPuEzoAPfVUlmgJU0ouiU3LFsbEUDKqtxc5mmB
- VfGeQlt09aipOZA53ds3R2vg==
+UI-OutboundReport: notjunk:1;M01:P0:4i3lW4xDfNk=;2vfUEntvDEFs0axQpyzrSRVeWZp
+ LjF4UAHwcoJgoIAaIHt9FyIcHVBzISjt5XVD5vwCJvHPmHLHHJBg10kX6ngFbU1spllPXOOH6
+ XTW+4e09ULG0ZwLR35Eck/iuxTPZo0pmXImlBoOcxoaltowGwny7FqpQDhEnuyqWw/r/vGIn6
+ VtuKUyqxpmWBx2gWnICNkJcjwxv9Voo1K8hoS0kEVhxDLc7vVoigZyrG1SdZRVgkGvvuUrxHW
+ KuGJgR2PUJyyALfd0NoMRGa+xMtgqqziA/sUsaCIniUUCvbvZNGj1wsu7HqGc9hmcO1CEJZQy
+ q607g2/z3PvvzdVIkqWeCBPsA+ElelTXRPbEGm9E8TrIBlLYCxdRwTAPzFKaMNA0h13PsYEPu
+ Ec8ZE3CO+hM21rqxztCIrIixwB6YeY/BIGy4aeQn3tjqBwvtt2xZkhKpi3Ke0i2qB79KSNxjq
+ X6gTqZv9ZVfb1kj5ih6p2Rst+ksw1L5eL4uNwWLxJMiV072YqY7w4vk4Cm86Up2tbjzuMqOJ0
+ bQW63pu1q9FLFzbGDlLUn9uUQwByxr4HindIoXO3hUC2roYA5QfpiPKFQeFtA/Qmx7PHWfGJU
+ D3sVfBBNYZZoomgnZaQbOQ3OgVMfJZlFYVGqi7QT91vWg/25KWZjtB7vQxSsiWOoMPBDW1M1D
+ n0K67XnJcXkBHOSRHXwtZlTfPQ/GzJV4CJO+0p53h5kNV/L8LlCcClrrbolmdq1ZL3CHiPFha
+ PWvD/y8RwzYAFACMHViuZ78UwtQe9zMjlerrTJjGzvntAf+KWxDMxMu/kSRGRmSsu8ia5RWwn
+ cODd1MJnJYpuHx22EF5PMkHg==
 
-Add suspend/resume support for the VC4 HDMI component in order
-to handle suspend to idle properly. Since the HDMI power domain
-is powered down during suspend, this makes connector status polling
-pointless.
+This series implement the initial S2Idle support for
+the Raspberry Pi, which was a long time on my TODO list [1]. The
+changes allow to suspend and resume the Raspberry Pi via debug UART.
+The focus is on the BCM2835 SoC, because it's less complex than its
+successors and have enough documentation.
 
-Link: https://lore.kernel.org/dri-devel/7003512d-7303-4f41-b0d6-a8af5bf8e4=
-97@gmx.net/
-Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
-Acked-by: Maxime Ripard <mripard@kernel.org>
-=2D--
- drivers/gpu/drm/vc4/vc4_hdmi.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+The series can be roughly separated in 3 parts:
+ 1. base patches (1, 9) which allows S2Idle support for BCM2835
+ 2. drm vc4 patches (2 - 6)  which implement S2Idle support
+ 3. dwc2 patches (7, 8) which handle BCM2835 specific issues
 
-diff --git a/drivers/gpu/drm/vc4/vc4_hdmi.c b/drivers/gpu/drm/vc4/vc4_hdmi=
-.c
-index 6611ab7c26a6..f7a4ed16094e 100644
-=2D-- a/drivers/gpu/drm/vc4/vc4_hdmi.c
-+++ b/drivers/gpu/drm/vc4/vc4_hdmi.c
-@@ -3104,6 +3104,31 @@ static int vc5_hdmi_init_resources(struct drm_devic=
-e *drm,
- 	return 0;
- }
+Cherry-picking of patches should be fine.
 
-+static int vc4_hdmi_suspend(struct device *dev)
-+{
-+	struct vc4_hdmi *vc4_hdmi =3D dev_get_drvdata(dev);
-+	struct drm_device *drm =3D vc4_hdmi->connector.dev;
-+
-+	if (drm && drm->mode_config.poll_enabled)
-+		drm_kms_helper_poll_disable(drm);
-+
-+	return pm_runtime_force_suspend(dev);
-+}
-+
-+static int vc4_hdmi_resume(struct device *dev)
-+{
-+	struct vc4_hdmi *vc4_hdmi =3D dev_get_drvdata(dev);
-+	struct drm_device *drm =3D vc4_hdmi->connector.dev;
-+	int ret;
-+
-+	ret =3D pm_runtime_force_resume(dev);
-+
-+	if (drm && drm->mode_config.poll_enabled)
-+		drm_kms_helper_poll_enable(drm);
-+
-+	return ret;
-+}
-+
- static int vc4_hdmi_runtime_suspend(struct device *dev)
- {
- 	struct vc4_hdmi *vc4_hdmi =3D dev_get_drvdata(dev);
-@@ -3405,6 +3430,7 @@ static const struct dev_pm_ops vc4_hdmi_pm_ops =3D {
- 	SET_RUNTIME_PM_OPS(vc4_hdmi_runtime_suspend,
- 			   vc4_hdmi_runtime_resume,
- 			   NULL)
-+	SET_SYSTEM_SLEEP_PM_OPS(vc4_hdmi_suspend, vc4_hdmi_resume)
- };
+Test steps:
+- configure debug console (pl011 or mini UART) as wakeup source
+- send system to idle state
 
- struct platform_driver vc4_hdmi_driver =3D {
+  echo freeze > /sys/power/state
+
+- wakeup system by console traffic
+
+The DWC2 part based on an idea of Doug Anderson and its implementation
+should be mostly finished now, but still RFC. The USB domain is now powere=
+d
+down and the USB devices are still usable after resume. There is still roo=
+m
+for improvements, but at least the system won't freeze forever as before.
+
+Here are some figures for the Raspberry Pi 1 (without any
+devices connected except of a debug UART):
+
+running but CPU idle =3D 1.67 W
+S2Idle               =3D 1.33 W
+
+In comparison with HDMI & USB keyboard connected (but neither active
+nor wakeup source):
+
+running but CPU idle =3D 1.82 W
+S2Idle               =3D 1.33 W
+
+The series has been successfully tested on the following platforms:
+Raspberry Pi 1 B
+Raspberry Pi 3 B+
+
+Changes in V3:
+- added Reviewed-by & Acked-by from Florian & Ma=C3=ADra
+- dropped applied pmdomain & bcm2835aux patches
+- address comments by Ma=C3=ADra (patch 3 & 5)
+- replace old USB recovery patch with canary approach [3], which should
+  work with other platforms
+
+Changes in V2:
+- rebased against todays mainline
+- added Reviewed-by from Florian
+- added Acked-by from Minas
+- dropped "irqchip/bcm2835: Enable SKIP_SET_WAKE and MASK_ON_SUSPEND"
+  because it has been applied by Thomas Gleixner
+- dropped "pmdomain: raspberrypi-power: Avoid powering down USB"
+  because this workaround has been replaced by patch 14
+- use drm_err_once instead of DRM_ERROR and return connector_status_unknow=
+n
+  in patch 6
+- add new patch in order to clean-up all DRM_ERROR
+- add new patch to improve raspberrypi-power logging
+- add new patch to simplify V3D clock retrieval
+- add new patch 5 to avoid power down of wakeup devices
+- add new patch 12 to avoid confusion about ACPI ID of BCM283x USB
+- add new patch 8 & 10 which address the problem that HDMI
+  is not functional after s2idle
+- add more links and fix typo in patch 13
+- add new WIP patch 14 which recover DWC2 register after power down
+- take care of UART clock in patch 15 as commented by Florian
+- use SYSTEM_SLEEP_PM_OPS in patch 15
+
+[1] - https://github.com/lategoodbye/rpi-zero/issues/9
+[2] - https://bugzilla.redhat.com/show_bug.cgi?id=3D2283978
+[3] - https://lore.kernel.org/linux-usb/CAD=3DFV=3DW7sdi1+SHfhY6RrjK32r8iA=
+Ge4w+O_u5Sp982vgBU6EQ@mail.gmail.com/
+
+Stefan Wahren (9):
+  mailbox: bcm2835: Fix timeout during suspend mode
+  drm/vc4: hdmi: Handle error case of pm_runtime_resume_and_get
+  drm/vc4: Get the rid of DRM_ERROR()
+  drm/vc4: hdmi: add PM suspend/resume support
+  drm/vc4: v3d: simplify clock retrieval
+  drm/vc4: v3d: add PM suspend/resume support
+  usb: dwc2: Refactor backup/restore of registers
+  usb: dwc2: Implement recovery after PM domain off
+  ARM: bcm2835_defconfig: Enable SUSPEND
+
+ arch/arm/configs/bcm2835_defconfig |   2 -
+ drivers/gpu/drm/vc4/vc4_bo.c       |  14 ++--
+ drivers/gpu/drm/vc4/vc4_dpi.c      |  14 ++--
+ drivers/gpu/drm/vc4/vc4_dsi.c      |  32 +++++----
+ drivers/gpu/drm/vc4/vc4_gem.c      |  11 ++--
+ drivers/gpu/drm/vc4/vc4_hdmi.c     |  70 ++++++++++++++------
+ drivers/gpu/drm/vc4/vc4_hvs.c      |   4 +-
+ drivers/gpu/drm/vc4/vc4_irq.c      |   2 +-
+ drivers/gpu/drm/vc4/vc4_v3d.c      |  26 +++-----
+ drivers/gpu/drm/vc4/vc4_validate.c |   8 +--
+ drivers/gpu/drm/vc4/vc4_vec.c      |  10 +--
+ drivers/mailbox/bcm2835-mailbox.c  |   3 +-
+ drivers/usb/dwc2/core.c            |   1 +
+ drivers/usb/dwc2/core.h            |  14 ++++
+ drivers/usb/dwc2/gadget.c          | 101 +++++++++++++++--------------
+ drivers/usb/dwc2/hcd.c             |  99 ++++++++++++++--------------
+ drivers/usb/dwc2/platform.c        |  38 +++++++++++
+ 17 files changed, 265 insertions(+), 184 deletions(-)
+
 =2D-
 2.34.1
 
