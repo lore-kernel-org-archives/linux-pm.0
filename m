@@ -1,38 +1,38 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8456179652;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E872A17994F;
 	Wed, 21 Aug 2024 21:41:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724276499; cv=none; b=N87hfZ6nLkbPDQUmVXFq8gY762dKoq0SJRXmSL0nmHTNTNx86pIahC9bEPyZZWxzhJShaKWb7l9oIjsjk/u0M9Gz4yLd88z0fjvfSnIGHZkcJSYfjuaYTsskcVXJ/fTrmmW/qeS1pNbAYIu1NVp6ZD3OxegKtuRkk2fyvsK/EpY=
+	t=1724276499; cv=none; b=afroiOn9Y72DCePzOoLMP4Ft7nOp+gabAibvlAxwGSVTkgXmhq68vwCmOS4ET11VaNSS72wZ97vXAlXcXHZk5DXZfkjri36TNqVxqwaJU0JALdcGi4ZVkxXc1KU0PGnb7MkI1xphhzPcRbt4KdTvXahd7F0uAukPAOfh9Y2vNLM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1724276499; c=relaxed/simple;
-	bh=AxOFsGr28cfcbNC+h6Dftg8EXbp86i+W3CwA3JRfN74=;
+	bh=ibj0CC9kYkZBo2Ogqtrzi7iedyDjmLgyq1IbcoPK8Ww=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hWOzI1bu0n+8/X1ECmGHGgIqk0bu5Crzff3UjrbicMyTk7xftmPNctpx/mTMC7VbcVo9wK4vl6gQcm0gszZy4Traewk7sjvOmK0OU5Avfy3G2kuL8hJIGtPoYvBnQh96ZxJBn2kEqrZEkLtjgtXcasMo0JM3GJEgRk8h4L4X+vA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=Q3BGSdC3; arc=none smtp.client-ip=212.227.15.15
+	 MIME-Version; b=gTenJPuHPqueO4ak7ufMTCaSlFU++otCe9UfPzzPe/xg8lCxfOhqOCjJp6Iv2vHfcGMoULJCsxktymphnMGW/1fgxgX7QIHxU2J8YWFUt35YnorouhBj+8obJrVaq89XdGxvtNZspbXN+bGJqBSg8ETCYqej9/v7k/TLS8OAWmU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=Z/MX8qAZ; arc=none smtp.client-ip=212.227.15.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="Q3BGSdC3"
+	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="Z/MX8qAZ"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.net;
-	s=s31663417; t=1724276466; x=1724881266; i=wahrenst@gmx.net;
-	bh=cQY4hRDbG/mN48nwz0CKJd9xVLzJCWuo9bxt0VUNn7M=;
+	s=s31663417; t=1724276470; x=1724881270; i=wahrenst@gmx.net;
+	bh=xtr9kBJY4X3MX0Mx9EKJ4hQqPNtFCg//q2jcoGycQkI=;
 	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-Id:In-Reply-To:
-	 References:MIME-Version:Content-Type:Content-Transfer-Encoding:cc:
+	 References:MIME-Version:Content-Transfer-Encoding:cc:
 	 content-transfer-encoding:content-type:date:from:message-id:
 	 mime-version:reply-to:subject:to;
-	b=Q3BGSdC33AdlS6K3Wjc6qL3k8rkqCxFIjApQmQZtLA8bZNKO5lBeePM/AW6+vPnj
-	 7tmveOOaisZXn61VZzcrsln7vheDCE/l402/awC3j13XTW7RV8nuYwZGVFt+IhBAG
-	 OYQoSOA+1saXQghSbgACYDk2klyQCFupP33779uAUy+uIGODvnwN9la+1tMF67ExE
-	 EKgEn2/rlnAbg6tk6nzrRnTaAgMVxyFEwD/UXZZaCaicWQ7abSxrJc5cnJf2BTu/K
-	 yesB+NnQVQyMfg1IRIyVgw6dOg6rdUWKVcmKcIqaKkiqzGVZq1aesUYaOggiG+0PE
-	 oFKR9r4IKkdBBUZSfQ==
+	b=Z/MX8qAZtZxMtXrj8ZQNRCPMocCvwxqyKFs7ZMt2FgG2h5/bAoOt9ITT31AArOpe
+	 Nxv32eCf4IYW2JoLIBHyqqNgE7DEClsj4subF5bQ8j4P7lPdd9gydte3yF4OcM5Ze
+	 FBEgH4UUw4er9PJTxXzhxjmx7tljCA/iDkYOjcCUbp9PmXDS16zOLK3O6eExze9P2
+	 8IhQHqdXjQnenNoyW8Ozz4r6+3d0OVeWbZPiTpAiIqLJASK0i8tBbx8KTZ+3QEf0y
+	 Iyt/5XvRnu1UydlbRB6wNtlapW7HTaDTdnQ3238m54Rlw3qm39ZXZ5Z4fTIiuMtQu
+	 is3RtH64Nz7oDvqhCQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from stefanw-SCHENKER ([37.4.248.43]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M9o1v-1skRRX0OZx-004SBn; Wed, 21
- Aug 2024 23:41:06 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MUowV-1sYKTH1bSD-00RZdv; Wed, 21
+ Aug 2024 23:41:10 +0200
 From: Stefan Wahren <wahrenst@gmx.net>
 To: Russell King <linux@armlinux.org.uk>,
 	Doug Anderson <dianders@chromium.org>,
@@ -59,9 +59,9 @@ Cc: Dave Stevenson <dave.stevenson@raspberrypi.com>,
 	linux-arm-kernel@lists.infradead.org,
 	kernel-list@raspberrypi.com,
 	Stefan Wahren <wahrenst@gmx.net>
-Subject: [PATCH V3 2/9] drm/vc4: hdmi: Handle error case of pm_runtime_resume_and_get
-Date: Wed, 21 Aug 2024 23:40:45 +0200
-Message-Id: <20240821214052.6800-3-wahrenst@gmx.net>
+Subject: [PATCH V3 6/9] drm/vc4: v3d: add PM suspend/resume support
+Date: Wed, 21 Aug 2024 23:40:49 +0200
+Message-Id: <20240821214052.6800-7-wahrenst@gmx.net>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240821214052.6800-1-wahrenst@gmx.net>
 References: <20240821214052.6800-1-wahrenst@gmx.net>
@@ -71,75 +71,49 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:SYu0atATSJi2LLtaA7iRfrykbMjC2ntZZhlC8BBQR4Dd43fm7p+
- QGnzklCAc4BcEn73hukgPfVICFvTqZthCMrwpPOCva73I95NfjwMBDE3E3GwbGlLDiKfWYg
- wJ96yCe1GE5wrSAaynrcM3SFwQ+Yd09Hjd8cq6HUQDPk8hcInxZhinJ8tpE3IgkbeVWMoPW
- c47SpLu7fWMhRl+HKmLLQ==
+X-Provags-ID: V03:K1:iSPaP7dVaCfkDnoT7GUAk9j0q0tyJQzM/rwNmg7Z2xfsMGZbqOo
+ VA+mt/reSmfRFLwT7nzqjzhmpYuv2iNAFU0WrfbBRh7oygmtYRDCPwt7gzZNz6178FYqj1Z
+ MhwPj6dN/mZ8UP96bfTEYBY5VD/DtsNRcl8lZDGyqK1i02+LbIIVb5IdZZbYqrYTNVp/pfL
+ DwJc9SCFAdLRdZf8Ue0RA==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:m6ph2I7d/Tw=;IQD2wlv8W4JjTviZyvck0CjTTpP
- IORoRISPPUYiEiPw6NpEQrCRxLivACeKQ0K8UAG5syeleRnTuYCqY7xotNFXVPex3tL5abDI8
- 6fjTqrnrpeplbdzzynv+qAVzFCDF2ZgObTVeMjSgZWz8E9hFwrws4v8wVyE1GDWuo1rv91iPO
- ta5EWGuU+NyqtUZgJGqj8KuJ4HKmzdHnaiM6UF2TvmT+XDRFmHwfefH0mz6kG1ofvKgNF2C3B
- ORPvT99rIJvKrFqHhm+0fSLTpEPSekDm4uxI1wWWaSL/6myffjIaYdY+kTHMX+sQvDDEqHAhZ
- RfFFZr+wm2gn+vueXHtJmMQHY6RP5Ko8yGnb5jhwWopdUkx4mFUEkCs3UWl9CdOhYKA/Hk7E9
- nDcmbrSSwnuKHdnpiAOi84KO650WyTCNCzFYtc1FWsGPXZgr/uVlZufKZMJT440G8Uo9YbkQJ
- R+nLfXE/p7bLYniYyfAnkMzwxHNpIzpwAFWpQQfMiWG2x8KpQ2j3Fa0p4ZqFqtcy35UA1RKZ4
- h9ktNqF/cydg0G03AdA0bGS50UdOM2PxHc5UZ1rCT13M3jV0InulmIURsfMosnmlog7hYQ9Lz
- wEePvecFIcCJyyIXDxIEOf2YKlRQdssOTcc7k4kr/XNvz3U1Ka4K6YL53eDNySPtRBAxuif4G
- g0fjf4I0O2BamvlVYDMi9Dqlkq/LvI7dXNKX0x2Y6I0sPq91Pmp1zq1Uvl9F9gmHEs7YQGHae
- TrrwfmUpW/U6U1e2SdKOKxjVO6JcJHU+SsMhtn+y6zpRtNCmK6LKqnEc8ZxTARhzLzIKDLiXO
- v2az4Ax0zYQX9CmaFXDo5V2g==
+UI-OutboundReport: notjunk:1;M01:P0:4UDfCApTLZQ=;aJrzXp9h9WhNB+elsrHTYRy3Md2
+ r9kE2lmHUV26gNoEIb1tt2s2fVD7YJ1Ukbh8ty+TWHFUAUetbn1/b7VgoSHIaogfuASIOD/L3
+ HKFJLnB0hFjf05wlawN39Z5waRP1p1s0o+BIEmXn9QUx4432EsU24dBw13sbs62BKqGxrNKcq
+ RqxdVAFQmb+HSWbcwMj40CcWiT0ov+Cqmzza6G0ERu0skiGZYYCWTr4MGh76HPSiSBEAtcqYH
+ 1DU+gnxHAms6+5FjFxDdXigwG6kPlqTy3pu7ghG63eU65hQH5R4bLz6V7cUoBaua4sN/gr09S
+ YS1POifAXIafYl2zp6jYhFv7BU2/XtC3u7ziHR9xkBLgsbLl7vBpTv0Y+PaTuMJwWRvaGyDdR
+ mzl+eas2HYBd8k0Yg39hkG0auRrZGyYrKyYlBlhG+14wHYIGnH+YeJIuKWWQv8Xcizc+meqJF
+ GrwjfWoI1xKeSQvEoPwf08BiOWwgJJ4tBjDuDgYDvqzu7uDv33KhR2//IjATUAN0a7Zw0rUvH
+ rxAbX4dyoXrwGHj9dO0VxzvX9VTq2SglgGDpeCDVRjTk+grVpmXxFEXomR8Z08RzLEtYosBY/
+ gKGlDXmj7UvWk3XskMzplcnOSIuYslJj8DTdltw6EaZctK8JDyROs13+HZbpyHqDA6T9QKa9c
+ qeIlX1faYECptTsqdbSOnfaqSr2DLpQ8JM7PJhz0B1V11L6RV/UedmFfHR593FVUla3x54nDI
+ 5axOARxueG0DQHPDpBa3KCIbBbKUZQAYlcMH5mS9/pDnM105mM7acw/Uw51M70xtHZ6zDQAMy
+ cRjssMTKltIdFrd2ZuQh0EJQ==
 
-The commit 0f5251339eda ("drm/vc4: hdmi: Make sure the controller is
-powered in detect") introduced the necessary power management handling
-to avoid register access while controller is powered down.
-Unfortunately it just print a warning if pm_runtime_resume_and_get()
-fails and proceed anyway.
+Add suspend/resume support for the VC4 V3D component in order
+to handle suspend to idle properly.
 
-This could happen during suspend to idle. So we must assume it is unsafe
-to access the HDMI register. So bail out properly.
-
-Fixes: 0f5251339eda ("drm/vc4: hdmi: Make sure the controller is powered i=
-n detect")
 Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
-Reviewed-by: Ma=C3=ADra Canal <mcanal@igalia.com>
-Acked-by: Maxime Ripard <mripard@kernel.org>
 =2D--
- drivers/gpu/drm/vc4/vc4_hdmi.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/vc4/vc4_v3d.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/gpu/drm/vc4/vc4_hdmi.c b/drivers/gpu/drm/vc4/vc4_hdmi=
-.c
-index d57c4a5948c8..cb424604484f 100644
-=2D-- a/drivers/gpu/drm/vc4/vc4_hdmi.c
-+++ b/drivers/gpu/drm/vc4/vc4_hdmi.c
-@@ -429,6 +429,7 @@ static int vc4_hdmi_connector_detect_ctx(struct drm_co=
-nnector *connector,
- {
- 	struct vc4_hdmi *vc4_hdmi =3D connector_to_vc4_hdmi(connector);
- 	enum drm_connector_status status =3D connector_status_disconnected;
-+	int ret;
+diff --git a/drivers/gpu/drm/vc4/vc4_v3d.c b/drivers/gpu/drm/vc4/vc4_v3d.c
+index bf5c4e36c94e..03c790f7ffc6 100644
+=2D-- a/drivers/gpu/drm/vc4/vc4_v3d.c
++++ b/drivers/gpu/drm/vc4/vc4_v3d.c
+@@ -508,6 +508,8 @@ static void vc4_v3d_unbind(struct device *dev, struct =
+device *master,
 
- 	/*
- 	 * NOTE: This function should really take vc4_hdmi->mutex, but
-@@ -441,7 +442,12 @@ static int vc4_hdmi_connector_detect_ctx(struct drm_c=
-onnector *connector,
- 	 * the lock for now.
- 	 */
+ static const struct dev_pm_ops vc4_v3d_pm_ops =3D {
+ 	SET_RUNTIME_PM_OPS(vc4_v3d_runtime_suspend, vc4_v3d_runtime_resume, NULL=
+)
++	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
++				pm_runtime_force_resume)
+ };
 
--	WARN_ON(pm_runtime_resume_and_get(&vc4_hdmi->pdev->dev));
-+	ret =3D pm_runtime_resume_and_get(&vc4_hdmi->pdev->dev);
-+	if (ret) {
-+		drm_err_once(connector->dev, "Failed to retain HDMI power domain: %d\n"=
-,
-+			     ret);
-+		return connector_status_unknown;
-+	}
-
- 	if (vc4_hdmi->hpd_gpio) {
- 		if (gpiod_get_value_cansleep(vc4_hdmi->hpd_gpio))
+ static const struct component_ops vc4_v3d_ops =3D {
 =2D-
 2.34.1
 
