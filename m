@@ -1,53 +1,81 @@
-Received: from mail.opdensects.online (mail.opdensects.online [139.64.135.138])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2CD331AD5EF
-	for <linux-pm@vger.kernel.org>; Wed, 21 Aug 2024 11:07:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=139.64.135.138
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EB901B1D61;
+	Wed, 21 Aug 2024 11:11:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724238424; cv=none; b=XyCtPRY4YXV8TDZTfEe04rSEmcIbsqZjLEjUpD/g3FHOP+Y4crtgXIKQXIScD3FxqOhwQRR8jN7HNE1wkXK9Sp+pyA828irm6bRJrzHpSQQEtRaMCjld26VmLV/3ZAB2mSL6yWWIC9MkbBoqxKrZ5c8SQdgwbCTo0VWdf2gdeoM=
+	t=1724238677; cv=none; b=GKDHfsHqLqGRAVS48Ge80u9OD/t88NIFS+8ePHnSkAx85MFzMdA0JiXSxPdPeEY43SG5pRmgfcqn9e34ezdqKzBFTvoTCBlfh0TRUGF+TPJVPwtGKMHIa2a9408AIQ4gjZzhhx689pXWZADYIMqLkmZeLPwi30x5+5LYhVdGhak=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724238424; c=relaxed/simple;
-	bh=dV194gvtzxy+0Zus47l/ewvYA4HbmoohImqCmGgko+k=;
-	h=To:Subject:Message-ID:Date:From:MIME-Version:Content-Type; b=o2s1KRGFJvBNEBalnf8wW4z1y6wFW4O01WDg2wp2W9BW7SUiSFej5m4JRP8FcABotXcDABPmDrz/j4sLTm0CDb0SGY5BAEPjoNHlb5bdUyPkGMVCClfZIhR3BpzmNttAvyMoI3q3DMmK6AGuMh3NH7kfHZuiiYwKFUzOq21mTVI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=prefabs.in; spf=none smtp.mailfrom=fetpshces.co.in; arc=none smtp.client-ip=139.64.135.138
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=prefabs.in
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=fetpshces.co.in
-To: linux-pm@vger.kernel.org
-Subject: Fast-Track Your Dream Home with Modular Construction!
-Message-ID: <288227f9960016231b92a75749307a79@eris.shopfasrm.co.in>
-Date: Wed, 21 Aug 2024 10:42:03 +0000
-From: "prefabs" <hemant@prefabs.in>
-Reply-To: hemant@prefabs.in
+	s=arc-20240116; t=1724238677; c=relaxed/simple;
+	bh=NP2vT5XV0h7oRJk4j4u7B5zSDwT0M9sYHrdts5GFKCc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Fwpz4r6c8mDyDYGvFAhSN3aIK9sqPE3RzWbcyxFsMMNjyzwSPi9OmPxIUo8J6HjqfFjomOIpFcUDkTF+sZYi4Me5X9cDbBkHGkuylA/6UMQ3RzmNrNuVWAjo7xBZ6azO3TkoZ797jT88kXwGNLLwuRug52wjnTVHAi4wOg1PEUY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PyLYUkKw; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PyLYUkKw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1845AC4AF09;
+	Wed, 21 Aug 2024 11:11:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1724238677;
+	bh=NP2vT5XV0h7oRJk4j4u7B5zSDwT0M9sYHrdts5GFKCc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=PyLYUkKwrm0Zss1jyDFZumT0v4dq5VaSIwPQ24LDfKxqmpvjcgFYOLffxAKdTevd6
+	 zRviQ7qGlntPKjFWVQ4URzW2Mm0o6iUmzgK8J7DdMKYcuEcHeLilgsVn2mAB1KI1XD
+	 2X36KgMkch+r+z1XhBesUxksl+0U3ILwebfMgMfYvbUwpFd21PiIhn0VjKEzH/8su1
+	 XrM9zvbiZ/x4ldW6APvMtZBAaTqIXzH8b0Gbj+15uDGpggiWeALsuRxg6vEGoQJHto
+	 zpw47XcpfqWxBVNzev3Rtv7GoHGrMUAoWZS8nkkqH0u0xmP52kIWNKBb4KA7y/WeFF
+	 pMjenISyFlNWw==
+Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-27032e6dbf2so2426942fac.1;
+        Wed, 21 Aug 2024 04:11:17 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWMvHZZkZYUgwKVctcRwxJPTvBzH6I5sHj5fbvC3aGFU2zhojmABWz4ydgZRQHaKrEDw3CE7tVBvcwbIi4=@vger.kernel.org, AJvYcCWUVHhpucx8Et/NOAu0PgJwtpC2/kwhaoX7Ih7OWZZNY7C1/tmkxXoO9R2h6p0jr7M0lg80LD69H/8=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxjqjcuq8UZa03jFY4NSD59G5DaH56lajcgf4jQNmL9VVK36wIQ
+	7NJ4PNFEL2zouqDLvwoSMd7iiminvhogeuWhS4YvadAL6sndD4Q3ItC5wPhy8NZm+JjC2sN8GEL
+	aoZV2IZyvFyJfDmUKL2qbBMphkOk=
+X-Google-Smtp-Source: AGHT+IHTmYRIBJiKwg+iQ4yRJlRdPKZl8el3PfalFXSkxxA2kOksoEND2zF0c5bTykdRb0/+jUBusQO/xky7rlj3CI4=
+X-Received: by 2002:a05:6870:b289:b0:25d:ff1b:3793 with SMTP id
+ 586e51a60fabf-2738be316damr1918813fac.35.1724238676438; Wed, 21 Aug 2024
+ 04:11:16 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Mailer-LID: 6255
-X-Mailer-RecptId: 25674041
-X-Mailer-SID: 11292
-X-Mailer-Sent-By: 686
-X-Mailer-User: 123gadodia--gmail
-X-Mailer-App: eris602
-Content-Type: text/plain; format=flowed; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+References: <2205737.irdbgypaU6@rjwysocki.net> <10527734.nUPlyArG6x@rjwysocki.net>
+ <c01ed2d7-964d-4b75-9a8e-8325d4cc9269@linaro.org>
+In-Reply-To: <c01ed2d7-964d-4b75-9a8e-8325d4cc9269@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 21 Aug 2024 13:11:05 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gQvSouUcEH7CtxZptKHbRyy4=Nes_SjqAW0S7jOJXHqA@mail.gmail.com>
+Message-ID: <CAJZ5v0gQvSouUcEH7CtxZptKHbRyy4=Nes_SjqAW0S7jOJXHqA@mail.gmail.com>
+Subject: Re: [PATCH v3 03/14] thermal: core: Drop redundant thermal instance checks
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, 
+	LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, Aug 21, 2024 at 1:01=E2=80=AFPM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> On 19/08/2024 17:52, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Because the trip and cdev pointers are sufficient to identify a thermal
+> > instance holding them unambiguously, drop the additional thermal zone
+> > checks from two loops walking the list of thermal instances in a
+> > thermal zone.
+> >
+> > No intentional functional impact.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>
+> I'm wondering if the thermal_instance 'tz' field could be removed too ?
 
-Hi Sir/Ma'am,
-
-
-Ready to build your dream home?
-
-Our modular homes offer quick construction, customizable designs, and
-sustainable living—all within your budget. Experience a smoother, faster,
-and more efficient way to build.
-Let’s get started on your dream home today!
-
-
-Best regards,
-Hemant
-Prefabs
-Powered By Express Post
-Click this link to unsubscribe:
-https://eris.shopfasrm.co.in/unsubscribe.php?M=25674041&C=d05095951ac691a94cbf20e494ee81b8&L=6255&N=11292
-
+It is used in a debug printk in __thermal_cdev_update().  If that
+message can be dropped, then yes, but that would be a separate patch
+anyway.
