@@ -1,124 +1,162 @@
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37D7317B501;
-	Wed, 21 Aug 2024 21:32:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=141.14.17.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1BAE13A3E8;
+	Wed, 21 Aug 2024 21:41:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724275941; cv=none; b=TxH9r2iVgcXtNJH9hugnCzE14ltzTQcc7DCkslKebaj7qEWLL7YlmOW6uPWT9UIKFkp+MMBeCc2L/RJm2NWICziPJacXK82Km6HVeNuVi4qwy2xXa9ujHMH5B7JP+g16Y2OuK8YNIKQS0Ups+fmiyASKk9IWS0maDR71TYdzPfw=
+	t=1724276497; cv=none; b=OkvrxEQ8RmBZPmLxrzJr4PvqGLVIZ7Z3NkJ57pNvoZRlVxO74VynNY/ESWjJi8cUz5gSriUbKjnQQNNs0IhPekS6t3E0exnjRhwWZkbsA00/6xMYdOVt68dFjoTc/CaO2Kmh6qTo6Vn2OekpfHlUGe1mHwyaBBqzdqjkSnsf890=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724275941; c=relaxed/simple;
-	bh=x7G1HPWBcIlhyvYZes/Omld/2DwH+wIwRenyzvJjB2A=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:Content-Type; b=cGOddxHloePxhkwoEzykl8Xz87j21oby2CNhffcjhF1qZva3xNcf0PNV+PYBtFUPEdTQJmjkh1lbWmBpI6YCJct2GmbI504xi0erCRzdXos95gibjiw4T0CGYVDxeDchUBB+i3fZzRw+hSNQqv0l+GZqE3PMU+Nk8brtPMPLTtI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de; spf=pass smtp.mailfrom=molgen.mpg.de; arc=none smtp.client-ip=141.14.17.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=molgen.mpg.de
-Received: from [192.168.0.2] (ip5f5af4d2.dynamic.kabel-deutschland.de [95.90.244.210])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: pmenzel)
-	by mx.molgen.mpg.de (Postfix) with ESMTPSA id E569161E5FE07;
-	Wed, 21 Aug 2024 23:32:05 +0200 (CEST)
-Message-ID: <38b871f7-8583-4b9a-940b-ee33a1b6206d@molgen.mpg.de>
-Date: Wed, 21 Aug 2024 23:32:04 +0200
+	s=arc-20240116; t=1724276497; c=relaxed/simple;
+	bh=wY20nfRBuENskS9j1MKl9esl/9d+REWM+u8BeV3PCjU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=PkscXczxO2QWH43xwzUdl/7NWSwB6S5tJgzDKy9a7sw6+nKYWL+M5INBCseM90MeLOwKxx4gIIIVOIZ9xj2WmJxXPlfxh4cGvV/5ugi4IofT1c3SBE3wi0spqHe0XMzfJ5ykQzYhG8bAL/YhMPobgJzvB4dW91NFVwJRQLL6aRw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=NKWtp8ZE; arc=none smtp.client-ip=212.227.15.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="NKWtp8ZE"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.net;
+	s=s31663417; t=1724276465; x=1724881265; i=wahrenst@gmx.net;
+	bh=IbGjewfMVvYXbrFbwzubZ45vd9Gh3tFpLWbhBJeYuoI=;
+	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-Id:In-Reply-To:
+	 References:MIME-Version:Content-Transfer-Encoding:cc:
+	 content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=NKWtp8ZEQ6mzpsbeG9vy+n0d59v7F1XtuK+/PFazbByxFfjvMdq4crvcdJHz4U0b
+	 VnJ09qbsMIdxHdUVVdbRjhIZZ9vdASHOWmOs0vrRevT76+ezgC6ksTIJHrILymTkX
+	 IGyoK3ixIKruTQ/SedKVlv4cDhuG9800RXIpmM0nuCTvBys1bWIp0jDtc0+Vbpuw4
+	 oXQa7cW8dh7I7n7eYe4EdAHz4LvgxpVDX8nh5aJiXS1IEVmgdCaA7xyLvRgZzDxyy
+	 EILzvgAvUcCXuT2+6W5zddu+WoDhj9p5KSD38ht8OVvCpB1eHbpoG0CQgmUFA++l5
+	 PN05yUDnkbYhF7rEBg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from stefanw-SCHENKER ([37.4.248.43]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MCbIn-1spReE0Nz1-00ASCL; Wed, 21
+ Aug 2024 23:41:05 +0200
+From: Stefan Wahren <wahrenst@gmx.net>
+To: Russell King <linux@armlinux.org.uk>,
+	Doug Anderson <dianders@chromium.org>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Ray Jui <rjui@broadcom.com>,
+	Scott Branden <sbranden@broadcom.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Jassi Brar <jassisinghbrar@gmail.com>,
+	=?UTF-8?q?Ma=C3=ADra=20Canal?= <mcanal@igalia.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Minas Harutyunyan <hminas@synopsys.com>
+Cc: Dave Stevenson <dave.stevenson@raspberrypi.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	Lukas Wunner <lukas@wunner.de>,
+	Artur Petrosyan <Arthur.Petrosyan@synopsys.com>,
+	Peter Robinson <pbrobinson@gmail.com>,
+	dri-devel@lists.freedesktop.org,
+	bcm-kernel-feedback-list@broadcom.com,
+	linux-pm@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	kernel-list@raspberrypi.com,
+	Stefan Wahren <wahrenst@gmx.net>
+Subject: [PATCH V3 1/9] mailbox: bcm2835: Fix timeout during suspend mode
+Date: Wed, 21 Aug 2024 23:40:44 +0200
+Message-Id: <20240821214052.6800-2-wahrenst@gmx.net>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240821214052.6800-1-wahrenst@gmx.net>
+References: <20240821214052.6800-1-wahrenst@gmx.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Subject: USB-C adapter like Dell DA300 using > 5 W
-Content-Language: en-US
-To: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Mathias Nyman <mathias.nyman@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:Ps0daNFio1td97HjGTIDdopoApycSfa8qEfrfkoFZ4k/zzsd4TR
+ wh+HRKwaAmNSD2cF+626TBdV8+DAqDQ2FNzganb2joUii7lzPv7UFjB4bNUHTi8UJksheQt
+ 5U53WMIb7T/vsiG9v8jj0YNO0Xfj/G2c6xOOUmro8R0JtipHaY+VYz7F8qWrBgx7YHCzOsy
+ CxyXiky9R66N8L7GxhjSQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:U16rvxg5ux0=;g/2hdCvWDWc5NREG2mi0oVON4Br
+ PiGxu4pgvJ82XvwpCw6YcxKbyU3dR8bGrFqZ1sj6xVULooPQlJ2KZRzkqXJdj1z9AOHE86ZDx
+ Cyp71JGEgKzUz2wyg0GL40ci+R8tPyOO06mD8/CJJPdefznxYaXI+4aeGtDvgM6sZIGUWk6/P
+ +VxNJf6V6ZvjyPK51RuBnoH+ib/Mex3Nzloyo5ICa3ON2U5N9tXwmbeieQ2SNu8UDkntHhMC4
+ sTRTMIYh7GspMJ5M2BULxnhBELpXZUSo1NQiENV+Nok8exR0fuq1diTaMcm2qfUecuPtiSt3L
+ M3vRKHWRjkfLWFXxcudklrM6GZehddpilcVfMCYeI1HO9P0Qn9mijRSHL+k7sbmpahAnT2f0T
+ bLvpVDH+BtU7nZrza1Vpct/D3IGGxFTGd6mk0oCvjME2zR8Q7pVL8/5MDb2Qd9ibvhjbqjTuR
+ lrmCWMlkN/OfNM7BGQOi+PX5I0xoUcipIPNiPImbAf1brOVsiwoQPVTy+zV2zsUEgDpmqLUyf
+ Zdh+/fJzcWhhnM+yPDUUwzXSOf5Vx7iQXXLP8dVOfx82tLZrEwMIX0j2x1OO6d4+QoborAYsr
+ b+oQsYlmm/HTgJZldCnaacFTBY8rCGtNDE0C4T2eoIf9Y9PRJ/jZZZYMAbLdIx1y5voRKDBwB
+ LGeUSK6xkbVXLAIO4Kxq+JUKF/r+2PsJpVwfcc6+akSiegmgyCro1VYKpjDfXWjOQi3q/8GY/
+ V5u0d3G5lhrLOhB0PQtKZ+SGV2zAVA75hxNzinI5fO1H47TlZxGkN1dsoOyrMXokZ7ywo1wSw
+ /4A0+iC6kO67nbcjq/DK1NHA==
 
-Dear Linux folks,
+During noirq suspend phase the Raspberry Pi power driver suffer of
+firmware property timeouts. The reason is that the IRQ of the underlying
+BCM2835 mailbox is disabled and rpi_firmware_property_list() will always
+run into a timeout [1].
 
+Since the VideoCore side isn't consider as a wakeup source, set the
+IRQF_NO_SUSPEND flag for the mailbox IRQ in order to keep it enabled
+during suspend-resume cycle.
 
-On the Intel Kaby Lake laptop Dell XPS 13 9360 with Debian sid/unstable 
-and *powertop* 2.15-3, connecting a USB-C adapter like Dell DA300 or LMP 
-USB-C mini Dock (P/N 15954) [1] and connecting only an Ethernet cable 
-(module r8152 is used), the adapter gets very hot, and according to 
-PowerTOP it uses over 5 Watts – almost more as the laptop idling.
+[1]
+PM: late suspend of devices complete after 1.754 msecs
+WARNING: CPU: 0 PID: 438 at drivers/firmware/raspberrypi.c:128
+ rpi_firmware_property_list+0x204/0x22c
+Firmware transaction 0x00028001 timeout
+Modules linked in:
+CPU: 0 PID: 438 Comm: bash Tainted: G         C         6.9.3-dirty #17
+Hardware name: BCM2835
+Call trace:
+unwind_backtrace from show_stack+0x18/0x1c
+show_stack from dump_stack_lvl+0x34/0x44
+dump_stack_lvl from __warn+0x88/0xec
+__warn from warn_slowpath_fmt+0x7c/0xb0
+warn_slowpath_fmt from rpi_firmware_property_list+0x204/0x22c
+rpi_firmware_property_list from rpi_firmware_property+0x68/0x8c
+rpi_firmware_property from rpi_firmware_set_power+0x54/0xc0
+rpi_firmware_set_power from _genpd_power_off+0xe4/0x148
+_genpd_power_off from genpd_sync_power_off+0x7c/0x11c
+genpd_sync_power_off from genpd_finish_suspend+0xcc/0xe0
+genpd_finish_suspend from dpm_run_callback+0x78/0xd0
+dpm_run_callback from device_suspend_noirq+0xc0/0x238
+device_suspend_noirq from dpm_suspend_noirq+0xb0/0x168
+dpm_suspend_noirq from suspend_devices_and_enter+0x1b8/0x5ac
+suspend_devices_and_enter from pm_suspend+0x254/0x2e4
+pm_suspend from state_store+0xa8/0xd4
+state_store from kernfs_fop_write_iter+0x154/0x1a0
+kernfs_fop_write_iter from vfs_write+0x12c/0x184
+vfs_write from ksys_write+0x78/0xc0
+ksys_write from ret_fast_syscall+0x0/0x54
+Exception stack(0xcc93dfa8 to 0xcc93dff0)
+[...]
+PM: noirq suspend of devices complete after 3095.584 msecs
 
-     $ lsusb
-     Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-     Bus 001 Device 002: ID 0cf3:e300 Qualcomm Atheros Communications 
-QCA61x4 Bluetooth 4.0
-     Bus 001 Device 003: ID 04f3:2234 Elan Microelectronics Corp. 
-Touchscreen
-     Bus 001 Device 004: ID 0c45:670c Microdia Integrated Webcam HD
-     Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
-     Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-     Bus 003 Device 002: ID 2109:2820 VIA Labs, Inc. VL820 Hub
-     Bus 003 Device 003: ID 06c4:c412 Bizlink International Corp. DELL DA300
-     Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
-     Bus 004 Device 002: ID 2109:0820 VIA Labs, Inc. VL820 Hub
-     Bus 004 Device 003: ID 0bda:8153 Realtek Semiconductor Corp. 
-RTL8153 Gigabit Ethernet Adapter
+Link: https://github.com/raspberrypi/firmware/issues/1894
+Fixes: 0bae6af6d704 ("mailbox: Enable BCM2835 mailbox support")
+Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
+Reviewed-by: Florian Fainelli <florian.fainelli@broadcom.com>
+=2D--
+ drivers/mailbox/bcm2835-mailbox.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-With `LANG= sudo powertop --auto-tune` it stays high.
+diff --git a/drivers/mailbox/bcm2835-mailbox.c b/drivers/mailbox/bcm2835-m=
+ailbox.c
+index fbfd0202047c..ea12fb8d2401 100644
+=2D-- a/drivers/mailbox/bcm2835-mailbox.c
++++ b/drivers/mailbox/bcm2835-mailbox.c
+@@ -145,7 +145,8 @@ static int bcm2835_mbox_probe(struct platform_device *=
+pdev)
+ 	spin_lock_init(&mbox->lock);
 
-PowerTOP:
+ 	ret =3D devm_request_irq(dev, irq_of_parse_and_map(dev->of_node, 0),
+-			       bcm2835_mbox_irq, 0, dev_name(dev), mbox);
++			       bcm2835_mbox_irq, IRQF_NO_SUSPEND, dev_name(dev),
++			       mbox);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to register a mailbox IRQ handler: %d\n",
+ 			ret);
+=2D-
+2.34.1
 
-```
-The battery reports a discharge rate of 6.01 W
-The energy consumed was 146 J
-The estimated remaining time is 3 hours, 51 minutes
-
-Summary: 384.6 wakeups/second,  0.0 GPU ops/seconds, 0.0 VFS ops/sec and 
-8.5% CPU use
-
-Power est.              Usage       Events/s    Category       Description
-   5.94 W      0.0%                      Device         Display backlight
-   5.23 W    100.0%                      Device         USB device: USB 
-Optical Mouse (Logitech)
-   4.62 W     66.1%                      Device         USB device: USB 
-10/100/1000 LAN (Realtek)
-   205 mW    100.0%                      Device         USB device: 
-Fujitsu Keyboard (Fujitsu)
-  14.1 mW     13.5 ms/s       0.9        kWork intel_atomic_commit_work
-```
-
-At another time:
-
-```
-The battery reports a discharge rate of 10.5 W
-The energy consumed was 235 J
-The estimated remaining time is 2 hours, 20 minutes
-
-Summary: 395.8 wakeups/second,  0.0 GPU ops/seconds, 0.0 VFS ops/sec and 
-23.8% CPU use
-
-Power est.              Usage       Events/s    Category       Description
-   7.13 W    100.0%                      Device         USB device: USB 
-10/100/1000 LAN (Realtek)
-   3.92 W     15.8%                      Device         Display backlight
-   320 mW      0.0 us/s      0.00        Process        [PID 1349] 
-/usr/bin/pipewire
-  63.6 mW     65.4 ms/s       0.5        Process        [PID 4982] 
-/usr/lib/thunderbird/thunderbird
-  24.9 mW     25.6 ms/s       6.7        Process        [PID 37753] 
-/usr/lib/firefox-nightly/firefox-bin -contentproc -isForBrowser 
--prefsLen 36793 -prefMapSize 265654 -jsInitLe
-  14.7 mW     15.1 ms/s       0.5        kWork 
-intel_atomic_commit_work
-```
-
-The heat of the USB-C adapter might suggest, that it draws that much 
-power. What is your experience? Can you suggest something?
-
-
-Kind regards,
-
-Paul
-
-
-[1]: 
-https://lmp-adapter.com/product/lmp-usb-c-mini-dock/?attribute_pa_color=silver
-      "LMP USB-C mini Dock (P/N 15954)"
