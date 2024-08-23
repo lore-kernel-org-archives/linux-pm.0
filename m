@@ -1,155 +1,140 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 725051885AF
-	for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2024 15:43:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D6E418BC14;
+	Fri, 23 Aug 2024 16:18:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724427800; cv=none; b=b0S84JfAnQqJI3WEVL3WNsd0OSkiu4xPFp8fhbRMJsaROEh+OJDKyh2gYTMQPKMZmX0D7q+N3ZzTjTtaxdfTNb9fINrZgXSv2g4330nLhp1nXpVstrwG7W73bMPEi0oLXihe/RzopL/TYg6vwi68UmGOPxZe2zplQ7W5lXmOosA=
+	t=1724429891; cv=none; b=Wlkf7KVlT9LvtI8Zj7zEmdcufP2KK31XRIbOUDknjeO8KZrPNRRti1HLnDguD3xuCdNXK3B2/zspjKOfTy7tn/2NAaiMq3fYM62CRRFTaEdKBxTdE6xt9m1ur+bKuCXcCAIBQvIc6HHp6zML0frRJrgM4MYKwK6N/g85EiEVoR0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724427800; c=relaxed/simple;
-	bh=UAAKsIvCmNiVqRTFLcLoUi86VSU3tPObaOIJAs0+nhA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RR7Itb3qG32mLtdWh6EHyZ88M22RWqYBqZFeuGUPM97ZN85/hWPU8LzwQf/sbTD4q/OJavsW4An18mttI03eX62PkWJQgFfshUa/5wJMIxPlLFn4pbQadO5y5XMD35Re9e/CT6pVk450foDu4Bgt2cCdfLgCTae/gtDnxuuu4ac=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=j6JXTcaM; arc=none smtp.client-ip=209.85.128.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1724429891; c=relaxed/simple;
+	bh=PgdByvdiAfbXaDotznDJ0dcWaZ63H3JEqmGBNQTkNik=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fgcTzg9XirlC8Soo4v9EwWMNFSWmIl/fQzjqksfiaoA5fG6p+u+cYF+vOUa6ib9wJ4MfqSfNXiV+S0XUN9FaBJUHaRAXXGuOE9npoHTSy73vP4lv+kUSUmWqAvj3TDysWy1BfjMeBkr/WQfs3fcBON4LV7MI5gi4CzQkulT0Y2o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZC90Fm8O; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="j6JXTcaM"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-4281faefea9so16149795e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2024 08:43:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1724427797; x=1725032597; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WtnMpPUERM2pDdBMnHXsV0NgdHCRPYPmkwqv5dMYPzQ=;
-        b=j6JXTcaMvgKn5W8iLbZSxd/KiNkvIXjagBaCFCH0AmkafB75u79rJ1/bfmI2svJ0q1
-         3KECHqtSVgrLjKE8aXuDgrcgtEJ5wgT9SGxKGnET8iT85j96/QXBJVATQbYS9HuIicGo
-         HCwlOCH8IJ8sxHwnRlfQ6VkB9apBKaxvbt0mjlTU8oEm2jRxszXX4CXVL8YOC0V6CJZJ
-         CozDTSmB6q0BW1qxSJs/x++PPSRgVASqz+pvPilliMlYpvZN3Y6M0EbIecdg3XYGyXJJ
-         DnJ/n9CxiF7kXGLglZmEajvJY+9AEQ9pvFPMM14HITJyFbsN4k8ymB+AX/S8UhvKa+PY
-         lgPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724427797; x=1725032597;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=WtnMpPUERM2pDdBMnHXsV0NgdHCRPYPmkwqv5dMYPzQ=;
-        b=YMxaBpux6dN9dMtXYbLhowKUYfVipeEhnUCxpf9OAxeNnLIQXEkmPDzEWB7GrelNaN
-         UTRCDkbYjGozXb/EThhuSsgJWWjQcQEPgnl0oIIQS9UKp2WXbD7du0jsZM50fSKZ3XKo
-         bScjoJpUnPBS2QtT+6vk5f4ZCXYGOlxyfFRf7cAYhoBg02iDr+vd9ndyw0bK/ubbEmbN
-         ouVH8EU/LmXS3uVK3ZO2v3sObk0Tvk3G5jYB69IihSBFlpSpxPwkl/CbhyN8P9lqdLqF
-         38nFDqjU6DGP7+Rum3Ntt11b/ij/IBuR3DrGjThs5Azynf5Z//AMuwV0taf2BWTW4fmB
-         bwCg==
-X-Gm-Message-State: AOJu0YwkNsfFmWuGkmAJaTr3QiP5MLLpPj0lDZ1Jrxq4E4Z0ir+Ma79e
-	72Bk+qlk9KZMvwkve/6W3PfFgLbHMTGZ557ts7e8aQx7EM2M97op8w05k7OL4MY=
-X-Google-Smtp-Source: AGHT+IH/51VXtSOjuCnDyuonQwj6xZRhLMvkaTQ3d7h/0AoF41O+/4rayP6IPnGDhi6+Curs1LtZsg==
-X-Received: by 2002:a05:600c:4a9d:b0:427:ac40:d4b1 with SMTP id 5b1f17b1804b1-42b89bf4d11mr6601865e9.27.1724427796647;
-        Fri, 23 Aug 2024 08:43:16 -0700 (PDT)
-Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-373081ff5b8sm4395891f8f.85.2024.08.23.08.43.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 Aug 2024 08:43:16 -0700 (PDT)
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-To: daniel.lezcano@linaro.org,
-	rafael@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	=?UTF-8?q?J=C3=A9r=C3=A9mie=20Garcia?= <jgarcia@baylibre.com>,
-	Alexandre Bailon <abailon@baylibre.com>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-kernel@vger.kernel.org (open list)
-Subject: [RFC PATCH 2/2] thermal/of: Use thermal_zone_device_param
-Date: Fri, 23 Aug 2024 17:42:44 +0200
-Message-ID: <20240823154245.1553458-2-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240823154245.1553458-1-daniel.lezcano@linaro.org>
-References: <20240823154245.1553458-1-daniel.lezcano@linaro.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZC90Fm8O"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CD95EC32786;
+	Fri, 23 Aug 2024 16:18:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1724429891;
+	bh=PgdByvdiAfbXaDotznDJ0dcWaZ63H3JEqmGBNQTkNik=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ZC90Fm8Oaw+MQx+uDsJmmODI2/hX9icvDed7tm4bS+eYRSFHflJN7lzWx7rLqnZVc
+	 /EeRQapRZtyrKflOGlW921S5f2NsO84csxAlObYlSnAoSpArgtGMI1fyIeP9JFeMd+
+	 wxx6FxANYeXN8kJP5XsIVDrOFWBOYyRpjxLF9MXQEWWoYz/NUKfioM1Mo5XKWcUVb2
+	 Xrli84Wyw2O4//SzdGKFRgz5B8WyBrbhzXS4McahzOIuBxJGTEl95FGQdPqujyGtbz
+	 LFS9h83DMHMURzMQNRTkjhJuj8I+FBR4OPZ7ykSCmj8rKCnV6Ksfnx4Ww39PmTXW/w
+	 TNlBbNLVZYIWg==
+Date: Fri, 23 Aug 2024 17:18:04 +0100
+From: Conor Dooley <conor@kernel.org>
+To: claudiu beznea <claudiu.beznea@tuxon.dev>
+Cc: vkoul@kernel.org, kishon@kernel.org, robh@kernel.org,
+	krzk+dt@kernel.org, conor+dt@kernel.org, p.zabel@pengutronix.de,
+	geert+renesas@glider.be, magnus.damm@gmail.com,
+	gregkh@linuxfoundation.org, mturquette@baylibre.com,
+	sboyd@kernel.org, yoshihiro.shimoda.uh@renesas.com,
+	biju.das.jz@bp.renesas.com, ulf.hansson@linaro.org,
+	linux-phy@lists.infradead.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+	linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+	Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
+Subject: Re: [PATCH 02/16] dt-bindings: soc: renesas: renesas,rzg2l-sysc: Add
+ #reset-cells for RZ/G3S
+Message-ID: <20240823-plywood-unfixed-d8d8a2d93f14@spud>
+References: <20240822152801.602318-1-claudiu.beznea.uj@bp.renesas.com>
+ <20240822152801.602318-3-claudiu.beznea.uj@bp.renesas.com>
+ <20240822-vanilla-enigmatic-f0b05ecca4b6@spud>
+ <0d8b1322-cf15-4ed9-b958-06516bbb64c7@tuxon.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="GSCRsUY2DblipIOX"
+Content-Disposition: inline
+In-Reply-To: <0d8b1322-cf15-4ed9-b958-06516bbb64c7@tuxon.dev>
 
-As we can use the thermal_zone_device_param structure to pass the
-thermal zone parameters, let's use it in thermal-of code.
 
-Cc: Jérémie Garcia <jgarcia@baylibre.com>
-Cc: Alexandre Bailon <abailon@baylibre.com>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/thermal_of.c | 19 +++++++------------
- 1 file changed, 7 insertions(+), 12 deletions(-)
+--GSCRsUY2DblipIOX
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 1f252692815a..3e494ff88648 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -474,12 +474,9 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
- {
- 	struct thermal_zone_device_ops of_ops = *ops;
- 	struct thermal_zone_device *tz;
--	struct thermal_trip *trips;
--	struct thermal_zone_params tzp = {};
-+	struct thermal_zone_params tzp = { .devdata = data, .ops = &of_ops };
- 	struct device_node *np;
- 	const char *action;
--	int delay, pdelay;
--	int ntrips;
- 	int ret;
- 
- 	np = of_thermal_zone_find(sensor, id);
-@@ -489,14 +486,14 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
- 		return ERR_CAST(np);
- 	}
- 
--	trips = thermal_of_trips_init(np, &ntrips);
--	if (IS_ERR(trips)) {
-+	tzp.trips = thermal_of_trips_init(np, &tzp.num_trips);
-+	if (IS_ERR(tzp.trips)) {
- 		pr_err("Failed to find trip points for %pOFn id=%d\n", sensor, id);
- 		ret = PTR_ERR(trips);
- 		goto out_of_node_put;
- 	}
- 
--	ret = thermal_of_monitor_init(np, &delay, &pdelay);
-+	ret = thermal_of_monitor_init(np, &tzp.polling_delay, &tzp.passive_delay);
- 	if (ret) {
- 		pr_err("Failed to initialize monitoring delays from %pOFn\n", np);
- 		goto out_kfree_trips;
-@@ -512,9 +509,7 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
- 		if (!of_ops.critical && !strcasecmp(action, "reboot"))
- 			of_ops.critical = thermal_zone_device_critical_reboot;
- 
--	tz = thermal_zone_device_register_with_trips(np->name, trips, ntrips,
--						     data, &of_ops, &tzp,
--						     pdelay, delay);
-+	tz = thermal_zone_device_register(np->name, &tzp);
- 	if (IS_ERR(tz)) {
- 		ret = PTR_ERR(tz);
- 		pr_err("Failed to register thermal zone %pOFn: %d\n", np, ret);
-@@ -522,7 +517,7 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
- 	}
- 
- 	of_node_put(np);
--	kfree(trips);
-+	kfree(tzp.trips);
- 
- 	ret = thermal_zone_device_enable(tz);
- 	if (ret) {
-@@ -535,7 +530,7 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
- 	return tz;
- 
- out_kfree_trips:
--	kfree(trips);
-+	kfree(tzp.trips);
- out_of_node_put:
- 	of_node_put(np);
- 
--- 
-2.43.0
+On Fri, Aug 23, 2024 at 10:54:06AM +0300, claudiu beznea wrote:
+> Hi, Conor,
+>=20
+> On 22.08.2024 19:42, Conor Dooley wrote:
+> > On Thu, Aug 22, 2024 at 06:27:47PM +0300, Claudiu wrote:
+> >> From: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
+> >>
+> >> The RZ/G3S System controller has registers to control signals that need
+> >> to be de-asserted/asserted before/after different SoC areas are power
+> >> on/off. This signals are implemented as reset signals. For this docume=
+nt
+> >> the #reset-cells property.
+> >>
+> >> Signed-off-by: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
+> >> ---
+> >>  .../bindings/soc/renesas/renesas,rzg2l-sysc.yaml | 16 ++++++++++++++++
+> >>  1 file changed, 16 insertions(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/soc/renesas/renesas,rzg=
+2l-sysc.yaml b/Documentation/devicetree/bindings/soc/renesas/renesas,rzg2l-=
+sysc.yaml
+> >> index 4386b2c3fa4d..6b0bb34485d9 100644
+> >> --- a/Documentation/devicetree/bindings/soc/renesas/renesas,rzg2l-sysc=
+=2Eyaml
+> >> +++ b/Documentation/devicetree/bindings/soc/renesas/renesas,rzg2l-sysc=
+=2Eyaml
+> >> @@ -42,12 +42,28 @@ properties:
+> >>        - const: cm33stbyr_int
+> >>        - const: ca55_deny
+> >> =20
+> >> +  "#reset-cells":
+> >> +    const: 1
+> >> +
+> >>  required:
+> >>    - compatible
+> >>    - reg
+> >> =20
+> >>  additionalProperties: false
+> >> =20
+> >> +allOf:
+> >> +  - if:
+> >> +      properties:
+> >> +        compatible:
+> >> +          contains:
+> >> +            const: renesas,r9a08g045-sysc
+> >> +    then:
+> >> +      required:
+> >> +        - "#reset-cells"
+> >=20
+> > Given this is new required property on an existing platform, I'd expect
+> > some mention of why it used to be okay to not have this but is now
+> > required. Did firmware or a bootloader stage take things out of reset?
+>=20
+> On previous SoCs the SYS controller has no support for controlling the
+> signals going to different peripherals (USB, PCIE in case of RZ/G3S).
+> I'll add a note about this on next version.
 
+My initial thought here wasn't about previous SoCs though, it was
+because you didn't add the compatible in this series for /this/ SoC.
+What's worth noting isn't about the prior SoCs, it is about what makes
+it okay for this one.
+
+--GSCRsUY2DblipIOX
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZsi2PAAKCRB4tDGHoIJi
+0g2cAQDP31P2uZ2yJsxRp9QIUYTgXjcHmhTZPcFjJt8BD980TgD8DlBwXJ0T9MnS
+uL/Znkm4rQCaBJlq8vpNa0dgniF1pAQ=
+=Yj0N
+-----END PGP SIGNATURE-----
+
+--GSCRsUY2DblipIOX--
