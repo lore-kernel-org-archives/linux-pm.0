@@ -1,210 +1,94 @@
-Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D01F189516
-	for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2024 12:51:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9BB5186601;
+	Fri, 23 Aug 2024 13:28:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724417508; cv=none; b=oK48s3tCPmJRIkC+rCxwA40h0Ur72pDm2EYUS4MSWzXj9AWyIro7InW2Y9d3IAWSIOf1tfNa4hjWf7kn8zaWG7Xd+9uQuWB44UwcmINX4D/c6fGbioHZ8fbcpHXSTyFxC4UdKEcZlqHFulsf5Bq0A4DE9T/0g25qybRzhyqe7fY=
+	t=1724419685; cv=none; b=lK8va/fZ+QUWn/k7VssDoDXUefV28XRdFDxmGPzRh+GHt+u1+nhTrcRU0ZRpGz5EcsL4TvxY6WsgxV838bK63UsGcY4d1eIuZvrQqyymXqTwmgg51xC+OAYgnou5xfegak6mtq3WhshFMooGESI/D8BesX0OeMirD9DiL9DisS4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724417508; c=relaxed/simple;
-	bh=RaCHoWfcvN19DBMmkgIRc0NGUjytTpFgVMcU13mcxgo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=K7tXybkYED1PRIThzWz2b3SddurR+kSmrfbCsiorjF3k+lHbZg7lsCB2OljGvDfz1zDaXWdA5gMeglOwcnTe8Wp1WksBbO6aa2LLsdl6xaW1Q7h5EjGJ5sFkN+xo0NVGfCfTkYwYw3gGTWi5JQXYEcxMgZLfeu7OoJcBXLGKBxk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=wt2HdV1Y; arc=none smtp.client-ip=209.85.218.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1724419685; c=relaxed/simple;
+	bh=DNlR9IfmHdpksq7A8/Fhgkr8Dh+iHoATiUQp29Ay9Ao=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=tjvpXR5CohxAbJeaMaeVWNgpvEF+tHeK44KbjYUufLAJovm3M5arvHQmy/e5j8oQLUDwLLH8uJo3Rd+UxmrxJNqpNS5isnDsgA5cTOhloyzkCVtyBtrjpfaIJjflqgEW7GHZXz0RqNAibTWviRlGsBheBqQuEIYVl4LhiREJndM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JS32JMbN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="wt2HdV1Y"
-Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-a86a07b2b2aso4693366b.1
-        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2024 05:51:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1724417505; x=1725022305; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/rp37AUE8o1pDdOTGLdrCW8KtmisO6ANjwH8PgBb0ls=;
-        b=wt2HdV1Y+hpHDtGu4AZPY1gaQjH5BA43pu8GrqurKqPNSlmSGOIsL7UA3uNXKqMvy1
-         V3CZ2Pn0K3rZqssB0KftZzRFMWFKPd7VmMuKxDJuqwbyrySnATjgpa0xcLst8zinsR4n
-         eUNyCsX9ezBEKxt7psZ8dyQSFW5uX1InKa80iqqi1s7y7k8xwR1bqHG+OCRxDMJPx5Vu
-         VV2pib7S8T0OargbhFdQopxYtXNlMlXBuzBCyOZjUBucAClgh34ccrLUlQ1zUf5AOLvO
-         mpGzY+v9zoVnyXXTJ5LzikHb3TUT0MIId2ydVNMZcFFVi8R0Qn0C3L1/gqzURz1YQBZo
-         UVUA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724417505; x=1725022305;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=/rp37AUE8o1pDdOTGLdrCW8KtmisO6ANjwH8PgBb0ls=;
-        b=uFUIsoTTQ6WOgYN4TW0dmsD15E3/REmmXBokY12vKj+Z+n3JByln0XhDmyM19klj5r
-         YfnmnIKOnd3IC51tjRS+9M//CtpwaN5Wc+nFJDbdqRJWTrQqu8OpkMkpXH9TaI31xEdN
-         YapefS6zmS3VjMrZtBBpi8xK/eqE7WK2AczGCg7/8hD0fjxxY0+ZNpp8RbVCO+0GfLFD
-         4TaWpmNIuLy9vmqvX54yTw5PiuA8cc94AcCW6enbFbhOd0gCfqobu9loy7Vz9Kl33zsG
-         eE6AzdRrdE1yqmSvl4txvm0acw268ADhU3jKcDfxB+hza9imZhK5lnCBsyct1UatLd4Q
-         M1hg==
-X-Gm-Message-State: AOJu0YxJAEMeJV3t7+Z02/clJEl+bnIPdY3sDgRKV/WuL/V4YkBIQPYX
-	tuxzTHxoiPvIxnbx3J5cXKRP4qY+AjdB5V8n77lXbd4ZBzjkYZPmaXS8GWOEeUg=
-X-Google-Smtp-Source: AGHT+IE1+3Q98ogeUT94jLgiJMspBnSs1Bmg9/MGG8bMaWFikVo5szbklH8yaPLEJlsyUwI0svusGA==
-X-Received: by 2002:a17:906:c355:b0:a86:a694:aaff with SMTP id a640c23a62f3a-a86a694abe2mr75972666b.1.1724417504852;
-        Fri, 23 Aug 2024 05:51:44 -0700 (PDT)
-Received: from [127.0.1.1] ([178.197.222.82])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a868f4f384bsm255931666b.192.2024.08.23.05.51.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 Aug 2024 05:51:44 -0700 (PDT)
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 23 Aug 2024 14:51:14 +0200
-Subject: [PATCH 10/10] pmdomain: renesas: rcar-sysc: Use scoped device node
- handling to simplify error paths
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JS32JMbN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3DAE5C4AF09;
+	Fri, 23 Aug 2024 13:28:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1724419685;
+	bh=DNlR9IfmHdpksq7A8/Fhgkr8Dh+iHoATiUQp29Ay9Ao=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=JS32JMbNlVZdL2ke6W76ZOFYihkqV44p3oAPSqGoFyyIOdnkTYwZd3XX3nIDVZJU4
+	 izBMZzsJsN7QXWKE3QbmadQb4hmJMU4ffLZ/4Ta3f5QVEERL0Zo84/4RwBgACFrNLr
+	 Sr5B2EK86gTYU74lsaQiZ3gzZJFvfRCZErWI/+/RqyjARw5n4cYVm2WuhcpOJ53Y+4
+	 57DCdEYa+Aa8iwnO7TDACxlvsiV8abxfT+0at/8wXBresMsgo++9GO6jR/EgGzlW+s
+	 suHedI6VI57dOfsX7k9HmO8wJ1i61SeUKq5IdvDLfHI9hG7DL9VZyTeajv6LnnpfPw
+	 3CgDjJoGeDTRQ==
+Received: by mail-oa1-f45.google.com with SMTP id 586e51a60fabf-268eec6c7c1so1360896fac.3;
+        Fri, 23 Aug 2024 06:28:05 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVU8JGkmkSs4XBoQiBbHZikveSEu6svurTMu5nJWrcs2DZirSoL04qFU/m9HFLqXa2KOx9H1H2cutI=@vger.kernel.org, AJvYcCXKjDp498tn/5tXLRy5cBqTBSg0xxQhbQ06Ky8JDgrqqvz+EQ/ArejysncRBuBXDt4eZmIoHxMylqRMjMo=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwNgy1KkvjcO1soPcx7QbW1hH3+LcKiVDunGv2gBFFT2SYrVh+J
+	AL14AlMgFM+j4ZXFCXHvuBg8guad+NggyeTxCNHFSK2S0B/J9wiF3d8TLmbISpZ8uFDnbbjfxDE
+	PRZ2A2F8c2ZSk/wqe+wfZECQp9ag=
+X-Google-Smtp-Source: AGHT+IGIRNoKP4JL5Gq1gJYcxZT+ZARdtAf+zcnKNPiWj9LhaEWGtYnyVS2U+bMY5dmYBScdsFE5Nd2NRT+TSQCUNFA=
+X-Received: by 2002:a05:6871:706:b0:268:a074:39cf with SMTP id
+ 586e51a60fabf-273e641fa92mr2404461fac.8.1724419684502; Fri, 23 Aug 2024
+ 06:28:04 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240823-cleanup-h-guard-pm-domain-v1-10-8320722eaf39@linaro.org>
-References: <20240823-cleanup-h-guard-pm-domain-v1-0-8320722eaf39@linaro.org>
-In-Reply-To: <20240823-cleanup-h-guard-pm-domain-v1-0-8320722eaf39@linaro.org>
-To: Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, 
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>, Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, 
- Geert Uytterhoeven <geert+renesas@glider.be>, 
- Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
- imx@lists.linux.dev, linux-arm-msm@vger.kernel.org, 
- linux-renesas-soc@vger.kernel.org, 
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3056;
- i=krzysztof.kozlowski@linaro.org; h=from:subject:message-id;
- bh=RaCHoWfcvN19DBMmkgIRc0NGUjytTpFgVMcU13mcxgo=;
- b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBmyIXNR2zayhDCmXFhzQ1RKmq8aC4JQfASOX82l
- qQyhlx44UOJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCZsiFzQAKCRDBN2bmhouD
- 1xL8D/9RUFSYlgRZQEabYs+Zlod9oIJejL78n+4Ll7xzEa+aucx3mi/5XlXocpJxNV+gOzHmnL5
- pTAKjf9vr2rrSCFpdxWqcebEDpOfdp3FhZVpBNUc1h/OP5bjr184cjhi7i9TuCDo/iVdB0pUXdN
- M76MCTdDAD/bgYmwRgVMQpXF1J769uZTGjSJmi58B0VRQhOhJgjmrSLchp8/NAEnWPwerPXMCkm
- eB714yX5DLHHI+JfhnayFx/N2/E534xyEO1HvsBvfioJrdNphfVPfe4xI/qOHupvYmd5t+/9Ghd
- in1T0ooZnRBOqqF/8HZO+fb5oZPBETF2hHD6X7fMDmFhHDfW6lReeoDHG+ru1B6TG9NLvU0x98u
- wrOOoAXHWLuo2AT/cJjkItEh9Q4T0t0HZ4GscFMohXEJ+GKyoOgFKiAgIBfVgaeJ9bfTpT6teuW
- zljMa7caswrosPMTvLgRiWDI6NIuUAP1HdpDhMSMerJwDdR3mM18CodSRTqDknlhCH8Tff/UyzE
- YQqB1Shvtr1g7dD8+6Ajdjhu72i65o1lOBEcq/i6nT6QV3efKKqIzTcF1WoXBmdjq5ZQQyxC71v
- yN682xplaXESoBHsCxOVmTmEK5SdClLG2XTLvLhB2ErFuaqOK91wtibYaqRUCEPcNvHLuNxW/fR
- 7csJsV6ahkbU4zA==
-X-Developer-Key: i=krzysztof.kozlowski@linaro.org; a=openpgp;
- fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
+References: <20240823071555.3331632-1-ruanjinjie@huawei.com>
+In-Reply-To: <20240823071555.3331632-1-ruanjinjie@huawei.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 23 Aug 2024 15:27:52 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iw7uXE_cfU5VXOjFDg9GM8Hu0+hKxqfzU3v0OM5KK9oQ@mail.gmail.com>
+Message-ID: <CAJZ5v0iw7uXE_cfU5VXOjFDg9GM8Hu0+hKxqfzU3v0OM5KK9oQ@mail.gmail.com>
+Subject: Re: [PATCH -next] thermal/of: Fix duplicate of_node_put()
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: rafael@kernel.org, daniel.lezcano@linaro.org, rui.zhang@intel.com, 
+	lukasz.luba@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Obtain the device node reference with scoped/cleanup.h to reduce error
-handling and make the code a bit simpler.
+On Fri, Aug 23, 2024 at 9:08=E2=80=AFAM Jinjie Ruan <ruanjinjie@huawei.com>=
+ wrote:
+>
+> In for_each_child_of_node(), if continue, of_node_put(prev) will be
+> called by __of_get_next_child(), so remove the duplicate
+> of_node_put(child).
+>
+> Fixes: 0f0a1b4ba3e4 ("thermal/of: Use the .should_bind() thermal zone cal=
+lback")
+> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+> ---
+>  drivers/thermal/thermal_of.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>
+> diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+> index dc43f50db890..85e7e3c43c7e 100644
+> --- a/drivers/thermal/thermal_of.c
+> +++ b/drivers/thermal/thermal_of.c
+> @@ -319,10 +319,8 @@ static bool thermal_of_should_bind(struct thermal_zo=
+ne_device *tz,
+>                 int count, i;
+>
+>                 tr_np =3D of_parse_phandle(child, "trip", 0);
+> -               if (tr_np !=3D trip->priv) {
+> -                       of_node_put(child);
+> +               if (tr_np !=3D trip->priv)
+>                         continue;
+> -               }
+>
+>                 /* The trip has been found, look up the cdev. */
+>                 count =3D of_count_phandle_with_args(child, "cooling-devi=
+ce", "#cooling-cells");
+> --
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- drivers/pmdomain/renesas/rcar-sysc.c | 28 +++++++++++-----------------
- 1 file changed, 11 insertions(+), 17 deletions(-)
+Good catch, thank you!
 
-diff --git a/drivers/pmdomain/renesas/rcar-sysc.c b/drivers/pmdomain/renesas/rcar-sysc.c
-index b99326917330..da169eed638c 100644
---- a/drivers/pmdomain/renesas/rcar-sysc.c
-+++ b/drivers/pmdomain/renesas/rcar-sysc.c
-@@ -6,6 +6,7 @@
-  * Copyright (C) 2015-2017 Glider bvba
-  */
- 
-+#include <linux/cleanup.h>
- #include <linux/clk/renesas.h>
- #include <linux/delay.h>
- #include <linux/err.h>
-@@ -348,12 +349,12 @@ static int __init rcar_sysc_pd_init(void)
- 	const struct rcar_sysc_info *info;
- 	const struct of_device_id *match;
- 	struct rcar_pm_domains *domains;
--	struct device_node *np;
- 	void __iomem *base;
- 	unsigned int i;
- 	int error;
- 
--	np = of_find_matching_node_and_match(NULL, rcar_sysc_matches, &match);
-+	struct device_node *np __free(device_node) =
-+		of_find_matching_node_and_match(NULL, rcar_sysc_matches, &match);
- 	if (!np)
- 		return -ENODEV;
- 
-@@ -362,7 +363,7 @@ static int __init rcar_sysc_pd_init(void)
- 	if (info->init) {
- 		error = info->init();
- 		if (error)
--			goto out_put;
-+			return error;
- 	}
- 
- 	has_cpg_mstp = of_find_compatible_node(NULL, NULL,
-@@ -371,8 +372,7 @@ static int __init rcar_sysc_pd_init(void)
- 	base = of_iomap(np, 0);
- 	if (!base) {
- 		pr_warn("%pOF: Cannot map regs\n", np);
--		error = -ENOMEM;
--		goto out_put;
-+		return -ENOMEM;
- 	}
- 
- 	rcar_sysc_base = base;
-@@ -382,10 +382,8 @@ static int __init rcar_sysc_pd_init(void)
- 	rcar_sysc_extmask_val = info->extmask_val;
- 
- 	domains = kzalloc(sizeof(*domains), GFP_KERNEL);
--	if (!domains) {
--		error = -ENOMEM;
--		goto out_put;
--	}
-+	if (!domains)
-+		return -ENOMEM;
- 
- 	domains->onecell_data.domains = domains->domains;
- 	domains->onecell_data.num_domains = ARRAY_SIZE(domains->domains);
-@@ -403,10 +401,8 @@ static int __init rcar_sysc_pd_init(void)
- 
- 		n = strlen(area->name) + 1;
- 		pd = kzalloc(sizeof(*pd) + n, GFP_KERNEL);
--		if (!pd) {
--			error = -ENOMEM;
--			goto out_put;
--		}
-+		if (!pd)
-+			return -ENOMEM;
- 
- 		memcpy(pd->name, area->name, n);
- 		pd->genpd.name = pd->name;
-@@ -417,7 +413,7 @@ static int __init rcar_sysc_pd_init(void)
- 
- 		error = rcar_sysc_pd_setup(pd);
- 		if (error)
--			goto out_put;
-+			return error;
- 
- 		domains->domains[area->isr_bit] = &pd->genpd;
- 
-@@ -429,7 +425,7 @@ static int __init rcar_sysc_pd_init(void)
- 		if (error) {
- 			pr_warn("Failed to add PM subdomain %s to parent %u\n",
- 				area->name, area->parent);
--			goto out_put;
-+			return error;
- 		}
- 	}
- 
-@@ -437,8 +433,6 @@ static int __init rcar_sysc_pd_init(void)
- 	if (!error)
- 		fwnode_dev_initialized(of_fwnode_handle(np), true);
- 
--out_put:
--	of_node_put(np);
- 	return error;
- }
- early_initcall(rcar_sysc_pd_init);
-
--- 
-2.43.0
-
+I'll fix the original patch and reapply it.
