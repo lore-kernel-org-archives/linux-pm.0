@@ -1,151 +1,96 @@
-Received: from mail-lf1-f41.google.com (mail-lf1-f41.google.com [209.85.167.41])
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C58A5188926
-	for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2024 12:51:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28D6C188939
+	for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2024 12:51:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724417503; cv=none; b=kGex1E+FxxOdYQHqcQZ1/7E35xOdhR7zFBPYfAIUFr6DzDwQZuKLwk0mxBJtvHqOD1fDr9DZC9/xs8iNEMKtSjcLw/RR/V/HBpPXZ8pau39uHgI7kAN2aBuFUQ4yfci9VoEXpNjJJ3FDB+YYlntAzJgB5cYlg//95cyEsRu2lV4=
+	t=1724417504; cv=none; b=lz+u6oBlD2OxsDifJSs1S0Psmv2/9yGm51+Gschmp7SP/OjIIA/ImCRkub/Rp4pEYmTIpu49ZmPjoYF0Zb47/xrdUxyf1Y8bknZ6390AEUTNv4olJ1CrXu4B5drL6Q4phlbPGlXEGKi6FazCCvjcYwkx7sgrx7Ni26uQ9By0ZL8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724417503; c=relaxed/simple;
-	bh=y0QBIaJnf0/fSVbWVB0Xkg+ZYq4xy8XVXKh8rGpZrnE=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=iJxkLXYrjI1O50Nju8XXiyZFlqD0OBIQYDsT8osCSjpfI0RHtTFPJy/rfcNHqzG4i7zNRkVz+oiiTjgk/F+Q97Rm4VbjWhFCq24QQDZ/mCMuCKXYGreh3gyNhkAWB2vM2gYGoELuMjc9bu2EXZDW2BL7LsZLc8o6imUgvGw4aR0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=LFJg2L89; arc=none smtp.client-ip=209.85.167.41
+	s=arc-20240116; t=1724417504; c=relaxed/simple;
+	bh=0GYm2ySTIWpR5t1AhOZzOLn2pSAeaQl/xmm0Un/1iQ0=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=hov5snh7HU6VieiQWTeJ8FO8/Jh4Gf7ryRPYdwIujnfmk3xgMlbt4QP9Zf7xklMK3Rqu7eMoLD+1Z6qY22M3iJC2PspHzWOXMNzCDvKEMjUdrkw40pMRwCmqYqfDCbLu4POQ7JlzQhN0r1sj6ab8xrPQZH4DjtfT0J5O2arJPQk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=t6spEVrL; arc=none smtp.client-ip=209.85.128.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="LFJg2L89"
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-52efcbfacb9so376217e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2024 05:51:41 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="t6spEVrL"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-42812945633so14877465e9.0
+        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2024 05:51:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1724417500; x=1725022300; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=pPH0zYeEKEXW0yb0C0QcNli7uy5nXQcT3Asm3cghOnA=;
-        b=LFJg2L89T2yzhyrSQIoObccQYH1RCmuCK5GRHwgKKPZXoQ5mL7RLL99bp6eJ6aZ4Xe
-         OjlOJLkUrBEeyx8kbzrWUwOf9EymQ9j+8ugmkPj1WrFgLFUgoLdi9OW9BSCOELmEM9NZ
-         1jat9MdIPBTBOqEZAYNYuWYDs1oRZMAOMKbQ6LkNgrjVjMT+gJVMN66Ll0aXjfq13MUb
-         mtbUnB1zr266xv0CG7cLaZtsZjMvQ68M/W59zpdejl2/gJTHvWFXsC04CeqiDnImOFa5
-         w8l3QPsbNgtWvSZvyc1m+lte+QdujeSLB6CHwypvGF33AVj3QBepEM2gn0sdiNmz5F/6
-         2iRA==
+        d=linaro.org; s=google; t=1724417501; x=1725022301; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=hoe5j+zL5nAbiCIUvREYQpVSE2yifQUHpqXLQ7XWoEA=;
+        b=t6spEVrLkloBDjLQeUDFN+MUth0UW8hqeZpFlanPz2oBDR3JDzu/fbfPbXX43b0cOY
+         a8BLTtQZSX3u41B/IwylFYhNl2BPxA1K3MT93NS3QD47sCw36DvzJqTGZu3B5hKQaP8m
+         5Up9cRi4WJHnUQSEomb3SU1wzHy8x7OPoVxeOph1AXsWs4RdLMScglQZsBBmtiQWYJEv
+         bYnzXfk2ZW6YGfw1/HPDbeMJJq9fVsLoIPzlRnCc3n5/pTIEtlqX7ragzk4FKYp01iyD
+         VXOWcWYwx+v8dljmchxKr/L5psdvXUxor1baIibjrQ0kM4SxdU25GLpcmEwtPfCVM9Xm
+         C1cg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724417500; x=1725022300;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=pPH0zYeEKEXW0yb0C0QcNli7uy5nXQcT3Asm3cghOnA=;
-        b=ro7kfgJfoAZ1WMBAXnCCPh6WZirdIAafGUrFJ7rauOmqA0P/uAY0cvBlYQsydqyu9U
-         ODfvrCYQgHpDY3Jn1aOtLvrJeOqc8XaBMC8cXlRoRw8ezYd/QogrguKMv7jOU0eaMR50
-         PKG8kfVtsMnIieuPmJ0tm/mYyq9ChBCM0SVMejgb+JHb0kzgbUB/hwvrHSHd0O3XPKES
-         lE8GYRB7F3kpN8LfgT+OjQivqfi8pxeK2goiXNWtFUv6+uMMCPDDDojVr5hyyQ5Qf2E2
-         PKNEvNHAHADE0t/Ir/aC9ACyo12LMqK1Nq+/NqGihtQTGOriiP4AG7SDvVUOFvNjBJPG
-         +YzA==
-X-Gm-Message-State: AOJu0Yy9hiNpy31MdvouAZ1S7CH2gaCZRwgaV/ailnD63wCcattmexwf
-	2e/APJZWSnOgCieDd2YO5XDIpmnQxo6cDPifPHHBxloe/Tjpy5WphVFUxF0PE24=
-X-Google-Smtp-Source: AGHT+IEx9QTBZ6Ig4dC6hFm6sSZWyp2NrZPz8Q5OQ6LiyVq1B5Hos95uvD5/wXcqZMFiFAQUCs44Kw==
-X-Received: by 2002:a05:6512:ea8:b0:52f:cf7e:b1bc with SMTP id 2adb3069b0e04-5343876c2a6mr830569e87.1.1724417499775;
-        Fri, 23 Aug 2024 05:51:39 -0700 (PDT)
-Received: from [127.0.1.1] ([178.197.222.82])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a868f4f384bsm255931666b.192.2024.08.23.05.51.37
+        d=1e100.net; s=20230601; t=1724417501; x=1725022301;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=hoe5j+zL5nAbiCIUvREYQpVSE2yifQUHpqXLQ7XWoEA=;
+        b=Ep2cibxh5PpLCEjO1IxbaVaGVy2lC0WyOBMu02aohsRrIaaNou+9AtgWJJLT90x/Td
+         EGynlLc3zOWErBsRY47EVdCHJ8lw75og4DNOAchfaO6BU770vso4PfQprUk4f3FhPf7n
+         PC8Hkm1Spp3a6ldwEO6oM2w31N6zBL47cs7tLGTOmanNZpaTbqCH1MUMZvEHO7qKyqcL
+         ngWeMjyqIXsgHHm2a+6tCUfeQUVw6if+VhXkWcxfo6zkM0Hqp+1MYOnylhO5kc5Sc2zQ
+         b+U9zCvt0g2WS81FKwDBrTHO6Sr6V2oFnLA5wvBrGsjUv6xiT0OBMEMvg63jZ5NJCzrq
+         4+kg==
+X-Forwarded-Encrypted: i=1; AJvYcCW9hVFW18wfekmgZWDvok7Bh6uyBNPoURD6M8bVEutBuYcblpfJk9QNHgX6xZOIejO8ZzEs/dXBqw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzI3XConx2SD8qzCtjHa6lcLSeJMkQcIVBr4DygnClDJd7XZ1mQ
+	qxvylABkdCt/N/l3y5RDSdUtOib0I3ldIbASMZOYYVyRQQkU91Lwexj+lkknbE8=
+X-Google-Smtp-Source: AGHT+IHkggqQwYF252ozofkl8OYWm3rlLNjamoptyTPU8soyrbqGqbFpghbuhPHDyrmStFxt8rYQdw==
+X-Received: by 2002:adf:e54a:0:b0:371:8dcc:7f9e with SMTP id ffacd0b85a97d-37311840e04mr1346482f8f.2.1724417501372;
+        Fri, 23 Aug 2024 05:51:41 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-373081ffeb8sm4092416f8f.88.2024.08.23.05.51.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 Aug 2024 05:51:39 -0700 (PDT)
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 23 Aug 2024 14:51:11 +0200
-Subject: [PATCH 07/10] pmdomain: qcom: rpmhpd: Simplify locking with
- guard()
+        Fri, 23 Aug 2024 05:51:41 -0700 (PDT)
+Date: Fri, 23 Aug 2024 15:51:36 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH next] powercap: intel_rapl: Change an error pointer to NULL
+Message-ID: <fa719c6a-8d3b-4cca-9b43-bcd477ff6655@stanley.mountain>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240823-cleanup-h-guard-pm-domain-v1-7-8320722eaf39@linaro.org>
-References: <20240823-cleanup-h-guard-pm-domain-v1-0-8320722eaf39@linaro.org>
-In-Reply-To: <20240823-cleanup-h-guard-pm-domain-v1-0-8320722eaf39@linaro.org>
-To: Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, 
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>, Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, 
- Geert Uytterhoeven <geert+renesas@glider.be>, 
- Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
- imx@lists.linux.dev, linux-arm-msm@vger.kernel.org, 
- linux-renesas-soc@vger.kernel.org, 
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1388;
- i=krzysztof.kozlowski@linaro.org; h=from:subject:message-id;
- bh=y0QBIaJnf0/fSVbWVB0Xkg+ZYq4xy8XVXKh8rGpZrnE=;
- b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBmyIXK0zZ4ZGoxkalISx0Oa0HQbALLrTngWax7j
- L5WXrBsTjyJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCZsiFygAKCRDBN2bmhouD
- 1xawD/4+ne9u+0w9Ge4yGMtpLBPqws51qJWUNwZocPNFdFCwDtnWIBM/MFNMy6G7mVaitbYRu8S
- NufmqYkj3DXtJ2sKLwHYQ+wbGJkH2CKegDUkrberoehE5ecSQYeq+L8IeWTDwZ9t/8rORPyEAn3
- 0x+pkG6t7Pup4fVh2PrYBqNBLimMVjnwPz/u3f9Da+qwY2cQzBoPcqDso2D9mBwsquclFCwEpQR
- RWeucQ/vUYJtFQqNxObOMA/GEDW+JSHCT4mD2CN1z1T2ASa0Co/ordw0ZJc4WuU4KjCZk9xq9Dj
- 5GPBqEWzwt5f9DxLtaELBbhsyGQLEa13QryylbpEhT4Ax9ArnWkugphkF+OWJ5ewm8g5uB5xEqR
- KoLcKhf8VO506EI2bhmXkAW8+vnZmUMVyHnFQzvkDEeI7IjHYozxMcG8iYb+/3HEhwyZOL68qBx
- 32uk1Gw5Yu5BWFddNZeihHUePRt4KK8NHdUfvtPQiHYylFkpEFwViCU4s3Gwuz1A8vDyFBVWvfZ
- KzAVDDXyVLMfYt/VO5iVeN4dwHtmPf9xQzkIIwd0gDwPKgC062VVJVqdTysn95/R+LPN6zp8qej
- cO2gtpfnk+e8mUL7UlFd3ZonuKOUmlacOqS2E1+zGdH5umSfmjMv+B2cyoGRXy7d/2Gac7Miz36
- HqfXODj1mLYdYeA==
-X-Developer-Key: i=krzysztof.kozlowski@linaro.org; a=openpgp;
- fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Mailer: git-send-email haha only kidding
 
-Simplify error handling (less gotos) over locks with guard().
+The rapl_find_package_domain_cpuslocked() function is supposed to
+return NULL on error.  This new error patch returns ERR_PTR(-EINVAL) but
+none of the callers check for that so it would lead to an Oops.
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Fixes: 26096aed255f ("powercap/intel_rapl: Fix the energy-pkg event for AMD CPUs")
+Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
 ---
- drivers/pmdomain/qcom/rpmhpd.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/powercap/intel_rapl_common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhpd.c
-index d2cb4271a1ca..65505e1e2219 100644
---- a/drivers/pmdomain/qcom/rpmhpd.c
-+++ b/drivers/pmdomain/qcom/rpmhpd.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright (c) 2018, The Linux Foundation. All rights reserved.*/
- 
-+#include <linux/cleanup.h>
- #include <linux/err.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-@@ -775,9 +776,9 @@ static int rpmhpd_set_performance_state(struct generic_pm_domain *domain,
- 					unsigned int level)
- {
- 	struct rpmhpd *pd = domain_to_rpmhpd(domain);
--	int ret = 0, i;
-+	int ret, i;
- 
--	mutex_lock(&rpmhpd_lock);
-+	guard(mutex)(&rpmhpd_lock);
- 
- 	for (i = 0; i < pd->level_count; i++)
- 		if (level <= pd->level[i])
-@@ -797,14 +798,12 @@ static int rpmhpd_set_performance_state(struct generic_pm_domain *domain,
- 
- 		ret = rpmhpd_aggregate_corner(pd, i);
- 		if (ret)
--			goto out;
-+			return ret;
+diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+index d110c5da5cfe..2881687d7900 100644
+--- a/drivers/powercap/intel_rapl_common.c
++++ b/drivers/powercap/intel_rapl_common.c
+@@ -2157,7 +2157,7 @@ struct rapl_package *rapl_find_package_domain_cpuslocked(int id, struct rapl_if_
+ 		      topology_physical_package_id(id) : topology_logical_die_id(id);
+ 		if (uid < 0) {
+ 			pr_err("topology_logical_(package/die)_id() returned a negative value");
+-			return ERR_PTR(-EINVAL);
++			return NULL;
+ 		}
  	}
- 
- 	pd->corner = i;
--out:
--	mutex_unlock(&rpmhpd_lock);
- 
--	return ret;
-+	return 0;
- }
- 
- static int rpmhpd_update_level_mapping(struct rpmhpd *rpmhpd)
-
+ 	else
 -- 
 2.43.0
 
