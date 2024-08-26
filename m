@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCD692B9B0
-	for <linux-pm@vger.kernel.org>; Mon, 26 Aug 2024 18:19:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CD17770F1
+	for <linux-pm@vger.kernel.org>; Mon, 26 Aug 2024 18:22:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724696349; cv=none; b=IK2TS90EQDaOve7TxEnNag476lcSLcai3ALppAUrKFFxOABR3iF/m/CXrjWmj3O3Zk95VksnYIsnXqB8nfGpp9xfg+laQztVvODgrTzTrPXaVp9jvHtt0SycHTa/F8f9wC9WxSvVDw7LwmzGN1WNWHBnB0ylRAJSY45YWHmuraU=
+	t=1724696552; cv=none; b=AuEYf2HHiQS9usnDxV2R2kbiSxgdEil1kotjwHw6UVsF6TtLET6DbpNDG9InPR9NHyMgrq6/1FOhfDoqkAkSQl4q8AZMxyrKgpEb+v+YLbsrPSIm3x4Kjcv0JEC3FfkI1Eqt/JDqf+x9lzVt+1mtKGmBAj5YWvpAedC6OSGdQeQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724696349; c=relaxed/simple;
-	bh=Nt4pt8gKKJt/aS9WpIdAFNlYsaQFRAIt2Y4w8Uw5ckA=;
+	s=arc-20240116; t=1724696552; c=relaxed/simple;
+	bh=Oy3swS4xM8ugMQ63lmxP819SpemvXN+HlfREYtoUgzI=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=ELX2U/JCC5lO57xE1tV7FNvoq6XbqiMpggZdzIPOKRXV4c9u7ZN3qTlH5oeFxjK2GQttP9LWOHK3RcY2C2HPEYzlY4e7+ez+gQSiyBBIsC3vcvSNLMdMLMz6Mb+JgjHJ1f7huHqjX5r3M/mzcng81n+P7NmhheM7OETeu98CPo8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LQ6R5VOJ; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:MIME-Version; b=W/HTco0pPsj6J+NICHr5Bu3VuBPVORmBbTCvk5MMPk9U1YFOX1I7VthGTez6ikN6RWCtjhMazlMEJOrba6XCD5gTHyaiK2SbWzX2S7ideNU3IDTDU2hzCR85X8sf4Ch+5zKLyk5WACwHwJUQ6s3TI5Lol/Dj1EmRr3qwdWMsF4s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r9aYhyJX; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LQ6R5VOJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id EDA85C8B7BC
-	for <linux-pm@vger.kernel.org>; Mon, 26 Aug 2024 18:19:05 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r9aYhyJX"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A2BE8C4DE15
+	for <linux-pm@vger.kernel.org>; Mon, 26 Aug 2024 18:22:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1724696346;
-	bh=Nt4pt8gKKJt/aS9WpIdAFNlYsaQFRAIt2Y4w8Uw5ckA=;
+	s=k20201202; t=1724696551;
+	bh=Oy3swS4xM8ugMQ63lmxP819SpemvXN+HlfREYtoUgzI=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=LQ6R5VOJjuuvF83tcUlcb5FQWpkSSI3n7E8tdM2LPeR8IdnRkrJqteTgiCWLXuz6e
-	 df3LS1YnAEFEdA2QE0SalHircJKWJ2MrKQJlZN5Fla6U88dOiGhewn9jUwzDHJ5TGh
-	 wAeQv10ac5I/cmR2d0UZD/B0uSTUus61KJUlrTByFaiWkX8apwWNk9UT3DDyA86s3g
-	 PPqrH6CSlmjX7lsfw2d0TMzgzqqbatW4s1wuv0u3Ou+jDTrvwB8A98RYmFd9ss8OcD
-	 ZSsn3IW98AYRMzzq95/D1PBnxJHdendVPouh8BYXBbHPE4M9oWk4/gjnugYnFITZqG
-	 +O+/JIbHcOjwQ==
+	b=r9aYhyJXFsYExvBwLu6E7aV/xmqdFaKem5rN+MW6lFLZaCmuvNePoKylKiBR7WWTP
+	 FRJCnbPvFoRyZuopefGFaViuBxsNlGZ2OnYaNQ8XsrO7vb/Sy/+EZCsIAPrx2bvYta
+	 6r9kbhfxqd4cUXFzPwTpD806HszPotEPOpr8deKvvtMogIsrsNbLFUjdXNVnZa4/Wn
+	 bvEaoxEkPTcxdwIqIYYc4NMFsi9/EwfUmfqBBouTXs3HeclYRTZExPY/2L4drFNifX
+	 mIe2G91TWPxrOJdLr+tw3laEsXr7tT6KhV4iXYatgYviX2vVkM4q1PasGW4q+FmCcT
+	 EjmsSYvmq685A==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id DFFF2C53B7E; Mon, 26 Aug 2024 18:19:05 +0000 (UTC)
+	id 97289C53BBF; Mon, 26 Aug 2024 18:22:31 +0000 (UTC)
 From: bugzilla-daemon@kernel.org
 To: linux-pm@vger.kernel.org
 Subject: [Bug 219110] amd-pstate's balance_performance
  energy_performance_preference doesn't survive suspend resume
-Date: Mon, 26 Aug 2024 18:19:05 +0000
+Date: Mon, 26 Aug 2024 18:22:31 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -48,7 +48,7 @@ X-Bugzilla-Priority: P5
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-219110-137361-VF6LFWfjDm@https.bugzilla.kernel.org/>
+Message-ID: <bug-219110-137361-x2aM3C5qML@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-219110-137361@https.bugzilla.kernel.org/>
 References: <bug-219110-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -64,16 +64,18 @@ MIME-Version: 1.0
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D219110
 
---- Comment #10 from Artem S. Tashkinov (aros@gmx.com) ---
-It works, I didn't understand how to use it at first.
+--- Comment #11 from Artem S. Tashkinov (aros@gmx.com) ---
+After resuming:
 
-Before suspend:
+for i in `seq 0 4`; do rdmsr "0xc00102b$i"; done
 
-0xc00102b0: c4912a10c4912a10
-0xc00102b1: 1
-0xc00102b2: 0
-0xc00102b3: 800010c4
-0xc00102b4: 0
+c4912a10c4912a10
+1
+0
+800010c4
+0
+
+Looks exactly the same.
 
 --=20
 You may reply to this email to add a comment.
