@@ -1,35 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D259D1C4EE3;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5D261C7B6F;
 	Tue, 27 Aug 2024 16:25:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724775933; cv=none; b=SHsn6FnoryFGdA2vNi8QVT0vkDLx6UxWj9i74QljweuVXg0Sm623P/tLh2PHx5S3ZKx40vKQzFR5jBlModxf9b6NaSrkCXvhieazWiZsDXxzKKIeoOD7Qgtfvph5sd/g+/gwd9pvRt4BreZRUdCFoPFnrlJW98OvBDRFwh6pWZE=
+	t=1724775933; cv=none; b=MuOSUTRD4Ppq7aTYaZQ8O87sT+qDD/QGYf1XV/ooF6qZ0hwLOsqceZ8Ufb/X1pYXDYyfdgCyTZPMy6V36PODBIdBMv6UlcGi6UqwL0R49ENt5RNL78rtj/iH4tyhDLotBy4lUyc7UQQGPUqiVnn70wXS8Cv+7g6nip6w8zsbrjQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1724775933; c=relaxed/simple;
-	bh=henAKoUNAaByuZc9acrEy1/IV4+TOUcMIWvjZUSrQEA=;
+	bh=KAp4JjBV/i2vUfDdcuS9arjrIYL8u1wNNy7Y+gvZPwE=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=BhJvfK01TwtXanNbGYeI3TuINneWRgv9FOVcW3TE3sEali0eVLNQ8it36KztZ2FHl/ozGZnNSFxKjfJF8VximD/w9HVW8sXjB1Kd7a/kcwSnhae9IBA0Sdz/Cq167cOsQHJ6f56yzcsgK98VLqhcjVeDCVDeAbaOpmEmCW+OzUc=
+	 MIME-Version:Content-Type; b=DyMYzBdviGQyM+5lXhfQGzlE7ZDbMp0D4eeLRVclg40XFD2w+33P0NCOCuH+ia4eMnQkGH6kNs8t9K83n+xSQ1heTg4bb+F/mb+IDKiYHeNmtOwBTR9DrasB8Kw1je1ZTQwnucYKn497WgkEfKgkgABJSdUCfhMEfwqhWS1uL2A=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55906C8B7B7;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87644C8B7B3;
 	Tue, 27 Aug 2024 16:25:33 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 3BD591060534; Tue, 27 Aug 2024 18:25:31 +0200 (CEST)
+	id 4BE03106053B; Tue, 27 Aug 2024 18:25:31 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Chunyan Zhang <zhang.lyra@gmail.com>, 
- Stanislav Jakubek <stano.jakubek@gmail.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org
-In-Reply-To: <Zr3SAHlq5A78QvrW@standask-GA-A55M-S2HP>
-References: <Zr3SAHlq5A78QvrW@standask-GA-A55M-S2HP>
-Subject: Re: [PATCH] dt-bindings: power: supply: sc27xx-fg: add low voltage
- alarm IRQ
-Message-Id: <172477593123.353499.162167504738447806.b4-ty@collabora.com>
+To: linux-sunxi@lists.linux.dev, Chris Morgan <macroalpha82@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ devicetree@vger.kernel.org, linux-iio@vger.kernel.org, 
+ quentin.schulz@free-electrons.com, mripard@kernel.org, 
+ tgamblin@baylibre.com, aidanmacdonald.0x0@gmail.com, 
+ u.kleine-koenig@pengutronix.de, lee@kernel.org, samuel@sholland.org, 
+ jernej.skrabec@gmail.com, sre@kernel.org, wens@csie.org, 
+ conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org, lars@metafoo.de, 
+ jic23@kernel.org, jonathan.cameron@huawei.com, 
+ Chris Morgan <macromorgan@hotmail.com>
+In-Reply-To: <20240821215456.962564-1-macroalpha82@gmail.com>
+References: <20240821215456.962564-1-macroalpha82@gmail.com>
+Subject: Re: (subset) [PATCH V4 00/15] Add Battery and USB Supply for
+ AXP717
+Message-Id: <172477593130.353499.14090062100249712137.b4-ty@collabora.com>
 Date: Tue, 27 Aug 2024 18:25:31 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -42,18 +44,30 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.1
 
 
-On Thu, 15 Aug 2024 12:01:36 +0200, Stanislav Jakubek wrote:
-> The SC27XX fuel gauge supports a low voltage alarm IRQ, which is used
-> for more accurate battery capacity measurements with lower voltages.
+On Wed, 21 Aug 2024 16:54:41 -0500, Chris Morgan wrote:
+> From: Chris Morgan <macromorgan@hotmail.com>
 > 
-> This was unfortunately never documented in bindings, do so now.
+> Add support for monitoring the USB charger and battery charger on the
+> AXP717 PMIC. This required some driver refactoring of the axp20x USB
+> and battery charger as the AXP717 is somewhat different but can still
+> benefit from some common elements.
 > 
-> 
+> [...]
 
 Applied, thanks!
 
-[1/1] dt-bindings: power: supply: sc27xx-fg: add low voltage alarm IRQ
-      commit: 17656d2215c3978bbe2811a5e249cd07fe3de77f
+[02/15] power: supply: axp20x_battery: Remove design from min and max voltage
+        commit: 61978807b00f8a1817b0e5580981af1cd2f428a5
+[03/15] power: supply: axp20x_battery: Make iio and battery config per device
+        commit: db97fecb55cee4eed2f8dcdc17c4831719cbfe4d
+[04/15] power: supply: axp20x_usb_power: Make VBUS and IIO config per device
+        commit: ae640fc690353f6181740b50a0d6761bc67ebaa9
+[05/15] dt-bindings: power: supply: axp20x: Add input-current-limit-microamp
+        commit: 6f5cdb7ec8836bb5e5ab221c2f49e2b170d5a978
+[06/15] power: supply: axp20x_usb_power: add input-current-limit-microamp
+        commit: 6934da720aac7b0feb99d08ff27fd245a962d8d2
+[07/15] dt-bindings: power: supply: axp20x-battery: Add monitored-battery
+        commit: dc123a1a80933b7fba1cf53cec77c2425268ff85
 
 Best regards,
 -- 
