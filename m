@@ -1,31 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D25491C0DF9;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D259D1C4EE3;
 	Tue, 27 Aug 2024 16:25:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724775933; cv=none; b=O0UNsaod1dLyilnkLJN/g1JJckGB/3ib+7HivOcst1fZOQt7pojntKm05PG0suUAvEMYdS9ieRQuG8Cua4nWliZEVZu0FjgQu0GFNFcHgU3LOXRr0FADapZ+y2iE0joUXgpDzEjskdAnRooiszXd3jh5zaJ12jMAiNb7A81KVf0=
+	t=1724775933; cv=none; b=SHsn6FnoryFGdA2vNi8QVT0vkDLx6UxWj9i74QljweuVXg0Sm623P/tLh2PHx5S3ZKx40vKQzFR5jBlModxf9b6NaSrkCXvhieazWiZsDXxzKKIeoOD7Qgtfvph5sd/g+/gwd9pvRt4BreZRUdCFoPFnrlJW98OvBDRFwh6pWZE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1724775933; c=relaxed/simple;
-	bh=4r4Mk9LVUABbaIqQckC5tl/SAoGXpVjIK37Vb+Tyvys=;
+	bh=henAKoUNAaByuZc9acrEy1/IV4+TOUcMIWvjZUSrQEA=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=duRIRQQOTlJEOVLJdzzQ8/e0OrUTZJCO/DODDkQ6sr7MOwFfWQJhRNrCc1LVZvaPW27yAGXakpmHzxtUkYlCSpmq/Xfs68AMW3hJMJYTXJHd/uT5gTQJMdY+xSDSVTS99evn61BymprPddHqagBBOama5yPabemV1EgnO03cnVk=
+	 MIME-Version:Content-Type; b=BhJvfK01TwtXanNbGYeI3TuINneWRgv9FOVcW3TE3sEali0eVLNQ8it36KztZ2FHl/ozGZnNSFxKjfJF8VximD/w9HVW8sXjB1Kd7a/kcwSnhae9IBA0Sdz/Cq167cOsQHJ6f56yzcsgK98VLqhcjVeDCVDeAbaOpmEmCW+OzUc=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C8C7C8B7C3;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55906C8B7B7;
 	Tue, 27 Aug 2024 16:25:33 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 3150610604BD; Tue, 27 Aug 2024 18:25:31 +0200 (CEST)
+	id 3BD591060534; Tue, 27 Aug 2024 18:25:31 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: linux-kernel@vger.kernel.org, Andres Salomon <dilinger@queued.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, 
- Hans de Goede <hdegoede@redhat.com>, 
- =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>
-In-Reply-To: <20240820041942.30ed42f3@5400>
-References: <20240820041942.30ed42f3@5400>
-Subject: Re: [PATCH] ABI: testing: sysfs-class-power: clarify charge_type
- documentation
-Message-Id: <172477593115.353499.16626853404367080768.b4-ty@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ Chunyan Zhang <zhang.lyra@gmail.com>, 
+ Stanislav Jakubek <stano.jakubek@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <Zr3SAHlq5A78QvrW@standask-GA-A55M-S2HP>
+References: <Zr3SAHlq5A78QvrW@standask-GA-A55M-S2HP>
+Subject: Re: [PATCH] dt-bindings: power: supply: sc27xx-fg: add low voltage
+ alarm IRQ
+Message-Id: <172477593123.353499.162167504738447806.b4-ty@collabora.com>
 Date: Tue, 27 Aug 2024 18:25:31 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -38,20 +42,18 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.1
 
 
-On Tue, 20 Aug 2024 04:19:42 -0400, Andres Salomon wrote:
-> The existing docs here are a bit vague. This reformats and rewords it,
-> and is based upon the wording originally used by the dell-laptop driver
-> battery documentation and also sysfs-class-power-wilco.
+On Thu, 15 Aug 2024 12:01:36 +0200, Stanislav Jakubek wrote:
+> The SC27XX fuel gauge supports a low voltage alarm IRQ, which is used
+> for more accurate battery capacity measurements with lower voltages.
 > 
-> The wording for "Long Life" and "Bypass" remain the same, because I'm
-> unfamiliar with hardware that use them.
+> This was unfortunately never documented in bindings, do so now.
 > 
-> [...]
+> 
 
 Applied, thanks!
 
-[1/1] ABI: testing: sysfs-class-power: clarify charge_type documentation
-      commit: 919a4719026f68a9d6b5b87db2e935564cdf42a5
+[1/1] dt-bindings: power: supply: sc27xx-fg: add low voltage alarm IRQ
+      commit: 17656d2215c3978bbe2811a5e249cd07fe3de77f
 
 Best regards,
 -- 
