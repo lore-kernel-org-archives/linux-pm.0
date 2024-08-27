@@ -1,59 +1,60 @@
-Received: from sender4-op-o14.zoho.com (sender4-op-o14.zoho.com [136.143.188.14])
+Received: from sender4-op-o15.zoho.com (sender4-op-o15.zoho.com [136.143.188.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4432A1CEAA2;
-	Tue, 27 Aug 2024 16:25:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6953A1C3F1D;
+	Tue, 27 Aug 2024 16:30:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.15
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724775935; cv=pass; b=QadJOE6kW3soYK2IovwFqBSiqny+AXyKvNqQPUxiLNqypQOseSCnXYfTv9EbkQz2mdr5h9gfbpSBwr16N9p77/4w+Zwlqf5128J9MfDlXstyr9zO0J1DolOxbu+cA3gDL8H7eZQlOXn/PLTURWwVtiVhIv20KmWrdEbi/8kjb3I=
+	t=1724776229; cv=pass; b=BF1AJ/FphGvw/VIP7F0Fq5LHU30AnoOKucB8AcfxfP5hiNmJQUJN/EC6k5mRDAXOONDdrzKnssnCCwGatalD+ZolsxnS8NxwCVffAg9KLhjUWG9AtSngv1ZI2e+XPHHH/fGmpkEt7swNDABl6kdx9wPG/7JNxWP5Og2btu3DiRs=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724775935; c=relaxed/simple;
-	bh=L9/vXr6cbZax1DImJmmfs6FjZtQsHY3bRq1L5J6vlJo=;
+	s=arc-20240116; t=1724776229; c=relaxed/simple;
+	bh=/kzx1RinYKgOz2UtzB5CMAvZLHO7c3+nz/XEbSShg2M=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RitN4bLNoo0A0WCZ+1udM4b4ngEDPNWFlVtbyw5ieSugiyCmD8dyMROnwxbAOiBJD6jl+4MBOKShZQYEF5oh2xRNyNqTAJa/tEX35S0O3ceg3QiLAYswMWdYXAd/Yggmn0uI5jFjR21ANKLU8/gDoaB55PQzfVMrc+t83BOwYy4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=WjHlG5St; arc=pass smtp.client-ip=136.143.188.14
+	 Content-Type:Content-Disposition:In-Reply-To; b=P5lW/Qr+rSOoca3SicQW9X44PuQwyo51VIZJnB9ISGLJg9DscOZhSKaacj3u6m9M0aCIXhY4eyKuzreCK3nnXig1TcpC0m8fmZIhoddznE+6r0o2DDo8iYB0bndw+h9OeN7yuicUSCbMT6IuPZs/7MgFuicR37tS8g9l6BwM4Ps=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=XQVsRIU2; arc=pass smtp.client-ip=136.143.188.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="WjHlG5St"
-ARC-Seal: i=1; a=rsa-sha256; t=1724775890; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="XQVsRIU2"
+ARC-Seal: i=1; a=rsa-sha256; t=1724776187; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=MSKUbFsrVDDPOZscRNtfhYFaMDrSSxbq/DIbWJ7SWsXSILhUR4SWLyJ3R0LxrO0vXYQvyPgRx59wjK4Naknr3ZkwMW51sgxhpkWdVXtljRuuikhxxm12iq4Bko7hklUId5/xOZrEU7H41rZSoe8rZH7eihDOgE/Qb1Zx9oDipiw=
+	b=dV4yUuRMtkdlYes9lilFVNqwvEbmoZXh7AQpd/lmRuUyjWd8oo9apnBqjTSFAyMrUWU+fgkCoFX20QihOIER3MuCn19wrdnQIdbAR8ocBpVBB4h2U1BICd1rDO4gIJgEUFrgEVkR3LyPHq2ISoKG0l7pmFJ5GtpjCuik4BmjjYQ=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1724775890; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=7xNeOrqXH8lGwbdUxuthbOlYViSQpDsND0/7JODQeiY=; 
-	b=Eb5xUdpHTvqO8bCnH11kwJxY+MfLYEBMj/ANZ6FsZ2vjI9dV1IY3bohFra/RlXonzxmbtMD/zAwuvQN9ouydIeR+t2QBsTwWSSUCz2vI7cbEIJ6g0jpg15/CUL8p9jiUGzOTzoQFV8lVvc0SxAw4kA4wab9pRskSJyldet0hcy4=
+	t=1724776187; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=yIZ4tokYIs1ihPKr07xclM5JUdjc2mCvibla5fSMoXc=; 
+	b=gCdaq9fP/CZclQ5+WAVBOkAf3gS5ADwAvE1BkfygmsgiBeolk5AQieQ4mT2WlcGNO3PG/VRlDmSD6YlBmDkCLvYMV6sMb0Hl3csz71unFMifaCWK31ilC2J5epAiF8I/Yir35NeZxdBhyrP7N6+l6Es6p+Yvgz+/PRcn4RGrqpg=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
 	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1724775890;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1724776187;
 	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
 	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=7xNeOrqXH8lGwbdUxuthbOlYViSQpDsND0/7JODQeiY=;
-	b=WjHlG5StJmuecqVqPJh/DzVDatDu7wNk2DI05uXE8k65YaNM5Hh3kK8TFl+GNiB6
-	ok87fDULgeQI5BWOKfaq24YUoXqmeJvFESDA7gF1t10lvDVdPB9kKSg0V8fGi0BF1YB
-	3QZzQsFicnwWyOElCHPTO1IE9FBxiehxifICKCew=
-Received: by mx.zohomail.com with SMTPS id 1724775888785598.5497949475847;
-	Tue, 27 Aug 2024 09:24:48 -0700 (PDT)
+	bh=yIZ4tokYIs1ihPKr07xclM5JUdjc2mCvibla5fSMoXc=;
+	b=XQVsRIU2208eGNpDbDh5z/5tfN0pYZhYpuzg0qdFyAXuVEph/ODawx3xP+MDZ464
+	U9DXYVkywRqb9Jr0JIHTWucJ0S5R7mxJrwFL/VQU5+X9Po3ki0b4NitodbBqRFRt3mp
+	fcsgMRES7zn6dgUjME8ZqxrdDzaVpzk/zAjNv12I=
+Received: by mx.zohomail.com with SMTPS id 1724776186585449.4642360121936;
+	Tue, 27 Aug 2024 09:29:46 -0700 (PDT)
 Received: by mercury (Postfix, from userid 1000)
-	id C15D710604BD; Tue, 27 Aug 2024 18:24:42 +0200 (CEST)
-Date: Tue, 27 Aug 2024 18:24:42 +0200
+	id 16A8610604BD; Tue, 27 Aug 2024 18:29:41 +0200 (CEST)
+Date: Tue, 27 Aug 2024 18:29:40 +0200
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Chris Morgan <macroalpha82@gmail.com>
-Cc: linux-sunxi@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-iio@vger.kernel.org, 
-	quentin.schulz@free-electrons.com, mripard@kernel.org, tgamblin@baylibre.com, 
-	aidanmacdonald.0x0@gmail.com, u.kleine-koenig@pengutronix.de, lee@kernel.org, 
-	samuel@sholland.org, jernej.skrabec@gmail.com, wens@csie.org, conor+dt@kernel.org, 
-	krzk+dt@kernel.org, robh@kernel.org, lars@metafoo.de, jic23@kernel.org, 
-	jonathan.cameron@huawei.com, Chris Morgan <macromorgan@hotmail.com>, 
-	Philippe Simons <simons.philippe@gmail.com>
-Subject: Re: [PATCH V4 14/15] power: supply: axp20x_battery: add support for
- AXP717
-Message-ID: <kpcnvalhcfzludd6ifjn4mkeipihkselgr3e4bzog2zfyap4jz@ib7cg2drpd4p>
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, linux-sunxi@lists.linux.dev, 
+	Chris Morgan <macroalpha82@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	devicetree@vger.kernel.org, linux-iio@vger.kernel.org, quentin.schulz@free-electrons.com, 
+	mripard@kernel.org, tgamblin@baylibre.com, aidanmacdonald.0x0@gmail.com, 
+	u.kleine-koenig@pengutronix.de, samuel@sholland.org, jernej.skrabec@gmail.com, wens@csie.org, 
+	conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org, lars@metafoo.de, 
+	jonathan.cameron@huawei.com, Chris Morgan <macromorgan@hotmail.com>
+Subject: Re: (subset) [PATCH V4 11/15] mfd: axp20x: Add ADC, BAT, and USB
+ cells for AXP717
+Message-ID: <fv4ukscke4hoyso4vprtrx2pzqy5lkwkuhnd5wywfxe4burlr4@2dgxbhqpol7t>
 References: <20240821215456.962564-1-macroalpha82@gmail.com>
- <20240821215456.962564-15-macroalpha82@gmail.com>
+ <20240821215456.962564-12-macroalpha82@gmail.com>
+ <172433485381.1334876.7027428905035727559.b4-ty@kernel.org>
+ <20240826120342.503bef41@jic23-huawei>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,89 +62,74 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="rumth67p7agnd4xq"
+	protocol="application/pgp-signature"; boundary="72vwrvvbohscblme"
 Content-Disposition: inline
-In-Reply-To: <20240821215456.962564-15-macroalpha82@gmail.com>
+In-Reply-To: <20240826120342.503bef41@jic23-huawei>
 X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-1.3.1/224.300.3
+X-Zoho-AV-Stamp: zmail-av-1.3.1/224.285.20
 X-ZohoMailClient: External
 
 
---rumth67p7agnd4xq
+--72vwrvvbohscblme
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Aug 21, 2024 at 04:54:55PM GMT, Chris Morgan wrote:
-> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> +		ret = iio_read_channel_processed(axp20x_batt->batt_v,
-> +						 &val->intval);
-> +		if (ret)
-> +			return ret;
-> +
-> +		/* IIO framework gives mV but Power Supply framework gives uV */
-> +		val->intval *= 1000;
-> +		return 0;
+On Mon, Aug 26, 2024 at 12:03:42PM GMT, Jonathan Cameron wrote:
+> On Thu, 22 Aug 2024 14:54:13 +0100
+> Lee Jones <lee@kernel.org> wrote:
+>=20
+> > On Wed, 21 Aug 2024 16:54:52 -0500, Chris Morgan wrote:
+> > > Add support for the AXP717 PMIC to utilize the ADC (for reading
+> > > voltage, current, and temperature information from the PMIC) as well
+> > > as the USB charger and battery.
+> > >=20
+> > >  =20
+> >=20
+> > Applied, thanks!
+> >=20
+> > [11/15] mfd: axp20x: Add ADC, BAT, and USB cells for AXP717
+> >         commit: e1043ad46060c181ffb8f981ccb25d9f698b2f09
+> >=20
+> Hi Lee, patch 12 is dependent on this because of the header
+> additions.
+>=20
+> If you don't mind can you pick up 1, 8 and 12
+> (all the IIO ones)?  Otherwise they'll have to wait for next
+> cycle. Guessing too late to ask for an IB?
+>=20
+> I haven't checked but the later power supply ones may have
+> the same block.
 
-I see you followed the existing pattern for these two drivers. Can
-you please add another patch, which converts both drivers to the
-following pattern:
+Yes, patches 13 + 14 are also blocked by the MFD patch adding
+register defines. I merged the other power-supply patches before
+noticing this, so patches 13 + 14 need to wait a cycle without
+an immutable branch.
 
-return iio_read_channel_processed_scale(adc_chan, &val->intval, 1000);
-
-[...]
-
-> +static int axp717_battery_set_max_voltage(struct axp20x_batt_ps *axp20x_batt,
-> +					  int val)
-> +{
-> +	switch (val) {
-> +	case 4000000:
-> +		val = AXP717_CHRG_CV_4_0V;
-> +		break;
-> +
-> +	case 4100000:
-> +		val = AXP717_CHRG_CV_4_1V;
-> +		break;
-> +
-> +	case 4200000:
-> +		val = AXP717_CHRG_CV_4_2V;
-> +		break;
-> +
-> +	default:
-> +		/*
-> +		 * AXP717 can go up to 4.35, 4.4, and 5.0 volts which
-> +		 * seem too high for lithium batteries, so do not allow.
-> +		 */
-> +		return -EINVAL;
-
-4.35V and 4.4V batteries exists. You can find them when you search
-for LiHV (Lithium High Voltage).
-
-[...]
-
-Otherwise LGTM,
+Greetings,
 
 -- Sebastian
 
---rumth67p7agnd4xq
+--72vwrvvbohscblme
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmbN/cMACgkQ2O7X88g7
-+prguA//f9D896gM6SvqiOfkyD1b1S0E0pfZ3qnrud7tJVtIhxO0rjwA+nSM0596
-Joe2DM36xbq+PxbQ1tNbUudPCRxNza+2qiq44iqnt6rAW99arNKA13OPqQMko8VZ
-UbpmKS5mx9M8ZEACLzfXrClVR1g9kXb1wzLc6UCrlblDetSPRWeTN1BuOnvr88GU
-jgwvhBLTfVXXKToUOL/G6bLM15L2KR/Evp5HN40l42yms/sgRzxDyq8/KfGpIseE
-vzdNPel1EYJ7iUdkcDCi2eD9QoLGx7pqUipotCayLS1Jhg1M0+55UnLXI2Esm4lP
-vKYlN4WD8AJwx7uEfeeRNPIsaxrVFUnZJ7YTSw1X+BitNVbBXWmMwpmife8o0/jT
-Sa4KM374RaG0biAtruKfM4I/yHO3HdhiNEjqSj6mtXQjYZDl3H33SfdHqs/9IUSR
-lI3nY1JRgsfvaN4sPngXfUg5NVlyFnqWy3fp2sdPdCZyL4wjUTWF7wMPFTUxaZgv
-HdpL4j5txTDFyuVyqFjLOyFrHFLN11QX9jRIMYIXxdwCbBTS9p025w4hGwq2C+T+
-31C1dFqy/3a5O6LzY5kjfLPpk6ngu8M1JqWyOtkA45aO5TTtwGFXpn4Lfc/M6wsD
-iEUky6v1DLpItqgZF9rMuVsh0obZ47HK+1ezxRMAO+Qnu4TSraw=
-=B61j
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmbN/vQACgkQ2O7X88g7
++pr/qA//Z47zpsYNHymEJyhzZ0+KvDR6LxviBoQRMkhNZNmbjQVA1OEZOXbMm6Np
+AP3B6ifwXDdRGV0dv4wUSYbL95QnZ3BW2tWBrblZOSPzy6fs2p3yKvGamIlxaWUf
+0VQSsV+j5sZjeF2NCv6NiP+y4mpMI02VOphcXjX3b9Qb/9E6JXlEK8rS6ONHxjsh
++czXqGougXwybTW2pDeIHmmjA9YPjd/NL1FJ9wTDxbcNLieuuU06yh29YRVQhAVi
+fqRL262HNQv6zBJzSqusggdpMY01u2Dm2i5ySUXNG0KOXEkC5In5t+o9SjC5Ft6f
+poQC8NRXUR/h4nIOo8v9jFBEE3zxO2cR2fgn2EGv9TH9QeBGQ3343vqCu+nsDR0P
+KGexs6RFiDxTJEigSlQ/oPEoV7MCims5vAR/SyEzCLerDN+pHDmc3Bi3zKjcmq3B
+g3PqyPhD8uh4rB0Jr9rYyWg4G/7DfvIwKFwqAzqvx4L76v1C5dtqgziYkjTCc9r7
+2hZWU7L6oGxgEgkRdtQy26a6JB8NBNvIR5Xn12zirVsaIk5kLl2SLftTXJPp4md3
+uRFWJOnLjnZnhDt0F+Me7TXOdNzfftWjK2BZ71EYCs8rDUmrNHMZRe92D0d5OduS
+JpgeBYL91p04T3HPOiQX4FQ75/jLmWL15fvgnJKgIZV2x7OYgDo=
+=uRJ7
 -----END PGP SIGNATURE-----
 
---rumth67p7agnd4xq--
+--72vwrvvbohscblme--
