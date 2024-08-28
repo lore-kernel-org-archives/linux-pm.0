@@ -1,113 +1,126 @@
-Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0E931AC8BF
-	for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2024 20:38:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B21311B78E9;
+	Wed, 28 Aug 2024 20:38:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724877526; cv=none; b=Cpk/8bQ8we+q9Iu9Oe3/fRAvLVgacoKeiHqKIyHEOczhNfrcYQ3M5V3gXeSiJ4P4mjNGUsHIIOVK/aDpuwgj9GVdoQzCrx4afQcMHkchcKSIVeAd/YGlKgnxjaVWvq2a5Ufhc4OOAE/egQqMWdVg1R4Uc4BNF6wUYiWCYWfCN+U=
+	t=1724877532; cv=none; b=YKjl1vMzl6gJv0KmOlQGFLcdKZlYGdWSY3KYLnowqH5KUP/sMXXC1822/N3Ek3i2KNz3YS85YFJ8eSDcKx7ZQ2pCthrw+exfZQ2KimG94KUYsFHeXRFizCOeXym+hUP33c10dNEs3KqjycbLn1P8mXNl0o/zLt+nOy+ZANJeWf4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724877526; c=relaxed/simple;
-	bh=K+lCygMRE3qyJWdl/GdEZGE+ba1atTZSeNTjbrLyKeI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JLb9Ycr3YXVCoZd21JgQX6mxyjT1inI+tb+D7l9NwLmB9Rn/pVVC9LVneru1GlbAG5Y+MIaqp8LxZ5QTJXmGouTklHsEWBbjSbuuRtPannErrp6Aoz5CAzuqMNIZijeZZie2XT24YmmKxROWrhaZyaUQfdjhPCGvhW2vmDHA00k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=rsKekD1D; arc=none smtp.client-ip=209.85.167.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1724877532; c=relaxed/simple;
+	bh=tR3oFeK+MRScvoo6q/RXi9/a/5uo9KhPGN8a307ZOBk=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=fjzp4OdPCJErKOnPAtonT3kIXjNfquFNbwUx+tJ2c23nZVYVxlNhJijyRe/5/jyaEZG2Vr7jQjPNfO1rLhTAMXOB+6R72kGRvLPxzuzSsQJAozMfQG+jVpnH+fKfP4pkNX0uVPwashfM6DylRcJ2N/N/jWzyFg3SvvS+V5eScIQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=j4bRYfPe; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rsKekD1D"
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-533463f6b16so8452405e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2024 13:38:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1724877523; x=1725482323; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=x462g7ZWs4h3Hy1zE24TOG/f1mPwTtweyG1eiKJBSx4=;
-        b=rsKekD1DAQS0lNo6w80agSuaUkD8NOaO+bFzsyXze75h/rjBzlP1DzLmptrXPOgfAk
-         mPzZwqwgnYWv1Ujyk9KBzsVzF55zGl6h6Bg3PUiLW8wGLCLlcgYAIOHjzk4CcFtWEN1Y
-         uTWDSKxzQRh1s88GTeGNNH3Pgi8PrBVmk4V6lI5uzhdpcDrogF2aLK2oQyJH5mA1rXHD
-         blds0KiDpyxGW1MWSw7aVzW+FSSS9ejVc8L7nCziJ/49/TeyM8gBnysYQFkjfQZp19iu
-         +YVdRk+pJKwqYAABeGXfo3Zv1rLpLokNyQG4L3ylurIBHEKQ3UwZzXdAUFQZbxvA8+8K
-         1Gfw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724877523; x=1725482323;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=x462g7ZWs4h3Hy1zE24TOG/f1mPwTtweyG1eiKJBSx4=;
-        b=GTwVAzZY25LZdsii/4zVd+9C8cjIz7FfLRunbaOlfwwcVIuDWh2RNttA1zir0jEVj+
-         cP63hKswKXCpAchobC5e9p43xT22poJbG/Qdw8qVbxjkfSFXSjsVHvVe2MdP+YLhEZ9F
-         DwAfRZLHwKlbbdl/O5rTipHogRARGVop6Lq79qQipReB+oOxjVSvWs3GX6Y9xBhFrjkh
-         bX4p275RsDo2PVgWEfJmASFh2QjPGl5Ky/POKUldm5KrD/EKy7qaU1pQw+hSDF0Npoaa
-         besBB/LCU5XblevQGZrcHQ1wttAByZXAunu79FS9t55H+jEC/A/pJOznr6K7lMPDu0hK
-         b9Wg==
-X-Forwarded-Encrypted: i=1; AJvYcCWQexGBj+gXCY+kwwwtPTeXKSSjWsj18tvYdfpt8nZkr0/XrsrBTKS0N2Vgbkcp4Roy7LQM8VaWnQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxbQLu1hu/HrHNiNXoz1PeXm1SeN+PxuFOROtJc+Rd2kplw69tS
-	uqXdG18fGs6dVgee21kicHwKuqLTjxW1FlJLH9wQeju9aSom1oNSfw4sCGWIfh4=
-X-Google-Smtp-Source: AGHT+IHc3Qk42WkdG0WrRXfObmEa8xWIHNllAS5bHRWo8S/cMne7NBCSqkvuXItwd2U/zT4/Fzw7Iw==
-X-Received: by 2002:a05:6512:6cf:b0:52f:c5c0:2879 with SMTP id 2adb3069b0e04-5353e5b83d3mr280301e87.41.1724877522331;
-        Wed, 28 Aug 2024 13:38:42 -0700 (PDT)
-Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--7a1.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::7a1])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5334ea292fesm2274204e87.9.2024.08.28.13.38.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Aug 2024 13:38:41 -0700 (PDT)
-Date: Wed, 28 Aug 2024 23:38:40 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To: Tengfei Fan <quic_tengfan@quicinc.com>
-Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, kernel@quicinc.com, 
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v4 2/3] interconnect: qcom: Add SM4450 interconnect
- provider driver
-Message-ID: <jsf66upx7xfhm4omzgwr5b5v7isihond62jsspsgqdjymbciha@b6jzlyqoxgqz>
-References: <20240813-sm4450_interconnect-v4-0-41a426f0fc49@quicinc.com>
- <20240813-sm4450_interconnect-v4-2-41a426f0fc49@quicinc.com>
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="j4bRYfPe"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47SJMNeR013613;
+	Wed, 28 Aug 2024 20:38:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	VrUrfvvTbkR8lpQLzQjX8IiQmvFPW2U7aDaTXDtPm1I=; b=j4bRYfPeeP3LbkDU
+	iH2BKcArOHE+LbNOUwl1C4ym7+RO2K2rjGGHtm2vpTe3BVkEZZA+2z3yFh8pCv97
+	PndLrMDWlzEUBvV83UAGWjC19qDJbn3+WfvW5lwg8AqIgItsz8J6oGvaGDNMIb71
+	D8s/Dprut/ECUvpU25t8rdybeTCHrgduL4autsZzv1q8uo8jrKaDbuKzYHPb/WxC
+	8zvFZAR0RB9Q5ume9fF4qVM30xvr2zidJflM0Nx6PNxspI45kVEFaezFloTqAH+j
+	TpbTYxyuh6L70vGTX4rl3ZaTKZbBvI+k2y8g/jxwcapnwwsDHkvwmvOzCufYwwsJ
+	6O7ACw==
+Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 419px5k09e-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 28 Aug 2024 20:38:08 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA04.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 47SKc7Hh025856
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 28 Aug 2024 20:38:07 GMT
+Received: from hu-nkela-lv.qualcomm.com (10.49.16.6) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Wed, 28 Aug 2024 13:38:03 -0700
+From: Nikunj Kela <quic_nkela@quicinc.com>
+To: <andersson@kernel.org>, <konradybcio@kernel.org>, <robh@kernel.org>,
+        <krzk+dt@kernel.org>, <conor+dt@kernel.org>, <rafael@kernel.org>,
+        <viresh.kumar@linaro.org>, <herbert@gondor.apana.org.au>,
+        <davem@davemloft.net>, <sudeep.holla@arm.com>, <andi.shyti@kernel.org>,
+        <tglx@linutronix.de>, <will@kernel.org>, <joro@8bytes.org>,
+        <jassisinghbrar@gmail.com>, <lee@kernel.org>,
+        <linus.walleij@linaro.org>, <amitk@kernel.org>,
+        <thara.gopinath@gmail.com>, <broonie@kernel.org>,
+        <wim@linux-watchdog.org>, <linux@roeck-us.net>
+CC: <robin.murphy@arm.com>, <cristian.marussi@arm.com>, <rui.zhang@intel.com>,
+        <lukasz.luba@arm.com>, <vkoul@kernel.org>, <quic_gurus@quicinc.com>,
+        <agross@kernel.org>, <bartosz.golaszewski@linaro.org>,
+        <quic_rjendra@quicinc.com>, <robimarko@gmail.com>,
+        <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-crypto@vger.kernel.org>, <arm-scmi@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>, <linux-i2c@vger.kernel.org>,
+        <iommu@lists.linux.dev>, <linux-gpio@vger.kernel.org>,
+        <linux-serial@vger.kernel.org>, <linux-spi@vger.kernel.org>,
+        <linux-watchdog@vger.kernel.org>, <kernel@quicinc.com>,
+        <quic_psodagud@quicinc.com>, <quic_tsoni@quicinc.com>,
+        <quic_shazhuss@quicinc.com>, Nikunj Kela <quic_nkela@quicinc.com>
+Subject: [PATCH 10/22] dt-bindings: pinctrl: document support for SA8255p
+Date: Wed, 28 Aug 2024 13:37:09 -0700
+Message-ID: <20240828203721.2751904-11-quic_nkela@quicinc.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240828203721.2751904-1-quic_nkela@quicinc.com>
+References: <20240828203721.2751904-1-quic_nkela@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240813-sm4450_interconnect-v4-2-41a426f0fc49@quicinc.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: pJXZs3ggEU0Rq8p2NWHSt2-rJSrrnBBS
+X-Proofpoint-GUID: pJXZs3ggEU0Rq8p2NWHSt2-rJSrrnBBS
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-28_08,2024-08-28_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 clxscore=1015
+ adultscore=0 suspectscore=0 lowpriorityscore=0 mlxlogscore=999 spamscore=0
+ priorityscore=1501 bulkscore=0 mlxscore=0 malwarescore=0 impostorscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2407110000
+ definitions=main-2408280149
 
-On Tue, Aug 13, 2024 at 10:47:54AM GMT, Tengfei Fan wrote:
-> Add driver for the Qualcomm interconnect buses found in SM4450 based
-> platforms. The topology consists of several NoCs that are controlled
-> by a remote processor that collects the aggregated bandwidth for each
-> master-slave pairs.
-> 
-> Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
-> ---
->  drivers/interconnect/qcom/Kconfig  |    9 +
->  drivers/interconnect/qcom/Makefile |    2 +
->  drivers/interconnect/qcom/sm4450.c | 1722 ++++++++++++++++++++++++++++++++++++
->  drivers/interconnect/qcom/sm4450.h |  152 ++++
->  4 files changed, 1885 insertions(+)
+Add compatible for pincontrol representing support on SA8255p.
 
-[skipped]
+SA8255p uses the same TLMM block as SA8775p however the ownership
+of pins are split between Firmware VM and Linux VM on SA8255p. For
+example, pins used by UART are owned and configured by Firmware VM
+while pins used by ethernet are owned and configured by Linux VM.
+Therefore, adding a sa8255p specific compatible to mark the difference.
 
-> +#define SM4450_SLAVE_TCU				591
-> +#define SM4450_MASTER_LLCC_DISP				1000
-> +#define SM4450_MASTER_MDP_DISP				1001
-> +#define SM4450_MASTER_MNOC_HF_MEM_NOC_DISP				1002
-> +#define SM4450_MASTER_ANOC_PCIE_GEM_NOC_DISP				1003
-> +#define SM4450_SLAVE_EBI1_DISP				1512
-> +#define SM4450_SLAVE_LLCC_DISP				1513
-> +#define SM4450_SLAVE_MNOC_HF_MEM_NOC_DISP				1514
+Signed-off-by: Nikunj Kela <quic_nkela@quicinc.com>
+---
+ .../devicetree/bindings/pinctrl/qcom,sa8775p-tlmm.yaml        | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Please drop _DISP defines
-
-> +
-> +#endif
-> 
-> -- 
-> 2.25.1
-> 
-
+diff --git a/Documentation/devicetree/bindings/pinctrl/qcom,sa8775p-tlmm.yaml b/Documentation/devicetree/bindings/pinctrl/qcom,sa8775p-tlmm.yaml
+index e9abbf2c0689..0d712153f9d7 100644
+--- a/Documentation/devicetree/bindings/pinctrl/qcom,sa8775p-tlmm.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/qcom,sa8775p-tlmm.yaml
+@@ -17,7 +17,9 @@ allOf:
+ 
+ properties:
+   compatible:
+-    const: qcom,sa8775p-tlmm
++    enum:
++      - qcom,sa8255p-tlmm
++      - qcom,sa8775p-tlmm
+ 
+   reg:
+     maxItems: 1
 -- 
-With best wishes
-Dmitry
+2.34.1
+
