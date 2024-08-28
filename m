@@ -1,125 +1,108 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from xry111.site (xry111.site [89.208.246.23])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCA0416D334;
-	Wed, 28 Aug 2024 11:52:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCD3C16BE35;
+	Wed, 28 Aug 2024 11:59:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.208.246.23
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724845961; cv=none; b=qd72EB0F0h2c3Po2ugCk/HHYFBeMX8YAOhM3vh2uNshqdh3KfUjB+C2Qc1IJXLXHx+x2J/M9JFh428gq3IFzZqPUw267oTyDNpWv+SWBPgA3LcpVCMo3F8OoGA4xT+cZZ57yuzmb+aoqFnTnW1bYx57i746L2qbqOgbnqjTRE5A=
+	t=1724846361; cv=none; b=b9WFhnLyZ7V0dD/V3C13zo71u9w5q2/saWWoFfG/PVpSGWYUVPrrfRdBvSKcl/rzZo/UQnH5WZhPqJ4wcD7XGuyCcykieCWYtIP+O6pXivzpmDllRPYkiRTviJ4TDkt+4kFh5OGu8mUh3UmwIIDdEVjw9G8njC5hBcAOIsCqfSY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724845961; c=relaxed/simple;
-	bh=RJOnJ5A4TdkFnKq4gpjtqlbLO38nenDCNd9HYf73RnI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=oCAG4BpFxTcVYU+V5URmJUyvPe4+8TCd+BO85o6i2ZBoHSnVBI7O8qiS1aKzb7+mHspsVYld4I0kkGzMJ6pmKI1TIrxb8G5OGtb7u+f5u02Rkfbt5eeuCcCmQKgxGjqZKpvwrB9e9G9M7fc8+80WmXfaiXoTsSMgsDVUZLYjXp0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=fiM5LoIE reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1724846361; c=relaxed/simple;
+	bh=rsEkCSbL+6t9wAmS7k0WRYrB5VkHidRUySmabKRT7D0=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=VHJ7IWXkjUGjUhFEx5jT78LL6z+HAzTZAsiOjZ/8y+dbRAZHQsKSF7/hzjEQHDd/6lMYozYrMuKUqygxu1U9wOr4lizX3tOodv/DB+tkp+VfZ7jR1QjegSNat4dnburKL+ivc0Gxa1F1gzNJ+myfvc/phDAlGotJgk0jvG4BprY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=xry111.site; spf=pass smtp.mailfrom=xry111.site; dkim=pass (1024-bit key) header.d=xry111.site header.i=@xry111.site header.b=b7VBHZZ8; arc=none smtp.client-ip=89.208.246.23
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=xry111.site
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xry111.site
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="fiM5LoIE"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id bb71734bd8613a60; Wed, 28 Aug 2024 13:52:31 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
+	dkim=pass (1024-bit key) header.d=xry111.site header.i=@xry111.site header.b="b7VBHZZ8"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=xry111.site;
+	s=default; t=1724846351;
+	bh=rsEkCSbL+6t9wAmS7k0WRYrB5VkHidRUySmabKRT7D0=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+	b=b7VBHZZ8AV2Z+TORXpcjY1MAedDxebAyWOXRnpWEgBqiR3VjGKH8LvcU8/YUsFO98
+	 oo7exZT+Qqg/RVx9TuhdxC3rv6DcpuIMmZShBHZTYgvtLH6Nvxc3EoKpdId52crDpY
+	 wdlbzFqEAKAZcim2S947V/CCXefMEXTcDjbRUdi4=
+Received: from [192.168.124.6] (unknown [113.200.174.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 8620E923483;
-	Wed, 28 Aug 2024 13:52:30 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1724845951;
-	bh=RJOnJ5A4TdkFnKq4gpjtqlbLO38nenDCNd9HYf73RnI=;
-	h=From:Subject:Date;
-	b=fiM5LoIEjfQ7zAqXf3IMwvACNHuuzSgwEm7Wh/lJ1d2TJmYZSbKquk1xlVzVMp3R4
-	 kA31g3ugPLyVXk++LYdLpVcjHfpnv6cbOQE1Rba83T+VD4k00pSV1txlTuTMq78aQI
-	 PMn7RWoi6cVpReLbsYoTAPi7k/tZ1+NFj2S3yRAI1sima8Xp/3fnTU1JiuoUtbbeuS
-	 qHGgfK/DY7ezjcrjsZhjJeGShOKTA3yN9IctG54Imrxx07ScXHprydk0hI518lv71k
-	 Ez2wMV8OGlDv8oABJ6p7MTafhD9l1faiaZ+klP4/ikTXktwHtvkK4RqEYWduAGWMbU
-	 MZ4ZlIZUCpirw==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: x86 Maintainers <x86@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Ricardo Neri <ricardo.neri@intel.com>, Tim Chen <tim.c.chen@intel.com>
-Subject:
- [PATCH v3 0/2] x86 / intel_pstate: Set asymmetric CPU capacity on hybrid
- systems
-Date: Wed, 28 Aug 2024 13:45:00 +0200
-Message-ID: <3310447.aeNJFYEL58@rjwysocki.net>
+	 key-exchange ECDHE (P-256) server-signature ECDSA (P-384) server-digest SHA384)
+	(Client did not present a certificate)
+	(Authenticated sender: xry111@xry111.site)
+	by xry111.site (Postfix) with ESMTPSA id 801EA6656F;
+	Wed, 28 Aug 2024 07:59:08 -0400 (EDT)
+Message-ID: <affff6410e681152c3fdcf3512df76d734f29aeb.camel@xry111.site>
+Subject: Re: [PATCH] cpufreq: loongson3: Use raw_smp_processor_id() in
+ do_service_request()
+From: Xi Ruoyao <xry111@xry111.site>
+To: Huacai Chen <chenhuacai@loongson.cn>, "Rafael J . Wysocki"
+	 <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Huacai Chen
+	 <chenhuacai@kernel.org>
+Cc: loongarch@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Xuerui Wang <kernel@xen0n.name>, Jiaxun Yang
+	 <jiaxun.yang@flygoat.com>, Binbin Zhou <zhoubinbin@loongson.cn>
+Date: Wed, 28 Aug 2024 19:59:04 +0800
+In-Reply-To: <20240828062459.1853837-1-chenhuacai@loongson.cn>
+References: <20240828062459.1853837-1-chenhuacai@loongson.cn>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.52.3 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrudefvddggeegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucfuphgrmhfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopedutddprhgtphhtthhopeigkeeisehkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehtghhlgieslhhinhhuthhrohhnihigrdguvgdprhgtphhtthhopehpvghtvghriiesihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopeguihgvthhmrghrrdgvghhgvghmrghnnhesrghrmhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
 
-Hi Everyone,
+On Wed, 2024-08-28 at 14:24 +0800, Huacai Chen wrote:
+> Use raw_smp_processor_id() instead of plain smp_processor_id() in
+> do_service_request(), otherwise we may get some errors with the driver
+> enabled:
+>=20
+> =C2=A0BUG: using smp_processor_id() in preemptible [00000000] code: (udev=
+-
+> worker)/208
+> =C2=A0caller is loongson3_cpufreq_probe+0x5c/0x250 [loongson3_cpufreq]
+>=20
+> Reported-by: Xi Ruoyao <xry111@xry111.site>
+> Tested-by: Binbin Zhou <zhoubinbin@loongson.cn>
+> Signed-off-by: Huacai Chen <chenhuacai@loongson.cn>
 
-This is an update of
+Tested-by: Xi Ruoyao <xry111@xry111.site>
 
-https://lore.kernel.org/linux-pm/4941491.31r3eYUQgx@rjwysocki.net/
+After this patch the BUG() message is gone, but I still get
 
-which was an update of
+[    6.610357] loongson3_cpufreq loongson3_cpufreq: probe with driver loong=
+son3_cpufreq failed with error -1
 
-https://lore.kernel.org/linux-pm/4908113.GXAFRqVoOG@rjwysocki.net/
+-1 is EPERM and there are several "return -EPERM;" in the code.  Not
+sure which one.
 
-It addresses Ricardo's review comments and fixes an issue with intel_pstate
-operation mode changes that would cause it to attempt to enable hybrid CPU
-capacity scaling after it has been already enabled during initialization.
+Do I need to modify some firmware setting to make it work?
 
-The most visible difference with respect to the previous version is that
-patch [1/3] has been dropped because it is not needed any more after using
-the observation that sched_clear_itmt_support() would cause sched domains
-to be rebuilt.
+FWIW I'm building it as a module.  Should I try building it as a part of
+vmlinux?
 
-Other than this, there are cosmetic differences in patch [1/2] (previously [2/3])
-and the new code in intel_pstate_register_driver() in patch [2/2] (previously [3/3])
-has been squashed into hybrid_init_cpu_scaling() which now checks whether or
-not to enable hybrid CPU capacity scaling (as it may have been enabled already).
+> ---
+> =C2=A0drivers/cpufreq/loongson3_cpufreq.c | 2 +-
+> =C2=A01 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/cpufreq/loongson3_cpufreq.c
+> b/drivers/cpufreq/loongson3_cpufreq.c
+> index 5f79b6de127c..6b5e6798d9a2 100644
+> --- a/drivers/cpufreq/loongson3_cpufreq.c
+> +++ b/drivers/cpufreq/loongson3_cpufreq.c
+> @@ -176,7 +176,7 @@ static DEFINE_PER_CPU(struct loongson3_freq_data
+> *, freq_data);
+> =C2=A0static inline int do_service_request(u32 id, u32 info, u32 cmd, u32
+> val, u32 extra)
+> =C2=A0{
+> =C2=A0	int retries;
+> -	unsigned int cpu =3D smp_processor_id();
+> +	unsigned int cpu =3D raw_smp_processor_id();
+> =C2=A0	unsigned int package =3D cpu_data[cpu].package;
+> =C2=A0	union smc_message msg, last;
+> =C2=A0
 
-This series is available from the following git branch:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/log/?h=intel_pstate-testing
-
-(with an extra debug commit on top).
-
-The original cover letter quoted below still applies:
-
-The purpose of this series is to provide the scheduler with asymmetric CPU
-capacity information on x86 hybrid systems based on Intel hardware.
-
-The asymmetric CPU capacity information is important on hybrid systems as it
-allows utilization to be computed for tasks in a consistent way across all
-CPUs in the system, regardless of their capacity.  This, in turn, allows
-the schedutil cpufreq governor to set CPU performance levels consistently
-in the cases when tasks migrate between CPUs of different capacities.  It
-should also help to improve task placement and load balancing decisions on
-hybrid systems and it is key for anything along the lines of EAS.
-
-The information in question comes from the MSR_HWP_CAPABILITIES register and
-is provided to the scheduler by the intel_pstate driver, as per the changelog
-of patch [3/3].  Patch [2/3] introduces the arch infrastructure needed for
-that (in the form of a per-CPU capacity variable) and patch [1/3] is a
-preliminary code adjustment.
-
-This is based on an RFC posted previously
-
-https://lore.kernel.org/linux-pm/7663799.EvYhyI6sBW@kreacher/
-
-but differs from it quite a bit (except for the first patch).  The most
-significant difference is based on the observation that frequency-
-invariance needs to adjusted to the capacity scaling on hybrid systems
-for the complete scale-invariance to work as expected.
-
-Thank you!
-
-
-
+--=20
+Xi Ruoyao <xry111@xry111.site>
+School of Aerospace Science and Technology, Xidian University
