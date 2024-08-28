@@ -1,118 +1,116 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f181.google.com (mail-lj1-f181.google.com [209.85.208.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C69791AED32;
-	Wed, 28 Aug 2024 20:43:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D1D71AC880
+	for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2024 20:59:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724877837; cv=none; b=U9ijoLxwhlgjftlCYpNqp/Lx5n57wIdQaB46yRx1MI86NPhuHrM7LGB16IuxAghQxiowkVWnlGcmjaaDT1NX6QTtVVG4PAVH2GUNAylPzmGbaLZoYCTJp1FCojevsZ7jKDc2QU5gAU3YDf3P93M4pStK+zm2qRE0eMO7Q8tI7+c=
+	t=1724878782; cv=none; b=XzEd797WUabf4uopnHOBtsRif1eP0RXPKfFgHLyyqykdgCeqgcRDEXUQm/UrmB1l1OkqNQ/yXVqBby8MGGEw+uZzloD0tBQ1d71H50STgizT/fGwlkYwtUWZ7kuKdJheauLWHiuW9liyWTCMokLXSe27UZoy4N3K9+0/7AHgbHk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724877837; c=relaxed/simple;
-	bh=GXZl48K7EFCGmXer8x9KQlUaWBdXi14B53BJFi/4PUA=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Js2K9bmfsOjkfA1AgqwD98EPYcbxq/3peocxpe1KI3uaRcoC5zOpW04OdGXdICW195swlpYbGTnXrLYh5s1Oruc1s2B0EWQ2bLyiFroLw6q8UFPSHdkCtsw4jQ+enKedlFy9EtVIGHFFbvOLgsQ0PZjpF9fQePmuSfa9JLGJRY8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=GelYMMoz; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1724878782; c=relaxed/simple;
+	bh=rgXiQ0ut4rQ+4bIIkkS5brMFNpLbKdsLtkTp1LLm1/0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Zx6xgr+e5Mi1gzN6JNRthvstbK81PMV8crqzcskA2e+LoPHg1/jCZ92+WanTjPYuC3MwXSgO0mU/u7C+xZ28GWaCQ5TXVExOav7LW+Q/6H3Ny2i2+8znZ0NzbT1b1aPX+xGbnH2Bv1URU41txqJpjOAyeLiHUwbmXkh2BQtSdq4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=akue8Pph; arc=none smtp.client-ip=209.85.208.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="GelYMMoz"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47SJM2Nt013233;
-	Wed, 28 Aug 2024 20:38:13 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	ioQIr6ZQHoLqjIx+IpUUkpTUjoh7kLQrRYAd6jKuzLM=; b=GelYMMozWnvEBA57
-	/VJT5lVVYoy45/A063bMehSKs9ZOHHcl0/npvPknsoblq0NeoHIxYTqVE431eJCh
-	WotxVNzIzENwTkYCwv7/iHT1wu5jSQHtkD/+bXoXQcWOmP1CMcK6QncNPJP8FbB5
-	wm6tesaWqGDvaXjL69OQ47CEpfgZU8BFLWEWVSsswNsyUjSScZpZkoS6peXeXmP8
-	zMbn2NpbXUh9MLSV2PHOq/od8gTim1TKcKoNX8vF682rHEma4lceTd34hrTqNZ5t
-	t+MxXXQ1M3PrAlIWoDflkfWIFmePmLJ2x3e7xEPbnHkfsjrG/GYqItZqxb8Em57r
-	5L4TFQ==
-Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 419pv130bq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Aug 2024 20:38:12 +0000 (GMT)
-Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-	by NASANPPMTA04.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 47SKcBOI025894
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Aug 2024 20:38:11 GMT
-Received: from hu-nkela-lv.qualcomm.com (10.49.16.6) by
- nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Wed, 28 Aug 2024 13:38:08 -0700
-From: Nikunj Kela <quic_nkela@quicinc.com>
-To: <andersson@kernel.org>, <konradybcio@kernel.org>, <robh@kernel.org>,
-        <krzk+dt@kernel.org>, <conor+dt@kernel.org>, <rafael@kernel.org>,
-        <viresh.kumar@linaro.org>, <herbert@gondor.apana.org.au>,
-        <davem@davemloft.net>, <sudeep.holla@arm.com>, <andi.shyti@kernel.org>,
-        <tglx@linutronix.de>, <will@kernel.org>, <joro@8bytes.org>,
-        <jassisinghbrar@gmail.com>, <lee@kernel.org>,
-        <linus.walleij@linaro.org>, <amitk@kernel.org>,
-        <thara.gopinath@gmail.com>, <broonie@kernel.org>,
-        <wim@linux-watchdog.org>, <linux@roeck-us.net>
-CC: <robin.murphy@arm.com>, <cristian.marussi@arm.com>, <rui.zhang@intel.com>,
-        <lukasz.luba@arm.com>, <vkoul@kernel.org>, <quic_gurus@quicinc.com>,
-        <agross@kernel.org>, <bartosz.golaszewski@linaro.org>,
-        <quic_rjendra@quicinc.com>, <robimarko@gmail.com>,
-        <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-crypto@vger.kernel.org>, <arm-scmi@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-i2c@vger.kernel.org>,
-        <iommu@lists.linux.dev>, <linux-gpio@vger.kernel.org>,
-        <linux-serial@vger.kernel.org>, <linux-spi@vger.kernel.org>,
-        <linux-watchdog@vger.kernel.org>, <kernel@quicinc.com>,
-        <quic_psodagud@quicinc.com>, <quic_tsoni@quicinc.com>,
-        <quic_shazhuss@quicinc.com>, Nikunj Kela <quic_nkela@quicinc.com>
-Subject: [PATCH 15/22] dt-bindings: mfd: qcom,tcsr: document support for SA8255p
-Date: Wed, 28 Aug 2024 13:37:14 -0700
-Message-ID: <20240828203721.2751904-16-quic_nkela@quicinc.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240828203721.2751904-1-quic_nkela@quicinc.com>
-References: <20240828203721.2751904-1-quic_nkela@quicinc.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="akue8Pph"
+Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-2f3fea6a0a9so9433421fa.0
+        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2024 13:59:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1724878779; x=1725483579; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=w3e2rMn7JyR9qzQn+ZSCjNL54f4MTdVR/nFThKl7tiM=;
+        b=akue8PphbNF4fYKsEysZlZXYnQl5OPqwVKc1yjOS0cs/qx2MlZOcvyWPSKSOYuHUi7
+         2O1wFX1VcwAuihYz7LT46BfUYsX63Ma7BnOfyPBeSZI2vrBG23mfvdHuYozyl5pYD/Gc
+         kDMnUlr4w+x1WSbFvk6xJtEOwM3g4xzj1UUiZVbaSUPSYVP1hb55KR4LUttWp9imbn21
+         YV5qv6oYFM4PauGiMZV3RWc4Ottzj/bTjcn4wDPwKANwF3A3ZrxVH6Geg6+tD7uXcPC6
+         Q4IRGnAzQ1AnFmq9ea1VZ1CONArMUMH6R7n86c6MAr4YRyILyblpDBz0l63Plyq/JCZN
+         yg4Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724878779; x=1725483579;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=w3e2rMn7JyR9qzQn+ZSCjNL54f4MTdVR/nFThKl7tiM=;
+        b=Do0Tscea/Av7wo3rHgG+ZMO8HKrcduNmkCVLVI3cdPjczvEHykMWT4cdSXBjiCZdKy
+         QidsHibKyI09Hy1febxkfXi40XeDNvvMnbmHnGaLhLbaZyx1xm5He3kkT/qLQwoT4ipf
+         H3hCYQBh8TDMG9kUX8jfS3PTvyKl2iOw9qoUvhhRC1iYpfK29BKu/gmgbrQYpnEuovgK
+         u5OX91+bg5g3yU6fymeWmwm0ukbLdykStwtbPuicZuefbnvnBsN7LFfXfrGf/WUbxsp8
+         ILHF0VG3x3GEuxMLi3hlwuPbmTLdTDfLSSoNSVY3SPATDaSh1kL/3Mh00HBbBKaMzNjU
+         bt+w==
+X-Forwarded-Encrypted: i=1; AJvYcCVTX8VDw1sVMmbGT3YVbCAQnxXP65oUwnuTGEmuIBQuNEKf0Yq6S+hMLBZcDcviT9Pww1nQ6VwPHA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzCBM0DKoK24GGtJd0oPJOTexvEXUgFLk8X94vHqmwk9B/xv5RR
+	/QR1RqI7HX2nscEhgEMXMMMKXsLK0v54Wnv9XMz3Z0Sqg3ydANygYSOPbXEdFf0=
+X-Google-Smtp-Source: AGHT+IFbHz8tCFXAnyET44/ligk5uJzcSPo66ooELnKUtYAB0PqKSrneJsVu2v9zyMP4D3hSScLw9g==
+X-Received: by 2002:a05:651c:211d:b0:2f5:23a:1055 with SMTP id 38308e7fff4ca-2f612ae4c5fmr1068811fa.18.1724878777924;
+        Wed, 28 Aug 2024 13:59:37 -0700 (PDT)
+Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--7a1.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::7a1])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-2f4047e101esm20650611fa.72.2024.08.28.13.59.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Aug 2024 13:59:36 -0700 (PDT)
+Date: Wed, 28 Aug 2024 23:59:35 +0300
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To: Varadarajan Narayanan <quic_varada@quicinc.com>
+Cc: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, 
+	krzk+dt@kernel.org, conor+dt@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, 
+	ilia.lin@kernel.org, rafael@kernel.org, viresh.kumar@linaro.org, 
+	ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: Re: [PATCH v7 3/7] dt-bindings: soc: qcom: cpr3: Add bindings for
+ IPQ9574
+Message-ID: <52cffqp4ugh557yg6wx5n56tar74csra635pewqyu7wirv4cqj@zljbg2hdrxsx>
+References: <20240820055705.3922754-1-quic_varada@quicinc.com>
+ <20240820055705.3922754-4-quic_varada@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: ALa-1UPZ8rkXC1hubn1E8ZhyGkcgaK7E
-X-Proofpoint-ORIG-GUID: ALa-1UPZ8rkXC1hubn1E8ZhyGkcgaK7E
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-08-28_08,2024-08-28_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- suspectscore=0 clxscore=1015 lowpriorityscore=0 mlxscore=0 bulkscore=0
- mlxlogscore=999 impostorscore=0 malwarescore=0 spamscore=0 phishscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2407110000 definitions=main-2408280149
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240820055705.3922754-4-quic_varada@quicinc.com>
 
-Add compatible for tcsr representing support on SA8255p SoC.
+On Tue, Aug 20, 2024 at 11:27:01AM GMT, Varadarajan Narayanan wrote:
+> Add the bindings for the IPQ9574 CPR3 driver to the documentation.
 
-Signed-off-by: Shazad Hussain <quic_shazhuss@quicinc.com>
-Signed-off-by: Nikunj Kela <quic_nkela@quicinc.com>
----
- Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml | 1 +
- 1 file changed, 1 insertion(+)
+Bindings are for the hardware, not for the driver.
 
-diff --git a/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml b/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
-index c6bd14ec5aa0..88f804bd7581 100644
---- a/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
-+++ b/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
-@@ -21,6 +21,7 @@ properties:
-           - qcom,msm8998-tcsr
-           - qcom,qcm2290-tcsr
-           - qcom,qcs404-tcsr
-+          - qcom,sa8255p-tcsr
-           - qcom,sc7180-tcsr
-           - qcom,sc7280-tcsr
-           - qcom,sc8280xp-tcsr
+> 
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+> ---
+> v5: Add Reviewed-by
+> 
+> v4: Change compatible string to cpr4 instead of cprh
+>     Not adding Reviewed-By as compatible string changed
+
+I still see that it is being declared as compatible with qcom,cprh,
+while your hardware isn't CPRh, it's CPR4.
+
+> 
+> v2: Constrained nvmem-cells and the other variant.
+>     Removed unnecessary blank line.
+> ---
+>  .../bindings/soc/qcom/qcom,cpr3.yaml          | 35 +++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
+> index 2e6712aa1c58..c00373948901 100644
+> --- a/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
+> +++ b/Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
+> @@ -24,6 +24,7 @@ properties:
+>        - const: qcom,cpr4
+>        - items:
+>            - enum:
+> +              - qcom,ipq9574-cpr4
+>                - qcom,msm8998-cprh
+>                - qcom,sdm630-cprh
+>            - const: qcom,cprh
 -- 
-2.34.1
-
+With best wishes
+Dmitry
