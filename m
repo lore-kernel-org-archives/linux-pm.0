@@ -1,30 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2257E1ABEC4;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24FBE1AC8A9;
 	Wed, 28 Aug 2024 22:17:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724883463; cv=none; b=S7QIDUM/MOYivky0oXWIzf4uE6sCGvTEN460X0+Pvi2YdNFavtz9EvFpJ8GDaez4AdJo3BX6fn+TWmaIAF6Nh00RACOaoapgdkgI8841a4OcgxALHpoiuOYJ+PlU8jPNpvyzJerRbCEw/C2WZAwzMrqCG+v+g+6BZFyZXfAgoqs=
+	t=1724883463; cv=none; b=D1aZTKgyZ5xUKd5/E8jDHC/GKAZeLGHu32bV9NBfhxml+HrWGQFUyavyWuarknLCW0ANLh2j357l+OyxS1jxZIog/fCD/+/UQW+foTc2YVbaB8HJTCZQGb+CZOQecqhT4PFDHTr9fp1BkWgQPJC9+O885pMPR31BtgFDNkbrTzs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1724883463; c=relaxed/simple;
-	bh=xy4g412hpADC8QifL9eJoRK/pCq3SSV4cCSudLV8OEc=;
+	bh=lpJbHZspsQiMJ6ieepbT9T5dQRIu+DZnhhP+O9BlYsg=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=Q/Hi8B+UvC3gsmPOjlwBBo6L7G6IaiDM38aOoWWdEqyJe2B6hYaJBILJ3LYKkAPQDih7Zx54hGz5snM0DH36oLTOm/GjPiqfSi52F+YMKoz0s9mMtKWuIOE3WCFTwV/4TiBSdWKGLeKqtIBeOUgEXTJOiuGKYqA5HBEgTgA9+YE=
+	 MIME-Version:Content-Type; b=qp1ASjSovSd4DxN72G5HkrfP7SULNZzg1YM4jrEFU5AuR+Sm6Lt/NeSt+lScT/aGOJ8p5mKxPewAorQzGe89mim1miUD/OPKYWwVP45C7F4VnpIsrlDNveVPxTdsQXiBsmvGX4gsG55vS+FkebNG3KdHj93IkrMjyzEfrnkaQR0=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A929BC4CEC6;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A71F0C4CEC0;
 	Wed, 28 Aug 2024 22:17:42 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 480781060533; Thu, 29 Aug 2024 00:17:40 +0200 (CEST)
+	id 4C1CA1060535; Thu, 29 Aug 2024 00:17:40 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
- Asmaa Mnebhi <asmaa@nvidia.com>
-Cc: David Thompson <davthompson@nvidia.com>
-In-Reply-To: <20240611134327.30975-1-asmaa@nvidia.com>
-References: <20240611134327.30975-1-asmaa@nvidia.com>
-Subject: Re: [PATCH v2 1/1] power: reset: pwr-mlxbf: support graceful
- shutdown
-Message-Id: <172488346028.466860.15092209246524178878.b4-ty@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, 
+ Florian Fainelli <florian.fainelli@broadcom.com>, Andrew Davis <afd@ti.com>
+Cc: Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20240610142836.168603-1-afd@ti.com>
+References: <20240610142836.168603-1-afd@ti.com>
+Subject: Re: [PATCH 1/5] power: reset: brcmstb: Use normal driver register
+ function
+Message-Id: <172488346030.466860.4956050651307556387.b4-ty@collabora.com>
 Date: Thu, 29 Aug 2024 00:17:40 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -37,20 +39,25 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.1
 
 
-On Tue, 11 Jun 2024 09:43:27 -0400, Asmaa Mnebhi wrote:
-> The OCP board used a BlueField's GPIO pin for entering
-> low power mode. That board was not commercialized and
-> has been dropped from production so all its code is unused.
-> The new hardware requirement is to trigger a graceful shutdown
-> when that GPIO pin is toggled. So replace the unused low power
-> mode with a graceful shutdown.
+On Mon, 10 Jun 2024 09:28:32 -0500, Andrew Davis wrote:
+> The platform_driver_probe() helper is useful when the probe function
+> is in the _init section, that is not the case here. Use the normal
+> platform_driver_register() function.
 > 
-> [...]
+> 
 
 Applied, thanks!
 
-[1/1] power: reset: pwr-mlxbf: support graceful shutdown
-      commit: 292fe42c34a9e9eea07f58a691813e077e9ca86f
+[1/5] power: reset: brcmstb: Use normal driver register function
+      commit: 0174d12f9b7ebc83f1f2b6c25f05304104de5a91
+[2/5] power: reset: brcmstb: Use device_get_match_data() for matching
+      commit: cf37f16a60f332fad21fe0a45893ac4c6a825d9d
+[3/5] power: reset: brcmstb: Use syscon_regmap_lookup_by_phandle_args() helper
+      commit: a4ceaab660cabdc9ac2d2514a809174443209b3b
+[4/5] power: reset: brcmstb: Use devm_register_sys_off_handler()
+      commit: ad87aee5cba821066be99c76efd818368ff5bb4a
+[5/5] power: reset: brcmstb: Do not go into infinite loop if reset fails
+      commit: cf8c39b00e982fa506b16f9d76657838c09150cb
 
 Best regards,
 -- 
