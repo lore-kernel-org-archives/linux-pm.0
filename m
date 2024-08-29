@@ -1,57 +1,76 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f179.google.com (mail-oi1-f179.google.com [209.85.167.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E78D1BB68F;
-	Thu, 29 Aug 2024 20:26:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DC6A1411EE;
+	Thu, 29 Aug 2024 21:33:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724963173; cv=none; b=Ah+6gldZgIG34zn+fnP/u/8Y/8SQw0qMkdIyIrCVMQdc8lmTouuqN1vuwqJDc7QljqZFmrx30xCR6u2Rop4yrw+3MQhii2kqsxaJW5Ysb6iQKk1vib9/FmwyT6Xpu5tgmCFtXD1hguaN6IPrdIbMOSnzGCzodK5TRG7cGev/OQI=
+	t=1724967208; cv=none; b=TxAV5tJpwQ7r2E9CSVpbeGzBc3hCqX/dmYXvW9ElzYo28buJxFwns1H6RkXhgy2V+ZG+85MU5nhHsddeWCc7QZrXQ3PmvRHnxmW2NjW6hZRGxAfzEj0Uqx4lB1rcHqDXxRVwfepZkoFegDw7IJK2BhExs+T0v7EuJBNrd8yl9mU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724963173; c=relaxed/simple;
-	bh=sQE61qiplUVQwvO+oRXKg1alqgEO6GT2ZbgV3dVP5dM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TSllaQQxJD3Zlf+wqLx6Jtc+ECsDa/CWCHQ3kZI8yKQusXMtnIrg5X9cQ1ztKqB8DZpi0wpQHbT/bPYW61VjC0GSdkRydU7MeZqx6F7TSNuDlhuatsbFP6oJphTjKXGp47EWCkAYDeYyIHJwebcL8ul8H0qSoGuBzuoxQ+SxvBc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=m+3wxnG5; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1724967208; c=relaxed/simple;
+	bh=eVqTviXo8V6cwFH8hK97qRzQBwoSafV5MfsrLyhgPco=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=UoxhOcXtFX3FxRkbgeEtcCBKVL9vHd7LD1itamOyEB5jE4p95quf7MzCZu9D3gmDvQ40zS1vA46b/zzOV9qsUo2hYTA49h4zxoa/xWLVmSyQxTg7bTUmG93IIyCZmnWuNewNBkj4uhbHoTK7S75qZ6za6KafrUlqX3mLlh4yY7Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=X4r4nWb0; arc=none smtp.client-ip=209.85.167.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="m+3wxnG5"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1724963169;
-	bh=sQE61qiplUVQwvO+oRXKg1alqgEO6GT2ZbgV3dVP5dM=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=m+3wxnG5exmXtAEqCUCBPpytsEHDSwDuLl+NSwV04IOKUw+82TeeTXQH9O99M+Zw0
-	 zV6FGaU9/3PGvETIS4hI4EK+USEBFdd3DLk4V9KmcCs1E1AOtffokk70jGv2/QtH56
-	 PBbWKEBMbTHfP+JYNUP38SqVLdEqn0hQRBc/ezSLexQ+C2gGJNH522LoBx3On9z3wL
-	 ZuQgHds0Nwr1wzUJZnNcbmqTwBkWTzUKJUCiJUdezEkrne0ZOo36eA9HNl15iD4Z9a
-	 bip6hxCy36fcILQ6zrNb5dsA3Pw56beEOa9ocJIMmUruGSiI99vmZvloaLPgpx5A1+
-	 K4/aH/0elPEPA==
-Received: from trenzalore.hitronhub.home (unknown [23.233.251.139])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: detlev)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 94AEB17E1034;
-	Thu, 29 Aug 2024 22:26:07 +0200 (CEST)
-From: Detlev Casanova <detlev.casanova@collabora.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Detlev Casanova <detlev.casanova@collabora.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Finley Xiao <finley.xiao@rock-chips.com>,
-	Rob Herring <robh@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-rockchip@lists.infradead.org,
-	kernel@collabora.com
-Subject: [PATCH 2/2] pmdomain: rockchip: Add gating masks for rk3576
-Date: Thu, 29 Aug 2024 16:20:48 -0400
-Message-ID: <20240829202732.75961-3-detlev.casanova@collabora.com>
-X-Mailer: git-send-email 2.46.0
-In-Reply-To: <20240829202732.75961-1-detlev.casanova@collabora.com>
-References: <20240829202732.75961-1-detlev.casanova@collabora.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="X4r4nWb0"
+Received: by mail-oi1-f179.google.com with SMTP id 5614622812f47-3df06040fa6so653831b6e.3;
+        Thu, 29 Aug 2024 14:33:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1724967205; x=1725572005; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=n/l6Vuy6Yja6nMfuFm5IV/CQv24CYeSkA0vOpwlyExA=;
+        b=X4r4nWb0qp/+9mZDev4lYJESMb1nOBJwjsDyEzLWZYbWYF4WkVrzvT5r+CKG5Kgfye
+         4AtfJJMT2Ag0sD7v8cgtwDvFUGQu+QJ4kQdBEjP4NH6dXtK+zCXxi05Dgt89euoLr2fQ
+         7jKYc7KPdQQKjnJJbAr4c17983dlFNuaPPS1VzbFVMaQo9qPBs2n6NFpuVl9Jdt5T8Sm
+         wenvhiCE5eHxQZ2OkxCrWrcNMY5IXL0e5ad0jtsCJvbLLtiAHl310llwiw/x6mueZkdt
+         FMO9KkCZY0mzj3oDqYXWUmQWVCLYOLOVdixlGbIzNGNits313MMcFDFuFtWflxii6gXh
+         CUoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724967205; x=1725572005;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=n/l6Vuy6Yja6nMfuFm5IV/CQv24CYeSkA0vOpwlyExA=;
+        b=HfF1k7y1NeuY3D5bJCHEVDUk8RPn3DAWQ88vPnlGuON6uaR9Wt8ABZ/eVQCxXdpFmM
+         Uj5I7Makygz6aPXEvixKcbGtsmGNAzNt9oWZsDkhZsDCk7WhzKnYbaYVM6uckzCAWqkA
+         VSBoEchUiFB6H21NfyE14D3MOGhwHWm4EzrQddudlfSlCUQ00c59XdeiKeqLDLvbDTP4
+         A3qF1xUnEB97cfOBj0eQXcfbmrgVaLWl2iTEltVGDXNMZlyxuGL/zFlEIx+27qFCqbLv
+         hzau/CSn7JMnkARcyklccFQCF8vv3Ek+4Y86OmWrqssNs/Q1qhS+1v8rcnrU/ZpCMMVP
+         3V4Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVoNyd/TY9IQfoc+Pa3ikKxkgTLuzWc6dfn3/f/6xFexOtFVQpwn4sZY1FDMXuRY649sMkKXZ8pzWs8@vger.kernel.org
+X-Gm-Message-State: AOJu0YwdNasb83d9Vhf3xC5AJo+Ze1w3i2LHBbnyrpegaZW7bBxHdIJT
+	w8VOINisaq9+KMWHtrod7tQIdRJKETz44/+fwlXWXQ2vn2huBxV3Zhy4hg==
+X-Google-Smtp-Source: AGHT+IEWu+O+TSKWVKhbXLuQSSvCgo+TCWgZ3yKoVGpE8zXP4ZswpIwCFYRo+byFPALHaw73+yBZuw==
+X-Received: by 2002:a05:6808:238b:b0:3da:b3c2:b4c0 with SMTP id 5614622812f47-3df05ec779emr4477287b6e.31.1724967205478;
+        Thu, 29 Aug 2024 14:33:25 -0700 (PDT)
+Received: from localhost.localdomain ([2600:1700:fb0:1bcf::54])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-3df11865de3sm93097b6e.42.2024.08.29.14.33.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 29 Aug 2024 14:33:25 -0700 (PDT)
+From: Chris Morgan <macroalpha82@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-rockchip@lists.infradead.org,
+	devicetree@vger.kernel.org,
+	broonie@kernel.org,
+	lgirdwood@gmail.com,
+	sre@kernel.org,
+	heiko@sntech.de,
+	conor+dt@kernel.org,
+	krzk+dt@kernel.org,
+	robh@kernel.org,
+	lee@kernel.org,
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: [RFC 1/5] dt-bindings: mfd: ti,bq25703a: Add TI BQ25703A Charger
+Date: Thu, 29 Aug 2024 16:30:58 -0500
+Message-Id: <20240829213102.448047-2-macroalpha82@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240829213102.448047-1-macroalpha82@gmail.com>
+References: <20240829213102.448047-1-macroalpha82@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -60,110 +79,166 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The RK3576 SoC needs to ungate the power domains before their status can
-be modified.
+From: Chris Morgan <macromorgan@hotmail.com>
 
-The values have been taken from the rockchip downstream driver.
+Document the Texas instruments BQ25703 series of charger managers/
+buck/boost regulators.
 
-Signed-off-by: Detlev Casanova <detlev.casanova@collabora.com>
+Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
 ---
- drivers/pmdomain/rockchip/pm-domains.c | 62 +++++++++++++++++---------
- 1 file changed, 41 insertions(+), 21 deletions(-)
+ .../devicetree/bindings/mfd/ti,bq25703a.yaml  | 143 ++++++++++++++++++
+ 1 file changed, 143 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index 5b601efadd2e0..ab2d34f21718b 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -147,6 +147,25 @@ struct rockchip_pmu {
- 	.active_wakeup = wakeup,			\
- }
- 
-+#define DOMAIN_M_O_R_G(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, wakeup)	\
-+{							\
-+	.name = _name,					\
-+	.pwr_offset = p_offset,				\
-+	.pwr_w_mask = (pwr) << 16,			\
-+	.pwr_mask = (pwr),				\
-+	.status_mask = (status),			\
-+	.mem_offset = m_offset,				\
-+	.mem_status_mask = (m_status),			\
-+	.repair_status_mask = (r_status),		\
-+	.req_offset = r_offset,				\
-+	.req_w_mask = (req) << 16,			\
-+	.req_mask = (req),				\
-+	.idle_mask = (idle),				\
-+	.clk_ungate_mask = (g_mask),			\
-+	.ack_mask = (ack),				\
-+	.active_wakeup = wakeup,			\
-+}
+diff --git a/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml b/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
+new file mode 100644
+index 000000000000..e555aa60f9ad
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
+@@ -0,0 +1,143 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/ti,bq25703a.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- #define DOMAIN_RK3036(_name, req, ack, idle, wakeup)		\
- {							\
- 	.name = _name,				\
-@@ -178,8 +197,8 @@ struct rockchip_pmu {
- #define DOMAIN_RK3568(name, pwr, req, wakeup)		\
- 	DOMAIN_M(name, pwr, pwr, req, req, req, wakeup)
- 
--#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, wakeup)	\
--	DOMAIN_M_O_R(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, wakeup)
-+#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, wakeup)	\
-+	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup)
- 
- /*
-  * Dynamic Memory Controller may need to coordinate with us -- see
-@@ -1136,25 +1155,25 @@ static const struct rockchip_domain_info rk3568_pm_domains[] = {
- };
- 
- static const struct rockchip_domain_info rk3576_pm_domains[] = {
--	[RK3576_PD_NPU]		= DOMAIN_RK3576("npu",    0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       false),
--	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), false),
--	[RK3576_PD_SDGMAC]	= DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BIT(7),  0x4, BIT(1),  BIT(17), false),
--	[RK3576_PD_AUDIO]	= DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT(8),  0x4, BIT(0),  BIT(16), false),
--	[RK3576_PD_PHP]		= DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(9),  0x0, BIT(15), BIT(15), false),
--	[RK3576_PD_SUBPHP]	= DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BIT(10), 0x0, 0,       0,       false),
--	[RK3576_PD_VOP]		= DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(11), 0x0, 0x6000,  0x6000,  false),
--	[RK3576_PD_VO1]		= DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(14), 0x0, BIT(12), BIT(12), false),
--	[RK3576_PD_VO0]		= DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(15), 0x0, BIT(11), BIT(11), false),
--	[RK3576_PD_USB]		= DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(16), 0x0, BIT(10), BIT(10), true),
--	[RK3576_PD_VI]		= DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(17), 0x0, BIT(9),  BIT(9),  false),
--	[RK3576_PD_VEPU0]	= DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT(18), 0x0, BIT(7),  BIT(7),  false),
--	[RK3576_PD_VEPU1]	= DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT(19), 0x0, BIT(8),  BIT(8),  false),
--	[RK3576_PD_VDEC]	= DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(20), 0x0, BIT(6),  BIT(6),  false),
--	[RK3576_PD_VPU]		= DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(21), 0x0, BIT(5),  BIT(5),  false),
--	[RK3576_PD_NPUTOP]	= DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BIT(22), 0x0, 0x18,    0x18,    false),
--	[RK3576_PD_NPU0]	= DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(23), 0x0, BIT(1),  BIT(1),  false),
--	[RK3576_PD_NPU1]	= DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(24), 0x0, BIT(2),  BIT(2),  false),
--	[RK3576_PD_GPU]		= DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  false),
-+	[RK3576_PD_NPU]		= DOMAIN_RK3576("npu",    0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       false),
-+	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), BIT(2),  false),
-+	[RK3576_PD_SDGMAC]	= DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BIT(7),  0x4, BIT(1),  BIT(17), 0x6,     false),
-+	[RK3576_PD_AUDIO]	= DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT(8),  0x4, BIT(0),  BIT(16), BIT(0),  false),
-+	[RK3576_PD_PHP]		= DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(9),  0x0, BIT(15), BIT(15), BIT(15), false),
-+	[RK3576_PD_SUBPHP]	= DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BIT(10), 0x0, 0,       0,       0,       false),
-+	[RK3576_PD_VOP]		= DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(11), 0x0, 0x6000,  0x6000,  0x6000,  false),
-+	[RK3576_PD_VO1]		= DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(14), 0x0, BIT(12), BIT(12), 0x7000,  false),
-+	[RK3576_PD_VO0]		= DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(15), 0x0, BIT(11), BIT(11), 0x6800,  false),
-+	[RK3576_PD_USB]		= DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(16), 0x0, BIT(10), BIT(10), 0x6400,  true),
-+	[RK3576_PD_VI]		= DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(17), 0x0, BIT(9),  BIT(9),  BIT(9),  false),
-+	[RK3576_PD_VEPU0]	= DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT(18), 0x0, BIT(7),  BIT(7),  0x280,   false),
-+	[RK3576_PD_VEPU1]	= DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT(19), 0x0, BIT(8),  BIT(8),  BIT(8),  false),
-+	[RK3576_PD_VDEC]	= DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(20), 0x0, BIT(6),  BIT(6),  BIT(6),  false),
-+	[RK3576_PD_VPU]		= DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(21), 0x0, BIT(5),  BIT(5),  BIT(5),  false),
-+	[RK3576_PD_NPUTOP]	= DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BIT(22), 0x0, 0x18,    0x18,    0x18,    false),
-+	[RK3576_PD_NPU0]	= DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(23), 0x0, BIT(1),  BIT(1),  0x1a,    false),
-+	[RK3576_PD_NPU1]	= DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(24), 0x0, BIT(2),  BIT(2),  0x1c,    false),
-+	[RK3576_PD_GPU]		= DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  BIT(0),  false),
- };
- 
- static const struct rockchip_domain_info rk3588_pm_domains[] = {
-@@ -1345,6 +1364,7 @@ static const struct rockchip_pmu_info rk3576_pmu = {
- 	.idle_offset = 0x128,
- 	.ack_offset = 0x120,
- 	.repair_status_offset = 0x570,
-+	.clk_ungate_offset = 0x140,
- 
- 	.num_domains = ARRAY_SIZE(rk3576_pm_domains),
- 	.domain_info = rk3576_pm_domains,
++title: BQ25703 Charger Manager/Buck/Boost Converter
++
++maintainers:
++  - Chris Morgan <macromorgan@hotmail.com>
++
++properties:
++  compatible:
++    const: ti,bq25703a
++
++  reg:
++    const: 0x6b
++    description: I2C slave address
++
++  interrupts:
++    maxItems: 1
++
++  power-supplies:
++    description:
++      phandle of the power supply that provides input power
++    $ref: /schemas/types.yaml#/definitions/phandle
++
++  ti,charge-current:
++    description:
++      maximum current to apply to charging the battery
++    minimum: 0
++    maximum: 8128000
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  ti,current-limit:
++    description:
++      maximum total input current allowed
++    minimum: 50000
++    maximum: 6400000
++    default: 3250000
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  ti,max-charge-voltage:
++    description:
++      maximum voltage to apply to charging the battery
++    minimum: 1024000
++    maximum: 19200000
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  ti,minimum-sys-voltage:
++    description:
++      minimum system voltage while on battery power, with default value
++      depending based on cell configuration
++    minimum: 1024000
++    maximum: 16128000
++    default:
++      enum: [3584000, 6144000, 9216000, 16128000]
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  regulators:
++    type: object
++    additionalProperties: false
++    description:
++      Boost converter regulator output of bq257xx
++
++    properties:
++      "usb-otg-vbus":
++        type: object
++        $ref: /schemas/regulator/regulator.yaml
++
++        properties:
++          regulator-name: true
++          regulator-min-microamp:
++            minimum: 0
++            maximum: 6350000
++          regulator-max-microamp:
++            minimum: 0
++            maximum: 6350000
++          regulator-min-microvolt:
++            minimum: 4480000
++            maximum: 20800000
++          regulator-max-microvolt:
++            minimum: 4480000
++            maximum: 20800000
++          enable-gpios:
++            description:
++              The BQ25703 may require both a register write and a GPIO
++              toggle to enable the boost regulator.
++
++        additionalProperties: true
++
++        required:
++          - regulator-name
++          - regulator-min-microamp
++          - regulator-max-microamp
++          - regulator-min-microvolt
++          - regulator-max-microvolt
++
++additionalProperties: false
++
++required:
++  - compatible
++  - reg
++  - power-supplies
++  - ti,charge-current
++  - ti,current-limit
++  - ti,max-charge-voltage
++  - ti,minimum-sys-voltage
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++    #include <dt-bindings/pinctrl/rockchip.h>
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        bq25703: bq25703@6b {
++            compatible = "ti,bq25703a";
++            reg = <0x6b>;
++            interrupt-parent = <&gpio0>;
++            interrupts = <RK_PD5 IRQ_TYPE_LEVEL_LOW>;
++            power-supplies = <&fusb302>;
++            ti,charge-current = <2500000>;
++            ti,current-limit = <5000000>;
++            ti,max-charge-voltage = <8750000>;
++            ti,minimum-sys-voltage = <7400000>;
++
++            regulators {
++                usb_otg_vbus: usb-otg-vbus {
++                    enable-gpios = <&gpio4 RK_PA6 GPIO_ACTIVE_HIGH>;
++                    regulator-max-microamp = <960000>;
++                    regulator-max-microvolt = <5088000>;
++                    regulator-min-microamp = <512000>;
++                    regulator-min-microvolt = <4992000>;
++                    regulator-name = "usb_otg_vbus";
++                };
++            };
++        };
++    };
++
++...
 -- 
-2.46.0
+2.34.1
 
