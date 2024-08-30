@@ -1,355 +1,226 @@
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11olkn2019.outbound.protection.outlook.com [40.92.18.19])
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A7BC1C1740;
-	Fri, 30 Aug 2024 20:52:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.18.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 604311BCA05;
+	Fri, 30 Aug 2024 22:29:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725051132; cv=fail; b=XYf8eavFUZutE/S30zIn+gr/f8EJspHRRv2p14Ae9K2neBI3dNQo214I/lUgxjbvDPRQ0k4sFbPlSllnCcewx/P9BaoH6gdPvj3mu4lJjZjvospKjcwkkbhsDPVOFFap2yhoS0ggIYb+9NYmWXSewaGDz5W9cKfe1SZoQbn0uQQ=
+	t=1725056986; cv=fail; b=vAfLakbu8agXg+pmqs6lhx9f9Kcviaeuf1b/GT+xJ4gh4Cx0TCL0mSFX6VoZ8TELRQvFk1tuWElgHd53FqPLZjqTe/UbCYFqyWa8i6qmyx11U1FMLw+j0B1REFyMSwE0kVxrgUw9s/2Pi6qzgMXOJE1MMv81BpLJaZB9exkIOcM=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725051132; c=relaxed/simple;
-	bh=9PCyjkEOO8zI/aIC396LwHlIUr3tzgXmW4WNeP1ZZ/o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=lbj9IvRyfs2HcZExu16drFTFsSBhOMAgG/nWinZIjJz6lfG/hIx6tDyOHlALZVFyQrK1QuwtdnuA9xfbCdxAikdytMBYRhq8FTwCMMmyE4sIZzLQkg1AA/kKC85FKkE5LGfzRk0LhgMPK0NLAQLxuLxIgMI0B6EqaHZh0I3uXOg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com; spf=pass smtp.mailfrom=hotmail.com; dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b=HnY06aGm; arc=fail smtp.client-ip=40.92.18.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hotmail.com
+	s=arc-20240116; t=1725056986; c=relaxed/simple;
+	bh=3mLsfLAFCO5unkum3XPf+Fc421bTEhPSmgUCUm49wtE=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=sdk2H+H68yxAiEy3XVql0CwrHVgDI7W3JXLw7aRr/iRnyeTZWiBcBcjV2Ftu1Igo1XTZ4R/vBoiG/aVaKKwY00Nb5YY1iwByKpZ8kIgKDKLVGZCpHvOt8M4ioEXt1eSnz3JkSVH5CW7vifJQM+3FQsVVNiHybnLKLpMLUvoPusU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=BFbQ6cZs; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=iB0Yg0cr; arc=fail smtp.client-ip=205.220.165.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b="HnY06aGm"
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="BFbQ6cZs";
+	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="iB0Yg0cr"
+Received: from pps.filterd (m0333521.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47UMNDLZ026847;
+	Fri, 30 Aug 2024 22:29:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=
+	from:to:cc:subject:date:message-id:in-reply-to:references
+	:content-transfer-encoding:content-type:mime-version; s=
+	corp-2023-11-20; bh=dvXJ5o8iIvTtz4S/Dd5gnOY5EcavTuSun8qAuwbapO8=; b=
+	BFbQ6cZsQTKKts81st1lOTfXZdNY3a13E9GxK9nUkP6p2jRZFxj0WI6oM/MzNDFU
+	g8ZNBTwtRsYLqOKSDtDDVxRKmVzFK69Wf+APWU0ZxuWeavB2pSe/6Cx5yVo9Zh2W
+	/g+NU2Nz/o+sj53lvMGGw70/GcuH3M2JqDQZ4fJaCR2XprfiuQDYvcoHbn0tE6EM
+	YaaE0VBlwxdT0jHJk3hSSkWVMG4HoyKVIeffeDtgSJ8KHXrXjeS/pwq/gGbc0xLG
+	o++3nLZKRUaZfaNNuynUsZ6tJsRkrPqZ4uVVT+4K0n+rXjCazeILJBjFFSboJrgY
+	IsM8GbTW1GgEE1L4epXihg==
+Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.appoci.oracle.com [147.154.114.232])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 41bptkr078-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 30 Aug 2024 22:29:10 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 47UJXoQj010448;
+	Fri, 30 Aug 2024 22:29:09 GMT
+Received: from nam10-dm6-obe.outbound.protection.outlook.com (mail-dm6nam10lp2100.outbound.protection.outlook.com [104.47.58.100])
+	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 41894sjasm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 30 Aug 2024 22:29:09 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ot1wF/Xu9JMl5OJ4cycVxabQrvrSTc1sjpbh4DQdhGuyA1gMwQ+eyVEoitXR8wFg9IvyZAP6QyJwbjtwsMJZ/GdoqvrbXavapHlmvwDlY7hsu/qyVuPZcsprfaylg7DF3IvimRsfo0f0kpygGlvCSb0Ey57hwxEFw5lC3IUH0NAFX39vyBEwjG4+nP5RZLeeJMyENLkHXlTYd6yjpavyZwRQDgOHy27T01SlUAPcwhVgI/PcI8Lyb2u2IfGL/gOIAsErNxVP7W4fUHlqRh5CW6rZ2Nxy1017D8Tz67mwlH0S8YFmbI5+WOMbEz6ODYSzu+NXs/CDX1uD0fWWqwbmGA==
+ b=cwZ1pHfCJ9pTJEEVADSwUidHdTpFPoYtekJSx95g0GomXUx2WKSBySQmCHaM0aIp+eiFRprabXkHcroeJpPXu//hKZyalHiS19ZuEKlriJOZAU4Xday00uD0fBdnRaz/tdRCzguslcfRsjazDgR2KeP0sHa+d0w4rh1zW0L9D/dZs5EcwTNRm+KN6NWqCNOQ37uwhG9gZ28kTKaUZOBe2n0C1W+6zj+AI5hsGgFHRIhnDBtf4F3TZ0Xz3R5sYp1ExcP/hLXgervO3NTBNkWvNdNeK5H2+MtgXpwpU0OVdNN4TalvdV5zOKhG12XL8UNiBrEOS6vmWxoALGKm92SpnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=S1vQIwHIxB7rEiHQSFRfshvLqdoXg/wLUAtc0ELhEc8=;
- b=XODZhq7nGIJz25ugyJRK1zOx9YrXK8+QXDqTqQap9mGDPtFiL3GZyWab3e3Mo33hxk3EjWfVu0ft8Cj7pyI3HxOE1O+qoGRMPz4d57mCsaj3ClewaZVxpU4wCRbKmnI7PoHoH8uKaWqZwUFVGBr+JRAqsUySKD2v3avEoGyEtI+Jh3fIY82rP61MQjWBWcu7YE9ORKZwRQ40CHjPlgOtkF6obYBQdomPgbr6jnyqyCyU6Lz5oyCMvDOhKQGfu3b7LvRUA/jXulh0YEqS0k4KwmpX0tTiGjb5H6D0+ZUapEJ/UBuUkV8W9tMVCkkokqn38WSvPDTkSFms8ORBvUNiEw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
- s=selector1;
+ bh=dvXJ5o8iIvTtz4S/Dd5gnOY5EcavTuSun8qAuwbapO8=;
+ b=kJW4uZsPQDK3naMnzTmtqxxGQUl94rfNdGyJmLE4ty0AR2M2k3yYpGzIQ6eC/i6y88ErBb9gWLgsfeEDfMbf466DMMew1vjc1ke0TVtxpPc7P8KC7D76E3FowpQADXf8+4kAw87xOT1SLIcSbA6tGeR7hXs9/BO4EMFEOFyMz+khFNBCmlQbhayWBINS4WPO2svBEIJN9japJSPgZyfP/zKTUFMT1FSriaLfkG2fzNSABd81QWVBwbVshqjW3fi64E80DZwQR9R2Si6oNGVSk2IL4P8HMkdRqmCU7utIBEXV17jjzusZp/TkuOBr4Trri7HQcerYPsILossXxYuOXg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=S1vQIwHIxB7rEiHQSFRfshvLqdoXg/wLUAtc0ELhEc8=;
- b=HnY06aGmEtNU2jS/qrOX4eNhx98YMgIFzFTNKIMV0A2eXP1JjI3fQix2jO0z9OBx7YfgRB8G+v8aNBOS1HhCIR6mpO1qAvIzZZGkt7qdYB3HUo1/7XFVbNpkBPBZ6CcxaEJ/mCyhWbEuyEoZTY+e2JeqJ9qqMCKm8IAyA5nQT4OQ6ztPXkmMvF1QTmboBas1m9vXOGUkQv4Utjh+IUvceYK2UyuAzal6xKcLvGPbYY+k2wOeJXrVqr7M7U4nqCZai3Ei54hHaN8MpgXeDRw7Ucm5zFnruM1kFiIetdi7/0BrKAHgOgdX7KzBeq4w/os7hbGLO68DzHtOx3iT2UT0xA==
-Received: from MN2PR16MB2941.namprd16.prod.outlook.com (2603:10b6:208:e1::15)
- by PH7PR16MB4623.namprd16.prod.outlook.com (2603:10b6:510:132::13) with
+ bh=dvXJ5o8iIvTtz4S/Dd5gnOY5EcavTuSun8qAuwbapO8=;
+ b=iB0Yg0crYYJhskeN9UaUSiLeSqqca3ExwoDqfGasrUwbcOInyW9Co6MI+s/JNgtCR8FQWkw5Sn5Rt19DthF8Z1+EsZupmZdAEegeGoL+KQorEzSGEMk+W73Z6/0Fir3bJzruNnEdIb5aVJfOQBG1tQaOi16B8YrTULec7YT15VI=
+Received: from CO6PR10MB5409.namprd10.prod.outlook.com (2603:10b6:5:357::14)
+ by BN0PR10MB5077.namprd10.prod.outlook.com (2603:10b6:408:12e::17) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7897.26; Fri, 30 Aug
- 2024 20:52:08 +0000
-Received: from MN2PR16MB2941.namprd16.prod.outlook.com
- ([fe80::9d62:95ae:c373:c490]) by MN2PR16MB2941.namprd16.prod.outlook.com
- ([fe80::9d62:95ae:c373:c490%5]) with mapi id 15.20.7918.020; Fri, 30 Aug 2024
- 20:52:08 +0000
-Date: Fri, 30 Aug 2024 15:52:04 -0500
-From: Chris Morgan <macromorgan@hotmail.com>
-To: Rob Herring <robh@kernel.org>
-Cc: Chris Morgan <macroalpha82@gmail.com>, linux-pm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
-	broonie@kernel.org, lgirdwood@gmail.com, sre@kernel.org,
-	heiko@sntech.de, conor+dt@kernel.org, krzk+dt@kernel.org,
-	lee@kernel.org
-Subject: Re: [RFC 1/5] dt-bindings: mfd: ti,bq25703a: Add TI BQ25703A Charger
-Message-ID:
- <MN2PR16MB2941EFA87151EF7685889EEAA5972@MN2PR16MB2941.namprd16.prod.outlook.com>
-References: <20240829213102.448047-1-macroalpha82@gmail.com>
- <20240829213102.448047-2-macroalpha82@gmail.com>
- <20240830163042.GA319200-robh@kernel.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240830163042.GA319200-robh@kernel.org>
-X-TMN: [mRhboj51fY0Nh9vdhT+ZkqeM1JpeYNVv5XnbsFKyw9glBGfTfVDFS9UAPhXcgmUs]
-X-ClientProxiedBy: SA9P223CA0004.NAMP223.PROD.OUTLOOK.COM
- (2603:10b6:806:26::9) To MN2PR16MB2941.namprd16.prod.outlook.com
- (2603:10b6:208:e1::15)
-X-Microsoft-Original-Message-ID: <ZtIw9DyE0sVQgnNk@wintermute.localhost.fail>
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7918.20; Fri, 30 Aug
+ 2024 22:29:07 +0000
+Received: from CO6PR10MB5409.namprd10.prod.outlook.com
+ ([fe80::25a9:32c2:a7b0:de9e]) by CO6PR10MB5409.namprd10.prod.outlook.com
+ ([fe80::25a9:32c2:a7b0:de9e%3]) with mapi id 15.20.7918.020; Fri, 30 Aug 2024
+ 22:29:07 +0000
+From: Ankur Arora <ankur.a.arora@oracle.com>
+To: linux-pm@vger.kernel.org, kvm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: catalin.marinas@arm.com, will@kernel.org, tglx@linutronix.de,
+        mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
+        x86@kernel.org, hpa@zytor.com, pbonzini@redhat.com,
+        wanpengli@tencent.com, vkuznets@redhat.com, rafael@kernel.org,
+        daniel.lezcano@linaro.org, peterz@infradead.org, arnd@arndb.de,
+        lenb@kernel.org, mark.rutland@arm.com, harisokn@amazon.com,
+        mtosatti@redhat.com, sudeep.holla@arm.com, cl@gentwo.org,
+        misono.tomohiro@fujitsu.com, maobibo@loongson.cn,
+        joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
+        konrad.wilk@oracle.com
+Subject: [PATCH v7 07/10] arm64: define TIF_POLLING_NRFLAG
+Date: Fri, 30 Aug 2024 15:28:41 -0700
+Message-Id: <20240830222844.1601170-8-ankur.a.arora@oracle.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20240830222844.1601170-1-ankur.a.arora@oracle.com>
+References: <20240830222844.1601170-1-ankur.a.arora@oracle.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SJ0PR13CA0037.namprd13.prod.outlook.com
+ (2603:10b6:a03:2c2::12) To CO6PR10MB5409.namprd10.prod.outlook.com
+ (2603:10b6:5:357::14)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN2PR16MB2941:EE_|PH7PR16MB4623:EE_
-X-MS-Office365-Filtering-Correlation-Id: 72ca84f3-4fdf-4400-3e87-08dcc9359afb
-X-Microsoft-Antispam:
-	BCL:0;ARA:14566002|8060799006|8022599003|15080799006|461199028|5072599009|19110799003|6090799003|3412199025|440099028|4302099013|1602099012;
+X-MS-TrafficTypeDiagnostic: CO6PR10MB5409:EE_|BN0PR10MB5077:EE_
+X-MS-Office365-Filtering-Correlation-Id: aaddf99b-9d94-40b2-3c4b-08dcc94328d1
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|376014|7416014|366016;
 X-Microsoft-Antispam-Message-Info:
-	NZXfK1IG0xk4EYnaQSJSBZeXtJr2fEc8uSI5sCVvnnQwUBs4xgQAfbSwkJ9E5PM3TBSVWeudXmUMeBrMTW9aY2rB259S1XzS0Zx/W2EeQXH1T4oNvQcLhkDsS2Xrw7phk/wz0SzNrQMvUJtiBnhZmSUZDzApF31trG9mk2HQR1CTf9amY9OHEdSRoIfaRzaNrll1LSnIYF0rKR9TxWjb/iwFXZXdS58OnPdDDgcfEE8ZC9q5qZstRYfivhYauhPIBhpbP9awgKMrD3139TUl0P4RHN2EjH+geRrkMSLMlTaepfr1yPrRKSuqVme14e6FuPu0ctlec/J4FFdbyElLCUkjLTD0F7qhViMP4Z1kY8u1myToBo+ffZuMOozqGr2gv9QWv5N4ELY/4Sypm7YVHLd0T2ra3Vn83IY9MqXv+j6CQjAIiXAVjdVd2LvKp9royrU47cfF0C9V0h7GeP83IRwjQ036faMTmdyalivEnLFjwMR1MyhuaXQ0N3aTvVqCliRt2oPyg0Rf9WIfO4JZF4z0ISl1r4jsZ8lNa4f/4VEN0oWbsyvOUktfdEjlCwHUv67t2TJHXctJqOe9QVjBEcK0A9EgHh5uu+GQo/8z5mHKzPXGN3NTOughAw1g7VTd4mQctawv3AtKXOTttyxEqfmSQp9Zgh3hGBVZYvH0dULJzXq+pyDpUHvMrFmgShWjFKGsyh+7orx2foIS5lqyg82aWHFjuv6IyWbNMLC8cFc6dN8OLq9FXVIgAQnNi/MWOYyIc8W4xuSubgwiaKfSo80y45p/hzcmfsW//hltfxv44V2u0xcyL4YyagOLOIx2OmZSDFhiYtZ2PqVVqJck01Lp2r/kqEXWjdUFDQ9kTZAT7Z3YkviyiVJYNidKZVx7
+	=?us-ascii?Q?JfYKV4OUWuM2MOcG6GELAEUyXkqM7wjUn9LMSVmXeB8xHZ+/0t5jSirMEdgY?=
+ =?us-ascii?Q?TmgWoL0PGbvibFxhh0gWOPwt5eSbVB1b3j2TnkVV7cnMxpJao4X/5fXJyAjg?=
+ =?us-ascii?Q?a+rW+/fv83r0tJPhtFfNW7la++LZNdONS0WWPDF2K8cydBkbayUPASQbiolo?=
+ =?us-ascii?Q?kUf4VkZfM8Dw5E+bngkKtu6o1yBRGzBD3sTGcqSOs6+5Y3YXTiuEeDnvuSvS?=
+ =?us-ascii?Q?iuXIUo/YFXTADnLOLqmBKQ6WJEEM6oriCPBEb20xvcj+zs7ax1IXejo+H9wC?=
+ =?us-ascii?Q?xeIGsf7ZbPtrWbG2qn5TCuLZPm8Is5gAeOxW8q9WK54ZD3Nzl3CD/c9Zmsvu?=
+ =?us-ascii?Q?rJ6BNoyXYgiAl2r9/sYsE1afbbPtpojSEND94JjZzk3PfNWgarVLwR4AHtSE?=
+ =?us-ascii?Q?gGDpBFDf0Q7a6u9ILreE1OOtQcv3DrJcJ/gqJfHPILJsvPUneI/9tC/JVCgm?=
+ =?us-ascii?Q?XP+Fs9LIWFjksnE52jDeP98zQxy42m4VfrgB6PpJfegxMnnjcrOzaC/C+DY1?=
+ =?us-ascii?Q?ZtURyQcMe82oJ9it6Np8wRIjqe9Zp/rl1O7RwrlJl0SaZ0O8Zt5txaGR9zUu?=
+ =?us-ascii?Q?rDbdZzsDh/3jlIbyc9ds5XSy9ONHBSg7cMds2Wy4ePsHEEdrWx3f3RP509M8?=
+ =?us-ascii?Q?V13bFyhnKwT3rjelXs9AfwogoZnBWolJwA4fAF3sHesQmeKU8PybKWkai+CA?=
+ =?us-ascii?Q?ebfHyrjLCbyVUUjR6fDlc4QhtksyQvsC3raPAisvWj6ZlAKAhCq+hdXgH+I4?=
+ =?us-ascii?Q?8mujZ1WE6vVVdLYQC8Ua7JL3JsXkba5GGu5QRHxXfAZy0NQfQ05/yLZnPEVV?=
+ =?us-ascii?Q?yeN97p/qaxCqFMDUCbRtK9zfBB3MLxCzE4X2FwYdzkhyhG3CQbisefSAJFod?=
+ =?us-ascii?Q?JqKJRJZGnmFp3Gt0NZ15rn+08t243fcTjSpX65zPS24Mi03VbeXApIehhhWT?=
+ =?us-ascii?Q?ACQGw1qWgKcQ3k9rV01ipRipvValSJwuLSCNS1lyCpRQX994cMTJBH2+8t/6?=
+ =?us-ascii?Q?sP5NCT7gBRs7ejRhZBPpZIBzum+qOjbiwi/dS2PE1s69e9xE61jhmsxJzKb6?=
+ =?us-ascii?Q?xs5ttt6GDBPtaLGEKOzozLM8cOpNRhYT6vqRNXDiFctAAWv/AhsIEsxh+jBg?=
+ =?us-ascii?Q?XrhAtSxbirDdtZRfRYtqevixpzB8beS6IMtbqkoq7xFllGF9ra7OOKSPSd8B?=
+ =?us-ascii?Q?kgjteRgLUk6t+Hb/vTJ0FcWvQg/VhJcbc8y4zv4Z8dNNhN04Cx/Sf1eAvYw/?=
+ =?us-ascii?Q?7UJvm4Z4eFHW65D60+5F6MBNBc8m3g9ohTHh0OSP43yu9sXzY5xJbP+6idEZ?=
+ =?us-ascii?Q?0dc2gRPSbh//dvn4nPimzq+48QAnZicbko3HiGHAzRT1GQ=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO6PR10MB5409.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?+ajsAP9VPJ9hu3HL73+4mc4qwRC5ct/Bx7Dd7PNmQgnYYgB4s/pLUSlYuDsV?=
- =?us-ascii?Q?fGt9EHF8xQBpWRIa/J9bERM7MIg6VKKvAM18/2FT1a67ik1DFyNzwqb5XWHV?=
- =?us-ascii?Q?ttL6oXtTyEvxgCTd77ETJZHBv0CvAFbOMKXs+T82t1fOT3fWrOHIHPXROxRQ?=
- =?us-ascii?Q?RnBXQWuW/MZLJf3EltbP8I85jro6KCOLYnCecoXLuLt7xAwyKu97Vc8h5Yem?=
- =?us-ascii?Q?LMRUR1Z+EktbCS5dkkrp5uKqqRm+WkgJo9ijvD/vWwSXKeiE3CBLaaFmyEzA?=
- =?us-ascii?Q?nFk5W8f1TmcP82nExWRJS43DeVNrnJ/YVeiEF655bRiqskruikvVriW7Q6Z3?=
- =?us-ascii?Q?QWgO5wu+Mfv/STf8Ar7D3ibQUVNicwFCCz82+b6m2261k8AzV94HYY/qf2+w?=
- =?us-ascii?Q?z36VW1gJi4kA1LZKWmuFNPaMBoShcPHezD5YF77K+GWOIiwEhYP2yo4EuC/x?=
- =?us-ascii?Q?Ci8HbpPP7TKEkl7wTyGiIvqDdLuuTOftWg5rbmtt2C2KQ4OWyu4dC8r+lBGr?=
- =?us-ascii?Q?3PS3Em/qMxvAGQaR0vxwkfeT7R3BOAN+jCG8Qf+3JEDvMBAkJBE4nH2VapzV?=
- =?us-ascii?Q?mxS32Pn4LTuGjFL4qPBD/eea+CdXDNn/iQFHlqCOWJP51AegKO5HKKrNV/+J?=
- =?us-ascii?Q?t0fZblSvC5mHGweoqkJD5XUzd1NSHB6oDsMVx72AqUnScvaSnq/k3nwD9Kf0?=
- =?us-ascii?Q?IkNfUyFMDzdFYvRqilu8lrGCL5KOnuj1zpS851GtilSGrHKIDhLGu6zCW8sb?=
- =?us-ascii?Q?fWRPxWJft4IioWpAp4uZReK4T+Xqk/k0SEECS3wQqPmyRL6EJu6ttvLDuPxE?=
- =?us-ascii?Q?wwMk2LPMIF8teh0hkwajhKk4jxZkbUdqofPIVLpkFZuhPAo3i3eJgrj3qVxq?=
- =?us-ascii?Q?d4OJMdFWAWY4rBNOMdDXEqRdcDYKjxsPWxzGs1soog68PnAak8BUDEceDIrc?=
- =?us-ascii?Q?Wgf/r4oJzkPMNJ0OGXl21omt3ainU1yhciHi/F52kdEPBfYiVeuNgTn5EiMy?=
- =?us-ascii?Q?hT4fTwYQ/8i+rajfBolFjqkhDOsHlFG+45kTUEzfNnbHYxgyB+J4P76geNGY?=
- =?us-ascii?Q?N8CcuMwkmIZfWzw15DlEBwYDfG0Jp5wf3VIP28Cus3/UWV4SHGKgyZuoI79U?=
- =?us-ascii?Q?3EbwIaFsPI2QBixAjpKPv+ohjP9/J/VlkHpunIQ7cUgSnqOWT6MpL+UVGbI5?=
- =?us-ascii?Q?ZIkaDwytv+XnTF6nJNrRajHoBifePfYRNsFI30KLPBCeUVloYkLgXlq3vOiq?=
- =?us-ascii?Q?UaOz7r3mZ5kOVRf1xmtMFjXYs38qTTxpMAKfffQEdDl/aR0tRPowDLIckuiV?=
- =?us-ascii?Q?Q2eyqoT9UZ64vDphNTAl9n2s?=
-X-OriginatorOrg: sct-15-20-7719-20-msonline-outlook-559fc.templateTenant
-X-MS-Exchange-CrossTenant-Network-Message-Id: 72ca84f3-4fdf-4400-3e87-08dcc9359afb
-X-MS-Exchange-CrossTenant-AuthSource: MN2PR16MB2941.namprd16.prod.outlook.com
+	=?us-ascii?Q?Q6GqcyaJvpN1s4fQ3S3pRBXZXXryvXH7fGryesM0frz8NxL+S6gxDPkyik3S?=
+ =?us-ascii?Q?BrGZQfJW0aYHuEN4nBxHaBz0cUKntW3vumm+XGarRQ5l4e7+WofzQ+ZK/br6?=
+ =?us-ascii?Q?PzCY2/XLBTMo6KPnL5U9TFuJN2msuHXl7Ow0ZLFFJtATPBMQeyIZEPtFkA1D?=
+ =?us-ascii?Q?wcjrJa+tdVaA4dzx1bnvZLBsd6PJRmAtR3MVEts4SaUn6gCdhRDHQTLqB8rK?=
+ =?us-ascii?Q?k0TTwO0dQSl+CAi4oTcZfK7HLNABXdO5ifiVCmM/JkR1T7EeIJRS5b2RvRP+?=
+ =?us-ascii?Q?HBhbYIsNpT3nzCnIEq0bHVyqpZDKMV9DjYW5leRvMFgmk7hkcKUakPLyekaX?=
+ =?us-ascii?Q?RVJ+SN0iTa1qzZcrQWvBOa1MeC1aj50U/ffGZLvivp0UA77BhmzfYDBLHAwl?=
+ =?us-ascii?Q?dVdFeqWNUObtkw+2eJE38oAiRUlIvpI0fLouvQbUpBK7UqONSs/LCXKS8nbh?=
+ =?us-ascii?Q?gJBY5O/nqUmi8usHrG0mEAZrV/A4vx75HGBiMRXvy03Quy0kgLh7KJYWFr1b?=
+ =?us-ascii?Q?SzTsb1HAuFkq/wzQHGCd+ZhnUPq9B5YjyQAyh+Z+fo/91cGJdz+w3hAjMFF5?=
+ =?us-ascii?Q?9tTEkGPeNrxQUXoeBLsYDoS1BiRLVjrWAhTpuMpMkrgX4hzrVtksV6xfOwIn?=
+ =?us-ascii?Q?1yDAFBvgMk1CP+RauPG9MtkqStHTcrmd7gfre2sbSCctkx7SU42cp4WQiFQd?=
+ =?us-ascii?Q?9HcbPf1My2uvfXJPeB9ZvvlrCPcbCAhnWCQ73F+jDJ6R0eZqjM8ODgsE/M5L?=
+ =?us-ascii?Q?xGa3bFh55hjHyPEo5mssBnw5xIegJctMemskaJSnDViSUUbwL9csBAEoBPqK?=
+ =?us-ascii?Q?w2p+NXgk455UGo1gJNo59Ulw7wase9ptXq+CNqdub1LdPP7pMNfESkuE1mDw?=
+ =?us-ascii?Q?HjqHXHPrAv92yp8HUXDfcwFfI2tAcu9iibxt6HGcnztMBtist0/0rz2YsDfu?=
+ =?us-ascii?Q?BNj/iZhjJjcCSpwx9R1383DbNON9hnZJJARZ7P1/9d0XUNKd60p/yMoYY6n9?=
+ =?us-ascii?Q?Hkx+7mIT839wkcGBllWa9uzYehnGFcYDNrYv0XDyemOq6ergT5lh0BMSXFOa?=
+ =?us-ascii?Q?w3sIps0uj2lPJedH/de0I9K1KxvAX29oQYPjFYqLYKleKqcjU1J2xOHSADFR?=
+ =?us-ascii?Q?oRXPeamqUSP3HPuKziyhWWXE877/2pNsDkzkklx6B9S2+U6xzAY5CUN3MCFq?=
+ =?us-ascii?Q?YztonPq2s8LWDXlZ/iEiTyr/FpPhUcmRloPCgA+YD2jPgH0LDotTmUgVSy/O?=
+ =?us-ascii?Q?hXXhrwvuetG10Gc/AtRkMPKykserTTU3lRhuRqAKY5UGrUCH7daGIZqxiKXY?=
+ =?us-ascii?Q?JclrCRfc/sxKtOb0dZmObEqhPkuewBjYVv1Wqbl/g3ZQAdj0RV/djEYFMnJE?=
+ =?us-ascii?Q?vOL9YBuSwIDBGDO1S1gSWh5bDwdkYonyXs/ZbHn6Tp11EgYod0+YRPihZX3I?=
+ =?us-ascii?Q?rV0rfJ6vEw2X2J99JIQ5K0siyjQnultcyeBFLhR77ArXdNy+j4rI3x8F3ixQ?=
+ =?us-ascii?Q?v6kDZ9FTiRTCMReIIHKxya4009pQOSNQoBetOrSiZXHu7OlImn7CDlw89Ils?=
+ =?us-ascii?Q?vnCrC5ubgIB+/gdPsHS1GRZ/MKtZ+f3+zXiFQtzJME84DduKpt/nzxCQ9aZw?=
+ =?us-ascii?Q?Ww=3D=3D?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	LKQ8vngf5XKS/EUHctOQTmPtyY8iDNTLZUIUkpr9MXSPCD/DYkM1rVfO5jUdjZVd7FpJHoGqkFQ+EQAuHt9tZ+yB/uP5ruG7BXsVCJhEGzZGaM3hDf09/1BDt5SOBObP08NdB+sbBzkGi0/e05i9BbZQiSyF99BCX7e0PLpjRjw3BIwDnSm16C6t+GFsDucMX3qeuns0+wwJTm0n/dTSAB4DC1M0Yislm6rg9FCyUyRyTaxJKufApB5YvzwNOWB1sMnfaIGV+OIsjVM8oA+2gmUjTjPGJZFHbBlqIiGcBTKyvXC4/uU4wF39pXGdkh3t0s4g9hjixrcLnrwY5qz5/DcrF+pBz8XSMhM8hpJXKAJ5HYxK83e1DkEYOnDrdurQ6ZZoZcqcqATNzgfzdhJmu5xTlWXYSkkOjNXBKmINevyI9pEnhyKdLbuvZocz7lWuESEM1Ks45nLRpSKndm2tgl8dhQPUY25QzlGh25Z+I+NXI62yW0N1j503OTa9Qt3F3YA8gpblGJ+lmsuEe8zRUwQllcJYfqfvr6z9/prOFBOKHGPbIj5BlTDY3MdiwKfWGnLU3MiyUMYTs7GAiKejgnGfgjDpL3cL55qai8ClN/4=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: aaddf99b-9d94-40b2-3c4b-08dcc94328d1
+X-MS-Exchange-CrossTenant-AuthSource: CO6PR10MB5409.namprd10.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Aug 2024 20:52:08.1452
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Aug 2024 22:29:07.2172
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR16MB4623
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: fr9O8Oqy/vaBBRMJnNCYWJZjP6sEdc+wGFqJknpuxaW9LQDaj+qAj25PKO66HrW3EySSy7OjgFriQofILBs5uKDKb0F/Y3xqXdnGMsF9lW0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN0PR10MB5077
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-30_12,2024-08-30_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 malwarescore=0 spamscore=0
+ mlxlogscore=999 adultscore=0 suspectscore=0 phishscore=0 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2407110000
+ definitions=main-2408300174
+X-Proofpoint-GUID: 964dIE4GIsVRMxIkxXXjcBbECLNVktF_
+X-Proofpoint-ORIG-GUID: 964dIE4GIsVRMxIkxXXjcBbECLNVktF_
 
-On Fri, Aug 30, 2024 at 11:30:42AM -0500, Rob Herring wrote:
-> On Thu, Aug 29, 2024 at 04:30:58PM -0500, Chris Morgan wrote:
-> > From: Chris Morgan <macromorgan@hotmail.com>
-> > 
-> > Document the Texas instruments BQ25703 series of charger managers/
-> > buck/boost regulators.
-> > 
-> > Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-> > ---
-> >  .../devicetree/bindings/mfd/ti,bq25703a.yaml  | 143 ++++++++++++++++++
-> >  1 file changed, 143 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
-> > 
-> > diff --git a/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml b/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
-> > new file mode 100644
-> > index 000000000000..e555aa60f9ad
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
-> > @@ -0,0 +1,143 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/mfd/ti,bq25703a.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: BQ25703 Charger Manager/Buck/Boost Converter
-> 
-> BQ25703A?
+From: Joao Martins <joao.m.martins@oracle.com>
 
-I'm not entirely sure on the nomenclature. I know for sure I have a
-BQ25703A in my device, but I don't know if the A is important or not.
-I'll just drop it until I know for sure to alleviate confusion.
+Commit 842514849a61 ("arm64: Remove TIF_POLLING_NRFLAG") had removed
+TIF_POLLING_NRFLAG because arm64 only supported non-polled idling via
+cpu_do_idle().
 
-> 
-> > +
-> > +maintainers:
-> > +  - Chris Morgan <macromorgan@hotmail.com>
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: ti,bq25703a
-> > +
-> > +  reg:
-> > +    const: 0x6b
-> > +    description: I2C slave address
-> 
-> Drop description.
+To add support for polling via cpuidle-haltpoll, we want to use the
+standard poll_idle() interface, which sets TIF_POLLING_NRFLAG while
+polling.
 
-Acknowledged.
+Reuse the same bit to define TIF_POLLING_NRFLAG.
 
-> 
-> > +
-> > +  interrupts:
-> > +    maxItems: 1
-> > +
-> > +  power-supplies:
-> > +    description:
-> > +      phandle of the power supply that provides input power
-> > +    $ref: /schemas/types.yaml#/definitions/phandle
-> 
-> Already has a type. You need a reference to power-supply.yaml at the 
-> top level and 'maxItems: 1' here.
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
+Signed-off-by: Mihai Carabas <mihai.carabas@oracle.com>
+Reviewed-by: Christoph Lameter <cl@linux.com>
+Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
+---
+ arch/arm64/include/asm/thread_info.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Gotcha, thank you.
+diff --git a/arch/arm64/include/asm/thread_info.h b/arch/arm64/include/asm/thread_info.h
+index e72a3bf9e563..23ff72168e48 100644
+--- a/arch/arm64/include/asm/thread_info.h
++++ b/arch/arm64/include/asm/thread_info.h
+@@ -69,6 +69,7 @@ void arch_setup_new_exec(void);
+ #define TIF_SYSCALL_TRACEPOINT	10	/* syscall tracepoint for ftrace */
+ #define TIF_SECCOMP		11	/* syscall secure computing */
+ #define TIF_SYSCALL_EMU		12	/* syscall emulation active */
++#define TIF_POLLING_NRFLAG	16	/* set while polling in poll_idle() */
+ #define TIF_MEMDIE		18	/* is terminating due to OOM killer */
+ #define TIF_FREEZE		19
+ #define TIF_RESTORE_SIGMASK	20
+@@ -91,6 +92,7 @@ void arch_setup_new_exec(void);
+ #define _TIF_SYSCALL_TRACEPOINT	(1 << TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
+ #define _TIF_SYSCALL_EMU	(1 << TIF_SYSCALL_EMU)
++#define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
+ #define _TIF_UPROBE		(1 << TIF_UPROBE)
+ #define _TIF_SINGLESTEP		(1 << TIF_SINGLESTEP)
+ #define _TIF_32BIT		(1 << TIF_32BIT)
+-- 
+2.43.5
 
-> 
-> > +
-> > +  ti,charge-current:
-> > +    description:
-> > +      maximum current to apply to charging the battery
-> > +    minimum: 0
-> > +    maximum: 8128000
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> 
-> I guess this is copied from other TI parts, but really this should move 
-> to a property with a unit suffix. Or these shared properties moved to a 
-> shared schema so we aren't redefining the type multiple times.
-> 
-> Same for the others here.
-
-Correct, I tried to reuse the same TI specific properties. I suppose I
-could also eliminate ti,charge-current and ti,max-charge-voltage, and
-then just require a phandle to a simple-battery node which contains
-those two values in a vendor independent form. What do you think?
-
-ti,current-limit and ti,minimum-system-voltage though are other
-possible questions I have. Basically I could also create a vsys
-regulator that represents the vsys coming off this device too (I
-currently omit this entirely). This regulator wouldn't be programable
-but would report the existing input current and input voltage for
-the system, which in my case I'm pretty sure is stepped down to 5v
-or less and then fed into an RK806 PMIC (I lack the schematics so
-I don't know for sure). Of course if I did that then I'd have a
-valid reason to add a "regulators" node since I'd have more than one
-regulator.
-
-> 
-> > +
-> > +  ti,current-limit:
-> > +    description:
-> > +      maximum total input current allowed
-> > +    minimum: 50000
-> > +    maximum: 6400000
-> > +    default: 3250000
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +
-> > +  ti,max-charge-voltage:
-> > +    description:
-> > +      maximum voltage to apply to charging the battery
-> > +    minimum: 1024000
-> > +    maximum: 19200000
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +
-> > +  ti,minimum-sys-voltage:
-> > +    description:
-> > +      minimum system voltage while on battery power, with default value
-> > +      depending based on cell configuration
-> > +    minimum: 1024000
-> > +    maximum: 16128000
-> > +    default:
-> > +      enum: [3584000, 6144000, 9216000, 16128000]
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +
-> > +  regulators:
-> > +    type: object
-> > +    additionalProperties: false
-> > +    description:
-> > +      Boost converter regulator output of bq257xx
-> 
-> Doesn't this apply to "usb-otg-vbus"?
-> 
-> Really, only one regulator, so you don't need a container node.
-> 
-
-It does, that's a mistake on my part. And see above; I could add a
-regulator for the vsys (even though you wouldn't be able to set the
-voltage or current).
-
-> > +
-> > +    properties:
-> > +      "usb-otg-vbus":
-> 
-> Don't need quotes.
-
-Acknowledged.
-
-> 
-> > +        type: object
-> > +        $ref: /schemas/regulator/regulator.yaml
-> > +
-> > +        properties:
-> > +          regulator-name: true
-> > +          regulator-min-microamp:
-> > +            minimum: 0
-> > +            maximum: 6350000
-> > +          regulator-max-microamp:
-> > +            minimum: 0
-> > +            maximum: 6350000
-> > +          regulator-min-microvolt:
-> > +            minimum: 4480000
-> > +            maximum: 20800000
-> > +          regulator-max-microvolt:
-> > +            minimum: 4480000
-> > +            maximum: 20800000
-> > +          enable-gpios:
-> > +            description:
-> > +              The BQ25703 may require both a register write and a GPIO
-> > +              toggle to enable the boost regulator.
-> > +
-> > +        additionalProperties: true
-> 
-> Nope.
-> 
-
-Acknowledged.
-
-> > +
-> > +        required:
-> > +          - regulator-name
-> > +          - regulator-min-microamp
-> > +          - regulator-max-microamp
-> > +          - regulator-min-microvolt
-> > +          - regulator-max-microvolt
-> > +
-> > +additionalProperties: false
-> > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +  - power-supplies
-> > +  - ti,charge-current
-> > +  - ti,current-limit
-> > +  - ti,max-charge-voltage
-> > +  - ti,minimum-sys-voltage
-> > +
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/gpio/gpio.h>
-> > +    #include <dt-bindings/interrupt-controller/irq.h>
-> > +    #include <dt-bindings/pinctrl/rockchip.h>
-> > +    i2c {
-> > +        #address-cells = <1>;
-> > +        #size-cells = <0>;
-> > +
-> > +        bq25703: bq25703@6b {
-> 
-> charger@6b
-> 
-
-Acknowledged.
-
-> > +            compatible = "ti,bq25703a";
-> > +            reg = <0x6b>;
-> > +            interrupt-parent = <&gpio0>;
-> > +            interrupts = <RK_PD5 IRQ_TYPE_LEVEL_LOW>;
-> > +            power-supplies = <&fusb302>;
-> > +            ti,charge-current = <2500000>;
-> > +            ti,current-limit = <5000000>;
-> > +            ti,max-charge-voltage = <8750000>;
-> > +            ti,minimum-sys-voltage = <7400000>;
-> > +
-> > +            regulators {
-> > +                usb_otg_vbus: usb-otg-vbus {
-> > +                    enable-gpios = <&gpio4 RK_PA6 GPIO_ACTIVE_HIGH>;
-> > +                    regulator-max-microamp = <960000>;
-> > +                    regulator-max-microvolt = <5088000>;
-> > +                    regulator-min-microamp = <512000>;
-> > +                    regulator-min-microvolt = <4992000>;
-> > +                    regulator-name = "usb_otg_vbus";
-> > +                };
-> > +            };
-> > +        };
-> > +    };
-> > +
-> > +...
-> > -- 
-> > 2.34.1
-> > 
-
-Thank you for your feedback,
-Chris
