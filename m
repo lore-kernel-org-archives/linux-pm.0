@@ -1,135 +1,78 @@
-Received: from mail-yb1-f180.google.com (mail-yb1-f180.google.com [209.85.219.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9BFA1AD26F
-	for <linux-pm@vger.kernel.org>; Tue,  3 Sep 2024 10:35:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE7951A3AA3;
+	Tue,  3 Sep 2024 10:42:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725359751; cv=none; b=QKgiOUhsaqr4VK+bp31/kRTRUS5u7ICxNbzMQ9ZcSDiKGbLJ97gSqoZKc9crbc+lxIdwyJ1+z+FIw+X6XwOt0YuoDOegGLDYMFSHpUpjZc25hBSikPAMgNJ4j14jUGWvTMsRFx8/q5cuu/vUfZTqjK1tHVQDTPPg5UDtpCEgmNQ=
+	t=1725360165; cv=none; b=lXadMu24nRC45vMfBnCxlwZTKjNSnaltkhtZ2e31IOqwZ3A3kSdzS05vAWq5Op/iyCTkZW9XrF1Cn+Mk+fiKPn350DS289gFAOE4fsXAPE1PMjzjeaXB5LdgNJLmFrAZvKHHNIr4Kh1qhW5vzso74cc2HHbgBdE/++fucyzl22g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725359751; c=relaxed/simple;
-	bh=YmkObPnyVEltJM+bKrCa4h0N/EDBel+3Kr+3oHWQ2A4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=RcJxwK69tMERIFecaLAX8VYKYsMmYCCj5iWnhRopD5MgcJko80B5Y+iUNUmH6g9udC9BpI7ugSeMWGoS2ikJxD5COwEqL6cz04NYrrCVLmBZUgYK9ENhTUxJUKLpCerejt1M4fac5mA9SDDeyHdVF+ZMKualIrouy5h3RT+Eb9A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=sovQNizJ; arc=none smtp.client-ip=209.85.219.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1725360165; c=relaxed/simple;
+	bh=ezxVlGdqbmTlfY+8KcIKlvZcCYG5xIM2gov7g8QDlgc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=tCD7RcxSxc5qr4qcfLwcGas4Vv6xrGmGXqyd2dLhTIevVp/N/Yg9UjNwsra3W5CJCapEArfZ57krJ0Yw4rwQp3ah2obJ+SsY0LtgmCWzTAfiV5gpZl7bwkBzVJBPc2K8krwL0vtm8WUFkjopmXIURMYxHbBaAwCvodtuWUFD6NU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=c/AB6W0K; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sovQNizJ"
-Received: by mail-yb1-f180.google.com with SMTP id 3f1490d57ef6-e04196b7603so5534425276.0
-        for <linux-pm@vger.kernel.org>; Tue, 03 Sep 2024 03:35:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1725359749; x=1725964549; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=wk8IQrj3Ag1NuoIr8ToTqjuTDbNQapkqLJ16Fkg4zcI=;
-        b=sovQNizJxr+0yvKgumskp0xKen9pTaJ8GptymK4oIeq42YTMxsgeCYcG7575+Wb6dZ
-         UGtifC4UVeFVq4PFMrcDhsPyqPcsj9miMflt60nthF/GkXBRZYUh1AMUOpdcx7sS5D/q
-         ow1NJ1nGolKafoGzEHAEou4VfOJOyRcGXZmL1HYsSefkDf+fYYH3MT6aPh1crSZ6y+sV
-         S2kuldHCGyJ70u3sz54wPvNFrTeWKFt/k4PxF7Lt5i+OLJSIa24WR2eExCoRbYnaJ58r
-         mS3xkcKpz9v4YbNDRQgea9yxhkEvUyOHZPlwRWjDtUXN/+8tj54bFeXz8eNRp/x13Kv3
-         4yxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725359749; x=1725964549;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=wk8IQrj3Ag1NuoIr8ToTqjuTDbNQapkqLJ16Fkg4zcI=;
-        b=Nv/VxFX9pKEaGiVfviJ4/3tvArOUZL7KGXHN4OpNmFB97uG3IG5HuEQHndPArQdqqQ
-         XtHgEs6jMbJ0nKnFHuR0OPNS+WxsN5uQfY9IPEm56G21aLog/sb9v/E34YaICzPl/NJs
-         V15cfHKYfd05CnqU5M7AuvNxUmd0gzJkBpIzGMnZat+A6l/fCtk2xOGj3yNFa338Y2q5
-         F1zQtbxyC/N+YBDJ6Fz9PWEWPLmCDWM6WtcOmhq8O+m+wNlLUp48NlQuPq/WzVXkms5d
-         LXkBmdJqJZt+YGJ3fpQuDfnlIu65hndXISEC3+WDoQhlZfQ2bihn86z4iRaS25tODNsg
-         c2zg==
-X-Forwarded-Encrypted: i=1; AJvYcCVdR0qM6ZJlAnca/dJ+x1+Nv4jL5j5tho9JdOvafeVw8S3YNWbK0sH2+7YIozvehtOGU3PVhCKENA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx3uFbG2QOBXJJCp4OCbJcdPnHM4KiDydsLFvYahBchkHbN/Os1
-	khYQILsKj7HVml1PO69JBrobzt/TuB2mthw/qXnwpjFMEY1vNWaGuzZH2jQlddmXE/7bk1a7Qjq
-	AOEwrbSn639ZVbQfHUvV8l09gtZ/qlHyfX91Vwg==
-X-Google-Smtp-Source: AGHT+IEptjQ9HnzO7IsNO1D9S4qr5WM4xYdZM3VIT60UnRxgn+glo0EzcUHzkrVnacRkJvKM+kyKu9xW5IsYaduxCjQ=
-X-Received: by 2002:a05:6902:120d:b0:e16:55cc:215c with SMTP id
- 3f1490d57ef6-e1a79fe3948mr17521678276.6.1725359748806; Tue, 03 Sep 2024
- 03:35:48 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="c/AB6W0K"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6359DC4CEC4;
+	Tue,  3 Sep 2024 10:42:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1725360164;
+	bh=ezxVlGdqbmTlfY+8KcIKlvZcCYG5xIM2gov7g8QDlgc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=c/AB6W0K5VYMLA3QJ0KwBaUxudD+N94DrLDpUTsYNs2S7WxNpnozPWfEotC/oOosh
+	 l/Rd2bNay8EASQFjfJZeDU+NAm/97L3/lGlDaPJvvFVk3Jf/B1JT+MBUy80dvQHZKV
+	 mSS4U1tfa6zBYrIJb9MKevEM0YvyKGlm2LNP1IYo=
+Date: Tue, 3 Sep 2024 12:23:55 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: David Wang <00107082@163.com>
+Cc: rafael@kernel.org, pavel@ucw.cz, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pm: sleep: do not set is_prepared when no_pm_callbacks
+ is set
+Message-ID: <2024090347-latter-collide-772a@gregkh>
+References: <20240902125933.5742-1-00107082@163.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240822152801.602318-1-claudiu.beznea.uj@bp.renesas.com>
- <CAPDyKFrS4Dhd7DZa2zz=oPro1TiTJFix0awzzzp8Qatm-8Z2Ug@mail.gmail.com>
- <99bef301-9f6c-4797-b47e-c83e56dfbda9@tuxon.dev> <CAPDyKFrVS2vpsJqTvjKCJ7ADqXc4D4k2eeCBsaK4T+=pXDnKUA@mail.gmail.com>
- <fa9b3449-ea3e-4482-b7eb-96999445cea5@tuxon.dev> <CAPDyKFrkkASq7rfRN=9sEet-p8T8t+f__PdnSNRN3bMNipnNNw@mail.gmail.com>
-In-Reply-To: <CAPDyKFrkkASq7rfRN=9sEet-p8T8t+f__PdnSNRN3bMNipnNNw@mail.gmail.com>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 3 Sep 2024 12:35:12 +0200
-Message-ID: <CAPDyKFpLnREr4C=wZ7o8Lb-CZbQa4Nr2VTuYdZHZ26Rcb1Masg@mail.gmail.com>
-Subject: Re: [PATCH 00/16] Add initial USB support for the Renesas RZ/G3S SoC
-To: claudiu beznea <claudiu.beznea@tuxon.dev>
-Cc: vkoul@kernel.org, kishon@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, p.zabel@pengutronix.de, geert+renesas@glider.be, 
-	magnus.damm@gmail.com, gregkh@linuxfoundation.org, mturquette@baylibre.com, 
-	sboyd@kernel.org, yoshihiro.shimoda.uh@renesas.com, 
-	biju.das.jz@bp.renesas.com, linux-phy@lists.infradead.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240902125933.5742-1-00107082@163.com>
 
-On Sat, 31 Aug 2024 at 12:32, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> [...]
->
-> > >
-> > > If not, there are two other options that can be considered I think.
-> > > *) Using the genpd on/off notifiers, to really allow the consumer
-> > > driver of the reset-control to know when the PM domain gets turned
-> > > on/off.
-> > > **) Move the entire reset handling into the PM domain provider, as it
-> > > obviously knows when the domain is getting turned on/off.
-> >
-> > This option is what I've explored, tested on my side.
-> >
-> > I explored it in 2 ways:
-> >
-> > 1/ SYSC modeled as an individual PM domain provider (this is more
-> >    appropriate to how HW manual described the hardware) with this the PHY
-> >    reset DT node would have to get 2 PM domains handlers (one for the
-> >    current PM domain provider and the other one for SYSC):
-> >
-> > +               phyrst: usbphy-ctrl@11e00000 {
-> > +                       compatible = "renesas,r9a08g045-usbphy-ctrl";
-> > +                       reg = <0 0x11e00000 0 0x10000>;
-> > +                       clocks = <&cpg CPG_MOD R9A08G045_USB_PCLK>;
-> > +                       resets = <&cpg R9A08G045_USB_PRESETN>;
-> > +                       power-domain-names = "cpg", "sysc";
-> > +                       power-domains = <&cpg R9A08G045_PD_USB_PHY>, <&sysc
-> > R9A08G045_SYSC_PD_USB>;
-> > +                       #reset-cells = <1>;
-> > +                       status = "disabled";
-> > +
-> > +                       usb0_vbus_otg: regulator-vbus {
-> > +                               regulator-name = "vbus";
-> > +                       };
-> > +               };
-> > +
->
-> According to what you have described earlier/above, modelling the SYSC
-> as a PM domain provider seems like a better description of the HW to
-> me. Although, as I said earlier, if you prefer the reset approach, I
-> would not object to that.
+On Mon, Sep 02, 2024 at 08:59:33PM +0800, David Wang wrote:
+> When resume, a parent device with no pm callbacks
+> would have "is_prepared" and "direct_complete" bit
+> set, and skip the "fib" chance to unset "is_prepared"
+> in device_resume because of the direct_complete bit.
+> This will trigger a kernel warning when resume its child
+> For example, when suspend system with an USB webcam
+> opened, following warning would show up during resume:
+> 
+>  >usb 3-1.1: reset high-speed USB device number 4 using xhci_hcd
+>  >..
+>  >ep_81: PM: parent 3-1.1:1.1 should not be sleeping
+> 
+> The device parenting relationships are:
+> [usb 3-1.1] << [uvcvideo 3-1.1:1.1] << [ep_81].
+> When resume, since the virtual [uvcvideo 3-1.1:1.1] device
+> has no pm callbacks, it would not clear "is_prepared"
+> once set.  Then, when resume [ep_81], pm module would
+> yield a warn seeing [ep_81]'s parent [uvcvideo 3-1.1:1.1]
+> having "is_prepared".
+> 
+> Do not set "is_prepared" for virtual devices having
+> no pm callbacks can clear those kernel warnings.
+> 
+> Signed-off-by: David Wang <00107082@163.com>
+> ---
+>  drivers/base/power/main.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
-Following the discussion I believe I should take this back. If I
-understand correctly, SYSC signal seems best to be modelled as a
-reset.
+What commit id does this fix?
 
- Although, it looks like the USB PM domain provider should rather be
-the consumer of that reset, instead of having the reset being consumed
-by the consumers of the USB PM domain.
+thanks,
 
-Did that make sense?
-
-[...]
-
-Kind regards
-Uffe
+greg k-h
