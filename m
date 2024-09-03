@@ -1,39 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 059701CB52A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29CD51D223A;
 	Tue,  3 Sep 2024 21:58:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725400681; cv=none; b=crbR/TzPUT+IQPp/QKjzwTYon485jlIVPYL5PGKpT34GUfIiegLM3p4xg3GnasTpXoItBb75JqoVGHWnWmwgHe5CXxBvd1osiJcrvR9Kf82oBNnCoGO3uJm7cDR9f4IMdt0kXMUk/aKnDiLzku+PyN/pUIcS9goh82piBGsGrgo=
+	t=1725400681; cv=none; b=JhS6uWp0/HDU/cZBbbCfCHldZWKz+0Vnar58WMyKA+Ne6WjkooQuzlI1tR1JNRGD036cgTLUHai04KWGXBLh2vqPf3pIegzRU1qF78vjPRMCZiy9SXuJ1fdu0Lfq9UlHjGpaCuNDKLfWbbPGnWhyIdPoIuTOPvBpArZjfQaERKk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1725400681; c=relaxed/simple;
-	bh=7ay6BnCa/B67NWwvPBMg48FH7M8hObG2QEGAY191p0M=;
+	bh=bfkASTT+Az0WHoeeWuQspysfBtzPVt+pivV/Wg/6HLk=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=gINBOjOHXDL2+gLTd2aL1D5/yuaUbsD8mGQ0tqHA5msacrFjlAdsYmpOZ5li7p5Mhx6kfpuepSpZLh26YwHLAgY8e3E4uAuMRFCAhJpfgQfbhmHptltauZ56BaTukEMXKq++ASJtxkjalHFa+oFgLz/jJXo6OIVE57taBaKgrQA=
+	 MIME-Version:Content-Type; b=B6cwA6V3rDlEj+EcxpNojgtiYdWyBrzyJxhugjN156A3NYW3LCrgz5YejIccuq1pLunyFgMs4TFBn112fENH8QkpiZO6eFuDTrNUa4kT1RqU8Y5toEneqLDadCgfnCA/HQTta8EYE+gHNkap45x7tZP8mAHmRB5/qgmnnfXq1AU=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BF40C4CEC5;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CD69C4CEC9;
 	Tue,  3 Sep 2024 21:58:00 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 37B6B10604AA; Tue, 03 Sep 2024 23:57:58 +0200 (CEST)
+	id 473811060534; Tue, 03 Sep 2024 23:57:58 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
- MyungJoo Ham <myungjoo.ham@samsung.com>, 
- Chanwoo Choi <cw00.choi@samsung.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
- Vinod Koul <vkoul@kernel.org>, Kishon Vijay Abraham I <kishon@kernel.org>, 
- Hans de Goede <hdegoede@redhat.com>
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
- linux-phy@lists.infradead.org, 
- Enric Balletbo i Serra <eballetbo@kernel.org>
-In-Reply-To: <20240831142039.28830-1-hdegoede@redhat.com>
-References: <20240831142039.28830-1-hdegoede@redhat.com>
-Subject: Re: [PATCH 0/6] power: supply: Change usb_types from an array into
- a bitmask
-Message-Id: <172540067821.972525.3472424402904819549.b4-ty@collabora.com>
+To: linux-sunxi@lists.linux.dev, Chris Morgan <macroalpha82@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ devicetree@vger.kernel.org, linux-iio@vger.kernel.org, 
+ quentin.schulz@free-electrons.com, mripard@kernel.org, 
+ tgamblin@baylibre.com, aidanmacdonald.0x0@gmail.com, 
+ u.kleine-koenig@pengutronix.de, lee@kernel.org, samuel@sholland.org, 
+ jernej.skrabec@gmail.com, sre@kernel.org, wens@csie.org, 
+ conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org, lars@metafoo.de, 
+ jic23@kernel.org, jonathan.cameron@huawei.com, 
+ Chris Morgan <macromorgan@hotmail.com>
+In-Reply-To: <20240821215456.962564-1-macroalpha82@gmail.com>
+References: <20240821215456.962564-1-macroalpha82@gmail.com>
+Subject: Re: (subset) [PATCH V4 00/15] Add Battery and USB Supply for
+ AXP717
+Message-Id: <172540067828.972525.2485048078454932049.b4-ty@collabora.com>
 Date: Tue, 03 Sep 2024 23:57:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -46,32 +44,26 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.1
 
 
-On Sat, 31 Aug 2024 16:20:33 +0200, Hans de Goede wrote:
-> When support for the "charge_behaviour" property was added the list of
-> available values was made a bitmask in power_supply_desc.
+On Wed, 21 Aug 2024 16:54:41 -0500, Chris Morgan wrote:
+> From: Chris Morgan <macromorgan@hotmail.com>
 > 
-> "usb_types" is very similar in that:
-> 1. It is an enum
-> 2. The list of available values is stored in power_supply_desc
-> 3. When shown it shows all available values, with the active one surrounded
->    by square brackets.
+> Add support for monitoring the USB charger and battery charger on the
+> AXP717 PMIC. This required some driver refactoring of the axp20x USB
+> and battery charger as the AXP717 is somewhat different but can still
+> benefit from some common elements.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/6] power: supply: "usb_type" property may be written to
-      commit: 0d9af1e1c93b6a89f3fb6dcbafa5bc78892cb94f
-[2/6] power: supply: ucs1002: Adjust ucs1002_set_usb_type() to accept string values
-      commit: 83a4c42df75e8f6ff671fa9fbe7d4c79b98626de
-[3/6] power: supply: rt9467-charger: Remove "usb_type" property write support
-      commit: 03ec41c1670aedfbd126f541c4acbb8e69d4cd0c
-[4/6] power: supply: sysfs: Add power_supply_show_enum_with_available() helper
-      commit: a6456d43e9abebb5d7866e5edae3024188273306
-[5/6] power: supply: sysfs: Move power_supply_show_enum_with_available() up
-      commit: 322900ac7d82be0475466f81946b6484cd1936bd
-[6/6] power: supply: Change usb_types from an array into a bitmask
-      commit: 364ea7ccaef917a3068236a19a4b31a0623b561a
+[09/15] dt-bindings: power: supply: axp20x: Add AXP717 compatible
+        commit: e44c5691822962dc6f50793029bef5e71f5b0a62
+[10/15] dt-bindings: power: supply: axp20x: Add AXP717 compatible
+        commit: e44c5691822962dc6f50793029bef5e71f5b0a62
+[13/15] power: supply: axp20x_usb_power: Add support for AXP717
+        commit: 75098176d17fab88c06120b453b4b0d1641e2a41
+[14/15] power: supply: axp20x_battery: add support for AXP717
+        commit: 6625767049c2e0960ba9835392a6ef9143170be6
 
 Best regards,
 -- 
