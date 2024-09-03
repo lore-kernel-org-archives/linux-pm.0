@@ -1,58 +1,56 @@
 Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 927D31D54D2;
-	Tue,  3 Sep 2024 06:43:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 573B91D54D0;
+	Tue,  3 Sep 2024 06:43:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.154.123
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725345815; cv=none; b=PcKq9k+Obj6RwaQ0BMavgawDz9X1WW47bJ2bHoXB+JFrTidBFEhdiZrRUZAR23kD/t0Gh83R8omVfdmKtNS8bFDofK15kH/OPHC/vbNwO9QJepMhw71kM+mAX5zJOql2Nogly7zHkssCnLeQdZkp7a2N3oG8tTohX29biCvu3mY=
+	t=1725345816; cv=none; b=khrJ4JpZrKm52qhiz6LbyYXCQnRzsBaenFNDrWeof2JAK+Wzz2zGbmkzRGEcZS2QgGdDluTolKH/00H2ijnJ7omb1mII+Zs3sg6zEhxmRRTXmg8MXaKxoFY7ftQDtpwoe3U2shtrVw3m+lJGZqIomQ1x1WcAK+D39nu1QnwHq3M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725345815; c=relaxed/simple;
-	bh=yUcQ0ZEyongp+UxISXeLzvhZd4sbwkjQc1piPm4hlnw=;
+	s=arc-20240116; t=1725345816; c=relaxed/simple;
+	bh=/mWFDaWRq2GZ4n7XU0bnxeFOBI7HIo3HCLBzu1R86fI=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RifMDFvkB9iHodSX8UKh6MCAOBLpGluSpNqgy1NpvZqw3nam50zwAeAuNDpvGZwWpj57uI3wen6UW4YKH5WZOCYqMBw5hKRT4a1xRfA33njFWdTb7K6Q8ajdxQ+Zf9/CqVxYa2XQSjVDjWg5BfOiz45tvBFJF4E19wVb2sVCAGM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=PHSb5u7A; arc=none smtp.client-ip=68.232.154.123
+	 MIME-Version:Content-Type; b=kfBJE8UmDEIZ0WWAj+Vp4Cf75XHnw+b3K+5zVwAChhInEFSono7C20+WHfFW/fd+81hdR8ISiixMXXuiGHyF17mbEGqI+pBYt9B7Kp3TyFfWVfoCkMp/e3+7ivMmzs3e9RWusHYrdnMyd9CRm+MfYWMhT3HIoScWZ6Jxhkn+kus=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=XP70fSbh; arc=none smtp.client-ip=68.232.154.123
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="PHSb5u7A"
+	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="XP70fSbh"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1725345813; x=1756881813;
+  t=1725345815; x=1756881815;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=yUcQ0ZEyongp+UxISXeLzvhZd4sbwkjQc1piPm4hlnw=;
-  b=PHSb5u7AvH3gSpoiekjTnNOqjrp6fv0YwbJINADWC3/hcSoyjFXADTm+
-   TitxWcgRYtVdg3ciKs94f4OecFzHyP4aXYGSTFH8Doe6dq82nGNH0wtrx
-   fnPRy7w3kSGKlp/bX0QL+Xp6K4Y3xGMXXLNaX9S25FW9bm5akTmvPmJnh
-   lwkMaNINtGRiCW3vSYx6xUTIi5vW6PdHcyYuwURlagAldJ66Q1+qTh9n2
-   7jbDoKdeS3PGD636+fq9zGqTBls/i1LTZiepV7aHbJTUxAiSf4lK0+J9c
-   RLcoSSvzCegP2ciYRn74JupLHloXb2FK+dcqVvSkMy2XT7r3aWBIMVlDf
+  bh=/mWFDaWRq2GZ4n7XU0bnxeFOBI7HIo3HCLBzu1R86fI=;
+  b=XP70fSbhs67QRQvT8SIcLOqmg6KlusJ13dYVC8tYBdYzf5M63QHaUS7B
+   uf19tVzuloXrOu6md1DrwJvwvi2Vrc4QMzSAzimK4lXv9zD5S7V/4FOk4
+   V+M+lODE7Pz+eORS/UycBYMm9kpThPvn1QAJlxaBkmnnO4HniZKKrYSHK
+   tRkbCDCOyMg25/x1ozjxQzuE1dk9dAfOgZKfOSJ90MPHtH5QxIi96wiR9
+   KDXDClWtsrWR8EyDIKut/hvMeyMZKvz0lMeD2K8SsDgkRLgyyNRswlVrg
+   55KsHXfGSPxf1ilRBJBlEbuQmjIvz5VU0mepRKoUbG70MeqN8Zr3GJTGU
    w==;
 X-CSE-ConnectionGUID: lHuJBXFVRKq7Mozyeyt1yw==
-X-CSE-MsgGUID: /VwWH80ATamRRbsNGBBXvw==
+X-CSE-MsgGUID: jWSkA5t9SWOm9R/PHbT9kw==
 X-IronPort-AV: E=Sophos;i="6.10,197,1719903600"; 
-   d="scan'208";a="31877377"
+   d="scan'208";a="31877379"
 X-Amp-Result: SKIPPED(no attachment in message)
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa2.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 02 Sep 2024 23:43:32 -0700
+  by esa2.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 02 Sep 2024 23:43:33 -0700
 Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
  chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Mon, 2 Sep 2024 23:43:03 -0700
+ 15.1.2507.35; Mon, 2 Sep 2024 23:43:28 -0700
 Received: from che-lt-i67070.microchip.com (10.10.85.11) by
  chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server id
- 15.1.2507.35 via Frontend Transport; Mon, 2 Sep 2024 23:43:00 -0700
+ 15.1.2507.35 via Frontend Transport; Mon, 2 Sep 2024 23:43:20 -0700
 From: Varshini Rajendran <varshini.rajendran@microchip.com>
-To: <claudiu.beznea@tuxon.dev>, <sre@kernel.org>,
-	<nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
-	<linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+To: <sre@kernel.org>, <linux-pm@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
 CC: <varshini.rajendran@microchip.com>, Sebastian Reichel
-	<sebastian.reichel@collabora.com>
-Subject: [PATCH v7 05/12] power: reset: at91-poweroff: lookup for proper pmc dt node for sam9x7
-Date: Tue, 3 Sep 2024 12:12:59 +0530
-Message-ID: <20240903064259.49580-1-varshini.rajendran@microchip.com>
+	<sebastian.reichel@collabora.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>
+Subject: [PATCH v7 07/12] power: reset: at91-reset: add sdhwc support for sam9x7 SoC
+Date: Tue, 3 Sep 2024 12:13:19 +0530
+Message-ID: <20240903064319.49702-1-varshini.rajendran@microchip.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240903063913.48307-1-varshini.rajendran@microchip.com>
 References: <20240903063913.48307-1-varshini.rajendran@microchip.com>
@@ -65,27 +63,28 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-Use sam9x7 pmc's compatible to lookup for in the SHDWC driver.
+Add shutdown controller support for SAM9X7 SoC.
 
 Signed-off-by: Varshini Rajendran <varshini.rajendran@microchip.com>
 Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Reviewed-by: Claudiu Beznea <claudiu.beznea@tuxon.dev>
 ---
- drivers/power/reset/at91-sama5d2_shdwc.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/power/reset/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/reset/at91-sama5d2_shdwc.c b/drivers/power/reset/at91-sama5d2_shdwc.c
-index 959ce0dbe91d..2121d7e74e12 100644
---- a/drivers/power/reset/at91-sama5d2_shdwc.c
-+++ b/drivers/power/reset/at91-sama5d2_shdwc.c
-@@ -326,6 +326,7 @@ static const struct of_device_id at91_pmc_ids[] = {
- 	{ .compatible = "atmel,sama5d2-pmc" },
- 	{ .compatible = "microchip,sam9x60-pmc" },
- 	{ .compatible = "microchip,sama7g5-pmc" },
-+	{ .compatible = "microchip,sam9x7-pmc" },
- 	{ /* Sentinel. */ }
- };
- 
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index e3ebebc1f80d..dafb0126f683 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -34,7 +34,7 @@ config POWER_RESET_AT91_RESET
+ config POWER_RESET_AT91_SAMA5D2_SHDWC
+ 	tristate "Atmel AT91 SAMA5D2-Compatible shutdown controller driver"
+ 	depends on ARCH_AT91
+-	default SOC_SAM9X60 || SOC_SAMA5
++	default SOC_SAM9X60 || SOC_SAM9X7 || SOC_SAMA5
+ 	help
+ 	  This driver supports the alternate shutdown controller for some Atmel
+ 	  SAMA5 SoCs. It is present for example on SAMA5D2 SoC.
 -- 
 2.25.1
 
