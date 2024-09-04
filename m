@@ -1,132 +1,161 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f51.google.com (mail-io1-f51.google.com [209.85.166.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C37F1D935D;
-	Wed,  4 Sep 2024 12:39:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 255221D9337
+	for <linux-pm@vger.kernel.org>; Wed,  4 Sep 2024 12:41:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725453544; cv=none; b=FS+zmWZhNYpr1zHVhVxW+dSXQmr33A9x9w0dNsh25vz0RAcMTWRGsiCRdXNynJ3W8nWMYEw1S0jQUi/FHt+OZvt510iOhvwJVDwk+tkK0Y73rLq+3VlBICgBjpSEgvJMG9/Kzi7V3ezKYcYIudBiEHmZA0Q86eLVyw0FM0Lv6/s=
+	t=1725453679; cv=none; b=Opa5zaA6PVASL22bHQHf5R8WWBb9O+JXZj16gcwgwFVMVaNwZxfFa9kMOoaGfI14gmZefgcV1S/MMcaDTd/9JzV4lbo4ssswG1Yy8+TMD474KsS2mpUsmhofMOhPc6bO7dJF5WbNGPmTs17k+yBSWBcLmyPEhG3HzJ0n3u16GAE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725453544; c=relaxed/simple;
-	bh=+Jr9s9B+xtckA4J4nfQj1cPdaXghEqXj3TPABoG+KGg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=F9HN9ZeddgS56O7eq1kj7xMRBZTvbO08gKQ+oLkvmrGrcJMoq2P+CH4cSpc0v7LGmG/qylQkWqD2mymUUJCJXltjoEq+2Dgsuc7KFB4LnWCq0V+Bxj3CgeDKjM61Z+tSwV4cB0yH7tp9X549TUBvrPPItwrBhmn3+AYoIKeD6Kg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NiqVLHbS; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1725453679; c=relaxed/simple;
+	bh=1UISgvlWcv2Y7+TxNQcrzQtP8EfA+ViBiYZQ6iNHTfA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=k0SClYlqOGZ4i0c/Y9JESq3JKmB26tBqY+khmMq8JK0juStkLpR7yX5Bd9+XpB8lePX8CwsoF5gLMvKOSOEKS3T9Xu1UMXrekrP1XbhGDkf0YIDnomu7rRLFA7RXMI4VVmqu8Rq1qGnZyZR3US9IzzuLoIAq5SaAj/xVY2plCbQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=XWRTP3xp; arc=none smtp.client-ip=209.85.166.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NiqVLHbS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDEE2C4CEC2;
-	Wed,  4 Sep 2024 12:39:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1725453544;
-	bh=+Jr9s9B+xtckA4J4nfQj1cPdaXghEqXj3TPABoG+KGg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=NiqVLHbSMD2MIzszchmpc6rhR2fhp0GLyZTFuXmvUSiAKM7Y9UTO8nYHqsAHkMtY+
-	 nmdmxE2VQkAtJdXshmptwYH7tNf43gSzyrhhYS3JqHyRrmdiZJDbfpzfgibTiLV85S
-	 FX7qimyGCGi0Hiy4KbVnvNq/4Tv4aHFtLMqufeKMigOG+lsiN6t5WVqfXx+jt7K2Sv
-	 vn5CwPPU9iittVau1chuGCYgkEuQ6Az5uWA4s2ETruTak0Q84CzZok6klzrhHqnnGs
-	 ZiyriaUFtETWR4xhwhWICIY1S87EDnPtaHVCjJMzRBwciTNTQGINg18dsVrs7AqspD
-	 dA7iLa9McJIWA==
-Received: by mail-oa1-f45.google.com with SMTP id 586e51a60fabf-277f19ee2a2so1719469fac.1;
-        Wed, 04 Sep 2024 05:39:03 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCU31ZocLCtiCbv2FMln2IKtVmeEK+UDPDnLDGobDFf60lijVopn78X7b2KXfGTKtkvm70SiXr4BjHRNZTw=@vger.kernel.org, AJvYcCXC6AclNTycXOlvcDSZ/NYhljqa8ieWo8RxcW6sKEemgNfb5zMVV3+PMp6LYupawq0pDahj/BIQYD4=@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzs8HIj6sKmwxrg5KdRwnwxYg6e/jlRs7PeBr2jLwa0AtHwoRY8
-	2bgDg8ZLOeNk44vLBWx1F6qTwNSTsofp1FxIhX/w87vkspMljNWVNMWYLbKlBegrTq3n/e1SQ4N
-	wO6TwH+LO7+rxjAIv/qObbkCijcc=
-X-Google-Smtp-Source: AGHT+IFhGBnFxPcLvPZtSBwEOsfLlzoe0vk52Or7lW5q35KGkeYf6Lg9D+a9umxvopAzEQM12b7t7F8cT6gNu4/ro+U=
-X-Received: by 2002:a05:6871:8c15:b0:277:eb79:b4fb with SMTP id
- 586e51a60fabf-277eb79b8aamr8429970fac.1.1725453543333; Wed, 04 Sep 2024
- 05:39:03 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="XWRTP3xp"
+Received: by mail-io1-f51.google.com with SMTP id ca18e2360f4ac-82a1dadc2d2so263669339f.1
+        for <linux-pm@vger.kernel.org>; Wed, 04 Sep 2024 05:41:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1725453676; x=1726058476; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=qcq1FEBxbDWBsgRl9Is3K+I7b8WqhaMddxDrtzjKeh4=;
+        b=XWRTP3xpjnxCaL/kXZFPEpzYXiETBamAyfeQVmZu0JDZmIwgIVHa7zH07XfdamXfYt
+         YQ/9EiFm8+TIsRjTsjynbKZZjyW04ktmwiu1Xh+sbJE+3/vbXozqEmLNZTUXYXd6gn0c
+         iu/sBIfbWIRutqu2p0xCMhs/N205TviFv49Z4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725453676; x=1726058476;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=qcq1FEBxbDWBsgRl9Is3K+I7b8WqhaMddxDrtzjKeh4=;
+        b=UQ0PRjrsm9MDuyDjuYnDU0VhqgC6g3bRm/2fsz0ar9I5JqXgNitYCFsiSZERSwzTGB
+         zBqnXUexMfGMTHA3VcStw4b2aY/rPeSjvM3n0hdnVlbaca/L/iYcGD9ZhSZ6TNC8FAlV
+         +j59F2F88Jm8P/QZ6Bk5PKsXIrOs5EvTsBY2jlyOmk8gwfhLpRGgc+JSmQ26XjOQfzUS
+         DIAxCd52DtptY2UTKtBRW1rFicFvwdxGHziLzoJdi29HnMlQNsBxktJxNzsA8sGogTBR
+         qyZ/TT5JxYQMRpGVEm7f/A/TNUhIHMUFv/+lfBiFR3BaLarjR6cam0oBVaqpyFfuzCU0
+         n6fA==
+X-Gm-Message-State: AOJu0YydTk8+jqj34OKdTWwkpnPXseRknuBRQ2QkEb7yCURcpAEk3zyA
+	2D66543/DuoGBUuqpStXtSxdSGj/mh76EspNYZTvKatfwmG8uG8F+VSnSzgLIKE=
+X-Google-Smtp-Source: AGHT+IFSTJiOA1xhZqwjBQpQ3S0Ug1iDsLyH/VoJmMKqMb92HEU0RD9+LXZdHya9APtp2pz3k3Stjg==
+X-Received: by 2002:a05:6602:1609:b0:824:d9d1:e67b with SMTP id ca18e2360f4ac-82a3428cd59mr1922511739f.8.1725453676078;
+        Wed, 04 Sep 2024 05:41:16 -0700 (PDT)
+Received: from [192.168.1.128] ([38.175.170.29])
+        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-4ced2dcd722sm3160524173.27.2024.09.04.05.41.15
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 04 Sep 2024 05:41:15 -0700 (PDT)
+Message-ID: <ab9e3727-9978-4a30-8bff-e366fa5defc1@linuxfoundation.org>
+Date: Wed, 4 Sep 2024 06:41:14 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240903172520.3568731-1-andriy.shevchenko@linux.intel.com>
-In-Reply-To: <20240903172520.3568731-1-andriy.shevchenko@linux.intel.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 4 Sep 2024 14:38:52 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0h20btyh41vHsXgMDhDrhPGL-CJJNUjzLhgj7Szj3y6Qg@mail.gmail.com>
-Message-ID: <CAJZ5v0h20btyh41vHsXgMDhDrhPGL-CJJNUjzLhgj7Szj3y6Qg@mail.gmail.com>
-Subject: Re: [PATCH v1 1/1] Documentation: PM: Discourage use of deprecated macros
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Sakari Ailus <sakari.ailus@linux.intel.com>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/4] Add SWIG Bindings to libcpupower
+To: "John B. Wyatt IV" <jwyatt@redhat.com>
+Cc: linux-pm@vger.kernel.org, Thomas Renninger <trenn@suse.com>,
+ Shuah Khan <shuah@kernel.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ John Kacur <jkacur@redhat.com>, Tomas Glozar <tglozar@redhat.com>,
+ Arnaldo Melo <acme@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "John B. Wyatt IV" <sageofredondo@gmail.com>,
+ Shuah Khan <skhan@linuxfoundation.org>
+References: <20240827062438.71809-1-jwyatt@redhat.com>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <20240827062438.71809-1-jwyatt@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 3, 2024 at 7:25=E2=80=AFPM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
->
-> The Documentation refers to some deprecated macros.
-> Update those parts accordingly.
->
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  Documentation/power/pci.rst        | 11 +++++------
->  Documentation/power/runtime_pm.rst |  4 ++--
->  2 files changed, 7 insertions(+), 8 deletions(-)
->
-> diff --git a/Documentation/power/pci.rst b/Documentation/power/pci.rst
-> index e2c1fb8a569a..9ebecb7b00b2 100644
-> --- a/Documentation/power/pci.rst
-> +++ b/Documentation/power/pci.rst
-> @@ -979,18 +979,17 @@ subsections can be defined as a separate function, =
-it often is convenient to
->  point two or more members of struct dev_pm_ops to the same routine.  The=
-re are
->  a few convenience macros that can be used for this purpose.
->
-> -The SIMPLE_DEV_PM_OPS macro declares a struct dev_pm_ops object with one
-> +The DEFINE_SIMPLE_DEV_PM_OPS() declares a struct dev_pm_ops object with =
-one
->  suspend routine pointed to by the .suspend(), .freeze(), and .poweroff()
->  members and one resume routine pointed to by the .resume(), .thaw(), and
->  .restore() members.  The other function pointers in this struct dev_pm_o=
-ps are
->  unset.
->
-> -The UNIVERSAL_DEV_PM_OPS macro is similar to SIMPLE_DEV_PM_OPS, but it
-> -additionally sets the .runtime_resume() pointer to the same value as
-> -.resume() (and .thaw(), and .restore()) and the .runtime_suspend() point=
-er to
-> -the same value as .suspend() (and .freeze() and .poweroff()).
-> +The DEFINE_RUNTIME_DEV_PM_OPS() is similar to DEFINE_SIMPLE_DEV_PM_OPS()=
-, but it
-> +additionally sets the .runtime_resume() pointer to pm_runtime_force_resu=
-me()
-> +and the .runtime_suspend() pointer to pm_runtime_force_suspend().
->
-> -The SET_SYSTEM_SLEEP_PM_OPS can be used inside of a declaration of struc=
-t
-> +The SYSTEM_SLEEP_PM_OPS() can be used inside of a declaration of struct
->  dev_pm_ops to indicate that one suspend routine is to be pointed to by t=
-he
->  .suspend(), .freeze(), and .poweroff() members and one resume routine is=
- to
->  be pointed to by the .resume(), .thaw(), and .restore() members.
-> diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/run=
-time_pm.rst
-> index 5c4e730f38d0..53d1996460ab 100644
-> --- a/Documentation/power/runtime_pm.rst
-> +++ b/Documentation/power/runtime_pm.rst
-> @@ -811,8 +811,8 @@ subsystem-level dev_pm_ops structure.
->
->  Device drivers that wish to use the same function as a system suspend, f=
-reeze,
->  poweroff and runtime suspend callback, and similarly for system resume, =
-thaw,
-> -restore, and runtime resume, can achieve this with the help of the
-> -UNIVERSAL_DEV_PM_OPS macro defined in include/linux/pm.h (possibly setti=
-ng its
-> +restore, and runtime resume, can achieve similar behaviour with the help=
- of the
-> +DEFINE_RUNTIME_DEV_PM_OPS() defined in include/linux/pm_runtime.h (possi=
-bly setting its
->  last argument to NULL).
->
->  8. "No-Callback" Devices
-> --
+On 8/27/24 00:24, John B. Wyatt IV wrote:
+> SWIG is a tool packaged in Fedora and other distros that can generate
+> bindings from C and C++ code for several languages including Python,
+> Perl, and Go. Providing bindings for scripting languages is a common feature
+> to make use of libraries more accessible to more users and programs. My team
+> specifically wants to expand the features of rteval. rteval is a Python program
+> used to measure real time performance. We wanted to test the effect of enabling
+> some levels of idle-stat to see how it affects latency, and didn't want to
+> reinvent the wheel. Since SWIG requires the .o files created by libcpupower at
+> compilation it makes sense to include this in the cpupower directory so that
+> others can make use of them.
+> 
+> The V2 of this patchset includes:
+> * the full definition of libcpupower headers that is needed for the bindings
+> * dummy implementation in C of a function listed in the header of libcpupower
+> (requested by Shuah Khan)
+> * test_raw_pylibcpupower.py demonstrates an example of using the bindings
+> * adding myself and John Kacur to the cpupower section of the maintainers file
+> (requested by Shuah Khan)
+> * addressed review comments about doc, makefile, and maintainers file
+> * small style and other fixes
+> 
+> The name raw_pylibcpupower is used because a wrapper `pylibcpupower` may be
+> needed to make the bindings more 'pythonic' in the future. The bindings folder
+> is used because Go or Perl bindings may be useful for other users in the
+> future.
+> 
+> Note that while SWIG itself is GPL v3+ licensed; the resulting output, the
+> bindings code, has the same license as the .o files used to generate the
+> bindings (GPL v2 only). Please see
+> https://swig.org/legal.html
+> and
+> https://lore.kernel.org/linux-pm/Zqv9BOjxLAgyNP5B@hatbackup/#t
+> for more details on the license.
+> 
+> Sincerely,
+> John Wyatt
+> Software Engineer, Core Kernel
+> Red Hat
+> 
+> John B. Wyatt IV (4):
+>    Add SWIG bindings files for libcpupower
+>    Implement dummy function for SWIG to accept the full library
+>      definitions
+>    Include test_raw_pylibcpupower.py
+>    MAINTAINERS: Add Maintainers for SWIG Python bindings
+> 
+>   MAINTAINERS                                   |   3 +
+>   .../power/cpupower/bindings/python/.gitignore |   8 +
+>   tools/power/cpupower/bindings/python/Makefile |  31 +++
+>   tools/power/cpupower/bindings/python/README   |  59 +++++
+>   .../bindings/python/raw_pylibcpupower.i       | 247 ++++++++++++++++++
+>   .../bindings/python/test_raw_pylibcpupower.py |  42 +++
+>   tools/power/cpupower/lib/powercap.c           |   8 +
+>   7 files changed, 398 insertions(+)
+>   create mode 100644 tools/power/cpupower/bindings/python/.gitignore
+>   create mode 100644 tools/power/cpupower/bindings/python/Makefile
+>   create mode 100644 tools/power/cpupower/bindings/python/README
+>   create mode 100644 tools/power/cpupower/bindings/python/raw_pylibcpupower.i
+>   create mode 100755 tools/power/cpupower/bindings/python/test_raw_pylibcpupower.py
+> 
 
-Applied as 6.12 material, thanks!
+Couple of things to address:
+
+1. I noticed none of the patches have the subsystem prefix:
+   pm:cpupower is the right prefix for patch subject for all
+   the patches except the MAINTAINERS file
+
+I will pull the fix  "Implement dummy function for SWIG to accept
+the full library" Patch 2 in your series.
+
+I want this subject changed to just fix as it is a problem irrespective
+of SWIG - we have a missing function. Subject would be as follows:
+
+""pm:cpupower: Add missing powercap_set_enabled() stub function"
+
+Make this the first patch in the series. I will send this up for
+Linux 6.11-rc7 or Linux 6.12-rc1
+
+Depending on how the timelines for merge window work, expect the
+series to land in Linux 6.13-rc1. I would prefer to delay it anyway
+so we can get some soaking in next.
+
+thanks,
+-- Shuah
