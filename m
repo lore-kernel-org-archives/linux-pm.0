@@ -1,154 +1,187 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AC491386C9;
-	Wed,  4 Sep 2024 06:32:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8746013B295;
+	Wed,  4 Sep 2024 06:33:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725431523; cv=none; b=IlOswsQ5FI/nLeOVifisBQDDUDc8ES7ikyy9ganP7xoyFzoNOG/4ybWWC+0Vs7nUS+OI6wBl9TvGq/Nxl3jKf2PmP8U0JkIXfe2U0mh5xFF56WXXPHsVIvKlo7xPxXCD5tZCGBilau6tQ1acDQerwkcz994JifRO8V1Ea85GjQM=
+	t=1725431611; cv=none; b=XN6yRPOblunm4b0SJmptMK84TTuzT1k4cY7RqLiGZ5RH/gDIFdqs+VmNWTKA2bLWbfc8YrOLWZvf3WoJ+UikVV7rwmsN2qY2J9pcuQxQ9MTRcZpC17kBVsSAxbJvBoqVVtEKS/sFw4FQCRAQPGfr0DBTADVSDL0CWOvTLTWYH38=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725431523; c=relaxed/simple;
-	bh=p6zo3cD/MS1jSLLM7Rm6ErwANFF4wNKY4HrupXO3AC4=;
+	s=arc-20240116; t=1725431611; c=relaxed/simple;
+	bh=2QJoXB3gfnQ97DNZAs6pSA6MA43OuBZVAKZyeRJkbKY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oxnpVSHFiDBhD2LSVvQ/FRTsWjEe2t8vedWv7lU7PNAS3PISoOKFRTNaKRROnor1ojGMjlXZHnVIW8W8yUw2cFY7XMGx7d7F8QY2qkV7TCkTx6fSFfl3GLS7M6CSK5FHiNro3z9cgoJ9SlHDP1KXfkieSmGKsex11y6L53Cj5RY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c/oM1lba; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=VsvtxpLMR6gbPXRQwimVgDOJvIkou/mpwlsSq2TkK6POrrSyBav0rg8H+IRZc6qUB36HZErJ6Edj/ZnjnBLAblPTIdzTVNmH9hEqVl42TVIWKYUPExtFOUfq5hxK2CywpRmTxN6dCDqQQ7OSIUIULmME4JtTTDtBOfnLvrVvKIE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=BDyxoDz8; arc=none smtp.client-ip=192.198.163.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c/oM1lba"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C0E96C4CEC2;
-	Wed,  4 Sep 2024 06:32:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1725431522;
-	bh=p6zo3cD/MS1jSLLM7Rm6ErwANFF4wNKY4HrupXO3AC4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=c/oM1lbaBVfW8xXoJk39xPrtyv63jVjNd+jQW/BBZ8Olrr/Ckv13ZEx+pbWDitVVX
-	 vcHd/Vb7oRDU2jghbU8t8bEYWPSumVPnu/R2jezkCn6jTJTybUPPwuNcAQQ2onvGCb
-	 bLwY54Jw6/e5Ce/23soMP9bK0FUYTRCW6S6q7jaotdQ2t0C3MOZPwNSffsLgD8CWvJ
-	 qXnhZMAcito18IBiiukvpF9NTVG/L2Yv9iN62s20GtdP91KXmI0/7Q5tliR/L9hDGN
-	 7y1w3JO6cuGNIKYljzgxLLPAsOaQTgR1w14laJ/AMxidj8U20oWlZk3nFEW6XqyUrC
-	 A9HEc92l1wbVg==
-Date: Wed, 4 Sep 2024 08:31:59 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Nikunj Kela <quic_nkela@quicinc.com>
-Cc: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, 
-	krzk+dt@kernel.org, conor+dt@kernel.org, rafael@kernel.org, viresh.kumar@linaro.org, 
-	herbert@gondor.apana.org.au, davem@davemloft.net, sudeep.holla@arm.com, andi.shyti@kernel.org, 
-	tglx@linutronix.de, will@kernel.org, robin.murphy@arm.com, joro@8bytes.org, 
-	jassisinghbrar@gmail.com, lee@kernel.org, linus.walleij@linaro.org, amitk@kernel.org, 
-	thara.gopinath@gmail.com, broonie@kernel.org, cristian.marussi@arm.com, 
-	rui.zhang@intel.com, lukasz.luba@arm.com, wim@linux-watchdog.org, linux@roeck-us.net, 
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, arm-scmi@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, iommu@lists.linux.dev, 
-	linux-gpio@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, 
-	linux-watchdog@vger.kernel.org, kernel@quicinc.com, quic_psodagud@quicinc.com, 
-	Praveen Talari <quic_ptalari@quicinc.com>
-Subject: Re: [PATCH v2 15/21] dt-bindings: i2c: document support for SA8255p
-Message-ID: <xtguaoof7iblrtd2idsa2k4ml64qkttgliyijbeqw5thkdcbx3@jnm75a4wmbqd>
-References: <20240828203721.2751904-1-quic_nkela@quicinc.com>
- <20240903220240.2594102-1-quic_nkela@quicinc.com>
- <20240903220240.2594102-16-quic_nkela@quicinc.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="BDyxoDz8"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1725431610; x=1756967610;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=2QJoXB3gfnQ97DNZAs6pSA6MA43OuBZVAKZyeRJkbKY=;
+  b=BDyxoDz8uNtPyiJKPJm3ZtSBIH/LKiuMCGsjg2UrOImkX+nYVO5FW/ib
+   tce7NeQoWDE2lxgwIRfomkhXMrksZRgZR1MKclhymeppIDJar2bQFqwx6
+   qZU6MsRcLFEyBU15xsp3CLmqgXuB6wqDsbZFCIXEKneamx2Nwxx+bwoX/
+   RWUvFV2tDOAUuOFpqrjrnsuI41N4TLwHkWHCPd6N3j7rwsulcdePVjb7J
+   RewA5qG0h0ptPH/RNHAM4E0ZG364oeuF7tmdC/d171Sobw3bsFgPngQNm
+   0SdyG49j20OM3+uHBeFL2vfHB/kKE899jAP8AgpT8Efk+MSdTQSKm68K2
+   A==;
+X-CSE-ConnectionGUID: l0kSRhBERfGv6Jvg8xxScw==
+X-CSE-MsgGUID: PBKWuP17QbmBISSdzDMp/w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11184"; a="24221593"
+X-IronPort-AV: E=Sophos;i="6.10,201,1719903600"; 
+   d="scan'208";a="24221593"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Sep 2024 23:33:29 -0700
+X-CSE-ConnectionGUID: MohK5h6LSF+MqxH9bjTRFQ==
+X-CSE-MsgGUID: 3lOQ/p2OTK6TfcS/+aKW+g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,201,1719903600"; 
+   d="scan'208";a="69981830"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+  by orviesa005.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Sep 2024 23:33:29 -0700
+Date: Tue, 3 Sep 2024 23:39:15 -0700
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: x86 Maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Ricardo Neri <ricardo.neri@intel.com>,
+	Tim Chen <tim.c.chen@intel.com>
+Subject: Re: [PATCH v3 2/2] cpufreq: intel_pstate: Set asymmetric CPU
+ capacity on hybrid systems
+Message-ID: <20240904063915.GA3674@ranerica-svr.sc.intel.com>
+References: <3310447.aeNJFYEL58@rjwysocki.net>
+ <1979653.PYKUYFuaPT@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240903220240.2594102-16-quic_nkela@quicinc.com>
+In-Reply-To: <1979653.PYKUYFuaPT@rjwysocki.net>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 
-On Tue, Sep 03, 2024 at 03:02:34PM -0700, Nikunj Kela wrote:
-> Add compatible representing i2c support on SA8255p.
+On Wed, Aug 28, 2024 at 01:48:10PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Clocks and interconnects are being configured in Firmware VM
-> on SA8255p, therefore making them optional.
+> Make intel_pstate use the HWP_HIGHEST_PERF values from
+> MSR_HWP_CAPABILITIES to set asymmetric CPU capacity information
+> via the previously introduced arch_set_cpu_capacity() on hybrid
+> systems without SMT.
 > 
-> CC: Praveen Talari <quic_ptalari@quicinc.com>
-> Signed-off-by: Nikunj Kela <quic_nkela@quicinc.com>
-> ---
->  .../bindings/i2c/qcom,i2c-geni-qcom.yaml      | 33 +++++++++++++++++--
->  1 file changed, 31 insertions(+), 2 deletions(-)
+> Setting asymmetric CPU capacity is generally necessary to allow the
+> scheduler to compute task sizes in a consistent way across all CPUs
+> in a system where they differ by capacity.  That, in turn, should help
+> to improve scheduling decisions.  It is also necessary for the schedutil
+> cpufreq governor to operate as expected on hybrid systems where tasks
+> migrate between CPUs of different capacities.
 > 
+> The underlying observation is that intel_pstate already uses
+> MSR_HWP_CAPABILITIES to get CPU performance information which is
+> exposed by it via sysfs and CPU performance scaling is based on it.
+> Thus using this information for setting asymmetric CPU capacity is
+> consistent with what the driver has been doing already.  Moreover,
+> HWP_HIGHEST_PERF reflects the maximum capacity of a given CPU including
+> both the instructions-per-cycle (IPC) factor and the maximum turbo
+> frequency and the units in which that value is expressed are the same
+> for all CPUs in the system, so the maximum capacity ratio between two
+> CPUs can be obtained by computing the ratio of their HWP_HIGHEST_PERF
+> values.  Of course, in principle that capacity ratio need not be
+> directly applicable at lower frequencies, so using it for providing the
+> asymmetric CPU capacity information to the scheduler is a rough
+> approximation, but it is as good as it gets.  Also, measurements
+> indicate that this approximation is not too bad in practice.
+> 
+> If the given system is hybrid and non-SMT, the new code disables ITMT
+> support in the scheduler (because it may get in the way of asymmetric CPU
+> capacity code in the scheduler that automatically gets enabled by setting
+> asymmetric CPU capacity) after initializing all online CPUs and finds
+> the one with the maximum HWP_HIGHEST_PERF value.  Next, it computes the
+> capacity number for each (online) CPU by dividing the product of its
+> HWP_HIGHEST_PERF and SCHED_CAPACITY_SCALE by the maximum HWP_HIGHEST_PERF.
+> 
+> When a CPU goes offline, its capacity is reset to SCHED_CAPACITY_SCALE
+> and if it is the one with the maximum HWP_HIGHEST_PERF value, the
+> capacity numbers for all of the other online CPUs are recomputed.  This
+> also takes care of a cleanup during driver operation mode changes.
+> 
+> Analogously, when a new CPU goes online, its capacity number is updated
+> and if its HWP_HIGHEST_PERF value is greater than the current maximum
+> one, the capacity numbers for all of the other online CPUs are
+> recomputed.
+> 
+> The case when the driver is notified of a CPU capacity change, either
+> through the HWP interrupt or through an ACPI notification, is handled
+> similarly to the CPU online case above, except that if the target CPU
+> is the current highest-capacity one and its capacity is reduced, the
+> capacity numbers for all of the other online CPUs need to be recomputed
+> either.
+> 
+> If the driver's "no_trubo" sysfs attribute is updated, all of the CPU
+> capacity information is computed from scratch to reflect the new turbo
+> status.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I don't know what to do with this patch. Using specific compatibles next
-to generic compatible is just wrong, although mistake was probably
-allowing generic compatible. The patch does not explain the differences
-in interface which would explain why devices are not compatible. In the
-same time my advice of separate binding was not followed, because maybe
-these devices are compatible? But then it should be expressed...
+A few minor comments below...
 
-You have entire commit msg to explain what and why.
+FWIW,
 
-> diff --git a/Documentation/devicetree/bindings/i2c/qcom,i2c-geni-qcom.yaml b/Documentation/devicetree/bindings/i2c/qcom,i2c-geni-qcom.yaml
-> index 9f66a3bb1f80..b477fae734b6 100644
-> --- a/Documentation/devicetree/bindings/i2c/qcom,i2c-geni-qcom.yaml
-> +++ b/Documentation/devicetree/bindings/i2c/qcom,i2c-geni-qcom.yaml
-> @@ -15,6 +15,7 @@ properties:
->      enum:
->        - qcom,geni-i2c
->        - qcom,geni-i2c-master-hub
-> +      - qcom,sa8255p-geni-i2c
->  
->    clocks:
->      minItems: 1
-> @@ -69,8 +70,6 @@ properties:
->  required:
->    - compatible
->    - interrupts
-> -  - clocks
-> -  - clock-names
->    - reg
->  
->  allOf:
-> @@ -81,6 +80,10 @@ allOf:
->            contains:
->              const: qcom,geni-i2c-master-hub
->      then:
-> +      required:
-> +        - clocks
-> +        - clock-names
+Reviewed-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Tested-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com> # scale invariance
 
-
-So it is required here?
-
-> +
->        properties:
->          clocks:
->            minItems: 2
-> @@ -100,7 +103,21 @@ allOf:
->            items:
->              - const: qup-core
->              - const: qup-config
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            const: qcom,sa8255p-geni-i2c
-> +    then:
-> +      required:
-> +        - power-domains
-> +
-
-And possible here? I assume with the same clocks? The same for
-interconnects - same values are valid?
-
->      else:
-> +      required:
-> +        - clocks
-> +        - clock-names
-
-And clocks are required again?
+[...]
 
 > +
->        properties:
->          clocks:
->            maxItems: 1
+> +static void hybrid_init_cpu_scaling(void)
 
-Eeee? So now all other variants have max 1 clock?
+Maybe renaming hybrid_init_cpu_scaling() as hybrid_init_cpu_capacity_scaling(),
+__hybrid_init_cpu_scaling() as __hybrid_init_cpu_capacity_scaling(), and
+hybrid_update_cpu_scaling() as hybrid_update_cpu_capacity_scaling()?
 
-Nope, this wasn't ever tested on real DTS.
+It would make the code easier to read.
 
-Best regards,
-Krzysztof
+> +{
+> +	bool disable_itmt = false;
+> +
+> +	mutex_lock(&hybrid_capacity_lock);
+> +
+> +	/*
+> +	 * If hybrid_max_perf_cpu is set at this point, the hybrid CPU capacity
+> +	 * scaling has been enabled already and the driver is just changing the
+> +	 * operation mode.
+> +	 */
+> +	if (hybrid_max_perf_cpu) {
+> +		__hybrid_init_cpu_scaling();
+> +		goto unlock;
+> +	}
+> +
+> +	/*
+> +	 * On hybrid systems, use asym capacity instead of ITMT, but because
+> +	 * the capacity of SMT threads is not deterministic even approximately,
+> +	 * do not do that when SMT is in use.
+> +	 */
+> +	if (hwp_is_hybrid && !sched_smt_active() && arch_enable_hybrid_capacity_scale()) {
+> +		__hybrid_init_cpu_scaling();
+> +		disable_itmt = true;
+> +	}
+> +
+> +unlock:
+> +	mutex_unlock(&hybrid_capacity_lock);
+> +
+> +	if (disable_itmt)
+> +		sched_clear_itmt_support();
 
+It may be worth adding a comment here saying that the sched domains will
+rebuilt to disable asym packing and enable asym capacity.
+ 
