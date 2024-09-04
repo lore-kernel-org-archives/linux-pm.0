@@ -1,30 +1,29 @@
-Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [195.130.132.51])
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [195.130.132.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEB571DCB2C
-	for <linux-pm@vger.kernel.org>; Wed,  4 Sep 2024 14:31:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87FD31DCB38
+	for <linux-pm@vger.kernel.org>; Wed,  4 Sep 2024 14:31:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725460268; cv=none; b=KXXFEtNEwDm11Ebjd8is/dwxdbYYHBAJDDdXvSikVquH2FLdBEGjZBlEg14Qq6mv7Fi2CA1/WRoL2s1xs7efC+Q6zVUBFXwxRwZ2d9mNqzbVqs+UfLPOVMdoOu/qedXZQdjMa+hgR7zd4sNsh9yWN1Ut4QpD19F3u4vXuJPe2ck=
+	t=1725460270; cv=none; b=Ym55xM6dFczY+wJYpZUKVEqWt22mGxEI43VkHjjQaoVdLDxx0+u53jSXxyX5vtM9WgoN7O9l0aXe+NO5zcvozUhGdi6+ZZegcjemdUdYwHG79n1LD943vBW3BtuM/fmTnp7yj9c4KSUH/28+EZCoX0THwhDYb1u5xpqviHCwYi8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725460268; c=relaxed/simple;
-	bh=PvIExtq/8JZw+HWVjYfMbNbIIf4VpurgjJG5pvlFfk8=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=q1zyS93tYp0s9ZAu0S4KOtVz9GushvCSkpOv/a3wqxZT6AhQh3IqnQCW0YVrdLLsNzTIGCzgJXD6xWivsHOuU+yQmRBNGoCRgSIOOd5OvpNEx1PQ0s9IcTFlOmawgiL3LW7j7LTcwNyUD7G3bBrRp4CkcLow6cBLZllXVeH3GNA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.51
+	s=arc-20240116; t=1725460270; c=relaxed/simple;
+	bh=P467mDUfuNo+4sLO1U0OGgnTSxfzQa2d9CPIR8FgBtk=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=i8QWUWX3Ga0PJGQ8/8T5caQ57P7QBKO8RWnc4Z5dSSTGQvDiAb5puTtl8gX2ZFDP86hGi8kAUMEnma4zjvs4mx6eYoTL7CLKNpEYab4K/6OrWx5/gZ28ZPdk/jlvulhDBFI0ifbHq5XdNLNBCjxI+TTviMyzMibzNqaNrtqWIJc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:ef52:68c5:eac1:f6b5])
-	by baptiste.telenet-ops.be with cmsmtp
-	id 8EWv2D00A3m5in101EWv7F; Wed, 04 Sep 2024 16:30:58 +0200
+	by andre.telenet-ops.be with cmsmtp
+	id 8EWv2D00J3m5in101EWvaT; Wed, 04 Sep 2024 16:30:59 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1slr24-0028JT-If;
+	id 1slr24-0028JM-H1;
 	Wed, 04 Sep 2024 16:30:55 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1slr27-004MyI-AF;
+	id 1slr27-004My7-6y;
 	Wed, 04 Sep 2024 16:30:55 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ulf Hansson <ulf.hansson@linaro.org>,
@@ -39,12 +38,10 @@ Cc: linux-pm@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 3/4] pmdomain: core: Move mode_status_str()
-Date: Wed,  4 Sep 2024 16:30:47 +0200
-Message-Id: <18ed6fb2bb92860f3af1bc7e5e4a01e9dacf2126.1725459707.git.geert+renesas@glider.be>
+Subject: [PATCH 0/4] pmdomain: core: Debug summary improvements
+Date: Wed,  4 Sep 2024 16:30:44 +0200
+Message-Id: <cover.1725459707.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1725459707.git.geert+renesas@glider.be>
-References: <cover.1725459707.git.geert+renesas@glider.be>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -53,47 +50,36 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Move mode_status_str() below perf_status_str(), to make declaration
-order match calling order of the various *_status_str() helpers.
+	Hi Ulf,
 
-While at it, add a blank line for consistency among the three helpers.
+This patch series improves the table formatting in the pm_genpd_summary
+file in debugfs.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/pmdomain/core.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+The first two patches are fixes and cleanups for commits in upstream.
+On systems where performance_state is always zero, the first three
+patches have no visible impact.
 
-diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-index 912bdc131fc0e2b1..2233daaa4168be14 100644
---- a/drivers/pmdomain/core.c
-+++ b/drivers/pmdomain/core.c
-@@ -3311,21 +3311,22 @@ static void rtpm_status_str(struct seq_file *s, struct device *dev)
- 	seq_printf(s, "%-25s  ", p);
- }
- 
--static void mode_status_str(struct seq_file *s, struct device *dev)
-+static void perf_status_str(struct seq_file *s, struct device *dev)
- {
- 	struct generic_pm_domain_data *gpd_data;
- 
- 	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
- 
--	seq_printf(s, "%9s", gpd_data->hw_mode ? "HW" : "SW");
-+	seq_printf(s, "%-10u  ", gpd_data->performance_state);
- }
- 
--static void perf_status_str(struct seq_file *s, struct device *dev)
-+static void mode_status_str(struct seq_file *s, struct device *dev)
- {
- 	struct generic_pm_domain_data *gpd_data;
- 
- 	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
--	seq_printf(s, "%-10u  ", gpd_data->performance_state);
-+
-+	seq_printf(s, "%9s", gpd_data->hw_mode ? "HW" : "SW");
- }
- 
- static int genpd_summary_one(struct seq_file *s,
+Thanks for your comments!
+
+Geert Uytterhoeven (4):
+  pmdomain: core: Harden inter-column space in debug summary
+  pmdomain: core: Fix "managed by" alignment in debug summary
+  pmdomain: core: Move mode_status_str()
+  pmdomain: core: Reduce debug summary table width
+
+ drivers/pmdomain/core.c | 21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
+
 -- 
 2.34.1
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
