@@ -1,71 +1,64 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8280A145B1B
-	for <linux-pm@vger.kernel.org>; Wed,  4 Sep 2024 06:50:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AC026BFA3;
+	Wed,  4 Sep 2024 07:19:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725432636; cv=none; b=mW3f5GYIuMoVxNFEk66cAEFEBhxqOIHq1+A0WbcfZkIsLycB4r/kpZ8DM0UQ6XIBkDCX4qubBVUxQDuCwnCIQlis+OItGcVlW+gb8YEDyNLgusiwYJ0c38YiWLiTQ1HSzrmDbQW64YJ+/0TFKFVf2MDBa6eZMasp5eW8y6lx3BA=
+	t=1725434391; cv=none; b=hPrUPxj72Gw3SbHHj1WcZxWYYsLTmegFMarFf5WTCmWODXrml2twkNv8bX7AoWZq1/IHOgyJ0GmZvkcg0IEEoX10abEL6VuvhYI4o5IQuFo5svpYfCS7/NBzXNqHYIFhxHs268h5G516ASdBrDfXwHoFnoaWCNkblZEiwTXw0E8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725432636; c=relaxed/simple;
-	bh=HpLRa4Rvt/+aAqe7IwAUdh3ViPIKY5BzBPQgUSEG2Jw=;
+	s=arc-20240116; t=1725434391; c=relaxed/simple;
+	bh=6/0kN+PdIoKIhYAPwW3m9WLHBECcU7HjeWWLYgFJdLk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=uX+xRcmej6sEz2G4Tqw+AHWCMlGH2puEiabjuYOdjoujp90x6O0RL6/RkxW7JEau7n5i1tTioULP7nnj+Uqg6SJssOfq3hCXSNACiJ4vZ5cDNxqEIyjbeoJw5wdqw6+cb3eaGCRGI27Pfg8Bm0sjOTaJg41kWoHyfzntx8PuQDQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=S4JB0Bls; arc=none smtp.client-ip=209.85.214.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=HpyyqLDvCqr0hk5tgWtGEK+NUDI5aQscxJvOv6cx424/1tF8HqgvyjiPrI5N5GBARiFwktLxnR8hzXc3rrfpN5Mp+W3xcs6TIVTmtZsEcQ2PaFYYEYqqlBt6NI2OhKUI3DOR10fajXgx0zDsO7q3MQmlJrYByN9acYtTe8LGb04=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ceuc2Y0t; arc=none smtp.client-ip=192.198.163.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="S4JB0Bls"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-206aee4073cso6044025ad.1
-        for <linux-pm@vger.kernel.org>; Tue, 03 Sep 2024 23:50:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1725432635; x=1726037435; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=en2oD5qDU2tZ2yKUFz47PNROzUaBtikH/wne/ueokiQ=;
-        b=S4JB0Blsry9wagRKRzgguTMN2QY1C70Yw37rOuspCFfPQV9yA8t6cagvZOK5MEiF/k
-         jZgjhMr3yLlz69MGdhn+HQxSYG0dX3HPyK1yodFMviKstagw7jR19udvyR8RQwhaBPNn
-         mALm8L3gtQMHbpDS1ZxsLJLzOWueynR9hveQ2S4GeoeQDTb0NQAlML10V0JtQEJZ1HYi
-         6DTiXGMENEqfEK8vMGUOS3qm3MofE4NGJAseaRic4/XHanZhgEE6VN4gTa/7YEUp407Y
-         58HulOvoqeDFl8gvHbNSgk6cluVYbO57OFVfoySmq6G7wrV1W1L6nF+yqXEusOsEg8Kv
-         nncw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725432635; x=1726037435;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=en2oD5qDU2tZ2yKUFz47PNROzUaBtikH/wne/ueokiQ=;
-        b=RdzTspEh9ClhOCeyQ1v1IOX+2Pkj7rFh4/2TdCdpbm86Dq6PaqVvCBpxj1/sdFI98B
-         sdHlBjXsBipWprNWy2+kn/dXgQsRe+8Oxht3Bd4tnOax03q6gi5wPqh8v6kqpJJ1Kikb
-         kSjlSRDnfGiKqszNwR36bbLEpCHXnKGgBXeSiap+TndTUlGg5OKlkRfZTMlXsQfqDTWk
-         r5L1l3Z/XPCw8PLN6rWyCbgQyHCI1eS4aFaPP9EtspGLY7x+vCA3mgoVfxdqMH4uIKM1
-         CswTQQA4ZNGl84pB2RseFlFk0HXsuh8gd8LtBonpQrTZ2K+HF2g+zcA5cQFLJCnlbmPf
-         mQOQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUKpu1CN6HOKCieBlwpJ1WxHnpmMShlPVuYvPx2BycDH79dRAbmqcfoHmB339ZM35dZbG/luyocrA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzVLWcjTsvMaZk5TdE0ONB/lyIwy+QO8TYnUendhWNP9sQOuouK
-	NHjem/2k3J+823Wzn25M1eS7EjMKsBrj3/e3kv6nkGzqot/PrAZYhF38ZN8+/8w=
-X-Google-Smtp-Source: AGHT+IHuXkPrjnRxHzKUt+c3fsqI1O6+trvX9+ZrTiAv83zDvIGejHvXzro9xkUdyvXrL9OT3DDtvw==
-X-Received: by 2002:a17:902:ebc5:b0:1fb:4a68:b7bf with SMTP id d9443c01a7336-20546b35bd7mr151754375ad.45.1725432634728;
-        Tue, 03 Sep 2024 23:50:34 -0700 (PDT)
-Received: from localhost ([122.172.83.237])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-206ae913674sm7704755ad.51.2024.09.03.23.50.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Sep 2024 23:50:34 -0700 (PDT)
-Date: Wed, 4 Sep 2024 12:20:32 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Dhruva Gole <d-gole@ti.com>
-Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-	Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	Vignesh Raghavendra <vigneshr@ti.com>, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] dt-bindings: opp: operating-points-v2-ti-cpu: Update
- maintainers
-Message-ID: <20240904065032.zetnlmzbswae44mu@vireshk-i7>
-References: <20240903-b4-opp-dt-binding-fix-v1-0-f7e186456d9f@ti.com>
- <20240903-b4-opp-dt-binding-fix-v1-2-f7e186456d9f@ti.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ceuc2Y0t"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1725434390; x=1756970390;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=6/0kN+PdIoKIhYAPwW3m9WLHBECcU7HjeWWLYgFJdLk=;
+  b=ceuc2Y0tkiEq017xjVkN65/7PQFF0UF4K9+4F3mySKKiDvAe1sz9MRWB
+   lmAuDIv/i7USwUx4Tosz8qE9IL8LEVhudbYVJNEnong8ZYEjjLSmAu8FK
+   8F7HA1Wjm1UXYjMiWaKcakBNJQ25OBggYgDvQyHe9Uun3nf8rqFQbR9TZ
+   QIQxV5h3GItMpAFzf0mG2cDIraucl03QvtvzppWbATgXJ0ouVSiqvXAmb
+   VeyHmRIJ7HvHcROYV/T983s+xX88Dh3s/1ZvxE79sphy9MREuQh9U1Gy4
+   3rdxdz7pROY0cDeG0YuHqvxBYd0ZMKdVrvv3XrBKbLvvLiOekMB4Bnmf5
+   w==;
+X-CSE-ConnectionGUID: y0JUjgwQSpKr7xYgDJxl2A==
+X-CSE-MsgGUID: wrb1Q/NSSmm8j7r6z4osAQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11184"; a="23951180"
+X-IronPort-AV: E=Sophos;i="6.10,201,1719903600"; 
+   d="scan'208";a="23951180"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2024 00:19:35 -0700
+X-CSE-ConnectionGUID: fFcvEoGVQV2cPP7W3TWGXg==
+X-CSE-MsgGUID: A3eARBvSRW2zvVNSl5axkA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,201,1719903600"; 
+   d="scan'208";a="65901057"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+  by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2024 00:19:34 -0700
+Date: Wed, 4 Sep 2024 00:25:21 -0700
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: x86 Maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Ricardo Neri <ricardo.neri@intel.com>,
+	Tim Chen <tim.c.chen@intel.com>
+Subject: Re: [PATCH v3 0/2] x86 / intel_pstate: Set asymmetric CPU capacity
+ on hybrid systems
+Message-ID: <20240904072521.GA3757@ranerica-svr.sc.intel.com>
+References: <3310447.aeNJFYEL58@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -74,18 +67,98 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240903-b4-opp-dt-binding-fix-v1-2-f7e186456d9f@ti.com>
+In-Reply-To: <3310447.aeNJFYEL58@rjwysocki.net>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 
-On 03-09-24, 16:00, Dhruva Gole wrote:
-> Update the maintainers entry since I will be taking over this file from
-> now.
+On Wed, Aug 28, 2024 at 01:45:00PM +0200, Rafael J. Wysocki wrote:
+> Hi Everyone,
 > 
-> Signed-off-by: Dhruva Gole <d-gole@ti.com>
-> ---
->  Documentation/devicetree/bindings/opp/operating-points-v2-ti-cpu.yaml | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> This is an update of
+> 
+> https://lore.kernel.org/linux-pm/4941491.31r3eYUQgx@rjwysocki.net/
+> 
+> which was an update of
+> 
+> https://lore.kernel.org/linux-pm/4908113.GXAFRqVoOG@rjwysocki.net/
+> 
+> It addresses Ricardo's review comments and fixes an issue with intel_pstate
+> operation mode changes that would cause it to attempt to enable hybrid CPU
+> capacity scaling after it has been already enabled during initialization.
+> 
+> The most visible difference with respect to the previous version is that
+> patch [1/3] has been dropped because it is not needed any more after using
+> the observation that sched_clear_itmt_support() would cause sched domains
+> to be rebuilt.
+> 
+> Other than this, there are cosmetic differences in patch [1/2] (previously [2/3])
+> and the new code in intel_pstate_register_driver() in patch [2/2] (previously [3/3])
+> has been squashed into hybrid_init_cpu_scaling() which now checks whether or
+> not to enable hybrid CPU capacity scaling (as it may have been enabled already).
+> 
+> This series is available from the following git branch:
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/log/?h=intel_pstate-testing
+> 
+> (with an extra debug commit on top).
+> 
+> The original cover letter quoted below still applies:
+> 
+> The purpose of this series is to provide the scheduler with asymmetric CPU
+> capacity information on x86 hybrid systems based on Intel hardware.
+> 
+> The asymmetric CPU capacity information is important on hybrid systems as it
+> allows utilization to be computed for tasks in a consistent way across all
+> CPUs in the system, regardless of their capacity.  This, in turn, allows
+> the schedutil cpufreq governor to set CPU performance levels consistently
+> in the cases when tasks migrate between CPUs of different capacities.  It
+> should also help to improve task placement and load balancing decisions on
+> hybrid systems and it is key for anything along the lines of EAS.
+> 
+> The information in question comes from the MSR_HWP_CAPABILITIES register and
+> is provided to the scheduler by the intel_pstate driver, as per the changelog
+> of patch [3/3].  Patch [2/3] introduces the arch infrastructure needed for
+> that (in the form of a per-CPU capacity variable) and patch [1/3] is a
+> preliminary code adjustment.
+> 
+> This is based on an RFC posted previously
+> 
+> https://lore.kernel.org/linux-pm/7663799.EvYhyI6sBW@kreacher/
+> 
+> but differs from it quite a bit (except for the first patch).  The most
+> significant difference is based on the observation that frequency-
+> invariance needs to adjusted to the capacity scaling on hybrid systems
+> for the complete scale-invariance to work as expected.
+> 
+> Thank you!
 
-Applied. Thanks.
+Tested-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com> # scale invariance
 
--- 
-viresh
+You can look at the scaling invariance these patches achieve here
+
+https://pasteboard.co/dhBAUjfr36Tx.png
+
+I tested these patches on an Meteor Lake system. It has CPUs with three
+levels of capacity (Pcore, Ecore, and Lcore)
+
+The "Requested work" plot shows a sawtooth pattern of the amount of work
+requested as a percentage of the maximum amount of work that can be
+obtained from the biggest CPU running at its maximum frequency. The work
+is continuously calling getcpu() in a time window of constant duration
+with varying percentages of work.
+
+The "Achieved work" plot shows that the Ecore and Lcore cannot complete
+as much work as the PCore even when fully busy (see the "Busy %" plot).
+Also, bigger CPUs have more idle time.
+
+The "Scale freq capacity" plot shows the current frequency of each CPU
+is now scaled to 1024 by their respective max frequencies. It no longer
+uses the single arch_max_freq_ratio value. Capacity now scales correctly:
+when running at its maximum frequency, the current capacity (see
+"Current capacity" plot and refer to cap_scale()) now matches the value
+from arch_scale_cpu_capacity() (see "CPU capacity" plot).
+
+The "Task utilization" plot shows that task->util_avg is now invariant
+across CPUs.
+> 
+> 
+> 
