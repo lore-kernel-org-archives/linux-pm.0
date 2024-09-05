@@ -1,53 +1,53 @@
-Received: from mail-yb1-f177.google.com (mail-yb1-f177.google.com [209.85.219.177])
+Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com [209.85.219.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 234CF199947
-	for <linux-pm@vger.kernel.org>; Thu,  5 Sep 2024 11:32:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC300192D72
+	for <linux-pm@vger.kernel.org>; Thu,  5 Sep 2024 11:39:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725535939; cv=none; b=oNKWuQUHNbvBHsv4yetsfBjr70eFVqj92QanWExazL72aCoRweD/yjpIjn7zACrQiqAz5JRY9HX9iZ0g9XcvtyVlTet/dt58cR1ThXmOu8rwrOtqlExR/TPv/V/QxOfYPXWzyBeA7YRuLRv3Po84m2lQGt5cg7/zVg1l47dMgAw=
+	t=1725536346; cv=none; b=KT00h9dIYb6EtqKTVKBnLlEl5KoxJVa1LGcWrfQ/M2Kmowx0suJd/98odAlZQN1Ce9muyPbMzjOLNyokZ0eRWTrQof4YkdloIrApdg+l49XkDSCJTeI8pyBeJdxlfU8if7aLhmLT7UfsWSuRm/TE3GXv/WoDDNT/DQsBRIW1j+Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725535939; c=relaxed/simple;
-	bh=3qZzaYmpiDZJPb0FBA+dUOf5gH2svOgHL1P3EL9vJ+c=;
+	s=arc-20240116; t=1725536346; c=relaxed/simple;
+	bh=7dThSnBD4jy2w+lNK4sQoHqZorzmpN8yffl06pPHXfY=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=OMBz3sCPjeMKpb6W/Jv9YUhHjXrv82rxHtre8ZppCYSlVyDiQWXaY+Qh08HlJ03c4GF7nLPL+z/gr7Tga4Dp26SqeeIvB4Hc+ZhkUCB7PTF+PWr08Bzz4vk53oFv1rudiLCBTWToLrf2rVPGeP+KR9nE/Jn9EjpBWmQ4AdCc5kw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=VuhV2LFS; arc=none smtp.client-ip=209.85.219.177
+	 To:Cc:Content-Type; b=tOQrTarB6nEr+6SuPnWceF+bAjnjG/niaT5CmRf1sX/mb8mUiN+qnIlMpw/UWYT+HgrdSj6mdiq69T7KWfXr2MbaoQL/HcKLS3YKaaaHTOdcneX/mdsZOpHEJzT/FYx72WafO43nrj241bxJE9HIypYQihF/ePKmZ0GMXPkcaFU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=l88QK/a3; arc=none smtp.client-ip=209.85.219.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="VuhV2LFS"
-Received: by mail-yb1-f177.google.com with SMTP id 3f1490d57ef6-e1d2cf4cbf1so204402276.1
-        for <linux-pm@vger.kernel.org>; Thu, 05 Sep 2024 04:32:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="l88QK/a3"
+Received: by mail-yb1-f182.google.com with SMTP id 3f1490d57ef6-e1a819488e3so725078276.3
+        for <linux-pm@vger.kernel.org>; Thu, 05 Sep 2024 04:39:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1725535937; x=1726140737; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1725536344; x=1726141144; darn=vger.kernel.org;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=BE62jvNjRymeBPRNCoV4pu9zk/FV0GIpysTD3uE/Nh8=;
-        b=VuhV2LFSn4qb2p4fTMy4O+KD7aJuFkVMmL62Z0vG/mMW1Z8fiY3qXzMlqkvaQk/kxQ
-         s+IO213RSndd46q4JlA2apfx9IkkEAyllKba12Kqs0SpX+1lDIFQMKi2ZUdMIVCpeOJW
-         cK3YYFihUAHYAaFnICTHWM7VIZKIhq9Hyk1A5p6eE09GIgMOv/SOGpDaU4cIDY4rUngX
-         x7FadMvcUyO84fNhNPbRtf/EC0avBvBueVCaoEDk2GW9RiK6f0HvHXAB4j7T3ewHPtSI
-         /OL32VeeH42YjaNsvlqjBAKL7McM0+kEMu8qcJ9DWvFvZi/Ye0o9Xek6R7lbJ57nI2TC
-         xjKQ==
+        bh=jLrIko9Z9MxBDc0IDBCABFFMewp6y0UOpPNBPOn2Xow=;
+        b=l88QK/a3fjAjpOG6VwKD1oPLrRaiyGRA7dUiVdGCXGQWF71DhFj68YBAfZ6HKcXbkQ
+         ygIuyhdvImkdKzCjGZUw0kDRiUxh09i7TlfhTGHVqMzx33B4OxlfkYEH0hbMi9cQzeCJ
+         wNAyF8LS4MAigFDB4RFVbUYeb6FyjZn31M1Kn241mv9w3avzKR+nA3/Z94fEUs4I5Vo6
+         Es13IMNYPd5bDWdIbrkB8fiJ7YQccKW2C2tRgC23H8VZYOoQq69sbREiJUFK8MkQPzEM
+         egXilzak+nTL0u3D9+ZzazX28Zzg7G6+MI+0cCBN8kfO0UjTb3gV8/0jQtZIgfQiEZXN
+         q8lA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725535937; x=1726140737;
+        d=1e100.net; s=20230601; t=1725536344; x=1726141144;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=BE62jvNjRymeBPRNCoV4pu9zk/FV0GIpysTD3uE/Nh8=;
-        b=hlnbe4nKT/gWXrQdioUSF/Q7n0Y2E8Zeq7umjlc+Z+mTZ/8DlbrU9u63ZDC85LF1CT
-         INlPFQ/oWbuJlirzqvkGMVe+SZWR3kYYFcCRgScp4uoD3M4ENZBPhfRYsdZ+PFnd+Gm2
-         AXccKaZNBI8Bv8nq0wvFVpP5T6BhWvj4MfX3230fyvJRysE7V5bH7Ye4EXg48dwcqUR8
-         pb0OuO5hi/YUeKqSk94btIDKdmOm6w5A6dfOipvMHF4IW/YCK5EsDOnOOqvKlOJGPzLV
-         nyt5wIergiSzSBl/HfsrTIBHEqtLEX+6m9Xee3JwrjUZvTBVIWZ7DRXvfdD5QoQ1GUfS
-         efEw==
-X-Gm-Message-State: AOJu0YyPgREZhwRjDCenO1Spz6zRU9PLswFq6t+h0GWm5JlpnPRMK9aj
-	Pp+KPAzxHUyYQxp4UJbqaD+H2CZYbyL2T55Jd68MY0w3LnIr/Q4XLkGLy2Ad7foCbw4BBpRU93p
-	EV57Zg4aTUY9UgrronU0KQ2i16wFhhteG93cZZw==
-X-Google-Smtp-Source: AGHT+IHygd3KTX3EiW5rVbf+Gfj+wNPvBrt4G9Mi/elE8/M1C1pE+bPBemzUuvOcTWQEiq8y22JwXAOEFht0eCV1T7o=
-X-Received: by 2002:a05:6902:d47:b0:e1a:8e31:e44d with SMTP id
- 3f1490d57ef6-e1a8e31e75cmr16230309276.14.1725535937095; Thu, 05 Sep 2024
- 04:32:17 -0700 (PDT)
+        bh=jLrIko9Z9MxBDc0IDBCABFFMewp6y0UOpPNBPOn2Xow=;
+        b=eLrsz969LFfAv7Zovm4kr2XtxvykLqn+/6gVNGghAp+EnDv9w79Ce1mM/ZcbddvfU/
+         o3FlroO8dro/6EBfy70yJ7bELlist1vIS8Prdx38XidYD+tQVab/socSpDOXQ69V+KVS
+         rEPAoLqzJnU6kvor5QpfJXwMXEuhoiakVkLjsVk21idfiBw33ngmLH5puqFYVqHpQUvR
+         LfQDtuesxKrOs4x5IlEmMuHTayWpQyDI+Xo/JtZq4zMmch27PMebwvM0MhNZMD1KJU07
+         mYz3g2xCgYy70RQCHL0MJP0Sm5WFcGluykImqcaEmRJ3uCj9lX4mcdqKpBDeImCiJHNJ
+         WxOw==
+X-Gm-Message-State: AOJu0YwXadIj25z7UaiwlEKGWWUyel0sFViMJ29xTuY15Sa69/8lWHkM
+	1NnNidT/p2wZXQqu3yAd1+6z78R/vvEs9hbPw7+AYK0yQwfkunnXcoxch2Z7XLaBAQsi2ZeO8HN
+	AN9D0shgUXpf+1TA3Bpb6KEJW7R9KkTGr1mN4BQ==
+X-Google-Smtp-Source: AGHT+IG2scPjtVAXf9nEKI3l/EN+JmBquZI8G7Ofzyty/BbMRzaMcLv0Q0Cuw4yoEG/OI+Q41jbqYX6lsRoODakwg1Q=
+X-Received: by 2002:a05:6902:2601:b0:e1a:b168:8053 with SMTP id
+ 3f1490d57ef6-e1ab16881a3mr15652183276.17.1725536343783; Thu, 05 Sep 2024
+ 04:39:03 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,12 +55,11 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 References: <20240819-lpm-v6-10-constraints-pmdomain-v2-0-461325a6008f@baylibre.com>
- <20240819-lpm-v6-10-constraints-pmdomain-v2-2-461325a6008f@baylibre.com>
-In-Reply-To: <20240819-lpm-v6-10-constraints-pmdomain-v2-2-461325a6008f@baylibre.com>
+In-Reply-To: <20240819-lpm-v6-10-constraints-pmdomain-v2-0-461325a6008f@baylibre.com>
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Thu, 5 Sep 2024 13:31:41 +0200
-Message-ID: <CAPDyKFpH9TQ3P75CXxHmgo+y8z-C_iYCzFzqR93w1Mt9jhFBBw@mail.gmail.com>
-Subject: Re: [PATCH v2 2/3] pmdomain: ti_sci: add wakeup constraint management
+Date: Thu, 5 Sep 2024 13:38:27 +0200
+Message-ID: <CAPDyKFrFX_UeYWuZtQPoxHbZb0CwpLRA=QcMFsALwuiFTY3T5Q@mail.gmail.com>
+Subject: Re: [PATCH v2 0/3] pmdomain: ti_sci: collect and send low-power mode constraints
 To: Kevin Hilman <khilman@baylibre.com>
 Cc: linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>, Vibhore Vardhan <vibhore@ti.com>, 
 	Dhruva Gole <d-gole@ti.com>, Akashdeep Kaur <a-kaur@ti.com>, Sebin Francis <sebin.francis@ti.com>, 
@@ -70,64 +69,75 @@ Content-Type: text/plain; charset="UTF-8"
 
 On Tue, 20 Aug 2024 at 02:00, Kevin Hilman <khilman@baylibre.com> wrote:
 >
-> During system-wide suspend, check all devices connected to PM domain
-> to see if they are wakeup-enabled.  If so, set a TI SCI device
-> constraint.
+> The latest (10.x) version of the firmware for the PM co-processor (aka
+> device manager, or DM) adds support for a "managed" mode, where the DM
+> firmware will select the specific low power state which is entered
+> when Linux requests a system-wide suspend.
 >
-> Note: DM firmware clears all constraints on resume.
+> In this mode, the DM will always attempt the deepest low-power state
+> available for the SoC.
 >
-> Co-developed-by: Vibhore Vardhan <vibhore@ti.com>
-> Signed-off-by: Vibhore Vardhan <vibhore@ti.com>
+> However, Linux (or OSes running on other cores) may want to constrain
+> the DM for certain use cases.  For example, the deepest state may have
+> a wakeup/resume latency that is too long for certain use cases.  Or,
+> some wakeup-capable devices may potentially be powered off in deep
+> low-power states, but if one of those devices is enabled as a wakeup
+> source, it should not be powered off.
+>
+> These kinds of constraints are are already known in Linux by the use
+> of existing APIs such as per-device PM QoS and device wakeup APIs, but
+> now we need to communicate these constraints to the DM.
+>
+> For TI SoCs with TI SCI support, all DM-managed devices will be
+> connected to a TI SCI PM domain.  So the goal of this series is to use
+> the PM domain driver for TI SCI devices to collect constraints, and
+> communicate them to the DM via the new TI SCI APIs.
+>
+> This is all managed by TI SCI PM domain code.  No new APIs are needed
+> by Linux drivers.  Any device that is managed by TI SCI will be
+> checked for QoS constraints or wakeup capability and the constraints
+> will be collected and sent to the DM.
+>
+> This series depends on the support for the new TI SCI APIs (v10) and
+> was also tested with this series to update 8250_omap serial support
+> for AM62x[2].
+>
+> [1] https://lore.kernel.org/all/20240801195422.2296347-1-msp@baylibre.com
+> [2] https://lore.kernel.org/all/20240807141227.1093006-1-msp@baylibre.com/
+>
 > Signed-off-by: Kevin Hilman <khilman@baylibre.com>
-> Signed-off-by: Dhruva Gole <d-gole@ti.com>
 > ---
->  drivers/pmdomain/ti/ti_sci_pm_domains.c | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
+> Changes in v2:
 >
-> diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-> index 963272fa387b..8af907579152 100644
-> --- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
-> +++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-> @@ -76,6 +76,23 @@ static int ti_sci_pd_set_lat_constraint(struct device *dev, s32 val)
->         return ret;
->  }
+> - To simplify this version a bit, drop the pmdomain ->power_off()
+>   changes.  Constraints only sent during ->suspend() path.  The pmdomain
+>   path was an optimization that may be added back later.
+> - With the above simplification, drop the extra state variables that
+>   had been added to keep track of constraint status.
+> - Link to v1: https://lore.kernel.org/r/20240805-lpm-v6-10-constraints-pmdomain-v1-0-d186b68ded4c@baylibre.com
 >
-> +static inline bool ti_sci_pd_set_wkup_constraint(struct device *dev)
-> +{
-
-Similar comment as for patch1, should this be a static void intstead?
-
-> +       struct generic_pm_domain *genpd = pd_to_genpd(dev->pm_domain);
-> +       struct ti_sci_pm_domain *pd = genpd_to_ti_sci_pd(genpd);
-> +       const struct ti_sci_handle *ti_sci = pd->parent->ti_sci;
-> +       int ret;
-> +
-> +       if (device_may_wakeup(dev)) {
-> +               ret = ti_sci->ops.pm_ops.set_device_constraint(ti_sci, pd->idx,
-> +                                                              TISCI_MSG_CONSTRAINT_SET);
-> +               if (!ret)
-> +                       dev_dbg(dev, "ti_sci_pd: ID:%d set device constraint.\n", pd->idx);
-> +       }
-> +
-> +       return true;
-> +}
-> +
->  /*
->   * ti_sci_pd_power_off(): genpd power down hook
->   * @domain: pointer to the powerdomain to power off
-> @@ -117,6 +134,8 @@ static int ti_sci_pd_suspend(struct device *dev)
->         if (ti_sci_pd_is_valid_constraint(val))
->                 ti_sci_pd_set_lat_constraint(dev, val);
+> ---
+> Kevin Hilman (3):
+>       pmdomain: ti_sci: add per-device latency constraint management
+>       pmdomain: ti_sci: add wakeup constraint management
+>       pmdomain: ti_sci: handle wake IRQs for IO daisy chain wakeups
 >
-> +       ti_sci_pd_set_wkup_constraint(dev);
-> +
->         return 0;
->  }
+>  drivers/pmdomain/ti/ti_sci_pm_domains.c | 76 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 76 insertions(+)
+> ---
+> base-commit: ad7eb1b6b92ee0c959a0a6ae846ddadd7a79ea64
+> change-id: 20240802-lpm-v6-10-constraints-pmdomain-f33df5aef449
 >
->
+> Best regards,
 > --
-> 2.46.0
->
+> Kevin Hilman <khilman@baylibre.com>
+
+Besides a couple of minor things that I have commented on for each
+patch, this looks okay to me!
+
+Taking into account the other series that this depends on, what is the
+best merging strategy? Is it safe for me to take it through my
+pmdomain tree?
 
 Kind regards
 Uffe
