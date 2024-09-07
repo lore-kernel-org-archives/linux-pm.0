@@ -1,73 +1,98 @@
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from mout.web.de (mout.web.de [212.227.17.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CD01D29E
-	for <linux-pm@vger.kernel.org>; Sat,  7 Sep 2024 08:20:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.188
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72CE238F83;
+	Sat,  7 Sep 2024 08:45:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725697248; cv=none; b=iS265B7PAQVnd2hBQhaND8yts6H7Y2n52azqNCNulzAUa4RxKvyEJZ7z5H+UHhYWtJtVq1U+3cviu00+vJweBlex1kREC3yDKl3teb2+92WeFjehJQNhNKarg9X2PHctLTINZmVp6rdjl56ydrNmOd1DCQzB1zoOSBodWWQvqJc=
+	t=1725698704; cv=none; b=B7snL8dMwwUQDYaNRJvblZem3/GE9WbLmG0sHZHDuNP4EamjSg91vi+oe3OAaTmnxC07LSR8QV7PNwc7G2BWNWbPYOZFpbX3yqIyGud3QkI1v4z/CMlycrPJfzR1U0rWZ4ZJNUSstZft0Zves2ItK5cmbb4/QX/N4My5DB2suXQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725697248; c=relaxed/simple;
-	bh=Qvuv23+trl8kbf5QGuEFnyvvCLnLOOeB356Qcbw09iQ=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fLqqx6aN/azFhGh2+zjcqSK55ajTqIJDbHqFEz9C37V0bkWUJXgc7carWvre9bLqyKa5Qwu4Wt30LzoBbAGXdp2jpc0nAhUjMoDCSBMHmo5zHxP2p3fuuKBGy6X5yGg44Vpu7jna7mx3C6dIWRbqR5O50wP+kmFepaLBmBpiE60=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.188
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.163.174])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4X15bB2CsbzpVPS;
-	Sat,  7 Sep 2024 16:18:46 +0800 (CST)
-Received: from kwepemf500003.china.huawei.com (unknown [7.202.181.241])
-	by mail.maildlp.com (Postfix) with ESMTPS id 5882B14022D;
-	Sat,  7 Sep 2024 16:20:43 +0800 (CST)
-Received: from huawei.com (10.175.112.208) by kwepemf500003.china.huawei.com
- (7.202.181.241) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Sat, 7 Sep
- 2024 16:20:40 +0800
-From: Zhang Zekun <zhangzekun11@huawei.com>
-To: <vireshk@kernel.org>, <nm@ti.com>, <sboyd@kernel.org>,
-	<linux-pm@vger.kernel.org>
-CC: <chenjun102@huawei.com>, <zhangzekun11@huawei.com>
-Subject: [PATCH] OPP: Remove unused declarations in header file
-Date: Sat, 7 Sep 2024 16:07:01 +0800
-Message-ID: <20240907080701.102266-1-zhangzekun11@huawei.com>
-X-Mailer: git-send-email 2.17.1
+	s=arc-20240116; t=1725698704; c=relaxed/simple;
+	bh=1T8ODkuWTdAoYSFX/rWPkZU7Xo9zq7V8SxV+btIcMho=;
+	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
+	 In-Reply-To:Content-Type; b=SSkkIW85XXshCPt8lJOW8EGexhe3XU/E5N/4aEdmESPnLzKxpvf5nuj5lqbPGz9eN7MvF8mK/NT/NhYvYGVR4WkTDkhJlDfn6iqE3sy4SLwoGzwxB0s0/7YOFu5FkXy0LPEefkroAkjQEn4h3TiyfwVlNM/KCT0T6C9IBPNyi0o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=odk/rU7l; arc=none smtp.client-ip=212.227.17.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="odk/rU7l"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1725698658; x=1726303458; i=markus.elfring@web.de;
+	bh=1T8ODkuWTdAoYSFX/rWPkZU7Xo9zq7V8SxV+btIcMho=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
+	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 cc:content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=odk/rU7lLA+X60vwLvTTHeTsuZEggW39GuTPuX38WgjG4HbOoOQOwB5MUpKAYz+F
+	 KTc55WO+KfSIj2fWOmfsP2D2YrOOq6CmScYPcPnTEqNxfjnkag1UnSJUQMYDlsOV9
+	 lQ6EWm7O+YQJ/svC//w7Z7vFa6Dyns3k/pm8vV76RU9RbNF55/SH/DmLDf6aMZ5R3
+	 HAWw6CIsKdHRJrkOzbk10KefJZjGyY6j63EKXYid439BTMzqdnoBp1aCFTUUg87x1
+	 i9k2QdZ0VWEHrdZQFeDeFjSGEiUTee0tFOaEJ6/S0pKP+pfF0wo4LUFelL3HwHJJr
+	 YvihpoXTrJtq1LV0oA==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.21] ([94.31.84.95]) by smtp.web.de (mrweb105
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1MOm0r-1sORcT2zhH-00OkMZ; Sat, 07
+ Sep 2024 10:44:18 +0200
+Message-ID: <de5c9c27-56fa-4163-98e1-9a98400d2408@web.de>
+Date: Sat, 7 Sep 2024 10:44:15 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemf500003.china.huawei.com (7.202.181.241)
+User-Agent: Mozilla Thunderbird
+To: Junhao Xie <bigfoot@classfun.cn>, devicetree@vger.kernel.org,
+ linux-hwmon@vger.kernel.org, linux-leds@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+ linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-rockchip@lists.infradead.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Chukun Pan <amadeus@jmu.edu.cn>, Conor Dooley <conor+dt@kernel.org>,
+ =?UTF-8?B?R8O8bnRlciBSw7Zjaw==?= <linux@roeck-us.net>,
+ =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>,
+ Jean Delvare <jdelvare@suse.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Lee Jones <lee@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+ Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+ Wim Van Sebroeck <wim@linux-watchdog.org>
+References: <20240906093630.2428329-2-bigfoot@classfun.cn>
+Subject: Re: [PATCH 1/9] mfd: Add driver for Photonicat power management MCU
+Content-Language: en-GB
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <20240906093630.2428329-2-bigfoot@classfun.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:AQhlxKYF+SVNHVdzbmkBXd5OhmUNfn40KEC4+sPg7R3VHJVCB6W
+ kgsjtqr/3XCqYY0kbjdmfw4Gc/kKrY7O3ztbKrhpBdOJN57VkTcttlaBLx/P+jmYJkCyuL0
+ hRC19UEg+8R1+cLinVv0nA99FmzeD4GnVAWaaCk1emQAgqOyWZuWFXyBcxPaLma8EaCteF0
+ bt6BV+h9zAtjotQ1FDCdg==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:TnJKtUlBzu0=;V418xZ90PwgrfitnQWSk9KXPwgJ
+ aO4UdqBu/LQQEY+Cz4tKzqvs1DTJFq40uX+Fzhi0gf7IQ4sMZuU1IAJhFfFx5C3I4TTt3GQ0n
+ 5kH1/9TGlYMK8dh3OTbdsPuwU+kAeVFHiTnXVDxONpd8VtGeNI98ly3v2rEaf5h7/aYOuRsXj
+ IxTOPba2V7pGk75gqEbirMxCWrhuRrg6e6JR5l8tEuSZ90fkI5HPGdXBl7c+2euU21hnfEoMd
+ TF4wnjEDcW0SFS9QuxFfntlY/3wmUhNQwM6J3RD0cY0n5bIvSTYAZ+SIayAOC/H0yWXnS0/q7
+ +KSJpMn4Vqnls7uDaLStwgQPguUr0GWQSnRV69XEjevJSW66aJBLAPT0Ut6vwpOkHdbbhZs6p
+ 1i3UgPcGpXWdH3WvG/Thd53+JA03qNSKkK6Wh6EmkngZZeY/IIfCjOHY0CBreUtgBWL1K4loU
+ MbZ7vO0AQQMCJlv7JqV0imAZ2FrtCgnvhcuUv7InGr7+LGN4DqaCli30yjSutSIC4nt6pyeGo
+ TLwtx4wFJrja+4Hq/pG8Z8TZGRkKVLBlTLyX/exVXl33Vv99zhHfD92634Q5cuAXpQfxFKUT3
+ 8Yc/XKg0/FmeYrvZe3IWNsDavTxbS70d8zR9kl6XaxU+68ryzQJG6ZpmROPiGpv/R9X0/XkDO
+ kqr42U9mHBfzuZbO4Q+10EA34DTNGxw3suP0Wh69x9H3tWVXa+OA8wJG16AJCgkPdC4uI7cek
+ lbWoytI84HimqyjkrNnTvkgCnL0tMRfBp2QUxHFenieieQjNhHXzmTx3/UHtKc3zeKfY9OkZf
+ Cb/WXIh7j8ak2djyeBZrO0Qw==
 
-The definition of _update_set_required_opps() has been removed since
-commit e37440e7e2c2 ("OPP: Call dev_pm_opp_set_opp() for required
-OPPs").
+=E2=80=A6
+> +++ b/include/linux/mfd/photonicat-pmu.h
+> @@ -0,0 +1,86 @@
+=E2=80=A6
+> +#ifndef _PHOTONICAT_PMU_H
+> +#define _PHOTONICAT_PMU_H
+=E2=80=A6
 
-Besides, the definition of _put_opp_list_kref() has been removed since
-commit 03758d60265c ("opp: Replace list_kref with a local counter").
-Let's remove the empty declarations in header file.
+I suggest to omit leading underscores from such identifiers.
+https://wiki.sei.cmu.edu/confluence/display/c/DCL37-C.+Do+not+declare+or+d=
+efine+a+reserved+identifier
 
-Signed-off-by: Zhang Zekun <zhangzekun11@huawei.com>
----
- drivers/opp/opp.h | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 318a4ecbabf1..641e4bccf68e 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -263,9 +263,7 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp, struct opp_table *o
- int _opp_add_v1(struct opp_table *opp_table, struct device *dev, struct dev_pm_opp_data *data, bool dynamic);
- void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, int last_cpu);
- struct opp_table *_add_opp_table_indexed(struct device *dev, int index, bool getclk);
--void _put_opp_list_kref(struct opp_table *opp_table);
- void _required_opps_available(struct dev_pm_opp *opp, int count);
--void _update_set_required_opps(struct opp_table *opp_table);
- 
- static inline bool lazy_linking_pending(struct opp_table *opp_table)
- {
--- 
-2.17.1
-
+Regards,
+Markus
