@@ -1,146 +1,203 @@
-Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C158E1B1432
-	for <linux-pm@vger.kernel.org>; Mon,  9 Sep 2024 08:07:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCB581B0107;
+	Mon,  9 Sep 2024 08:12:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725869258; cv=none; b=O9i+xKeLuATOk68/qhlRN3Uhmetr4jHv+lzUzt5telf08PpsNhkjWRe7YvFjhOWCkxXeWzx/xYoRkXLRvLd7ntXnk2peSo6qq55SFSxSlT9RUQd670OFN6pw0yj+xz0BUSQ7VWoakZUxGfXWGedOY5cBp2Bs/3Ewxq/irRyZF7E=
+	t=1725869535; cv=none; b=Ir4R6aP4GONoqc+ntrsCUhxKN394JSZL8OLs5ad/XCGw1ReVubFZa8UbGEOxCuuG3WevMtozjD4AEB1vfkkI/SO4Ykuq4eaJKfAvsdhxIog2WmvZAo9FXDoBK/Goe0JoC7AGSLuOQhcBs8Mw5tgURmlPuXUAytA491feBCb6BvA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725869258; c=relaxed/simple;
-	bh=Vfl1ocurgCSFI1KNt1GwhqKcatav9LjQQckrGTh2TyE=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Rq/e/5zUsTmfqIkvOwBhYyN3iKxBQ3vT3zOi+F0mAl6K7qru2DplE1YAA0JulLixQ44m1IKLPfk+DYghfQlX5zO9/jZnT2IYGnfDMEskyNbF10q4XL/MAYNo8N+O/lvD+A9z3/Fiib5FVjqc2VqONSzGZiEttpau4+FdEVcwqnA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.216.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-2d892997913so2637468a91.3
-        for <linux-pm@vger.kernel.org>; Mon, 09 Sep 2024 01:07:35 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725869255; x=1726474055;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=5HO8MI3NCN1WcuYQ6ANpTcpLsOAP4oXeZ/Q97FimnzE=;
-        b=NNgfvlmoVmbBpjZtKlCiTcGGpBPfRRnXHoaS5IZHRf0fitCrQ8E1AOhbNw+Yti1d43
-         SeMb4v0sNEuECZkKjVhWKK2y7soSXjEI8N8RPXPCyPGH8hOVafH3eVp7XZ28uwqWww97
-         eG2cVqyuO/5jqKwJ3QSwoK/42cvfOfKBJi2JLOnu48G5MWA3OAVj+76KvtCpxGgNJDEx
-         YLHE8Y3VGxytc6svh3X0MyS+JV/XlZw2MRxOH159NJPSrbqcDueeG2T8PGaGPMttUwmF
-         S0RI6ILYmpqjpO92eNDb8Z4jdFW2LvP9OJ8eaBWV9QHLbmQKyXvphBplTKzCtysoKqFx
-         guJA==
-X-Gm-Message-State: AOJu0YzKdZBcUUwQvOA8bQCSik7XvTvIpdnHoueop60HKM1KXc5TNfTA
-	RGe6tuKkg+L6yEug7WhkuriwC1p5uGX29gbikCIiDj+OF6vtYtfT
-X-Google-Smtp-Source: AGHT+IGM9Bg69N+5waEL36awnDI9RwLKSOGScrp1SbhHypvHBUGhy3T/bgoGWqqWcr3sg+Mw0j7Ytw==
-X-Received: by 2002:a17:90a:c90c:b0:2d3:d728:6ebb with SMTP id 98e67ed59e1d1-2dad4de1412mr12622802a91.5.1725869254744;
-        Mon, 09 Sep 2024 01:07:34 -0700 (PDT)
-Received: from localhost.localdomain ([111.48.69.247])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2dadc0317c0sm6023886a91.19.2024.09.09.01.07.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Sep 2024 01:07:34 -0700 (PDT)
-From: Xiong Xin <xiongxin@kylinos.cn>
-To: rafael@kernel.org,
-	mario.limonciello@amd.com,
-	len.brown@intel.com,
-	pavel@ucw.cz
-Cc: linux-pm@vger.kernel.org,
-	xiongxin <xiongxin@kylinos.cn>
-Subject: [PATCH v2] PM: sleep: Optimize the pm_debug_messages_should_print() condition
-Date: Mon,  9 Sep 2024 16:07:26 +0800
-Message-Id: <20240909080726.16811-1-xiongxin@kylinos.cn>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1725869535; c=relaxed/simple;
+	bh=3Z6dox2Fymi1+aRMhQdQKH5Qtaviq6Z/6WvzB3kGW4E=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=VfhU4UAsczbopE1NAxhRXIQnC4jAVD+9MtKMtnT74td1E6YQ1WjkPoi5cAN5pNLGy5YEnQsMA6Li9vZhbFgVO0QXPxC5NxYDgcBDf3cZrssBN/F3YRKWAUSf4HPjSxAMeBX1yZbxQqUQTB9KrWbDa4Pxw4psq/ug7Wly2PjI56k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GZdYdnKE; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GZdYdnKE"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 89A75C4CED6;
+	Mon,  9 Sep 2024 08:12:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1725869535;
+	bh=3Z6dox2Fymi1+aRMhQdQKH5Qtaviq6Z/6WvzB3kGW4E=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=GZdYdnKERYjsGloJ4tEj0SMcr9+70oo0DIPkRdjJ4u32bjSoDCUid7Ta1SDkmYcwK
+	 SLC5dnVGS7bQsfdG8/NNiRIhAIiDJ+jO1kzsWI00BcIz6lk4YKjWIbkTPw/PMTEJIT
+	 UpdhP1yGnP4kFaQ3i/ZeZuXoLkYrKYCUlUgJymwraIUIVCW6NQ2s++++yJ7gy1X1xU
+	 H3ngJwiEKbdAyUqtUHspFRX/iOlKGzd2IRLG834IxfqfnldnmcZs54OJ5qB9cz64hd
+	 uPpwFDTfb3LsG35VsnDKNBV8EphDj8aG6yHJtgmmnlgVqueoazmlmJ9NwN0FO5kf4w
+	 Z8NohJJ9im9Bg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AD52ECE57B;
+	Mon,  9 Sep 2024 08:12:15 +0000 (UTC)
+From: Nikita Shubin via B4 Relay <devnull+nikita.shubin.maquefel.me@kernel.org>
+Date: Mon, 09 Sep 2024 11:10:30 +0300
+Subject: [PATCH v12 05/38] power: reset: Add a driver for the ep93xx reset
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240909-ep93xx-v12-5-e86ab2423d4b@maquefel.me>
+References: <20240909-ep93xx-v12-0-e86ab2423d4b@maquefel.me>
+In-Reply-To: <20240909-ep93xx-v12-0-e86ab2423d4b@maquefel.me>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+X-Mailer: b4 0.13-dev-e3e53
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1725869532; l=4433;
+ i=nikita.shubin@maquefel.me; s=20230718; h=from:subject:message-id;
+ bh=onC/yUOhswI9EYOcxGSoR30thUvusn3WXoEialTiwl4=;
+ b=eV84dK9jv2iUSW56yYapX4Stt9DTbhem9ld1v9cfrrqU87z7QjUJBN9ex+i1dJrLifEWqCKhxuWF
+ ok0RbCnJB0Mc18+i5/E2uDPU1qMTiKRu/PzsUcsYH87b65jGRTcR
+X-Developer-Key: i=nikita.shubin@maquefel.me; a=ed25519;
+ pk=vqf5YIUJ7BJv3EJFaNNxWZgGuMgDH6rwufTLflwU9ac=
+X-Endpoint-Received: by B4 Relay for nikita.shubin@maquefel.me/20230718
+ with auth_id=65
+X-Original-From: Nikita Shubin <nikita.shubin@maquefel.me>
+Reply-To: nikita.shubin@maquefel.me
 
-From: xiongxin <xiongxin@kylinos.cn>
+From: Nikita Shubin <nikita.shubin@maquefel.me>
 
-pm_pr_dbg() is useful when debugging suspend and hibernate processes. In
-commit cdb8c100d8a4 ("include/linux/suspend.h: Only show pm_pr_dbg
-messages at suspend/resume") using pm_suspend_target_state to limits the
-output range of pm_pr_dbg(), causes the original pm_pr_dbg() output
-range to change.
+Implement the reset behaviour of the various EP93xx SoCS
+in drivers/power/reset.
 
-In the suspend process, pm_pr_dbg() is called before setting
-pm_suspend_target_state. As a result, this part of the log cannot be
-output.
+It used to be located in arch/arm/mach-ep93xx.
 
-pm_pr_dbg() also outputs debug logs for hibernate, but
-pm_suspend_target_state is not set, resulting in hibernate debug logs
-can only be output through dynamic debug, which is very inconvenient.
-
-Expand the scope of the state variable in state_store() and add judgment
-on it in pm_debug_messages_should_print() to extend the debugging output
-of pm_pr_dbg() to suspend and hibernate processes.
-
-Fixes: cdb8c100d8a4 ("include/linux/suspend.h: Only show pm_pr_dbg messages at suspend/resume").
-Signed-off-by: xiongxin <xiongxin@kylinos.cn>
-Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
+Signed-off-by: Nikita Shubin <nikita.shubin@maquefel.me>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 ---
- kernel/power/main.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
+ drivers/power/reset/Kconfig          | 10 +++++
+ drivers/power/reset/Makefile         |  1 +
+ drivers/power/reset/ep93xx-restart.c | 84 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 95 insertions(+)
 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index a9e0693aaf69..a376107efbb4 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -559,6 +559,8 @@ late_initcall(pm_debugfs_init);
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index fece990af4a7..389d5a193e5d 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -75,6 +75,16 @@ config POWER_RESET_BRCMSTB
+ 	  Say Y here if you have a Broadcom STB board and you wish
+ 	  to have restart support.
  
- #endif /* CONFIG_PM_SLEEP */
- 
-+static suspend_state_t pm_state = PM_SUSPEND_ON;
++config POWER_RESET_EP93XX
++	bool "Cirrus EP93XX reset driver" if COMPILE_TEST
++	depends on MFD_SYSCON
++	default ARCH_EP93XX
++	help
++	  This driver provides restart support for Cirrus EP93XX SoC.
 +
- #ifdef CONFIG_PM_SLEEP_DEBUG
- /*
-  * pm_print_times: print time taken by devices to suspend and resume.
-@@ -613,7 +615,9 @@ bool pm_debug_messages_on __read_mostly;
- 
- bool pm_debug_messages_should_print(void)
- {
--	return pm_debug_messages_on && pm_suspend_target_state != PM_SUSPEND_ON;
-+	return pm_debug_messages_on &&
-+	       (pm_suspend_target_state != PM_SUSPEND_ON ||
-+		pm_state != PM_SUSPEND_ON);
- }
- EXPORT_SYMBOL_GPL(pm_debug_messages_should_print);
- 
-@@ -715,7 +719,6 @@ static suspend_state_t decode_state(const char *buf, size_t n)
- static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
- 			   const char *buf, size_t n)
- {
--	suspend_state_t state;
- 	int error;
- 
- 	error = pm_autosleep_lock();
-@@ -727,18 +730,20 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
- 		goto out;
- 	}
- 
--	state = decode_state(buf, n);
--	if (state < PM_SUSPEND_MAX) {
--		if (state == PM_SUSPEND_MEM)
--			state = mem_sleep_current;
-+	pm_state = decode_state(buf, n);
-+	if (pm_state < PM_SUSPEND_MAX) {
-+		if (pm_state == PM_SUSPEND_MEM)
-+			pm_state = mem_sleep_current;
- 
--		error = pm_suspend(state);
--	} else if (state == PM_SUSPEND_MAX) {
-+		error = pm_suspend(pm_state);
-+	} else if (pm_state == PM_SUSPEND_MAX) {
- 		error = hibernate();
- 	} else {
- 		error = -EINVAL;
- 	}
- 
-+	pm_state = PM_SUSPEND_ON;
++	  Say Y here if you have a Cirrus EP93XX SoC and you wish
++	  to have restart support.
 +
-  out:
- 	pm_autosleep_unlock();
- 	return error ? error : n;
+ config POWER_RESET_GEMINI_POWEROFF
+ 	bool "Cortina Gemini power-off driver"
+ 	depends on ARCH_GEMINI || COMPILE_TEST
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index a95d1bd275d1..10782d32e1da 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -7,6 +7,7 @@ obj-$(CONFIG_POWER_RESET_ATC260X) += atc260x-poweroff.o
+ obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
+ obj-$(CONFIG_POWER_RESET_BRCMKONA) += brcm-kona-reset.o
+ obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
++obj-$(CONFIG_POWER_RESET_EP93XX) += ep93xx-restart.o
+ obj-$(CONFIG_POWER_RESET_GEMINI_POWEROFF) += gemini-poweroff.o
+ obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
+ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
+diff --git a/drivers/power/reset/ep93xx-restart.c b/drivers/power/reset/ep93xx-restart.c
+new file mode 100644
+index 000000000000..57cfb8620faf
+--- /dev/null
++++ b/drivers/power/reset/ep93xx-restart.c
+@@ -0,0 +1,84 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Cirrus EP93xx SoC reset driver
++ *
++ * Copyright (C) 2021 Nikita Shubin <nikita.shubin@maquefel.me>
++ */
++
++#include <linux/bits.h>
++#include <linux/container_of.h>
++#include <linux/delay.h>
++#include <linux/errno.h>
++#include <linux/mfd/syscon.h>
++#include <linux/module.h>
++#include <linux/mod_devicetable.h>
++#include <linux/notifier.h>
++#include <linux/reboot.h>
++#include <linux/slab.h>
++
++#include <linux/soc/cirrus/ep93xx.h>
++
++#define EP93XX_SYSCON_DEVCFG		0x80
++#define EP93XX_SYSCON_DEVCFG_SWRST	BIT(31)
++
++struct ep93xx_restart {
++	struct ep93xx_regmap_adev *aux_dev;
++	struct notifier_block restart_handler;
++};
++
++static int ep93xx_restart_handle(struct notifier_block *this,
++				 unsigned long mode, void *cmd)
++{
++	struct ep93xx_restart *priv =
++		container_of(this, struct ep93xx_restart, restart_handler);
++	struct ep93xx_regmap_adev *aux = priv->aux_dev;
++
++	/* Issue the reboot */
++	aux->update_bits(aux->map, aux->lock, EP93XX_SYSCON_DEVCFG,
++			 EP93XX_SYSCON_DEVCFG_SWRST, EP93XX_SYSCON_DEVCFG_SWRST);
++	aux->update_bits(aux->map, aux->lock, EP93XX_SYSCON_DEVCFG,
++			 EP93XX_SYSCON_DEVCFG_SWRST, 0);
++
++	return NOTIFY_DONE;
++}
++
++static int ep93xx_reboot_probe(struct auxiliary_device *adev,
++			       const struct auxiliary_device_id *id)
++{
++	struct ep93xx_regmap_adev *rdev = to_ep93xx_regmap_adev(adev);
++	struct device *dev = &adev->dev;
++	struct ep93xx_restart *priv;
++	int err;
++
++	if (!rdev->update_bits)
++		return -ENODEV;
++
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->aux_dev = rdev;
++
++	priv->restart_handler.notifier_call = ep93xx_restart_handle;
++	priv->restart_handler.priority = 128;
++
++	err = register_restart_handler(&priv->restart_handler);
++	if (err)
++		return dev_err_probe(dev, err, "can't register restart notifier\n");
++
++	return 0;
++}
++
++static const struct auxiliary_device_id ep93xx_reboot_ids[] = {
++	{
++		.name = "soc_ep93xx.reset-ep93xx",
++	},
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(auxiliary, ep93xx_reboot_ids);
++
++static struct auxiliary_driver ep93xx_reboot_driver = {
++	.probe		= ep93xx_reboot_probe,
++	.id_table	= ep93xx_reboot_ids,
++};
++module_auxiliary_driver(ep93xx_reboot_driver);
+
 -- 
-2.43.0
+2.43.2
+
 
