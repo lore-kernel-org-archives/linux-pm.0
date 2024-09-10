@@ -1,89 +1,137 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEF3718B49F;
-	Tue, 10 Sep 2024 09:43:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D04418B46D
+	for <linux-pm@vger.kernel.org>; Tue, 10 Sep 2024 09:59:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725961392; cv=none; b=K9R09dLjcJQCW9haFHaiPCnKjH1+lDInf/+x1X9mxlAyCEnEo+O5M7Lgg0aWCfRPtyuw8sFUZTU/uZ1IDLPdFmgI6N9vPqs9bVbcHSwfn8O0ycxlwblJ2E9fL8kWCYRuQzr3+VxWw8QxVwMjAW3dtVFCkXjPrLjTvWrjwae39Oc=
+	t=1725962380; cv=none; b=anjO6Qg3qKs/Ar++dNrdW6sLPN6i+n/DMTmd3gag/1Tj5nhTU0K6RfA3GA+rquh5n4/n/PqSGhCFC0ntakWN/Z43aEoqgSYbKMkfnfutMhGLItCZ/6ww4G3pXQDQVAW67TAgoQKvcSBPcgfGpb9OkQvNlETH3w2aDuaxxF9Z1P8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725961392; c=relaxed/simple;
-	bh=mvjLn9zFwJlZz0nGlnZNMMgArdG4cwCr0n5Xbf49/r0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=sOsg96Q26KKjoyj2wWmIzVZ/4newYKPz+ug8m/8vHy8GRARvJUhzkhthDPDsmfYlUlLzXAYjtBs3q1Plbet10cHZKWpGcuRZZP6NDdpC+IvFW2s/SxhQGtmjlTZEWBXWh/K6Q2NzqKYH1ONskE1FHQdFhHjmZz7FxplV01dBUsk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=dGUdGZLR reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1725962380; c=relaxed/simple;
+	bh=cPN+c5d1qbghZwAgbLbBKbGa0droBLNlCAHDEF+wklI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=sicK/L2CXiQ9BsNCDkix0Js3II9f23rD6REjDCJx7dm2UXsoMNOr3C+cs5MyV7WMP3nAX/2gZ+gCjdSJYwGE7efui4g5z17MwGu2PHFQyNnTT0GCprhl2TEfnDz1+bs1DpwYbyRuCKOrkoqrLYC5uacB2UW/iZvZhTpFUUo0lUk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=gDEaBBBa; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="dGUdGZLR"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 73940c6d5ef18685; Tue, 10 Sep 2024 11:43:08 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 1C1F76B836A;
-	Tue, 10 Sep 2024 11:43:08 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1725961388;
-	bh=mvjLn9zFwJlZz0nGlnZNMMgArdG4cwCr0n5Xbf49/r0=;
-	h=From:Subject:Date;
-	b=dGUdGZLRWpMiSuSZFmDjW3pqK3NHxX40JutUuuA/gI9bylCqKq51XcBkgMAglllwU
-	 PN6kzfLwm9LtO8tU52Zx3HZKGZjdgEGB/z4kmnMPYZzY08JWwcXBdm8e4xAaOpljUg
-	 cAsuf6ITSTithV+evciAZVW+dlrvKXAT06kldPOCLaaV4xCK/eCZiIbO6BuQ9CEvab
-	 umtCqrKKJcr0INsbgkMrCAKbrAwsS78aGovjmw0f/B4VfP9OEGJ3hoJ4RVXGnYzMBX
-	 peiaRHPcSTd3snv0B7KnaG3vcKux8wK91GJIJPHYOFk99JwSedqqsp6ku6v7bAEqCO
-	 disxLvaJs9a+w==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
-Subject:
- [PATCH for 6.13 v1 0/8] thermal: core: Updates related to thermal instances,
- trip points handling and locking
-Date: Tue, 10 Sep 2024 11:26:39 +0200
-Message-ID: <4920970.GXAFRqVoOG@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="gDEaBBBa"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-374c5bab490so3951915f8f.1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Sep 2024 02:59:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1725962375; x=1726567175; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=OxZS7VLlvlNcdBPu4dATlqzqCH0SG09iCapcqr1ry4w=;
+        b=gDEaBBBaUoUF56F+rRo9PuyFWwCDXHMu9g8K4zUwzDGwMpXycdSh6VN8oSHKoKmQDX
+         CBycD7ciOZ1IR/0FyHTBJwSQFgwXanXz3ol8xbl5RK83QGEK0N3oWqobPdcp8bRdgAsN
+         zJRHd79Wx0r0r8VkECdsWZb8CG0MTWwIVMwwCsEcAmeXjwPTxuTluhZM7GsBiOTSBwrj
+         GicQeuUF2tjHfHAcuM2wfkPOGx4ZbqH0giOqp7i7zEgqh4hK1Pa1zjBQx5YIUhcLJEEI
+         cCWTNWPXEUubsUXMUR3rMj8TS/LnZJsaKYVFX+QI/MiP7LRzRAcFnOJ6btWsJUUwXo6H
+         JbkQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725962375; x=1726567175;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=OxZS7VLlvlNcdBPu4dATlqzqCH0SG09iCapcqr1ry4w=;
+        b=ExZXYX3eqXeWJd4OCyQBZ7kgAgisoCcYxDv7A8Begg3X4n4CfxcK9ElbciEP9ypn4R
+         VVixeiQNDE9M02KLsYgHyrRgdRidfO0tH5YHvI63xhZrbGM1AJwnJZIivJVDBINU0PRm
+         xlE6BAomJc1S+VLMwQGIVyFIBQ3faD2W9ay9bpFSBy4Ptc5qE096Jmd2v9jSJrE72Bnp
+         4mIG814P9wjtx9BvvWEHT5R9rLWL4/1mAibHQ4LgkQ3oeFyoaKeUNko+Q9Gotts8ifo0
+         S3tVgyKbtjTxPA/1mD031WA/NeCWYTRH9mDgxvWJQaAzbtLDGXhANrHXYsRqdqX/NDyI
+         GXpQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWzBBEHomtv54TEgunZ/dT/QVyRRx8KxZKOKsoj7jKibbMN0RRn7pdkSM10HEyXUIMT2b6BorvxTA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyY//XdkjDfJH2vcDotCdRqCrK7scN7myHJhgRCJuwcn73Nuxr8
+	rM7fcNqNhFWmWRrJCU3L21+fiKFwL3V8J3eOORf2qozFW0WBUuLyTsW6Wo3sNIk=
+X-Google-Smtp-Source: AGHT+IEtmAPvqyyaWuRoKy32eCJyGneGNTbPJN2tRd224P8AECPcesi7ike/qTX7P5GRwYiq+pSdJw==
+X-Received: by 2002:a5d:46ca:0:b0:374:c3e4:d6e3 with SMTP id ffacd0b85a97d-378a89fd45fmr1331874f8f.5.1725962375253;
+        Tue, 10 Sep 2024 02:59:35 -0700 (PDT)
+Received: from localhost (p5dc68d3d.dip0.t-ipconnect.de. [93.198.141.61])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3789564a072sm8465192f8f.2.2024.09.10.02.59.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Sep 2024 02:59:34 -0700 (PDT)
+Date: Tue, 10 Sep 2024 11:59:33 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Dzmitry Sankouski <dsankouski@gmail.com>
+Cc: dmitry.baryshkov@linaro.org, Sebastian Reichel <sre@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Jessica Zhang <quic_jesszhan@quicinc.com>, Sam Ravnborg <sam@ravnborg.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
+	Daniel Vetter <daniel@ffwll.ch>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Konrad Dybcio <konrad.dybcio@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-leds@vger.kernel.org, linux-pwm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Subject: Re: [PATCH v4 27/28] gcc-sdm845: Add general purpose clock ops
+Message-ID: <uevafpb6r7rfutiqrm5asfvv7zfxcb3acrlxqpispele5er52x@eegonpzqlm7j>
+References: <20240719-starqltechn_integration_upstream-v4-0-a7f644821941@gmail.com>
+ <20240719-starqltechn_integration_upstream-v4-27-a7f644821941@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrudeiledgudekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucfuphgrmhfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeehpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=15 Fuz1=15 Fuz2=15
-
-Hi Everyone,
-
-This is a collection of thermal core updates for the 6.13 cycle that have been
-present in my bleeding-edge branch for some time (they are also present in my
-thermal-core-experimental branch).  They are based on linux-pm.git/thermal.
-
-Some of them touch the same pieces of code as
-
-https://lore.kernel.org/linux-pm/20240906073631.1655552-1-daniel.lezcano@linaro.org/
-
-but these are complementary changes rather than real conflicts so adjusting
-them to apply along with the above should not be a problem.
-
-The first two patches move the lists of thermal instances from thermal zone
-device objects to trip point descriptors, which allows some code to become more
-straightforward, and clean up code on top of that.
-
-The next five patches rearrange the handling of trip points while updating thermal
-zone temperature to use sorted lists of trip points, which allows the total amount
-of computations related to this to be reduced, at least on average.
-
-The last patch simplifies the thermal zone locking with the help of a guard.
-
-Please refer to the individual patch changelogs for details.
-
-Thanks!
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="d2rlzxmgwshy2k4w"
+Content-Disposition: inline
+In-Reply-To: <20240719-starqltechn_integration_upstream-v4-27-a7f644821941@gmail.com>
 
 
+--d2rlzxmgwshy2k4w
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hello,
+
+On Fri, Jul 19, 2024 at 03:55:04PM +0300, Dzmitry Sankouski wrote:
+> SDM845 has "General Purpose" clocks that can be muxed to
+> SoC pins to clock various external devices.
+> Those clocks may be used as e.g. PWM sources for external peripherals.
+>=20
+> GPCLK can in theory have arbitrary value depending on the use case, so
+> the concept of frequency tables, used in rcg2 clock driver, is not
+> efficient, because it allows only defined frequencies.
+>=20
+> Introduce clk_rcg2_gp_ops, which automatically calculate clock
+> mnd values for arbitrary clock rate.
+>=20
+> Signed-off-by: Dzmitry Sankouski <dsankouski@gmail.com>
+> ---
+>  drivers/clk/qcom/clk-rcg.h    |   1 +
+>  drivers/clk/qcom/clk-rcg2.c   | 162 ++++++++++++++++++++++++++++++++++++=
+++++--
+>  drivers/clk/qcom/gcc-sdm845.c |  19 ++---
+>  drivers/pwm/pwm-clk.c         |   5 ++
+
+I don't understand why a change to some qcom clk implementation detail
+needs a change to drivers/pwm/pwm-clk.c in the same commit. I guess if
+the change to drivers/pwm/pwm-clk.c is needed it should better go into a
+separate patch with an appropriate commit log?!
+
+Best regards
+Uwe
+
+--d2rlzxmgwshy2k4w
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmbgGIIACgkQj4D7WH0S
+/k7x2AgAluuv/f/FtpsMhu/tAKjHUOr1Y+1vUefo+pFCKzhUDjMyHMtIz8by9GsE
+1pZ9fiw/to0h6iyEctQmMN3sqoMqkEwL4aKMYb9WOopkDgY36I7oAWjXs4mio6Ed
+DPguLwTovw/p+OJMmgb/ndu5GNyQCb9AsmjekXGIx4ZVDJPX3pc8v/DX5HQj2y3x
+sCi8NmmXABsckLz42oxrky2ZGcNmFddqBJxJdgjVcXfa5BEetdtLnUhmtmhiKyJy
+g1rWCprL53Lj1ZWKLdQgu6yiNCQK9LS45ETRzHX8idzAODnagfx6by+X58QljgMg
+i72ZlH212j1K035K3UHJar7Lo0D7FQ==
+=xssr
+-----END PGP SIGNATURE-----
+
+--d2rlzxmgwshy2k4w--
