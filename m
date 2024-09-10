@@ -1,119 +1,118 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f42.google.com (mail-io1-f42.google.com [209.85.166.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6C2E18B498;
-	Tue, 10 Sep 2024 10:15:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AB58192581;
+	Tue, 10 Sep 2024 10:19:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725963347; cv=none; b=rx8BJWrvncLfet8vroPyUMue3GsOesxhWPYpB4FgY41jOLJ6ad6pWYh93MfBEOCUQvewYvsZgUgrqNDMoagorCuR5OkUklgN3o3PdQMx5hvJ26uQW7Q9MjFYYRZqbU5AdVnuIDO7tAO00kqzJDiGzNtmgtjsENR3rYgPrMBy8Ig=
+	t=1725963566; cv=none; b=hFcg2poDhCteQ0k1QNOLNWOl4VLDwCTSu/aj6CfL66Z3mc7upHSM0WKisO6tJyc5vOkTvDumVXAl3iUJOYfA5zx75pAEbUz6Mzf6/+k6QyN/FT9t7x3UZOCIpPdk+hBjcABg2QMwOocmL4CGHmH6rDMFeSaUmolmLoYJfPuR8mA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725963347; c=relaxed/simple;
-	bh=RJakgAWPl3L8DYhY9yMdwho4N1JyK2KPRQa3NxMSuYk=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ESO0MTkxlwfaaylYDqE0eYN4fM6b5lgEFbvl0ZOblSkKxR6qiezCz3QYOBmONOekzpXclOsJJxcZISnlHLxA1C25KBhfVJdVma5+OeLE8zgJ0xvXcqlb/MMrzDMZgdSLrErmZPbjARlAZt3V+6MDdw4/oCxQ4pq4B0MaBaSzRh8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=YElqqXyo; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1725963566; c=relaxed/simple;
+	bh=C95Ej2aQN/c62kFPmyAGaW0daCgItfMqNofPsPiXkUg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nEoW3D1Yk7N8vysUCD18TvEhHW2zeNHbXvFddeM5CzOXhFWr3feRmydbcSwheDmSTHMh9oISdkeWP4EJb/2l/BlIG/l4gOJ7nUUMR0HhWe2bHZdD0fwyrp4DcAq7WQCozAXTQORe0xQPziaYppz5kLuEQgf0zt6/lMNjuQ5Ji14=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OsaTnXvg; arc=none smtp.client-ip=209.85.166.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="YElqqXyo"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48A4b1Zg000538;
-	Tue, 10 Sep 2024 10:10:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=N5YXDTqQmIZOplCswfYBfX
-	Uif9UQ0Rc55Bi0BP6n8qg=; b=YElqqXyo7z8jUpeC2jpPZDHku4+9ne3YmKRJgt
-	uhR9KvLNEiGhxdzYV2Sl0MTYaVA9EExUiIkBloAisFKH1DVwI5HKJCV3h/LiAud0
-	GUeKPmo1G8X41wFdgcYES8zYHkDUzaWoyMMWYWU/Mo83orR05FJGvbq4yMWFALLD
-	D3qpoRR9pVOylcNX68UaSGIZrrP9mIlZIEVOppL4bFVM4OjowEG7NsMqRArscLtw
-	4H5nYG9DfOZCGAta0Z0ttklkIBF5FITCnnQlmlSq48aP6oP2cbTfqkdEgulCVs8G
-	VZpJNaiwzmbl7i7CDjazy1jjj1xaWf6NMJsN1xzLXUOvT7HQ==
-Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 41gy515fyu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Sep 2024 10:10:36 +0000 (GMT)
-Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-	by NASANPPMTA05.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 48AAAY4x016629
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Sep 2024 10:10:34 GMT
-Received: from 3a9ae799c7fb.qualcomm.com (10.80.80.8) by
- nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Tue, 10 Sep 2024 03:10:29 -0700
-From: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
-To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>
-CC: Konrad Dybcio <konradybcio@kernel.org>,
-        Neil Armstrong
-	<neil.armstrong@linaro.org>,
-        Stephan Gerhold
-	<stephan.gerhold@kernkonzept.com>,
-        Danila Tikhonov <danila@jiaxyga.com>,
-        "Adam Skladowski" <a39.skl@gmail.com>,
-        Vladimir Lypak
-	<vladimir.lypak@gmail.com>,
-        Andrew Halaney <ahalaney@redhat.com>,
-        Odelu
- Kukatla <quic_okukatla@quicinc.com>,
-        Mike Tipton <quic_mdtipton@quicinc.com>,
-        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH V3 0/2] Add interconnect support for QCS8300 SoC
-Date: Tue, 10 Sep 2024 10:10:11 +0000
-Message-ID: <20240910101013.3020-1-quic_rlaggysh@quicinc.com>
-X-Mailer: git-send-email 2.39.2
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OsaTnXvg"
+Received: by mail-io1-f42.google.com with SMTP id ca18e2360f4ac-82cd93a6617so105659739f.3;
+        Tue, 10 Sep 2024 03:19:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1725963564; x=1726568364; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=uCP0tRBOIy+wsaDTLfRdgyza+J/0n87KT7hpkg3zkHY=;
+        b=OsaTnXvg/swFvcRGs4EW3Vt9Srv0e0leIeTQGS6+NovXD3PBwMnUntHo3U6vA15Jc2
+         12BSnp6ugGfa8dorOqImNsz1v8QqeCObjbQRc3bUTZoLUZXoD6B0KvFwINJjhePcM1rZ
+         2HDWnWpw1iSjhqh4JbDivdBQGK34BapSuKRrHMtSwvqwhEY/T7AtXMfB6D11a1pT4BzV
+         Ta2dbk3cTcTGujor2IU2JlV84fo+S95oFi5C6G9QBir11rtB9R9+wmTo7nWVS3PDeosi
+         XFIMmjaYAYCE9CYdFfHSPERSPbxSf9/V8eykMRW8l+yZPgoJV8jJW324qQiCSJEkB4Oh
+         yJBQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725963564; x=1726568364;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=uCP0tRBOIy+wsaDTLfRdgyza+J/0n87KT7hpkg3zkHY=;
+        b=dlhoLARY808VzqBnsqWg2iHgiqr+2P/yRy6BvMpIw6XJ3G/VBv76qJSiHupWunLpm6
+         J3bRMrfbBD1NGpgcOXV0CnNOlMnx5ZzSCpSO7pch57NBS978HlpUuLz1D7dFaOupoETy
+         bjyKq5Y3Qv3XQHaWisv3Sq81JjJ0DiO/5WcCWfQcXYDVOclRdy/qYs3PRgaSSQkvSSs0
+         dIB6ya9Ge7ZXusG79ThjdHZd0NkKSP5prsVOrP609iYqgq2j9aqE1F2OPGFa7wLGkE6R
+         HGtjKuMTa+LTCiiR9XkRXTwC8CB7liY3z1Dv+KKvcNfxReNtlUdNfR/c1tS4o7Pwecr+
+         2mTw==
+X-Forwarded-Encrypted: i=1; AJvYcCUCRCj5Ol4Ydve9rAVS+lG//BVlY0myxWVDK+1Lp5OTda7QFdReum7GStGWE63pQBOC/Zg6WwtnG1s=@vger.kernel.org, AJvYcCUW/zKluJ3wlA3YYgJqFf4/jDUxSg50AkXe/dxVU/BJdD2nUHnwqeqi0fKFCdLZ1XxTue+O0KZDU00A9T2L@vger.kernel.org, AJvYcCXTgdaL6OGGBrLCDR64nGuH0Hgvp/Jbi3ad3cASiICjX6rcjnGCYnJ5RErdv30dVhLveOdhkHOYZ/E2@vger.kernel.org
+X-Gm-Message-State: AOJu0YyMj7QZ6Tb5q/g7Zc837HikHUiHpKJ02RA/H8hqOI8QxYfIyxUs
+	pf77RISwttPWU+v6LG6087sd8tIdWODMrt8NkvNKEBu2uOrfoBfS
+X-Google-Smtp-Source: AGHT+IFi1zaBeOZjTw7d0VSukZgvKaIGbeZUF6nMC8+GShKRqhjV0ugGd0V2/z6AnmzzjrVOyAAYnw==
+X-Received: by 2002:a05:6602:1693:b0:824:d5d2:2c8f with SMTP id ca18e2360f4ac-82a96171bf6mr1274984839f.1.1725963564155;
+        Tue, 10 Sep 2024 03:19:24 -0700 (PDT)
+Received: from ?IPV6:2600:6c56:7d00:582f::64e? ([2600:6c56:7d00:582f::64e])
+        by smtp.googlemail.com with ESMTPSA id ca18e2360f4ac-82aa733a317sm200522139f.4.2024.09.10.03.19.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 10 Sep 2024 03:19:23 -0700 (PDT)
+Message-ID: <53f402cb-1a0d-4b48-b92a-e968ea77a138@gmail.com>
+Date: Tue, 10 Sep 2024 05:19:20 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: 5KI-C9ruJ9W-bKaA_drjmlrH2nlwYBEo
-X-Proofpoint-GUID: 5KI-C9ruJ9W-bKaA_drjmlrH2nlwYBEo
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 impostorscore=0
- mlxscore=0 bulkscore=0 mlxlogscore=999 priorityscore=1501
- lowpriorityscore=0 malwarescore=0 clxscore=1011 phishscore=0
- suspectscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2408220000 definitions=main-2409100077
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 10/11] cpufreq: amd-pstate: Add documentation for
+ `amd_pstate_hw_prefcore`
+To: Mario Limonciello <superm1@kernel.org>,
+ "Gautham R . Shenoy" <gautham.shenoy@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>
+Cc: Borislav Petkov <bp@alien8.de>,
+ "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ "open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)"
+ <linux-kernel@vger.kernel.org>, "open list:ACPI"
+ <linux-acpi@vger.kernel.org>,
+ "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>,
+ Mario Limonciello <mario.limonciello@amd.com>
+References: <20240905163007.1350840-1-superm1@kernel.org>
+ <20240905163007.1350840-11-superm1@kernel.org>
+Content-Language: en-US
+From: Russell Haley <yumpusamongus@gmail.com>
+In-Reply-To: <20240905163007.1350840-11-superm1@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Add interconnect dtbindings and driver support for Qualcomm QCS8300 SoC.
+On 9/5/24 11:30 AM, Mario Limonciello wrote:
+> From: Mario Limonciello <mario.limonciello@amd.com>
+> 
+> Explain that the sysfs file represents both preferred core being
+> enabled by the user and supported by the hardware.
+> 
+> Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+> ---
+> v2->v3:
+>  * Add tag
+> ---
+>  Documentation/admin-guide/pm/amd-pstate.rst | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
+> index e13915c540648..d5c050ea390dc 100644
+> --- a/Documentation/admin-guide/pm/amd-pstate.rst
+> +++ b/Documentation/admin-guide/pm/amd-pstate.rst
+> @@ -263,6 +263,11 @@ lowest non-linear performance in `AMD CPPC Performance Capability
+>  <perf_cap_>`_.)
+>  This attribute is read-only.
+>  
+> +``amd_pstate_hw_prefcore``
+> +
+> +Whether the platform supports the preferred core feature and it has been
+> +enabled. This attribute is read-only.
+> +
+>  ``energy_performance_available_preferences``
+>  
+>  A list of all the supported EPP preferences that could be used for
 
-Changes since V2:
- - Addressed comments related to dt-bindings title and commit text.
-
-Changes since V1:
- - constify all the array of pointers to structures and provider
-   descriptor structures.
- - Dropped all empty nodes.
- - Added reg as required property for all the providers excluding
-   clk-virt and mc-virt in dt-bindings.
-
-Raviteja Laggyshetty (2):
-  dt-bindings: interconnect: document the RPMh Network-On-Chip
-    interconnect in QCS8300 SoC
-  interconnect: qcom: add QCS8300 interconnect provider driver
-
- .../interconnect/qcom,qcs8300-rpmh.yaml       |   72 +
- drivers/interconnect/qcom/Kconfig             |   11 +
- drivers/interconnect/qcom/Makefile            |    2 +
- drivers/interconnect/qcom/qcs8300.c           | 2088 +++++++++++++++++
- drivers/interconnect/qcom/qcs8300.h           |  177 ++
- .../interconnect/qcom,qcs8300-rpmh.h          |  189 ++
- 6 files changed, 2539 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcs8300-rpmh.yaml
- create mode 100644 drivers/interconnect/qcom/qcs8300.c
- create mode 100644 drivers/interconnect/qcom/qcs8300.h
- create mode 100644 include/dt-bindings/interconnect/qcom,qcs8300-rpmh.h
-
--- 
-2.39.2
-
+I notice I am confused. If the attribute is read only, how can it be
+enabled by the user?
