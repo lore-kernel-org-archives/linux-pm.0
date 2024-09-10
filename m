@@ -1,172 +1,524 @@
-Received: from zg8tmja5ljk3lje4ms43mwaa.icoremail.net (zg8tmja5ljk3lje4ms43mwaa.icoremail.net [209.97.181.73])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1E33919993B
-	for <linux-pm@vger.kernel.org>; Tue, 10 Sep 2024 10:31:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.97.181.73
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DECE7193439;
+	Tue, 10 Sep 2024 10:35:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725964294; cv=none; b=BOZ/TJpSF4J5QJPj2EZKsROiPur75OeYqlzERWrOrA9ina9bbd5DLvaKEDUKmZQE5boX4ZfkaCCY/2xbNqTZ2f51oonn6g1hq4F9B1seNsZYOvNzmOkY4EzpuulkeNWdwlQJK6wfqBlNsdv0XBGZuBjy8jcFkzPHk4GxpM4JMYQ=
+	t=1725964543; cv=none; b=TxBfKugHrgjVLlR2uOH2L8R4C4j4gFqOsjZv4mszMPGAmGEal59DoXeCddxvr6H76E2Mdo3VR+xrc/OS7YULHr9R63WpYy2ODAcvwfozY08DDWa4Llxk601jAh1XWEZv7+xVOcSHfWte4yVAp8QLn+rLhcZJ5tAeqJe7RiD3fGU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725964294; c=relaxed/simple;
-	bh=4vgGAC2/MIbHxWOHPWCtphUS5HSOlyiqAWITBBfKWIY=;
-	h=Date:From:To:Cc:Subject:References:Mime-Version:Message-ID:
-	 Content-Type; b=fVoY15/vpa7xG/dS58HIoMEBXrdR04j6o4tIzXZ4sgnyKGybIXEQiVnsoeMZ4FVvjZQKmcCnq566cGrc786sljsXrf9DFHpFZQjezYir6NHuqxtD45t5M9bW1XUPOYI21ohrobDWyivA9U8i3R/uV53zc82Exszs8oYHc1msqv4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=eswincomputing.com; spf=pass smtp.mailfrom=eswincomputing.com; arc=none smtp.client-ip=209.97.181.73
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=eswincomputing.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=eswincomputing.com
-Received: from E0002116LT (unknown [10.12.96.22])
-	by app2 (Coremail) with SMTP id TQJkCgAX2+TuH+Bm51AAAA--.813S2;
-	Tue, 10 Sep 2024 18:31:10 +0800 (CST)
-Date: Tue, 10 Sep 2024 18:31:10 +0800
-From: "chenshuo@eswincomputing.com" <chenshuo@eswincomputing.com>
-To: "Christian Loehle" <christian.loehle@arm.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-pm <linux-pm@vger.kernel.org>, 
-	"Lukasz Luba" <lukasz.luba@arm.com>
-Subject: Re: Re: PM: EM: Question Potential Issue with EM and OPP Table in cpufreq ondemand Governor
-References: <202409101046414978042@eswincomputing.com>, 
-	<f4478146-88d3-445c-8676-7246bf477c50@arm.com>
-X-Priority: 3
-X-GUID: 098C96DB-22FF-4AFB-AEA2-EB8A61AB7659
-X-Has-Attach: no
-X-Mailer: Foxmail 7.2.15.80[cn]
+	s=arc-20240116; t=1725964543; c=relaxed/simple;
+	bh=u/7UB3Q5cuqzEscCukI5NdFR2SsbxTFB4sY1UpEhUAM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ONpzIRXtCNGVlkHY7E81Kl0TRANrPn262UwA0xJQjqus8+WDzhcU9XhryNntk4xUYwSlxrq5UZngDpozUM1Ia8r7wcyqmBe4i8I2p0SxUxOBxeRjCYEtMIZ9yiZAPHyvlo+j+GpNSNl14sr8honSAomQ8JJGaI+zxURfN9cEY/o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ifRnyhV+; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ifRnyhV+"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
+ id 113eee69d23d6f90; Tue, 10 Sep 2024 11:35:38 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 6D3C46B836C;
+	Tue, 10 Sep 2024 11:35:38 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1725960938;
+	bh=u/7UB3Q5cuqzEscCukI5NdFR2SsbxTFB4sY1UpEhUAM=;
+	h=From:Subject:Date;
+	b=ifRnyhV+yIjoHdrIahCzt6HEJxoSqk+B7P84qoPHeKZOSrwi7c1K4ByDPqnHDygso
+	 2wj2Frh7FqzXGIUwwKYwAncQcqgP8x2/yBMmkknV1EVM2DVKoX6OcXikPgavQmGMja
+	 tXpg4JuqeTGA8x9bQqifQHy8YVF/W8VmlOkJPwJDXPn+HJqiplD6FM4J2OaeJab+0v
+	 gX41Wq5O7kI1IRkbnw7q9eK/DfKAT1i4jBb574ofOTIXhjQ930u1XjJK2y+AkcZGwz
+	 VQgsiSlJPrUOX7PFZc4gC35PHHaGtIX1W5ax6Q4y2Jxmo408JT8L+4iqeEQ75ioHBa
+	 RGOJXHqDbIeoQ==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH for 6.13 v1 8/8] thermal: core: Add and use thermal zone guard
+Date: Tue, 10 Sep 2024 11:35:20 +0200
+Message-ID: <3241904.5fSG56mABF@rjwysocki.net>
+In-Reply-To: <4920970.GXAFRqVoOG@rjwysocki.net>
+References: <4920970.GXAFRqVoOG@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Message-ID: <202409101831099346787@eswincomputing.com>
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: base64
-X-CM-TRANSID:TQJkCgAX2+TuH+Bm51AAAA--.813S2
-X-Coremail-Antispam: 1UD129KBjvJXoW3Ary5CryUKw17AF4ruw1rJFb_yoWxGF15pF
-	s8Jayj9w4vvr45Zw15tF10kr4Y9an8ZF15Gr1DKry8A3yS9ryqgF1qqF1Dta48Cr18Zw1x
-	Zw4jvFyvvw1DCw7anT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUmEb7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I2
-	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
-	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xII
-	jxv20xvEc7CjxVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwV
-	C2z280aVCY1x0267AKxVW0oVCq3wAa7VCE64xvF2IEb7IF0Fy264xvF2IEb7IF0Fy264kE
-	64k0F2IE7I0Y6sxI4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4
-	xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCa
-	FVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4xvF2IEb7IF0Fy264kE64k0F24lFcxC0V
-	AYjxAxZF0Ex2IqxwCY02Avz4vE-syl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_
-	Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1V
-	AY17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAI
-	cVC0I7IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42
-	IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UMVCEFcxC0VAY
-	jxAxZFUvcSsGvfC2KfnxnUUI43ZEXa7IUeGZXDUUUUU==
-X-CM-SenderInfo: xfkh02xkxrqvxvzl0uprps33xlqjhudrp/
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: spam:low
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrudeiledgudejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
-Pk9uIDkvMTAvMjQgMDM6NDYsIGNoZW5zaHVvQGVzd2luY29tcHV0aW5nLmNvbSB3cm90ZToKPj4g
-SGkgUmFmYWVsLAo+wqAKPigrQ0MgTHVrYXN6KQo+wqAKPj4KPj4gSSBhbSBlbmNvdW50ZXJpbmcg
-YW4gaXNzdWUgcmVsYXRlZCB0byB0aGUgRW5lcmd5IE1vZGVsIChFTSkgd2hlbiB1c2luZyBjcHVm
-cmVxIHdpdGggdGhlIG9uZGVtYW5kIGdvdmVybm9yLiBCZWxvdyBpcyBhIGRldGFpbGVkIGRlc2Ny
-aXB0aW9uOgo+Pgo+PiAxLiBQcm9ibGVtIERlc2NyaXB0aW9uOgo+PiDCoCDCoFdoZW4gdXNpbmcg
-Y3B1ZnJlcSB3aXRoIHRoZSBvbmRlbWFuZCBnb3Zlcm5vciBhbmQgZW5hYmxpbmcgdGhlIGVuZXJn
-eSBtb2RlbCAoRU0pLCB0aGUgQ1BVIE9QUCB0YWJsZSBpcyBjb25maWd1cmVkIHdpdGggZnJlcXVl
-bmNpZXMgYW5kIHZvbHRhZ2VzIGZvciBlYWNoIGZyZXF1ZW5jeSBwb2ludC4gQWRkaXRpb25hbGx5
-LCB0aGUgYGR5bmFtaWMtcG93ZXItY29lZmZpY2llbnRgIGlzIGNvbmZpZ3VyZWQgaW4gdGhlIERU
-UyB1bmRlciB0aGUgQ1BVIG5vZGUuIEhvd2V2ZXIsIEkgb2JzZXJ2ZSBhYm5vcm1hbCBkeW5hbWlj
-IGZyZXF1ZW5jeSBzY2FsaW5nLCB3aGVyZSB0aGUgQ1BVIGZyZXF1ZW5jeSBhbHdheXMgc3RheXMg
-YXQgdGhlIGhpZ2hlc3QgZnJlcXVlbmN5IHBvaW50IGluIHRoZSBPUFAgdGFibGUuIEJlbG93IGlz
-IGFuIGV4YW1wbGUgb2YgdGhlIERUUyBjb25maWd1cmF0aW9uOgo+PiBgYGAKPj4gY3B1MDogY3B1
-QDDCoAo+PiB7wqAKPj4gLi4uCj4+IG9wZXJhdGluZy1wb2ludHMtdjIgPSA8JmQwX2NwdV9vcHBf
-dGFibGU+O8KgCj7CoAo+RG8geW91IG1pbmQgc2hhcmluZyA8JmQwX2NwdV9vcHBfdGFibGU+Pwo+
-wqAKT2YgY291cnNlLCB0aGUgZW50aXJlIERUUyBmaWxlIGlzIGluY29udmVuaWVudCB0byBjb3B5
-LCB0aGUgbWFpbiB1c2VmdWwgc2VnbWVudHMgSSBoYXZlIGFyZToKYGBgCglkMF9jcHVfb3BwX3Rh
-YmxlOiBvcHAtdGFibGUwIHsKCQljb21wYXRpYmxlID0gIm9wZXJhdGluZy1wb2ludHMtdjIiOwoJ
-CW9wcC1zaGFyZWQ7CgoJCW9wcC0yNDAwMDAwMCB7CgkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8Q0xL
-X0ZSRVFfMjRNPjsKCQkJb3BwLW1pY3Jvdm9sdCA9IDw4MDAwMDA+OwoJCQljbG9jay1sYXRlbmN5
-LW5zID0gPDcwMDAwPjsKCQl9OwoJCW9wcC0xMDAwMDAwMDAgewoJCQlvcHAtaHogPSAvYml0cy8g
-NjQgPENMS19GUkVRXzEwME0+OwoJCQlvcHAtbWljcm92b2x0ID0gPDgwMDAwMD47CgkJCWNsb2Nr
-LWxhdGVuY3ktbnMgPSA8NzAwMDA+OwoJCX07CgkJb3BwLTIwMDAwMDAwMCB7CgkJCW9wcC1oeiA9
-IC9iaXRzLyA2NCA8Q0xLX0ZSRVFfMjAwTT47CgkJCW9wcC1taWNyb3ZvbHQgPSA8ODAwMDAwPjsK
-CQkJY2xvY2stbGF0ZW5jeS1ucyA9IDw3MDAwMD47CgkJfTsKCQlvcHAtNDAwMDAwMDAwIHsKCQkJ
-b3BwLWh6ID0gL2JpdHMvIDY0IDxDTEtfRlJFUV80MDBNPjsKCQkJb3BwLW1pY3Jvdm9sdCA9IDw4
-MDAwMDA+OwoJCQljbG9jay1sYXRlbmN5LW5zID0gPDcwMDAwPjsKCQl9OwoJCW9wcC01MDAwMDAw
-MDAgewoJCQlvcHAtaHogPSAvYml0cy8gNjQgPENMS19GUkVRXzUwME0+OwoJCQlvcHAtbWljcm92
-b2x0ID0gPDgwMDAwMD47CgkJCWNsb2NrLWxhdGVuY3ktbnMgPSA8NzAwMDA+OwoJCX07CgkJb3Bw
-LTYwMDAwMDAwMCB7CgkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8Q0xLX0ZSRVFfNjAwTT47CgkJCW9w
-cC1taWNyb3ZvbHQgPSA8ODAwMDAwPjsKCQkJY2xvY2stbGF0ZW5jeS1ucyA9IDw3MDAwMD47CgkJ
-fTsKCQlvcHAtNzAwMDAwMDAwIHsKCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDxDTEtfRlJFUV83MDBN
-PjsKCQkJb3BwLW1pY3Jvdm9sdCA9IDw4MDAwMDA+OwoJCQljbG9jay1sYXRlbmN5LW5zID0gPDcw
-MDAwPjsKCQl9OwoJCW9wcC04MDAwMDAwMDAgewoJCQlvcHAtaHogPSAvYml0cy8gNjQgPENMS19G
-UkVRXzgwME0+OwoJCQlvcHAtbWljcm92b2x0ID0gPDgwMDAwMD47CgkJCWNsb2NrLWxhdGVuY3kt
-bnMgPSA8NzAwMDA+OwoJCX07CgkJb3BwLTkwMDAwMDAwMCB7CgkJCW9wcC1oeiA9IC9iaXRzLyA2
-NCA8Q0xLX0ZSRVFfOTAwTT47CgkJCW9wcC1taWNyb3ZvbHQgPSA8ODAwMDAwPjsKCQkJY2xvY2st
-bGF0ZW5jeS1ucyA9IDw3MDAwMD47CgkJfTsKCQlvcHAtMTAwMDAwMDAwMCB7CgkJCW9wcC1oeiA9
-IC9iaXRzLyA2NCA8Q0xLX0ZSRVFfMTAwME0+OwoJCQlvcHAtbWljcm92b2x0ID0gPDgwMDAwMD47
-CgkJCWNsb2NrLWxhdGVuY3ktbnMgPSA8NzAwMDA+OwoJCX07CgkJb3BwLTEyMDAwMDAwMDAgewoJ
-CQlvcHAtaHogPSAvYml0cy8gNjQgPENMS19GUkVRXzEyMDBNPjsKCQkJb3BwLW1pY3Jvdm9sdCA9
-IDw4MDAwMDA+OwoJCQljbG9jay1sYXRlbmN5LW5zID0gPDcwMDAwPjsKCQl9OwoJCW9wcC0xMzAw
-MDAwMDAwIHsKCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDxDTEtfRlJFUV8xMzAwTT47CgkJCW9wcC1t
-aWNyb3ZvbHQgPSA8ODAwMDAwPjsKCQkJY2xvY2stbGF0ZW5jeS1ucyA9IDw3MDAwMD47CgkJfTsK
-CQlvcHAtMTQwMDAwMDAwMCB7CgkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8Q0xLX0ZSRVFfMTQwME0+
-OwoJCQlvcHAtbWljcm92b2x0ID0gPDgwMDAwMD47CgkJCWNsb2NrLWxhdGVuY3ktbnMgPSA8NzAw
-MDA+OwoJCX07Cgl9OwouLi4JCglDNjQ6IGNwdXMgewoJCSNhZGRyZXNzLWNlbGxzID0gPDE+OwoJ
-CSNzaXplLWNlbGxzID0gPDA+OwoJCXRpbWViYXNlLWZyZXF1ZW5jeSA9IDxSVENDTEtfRlJFUT47
-CgkJY3B1MDogY3B1QDAgewoJCQkuLi4KCQkJb3BlcmF0aW5nLXBvaW50cy12MiA9IDwmZDBfY3B1
-X29wcF90YWJsZT47CgkJCSNjb29saW5nLWNlbGxzID0gPDI+OwoJCQlkeW5hbWljLXBvd2VyLWNv
-ZWZmaWNpZW50ID0gPDIwMDA+O8KgCgkJCUMxOiBpbnRlcnJ1cHQtY29udHJvbGxlciB7CgkJCQkj
-aW50ZXJydXB0LWNlbGxzID0gPDE+OwoJCQkJY29tcGF0aWJsZSA9ICJyaXNjdixjcHUtaW50YyI7
-CgkJCQlpbnRlcnJ1cHQtY29udHJvbGxlcjsKCQkJfTsKCQl9OwoJCWNwdTE6IGNwdUAxIHsKCQkJ
-Li4uCgkJCW9wZXJhdGluZy1wb2ludHMtdjIgPSA8JmQwX2NwdV9vcHBfdGFibGU+OwoJCQkjY29v
-bGluZy1jZWxscyA9IDwyPjsKCQkJZHluYW1pYy1wb3dlci1jb2VmZmljaWVudCA9IDwyMDAwPjsK
-CQkJQzI6IGludGVycnVwdC1jb250cm9sbGVyIHsKCQkJCSNpbnRlcnJ1cHQtY2VsbHMgPSA8MT47
-CgkJCQljb21wYXRpYmxlID0gInJpc2N2LGNwdS1pbnRjIjsKCQkJCWludGVycnVwdC1jb250cm9s
-bGVyOwoJCQl9OwoJCX07CQoJCWNwdTI6IGNwdUAyIHsKCQkJLi4uCgkJCW9wZXJhdGluZy1wb2lu
-dHMtdjIgPSA8JmQwX2NwdV9vcHBfdGFibGU+OwoJCQkjY29vbGluZy1jZWxscyA9IDwyPjsKCQkJ
-ZHluYW1pYy1wb3dlci1jb2VmZmljaWVudCA9IDwyMDAwPjsKCQkJQzM6IGludGVycnVwdC1jb250
-cm9sbGVyIHsKCQkJCSNpbnRlcnJ1cHQtY2VsbHMgPSA8MT47CgkJCQljb21wYXRpYmxlID0gInJp
-c2N2LGNwdS1pbnRjIjsKCQkJCWludGVycnVwdC1jb250cm9sbGVyOwoJCQl9OwoJCX07CQoJCWNw
-dTM6IGNwdUAzIHsKCQkJLi4uCgkJCW9wZXJhdGluZy1wb2ludHMtdjIgPSA8JmQwX2NwdV9vcHBf
-dGFibGU+OwoJCQkjY29vbGluZy1jZWxscyA9IDwyPjsKCQkJZHluYW1pYy1wb3dlci1jb2VmZmlj
-aWVudCA9IDwyMDAwPjsKCQkJQzQ6IGludGVycnVwdC1jb250cm9sbGVyIHsKCQkJCSNpbnRlcnJ1
-cHQtY2VsbHMgPSA8MT47CgkJCQljb21wYXRpYmxlID0gInJpc2N2LGNwdS1pbnRjIjsKCQkJCWlu
-dGVycnVwdC1jb250cm9sbGVyOwoJCQl9OwoJCX07CQkKCX07CQkKYGBgCj4+ICNjb29saW5nLWNl
-bGxzID0gPDI+OyBkeW5hbWljLXBvd2VyLWNvZWZmaWNpZW50ID0gPDIwMDA+OyB9Owo+PiAuLi4K
-Pj4gYGBgCj4+IDIuIFJvb3QgQ2F1c2UgQW5hbHlzaXM6Cj4+IFdoZW4gdXNpbmcgdGhlIE9QUCB0
-YWJsZSBhbmQgY29uZmlndXJpbmcgdGhlICJkeW5hbWljLXBvd2VyLWNvZWZmaWNpZW50LCIgdGhl
-IGBlbV9kZXZfcmVnaXN0ZXJfcGVyZl9kb21haW4oKWAgZnVuY3Rpb24gaW4gYGtlcm5lbC9wb3dl
-ci9lbmVyZ3lfbW9kZWwuY2Agc2V0cyB0aGUgZmxhZ3MgdG8gYEVNX1BFUkZfRE9NQUlOX01JQ1JP
-V0FUVFNgLiBJbiB0aGUgYGVtX2NyZWF0ZV9wZXJmX3RhYmxlKClgIGZ1bmN0aW9uLCBgZW1fY29t
-cHV0ZV9jb3N0cygpYCBpbmNsdWRlcyB0aGUgZm9sbG93aW5nIGNvZGU6Cj4+IGBgYAo+PiBpZiAo
-dGFibGVbaV0uY29zdCA+PSBwcmV2X2Nvc3QpIHsKPj4gwqAgwqAgdGFibGVbaV0uZmxhZ3MgPSBF
-TV9QRVJGX1NUQVRFX0lORUZGSUNJRU5UOwo+PiDCoCDCoCBkZXZfZGJnKGRldiwgIkVNOiBPUFA6
-JWx1IGlzIGluZWZmaWNpZW50XG4iLCB0YWJsZVtpXS5mcmVxdWVuY3kpOwo+PiB9Cj4+IGBgYAo+
-PiBTaW5jZSB0aGUgY29zdCBpcyBjYWxjdWxhdGVkIGFzIHBvd2VyICogbWF4X2ZyZXF1ZW5jeSAv
-IGZyZXF1ZW5jeSwgdGhlIGNvc3QgZm9yIGVhY2ggZnJlcXVlbmN5IHBvaW50IGJlY29tZXMgYSBj
-b25zdGFudCB2YWx1ZS4gQ29uc2VxdWVudGx5LCBleGNlcHQgZm9yIG5yX3N0YXRlcyAtIDEgKHdo
-ZXJlIHByZXZfc3RhdGUgaXMgaW5pdGlhbGl6ZWQgYXMgVUxPTkdfTUFYKSwgYWxsIG90aGVyIGZy
-ZXF1ZW5jeSBwb2ludHMnIGNvc3QgaXMgZXF1YWwgdG8gcHJldl9jb3N0LiBBcyBhIHJlc3VsdCwg
-b25seSB0aGUgaGlnaGVzdCBmcmVxdWVuY3kgcG9pbnQgKHRhYmxlW25yX3N0YXRlcyAtIDFdKSBp
-cyBub3QgZmxhZ2dlZCBhcyBFTV9QRVJGX1NUQVRFX0lORUZGSUNJRU5UIGluIHRoZSBFTSBwZXJm
-b3JtYW5jZSB0YWJsZS4KPj4KPj4gSW4gdGhlIGVtX2NwdWZyZXFfdXBkYXRlX2VmZmljaWVuY2ll
-cygpIGZ1bmN0aW9uLCB0aGUgZm9sbG93aW5nIGNvZGUgaXMgZXhlY3V0ZWQ6Cj4+IGBgYAo+PiBm
-b3IgKGkgPSAwOyBpIDwgcGQtPm5yX3BlcmZfc3RhdGVzOyBpKyspIHsKPj4gwqAgwqAgaWYgKCEo
-dGFibGVbaV0uZmxhZ3MgJiBFTV9QRVJGX1NUQVRFX0lORUZGSUNJRU5UKSkKPj4gwqAgwqAgwqAg
-wqAgY29udGludWU7Cj4+Cj4+IMKgIMKgIGlmICghY3B1ZnJlcV90YWJsZV9zZXRfaW5lZmZpY2ll
-bnQocG9saWN5LCB0YWJsZVtpXS5mcmVxdWVuY3kpKQo+PiDCoCDCoCDCoCDCoCBmb3VuZCsrOwo+
-PiB9Cj4+IGBgYAo+PiBBcyBhIHJlc3VsdCwgYWxsIGZyZXF1ZW5jeSBwb2ludHMgbWFya2VkIGFz
-IEVNX1BFUkZfU1RBVEVfSU5FRkZJQ0lFTlQgYXJlIGZsYWdnZWQgYXMgQ1BVRlJFUV9JTkVGRklD
-SUVOVF9GUkVRIGluIHRoZSBjcHVmcmVxX3RhYmxlX3NldF9pbmVmZmljaWVudCgpIGZ1bmN0aW9u
-LCBjYXVzaW5nIHRoZXNlIGZyZXF1ZW5jaWVzIHRvIGJlIHNraXBwZWQgZHVyaW5nIGZyZXF1ZW5j
-eSBzY2FsaW5nLgo+Pgo+PiAzLiBQcm9wb3NlZCBDaGFuZ2UgYW5kIFRlc3Rpbmc6wqAKPj4gT24g
-TGludXggNi42LCB0aGlzIGJlaGF2aW9yIGFmZmVjdHMgdGhlIG5vcm1hbCBvcGVyYXRpb24gb2Yg
-dGhlIGNwdWZyZXEgb25kZW1hbmQgZ292ZXJub3IsIHdoaWNoIGluIHR1cm4gY2F1c2VzIHBhc3Np
-dmUgY29vbGluZyBkZXZpY2VzIHRvIG1hbGZ1bmN0aW9uIHdoZW4gdXNpbmcgdGhlIHBvd2VyIGFs
-bG9jYXRvciBzdHJhdGVneSBpbiB0aGUgdGhlcm1hbCBmcmFtZXdvcmsuIEkgbWFkZSBhIHRlbXBv
-cmFyeSBmaXggYnkgY2hhbmdpbmcgdGhlIGNvbmRpdGlvbiBmcm9tOgo+PiBpZiAodGFibGVbaV0u
-Y29zdCA+PSBwcmV2X2Nvc3QpCj4+IHRvOgo+PiBpZiAodGFibGVbaV0uY29zdCA+IHByZXZfY29z
-dCkKPj4gQWZ0ZXIgdGhpcyBjaGFuZ2UsIHRoZSBpc3N1ZSBzZWVtcyByZXNvbHZlZCBmb3Igbm93
-LiBIb3dldmVyLCBJIGFtIGNvbmNlcm5lZCBhYm91dCBwb3RlbnRpYWwgc2lkZSBlZmZlY3RzIG9m
-IHRoaXMgbW9kaWZpY2F0aW9uLgo+wqAKPkJ1dCB0aGlzIGRvZXNuJ3Qgc29sdmUgdGhlIGFjdHVh
-bCBpc3N1ZSwgaWYgY29zdCA9PSBwcmV2X2Nvc3QgZm9yIGFsbAo+T1BQcyB0aGVuIGFsbCBvZiB0
-aGVtIGJ1dCBvbmUgYXJlIGluZGVlZCBpbmVmZmljaWVudC4KRGVzcGl0ZSB0aGlzLCB1bmRlciBh
-biBvbmRlbWFuZCBwb2xpY3kgYmFzZWQgb24gRFZGUywgdGhlIHNvZnR3YXJlIG1pZ2h0IG5vdCBr
-bm93IHRoZSByZWFsIHBvd2VyIGNvbnN1bXB0aW9uLCBhbmQgY2FuIG9ubHkgdXNlIHRoZSBmb3Jt
-dWxhIFA9QypWXjIqZip1c2FnZV9yYXRlLgpBZGRpdGlvbmFsbHksIHRoaXMgYXQgbGVhc3QgZW5z
-dXJlcyB0aGF0IHRoZSB0aGVybWFsIGZyYW1ld29yayB1c2luZyB0aGUgSVBBIHN0cmF0ZWd5IGNh
-biBwcm9wZXJseSBjb29sIGRvd24u
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Add and use a special guard for thermal zones.
+
+This allows quite a few error code paths to be simplified among
+other things and brings in a noticeable code size reduction for
+a good measure.
+
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/thermal_core.c    |   67 +++++++++++++------------------
+ drivers/thermal/thermal_core.h    |    4 +
+ drivers/thermal/thermal_helpers.c |   17 ++-----
+ drivers/thermal/thermal_sysfs.c   |   81 ++++++++++++++++----------------------
+ drivers/thermal/thermal_trip.c    |    8 ---
+ 5 files changed, 76 insertions(+), 101 deletions(-)
+
+Index: linux-pm/drivers/thermal/thermal_core.h
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.h
++++ linux-pm/drivers/thermal/thermal_core.h
+@@ -9,6 +9,7 @@
+ #ifndef __THERMAL_CORE_H__
+ #define __THERMAL_CORE_H__
+ 
++#include <linux/cleanup.h>
+ #include <linux/device.h>
+ #include <linux/thermal.h>
+ 
+@@ -146,6 +147,9 @@ struct thermal_zone_device {
+ 	struct thermal_trip_desc trips[] __counted_by(num_trips);
+ };
+ 
++DEFINE_GUARD(thermal_zone, struct thermal_zone_device *, mutex_lock(&_T->lock),
++	     mutex_unlock(&_T->lock))
++
+ /* Initial thermal zone temperature. */
+ #define THERMAL_TEMP_INIT	INT_MIN
+ 
+Index: linux-pm/drivers/thermal/thermal_sysfs.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_sysfs.c
++++ linux-pm/drivers/thermal/thermal_sysfs.c
+@@ -50,13 +50,13 @@ static ssize_t
+ mode_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	int enabled;
+ 
+-	mutex_lock(&tz->lock);
+-	enabled = tz->mode == THERMAL_DEVICE_ENABLED;
+-	mutex_unlock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+-	return sprintf(buf, "%s\n", enabled ? "enabled" : "disabled");
++	if (tz->mode == THERMAL_DEVICE_ENABLED)
++		return sprintf(buf, "enabled\n");
++
++	return sprintf(buf, "disabled\n");
+ }
+ 
+ static ssize_t
+@@ -103,38 +103,34 @@ trip_point_temp_store(struct device *dev
+ {
+ 	struct thermal_trip *trip = thermal_trip_of_attr(attr, temp);
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	int ret, temp;
++	int temp;
+ 
+-	ret = kstrtoint(buf, 10, &temp);
+-	if (ret)
++	if (kstrtoint(buf, 10, &temp))
+ 		return -EINVAL;
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+ 	if (temp == trip->temperature)
+-		goto unlock;
++		return count;
+ 
+ 	/* Arrange the condition to avoid integer overflows. */
+ 	if (temp != THERMAL_TEMP_INVALID &&
+-	    temp <= trip->hysteresis + THERMAL_TEMP_INVALID) {
+-		ret = -EINVAL;
+-		goto unlock;
+-	}
++	    temp <= trip->hysteresis + THERMAL_TEMP_INVALID)
++		return -EINVAL;
+ 
+ 	if (tz->ops.set_trip_temp) {
++		int ret;
++
+ 		ret = tz->ops.set_trip_temp(tz, trip, temp);
+ 		if (ret)
+-			goto unlock;
++			return ret;
+ 	}
+ 
+ 	thermal_zone_set_trip_temp(tz, trip, temp);
+ 
+ 	__thermal_zone_device_update(tz, THERMAL_TRIP_CHANGED);
+ 
+-unlock:
+-	mutex_unlock(&tz->lock);
+-
+-	return ret ? ret : count;
++	return count;
+ }
+ 
+ static ssize_t
+@@ -152,16 +148,15 @@ trip_point_hyst_store(struct device *dev
+ {
+ 	struct thermal_trip *trip = thermal_trip_of_attr(attr, hyst);
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	int ret, hyst;
++	int hyst;
+ 
+-	ret = kstrtoint(buf, 10, &hyst);
+-	if (ret || hyst < 0)
++	if (kstrtoint(buf, 10, &hyst) || hyst < 0)
+ 		return -EINVAL;
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+ 	if (hyst == trip->hysteresis)
+-		goto unlock;
++		return count;
+ 
+ 	/*
+ 	 * Allow the hysteresis to be updated when the temperature is invalid
+@@ -171,22 +166,17 @@ trip_point_hyst_store(struct device *dev
+ 	 */
+ 	if (trip->temperature == THERMAL_TEMP_INVALID) {
+ 		WRITE_ONCE(trip->hysteresis, hyst);
+-		goto unlock;
++		return count;
+ 	}
+ 
+-	if (trip->temperature - hyst <= THERMAL_TEMP_INVALID) {
+-		ret = -EINVAL;
+-		goto unlock;
+-	}
++	if (trip->temperature - hyst <= THERMAL_TEMP_INVALID)
++		return -EINVAL;
+ 
+ 	thermal_zone_set_trip_hyst(tz, trip, hyst);
+ 
+ 	__thermal_zone_device_update(tz, THERMAL_TRIP_CHANGED);
+ 
+-unlock:
+-	mutex_unlock(&tz->lock);
+-
+-	return ret ? ret : count;
++	return count;
+ }
+ 
+ static ssize_t
+@@ -236,25 +226,26 @@ emul_temp_store(struct device *dev, stru
+ 		const char *buf, size_t count)
+ {
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	int ret = 0;
+ 	int temperature;
+ 
+ 	if (kstrtoint(buf, 10, &temperature))
+ 		return -EINVAL;
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+-	if (!tz->ops.set_emul_temp)
+-		tz->emul_temperature = temperature;
+-	else
+-		ret = tz->ops.set_emul_temp(tz, temperature);
++	if (tz->ops.set_emul_temp) {
++		int ret;
+ 
+-	if (!ret)
+-		__thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
++		ret = tz->ops.set_emul_temp(tz, temperature);
++		if (ret)
++			return ret;
++	} else {
++		tz->emul_temperature = temperature;
++	}
+ 
+-	mutex_unlock(&tz->lock);
++	__thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+-	return ret ? ret : count;
++	return count;
+ }
+ static DEVICE_ATTR_WO(emul_temp);
+ #endif
+@@ -894,13 +885,11 @@ ssize_t weight_store(struct device *dev,
+ 	instance = container_of(attr, struct thermal_instance, weight_attr);
+ 
+ 	/* Don't race with governors using the 'weight' value */
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+ 	instance->weight = weight;
+ 
+ 	thermal_governor_update_tz(tz, THERMAL_INSTANCE_WEIGHT_CHANGED);
+ 
+-	mutex_unlock(&tz->lock);
+-
+ 	return count;
+ }
+Index: linux-pm/drivers/thermal/thermal_trip.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_trip.c
++++ linux-pm/drivers/thermal/thermal_trip.c
+@@ -45,13 +45,9 @@ int thermal_zone_for_each_trip(struct th
+ 			       int (*cb)(struct thermal_trip *, void *),
+ 			       void *data)
+ {
+-	int ret;
++	guard(thermal_zone)(tz);
+ 
+-	mutex_lock(&tz->lock);
+-	ret = for_each_thermal_trip(tz, cb, data);
+-	mutex_unlock(&tz->lock);
+-
+-	return ret;
++	return for_each_thermal_trip(tz, cb, data);
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_for_each_trip);
+ 
+Index: linux-pm/drivers/thermal/thermal_helpers.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_helpers.c
++++ linux-pm/drivers/thermal/thermal_helpers.c
+@@ -60,13 +60,13 @@ bool thermal_trip_is_bound_to_cdev(struc
+ {
+ 	bool ret;
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
++
+ 	mutex_lock(&cdev->lock);
+ 
+ 	ret = thermal_instance_present(tz, cdev, trip);
+ 
+ 	mutex_unlock(&cdev->lock);
+-	mutex_unlock(&tz->lock);
+ 
+ 	return ret;
+ }
+@@ -138,19 +138,14 @@ int thermal_zone_get_temp(struct thermal
+ 	if (IS_ERR_OR_NULL(tz))
+ 		return -EINVAL;
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+-	if (!tz->ops.get_temp) {
+-		ret = -EINVAL;
+-		goto unlock;
+-	}
++	if (!tz->ops.get_temp)
++		return -EINVAL;
+ 
+ 	ret = __thermal_zone_get_temp(tz, temp);
+ 	if (!ret && *temp <= THERMAL_TEMP_INVALID)
+-		ret = -ENODATA;
+-
+-unlock:
+-	mutex_unlock(&tz->lock);
++		return -ENODATA;
+ 
+ 	return ret;
+ }
+Index: linux-pm/drivers/thermal/thermal_core.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -199,16 +199,13 @@ int thermal_zone_device_set_policy(struc
+ 	int ret = -EINVAL;
+ 
+ 	mutex_lock(&thermal_governor_lock);
+-	mutex_lock(&tz->lock);
+ 
+-	gov = __find_governor(strim(policy));
+-	if (!gov)
+-		goto exit;
++	guard(thermal_zone)(tz);
+ 
+-	ret = thermal_set_governor(tz, gov);
++	gov = __find_governor(strim(policy));
++	if (gov)
++		ret = thermal_set_governor(tz, gov);
+ 
+-exit:
+-	mutex_unlock(&tz->lock);
+ 	mutex_unlock(&thermal_governor_lock);
+ 
+ 	thermal_notify_tz_gov_change(tz, policy);
+@@ -608,26 +605,18 @@ static int thermal_zone_device_set_mode(
+ {
+ 	int ret;
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+ 	/* do nothing if mode isn't changing */
+-	if (mode == tz->mode) {
+-		mutex_unlock(&tz->lock);
+-
++	if (mode == tz->mode)
+ 		return 0;
+-	}
+ 
+ 	ret = __thermal_zone_device_set_mode(tz, mode);
+-	if (ret) {
+-		mutex_unlock(&tz->lock);
+-
++	if (ret)
+ 		return ret;
+-	}
+ 
+ 	__thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+-	mutex_unlock(&tz->lock);
+-
+ 	if (mode == THERMAL_DEVICE_ENABLED)
+ 		thermal_notify_tz_enable(tz);
+ 	else
+@@ -656,10 +645,10 @@ static bool thermal_zone_is_present(stru
+ void thermal_zone_device_update(struct thermal_zone_device *tz,
+ 				enum thermal_notify_event event)
+ {
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
++
+ 	if (thermal_zone_is_present(tz))
+ 		__thermal_zone_device_update(tz, event);
+-	mutex_unlock(&tz->lock);
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_device_update);
+ 
+@@ -936,7 +925,7 @@ static void thermal_zone_cdev_bind(struc
+ 	if (!tz->ops.should_bind)
+ 		return;
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+ 	for_each_trip_desc(tz, td) {
+ 		struct cooling_spec c = {
+@@ -953,8 +942,6 @@ static void thermal_zone_cdev_bind(struc
+ 		if (ret)
+ 			print_bind_err_msg(tz, td, cdev, ret);
+ 	}
+-
+-	mutex_unlock(&tz->lock);
+ }
+ 
+ /**
+@@ -1259,12 +1246,10 @@ static void thermal_zone_cdev_unbind(str
+ {
+ 	struct thermal_trip_desc *td;
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+ 	for_each_trip_desc(tz, td)
+ 		thermal_unbind_cdev_from_trip(tz, td, cdev);
+-
+-	mutex_unlock(&tz->lock);
+ }
+ 
+ /**
+@@ -1310,7 +1295,7 @@ int thermal_zone_get_crit_temp(struct th
+ 	if (tz->ops.get_crit_temp)
+ 		return tz->ops.get_crit_temp(tz, temp);
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+ 	for_each_trip_desc(tz, td) {
+ 		const struct thermal_trip *trip = &td->trip;
+@@ -1322,12 +1307,17 @@ int thermal_zone_get_crit_temp(struct th
+ 		}
+ 	}
+ 
+-	mutex_unlock(&tz->lock);
+-
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_get_crit_temp);
+ 
++static void thermal_zone_add_to_list(struct thermal_zone_device *tz)
++{
++	guard(thermal_zone)(tz);
++
++	list_add_tail(&tz->node, &thermal_tz_list);
++}
++
+ /**
+  * thermal_zone_device_register_with_trips() - register a new thermal zone device
+  * @type:	the thermal zone device type
+@@ -1488,9 +1478,7 @@ thermal_zone_device_register_with_trips(
+ 
+ 	mutex_lock(&thermal_list_lock);
+ 
+-	mutex_lock(&tz->lock);
+-	list_add_tail(&tz->node, &thermal_tz_list);
+-	mutex_unlock(&tz->lock);
++	thermal_zone_add_to_list(tz);
+ 
+ 	/* Bind cooling devices for this zone */
+ 	list_for_each_entry(cdev, &thermal_cdev_list, node)
+@@ -1557,6 +1545,13 @@ struct device *thermal_zone_device(struc
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_device);
+ 
++static void thermal_zone_del_from_list(struct thermal_zone_device *tz)
++{
++	guard(thermal_zone)(tz);
++
++	list_del(&tz->node);
++}
++
+ /**
+  * thermal_zone_device_unregister - removes the registered thermal zone device
+  * @tz: the thermal zone device to remove
+@@ -1581,9 +1576,7 @@ void thermal_zone_device_unregister(stru
+ 		return;
+ 	}
+ 
+-	mutex_lock(&tz->lock);
+-	list_del(&tz->node);
+-	mutex_unlock(&tz->lock);
++	thermal_zone_del_from_list(tz);
+ 
+ 	/* Unbind all cdevs associated with 'this' thermal zone */
+ 	list_for_each_entry(cdev, &thermal_cdev_list, node)
+@@ -1656,7 +1649,7 @@ static void thermal_zone_device_resume(s
+ 
+ 	tz = container_of(work, struct thermal_zone_device, poll_queue.work);
+ 
+-	mutex_lock(&tz->lock);
++	guard(thermal_zone)(tz);
+ 
+ 	tz->suspended = false;
+ 
+@@ -1667,8 +1660,6 @@ static void thermal_zone_device_resume(s
+ 
+ 	complete(&tz->resume);
+ 	tz->resuming = false;
+-
+-	mutex_unlock(&tz->lock);
+ }
+ 
+ static int thermal_pm_notify(struct notifier_block *nb,
+
+
 
