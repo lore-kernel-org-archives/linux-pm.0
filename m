@@ -1,94 +1,262 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id A3CBE17BED6
-	for <linux-pm@vger.kernel.org>; Tue, 10 Sep 2024 09:13:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5330D18595E;
+	Tue, 10 Sep 2024 09:32:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725959628; cv=none; b=BQNs/Rvsqhzz4JHmhTLqs6mHLU+0N77pC1LLAAv34YaGI7F5qBaEv47XG1C0wRa2oek5Y4T9obHpA4Be6qFAhV83Fpc6Tekrn5JNXIGhATiOT7B2PQ7j8ou4+hvmU2WDTPq9kueTbSMfHt0whqjGT5UTd9gSf5gaIE4Ijwa7+sA=
+	t=1725960780; cv=none; b=j++g5W39K/4rFcOo+2vfb6OGN8Hs2IhyKpVFuK+ssipIZjMDkpITi5PDc7SCdcnF4MDtKlD1G0QEHe0SsT1VQNfHp1/maqYaM9zwmdSLmq9Q6EtLBGD4c/SafWOv1wLEjmT5EtStXXV+GlultpTEo/wRYw+Jma98qzERSvxeTmA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725959628; c=relaxed/simple;
-	bh=DJdS2SI42GcB9p0WPdnYzH+yL3DWxpEY2EutTKyiI7g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bpKGgWnyeUw/jo86hiT7tmgtGKSALptLjYHAjX3T8Dj1dkYSXfd4d3FKiHMdReiok6zIEB1BE+1EgX14+uiw6FOweqLozyn3dnczdvRntENiaC/xOoM1rPDTCCxc7ayvmFPsqVQm2MiYkERg2Oy8Qv1abFHMEJjzJDa/l7VYPjk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 24F3B113E;
-	Tue, 10 Sep 2024 02:14:15 -0700 (PDT)
-Received: from [10.1.26.79] (e127648.arm.com [10.1.26.79])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6284D3F66E;
-	Tue, 10 Sep 2024 02:13:45 -0700 (PDT)
-Message-ID: <f4478146-88d3-445c-8676-7246bf477c50@arm.com>
-Date: Tue, 10 Sep 2024 10:13:43 +0100
+	s=arc-20240116; t=1725960780; c=relaxed/simple;
+	bh=I3/4yorClfjkVCr8bmjnPr9cVL52OsbEuW9h0Dutdnc=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=j+ZJs9rtp57ZbOVeH23h1VaLdHzkdkHdifRAgvpHzocd5GoC61GpAZvTy55JZLTdhnBRkdtPXPMkSI6DrvCn1kMlATTBnQq07bW4aF4lK6cSzFfdPFswgDSL4TSqQ23wz2C4z5KetGS/LTRXw1iLQ0Mo9AKalKddqtEXwwmLH4o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=C+c0JXYu; arc=none smtp.client-ip=198.175.65.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="C+c0JXYu"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1725960778; x=1757496778;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=I3/4yorClfjkVCr8bmjnPr9cVL52OsbEuW9h0Dutdnc=;
+  b=C+c0JXYuVgdRkfNLEHJpaTUd0U7paqpeCz/J44o7tyHyS5QhHEDIQQfV
+   Jx3aJatBhMFFDEiXppZeyoxtiBmKap10uOHb0reI40XEHDUtM7HVn4rAX
+   ViUKU5/BzW45QvUbX654e9yby6nU1I1x3jaZ9gZOeMQ9NkUHMasin8c8A
+   BWA0gqgjCtEy/08QgQOvzmxDwCq3nJT37vk7wJJOMxcHG7n0I19CuhltG
+   PJtwvPgRdAzFwrApLvz0N6SsZ5NearAF1L1BvWgEjl9paSLZZCa35yx6x
+   EijMq5eJDtEwXs2z/ao2Aw+XL32pI4kiKgadiZoWdz0ZAnmWi/VK11emV
+   Q==;
+X-CSE-ConnectionGUID: 7QMBpcRtRkyQniO2kdh64Q==
+X-CSE-MsgGUID: XWQmg/RGSiCnLRZExymtRg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11190"; a="24801251"
+X-IronPort-AV: E=Sophos;i="6.10,216,1719903600"; 
+   d="scan'208";a="24801251"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2024 02:32:58 -0700
+X-CSE-ConnectionGUID: Ww0eZmwNSZKsGLVOctnFHg==
+X-CSE-MsgGUID: xkGeG7LgTYid0Ypj5U5b6A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,216,1719903600"; 
+   d="scan'208";a="71566297"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.223])
+  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2024 02:32:54 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Tue, 10 Sep 2024 12:32:50 +0300 (EEST)
+To: Rajvi Jingar <rajvi.jingar@linux.intel.com>
+cc: xi.pardee@linux.intel.com, irenic.rajneesh@gmail.com, 
+    david.e.box@linux.intel.com, Hans de Goede <hdegoede@redhat.com>, 
+    platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+    linux-pm@vger.kernel.org
+Subject: Re: [PATCH] platform/x86/intel/pmc: Add Arrow Lake U/H support to
+ intel_pmc_core driver
+In-Reply-To: <20240909232842.2896965-1-rajvi.jingar@linux.intel.com>
+Message-ID: <4481a9c5-05b1-fef8-a011-4bbdad19c35b@linux.intel.com>
+References: <20240909232842.2896965-1-rajvi.jingar@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: PM: EM: Question Potential Issue with EM and OPP Table in cpufreq
- ondemand Governor
-To: "chenshuo@eswincomputing.com" <chenshuo@eswincomputing.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
-References: <202409101046414978042@eswincomputing.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <202409101046414978042@eswincomputing.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
 
-On 9/10/24 03:46, chenshuo@eswincomputing.com wrote:
-> Hi Rafael,
+On Mon, 9 Sep 2024, Rajvi Jingar wrote:
 
-(+CC Lukasz)
+> Add Arrow Lake U and Arro Lake H support in intel_pmc_core driver
 
+Arrow
+
+Add . to the end of sentence.
+
+> Signed-off-by: Rajvi Jingar <rajvi.jingar@linux.intel.com>
+> ---
+>  drivers/platform/x86/intel/pmc/arl.c  | 65 ++++++++++++++++++++++-----
+>  drivers/platform/x86/intel/pmc/core.c |  2 +
+>  drivers/platform/x86/intel/pmc/core.h |  7 +++
+>  3 files changed, 64 insertions(+), 10 deletions(-)
 > 
-> I am encountering an issue related to the Energy Model (EM) when using cpufreq with the ondemand governor. Below is a detailed description:
-> 
-> 1. Problem Description:
->    When using cpufreq with the ondemand governor and enabling the energy model (EM), the CPU OPP table is configured with frequencies and voltages for each frequency point. Additionally, the `dynamic-power-coefficient` is configured in the DTS under the CPU node. However, I observe abnormal dynamic frequency scaling, where the CPU frequency always stays at the highest frequency point in the OPP table. Below is an example of the DTS configuration:
-> ```
-> cpu0: cpu@0 
-> 	{ 
-> 		...
-> 		operating-points-v2 = <&d0_cpu_opp_table>; 
+> diff --git a/drivers/platform/x86/intel/pmc/arl.c b/drivers/platform/x86/intel/pmc/arl.c
+> index e10527c4e3e0..964f5f040dd9 100644
+> --- a/drivers/platform/x86/intel/pmc/arl.c
+> +++ b/drivers/platform/x86/intel/pmc/arl.c
+> @@ -16,6 +16,7 @@
+>  #define IOEP_LPM_REQ_GUID	0x5077612
+>  #define SOCS_LPM_REQ_GUID	0x8478657
+>  #define PCHS_LPM_REQ_GUID	0x9684572
+> +#define SOCM_LPM_REQ_GUID	0x2625030
+>  
+>  static const u8 ARL_LPM_REG_INDEX[] = {0, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20};
+>  
+> @@ -650,6 +651,7 @@ const struct pmc_reg_map arl_pchs_reg_map = {
+>  	.etr3_offset = ETR3_OFFSET,
+>  };
+>  
+> +#define PMC_DEVID_SOCM 0x777f
+>  #define PMC_DEVID_SOCS 0xae7f
+>  #define PMC_DEVID_IOEP 0x7ecf
+>  #define PMC_DEVID_PCHS 0x7f27
+> @@ -669,11 +671,17 @@ static struct pmc_info arl_pmc_info_list[] = {
+>  		.devid	= PMC_DEVID_PCHS,
+>  		.map	= &arl_pchs_reg_map,
+>  	},
+> +	{
+> +		.guid	= SOCM_LPM_REQ_GUID,
+> +		.devid	= PMC_DEVID_SOCM,
+> +		.map	= &mtl_socm_reg_map,
+> +	},
+>  	{}
+>  };
+>  
+>  #define ARL_NPU_PCI_DEV			0xad1d
+>  #define ARL_GNA_PCI_DEV			0xae4c
+> +#define ARL_H_GNA_PCI_DEV 		0x774c
+>  /*
+>   * Set power state of select devices that do not have drivers to D3
+>   * so that they do not block Package C entry.
+> @@ -684,6 +692,12 @@ static void arl_d3_fixup(void)
+>  	pmc_core_set_device_d3(ARL_GNA_PCI_DEV);
+>  }
+>  
+> +static void arl_h_d3_fixup(void)
+> +{
+> +	pmc_core_set_device_d3(ARL_NPU_PCI_DEV);
+> +	pmc_core_set_device_d3(ARL_H_GNA_PCI_DEV);
+> +}
+> +
+>  static int arl_resume(struct pmc_dev *pmcdev)
+>  {
+>  	arl_d3_fixup();
+> @@ -692,16 +706,47 @@ static int arl_resume(struct pmc_dev *pmcdev)
+>  	return pmc_core_resume_common(pmcdev);
+>  }
+>  
+> +static int arl_h_resume(struct pmc_dev *pmcdev)
+> +{
+> +	arl_h_d3_fixup();
+> +	pmc_core_send_ltr_ignore(pmcdev, 3, 0);
+> +
+> +	return pmc_core_resume_common(pmcdev);
+> +}
+> +
+> +int arl_h_core_init(struct pmc_dev *pmcdev)
+> +{
+> +	arl_h_d3_fixup();
+> +
+> +	return arl_core_generic_init(pmcdev, SOC_M);
+> +}
+> +
+>  int arl_core_init(struct pmc_dev *pmcdev)
+>  {
+> -	struct pmc *pmc = pmcdev->pmcs[PMC_IDX_SOC];
+> +	arl_d3_fixup();
+> +
+> +	return arl_core_generic_init(pmcdev, SOC_S);
+> +}
+> +
+> +int arl_core_generic_init(struct pmc_dev *pmcdev, int soc_tp)
 
-Do you mind sharing <&d0_cpu_opp_table>?
+This function has no callers outside or arl.c and should be made static 
+and the code should be reordered such that no prototype is needed.
 
-> 		#cooling-cells = <2>; dynamic-power-coefficient = <2000>; };
-> 		...
-> ```
-> 2. Root Cause Analysis:
-> When using the OPP table and configuring the "dynamic-power-coefficient," the `em_dev_register_perf_domain()` function in `kernel/power/energy_model.c` sets the flags to `EM_PERF_DOMAIN_MICROWATTS`. In the `em_create_perf_table()` function, `em_compute_costs()` includes the following code:
-> ```
-> if (table[i].cost >= prev_cost) {
->     table[i].flags = EM_PERF_STATE_INEFFICIENT;
->     dev_dbg(dev, "EM: OPP:%lu is inefficient\n", table[i].frequency);
-> }
-> ```
-> Since the cost is calculated as power * max_frequency / frequency, the cost for each frequency point becomes a constant value. Consequently, except for nr_states - 1 (where prev_state is initialized as ULONG_MAX), all other frequency points' cost is equal to prev_cost. As a result, only the highest frequency point (table[nr_states - 1]) is not flagged as EM_PERF_STATE_INEFFICIENT in the EM performance table.
-> 
-> In the em_cpufreq_update_efficiencies() function, the following code is executed:
-> ```
-> for (i = 0; i < pd->nr_perf_states; i++) {
->     if (!(table[i].flags & EM_PERF_STATE_INEFFICIENT))
->         continue;
-> 
->     if (!cpufreq_table_set_inefficient(policy, table[i].frequency))
->         found++;
-> }
-> ```
-> As a result, all frequency points marked as EM_PERF_STATE_INEFFICIENT are flagged as CPUFREQ_INEFFICIENT_FREQ in the cpufreq_table_set_inefficient() function, causing these frequencies to be skipped during frequency scaling.
-> 
-> 3. Proposed Change and Testing: 
-> On Linux 6.6, this behavior affects the normal operation of the cpufreq ondemand governor, which in turn causes passive cooling devices to malfunction when using the power allocator strategy in the thermal framework. I made a temporary fix by changing the condition from:
-> 	if (table[i].cost >= prev_cost)
-> to:
-> 	if (table[i].cost > prev_cost)
-> After this change, the issue seems resolved for now. However, I am concerned about potential side effects of this modification.
+> +{
+>  	int ret;
+> -	int func = 0;
+> +	int func;
+>  	bool ssram_init = true;
+> +	struct pmc *pmc = pmcdev->pmcs[PMC_IDX_SOC];
+>  
+> -	arl_d3_fixup();
+>  	pmcdev->suspend = cnl_suspend;
+> -	pmcdev->resume = arl_resume;
+> +
+> +	if (soc_tp == SOC_M) {
+> +		func = 2;
+> +		pmcdev->resume = arl_h_resume;
+> +	} else if (soc_tp == SOC_S) {
+> +		func = 0;
+> +		pmcdev->resume = arl_resume;
 
-But this doesn't solve the actual issue, if cost == prev_cost for all
-OPPs then all of them but one are indeed inefficient.
+It would be preferrable to make an info structure to describe this kind 
+of platform variations so that if () forests like this are avoided.
 
+> +	} else {
+> +		return -EINVAL;
+> +	}
+> +
+>  	pmcdev->regmap_list = arl_pmc_info_list;
+>  
+>  	/*
+> @@ -711,7 +756,10 @@ int arl_core_init(struct pmc_dev *pmcdev)
+>  	ret = pmc_core_ssram_init(pmcdev, func);
+>  	if (ret) {
+>  		ssram_init = false;
+> -		pmc->map = &arl_socs_reg_map;
+> +		if (soc_tp == SOC_M)
+> +			pmc->map = &mtl_socm_reg_map;
+> +		else
+> +			pmc->map = &arl_socs_reg_map;
+
+As with above, use an info struct.
+
+-- 
+ i.
+
+>  
+>  		ret = get_primary_reg_base(pmc);
+>  		if (ret)
+> @@ -721,11 +769,8 @@ int arl_core_init(struct pmc_dev *pmcdev)
+>  	pmc_core_get_low_power_modes(pmcdev);
+>  	pmc_core_punit_pmt_init(pmcdev, ARL_PMT_DMU_GUID);
+>  
+> -	if (ssram_init)	{
+> -		ret = pmc_core_ssram_get_lpm_reqs(pmcdev);
+> -		if (ret)
+> -			return ret;
+> -	}
+> +	if (ssram_init)
+> +		return pmc_core_ssram_get_lpm_reqs(pmcdev);
+>  
+>  	return 0;
+>  }
+> diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
+> index 01ae71c6df59..046791f21619 100644
+> --- a/drivers/platform/x86/intel/pmc/core.c
+> +++ b/drivers/platform/x86/intel/pmc/core.c
+> @@ -1319,6 +1319,8 @@ static const struct x86_cpu_id intel_pmc_core_ids[] = {
+>  	X86_MATCH_VFM(INTEL_RAPTORLAKE_S,	adl_core_init),
+>  	X86_MATCH_VFM(INTEL_METEORLAKE_L,	mtl_core_init),
+>  	X86_MATCH_VFM(INTEL_ARROWLAKE,		arl_core_init),
+> +	X86_MATCH_VFM(INTEL_ARROWLAKE_H,	arl_h_core_init),
+> +	X86_MATCH_VFM(INTEL_ARROWLAKE_U,	arl_h_core_init),
+>  	X86_MATCH_VFM(INTEL_LUNARLAKE_M,	lnl_core_init),
+>  	{}
+>  };
+> diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86/intel/pmc/core.h
+> index ea04de7eb9e8..5771f40185c2 100644
+> --- a/drivers/platform/x86/intel/pmc/core.h
+> +++ b/drivers/platform/x86/intel/pmc/core.h
+> @@ -365,6 +365,11 @@ struct pmc_info {
+>  	const struct pmc_reg_map *map;
+>  };
+>  
+> +enum soc_type {
+> +	SOC_M,
+> +	SOC_S
+> +};
+> +
+>  /**
+>   * struct pmc - pmc private info structure
+>   * @base_addr:		contains pmc base address
+> @@ -599,6 +604,8 @@ int tgl_core_generic_init(struct pmc_dev *pmcdev, int pch_tp);
+>  int adl_core_init(struct pmc_dev *pmcdev);
+>  int mtl_core_init(struct pmc_dev *pmcdev);
+>  int arl_core_init(struct pmc_dev *pmcdev);
+> +int arl_h_core_init(struct pmc_dev *pmcdev);
+> +int arl_core_generic_init(struct pmc_dev *pmcdev, int pch_tp);
+>  int lnl_core_init(struct pmc_dev *pmcdev);
+>  
+>  void cnl_suspend(struct pmc_dev *pmcdev);
+> 
