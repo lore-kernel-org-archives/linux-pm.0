@@ -1,40 +1,40 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB8BF18E021;
-	Tue, 10 Sep 2024 18:05:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BF701A705D;
+	Tue, 10 Sep 2024 18:05:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725991537; cv=none; b=akBbZ7XlgkpCR6akXUKGu0ObSrBmxelNn4mVEpjWBBZuSx2lqiOqsJ+IXUzSG3YlXb3qHC7Pmxz38tfbs4OEB1RtNk8/zqDOelINOA/9Llz913rkvPl2ifl0rC6zPRVxpna1dn9dIoCL6WwoaktJK90G1wXMlMq+3AkfYl87UmI=
+	t=1725991539; cv=none; b=cIMX+8174ZxxYqw6qVlYi0vbZH8XrFXW44VXMR1cOitjtgRIDl2cPZeJjo2AYMjjYEPbvy1AfeU86PKxqhJu9pEWXSYPgfWmqDJoWefRwFDPYDDyD/D1jf774M0ybuscGEvLnqXOcIrTmvOOIqAHJbvRl24QNbmChJNOCls7078=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725991537; c=relaxed/simple;
-	bh=MeN1i+aab0NQ3JQYuaxoKtvqWnyl4os7c4ARpZBGstw=;
+	s=arc-20240116; t=1725991539; c=relaxed/simple;
+	bh=TfEQ0e/TZzz/N5j2kw3vCDQnPXPvuDJwAkPceMp2rKY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=g6UYGltQsJvWDR2aN6NvhEm9VhZrrr6WuDB27ypJtWIDgmwFvXxbVS1sx2TeS9zZaHcI6ngDwGRtxfkQtnMMnFBBPGx7tXLIvv21Ye+nzpwrfpEvkTAqGCkVVZa3VZFN0kYyNW2mwO++M7hGT0t7va2rPq8pHVfYuD3qW/1mvqY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=i/8jHUS5; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=o+cWE+S3EGEciQlXw4FzkAjTySbtirvOQwtBEhcSAaHAlH0MQyTeNaJuEyHT2O/hfZbKiZZEBrp69Y2zPUJ7LwAmdgpgfXlQ850F5oHhGH9xrpn+v5Y6d6gAN8ULoGoYfzaEZ8B23tvLfjYPV8VhIox6yeXHDRDWssmKMdxxP+g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=M8XpCSe1; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="i/8jHUS5"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="M8XpCSe1"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1725991531;
-	bh=MeN1i+aab0NQ3JQYuaxoKtvqWnyl4os7c4ARpZBGstw=;
+	s=mail; t=1725991532;
+	bh=TfEQ0e/TZzz/N5j2kw3vCDQnPXPvuDJwAkPceMp2rKY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=i/8jHUS5okXgNF3JAi1jU6cygrU6Opm/B80l6yR1Sw9wzOW12AHMZe2nUloYKVls0
-	 RX0sfj8KWEdmA4oQA3sf8APJZOjKixPYMeOexlE2C/WH6StB71OJLT2wTgAHZohvWN
-	 ZpB2jHBTxnrzA3iZyG1ZZizKkKkb0aUCCkqxsWN1iBfMJZ352ImfxYhUd4y2KPKP/C
-	 lSCMhExjqPNUpKJdfgLZR9IRDpn6hRUfZhzxRp3mvm4tCP5gSywZdk9eQ3XWoLax8z
-	 1GVgSRPoNlTkvI7tonujtNsTkKVux1HbxLanySPDiccaI09rUmVGsc7sBvOhLIWHKf
-	 VJMvN6SrZzzsw==
+	b=M8XpCSe1QYXBmMA+yRiI0tCENnO5kMj9oO+2oSh70RevifXgsqdu/L57bUZt44VNe
+	 /eDJ4Vvf8Qoel4QfS5jStA6STSTu98WRjOatvaLp9Su50yrKFlsJLgZrT4EoYrIWK4
+	 y96/xgB/lXz4fzhE9XAVfwQ95EPEq8mQ3UPB+rDcctN2QiTS5e0B0V0HQEroroCNoc
+	 6OlyBb+7dOqH/2EPbM7uzLebC3FbdmF283KnxFnEefFbftPR/M7R/CQ2AsPEOjbk4x
+	 Pup7Sc4WprQ8DvyMcp55a7Nw+Oto4cPW2cYpiKgC5IkJmG3g+aMogxD5RBZpSoH3L6
+	 ydeoSozA5TvNA==
 Received: from jupiter.universe (dyndsl-091-248-215-127.ewe-ip-backbone.de [91.248.215.127])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
 	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id D192117E35FA;
-	Tue, 10 Sep 2024 20:05:31 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 15A1317E3600;
+	Tue, 10 Sep 2024 20:05:32 +0200 (CEST)
 Received: by jupiter.universe (Postfix, from userid 1000)
-	id 8C3084800E4; Tue, 10 Sep 2024 20:05:31 +0200 (CEST)
+	id 939474800FF; Tue, 10 Sep 2024 20:05:31 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -50,9 +50,9 @@ Cc: Elaine Zhang <zhangqing@rock-chips.com>,
 	linux-pm@vger.kernel.org,
 	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	kernel@collabora.com
-Subject: [PATCH v1 1/6] pmdomain: rockchip: forward rockchip_do_pmu_set_power_domain errors
-Date: Tue, 10 Sep 2024 19:57:10 +0200
-Message-ID: <20240910180530.47194-2-sebastian.reichel@collabora.com>
+Subject: [PATCH v1 5/6] pmdomain: rockchip: add regulator support
+Date: Tue, 10 Sep 2024 19:57:14 +0200
+Message-ID: <20240910180530.47194-6-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20240910180530.47194-1-sebastian.reichel@collabora.com>
 References: <20240910180530.47194-1-sebastian.reichel@collabora.com>
@@ -64,89 +64,122 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Currently rockchip_do_pmu_set_power_domain prints a warning if there
-have been errors turning on the power domain, but it does not return
-any errors and rockchip_pd_power() tries to continue setting up the
-QOS registers. This usually results in accessing unpowered registers,
-which triggers an SError and a full system hang.
+Some power domains require extra voltages to be applied. For example
+trying to enable the GPU domain on RK3588 fails when the SoC does not
+have VDD GPU enabled.
 
-This improves the error handling by forwarding the error to avoid
-kernel panics.
+The solution to temporarily change the device's device tree node has
+been taken over from the Mediatek power domain driver.
+
+The regulator is not acquired at probe time, since that creates circular
+dependencies. The power domain driver must be probed early, since SoC
+peripherals need it. Regulators on the other hand depend on SoC
+peripherals like SPI, I2C or GPIO.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/pmdomain/rockchip/pm-domains.c | 35 +++++++++++++++++---------
- 1 file changed, 23 insertions(+), 12 deletions(-)
+ drivers/pmdomain/rockchip/pm-domains.c | 57 +++++++++++++++++++++++++-
+ 1 file changed, 55 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index 9b76b62869d0..0f44d698475b 100644
+index 663d390faaeb..ae6990897928 100644
 --- a/drivers/pmdomain/rockchip/pm-domains.c
 +++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -488,16 +488,17 @@ static int rockchip_pmu_domain_mem_reset(struct rockchip_pm_domain *pd)
- 	return ret;
+@@ -18,6 +18,7 @@
+ #include <linux/of_clk.h>
+ #include <linux/clk.h>
+ #include <linux/regmap.h>
++#include <linux/regulator/consumer.h>
+ #include <linux/mfd/syscon.h>
+ #include <soc/rockchip/pm_domains.h>
+ #include <dt-bindings/power/px30-power.h>
+@@ -89,6 +90,8 @@ struct rockchip_pm_domain {
+ 	u32 *qos_save_regs[MAX_QOS_REGS_NUM];
+ 	int num_clks;
+ 	struct clk_bulk_data *clks;
++	struct device_node *node;
++	struct regulator *supply;
+ };
+ 
+ struct rockchip_pmu {
+@@ -571,18 +574,67 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
+ 	return 0;
  }
  
--static void rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
--					     bool on)
-+static int rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
-+					    bool on)
++static int rockchip_pd_regulator_disable(struct rockchip_pm_domain *pd)
++{
++	return pd->supply ? regulator_disable(pd->supply) : 0;
++}
++
++
++static int rockchip_pd_regulator_enable(struct rockchip_pm_domain *pd)
++{
++	struct rockchip_pmu *pmu = pd->pmu;
++	struct device_node *main_node;
++
++	if (!pd->supply) {
++		/*
++		 * Find regulator in current power domain node.
++		 * devm_regulator_get() finds regulator in a node and its child
++		 * node, so set of_node to current power domain node then change
++		 * back to original node after regulator is found for current
++		 * power domain node.
++		 */
++		main_node = pmu->dev->of_node;
++		pmu->dev->of_node = pd->node;
++		pd->supply = devm_regulator_get(pmu->dev, "domain");
++		pmu->dev->of_node = main_node;
++		if (IS_ERR(pd->supply)) {
++			pd->supply = NULL;
++			return 0;
++		}
++	}
++
++	return regulator_enable(pd->supply);
++}
++
+ static int rockchip_pd_power_on(struct generic_pm_domain *domain)
  {
- 	struct rockchip_pmu *pmu = pd->pmu;
- 	struct generic_pm_domain *genpd = &pd->genpd;
- 	u32 pd_pwr_offset = pd->info->pwr_offset;
- 	bool is_on, is_mem_on = false;
+ 	struct rockchip_pm_domain *pd = to_rockchip_pd(domain);
 +	int ret;
- 
- 	if (pd->info->pwr_mask == 0)
--		return;
-+		return 0;
- 
- 	if (on && pd->info->mem_status_mask)
- 		is_mem_on = rockchip_pmu_domain_is_mem_on(pd);
-@@ -512,16 +513,21 @@ static void rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
- 
- 	wmb();
- 
--	if (is_mem_on && rockchip_pmu_domain_mem_reset(pd))
--		return;
-+	if (is_mem_on) {
-+		ret = rockchip_pmu_domain_mem_reset(pd);
-+		if (ret)
-+			return ret;
++
++	ret = rockchip_pd_regulator_enable(pd);
++	if (ret) {
++		dev_err(pd->pmu->dev, "Failed to enable supply: %d\n", ret);
++		return ret;
 +	}
  
--	if (readx_poll_timeout_atomic(rockchip_pmu_domain_is_on, pd, is_on,
--				      is_on == on, 0, 10000)) {
--		dev_err(pmu->dev,
--			"failed to set domain '%s', val=%d\n",
--			genpd->name, is_on);
--		return;
-+	ret = readx_poll_timeout_atomic(rockchip_pmu_domain_is_on, pd, is_on,
-+					is_on == on, 0, 10000);
-+	if (ret) {
-+		dev_err(pmu->dev, "failed to set domain '%s' %s, val=%d\n",
-+			genpd->name, on ? "on" : "off", is_on);
-+		return ret;
- 	}
+-	return rockchip_pd_power(pd, true);
++	ret = rockchip_pd_power(pd, true);
++	if (ret)
++		rockchip_pd_regulator_disable(pd);
 +
-+	return 0;
++	return ret;
  }
  
- static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
-@@ -546,7 +552,12 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
- 			rockchip_pmu_set_idle_request(pd, true);
- 		}
+ static int rockchip_pd_power_off(struct generic_pm_domain *domain)
+ {
+ 	struct rockchip_pm_domain *pd = to_rockchip_pd(domain);
++	int ret;
  
--		rockchip_do_pmu_set_power_domain(pd, power_on);
-+		ret = rockchip_do_pmu_set_power_domain(pd, power_on);
-+		if (ret < 0) {
-+			clk_bulk_disable(pd->num_clks, pd->clks);
-+			mutex_unlock(&pmu->mutex);
-+			return ret;
-+		}
+-	return rockchip_pd_power(pd, false);
++	ret = rockchip_pd_power(pd, false);
++	if (ret)
++		return ret;
++
++	rockchip_pd_regulator_disable(pd);
++	return ret;
+ }
  
- 		if (power_on) {
- 			/* if powering up, leave idle mode */
+ static int rockchip_pd_attach_dev(struct generic_pm_domain *genpd,
+@@ -663,6 +715,7 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+ 
+ 	pd->info = pd_info;
+ 	pd->pmu = pmu;
++	pd->node = node;
+ 
+ 	pd->num_clks = of_clk_get_parent_count(node);
+ 	if (pd->num_clks > 0) {
 -- 
 2.45.2
 
