@@ -1,55 +1,55 @@
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74F57187355
-	for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2024 12:11:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6291B188A14
+	for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2024 12:11:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726056715; cv=none; b=XTHVTMzUbXz/CkhccV6l4IH9Sm6s/bxTihIY9zn6sXq1WHIaae5fXZZHmSbK7cvJZLr2qXPdr3dCMeNGS5OSW4UO/fAzO64IQamyCFe9CQ0/szWlU/jWeGzuKQ4d40QSWC46gkik+VWF7WYIm09VH9DmdyG6CK2dKmroLRlQ8UQ=
+	t=1726056718; cv=none; b=sCyGZ/ANne06I6BOi77xYuDT5/nKdQviKXrLw+ZUNfG5vJaEEBCvJJU3Tj7QKSFIVEV2SWxsCUlsEKXzX3pQhIgOWoXgSYvhOm/CU6d5L4qvUDVH6Rq/qTTmSIck0lDOXZpLDn6e5ngwjtkCfXFIZXDPMZwDgRF9rwlDMQ7K8zs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726056715; c=relaxed/simple;
-	bh=3Swu0Hd8jz4hEyhWca91c8oRCzGFb39Ieire6DVvOcA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type:
-	 References; b=bTa/KsgRYGmDxXNRba6hX7zE9+I/AJTt8G6kRRUSl3vKG5Mn4UCjUyf6gpmSZbNia0EPQdwCxznJSiNKc3dLtZ7xphSOStaf6iZk9MRVd9jaqaM40m8lnhzYZUoIr9OiELF+umzj7yKLcJkLlXfpIw/FEBv4fy092REp1oMPrNQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=fNKA+/nm; arc=none smtp.client-ip=210.118.77.11
+	s=arc-20240116; t=1726056718; c=relaxed/simple;
+	bh=FEDEmbpAYmPOuuRo+RlDglGdJcWvHkw84rfZyKXuWo0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:MIME-Version:
+	 Content-Type:References; b=sq/uGZ879oedAFKkxAyr2G/v56oDgXnXLid0pMq76Mnh1veIFwL8lPDYrd/Z+YCcR6eOWc24ukcK8f5uPMheJYZcH17XVsEGyde302/gyjGqUtvCv3JH5yuu/w0sMd13liEoCB0QtiilzkBI/ENFyGxIeq/ww5xl248lV6XE8dE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=GIwkwKp/; arc=none smtp.client-ip=210.118.77.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="fNKA+/nm"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="GIwkwKp/"
 Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20240911121150euoutp01be8e0f3f29911d53420dcc1f21e3e617~0L27s1RGI0990809908euoutp019
-	for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2024 12:11:50 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20240911121150euoutp01be8e0f3f29911d53420dcc1f21e3e617~0L27s1RGI0990809908euoutp019
+	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20240911121154euoutp028ae5cc127f4e5c7e141d2fc9d65aa5b8~0L2-supCN0109201092euoutp026
+	for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2024 12:11:54 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20240911121154euoutp028ae5cc127f4e5c7e141d2fc9d65aa5b8~0L2-supCN0109201092euoutp026
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1726056710;
-	bh=JJQazKGbc8eC2nG+ZbcooFNwFLYJU5Lc7hKXABWosA0=;
-	h=From:To:Cc:Subject:Date:References:From;
-	b=fNKA+/nmBKhKHJzuyF8FWdSl58z8dJc+Hlx3qOG+oKKa59ke+STT8Jr4rSdeGtsXY
-	 aPINrwDJBzjrpnTEZ4Nx4qhbFo1gh0CT1n7wHbr7PiA5OqmiKdqUzpb5kxlZOApR+J
-	 z7Bg6wDmnYrhtuIThBh600ranJrJ+DHuyzA6+h/c=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+	s=mail20170921; t=1726056714;
+	bh=nvjwVOd+W/1Fy0GOMSwgEOErF159CdYtI3kdur0Gf6I=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=GIwkwKp/OZGhVNI+2PDPIYRSOA1k/TD/DTxp8uDzG7tVeQql2Np8gd7Z+QzqKRnhs
+	 6ux1Z9Pf6JHsKSispYTpN+kA5HYebJtJDX+EK/UUOmCJHUSwnC9t3IlhnQdlzbjfBt
+	 wOM4jYv89zRV+cw204xfOKL/RA5HjiU8Bnx4YsXo=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
 	eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-	20240911121149eucas1p28d2864cd11bd828ddde8f104984bc07d~0L27EVQ8j1734517345eucas1p25;
-	Wed, 11 Sep 2024 12:11:49 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-	eusmges3new.samsung.com (EUCPMTA) with SMTP id 3E.38.09620.50981E66; Wed, 11
-	Sep 2024 13:11:49 +0100 (BST)
+	20240911121154eucas1p2552975738977fa101ffa3a3c06d5579a~0L2_8pLtA1732517325eucas1p2r;
+	Wed, 11 Sep 2024 12:11:54 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+	eusmges2new.samsung.com (EUCPMTA) with SMTP id B0.61.09875.90981E66; Wed, 11
+	Sep 2024 13:11:54 +0100 (BST)
 Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
 	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-	20240911121149eucas1p29b9ccf99a545cfaa924b122cd8dd3183~0L26qYr0i1735817358eucas1p25;
-	Wed, 11 Sep 2024 12:11:49 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+	20240911121153eucas1p20f864c51746e6a7de55ecd0e52efe5c4~0L2_Xdqg22858828588eucas1p2o;
+	Wed, 11 Sep 2024 12:11:53 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
 	eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-	20240911121149eusmtrp2398e0023dca67fda0474c1fd19aeca81~0L26pn7zv2688526885eusmtrp2T;
-	Wed, 11 Sep 2024 12:11:49 +0000 (GMT)
-X-AuditID: cbfec7f5-d1bff70000002594-66-66e189054cb8
+	20240911121153eusmtrp2b14e07e38aec133391ae4431a80287ec~0L2_WRz632688526885eusmtrp2b;
+	Wed, 11 Sep 2024 12:11:53 +0000 (GMT)
+X-AuditID: cbfec7f4-131ff70000002693-8f-66e18909b265
 Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-	eusmgms1.samsung.com (EUCPMTA) with SMTP id D7.E9.14621.50981E66; Wed, 11
-	Sep 2024 13:11:49 +0100 (BST)
+	eusmgms2.samsung.com (EUCPMTA) with SMTP id 8B.4D.19096.90981E66; Wed, 11
+	Sep 2024 13:11:53 +0100 (BST)
 Received: from AMDC4515.eu.corp.samsungelectronics.net (unknown
 	[106.120.51.28]) by eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-	20240911121148eusmtip14c9e2adaadac8aea8c6f73d897d0f577~0L25vfIki0847908479eusmtip1g;
-	Wed, 11 Sep 2024 12:11:48 +0000 (GMT)
+	20240911121152eusmtip124636a6e621dbf563a9446cfc7e7ca49~0L29Ypa2P3163131631eusmtip19;
+	Wed, 11 Sep 2024 12:11:52 +0000 (GMT)
 From: Mateusz Majewski <m.majewski2@samsung.com>
 To: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
 	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
@@ -61,10 +61,12 @@ Cc: Mateusz Majewski <m.majewski2@samsung.com>, Bartlomiej Zolnierkiewicz
 	Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Alim Akhtar
 	<alim.akhtar@samsung.com>, Sam Protsenko <semen.protsenko@linaro.org>, Anand
 	Moon <linux.amoon@gmail.com>, Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v4 0/7] Add initial Exynos850 support to the thermal driver
-Date: Wed, 11 Sep 2024 14:11:23 +0200
-Message-ID: <20240911121136.1120026-1-m.majewski2@samsung.com>
+Subject: [PATCH v4 2/7] drivers/thermal/exynos: use pm_sleep_ptr instead of
+ conditional compilation
+Date: Wed, 11 Sep 2024 14:11:25 +0200
+Message-ID: <20240911121136.1120026-3-m.majewski2@samsung.com>
 X-Mailer: git-send-email 2.45.2
+In-Reply-To: <20240911121136.1120026-1-m.majewski2@samsung.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,86 +74,88 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrMKsWRmVeSWpSXmKPExsWy7djPc7qsnQ/TDJ78MrV4MG8bm8X3LdeZ
-	LNbsPcdkMe+zrMX8I+dYLc6f38BusenxNVaLy7vmsFl87j3CaDHj/D4mi3Ubb7FbLGxqYbeY
-	eGwys8XaI3fZLeZ+mcps8X/PDnaLJw/72Cye9+1jchDyWDNvDaPHzll32T0W73nJ5LFpVSeb
-	x51re9g8Ni+p9+jbsorR4/MmuQCOKC6blNSczLLUIn27BK6MGbvnshSs4Kl4t3oKcwPjH84u
-	Rk4OCQETiWMPb7CD2EICKxglPi8N62LkArK/MEq8PfqPGcL5zChxYskeZpiOcz1HWCESyxkl
-	mrvXQjmtTBLP77xjBKliEzCQePBmGTtIQkRgMaNE4493YFXMAhNZJNa/6Qaq4uAQFvCWuP8j
-	B6SBRUBVYuOHrWCH8ArYSRz79YAdYp28xMU1z9kg4oISJ2c+YQGxmYHizVtng90nIdDMKbHi
-	z2ZWiAYXibZJz6FsYYlXx7dADZKR+L9zPhOEnS8xY/N7FpAbJAQqJO4e9IIwrSU+nmEGMZkF
-	NCXW79KHKHaU6Ll+lB2igk/ixltBiAP4JCZtm84MEeaV6GgTgqhWlTi+ZxI0qKQlnrTchlrp
-	IXFp9zRoQMdKHG+7yjqBUWEWkrdmIXlrFsINCxiZVzGKp5YW56anFhvnpZbrFSfmFpfmpesl
-	5+duYgSmu9P/jn/dwbji1Ue9Q4xMHIyHGCU4mJVEePvt7qUJ8aYkVlalFuXHF5XmpBYfYpTm
-	YFES51VNkU8VEkhPLEnNTk0tSC2CyTJxcEo1MOVdj5nzzKjmydqbKrP4Fp5h6dis7h3KlCqg
-	EHX44HzBzuOMhZmpmgzmwrF6RTVSlTKhSwXbUpyOnCjj7nt75vjGthqe07Xm1gd7BA+4yxra
-	ru8tX9Qc+fKqWtPx3PdB8w5VXLi5luvjzIMsot8chHhnrU7/c2o9ry3PxGKesA91LtNfhU75
-	vVjBfucX9Ve9W8xaSirf77loYy7PwPP0h+fc6xy8r6/kHngpP+FhOWvy78X8aouK9rd+Vn60
-	8t79449KbhTvNzI3fFjjH+eq+f1yypm/z1alrH14537Ajk3avvGzzLjrJUKNLx9wmL1nRd+v
-	45HLbPJLbOqN/u9PW3br1IJ9Rif//v6/X+va1VIlluKMREMt5qLiRACnbczx5gMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrDIsWRmVeSWpSXmKPExsVy+t/xu7qsnQ/TDGa0y1g8mLeNzeL7lutM
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrCKsWRmVeSWpSXmKPExsWy7djP87pcnQ/TDHovM1k8mLeNzeL7lutM
 	Fmv2nmOymPdZ1mL+kXOsFufPb2C32PT4GqvF5V1z2Cw+9x5htJhxfh+TxbqNt9gtFja1sFtM
 	PDaZ2WLtkbvsFnO/TGW2+L9nB7vFk4d9bBbP+/YxOQh5rJm3htFj56y77B6L97xk8ti0qpPN
-	4861PWwem5fUe/RtWcXo8XmTXABHlJ5NUX5pSapCRn5xia1StKGFkZ6hpYWekYmlnqGxeayV
-	kamSvp1NSmpOZllqkb5dgl7GjN1zWQpW8FS8Wz2FuYHxD2cXIyeHhICJxLmeI6xdjFwcQgJL
-	GSVWbDrLDpGQljj8ZQqULSzx51oXG0RRM5PEm91dYAk2AQOJB2+WgdkiAssZJTa3e4AUMQvM
-	ZZHofL0aKMHBISzgLXH/Rw5IDYuAqsTGD1vB6nkF7CSO/XoAtUBe4uKa52wQcUGJkzOfsIDY
-	zEDx5q2zmScw8s1CkpqFJLWAkWkVo0hqaXFuem6xoV5xYm5xaV66XnJ+7iZGYLRtO/Zz8w7G
-	ea8+6h1iZOJgPMQowcGsJMLbb3cvTYg3JbGyKrUoP76oNCe1+BCjKdB9E5mlRJPzgfGeVxJv
-	aGZgamhiZmlgamlmrCTO63b5fJqQQHpiSWp2ampBahFMHxMHp1QDk8BVuYd8sdr1ulb1H/60
-	XX1dvW9F4K1WRd2Lcayh30MPv4vWcXq/7/rfpP9V0914om6+mimZmTid30U6c7vl/N+BiTvv
-	dRb27Xzo2eO4W/7bmwXvH3+XO7r0o9016QBOvXbXR2Zn5v9wkdncGd5Vp/12m75RsLOyW7CA
-	gErfv//rk2bPZGabzVo9Zd35VPFNt1x3xZtwbtoupcH2NFLptHWWolryLZfQ/J4pwqL+AXM6
-	r5xeVJgnt3Nl9u+fqjEcOqavD12YIVX5b/e6Cy7eurfv7zapM//fEe2hUi3iq7nxi0r1OmOr
-	xKULz7WJ90u1MDZ1Vp84sOT11wWtyTM/u/+xqjFwXSRRLV/Uc3CzEktxRqKhFnNRcSIAVZre
-	RT8DAAA=
-X-CMS-MailID: 20240911121149eucas1p29b9ccf99a545cfaa924b122cd8dd3183
+	4861PWwem5fUe/RtWcXo8XmTXABHFJdNSmpOZllqkb5dAlfG2kdHmAseclUcXnyepYGxh7OL
+	kZNDQsBEYlHnXLYuRi4OIYEVjBK/Dp+Ecr4wSvT1fWGGcD4zSiydd5sdpuVa6x+oxHJGieam
+	SWwgCSGBViaJFQeYQGw2AQOJB2+WsYMUiQgsZpRo/PGOFcRhFpjIIrH+TTcjSJWwQKrE5uXX
+	wMayCKhKnL3Qywxi8wrYSXx5uYsFYp28xMU1z8E2cArYS3x/vZwRokZQ4uTMJ2A1zEA1zVtn
+	g50kITCfU2LX3h/MEM0uEkfO3oeyhSVeHd8C9YOMxP+d85kg7HyJGZvfAw3iALIrJO4e9IIw
+	rSU+nmEGMZkFNCXW79KHKHaU6J20kwmigk/ixltBiAP4JCZtm84MEeaV6GgTgqhWlTi+ZxLU
+	emmJJy23oVZ6SCz+18g0gVFxFpJXZiF5ZRbC3gWMzKsYxVNLi3PTU4uN8lLL9YoTc4tL89L1
+	kvNzNzECE97pf8e/7GBc/uqj3iFGJg7GQ4wSHMxKIrz9dvfShHhTEiurUovy44tKc1KLDzFK
+	c7AoifOqpsinCgmkJ5akZqemFqQWwWSZODilGpiSmmqenqzew+hRKJcUGr6hSGfd5qUWr5SO
+	T7i0RYNX/tDJGXvuu7Q3PGe98fVSS92KSLtL/S7JK/f0nHSytjG57rhr+4s7U7iLlpU/3y0p
+	0ZUpNJtT1SBF7ci95g9m7580zVpl0mvJqLW06qj+kS+XNZ4U+3HZu1x/FbDo/g4hFz/5BScz
+	edJVbddeCdn37i1z6KI9qlddN3NdExILXpj7IF6hYOFJgYsby2L49ycc6ZMvzYhw/fns7xR2
+	75pPFaypUkFG/ItOMtZZ2LVsTztWu58l/lDaFmZ//ytLk1M2xaedmqHey2Xxg+XFUZftR5kN
+	QhOP7g75/+bGrlS+4LZgbRWTQ+9W9qnuejt98wQlluKMREMt5qLiRAAMaNqJ5wMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrCIsWRmVeSWpSXmKPExsVy+t/xu7qcnQ/TDK6sELd4MG8bm8X3LdeZ
+	LNbsPcdkMe+zrMX8I+dYLc6f38BusenxNVaLy7vmsFl87j3CaDHj/D4mi3Ubb7FbLGxqYbeY
+	eGwys8XaI3fZLeZ+mcps8X/PDnaLJw/72Cye9+1jchDyWDNvDaPHzll32T0W73nJ5LFpVSeb
+	x51re9g8Ni+p9+jbsorR4/MmuQCOKD2bovzSklSFjPziElulaEMLIz1DSws9IxNLPUNj81gr
+	I1MlfTublNSczLLUIn27BL2MtY+OMBc85Ko4vPg8SwNjD2cXIyeHhICJxLXWP8wgtpDAUkaJ
+	rWsMIeLSEoe/TGGHsIUl/lzrYuti5AKqaWaS+LXwHStIgk3AQOLBm2VgRSICyxklNrd7gBQx
+	C8xlkeh8vRosISyQLPG1cy+YzSKgKnH2Qi/YNl4BO4kvL3exQGyQl7i45jkbiM0pYC/x/fVy
+	RoiL7CQ+bjzJClEvKHFy5hOwemag+uats5knMArMQpKahSS1gJFpFaNIamlxbnpusZFecWJu
+	cWleul5yfu4mRmB0bjv2c8sOxpWvPuodYmTiYDzEKMHBrCTC2293L02INyWxsiq1KD++qDQn
+	tfgQoynQ3ROZpUST84HpIa8k3tDMwNTQxMzSwNTSzFhJnJftyvk0IYH0xJLU7NTUgtQimD4m
+	Dk6pBqZdDo0JWX6ObLNvLxf+t+KWzIupd1j7+yzezL7VOimjKemUvrrdy8+hM9MlE6UbxLsb
+	W5/lPlujmzzxraTDtexNojynuPZ4zOyf2iGW93R99T6r9P9MQff2SVsrcV345c6lKhneUKNi
+	Lf++efGblJJ/nrvsClT2vEg8v8T+hX7H3hITD5OjT7uu7WOeMDN/W9Aci0VeIu+PBzw4rnVc
+	zPOj4c8TuvtOnGtZfzOkm+MLg96aKlmmiqsTDHq1LsQ5ctccYzm8wvJHy2SFe+GxS8pMU/5v
+	m7pl5oNJp16aHJh9d4niAX6hXyeluffr7BM9p/WoUa0g5YWXh+g549LaXyoLQg0/3uIpPj71
+	Q9HGXzxKLMUZiYZazEXFiQCKAhD+VwMAAA==
+X-CMS-MailID: 20240911121153eucas1p20f864c51746e6a7de55ecd0e52efe5c4
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20240911121149eucas1p29b9ccf99a545cfaa924b122cd8dd3183
+X-RootMTR: 20240911121153eucas1p20f864c51746e6a7de55ecd0e52efe5c4
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20240911121149eucas1p29b9ccf99a545cfaa924b122cd8dd3183
-References: <CGME20240911121149eucas1p29b9ccf99a545cfaa924b122cd8dd3183@eucas1p2.samsung.com>
+X-CMS-RootMailID: 20240911121153eucas1p20f864c51746e6a7de55ecd0e52efe5c4
+References: <20240911121136.1120026-1-m.majewski2@samsung.com>
+	<CGME20240911121153eucas1p20f864c51746e6a7de55ecd0e52efe5c4@eucas1p2.samsung.com>
 
-This series adds initial Exynos850 support to the thermal driver
-together with its requirements (sanitize_temp_error fix, adding the new
-string to dt-bindings), while also cleaning up a bit (improving power
-management support and removing some outdated information from
-dt-bindings).
+Slightly simpler and nothing is lost if _suspend and _resume functions
+are built unconditionally.
 
-Changelog:
- v4:
-   - Cleaned up sanitize_temp_error a bit more
-   - Modified exynos_tmu_update_temp to match sanitize_temp_error
- v3:
-   - Reworded the commit message of the dt-binding information removal
-     change
- v2:
-   - Reimplemented to use the Exynos850 TMU clock: removed the patch to
-     make the clock optional and changed dt-bindings change accordingly
-   - Improved the Exynos850 implementation itself (style and one correct
-     register offset)
-   - Removed conditional compilation in favor of pm_sleep_ptr
-   - Shortened dt-bindings description
+Suggested-by: Anand Moon <linux.amoon@gmail.com>
+Reviewed-by: Sam Protsenko <semen.protsenko@linaro.org>
+Signed-off-by: Mateusz Majewski <m.majewski2@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-
-Mateusz Majewski (7):
-  drivers/thermal/exynos: use DEFINE_SIMPLE_DEV_PM_OPS
-  drivers/thermal/exynos: use pm_sleep_ptr instead of conditional
-    compilation
-  drivers/thermal/exynos: improve sanitize_temp_error
-  drivers/thermal/exynos: reuse data->temp_mask in
-    exynos_tmu_update_temp
-  dt-bindings: thermal: samsung,exynos: add exynos850-tmu string
-  drivers/thermal/exynos: add initial Exynos850 support
-  dt-bindings: thermal: samsung,exynos: remove driver-specific
-    information
-
- .../thermal/samsung,exynos-thermal.yaml       |   8 +-
- drivers/thermal/samsung/exynos_tmu.c          | 237 +++++++++++++++---
- 2 files changed, 209 insertions(+), 36 deletions(-)
-
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 9b7ca93a72f1..b68e9755c933 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -1132,7 +1132,6 @@ static void exynos_tmu_remove(struct platform_device *pdev)
+ 		clk_unprepare(data->clk_sec);
+ }
+ 
+-#ifdef CONFIG_PM_SLEEP
+ static int exynos_tmu_suspend(struct device *dev)
+ {
+ 	exynos_tmu_control(to_platform_device(dev), false);
+@@ -1152,15 +1151,11 @@ static int exynos_tmu_resume(struct device *dev)
+ 
+ static DEFINE_SIMPLE_DEV_PM_OPS(exynos_tmu_pm,
+ 				exynos_tmu_suspend, exynos_tmu_resume);
+-#define EXYNOS_TMU_PM	(&exynos_tmu_pm)
+-#else
+-#define EXYNOS_TMU_PM	NULL
+-#endif
+ 
+ static struct platform_driver exynos_tmu_driver = {
+ 	.driver = {
+ 		.name   = "exynos-tmu",
+-		.pm     = EXYNOS_TMU_PM,
++		.pm     = pm_sleep_ptr(&exynos_tmu_pm),
+ 		.of_match_table = exynos_tmu_match,
+ 	},
+ 	.probe = exynos_tmu_probe,
 -- 
 2.45.2
 
