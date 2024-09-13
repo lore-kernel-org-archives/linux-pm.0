@@ -1,204 +1,101 @@
-Received: from fhigh3-smtp.messagingengine.com (fhigh3-smtp.messagingengine.com [103.168.172.154])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3200C2F860;
-	Fri, 13 Sep 2024 20:41:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.154
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56626126BFE;
+	Fri, 13 Sep 2024 21:27:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726260073; cv=none; b=Grcx38CfHGtvzGE06piQQAAoVB+eua/JKDBAPoaen3z9HQ0689lPxdwdqvhDsnlGKqPcym8MpDBM4yXHCbrZt2gUZ09MyG4hcXdc3JaSP1p/8gbea1MvQvXxH+zVsAghBmn7J9QWHBeeOYkuDelbd+k1sl0W1Cli36I2mr8wyrs=
+	t=1726262841; cv=none; b=A6t5Jo4gmhXYjYaHfrhAWFGwHGQ37PZpnwdEWihr8TdVRYSy71a6pd0TEzQo0AgkEAsu58XXZoY/YqF3MWaZ310+D1QTWMcQ3jbyd0ph3RpIedNKBVpFeRQF2S/pBXbJmyHk1lTLoWATnhQBDVP+rRAMnFiwSCKB1fyqTYt4Gwc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726260073; c=relaxed/simple;
-	bh=CxkMsd4bJJkWrqyEQFy6R/lqvKTJ2ykNLfa/bCFXErY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=JCgLQ4UKt5DXVpU+OuYMtruA9vgnNlWkFfgsztaM9e4Si+rviVwDSm1QNeilf4v12OYlDctarXFcpHz0AY1cvWpeOlvHmhwjTOZ7UNk3wB33Qpi+lJlBsbl7f91YUfoUat+UXPQEPhkzMwe45um1J52lTbJvk3SyK5VSMaOFcPM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=flygoat.com; spf=pass smtp.mailfrom=flygoat.com; dkim=pass (2048-bit key) header.d=flygoat.com header.i=@flygoat.com header.b=zfDQR15W; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=oxn6Y8pS; arc=none smtp.client-ip=103.168.172.154
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=flygoat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flygoat.com
+	s=arc-20240116; t=1726262841; c=relaxed/simple;
+	bh=e2Egl2CiNVT6C6Q9NlJXEkVqJ9ZWnNq6oZ79xiIYOUM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dmOaQslWamZkWlOC95dbA03jMo0nrlOfPdPwb7XW9DxjVG77Gb2bKXJhTPOBRdDWFG6UkyCwnGL5gfGawRGwdH4J28tZXKIlLdvZh8tkXOJZJYTJ7ghZk0T+k9/oiVcyjheATkyGpGWleAXrxI8DOFT6OblxfGEGMg0OGi0QXuM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pmUJFKid; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flygoat.com header.i=@flygoat.com header.b="zfDQR15W";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="oxn6Y8pS"
-Received: from phl-compute-08.internal (phl-compute-08.phl.internal [10.202.2.48])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id AD14F1140322;
-	Fri, 13 Sep 2024 16:32:43 -0400 (EDT)
-Received: from phl-mailfrontend-02 ([10.202.2.163])
-  by phl-compute-08.internal (MEProxy); Fri, 13 Sep 2024 16:32:43 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flygoat.com; h=
-	cc:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1726259563;
-	 x=1726345963; bh=g3uETlfiUWlB/YD2dw5l2NaggelTzlICuj+8WCWMJOw=; b=
-	zfDQR15W9GgDGLw+xPSBUhQLQ7ybsf5n5IEPACOZXj5xhBUeMeIlwsBolckNOnOF
-	L9AvkfDMiNi47PkaqkiZwFkSyQ66iKHikRcS36WjChVMzjea88bltatpvWO1FNGo
-	wskDfdOUMNekET7JMDPoJURnV//GS2vAzoewgwDF1mnHj3jXdj4ViCJ5BT/cBPz3
-	mq69GegPQZmm+mLBfNEfqvm2jYkIAh2qQ+ZPN8MwrPJ281beBnwl86WDZPFMASR1
-	lZo017HYZcjU4KmrPt1agSSDACofKvTH7BCTyxTTj33lZRjD0RCjSrIsLUC/T5BN
-	p5zWwzRJx7lKwugtiXFcZQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1726259563; x=
-	1726345963; bh=g3uETlfiUWlB/YD2dw5l2NaggelTzlICuj+8WCWMJOw=; b=o
-	xn6Y8pSqtYQ87QSkAP8/04rm4eP5m9ce1jgaYE5KOvkG4i2JXacARtXl7VzAZjGY
-	6BlMXTvEDLFB2p6zr/abvDhvizP0E5GyHDX7SZKVppzZIOBbjYnZa+7NfT4rjsvt
-	cwh1fineSh5iCpUZbCxRKzNMx8N5S5DPE483qXgyhbXgpIEctRUE2LTq5ErU7bHo
-	XG22Vqy8hxwjIKz0VsHp9U3g/Y3b35hf0UNeADEdctMqQE3xWFKbvPg/WCC02+e6
-	17twGoMvtwnqFh3FpJ4EzodaFAyzU0QNt6LW2iX1owUFXzfW6EkJU5EgF7j6/boP
-	qD7955vs67jibcDfImRpQ==
-X-ME-Sender: <xms:a6HkZtiBJb53SH4sMQ62pA6XfGPQTQSFrw8ZRXcfdqg6rh5rNQOxZg>
-    <xme:a6HkZiB1tvP59GpoHdtK16tm-g8tlgaDij_LE-tvdSJ13iAffVWO9ByRQcQi3MEy8
-    0hc4GdA7ZDYsuXU9bM>
-X-ME-Received: <xmr:a6HkZtH2ymID7_0wxcmYTPiKZRlW7yXdxHA1upknOf3xyXySz3csP16gK-WtDEKDUWs>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeftddrudejkedgvdefucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggvpdfu
-    rfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnh
-    htshculddquddttddmnecujfgurhephfffufggtgfgkfhfjgfvvefosehtjeertdertdej
-    necuhfhrohhmpeflihgrgihunhcujggrnhhguceojhhirgiguhhnrdihrghnghesfhhlhi
-    hgohgrthdrtghomheqnecuggftrfgrthhtvghrnhepvdekiefhfeevkeeuveetfeelffek
-    gedugefhtdduudeghfeuveegffegudekjeelnecuvehluhhsthgvrhfuihiivgeptdenuc
-    frrghrrghmpehmrghilhhfrhhomhepjhhirgiguhhnrdihrghnghesfhhlhihgohgrthdr
-    tghomhdpnhgspghrtghpthhtohepuddvpdhmohguvgepshhmthhpohhuthdprhgtphhtth
-    hopegthhgvnhhhuhgrtggriheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepkhhvmhes
-    vhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhmihhpshesvh
-    hgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehvihhrvghshhdrkhhumhgrrhes
-    lhhinhgrrhhordhorhhgpdhrtghpthhtohepjhhirgiguhhnrdihrghnghesfhhlhihgoh
-    grthdrtghomhdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdr
-    ohhrghdprhgtphhtthhopehkvghrnhgvlhesgigvnhdtnhdrnhgrmhgvpdhrtghpthhtoh
-    eprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghr
-    nhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
-X-ME-Proxy: <xmx:a6HkZiRJunUHwCwc67q5YmFPNA-4RsgLxpKyypqqBtjwBEE6WQRVcw>
-    <xmx:a6HkZqxAe18SnJja2vPphmkRwN14tNs-r4z3dfB6l1zKVxZxmsRZPw>
-    <xmx:a6HkZo6tC6shUsnswSUMdmtxgawsrDrZsW3iwKybM4l6ZIj15qNvbA>
-    <xmx:a6HkZvwKbOcOcFuwKsgPqZdCybev11hw3wMYWSb01CXBgspnZdPhFA>
-    <xmx:a6HkZlrCYLuGAfBYxu3oArvbb9qV3oHYsQ3ANS75_k29H8T42x3V0To4>
-Feedback-ID: ifd894703:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
- 13 Sep 2024 16:32:38 -0400 (EDT)
-From: Jiaxun Yang <jiaxun.yang@flygoat.com>
-Date: Fri, 13 Sep 2024 21:32:05 +0100
-Subject: [PATCH v3 2/4] LoongArch: cpu-probe: Move IOCSR probing out of
- cpu_probe_common
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pmUJFKid"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ADEAFC4CEC0;
+	Fri, 13 Sep 2024 21:27:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1726262840;
+	bh=e2Egl2CiNVT6C6Q9NlJXEkVqJ9ZWnNq6oZ79xiIYOUM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=pmUJFKidmt5t9YvCGkPoZxDAwkJR/qzMBD1ppAJRTZPzhyDwiIJA1UDS5+TIOt1S1
+	 TDbGFabyGmeYGidBCgncLheZT9l3voYZL5HvajOco9CcDfEDKVZa94j6I9btL800Lg
+	 JPwb1CP159MudzwKtv1IWzybv84rIlPKg5UNg6BZDJWCoq9yP40s2DMflpFw0yi2h8
+	 BZ/zC93KcYej0nYfBh9ibfsVYudONxDlWp+QXwvFKTuevmwXKGerd69DoTpFvTAp5t
+	 6O5+eZdsc1HMZ0XES9KRzM0B3HVpodtpelm60GLShbmEglca+Xgl9iK6WWeGHfUhKw
+	 NY2QZyJWxJocw==
+Received: by pali.im (Postfix)
+	id BC139725; Fri, 13 Sep 2024 23:27:15 +0200 (CEST)
+Date: Fri, 13 Sep 2024 23:27:15 +0200
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
+To: Jerry Lv <Jerry.Lv@axis.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel@axis.com
+Subject: Re: [PATCH] power: supply: bq27xxx_battery: Do not return ENODEV
+ when busy
+Message-ID: <20240913212715.gmchsmmaqrhksmhx@pali>
+References: <20240913-foo-fix2-v1-1-a0f499404f3a@axis.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240913-iocsr-v3-2-81a57f60350d@flygoat.com>
-References: <20240913-iocsr-v3-0-81a57f60350d@flygoat.com>
-In-Reply-To: <20240913-iocsr-v3-0-81a57f60350d@flygoat.com>
-To: Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, 
- Thomas Gleixner <tglx@linutronix.de>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: loongarch@lists.linux.dev, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, linux-mips@vger.kernel.org, kvm@vger.kernel.org, 
- Jiaxun Yang <jiaxun.yang@flygoat.com>
-X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3243;
- i=jiaxun.yang@flygoat.com; h=from:subject:message-id;
- bh=CxkMsd4bJJkWrqyEQFy6R/lqvKTJ2ykNLfa/bCFXErY=;
- b=owGbwMvMwCXmXMhTe71c8zDjabUkhrQnC6PPHFaLeGKy3nenkkaU9V1Rx/ZCQY+eHOkbl+RmW
- XWazD/ZUcrCIMbFICumyBIioNS3ofHigusPsv7AzGFlAhnCwMUpABPZncbwP6hjX27j5l7PJOOt
- uccEnzyUM1iiYV5nkdYu2O4/OSRVgOEPb133Svm2nZ0H8t41Zm4/Izij1KY47rtp6b19Kvd87kx
- nAAA=
-X-Developer-Key: i=jiaxun.yang@flygoat.com; a=openpgp;
- fpr=980379BEFEBFBF477EA04EF9C111949073FC0F67
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240913-foo-fix2-v1-1-a0f499404f3a@axis.com>
+User-Agent: NeoMutt/20180716
 
-IOCSR register definition appears to be a platform specific
-spec instead of architecture spec, even for Loongson CPUs
-there is no guarantee that IOCSR will always present.
+On Friday 13 September 2024 16:45:37 Jerry Lv wrote:
+> Multiple applications may access the device gauge at the same time, so the
+> gauge may be busy and EBUSY will be returned. The driver will set a flag to
+> record the EBUSY state, and this flag will be kept until the next periodic
+> update. When this flag is set, bq27xxx_battery_get_property() will just
+> return ENODEV until the flag is updated.
 
-Thus it's dangerous to perform IOCSR probing without checking
-CPU type and instruction availability.
+I did not find any evidence of EBUSY. Which function and to which caller
+it returns? Do you mean that bq27xxx_read() returns -EBUSY?
 
-Signed-off-by: Jiaxun Yang <jiaxun.yang@flygoat.com>
----
- arch/loongarch/kernel/cpu-probe.c | 50 +++++++++++++++++++++------------------
- 1 file changed, 27 insertions(+), 23 deletions(-)
+> Even if the gauge was busy during the last accessing attempt, returning
+> ENODEV is not ideal, and can cause confusion in the applications layer.
 
-diff --git a/arch/loongarch/kernel/cpu-probe.c b/arch/loongarch/kernel/cpu-probe.c
-index a5473bb673e5..8a868a10df9c 100644
---- a/arch/loongarch/kernel/cpu-probe.c
-+++ b/arch/loongarch/kernel/cpu-probe.c
-@@ -182,22 +182,6 @@ static void cpu_probe_common(struct cpuinfo_loongarch *c)
- 	if (config & CPUCFG6_PMP)
- 		c->options |= LOONGARCH_CPU_PMP;
- 
--	config = iocsr_read32(LOONGARCH_IOCSR_FEATURES);
--	if (config & IOCSRF_CSRIPI)
--		c->options |= LOONGARCH_CPU_CSRIPI;
--	if (config & IOCSRF_EXTIOI)
--		c->options |= LOONGARCH_CPU_EXTIOI;
--	if (config & IOCSRF_FREQSCALE)
--		c->options |= LOONGARCH_CPU_SCALEFREQ;
--	if (config & IOCSRF_FLATMODE)
--		c->options |= LOONGARCH_CPU_FLATMODE;
--	if (config & IOCSRF_EIODECODE)
--		c->options |= LOONGARCH_CPU_EIODECODE;
--	if (config & IOCSRF_AVEC)
--		c->options |= LOONGARCH_CPU_AVECINT;
--	if (config & IOCSRF_VM)
--		c->options |= LOONGARCH_CPU_HYPERVISOR;
--
- 	config = csr_read32(LOONGARCH_CSR_ASID);
- 	config = (config & CSR_ASID_BIT) >> CSR_ASID_BIT_SHIFT;
- 	asid_mask = GENMASK(config - 1, 0);
-@@ -240,15 +224,10 @@ static char cpu_full_name[MAX_NAME_LEN] = "        -        ";
- 
- static inline void cpu_probe_loongson(struct cpuinfo_loongarch *c, unsigned int cpu)
- {
-+	uint32_t config;
-+	const char *core_name = "Unknown";
- 	uint64_t *vendor = (void *)(&cpu_full_name[VENDOR_OFFSET]);
- 	uint64_t *cpuname = (void *)(&cpu_full_name[CPUNAME_OFFSET]);
--	const char *core_name = "Unknown";
--
--	if (!__cpu_full_name[cpu])
--		__cpu_full_name[cpu] = cpu_full_name;
--
--	*vendor = iocsr_read64(LOONGARCH_IOCSR_VENDOR);
--	*cpuname = iocsr_read64(LOONGARCH_IOCSR_CPUNAME);
- 
- 	switch (BIT(fls(c->isa_level) - 1)) {
- 	case LOONGARCH_CPU_ISA_LA32R:
-@@ -284,6 +263,31 @@ static inline void cpu_probe_loongson(struct cpuinfo_loongarch *c, unsigned int
- 	}
- 
- 	pr_info("%s Processor probed (%s Core)\n", __cpu_family[cpu], core_name);
-+
-+	if (!(c->options & LOONGARCH_CPU_IOCSR))
-+		return;
-+
-+	*vendor = iocsr_read64(LOONGARCH_IOCSR_VENDOR);
-+	*cpuname = iocsr_read64(LOONGARCH_IOCSR_CPUNAME);
-+
-+	if (!__cpu_full_name[cpu])
-+		__cpu_full_name[cpu] = cpu_full_name;
-+
-+	config = iocsr_read32(LOONGARCH_IOCSR_FEATURES);
-+	if (config & IOCSRF_CSRIPI)
-+		c->options |= LOONGARCH_CPU_CSRIPI;
-+	if (config & IOCSRF_EXTIOI)
-+		c->options |= LOONGARCH_CPU_EXTIOI;
-+	if (config & IOCSRF_FREQSCALE)
-+		c->options |= LOONGARCH_CPU_SCALEFREQ;
-+	if (config & IOCSRF_FLATMODE)
-+		c->options |= LOONGARCH_CPU_FLATMODE;
-+	if (config & IOCSRF_EIODECODE)
-+		c->options |= LOONGARCH_CPU_EIODECODE;
-+	if (config & IOCSRF_AVEC)
-+		c->options |= LOONGARCH_CPU_AVECINT;
-+	if (config & IOCSRF_VM)
-+		c->options |= LOONGARCH_CPU_HYPERVISOR;
- }
- 
- #ifdef CONFIG_64BIT
+It would be better to either propagate correct error or return old value
+from cache...
 
--- 
-2.46.0
+> Instead, retry accessing the gauge to update the properties is as expected.
+> The gauge typically recovers from busy state within a few milliseconds, and
+> the cached flag will not cause issues while updating the properties.
+> 
+> Signed-off-by: Jerry Lv <Jerry.Lv@axis.com>
+> ---
+>  drivers/power/supply/bq27xxx_battery.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 750fda543308..eefbb5029a3b 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -2029,7 +2029,7 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+>  		bq27xxx_battery_update_unlocked(di);
+>  	mutex_unlock(&di->lock);
+>  
+> -	if (psp != POWER_SUPPLY_PROP_PRESENT && di->cache.flags < 0)
+> +	if (psp != POWER_SUPPLY_PROP_PRESENT && di->cache.flags < 0 && di->cache.flags != -EBUSY)
+>  		return -ENODEV;
 
+... but ignoring error and re-using the error return value as flags in
+code later in this function is bad idea.
+
+>  
+>  	switch (psp) {
+> 
+> ---
+> base-commit: da3ea35007d0af457a0afc87e84fddaebc4e0b63
+> change-id: 20240913-foo-fix2-a0d79db86a0b
+> 
+> Best regards,
+> -- 
+> Jerry Lv <Jerry.Lv@axis.com>
+> 
