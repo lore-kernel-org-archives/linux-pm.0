@@ -1,80 +1,118 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E217A12C54B;
-	Sat, 14 Sep 2024 11:16:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7967E77115;
+	Sat, 14 Sep 2024 12:14:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726312604; cv=none; b=hzVX3J5eOmNLgH5hQtNfNBVIOYlkeIRoLBDoXQ3OyCF88j63ygqu6eGpCAWWQ8jtcvuaaln1D9Ymckr8rwPUITawqfa3RHgrhbaU5nRlm+U13b7cE9MAeqvSRYptj0yxAe58aONQs7O4Ej7d8l4UjHvrnaVbQg46RXwIrxVzA0o=
+	t=1726316044; cv=none; b=ifmod6R2/Diq+eSP/2JdJ/71Vi6zeBWOi+3ByinqWEuzRJ2Su5fUqRb7A2gj6QO1YMczyfoySG4NcIv0oqtZuEI8DZu0YPOR/7KPDNF0RaEFBRi3znIJ2O4lLNI9CZ11+q+A+x2gTX21t+dnVXSkst87ft6nsczJV6VBbKjCiHY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726312604; c=relaxed/simple;
-	bh=JOErgjpnuu04eN575aCPVd3VSulYPCTotICG8i3xd78=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ie2BNGeMhEKJ9nSFR2VFGNgmhg+ft5rCQfr3poXYBmMQvlja2b1t/k5Mq+zx95HUuKNxuh3fbwP+QDG6wGNGhflsz0jE7/owWCViTyF9ulI7D+gWJTRAVGKjejpnd3PlVvZ1EiJq2EtXUMnqpAkeUdggeFwF2Wt/PLw4ZEJa93Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=W3Td9nKu reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1726316044; c=relaxed/simple;
+	bh=ot9x1hg/d/1uLiT7Q0B6SgyHCzVqHOo4oWuX+Wh2JJ4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nRKVPg7XY6ZboMzVssOvXJKM9i2+IOuxMGGs4sACqsIopSvQ9rNvVmNwe3jAsknQESf8wjA1+Q0Z3ixCm1ByzE6iDK5MwicSrmccNSqQUw+dUcHe4ZsH6L2Ig9pPM3b6rC2+OxTmgDRWEHADSwY8M/GYfkjh02o3FBTk+umktVs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lHqoF4T3; arc=none smtp.client-ip=198.175.65.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="W3Td9nKu"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id b6add2ec3eefa7e9; Sat, 14 Sep 2024 13:16:40 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 6DC978532AE;
-	Sat, 14 Sep 2024 13:16:40 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1726312600;
-	bh=JOErgjpnuu04eN575aCPVd3VSulYPCTotICG8i3xd78=;
-	h=From:Subject:Date;
-	b=W3Td9nKu925inZSXSM7nFxh60FG7LuEXb8pmm0mrfEtcCtARSu0gJCYmlMZTekDhA
-	 vgPxNvQLCXMA5zTCSG2STZS4iGgJ68ZpfVvrm8k1uXOwJCpxWkcOLpvH44hp/8P81J
-	 Mlp4F6FjtUe1Ul1HPZO9MYobQATyXmabEM35KAU5C+Kbq8fu8Pg5cH7Gq4BlA/kPWO
-	 NYbS6A5bDEPR6OuJPhdgiZ+TYDRThwC9p6diRuxzYwjRFkxTKFLdopNT97GXvOvwB2
-	 anj7Vr00fgSvVOZC/MXMTpMq+W/WdE+KahoPt5p96349mJeu62fO5XZJY6QKVs6nfa
-	 Ag/n7OWoOJcCQ==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
-Subject:
- [RFC PATCH for 6.13 v1 00/20] thermal: core: Updates related to thermal zone
- initialization, suspend and locking
-Date: Sat, 14 Sep 2024 12:24:08 +0200
-Message-ID: <6100907.lOV4Wx5bFT@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lHqoF4T3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1726316042; x=1757852042;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=ot9x1hg/d/1uLiT7Q0B6SgyHCzVqHOo4oWuX+Wh2JJ4=;
+  b=lHqoF4T3VVJnSQVTvTKonZH5rPDotOnX+yqqr+yEAmJPmdJ+5luvpuvn
+   +EWIv/OkMcpmg+1rHL/eicOStYlHKNedVkXlP/mz2IYRA1qU0ztzGiSn/
+   2CqrOVbp6WHDpwBDBMTJ6R30SfeVOVQU/S4Kz6L/FrDYCpbNFO7tSmQqp
+   Eo8cBNnlTnYnCK4/+g7hY+l1/08rIv0kPqnMUFOdDIQN0prE5IigdRcpT
+   7PX1+u+d3edYrb3aSYn4MLvJHLYtaIYCWBVDdChNHC8YuZaUEv9K7YTbm
+   gGl4ZsD65SiJs6Ns0l6I6zdNH2T89fPc8TaUqzkUB3qQLjrj2+dRdQJzv
+   w==;
+X-CSE-ConnectionGUID: dFq6FdO5RMu04H2zcI29uw==
+X-CSE-MsgGUID: 0/1u+pGSScC6SrFGjHr5mg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11194"; a="36347227"
+X-IronPort-AV: E=Sophos;i="6.10,229,1719903600"; 
+   d="scan'208";a="36347227"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Sep 2024 05:14:02 -0700
+X-CSE-ConnectionGUID: BAdcNCMdSIuzILkdbxjCLw==
+X-CSE-MsgGUID: nNdw04wrQkGXUcH5gwqkww==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,229,1719903600"; 
+   d="scan'208";a="68476797"
+Received: from lkp-server01.sh.intel.com (HELO 53e96f405c61) ([10.239.97.150])
+  by fmviesa008.fm.intel.com with ESMTP; 14 Sep 2024 05:13:58 -0700
+Received: from kbuild by 53e96f405c61 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1spRf1-0007ig-2I;
+	Sat, 14 Sep 2024 12:13:55 +0000
+Date: Sat, 14 Sep 2024 20:13:50 +0800
+From: kernel test robot <lkp@intel.com>
+To: Jie Zhan <zhanjie9@hisilicon.com>, ionela.voinescu@arm.com,
+	beata.michalska@arm.com, wangxiongfeng2@huawei.com,
+	viresh.kumar@linaro.org, rafael@kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linuxarm@huawei.com,
+	zhanjie9@hisilicon.com, jonathan.cameron@huawei.com,
+	wanghuiqiang@huawei.com, zhenglifeng1@huawei.com,
+	lihuisong@huawei.com, yangyicong@huawei.com, liaochang1@huawei.com,
+	zengheng4@huawei.com
+Subject: Re: [PATCH v2 3/3] cppc_cpufreq: Remove HiSilicon CPPC workaround
+Message-ID: <202409141923.kDxHsCjn-lkp@intel.com>
+References: <20240912072231.439332-4-zhanjie9@hisilicon.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrudektddgfeelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucfuphgrmhfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeehpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=50 Fuz1=50 Fuz2=50
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240912072231.439332-4-zhanjie9@hisilicon.com>
 
-Hi Everyone,
+Hi Jie,
 
-This is a continuation of
+kernel test robot noticed the following build warnings:
 
-https://lore.kernel.org/linux-pm/4920970.GXAFRqVoOG@rjwysocki.net/
+[auto build test WARNING on rafael-pm/linux-next]
+[also build test WARNING on rafael-pm/bleeding-edge linus/master v6.11-rc7 next-20240913]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-that eliminates a couple of races related to thermal zone initialization
-and system suspend, cleans up thermal zone updates handling during thermal
-zone and cooling device initialization and generally switches over the
-thermal core to using guards for locking.
+url:    https://github.com/intel-lab-lkp/linux/commits/Jie-Zhan/cppc_cpufreq-Return-desired-perf-in-get-if-feedback-counters-are-0/20240912-153059
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+patch link:    https://lore.kernel.org/r/20240912072231.439332-4-zhanjie9%40hisilicon.com
+patch subject: [PATCH v2 3/3] cppc_cpufreq: Remove HiSilicon CPPC workaround
+config: arm64-randconfig-001-20240913 (https://download.01.org/0day-ci/archive/20240914/202409141923.kDxHsCjn-lkp@intel.com/config)
+compiler: clang version 15.0.7 (https://github.com/llvm/llvm-project 8dfdcc7b7bf66834a761bd8de445840ef68e4d1a)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240914/202409141923.kDxHsCjn-lkp@intel.com/reproduce)
 
-Please see the individual patch changelogs for details.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202409141923.kDxHsCjn-lkp@intel.com/
 
-The patches in this series only received minimum testing (hence RFC), but
-all of these changes make sense IMV.
+All warnings (new ones prefixed by >>):
 
-Thanks!
+>> drivers/cpufreq/cppc_cpufreq.c:45:3: warning: unused variable 'fie_disabled' [-Wunused-variable]
+   } fie_disabled = FIE_UNSET;
+     ^
+   1 warning generated.
 
 
+vim +/fie_disabled +45 drivers/cpufreq/cppc_cpufreq.c
 
+a3f083e04a8766 Zheng Bin     2022-05-21  40  
+ae2df912d1a557 Jeremy Linton 2022-09-12  41  static enum {
+ae2df912d1a557 Jeremy Linton 2022-09-12  42  	FIE_UNSET = -1,
+ae2df912d1a557 Jeremy Linton 2022-09-12  43  	FIE_ENABLED,
+ae2df912d1a557 Jeremy Linton 2022-09-12  44  	FIE_DISABLED
+ae2df912d1a557 Jeremy Linton 2022-09-12 @45  } fie_disabled = FIE_UNSET;
+ae2df912d1a557 Jeremy Linton 2022-09-12  46  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
