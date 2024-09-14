@@ -1,50 +1,50 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 537C54437;
-	Sat, 14 Sep 2024 11:03:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 119A41CF2B1;
+	Sat, 14 Sep 2024 11:03:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726311822; cv=none; b=pVqUK86hpzP3AFSgaAU9mOqzS12dsK5XBiMX8QN3qhxdlhlF+0E2A1y/0jsHmpHSJyx98IGW3X9UsZha3NZ4N/CIo2PswR571Ylx2OFh74vQzoyhr/zvlQgCO5CgZsNG9KXEwStDt9ZYAJ3ghbhw24ncDBxtGp8u0RLsQYLLXV0=
+	t=1726311827; cv=none; b=HQiv2vHcOfLj7bxGilcslCEAnQs2xwsIrAx16tP6bCeOLBlhI7VRPj4/2NAOgsw0vMgjwKcKt59VqUu0zcUnj2J6dns0JpOXoJTbmXO/rEIr6Qxp9Iqi46Lrmm9MCbGPyFbk/T+mNKtFSvjd72/6W1Y5wH08zbZk0jb3P5OhsIo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726311822; c=relaxed/simple;
-	bh=LzuSMsQ8zYf06qhRsW0uKP+Ha8RA1FTKiyM9mfxAlTU=;
+	s=arc-20240116; t=1726311827; c=relaxed/simple;
+	bh=9WXyKvAcLO2BMZyBokhszmnjfpwu44G6g4cyK24kuwI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=HKKQxzvLnSjaLwPM4R7uzqiRuh/erTetom30sQvbFG0+ysJCcRBbUunPrCK1rQiLuZ3zuz2kqxsjs3le9Li8QZsZBzVihuIoxms1/w2wpp6/YRkJdt7sZtWkBk8cqDc8dDrTDmCNZnGP4CVNqOtSSFu0eVGKSq5gwZ8/Dq3oxow=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=CMfpSeqt reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=E3WaN0su0n1crrAPjcn6BENeIax6+uhgpqIet/595jIolCMSOZCOlxp7LSvaI0FywBurmHAJOqNem9z8TCumJZA2sA9D5lhrmYqiJADd9VdMu6QO6vp8NDsxVkQNx+k2ZG+6m5MZEMT4MQ78j1NUdtZcWi1NCMky1taO6YVxL6k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Tq89ZFBa reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="CMfpSeqt"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Tq89ZFBa"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 1852fd98ce71f1db; Sat, 14 Sep 2024 13:03:38 +0200
+ id 5b635f05774a90d9; Sat, 14 Sep 2024 13:03:43 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 9B309853357;
-	Sat, 14 Sep 2024 13:03:36 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 1725F8532AE;
+	Sat, 14 Sep 2024 13:03:42 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1726311817;
-	bh=LzuSMsQ8zYf06qhRsW0uKP+Ha8RA1FTKiyM9mfxAlTU=;
+	s=dkim; t=1726311822;
+	bh=9WXyKvAcLO2BMZyBokhszmnjfpwu44G6g4cyK24kuwI=;
 	h=From:Subject:Date;
-	b=CMfpSeqtK4rm4xEv9UeS/BWPW2xm389zlo9GYsNzfU2jr0VJcAmcEbwvkGE9iBkLE
-	 KDJs/rMCIvEk9RHTKzgPeJjFQ6vs7KnBJE5Qs/K/ulKFArkUvUofOj52bAR0B6tSfj
-	 do5sHJRzVUxQe5RlV+j1ZEuqgJrTrDzubnNLujEN4Hdaj9pvVJ3XCIfF10/sj/IuPw
-	 0/LGqoA7iP1wyDxbQYikXn4DLvw35eMDq39kff7T8zFXaVXv79o2v6+xJUEe741niH
-	 yWtvMTnJeLwoFxgpJV5i1neOi9Q/bBZfCKvYavcAbQpOvPkpgzvCjvOr7HujZflh0F
-	 KFn+ZjGRneFsA==
+	b=Tq89ZFBa9frfgbK0J4wzD807UM9ILLu8Uiki9tGXyiOJJ3gvj8N5m5qpPrXsn7ldY
+	 TeoXDhU6BXJs99gqFt9h1S5xNBgHfPm9sUxXm63phvXGRJEH2SgMmnnE7HkXlJWzev
+	 TklUPBIJGW8F/hU1YFIbKM+YZVT8og9n5kDJWdGse0WKM7aW2GxaWs7m8fPZvMBcuM
+	 driZAi7MsbxnKZ59wL8bbYDpqNOtak5zxpd8IfxsVxJUjrkhezEc9Yg2fzGDYDDR6B
+	 BvlNKxceDGVu5kRcCYcIdZ8HAhS1XD6N+xrrgvaxt6H6hSjorPzq4W6KkuRB4ReFxV
+	 IZLB1/fQDtHZQ==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
 Subject:
- [RFC PATCH for 6.13 v1 10/20] thermal: core: Drop need_update field from
- struct thermal_zone_device
-Date: Sat, 14 Sep 2024 12:37:46 +0200
-Message-ID: <3261209.5fSG56mABF@rjwysocki.net>
+ [RFC PATCH for 6.13 v1 09/20] thermal: core: Update thermal zones after
+ cooling device binding
+Date: Sat, 14 Sep 2024 12:36:51 +0200
+Message-ID: <3603909.iIbC2pHGDl@rjwysocki.net>
 In-Reply-To: <6100907.lOV4Wx5bFT@rjwysocki.net>
 References: <6100907.lOV4Wx5bFT@rjwysocki.net>
 Precedence: bulk
@@ -58,64 +58,98 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrudektddgfeeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgepgeenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrudektddgfeeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
 X-DCC--Metrics: v370.home.net.pl 1024; Body=25 Fuz1=25 Fuz2=25
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-After previous changes, the need_update field in struct thermal_zone_device
-is only set and never read, so drop it.
+If a new cooling device is registered and it is bound to at least one
+trip point in a given thermal zone, that thermal zone needs to be
+updated via __thermal_zone_device_update().
 
-No functional impact.
+Instead of doing this with the help of the need_update atomic field in
+struct thermal_zone_device, which is not particularly straightforward,
+make __thermal_zone_cdev_bind() return a bool value indicating whether
+or not the given thermal zone needs to be updated because a new cooling
+device has been bound to it and update thermal_zone_cdev_bind() to
+call __thermal_zone_device_update() when this value is "true".
+
+No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c |    4 ----
- drivers/thermal/thermal_core.h |    2 --
- 2 files changed, 6 deletions(-)
+ drivers/thermal/thermal_core.c |   23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
 Index: linux-pm/drivers/thermal/thermal_core.c
 ===================================================================
 --- linux-pm.orig/drivers/thermal/thermal_core.c
 +++ linux-pm/drivers/thermal/thermal_core.c
-@@ -826,7 +826,6 @@ static int thermal_bind_cdev_to_trip(str
- 	if (!result) {
- 		list_add_tail(&dev->trip_node, &td->thermal_instances);
- 		list_add_tail(&dev->cdev_node, &cdev->thermal_instances);
--		atomic_set(&tz->need_update, 1);
+@@ -919,13 +919,14 @@ void print_bind_err_msg(struct thermal_z
+ 		cdev->type, thermal_zone_trip_id(tz, &td->trip), ret);
+ }
  
- 		thermal_governor_update_tz(tz, THERMAL_TZ_BIND_CDEV);
+-static void __thermal_zone_cdev_bind(struct thermal_zone_device *tz,
++static bool __thermal_zone_cdev_bind(struct thermal_zone_device *tz,
+ 				     struct thermal_cooling_device *cdev)
+ {
+ 	struct thermal_trip_desc *td;
++	bool update_tz = false;
+ 
+ 	if (!tz->ops.should_bind)
+-		return;
++		return false;
+ 
+ 	for_each_trip_desc(tz, td) {
+ 		struct cooling_spec c = {
+@@ -939,9 +940,15 @@ static void __thermal_zone_cdev_bind(str
+ 			continue;
+ 
+ 		ret = thermal_bind_cdev_to_trip(tz, td, cdev, &c);
+-		if (ret)
++		if (ret) {
+ 			print_bind_err_msg(tz, td, cdev, ret);
++			continue;
++		}
++
++		update_tz = true;
  	}
-@@ -1480,9 +1479,6 @@ thermal_zone_device_register_with_trips(
- 	if (result)
- 		goto remove_id;
++
++	return update_tz;
+ }
  
--	/* A new thermal zone needs to be updated anyway. */
--	atomic_set(&tz->need_update, 1);
+ static void thermal_zone_cdev_bind(struct thermal_zone_device *tz,
+@@ -949,7 +956,8 @@ static void thermal_zone_cdev_bind(struc
+ {
+ 	guard(thermal_zone)(tz);
+ 
+-	__thermal_zone_cdev_bind(tz, cdev);
++	if (__thermal_zone_cdev_bind(tz, cdev))
++		__thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ }
+ 
+ /**
+@@ -974,7 +982,7 @@ __thermal_cooling_device_register(struct
+ 				  const struct thermal_cooling_device_ops *ops)
+ {
+ 	struct thermal_cooling_device *cdev;
+-	struct thermal_zone_device *pos = NULL;
++	struct thermal_zone_device *pos;
+ 	unsigned long current_state;
+ 	int id, ret;
+ 
+@@ -1050,11 +1058,6 @@ __thermal_cooling_device_register(struct
+ 	list_for_each_entry(pos, &thermal_tz_list, node)
+ 		thermal_zone_cdev_bind(pos, cdev);
+ 
+-	list_for_each_entry(pos, &thermal_tz_list, node)
+-		if (atomic_cmpxchg(&pos->need_update, 1, 0))
+-			thermal_zone_device_update(pos,
+-						   THERMAL_EVENT_UNSPECIFIED);
 -
- 	result = dev_set_name(&tz->device, "thermal_zone%d", tz->id);
- 	if (result) {
- 		thermal_zone_destroy_device_groups(tz);
-Index: linux-pm/drivers/thermal/thermal_core.h
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.h
-+++ linux-pm/drivers/thermal/thermal_core.h
-@@ -99,7 +99,6 @@ struct thermal_governor {
- 			trip point.
-  * @prev_high_trip:	the above current temperature if you've crossed a
- 			passive trip point.
-- * @need_update:	if equals 1, thermal_zone_device_update needs to be invoked.
-  * @ops:	operations this &thermal_zone_device supports
-  * @tzp:	thermal zone parameters
-  * @governor:	pointer to the governor for this thermal zone
-@@ -135,7 +134,6 @@ struct thermal_zone_device {
- 	int passive;
- 	int prev_low_trip;
- 	int prev_high_trip;
--	atomic_t need_update;
- 	struct thermal_zone_device_ops ops;
- 	struct thermal_zone_params *tzp;
- 	struct thermal_governor *governor;
+ 	mutex_unlock(&thermal_list_lock);
+ 
+ 	return cdev;
 
 
 
