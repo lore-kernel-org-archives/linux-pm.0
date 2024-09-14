@@ -1,50 +1,49 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBE9F1CE71F;
-	Sat, 14 Sep 2024 11:11:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81E5B7A15A;
+	Sat, 14 Sep 2024 11:14:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726312286; cv=none; b=k5aEJsV9JBEc4FS1jQtDfT0FuMGaDpF9nX7PWnbRDtmcn+HoyPPKUOh4S+o9lgKWPigVTWYQSYwzir0m6QYqJkfgunQRZhSCbUNU3IMkvQ+ydcGpTa/wRdToJwsUe4/bMkzb8USBkPEtEWCGol9+K6muEMol2vtScPp8IBlpu60=
+	t=1726312443; cv=none; b=HES8K190u0tpoTitrA+uyeRgm0K/jU89psJfvzKp4ETKiMzfXXiDsgP5BZyJt+oaIGBPhcXFu5M1uL1KL+qakud4rPohpF4E6/aYBkm1J3e7PNAaKgp8gJl2iE2aEIi6wkj+knlU9x18znqU4rl3sQMe7269bwvi7XUZBsrYix0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726312286; c=relaxed/simple;
-	bh=1aGP2ubyvlPoEmFhGtZ1hFKOD0UpMhJppFF6WSwrEmA=;
+	s=arc-20240116; t=1726312443; c=relaxed/simple;
+	bh=FdlwvppnGhrvw2CWlzVf8Z4HuHTXJ0bu2PxvguLALyo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=HiPnXY5yQ/erx56d4Rlnf/uy7He2ZV+GyFRdalwsF6vT0htlqXE/xZCvqPdjUzIWmj2d73JCS86TeFa4M8s7zp8Wtb0CwaTmuem/3GhIxVjAiRTZjYG0UpqsST0m59wNXLox8j3cggxAHNsBwK2/wVYbDvkBHiS10jTjeTNp1ls=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=mxZD+nC2 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=UQjW1SepfTw7Hg8ZageKQ/nxMZvdXl0sOhSRS/B1xa0SW5eO5jj/NHGOL4hE0f/VRtmWnrPSZ4Z7lTmzYwvVFJpJoNhwCPWLjRAfk+f+9PgVUVSzwPsWbZxje2QiQw3SaHcttKjIojKwY5OY5MsFOJ0Xhq/xd42IAd2AWPFvzqQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ZkcvyjT8 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="mxZD+nC2"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ZkcvyjT8"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id e74fefbdeaa75e17; Sat, 14 Sep 2024 13:11:23 +0200
+ id 500d8a0d6220b94c; Sat, 14 Sep 2024 13:13:59 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 822248532AE;
-	Sat, 14 Sep 2024 13:11:22 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 0E95D8532AE;
+	Sat, 14 Sep 2024 13:13:59 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1726312282;
-	bh=1aGP2ubyvlPoEmFhGtZ1hFKOD0UpMhJppFF6WSwrEmA=;
+	s=dkim; t=1726312439;
+	bh=FdlwvppnGhrvw2CWlzVf8Z4HuHTXJ0bu2PxvguLALyo=;
 	h=From:Subject:Date;
-	b=mxZD+nC2qi0WsWWYJvxP7JQCAn3mkvaMm0odBTFz4lvvld8hfR0BgNwwNkN13tliz
-	 lViaGxKu6r9ZhiQz6ko4zdEgaGi4T/KqwWxOK3F9pTJ4qetzaURvq2O+8DsPTPHRHs
-	 cWzFZIYlgp2Qa1OU+KErPOMzHcEnB9ayF+gUdlOD7mE5WqWzR5JPadILx0xU2h1SwX
-	 ajWIJTTem/AjyJnvwyykB/zo0jzG1Dhq+tyBPjk0Mf6maXpKEw3b7UhHZlMR9DBNDW
-	 x0vBX4cGnj1lHiMwMQ0xATLToMxsluQC+71dhJ2ij/RpRwTOLFZH2dogsFVcPu/uux
-	 gIxzBkL50CAyw==
+	b=ZkcvyjT8J516BckV0W81lZy0ds0iQunUyoKC4tCXGXyq21t68aCCjIIjniWhJUJ3+
+	 5LQJV9LWOsX6Nu5aGp6GUgE1lXavWx95OtNABBcHRCjpI666IU3MXs3mf4U/DCW3LS
+	 V4TfD5xXEh/NoOt9DVi/XUjFtvg8B3/pTt8H0mx2Ts5Stmtj0uqiG+E+WFtLJOHsTU
+	 auawDa7NLS0uI9dxGUNA5ysamFrq65vzMaOexKyScefoWlmjktKcWeh06mOwDTATfc
+	 k4JX+jfg3TiULb79nFismyUdtyICPOCfcEy6wqHKZKBuo76ibwaApCCIBBQXU+2CEI
+	 63cz0LIpfVyiw==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>
 Subject:
- [RFC PATCH for 6.13 v1 03/20] thermal: core: Represent suspend-related
- thermal zone flags as bits
-Date: Sat, 14 Sep 2024 12:28:43 +0200
-Message-ID: <2215885.irdbgypaU6@rjwysocki.net>
+ [RFC PATCH for 6.13 v1 02/20] thermal: core: Rearrange PM notification code
+Date: Sat, 14 Sep 2024 12:27:17 +0200
+Message-ID: <4940614.GXAFRqVoOG@rjwysocki.net>
 In-Reply-To: <6100907.lOV4Wx5bFT@rjwysocki.net>
 References: <6100907.lOV4Wx5bFT@rjwysocki.net>
 Precedence: bulk
@@ -58,118 +57,134 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrudektddgfeekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=40 Fuz1=40 Fuz2=40
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrudektddgfeekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=45 Fuz1=45 Fuz2=45
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Instead of using two separate fields in struct thermal_zone_device for
-representing flags related to thermal zone suspend, represent them
-explicitly as bits in one u8 "state" field.
+Move the code run for each thermal zone by the thermal PM notify
+handler to separate functions and use the thermal zone guard to
+implement locking in them.
 
-Subsequently, that field will be used for addressing race conditions
-related to thermal zone initialization and exit.
+This will help to make some subsequent changes look somewhat more
+straightforward, among other things.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c |   11 +++++------
- drivers/thermal/thermal_core.h |   11 +++++++----
- 2 files changed, 12 insertions(+), 10 deletions(-)
+ drivers/thermal/thermal_core.c |   84 ++++++++++++++++++++---------------------
+ 1 file changed, 42 insertions(+), 42 deletions(-)
 
 Index: linux-pm/drivers/thermal/thermal_core.c
 ===================================================================
 --- linux-pm.orig/drivers/thermal/thermal_core.c
 +++ linux-pm/drivers/thermal/thermal_core.c
-@@ -497,7 +497,7 @@ void __thermal_zone_device_update(struct
- 	int low = -INT_MAX, high = INT_MAX;
- 	int temp, ret;
- 
--	if (tz->suspended || tz->mode != THERMAL_DEVICE_ENABLED)
-+	if (tz->state != TZ_STATE_READY || tz->mode != THERMAL_DEVICE_ENABLED)
- 		return;
- 
- 	ret = __thermal_zone_get_temp(tz, &temp);
-@@ -1651,7 +1651,7 @@ static void thermal_zone_device_resume(s
- 
- 	guard(thermal_zone)(tz);
- 
--	tz->suspended = false;
-+	tz->state &= ~(TZ_STATE_FLAG_SUSPENDED | TZ_STATE_FLAG_RESUMING);
- 
- 	thermal_debug_tz_resume(tz);
- 	thermal_zone_device_init(tz);
-@@ -1659,14 +1659,13 @@ static void thermal_zone_device_resume(s
- 	__thermal_zone_device_update(tz, THERMAL_TZ_RESUME);
- 
- 	complete(&tz->resume);
--	tz->resuming = false;
+@@ -1662,6 +1662,44 @@ static void thermal_zone_device_resume(s
+ 	tz->resuming = false;
  }
  
- static void thermal_zone_pm_prepare(struct thermal_zone_device *tz)
++static void thermal_zone_pm_prepare(struct thermal_zone_device *tz)
++{
++	guard(thermal_zone)(tz);
++
++	if (tz->resuming) {
++		/*
++		 * thermal_zone_device_resume() queued up for this zone has not
++		 * acquired the lock yet, so release it to let the function run
++		 * and wait util it has done the work.
++		 */
++		mutex_unlock(&tz->lock);
++
++		wait_for_completion(&tz->resume);
++
++		mutex_lock(&tz->lock);
++	}
++
++	tz->suspended = true;
++}
++
++static void thermal_zone_pm_complete(struct thermal_zone_device *tz)
++{
++	guard(thermal_zone)(tz);
++
++	cancel_delayed_work(&tz->poll_queue);
++
++	reinit_completion(&tz->resume);
++	tz->resuming = true;
++
++	/*
++	 * Replace the work function with the resume one, which will restore the
++	 * original work function and schedule the polling work if needed.
++	 */
++	INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_resume);
++	/* Queue up the work without a delay. */
++	mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, 0);
++}
++
+ static int thermal_pm_notify(struct notifier_block *nb,
+ 			     unsigned long mode, void *_unused)
  {
- 	guard(thermal_zone)(tz);
+@@ -1673,27 +1711,8 @@ static int thermal_pm_notify(struct noti
+ 	case PM_SUSPEND_PREPARE:
+ 		mutex_lock(&thermal_list_lock);
  
--	if (tz->resuming) {
-+	if (tz->state & TZ_STATE_FLAG_RESUMING) {
- 		/*
- 		 * thermal_zone_device_resume() queued up for this zone has not
- 		 * acquired the lock yet, so release it to let the function run
-@@ -1679,7 +1678,7 @@ static void thermal_zone_pm_prepare(stru
- 		mutex_lock(&tz->lock);
- 	}
+-		list_for_each_entry(tz, &thermal_tz_list, node) {
+-			mutex_lock(&tz->lock);
+-
+-			if (tz->resuming) {
+-				/*
+-				 * thermal_zone_device_resume() queued up for
+-				 * this zone has not acquired the lock yet, so
+-				 * release it to let the function run and wait
+-				 * util it has done the work.
+-				 */
+-				mutex_unlock(&tz->lock);
+-
+-				wait_for_completion(&tz->resume);
+-
+-				mutex_lock(&tz->lock);
+-			}
+-
+-			tz->suspended = true;
+-
+-			mutex_unlock(&tz->lock);
+-		}
++		list_for_each_entry(tz, &thermal_tz_list, node)
++			thermal_zone_pm_prepare(tz);
  
--	tz->suspended = true;
-+	tz->state |= TZ_STATE_FLAG_SUSPENDED;
- }
+ 		mutex_unlock(&thermal_list_lock);
+ 		break;
+@@ -1702,27 +1721,8 @@ static int thermal_pm_notify(struct noti
+ 	case PM_POST_SUSPEND:
+ 		mutex_lock(&thermal_list_lock);
  
- static void thermal_zone_pm_complete(struct thermal_zone_device *tz)
-@@ -1689,7 +1688,7 @@ static void thermal_zone_pm_complete(str
- 	cancel_delayed_work(&tz->poll_queue);
+-		list_for_each_entry(tz, &thermal_tz_list, node) {
+-			mutex_lock(&tz->lock);
+-
+-			cancel_delayed_work(&tz->poll_queue);
+-
+-			reinit_completion(&tz->resume);
+-			tz->resuming = true;
+-
+-			/*
+-			 * Replace the work function with the resume one, which
+-			 * will restore the original work function and schedule
+-			 * the polling work if needed.
+-			 */
+-			INIT_DELAYED_WORK(&tz->poll_queue,
+-					  thermal_zone_device_resume);
+-			/* Queue up the work without a delay. */
+-			mod_delayed_work(system_freezable_power_efficient_wq,
+-					 &tz->poll_queue, 0);
+-
+-			mutex_unlock(&tz->lock);
+-		}
++		list_for_each_entry(tz, &thermal_tz_list, node)
++			thermal_zone_pm_complete(tz);
  
- 	reinit_completion(&tz->resume);
--	tz->resuming = true;
-+	tz->state |= TZ_STATE_FLAG_RESUMING;
- 
- 	/*
- 	 * Replace the work function with the resume one, which will restore the
-Index: linux-pm/drivers/thermal/thermal_core.h
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.h
-+++ linux-pm/drivers/thermal/thermal_core.h
-@@ -62,6 +62,11 @@ struct thermal_governor {
- 	struct list_head	governor_list;
- };
- 
-+#define	TZ_STATE_FLAG_SUSPENDED	BIT(0)
-+#define	TZ_STATE_FLAG_RESUMING	BIT(1)
-+
-+#define TZ_STATE_READY		0
-+
- /**
-  * struct thermal_zone_device - structure for a thermal zone
-  * @id:		unique id number for each thermal zone
-@@ -103,8 +108,7 @@ struct thermal_governor {
-  * @node:	node in thermal_tz_list (in thermal_core.c)
-  * @poll_queue:	delayed work for polling
-  * @notify_event: Last notification event
-- * @suspended: thermal zone suspend indicator
-- * @resuming:	indicates whether or not thermal zone resume is in progress
-+ * @state: 	current state of the thermal zone
-  * @trips:	array of struct thermal_trip objects
-  */
- struct thermal_zone_device {
-@@ -139,8 +143,7 @@ struct thermal_zone_device {
- 	struct list_head node;
- 	struct delayed_work poll_queue;
- 	enum thermal_notify_event notify_event;
--	bool suspended;
--	bool resuming;
-+	u8 state;
- #ifdef CONFIG_THERMAL_DEBUGFS
- 	struct thermal_debugfs *debugfs;
- #endif
+ 		mutex_unlock(&thermal_list_lock);
+ 		break;
 
 
 
