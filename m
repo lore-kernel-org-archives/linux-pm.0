@@ -1,46 +1,45 @@
 Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BB6C1990C7;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18B6A1990D6;
 	Thu, 19 Sep 2024 08:31:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726734689; cv=none; b=DSqwZ3AOJWh+2+r+ruIhsmhGvMIAQsAjPrxdwrzIOkB2hWxn5MDz9A4qQ7YkMuVV3ChzR9PXX3ogBnEYdLEyxa45Dq8irbXOsaHHcr0DV7eJnX330Q+DWWOTX3+2MJpN31KOyimJTS1FmKMV9itsrTDeqEBlP/tXL0jjad0e+so=
+	t=1726734689; cv=none; b=dNdM17R7Mo1DdUlKhTnewKU24I3wreX0gWze/LZaJzIEWeprsYEsSsRSVxnV6mCZhxzp9V9se8PNMn0B1mlObIedJKQDRZ1qXszV0IUSgYM7GwsIlPvK+QwxZDjek6rX3Ab2KJ2f6oJp60aFhDNCg/ThgCY21NvLIWVOCGpjvFI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1726734689; c=relaxed/simple;
-	bh=D1ozCzN8EOcIsmgM8nfYHtI9gjtqsU0VRstJMG9YP94=;
+	bh=JaX6wUQ/bm9BHvP0cV2N11OE/HxkvRDSqS/WSD4Kw/s=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=WYf7VFG1qzNs5exCPtPtP9H7p8MhaEyJheIwrRYKODaBxT+27C9+djfCKGNmBiuPFqMclDPNjfwh5umHM/9YAK3oXmEPrdCKSezOvOwIYNmlVaclTmvIPjtWnMmHbDOg4Du02244GqrGmgL1yLjudq9QZC/mUJMY/uQNK29CpgM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=zDGbtGc2; arc=none smtp.client-ip=198.47.19.141
+	 MIME-Version:Content-Type; b=HxA3GBRTu+FIXTrl+LxaCKp+reG9/Z0QGvfTsZXy+QR1VAAgllK/JKQvdlwjQBRr5n/iHwqlG5qqHrmr/emL2zkc59T9pT1GYK3UILsE5tpDzOg0QwBv9bmlWANFNAMZVF35PyxK47EkrkIcGahIy6/cBXWfIJqg3kXXDG9L/78=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=SitOQZYT; arc=none smtp.client-ip=198.47.19.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="zDGbtGc2"
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 48J8VEo6012186;
-	Thu, 19 Sep 2024 03:31:14 -0500
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="SitOQZYT"
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 48J8VMmu012254;
+	Thu, 19 Sep 2024 03:31:22 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1726734674;
-	bh=AHtx/XNkIWcnpZQhDMkchZlqzR1VQR4Dsjo81guqk98=;
+	s=ti-com-17Q1; t=1726734682;
+	bh=ml7WXD4lYp/d/pZxmhToN7EUNx5OBXnZ8x8r4tbqS1Y=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=zDGbtGc2PH+sHTBh58Mb0l3qJVTdB1zBFxyoBEySbxRQnqb6YO7wT6P3T6w3+UY4M
-	 Gxfp0nyPeKjV+c/P9vYjEC5KsT9uTOvuv5FDWbdY/ZBgoUtQV3CEPezVEwRemSba3X
-	 J3m0KNHI2WW1zE0+zYsKc8z3zgRN8y/cMD6DvOfQ=
-Received: from DFLE108.ent.ti.com (dfle108.ent.ti.com [10.64.6.29])
-	by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 48J8VEwP005798
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 19 Sep 2024 03:31:14 -0500
-Received: from DFLE112.ent.ti.com (10.64.6.33) by DFLE108.ent.ti.com
- (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
+	b=SitOQZYTcGzye30dGESKfp2eoTEUXBjIPmHG9eWBwJ0kPx5dGrr6Du0cuFB0rOFIT
+	 LPona4kTcjvaVpHdcN5YmynP8Pqp1E8dYtdGKqxL+zQE+ywE6fVOnaXl7n/vL5BdAf
+	 waoHTXEy4WFDWxMT42QSu8LRn1OXrE/ZKVbwkOtM=
+Received: from DLEE107.ent.ti.com (dlee107.ent.ti.com [157.170.170.37])
+	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTP id 48J8VMqZ077614;
+	Thu, 19 Sep 2024 03:31:22 -0500
+Received: from DLEE109.ent.ti.com (157.170.170.41) by DLEE107.ent.ti.com
+ (157.170.170.37) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Thu, 19
- Sep 2024 03:31:14 -0500
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DFLE112.ent.ti.com
- (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
+ Sep 2024 03:31:21 -0500
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE109.ent.ti.com
+ (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Thu, 19 Sep 2024 03:31:14 -0500
+ Frontend Transport; Thu, 19 Sep 2024 03:31:21 -0500
 Received: from lcpd911.dhcp.ti.com (lcpd911.dhcp.ti.com [172.24.227.226])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 48J8UrgX042798;
-	Thu, 19 Sep 2024 03:31:10 -0500
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 48J8UrgZ042798;
+	Thu, 19 Sep 2024 03:31:18 -0500
 From: Dhruva Gole <d-gole@ti.com>
 To: Nishanth Menon <nm@ti.com>, Vignesh Raghavendra <vigneshr@ti.com>,
         Tero
@@ -53,9 +52,9 @@ CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
         Dhruva Gole <d-gole@ti.com>, Rob Herring <robh@kernel.org>,
         Krzysztof
  Kozlowski <krzk+dt@kernel.org>, Bryan Brattlof <bb@ti.com>
-Subject: [PATCH V4 2/6] arm64: dts: ti: k3-am62a7-sk: add 1.4ghz opp entry
-Date: Thu, 19 Sep 2024 13:58:06 +0530
-Message-ID: <20240919082809.174589-3-d-gole@ti.com>
+Subject: [PATCH V4 4/6] arm64: dts: ti: k3-am62p5-sk: add 1.4ghz opp entry
+Date: Thu, 19 Sep 2024 13:58:08 +0530
+Message-ID: <20240919082809.174589-5-d-gole@ti.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240919082809.174589-1-d-gole@ti.com>
 References: <20240919082809.174589-1-d-gole@ti.com>
@@ -71,23 +70,23 @@ X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
 
 From: Bryan Brattlof <bb@ti.com>
 
-The AM62Ax reference board is capable of supplying 0v85 to the VDD_CORE
+The AM62Px reference board is capable of supplying 0v85 to the VDD_CORE
 which allows the Cortex-A53s to operate at 1.4GHz according to chapter
-7.5 of the SoC's data sheet[0]. Append the 1.4Ghz entry to the OPP table
-to enable this OPP
+6.6 of the SoC's data sheet[0] . Append the 1.4Ghz entry to the OPP
+table to enable this frequency
 
-[0] https://www.ti.com/lit/ds/symlink/am62a3.pdf
+[0] https://www.ti.com/lit/ds/symlink/am62p-q1.pdf
 
 Signed-off-by: Bryan Brattlof <bb@ti.com>
 ---
- arch/arm64/boot/dts/ti/k3-am62a7-sk.dts | 9 +++++++++
+ arch/arm64/boot/dts/ti/k3-am62p5-sk.dts | 9 +++++++++
  1 file changed, 9 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/ti/k3-am62a7-sk.dts b/arch/arm64/boot/dts/ti/k3-am62a7-sk.dts
-index 67faf46d7a35..a6f0d87a50d8 100644
---- a/arch/arm64/boot/dts/ti/k3-am62a7-sk.dts
-+++ b/arch/arm64/boot/dts/ti/k3-am62a7-sk.dts
-@@ -68,6 +68,15 @@ wkup_r5fss0_core0_memory_region: r5f-dma-memory@9c900000 {
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p5-sk.dts b/arch/arm64/boot/dts/ti/k3-am62p5-sk.dts
+index 3efa12bb7254..7f3dc39e12bc 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p5-sk.dts
++++ b/arch/arm64/boot/dts/ti/k3-am62p5-sk.dts
+@@ -128,6 +128,15 @@ led-0 {
  		};
  	};
  
@@ -100,9 +99,9 @@ index 67faf46d7a35..a6f0d87a50d8 100644
 +		};
 +	};
 +
- 	vmain_pd: regulator-0 {
- 		/* TPS25750 PD CONTROLLER OUTPUT */
- 		compatible = "regulator-fixed";
+ 	tlv320_mclk: clk-0 {
+ 		#clock-cells = <0>;
+ 		compatible = "fixed-clock";
 -- 
 2.34.1
 
