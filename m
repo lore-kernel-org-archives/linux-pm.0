@@ -1,175 +1,146 @@
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f171.google.com (mail-lj1-f171.google.com [209.85.208.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27D8C1991BE;
-	Thu, 19 Sep 2024 08:51:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.255
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F1D91990A1
+	for <linux-pm@vger.kernel.org>; Thu, 19 Sep 2024 08:53:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726735920; cv=none; b=KNe0dLXytY96blZ9dnQfz+zZxZPFDs2rJkW5qF5rd2gOUcQ1jFO7YFMD+OGW3QAem9JCEQ1RB1mLNobyaktbBK9bRpRNyGC1FemGy0gp99WbTTiNck0a248qaI6rPwvskoH9V3JLedMSU4fEj+ZUg8Fv81a9/AKY+YXeov5GHHo=
+	t=1726736002; cv=none; b=VqFckMOoN0lRErEW12/1PB+afYT6k8XNxKCLf/vSV5pZ8Dv0JHlFuKcdeqGiekZOd0lsgBoR4F2p0T2/nph8PZDQcVgZDp/J4Vnqqvq5B+OlO26xCqc6XsrLPF9J0yJY5ElyCyPb/QxM40/dK2zGNvMwaBpraJ2vwZC2W7euXTo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726735920; c=relaxed/simple;
-	bh=ca9Z4TyC58D4S7fhwfrJ9jJGKJURa3GcHf6IEhiYb4w=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=DcYNQfCIFlFI54+9iz4NqA7RLypEOiwiut9BcwLtBh6aoTKahSHGc5Nh0Aip8woikdbB4Xg2lUOip4WnsLC9d7LllkD8qWtVUEJFTIaDxOoxVer6f+J/to4JVQg7I43bP+t0OQN1xBR2lTtOlA7+b/Udu5gafeKelV98rroIJLo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=45.249.212.255
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.174])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4X8TkJ335vz1T7fX;
-	Thu, 19 Sep 2024 16:50:32 +0800 (CST)
-Received: from dggpeml500019.china.huawei.com (unknown [7.185.36.137])
-	by mail.maildlp.com (Postfix) with ESMTPS id 6F0D0140E89;
-	Thu, 19 Sep 2024 16:51:49 +0800 (CST)
-Received: from localhost.localdomain (10.90.30.45) by
- dggpeml500019.china.huawei.com (7.185.36.137) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.39; Thu, 19 Sep 2024 16:51:49 +0800
-From: Jie Zhan <zhanjie9@hisilicon.com>
-To: <ionela.voinescu@arm.com>, <beata.michalska@arm.com>,
-	<wangxiongfeng2@huawei.com>, <viresh.kumar@linaro.org>, <rafael@kernel.org>
-CC: <linux-pm@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linuxarm@huawei.com>,
-	<zhanjie9@hisilicon.com>, <jonathan.cameron@huawei.com>,
-	<wanghuiqiang@huawei.com>, <zhenglifeng1@huawei.com>, <lihuisong@huawei.com>,
-	<yangyicong@huawei.com>, <liaochang1@huawei.com>, <zengheng4@huawei.com>
-Subject: [PATCH v3 2/2] cppc_cpufreq: Remove HiSilicon CPPC workaround
-Date: Thu, 19 Sep 2024 16:45:52 +0800
-Message-ID: <20240919084552.3591400-3-zhanjie9@hisilicon.com>
-X-Mailer: git-send-email 2.30.0
-In-Reply-To: <20240919084552.3591400-1-zhanjie9@hisilicon.com>
-References: <20240919084552.3591400-1-zhanjie9@hisilicon.com>
+	s=arc-20240116; t=1726736002; c=relaxed/simple;
+	bh=jmQGSHPQAAX/GFq/B1HD2tAS5MutC16GzgAMXMtyErU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JYgj3jeytjihPdFtw6lr5MWGgi06u+AokWchwjM1nHJPf8nYh5j52DTWTVmLdGd1bhIQvsUFukjz87pU8he8MdT/lDQen9hodoBqi4p5D9rzwxVq+OTZOjtq7VbMjS+6BwKj+6gubfYN0v1qiZfe8WLzcdbcWD0ASfXORo1+V9c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=VrVcQIQp; arc=none smtp.client-ip=209.85.208.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="VrVcQIQp"
+Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-2f753375394so4680511fa.0
+        for <linux-pm@vger.kernel.org>; Thu, 19 Sep 2024 01:53:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1726735997; x=1727340797; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=9ip5fmGFn7hygDUeJp4dufO1rEFoOFFXq7aKfuDJ9XE=;
+        b=VrVcQIQp0aceaKbot7i8ZEXl8v+lcyWsAXbo+r+72B7NxUXwh9Pku0TPu0ZqsjDilX
+         QzeQTrBVB8QP8b5WXmWIzvo1d5Fv5fNd9xU7Le0GGX+SmEIFaHZreC1YxoJmM7nDJL85
+         2xKOIvG37p/aJFHsUmOKZNVsuQp8HV5iSDb8t/m0F03DeZlikJf7D0lb2JXPxZMFc4ly
+         NOBIXKeJfgm1+q4Wycka/y/x7GUZ/bujf1PnoMhqANcarS/PkTnoG0jhCW5wqpUC11sS
+         TaZFyE3tGJC3OeqMetUZrRrB6vuxkcmPviZLgySqrL3plHOOktupPzBn1Llz3cpRLXub
+         gs4w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1726735997; x=1727340797;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=9ip5fmGFn7hygDUeJp4dufO1rEFoOFFXq7aKfuDJ9XE=;
+        b=Fcw+DPytJ4vBDDETw+8cA8+BfIiXIf/ynzWVED2Bqpal6VOTVWi9WQVXWv8QZJsNXr
+         vyfMS2snkirD8Xegl7/jMosrpfn949Bb/hEdGg0/hDuDRZVkFsgRQi9QTNQ0Zs7Wrq0+
+         Y79ZtK/1QipQQdiG3Y/6SMqNIOM8p30MvV46DvPWm7f3pB4W7CghNeKza0UHcZAhKbvk
+         3w8y7vFwjklT36WXnlC5uUUr2XsE3HFnU7EajNswG6FC4yrSnzIrxph8e10RKSkd0DMe
+         DiSouLgXigF5QEUHwTpF+QaajjpEchA6gq4E7yM+IVxVGt5xZ6QGd0K2Ui1dS9Oyle5t
+         9gLQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX68+K981iziaJyhJqNOqsf0ghqgkp5JuSUqhHJEDALZj3I+5GTWac125UXNL+X69J2uFgwxw2YTg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwvRWiJuV0T0HrG2zE8MZo7/G43IJOxf5LTj4iDSh0mH6Xf5qex
+	TBGha3BCq2NefStuc0BibTlBfbICHn4qhmMjQrpytcmwPZiAr9yAubNr1XD1SuA=
+X-Google-Smtp-Source: AGHT+IExHV10Jhw7pzq6Z+rh3ETzFIGUY1KRRXUiCBSFN21i+8wI32UjyZymk12trNBAHKYmGerSpA==
+X-Received: by 2002:a05:651c:1549:b0:2f7:631a:6e0d with SMTP id 38308e7fff4ca-2f787dc3b59mr141352651fa.12.1726735997390;
+        Thu, 19 Sep 2024 01:53:17 -0700 (PDT)
+Received: from pathway.suse.cz ([176.114.240.50])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-207945db10csm76076095ad.53.2024.09.19.01.53.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 19 Sep 2024 01:53:16 -0700 (PDT)
+Date: Thu, 19 Sep 2024 10:53:05 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+	regressions@lists.linux.dev,
+	John Ogness <john.ogness@linutronix.de>
+Subject: Re: Linux fails to ACPI S3 supend on Dell XPS 13 9630
+ (6.11.0-04557-g2f27fce67173)
+Message-ID: <ZuvmcclM_HzdZtwP@pathway.suse.cz>
+References: <18784f62-91ff-4d88-9621-6c88eb0af2b5@molgen.mpg.de>
+ <154114fb-276f-45f6-bba0-98133c7c5d4d@molgen.mpg.de>
+ <3b600845-77d5-42d3-8556-53cc0b2eab25@molgen.mpg.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- dggpeml500019.china.huawei.com (7.185.36.137)
+In-Reply-To: <3b600845-77d5-42d3-8556-53cc0b2eab25@molgen.mpg.de>
 
-Since commit 6c8d750f9784 ("cpufreq / cppc: Work around for Hisilicon CPPC
-cpufreq"), we introduce a workround for HiSilicon platforms that do not
-support performance feedback counters, whereas they can get the actual
-frequency from the desired perf register.  Later on, FIE is disabled in
-that workaround as well.
+On Thu 2024-09-19 10:17:24, Paul Menzel wrote:
+> Dear Linux folks,
+> 
+> 
+> Am 19.09.24 um 07:51 schrieb Paul Menzel:
+> 
+> > Am 19.09.24 um 07:51 schrieb Paul Menzel:
+> 
+> > > On the Intel Kaby Lake laptop Dell XPS 13, Linux 6.11.0-04557-
+> > > g2f27fce67173 (“6.12-rc0”) fails to ACPI S3 suspend the system. The
+> > > screen turns black (as expected) and the power button LED stays on.
+> > > 
+> > > Doing
+> > > 
+> > >      echo N | sudo tee /sys/module/printk/parameters/console_suspend
+> > > 
+> > > and on tty2
+> > > 
+> > >      sudo systemctl stop gdm3
+> > >      sudo systemctl start getty@tty1.service
+> > > 
+> > > and then on tty1
+> > > 
+> > >      sudo systemctl suspend
+> > > 
+> > > I see some panic messages and traces containing ktime_get or so, but
+> > > I failed to save the messages. (Hints very much appreciated.)
 
-Now the workround can be handled by the common code.  Desired perf would be
-read and converted to frequency if feedback counters don't change.  FIE
-would be disabled if the CPPC regs are in PCC region.
+You might try to enable the kernel crash dump.
 
-Hence, the workaround is no longer needed and can be safely removed, in an
-effort to consolidate the driver procedure.
+Or you might try to set some delay in /proc/sys/kernel/printk_delay and
+make a photo of the screen.
 
-Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
----
- drivers/cpufreq/cppc_cpufreq.c | 71 ----------------------------------
- 1 file changed, 71 deletions(-)
+John Ogness told me that there was a trick with a permanent memory.
+But it seems that there is no permanent memory on the laptop.
+Adding John into Cc.
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index e55192303a9f..0e95ad2303ea 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -36,24 +36,6 @@ static LIST_HEAD(cpu_data_list);
- 
- static bool boost_supported;
- 
--struct cppc_workaround_oem_info {
--	char oem_id[ACPI_OEM_ID_SIZE + 1];
--	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE + 1];
--	u32 oem_revision;
--};
--
--static struct cppc_workaround_oem_info wa_info[] = {
--	{
--		.oem_id		= "HISI  ",
--		.oem_table_id	= "HIP07   ",
--		.oem_revision	= 0,
--	}, {
--		.oem_id		= "HISI  ",
--		.oem_table_id	= "HIP08   ",
--		.oem_revision	= 0,
--	}
--};
--
- static struct cpufreq_driver cppc_cpufreq_driver;
- 
- static enum {
-@@ -78,7 +60,6 @@ struct cppc_freq_invariance {
- static DEFINE_PER_CPU(struct cppc_freq_invariance, cppc_freq_inv);
- static struct kthread_worker *kworker_fie;
- 
--static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpu);
- static int cppc_perf_from_fbctrs(struct cppc_cpudata *cpu_data,
- 				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
- 				 struct cppc_perf_fb_ctrs *fb_ctrs_t1);
-@@ -841,57 +822,6 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
- 	.name = "cppc_cpufreq",
- };
- 
--/*
-- * HISI platform does not support delivered performance counter and
-- * reference performance counter. It can calculate the performance using the
-- * platform specific mechanism. We reuse the desired performance register to
-- * store the real performance calculated by the platform.
-- */
--static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpu)
--{
--	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
--	struct cppc_cpudata *cpu_data;
--	u64 desired_perf;
--	int ret;
--
--	if (!policy)
--		return -ENODEV;
--
--	cpu_data = policy->driver_data;
--
--	cpufreq_cpu_put(policy);
--
--	ret = cppc_get_desired_perf(cpu, &desired_perf);
--	if (ret < 0)
--		return -EIO;
--
--	return cppc_perf_to_khz(&cpu_data->perf_caps, desired_perf);
--}
--
--static void cppc_check_hisi_workaround(void)
--{
--	struct acpi_table_header *tbl;
--	acpi_status status = AE_OK;
--	int i;
--
--	status = acpi_get_table(ACPI_SIG_PCCT, 0, &tbl);
--	if (ACPI_FAILURE(status) || !tbl)
--		return;
--
--	for (i = 0; i < ARRAY_SIZE(wa_info); i++) {
--		if (!memcmp(wa_info[i].oem_id, tbl->oem_id, ACPI_OEM_ID_SIZE) &&
--		    !memcmp(wa_info[i].oem_table_id, tbl->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
--		    wa_info[i].oem_revision == tbl->oem_revision) {
--			/* Overwrite the get() callback */
--			cppc_cpufreq_driver.get = hisi_cppc_cpufreq_get_rate;
--			fie_disabled = FIE_DISABLED;
--			break;
--		}
--	}
--
--	acpi_put_table(tbl);
--}
--
- static int __init cppc_cpufreq_init(void)
- {
- 	int ret;
-@@ -899,7 +829,6 @@ static int __init cppc_cpufreq_init(void)
- 	if (!acpi_cpc_valid())
- 		return -ENODEV;
- 
--	cppc_check_hisi_workaround();
- 	cppc_freq_invariance_init();
- 	populate_efficiency_class();
- 
--- 
-2.33.0
+> > > I try to test the printk changes, but otherwise bisecting is not
+> > > feasible, as it’s my production machine.
+> 
+> It’s not the printk changes.
 
+There should not be any visible changes at the moment because all
+console drivers still use the legacy code.
+
+The conversion of the 8250 serial console driver is still pending
+review, see the current version at
+https://lore.kernel.org/r/20240913140538.221708-1-john.ogness@linutronix.de
+But this patchset would have effect only when the serial console is enabled.
+
+> I tested some commits, and assume it’s the timer core changes:
+> 
+>     $ git log --oneline --merges daa394f0f9d3c -3 --no-decorate
+>     daa394f0f9d3c Merge tag 'core-debugobjects-2024-09-16' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+>     9ea925c806dbb Merge tag 'timers-core-2024-09-16' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+>     cb69d86550b3f Merge tag 'irq-core-2024-09-16' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+> 
+> 
+> 1.  6.11.0-02659-gcb69d86550b3 succeeds to ACPI S3 suspend
+> 2.  6.11.0-02710-gdaa394f0f9d3 fails to ACPI S3 suspend
+
+Best Regards,
+Petr
