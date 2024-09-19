@@ -1,40 +1,39 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68B5419923A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 514A2FC0C;
 	Thu, 19 Sep 2024 09:18:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726737520; cv=none; b=AfYfJXNdMaoef9QkWXsqjkHhmasyaLbOXARp4sJHebpRmRvtOm8b0tVVOavTgTn3CPgDIaGgX1K2W/94qG5pJb49yIzKQmskLDoIibUV1ykclNQ6LPTldQ/Eiod10c5ueqnK4jn0sZS1zncEX/UdTA7HPIxjo5cn1CGuL4262oM=
+	t=1726737521; cv=none; b=AS4wuY5VI1Z4Uj2ziXEbFa9GY0g8urrET7880xwLqEQl8mpXO25ztbUbuyxNmIYIaQpgJ2tGZpT+aMhRBkpi0tOeeRC+dGepj33bpclliOiKn4l3yMbL1H4hSTBRLmKBIgGE7zWxRDevLkFC1OWk+hAvK/O4Qhh0cbJ+/SzJnw8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726737520; c=relaxed/simple;
-	bh=QrWsVp0O3acriip4USpkmSpsqOVLVMd3IZ179rzxzbI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YBojahNarlnW2+8v+oMc0V0qyXtDU7W5Fy4/QEgmTkic4HW0tn9iUCpZzuz3McNExJo93mKffdBfwu0zje0rYW9MAOab6kpEnIALqurI4mOdRc+A33XuAFCJ6Djivc+tzia2C2ejwmoZQ8m1hRSI4jkcVS7TlRyBBFkhuTq+S8U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=nX2d0KxK; arc=none smtp.client-ip=148.251.105.195
+	s=arc-20240116; t=1726737521; c=relaxed/simple;
+	bh=AskcAs/7IGdGwwichZGEUf19/IkDbJsPg1sXinT/vnQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=L5F+per3eDBD2DPOIFAAV/qxa0l4XM2jPEysRKkMuD2KVHgtRKbp887dFXCndRq1sF2xTVBkhwYn4N5e5U/x3Z+JNmJXjpnE7pEA2m/sGSpMOi7eQOKqZvOCHtv1DTwYXvA0GzJAXXeKIq7FpCa7XETwDzOz41jsX3FKfIna3xs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Uj+yZL48; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="nX2d0KxK"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Uj+yZL48"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
 	s=mail; t=1726737516;
-	bh=QrWsVp0O3acriip4USpkmSpsqOVLVMd3IZ179rzxzbI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=nX2d0KxKVHyJVZbo2V53bBjuzcXznsevjWqf7ehrlfLkvc/G+6qW4IJ7MRivWW67Z
-	 K5HUaxwtPXnQd6wGRxtUG/YmuBaAIM4fqEGnH6jijOCDj/ZrUGuhKB0g032Z6vJp6Z
-	 J9O4DGLl9+zeBKbrjN/spdWRu6ytbn3VKPqsdlZ1G9cN2xZc+Su97m1PZYVMFO8r4w
-	 l4PzdZd1XQKRPeKJ+7nVR3EXgMZD7Rg6UJYEp463+ydVRt0njzgaGL7oDd1lf5Pj+h
-	 HdDgmEhMpnO5RvDdtuAeo65581oX/hz86nhHRXC0RVoJxM5oi7OFIdap9PuY7UZ8W0
-	 nYEL9MCjFgRvQ==
+	bh=AskcAs/7IGdGwwichZGEUf19/IkDbJsPg1sXinT/vnQ=;
+	h=From:To:Cc:Subject:Date:From;
+	b=Uj+yZL48c+2/7dlNfodatrWifsQHci+kVXeEswOFafkbW1gaiSB3vmQRydJ4ky8UV
+	 SufYL/CT+xxHuwgiUygHAW12uyeAcMnmEQEJaaeWdht12cJ0YVV3TaLeUUkinG2M82
+	 wNiJxjxhZEJ0QOGzA+xv24t/A0dcrKxkzAs5cbGO10JiQph3alHjrXVz33qcxt8M+/
+	 UD8JeWsH1pGJWTGzobirC0ZDYGEk/5/hO1Pmm2cgnHXfSxaQslv5nSE9xGg/lxS7j8
+	 ayrMKfnwXupOupdeCz7EJ6Gvgw0NRLFS+uZEr1drc07kKDQzYzUAt8ZOjVrZ3NXcP1
+	 rVLbl/YwrMAUw==
 Received: from jupiter.universe (dyndsl-091-248-208-160.ewe-ip-backbone.de [91.248.208.160])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
 	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 8C84917E10AB;
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 7B50117E107A;
 	Thu, 19 Sep 2024 11:18:36 +0200 (CEST)
 Received: by jupiter.universe (Postfix, from userid 1000)
-	id 5A37A480084; Thu, 19 Sep 2024 11:18:36 +0200 (CEST)
+	id 57159480076; Thu, 19 Sep 2024 11:18:36 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -51,104 +50,87 @@ Cc: Elaine Zhang <zhangqing@rock-chips.com>,
 	linux-pm@vger.kernel.org,
 	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	kernel@collabora.com
-Subject: [PATCH v2 2/6] pmdomain: rockchip: forward rockchip_do_pmu_set_power_domain errors
-Date: Thu, 19 Sep 2024 11:12:43 +0200
-Message-ID: <20240919091834.83572-3-sebastian.reichel@collabora.com>
+Subject: [PATCH v2 0/6] Fix RK3588 GPU domain
+Date: Thu, 19 Sep 2024 11:12:41 +0200
+Message-ID: <20240919091834.83572-1-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20240919091834.83572-1-sebastian.reichel@collabora.com>
-References: <20240919091834.83572-1-sebastian.reichel@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Currently rockchip_do_pmu_set_power_domain prints a warning if there
-have been errors turning on the power domain, but it does not return
-any errors and rockchip_pd_power() tries to continue setting up the
-QOS registers. This usually results in accessing unpowered registers,
-which triggers an SError and a full system hang.
+Hi,
 
-This improves the error handling by forwarding the error to avoid
-kernel panics.
+I got a report, that the Linux kernel crashes on Rock 5B when the panthor
+driver is loaded late after booting. The crash starts with the following
+shortened error print:
 
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-Tested-by: Adrian Larumbe <adrian.larumbe@collabora.com> # On Rock 5B
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/pmdomain/rockchip/pm-domains.c | 34 +++++++++++++++++---------
- 1 file changed, 22 insertions(+), 12 deletions(-)
+rockchip-pm-domain fd8d8000.power-management:power-controller: failed to set domain 'gpu', val=0
+rockchip-pm-domain fd8d8000.power-management:power-controller: failed to get ack on domain 'gpu', val=0xa9fff
+SError Interrupt on CPU4, code 0x00000000be000411 -- SError
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index 4f7021f47261..5e5291dedd28 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -488,16 +488,17 @@ static int rockchip_pmu_domain_mem_reset(struct rockchip_pm_domain *pd)
- 	return ret;
- }
- 
--static void rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
--					     bool on)
-+static int rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
-+					    bool on)
- {
- 	struct rockchip_pmu *pmu = pd->pmu;
- 	struct generic_pm_domain *genpd = &pd->genpd;
- 	u32 pd_pwr_offset = pd->info->pwr_offset;
- 	bool is_on, is_mem_on = false;
-+	int ret;
- 
- 	if (pd->info->pwr_mask == 0)
--		return;
-+		return 0;
- 
- 	if (on && pd->info->mem_status_mask)
- 		is_mem_on = rockchip_pmu_domain_is_mem_on(pd);
-@@ -512,16 +513,21 @@ static void rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
- 
- 	wmb();
- 
--	if (is_mem_on && rockchip_pmu_domain_mem_reset(pd))
--		return;
-+	if (is_mem_on) {
-+		ret = rockchip_pmu_domain_mem_reset(pd);
-+		if (ret)
-+			return ret;
-+	}
- 
--	if (readx_poll_timeout_atomic(rockchip_pmu_domain_is_on, pd, is_on,
--				      is_on == on, 0, 10000)) {
--		dev_err(pmu->dev,
--			"failed to set domain '%s', val=%d\n",
--			genpd->name, is_on);
--		return;
-+	ret = readx_poll_timeout_atomic(rockchip_pmu_domain_is_on, pd, is_on,
-+					is_on == on, 0, 10000);
-+	if (ret) {
-+		dev_err(pmu->dev, "failed to set domain '%s' %s, val=%d\n",
-+			genpd->name, on ? "on" : "off", is_on);
-+		return ret;
- 	}
-+
-+	return 0;
- }
- 
- static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
-@@ -545,7 +551,11 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
- 			rockchip_pmu_set_idle_request(pd, true);
- 		}
- 
--		rockchip_do_pmu_set_power_domain(pd, power_on);
-+		ret = rockchip_do_pmu_set_power_domain(pd, power_on);
-+		if (ret < 0) {
-+			clk_bulk_disable(pd->num_clks, pd->clks);
-+			return ret;
-+		}
- 
- 		if (power_on) {
- 			/* if powering up, leave idle mode */
+This series first does some cleanups in the Rockchip power domain
+driver and changes the driver, so that it no longer tries to continue
+when it fails to enable a domain. This gets rid of the SError interrupt
+and long backtraces. But the kernel still hangs when it fails to enable
+a power domain. I have not done further analysis to check if that can
+be avoided.
+
+Last but not least this provides a fix for the GPU power domain failing
+to get enabled - after some testing from my side it seems to require the
+GPU voltage supply to be enabled.
+
+I'm not really happy about the hack to get a regulator for a sub-node,
+which I took over from the Mediatek driver. I discussed this with
+Chen-Yu Tsai and Heiko Stübner at OSS EU and the plan is:
+
+1. Merge Rockchip PM domain driver with this hack for now, since DRM CI
+   people need it
+2. Chen-Yu will work on a series, which fixes the hack in Mediatek by
+   introducing a new devm_regulator_get function taking an DT node as
+   additional argument
+3. Rockchip PM domain later will switch to that once it has landed
+
+Changes since PATCHv1:
+ * https://lore.kernel.org/all/20240910180530.47194-1-sebastian.reichel@collabora.com/
+ * Collect Reviewed-by/Acked-by/Tested-by
+ * swap first and second patch to avoid introducing and directly removing a mutex_unlock
+ * fix spelling of indentation
+ * fix double empty line after rockchip_pd_regulator_disable()
+
+Greetings,
+
+-- Sebastian
+
+Sebastian Reichel (6):
+  pmdomain: rockchip: cleanup mutex handling in rockchip_pd_power
+  pmdomain: rockchip: forward rockchip_do_pmu_set_power_domain errors
+  pmdomain: rockchip: reduce indentation in rockchip_pd_power
+  dt-bindings: power: rockchip: add regulator support
+  pmdomain: rockchip: add regulator support
+  arm64: dts: rockchip: Add GPU power domain regulator dependency for
+    RK3588
+
+ .../power/rockchip,power-controller.yaml      |   3 +
+ .../boot/dts/rockchip/rk3588-armsom-sige7.dts |   4 +
+ arch/arm64/boot/dts/rockchip/rk3588-base.dtsi |   2 +-
+ .../boot/dts/rockchip/rk3588-coolpi-cm5.dtsi  |   4 +
+ .../rockchip/rk3588-friendlyelec-cm3588.dtsi  |   4 +
+ .../arm64/boot/dts/rockchip/rk3588-jaguar.dts |   4 +
+ .../boot/dts/rockchip/rk3588-ok3588-c.dts     |   4 +
+ .../boot/dts/rockchip/rk3588-rock-5-itx.dts   |   4 +
+ .../boot/dts/rockchip/rk3588-rock-5b.dts      |   4 +
+ .../arm64/boot/dts/rockchip/rk3588-tiger.dtsi |   4 +
+ .../boot/dts/rockchip/rk3588s-coolpi-4b.dts   |   4 +
+ .../dts/rockchip/rk3588s-khadas-edge2.dts     |   4 +
+ .../boot/dts/rockchip/rk3588s-orangepi-5.dts  |   4 +
+ drivers/pmdomain/rockchip/pm-domains.c        | 129 +++++++++++++-----
+ 14 files changed, 143 insertions(+), 35 deletions(-)
+
 -- 
 2.45.2
 
