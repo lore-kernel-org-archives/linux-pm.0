@@ -1,40 +1,40 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68BAB199240;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 514DF12E48;
 	Thu, 19 Sep 2024 09:18:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726737520; cv=none; b=P4gZl9insRQwqQ/VcJOu5NQo75jDOVDyj5et99D9HDwLZrBTws/+rphuJ3YmTgAWcvQvONTXVeH+NUb4t3n5BG8Y6C0ngBwdQPt9Bx/fkLxB/jYWHEk1dUItQ/19AmVUjzwTdRiLKDHmGFo5boKWRRKmbLUv2NXSeN/20mcnhQQ=
+	t=1726737520; cv=none; b=XXHr0g9QYh2P1P3GkOQXOkegRpMQBjFL7giwWhHxv/+X+0wdvAtJOZKSyt92fy3OLf2enFbYljb/Cha0fmd/egql0pyWnmlzGtMhRqR0FXVxuYOM60wI++Ywju5TkhVBnQ/fPMssu08RCxbJX/fER5zYyGq2mhdFzKtHO+L4lgg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1726737520; c=relaxed/simple;
-	bh=Vx9E0NW09bVtjBV5lKfEh6WBcSKCDD7TcmzItk//06E=;
+	bh=Zxm1uLqr1zUwk6C1A4ApcASI47Ep0+VpPk2kApygxO0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WJfPeRYh3OM29EOBZqZRx5+uRlrVXoxxa4v2/wsfdlG4RoCCtbQFIgqQ3qIG2H9DELnR1AMSSb2XtupISFiN5eHfa8M2saGHeqmW9XqzeO4xXgX99OAAXT1ZpWKaLMEKcly119a0IhuqLu3fSLiBNG7UVsSJy6VKTFkuckUjtZY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=SKOUz0r9; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=AbiQ8YwnIVQuuXkIasZ8rD4/oPCd6xr+mXih/OarE/sgXlckGPM/eayPBAUyy/xymR6dRfn1m8902Vuy2TaG9lpTkUjDgV7kvP35HlzIdsMca8fcLtzjvAfEGl5OSwFiDF94TXJMeC7M91OUcZVxixl+HWCxBzcm2Yd1LVm1rIY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=p8IxNupL; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="SKOUz0r9"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="p8IxNupL"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
 	s=mail; t=1726737516;
-	bh=Vx9E0NW09bVtjBV5lKfEh6WBcSKCDD7TcmzItk//06E=;
+	bh=Zxm1uLqr1zUwk6C1A4ApcASI47Ep0+VpPk2kApygxO0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=SKOUz0r9RYvKKUufZKS1qPQyag/Ytz82TxUpll710o+RkjFxibx0os50ztCNhxc/B
-	 JlyW7HhfTFaJgP1JLSRhHGexhWuSy8jTOP0S2YdMIeSRlfjfyKqDIXpaxx0Ma0qskC
-	 46IKaUNUcOG93o45ZFaoEeUU52kAzLEsE/y587YgiQTymr2B1bNdpG2e6/yMKF8ven
-	 1C05cdY1O+/m5cnBMHrs8n57ojNOLmYBiHT9VofpGhYMV24c1PC/J4BTwuvBLhJl+U
-	 jb+ILnSJ+NMCd8sTh2PURFv3c1fxF97s/hl05dgT2GvOMne8HTysvY8AVXwsv2mQTN
-	 XevkQSNoH1gNA==
+	b=p8IxNupLEi1CO37HBlbjusvnuFIXtFUWOIq1ZrBo8FjbwNC7puM9FfInIJkgLKdc6
+	 zFt/0ho4FEjSfoa4Ja6R6syk1kgexB3Z/KzPh8jNChqKcLrNw2wBxOAP1Pw1c1y4I2
+	 7YRI4G66Q1bfNahuxFF91JdiKGBJ7lQ4wA3NpAgebeszWU1pX6MF6ocUB+fAnLYVAj
+	 V1Vsd7EL9OiOaP2s83dtJBfN3rt1itloAj1FBKBkhAjAyAAdij1Vq52KCAH0DshQ77
+	 jqRyRSQwfmbAge5AfR80K9MA07t5cLDEDLd1xgJFa+bkInNg4runv4f2PBjci2Oqhf
+	 AqKUuVqYYUaow==
 Received: from jupiter.universe (dyndsl-091-248-208-160.ewe-ip-backbone.de [91.248.208.160])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
 	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 8E6B217E10AE;
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 808BF17E1082;
 	Thu, 19 Sep 2024 11:18:36 +0200 (CEST)
 Received: by jupiter.universe (Postfix, from userid 1000)
-	id 582B5480075; Thu, 19 Sep 2024 11:18:36 +0200 (CEST)
+	id 5C1B5480085; Thu, 19 Sep 2024 11:18:36 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -51,9 +51,9 @@ Cc: Elaine Zhang <zhangqing@rock-chips.com>,
 	linux-pm@vger.kernel.org,
 	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	kernel@collabora.com
-Subject: [PATCH v2 1/6] pmdomain: rockchip: cleanup mutex handling in rockchip_pd_power
-Date: Thu, 19 Sep 2024 11:12:42 +0200
-Message-ID: <20240919091834.83572-2-sebastian.reichel@collabora.com>
+Subject: [PATCH v2 3/6] pmdomain: rockchip: reduce indentation in rockchip_pd_power
+Date: Thu, 19 Sep 2024 11:12:44 +0200
+Message-ID: <20240919091834.83572-4-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20240919091834.83572-1-sebastian.reichel@collabora.com>
 References: <20240919091834.83572-1-sebastian.reichel@collabora.com>
@@ -65,40 +65,79 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Use the cleanup infrastructure to handle the mutex, which
-slightly improve code readability for this function.
+Rework the logic, so that the function exits early when the
+power domain state is already correct to reduce code indentation.
+
+No functional change intended.
 
 Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 Tested-by: Adrian Larumbe <adrian.larumbe@collabora.com> # On Rock 5B
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/pmdomain/rockchip/pm-domains.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/pmdomain/rockchip/pm-domains.c | 45 +++++++++++++-------------
+ 1 file changed, 23 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index 9b76b62869d0..4f7021f47261 100644
+index 5e5291dedd28..663d390faaeb 100644
 --- a/drivers/pmdomain/rockchip/pm-domains.c
 +++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -529,13 +529,12 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
- 	struct rockchip_pmu *pmu = pd->pmu;
- 	int ret;
+@@ -537,36 +537,37 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
  
--	mutex_lock(&pmu->mutex);
-+	guard(mutex)(&pmu->mutex);
+ 	guard(mutex)(&pmu->mutex);
  
- 	if (rockchip_pmu_domain_is_on(pd) != power_on) {
- 		ret = clk_bulk_enable(pd->num_clks, pd->clks);
- 		if (ret < 0) {
- 			dev_err(pmu->dev, "failed to enable clocks\n");
--			mutex_unlock(&pmu->mutex);
- 			return ret;
- 		}
+-	if (rockchip_pmu_domain_is_on(pd) != power_on) {
+-		ret = clk_bulk_enable(pd->num_clks, pd->clks);
+-		if (ret < 0) {
+-			dev_err(pmu->dev, "failed to enable clocks\n");
+-			return ret;
+-		}
++	if (rockchip_pmu_domain_is_on(pd) == power_on)
++		return 0;
  
-@@ -558,7 +557,6 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
- 		clk_bulk_disable(pd->num_clks, pd->clks);
+-		if (!power_on) {
+-			rockchip_pmu_save_qos(pd);
++	ret = clk_bulk_enable(pd->num_clks, pd->clks);
++	if (ret < 0) {
++		dev_err(pmu->dev, "failed to enable clocks\n");
++		return ret;
++	}
+ 
+-			/* if powering down, idle request to NIU first */
+-			rockchip_pmu_set_idle_request(pd, true);
+-		}
++	if (!power_on) {
++		rockchip_pmu_save_qos(pd);
+ 
+-		ret = rockchip_do_pmu_set_power_domain(pd, power_on);
+-		if (ret < 0) {
+-			clk_bulk_disable(pd->num_clks, pd->clks);
+-			return ret;
+-		}
++		/* if powering down, idle request to NIU first */
++		rockchip_pmu_set_idle_request(pd, true);
++	}
+ 
+-		if (power_on) {
+-			/* if powering up, leave idle mode */
+-			rockchip_pmu_set_idle_request(pd, false);
++	ret = rockchip_do_pmu_set_power_domain(pd, power_on);
++	if (ret < 0) {
++		clk_bulk_disable(pd->num_clks, pd->clks);
++		return ret;
++	}
+ 
+-			rockchip_pmu_restore_qos(pd);
+-		}
++	if (power_on) {
++		/* if powering up, leave idle mode */
++		rockchip_pmu_set_idle_request(pd, false);
+ 
+-		clk_bulk_disable(pd->num_clks, pd->clks);
++		rockchip_pmu_restore_qos(pd);
  	}
  
--	mutex_unlock(&pmu->mutex);
++	clk_bulk_disable(pd->num_clks, pd->clks);
++
  	return 0;
  }
  
