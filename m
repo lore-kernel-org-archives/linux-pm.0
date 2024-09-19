@@ -1,121 +1,289 @@
-Received: from mail-vs1-f45.google.com (mail-vs1-f45.google.com [209.85.217.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB600198A30;
-	Thu, 19 Sep 2024 08:40:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.45
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2CC10FC0E;
+	Thu, 19 Sep 2024 08:49:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726735246; cv=none; b=TAHo8GZgpn1K1cERAhS37dnPVZka11ovKWPldfiPyoIMQ+/uObhxHzz/uO7EEkW5UPxLAgCdj7UgpHq/XDlSa2asLAU3c4rYllOYWx3lANHh8i/pY+N5uuWehTUBZuAigg2jT9Uz1zVHouT+0OsxSI8VphmSM9rMRiUb/F1lqGg=
+	t=1726735780; cv=none; b=X48avAPHJfG8LNJILTYwpH896fyLGyogSiM9tHlq3ehZXwnZ5u41yr3p1EoVwwpeEnxpH2xNtH1Xj3t8+6QsWukMD7lnozOlPRgA5+yTHNbVWudsENNZ540yqY9BZh/x8WcfTGtdxMzG+7biWgquEZWXz49Iy8Ga+jjMogmTgM0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726735246; c=relaxed/simple;
-	bh=D0CUj5d6cc8AqQcicr95QuM3BKdQKimPOjS1AgGc/c8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IkcprS9+ZmMhn2MFFjqOAxn2MRuj5Lxj1xEgKtDoOCtnPw3lD74iJa5ILn+fsctWayUL3DF14hYpMH9fBhd6V78Haai2cKNDfStxaMiBxlD8dZ3pW0o3VbidrDGIOLiJXNdmSZt3y0qJPbtf75bnEAENhLLCgAL7pEieK4cPCkI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=IxqfnCPu; arc=none smtp.client-ip=209.85.217.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IxqfnCPu"
-Received: by mail-vs1-f45.google.com with SMTP id ada2fe7eead31-49bcd11fc37so182383137.3;
-        Thu, 19 Sep 2024 01:40:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1726735243; x=1727340043; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xykemnfjHLjw1rPIo+7O6AS00C6CkkoCorxyDrzMaEQ=;
-        b=IxqfnCPuWq0aTqLERSIlOiIpwacHfWTvlWFPPxTksJjhS2vt2ntz05f1qmnClbD4fJ
-         PU2FGlTIpcvJTwYIzDBlNRHCYjxYLOpMsN/y9lbup76w1SoJvMuYl9LKzx5On+C0dTzJ
-         /c7rPL2JrdEx7vyVukXKaFL0+KdveXPN9ZihOvVBjx2F52BtdhwYUX5ntVNmOEXLLwFV
-         STH4K1tBf5nU9Tfwzcu8ShIf/iP1JG7cxZy6UqvNkVxzlWTKWOHCse7UFgnEmaV4oZZK
-         e0jFcHCQaScxd78NckHpONcqgsPzX4fnsL3+5xffXPJS83fFO2d6u2o5HDA2CVuuKTmu
-         uD0g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1726735243; x=1727340043;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=xykemnfjHLjw1rPIo+7O6AS00C6CkkoCorxyDrzMaEQ=;
-        b=qWsKzq9CSSGC/i/ctk+2yZjt3ZhibOnLsFPovwK69lswussNOSWq1aCXO6IbUVLVHk
-         LTd/FhXdlIWNFKF5TYA2z/C9z+Fj9VqdoP1c/aT/otP+Yd+skRlFI6/DOvPtd3gJWGor
-         k6zFlS8F13+cJCg0QdHOCsB0AG8tw1UVaRw8hGexdW6+ZNcyjBBjCrvX10vipA5mi/wA
-         yB97X6z8X+DgzHgDDBvCL9uNjodK2kCU7aOlwrApm/jkV0pwnHso+fKgrvF6qWaACkUz
-         g3aF2ligj4nuZ+rKOYJdDNI31lhIr8jHbtkfj7F930evnaMjH9bim2raUN+sMNOauZj0
-         UfDA==
-X-Forwarded-Encrypted: i=1; AJvYcCU7xw/JWmy52kWpzYNA1mWo2+wSEg2URjMVF3m8hJmFyrk7FQxeQh5wihK4xIhlWOzwcJaKV9YPIvyP@vger.kernel.org, AJvYcCUTHapgoPAyvgGgmuICY22biBM8n4in6wqMhv0YGxGIKtZRSmcpkvju1Iy+5c9/6MNIA7/pcsAy5Zs=@vger.kernel.org, AJvYcCUfHUs9OJDNRYYqkMmrBYo2SiM3JJOW06a0D/qCSLe4SL4ozzRJzky32ViCRO5krG7CI1APQsjYcwp2@vger.kernel.org, AJvYcCVHO9M0HTO9Big+vs6zrYqotjrdAE0oR9DDZG03pQbdbKu+fNsyfK6ra2XBzNz0qTuSQAvstRIUK4E1PbZp@vger.kernel.org, AJvYcCVu3G20I1T09Gcn0QBMq8Um3GuTOxm4VFW0DKaAmxCwVwHFlJkHkeCkdwE/akm46+fIejSd9qnYeG8eJQ==@vger.kernel.org, AJvYcCW/kkuYeNQZ/JL6RbuyAkviemGHVHvN/gkOLHFLFfFMpXTgaq81a8AS4m+NcTYm+CoiSITtz+aNzxRqGcY30w==@vger.kernel.org, AJvYcCXHKrkNQONjmFIzA1sLUoCUYLvao//e62WGcnlneDghfeziAmIrWYn4QInPTIdYSZoRsoquM76Dkzsu@vger.kernel.org, AJvYcCXJpdpLoxg67umQGfE4iBdNMdSZr0SHnS2bhl6VAJ1NC2GNW4rSjkM5CwRVPFcdaYlBVRwJhyC5ERy84sI=@vger.kernel.org, AJvYcCXn0kgOg1WcFfP7P6b/OAv3lK6ULCmTOKsPo0ncIEqGsSO2mBmF71daRkLAUDKZdp3W3JqGlYd9rLHtTO2Sc1++TPY=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzzN3cEU7FsFpxo4NpzVagGxAY/UsgPmUVRqjndQ8zAeaUYELiO
-	0KsDjK8fF7cn4oLurGNaMbvL2bjDwzNZSqyqNexSyiyOCOzTKx29i8JXS9rSPdxzxdPDls9UeuZ
-	GHIqqlIEylGw4e6xs5gh7AbZipH4=
-X-Google-Smtp-Source: AGHT+IEPF6qaPSTwKWIjFiNSfRRNnkJYm1P330LaZ6f6Fgj87ECtB4FGVzstCMCjXzBEMRn+f/qNz2tsedSZyWrs7oI=
-X-Received: by 2002:a05:6102:38d1:b0:49b:f5ed:4bcb with SMTP id
- ada2fe7eead31-49d4157db8cmr17162683137.24.1726735243511; Thu, 19 Sep 2024
- 01:40:43 -0700 (PDT)
+	s=arc-20240116; t=1726735780; c=relaxed/simple;
+	bh=LtBtuzcFJbYvJIJ6u4O/BwThQXONclKeT84VCPquw30=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=orLqb3NrXCztTYU1UH/wITsV+QggRB+IxGKYMTG/zBX5yLOcKwXBK5PtGIEDjBIWo1JvbV/Exf6iAPUxKCVxOVcKuaTGEoNJsrXJFXHC0vyVGGzfUVl3OHqHchCfDAZq4YXyAhpgxY712wt+I3IUhohd5/WwfmMCak1jzaVIQC8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E63181007;
+	Thu, 19 Sep 2024 01:50:06 -0700 (PDT)
+Received: from [192.168.0.16] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9F3863F71A;
+	Thu, 19 Sep 2024 01:49:36 -0700 (PDT)
+Message-ID: <6ae997ca-9712-4497-b666-11b976b1816d@arm.com>
+Date: Thu, 19 Sep 2024 09:49:34 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240913-starqltechn_integration_upstream-v4-0-2d2efd5c5877@gmail.com>
- <20240913-starqltechn_integration_upstream-v4-8-2d2efd5c5877@gmail.com>
- <wywp6vj2pqqe7to55k7ssh5sbqrmy7emvwruvm2waytancf3r4@aygtw3y6huwx>
- <CABTCjFAvXYrRJS3Dwf-TMq3OW_vN1hskk+qPjosbRym7xOvy1Q@mail.gmail.com> <6886f561-b9e4-468b-9515-72053d57911f@kernel.org>
-In-Reply-To: <6886f561-b9e4-468b-9515-72053d57911f@kernel.org>
-From: Dzmitry Sankouski <dsankouski@gmail.com>
-Date: Thu, 19 Sep 2024 11:40:32 +0300
-Message-ID: <CABTCjFDKuEM2wogLcJXX+0eCOTCDUSycPi7JCjvdRCbXaP2EOg@mail.gmail.com>
-Subject: Re: [PATCH v4 08/27] mfd: max77693: remove unused declarations
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Neil Armstrong <neil.armstrong@linaro.org>, Jessica Zhang <quic_jesszhan@quicinc.com>, 
-	Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <ukleinek@kernel.org>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Simona Vetter <simona@ffwll.ch>, 
-	cros-qcom-dts-watchers@chromium.org, Konrad Dybcio <konradybcio@kernel.org>, 
-	Simona Vetter <simona.vetter@ffwll.ch>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	devicetree@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-leds@vger.kernel.org, linux-pwm@vger.kernel.org, 
-	linux-samsung-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/1] cpuidle/menu: Address performance drop from favoring
+ physical over polling cpuidle state
+To: Aboorva Devarajan <aboorvad@linux.ibm.com>, rafael@kernel.org,
+ daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: gautam@linux.ibm.com
+References: <20240809073120.250974-1-aboorvad@linux.ibm.com>
+ <93d9ffb2-482d-49e0-8c67-b795256d961a@arm.com>
+ <9e5ef8ab0f0f3e7cb128291cd60591e3d07b33e4.camel@linux.ibm.com>
+ <4c897ab4-d592-427b-9a97-79c2b14d5c46@arm.com>
+ <6371848e9c260743f381be6e0114743ffab5e5bb.camel@linux.ibm.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <6371848e9c260743f381be6e0114743ffab5e5bb.camel@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-=D1=87=D1=82, 19 =D1=81=D0=B5=D0=BD=D1=82. 2024=E2=80=AF=D0=B3. =D0=B2 10:0=
-0, Krzysztof Kozlowski <krzk@kernel.org>:
->
-> On 18/09/2024 14:53, Dzmitry Sankouski wrote:
-> > =D0=BF=D0=BD, 16 =D1=81=D0=B5=D0=BD=D1=82. 2024=E2=80=AF=D0=B3. =D0=B2 =
-12:10, Krzysztof Kozlowski <krzk@kernel.org>:
-> >>
-> >> On Fri, Sep 13, 2024 at 06:07:51PM +0300, Dzmitry Sankouski wrote:
-> >>> Remove `enum max77693_irq_source` declaration because unused.
-> >>>
-> >>> Signed-off-by: Dzmitry Sankouski <dsankouski@gmail.com>
-> >>> ---
-> >>>  include/linux/mfd/max77693-private.h | 11 -----------
-> >>>  1 file changed, 11 deletions(-)
-> >>
-> >> Please split your patchset per subsystems. There is no dependency on M=
-FD
-> >> bits from your DTS... (if there is, this needs to be fixed anyway)
-> >
-> > Indeed, my dts has no dependency on this patch.
-> > However, my dts has dependency on MAX77705, so AFAIU,
-> > I should send this patch separately, while leaving other drivers in sam=
-e
-> > patchset, right?
->
-> How DTS could have dependency on MAX77705? It's a clear no go - broken
-> patch. And something very weird, almost never happening for new hardware.
->
-Oh right, dts only depends on driver bindings, not driver code, so I
-can send dts
-patches with bindings in separate series, and per subsystem series for new
-driver code.
+On 9/19/24 06:02, Aboorva Devarajan wrote:
+> On Wed, 2024-08-21 at 11:55 +0100, Christian Loehle wrote:
+> 
+>> On 8/20/24 09:51, Aboorva Devarajan wrote:
+>>> On Tue, 2024-08-13 at 13:56 +0100, Christian Loehle wrote:
+>>>
+> ...
+>> The wakeup source(s), since they don't seem to be timer events would be
+>> interesting, although a bit of a hassle to get right. 
+>> What's the workload anyway?
+>>
+> 
+> Hi Christian,
+> 
+> Apologies for the delayed response.
+
+No worries!
+
+> 
+> I identified the part of the internal workload responsible for performance
+> improvement with the patch and it appears to be the OLTP queries, and yes
+> the wakeup sources are not timer events.
+> 
+> ---------------------------------------------------------------------
+> 
+> Additionally to reproduce the issue using a more open and accessible
+> benchmark, conducted similar experiments using pgbench and I observed
+> similar improvements with the patch, particularly when running the
+> read intensive select query benchmarks.
+> 
+> ---------------------------------------------------------------------
+> System Details
+> ---------------------------------------------------------------------
+> $ lscpu
+> Architecture:             ppc64le
+>   Byte Order:             Little Endian
+> CPU(s):                   224
+>   On-line CPU(s) list:    0-223
+> Model name:               POWER10 (architected), altivec supported
+>   Model:                  2.0 (pvr 0080 0200)
+>   Thread(s) per core:     8
+>   Core(s) per socket:     3
+>   Socket(s):              8
+> Virtualization features:  
+>   Hypervisor vendor:      pHyp
+>   Virtualization type:    para
+> ---------------------------------------------------------------------
+> 
+> $ cpupower idle-info
+> CPUidle driver: pseries_idle
+> CPUidle governor: menu
+> analyzing CPU 0:
+> 
+> Number of idle states: 2
+> Available idle states: snooze CEDE
+> snooze:
+> Flags/Description: snooze
+> 
+> Latency: 0
+> Residency: 0
+> Usage: 6229
+> Duration: 402142
+> CEDE:
+> Flags/Description: CEDE
+> Latency: 12
+> Residency: 120
+> Usage: 191411
+> Duration: 36329999037
+> 
+> ---------------------------------------------------------------------
+> PostgreSQL Benchmark:
+> ---------------------------------------------------------------------
+> 
+> I ran pgbench with 224 clients and 20 threads for 600 seconds,
+> performing only SELECT queries against the pgbench database to 
+> evaluate performance under read-intensive workloads:
+> 
+> $ pgbench -c 224 -j 20 -T 600 -S pgbench
+> 
+> Latency:
+> 
+> |---|-------------|------------|------------|
+> | # | Before (ms) | After (ms) | Change (%) |
+> |Run| Patch       | Patch      |            |
+> |---|-------------|------------|------------|
+> | 1 | 0.343       | 0.287      | -16.31%    |
+> | 2 | 0.334       | 0.286      | -14.37%    |
+> | 3 | 0.333       | 0.286      | -14.11%    |
+> | 4 | 0.341       | 0.288      | -15.55%    |
+> | 5 | 0.342       | 0.288      | -15.79%    |
+> |---|-------------|------------|------------|
+> 
+> Latency Reduction: After applying the patch, the latency decreased
+> by 14% to 16% across multiple runs.
+> 
+> Throughput per second:
+> 
+> |---|-------------|------------|------------|
+> | # | Before      | After      | Change (%) |
+> |Run| Patch       | Patch      |            |
+> |---|-------------|------------|------------|
+> | 1 | 652,544.23  | 780,613.42 | +19.63%    |
+> | 2 | 670,243.45  | 784,348.44 | +17.04%    |
+> | 3 | 673,495.39  | 784,458.12 | +16.48%    |
+> | 4 | 656,609.16  | 778,531.20 | +18.57%    |
+> | 5 | 654,644.52  | 778,322.88 | +18.88%    |
+> |---|-------------|------------|------------|
+
+Do you happen to have the idle stats here, too?
+Especially above/below see comment below.
+
+> 
+> Transactions per second Improvement: The patch led to an increase in
+> TPS, ranging from 16% to 19%.
+> 
+> This indicates that the patch significantly reduces latency while
+> improving throughput (TPS).  pgbench is an OLTP benchmark and doesn't
+> do timer based wakeups, this is in-line with the improvements
+> I saw in the originally reported OLTP workload as well. 
+> 
+> ---------------------------------------------------------------------
+> Additional CPU Idle test with custom benchmark:
+> ---------------------------------------------------------------------
+> I also wrote a simple benchmark [1] to analyze the impact of cpuidle
+> state selection, comparing timer-based wakeups and non-timer
+> (pipe-based) wakeups.
+> 
+> This test involves a single waker thread periodically waking up a
+> single wakee thread, simulating a repeating sleep-wake pattern. The
+> test was run with both timer-based and pipe-based wakeups, and cpuidle
+> statistics (usage, time, above, below) were collected.
+
+Thanks, pretty cool and just quickly checking it seems to be all there:
+hrtimer, different cpusets for wakee and waker, the pipe wakeup.
+That could be useful, only thing missing is the license header ;)
+
+> 
+> Timer based wakeup:
+> 
+> +------------------------+---------------------+---------------------+
+> | Metric                 | Without Patch       | With Patch          |
+> +------------------------+---------------------+---------------------+
+> | Wakee thread - CPU     | 110                 | 110                 |
+> | Waker thread - CPU     | 20                  | 20                  |
+> | Sleep Interval         | 50 us               | 50 us               |
+> | Total Wakeups          | -                   | -                   |
+> | Avg Wakeup Latency     | -                   | -                   |
+> | Actual Sleep time      | 52.639 us           | 52.627 us           |
+> +------------------------+---------------------+---------------------+
+> | Idle State 0 Usage Diff| 94,879              | 94,879              |
+> | Idle State 0 Time Diff | 4,700,323 ns        | 4,697,576 ns        |
+> | Idle State 1 Usage Diff| 0                   | 0                   |
+> | Idle State 1 Time Diff | 0 ns                | 0 ns                |
+> +------------------------+---------------------+---------------------+
+> | Total Above Usage      | 0 (0.00%)           | (0.00%)             |
+> +------------------------+---------------------+---------------------+
+> | Total Below Usage      | 0 (0.00%)           | 0 (0.00%)           |
+> +------------------------+---------------------+---------------------+
+> 
+> In timer-based wakeups, the menu governor effectively predicts the idle
+> duration both with and without the patch. This ensures that there are
+> few or no instances of "Above" usage, allowing the CPU to remain in the
+> correct idle state.
+> 
+> The condition (s->target_residency_ns <= data->next_timer_ns) in the menu
+> governor ensures that a physical idle state is not prioritized when a
+> timer event is expected before the target residency of the first physical
+> idle state.
+> 
+> As a result, the patch has no impact in this case, and performance
+> remains stable with timer based wakeups.
+> 
+> Pipe based wakeup (non-timer wakeup):
+> 
+> +------------------------+---------------------+---------------------+
+> | Metric                 | Without Patch       | With Patch          |
+> +------------------------+---------------------+---------------------+
+> | Wakee thread - CPU     | 110                 | 110                 |
+> | Waker thread - CPU     | 20                  | 20                  |
+> | Sleep Interval         | 50 us               | 50 us               |
+> | Total Wakeups          | 97031               | 96583               |
+> | Avg Wakeup Latency     | 7.070 us            | 4.879 us            |
+> | Actual Sleep time      | 51.366 us           | 51.605 us           |
+> +------------------------+---------------------+---------------------+
+> | Idle State 0 Usage Diff| 1209                | 96,586              |
+> | Idle State 0 Time Diff | 55,579 ns           | 4,510,003 ns        |
+> | Idle State 1 Usage Diff| 95,826              | 5                   |
+> | Idle State 1 Time Diff | 4,522,639 ns        | 198 ns              |
+> +------------------------+---------------------+---------------------+
+> +------------------------+---------------------+---------------------+
+> | **Total Above Usage**  | 95,824 (98.75%)     | 5 (0.01%)           |
+> +------------------------+---------------------+---------------------+     
+> +------------------------+---------------------+---------------------+
+> | Total Below Usage      | 0 (0.00%)           | 0 (0.00%)           |
+> +------------------------+---------------------+---------------------+
+> 
+> In the pipe-based wakeup scenario, before the patch was applied, the 
+> "Above" metric was notably high around 98.75%. This suggests that the
+> menu governor frequently selected a deeper idle state like CEDE, even
+> when the idle period was relatively short.
+> 
+> This happened because the menu governor is inclined to prioritize the
+> physical idle state (CEDE) even when the target residency time of the
+> physical idle state (s->target_residency_ns) was longer than the
+> predicted idle time (predicted_ns), so data->next_timer_ns won't be
+> relevant here in non-timer wakeups.
+> 
+> In this test, despite the actual idle period being around 50 microseconds,
+> the menu governor still chose CEDE state, which has a target residency of
+> 120 microseconds.
+
+And the idle_miss statistics confirms that this was mostly wrong decisions
+in hindsight.
+I'll go through the menu code again, this indeed shouldn't be happening.
+I'd be very surprised if upstream teo performed as badly (or actually badly
+at all) on this, although it doesn't seem to help your actual workload,
+would you mind giving that a try too?
+
+Regards,
+Christian
+
+> 
+> ---------------------------------------------------------------------
+> 
+> While timer-based wakeups performed well even without the patch, workloads
+> that don't have timers as wakeup source but have predictable idle durations
+> shorter than the first idle state's target residency benefit significantly
+> from the patch.
+> 
+> It will be helpful to understand why prioritizing deep physical idle
+> states over shallow ones even for short idle periods that don’t meet
+> the target residency like mentioned above is considered more beneficial.
+> 
+> Is there something I could be missing here?
+> 
+> Any comments or suggestions will be really helpful.
+> 
+> [1] https://github.com/AboorvaDevarajan/linux-utils/tree/main/cpuidle/cpuidle_wakeup
+> 
+> Thanks,
+> Aboorva
+> 
+
