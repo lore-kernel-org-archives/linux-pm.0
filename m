@@ -1,99 +1,133 @@
-Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
+Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60893224CF
-	for <linux-pm@vger.kernel.org>; Sun, 22 Sep 2024 15:39:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9958D2AEFC;
+	Sun, 22 Sep 2024 17:24:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727019590; cv=none; b=gbA59XXbUw6AmZQ/TjwUx3XR1LjjZdGJZJWBktqc9O6bQFnIOmepWBXhiTGlPMr8ivdIlV1HuFOMtzd75wUtNZrr3sGVQSpY3iKku7VpXA/dFEv3uG9xq26sfmdkxBZlrGHdFbo7h+MI0esSKTcyQiu9/1plsjfAfbgDE8dV+cE=
+	t=1727025873; cv=none; b=XPj2OTVOfM/Y89m0+XBs3hL/LoS5mlzSV+MxZRaFwC3AOu6ESi5H+1N7NtkvIdanVsfYoH/wz9QYKXpLjABJtrQmNB06Mvbwepkb2GlynCwa3wZ5bf5n1CfPb8J3I6Eo4gO+w2JPZVyH2OV7Ph47sCYbEYAcglgWPTEDWAcbODs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727019590; c=relaxed/simple;
-	bh=PUgL8/X5kk0A6C8lhHqaF3yeeShTkPQEj3XfKgJqe94=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GlIt/wXYqiPmToeJ5xaYfBUOa/Y6PlI20xItSpUaUOP1rOEq+xbaVxxv8jc8k9KyPv3oIl5AkpBihRYC/5Zuzl5FEPyVY2O6wmiwRbHtOkH6JSsX1uAvw/c4FwzsEHcYSWfo1BKihGlWVREebr+sod9Aj7rRMhXk+942UkAKJjs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=GaOImS/H; arc=none smtp.client-ip=209.85.218.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1727025873; c=relaxed/simple;
+	bh=nBKbezGU8tCj+w5KktCCaXSUYra/fTFZnmGI3X7dqYs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=E1E4eqSK4ofxu3n5bxbVycEbt/nEzbJ7vMPKGp2MplphVyu9xVyXXXXXi4j/XC0RkUeJ7umpvQlNUxo3zmw++xSRw8a/f4QnKGYi4PxsYtHvt+hVH1YHJRhF5OU2AgF6uafz9jBoZJj0QD6yj83F/aGB88+fiBNyKwCK16R4vvg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=WlvJjWun; arc=none smtp.client-ip=185.138.42.100
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="GaOImS/H"
-Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-a8a897bd4f1so518551666b.3
-        for <linux-pm@vger.kernel.org>; Sun, 22 Sep 2024 08:39:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1727019587; x=1727624387; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZFxgZTFjgb2JZJAextayyq2RXVTLpxRhrGXsrPnvanQ=;
-        b=GaOImS/HYu6TN8aaWuiNiW/J9HI3dVWMeovybQVkGKBw0oXVtqa8rQfGC4ivYj3vUy
-         ZNlOAwxm49ptKgcUEmy636heSYvbqsDRI/9r2Mo95tVBfQYTdOgK+bZogpCybiYTLfjj
-         XKXiJjQEU3kr7Xe6exftrkPfwtA2pRWQ8bmOE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727019587; x=1727624387;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ZFxgZTFjgb2JZJAextayyq2RXVTLpxRhrGXsrPnvanQ=;
-        b=k9+vtm1hQhGDikluiywQ25XvFv4IeuKJ5n1qqic7FP5p16c6THQu9q6jLJRoZqt3YO
-         1oVsP/yt7+uFwVi4zhRDp02OqBO7mcy3XyirNJ2x4nDNUpZdgL4qyN3922QZlT/qT7BC
-         Lpk4kHy/Gm/QxVZHwTkkw3AzbLZ+KQ09iUjgzERQaKUSsizLxGDJd2IKvUsi6d/F1lFy
-         ZxurfEvoWI0Kh5HNqHO1fGEh7OophlV0BfQrD3rS4rhieLxOHU4QvAZIjDwk5yNf9pzU
-         5xDmsKlT4zqd//UjyVOUMRA5ftoFRzDg+JxGD5Pd6l4aiIU9xAHwWT54mzGA5D2lKnyv
-         rF+Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUnBAdZWnv5kheoo2r427qwSZgoNsTqw6KwIOv41x0D/OSCPENA+yvPn5PxwOpAzYPsewpE74FUZQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwPMufz62GvCEIAlPUkiBgbKehiac3e/+RSD5RGafHUMWk0nVf9
-	KO6108xIVo7vp3Hlo2lNvlRcBYD6HLh4vj8G2zov2h3HH/tXPH/3oIy+0aT0U9/R9dDcVcbFo41
-	2cak=
-X-Google-Smtp-Source: AGHT+IGvyQkiLfi5FfH7/jY50YVbSNFRJodArfWuKwecKEN1WAB2KEr6ZcAwJ4598tXD66kep5QFsw==
-X-Received: by 2002:a17:907:7e8b:b0:a86:789f:c756 with SMTP id a640c23a62f3a-a90d50fd4aamr982550166b.53.1727019586636;
-        Sun, 22 Sep 2024 08:39:46 -0700 (PDT)
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com. [209.85.218.46])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a90612e50easm1109995266b.174.2024.09.22.08.39.45
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 22 Sep 2024 08:39:45 -0700 (PDT)
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-a8d446adf6eso547611966b.2
-        for <linux-pm@vger.kernel.org>; Sun, 22 Sep 2024 08:39:45 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCX6jby6hxOPsQYNDOUji5duWPGSxTBOH8nMmQJvJEYVPPn5rm6/nC47pi0S81+v8w0AOoafqHAe6Q==@vger.kernel.org
-X-Received: by 2002:a17:907:e253:b0:a8d:3085:a7b1 with SMTP id
- a640c23a62f3a-a90d50124d9mr838803866b.38.1727019585320; Sun, 22 Sep 2024
- 08:39:45 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="WlvJjWun"
+Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:cbc0:999f:73ad:33bd])
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id 3B10E2E096FD;
+	Sun, 22 Sep 2024 20:24:26 +0300 (EEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
+	s=default; t=1727025867;
+	bh=iWGWg+HqOzVyWBplL1Ejrl1AsmTfFMNkEylcKF88Ny4=; h=From:To:Subject;
+	b=WlvJjWunpd7xINvl5r1mGCtvbIdtnbvYmGUyCGx5xOKjC3kMyGNH+xLQgb0G5vtqd
+	 Gr+/XJb5ZBYX9IOEl19+ORUzujlSehhFQ6BjCJSlgg8cQNkxW5w8E+PtGeusCW/1ga
+	 6D+f2Qy9PuwDSnPjy/+yTSd1enxgGA6mCTE+NzTE=
+Authentication-Results: linux1587.grserver.gr;
+	spf=pass (sender IP is 2a05:f6c2:511b:0:cbc0:999f:73ad:33bd) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
+Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
+From: Antheas Kapenekakis <lkml@antheas.dev>
+To: linux-pm@vger.kernel.org
+Cc: platform-driver-x86@vger.kernel.org,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	luke@ljones.dev,
+	me@kylegospodneti.ch,
+	Denis Benato <benato.denis96@gmail.com>,
+	Antheas Kapenekakis <lkml@antheas.dev>
+Subject: [PATCH v2 1/5] acpi/x86: s2idle: add support for Display Off and
+ Display On callbacks
+Date: Sun, 22 Sep 2024 19:22:54 +0200
+Message-ID: <20240922172258.48435-2-lkml@antheas.dev>
+X-Mailer: git-send-email 2.46.0
+In-Reply-To: <20240922172258.48435-1-lkml@antheas.dev>
+References: <20240922172258.48435-1-lkml@antheas.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240905021916.15938-1-jwyatt@redhat.com> <20240905021916.15938-3-jwyatt@redhat.com>
- <0ff4937d-0e51-4d67-9b8a-d2bf1bebe1fb@roeck-us.net>
-In-Reply-To: <0ff4937d-0e51-4d67-9b8a-d2bf1bebe1fb@roeck-us.net>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sun, 22 Sep 2024 08:39:28 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wjVpftmPF3SopywFgQ+uzgdScTPWTxmq7HwinVqwbue3w@mail.gmail.com>
-Message-ID: <CAHk-=wjVpftmPF3SopywFgQ+uzgdScTPWTxmq7HwinVqwbue3w@mail.gmail.com>
-Subject: Re: [PATCH v3 2/4] pm:cpupower: Add SWIG bindings files for libcpupower
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: "John B. Wyatt IV" <jwyatt@redhat.com>, Shuah Khan <skhan@linuxfoundation.org>, 
-	linux-pm@vger.kernel.org, Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, 
-	John Kacur <jkacur@redhat.com>, Tomas Glozar <tglozar@redhat.com>, Arnaldo Melo <acme@redhat.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "John B. Wyatt IV" <sageofredondo@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-PPP-Message-ID: 
+ <172702586706.19493.3873523492503629555@linux1587.grserver.gr>
+X-PPP-Vhost: antheas.dev
+X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
+X-Virus-Status: Clean
 
-On Sat, 21 Sept 2024 at 14:23, Guenter Roeck <linux@roeck-us.net> wrote:
->
-> On Wed, Sep 04, 2024 at 10:19:09PM -0400, John B. Wyatt IV wrote:
-> >
-> >  .../bindings/python/raw_pylibcpupower.i       | 247 ++++++++++++++++++
->
-> This file is deleted when running "make mrproper".
+The Display Off and Display On firmware notifications are meant to signify
+the system entering a state where the user is not actively interacting
+with it (i.e., in Windows this state is called "Screen Off" and the
+system enters it once it turns the screen off e.g., due to inactivity).
 
-Yes, please don't create files called '*.i", "*.s" or "*.o".  We
-assume they are generated files (the result of the preprocessor, the
-compiler, and the assembler respectively).
+Currently, these functions are called within the suspend sequence, which
+causes issues when these notifications interact with e.g., a USB device
+and makes them unable to be called as part of the screen turning off.
 
-And yeah, obviously "*.i" and "*.s" and not _usually_ seen, because
-they are only steps on the way to "*.o", so maybe they aren't _quite_
-as obvious as some "*.o" file would be, but they are very much
-standard naming, and we have build rules for them (ie "make
-kernel/exit.i" will create the pre-processed result of exit.c).
+This patch adds a set of callbacks to allow calling the Display On/Off
+notifications outside of the suspend/resume path.
 
-                    Linus
+Co-developed-by: Mario Limonciello <mario.limonciello@amd.com>
+Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
+---
+ include/linux/suspend.h |  5 +++++
+ kernel/power/suspend.c  | 12 ++++++++++++
+ 2 files changed, 17 insertions(+)
+
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index da6ebca3ff77..8f33249cc067 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -132,6 +132,7 @@ struct platform_suspend_ops {
+ };
+ 
+ struct platform_s2idle_ops {
++	int (*display_off)(void);
+ 	int (*begin)(void);
+ 	int (*prepare)(void);
+ 	int (*prepare_late)(void);
+@@ -140,6 +141,7 @@ struct platform_s2idle_ops {
+ 	void (*restore_early)(void);
+ 	void (*restore)(void);
+ 	void (*end)(void);
++	int (*display_on)(void);
+ };
+ 
+ #ifdef CONFIG_SUSPEND
+@@ -160,6 +162,9 @@ extern unsigned int pm_suspend_global_flags;
+ #define PM_SUSPEND_FLAG_FW_RESUME	BIT(1)
+ #define PM_SUSPEND_FLAG_NO_PLATFORM	BIT(2)
+ 
++int platform_suspend_display_off(void);
++int platform_suspend_display_on(void);
++
+ static inline void pm_suspend_clear_flags(void)
+ {
+ 	pm_suspend_global_flags = 0;
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 09f8397bae15..c527dc0ae5ae 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -254,6 +254,18 @@ static bool sleep_state_supported(suspend_state_t state)
+ 	       (valid_state(state) && !cxl_mem_active());
+ }
+ 
++int platform_suspend_display_off(void)
++{
++	return s2idle_ops && s2idle_ops->display_off ? s2idle_ops->display_off() : 0;
++}
++EXPORT_SYMBOL_GPL(platform_suspend_display_off);
++
++int platform_suspend_display_on(void)
++{
++	return s2idle_ops && s2idle_ops->display_on ? s2idle_ops->display_on() : 0;
++}
++EXPORT_SYMBOL_GPL(platform_suspend_display_on);
++
+ static int platform_suspend_prepare(suspend_state_t state)
+ {
+ 	return state != PM_SUSPEND_TO_IDLE && suspend_ops->prepare ?
+-- 
+2.46.1
+
