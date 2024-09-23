@@ -1,83 +1,144 @@
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 639792CA9
-	for <linux-pm@vger.kernel.org>; Mon, 23 Sep 2024 02:02:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D94EB747F
+	for <linux-pm@vger.kernel.org>; Mon, 23 Sep 2024 05:57:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727056968; cv=none; b=P3qy8A3dZDN7YQgCjORKWFik6LHrsoMzg7D5B10XjzQbojnqjXU63BB8WnILTLp9ZMUX1w+hOmUGo5emOqY6iyl2CWP9pmH5n7IDChjHVdoKzTxIlwnFbSLlNJsnHkRMh24QbYEX91kdYe9Z8+uKgTDZVaBXLxlaliM41r4lmvU=
+	t=1727071066; cv=none; b=G4geDGhM+Bz19PMfBLByEaKzTOk9IrQBXKLa4sejvjvkB9oZHiYQH3CHwqNbv+3ICHca2YRUUiAdu8FeULMSFCO3QVFIx3LGZNYl3WLfpogRmU/BBcHbxXG8OUugQ0OFx/yAmK2AEzW7XlcJW5Dk9Q1l3Fixy0Kvwd/6ous0zeQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727056968; c=relaxed/simple;
-	bh=1ds0uurUuie1pb7zbm7wCos3oPI7VOS5dr/ScjH7/4U=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=l6YzPqfWdxfSDJMvCo6pg2u9gMr5SpZ3/ASFioyNPS1OPVyAlvzurWRj10nygJTgabaZJxwrrUulCbDqq1SQM5PI0Be45oK7JQfs5VLJJUP9gfb+eToAh3/MtDRHz3oFOPkVC6l/cpBKcfcHJq7HYENX+AWa71egq0ypEqoTqQI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.163.17])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4XBmTR1j4Yz20pJ2;
-	Mon, 23 Sep 2024 10:02:19 +0800 (CST)
-Received: from kwepemf500003.china.huawei.com (unknown [7.202.181.241])
-	by mail.maildlp.com (Postfix) with ESMTPS id E99631A0190;
-	Mon, 23 Sep 2024 10:02:37 +0800 (CST)
-Received: from huawei.com (10.175.112.208) by kwepemf500003.china.huawei.com
- (7.202.181.241) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 23 Sep
- 2024 10:02:37 +0800
-From: Zhang Zekun <zhangzekun11@huawei.com>
-To: <nm@ti.com>, <kristo@kernel.org>, <ssantosh@kernel.org>,
-	<ulf.hansson@linaro.or>, <linux-pm@vger.kernel.org>
-CC: <chenjun102@huawei.com>, <zhangzekun11@huawei.com>
-Subject: [PATCH v2 1/2] pmdomain: ti-sci: Add missing of_node_put() for args.np
-Date: Mon, 23 Sep 2024 09:48:24 +0800
-Message-ID: <20240923014825.85176-2-zhangzekun11@huawei.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20240923014825.85176-1-zhangzekun11@huawei.com>
-References: <20240923014825.85176-1-zhangzekun11@huawei.com>
+	s=arc-20240116; t=1727071066; c=relaxed/simple;
+	bh=Ar21FYPF7WFIbLHKSGNIn5ZsVF38vd0Rtapd9mViFQw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VNpoXa8LmScQe+ZV09Ir+vZmKZra8INL9GYCc/7ImlV92c+taiQQrnFs0G5GBKgibZeslXIq7phfBgX/23fHwfvEbRPbn8Yj8KzcCBQWwcpoz1cdBtdMKPRTTH50wAEMbGlswkojsHXke9wGbIiND+H3OSW7AzV9MmXQZXc8x2M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=IuNktr06; arc=none smtp.client-ip=185.138.42.100
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="IuNktr06"
+Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id AFBD12E04650
+	for <linux-pm@vger.kernel.org>; Mon, 23 Sep 2024 08:57:38 +0300 (EEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
+	s=default; t=1727071059;
+	bh=Ar21FYPF7WFIbLHKSGNIn5ZsVF38vd0Rtapd9mViFQw=;
+	h=Received:From:Subject:To;
+	b=IuNktr06u2ApFX5sxErxI+3LScQolRIvaz4kMwABZHBTKM+D4/8oyVSeGJncDipX5
+	 NE50qhFYHgjxb9SMFk/mLaTcOyYHFXL2IMZHlh0nzCpa41jQ6TyUMLqiOQEWLrbKrs
+	 BW9B/dUfq279wb+kJk3SYDABPQoILxagHp8xx/KM=
+Authentication-Results: linux1587.grserver.gr;
+        spf=pass (sender IP is 209.85.208.170) smtp.mailfrom=lkml@antheas.dev smtp.helo=mail-lj1-f170.google.com
+Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
+Received: by mail-lj1-f170.google.com with SMTP id
+ 38308e7fff4ca-2f7657f9f62so42507391fa.3
+        for <linux-pm@vger.kernel.org>; Sun, 22 Sep 2024 22:57:38 -0700 (PDT)
+X-Forwarded-Encrypted: i=1;
+ AJvYcCU4o6mnt0S94V9milZ6IUISS7dWqBjE/4+q13Q5WUs/zf/zW4KJgr2aInTLnqKiVPpQ81mDJ9/AtA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz0HH33DujH4eROUZoWWmO9/H7vFmP9KD6/ARHsHXjKoTW9J+jq
+	3eqYIjkxbH3rTRM5WsRz9CvfOXWYDz989mOVYHco7e0dZk4IE6BmPMTDyyV65TIrYeUp+fOseQK
+	IUQaKx3aQWN0VlTN8WdwhMS6Q9kg=
+X-Google-Smtp-Source: 
+ AGHT+IFv2YSDzZvxOinmkIRqzEUv6+cO9JXtFcvefYFV3Hz3VsTDU5lcBVw1kkCmxKmjg7iAhjrFBaGurjanExAyOaU=
+X-Received: by 2002:a2e:8905:0:b0:2f7:9d1b:da59 with SMTP id
+ 38308e7fff4ca-2f7cc388652mr40841991fa.26.1727071057942; Sun, 22 Sep 2024
+ 22:57:37 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- kwepemf500003.china.huawei.com (7.202.181.241)
+References: 
+ <CAGwozwHqHbHNi53T87m36-OZ8suCEo1wgJ9fPPgPdcLnt_+S4g@mail.gmail.com>
+ <20240923013657.7464-1-derekjohn.clark@gmail.com>
+In-Reply-To: <20240923013657.7464-1-derekjohn.clark@gmail.com>
+From: Antheas Kapenekakis <lkml@antheas.dev>
+Date: Mon, 23 Sep 2024 07:57:25 +0200
+X-Gmail-Original-Message-ID: 
+ <CAGwozwHmS-XjhzYayNvT07vesw4eOBh+ZjWi_NDa4xsOangYDQ@mail.gmail.com>
+Message-ID: 
+ <CAGwozwHmS-XjhzYayNvT07vesw4eOBh+ZjWi_NDa4xsOangYDQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/5] acpi/x86: s2idle: move Display off/on calls
+ outside suspend (fixes ROG Ally suspend)
+To: "Derek J. Clark" <derekjohn.clark@gmail.com>
+Cc: Mario Limonciello <mario.limonciello@amd.com>,
+ Luke Jones <luke@ljones.dev>, me@kylegospodneti.ch,
+	Denis Benato <benato.denis96@gmail.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+X-PPP-Message-ID: 
+ <172707105909.26170.2524818982249126860@linux1587.grserver.gr>
+X-PPP-Vhost: antheas.dev
+X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
+X-Virus-Status: Clean
 
-of_parse_phandle_with_args() need to call of_node_put() to decerement
-the refcount of args.np. Adding backing the missing of_node_put().
+Hi Derek,
 
-Fixes: efa5c01cd7ee ("soc: ti: ti_sci_pm_domains: switch to use multiple genpds instead of one")
-Signed-off-by: Zhang Zekun <zhangzekun11@huawei.com>
----
-v2: Add missing brackets.
+> I'm going to be somewhat brief here as I don't like repeating myself, you are
+> working from incomplete information and from that you are inferring incorrect
+> assertions. Due to NDA the full slate of information that would clarify this
+> cannot be released here, but I will be clear: I am not sharing my opinion, I
+> am stating facts. What you have described here is a missinterpretation of the
+> symptoms and is not correct. The _DSM call is not relevant to the proper fix,
+> the sequencing you observe is not applicable to Linux, and the sensitivity of
+> the controller is another symptom of the Windows quirk behaving badly in Linux.
+> Furthermore, the RGB "flourish" as you call it works as intended with the new
+> firmware and no kernel changes required.
 
- drivers/pmdomain/ti/ti_sci_pm_domains.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Only thing I am seeing here is a bit of heresay. Please get in touch
+with Asus, cross your t's and dot your i's, and share what you found
+with the rest of the class.
 
-diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-index 1510d5ddae3d..0df3eb7ff09a 100644
---- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
-+++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-@@ -161,6 +161,7 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
- 				break;
- 
- 			if (args.args_count >= 1 && args.np == dev->of_node) {
-+				of_node_put(args.np);
- 				if (args.args[0] > max_id) {
- 					max_id = args.args[0];
- 				} else {
-@@ -192,7 +193,10 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
- 				pm_genpd_init(&pd->pd, NULL, true);
- 
- 				list_add(&pd->node, &pd_provider->pd_list);
-+			} else {
-+				of_node_put(args.np);
- 			}
-+
- 			index++;
- 		}
- 	}
--- 
-2.17.1
+I am in no rush to see this merge, and as all gaming distributions
+carry custom kernels that update on a weekly cadence and 90% of users
+are on those kernels with the rest being able to figure it out, there
+is no practical reason for this to merge quickly. Ubuntu (+variant)
+users will get this fix after they've thrown their ally away anyway.
 
+> What I can provide is information on a test we did that should hopefully
+> elucidate the issue more clearly for you. We included a patch that allowed us
+> to alter the delay in asus-wmi on the fly by writing to an attribute in sysfs.
+> In addition, we pushed the _DSM calls as early as possible in the suspend
+> sequence. We were unable to find a timing for this that would work consistently
+> on different configurations. The same issue exists in your patch set and the
+> testing bears this out with Denis still getting spurious wakes when using it.
+> The problem with your approach is that you aren't listening to us despite our
+> much broader understanding of the issue at hand. If this worked we would have
+> submitted it ourselves nearly three weeks ago.
+
+Here you assume I did not do the same. Yes, I did. The asus-wmi quirk
+is subject to racing conditions that mean it will never work correctly
+(well; without newer firmware maybe perhaps). This series is not, as
+the calls happen before suspend starts.
+
+Yes, my V1 of the patch did not include a delay at all. Since the
+original Ally is XInput, one of the MCUs was left on, which caused
+what Denis experienced. It also triggered a restart of the MCU on the
+Ally X after resume. V2 fixes this restart on the Ally X and makes it
+behave completely properly.
+
+In fact, after being included in bazzite-testing yesterday, my Ally X
+unit went on a deep slumber tonight with powersave on, and then woke
+up today beautifully, having only lost 1% of battery.
+
+It is not clear if the issue still exists on the original Ally, I
+could not get a clear signal from Denis but do not worry, one of our
+contributors is on it.
+
+> *Our solution doesn't require any kernel changes for newer firmware*, as I
+> already stated the solution from ASUS fixes the root cause of the problem. Your
+> attempt at a solution attempts to outrace the symptoms of it. Please don't
+> mischaracterize my statements.
+
+I would hope that is not true and your solution completely removes the
+quirk from asus-wmi for newer firmware, as it prolongs the suspend and
+resume sequences noticeably. However, given my and Denis' limited
+testing, I doubt the controller is able to suspend quickly enough even
+with new firmware (you can see the RGB cut before it's able to fade).
+
+In any case, this patch series is not expected to conflict with Asus'
+newer firmware and is in fact complementary with it. Both fix the same
+issue in a different way, which means our users will have a great
+experience, squared. This series also greatly improves resume behavior
+on the Ally, which, let me tell you, is blazing fast now.
+
+Antheas
