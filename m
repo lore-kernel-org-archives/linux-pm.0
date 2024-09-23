@@ -1,65 +1,65 @@
 Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69252195809
-	for <linux-pm@vger.kernel.org>; Mon, 23 Sep 2024 10:00:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EABAF194C6E
+	for <linux-pm@vger.kernel.org>; Mon, 23 Sep 2024 10:00:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727085615; cv=none; b=VqAT6IGr6cXy5u+XSGibCDhCF5NO9GTS85vxle1zgGbnTPJM8m6z4UDAq7JsoRc8HNaa1Es32DtbvNkPYK5h4ACdf1jVaf7dlFX1wOOdnx8du+rj79LGovNvc5KdqqQYhk+hDjJ5wbB9xT6NKuil6vAPjME0FUiOiIWgG2n3SrE=
+	t=1727085616; cv=none; b=d9PGSv+/9lmVKSyHmSE0XUyPJYHzFChfgGztaDlDrrIlbvKVLyb0oByRgWP/Rtf45aLy4FuKw49b6F0NSaMDuQzWjZUZ/Ub4ogKeR8/QfqcfeAMK/yUvKJ1VBn2iAOuiVXrtJDyOT81tAgQfTVJNQYX9fd1/RYD37YbiT+9eY1s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727085615; c=relaxed/simple;
-	bh=5zx5SBZJcmnV5Ww3N8DuiCrm7wd+D9uGvjo4cHTJ8B0=;
+	s=arc-20240116; t=1727085616; c=relaxed/simple;
+	bh=jBaTX53Phst+hHnS5w1wtky5QWcWytquKVGEZ5GX7ts=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gofH6oslIU2vsJXlABLDr5tUWXK6VNl7S9z0GRSkP95a0OXj8/koF3FZfvydor4McE1beCc2RuLw3n1SDBZ5qi85GRqcdrMmT15WYBTAOjjtwjuMsYkGSSjTBUBXCPp+vxHvnYeL96NcarNaeW3DkGlLUjRvqxgu6ci1FcM9smM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=nI/dlvaZ; arc=none smtp.client-ip=209.85.221.47
+	 MIME-Version; b=BChRIY6L+m4V4FYJpPMxXOuSn/TZh2FwQl7007n82KO/sO3T5kKKTqoKPrGMfDTxgT7agtgBv0M8+emTQDyAu3Cn+2S8zaZzF5xpa/wN//0OBUom5j7p1m5z+llauGuwGPODHcxlW7Z4nv9LbfJtIeZI86ld0ZyfTJ93W47CGks=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=foMm+X3/; arc=none smtp.client-ip=209.85.221.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nI/dlvaZ"
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-37a33e55d01so3083278f8f.3
-        for <linux-pm@vger.kernel.org>; Mon, 23 Sep 2024 03:00:13 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="foMm+X3/"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-374c326c638so2296794f8f.2
+        for <linux-pm@vger.kernel.org>; Mon, 23 Sep 2024 03:00:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1727085612; x=1727690412; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1727085613; x=1727690413; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=doGqzwUQ5AL+SIN7Jttrlpj9/AQawzQ14twkeztHlAw=;
-        b=nI/dlvaZyy1gRyQpCCzckzbJW++S8l1SFKPEDA2EDnvLvr+NAjrl3W5URGWCAXxWTE
-         H3e6ityCg8oiEcTYH8oAotVUeB1ODAU4zTdd22Ra7HtNCC+ZmSSYlxo6ISzBDjQcpOIB
-         MreI7Dg2d/6yyCUzEHHsPsdsffh6fg0IJDByvd1SYqfE6B8i64y92LOURO4U/smUORTf
-         Cm5VzVMZ8UywbocoQ0Ul5o0kWKqa+mtwvb7IeHJZs+dOdxN0kKBfnNXIxBMoVRUV0TxL
-         UjUXmq6oh6EJSZRiybEmRERRPi4rHEMfNPfFShGVXvtWHyTY893R+XVIwdtwMc/rWHty
-         niJA==
+        bh=deaZPEiz8FHu9sPVP9I3mxBXKzoXXYxNuh+Xqkh0+pc=;
+        b=foMm+X3/F1d6lfC80NTe8P8F9JCGjpnXmnayy3/yUwsSz7E87oAB8FqEVtoNO89HES
+         17vRZz1Gvm55/GMkvngVZp2hC88CXIcieieCrGTmSJ9CPFRMpV474y2zk6utVe6/10ci
+         S+gOIpB87kZiRv7xwkKQQIGk98eNC+k8doitnkcB/RcS+QNVOGV79Anh4CByoDh3gJli
+         L1l9FdT/02+EGkNpOb/BI2wCqEp3Jax4iYlfleieo38QSexQZIkac7L0I/csZk8vhLHK
+         rDfUiDge6LVJBgOrRZVR6fpvVpaL6CVy4FhK8WLgU2tC5Rxz+WZ+DRWzHMyM7lFAsA58
+         pZvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727085612; x=1727690412;
+        d=1e100.net; s=20230601; t=1727085613; x=1727690413;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=doGqzwUQ5AL+SIN7Jttrlpj9/AQawzQ14twkeztHlAw=;
-        b=ZYljRKcyeHlAyB31k4jV4PQKEAhnvWcLmRL8Pr6oVH2HyVwGyPBs1OERSSgZ8Rtd9M
-         3arEWlVXR3r6R0px3OBt4oAic4PicME44uqVET84VrGy/gyh9E/KpaM8cC6k/PEau0Mw
-         5Qm+wshSbA90d925+6ZGotXbunHpGBoqaSoCiS0yps/J2uUF1l17Ugn+KmiiEK/Z8OfS
-         Vuho8RylAqJQQUQFzRsjVrFa1u/cHrodnC6CskPkuWs08JlLH1fMeYxCuRcIYsgYVXop
-         b/udD3T9TtRzLpEUE3HuM1ZcCrj3akGyjmQoQKo9BYdGvQHwubbR909lak/djLcOJLEX
-         175Q==
-X-Gm-Message-State: AOJu0YzwE3HxERq/MaH80Z3Q2nd6beRZ9iN4jH+pHxrBu0LUgLE5ki/i
-	Y2YLrflp2b9895Y0KDtrDLUuSJFbXQLmz7oYPGIcqY6AjxhOpJ/oIc+l41XExBo=
-X-Google-Smtp-Source: AGHT+IEMtJTwrzRrBHiug8tyrxnaFF3H2kZLZMAjErCgO4lIpu0ZIojNqOA0sfk+zMhawyBCzkEdSA==
-X-Received: by 2002:a5d:6284:0:b0:374:d25f:101 with SMTP id ffacd0b85a97d-37a4315803fmr5703114f8f.18.1727085611622;
-        Mon, 23 Sep 2024 03:00:11 -0700 (PDT)
+        bh=deaZPEiz8FHu9sPVP9I3mxBXKzoXXYxNuh+Xqkh0+pc=;
+        b=kcmWUwheWC0RAFSl6PwS/AXArhmmvc81coeVAtCmv02Z0g5hiylG+zznPlDK2DsTvf
+         KzxqKRY3jXuCEFdr124BZWwNp8DTdDuL9Z3l8ZF4Zq7Xa3hnVZugBXLABe5gb5XDVrCH
+         n6csLd2g9q5AkUF8CNi4ayhtSQQ8hxMnvzTBhVjNIUacR+2j3Jev0GTg5jTcEpqyILfA
+         0U/uASfELYCzOIEmktrb8MWdj1jT6i1pdkx12Z/0NdICGvSEhcadB6ytZKBoPEDMRk8o
+         BmAAAQNssHgbxWj8RcLjeDatePWkussmQHrAZaXAitiQFydlxlqD4kgRwfGKsTeLEipt
+         WN1Q==
+X-Gm-Message-State: AOJu0YycPkjpH355JU+5LMQ93iybR94HQ0WDm5uu16IdZyEz68VgfwsA
+	woTXXkcpfTrMOqHlLh5QEL3PPMfgvZjp3H/ZJcGFYkQYks9iB4HPwRoPtuGctSo=
+X-Google-Smtp-Source: AGHT+IHPqUeJXNM0nWjuvXLnmg0xECnAAmNrYRnyvWunsIb2Di5nRB25HSWfta8Kak3jTQgqSXSAyw==
+X-Received: by 2002:adf:dd90:0:b0:36b:bb84:33e2 with SMTP id ffacd0b85a97d-37a4235a1d3mr5397014f8f.37.1727085613105;
+        Mon, 23 Sep 2024 03:00:13 -0700 (PDT)
 Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-378e73f62dasm23977216f8f.49.2024.09.23.03.00.11
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-378e73f62dasm23977216f8f.49.2024.09.23.03.00.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Sep 2024 03:00:11 -0700 (PDT)
+        Mon, 23 Sep 2024 03:00:12 -0700 (PDT)
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 To: daniel.lezcano@linaro.org,
 	rafael@kernel.org
 Cc: linux-pm@vger.kernel.org,
 	lukasz.luba@arm.com,
 	quic_manafm@quicinc.com
-Subject: [PATCH v4 2/6] thermal/core: Connect the threshold with the core
-Date: Mon, 23 Sep 2024 11:59:58 +0200
-Message-ID: <20240923100005.2532430-3-daniel.lezcano@linaro.org>
+Subject: [PATCH v4 4/6] tools/lib/thermal: Make more generic the command encoding function
+Date: Mon, 23 Sep 2024 12:00:00 +0200
+Message-ID: <20240923100005.2532430-5-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240923100005.2532430-1-daniel.lezcano@linaro.org>
 References: <20240923100005.2532430-1-daniel.lezcano@linaro.org>
@@ -71,55 +71,104 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Initialize, de-initialize and handle the threshold in the same place
-than the trip points.
+The thermal netlink has been extended with more commands which require
+an encoding with more information. The generic encoding function puts
+the thermal zone id with the command name. It is the unique
+parameters.
+
+The next changes will provide more parameters to the command. Set the
+scene for those new parameters by making the encoding function more
+generic.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/thermal_core.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ tools/lib/thermal/commands.c | 41 ++++++++++++++++++++++++++++--------
+ 1 file changed, 32 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 073d02e21352..90937c23b0e6 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -585,6 +585,8 @@ void __thermal_zone_device_update(struct thermal_zone_device *tz,
- 			high = td->threshold;
- 	}
+diff --git a/tools/lib/thermal/commands.c b/tools/lib/thermal/commands.c
+index 73d4d4e8d6ec..a9223df91dcf 100644
+--- a/tools/lib/thermal/commands.c
++++ b/tools/lib/thermal/commands.c
+@@ -261,8 +261,23 @@ static struct genl_ops thermal_cmd_ops = {
+ 	.o_ncmds	= ARRAY_SIZE(thermal_cmds),
+ };
  
-+	thermal_thresholds_handle(tz, &low, &high);
+-static thermal_error_t thermal_genl_auto(struct thermal_handler *th, int id, int cmd,
+-					 int flags, void *arg)
++struct cmd_param {
++	int tz_id;
++};
 +
- 	thermal_zone_set_trips(tz, low, high);
- 
- 	list_sort(NULL, &way_up_list, thermal_trip_notify_cmp);
-@@ -1490,6 +1492,10 @@ thermal_zone_device_register_with_trips(const char *type,
- 			goto unregister;
- 	}
- 
-+	result = thermal_thresholds_init(tz);
-+	if (result)
-+		goto remove_hwmon;
++typedef int (*cmd_cb_t)(struct nl_msg *, struct cmd_param *);
 +
- 	mutex_lock(&thermal_list_lock);
++static int thermal_genl_tz_id_encode(struct nl_msg *msg, struct cmd_param *p)
++{
++	if (p->tz_id >= 0 && nla_put_u32(msg, THERMAL_GENL_ATTR_TZ_ID, p->tz_id))
++		return -1;
++
++	return 0;
++}
++
++static thermal_error_t thermal_genl_auto(struct thermal_handler *th, cmd_cb_t cmd_cb,
++					 struct cmd_param *param,
++					 int cmd, int flags, void *arg)
+ {
+ 	struct nl_msg *msg;
+ 	void *hdr;
+@@ -276,7 +291,7 @@ static thermal_error_t thermal_genl_auto(struct thermal_handler *th, int id, int
+ 	if (!hdr)
+ 		return THERMAL_ERROR;
  
- 	mutex_lock(&tz->lock);
-@@ -1513,6 +1519,8 @@ thermal_zone_device_register_with_trips(const char *type,
+-	if (id >= 0 && nla_put_u32(msg, THERMAL_GENL_ATTR_TZ_ID, id))
++	if (cmd_cb && cmd_cb(msg, param))
+ 		return THERMAL_ERROR;
  
- 	return tz;
+ 	if (nl_send_msg(th->sk_cmd, th->cb_cmd, msg, genl_handle_msg, arg))
+@@ -289,30 +304,38 @@ static thermal_error_t thermal_genl_auto(struct thermal_handler *th, int id, int
  
-+remove_hwmon:
-+	thermal_remove_hwmon_sysfs(tz);
- unregister:
- 	device_del(&tz->device);
- release_device:
-@@ -1600,6 +1608,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ thermal_error_t thermal_cmd_get_tz(struct thermal_handler *th, struct thermal_zone **tz)
+ {
+-	return thermal_genl_auto(th, -1, THERMAL_GENL_CMD_TZ_GET_ID,
++	return thermal_genl_auto(th, NULL, NULL, THERMAL_GENL_CMD_TZ_GET_ID,
+ 				 NLM_F_DUMP | NLM_F_ACK, tz);
+ }
  
- 	thermal_set_governor(tz, NULL);
+ thermal_error_t thermal_cmd_get_cdev(struct thermal_handler *th, struct thermal_cdev **tc)
+ {
+-	return thermal_genl_auto(th, -1, THERMAL_GENL_CMD_CDEV_GET,
++	return thermal_genl_auto(th, NULL, NULL, THERMAL_GENL_CMD_CDEV_GET,
+ 				 NLM_F_DUMP | NLM_F_ACK, tc);
+ }
  
-+	thermal_thresholds_exit(tz);
- 	thermal_remove_hwmon_sysfs(tz);
- 	ida_free(&thermal_tz_ida, tz->id);
- 	ida_destroy(&tz->ida);
+ thermal_error_t thermal_cmd_get_trip(struct thermal_handler *th, struct thermal_zone *tz)
+ {
+-	return thermal_genl_auto(th, tz->id, THERMAL_GENL_CMD_TZ_GET_TRIP,
+-				 0, tz);
++	struct cmd_param p = { .tz_id = tz->id };
++
++	return thermal_genl_auto(th, thermal_genl_tz_id_encode, &p,
++				 THERMAL_GENL_CMD_TZ_GET_TRIP, 0, tz);
+ }
+ 
+ thermal_error_t thermal_cmd_get_governor(struct thermal_handler *th, struct thermal_zone *tz)
+ {
+-	return thermal_genl_auto(th, tz->id, THERMAL_GENL_CMD_TZ_GET_GOV, 0, tz);
++	struct cmd_param p = { .tz_id = tz->id };
++
++	return thermal_genl_auto(th, thermal_genl_tz_id_encode, &p,
++				 THERMAL_GENL_CMD_TZ_GET_GOV, 0, tz);
+ }
+ 
+ thermal_error_t thermal_cmd_get_temp(struct thermal_handler *th, struct thermal_zone *tz)
+ {
+-	return thermal_genl_auto(th, tz->id, THERMAL_GENL_CMD_TZ_GET_TEMP, 0, tz);
++	struct cmd_param p = { .tz_id = tz->id };
++
++	return thermal_genl_auto(th, thermal_genl_tz_id_encode, &p,
++				 THERMAL_GENL_CMD_TZ_GET_TEMP, 0, tz);
+ }
+ 
+ thermal_error_t thermal_cmd_exit(struct thermal_handler *th)
 -- 
 2.43.0
 
