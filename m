@@ -1,49 +1,48 @@
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
+Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1661181AB6;
-	Tue, 24 Sep 2024 09:51:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.248
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBC8116DED5;
+	Tue, 24 Sep 2024 09:51:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.249
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727171488; cv=none; b=WcGVnoDAtNCz4hdwat0Kix2DrRxJdPm5I58OLIMqP3kbZia8MKOt89G+cH7qmWmmQ2xfIVcR/ZssviPpZClkdMAzf5YaoHv/IU3lrwWMaMxj2nltskEpH95wF1JOpPKseYWdoHSTassGwpbdFuL0LrDTbHRzi90OifRHPyThnNY=
+	t=1727171490; cv=none; b=U1I3Z8xO3E/Dh8eTnGtD09BnV19EbyHjWLbgFLd4BUMGJiofXelh7+VPmzTasKgCTrzFW4TI/kTSLfh61LitEbUuWS/9vBa6Rlb3iYOAwrXdVQZV+9p3Q+JaorjmRhICFjVLWsMewzvbv4igtnm4ldRmky6XN/wtzByrYNaYV0o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727171488; c=relaxed/simple;
-	bh=VnrBJBrjcf3aALLSxOaCd0GOye6p5E+Bvu2I81GeIwg=;
+	s=arc-20240116; t=1727171490; c=relaxed/simple;
+	bh=FzZjOPw1BD3qZNC2dIsjDN3y56BlWcGXa6l+cJcylGs=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=cyOmZjst0UGKbISCp+Za9he5qfAaGI5AUl+GIuBTpWQR1eUBdtUwCaVKMHVXXy6aruQ3vnHdYReEsHBazxBuPkcbr4DR6ZJgxUOZTDTSJEYbzmyxDZIjHmsHpKn/QVtuGT8G5y42r2ib6xWmu3NBayQ/7qb/qLrFXgyMGGIVzS4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=cjn+qqAs; arc=none smtp.client-ip=198.47.23.248
+	 In-Reply-To:To:CC; b=lsHrNy19GXEbfs9O3NsUeA0cb7TDual1H6wdTSf3o+EtascK1QyfOJ5Ju1+EwB6en2dJs4YMSVayuno6A5yzCLEDJ6ennJWDONF6vmmdASZ/9OoLR8+Xv5vSrI+kKLuNw/IC5CA5E0Z/6EmWZmA9zzYZOrqWJJsSDPv8feUjmK8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=i12wRdpn; arc=none smtp.client-ip=198.47.23.249
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="cjn+qqAs"
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-	by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 48O9p7bZ120010;
-	Tue, 24 Sep 2024 04:51:07 -0500
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="i12wRdpn"
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+	by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 48O9pFmn071159;
+	Tue, 24 Sep 2024 04:51:15 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1727171467;
-	bh=+nInyqhFC3BdNTlgq3xlhiMTc4jzcWvJSd9GJ9RnehM=;
+	s=ti-com-17Q1; t=1727171475;
+	bh=28nm6GciXd1Z/cAECj7/YWo0gE1W8fU4bL/W7b+3Ja8=;
 	h=From:Date:Subject:References:In-Reply-To:To:CC;
-	b=cjn+qqAsZbDMkkAO2jWCpcPrttUHLzwC02kLuXveAlq1qiWmpBtnI7jyUaqfsqfE0
-	 AO2ENLisis981dSEq61QVaRp67nVgF7iU97jWfdEfUsgJGvE8tohm8xSndZZ86dXEz
-	 VXjHbiyQMVCwFW4tD7jIA1zy+4np99ut2XbY/vlk=
-Received: from DFLE109.ent.ti.com (dfle109.ent.ti.com [10.64.6.30])
-	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 48O9p7L0000919
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 24 Sep 2024 04:51:07 -0500
-Received: from DFLE115.ent.ti.com (10.64.6.36) by DFLE109.ent.ti.com
- (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
+	b=i12wRdpnF6JLyjuw/5i11mILiiXpCKBotEPaHuz/Y2jgvu3mhZiPU5OtjesuuT3gd
+	 2OS6h22EcKv2t4WSGh7Z+tIhCP75Cie4x//brNKvW3tLSuLopzQDMG91jj3dG0ItDG
+	 YT4WTcWJf5f3ZxEU2meVH0AS62LVcJdYd1cQkqjE=
+Received: from DLEE112.ent.ti.com (dlee112.ent.ti.com [157.170.170.23])
+	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTP id 48O9pFjG017136;
+	Tue, 24 Sep 2024 04:51:15 -0500
+Received: from DLEE104.ent.ti.com (157.170.170.34) by DLEE112.ent.ti.com
+ (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 24
- Sep 2024 04:51:06 -0500
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DFLE115.ent.ti.com
- (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
+ Sep 2024 04:51:15 -0500
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE104.ent.ti.com
+ (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 24 Sep 2024 04:51:06 -0500
+ Frontend Transport; Tue, 24 Sep 2024 04:51:15 -0500
 Received: from [127.0.1.1] (lcpd911.dhcp.ti.com [172.24.227.226])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 48O9owSq017217;
-	Tue, 24 Sep 2024 04:51:03 -0500
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 48O9owSs017217;
+	Tue, 24 Sep 2024 04:51:11 -0500
 From: Dhruva Gole <d-gole@ti.com>
-Date: Tue, 24 Sep 2024 15:20:41 +0530
-Subject: [PATCH v5 1/6] arm64: dts: ti: k3-am62a: add opp frequencies
+Date: Tue, 24 Sep 2024 15:20:43 +0530
+Subject: [PATCH v5 3/6] arm64: dts: ti: k3-am62p: add opp frequencies
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -52,7 +51,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20240924-ti-cpufreq-fixes-v5-v5-1-cbe16b9ddb1b@ti.com>
+Message-ID: <20240924-ti-cpufreq-fixes-v5-v5-3-cbe16b9ddb1b@ti.com>
 References: <20240924-ti-cpufreq-fixes-v5-v5-0-cbe16b9ddb1b@ti.com>
 In-Reply-To: <20240924-ti-cpufreq-fixes-v5-v5-0-cbe16b9ddb1b@ti.com>
 To: Nishanth Menon <nm@ti.com>, Vignesh Raghavendra <vigneshr@ti.com>,
@@ -70,11 +69,11 @@ CC: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
 	<afd@ti.com>, Bryan Brattlof <bb@ti.com>,
         Dhruva Gole <d-gole@ti.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1727171458; l=3780;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1727171458; l=3849;
  i=d-gole@ti.com; s=20240919; h=from:subject:message-id;
- bh=h4Lsswdhctun8wxkRbSRUFWd5uwJNN09QzsFaxwDKNE=;
- b=A/wCvjDQDDRtnZQgHYDMhGRnoMMBksTv2YryY/5MJ+iEL+xCkzXIY3ssgHHBD6jlbdoXgg9Rt
- WioPGYrsD7CC/pjzneGQXFy64U1XDkGWzInHmax6iQV/EdoJ01R/yM0
+ bh=/9L7M8ngafoj6TyntikdD62vQqSW7r8Y6HKG3GFLThQ=;
+ b=MJHh8NGKCbIUWuSIJq+jxDOxVAuJ6wyYIG9w6oITqejglwY2K1NrT8XymXVaINLp54fjybjTy
+ 83pRkHiSKuQBn9oxoVGERyfj2DvypJ4BIqh9u+l17NTYhgD4h3VERp9
 X-Developer-Key: i=d-gole@ti.com; a=ed25519;
  pk=k8NnY4RbxVqeqGsYfTHeVn4hPOHkjg7Mii0Ixs4rghM=
 X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
@@ -85,30 +84,30 @@ One power management technique available to the Cortex-A53s is their
 ability to dynamically scale their frequency across the device's
 Operating Performance Points (OPP)
 
-The OPPs available for the Cortex-A53s on the AM62Ax can vary based on
+The OPPs available for the Cortex-A53s on the AM62Px can vary based on
 the silicon variant used. The SoC variant is encoded into the
 WKUP_MMR0_WKUP0_CTRL_MMR0_JTAG_USER_ID register which is used to limit
-to only OPP entries the variant supports. A table of all these variants
-can be found in it's data sheet[0] for the AM62Ax family.
+the OPP entries the SoC supports. A table of all these variants can be
+found in its data sheet[0] for the AM62Px processor family.
 
 Add the OPP table into the SoC's fdti file along with the syscon node to
 describe the WKUP_MMR0_WKUP0_CTRL_MMR0_JTAG_USER_ID register to detect
 the SoC variant.
 
-[0] https://www.ti.com/lit/ds/symlink/am62a3.pdf
+[0] https://www.ti.com/lit/ds/symlink/am62p-q1.pdf
 
 Signed-off-by: Bryan Brattlof <bb@ti.com>
 ---
- arch/arm64/boot/dts/ti/k3-am62a-wakeup.dtsi |  5 +++
- arch/arm64/boot/dts/ti/k3-am62a7.dtsi       | 51 +++++++++++++++++++++++++++++
- 2 files changed, 56 insertions(+)
+ .../boot/dts/ti/k3-am62p-j722s-common-wakeup.dtsi  |  5 +++
+ arch/arm64/boot/dts/ti/k3-am62p5.dtsi              | 47 ++++++++++++++++++++++
+ 2 files changed, 52 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/ti/k3-am62a-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-am62a-wakeup.dtsi
-index f5ac101a04dfa0bdae8ac4f43b01473725433c51..0b1dd5390cd3f42b0ec56bab042388722b4c22a1 100644
---- a/arch/arm64/boot/dts/ti/k3-am62a-wakeup.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-am62a-wakeup.dtsi
-@@ -17,6 +17,11 @@ chipid: chipid@14 {
- 			reg = <0x14 0x4>;
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-wakeup.dtsi
+index 315d0092e73664416998cb34d9b9f5fa70a311c2..6f32135f00a551cfea4cc896fc03147271eab9b7 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-wakeup.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-wakeup.dtsi
+@@ -20,6 +20,11 @@ chipid: chipid@14 {
+ 			bootph-all;
  		};
  
 +		opp_efuse_table: syscon@18 {
@@ -119,46 +118,43 @@ index f5ac101a04dfa0bdae8ac4f43b01473725433c51..0b1dd5390cd3f42b0ec56bab04238872
  		cpsw_mac_syscon: ethernet-mac-syscon@200 {
  			compatible = "ti,am62p-cpsw-mac-efuse", "syscon";
  			reg = <0x200 0x8>;
-diff --git a/arch/arm64/boot/dts/ti/k3-am62a7.dtsi b/arch/arm64/boot/dts/ti/k3-am62a7.dtsi
-index f86a23404e6dde3ca90e41ac0efdb378948e6d50..6c99221beb6bd8e5ad93888e6b659cc6e08fb679 100644
---- a/arch/arm64/boot/dts/ti/k3-am62a7.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-am62a7.dtsi
-@@ -48,6 +48,8 @@ cpu0: cpu@0 {
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p5.dtsi b/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
+index 41f479dca455567c91bbb3a0b75d13810ea11157..140587d02e88e9d391c41001643ec715d41bf262 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
+@@ -47,6 +47,7 @@ cpu0: cpu@0 {
  			d-cache-line-size = <64>;
  			d-cache-sets = <128>;
- 			next-level-cache = <&L2_0>;
+ 			next-level-cache = <&l2_0>;
 +			operating-points-v2 = <&a53_opp_table>;
-+			clocks = <&k3_clks 135 0>;
+ 			clocks = <&k3_clks 135 0>;
  		};
  
- 		cpu1: cpu@1 {
-@@ -62,6 +64,8 @@ cpu1: cpu@1 {
+@@ -62,6 +63,7 @@ cpu1: cpu@1 {
  			d-cache-line-size = <64>;
  			d-cache-sets = <128>;
- 			next-level-cache = <&L2_0>;
+ 			next-level-cache = <&l2_0>;
 +			operating-points-v2 = <&a53_opp_table>;
-+			clocks = <&k3_clks 136 0>;
+ 			clocks = <&k3_clks 136 0>;
  		};
  
- 		cpu2: cpu@2 {
-@@ -76,6 +80,8 @@ cpu2: cpu@2 {
+@@ -77,6 +79,7 @@ cpu2: cpu@2 {
  			d-cache-line-size = <64>;
  			d-cache-sets = <128>;
- 			next-level-cache = <&L2_0>;
+ 			next-level-cache = <&l2_0>;
 +			operating-points-v2 = <&a53_opp_table>;
-+			clocks = <&k3_clks 137 0>;
+ 			clocks = <&k3_clks 137 0>;
  		};
  
- 		cpu3: cpu@3 {
-@@ -90,6 +96,51 @@ cpu3: cpu@3 {
+@@ -92,10 +95,54 @@ cpu3: cpu@3 {
  			d-cache-line-size = <64>;
  			d-cache-sets = <128>;
- 			next-level-cache = <&L2_0>;
+ 			next-level-cache = <&l2_0>;
 +			operating-points-v2 = <&a53_opp_table>;
-+			clocks = <&k3_clks 138 0>;
-+		};
-+	};
-+
+ 			clocks = <&k3_clks 138 0>;
+ 		};
+ 	};
+ 
 +	a53_opp_table: opp-table {
 +		compatible = "operating-points-v2-ti-cpu";
 +		opp-shared;
@@ -199,9 +195,12 @@ index f86a23404e6dde3ca90e41ac0efdb378948e6d50..6c99221beb6bd8e5ad93888e6b659cc6
 +			opp-supported-hw = <0x01 0x0004>;
 +			clock-latency-ns = <6000000>;
 +			opp-suspend;
- 		};
- 	};
- 
++		};
++	};
++
+ 	l2_0: l2-cache0 {
+ 		compatible = "cache";
+ 		cache-unified;
 
 -- 
 2.34.1
