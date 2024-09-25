@@ -1,120 +1,135 @@
-Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C581117547
-	for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2024 16:47:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47F58134BD;
+	Wed, 25 Sep 2024 17:12:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=60.244.123.138
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727282841; cv=none; b=rV4tGmwLxFFNgLEV2TiW78IGnROdI1OEUTBcaU9ZeEqg7qKNDDoJXgtCk5yPzUwLSa0wLRE+FINCJ7qDQLL6U2H9kLO8OvKp4KnfFk7oElHw3GrIFSyvsIsfMmytj1oVDMKnrwF5WdbZe66wvOgkOBwuGN2NPjA6OdFEUi+YFlc=
+	t=1727284341; cv=none; b=SDh6/ejfavZU5QV0XJ7zzKXnIED/lJ9OFqZ9BFRvp7/02DNP77oNRTt3tuUISE2N5d3qBUynpJKjAJotQaLJtY8SFfAusEwXbgwKlsJXvBiLEoFy/Mb6LBKZ2Mgnuf82JdBQeO2jGbKbeyIjcplGB3APg0NSsQVu7BXErc99kp8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727282841; c=relaxed/simple;
-	bh=/t+YSp2gvbsBW9hsAIIEsn2fOHY2XQVupxHXFI22op4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=C4qE4GJnP8A9b62x6eU16jVEc8r8SbbKjEhS/BByyZ++m8NXMSWdcGopo1qKW1SFiuPftZ7Hn1EqmA4h05WsIrv47qLFG4k9O+tAalsuzWq8/zaLE8RWZEwj3OpGG+XX4SFpT6kfJMoGKcT/t0bVrIpaJOIXYBI6iDK1NvvMO3k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=LHF6aAqO; arc=none smtp.client-ip=209.85.218.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1727284341; c=relaxed/simple;
+	bh=gYWxM1TeoQg6TO2sus0j7GCmOr+z2YV/d6+5qLSlM8s=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=K/vtbSSbhii+o4Jsyhbug0e6YDAuMc2jxy1XKAz9AJYKUM0hIkT1YinZHU8F5uQKg8FgUdgV4rGCfuYmyKUqYmGZPGcJAZLUgiaLUrndjtXc1/ax4sHXBO+KLSXzNM7zknDNTT9xUQCPnOEWe43p5QLVcIglIDFDiP/Wz/HjCFQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=E3YYUJP3; arc=none smtp.client-ip=60.244.123.138
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mediatek.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="LHF6aAqO"
-Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-a8d60e23b33so8514866b.0
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2024 09:47:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1727282838; x=1727887638; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=nj8+qG2S/Bk0hHBrSluJoVQqRkgSfLVqxLrwhmmQqfQ=;
-        b=LHF6aAqOcAmrEbPN9CQFazK6DXmCZSiAwf51au+AQbIwgTx5WJHVbSVCt5ybHt+O8i
-         Hr7is4w25JX+hiNJOp6w7Xt97OsQnkuBzhdeZ6+CS7adP8GJHgTwlDzVc1BXXbprliGV
-         AGofM4ivEjkSQLZa8qHPkE5gMsQIuTQkAmFco=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727282838; x=1727887638;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=nj8+qG2S/Bk0hHBrSluJoVQqRkgSfLVqxLrwhmmQqfQ=;
-        b=DfcilAJsVQ6O3NxrayEVnG1Pnb4RzslVDvxt+plmSs4eWq1zE7rG8RR9olkOlHoAiW
-         KLVnNvafy9fXan42Fmdkt/4Stn4v3+uMwuPGRE0ii32cWTPzaeqLYP3ZK9tVi6og+LVn
-         j/OmNn/QQgPfRART1l7nlO4jXYd1SSszOJJQ6iQV/FPM4RBzwqIT3jhY3jDqhYffr8dR
-         gbFC/2ZxJa5p0/f5fEbdGjoWbGO2W6/Wjvf3pc2/UUquTVyGm2GYnWowXQ209XAYANuQ
-         2P/xZuEzd9TAxbnNa+XqJYqnZQXb8uwPK3Ih81qsKfWbdZ22vOlk1O2QYOIB7+R+DD73
-         Qeaw==
-X-Forwarded-Encrypted: i=1; AJvYcCU+mI/ojHT7C1PHMlTjbdFhnY4e2sKqZSMME+0eGJq3bohYr04sZlZ0t6iaJ6Yow9hm4CouJbmL1Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx+HgnX4giR94X41VHZnoMHx4xBbKyO+4UUG6N0Xca6k8Zq9QEW
-	ivSUM6FP4clmMEFzfbt6a3kzL1K7uu+xkkgjf3fkQeyTz2k+cLS9jekRFPqoMMoOgpZZQaofIET
-	Bj2J3lg==
-X-Google-Smtp-Source: AGHT+IE8YD12soQuBHYuNlMlyAyRHmOciX1V4YOxsRBm4fy08h9O6A+h+K2EvPke+KmTcHihDKn2VQ==
-X-Received: by 2002:a17:907:7ea8:b0:a8d:6921:e179 with SMTP id a640c23a62f3a-a93a051c3c9mr268700266b.39.1727282837701;
-        Wed, 25 Sep 2024 09:47:17 -0700 (PDT)
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com. [209.85.128.48])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a9392f34976sm226383266b.45.2024.09.25.09.47.17
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 25 Sep 2024 09:47:17 -0700 (PDT)
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-42cb8dac900so68416655e9.3
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2024 09:47:17 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUBMIblTjMAnQnztA/cx5CPc/m8HPI0dI9HyYoFJNc387jfrdzXeOrT+w/HZvgsZwHIlRbdTbiyIw==@vger.kernel.org
-X-Received: by 2002:a17:906:f5a9:b0:a86:9d39:a2a with SMTP id
- a640c23a62f3a-a93a0330c37mr309689066b.8.1727282382886; Wed, 25 Sep 2024
- 09:39:42 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="E3YYUJP3"
+X-UUID: 4e1f18f27b6111efb66947d174671e26-20240926
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+	h=Content-Type:Content-Transfer-Encoding:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=QoTT/6NBpLK4C3nKaQBc7mw+Qc83kZKYIzQinskh5z4=;
+	b=E3YYUJP3qFE9CEzvkSi92QwQmgSvurO67cJMihMVaMXQhNG6Bu0BB0IjHL5eOAD+aoSbC6YEOER/of2D6ymuRTWRJ1GW/7LaKl6g3dCjiWBQ5DGwOU1imvfwFUTPSYwR4pudx4p3FaJPVGFuel+P6XDYteG/eL9VVm07iZE4WPU=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.41,REQID:909b3bb8-c860-4021-bf38-7ebda0659179,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:6dc6a47,CLOUDID:a078c2d0-7921-4900-88a1-3aef019a55ce,B
+	ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
+	RL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,
+	SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-UUID: 4e1f18f27b6111efb66947d174671e26-20240926
+Received: from mtkmbs14n2.mediatek.inc [(172.21.101.76)] by mailgw01.mediatek.com
+	(envelope-from <macpaul.lin@mediatek.com>)
+	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+	with ESMTP id 129292092; Thu, 26 Sep 2024 01:12:12 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ MTKMBS14N1.mediatek.inc (172.21.101.75) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.26; Thu, 26 Sep 2024 01:12:08 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
+ mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.1118.26 via Frontend Transport; Thu, 26 Sep 2024 01:12:08 +0800
+From: Macpaul Lin <macpaul.lin@mediatek.com>
+To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>,
+	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, "Rob
+ Herring" <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, "Conor
+ Dooley" <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	<linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-mediatek@lists.infradead.org>, Alexandre Mergnat
+	<amergnat@baylibre.com>
+CC: Bear Wang <bear.wang@mediatek.com>, Pablo Sun <pablo.sun@mediatek.com>,
+	Macpaul Lin <macpaul@gmail.com>, Chris-qj chen <chris-qj.chen@mediatek.com>,
+	MediaTek Chromebook Upstream
+	<Project_Global_Chrome_Upstream_Group@mediatek.com>, Chen-Yu Tsai
+	<wenst@chromium.org>
+Subject: [PATCH 1/2] dt-bindings: mfd: mediatek: mt6397: add adc and regulators for mt6359
+Date: Thu, 26 Sep 2024 01:11:55 +0800
+Message-ID: <20240925171156.9115-1-macpaul.lin@mediatek.com>
+X-Mailer: git-send-email 2.18.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240925150059.3955569-30-ardb+git@google.com> <20240925150059.3955569-44-ardb+git@google.com>
-In-Reply-To: <20240925150059.3955569-44-ardb+git@google.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 25 Sep 2024 09:39:23 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wiLYCoGSnqqPq+7fHWgmyf5DpO4SLDJ4kF=EGZVVZOX4A@mail.gmail.com>
-Message-ID: <CAHk-=wiLYCoGSnqqPq+7fHWgmyf5DpO4SLDJ4kF=EGZVVZOX4A@mail.gmail.com>
-Subject: Re: [RFC PATCH 14/28] x86/rethook: Use RIP-relative reference for
- return address
-To: Ard Biesheuvel <ardb+git@google.com>
-Cc: linux-kernel@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>, x86@kernel.org, 
-	"H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
-	Uros Bizjak <ubizjak@gmail.com>, Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>, 
-	Christoph Lameter <cl@linux.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, 
-	Juergen Gross <jgross@suse.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Masahiro Yamada <masahiroy@kernel.org>, Kees Cook <kees@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Keith Packard <keithp@keithp.com>, 
-	Justin Stitt <justinstitt@google.com>, Josh Poimboeuf <jpoimboe@kernel.org>, 
-	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Jiri Olsa <jolsa@kernel.org>, 
-	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
-	Kan Liang <kan.liang@linux.intel.com>, linux-doc@vger.kernel.org, 
-	linux-pm@vger.kernel.org, kvm@vger.kernel.org, xen-devel@lists.xenproject.org, 
-	linux-efi@vger.kernel.org, linux-arch@vger.kernel.org, 
-	linux-sparse@vger.kernel.org, linux-kbuild@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, rust-for-linux@vger.kernel.org, 
-	llvm@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-Product-Ver: SMEX-14.0.0.3152-9.1.1006-23728.005
+X-TM-AS-Result: No-10--4.079200-8.000000
+X-TMASE-MatchedRID: SsmlBu/h5g26lIBLPjRk6RWCVBr+Ay98wQ0CCpqVHSz98u70/pR9Gpas
+	fA8Y/RCFDGo03EdVgDKjp64yUKGpZGaAyMVnPatL6/xAZojbl7cP4vBWNr0zgZsoi2XrUn/Jn6K
+	dMrRsL14qtq5d3cxkNSjkRB+q9uV+Jsb3yTJxofTGAeY87hnlSO/NyqpYUkJBsqIjn1nHtvvMuU
+	MG5xRFzczHQD4nSrHNeHsfn6gZqBMJzWjfPdXPzo7NPt9DnHpk82Gj2QC3yG0smXVK/H8eHzG7s
+	r7xobSAsPEFD+rZA81DDKa3G4nrLQ==
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
+X-TMASE-Result: 10--4.079200-8.000000
+X-TMASE-Version: SMEX-14.0.0.3152-9.1.1006-23728.005
+X-TM-SNTS-SMTP:
+	B3DCA1ED930D0C66E8405AD4634D85CB39EA432A4B1306D31E1ACE828E230CF82000:8
+X-MTK: N
 
-On Wed, 25 Sept 2024 at 08:16, Ard Biesheuvel <ardb+git@google.com> wrote:
->
-> Instead of pushing an immediate absolute address, which is incompatible
-> with PIE codegen or linking, use a LEA instruction to take the address
-> into a register.
+Since MT6359 PMIC has been added as one of the compatibles of
+"mediatek,mt6397.yaml", the sub-device node of "MT6359 PMIC AUXADC" and
+"MT6359 PMIC Regulators" should also be contained in this DT Schema as
+well.
 
-I don't think you can do this - it corrupts %rdi.
+This patch includes:
+ - add 'adc' property and $ref for 'mediatek,mt6359-auxadc'.
+ - add 'mt6359-regulator' to the compatibles of regulators.
 
-Yes, the code uses  %rdi later, but that's inside the SAVE_REGS_STRING
-/ RESTORE_REGS_STRING area.
+Signed-off-by: Macpaul Lin <macpaul.lin@mediatek.com>
+---
+ Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-And we do have special calling conventions that aren't the regular
-ones, so %rdi might actually be used elsewhere. For example,
-__get_user_X and __put_user_X all have magical calling conventions:
-they don't actually use %rdi, but part of the calling convention is
-that the unused registers aren't modified.
+diff --git a/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml b/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
+index 953358bc997a..40cabaf60d0d 100644
+--- a/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
++++ b/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
+@@ -17,6 +17,7 @@ description: |
+   MT6397/MT6323 is a multifunction device with the following sub modules:
+   - Regulators
+   - RTC
++  - ADC
+   - Audio codec
+   - GPIO
+   - Clock
+@@ -86,6 +87,7 @@ properties:
+           - enum:
+               - mediatek,mt6323-regulator
+               - mediatek,mt6358-regulator
++              - mediatek,mt6359-regulator
+               - mediatek,mt6397-regulator
+           - items:
+               - enum:
+@@ -95,6 +97,11 @@ properties:
+     required:
+       - compatible
+ 
++  adc:
++    type: object
++    $ref: /schemas/iio/adc/mediatek,mt6359-auxadc.yaml#
++    unevaluatedProperties: false
++
+   audio-codec:
+     type: object
+     additionalProperties: false
+-- 
+2.45.2
 
-Of course, I'm not actually sure you can probe those and trigger this
-issue, but it all makes me think it's broken.
-
-And it's entirely possible that I'm wrong for some reason, but this
-just _looks_ very very wrong to me.
-
-I think you can do this with a "pushq mem" instead, and put the
-relocation into the memory location.
-
-                 Linus
