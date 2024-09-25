@@ -1,172 +1,113 @@
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 863812F5B;
-	Wed, 25 Sep 2024 16:13:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.142
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CF7247A62;
+	Wed, 25 Sep 2024 16:45:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727280784; cv=none; b=F+7CbzCJRYJt44wGPhpJ28S/Z+4ehJplYuGCt0L3g/n5/JA9EgRfeFUT01tdWOOu0SKQJxJeXJGEpWknTPEIQ/eoeDDH9Ux8465nbx++i80Ol12GkGUj7fE9iLHphfJSuRH70SxA5/NoYr7Kyxc27Je2pLts4bTSuRuWbPsrcC4=
+	t=1727282719; cv=none; b=Ax++ce/B/oySvRIQ5nNSLv1xLmd2gmeRbkO20AHZYA7/jjTlQI3BXMIL+eDgIyWm0jJGJDy6tDHBdjWtc7k2knWycQrNGHNcwlGIrGmI+U/di1fcl3nwbdo1SvEeN4dYZp4O0kdbABUvK8imneP4dXGqecuGPIuVIf9/PIe3HJs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727280784; c=relaxed/simple;
-	bh=OO2N0MlWDN0Lh2XfHNJMedIUwrmR2LNmHR79B3i0gaY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=SaK4kPlwOnprQa26mL83sj8EJ4H76MoY4YXRhIn4vkkitzoS31cV3GhJ+2AQTsAbzMA2blyxuT26TZPJGuZldaCln3cidM47Vs4lU1zC+PM6f9wjDDRAohxXNO5iyhrA9t7KS+WOgomq5tKu+xUkWUEEw3852HP3aZd9kQLzy/I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=qiJ7C2J0; arc=none smtp.client-ip=198.47.19.142
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	s=arc-20240116; t=1727282719; c=relaxed/simple;
+	bh=qgOwvX93MJaNEr7OQzS/TNQMPiUPOBpt0ph4xzwCx1w=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=AziAgYNVvwboynEcgkaYY5LVkkFiI1lr6p5Is101RhyjKuqts3xxLYLa41S01kO6fJ8mdW0Xa0Ug7aF9dOnBIfnBuW81mtuCeJm3X9MMEK748Bm6A2R2Z+qA8AKIp3mKu6FzMX4dpftl5EnHXQVMo0cz3ITpUsjkoeuoXy+AMHs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=onMHF/g0; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="qiJ7C2J0"
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 48PGCrtI120414;
-	Wed, 25 Sep 2024 11:12:53 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1727280773;
-	bh=usMqwaFjtbUHhvdgniW/2exXtWe9frXJJ19B3XP9a3s=;
-	h=Date:Subject:To:CC:References:From:In-Reply-To;
-	b=qiJ7C2J0oRE3zhKmtajbV0CEPR8+zhOJ390s1kgGaC7POUMZV8gx2WSyLP1x+cUef
-	 /FqczTibZkijzrx3p1HIimxX7yv4Gm3QBBt/GLMu5lOCiOUsv+uW7xoLhaMmflW3Li
-	 krwX48edxbL/me4Yd2yHCcnZpnMlUFdisUCae644=
-Received: from DLEE107.ent.ti.com (dlee107.ent.ti.com [157.170.170.37])
-	by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 48PGCrms015577
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Wed, 25 Sep 2024 11:12:53 -0500
-Received: from DLEE103.ent.ti.com (157.170.170.33) by DLEE107.ent.ti.com
- (157.170.170.37) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Wed, 25
- Sep 2024 11:12:52 -0500
-Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DLEE103.ent.ti.com
- (157.170.170.33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Wed, 25 Sep 2024 11:12:52 -0500
-Received: from [10.249.42.149] ([10.249.42.149])
-	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 48PGCqtA065205;
-	Wed, 25 Sep 2024 11:12:52 -0500
-Message-ID: <809b9eaa-a539-4309-95a3-c9fc9c39288b@ti.com>
-Date: Wed, 25 Sep 2024 11:12:52 -0500
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="onMHF/g0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A5925C4CECE;
+	Wed, 25 Sep 2024 16:45:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1727282718;
+	bh=qgOwvX93MJaNEr7OQzS/TNQMPiUPOBpt0ph4xzwCx1w=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=onMHF/g0D43HW6aMXQhcIu1A27RFbkhoDeVTu1IsE3Dr45prf9Gt/b9XTbLxkLRdc
+	 tp+sKb+2tVL2RKsH7zt7pedqKxbxASz7T6hHTvkigsDpqXaREORqbOHeHr1WNosC80
+	 8oqjuX47b/9IC6c9ciSn6WciiPIOmDd4sLFsDQ49EcS7F2y6hlJlFootPDIZyx6tV1
+	 nZWbOIv6XsJEj83cV3qJkPJFVqvvPhr7TNk6o6VoBEYUa0GNLZHRv55RTy27voXKfL
+	 S1kfkqExZO+yREPbbJkOthV308A1sBbwWyv5+7Rufb9Ltpojr4m1MeoarzGHGNAwS0
+	 hJW9ST3pclReg==
+Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-2f75129b3a3so192291fa.2;
+        Wed, 25 Sep 2024 09:45:18 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUZrVQFyfp3OROznK55Rykut0Vq4VzJw2zcFPgidFv6NsTIp5igjymbOi7x1ALJHZNX8dOA5JfLR94CsQ==@vger.kernel.org, AJvYcCUz+23C1CHv7iFrXAI2PEAOlsl3nKy4zCkgdpCzjVR+PZG/lT5iVlyfrYYV9edM8i+u5iKA7NZGYK+3MmbD@vger.kernel.org, AJvYcCVDkfKF4Wf1/S72iFv6+6GmsbTOzeH0z7QS2u4HE/mUpjgxlqabatrtoHE5damQ3TxOLgU=@vger.kernel.org, AJvYcCVv+ineSpy35ISvR/o04URA/heKwgTJwY6lwUmkbod4vH2jws/WdAr65sQcYJlRJ12uqvuvjxdiHDpM@vger.kernel.org, AJvYcCWJTF2NgETPwYnZC1l04iimVEYaciRTWWIYCqoca1IKqvoQthkXc4epr2xaSNGnA3pGtjbGYhBfxPN5@vger.kernel.org, AJvYcCWy+l3uwmBwVhKoQ6/pF6D3xkpICniLemWxfUq5kfXXMwCDkVtPh5Lhh5ALyLRylrh2TQCx1ZjWSYGfSytIJzpOpw==@vger.kernel.org, AJvYcCX2J8m9RLcuSRmneFctGBeIMH74AifQm5JUDjOfc6yxZKtYnNuLp3FgjZK0yTB/JPnYnhbm6XjfzZj48YLW@vger.kernel.org, AJvYcCXEjsV+TRobG1afondrysMpUh2I+xFjlDATIRV3KSx8PO6QqDEHMgTdTCXFuUizAKxBmZWbK162qUz9p2vy@vger.kernel.org, AJvYcCXMOrBwLsF12s7wQCENUNmqXoDWgmdI17sBCmGlAqja+tWcQOVOBNzH9VglDke1UwZ7ifo5UVf/oA8=@vger.kernel.org, AJvYcCXgNLhP3y+nNGHVlPY1jLREbsxBYjNh9qop0QTGyGMESUJ8dlVFgH1pgDGtuFrK2DfuZYNhfWM/Q8HWL3eDwxU=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxONOvlF79P2t0wIUAmL20ZGykKkiWT5lNNd+sBvz9HZ7Inrfys
+	4TcpN3U4YNbgn8s2N1quoivpCJkA1bc6Ev5v0LTEwAS5YynzrkOT+4Va4bACVxalIE8l8Yug4qT
+	aAC7qlbvbMKu8ISAB34QPfGJ2e6A=
+X-Google-Smtp-Source: AGHT+IHztXYzAiMagygAhzDxKwnY8wOFDul9cLbEROanbEnmGDGU1AJFUfvHaHhmJ6jyIhgnmNtdOygZ3lKoSkpCLq0=
+X-Received: by 2002:a2e:702:0:b0:2ef:20ae:d113 with SMTP id
+ 38308e7fff4ca-2f91ca64507mr16954501fa.40.1727282716715; Wed, 25 Sep 2024
+ 09:45:16 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 6/6] cpufreq: ti-cpufreq: Update efuse/rev offsets in
- AM62 family
-To: Dhruva Gole <d-gole@ti.com>, Nishanth Menon <nm@ti.com>,
-        Vignesh
- Raghavendra <vigneshr@ti.com>,
-        Tero Kristo <kristo@kernel.org>, Rob Herring
-	<robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
-	<conor+dt@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar
-	<viresh.kumar@linaro.org>
-CC: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        Bryan Brattlof
-	<bb@ti.com>
-References: <20240925-ti-cpufreq-fixes-v5-v6-0-46f41a903e01@ti.com>
- <20240925-ti-cpufreq-fixes-v5-v6-6-46f41a903e01@ti.com>
-Content-Language: en-US
-From: Andrew Davis <afd@ti.com>
-In-Reply-To: <20240925-ti-cpufreq-fixes-v5-v6-6-46f41a903e01@ti.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
+References: <20240925150059.3955569-30-ardb+git@google.com>
+ <20240925150059.3955569-44-ardb+git@google.com> <CAHk-=wiLYCoGSnqqPq+7fHWgmyf5DpO4SLDJ4kF=EGZVVZOX4A@mail.gmail.com>
+In-Reply-To: <CAHk-=wiLYCoGSnqqPq+7fHWgmyf5DpO4SLDJ4kF=EGZVVZOX4A@mail.gmail.com>
+From: Ard Biesheuvel <ardb@kernel.org>
+Date: Wed, 25 Sep 2024 18:45:05 +0200
+X-Gmail-Original-Message-ID: <CAMj1kXH1xqYwhG16XxoBpoedTkBvt72xBjO259174jHirdf47A@mail.gmail.com>
+Message-ID: <CAMj1kXH1xqYwhG16XxoBpoedTkBvt72xBjO259174jHirdf47A@mail.gmail.com>
+Subject: Re: [RFC PATCH 14/28] x86/rethook: Use RIP-relative reference for
+ return address
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ard Biesheuvel <ardb+git@google.com>, linux-kernel@vger.kernel.org, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Uros Bizjak <ubizjak@gmail.com>, Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>, 
+	Christoph Lameter <cl@linux.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
+	Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, 
+	Juergen Gross <jgross@suse.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Masahiro Yamada <masahiroy@kernel.org>, Kees Cook <kees@kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Keith Packard <keithp@keithp.com>, 
+	Justin Stitt <justinstitt@google.com>, Josh Poimboeuf <jpoimboe@kernel.org>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Jiri Olsa <jolsa@kernel.org>, 
+	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
+	Kan Liang <kan.liang@linux.intel.com>, linux-doc@vger.kernel.org, 
+	linux-pm@vger.kernel.org, kvm@vger.kernel.org, xen-devel@lists.xenproject.org, 
+	linux-efi@vger.kernel.org, linux-arch@vger.kernel.org, 
+	linux-sparse@vger.kernel.org, linux-kbuild@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, rust-for-linux@vger.kernel.org, 
+	llvm@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
 
-On 9/25/24 9:54 AM, Dhruva Gole wrote:
-> With the Silicon revision being taken directly from socinfo, there's no
-> longer any need for reading any SOC register for revision from this driver.
-> Hence, we do not require any rev_offset for AM62 family of devices.
-> The efuse offset should be 0x0 for AM625 as well, as the syscon
-> register being used from DT refers to the efuse_offset directly.
-> 
-> However, to maintain the backward compatibility with old devicetree, also
-> add condition to handle the case where we have the wrong offset and add
-> the older efuse_offset value there such that we don't end up reading the
-> wrong register offset.
-> 
-> Signed-off-by: Dhruva Gole <d-gole@ti.com>
-> ---
->   drivers/cpufreq/ti-cpufreq.c | 23 +++++++++++++++++------
->   1 file changed, 17 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-> index ba621ce1cdda694c98867422dbb7f10c0df2afef..8a97b95b4c44a76b12cab76ddc0f9a5b8ae73f84 100644
-> --- a/drivers/cpufreq/ti-cpufreq.c
-> +++ b/drivers/cpufreq/ti-cpufreq.c
-> @@ -313,10 +313,9 @@ static const struct soc_device_attribute k3_cpufreq_soc[] = {
->   
->   static struct ti_cpufreq_soc_data am625_soc_data = {
->   	.efuse_xlate = am625_efuse_xlate,
-> -	.efuse_offset = 0x0018,
-> +	.efuse_offset = 0x0,
->   	.efuse_mask = 0x07c0,
->   	.efuse_shift = 0x6,
-> -	.rev_offset = 0x0014,
->   	.multi_regulator = false,
->   };
->   
-> @@ -325,7 +324,6 @@ static struct ti_cpufreq_soc_data am62a7_soc_data = {
->   	.efuse_offset = 0x0,
->   	.efuse_mask = 0x07c0,
->   	.efuse_shift = 0x6,
-> -	.rev_offset = 0x0014,
->   	.multi_regulator = false,
->   };
->   
-> @@ -334,7 +332,6 @@ static struct ti_cpufreq_soc_data am62p5_soc_data = {
->   	.efuse_offset = 0x0,
->   	.efuse_mask = 0x07c0,
->   	.efuse_shift = 0x6,
-> -	.rev_offset = 0x0014,
->   	.multi_regulator = false,
->   };
->   
-> @@ -349,11 +346,25 @@ static int ti_cpufreq_get_efuse(struct ti_cpufreq_data *opp_data,
->   				u32 *efuse_value)
->   {
->   	struct device *dev = opp_data->cpu_dev;
-> +	struct device_node *np = opp_data->opp_node;
->   	u32 efuse;
->   	int ret;
->   
-> -	ret = regmap_read(opp_data->syscon, opp_data->soc_data->efuse_offset,
-> -			  &efuse);
-> +	/*
-> +	 * The following check is used as a way to check if this is an older devicetree
+On Wed, 25 Sept 2024 at 18:39, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+> On Wed, 25 Sept 2024 at 08:16, Ard Biesheuvel <ardb+git@google.com> wrote:
+> >
+> > Instead of pushing an immediate absolute address, which is incompatible
+> > with PIE codegen or linking, use a LEA instruction to take the address
+> > into a register.
+>
+> I don't think you can do this - it corrupts %rdi.
+>
+> Yes, the code uses  %rdi later, but that's inside the SAVE_REGS_STRING
+> / RESTORE_REGS_STRING area.
+>
 
-"check is used as a way to check" sound redundant, maybe just:
+Oops, I missed that.
 
-This checks for old AM625 Devicetrees where the syscon was a phandle
-to the wkup_conf parent, this required a hard-coded offset to
-the efuse register.
+> And we do have special calling conventions that aren't the regular
+> ones, so %rdi might actually be used elsewhere. For example,
+> __get_user_X and __put_user_X all have magical calling conventions:
+> they don't actually use %rdi, but part of the calling convention is
+> that the unused registers aren't modified.
+>
+> Of course, I'm not actually sure you can probe those and trigger this
+> issue, but it all makes me think it's broken.
+>
+> And it's entirely possible that I'm wrong for some reason, but this
+> just _looks_ very very wrong to me.
+>
+> I think you can do this with a "pushq mem" instead, and put the
+> relocation into the memory location.
+>
 
-> +	 * being used where the entire wkup_conf node was marked as "syscon",
-> +	 * "simple-mfd".
-> +	 * Since this bug only affects AM625, make sure it enters this condition
-> +	 * only for that SoC.
-> +	 */
-> +	if (of_device_is_compatible(np, "simple-mfd") &&
-> +	    of_device_is_compatible(np, "ti,am625")) {
+I'll change this into
 
-Kinda hacky, but keeping backwards compat often is hacky..
+  pushq arch_rethook_trampoline@GOTPCREL(%rip)
 
-Does `of_device_is_compatible(np, "ti,am625")` actually work here? I'm assuming you
-tested with an old DT to make sure this path ever got taken. Maybe put a warning
-here that an old DT is in use and the user should update at some point.
-
-Andrew
-
-> +		ret = regmap_read(opp_data->syscon, opp_data->soc_data->efuse_offset + 0x0018,
-> +				  &efuse);
-> +	} else {
-> +		ret = regmap_read(opp_data->syscon, opp_data->soc_data->efuse_offset,
-> +				  &efuse);
-> +	}
->   	if (opp_data->soc_data->quirks & TI_QUIRK_SYSCON_MAY_BE_MISSING && ret == -EIO) {
->   		/* not a syscon register! */
->   		void __iomem *regs = ioremap(OMAP3_SYSCON_BASE +
-> 
+which I had originally. I was trying to avoid the load from memory,
+but that obviously only works if the register is not live.
