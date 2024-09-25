@@ -1,85 +1,135 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A66F615B968;
-	Wed, 25 Sep 2024 08:18:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9440132124;
+	Wed, 25 Sep 2024 08:40:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727252320; cv=none; b=FZXmloXyTu+Un7KZ3ienUydPxZ31zZXdZxSz0E5IxbUXyxkABaprDzOiPfzcF+gFa+HDj6xHHMhLlx23lqUQnw6OsTZnLbtebta3SxuPonEfs03WKZ11jx9I/yT79nut59UjK9eJthnzNmybJKAym1HYxwpkPV7WcSFANzKehd8=
+	t=1727253638; cv=none; b=Nlx6JUJIoEFnLln88pZZgDAKkBThBgFBpbsqgViXandBTsc2Wai3FEYocMxHUFIWDZ/upfy5GeZZMkm/o82MdVA/HzSNxxonybg9ePvGXUZ9HcUAF1tsCxHfBb4xJbK8rJGW5FGykSrsRxgr2P50Wm9sS2ixPq0t1gwfR/Yo06Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727252320; c=relaxed/simple;
-	bh=+0YFLpub1Y4HInlgfqUnAB+eG+j44TxlEcYL8WdQX0Q=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=OuJ/4qiWPGZXdv/zxmtKEgyg7wHQjZV5HMEA/HCqiKhdo/CxUJahazdbEQ6XPXVN2vCXgEb1ddvd8WiCostHyBteyBARcH370yI01hp6sfBBTW9BRLLxwwR+LY2IwDhp5cc16wkamjGuzCWzZ/Hc3/Il109nYr5RtzAMJ2+FmQg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: bfe770927b1611efa216b1d71e6e1362-20240925
-X-CTIC-Tags:
-	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NO_NAME, HR_CTE_8B, HR_CTT_MISS
-	HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_DIGIT_LEN, HR_FROM_NAME
-	HR_SJ_DIGIT_LEN, HR_SJ_LANG, HR_SJ_LEN, HR_SJ_LETTER, HR_SJ_NOR_SYM
-	HR_SJ_PHRASE, HR_SJ_PHRASE_LEN, HR_SJ_PRE_RE, HR_SJ_WS, HR_TO_COUNT
-	HR_TO_DOMAIN_COUNT, HR_TO_NO_NAME, IP_TRUSTED, SRC_TRUSTED, DN_TRUSTED
-	SA_UNTRUSTED, SA_LOWREP, SA_EXISTED, SN_UNTRUSTED, SN_UNFAMILIAR
-	SPF_NOPASS, DKIM_NOPASS, DMARC_NOPASS, CIE_BAD, CIE_GOOD_SPF
-	GTI_FG_BS, GTI_RG_INFO, GTI_C_BU, AMN_T1, AMN_GOOD
-	AMN_C_TI, AMN_C_BU
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.38,REQID:6f8d0b0c-46bc-49b8-bf8b-8ab908dc377f,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:-5,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-	:release,TS:-5
-X-CID-INFO: VERSION:1.1.38,REQID:6f8d0b0c-46bc-49b8-bf8b-8ab908dc377f,IP:0,URL
-	:0,TC:0,Content:0,EDM:0,RT:0,SF:-5,FILE:0,BULK:0,RULE:Release_Ham,ACTION:r
-	elease,TS:-5
-X-CID-META: VersionHash:82c5f88,CLOUDID:695219811593fbe85e15dfcede684a86,BulkI
-	D:240925144023207KTES0,BulkQuantity:9,Recheck:0,SF:64|66|17|19|817|102,TC:
-	nil,Content:0|-5,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:40,QS:nil,BEC:ni
-	l,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
-X-CID-BVR: 1,FCT|NGT
-X-CID-BAS: 1,FCT|NGT,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD
-X-UUID: bfe770927b1611efa216b1d71e6e1362-20240925
-X-User: dengjie03@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <dengjie03@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 2091786093; Wed, 25 Sep 2024 16:18:31 +0800
-From: dengjie <dengjie03@kylinos.cn>
-To: gregkh@linuxfoundation.org
-Cc: rafael@kernel.org,
-	pavel@ucw.cz,
-	len.brown@intel.com,
-	linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	xiehongyu1@kylinos.cn,
-	duanchenghao@kylinos.cn,
-	xiongxin@kylinos.cn
-Subject: Re: [PATCH v2] USB: Fix the issue of S4 wakeup queisce phase where task resumption fails due to USB status
-Date: Wed, 25 Sep 2024 16:18:27 +0800
-Message-Id: <20240925081827.189845-1-dengjie03@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <2024092543-enforcer-quaintly-9f3e@gregkh>
-References: <2024092543-enforcer-quaintly-9f3e@gregkh>
+	s=arc-20240116; t=1727253638; c=relaxed/simple;
+	bh=G3rkyJMud+WT9NrQgRrDr5uH79egWN8AUKmAFpNfr2Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=mlBwzds2SHI1gpWJts3xxhCv8Hc3mkTxfq0kVHBjzbwH/BIbml2vYbKRxjeb9A3zCKUJSRStVqx5LFMLji0SNYFvzIaONhHyIGRDrgvb4NCgUrJ/YVD1a4bRVd0k2jz2MHQVGu8JtdGYqgdMXTjZj7Vv5cNmb1eoHDb8QrK/ZXQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=NiZjgL4r; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="NiZjgL4r"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48P8CCGv003198;
+	Wed, 25 Sep 2024 08:40:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	byKamiQAHNnlbq0CpogC8pF/k5ZwWEhkxkolRelxSvg=; b=NiZjgL4r8MKCcwte
+	5H3eFAR3nqSC8aGQbcRAys2mlWKhfhQQNL4qe2KdLFPYHrSubav92hEPI/tnLa/p
+	ysLKPR9pGujpAW2SZyQgYMX4QgZ6OAJeY3kE2d8mfNk6eZeBXwZvP3bWvwalgVCG
+	bIZZA4APTXRjLIWxIkDmkv5h8E0lCUJbZ2y2XMasAfAWlXHSnqOOyiNXt0OevWaP
+	FOgwYqJ/LamocboV4/QanWqsXbZEKztQdTjqvCGFpRg3DiGZovLcQd0MMMCm4PVu
+	2sJic/+BmqE0gjUq3q8WfmpcavCoeXh77MGBXK/mfZqRVGXrPYuE6NbwKVo67dKT
+	sMh0sg==
+Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 41sph6ujyp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Sep 2024 08:40:27 +0000 (GMT)
+Received: from nalasex01b.na.qualcomm.com (nalasex01b.na.qualcomm.com [10.47.209.197])
+	by NALASPPMTA01.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 48P8ePO0027288
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Sep 2024 08:40:25 GMT
+Received: from [10.233.21.53] (10.80.80.8) by nalasex01b.na.qualcomm.com
+ (10.47.209.197) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Wed, 25 Sep
+ 2024 01:40:23 -0700
+Message-ID: <56b3ca36-e7b8-480f-99b8-c624acba8d65@quicinc.com>
+Date: Wed, 25 Sep 2024 16:40:20 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] dt-bindings: interconnect: qcom-bwmon: Document QCS8300
+ bwmon compatibles
+To: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+CC: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Georgi Djakov
+	<djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Conor Dooley
+	<conor+dt@kernel.org>, <quic_tengfan@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20240925-qcs8300_bwmon_binding-v1-1-a7bfd94b2854@quicinc.com>
+ <7ld327om75xpz53fb7itxp2i7gjqvhavywzuhmf52myynawwvo@rmb7yimjxxmy>
+Content-Language: en-US
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+In-Reply-To: <7ld327om75xpz53fb7itxp2i7gjqvhavywzuhmf52myynawwvo@rmb7yimjxxmy>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nalasex01b.na.qualcomm.com (10.47.209.197)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: amRyg2Afm2cv0iX8sGCVKnzRyLNofn1g
+X-Proofpoint-ORIG-GUID: amRyg2Afm2cv0iX8sGCVKnzRyLNofn1g
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ impostorscore=0 bulkscore=0 spamscore=0 clxscore=1015 mlxlogscore=999
+ mlxscore=0 adultscore=0 phishscore=0 suspectscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2408220000 definitions=main-2409250062
 
->> Reproduction of the problem: During the S4 stress test, when a USB device is inserted or
->> removed, there is a probability that the S4 wakeup will turn into a reboot.The following
->> two points describe how to analyze and locate the problem points:
->
->Also please wrap your paragraphs at a much narrower line length like 72
->or 75 characters or so.
->
-Thank you for pointing out the problem. I will pay attention to it in 
-the future.
 
+
+On 9/25/2024 4:10 PM, Dmitry Baryshkov wrote:
+> On Wed, Sep 25, 2024 at 03:45:06PM GMT, Jingyi Wang wrote:
+>> Document QCS8300 BWMONs, which has two BWMONv4 instances for the CPU->LLCC
+>> path and one BWMONv5 instance for LLCC->DDR path.
+>>
+>> Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+>> ---
+>>  Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+>> index 189f5900ee50..251410aabf38 100644
+>> --- a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+>> +++ b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+>> @@ -26,6 +26,7 @@ properties:
+>>        - items:
+>>            - enum:
+>>                - qcom,qcm2290-cpu-bwmon
+>> +              - qcom,qcs8300-cpu-bwmon
+> 
+> In most other cases qcs8300 is being declared with the compat fallback
+> to sa8775p compat string. Is there any reason why bwmon is different?
+> 
+All the *cpu-bwmon are fallback to "qcom,sdm845-bwmon", so we add "qcom,qcs8300-cpu-bwmon"
+compatible and fallback to that.
+>>                - qcom,sa8775p-cpu-bwmon
+>>                - qcom,sc7180-cpu-bwmon
+>>                - qcom,sc7280-cpu-bwmon
+>> @@ -40,6 +41,7 @@ properties:
+>>            - const: qcom,sdm845-bwmon    # BWMON v4, unified register space
+>>        - items:
+>>            - enum:
+>> +              - qcom,qcs8300-llcc-bwmon
+>>                - qcom,sa8775p-llcc-bwmon
+>>                - qcom,sc7180-llcc-bwmon
+>>                - qcom,sc8280xp-llcc-bwmon
+>>
+>> ---
+>> base-commit: 4d0326b60bb753627437fff0f76bf1525bcda422
+>> change-id: 20240925-qcs8300_bwmon_binding-641d8e4bf376
+>>
+>> Best regards,
+>> -- 
+>> Jingyi Wang <quic_jingyw@quicinc.com>
+>>
+> 
 Thanks,
+Jingyi
 
-dengjie
