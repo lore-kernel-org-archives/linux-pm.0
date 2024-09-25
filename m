@@ -1,129 +1,107 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz [202.36.163.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3498A4C91;
-	Wed, 25 Sep 2024 21:50:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D84FD146A93
+	for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2024 22:00:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.36.163.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727301027; cv=none; b=VGVc129jLv2PqzKXFfKHM3XxPURPQ9RGxz/aoTSeVJZiVg6tollZFFCJkqcx/4rQT2esslVEH+NLTSUm2PbYgWgfUE7PiNk1UHkb1K+U4+ahomcFapX85YYnl8tOdrxRfGbSnWAI5YdQ0WlarDgymy/cwsgX9ro6dlUkGLyXJK8=
+	t=1727301613; cv=none; b=rIaZnVb2zkDQpzpXZwkcL+lccYQMuLcBUplNzUnKNZGlpkP0EqOXqpbEfkDR/PQ4Dl6K86qfzrGMRpkEvHwmrER5uDQuAXFy5wm+6ZVrIz7G3vPIy4+s2iAk2Obk9XA5W/oQg7WCG7iIqJRi9g4hYEMJcDLsBfh+VK/PQLZxyOU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727301027; c=relaxed/simple;
-	bh=1lEhoW6WR1MzdDMJddixyg5DPptKnPhIlRVYn7j8lQg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=OucniQHqheOaC1RUTwPT4jJywAApNqyp3aOkxNYHMQSMIYy+9UZq6Qc8V6f4fL97TeWKAvVgZ7LdNP6txqg547CaltGwfGaWGzy/WC7MRK6xalTHcQ4ff3ZUqBK+XSlVMwGig6fFF984H30Qc/c0xcphOXY1Qb1MAxtHUjv0G+U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ur/3nHyr; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1727301613; c=relaxed/simple;
+	bh=KCRZkJVUVCRux8zh/Yuzd2PQ/uHmMLXlhfYhvvFa7ds=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=pByI8vcnEBzSbWwZA4aIygMoGJyeCLRTOgc8ZwsUukd/+NTHboH5thqsrrKufVQO8hkjT3yadCVAmFOIfE+jsyEmkqLgz94PZAlb9Or3Y6AELlPuh2+sNhOgpBu6KMjLZPDsBm8OlGV/Fi7BjBn3PNY5fI8DHfaKkWY/u9oT3h4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz; spf=pass smtp.mailfrom=alliedtelesis.co.nz; dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b=KkbhBtss; arc=none smtp.client-ip=202.36.163.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alliedtelesis.co.nz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ur/3nHyr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BBFCAC4AF09;
-	Wed, 25 Sep 2024 21:50:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1727301026;
-	bh=1lEhoW6WR1MzdDMJddixyg5DPptKnPhIlRVYn7j8lQg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=ur/3nHyrhZZPu0Yh+dxx9IKm8wfPUcwkSUQRT5/24oDl5DsWgNcYT0e6Eea2tNJEj
-	 e7kkusZnvqM4WaMdV8I/B88HrhGKrbpU1NmXjGCDHN50ORnxvzmOycJHLxIoyGwsDO
-	 ExoHCIyOj9vlAWjwlo1VC3vyBOmMfPmkVdu53MKdw2rUvIg+EICDRFsYyGF/ME23Kr
-	 OQb1mqpKJ2KcOIs7wkgcqQbNW9IxvVRHKG6I1vwEmJlaj0YC21mvFP8GdjxaBxyry9
-	 jndDvY46F1MqAtmxQOq27Nb8WyvN+IBfi0EcE/uMfNIYvCFZoSopABS7dcRnOBsVSy
-	 JHKCzVeyLclIw==
-Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-2f75aaaade6so3504161fa.1;
-        Wed, 25 Sep 2024 14:50:26 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCU41Yl1sttTg6M09g6XFlPWgM6aKYUPcyKAZuJi1MFpolUjBY6EX3rjid7yiMuIPFvcxwtqxGDi8A1e@vger.kernel.org, AJvYcCUBjZa2k9ktNoszDdBbGsmUYkoo+UBysl/zvy9zEChTzav8UykXq5KYmPVktYLgeiDJYa8JdVW5Iahoig==@vger.kernel.org, AJvYcCUEhDAfbKmtW+zDQTSj8AFR1LX8pKPrayJ2WSXwEbHSJXbIRSWMLY+ST+VMmtIHzTHHMx3uO7FPSku0Gatc@vger.kernel.org, AJvYcCUWEzhuPr/DJK5KOA2tsWED2rzTCuDC8XPWG6Kmt+EtUzuFt4w/e0WCCiuvVO5U5g2SoVuADYMSTZy2n3t8@vger.kernel.org, AJvYcCV8+3qzx+hE0bn/8reGc0wt841uez3ElAs+KnYznZL0spqZvZYTjnETCbwmxGXO0JQahGzQHymsFQ7NJsOl3T1Hog==@vger.kernel.org, AJvYcCVil+zKdn6eUJiaXguneqD7UclkSAfYRhmSG6G04Z/HMf7GbyCdTAkhnba+IZsEwMuesIJU8qPBZCCR@vger.kernel.org, AJvYcCVqtgmdPe9Ln076tMvVEt+OM5yyog9qM/HupRRpc6WUb+6I976IxRiEWCESwprKDHBS1BccOVD4wX6wKbjc@vger.kernel.org, AJvYcCW/FNYUPHIWOKdbh/UZ+L/OmwCj4u8w5bDaQJaGJ8LFENeElMIVdgKoOQhW3fUcrE9aFsE=@vger.kernel.org, AJvYcCWCyAZNBGjwnxfsNNWHE4QLxncQYVf5ho6jd0xc8YuyNeyoJqOEJU/SB88FRn54XbVKBB0h2AVYZaI=@vger.kernel.org, AJvYcCX1eEHLdus66GmS/KJZX7ITtZ4PhpHnLhnuipufilF2AaNvFnZTir3rIUqqP8eyDxUB0v0K2px304CrLGEx+Mg=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxwC/c5a8nTdg728+loAEpIpQH2/3bfHpgP/Pb8IhyKv6zUgqkq
-	4XO8JKXu/IlLKxQFKeqtk+quVTXt7z5G02PQrvFQqFzSkBcT9AUMWurT07LdmtiZlv6HEuTl5FW
-	YMQHXC+TLhm8muCz6BoP/T4Im1m4=
-X-Google-Smtp-Source: AGHT+IFAZ+6hWU7rSBzvDQXewHWYdV56nlJpCG7le3cONkuZamphf5guvKvreSQ+Lzis3ZFjbCnAEt7u29iA4vUB0Ko=
-X-Received: by 2002:a05:651c:1991:b0:2f6:5f7b:e5cf with SMTP id
- 38308e7fff4ca-2f915fdfea6mr30629271fa.14.1727301024993; Wed, 25 Sep 2024
- 14:50:24 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="KkbhBtss"
+Received: from svr-chch-seg1.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 55C212C0125;
+	Thu, 26 Sep 2024 10:00:02 +1200 (NZST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
+	s=mail181024; t=1727301602;
+	bh=W3ZRm9QfitUJ3rBWGirI0fRXOd+dseX1PtPwNOyjLqk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=KkbhBtssVNbePHgGwD5q9ztrzfoWtP5WM/KkkF7qULCHSHc4UlNJscvmEKgaaio6q
+	 rn4MsM7gCFxNXpXCff3l6IGZfT0Y6whmbdPfz1fTON77ROZT2w5DdWDAv5JlSWisZm
+	 LJI2bda/BZcjcwyeTfmcNsKMsH3YV5g1GDBjYj7RG5ZdvXHOdFwFprXZ4nocpMxGqZ
+	 Uw5UQtwIJ/VVah3NbwoZNNtoOTfHhY7EljJPAQ2h+FSSx6SjkRk9VY/HaXXkCOor16
+	 jV3iB045ypgAxSqujQLq1HW5ZXLJFwRiCqQYTpmZrmXXha3ssTCMs3Gd23wZf56b7L
+	 /TvcqMrqBeRNg==
+Received: from pat.atlnz.lc (Not Verified[10.32.16.33]) by svr-chch-seg1.atlnz.lc with Trustwave SEG (v8,2,6,11305)
+	id <B66f487e20002>; Thu, 26 Sep 2024 10:00:02 +1200
+Received: from chrisp-dl.ws.atlnz.lc (chrisp-dl.ws.atlnz.lc [10.33.22.30])
+	by pat.atlnz.lc (Postfix) with ESMTP id 0DAD013EE83;
+	Thu, 26 Sep 2024 10:00:02 +1200 (NZST)
+Received: by chrisp-dl.ws.atlnz.lc (Postfix, from userid 1030)
+	id 0B801280571; Thu, 26 Sep 2024 10:00:02 +1200 (NZST)
+From: Chris Packham <chris.packham@alliedtelesis.co.nz>
+To: andi.shyti@kernel.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	lee@kernel.org,
+	sre@kernel.org,
+	tsbogend@alpha.franken.de
+Cc: linux-i2c@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-mips@vger.kernel.org,
+	Chris Packham <chris.packham@alliedtelesis.co.nz>
+Subject: [PATCH v5 2/6] power: reset: syscon-reboot: Accept reg property
+Date: Thu, 26 Sep 2024 09:58:43 +1200
+Message-ID: <20240925215847.3594898-3-chris.packham@alliedtelesis.co.nz>
+X-Mailer: git-send-email 2.46.2
+In-Reply-To: <20240925215847.3594898-1-chris.packham@alliedtelesis.co.nz>
+References: <20240925215847.3594898-1-chris.packham@alliedtelesis.co.nz>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240925150059.3955569-30-ardb+git@google.com>
- <20240925150059.3955569-41-ardb+git@google.com> <81fb3f6b-4ded-41d1-be66-d86af4f22171@amd.com>
-In-Reply-To: <81fb3f6b-4ded-41d1-be66-d86af4f22171@amd.com>
-From: Ard Biesheuvel <ardb@kernel.org>
-Date: Wed, 25 Sep 2024 23:50:13 +0200
-X-Gmail-Original-Message-ID: <CAMj1kXGj25bn2R9vWPqG5+SSSjJp6rzopssDbjk8uOvi=cAiUw@mail.gmail.com>
-Message-ID: <CAMj1kXGj25bn2R9vWPqG5+SSSjJp6rzopssDbjk8uOvi=cAiUw@mail.gmail.com>
-Subject: Re: [RFC PATCH 11/28] x86/pvh: Avoid absolute symbol references in .head.text
-To: Jason Andryuk <jason.andryuk@amd.com>
-Cc: Ard Biesheuvel <ardb+git@google.com>, linux-kernel@vger.kernel.org, x86@kernel.org, 
-	"H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
-	Uros Bizjak <ubizjak@gmail.com>, Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>, 
-	Christoph Lameter <cl@linux.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, 
-	Juergen Gross <jgross@suse.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Masahiro Yamada <masahiroy@kernel.org>, Kees Cook <kees@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Keith Packard <keithp@keithp.com>, 
-	Justin Stitt <justinstitt@google.com>, Josh Poimboeuf <jpoimboe@kernel.org>, 
-	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Jiri Olsa <jolsa@kernel.org>, 
-	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
-	Kan Liang <kan.liang@linux.intel.com>, linux-doc@vger.kernel.org, 
-	linux-pm@vger.kernel.org, kvm@vger.kernel.org, xen-devel@lists.xenproject.org, 
-	linux-efi@vger.kernel.org, linux-arch@vger.kernel.org, 
-	linux-sparse@vger.kernel.org, linux-kbuild@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, rust-for-linux@vger.kernel.org, 
-	llvm@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-SEG-SpamProfiler-Analysis: v=2.4 cv=Id0kWnqa c=1 sm=1 tr=0 ts=66f487e2 a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=EaEq8P2WXUwA:10 a=GF1LeCK7rlvhbTvQy6cA:9 a=3ZKOabzyN94A:10
+X-SEG-SpamProfiler-Score: 0
+x-atlnz-ls: pat
 
-On Wed, 25 Sept 2024 at 23:11, Jason Andryuk <jason.andryuk@amd.com> wrote:
->
-> Hi Ard,
->
-> On 2024-09-25 11:01, Ard Biesheuvel wrote:
-> > From: Ard Biesheuvel <ardb@kernel.org>
-> >
-> > The .head.text section contains code that may execute from a different
-> > address than it was linked at. This is fragile, given that the x86 ABI
-> > can refer to global symbols via absolute or relative references, and the
-> > toolchain assumes that these are interchangeable, which they are not in
-> > this particular case.
-> >
-> > In the case of the PVH code, there are some additional complications:
-> > - the absolute references are in 32-bit code, which get emitted with
-> >    R_X86_64_32 relocations, and these are not permitted in PIE code;
-> > - the code in question is not actually relocatable: it can only run
-> >    correctly from the physical load address specified in the ELF note.
-> >
-> > So rewrite the code to only rely on relative symbol references: these
-> > are always 32-bits wide, even in 64-bit code, and are resolved by the
-> > linker at build time.
-> >
-> > Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
->
-> Juergen queued up my patches to make the PVH entry point position
-> independent (5 commits):
-> https://git.kernel.org/pub/scm/linux/kernel/git/xen/tip.git/log/?h=linux-next
->
-> My commit that corresponds to this patch of yours is:
-> https://git.kernel.org/pub/scm/linux/kernel/git/xen/tip.git/commit/?h=linux-next&id=1db29f99edb056d8445876292f53a63459142309
->
-> (There are more changes to handle adjusting the page tables.)
->
+For historical reasons syscon-reboot has used an 'offset' property. As a
+child on a MMIO bus having a 'reg' property is more appropriate. Accept
+'reg' as an alternative to 'offset'.
 
-Thanks for the head's up. Those changes look quite similar, so I guess
-I should just rebase my stuff onto the xen tree.
+Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+---
 
-The only thing that I would like to keep from my version is
+Notes:
+    Changes in v5:
+    - New, making the driver accept the updated binding
 
-+ lea (gdt - pvh_start_xen)(%ebp), %eax
-+ add %eax, 2(%eax)
-+ lgdt (%eax)
+ drivers/power/reset/syscon-reboot.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-and
+diff --git a/drivers/power/reset/syscon-reboot.c b/drivers/power/reset/sy=
+scon-reboot.c
+index 4d622c19bc48..d623d77e657e 100644
+--- a/drivers/power/reset/syscon-reboot.c
++++ b/drivers/power/reset/syscon-reboot.c
+@@ -61,7 +61,8 @@ static int syscon_reboot_probe(struct platform_device *=
+pdev)
+ 		priority =3D 192;
+=20
+ 	if (of_property_read_u32(pdev->dev.of_node, "offset", &ctx->offset))
+-		return -EINVAL;
++		if (of_property_read_u32(pdev->dev.of_node, "reg", &ctx->offset))
++			return -EINVAL;
+=20
+ 	value_err =3D of_property_read_u32(pdev->dev.of_node, "value", &ctx->va=
+lue);
+ 	mask_err =3D of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask=
+);
+--=20
+2.46.2
 
-- .word gdt_end - gdt_start
-- .long _pa(gdt_start)
-+ .word gdt_end - gdt_start - 1
-+ .long gdt_start - gdt
-
-The first line is a bugfix, btw, so perhaps I should send that out
-separately. But my series relies on all 32-bit absolute symbol
-references being removed, since the linker rejects those when running
-in PIE mode, and so the second line is needed to get rid of the _pa()
-there.
