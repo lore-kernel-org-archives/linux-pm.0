@@ -1,48 +1,49 @@
 Received: from mg.richtek.com (mg.richtek.com [220.130.44.152])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 852D8158DCA;
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8528C158D8D;
 	Wed, 25 Sep 2024 08:41:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.130.44.152
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727253677; cv=none; b=TFeUk9gGL43qN3+lk/2tkfbh1Hudpmyp03vDs2WXpXM7ZVsqgCoiD6eCFAZ7jxURVEtgYXaEZ7ZLAIIcElU1RUgppURoovNjTd8K9a5QRP37KXIsqqZhx67AU+q0OVhN3RQeKWNO0MwIxsZRWMWvVs6AytABiSs4FYsM32CMjG4=
+	t=1727253678; cv=none; b=VCS3LtUkSJw1+V3XsZngiiEVetmVJubmbmY0WdulVjHs7Y5AL5RkXmwdYiR5gRgzZKhj83Ypt7Zl0WL/IDQml5H6fmcyrXUkNAJVPKcMMzxcrv+d7G1UBZl4U+kY9bDWkogZ9ZmWkUvI4RABMp6aifXDiIzv02/qibi0PvmsR+U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727253677; c=relaxed/simple;
-	bh=nM7iSF6c0w0QH1Vof8AfQe6JrilnzTkiXL14EjhKcg8=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=r362j44XPBexFvatOmCZ9TuPCjB1z3s94YV66wLk10vpMDSuoDm6aQJ01P1qQvx/Des4MUDtyaRqlLm9HPWDXKmgpPydHyc1uVOf5OG4rNjY9Ts9KeYZxntR05wX5UYfTSWjdUKCBA+ovJ9/9cv+z2AYsudEbvOJu0yWIiI28lE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=fekwNvTo; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=NpMD+N51; arc=none smtp.client-ip=220.130.44.152
+	s=arc-20240116; t=1727253678; c=relaxed/simple;
+	bh=hG2GUbm3yiSgMz+SgpzUWv5SUgrpVENjU8/tkhb8kY8=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=dP1eBcw7afFhBrOeUXNmMYjUM3tyltdcyqokeIhCqjJlDW306ovbO42Cu9ewRcjeBt9arK1zNWkZ9wjvC7tcJ+zD/WhH5UvgVgqCwe23SLdlnDBcgKzdVXB9EqJZo8THEdj2+2UmVs0KOrtFBR0e9Fc27L6zhUxR/9TwXRyWEe4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=oWlpPDJ1; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=lXNmIS/b; arc=none smtp.client-ip=220.130.44.152
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=richtek.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="fekwNvTo";
-	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="NpMD+N51"
+	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="oWlpPDJ1";
+	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="lXNmIS/b"
 X-MailGates: (SIP:2,PASS,NONE)(compute_score:DELIVER,40,3)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=richtek.com;
 	s=richtek; t=1727253673;
-	bh=mUdi9yMu+UVLGMRC6gLui78O+3HasF3EwSVe5W6mxn4=; l=487;
+	bh=77wqm6qbVAW23ObIDiogsupfm9Sxgz3rpNFpYbVnXws=; l=2463;
 	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=fekwNvToiCKUKjhunshSt0nkQa1Lb0XjunhQSqpQ05gPaTPOXQAlKXH//zlc/7wUu
-	 b+7qJ9F+HoiWEvS/vCOSHErcofXXtkzAWDbBj9g+H9LYsIPequdkpj6R+4fmivWpX+
-	 iLvC3qWeEBLIlBQXmiiJetTFEEQqqyTK3br3jrER5bMbX2AiJRZVzWraiuN+ZheekH
-	 qLxbhfHadK0nGwcpYfeTGl9K5DmB1Jnx0gr42gUnQwgr6J6Du2e+SOI1bACgCjlwyW
-	 YW8Qt6p/UjBFHzz5oLpw3Sx/eR7SIc26jYSM+flw+psMZNXYLXYymFhq11L44nM1J/
-	 goU9f50mGu1Mg==
+	b=oWlpPDJ1PdAFFOvaDnZS3r2C3k6TPsDRdcpazlWbv5g29kH/tX+4RkYOn1TWj2I9+
+	 HPeBSfpOaPq7i2gUgq5dLNsPxXDTdhNf86dWR+2Skv6Y51Ghk4vYlevUpyuYP4ghro
+	 RqTq7f93NwHb9l8k13ZjcmArQqjozYFjidlzETcQjKnpVUB9aKpGyEh2JTyqFiAc2S
+	 jWH5QzpYfkWt6WGldw0zZ5KmeMuID6mfjogQ5y4YER1a/hsIcZ6e0iWjyGwURVvNYn
+	 CwrzaQX/9MjLLcr3npbo9ZoeV6IhNESdPtlw7JBkKiHwdEbsMaCvm7d0pYrczB1IDd
+	 RZW4+jOlfLuGw==
 Received: from 192.168.8.21
-	by mg.richtek.com with MailGates ESMTP Server V3.0(3190227:0:AUTH_RELAY)
+	by mg.richtek.com with MailGates ESMTP Server V3.0(3190219:0:AUTH_RELAY)
 	(envelope-from <prvs=1995EE0AA0=cy_huang@richtek.com>); Wed, 25 Sep 2024 16:41:12 +0800 (CST)
 X-MailGates: (compute_score:DELIVER,40,3)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=richtek.com;
 	s=richtek; t=1727253672;
-	bh=mUdi9yMu+UVLGMRC6gLui78O+3HasF3EwSVe5W6mxn4=; l=487;
+	bh=77wqm6qbVAW23ObIDiogsupfm9Sxgz3rpNFpYbVnXws=; l=2463;
 	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=NpMD+N51Ywt47RXmlxrH0u/GQy9UoyJ/bpICzmA8sEKYQfqsnl0GCvrpRriMsx2WF
-	 TPyp2ntRQtirse4CdPemzkmY4o8jrrBgDQ/LcVsgYtXsRP7uZWzNXgG6t1SERjyo9V
-	 xwovulQg3nJjrGLVm+av6IwT8yMqvfhXK0IPctGHBaeqKnJitDf1lUKP72fiR9vGqx
-	 wZm7/ZzwMU+4bN0Q3aGG/QUMQ6S6MO8zrNYNaK8dXMRgbvqzGi3+HlnwmeMS1caUlL
-	 zKTGZ1qHzyyhOCmN0htLJIP4zbPFKpK7f/ramjPpNYU3tnpzaVipqGVTqOzWGG1+tg
-	 2pQxYl2cHUbXw==
+	b=lXNmIS/b9Hm1rBn0F6XauWsIlWCbyCdSULK/An9tdWe8WWmwgQeHZAohP3hNZUs61
+	 JLKaxarZdIVBXPVtrYYlg/A+wJo46uWqiRX+jJ3XZYI2l2oX863nbZ3SCtAUjRVNFR
+	 6ZbvnB5RP3MIv8R2AdufoHRqqZY80VMVxfl+h8Un9JzCakMhn9NqabUPp/a2H8nIGe
+	 wYchmtDHffHEcGss0ivw0YhGVrtERKfOSx9T8k5ww9O1sFW2CJ1u59uvQybxtGW8Kl
+	 xaMQuEQVs2eqjmojmYShbI4tmcSxWzwX28DgEcilVAGz5vTuROdx0cxARtwYjh5ONe
+	 vCC0qYaVVOrZA==
 Received: from 192.168.10.47
-	by mg.richtek.com with MailGates ESMTPS Server V6.0(1323018:0:AUTH_RELAY)
+	by mg.richtek.com with MailGates ESMTPS Server V6.0(1322962:0:AUTH_RELAY)
 	(envelope-from <cy_huang@richtek.com>)
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256/256); Wed, 25 Sep 2024 16:33:16 +0800 (CST)
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256/256); Wed, 25 Sep 2024 16:33:17 +0800 (CST)
 Received: from ex4.rt.l (192.168.10.47) by ex4.rt.l (192.168.10.47) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Wed, 25 Sep
@@ -54,10 +55,12 @@ From: <cy_huang@richtek.com>
 To: 'Lucas Tsai ' <lucas_tsai@richtek.com>, Sebastian Reichel <sre@kernel.org>
 CC: ChiYuan Huang <cy_huang@richtek.com>, <linux-pm@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/2] power: supply: rt9471: Fix WDT bitfield and charger status
-Date: Wed, 25 Sep 2024 16:32:57 +0800
-Message-ID: <cover.1727252762.git.cy_huang@richtek.com>
+Subject: [PATCH 2/2] power: supply: rt9471: Use IC status regfield to report real charger status
+Date: Wed, 25 Sep 2024 16:32:59 +0800
+Message-ID: <67ba92bb4a9c51d9cafadab30b788a3a2c3048e1.1727252762.git.cy_huang@richtek.com>
 X-Mailer: git-send-email 2.43.5
+In-Reply-To: <cover.1727252762.git.cy_huang@richtek.com>
+References: <cover.1727252762.git.cy_huang@richtek.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,17 +72,90 @@ Content-Type: text/plain
 
 From: ChiYuan Huang <cy_huang@richtek.com>
 
-This patch series add the following fixes that reported from the end
-market included WDT bitfield and the real charger status.
+Use IC status regfield to rewrite the 'get_staus' function. The original
+one cannot cover some special scenario like as charger OTP or JEITA case.
 
-ChiYuan Huang (2):
-  power: supply: rt9471: Fix wrong WDT function regfield declaration
-  power: supply: rt9471: Use IC status regfield to report real charger
-    status
+Fixes: 4a1a5f6781d8 ("power: supply: rt9471: Add Richtek RT9471 charger driver")
+Reported-by: Lucas Tsai <lucas_tsai@richtek.com>
+Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+---
+ drivers/power/supply/rt9471.c | 48 ++++++++++++++++++++++-------------
+ 1 file changed, 31 insertions(+), 17 deletions(-)
 
- drivers/power/supply/rt9471.c | 52 ++++++++++++++++++++++-------------
- 1 file changed, 33 insertions(+), 19 deletions(-)
-
+diff --git a/drivers/power/supply/rt9471.c b/drivers/power/supply/rt9471.c
+index 730b252b4900..67b86ac91a21 100644
+--- a/drivers/power/supply/rt9471.c
++++ b/drivers/power/supply/rt9471.c
+@@ -139,6 +139,19 @@ enum {
+ 	RT9471_PORTSTAT_DCP,
+ };
+ 
++enum {
++	RT9471_ICSTAT_SLEEP = 0,
++	RT9471_ICSTAT_VBUSRDY,
++	RT9471_ICSTAT_TRICKLECHG,
++	RT9471_ICSTAT_PRECHG,
++	RT9471_ICSTAT_FASTCHG,
++	RT9471_ICSTAT_IEOC,
++	RT9471_ICSTAT_BGCHG,
++	RT9471_ICSTAT_CHGDONE,
++	RT9471_ICSTAT_CHGFAULT,
++	RT9471_ICSTAT_OTG = 15,
++};
++
+ struct rt9471_chip {
+ 	struct device *dev;
+ 	struct regmap *regmap;
+@@ -255,31 +268,32 @@ static int rt9471_get_ieoc(struct rt9471_chip *chip, int *microamp)
+ 
+ static int rt9471_get_status(struct rt9471_chip *chip, int *status)
+ {
+-	unsigned int chg_ready, chg_done, fault_stat;
++	unsigned int ic_stat;
+ 	int ret;
+ 
+-	ret = regmap_field_read(chip->rm_fields[F_ST_CHG_RDY], &chg_ready);
+-	if (ret)
+-		return ret;
+-
+-	ret = regmap_field_read(chip->rm_fields[F_ST_CHG_DONE], &chg_done);
++	ret = regmap_field_read(chip->rm_fields[F_IC_STAT], &ic_stat);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = regmap_read(chip->regmap, RT9471_REG_STAT1, &fault_stat);
+-	if (ret)
+-		return ret;
+-
+-	fault_stat &= RT9471_CHGFAULT_MASK;
+-
+-	if (chg_ready && chg_done)
+-		*status = POWER_SUPPLY_STATUS_FULL;
+-	else if (chg_ready && fault_stat)
++	switch (ic_stat) {
++	case RT9471_ICSTAT_VBUSRDY:
++	case RT9471_ICSTAT_CHGFAULT:
+ 		*status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+-	else if (chg_ready && !fault_stat)
++		break;
++	case RT9471_ICSTAT_TRICKLECHG ... RT9471_ICSTAT_BGCHG:
+ 		*status = POWER_SUPPLY_STATUS_CHARGING;
+-	else
++		break;
++	case RT9471_ICSTAT_CHGDONE:
++		*status = POWER_SUPPLY_STATUS_FULL;
++		break;
++	case RT9471_ICSTAT_SLEEP:
++	case RT9471_ICSTAT_OTG:
+ 		*status = POWER_SUPPLY_STATUS_DISCHARGING;
++		break;
++	default:
++		*status = POWER_SUPPLY_STATUS_UNKNOWN;
++		break;
++	}
+ 
+ 	return 0;
+ }
 -- 
 2.34.1
 
