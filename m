@@ -1,126 +1,93 @@
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+Received: from l2mail1.panix.com (l2mail1.panix.com [166.84.1.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EA6E481CE;
-	Wed, 25 Sep 2024 17:12:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=60.244.123.138
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC095134BD;
+	Wed, 25 Sep 2024 17:14:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=166.84.1.75
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727284342; cv=none; b=sp4yly42AhiSnmbujhIrn7pnYIBLmWOLAkqu/JOoSSHLgdQ/fYxpkR80mX9DzVbkDR4PjYWRhFKKs05Gj4RDXOL1dujVCu/HBZ/NR+rnKQRRv1FAi3bqAtOlHSgLiJLfL6lzw+mLSQS76JPgU79kYjbZeYEVP7eMEzh+scPjwoQ=
+	t=1727284487; cv=none; b=cr4PmVaoeigCym/UyOSnjrNBwxBLF7FnytZoP52YSWZZ5QwiuRQeyEeG3mt7vI6G5IyZtnCTAUzPRLm/9M6DkNc7bSWOa8JrY3qyNymG/R1nNKVK/Mss5aYZYkkrBX3aYNkWzaI34P3u8gjI2szhekhntvMvESwYAOQTY+gxWoY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727284342; c=relaxed/simple;
-	bh=ZDX/3Uw+OGxEuW7N3xp9JAXC/koSaQ7zuRhrK1YtCZo=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=sfGEi0h/TWRNBx8VfHjHFA0Q59tUGAhvf3reynzu/9ExHUJoG5bue/ZU1+Tpa+KTaC0eRdsojCbfToe+6p4q2dzX69A6la/S/Rs/nn//N6EfwgVWzvksqPgM1DnMkdhcZ6DXAmX+jxj0teRdgKf4iuW2R4ahMIznHbrtJtgha0A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=dj3ZLDTe; arc=none smtp.client-ip=60.244.123.138
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mediatek.com
+	s=arc-20240116; t=1727284487; c=relaxed/simple;
+	bh=aIW1QfRYwvuDJbIY3ZHeD9wGhOVohwX859RGPoS1nQs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dywOxllQSWM8XJMKuBsp6rfNmdPmmxfUZzvTEHlC4haTMlL6F2On/0MkyxcpMrUqxaY3fTIwNl718yw6L2nwwIlrbAm1baBYmejDYxzcn3dny2QZRgUw9yN/06pNa12pUbSkirJQfAFYAIu85uwaIwggVigyE8uqzwNoxJwrNos=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=panix.com; spf=pass smtp.mailfrom=panix.com; dkim=pass (1024-bit key) header.d=panix.com header.i=@panix.com header.b=RH94mpxk; arc=none smtp.client-ip=166.84.1.75
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=panix.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=panix.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="dj3ZLDTe"
-X-UUID: 4df472d27b6111efb66947d174671e26-20240926
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-	h=Content-Type:Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=iAzBCvy0VmUuU94kvJI2+WAtlOqI4D3pcld1I1Auw0w=;
-	b=dj3ZLDTem4f20YkrtdEEH5EPYnMyh+e5gUaf8v63fTbekZFV7KkaCO88NK7WfEkueE1dpPXSCDhISes9PUzCB0LvXJKV0/jJg+67HKPQtqA6yfcKACPAqVUnquYaJgz/+MeiIjrYy3I2J1l1bnawY4ecNXqoFm1fNt2kQWmxbPE=;
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.41,REQID:7e19de30-bb04-47c8-9f05-b110acb3d76d,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:6dc6a47,CLOUDID:a178c2d0-7921-4900-88a1-3aef019a55ce,B
-	ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
-	RL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,
-	SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 0
-X-CID-BAS: 0,_,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-UUID: 4df472d27b6111efb66947d174671e26-20240926
-Received: from mtkmbs14n2.mediatek.inc [(172.21.101.76)] by mailgw01.mediatek.com
-	(envelope-from <macpaul.lin@mediatek.com>)
-	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-	with ESMTP id 822567883; Thu, 26 Sep 2024 01:12:12 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
- MTKMBS14N1.mediatek.inc (172.21.101.75) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.26; Thu, 26 Sep 2024 01:12:09 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
- mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.1118.26 via Frontend Transport; Thu, 26 Sep 2024 01:12:09 +0800
-From: Macpaul Lin <macpaul.lin@mediatek.com>
-To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>,
-	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, "Rob
- Herring" <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, "Conor
- Dooley" <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	<linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-mediatek@lists.infradead.org>, Alexandre Mergnat
-	<amergnat@baylibre.com>
-CC: Bear Wang <bear.wang@mediatek.com>, Pablo Sun <pablo.sun@mediatek.com>,
-	Macpaul Lin <macpaul@gmail.com>, Chris-qj chen <chris-qj.chen@mediatek.com>,
-	MediaTek Chromebook Upstream
-	<Project_Global_Chrome_Upstream_Group@mediatek.com>, Chen-Yu Tsai
-	<wenst@chromium.org>
-Subject: [PATCH 2/2] arm64: dts: mediatek: mt6359: fix dtbs_check error for RTC and regulators
-Date: Thu, 26 Sep 2024 01:11:56 +0800
-Message-ID: <20240925171156.9115-2-macpaul.lin@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20240925171156.9115-1-macpaul.lin@mediatek.com>
-References: <20240925171156.9115-1-macpaul.lin@mediatek.com>
+	dkim=pass (1024-bit key) header.d=panix.com header.i=@panix.com header.b="RH94mpxk"
+Received: from mailbackend.panix.com (mailbackend.panix.com [166.84.1.89])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (1024 bits) server-digest SHA256)
+	(No client certificate requested)
+	by l2mail1.panix.com (Postfix) with ESMTPS id 4XDNCF2nF7zDQj;
+	Wed, 25 Sep 2024 12:55:37 -0400 (EDT)
+Received: from [192.168.80.67] (unknown [207.7.121.250])
+	by mailbackend.panix.com (Postfix) with ESMTPSA id 4XDNC55w34zl2J;
+	Wed, 25 Sep 2024 12:55:29 -0400 (EDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=panix.com; s=panix;
+	t=1727283330; bh=aIW1QfRYwvuDJbIY3ZHeD9wGhOVohwX859RGPoS1nQs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=RH94mpxk3EVikiQBZ1bjTttZbakCa8GRtM46BdWBji+xmCV9HMcCnb9vv83DEjwca
+	 fl1W/jyqYBWNmmw7RlpXdEIW/qQ6/sOgA2YAVXrHf/gOa/E2YD241Cuc4hv472ZfDq
+	 q7GRkY2Q8ZhpPmGrhhgNuksq8nQhzXTg2IP1ujdM=
+Message-ID: <985893c0-ade3-4b23-b452-6f416e7ff2a1@panix.com>
+Date: Wed, 25 Sep 2024 09:55:28 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-TM-AS-Product-Ver: SMEX-14.0.0.3152-9.1.1006-23728.005
-X-TM-AS-Result: No-10--2.002300-8.000000
-X-TMASE-MatchedRID: 8PwIYNh8Bn1DKVWWbGcmRiZm6wdY+F8KCt59Uh3p/NWUzka/OKYytcFk
-	Mp+HRF4cVkYkwvZAWNf5IV2n4J3Q94JrRWPc34Z+A9lly13c/gF9LQinZ4QefPcjNeVeWlqY+gt
-	Hj7OwNO1J4MCrOTno5+a2TFKA2Ye2AlAf+rnwEGLTwbw0zKGZTcOhnWkOZTjkx9iZU14Li3vKhz
-	P7d9BDrNpZ7JqxkrFqc90KBdA4Y8ReBZp2IvvhrqMnTJRI0XInfXwUEm1ouDzLDYxFC1/7rjCBQ
-	Dy1BJScwL6SxPpr1/I=
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
-X-TMASE-Result: 10--2.002300-8.000000
-X-TMASE-Version: SMEX-14.0.0.3152-9.1.1006-23728.005
-X-TM-SNTS-SMTP:
-	17DFAE06CD59BBD0E82B8C6D67528A7396DCFB95B7366686CEA392FC3798324A2000:8
-X-MTK: N
+User-Agent: Mozilla Thunderbird
+Subject: Re: My Dell XPS-9320 (kernel 6.10.x, et al.) doesn't detect
+ Thunderbolt additions when coming out of suspend or hibernate
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, Me <kenny@panix.com>
+Cc: Lukas Wunner <lukas@wunner.de>, linux-usb@vger.kernel.org,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ linux-pci@vger.kernel.org
+References: <c9feac08-a1fd-4e03-a708-1046793443db@panix.com>
+ <ZsvxR-dQAZtwNi0g@wunner.de> <6322b3f1-c5d9-4291-96da-72b85248dea0@panix.com>
+ <5e7183c8-1843-4390-aef1-1772e538a359@panix.com>
+ <20240904122835.GG1532424@black.fi.intel.com>
+ <98c3c35d-c694-4fcd-b8b4-6101c4764ae4@panix.com>
+ <0e5168df-894e-4e35-8785-6c48328f8782@panix.com>
+ <20240913052540.GN275077@black.fi.intel.com>
+ <7ac9a400-fdb2-4d78-bacf-2e502c7338e8@panix.com>
+ <ad0458ee-b75c-46f9-a012-1e0615aecf53@panix.com>
+ <b29b8750-5235-4097-a880-d8620da2520a@panix.com>
+Content-Language: en-US
+From: Kenneth Crudup <kenny@panix.com>
+In-Reply-To: <b29b8750-5235-4097-a880-d8620da2520a@panix.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-This patch fixes the following dtbs_check errors:
-1. 'mt6359rtc' do not match any of the regexes: 'pinctrl-[0-9]+'
- - Update 'mt6359rtc' in 'mt6359.dtsi' with a generic device name 'rtc'
-2. 'pmic: regulators: 'compatible' is a required property'
- - Add 'mediatek,mt6359-regulator' to compatible property.
 
-Fixes: 3b7d143be4b7 ("arm64: dts: mt6359: add PMIC MT6359 related nodes")
-Signed-off-by: Macpaul Lin <macpaul.lin@mediatek.com>
----
- arch/arm64/boot/dts/mediatek/mt6359.dtsi | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt6359.dtsi b/arch/arm64/boot/dts/mediatek/mt6359.dtsi
-index 8e1b8c85c6ed..dd732a820a7c 100644
---- a/arch/arm64/boot/dts/mediatek/mt6359.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt6359.dtsi
-@@ -18,6 +18,8 @@ mt6359codec: mt6359codec {
- 		};
- 
- 		regulators {
-+			compatible = "mediatek,mt6359-regulator";
-+
- 			mt6359_vs1_buck_reg: buck_vs1 {
- 				regulator-name = "vs1";
- 				regulator-min-microvolt = <800000>;
-@@ -296,7 +298,7 @@ mt6359_vsram_others_sshub_ldo: ldo_vsram_others_sshub {
- 			};
- 		};
- 
--		mt6359rtc: mt6359rtc {
-+		mt6359_rtc: rtc {
- 			compatible = "mediatek,mt6358-rtc";
- 		};
- 	};
+On 9/15/24 17:14, Kenneth Crudup wrote:
+
+> ... and it turns out that my crashes on the CalDigit TB4 dock are 
+> probably related to a Thunderbolt-to-NVMe enclosure that was always 
+> plugged into to the dock; apparently when resuming "something" was 
+> waiting for the now-disconnected NVMe drive to come back, leading to the 
+> hangs. Disconnecting the enclosure from the dock seems to prevent the 
+> resume crashes.
+> 
+> I may try and root-cause that issue later, if I have time.
+
+So I've determined this problem happened somewhere between 6.10.8 and 
+6.10.9; I don't always have the affected hardware so it'll take me a 
+couple of days to bisect the issue, but at least I have an idea on where 
+the problem is.
+
+What's interesting is testing using the NVMe-to-TB adaptor directly into 
+the laptop isn't enough to trigger the crashes, it has to be plugged 
+into the CalDigit TB4 dock at suspend time to trigger a hang on resume 
+if the CalDigit dock is disconnected in between.
+
+-Kenny
+
 -- 
-2.45.2
+Kenneth R. Crudup / Sr. SW Engineer, Scott County Consulting, Orange 
+County CA
 
