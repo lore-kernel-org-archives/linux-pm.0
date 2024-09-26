@@ -1,179 +1,152 @@
-Received: from stravinsky.debian.org (stravinsky.debian.org [82.195.75.108])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEAB1135A53;
-	Thu, 26 Sep 2024 08:04:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=82.195.75.108
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3059B143C4C;
+	Thu, 26 Sep 2024 08:20:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727337858; cv=none; b=sanFMgEw+0Kwa2+ABS/lWu5qHnQcc6xgpyASaMAVjtLFcptGkmPdgiSvtFUZQNUNeCvFN3O2Ylz/GqZvLHmxdb4gtQD55VLmADuOEMKOw2LvQknJoHRuWvacNH9Ewuq867LTRzaz3BivWGTMiiiszK6jNAIxg5ZMwagwdiTVPiA=
+	t=1727338854; cv=none; b=RF4C/YH0NzIv4OMkXqsomXS3bkKpn80ZQN35m2wsp9Fy7Z+jGKE7OT2iC/ryMF5qRzpMON1b4bILFY8c6h9VVNY//2CtOhutAKGX/ZplVrZeoNzD7dkbPrBbYnRS9mck6L+bHuDE7/ieE+2GJvQZsg/qz8FkoGiok7nIkKlISKo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727337858; c=relaxed/simple;
-	bh=Ohle+mSw6OKgmkTexCka+g0/+2Xqg7/h2dZCBBh3Xck=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=N7eX+VnuDAqxBRw1MubW7OohEuH1bt0I9HCpVDXFkrkyAs/tFBzlpfSYzRI25QDkXFCy+Ij6N4qdOzL1M3DymjPvPeMP6fWAJjk1PlpwAeUQEQnzC+1lP6DxjYsVa55rzs9A0bgsKXvmAqE4GWleFBelA7v578BC9Xw6a32Df8k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org; spf=none smtp.mailfrom=debian.org; dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b=fcqtXLfU; arc=none smtp.client-ip=82.195.75.108
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=debian.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b="fcqtXLfU"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
-	s=smtpauto.stravinsky; h=X-Debian-User:Content-Transfer-Encoding:Content-Type
-	:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
-	Reply-To:Content-ID:Content-Description;
-	bh=KZQEtEFqUVCYlKWgRmtdxxygl4+pC7dy1IIxMbe5cg0=; b=fcqtXLfUs9b0sULv/yGdtMPUAG
-	C9xD76hz3naN3LSTALxxk4w4BNVXi5kRrF2VSnJGc4xMzQFEVr3A4zHlg3eRRts5wNy5LCIqdgAHK
-	+u/sCaAQ7dVJToa3UQcd5kXR6Yu9uw3uZ+I6HBCmdHK5DKdOx00yi+SQ55nIFeHRqPmKR6xDMgKbW
-	/0JA35CRO+2UsrXtE59d/992zfbKEcVd52QdBVvgksGjqhTrl2/ECVnXlSC9YGv1SC1TnjxhuGxli
-	7eyIvl1dxLWKehKye7NVE/Fd5iEesYH2O5GN+sBPTBv0DQkBUQxYU+JfgO11r9/t0Y5decbrbD6K4
-	6Wp9in8g==;
-Received: from authenticated user
-	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128)
-	(Exim 4.94.2)
-	(envelope-from <ukleinek@debian.org>)
-	id 1stjEr-004i5t-8z; Thu, 26 Sep 2024 07:48:37 +0000
-Message-ID: <10a1def7-1abc-4455-b73b-c324a9e0c0dd@debian.org>
-Date: Thu, 26 Sep 2024 09:48:34 +0200
+	s=arc-20240116; t=1727338854; c=relaxed/simple;
+	bh=5SG9w7Q4WnBvy27ddGc1bzdc8ZHjDro5bwU/EkO6oNQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=MqwFNRjo4aNn/UzjR/9w+y1QNfoA6oX6zHrBiLNXiAx4IBhN5rWq34MTG8/H5VGGodJyDn+lHt4D03s35hl5OWFjcUhVqRubXAFlWg0vXGKDKSrVTOwsciXWflBU/dp5QRE6Yo4069mYlMCAOuRY45LIVKt8IAdg3pVp1dF20aA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 3787687c7be011efa216b1d71e6e1362-20240926
+X-CTIC-Tags:
+	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NO_NAME, HR_CTE_8B, HR_CTT_MISS
+	HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_DIGIT_LEN, HR_FROM_NAME
+	HR_SJ_DIGIT_LEN, HR_SJ_LANG, HR_SJ_LEN, HR_SJ_LETTER, HR_SJ_NOR_SYM
+	HR_SJ_PHRASE, HR_SJ_PHRASE_LEN, HR_SJ_PRE_RE, HR_SJ_WS, HR_TO_COUNT
+	HR_TO_DOMAIN_COUNT, HR_TO_NO_NAME, IP_TRUSTED, SRC_TRUSTED, DN_TRUSTED
+	SA_UNTRUSTED, SA_LOWREP, SA_EXISTED, SN_UNTRUSTED, SN_LOWREP
+	SN_EXISTED, SPF_NOPASS, DKIM_NOPASS, DMARC_NOPASS, CIE_BAD
+	CIE_GOOD_SPF, GTI_FG_BS, GTI_RG_INFO, GTI_C_BU, AMN_T1
+	AMN_GOOD, AMN_C_TI, AMN_C_BU
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.38,REQID:7c3be859-750f-40b3-914d-316f1a05d482,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:-5,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:-5
+X-CID-INFO: VERSION:1.1.38,REQID:7c3be859-750f-40b3-914d-316f1a05d482,IP:0,URL
+	:0,TC:0,Content:0,EDM:0,RT:0,SF:-5,FILE:0,BULK:0,RULE:Release_Ham,ACTION:r
+	elease,TS:-5
+X-CID-META: VersionHash:82c5f88,CLOUDID:b629355be24ee38a092c299d6801b1bb,BulkI
+	D:240925144023207KTES0,BulkQuantity:13,Recheck:0,SF:64|66|17|19|102,TC:nil
+	,Content:0,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:40,QS:nil,BEC:nil,COL:
+	0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_OBB
+X-UUID: 3787687c7be011efa216b1d71e6e1362-20240926
+X-User: dengjie03@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <dengjie03@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 866411718; Thu, 26 Sep 2024 16:20:40 +0800
+From: Deng Jie <dengjie03@kylinos.cn>
+To: gregkh@linuxfoundation.org
+Cc: rafael@kernel.org,
+	pavel@ucw.cz,
+	len.brown@intel.com,
+	linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	xiehongyu1@kylinos.cn,
+	duanchenghao@kylinos.cn,
+	xiongxin@kylinos.cn
+Subject: Re: [PATCH v2] USB: Fix the issue of S4 wakeup queisce phase where task resumption fails due to USB status
+Date: Thu, 26 Sep 2024 16:20:36 +0800
+Message-Id: <20240926082036.312203-1-dengjie03@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <2024092525-envision-impotency-c1a6@gregkh>
+References: <2024092525-envision-impotency-c1a6@gregkh>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: intel_pstate: Make hwp_notify_lock a raw
- spinlock
-To: =?UTF-8?B?eGlhbyBzaGVuZyB3ZW4o6IKW55ub5paHKQ==?= <atzlinux@sina.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner
- <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- 1076483@bugs.debian.org
-Cc: linux-pm@vger.kernel.org, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, linux-rt-users@vger.kernel.org
-References: <20240919081121.10784-2-ukleinek@debian.org>
- <26829a6d-671c-45a4-bef4-4172f4f11615@sina.com>
-Content-Language: en-US, de-DE
-From: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@debian.org>
-In-Reply-To: <26829a6d-671c-45a4-bef4-4172f4f11615@sina.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Debian-User: ukleinek
 
-Hello,
+Hi Greg,
+Do you think this plan is feasible? Do I need to add more explanations?
 
-On 9/23/24 03:53, xiao sheng wen(肖盛文) wrote:
-> I apply this patch on Debian kernel 6.11-1~exp1 (2024-09-19) source code.
-> 
-> uname -a
-> Linux atzlinux-ce 6.11-rt-amd64 #1 SMP PREEMPT_RT atzlinux 6.11-1~exp1 
-> (2024-09-19) x86_64 GNU/Linux
-> 
-> I get the following errors in dmesg:
-> 
-> [    7.273690] ucsi_acpi USBC000:00: possible UCSI driver bug 2
-> [    7.451822] ucsi_acpi USBC000:00: error -EINVAL: PPM init failed
-> [    7.537749] ------------[ cut here ]------------
-> [    7.537753] WARNING: CPU: 12 PID: 96 at kernel/workqueue.c:2259 
-> delayed_work_timer_fn+0x63/0x90
-> [    7.537763] Modules linked in: rfcomm cmac algif_hash algif_skcipher 
-> af_alg snd_seq_dummy snd_hrtimer snd_seq snd_seq_device bnep btusb 
-> uvcvideo btrtl btintel videobuf2_vmalloc btbcm uvc btmtk 
-> videobuf2_memops videobuf2_v4l2 bluetooth videodev videobuf2_common mc 
-> snd_soc_skl_hda_dsp snd_soc_hdac_hdmi snd_sof_probes 
-> snd_soc_intel_hda_dsp_common binfmt_misc nls_ascii nls_cp437 vfat fat 
-> snd_hda_codec_hdmi snd_hda_codec_realtek snd_hda_codec_generic 
-> snd_hda_scodec_component snd_soc_dmic snd_sof_pci_intel_tgl 
-> snd_sof_pci_intel_cnl snd_sof_intel_hda_generic soundwire_intel 
-> soundwire_generic_allocation soundwire_cadence snd_sof_intel_hda_common 
-> snd_sof_intel_hda_mlink snd_sof_intel_hda snd_sof_pci snd_sof_xtensa_dsp 
-> snd_sof iwlmvm snd_sof_utils intel_uncore_frequency snd_soc_hdac_hda 
-> intel_uncore_frequency_common snd_soc_acpi_intel_match 
-> x86_pkg_temp_thermal intel_powerclamp snd_soc_acpi soundwire_bus 
-> coretemp kvm_intel snd_ctl_led mac80211 snd_soc_avs kvm 
-> snd_soc_hda_codec snd_hda_ext_core snd_soc_core libarc4
-> [    7.537811]  crct10dif_pclmul snd_compress snd_pcm_dmaengine 
-> ghash_clmulni_intel sha512_ssse3 snd_hda_intel sha256_ssse3 sha1_ssse3 
-> iwlwifi snd_intel_dspcfg snd_intel_sdw_acpi snd_hda_codec aesni_intel 
-> gf128mul snd_hda_core crypto_simd cryptd rapl mei_hdcp mei_pxp mei_wdt 
-> snd_hwdep intel_rapl_msr processor_thermal_device_pci intel_cstate 
-> cfg80211 processor_thermal_device processor_thermal_wt_hint intel_uncore 
-> snd_pcm thinkpad_acpi think_lmi iTCO_wdt processor_thermal_rfim mei_me 
-> firmware_attributes_class intel_pmc_bxt processor_thermal_rapl snd_timer 
-> ucsi_acpi mei iTCO_vendor_support intel_rapl_common nvram typec_ucsi 
-> wmi_bmof watchdog platform_profile processor_thermal_wt_req pcspkr 
-> processor_thermal_power_floor snd igen6_edac processor_thermal_mbox 
-> typec roles soundcore rfkill ac int3403_thermal joydev 
-> int340x_thermal_zone intel_pmc_core int3400_thermal intel_vsec intel_hid 
-> pmt_telemetry acpi_thermal_rel sparse_keymap acpi_tad pmt_class acpi_pad 
-> evdev serio_raw dm_mod loop configfs efi_pstore efivarfs ip_tables
-> [    7.537861]  x_tables autofs4 ext4 crc16 mbcache jbd2 crc32c_generic 
-> i915 drm_buddy i2c_algo_bit drm_display_helper cec hid_multitouch 
-> rc_core hid_generic xhci_pci xhci_hcd ttm i2c_hid_acpi i2c_hid usbcore 
-> drm_kms_helper hid intel_lpss_pci video nvme intel_lpss crc32_pclmul 
-> i2c_i801 thunderbolt psmouse drm nvme_core e1000e crc32c_intel idma64 
-> usb_common i2c_smbus fan button battery wmi
-> [    7.537887] CPU: 12 UID: 0 PID: 96 Comm: ktimers/12 Not tainted 6.11- 
-> rt-amd64 #1  atzlinux 6.11-1~exp1
-> [    7.537891] Hardware name: LENOVO 21HD0078CD/21HD0078CD, BIOS 
-> N3QET47W (1.47 ) 07/18/2024
-> [    7.537893] RIP: 0010:delayed_work_timer_fn+0x63/0x90
-> [    7.537898] Code: 65 48 8b 3d 3f ad b4 77 65 8b 05 40 ad b4 77 8b 97 
-> 00 0d 00 00 25 00 00 ff 00 81 e2 00 01 00 00 09 d0 75 06 f6 47 2c 20 75 
-> 0b <0f> 0b 5b 5d 41 5c c3 cc cc cc cc e8 fd 76 00 00 48 85 c0 74 eb 48
-> [    7.537900] RSP: 0018:ffffbb900046bc98 EFLAGS: 00010006
-> [    7.537903] RAX: 0000000000000100 RBX: ffff9a6182053000 RCX: 
-> ffff9a64cf7a35c0
-> [    7.537904] RDX: 0000000000000100 RSI: ffffffff884eab80 RDI: 
-> ffff9a6181130000
-> [    7.537906] RBP: 0000000000002000 R08: ffff9a64cf7a3610 R09: 
-> ffff9a64cf7a3658
-> [    7.537907] R10: 0000000000000002 R11: 0000000000000001 R12: 
-> ffff9a6183bfa900
-> [    7.537908] R13: dead000000000122 R14: ffffffff884eab80 R15: 
-> ffff9a6183bfa920
-> [    7.537910] FS:  0000000000000000(0000) GS:ffff9a64cf600000(0000) 
-> knlGS:0000000000000000
-> [    7.537912] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [    7.537913] CR2: 0000561c94ed4000 CR3: 000000041d62c000 CR4: 
-> 0000000000f50ef0
-> [    7.537915] PKRU: 55555554
-> [    7.537916] Call Trace:
-> [    7.537918]  <TASK>
-> [    7.537919]  ? delayed_work_timer_fn+0x63/0x90
-> [    7.537923]  ? __warn.cold+0x93/0xed
-> [    7.537926]  ? delayed_work_timer_fn+0x63/0x90
-> [    7.537933]  ? report_bug+0xff/0x140
-> [    7.537937]  ? handle_bug+0x3c/0x80
-> [    7.537942]  ? exc_invalid_op+0x17/0x70
-> [    7.537945]  ? asm_exc_invalid_op+0x1a/0x20
-> [    7.537947]  ? __pfx_delayed_work_timer_fn+0x10/0x10
-> [    7.537951]  ? __pfx_delayed_work_timer_fn+0x10/0x10
-> [    7.537955]  ? delayed_work_timer_fn+0x63/0x90
-> [    7.537958]  ? __pfx_delayed_work_timer_fn+0x10/0x10
-> [    7.537961]  call_timer_fn+0x27/0x120
-> [    7.537965]  __run_timers+0x18d/0x300
-> [    7.537969]  timer_expire_remote+0x51/0x80
-> [    7.537973]  tmigr_handle_remote+0x3cc/0x470
-> [    7.537979]  handle_softirqs.isra.0+0xb5/0x230
-> [    7.537982]  ? __pfx_smpboot_thread_fn+0x10/0x10
-> [    7.537986]  run_timersd+0x3e/0x80
-> [    7.537988]  smpboot_thread_fn+0xda/0x1d0
-> [    7.537992]  kthread+0xcf/0x100
-> [    7.537995]  ? __pfx_kthread+0x10/0x10
-> [    7.537997]  ret_from_fork+0x31/0x50
-> [    7.538000]  ? __pfx_kthread+0x10/0x10
-> [    7.538001]  ret_from_fork_asm+0x1a/0x30
-> [    7.538006]  </TASK>
-> [    7.538007] ---[ end trace 0000000000000000 ]---
-> 
-> The whole dmesg is:
-> https://linux-hardware.org/?probe=28057f9ed2&log=dmesg
+Thanks,
 
-On a first glance this looks like an unrelated issue to me. Could you 
-test with CONFIG_X86_INTEL_PSTATE=n? (If doesn't matter if you do this 
-with my patch applied or not, without CONFIG_X86_INTEL_PSTATE the driver 
-isn't build.)
+Deng Jie
 
-Best regards
-Uwe
+>---
+>v2:
+>	* Fix the formatting issues and function naming conventions in the v1 patch.
+>v1:
+>	* USB: Fix the issue of S4 wakeup queisce phase where task resumption fails
+> 	   due to USB status.
+>---
+>
+>diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>index fb4d18a0b185..7723e7082a36 100644
+>--- a/drivers/base/power/main.c
+>+++ b/drivers/base/power/main.c
+>@@ -559,6 +559,11 @@ bool dev_pm_may_skip_resume(struct device *dev)
+> 	return !dev->power.must_resume && pm_transition.event != PM_EVENT_RESTORE;
+> }
+> 
+>+bool pm_event_is_queisce(void)
+>+{
+>+	return pm_transition.event == PM_EVENT_QUIESCE;
+>+}
+>+
+> static pm_callback_t dpm_subsys_resume_noirq_cb(struct device *dev,
+> 						pm_message_t state,
+> 						const char **info_p)
+>diff --git a/drivers/usb/core/hcd-pci.c b/drivers/usb/core/hcd-pci.c
+>index 77830f120834..af2c60049e4a 100644
+>--- a/drivers/usb/core/hcd-pci.c
+>+++ b/drivers/usb/core/hcd-pci.c
+>@@ -456,18 +456,25 @@ static int suspend_common(struct device *dev, bool do_wakeup)
+> 		/* Optimization: Don't suspend if a root-hub wakeup is
+> 		 * pending and it would cause the HCD to wake up anyway.
+> 		 */
+>-		if (do_wakeup && HCD_WAKEUP_PENDING(hcd))
+>-			return -EBUSY;
+>-		if (do_wakeup && hcd->shared_hcd &&
+>-				HCD_WAKEUP_PENDING(hcd->shared_hcd))
+>+		/* Considering the restore process that occurs after
+>+		 * the quiesce phase during S4 wakeup, which essentially
+>+		 * resets all root hubs,checking this wakeup pending status
+>+		 * in USB suspend_common() during the quiesce phase is of
+>+		 * little significance and should therefore be filtered out.
+>+		 */
+>+		if (!pm_event_is_queisce() && do_wakeup &&
+>+		    (HCD_WAKEUP_PENDING(hcd) ||
+>+		     (hcd->shared_hcd &&
+>+		      HCD_WAKEUP_PENDING(hcd->shared_hcd))))
+> 			return -EBUSY;
+> 		retval = hcd->driver->pci_suspend(hcd, do_wakeup);
+> 		suspend_report_result(hcd->driver->pci_suspend, retval);
+> 
+> 		/* Check again in case wakeup raced with pci_suspend */
+>-		if ((retval == 0 && do_wakeup && HCD_WAKEUP_PENDING(hcd)) ||
+>-				(retval == 0 && do_wakeup && hcd->shared_hcd &&
+>-				 HCD_WAKEUP_PENDING(hcd->shared_hcd))) {
+>+		if (retval == 0 && !pm_event_is_queisce() && do_wakeup &&
+>+		    (HCD_WAKEUP_PENDING(hcd) ||
+>+		     (hcd->shared_hcd &&
+>+		      HCD_WAKEUP_PENDING(hcd->shared_hcd)))) {
+> 			if (hcd->driver->pci_resume)
+> 				hcd->driver->pci_resume(hcd, false);
+> 			retval = -EBUSY;
+>diff --git a/include/linux/pm.h b/include/linux/pm.h
+>index 4c441be03079..dad87c9ecfee 100644
+>--- a/include/linux/pm.h
+>+++ b/include/linux/pm.h
+>@@ -758,6 +758,7 @@ extern void pm_generic_complete(struct device *dev);
+> 
+> extern bool dev_pm_may_skip_resume(struct device *dev);
+> extern bool dev_pm_smart_suspend_and_suspended(struct device *dev);
+>+extern bool pm_event_is_queisce(void);
+> 
+> #else /* !CONFIG_PM_SLEEP */
+>
