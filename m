@@ -1,90 +1,137 @@
-Received: from msa.smtpout.orange.fr (smtp-73.smtpout.orange.fr [80.12.242.73])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DA4C1534E6;
-	Thu, 26 Sep 2024 18:34:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.73
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DB971D5AD0;
+	Thu, 26 Sep 2024 18:38:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727375648; cv=none; b=OYIUEvV+hFqgtrV0qLxnnLPJvUUlI1Vn0RiSazqQlf9ORajuDmMZDnUQZTuEiJ1LAWx9XzfeJ/C+0b4zjtI+38KplxJQg+MaojDneEtMEUrkr59zqPL2wILiVewafEJzFIT/DgvHKDE7jcgJmMacOTUg87CoOylkY4PumPx4mgc=
+	t=1727375940; cv=none; b=XQaIvPMo4EBIr9uh9aiBrFyJqFwzxIBrBHcwzCcvhM4rh0VoLL6OOD0/2pHNUO4CyjNb4Q855Yv5QH78v9xCAWU0ZoxkdZgeP5NjHQjPf/O+3pwpdvnYTLOyEJpdyVNYXXxJnHaHrY9d2Nt855VrR+7/Ml4j4qQ4dg8PrkIwU7Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727375648; c=relaxed/simple;
-	bh=3iuHCMpCaY/5WFrJneLSrvAgOGDV6yGyGWwA8luU3GI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NubtrGF1sQM1N3vwrf+EUrg8PRKm/v/eBB2zxceTiMIclKzvruKWMJAZGS0JyrOaOUSTFjisic9d9BdXbD3sGqDjv01w2e4WFwfFbOosCAxgj0tvG7wmfd3r1/5yAWJx7Nwp16j3gCeEZaC1/R3Aj12L0zjgT5Im9CBW1f3Oisk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=KuodYhZL; arc=none smtp.client-ip=80.12.242.73
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	s=arc-20240116; t=1727375940; c=relaxed/simple;
+	bh=bqWGoAaO8nHvHaEKFlHMhxU2QHht9Hj9OjVvaSdtHig=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MJiVdFo/oc3Pk/kqmqdQnTB694gm4fBT7/LVpb0co+1gQ9ksWlluEGyCrKmVW9sUxphKwsjcjdUI1FzgLcU8whWC22NFgLl1C9SFgiRjPFribQXU1XlKPabqPahPOjCxZWdyXIGgM+1mXKNPR9LetqnptGnylAIFlDPzk3mN1xE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tWf169OI; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="KuodYhZL"
-Received: from fedora.home ([90.11.132.44])
-	by smtp.orange.fr with ESMTPA
-	id ttJMsN3PhfghUttJMstZV4; Thu, 26 Sep 2024 20:33:57 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1727375637;
-	bh=3QlM06zztQktN3NIJ4DxdnB67HniBEmCvi/NMR3NrVA=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=KuodYhZLbK4ZwM/vRiKVcRr+eCUZHWcwycWMRPW63AFa5JtMzyAhZ9aOCFOpkvq9A
-	 Z3PCZBnRBd5eLqYNbVvCCcUfSBjq0Y8xjfe6JIUqxl2PJjs8IJOqd2lsBNN2wiNAdN
-	 7KgSUgrYFEhT/8eyy9bkLTQXVUiZP46KifQwWNMtS0KVQyZmoGIwty/mQVVQ7G4OXM
-	 7z/WfWuuj9haGD92O2WG4Rb8uB4/fsMqD2QnTRE6ClNg97AggiRis54/Ty0I8YTKSZ
-	 OoaHlyz5fZ4+86NlJr6hUj0sv6GjNQtsdBGuQPiBOr70cIP6C5ooN0Xz4GxPel+C6E
-	 u5ZKrk24ih9yA==
-X-ME-Helo: fedora.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Thu, 26 Sep 2024 20:33:57 +0200
-X-ME-IP: 90.11.132.44
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: Georgi Djakov <djakov@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] interconnect: Remove a useless kfree_const() usage
-Date: Thu, 26 Sep 2024 20:33:49 +0200
-Message-ID: <06630f9ec3e153d0e7773b8d97a17e7c53e0d606.1727375615.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.46.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tWf169OI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76B59C4CEC5;
+	Thu, 26 Sep 2024 18:38:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1727375939;
+	bh=bqWGoAaO8nHvHaEKFlHMhxU2QHht9Hj9OjVvaSdtHig=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=tWf169OIK42LOs7v6xZBQ6TML/HPur+151d1OlRy1ckW8IleLofNaXQzFzsgOPZXM
+	 ATvRZZbqOHwzmdJNtoYa+m1Hy8uAFSxvT+3e5axvVoWmQ7FcpF1wzG0GQ3Xicza6t0
+	 yrugHX7dsLPzGmNxOBjEH17HNcBPciL2x/2TYqC+mFfwKxomtJt+yRYP95jl8rHYsE
+	 /fqkwAbX/y0NBOW6o3J+a5fkS4PTLXVPZTjLPc5Qf3fW47CJc+3Lynj8VFJJBDNrns
+	 u+7Xy2Zl8herudyztpaUYiGO3GiF13P7fOjTD/cjDng7VMFT9AZ8STclBWo5zoav4V
+	 FTC6weepR4hUA==
+Date: Thu, 26 Sep 2024 13:38:58 -0500
+From: Rob Herring <robh@kernel.org>
+To: Dzmitry Sankouski <dsankouski@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-input@vger.kernel.org, linux-leds@vger.kernel.org
+Subject: Re: [PATCH v5 2/7] dt-bindings: mfd: add maxim,max77705
+Message-ID: <20240926183858.GA2718844-robh@kernel.org>
+References: <20240617-starqltechn_integration_upstream-v5-0-e0033f141d17@gmail.com>
+ <20240617-starqltechn_integration_upstream-v5-2-e0033f141d17@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240617-starqltechn_integration_upstream-v5-2-e0033f141d17@gmail.com>
 
-"path->name" is allocated in of_icc_get_by_index() using kasprintf(), so
-there is no point in using kfree_const() to free it.
+On Thu, Sep 26, 2024 at 01:20:19PM +0300, Dzmitry Sankouski wrote:
+> Add maxim,max77705 core binding part.
+> 
+> Signed-off-by: Dzmitry Sankouski <dsankouski@gmail.com>
+> 
+> ---
+> Changes in v5:
+> - formatting changes
+> - add unevaluatedProperties: false for nodes referencing
+>   common schemas
+> - remove additionalProperties on nodes with
+>   unevaluatedProperties: false
+> - add min and max to led index
+> Changes in v4:
+> - change dts example intendation from tabs
+>  to spaces
+> - remove interrupt-names property
+> - remove obvious reg description
+> - split long(>80) lines
+> ---
+>  Documentation/devicetree/bindings/mfd/maxim,max77705.yaml | 177 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  MAINTAINERS                                               |   1 +
+>  2 files changed, 178 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/maxim,max77705.yaml b/Documentation/devicetree/bindings/mfd/maxim,max77705.yaml
+> new file mode 100644
+> index 000000000000..214515f84c85
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mfd/maxim,max77705.yaml
+> @@ -0,0 +1,177 @@
+> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/mfd/maxim,max77705.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Maxim MAX77705 Companion Power Management IC and USB Type-C interface IC
+> +
+> +maintainers:
+> +  - Dzmitry Sankouski <dsankouski@gmail.com>
+> +
+> +description: |
+> +  This is a part of device tree bindings for Maxim MAX77705 multi functional
+> +  device.
 
-Switch to the more standard kfree() to free this.
+Drop this sentence. Just describe the device.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-Compile tested only.
+> +
+> +  The Maxim MAX77705 is a Companion Power Management and Type-C
+> +  interface IC which includes charger, fuelgauge, LED, haptic motor driver and
+> +  Type-C management IC.
+> +
+> +properties:
+> +  compatible:
+> +    const: maxim,max77705
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  charger:
+> +    $ref: /schemas/power/supply/power-supply.yaml
+> +    unevaluatedProperties: true
 
-This is not a bug fix.
-kfree_const() works fine here, but is useless. It is equivalent to kfree().
+Must be false.
 
-Before commit 1597d453289b3 ("interconnect: Add of_icc_get_by_index()
-helper function"), using kfree_const() was needed.
+> +    properties:
+> +      compatible:
+> +        const: maxim,max77705-charger
+> +
+> +    required:
+> +      - compatible
+> +      - monitored-battery
+> +
+> +  fuel-gauge:
+> +    $ref: /schemas/power/supply/power-supply.yaml
+> +    type: object
+> +    unevaluatedProperties: true
 
-For the records, this patch is a clean-up effort related to discussions at:
-  - https://lore.kernel.org/all/ZvHurCYlCoi1ZTCX@skv.local/
-  - https://lore.kernel.org/all/20240924050937.697118-1-senozhatsky@chromium.org/
----
- drivers/interconnect/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Must be false.
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 7e9b996b47c8..8a993283da82 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -808,7 +808,7 @@ void icc_put(struct icc_path *path)
- 	mutex_unlock(&icc_bw_lock);
- 	mutex_unlock(&icc_lock);
- 
--	kfree_const(path->name);
-+	kfree(path->name);
- 	kfree(path);
- }
- EXPORT_SYMBOL_GPL(icc_put);
--- 
-2.46.1
-
+Rob
