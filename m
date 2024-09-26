@@ -1,113 +1,165 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84A4D14F10E;
-	Thu, 26 Sep 2024 07:47:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30C8B192586
+	for <linux-pm@vger.kernel.org>; Thu, 26 Sep 2024 07:59:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727336859; cv=none; b=ZI98qM1e6tAnv7412P9TJLIm0zaI61c0nSF1JAhzRXh0ndyHnga8seRkSxrX5mSshGfmlGvVlJKLKlQDdKXQ0k2iw5iltziDsSvlAuVQeeKbsziA3blZEvOkK7jdrIJ1YG/viHlNRoIfAYtgbjqIgr9kGGS6cpzURnLQL/EqqZo=
+	t=1727337579; cv=none; b=B0ZbWmr/g5WgVBbM3Tw6KPd1mhCG3wGWHtc2Xa6gye8vPkZ004OC00B1dODjiCX6Nj8Ekn+GK1NoHM+5ivmIA3+nsDugqYPKh3M/q/XF3ODQa8uV31KgHsZY6PeP97Ztgn/ddVUvsALHNOPFs9UWjI4xQp2NBOIS+t1KkURGwXg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727336859; c=relaxed/simple;
-	bh=Y3HhTt8MHY+5GRnCjQ0FSWWnve07KF0c/uMMGYJBAwE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lzcZM0h+Wq6iy5fAbGZDOB74XKFeZYohisVkhhMnp2zVSCGpK5hZMkKGT8F8AtRr5nIXJdDmPHM7rcu061/qDsRWvuNXoGhpzxZlGO2nLugoW/M1kE8okhnj+jEwBJIc1IrUyXyTn5hxQ9IFyDe4B4AusU7OK8zYZHPg4jX9oCQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XdPvXN3a; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1727337579; c=relaxed/simple;
+	bh=PYpD0W40WiTPGYYolxMwxzjtPuxE2bqs82HjAE2I/Gg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=J4jhZsurtIJEQQeWSad8EBu5uoBFi/LPlzjffy8cK6VSvldShPIslf/yXZNSRtgR+P3ZwPbz2FcnQ0rAa1hfqFGLeKFGwKMp1P9Tg9IXGKNZSoObY9MasiK2/F35xg7cmV52tZI3xusSG7uXoMNAXCxverQX29hXalcn0k+//OE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ventanamicro.com; spf=pass smtp.mailfrom=ventanamicro.com; dkim=pass (2048-bit key) header.d=ventanamicro.com header.i=@ventanamicro.com header.b=M1YLduvK; arc=none smtp.client-ip=209.85.128.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ventanamicro.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ventanamicro.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XdPvXN3a"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D711AC4CEC5;
-	Thu, 26 Sep 2024 07:47:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1727336859;
-	bh=Y3HhTt8MHY+5GRnCjQ0FSWWnve07KF0c/uMMGYJBAwE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=XdPvXN3aI0ukKXaRu8pt57S1AT0j43qW2QiHg2UX+OmCWIHpXMmWvfprtD6/CN8HF
-	 aNQZMyoNFAKr54I6ZOH4FX4obNfla38QnzvpqNBqkz1StE3t7MI9eE7In/wVu42QbS
-	 aZjLVDqwyPzvRTCu0WSLFbbh2iEAurFM0yMoEJNy04fwzmGC229LNU1i/mXePQzeEu
-	 N43uevfHFIbwQo5EOMYEUsS7Re3lEPv3a8bJUoqUo7iiLClJGjIxG68YMFJk0wDkcH
-	 pis+WLAMiQErzpCtIpdPsBJH4Ro6N7hyjER+qgdFr0q/uoOonqXkMrc2hXKcWFeA0t
-	 c6lGper0ph7og==
-Message-ID: <0a35a1a0-c522-47f9-94a5-1079ac3ff0af@kernel.org>
-Date: Thu, 26 Sep 2024 09:47:34 +0200
+	dkim=pass (2048-bit key) header.d=ventanamicro.com header.i=@ventanamicro.com header.b="M1YLduvK"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-42cb60aff1eso6172995e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Sep 2024 00:59:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ventanamicro.com; s=google; t=1727337576; x=1727942376; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=PpCiGEBlNu0mNZ7okeDi8cYacva/g1Cbr0GdHobTz6g=;
+        b=M1YLduvKvEyYp+Y46od5eQP3WFtaxXqvfCYew7xjs9qqwIAS476yXzvDw6ZL/yMRSb
+         guO3G/PGQjI7ANW/tp7QvCrhs7brvt2k9jcMYGr23WdV6L+gtl5ksAL61ie0Z5/TiGAd
+         CzIeEMIaNoJrOqEDedQazcxpRq5gsikDwqgMAp53f4axofQUeVJ+uQQxckPHTTmKxDuH
+         TM7Cbq2CDvI+qYmfmvl8ER/KkeoT95cnZzv4yaTmCG3+ui7ODMWGkPFfB3ueiAd8xcyH
+         llv5qLn5Aj/i3P4tc6XsCNebVopKOljjbznM9hJfBxCK7eqt2Ukazd+oWLmkR5HRdhiX
+         5u0Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1727337576; x=1727942376;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PpCiGEBlNu0mNZ7okeDi8cYacva/g1Cbr0GdHobTz6g=;
+        b=gn9esNUNpCOtqzgdK/d/RPF3OaIHAQfSLrwUwGETjJrCFsWDVZXCQwLp0NId+s5qeB
+         15shR+vsoV5Sn/r0NiqeLAyimQzDhpmF9DLRyPhcpVybHxVYwPTCSIht7yl0vz4ZbmRx
+         wYAx5EJQALKRfXT+GzqULDLw1KMVVXWZhTSujBKqGIVVcgAlS3WZkMPGVOGYT8zjhJWi
+         cfgC87xqIuEusdzsuY+EndNejaipHs60DDfmSvvDvaa6mGaPu2WhNJAqfAecW7KX2jdt
+         FQwrhgSILiuUmLIkgbv5DOjtT0a6ZjWBMEeN1ADsyXUxjuNFagi5tOQ2zk1TSIU/tWBj
+         wXDQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUpxdRQEc0xqaSh2++YxP4mxNsiOqdgn2u/PEykaHB3xrretQRYa4C4RprwE9yTTxgUOpJVU6eBnQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzxPo+ThUyj8+nKK8vf9ts9jhM6CHiGmYVJxGJxUub12Ndjh6oi
+	mk4iU/mGTRQi4plhxrFGfF9HOuEqHevMAfOmvoRqQfGfMPxR/rzHk6dUHTY9Oj8=
+X-Google-Smtp-Source: AGHT+IH7ivAeF8lcHIJrAIXadm6iyognSZRY/aTKpYZz3gkdQWtorWwQDRTmTAf88fh/VevbkacKBg==
+X-Received: by 2002:adf:f64f:0:b0:37c:cbca:fd7c with SMTP id ffacd0b85a97d-37ccbcafe16mr2698906f8f.41.1727337576104;
+        Thu, 26 Sep 2024 00:59:36 -0700 (PDT)
+Received: from localhost (cst2-173-13.cust.vodafone.cz. [31.30.173.13])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-37cd21129e6sm179018f8f.47.2024.09.26.00.59.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Sep 2024 00:59:35 -0700 (PDT)
+Date: Thu, 26 Sep 2024 09:59:32 +0200
+From: Andrew Jones <ajones@ventanamicro.com>
+To: Nick Hu <nick.hu@sifive.com>
+Cc: greentime.hu@sifive.com, zong.li@sifive.com, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Pavel Machek <pavel@ucw.cz>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Thomas Gleixner <tglx@linutronix.de>, Anup Patel <anup@brainfault.org>, 
+	Mayuresh Chitale <mchitale@ventanamicro.com>, Conor Dooley <conor.dooley@microchip.com>, 
+	Atish Patra <atishp@rivosinc.com>, Samuel Ortiz <sameo@rivosinc.com>, 
+	Samuel Holland <samuel.holland@sifive.com>, Sunil V L <sunilvl@ventanamicro.com>, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 1/3] riscv: Add csr_read/write_hi_lo support
+Message-ID: <20240926-b96b7164b51b0be0c732235b@orel>
+References: <20240926065422.226518-1-nick.hu@sifive.com>
+ <20240926065422.226518-2-nick.hu@sifive.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 3/6] dt-bindings: mfd: Add Realtek RTL9300 switch
- peripherals
-To: Lee Jones <lee@kernel.org>
-Cc: Chris Packham <chris.packham@alliedtelesis.co.nz>, andi.shyti@kernel.org,
- robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, sre@kernel.org,
- tsbogend@alpha.franken.de, linux-i2c@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-mips@vger.kernel.org
-References: <20240925215847.3594898-1-chris.packham@alliedtelesis.co.nz>
- <20240925215847.3594898-4-chris.packham@alliedtelesis.co.nz>
- <4pxungrwkjusdalmjbwvqcpjwmbsb7hw4452zqlto6sq54vfa6@psz3gge4uwy7>
- <20240926074554.GH7545@google.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
-In-Reply-To: <20240926074554.GH7545@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240926065422.226518-2-nick.hu@sifive.com>
 
-On 26/09/2024 09:45, Lee Jones wrote:
-> Intentional top-post.
+On Thu, Sep 26, 2024 at 02:54:16PM GMT, Nick Hu wrote:
+> In RV32, we may have the need to read both low 32 bit and high 32 bit of
+> the CSR. Therefore adding the csr_read_hi_lo() and csr_write_hi_lo() to
+> support such case.
 > 
-> These replies all came in without the original mail.
+> Suggested-by: Andrew Jones <ajones@ventanamicro.com>
+> Suggested-by: Zong Li <zong.li@sifive.com>
+> Signed-off-by: Nick Hu <nick.hu@sifive.com>
+> ---
+>  arch/riscv/include/asm/csr.h | 22 ++++++++++++++++++++++
+>  1 file changed, 22 insertions(+)
 > 
-> Does anyone have any idea why that would have been?
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index 25966995da04..54198284eb22 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -501,6 +501,17 @@
+>  	__v;							\
+>  })
+>  
+> +#if __riscv_xlen < 64
+> +#define csr_read_hi_lo(csr)					\
+> +({								\
+> +	u32 hi = csr_read(csr##H);				\
+> +	u32 lo = csr_read(csr);					\
+> +	lo | ((u64)hi << 32);					\
+> +})
+> +#else
+> +#define csr_read_hi_lo	csr_read
+> +#endif
+> +
+>  #define csr_write(csr, val)					\
+>  ({								\
+>  	unsigned long __v = (unsigned long)(val);		\
+> @@ -509,6 +520,17 @@
+>  			      : "memory");			\
+>  })
+>  
+> +#if __riscv_xlen < 64
+> +#define csr_write_hi_lo(csr, val)				\
+> +({								\
+> +	u64 _v = (u64)(val);					\
+> +	csr_write(csr##H, (_v) >> 32);				\
+> +	csr_write(csr, (_v));					\
+> +})
+> +#else
+> +#define csr_write_hi_lo	csr_write
+> +#endif
+> +
+>  #define csr_read_set(csr, val)					\
+>  ({								\
+>  	unsigned long __v = (unsigned long)(val);		\
+> -- 
+> 2.34.1
+>
 
-Spam folder?
+I know I suggested this, but I'm having second thoughts. The nice thing
+about the
 
-Lists got them:
-https://lore.kernel.org/all/20240925215847.3594898-4-chris.packham@alliedtelesis.co.nz/
+ csr_write(CSR, ...);
+ if (__riscv_xlen < 64)
+    csr_write(CSRH, ...);
 
-Best regards,
-Krzysztof
+pattern is that it matches the spec. With this helper we'll have
 
+ csr_write_hi_lo(CSR, ...);
+
+for both rv32 and rv64. That looks odd for rv64 and hides the hi register
+access for rv32.
+
+We could avoid the oddness of the helper's name for rv64 if we instead
+added csr_write32 and csr_write64 which do the right things, but that
+still hides the hi register access for rv32. Hiding the hi register
+access is probably fine, though, since we can be pretty certain that
+the spec will rarely, if ever, deviate from naming high registers with
+the H suffix and/or not keep the upper bits compatible.
+
+In summary, I think I'm in favor of just dropping this patch, keeping
+the noisy, but explicit, pattern. Or, if the consensus is to add
+helpers, then I'd rather have all csr_<op>32/64 helpers. Then, code
+would match the spec by choosing the right helper based on the width
+of the CSR being accessed, when the CSR has an explicit width, or still
+use the current helpers for xlen-wide CSRs.
+
+Thanks,
+drew
