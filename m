@@ -1,56 +1,56 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 822E4175D4A;
-	Mon, 30 Sep 2024 08:19:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD1AF178CCA;
+	Mon, 30 Sep 2024 08:19:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727684389; cv=none; b=ajTdsaXiMK5UCr+x3/rbC7s3b87MXlfSiCu6/7jEQnPLSs1MP78zmEO/CvzkX/2FtRA0NBDxyFjvgXv8SOJFrjrmb84Fk1dy5AicR2SW5Q4qcjhsbnAfS5OyJm3uRFL7y1Kdi9/nqIe+PBd27ZWLCE8XCyrvxqjnzGtlphVSM+Y=
+	t=1727684390; cv=none; b=X+q5H3aY3ZgOq9hhOsHH3vGlqPkeLrTVR9dSsGQEWQuyMQSsJCxKs4MioIHhRyZDgRxELuTC0jrCNw29Dob2TD9rXo8ksW7AwB/rdaM73kUOWy+DOGxIQBaWxl2DbdHFGFd7+2XNyhJ27juDPZXJPBKhZy8rs9M6krT0st2cOHQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727684389; c=relaxed/simple;
-	bh=djrjqBdvWXVCFCoBhXiXbyrgzobGegM7KrS14RHA7AI=;
+	s=arc-20240116; t=1727684390; c=relaxed/simple;
+	bh=w0jLDzy95ysPhd7nXSw/LGQtr8lMj9+9LTOOTudlOUg=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=S+/Ebql5YviYjduSETUsSYQvzsB9n5zpbyO3EDp+uP5DFfJI5ziuBqgUtLFG+/tAWIZhy2hIKV6yAW94sp0jX3aeNjd+3o8kw08CI/cIkecGl9p2P2Rz0ULswHgJjGygcajhT4SFdQLXTsf0gKZns7AV13YrFk3JkofB+r6aaLY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EuPmUaFo; arc=none smtp.client-ip=198.175.65.19
+	 MIME-Version; b=mZQw4lWIisQo0clD3W7j43qrri0q8UAfHvbP2mrlr6H9BqdQFy72DmALdqo6YbMk+2I6xcka//wOgo2OuT90RitBxHSxxDs2NkK7+91rxZnI0eapglTh6GBZHoGgoIL3iEFAFW34ZSueBgauUUYzwrziSlr8iogzewYl2wZyQms=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NmgOj39y; arc=none smtp.client-ip=198.175.65.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EuPmUaFo"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NmgOj39y"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1727684387; x=1759220387;
+  t=1727684388; x=1759220388;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=djrjqBdvWXVCFCoBhXiXbyrgzobGegM7KrS14RHA7AI=;
-  b=EuPmUaFoK9Jld9Td35G89oxSWtFAX9HibyIlqkrD8Ps37SvCSr8Ju4D4
-   fzQhEZP9b1DH3J3z2rx9GIOAJwVA3VDswf0Ky3blQjGEN7DOCWOpqL2fa
-   O9NcIvlQX2X7RP7d0sUC3bFE0ke+sbS1BV2/Z2gyKpon2m5iAAy/Kzn3/
-   KsxP9aVyfpUiRNM09ckMsJsZ6kiPheGNNHjyGDripLW8lwFS9Mo857lak
-   Az/98vhblBdqryPakKSALsa9qv4kbPdkpba2lkj5/txlAsBP2+uBKZyVD
-   x0dfOjzYNNrcqbf+zMpN48qkgIqUU358KSAO98dpejTOnQVr+ILJNFW+C
-   Q==;
-X-CSE-ConnectionGUID: E+pJvgO5RFKpMhNqdmqY0w==
-X-CSE-MsgGUID: XiePO0aUR/KUgrON6RMqvQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="26638957"
+  bh=w0jLDzy95ysPhd7nXSw/LGQtr8lMj9+9LTOOTudlOUg=;
+  b=NmgOj39yVK+hOpZjRPY2msINphbmjC3NbXONrJ8tfEDEqRKotVuBxWxp
+   EDZzHtdHBiWvuDjg2qmQUy/uJIjHOJOEPbGrH1kMCNjykCG280xxRYKuI
+   0SewYcflXYc6U5lYsKFvQw/V907QhKQQ0pw34AP3jf89f5zAUbaBzXzBq
+   7kUxMftAkQ//cYP3m5/a7xO8cJiQ0rEYDDvWKVxWTwyaT1PzGTNLgcW11
+   dHeB2KGGVql0jXctPkdXUUo4+eUTzD6hpSs2zTI+CXtqBqAMyG/UxqGGl
+   F2IXQ/kywSvVjDqiCSoSWQT/iFzIIAO29WNIvuYKCXwPLKAKJTkV5uCwd
+   w==;
+X-CSE-ConnectionGUID: 9BTQTAZ0SB2wv5ab25Q9zw==
+X-CSE-MsgGUID: NjPItvR+Qe+IXfHG7Xbthg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="26638963"
 X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; 
-   d="scan'208";a="26638957"
+   d="scan'208";a="26638963"
 Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Sep 2024 01:18:23 -0700
-X-CSE-ConnectionGUID: oXsdmYS0TnOnvbYUIi0iZw==
-X-CSE-MsgGUID: NKR/R/eCSlSb2rB9uIfSqg==
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Sep 2024 01:18:34 -0700
+X-CSE-ConnectionGUID: NFUJ900GRhm8m5rC8KQ0dA==
+X-CSE-MsgGUID: t84cBhS4RjCsPsUL6pAfTg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; 
-   d="scan'208";a="96549416"
+   d="scan'208";a="96549434"
 Received: from unknown (HELO rzhang1-mobl7.ccr.corp.intel.com) ([10.245.243.126])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Sep 2024 01:18:22 -0700
+  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Sep 2024 01:18:26 -0700
 From: Zhang Rui <rui.zhang@intel.com>
 To: rafael.j.wysocki@intel.com
 Cc: linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	srinivas.pandruvada@intel.com
-Subject: [PATCH 1/6] powercap: intel_rapl_tpmi: Fix bogus register reading
-Date: Mon, 30 Sep 2024 16:17:56 +0800
-Message-Id: <20240930081801.28502-2-rui.zhang@intel.com>
+Subject: [PATCH 3/6] powercap: intel_rapl_tpmi: Ignore minor version change
+Date: Mon, 30 Sep 2024 16:17:58 +0800
+Message-Id: <20240930081801.28502-4-rui.zhang@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240930081801.28502-1-rui.zhang@intel.com>
 References: <20240930081801.28502-1-rui.zhang@intel.com>
@@ -62,28 +62,67 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Fix bogus reading of the TPMI_RAPL_REG_DOMAIN_INFO register.
+The hardware definition of every TPMI feature contains a major and minor
+version. When there is a change in the MMIO offset or change in the
+definition of a field, hardware will change major version. For addition
+of new fields without modifying existing MMIO offsets or fields, only the
+minor version is changed.
 
-Cc: stable@vger.kernel.org
-Fixes: 903eb9fb85e3 ("powercap: intel_rapl_tpmi: Fix System Domain probing")
+Driver is developed to support RAPL functionality for a major and minor
+version. If the hardware changes major version, since offsets and
+definitions are changed, driver cannot continue to provide RAPL interface
+to users. Driver can still function with a minor version change as it will
+just miss the new functionality added by the hardware. The current
+implementation doesn't ignore any version change.
+
+If there is mismatch with the minor version, continue with an information
+log message. If there is mismatch with the major version, log error and
+exit.
+
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Reviewed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/powercap/intel_rapl_tpmi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/powercap/intel_rapl_tpmi.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/powercap/intel_rapl_tpmi.c b/drivers/powercap/intel_rapl_tpmi.c
-index 947544e4d229..7435df083ea4 100644
+index 7435df083ea4..645fd1dc51a9 100644
 --- a/drivers/powercap/intel_rapl_tpmi.c
 +++ b/drivers/powercap/intel_rapl_tpmi.c
-@@ -181,7 +181,7 @@ static int parse_one_domain(struct tpmi_rapl_package *trp, u32 offset)
- 			pr_warn(FW_BUG "System domain must support Domain Info register\n");
- 			return -ENODEV;
- 		}
--		tpmi_domain_info = readq(trp->base + offset + TPMI_RAPL_REG_DOMAIN_INFO);
-+		tpmi_domain_info = readq(trp->base + offset + TPMI_RAPL_REG_DOMAIN_INFO * 8);
- 		if (!(tpmi_domain_info & TPMI_RAPL_DOMAIN_ROOT))
- 			return 0;
- 		domain_type = RAPL_DOMAIN_PLATFORM;
+@@ -15,7 +15,8 @@
+ #include <linux/module.h>
+ #include <linux/slab.h>
+ 
+-#define TPMI_RAPL_VERSION 1
++#define TPMI_RAPL_MAJOR_VERSION 0
++#define TPMI_RAPL_MINOR_VERSION 1
+ 
+ /* 1 header + 10 registers + 5 reserved. 8 bytes for each. */
+ #define TPMI_RAPL_DOMAIN_SIZE 128
+@@ -154,11 +155,21 @@ static int parse_one_domain(struct tpmi_rapl_package *trp, u32 offset)
+ 	tpmi_domain_size = tpmi_domain_header >> 16 & 0xff;
+ 	tpmi_domain_flags = tpmi_domain_header >> 32 & 0xffff;
+ 
+-	if (tpmi_domain_version != TPMI_RAPL_VERSION) {
+-		pr_warn(FW_BUG "Unsupported version:%d\n", tpmi_domain_version);
++	if (tpmi_domain_version == TPMI_VERSION_INVALID) {
++		pr_warn(FW_BUG "Invalid version\n");
+ 		return -ENODEV;
+ 	}
+ 
++	if (TPMI_MAJOR_VERSION(tpmi_domain_version) != TPMI_RAPL_MAJOR_VERSION) {
++		pr_warn(FW_BUG "Unsupported major version:%ld\n",
++			TPMI_MAJOR_VERSION(tpmi_domain_version));
++		return -ENODEV;
++	}
++
++	if (TPMI_MINOR_VERSION(tpmi_domain_version) > TPMI_RAPL_MINOR_VERSION)
++		pr_info("Ignore: Unsupported minor version:%ld\n",
++			TPMI_MINOR_VERSION(tpmi_domain_version));
++
+ 	/* Domain size: in unit of 128 Bytes */
+ 	if (tpmi_domain_size != 1) {
+ 		pr_warn(FW_BUG "Invalid Domain size %d\n", tpmi_domain_size);
 -- 
 2.34.1
 
