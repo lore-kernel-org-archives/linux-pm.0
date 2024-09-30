@@ -1,111 +1,87 @@
-Received: from mail.andi.de1.cc (mail.andi.de1.cc [178.238.236.174])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09D96190482;
-	Mon, 30 Sep 2024 15:54:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.238.236.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65E55192D68
+	for <linux-pm@vger.kernel.org>; Mon, 30 Sep 2024 16:11:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727711655; cv=none; b=IgWOptH+zTWn5Thfxs9/NmqMa/HxVJP/zoNrLckFyBE3d6MmXBnsAJ6LKrKxfbTm31OAIr3duWUVUtwIy65LStjLFHnLGEA21EkpPD9j7q9BLEJU13dj4e4coCVvCuoWGxoJd6CYmqonbISsDfQfvdCs6nwhKHzR8NklmVjZQUU=
+	t=1727712708; cv=none; b=sLHdNIPh0vdMhmKUrgBO39t7QtiXuK3GuPLzkwDsyZCbSNmr7gSdMa7Eh76e3Ymt4G8lN+5EZZGPxk6NOy1xlxJ9fZGAfWjZ9oKZuBwRYHCEELpeNPtDletN3i9NizF9WOqoDWmweqd2hXTfCOty3DqADN4LQ9rCEr7dycTd4ak=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727711655; c=relaxed/simple;
-	bh=m/7IdEkKhEPMkReOnZZ6V/CwrSu7O1tSM3NvBp9Z6y0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=rLWekKTvcbpd7TI29zlHqLbBKS66v122YNTCVacFig/DeSoZmXrcaN1jOd9xR3/xplli//AZ+1EDp83D38RzYPd8ReKJ7M5l1NY3hclODiiVRo1GFmStevbFXS6eHVtpZQEIABuLLxBBVh4beQi/ymAhleMWtB0Rywzu3r/8PrI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info; spf=pass smtp.mailfrom=kemnade.info; dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b=mqeUWXTj; arc=none smtp.client-ip=178.238.236.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kemnade.info
+	s=arc-20240116; t=1727712708; c=relaxed/simple;
+	bh=ZyCCpQzrqqTQtr5V2iTiKMMhym52ckySL810ZPx6Bzc=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=k7Xg/6f6gov+tFNMeC3esnWgPK9xUXl4RopT2sjMgIxnfVfunRBJs9eiJjoTOqFtxMxpCeWwWl8zUhlDL9WaHD/ZWLvEcRGWUq7fLnVlrj1TbllVJgPxibGhc6Wxkn9PqTEVhH5kdBrgOmPgpsg1G+FuYR8jb6sAvKwI/ti/LCc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dbQHX5L/; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b="mqeUWXTj"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=kemnade.info; s=20220719; h=References:In-Reply-To:Cc:From:Sender:Reply-To:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID;
-	bh=qME5dKJqS8ynkYI2n9iKU3mNmrn4EubnbBdaMwhZ954=; b=mqeUWXTj2z1FscmydKfbHCES6A
-	gh9hE1lZrfSvK9VmNYs0CLxSqVtIwvnq0bmUlqhcv1FDDFS3xNRHVFE4AXhEc0HenVhrp2AxxvUQj
-	OPS61UQYIWZaX2t9IwkFMweeusiggxQx41MUsVLpp7ytzdfOh21kQTaqOFoy2dr0T+HhYziGrwxKy
-	pL8XqGR8vm/CLyWFXEu2sFbCMK6TTNPJVGaenNSKWUJFtGlnnZtKVma9+minzUPQguMJjQP+AKMgM
-	x6lvF/GSdUVh5rcrwVv/csXSJJS+kSTXOP2F6jWI+D/+LNDhdgchVuy+aFYz5uGvRddyTgMIJW+Qo
-	N+ycGKTQ==;
-From: Andreas Kemnade <andreas@kemnade.info>
-To: Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	linux-pm@vger.kernel.org,
-	Conor Dooley <conor+dt@kernel.org>,
-	tony@atomide.com,
-	linux-kernel@vger.kernel.org,
-	linux-omap@vger.kernel.org,
-	Lee Jones <lee@kernel.org>,
-	devicetree@vger.kernel.org,
-	Sebastian Reichel <sre@kernel.org>,
-	Rob Herring <robh@kernel.org>
-Cc: Andreas Kemnade <andreas@kemnade.info>
-Subject: [PATCH v2 2/3] dt-bindings: mfd: twl: add charger node also for TWL603x
-Date: Mon, 30 Sep 2024 17:54:03 +0200
-Message-Id: <20240930155404.1275702-3-andreas@kemnade.info>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240930155404.1275702-1-andreas@kemnade.info>
-References: <20240930155404.1275702-1-andreas@kemnade.info>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dbQHX5L/"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3CE9DC4CED0
+	for <linux-pm@vger.kernel.org>; Mon, 30 Sep 2024 16:11:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1727712708;
+	bh=ZyCCpQzrqqTQtr5V2iTiKMMhym52ckySL810ZPx6Bzc=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=dbQHX5L/LS32XhIxeg43grtjLm24Jsz8b2SpNt3lXJCsyMWxNOpO04zbXmit75qNu
+	 vQC39HoKvhIpVKpwmFE3BBSbUsi4fmNOdogD38tCeweYVI6sq5GWbBfi/GNtFC1pOJ
+	 UxzjDdbRKgn8E4vGXQxSg+ECYPWO8j6+46XSs2mThTU8SjAJVHS2m8ezcilk1l3hRe
+	 YZRUI8+z/b+NAvNv6nx/ZeA9ueUPri/UhS9gN75Excvsg1AN4JFRFfJW5jz2aULtDV
+	 ndUR8kMrveo4pSUZy3bCUnP9Mex7icsjcXJJyRcDYBSQRD1A0t4/upyVG7Hj9Z42rz
+	 tWR+KWNzEsLzw==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 1DBC6C53BC8; Mon, 30 Sep 2024 16:11:48 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: =?UTF-8?B?W0J1ZyAyMTkzMzJdIC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2Nw?=
+ =?UTF-8?B?dWZyZXEvcG9saWN5MC9lbmVyZ3lfcGVyZm9ybWFuY2VfcHJlZmVyZW5jZTog?=
+ =?UTF-8?B?RGV2aWNlIG9yIHJlc291cmNlIGJ1c3k=?=
+Date: Mon, 30 Sep 2024 16:11:47 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: high
+X-Bugzilla-Who: mario.limonciello@amd.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-219332-137361-acuqvw2ePi@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-219332-137361@https.bugzilla.kernel.org/>
+References: <bug-219332-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-Also the TWL603X devices have a charger, so allow to specify it here.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D219332
 
-Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
----
- .../devicetree/bindings/mfd/ti,twl.yaml       | 22 +++++++++++++++++++
- 1 file changed, 22 insertions(+)
+--- Comment #9 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
+> Didnt understand this part, in which scenario were you able to see the
+> governors, but they were ineffective?
 
-diff --git a/Documentation/devicetree/bindings/mfd/ti,twl.yaml b/Documentation/devicetree/bindings/mfd/ti,twl.yaml
-index e94b0fd7af0f8..488d419b211d1 100644
---- a/Documentation/devicetree/bindings/mfd/ti,twl.yaml
-+++ b/Documentation/devicetree/bindings/mfd/ti,twl.yaml
-@@ -105,6 +105,12 @@ allOf:
-             regulator-initial-mode: false
- 
-       properties:
-+        charger:
-+          type: object
-+          additionalProperties: true
-+          properties:
-+            compatible:
-+              const: ti,twl6030-charger
-         gpadc:
-           type: object
-           properties:
-@@ -136,6 +142,14 @@ allOf:
-             regulator-initial-mode: false
- 
-       properties:
-+        charger:
-+          type: object
-+          additionalProperties: true
-+          properties:
-+            compatible:
-+              items:
-+                - const: ti,twl6032-charger
-+                - const: ti,twl6030-charger
-         gpadc:
-           type: object
-           properties:
-@@ -222,6 +236,14 @@ examples:
-         interrupt-controller;
-         #interrupt-cells = <1>;
- 
-+        charger {
-+          compatible = "ti,twl6030-charger";
-+          interrupts = <2>, <5>;
-+          io-channels = <&gpadc 10>;
-+          io-channel-names = "vusb";
-+          monitored-battery = <&bat>;
-+        };
-+
-         gpadc {
-           compatible = "ti,twl6030-gpadc";
-           interrupts = <6>;
--- 
-2.39.2
+I'm confused by this too.
 
+$ cat /sys/devices/system/cpu/cpufreq/policy0/scaling_driver
+amd-pstate-epp
+$ cat /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors
+performance powersave
+$ cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
+powersave
+
+I don't see any others exposed in active mode.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
