@@ -1,102 +1,128 @@
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 754DA1ABEAB;
-	Thu,  3 Oct 2024 23:17:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=141.14.17.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 212A917C6C;
+	Fri,  4 Oct 2024 03:02:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=60.244.123.138
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727997453; cv=none; b=lY/t7qbrEKuxEWQ4Jw1fpSY9GfAYAEsqsxpFh2y55dmnoU/6yZGEuIz2vOYvDnR/jRQNUKf4IODPGOgMj0hpBeUBxCewj1y2jOMBmr3wuk2+i3xo2WIQeF0mfexETEdliDs1qs/jjQOMwx4QbvIgoAWzn2vZJYahJY/dpaGc19U=
+	t=1728010930; cv=none; b=Dbdo3Bp6TMt2KetvAPs2RYVYhNVVocQqDNgoSNfgAe/Ht1DPCNss7Ma21Ob2BZ94MXKhzgjKBwIkP1f08NTtvELgCX6tQgINE+yNKqIar747M0DBwMP1Bc6wU9jU5gK5VelTkF6WwHUuflFoc8zIChcxbdkrb3oWdel6EfHiffU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727997453; c=relaxed/simple;
-	bh=P5UcpAipfbHxuw26N/La74wzuf3cWkCq92gj8uBLqhI=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=kNLb7RItqkMDJxsZn54dDxtbuEn3e1yUbv9JPRJHbX3as5OkYBbPTL8u/+VxM6yM4sl7/pRVaO/cVasN0adkPa0KyIuUEGNtGI+lIhZnimcJ6PrG5R09Wa7Pa7uHpYqwj7n9tcwThZyBtULIFKRBQ08aQvL5Y1Gk2fAe7ggoUXk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de; spf=pass smtp.mailfrom=molgen.mpg.de; arc=none smtp.client-ip=141.14.17.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=molgen.mpg.de
-Received: from [192.168.1.164] (77-32-42-93.dyn.eolo.it [77.32.42.93])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: pmenzel)
-	by mx.molgen.mpg.de (Postfix) with ESMTPSA id 9600561E5FE05;
-	Fri,  4 Oct 2024 01:16:20 +0200 (CEST)
-Message-ID: <862f7737-c88b-4e19-a384-52a3ecb43111@molgen.mpg.de>
-Date: Fri, 4 Oct 2024 01:16:19 +0200
+	s=arc-20240116; t=1728010930; c=relaxed/simple;
+	bh=m1upLiwHF9WhlVD/X9fv/4lhQpI9li48siu2XiFlHGI=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=FDR3GVGt6gM2RlqBG5iWeZshkSPRMiOKYjYF0GtNr+jC43n0Ufn2dbewX2Zi9kW2JkK874lbOAAJoRivl2/3KfpdNI0JFibcy79vCE6I+ZsOfXHaogOwYezYgwpaHexQxvv/fbKErIK2PGHaXoTl/WezewlbdjghKHVr0PDw9CM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=Tm0AzsPb; arc=none smtp.client-ip=60.244.123.138
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mediatek.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="Tm0AzsPb"
+X-UUID: 0794864081fd11efb66947d174671e26-20241004
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+	h=Content-Type:Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=Igm/g11ai9vwnRyUQTM0+p9KLTeYcyfZjO5y3QI8Ioo=;
+	b=Tm0AzsPbGZktN+dcpyi2xiTEq75Pd/i5LEz+NvhNjf7jgZ/+FXxL/A2yJXXZ5ZbgdxJIaKaG5hKrpHYBaqCxYcqRTHjx37//9B7P5k88slQ6qHAv/RDA/acqHJd6kJdOc5d49fkKTk+KNMnG7/g7rusfmjiJlTCHVhlLujmCZIY=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.41,REQID:c517edac-dddb-46c0-82dd-96605ae04c84,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:6dc6a47,CLOUDID:f637ba40-8751-41b2-98dd-475503d45150,B
+	ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
+	RL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,
+	SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-UUID: 0794864081fd11efb66947d174671e26-20241004
+Received: from mtkmbs14n1.mediatek.inc [(172.21.101.75)] by mailgw01.mediatek.com
+	(envelope-from <macpaul.lin@mediatek.com>)
+	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+	with ESMTP id 1004533211; Fri, 04 Oct 2024 11:02:02 +0800
+Received: from mtkmbs13n2.mediatek.inc (172.21.101.108) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.26; Fri, 4 Oct 2024 11:02:00 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
+ mtkmbs13n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.1118.26 via Frontend Transport; Fri, 4 Oct 2024 11:02:00 +0800
+From: Macpaul Lin <macpaul.lin@mediatek.com>
+To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>,
+	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, "Rob
+ Herring" <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, "Conor
+ Dooley" <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	<linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-mediatek@lists.infradead.org>, Alexandre Mergnat
+	<amergnat@baylibre.com>
+CC: Bear Wang <bear.wang@mediatek.com>, Pablo Sun <pablo.sun@mediatek.com>,
+	Macpaul Lin <macpaul@gmail.com>, Chris-qj chen <chris-qj.chen@mediatek.com>,
+	MediaTek Chromebook Upstream
+	<Project_Global_Chrome_Upstream_Group@mediatek.com>, Chen-Yu Tsai
+	<wenst@chromium.org>
+Subject: [PATCH v2 2/2] arm64: dts: mediatek: mt6359: fix dtbs_check error for RTC and regulators
+Date: Fri, 4 Oct 2024 11:01:48 +0800
+Message-ID: <20241004030148.13366-2-macpaul.lin@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20241004030148.13366-1-macpaul.lin@mediatek.com>
+References: <20241004030148.13366-1-macpaul.lin@mediatek.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Subject: Re: [PATCH] platform/x86:intel/pmc: Disable ACPI PM Timer disabling
- on Sky and Kabe Lake
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
- David E Box <david.e.box@intel.com>,
- =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
- Andy Shevchenko <andy@kernel.org>, Todd Brandt <todd.e.brandt@intel.com>,
- Marek Maslanka <mmaslanka@google.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, regressions@lists.linux.dev,
- linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org
-References: <20241003202614.17181-1-hdegoede@redhat.com>
- <20241003202614.17181-2-hdegoede@redhat.com>
-Content-Language: en-US
-In-Reply-To: <20241003202614.17181-2-hdegoede@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-Product-Ver: SMEX-14.0.0.3152-9.1.1006-23728.005
+X-TM-AS-Result: No-10--2.373200-8.000000
+X-TMASE-MatchedRID: EzeqGrx38DlDKVWWbGcmRiZm6wdY+F8KCt59Uh3p/NWUzka/OKYytcFk
+	Mp+HRF4cVkYkwvZAWNf5IV2n4J3Q94JrRWPc34Z+wCZxkTHxcclUENBIMyKD0Zsoi2XrUn/Jn6K
+	dMrRsL14qtq5d3cxkNXRcsnIv8tAumPlydFJwJDGe8bOplaTm7MOBUyCKCucp6aZ5Zuvojc6cuh
+	RZrNicI5xhmyygWGqpKLts6W3au/+QX1Vdxi30aK6c9X2DKLPd82Gj2QC3yG0smXVK/H8eHzG7s
+	r7xobSAsPEFD+rZA81DDKa3G4nrLQ==
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
+X-TMASE-Result: 10--2.373200-8.000000
+X-TMASE-Version: SMEX-14.0.0.3152-9.1.1006-23728.005
+X-TM-SNTS-SMTP: AF13A379B377423AD72CE79A8E91DB3E0B9E9FC241246632324AC6B30BAE59A72000:8
+X-MTK: N
 
-Dear Hans,
+This patch fixes the following dtbs_check errors:
+1. 'mt6359rtc' do not match any of the regexes: 'pinctrl-[0-9]+'
+ - Update 'mt6359rtc' in 'mt6359.dtsi' with a generic device name 'rtc'
+2. 'pmic: regulators: 'compatible' is a required property'
+ - Add 'mediatek,mt6359-regulator' to compatible property.
 
+Fixes: 3b7d143be4b7 ("arm64: dts: mt6359: add PMIC MT6359 related nodes")
+Signed-off-by: Macpaul Lin <macpaul.lin@mediatek.com>
+---
+ arch/arm64/boot/dts/mediatek/mt6359.dtsi | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Thank you for the patch.
+Changes for v2:
+ - No change.
 
-Am 03.10.24 um 22:26 schrieb Hans de Goede:
-> There have been multiple reports that the ACPI PM Timer disabling is
-> causing Sky and Kabe Lake systems to hang on all suspend (s2idle, s3,
+diff --git a/arch/arm64/boot/dts/mediatek/mt6359.dtsi b/arch/arm64/boot/dts/mediatek/mt6359.dtsi
+index 8e1b8c85c6ed..dd732a820a7c 100644
+--- a/arch/arm64/boot/dts/mediatek/mt6359.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt6359.dtsi
+@@ -18,6 +18,8 @@ mt6359codec: mt6359codec {
+ 		};
+ 
+ 		regulators {
++			compatible = "mediatek,mt6359-regulator";
++
+ 			mt6359_vs1_buck_reg: buck_vs1 {
+ 				regulator-name = "vs1";
+ 				regulator-min-microvolt = <800000>;
+@@ -296,7 +298,7 @@ mt6359_vsram_others_sshub_ldo: ldo_vsram_others_sshub {
+ 			};
+ 		};
+ 
+-		mt6359rtc: mt6359rtc {
++		mt6359_rtc: rtc {
+ 			compatible = "mediatek,mt6358-rtc";
+ 		};
+ 	};
+-- 
+2.45.2
 
-Kab*y* (also in the summary)
-
-> hibernate) methods.
-> 
-> Remove the acpi_pm_tmr_ctl_offset and acpi_pm_tmr_disable_bit settings from
-> spt_reg_map to disable the ACPI PM Timer disabling on Sky and Kabe Lake to
-
-Ditto.
-
-> fix the hang on suspend.
-> 
-> Fixes: e86c8186d03a ("platform/x86:intel/pmc: Enable the ACPI PM Timer to be turned off when suspended")
-> Reported-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> Closes: https://lore.kernel.org/linux-pm/18784f62-91ff-4d88-9621-6c88eb0af2b5@molgen.mpg.de/
-> Reported-by: Todd Brandt <todd.e.brandt@intel.com>
-> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=219346
-> Cc: Marek Maslanka <mmaslanka@google.com>
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
->   drivers/platform/x86/intel/pmc/spt.c | 2 --
->   1 file changed, 2 deletions(-)
-> 
-> diff --git a/drivers/platform/x86/intel/pmc/spt.c b/drivers/platform/x86/intel/pmc/spt.c
-> index 2cd2b3c68e46..ab993a69e33e 100644
-> --- a/drivers/platform/x86/intel/pmc/spt.c
-> +++ b/drivers/platform/x86/intel/pmc/spt.c
-> @@ -130,8 +130,6 @@ const struct pmc_reg_map spt_reg_map = {
->   	.ppfear_buckets = SPT_PPFEAR_NUM_ENTRIES,
->   	.pm_cfg_offset = SPT_PMC_PM_CFG_OFFSET,
->   	.pm_read_disable_bit = SPT_PMC_READ_DISABLE_BIT,
-> -	.acpi_pm_tmr_ctl_offset = SPT_PMC_ACPI_PM_TMR_CTL_OFFSET,
-> -	.acpi_pm_tmr_disable_bit = SPT_PMC_BIT_ACPI_PM_TMR_DISABLE,
->   	.ltr_ignore_max = SPT_NUM_IP_IGN_ALLOWED,
->   	.pm_vric1_offset = SPT_PMC_VRIC1_OFFSET,
->   };
-
-Tested-by: Paul Menzel <pmenzel@molgen.mpg.de> # Dell XPS 13 
-9360/0596KF, BIOS 2.21.0 06/02/2022 (suspend/resume with deep and s2idle)
-
-
-Kind regards,
-
-Paul
