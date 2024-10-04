@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90B331E04AA;
-	Fri,  4 Oct 2024 19:43:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C97A61E04B4;
+	Fri,  4 Oct 2024 19:43:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728070994; cv=none; b=GOcuN0P/92Tz/h1podetlIjHJiuMzOEtQ30Sv01tne6NrkYS4v09lFJFRhCsRizP7ZlEpO0WEkVr/iowYkYX8UOYpKTkkPqP+Z2RRFp5Gvcs8bf3c9BpbPaNMaxI67ixEQObNJn6MGeVwGy4on8sZPXEgaCoThjDQK7d/kIk+VI=
+	t=1728070995; cv=none; b=ugJ+lJl9LWF2o+0O0YEl+Vha6QE/TKkuQkRw/WCu769X+G88UJuGWtYYL3j9EOTY3D061WSvlwHD3FP1sEgnRnckP3/OQKIUuQbbSVeEai2NjpvLp9nVlbwkUVqY7w5Ahp/6DcYvRGv0CfGYCBMrgY/WZHQZppoNf9w6ImTErwU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728070994; c=relaxed/simple;
-	bh=r1eo//L6VVctTILFDWgYB4+XSDUQ9la2/czwVaNfpeA=;
+	s=arc-20240116; t=1728070995; c=relaxed/simple;
+	bh=0P2WxnUpd1AyHHvrMH196mT7Oa6TA2+VCu5CwDH3EHo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=S0VJ1iT9bh+N1r/Tpvky4LgSpNfwZRq5dRmSV3FesIiKkQdNjhX2pfTkng77CqUXXkSdHIuio6uthkP61YsmaDqJDnGR62ylk74/U5WYDD0ZobGFolxCILf955dmS/RSQEkHmbs+FER1an/K4MCP+r3YLbtatIjvuYRJ/SliDY0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=eRIrJ7UV reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=XPL4ss9bR/jJAravPCqeoq9pKB9RdKWxOKnPponJW7CKjp86/Zt2sTg8EpzDU0kGiB08k9dLY76b7rGLMd7eAmKsiqraRuOKSn8RPPA0TWsjH3hmDXk2EsKIvbABp6zEVWBkn6q7gfNGBBZa6DVXl7/7LmjiD+lcFWzo9/BDDOs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=kW2VDnhy reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="eRIrJ7UV"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="kW2VDnhy"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 1f4bd3d36c6c5d6a; Fri, 4 Oct 2024 21:43:05 +0200
+ id 974918518edb54b4; Fri, 4 Oct 2024 21:43:03 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 55C7A6A9505;
-	Fri,  4 Oct 2024 21:43:05 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id B12B76A9505;
+	Fri,  4 Oct 2024 21:43:03 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1728070985;
-	bh=r1eo//L6VVctTILFDWgYB4+XSDUQ9la2/czwVaNfpeA=;
+	s=dkim; t=1728070983;
+	bh=0P2WxnUpd1AyHHvrMH196mT7Oa6TA2+VCu5CwDH3EHo=;
 	h=From:Subject:Date;
-	b=eRIrJ7UVm8rvLkZbxuISxlmVpY6LECsuyHhafp9E66EwJ7s0ULnryQBc6QFPI5Bpl
-	 S2O89h1dNDecayqvDggIuOKyghNiinJHmLWfzV0OkXgrpbv+wvGp1NJrPB/GZtsSiW
-	 xkWk4rMOyU9QyZJyG04WA/qC+YCWCgyc9ufdEWkbvMS0ZwJrzK8BHX1JOQEXu0R73w
-	 VZcbCKMM2WOH1tYEJnSXkIx5tLlXNwS+x3XRzvY6tOiH+2NqsU5VNzz3gOH4EPe7mK
-	 IAvLg24JXEUqs8UPl8DHkytJH+55mIguiKVQfsV9hvVhDJRROrKkp+mLdYl1pQ6KCR
-	 LV2WnQV1yOx4Q==
+	b=kW2VDnhyQwQOcey/bOFd8nuhVmqF4pPrrWOb+529WlA4B03S04luBlvT25Vsw+5am
+	 SdBBNQqYv00mWnqBdKYTdBQGR+T+CGmKqlznKkzQY3RO3uclHwWLvilRrgcjjm+edN
+	 Fyk1iuOtJrkGbX5L7z8FYEW/6kUsFL7lepogRp50VmY3L6+nRcfS8+CpsaAW+JfFhl
+	 1eRzEt81NPArvex3FE34l3fBg9mq8QTkicc8TXi1LGu44uBKJ+rOw91zKf+yZF0QOd
+	 2+1VxYrWxDN4gPOjbog7l0yoO/Qscxdz2FTwtR6sGWHCKmRx2EbZmZilPfRqfO/6OS
+	 C69C2uhFUyvGw==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -42,10 +42,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Subject:
- [PATCH v2 06/12] thermal: core: Consolidate thermal zone locking during
- initialization
-Date: Fri, 04 Oct 2024 21:23:10 +0200
-Message-ID: <1920382.CQOukoFCf9@rjwysocki.net>
+ [PATCH v2 09/12] thermal: core: Update thermal zones after cooling device
+ binding
+Date: Fri, 04 Oct 2024 21:33:28 +0200
+Message-ID: <2226302.Icojqenx9y@rjwysocki.net>
 In-Reply-To: <2215082.irdbgypaU6@rjwysocki.net>
 References: <2215082.irdbgypaU6@rjwysocki.net>
 Precedence: bulk
@@ -64,21 +64,16 @@ X-DCC--Metrics: v370.home.net.pl 0; Body=6 Fuz1=6 Fuz2=6
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The part of thermal zone initialization carried out under
-thermal_list_lock acquires the thermal zone lock and releases it
-multiple times back and forth which is not really necessary.
+If a new cooling device is registered and it is bound to at least one
+trip point in a given thermal zone, that thermal zone needs to be
+updated via __thermal_zone_device_update().
 
-Instead of doing this, make it acquire the thermal zone lock once after
-acquiring thermal_list_lock and release it along with that lock.
-
-For this purpose, move all of the code in question to
-thermal_zone_init_complete() introduced previously and provide an
-"unlocked" variant of thermal_zone_cdev_bind() to be invoked from
-there.
-
-Also notice that a thermal zone does not need to be added to
-thermal_tz_list under its own lock, so make the new code acquire
-the thermal zone lock after adding it to the list.
+Instead of doing this with the help of the need_update atomic field in
+struct thermal_zone_device, which is not particularly straightforward,
+make __thermal_zone_cdev_bind() return a bool value indicating whether
+or not the given thermal zone needs to be updated because a new cooling
+device has been bound to it and update thermal_zone_cdev_bind() to
+call __thermal_zone_device_update() when this value is "true".
 
 No intentional functional impact.
 
@@ -87,109 +82,83 @@ Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
 This is a new iteration of
 
-https://lore.kernel.org/linux-pm/10548633.nUPlyArG6x@rjwysocki.net/
+https://lore.kernel.org/linux-pm/3603909.iIbC2pHGDl@rjwysocki.net/
 
-v1 -> v2: Rebase, update the changelog.
+v1 -> v2: Rebase.
 
 ---
- drivers/thermal/thermal_core.c |   39 ++++++++++++++++++++++-----------------
- 1 file changed, 22 insertions(+), 17 deletions(-)
+ drivers/thermal/thermal_core.c |   23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
 Index: linux-pm/drivers/thermal/thermal_core.c
 ===================================================================
 --- linux-pm.orig/drivers/thermal/thermal_core.c
 +++ linux-pm/drivers/thermal/thermal_core.c
-@@ -933,16 +933,14 @@ void print_bind_err_msg(struct thermal_z
+@@ -933,13 +933,14 @@ void print_bind_err_msg(struct thermal_z
  		cdev->type, thermal_zone_trip_id(tz, trip), ret);
  }
  
--static void thermal_zone_cdev_bind(struct thermal_zone_device *tz,
--				   struct thermal_cooling_device *cdev)
-+static void __thermal_zone_cdev_bind(struct thermal_zone_device *tz,
-+				     struct thermal_cooling_device *cdev)
+-static void __thermal_zone_cdev_bind(struct thermal_zone_device *tz,
++static bool __thermal_zone_cdev_bind(struct thermal_zone_device *tz,
+ 				     struct thermal_cooling_device *cdev)
  {
  	struct thermal_trip_desc *td;
++	bool update_tz = false;
  
  	if (!tz->ops.should_bind)
- 		return;
+-		return;
++		return false;
  
--	mutex_lock(&tz->lock);
--
  	for_each_trip_desc(tz, td) {
  		struct thermal_trip *trip = &td->trip;
- 		struct cooling_spec c = {
-@@ -959,6 +957,14 @@ static void thermal_zone_cdev_bind(struc
- 		if (ret)
+@@ -954,9 +955,15 @@ static void __thermal_zone_cdev_bind(str
+ 			continue;
+ 
+ 		ret = thermal_bind_cdev_to_trip(tz, trip, cdev, &c);
+-		if (ret)
++		if (ret) {
  			print_bind_err_msg(tz, trip, cdev, ret);
++			continue;
++		}
++
++		update_tz = true;
  	}
-+}
 +
-+static void thermal_zone_cdev_bind(struct thermal_zone_device *tz,
-+				   struct thermal_cooling_device *cdev)
-+{
-+	mutex_lock(&tz->lock);
-+
-+	__thermal_zone_cdev_bind(tz, cdev);
- 
- 	mutex_unlock(&tz->lock);
++	return update_tz;
  }
-@@ -1336,8 +1342,18 @@ EXPORT_SYMBOL_GPL(thermal_zone_get_crit_
  
- static void thermal_zone_init_complete(struct thermal_zone_device *tz)
+ static void thermal_zone_cdev_bind(struct thermal_zone_device *tz,
+@@ -964,7 +971,8 @@ static void thermal_zone_cdev_bind(struc
  {
-+	struct thermal_cooling_device *cdev;
-+
-+	mutex_lock(&thermal_list_lock);
-+
-+	list_add_tail(&tz->node, &thermal_tz_list);
-+
  	mutex_lock(&tz->lock);
  
-+	/* Bind cooling devices for this zone. */
-+	list_for_each_entry(cdev, &thermal_cdev_list, node)
-+		__thermal_zone_cdev_bind(tz, cdev);
-+
- 	tz->state &= ~TZ_STATE_FLAG_INIT;
- 	/*
- 	 * If system suspend or resume is in progress at this point, the
-@@ -1350,6 +1366,8 @@ static void thermal_zone_init_complete(s
- 	__thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+-	__thermal_zone_cdev_bind(tz, cdev);
++	if (__thermal_zone_cdev_bind(tz, cdev))
++		__thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
  
  	mutex_unlock(&tz->lock);
-+
-+	mutex_unlock(&thermal_list_lock);
  }
- 
- /**
-@@ -1386,7 +1404,6 @@ thermal_zone_device_register_with_trips(
- 					unsigned int polling_delay)
+@@ -991,7 +999,7 @@ __thermal_cooling_device_register(struct
+ 				  const struct thermal_cooling_device_ops *ops)
  {
- 	const struct thermal_trip *trip = trips;
--	struct thermal_cooling_device *cdev;
- 	struct thermal_zone_device *tz;
- 	struct thermal_trip_desc *td;
- 	int id;
-@@ -1514,20 +1531,8 @@ thermal_zone_device_register_with_trips(
- 			goto unregister;
- 	}
+ 	struct thermal_cooling_device *cdev;
+-	struct thermal_zone_device *pos = NULL;
++	struct thermal_zone_device *pos;
+ 	unsigned long current_state;
+ 	int id, ret;
  
--	mutex_lock(&thermal_list_lock);
--
--	mutex_lock(&tz->lock);
--	list_add_tail(&tz->node, &thermal_tz_list);
--	mutex_unlock(&tz->lock);
--
--	/* Bind cooling devices for this zone */
--	list_for_each_entry(cdev, &thermal_cdev_list, node)
--		thermal_zone_cdev_bind(tz, cdev);
--
- 	thermal_zone_init_complete(tz);
+@@ -1067,11 +1075,6 @@ __thermal_cooling_device_register(struct
+ 	list_for_each_entry(pos, &thermal_tz_list, node)
+ 		thermal_zone_cdev_bind(pos, cdev);
  
--	mutex_unlock(&thermal_list_lock);
+-	list_for_each_entry(pos, &thermal_tz_list, node)
+-		if (atomic_cmpxchg(&pos->need_update, 1, 0))
+-			thermal_zone_device_update(pos,
+-						   THERMAL_EVENT_UNSPECIFIED);
 -
- 	thermal_notify_tz_create(tz);
+ 	mutex_unlock(&thermal_list_lock);
  
- 	thermal_debug_tz_add(tz);
+ 	return cdev;
 
 
 
