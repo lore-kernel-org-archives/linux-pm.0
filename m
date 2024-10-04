@@ -1,51 +1,49 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 925E61E04B5;
-	Fri,  4 Oct 2024 19:43:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F16491E04A3;
+	Fri,  4 Oct 2024 19:43:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728070994; cv=none; b=B9I+fMp5Ym6uWFjYzIaq7UOza2vXDDVDTa9KfzgnADE+5/SrehYlGAimrDCObb3fb0Bpo4XYT8H8YYpRX0GstmSivnasqE4XYtPcSM+66+u7uqdx+9L6wTBbP1H2SabuKmBHM2SlBQjLFoJiRuR6np/BXNS9pC2ObNHehivRuxU=
+	t=1728070994; cv=none; b=m78k2XlSr27Wz25qs1CUcuIpTgMRIqTfS2qICbXZEGeA2Ji31RNCNXoTaMq6wUgS53ECn7dyqNKQY0fkwSQpAt+3UalyDOd+VVciPRSeEcNlWjeWsM5+jU/zzSPDUWQineoDEUp2FNjuwZD/562OF70e2PLWKvDnCImY8ctBz9M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1728070994; c=relaxed/simple;
-	bh=RvElTQ4H7eYyI818MMB6dDqmpeYAKR0WEPM4hHiWSvY=;
+	bh=XDknYcHwRJCGRiktQeXSdagSDdi3Gy/O0jox8ywDg7o=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jWZktQDjEHbAw7F9OOyYCJMHzLO+gvBBqE1XqGZ0kOu1E9Gwww2pSn6WbaKdQZSrd7QPb0QssQ4nwQfxNFH9I2kSSuLh1hqcoxnT0SnuVjKFDvcXwAXnv72W6NJy7wlwXsss8MXAUPY0paqEtQqVq1H+PG5xUotxrkplICfmvek=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=UflJ92E+ reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=RpeFrDip5KTHIO9ltqvQvOx5vDTfXEqmDX8ecOjFkHL305vuWD3aWg4vqUvj+Pc4vh9YEutag0DPy2yJvmInE+IsyKbcaIn8rUFWN17HFG38ZvN7+VKYw7pJdu2/2QXuZ+09y10rjRyPJOUDVzxHHOr4tiBB4iv8vewN5poFtDw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=kS0B1Gv6; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="UflJ92E+"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="kS0B1Gv6"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 1513be72712f9a15; Fri, 4 Oct 2024 21:43:04 +0200
+ id 1181a698366aaaa3; Fri, 4 Oct 2024 21:43:08 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id B8E1D6A9505;
-	Fri,  4 Oct 2024 21:43:04 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id F3A196A9505;
+	Fri,  4 Oct 2024 21:43:07 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1728070984;
-	bh=RvElTQ4H7eYyI818MMB6dDqmpeYAKR0WEPM4hHiWSvY=;
+	s=dkim; t=1728070988;
+	bh=XDknYcHwRJCGRiktQeXSdagSDdi3Gy/O0jox8ywDg7o=;
 	h=From:Subject:Date;
-	b=UflJ92E+eLG7fKwEKy1yaevWf95oFh2H+rnGalT/WErMcGGRSpFcazjgxB+mM8sN6
-	 j+c+mJ282zOCWl7Kk+L1F/lPaDBDd2K63MVadN2h6fgH9aH7SR/bGVWmzyixECRT57
-	 Wcms3kR3fBavqq8VBfeYylySFAuXkxG5tdHLpyq/0vvTUdvW7j6SSw6AG3BDRpYlF4
-	 TvAmcO5typorXyXnnWVowj073og2Fvamfg/dFK9TZgyvUNyhx5Kq9VGV3WgeeTXeRM
-	 qPE0HMBWhtfgbQEOPOhY2LTMNxotXaWcaBILvAR9UP/b+mEJ70FqwtFw4FeCVP7dco
-	 1k3/4zGX0ttmg==
+	b=kS0B1Gv6ch0y9cLw020dsscYAXrVs71ovPwTgJKvI+xg03bETXolcUAB/XRjJQV41
+	 cXemUPV7c0OUkE7RfgOEl4JpZiprHQQzPj85xi/U5vDq2OS8v6cZGcZ6zhdL7cNsBw
+	 fE18v20qsPFhh4LsxFpOUiw0ewNfORlAZxGwqYFFcBFi+FNT1kD35XyPX3/CfdXXL5
+	 5kSY+wNDttq8rf2Ab5FzYdkBBC+oEFuEr6z8CICkSdNKMHABElodS2kKRn75qoB14o
+	 sEYGl2fH0eI5YTgb4RlVxMabfKofaSR1iazzvlcOn3ibGcVhefAVLrr1smOx/bVZzU
+	 FIdPPbdwnGrdA==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject:
- [PATCH v2 07/12] thermal: core: Mark thermal zones as exiting before
- unregistration
-Date: Fri, 04 Oct 2024 21:26:12 +0200
-Message-ID: <4394176.ejJDZkT8p0@rjwysocki.net>
+Subject: [PATCH v2 02/12] thermal: core: Rearrange PM notification code
+Date: Fri, 04 Oct 2024 21:09:23 +0200
+Message-ID: <2299090.iZASKD2KPV@rjwysocki.net>
 In-Reply-To: <2215082.irdbgypaU6@rjwysocki.net>
 References: <2215082.irdbgypaU6@rjwysocki.net>
 Precedence: bulk
@@ -64,53 +62,141 @@ X-DCC--Metrics: v370.home.net.pl 0; Body=6 Fuz1=6 Fuz2=6
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In analogy with a previous change in the thermal zone registration code
-path, to ensure that __thermal_zone_device_update() will return early
-for thermal zones that are going away, introduce a thermal zone state
-flag representing the "exit" state and set it while deleting the thermal
-zone from thermal_tz_list.
+Move the code run for each thermal zone by the thermal PM notify
+handler to separate functions.
+
+This will help to make some subsequent changes look somewhat more
+straightforward, among other things.
+
+No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
 This is a new iteration of
 
-https://lore.kernel.org/linux-pm/1997536.PYKUYFuaPT@rjwysocki.net/
+https://lore.kernel.org/linux-pm/4940614.GXAFRqVoOG@rjwysocki.net/
 
-v1 -> v2: Rebase.
+v1 -> v2: The thermal zone guard has not been defined yet, so use lock/unlock
+          directly on the thermal zone lock and update the changelog accordingly.
 
 ---
- drivers/thermal/thermal_core.c |    3 +++
- drivers/thermal/thermal_core.h |    1 +
- 2 files changed, 4 insertions(+)
+ drivers/thermal/thermal_core.c |   88 +++++++++++++++++++++--------------------
+ 1 file changed, 46 insertions(+), 42 deletions(-)
 
 Index: linux-pm/drivers/thermal/thermal_core.c
 ===================================================================
 --- linux-pm.orig/drivers/thermal/thermal_core.c
 +++ linux-pm/drivers/thermal/thermal_core.c
-@@ -1613,7 +1613,10 @@ void thermal_zone_device_unregister(stru
- 	}
- 
- 	mutex_lock(&tz->lock);
-+
-+	tz->state |= TZ_STATE_FLAG_EXIT;
- 	list_del(&tz->node);
-+
+@@ -1675,6 +1675,48 @@ static void thermal_zone_device_resume(s
  	mutex_unlock(&tz->lock);
+ }
  
- 	/* Unbind all cdevs associated with 'this' thermal zone */
-Index: linux-pm/drivers/thermal/thermal_core.h
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.h
-+++ linux-pm/drivers/thermal/thermal_core.h
-@@ -64,6 +64,7 @@ struct thermal_governor {
- #define	TZ_STATE_FLAG_SUSPENDED	BIT(0)
- #define	TZ_STATE_FLAG_RESUMING	BIT(1)
- #define	TZ_STATE_FLAG_INIT	BIT(2)
-+#define	TZ_STATE_FLAG_EXIT	BIT(3)
++static void thermal_zone_pm_prepare(struct thermal_zone_device *tz)
++{
++	mutex_lock(&tz->lock);
++
++	if (tz->resuming) {
++		/*
++		 * thermal_zone_device_resume() queued up for this zone has not
++		 * acquired the lock yet, so release it to let the function run
++		 * and wait util it has done the work.
++		 */
++		mutex_unlock(&tz->lock);
++
++		wait_for_completion(&tz->resume);
++
++		mutex_lock(&tz->lock);
++	}
++
++	tz->suspended = true;
++
++	mutex_unlock(&tz->lock);
++}
++
++static void thermal_zone_pm_complete(struct thermal_zone_device *tz)
++{
++	mutex_lock(&tz->lock);
++
++	cancel_delayed_work(&tz->poll_queue);
++
++	reinit_completion(&tz->resume);
++	tz->resuming = true;
++
++	/*
++	 * Replace the work function with the resume one, which will restore the
++	 * original work function and schedule the polling work if needed.
++	 */
++	INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_resume);
++	/* Queue up the work without a delay. */
++	mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, 0);
++
++	mutex_unlock(&tz->lock);
++}
++
+ static int thermal_pm_notify(struct notifier_block *nb,
+ 			     unsigned long mode, void *_unused)
+ {
+@@ -1686,27 +1728,8 @@ static int thermal_pm_notify(struct noti
+ 	case PM_SUSPEND_PREPARE:
+ 		mutex_lock(&thermal_list_lock);
  
- #define TZ_STATE_READY		0
+-		list_for_each_entry(tz, &thermal_tz_list, node) {
+-			mutex_lock(&tz->lock);
+-
+-			if (tz->resuming) {
+-				/*
+-				 * thermal_zone_device_resume() queued up for
+-				 * this zone has not acquired the lock yet, so
+-				 * release it to let the function run and wait
+-				 * util it has done the work.
+-				 */
+-				mutex_unlock(&tz->lock);
+-
+-				wait_for_completion(&tz->resume);
+-
+-				mutex_lock(&tz->lock);
+-			}
+-
+-			tz->suspended = true;
+-
+-			mutex_unlock(&tz->lock);
+-		}
++		list_for_each_entry(tz, &thermal_tz_list, node)
++			thermal_zone_pm_prepare(tz);
  
+ 		mutex_unlock(&thermal_list_lock);
+ 		break;
+@@ -1715,27 +1738,8 @@ static int thermal_pm_notify(struct noti
+ 	case PM_POST_SUSPEND:
+ 		mutex_lock(&thermal_list_lock);
+ 
+-		list_for_each_entry(tz, &thermal_tz_list, node) {
+-			mutex_lock(&tz->lock);
+-
+-			cancel_delayed_work(&tz->poll_queue);
+-
+-			reinit_completion(&tz->resume);
+-			tz->resuming = true;
+-
+-			/*
+-			 * Replace the work function with the resume one, which
+-			 * will restore the original work function and schedule
+-			 * the polling work if needed.
+-			 */
+-			INIT_DELAYED_WORK(&tz->poll_queue,
+-					  thermal_zone_device_resume);
+-			/* Queue up the work without a delay. */
+-			mod_delayed_work(system_freezable_power_efficient_wq,
+-					 &tz->poll_queue, 0);
+-
+-			mutex_unlock(&tz->lock);
+-		}
++		list_for_each_entry(tz, &thermal_tz_list, node)
++			thermal_zone_pm_complete(tz);
+ 
+ 		mutex_unlock(&thermal_list_lock);
+ 		break;
 
 
 
