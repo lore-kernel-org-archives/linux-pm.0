@@ -1,31 +1,32 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FEF914C5B5;
-	Sat,  5 Oct 2024 10:04:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BDB954F95;
+	Sat,  5 Oct 2024 10:05:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728122692; cv=none; b=WoEPMl+5Ap/y/D2caIIyO0XkHOEQfX6W3ya3tZATui7j3A5Iu8V6vp0vsG/aol6b82q9Py4Ilr5WUi+4mrnlFmbEnG9xd97/OGufEuzJuoahE3Mup6BMO9BHDI7RmKlK79/hVGYFvTcmmgnF2BrNY4XhwrpNB3bPotx9CBtqnm8=
+	t=1728122730; cv=none; b=Tscr0CvkMxWdF5gyJO4vPubWTZ+VTPMA1/k2ndxnE3OmI9QVlTZvW7XZ8aTdjqrE5VFdwaVr7WgwWtCumKsXFJGkoivIjwgsabgajvqCTDQqLrxAQ+AY49Qd8vDUBGdQRqDmn4UyZAlX9wRuGlXoMvaD5bWygTgWd5cGxVkWnd8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728122692; c=relaxed/simple;
-	bh=G7hFn53Hx/armmZCWo8cg+1e0J/zbMPD5IhuGApPuV4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bOu/ObGqBBaLCf3YENBBYhA2+p2qUJssX+Vbp9b7h7tTIJA+dYgkY6DOzFWPCQeKDRtBqghXE6f2BjzrvNrCCUQaY49fHYwR2rIZnAK5VZmbmM++3gBSPx+VQuVPx5sNIhL7pIdRwrmKYJ9xOIps+C9o7hETIxZJ7YybfaquiM4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=OTfMmLXu; arc=none smtp.client-ip=159.69.126.157
+	s=arc-20240116; t=1728122730; c=relaxed/simple;
+	bh=aY3x1zoEK/AerqbuxoCWJqyPGjSGQrsN4fv559DLlnc=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=VfWKFaYA1cc3BCK6ZkUD0dfFdo3x55/SWjWTrZZnUggbNb4bhcNsOooxQTOmpAQFz2hsLwBZuq8cU2z56s2sX5te/zZ2XxF3sdW2Fe+6pDPxHRVH22f9P9PjJHT6HlNTzNKGriT+ZsiU7r0Pw1CcYVEXp+fVb+eTeIwT8YHpu58=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=XVKwSV9C; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="OTfMmLXu"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="XVKwSV9C"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1728122684;
-	bh=G7hFn53Hx/armmZCWo8cg+1e0J/zbMPD5IhuGApPuV4=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=OTfMmLXuJtpBcquKC7KAfgSS3aCISaPH9eNFwhJdhwZv9963BBv7H7HkHctm4maBt
-	 0GT7uYTwolZt3c03B6Plr1cLaHcqHODHQ3s7OigaSedCP8Be4oYFEp7IBKBG/5ftYe
-	 gESZMJoNDgTPn76ddsggTEzdgguMNkM7IZ1D1dyA=
+	s=mail; t=1728122726;
+	bh=aY3x1zoEK/AerqbuxoCWJqyPGjSGQrsN4fv559DLlnc=;
+	h=From:Subject:Date:To:Cc:From;
+	b=XVKwSV9Cb3eg68g+wKRk224+KTLGOoprfOxyFZQKjnAOUDI8t2fH+6kZXeShr6F4Z
+	 JVuW3SHewQ0gSh5cXhVS1VC8xUPtHo+oPjrZydjsjlgIDdQrFytRIWjFRhI+MGS/Bx
+	 zZaR8HEO9dIDUvIswJJ9Dht+WhKtBPi8ArXI1ERk=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sat, 05 Oct 2024 12:04:22 +0200
-Subject: [PATCH 6/7] power: supply: ab8500: constify ocv table
+Subject: [PATCH 0/8] power: supply: core: remove
+ {,devm_}power_supply_register_no_ws()
+Date: Sat, 05 Oct 2024 12:05:02 +0200
+Message-Id: <20241005-power-supply-no-wakeup-source-v1-0-1d62bf9bcb1d@weissschuh.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,46 +35,59 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241005-power-supply-battery-const-v1-6-c1f721927048@weissschuh.net>
-References: <20241005-power-supply-battery-const-v1-0-c1f721927048@weissschuh.net>
-In-Reply-To: <20241005-power-supply-battery-const-v1-0-c1f721927048@weissschuh.net>
+X-B4-Tracking: v=1; b=H4sIAE4PAWcC/x3MwQqDMAwA0F+RnBfQosPuV8YOXc1mUNqQ0Lkh/
+ rtlx3d5Oxgpk8Gt2UHpw8Y5VXSXBuIc0puQp2pwretb7xxK3kjRisj6w5RxCwsVQctFI2E/xKn
+ zz+sYfIB6iNKLv////jiOE39d7IlvAAAA
+X-Change-ID: 20240922-power-supply-no-wakeup-source-45cd19b68a9a
 To: Sebastian Reichel <sre@kernel.org>, 
- Linus Walleij <linus.walleij@linaro.org>, Orson Zhai <orsonzhai@gmail.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Chunyan Zhang <zhang.lyra@gmail.com>
+ "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
+ =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
+ Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, 
+ Luca Ceresoli <luca.ceresoli@bootlin.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-acpi@vger.kernel.org, chrome-platform@lists.linux.dev, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1728122683; l=912;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1728122726; l=1840;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=G7hFn53Hx/armmZCWo8cg+1e0J/zbMPD5IhuGApPuV4=;
- b=0NizM4/ou17qrDgIW2R6hywiNqZWjrLMRyiJqMrqhhsBwrsGGjKCWxRr22taXIvwHFBuulhi+
- oETkVsI8b0IAuP1r8skOlb0pZly3vIuJfpdua/3597aP1N7puRYmBSt
+ bh=aY3x1zoEK/AerqbuxoCWJqyPGjSGQrsN4fv559DLlnc=;
+ b=6a85BGLKptqISfDlab43RGOcxCftbSsCSnFrs47gEEzs4VONZ1vV5qMB9IXg5s4/iAKYMHd/r
+ qOZAfotnmMZB4VGH/otOj534lvLNv9UwiWwpS74no/6E4JeM1rNp4zA
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The power supply core now allows this constification.
-Prevent accidental or malicious modification of the data.
+The meaning of the _no_ws() suffix is not immediately clear when reading
+the code. Furthermore there is already a dedicated API to configure the
+details of the created power supply in "struct power_supply_config".
+Migrate the functionality to "struct power_supply_config" and remove the
+special functions.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/ab8500_bmdata.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thomas Weißschuh (8):
+      power: supply: core: add wakeup source inhibit by power_supply_config
+      ACPI: battery: Register power supply with power_supply_register()
+      power: supply: acer_a500_battery: register power supply with devm_power_supply_register()
+      power: supply: bq27xxx_battery: register power supply with power_supply_register()
+      power: supply: cros_usbpd-charger: register power supply with devm_power_supply_register()
+      power: supply: lenovo_yoga_c630_battery: register power supplies with power_supply_register()
+      power: supply: max77976_charger: register power supply with devm_power_supply_register()
+      power: supply: core: remove {,devm_}power_supply_register_no_ws()
 
-diff --git a/drivers/power/supply/ab8500_bmdata.c b/drivers/power/supply/ab8500_bmdata.c
-index 2fcfbbef050383eaef461ec2e8191e9b269305ff..19ed528528048547a97cddbf18f3f5aaf771d646 100644
---- a/drivers/power/supply/ab8500_bmdata.c
-+++ b/drivers/power/supply/ab8500_bmdata.c
-@@ -16,7 +16,7 @@
- /* Default: temperature hysteresis */
- #define AB8500_TEMP_HYSTERESIS	3
- 
--static struct power_supply_battery_ocv_table ocv_cap_tbl[] = {
-+static const struct power_supply_battery_ocv_table ocv_cap_tbl[] = {
- 	{ .ocv = 4186000, .capacity = 100},
- 	{ .ocv = 4163000, .capacity = 99},
- 	{ .ocv = 4114000, .capacity = 95},
+ drivers/acpi/battery.c                          |  3 +-
+ drivers/power/supply/acer_a500_battery.c        |  7 +--
+ drivers/power/supply/bq27xxx_battery.c          |  3 +-
+ drivers/power/supply/cros_usbpd-charger.c       |  4 +-
+ drivers/power/supply/lenovo_yoga_c630_battery.c | 14 ++---
+ drivers/power/supply/max77976_charger.c         |  3 +-
+ drivers/power/supply/power_supply_core.c        | 68 ++-----------------------
+ include/linux/power_supply.h                    | 10 +---
+ 8 files changed, 26 insertions(+), 86 deletions(-)
+---
+base-commit: 27cc6fdf720183dce1dbd293483ec5a9cb6b595e
+change-id: 20240922-power-supply-no-wakeup-source-45cd19b68a9a
 
+Best regards,
 -- 
-2.46.2
+Thomas Weißschuh <linux@weissschuh.net>
 
