@@ -1,31 +1,32 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A8D1231C8A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECCC8136349;
 	Sat,  5 Oct 2024 10:04:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728122688; cv=none; b=Hl9Po87z+1eEA6IM+bcNXIbKu7m+541hGCDaOL98gcN0YtIrUn7zNFlpIIdkOuXRWRyTXOROq4erXJeTh/5L7Bluv+EQTV9C6K7i3nEuONewtl8Wxu7hRRMYhwccIpwyRtIo7JbmScYRJ8b84+XVneKJ1A6pa1hsd1hxk12qcAE=
+	t=1728122689; cv=none; b=O5U6nVgvnZxpL7OY5NQOsNiIkJOl4ZdSMzxb3nUgsLM64YksDv8+O5g+xMRTQFLTuWoZEWTKG6+04Ps8pM3n/eqANp13vq2iDbfOlPZD0IfJSWAY8JPTeKTjmJ2nycHnUGD6R/IrubF7GAF7bvzhrDi19IEuKE7GnP+LJbIEXko=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728122688; c=relaxed/simple;
-	bh=TqpkU7g/Y7luq6W/VydlwUzftAlrXkbseidQfcUpmRI=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=dSUL91/jtXjtUnxKlvaNFvXhR84t2B9DLPbRB2XgGA0zaePen+Ifu/DvzDkxT9HspyEYPcPN1siL4K2/RZ3iN0p+VBlWSDlDuZdk0p0r6v94mn7djpwaVd21Hh6QwV8DPn0z9g5KfiN0xuBkWGMgWW5jf0dI8aEEWuZqq8nCevo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=QvcNE8fv; arc=none smtp.client-ip=159.69.126.157
+	s=arc-20240116; t=1728122689; c=relaxed/simple;
+	bh=AwYwiT2DeM2wVq1UwoseCa2sO84nhlWpq31txXWMSQE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=E00BoG4gSZpFepXGxdvJVQ0vhmvD3c6BGDPkYv+rrocqSQzkXuLsfihQ3hPyQsUuR2rlXkLFXWIBzGGpyzuAVRIl/8m5gJ78id7agUh7LvvN1eFRNc9NbXmapvwcGDATNEGQ9d4VQIiO9+r5WeWb3Lx/v80S8+UisXdjH+NyrLU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=TaJF7eIB; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="QvcNE8fv"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="TaJF7eIB"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1728122684;
-	bh=TqpkU7g/Y7luq6W/VydlwUzftAlrXkbseidQfcUpmRI=;
-	h=From:Subject:Date:To:Cc:From;
-	b=QvcNE8fvCuWBf6mN4PF6oIGq0ZyrgqonkzqIrXkpZG34VpUz1Ody0Z5BSEEcFioFK
-	 9L13MId0bHm2qVg6inxbs5bTJ2W8TYVViAFMIH7Z3FG6XjfhJTZD2B31To4ptOtEUO
-	 0q42MQDOmEA+Lhoz2JrnBsWpdrdfk6PjNlBG3bok=
+	bh=AwYwiT2DeM2wVq1UwoseCa2sO84nhlWpq31txXWMSQE=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=TaJF7eIB0+nzM2l5m6N4sVRy8C7mdn/Otg/147qaEivoRYvXabb81daAcfZC9kqE2
+	 tr5z3taDitdzrQHSHDGJE/EqdozU4fUZ6SqRcYfh6tbMdZ0TwQUMGiZbZhm8AtJPUM
+	 Bg/oAC9INA4Lcxef1/1ataOoOKPayORp3V2lbtcE=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Subject: [PATCH 0/7] power: supply: constify ocv and resistance tables
-Date: Sat, 05 Oct 2024 12:04:16 +0200
-Message-Id: <20241005-power-supply-battery-const-v1-0-c1f721927048@weissschuh.net>
+Date: Sat, 05 Oct 2024 12:04:19 +0200
+Subject: [PATCH 3/7] power: supply: samsung-sdi-battery: constify
+ resistance table
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,10 +35,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIACAPAWcC/x3MwQqDMAwA0F+RnBfQKMr8FdlBbdwCoy1J3RTx3
- y0e3+UdYKzCBn1xgPJPTILPqB4FzJ/RvxnFZQOV1JRPIozhz4q2xvjdcRpTYt1xDt4S1h2RWzp
- XtdxADqLyItudD6/zvAC6rfnTbAAAAA==
-X-Change-ID: 20240922-power-supply-battery-const-3722df7d16e4
+Message-Id: <20241005-power-supply-battery-const-v1-3-c1f721927048@weissschuh.net>
+References: <20241005-power-supply-battery-const-v1-0-c1f721927048@weissschuh.net>
+In-Reply-To: <20241005-power-supply-battery-const-v1-0-c1f721927048@weissschuh.net>
 To: Sebastian Reichel <sre@kernel.org>, 
  Linus Walleij <linus.walleij@linaro.org>, Orson Zhai <orsonzhai@gmail.com>, 
  Baolin Wang <baolin.wang@linux.alibaba.com>, 
@@ -45,39 +45,36 @@ To: Sebastian Reichel <sre@kernel.org>,
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1728122683; l=1167;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1728122683; l=1114;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=TqpkU7g/Y7luq6W/VydlwUzftAlrXkbseidQfcUpmRI=;
- b=VVWQylHFyGqBwlL6cFGyQsLEGzjKO8fkAuVQ98D6sHjZlMcFMXumFiD1ZjwIsfOoASNQZlyFg
- QZiNdUre9d9DuT9swV1wFUEexspr7M/loMvz9chI5gp1p3csfHQtoE0
+ bh=AwYwiT2DeM2wVq1UwoseCa2sO84nhlWpq31txXWMSQE=;
+ b=qmXj7XvxaS6SK4/Sp2D3XOW7fmip94fNft/oIVu1Db0RHo82w4sTF95qCTAHgGy1Kq9Ko3Erz
+ 1VoEUftrA6qBCGRRt9sk2sZsiHLon4dGrm//jU6H6NZG+aMpW53X1XR
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-These tables are nevery modified. Reflect this in the API and constify
-the table definitions.
+The power supply core now allows this constification.
+Prevent accidental or malicious modification of the data.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
-Thomas Weißschuh (7):
-      power: supply: core: constify power_supply_battery_info::resist_table
-      power: supply: ab8500: constify resistance table
-      power: supply: samsung-sdi-battery: constify resistance table
-      power: supply: sc27xx: use const reference to ocv table
-      power: supply: core: constify power_supply_battery_info::ocv_table
-      power: supply: ab8500: constify ocv table
-      power: supply: samsung-sdi-battery: constify ocv table
+ drivers/power/supply/samsung-sdi-battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/power/supply/ab8500_bmdata.c       |  4 ++--
- drivers/power/supply/power_supply_core.c   | 12 ++++++------
- drivers/power/supply/samsung-sdi-battery.c | 10 +++++-----
- drivers/power/supply/sc27xx_fuel_gauge.c   |  2 +-
- include/linux/power_supply.h               | 10 +++++-----
- 5 files changed, 19 insertions(+), 19 deletions(-)
----
-base-commit: 27cc6fdf720183dce1dbd293483ec5a9cb6b595e
-change-id: 20240922-power-supply-battery-const-3722df7d16e4
+diff --git a/drivers/power/supply/samsung-sdi-battery.c b/drivers/power/supply/samsung-sdi-battery.c
+index b63fd2758c2f13f35d9e2ae5e8ebf25d92f847dc..263592d625837e3851ccb30b4cf1272139ee923d 100644
+--- a/drivers/power/supply/samsung-sdi-battery.c
++++ b/drivers/power/supply/samsung-sdi-battery.c
+@@ -431,7 +431,7 @@ static const struct power_supply_vbat_ri_table samsung_vbat2res_charging_eb58515
+  * temperature compensation tables so we just state 100% for every temperature.
+  * If you have the datasheets, please provide these tables.
+  */
+-static struct power_supply_resistance_temp_table samsung_temp2res[] = {
++static const struct power_supply_resistance_temp_table samsung_temp2res[] = {
+ 	{ .temp = 50, .resistance = 100 },
+ 	{ .temp = 40, .resistance = 100 },
+ 	{ .temp = 30, .resistance = 100 },
 
-Best regards,
 -- 
-Thomas Weißschuh <linux@weissschuh.net>
+2.46.2
 
