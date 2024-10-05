@@ -1,120 +1,138 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from vps-ovh.mhejs.net (vps-ovh.mhejs.net [145.239.82.108])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17BED13DDDD;
-	Sat,  5 Oct 2024 10:06:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D09C715AF6;
+	Sat,  5 Oct 2024 14:05:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=145.239.82.108
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728122795; cv=none; b=IWTxrwRwPCsAXbPayBn4JQEGPswWQvIHPrzJXYkBkMxEj+GceFNYlPlBmsH9aEwFIfdaPc/nPzyyCULFVP11hMwkxoSo19t2P0iEIy2RraB9e3WnjHSOJwiU7f1I8wAN+0KL9ao/5vZ+3INbO/c9MrHaMqbINpBnzZ0hL6YRXqM=
+	t=1728137132; cv=none; b=qL5K+61qYG94qJ3SEra4H89amX1PVdNHlnEyovXne5ccUZzsIs6xagaT4PG5tdZsLE0irmqr8JZW8wjYNxNKCbE50LpXJhTYFOl3+aneXO3nUE9PGXOQ3G9KhqfckmOddSWpWxOVlCw8aftJ+ypRD0g1rLOtkMvvOB4oLCx6+y4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728122795; c=relaxed/simple;
-	bh=iaZA482jF5FfFGlgdv4MON26pqjatXtV2BsozZy2/eI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=WAGG+NqJiZ/rE3ch4L2jmEkiI+mufuMUw8brh+8rrjRWGYIElox9r5jKbefZ2Zqg/ok3rXF2xI3Mppt9dZsk/vCxbeyVpvwaJSQZ5uBBLeE1Gz7CTS/OYT0Kv16OwIJcgaRYbEp5X1hrq6lWdZbLU2sKlWd/QlLIW7qj64QCOqU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=e0HwC/oc; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="e0HwC/oc"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1728122791;
-	bh=iaZA482jF5FfFGlgdv4MON26pqjatXtV2BsozZy2/eI=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=e0HwC/oct/PbLG/CJCb5Ldue2PY9AH+BmBVqdFSuQjBSXgQOytKpqtL4JkwND7gLX
-	 oRRLmGK2ePcwKhxc5MTdAIZxFPOPMVLcrygl0gYNUgROpyQNHAzQJz7+ZDDQcpX14o
-	 Nv8O56gLzjaYqwA5JtvybYAd1wekVf/b139E4AVI=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sat, 05 Oct 2024 12:06:16 +0200
-Subject: [PATCH 2/4] power: supply: core: unexport
- power_supply_property_is_writeable()
+	s=arc-20240116; t=1728137132; c=relaxed/simple;
+	bh=fUcwfSgvkcE7Ic79KuksBiU7kEwLsGaeMLge1N+Ssx4=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=CqvqSfXeNwn1UNuTbo3x60HDyDwfcx6nJ0hTaLI2HUb7qil2XilXvmX0vOSf2PEnRL5UJuCqlF9LToZh3fkepyDYGrVXvbYCEC+HDdlF9TbBtmq5+EdGtJhyiD/6Jub0KIp/WcS4imONjlzVhypzQmmdofw5F0krpkP6NMqeifU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=maciej.szmigiero.name; spf=none smtp.mailfrom=vps-ovh.mhejs.net; arc=none smtp.client-ip=145.239.82.108
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=maciej.szmigiero.name
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=vps-ovh.mhejs.net
+Received: from MUA
+	by vps-ovh.mhejs.net with esmtpsa  (TLS1.3) tls TLS_AES_128_GCM_SHA256
+	(Exim 4.98)
+	(envelope-from <mhej@vps-ovh.mhejs.net>)
+	id 1sx4e9-00000000I5R-2Aq0;
+	Sat, 05 Oct 2024 15:16:33 +0200
+Message-ID: <413b1e99-8cfe-4018-9ef3-2f3e21806bad@maciej.szmigiero.name>
+Date: Sat, 5 Oct 2024 15:16:27 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: Root filesystem read access for firmware load during hibernation
+ image writing
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>,
+ Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org,
+ Chris Mason <clm@fb.com>, Josef Bacik <josef@toxicpanda.com>,
+ David Sterba <dsterba@suse.com>, linux-btrfs@vger.kernel.org,
+ Luis Chamberlain <mcgrof@kernel.org>, Russ Weight <russ.weight@linux.dev>,
+ Danilo Krummrich <dakr@redhat.com>
+References: <3c95fb54-9cac-4b4f-8e1b-84ca041b57cb@maciej.szmigiero.name>
+Content-Language: en-US, pl-PL
+Autocrypt: addr=mail@maciej.szmigiero.name; keydata=
+ xsFNBFpGusUBEADXUMM2t7y9sHhI79+2QUnDdpauIBjZDukPZArwD+sDlx5P+jxaZ13XjUQc
+ 6oJdk+jpvKiyzlbKqlDtw/Y2Ob24tg1g/zvkHn8AVUwX+ZWWewSZ0vcwp7u/LvA+w2nJbIL1
+ N0/QUUdmxfkWTHhNqgkNX5hEmYqhwUPozFR0zblfD/6+XFR7VM9yT0fZPLqYLNOmGfqAXlxY
+ m8nWmi+lxkd/PYqQQwOq6GQwxjRFEvSc09m/YPYo9hxh7a6s8hAP88YOf2PD8oBB1r5E7KGb
+ Fv10Qss4CU/3zaiyRTExWwOJnTQdzSbtnM3S8/ZO/sL0FY/b4VLtlZzERAraxHdnPn8GgxYk
+ oPtAqoyf52RkCabL9dsXPWYQjkwG8WEUPScHDy8Uoo6imQujshG23A99iPuXcWc/5ld9mIo/
+ Ee7kN50MOXwS4vCJSv0cMkVhh77CmGUv5++E/rPcbXPLTPeRVy6SHgdDhIj7elmx2Lgo0cyh
+ uyxyBKSuzPvb61nh5EKAGL7kPqflNw7LJkInzHqKHDNu57rVuCHEx4yxcKNB4pdE2SgyPxs9
+ 9W7Cz0q2Hd7Yu8GOXvMfQfrBiEV4q4PzidUtV6sLqVq0RMK7LEi0RiZpthwxz0IUFwRw2KS/
+ 9Kgs9LmOXYimodrV0pMxpVqcyTepmDSoWzyXNP2NL1+GuQtaTQARAQABzTBNYWNpZWogUy4g
+ U3ptaWdpZXJvIDxtYWlsQG1hY2llai5zem1pZ2llcm8ubmFtZT7CwZQEEwEIAD4CGwMFCwkI
+ BwIGFQoJCAsCBBYCAwECHgECF4AWIQRyeg1N257Z9gOb7O+Ef143kM4JdwUCZdEV4gUJDWuO
+ nQAKCRCEf143kM4JdyzED/0Qwk2KVsyNwEukYK2zbJPHp7CRbXcpCApgocVwtmdabAubtHej
+ 7owLq89ibmkKT0gJxc6OfJJeo/PWTJ/Qo/+db48Y7y03Xl+rTbFyzsoTyZgdR21FQGdgNRG9
+ 3ACPDpZ0UlEwA4VdGT+HKfu0X8pVb0G0D44DjIeHC7lBRzzE5JXJUGUVUd2FiyUqMFqZ8xP3
+ wp53ekB5p5OstceqyZIq+O/r1pTgGErZ1No80JrnVC/psJpmMpw1Q56t88JMaHIe+Gcnm8fB
+ k3LyWNr7gUwVOus8TbkP3TOx/BdS/DqkjN3GvXauhVXfGsasmHHWEFBE0ijNZi/tD63ZILRY
+ wUpRVRU2F0UqI+cJvbeG3c+RZ7jqMAAZj8NB8w6iviX1XG3amlbJgiyElxap6Za1SQ3hfTWf
+ c6gYzgaNOFRh77PQbzP9BcAVDeinOqXg2IkjWQ89o0YVFKXiaDHKw7VVld3kz2FQMI8PGfyn
+ zg5vyd9id1ykISCQQUQ4Nw49tqYoSomLdmIgPSfXDDMOvoDoENWDXPiMGOgDS2KbqRNYCNy5
+ KGQngJZNuDicDBs4r/FGt9/xg2uf8M5lU5b8vC78075c4DWiKgdqaIhqhSC+n+qcHX0bAl1L
+ me9DMNm0NtsVw+mk65d7cwxHmYXKEGgzBcbVMa5C+Yevv+0GPkkwccIvps7AzQRaRrwiAQwA
+ xnVmJqeP9VUTISps+WbyYFYlMFfIurl7tzK74bc67KUBp+PHuDP9p4ZcJUGC3UZJP85/GlUV
+ dE1NairYWEJQUB7bpogTuzMI825QXIB9z842HwWfP2RW5eDtJMeujzJeFaUpmeTG9snzaYxY
+ N3r0TDKj5dZwSIThIMQpsmhH2zylkT0jH7kBPxb8IkCQ1c6wgKITwoHFjTIO0B75U7bBNSDp
+ XUaUDvd6T3xd1Fz57ujAvKHrZfWtaNSGwLmUYQAcFvrKDGPB5Z3ggkiTtkmW3OCQbnIxGJJw
+ /+HefYhB5/kCcpKUQ2RYcYgCZ0/WcES1xU5dnNe4i0a5gsOFSOYCpNCfTHttVxKxZZTQ/rxj
+ XwTuToXmTI4Nehn96t25DHZ0t9L9UEJ0yxH2y8Av4rtf75K2yAXFZa8dHnQgCkyjA/gs0ujG
+ wD+Gs7dYQxP4i+rLhwBWD3mawJxLxY0vGwkG7k7npqanlsWlATHpOdqBMUiAR22hs02FikAo
+ iXNgWTy7ABEBAAHCwXwEGAEIACYCGwwWIQRyeg1N257Z9gOb7O+Ef143kM4JdwUCZdEWBwUJ
+ DWuNXAAKCRCEf143kM4Jd5OdD/0UXMpMd4eDWvtBBQkoOcz2SqsWwMj+vKPJS0BZ33MV/wXT
+ PaTbzAFy23/JXbyBPcb0qgILCmoimBNiXDzYBfcwIoc9ycNwCMBBN47Jxwb8ES5ukFutjS4q
+ +tPcjbPYu+hc9qzodl1vjAhaWjgqY6IzDGe4BAmM+L6UUID4Vr46PPN02bpm4UsL31J6X+lA
+ Vj5WbY501vKMvTAiF1dg7RkHPX7ZVa0u7BPLjBLqu6NixNkpSRts8L9G4QDpIGVO7sOC9oOU
+ 2h99VYY1qKml0qJ9SdTwtDj+Yxz+BqW7O4nHLsc4FEIjILjwF71ZKY/dlTWDEwDl5AJR7bhy
+ HXomkWae2nBTzmWgIf9fJ2ghuCIjdKKwOFkDbFUkSs8HjrWymvMM22PHLTTGFx+0QbjOstEh
+ 9i56FZj3DoOEfVKvoyurU86/4sxjIbyhqL6ZiTzuZAmB0RICOIGilm5x03ESkDztiuCtQL2u
+ xNT833IQSNqyuEnxG9/M82yYa+9ClBiRKM2JyvgnBEbiWA15rAQkOqZGJfFJ3bmTFePx4R/I
+ ZVehUxCRY5IS1FLe16tymf9lCASrPXnkO2+hkHpBCwt75wnccS3DwtIGqwagVVmciCxAFg9E
+ WZ4dI5B0IUziKtBxgwJG4xY5rp7WbzywjCeaaKubtcLQ9bSBkkK4U8Fu58g6Hg==
+In-Reply-To: <3c95fb54-9cac-4b4f-8e1b-84ca041b57cb@maciej.szmigiero.name>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241005-power-supply-cleanups-v1-2-45303b2d0a4d@weissschuh.net>
-References: <20241005-power-supply-cleanups-v1-0-45303b2d0a4d@weissschuh.net>
-In-Reply-To: <20241005-power-supply-cleanups-v1-0-45303b2d0a4d@weissschuh.net>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1728122791; l=2920;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=iaZA482jF5FfFGlgdv4MON26pqjatXtV2BsozZy2/eI=;
- b=gokUJLtPrG3OxCXLQQM2qYbnzx7BmEzF6IYQdyaiIB6VX7GClPy1ikwPL55WN6KM4smoW2deB
- iy84iJWZ+K+B/ukTEGH65uM+okHfok/dShgtqrbptWle8JWfBLi2xO5
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
+Sender: mhej@vps-ovh.mhejs.net
 
-Since commit ("power: supply: Drop use_cnt check from power_supply_property_is_writeable()"),
-this function does not check use_cnt anymore, making it unsuitable for
-general usage. As it is only used by the psy core anyways, remove it
-from the public header and unexport it to avoid misusage.
+The issue below still happens on kernel version 6.11.1.
 
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
- drivers/power/supply/power_supply.h       | 3 +++
- drivers/power/supply/power_supply_core.c  | 1 -
- drivers/power/supply/power_supply_hwmon.c | 1 +
- include/linux/power_supply.h              | 2 --
- 4 files changed, 4 insertions(+), 3 deletions(-)
+Created a kernel bugzilla entry for it:
+https://bugzilla.kernel.org/show_bug.cgi?id=219353
 
-diff --git a/drivers/power/supply/power_supply.h b/drivers/power/supply/power_supply.h
-index 3cbafc58bdad0b9766441fa22981e5cf15870c80..1bc57615ba68fb33e5b77f720e454dbba6daa291 100644
---- a/drivers/power/supply/power_supply.h
-+++ b/drivers/power/supply/power_supply.h
-@@ -13,6 +13,9 @@ struct device;
- struct device_type;
- struct power_supply;
- 
-+extern int power_supply_property_is_writeable(struct power_supply *psy,
-+					      enum power_supply_property psp);
-+
- #ifdef CONFIG_SYSFS
- 
- extern void power_supply_init_attrs(void);
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index c4608c60f7de2618941aae6e345a413ee249c0ae..3fea6c973d751ba97ab5e132895eaf39c3a79266 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -1233,7 +1233,6 @@ int power_supply_property_is_writeable(struct power_supply *psy,
- {
- 	return psy->desc->property_is_writeable && psy->desc->property_is_writeable(psy, psp);
- }
--EXPORT_SYMBOL_GPL(power_supply_property_is_writeable);
- 
- void power_supply_external_power_changed(struct power_supply *psy)
- {
-diff --git a/drivers/power/supply/power_supply_hwmon.c b/drivers/power/supply/power_supply_hwmon.c
-index 6fbbfb1c685e6c7fde41ea2fa88a557ed6dda2a1..01be04903d7d2465ae2acb9eeb0b55a87868bb87 100644
---- a/drivers/power/supply/power_supply_hwmon.c
-+++ b/drivers/power/supply/power_supply_hwmon.c
-@@ -7,6 +7,7 @@
- #include <linux/hwmon.h>
- #include <linux/power_supply.h>
- #include <linux/slab.h>
-+#include "power_supply.h"
- 
- struct power_supply_hwmon {
- 	struct power_supply *psy;
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 910d407ebe6323aaf4b31f0081f2cdd4be43a9fa..ea0ba149f296644bd18717d91f338172602eb6d6 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -863,8 +863,6 @@ static inline int power_supply_set_property(struct power_supply *psy,
- 			    const union power_supply_propval *val)
- { return 0; }
- #endif
--extern int power_supply_property_is_writeable(struct power_supply *psy,
--					enum power_supply_property psp);
- extern void power_supply_external_power_changed(struct power_supply *psy);
- 
- extern struct power_supply *__must_check
+It would be nice to at least know whether the filesystem read access supposed is
+to be working normally at PMSG_THAW hibernation stage to assign the issue accordingly.
 
--- 
-2.46.2
+CC: request_firmware() maintainers
+
+Thanks,
+Maciej
+
+On 28.08.2024 21:08, Maciej S. Szmigiero wrote:
+> Hi,
+> 
+> I have a quick question about hibernation "image writing" state - is
+> (root) filesystem *read* access supposed to be working normally at that point?
+> 
+> Specifically, I know that devices are resumed (PMSG_THAW) after preparing
+> the hibernation image.
+> 
+> In my case, a USB device (RTL8821CU) gets reset at that stage due to
+> commit 04b8c8143d46 ("btusb: fix Realtek suspend/resume") and so it tries
+> to request_firmware() from the root filesystem after that thaw/reset,
+> when the hibernation image is being written.
+> 
+> It usually succeeds, however often it deadlocks somewhere in Btrfs code
+> resulting in the system failing to power off after writing the hibernate
+> image:
+> power_off() calls dpm_suspend_start(), which calls dpm_prepare(), which
+> waits for device probe to finish.
+> 
+> And device probe is stuck forever trying to load that USB stick firmware
+> from the filesystem - so in the end the system never powers off during
+> (after) hibernation.
+> 
+> That's why I wonder whether this firmware load is supposed to work correctly
+> during that hibernation state and so the system may be hitting some kind of
+> a swsusp/btrfs/block layer race condition.
+> 
+> Or, alternatively, maybe  reading files is not supported at this point and
+> so this is really a btrtl/rtw88 bug?
+> 
+> CCing Btrfs people in case it is some known Btrfs issue.
+> 
+> Btw, this is on upstream kernel 6.10.6 and the "Show Blocked State" trace
+> during that failed power off is attached below.
 
