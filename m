@@ -1,32 +1,31 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3017D14C5AE;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EFEF14C5B0;
 	Sat,  5 Oct 2024 10:06:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728122794; cv=none; b=awEWZifOAqx6rwuIY1Jqy+Hs18UhxxfcHKl5BEzhaFBW6yj6/nUUQS1u8osnu7pv8xHcwteWePd9cyO9I4pCQdY2AuKSbhFi1a2sz815r/f4c6eDWQFm8znKCh2Y/IlBTMvcb1ihXxTF89VL+VpUoAMkXCHx+ipxNusHgiesiNM=
+	t=1728122794; cv=none; b=UTrGNJ8BTqxRePgejRvQ3/y/1a7QIQrB4lUm24u8dcJlP3RNaYuyS4YSMfkUB35AhrB2x6G7mrVh4kbT5amIP353uq+PUhKpwXhBotf8wKUTB8vGooVXxWWgdDtAwIL7bIn9yRIqlFuA9EWi5iQF4qY4tbwfkbV/jocC7qRfDUM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1728122794; c=relaxed/simple;
-	bh=cVeJsyW6U2wZJ6iC3eZHoUXaNynzQYlamOESFTS23GI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=E0v9woHx/B9ic8vWgxQJkg+eQudQkkJrMv7wbUGVQafqcoW9S3iM9pZqH8X1752sRR04sdoefRA2mgUjEnGnz/Jpesf5NfrwWWGDIjXzvMfWN8gV3DyknxRdE1cdze8e4B0oiidzdlpnunafngzBrYMY3kOVj2Y2/WnQjX1o4wc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=Rj7m4jmi; arc=none smtp.client-ip=159.69.126.157
+	bh=xSJzXcjSDEw5veRB5ks1paRA8EhnR9PwkhHHH7zXiuA=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Zcsx8tDlJhFigs5Kb+cBLEL9ZolsPNmlXkK2QuVoMMfSnV7ge4iutLfKqae38R9bBkM9sk2G7zetaOpfcAp75eCwbTide6idHBkE9B4cmFlXNdyh6Qab3pa8hdZwNv3YHZ/CMhSBPHyUe6I4tCzjp86T/Zo0BFp5p0iebBWDQM0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=cKoimEs8; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="Rj7m4jmi"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="cKoimEs8"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1728122791;
-	bh=cVeJsyW6U2wZJ6iC3eZHoUXaNynzQYlamOESFTS23GI=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Rj7m4jmislF/SBdurxFNvhaTC+uSfBTDDziJi43AC446/0IAvsKZYr5p/yXpKcmfF
-	 I7P6FhkoWYzA5IrwTXbHQdtwHqVJYKC/iXXIwdilx6I/NPd/kkDUlLvoFHdnfPqfr1
-	 JfAq7Vl26caRbj6DzLKJGBqTPk4WbfWxtmSM0L04=
+	bh=xSJzXcjSDEw5veRB5ks1paRA8EhnR9PwkhHHH7zXiuA=;
+	h=From:Subject:Date:To:Cc:From;
+	b=cKoimEs8+9h+uIj1qwaQDK6ojILE7qnHmLnEfatLNLLT8eGzRDCSh43T8cwssZH8F
+	 rfakwxOKEJfMq/LkaTrRyOK0x1CwEZMENWx7Ud0IwwoPTMCiL4q2JB0l49yxHVfW9H
+	 OlPlkwRani52y3j/6VLxn7NorDKLtcA7xgkdiuUM=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sat, 05 Oct 2024 12:06:17 +0200
-Subject: [PATCH 3/4] power: supply: core: mark attribute arrays as
- ro_after_init
+Subject: [PATCH 0/4] power: supply: core: random cleanups and optimizations
+Date: Sat, 05 Oct 2024 12:06:14 +0200
+Message-Id: <20241005-power-supply-cleanups-v1-0-45303b2d0a4d@weissschuh.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,100 +34,43 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241005-power-supply-cleanups-v1-3-45303b2d0a4d@weissschuh.net>
-References: <20241005-power-supply-cleanups-v1-0-45303b2d0a4d@weissschuh.net>
-In-Reply-To: <20241005-power-supply-cleanups-v1-0-45303b2d0a4d@weissschuh.net>
+X-B4-Tracking: v=1; b=H4sIAJYPAWcC/x3M3QpAQBBA4VfRXJtiW8SryAVrMKU17eQveXeby
+ +/inAeUApNCkzwQ6GDlzUfkaQJu6f1MyGM0mMzYrDYGZTspoO4i641upd7volg5GiZb1nlVWIi
+ tBJr4+r9t974fAxnDdWcAAAA=
+X-Change-ID: 20240922-power-supply-cleanups-7cebf4691754
 To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1728122791; l=3387;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1728122791; l=933;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=cVeJsyW6U2wZJ6iC3eZHoUXaNynzQYlamOESFTS23GI=;
- b=24viEx2PtK/jahp7sIGwnohJclF/Xq5E2PE1rJsfaqUF7sSYUZbAkq7EjMUgNQbNixmGiH+GY
- TiQdpwIw8NhD1t5YVN2g3tsbtM33exykL3gr3mfBiuwlv+7PUNb7kt4
+ bh=xSJzXcjSDEw5veRB5ks1paRA8EhnR9PwkhHHH7zXiuA=;
+ b=hv3gOaOMNHE099HpT1byo++U+P085sQ/RVNJzFyLe9uHs/5yJgCgbQ3XMOZWxoMUHDDse/NRy
+ nCsgS1i/bTwA7NNscwccmS8qj2Pxq7JCE1CXYhzE5nYup2ZQhLIfDhs
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The attribute arrays are only modified during the __init phase.
-To protect them against intentional or accidental modification,
-mark them as __ro_after_init.
-
-To make sure no modifications are introduced, also mark the return
-values of the accessors as const.
+Some independent cleanups and optimizations.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/power_supply.h       |  2 +-
+Thomas Weißschuh (4):
+      power: supply: core: use device mutex wrappers
+      power: supply: core: unexport power_supply_property_is_writeable()
+      power: supply: core: mark attribute arrays as ro_after_init
+      power: supply: hwmon: move interface to private header
+
+ drivers/power/supply/power_supply.h       | 22 +++++++++++++++++++++-
+ drivers/power/supply/power_supply_core.c  |  5 ++---
+ drivers/power/supply/power_supply_hwmon.c |  3 +++
  drivers/power/supply/power_supply_sysfs.c | 12 ++++++------
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ include/linux/power_supply.h              | 15 ---------------
+ 5 files changed, 32 insertions(+), 25 deletions(-)
+---
+base-commit: 27cc6fdf720183dce1dbd293483ec5a9cb6b595e
+change-id: 20240922-power-supply-cleanups-7cebf4691754
 
-diff --git a/drivers/power/supply/power_supply.h b/drivers/power/supply/power_supply.h
-index 1bc57615ba68fb33e5b77f720e454dbba6daa291..4c558fb3db7211a610134960292790ea3584b363 100644
---- a/drivers/power/supply/power_supply.h
-+++ b/drivers/power/supply/power_supply.h
-@@ -18,7 +18,7 @@ extern int power_supply_property_is_writeable(struct power_supply *psy,
- 
- #ifdef CONFIG_SYSFS
- 
--extern void power_supply_init_attrs(void);
-+extern void __init power_supply_init_attrs(void);
- extern int power_supply_uevent(const struct device *dev, struct kobj_uevent_env *env);
- extern const struct attribute_group *power_supply_attr_groups[];
- 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 16b3c5880cd8ce14cd7c697b11fcf5449b65c2d6..571de43fcca9827cf0fe3023e453defbf1eaec7d 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -142,7 +142,7 @@ static const char * const POWER_SUPPLY_CHARGE_BEHAVIOUR_TEXT[] = {
- 	[POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE]	= "force-discharge",
- };
- 
--static struct power_supply_attr power_supply_attrs[] = {
-+static struct power_supply_attr power_supply_attrs[] __ro_after_init = {
- 	/* Properties of type `int' */
- 	POWER_SUPPLY_ENUM_ATTR(STATUS),
- 	POWER_SUPPLY_ENUM_ATTR(CHARGE_TYPE),
-@@ -225,9 +225,9 @@ static struct power_supply_attr power_supply_attrs[] = {
- #define POWER_SUPPLY_ATTR_CNT ARRAY_SIZE(power_supply_attrs)
- 
- static struct attribute *
--__power_supply_attrs[POWER_SUPPLY_ATTR_CNT + 1];
-+__power_supply_attrs[POWER_SUPPLY_ATTR_CNT + 1] __ro_after_init;
- 
--static struct power_supply_attr *to_ps_attr(struct device_attribute *attr)
-+static const struct power_supply_attr *to_ps_attr(struct device_attribute *attr)
- {
- 	return container_of(attr, struct power_supply_attr, dev_attr);
- }
-@@ -273,7 +273,7 @@ static ssize_t power_supply_show_property(struct device *dev,
- 					  char *buf) {
- 	ssize_t ret;
- 	struct power_supply *psy = dev_get_drvdata(dev);
--	struct power_supply_attr *ps_attr = to_ps_attr(attr);
-+	const struct power_supply_attr *ps_attr = to_ps_attr(attr);
- 	enum power_supply_property psp = dev_attr_psp(attr);
- 	union power_supply_propval value;
- 
-@@ -326,7 +326,7 @@ static ssize_t power_supply_store_property(struct device *dev,
- 					   const char *buf, size_t count) {
- 	ssize_t ret;
- 	struct power_supply *psy = dev_get_drvdata(dev);
--	struct power_supply_attr *ps_attr = to_ps_attr(attr);
-+	const struct power_supply_attr *ps_attr = to_ps_attr(attr);
- 	enum power_supply_property psp = dev_attr_psp(attr);
- 	union power_supply_propval value;
- 
-@@ -401,7 +401,7 @@ const struct attribute_group *power_supply_attr_groups[] = {
- 	NULL
- };
- 
--void power_supply_init_attrs(void)
-+void __init power_supply_init_attrs(void)
- {
- 	int i;
- 
-
+Best regards,
 -- 
-2.46.2
+Thomas Weißschuh <linux@weissschuh.net>
 
