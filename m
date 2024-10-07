@@ -1,46 +1,44 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD6A774C08;
-	Mon,  7 Oct 2024 06:07:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1D2C1531C1;
+	Mon,  7 Oct 2024 06:07:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728281266; cv=none; b=Y5VCy+oVon7D27MyH2StQG9WF7bHmwu59ZwG3mAcsr/JdIlHrF2aia0EesPUzfw9akVj/bpmBpT5d01Br744UZFOWUSrLEerZeL272VZvioARWjWNSYXRwgNX3rSQHlbdMkaJM91HdpRD3/ffoSkrM15gGegGU5RDJxVL/ADbwY=
+	t=1728281268; cv=none; b=ahUA8QmlP0b1utZVGDZh0vJaDS8TB+brG6SJvD26fYCd7BUH4sriW4ROHOPPH08FEmPtWkV7iiMtvX6R4a+HxTtkVFdgP7nHzoF57zEa6Fms/LNW+Ba1KJEJfnkjSOaY7Nyw0fbU8sew7KkTd8KpE0t3z1pZWqmopCZW1pCjL2E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728281266; c=relaxed/simple;
-	bh=972xAZIjSock1dKzeD2w9Ee1WIBKi3bz+G2MFBf12sw=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ua42s5Mk2CHljwn0W2hkqj5/l8jKTc/o9vmC21nowwGLy2I5rcvfc/wuJgNL+r86+yI4xRXnGpF+ez5CvlZOtpK7SZeVkAs6x+YXxSeYmN/A4CXQjCRGsPkSR5Kkv1RRW0zSvRkQZNsLCzJUz/+wU+CugX0Zm8YWEAfAZRoqU2o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=W4gX/r4u; arc=none smtp.client-ip=205.220.168.131
+	s=arc-20240116; t=1728281268; c=relaxed/simple;
+	bh=1zkhF5j0Yfw8wEglWFoGgfvTDXqYAccNbdeOJh5HwDk=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=sUv/OJU2yEBUAdRAEyD5Ouped8cU+dxZsp638DKHCu+Nn4cXK9NGY9ZFxdDuzpEgG6EGBRhSWeyyL/xwpanFbxBWrjIK2BhU9v/9V2y2C96/3Z1xlaUj2XnuuIAeeHyMaNdnAIiJfkgIXxrZUXOUN3Xm+grv5JOfb9+hpniTDws=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=o+w9MCZ0; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="W4gX/r4u"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4974TeO9015709;
-	Mon, 7 Oct 2024 06:07:31 GMT
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="o+w9MCZ0"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4974TBtD027139;
+	Mon, 7 Oct 2024 06:07:22 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	TWZ01IZjv9Y8YK5bldQPHn/h7ZKaLj8sn4hpDo+Julg=; b=W4gX/r4uy85QTtQ2
-	F3l6GKotNMPDKG5auaRbYc55QqJEg6i73PodVyrh7Sh4btC2tE5qsbj+d9JrZpyI
-	P/W6Li/tRtW5KppN+f465A7UMaiojlh+33AqYl1LPgdTSbAGVoDCaaxdHYWe7Z5E
-	LqHiWdxYrnFlX+c6GOyzfjdOsIiV4pGs7IN4WGyYkPiXLtUXWgvmvL4IL/T4ajCm
-	XJnBZyPhaFLNAOr+cPm9zgk6SAtgXsQH3wg8f2lbDDSQxKybeLJ2cKvfKEDTaTOo
-	aPzYvUhRIXDS8fVNfGS9TR2epbQ0VLJ9lhyHN7ZTh18gyoWwZmG0TjE9S7LPDJfO
-	WE+MZQ==
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 422xs735be-1
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=pqc2VP+MLjp0hUrnxVvMv5
+	GmaCVOoqr7kCbfwtJ+IGg=; b=o+w9MCZ0QjFq+KWkAv+heKkLjHm/mHpXXjDbrk
+	4Zzld/MSVTTDvDgqGYEa/ZVuyivLnkvEl3gP69BhgQFrBYfprljg7gAGEtUTXHga
+	6B3PZ04gewxT+eAU8IczytxFWmCEzxuFz+LzsXvmtYQFspWHyhlfeWHGptOCb688
+	+Fv1sf8GNkePgxZ82rJPVKEZkLp0hyHzeTmZOst8PLXfH0aW/bd/pHP4NlhVXXzv
+	+UdWx8MhkVsu13LHo4ZoBnNzPfzVpcuLs+58IykfP2VxIzIXMzmVabRQ59cZtXWV
+	72R+Rzg5X+z1RPkD8PqpNZW/sHuxWPEI1vBdN9Rk0m+CVOlQ==
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 422xu6b4dk-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 07 Oct 2024 06:07:30 +0000 (GMT)
+	Mon, 07 Oct 2024 06:07:21 +0000 (GMT)
 Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA04.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 49767Ues025092
+	by NALASPPMTA03.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 49767KFe007798
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 7 Oct 2024 06:07:30 GMT
+	Mon, 7 Oct 2024 06:07:20 GMT
 Received: from hu-sibis-blr.qualcomm.com (10.80.80.8) by
  nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Sun, 6 Oct 2024 23:07:25 -0700
+ 15.2.1544.9; Sun, 6 Oct 2024 23:07:16 -0700
 From: Sibi Sankar <quic_sibis@quicinc.com>
 To: <sudeep.holla@arm.com>, <cristian.marussi@arm.com>,
         <ulf.hansson@linaro.org>, <jassisinghbrar@gmail.com>
@@ -48,14 +46,11 @@ CC: <linux-kernel@vger.kernel.org>, <arm-scmi@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-arm-msm@vger.kernel.org>, <quic_sibis@quicinc.com>,
         <johan@kernel.org>, <konradybcio@kernel.org>,
-        <linux-pm@vger.kernel.org>, <tstrudel@google.com>, <rafael@kernel.org>,
-        "Johan Hovold" <johan+linaro@kernel.org>
-Subject: [PATCH V3 2/4] firmware: arm_scmi: Skip adding bad duplicates
-Date: Mon, 7 Oct 2024 11:36:40 +0530
-Message-ID: <20241007060642.1978049-3-quic_sibis@quicinc.com>
+        <linux-pm@vger.kernel.org>, <tstrudel@google.com>, <rafael@kernel.org>
+Subject: [PATCH V3 0/4] firmware: arm_scmi: Misc Fixes
+Date: Mon, 7 Oct 2024 11:36:38 +0530
+Message-ID: <20241007060642.1978049-1-quic_sibis@quicinc.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20241007060642.1978049-1-quic_sibis@quicinc.com>
-References: <20241007060642.1978049-1-quic_sibis@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -68,125 +63,67 @@ X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
  nalasex01a.na.qualcomm.com (10.47.209.196)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: XB2lBeFDyMM-CTx6GtZB-PZ2pNxXn43C
-X-Proofpoint-GUID: XB2lBeFDyMM-CTx6GtZB-PZ2pNxXn43C
+X-Proofpoint-GUID: wJGfF22zYrib2cyoxMDWMUaAIZOt_JD3
+X-Proofpoint-ORIG-GUID: wJGfF22zYrib2cyoxMDWMUaAIZOt_JD3
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
  definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 adultscore=0
- suspectscore=0 priorityscore=1501 bulkscore=0 mlxlogscore=999
- clxscore=1015 malwarescore=0 spamscore=0 lowpriorityscore=0 phishscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 clxscore=1011
+ spamscore=0 mlxscore=0 malwarescore=0 suspectscore=0 mlxlogscore=999
+ impostorscore=0 priorityscore=1501 lowpriorityscore=0 phishscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2409260000 definitions=main-2410070041
 
-From: Cristian Marussi <cristian.marussi@arm.com>
+The series addresses the kernel warnings reported by Johan at [1] and are
+are required to X1E cpufreq device tree changes [2] to land.
 
-Ensure that the bad duplicates reported by the platform firmware
-doesn't get added to the opp-tables.
+[1] - https://lore.kernel.org/lkml/ZoQjAWse2YxwyRJv@hovoldconsulting.com/
+[2] - https://lore.kernel.org/lkml/20240612124056.39230-1-quic_sibis@quicinc.com/
 
-Reported-by: Johan Hovold <johan+linaro@kernel.org>
-Closes: https://lore.kernel.org/lkml/ZoQjAWse2YxwyRJv@hovoldconsulting.com/
-Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
-Signed-off-by: Sibi Sankar <quic_sibis@quicinc.com>
----
- drivers/firmware/arm_scmi/perf.c | 37 ++++++++++++++++++++++++--------
- 1 file changed, 28 insertions(+), 9 deletions(-)
+The following warnings remain unadressed:
+arm-scmi arm-scmi.0.auto: Failed to add opps_by_lvl at 3417600 for NCC - ret:-16
+arm-scmi arm-scmi.0.auto: Failed to add opps_by_lvl at 3417600 for NCC - ret:-16
 
-diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
-index 2d77b5f40ca7..38893cc44423 100644
---- a/drivers/firmware/arm_scmi/perf.c
-+++ b/drivers/firmware/arm_scmi/perf.c
-@@ -373,7 +373,7 @@ static int iter_perf_levels_update_state(struct scmi_iterator_state *st,
- 	return 0;
- }
- 
--static inline void
-+static inline int
- process_response_opp(struct device *dev, struct perf_dom_info *dom,
- 		     struct scmi_opp *opp, unsigned int loop_idx,
- 		     const struct scmi_msg_resp_perf_describe_levels *r)
-@@ -386,12 +386,16 @@ process_response_opp(struct device *dev, struct perf_dom_info *dom,
- 		le16_to_cpu(r->opp[loop_idx].transition_latency_us);
- 
- 	ret = xa_insert(&dom->opps_by_lvl, opp->perf, opp, GFP_KERNEL);
--	if (ret)
-+	if (ret) {
- 		dev_warn(dev, "Failed to add opps_by_lvl at %d for %s - ret:%d\n",
- 			 opp->perf, dom->info.name, ret);
-+		return ret;
-+	}
-+
-+	return 0;
- }
- 
--static inline void
-+static inline int
- process_response_opp_v4(struct device *dev, struct perf_dom_info *dom,
- 			struct scmi_opp *opp, unsigned int loop_idx,
- 			const struct scmi_msg_resp_perf_describe_levels_v4 *r)
-@@ -404,10 +408,13 @@ process_response_opp_v4(struct device *dev, struct perf_dom_info *dom,
- 		le16_to_cpu(r->opp[loop_idx].transition_latency_us);
- 
- 	ret = xa_insert(&dom->opps_by_lvl, opp->perf, opp, GFP_KERNEL);
--	if (ret)
-+	if (ret) {
- 		dev_warn(dev, "Failed to add opps_by_lvl at %d for %s - ret:%d\n",
- 			 opp->perf, dom->info.name, ret);
- 
-+		return ret;
-+	}
-+
- 	/* Note that PERF v4 reports always five 32-bit words */
- 	opp->indicative_freq = le32_to_cpu(r->opp[loop_idx].indicative_freq);
- 	if (dom->level_indexing_mode) {
-@@ -415,13 +422,21 @@ process_response_opp_v4(struct device *dev, struct perf_dom_info *dom,
- 
- 		ret = xa_insert(&dom->opps_by_idx, opp->level_index, opp,
- 				GFP_KERNEL);
--		if (ret)
-+		if (ret) {
- 			dev_warn(dev,
- 				 "Failed to add opps_by_idx at %d for %s - ret:%d\n",
- 				 opp->level_index, dom->info.name, ret);
- 
-+			/* Cleanup by_lvl too */
-+			xa_erase(&dom->opps_by_lvl, opp->perf);
-+
-+			return ret;
-+		}
-+
- 		hash_add(dom->opps_by_freq, &opp->hash, opp->indicative_freq);
- 	}
-+
-+	return 0;
- }
- 
- static int
-@@ -429,16 +444,20 @@ iter_perf_levels_process_response(const struct scmi_protocol_handle *ph,
- 				  const void *response,
- 				  struct scmi_iterator_state *st, void *priv)
- {
-+	int ret;
- 	struct scmi_opp *opp;
- 	struct scmi_perf_ipriv *p = priv;
- 
- 	opp = &p->perf_dom->opp[st->desc_index + st->loop_idx];
- 	if (PROTOCOL_REV_MAJOR(p->version) <= 0x3)
--		process_response_opp(ph->dev, p->perf_dom, opp, st->loop_idx,
--				     response);
-+		ret = process_response_opp(ph->dev, p->perf_dom, opp, st->loop_idx, response);
- 	else
--		process_response_opp_v4(ph->dev, p->perf_dom, opp, st->loop_idx,
--					response);
-+		ret = process_response_opp_v4(ph->dev, p->perf_dom, opp, st->loop_idx, response);
-+
-+	/* Skip BAD duplicates received from firmware */
-+	if (ret)
-+		return ret == -EBUSY ? 0 : ret;
-+
- 	p->perf_dom->opp_count++;
- 
- 	dev_dbg(ph->dev, "Level %d Power %d Latency %dus Ifreq %d Index %d\n",
+Duplicate levels:
+arm-scmi arm-scmi.0.auto: Level 2976000 Power 218062 Latency 30us Ifreq 2976000 Index 10
+arm-scmi arm-scmi.0.auto: Level 3206400 Power 264356 Latency 30us Ifreq 3206400 Index 11
+arm-scmi arm-scmi.0.auto: Level 3417600 Power 314966 Latency 30us Ifreq 3417600 Index 12
+arm-scmi arm-scmi.0.auto: Failed to add opps_by_lvl at 3417600 for NCC - ret:-16
+arm-scmi arm-scmi.0.auto: Failed to add opps_by_lvl at 3417600 for NCC - ret:-16
+arm-scmi arm-scmi.0.auto: Level 4012800 Power 528848 Latency 30us Ifreq 4012800 Index 15
+
+^^ exist because SCP reports duplicate values for the highest sustainable
+freq for perf domains 1 and 2. These are the only freqs that appear as
+duplicates and will be fixed with a firmware update. FWIW the warnings
+that we are addressing in this series will also get fixed by a firmware
+update but they still have to land for devices already out in the wild.
+
+V2:
+* Include the fix for do_xfer timeout
+* Include the fix debugfs node creation failure
+* Include Cristian's fix for skipping opp duplication
+
+V1:
+* add missing MSG_SUPPORTS_FASTCHANNEL definition.
+
+Base branch: next-20241004
+
+Cristian Marussi (1):
+  firmware: arm_scmi: Skip adding bad duplicates
+
+Sibi Sankar (3):
+  firmware: arm_scmi: Ensure that the message-id supports fastchannel
+  pmdomain: core: Fix debugfs node creation failure
+  mailbox: qcom-cpucp: Mark the irq with IRQF_NO_SUSPEND flag
+
+ drivers/firmware/arm_scmi/driver.c    |  9 ++++++
+ drivers/firmware/arm_scmi/perf.c      | 37 +++++++++++++++++++------
+ drivers/firmware/arm_scmi/protocols.h |  2 ++
+ drivers/mailbox/qcom-cpucp-mbox.c     |  2 +-
+ drivers/pmdomain/core.c               | 40 +++++++++++++++++----------
+ include/linux/pm_domain.h             |  1 +
+ 6 files changed, 66 insertions(+), 25 deletions(-)
+
 -- 
 2.34.1
 
