@@ -1,115 +1,117 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 022C916131A;
-	Mon,  7 Oct 2024 06:07:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2EBDA143736
+	for <linux-pm@vger.kernel.org>; Mon,  7 Oct 2024 06:09:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728281272; cv=none; b=lzeNLTUe0ROjps4NuvDEsLWDa+obPiP17l6nQ0D7xKG1AcyXq6IV1X+q0Wp1iIGU0mMbYZokjpLRUnZ3bSy2wsPfC1xzqoQ3wzP69EC6c1ytGkDiyLm36l87/4p9g0qsG9R1Vls3PaSVc2/h09Fpq4JJn3eDO19wPmUl+gkEHnI=
+	t=1728281389; cv=none; b=SVhZyxzEmFd5r9LQ0cXe8eJp1bwd4uWwdjQg3ShkhCywunsVJjWpoVKnNnLd/YzMiqFH28247FOMkQgCZ2j4MxVUwYBJq7NOtF2VBME0Sui4oXJZ4/kVtGp2zsUREBHpTtKyq0eNh90w8kPfeMseinyadaTvq0deVzkNT6wE1Eo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728281272; c=relaxed/simple;
-	bh=S58hrxJcpmNi+Jq0WvzvgeXizhzyqfE/1ugjuKzqLJI=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Y4i5XqYCl9kRLx5MgQ9CTZwUOkUrDxLHEgyse6BEoZ40Vi948yILltvLEMkYWXvu6fgcXT3jUl7z02KmafTG+2jG97Mt119uXMylId+9YPEQpTnA2QLGVYEn60xrG9b6IPtg6anG4xr4uMCQSQKHOO/uOWsqHOofXClN9iR0lQU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=oC7+oUCz; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1728281389; c=relaxed/simple;
+	bh=2y8uH64yfzV0w3LNWnAsmQ9joLDzznVm6rctMixptTw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Kts/F/xB2CfJUUzvqCPWUM6cU2Yk95htKizDZjitI3FjoWlG4XLXsuo6XZvC44IyP9DQm+Vh4LuvGRMa+0K9t6Ro1yAumVlbMB8iy8ixdQt7JRtRS10KOizRNAW96b67/uyco05CN4s66JRz9e5XORES0ogV2ZzgRKblLz3LH98=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=A6Z4Kp/F; arc=none smtp.client-ip=209.85.208.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="oC7+oUCz"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4974Sn3A015093;
-	Mon, 7 Oct 2024 06:07:40 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	mjTyoWMSNmI92qQkX8St8oeAHiTPVO/enkB9xX+DiCk=; b=oC7+oUCzXI25RTXV
-	nCYenqanS1R7oBOxlWHYkwxJM5T9lQNQi/opoQQAGDDm6s6QN4XYqzOBi6w2qbP6
-	tT56M9r8D+iPwGRQmyH8JA5vuq+EcFgKrIMxnx18v0c8RRQKBN89jLA9ZHNkhB/1
-	hoxkQPjg5dm0bTUr5cu4hrbucEM6hA2F6Yuc53pBNPIOBnHfgyX9h0IFJCYYK3p2
-	pkjPzSsSX8uKIhhAN79TKx3I9iDcLPSaZinIPoQWryf546h1UED9fByKN6xxBTnr
-	rsXhVLknErcTUorl14yw1hECcjG0eNxFqrhE29/HRZ+g0FqTPhXp5KpkzCfJrE5U
-	2kEIgQ==
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 422xs735bq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 07 Oct 2024 06:07:40 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA04.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 49767dra025606
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 7 Oct 2024 06:07:39 GMT
-Received: from hu-sibis-blr.qualcomm.com (10.80.80.8) by
- nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Sun, 6 Oct 2024 23:07:35 -0700
-From: Sibi Sankar <quic_sibis@quicinc.com>
-To: <sudeep.holla@arm.com>, <cristian.marussi@arm.com>,
-        <ulf.hansson@linaro.org>, <jassisinghbrar@gmail.com>
-CC: <linux-kernel@vger.kernel.org>, <arm-scmi@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-arm-msm@vger.kernel.org>, <quic_sibis@quicinc.com>,
-        <johan@kernel.org>, <konradybcio@kernel.org>,
-        <linux-pm@vger.kernel.org>, <tstrudel@google.com>, <rafael@kernel.org>,
-        "Johan Hovold" <johan+linaro@kernel.org>
-Subject: [PATCH V3 4/4] mailbox: qcom-cpucp: Mark the irq with IRQF_NO_SUSPEND flag
-Date: Mon, 7 Oct 2024 11:36:42 +0530
-Message-ID: <20241007060642.1978049-5-quic_sibis@quicinc.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20241007060642.1978049-1-quic_sibis@quicinc.com>
-References: <20241007060642.1978049-1-quic_sibis@quicinc.com>
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="A6Z4Kp/F"
+Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-5c8a2579d94so4838218a12.0
+        for <linux-pm@vger.kernel.org>; Sun, 06 Oct 2024 23:09:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1728281385; x=1728886185; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=vAA9jPxU0BfqvqEkfgPpbiip1Qzle+GG2gZf/PhNMVM=;
+        b=A6Z4Kp/FGDl/DLAbf7d4jHP3IJYM1licu/sVWI6iEmpS98Mvo8QSYQThtxumrplpzn
+         IWO8iYPbIAsZg5lCoN7/QGiiGf30fSWpupFgItMcBhL7pkRdM3gY/H/69PWFqGkSFrkn
+         F1ySskEInsKwaHuun9AsC8aDZAWzh62NdyOGBpLMzrGhuUER0AJ49bu9ClHWnRmp3Jun
+         3OSV8Fk36yCnrg1EdjqL93FVtJlw+mTwGo9u2FB5XAWOe5/mwcDB49zRBYYwdXj9kNCD
+         HUdgc7GzidOE/l1FGZK6K2ZnMTe5HPIeYDnnVGjg7zfOBLnW0NoSv5Urxdi6PMeqaCh8
+         OV5A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728281385; x=1728886185;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=vAA9jPxU0BfqvqEkfgPpbiip1Qzle+GG2gZf/PhNMVM=;
+        b=iNz09Dnei1Bge1ZcsjBwcx89CxFU5UywrVTkVic/dNKg4O+uo7phMIo978oV/j19A5
+         t0YNfkYAxvKUjMmGkjZkDtivNUKBtMfahq/6zEmCd/U5F3mNFUKW6f44mAh3X98K/d+4
+         4Vmfrvo9ZR1UFUBjOmN0gNSkohhILU1jArBRuEBfBGCwtlBLiV9d+sF7gR0vgBrsCHOn
+         S0FFjxuYvlVCiMlAqReNIPQumE9mqf5Vq43z5/Q3OZZEcyukSyj3QsdBrnGBzyZs4FNH
+         gJ8JxT4YoPSYuhx+E+9w/hlrCiwyGtDcjFV1wSNsS8s62kCfAEC84doKl0vypbwuN7lO
+         jFlg==
+X-Gm-Message-State: AOJu0Yy9u1ZisUw3zcKDIFgMr1vDATooSTkwg1Mygp71fBlkraNSXQTi
+	04fWzu/YNhA6LTDAKsE0HYZVrKoNio0896K16xOZbzShN/bnGzfeYEG9NwfVtwc=
+X-Google-Smtp-Source: AGHT+IHhb+bk5P/hhsqwiz2jxOOW+vG1SmyFJlGritE2akoP/ChRbLdPyzWQcmKZOyMmcSrj0wYJbA==
+X-Received: by 2002:a17:907:e647:b0:a8d:caa:7ffb with SMTP id a640c23a62f3a-a991bd73236mr1085273466b.29.1728281385567;
+        Sun, 06 Oct 2024 23:09:45 -0700 (PDT)
+Received: from localhost ([2001:4090:a244:83ae:2517:2666:43c9:d0d3])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a992e623957sm337291766b.76.2024.10.06.23.09.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 06 Oct 2024 23:09:45 -0700 (PDT)
+From: Markus Schneider-Pargmann <msp@baylibre.com>
+Date: Mon, 07 Oct 2024 08:08:54 +0200
+Subject: [PATCH v13 1/5] PM: QoS: Export dev_pm_qos_read_value
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: cFOQsPJODioytTC0j0JhSxo5sSMs7haL
-X-Proofpoint-GUID: cFOQsPJODioytTC0j0JhSxo5sSMs7haL
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 adultscore=0
- suspectscore=0 priorityscore=1501 bulkscore=0 mlxlogscore=999
- clxscore=1015 malwarescore=0 spamscore=0 lowpriorityscore=0 phishscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2409260000 definitions=main-2410070041
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20241007-tisci-syssuspendresume-v13-1-ed54cd659a49@baylibre.com>
+References: <20241007-tisci-syssuspendresume-v13-0-ed54cd659a49@baylibre.com>
+In-Reply-To: <20241007-tisci-syssuspendresume-v13-0-ed54cd659a49@baylibre.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, 
+ Len Brown <len.brown@intel.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nishanth Menon <nm@ti.com>, 
+ Tero Kristo <kristo@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, Kamlesh Gurudasani <kamlesh@ti.com>, 
+ Kevin Hilman <khilman@baylibre.com>, Dhruva Gole <d-gole@ti.com>, 
+ Vishal Mahaveer <vishalm@ti.com>, 
+ Markus Schneider-Pargmann <msp@baylibre.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1038; i=msp@baylibre.com;
+ h=from:subject:message-id; bh=2y8uH64yfzV0w3LNWnAsmQ9joLDzznVm6rctMixptTw=;
+ b=owGbwMvMwCGm0rPl0RXRdfaMp9WSGNKZq3mClun9NDvjU23pfk76t5yD3Fp30/IL+X3NBSoKv
+ tpNIcc7SlkYxDgYZMUUWe5+WPiuTu76goh1jxxh5rAygQxh4OIUgIkc5GBkuHro5+0ZU450q2ul
+ s0/vmTmrtHez4x+lYB6Jx6UPjguumMLwz3Kdz4K/Wc1bgmcv/yDDXvlXdY26/ce+Y6U577d2Vux
+ v5QAA
+X-Developer-Key: i=msp@baylibre.com; a=openpgp;
+ fpr=BADD88DB889FDC3E8A3D5FE612FA6A01E0A45B41
 
-The qcom-cpucp mailbox irq is expected to function during suspend-resume
-cycle particularly when the scmi cpufreq driver can query the current
-frequency using the get_level message after the cpus are brought up during
-resume. Hence mark the irq with IRQF_NO_SUSPEND flag to fix the do_xfer
-failures we see during resume.
+Export the function dev_pm_qos_read_value(). Most other functions
+mentioned in Documentation/power/pm_qos_interface.rst are already
+exported, so export this one as well.
 
-Err Logs:
-arm-scmi firmware:scmi: timed out in resp(caller:do_xfer+0x164/0x568)
-cpufreq: cpufreq_online: ->get() failed
+This function will be used to read the resume latency in a driver that
+can also be compiled as a module.
 
-Reported-by: Johan Hovold <johan+linaro@kernel.org>
-Closes: https://lore.kernel.org/lkml/ZtgFj1y5ggipgEOS@hovoldconsulting.com/
-Fixes: 0e2a9a03106c ("mailbox: Add support for QTI CPUCP mailbox controller")
-Signed-off-by: Sibi Sankar <quic_sibis@quicinc.com>
+Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+Reviewed-by: Dhruva Gole <d-gole@ti.com>
+Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+Tested-by: Kevin Hilman <khilman@baylibre.com>
 ---
- drivers/mailbox/qcom-cpucp-mbox.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/base/power/qos.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/mailbox/qcom-cpucp-mbox.c b/drivers/mailbox/qcom-cpucp-mbox.c
-index e5437c294803..44f4ed15f818 100644
---- a/drivers/mailbox/qcom-cpucp-mbox.c
-+++ b/drivers/mailbox/qcom-cpucp-mbox.c
-@@ -138,7 +138,7 @@ static int qcom_cpucp_mbox_probe(struct platform_device *pdev)
- 		return irq;
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index bd77f6734f14cda9f45c26538ee7ea7c3a0bc136..ff393cba7649696a6eb1c41993b26a90ff02e5c2 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -137,6 +137,7 @@ s32 dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type)
  
- 	ret = devm_request_irq(dev, irq, qcom_cpucp_mbox_irq_fn,
--			       IRQF_TRIGGER_HIGH, "apss_cpucp_mbox", cpucp);
-+			       IRQF_TRIGGER_HIGH | IRQF_NO_SUSPEND, "apss_cpucp_mbox", cpucp);
- 	if (ret < 0)
- 		return dev_err_probe(dev, ret, "Failed to register irq: %d\n", irq);
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(dev_pm_qos_read_value);
  
+ /**
+  * apply_constraint - Add/modify/remove device PM QoS request.
+
 -- 
-2.34.1
+2.45.2
 
