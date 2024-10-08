@@ -1,30 +1,30 @@
 Received: from michel.telenet-ops.be (michel.telenet-ops.be [195.130.137.88])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE196192B9C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE1021925B5
 	for <linux-pm@vger.kernel.org>; Tue,  8 Oct 2024 09:14:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.88
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728378878; cv=none; b=T0ix/HzjCyYyqdyquepAdx4rDl/KqQZ6q22KzLuWtya3iYfG222vRFqs3madVfVmYEAQCpUHU5GwA/CpXGEwUNxogOURyjFLAF2ZSQyW1D6FlBqVdp/CBQafH8dciassZHYG1IdBefwAxD8Yg/fX15MK9SsLOwFvEX2q2AJd+fk=
+	t=1728378879; cv=none; b=dl6rWZEjDEze3Y30odvHhA0H8amCIVAm6rvpIeKodrSxKD25bK+grY7REb/+eaRDU5F0XLgh54TgBX+xJ8QCiOMWQs3N318/QL7q7Jyoe7pnIKpX5ErzFmAgQpqZ1ym6p/HO4Oz086NRNyj7b7OjmHzzezVxr3niLqdo4JEvXk0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728378878; c=relaxed/simple;
-	bh=tmCFPHOafuY/kvSSZhoNdE4swoZXJSjmXCm7P4fMpwE=;
+	s=arc-20240116; t=1728378879; c=relaxed/simple;
+	bh=RbAAAptohwkXGF/lWasQYEt4BriFrYvFkoZCqLFBweA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=RSlzOuRGmYmsry2yqwPbjmLD8LER/pyqgI3q46/F5jV1ueSdQrP/zwLX7W5Rqxk6RjSorY4AJOacdfhdoen4JnDNRMYbc7aBaCMcXDKM1rNZvN4sOcuLKpk3BNi/qu6x0Qz9K56j5NSFWa/6uCAajJWjs0dyOtNWNt6oqC4NIbM=
+	 MIME-Version; b=lisP+qgzeb70JSk1LhLEF3fgd2P/AAvfPf9oIHrAnSL+1uy14239rkuo+2DREuDy6e8mn2Yth+GRu6+3HvkJZHuEXbnGoPXc/EUp2y58jhI9dZz5EQ7J/zarfsLb6C8eFkOePcuIWK1wu2CRuS53Xn/LCgm90NOG1Bo969eHnhI=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.88
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:af78:ce2e:2b4b:9f2a])
 	by michel.telenet-ops.be with cmsmtp
-	id MlET2D00A0Eqs9l06lETAG; Tue, 08 Oct 2024 11:14:28 +0200
+	id MlET2D0090Eqs9l06lETAF; Tue, 08 Oct 2024 11:14:28 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1sy6IL-003RYL-2R;
+	id 1sy6IL-003RYJ-1y;
 	Tue, 08 Oct 2024 11:14:27 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1sy6IV-00D2DH-Hn;
+	id 1sy6IV-00D2DE-HA;
 	Tue, 08 Oct 2024 11:14:27 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Lukasz Luba <lukasz.luba@arm.com>,
@@ -35,9 +35,9 @@ Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
 	linux-renesas-soc@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 2/2] arm64: dts: renesas: r8a77990: Re-add voltages to OPP table
-Date: Tue,  8 Oct 2024 11:14:21 +0200
-Message-Id: <80890bc244670bc3e8d6fc89fb2c3cb23e7025f5.1728377971.git.geert+renesas@glider.be>
+Subject: [PATCH/RFC 1/2] arm64: dts: renesas: r8a774c0: Re-add voltages to OPP table
+Date: Tue,  8 Oct 2024 11:14:20 +0200
+Message-Id: <2046da75f3db95b62f86c0482063c4d04c2b47d5.1728377971.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1728377971.git.geert+renesas@glider.be>
 References: <cover.1728377971.git.geert+renesas@glider.be>
@@ -65,16 +65,16 @@ same efficiency, and the energy model always picks the one with the
 highest clock rate.
 
 Reported-by: Renesas Test Team via Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Fixes: fb76b0fae3ca8803 ("arm64: dts: renesas: r8a77990: Remove bogus voltages from OPP table")
+Fixes: 554edc3e9239bb81 ("arm64: dts: renesas: r8a774c0: Remove bogus voltages from OPP table")
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- arch/arm64/boot/dts/renesas/r8a77990.dtsi | 3 +++
+ arch/arm64/boot/dts/renesas/r8a774c0.dtsi | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/renesas/r8a77990.dtsi b/arch/arm64/boot/dts/renesas/r8a77990.dtsi
-index 233af3081e84a407..26d08f2cbcb6417b 100644
---- a/arch/arm64/boot/dts/renesas/r8a77990.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a77990.dtsi
+diff --git a/arch/arm64/boot/dts/renesas/r8a774c0.dtsi b/arch/arm64/boot/dts/renesas/r8a774c0.dtsi
+index 7655d5e3a034166e..5d4db20033212218 100644
+--- a/arch/arm64/boot/dts/renesas/r8a774c0.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a774c0.dtsi
 @@ -49,14 +49,17 @@ cluster1_opp: opp-table-1 {
  		opp-shared;
  		opp-800000000 {
