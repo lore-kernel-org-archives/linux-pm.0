@@ -1,89 +1,67 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id B352817E006;
-	Tue,  8 Oct 2024 09:56:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2353216EB76;
+	Tue,  8 Oct 2024 11:28:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728381369; cv=none; b=GwlQ++XAzKs5nHdQxbB28UI3qzFTKkECpnESH91JvVCqOjDuKJJyWCVULHkxp4yaou51pzdauLYQnqKDEk/1/YVQNlRVRnHncLngTUkolCRYafG4Ltuk1QJecaj19MMsCm4autsv513YJPtPND9Jh5bjpaXMzWhOxupFwDSZC2Q=
+	t=1728386937; cv=none; b=fCI1pNJZi8AS+OaUZHrWu6HIv+iLgLRbtFWVqa9JZtyMDQqNJEOUM0t/1JoBq8+NcfghwjO8L3bDo0oo/MngYp9AIYqW/OdiFK0ptrHQH0my9Zcg/G1lDyi2G8zcLRK2j4CY1TGtxJDZsi3rs2VeV4Mbvxbyhu2CXtRbbqH7sHM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728381369; c=relaxed/simple;
-	bh=sflavb67v+3jMqz9cuuU/EBMb/bUrsBD/FaAW31LevQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=sXx4kfU76Tfqffa+6xC/gzQte+bZr60ylc0aAKJIKFXRcH1s/D3DYvUXImvK0eVKVTvx2Oe1YZ89ALbUb7doFfdje5nTdikjA1XsngfxGZKKNdb+yOZ05HTzy+s1XOCCWit4a0HUX8kV8alHjEFevNzcJbuNdAO+6iBmOOOKmPI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 94059DA7;
-	Tue,  8 Oct 2024 02:56:36 -0700 (PDT)
-Received: from [10.1.26.27] (unknown [10.1.26.27])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 13B3C3F640;
-	Tue,  8 Oct 2024 02:56:03 -0700 (PDT)
-Message-ID: <fa2f15b1-1602-4fd0-80ff-9d33303b7b5a@arm.com>
-Date: Tue, 8 Oct 2024 10:56:02 +0100
+	s=arc-20240116; t=1728386937; c=relaxed/simple;
+	bh=Zt66yjoGc3v8K750gZYqmMXE+fuFcmjQo4E8SwaYIko=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=XaB3y3riPr8hA1GC+QZVhHkFKg0dfZHe21rZFraBu4uxZcdYylBmfh71Sle3aFv1TODAQ6OIWQTxy1Da0GaLPGn0/sptYzQocugCVLQOHPiHzOQ0xreKJR2pmEZMlQzVWI2sse5NzQgzWmYlM98qM05fXvr0nTO5vfi1xHz0zF4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.186.216])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4XNDKy6Bw8z6K99V;
+	Tue,  8 Oct 2024 19:28:38 +0800 (CST)
+Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
+	by mail.maildlp.com (Postfix) with ESMTPS id 9D3511408F9;
+	Tue,  8 Oct 2024 19:28:53 +0800 (CST)
+Received: from localhost (10.203.177.66) by frapeml500008.china.huawei.com
+ (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Tue, 8 Oct
+ 2024 13:28:52 +0200
+Date: Tue, 8 Oct 2024 12:28:51 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+CC: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano
+	<daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba
+	<lukasz.luba@arm.com>, Amit Kucheria <amitk@kernel.org>, Thara Gopinath
+	<thara.gopinath@gmail.com>, Thierry Reding <thierry.reding@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>, Vasily Khoruzhick
+	<anarsoul@gmail.com>, Yangtao Li <tiny.windzz@gmail.com>, Chen-Yu Tsai
+	<wens@csie.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland
+	<samuel@sholland.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+	<linux-tegra@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-sunxi@lists.linux.dev>
+Subject: Re: [PATCH v3 1/6] thermal: of: Simplify thermal_of_should_bind
+ with scoped for each OF child
+Message-ID: <20241008122851.000041a7@Huawei.com>
+In-Reply-To: <20241008-b4-cleanup-h-of-node-put-thermal-v3-1-825122398f71@linaro.org>
+References: <20241008-b4-cleanup-h-of-node-put-thermal-v3-0-825122398f71@linaro.org>
+	<20241008-b4-cleanup-h-of-node-put-thermal-v3-1-825122398f71@linaro.org>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7] sched: Consolidate cpufreq updates
-To: Anjali K <anjalik@linux.ibm.com>, Qais Yousef <qyousef@layalina.io>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Juri Lelli <juri.lelli@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>, Ben Segall
- <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
- Valentin Schneider <vschneid@redhat.com>, Hongyan Xia
- <hongyan.xia2@arm.com>, John Stultz <jstultz@google.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20240728184551.42133-1-qyousef@layalina.io>
- <ae65e4aa-3407-4fb0-b1f1-eb7c2626f768@linux.ibm.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <ae65e4aa-3407-4fb0-b1f1-eb7c2626f768@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
+ frapeml500008.china.huawei.com (7.182.85.71)
 
-On 10/7/24 18:20, Anjali K wrote:
-> Hi, I tested this patch to see if it causes any regressions on bare-metal power9 systems with microbenchmarks.
-> The test system is a 2 NUMA node 128 cpu powernv power9 system. The conservative governor is enabled.
-> I took the baseline as the 6.10.0-rc1 tip sched/core kernel.
-> No regressions were found.
+On Tue, 08 Oct 2024 11:00:01 +0200
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+
+> Use scoped for_each_child_of_node_scoped() when iterating over device
+> nodes to make code a bit simpler.
 > 
-> +------------------------------------------------------+--------------------+----------+
-> |                     Benchmark                        |      Baseline      | Baseline |
-> |                                                      |  (6.10.0-rc1 tip   | + patch  |
-> |                                                      |  sched/core)       |          |
-> +------------------------------------------------------+--------------------+----------+
-> |Hackbench run duration (sec)                          |         1          |   1.01   |
-> |Lmbench simple fstat (usec)                           |         1          |   0.99   |
-> |Lmbench simple open/close (usec)                      |         1          |   1.02   |
-> |Lmbench simple read (usec)                            |         1          |   1      |
-> |Lmbench simple stat (usec)                            |         1          |   1.01   |
-> |Lmbench simple syscall (usec)                         |         1          |   1.01   |
-> |Lmbench simple write (usec)                           |         1          |   1      |
-> |stressng (bogo ops)                                   |         1          |   0.94   |
-> |Unixbench execl throughput (lps)                      |         1          |   0.97   |
-> |Unixbench Pipebased Context Switching throughput (lps)|         1          |   0.94   |
-> |Unixbench Process Creation (lps)                      |         1          |   1      |
-> |Unixbench Shell Scripts (1 concurrent) (lpm)          |         1          |   1      |
-> |Unixbench Shell Scripts (8 concurrent) (lpm)          |         1          |   1.01   |
-> +------------------------------------------------------+--------------------+----------+
-> 
-> Thank you,
-> Anjali K
-> 
-
-The default CPUFREQ_DBS_MIN_SAMPLING_INTERVAL is still to have 2 ticks between
-cpufreq updates on conservative/ondemand.
-What is your sampling_rate setting? What's your HZ?
-Interestingly the context switch heavy benchmarks still show -6% don't they?
-Do you mind trying schedutil with a reasonable rate_limit_us, too?
-
-Regards,
-Christian
-
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
