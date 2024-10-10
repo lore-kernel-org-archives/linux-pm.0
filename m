@@ -1,155 +1,183 @@
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2069.outbound.protection.outlook.com [40.107.237.69])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 103AD1CF5C3;
-	Thu, 10 Oct 2024 19:37:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.237.69
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728589080; cv=fail; b=odxIi6w7PlHVRcEf8xX3984lDuszS6rNDuhvuT62W62Mmru+MilvvxMYKEh0v9i92acGXY1HNMFQHxjfW1qKUQj6BLGGTDPZV+1tMmXu4fOLXhrjJKJvvvyHNwktjohzo7vWiwY6NmSRvhl3YTQ5Zt7AvHPIC0724NdU4e/1x44=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728589080; c=relaxed/simple;
-	bh=vq6PyZvHUSYtHDOnH5JX8QiULks8YPaXPgLvmkgN0/8=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BqUKXMv72ZK8Rbsn8SV61W86sfjsfhr1h2eSCo6WDX2M8Jg+EzBXJMByKeRNoGTBawcacFIOqnLtquckf4uQRvpHhGV9F/nTCdNaAsXnTZlbvv2ZgZCouRqTFn+N8Args5HwALoRyHrYK8aUNoIGvAn3S9CgjWrDIfqnx1m0kKk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=pw0cmUHX; arc=fail smtp.client-ip=40.107.237.69
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78FF91D04B9
+	for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2024 20:11:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1728591088; cv=none; b=LtnOuZeGrxYTmHloZf9f5/q40Ms1baDW5FyWUt24V0PkFjk58niQq3zd/VIE8O4HkLxi/7OfaD8q6oJEWjqZi3HEDKaU09A90p/wyVHSeRblWNGvynXgVVHHXATEhhxzmOjFXthQQW11pBpg7TbmKpGL/a32QM8rsqn3+JgdKi8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1728591088; c=relaxed/simple;
+	bh=Idjf9j2GpfBNRTdrVsLP07ri3rOscqHpjdrY4UFQ6ZA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=id5nztTkeyksVWb5x6BUyRmB/ooAEZ6/3Lj7Yd4OXOvPn7Trfrhfm4Fbd1Jy7T4ae3tELYz1IOg4QiE1BYFu+jSmUCK35cmifHnHjYmCysm064yJXkNweJJVJ7No3wuabPewyNEKRnNN0m9WLjaVlZN0o7YNMHfnNpODyOc0k14=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=sX41yqi7; arc=none smtp.client-ip=209.85.216.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="pw0cmUHX"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=fEecSPe5mcfTGiz+TkdmQFdZaIihJpGhyUXg67fcUcWD93hCV18+dUt01rnweWWJciNnsOBNvNcifE1fpNsY1HMcqB/NGk5jFm9GBmnpepS/c++jhv0u5BxcQtUFIqnR+jeNAgqHpPm3Yq0537U3u1V0swNWmYF7yU5xKTThNtBu80tRV0WP7e0UTtYqR4l6mtCP7RgFFgWVDKM7BNDKxGD8pOeBqyRpGqrRTTdw3u1prC2uh+6l81oT0oeN1RdrPY0t2AgCP5eFEn/s16WsLK+FAENJNjgH0oHWFlHLLaW7GUe/vWQirMl4eqjZPhOhdZakme9Et7sb6yeAqITeiw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=EfwreEnEewYS0pE9jStWIsLZJZhnleuZNICQAsz10yA=;
- b=N6oeO8POyMxoVKkQToGlZjQUN85gE13/oC9PShFWXAdgx0DbIvICLBxXo+PwuA8pEtehWiX9+Uj6pxC5WIJ2IDo4ttoSoXXib/G5MKpchFWg8xChN5cGxUUbjS+LTCVZmxwjbopWBYOStZLJhQcLXhJE4sOgVRAjsiBcR+StE7EbGNCjuhOr7Wyq7tqNJ/9YBCWbCRdSVJWSDaiF374S0PsaoC1+wmfmKMSodkQXi6xqz+067b2UQ86KY6c5rfARTIugP7QBaZ5tBk81RzZ0xr8J1wf/6ECx0EDFTj/iGAGa9pzLpEmM3ykuG/ALIwD/Ad14ZeWMXTgOcptYpJbUKg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=alien8.de smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=EfwreEnEewYS0pE9jStWIsLZJZhnleuZNICQAsz10yA=;
- b=pw0cmUHX/+nfd0nLVkqSEiLyshsQXCK1FzI7JTTpvyhWXezd7Xq0+5aS1J0sI17t2UKHBToj2M4Her3OPLOkWv2L4xSaGhBdXa7H89dNQOIk8orqAhb4e7XRrx30C5X70zqJ7yTqA0a/9S4HLsBLX2AKwX5naa6fxtlmwSN9CnA=
-Received: from SA1PR04CA0013.namprd04.prod.outlook.com (2603:10b6:806:2ce::19)
- by BL1PR12MB5873.namprd12.prod.outlook.com (2603:10b6:208:395::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8048.18; Thu, 10 Oct
- 2024 19:37:54 +0000
-Received: from SA2PEPF000015CA.namprd03.prod.outlook.com
- (2603:10b6:806:2ce:cafe::8b) by SA1PR04CA0013.outlook.office365.com
- (2603:10b6:806:2ce::19) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8048.19 via Frontend
- Transport; Thu, 10 Oct 2024 19:37:53 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- SA2PEPF000015CA.mail.protection.outlook.com (10.167.241.200) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.8048.13 via Frontend Transport; Thu, 10 Oct 2024 19:37:53 +0000
-Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Thu, 10 Oct
- 2024 14:37:51 -0500
-From: Mario Limonciello <mario.limonciello@amd.com>
-To: Borislav Petkov <bp@alien8.de>, Hans de Goede <hdegoede@redhat.com>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-CC: <x86@kernel.org>, "Gautham R . Shenoy" <gautham.shenoy@amd.com>, "Mario
- Limonciello" <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>,
-	<linux-kernel@vger.kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, <platform-driver-x86@vger.kernel.org>, "Shyam
- Sundar S K" <Shyam-sundar.S-k@amd.com>
-Subject: [PATCH v2 12/13] cpufreq/amd-pstate: Disable preferred cores on designs with workload classification
-Date: Thu, 10 Oct 2024 14:37:04 -0500
-Message-ID: <20241010193705.10362-13-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20241010193705.10362-1-mario.limonciello@amd.com>
-References: <20241010193705.10362-1-mario.limonciello@amd.com>
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="sX41yqi7"
+Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-2e2bd0e2c4fso1156616a91.3
+        for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2024 13:11:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1728591086; x=1729195886; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=isbhnlnYjDbxJL0QtsFO8LYkHr6huIwURaxSzZxcRWY=;
+        b=sX41yqi77/mt2mOpe4F1Ax3w+G3KtN50396qM9zZWg74j5ZQzoE3mKvxyUgg8huSiC
+         gOCpkw6NgbUPW+LXCjyhr37/ckbm3aEHAgxTnzrmcrjQdA9nAbec8kxu3Ww8JKhAgIjv
+         s4m/FvCA5uDBjhHPjHkVQNkimQs/TfJ4dNZlyy8+lHwm4/atIFnnnzV7Fa+22q8K0P6e
+         WfcX1h9XHVi/0HhMg07chWbDpUKIOL6VzZVQghXl+h1OPQ1xSkP3wF2Ioh+atGz8KQdI
+         0Q745ow+vVuR0t1wwj+8Uw/YmJMPtCvbnBiFGOkjlYf698pp9q8p0dXtZs/cxkKA0UcS
+         3NjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728591086; x=1729195886;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=isbhnlnYjDbxJL0QtsFO8LYkHr6huIwURaxSzZxcRWY=;
+        b=a+hXTCugbByGusiwUDYQnCX18Jq++OeTWexRf5UCRO/YnS5IwXNbaI8LvrAPqZHlh+
+         U8JVQIOJeCez1yh4iYjrStzeh3JinJQbN2+1g9KUM4RJs/dbPnVUWHAssNBOcPBLV53n
+         4qEtO4dgxhlfU7X7RehpARZZ7y37msMqJbbAm4nhlR1YCLZw0QZdapCmjoyGxEEGlOEZ
+         7eQPBNjoxc+vk39ULB5+ZjmWEBDz1RpcY6AGBZyb9Zt1US2YfFUJI6NWVYeMcPf1AVlM
+         64lwvPZNU2egLaQWwB+oqqeD6surZ/nVggTHXCVy64QUGUeOsXESBSyd+KMmAIUrj5DA
+         E9vQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXdehqZ5HSdLp01IuSsJbH6OVQr7KLB8bgTbOShEYypk9rkv+qompAphNS5w9v8CXIP52zlcA1/Hg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw3feQv/p4uBcr4qzI/frjfVA1U8jnroXQGUpTUuUSF/bolFU1+
+	BRDL7OxWRt2sqYGmZPMGCvVs6oxvUhUNdS/SE4tAjmoY/MGmDyN8wfFisTeMp8XwAr7J5M1IfbR
+	4sIoqQsjT+61low0zZcsKP5CV1zfSO+r3LHcP
+X-Google-Smtp-Source: AGHT+IEJn6j/SNCjwA03MHmP2UIfCIQUKdMslhxdgxi/rC7ZgmclKOvxmm80gMLMZu6xO/lwjT1+HEPZp+d9lyxjCj4=
+X-Received: by 2002:a17:90a:1f4f:b0:2d3:c638:ec67 with SMTP id
+ 98e67ed59e1d1-2e2f0825fc1mr467917a91.0.1728591085234; Thu, 10 Oct 2024
+ 13:11:25 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SA2PEPF000015CA:EE_|BL1PR12MB5873:EE_
-X-MS-Office365-Filtering-Correlation-Id: f35635fe-6677-4975-7931-08dce96308df
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|376014|36860700013|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?oHUZj2RZHOurvBQJKQsOp9GH4QCI8Eleis3evidIq1i0mN4hjK6ekf6/J+ay?=
- =?us-ascii?Q?I/SKSDOT+3VPreKPdg/OsLuuTmcbAWkdt0upzGGNfuz1G6xShUO85fGmCi+n?=
- =?us-ascii?Q?CVcKGu8jYDk4HkldiBlQIWMCsQpKEok9b5b9BpGHzrGbrYiZJVsM5/iX3r1h?=
- =?us-ascii?Q?lojwkNZ+YuhjNuhCcKzBWd7XNvlKq19zK1zg7MHcXUvVIfd8GB60eEYJFoJ2?=
- =?us-ascii?Q?kepnK70lIb92ZV1XlCKKk3gBXkGAMMKB5Xpqw6/55Udtjk5x/ZYLJGx/rQJv?=
- =?us-ascii?Q?oBtKAGxBo57Yyt3mPjXeNJKlbKzRGWrumwBMgkm1h7Oa/ZteRiEmTTrtKAaA?=
- =?us-ascii?Q?oqY0tk2Jp5gP3oP7CeMdSNhKjZciykLtx3vBYwR+326zODu3k1btSZa493Pr?=
- =?us-ascii?Q?HDo4Ah3+3o7Ni5+Kgufu+XJfallExPOTge1E+I7dMBJPKMfhTsESNJtgUKMj?=
- =?us-ascii?Q?j5CI1l1Zg+PY4XpuRmrYOKCIegZEnNmUunb4UAXzoEuZOttOcCjtP/nTp98j?=
- =?us-ascii?Q?axGe2UKJOVOzKlJNplymASyVGsidTdmME0Huf65khPbFghp5R7SsRs7sqrHe?=
- =?us-ascii?Q?P2hF10rLMR/sq7SqMhr4n/C1sAiIMy5KrNWrcHBOB6Pq56acGkyO+dk5V2Y6?=
- =?us-ascii?Q?OUffClC9rjo2D2mKUu1qcBLMJVLvLzQDGDEErD4qnh8eTHFk3cOMJEg7oT+K?=
- =?us-ascii?Q?6ClgCwMo8ZlDnQ78SkQAT1c1sFAcp7xB7GE5FRaQ8OuypW2JJTzYZwZIA63j?=
- =?us-ascii?Q?IZHmWhJ4hlnNGsAdbdpmr3erkQkNZAsZCHs8E6kcEhN0x0kcIY4uUIh+trHR?=
- =?us-ascii?Q?sr1+pqBiJyboCYvM5BJR54jcZ5C5A7KrqJXBTH/2s2wVdEHZrjIYYJVTETaX?=
- =?us-ascii?Q?+KGG5KaamJUqz9VmZnl4Lhe/u7Kl1CsaVomCzFQqjptHsCo8m1YywbRrn82U?=
- =?us-ascii?Q?j90+w3eZyyXfbg7WJiz/RxasbuwQOJYeCZ5gSCZeA4fuNUB9bvNuoXn9Tm36?=
- =?us-ascii?Q?LWWdh1taKjwlfutSaF9XNHb/2vwApaor+ic/Fa+1QVlRz8rBNVKQhwJnfcit?=
- =?us-ascii?Q?b45c66FnKeAdTv6Cw0RTZA1luQ/yqq5awK91yf7CkTBcRfnRgVwzugLgE7ZL?=
- =?us-ascii?Q?sJq72MVY2yoMCqhlaOEAdT0bf1jI4LufJRcSkAmY6gz4DnPSlEdj3VwxkdEA?=
- =?us-ascii?Q?k/ULV6QcLkAmj/2GvgFZ1u0yqsGFam1wNYI/V5ulktgMPBal36VG6ikDfU8R?=
- =?us-ascii?Q?ImdNeWa+wCW4oNZ3zToJolzhcOK4pcosXjIsOFhI/zV0qUa+K5Ev9sWFdlnw?=
- =?us-ascii?Q?1VBYMgmN4+VC2p6ASDg39RLkPw7pNLxuyTKIpGP7633llyhCcQucr/hAMVPu?=
- =?us-ascii?Q?gmpdh7QAR6hKPIocV7zi5JICv9/9?=
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(376014)(36860700013)(1800799024);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Oct 2024 19:37:53.8727
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: f35635fe-6677-4975-7931-08dce96308df
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SA2PEPF000015CA.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL1PR12MB5873
+References: <7ho73shkrw.fsf@baylibre.com> <CAJZ5v0hTYkR64x_h5_Qn_J6k=seSZ=eKqdNKEC+UzkQMe1wC1A@mail.gmail.com>
+ <7e22ed71-4e61-4250-a81d-eda4f4647b8b@arm.com> <7hjzefydcc.fsf@baylibre.com>
+In-Reply-To: <7hjzefydcc.fsf@baylibre.com>
+From: Saravana Kannan <saravanak@google.com>
+Date: Thu, 10 Oct 2024 13:10:46 -0700
+Message-ID: <CAGETcx9xFtxj2XZSvUg1_6-RaeHPyc3gedxfb77QK3OAnFkXqw@mail.gmail.com>
+Subject: Re: arm64 s2idle vs. workqueues
+To: Kevin Hilman <khilman@baylibre.com>
+Cc: Christian Loehle <christian.loehle@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On designs that have workload classification, it's preferred that
-the amd-hfi driver is used to provide hints to the scheduler of
-which cores to use instead of the amd-pstate driver.
+If you have some lessons learned from this and present at the next
+LPC, that'd be awesome! Or some LWN writeup, etc.
 
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
- drivers/cpufreq/amd-pstate.c | 4 ++++
- 1 file changed, 4 insertions(+)
+One of the issues you might hit... drivers doing stuff in hotplug
+notifiers that are per CPU. We need a better solution for that.
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 30415c30d8b4..0751579ef06c 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -780,6 +780,10 @@ static void amd_pstate_init_prefcore(struct amd_cpudata *cpudata)
- 	/* user disabled or not detected */
- 	if (!amd_pstate_prefcore)
- 		return;
-+	/* should use amd-hfi instead */
-+	if (boot_cpu_has(X86_FEATURE_WORKLOAD_CLASS) &&
-+	    IS_ENABLED(CONFIG_AMD_HFI))
-+		return;
- 
- 	cpudata->hw_prefcore = true;
- 
--- 
-2.43.0
+-Saravana
 
+On Thu, Oct 10, 2024 at 12:20=E2=80=AFPM Kevin Hilman <khilman@baylibre.com=
+> wrote:
+>
+> Christian Loehle <christian.loehle@arm.com> writes:
+>
+> > On 10/10/24 11:23, Rafael J. Wysocki wrote:
+> >> Hi Kevin,
+> >>
+> >> On Thu, Oct 10, 2024 at 2:19=E2=80=AFAM Kevin Hilman <khilman@baylibre=
+.com> wrote:
+> >>>
+> >>> Hello,
+> >>>
+> >>> Looking for some pointers/tips on debugging s2idle, and in particular
+> >>> why it is not staying in an idle state as long as expected.
+> >>>
+> >>> I'm attempting to use s2idle on a 4-core, single cluster ARM64 SoC (T=
+I
+> >>> AM62x), which doesn't (yet) have any DT defined idle-states, so is ju=
+st
+> >>> doing a WFI when idle.
+> >>>
+> >>> I'm doing an 8-second s2idle with RTC wakeup by using:
+> >>>
+> >>>   rtcwake -m freeze -s8
+> >>>
+> >>> and what I see is that 3 of the CPUs stay in their idle state for the
+> >>> full 8 seconds, but one of them keeps waking due to the A53
+> >>> arm_arch_timer firing, and processing misc. workqueue related activit=
+y
+> >>> (example work listed below[1].)
+> >>>
+> >>> I realize that these workqueues are not WQ_FREEZABLE, so I don't expe=
+ct
+> >>> the freezer part of suspend to stop/freeze them.  However, I am a bit
+> >>> surprised to see this non-frozen workqueue activity happening often
+> >>> enough (few times per second) to prevent all 4 CPUs from being idle f=
+or
+> >>> long periods at the same time, thus preventing a deeper cluster-idle
+> >>> state.
+> >>>
+> >>> Is there something else I'm missing that is needed to keep these
+> >>> workqueues quiet for longer?  I had assumed that most of this workque=
+ue
+> >>> work would be deferred, and shouldn't need to wakeup a CPU just to ru=
+n.
+> >>>
+> >>> In case it's helpful I have published a trace.dat from trace-cmd whic=
+h
+> >>> captures power, sched, irq, timer and workqueue events.  With
+> >>> kernelshark, it's pretty obvious to visualize what's happening: CPU0,=
+1,3
+> >>> are all nicely idle for 8 sec while CPU2 is waking due to the timer a=
+nd
+> >>> workqueue activity.
+> >>>
+> >>> Any pointers to how to improve this situation, or what else needs to =
+be
+> >>> tweaked here would be greatly appreciated,
+> >>
+> >> It looks like tick_freeze() is not called, which only happens in
+> >> enter_s2idle_proper() that is called from cpuidle_enter_s2idle() if
+> >> there are any idle states with an .enter_s2idle() callback.
+> >>
+> >> So does the cpuidle driver for this platform provide .enter_s2idle()
+> >> callbacks for any of its idle states?
+> >
+> > AFAICT there shouldn't be a cpuidle driver that initialized and WFI is
+> > entered through arch code. The trace.dat indicates that, too.
+>
+> That's correct.
+>
+> > @Kevin
+> > I assume you can add a state in the DT, disable it and everything works
+> > as expected?
+>
+> Thanks for the suggestion.  I tried that quickly, but ran into a couple
+> problems:
+>
+> 1) If the state is added, but disabled, that leaves only a WFI state,
+>    and the current PSCI CPUidle driver fails out and defers to arch idle
+>    if there's only the 1 WFI state[1]
+>
+> 2) The PSCI implementation on this SoC does not implement OSI mode, and
+>    the PSCI CPUidle driver also doesn't setup the s2idle callbacks
+>    unless OSI is supported[2]
+>
+> I'm going to hack a bit around these limitations just to see if I can
+> get fully idle, but long term, it looks like I have some TF-A work to do
+> for the PSCI implementation on this SoC.  But at least now I understand
+> the s2idle callbacks and the missing tick_freeze() path, so it makes
+> sense why my platform is not fully idle/suspended.  And the good news is
+> that the TF-A implementation for these TI SoCs is fully upstream, and I
+> can build & use my own version, so that will be the next step.
+>
+> Thanks for the pointers!
+>
+> Kevin
+>
+> [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tr=
+ee/drivers/cpuidle/cpuidle-psci.c?h=3Dv6.11#n361
+> [2] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tr=
+ee/drivers/cpuidle/cpuidle-psci.c?h=3Dv6.11#n221
