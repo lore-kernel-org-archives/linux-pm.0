@@ -1,52 +1,48 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4446C1C172A;
-	Thu, 10 Oct 2024 22:22:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 674C81E7C12;
+	Thu, 10 Oct 2024 22:22:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728598959; cv=none; b=DR8fZ0VAKHc5tYTD3z58hEh67jbDncRg/HTndtn5xjLIzRZRUE4dubytA8quk/C7XJj5DVE7Vu8xay3N+GyygMGIjKSFBgfJmpD1tfhn0XZGRWB+LpDvVzIQgjykfH+IE05LVSK3Tr9b/nl6yl4U3+CQg5Q/VO7ZkjbB+jv7FMo=
+	t=1728598961; cv=none; b=qwLyuR3+mnPi9LObeE0+9+8P8JG9naCghomQUrvPSnAODtsEOpNvXvTEIMRslavFLb8QwexmHw+EYJ9A2/4IxNhDray+wNZ4yVE4V6b6HyFv0kJ6dXnEYR39k6qBnD11TtOD7iK4uxJATij+oAuZqigXmt6g92KaP5l2Gm/5WWQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728598959; c=relaxed/simple;
-	bh=sbzkRocgHF+RLVRdsZm18wLCdz4OqurChzrAtJI9nk4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=fzgewm2Kk4zgpLIXCNCh+WcXRXfV07X/WhHAei6e28gc3uapmgc13B1pWivmtBvy5CtGnPaG8rsauP7j7wDgwFqKQrBkSTxlSWkTIIVnpvV9/Jhb7hF6v0arxBJQZYSf6fzvAaQlmr6ryo24K7/v2HdoZ2pG/i+ZyDysX8Ehyt0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ucH3W9WC reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	s=arc-20240116; t=1728598961; c=relaxed/simple;
+	bh=HA4TfzmPcQgOlDGx1HKQ4a7Us7mD3RLmcsM9rkBT370=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=b4wxO+qenEJOY0tVbzSLU52CTsrSwFaYuKTY17lCXJaEr1rj+YIxyHfa/T1zfwJ47XkUIK6iPJPRo7Y6GBONqnlahGg2zc4XxX3RSv3rNmamGFbzFk2JFVTNIOkhXSNZOwtSUKra6sQKGhdnNci5dBjYpzp/CSuBQR2Dy4f8s/s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=NDXHXXSW; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ucH3W9WC"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="NDXHXXSW"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 1f06392505035da9; Fri, 11 Oct 2024 00:22:25 +0200
+ id 66c1623ba68ce2f1; Fri, 11 Oct 2024 00:22:29 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id A49A169EF02;
-	Fri, 11 Oct 2024 00:22:25 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id B368369EF02;
+	Fri, 11 Oct 2024 00:22:29 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1728598945;
-	bh=sbzkRocgHF+RLVRdsZm18wLCdz4OqurChzrAtJI9nk4=;
+	s=dkim; t=1728598949;
+	bh=HA4TfzmPcQgOlDGx1HKQ4a7Us7mD3RLmcsM9rkBT370=;
 	h=From:Subject:Date;
-	b=ucH3W9WC3xecLxItzi8dYrRNGIC75szLlUwpFNHojI7dDujDpyDzbueWWMQdTHqNx
-	 dzRojgqdSlglfTpP0ICIdWf8kkInWLNYlMYeW759w56fP2hMFQ9ltIKvAaYHy6WFSl
-	 QkYTP6Jyqx4DWs10Xhvn6SFM6ztXYBWvsPbjJ1lFfMY3tQMOXWigtNW1QRpEBTs/8U
-	 jcoQ92DEGE2T3pvHaRnjk4aVHxjlrutTZOZUKSu14otL48MStYrRaX9jzqUZoCEizN
-	 5IdEgUtU/NHZoNyMFNtMXHRFnia6il4XieU5u9Z2NA+7vVesfKZkqbUgqG/zrn3dsI
-	 23CHETi6jFv9Q==
+	b=NDXHXXSWAkb0AHeUfDwQtNoW56Tvn8vvKdnQ5hyBTqaV2dghgsOGXd6Zv6XDUPTrH
+	 dRkBHZ1GkHUYg/I01GtKFUZDjpQyq+4sR3VFScHBlL0zRY7wXeDfMRFf8RF+bVVnjZ
+	 hbl1xcgZKqZY6KVdRNPpb25ssvH1RDUvEsAoFHhX2ybpXo+iNeozsWu4tzWy4Qhind
+	 6dvYW8W+SbY80gvHTqub5fE/EogsFle83IIOVN0UWRV505xzsfL47jokUrrqStciw0
+	 tXf9aIqbCyztFrRHD3q8yd4gbuSDucXwxnSwx4LnokzRk6/NleTA2fLcr13iur4brV
+	 JfLwtfCu9lehA==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject:
- [PATCH v2 10/11] thermal: core: Separate thermal zone governor initialization
-Date: Fri, 11 Oct 2024 00:20:56 +0200
-Message-ID: <4408795.ejJDZkT8p0@rjwysocki.net>
-In-Reply-To: <4985597.31r3eYUQgx@rjwysocki.net>
-References: <4985597.31r3eYUQgx@rjwysocki.net>
+Subject: [PATCH v2 00/11] thermal: core: Reimplement locking through guards
+Date: Thu, 10 Oct 2024 23:59:35 +0200
+Message-ID: <4985597.31r3eYUQgx@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -58,93 +54,32 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrvdefjedguddtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepfeduudeutdeugfelffduieegiedtueefledvjeegffdttefhhffhtefhleejgfetnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheprhhuihdriih
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrvdefjedguddtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheprhhuihdriihhrgh
 X-DCC--Metrics: v370.home.net.pl 0; Body=6 Fuz1=6 Fuz2=6
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Everyone,
 
-In preparation for a subsequent change that will switch over the thermal
-core to using a mutex guard for managing thermal_governor_lock, move
-the code running in thermal_zone_device_register_with_trips() under that
-lock into a separate function called thermal_zone_init_governor().
+This is a continuation of
 
-While at it, drop a useless comment.
+https://lore.kernel.org/linux-pm/2215082.irdbgypaU6@rjwysocki.net/
 
-No intentional functional impact.
+and (quite obviously) it is based on that series.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+The majority of the patches in it are new iterations of patches included in
 
-This is a resend of
+https://lore.kernel.org/linux-pm/6100907.lOV4Wx5bFT@rjwysocki.net/
 
-https://lore.kernel.org/linux-pm/2495577.jE0xQCEvom@rjwysocki.net/
+and there is one new patch ([02/11]).
 
----
- drivers/thermal/thermal_core.c |   36 +++++++++++++++++++++---------------
- 1 file changed, 21 insertions(+), 15 deletions(-)
+All of these patches are related to locking, but some of them are preparatory.
 
-Index: linux-pm/drivers/thermal/thermal_core.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -1343,6 +1343,25 @@ int thermal_zone_get_crit_temp(struct th
- }
- EXPORT_SYMBOL_GPL(thermal_zone_get_crit_temp);
- 
-+static int thermal_zone_init_governor(struct thermal_zone_device *tz)
-+{
-+	struct thermal_governor *governor;
-+	int ret;
-+
-+	mutex_lock(&thermal_governor_lock);
-+
-+	if (tz->tzp)
-+		governor = __find_governor(tz->tzp->governor_name);
-+	else
-+		governor = def_governor;
-+
-+	ret = thermal_set_governor(tz, governor);
-+
-+	mutex_unlock(&thermal_governor_lock);
-+
-+	return ret;
-+}
-+
- static void thermal_zone_init_complete(struct thermal_zone_device *tz)
- {
- 	struct thermal_cooling_device *cdev;
-@@ -1407,7 +1426,6 @@ thermal_zone_device_register_with_trips(
- 	struct thermal_trip_desc *td;
- 	int id;
- 	int result;
--	struct thermal_governor *governor;
- 
- 	if (!type || strlen(type) == 0) {
- 		pr_err("No thermal zone type defined\n");
-@@ -1505,21 +1523,9 @@ thermal_zone_device_register_with_trips(
- 	if (result)
- 		goto release_device;
- 
--	/* Update 'this' zone's governor information */
--	mutex_lock(&thermal_governor_lock);
--
--	if (tz->tzp)
--		governor = __find_governor(tz->tzp->governor_name);
--	else
--		governor = def_governor;
--
--	result = thermal_set_governor(tz, governor);
--	if (result) {
--		mutex_unlock(&thermal_governor_lock);
-+	result = thermal_zone_init_governor(tz);
-+	if (result)
- 		goto unregister;
--	}
--
--	mutex_unlock(&thermal_governor_lock);
- 
- 	if (!tz->tzp || !tz->tzp->no_hwmon) {
- 		result = thermal_add_hwmon_sysfs(tz);
+The series as a whole introduces guards for thermal zones and cooling devices
+and uses them to re-implement locking in the thermal core.  It also uses mutex
+guards for thermal_list_lock and thermal_governor_lock locking.
+
+As usual, the details are described by the individual patch changelogs.
+
+Thanks!
 
 
 
