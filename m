@@ -1,108 +1,212 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E80028F6A
-	for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2024 21:44:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEA201BDA9A;
+	Thu, 10 Oct 2024 22:22:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728596675; cv=none; b=k4Dbhdf5nt1Qud14N9Dx4Mjw0O84PMv77IID2B6u8H2bPsxeLAbe3Im2WciJ1Zqh6C6jpaxKg6p9rZq8DsuaChVLn2mqZp2S0C4TAI+M/bXC+BY/fTr+vYMPXyEGQeOQ7MNcFro4+4axWfvwq+/lQzCbHPknn8LXUASmj7FqztI=
+	t=1728598957; cv=none; b=UZf12Z/i6PauxMLuj7xU4WxrAXttNmD7HRLKJv6qAOrvdCEBDi3u8sq9daq3GWhxm09v9CkctgjWDMHELiq0XBNYJnImHP45kPcW/bmeshgcoC15P8akDxZrFAvZQQ/jSSv5TzeL6dWRnL4f3yoa78qdIABybeuz2f6n9lPN6pc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728596675; c=relaxed/simple;
-	bh=AcSuf/vPOT9tcrdfVuyWUs/nU36TWjtWhqEsOkTBf6Y=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=psrAEKBiSYknoPqvpGALpqyXcwo3l1+USxpQmHWo9ifbPqkN8fTP+/YbifcWuRijBgc3p8mUUjBUEwYTdN9eai6W/e8oov4T2imvo+ZRQGzcmGQ8no3LdiR9qLHzesNwMGMxYaeoIzUe4CTgvV/b2b7lUhrjErmkn0w69RQvyrE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BByj7kYW; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1728598957; c=relaxed/simple;
+	bh=/ZCMzvsyY8AkHkTgqfvOe0987FpFdTCSBezdckfQuss=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=MmSQ9w7al1cxYKaiQ1kVAEINGaNIPO8GzEkashKchuGrX+dx/3mE7yYmKiappdcHY2pFyKVvjhoWV2GEQb4BMvd3H6wvlqtKgK2SQbdvT6CMt5qJOTptWlaJ02qejl83+4nQ5VZr1Nt7Hq07P4FefoDFfaWl5AVg9TAStLlpKFA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=eNapYM1q reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BByj7kYW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 73BD6C4CED0
-	for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2024 21:44:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1728596674;
-	bh=AcSuf/vPOT9tcrdfVuyWUs/nU36TWjtWhqEsOkTBf6Y=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=BByj7kYWr6v1AYC0PpS/wTMPryUM99SC5xpsRL3+IR/8CU60Wtf0Dz2YWoxK9IfuI
-	 NGxg0jehRnLqOJaUHi5sFg41OAtDWxyWXDYlbL2oeHNuQNpKrZDNRcRgt56U5SDIYV
-	 ncesf+pvf6yp6Q2yphSnXC+1yJ5f19/Mi00dWPQbOAbwa7Vd3FZ3BPcChvZUel8pUu
-	 C47q33m+VPwG00nzICHsyJ+Tnb0zstzqwzLBZBNNokjkGDPaoJvura/PrCjwhvWk6z
-	 E8InsePTvoTOoOk+hxWV3r4H1jUy0tZ/LCe6Jac9TZ2YXxa2kZAg1P3DNHhT4tYRSJ
-	 UiHDjFxVPx2Nw==
-Received: by mail-oi1-f178.google.com with SMTP id 5614622812f47-3e4444b0788so902252b6e.1
-        for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2024 14:44:34 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUTWtMRlcW4Rd4RhAIg36e8JS4iMnIkbPYO+wgEAC+HwhzFaQnfy2GHAnd+/apRWgxRNoz7SHgnvA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxCNXIhzrQCgeZCemkg8JjPwKtkBTDSVJI7Vu87aAC2uA663Stf
-	49utg518doTThJggJ05HXo18zE1sfQ/KhgLbYlJppaJUKB93xG1zNPZcu+G4HoTeYR9yxMN1uCG
-	z8u9/7SF/KTjRZ9pssfof+87wN6s=
-X-Google-Smtp-Source: AGHT+IE7p/kIgeXrs0GvEiAOUPA4iQg9W6ZwMYzWxstWg3J26yClZVVQp7xfzhPzUK45aJHFHKdFbsByRDWomkB8HGI=
-X-Received: by 2002:a05:6808:1b2a:b0:3e4:d7aa:dfc9 with SMTP id
- 5614622812f47-3e5c9144ac1mr408325b6e.46.1728596673718; Thu, 10 Oct 2024
- 14:44:33 -0700 (PDT)
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="eNapYM1q"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
+ id 92e9b709ea85c6a5; Fri, 11 Oct 2024 00:22:25 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 3507369EF02;
+	Fri, 11 Oct 2024 00:22:25 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1728598945;
+	bh=/ZCMzvsyY8AkHkTgqfvOe0987FpFdTCSBezdckfQuss=;
+	h=From:Subject:Date;
+	b=eNapYM1qme+moj8TNyhiVf4tEjaInNKOgRCi8MFoH+lGDtX1ZOVkXUqMAAoqyZnfC
+	 JbkfRgKN2wxnpWii7oiMEdIhrT/XC9BXR4ck+tGA4Sa2js34kCZh7E6IZh/Glkz5X6
+	 4yi+EHSdr1lfBqjuuST+Rzo3iNOsJ4YLgbv0eL5mZGqM09fCOawRNu/453u8dqU/Ur
+	 bjkMLlDp94UDpU3fQMqrlwkHuDWgAx/g1BEpfDIQHOb0PefmEdyVC6+noS5pYEYJIx
+	 HI+aq4/LlaT7X15MW5elTWkFd4tsnZ3k6UOrf4X8V/y2eGumVBJG2bILKxeCk1LSkz
+	 7lr0Zgeijvpjw==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject:
+ [PATCH v2 11/11] thermal: core: Manage thermal_governor_lock using a mutex
+ guard
+Date: Fri, 11 Oct 2024 00:22:09 +0200
+Message-ID: <3679429.R56niFO833@rjwysocki.net>
+In-Reply-To: <4985597.31r3eYUQgx@rjwysocki.net>
+References: <4985597.31r3eYUQgx@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240923100005.2532430-1-daniel.lezcano@linaro.org>
- <20240923100005.2532430-2-daniel.lezcano@linaro.org> <CAJZ5v0i9N_ie_duMXYSumQSnFDVxHj1h1ikSyrApJyEjXs_mQg@mail.gmail.com>
- <CAJZ5v0jCOHAmpmniVRuGCrtvKj6+YtCKidKSJf1t+HitwpKrwg@mail.gmail.com>
- <d9682276-1068-4b90-8478-bf1f5047d306@linaro.org> <CAJZ5v0iUYnJi61TAaUz5exRhH7fjwDSXCCeVVUQgm80L-ujfnw@mail.gmail.com>
- <bb4741a1-0a1a-42a9-b71a-0ecd9d34b231@linaro.org>
-In-Reply-To: <bb4741a1-0a1a-42a9-b71a-0ecd9d34b231@linaro.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 10 Oct 2024 23:44:22 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jWFrs4XQLSG9r_WeMTHsRZWdvqXv4C_snBPAE2DFSJOw@mail.gmail.com>
-Message-ID: <CAJZ5v0jWFrs4XQLSG9r_WeMTHsRZWdvqXv4C_snBPAE2DFSJOw@mail.gmail.com>
-Subject: Re: [PATCH v4 1/6] thermal/core: Add user thresholds support
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, lukasz.luba@arm.com, 
-	quic_manafm@quicinc.com
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrvdefjedguddtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepfeduudeutdeugfelffduieegiedtueefledvjeegffdttefhhffhtefhleejgfetnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtoheprhhuihdriih
+X-DCC--Metrics: v370.home.net.pl 0; Body=6 Fuz1=6 Fuz2=6
 
-On Wed, Oct 9, 2024 at 6:44=E2=80=AFPM Daniel Lezcano <daniel.lezcano@linar=
-o.org> wrote:
->
-> On 09/10/2024 17:59, Rafael J. Wysocki wrote:
-> > Hi Daniel,
-> >
-> > On Wed, Oct 9, 2024 at 5:40=E2=80=AFPM Daniel Lezcano <daniel.lezcano@l=
-inaro.org> wrote:
-> >>
-> >>
-> >> Hi Rafael,
-> >>
-> >> On 02/10/2024 14:22, Rafael J. Wysocki wrote:
-> >>> On Tue, Oct 1, 2024 at 9:57=E2=80=AFPM Rafael J. Wysocki <rafael@kern=
-el.org> wrote:
-> >>>>
-> >>>> On Mon, Sep 23, 2024 at 12:00=E2=80=AFPM Daniel Lezcano
-> >>>> <daniel.lezcano@linaro.org> wrote:
-> >>>>>
-> >>>>> The user thresholds mechanism is a way to have the userspace to tel=
-l
-> >>>>> the thermal framework to send a notification when a temperature lim=
-it
-> >>>>> is crossed. There is no id, no hysteresis, just the temperature and
-> >>>>> the direction of the limit crossing. That means we can be notified
-> >>>>> when a threshold is crossed the way up only, or the way down only o=
-r
-> >>>>> both ways. That allows to create hysteresis values if it is needed.
-> >>
-> >> [ ... ]
-> >>
-> >>
-> >>> I'm inclined to apply these 2 patches with the change mentioned above=
-,
-> >>> so that I can base my 6.13 work on them.
-> >>
-> >> I was expecting you to pick these two patches and do the modifications
-> >> but I don't see them in your tree. Did I misunderstood your comment?
-> >
-> > That's still the plan, I've been waiting for you to respond and confirm=
-.
-> >
-> > I gather that this is OK then.
->
-> Yes, it is ;)
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Applied now, sorry for the delay.
+Switch over the thermal core to using a mutex guard for
+thermal_governor_lock management.
+
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+This is a resend of
+
+https://lore.kernel.org/linux-pm/863177860.0ifERbkFSE@rjwysocki.net/
+
+---
+ drivers/thermal/thermal_core.c |   40 +++++++++++++---------------------------
+ 1 file changed, 13 insertions(+), 27 deletions(-)
+
+Index: linux-pm/drivers/thermal/thermal_core.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -124,7 +124,7 @@ int thermal_register_governor(struct the
+ 	if (!governor)
+ 		return -EINVAL;
+ 
+-	mutex_lock(&thermal_governor_lock);
++	guard(mutex)(&thermal_governor_lock);
+ 
+ 	err = -EBUSY;
+ 	if (!__find_governor(governor->name)) {
+@@ -163,8 +163,6 @@ int thermal_register_governor(struct the
+ 		}
+ 	}
+ 
+-	mutex_unlock(&thermal_governor_lock);
+-
+ 	return err;
+ }
+ 
+@@ -175,10 +173,10 @@ void thermal_unregister_governor(struct
+ 	if (!governor)
+ 		return;
+ 
+-	mutex_lock(&thermal_governor_lock);
++	guard(mutex)(&thermal_governor_lock);
+ 
+ 	if (!__find_governor(governor->name))
+-		goto exit;
++		return;
+ 
+ 	list_del(&governor->governor_list);
+ 
+@@ -189,9 +187,6 @@ void thermal_unregister_governor(struct
+ 				 THERMAL_NAME_LENGTH))
+ 			thermal_set_governor(pos, NULL);
+ 	}
+-
+-exit:
+-	mutex_unlock(&thermal_governor_lock);
+ }
+ 
+ int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
+@@ -200,16 +195,13 @@ int thermal_zone_device_set_policy(struc
+ 	struct thermal_governor *gov;
+ 	int ret = -EINVAL;
+ 
+-	mutex_lock(&thermal_governor_lock);
+-
++	guard(mutex)(&thermal_governor_lock);
+ 	guard(thermal_zone)(tz);
+ 
+ 	gov = __find_governor(strim(policy));
+ 	if (gov)
+ 		ret = thermal_set_governor(tz, gov);
+ 
+-	mutex_unlock(&thermal_governor_lock);
+-
+ 	thermal_notify_tz_gov_change(tz, policy);
+ 
+ 	return ret;
+@@ -220,15 +212,13 @@ int thermal_build_list_of_policies(char
+ 	struct thermal_governor *pos;
+ 	ssize_t count = 0;
+ 
+-	mutex_lock(&thermal_governor_lock);
++	guard(mutex)(&thermal_governor_lock);
+ 
+ 	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
+ 		count += sysfs_emit_at(buf, count, "%s ", pos->name);
+ 	}
+ 	count += sysfs_emit_at(buf, count, "\n");
+ 
+-	mutex_unlock(&thermal_governor_lock);
+-
+ 	return count;
+ }
+ 
+@@ -668,17 +658,18 @@ int for_each_thermal_governor(int (*cb)(
+ 			      void *data)
+ {
+ 	struct thermal_governor *gov;
+-	int ret = 0;
+ 
+-	mutex_lock(&thermal_governor_lock);
++	guard(mutex)(&thermal_governor_lock);
++
+ 	list_for_each_entry(gov, &thermal_governor_list, governor_list) {
++		int ret;
++
+ 		ret = cb(gov, data);
+ 		if (ret)
+-			break;
++			return ret;
+ 	}
+-	mutex_unlock(&thermal_governor_lock);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ int for_each_thermal_cooling_device(int (*cb)(struct thermal_cooling_device *,
+@@ -1346,20 +1337,15 @@ EXPORT_SYMBOL_GPL(thermal_zone_get_crit_
+ static int thermal_zone_init_governor(struct thermal_zone_device *tz)
+ {
+ 	struct thermal_governor *governor;
+-	int ret;
+ 
+-	mutex_lock(&thermal_governor_lock);
++	guard(mutex)(&thermal_governor_lock);
+ 
+ 	if (tz->tzp)
+ 		governor = __find_governor(tz->tzp->governor_name);
+ 	else
+ 		governor = def_governor;
+ 
+-	ret = thermal_set_governor(tz, governor);
+-
+-	mutex_unlock(&thermal_governor_lock);
+-
+-	return ret;
++	return thermal_set_governor(tz, governor);
+ }
+ 
+ static void thermal_zone_init_complete(struct thermal_zone_device *tz)
+
+
+
