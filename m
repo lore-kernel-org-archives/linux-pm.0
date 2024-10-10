@@ -1,156 +1,148 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78BB919C57D;
-	Thu, 10 Oct 2024 17:57:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E650819F120
+	for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2024 18:06:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728583054; cv=none; b=lfshqp4bPlPYS4YX6DaVGMh+OtncvAHRwUDibe1h1WBjPEY628mWlJPpz2PELr51e1I+WphGXWKyIsIYjxnIV4v9oIcyaDw5qB6LvCW1iNbhJaFgpbMAFRsvM7h1bD8Q9kpxNWl+Pj495WBXB/0igysSqdEiI/CQ5SF9/0t+38g=
+	t=1728583597; cv=none; b=u2ztcvt6dr6cnnwlKSDocuaXD164Hq9RCeWWF6C38/w32OXeM/tXMD3Po+2YjJfqwggtQsY/H00bV6EUNFkVDXguJGtIoC037aFAeaRJslSLHFfP55YbnWUjp9V6+6/nCehGUdrIf9OOnEygvUmcyrp7ifwOPS2mQZKaAGqoo3s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728583054; c=relaxed/simple;
-	bh=PFsH6ItHrM4WJs3X0uhKTVAGz1bIRu+P1arqBYDfk2U=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TtKHZZD0AGUJN1CAwfNTHUASrFGREyoRssZwUnqa6AZ8SJBcvPicrpLJCDDtue/HB+nhB3uTI49TgFXeavKKFvhtw3o6M+PjGH2vyjTWl213uV4s383DVYDk+d6IVkDlEbPtlSQZHGx+ZWaXcVYbdA+X20/FOF/GFDGeWpIJvI4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BbXir0cH; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1728583597; c=relaxed/simple;
+	bh=21ObDeB7Uw+CZa7niRziQZGtHt4YzVv2qAEMDtifp+A=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=PpxgWRTnzQ+bXN8M6L2/cN4n/3MIxnUs4qYtzv8/OsXO4drDBL0S76gltKHPIwgjxckiJBwWrivGcGmK+DXy9uwuz2uJXapqfpS/gkF0fZ6EmJzRsGP5ZSS4ppkkaxpLg9yCxuID6mt0IaE7lnJktTixv/PlD8xCpDJ27L5F388=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=f66KCI0E; arc=none smtp.client-ip=209.85.218.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BbXir0cH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E780C4CEC6;
-	Thu, 10 Oct 2024 17:57:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1728583054;
-	bh=PFsH6ItHrM4WJs3X0uhKTVAGz1bIRu+P1arqBYDfk2U=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=BbXir0cH3uyT1gpTZnaLVIYlVE9/xzWqPbd1p8SQCEidrrVyViaUYXgj6/W9fWwaK
-	 A/Z5wKSiBSBNchzKk5gpms7l5/CdX7ZJN1P1x2tOefp7AYF9gdKLmfqk9Dv8v/UxCW
-	 NoFYPW/rPljT30mNpsphVe2Qpeiao9FieOulHksZVMV2Tgc301LE5Y1cvpnS1WWeog
-	 +VMs1PTmXPI0W3lKpjLtMumODX4zn7gNnphYX2DW7fX68poe9g7QYn3oCnxcA5x6FB
-	 71TUhaPYzqQF5QE2GhhFe0xoOBtQwNC51VmgoyG5r8UlvsWozLM9MqLy8SjEE80AHg
-	 zD2OkKfMxF3mg==
-Received: by mail-oo1-f48.google.com with SMTP id 006d021491bc7-5e5d0a80db4so625935eaf.3;
-        Thu, 10 Oct 2024 10:57:34 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCX5NTIwfmjvgkDGJmcNUOxPdO3Kli46F5nnrWkE4T+kyVDzBPkNUXulh1Z60lPJ4xF2rrdVEBR6eo8=@vger.kernel.org, AJvYcCXy/6EFvcBCbDwrd5nPWnDhvCJmeavNNF4ypxVR2Ym0s2TAAMZp4EbUSE1uwlCt8lhaKCHW6yonPYeL5Dk=@vger.kernel.org
-X-Gm-Message-State: AOJu0YytrezFQ52XralKkodS9mil69bK3Eq03sKgjGohvnPSK4MRl+hx
-	p0f7mEf4HWvoMH3G59ZxfuiQrWq+tzvVx+sqBXiu5JJJ9IM2WIMsBLKbasVBBfySYMF27UannO6
-	YXArF80JbZlkxmWh5ALbetMnQZw4=
-X-Google-Smtp-Source: AGHT+IHsGFdp1H2B0bRRMFETpGIZM6TFOs4+STFq23+cQOaCSlRAvLYs2o5IIAiNjyfZh29gcfzP5sR3gjPZzlbL2II=
-X-Received: by 2002:a05:6820:1621:b0:5c4:144b:1ff9 with SMTP id
- 006d021491bc7-5e9900a5a42mr4003997eaf.5.1728583053486; Thu, 10 Oct 2024
- 10:57:33 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="f66KCI0E"
+Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-a995d3cc573so14636966b.0
+        for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2024 11:06:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1728583594; x=1729188394; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=XVR/FvDP5mhKIoh1Y1kujnxSoI8PJE0vC17HhQCmzJ4=;
+        b=f66KCI0ED/RW9AUI9gXWyzfhNMrARv9YV3j4Q5LVzVkZ+AO8W0vOfqjNKXWTqKBnao
+         W6DjwWjzHM6ml8voRIRJenSlaQm/cFsWPu5/XKcMgryVuS1KkSwWhruLPKv/bOmtmeoA
+         3eG8usTQKHx9iihBXkHVMY0hvqKMAwudI+2lZ6bwDDGprUAzlf5vQu2OVTXNuQrUSmP9
+         y85RLgmJ+CgkeWetB25XK8UmVbD75jQuNqkgKYrj/FoNnzrFtdteEoXqpqLVi/umHjfY
+         2cTYVUhEUAbshVmfEmUwKOeSCBv/sm+46RslQkoBt+4jV8aU4883dgsERrAL3opvAEcW
+         M3HQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728583594; x=1729188394;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XVR/FvDP5mhKIoh1Y1kujnxSoI8PJE0vC17HhQCmzJ4=;
+        b=DfRkJPvyKF/U86wl8gceM0In2QBwKRUxejOF8AQFoL3jHIo0vcG8l4a2Zp8OC6ZnDc
+         BVWZP/1o7X3t/xHBmPOu15IUNx9xPUwgO6xYOnuRbNJDu9PgZR5Z1uilPVOlD0wreFlv
+         nooSEDiC+A6Bg8L+GzZNNaz5zkTSqxxh38Drdq5oNFke8lqQLFyFERGUYgOWuLfC/S5H
+         eM6MgfLpZNIyVvf964fu8DEbIkrQJ0Px1JgGaBaYAecZGaRypBrJAyp/Mq0gEBv2po1B
+         +ypL2XbgK5dgtVOGFL8Nr/a4BqEaEg8ANvfeR4ubc1sbL3h41zVsqR2T9FIt89zXmts5
+         +xTA==
+X-Gm-Message-State: AOJu0Yz+71KFL4cuYNs+Q6KDBdRjgXz3aP/WtAHkYKH/p23lrrBVgC0Y
+	UwUhma4Xyths3TmCBg3c3JQ/OlWJxBZ/ciHVPFn3ceZUgD6icZa5JrillafF5PQ=
+X-Google-Smtp-Source: AGHT+IHpSo1bYpbQTRApH52ZLkx22//wr4+WM4NMb5T69enhQxaHE8oy4HxKVHQ9HPHYW4HoXxn5kw==
+X-Received: by 2002:a17:907:2d8e:b0:a8d:4410:3bd6 with SMTP id a640c23a62f3a-a998d16a1bcmr285817266b.4.1728583594256;
+        Thu, 10 Oct 2024 11:06:34 -0700 (PDT)
+Received: from [127.0.1.1] ([178.197.211.167])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a99a80c1b8asm119757966b.116.2024.10.10.11.06.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Oct 2024 11:06:33 -0700 (PDT)
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 10 Oct 2024 20:06:17 +0200
+Subject: [PATCH v4 1/6] thermal: of: Simplify thermal_of_should_bind with
+ scoped for each OF child
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241003083952.3186-1-Dhananjay.Ugwekar@amd.com>
- <20241003083952.3186-2-Dhananjay.Ugwekar@amd.com> <CAJZ5v0hoiPo6Q=K=q-EoCNsunr0zLGPJgK39LwnjsSr=btmjOw@mail.gmail.com>
- <ac6aab6d-51d8-47e8-8508-8cc52aba227b@amd.com> <CAJZ5v0iKOQkAUuZaHf1Zcm5sO6xD-dYkeTg8nyC3EuMmY0qDqQ@mail.gmail.com>
- <CAJZ5v0j46anSdQBnsqojcyn2RGKG259ahd92n380wUSAtRFDxg@mail.gmail.com> <b4758500-9169-41fd-8dc4-9b61d00f2fb6@amd.com>
-In-Reply-To: <b4758500-9169-41fd-8dc4-9b61d00f2fb6@amd.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 10 Oct 2024 19:57:21 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jrbNFGR3gevtRS+KDB-iVx-aK4F30TCrZOLH7x0QXuqg@mail.gmail.com>
-Message-ID: <CAJZ5v0jrbNFGR3gevtRS+KDB-iVx-aK4F30TCrZOLH7x0QXuqg@mail.gmail.com>
-Subject: Re: [PATCH 1/3] cpufreq: Add a callback to update the min_freq_req
- from drivers
-To: Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, gautham.shenoy@amd.com, mario.limonciello@amd.com, 
-	perry.yuan@amd.com, ray.huang@amd.com, viresh.kumar@linaro.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20241010-b4-cleanup-h-of-node-put-thermal-v4-1-bfbe29ad81f4@linaro.org>
+References: <20241010-b4-cleanup-h-of-node-put-thermal-v4-0-bfbe29ad81f4@linaro.org>
+In-Reply-To: <20241010-b4-cleanup-h-of-node-put-thermal-v4-0-bfbe29ad81f4@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Amit Kucheria <amitk@kernel.org>, 
+ Thara Gopinath <thara.gopinath@gmail.com>, 
+ Thierry Reding <thierry.reding@gmail.com>, 
+ Jonathan Hunter <jonathanh@nvidia.com>, 
+ Vasily Khoruzhick <anarsoul@gmail.com>, Yangtao Li <tiny.windzz@gmail.com>, 
+ Chen-Yu Tsai <wens@csie.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+ Samuel Holland <samuel@sholland.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1418;
+ i=krzysztof.kozlowski@linaro.org; h=from:subject:message-id;
+ bh=21ObDeB7Uw+CZa7niRziQZGtHt4YzVv2qAEMDtifp+A=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBnCBegb1ST/vPn7ZbI4vbAm3dM40R8drrb7KNXe
+ ium4Vc1Q5qJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCZwgXoAAKCRDBN2bmhouD
+ 1wR/EACaO+1utPorr9k+KbMHdTtCwjgZJ0u+vdGMXRDDjW3QbIQfwJl/2brqpM6MmZv+QBLAhe3
+ 9E67zox8RRdjTRvyCyV4B4qXqA88p9tnj9iLBBgNt4I9aXXeYwpfIGaRk/FDZtVsG+kT9qRe5gW
+ njBUzqQELD10L77i8aglLv7Wz2BZyLegcXh1RpiE/jBphdpydEfiG7zMT/gupnQ9uG946N9Hkzs
+ rVXexntG66EPfAzg8fG6a/fTjnzwTwEYP3mfb644cLbAa0+Fq2BS1YdupOyRkuQEweVTeWQhM2u
+ MGHBXwWcEULDqc9I///ZayC7rqIeSa0AEqyXt6IegYO9eNHWtbTOFk4L2Wsb6xiPflzQyvEECdO
+ ubdTdXqDvabhRuvsl/xY4SLKqzzwhF1QY5FmyCzD0w42dLuzC0+4k6oKn7zGxt+yyn7VysLqJ1C
+ LC/bNXi9OEVnDQpSVJoPPVn2PanSEBiI28SySUhmf8V9qUDUfsPzZpQUSbSCp0x6xS+ViWdVMt6
+ tHFuaKM/rvM4RCYbTGPktSGmHKaFqetIeaheu51jTt6e0U9ts/rPeksEP3RC55+aUNH5FSOByhM
+ zt4jqgBHUYsKZ4C7WvkKn3CixKM0yVU0uv3pFzg+0rs1d/CdnaO7JoqeGQoi25NfFG1jJvSPeUN
+ p4g7KXqiXCwj83A==
+X-Developer-Key: i=krzysztof.kozlowski@linaro.org; a=openpgp;
+ fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
 
-Hi,
+Use scoped for_each_child_of_node_scoped() when iterating over device
+nodes to make code a bit simpler.
 
-On Tue, Oct 8, 2024 at 8:32=E2=80=AFAM Dhananjay Ugwekar
-<Dhananjay.Ugwekar@amd.com> wrote:
->
-> Hello Rafael,
->
-> On 10/7/2024 9:18 PM, Rafael J. Wysocki wrote:
-> > On Mon, Oct 7, 2024 at 5:46=E2=80=AFPM Rafael J. Wysocki <rafael@kernel=
-.org> wrote:
-> >>
-> >> Hi,
-> >>
-> >> On Mon, Oct 7, 2024 at 6:40=E2=80=AFAM Dhananjay Ugwekar
-> >> <Dhananjay.Ugwekar@amd.com> wrote:
-> >>>
-> >>> Hello Rafael,
-> >>>
-> >>> On 10/4/2024 11:47 PM, Rafael J. Wysocki wrote:
-> >>>> On Thu, Oct 3, 2024 at 10:44=E2=80=AFAM Dhananjay Ugwekar
-> >>>> <Dhananjay.Ugwekar@amd.com> wrote:
-> >>>>>
-> >>>>> Currently, there is no proper way to update the initial lower frequ=
-ency
-> >>>>> limit from cpufreq drivers.
-> >>>>
-> >>>> Why do you want to do it?
-> >>>
-> >>> We want to set the initial lower frequency limit at a more efficient =
-level
-> >>> (lowest_nonlinear_freq) than the lowest frequency, which helps save p=
-ower in
-> >>> some idle scenarios, and also improves benchmark results in some scen=
-arios.
-> >>> At the same time, we want to allow the user to set the lower limit ba=
-ck to
-> >>> the inefficient lowest frequency.
-> >>
-> >> So you want the default value of scaling_min_freq to be greater than
-> >> the total floor.
->
-> Yes, we want to set the default min value to what we think is best for th=
-e platform.
->
-> >>
-> >> I have to say that I'm not particularly fond of this approach because
-> >> it is adding a new meaning to scaling_min_freq: Setting it below the
-> >> default would not cause the driver to use inefficient frequencies
-> >
-> > s/not/now/ (sorry)
->
-> I believe we are not changing the meaning of the scaling_min_freq just se=
-tting it
-> to the best value at boot and then allowing the user to have access to th=
-e entire
-> frequency range for the platform. Also, we have cpuinfo_min_freq/max_freq=
- to
-> indicate to the user as to what the entire frequency range is for the pla=
-tform
-> (depending on boost enabled/disabled).
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
 
-But the default you want to set is the lowest efficient frequency
-which user space needs to be aware of.  Otherwise it may make
-suboptimal decisions.
+Changes in v3:
+1. New patch
+---
+ drivers/thermal/thermal_of.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-> >
-> > I should have double checked this before sending.
-> >
-> >> which user space may not be aware of.
->
-> I guess, this part we can fix by documenting correctly ?
->
-> >> Moreover, it would tell the
-> >> driver how far it could go with that.
->
-> Sorry, I didnt understand this part.
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index a4caf7899f8e4a5f3422e4c02c66502b5050fd6d..f0ffc0e335ba9406f4fd858d6c561f9d23f4b842 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -301,7 +301,7 @@ static bool thermal_of_should_bind(struct thermal_zone_device *tz,
+ 				   struct thermal_cooling_device *cdev,
+ 				   struct cooling_spec *c)
+ {
+-	struct device_node *tz_np, *cm_np, *child;
++	struct device_node *tz_np, *cm_np;
+ 	bool result = false;
+ 
+ 	tz_np = thermal_of_zone_get_by_name(tz);
+@@ -315,7 +315,7 @@ static bool thermal_of_should_bind(struct thermal_zone_device *tz,
+ 		goto out;
+ 
+ 	/* Look up the trip and the cdev in the cooling maps. */
+-	for_each_child_of_node(cm_np, child) {
++	for_each_child_of_node_scoped(cm_np, child) {
+ 		struct device_node *tr_np;
+ 		int count, i;
+ 
+@@ -334,7 +334,6 @@ static bool thermal_of_should_bind(struct thermal_zone_device *tz,
+ 				break;
+ 		}
+ 
+-		of_node_put(child);
+ 		break;
+ 	}
+ 
 
-Sorry, never mind.  I was just repeating myself.
+-- 
+2.43.0
 
-> >>
-> >> IMV it would be bettwr to have a separate interface for this kind of t=
-uning.
->
-> I feel like we can incorporate this change cleanly enough into scaling_mi=
-n_freq,
-> without adding a new interface which might further confuse the user. But =
-please
-> let me know your concerns and thoughts.
-
-I'm not sure if you realize that the .show() operation for
-scaling_min_freq prints policy->max and you can easily make your
-driver's .verify() callback change it to whatever value is desired.
-You may as well set it to the lowest efficient frequency if the one
-passed to you is equal to FREQ_QOS_MIN_DEFAULT_VALUE.
