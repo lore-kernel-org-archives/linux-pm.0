@@ -1,49 +1,50 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AE031BBBC4;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4EA1B1E2315;
 	Thu, 10 Oct 2024 22:22:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728598957; cv=none; b=kzj2e+qEKy2TmQjmmMY8S+X7VpCCCjJ//xdfkGHjU5DN16AZaLqUPkN4Sh/bsvf8mCkZIu02ssBoBfh6BILjW1TkPbDTfhf3h/F8jVo9L2LNQbFVd7DhhI/rGIY3ga0IOo8BcFiTBUpdTSmSju8hr1t4vg5p8ZNXd5Wxqth9QCo=
+	t=1728598958; cv=none; b=ZdQb4my/rLhT+mgHqj5zEEafklPx2nC8cFpZOXlIxZnnyYlq1adehkHwrzKZjb5kPxaiRmVZU34TeKG6C35XFhRqa9nGdl8QNjChuWWsVPaoxufwmIY4ozoqCEF6ohQHC7LG6bGbItHVeMTatld61foS6kpsk+Fc9AYG8m6/oaU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728598957; c=relaxed/simple;
-	bh=oZ3MkYoI/38gHlsW+UpIxuXSBrs2+RlFIlO9IgUbsic=;
+	s=arc-20240116; t=1728598958; c=relaxed/simple;
+	bh=6wJf8qwNZabXARs2oRAqCqXVBZZc0JIY1+aXfocLsq0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YhmhAU9qu8o10ZcnKYtNLMK1wQTSWXCxcL7tNCMs9xZwANyGhaz+ckNAtAjYo5pIhmgkhaRk00nTc0E3pfcVJjGPhgoewIw7HS50II8/bZszk/mZiLw/irrQePpnJbvWTazKdv5grD6WFSj+YnsJ7BzwlFqaR5kad+/IOpF7XRU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=cYQJ/t4+; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=rZ1AmHjnE49Jo7vfuGhNzqCjUseBLLFZzC3dSns0YOe1ZEPGkpgKhhuSIg0Ap01LdZQuB4LZGOM82hD6omWbVj5HFVZO4QvtJzFE5QNwL1JJB8JRswkkjIWUDfQq5kT7DFZuX6hah1PQ0DwZUMwvBC7Y62Lwait6ak88cplZM70=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=IrJH9oWK reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="cYQJ/t4+"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="IrJH9oWK"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id 75ad9fdc9bd72b61; Fri, 11 Oct 2024 00:22:27 +0200
+ id 173ccb3c50bd765f; Fri, 11 Oct 2024 00:22:26 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 443F669EF02;
-	Fri, 11 Oct 2024 00:22:27 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 890B969EF02;
+	Fri, 11 Oct 2024 00:22:26 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1728598947;
-	bh=oZ3MkYoI/38gHlsW+UpIxuXSBrs2+RlFIlO9IgUbsic=;
+	s=dkim; t=1728598946;
+	bh=6wJf8qwNZabXARs2oRAqCqXVBZZc0JIY1+aXfocLsq0=;
 	h=From:Subject:Date;
-	b=cYQJ/t4+wj8QqntZv8ZmaH9qvC0G/hG8bRlYPHU3PB18cxyVG97Zd7Jwgjexxf3jI
-	 c6tDQSLkXCa1igl+ix7HJRYoGXeoppWx2Be5WHa/m7cJBZlRwHL9elYUTNAVIVSdRS
-	 KbZwFLaMsKuEe2K4YRyAGzXYu0RznTV0PplnCcxyahiuKWopQCXS3NEYAq+ng1vuNp
-	 PQFIkaiKsDkpgndrCbXKGwJZQ7EIt37ogrWocxl06KftUpwziqVfEuqKxG/zUCfNHs
-	 DrIYAY0/WtL6st1npP2WDcPZr3fp1YLHBOEmUSOUTK6GVYX2aZCvXAhm1HBsRzwy2m
-	 /sjno3+aFrhBQ==
+	b=IrJH9oWKwBNavtG94OtlC6mg+d8ZQk/aLlO3DyrNo91K/E40LmHQyhr0j8GUwAPby
+	 TTTo8AylsRTKlGi30SGHFAEUKnpDuXXYe9zLppGzoCmosc9iqQvy4Pg66D/k6tCobV
+	 aetgIKnVCj295XukDg3+C4ab/LThyu1sZIHCdN5XqzML3B7ECwXUnBIHk/u0PpfitJ
+	 ytNn8wcu6CUgQFkHxd5cNYI+IOW0e1YXzRTQrc6poDgOQ2bAIldlXfZbRK6Of1ngBJ
+	 bXLIt4n9Ciglp1mhtsF0JWMOMEQz+UaCePGkcevAo6SmMbtkFFRcbZoT6yeVhZP6Lj
+	 zMGxywOoRAotA==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 06/11] thermal: core: Introduce thermal_instance_add()
-Date: Fri, 11 Oct 2024 00:13:50 +0200
-Message-ID: <3618899.iIbC2pHGDl@rjwysocki.net>
+Subject:
+ [PATCH v2 08/11] thermal: core: Introduce thermal_cdev_update_nocheck()
+Date: Fri, 11 Oct 2024 00:16:54 +0200
+Message-ID: <1835097.VLH7GnMWUR@rjwysocki.net>
 In-Reply-To: <4985597.31r3eYUQgx@rjwysocki.net>
 References: <4985597.31r3eYUQgx@rjwysocki.net>
 Precedence: bulk
@@ -62,10 +63,10 @@ X-DCC--Metrics: v370.home.net.pl 0; Body=6 Fuz1=6 Fuz2=6
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-To reduce the number of redundant result checks in
-thermal_bind_cdev_to_trip() and make the code in it easier to
-follow, move some of it to a new function called thermal_instance_add()
-and make thermal_bind_cdev_to_trip() invoke that function.
+Three thermal governors call __thermal_cdev_update() under the
+cdev lock without doing any checks, so in order to reduce the
+related code duplication, introduce a new helper function called
+thermal_cdev_update_nocheck() for them and make them use it.
 
 No intentional functional impact.
 
@@ -74,85 +75,98 @@ Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
 This is a resend of
 
-https://lore.kernel.org/linux-pm/2641944.Lt9SDvczpP@rjwysocki.net/
+https://lore.kernel.org/linux-pm/3791590.MHq7AAxBmi@rjwysocki.net/
 
 ---
- drivers/thermal/thermal_core.c |   46 ++++++++++++++++++++++++++---------------
- 1 file changed, 30 insertions(+), 16 deletions(-)
+ drivers/thermal/gov_bang_bang.c       |    4 +---
+ drivers/thermal/gov_fair_share.c      |    4 +---
+ drivers/thermal/gov_power_allocator.c |    5 ++---
+ drivers/thermal/thermal_core.h        |    1 +
+ drivers/thermal/thermal_helpers.c     |   13 +++++++++++++
+ 5 files changed, 18 insertions(+), 9 deletions(-)
 
-Index: linux-pm/drivers/thermal/thermal_core.c
+Index: linux-pm/drivers/thermal/gov_bang_bang.c
 ===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -743,6 +743,28 @@ struct thermal_zone_device *thermal_zone
-  *				     binding, and unbinding.
-  */
+--- linux-pm.orig/drivers/thermal/gov_bang_bang.c
++++ linux-pm/drivers/thermal/gov_bang_bang.c
+@@ -30,9 +30,7 @@ static void bang_bang_set_instance_targe
  
-+static int thermal_instance_add(struct thermal_instance *new_instance,
-+				struct thermal_cooling_device *cdev,
-+				struct thermal_trip_desc *td)
+ 	dev_dbg(&instance->cdev->device, "target=%ld\n", instance->target);
+ 
+-	mutex_lock(&instance->cdev->lock);
+-	__thermal_cdev_update(instance->cdev);
+-	mutex_unlock(&instance->cdev->lock);
++	thermal_cdev_update_nocheck(instance->cdev);
+ }
+ 
+ /**
+Index: linux-pm/drivers/thermal/gov_fair_share.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/gov_fair_share.c
++++ linux-pm/drivers/thermal/gov_fair_share.c
+@@ -89,9 +89,7 @@ static void fair_share_throttle(struct t
+ 		}
+ 		instance->target = div_u64(dividend, divisor);
+ 
+-		mutex_lock(&cdev->lock);
+-		__thermal_cdev_update(cdev);
+-		mutex_unlock(&cdev->lock);
++		thermal_cdev_update_nocheck(cdev);
+ 	}
+ }
+ 
+Index: linux-pm/drivers/thermal/gov_power_allocator.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/gov_power_allocator.c
++++ linux-pm/drivers/thermal/gov_power_allocator.c
+@@ -322,9 +322,8 @@ power_actor_set_power(struct thermal_coo
+ 		return ret;
+ 
+ 	instance->target = clamp_val(state, instance->lower, instance->upper);
+-	mutex_lock(&cdev->lock);
+-	__thermal_cdev_update(cdev);
+-	mutex_unlock(&cdev->lock);
++
++	thermal_cdev_update_nocheck(cdev);
+ 
+ 	return 0;
+ }
+Index: linux-pm/drivers/thermal/thermal_core.h
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.h
++++ linux-pm/drivers/thermal/thermal_core.h
+@@ -213,6 +213,7 @@ static inline bool cdev_is_power_actor(s
+ }
+ 
+ void thermal_cdev_update(struct thermal_cooling_device *);
++void thermal_cdev_update_nocheck(struct thermal_cooling_device *cdev);
+ void __thermal_cdev_update(struct thermal_cooling_device *cdev);
+ 
+ int get_tz_trend(struct thermal_zone_device *tz, const struct thermal_trip *trip);
+Index: linux-pm/drivers/thermal/thermal_helpers.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_helpers.c
++++ linux-pm/drivers/thermal/thermal_helpers.c
+@@ -206,6 +206,19 @@ void thermal_cdev_update(struct thermal_
+ }
+ 
+ /**
++ * thermal_cdev_update_nocheck() - Unconditionally update cooling device state
++ * @cdev: Target cooling device.
++ */
++void thermal_cdev_update_nocheck(struct thermal_cooling_device *cdev)
 +{
-+	struct thermal_instance *instance;
-+
-+	list_for_each_entry(instance, &td->thermal_instances, trip_node) {
-+		if (instance->cdev == cdev)
-+			return -EEXIST;
-+	}
-+
-+	list_add_tail(&new_instance->trip_node, &td->thermal_instances);
-+
 +	mutex_lock(&cdev->lock);
 +
-+	list_add_tail(&new_instance->cdev_node, &cdev->thermal_instances);
++	__thermal_cdev_update(cdev);
 +
 +	mutex_unlock(&cdev->lock);
-+
-+	return 0;
 +}
 +
- /**
-  * thermal_bind_cdev_to_trip - bind a cooling device to a thermal zone
-  * @tz:		pointer to struct thermal_zone_device
-@@ -761,7 +783,7 @@ static int thermal_bind_cdev_to_trip(str
- 				     struct thermal_cooling_device *cdev,
- 				     struct cooling_spec *cool_spec)
- {
--	struct thermal_instance *dev, *instance;
-+	struct thermal_instance *dev;
- 	bool upper_no_limit;
- 	int result;
- 
-@@ -823,23 +845,15 @@ static int thermal_bind_cdev_to_trip(str
- 	if (result)
- 		goto remove_trip_file;
- 
--	mutex_lock(&cdev->lock);
--	list_for_each_entry(instance, &td->thermal_instances, trip_node)
--		if (instance->cdev == cdev) {
--			result = -EEXIST;
--			break;
--		}
--	if (!result) {
--		list_add_tail(&dev->trip_node, &td->thermal_instances);
--		list_add_tail(&dev->cdev_node, &cdev->thermal_instances);
--	}
--	mutex_unlock(&cdev->lock);
-+	result = thermal_instance_add(dev, cdev, td);
-+	if (result)
-+		goto remove_weight_file;
- 
--	if (!result) {
--		thermal_governor_update_tz(tz, THERMAL_TZ_BIND_CDEV);
--		return 0;
--	}
-+	thermal_governor_update_tz(tz, THERMAL_TZ_BIND_CDEV);
-+
-+	return 0;
- 
-+remove_weight_file:
- 	device_remove_file(&tz->device, &dev->weight_attr);
- remove_trip_file:
- 	device_remove_file(&tz->device, &dev->attr);
++/**
+  * thermal_zone_get_slope - return the slope attribute of the thermal zone
+  * @tz: thermal zone device with the slope attribute
+  *
 
 
 
