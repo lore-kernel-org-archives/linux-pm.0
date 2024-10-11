@@ -1,184 +1,198 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2073.outbound.protection.outlook.com [40.107.93.73])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7657D4A31;
-	Fri, 11 Oct 2024 01:15:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728609364; cv=none; b=EBIqvXftUQbDqv7I2snunaAfMuum9a5JQ+/GlJe7gHQlyh+XsWPFeA7gH4d7CgWuf351xfnylo4hXwy5bHe4C+t+/84hUjr08g4sDYJ+NByoHTRYjwX7N4M8FUpc4XH7lwpvpXml/qg4SLU2oYIlhgWNUOFQzQ2qIrSXvi7I5C4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728609364; c=relaxed/simple;
-	bh=X0fdnhlNWN3WChTKv5072MtcWTbFVZrq4OyGc5KN0lU=;
-	h=Message-ID:Subject:From:To:Cc:In-Reply-To:References:Content-Type:
-	 MIME-Version:Date; b=hxy3glZlNYrVLeLcVARllMByErq+856rOF0xuATiNUuFX+MwTafRb/MWpMiHD0jyAt8G1/4NDkothM3XvPfOBy7WfjScQgUpjSOYSWtwSL3qbVrbD/DbJUjEgRCT+DmAF6krN03VlT9DeBcuLDvMD+Xn3sEFNXrG256XacgIdVg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 5b0f078e876e11efa216b1d71e6e1362-20241011
-X-CTIC-Tags:
-	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NAME, HR_CC_NO_NAME, HR_CTE_QP
-	HR_CTT_TXT, HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_NAME
-	HR_SJ_DIGIT_LEN, HR_SJ_LANG, HR_SJ_LEN, HR_SJ_LETTER, HR_SJ_NOR_SYM
-	HR_SJ_PHRASE, HR_SJ_PHRASE_LEN, HR_SJ_PRE_RE, HR_SJ_WS, HR_TO_COUNT
-	HR_TO_DOMAIN_COUNT, HR_TO_NAME, IP_TRUSTED, SRC_TRUSTED, DN_TRUSTED
-	SA_TRUSTED, SA_EXISTED, SN_EXISTED, SPF_NOPASS, DKIM_NOPASS
-	DMARC_NOPASS, CIE_BAD, CIE_GOOD_SPF, GTI_FG_BS, GTI_RG_INFO
-	GTI_C_BU, AMN_T1, AMN_GOOD, AMN_C_TI, AMN_C_BU
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.38,REQID:c626f364-f2b2-4676-9331-f0793413ca62,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:-5,FILE:0,BULK:28,RULE:Release_Ham,ACTIO
-	N:release,TS:23
-X-CID-INFO: VERSION:1.1.38,REQID:c626f364-f2b2-4676-9331-f0793413ca62,IP:0,URL
-	:0,TC:0,Content:0,EDM:0,RT:0,SF:-5,FILE:0,BULK:28,RULE:Release_Ham,ACTION:
-	release,TS:23
-X-CID-META: VersionHash:82c5f88,CLOUDID:a781ed74474aa5932de4f4e26ca4023d,BulkI
-	D:2409062205428B690IWE,BulkQuantity:42,Recheck:0,SF:64|66|38|17|19|102,TC:
-	nil,Content:1|-5,EDM:-3,IP:nil,URL:1,File:nil,RT:nil,Bulk:40|20,QS:nil,BEC
-	:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
-X-CID-BVR: 0
-X-CID-BAS: 0,_,0,_
-X-CID-FACTOR: TF_CID_SPAM_OBB,TF_CID_SPAM_FCD,TF_CID_SPAM_ULS,TF_CID_SPAM_SNR,
-	TF_CID_SPAM_FAS,TF_CID_SPAM_FSD
-X-UUID: 5b0f078e876e11efa216b1d71e6e1362-20241011
-X-User: duanchenghao@kylinos.cn
-Received: from [172.30.80.21] [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <duanchenghao@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 469428937; Fri, 11 Oct 2024 09:15:51 +0800
-Message-ID: <075bed9dc766b31291a57805d2e4a3c72619e3c8.camel@kylinos.cn>
-Subject: Re: [PATCH] USB: Fix the issue of task recovery failure caused by
- USB status when S4 wakes up
-From: duanchenghao <duanchenghao@kylinos.cn>
-To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki"
-	 <rafael@kernel.org>
-Cc: Hongyu Xie <xy521521@gmail.com>, gregkh@linuxfoundation.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-usb@vger.kernel.org, niko.mauno@vaisala.com, pavel@ucw.cz, 
- stanley_chang@realtek.com, tj@kernel.org, Hongyu Xie <xiehongyu1@kylinos.cn>
-In-Reply-To: <2c368013-8363-4a4e-bfee-2f0b14d01162@rowland.harvard.edu>
-References: <20240906030548.845115-1-duanchenghao@kylinos.cn>
-	 <1725931490447646.3.seg@mailgw.kylinos.cn>
-	 <a618ada1582c82b58d2503ecf777ea2d726f9399.camel@kylinos.cn>
-	 <8b07752d-63c4-41e3-bd20-ce3da43dfffc@rowland.harvard.edu>
-	 <8068130ce4ece6078b2893c4c6333c06c792b6c0.camel@kylinos.cn>
-	 <b8dc326b-8aee-4903-bbb6-64083cf66b4d@rowland.harvard.edu>
-	 <bddecd4e-d3c8-448e-8a22-84bbc98c4d1b@kylinos.cn>
-	 <b2ec107d4797f6e1e8e558f97c0ad1be6d46572c.camel@kylinos.cn>
-	 <84a4f66a-5b0e-46a8-8746-be6cd7d49629@rowland.harvard.edu>
-	 <fa347849defa66a7d4af23ac6317ae5b37357ea4.camel@kylinos.cn>
-	 <2c368013-8363-4a4e-bfee-2f0b14d01162@rowland.harvard.edu>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CFA817BA9;
+	Fri, 11 Oct 2024 01:29:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.93.73
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1728610194; cv=fail; b=gHbwg5MNiLosLW+p7DmGJL5pmYCkrB3eAqW3xvcTFdW4a6OdwLxPFBtza1Rq5yHncxzzLNmJ4By13s+4GoriHGkN1/SRWRXM0CJWNxYE5Z0fVz9RzoU1vFKKjEVU7on6gWnUkLQQJRWc+77ml5PX+BdFtFU7WyYoM8OGUX/ScWg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1728610194; c=relaxed/simple;
+	bh=ydesrNNPbkC2oUtbUYUxxxHKo91S7H4rUFWBIE2dmgg=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=lpDafJKekrLRMTSBHmc6Q/sqUAaeUrnHq1C4xJ5jWw4+TYX9082gFJyJ1t3CaiaiVPmnORPoVIID2mw8ugteAnjviXFZEvOOykVm1BI22udGtRcZk1dZdhvRxjFVoUcV+mV0Wt1CpnGCA3NcgV0Ik4Vx2131RtF3U2EmjoKAAZg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=2vHM2TIo; arc=fail smtp.client-ip=40.107.93.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="2vHM2TIo"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=dSPaWCbqe/IdxAExuhAgnrASMcvDXX+huW+EEF2MLiG8GZLZzqJO/1WBtkOEZ9yaXixfcWVbzCBYae1nFA0MfMlme8u04u8c51KIyHvztSkWwZNPFRIiwN7bmNib42269KSjKXX9WddC/gomY8MLoRBmQTaYYBOlA2zFNgWACLGhahVW4RwQ4DnAM/yer7HrvfLvcZFvM6BZjlIs6qoDOkp3f3kB20woFdUdqpeKIBQWZtTrFtn/eynCt/6/MdsHDvqtQdgLmODoR9elPLVwyG1C4dJ3GTw6oru0ecKLUumAAL8rFvOReevzYkJ4E+hGVnkwODsT0diphw8TTFvupQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=lI8TjifObE+GCAo8lzNvWYVwkoI3l0bWEZyiDui3MRU=;
+ b=QZnCsunLNsxCwlwIqVe2HEx5bh2L5V6UxHSQDw7CYgGA5LZ/mvBF71slzQ6N0nTzcA1eve0+vnJguGxi46pFHhVlxzDM/1U9QTilBmsVAC3co1ICJDPa62zR1UeCe7s4Pto6ejEjN+AEXiVWjTk9QIWe/F3Be3snSDMqrmwNWve6+YWlJCaX1KwVftyZKAnBVmisSzKwNqyLKX2NvSV1rwp0KDicUMNk9RDvqnX8ohQQIMvXpSvrSwDcNRHHa51F2HR78csrC200r5Iwloh/sd5HhBTavdqadE2OYkTK6I40zIEve22M3LcoWkU/q6HWrw3lduajaAK+/fmUQl0z3Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=lI8TjifObE+GCAo8lzNvWYVwkoI3l0bWEZyiDui3MRU=;
+ b=2vHM2TIoBVkCeviUslhywnTbkgStfoTaNTlf2kbRK/LTpAP+h/SRyeOUqL2y/ZtgkjoLSyrZa8gp/cfSnXpc6q5ogLwhM5wT8D2PJ8b5y6JKGIFe8q53qo3lnUifjyQcpvYa9MXzyrUaFcEwR+rosgsrMAMUBNr7UeeaxRFf7Fs=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from MN0PR12MB6101.namprd12.prod.outlook.com (2603:10b6:208:3cb::10)
+ by PH7PR12MB6393.namprd12.prod.outlook.com (2603:10b6:510:1ff::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8048.16; Fri, 11 Oct
+ 2024 01:29:49 +0000
+Received: from MN0PR12MB6101.namprd12.prod.outlook.com
+ ([fe80::37ee:a763:6d04:81ca]) by MN0PR12MB6101.namprd12.prod.outlook.com
+ ([fe80::37ee:a763:6d04:81ca%6]) with mapi id 15.20.8048.017; Fri, 11 Oct 2024
+ 01:29:49 +0000
+Message-ID: <6d7e5cc5-db07-423b-b39c-0de213fedaf5@amd.com>
+Date: Thu, 10 Oct 2024 20:29:47 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 00/13] Add support for AMD hardware feedback interface
+To: Bagas Sanjaya <bagasdotme@gmail.com>, Borislav Petkov <bp@alien8.de>,
+ Hans de Goede <hdegoede@redhat.com>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Cc: x86@kernel.org, "Gautham R . Shenoy" <gautham.shenoy@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-pm@vger.kernel.org,
+ platform-driver-x86@vger.kernel.org,
+ Shyam Sundar S K <Shyam-sundar.S-k@amd.com>
+References: <20241010193705.10362-1-mario.limonciello@amd.com>
+ <Zwh3Ky9Qoe6si1qC@archie.me>
+Content-Language: en-US
+From: Mario Limonciello <mario.limonciello@amd.com>
+In-Reply-To: <Zwh3Ky9Qoe6si1qC@archie.me>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SA9PR13CA0168.namprd13.prod.outlook.com
+ (2603:10b6:806:28::23) To MN0PR12MB6101.namprd12.prod.outlook.com
+ (2603:10b6:208:3cb::10)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Thu, 10 Oct 2024 13:53:49 +0800
-User-Agent: Evolution 3.44.4-0ubuntu2 
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MN0PR12MB6101:EE_|PH7PR12MB6393:EE_
+X-MS-Office365-Filtering-Correlation-Id: c16a9e71-93a6-48da-4903-08dce99432bf
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|376014;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?ZjRTaHZiVGxoYyt0eER3Qm5PSUxIY01rQ1ZrU3dFb2pFL2ZmQ2t1OSt0VjYr?=
+ =?utf-8?B?cDYzUzhObHRKTGJyQ1BJNXV3dm0yOURtZmxLdGtxenI0TzJnUko2Z2NLQWp1?=
+ =?utf-8?B?a0xlYzdOV3VlTERXU29DeFFLcHlRVExpV1hlZUllK1RJRHF2TEliSk9EZ0xK?=
+ =?utf-8?B?U0RjS1BpSEdPYXJ5Mm5vVEt2VmE5bU01SFhTWXozYXhUOThydmFyYVNyRWE3?=
+ =?utf-8?B?ZW52T2hEMCtwWDNTaXRWT0ZCRWZ2VVpJcHZYb2cxR1VhRlB3NUV0NHR3aWV0?=
+ =?utf-8?B?ZGZ4SHVoZE5wdWRlMFFSMGtDRnBjVklzN3NIWGl6dnprV3RSZW9OakthVW1U?=
+ =?utf-8?B?MitQWGhRQXFteVk5VHhvRlR1NDRjWUNsbzExYUswMUFScFBKdnY4RHZtQzQy?=
+ =?utf-8?B?VUs0ZCtONmNaS0ZhcEZOUUF2Rmpkai9vRXJWR0x6eE1PMCtLQ2tWQ0o1d0NS?=
+ =?utf-8?B?bjFlWmNxRjI3VTZ4dlpUUkdVSk96cVFFa3B4bUlOWENOVzlqVFp0RXpCL0VJ?=
+ =?utf-8?B?Q3ZTY3d4ZXcyZm1BaEVLZkFLVmM5dDF1bFNqclFQRjA3SHZBcElUV2NwN1R2?=
+ =?utf-8?B?QVNDRUk5NWFUc1VUU1JVMHN6dE0yYkJTTWV4d3lCTUw5LzZCNlJMT0hNVkUv?=
+ =?utf-8?B?UTVTZGpKdUF5bldUM2dPb2N3aTFheXlHRWdNcDVJNFljejBYZnFRb3RxRHBM?=
+ =?utf-8?B?TTVMSVg2eUlnWU5ocDVUbXM5WGp0RURsZmRwMGdPZmQ2dkhROFF3SFJEY0w3?=
+ =?utf-8?B?bnBveTc5dW1Femk0eWlsYlRtc3hVbXlMWThNd1NtczJNUGxVOGtFL3NRTk1V?=
+ =?utf-8?B?ZmtvcWFRdXJqeVA3Mm5YMXZUZ0N5eklzTm01Mks2TEpyelM0a3NpcUJNWVlx?=
+ =?utf-8?B?MEVyUUh1VUlYUEZ5alJvVU1uSDZUanlPbktyMy96TEI1R2tnbG9FY0tYczUx?=
+ =?utf-8?B?TUlDcUcvNUxCRXMza1NyUlRDeC9zZHpRYmszc1d5RVdKdFhDbWk3cklWM3g5?=
+ =?utf-8?B?S2dQK0N4RUk0OXN5L0hrQnlhM3JpUjF6aHNBcWtDKzQzQ2FEQTJHVkRIS3ll?=
+ =?utf-8?B?eCtmMzdnTWY2TElzODY3bGNFaGF3cDJENEZSOG5HRWU0YjVVSnFzRnZvOUEr?=
+ =?utf-8?B?Vnlxb1l5UnNoK28rbE1MQmV6RUxvaTlHdWxIc1ZuYU9ZdGVnc1lUZURPK3Ro?=
+ =?utf-8?B?UWY0YTRPTjFlQnByMk91dUs1TVU1YXlDN01VUDQ2M2U3N3NIb1p2NEt2R28v?=
+ =?utf-8?B?UmRwQUJMOU8reEhHYXA5bjVWbWFZOFpPKzNXRnJIbFVsNWJNOVloVUsyaUpN?=
+ =?utf-8?B?V3RaYkdpK2dwQ1hWa1QrUkUvM21PZXhZY1VhSjhUK2NWbURYM2tlemo1SVpC?=
+ =?utf-8?B?RFJ1anZtVTlpcEgwNkhtK0xYVXljSVRnU1lZQnFJd24rUUJOTEd6Q1dyVDdq?=
+ =?utf-8?B?Zmd5VG9NaHFFcEpNaC9GMDBzd3ovV01QQzgxSUNyMXRESnA1cCs4ZURvdGJl?=
+ =?utf-8?B?Nm5JYkYrTGlBWFlBSEd4YWlFNElUY2d1eUVvNkZGK3ZpbWNxMkNYdFMzdmxY?=
+ =?utf-8?B?dmVoTzc0TUhzdDkyWm80Z0VjRG1jQWpJSHNicURIZHdkMGx3VE1LbXlTRk9x?=
+ =?utf-8?B?SU1mY1dIM2c0aWhnaDBqeW9jTDNlU2p0cjhMZk1vbGVZc21Wc2dobFNWdzMv?=
+ =?utf-8?B?MnJxTFAxVFg5U3IzMUQzSXZ5SXpJTWdBRHFHOExQYXR0b1FVTUdQdk5RPT0=?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN0PR12MB6101.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?MG1nUjhla2ZHaWFyV1FZYmptekdZc1V5VEpmSnliS0Jqb294WVVpNzVock9o?=
+ =?utf-8?B?ZytWdGF5TzlHalhJbHlHYXBMdS9iN2M3bFRhaWt6MlJxaUNvejdoZ3FXVS9N?=
+ =?utf-8?B?ZUJKa2xWNnpBTkd2MENzZ2ZnT25TaEpMNGlXcTduYXVMR241cHpDTEFkVWY5?=
+ =?utf-8?B?cEI3N1NMek44UldYZy82Sjc0NHRlM1VyRko5bTdxWUkrOS9HdEhxMlhHbSt2?=
+ =?utf-8?B?RjgvdEZ5UHduSDlUeXdtSkNZeUFxN1B1ejNHR3RSd3MybTRUNTRBbVhIbGtp?=
+ =?utf-8?B?ZE9VVjBVQmVZTUpzM2hMeVI3T1lrdWhJMW9KaHY4YVpBaE5adnc4KzlscnZm?=
+ =?utf-8?B?cDJYMHhqenpZVVpNR3dpU2VPUEZKd3ZBZXUza2lPZ043RlhiQ1AxQTNEWHRv?=
+ =?utf-8?B?VE5aUHdMZ0NSVk1FNVZ2OXRxWDM0SXZvMFBLU2h2ZkZVbys4aFI5a0RzYzk0?=
+ =?utf-8?B?L2xpajNnbktDMytISlNYdFlqZUIyL3QrVXRUMnM0YVJiRzlpb1VVWVZWYkpx?=
+ =?utf-8?B?eVRJQ3hlMjM2aWo0ODJIZlc3bmh3ckFRelBCMlNoWnF1OXlqYStISGJVeTBO?=
+ =?utf-8?B?WUY1Qi83OWVncnp0NEc4VW9MeFZXeEhWQ3YwMGc0TWZSNm14c2FkaVFSRzh0?=
+ =?utf-8?B?eFoyOHFiaVE4bDJObi9tZ0szK2g1QU5hbnlYWDQwRXptYVlCYU9jeU9JdGxX?=
+ =?utf-8?B?bkZsS1FvSktTeXh3MDAwVFFpZUVhWXQ1djV2dnVBaWhPVlFqY1pwTUZIM09q?=
+ =?utf-8?B?U1JIeVQ3ZzAwYm5JUkdhVFVVeUV1ZUtVVEpsWVFLZWliSWNDNXlpaU11aXhR?=
+ =?utf-8?B?TERreEc0RGZsKzUzbW9kRjFjeE9SK1Y1SnVGeGdzMy9OMGt6TWxqOTRpZm1E?=
+ =?utf-8?B?NnF3R2RiL1NlVWY2a1B3dnF5QnVTVDV3ZmNpRllwWTdTNzVFQnIxemd6V2dK?=
+ =?utf-8?B?b2hZeFdUcGlMS3hzSkNSMnJlcVVCTFRUVkpEdmpsRVd4NzI1dWpZb3RrYVFT?=
+ =?utf-8?B?TVhRZXJsQTZGYW0zRFhrVVZJOVBRZ1lCekxVWHJSQ1lPaTRSUU9WRWNYRjBx?=
+ =?utf-8?B?SkViVjd2K1QzUHNDeEF4cVMwWGR1Uk45dVQxOSt1a0VOd240aEJtSEQwcm5j?=
+ =?utf-8?B?L1FSdktCSnc0RUVreHh6VWZTZkpGNk05TlhoRXZnSkdsanNvNVRwVjY4WnA5?=
+ =?utf-8?B?NXJWd0tXS2xab1BPUmh2aVRaaHc0UURZcjk5MnBuNzNFR1lkZkQ0Z1RiSmxM?=
+ =?utf-8?B?YjEwYWFEVU85Y1ZHSVRmT3JySmM4bUJhVG1DRXVtUGVWakttR0U3aXE2V1gz?=
+ =?utf-8?B?MmpLSzE5MDUxQStxcktFcU9oeVhFRzhFcnFQbEFnc2RRMXBXN3VHOS9xWlRF?=
+ =?utf-8?B?eVFvQU5GZWRtVkFIanRRUzJkU0htcWtWYWpZK0Z5V3pqNEZIWERzbE9qRGI4?=
+ =?utf-8?B?OHMvS0V1MDJ3RlVrQ1g5TWV3ZjZyVHZqZTU3b0V4ZStMVUFsb01sTkZSd29u?=
+ =?utf-8?B?UjBQdmF2c3lkNFNIOWxBSTU2WU0zZUVGYWdCWUFIcnRGTVZOZDJQM3QrTGVa?=
+ =?utf-8?B?ZUFJdk5EbnZiSlMzWDBoZzlaRFhLOFpMYWlnb2I5eDZmV0dsZkU0eGxuZXZX?=
+ =?utf-8?B?K2FjUmxEYWNPSGxzOEZwd3FzRzJBb216MjlLdVhUejVNaUFkSXQrcWdRRXF3?=
+ =?utf-8?B?QVNaLzhIcHMvZE9tbVdnOUtwbzZUWTRCZUVqTXl1Q0prZXNOOFlHU0VESDJv?=
+ =?utf-8?B?TW1ZUi8rQUp3YWc3S2xTZ2FrSmw3T1diclJQUWtYL3JwcWE3dDJqMkRwMVFU?=
+ =?utf-8?B?YmI0Nk42M3pVVURWUGRUQXViUDFjdGVKZDNxMTUySUtTM2lUUmRXN09SOXk1?=
+ =?utf-8?B?OUtLNHhqU1h4bFNuVTRqWmRNTVhNQ0didExhekszN1VGYUR6UVQyTWpUSWF1?=
+ =?utf-8?B?a0JNTVpTYzFWZ1kyRmVmekpDYkExa2VaZERFVDFrRmRXZHRnWGdqYnhzVzlN?=
+ =?utf-8?B?U3hlUVBTdXZhS2N3Q0pPUHQ5a0wyMEFLeWlNRytrTnE3YUZNeTlWWjV4WG1O?=
+ =?utf-8?B?UlZMdXpHWXJscHF1Rm1GNnBtSWlHTThHQnMrU2FSTE1zVDUyYVRjL3A3a3ND?=
+ =?utf-8?Q?qnf1+PpOakgplQTtuOn3aqLCN?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c16a9e71-93a6-48da-4903-08dce99432bf
+X-MS-Exchange-CrossTenant-AuthSource: MN0PR12MB6101.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Oct 2024 01:29:49.6885
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: wPhevpAOPplzooEAifoViZ0+nk5IpXSSkxva3VntbkksuPxOjaZtTihCXfqY96PEpKZccnjz4gLoQwuNxO/+Ww==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6393
 
-Hi Alan,
+On 10/10/2024 19:54, Bagas Sanjaya wrote:
+> On Thu, Oct 10, 2024 at 02:36:52PM -0500, Mario Limonciello wrote:
+>> The AMD Heterogeneous core design and Hardware Feedback Interface (HFI)
+>> provide behavioral classification and a dynamically updated ranking table
+>> for the scheduler to use when choosing cores for tasks.
+>>
+>> Threads are classified during runtime into enumerated classes.
+>> Currently, the driver supports 3 classes (0 through 2). These classes
+>> represent thread performance/power characteristics that may benefit from
+>> special scheduling behaviors. The real-time thread classification is
+>> consumed by the operating system and is used to inform the scheduler of
+>> where the thread should be placed for optimal performance or energy efficiency.
+>>
+>> The thread classification helps to select CPU from a ranking table that describes
+>> an efficiency and performance ranking for each classification from two dimensions.
+>>
+>> The ranking data provided by the ranking table are numbers ranging from 0 to 255,
+>> where a higher performance value indicates higher performance capability and a higher
+>> efficiency value indicates greater efficiency. All the CPU cores are ranked into
+>> different class IDs. Within each class ranking, the cores may have different ranking
+>> values. Therefore, picking from each classification ID will later allow the scheduler
+>> to select the best core while threads are classified into the specified workload class.
+>>
+>> This series was originally submitted by Perry Yuan [1] but he is now doing a different
+>> role and he asked me to take over.
+> 
+> Sorry but can you specify the base commit/tree of this series? I can't apply
+> it on top of current platform-drivers-x86.git, though.
+> 
+> Confused...
+> 
 
-=E5=9C=A8 2024-10-09=E6=98=9F=E6=9C=9F=E4=B8=89=E7=9A=84 11:50 -0400=EF=BC=
-=8CAlan Stern=E5=86=99=E9=81=93=EF=BC=9A
-> On Wed, Oct 09, 2024 at 10:35:05AM +0800, duanchenghao wrote:
-> > Hi Alan,
-> >=20
-> > These are two patches, each addressing the same issue. The current
-> > patch is a direct solution to the problem of the interrupt bottom
-> > half
-> > being frozen. The patch you replied with is another, alternative
-> > solution to the same problem. Please review which solution is more
-> > suitable, or if there are any other revised proposals.
-> >=20
-> >=20
-> > Please review the patch I mentioned:
-> > https://lore.kernel.org/all/0a4dc46ae767c28dd207ae29511ede747f05539a.ca=
-mel@kylinos.cn/
->=20
-> I still think your whole approach is wrong.=C2=A0 There is no need to
-> change=20
-> the way the HCD_FLAG_WAKEUP_PENDING flag gets set or cleared; that's
-> not=20
-> the reason for the problem you're seeing.
->=20
+Sorry about that.  As it crosses a few subsystems it will require some 
+coordination to properly land once it has review comments.
 
-Thank you very much for your evaluation of the scheme. I have a
-question regarding why the set_bit operation for the
-HCD_FLAG_WAKEUP_PENDING flag is performed in the top half of an
-interrupt handler, while the clear_bit operation is done in the bottom
-half. This seems to contradict conventional practices. The issue is not
-limited to S4; if other processes freeze the work queue in the bottom
-half, the same problem may arise.
+It's (currently) based off:
+https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git/log/?h=linux-next
 
-The solution you described below should be able to resolve the current
-S4 issue, but for now, we haven't identified any other scenarios that
-require the same operation. Based on my understanding, the USB device
-is woken up in the bottom half of the interrupt, and both the set_bit
-and clear_bit operations for the HCD_FLAG_WAKEUP_PENDING flag should be
-executed within the same thread in the bottom half. May I ask if there
-are any other reasons why the set_bit is executed in the top half?
-
-> The problem occurs because when suspend_common() in=20
-> drivers/usb/core/hcd-pci.c sets do_wakeup, it does so by calling=20
-> device_may_wakeup(), and the value that function returns is not what
-> we=20
-> want.=C2=A0 The value is based on whether the controller's power/wakeup=
-=20
-> attribute is set, but we also have to take into account the type of=20
-> suspend that's happening.
->=20
-> Basically, if msg is one of the suspend types for which wakeups
-> should=20
-> always be disabled, then do_wakeup should be set to false.=C2=A0 There
-> isn't=20
-> a macro to test for these things, but there should be.=C2=A0 Something
-> like=20
-> PMSG_IS_AUTO() in include/linux/pm.h; maybe call it
-> PMSG_NO_WAKEUP().=C2=A0=20
-> This macro should return true if the PM_EVENT_FREEZE or
-> PM_EVENT_QUIESCE=20
-> bits are set in msg.event.
->=20
-> Rafael, please correct me if I got any of this wrong.
->=20
-> So the right way to fix the problem is to add to pm.h:
->=20
-> #define PMSG_NO_WAKEUP(msg)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0(((msg.event) & =
-\
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0(PM_EVENT_FREEZE | PM_EVENT_QUIESCE)) !=3D 0)
->=20
-> and in suspend_common():
->=20
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (PMSG_IS_AUTO(msg))
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0do_wakeup =3D true;
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0else if (PMSG_NO_WAKEUP(m=
-sg))
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0do_wakeup =3D false;
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0else
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0do_wakeup =3D device_may_wakeup(dev);
->=20
-> Then with do_wakeup set to false, none of the HCD_WAKEUP_PENDING()
-> tests=20
-> in the following code will be executed, so the routine won't fail
-> during=20
-> the freeze or restore phase with -EBUSY.
->=20
-> You'll also have to define an hcd_pci_freeze() routine, just=20
-> like hcd_pci_suspend() except that it uses PMSG_FREEZE instead of=20
-> PMSG_SUSPEND.=C2=A0 And the .freeze callback in usb_hcd_pci_pm_ops should
-> be=20
-> changed to hcd_pci_freeze.
->=20
-> In fact, it looks like choose_wakeup() in drivers/usb/core/driver.c=20
-> could also use the new macro, instead of checking for FREEZE or
-> QUIESCE=20
-> directly the way it does now.
->=20
-> Alan Stern
-
+commit 57533bc760ae ("cpufreq/amd-pstate: Fix non kerneldoc comment")
