@@ -1,459 +1,429 @@
-Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bayard.4d2.org (bayard.4d2.org [5.78.89.93])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE29313B5B4;
-	Mon, 14 Oct 2024 06:35:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C919F149C7A;
+	Mon, 14 Oct 2024 07:38:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.78.89.93
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728887741; cv=none; b=ARuQDs7em9BbcsAEToiyIi4zcImCW0utCr3mwZC9ffrfg3Q+j+W+v3Fln+FUVKXY6K4JTlBcEXqpfTuqt/83tjmDs35Qd7vbnycr9UOLefB/36qH8CVF3KhpnIyzvO1/AA1UMlxqCUo+Xlc/09hNJtEwB3emUE6fLpAZj/XoD0E=
+	t=1728891532; cv=none; b=V9c/zwRwRRo8xvEC4QHjuHvkxaib1gjmAg+l5iu9qp2gomNMzbTgxddf/zu7/tR6yFnmOf7njTRTAu6jUXu/2f8buaJonMTzrEWLaiHM7OZnLvaxjt2ood7rF7wRybvwDik8Gr5RTY4RwLEhdtyH/lL/V+65NwvAMcP+HQEjMEc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728887741; c=relaxed/simple;
-	bh=ZkgW5vYO4joq2Z/uGOt5rwCB6DTYX7lp7/3pY/P6+nU=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=GjGKQjdicpq7BB0aPJA2i/R384fXHPHqCLEnxMIuHEuEyruwRwb8P2Hwv811s5uKbIDqbmUhGcYs++P8QYwIXEchAWibKQRn8LRNGzbi6BdZqQ3aT55i2qmFfRXquqO0t5Rjg9+yyORU8eLvly9t02fpdSob8/CPRyxpNJXvReU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XrSrkX54; arc=none smtp.client-ip=209.85.128.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1728891532; c=relaxed/simple;
+	bh=hXwiaJsujF57M9a4+lPqhF/DWZkT5Kmxxr871kS+4m4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=qWUXkwwE7ffqP4PHa+M/I/E+0XlUGIB17fc2wcaGsHMpE5+sB+C2jStc5kUcioG0jPAkm1khxlL0Elm2Czm04L8BKy16COYMNSuPpIIw6MbSrWsitD7gvqbRIJBEUhbwSW6WN9XFwiQkKRFtgOPHTuSOEXM6glWoGdcQ0RNAsfQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=4d2.org; spf=pass smtp.mailfrom=4d2.org; dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b=js8fchSs; dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b=YKLOVGQv; arc=none smtp.client-ip=5.78.89.93
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=4d2.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=4d2.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XrSrkX54"
-Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-4311420b63fso29116025e9.2;
-        Sun, 13 Oct 2024 23:35:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1728887738; x=1729492538; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=ZkgW5vYO4joq2Z/uGOt5rwCB6DTYX7lp7/3pY/P6+nU=;
-        b=XrSrkX54hvQw5WTUEXWXsGy/zKCQkLzLAMziJLQqqJeRWkDDlh5tJyc9JaedUiavUH
-         gea0JcwFbn9yo5ZKrrGZKb1sEiaW+/V8eFf/K7Ki7v3HZQ75P0IQa7VcJivuBfDqka6k
-         Aa2uQfLLpu7fisYYfqmH8VIKTZ3BoL1NnMhHLHiGCy/HBPk/+6PLIw2165lPaGJDEZ4o
-         A1+MD/leXPvS19A7Y+94eXdOGYyvRJNpCfNdfcaItWoE+X2ChfDMfL1P52hOReWwVbBl
-         b0Dxd3JUx3y/Fp5J2GusWM7PwAYq5VH0IhYAeqsKUnf0QIy83/m4eXwtI+Jn4qjEJhYg
-         b5kw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1728887738; x=1729492538;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=ZkgW5vYO4joq2Z/uGOt5rwCB6DTYX7lp7/3pY/P6+nU=;
-        b=IxdIvQSKODD9kC0qjW/VmfKqoxyU02rB9uxXk1bM1qREHp4mZIzwQ0VkUr8GrKmlQN
-         3mFj+rhMymMWAzPo7QpjH6Eltv4pER5WkkMygdBJn2YPeqzvNka9LKusHtlZH3KcdDBm
-         Y0mucV5+e0xK8SBCASp763kcUz1NPsgnaczzEedOGFDPvwHYlJZ43YrvIi5DlZ5NTs7Y
-         Ir5esMK0YjG4ZnEPBk44BBy2Qh2kJTyTEEU/2maXS/8ZnFl7pnbQP1nP+RPqUU6ExS/D
-         d7Yo5PWPz9bibUhS32wlp8TLjmsbmpHokr2irDE0ODdQjrZVQ9jix+iT0KgwUaR/bJXx
-         jW6Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVsP94ofoIwTKU2DEjsjVJwRAOBKRr0eOuzXEGBbLTpgE5zThjXS/M62FXDTcEgTpgxB+NrSvDcTFfLFIUF@vger.kernel.org, AJvYcCWH8LyWstQy/axjtvbw7oH6e/+a6IUUVo1zIjWZKwus1xUFShQvPCZ6nizYgGoxntoLCysshLA8SRA=@vger.kernel.org, AJvYcCX5khlFR4SPRvDSSB6bCiPhH32SAET5BOSmVI20zUw35LzYJ870NHMLnAplMQUwmJc44X4jT5uvBTD4jw==@vger.kernel.org, AJvYcCXLT6+AnmWUOJ+BnZLkqYqP8/YlFGbemll4oTrSpVAfeGMHTlu2lHo+7z1+OKCm87tzUIJGQk+ceO4=@vger.kernel.org
-X-Gm-Message-State: AOJu0YygyNFjgBzujkGDhrXuBksCpyglMGyrQNeDYhZKr7jH0T6k4YJd
-	uSOu5qDgQcR8KlLgdudWEJ5fveK1jiR/J1GqyoO2x+rPZDMsuFH1
-X-Google-Smtp-Source: AGHT+IFHO+5s6Fw09SE6aT49ckvKglgKqyMSHdvbyT7PrkepR+1k6oGCdyf9Vm714qtnk+/QNrPBqg==
-X-Received: by 2002:a05:600c:1d8c:b0:424:ad14:6b79 with SMTP id 5b1f17b1804b1-431255dc78bmr56827765e9.8.1728887737673;
-        Sun, 13 Oct 2024 23:35:37 -0700 (PDT)
-Received: from ?IPv6:2003:f6:ef15:2100:2c2b:bcc5:835e:c2dd? (p200300f6ef1521002c2bbcc5835ec2dd.dip0.t-ipconnect.de. [2003:f6:ef15:2100:2c2b:bcc5:835e:c2dd])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-37d4b79fa54sm10517019f8f.84.2024.10.13.23.35.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 13 Oct 2024 23:35:37 -0700 (PDT)
-Message-ID: <f17530fc6ae51292117eae4d3e00a3c922386f47.camel@gmail.com>
-Subject: Re: [PATCH v2 5/7] iio: inkern: copy/release available info from
- producer
-From: Nuno =?ISO-8859-1?Q?S=E1?= <noname.nuno@gmail.com>
-To: Matteo Martelli <matteomartelli3@gmail.com>, Jonathan Cameron
-	 <jic23@kernel.org>
-Cc: Alisa-Dariana Roman <alisa.roman@analog.com>, Christian Eggers	
- <ceggers@arri.de>, Lars-Peter Clausen <lars@metafoo.de>, Michael Hennerich	
- <Michael.Hennerich@analog.com>, Paul Cercueil <paul@crapouillou.net>, Peter
- Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>,
- linux-iio@vger.kernel.org, 	linux-kernel@vger.kernel.org,
- linux-mips@vger.kernel.org, 	linux-pm@vger.kernel.org
-Date: Mon, 14 Oct 2024 08:39:53 +0200
-In-Reply-To: <172877455634.1202.4959444122842083990@njaxe.localdomain>
-References: <20241007-iio-read-avail-release-v2-0-245002d5869e@gmail.com>
-	 <20241007-iio-read-avail-release-v2-5-245002d5869e@gmail.com>
-	 <8a5f6f12c2cb6989cef1d09957fc0f6f7a512b26.camel@gmail.com>
-	 <172837007815.3337.5869213289160447430@njaxe.localdomain>
-	 <8241b4caf9ebacb116f50bfe1503f325cc576066.camel@gmail.com>
-	 <172837459910.12274.5022869861872605261@njaxe.localdomain>
-	 <27e0d7b2a70015300047d9388edc87a8ece0c0dc.camel@gmail.com>
-	 <172849861528.354008.17477801981314044908@njaxe.localdomain>
-	 <20241012164732.518f86a5@jic23-huawei>
-	 <172877455634.1202.4959444122842083990@njaxe.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.54.0 
+	dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b="js8fchSs";
+	dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b="YKLOVGQv"
+Received: from bayard.4d2.org (bayard.4d2.org [127.0.0.1])
+	by bayard.4d2.org (Postfix) with ESMTP id 319C5122FE29;
+	Mon, 14 Oct 2024 00:38:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=4d2.org; s=mail;
+	t=1728891529; bh=hXwiaJsujF57M9a4+lPqhF/DWZkT5Kmxxr871kS+4m4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=js8fchSsHCLMxHgABXht3UMHSh+fVlRBGmE9PAYQrykNw0xY2UdJJv4r/jkdTvBo3
+	 bYRZEyeYcA8+Rp9Jao8iHpNoAz0wkVZ7V6R+BU4XXB5+TyW5A3HHS3nebOlMeU0V+b
+	 oREwAt5oRfMyAUvKGC7qvyecmxqUIp1Xm4lxpyz6y6H5Q+AWAelnBneECoCl3Vqko+
+	 x4182UMv5+8EHPInVUHDvzyHYPg15TIRKPWLRQHyfDWHuSCPgIyW7fL38dvVCYP5U9
+	 qdyJAUGOg1HMyrzlUR1J5F6vQbTyHvmiBvfXDgTo5JCzV/6aCOqh4AMwn1VXHFoPuu
+	 ilnYH7LZ3Ek1A==
+X-Virus-Scanned: amavisd-new at 4d2.org
+Authentication-Results: bayard.4d2.org (amavisd-new); dkim=pass (2048-bit key)
+ header.d=4d2.org
+Received: from bayard.4d2.org ([127.0.0.1])
+ by bayard.4d2.org (bayard.4d2.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id qAbo-MGPcEAK; Mon, 14 Oct 2024 00:38:48 -0700 (PDT)
+Received: from localhost.localdomain (unknown [110.52.220.241])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: heylenay@4d2.org)
+	by bayard.4d2.org (Postfix) with ESMTPSA id 2E178122FE1E;
+	Mon, 14 Oct 2024 00:38:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=4d2.org; s=mail;
+	t=1728891528; bh=hXwiaJsujF57M9a4+lPqhF/DWZkT5Kmxxr871kS+4m4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=YKLOVGQvU0R48d6tO5iwOzL3uJJCNt0EjD6HMOFreq49tlzwhZsRVmpgzflRvqZMc
+	 7mqw3B9MGMAh3kETQv/E8qD2dMp5WCZZvPOkKmuT02zAmXo5PWKtz6o4r0x/W5jsfp
+	 lBpCSNWGK5grihw4U3PvvzRjwJtbqiXFXzSxOVExpo5NXocrgqYNFi5QICOhR+JdHd
+	 p+QZ4FbYKcCmCGi1tF4ab6HiSQAgm/Asyk8eYvhLTmh2jGs7D6QO0r9D9uX6+aJKqb
+	 YHkQ0rqVU/VWXq/AKVWED3jS5rQd2+/Cz1CPp7KpWRslToRTS7H7KHD8AxndlrqyeG
+	 ObjoOZvXPOYYg==
+From: Haylen Chu <heylenay@4d2.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Chen Wang <unicorn_wang@outlook.com>,
+	Inochi Amaoto <inochiama@outlook.com>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Jisheng Zhang <jszhang@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	Haylen Chu <heylenay@4d2.org>
+Subject: [PATCH v5 2/3] thermal: cv1800: Add cv1800 thermal driver support
+Date: Mon, 14 Oct 2024 07:38:12 +0000
+Message-ID: <20241014073813.23984-3-heylenay@4d2.org>
+X-Mailer: git-send-email 2.46.2
+In-Reply-To: <20241014073813.23984-1-heylenay@4d2.org>
+References: <20241014073813.23984-1-heylenay@4d2.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Sun, 2024-10-13 at 01:09 +0200, Matteo Martelli wrote:
-> Quoting Jonathan Cameron (2024-10-12 17:47:32)
-> > On Wed, 09 Oct 2024 20:30:15 +0200
-> > Matteo Martelli <matteomartelli3@gmail.com> wrote:
-> >=20
-> > > Quoting Nuno S=C3=A1 (2024-10-08 14:37:22)
-> > > > On Tue, 2024-10-08 at 10:03 +0200, Matteo Martelli wrote:=C2=A0=20
-> > > > > Quoting Nuno S=C3=A1 (2024-10-08 09:29:14)=C2=A0=20
-> > > > > > On Tue, 2024-10-08 at 08:47 +0200, Matteo Martelli wrote:=C2=A0=
-=20
-> > > > > > > Quoting Nuno S=C3=A1 (2024-10-07 17:15:13)=C2=A0=20
-> > > > > > > > On Mon, 2024-10-07 at 10:37 +0200, Matteo Martelli wrote:=
-=C2=A0=20
-> > > > > > > > > Consumers need to call the read_avail_release_resource af=
-ter
-> > > > > > > > > reading
-> > > > > > > > > the
-> > > > > > > > > available info. To call the release with info_exists lock=
-ed,
-> > > > > > > > > copy the
-> > > > > > > > > available info from the producer and immediately call its
-> > > > > > > > > release
-> > > > > > > > > callback. With this change, users of
-> > > > > > > > > iio_read_avail_channel_raw() and
-> > > > > > > > > iio_read_avail_channel_attribute() must free the copied a=
-vail
-> > > > > > > > > info
-> > > > > > > > > after
-> > > > > > > > > calling them.
-> > > > > > > > >=20
-> > > > > > > > > Signed-off-by: Matteo Martelli <matteomartelli3@gmail.com=
->
-> > > > > > > > > ---
-> > > > > > > > > =C2=A0drivers/iio/inkern.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 | 64
-> > > > > > > > > +++++++++++++++++++++++++++++++++--
-> > > > > > > > > ----
-> > > > > > > > > -----
-> > > > > > > > > =C2=A0include/linux/iio/consumer.h |=C2=A0 4 +--
-> > > > > > > > > =C2=A02 files changed, 50 insertions(+), 18 deletions(-)
-> > > > > > > > >=20
-> > > > > > > > > diff --git a/drivers/iio/inkern.c b/drivers/iio/inkern.c
-> > > > > > > > > index
-> > > > > > > > > 7f325b3ed08fae6674245312cf8f57bb151006c0..cc65ef79451e5aa=
-2cea4
-> > > > > > > > > 47e16800
-> > > > > > > > > 7a44
-> > > > > > > > > 7ffc0d91
-> > > > > > > > > 100644
-> > > > > > > > > --- a/drivers/iio/inkern.c
-> > > > > > > > > +++ b/drivers/iio/inkern.c
-> > > > > > > > > @@ -760,9 +760,25 @@ static int iio_channel_read_avail(st=
-ruct
-> > > > > > > > > iio_channel
-> > > > > > > > > *chan,
-> > > > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (!iio_channel_has_avail=
-able(chan->channel, info))
-> > > > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0 return -EINVAL;
-> > > > > > > > > =C2=A0
-> > > > > > > > > -=C2=A0=C2=A0=C2=A0=C2=A0 if (iio_info->read_avail)
-> > > > > > > > > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 return iio_info->read_avail(chan->indio_dev,
-> > > > > > > > > chan-=C2=A0=20
-> > > > > > > > > > channel,=C2=A0=20
-> > > > > > > > > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 vals, type, length,
-> > > > > > > > > info);
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0 if (iio_info->read_avail) {
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 const int *vals_tmp;
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 int ret;
-> > > > > > > > > +
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 ret =3D iio_info->read_avail(chan->indio_dev,
-> > > > > > > > > chan-=C2=A0=20
-> > > > > > > > > > channel,=C2=A0=20
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 =C2=A0=C2=A0 &vals_tmp, type,
-> > > > > > > > > length,
-> > > > > > > > > info);
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 if (ret < 0)
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return r=
-et;
-> > > > > > > > > +
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 *vals =3D kmemdup_array(vals_tmp, *length,
-> > > > > > > > > sizeof(int),
-> > > > > > > > > GFP_KERNEL);
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 if (!*vals)
-> > > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -=
-ENOMEM;
-> > > > > > > > > +=C2=A0=20
-> > > > > > > >=20
-> > > > > > > > Not a big deal but I would likely prefer to avoid yet anoth=
-er
-> > > > > > > > copy. If
-> > > > > > > > I'm
-> > > > > > > > understanding things correctly, I would rather create an in=
-kern
-> > > > > > > > wrapper
-> > > > > > > > API
-> > > > > > > > like=20
-> > > > > > > > iio_channel_read_avail_release_resource() - maybe something=
- with
-> > > > > > > > a
-> > > > > > > > smaller
-> > > > > > > > name :).
-> > > > > > > > Hence, the lifetime of the data would be only controlled by=
- the
-> > > > > > > > producer
-> > > > > > > > of
-> > > > > > > > it. It
-> > > > > > > > would also produce a smaller diff (I think). I just find it=
- a
-> > > > > > > > bit
-> > > > > > > > confusing
-> > > > > > > > that we
-> > > > > > > > duplicate the data in here and the producer also duplicates=
- it
-> > > > > > > > on the -=C2=A0=20
-> > > > > > > > > read_avail()=C2=A0=20
-> > > > > > > > call. Another advantage I see is that often the available d=
-ata
-> > > > > > > > is indeed
-> > > > > > > > const in
-> > > > > > > > which case no kmemdup_array() is needed at all.=C2=A0=20
-> > > > > > >=20
-> > > > > > >=20
-> > > > > > > If I understand correctly your suggestion you would leave the
-> > > > > > > inkern
-> > > > > > > iio_channel_read_avail() untouched, then add a new inkern wra=
-pper,
-> > > > > > > something
-> > > > > > > like iio_channel_read_avail_release_resource(), that would ca=
-ll
-> > > > > > > the
-> > > > > > > producer's
-> > > > > > > read_avail_release_resource(). The consumer would invoke this=
- new
-> > > > > > > wrapper
-> > > > > > > in
-> > > > > > > its
-> > > > > > > own read_avail_release_resource() avoiding the additional cop=
-y.
-> > > > > > > The call
-> > > > > > > stack
-> > > > > > > would look something like the following:
-> > > > > > >=20
-> > > > > > > iio_read_channel_info_avail() {
-> >=20
-> > Here you are talking about the core code that produces a string.
-> > But you've done that in reply to v5 which is about inkern interfaces
-> > that don't work in strings...
-> >=20
-> >=20
-> >=20
-> > > > > > > =C2=A0=C2=A0=C2=A0 consumer->read_avail() {
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 iio_read_avail_cha=
-nnel_raw() {
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0 iio_channel_read_avail() {
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 producer->read_avail() {
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 kmemdup_array();
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0 }
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
-> > > > > > > =C2=A0=C2=A0=C2=A0 }
-> > > > > > >=20
-> > > > > > > =C2=A0=C2=A0=C2=A0 iio_format_list();
-> > That's effectively making the safe copy that is handed back to the
-> > caller. So this is fine.
-> > > > > > >=20
-> > > > > > > =C2=A0=C2=A0=C2=A0 consumer->read_avail_release_resource() {
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 iio_read_avail_cha=
-nnel_release_resource() {
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0 producer->read_avail_release_resource() {
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 kfree();
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0 }
-> > > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
-> > > > > > > =C2=A0=C2=A0=C2=A0 }
-> > > > > > > }=C2=A0=20
-> > > > > >=20
-> > > > > > Yeah, exactly what came to mind...
-> >=20
-> > I'm very confused what scope of comments here is. Maybe the easiest thi=
-ng is
-> > to send the code.
-> >=20
->=20
-> The function call graph example and the related comments above were just
-> to show the full flow of a read_avail() call on a consumer driver in
-> case an inkern release_resource() wrapper was used instead of an
-> additional consumer copy. This just to confirm that I was on the same
-> page as what Nuno suggested.
->=20
-> >=20
-> > > > > > =C2=A0=20
-> > > > > > >=20
-> > > > > > >=20
-> > > > > > > I was going with the simpler solution you described, but my
-> > > > > > > concern with
-> > > > > > > it
-> > > > > > > was
-> > > > > > > that the info_exists_lock mutex would be unlocked between a
-> > > > > > > iio_channel_read_avail()
-> > > > > > > call and its corresponding
-> > > > > > > iio_channel_read_avail_release_resource() call.
-> > > > > > > To my understanding, this could potentially allow for the dev=
-ice
-> > > > > > > to be
-> > > > > > > unregistered between the two calls and result in a memleak of=
- the
-> > > > > > > avail
-> > > > > > > buffer
-> > > > > > > allocated by the producer.
-> >=20
-> > Yes. That's why we have to free the produced copy under the exist_lock
-> > (and take yet another copy).
-> >=20
-> > > > > > >=20
-> > > > > > > However, I have been trying to reproduce a similar case by ad=
-ding
-> > > > > > > a delay
-> > > > > > > between the consumer->read_avail() and the
-> > > > > > > consumer->read_avail_release_resources(), and by unbinding th=
-e
-> > > > > > > driver
-> > > > > > > during
-> > > > > > > that delay, thus with the info_exists_lock mutex unlocked. In=
- this
-> > > > > > > case
-> > > > > > > the
-> > > > > > > driver is not unregistered until the iio_read_channel_info_av=
-ail()
-> > > > > > > function
-> > > > > > > completes, likely because of some other lock on the sysfs fil=
-e
-> > > > > > > after the
-> > > > > > > call
-> > > > > > > of
-> > > > > > > cdev_device_del() in iio_device_unregister().
-> > > > > > > =C2=A0=20
-> > > > > >=20
-> > > > > > Yes, you need to have some sync point at the kernfs level other=
-wise
-> > > > > > we could
-> > > > > > always be handling a sysfs attr while the device is being remov=
-ed
-> > > > > > under our
-> > > > > > feet. But I'm not sure what you're trying to do... IIUC, the pr=
-oblem
-> > > > > > might
-> > > > > > come
-> > > > > > if have:
-> > > > > >=20
-> > > > > > consumer->read_avail_channel_attribute()
-> > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 producer->info_lock(=
-)
-> > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 producer->read_avail=
-()
-> > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0 producer->kmalloc()
-> > > > > >=20
-> > > > > > ...
-> > > > > > // producer unbound
-> > > > > > ...
-> > > > > > consumer->read_avail_release()
-> > > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -ENODEV;
-> > > > > >=20
-> > > > > > // producer->kmalloc() never get's freed...
-> > > > > >=20
-> > > > > > The above is your problem right? And I think it should be a val=
-id
-> > > > > > one since
-> > > > > > between ->read_avail_channel_attribute() and read_avail_release=
-()
-> > > > > > there's
-> > > > > > nothing preventing the producer from being unregistered...=C2=
-=A0=20
-> > > > >=20
-> > > > > Yes, that's the problem.
-> > > > > =C2=A0=20
-> > > > > >=20
-> > > > > > If I'm not missing nothing one solution would be for the produc=
-er to
-> > > > > > do
-> > > > > > devm_kmalloc() and devm_kfree() on read_avail() and
-> > > > > > release_resources() but
-> > > > > > at
-> > > > > > that point I'm not sure it's better than what you have since it=
-'s
-> > > > > > odd enough
-> > > > > > for
-> > > > > > being missed in reviews...=C2=A0=20
-> >=20
-> > If it's an allocation to keep a copy for an active consumer then that i=
-s
-> > nasty
-> > as the lifetime is completely untidied.=C2=A0 Effectively you are garba=
-ge
-> > collecting.
-> >=20
-> > > > >=20
-> > > > > I honestly didn't think of this and it would in fact prevent the
-> > > > > additional copy. But I agree that it could be missed in new drive=
-rs,
-> > > > > maybe a comment in the iio_info read_avail_release_resource() cal=
-lback
-> > > > > declaration would help?=C2=A0=20
-> > > > > > =C2=A0=20
-> > > > At this point I would say whatever you or Jonathan prefer :)
-> > > > =C2=A0=20
-> > >=20
-> > > I run some quick tests with this approach and haven't found any issue=
- so
-> > > far.=20
-> >=20
-> > I can't see what is preventing the race you describe where the
-> > release callback is swept out by a driver unbind of the provider.
-> > So unless we can show that is safe I don't see a way to avoid a consume=
-r
-> > copy.
-> >=20
-> > Long shot, Lars-Peter I think you fixed up most of the previous races i=
-n
-> > this
-> > code, don't suppose you remember how it works?
-> >=20
-> > > I would personally switch to this approach as it would be much
-> > > simpler and easier to understand, and since the avail lists are const
-> > > for most of the current drivers I would not expect many new drivers
-> > > needing a dynamic available list. However, I will wait Jonathan feedb=
-ack
-> > > first.
-> > The idea here is almost no one actually makes a copy in the producer.
-> > The consumer copy is a necessity to my thinking because we are effectiv=
-ely
-> > passing the ownership of the data.=C2=A0 Unfortunately we have no idea =
-how
-> > the producer would free it so we need to create our own copy.
-> >=20
->=20
-> You are indeed right. During the last comment reviews I focused on the
-> fact that using a devm_kfree() in the producer's read_avail_release()
-> would prevent the memleak but I completely missed that it would not
-> prevent the race condition: without the consumer copy, the consumer or
-> core code could still try to access a freed buffer after the producer
-> driver gets unregistered.
->=20
+Add support for cv1800 SoC integrated thermal sensors. Temperature is
+calculated with a curve-fitted formula. Threshold registers are set as
+specified by trip points and the thermal zone will be updated on
+threshold violation interrupts.
 
-Yeah, this would be indeed an issue... Good catch!
+Signed-off-by: Haylen Chu <heylenay@4d2.org>
+---
+ drivers/thermal/Kconfig          |   6 +
+ drivers/thermal/Makefile         |   1 +
+ drivers/thermal/cv1800_thermal.c | 296 +++++++++++++++++++++++++++++++
+ 3 files changed, 303 insertions(+)
+ create mode 100644 drivers/thermal/cv1800_thermal.c
 
-- Nuno S=C3=A1
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 61e7ae524b1f..901524ba8b38 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -499,4 +499,10 @@ config LOONGSON2_THERMAL
+ 	  is higher than the high temperature threshold or lower than the low
+ 	  temperature threshold, the interrupt will occur.
+ 
++config CV1800_THERMAL
++	tristate "Temperature sensor driver for Sophgo CV1800"
++	help
++	  If you say yes here you get support for thermal sensor integrated in
++	  Sophgo CV1800 SoC.
++
+ endif
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 41c4d56beb40..b1890b570f9b 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -63,4 +63,5 @@ obj-$(CONFIG_AMLOGIC_THERMAL)     += amlogic_thermal.o
+ obj-$(CONFIG_SPRD_THERMAL)	+= sprd_thermal.o
+ obj-$(CONFIG_KHADAS_MCU_FAN_THERMAL)	+= khadas_mcu_fan.o
+ obj-$(CONFIG_LOONGSON2_THERMAL)	+= loongson2_thermal.o
++obj-$(CONFIG_CV1800_THERMAL)	+= cv1800_thermal.o
+ obj-$(CONFIG_THERMAL_CORE_TESTING)	+= testing/
+diff --git a/drivers/thermal/cv1800_thermal.c b/drivers/thermal/cv1800_thermal.c
+new file mode 100644
+index 000000000000..588fc2da06e1
+--- /dev/null
++++ b/drivers/thermal/cv1800_thermal.c
+@@ -0,0 +1,296 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2021 Sophgo Inc.
++ * Copyright (C) 2024 Haylen Chu <heylenay@4d2.org>
++ */
++
++#include <linux/bits.h>
++#include <linux/clk.h>
++#include <linux/io.h>
++#include <linux/interrupt.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
++#include <linux/units.h>
++
++#define TEMPSEN_VERSION					0x0
++#define TEMPSEN_CTRL					0x4
++#define  TEMPSEN_CTRL_EN				BIT(0)
++#define  TEMPSEN_CTRL_SEL_MASK				GENMASK(7, 4)
++#define  TEMPSEN_CTRL_SEL_OFFSET			4
++#define TEMPSEN_STATUS					0x8
++#define TEMPSEN_SET					0xc
++#define  TEMPSEN_SET_CHOPSEL_MASK			GENMASK(5, 4)
++#define  TEMPSEN_SET_CHOPSEL_OFFSET			4
++#define  TEMPSEN_SET_CHOPSEL_128T			0
++#define  TEMPSEN_SET_CHOPSEL_256T			1
++#define  TEMPSEN_SET_CHOPSEL_512T			2
++#define  TEMPSEN_SET_CHOPSEL_1024T			3
++#define  TEMPSEN_SET_ACCSEL_MASK			GENMASK(7, 6)
++#define  TEMPSEN_SET_ACCSEL_OFFSET			6
++#define  TEMPSEN_SET_ACCSEL_512T			0
++#define  TEMPSEN_SET_ACCSEL_1024T			1
++#define  TEMPSEN_SET_ACCSEL_2048T			2
++#define  TEMPSEN_SET_ACCSEL_4096T			3
++#define  TEMPSEN_SET_CYC_CLKDIV_MASK			GENMASK(15, 8)
++#define  TEMPSEN_SET_CYC_CLKDIV_OFFSET			8
++#define TEMPSEN_INTR_EN					0x10
++#define TEMPSEN_INTR_CLR				0x14
++#define TEMPSEN_INTR_STA				0x18
++#define TEMPSEN_INTR_RAW				0x1c
++#define  TEMPSEN_INTR_THRESHOLD_HIGH(n)			BIT(4 + (n))
++#define  TEMPSEN_INTR_THRESHOLD_LOW(n)			BIT(8 + (n))
++#define TEMPSEN_RESULT(n)				(0x20 + (n) * 4)
++#define  TEMPSEN_RESULT_RESULT_MASK			GENMASK(12, 0)
++#define  TEMPSEN_RESULT_MAX_RESULT_MASK			GENMASK(28, 16)
++#define  TEMPSEN_RESULT_CLR_MAX_RESULT			BIT(31)
++#define TEMPSEN_THRESHOLD(n)				(0x40 + (n) * 4)
++#define  TEMPSEN_THRESHOLD_HIGH_OFFSET			0
++#define  TEMPSEN_THRESHOLD_LOW_OFFSET			16
++#define TEMPSEN_AUTO_PERIOD				0x64
++#define  TEMPSEN_AUTO_PERIOD_AUTO_CYCLE_MASK		GENMASK(23, 0)
++#define  TEMPSEN_AUTO_PERIOD_AUTO_CYCLE_OFFSET		0
++
++struct cv1800_thermal_zone {
++	struct device *dev;
++	void __iomem *base;
++	struct clk *clk_tempsen;
++	u32 sample_cycle;
++};
++
++static void cv1800_thermal_init(struct cv1800_thermal_zone *ctz)
++{
++	void __iomem *base = ctz->base;
++	u32 regval;
++
++	writel(readl(base + TEMPSEN_INTR_RAW), base + TEMPSEN_INTR_CLR);
++	writel(TEMPSEN_RESULT_CLR_MAX_RESULT, base + TEMPSEN_RESULT(0));
++
++	regval = readl(base + TEMPSEN_SET);
++	regval &= ~TEMPSEN_SET_CHOPSEL_MASK;
++	regval &= ~TEMPSEN_SET_ACCSEL_MASK;
++	regval &= ~TEMPSEN_SET_CYC_CLKDIV_MASK;
++	regval |= TEMPSEN_SET_CHOPSEL_1024T << TEMPSEN_SET_CHOPSEL_OFFSET;
++	regval |= TEMPSEN_SET_ACCSEL_2048T << TEMPSEN_SET_ACCSEL_OFFSET;
++	regval |= 0x31 << TEMPSEN_SET_CYC_CLKDIV_OFFSET;
++	writel(regval, base + TEMPSEN_SET);
++
++	regval = readl(base + TEMPSEN_AUTO_PERIOD);
++	regval &= ~TEMPSEN_AUTO_PERIOD_AUTO_CYCLE_MASK;
++	regval |= ctz->sample_cycle << TEMPSEN_AUTO_PERIOD_AUTO_CYCLE_OFFSET;
++	writel(regval, base + TEMPSEN_AUTO_PERIOD);
++
++	regval = readl(base + TEMPSEN_CTRL);
++	regval &= ~TEMPSEN_CTRL_SEL_MASK;
++	regval |= 1 << TEMPSEN_CTRL_SEL_OFFSET;
++	regval |= TEMPSEN_CTRL_EN;
++	writel(regval, base + TEMPSEN_CTRL);
++}
++
++static void cv1800_thermal_deinit(struct cv1800_thermal_zone *ctz)
++{
++	void __iomem *base = ctz->base;
++	u32 regval;
++
++	regval = readl(base + TEMPSEN_CTRL);
++	regval &= ~(TEMPSEN_CTRL_SEL_MASK | TEMPSEN_CTRL_EN);
++	writel(regval, base + TEMPSEN_CTRL);
++
++	writel(0, base + TEMPSEN_INTR_EN);
++}
++
++/*
++ *	Raw register value to temperature (mC) formula:
++ *
++ *		       read_val * 1000 * 716
++ *	Temperature = ----------------------- - 273000
++ *				divider
++ *
++ *	where divider should be ticks number of accumulation period,
++ *	e.g. 2048 for TEMPSEN_CTRL_ACCSEL_2048T
++ */
++static int cv1800_calc_temp(u32 result)
++{
++	return (result * 1000) * 716 / 2048 - 273000;
++}
++
++static u32 cv1800_calc_raw(int temp)
++{
++	return (temp + 273000) * 2048 / (1000 * 716);
++}
++
++static int cv1800_set_threshold(struct cv1800_thermal_zone *ctz,
++				int low, int high)
++{
++	writel((cv1800_calc_raw(low) << TEMPSEN_THRESHOLD_LOW_OFFSET) |
++	       (cv1800_calc_raw(high) << TEMPSEN_THRESHOLD_HIGH_OFFSET),
++	       ctz->base + TEMPSEN_THRESHOLD(0));
++	writel(TEMPSEN_INTR_THRESHOLD_LOW(0) | TEMPSEN_INTR_THRESHOLD_HIGH(0),
++	       ctz->base + TEMPSEN_INTR_EN);
++
++	return 0;
++}
++
++static irqreturn_t cv1800_irq_thread(int irq, void *dev)
++{
++	struct thermal_zone_device *tdev = dev;
++	struct cv1800_thermal_zone *ctz = thermal_zone_device_priv(tdev);
++
++	writel(readl(ctz->base + TEMPSEN_INTR_RAW),
++	       ctz->base + TEMPSEN_INTR_CLR);
++
++	thermal_zone_device_update(tdev, THERMAL_EVENT_UNSPECIFIED);
++
++	return IRQ_HANDLED;
++}
++
++static int cv1800_get_temp(struct thermal_zone_device *tdev, int *temperature)
++{
++	struct cv1800_thermal_zone *ctz = thermal_zone_device_priv(tdev);
++	void __iomem *base = ctz->base;
++	u32 result;
++
++	result = readl(base + TEMPSEN_RESULT(0)) & TEMPSEN_RESULT_RESULT_MASK;
++	*temperature = cv1800_calc_temp(result);
++
++	return 0;
++}
++
++static int cv1800_set_trips(struct thermal_zone_device *tdev, int low, int high)
++{
++	struct cv1800_thermal_zone *ctz = thermal_zone_device_priv(tdev);
++
++	return cv1800_set_threshold(ctz,
++				    clamp(low, -273 * 1000, 200 * 1000),
++				    clamp(high, -273 * 1000, 200 * 1000));
++}
++
++static const struct thermal_zone_device_ops cv1800_thermal_ops = {
++	.get_temp	= cv1800_get_temp,
++	.set_trips	= cv1800_set_trips,
++};
++
++static const struct of_device_id cv1800_thermal_of_match[] = {
++	{ .compatible = "sophgo,cv1800-thermal" },
++	{},
++};
++MODULE_DEVICE_TABLE(of, cv1800_thermal_of_match);
++
++static int
++cv1800_parse_dt(struct cv1800_thermal_zone *ctz)
++{
++	struct device_node *np = ctz->dev->of_node;
++	u32 tmp;
++
++	if (of_property_read_u32(np, "sample-rate-hz", &tmp)) {
++		ctz->sample_cycle = 1000000;
++	} else {
++		/* sample cycle should be at least 524us */
++		if (tmp > 1000000 / 524) {
++			dev_err(ctz->dev, "invalid sample rate %d\n", tmp);
++			return -EINVAL;
++		}
++
++		ctz->sample_cycle = 1000000 / tmp;
++	}
++
++	return 0;
++}
++
++static int cv1800_thermal_probe(struct platform_device *pdev)
++{
++	struct thermal_zone_device *tdev;
++	struct cv1800_thermal_zone *ctz;
++	struct resource *res;
++	int ret, irq;
++
++	ctz = devm_kzalloc(&pdev->dev, sizeof(*ctz), GFP_KERNEL);
++	if (!ctz)
++		return -ENOMEM;
++
++	ctz->dev = &pdev->dev;
++
++	ret = cv1800_parse_dt(ctz);
++	if (ret)
++		return dev_err_probe(&pdev->dev, ret, "failed to parse dt\n");
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	ctz->base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(ctz->base))
++		return dev_err_probe(&pdev->dev, PTR_ERR(ctz->base),
++				     "failed to map tempsen registers\n");
++
++	ctz->clk_tempsen = devm_clk_get_enabled(&pdev->dev, NULL);
++	if (IS_ERR(ctz->clk_tempsen))
++		return dev_err_probe(&pdev->dev, PTR_ERR(ctz->clk_tempsen),
++				     "failed to get clk_tempsen\n");
++
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0)
++		return irq;
++
++	cv1800_thermal_init(ctz);
++
++	tdev = devm_thermal_of_zone_register(&pdev->dev, 0, ctz,
++					     &cv1800_thermal_ops);
++	if (IS_ERR(tdev))
++		return dev_err_probe(&pdev->dev, PTR_ERR(tdev),
++				     "failed to register thermal zone\n");
++
++	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
++					cv1800_irq_thread, IRQF_ONESHOT,
++					"cv1800_thermal", tdev);
++	if (ret < 0)
++		return dev_err_probe(&pdev->dev, ret, "failed to request irq\n");
++
++	platform_set_drvdata(pdev, ctz);
++
++	return 0;
++}
++
++static void cv1800_thermal_remove(struct platform_device *pdev)
++{
++	struct cv1800_thermal_zone *ctz = platform_get_drvdata(pdev);
++
++	cv1800_thermal_deinit(ctz);
++}
++
++static int __maybe_unused cv1800_thermal_suspend(struct device *dev)
++{
++	struct cv1800_thermal_zone *ctz = dev_get_drvdata(dev);
++
++	cv1800_thermal_deinit(ctz);
++	clk_disable_unprepare(ctz->clk_tempsen);
++
++	return 0;
++}
++
++static int __maybe_unused cv1800_thermal_resume(struct device *dev)
++{
++	struct cv1800_thermal_zone *ctz = dev_get_drvdata(dev);
++
++	clk_prepare_enable(ctz->clk_tempsen);
++	cv1800_thermal_init(ctz);
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(cv1800_thermal_pm_ops,
++			 cv1800_thermal_suspend, cv1800_thermal_resume);
++
++static struct platform_driver cv1800_thermal_driver = {
++	.probe = cv1800_thermal_probe,
++	.remove = cv1800_thermal_remove,
++	.driver = {
++		.name = "cv1800-thermal",
++		.pm = &cv1800_thermal_pm_ops,
++		.of_match_table = cv1800_thermal_of_match,
++	},
++};
++
++module_platform_driver(cv1800_thermal_driver);
++
++MODULE_DESCRIPTION("Sophgo CV1800 thermal driver");
++MODULE_AUTHOR("Haylen Chu <heylenay@4d2.org>");
++MODULE_LICENSE("GPL");
+-- 
+2.46.2
 
