@@ -1,80 +1,127 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from bayard.4d2.org (bayard.4d2.org [5.78.89.93])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B31114A624;
-	Mon, 14 Oct 2024 07:40:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D465E13DB9F;
+	Mon, 14 Oct 2024 07:58:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.78.89.93
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728891618; cv=none; b=TwrQ7ReqI36Mgo+KDQYHHoNwgBFp9gAnV1HlOKT0m4NUq6mujfzg5YWHYC0oZwn5b3ZKztR1mOTynv0sZqEhZZOUjl7BXpoyNig8+gYlfi5HW09onNbUCF9XZodYbt79af8stIdP54Tt3WDabOkTQGhWBgc85U4+9kaOGQN3nuA=
+	t=1728892698; cv=none; b=OIavXJGcwDmi+XS9EAc/xapPB00y62LvLASXpJEdVach1eSvmaXTx6Aib87H8AW03Oz+07s5MqUFO3XrkKOeSKaerclGUII9eUHNC3sCZ79dxk6Djx1hUJ6Fv5iE8TNkwasB+A57vJC82vkclRG7XpCSj8sYd5k3pTJil3geBYw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728891618; c=relaxed/simple;
-	bh=Wcac2XZQHtmBThH5hyHn0l9csa4sK/TVqzzdehNcWEc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XYp9CB8Ze/9O/9Mi+qPVHzZ1fAZXcpsrwWdFUD0nqif2+O9imaV4V0QAf7uZAosZNpaAzJ7n0I6z/lrRUiTtpsNh1v0GMLO9CnBgxjji64YPk2zYvnWgaXEr79EU69p6qXuP3yIezQLrzJqwO2X9Mio2Y+833lxHkokm0WVGTOA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pQGK204I; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1728892698; c=relaxed/simple;
+	bh=Zh8qbVVIX7EsBpJFG/gcKYvAuggerEXcwlv2jiDrPbs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Jp0J0FFts4y42LzBokqrWn1fI6AiNnBfrW/OJgdpKF1oVP/ANGmp7GtIr0SMAi6/Ip0+S2CSgroleFT34KVcWnOi9apWR3gDaRM+OKprT0NlA8xWHdv8fpGxOmA6bON8RDfH7+ufNh5NKI3tHsEMtKPjqEMZ30AKoajJx4Wa8Yw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=4d2.org; spf=pass smtp.mailfrom=4d2.org; dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b=o/24iZFK; dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b=kUgnqLhc; arc=none smtp.client-ip=5.78.89.93
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=4d2.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=4d2.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pQGK204I"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86F5CC4CEC3;
-	Mon, 14 Oct 2024 07:40:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1728891617;
-	bh=Wcac2XZQHtmBThH5hyHn0l9csa4sK/TVqzzdehNcWEc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=pQGK204IOJEOFB2eQYIjXUxFQwV3E51A1qVpfa/WwbX7JCtebBipm/AbDpFfTdXZS
-	 lXCF/bsJ6bi6tjRx+fzVjqhHLZzR9xOCPIO0pqeaXX2acNREA08hwdgtQzaXAcSTUR
-	 ggXYB1HA6eXG2uV3uA0kxMlUa8Z/FPCgx3vKyzem0Zj6OCWfPzyRXLjvFnP86rp8ZF
-	 q8Jos+wCeVyzdv7iMWKVFZI9rg2QOSoe6NhewPuZTyqdE7AOPAKatvbkQ7bKUDoxBJ
-	 4fcReYuU738t5PJ663As+jiKA2tfAgqDkBuG2N3aBehdeQ52mxWo3DV05Ct4I9eT9P
-	 7ZRUgJcciHR/g==
-Date: Mon, 14 Oct 2024 09:40:13 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Akhil P Oommen <quic_akhilpo@quicinc.com>
-Cc: Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Abhinav Kumar <quic_abhinavk@quicinc.com>, 
-	Dmitry Baryshkov <dmitry.baryshkov@linaro.org>, Marijn Suijten <marijn.suijten@somainline.org>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
-	linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Subject: Re: [PATCH RFC 3/3] arm64: dts: qcom: x1e80100: Add ACD levels for
- GPU
-Message-ID: <5axuqj4hetfkgg2f53ph4um24b7xfyumktreglxqyzfsdhy25e@deucq7vqxq5l>
-References: <20241012-gpu-acd-v1-0-1e5e91aa95b6@quicinc.com>
- <20241012-gpu-acd-v1-3-1e5e91aa95b6@quicinc.com>
+	dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b="o/24iZFK";
+	dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b="kUgnqLhc"
+Received: from bayard.4d2.org (bayard.4d2.org [127.0.0.1])
+	by bayard.4d2.org (Postfix) with ESMTP id 92879122FE22;
+	Mon, 14 Oct 2024 00:38:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=4d2.org; s=mail;
+	t=1728891520; bh=Zh8qbVVIX7EsBpJFG/gcKYvAuggerEXcwlv2jiDrPbs=;
+	h=From:To:Cc:Subject:Date:From;
+	b=o/24iZFKJYmLwlXVRJ+jgYXwoiyWYJRHJJHsujVOfVJAv1AVOh35NDNLmhdrNlLbw
+	 kAuYbb/hHepa1GDILnyYD9oJuAwVLyzwPkBvJZ2tLdSEQqNcYBcZbXSpHQuj42NV0b
+	 gG2O/iT25gp69DINZVj8+Anq9IWcNHrNdfmBHC1ibOugVRrZdjFPaL7gCVTf1jLhaY
+	 0TsW6lf131cL9B0w4imX68R265tudazjKgsKU0PjwSLJdk7E4eovQFLmStuXxpyTwr
+	 OELtuxhle4mmtf5PwSRgI6p7FEuUsxuoAKLsfgcm0PKW+06HTQkTAaohKrO/3EYNk3
+	 JSvfkObdP0fHg==
+X-Virus-Scanned: amavisd-new at 4d2.org
+Authentication-Results: bayard.4d2.org (amavisd-new); dkim=pass (2048-bit key)
+ header.d=4d2.org
+Received: from bayard.4d2.org ([127.0.0.1])
+ by bayard.4d2.org (bayard.4d2.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id I1NoHwtUyw32; Mon, 14 Oct 2024 00:38:38 -0700 (PDT)
+Received: from localhost.localdomain (unknown [110.52.220.241])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: heylenay@4d2.org)
+	by bayard.4d2.org (Postfix) with ESMTPSA id 531B7122FE1E;
+	Mon, 14 Oct 2024 00:38:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=4d2.org; s=mail;
+	t=1728891518; bh=Zh8qbVVIX7EsBpJFG/gcKYvAuggerEXcwlv2jiDrPbs=;
+	h=From:To:Cc:Subject:Date:From;
+	b=kUgnqLhc0j+qgIaHSDUxoQLC0f0+/URJuqxRQbc7ofvAhqYAC8wMXLapSmbc8RjQ3
+	 Gf2jIONH02Rn0TpDVp5DsamsyyDRliDEHxtEvfcIf8jgdwVGfn2rYLZJdyARnb8ekj
+	 NtG6M/pJg5G2Jc/aSulzYiuTIX3dDBXFXvfxqtLYw9w44bCl7FwHh1RrqTChC2nLdH
+	 geoM79FZ1izrDy/PMAGWoAGUghQFNEoTTOdamXqSExcYg/M0d4pkJsZuxDEn7o0VED
+	 FjLhew2QRG6Uvehl2VwuvSumyupHlD7RxWNnAzolv8YP0C4VyNob4cZvxj1UEsdidt
+	 gnTG9/w9T/ypg==
+From: Haylen Chu <heylenay@4d2.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Chen Wang <unicorn_wang@outlook.com>,
+	Inochi Amaoto <inochiama@outlook.com>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Jisheng Zhang <jszhang@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	Haylen Chu <heylenay@4d2.org>
+Subject: [PATCH v5 0/3] riscv: sophgo: add thermal sensor support for cv180x/sg200x SoCs
+Date: Mon, 14 Oct 2024 07:38:10 +0000
+Message-ID: <20241014073813.23984-1-heylenay@4d2.org>
+X-Mailer: git-send-email 2.46.2
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20241012-gpu-acd-v1-3-1e5e91aa95b6@quicinc.com>
+Content-Transfer-Encoding: 8bit
 
-On Sat, Oct 12, 2024 at 01:59:30AM +0530, Akhil P Oommen wrote:
-> Update GPU node to include acd level values.
-> 
-> Signed-off-by: Akhil P Oommen <quic_akhilpo@quicinc.com>
-> ---
->  arch/arm64/boot/dts/qcom/x1e80100.dtsi | 11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm64/boot/dts/qcom/x1e80100.dtsi b/arch/arm64/boot/dts/qcom/x1e80100.dtsi
-> index a36076e3c56b..e6c500480eb1 100644
-> --- a/arch/arm64/boot/dts/qcom/x1e80100.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/x1e80100.dtsi
-> @@ -3323,60 +3323,69 @@ zap-shader {
->  			};
->  
->  			gpu_opp_table: opp-table {
-> -				compatible = "operating-points-v2";
-> +				compatible = "operating-points-v2-adreno";
+This series implements driver for Sophgo cv180x/sg200x on-chip thermal
+sensor and adds thermal zones for CV1800B SoCs.
 
-This nicely breaks all existing users of this DTS. Sorry, no. We are way
-past initial bringup/development. One year past.
+Changed from v4:
+1. support temperature threshold violation interrupts
+2. completely switch codename to cv1800
+3. style improvements
+4. update e-mail address
+Link: https://lore.kernel.org/all/SEYPR01MB422158B2766DA03728AD90CBD7A22@SEYPR01MB4221.apcprd01.prod.exchangelabs.com/
 
-Best regards,
-Krzysztof
+Changed from v3:
+1. style improvments
+2. drop unnecessary dt parameters for simplicity
+Link: https://lore.kernel.org/all/SEYPR01MB42213F3A032C60C6AF5EB677D7DC2@SEYPR01MB4221.apcprd01.prod.exchangelabs.com/
+
+Changed from v2:
+1. style and code improvements
+2. use human-readable value for sensor parameters
+Link: https://lore.kernel.org/all/SG2PR01MB4218013241B3EED779D3BAE8D7F82@SG2PR01MB4218.apcprd01.prod.exchangelabs.com/
+
+Changed from v1:
+1. style and code improvements
+2. make sample parameters configurable
+3. generalize document temperature calculating formula
+Link: https://lore.kernel.org/all/SEYPR01MB422119B40F4CF05B823F93DCD7F32@SEYPR01MB4221.apcprd01.prod.exchangelabs.com/
+
+Haylen Chu (3):
+  dt-bindings: thermal: sophgo,cv1800-thermal: Add Sophgo CV1800 thermal
+  thermal: cv1800: Add cv1800 thermal driver support
+  riscv: dts: sophgo: cv18xx: Add sensor device and thermal zone
+
+ .../thermal/sophgo,cv1800-thermal.yaml        |  57 ++++
+ arch/riscv/boot/dts/sophgo/cv1800b.dtsi       |  28 ++
+ arch/riscv/boot/dts/sophgo/cv18xx.dtsi        |   8 +
+ drivers/thermal/Kconfig                       |   6 +
+ drivers/thermal/Makefile                      |   1 +
+ drivers/thermal/cv1800_thermal.c              | 296 ++++++++++++++++++
+ 6 files changed, 396 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/sophgo,cv1800-thermal.yaml
+ create mode 100644 drivers/thermal/cv1800_thermal.c
+
+-- 
+2.46.2
 
