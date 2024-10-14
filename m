@@ -1,161 +1,166 @@
-Received: from bayard.4d2.org (bayard.4d2.org [5.78.89.93])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D46221384BF;
-	Mon, 14 Oct 2024 07:58:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.78.89.93
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B72AD9474;
+	Mon, 14 Oct 2024 08:06:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728892698; cv=none; b=JcnnF1UL/62RyhvyqHWaltg04vC5s8ULPu8Dv0qvEwPgldokwBKCGajZWb++BbJELIVNK7l+qnKAGD/NnpKLBXM23M2UFanOonmzNuBCapeC4+BzETZCclGKMlSpKPWiXjtBmFZX065pLiLoROr4uPS960Ig/ae52GVuvmjwnoo=
+	t=1728893201; cv=none; b=pN3wJFIZV4jsOScOjW7+pwcyYoDG0ZOCU/QsQKvn7QWvQsBKlD52c+yV+ABc7J8256kC96Rh1Tt/qNJ6Kq68yZC+hwVXwXpj3pr8QT+AXqHAuXKSWGI5r92alBHPvRogEne6Xu9YhW3XBnlEinbNdCdbBb0Fdk4y40fGSGmNcB8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728892698; c=relaxed/simple;
-	bh=lPoc6pym9DSYQLknNxVyoHOgF8wwG7bJWhc07t4BUfA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dI0zWUCc91HEMMcFg63kIi1eITAhAMQP2zStEla0cWBmw9e+K8A0iaI7xmT1EBCdu4xFywC23FDdTvog9DUmAN+1RQo1EL/OWao9PZXmvOOdBY1X2tDKf7dLJa2Kggqv5vCaTv/WRAbB3AcVLN/ObO8S3/3umLCawOTKGosrmHs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=4d2.org; spf=pass smtp.mailfrom=4d2.org; dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b=XNBqLfi7; dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b=hGGDTu8O; arc=none smtp.client-ip=5.78.89.93
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=4d2.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=4d2.org
+	s=arc-20240116; t=1728893201; c=relaxed/simple;
+	bh=sSQ/JLtfOylYmetmA4x1PJlINm2mWwdgTelJNw1+qv8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=kx7p0J2lh8OkBMqKEZlelU5zdC1jrqmNVI4BOL59Iml47bLkQVaMx6AQRDnD2azMunK/x1w0Ls0JYCjONcD5J1viBc8qW8OgY+IQFV6bkjDy9iF+RJeoQc1yAhW5R8UsA0JenjCjJn3Nq1vcaFVCRCxi6sIK+1qzpUPg50ZciEY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=jGAGlW9q; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b="XNBqLfi7";
-	dkim=pass (2048-bit key) header.d=4d2.org header.i=@4d2.org header.b="hGGDTu8O"
-Received: from bayard.4d2.org (bayard.4d2.org [127.0.0.1])
-	by bayard.4d2.org (Postfix) with ESMTP id 73092122FE26;
-	Mon, 14 Oct 2024 00:38:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=4d2.org; s=mail;
-	t=1728891525; bh=lPoc6pym9DSYQLknNxVyoHOgF8wwG7bJWhc07t4BUfA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=XNBqLfi7Mg3aScFk8JnEbvZBA21HfmeOGJM6Y7VVpBkau4Nhui0v5Ua2g7KT2t02y
-	 MVNcJRLyiXuieb6NzLCgivi23CbCY1Dg+e+FWou+Wr05NGsVh03ghJpV62+srEXtcy
-	 YzCkE20l18zZ7KZe+G0zvLYOMtzt3PsiR52HBDG6fArE1wJrGdsQ3+mko9tdnDgChj
-	 lwMg/uL2YBdvRDfjwE/oadRfc/CQ/fqXsRR46QiEAY1jq0/afUKW0X1UAGI+qwU6/V
-	 iZnqWI8//h8XfyFtFohVS8kLBXC7M/0ahs1LvUov4iKHXGb5IkjDIDKtrf7kR1y8O8
-	 fVOBrP4+C6EdA==
-X-Virus-Scanned: amavisd-new at 4d2.org
-Authentication-Results: bayard.4d2.org (amavisd-new); dkim=pass (2048-bit key)
- header.d=4d2.org
-Received: from bayard.4d2.org ([127.0.0.1])
- by bayard.4d2.org (bayard.4d2.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 7A1VF3tOUE2e; Mon, 14 Oct 2024 00:38:43 -0700 (PDT)
-Received: from localhost.localdomain (unknown [110.52.220.241])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="jGAGlW9q"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1728893198;
+	bh=sSQ/JLtfOylYmetmA4x1PJlINm2mWwdgTelJNw1+qv8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=jGAGlW9qACfI26EUDUV9ViwMCdDvwOhgDdmF4wXFH4qKTONWDsWczOgCX4imvaOmH
+	 RcTOLerC2LWpfDhNXVQVpqUrA3eph8tCQiy0N29Vv2JLTv2HvR+lvSzkwUsL29oYPW
+	 9HgsBum46bSbUbojdRFc3n5OQOR8FiKBO/Xjzi2/yzhc87WdFFFv3cBjiTm3h0taW6
+	 mIn/VBWwLEpExGXCoPSXPm7SdaiuDZoJRsE2+t3QCxwcOt7mnY7Nbqmcss56oEsHbz
+	 HyqhcxIjjTTSgMxoVHsCrioltl/OgvtX3naJY5Oawcx5ntQ2bycFqv4gBdqFkMCUNE
+	 FbpmQOqJqH7Ag==
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	(Authenticated sender: heylenay@4d2.org)
-	by bayard.4d2.org (Postfix) with ESMTPSA id 43A51122FE21;
-	Mon, 14 Oct 2024 00:38:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=4d2.org; s=mail;
-	t=1728891523; bh=lPoc6pym9DSYQLknNxVyoHOgF8wwG7bJWhc07t4BUfA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=hGGDTu8OZMFmxGIKeJkuFmaktpuekIOPExp+WOYDAz88vgV8YsjRJ8UFgUI0Y1zsD
-	 9GAZS58elqBBYecsSMI8iL/Aih6VvReW3q9jnb6DO2AyNLwhcNUlGXVxNg0d/XjlPg
-	 mYoofXAGXxksWZu9f0sFMvF5xW8JtAg9SseNAbvL7/PREq53RPXrwTD153yKaT3+u+
-	 Sv7tv2DRRQR+WwZYVE2tLgNXh1i2/zdTxi4tfPZtf5v9ry8fjGjsuUDxhp9zuPwpoV
-	 uvPrWQv+xkfsvsRHXMa4xAWZa06yDwca9rxngnapls3Cp1lLihAa9A/bxr6NIS/ZN3
-	 G1OBCpguG8UDg==
-From: Haylen Chu <heylenay@4d2.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Chen Wang <unicorn_wang@outlook.com>,
-	Inochi Amaoto <inochiama@outlook.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Jisheng Zhang <jszhang@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	Haylen Chu <heylenay@4d2.org>
-Subject: [PATCH v5 1/3] dt-bindings: thermal: sophgo,cv1800-thermal: Add Sophgo CV1800 thermal
-Date: Mon, 14 Oct 2024 07:38:11 +0000
-Message-ID: <20241014073813.23984-2-heylenay@4d2.org>
-X-Mailer: git-send-email 2.46.2
-In-Reply-To: <20241014073813.23984-1-heylenay@4d2.org>
-References: <20241014073813.23984-1-heylenay@4d2.org>
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 5405217E10C7;
+	Mon, 14 Oct 2024 10:06:37 +0200 (CEST)
+Message-ID: <863458cb-cac7-40c0-856d-edc0fa6ee6a6@collabora.com>
+Date: Mon, 14 Oct 2024 10:06:36 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 0/7] MediaTek DVFSRC Bus Bandwidth and Regulator knobs
+To: Rob Herring <robh@kernel.org>
+Cc: djakov@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+ conor+dt@kernel.org, matthias.bgg@gmail.com, lgirdwood@gmail.com,
+ broonie@kernel.org, keescook@chromium.org, gustavoars@kernel.org,
+ henryc.chen@mediatek.com, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ kernel@collabora.com, wenst@chromium.org, amergnat@baylibre.com
+References: <20240610085735.147134-1-angelogioacchino.delregno@collabora.com>
+ <CAL_Jsq+F_pwhVLD1HF7=sYLp2w5kpc53UmzzffxyKzwh8WZthw@mail.gmail.com>
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Language: en-US
+In-Reply-To: <CAL_Jsq+F_pwhVLD1HF7=sYLp2w5kpc53UmzzffxyKzwh8WZthw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Add devicetree binding documentation for thermal sensors integrated in
-Sophgo CV1800 SoCs.
+Il 12/10/24 00:15, Rob Herring ha scritto:
+> On Mon, Jun 10, 2024 at 3:57 AM AngeloGioacchino Del Regno
+> <angelogioacchino.delregno@collabora.com> wrote:
+>>
+>> Changes in v6:
+>>   - Fixed build with clang (thanks Nathan!)
+>>   - Removed unused mtk_rmw() macro in mtk-dvfsrc.c
+>>   - Added MODULE_DESCRIPTION() to mtk-dvfsrc-regulator.c
+>>
+>> Changes in v5:
+>>   - Fixed Kconfig dependencies in interconnect
+>>   - Fixed module build for dvfsrc and interconnect
+>>
+>> Changes in v4:
+>>   - Updated patch [3/7] to actually remove address/size cells
+>>     as the old version got unexpectedly pushed in v3.
+>>
+>> Changes in v3:
+>>   - Removed examples from interconnect and regulator bindings
+>>     and kept example node with interconnect and regulator in
+>>     the main DVFSRC binding as suggested
+>>   - Removed 'reg' from interconnect and regulator, removed both
+>>     address and size cells from the main DVFSRC binding as that
+>>     was not really needed
+>>   - Added anyOf-required entries in the regulator binding as it
+>>     doesn't make sense to probe it without any regulator subnode
+>>
+>> Changes in v2:
+>>   - Fixed issues with regulator binding about useless quotes and
+>>     wrong binding path (oops)
+>>   - Removed useless 'items' from DVFSRC main binding
+>>   - Allowed address/size cells to DVFSRC main binding to resolve
+>>     validation issues on the regulator and interconnect bindings
+>>   - Changed dvfsrc node name to `system-controller`, as the DVFSRC
+>>     is actually able to control multiple system components.
+>>   - Added a commit to remove mtk-dvfs-regulator.c before adding the
+>>     new, refactored regulator driver
+>>
+>>
+>> This series adds support for the MediaTek Dynamic Voltage and Frequency
+>> Scaling Resource Controller (DVFSRC), found on many MediaTek SoCs.
+>>
+>> This hardware collects requests from both software and the various remote
+>> processors embededd into the SoC, and decides about a minimum operating
+>> voltage and a minimum DRAM frequency to fulfill those requests, in an
+>> effort to provide the best achievable performance per watt.
+>>
+>> Such hardware IP is capable of transparently performing direct register
+>> R/W on all of the DVFSRC-controlled regulators and SoC bandwidth knobs.
+>>
+>> Summarizing how the DVFSRC works for Interconnect:
+>>
+>>               ICC provider         ICC Nodes
+>>                                ----          ----
+>>               _________       |CPU |   |--- |VPU |
+>>      _____   |         |-----  ----    |     ----
+>>     |     |->|  DRAM   |       ----    |     ----
+>>     |DRAM |->|scheduler|----- |GPU |   |--- |DISP|
+>>     |     |->|  (EMI)  |       ----    |     ----
+>>     |_____|->|_________|---.   -----   |     ----
+>>                 /|\         `-|MMSYS|--|--- |VDEC|
+>>                  |             -----   |     ----
+>>                  |                     |     ----
+>>                  | change DRAM freq    |--- |VENC|
+>>               --------                 |     ----
+>>      SMC --> | DVFSRC |                |     ----
+>>               --------                 |--- |IMG |
+>>                                        |     ----
+>>                                        |     ----
+>>                                        |--- |CAM |
+>>                                              ----
+>>
+>> ...and for regulators, it's simply...
+>>     SMC -> DVFSRC -> Regulator voltage decider -> (vreg) Registers R/W
+>>
+>> Please note that this series is based on an old (abandoned) series from
+>> MediaTek [1], and reuses some parts of the code found in that.
+>>
+>> Besides, included in this series, there's also a refactoring of the
+>> mtk-dvfsrc-regulator driver, which never got compiled at all, and would
+>> not build anyway because of missing headers and typos: that commit did
+>> not get any Fixes tag because, well, backporting makes no sense at all
+>> as the DVFSRC support - which is critical for that driver to work - is
+>> introduced with *this series*! :-)
+>>
+>> P.S.: The DVFSRC regulator is a requirement for the MediaTek UFSHCI
+>>        controller's crypto boost feature, which is already upstream but
+>>        lacking the actual regulator to work....... :-)
+>>
+>> [1]: https://lore.kernel.org/all/20210812085846.2628-1-dawei.chien@mediatek.com/
+>>
+>> AngeloGioacchino Del Regno (7):
+>>    dt-bindings: regulator: Add bindings for MediaTek DVFSRC Regulators
+>>    dt-bindings: interconnect: Add MediaTek EMI Interconnect bindings
+>>    dt-bindings: soc: mediatek: Add DVFSRC bindings for MT8183 and MT8195
+>>    soc: mediatek: Add MediaTek DVFS Resource Collector (DVFSRC) driver
+> 
+> Looks like the driver got picked up, but not the binding.
+> mediatek,mt8183-dvfsrc and mediatek,mt8195-dvfsrc show up in next as
+> undocumented.
+> 
+Thanks for making me notice. Adding it up right now.
 
-Signed-off-by: Haylen Chu <heylenay@4d2.org>
----
- .../thermal/sophgo,cv1800-thermal.yaml        | 57 +++++++++++++++++++
- 1 file changed, 57 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/sophgo,cv1800-thermal.yaml
-
-diff --git a/Documentation/devicetree/bindings/thermal/sophgo,cv1800-thermal.yaml b/Documentation/devicetree/bindings/thermal/sophgo,cv1800-thermal.yaml
-new file mode 100644
-index 000000000000..14abeb7a272a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/sophgo,cv1800-thermal.yaml
-@@ -0,0 +1,57 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/sophgo,cv1800-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Sophgo CV1800 on-SoC Thermal Sensor
-+
-+maintainers:
-+  - Haylen Chu <heylenay@4d2.org>
-+
-+description: Sophgo CV1800 on-SoC thermal sensor
-+
-+$ref: thermal-sensor.yaml#
-+
-+properties:
-+  compatible:
-+    enum:
-+      - sophgo,cv1800-thermal
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  sample-rate-hz:
-+    minimum: 1
-+    maximum: 1908
-+    default: 1
-+
-+  '#thermal-sensor-cells':
-+    const: 0
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - interrupts
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/sophgo,cv1800.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    thermal-sensor@30e0000 {
-+        compatible = "sophgo,cv1800-thermal";
-+        reg = <0x30e0000 0x100>;
-+        clocks = <&clk CLK_TEMPSEN>;
-+        interrupts = <16 IRQ_TYPE_LEVEL_HIGH>;
-+        #thermal-sensor-cells = <0>;
-+    };
-+...
--- 
-2.46.2
-
+Cheers,
+Angelo
