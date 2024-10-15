@@ -1,136 +1,161 @@
-Received: from mail-il1-f174.google.com (mail-il1-f174.google.com [209.85.166.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz [202.36.163.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17A1B21E3D2
-	for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2024 22:16:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B57B1D63E8
+	for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2024 22:59:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.36.163.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729030601; cv=none; b=ehykYcpH4PlD8cDt2vE2LAn29HyyhsfPg2bEdbGONOnxqg2fmufwz1Yp4QDIsusmDbsrGqSNs/KTcZcB/RxvLQ6AvsZX0/I0nFD8LCwLE2pL90dGJKCpfvAIOTscxquR2DXO4jyFe/Ga02ObCI5Qkw/hlMoqPoB8Uw7nMIDW2Ds=
+	t=1729033197; cv=none; b=K4uvT0AY2hXXRExDbQ6ml+4ge+GzliylQ2DoTgJM6fhCCKSn3NtlIEiE4nDn0cAuQI0mCT770CRiSRPare+hLkd5eBfbOutzZMKBqG0qlK+TiJlinci0sEQPtRCKCETOSaHAAHvOadlgjn/wRH8AMZLve+nRCuoQNXXEzqYm8Iw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729030601; c=relaxed/simple;
-	bh=CkIkPhMOgzlB/KzA8/OVhY+pto73UGDlKEFhEx4sLEM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aipjau/vrkkOk+OR33tQX6PH9MJ34zXGqCyUTArl4X7WmGST5jfFv+q7YwFVrQDHNwTDsF2WI65+K9Niz36X0SXtEZj2XZowjoOol2rwZZ0PfLgYhxedEscKraUheOkNNnAkYIBULEe7hH0PQy/yH/PuhVHWWXTQezbjamAMRWY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=IGvfknLe; arc=none smtp.client-ip=209.85.166.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1729033197; c=relaxed/simple;
+	bh=eMeIbpXS7aTBAvRejNPdTPj7B4V4zozkWcmqolXv2IQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=O8CvMOU0ri4Q9SN8p/7l1ZRRi/CZnWwd7/tt2/AQmYR7eRx9Na3AVEEflKPI0TAO/uX79hY9/pyHcLYRHTBPegQ2I7B5+ZjZ0UHAPsI214LWbYcUd2nk8l9w2uAPI5tNOwxN9OR3qd7972/0Qx+89D+9ZCRUw4ZWp7U16k9KuA4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz; spf=pass smtp.mailfrom=alliedtelesis.co.nz; dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b=tG1P/9k7; arc=none smtp.client-ip=202.36.163.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alliedtelesis.co.nz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="IGvfknLe"
-Received: by mail-il1-f174.google.com with SMTP id e9e14a558f8ab-3a39620ff54so21719625ab.1
-        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2024 15:16:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1729030598; x=1729635398; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=5V5396hSHL87gEdUlwfvr/5lKm+6erYkMf9B8ShF5KM=;
-        b=IGvfknLeO/WT9Irmg8VPnyAVzFjds6sEFNqV751YiDfSa70Je44zO7ZsDQpHtXFpPZ
-         P/uHJdAeTMXQY1+wCaJvC4hOLIwd7V7fhjYAqzHrnS753aytcAnYkcJaGlpxTHS2B5gf
-         NLcGC2Y4oHNjg+fD9uG9YDfmofkadUbrlWt+8=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729030598; x=1729635398;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=5V5396hSHL87gEdUlwfvr/5lKm+6erYkMf9B8ShF5KM=;
-        b=GI80fG/1+Sc/H2LTwHGNF8B1iIQ8/9FnWcNqkGho2rfP+58f7sezOGmYjfqR7HuWAE
-         v+BvsYpUGnx2qdo2CkGqar9/JUKjUdretaBLiI2yahNQCHaoJiYTBzbxHnz/yClSXgMU
-         v/vIx1jPij3MY0NaNFZBbFxJNb6N9kH5P+eEHuDyP2+7mOpa0RXl8/CEGYDt8iuUB9Ua
-         j7AE/IWDVkdEv7YnoDIjSiGaTl5FHqHu5roCkKsbq1taNAuWvW1XuWEHLWaEMhCTPXMV
-         5a2eX2fqVjDuM68ci7IvqmImOvg93u2ZO6fUxd7idWX1ciQeHW9c6/S7dN1z+bWPilLm
-         OA6w==
-X-Forwarded-Encrypted: i=1; AJvYcCUy3aTVmE6+RguB9tZTJMv8UktwZ3x4wkXWMqhZ7CW2LW6LX5MBr+ZAlhOa7JkWhNT1IP2VQwgp+w==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzcs6yZrd5ndubn7E7XGJ63HxjtHFUJLOe4614P61RJ8oxvLOyN
-	VJR1ubOc9HxXRjVyCcuVyrY9IDaea+Dczum1mVWjKpwAj7BXH4QkgFmcsJX0WiA=
-X-Google-Smtp-Source: AGHT+IE1Kulkbi5leWTsG7UZ2nsA2AvXAklVBBregXuM7xhtgYn2RZzeSO90hlWgGWV4CEtCMLWs8Q==
-X-Received: by 2002:a05:6e02:20c3:b0:39f:60d7:813b with SMTP id e9e14a558f8ab-3a3b603d198mr154949735ab.22.1729030598069;
-        Tue, 15 Oct 2024 15:16:38 -0700 (PDT)
-Received: from [192.168.1.128] ([38.175.170.29])
-        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-4dbecc424cbsm523358173.124.2024.10.15.15.16.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 15 Oct 2024 15:16:37 -0700 (PDT)
-Message-ID: <d876dacc-c4b0-435c-97ff-3207f0866a3c@linuxfoundation.org>
-Date: Tue, 15 Oct 2024 16:16:37 -0600
+	dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="tG1P/9k7"
+Received: from svr-chch-seg1.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id D9C4D2C06BE;
+	Wed, 16 Oct 2024 11:59:52 +1300 (NZDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
+	s=mail181024; t=1729033192;
+	bh=wt8qpiB7f3W08XwGrUW2KUHSdrlegOd4RqvVbQzmbzc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=tG1P/9k7kq6b4x02QBDNNJ3Qq9aAWUjlkTg8Dni2cfJRrRA+lI2HMSSAaeYgi1w1z
+	 jYPdFxeAgUpwOrkM484LpsGsKm1C0oIt8Re4/yb1++lWQ68FSCvoytuoll7oL8/uWT
+	 /0lIa5zBbjYddI6eN0PZWdXvWaB9b525iRc1XVJhPoICVbAFMgmz/MkrjfLuxYpyFQ
+	 T2BjYsnGHDGNmIPYigRw5iaYyKK9poZ6HkM/8o4zUNoIlFStVmYEavFIMSTyKaAYZX
+	 ny30Hi4HDA273ck9MQzEjBSTj9IoWgDJICMuoWKPfyXDTEWfwBkTuZLqgcZNdYI6Oe
+	 ezUAhDjES2zjA==
+Received: from pat.atlnz.lc (Not Verified[10.32.16.33]) by svr-chch-seg1.atlnz.lc with Trustwave SEG (v8,2,6,11305)
+	id <B670ef3e80004>; Wed, 16 Oct 2024 11:59:52 +1300
+Received: from chrisp-dl.ws.atlnz.lc (chrisp-dl.ws.atlnz.lc [10.33.22.30])
+	by pat.atlnz.lc (Postfix) with ESMTP id 46EED13EEA1;
+	Wed, 16 Oct 2024 11:59:52 +1300 (NZDT)
+Received: by chrisp-dl.ws.atlnz.lc (Postfix, from userid 1030)
+	id 4573F2820D4; Wed, 16 Oct 2024 11:59:52 +1300 (NZDT)
+From: Chris Packham <chris.packham@alliedtelesis.co.nz>
+To: andi.shyti@kernel.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	lee@kernel.org,
+	sre@kernel.org,
+	tsbogend@alpha.franken.de,
+	markus.stockhausen@gmx.de
+Cc: linux-i2c@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-mips@vger.kernel.org,
+	Chris Packham <chris.packham@alliedtelesis.co.nz>
+Subject: [PATCH v6 4/6] mips: dts: realtek: Add syscon-reboot node
+Date: Wed, 16 Oct 2024 11:59:46 +1300
+Message-ID: <20241015225948.3971924-5-chris.packham@alliedtelesis.co.nz>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241015225948.3971924-1-chris.packham@alliedtelesis.co.nz>
+References: <20241015225948.3971924-1-chris.packham@alliedtelesis.co.nz>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpupower: add checks for xgettext and msgfmt
-To: Sid <simeddon@gmail.com>, "John B. Wyatt IV" <jwyatt@redhat.com>
-Cc: shuah@kernel.org, trenn@suse.com, jkacur@redhat.com,
- linux-pm@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
-References: <20241015163854.35204-1-simeddon@gmail.com>
- <Zw6rNVJ1iIjLr1Y2@rhfedora>
- <CAGd6pzOpjEnU-iOeVEmWbaLfWaSQExkEhqREOHXP-7Qkp3AsvA@mail.gmail.com>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <CAGd6pzOpjEnU-iOeVEmWbaLfWaSQExkEhqREOHXP-7Qkp3AsvA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-SEG-SpamProfiler-Analysis: v=2.4 cv=ca1xrWDM c=1 sm=1 tr=0 ts=670ef3e8 a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=DAUX931o1VcA:10 a=wvvtYBgb9FI6sUgW-XsA:9 a=3ZKOabzyN94A:10
+X-SEG-SpamProfiler-Score: 0
+x-atlnz-ls: pat
 
-On 10/15/24 15:55, Sid wrote:
-> On Tue, 15 Oct 2024 at 23:19, John B. Wyatt IV <jwyatt@redhat.com> wrote:
->>
->> I tested this on a Fedora 40 server. I was not able to get this message to
->> print despite xgettext not being in the path.
-> Thank you for testing out my patch. The .pot file for cpupower is required
-> in order to enter this code block.
-> 
-> Should I  send in another patch to generate cpupower.pot in the makefile
-> itself?
-> 
-> Resending my previous response as I accidentally left text-only mode
-> disabled.
-> 
+The board level reset on systems using the RTL9302 can be driven via the
+switch. Use a syscon-reboot node to represent this.
 
-As mentioned earlier multiple error messages clutter the output.
-How about the following simpler fix:
+Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+---
 
-===========================================================================
+Notes:
+    Changes in v6:
+    - Drop wildcard compatible
+    Changes in v5:
+    - Krzysztof did technically give a r-by on v4 but given the changes t=
+o
+      the rest of the series I haven't included it.
+    - Use reg instead of offset
+    - Add a rtl9302c.dtsi for the specific chip which pulls in the generi=
+c
+      rtl930x.dtsi and updates a few of the compatibles on the way throug=
+h.
+    - Update Cameo board to use rtl9302c.dtsi
+    Changes in v4:
+    - None
+    Changes in v3:
+    - None
+    Changes in v2:
+    - drop redundant status =3D "okay"
 
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index 6c02f401069e..d1171385b552 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -218,17 +218,28 @@ else
-  endif
-         $(QUIET) $(STRIPCMD) $@
-  
-+ifeq (, $(shell which xgettext))
-+$(warning "Install xgettext to generate GNU gettext Language Translations")
-+else
-  $(OUTPUT)po/$(PACKAGE).pot: $(UTIL_SRC)
-         $(ECHO) "  GETTEXT " $@
-         $(QUIET) xgettext --default-domain=$(PACKAGE) --add-comments \
-                 --keyword=_ --keyword=N_ $(UTIL_SRC) -p $(@D) -o $(@F)
-+endif
-  
-+ifeq (, $(shell which msgfmt))
-+$(warning "Install msgfmt to generate GNU gettext Language Translations")
-+else
-  $(OUTPUT)po/%.gmo: po/%.po
-         $(ECHO) "  MSGFMT  " $@
-         $(QUIET) msgfmt -o $@ po/$*.po
-+endif
-  
-  create-gmo: ${GMO_FILES}
-  
-+ifeq (, $(shell which msgmerge))
-+$(warning "Install msgmerge to generate GNU gettext Language Translations")
-+else
-  update-po: $(OUTPUT)po/$(PACKAGE).pot
-         $(ECHO) "  MSGMRG  " $@
-         $(QUIET) @for HLANG in $(LANGUAGES); do \
-@@ -241,6 +252,7 @@ update-po: $(OUTPUT)po/$(PACKAGE).pot
-                         rm -f $(OUTPUT)po/$$HLANG.new.po; \
-                 fi; \
-         done;
-+endif
-  
-  compile-bench: $(OUTPUT)libcpupower.so.$(LIB_MAJ)
-         @V=$(V) confdir=$(confdir) $(MAKE) -C bench O=$(OUTPUT)
+ .../dts/realtek/cameo-rtl9302c-2x-rtl8224-2xge.dts  |  2 +-
+ arch/mips/boot/dts/realtek/rtl9302c.dtsi            |  7 +++++++
+ arch/mips/boot/dts/realtek/rtl930x.dtsi             | 13 +++++++++++++
+ 3 files changed, 21 insertions(+), 1 deletion(-)
+ create mode 100644 arch/mips/boot/dts/realtek/rtl9302c.dtsi
 
-===========================================================================
+diff --git a/arch/mips/boot/dts/realtek/cameo-rtl9302c-2x-rtl8224-2xge.dt=
+s b/arch/mips/boot/dts/realtek/cameo-rtl9302c-2x-rtl8224-2xge.dts
+index 77d2566545f2..6789bf374044 100644
+--- a/arch/mips/boot/dts/realtek/cameo-rtl9302c-2x-rtl8224-2xge.dts
++++ b/arch/mips/boot/dts/realtek/cameo-rtl9302c-2x-rtl8224-2xge.dts
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /dts-v1/;
+=20
+-#include "rtl930x.dtsi"
++#include "rtl9302c.dtsi"
+=20
+ #include <dt-bindings/input/input.h>
+ #include <dt-bindings/gpio/gpio.h>
+diff --git a/arch/mips/boot/dts/realtek/rtl9302c.dtsi b/arch/mips/boot/dt=
+s/realtek/rtl9302c.dtsi
+new file mode 100644
+index 000000000000..ca4d347af8d3
+--- /dev/null
++++ b/arch/mips/boot/dts/realtek/rtl9302c.dtsi
+@@ -0,0 +1,7 @@
++// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-2-Clause
++
++#include "rtl930x.dtsi"
++
++&switch0 {
++	compatible =3D "realtek,rtl9302c-switch", "syscon", "simple-mfd";
++};
+diff --git a/arch/mips/boot/dts/realtek/rtl930x.dtsi b/arch/mips/boot/dts=
+/realtek/rtl930x.dtsi
+index f271940f82be..7477fae34987 100644
+--- a/arch/mips/boot/dts/realtek/rtl930x.dtsi
++++ b/arch/mips/boot/dts/realtek/rtl930x.dtsi
+@@ -29,6 +29,19 @@ lx_clk: clock-175mhz {
+ 		#clock-cells =3D <0>;
+ 		clock-frequency  =3D <175000000>;
+ 	};
++
++	switch0: switch@1b000000 {
++		compatible =3D "realtek,rtl9301-switch", "syscon", "simple-mfd";
++		reg =3D <0x1b000000 0x10000>;
++		#address-cells =3D <1>;
++		#size-cells =3D <1>;
++
++		reboot@c {
++			compatible =3D "syscon-reboot";
++			reg =3D <0x0c 0x4>;
++			value =3D <0x01>;
++		};
++	};
+ };
+=20
+ &soc {
+--=20
+2.47.0
+
