@@ -1,148 +1,107 @@
-Received: from out-174.mta1.migadu.com (out-174.mta1.migadu.com [95.215.58.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5ACC61F9EBA
-	for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2024 17:16:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED4C71D514C;
+	Tue, 15 Oct 2024 17:19:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729012592; cv=none; b=Qz9lSTJm/XssIMZ/6GaTSUrb5adbu9PW5iiOLUBEWd1kWV1btJDDCcbQJkNuh9N+PSNNyfj/yMbZZjWHaoNF5ujdazPA9RMXaSKgkfb+WatXMoTb37psrs+X5oack/05EjadVoS8qB+1+/J/5bvFG5cQsvlPexY7trJnLxq1+54=
+	t=1729012742; cv=none; b=n1pW9J+8266TZkBuwQ9TYoC5hdnUxmxhYmcRXhTNpkYhK/cf+G2JHMMapbQg/Zj2mC9p7slP3/mEC+E04nOS8uide5vet50zA7n/HUI/+XYKseoxI2oB0X0fgoKLUJ6zpStY2Kku7iA14KGqUjUlImtxwbJva0biXzejxGKol7k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729012592; c=relaxed/simple;
-	bh=aqe7ZBAXHSE2gzwDaIJiDGMt8akPLQVMlvbhK5NT45Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DUGMhVPavMjaGhMBJ7Cmdx3DfvmyAbJO0gBjZboBAghOXzGaQzWABuG5T/ygAhb+oB/AlKVh9ptjRw4PDzzY2DPXCbmKDLrGw+zw28a8ahV8q3OtVPxfyWl3VR1AmuCpDvDI+a3XLXs21+SCqs5vTDdng4iBm1a6Xy/yMDPcBqs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=k9ysL/1I; arc=none smtp.client-ip=95.215.58.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1729012742; c=relaxed/simple;
+	bh=/4d7EoBzIlhcHDH9qkC6J52wMGKWA7EO9n7isAB5FvA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Rcj1tZMkPiqVRHOyG/UzPHMLH45fn9PGeYJTRwGux5/WDcN/dfaNZ1r9T50FHiAi5jIqlZ8/FDV6U2h7xtmZSwrRishV6EIq3OjX6lFKlWvj+R7SjJy9fdovB43OeuqnuAne10ma+x9rWrVlLxKjsOTl39AiG6AImj3QTrQ3T2o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NMC7MkId; arc=none smtp.client-ip=209.85.208.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="k9ysL/1I"
-Date: Tue, 15 Oct 2024 10:16:12 -0700
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1729012583;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=yw0BRkFp5Fq3zNmseLDS7BgS3nwlhhSku9PTDEcx65A=;
-	b=k9ysL/1Ifn3FGFggblukp1Eo7eWxiC94YkkDmiW+eIx7Z2qkCTpZr/39b66tE5EmHP5Ud8
-	yFPqwzKytZHX1ljq9MJbqNSmsUPocgUQ/PzredAkviNPxEBWqICQTKvMEcgPLoqVBC0nfM
-	OOvIGjkIz7nkQq+w6IjgWj+mICM0Oe8=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Oliver Upton <oliver.upton@linux.dev>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
-	Marc Zyngier <maz@kernel.org>, James Morse <james.morse@arm.com>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Zenghui Yu <yuzenghui@huawei.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-	Shuah Khan <shuah@kernel.org>, kvm@vger.kernel.org,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
-	linux-pm@vger.kernel.org, linux-kselftest@vger.kernel.org,
-	Francesco Lavra <francescolavra.fl@gmail.com>,
-	Miguel Luis <miguel.luis@oracle.com>
-Subject: Re: [PATCH v5 4/5] KVM: selftests: Add test for PSCI SYSTEM_OFF2
-Message-ID: <Zw6jXEWwdW3S5Y6c@linux.dev>
-References: <20240926184546.833516-1-dwmw2@infradead.org>
- <20240926184546.833516-5-dwmw2@infradead.org>
- <ZvwWM7rQd075o6nb@linux.dev>
- <408b137dbf60ff4d189cbd98b7cf8cd833579f61.camel@infradead.org>
- <Zw6Svts5hqpIoKwN@linux.dev>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NMC7MkId"
+Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-5c960af31daso4320765a12.3;
+        Tue, 15 Oct 2024 10:19:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1729012739; x=1729617539; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=zSRsu/greOiguhxWKwTVAbA1IuBqHC3TjNHFAMMX7g8=;
+        b=NMC7MkIdTzN5NSzZsXZklkGTBMOkkMmZUDU9h8oaWw42bA6mp4g1GqzFPAbSeugQmx
+         uxEwhvzGltDWXSfUjHLvlfPwh17kM3OQGOtCV5Dp1yZozzuPam0UOdafOSt8R/1ROqiH
+         JzPp4etNY1j+cOFLXVQLI8/SikXxxvuxgq+zZCyIv81UswSDTlSeU5Mxf9UDb/j21svX
+         QU/A971st+QJp7OwcLk5qPkYyGiRSCRobWAIfBCbVt1rqyt+G/HHT63oIC0UJ7kmvHnQ
+         2XuL9rATgsGZ0O2PDXBgQC2SNkcaYOwaB07kKr0vfWuB+sj/J335l7lqXAfpYg7TrowE
+         M3iw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1729012739; x=1729617539;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=zSRsu/greOiguhxWKwTVAbA1IuBqHC3TjNHFAMMX7g8=;
+        b=c49CzxF6BykYp9DC+N6MZBdiMUD+Nr5Gwa5bdU+lfTouV4aGANbB4PUeyd4ohxqixi
+         KGlb5J5UhMd/YdDmJJuueU5urAY8anLtcQ6PSQFf2U2QSu2snDf+ZtzsTIXKFWqvs9nB
+         rBT7uYHUE1qJcDi3GLyOtNMZsPnFsCJnArxUIakLFAXeopDiZnRUzjLvCEtMTdGZxaeK
+         70fVliFfZPLw4WLjbSXHh/5RZ6Iw4wKajpy2JlY130shsNYYirzg2MMWRp0b063zkGrC
+         NwtHJXYWuVHhy//XkzJtMqReIIBZYCaNqv8UEy9A764N+jRC+snPMPhrRtcmtsID5T6k
+         JQKA==
+X-Forwarded-Encrypted: i=1; AJvYcCV4D73cAYhXkupaOYdJB4Yi4jfCr5nxIXwQ+Lf54OCi7uKNIx9Ymo0EPGlQZz0do9E6/PIlin8/n3HIZRo=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy9FeyvX+tXBjgWWn7eN4nPBBeAFixx22M4M9dJXSGrZ3/CKhwt
+	aW04k92ZsNMI5FzKXYQywaIUpbojA1y4d/WjAvwzYqgDK0V6AbG6
+X-Google-Smtp-Source: AGHT+IEguhQUTD1gQ7IIpJaup7vCYhfOUC8FaXMG8j8bXdOvxgWzgi4JiTqF9brhLY3lJq9JtSN/rw==
+X-Received: by 2002:a05:6402:51cd:b0:5c9:5ac1:df6c with SMTP id 4fb4d7f45d1cf-5c95ac1e675mr8462466a12.33.1729012739130;
+        Tue, 15 Oct 2024 10:18:59 -0700 (PDT)
+Received: from emdj-bno.. (0x5da5fe69.static.cust.fastspeed.dk. [93.165.254.105])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5c98d507a14sm911763a12.49.2024.10.15.10.18.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Oct 2024 10:18:58 -0700 (PDT)
+From: juhl.emildahl@gmail.com
+X-Google-Original-From: emdj@bang-olufsen.dk
+To: rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	rafael@kernel.org,
+	daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Emil Dahl Juhl <emdj@bang-olufsen.dk>
+Subject: [PATCH RESEND] tools/lib/thermal: fix sampling handler context ptr
+Date: Tue, 15 Oct 2024 19:18:26 +0200
+Message-ID: <20241015171826.170154-1-emdj@bang-olufsen.dk>
+X-Mailer: git-send-email 2.47.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <Zw6Svts5hqpIoKwN@linux.dev>
-X-Migadu-Flow: FLOW_OUT
 
-On Tue, Oct 15, 2024 at 09:05:18AM -0700, Oliver Upton wrote:
-> On Sat, Oct 12, 2024 at 10:28:10AM +0100, David Woodhouse wrote:
-> > On Tue, 2024-10-01 at 08:33 -0700, Oliver Upton wrote:
-> > > On Thu, Sep 26, 2024 at 07:37:59PM +0100, David Woodhouse wrote:
-> > > > +       vm = setup_vm(guest_test_system_off2, &source, &target);
-> > > > +       vcpu_get_reg(target, KVM_REG_ARM_PSCI_VERSION, &psci_version);
-> > > > +       TEST_ASSERT(psci_version >= PSCI_VERSION(0, 2),
-> > > > +                   "Unexpected PSCI version %lu.%lu",
-> > > > +                   PSCI_VERSION_MAJOR(psci_version),
-> > > > +                   PSCI_VERSION_MINOR(psci_version));
-> > > > +
-> > > > +       if (psci_version < PSCI_VERSION(1,3))
-> > > > +               goto skip;
-> > > 
-> > > I'm not following this. Is there a particular reason why we'd want to
-> > > skip for v1.2 and fail the test for anything less than that?
-> > 
-> > These tests unconditionally set KVM_ARM_VCPU_PSCI_0_2 in setup_vm().
-> > Which is probably OK assuming support for that that predates
-> > KVM_CAP_ARM_SYSTEM_SUSPEND (which is already a TEST_REQUIRE() right at
-> > the start).
-> > 
-> > So the world is very broken if KVM actually starts a VM but the version
-> > isn't at least 0.2, and it seemed like it warranted an actual failure.
-> 
-> If we're looking at this from a testing lens then KVM coming up with any
-> PSCI version other than KVM_ARM_PSCI_LATEST (i.e. v1.3) is a bug. So
-> maybe we can tighten that assertion because...
-> 
-> > > Just do TEST_REQUIRE(psci_version >= PSCI_VERSION(1, 3)), it makes the
-> > > requirements obvious in the case someone runs new selftests on an old
-> > > kernel.
-> > 
-> > I don't think we want to put that in main() and skip the other checks
-> > that would run on earlier kernels.
-> 
-> Running KVM selftests on older kernels in a meaningful way isn't
-> something we support. At all. An example of this is commit
-> 8a53e1302133 ("KVM: selftests: Require KVM_CAP_USER_MEMORY2 for
-> tests that create memslots"), which skips ~everything for kernels older
-> than 6.8.
-> 
-> > (Even if we had easy access to
-> > psci_version without actually running a test and starting a VM).
-> > 
-> > I could put it into host_test_system_off2() which runs last (and
-> > comment the invocations in main() to say that they're in increasing
-> > order of PSCI version) to accommodate such). But then it seems that I'd
-> > be the target of this comment in ksft_exit_skip()...
-> > 
-> >         /*
-> >          * FIXME: several tests misuse ksft_exit_skip so produce
-> >          * something sensible if some tests have already been run
-> >          * or a plan has been printed.  Those tests should use
-> >          * ksft_test_result_skip or ksft_exit_fail_msg instead.
-> >          */
-> > 
-> > I suspect the real answer here is that the individual tests here be
-> > calling ksft_test_result_pass(), and the system_off2 one should call
-> > ksft_test_result_skip() if it skips?
-> 
-> modulo a few one-offs, KVM selftests doesn't use the kselftest harness
-> so it isn't subject to this comment. Since there's no test plan, we can
-> skip at any time.
-> 
-> > I'll add an explicit comment about the 0.2 check though, saying that it
-> > should never happen so we might as well have the ASSERT for it.
-> 
-> After looking at this again, I think we should do one of the following:
-> 
->  - TEST_REQUIRE() that the PSCI version is at least v1.3, making the
->    dependency clear on older kernels.
-> 
->  - TEST_REQUIRE() for v1.3, which would provide better test coverage on
->    upstream.
+From: Emil Dahl Juhl <emdj@bang-olufsen.dk>
 
-Sorry, I meant TEST_ASSERT() here.
+The sampling handler, provided by the user alongside a void* context,
+was invoked with an internal structure instead of the user context.
 
-> -- 
-> Thanks,
-> Oliver
-> 
+Correct the invocation of the sampling handler to pass the user context
+pointer instead.
+
+Note that the approach taken is similar to that in events.c, and will
+reduce the chances of this mistake happening if additional sampling
+callbacks are added.
+
+Fixes: 47c4b0de080a ("tools/lib/thermal: Add a thermal library")
+Signed-off-by: Emil Dahl Juhl <emdj@bang-olufsen.dk>
+---
+ tools/lib/thermal/sampling.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/tools/lib/thermal/sampling.c b/tools/lib/thermal/sampling.c
+index 70577423a9f0..f67c1f9ea1d7 100644
+--- a/tools/lib/thermal/sampling.c
++++ b/tools/lib/thermal/sampling.c
+@@ -16,6 +16,8 @@ static int handle_thermal_sample(struct nl_msg *n, void *arg)
+ 	struct thermal_handler_param *thp = arg;
+ 	struct thermal_handler *th = thp->th;
+
++	arg = thp->arg;
++
+ 	genlmsg_parse(nlh, 0, attrs, THERMAL_GENL_ATTR_MAX, NULL);
+
+ 	switch (genlhdr->cmd) {
+--
+2.45.0
+
