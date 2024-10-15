@@ -1,43 +1,44 @@
 Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz [202.36.163.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A40BB1D63F7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6D981D9A4F
 	for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2024 22:59:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.36.163.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729033198; cv=none; b=GJAPeWyDrKDSO2aFmW7F+JBf6AgRedZhTq9t8xF276ULKRlVyx9ckjSjF2qxOxgPcbFrurDAN9+XeB0iajpXfkpsTNuCZ8ViDRiXVYrLmDYdFRMk1NQf/FZUlK03S7f5Zoc8mlVxP5N0pI3DpPBEHJhC7amQC3Y0RhBOcjmolWM=
+	t=1729033199; cv=none; b=CdxBsC85Sy6Imbz+AQbYpOKnvPziyAiOvt6J6+OlOjfvW9RnrIBur59oBmNXACSzR1bnHaGZQp8A5pRdMtiRL83W4Lp+614craQHkTiFQK2M9E3uK5W7gx2ZPCvg4ByIq1ApYrr421KLrcjxs7S5iMx4Qr1LRh7LVgADVfiZDBk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729033198; c=relaxed/simple;
-	bh=AUq+DRuI2P8P4NGN1Z3bUH0LrDdXYBWBFbLpZVuzyOE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uFbuy7feJI7ZLEDpuGOC4OzbNjB9kc7MtuHKkodZZz0n0nni6hif84xNhioBTuiBDeJt+ZVuNAWi1E0wAAjtAv66BOQyPSjeY7JjkUe4jl7DK8wxMgubl4JaIwGj6JFvj9ZZ1nt0eGmi3bZanXi0VRZ0awaIIWF1Ph5IiyP6IMA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz; spf=pass smtp.mailfrom=alliedtelesis.co.nz; dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b=FLPpWC5o; arc=none smtp.client-ip=202.36.163.20
+	s=arc-20240116; t=1729033199; c=relaxed/simple;
+	bh=/5WU5hCQX2Z1jlwxDKcyoCYzwu2CjAChxHZethJ6+8k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=XQUgpscROtghiWgdqX+3tBwgv2ckjcCrkPZYVfl9JcrrirOHayLbO9wPQSA/4iy7k16KWnsEB0KvnCFIwnGLW5UbQazcT1qp12p9nfYpRUMHvr1b99f6UBoKuesUNsh7aNXw6iUy1ffvZ+MX42o/cjSqzF7M8+Um4NQZJ9N7EPk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz; spf=pass smtp.mailfrom=alliedtelesis.co.nz; dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b=IwLBXrrb; arc=none smtp.client-ip=202.36.163.20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alliedtelesis.co.nz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="FLPpWC5o"
+	dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="IwLBXrrb"
 Received: from svr-chch-seg1.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 969592C038E;
+	by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id C32262C03E8;
 	Wed, 16 Oct 2024 11:59:52 +1300 (NZDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
 	s=mail181024; t=1729033192;
-	bh=l07QL1OSHu0TgCuTqR1/PJIa1Ihp52ojcHC70VFVMJU=;
-	h=From:To:Cc:Subject:Date:From;
-	b=FLPpWC5o1gn7Fm4HjNPQg5Swb4J5bdX9yDCwysNKqfxRE+QX/S7otfUbqVpr5IKvj
-	 BTZG2kHYIm6EpqEoZ5XGMnFeqLrAY+dX4yiqPONIJ7RsPvh1+TXa7YmMkmJ+5LfGZe
-	 xcv5PjJEvVi0vVwcnAB7mgIn7c0enORF8QiSrOyjViW1WBywSkTgwmpEq8t/CghUjU
-	 jCtkLWuGS3T9/W3tNbJ4qY/2wGlLU1plFyjQ6HwCidmi64zu9Ux+QZijLwaRaMYxGr
-	 bGsv23U2cJKDuqTeL8uPjvVzYdQppUAP+8QTOl8p/E/cy0pIJWUv9AHRJ0GYFThDX9
-	 jheUczXP9qUVg==
+	bh=zn1mz/1EORt+bpdlJq0OQONh/PaoueiogkKlddA61BU=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=IwLBXrrbULeReN3FBrk9298MxwbPJIUByD7c83joFFFfMiUGBzZDtwmtJYAmyXZyb
+	 MYThRUqAkdzcqIm5mPKyjz8gc+Jqs9In/7pKBV0MByGYzEZHRVDX14GomTQdzCGQ1Y
+	 k6xgb3dZ7jHEsxsfwls1bMJsZE/azExMGfAZOhVMqiK23RG37asG6RwKT3uhNIF/SU
+	 9fGeKOCvVpV6FV7MUO/BBPIFMKoG2CWyzEHgmTVAqO/AkFX+UMeQAvGeFiTQdpw0lC
+	 ZL8LujjwnsNFMO2RgLSZZvMTDeUId402cyNPdvmgPcelW0ME41UXuRLsB3RIoEEqwv
+	 wsEhA78emkLlg==
 Received: from pat.atlnz.lc (Not Verified[10.32.16.33]) by svr-chch-seg1.atlnz.lc with Trustwave SEG (v8,2,6,11305)
-	id <B670ef3e80000>; Wed, 16 Oct 2024 11:59:52 +1300
+	id <B670ef3e80002>; Wed, 16 Oct 2024 11:59:52 +1300
 Received: from chrisp-dl.ws.atlnz.lc (chrisp-dl.ws.atlnz.lc [10.33.22.30])
-	by pat.atlnz.lc (Postfix) with ESMTP id 3B07013ED7B;
+	by pat.atlnz.lc (Postfix) with ESMTP id 3ED4613EE9B;
 	Wed, 16 Oct 2024 11:59:52 +1300 (NZDT)
 Received: by chrisp-dl.ws.atlnz.lc (Postfix, from userid 1030)
-	id 351802820D4; Wed, 16 Oct 2024 11:59:52 +1300 (NZDT)
+	id 3B15628247E; Wed, 16 Oct 2024 11:59:52 +1300 (NZDT)
 From: Chris Packham <chris.packham@alliedtelesis.co.nz>
 To: andi.shyti@kernel.org,
 	robh@kernel.org,
@@ -53,10 +54,12 @@ Cc: linux-i2c@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-mips@vger.kernel.org,
 	Chris Packham <chris.packham@alliedtelesis.co.nz>
-Subject: [PATCH v6 0/6] RTL9300 support for reboot and i2c
-Date: Wed, 16 Oct 2024 11:59:42 +1300
-Message-ID: <20241015225948.3971924-1-chris.packham@alliedtelesis.co.nz>
+Subject: [PATCH v6 2/6] power: reset: syscon-reboot: Accept reg property
+Date: Wed, 16 Oct 2024 11:59:44 +1300
+Message-ID: <20241015225948.3971924-3-chris.packham@alliedtelesis.co.nz>
 X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241015225948.3971924-1-chris.packham@alliedtelesis.co.nz>
+References: <20241015225948.3971924-1-chris.packham@alliedtelesis.co.nz>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -64,51 +67,45 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-SEG-SpamProfiler-Analysis: v=2.4 cv=ca1xrWDM c=1 sm=1 tr=0 ts=670ef3e8 a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=DAUX931o1VcA:10 a=bFzpBXSQfSLquZs-7NAA:9 a=3ZKOabzyN94A:10
+X-SEG-SpamProfiler-Analysis: v=2.4 cv=ca1xrWDM c=1 sm=1 tr=0 ts=670ef3e8 a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=DAUX931o1VcA:10 a=KKAkSRfTAAAA:8 a=GF1LeCK7rlvhbTvQy6cA:9 a=3ZKOabzyN94A:10 a=cvBusfyB2V15izCimMoJ:22
 X-SEG-SpamProfiler-Score: 0
 x-atlnz-ls: pat
 
-As requested I've combined my two series into a single one to provide som=
-e
-better context for reviewers. I'm not sure which trees the patches should=
- go in
-via. The first two are reasonably independent and could go in via linux-p=
-m. I
-guess technically the last one could go via linux-i2c but it needs the an=
-d the
-bindings/dts updates which would probably make sense to come via linux-mi=
-ps.
+For historical reasons syscon-reboot has used an 'offset' property. As a
+child on a MMIO bus having a 'reg' property is more appropriate. Accept
+'reg' as an alternative to 'offset'.
 
---
-2.46.1
+Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
 
-Chris Packham (6):
-  dt-bindings: reset: syscon-reboot: Add reg property
-  power: reset: syscon-reboot: Accept reg property
-  dt-bindings: mfd: Add Realtek RTL9300 switch peripherals
-  mips: dts: realtek: Add syscon-reboot node
-  mips: dts: realtek: Add I2C controllers
-  i2c: Add driver for the RTL9300 I2C controller
+Notes:
+    Changes in v6:
+    - Add r-by from Krzysztof
+    Changes in v5:
+    - New, making the driver accept the updated binding
 
- .../bindings/i2c/realtek,rtl9301-i2c.yaml     |  99 ++++
- .../bindings/mfd/realtek,rtl9301-switch.yaml  | 114 +++++
- .../bindings/power/reset/syscon-reboot.yaml   |  11 +-
- MAINTAINERS                                   |   7 +
- .../cameo-rtl9302c-2x-rtl8224-2xge.dts        |   2 +-
- arch/mips/boot/dts/realtek/rtl9302c.dtsi      |  15 +
- arch/mips/boot/dts/realtek/rtl930x.dtsi       |  29 ++
- drivers/i2c/busses/Kconfig                    |  10 +
- drivers/i2c/busses/Makefile                   |   1 +
- drivers/i2c/busses/i2c-rtl9300.c              | 425 ++++++++++++++++++
- drivers/power/reset/syscon-reboot.c           |   3 +-
- 11 files changed, 713 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/i2c/realtek,rtl9301=
--i2c.yaml
- create mode 100644 Documentation/devicetree/bindings/mfd/realtek,rtl9301=
--switch.yaml
- create mode 100644 arch/mips/boot/dts/realtek/rtl9302c.dtsi
- create mode 100644 drivers/i2c/busses/i2c-rtl9300.c
+ drivers/power/reset/syscon-reboot.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/power/reset/syscon-reboot.c b/drivers/power/reset/sy=
+scon-reboot.c
+index 4d622c19bc48..d623d77e657e 100644
+--- a/drivers/power/reset/syscon-reboot.c
++++ b/drivers/power/reset/syscon-reboot.c
+@@ -61,7 +61,8 @@ static int syscon_reboot_probe(struct platform_device *=
+pdev)
+ 		priority =3D 192;
+=20
+ 	if (of_property_read_u32(pdev->dev.of_node, "offset", &ctx->offset))
+-		return -EINVAL;
++		if (of_property_read_u32(pdev->dev.of_node, "reg", &ctx->offset))
++			return -EINVAL;
+=20
+ 	value_err =3D of_property_read_u32(pdev->dev.of_node, "value", &ctx->va=
+lue);
+ 	mask_err =3D of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask=
+);
 --=20
 2.47.0
 
