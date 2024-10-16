@@ -1,30 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D72031D517F;
-	Wed, 16 Oct 2024 21:42:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00B071D2B37
+	for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2024 21:42:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729114921; cv=none; b=lv5WpuHF7BTKO2gP3qOPexnSw5/YIv9dFo8zdlyVz2wfxj5Dv+j6Mvi0QV2oMLlZcI+twBi2h2l2llPV1DmnU8grgW4cQHkT2cS0+q1rIflJlfesoxCGzGAQlObdBuUyXK/Gb6FSinwXDAwNeyoc5LVBBitNMAhfpkA2ZTjj2d4=
+	t=1729114922; cv=none; b=slOv/ZlvoGsY8HsPgg2elcvhYmc7aAnvDZV7CAOMxwC2xpfpYq0R4I6mrMtQ9XyTYRP8JzLZ1ElkJqI4qQ9zHok5LvyVAdiWfTuvtMeL93B6MQ5YAQLLGRf7IBgEhdvSI/zy47jy6jxkviS5kLXo6zC2H7Djs6SbwFZeyC0ggZE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729114921; c=relaxed/simple;
-	bh=UatnwLdLYEqwbn7VVH986cj25w1ARhMFB6bRK9YGE7Q=;
+	s=arc-20240116; t=1729114922; c=relaxed/simple;
+	bh=39uvMhtLAUbCIv60TtvNBIDt/BiTg2FZcI6CpiSqgzs=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=ch5pT3d/7r1/Oi2k+6y/NhJxwnAGLVm/Han8+vJ36JebL+bWpBQedOuWQps/piVary8aQpwIP/y6KZsnkShB9p/ROZhfaVwpwgqt9m+U4T2dABtrrOI7DxDdYbh/ui+8cJc4TObW9cwOS5QGrM4dzoLjeydKo1iWX6Y80fGQu/A=
+	 MIME-Version:Content-Type; b=n77vfXQuTm2gn3aAIl17z0bV9mqYII2hvpv98AO4kE+lOvnExOo2ebFUt2X04PYzuVjGv3+II0E2KI/Mwy6AwLTVwds8/7UgCABJIxRZ7v9v+qXjUqYCyPdrg/gq9NKrvXR8j9UZYhGh3hHh0XXaJkKStTCjyrdR0rNtR9+WUZQ=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 630B5C4CED3;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6979DC4CED6;
 	Wed, 16 Oct 2024 21:42:01 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 54C5B1060460; Wed, 16 Oct 2024 23:41:56 +0200 (CEST)
+	id 583DA10604A7; Wed, 16 Oct 2024 23:41:56 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: 'Lucas Tsai ' <lucas_tsai@richtek.com>, 
- Sebastian Reichel <sre@kernel.org>, cy_huang@richtek.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <cover.1727252762.git.cy_huang@richtek.com>
-References: <cover.1727252762.git.cy_huang@richtek.com>
-Subject: Re: [PATCH 0/2] power: supply: rt9471: Fix WDT bitfield and
- charger status
-Message-Id: <172911491633.630785.17931516784281011855.b4-ty@collabora.com>
+To: linux-pm@vger.kernel.org, Chris Morgan <macroalpha82@gmail.com>
+Cc: sre@kernel.org, Chris Morgan <macromorgan@hotmail.com>
+In-Reply-To: <20240926144346.94630-1-macroalpha82@gmail.com>
+References: <20240926144346.94630-1-macroalpha82@gmail.com>
+Subject: Re: [PATCH 0/2] rk817_charger full charge capacity fixes
+Message-Id: <172911491635.630785.966402085830383621.b4-ty@collabora.com>
 Date: Wed, 16 Oct 2024 23:41:56 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -37,25 +35,22 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Wed, 25 Sep 2024 16:32:57 +0800, cy_huang@richtek.com wrote:
-> From: ChiYuan Huang <cy_huang@richtek.com>
+On Thu, 26 Sep 2024 09:43:44 -0500, Chris Morgan wrote:
+> From: Chris Morgan <macromorgan@hotmail.com>
 > 
-> This patch series add the following fixes that reported from the end
-> market included WDT bitfield and the real charger status.
-> 
-> ChiYuan Huang (2):
->   power: supply: rt9471: Fix wrong WDT function regfield declaration
->   power: supply: rt9471: Use IC status regfield to report real charger
->     status
+> The code for fully charged capacity is still causing problems when
+> invalid values are reported by the charger (usually after resume from
+> suspend). Stop attempting to auto calibrate this and instead allow the
+> value to be writeable from userspace.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/2] power: supply: rt9471: Fix wrong WDT function regfield declaration
-      commit: d10ff07dd2b933e3864c592ca932996b07bbf22a
-[2/2] power: supply: rt9471: Use IC status regfield to report real charger status
-      commit: c46a9ee5c6210682611d3d4276436c23a95e1996
+[1/2] power: supply: rk817: stop updating info in suspend
+      commit: bded860c3110a45fe091f67b2fe6f3b2bb096165
+[2/2] power: supply: rk817: Update battery capacity calibration
+      commit: 1e5335d00707220b46c28ab09cd09a1837b84978
 
 Best regards,
 -- 
