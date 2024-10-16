@@ -1,144 +1,78 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail.andi.de1.cc (mail.andi.de1.cc [178.238.236.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F045A1D1E99;
-	Wed, 16 Oct 2024 08:02:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FB151D1F5A;
+	Wed, 16 Oct 2024 08:03:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.238.236.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729065779; cv=none; b=DE6uYgVRiN86KbhGp3yKCDmLdKtjuWTx6jKQOKkusxUXNKVTsGceFl4UZzxdXw0fI4sF6Fpgs7H+27H5mHxo1xvIntIrBmHApNfpnLmvHDGc6Uy4s5AOgqhwqsiY1pNK2xTbfmQ9Jofe1XN2gSEx/ddegWrD6mwCRebHfMU3LyI=
+	t=1729065807; cv=none; b=aYATSTSBtpYTqks2sjW5WBBa9FXjycGRdIZBKYatG5Bvi2aSWgNiOg4941+PAT397puC0fpWi1/tMNcmz+yWoRjcwpoTC15yxT5A6N60/9b6tAn+2BmLY6JG2kJpNpL/doSvQKzF6ZEvFqk/qclSak4EybVx5wXK554JMU654Qo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729065779; c=relaxed/simple;
-	bh=VQWxLbP46Yk3JT2ruUu0Qw3xjvSUtKf+K6RBYmBe+lM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mPV/PDB+UNRic1w+yJ6soybzyVhgoHYyloyAVzP1cMRNVMMoIBsosv8Hd9/aFUgYWKow9cxKhv4ypPSDdcfYoJ4Qz1aT0w3jTgniVmhDZJywINcqiI2N5rzTpOLWKReUtPEkQdtCJdHU1+ItC2OXvtB9fwS469Ipt6W7GrcpE9Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EdZQu0lv; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1729065807; c=relaxed/simple;
+	bh=avbkBuu+IeylLDazEvd0vZ3GdpIvrosWqQVh97Iqy/0=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=g5adLHmBKSgTVdBPd1CtKsiPyc2ZgmSr1QnrgMYyHpCTxr+THU5wstN8u2Lc9sP8qgXDO+1RE80iwcVddiR+4rAWx8g0uMkSgqNvhV4PS+jg+bJLy/LlZgIUeVCmT5n5d/X8oJjeAxmpdklTYwWzt2LZkrPT1Q6hdrCr5EtddN8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info; spf=pass smtp.mailfrom=kemnade.info; dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b=2yj2s5eS; arc=none smtp.client-ip=178.238.236.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kemnade.info
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EdZQu0lv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25CC7C4CED0;
-	Wed, 16 Oct 2024 08:02:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729065778;
-	bh=VQWxLbP46Yk3JT2ruUu0Qw3xjvSUtKf+K6RBYmBe+lM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=EdZQu0lvkqQKp6i7wnzriOv0ggkWZWcHotek7nZZSEdw35cKxZpgEDMR9IrMPXZbQ
-	 WYoop23uy1X0RnPZxv+h22a0dffsyAWGe47B3VkLwdnV46GNOwJL0i3dnbOWnL5pqV
-	 omdNB+UMVqzfLHYIcQhnCKXUFkU6z65UbCHDFkDyHmnnjxUI+O5bzUMFG8CnQdhrus
-	 XL9m9kdJ61u2FNby/2sWKy01wPxw1/DeGD4aTCMMTOmDF7gVJmeIWCVkItZEaRNeJH
-	 MyKxVJEiK6L05viEsJafMLkbLfvaL3SZzmumCECEL5gaUXlP26Z9cagMEpkoaYU6ij
-	 1iyG5JVbDWBUg==
-Date: Wed, 16 Oct 2024 09:02:48 +0100
-From: Lee Jones <lee@kernel.org>
-To: Macpaul Lin <macpaul.lin@mediatek.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>,
-	Andrew Lunn <andrew@lunn.ch>,
-	Florian Fainelli <f.fainelli@gmail.com>,
-	Vladimir Oltean <olteanv@gmail.com>,
-	"David S . Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b="2yj2s5eS"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=kemnade.info; s=20220719; h=References:In-Reply-To:Cc:From:Sender:Reply-To:
+	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+	Resent-To:Resent-Cc:Resent-Message-ID;
+	bh=PbKIZr1whktnbITD00APK/aUO0+aJL4weKLvHytG4m4=; b=2yj2s5eSe5s1p/PZqGvHq1Rkk7
+	/Dy8fN3tJYAWv1zf6CnLyxnO4z2R1uAXVzHNYZx8dbjDb9sYmNhtX245YkF4rCH50T66zA184dHjV
+	td2uUAkxQOecXydEwAnY9DaaW/mVSllKU5THjfAUngiE8cyTa1gLDsWYe5GCBI9r0z9eMUwx5nH8p
+	Z2db0WKncI448S8gfRYioNAoQxU3Hrdhp+gB+da/WH6ZuFAUQi/wMOK4G9qzJzCtsf3sOkDjr4RtS
+	so4MjSBauFFdbGr/dxTNMb6cZok+AoGQ/rSuwDkBx8eFaS7HsML8Rt5rk9/uSnATSPRf5HHCxSmIQ
+	i4Sa3fNQ==;
+From: Andreas Kemnade <andreas@kemnade.info>
+To: khilman@baylibre.com,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
 	Sebastian Reichel <sre@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	linux-input@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
-	netdev@vger.kernel.org, linux-rtc@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	Alexandre Mergnat <amergnat@baylibre.com>,
-	Bear Wang <bear.wang@mediatek.com>,
-	Pablo Sun <pablo.sun@mediatek.com>, Macpaul Lin <macpaul@gmail.com>,
-	Chris-qj chen <chris-qj.chen@mediatek.com>,
-	MediaTek Chromebook Upstream <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-	Chen-Yu Tsai <wenst@chromium.org>
-Subject: Re: [PATCH v8 3/3] dt-bindings: mfd: mediatek: mt6397: Convert to DT
- schema format
-Message-ID: <20241016080248.GN8348@google.com>
-References: <20241001104145.24054-1-macpaul.lin@mediatek.com>
- <20241001104145.24054-3-macpaul.lin@mediatek.com>
+	Rob Herring <robh@kernel.org>,
+	devicetree@vger.kernel.org,
+	Lee Jones <lee@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	tony@atomide.com,
+	linux-omap@vger.kernel.org
+Cc: Andreas Kemnade <andreas@kemnade.info>
+Subject: [PATCH v5 3/3] ARM: dts: ti/omap: use standard node name for twl4030 charger
+Date: Wed, 16 Oct 2024 10:03:14 +0200
+Message-Id: <20241016080314.222674-4-andreas@kemnade.info>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20241016080314.222674-1-andreas@kemnade.info>
+References: <20241016080314.222674-1-andreas@kemnade.info>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20241001104145.24054-3-macpaul.lin@mediatek.com>
 
-Argh, I couldn't bring myself to do it!  Here's a PR instead:
+Use the established node name for the charger.
 
-The following changes since commit 9852d85ec9d492ebef56dc5f229416c925758edc:
+Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
+---
+ arch/arm/boot/dts/ti/omap/twl4030.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-  Linux 6.12-rc1 (2024-09-29 15:06:19 -0700)
-
-are available in the Git repository at:
-
-  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-dt-mfd-input-leds-power-rtc-v6.13
-
-for you to fetch changes up to 6e357f572638547e9c9e8d8abb7dc572c12032f3:
-
-  dt-bindings: mfd: mediatek: mt6397: Convert to DT schema format (2024-10-16 09:00:38 +0100)
-
-----------------------------------------------------------------
-Immutable branch between DT, MFD, Input, LEDs Power and RTC due for the v6.13 merge window
-
-----------------------------------------------------------------
-Macpaul Lin (1):
-      dt-bindings: mfd: mediatek: mt6397: Convert to DT schema format
-
- .../bindings/input/mediatek,pmic-keys.yaml         |   2 +-
- .../devicetree/bindings/leds/leds-mt6323.txt       |  63 ---
- .../devicetree/bindings/mfd/mediatek,mt6397.yaml   | 588 +++++++++++++++++++++
- Documentation/devicetree/bindings/mfd/mt6397.txt   | 110 ----
- .../bindings/power/reset/mt6323-poweroff.txt       |  20 -
- .../devicetree/bindings/rtc/rtc-mt6397.txt         |  31 --
- MAINTAINERS                                        |   8 +-
- 7 files changed, 595 insertions(+), 227 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/leds/leds-mt6323.txt
- create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
- delete mode 100644 Documentation/devicetree/bindings/mfd/mt6397.txt
- delete mode 100644 Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
- delete mode 100644 Documentation/devicetree/bindings/rtc/rtc-mt6397.txtThe following changes since commit 9852d85ec9d492ebef56dc5f229416c925758edc:
-
-  Linux 6.12-rc1 (2024-09-29 15:06:19 -0700)
-
-are available in the Git repository at:
-
-  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-dt-mfd-input-leds-power-rtc-v6.13
-
-for you to fetch changes up to 6e357f572638547e9c9e8d8abb7dc572c12032f3:
-
-  dt-bindings: mfd: mediatek: mt6397: Convert to DT schema format (2024-10-16 09:00:38 +0100)
-
-----------------------------------------------------------------
-Immutable branch between DT, MFD, Input, LEDs Power and RTC due for the v6.13 merge window
-
-----------------------------------------------------------------
-Macpaul Lin (1):
-      dt-bindings: mfd: mediatek: mt6397: Convert to DT schema format
-
- .../bindings/input/mediatek,pmic-keys.yaml         |   2 +-
- .../devicetree/bindings/leds/leds-mt6323.txt       |  63 ---
- .../devicetree/bindings/mfd/mediatek,mt6397.yaml   | 588 +++++++++++++++++++++
- Documentation/devicetree/bindings/mfd/mt6397.txt   | 110 ----
- .../bindings/power/reset/mt6323-poweroff.txt       |  20 -
- .../devicetree/bindings/rtc/rtc-mt6397.txt         |  31 --
- MAINTAINERS                                        |   8 +-
- 7 files changed, 595 insertions(+), 227 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/leds/leds-mt6323.txt
- create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
- delete mode 100644 Documentation/devicetree/bindings/mfd/mt6397.txt
- delete mode 100644 Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
- delete mode 100644 Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
-
+diff --git a/arch/arm/boot/dts/ti/omap/twl4030.dtsi b/arch/arm/boot/dts/ti/omap/twl4030.dtsi
+index a5d9c5738317a..07b9ca942e78d 100644
+--- a/arch/arm/boot/dts/ti/omap/twl4030.dtsi
++++ b/arch/arm/boot/dts/ti/omap/twl4030.dtsi
+@@ -16,7 +16,7 @@ rtc {
+ 		interrupts = <11>;
+ 	};
+ 
+-	charger: bci {
++	charger: charger {
+ 		compatible = "ti,twl4030-bci";
+ 		interrupts = <9>, <2>;
+ 		bci3v1-supply = <&vusb3v1>;
 -- 
-Lee Jones [李琼斯]
+2.39.2
+
