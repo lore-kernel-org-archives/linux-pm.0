@@ -1,32 +1,30 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BD501D2B1A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 532841D2B39;
 	Wed, 16 Oct 2024 21:41:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729114919; cv=none; b=lRDym14lJmDxHL3MBIJHS6FvtgJzAjjDEAebQCe883YodRwq798nLsjKlwAhRMaAvn5IJiCEuDHdSXwZA2ozF9xshe/HEimq92h+96z8MAINw4TlvwS2eZj90ImB4j3PpuBIi2s7jxq7VolMfoVJsHfMB9bEANrJXm/+bT2rwv4=
+	t=1729114919; cv=none; b=X/uDvy8a6sAh9dcAhtGhGGW68fmKnY3XFSIKcdT9FDnTe+mAAn0bPqibi3ENevQnHBcKtptzQPx8l61iaYSn5aotiM4OheoIinsLYPX4d/01xdXzfPukCHDG99x7B3gNZE9GnlcU6gNLFq6fap9d3Fn586J9zQTIfqwW0pWFbEw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1729114919; c=relaxed/simple;
-	bh=/6y5g0m6O0+fk05eterbm4ntycsxyuN+VaQnCIO+K/0=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=K7mEEj2SLk3xhjQFJuTZAO2zMZgWl2KCJlBaAknF2U8agY2nwYQOxrJkhVJ+AAkJPkEKFYpBYjlGYNXMecyMwnpk8taF4zByvoGi0c554zd7N3oL8gcHYVBj5CdmxNXGWMshVtBMbFhvSgI4xGPal1ghK5b5KDpgEWjYjgF04mU=
+	bh=wIyJk825vxE1cB6sJzT4gQT3wkEZCWbDwEm4otlzDjs=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=TaN3pD+2vNGJBu3TYfWCQuIzV1U3HV3WTaSBIaL9yWec7Q4NEzOOFJCcMF+9zYPP1rd/dXE/zLdghoO6Mp9yhaXl0MiIe6fxmXnBEU7aQnJSm/hc+sYe7BMsqvbM4yAavpHz5XsaAzpHPYJO7OmRbeK6ObBP5pyYMHRum+yuFu8=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C640EC4CEC5;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2643C4AF09;
 	Wed, 16 Oct 2024 21:41:58 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 41C91106044F; Wed, 16 Oct 2024 23:41:56 +0200 (CEST)
+	id 4DDDE106045D; Wed, 16 Oct 2024 23:41:56 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: khilman@baylibre.com, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, 
- Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, 
- Lee Jones <lee@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, tony@atomide.com, 
- linux-omap@vger.kernel.org, Andreas Kemnade <andreas@kemnade.info>
-In-Reply-To: <20241016080314.222674-1-andreas@kemnade.info>
-References: <20241016080314.222674-1-andreas@kemnade.info>
-Subject: Re: (subset) [PATCH v5 0/3] power: supply: twl6030/32 charger
-Message-Id: <172911491622.630785.377200401875530760.b4-ty@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20241005-power-supply-cleanups-v1-0-45303b2d0a4d@weissschuh.net>
+References: <20241005-power-supply-cleanups-v1-0-45303b2d0a4d@weissschuh.net>
+Subject: Re: (subset) [PATCH 0/4] power: supply: core: random cleanups and
+ optimizations
+Message-Id: <172911491630.630785.7870261570020412690.b4-ty@collabora.com>
 Date: Wed, 16 Oct 2024 23:41:56 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -35,26 +33,23 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.14.2
 
 
-On Wed, 16 Oct 2024 10:03:11 +0200, Andreas Kemnade wrote:
-> Add basic support for the charger in the TWL6030/32. Supported is the USB
-> path. AC path is not handled yet, also there is no entry yet
-> in /sys/class/power_supply with type battery yet.
+On Sat, 05 Oct 2024 12:06:14 +0200, Thomas Weißschuh wrote:
+> Some independent cleanups and optimizations.
 > 
-> Without this series, devices will happily drain battery when running
-> on mainline.
 > 
-> [...]
 
 Applied, thanks!
 
-[1/3] dt-bindings: power: supply: Add TI TWL603X charger
-      commit: 421aadd19a622852172ccc15ad4049201fd1f80b
-[2/3] power: supply: initial support for TWL6030/32
-      commit: b45cdceba64d79a2538aeb36926fd9a065f0f753
+[1/4] power: supply: core: use device mutex wrappers
+      commit: bd3ee57b9d4c58edbf6f7bba071f6e508c7ff1c6
+[2/4] power: supply: core: unexport power_supply_property_is_writeable()
+      commit: cf70da29c4993bf23df68b67a82dfa3da8234e75
+[3/4] power: supply: core: mark attribute arrays as ro_after_init
+      commit: 3120b5f218ca8e2b375d496e2ff3f4f861fbc013
 
 Best regards,
 -- 
