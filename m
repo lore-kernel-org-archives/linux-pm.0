@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D37D206979;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95AE2206E92;
 	Wed, 16 Oct 2024 11:37:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729078631; cv=none; b=T8SUau/OLuFdC5YTifWKDDf/bgwWHSyryjk36zfRSPf1Vjsmj/BJlXjw/Kk57fmhkvuGgz944yBU4xhIS3SzZRmnBJ+czbPXkFwf/NRGf1CjSP1+hK1WpaUXBivzcnhQvkhrbmtavEvaTmZp+XVSZsBaYz9amUXfOmxCvKPJuYs=
+	t=1729078631; cv=none; b=eaeT+6D9ST9QezK+SrrlxAvNAg8wtj/O/az5fvxjY9OVvwzDz5D1KD+6+n7buWod5n1ynS5FG7BO7sI7K8GA5xTee3VecsGtLYi97J1oKu7dOcGb8lJ7kd8ZRWf2S1JtdyLZOHXfIodnJfcU/wtAZ+MphxJmyOD45/hjawFqk1g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1729078631; c=relaxed/simple;
-	bh=9lT857ctfzD/iFRi0G/KTA54Z1OPV5bjQ4s0G3ON6vU=;
+	bh=dhkcwHcy1qf8BqFwZpE/80n76Nr/JxMr0kW9TvKncw0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=MCH0xMTsbi5H/Fzd8BM2oeLe5lznF5qkcuThjHd7vI+AjsimVAJlsjCgd21btB+Kd5DPMffuRjClTW1SymQyGrMS0cXxyo/6cKoW/SA1hv1Zqm1w56C4+GlmcIr+tCtJKgmO5cZD112N8k0w8IogoZ9WY+l7FgcViCpTq59+qek=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=rP5zspe6 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=ih+8nvS3GUxLltROaCF0uCDydh+smrQmg1BnhU6OCDS/aSkpJOizUUZ4YHqXlO0Vqpn+o4jlyA+ILAG3Q5vmi2U+lX5J1JUB/N4CpEhLGtuEtFy77mPGRfeScja21a7kwudl0mHO5thI1/g1EHJso4EHdCHTdiunhNRqO+9WsTI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=sQW3sOh3 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="rP5zspe6"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="sQW3sOh3"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id c44b4993e14fa7d9; Wed, 16 Oct 2024 13:37:00 +0200
+ id 4e92effa67a29842; Wed, 16 Oct 2024 13:37:02 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id A35ADA9396A;
-	Wed, 16 Oct 2024 13:37:00 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 04683A93969;
+	Wed, 16 Oct 2024 13:37:02 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1729078620;
-	bh=9lT857ctfzD/iFRi0G/KTA54Z1OPV5bjQ4s0G3ON6vU=;
+	s=dkim; t=1729078622;
+	bh=dhkcwHcy1qf8BqFwZpE/80n76Nr/JxMr0kW9TvKncw0=;
 	h=From:Subject:Date;
-	b=rP5zspe6ifKmYwTN7/l6fioNJzY8jOnu1PU3QVljYNd4+MVKMAzAQHpHvPlmUCvE4
-	 6IcS0M1BCwdPWjE5N8pj8ZkzHSx8g5reKsw98us13SUy+K6anY5h6a120YwJpvUZtB
-	 UbCjmywrHcG3R6urBkXr16QigJHuwDEvOgWVFGH783b+2SAvq/nawDDpbIENN+Qo1W
-	 x5n4tYZXhdmuf0wsQ8qbgTk9L3qqX5/DqO85J3y40T/hU1oj123DhpDN2etBKeIpB5
-	 7owKA3K+D413Gd7HuikJGPUkVQqrrmBWMweynSU0B9eDIXnoXEo59hiODdCBR8ovVe
-	 MeL31/3onYG+A==
+	b=sQW3sOh36cP/a9wK3LE0GuzH9JIb5u32gEjEKLVOdjNfX4bMVtChEk3UpgFaxcBnl
+	 n2QWUW9A5UEE3PPSVqQIQMakn4d75U2vAIRO1N+XzHaiT8zpRQG1KzzS18/wS0HRRo
+	 jX7df9FyR/8KrDZ4ZkmNMAdGHZk7K+TZGpvR5UilYIFqP5gtDhRwhao5yFsEIs+m+s
+	 q2D6aZlpU2ne9R4VNp4J9aCx7pxB5rPaHs2MHHUKxOtxXOCn/92IQ27RiXYPxgQEp0
+	 MapYG00nLsRcQcN9grzmCD8BifGR9z/pmxmmTedrbBtJ/gyZXlHgj65stDKjjaxYzC
+	 08mXPs6YpyXYw==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -42,9 +42,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Zhang Rui <rui.zhang@intel.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Subject:
- [PATCH v1 07/10] thermal: core: Relocate functions that update trip points
-Date: Wed, 16 Oct 2024 13:32:13 +0200
-Message-ID: <3248558.5fSG56mABF@rjwysocki.net>
+ [PATCH v1 04/10] thermal: core: Rearrange __thermal_zone_device_update()
+Date: Wed, 16 Oct 2024 13:26:20 +0200
+Message-ID: <3323276.44csPzL39Z@rjwysocki.net>
 In-Reply-To: <4958885.31r3eYUQgx@rjwysocki.net>
 References: <4958885.31r3eYUQgx@rjwysocki.net>
 Precedence: bulk
@@ -63,107 +63,44 @@ X-DCC--Metrics: v370.home.net.pl 0; Body=6 Fuz1=6 Fuz2=6
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In preparation for subsequent changes, move two functions used
-for updating trip points, thermal_zone_set_trip_temp() and
-thermal_zone_set_trip_hyst(), to thermal_core.c.
+In preparation for subsequent changes, move the invocations of
+thermal_thresholds_handle() and thermal_zone_set_trips() in
+__thermal_zone_device_update() after the processing of the
+temporary trip lists.
 
-No functional impact.
+No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c |   35 +++++++++++++++++++++++++++++++++++
- drivers/thermal/thermal_trip.c |   35 -----------------------------------
- 2 files changed, 35 insertions(+), 35 deletions(-)
+ drivers/thermal/thermal_core.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 Index: linux-pm/drivers/thermal/thermal_core.c
 ===================================================================
 --- linux-pm.orig/drivers/thermal/thermal_core.c
 +++ linux-pm/drivers/thermal/thermal_core.c
-@@ -541,6 +541,41 @@ static void thermal_trip_crossed(struct
- 	thermal_governor_trip_crossed(governor, tz, trip, crossed_up);
- }
+@@ -588,10 +588,6 @@ void __thermal_zone_device_update(struct
+ 			high = td->threshold;
+ 	}
  
-+void thermal_zone_set_trip_hyst(struct thermal_zone_device *tz,
-+				struct thermal_trip *trip, int hyst)
-+{
-+	WRITE_ONCE(trip->hysteresis, hyst);
-+	thermal_notify_tz_trip_change(tz, trip);
-+}
-+
-+void thermal_zone_set_trip_temp(struct thermal_zone_device *tz,
-+				struct thermal_trip *trip, int temp)
-+{
-+	if (trip->temperature == temp)
-+		return;
-+
-+	WRITE_ONCE(trip->temperature, temp);
-+	thermal_notify_tz_trip_change(tz, trip);
-+
-+	if (temp == THERMAL_TEMP_INVALID) {
-+		struct thermal_trip_desc *td = trip_to_trip_desc(trip);
-+
-+		/*
-+		 * If the trip has been crossed on the way up, some adjustments
-+		 * are needed to compensate for the lack of it going forward.
-+		 */
-+		if (tz->temperature >= td->threshold)
-+			thermal_zone_trip_down(tz, td);
-+
-+		/*
-+		 * Invalidate the threshold to avoid triggering a spurious
-+		 * trip crossing notification when the trip becomes valid.
-+		 */
-+		td->threshold = INT_MAX;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(thermal_zone_set_trip_temp);
-+
- void __thermal_zone_device_update(struct thermal_zone_device *tz,
- 				  enum thermal_notify_event event)
- {
-Index: linux-pm/drivers/thermal/thermal_trip.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_trip.c
-+++ linux-pm/drivers/thermal/thermal_trip.c
-@@ -88,38 +88,3 @@ int thermal_zone_trip_id(const struct th
- 	 */
- 	return trip_to_trip_desc(trip) - tz->trips;
- }
+-	thermal_thresholds_handle(tz, &low, &high);
 -
--void thermal_zone_set_trip_hyst(struct thermal_zone_device *tz,
--				struct thermal_trip *trip, int hyst)
--{
--	WRITE_ONCE(trip->hysteresis, hyst);
--	thermal_notify_tz_trip_change(tz, trip);
--}
+-	thermal_zone_set_trips(tz, low, high);
 -
--void thermal_zone_set_trip_temp(struct thermal_zone_device *tz,
--				struct thermal_trip *trip, int temp)
--{
--	if (trip->temperature == temp)
--		return;
--
--	WRITE_ONCE(trip->temperature, temp);
--	thermal_notify_tz_trip_change(tz, trip);
--
--	if (temp == THERMAL_TEMP_INVALID) {
--		struct thermal_trip_desc *td = trip_to_trip_desc(trip);
--
--		/*
--		 * If the trip has been crossed on the way up, some adjustments
--		 * are needed to compensate for the lack of it going forward.
--		 */
--		if (tz->temperature >= td->threshold)
--			thermal_zone_trip_down(tz, td);
--
--		/*
--		 * Invalidate the threshold to avoid triggering a spurious
--		 * trip crossing notification when the trip becomes valid.
--		 */
--		td->threshold = INT_MAX;
--	}
--}
--EXPORT_SYMBOL_GPL(thermal_zone_set_trip_temp);
+ 	list_for_each_entry_safe(td, next, &way_up_list, list_node) {
+ 		thermal_trip_crossed(tz, &td->trip, governor, true);
+ 		list_del_init(&td->list_node);
+@@ -602,6 +598,10 @@ void __thermal_zone_device_update(struct
+ 		list_del_init(&td->list_node);
+ 	}
+ 
++	thermal_thresholds_handle(tz, &low, &high);
++
++	thermal_zone_set_trips(tz, low, high);
++
+ 	if (governor->manage)
+ 		governor->manage(tz);
+ 
 
 
 
