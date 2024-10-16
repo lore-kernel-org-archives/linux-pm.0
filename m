@@ -1,117 +1,177 @@
-Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C43B18C331
-	for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2024 05:59:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.180
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 54294156E4;
+	Wed, 16 Oct 2024 06:20:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=114.242.206.163
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729058375; cv=none; b=E+ADGCqPNcqCjAk2nEkbUTWK1MhTYgVNPvp+fcAHV/rcmCyaLWk+9PbVN/8lxXg/cxLXwfdZc6TPDCHyAqW0qWNQoERPOt7CUf19N459ICu6VLoMuoK3jQfatM7g0w7VAIWt81hdV2d82GriDPBiO+ZqWZmltTcfbQ4P8SstLLo=
+	t=1729059657; cv=none; b=L4ytgUecCzQKyoNLkAK2YrJBjr0GC9+RSq7YjHiPKemxaosX8JhjIVN7iB6ax/IR6tQTnMsG+FQsk7grGaj4YmB/EhO1McqvCNDSXNtMHh63A5fxJUfjm/HVowpFRKMDvePTOQfjslnvU1vxlHaEpbP4QY2tOpQnwDu1FJ5MUA4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729058375; c=relaxed/simple;
-	bh=VWK4U/i8gUcds76RyMyEeEuiDy0+2wEwZXNMbfzpgPs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aQBLPl+axOi9FUC7AcyvMe3JPompbLdd7+suhhyZS5k1nPJO4blfwB2dD1QSYeHxB/aqw0EvW1/5I8IC5qw3A0oZ1T+Bb2f3s5DEBG3qmOcK61HaWufaUKRahAxTKlr81VGZE/+PR5ip2Mbghn+nQOg34LppSNxyo3FQkNKuTTU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=n9Pub590; arc=none smtp.client-ip=209.85.210.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="n9Pub590"
-Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-71e625b00bcso2317863b3a.3
-        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2024 22:59:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1729058373; x=1729663173; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=8rXbSaoRM3I91C8i3phm7sHDz+HHlGYglaP+SNKnxuk=;
-        b=n9Pub590uhX2mVwl3DdLG73eCptt9DQalEIef5/Fi857u55pbxxSho2mNPs+3Zxtw1
-         HGJCsogmON89Mb/iBIwn6NZalXR108q0Oj3GvNAx4eYpuzA1As+JasshPMl8+LaXA8GM
-         7ttzA/4lwE2d0ul3c1LrX6DIMYLRoa4TshIT+AHW1SYXNnnNlCyrof0hN26XO8BtvnWM
-         1prxz+tuz6xH3YIN5EBbswiFz6F4P0a/+pjxFniuXjkJA9N7azG56lopVV5EffJjovog
-         qsQAmm8l3JA1b9l+XIbEF4Bh9xwUdDibWEQuMt8ktEeL4m4A06eWkUe7PHJAwklrAU7O
-         cmHA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729058373; x=1729663173;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8rXbSaoRM3I91C8i3phm7sHDz+HHlGYglaP+SNKnxuk=;
-        b=ZNAxsUVXenSeEAXPPtOymtDajGOQZPUxQR5196ZlCFBJpmlcGL3ddxGJfdXPHOfJeh
-         L4/t7p+GgQyvgdFcPfcJ5fdLvFv8tuCNjhbdReVi6oKkIDQ0i/OZFbm9+Y8ui9VM5E+d
-         Yow72bHFq9knygww0zQm5ihrE0m6A61APgHslKgrbpF7G0FnIV1uNW7FjeZvF2eEkkbf
-         omXkcB+OddsYcQV6+ZfBRH2nu1icOiQLPhh6SS/Z3f3l8uCzAVNtNAF+eRqnccN9Cf0+
-         T+ihnxsvMO23+iBZ+3e1ISKKRGT4Y6MAgZLPNp/MBZAgg8Wn6aA4EwC1gbYtIprIh+SE
-         kJ6A==
-X-Forwarded-Encrypted: i=1; AJvYcCVZDbg2htJZIJIvfW+Cf7MJ42yUDLUh2jMIf2wBCEzRm6dU+4NYD9g6Jos8IzyXLAd/MP+USNpAdg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy5JyOaGSM6GGseu55sE18TMHnkIwKvF8bjMgj+Ut8ct6EfeBnZ
-	274b0f4BD+NlD+/mv8LeQbdHg4bEJ3Jh2+8xvW54y3KPAmdu1oKv04TggLgHPKo=
-X-Google-Smtp-Source: AGHT+IHxy9OWThf9MgRvmZDpDpf2hJTqNvgcWsu7qq0YeFBzyE3RSWwmvlEXJG8I0L8nUOp3N1UmOA==
-X-Received: by 2002:a05:6a00:1797:b0:71e:7c25:8217 with SMTP id d2e1a72fcca58-71e7c2591demr4729926b3a.25.1729058373527;
-        Tue, 15 Oct 2024 22:59:33 -0700 (PDT)
-Received: from localhost ([122.172.84.231])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-71e77508b1asm2316879b3a.192.2024.10.15.22.59.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Oct 2024 22:59:32 -0700 (PDT)
-Date: Wed, 16 Oct 2024 11:29:30 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Yuan Can <yuancan@huawei.com>
-Cc: jiaxun.yang@flygoat.com, rafael@kernel.org, ralf@linux-mips.org,
-	wuzhangjin@gmail.com, linux-mips@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: loongson2: Unregister platform_driver on failure
-Message-ID: <20241016055930.zhup3ecjrm4k24cn@vireshk-i7>
-References: <20241015131337.20159-1-yuancan@huawei.com>
+	s=arc-20240116; t=1729059657; c=relaxed/simple;
+	bh=QUJFG5JDDq4z9fFBBRCf84NQh3GYWK9emtnmcD3wnF4=;
+	h=Subject:To:Cc:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=lNnh26wfCjKpViLvCsCfHYYmJPd0C1EHqs2vM5Y/jGIeeSbfoxb/kkg85cWA+2ZKhvwaY+4PhEQUWV62KmSREKW5XFjsH/qEpXrXldxhNXilUFu3Fa3FQ0SgNyFTJFwyBUwZhc52wfiy5d/QSIi9N4sSjR6e8Dj3DRTOxUzg9yQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn; spf=pass smtp.mailfrom=loongson.cn; arc=none smtp.client-ip=114.242.206.163
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
+Received: from loongson.cn (unknown [10.20.42.62])
+	by gateway (Coremail) with SMTP id _____8AxvvBDWw9n94sfAA--.46537S3;
+	Wed, 16 Oct 2024 14:20:51 +0800 (CST)
+Received: from [10.20.42.62] (unknown [10.20.42.62])
+	by front1 (Coremail) with SMTP id qMiowMCx3tU+Ww9nNEMsAA--.28349S3;
+	Wed, 16 Oct 2024 14:20:48 +0800 (CST)
+Subject: Re: [PATCH v8 01/11] cpuidle/poll_state: poll via
+ smp_cond_load_relaxed()
+To: Ankur Arora <ankur.a.arora@oracle.com>,
+ Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-pm@vger.kernel.org, kvm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ will@kernel.org, tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+ dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
+ pbonzini@redhat.com, wanpengli@tencent.com, vkuznets@redhat.com,
+ rafael@kernel.org, daniel.lezcano@linaro.org, peterz@infradead.org,
+ arnd@arndb.de, lenb@kernel.org, mark.rutland@arm.com, harisokn@amazon.com,
+ mtosatti@redhat.com, sudeep.holla@arm.com, cl@gentwo.org,
+ misono.tomohiro@fujitsu.com, joao.m.martins@oracle.com,
+ boris.ostrovsky@oracle.com, konrad.wilk@oracle.com
+References: <20240925232425.2763385-1-ankur.a.arora@oracle.com>
+ <20240925232425.2763385-2-ankur.a.arora@oracle.com>
+ <Zw5aPAuVi5sxdN5-@arm.com> <87ttddrr1r.fsf@oracle.com>
+From: maobibo <maobibo@loongson.cn>
+Message-ID: <188455ae-edf1-1eba-572b-6c259ddf8d27@loongson.cn>
+Date: Wed, 16 Oct 2024 14:20:27 +0800
+User-Agent: Mozilla/5.0 (X11; Linux loongarch64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241015131337.20159-1-yuancan@huawei.com>
+In-Reply-To: <87ttddrr1r.fsf@oracle.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:qMiowMCx3tU+Ww9nNEMsAA--.28349S3
+X-CM-SenderInfo: xpdruxter6z05rqj20fqof0/
+X-Coremail-Antispam: 1Uk129KBj93XoWxurW8uw17WF48trW7ZF15KFX_yoWrGryrpF
+	Wjgay3KF4kJryYy392vw1v9rWY93ykt3yagryrG3yIkrs8AFySyF4fJF1a9F4vvr4kXF10
+	vF409anrua4jyFXCm3ZEXasCq-sJn29KB7ZKAUJUUUU_529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUUPab4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
+	xVW8Jr0_Cr1UM2kKe7AKxVWUtVW8ZwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
+	AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
+	tVWrXwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI4
+	8JMxk0xIA0c2IEe2xFo4CEbIxvr21lc7CjxVAaw2AFwI0_GFv_Wryl42xK82IYc2Ij64vI
+	r41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_Jw0_GFylx2IqxVAqx4xG67
+	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIY
+	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Xr0_Ar1lIxAIcVC0I7IYx2IY6xkF7I0E14
+	v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWx
+	JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxUShiSDU
+	UUU
 
-On 15-10-24, 21:13, Yuan Can wrote:
-> When cpufreq_register_driver() returns error, the cpufreq_init() returns
-> without unregister platform_driver, fix by add missing
-> platform_driver_unregister() when cpufreq_register_driver() failed.
+
+
+On 2024/10/16 上午5:32, Ankur Arora wrote:
 > 
-> Fixes: f8ede0f700f5 ("MIPS: Loongson 2F: Add CPU frequency scaling support")
-> Signed-off-by: Yuan Can <yuancan@huawei.com>
-> ---
->  drivers/cpufreq/loongson2_cpufreq.c | 3 +++
->  1 file changed, 3 insertions(+)
+> Catalin Marinas <catalin.marinas@arm.com> writes:
 > 
-> diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
-> index 6a8e97896d38..1291db067559 100644
-> --- a/drivers/cpufreq/loongson2_cpufreq.c
-> +++ b/drivers/cpufreq/loongson2_cpufreq.c
-> @@ -153,6 +153,9 @@ static int __init cpufreq_init(void)
->  		cpu_wait = loongson2_cpu_wait;
->  	}
->  
-> +	if (ret)
-> +		platform_driver_unregister(&platform_driver);
-> +
->  	return ret;
+>> On Wed, Sep 25, 2024 at 04:24:15PM -0700, Ankur Arora wrote:
+>>> diff --git a/drivers/cpuidle/poll_state.c b/drivers/cpuidle/poll_state.c
+>>> index 9b6d90a72601..fc1204426158 100644
+>>> --- a/drivers/cpuidle/poll_state.c
+>>> +++ b/drivers/cpuidle/poll_state.c
+>>> @@ -21,21 +21,20 @@ static int __cpuidle poll_idle(struct cpuidle_device *dev,
+>>>
+>>>   	raw_local_irq_enable();
+>>>   	if (!current_set_polling_and_test()) {
+>>> -		unsigned int loop_count = 0;
+>>>   		u64 limit;
+>>>
+>>>   		limit = cpuidle_poll_time(drv, dev);
+>>>
+>>>   		while (!need_resched()) {
+>>> -			cpu_relax();
+>>> -			if (loop_count++ < POLL_IDLE_RELAX_COUNT)
+>>> -				continue;
+>>> -
+>>> -			loop_count = 0;
+>>> +			unsigned int loop_count = 0;
+>>>   			if (local_clock_noinstr() - time_start > limit) {
+>>>   				dev->poll_time_limit = true;
+>>>   				break;
+>>>   			}
+>>> +
+>>> +			smp_cond_load_relaxed(&current_thread_info()->flags,
+>>> +					      VAL & _TIF_NEED_RESCHED ||
+>>> +					      loop_count++ >= POLL_IDLE_RELAX_COUNT);
+>>
+>> The above is not guaranteed to make progress if _TIF_NEED_RESCHED is
+>> never set. With the event stream enabled on arm64, the WFE will
+>> eventually be woken up, loop_count incremented and the condition would
+>> become true.
+> 
+> That makes sense.
+> 
+>> However, the smp_cond_load_relaxed() semantics require that
+>> a different agent updates the variable being waited on, not the waiting
+>> CPU updating it itself.
+> 
+> Right. And, that seems to work well with the semantics of WFE. And,
+> the event stream (if enabled) has a side effect that allows the exit
+> from the loop.
+> 
+>> Also note that the event stream can be disabled
+>> on arm64 on the kernel command line.
+> 
+> Yes, that's a good point. In patch-11 I tried to address that aspect
+> by only allowing haltpoll to be force loaded.
+> 
+> But, I guess your point is that its not just haltpoll that has a problem,
+> but also regular polling -- and maybe the right thing to do would be to
+> disable polling if the event stream is disabled.
+> 
+>> Does the code above break any other architecture?
+> 
+> Me (and others) have so far tested x86, ARM64 (with/without the
+> event stream), and I believe riscv. I haven't seen any obvious
+> breakage. But, that's probably because most of the time somebody would
+> be set TIF_NEED_RESCHED.
+> 
+>> I'd say if you want
+>> something like this, better introduce a new smp_cond_load_timeout()
+>> API. The above looks like a hack that may only work on arm64 when the
+>> event stream is enabled.
+> 
+> I had a preliminary version of smp_cond_load_relaxed_timeout() here:
+>   https://lore.kernel.org/lkml/87edae3a1x.fsf@oracle.com/
+> 
+> Even with an smp_cond_load_timeout(), we would need to fallback to
+> something like the above for uarchs without WFxT.
+> 
+>> A generic option is udelay() (on arm64 it would use WFE/WFET by
+>> default). Not sure how important it is for poll_idle() but the downside
+>> of udelay() that it won't be able to also poll need_resched() while
+>> waiting for the timeout. If this matters, you could instead make smaller
+>> udelay() calls. Yet another problem, I don't know how energy efficient
+>> udelay() is on x86 vs cpu_relax().
+>>
+>> So maybe an smp_cond_load_timeout() would be better, implemented with
+>> cpu_relax() generically and the arm64 would use LDXR, WFE and rely on
+>> the event stream (or fall back to cpu_relax() if the event stream is
+>> disabled).
+> 
+> Yeah, something like that might work.
+Yeah, I like idea about smp_cond_load_timeout method. If generic 
+smp_cond_load_timeout method does not meet the requirement, the 
+architecture can define itself one. And this keeps less modification 
+about original code logic.
 
-diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
-index 6a8e97896d38..6f8f647efded 100644
---- a/drivers/cpufreq/loongson2_cpufreq.c
-+++ b/drivers/cpufreq/loongson2_cpufreq.c
-@@ -147,8 +147,9 @@ static int __init cpufreq_init(void)
-                                  CPUFREQ_TRANSITION_NOTIFIER);
- 
-        ret = cpufreq_register_driver(&loongson2_cpufreq_driver);
--
--       if (!ret && !nowait) {
-+       if (ret) {
-+               platform_driver_unregister(&platform_driver);
-+       } else if (!nowait) {
-                saved_cpu_wait = cpu_wait;
-                cpu_wait = loongson2_cpu_wait;
-        }
+Regards
+Bibo Mao
+> 
+> --
+> ankur
+> 
 
-Maybe a bit like this instead ?
-
--- 
-viresh
