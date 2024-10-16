@@ -1,33 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BD971D2B2F;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 532D01D2F42;
 	Wed, 16 Oct 2024 21:41:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729114919; cv=none; b=TcD3Pe+Mmx404JpX6gL8848w6M95GA3mlk0GeGmML9r8SE1tDzgg36QGT0F0ovSQw4sxHvXeWdpuRH/Q/UAmHqDhWOZisGL8FpEtLOa7GumLYWoF4RzEP9+UUvRnKsSrwiIPNeEyTb11n7rlRyJoFenJaGeFnWnhElaGq033Mx0=
+	t=1729114919; cv=none; b=lVfO1DeAooyboy98HqM2DxYW1wACgAS3CXVUkg4ifSzHt1IBIymxVGBL0zGPpO+CW2t3oWHmMEwPuQuOHWsAZZnt+uBaUYAvr+EiS7tVxSs8Gf3wlIDIPB/3zAFOE1NFrXZcpzxEQ1bmh/gQGBIxDkCDxOGoRfkN1Ry8pINWGTg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1729114919; c=relaxed/simple;
-	bh=S3EfK2JVGZ3joMiaZUylXW+vGex1gp8GJngUZrzgF2k=;
+	bh=4iRkuo/ixekJiaZID2LT6tM7WIVS0D7PrdnJUM1P39k=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=YVd+npUtg7Yh5JTpEd+B+jCiRkk3DSuH0ygYZ8bqHsyGVlM/YI4Xtk7b4uJ6myuFv4AfF+l8xurRJXkR2ZgsOPn/QXGELHi+wiGMCgj3tOVdjNFjHSy9f7sYJ8hHlZdvn7hXBvQnH2VK4mr+hiju3dHlvwfc5xsJBaYYNTCU5b8=
+	 MIME-Version:Content-Type; b=PR6RM1s7lLsfM3SjAsDPZ9GMhpRwC+pPhCydJvljQFkJor/Ycj+NIc482i417G6RFPPlFHqUzI0t+44djXa1SxTjSAMBLNFIsQ9mCLcKWM+zOV+F8hUcf8zsbl3TqLhWeDnPprLOXOxH9MaflHyy2+2WKoJmFDGZNQhjH48csL0=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA4ACC4CECD;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC340C4CED0;
 	Wed, 16 Oct 2024 21:41:58 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 46BE01060453; Wed, 16 Oct 2024 23:41:56 +0200 (CEST)
+	id 5160C106045F; Wed, 16 Oct 2024 23:41:56 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: andi.shyti@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
- conor+dt@kernel.org, lee@kernel.org, sre@kernel.org, 
- tsbogend@alpha.franken.de, markus.stockhausen@gmx.de, 
- Chris Packham <chris.packham@alliedtelesis.co.nz>
-Cc: linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-mips@vger.kernel.org
-In-Reply-To: <20241015225948.3971924-1-chris.packham@alliedtelesis.co.nz>
-References: <20241015225948.3971924-1-chris.packham@alliedtelesis.co.nz>
-Subject: Re: (subset) [PATCH v6 0/6] RTL9300 support for reboot and i2c
-Message-Id: <172911491628.630785.7202407720248115906.b4-ty@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Caleb Connolly <caleb.connolly@linaro.org>, 
+ "Rob Herring (Arm)" <robh@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20240926213727.3064977-1-robh@kernel.org>
+References: <20240926213727.3064977-1-robh@kernel.org>
+Subject: Re: [PATCH v2] dt-bindings: power/supply: qcom,pmi8998-charger:
+ Drop incorrect "#interrupt-cells" from example
+Message-Id: <172911491632.630785.3556397523712919564.b4-ty@collabora.com>
 Date: Wed, 16 Oct 2024 23:41:56 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -40,24 +41,18 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Wed, 16 Oct 2024 11:59:42 +1300, Chris Packham wrote:
-> As requested I've combined my two series into a single one to provide some
-> better context for reviewers. I'm not sure which trees the patches should go in
-> via. The first two are reasonably independent and could go in via linux-pm. I
-> guess technically the last one could go via linux-i2c but it needs the and the
-> bindings/dts updates which would probably make sense to come via linux-mips.
+On Thu, 26 Sep 2024 16:37:26 -0500, Rob Herring (Arm) wrote:
+> Enabling dtc interrupt_provider check reveals the example is missing
+> the "interrupt-controller" property as it is a dependency of
+> "#interrupt-cells". However, the PMIC parent node is not an interrupt
+> controller at all, so the "#interrupt-cells" is erroneous.
 > 
-> --
-> 2.46.1
 > 
-> [...]
 
 Applied, thanks!
 
-[1/6] dt-bindings: reset: syscon-reboot: Add reg property
-      commit: e7af7d13316dc5e2293c4f777f71bd8331f5d7a5
-[2/6] power: reset: syscon-reboot: Accept reg property
-      commit: ce38cdc908557953604ffb0a91ef5ae3fbdf1c6b
+[1/1] dt-bindings: power/supply: qcom,pmi8998-charger: Drop incorrect "#interrupt-cells" from example
+      commit: 5d121065a6993e5ab4ccc0c9629241f256d11ad0
 
 Best regards,
 -- 
