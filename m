@@ -1,155 +1,115 @@
-Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2058.outbound.protection.outlook.com [40.107.94.58])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8F8E1DFDB6;
-	Thu, 17 Oct 2024 17:35:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.94.58
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729186555; cv=fail; b=cjTCdCnsfcIfbDFfoMOY4uh3xMYPJ1W9aYJJWHQ9ioAoUMqj8lffk/6C1V8Zfpswx4yslMCTWinIRUhp+a5Hyt4bywTJ0bTDm7HP08Bb9HKNSEwTzZKI/vsk8xG7oywdxohd90c+b+aZqeDde2kcik41Kg+2c5thLqCmH/PEKNs=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729186555; c=relaxed/simple;
-	bh=6dmwMjP3pUWtFfca+ItxrO1yRmYwfhBRCUezDNCk/8k=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Q5eaf9S1RV8OljmYp9xjQwGsldlaodUtEUUZMRBYZQOs0kMh1xCnfibvmVenSdZeceUS3tZw/P1IMpvj6QOPIkwPF5eM5XyTv44Nv3JsfWtOrO49kTub8FP3m6GdtoWdbR2Yv8RIP9Uv72IKISURA3uOlssxhLVvvB/j/uUQLkU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=hGvr+XSU; arc=fail smtp.client-ip=40.107.94.58
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FA281DFD88
+	for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2024 17:52:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.48
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1729187568; cv=none; b=phh7GeGBWdOrnVpZdRZU1Do8J+dRGngcDWp2tHyXclgNCB2KN4M2Ih5ygl1hv1nhUWNKESvD9p/T85aKdkpP7ckgPdcwVwokYixQjuNAd/HMiLYqN+BpFVIov5TCGGFn/P3Z3p/PX0iqbY4HPf1+WP3t0hpLe5gOO28aCdokg/0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1729187568; c=relaxed/simple;
+	bh=/oO6HM+YNUi2rf9nwpMtXblEKKUSVCep9x2wkci+y+g=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=YVvI0Hgemdgfaorz6eg9Z8qJTd62OHzM1cWQh8y4eXZGyRzE56OdsnzCYoTvXIR5/NhK5guxpmQRz7AJOOPZ5n8KDV+HWFRhxQ3kR3ZIQ2BoYKHPfEnoN2gvYAKqJuNNVm5a0kGdfryH89SslFxFJB3nGQkpW190MoQL0XTWPDI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=J6v0DsHr; arc=none smtp.client-ip=209.85.167.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="hGvr+XSU"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=DTW5mdF8/FZoxBDX2G1mnDSiwlYvI9R+4vVFsZPX8gDZBZmlEGumsMIs1EAQ3jv99xvhrsEpTnltVfH1soE4+vA2Z5rkJoytuoK4HJorKAkLyJir7BPBf2z4nqoRCmLYp9E+dpLm+NmcBdZuclwf+9PHL3Yd9XsZcC75uRkKzkiN+jZiy50MSm74gYmvcTVpFuE0qoSY6QXtQuCgD47uUInMBKITgdw6iuElmQBzEKJBeRJKLzIxZblPvd8LFE/Aop7qkH8xe2MeNL9KDf3ugDfmm7D6ksT0EWY60hxIumeKeTy0zY675F89DhSTCDNDfnGmxJD9dvAxYhdHnEqfQQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=prDXHtG1GRM//yMKoTKbM1uWCwELswxYBc2SGb0r6vc=;
- b=b3izBRRapPhC11RPKN3zt/l+3WlsKJ0AxuRaXFLAVax7/1DF/dH02Pydq/hrZjmCps13yvQrTUv5nX3jHLwR4BQaJNOStkpr1tW0pMDRueKL6PEAc0HLwIse7vgovLsPKPR2xM7x+hwiGwK8Nn1AenfMNK9h7zZ20JV9r0L8m8nlQS6xZNT+WkGP1SEPILM02O0qsF+QdenvQSJ78FWC+cJSLXMf3lGXR9JbLzo4KfV+wNzOCa/L5TBaDh/PTWcxa2eCkHM41qUVOHdZgfp8je47NkWPpy7R9pk6w4ZKF4lOgRCSUGyTe9YlvKH30ajMlnA3hBzbsHWnTpWqOzNkZw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=prDXHtG1GRM//yMKoTKbM1uWCwELswxYBc2SGb0r6vc=;
- b=hGvr+XSUOdYhKHFaABxMayk4v1SGUg3ZiVo5w2ka/GiPsrUzbzhCAvFMtYrX080YiLaHDQdfPVIIdyJbf3QDqSx+UEWCto7Yz8Yk1PjpzgzxEyBrSdPJ1ugy14KpCeT4udELS1qfco6PQWeKXNMruUrwrN9loIUGLn2q3uUAd/w=
-Received: from BL1PR13CA0237.namprd13.prod.outlook.com (2603:10b6:208:2bf::32)
- by SJ0PR12MB8168.namprd12.prod.outlook.com (2603:10b6:a03:4e7::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8069.18; Thu, 17 Oct
- 2024 17:35:46 +0000
-Received: from MN1PEPF0000ECD6.namprd02.prod.outlook.com
- (2603:10b6:208:2bf:cafe::e3) by BL1PR13CA0237.outlook.office365.com
- (2603:10b6:208:2bf::32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.7 via Frontend
- Transport; Thu, 17 Oct 2024 17:35:45 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- MN1PEPF0000ECD6.mail.protection.outlook.com (10.167.242.135) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.8069.17 via Frontend Transport; Thu, 17 Oct 2024 17:35:45 +0000
-Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Thu, 17 Oct
- 2024 12:35:44 -0500
-From: Mario Limonciello <mario.limonciello@amd.com>
-To: "Gautham R . Shenoy" <gautham.shenoy@amd.com>
-CC: Perry Yuan <perry.yuan@amd.com>, <linux-kernel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH] cpufreq/amd-pstate-ut: Add fix for min freq unit test
-Date: Thu, 17 Oct 2024 12:34:39 -0500
-Message-ID: <20241017173439.4924-1-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="J6v0DsHr"
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-53a0c160b94so1727680e87.2
+        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2024 10:52:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1729187564; x=1729792364; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Cz/QpxYZj1EV+IH7qrZVL4MflpOswpvln2kSGkCR4mI=;
+        b=J6v0DsHr4ofA/yW9iSuBhLrvHBn0rYhNS3lJn+MbdWglMjLr5bDLYL/o+qc64/00Vt
+         kEKMpTQoapRKf7XBY3SFE/5+dfCu9/PBBidG+uoCvX3S36aoyDk1V9IfhQURwsurs3x6
+         tpwBIehbAHgpaw/CWVzvFzHeVqEpk2mE9j/axc2z2bql2QsEHFjSF6zEjD51nuO0VGy9
+         6zaaDDZ2+ojpdO88Kxh9tlEY0ZFVLCDlF0B0ymVcWE8Hob6QfpgSO3djTkjwR6jgA4KH
+         pvV+jPArlKJA+nd8bkrHnWFcIUiPOnojD0pZrSYTqPyJKe4ER5fP94W782gmCYXdBke/
+         niRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1729187564; x=1729792364;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Cz/QpxYZj1EV+IH7qrZVL4MflpOswpvln2kSGkCR4mI=;
+        b=K3rEb6C52lVvgqw0GpJDmIgJiCXuyGl/uYaOmEOxasqR88wv0aq9kutt7H8Kl0d7il
+         H6+hgXuLlIRSEON+YZzYWrBQyEHHve1wUOsjAKtXwHJsSR6+1Bggt7IQhYLLRqtL8VUV
+         extw3qSOIWHrICHTEhOQ2Zs0WM80TOrnyYqM9BppCFvF1Dihu7Qg+wJ48lsJ3XDFG8Ke
+         v1IAqntYzEigN3g2G0XHhvFPb6o2NP6AbiAMRxjzeNzFe+kmV2OmoC7LJ4VXv8nYzw8E
+         5SQfjpLpi2M7OtL/slolU5i/hmbn77ZYKFwUtya4d+A/TyxWgR1VlnWas2HOZ/h2Bj6V
+         iHtQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUuC0bW7PtZe0zGbqG2daQNS4oVZNWp2pHddt/lMrhPBjT4H3jg8+KfbOUC9k53Kbh14UJ5bL5t/g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyJsCw4R7AX7kLEijeDFrektC1l21HiXudspN2NoNkfCE5zyFYd
+	CJk/iK8lZ4Hs9olL2ZPuU08V0NvTjoKISPgns5twT5vzBE2tg4KX75KkaoXdrQM=
+X-Google-Smtp-Source: AGHT+IGsqEz513rkATayAG7MXqLRzzVh91w7A8v7f9i1ZQerLp45lBfsd/kbzup9aghNzXXf3qMQmw==
+X-Received: by 2002:ac2:4c46:0:b0:536:796b:4d94 with SMTP id 2adb3069b0e04-539e57316a5mr11685093e87.41.1729187564250;
+        Thu, 17 Oct 2024 10:52:44 -0700 (PDT)
+Received: from [127.0.1.1] (2001-14ba-a0c3-3a00-70b-e6fc-b322-6a1b.rev.dnainternet.fi. [2001:14ba:a0c3:3a00:70b:e6fc:b322:6a1b])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-53a00013f8bsm829557e87.286.2024.10.17.10.52.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 17 Oct 2024 10:52:43 -0700 (PDT)
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Thu, 17 Oct 2024 20:52:35 +0300
+Subject: [PATCH 1/2] dt-bindings: power: rpmpd: Add SAR2130P compatible
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN1PEPF0000ECD6:EE_|SJ0PR12MB8168:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4f3b74cc-cb93-4687-7817-08dceed221b1
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|36860700013|376014|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?0bTJsoxgYNv2Xxr/rNxutXJnto5oakhqhJ8U7X4d3rP7G69unpyofHMX/RmQ?=
- =?us-ascii?Q?H6ljmyyRDuPnRhzYIfuandWxd5KIaRFNBXADbt+9n5LZvNesWgVGVAS/b1gD?=
- =?us-ascii?Q?pObo829wsi7a8cP5V5nLpkSfXhD0TN/GQxpGnd+NFnAT+z0K9JgmkLV2MAAA?=
- =?us-ascii?Q?5ms9pZ4zNXw6KyifAQRTVoE1OL2SsrI3d1Q54VcUNReWO1Z8LJrXWp6xcVfw?=
- =?us-ascii?Q?EM0AhR2kVff0JQlr5Kwy0mpZgpNSAVr0rQ478HKsn4omO1shwf/fNASDyuGH?=
- =?us-ascii?Q?CFJ7J61XNgZxEafYkHHgoT2oA2ZNiNNr9x+d/Ide8cwXXh+yZS66H4+HZQMX?=
- =?us-ascii?Q?BXMkUzDe55r3TZ2z4GLyNi/d+HnMK3P0mCp1QvQ8W5AJ/laoZKouC90D30tx?=
- =?us-ascii?Q?SKrpPl3AhcSgd3RL+0v/voBeJaI1us0eXZhOpngBloQY8xcD646OXbWkFh5H?=
- =?us-ascii?Q?dewrKWOjDnV25GAR1zw4q2OE+kOQr1VnvAOgM6armsEsyGXIPDfuUrqXajH5?=
- =?us-ascii?Q?5GA5va186V0Bkx4Kp1/wxS6XA40FpGtkgn+qZQhae2QNgE9lsxKwwejaNEEo?=
- =?us-ascii?Q?pl+/pWqYnCCFUrxY7fMkVfbnuHMvcNv5ZJYHhpsMziYBFQCnQ7wCh+fh1sDm?=
- =?us-ascii?Q?yAbNiJ6ybhd65ykSmOpnvuQHgd0zjLTeyX9onikg3qAPO4FCeb3ZJvkPOiKV?=
- =?us-ascii?Q?acNwUyVg7yQEGZCfGd6zTdVuRXg2Z7wgcLzckAJdWCjhrBVVLwaSVbUV19W7?=
- =?us-ascii?Q?qQtYVuI3GvcnYjPifeTMvU5tkIZ8NJLvqKJzor6+aFUy4fEgSHYNX8Dhfeey?=
- =?us-ascii?Q?wh4DA+ziK9rvUoH/TUBMvhDi+sqA36NTaxw+cY5PWf1e6Dd++aFcoN3WCkEF?=
- =?us-ascii?Q?BTma1Tcj5yzOHBdajOEVMT+m75G0V8lcAxyReLVQwZRTWMAkfIHErOkgvmUL?=
- =?us-ascii?Q?OLQwtouAUa3s2Zr+DXJNUGdbYBWsM+p1M6r6jbNWGLzs0fgVK5/U56j3qXPq?=
- =?us-ascii?Q?SWFvoGB88PWn+ALnUs42cp4qReppe5ayWH9/2muepJZzq68gHiNjpI5qgSTk?=
- =?us-ascii?Q?zJ0kHyKpjdUE8aXghmCCo7eDe/YQoOwe0SRrU3Z9TwAxfTRh/ncuK/WoJTj9?=
- =?us-ascii?Q?+acDs4UOAewgJQBuvn6fmae3z1bm4MYtv0Ov32p44behDO900HJAzc1drpKL?=
- =?us-ascii?Q?GavO7wDZc/+fFGc7mwHbB5nOM1Dy5qEQFqf9HWeS+3ABoiIoC9eQaRnOZtQ6?=
- =?us-ascii?Q?qt4miUt9+GFic4kRVSpiY+twu7WzMdXNY5TWVI3vsRb9ZdVILC17InnG2Yl0?=
- =?us-ascii?Q?llXNlK3JMV9CYw6htDpMb6X/OOp2B12BDT6cyftcxSnBFdCGD8GoLK2BZ3X6?=
- =?us-ascii?Q?OlBPC6GjtY0yavePX8K1aq4FLcmP6Ek7fkTdHDGR7YOJPHDfqQ=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700013)(376014)(1800799024);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Oct 2024 17:35:45.4808
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4f3b74cc-cb93-4687-7817-08dceed221b1
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	MN1PEPF0000ECD6.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB8168
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20241017-sar2130p-rpmhpd-v1-1-f4bf7f6fd12e@linaro.org>
+References: <20241017-sar2130p-rpmhpd-v1-0-f4bf7f6fd12e@linaro.org>
+In-Reply-To: <20241017-sar2130p-rpmhpd-v1-0-f4bf7f6fd12e@linaro.org>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+ Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=879;
+ i=dmitry.baryshkov@linaro.org; h=from:subject:message-id;
+ bh=/oO6HM+YNUi2rf9nwpMtXblEKKUSVCep9x2wkci+y+g=;
+ b=owEBbQKS/ZANAwAKARTbcu2+gGW4AcsmYgBnEU7nGZjSjxM5orVyOR6bUoAFxYVZ3sJyWFSAI
+ nC3GB5d3oSJAjMEAAEKAB0WIQRdB85SOKWMgfgVe+4U23LtvoBluAUCZxFO5wAKCRAU23LtvoBl
+ uC72D/9xA7gaR833fW3oK+vY5m3DZm7POuWcucgyKPkKTkA/ck+zPi1WlBoaLGS48J8uJbPGjFZ
+ t46z7e/6wK9iiJpl2/1sY1myOy47At0XsCwx4A735OsJTgFf9k5qDCGFrdT2NexXtjbbBPRIzI9
+ bPkPdDaF470RfiIhC8UiVIXneCEu3Iu8rB2uMV9WROC6u+UN217fgFwQY9tSZYvYxHz6uKts/yR
+ Z0Kq8eVnDcc8BgVcPRCksrfFIfnMmWFcVdM4gZvPsaX4YIj9X4JnnVeVbCLABXVcqiwcMXcaTXN
+ me69g1rVERpuwgUfauKH0u4YqgpIima/AjhbuwGTwXZ7kzlYsCMap61GXAY2qQFNW44ad1HOwTL
+ Xs/tJ9myjoqGz0Wm+fqJXgFL8Kg6U5fjPNi1+8VIcSyACmrD9GmGzE+V6c2+Kq5iVDZGEe1ofBH
+ aHOz77iEy5AaQZKxwpPDRFKFRC3p2iOamc/av3vYy5FrLj5auS9MkGkIJ7F7U7NXsKTm7XqOmJP
+ y4Z0sOoYJKcoLunfc+xATKjeDnglAQcSdqhkpq0nMTPCfcyqmxe7oSTIT+BYsaHgcZyejZUFa7f
+ ieT/+QYO3O0Ah5+noeQ9hS2yn9tTYhksed9dhLd6HokT0FnlRsuZoQru1ib/2l2agqvLXoF+egu
+ vvjdTjhy17JcyEg==
+X-Developer-Key: i=dmitry.baryshkov@linaro.org; a=openpgp;
+ fpr=8F88381DD5C873E4AE487DA5199BF1243632046A
 
-commit 642aff3964b0f ("cpufreq/amd-pstate: Set the initial min_freq to
-lowest_nonlinear_freq") changed the iniital minimum frequency to lowest
-nonlinear frequency, but the unit tests weren't updated and now fail.
+Document compatible for RPMh power domain controller on SAR2130P platform.
 
-Update them to match this same change.
-
-Fixes: 642aff3964b0f ("cpufreq/amd-pstate: Set the initial min_freq to lowest_nonlinear_freq")
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- drivers/cpufreq/amd-pstate-ut.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
-index f66701514d906..a261d7300951e 100644
---- a/drivers/cpufreq/amd-pstate-ut.c
-+++ b/drivers/cpufreq/amd-pstate-ut.c
-@@ -227,10 +227,10 @@ static void amd_pstate_ut_check_freq(u32 index)
- 			goto skip_test;
- 		}
- 
--		if (cpudata->min_freq != policy->min) {
-+		if (cpudata->lowest_nonlinear_freq != policy->min) {
- 			amd_pstate_ut_cases[index].result = AMD_PSTATE_UT_RESULT_FAIL;
--			pr_err("%s cpu%d cpudata_min_freq=%d policy_min=%d, they should be equal!\n",
--				__func__, cpu, cpudata->min_freq, policy->min);
-+			pr_err("%s cpu%d cpudata_lowest_nonlinear_freq=%d policy_min=%d, they should be equal!\n",
-+				__func__, cpu, cpudata->lowest_nonlinear_freq, policy->min);
- 			goto skip_test;
- 		}
- 
+diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+index 17ad46e5552947f08b1be8691e225ed9ddaa736b..31c2ac93f80475a6be6e985a23cebf44fe2ec520 100644
+--- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
++++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+@@ -39,6 +39,7 @@ properties:
+           - qcom,sa8155p-rpmhpd
+           - qcom,sa8540p-rpmhpd
+           - qcom,sa8775p-rpmhpd
++          - qcom,sar2130p-rpmhpd
+           - qcom,sc7180-rpmhpd
+           - qcom,sc7280-rpmhpd
+           - qcom,sc8180x-rpmhpd
+
 -- 
-2.43.0
+2.39.5
 
