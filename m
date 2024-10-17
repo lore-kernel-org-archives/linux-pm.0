@@ -1,149 +1,175 @@
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FBA410F2;
-	Thu, 17 Oct 2024 14:39:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 664BA1DE4D8;
+	Thu, 17 Oct 2024 14:42:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729175953; cv=none; b=ujGaueW01mFF7krj0AvMZz6vTeZ+v2SrGy/uHDc2Gk4XoSzGimZEROVrvNdPm/1iThdB+PGNsE3Sjf5h1B4ONvSNxQTy6KTAOKxmyYiMFynLofJrHF4XH38LrZHROWJvAMgXaYvXFejs3Imc7C28LaTYfKk4xuR42rU9RF+4N/Y=
+	t=1729176151; cv=none; b=rPisvIbX7kXwbi8H/uw7ywZnThb8yW7r0amqW2StgwUiwi9RifMdH1mYBqAFE8jLmHf73UGno48zOPatGRMctOB/f0PuYly4WArKNrdymkxVloCVd9dDQ38x+tljv4GOlLpttVHHXFubhqo1rUsGbNz1N82jVeILWcRU8eKjPT8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729175953; c=relaxed/simple;
-	bh=RSdMFumWyD7Mx4sKNxKfjNlsDJaTB6uemxsTmcKyHuo=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version; b=hlpZP5XB7GSFq7to4x/E6s8BtXZYyC0xI5kKxtGWGjZymLQjxyTUPjszPA2tbDAYw0ODstaxkfEU62P45h+kSTo7z6F6ZkK8c21sOCeLienJS8ZURt8tohd/gtOyV7jRwsyHnFyvEuPEBl6C9ms9m/A/gK2mcNJoJ7rPk0iAAIA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=O/otaqd5; arc=none smtp.client-ip=209.85.221.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1729176151; c=relaxed/simple;
+	bh=SwfuPA0ILo0Hz3cUZJFbeIjOtFdCx0+ql50qnpHMfKM=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=sG1hPxnpsvSfz2+PX7O2QAOngfp/l27BeZcflHIyPtzXGNvyulLIgZS/ceBd1SGTXhxrq/eyGr7YpnamKnT88h8UHlg3YUG0IKvWrRTXMlHVCotuxae1TnG7vkX4pTe46D12FzjuaCG69ERbneCj5k1wZbi5Skk7+W/YRBnAsvI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NwUQVmy5; arc=none smtp.client-ip=192.198.163.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O/otaqd5"
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-37d4b0943c7so747985f8f.1;
-        Thu, 17 Oct 2024 07:39:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1729175947; x=1729780747; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=NRHQQGm7cGssgdoLEtNCNKA/IiRlPKI/cHGPt5rH+50=;
-        b=O/otaqd54QBlBX+Op+mhyy76V1F5w0K1G9/Ie+1LuK/n03BTM/mk1ZDFsaCgQM4j3q
-         NhX0BNGFqPHMzsTYS6CfSk9EFmO9Vknnv64Ps+rlf8ArHKuwi0/G7bA7LVsjyjBSQWlq
-         mLdxp8rXjmAj/6OPEpCIqMJ1anPxb1XSsuGO7a9HOoOXX4u3epiCbynd+6gVxGYlRjoA
-         ofpsP3M1/BWZG4k1xPQ/jEaNyAwHRJ7c8RgcPEj8Dm56V5x5Qd8Jens2tpIKohrwr5UF
-         p11EKOXL6IOPeeOEHeXANXLAD2faj+X1qYBttQXtuWjUu60cvQd6Nxuygjr6lJs1TRLY
-         DdiA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729175947; x=1729780747;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=NRHQQGm7cGssgdoLEtNCNKA/IiRlPKI/cHGPt5rH+50=;
-        b=epG9GhFwzfqZxSy5i2wfsd9lmAk/XFDztWh46U963cDheqiVQrY6JEzmASNHTIw++E
-         oi6Qdy795R9/699qOcuNhG4ow7T8KFjafRU6T1xkMnmTNm1PmpPJmAJ+5qoW8R3Y99UF
-         Cjgs4rzVNm6f6Gc4Pjrt2tVQFydzsnpUzXb4FIv82ncwHqu7nHoPQbL7fw+Bhey5pK2S
-         kgXtHXuOhHcGvAXOdx/iBBMEYmPjz3BcfKgWOAy5VS5HQ3FYZME+oxAyNIL16QU87f/8
-         pp6kTPtD9V0KPaqu2ItMWvf1si146lbmNlzMQL+HUi8WC+VnedVKu1F7oU4aos5AgYou
-         +9gQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUHiWQ/AqpdV/k4s8XbBfXgXjkgXDLQ4oJSqH3HvL+esd60HMU1rvUitMw0GwDwctw0Ouh4fQSmbK23@vger.kernel.org, AJvYcCW0UKUa895ZfTWqbYdJ9QgJEqVgCJZ0vPfbUgCmPJ4g44B7RrOTVvVMGreHDR2MHVkH+bcL2dnrwzWt5zpP@vger.kernel.org, AJvYcCWGqngQRDaPB3nSiwFm+M0u8s8RgKn6+5mtc/vYr4IamPNAF+rqQpL+l1j4Gp/eJi4TcPanUi82XKE=@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx0Wg13bz25bEHDQh0jOwxlW1lUdqwvWOcacTMcQTBNcVekpFuU
-	ud0/DsMEkbEAvjGuxFz/bulg58isOGEttlI0sHOW3nNJpWSMe6Fh
-X-Google-Smtp-Source: AGHT+IHurhqL3M/WK0hFCGWAVhEuLelLlozmUE30CPXOnitE4Wu9IcCt+oBAvpCfr+HSmToSGIUGRQ==
-X-Received: by 2002:a5d:5985:0:b0:37d:511b:aecc with SMTP id ffacd0b85a97d-37d86d6fec8mr6196339f8f.54.1729175946450;
-        Thu, 17 Oct 2024 07:39:06 -0700 (PDT)
-Received: from localhost.localdomain (93-34-90-105.ip49.fastwebnet.it. [93.34.90.105])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-37d7fa7a12fsm7442784f8f.6.2024.10.17.07.39.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Oct 2024 07:39:06 -0700 (PDT)
-From: Christian Marangi <ansuelsmth@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Christian Marangi <ansuelsmth@gmail.com>,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Lorenzo Bianconi <lorenzo@kernel.org>,
-	upstream@airoha.com
-Subject: [PATCH v2 1/2] dt-bindings: thermal: Add support for Airoha EN7581 thermal sensor
-Date: Thu, 17 Oct 2024 16:37:56 +0200
-Message-ID: <20241017143830.1656-1-ansuelsmth@gmail.com>
-X-Mailer: git-send-email 2.45.2
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NwUQVmy5"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1729176149; x=1760712149;
+  h=date:from:to:cc:subject:message-id;
+  bh=SwfuPA0ILo0Hz3cUZJFbeIjOtFdCx0+ql50qnpHMfKM=;
+  b=NwUQVmy5JCrVKueyBgS/z5HS/npxurFqn5JorrvQd/moOUE6JrfFfSxY
+   1Q6vwEZkmWW52tBmd2eoH6oYoPTsPv2rEXwVvXhsObrVy7mGs5uRSXaGR
+   2b0hdcwab7QyCQWXl/czu7AXIUw1eohhVcjzuSJwgQtXt5mDOPWyGyArF
+   3c8127ybRVP9P0aFxo3jguJVAqN0hCpVGarLzpUDSP/7a1D23dzspZcWE
+   qDcq2sC8N7aSM6G13pVX6H4182YxSnCDWR4Mw89r6Io9y4U9c6J5ng7G6
+   vXaus7G6JHghKYjaGfXuzJmUkksAbwvyFr+etWtpqPpEdOVsxcCOgEweo
+   A==;
+X-CSE-ConnectionGUID: LpqBAysRQXC6QtYEX4sAsA==
+X-CSE-MsgGUID: dLWmkFlkTQS8BjnZ8gv8SQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11228"; a="28546918"
+X-IronPort-AV: E=Sophos;i="6.11,211,1725346800"; 
+   d="scan'208";a="28546918"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Oct 2024 07:42:28 -0700
+X-CSE-ConnectionGUID: EU2mjRS9RO6EtjO1p7LKVw==
+X-CSE-MsgGUID: 7mWo6CAdSfesIGTEIcScFQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.11,211,1725346800"; 
+   d="scan'208";a="82522605"
+Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
+  by fmviesa003.fm.intel.com with ESMTP; 17 Oct 2024 07:42:27 -0700
+Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1t1Rhp-000MTX-1D;
+	Thu, 17 Oct 2024 14:42:25 +0000
+Date: Thu, 17 Oct 2024 22:41:51 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, devel@acpica.org,
+ linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ ad6ccd402c4040dee31dbfacd05f662adcaaec68
+Message-ID: <202410172242.sTHn2J0y-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-Add support for Airoha EN7581 thermal sensor and monitor. This is a
-simple sensor for the CPU or SoC Package that provide thermal sensor and
-trip point for hot low and critical condition to fire interrupt and
-react on the abnormal state.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: ad6ccd402c4040dee31dbfacd05f662adcaaec68  Merge branch 'thermal-core-experimental' into bleeding-edge
 
-Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
----
-Changes v2:
-- Add Reviewed-by tag
+elapsed time: 1080m
 
- .../thermal/airoha,en7581-thermal.yaml        | 48 +++++++++++++++++++
- 1 file changed, 48 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/airoha,en7581-thermal.yaml
+configs tested: 97
+configs skipped: 4
 
-diff --git a/Documentation/devicetree/bindings/thermal/airoha,en7581-thermal.yaml b/Documentation/devicetree/bindings/thermal/airoha,en7581-thermal.yaml
-new file mode 100644
-index 000000000000..ca0242ef0378
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/airoha,en7581-thermal.yaml
-@@ -0,0 +1,48 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/airoha,en7581-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Airoha EN7581 Thermal Sensor and Monitor
-+
-+maintainers:
-+  - Christian Marangi <ansuelsmth@gmail.com>
-+
-+properties:
-+  compatible:
-+    const: airoha,en7581-thermal
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  airoha,chip-scu:
-+    description: phandle to the chip SCU syscon
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+
-+  '#thermal-sensor-cells':
-+    const: 0
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - airoha,chip-scu
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+
-+    thermal-sensor@1efbd800 {
-+        compatible = "airoha,en7581-thermal";
-+        reg = <0x1efbd000 0xd5c>;
-+        interrupts = <GIC_SPI 23 IRQ_TYPE_LEVEL_HIGH>;
-+        airoha,chip-scu = <&chip_scu>;
-+
-+        #thermal-sensor-cells = <0>;
-+    };
--- 
-2.45.2
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+tested configs:
+alpha                             allnoconfig    gcc-14.1.0
+alpha                            allyesconfig    clang-20
+arc                              allmodconfig    clang-20
+arc                               allnoconfig    gcc-14.1.0
+arc                              allyesconfig    clang-20
+arc                           tb10x_defconfig    clang-20
+arm                              allmodconfig    clang-20
+arm                               allnoconfig    gcc-14.1.0
+arm                              allyesconfig    clang-20
+arm                         bcm2835_defconfig    clang-20
+arm                      integrator_defconfig    clang-20
+arm                   milbeaut_m10v_defconfig    clang-20
+arm                        mvebu_v5_defconfig    clang-20
+arm                        spear3xx_defconfig    clang-20
+arm64                            allmodconfig    clang-20
+arm64                             allnoconfig    gcc-14.1.0
+csky                              allnoconfig    gcc-14.1.0
+hexagon                          allmodconfig    clang-20
+hexagon                           allnoconfig    gcc-14.1.0
+hexagon                          allyesconfig    clang-20
+i386                             allmodconfig    clang-18
+i386                              allnoconfig    clang-18
+i386                             allyesconfig    clang-18
+i386        buildonly-randconfig-001-20241017    clang-18
+i386        buildonly-randconfig-002-20241017    clang-18
+i386        buildonly-randconfig-003-20241017    clang-18
+i386        buildonly-randconfig-004-20241017    clang-18
+i386        buildonly-randconfig-005-20241017    clang-18
+i386        buildonly-randconfig-006-20241017    clang-18
+i386                                defconfig    clang-18
+i386                  randconfig-001-20241017    clang-18
+i386                  randconfig-002-20241017    clang-18
+i386                  randconfig-003-20241017    clang-18
+i386                  randconfig-004-20241017    clang-18
+i386                  randconfig-005-20241017    clang-18
+i386                  randconfig-006-20241017    clang-18
+i386                  randconfig-011-20241017    clang-18
+i386                  randconfig-012-20241017    clang-18
+i386                  randconfig-013-20241017    clang-18
+i386                  randconfig-014-20241017    clang-18
+i386                  randconfig-015-20241017    clang-18
+i386                  randconfig-016-20241017    clang-18
+loongarch                        allmodconfig    gcc-14.1.0
+loongarch                         allnoconfig    gcc-14.1.0
+m68k                             allmodconfig    gcc-14.1.0
+m68k                              allnoconfig    gcc-14.1.0
+m68k                             allyesconfig    gcc-14.1.0
+microblaze                       allmodconfig    gcc-14.1.0
+microblaze                        allnoconfig    gcc-14.1.0
+microblaze                       allyesconfig    gcc-14.1.0
+mips                              allnoconfig    gcc-14.1.0
+mips                           mtx1_defconfig    clang-20
+nios2                             allnoconfig    gcc-14.1.0
+openrisc                          allnoconfig    clang-20
+openrisc                         allyesconfig    gcc-14.1.0
+openrisc                            defconfig    gcc-12
+parisc                           allmodconfig    gcc-14.1.0
+parisc                            allnoconfig    clang-20
+parisc                           allyesconfig    gcc-14.1.0
+parisc                              defconfig    gcc-12
+powerpc                          allmodconfig    gcc-14.1.0
+powerpc                           allnoconfig    clang-20
+powerpc                          allyesconfig    gcc-14.1.0
+powerpc                       maple_defconfig    clang-20
+powerpc                      mgcoge_defconfig    clang-20
+powerpc                     taishan_defconfig    clang-20
+riscv                            allmodconfig    gcc-14.1.0
+riscv                             allnoconfig    clang-20
+riscv                            allyesconfig    gcc-14.1.0
+riscv                               defconfig    gcc-12
+s390                             allmodconfig    gcc-14.1.0
+s390                              allnoconfig    clang-20
+s390                             allyesconfig    gcc-14.1.0
+s390                          debug_defconfig    clang-20
+s390                                defconfig    gcc-12
+sh                               allmodconfig    gcc-14.1.0
+sh                                allnoconfig    gcc-14.1.0
+sh                               allyesconfig    gcc-14.1.0
+sh                                  defconfig    gcc-12
+sh                             espt_defconfig    clang-20
+sh                            migor_defconfig    clang-20
+sh                   sh7770_generic_defconfig    clang-20
+sparc                            allmodconfig    gcc-14.1.0
+sparc                       sparc32_defconfig    clang-20
+sparc64                             defconfig    gcc-12
+um                               allmodconfig    clang-20
+um                                allnoconfig    clang-20
+um                               allyesconfig    clang-20
+um                                  defconfig    gcc-12
+um                             i386_defconfig    gcc-12
+um                           x86_64_defconfig    gcc-12
+x86_64                            allnoconfig    clang-18
+x86_64                           allyesconfig    clang-18
+x86_64                              defconfig    clang-18
+x86_64                                  kexec    gcc-12
+x86_64                               rhel-8.3    gcc-12
+xtensa                            allnoconfig    gcc-14.1.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
