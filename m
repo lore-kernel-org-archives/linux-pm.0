@@ -1,60 +1,60 @@
-Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7262A1D1E96
-	for <linux-pm@vger.kernel.org>; Fri, 18 Oct 2024 12:49:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD1791E0DE3
+	for <linux-pm@vger.kernel.org>; Fri, 18 Oct 2024 12:49:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729255786; cv=none; b=YqPqTJSeuqJqElerUU4TEqu0JrbUBUcVJ5NJ8eKFxnao4IOc5HqSPmZzTtc0wXSXh5J99CiyzN9OdDtvKIpoU/EVGce972ANO6zD5ldVRjPYHIXsey7vhixgVZUbVLzrIL5n6H57R2yEUU2oJfFmDavUE+PQI51bCpqC5VXgJqk=
+	t=1729255789; cv=none; b=olEOQyzgrm8pOz4exGTSdRGjRohdyyTdzuK3/HCSxqd1neSd6st5pxisLBWtxF4v0et1kahFcDreXjIIoqircMjSB81b5ZYJAcKpg8DC12dNZOjYXNBMj2RZJFX4e2BsVEBjNLA+WjoiMrFpYBkBDxeQS9cqUUZH501C205nh7M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729255786; c=relaxed/simple;
-	bh=ALfCKFByYUDVrZkxzCoUjBlHbP+GuGdy/oMAze7XwKI=;
+	s=arc-20240116; t=1729255789; c=relaxed/simple;
+	bh=Mn0mPpmbFY44Z0P2dT0RMB+Ql2YBHQB3ao9m3twFsKY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=D+dQrfQQnccl/D/mksMA9IWQg4OoMRUk3Q0wQlbyFLQC9Az1hjLak4v8TkqlSOE1/hrciFf56qcdsd7UVSnCG7fNn+sOEfpwNoLdLY5/B3ZPKOK9fGcy7WPxRKxdH8ejNyvh79/7uuxKYzFfzLnNtRcYTk3heexx7boCdVZT29A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=YXsWEtSE; arc=none smtp.client-ip=209.85.128.52
+	 In-Reply-To:To:Cc; b=vDz/EaBBSmbJfrKRyj9y2F5LSTu/L4nGxt2PkHd4Lj+7vDoqyZHyJwXLfUe4g4+F3j+slZff+265FTd5KkIU/VVhgaeFBlsxTnJ0hjzpLHdrV2431N/FhdG1juF0DgVHVulmL6P2KSTudGrI30eK+4M3kQ+mT3kLKdh5/eAJqL4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=IjEQynAw; arc=none smtp.client-ip=209.85.128.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="YXsWEtSE"
-Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-431137d12a5so21068125e9.1
-        for <linux-pm@vger.kernel.org>; Fri, 18 Oct 2024 05:49:43 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="IjEQynAw"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-430ee5c9570so26980045e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 18 Oct 2024 05:49:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1729255782; x=1729860582; darn=vger.kernel.org;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1729255785; x=1729860585; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=2SXk1aP0FJCXvypNsnh25z1CFtl/7LUgjPK1RLNlZfg=;
-        b=YXsWEtSEzq+/X2aKudIgcEvy3Fb4ufUoCNW5bLQLXmo4CtnKPln/BMGBvk+Iboybdw
-         LSX76h7ktlY0gg2OZedGmAnM92sqib3xPmiMkN2PkwpeS7XvzS3q94/HFSa+GxCeborH
-         MoXwJh56YOPh3/WeunYQBb2UJlEeLKKCARq+Lo9gM0wDDsyAav/EAAoscqvoCQoyxtj4
-         QzA4F3qBAPBHkEp1a7GJ8a9gFkhkm+eMb7d4vb5w8jbfLswHGU2jdi050SCLT0RodTcN
-         zrbIUHTFjQiYXnbr4VyMjch7B4FDHu+TYYRJ2Qt1rHoazWzHLjYHqROLbA45IZVtGfdp
-         bYvA==
+        bh=puU3xrkTTeTbfF4fDr7QGtlbG9wfai2YC1VsHMJgxP4=;
+        b=IjEQynAwmH6c1YeLWQ+CUcTnMioslDeV7juZzxLu30mLd3B4gJGlpxeLsz5aTrrEV7
+         9mHKl9/sK8B9aZ8Y8bpjxNu2U4LySesKmC2M8750D69f4teElDGUk0tVZe9Jahib/gzA
+         JFIAt0n36RVDLHTjy12sjIMErfqWKmb3d8OZquW6C8zW+/agNE2D2iE5zftPyuBHn/XP
+         4dHoXp+OeL9PXuYE7CMD1YjmGB80VnrSrkld1BDWmY/2twthkRtrROMfhOm0BvFmG3HQ
+         ezCeHgSoFeop/zRGIyKCeG+XjK3OMqY5Sa4TIOGZLytbsXhTUu+eD9/2PcPJw/MHsjwI
+         4eJQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729255782; x=1729860582;
+        d=1e100.net; s=20230601; t=1729255785; x=1729860585;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=2SXk1aP0FJCXvypNsnh25z1CFtl/7LUgjPK1RLNlZfg=;
-        b=C77+B00HIimDlBcImgb/fukIVaLkXZri0bSrCRP7P7KYOamS8BtoMogo2PSbGQufAF
-         1i0TMQpfJGmcMk69KLxiAZWfXu19vqRET6q2vWlJOUbWQ3tZWtU2yWcp05BLcT7h8Tnl
-         BIwp6X/TRBr/CvqUtRG9joby4tYZYMlRWwIs9BjLNSI5FF56IsDVlB2zeuaMhNjzRTIp
-         3GA4ok9uMvVGi0XtyoHh2/n4GuUaaCjS7mKQL52gresvlj583YPrwykL7BHu+JUqtlYE
-         khGaVcsOeYYjIxGyz+X0YXsCYQSCndUaxkiyIOdJJjR5cBgbYH5K1ojvWsk4+9aJRIyk
-         8kPA==
-X-Forwarded-Encrypted: i=1; AJvYcCXTe0AuOakOnrbuMJHHgcpPd3sUlGoYnQsfSa0iP6L/StJ2ymIvBAx1yfulvGopPJxn1JcNRaAxlQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyval3i+aK2M8ZHSDMBbtFtmbBLMqR+W7y1YpiXLvVjIVNDA6GN
-	lmTWREufwWjhXHJtthLr9Po7hA0pPdZ4cTKNnpIA3QiTkRlt/nJnv1J/Bo16kpw=
-X-Google-Smtp-Source: AGHT+IF7i5ijJ/PBj+rVVE90wGBGkUbs+Qau7bPR83w2OKEfud7HPlsA4a1baxa0bmZ7IKUkM5cLpw==
-X-Received: by 2002:a05:600c:4f15:b0:42c:b187:bde9 with SMTP id 5b1f17b1804b1-4316168ffb3mr20259385e9.30.1729255781722;
-        Fri, 18 Oct 2024 05:49:41 -0700 (PDT)
+        bh=puU3xrkTTeTbfF4fDr7QGtlbG9wfai2YC1VsHMJgxP4=;
+        b=ufmxoTx1EDvda8G4zaXfY//yBRhPcBb8LfB9bpH19F+2Cq/rEha+YX5izya4ZRHJ7w
+         MliEUpJ3ULlz6yjLmGse4Id7VZnuQy3mmeq7iypFpmL55w1Mra7JylaGqKUgwRE8jM45
+         qccSI0+z6uAc+LIcmUFNIzAm1bkkqLoMZ1dm2379ga/jxKP1IlmPngWLZutOQzubONxZ
+         D1BJ9bB7WeqCiX7H92wdoDrzjBPhX/yh1KBiXJDuXv5SMu7q8P6hb6dy0p7EMgl65vT0
+         cusYhDOD6GdURtiv3PQ7xv+JswFm6QEA2AgFs/UMXX2B2HuCq+y9ninEI5WJ0Sr50Wz/
+         cMbA==
+X-Forwarded-Encrypted: i=1; AJvYcCVrIT7iyahlMvOcF6OFbK4DhppsZf/qyvRqWufjs8q4CRt65KZnVbm7ldPKv0PN4hB6wP0/JRhNAg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzdEaRLmkws3bUJnQzQ1lshTiR12c+qSBxJaarJKf1gus4qVxo9
+	FfhRw69eEruh9MsDipUq9cEkc+sBoTZmEn6mV/wSdIQW24Itg+oKEczn7mpQloU=
+X-Google-Smtp-Source: AGHT+IEGATYWTKXNH6YAve//PNdziwpNAYmjhrBS40gfiqxO+ONe+vKCaXB1kH27WO6F4kgHc1nBjQ==
+X-Received: by 2002:a05:600c:1c94:b0:431:5f8c:ccb9 with SMTP id 5b1f17b1804b1-4316163c333mr23809175e9.17.1729255784130;
+        Fri, 18 Oct 2024 05:49:44 -0700 (PDT)
 Received: from [127.0.1.1] ([2a01:cb1d:dc:7e00:45a3:93e:5196:d8ce])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43160695d8fsm26640835e9.27.2024.10.18.05.49.40
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43160695d8fsm26640835e9.27.2024.10.18.05.49.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 18 Oct 2024 05:49:40 -0700 (PDT)
+        Fri, 18 Oct 2024 05:49:43 -0700 (PDT)
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Fri, 18 Oct 2024 14:49:13 +0200
-Subject: [PATCH v6 3/6] arm64: dts: qcom: sc8280xp-crd: model the PMU of
+Date: Fri, 18 Oct 2024 14:49:15 +0200
+Subject: [PATCH v6 5/6] arm64: dts: qcom: sc8280xp-x13s: model the PMU of
  the on-board wcn6855
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -64,7 +64,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241018-sc8280xp-pwrseq-v6-3-8da8310d9564@linaro.org>
+Message-Id: <20241018-sc8280xp-pwrseq-v6-5-8da8310d9564@linaro.org>
 References: <20241018-sc8280xp-pwrseq-v6-0-8da8310d9564@linaro.org>
 In-Reply-To: <20241018-sc8280xp-pwrseq-v6-0-8da8310d9564@linaro.org>
 To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
@@ -77,45 +77,47 @@ To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
  Abel Vesa <abel.vesa@linaro.org>, Manivannan Sadhasivam <mani@kernel.org>
 Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
- Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+ Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, 
+ Steev Klimaszewski <steev@kali.org>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4498;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4620;
  i=bartosz.golaszewski@linaro.org; h=from:subject:message-id;
- bh=z5k/Qqi73I7Ez24Ck4rdkv9VCt9Ycv56x4hxpvBQUWM=;
- b=owEBbQKS/ZANAwAKARGnLqAUcddyAcsmYgBnEllfEMACrK1WN1Db9NkLo+75YO6OWKDZMpOGN
- nNzGKXdvV6JAjMEAAEKAB0WIQQWnetsC8PEYBPSx58Rpy6gFHHXcgUCZxJZXwAKCRARpy6gFHHX
- cl4iD/9v/vJiABNNQviNzBQ10JNb6iik4lfxcUYjiTcfwoGbXeXmMi/3l0J8P8QvfcN44smeCNU
- Xn1jRCO2aNZwHVrR7MclNC2JzZ3dptqsfsgfKpSl35lIqAyxB0MTgjnpzpUKJlzdN8PuIfFUWQm
- 1PjK3w0mFixu6Z6gfCVHZrlQAb37I9HrPnDAKYvrvIBmBEzCPOdXctdz8gtr/Z6lhyLlkBAxvzs
- EAKDEP2JpAvDhsnLv2z7hP3qZmMVY292cuMxfrNrEV3KmMD+GkczwNRumxPI3fKJOi6jUA7h9NP
- i19zJW5vpCcoVj4NLKfTAtJhgMqwQm95ICbXf00VT7Tb2X+C1MqHp3+uZj5W0ArCUybJd0RUhWI
- HE6x8N/eLcBnXYT99gPZ7jMl3Cy0Cs/sTJPXuhnZRWF+CUHs59HBI3O9fAjCrFl+C52tgoYEDMS
- xYVgM7QWqZY3INaKCk7x4cxkcO9lYw/PHMkXsZVZCs7IutWTN/CIrGbZAiyAinYVeqmv0wZQ+nu
- LfRmpp/2SYhaVjjgVBoFFPu77UdXN0pWaujoKwnwDvo7DO4FiRBYvVHmgBSYQIimj6KDm37ohQ0
- UzlX58HK04UXo2JmCkrf0X+eSFmIA0GF2By0bYNRc0VAHHaHNDqb6+iFpXlrvNPQ3k74ctsDwh6
- 9N3OdtZI9po96rg==
+ bh=VorITfXsqBi0NtY1PaIp2H2H5IW9YOuVROCxugaGrMg=;
+ b=owEBbQKS/ZANAwAKARGnLqAUcddyAcsmYgBnEllgx+72Im4cPUTbWEDEvC4JqzP7pr7yc/98X
+ G0xvVyL/aSJAjMEAAEKAB0WIQQWnetsC8PEYBPSx58Rpy6gFHHXcgUCZxJZYAAKCRARpy6gFHHX
+ cuY0EACC5MCJbW16PRuawEC9C2LqGVUDMnPQFTjDLxk3TSoCgTWlfOBCoHrwF7VdKEaAOzlFgq0
+ 1cSaxe2Hylt8qaVME4EPC7VP9xBvu0jnyknp++1cSK2uOb6phU9FQ7XUb4qprEWgK+dqxsDekO4
+ E325JkvYuzreI+qZ+v0g5NZEuo72bFyEfUY770kww1SP1xKENtzwqRVtKUxpnES09gVUV2+S6Oo
+ 9IdILGuJ0EaweEcDxbrgipFghSDMlAu08yKcOYerfkTgAPgHm9HpauzqnhPNYVk6Mt2yqs1Sqjb
+ 1WtLvbGCGrmsIZWfy8d0VwOgVzgOuxOO6rNfH3hGKCfxkNxk1+EpylhybPbdE8sBuKLi5FpFVT4
+ BLOqNKNxsEdwY0xXbLvZV6MWqp08yPnNHzl4q8JfKrphPev03okjqoz/furEyQMVcVNV56tMuSa
+ j1QqG865r7CLzHXyH46Nd0hdCSbJpUHT+RTCd8YHADI98Dl7osU0sn3u7T8qSX+kO3U5qQLQOn8
+ aI8EDwAh1j5FRvKyoLu784sTUr/1ReZcB9EesPkS1lZhWm+RXVb/HIYzwy5MByXMkF/ZGUahPRm
+ SMQzmkPoifFGThTL6kC+NfLVGYYY1n/k72JNlQcumsjStb5qZg1tcfxljC1z7cNFBU+wiTjrZ6t
+ JkGyl5QqpkOYQeA==
 X-Developer-Key: i=bartosz.golaszewski@linaro.org; a=openpgp;
  fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
 
 From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-Add nodes for the WCN6855 PMU, the WLAN module and relevant regulators
-and pin functions to fully describe how the wifi is actually wired on
-this platform.
+Add a node for the PMU of the WCN6855 and rework the inputs of the wifi
+and bluetooth nodes to consume the PMU's outputs.
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Co-developed-by: Konrad Dybcio <konradybcio@kernel.org>
-Signed-off-by: Konrad Dybcio <konradybcio@kernel.org>
+With this we can drop the regulator-always-on properties from vreg_s11b
+and vreg_s12b as they will now be enabled by the power sequencing
+driver.
+
+Tested-by: Steev Klimaszewski <steev@kali.org> # Thinkpad X13s
 Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/sc8280xp-crd.dts | 112 ++++++++++++++++++++++++++++++
- 1 file changed, 112 insertions(+)
+ .../dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts     | 103 ++++++++++++++++++---
+ 1 file changed, 89 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/sc8280xp-crd.dts b/arch/arm64/boot/dts/qcom/sc8280xp-crd.dts
-index 6020582b0a59..a02d8029ac2d 100644
---- a/arch/arm64/boot/dts/qcom/sc8280xp-crd.dts
-+++ b/arch/arm64/boot/dts/qcom/sc8280xp-crd.dts
-@@ -260,6 +260,69 @@ usb1_sbu_mux: endpoint {
+diff --git a/arch/arm64/boot/dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts b/arch/arm64/boot/dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts
+index 6a28cab97189..ce1898c085de 100644
+--- a/arch/arm64/boot/dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts
++++ b/arch/arm64/boot/dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts
+@@ -400,6 +400,70 @@ usb1_sbu_mux: endpoint {
  			};
  		};
  	};
@@ -123,10 +125,11 @@ index 6020582b0a59..a02d8029ac2d 100644
 +	wcn6855-pmu {
 +		compatible = "qcom,wcn6855-pmu";
 +
-+		pinctrl-0 = <&wlan_en>;
++		pinctrl-0 = <&bt_default>, <&wlan_en>;
 +		pinctrl-names = "default";
 +
 +		wlan-enable-gpios = <&tlmm 134 GPIO_ACTIVE_HIGH>;
++		bt-enable-gpios = <&tlmm 133 GPIO_ACTIVE_HIGH>;
 +		swctrl-gpios = <&tlmm 132 GPIO_ACTIVE_HIGH>;
 +
 +		vddio-supply = <&vreg_s10b>;
@@ -185,59 +188,26 @@ index 6020582b0a59..a02d8029ac2d 100644
  };
  
  &apps_rsc {
-@@ -269,6 +332,15 @@ regulators-0 {
- 
- 		vdd-l3-l5-supply = <&vreg_s11b>;
- 
-+		vreg_s10b: smps10 {
-+			regulator-name = "vreg_s10b";
-+			regulator-min-microvolt = <1800000>;
-+			regulator-max-microvolt = <1800000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+			regulator-always-on;
-+			regulator-boot-on;
-+		};
-+
- 		vreg_s11b: smps11 {
- 			regulator-name = "vreg_s11b";
+@@ -426,7 +490,6 @@ vreg_s11b: smps11 {
  			regulator-min-microvolt = <1272000>;
-@@ -276,6 +348,13 @@ vreg_s11b: smps11 {
+ 			regulator-max-microvolt = <1272000>;
  			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+-			regulator-always-on;
  		};
  
-+		vreg_s12b: smps12 {
-+			regulator-name = "vreg_s12b";
-+			regulator-min-microvolt = <984000>;
-+			regulator-max-microvolt = <984000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+
- 		vreg_l3b: ldo3 {
- 			regulator-name = "vreg_l3b";
- 			regulator-min-microvolt = <1200000>;
-@@ -304,6 +383,13 @@ regulators-1 {
- 		compatible = "qcom,pm8350c-rpmh-regulators";
- 		qcom,pmic-id = "c";
+ 		vreg_s12b: smps12 {
+@@ -434,7 +497,6 @@ vreg_s12b: smps12 {
+ 			regulator-min-microvolt = <984000>;
+ 			regulator-max-microvolt = <984000>;
+ 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+-			regulator-always-on;
+ 		};
  
-+		vreg_s1c: smps1 {
-+			regulator-name = "vreg_s1c";
-+			regulator-min-microvolt = <1888000>;
-+			regulator-max-microvolt = <1888000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+
- 		vreg_l1c: ldo1 {
- 			regulator-name = "vreg_l1c";
- 			regulator-min-microvolt = <1800000>;
-@@ -583,6 +669,25 @@ &pcie4_phy {
- 	status = "okay";
- };
+ 		vreg_l1b: ldo1 {
+@@ -927,6 +989,16 @@ wifi@0 {
+ 		compatible = "pci17cb,1103";
+ 		reg = <0x10000 0x0 0x0 0x0 0x0>;
  
-+&pcie4_port0 {
-+	wifi@0 {
-+		compatible = "pci17cb,1103";
-+		reg = <0x10000 0x0 0x0 0x0 0x0>;
-+
 +		vddrfacmn-supply = <&vreg_pmu_rfa_cmn_0p8>;
 +		vddaon-supply = <&vreg_pmu_aon_0p8>;
 +		vddwlcx-supply = <&vreg_pmu_wlcx_0p8>;
@@ -248,23 +218,48 @@ index 6020582b0a59..a02d8029ac2d 100644
 +		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
 +		vddrfa1p8-supply = <&vreg_pmu_rfa_1p7>;
 +
-+		qcom,ath11k-calibration-variant = "QC_8280XP_CRD";
-+	};
-+};
-+
- &pmc8280c_lpg {
- 	status = "okay";
+ 		qcom,ath11k-calibration-variant = "LE_X13S";
+ 	};
  };
-@@ -1030,4 +1135,11 @@ mode-pins {
- 			output-high;
+@@ -1258,20 +1330,16 @@ &uart2 {
+ 	bluetooth {
+ 		compatible = "qcom,wcn6855-bt";
+ 
+-		vddio-supply = <&vreg_s10b>;
+-		vddbtcxmx-supply = <&vreg_s12b>;
+-		vddrfacmn-supply = <&vreg_s12b>;
+-		vddrfa0p8-supply = <&vreg_s12b>;
+-		vddrfa1p2-supply = <&vreg_s11b>;
+-		vddrfa1p7-supply = <&vreg_s1c>;
++		vddrfacmn-supply = <&vreg_pmu_rfa_cmn_0p8>;
++		vddaon-supply = <&vreg_pmu_aon_0p8>;
++		vddwlcx-supply = <&vreg_pmu_wlcx_0p8>;
++		vddwlmx-supply = <&vreg_pmu_wlmx_0p8>;
++		vddbtcmx-supply = <&vreg_pmu_btcmx_0p8>;
++		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
++		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
++		vddrfa1p8-supply = <&vreg_pmu_rfa_1p7>;
+ 
+ 		max-speed = <3200000>;
+-
+-		enable-gpios = <&tlmm 133 GPIO_ACTIVE_HIGH>;
+-		swctrl-gpios = <&tlmm 132 GPIO_ACTIVE_HIGH>;
+-
+-		pinctrl-0 = <&bt_default>;
+-		pinctrl-names = "default";
+ 	};
+ };
+ 
+@@ -1761,4 +1829,11 @@ reset-pins {
+ 			bias-disable;
  		};
  	};
 +
 +	wlan_en: wlan-en-state {
 +		pins = "gpio134";
 +		function = "gpio";
-+		drive-strength = <16>;
-+		bias-disable;
++		drive-strength = <8>;
++		bias-pull-down;
 +	};
  };
 
