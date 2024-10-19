@@ -1,121 +1,179 @@
-Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FCAD18DF86;
-	Sat, 19 Oct 2024 17:25:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5204C13C682;
+	Sat, 19 Oct 2024 18:29:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729358732; cv=none; b=GPrlsSeFkoW4UkSmph93GhShvV/IK4IqKMdeKFzTCHktiXWJoGYVTe+TLnKw8LZmcgm7EtMvOvoLPlncU3Xu0QQE7yKvhSbwemnyINN9wgC/QLZIR57YBF5LsKZKdXm+ZHzG2l8iDI1seBGcA2Ck3AxovWyqjPD8TxaPRWAcKKM=
+	t=1729362547; cv=none; b=OcRD6fkCaDQOckSBCQwU6Kb7Blsft+gEXcUBw1ZC059spc8G5CHE1+jSSKBGrgT9vJYdah9lLtbjNukZxVJUCHqJad54aVrJ2zo9MwHZZw7qP23U8q6Tt9hIijdHAGFrRIIjyE5pDoI6OwMQzij+V12474GQ2gwtz87nzPV9LhM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729358732; c=relaxed/simple;
-	bh=GAwiRUme3l79armWjPCTT1xL7TWZdYQrkokP+tBs6xQ=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=UMe+MaBYhTq0cS7pdGkcB13FCWnS5rayQSaIkPQxzJmWEGgwP01HUHk1frK5xxAJwH/5umw7ju1XPULe6rIb24e3vBw//uwTUWAt0+5I6gihsbkW5BXjtrB4ZPUxz4BaOiR0+xtIhVFe5qTqz0GtnwNRl0CW/umh9pPjZk9oUK4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=desiato.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=XzGlFbWx; arc=none smtp.client-ip=90.155.92.199
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=desiato.srs.infradead.org
+	s=arc-20240116; t=1729362547; c=relaxed/simple;
+	bh=3eWD6IyQ9v4ZUcBeqZCxI2eezCWFh+ZZgimWzYafS1A=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=TN6iqPxP7q4lybNr6TuLe+SW9/g/zcwZzvgzRgcIWnVstRUWP1nQCmTeWVdkcTzX+7stMTM7hDN86YCpkhLPN5JKR9gpujD2v8rfKPsX5xUEDCvFT6wTc+6hYkMJjbIgbGWk2i//HIuJXzDH+UeoYcT+aiuyVrgzrSaAjtqvFAE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=V1QnCC33; arc=none smtp.client-ip=198.175.65.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="XzGlFbWx"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:To:From:Reply-To:
-	Cc:Content-Type:Content-ID:Content-Description;
-	bh=dgOa7g3zajQLpd5LE62QUGty2o4u6sxV9PdYHjxAfec=; b=XzGlFbWx89wH/Hwr4VFywS7iRy
-	UkBHnYBAN0gqrQSfLligxN8doifFp8nQM/JkfDAiuCDUs9nTloQXWsEENhsW591tkwqZS1smmDjxq
-	IE4baRNi425eXqxZk1Euqd3gQMxGNG9UREgt+rsiQZleSd2JYkbNFguG27JA0WKqeNQVcYcu+JS33
-	nc+SPrbSqpVJvHn5tAhhAoNAO2J8T5wNKdBwtPakGmscIp7xNkEqDk6Yp95y2/vvVkiglssnEcrUl
-	9Zyv+p/yON8qkZOpAs0fNzdILJPpjWG7V7eesdNM6WUfCk3DPStY7VxUnUeKi0wZcPjfmQ7UI2ABm
-	EaDMZKJQ==;
-Received: from [2001:8b0:10b:1::ebe] (helo=i7.infradead.org)
-	by desiato.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
-	id 1t2DCM-00000007ZXd-32pz;
-	Sat, 19 Oct 2024 17:25:07 +0000
-Received: from dwoodhou by i7.infradead.org with local (Exim 4.97.1 #2 (Red Hat Linux))
-	id 1t2DCI-00000009TKb-3CtK;
-	Sat, 19 Oct 2024 18:25:02 +0100
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paolo Bonzini <pbonzini@redhat.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Marc Zyngier <maz@kernel.org>,
-	Oliver Upton <oliver.upton@linux.dev>,
-	James Morse <james.morse@arm.com>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Zenghui Yu <yuzenghui@huawei.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@ucw.cz>,
-	Len Brown <len.brown@intel.com>,
-	Shuah Khan <shuah@kernel.org>,
-	David Woodhouse <dwmw@amazon.co.uk>,
-	kvm@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	kvmarm@lists.linux.dev,
-	linux-pm@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	Francesco Lavra <francescolavra.fl@gmail.com>,
-	Miguel Luis <miguel.luis@oracle.com>
-Subject: [PATCH v6 1/6] firmware/psci: Add definitions for PSCI v1.3 specification
-Date: Sat, 19 Oct 2024 18:15:42 +0100
-Message-ID: <20241019172459.2241939-2-dwmw2@infradead.org>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20241019172459.2241939-1-dwmw2@infradead.org>
-References: <20241019172459.2241939-1-dwmw2@infradead.org>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="V1QnCC33"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1729362544; x=1760898544;
+  h=date:from:to:cc:subject:message-id;
+  bh=3eWD6IyQ9v4ZUcBeqZCxI2eezCWFh+ZZgimWzYafS1A=;
+  b=V1QnCC33Xiom0vlwYyH0itfNTm4frHxyuSTTkkrmgUQ+1f/mfbrlU12s
+   5Uij7q1SzZjLGPaZ30IVAnThLliL/TVdlJEalCnbfWH0iKeSLdQvxLwud
+   QdnISL6LliPjwK7uaV9Xq6zre2qBWe/J2NNZ80qaUh35oXmTGYxUyh0M2
+   QeoS6EzX/epKz1RvJSo/+JlPLq0xFkslk1KgarklNfoGFnRTHerufc8DG
+   /75KIRML8irbwUanQE6vv6at3AotPxtO2tZfp88i2+g3wbIK5h3fyhoaF
+   6s0ndYpK4/D1oy5zXO4GsPIzfRIwJiDmXX89GtXgSMe/pNxqxfP+YgkXQ
+   g==;
+X-CSE-ConnectionGUID: ZJo4JSwtQWqMUaiZHXCcHA==
+X-CSE-MsgGUID: bpZiHAYaSRCrspAiWRHwjg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="28671763"
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; 
+   d="scan'208";a="28671763"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Oct 2024 11:29:03 -0700
+X-CSE-ConnectionGUID: iZ7Xx73nQ+SD6I5yrqHVOA==
+X-CSE-MsgGUID: KL0QgASYRqmWmhkVoeUH/g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.11,217,1725346800"; 
+   d="scan'208";a="109912283"
+Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
+  by fmviesa001.fm.intel.com with ESMTP; 19 Oct 2024 11:28:48 -0700
+Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1t2EBy-000PNg-1N;
+	Sat, 19 Oct 2024 18:28:46 +0000
+Date: Sun, 20 Oct 2024 02:28:25 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, devel@acpica.org,
+ linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ fbfaf5db0dad86929bc8349eb817dff881523920
+Message-ID: <202410200217.9E8FTLCg-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: David Woodhouse <dwmw2@infradead.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
 
-From: David Woodhouse <dwmw@amazon.co.uk>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: fbfaf5db0dad86929bc8349eb817dff881523920  Merge branch 'pm-cpufreq' into bleeding-edge
 
-The v1.3 PSCI spec (https://developer.arm.com/documentation/den0022) adds
-the SYSTEM_OFF2 function. Add definitions for it and its hibernation type
-parameter.
+elapsed time: 1487m
 
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- include/uapi/linux/psci.h | 5 +++++
- 1 file changed, 5 insertions(+)
+configs tested: 101
+configs skipped: 5
 
-diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
-index 42a40ad3fb62..81759ff385e6 100644
---- a/include/uapi/linux/psci.h
-+++ b/include/uapi/linux/psci.h
-@@ -59,6 +59,7 @@
- #define PSCI_1_1_FN_SYSTEM_RESET2		PSCI_0_2_FN(18)
- #define PSCI_1_1_FN_MEM_PROTECT			PSCI_0_2_FN(19)
- #define PSCI_1_1_FN_MEM_PROTECT_CHECK_RANGE	PSCI_0_2_FN(20)
-+#define PSCI_1_3_FN_SYSTEM_OFF2			PSCI_0_2_FN(21)
- 
- #define PSCI_1_0_FN64_CPU_DEFAULT_SUSPEND	PSCI_0_2_FN64(12)
- #define PSCI_1_0_FN64_NODE_HW_STATE		PSCI_0_2_FN64(13)
-@@ -68,6 +69,7 @@
- 
- #define PSCI_1_1_FN64_SYSTEM_RESET2		PSCI_0_2_FN64(18)
- #define PSCI_1_1_FN64_MEM_PROTECT_CHECK_RANGE	PSCI_0_2_FN64(20)
-+#define PSCI_1_3_FN64_SYSTEM_OFF2		PSCI_0_2_FN64(21)
- 
- /* PSCI v0.2 power state encoding for CPU_SUSPEND function */
- #define PSCI_0_2_POWER_STATE_ID_MASK		0xffff
-@@ -100,6 +102,9 @@
- #define PSCI_1_1_RESET_TYPE_SYSTEM_WARM_RESET	0
- #define PSCI_1_1_RESET_TYPE_VENDOR_START	0x80000000U
- 
-+/* PSCI v1.3 hibernate type for SYSTEM_OFF2 */
-+#define PSCI_1_3_OFF_TYPE_HIBERNATE_OFF		BIT(0)
-+
- /* PSCI version decoding (independent of PSCI version) */
- #define PSCI_VERSION_MAJOR_SHIFT		16
- #define PSCI_VERSION_MINOR_MASK			\
--- 
-2.44.0
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+tested configs:
+alpha                             allnoconfig    gcc-14.1.0
+alpha                            allyesconfig    clang-20
+alpha                               defconfig    gcc-14.1.0
+arc                              allmodconfig    clang-20
+arc                               allnoconfig    gcc-14.1.0
+arc                              allyesconfig    clang-20
+arc                                 defconfig    gcc-14.1.0
+arc                        vdk_hs38_defconfig    clang-20
+arm                              allmodconfig    clang-20
+arm                               allnoconfig    gcc-14.1.0
+arm                              allyesconfig    clang-20
+arm                                 defconfig    gcc-14.1.0
+arm                         nhk8815_defconfig    clang-20
+arm                       omap2plus_defconfig    clang-20
+arm64                            allmodconfig    clang-20
+arm64                             allnoconfig    gcc-14.1.0
+arm64                               defconfig    gcc-14.1.0
+csky                              allnoconfig    gcc-14.1.0
+csky                                defconfig    gcc-14.1.0
+hexagon                          alldefconfig    clang-20
+hexagon                          allmodconfig    clang-20
+hexagon                           allnoconfig    gcc-14.1.0
+hexagon                          allyesconfig    clang-20
+hexagon                             defconfig    gcc-14.1.0
+i386                             allmodconfig    clang-18
+i386                              allnoconfig    clang-18
+i386                             allyesconfig    clang-18
+i386        buildonly-randconfig-001-20241019    clang-18
+i386        buildonly-randconfig-002-20241019    clang-18
+i386        buildonly-randconfig-003-20241019    clang-18
+i386        buildonly-randconfig-004-20241019    clang-18
+i386        buildonly-randconfig-005-20241019    clang-18
+i386        buildonly-randconfig-006-20241019    clang-18
+i386                                defconfig    clang-18
+i386                  randconfig-001-20241019    clang-18
+i386                  randconfig-002-20241019    clang-18
+i386                  randconfig-003-20241019    clang-18
+i386                  randconfig-004-20241019    clang-18
+i386                  randconfig-005-20241019    clang-18
+i386                  randconfig-006-20241019    clang-18
+i386                  randconfig-011-20241019    clang-18
+i386                  randconfig-012-20241019    clang-18
+i386                  randconfig-013-20241019    clang-18
+i386                  randconfig-014-20241019    clang-18
+i386                  randconfig-015-20241019    clang-18
+i386                  randconfig-016-20241019    clang-18
+loongarch                        allmodconfig    gcc-14.1.0
+loongarch                         allnoconfig    gcc-14.1.0
+loongarch                           defconfig    gcc-14.1.0
+m68k                             allmodconfig    gcc-14.1.0
+m68k                              allnoconfig    gcc-14.1.0
+m68k                             allyesconfig    gcc-14.1.0
+m68k                                defconfig    gcc-14.1.0
+m68k                        m5307c3_defconfig    clang-20
+m68k                          sun3x_defconfig    clang-20
+microblaze                       allmodconfig    gcc-14.1.0
+microblaze                        allnoconfig    gcc-14.1.0
+microblaze                       allyesconfig    gcc-14.1.0
+microblaze                          defconfig    gcc-14.1.0
+mips                              allnoconfig    gcc-14.1.0
+mips                          eyeq5_defconfig    clang-20
+mips                         rt305x_defconfig    clang-20
+nios2                             allnoconfig    gcc-14.1.0
+nios2                               defconfig    gcc-14.1.0
+openrisc                          allnoconfig    clang-20
+openrisc                            defconfig    gcc-12
+parisc                            allnoconfig    clang-20
+parisc                              defconfig    gcc-12
+parisc                generic-32bit_defconfig    clang-20
+parisc64                            defconfig    gcc-14.1.0
+powerpc                           allnoconfig    clang-20
+powerpc                   currituck_defconfig    clang-20
+powerpc                       holly_defconfig    clang-20
+powerpc                    mvme5100_defconfig    clang-20
+powerpc                     tqm8541_defconfig    clang-20
+riscv                             allnoconfig    clang-20
+riscv                               defconfig    gcc-12
+s390                             allmodconfig    gcc-14.1.0
+s390                              allnoconfig    clang-20
+s390                             allyesconfig    gcc-14.1.0
+s390                                defconfig    gcc-12
+sh                               allmodconfig    gcc-14.1.0
+sh                                allnoconfig    gcc-14.1.0
+sh                               allyesconfig    gcc-14.1.0
+sh                                  defconfig    gcc-12
+sh                      rts7751r2d1_defconfig    clang-20
+sparc                            allmodconfig    gcc-14.1.0
+sparc64                             defconfig    gcc-12
+um                               allmodconfig    clang-20
+um                                allnoconfig    clang-20
+um                               allyesconfig    clang-20
+um                                  defconfig    gcc-12
+um                             i386_defconfig    gcc-12
+um                           x86_64_defconfig    gcc-12
+x86_64                            allnoconfig    clang-18
+x86_64                           allyesconfig    clang-18
+x86_64                              defconfig    clang-18
+x86_64                                  kexec    gcc-12
+x86_64                               rhel-8.3    gcc-12
+xtensa                            allnoconfig    gcc-14.1.0
+xtensa                  cadence_csp_defconfig    clang-20
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
