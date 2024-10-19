@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F93618EFED;
-	Sat, 19 Oct 2024 13:21:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2409B190074;
+	Sat, 19 Oct 2024 13:21:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729344080; cv=none; b=spKRPOIvhn3r8ChAZxgvgR1Z2yuY64gcUdZmz7mLsWPrJikEIboXeXKYRnw/I1WqwU000R6qTmuVfaEvrraKTYjErjkVQrYbb6FOsdlzWOxHcWBLo+n4hxXGsKvZaHl3Ze9heKZvRSp3PWUIN6FhjQiCWL6/2d0QHTrtllilxsc=
+	t=1729344081; cv=none; b=Zpbq3h2T+zWOielULeH/in+igpCclw3YwNZz/A4aopjfC6HEWOF92368VlxR3rI2v4xE44cUvTFrvZMfST6OTTm2FK8KqDreAsWD/5y0Mfgmdo9VwL6EuohPR1QKgDCdSYMhMwvZa55plnjzvDgPksat+Z/04qYIYnfEb+GiVCQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729344080; c=relaxed/simple;
-	bh=q7fIMWvEeO403QIX9kaH38XSloQwTbU8a+27gR0coIY=;
+	s=arc-20240116; t=1729344081; c=relaxed/simple;
+	bh=or3247cKJ1jKd4U/sgvypGpqvn18gzAUK+zAzepboWc=;
 	h=Date:Content-Type:MIME-Version:From:To:Cc:In-Reply-To:References:
-	 Message-Id:Subject; b=C/31R02jIiiuCeK8328gseEGbVHQihKYWGYqs8ni3adD50gzL/V3P5dB5tLaww3GLdwwi9A9kp6/Ruum+0j5VlSuWFz+sTWwBT32z90LlB2QaEtcf8LvNs7StsrW9YubHbNiSf8A4F92eqKrK8L6KAovdMriBDxSMDLWnFWRpnE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bpBi8EkO; arc=none smtp.client-ip=10.30.226.201
+	 Message-Id:Subject; b=RasJ9m73VDGUY11rN9m3EcVBNYZPZ3l9QZsfroOnaBB+7X27cpxNGXWdqWD6bvXcCuLSvAB6OPYlDZzXw3Rk+yl5w69Hqi5rEHEUv1DkX0FeU1HO5QXSAVTcIEjs4Jhl46jg1HezKRIYa53/7DwYMdSn3LtTmB1JWrDFQGgsHAs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KDRdH2Vj; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bpBi8EkO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4D15C4CED4;
-	Sat, 19 Oct 2024 13:21:17 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KDRdH2Vj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90B64C4CED1;
+	Sat, 19 Oct 2024 13:21:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729344078;
-	bh=q7fIMWvEeO403QIX9kaH38XSloQwTbU8a+27gR0coIY=;
+	s=k20201202; t=1729344080;
+	bh=or3247cKJ1jKd4U/sgvypGpqvn18gzAUK+zAzepboWc=;
 	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
-	b=bpBi8EkOKNHDrH3nSMZVuTgugmoGNvxYPgW4decsipisidnYT8KCztvNz/spMm2rO
-	 +X2SubA5qLYHzaRro+EBO0/OuFge5QlM2D+Hgt9/5grmQ9cHIwD2sLG1wIvC4e735w
-	 DPf148mkTnpqs/v3hOoIx/s+/4b7WVyFofMdggi2C0QVxqaCo/OQlA7wnQhldZjU6x
-	 IdjXL5UWZYIfx0rcnJ5KcEE1vSni4Vvi4Fw9l2tFv0f/d26s+Qnuo1mn23k7rM6svi
-	 lnBD30NGSZKCFOdK3lbE3WcobympJaxWwI9ChQUKi3EtPiG19C7C71cwHNqAI6ZATX
-	 xPHgPrXUIlqcA==
-Date: Sat, 19 Oct 2024 08:21:16 -0500
+	b=KDRdH2VjyfkDPGVIvimt99E565twkG3eVFjqmTSCjYICabR7cl3Xl0YZVdOYDGwS4
+	 wJFUJKvGuQeFOlYDvEnXujaj4tSG3kKdJ8L0oOOh9+uOm0P7TWybkjTyMUYzLte3JM
+	 u1LSFQKbg9mQf9vyTDuCaZk1DOQ6cVCJlr1zHWzXy2+jlMfWQ46I9tDDjf0MoyD/Kz
+	 KBkEbXJrPNZ3HHBwVA9jUjannhvRFOup7HqO1+f7nfyPyJrH+pp36T35/8c8KPAWyr
+	 wkNlvb8NLx+mG7hVwRg0J4+mo8nuYV2KgRutTVnQXbkTMMsVY1FrJwpZl3LEJC7m9b
+	 X9m+Y9levIQ3w==
+Date: Sat, 19 Oct 2024 08:21:19 -0500
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -37,36 +37,32 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 From: "Rob Herring (Arm)" <robh@kernel.org>
 To: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Cc: iommu@lists.linux.dev, Zhang Rui <rui.zhang@intel.com>, 
- Lee Jones <lee@kernel.org>, Joerg Roedel <joro@8bytes.org>, 
- Linus Walleij <linus.walleij@linaro.org>, 
- Thara Gopinath <thara.gopinath@gmail.com>, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, linux-gpio@vger.kernel.org, 
- Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, 
- Will Deacon <will@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
- linux-arm-msm@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, 
- Robin Murphy <robin.murphy@arm.com>, linux-pm@vger.kernel.org, 
- Amit Kucheria <amitk@kernel.org>
-In-Reply-To: <20241019-msm8917-v1-10-f1f3ca1d88e5@mainlining.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, 
+ Lee Jones <lee@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+ Will Deacon <will@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Amit Kucheria <amitk@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ devicetree@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+ linux-gpio@vger.kernel.org, Thara Gopinath <thara.gopinath@gmail.com>, 
+ linux-arm-msm@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>, 
+ Joerg Roedel <joro@8bytes.org>, 
+ Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, iommu@lists.linux.dev, 
+ linux-pm@vger.kernel.org, Lukasz Luba <lukasz.luba@arm.com>, 
+ Bjorn Andersson <andersson@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+In-Reply-To: <20241019-msm8917-v1-13-f1f3ca1d88e5@mainlining.org>
 References: <20241019-msm8917-v1-0-f1f3ca1d88e5@mainlining.org>
- <20241019-msm8917-v1-10-f1f3ca1d88e5@mainlining.org>
-Message-Id: <172934406753.3231809.282041778335117501.robh@kernel.org>
-Subject: Re: [PATCH RFC 10/14] dt-bindings: iommu: qcom,iommu: Add MSM8917
- IOMMU to SMMUv1 compatibles
+ <20241019-msm8917-v1-13-f1f3ca1d88e5@mainlining.org>
+Message-Id: <172934407034.3231899.7392899989980103960.robh@kernel.org>
+Subject: Re: [PATCH RFC 13/14] dt-bindings: arm: qcom: Add Xiaomi Redmi 5A
 
 
-On Sat, 19 Oct 2024 13:50:47 +0200, Barnabás Czémán wrote:
-> Add MSM8917 compatible string with "qcom,msm-iommu-v1" as fallback
-> for the MSM8917 IOMMU which is compatible with Qualcomm's secure
-> fw "SMMU v1" implementation.
+On Sat, 19 Oct 2024 13:50:50 +0200, Barnabás Czémán wrote:
+> Document Xiaomi Remi 5A (riva).
 > 
 > Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 > ---
->  Documentation/devicetree/bindings/iommu/qcom,iommu.yaml | 1 +
->  1 file changed, 1 insertion(+)
+>  Documentation/devicetree/bindings/arm/qcom.yaml | 7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
 
 My bot found errors running 'make dt_binding_check' on your patch:
@@ -78,7 +74,7 @@ dtschema/dtc warnings/errors:
 
 doc reference errors (make refcheckdocs):
 
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20241019-msm8917-v1-10-f1f3ca1d88e5@mainlining.org
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20241019-msm8917-v1-13-f1f3ca1d88e5@mainlining.org
 
 The base for the series is generally the latest rc1. A different dependency
 should be noted in *this* patch.
