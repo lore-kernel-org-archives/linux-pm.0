@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 343BE18734F;
-	Sat, 19 Oct 2024 13:21:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C86A13635F;
+	Sat, 19 Oct 2024 13:21:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729344077; cv=none; b=QtZ72DvvR9iLXg135cxNclGUzcfgT+7i/Vpr/WJb2o+GRRP6R5DuZCn3+zb8pC7OzL1AG18YIbFfaLuJ/Pflz3W8dG/zaJAq3M8HOZEFCnGFvGSaHQ6EPiAcZdPwfr16Mn/W2dS+H0OFcZ36nfKmAKERINLL0UtlaqHoqX7vAJ4=
+	t=1729344079; cv=none; b=bexbWilj/TlHXZH3TrlvwEvthOFUlZVT4ua8UIGon0NjU3Mnp2IRmE0uyzEPjsy3WagMOwvFilKLYtiTu8szCvTRs0NXHBolWAZJyn0eVbXVZIafIlD83J7GdsnATq9dq5iOBiTb538Rh7OAItW3Eu19p3CnZFPpYzbyhCFIXNY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729344077; c=relaxed/simple;
-	bh=uz65MZHqm91U1b3AiMM4JZkVFGTA2wPr7A12uXrXE8g=;
+	s=arc-20240116; t=1729344079; c=relaxed/simple;
+	bh=gQhICnSvSHv9yD1EiEkSUgTa69qxK8AgGvR65Aui+EY=;
 	h=Date:Content-Type:MIME-Version:From:To:Cc:In-Reply-To:References:
-	 Message-Id:Subject; b=oNF7WV3hCnGAJumQh4VS5D1AWAREtztTJK3yN3uupIGiXg9vlvfg3dLO4KO8MtiK5LFE0NU64w+nJQV7Su2hcQqq41+eplSZH/fQZh8oLlSY9AKcp5MT7hXjq455q1/YeLGOzllnE1bh916tJoieBu9KifjNgHwnmj3RVYNwAOA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pB0fG0oL; arc=none smtp.client-ip=10.30.226.201
+	 Message-Id:Subject; b=Ish9HOefps5YXwBWGCRlvU5QSpnHuuM51lRoiX1NlAXWAA2YmcGI1vgN1p+fpU/q5LDGBn/CX/nkuUcze21/JDgQIe02mWc5NEI2f5NfpSNffm/Scm0qKS2f9esN8uiW7/qKD8A+R6G1m0yz4j8qmYuSmNKtKmrWH25V770cl98=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BK+Md1Zq; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pB0fG0oL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B0B6C4CEC5;
-	Sat, 19 Oct 2024 13:21:16 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BK+Md1Zq"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E2FBC4CEC5;
+	Sat, 19 Oct 2024 13:21:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729344076;
-	bh=uz65MZHqm91U1b3AiMM4JZkVFGTA2wPr7A12uXrXE8g=;
+	s=k20201202; t=1729344079;
+	bh=gQhICnSvSHv9yD1EiEkSUgTa69qxK8AgGvR65Aui+EY=;
 	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
-	b=pB0fG0oLljFPdfaajFI8a7GQC4KLcKxU8VHyyPBZh75Bc9MGNx+C1q2AgJ4bhUltQ
-	 T81oVMy4AKY0vlfPf63Dxh22hXje0l+Ow54hxKSyykQlVLTV/+hQ4H3DM9S0Np476J
-	 bYAQrN0kJ1rXuGo/UluKsFUr9/wM0MwlSNbKz4oknzkogOFiHLNJkunzePkLZYxZqc
-	 8hJ+RHJFUoXFKFV6N1MitOV35W8rNXHBoGdC/43QFi+X4dPgf9W02tje6sGNxm9YOG
-	 uwTWwVIhlhderKonjpQQA0ul4YCJYhsPdGNE/q8iXC+CwN2XcIzUPLO1SVWKVA5ksx
-	 LlITdJW65iHwg==
-Date: Sat, 19 Oct 2024 08:21:15 -0500
+	b=BK+Md1ZqWSec5uuVwfaspttydKxG3jkKC1bmsSiYVCjlflUe1IquYCzDD4Eq0s6iE
+	 JwlgJzC4anr+T/bbLII6Lku/ekGUKlgnuFrijiHAbJBkeP/bPByEUmmlr0Dv9nXywh
+	 AFEerCPB2Bt1WtMl+Ux+qcF21RzN4AH1hByCdslIDFcXQ17vCuSEVVJopEO+9+xpVk
+	 sGPkeH/A/gYxt5y8VMbGiQgGbLTA4lgCb4OyeIOVQjlUwpvkFBFm97Lfi9y8lKR4AN
+	 GWuOjol4dVpCNmgJz5CEqyIbKqPNGMRGgsWH/hW778ODr8e6vb2j88ESEfliPltox3
+	 MGSTMoYq7KGiQ==
+Date: Sat, 19 Oct 2024 08:21:18 -0500
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -37,33 +37,34 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 From: "Rob Herring (Arm)" <robh@kernel.org>
 To: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Cc: Thara Gopinath <thara.gopinath@gmail.com>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Linus Walleij <linus.walleij@linaro.org>, linux-arm-msm@vger.kernel.org, 
- Konrad Dybcio <konradybcio@kernel.org>, linux-gpio@vger.kernel.org, 
- Lukasz Luba <lukasz.luba@arm.com>, Robin Murphy <robin.murphy@arm.com>, 
- Joerg Roedel <joro@8bytes.org>, devicetree@vger.kernel.org, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, 
- Lee Jones <lee@kernel.org>, Amit Kucheria <amitk@kernel.org>, 
+Cc: linux-kernel@vger.kernel.org, 
  Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, 
- linux-kernel@vger.kernel.org, iommu@lists.linux.dev, 
- Bjorn Andersson <andersson@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
- Zhang Rui <rui.zhang@intel.com>, Will Deacon <will@kernel.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>
-In-Reply-To: <20241019-msm8917-v1-9-f1f3ca1d88e5@mainlining.org>
+ Linus Walleij <linus.walleij@linaro.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>, linux-pm@vger.kernel.org, 
+ iommu@lists.linux.dev, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Zhang Rui <rui.zhang@intel.com>, Thara Gopinath <thara.gopinath@gmail.com>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>, 
+ linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+ Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
+ linux-gpio@vger.kernel.org, Lukasz Luba <lukasz.luba@arm.com>, 
+ Will Deacon <will@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+ Amit Kucheria <amitk@kernel.org>
+In-Reply-To: <20241019-msm8917-v1-11-f1f3ca1d88e5@mainlining.org>
 References: <20241019-msm8917-v1-0-f1f3ca1d88e5@mainlining.org>
- <20241019-msm8917-v1-9-f1f3ca1d88e5@mainlining.org>
-Message-Id: <172934406611.3231743.3141053067673883115.robh@kernel.org>
-Subject: Re: [PATCH RFC 09/14] dt-bindings: thermal: tsens: Add MSM8917
- compatible
+ <20241019-msm8917-v1-11-f1f3ca1d88e5@mainlining.org>
+Message-Id: <172934406893.3231847.5057428038723447811.robh@kernel.org>
+Subject: Re: [PATCH RFC 11/14] dt-bindings: nvmem: Add compatible for
+ MS8917
 
 
-On Sat, 19 Oct 2024 13:50:46 +0200, Barnabás Czémán wrote:
-> Document the compatible string for tsens found in MSM8917.
+On Sat, 19 Oct 2024 13:50:48 +0200, Barnabás Czémán wrote:
+> Document the QFPROM block found on MSM8917.
 > 
 > Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 > ---
->  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+>  Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml | 1 +
 >  1 file changed, 1 insertion(+)
 > 
 
@@ -76,7 +77,7 @@ dtschema/dtc warnings/errors:
 
 doc reference errors (make refcheckdocs):
 
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20241019-msm8917-v1-9-f1f3ca1d88e5@mainlining.org
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20241019-msm8917-v1-11-f1f3ca1d88e5@mainlining.org
 
 The base for the series is generally the latest rc1. A different dependency
 should be noted in *this* patch.
