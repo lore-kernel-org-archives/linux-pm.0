@@ -1,57 +1,25 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D2551E283F
-	for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2024 22:30:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B25111EB56;
+	Mon, 21 Oct 2024 22:30:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729549811; cv=none; b=NluzC48XV0k152Gi8U9ePvlXu9wIr6h2enetfCQVpbRkZqBTaypooP6eLzuCwoGB4Q8bcuLYxZWPYwggWXB0Tev7gL9uXIQ6SjEGxgo68smgb19Gyy/cHAwZ77IIhBREqJF6pWiXd60IVlWSHipRaVGfrb5++ENe8HtybsqQerY=
+	t=1729549838; cv=none; b=RbyEJ6ygSUYEfWvMmJRMTBxQzCPq5fp5VfuRFxQ1ZyUwc7UIkA71d377106t5/5R5YgW1E/hR5YR6M+8MK5Q6KDDlM2lynKOUnKaoFBY5jXMro8uqmUq1+h284FAoKUDak4MP8Bev6aq3HCcrREp6Cc4porSm1bWsJp6grXNUG0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729549811; c=relaxed/simple;
-	bh=C2C68GMIxq852cFa9pbvn2pwWeXbpGGd+1/8mY3iUKE=;
-	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=ModtzuMC5m9PM4/+dcFtDUsNQ5iCbaFmqHY6a16dENOQxRrs+kMkquu+QAlbCrWMT94h8Z0xoeTovbHwfIjwleIDQ8WeiasCQjP244DGRGR5Qauy0lLRkBAm7kVv9hkwDUustmU4mkpYF7F3eXjzDn7sSXrgwf0wXDnqNZqhEZI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cjcs2isI; arc=none smtp.client-ip=209.85.128.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cjcs2isI"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-43152b79d25so48190225e9.1
-        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2024 15:30:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1729549808; x=1730154608; darn=vger.kernel.org;
-        h=content-transfer-encoding:subject:from:cc:to:content-language
-         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wNJzzDLVafZi+aocwsPQQzFoOmb4MtQ2aHn/vcpxx9M=;
-        b=cjcs2isIRJggjUljhO61VkKSQV1IRW91qdc//Q9pP+wNBNjNyyppDX73etnXIiy47o
-         4RGADJ4oUUCWRS29oVAVW5K6H3EjP9ihPfLU92xWQCdXX1/ZXLNXxVslBsP9zJN45TLF
-         ePCpKKoRyLoyLyM73eX9ScI3cfkLul8FjBo0Gggqv/ukOWZs6zP5+v8gR3LutXrSujZE
-         VXO3XWG3BGzqtgB7nZk1hi2H6vJ30dZG1Lo3mu3ImQAC3IDIX6XtwokP1Ssr95lgRBe3
-         oh92a+ONCHki7m45xkPKXlDpIAiJWF4ijoC5K/GGrwwHaWZRw1y64D+DLXGJYbz7mMvi
-         VEUg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729549808; x=1730154608;
-        h=content-transfer-encoding:subject:from:cc:to:content-language
-         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=wNJzzDLVafZi+aocwsPQQzFoOmb4MtQ2aHn/vcpxx9M=;
-        b=mtHOkkc4r1/GEPY25i9gOhdRHOFB7putI7eUyy8XoV0U6FJkSqouZPuH7QvhFeh1sY
-         i3zOuPuFFTc8A0WMsHACE6cvxA8oo5tL9MW1fwGRbLMhr6WDzxyDhATy2L4U79DcOSjB
-         LSL5cgiPuN74/zycJDr3e30ruhrKXWyJ5/kGKOEr0qYjt+cWIPc+/O3Qhn3BaMXBCmVb
-         m4oW6HSIK02Dr4mQqu8ul3Khou++8R3qQI41e07irgnfx6Bbt3mY3eJfqVqGBST06BmU
-         KAUTDD5NED2ok/kJ+I/Q7wOzkRF0EvCnaxM9p9nwAd3+W3s7bXAVl0BKC4yStZpVB2Bg
-         jlDQ==
-X-Gm-Message-State: AOJu0Yx9fZGQRkQhLXZwnSe+nyXBUq9uLH1apT8eExisU8R1q4KKxXxk
-	lAzVXQq2+hrUra69LG6hh+Y89R35DZm47KA2D0VBuJojv4976+U5
-X-Google-Smtp-Source: AGHT+IHTYU0eAiZYqb51Tl2NnqBz3uqKNSAf5VRoWhSnOQP2n3J11ktqtmOW/5A3Obs4QNoADC5T7A==
-X-Received: by 2002:a05:600c:4f8f:b0:431:3c67:fb86 with SMTP id 5b1f17b1804b1-4317cb096d5mr3751235e9.33.1729549807648;
-        Mon, 21 Oct 2024 15:30:07 -0700 (PDT)
-Received: from [192.168.1.248] ([194.120.133.34])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-4316f58f1fdsm69735405e9.28.2024.10.21.15.30.06
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 21 Oct 2024 15:30:07 -0700 (PDT)
-Message-ID: <6f78a1ba-23a7-4676-b9be-06d632bbf3ea@gmail.com>
-Date: Mon, 21 Oct 2024 23:30:05 +0100
+	s=arc-20240116; t=1729549838; c=relaxed/simple;
+	bh=UD732M7EnrtgsamVXJ5QerbcYazpkpBNPLQt8vDJWpQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=GFoalMG+WlYwSGypVnTi4W5lOkqPGFjRcXk0ISNJxhO6NxhGZkqKalNTgx/mfcTp3uDfbe5+Mr1ubftJeNBPAuCFPpk4pXCi3wj3I0eFCcFGoCWaw1w1lMZy3ZLR7C0fkno4L/tctH9wt+1Qfu+EMe/ESiuAU02FCUpY0VcCD24=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E87DA497;
+	Mon, 21 Oct 2024 15:31:05 -0700 (PDT)
+Received: from [10.57.65.103] (unknown [10.57.65.103])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 022A43F71E;
+	Mon, 21 Oct 2024 15:30:34 -0700 (PDT)
+Message-ID: <91641867-0dd9-46ab-90b7-1d687f3f4408@arm.com>
+Date: Mon, 21 Oct 2024 23:31:44 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -59,68 +27,74 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 07/12] thermal: core: Mark thermal zones as exiting
+ before unregistration
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+References: <2215082.irdbgypaU6@rjwysocki.net>
+ <4394176.ejJDZkT8p0@rjwysocki.net>
 Content-Language: en-US
-To: Markus Mayer <mmayer@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com, "Rafael J. Wysocki"
- <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- Florian Fainelli <florian.fainelli@broadcom.com>
-Cc: linux-pm@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-pm@vger.kernel.org
-From: "Colin King (gmail)" <colin.i.king@gmail.com>
-Subject: cpufreq: brcmstb-avs-cpufreq: issue with error number check that's
- always true
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <4394176.ejJDZkT8p0@rjwysocki.net>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Hi,
-
-There seems to be a logic issue with the rc comparisons in the following 
-function in drivers/cpufreq/brcmstb-avs-cpufreq.c
-
-/*
-  * To ensure the right firmware is running we need to
-  *    - check the MAGIC matches what we expect
-  *    - brcm_avs_get_pmap() doesn't return -ENOTSUPP or -EINVAL
-  * We need to set up our interrupt handling before calling 
-brcm_avs_get_pmap()!
-  */
-static bool brcm_avs_is_firmware_loaded(struct private_data *priv)
-{
-         u32 magic;
-         int rc;
-
-         rc = brcm_avs_get_pmap(priv, NULL);
-         magic = readl(priv->base + AVS_MBOX_MAGIC);
-
-         return (magic == AVS_FIRMWARE_MAGIC) && ((rc != -ENOTSUPP) ||
-                 (rc != -EINVAL));
-}
-
-..the following condition is always true:
-
-       ((rc != -ENOTSUPP) || (rc != -EINVAL))
 
 
-.. because rc cannot be equal to two different values at the same time, 
-so it must be not equal to at least one of them.
+On 10/4/24 20:26, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> In analogy with a previous change in the thermal zone registration code
+> path, to ensure that __thermal_zone_device_update() will return early
+> for thermal zones that are going away, introduce a thermal zone state
+> flag representing the "exit" state and set it while deleting the thermal
+> zone from thermal_tz_list.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> This is a new iteration of
+> 
+> https://lore.kernel.org/linux-pm/1997536.PYKUYFuaPT@rjwysocki.net/
+> 
+> v1 -> v2: Rebase.
+> 
+> ---
+>   drivers/thermal/thermal_core.c |    3 +++
+>   drivers/thermal/thermal_core.h |    1 +
+>   2 files changed, 4 insertions(+)
+> 
+> Index: linux-pm/drivers/thermal/thermal_core.c
+> ===================================================================
+> --- linux-pm.orig/drivers/thermal/thermal_core.c
+> +++ linux-pm/drivers/thermal/thermal_core.c
+> @@ -1613,7 +1613,10 @@ void thermal_zone_device_unregister(stru
+>   	}
+>   
+>   	mutex_lock(&tz->lock);
+> +
+> +	tz->state |= TZ_STATE_FLAG_EXIT;
+>   	list_del(&tz->node);
+> +
+>   	mutex_unlock(&tz->lock);
+>   
+>   	/* Unbind all cdevs associated with 'this' thermal zone */
+> Index: linux-pm/drivers/thermal/thermal_core.h
+> ===================================================================
+> --- linux-pm.orig/drivers/thermal/thermal_core.h
+> +++ linux-pm/drivers/thermal/thermal_core.h
+> @@ -64,6 +64,7 @@ struct thermal_governor {
+>   #define	TZ_STATE_FLAG_SUSPENDED	BIT(0)
+>   #define	TZ_STATE_FLAG_RESUMING	BIT(1)
+>   #define	TZ_STATE_FLAG_INIT	BIT(2)
+> +#define	TZ_STATE_FLAG_EXIT	BIT(3)
+>   
+>   #define TZ_STATE_READY		0
+>   
+> 
+> 
+> 
 
-This was introduced with commit:
-
-commit 22a26cc6a51ef73dcfeb64c50513903f6b2d53d8
-Author: Florian Fainelli <f.fainelli@gmail.com>
-Date:   Wed May 22 11:45:46 2019 -0700
-
-     cpufreq: brcmstb-avs-cpufreq: Fix initial command check
-
-     There is a logical error in brcm_avs_is_firmware_loaded() whereby 
-if the
-     firmware returns -EINVAL, we will be reporting this as an error. The
-     comment is correct, the code was not.
-
-
-..the commit message seems to rely on the logic expressed in the 
-comment, but I think the "or" used in the comment is not equivalent to 
-the English grammatical use of "or". I suspect the commit is incorrect 
-and needs reverting/fixing.
-
-Colin
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
