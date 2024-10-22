@@ -1,40 +1,40 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABFD619B5B4;
-	Tue, 22 Oct 2024 15:45:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15DBF1B5338;
+	Tue, 22 Oct 2024 15:45:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729611914; cv=none; b=DrDfaZ8TJUXFlZHiTCnSF8HSNrbjRZAcrwW1EKVSwns4MR5VC1gS5FPRJsGLkQ/65HGEgCWbKwvu+JlLUS560aUdlyQN7T3I6tztBcvuMko7jzOx6Eo0/UJvSRqtUcvByqvhPGcvW/HVHWMZqFQ9RBae7iMrba6tmNB4aTdWIhk=
+	t=1729611916; cv=none; b=SC4Qf2Kkh6CIUx2YjamIGaznVXfw1Z7w3VvmLuEEtALMcmF74aAJ0Dbo8Y6rviTWqpC123s+lhxGCU9IAgAtN/Vq/I/xSlX3J6UAq1C8Jm5hjnwNpePYhhyTBtS+tO06IAUozl29WezTzPQayRIgWYU8AvgsrKKNoU2rMk9CnRw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729611914; c=relaxed/simple;
-	bh=O5swrGRgXY7L7+HtzQsEkzO+Z95c/1GCTlkAs6oxEew=;
+	s=arc-20240116; t=1729611916; c=relaxed/simple;
+	bh=HylE764hFn4QR8Thq5VNJ1Y99OJHF7eCaB0kqVRf8sY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bNFm0tAzWIdQV8c2zA3b5G2JMMA0qp4O7FwiuTq/DeO8hUXVARQk5udkDctb1rESlBrsUv9vKnEiacgAW/HXMEixvnnuqxfGib/YdZbD+lw1/PD+S558Glr8YimuFQ6ymg2DtT98jU9DbT1DnzZO11VTDkXM3+uXHinMOeaEEZg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=NJmsV0IK; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=FB6RQbbMciGrdZn5/E5xGSFPScAofXxRWfxzgCyIOb7E8tASU4bXtyuYGwWaPUxEwYkNs+pZsOATdXZ1kjbmyX1gr/leMDKnehriwtxCPkl6ElgabvUQykMQEKpYGZLLmbSxUuV+MJXIgwCpn12tbMycMPNLjBfyuH2ga4tQdA0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=BsWDpzvY; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="NJmsV0IK"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="BsWDpzvY"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1729611909;
-	bh=O5swrGRgXY7L7+HtzQsEkzO+Z95c/1GCTlkAs6oxEew=;
+	s=mail; t=1729611910;
+	bh=HylE764hFn4QR8Thq5VNJ1Y99OJHF7eCaB0kqVRf8sY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=NJmsV0IKI06XGV5IUdfoca8QXYx9RIflAofFkxHLgL0MhQCw/M2yeVbdog43y4aai
-	 mybhNVd3wW1ERUoehxibW0/mb92THtAxkdySCZritT1Hw0AvHjQy921erX2zGXOSGt
-	 C0uRPr9/Vbx5gmPgeKScQlWKS8lwaGE/+zQ3XPPKF/nZniTXH2oshV67SG3gbPho6/
-	 aSm9NHi6PISyPubRJyIR8tzBpITe8dbJi9W4mdA1VPd/HA+b/G8bj9EkZV0MZzMZxv
-	 qgEQkVvLuFbvAp5FUfPIcN5bcNtekPl8hJzVgGFRHFLmdZk60agoiyZwEAaSby/RvD
-	 27QiM5PFn4tgw==
+	b=BsWDpzvY8/hQW1bmXya9CaIgTs7e41QI5tNC1AoWJeWgCBGIUC16uVmZfFQfXOgNm
+	 jKOdAvWgjtmZwp4BS6aiEmjoaMYY2r+5dJHKNuSA3pVni26EhjHLuMZNxz75t126P4
+	 cnahKO0oGsq8jkmJL+vjhW/DuBOHfcZC8P+u1e4LFkAQMuQYQto9c8EtcG4t1vFxoG
+	 +CNQ1PCCCcW5vqpFpQPKbj3+mmBQCbtJoqYHzYqjc95Jh99VrwTQMQiTw+bP20YfEw
+	 C+s4TUCxx1p5QEWtoUyoUcdv3F2QMEaFhWzmkw58SEDqbmUpTw7vyw1waNp/ons5bF
+	 KmpMeOwhcoFqA==
 Received: from jupiter.universe (dyndsl-091-248-085-026.ewe-ip-backbone.de [91.248.85.26])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
 	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id B6C3D17E367B;
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id EC97217E367E;
 	Tue, 22 Oct 2024 17:45:09 +0200 (CEST)
 Received: by jupiter.universe (Postfix, from userid 1000)
-	id 661C74800E4; Tue, 22 Oct 2024 17:45:09 +0200 (CEST)
+	id 6D6D74800FE; Tue, 22 Oct 2024 17:45:09 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -53,9 +53,9 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>,
 	linux-pm@vger.kernel.org,
 	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	kernel@collabora.com
-Subject: [PATCH v3 1/7] regulator: Add (devm_)of_regulator_get()
-Date: Tue, 22 Oct 2024 17:41:46 +0200
-Message-ID: <20241022154508.63563-2-sebastian.reichel@collabora.com>
+Subject: [PATCH v3 5/7] dt-bindings: power: rockchip: add regulator support
+Date: Tue, 22 Oct 2024 17:41:50 +0200
+Message-ID: <20241022154508.63563-6-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20241022154508.63563-1-sebastian.reichel@collabora.com>
 References: <20241022154508.63563-1-sebastian.reichel@collabora.com>
@@ -67,100 +67,37 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The Rockchip power-domain controller also plans to make use of
-per-domain regulators similar to the MediaTek power-domain controller.
-Since existing DTs are missing the regulator information, the kernel
-should fallback to the automatically created dummy regulator if
-necessary. Thus the version without the _optional suffix is needed.
+Add optional support for a voltage supply required to enable a
+power domain. The binding follows the way it is handled by the
+Mediatek binding to keep things consistent.
 
-The Rockchip driver plans to use the managed version, but to be
-consistent with existing code the unmanaged version is added at the
-same time.
+This will initially be used by the RK3588 GPU power domain, which
+fails to be enabled when the GPU regulator is not enabled. It is
+not limited to that platform, since older generations have similar
+requirements. They worked around this by marking the regulators
+as always-on instead of describing the dependency.
 
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/regulator/devres.c         | 17 +++++++++++++++++
- drivers/regulator/of_regulator.c   | 21 +++++++++++++++++++++
- include/linux/regulator/consumer.h |  6 ++++++
- 3 files changed, 44 insertions(+)
+ .../devicetree/bindings/power/rockchip,power-controller.yaml   | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/regulator/devres.c b/drivers/regulator/devres.c
-index 36164aec30e8..a3a3ccc711fc 100644
---- a/drivers/regulator/devres.c
-+++ b/drivers/regulator/devres.c
-@@ -771,6 +771,23 @@ static struct regulator *_devm_of_regulator_get(struct device *dev, struct devic
- 	return regulator;
- }
+diff --git a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
+index 650dc0aae6f5..ebab98987e49 100644
+--- a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
++++ b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
+@@ -132,6 +132,9 @@ $defs:
+           A number of phandles to clocks that need to be enabled
+           while power domain switches state.
  
-+/**
-+ * devm_of_regulator_get - Resource managed of_regulator_get()
-+ * @dev: device used for dev_printk() messages and resource lifetime management
-+ * @node: device node for regulator "consumer"
-+ * @id:  supply name or regulator ID.
-+ *
-+ * Managed of_regulator_get(). Regulators returned from this
-+ * function are automatically regulator_put() on driver detach. See
-+ * of_regulator_get() for more information.
-+ */
-+struct regulator *devm_of_regulator_get(struct device *dev, struct device_node *node,
-+						 const char *id)
-+{
-+	return _devm_of_regulator_get(dev, node, id, NORMAL_GET);
-+}
-+EXPORT_SYMBOL_GPL(devm_of_regulator_get);
++      domain-supply:
++        description: domain regulator supply.
 +
- /**
-  * devm_of_regulator_get_optional - Resource managed of_regulator_get_optional()
-  * @dev: device used for dev_printk() messages and resource lifetime management
-diff --git a/drivers/regulator/of_regulator.c b/drivers/regulator/of_regulator.c
-index 3d85762beda6..31a5bacd99b4 100644
---- a/drivers/regulator/of_regulator.c
-+++ b/drivers/regulator/of_regulator.c
-@@ -682,6 +682,27 @@ struct regulator *_of_regulator_get(struct device *dev, struct device_node *node
- 	return _regulator_get_common(r, dev, id, get_type);
- }
- 
-+/**
-+ * of_regulator_get - get regulator via device tree lookup
-+ * @dev: device used for dev_printk() messages
-+ * @node: device node for regulator "consumer"
-+ * @id: Supply name
-+ *
-+ * Return: pointer to struct regulator corresponding to the regulator producer,
-+ *	   or PTR_ERR() encoded error number.
-+ *
-+ * This is intended for use by consumers that want to get a regulator
-+ * supply directly from a device node. This will _not_ consider supply
-+ * aliases. See regulator_dev_lookup().
-+ */
-+struct regulator *of_regulator_get(struct device *dev,
-+					    struct device_node *node,
-+					    const char *id)
-+{
-+	return _of_regulator_get(dev, node, id, NORMAL_GET);
-+}
-+EXPORT_SYMBOL_GPL(of_regulator_get);
-+
- /**
-  * of_regulator_get_optional - get optional regulator via device tree lookup
-  * @dev: device used for dev_printk() messages
-diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
-index 8c3c372ad735..5903ae7444ae 100644
---- a/include/linux/regulator/consumer.h
-+++ b/include/linux/regulator/consumer.h
-@@ -169,6 +169,12 @@ void regulator_put(struct regulator *regulator);
- void devm_regulator_put(struct regulator *regulator);
- 
- #if IS_ENABLED(CONFIG_OF)
-+struct regulator *__must_check of_regulator_get(struct device *dev,
-+						struct device_node *node,
-+						const char *id);
-+struct regulator *__must_check devm_of_regulator_get(struct device *dev,
-+						     struct device_node *node,
-+						     const char *id);
- struct regulator *__must_check of_regulator_get_optional(struct device *dev,
- 							 struct device_node *node,
- 							 const char *id);
+       pm_qos:
+         $ref: /schemas/types.yaml#/definitions/phandle-array
+         items:
 -- 
 2.45.2
 
