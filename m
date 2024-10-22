@@ -1,40 +1,39 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9669A13957E;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 966FB19ABAC;
 	Tue, 22 Oct 2024 15:45:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729611913; cv=none; b=O7IAHRdTOaEIU+31C6X2IQl12NCtQuJ6ae0BkmBTibmpSpx9eQ4GlXUDC0thfEw/OnnkXF3eZVLRWotPpCfIuB8sA6kU0tHYFf7c15gsK4h3+vIfqdhO+FpXHWgKwvp3Ur8maIa/rMDDIWIaz8MQ/yM5h0UhOZ3frhS6+bOmFLI=
+	t=1729611913; cv=none; b=Tiw5JIEIGZjSSvL4xRuzkNh+Slu+Arpz7PX1BZj37zPjD10y6ZaXwrhGbuuo9zcSVSBBLJyAIt9PmYCaxdjW5qplotSNX6b8saKfHBJqFJB9o/US7T53TC1OKo2YaQBlZ0/tOBw2D+0DseWB/qyr1R3Y2ar8FKlhZvsKSijbBZ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1729611913; c=relaxed/simple;
-	bh=NJ7R6moR13i/qYgT1UcSIwbcfv9v3Unc4ptYYcOTvR8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=R4cyxVV1DwSwYjq81hal1Xuo6g3ECs4rFVL+bBx7y9F6LbX/uIfzbK1tRip64Q4tL4qq1f46+GVjWkqTitwVwJDG3v88agxGs4YWGdnV8YoxixdD8f0Ij1dFNkxPpkJphinb2OV+QJMI7nUqOY1/sSEwUoJXN3I2+q/ts6ZOEs8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Qsq5E/Yu; arc=none smtp.client-ip=148.251.105.195
+	bh=M0bq/DvLeH0XIHZLMAHQAQJxIOvTez7VZya3lPCe2Gk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=jflCms45nDFOv2mtyKhIWHF1BBQBh3dugteTHBg1Bi1E3X061RFimE93xMoqsbq5LSxvEzLjZovVo+vjHRIjb7ZRbgwKzZInJPSUw25IbR3351/sj519eqnvYWFxrUzRYAWlzKfX7DczN2paOsw03hbBrG10mwXU9aEsugo9Tic=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=JlK9/aXU; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Qsq5E/Yu"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="JlK9/aXU"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
 	s=mail; t=1729611909;
-	bh=NJ7R6moR13i/qYgT1UcSIwbcfv9v3Unc4ptYYcOTvR8=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Qsq5E/YuMW8X8fdJD+9wgJY2Y5OR87uzXyjvH/LWxAC5E8KmChY4OLuJ6qGQtyug4
-	 HJkJiYDiN6ABHqOdk2LdjKbK8/qsqvlJi5N5MEo5QcxQZZocEjo5gjlmIx6E3sW8Uw
-	 jbJ9klthZSo/X9NZ5OwwDCxgyePWx5G/u5TzCqY760MFf19IIClcmE9X5D12h1ZFta
-	 BE/zyApE3vk2ePNPGUxfdaA/ZB+itEo4AmD8TlGM55M4ueErSFz/LYHqg4c/Y/wVwO
-	 IXgS+7sDOi3ttKoFQ01Be35kCJsEvhuo5q5pganGc5Vz4HHPKbPsMV0AO+ZzpkdI0L
-	 trjwufFipLIAg==
+	bh=M0bq/DvLeH0XIHZLMAHQAQJxIOvTez7VZya3lPCe2Gk=;
+	h=From:To:Cc:Subject:Date:From;
+	b=JlK9/aXU3yotrT+ZdDKCuV0cxRiZAgoqrk+oWTa10rSqk651kI+0/UlP9dJr+gVz3
+	 EHM+U+XtUi9b0BXPOV+JF87ZK5Z+kSZ+RIWDf+mbEGVKUAKSWkbk7sjBEqUQMkFeC4
+	 lt58tCANmk5oEH+MrjIE2KLjLWSTcPfAVahoJA+zwjEtV6/zQLs6De5Gu714bEDI0U
+	 dqQyo82aRTFb3P503fe0ybFU3owHI2b02eCM1XUq/8KsVZnAjNoKajRXpDRJ5k/2Nw
+	 AEOuk3DuzjvppyDNHe12y92jbKZaxPg54/mJ+HvUk4oEjR3uTuND7eHl7/VxfWN8Z8
+	 /s4jIIt2A4hgA==
 Received: from jupiter.universe (dyndsl-091-248-085-026.ewe-ip-backbone.de [91.248.85.26])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id B5D9117E3677;
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id B27DA17E3662;
 	Tue, 22 Oct 2024 17:45:09 +0200 (CEST)
 Received: by jupiter.universe (Postfix, from userid 1000)
-	id 69AF84800F6; Tue, 22 Oct 2024 17:45:09 +0200 (CEST)
+	id 6467C4800EA; Tue, 22 Oct 2024 17:45:09 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -53,104 +52,115 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>,
 	linux-pm@vger.kernel.org,
 	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	kernel@collabora.com
-Subject: [PATCH v3 3/7] pmdomain: rockchip: forward rockchip_do_pmu_set_power_domain errors
-Date: Tue, 22 Oct 2024 17:41:48 +0200
-Message-ID: <20241022154508.63563-4-sebastian.reichel@collabora.com>
+Subject: [PATCH v3 0/7] Fix RK3588 GPU domain
+Date: Tue, 22 Oct 2024 17:41:45 +0200
+Message-ID: <20241022154508.63563-1-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20241022154508.63563-1-sebastian.reichel@collabora.com>
-References: <20241022154508.63563-1-sebastian.reichel@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Currently rockchip_do_pmu_set_power_domain prints a warning if there
-have been errors turning on the power domain, but it does not return
-any errors and rockchip_pd_power() tries to continue setting up the
-QOS registers. This usually results in accessing unpowered registers,
-which triggers an SError and a full system hang.
+Hi,
 
-This improves the error handling by forwarding the error to avoid
-kernel panics.
+I got a report, that the Linux kernel crashes on Rock 5B when the panthor
+driver is loaded late after booting. The crash starts with the following
+shortened error print:
 
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-Tested-by: Adrian Larumbe <adrian.larumbe@collabora.com> # On Rock 5B
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/pmdomain/rockchip/pm-domains.c | 34 +++++++++++++++++---------
- 1 file changed, 22 insertions(+), 12 deletions(-)
+rockchip-pm-domain fd8d8000.power-management:power-controller: failed to set domain 'gpu', val=0
+rockchip-pm-domain fd8d8000.power-management:power-controller: failed to get ack on domain 'gpu', val=0xa9fff
+SError Interrupt on CPU4, code 0x00000000be000411 -- SError
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index a161ee13c633..8f440f2883db 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -533,16 +533,17 @@ static int rockchip_pmu_domain_mem_reset(struct rockchip_pm_domain *pd)
- 	return ret;
- }
- 
--static void rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
--					     bool on)
-+static int rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
-+					    bool on)
- {
- 	struct rockchip_pmu *pmu = pd->pmu;
- 	struct generic_pm_domain *genpd = &pd->genpd;
- 	u32 pd_pwr_offset = pd->info->pwr_offset;
- 	bool is_on, is_mem_on = false;
-+	int ret;
- 
- 	if (pd->info->pwr_mask == 0)
--		return;
-+		return 0;
- 
- 	if (on && pd->info->mem_status_mask)
- 		is_mem_on = rockchip_pmu_domain_is_mem_on(pd);
-@@ -557,16 +558,21 @@ static void rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
- 
- 	wmb();
- 
--	if (is_mem_on && rockchip_pmu_domain_mem_reset(pd))
--		return;
-+	if (is_mem_on) {
-+		ret = rockchip_pmu_domain_mem_reset(pd);
-+		if (ret)
-+			return ret;
-+	}
- 
--	if (readx_poll_timeout_atomic(rockchip_pmu_domain_is_on, pd, is_on,
--				      is_on == on, 0, 10000)) {
--		dev_err(pmu->dev,
--			"failed to set domain '%s', val=%d\n",
--			genpd->name, is_on);
--		return;
-+	ret = readx_poll_timeout_atomic(rockchip_pmu_domain_is_on, pd, is_on,
-+					is_on == on, 0, 10000);
-+	if (ret) {
-+		dev_err(pmu->dev, "failed to set domain '%s' %s, val=%d\n",
-+			genpd->name, on ? "on" : "off", is_on);
-+		return ret;
- 	}
-+
-+	return 0;
- }
- 
- static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
-@@ -592,7 +598,11 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
- 			rockchip_pmu_set_idle_request(pd, true);
- 		}
- 
--		rockchip_do_pmu_set_power_domain(pd, power_on);
-+		ret = rockchip_do_pmu_set_power_domain(pd, power_on);
-+		if (ret < 0) {
-+			clk_bulk_disable(pd->num_clks, pd->clks);
-+			return ret;
-+		}
- 
- 		if (power_on) {
- 			/* if powering up, leave idle mode */
+This series first does some cleanups in the Rockchip power domain
+driver and changes the driver, so that it no longer tries to continue
+when it fails to enable a domain. This gets rid of the SError interrupt
+and long backtraces. But the kernel still hangs when it fails to enable
+a power domain. I have not done further analysis to check if that can
+be avoided.
+
+Last but not least this provides a fix for the GPU power domain failing
+to get enabled - after some testing from my side it seems to require the
+GPU voltage supply to be enabled.
+
+This series is now based on the pull request from Mark Brown:
+https://lore.kernel.org/linux-pm/ZvsVfQ1fuSVZpF6A@finisterre.sirena.org.uk/
+
+I added one more patch, which adds devm_of_regulator_get without the
+_optional suffix, since that is more sensible for the Rockchip usecase.
+Longer explanation can be seen in patch 6, which adds the handling to
+the Rockchip driver. My merge suggestion would be that Mark adds the
+regulator patch on top of the immutable branch and creates a new pull
+request.
+
+The last patch, which updates the RK3588 board files only covers the
+boards from 6.12-rc1. Any board missing the update will behave as before,
+so it is perfectly fine not to update all DT files at once.
+
+Changes since PATCHv2:
+ * https://lore.kernel.org/linux-rockchip/20240919091834.83572-1-sebastian.reichel@collabora.com/
+ * Rebase to 6.12-rc1 + devm_of_regulator_get_optional branch (Ulf Hansson, Chen-Yu Tsai)
+  - Introduce devm_of_regulator_get()
+  - Add code to only request regulators for domains needing them
+ * Mention other platforms in the DT binding patch (Rob Murphy)
+ * Update more RK3588 DT files (Jonas Karlman)
+
+Changes since PATCHv1:
+ * https://lore.kernel.org/all/20240910180530.47194-1-sebastian.reichel@collabora.com/
+ * Collect Reviewed-by/Acked-by/Tested-by
+ * swap first and second patch to avoid introducing and directly removing a mutex_unlock
+ * fix spelling of indentation
+ * fix double empty line after rockchip_pd_regulator_disable()
+
+Greetings,
+
+-- Sebastian
+
+Sebastian Reichel (7):
+  regulator: Add (devm_)of_regulator_get()
+  pmdomain: rockchip: cleanup mutex handling in rockchip_pd_power
+  pmdomain: rockchip: forward rockchip_do_pmu_set_power_domain errors
+  pmdomain: rockchip: reduce indentation in rockchip_pd_power
+  dt-bindings: power: rockchip: add regulator support
+  pmdomain: rockchip: add regulator support
+  arm64: dts: rockchip: Add GPU power domain regulator dependency for
+    RK3588
+
+ .../power/rockchip,power-controller.yaml      |   3 +
+ .../boot/dts/rockchip/rk3588-armsom-sige7.dts |   4 +
+ arch/arm64/boot/dts/rockchip/rk3588-base.dtsi |   2 +-
+ .../boot/dts/rockchip/rk3588-coolpi-cm5.dtsi  |   4 +
+ .../rockchip/rk3588-edgeble-neu6a-common.dtsi |   4 +
+ .../boot/dts/rockchip/rk3588-evb1-v10.dts     |   4 +
+ .../boot/dts/rockchip/rk3588-fet3588-c.dtsi   |   4 +
+ .../rockchip/rk3588-friendlyelec-cm3588.dtsi  |   4 +
+ .../arm64/boot/dts/rockchip/rk3588-jaguar.dts |   4 +
+ .../boot/dts/rockchip/rk3588-nanopc-t6.dtsi   |   4 +
+ .../boot/dts/rockchip/rk3588-ok3588-c.dts     |   4 +
+ .../dts/rockchip/rk3588-orangepi-5-plus.dts   |   4 +
+ .../boot/dts/rockchip/rk3588-quartzpro64.dts  |   4 +
+ .../boot/dts/rockchip/rk3588-rock-5-itx.dts   |   4 +
+ .../boot/dts/rockchip/rk3588-rock-5b.dts      |   4 +
+ .../arm64/boot/dts/rockchip/rk3588-tiger.dtsi |   4 +
+ .../boot/dts/rockchip/rk3588-toybrick-x0.dts  |   4 +
+ .../boot/dts/rockchip/rk3588-turing-rk1.dtsi  |   4 +
+ .../boot/dts/rockchip/rk3588s-coolpi-4b.dts   |   4 +
+ .../dts/rockchip/rk3588s-gameforce-ace.dts    |   4 +
+ .../dts/rockchip/rk3588s-indiedroid-nova.dts  |   4 +
+ .../dts/rockchip/rk3588s-khadas-edge2.dts     |   4 +
+ .../boot/dts/rockchip/rk3588s-nanopi-r6s.dts  |   4 +
+ .../boot/dts/rockchip/rk3588s-odroid-m2.dts   |   4 +
+ .../boot/dts/rockchip/rk3588s-orangepi-5.dts  |   4 +
+ .../boot/dts/rockchip/rk3588s-rock-5a.dts     |   4 +
+ drivers/pmdomain/rockchip/pm-domains.c        | 190 +++++++++++-------
+ drivers/regulator/devres.c                    |  17 ++
+ drivers/regulator/of_regulator.c              |  21 ++
+ include/linux/regulator/consumer.h            |   6 +
+ 30 files changed, 266 insertions(+), 69 deletions(-)
+
 -- 
 2.45.2
 
