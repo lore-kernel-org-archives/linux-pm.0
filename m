@@ -1,25 +1,25 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7EF5212D1EA
-	for <linux-pm@vger.kernel.org>; Tue, 22 Oct 2024 10:18:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6D45A12D1EA;
+	Tue, 22 Oct 2024 10:19:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729592336; cv=none; b=k9jGzS7Xe8H5VXf+Cdr5Zqx28PWEkqj7uOrjjt3+Ql6mlvJx80oUdVI6eOcrKnQh6Gm/bj418Kz7rlGI4iKEECl1/3Dc0qmsXRl94hjfEUy0r7bxure1S5toWI5CgBDhqJ6Qx9JNGrwIbmDqm13E8p6qV3vPcq/V3XJcNq8XEf4=
+	t=1729592398; cv=none; b=ZnQ/WfcaDRz1As/clv0WVpE0DW3UvZ3eJhdBNad0zW89QRQrUj3nfOfrnK1XMKdE2yPDz/O3E9+8Y0wrDbc6Tv6AKU3j+XUR15iX6GCSSnDxWM8q3JlsxgewlZgPJyojj8suB0W2ovHKUJHYesVWYbzxDlSJhO/KLADrM+F2Kys=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729592336; c=relaxed/simple;
-	bh=IjLaoXsQbGYYw2pv+kxbuZjmdh5oufmye7ZnH/7iXx0=;
+	s=arc-20240116; t=1729592398; c=relaxed/simple;
+	bh=5DHY+qnatij+MGCadRUcaUBKEvw0C69Oa6l9LhfDZpA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=K58grmNbYVM5NUULGNXdJvNRmOpnjLFgMW+nlBoqAzYMNXseDgdp6mYPbqgNZWwlTx58oxYFa5C++92jOsGMEd3taB/rW5MPVkgz4p4jPO1hDcyqIvQZvnRVQYBe9YtF6ZMfz8/18/DWrU24PSh1/miKYGaDWCehp+xzrA9OmX0=
+	 In-Reply-To:Content-Type; b=VktDw7/N3depV+l5Q9j1t1P/jI41962+QjORmeuQ4q5bTFdtSn/+bXSwI956dKOK9MHlxZlyn+0jMknHuD0p2w6SANX8FPJoKOgzotvF08UypwVDXatwx/rAf58jJ7m8riySo4Gc2g+EoP/EIb57mNlJuZcycjvLYI74jlhNSAs=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 613E9497;
-	Tue, 22 Oct 2024 03:19:23 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4269C497;
+	Tue, 22 Oct 2024 03:20:25 -0700 (PDT)
 Received: from [10.57.65.67] (unknown [10.57.65.67])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DAFF43F71E;
-	Tue, 22 Oct 2024 03:18:52 -0700 (PDT)
-Message-ID: <8bda9e15-cba9-48ce-a46d-71d8ac921d0c@arm.com>
-Date: Tue, 22 Oct 2024 11:20:03 +0100
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 619703F71E;
+	Tue, 22 Oct 2024 03:19:54 -0700 (PDT)
+Message-ID: <8f7fdfe6-f29c-46e0-ae85-c2f794ee268d@arm.com>
+Date: Tue, 22 Oct 2024 11:21:05 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -27,78 +27,69 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 1/4] thermal/netlink: Add the commands and the events
- for the thresholds
+Subject: Re: [PATCH v2 00/11] thermal: core: Reimplement locking through
+ guards
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org,
- quic_manafm@quicinc.com
-References: <20241014094309.1430126-1-daniel.lezcano@linaro.org>
- <20241014094309.1430126-2-daniel.lezcano@linaro.org>
- <46d25358-bf23-44ec-8350-711252560b89@arm.com>
- <c5df4aae-70af-451e-a1be-57089f5fd848@linaro.org>
- <962dfad6-e2f0-44e3-b567-e0b72e2a2a11@arm.com>
- <CAJZ5v0iaYys8H_AcM_5SHHy0LxzZkok4sx=jji1wOGjZ+30rzg@mail.gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>
+References: <4985597.31r3eYUQgx@rjwysocki.net>
+ <CAJZ5v0iV4-3-sqmK12ZoRQXzUSgO0NDySe5LZ3z7FMQOFJCymQ@mail.gmail.com>
+ <CAJZ5v0hHFp+FROxs_NbyjA8_ODKmiirFrdJNhGiHYvDMjZ2h3A@mail.gmail.com>
+ <81c752c1-6f51-4aae-ac25-98214c9b9da0@arm.com>
+ <CAJZ5v0iy3Z_WV1k7KBwuy1RrdgXpqK2fu2J2wG6PWpLxz293zA@mail.gmail.com>
 Content-Language: en-US
 From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <CAJZ5v0iaYys8H_AcM_5SHHy0LxzZkok4sx=jji1wOGjZ+30rzg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0iy3Z_WV1k7KBwuy1RrdgXpqK2fu2J2wG6PWpLxz293zA@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-On 10/22/24 11:01, Rafael J. Wysocki wrote:
+On 10/22/24 10:57, Rafael J. Wysocki wrote:
 > Hi Lukasz,
 > 
-> On Tue, Oct 22, 2024 at 11:39 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
+> On Tue, Oct 22, 2024 at 12:02 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
 >>
->> Hi Daniel,
+>> Hi Rafael,
 >>
->> On 10/22/24 08:09, Daniel Lezcano wrote:
->>> On 22/10/2024 00:02, Lukasz Luba wrote:
+>> On 10/21/24 12:08, Rafael J. Wysocki wrote:
+>>> On Fri, Oct 11, 2024 at 8:51 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
 >>>>
->>>>
->>>> On 10/14/24 10:43, Daniel Lezcano wrote:
->>>>> The thresholds exist but there is no notification neither action code
->>>>> related to them yet.
+>>>> On Fri, Oct 11, 2024 at 12:22 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 >>>>>
->>>>> These changes implement the netlink for the notifications when the
->>>>> thresholds are crossed, added, deleted or flushed as well as the
->>>>> commands which allows to get the list of the thresholds, flush them,
->>>>> add and delete.
+>>>>> Hi Everyone,
 >>>>>
->>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>>>> ---
->>>
->>> [ ... ]
->>>
->>>>> +static inline int thermal_notify_threshold_up(const struct
->>>>> thermal_zone_device *tz)
->>>>> +{
->>>>> +    return 0;
->>>>> +}
+>>>>> This is a continuation of
+>>>>>
+>>>>> https://lore.kernel.org/linux-pm/2215082.irdbgypaU6@rjwysocki.net/
+>>>>>
+>>>>> and (quite obviously) it is based on that series.
+>>>>>
+>>>>> The majority of the patches in it are new iterations of patches included in
+>>>>>
+>>>>> https://lore.kernel.org/linux-pm/6100907.lOV4Wx5bFT@rjwysocki.net/
+>>>>>
+>>>>> and there is one new patch ([02/11]).
+>>>>>
+>>>>> All of these patches are related to locking, but some of them are preparatory.
+>>>>>
+>>>>> The series as a whole introduces guards for thermal zones and cooling devices
+>>>>> and uses them to re-implement locking in the thermal core.  It also uses mutex
+>>>>> guards for thermal_list_lock and thermal_governor_lock locking.
+>>>>>
+>>>>> As usual, the details are described by the individual patch changelogs.
 >>>>
->>>> These 'return 0' look a bit odd. We usually use 'return -EINVAL' in
->>>> not defined. Although, since we don't check the output of those
->>>> functions  - we are OK. We just have to remember about these zeros,
->>>> one day when we would like to add the check of the return.
+>>>> This material is now present in the thermal-core-experimental branch
+>>>> in linux-pm.git.
 >>>
->>> The return error really depends on the context of the call site. There
->>> are other subsystems returning 0 when the service is not enabled (eg.
->>> cpufreq.h, devfreq.h, device_cgroup.h, etc ...)
->>>
->>>
+>>> I gather that it is not controversial as it was covered in the PM+TC
+>>> session at the LPC and it has been around for quite a while, so I've
+>>> just queued it up for 6.13.
 >>
->> Fair enough. As I said, we would just keep them in mind if we one
->> day decide to add the checks of the returns.
->>
->> I'm waiting for your next version with the new locking scheme that
->> Rafael asked and I will add my review tags.
+>> If it's not too late, I will do the review tomorrow.
 > 
-> My plan was to take this patch and replace the open-coded locking with
-> guards when applying it (that would be a mechanical change AFAICS).
-> 
-> I guess it's OK to add a R-by from you in that case?
+> No, it isn't, please do!
 
-Yes, please add. I know what you are going to add there, so:
-
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+OK, I will do that today.
