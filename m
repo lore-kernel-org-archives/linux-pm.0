@@ -1,70 +1,62 @@
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2081.outbound.protection.outlook.com [40.107.92.81])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78E2A1A3AB1;
-	Wed, 23 Oct 2024 10:22:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.92.81
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729678950; cv=fail; b=MbLfraB8er7dniWhYOIAUx8Mt51bOafgaECuWIA583vNY5MdbPfYdqneW338pO3Yc7JvP4xp2b4KDnqGU2Ye0Uf2MREGk4FGhRFU2Wllp2Z3TXiVwKM0TfxIfM+w+kWY4FNpLLQ/NrTKW0VP1yfvBqypQmiDV0Xa6r5XS+iGO9M=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729678950; c=relaxed/simple;
-	bh=YWU43ExnNRRx+O1o/cvLg8ZoE+XGcC9xQ5a6rg1GccY=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E2A21A3A8D;
+	Wed, 23 Oct 2024 10:22:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1729678955; cv=none; b=LWz29du5UzEQrEgnO88t7H56ZH4OVZN6KO6dhDFk3sK1C5e6GSDSxpbu45/DrxNrYlkzXR9Nw4qjQuZwtDhqfKuCd3rsc3hXg+Yxa3XZgJ6n5pmORb0UK76TN4oWBcKf7DOaKy3YL52tbAi9WulxJCr21uhnHxmf83xKKpzabxs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1729678955; c=relaxed/simple;
+	bh=UbH1ohsDF2CKHqVY99eKOuNWdKUZ4+Yt+cMdjDn0w4Y=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ijqatCurKsvPv9IO4tQquVuAKu6TWk6Qj3YJ29398fqIR84BHIddziM1Bsthca1xlj7qdkN7pQcfp1eyuXOSDmJXQALCD8Tqj5XLifSbfcxbbL+InWcWWcHnxuHY/PH6iX1UYFo0TE2eMPA7TcRNvLFXntj8Wztd6+fmLn9jUcM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=3PAfUNsi; arc=fail smtp.client-ip=40.107.92.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	 MIME-Version:Content-Type; b=XsVwLbh79gRsCIWwj4qk44Zg8RZA/LzlLpWKGjbPp4D3h0K1RVzeCTFIbtqipGroyNChZhf4iTf6jJf3PwStYMzcSHgwKHv4cLQi8AO7lC21MNobrMS4wFngOIwzepeUyxMaYRhXSkUuUnVz/yMa9oYQc/aczpJbu0D5gVicKIk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=dn9aOaQU; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="3PAfUNsi"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Iyzu6MSnAAPH1pL4l9FOB2qmRLaqAl4wtytrZ8qazEOtV4NXpvTQvb9x0lNYEgeZ8cM/kGQFqy35eJkQGOHmGgrjairVX/osPENTDyk7WFjewggV8ftiiZKnuDTBT8sNFhWJbwQspZGJokxniaHLguFDynSjDNRcwFCxuTlDq9x2OBMIKvxAOGT1ObO1o2KzYbPmbqlBdmVlAJBJL8/PMO4HwzKaEuvLw5ujAj2/H4TW62VAKU0plude1a/f6ia9l0SSHeI898IBIKHBXpvBsQFEaRhjb4ZtGxrhPuQ6FoX6mu4cgn7nq4TseID7W2t7FeWeloWsbnv8Mrv6cjNz6g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=THmELJVVf6pfoHTN7s94g41BqJSIgmFnwGoF19ojb1Q=;
- b=EglDGN4OXDaQF4Jt5frk7DeWDxlYZ+sRsp77DWdEkAbxv8rYIFHDMkQpcUJqUtgBMoM33BJxwZxPqDhJC2EdaY2ufqM8zKSE4Z/60/4i66kqx0eJAS+STEawxp3nEPuMXtR5qKiHxqy9He3fVbV5STR2lxSkFI2hk+BxuThAUzdxdDK9bEnuCVBOFcql1EqmjjFvduL6X4NyVQ59dzqG69pDe39DL2HYcFCaPmzvTDE3NGfQhATWFp/kEcVsVMB8OhSWQh+B8pIDjPWuHj3H8Aronw9P7z/r6KHYQmrPdHrtj/zIAuyCBZKlOOmyxT7hflrnKnq/9JnZvYoRiCs02g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=THmELJVVf6pfoHTN7s94g41BqJSIgmFnwGoF19ojb1Q=;
- b=3PAfUNsiyljq2HHaZrQJMDQcQRL+60iO9qnYFtkocsOp4RhLl/EZfk+KElYDJhNF0KxQTg8IpEE+wBtyEC+dDQ8D9EYG1SmCzCgWdw61ZLJyMQhQH7nocSU3hn+0tDVp/k0OnL/axJ2RMOqqu0ilMnCZUK1/kLItXSW0sivfDUw=
-Received: from SN6PR01CA0034.prod.exchangelabs.com (2603:10b6:805:b6::47) by
- DM4PR12MB8521.namprd12.prod.outlook.com (2603:10b6:8:17e::6) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.8093.18; Wed, 23 Oct 2024 10:22:22 +0000
-Received: from SA2PEPF00001504.namprd04.prod.outlook.com
- (2603:10b6:805:b6:cafe::98) by SN6PR01CA0034.outlook.office365.com
- (2603:10b6:805:b6::47) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8069.29 via Frontend
- Transport; Wed, 23 Oct 2024 10:22:22 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- SA2PEPF00001504.mail.protection.outlook.com (10.167.242.36) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.8093.14 via Frontend Transport; Wed, 23 Oct 2024 10:22:22 +0000
-Received: from shatadru.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Wed, 23 Oct
- 2024 05:22:18 -0500
-From: Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>
-To: <gautham.shenoy@amd.com>, <mario.limonciello@amd.com>,
-	<perry.yuan@amd.com>, <rafael@kernel.org>, <viresh.kumar@linaro.org>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Dhananjay
- Ugwekar" <Dhananjay.Ugwekar@amd.com>
-Subject: [PATCH 1/4] cpufreq/amd-pstate: Rename functions that enable CPPC
-Date: Wed, 23 Oct 2024 10:21:06 +0000
-Message-ID: <20241023102108.5980-2-Dhananjay.Ugwekar@amd.com>
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="dn9aOaQU"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49N9MLis031271;
+	Wed, 23 Oct 2024 10:22:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	N9thzI2s9qip/T79oZliExDHbQAqsITN4CwToGHt28Q=; b=dn9aOaQU6PXp8Q/6
+	ixVAuX6WKDks88F2Ey84Og/gvgTSyUa2SXamDqk+CvDoJ+KI70sx9l95PFS7y6L0
+	T2ilBsDSnIK8R+5D8DVLg6r0XcgB7cNOLG7xW/pn+ynyQk+G8tiFtYdVpvBUgo+5
+	pgFuEg3kGx/1sp6tAA96YruN/SVe5qtgQ9jW83djHPt9Ci5B6Kz4Xz3ebktVD8Ap
+	oTFBu6pt2DxJUazIls1hda8zlZFioOzUMFmeY7CZFa8zJ1whHqTzLbChffbGc8q+
+	OVSkF149QhD7cufV5E7H0ns21QA4MeBQpcJu3uNcpiS0KOpH/xjPqtXHHWVTsFcM
+	GJhfGw==
+Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 42em3vsu7q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 23 Oct 2024 10:22:21 +0000 (GMT)
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+	by NALASPPMTA04.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 49NAMKdb010205
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 23 Oct 2024 10:22:21 GMT
+Received: from hu-sibis-blr.qualcomm.com (10.80.80.8) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Wed, 23 Oct 2024 03:22:16 -0700
+From: Sibi Sankar <quic_sibis@quicinc.com>
+To: <sudeep.holla@arm.com>, <cristian.marussi@arm.com>,
+        <ulf.hansson@linaro.org>, <jassisinghbrar@gmail.com>,
+        <dmitry.baryshkov@linaro.org>
+CC: <linux-kernel@vger.kernel.org>, <arm-scmi@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-arm-msm@vger.kernel.org>, <quic_sibis@quicinc.com>,
+        <johan@kernel.org>, <konradybcio@kernel.org>,
+        <linux-pm@vger.kernel.org>, <tstrudel@google.com>, <rafael@kernel.org>,
+        "Johan Hovold" <johan+linaro@kernel.org>
+Subject: [PATCH V4 3/4] pmdomain: core: Fix debugfs node creation failure
+Date: Wed, 23 Oct 2024 15:51:47 +0530
+Message-ID: <20241023102148.1698910-4-quic_sibis@quicinc.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20241023102108.5980-1-Dhananjay.Ugwekar@amd.com>
-References: <20241023102108.5980-1-Dhananjay.Ugwekar@amd.com>
+In-Reply-To: <20241023102148.1698910-1-quic_sibis@quicinc.com>
+References: <20241023102148.1698910-1-quic_sibis@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -73,171 +65,256 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SA2PEPF00001504:EE_|DM4PR12MB8521:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7d937336-6e25-4b42-0bb5-08dcf34c9513
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|36860700013|376014|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?zQLsN0geA+2ZXzq3h21KxEqODazLBarY04NvtTDThDZMnNaKS/KDTjKG0xIN?=
- =?us-ascii?Q?dJ2+pQIH5SYdRAzUk7xfOFwNwvAjRSFx5IHkCAJ5EYl7+7tjMdDM2joPfOKO?=
- =?us-ascii?Q?2jsZJGHU/NyrDesPAXos8GxJ3DlmRtUWYp7WTaXhdmlVE9/bDdJh6eT+CuRv?=
- =?us-ascii?Q?mqljfdMCCZONMOshZm1F7WPYa0HREBEA4ug3M3pItdRLriipaNIi3vpbRSrU?=
- =?us-ascii?Q?vwvcjE3ObPSgRgXQwgc0DKeTKWHcGv5FQXRT/okruZT10+PvQhH6BWVAKIdB?=
- =?us-ascii?Q?Bs8Ndmibhtp2QZ/3ZRkvYSYdptuYdYUKkn32TQLifGOj/RJTMDiw4+RYYPGS?=
- =?us-ascii?Q?x83TgTtRKGUTYbKyfO0qeK8Njf6D2HVqG5P9saIvOQ/3stGRhQgl3uFy6gy2?=
- =?us-ascii?Q?dE10/F428Vq9KzH/pXXCYmj5yqVCyqqVtUP0748ExJmd5EBFt5yYYjHxY9sC?=
- =?us-ascii?Q?oNnzVYC4dZTWQG0EDRFJ/Gl6InOcKRoDVtfBYkl88FweEQ7Aa51f0QHfai85?=
- =?us-ascii?Q?aPr3+7SP8XU3Y4UvIGQ553aR3l4fxCijD6yjjIcszoyufmP17UCt19rfndM9?=
- =?us-ascii?Q?vEEfIm5QOODTZq6x6v5FTDWLxhMyjYqXHrSmEVfAsKyIVBs+1RZ2WuHE5PuZ?=
- =?us-ascii?Q?rvFbPZkO2DMX66NrL9YWexr3/P9kIGw8q48pi32N8KyHf0SleBMNWsMDCXYW?=
- =?us-ascii?Q?CPfll4uSYYuPsUfKqce6grjZypcyu/KkhNNNjE3o1E2OeCXPJestyJoOGSXv?=
- =?us-ascii?Q?t/Fj5jGcpPwgNmfaHLJ3pepji1WHVr24Xz+N/LyjFfRdU0ui779A+wXDibYS?=
- =?us-ascii?Q?kAgGLrFVsv9M3D40TN3/KBJQEkokbjfP+B3VBPkbmjX8PLkQP0IGDQQmAknA?=
- =?us-ascii?Q?3apObKS5QjjpmTmhcrmafqKdCipJM6EZSHWR23ImmhImDm0j8hr9p1hsf7zt?=
- =?us-ascii?Q?SVmNDwmUWiFhcqPEqPGNP23ZhumejzKQb5VjhHC8ycSwDWxLfYgaLGqYPBEM?=
- =?us-ascii?Q?ZRGEZ5Hr7oJ6VhvAp7EuKOttkISE6n+oe7z5SI+i2/ySW0to1hcByBJC/4E/?=
- =?us-ascii?Q?pFooDABRZEgL7Kj0IMPm1aef+UbdqrjyVzFvI6W578ep4HCPk6zpt4wGFLz+?=
- =?us-ascii?Q?TL3rg04oTUdUbBuxP4UYccj/cbgg5DQZhQ9dXwcz6iSQrlSJT0hNdHKBvrXI?=
- =?us-ascii?Q?OZrFHNYL9voGAGljOSCqWdE2R9vLJhQF8iX05QO46wg8AIonvygzzt9wJL3b?=
- =?us-ascii?Q?K+M60dRRD3XXQkFnIM38ggNO9JXDwpB9udyAdVw+mZgI0D+vKcW68KZ4Pjw2?=
- =?us-ascii?Q?m5a7seRaUwo1TXJOcyki1S592KfuRO4vpZQ4O/hUx5WgUTXVeIA3qIJpGtdF?=
- =?us-ascii?Q?AFQaSThbMt0aoP8Tu7e9eZOD7Epj3AFZfygoy3zdCqWo2PjkTA=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700013)(376014)(1800799024);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Oct 2024 10:22:22.3103
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7d937336-6e25-4b42-0bb5-08dcf34c9513
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SA2PEPF00001504.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB8521
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: oMv9eqmeUCp-SpNGElq7Gzy8DpaZYZnT
+X-Proofpoint-ORIG-GUID: oMv9eqmeUCp-SpNGElq7Gzy8DpaZYZnT
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 adultscore=0
+ malwarescore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
+ mlxlogscore=999 priorityscore=1501 mlxscore=0 suspectscore=0 phishscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2410230063
 
-Explicitly rename functions that enable CPPC as *_cppc_*.
+The domain attributes returned by the perf protocol can end up
+reporting identical names across domains, resulting in debugfs
+node creation failure. Fix this failure by ensuring that pm domains
+get a unique name using ida in pm_genpd_init.
 
-Signed-off-by: Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>
+Logs: [X1E reports 'NCC' for all its scmi perf domains]
+debugfs: Directory 'NCC' with parent 'pm_genpd' already present!
+debugfs: Directory 'NCC' with parent 'pm_genpd' already present!
+
+Reported-by: Johan Hovold <johan+linaro@kernel.org>
+Closes: https://lore.kernel.org/lkml/ZoQjAWse2YxwyRJv@hovoldconsulting.com/
+Fixes: 718072ceb211 ("PM: domains: create debugfs nodes when adding power domains")
+Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Sibi Sankar <quic_sibis@quicinc.com>
 ---
- drivers/cpufreq/amd-pstate.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 3c14962adeb2..0b4a4d69c14d 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -306,7 +306,7 @@ static int amd_pstate_set_energy_pref_index(struct amd_cpudata *cpudata,
+v3:
+* Update device names only when a name collision occurs [Dmitry/Ulf]
+* Drop Johan's T-b from "fix debugfs node creation failure"
+
+ drivers/pmdomain/core.c   | 65 ++++++++++++++++++++++++++++++---------
+ include/linux/pm_domain.h |  1 +
+ 2 files changed, 51 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+index 76490f0bf1e2..756ed0975788 100644
+--- a/drivers/pmdomain/core.c
++++ b/drivers/pmdomain/core.c
+@@ -7,6 +7,7 @@
+ #define pr_fmt(fmt) "PM: " fmt
+ 
+ #include <linux/delay.h>
++#include <linux/idr.h>
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
+@@ -23,6 +24,9 @@
+ #include <linux/cpu.h>
+ #include <linux/debugfs.h>
+ 
++/* Provides a unique ID for each genpd device */
++static DEFINE_IDA(genpd_ida);
++
+ #define GENPD_RETRY_MAX_MS	250		/* Approximate */
+ 
+ #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)		\
+@@ -189,7 +193,7 @@ static inline bool irq_safe_dev_in_sleep_domain(struct device *dev,
+ 
+ 	if (ret)
+ 		dev_warn_once(dev, "PM domain %s will not be powered off\n",
+-				genpd->name);
++			      dev_name(&genpd->dev));
+ 
  	return ret;
  }
+@@ -274,7 +278,7 @@ static void genpd_debug_remove(struct generic_pm_domain *genpd)
+ 	if (!genpd_debugfs_dir)
+ 		return;
  
--static inline int msr_enable(bool enable)
-+static inline int msr_cppc_enable(bool enable)
- {
- 	int ret, cpu;
- 	unsigned long logical_proc_id_mask = 0;
-@@ -332,7 +332,7 @@ static inline int msr_enable(bool enable)
+-	debugfs_lookup_and_remove(genpd->name, genpd_debugfs_dir);
++	debugfs_lookup_and_remove(dev_name(&genpd->dev), genpd_debugfs_dir);
+ }
+ 
+ static void genpd_update_accounting(struct generic_pm_domain *genpd)
+@@ -731,7 +735,7 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ 	genpd->states[state_idx].power_on_latency_ns = elapsed_ns;
+ 	genpd->gd->max_off_time_changed = true;
+ 	pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
+-		 genpd->name, "on", elapsed_ns);
++		 dev_name(&genpd->dev), "on", elapsed_ns);
+ 
+ out:
+ 	raw_notifier_call_chain(&genpd->power_notifiers, GENPD_NOTIFY_ON, NULL);
+@@ -782,7 +786,7 @@ static int _genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+ 	genpd->states[state_idx].power_off_latency_ns = elapsed_ns;
+ 	genpd->gd->max_off_time_changed = true;
+ 	pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
+-		 genpd->name, "off", elapsed_ns);
++		 dev_name(&genpd->dev), "off", elapsed_ns);
+ 
+ out:
+ 	raw_notifier_call_chain(&genpd->power_notifiers, GENPD_NOTIFY_OFF,
+@@ -1941,7 +1945,7 @@ int dev_pm_genpd_add_notifier(struct device *dev, struct notifier_block *nb)
+ 
+ 	if (ret) {
+ 		dev_warn(dev, "failed to add notifier for PM domain %s\n",
+-			 genpd->name);
++			 dev_name(&genpd->dev));
+ 		return ret;
+ 	}
+ 
+@@ -1988,7 +1992,7 @@ int dev_pm_genpd_remove_notifier(struct device *dev)
+ 
+ 	if (ret) {
+ 		dev_warn(dev, "failed to remove notifier for PM domain %s\n",
+-			 genpd->name);
++			 dev_name(&genpd->dev));
+ 		return ret;
+ 	}
+ 
+@@ -2014,7 +2018,7 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
+ 	 */
+ 	if (!genpd_is_irq_safe(genpd) && genpd_is_irq_safe(subdomain)) {
+ 		WARN(1, "Parent %s of subdomain %s must be IRQ safe\n",
+-				genpd->name, subdomain->name);
++		     dev_name(&genpd->dev), subdomain->name);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -2089,7 +2093,7 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+ 
+ 	if (!list_empty(&subdomain->parent_links) || subdomain->device_count) {
+ 		pr_warn("%s: unable to remove subdomain %s\n",
+-			genpd->name, subdomain->name);
++			dev_name(&genpd->dev), subdomain->name);
+ 		ret = -EBUSY;
+ 		goto out;
+ 	}
+@@ -2199,6 +2203,23 @@ static void genpd_lock_init(struct generic_pm_domain *genpd)
+ 	}
+ }
+ 
++static bool genpd_name_present(const char *name)
++{
++	bool ret = false;
++	const struct generic_pm_domain *gpd;
++
++	mutex_lock(&gpd_list_lock);
++	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
++		if (!strcmp(dev_name(&gpd->dev), name)) {
++			ret = true;
++			break;
++		}
++	}
++	mutex_unlock(&gpd_list_lock);
++
++	return ret;
++}
++
+ /**
+  * pm_genpd_init - Initialize a generic I/O PM domain object.
+  * @genpd: PM domain object to initialize.
+@@ -2226,6 +2247,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 	genpd->status = is_off ? GENPD_STATE_OFF : GENPD_STATE_ON;
+ 	genpd->device_count = 0;
+ 	genpd->provider = NULL;
++	genpd->device_id = -ENXIO;
+ 	genpd->has_provider = false;
+ 	genpd->accounting_time = ktime_get_mono_fast_ns();
+ 	genpd->domain.ops.runtime_suspend = genpd_runtime_suspend;
+@@ -2266,7 +2288,18 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 		return ret;
+ 
+ 	device_initialize(&genpd->dev);
+-	dev_set_name(&genpd->dev, "%s", genpd->name);
++
++	if (!genpd_name_present(genpd->name)) {
++		dev_set_name(&genpd->dev, "%s", genpd->name);
++	} else {
++		ret = ida_alloc(&genpd_ida, GFP_KERNEL);
++		if (ret < 0) {
++			put_device(&genpd->dev);
++			return ret;
++		}
++		genpd->device_id = ret;
++		dev_set_name(&genpd->dev, "%s_%u", genpd->name, genpd->device_id);
++	}
+ 
+ 	mutex_lock(&gpd_list_lock);
+ 	list_add(&genpd->gpd_list_node, &gpd_list);
+@@ -2288,13 +2321,13 @@ static int genpd_remove(struct generic_pm_domain *genpd)
+ 
+ 	if (genpd->has_provider) {
+ 		genpd_unlock(genpd);
+-		pr_err("Provider present, unable to remove %s\n", genpd->name);
++		pr_err("Provider present, unable to remove %s\n", dev_name(&genpd->dev));
+ 		return -EBUSY;
+ 	}
+ 
+ 	if (!list_empty(&genpd->parent_links) || genpd->device_count) {
+ 		genpd_unlock(genpd);
+-		pr_err("%s: unable to remove %s\n", __func__, genpd->name);
++		pr_err("%s: unable to remove %s\n", __func__, dev_name(&genpd->dev));
+ 		return -EBUSY;
+ 	}
+ 
+@@ -2308,9 +2341,11 @@ static int genpd_remove(struct generic_pm_domain *genpd)
+ 	genpd_unlock(genpd);
+ 	genpd_debug_remove(genpd);
+ 	cancel_work_sync(&genpd->power_off_work);
++	if (genpd->device_id != -ENXIO)
++		ida_free(&genpd_ida, genpd->device_id);
+ 	genpd_free_data(genpd);
+ 
+-	pr_debug("%s: removed %s\n", __func__, genpd->name);
++	pr_debug("%s: removed %s\n", __func__, dev_name(&genpd->dev));
+ 
  	return 0;
  }
+@@ -3320,12 +3355,12 @@ static int genpd_summary_one(struct seq_file *s,
+ 	else
+ 		snprintf(state, sizeof(state), "%s",
+ 			 status_lookup[genpd->status]);
+-	seq_printf(s, "%-30s  %-30s  %u", genpd->name, state, genpd->performance_state);
++	seq_printf(s, "%-30s  %-30s  %u", dev_name(&genpd->dev), state, genpd->performance_state);
  
--static int shmem_enable(bool enable)
-+static int shmem_cppc_enable(bool enable)
- {
- 	int cpu, ret = 0;
- 	struct cppc_perf_ctrls perf_ctrls;
-@@ -359,11 +359,11 @@ static int shmem_enable(bool enable)
- 	return ret;
- }
+ 	/*
+ 	 * Modifications on the list require holding locks on both
+ 	 * parent and child, so we are safe.
+-	 * Also genpd->name is immutable.
++	 * Also the device name is immutable.
+ 	 */
+ 	list_for_each_entry(link, &genpd->parent_links, parent_node) {
+ 		if (list_is_first(&link->parent_node, &genpd->parent_links))
+@@ -3550,7 +3585,7 @@ static void genpd_debug_add(struct generic_pm_domain *genpd)
+ 	if (!genpd_debugfs_dir)
+ 		return;
  
--DEFINE_STATIC_CALL(amd_pstate_enable, msr_enable);
-+DEFINE_STATIC_CALL(amd_pstate_cppc_enable, msr_cppc_enable);
+-	d = debugfs_create_dir(genpd->name, genpd_debugfs_dir);
++	d = debugfs_create_dir(dev_name(&genpd->dev), genpd_debugfs_dir);
  
--static inline int amd_pstate_enable(bool enable)
-+static inline int amd_pstate_cppc_enable(bool enable)
- {
--	return static_call(amd_pstate_enable)(enable);
-+	return static_call(amd_pstate_cppc_enable)(enable);
- }
- 
- static int msr_init_perf(struct amd_cpudata *cpudata)
-@@ -1042,7 +1042,7 @@ static int amd_pstate_cpu_resume(struct cpufreq_policy *policy)
- {
- 	int ret;
- 
--	ret = amd_pstate_enable(true);
-+	ret = amd_pstate_cppc_enable(true);
- 	if (ret)
- 		pr_err("failed to enable amd-pstate during resume, return %d\n", ret);
- 
-@@ -1053,7 +1053,7 @@ static int amd_pstate_cpu_suspend(struct cpufreq_policy *policy)
- {
- 	int ret;
- 
--	ret = amd_pstate_enable(false);
-+	ret = amd_pstate_cppc_enable(false);
- 	if (ret)
- 		pr_err("failed to disable amd-pstate during suspend, return %d\n", ret);
- 
-@@ -1186,7 +1186,7 @@ static ssize_t show_energy_performance_preference(
- 
- static void amd_pstate_driver_cleanup(void)
- {
--	amd_pstate_enable(false);
-+	amd_pstate_cppc_enable(false);
- 	cppc_state = AMD_PSTATE_DISABLE;
- 	current_pstate_driver = NULL;
- }
-@@ -1220,7 +1220,7 @@ static int amd_pstate_register_driver(int mode)
- 
- 	cppc_state = mode;
- 
--	ret = amd_pstate_enable(true);
-+	ret = amd_pstate_cppc_enable(true);
- 	if (ret) {
- 		pr_err("failed to enable cppc during amd-pstate driver registration, return %d\n",
- 		       ret);
-@@ -1599,7 +1599,7 @@ static void amd_pstate_epp_reenable(struct amd_cpudata *cpudata)
- 	u64 value, max_perf;
- 	int ret;
- 
--	ret = amd_pstate_enable(true);
-+	ret = amd_pstate_cppc_enable(true);
- 	if (ret)
- 		pr_err("failed to enable amd pstate during resume, return %d\n", ret);
- 
-@@ -1686,7 +1686,7 @@ static int amd_pstate_epp_suspend(struct cpufreq_policy *policy)
- 	cpudata->suspended = true;
- 
- 	/* disable CPPC in lowlevel firmware */
--	ret = amd_pstate_enable(false);
-+	ret = amd_pstate_cppc_enable(false);
- 	if (ret)
- 		pr_err("failed to suspend, return %d\n", ret);
- 
-@@ -1861,7 +1861,7 @@ static int __init amd_pstate_init(void)
- 			current_pstate_driver->adjust_perf = amd_pstate_adjust_perf;
- 	} else {
- 		pr_debug("AMD CPPC shared memory based functionality is supported\n");
--		static_call_update(amd_pstate_enable, shmem_enable);
-+		static_call_update(amd_pstate_cppc_enable, shmem_cppc_enable);
- 		static_call_update(amd_pstate_init_perf, shmem_init_perf);
- 		static_call_update(amd_pstate_update_perf, shmem_update_perf);
- 	}
-@@ -1886,7 +1886,7 @@ static int __init amd_pstate_init(void)
- 
- global_attr_free:
- 	cpufreq_unregister_driver(current_pstate_driver);
--	amd_pstate_enable(false);
-+	amd_pstate_cppc_enable(false);
- 	return ret;
- }
- device_initcall(amd_pstate_init);
+ 	debugfs_create_file("current_state", 0444,
+ 			    d, genpd, &status_fops);
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 76775ab38898..1106b86de279 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -171,6 +171,7 @@ struct generic_pm_domain {
+ 	atomic_t sd_count;	/* Number of subdomains with power "on" */
+ 	enum gpd_status status;	/* Current state of the domain */
+ 	unsigned int device_count;	/* Number of devices */
++	unsigned int device_id;		/* unique device id */
+ 	unsigned int suspended_count;	/* System suspend device counter */
+ 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
+ 	unsigned int performance_state;	/* Aggregated max performance state */
 -- 
 2.34.1
 
