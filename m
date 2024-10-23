@@ -1,45 +1,46 @@
-Received: from NAM02-BN1-obe.outbound.protection.outlook.com (mail-bn1nam02on2044.outbound.protection.outlook.com [40.107.212.44])
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2086.outbound.protection.outlook.com [40.107.220.86])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D45741D0175;
-	Wed, 23 Oct 2024 17:44:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.212.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5117F1C9DF0;
+	Wed, 23 Oct 2024 17:44:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.220.86
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729705489; cv=fail; b=OTj3kSPXEOBliROuMQmjvbQ6jTtf/0UDL1vwRUpJXXei0GWNumtzSGWge+U2aVsvnrl++04dEuKZsZpp7UAgds0ntmPxDjG5J0LWHkM/idDMhh7fq7g7g8crhtrIpbzQFGIM08N76nTj/D+cmgBNy4WzVvVvxD5LpANOnA7ypvg=
+	t=1729705489; cv=fail; b=TCre1yGNXK6GmunazQqkBg28Co7FGfNrt6MhEKqf/ryioQwNPRywq0e/sM2kp3la5sY7P+uaEt/qKdeiQOCketJZmuBfCjQMKDiReIdp5lzmF37T601V+HrsY2hW4wLu6jZpZC79McofLEY2zMEmXhs/hOHz1q2x9tlITbXzSks=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1729705489; c=relaxed/simple;
-	bh=iPeED/xiItX0aEfMtqUf9jG7ENSAgp4e1giO+JX6UgQ=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ccYbNwImilPs/Q/BPjrTcGuufqBeu2r5iPmovbp6MhXvzXMMHrj7ewGjKw9DvldDVUq/EmVO6FtNfKgoCwHnRWoUESdqZRSNCFMvkhi1rcTIkgTQpf4+C1fVaQnPEqEJRGM68V5bP6B1soPu5Lqhida6J1GBIeaIr7EK7vcKVpE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=L3QlbsTY; arc=fail smtp.client-ip=40.107.212.44
+	bh=/D63Q25KjY8gAZqJzmI82Fx6EC4b55e0Fwxdsbyqn8A=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=SEPOI16Y3gUM/nRTjhm4UU/SwGrvo+NAMNYefGJG7cP++MqrAOS9AWj8mRWjhoMW3QLIiHPhh0Dw7c53VaE6a7oPrd7bWrlJMrnj1cWn+HTCRq36wnCcdiw+IPLWuABGAJ9AtEDaysHdLPfkxZ95EcOilcjQBLe+h8LUUZ5MANU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=EgSuisx7; arc=fail smtp.client-ip=40.107.220.86
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="L3QlbsTY"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="EgSuisx7"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=H5SUP3bovmyEoyAq51aryx2Y5rz9QVZpB2kcUagdLRj5z0qFDKt/8cHDrJVLje5W8roDLfnVq3vA7qUAZtl2gwKvKTY6YXVZpGWftVTMTEUF/VSgbhlfbf4oFAgdsKtsDusjpiC86R21WG6h4/tcl58+LdpSC62mzcjUwztXVWiDceU+cnlzmGBnZLLREBPHbkWSxB/jpuLdX5gv9zzWXhiVQeOG77fTEaU9VZ0okHjLiFj/29C59XQ5nxVLnX4J27/hnoS9AuBcNClTU6AsubzibYLRSZKAnkyY5uOIO2SJtyxgvjLo0VoAVgr27wwHorPRn4vuh2tBj+8kafclJQ==
+ b=JPoI50RFdtyiOh7ha6FQlFWzHx98Hhmv/tkmYQJDGIhOqBSmeYnvqSgb+rfbQA9WN2ag98Ctk6+4ActM2vw91TlrqiZcaHsgIKa/4zCITzcBdowGSVXioJmXzTaTUlzri9oedhT8n9q+4m95eODxjeRirhFCEJ1DTKEpH37v6QTxD1uix5/tD1jR573HdaxsLQ96aEvohxlqUDHp1sFGi+ulNQvmSD4h0TPdcW1SDj79WYyc3DC/Sjo8I1yg8nI8rZ9Lq7LM+zed0cRrTfijXDaIqtdNoGv5V/1JNWLHtopnPmYt5AgPdNSoh3H/NEY39NLVAmjA8MEIZrCZo+8KdA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=eWj318giMEwg6/i+EwTjvVX3/jvcyuA3hPKBLeRWPHs=;
- b=y/GagYJprKezLM6AQCnlNw2LCDZQ/+o0rurrVfQuS2h6m1g35vxZ1fua9zGbCil6gnORcsM9tko4g2SOV5mqoLFL/yZfsihWftC2ixcZH5p0Eb7HaLs/nVkVGxMg/b2ISrJpSKu0crdGUrdITbvHkbABQIEIhsJh+morCOx2EOc3UqiDy1CofwzqrR+G6GdyViX/PCIQpw9Vh4Bv3/YHp7nYB0qkw/rDEAxvprGC30/qhe/3NE/GszqDbPRlX30ISazWJyJP1NghBhWdJrZ5LwGgo99nipPvu6/uM6EC1g+dQ0OHpfOruncLGSrxRplR0lXiOwIFPkBH56RrI5XhNw==
+ bh=Vi23DQjRuosKmxswA1gpCBi8BwBcnoPIVfbl2NWRQ2A=;
+ b=t4uYxkj2NhVYwm9ES+70Kr5U/lFT8PZi8O2287M3zPNctYV2zmh7FbOYVbxu/01ozjY6a20t3TvlUxU2ytYi8zlm/M9WnzBi03Vr0fB24lux6ZsXvq7rLdsApJx9H89U5F+kUO8vZEqDOxC6EM3/7XZJUdMB82R40Ny2BippuTFp59kR0Fb3PYEz/ez0xRVcfiUK5RiBnnFUa7JGf5KiKg/KddfIcGmbKhQIihgnnlYdrRhFFVA/wzKNzlNXSX3niEUSk1FkyY5kjQ56cjLkZ+VEertzPI6tydY7toMivsw+rXfOR7Kta9ZfIsjgp+PFA8SCqpGsmHZSz8Fo2tpfuA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=alien8.de smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=eWj318giMEwg6/i+EwTjvVX3/jvcyuA3hPKBLeRWPHs=;
- b=L3QlbsTYIOuByqqs0DeFgDusGINnZ6Njk/E+rkuzdLzHO2mtTHnre8Nb9J2v2w+jHGJ0rsP/s4U+Vjb2DJ2Gti7D2qcrbyOvOpyUCIHV8uP+OXwTdZgJPe/KyhXOfY/iNlbVas83z7JUnl00vLd1FiHinYaqt4fdkgB6NhECa/s=
-Received: from DS7PR06CA0014.namprd06.prod.outlook.com (2603:10b6:8:2a::11) by
- IA0PR12MB8748.namprd12.prod.outlook.com (2603:10b6:208:482::17) with
+ bh=Vi23DQjRuosKmxswA1gpCBi8BwBcnoPIVfbl2NWRQ2A=;
+ b=EgSuisx7kH+Cnw1vQzFDH328DBhWkUWy9HUEhVjsZPSdJYQCcD5r0zJztdJh/Jzi1yuuqzCyQzUdn6FrdRqSLNCPxfWmbAyjSWgytzFcUJSGm3RCfl5cuw0fQdLLI1jStWCftiT7JaZJVtl6CASc4oIGbxl5YInBxpSdnq1iZDo=
+Received: from DS7PR06CA0006.namprd06.prod.outlook.com (2603:10b6:8:2a::7) by
+ SJ2PR12MB8181.namprd12.prod.outlook.com (2603:10b6:a03:4f6::18) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8048.20; Wed, 23 Oct
- 2024 17:44:39 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8069.28; Wed, 23 Oct
+ 2024 17:44:43 +0000
 Received: from CY4PEPF0000E9CE.namprd03.prod.outlook.com
- (2603:10b6:8:2a:cafe::ba) by DS7PR06CA0014.outlook.office365.com
- (2603:10b6:8:2a::11) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.19 via Frontend
- Transport; Wed, 23 Oct 2024 17:44:37 +0000
+ (2603:10b6:8:2a:cafe::9f) by DS7PR06CA0006.outlook.office365.com
+ (2603:10b6:8:2a::7) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.17 via Frontend
+ Transport; Wed, 23 Oct 2024 17:44:43 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -49,11 +50,11 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  CY4PEPF0000E9CE.mail.protection.outlook.com (10.167.241.133) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.8093.14 via Frontend Transport; Wed, 23 Oct 2024 17:44:36 +0000
+ 15.20.8093.14 via Frontend Transport; Wed, 23 Oct 2024 17:44:43 +0000
 Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Wed, 23 Oct
- 2024 12:44:34 -0500
+ 2024 12:44:40 -0500
 From: Mario Limonciello <mario.limonciello@amd.com>
 To: Borislav Petkov <bp@alien8.de>
 CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
@@ -66,10 +67,12 @@ CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  list:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <linux-kernel@vger.kernel.org>,
 	"open list:ACPI" <linux-acpi@vger.kernel.org>, "open list:AMD PSTATE DRIVER"
 	<linux-pm@vger.kernel.org>, Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-Subject: [PATCH v3 0/5] x86 Heterogeneous design identification
-Date: Wed, 23 Oct 2024 12:43:52 -0500
-Message-ID: <20241023174357.34338-1-mario.limonciello@amd.com>
+Subject: [PATCH v3 4/5] x86/cpu: Add CPU type to struct cpuinfo_topology
+Date: Wed, 23 Oct 2024 12:43:56 -0500
+Message-ID: <20241023174357.34338-5-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20241023174357.34338-1-mario.limonciello@amd.com>
+References: <20241023174357.34338-1-mario.limonciello@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -82,98 +85,252 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY4PEPF0000E9CE:EE_|IA0PR12MB8748:EE_
-X-MS-Office365-Filtering-Correlation-Id: 03fa4db0-7da1-48d7-f091-08dcf38a5cf6
+X-MS-TrafficTypeDiagnostic: CY4PEPF0000E9CE:EE_|SJ2PR12MB8181:EE_
+X-MS-Office365-Filtering-Correlation-Id: 49bcdb5f-a964-47c2-8533-08dcf38a60bc
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|7416014|36860700013|376014|1800799024;
+	BCL:0;ARA:13230040|7416014|36860700013|376014|82310400026|1800799024;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?ZUQAnYyEiCr4EYrfZeI4MhBBplRB+7ebtbcMV2cZ/XywLSaagphTqoRLeUGr?=
- =?us-ascii?Q?5xGPhgctJwO4vQgu+yvs+nqHwloP7Nvfw3sP5p3Yew/LMm7B51q4bom5c8QG?=
- =?us-ascii?Q?FQlemSME0nl/n/DesvsB0MZaurawqOt1ePEYgywqqckJuFrz07akfLaKUZz5?=
- =?us-ascii?Q?ZWHJUAHPSOWR4B7lrt1wkVK8mJK3Wv4OjwaYl8A4iSlykr8UdlRTcNECx21J?=
- =?us-ascii?Q?rTmNRUpR6eSGEXEyZTyamkO1ORiZb7cltG6aT2X6SsV0Ls13O15onQt+95HA?=
- =?us-ascii?Q?2X2f3HhzWqC87gvFq6ayobg5hev+vkAX+GUn4Cif8IXG1iG7Fp2NZ/7sO5O9?=
- =?us-ascii?Q?qPkqxaxw0bPxe/R4Vh/2ElbGNrGfIvVNfA1tse50IpwwJw+P64TF71k365/0?=
- =?us-ascii?Q?DfX2ZajZA7+cTU+bq6B3ON8mkZYPm3/wrRsTkXpL2T6c91yfwVM6A5zip+0f?=
- =?us-ascii?Q?C6kbSdtOxuidLGAOKe4HZIrPRZqjg6dXoXbU5UHCkNFS348WtOOjxaCjyHzX?=
- =?us-ascii?Q?BVbEl4UIEHFHuasnImG9egB48YuWaTR/5tPxhex4vJS4lOtpW2V09ZfGCh7M?=
- =?us-ascii?Q?HDJ78LAbKPRpw1VPI6t55WZ9aRuK55HflhPr6468zIrPEQFebSLESOwv26pc?=
- =?us-ascii?Q?IGt3wpJhwgljXn8nd12QRGnrkYaFz79t26fr6GV40NRLzXPHpINzxEVNORT2?=
- =?us-ascii?Q?cqMqU+B4LV/1gAhCZAGLbYgfqMn3Izlwr//mIsD/BWB3X1NlimOyAvjzWHUD?=
- =?us-ascii?Q?prJ8eNXhRZliQxAQ2JEltRWLw1vcoPafeCe4Na9ZOxBFKpyg8f4y1V24JUN8?=
- =?us-ascii?Q?IJY9nC/lUGYrcsk2zR9K2Zak1sjrSg7p00eZX+iWzOer7+dUe1RkmRtIu03l?=
- =?us-ascii?Q?cWF6umBg18gdV/IZcy37yPROzwNN9HqBbtV1z+I4dd8pInyPf+ToB2EdIikc?=
- =?us-ascii?Q?1xuOzH9s2rF7XQ707GXFX7m8EbxPxEdVJLBGQEff/jTtYCioLReG71xwmxpI?=
- =?us-ascii?Q?B96WDluEIx3g7X+uv9s8JaBX24FJllW4L08gwBf+UTkB1bAkc1KfA1QBLlDP?=
- =?us-ascii?Q?QKQY1rkq2DlkSqFKHHS5RQFl5SoLKPJ4LWyrOoQ4SF05WXqkQvRWpwGX7upz?=
- =?us-ascii?Q?hneh2gmRuMh+ajMNHvbebqa3KCwk3xGaU1bE3wqrH04KoAS6PTQfCSppdYyR?=
- =?us-ascii?Q?6vEeBBOayLKbg4OC1Oqh8lLYJt6UVZSk7Mx+z/4ibpbnyEx09OMBJW/453A7?=
- =?us-ascii?Q?cWKAAw/gJgQCXBNlbQhSC2IjpjJG/vSwok6CM5BCin3K9SNnKO5UfgbsYScO?=
- =?us-ascii?Q?n44MdZ3l8SNBzU+53Y25Bb3pYmSsXP9N60n3NqdCV+wgwHJel2ghcQDQrUpA?=
- =?us-ascii?Q?SwXh8eIN7TcKX0wCgXxv+p7Wd2kpAoat9tPKgeRiwEivlvK84xOuJgxtcIK7?=
- =?us-ascii?Q?v7qblVCpFDo=3D?=
+	=?us-ascii?Q?VCTEEN8OXFj+wubX+2AfM5o+1Vr0hsfRBnhska8h5TRaKhho9O6j/WttTQ3C?=
+ =?us-ascii?Q?lLV6Bl61+iM9en4zuFaFQxVvKTnoxw/FMPpRjGHxyrkjd6fVX9VP9rrRQj7P?=
+ =?us-ascii?Q?ygLf/atasbgBddGD8/tEENVuuJRjdGFzvHg7uSFyDw0lP07bQrXZXD6/DCxX?=
+ =?us-ascii?Q?jU9gvyKPAb4ch+iY9AbVeWI5MQmZZylrsfKlM5DW7rWvOisg96dqynjeQusa?=
+ =?us-ascii?Q?b43FejykngDh8KjMrlM6SMIXgLFkSO2wIYFwQZw4+YMeGktnj0XUwfqd4VC3?=
+ =?us-ascii?Q?H3XzBs+//MY27h/cp+rcSkAdYo6NZtSvC/OeCXyZV4TA5QDVYW2QrhihT5pO?=
+ =?us-ascii?Q?0Vc7B8N+r37NH51SLRW/pOc8lr7I2wNP8dyTD18dB5SzzlnOpMZOPaI/xOkG?=
+ =?us-ascii?Q?0jQ2Iep78FTcIoaiuxCPvf6VENbsS7Sh9Cl1L3QBeiclAWmdOOT0Q2I/w+Mm?=
+ =?us-ascii?Q?CnE36hnmmJXLeA+vwXyvGSUgUW/yUJk4nL1IZz0Tm2cpn3ER50tEitcFJYsy?=
+ =?us-ascii?Q?Y/M30wzW3f0Lq2qoQ1huxUx+pUmvesNUA7LRK9l51eF61/hf6Jkm4QDdz6Jq?=
+ =?us-ascii?Q?/y0gcMOJWJ64Z86oKstouVSNvSycE75GSJx5/KVZ6svmkUYzZWEToX+WMpf7?=
+ =?us-ascii?Q?CvEhrmBdtukjGWE2tmIW3SQeZAA4eYaSQrMOcqnw85pY+fojqV+5lMJD1IIN?=
+ =?us-ascii?Q?JvnmJ3PDDSNBZ/+1JJ06axDdoDrysTV8qEkgnj1+7fRelzDh2zw/1vlZPUOp?=
+ =?us-ascii?Q?HRnh27tHE2DVSTl0kyR2qmTDEv4WU+v1DvO7Kqm2s80rsGFou6MC25JLnO36?=
+ =?us-ascii?Q?Ob/tkwZvgtVozoDVBvI9XtTyXC4Cs5wf5dE1xMojjdNBCPQWtU9KnnBgIX+f?=
+ =?us-ascii?Q?vvbJy6b6vGPYAcl35pKfK7sa261duWwHbskcGvsQd5lbTVz2/Vx5p+++NSaW?=
+ =?us-ascii?Q?pqG9EAPW3dgipfvyH5/YZasU4Vwvn3zMdv62VaurfqaMNGIl2xsOdn2Sgf++?=
+ =?us-ascii?Q?xAMqOmDvYYqc5D6aXbs770SBPiGlbpLsk7ONlvshhh6NaT7eY0IWvvctgI2d?=
+ =?us-ascii?Q?xvgnqAIbaoMi5WIn21fnduh2aYNgYvlPi/AVa2FLwTRaQ4ncQ5j00YDGkwEN?=
+ =?us-ascii?Q?6UdTYmNB2g4yHG3Vjv7v97IOtmxVH8NUxC4lNi6AIVkX74m75rbegQkrPs1w?=
+ =?us-ascii?Q?w22+40uo6CVzISq44G+TBmxSqzeMe+rJSFQx+atf4Yna6NsNsl1iuw4/+FIq?=
+ =?us-ascii?Q?N6lWM+TZcT+VbguUp6m/5qTqBGUPO6STY5Dei85QJJc/jsQKRlYVQCVLo04v?=
+ =?us-ascii?Q?m5WE3dvYtCtC0qOXQPDd+XuY5PlE5943GxaQRq8wm+OZVOTBaAe08npLgcyT?=
+ =?us-ascii?Q?a11Ejc5j6SHd9ZTc8RweHawZnY6qFFerIWifgTGFSkK4BZSg8g=3D=3D?=
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(7416014)(36860700013)(376014)(1800799024);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(7416014)(36860700013)(376014)(82310400026)(1800799024);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Oct 2024 17:44:36.8771
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Oct 2024 17:44:43.2209
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 03fa4db0-7da1-48d7-f091-08dcf38a5cf6
+X-MS-Exchange-CrossTenant-Network-Message-Id: 49bcdb5f-a964-47c2-8533-08dcf38a60bc
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	CY4PEPF0000E9CE.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB8748
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB8181
 
-This series adds topology identification for Intel and AMD processors and
-uses this identification in the AMD CPPC code to identify the boost
-numerator.
+From: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
 
-This series was previously submitted as [1], but this was based on some
-patches in linux-pm/linux-next that will be dropped.
+Sometimes it is required to take actions based on if a CPU is a performance
+or efficiency core. As an example, intel_pstate driver uses the Intel
+core-type to determine CPU scaling. Also, some CPU vulnerabilities only
+affect a specific CPU type, like RFDS only affects Intel Atom. Hybrid
+systems that have variants P+E, P-only(Core) and E-only(Atom), it is not
+straightforward to identify which variant is affected by a type specific
+vulnerability.
 
-Instead the series is now based on tip/master.
+Such processors do have CPUID field that can uniquely identify them. Like,
+P+E, P-only and E-only enumerates CPUID.1A.CORE_TYPE identification, while
+P+E additionally enumerates CPUID.7.HYBRID. Based on this information, it
+is possible for boot CPU to identify if a system has mixed CPU types.
 
-This also pulls one patch from Pawan's series [2] and adjusts it for all
-feedback while adding AMD support at the same time.
+Add a new field hw_cpu_type to struct cpuinfo_topology that stores the
+hardware specific CPU type. This saves the overhead of IPIs to get the CPU
+type of a different CPU. CPU type is populated early in the boot process,
+before vulnerabilities are enumerated.
 
-[1] https://lore.kernel.org/all/20241021175509.2079-5-mario.limonciello@amd.com/T/
-[2] https://lore.kernel.org/all/20240930-add-cpu-type-v4-0-104892b7ab5f@linux.intel.com/
-
+Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+Co-developed-by: Mario Limonciello <mario.limonciello@amd.com>
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
 v2->v3:
- * Adjustments on Pawan's patch from M/L feedback.
+ * Remove a bunch of boilerplate code
+ * Convert to showing string in debugfs
+ * Rename to get_topology_generic_cpu_type/get_topology_cpu_type_name
+ * Add Intel definitions to intel-family.h
+---
+ arch/x86/include/asm/intel-family.h   |  6 +++++
+ arch/x86/include/asm/processor.h      | 18 ++++++++++++++
+ arch/x86/include/asm/topology.h       |  9 +++++++
+ arch/x86/kernel/cpu/debugfs.c         |  1 +
+ arch/x86/kernel/cpu/topology_amd.c    |  3 +++
+ arch/x86/kernel/cpu/topology_common.c | 34 +++++++++++++++++++++++++++
+ 6 files changed, 71 insertions(+)
 
-Mario Limonciello (2):
-  x86/cpufeatures: Rename X86_FEATURE_FAST_CPPC to have AMD prefix
-  x86/amd: Use heterogeneous core topology for identifying boost
-    numerator
-
-Pawan Gupta (1):
-  x86/cpu: Add CPU type to struct cpuinfo_topology
-
-Perry Yuan (2):
-  x86/cpufeatures: Add feature bits for AMD heterogeneous processor
-  x86/cpu: Enable SD_ASYM_PACKING for PKG Domain on AMD Processors
-
- arch/x86/include/asm/cpufeatures.h       |  3 ++-
- arch/x86/include/asm/intel-family.h      |  6 +++++
- arch/x86/include/asm/processor.h         | 18 +++++++++++++
- arch/x86/include/asm/topology.h          |  9 +++++++
- arch/x86/kernel/acpi/cppc.c              | 23 ++++++++++++++++
- arch/x86/kernel/cpu/debugfs.c            |  1 +
- arch/x86/kernel/cpu/scattered.c          |  3 ++-
- arch/x86/kernel/cpu/topology_amd.c       |  3 +++
- arch/x86/kernel/cpu/topology_common.c    | 34 ++++++++++++++++++++++++
- arch/x86/kernel/smpboot.c                |  5 ++--
- drivers/cpufreq/amd-pstate.c             |  2 +-
- tools/arch/x86/include/asm/cpufeatures.h |  2 +-
- 12 files changed, 103 insertions(+), 6 deletions(-)
-
-
-base-commit: 21f0d4005e7eb71b95cf6b55041fd525bdb11c1f
+diff --git a/arch/x86/include/asm/intel-family.h b/arch/x86/include/asm/intel-family.h
+index 1a42f829667a3..7367644720484 100644
+--- a/arch/x86/include/asm/intel-family.h
++++ b/arch/x86/include/asm/intel-family.h
+@@ -183,4 +183,10 @@
+ /* Family 19 */
+ #define INTEL_PANTHERCOVE_X		IFM(19, 0x01) /* Diamond Rapids */
+ 
++/* CPU core types */
++enum intel_cpu_type {
++	INTEL_CPU_TYPE_ATOM = 0x20,
++	INTEL_CPU_TYPE_CORE = 0x40,
++};
++
+ #endif /* _ASM_X86_INTEL_FAMILY_H */
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 4a686f0e5dbf6..c0975815980c8 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -105,6 +105,24 @@ struct cpuinfo_topology {
+ 	// Cache level topology IDs
+ 	u32			llc_id;
+ 	u32			l2c_id;
++
++	// Hardware defined CPU-type
++	union {
++		u32		cpu_type;
++		struct {
++			// CPUID.1A.EAX[23-0]
++			u32	intel_native_model_id	:24;
++			// CPUID.1A.EAX[31-24]
++			u32	intel_type		:8;
++		};
++		struct {
++			// CPUID 0x80000026.EBX
++			u32	amd_num_processors	:16,
++				amd_power_eff_ranking	:8,
++				amd_native_model_id	:4,
++				amd_type		:4;
++		};
++	};
+ };
+ 
+ struct cpuinfo_x86 {
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index aef70336d6247..795619ea13346 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -114,6 +114,12 @@ enum x86_topology_domains {
+ 	TOPO_MAX_DOMAIN,
+ };
+ 
++enum x86_topology_cpu_type {
++	TOPO_CPU_TYPE_PERFORMANCE,
++	TOPO_CPU_TYPE_EFFICIENCY,
++	TOPO_CPU_TYPE_UNKNOWN,
++};
++
+ struct x86_topology_system {
+ 	unsigned int	dom_shifts[TOPO_MAX_DOMAIN];
+ 	unsigned int	dom_size[TOPO_MAX_DOMAIN];
+@@ -149,6 +155,9 @@ extern unsigned int __max_threads_per_core;
+ extern unsigned int __num_threads_per_package;
+ extern unsigned int __num_cores_per_package;
+ 
++const char *get_topology_cpu_type_name(struct cpuinfo_x86 *c);
++enum x86_topology_cpu_type get_topology_generic_cpu_type(struct cpuinfo_x86 *c);
++
+ static inline unsigned int topology_max_packages(void)
+ {
+ 	return __max_logical_packages;
+diff --git a/arch/x86/kernel/cpu/debugfs.c b/arch/x86/kernel/cpu/debugfs.c
+index 3baf3e4358347..10719aba62768 100644
+--- a/arch/x86/kernel/cpu/debugfs.c
++++ b/arch/x86/kernel/cpu/debugfs.c
+@@ -22,6 +22,7 @@ static int cpu_debug_show(struct seq_file *m, void *p)
+ 	seq_printf(m, "die_id:              %u\n", c->topo.die_id);
+ 	seq_printf(m, "cu_id:               %u\n", c->topo.cu_id);
+ 	seq_printf(m, "core_id:             %u\n", c->topo.core_id);
++	seq_printf(m, "cpu_type:            %s\n", get_topology_cpu_type_name(c));
+ 	seq_printf(m, "logical_pkg_id:      %u\n", c->topo.logical_pkg_id);
+ 	seq_printf(m, "logical_die_id:      %u\n", c->topo.logical_die_id);
+ 	seq_printf(m, "llc_id:              %u\n", c->topo.llc_id);
+diff --git a/arch/x86/kernel/cpu/topology_amd.c b/arch/x86/kernel/cpu/topology_amd.c
+index 7d476fa697ca5..03b3c9c3a45e2 100644
+--- a/arch/x86/kernel/cpu/topology_amd.c
++++ b/arch/x86/kernel/cpu/topology_amd.c
+@@ -182,6 +182,9 @@ static void parse_topology_amd(struct topo_scan *tscan)
+ 	if (cpu_feature_enabled(X86_FEATURE_TOPOEXT))
+ 		has_topoext = cpu_parse_topology_ext(tscan);
+ 
++	if (cpu_feature_enabled(X86_FEATURE_AMD_HETEROGENEOUS_CORES))
++		tscan->c->topo.cpu_type = cpuid_ebx(0x80000026);
++
+ 	if (!has_topoext && !parse_8000_0008(tscan))
+ 		return;
+ 
+diff --git a/arch/x86/kernel/cpu/topology_common.c b/arch/x86/kernel/cpu/topology_common.c
+index 9a6069e7133c9..60d5d74189a30 100644
+--- a/arch/x86/kernel/cpu/topology_common.c
++++ b/arch/x86/kernel/cpu/topology_common.c
+@@ -3,6 +3,7 @@
+ 
+ #include <xen/xen.h>
+ 
++#include <asm/intel-family.h>
+ #include <asm/apic.h>
+ #include <asm/processor.h>
+ #include <asm/smp.h>
+@@ -27,6 +28,36 @@ void topology_set_dom(struct topo_scan *tscan, enum x86_topology_domains dom,
+ 	}
+ }
+ 
++enum x86_topology_cpu_type get_topology_generic_cpu_type(struct cpuinfo_x86 *c)
++{
++	if (c->x86_vendor == X86_VENDOR_INTEL) {
++		switch (c->topo.intel_type) {
++		case INTEL_CPU_TYPE_ATOM: return TOPO_CPU_TYPE_EFFICIENCY;
++		case INTEL_CPU_TYPE_CORE: return TOPO_CPU_TYPE_PERFORMANCE;
++		}
++	}
++	if (c->x86_vendor == X86_VENDOR_AMD) {
++		switch (c->topo.amd_type) {
++		case 0:	return TOPO_CPU_TYPE_PERFORMANCE;
++		case 1:	return TOPO_CPU_TYPE_EFFICIENCY;
++		}
++	}
++
++	return TOPO_CPU_TYPE_UNKNOWN;
++}
++
++const char *get_topology_cpu_type_name(struct cpuinfo_x86 *c)
++{
++	switch (get_topology_generic_cpu_type(c)) {
++	case TOPO_CPU_TYPE_PERFORMANCE:
++		return "performance";
++	case TOPO_CPU_TYPE_EFFICIENCY:
++		return "efficiency";
++	default:
++		return "unknown";
++	}
++}
++
+ static unsigned int __maybe_unused parse_num_cores_legacy(struct cpuinfo_x86 *c)
+ {
+ 	struct {
+@@ -87,6 +118,7 @@ static void parse_topology(struct topo_scan *tscan, bool early)
+ 		.cu_id			= 0xff,
+ 		.llc_id			= BAD_APICID,
+ 		.l2c_id			= BAD_APICID,
++		.cpu_type		= TOPO_CPU_TYPE_UNKNOWN,
+ 	};
+ 	struct cpuinfo_x86 *c = tscan->c;
+ 	struct {
+@@ -132,6 +164,8 @@ static void parse_topology(struct topo_scan *tscan, bool early)
+ 	case X86_VENDOR_INTEL:
+ 		if (!IS_ENABLED(CONFIG_CPU_SUP_INTEL) || !cpu_parse_topology_ext(tscan))
+ 			parse_legacy(tscan);
++		if (c->cpuid_level >= 0x1a)
++			c->topo.cpu_type = cpuid_eax(0x1a);
+ 		break;
+ 	case X86_VENDOR_HYGON:
+ 		if (IS_ENABLED(CONFIG_CPU_SUP_HYGON))
 -- 
 2.43.0
 
