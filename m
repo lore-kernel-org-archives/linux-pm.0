@@ -1,31 +1,31 @@
 Received: from thales.epochal.quest (thales.epochal.quest [51.222.15.28])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E331E1F81A8;
-	Thu, 24 Oct 2024 17:09:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D87711FAF07;
+	Thu, 24 Oct 2024 17:09:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=51.222.15.28
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729789791; cv=none; b=UbqfZfrMaTQ+0ePxtj0fTQKIbsNgR+9Ct3QAHw0xZaVUgu7Rd7NqWqB6lGxzlO9cDwZImbhL2rOdw3fQ1CZ8QFL86H30rcRo9cuaOhzyFuLNgqzjP8DVoAcipoqpKbPxNdRbSG3UQCyFJO5NSzRDu9sN+O37QIPz/6bsjygbRKA=
+	t=1729789792; cv=none; b=izAi8nrmPTG7am2TlPIFM/eVgtFHb5ege1tynuUASAx9Sxke3zd0/4JeHAWE9s3BDrBBPkOQMQwThuGu3Q6C7uAXb5Ld7dxr3H2cTmkUewnx9G09I4+yAOASGhMU/TwOaarn+pfA1zkZEnum+JS0imA7mbCCDzc2Q3tZlRXKUSA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729789791; c=relaxed/simple;
-	bh=FH09cfs2D/eTLSS+cO6Kkfb54K4fYoxC6N0jK4Y1o38=;
+	s=arc-20240116; t=1729789792; c=relaxed/simple;
+	bh=0RkskRslYaUuKRSgVlTdkKv+Mh9NFTsXkwpsxrbjVIo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=j8xUq11TwpKD2xm05BGryWXoTwGINgoaE2leJBspz5DSePBEiY2dbu47aaWsd7ItG/5eL7uxs8BgBVAZN4u75CJIdmQ1K+qk+ZLjNWIFIKa44PQsntUNM2SnH54H233Qsfd56rUrxqC6GSK6Q/KBTkBUmM1amcGgmSFFFMVEKFE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=epochal.quest; spf=pass smtp.mailfrom=epochal.quest; dkim=pass (2048-bit key) header.d=epochal.quest header.i=@epochal.quest header.b=bBAsoLfA; arc=none smtp.client-ip=51.222.15.28
+	 MIME-Version; b=XIJy6MgHYI/JEX+X8mKEEIUCtgCKzJ6hR1XHEjw/vCH7Pq5d/LAXKOtXbMic1oNGA10qxDgWqgNDsyNfAIz2QEr+lf+jFg17E6NLt0vQzgGba69mEmsnBAET988vVql/7bzrxJxYlRCFQ/pN5SGlIqnqFZ4ykCzVUP2Tm9usmUY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=epochal.quest; spf=pass smtp.mailfrom=epochal.quest; dkim=pass (2048-bit key) header.d=epochal.quest header.i=@epochal.quest header.b=DL3jdBNp; arc=none smtp.client-ip=51.222.15.28
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=epochal.quest
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=epochal.quest
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=epochal.quest header.i=@epochal.quest header.b="bBAsoLfA"
+	dkim=pass (2048-bit key) header.d=epochal.quest header.i=@epochal.quest header.b="DL3jdBNp"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=epochal.quest;
-	s=default; t=1729789785;
-	bh=FH09cfs2D/eTLSS+cO6Kkfb54K4fYoxC6N0jK4Y1o38=;
+	s=default; t=1729789788;
+	bh=0RkskRslYaUuKRSgVlTdkKv+Mh9NFTsXkwpsxrbjVIo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=bBAsoLfA8Xr8/ymGhdlRzh7wD6MaTfs+sSVd7UkyXRmhfIO+ZH9IeAl5UQrOJsfCu
-	 BAV00mWamykjITl8MViMv08vXtYZvcJyx8x3pTQ9hWLJjyX2p3SLvcHxx7mLNULIGa
-	 99+JcSKt6UUf4uYqTowPeo9IzKQ0uuTJyXtU5N3KjTLjFUx2Hs4i5kjUbVQPPEN8E5
-	 Z8ebFUldvG0reYFdBejn99W8mJCunTX4VpVFBTT9EX6tQOHxc/61GNCNbivA4BSHbA
-	 WZi/bY6oJLsSz9A4Q8uo048ppkl6q9ZSS2RMYnjbQiG2vKWa9kThlsTW7vZoYy792J
-	 75AaHJpmNx31Q==
+	b=DL3jdBNpJNo5KntIZ0v25l3caK6zQjh0AQF//EWEnTja844TVoiVVkP53yIEkSYid
+	 DKTa16726L5IJMSUtxcb8b+x3AVift1IIubQRxKvoftZxNIZZszSGiWwaeYSM3ZXgC
+	 IRF/+WiDp5wGzmj/yjAhTQb1gMpPaSYQwSAnHFSzr9wONGl5h8f5FxcYTT0uCLsSMQ
+	 XpP0ttP2olSRaNo2Q5MKtnK7RosfYu3uw4Z6MF6I2JFjpPZ+nvuTjWEBW8Fvwc2r/x
+	 W2WBq8Qk4hcSIR2KwhyBzh+hCQWXhw23u5LiEd2Uq4IZkTMPyfO0pm3nW+tDx/+0S8
+	 rmJpdHNQ+NppA==
 X-Virus-Scanned: by epochal.quest
 From: Cody Eksal <masterr3c0rd@epochal.quest>
 To: linux-pm@vger.kernel.org,
@@ -35,21 +35,6 @@ To: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-phy@lists.infradead.org,
 	linux-usb@vger.kernel.org,
-	Vinod Koul <vkoul@kernel.org>,
-	Kishon Vijay Abraham I <kishon@kernel.org>,
-	Chen-Yu Tsai <wens@csie.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Cody Eksal <masterr3c0rd@epochal.quest>,
-	Yangtao Li <frank@allwinnertech.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc: Andre Przywara <andre.przywara@arm.com>,
-	Parthiban <parthiban@linumiz.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Thierry Reding <treding@nvidia.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Yangtao Li <tiny.windzz@gmail.com>,
 	Viresh Kumar <vireshk@kernel.org>,
 	Nishanth Menon <nm@ti.com>,
@@ -57,10 +42,25 @@ Cc: Andre Przywara <andre.przywara@arm.com>,
 	Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
+	Chen-Yu Tsai <wens@csie.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Maxime Ripard <mripard@kernel.org>
+Cc: Cody Eksal <masterr3c0rd@epochal.quest>,
+	Andre Przywara <andre.przywara@arm.com>,
+	Parthiban <parthiban@linumiz.com>,
+	Yangtao Li <frank@allwinnertech.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Thierry Reding <treding@nvidia.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Kishon Vijay Abraham I <kishon@kernel.org>,
 	"Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH 06/13] phy: sun4i-usb: add support for A100 USB PHY
-Date: Thu, 24 Oct 2024 14:05:24 -0300
-Message-ID: <20241024170540.2721307-7-masterr3c0rd@epochal.quest>
+Subject: [PATCH 11/13] dt-bindings: opp: h6: Add A100 operating points
+Date: Thu, 24 Oct 2024 14:05:29 -0300
+Message-ID: <20241024170540.2721307-12-masterr3c0rd@epochal.quest>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241024170540.2721307-1-masterr3c0rd@epochal.quest>
 References: <20241024170540.2721307-1-masterr3c0rd@epochal.quest>
@@ -72,46 +72,29 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Yangtao Li <frank@allwinnertech.com>
+The A100, similar to the H6 and H616, use an NVMEM value to determine
+speed binnings. The method used is similar to that of the H6. However,
+the information is stored at a slightly different bit offset.
 
-Add support for a100's usb phy, which with 2 PHYs.
+Add a new compatible for the A100.
 
-Signed-off-by: Yangtao Li <frank@allwinnertech.com>
-[masterr3c0rd@epochal.quest: modified to use quirk flags]
 Signed-off-by: Cody Eksal <masterr3c0rd@epochal.quest>
 ---
- drivers/phy/allwinner/phy-sun4i-usb.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ .../bindings/opp/allwinner,sun50i-h6-operating-points.yaml       | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/phy/allwinner/phy-sun4i-usb.c b/drivers/phy/allwinner/phy-sun4i-usb.c
-index b0f19e950601..a3942b2ee90b 100644
---- a/drivers/phy/allwinner/phy-sun4i-usb.c
-+++ b/drivers/phy/allwinner/phy-sun4i-usb.c
-@@ -1006,6 +1006,16 @@ static const struct sun4i_usb_phy_cfg sun50i_a64_cfg = {
- 	.phy0_dual_route = true,
- };
+diff --git a/Documentation/devicetree/bindings/opp/allwinner,sun50i-h6-operating-points.yaml b/Documentation/devicetree/bindings/opp/allwinner,sun50i-h6-operating-points.yaml
+index ec5e424bb3c8..603c6c88d080 100644
+--- a/Documentation/devicetree/bindings/opp/allwinner,sun50i-h6-operating-points.yaml
++++ b/Documentation/devicetree/bindings/opp/allwinner,sun50i-h6-operating-points.yaml
+@@ -23,6 +23,7 @@ properties:
+   compatible:
+     enum:
+       - allwinner,sun50i-h6-operating-points
++      - allwinner,sun50i-a100-operating-points
+       - allwinner,sun50i-h616-operating-points
  
-+static const struct sun4i_usb_phy_cfg sun50i_a100_cfg = {
-+	.num_phys = 2,
-+	.disc_thresh = 3,
-+	.phyctl_offset = REG_PHYCTL_A33,
-+	.dedicated_clocks = true,
-+	.hci_phy_ctl_clear = PHY_CTL_SIDDQ,
-+	.phy0_dual_route = true,
-+	.siddq_in_base = true,
-+};
-+
- static const struct sun4i_usb_phy_cfg sun50i_h6_cfg = {
- 	.num_phys = 4,
- 	.phyctl_offset = REG_PHYCTL_A33,
-@@ -1040,6 +1050,7 @@ static const struct of_device_id sun4i_usb_phy_of_match[] = {
- 	{ .compatible = "allwinner,sun20i-d1-usb-phy", .data = &sun20i_d1_cfg },
- 	{ .compatible = "allwinner,sun50i-a64-usb-phy",
- 	  .data = &sun50i_a64_cfg},
-+	{ .compatible = "allwinner,sun50i-a100-usb-phy", .data = &sun50i_a100_cfg },
- 	{ .compatible = "allwinner,sun50i-h6-usb-phy", .data = &sun50i_h6_cfg },
- 	{ .compatible = "allwinner,sun50i-h616-usb-phy", .data = &sun50i_h616_cfg },
- 	{ .compatible = "allwinner,suniv-f1c100s-usb-phy",
+   nvmem-cells:
 -- 
 2.47.0
 
