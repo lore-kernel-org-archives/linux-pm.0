@@ -1,81 +1,167 @@
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC0C874068
-	for <linux-pm@vger.kernel.org>; Thu, 24 Oct 2024 03:09:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3607EBA4B
+	for <linux-pm@vger.kernel.org>; Thu, 24 Oct 2024 04:33:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729739377; cv=none; b=pSsXTUyUQdR7uqIZgDbMS88vcx+nU/0L1Qq1fV75l4JkUYD/jzL0AN4SUWWziMPu7kvn2vsKduSXgjGroNwy7IeTrQpY9YHkwPecerQ56gN+sAGntvZson3it1eSl1uEfssUqL+Ose+zUklvy6hWzzkrF/Tzd+YmY1aw5tNcfjc=
+	t=1729744418; cv=none; b=ccES6mTHXuDQU1B8DkzA+/TDAnvWztGYQzzQC5uAgShDOFmt2ahQ3oux928vrJhM4kj48w/HuWcReDz18rnXo3tbaUL+ksr1POiK8nhDibShg8pch53ybWqTWiAhYItVxK/43BJaUhOUzqtR9wm7ypn3vfJAPkAO2Rw1x7FmkHA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729739377; c=relaxed/simple;
-	bh=8gIVK7vhsNt+7MTQf6nWZ6GU3ahg6rKXdhIQElTORCA=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aCaSsjYK1VgEeFBcD69YegveqtePBqDvroeY4uLVCX5WseGkB9HEX+jGsdkOVW5p6U/TeM5CQBcduNV7HP3TdBayUUtz313098wl7WWOGIFTfgudV21S7EiDK3InBIRcG1wyttNiVpI7/Fh5XklPbnGls0NkYeHBr6jx3Zw/Wc8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.88.234])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4XYrT23fF4z2FbTx;
-	Thu, 24 Oct 2024 11:08:06 +0800 (CST)
-Received: from kwepemf500003.china.huawei.com (unknown [7.202.181.241])
-	by mail.maildlp.com (Postfix) with ESMTPS id 87FA8140154;
-	Thu, 24 Oct 2024 11:09:30 +0800 (CST)
-Received: from huawei.com (10.175.112.208) by kwepemf500003.china.huawei.com
- (7.202.181.241) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 24 Oct
- 2024 11:09:29 +0800
-From: Zhang Zekun <zhangzekun11@huawei.com>
-To: <nm@ti.com>, <kristo@kernel.org>, <ssantosh@kernel.org>,
-	<ulf.hansson@linaro.org>, <d-gole@ti.com>, <linux-pm@vger.kernel.org>
-CC: <chenjun102@huawei.com>, <zhangzekun11@huawei.com>
-Subject: [PATCH v3 1/2] pmdomain: ti-sci: Add missing of_node_put() for args.np
-Date: Thu, 24 Oct 2024 11:04:41 +0800
-Message-ID: <20241024030442.119506-2-zhangzekun11@huawei.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20241024030442.119506-1-zhangzekun11@huawei.com>
-References: <20241024030442.119506-1-zhangzekun11@huawei.com>
+	s=arc-20240116; t=1729744418; c=relaxed/simple;
+	bh=aiG3SbuKeJVKFswLCNh+I9+gRFG2zqSfHBNbowAYaNE=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=BjuCs9PcrpQNgZYbl9n2bTJTZkgPn6oWs3DSt4gAqXkB0itmf7kBY61jzVWfufMBV/3Zpn9AEoppWmv071nx6v0l8V9GPidAi+oomVPkenkZLeIn//mXl/Wet4SCf3qsdrRJgMUUSyC8MPlBEP0WHZp0t/SL27SEU+z+kPweed8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nuWUTN9z; arc=none smtp.client-ip=198.175.65.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nuWUTN9z"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1729744416; x=1761280416;
+  h=date:from:to:cc:subject:message-id;
+  bh=aiG3SbuKeJVKFswLCNh+I9+gRFG2zqSfHBNbowAYaNE=;
+  b=nuWUTN9zYyubWOHZoBLEVBNjLzhljuqfI3YvGtZ+GmX9STI3npGzVhMm
+   IUHfHowLDxlX8lBi7Joy39C39CGGzwwOGELvrg1L+xR0HruVEgNLJlx8A
+   0C7hTCJ2ePBygCpezfT41vqqcTj3MVcC2ZNz7iwPop1xJtWiSKf/SGDl2
+   vDWxnNF05VVcn3TdiOv8h2YlJiOAAjxJjA6sGlEhG2JKeHdoqV+SnEzI8
+   a1xkCRmCzMhrcv6hDDIPuEVBjjfaiMpNmmIaClMKSITF/jGeuaANM6QFF
+   mrdkiFY+CUKY+el7Mxi5Xzta8CxoEI1mSnNEAgcUaY6XQXYZ+c5eg170C
+   A==;
+X-CSE-ConnectionGUID: btxberSVSsGvyEyb2kqCZw==
+X-CSE-MsgGUID: upxFPScSQCChrzwSwwNr4w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="40475235"
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; 
+   d="scan'208";a="40475235"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2024 21:33:35 -0700
+X-CSE-ConnectionGUID: /5oWsA5PSvaD4Ea5C2BskQ==
+X-CSE-MsgGUID: CadxePHMR2eQV3Xs2BMx+w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.11,228,1725346800"; 
+   d="scan'208";a="103796167"
+Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
+  by fmviesa002.fm.intel.com with ESMTP; 23 Oct 2024 21:33:33 -0700
+Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1t3pXP-000VwE-1E;
+	Thu, 24 Oct 2024 04:33:31 +0000
+Date: Thu, 24 Oct 2024 12:32:50 +0800
+From: kernel test robot <lkp@intel.com>
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: linux-pm@vger.kernel.org
+Subject: [amd-pstate:bleeding-edge] BUILD SUCCESS
+ c44cd8865138d5ca76d67c0b11679fa0c1dba20d
+Message-ID: <202410241243.sFnFoNux-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemf500003.china.huawei.com (7.202.181.241)
 
-of_parse_phandle_with_args() needs to call of_node_put() to decrement
-the refcount of args.np. So, Add the missing of_node_put() in the loop.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git bleeding-edge
+branch HEAD: c44cd8865138d5ca76d67c0b11679fa0c1dba20d  cpufreq/amd-pstate: Align offline flow of shared memory and MSR based systems
 
-Fixes: efa5c01cd7ee ("soc: ti: ti_sci_pm_domains: switch to use multiple genpds instead of one")
-Signed-off-by: Zhang Zekun <zhangzekun11@huawei.com>
----
- drivers/pmdomain/ti/ti_sci_pm_domains.c | 4 ++++
- 1 file changed, 4 insertions(+)
+elapsed time: 870m
 
-diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-index 1510d5ddae3d..0df3eb7ff09a 100644
---- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
-+++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-@@ -161,6 +161,7 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
- 				break;
- 
- 			if (args.args_count >= 1 && args.np == dev->of_node) {
-+				of_node_put(args.np);
- 				if (args.args[0] > max_id) {
- 					max_id = args.args[0];
- 				} else {
-@@ -192,7 +193,10 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
- 				pm_genpd_init(&pd->pd, NULL, true);
- 
- 				list_add(&pd->node, &pd_provider->pd_list);
-+			} else {
-+				of_node_put(args.np);
- 			}
-+
- 			index++;
- 		}
- 	}
--- 
-2.17.1
+configs tested: 90
+configs skipped: 1
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                             allnoconfig    gcc-14.1.0
+alpha                            allyesconfig    clang-20
+arc                              allmodconfig    clang-20
+arc                               allnoconfig    gcc-14.1.0
+arc                              allyesconfig    clang-20
+arc                    vdk_hs38_smp_defconfig    gcc-14.1.0
+arm                              allmodconfig    clang-20
+arm                               allnoconfig    gcc-14.1.0
+arm                              allyesconfig    clang-20
+arm                        spear3xx_defconfig    gcc-14.1.0
+arm                           stm32_defconfig    gcc-14.1.0
+arm64                            allmodconfig    clang-20
+arm64                             allnoconfig    gcc-14.1.0
+csky                             alldefconfig    gcc-14.1.0
+csky                              allnoconfig    gcc-14.1.0
+csky                                defconfig    gcc-14.1.0
+hexagon                          allmodconfig    clang-20
+hexagon                           allnoconfig    gcc-14.1.0
+hexagon                          allyesconfig    clang-20
+i386                             allmodconfig    clang-18
+i386                              allnoconfig    clang-18
+i386                             allyesconfig    clang-18
+i386        buildonly-randconfig-001-20241024    clang-18
+i386        buildonly-randconfig-002-20241024    clang-18
+i386        buildonly-randconfig-003-20241024    clang-18
+i386        buildonly-randconfig-004-20241024    clang-18
+i386        buildonly-randconfig-005-20241024    clang-18
+i386        buildonly-randconfig-006-20241024    clang-18
+i386                                defconfig    clang-18
+i386                  randconfig-001-20241024    clang-18
+i386                  randconfig-002-20241024    clang-18
+i386                  randconfig-003-20241024    clang-18
+i386                  randconfig-004-20241024    clang-18
+i386                  randconfig-005-20241024    clang-18
+i386                  randconfig-006-20241024    clang-18
+i386                  randconfig-011-20241024    clang-18
+i386                  randconfig-012-20241024    clang-18
+i386                  randconfig-013-20241024    clang-18
+i386                  randconfig-014-20241024    clang-18
+i386                  randconfig-015-20241024    clang-18
+i386                  randconfig-016-20241024    clang-18
+loongarch                        allmodconfig    gcc-14.1.0
+loongarch                         allnoconfig    gcc-14.1.0
+m68k                             allmodconfig    gcc-14.1.0
+m68k                              allnoconfig    gcc-14.1.0
+m68k                             allyesconfig    gcc-14.1.0
+m68k                        m5272c3_defconfig    gcc-14.1.0
+m68k                       m5275evb_defconfig    gcc-14.1.0
+m68k                           virt_defconfig    gcc-14.1.0
+microblaze                       allmodconfig    gcc-14.1.0
+microblaze                        allnoconfig    gcc-14.1.0
+microblaze                       allyesconfig    gcc-14.1.0
+mips                              allnoconfig    gcc-14.1.0
+nios2                             allnoconfig    gcc-14.1.0
+openrisc                          allnoconfig    clang-20
+openrisc                         allyesconfig    gcc-14.1.0
+parisc                           allmodconfig    gcc-14.1.0
+parisc                            allnoconfig    clang-20
+parisc                           allyesconfig    gcc-14.1.0
+powerpc                          allmodconfig    gcc-14.1.0
+powerpc                           allnoconfig    clang-20
+powerpc                          allyesconfig    gcc-14.1.0
+powerpc                      mgcoge_defconfig    gcc-14.1.0
+powerpc               mpc834x_itxgp_defconfig    gcc-14.1.0
+riscv                            allmodconfig    gcc-14.1.0
+riscv                             allnoconfig    clang-20
+riscv                            allyesconfig    gcc-14.1.0
+s390                             allmodconfig    gcc-14.1.0
+s390                              allnoconfig    clang-20
+s390                             allyesconfig    gcc-14.1.0
+sh                               allmodconfig    gcc-14.1.0
+sh                                allnoconfig    gcc-14.1.0
+sh                               allyesconfig    gcc-14.1.0
+sh                ecovec24-romimage_defconfig    gcc-14.1.0
+sh                        edosk7760_defconfig    gcc-14.1.0
+sh                           se7712_defconfig    gcc-14.1.0
+sh                           se7751_defconfig    gcc-14.1.0
+sh                   sh7724_generic_defconfig    gcc-14.1.0
+sparc                            allmodconfig    gcc-14.1.0
+um                               allmodconfig    clang-20
+um                                allnoconfig    clang-20
+um                               allyesconfig    clang-20
+x86_64                            allnoconfig    clang-18
+x86_64                           allyesconfig    clang-18
+x86_64                              defconfig    clang-18
+x86_64                                  kexec    clang-18
+x86_64                                  kexec    gcc-12
+x86_64                               rhel-8.3    gcc-12
+xtensa                            allnoconfig    gcc-14.1.0
+xtensa                  cadence_csp_defconfig    gcc-14.1.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
