@@ -1,25 +1,25 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3E0AB1C07D8;
-	Thu, 24 Oct 2024 10:20:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1534A1C233E;
+	Thu, 24 Oct 2024 10:23:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729765256; cv=none; b=YrNDDdQdXDJCL58k+p9FN4Oac16VKzNn+U9rWqXAXc1mU3YWGDD5wzRjcVRWPT1sSswYeC9i6HhTjMHI4amB7Z2f7o1cBAZswtwNpA67hEfwYJR56i9D8s2VipYu44CqzhL20K+GNzHIYUzg7zTog8TJ1wc4OBHYgQ24NikVEUs=
+	t=1729765387; cv=none; b=sBwat65XQwVjTeIfrCovxhvjxaeCIgfgCdlRCUZzTcpZ6VWw3i71dVmywr5Alc8iHXImNQKe7FjunUJv+lyQnI5oWn3zPOkDtoihZcGkoQqfs29R2vncPmn92Zt2+PabdQjZJLwj07KIN8Si/aoHOvo1VNCJJjDC0G/nKBCFja4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729765256; c=relaxed/simple;
-	bh=rrnBHWUo2aaeyUFKZ5dcC6YbyBwFy4haspuNHfKJgW4=;
+	s=arc-20240116; t=1729765387; c=relaxed/simple;
+	bh=B+1RfBYiqs79yFlaFW0DvH0tktjVn9e4WTKZNVljEio=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lECPOrPIErf5hsWKI3UnFlRuSzdI7JD9EgKj4owSaAv1IIQQWfK6ulNO8a85Y9bqvi+aSDrTfgZWIutrbCJW9mUbhKVDNVfdmDZkPP2kSHA7JJsxUtiDDKMSY+9gspBFP1CezgPOIOuAVFSMieC5HAeyI2v1T1ytK5qzxNVE5I4=
+	 In-Reply-To:Content-Type; b=p2+rfRUCEwPBIQS9eiIthZA8TsoUTixM6dZqWjA+IYprIoSLZ9LvP5u1h4i+2F0GhT+p84279Mc7clfxbOyCAOuCSRcJDOmcYX4Q3LTpXoJ5kWAq+DYbqqtqJO8wTDIKB0pv5tI4aIpdaZCIdGXU9YiGFfV2VAmUyGbn8zK8swI=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1A404339;
-	Thu, 24 Oct 2024 03:21:23 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 49110339;
+	Thu, 24 Oct 2024 03:23:34 -0700 (PDT)
 Received: from [10.57.55.74] (unknown [10.57.55.74])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 666BF3F71E;
-	Thu, 24 Oct 2024 03:20:52 -0700 (PDT)
-Message-ID: <17578871-30aa-4f6e-8e75-bdbbb4324f3c@arm.com>
-Date: Thu, 24 Oct 2024 11:22:02 +0100
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 98F7E3F71E;
+	Thu, 24 Oct 2024 03:23:03 -0700 (PDT)
+Message-ID: <75ca3ac0-be7c-4be5-be50-11b90b690102@arm.com>
+Date: Thu, 24 Oct 2024 11:24:14 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -27,111 +27,119 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 05/10] thermal: core: Pass trip descriptor to
+Subject: Re: [PATCH v1 06/10] thermal: core: Move some trip processing to
  thermal_trip_crossed()
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 References: <4958885.31r3eYUQgx@rjwysocki.net>
- <10547668.nUPlyArG6x@rjwysocki.net>
+ <1982859.PYKUYFuaPT@rjwysocki.net>
 Content-Language: en-US
 From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <10547668.nUPlyArG6x@rjwysocki.net>
+In-Reply-To: <1982859.PYKUYFuaPT@rjwysocki.net>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
-On 10/16/24 12:27, Rafael J. Wysocki wrote:
+On 10/16/24 12:29, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> In preparation for subsequent changes, modify thermal_trip_crossed()
-> to take a trip descriptor pointer instead of a pointer to struct
-> thermal_trip and propagate this change to thermal_zone_trip_down().
+> Notice that some processing related to trip point crossing carried out
+> in handle_thermal_trip() and thermal_zone_set_trip_temp() may as well
+> be done in thermal_trip_crossed(), which allows code duplication to be
+> reduced, so change the code accordingly.
 > 
-> No functional impact.
+> No intentional functional impact.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->   drivers/thermal/thermal_core.c |   12 +++++++-----
->   drivers/thermal/thermal_core.h |    2 +-
->   drivers/thermal/thermal_trip.c |    2 +-
->   3 files changed, 9 insertions(+), 7 deletions(-)
+>   drivers/thermal/thermal_core.c |   21 ++++++++++-----------
+>   drivers/thermal/thermal_trip.c |   17 ++++++-----------
+>   2 files changed, 16 insertions(+), 22 deletions(-)
 > 
 > Index: linux-pm/drivers/thermal/thermal_core.c
 > ===================================================================
 > --- linux-pm.orig/drivers/thermal/thermal_core.c
 > +++ linux-pm/drivers/thermal/thermal_core.c
-> @@ -526,10 +526,12 @@ static void thermal_governor_trip_crosse
+> @@ -460,11 +460,6 @@ static void handle_thermal_trip(struct t
+>   		if (tz->temperature < trip->temperature - trip->hysteresis) {
+>   			td->notify_temp = trip->temperature - trip->hysteresis;
+>   			move_trip_to_sorted_list(td, way_down_list);
+> -
+> -			if (trip->type == THERMAL_TRIP_PASSIVE) {
+> -				tz->passive--;
+> -				WARN_ON(tz->passive < 0);
+> -			}
+>   		} else {
+>   			td->threshold -= trip->hysteresis;
+>   		}
+> @@ -478,12 +473,6 @@ static void handle_thermal_trip(struct t
+>   		move_trip_to_sorted_list(td, way_up_list);
+>   
+>   		td->threshold -= trip->hysteresis;
+> -
+> -		if (trip->type == THERMAL_TRIP_PASSIVE)
+> -			tz->passive++;
+> -		else if (trip->type == THERMAL_TRIP_CRITICAL ||
+> -			 trip->type == THERMAL_TRIP_HOT)
+> -			handle_critical_trips(tz, trip);
+>   	}
 >   }
 >   
->   static void thermal_trip_crossed(struct thermal_zone_device *tz,
-> -				 const struct thermal_trip *trip,
-> +				 struct thermal_trip_desc *td,
->   				 struct thermal_governor *governor,
->   				 bool crossed_up)
->   {
-> +	const struct thermal_trip *trip = &td->trip;
-> +
+> @@ -533,9 +522,19 @@ static void thermal_trip_crossed(struct
+>   	const struct thermal_trip *trip = &td->trip;
+>   
 >   	if (crossed_up) {
+> +		if (trip->type == THERMAL_TRIP_PASSIVE)
+> +			tz->passive++;
+> +		else if (trip->type == THERMAL_TRIP_CRITICAL ||
+> +			 trip->type == THERMAL_TRIP_HOT)
+> +			handle_critical_trips(tz, trip);
+> +
 >   		thermal_notify_tz_trip_up(tz, trip);
 >   		thermal_debug_tz_trip_up(tz, trip);
-> @@ -589,12 +591,12 @@ void __thermal_zone_device_update(struct
+>   	} else {
+> +		if (trip->type == THERMAL_TRIP_PASSIVE) {
+> +			tz->passive--;
+> +			WARN_ON(tz->passive < 0);
+> +		}
+>   		thermal_notify_tz_trip_down(tz, trip);
+>   		thermal_debug_tz_trip_down(tz, trip);
 >   	}
->   
->   	list_for_each_entry_safe(td, next, &way_up_list, list_node) {
-> -		thermal_trip_crossed(tz, &td->trip, governor, true);
-> +		thermal_trip_crossed(tz, td, governor, true);
->   		list_del_init(&td->list_node);
->   	}
->   
->   	list_for_each_entry_safe_reverse(td, next, &way_down_list, list_node) {
-> -		thermal_trip_crossed(tz, &td->trip, governor, false);
-> +		thermal_trip_crossed(tz, td, governor, false);
->   		list_del_init(&td->list_node);
->   	}
->   
-> @@ -664,9 +666,9 @@ void thermal_zone_device_update(struct t
->   EXPORT_SYMBOL_GPL(thermal_zone_device_update);
->   
->   void thermal_zone_trip_down(struct thermal_zone_device *tz,
-> -			    const struct thermal_trip *trip)
-> +			    struct thermal_trip_desc *td)
->   {
-> -	thermal_trip_crossed(tz, trip, thermal_get_tz_governor(tz), false);
-> +	thermal_trip_crossed(tz, td, thermal_get_tz_governor(tz), false);
->   }
->   
->   int for_each_thermal_governor(int (*cb)(struct thermal_governor *, void *),
-> Index: linux-pm/drivers/thermal/thermal_core.h
-> ===================================================================
-> --- linux-pm.orig/drivers/thermal/thermal_core.h
-> +++ linux-pm/drivers/thermal/thermal_core.h
-> @@ -274,7 +274,7 @@ int thermal_zone_trip_id(const struct th
->   			 const struct thermal_trip *trip);
->   int __thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
->   void thermal_zone_trip_down(struct thermal_zone_device *tz,
-> -			    const struct thermal_trip *trip);
-> +			    struct thermal_trip_desc *td);
->   void thermal_zone_set_trip_hyst(struct thermal_zone_device *tz,
->   				struct thermal_trip *trip, int hyst);
->   
 > Index: linux-pm/drivers/thermal/thermal_trip.c
 > ===================================================================
 > --- linux-pm.orig/drivers/thermal/thermal_trip.c
 > +++ linux-pm/drivers/thermal/thermal_trip.c
-> @@ -118,7 +118,7 @@ void thermal_zone_set_trip_temp(struct t
->   				tz->passive--;
->   				WARN_ON_ONCE(tz->passive < 0);
->   			}
-> -			thermal_zone_trip_down(tz, trip);
-> +			thermal_zone_trip_down(tz, td);
->   		}
+> @@ -108,18 +108,13 @@ void thermal_zone_set_trip_temp(struct t
+>   	if (temp == THERMAL_TEMP_INVALID) {
+>   		struct thermal_trip_desc *td = trip_to_trip_desc(trip);
+>   
+> -		if (tz->temperature >= td->threshold) {
+> -			/*
+> -			 * The trip has been crossed on the way up, so some
+> -			 * adjustments are needed to compensate for the lack
+> -			 * of it going forward.
+> -			 */
+> -			if (trip->type == THERMAL_TRIP_PASSIVE) {
+> -				tz->passive--;
+> -				WARN_ON_ONCE(tz->passive < 0);
+> -			}
+> +		/*
+> +		 * If the trip has been crossed on the way up, some adjustments
+> +		 * are needed to compensate for the lack of it going forward.
+> +		 */
+> +		if (tz->temperature >= td->threshold)
+>   			thermal_zone_trip_down(tz, td);
+> -		}
+> +
 >   		/*
 >   		 * Invalidate the threshold to avoid triggering a spurious
+>   		 * trip crossing notification when the trip becomes valid.
 > 
 > 
 > 
+
 
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
