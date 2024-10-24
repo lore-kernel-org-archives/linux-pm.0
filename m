@@ -1,31 +1,31 @@
 Received: from thales.epochal.quest (thales.epochal.quest [51.222.15.28])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 518DD1FBF45;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C3581FAF05;
 	Thu, 24 Oct 2024 17:19:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=51.222.15.28
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729790356; cv=none; b=Z9caYtR2dCpjh7ZWYp60FzWovTTgrCJaG1+/FGITf2kG8pHPXTMBVsP3Z9a8akzhswp4t3nDyuLfF+oB17S8Y0sgpoRdcQSrVZsRi8bjj08+XJ/FfoGCMq1h1ZiphG65CLZql3Sz0HHu4XpJTztU3zLeJL/O3MZ2xkYPGr89BVU=
+	t=1729790356; cv=none; b=R8U6YdJFAwrpv4lSW+nrK8mDZnz8G2jGNqn7MtbXBXWrugMyMWTrKRh7esCVixdvu/AaRvrlY4V0jUWMQLLAOTHSL5ApHG+ZJf49gC1Wm4QJnarR4nRtENLSeJzJKD4L6ZHfnFWrzFe+qnmGupJc/ujCZpaUZK8N3EGet3Tgqww=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1729790356; c=relaxed/simple;
-	bh=8tBNvio1ObQTdhVztprL74DuHbZpuJ/042vXRGsdyBc=;
+	bh=JkRVwM9k+j3E/nlOdSLDJcFQJqTbTeyz4GS5TOzoBYo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OuGPNiQpnsgoGkBV1mZHcHIXsdtXIWRGbnK1E2hJdRdq3azw63Wx1uNPLKL43wqBepJV8oem3s/YxGhEB9nlRBRkce0b1d7g7n8xrtr+P4b1YhBZ27Gmxj1nKChtmDDISHz4FC3P1KUJoLqYs984qwk8gQcoKH//I0IVI7lflE0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=epochal.quest; spf=pass smtp.mailfrom=epochal.quest; dkim=pass (2048-bit key) header.d=epochal.quest header.i=@epochal.quest header.b=gBpbT0s4; arc=none smtp.client-ip=51.222.15.28
+	 MIME-Version; b=TGWBd39KGY/SS1cjJsB3xh73pypvVYpMuStXb8CIc/oGNq9SMqFOT7LPNU7VNqM3tn6FgwaRK9VT0EW0aosyWB27ga1lsmmCU73i9b7Y2gJZ1Bkee9dfL0vl7cYPdsyYs5sbdk1YvulQe0G9YDgW7FJm5Wz/vFu5/QCe0KNBkFU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=epochal.quest; spf=pass smtp.mailfrom=epochal.quest; dkim=pass (2048-bit key) header.d=epochal.quest header.i=@epochal.quest header.b=fu0uHdmh; arc=none smtp.client-ip=51.222.15.28
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=epochal.quest
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=epochal.quest
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=epochal.quest header.i=@epochal.quest header.b="gBpbT0s4"
+	dkim=pass (2048-bit key) header.d=epochal.quest header.i=@epochal.quest header.b="fu0uHdmh"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=epochal.quest;
-	s=default; t=1729789781;
-	bh=8tBNvio1ObQTdhVztprL74DuHbZpuJ/042vXRGsdyBc=;
+	s=default; t=1729789782;
+	bh=JkRVwM9k+j3E/nlOdSLDJcFQJqTbTeyz4GS5TOzoBYo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=gBpbT0s4l/mH/5QaMbAWMR9X/xoQ2LxH8ZCno0hvGjlhDc0U6Qp28p8TrQ6cLjCPt
-	 2JdrefvdU6KCkLy0g7yzngC/ECTV18sfnhi3F5dLI1qoil3nT/rXYzu6aIJ0m35q3+
-	 AZPfQdcVTq7ZeKK3gTHKbBSADrQmFoeehWhsb2RAq5BsjuYcjo/y6IoeXVA7Ju+Sjj
-	 /fsawnI5GeVxUwBixvNrppUX7BK9mfaazcRMhwOpdzWKiJOuwwOhl6nZ0EcFdg1tnV
-	 NjeqgtTgIUhtvTq6HJFNZZorHxqe/mvKk3VX9e7GPPODi/qhKTlDzs8N61/d88LNSy
-	 vuLAAireR7sXg==
+	b=fu0uHdmhg589NknjBuOq9MenRyuPkuLBEwT8UHfJfGkBBQxJ0hjtome9pFYIJ+ttH
+	 yKeWh1Jg8E+iEXu7C5XCIQSpBNGf8kSqDa33v+kuK3L3PRnHPpAF9zvKb0V9uIU+/a
+	 GynAIKZ3nVc4shet1UoW5blBjtZxNaMS8uLnjCxh9EFoEPMlJ9l1z+y1id20ZKcXkr
+	 V+fE7ofcC6P22gbdH5KAYDiwtn2q0uNfEmE7kU2UJA1aZQgsUdHtX5KZQ/EOTltLxQ
+	 0tNG3dPJI4PTOWsD/PXI1M1bLyvPGfNnPu1v77ZKBa+KHbvIaHbti9KNY/O6CJtxpl
+	 DRh1VwlvO88Mw==
 X-Virus-Scanned: by epochal.quest
 From: Cody Eksal <masterr3c0rd@epochal.quest>
 To: linux-pm@vger.kernel.org,
@@ -35,32 +35,32 @@ To: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-phy@lists.infradead.org,
 	linux-usb@vger.kernel.org,
+	Vinod Koul <vkoul@kernel.org>,
+	Kishon Vijay Abraham I <kishon@kernel.org>,
 	Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
 	Chen-Yu Tsai <wens@csie.org>,
 	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>
+	Samuel Holland <samuel@sholland.org>,
+	Maxime Ripard <mripard@kernel.org>
 Cc: Cody Eksal <masterr3c0rd@epochal.quest>,
 	Andre Przywara <andre.przywara@arm.com>,
 	Parthiban <parthiban@linumiz.com>,
 	Yangtao Li <frank@allwinnertech.com>,
 	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Vinod Koul <vkoul@kernel.org>,
 	Linus Walleij <linus.walleij@linaro.org>,
 	Thierry Reding <treding@nvidia.com>,
 	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	Maxime Ripard <mripard@kernel.org>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Yangtao Li <tiny.windzz@gmail.com>,
 	Viresh Kumar <vireshk@kernel.org>,
 	Nishanth Menon <nm@ti.com>,
 	Stephen Boyd <sboyd@kernel.org>,
-	Kishon Vijay Abraham I <kishon@kernel.org>,
 	"Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH 01/13] arm64: dts: allwinner: A100: Add PMU mode
-Date: Thu, 24 Oct 2024 14:05:19 -0300
-Message-ID: <20241024170540.2721307-2-masterr3c0rd@epochal.quest>
+Subject: [PATCH 03/13] dt-bindings: phy: sun50i-a64: add a100 compatible
+Date: Thu, 24 Oct 2024 14:05:21 -0300
+Message-ID: <20241024170540.2721307-4-masterr3c0rd@epochal.quest>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241024170540.2721307-1-masterr3c0rd@epochal.quest>
 References: <20241024170540.2721307-1-masterr3c0rd@epochal.quest>
@@ -72,64 +72,27 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Yangtao Li <frank@allwinnertech.com>
+The USB PHY found in the A100 is similar to that found in the A64,
+although it requires some quirks to be enabled. Add a compatible for the
+A100's variant.
 
-Add the Performance Monitoring Unit (PMU) device tree node to the A100
-.dtsi, which tells DT users which interrupts are triggered by PMU overflow
-events on each core.
-
-Signed-off-by: Yangtao Li <frank@allwinnertech.com>
-Reviewed-by: Andre Przywara <andre.przywara@arm.com>
 Signed-off-by: Cody Eksal <masterr3c0rd@epochal.quest>
 ---
- arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ .../devicetree/bindings/phy/allwinner,sun50i-a64-usb-phy.yaml    | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
-index a3dccf193765..1eca7c220ede 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
-@@ -25,21 +25,21 @@ cpu0: cpu@0 {
- 			enable-method = "psci";
- 		};
+diff --git a/Documentation/devicetree/bindings/phy/allwinner,sun50i-a64-usb-phy.yaml b/Documentation/devicetree/bindings/phy/allwinner,sun50i-a64-usb-phy.yaml
+index f557feca9763..b91e6c83722c 100644
+--- a/Documentation/devicetree/bindings/phy/allwinner,sun50i-a64-usb-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/allwinner,sun50i-a64-usb-phy.yaml
+@@ -18,6 +18,7 @@ properties:
+     enum:
+       - allwinner,sun20i-d1-usb-phy
+       - allwinner,sun50i-a64-usb-phy
++      - allwinner,sun50i-a100-usb-phy
  
--		cpu@1 {
-+		cpu1: cpu@1 {
- 			compatible = "arm,cortex-a53";
- 			device_type = "cpu";
- 			reg = <0x1>;
- 			enable-method = "psci";
- 		};
- 
--		cpu@2 {
-+		cpu2: cpu@2 {
- 			compatible = "arm,cortex-a53";
- 			device_type = "cpu";
- 			reg = <0x2>;
- 			enable-method = "psci";
- 		};
- 
--		cpu@3 {
-+		cpu3: cpu@3 {
- 			compatible = "arm,cortex-a53";
- 			device_type = "cpu";
- 			reg = <0x3>;
-@@ -47,6 +47,15 @@ cpu@3 {
- 		};
- 	};
- 
-+	pmu {
-+		compatible = "arm,cortex-a53-pmu";
-+		interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 142 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
-+		interrupt-affinity = <&cpu0>, <&cpu1>, <&cpu2>, <&cpu3>;
-+	};
-+
- 	psci {
- 		compatible = "arm,psci-1.0";
- 		method = "smc";
+   reg:
+     items:
 -- 
 2.47.0
 
