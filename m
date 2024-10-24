@@ -1,63 +1,63 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7F011F5836
-	for <linux-pm@vger.kernel.org>; Thu, 24 Oct 2024 15:41:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C25EA1F76BC
+	for <linux-pm@vger.kernel.org>; Thu, 24 Oct 2024 15:41:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729784485; cv=none; b=ZV6VbHSCSEjoA5gELRoB9bj7m8SdBBsMFKr0bFdbUzg3i5L5/v6zN1BlLKXLOjq1aDbbrPVxWmX2hsw1ZX7XPO8WD+/5vhnT4SPVWYuli/vhMV+SfcMzW5q2GPEOg2fcLNBlcQvDXiZG751KvT9kM8iQkw9DGyZRYNgz5oWMTwU=
+	t=1729784490; cv=none; b=lPi0/d70eb3AgkT95MVHJrfMgWy4mGwVTQWt03PLIk+3xO/PmHBGNbMWThAhK+Z6M0EAS0vHlRsmS7EFVrCNe4h5+wgaDnDPtTO15AEmmxa/uzqbO33e8o7Ivdj+ZI2ZvU+ii1fH55zppLOHe0iy/sjXsOx4CMeqwDmJSIGp9ok=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729784485; c=relaxed/simple;
-	bh=Vq0hwZOE+pwsen4g/SemCbnquuCGs6MC9R+dxIZBdGk=;
+	s=arc-20240116; t=1729784490; c=relaxed/simple;
+	bh=gLW0fh8PPs+BaOn5rkVzGVDEOg0uLVSjRbyJUCDLGBI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mMPkA6VS9OTc8gZHZPxdo3E7QdVYRhIi+gAugOssrjoOyeqFvDB+e3J3LS8TkBQVxPVVV/BZL6qhJs6IiVpyMD86/7tz2S7Sfepexu3e58ICeOIcCTeBTWhw1KMwG/jG2k4vA2yU1F39r2fihNf4gOpJ+kLcnT2cWf0WSMMqXss=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=YdB3uGLC; arc=none smtp.client-ip=170.10.133.124
+	 MIME-Version; b=DSYcsCPsahm/uRrpHbkilSfwl+lHmO3gzbj6WRIoGVmrKGrXJuu4ERIxEzGMLg+ho8lUj+P+d1Aj+8FC4DI65l1eHhUoWTqmRchOTsrapsXOgEK9S66pmd6SKm5JBg56Q9GuwYKSHcD8BEP7h952iVL2VoDdOQCXzDC/diHza4w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=irZuRXDg; arc=none smtp.client-ip=170.10.129.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="YdB3uGLC"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="irZuRXDg"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1729784482;
+	s=mimecast20190719; t=1729784487;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=7MvysEEBZ+T8FmbTZPAMUhj3c6tELoccFnLFV1SGbJM=;
-	b=YdB3uGLCNBCoTFjfLT1LyhLmwpfG3wNanT0UMn4oAXzklhnXbsnfeGEUOvOtzKvU8q8cl4
-	ie6tW61govnQwJHkGFMcMGeJquKvrxPhJgOaWrihUF9W9EX4quznGOL80x1ZXrfuMIotaR
-	asxRS6BNGnZgQKhF3T7EZk7YkvEiN5M=
-Received: from mail-vk1-f199.google.com (mail-vk1-f199.google.com
- [209.85.221.199]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=61B9Jq2TL9i1+pERa497eTJdtZBmCcAzgGgAjZWiZfs=;
+	b=irZuRXDgWACWRCTNXIsFKYyMMCr3EPRKYbhiHL1UW52GoAGZN5MEWelG/v4xAVk+UMtI7g
+	kXx9oTO7GheK/qR/KwBJWglXBOuJelNScLCX9FXUXjEdGqEn1pEmqJptc0I4dFj+SGpZ+g
+	1SF6IUqwKvlGVLfR19taLFonfWkbkow=
+Received: from mail-ua1-f70.google.com (mail-ua1-f70.google.com
+ [209.85.222.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-68-iukQlOkNNBK73-Qbaup-8Q-1; Thu, 24 Oct 2024 11:41:21 -0400
-X-MC-Unique: iukQlOkNNBK73-Qbaup-8Q-1
-Received: by mail-vk1-f199.google.com with SMTP id 71dfb90a1353d-50d6bc46348so314435e0c.0
-        for <linux-pm@vger.kernel.org>; Thu, 24 Oct 2024 08:41:18 -0700 (PDT)
+ us-mta-671-_t0g0PPSM1mRCah7stR7qw-1; Thu, 24 Oct 2024 11:41:26 -0400
+X-MC-Unique: _t0g0PPSM1mRCah7stR7qw-1
+Received: by mail-ua1-f70.google.com with SMTP id a1e0cc1a2514c-84b28b879bfso252499241.3
+        for <linux-pm@vger.kernel.org>; Thu, 24 Oct 2024 08:41:21 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729784478; x=1730389278;
+        d=1e100.net; s=20230601; t=1729784481; x=1730389281;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=7MvysEEBZ+T8FmbTZPAMUhj3c6tELoccFnLFV1SGbJM=;
-        b=kOrgvmv8nG08u6/HUkOJZCDo3hn2FWnCouLmoyqo0dBWSU+wr9+T056r5sEFgkxilK
-         NDkIPJR333+nCv++WqkSemt8FWbG5vkb6fQ6DnuX0yFqXd9X+SNmX2zAFsRbPXf1MngJ
-         +74Jl0bZp9BO5C54JDzL6L+518eCn9cPiMvYlZNKK+CzMW3IKLH4zoDNjenR4CVOGmQy
-         tgBMaXrj4fsN8VxYTGGzi3nUHiOwYitSndBe7481BNmNvkcunCkAH6Hb6NQNGCxBBooF
-         dIVMhLpVgdaKsLoo4aI8yUJCNO2HZWjuVO3/aJlBO1Fo4KtR9qgipsQtJ2p5j0mOzl7r
-         SW4A==
-X-Forwarded-Encrypted: i=1; AJvYcCWPgK+MEAVJTEw/06+iNB4u+9r+RAWzBfgvIjbmGRwIMywE52l6wDN+fZWod5LREBQ1XIh80XALNw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy2lleq16RYeM4gd8EDHNpW1Jn+PPTTX2f9dlCr23n5nSDxW0WH
-	XqmACK/NI5lt5FyvTHIR0vp+m3RnO6gozEa6jSET5m7mLxH3pqhiStTCg8nR+Wvs1wXW46fgcLB
-	ptAmhKJ+PbWYzU8e4UeN0idDEqU14ZG27ptvqqJMlTrn34YDRSVBfMnYY
-X-Received: by 2002:a05:6122:3108:b0:50d:5f75:f7d9 with SMTP id 71dfb90a1353d-50fd0328be1mr8094120e0c.9.1729784477786;
-        Thu, 24 Oct 2024 08:41:17 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEd4qMACX9LG+miS3COD2mtSEKu3z3IOg5e0itCY/rx1mnKITe4J+oT57bQeldmULjWLlgWyQ==
-X-Received: by 2002:a05:6122:3108:b0:50d:5f75:f7d9 with SMTP id 71dfb90a1353d-50fd0328be1mr8094092e0c.9.1729784477455;
-        Thu, 24 Oct 2024 08:41:17 -0700 (PDT)
+        bh=61B9Jq2TL9i1+pERa497eTJdtZBmCcAzgGgAjZWiZfs=;
+        b=eqky9eIruyR3oVJd4/ns7Z0zDp1j7qt7oStJPeiKcM5Qa/mzdzj0UKlP26nle+IcmB
+         xf4rOlRYH8kov1vKiXmRg+sPShNeow87RAysH269kU6L4P8GahkkghLkZjT1fKvYQ7qD
+         pBa212hzZF3C25NfP9bP0/T1WEYPqKv6bYeKLL0AEtOLer3ZbMG9H6wmS1HbAWaf8BZ2
+         wU3GmZO/UdF6pyZsFTxp0jOOoQRWMTjjrk5eEMYS8Km1pvv5cSGGaNLM9fZW2hBj7rs7
+         duFekvCZiXx5iWVP59aQNPnhLi95pstUgg4t11NpnyzwpIWB1j0Ud5NmRaY7XTr5Zf+v
+         BJdw==
+X-Forwarded-Encrypted: i=1; AJvYcCV3/JvLk0puLfy8Lj+PDFLhXjQCr6j7huguJQ51Tt5Kknh7DXyfoKmUeSwV9dV5t0KFxL9e4qvwgg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyJEFVymEjb/bD6OsspoWPIvjjUP4gvetTgYZZbDlMv7Q5NjXQT
+	8Hi2cr0gwtiMrwlEeRwoS/1wWLSpdhWH7QLvXRkX6P8x5JKqo2ToJEAUvhNhZdattH8K3QwqodG
+	Y6aNmVX3U1iFUlRGj32EFrroQWcggshJTGHVYpaJtXVyApd896rvQCHHT
+X-Received: by 2002:a05:6122:3c52:b0:50d:4257:5bde with SMTP id 71dfb90a1353d-50feafaf2cfmr3108141e0c.5.1729784481027;
+        Thu, 24 Oct 2024 08:41:21 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEOjcqYJKGQfUcpv5jcBoHcpWCXghuty7VZY+BBqG0fKgtkBaCSWPzjKiT1o+ltrBGA2G2CTQ==
+X-Received: by 2002:a05:6122:3c52:b0:50d:4257:5bde with SMTP id 71dfb90a1353d-50feafaf2cfmr3108126e0c.5.1729784480567;
+        Thu, 24 Oct 2024 08:41:20 -0700 (PDT)
 Received: from localhost.localdomain (2603-9001-3d00-5353-0000-0000-0000-14c1.inf6.spectrum.com. [2603:9001:3d00:5353::14c1])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-50e19f5fad0sm1364301e0c.40.2024.10.24.08.41.16
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-50e19f5fad0sm1364301e0c.40.2024.10.24.08.41.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Oct 2024 08:41:17 -0700 (PDT)
+        Thu, 24 Oct 2024 08:41:19 -0700 (PDT)
 From: Jennifer Berringer <jberring@redhat.com>
 To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
 	Sebastian Reichel <sre@kernel.org>,
@@ -66,9 +66,9 @@ To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
 Cc: linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Jennifer Berringer <jberring@redhat.com>
-Subject: [PATCH v2 1/3] nvmem: core: improve range check for nvmem_cell_write()
-Date: Thu, 24 Oct 2024 11:40:48 -0400
-Message-ID: <20241024154050.3245228-2-jberring@redhat.com>
+Subject: [PATCH v2 3/3] power: reset: nvmem-reboot-mode: fix write for small cells
+Date: Thu, 24 Oct 2024 11:40:50 -0400
+Message-ID: <20241024154050.3245228-4-jberring@redhat.com>
 X-Mailer: git-send-email 2.46.2
 In-Reply-To: <20241024154050.3245228-1-jberring@redhat.com>
 References: <20241024154050.3245228-1-jberring@redhat.com>
@@ -80,59 +80,30 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-When __nvmem_cell_entry_write() is called for an nvmem cell that does
-not need bit shifting, it requires that the len parameter exactly
-matches the nvmem cell size. However, when the nvmem cell has a nonzero
-bit_offset, it was skipping this check.
-
-Accepting values of len larger than the cell size results in
-nvmem_cell_prepare_write_buffer() trying to write past the end of a heap
-buffer that it allocates. This patch adds a check to avoid that problem
-and instead return -EINVAL when len is too large.
-
-Rather than unconditionally checking that len exactly matches the nvmem
-cell size, allowing len to be smaller when bit shifts are involved may
-be helpful because some devices have nvmem cells that are less than 8
-bits but span two bytes, although no current devices or drivers that do
-this seem to rely on nvmem_cell_write(). This possibility can be handled
-by nvmem_cell_prepare_write_buffer() because it allocates an
-appropriately-sized heap buffer and avoids reading past the end of buf.
-
-Fixes: 69aba7948cbe ("nvmem: Add a simple NVMEM framework for consumers")
+Some devices, such as Qualcomm sa8775p, have an nvmem reboot mode cell
+that is smaller than 32 bits, which resulted in
+nvmem_reboot_mode_write() failing. Using nvmem_cell_write_variable_u32()
+fixes this by writing only the least-significant byte of the magic value
+when the size specified in device tree is only one byte.
 
 Signed-off-by: Jennifer Berringer <jberring@redhat.com>
 ---
- drivers/nvmem/core.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/power/reset/nvmem-reboot-mode.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/nvmem/core.c b/drivers/nvmem/core.c
-index 33ffa2aa4c11..74bf4d35a7a7 100644
---- a/drivers/nvmem/core.c
-+++ b/drivers/nvmem/core.c
-@@ -1767,8 +1767,7 @@ static int __nvmem_cell_entry_write(struct nvmem_cell_entry *cell, void *buf, si
- 	struct nvmem_device *nvmem = cell->nvmem;
- 	int rc;
+diff --git a/drivers/power/reset/nvmem-reboot-mode.c b/drivers/power/reset/nvmem-reboot-mode.c
+index 41530b70cfc4..b52eb879d1c1 100644
+--- a/drivers/power/reset/nvmem-reboot-mode.c
++++ b/drivers/power/reset/nvmem-reboot-mode.c
+@@ -24,7 +24,7 @@ static int nvmem_reboot_mode_write(struct reboot_mode_driver *reboot,
  
--	if (!nvmem || nvmem->read_only ||
--	    (cell->bit_offset == 0 && len != cell->bytes))
-+	if (!nvmem || nvmem->read_only)
- 		return -EINVAL;
+ 	nvmem_rbm = container_of(reboot, struct nvmem_reboot_mode, reboot);
  
- 	/*
-@@ -1780,9 +1779,13 @@ static int __nvmem_cell_entry_write(struct nvmem_cell_entry *cell, void *buf, si
- 		return -EINVAL;
+-	ret = nvmem_cell_write(nvmem_rbm->cell, &magic, sizeof(magic));
++	ret = nvmem_cell_write_variable_u32(nvmem_rbm->cell, magic);
+ 	if (ret < 0)
+ 		dev_err(reboot->dev, "update reboot mode bits failed\n");
  
- 	if (cell->bit_offset || cell->nbits) {
-+		if (len > cell->bytes)
-+			return -EINVAL;
- 		buf = nvmem_cell_prepare_write_buffer(cell, buf, len);
- 		if (IS_ERR(buf))
- 			return PTR_ERR(buf);
-+	} else if (len != cell->bytes) {
-+		return -EINVAL;
- 	}
- 
- 	rc = nvmem_reg_write(nvmem, cell->offset, buf, cell->bytes);
 -- 
 2.46.2
 
