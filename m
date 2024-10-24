@@ -1,92 +1,122 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89F5E1D2207;
-	Thu, 24 Oct 2024 12:40:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 104811D319B
+	for <linux-pm@vger.kernel.org>; Thu, 24 Oct 2024 12:57:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729773611; cv=none; b=LxddlS+PEhxUZYcrvitRpTaskxCCjBicwtNRQg8/4DfDuYPt8oIi+JY50+e+JZvrU/tap2+dmQ05aGI7EcKkDp1+9y3RJNpOEliARQIfUgScG06ZNNcTBxJjTxU8J8bmvsMbWNTV+v9v+Nh7nY9qQdVLFvPsjcNn02dK0yqpzXQ=
+	t=1729774634; cv=none; b=dyxnd0E2KjrQ5TETdGV8g8lsaoWiqvJaheNH6YlnhCBrnFilX6XgBEftJew9pm7ghCyLBNK4Q0ez+YfpFG4x+q0LFgGu/amT98hEdEplJ657bVnZgHitPlGNQZ6aUkcb3i+nUOlREoxVRvjEThw04nmj0YMLCq4VXr1mPVp0amI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729773611; c=relaxed/simple;
-	bh=YrCb/mhgDJB269wiz1IB8jtnqMuRua4t7v/e15WwlH4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=II6SbCpNZBhmajhaxFphwDNIsNz6SHVhjNyUcnypbi0lAGfxU/OfGEb4DtulR8MsOxi7fuzb0ejyQ49kxN+0yr4t1BEj30xOuwjNNAXGdH/NXvCuaFyXyAJG1cVL+nh1eyoxXVR/2u7iyRf7Dy/3WbPEXBS0PZCuCzZgwS+2EQ0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pGyz5NUC; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1729774634; c=relaxed/simple;
+	bh=fqEoIh+dgxuIFMBN6cyueAHztwW8N9qpgQuWpBDpkGg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=uBrudL4FRj34xrdmQbGK/ldnRoaM+mf1x0bu2cCv2D7cQxT1ZvYR7a6NW6z6Muqql1l51cT/7HSlA1/Ch1sHw0zIwWeLw12Z8PKnSdoHavtCCLtk7bc4Cujeynjf8T3R/Csxm9YPMYJoCZJLb8Ylmo+s/v/9WJ4Lvtp/q/jjEV8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=UkPfp5hf; arc=none smtp.client-ip=209.85.128.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pGyz5NUC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50F49C4CEC7;
-	Thu, 24 Oct 2024 12:40:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729773611;
-	bh=YrCb/mhgDJB269wiz1IB8jtnqMuRua4t7v/e15WwlH4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=pGyz5NUCk+nC2ylIRx+oMRdFs05jcNmisi1bPlD+0Jwst/J0y5lzPH31hVS+SXI5w
-	 99k2CbFOevUjQZS2aI/8M9SEEN0s/RJT//p+s3n7lF/ZSP1Y/hT7B+z8oVuU4ttv+b
-	 UXLc8vH0Jh/Fx1hhzbh07HqZ/iFT88szxfKmskAIrDs7fyRfexSNIh1UpAGE6/BggY
-	 vq1NObvzg2/DBoRrobabsur48c4hPysH900VGjFoqwjuLvzDSvfe1srsJJQ1sgCq4q
-	 zBnZbpwalO8dD/8H0n/gYSCffTy/xbGtwpuIqVd43vwDD9PNwv3kmCd5/B6LxFtdwG
-	 u/4omlQXX9cWA==
-Date: Thu, 24 Oct 2024 13:40:04 +0100
-From: Will Deacon <will@kernel.org>
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: =?iso-8859-1?B?QmFybmFi4XMgQ3rpbeFu?= <barnabas.czeman@mainlining.org>,
-	iommu@lists.linux.dev, Zhang Rui <rui.zhang@intel.com>,
-	Lee Jones <lee@kernel.org>, Joerg Roedel <joro@8bytes.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>, linux-gpio@vger.kernel.org,
-	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	linux-arm-msm@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>, linux-pm@vger.kernel.org,
-	Amit Kucheria <amitk@kernel.org>
-Subject: Re: [PATCH RFC 10/14] dt-bindings: iommu: qcom,iommu: Add MSM8917
- IOMMU to SMMUv1 compatibles
-Message-ID: <20241024124002.GC30704@willie-the-truck>
-References: <20241019-msm8917-v1-0-f1f3ca1d88e5@mainlining.org>
- <20241019-msm8917-v1-10-f1f3ca1d88e5@mainlining.org>
- <172934406753.3231809.282041778335117501.robh@kernel.org>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UkPfp5hf"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-4315e9e9642so8599955e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 24 Oct 2024 05:57:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1729774630; x=1730379430; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Il7PJErLFSTwbIIob3qN4HBHgXZw+lBDkmE4mAtAfRs=;
+        b=UkPfp5hf6WaTkvW59YpE3aoJ91OOWShbeLxAjWJLdNKW0bzejpu9qowgNXAMpoSSCQ
+         FCZHdbMLta73Zk8L6Ca2hl9BA171cJFWgTKEsxeMgPuq3Q2dy/NQo2HKnDmHLWWCJCq4
+         rkvw1k6ARIlcKyCerjk2x4V9jSFU+3Qz/VnIMoGFw4iEJKQGRz3FtK4rvNuUHraRHm4M
+         7GTlZmPCz2zHdvYv3HUVVQDIE7dHE/5soHstNZkJ/xWOco+/3ONI3lM075mQ1keIsGjd
+         EJxSvx4Qusg/z6L26QDPz8142kh5JFnElAgcFRfed4kn3Xp+4aY9IQxhLWSPjj6I3igY
+         FAfQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1729774630; x=1730379430;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Il7PJErLFSTwbIIob3qN4HBHgXZw+lBDkmE4mAtAfRs=;
+        b=uxGygV6LrJ8LVJQA1/0eBrgk1ZHXx1w5L9HtQn1qQjx2TOXSD66h1Eb+e80ew/tY/G
+         H0icr7CipMLOXdUTY0i5my49RBdiTh5JInA2x5id0LS3Z79+8wA7FHSsehE1lMFrolNN
+         DDiqsONvIQIiS7vI9vKmwl0lP76Pg3L4f9kvej0NuWORGBcGAQTYMuOQrjv1iXfdmS13
+         coT1QLV/uGAjMSgxAXDAEVT1ybeAJ1m8/Wao5uYvaLOqS1vFJ90bdL2VEdiWFZfgQ4CF
+         sY1hNYVHAgr4S9t0zBr7NQ+JOmUulp6DFWIquL3Sp5nw5BMUGV5iJEm6FBmhTKGiTiK2
+         GkxQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVmNcS71rjlfOKdFV/cF09Xsqi0/lZ4PVqqHCNdhYRWPU5gL28ZQuJulEzgoeeRsNStKTosCmT14w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxSDjJc9WSTb+YFd7im/JcAZcDkpPZnRL9DQIhhc9pVsP04Pfb1
+	phGYYK40ckKa6MUWF8dWwolEZXif6zzhiC3KkKf6AyKLzLu5lzKQ/X+SzlNl2+jRuwkiiV31s/l
+	4
+X-Google-Smtp-Source: AGHT+IFcCk4ndxwV1eYGLw1HNaQkSMmcWJhjmwBTuLmOTNWjeZKVSceV3A3F12X0UF///gySqGg5IQ==
+X-Received: by 2002:a05:600c:35cd:b0:430:52ec:1e41 with SMTP id 5b1f17b1804b1-4318415c0acmr57933815e9.17.1729774630318;
+        Thu, 24 Oct 2024 05:57:10 -0700 (PDT)
+Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-4318b5431ecsm17580855e9.5.2024.10.24.05.57.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 24 Oct 2024 05:57:09 -0700 (PDT)
+Message-ID: <9ba3fa17-57c3-41e9-9e19-33fa105a179e@linaro.org>
+Date: Thu, 24 Oct 2024 14:57:09 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] thermal/lib: Fix memory leak on error in
+ thermal_genl_auto()
+To: Markus Elfring <Markus.Elfring@web.de>, linux-pm@vger.kernel.org,
+ Lukasz Luba <lukasz.luba@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+References: <20241024105938.1095358-1-daniel.lezcano@linaro.org>
+ <45265aca-7371-455f-819f-c4d68cbb089b@web.de>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <45265aca-7371-455f-819f-c4d68cbb089b@web.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <172934406753.3231809.282041778335117501.robh@kernel.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
 
-On Sat, Oct 19, 2024 at 08:21:16AM -0500, Rob Herring (Arm) wrote:
+On 24/10/2024 14:02, Markus Elfring wrote:
+>> The function thermal_genl_auto() does not free the allocated message
+>> in the error path. Fix that by putting a out label and jump to it
+>> which will free the message instead of directly returning an error.
 > 
-> On Sat, 19 Oct 2024 13:50:47 +0200, Barnabás Czémán wrote:
-> > Add MSM8917 compatible string with "qcom,msm-iommu-v1" as fallback
-> > for the MSM8917 IOMMU which is compatible with Qualcomm's secure
-> > fw "SMMU v1" implementation.
-> > 
-> > Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
-> > ---
-> >  Documentation/devicetree/bindings/iommu/qcom,iommu.yaml | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> 
-> My bot found errors running 'make dt_binding_check' on your patch:
-> 
-> yamllint warnings/errors:
-> 
-> dtschema/dtc warnings/errors:
+> Would you like to add any tags (like â€œFixesâ€ and â€œCcâ€) accordingly?
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst?h=v6.12-rc4#n145
 > 
 > 
-> doc reference errors (make refcheckdocs):
+> â€¦
+>> +++ b/tools/lib/thermal/commands.c
+>> @@ -375,27 +375,30 @@ static thermal_error_t thermal_genl_auto(struct thermal_handler *th, cmd_cb_t cm
+>>   					 struct cmd_param *param,
+>>   					 int cmd, int flags, void *arg)
+>>   {
+>> +	thermal_error_t ret = THERMAL_ERROR;
+>>   	struct nl_msg *msg;
+>>   	void *hdr;
+>>
+>>   	msg = nlmsg_alloc();
+>>   	if (!msg)
+>> -		return THERMAL_ERROR;
+>> +		goto out;
+> â€¦
 > 
-> See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20241019-msm8917-v1-10-f1f3ca1d88e5@mainlining.org
+> Is it really reasonable to pass a null pointer (from a failed function call)
+> to a subsequent nlmsg_free() call?
 
-I don't see any errors in the logs...
+You are right, I should return here :S
 
-Will
+
+
+> Can it be more appropriate to return directly in such an error case?
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/coding-style.rst?h=v6.12-rc4#n532
+> 
+> Regards,
+> Markus
+
+
+-- 
+<http://www.linaro.org/> Linaro.org â”‚ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
