@@ -1,134 +1,122 @@
-Received: from esa7.hc1455-7.c3s2.iphmx.com (esa7.hc1455-7.c3s2.iphmx.com [139.138.61.252])
+Received: from s1-ba86.socketlabs.email-od.com (s1-ba86.socketlabs.email-od.com [142.0.186.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29F597C0BE;
-	Fri, 25 Oct 2024 01:40:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=139.138.61.252
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1542345979
+	for <linux-pm@vger.kernel.org>; Fri, 25 Oct 2024 02:06:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=142.0.186.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729820453; cv=none; b=fJwaFF6Z1K9dNtxEkhI7PLYbyKvp1BvKyfat8QUT9IdReAdLf4kty0eG8pgUG/B/fRed4W/1v+RMgqcEYzm7XrruKxDmSyKXFYv7o7FW+MsmRyhN9VBx4u33OuD8tkTedF8ntqmJUhPMhPUnPF8cKKoieORcJbZS5jdH3qloQCw=
+	t=1729821986; cv=none; b=h4aoqREk994WJhT0fED9WcpAhnXjUSwrKoLrCklyLiwqC7jGxqVnf3OYr2PYcT8Q54+ky8rhu0mg73nHi1VjSVafp+hqlpp0PAb4zcbSonFxAYyDHA56eDH/XnV5rAQxxZWjnAOGg0BKvkE9CP5HEUFXmqZJfRfCp2E8vCqKTdA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729820453; c=relaxed/simple;
-	bh=Nn9+6N/wjtkyrB4OkpKbzfIbJW3ll5RS6cPN6VWxA1c=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JgxG2E03lCNjyEQ2jYmLzIj4MNlaw815xFfvHekpnU8aF/CgtQCo/E5ILqapMtqgwY0e0NT/qa/2WTLLSZgzHxDh4VqWifw4LAX+xobx8BjbPCrJLI+ycbYdGlags0H1+mLcJkWwGJoVL60mPL/cx+AVuQ8x/7zPrkiMF7SL4qI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com; spf=pass smtp.mailfrom=fujitsu.com; dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b=FWskN4Eu; arc=none smtp.client-ip=139.138.61.252
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fujitsu.com
+	s=arc-20240116; t=1729821986; c=relaxed/simple;
+	bh=NO9fmOs1GXCCcZ74pAbl6f5r+b/635OX5p3kSN9dM+4=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=Nk+uw7agr+T4MpusVbNyUQuA5c2NceH0Oh4h92t4cArFdNBoJrknrtclbVo4FATok4LuPEIvVuBn2QpL0xlgdZdSrVDqJZ8SkC9r2ZW8J3ShwSIb+zT5ECQBXNtuAD+95e5kV0v6Qhbw3a9mJPYbS+qHGp9MBhRVUWf57U8pww8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=nalramli.com; spf=pass smtp.mailfrom=email-od.com; dkim=pass (1024-bit key) header.d=email-od.com header.i=@email-od.com header.b=PS93qHhb; arc=none smtp.client-ip=142.0.186.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=nalramli.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=email-od.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b="FWskN4Eu"
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=fujitsu.com; i=@fujitsu.com; q=dns/txt; s=fj2;
-  t=1729820451; x=1761356451;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=Nn9+6N/wjtkyrB4OkpKbzfIbJW3ll5RS6cPN6VWxA1c=;
-  b=FWskN4EussNILevAkIV2cMvtCpYNF88LWWYvoRhAg+RxgvANHgKaBaav
-   52LV+yLw/n+NdDtY2zTaaXVLq54Lp0+DXTd/rn9RG9REFXFBnIKxAUMKn
-   YkntgiUQrRKbbm1AvbKV4N5pmEGNCThZnGsBRTCu9k5qpf/0phIy4piMx
-   7CUv5tMeXS56QswZ6XLquwUuhitITujj8MGonHA5ITjnEhbbrtcFirRhG
-   rRwuYw41bdwS8I0XNbZDZhv1p4qJd7RRwsaeEMS3VOiWhy/50b6WX7JER
-   9it9CfLW3DizCyl3BVcyTFnqp5niZGjSXvDsEF7sE9L4IUu26vLKwMiO9
-   g==;
-X-CSE-ConnectionGUID: 2OAeEKrURpG+kyoAFvaeow==
-X-CSE-MsgGUID: 6YkXRSG5SI6GAKkGzg6T4w==
-X-IronPort-AV: E=McAfee;i="6700,10204,11235"; a="156807501"
-X-IronPort-AV: E=Sophos;i="6.11,230,1725289200"; 
-   d="scan'208";a="156807501"
-Received: from unknown (HELO oym-r3.gw.nic.fujitsu.com) ([210.162.30.91])
-  by esa7.hc1455-7.c3s2.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Oct 2024 10:39:38 +0900
-Received: from oym-m2.gw.nic.fujitsu.com (oym-nat-oym-m2.gw.nic.fujitsu.com [192.168.87.59])
-	by oym-r3.gw.nic.fujitsu.com (Postfix) with ESMTP id 26380CA1F0;
-	Fri, 25 Oct 2024 10:39:36 +0900 (JST)
-Received: from kws-ab4.gw.nic.fujitsu.com (kws-ab4.gw.nic.fujitsu.com [192.51.206.22])
-	by oym-m2.gw.nic.fujitsu.com (Postfix) with ESMTP id 66E7CBF3FF;
-	Fri, 25 Oct 2024 10:39:35 +0900 (JST)
-Received: from edo.cn.fujitsu.com (edo.cn.fujitsu.com [10.167.33.5])
-	by kws-ab4.gw.nic.fujitsu.com (Postfix) with ESMTP id 01CA421CB00;
-	Fri, 25 Oct 2024 10:39:35 +0900 (JST)
-Received: from iaas-rdma.. (unknown [10.167.135.44])
-	by edo.cn.fujitsu.com (Postfix) with ESMTP id 594E11A01E9;
-	Fri, 25 Oct 2024 09:39:34 +0800 (CST)
-From: Li Zhijian <lizhijian@fujitsu.com>
-To: linux-kselftest@vger.kernel.org
-Cc: shuah@kernel.org,
+	dkim=pass (1024-bit key) header.d=email-od.com header.i=@email-od.com header.b="PS93qHhb"
+DKIM-Signature: v=1; a=rsa-sha256; d=email-od.com;i=@email-od.com;s=dkim;
+	c=relaxed/relaxed; q=dns/txt; t=1729821984; x=1732413984;
+	h=content-transfer-encoding:mime-version:references:in-reply-to:message-id:date:subject:cc:to:from:x-thread-info:subject:to:from:cc:reply-to;
+	bh=e/0/6KmLP8IDOZiXwbbz4hIq8Tt4TKaYWZ5giDxZMgs=;
+	b=PS93qHhbQIyJxb/mvnDuijfoqRFyFUwz99g2sqlzrYKRVJZSsiZ/1pyeEkHCrSKCJ++48ykrUctGcZI252vNgm0quhYiOWLfX3qUfyb21UeK8aBMCMewppPYUdKMdx1nyZXip0zmkklOfu8e/Xn9crPOxHnDNS27PhqZOPgPXx8=
+X-Thread-Info: NDUwNC4xMi42YjZkZDAwMDAyZWEyZjQubGludXgtcG09dmdlci5rZXJuZWwub3Jn
+x-xsSpam: eyJTY29yZSI6MCwiRGV0YWlscyI6bnVsbH0=
+Received: from localhost.localdomain (d4-50-191-215.clv.wideopenwest.com [50.4.215.191])
+	by nalramli.com (Postfix) with ESMTPS id F3BE82CE016E;
+	Thu, 24 Oct 2024 21:05:58 -0400 (EDT)
+From: "Nabil S. Alramli" <dev@nalramli.com>
+To: stable@vger.kernel.org
+Cc: nalramli@fastly.com,
+	jdamato@fastly.com,
+	khubert@fastly.com,
+	Perry.Yuan@amd.com,
+	li.meng@amd.com,
+	ray.huang@amd.com,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Li Zhijian <lizhijian@fujitsu.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH for-next 5/7] selftests/cpufreq: gitignore output files and clean them in make clean
-Date: Fri, 25 Oct 2024 09:40:08 +0800
-Message-ID: <20241025014010.6533-5-lizhijian@fujitsu.com>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20241025014010.6533-1-lizhijian@fujitsu.com>
-References: <20241025014010.6533-1-lizhijian@fujitsu.com>
+	"Nabil S. Alramli" <dev@nalramli.com>
+Subject: [RFC PATCH 6.1.y 0/1] cpufreq: amd-pstate: Enable CPU boost in passive and guided modes
+Date: Thu, 24 Oct 2024 21:05:26 -0400
+Message-Id: <20241025010527.491605-1-dev@nalramli.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <Zw8Wn5SPqBfRKUhp@LQ3V64L9R2>
+References: <Zw8Wn5SPqBfRKUhp@LQ3V64L9R2>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-TM-AS-Product-Ver: IMSS-9.1.0.1417-9.0.0.1002-28752.003
-X-TM-AS-User-Approved-Sender: Yes
-X-TMASE-Version: IMSS-9.1.0.1417-9.0.1002-28752.003
-X-TMASE-Result: 10--5.467200-10.000000
-X-TMASE-MatchedRID: FAP6nufyV76AIpLP/qXbGbnHu4BcYSmtegIHHX2L4YyjEIt+uIPPOOPh
-	s17991vRV89FgO/U4vBeAZpJlX3ct6Mqw1MrQ3Xs0e7jfBjhB8f4qCLIu0mtIL5/tqn0MloN7Pt
-	3qk+AS2v5jQz76et+v8rbguuTTSDuTBhdFGvbKaeqh5pv1eDPz/Wr7HvOSElaPbCkSqodb8QYQb
-	1oGZV/vOLzNWBegCW2wgn7iDBesS0gBwKKRHe+r6JKhpMS1tR9U3ObiTaV1W3AT3bRyqNrcgPMJ
-	BLBlOaSBM5cfL0JmKE=
-X-TMASE-SNAP-Result: 1.821001.0001-0-1-22:0,33:0,34:0-0
+Content-Transfer-Encoding: quoted-printable
 
-After `make run_tests`, the git status complains:
-Untracked files:
-    (use "git add <file>..." to include in what will be committed)
-        cpufreq/cpufreq_selftest.dmesg_cpufreq.txt
-        cpufreq/cpufreq_selftest.dmesg_full.txt
-        cpufreq/cpufreq_selftest.txt
+Greetings,
 
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shuah Khan <shuah@kernel.org>
-Signed-off-by: Li Zhijian <lizhijian@fujitsu.com>
----
-Cc: linux-pm@vger.kernel.org
----
-Hello,
-Cover letter is here.
+This is a RFC for a maintenance patch to an issue in the amd_pstate drive=
+r
+where CPU frequency cannot be boosted in passive or guided modes. Without
+this patch, AMD machines using stable kernels are unable to get their CPU
+frequency boosted, which is a significant performance issue.
 
-This patch set aims to make 'git status' clear after 'make' and 'make
-run_tests' for kselftests.
----
-V2:
-  split as a separate patch from a small one [0]
-  [0] https://lore.kernel.org/linux-kselftest/20241015010817.453539-1-lizhijian@fujitsu.com/
----
- tools/testing/selftests/cpufreq/.gitignore | 1 +
- tools/testing/selftests/cpufreq/Makefile   | 1 +
- 2 files changed, 2 insertions(+)
- create mode 100644 tools/testing/selftests/cpufreq/.gitignore
+For example, on a host that has AMD EPYC 7662 64-Core processor without
+this patch running at full CPU load:
 
-diff --git a/tools/testing/selftests/cpufreq/.gitignore b/tools/testing/selftests/cpufreq/.gitignore
-new file mode 100644
-index 000000000000..f684d27f5d91
---- /dev/null
-+++ b/tools/testing/selftests/cpufreq/.gitignore
-@@ -0,0 +1 @@
-+cpufreq_selftest.*
-diff --git a/tools/testing/selftests/cpufreq/Makefile b/tools/testing/selftests/cpufreq/Makefile
-index c86ca8342222..9b2ccb10b0cf 100644
---- a/tools/testing/selftests/cpufreq/Makefile
-+++ b/tools/testing/selftests/cpufreq/Makefile
-@@ -3,6 +3,7 @@ all:
- 
- TEST_PROGS := main.sh
- TEST_FILES := cpu.sh cpufreq.sh governor.sh module.sh special-tests.sh
-+EXTRA_CLEAN := cpufreq_selftest.dmesg_cpufreq.txt cpufreq_selftest.dmesg_full.txt cpufreq_selftest.txt
- 
- include ../lib.mk
- 
--- 
-2.44.0
+$ for i in $(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq); =
+\
+  do ni=3D$(echo "scale=3D1; $i/1000000" | bc -l); echo "$ni GHz"; done |=
+ \
+  sort | uniq -c
+
+    128 2.0 GHz
+
+And with this patch:
+
+$ for i in $(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq); =
+\
+  do ni=3D$(echo "scale=3D1; $i/1000000" | bc -l); echo "$ni GHz"; done |=
+ \
+  sort | uniq -c
+
+    128 3.3 GHz
+
+I am not sure what the correct process is for submitting patches which
+affect only stable trees but not the current code base, and do not apply =
+to
+the current tree. As such, I am submitting this directly to stable@, but
+please let me know if I should be submitting this elsewhere.
+
+The issue was introduced in v6.1 via commit bedadcfb011f ("cpufreq:
+amd-pstate: Fix initial highest_perf value"), and exists in stable kernel=
+s
+up until v6.6.51.
+
+In v6.6.51, a large change, commit 1ec40a175a48 ("cpufreq: amd-pstate:
+Enable amd-pstate preferred core support"), was introduced which
+significantly refactored the code. This commit cannot be ported back on i=
+ts
+own, and would require reviewing and cherry picking at least a few dozen =
+of
+commits in cpufreq, amd-pstate, ACPI, CPPC.
+
+This means kernels v6.1 up until v6.6.51 are affected by this significant
+performance issue, and cannot be easily remediated.
+
+Thank you for your attention and I look forward to your response in regar=
+ds
+to what the best way to proceed is for getting this important performance
+fix merged.
+
+Best Regards,
+
+Nabil S. Alramli (1):
+  cpufreq: amd-pstate: Enable CPU boost in passive and guided modes
+
+ drivers/cpufreq/amd-pstate.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+--=20
+2.35.1
 
