@@ -1,178 +1,172 @@
-Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2E70748A;
-	Sun, 27 Oct 2024 04:27:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DD3FF4FA
+	for <linux-pm@vger.kernel.org>; Sun, 27 Oct 2024 08:15:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730003239; cv=none; b=IgTbRbwzijJb61ab4BGikrfdfIZfEroLNdes9+uqHRs8yHlWw4DO9+bTETZFAobS8qeRG/3yRfQHrMcLG3L9eSPacSQf178GBzI8C+ZvcR9zgN4yC4B0IaFYs1gv/1GvDbOBWQgqxlibZ87VAKpX01hFv8U4rcEH3cXB7rriG3k=
+	t=1730016962; cv=none; b=SM6DZvlQhtPw0aMtUsoj+QoJaKqPDPFOKcwWOYke93jcoRclaNHdM0NJNxASNOeoWkiRMSR1Oo0SnRjLiAW9JICF+Xd/MFmu5EDy5lJntbImDQB0ZHHJbdbkmIGQbCm/zpZZwJONkMyqQHsgyHurluTS0O6IhstRuROiWIgY8D0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730003239; c=relaxed/simple;
-	bh=ErZvRMNFTC1JtfD7DlH7USWk//QvBMg14jI626yimY0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gThQHC1IshJVNMVg/Or1thMunSF/OdHyKpigIfECqTz5RMMVWITw7Nx5cX82FysW+ot+1WfY3zT6NZIV/eM2pHdo97n8w+U+bhcJe8cP8M/q4NPd8DYT71cTP0SHexomMkldiC4wW06Zez7YxRGSI7WG8PqGcko7X9SFJn4Wo/I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WfdX3s+3; arc=none smtp.client-ip=209.85.160.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1730016962; c=relaxed/simple;
+	bh=msPchU1wkC7C4xcn9CKpb3rP/qhM778iv3m9ZN2QmIM=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=fDN4vlt9khKcwEYsmzo4YB/xz118nzibHSj210NFa19tn/rv9torFjg9NV3s0c8cBc16qGfxHnhSA26r/toYMV5B3cHbRZjEJnOfVpNE4/H4ydcxHm3YFqmiEhQAwd6Dmm8Zf3aYclwoj830SrJTJUKtI1O8Gmxa6dAORMJJfAU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Uhnrjmlk; arc=none smtp.client-ip=192.198.163.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WfdX3s+3"
-Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-288d74b3a91so1859818fac.0;
-        Sat, 26 Oct 2024 21:27:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1730003236; x=1730608036; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=C3ERsECHBxHLHOagymcD1zigsnGkXaBUgS4zAFSQOKA=;
-        b=WfdX3s+3wbipy+0lXQVjpjgpKgWPMR4M5wuhcal8T1/WcCb+JxLcixc/Ec2eg46SOD
-         NcnVCvL7xNZuzF4XJU5rZuaWJp/INw76D3/p6st/ScM6SEGGr6B0eOtqKGu1kPNJDLxm
-         PGGgDjZHVjVMONELSWpcLKN+3ZmZDeiwaQ0zmh1aypa8VGG7tx8QsJfwTjywErXXitr6
-         iiANh9Zzr8Qpyw1M2rLDI83jduNAbZeNy20SqHP7k2l8duHolg2lOmjUSRU9HiQoxlBv
-         KgtQzJVOd7nFiOO1vncvTT4DcbZYiAczel977PMXXxIKBisG7+OsLm/iW+H37yQd0Fw4
-         SjzA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1730003236; x=1730608036;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=C3ERsECHBxHLHOagymcD1zigsnGkXaBUgS4zAFSQOKA=;
-        b=Wi2yXftrBYPUarmkPhPt67kqq4K+UN0nWPVeFTKyFcVM+lVz4T82jUMzqPaF6fwg8y
-         f3iuWEZlWyfYKcEJsD3wMRKfXC8f2zJKKNjW9stvLOKWcFOgIm1e5HlrODiHqoKii1DJ
-         omyXWuv0wDcYpADzo0hOicxsPQABfdPoDpcUicJ/snKwHTpBpy6YyJByEI/DZzxfiGbo
-         Ermh+k0CbzV6QqF6mik+99etSU8iqUW1FCFEyXiA/+RV30ER7vnBfkgZbgC1U0/ySHJb
-         ZFVjP3y4HlALEWMYWZjxWyxNprbBqcOJaOYTjvDJRjePP9AYiMm+kEK6GFnhCaCsePaw
-         VgnA==
-X-Forwarded-Encrypted: i=1; AJvYcCWx+q3vtGkKlW8/3QuhBWPg+OJtF8Rh6A8l2lF9eEmngGPog/+is4HkhcUA4CyaNvDFtrfkdjL4MgbfT1U=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzWk8Zs33Inx34tjLPzUFRcurAiT462RQdeWy1nd07QoU0CO1lv
-	zIYu6Ah7cKJ55dMm4RvEFfPimmDGHiYGDLRhw+NuWPH9P3z43BIh
-X-Google-Smtp-Source: AGHT+IGXRBRB5XvgbPVCdvrKM/2Xm5Yc7Cnlexf8ner2J6xCeCzsnPKJydgFYdf7iYsje5aK7U7n4Q==
-X-Received: by 2002:a05:6871:29a:b0:27c:4f04:a1f1 with SMTP id 586e51a60fabf-29051dc7c23mr3209798fac.32.1730003236452;
-        Sat, 26 Oct 2024 21:27:16 -0700 (PDT)
-Received: from ?IPV6:2607:fb91:1219:44f1:b4e8:dada:a078:b601? ([2607:fb91:1219:44f1:b4e8:dada:a078:b601])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7186189e28esm1005170a34.61.2024.10.26.21.27.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 26 Oct 2024 21:27:15 -0700 (PDT)
-Message-ID: <5cfc19d6-e171-4049-ad00-5f8474051c9b@gmail.com>
-Date: Sat, 26 Oct 2024 23:27:13 -0500
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Uhnrjmlk"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1730016960; x=1761552960;
+  h=date:from:to:cc:subject:message-id:mime-version;
+  bh=msPchU1wkC7C4xcn9CKpb3rP/qhM778iv3m9ZN2QmIM=;
+  b=UhnrjmlksZMULY2rABmB67BaWAae3mgeyY2OCIlenbB2eMwAj5kucb8x
+   CQR96dJyENIkSuN49m8wnm5Ji4VcPLojP4Ww/Iez3UjVRgdP0A+BIuC51
+   gqvJn9X2qZwhH9gCbWwApQxPkYzYMXEHYQVerB5Qgyt/HtsCDWQ+r9sAX
+   0wemwEiPCje+HAYFVM4rXN+G6NHAQc2PquzxOQfCdZmD+JLi8uXFWMfT8
+   hf4z66u0dHK57Agl2XhDKUEu8/3Qzp6UBEILwe4H4ZGQz2QyKSnYPh1A0
+   8iVk4yxOAzdmgPu7uw3a+wwHzeS1I/TnODVTHUL7voepzjXL5Ak6rpUly
+   g==;
+X-CSE-ConnectionGUID: A547951lQZy8w3/pXKHpdw==
+X-CSE-MsgGUID: peze/3nNRtW37rVvzHukqw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11237"; a="55044419"
+X-IronPort-AV: E=Sophos;i="6.11,236,1725346800"; 
+   d="scan'208";a="55044419"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Oct 2024 01:16:00 -0700
+X-CSE-ConnectionGUID: oKANRZioTnWILPULiGHpUQ==
+X-CSE-MsgGUID: +HdFOjRYRdmuUmjwj7dXNQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.11,236,1725346800"; 
+   d="scan'208";a="81359490"
+Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
+  by fmviesa009.fm.intel.com with ESMTP; 27 Oct 2024 01:15:58 -0700
+Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1t4yRI-000aWG-0u;
+	Sun, 27 Oct 2024 08:15:56 +0000
+Date: Sun, 27 Oct 2024 16:14:59 +0800
+From: kernel test robot <lkp@intel.com>
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org
+Subject: [amd-pstate:superm1/multiple-platform-profile-handlers-v2 12/15]
+ drivers/acpi/platform_profile.c:59:13: warning: variable 'err' set but not
+ used
+Message-ID: <202410271644.Rn7NUjO7-lkp@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/4] cpufreq/amd-pstate: Remove the redundant
- amd_pstate_set_driver() call
-To: Klara Modin <klarasmodin@gmail.com>,
- Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>, gautham.shenoy@amd.com,
- mario.limonciello@amd.com, perry.yuan@amd.com, rafael@kernel.org,
- viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, klara@kasm.eu
-References: <20241017100528.300143-1-Dhananjay.Ugwekar@amd.com>
- <20241017100528.300143-5-Dhananjay.Ugwekar@amd.com>
- <cf9c146d-bacf-444e-92e2-15ebf513af96@gmail.com>
-Content-Language: en-US
-From: Mario Limonciello <superm1@gmail.com>
-In-Reply-To: <cf9c146d-bacf-444e-92e2-15ebf513af96@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git superm1/multiple-platform-profile-handlers-v2
+head:   cca7df72a75a655ad552ae621054784b4a41c9ac
+commit: 543be2020cab67a5411906c96ce670b2f2ac3dab [12/15] ACPI: platform_profile: Make sure all profile handlers agree on profile
+config: x86_64-rhel-8.3-kselftests (https://download.01.org/0day-ci/archive/20241027/202410271644.Rn7NUjO7-lkp@intel.com/config)
+compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241027/202410271644.Rn7NUjO7-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202410271644.Rn7NUjO7-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+   drivers/acpi/platform_profile.c: In function 'platform_profile_get_active':
+>> drivers/acpi/platform_profile.c:59:13: warning: variable 'err' set but not used [-Wunused-but-set-variable]
+      59 |         int err;
+         |             ^~~
+   drivers/acpi/platform_profile.c: In function 'platform_profile_show':
+>> drivers/acpi/platform_profile.c:115:42: warning: unused variable 'handler' [-Wunused-variable]
+     115 |         struct platform_profile_handler *handler;
+         |                                          ^~~~~~~
 
 
+vim +/err +59 drivers/acpi/platform_profile.c
 
-On 10/26/24 06:58, Klara Modin wrote:
-> Hi,
-> 
-> On 2024-10-17 12:05, Dhananjay Ugwekar wrote:
->> amd_pstate_set_driver() is called twice, once in amd_pstate_init() and 
->> once
->> as part of amd_pstate_register_driver(). Move around code and eliminate
->> the redundancy.
->>
->> Signed-off-by: Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>
->> ---
->>   drivers/cpufreq/amd-pstate.c | 12 ++++--------
->>   1 file changed, 4 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
->> index 13ee5cac901d..6f6d961879cc 100644
->> --- a/drivers/cpufreq/amd-pstate.c
->> +++ b/drivers/cpufreq/amd-pstate.c
->> @@ -1848,9 +1848,11 @@ static int __init amd_pstate_init(void)
->>           return -ENODEV;
->>       }
->> -    ret = amd_pstate_set_driver(cppc_state);
->> -    if (ret)
->> +    ret = amd_pstate_register_driver(cppc_state);
->> +    if (ret) {
->> +        pr_err("failed to register with return %d\n", ret);
->>           return ret;
->> +    }
->>       /* capability check */
->>       if (cpu_feature_enabled(X86_FEATURE_CPPC)) {
->> @@ -1870,12 +1872,6 @@ static int __init amd_pstate_init(void)
->>               return ret;
->>       }
->> -    ret = amd_pstate_register_driver(cppc_state);
->> -    if (ret) {
->> -        pr_err("failed to register with return %d\n", ret);
->> -        return ret;
->> -    }
->> -
->>       dev_root = bus_get_dev_root(&cpu_subsys);
->>       if (dev_root) {
->>           ret = sysfs_create_group(&dev_root->kobj, 
->> &amd_pstate_global_attr_group);
-> 
-> 
-> This seems to break boot on my Zen 2 desktop (my Zen 4 laptop is fine, 
-> however). I don't see any messages on the console and nothing shows up 
-> in the pstore either.
-> 
-> I'll attach the kernel log from a normal boot (with the patch reverted) 
-> in case it helps.
-> 
-> Please let me know if there's anything else you need.
-> 
-> Regards,
-> Klara Modin
+    52	
+    53	/* expected to be called under mutex */
+    54	static int platform_profile_get_active(enum platform_profile_option *profile)
+    55	{
+    56		struct platform_profile_handler *handler;
+    57		enum platform_profile_option active = PLATFORM_PROFILE_LAST;
+    58		enum platform_profile_option active2 = PLATFORM_PROFILE_LAST;
+  > 59		int err;
+    60	
+    61		list_for_each_entry(handler, &platform_profile_handler_list, list) {
+    62			if (active == PLATFORM_PROFILE_LAST)
+    63				err = handler->profile_get(handler, &active);
+    64			else
+    65				err = handler->profile_get(handler, &active2);
+    66	
+    67			if (WARN_ON(active == PLATFORM_PROFILE_LAST))
+    68				return -EINVAL;
+    69			if (active2 == PLATFORM_PROFILE_LAST)
+    70				continue;
+    71	
+    72			if (active != active2) {
+    73				pr_warn("Profile handlers don't agree on current profile\n");
+    74				return -EINVAL;
+    75			}
+    76			active = active2;
+    77		}
+    78	
+    79		/* Check that profile is valid index */
+    80		if (WARN_ON((active < 0) || (active >= ARRAY_SIZE(profile_names))))
+    81			return -EIO;
+    82	
+    83		*profile = active;
+    84	
+    85		return 0;
+    86	}
+    87	
+    88	static ssize_t platform_profile_choices_show(struct device *dev,
+    89						struct device_attribute *attr,
+    90						char *buf)
+    91	{
+    92		unsigned long choices;
+    93		int len = 0;
+    94		int i;
+    95	
+    96		scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock)
+    97			choices = platform_profile_get_choices();
+    98	
+    99		for_each_set_bit(i, &choices, PLATFORM_PROFILE_LAST) {
+   100			if (len == 0)
+   101				len += sysfs_emit_at(buf, len, "%s", profile_names[i]);
+   102			else
+   103				len += sysfs_emit_at(buf, len, " %s", profile_names[i]);
+   104		}
+   105	
+   106		len += sysfs_emit_at(buf, len, "\n");
+   107		return len;
+   108	}
+   109	
+   110	static ssize_t platform_profile_show(struct device *dev,
+   111						struct device_attribute *attr,
+   112						char *buf)
+   113	{
+   114		enum platform_profile_option profile = PLATFORM_PROFILE_BALANCED;
+ > 115		struct platform_profile_handler *handler;
+   116		int err;
+   117	
+   118		scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock) {
+   119			if (!platform_profile_is_registered())
+   120				return -ENODEV;
+   121			err = platform_profile_get_active(&profile);
+   122			if (err)
+   123				return err;
+   124		}
+   125	
+   126		return sysfs_emit(buf, "%s\n", profile_names[profile]);
+   127	}
+   128	
 
-Hi,
-
-Thanks for reporting.  I think this might be a regression on shared 
-memory designs specifically because static calls weren't updated yet.
-
-Can you try this below diff?
-
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 206725219d8c9..2f0e29b05963d 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -1857,12 +1857,6 @@ static int __init amd_pstate_init(void)
-                 return -ENODEV;
-         }
-
--       ret = amd_pstate_register_driver(cppc_state);
--       if (ret) {
--               pr_err("failed to register with return %d\n", ret);
--               return ret;
--       }
--
-         /* capability check */
-         if (cpu_feature_enabled(X86_FEATURE_CPPC)) {
-                 pr_debug("AMD CPPC MSR based functionality is 
-supported\n");
-@@ -1881,6 +1875,12 @@ static int __init amd_pstate_init(void)
-                         return ret;
-         }
-
-+       ret = amd_pstate_register_driver(cppc_state);
-+       if (ret) {
-+               pr_err("failed to register with return %d\n", ret);
-+               return ret;
-+       }
-+
-         dev_root = bus_get_dev_root(&cpu_subsys);
-         if (dev_root) {
-                 ret = sysfs_create_group(&dev_root->kobj, 
-&amd_pstate_global_attr_group);
-
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
