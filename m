@@ -1,298 +1,118 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Received: from mx0a-00128a01.pphosted.com (mx0a-00128a01.pphosted.com [148.163.135.77])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97AEA56742
-	for <linux-pm@vger.kernel.org>; Sun, 27 Oct 2024 09:37:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE4F07DA79;
+	Sun, 27 Oct 2024 09:37:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.135.77
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730021826; cv=none; b=hbzXL+kmBSJEaLypsP3aNjPNyapWDvwunpoFe4ym0cdgT10UmIoh4EP+Wnuzs+FmEMTNCv1ZzJPIQUioKhO+9r4R1efmC3n/KarHVrKsPAXew//l989NxfgTCc1yU6ZKhZjMFOY8ddi4v2JJzCizFwjtZoQJCRkWZQlplCnDn5s=
+	t=1730021830; cv=none; b=g37LmpnpO24Wc9aVeyPYEHS0++XSWt3tPpiD9KzaFUW0zTtgC5azzXzCqFbUSM4wEJufjPw0Ii1Sr8Ei48Kg0cddtP/yi30u/2LjXb839YM/zt0xxxHG4ozGl2U1kX+poLLXvFPkxOv0kC9SayD7fj9FMM/OtB3Rc0gCn3YNiC4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730021826; c=relaxed/simple;
-	bh=OQsDUjoTHw3sJT/mORJAthkExOHHFdnrOACKO8dfofw=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=Vj3wG4TNZhqCm0yrICCquHggunXsDOgkAu05X/7BrzTKcl9D8jKXwtrxbecNFW78EFAv7CHLa6i30YLxzFa2DiNlGmJV1IMbYOvlPbKLF9bdj9JJhv2nY1sWA0sxv2rZOPcW+kYHz07Tw7hKlYBFm9LJvU9vPsVid891Tw6Wyzo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ZFnbgBjD; arc=none smtp.client-ip=192.198.163.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1730021830; c=relaxed/simple;
+	bh=+o+e0yc8z2cYvVr7ThWL/jjTXKKohxTY35SoOejb2tA=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=nEuYhQhIkbI6Yg+q641pk8UU30pE3lQwao5DgXbE+5R6TKn/MtcNVgywiBWqDCTP+brdFdkjYbQ7G8djMBIBgpvv2fSUFSkfaJ6nSHCxr1n+QJefkSMTCP7RUJ/M04Rek8U9lGVlud11asimlbSspQpcCtBkni4DyAg1Uy/4wUM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=analog.com; spf=pass smtp.mailfrom=analog.com; dkim=pass (2048-bit key) header.d=analog.com header.i=@analog.com header.b=mYIJYr1y; arc=none smtp.client-ip=148.163.135.77
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=analog.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=analog.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ZFnbgBjD"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1730021823; x=1761557823;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=OQsDUjoTHw3sJT/mORJAthkExOHHFdnrOACKO8dfofw=;
-  b=ZFnbgBjDVJT523SrB+PNS/H90HUFw8p1eD96snQ9ABY/8XXY9lUIKG7v
-   gxQSW2IB8OqMLxpSjspyEi3MB9Ndo43lCZE2Sx0Dxjt1sEFotau8DB7u/
-   mAMJHKPSGCwPHYwfCZvrOvWTo/qUTsJ8iJzQIvPb64nRvDQMrLKV+VEj0
-   4a04mMRx3gvcQUW8xW8Y+TvCc5uWABljKPkW/jZmCPT9uI8sYZt5LQGr+
-   RNuHTQyOsLOuM4+2kK4neZnV7KjrmbI3Ax1COFwM6QO2EdGD549yMDVGL
-   DiHcfVEwNSsz4c08jJ9NHSIrq1YFhtmZpQa3fIUBMOtOIzPBfaE0qXXBJ
-   g==;
-X-CSE-ConnectionGUID: NfKZq/O3RuGqccYgT3yZ7g==
-X-CSE-MsgGUID: Cx/TsEWURECPJ754opYkyw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11237"; a="40218811"
-X-IronPort-AV: E=Sophos;i="6.11,236,1725346800"; 
-   d="scan'208";a="40218811"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Oct 2024 02:37:02 -0700
-X-CSE-ConnectionGUID: HVmLfnKCQU+xhl+3jf2YMQ==
-X-CSE-MsgGUID: CnPJ4fuZS9SUbErVpG52Tg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,236,1725346800"; 
-   d="scan'208";a="81657973"
-Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
-  by fmviesa010.fm.intel.com with ESMTP; 27 Oct 2024 02:37:01 -0700
-Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1t4zhi-000aas-33;
-	Sun, 27 Oct 2024 09:36:58 +0000
-Date: Sun, 27 Oct 2024 17:36:55 +0800
-From: kernel test robot <lkp@intel.com>
-To: Mario Limonciello <mario.limonciello@amd.com>
-Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org
-Subject: [amd-pstate:superm1/multiple-platform-profile-handlers-v2 13/15]
- drivers/acpi/platform_profile.c:209:43: warning: passing argument 1 of
- 'find_next_bit_wrap' makes pointer from integer without a cast
-Message-ID: <202410271730.5bm4L4Nm-lkp@intel.com>
+	dkim=pass (2048-bit key) header.d=analog.com header.i=@analog.com header.b="mYIJYr1y"
+Received: from pps.filterd (m0167088.ppops.net [127.0.0.1])
+	by mx0a-00128a01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49R43dxa027775;
+	Sun, 27 Oct 2024 03:19:16 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=analog.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=DKIM; bh=f7XnJ
+	LRudKUw+rCrfpYbgUrUwaQnQvaE21uxx+0aig0=; b=mYIJYr1y7vaW+eA5J8APk
+	d6Jb9BrCEP5JMVXlRY5zegx4xIt8pQivDmIx82dncJIaIPljHJwBqb/NH+pH0B1h
+	0pTjL0OdyClg5kOFnMrniPiuZIy7sTFJrcG/dhrDURzp8Pmh7267fnNCqr6ooz6K
+	J7UcTQN9HD+eR5X+SpAV7bXA6L6Isqbxsj+GiHdiBY0tPUCv9FQvAD+K9r4h5GuI
+	bzFhMK70jpeCQdO5buI6KGnlV2Ii7/kHLI9HynEl4ShBZTxZrFpFB8KS7Ur/97LP
+	+ygOjDzafcz89E9kg9TpNSYcM/dWWrnhUOGTuI+BHFHxHpXR+xQZ5MZ1F4ZE/9VF
+	A==
+Received: from nwd2mta4.analog.com ([137.71.173.58])
+	by mx0a-00128a01.pphosted.com (PPS) with ESMTPS id 42gt92ka19-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 27 Oct 2024 03:19:15 -0400 (EDT)
+Received: from ASHBMBX9.ad.analog.com (ASHBMBX9.ad.analog.com [10.64.17.10])
+	by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 49R7JEuJ014722
+	(version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Sun, 27 Oct 2024 03:19:14 -0400
+Received: from ASHBMBX9.ad.analog.com (10.64.17.10) by ASHBMBX9.ad.analog.com
+ (10.64.17.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.14; Sun, 27 Oct
+ 2024 03:19:14 -0400
+Received: from zeus.spd.analog.com (10.66.68.11) by ashbmbx9.ad.analog.com
+ (10.64.17.10) with Microsoft SMTP Server id 15.2.986.14 via Frontend
+ Transport; Sun, 27 Oct 2024 03:19:14 -0400
+Received: from kim-VirtualBox.ad.analog.com (KPALLER2-L03.ad.analog.com [10.116.18.26])
+	by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 49R7IxwL009789;
+	Sun, 27 Oct 2024 03:19:07 -0400
+From: Kim Seer Paller <kimseer.paller@analog.com>
+To: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+CC: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Mike Looijmans <mike.looijmans@topic.nl>
+Subject: [PATCH 1/2] dt-bindings: power/supply: Add ltc4162-f/s and ltc4015
+Date: Sun, 27 Oct 2024 15:18:51 +0800
+Message-ID: <20241027071852.56240-2-kimseer.paller@analog.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20241027071852.56240-1-kimseer.paller@analog.com>
+References: <20241027071852.56240-1-kimseer.paller@analog.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ADIRuleOP-NewSCL: Rule Triggered
+X-Proofpoint-GUID: yp_7kNsaEm6WFwCMMaaDbT2wlHhj5tg9
+X-Proofpoint-ORIG-GUID: yp_7kNsaEm6WFwCMMaaDbT2wlHhj5tg9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 suspectscore=0
+ phishscore=0 mlxlogscore=999 priorityscore=1501 clxscore=1015 adultscore=0
+ bulkscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0 spamscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2409260000
+ definitions=main-2410270062
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git superm1/multiple-platform-profile-handlers-v2
-head:   cca7df72a75a655ad552ae621054784b4a41c9ac
-commit: e336433fe10fc421aeece46f2d67647e0c91931b [13/15] ACPI: platform_profile: Check all profile handler to calculate next
-config: x86_64-rhel-8.3-kselftests (https://download.01.org/0day-ci/archive/20241027/202410271730.5bm4L4Nm-lkp@intel.com/config)
-compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241027/202410271730.5bm4L4Nm-lkp@intel.com/reproduce)
+Add support for ltc4162-f/s and ltc4015
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410271730.5bm4L4Nm-lkp@intel.com/
+- Add compatible entries for ltc4162-f/s and ltc4015
+- Include datasheets for new devices
 
-All warnings (new ones prefixed by >>):
+Signed-off-by: Kim Seer Paller <kimseer.paller@analog.com>
+---
+ .../devicetree/bindings/power/supply/ltc4162-l.yaml         | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-   drivers/acpi/platform_profile.c: In function 'platform_profile_get_active':
-   drivers/acpi/platform_profile.c:59:13: warning: variable 'err' set but not used [-Wunused-but-set-variable]
-      59 |         int err;
-         |             ^~~
-   drivers/acpi/platform_profile.c: In function 'platform_profile_show':
-   drivers/acpi/platform_profile.c:115:42: warning: unused variable 'handler' [-Wunused-variable]
-     115 |         struct platform_profile_handler *handler;
-         |                                          ^~~~~~~
-   drivers/acpi/platform_profile.c: In function 'platform_profile_cycle':
->> drivers/acpi/platform_profile.c:209:43: warning: passing argument 1 of 'find_next_bit_wrap' makes pointer from integer without a cast [-Wint-conversion]
-     209 |                 next = find_next_bit_wrap(choices,
-         |                                           ^~~~~~~
-         |                                           |
-         |                                           long unsigned int
-   In file included from include/linux/bitmap.h:11,
-                    from include/linux/cpumask.h:12,
-                    from include/linux/smp.h:13,
-                    from include/linux/lockdep.h:14,
-                    from include/linux/spinlock.h:63,
-                    from include/linux/mmzone.h:8,
-                    from include/linux/gfp.h:7,
-                    from include/linux/slab.h:16,
-                    from include/linux/resource_ext.h:11,
-                    from include/linux/acpi.h:13,
-                    from drivers/acpi/platform_profile.c:5:
-   include/linux/find.h:452:55: note: expected 'const long unsigned int *' but argument is of type 'long unsigned int'
-     452 | unsigned long find_next_bit_wrap(const unsigned long *addr,
-         |                                  ~~~~~~~~~~~~~~~~~~~~~^~~~
-
-
-vim +/find_next_bit_wrap +209 drivers/acpi/platform_profile.c
-
-    52	
-    53	/* expected to be called under mutex */
-    54	static int platform_profile_get_active(enum platform_profile_option *profile)
-    55	{
-    56		struct platform_profile_handler *handler;
-    57		enum platform_profile_option active = PLATFORM_PROFILE_LAST;
-    58		enum platform_profile_option active2 = PLATFORM_PROFILE_LAST;
-  > 59		int err;
-    60	
-    61		list_for_each_entry(handler, &platform_profile_handler_list, list) {
-    62			if (active == PLATFORM_PROFILE_LAST)
-    63				err = handler->profile_get(handler, &active);
-    64			else
-    65				err = handler->profile_get(handler, &active2);
-    66	
-    67			if (WARN_ON(active == PLATFORM_PROFILE_LAST))
-    68				return -EINVAL;
-    69			if (active2 == PLATFORM_PROFILE_LAST)
-    70				continue;
-    71	
-    72			if (active != active2) {
-    73				pr_warn("Profile handlers don't agree on current profile\n");
-    74				return -EINVAL;
-    75			}
-    76			active = active2;
-    77		}
-    78	
-    79		/* Check that profile is valid index */
-    80		if (WARN_ON((active < 0) || (active >= ARRAY_SIZE(profile_names))))
-    81			return -EIO;
-    82	
-    83		*profile = active;
-    84	
-    85		return 0;
-    86	}
-    87	
-    88	static ssize_t platform_profile_choices_show(struct device *dev,
-    89						struct device_attribute *attr,
-    90						char *buf)
-    91	{
-    92		unsigned long choices;
-    93		int len = 0;
-    94		int i;
-    95	
-    96		scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock)
-    97			choices = platform_profile_get_choices();
-    98	
-    99		for_each_set_bit(i, &choices, PLATFORM_PROFILE_LAST) {
-   100			if (len == 0)
-   101				len += sysfs_emit_at(buf, len, "%s", profile_names[i]);
-   102			else
-   103				len += sysfs_emit_at(buf, len, " %s", profile_names[i]);
-   104		}
-   105	
-   106		len += sysfs_emit_at(buf, len, "\n");
-   107		return len;
-   108	}
-   109	
-   110	static ssize_t platform_profile_show(struct device *dev,
-   111						struct device_attribute *attr,
-   112						char *buf)
-   113	{
-   114		enum platform_profile_option profile = PLATFORM_PROFILE_BALANCED;
-   115		struct platform_profile_handler *handler;
-   116		int err;
-   117	
-   118		scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock) {
-   119			if (!platform_profile_is_registered())
-   120				return -ENODEV;
-   121			err = platform_profile_get_active(&profile);
-   122			if (err)
-   123				return err;
-   124		}
-   125	
-   126		return sysfs_emit(buf, "%s\n", profile_names[profile]);
-   127	}
-   128	
-   129	static ssize_t platform_profile_store(struct device *dev,
-   130				    struct device_attribute *attr,
-   131				    const char *buf, size_t count)
-   132	{
-   133		struct platform_profile_handler *handler;
-   134		unsigned long choices;
-   135		int err, i;
-   136	
-   137		/* Scan for a matching profile */
-   138		i = sysfs_match_string(profile_names, buf);
-   139		if (i < 0) {
-   140			return -EINVAL;
-   141		}
-   142	
-   143		scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock) {
-   144			if (!platform_profile_is_registered())
-   145				return -ENODEV;
-   146	
-   147			/* Check that all handlers support this profile choice */
-   148			choices = platform_profile_get_choices();
-   149			if (!test_bit(i, &choices))
-   150				return -EOPNOTSUPP;
-   151	
-   152			list_for_each_entry(handler, &platform_profile_handler_list, list) {
-   153				err = handler->profile_set(handler, i);
-   154				if (err) {
-   155					pr_err("Failed to set profile for handler %s\n", handler->name);
-   156					break;
-   157				}
-   158			}
-   159			if (err) {
-   160				list_for_each_entry_continue_reverse(handler, &platform_profile_handler_list, list) {
-   161					if (handler->profile_set(handler, PLATFORM_PROFILE_BALANCED))
-   162						pr_err("Failed to revert profile for handler %s\n", handler->name);
-   163				}
-   164				return err;
-   165			}
-   166		}
-   167	
-   168		sysfs_notify(acpi_kobj, NULL, "platform_profile");
-   169		return count;
-   170	}
-   171	
-   172	static DEVICE_ATTR_RO(platform_profile_choices);
-   173	static DEVICE_ATTR_RW(platform_profile);
-   174	
-   175	static struct attribute *platform_profile_attrs[] = {
-   176		&dev_attr_platform_profile_choices.attr,
-   177		&dev_attr_platform_profile.attr,
-   178		NULL
-   179	};
-   180	
-   181	static const struct attribute_group platform_profile_group = {
-   182		.attrs = platform_profile_attrs
-   183	};
-   184	
-   185	void platform_profile_notify(void)
-   186	{
-   187		if (!cur_profile)
-   188			return;
-   189		sysfs_notify(acpi_kobj, NULL, "platform_profile");
-   190	}
-   191	EXPORT_SYMBOL_GPL(platform_profile_notify);
-   192	
-   193	
-   194	int platform_profile_cycle(void)
-   195	{
-   196		enum platform_profile_option next = PLATFORM_PROFILE_LAST;
-   197		struct platform_profile_handler *handler;
-   198		enum platform_profile_option profile;
-   199		unsigned long choices;
-   200		int err;
-   201	
-   202		scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock) {
-   203			err = platform_profile_get_active(&profile);
-   204			if (err)
-   205				return err;
-   206	
-   207			choices = platform_profile_get_choices();
-   208	
- > 209			next = find_next_bit_wrap(choices,
-   210						  PLATFORM_PROFILE_LAST,
-   211						  profile + 1);
-   212	
-   213			list_for_each_entry(handler, &platform_profile_handler_list, list) {
-   214				err = handler->profile_set(handler, next);
-   215				if (err) {
-   216					pr_err("Failed to set profile for handler %s\n", handler->name);
-   217					break;
-   218				}
-   219			}
-   220			if (err) {
-   221				list_for_each_entry_continue_reverse(handler, &platform_profile_handler_list, list) {
-   222					err = handler->profile_set(handler, PLATFORM_PROFILE_BALANCED);
-   223					if (err)
-   224						pr_err("Failed to revert profile for handler %s\n", handler->name);
-   225				}
-   226			}
-   227		}
-   228	
-   229		sysfs_notify(acpi_kobj, NULL, "platform_profile");
-   230	
-   231		return 0;
-   232	}
-   233	EXPORT_SYMBOL_GPL(platform_profile_cycle);
-   234	
-
+diff --git a/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml b/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
+index 29d536541..9b546150d 100644
+--- a/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
++++ b/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
+@@ -17,12 +17,18 @@ description: |
+   panels, etc., and a rechargeable Lithium-Ion/Polymer battery.
+ 
+   Specifications about the charger can be found at:
++    https://www.analog.com/en/products/ltc4162-l.html
++    https://www.analog.com/en/products/ltc4162-f.html
+     https://www.analog.com/en/products/ltc4162-s.html
++    https://www.analog.com/en/products/ltc4015.html
+ 
+ properties:
+   compatible:
+     enum:
+       - lltc,ltc4162-l
++      - lltc,ltc4162-f
++      - lltc,ltc4162-s
++      - lltc,ltc4015
+ 
+   reg:
+     maxItems: 1
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.34.1
+
