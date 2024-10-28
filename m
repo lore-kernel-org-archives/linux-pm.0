@@ -1,76 +1,141 @@
-Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE07E1DF269;
-	Mon, 28 Oct 2024 18:58:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.214.62.61
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D0AA18F2DA
+	for <linux-pm@vger.kernel.org>; Mon, 28 Oct 2024 19:22:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730141941; cv=none; b=UE9kKO4ibte4gSAVebbJvCaML5DIH8Ld/5KrZWySIfePvBuovR2HdjGGDr5pSPrKXCrGnvexDhlYBopBVarRL6waQbdOvdZdz/9KbmvWSN8PFn4c5Rn47P+wTCB90W0+G0Zdu7dSkkvDgWUAjcRapY7Hi+6/dtK+moEmeDh9Yl8=
+	t=1730143368; cv=none; b=DpiojyJiEebuepLMj2q5en9zxYdRgHemqLAg3DBpi8sG3fyDvm0+APpH/kmbkdmQGBpV+sMP/2ifH+oYhqKm5HozLNb2DaARhYv/DbJhXVv+TDOf1NegrDNU6RQdOLYrldJJRe4wwp/8F/km9hDV8GD+BKItGUzrZF6rxWgA4nc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730141941; c=relaxed/simple;
-	bh=8WGafjVya077ILDXHhSSvM5YhVRBuyPpmORE/9ykOCg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SEMPJarT87n3laO+EVN4NLvJHkyT5incRHpOt/Ri0eXW/j9xPihNrBobFTz2l3r3P9thguCNT/EOZ6vTbR3H1PkABsgDp4TB8TQLipVxQfG0M+qAL2tL77JsrRN6hhRjEF0Wvr/6LrTnW9WnHZYMDm/V/VvLyA0Bdgw6Wjg5NjU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=F6gb8mek; arc=none smtp.client-ip=85.214.62.61
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=denx.de
+	s=arc-20240116; t=1730143368; c=relaxed/simple;
+	bh=CbObgP7IIl3aP9ALobbAUxvjEB1cz2+fRVVHoiOBfqI=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=B10SQr9r/hhF8F1c/wPGTh9tL1UnmyzkdFcTR/Fg9T0L0hEh8jrM6NBD1Mm+NlTRbUQlKWkXV49NBabfOXmPOOmkHO5Aw192naOBUHTeUt7mCup+Cf1jhNV4wQQsGtLr3L7RkvFy2bhKbQRbMTg9YxVQaNKr7XJ3AASFgxA+YH0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=e8c/ayiz; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="F6gb8mek"
-Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
-	(No client certificate requested)
-	(Authenticated sender: marex@denx.de)
-	by phobos.denx.de (Postfix) with ESMTPSA id 358858910C;
-	Mon, 28 Oct 2024 19:58:51 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
-	s=phobos-20191101; t=1730141931;
-	bh=xh/GaRY+S5pcuyrQRU2xRgm2fWL9H46nXW1L/svE3qQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=F6gb8mektYwkf0MT4BocRTHfT9GteUxFyFg3u8umCoJxO+nXwbbCZZTpRwZR3ZNbD
-	 ygxH1lt2tFgUhY8Qm9eMg3xgeZMFIAHa3bPlrI/ICmcn99WO8x8EVczGJJdrUjf2tZ
-	 C1HZ1wk0fYSs1XICEEY4XDyNbpdikHIVqxabPnkoCLsmxfjLFXsNPMyESJJZAPWbq4
-	 9HKd2Ru2lmtfsQLxpV/YXDw4BuOtw5Vwnztm5B8C7kI3d4u11ZYEYbHK2roS8+JeBG
-	 v34DEM5EvddxMBlWkYf2wwPErhPOEMNIuulQEUuiPoSvXaSWuG5pznyazHV96MCSeL
-	 /cWmJQfWPA5wQ==
-Message-ID: <6b47cc49-dd3b-4c4f-827d-f9b3a8719eb9@denx.de>
-Date: Mon, 28 Oct 2024 19:25:27 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="e8c/ayiz"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D48F5C4CEC7
+	for <linux-pm@vger.kernel.org>; Mon, 28 Oct 2024 19:22:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1730143367;
+	bh=CbObgP7IIl3aP9ALobbAUxvjEB1cz2+fRVVHoiOBfqI=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=e8c/ayizQc3ANtzuvT9bwsC7f5FomUgvJ9FXM62BbX+NOCiNlFv9d6XJJLjigGuzh
+	 ODg6zPAkvjVbRGfNU+C4laK+QDjc8ayak0MAegNnaP4rMO6yvH0ZhbMhYgqrNiNmO0
+	 e4jTJCB5VtYgBAD8we3lPHt3IESwQISWB0KJBXZ3+D/yRCeG3ey5pi+8mBS/BshPul
+	 d9AFRKh9cO5D6IgLTqNuDk3vFPfbcMSQhq9K52s1OEwThqi8/7Xj/UnPlAZsnnv/7J
+	 E/W+e7ucxdoR/m8pR90WYu05Yq64GvL5Ixom0c2vjoKhUUCo7osjaQV9RzdmByDRqJ
+	 iLXDnlm0pS9lw==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id C3266C53BBF; Mon, 28 Oct 2024 19:22:47 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 219431] [6.12] amd-pstate / Ryzen 5xxx (Zen 3, Vermeer): Could
+ not retrieve highest performance (-19)
+Date: Mon, 28 Oct 2024 19:22:47 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: intelfx@intelfx.name
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-219431-137361-4mb9M1Qiuu@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-219431-137361@https.bugzilla.kernel.org/>
+References: <bug-219431-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] [RFC] PCI/PM: Do not RPM suspend devices without drivers
-To: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>
-References: <20241012004857.218874-1-marex@denx.de>
- <ZwupHAAwTo5mDyyA@wunner.de> <52b90ab1-2759-45e9-ae86-3d3073a0add0@denx.de>
- <7ad59d82-8122-438e-9682-791816ab0366@intel.com>
-Content-Language: en-US
-From: Marek Vasut <marex@denx.de>
-In-Reply-To: <7ad59d82-8122-438e-9682-791816ab0366@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
-X-Virus-Status: Clean
 
-On 10/28/24 6:52 PM, Wysocki, Rafael J wrote:
-> On 10/26/2024 2:19 AM, Marek Vasut wrote:
->> On 10/13/24 1:03 PM, Lukas Wunner wrote:
->>> On Sat, Oct 12, 2024 at 02:48:48AM +0200, Marek Vasut wrote:
->>>> The pci_host_probe() does reallocate BARs for devices which start up 
->>>> with
->>>> uninitialized BAR addresses set to 0 by calling 
->>>> pci_bus_assign_resources(),
->>>> which updates the device config space content.
->>>>
->>>> At the same time, pci_pm_runtime_suspend() triggers pci_save_state() 
->>>> for
->>>> all devices which do not have drivers assigned to them to store current
->>>> content of their config space registers.
-> 
-> What exactly do you mean by "at the same time"?
-I mean these two blocks of code run in parallel and likely race each other.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D219431
+
+--- Comment #10 from Ivan Shapovalov (intelfx@intelfx.name) ---
+(In reply to Mario Limonciello (AMD) from comment #5)
+> It looks like this message is being emitted specifically from the calls in
+> amd_set_max_freq_ratio().
+>=20
+> You system is a shared memory design not a MSR design.
+> "[  +0.000016] amd_pstate: AMD CPPC shared memory based functionality is
+> supported"
+
+I assumed that all Zen 3 desktop parts are ACPI CPPC-based rather than
+MSR-based? That's why I mentioned Vermeer in both my original mail and this=
+ bug
+report.
+
+> This looks like the calltrace:
+> amd_set_max_freq_ratio
+> ->amd_get_boost_ratio_numerator
+> ->->amd_detect_prefcore
+> ->->->amd_get_highest_perf
+> ->->->->cppc_get_highest_perf
+> ->->->->->cppc_get_perf
+>=20
+> The first error you see is "No CPC descriptor for CPU:1" which comes from
+> cppc_get_perf().
+>=20
+> Can you please share your acpidump?  It sure seems like a BIOS bug to me.
+
+There is also an interesting observation, that at some point *after* this
+warning we get a pr_debug() from the end of amd_detect_prefcore(), which
+indicates that the latter is called again and this error does not happen
+anymore:
+
+```
+Oct 28 17:13:08 kernel: ACPI CPPC: CPPC v2 _OSC not acked
+Oct 28 17:13:08 kernel: ACPI CPPC: Parsed CPC struct for CPU: 0
+Oct 28 17:13:08 kernel: ACPI CPPC: TX completed. CMD sent:0, ret:0
+Oct 28 17:13:08 kernel: ACPI CPPC: TX completed. CMD sent:0, ret:0
+Oct 28 17:13:08 kernel: ACPI CPPC: No CPC descriptor for CPU:1
+Oct 28 17:13:08 kernel: Could not retrieve highest performance (-19)
+<...>
+Oct 28 17:13:08 kernel: amd_pstate: AMD CPPC shared memory based functional=
+ity
+is supported
+Oct 28 17:13:08 kernel: ACPI CPPC: TX completed. CMD sent:0, ret:0
+Oct 28 17:13:08 kernel: ACPI CPPC: TX completed. CMD sent:0, ret:0
+Oct 28 17:13:08 kernel: AMD CPPC preferred core is supported (highest perf:
+0xe7)
+```
+
+It's even more interesting that the debug logs from the amd-pstate flow you
+described earlier appear to be interleaved with debug logs from
+acpi_cppc_processor_probe():
+
+```
+Oct 28 17:13:08 kernel: ACPI CPPC: CPPC v2 _OSC not acked
+Oct 28 17:13:08 kernel: ACPI CPPC: Parsed CPC struct for CPU: 0
+Oct 28 17:13:08 kernel: ACPI CPPC: TX completed. CMD sent:0, ret:0
+Oct 28 17:13:08 kernel: ACPI CPPC: TX completed. CMD sent:0, ret:0
+Oct 28 17:13:08 kernel: ACPI CPPC: No CPC descriptor for CPU:1
+Oct 28 17:13:08 kernel: Could not retrieve highest performance (-19)
+Oct 28 17:13:08 kernel: Monitor-Mwait will be used to enter C-1 state
+Oct 28 17:13:08 kernel: ACPI CPPC: CPPC v2 _OSC not acked
+Oct 28 17:13:08 kernel: ACPI CPPC: Parsed CPC struct for CPU: 1 <-- THIS
+```
+
+I'm not familiar with control flow in these subsystems, but isn't it possib=
+le
+that we are simply racing with ACPI (and thus CPPC) subsystem initializatio=
+n?
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
