@@ -1,46 +1,46 @@
-Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2052.outbound.protection.outlook.com [40.107.93.52])
+Received: from NAM04-BN8-obe.outbound.protection.outlook.com (mail-bn8nam04on2075.outbound.protection.outlook.com [40.107.100.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD392188A08;
-	Mon, 28 Oct 2024 02:03:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.93.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 090B4189918;
+	Mon, 28 Oct 2024 02:03:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.100.75
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730081001; cv=fail; b=ATis3GqpR9z+l824ES++H2c6iQYIoPW0h81ew/0A5NzLYAJ9N1LVdog2KPxGRfE06vbm/gQ363hxaQVq9JRxCA2oFOe8rrECwV65ELpQoafNeHeMlZHWl6Ov1kCxsk1Nh1jZKkrrrqrJfK03csC2MPOTdXEbEvH/NGh/7YgzXj8=
+	t=1730081002; cv=fail; b=YnAdm6g84/VjKG44tIm8ycEuECxtNiCoDJ7Ah2p0o6hqzuRb17aICQtvHE3W49r1BRCLH5ey48lxr0cgWRxCs8t+tcxsYwxeQ+Pj04pDaaiKlLS+R05ZIJ5lz3WX7ZMOMJ3xBOPXa2v6gQhTvhLxHY5wH/5RW736IPHorsktbMw=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730081001; c=relaxed/simple;
-	bh=8HG1aI0ZH+69GiaPX1fCROITr6TmMRta77jCS37iELE=;
+	s=arc-20240116; t=1730081002; c=relaxed/simple;
+	bh=6/GNpT2p5G0nMQWNGh63AxQqGIghyA/swYKFuepemJE=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=GhvT9RgT5pQ7g9i1pVIVZY/1R7QktxQIeL+Q7y4xSLX4gMn7OwB/PMdLLFT78D7POUCkwQsHGIIF16/PlRWeJ3Jj4gzuj+YIgpo36QjO9se4M5ALA2UwK2kQjktwF4GVhOkKlV/mZ2Fg4istOFxkbyw/HU23ySvxYcBRM6f76Q8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=i5k7CTNn; arc=fail smtp.client-ip=40.107.93.52
+	 MIME-Version:Content-Type; b=p4DWB4knOwUEK+uP14cJPGPEGdASRG1VRMUUaIhySuHA73nj2EcM8PcDNPlZj0awh4uiDg3VA1XPhl2YhJFuQlNpLuyGnYdgfNcPx25txtYQf7O8nv5AdJwRcuc/ccr1RD3FvExKS2qsBttNdu7Oy/A2jJkYkYXcKr1LdqVAAIA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=YbcBoiG8; arc=fail smtp.client-ip=40.107.100.75
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="i5k7CTNn"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="YbcBoiG8"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=NFhmaY9dbqiDhWSQ8xArp+sMWGlxDJ5Y97QAXhB3bl4xpyKW/xOqSxPNSgrnapo6Ns4IPg5O4zgC3Yy76Lc0Li9bS0ciZhHVUZiKH5Wm6k2PQhs2SxzzhHunNrdYnc80gL/N186EBRGkbSEM+L9mnIOa6RvNmliJcQQWBxHs2h4VTrRrEC+Vnp0ksm2JNZfd7+tD5z1smnIG0RI41l3zBz4kMOlQrQWEAZbfmYngNOaqEL5m0LVmWJIM7S8U5Usok8zmmA/HYf7PQ6yQsLUUV6CeNC1+3lLXgy829/NisGVv4HHiiyr+0+AqHRZXjnWbjuC1szWO3Q/ZgbqLtufjvA==
+ b=vKpKHwuhHeSXuotvnUOF9u77WbeiseYgHXa7w+K8Y1G17ia+PZ6ahWPG+BFC1mFBIKS4d+c7uGRxQ8ulIXAzQK2Ieb8t8OyLE8GjwdAlaQrE2LsEplzRWorZmFxCH849OPwpRLa/pJObImmWH3jI9dfug8b91qvue+x9HKcMobarlXqzpvBDsfJ/l59GLmHvOZdsWuFi5jtcXpb558IDk7KP+RBfl6KgV+rjqmxpnnZLyeWblB4569BPLJs+DJv9g9J51aOxfvlbR2vQE08FnzMwbPf8NtJy0nf/SDDffMhS/nt4drg4+v0nqHO2o4gfObFk0ohPC3MgkqkX4sNTgg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=fuCe+9169sOZvFFHYStLSQ95SM3TAhSPvmqLex9qHT8=;
- b=mNe7YTk6u7XziB7JQM4ISHJpOpi32VK/vP6dhUq6h8DWmJx8JQ8gyuXtBCBDy1mGjUCfudvmAQAm76wKf+PIm4Eh27YCZHyQ37c8tg4eH1ob9EB1zA+0pxldDhBX2ZMl6cUXQGcBO/6a343L3M6mLSECiTSLLuVbZbJ2tbSZlLPU2BTAlU4Ey8G1Adlo00CivRiYFchasmrz14VZ7c1WYrfCrml5y1HyT26QJ3g7TT4m+oKpnA8WcgZug5HX5MZeNBkCcFzEIiRvy0kfIK4vQDnlGvTLW2YFxod+oRDgvE2g56x6Up+WjagBOgZdiey46XbrqMoL50jgBkO3HSlBCw==
+ bh=MK4bqI2kTIwrrtnwYodnqVtCHNR2bI5U4bV4Sc3i77M=;
+ b=T+YnyB4FvyMZRZGC/CY4g7RFYcz2jzUf529IV8CMKpYhlKLMUXvdZi5ZS9SgJDwtiCaQzOEp90PZIRzAnEIq2TeOh3F5ngY7rlzcRCoiUmCy4T57bp7oWswirM7fGbXov9W2fsqkoQy6p1vE9wL0GQlI2F0t/gJCqHi89t/IZxNBcfK9RhzpEUJAUhIrGRSdqpgRTaYuOUKw2TUaxP7rGwhh1/vvHYfMwPUHw+Wkgsj8Nds5KXmi478Yqt8iO+m5WrgSbehrBRSL7gaUr8YosewkSu4uR3xrAa+a6aFZUdgpy1qq2CMNHiNv0/hxO54WRzyABvmCdnAhfYJ/9+a0gg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=alien8.de smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fuCe+9169sOZvFFHYStLSQ95SM3TAhSPvmqLex9qHT8=;
- b=i5k7CTNnJ8thTy0k7rTPZgGZOatjp+a7yyeCSGtHR3uulF2Ln801sGHFlHvB9GLx+UaPt8clu4KE79g7tKhVEOXBwAOnkEPkGa8LpYb3EMVgCBbOi83/XtnRh/39Cl988e7LeVRLNI05tjuWyb7mrTlYdcGHzIrkRpQfFpashuA=
-Received: from MN2PR06CA0026.namprd06.prod.outlook.com (2603:10b6:208:23d::31)
- by SN7PR12MB7300.namprd12.prod.outlook.com (2603:10b6:806:298::7) with
+ bh=MK4bqI2kTIwrrtnwYodnqVtCHNR2bI5U4bV4Sc3i77M=;
+ b=YbcBoiG8JLlpG/jMm5dWF3cm62xE8WyRG1Oj0a01eeSg5Au1c04Y/iEzjo6AYb/V+y/83zvK3T3QAvN+1AtMzRzaDHDs6fIw7E9qa2z00IVp706eGIP9BWIBAcjW74PgI6uMpkttHFapiIEf1kwB85NgTGrywbRC+QvYjTt9mI0=
+Received: from MN2PR06CA0013.namprd06.prod.outlook.com (2603:10b6:208:23d::18)
+ by CY8PR12MB7337.namprd12.prod.outlook.com (2603:10b6:930:53::9) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.21; Mon, 28 Oct
- 2024 02:03:11 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.23; Mon, 28 Oct
+ 2024 02:03:16 +0000
 Received: from BL02EPF00021F6F.namprd02.prod.outlook.com
- (2603:10b6:208:23d:cafe::78) by MN2PR06CA0026.outlook.office365.com
- (2603:10b6:208:23d::31) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10b6:208:23d:cafe::4d) by MN2PR06CA0013.outlook.office365.com
+ (2603:10b6:208:23d::18) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.25 via Frontend
- Transport; Mon, 28 Oct 2024 02:03:11 +0000
+ Transport; Mon, 28 Oct 2024 02:03:15 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -50,11 +50,11 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  BL02EPF00021F6F.mail.protection.outlook.com (10.167.249.11) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.8114.16 via Frontend Transport; Mon, 28 Oct 2024 02:03:11 +0000
+ 15.20.8114.16 via Frontend Transport; Mon, 28 Oct 2024 02:03:15 +0000
 Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Sun, 27 Oct
- 2024 21:03:09 -0500
+ 2024 21:03:13 -0500
 From: Mario Limonciello <mario.limonciello@amd.com>
 To: Borislav Petkov <bp@alien8.de>, Hans de Goede <hdegoede@redhat.com>,
 	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
@@ -62,11 +62,10 @@ CC: <x86@kernel.org>, "Gautham R . Shenoy" <gautham.shenoy@amd.com>, "Mario
  Limonciello" <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>,
 	<linux-kernel@vger.kernel.org>, <linux-doc@vger.kernel.org>,
 	<linux-pm@vger.kernel.org>, <platform-driver-x86@vger.kernel.org>, "Shyam
- Sundar S K" <Shyam-sundar.S-k@amd.com>, Perry Yuan <Perry.Yuan@amd.com>,
-	"Bagas Sanjaya" <bagasdotme@gmail.com>
-Subject: [PATCH v5 01/13] Documentation: x86: Add AMD Hardware Feedback Interface documentation
-Date: Sun, 27 Oct 2024 21:02:39 -0500
-Message-ID: <20241028020251.8085-2-mario.limonciello@amd.com>
+ Sundar S K" <Shyam-sundar.S-k@amd.com>
+Subject: [PATCH v5 04/13] x86/msr-index: define AMD heterogeneous CPU related MSR
+Date: Sun, 27 Oct 2024 21:02:42 -0500
+Message-ID: <20241028020251.8085-5-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20241028020251.8085-1-mario.limonciello@amd.com>
 References: <20241028020251.8085-1-mario.limonciello@amd.com>
@@ -82,218 +81,80 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL02EPF00021F6F:EE_|SN7PR12MB7300:EE_
-X-MS-Office365-Filtering-Correlation-Id: 073a1b50-d638-4d60-a0a6-08dcf6f4acef
+X-MS-TrafficTypeDiagnostic: BL02EPF00021F6F:EE_|CY8PR12MB7337:EE_
+X-MS-Office365-Filtering-Correlation-Id: 66a6bdaf-5df8-44c5-f829-08dcf6f4af8f
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|36860700013|376014|82310400026;
+	BCL:0;ARA:13230040|82310400026|36860700013|376014|1800799024;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?OCZy8FIdIzZ5JijPM12GdnuasNw7bFuDIW8lx6oscGNqGAokPr7/869ZGwnZ?=
- =?us-ascii?Q?TLX40XaBCTCc4fqtAZ1G8HJ0s+jcd1rm5zfz/4c2M/bqdV/He9z2PfUa26xs?=
- =?us-ascii?Q?cF9iAqyaI+JgGM9F3aVQnthVwU888m7C+N9o8b42UX3OAcqRTG0bHRwwEJFK?=
- =?us-ascii?Q?1DdLG4GmsaGh4DW6zjZxAMBCjemVzD2YReDhzSZtycuoj59pHWq0Rn7SG51A?=
- =?us-ascii?Q?BFOL35m8VDNXcUr9cQgvxknaSGrisqcaAyBBpcdbfC5SbeE4gRy35/zyifjN?=
- =?us-ascii?Q?0/3X1pA5u46KdyZRNVP3iKihevQTHMlezhZOZmvkLVp2A6oadtqoWeSL7iy0?=
- =?us-ascii?Q?Kh/vl3O+2RUYereem+Bk+s7971RCoJrVMr9EMKPagrUFlMpwaYGMBtVRyKsv?=
- =?us-ascii?Q?8da0S9fyjj+Rw2okjtbwhVQEQHaVHwdtz9OUA0K4uYDl+g+/gMDAV6o1ASKo?=
- =?us-ascii?Q?LoEqrjJZx1b4eAYZeU84NNk7bdgY0HJvoyTHbqZrbTWZg/Vm6TrVTliG81TW?=
- =?us-ascii?Q?lRe1y5A8g9tv35X0liIIoF95sdqk7LP2TkE24GaPKLMmhjM8uvusd7B6VsCh?=
- =?us-ascii?Q?YsU5ZriURMmf5G5YRHmd4i4w6MJrMc51VyKD8dfCSj1wrAW28sYQTitl4XJK?=
- =?us-ascii?Q?H/s3L1Ai1+K6R28KLXpHel+Mz9Lrp1i06KgnPEFIxp+X2HKS07etIX0qyeW0?=
- =?us-ascii?Q?2MCORRAEtuMxD23H7Hrb1TsAfwKF0N5eteWKP9SBjsR//IYyZhQXjPHpmTRq?=
- =?us-ascii?Q?w9Qb/NQhC39WUozjrggwuLNHKKIerORyWuRhQhkngjZa9Q48VcnDKxE71pOE?=
- =?us-ascii?Q?TT+94FQCQpQACdo1U1mI3YBWGRCQGAMV+NPgK+linVp48q+VG/IPJmBTb1Cy?=
- =?us-ascii?Q?lQ+LaqjWELXLWoldwVNkIIXjMztJVpkX5MJBg11nsFWHWQymVB1UG0qU1vqG?=
- =?us-ascii?Q?rhkTL3Iluj9IEAbUe+i3g9HjZfyjdyrR7mkQwSP3hasL179+OctnUJerhsgO?=
- =?us-ascii?Q?mUxHQliq5/wuSaxm+/Z3k+7Aq+GaFdKH9U07jQYJSBumAwkH9/WEB6g5F+tK?=
- =?us-ascii?Q?229kVM1hEGvApguUw9Dbt/nxI9SHP5ylZJQiHaKhnPhJfL9BHGw8lhcM1nYD?=
- =?us-ascii?Q?la22WB+AxSC0D1yKtKTOgppfHwUlNOSOZZCvE0rBFg9BYMveo6pBAlIELPJt?=
- =?us-ascii?Q?rkmDzZZvV03hOG65NUlmfA/F1LSPeKmTxuEconM78HofwcdcD/NiD8To8hOb?=
- =?us-ascii?Q?reAs4z4j6UU7rLmNMq4CNeP0lTSh2lFkDSolpSBnwRmDsFpVHxehoDR3zLqY?=
- =?us-ascii?Q?eCtRCzyjYMZdWVVT1qoYfqXDHrtFZ60OPibatyPH/BpOzb0rmzbhVlpdb4Ww?=
- =?us-ascii?Q?R57gTU7lgj9tiQc9KtKIWV0vwElnvWYHCPnirQ4ofgIG7Ahv0Q=3D=3D?=
+	=?us-ascii?Q?/Jxh3DSewsjOMxKl1Y3r9aKsexnFaLfGS1FLTDgF4K/ctF7XExWK4INGE/AK?=
+ =?us-ascii?Q?qRP/5eCZ6sRAtB1ycVkbZZSUguIGX8TGZTsjCaGdVfYdLWd4D90lHiUbhwGt?=
+ =?us-ascii?Q?AA3zw0Vg26jnMGLvkOM8hyR5fEeEmpgN96+UAENKpvYiRiseznA+E5a1dX+c?=
+ =?us-ascii?Q?pn43Xi5melUZGoINVSXj6zH6141wqsRcBoWPLryWmBoY736bfoWU5riGI6lp?=
+ =?us-ascii?Q?yX+UlNenFHXhVqsUMiB6dcqc1LDLjlFaFRvYLGqH93Kd/UUtOoValntG0O6w?=
+ =?us-ascii?Q?pBOqt69Cna0BitMoVk9biVraeJkysL6PKqqKaEUEg/rZ0J7V/NNqYuV1ssTc?=
+ =?us-ascii?Q?f5I4g7f3b+bY1abty/EIZi4uQDWyEWtXEaYxfH+dHbniSC/842X1VjTzP2AE?=
+ =?us-ascii?Q?EaGbfPFm9LZenB0g8+dX1dCeNaimMkyk2sybGEzkbfvBqRegcXGrYKyrOl2e?=
+ =?us-ascii?Q?FC5nb8/wcebNalpHFpi5xKAti433m1QHgueEnx4/tMRx2LW/My7x5fBqSMVa?=
+ =?us-ascii?Q?/YtiV5l+dvI8+Xx5uL2/YqKxiuYltSea0yWICpBhQNGm8zW9MPFeHMd/E47g?=
+ =?us-ascii?Q?tuTJfA6TR7DWVvAaYldFKyn1FRIOqJmGLcS2iLPB4g5vRIIfxwjzlOK9ZkMv?=
+ =?us-ascii?Q?1FJcoTqnrKsnxTSq70TsXI9gL1XWEL6R5Udvr7CBXynFmzm7SEErRDDP3PYx?=
+ =?us-ascii?Q?1/pKAChLzbGhDdFuaOUmqPAKXYrgS5W/415hiISWEeR2w/BKvnnFqvdnCDwe?=
+ =?us-ascii?Q?bFBIMovG9bEiEr62aEMs+S5q3A32gbPXDeOzHFAoiArFfyDllk281SYUO9PZ?=
+ =?us-ascii?Q?Ly8keFhx8uY1MP9HOqqOXoASqqGQSTHcOOzJhZ8RtqCEI2hvJ+VWv5r/NVry?=
+ =?us-ascii?Q?6SPkNxOhDLMAF4tibQxo1JX1ENATl/Xpy/p49Fz46R6s92oQzqLpSChIhWiu?=
+ =?us-ascii?Q?vHQDy3TyrkUNQS4N2ktOMNOX862gLA5o4DNoKWhjwZ6L6CnUkDYGGXJNy+VK?=
+ =?us-ascii?Q?R+wPJH1iUj2juKToFxsh+AG6uf7VVZCk6BsBOSsMiizDOn8awZlNTQpOkUGE?=
+ =?us-ascii?Q?BgDPXCrDVd11itJoeCpLWw+jCFPgBKoklO9RA2rVkzd1oUGa8asFO7vm0I/l?=
+ =?us-ascii?Q?tggiHm+effNETK6R/To+kLBlZcbv0rX7zIlC05Kp0SI/vscLdzYdJpIk+8Ma?=
+ =?us-ascii?Q?CTAkjEjTADu4jhoMfSRwJzRHyQUWftwpXSBk/zVlo7oelD0TGooLdgS4b+FW?=
+ =?us-ascii?Q?DNwx+JBmKkMI5rhmTYRgiS33NRM52UlM9iuUVhnDffN/FM/pMX9LZbgOArCS?=
+ =?us-ascii?Q?3/bVGfi2O26hdL7t+D/AsLuO1gsHv5k8zH+Nxn8aJRusjO4f5dIR9Ak7dl6E?=
+ =?us-ascii?Q?eEp+wOgjWNqgYlsItCAsUemKq4wPYKlB7h7Ff5f9xzheKy4rUw=3D=3D?=
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700013)(376014)(82310400026);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700013)(376014)(1800799024);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Oct 2024 02:03:11.2981
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Oct 2024 02:03:15.6887
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 073a1b50-d638-4d60-a0a6-08dcf6f4acef
+X-MS-Exchange-CrossTenant-Network-Message-Id: 66a6bdaf-5df8-44c5-f829-08dcf6f4af8f
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	BL02EPF00021F6F.namprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7300
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR12MB7337
 
-From: Perry Yuan <Perry.Yuan@amd.com>
+From: Perry Yuan <perry.yuan@amd.com>
 
-Introduce a new documentation file, `amd_hfi.rst`, which delves into the
-implementation details of the AMD Hardware Feedback Interface and its
-associated driver, `amd_hfi`. This documentation describes how the
-driver provides hint to the OS scheduling which depends on the capability
-of core performance and efficiency ranking data.
+Introduces new MSR registers for AMD hardware feedback support.
+These registers enable the system to provide workload classification
+and configuration capabilities.
 
-This documentation describes
-* The design of the driver
-* How the driver provides hints to the OS scheduling
-* How the driver interfaces with the kernel for efficiency ranking data.
-
-Reviewed-by: Bagas Sanjaya <bagasdotme@gmail.com>
-Signed-off-by: Perry Yuan <Perry.Yuan@amd.com>
-Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
+Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+Signed-off-by: Perry Yuan <perry.yuan@amd.com>
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
- Documentation/arch/x86/amd-hfi.rst | 129 +++++++++++++++++++++++++++++
- Documentation/arch/x86/index.rst   |   1 +
- 2 files changed, 130 insertions(+)
- create mode 100644 Documentation/arch/x86/amd-hfi.rst
+ arch/x86/include/asm/msr-index.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/arch/x86/amd-hfi.rst b/Documentation/arch/x86/amd-hfi.rst
-new file mode 100644
-index 0000000000000..b66ff083855f3
---- /dev/null
-+++ b/Documentation/arch/x86/amd-hfi.rst
-@@ -0,0 +1,129 @@
-+.. SPDX-License-Identifier: GPL-2.0
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 3ae84c3b8e6db..0cd5ffe50f4a4 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -712,6 +712,11 @@
+ #define MSR_AMD64_PERF_CNTR_GLOBAL_CTL		0xc0000301
+ #define MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR	0xc0000302
+ 
++/* AMD Hardware Feedback Support MSRs */
++#define AMD_WORKLOAD_CLASS_CONFIG      0xc0000500
++#define AMD_WORKLOAD_CLASS_ID          0xc0000501
++#define AMD_WORKLOAD_HRST              0xc0000502
 +
-+======================================================================
-+Hardware Feedback Interface For Hetero Core Scheduling On AMD Platform
-+======================================================================
-+
-+:Copyright: 2024 Advanced Micro Devices, Inc. All Rights Reserved.
-+
-+:Author: Perry Yuan <perry.yuan@amd.com>
-+:Author: Mario Limonciello <mario.limonciello@amd.com>
-+
-+Overview
-+--------
-+
-+AMD Heterogeneous Core implementations are comprised of more than one
-+architectural class and CPUs are comprised of cores of various efficiency and
-+power capabilities: performance-oriented *classic cores* and power-efficient
-+*dense cores*. As such, power management strategies must be designed to
-+accommodate the complexities introduced by incorporating different core types.
-+Heterogeneous systems can also extend to more than two architectural classes as
-+well. The purpose of the scheduling feedback mechanism is to provide
-+information to the operating system scheduler in real time such that the
-+scheduler can direct threads to the optimal core.
-+
-+The goal of AMD's heterogeneous architecture is to attain power benefit by sending
-+background thread to the dense cores while sending high priority threads to the classic
-+cores. From a performance perspective, sending background threads to dense cores can free
-+up power headroom and allow the classic cores to optimally service demanding threads.
-+Furthermore, the area optimized nature of the dense cores allows for an increasing
-+number of physical cores. This improved core density will have positive multithreaded
-+performance impact.
-+
-+AMD Heterogeneous Core Driver
-+-----------------------------
-+
-+The ``amd_hfi`` driver delivers the operating system a performance and energy efficiency
-+capability data for each CPU in the system. The scheduler can use the ranking data
-+from the HFI driver to make task placement decisions.
-+
-+Thread Classification and Ranking Table Interaction
-+----------------------------------------------------
-+
-+The thread classification is used to select into a ranking table that describes
-+an efficiency and performance ranking for each classification.
-+
-+Threads are classified during runtime into enumerated classes. The classes represent
-+thread performance/power characteristics that may benefit from special scheduling behaviors.
-+The below table depicts an example of thread classification and a preference where a given thread
-+should be scheduled based on its thread class. The real time thread classification is consumed
-+by the operating system and is used to inform the scheduler of where the thread should be placed.
-+
-+Thread Classification Example Table
-+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-++----------+----------------+-------------------------------+---------------------+---------+
-+| class ID | Classification | Preferred scheduling behavior | Preemption priority | Counter |
-++----------+----------------+-------------------------------+---------------------+---------+
-+| 0        | Default        | Performant                    | Highest             |         |
-++----------+----------------+-------------------------------+---------------------+---------+
-+| 1        | Non-scalable   | Efficient                     | Lowest              | PMCx1A1 |
-++----------+----------------+-------------------------------+---------------------+---------+
-+| 2        | I/O bound      | Efficient                     | Lowest              | PMCx044 |
-++----------+----------------+-------------------------------+---------------------+---------+
-+
-+Thread classification is performed by the hardware each time that the thread is switched out.
-+Threads that don't meet any hardware specified criteria will be classified as "default".
-+
-+AMD Hardware Feedback Interface
-+--------------------------------
-+
-+The Hardware Feedback Interface provides to the operating system information
-+about the performance and energy efficiency of each CPU in the system. Each
-+capability is given as a unit-less quantity in the range [0-255]. A higher
-+performance value indicates higher performance capability, and a higher
-+efficiency value indicates more efficiency. Energy efficiency and performance
-+are reported in separate capabilities in the shared memory based ranking table.
-+
-+These capabilities may change at runtime as a result of changes in the
-+operating conditions of the system or the action of external factors.
-+Power Management FW is responsible for detecting events that would require
-+a reordering of the performance and efficiency ranking. Table updates would
-+happen relatively infrequently and occur on the time scale of seconds or more.
-+
-+The following events trigger a table update:
-+    * Thermal Stress Events
-+    * Silent Compute
-+    * Extreme Low Battery Scenarios
-+
-+The kernel or a userspace policy daemon can use these capabilities to modify
-+task placement decisions. For instance, if either the performance or energy
-+capabilities of a given logical processor becomes zero, it is an indication that
-+the hardware recommends to the operating system to not schedule any tasks on
-+that processor for performance or energy efficiency reasons, respectively.
-+
-+Implementation details for Linux
-+--------------------------------
-+
-+The implementation of threads scheduling consists of the following steps:
-+
-+1. A thread is spawned and scheduled to the ideal core using the default
-+   heterogeneous scheduling policy.
-+2. The processor profiles thread execution and assigns an enumerated classification ID.
-+   This classification is communicated to the OS via logical processor scope MSR.
-+3. During the thread context switch out the operating system consumes the workload(WL)
-+   classification which resides in a logical processor scope MSR.
-+4. The OS triggers the hardware to clear its history by writing to an MSR,
-+   after consuming the WL classification and before switching in the new thread.
-+5. If due to the classification, ranking table, and processor availability,
-+   the thread is not on its ideal processor, the OS will then consider scheduling
-+   the thread on its ideal processor (if available).
-+
-+Ranking Table
-+-------------
-+The ranking table is a shared memory region that is used to communicate the
-+performance and energy efficiency capabilities of each CPU in the system.
-+
-+The ranking table design includes rankings for each APIC ID in the system and
-+rankings both for performance and efficiency for each workload classification.
-+
-+.. kernel-doc:: drivers/platform/x86/amd/hfi/hfi.c
-+   :doc: amd_shmem_info
-+
-+Ranking Table update
-+---------------------------
-+The power management firmware issues an platform interrupt after updating the ranking
-+table and is ready for the operating system to consume it. CPUs receive such interrupt
-+and read new ranking table from shared memory which PCCT table has provided, then
-+``amd_hfi`` driver parse the new table to provide new consume data for scheduling decisions.
-+
-+
-diff --git a/Documentation/arch/x86/index.rst b/Documentation/arch/x86/index.rst
-index 8ac64d7de4dc9..56f2923f52597 100644
---- a/Documentation/arch/x86/index.rst
-+++ b/Documentation/arch/x86/index.rst
-@@ -43,3 +43,4 @@ x86-specific Documentation
-    features
-    elf_auxvec
-    xstate
-+   amd-hfi
+ /* AMD Last Branch Record MSRs */
+ #define MSR_AMD64_LBR_SELECT			0xc000010e
+ 
 -- 
 2.43.0
 
