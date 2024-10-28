@@ -1,46 +1,46 @@
-Received: from NAM04-BN8-obe.outbound.protection.outlook.com (mail-bn8nam04on2075.outbound.protection.outlook.com [40.107.100.75])
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2044.outbound.protection.outlook.com [40.107.92.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 090B4189918;
-	Mon, 28 Oct 2024 02:03:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.100.75
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9ED4618A92C;
+	Mon, 28 Oct 2024 02:03:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.92.44
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730081002; cv=fail; b=YnAdm6g84/VjKG44tIm8ycEuECxtNiCoDJ7Ah2p0o6hqzuRb17aICQtvHE3W49r1BRCLH5ey48lxr0cgWRxCs8t+tcxsYwxeQ+Pj04pDaaiKlLS+R05ZIJ5lz3WX7ZMOMJ3xBOPXa2v6gQhTvhLxHY5wH/5RW736IPHorsktbMw=
+	t=1730081003; cv=fail; b=CcPU7zj/doIpym7ydhMyzlfqxVzsJ97zC3FC/AQqILOFYzDgzUqkgNu/Y0KzTnJFa7bfuIhF+qm0XiG5hfFqsnD/1vUVoQwRORdQ6/MZfLCEZB0pjq962E46ZPNOmiBQnZwI4aOTME+0ACgkfQg8GgNCEsl2kFisOpEtFFnKx+U=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730081002; c=relaxed/simple;
-	bh=6/GNpT2p5G0nMQWNGh63AxQqGIghyA/swYKFuepemJE=;
+	s=arc-20240116; t=1730081003; c=relaxed/simple;
+	bh=QdHxzDBwqLPbjz8ikUa6cXymAnUz/qVkAinCUCshOe8=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=p4DWB4knOwUEK+uP14cJPGPEGdASRG1VRMUUaIhySuHA73nj2EcM8PcDNPlZj0awh4uiDg3VA1XPhl2YhJFuQlNpLuyGnYdgfNcPx25txtYQf7O8nv5AdJwRcuc/ccr1RD3FvExKS2qsBttNdu7Oy/A2jJkYkYXcKr1LdqVAAIA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=YbcBoiG8; arc=fail smtp.client-ip=40.107.100.75
+	 MIME-Version:Content-Type; b=FL7E/TBYW7DaUjcZKGuCRQ0HJaIbx9Bv6cb4Gt+9HNbRu72TsGplDs9S9gF73/iLsoW4And2SEUF9gaSW8JMZI6FWgzwqPih/hkudQb74vLanW5MXkN2UQsQnoJhhlWwQRnk224t85NSM9MzCSzS8xR3pZoaYZZH+/uda14ITCI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=PUtLqMLI; arc=fail smtp.client-ip=40.107.92.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="YbcBoiG8"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="PUtLqMLI"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=vKpKHwuhHeSXuotvnUOF9u77WbeiseYgHXa7w+K8Y1G17ia+PZ6ahWPG+BFC1mFBIKS4d+c7uGRxQ8ulIXAzQK2Ieb8t8OyLE8GjwdAlaQrE2LsEplzRWorZmFxCH849OPwpRLa/pJObImmWH3jI9dfug8b91qvue+x9HKcMobarlXqzpvBDsfJ/l59GLmHvOZdsWuFi5jtcXpb558IDk7KP+RBfl6KgV+rjqmxpnnZLyeWblB4569BPLJs+DJv9g9J51aOxfvlbR2vQE08FnzMwbPf8NtJy0nf/SDDffMhS/nt4drg4+v0nqHO2o4gfObFk0ohPC3MgkqkX4sNTgg==
+ b=hkomvkUbWPF3WM3+/Fzv1sSLwWURBm/NY7yOc57tSbytAL43iBIoouiZdXBX/quLWYpwPHvaaFB3mZxhUXZyZxNLl+1KRmwulm9xzOGEMhGEJ9HVJ6BFgvv65tXIvBpu6vcAMUZMxcFvKsJl5f6mHXysFJ3PE+GEc+jHDyh2FDxgzTRxxlroxdSuxmz4QPQfALFXZKVM60UPMWYGUalXZMNKPcoz0/xaebTrowoijRUYSZo/towYdhM/rN/iJE7PakdXryjZVW9jh4zNzMj3WxJo9MhedUJ2CdmBswN6vWELJl6EbCwouqjrxBJ8AEwdO3TFVIH0faQ+XJ2Qewm4xw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=MK4bqI2kTIwrrtnwYodnqVtCHNR2bI5U4bV4Sc3i77M=;
- b=T+YnyB4FvyMZRZGC/CY4g7RFYcz2jzUf529IV8CMKpYhlKLMUXvdZi5ZS9SgJDwtiCaQzOEp90PZIRzAnEIq2TeOh3F5ngY7rlzcRCoiUmCy4T57bp7oWswirM7fGbXov9W2fsqkoQy6p1vE9wL0GQlI2F0t/gJCqHi89t/IZxNBcfK9RhzpEUJAUhIrGRSdqpgRTaYuOUKw2TUaxP7rGwhh1/vvHYfMwPUHw+Wkgsj8Nds5KXmi478Yqt8iO+m5WrgSbehrBRSL7gaUr8YosewkSu4uR3xrAa+a6aFZUdgpy1qq2CMNHiNv0/hxO54WRzyABvmCdnAhfYJ/9+a0gg==
+ bh=lzfK7HBjuR0XVqwV0/ERsJPvnfHftLVOFwIxVzsvjJk=;
+ b=qgcwj/vipqAPqF5yiuCJ9SGCQtv85B3wRnSpvAnfAXu/sfilM0EK/piPm/vb0CbbAWxCKBdyOjAYWfJ3a1JeHqSyDZ+xFc3INBe367GoctCkDGUeweDMOsvDigLtkOXA5LJbZslMQTnQOWwGJsJrBNqDAi7URoDgccLvQ1MX5qkDIkdLJSLH7jSq+y6GWhYpAhcSOTzAHAb8zxLeVk8gJ+2sPSKVE7kJMEQ4ibVSIarRoxga78DkZTjwV6r/FeO/5eck+KJ4z/FuRIa4LZXhxX0OwSn7OFV4sqOYs656l4dsW2SLOU4/jLrhQd0NpkWFYFwwz7nmP66+xfwAnDcoTw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=alien8.de smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MK4bqI2kTIwrrtnwYodnqVtCHNR2bI5U4bV4Sc3i77M=;
- b=YbcBoiG8JLlpG/jMm5dWF3cm62xE8WyRG1Oj0a01eeSg5Au1c04Y/iEzjo6AYb/V+y/83zvK3T3QAvN+1AtMzRzaDHDs6fIw7E9qa2z00IVp706eGIP9BWIBAcjW74PgI6uMpkttHFapiIEf1kwB85NgTGrywbRC+QvYjTt9mI0=
-Received: from MN2PR06CA0013.namprd06.prod.outlook.com (2603:10b6:208:23d::18)
- by CY8PR12MB7337.namprd12.prod.outlook.com (2603:10b6:930:53::9) with
+ bh=lzfK7HBjuR0XVqwV0/ERsJPvnfHftLVOFwIxVzsvjJk=;
+ b=PUtLqMLIU0H3jR3KhlA10ffBTOd8gcUuusbA9VZK0jpacLhHKp4t/xDH6GS0uBYABYGLN4ODYCdBki0Kgj5lLxftPQqekHq9XxXZ7YuLASwnECrW8//ZNPmSAem1YULjizcO+4k+aMMy14C6dK+xfAQSTxi+D6BZVaxEmJy8OAs=
+Received: from MN2PR06CA0019.namprd06.prod.outlook.com (2603:10b6:208:23d::24)
+ by PH7PR12MB7259.namprd12.prod.outlook.com (2603:10b6:510:207::14) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.23; Mon, 28 Oct
- 2024 02:03:16 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.25; Mon, 28 Oct
+ 2024 02:03:13 +0000
 Received: from BL02EPF00021F6F.namprd02.prod.outlook.com
- (2603:10b6:208:23d:cafe::4d) by MN2PR06CA0013.outlook.office365.com
- (2603:10b6:208:23d::18) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.25 via Frontend
- Transport; Mon, 28 Oct 2024 02:03:15 +0000
+ (2603:10b6:208:23d:cafe::a5) by MN2PR06CA0019.outlook.office365.com
+ (2603:10b6:208:23d::24) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.26 via Frontend
+ Transport; Mon, 28 Oct 2024 02:03:13 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -50,11 +50,11 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  BL02EPF00021F6F.mail.protection.outlook.com (10.167.249.11) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.8114.16 via Frontend Transport; Mon, 28 Oct 2024 02:03:15 +0000
+ 15.20.8114.16 via Frontend Transport; Mon, 28 Oct 2024 02:03:13 +0000
 Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Sun, 27 Oct
- 2024 21:03:13 -0500
+ 2024 21:03:11 -0500
 From: Mario Limonciello <mario.limonciello@amd.com>
 To: Borislav Petkov <bp@alien8.de>, Hans de Goede <hdegoede@redhat.com>,
 	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
@@ -63,9 +63,9 @@ CC: <x86@kernel.org>, "Gautham R . Shenoy" <gautham.shenoy@amd.com>, "Mario
 	<linux-kernel@vger.kernel.org>, <linux-doc@vger.kernel.org>,
 	<linux-pm@vger.kernel.org>, <platform-driver-x86@vger.kernel.org>, "Shyam
  Sundar S K" <Shyam-sundar.S-k@amd.com>
-Subject: [PATCH v5 04/13] x86/msr-index: define AMD heterogeneous CPU related MSR
-Date: Sun, 27 Oct 2024 21:02:42 -0500
-Message-ID: <20241028020251.8085-5-mario.limonciello@amd.com>
+Subject: [PATCH v5 02/13] MAINTAINERS: Add maintainer entry for AMD Hardware Feedback Driver
+Date: Sun, 27 Oct 2024 21:02:40 -0500
+Message-ID: <20241028020251.8085-3-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20241028020251.8085-1-mario.limonciello@amd.com>
 References: <20241028020251.8085-1-mario.limonciello@amd.com>
@@ -81,80 +81,83 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL02EPF00021F6F:EE_|CY8PR12MB7337:EE_
-X-MS-Office365-Filtering-Correlation-Id: 66a6bdaf-5df8-44c5-f829-08dcf6f4af8f
+X-MS-TrafficTypeDiagnostic: BL02EPF00021F6F:EE_|PH7PR12MB7259:EE_
+X-MS-Office365-Filtering-Correlation-Id: 10094992-ca0d-4b91-b990-08dcf6f4ae2c
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|36860700013|376014|1800799024;
+	BCL:0;ARA:13230040|376014|1800799024|82310400026|36860700013;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?/Jxh3DSewsjOMxKl1Y3r9aKsexnFaLfGS1FLTDgF4K/ctF7XExWK4INGE/AK?=
- =?us-ascii?Q?qRP/5eCZ6sRAtB1ycVkbZZSUguIGX8TGZTsjCaGdVfYdLWd4D90lHiUbhwGt?=
- =?us-ascii?Q?AA3zw0Vg26jnMGLvkOM8hyR5fEeEmpgN96+UAENKpvYiRiseznA+E5a1dX+c?=
- =?us-ascii?Q?pn43Xi5melUZGoINVSXj6zH6141wqsRcBoWPLryWmBoY736bfoWU5riGI6lp?=
- =?us-ascii?Q?yX+UlNenFHXhVqsUMiB6dcqc1LDLjlFaFRvYLGqH93Kd/UUtOoValntG0O6w?=
- =?us-ascii?Q?pBOqt69Cna0BitMoVk9biVraeJkysL6PKqqKaEUEg/rZ0J7V/NNqYuV1ssTc?=
- =?us-ascii?Q?f5I4g7f3b+bY1abty/EIZi4uQDWyEWtXEaYxfH+dHbniSC/842X1VjTzP2AE?=
- =?us-ascii?Q?EaGbfPFm9LZenB0g8+dX1dCeNaimMkyk2sybGEzkbfvBqRegcXGrYKyrOl2e?=
- =?us-ascii?Q?FC5nb8/wcebNalpHFpi5xKAti433m1QHgueEnx4/tMRx2LW/My7x5fBqSMVa?=
- =?us-ascii?Q?/YtiV5l+dvI8+Xx5uL2/YqKxiuYltSea0yWICpBhQNGm8zW9MPFeHMd/E47g?=
- =?us-ascii?Q?tuTJfA6TR7DWVvAaYldFKyn1FRIOqJmGLcS2iLPB4g5vRIIfxwjzlOK9ZkMv?=
- =?us-ascii?Q?1FJcoTqnrKsnxTSq70TsXI9gL1XWEL6R5Udvr7CBXynFmzm7SEErRDDP3PYx?=
- =?us-ascii?Q?1/pKAChLzbGhDdFuaOUmqPAKXYrgS5W/415hiISWEeR2w/BKvnnFqvdnCDwe?=
- =?us-ascii?Q?bFBIMovG9bEiEr62aEMs+S5q3A32gbPXDeOzHFAoiArFfyDllk281SYUO9PZ?=
- =?us-ascii?Q?Ly8keFhx8uY1MP9HOqqOXoASqqGQSTHcOOzJhZ8RtqCEI2hvJ+VWv5r/NVry?=
- =?us-ascii?Q?6SPkNxOhDLMAF4tibQxo1JX1ENATl/Xpy/p49Fz46R6s92oQzqLpSChIhWiu?=
- =?us-ascii?Q?vHQDy3TyrkUNQS4N2ktOMNOX862gLA5o4DNoKWhjwZ6L6CnUkDYGGXJNy+VK?=
- =?us-ascii?Q?R+wPJH1iUj2juKToFxsh+AG6uf7VVZCk6BsBOSsMiizDOn8awZlNTQpOkUGE?=
- =?us-ascii?Q?BgDPXCrDVd11itJoeCpLWw+jCFPgBKoklO9RA2rVkzd1oUGa8asFO7vm0I/l?=
- =?us-ascii?Q?tggiHm+effNETK6R/To+kLBlZcbv0rX7zIlC05Kp0SI/vscLdzYdJpIk+8Ma?=
- =?us-ascii?Q?CTAkjEjTADu4jhoMfSRwJzRHyQUWftwpXSBk/zVlo7oelD0TGooLdgS4b+FW?=
- =?us-ascii?Q?DNwx+JBmKkMI5rhmTYRgiS33NRM52UlM9iuUVhnDffN/FM/pMX9LZbgOArCS?=
- =?us-ascii?Q?3/bVGfi2O26hdL7t+D/AsLuO1gsHv5k8zH+Nxn8aJRusjO4f5dIR9Ak7dl6E?=
- =?us-ascii?Q?eEp+wOgjWNqgYlsItCAsUemKq4wPYKlB7h7Ff5f9xzheKy4rUw=3D=3D?=
+	=?us-ascii?Q?lKR850gQsxWu3TOijv9AbEV2gQXDc8YAl+OqqZaJMNkN2P6+I77kYxEexTJg?=
+ =?us-ascii?Q?K/2LPbP5WXdQZ3DcmDJ2M8Y23R2mLcfnU2Rqlm7ZtUyDGnj1RPz7cVjHLppl?=
+ =?us-ascii?Q?Fmjr4czIVU7Om3VTZHUu2Q6Oe7zbO2CMyPxLc+WPFy7sOTp6Bl6fOJBpUAxN?=
+ =?us-ascii?Q?nY+2JZvRteqlhU7RSE2DqNXacBvesoeo2ynsAFhdD0mDmtqmXZV8toTI8NMs?=
+ =?us-ascii?Q?GgHeXVw0JHOoDPFh7o2m/V6s6WxZbb/USU1EWIHnIXQUDGU+idZ662CYkkhg?=
+ =?us-ascii?Q?85+T6Ut32nx05oLHvZrS71KPA5RI3tQpyfsS7/KbUxGkWt6D3CtNjPlc1uUq?=
+ =?us-ascii?Q?LTBBe/1toLlmRaoIJ3yv95z/sSAnb8FJOo0vEv9xuM2xsLjqu2TZ6R6FunFg?=
+ =?us-ascii?Q?6Riv3Q3IwUdCKfIYgFPUiKuyMYY5JXSUb4msQM4X+auX0UpKrXD34ziZuDf8?=
+ =?us-ascii?Q?agvxwubFjp5RYf5yIORZPof9uT0lR8RCiJHz5LRRN8bTAGxLYwmHu+4DEGNp?=
+ =?us-ascii?Q?65AHVA/muMyenTAghxMMx600VQlz4eHkNpn1ZXAOGh9SzOTCJUoTCVAWTN5M?=
+ =?us-ascii?Q?oHlXWM2Ob4W1f79BS0jnKOcnOFJ526r1tLLdN5FEgOZIbg2otIQSDn+2eVYi?=
+ =?us-ascii?Q?wMey5yAabsnY0oTGkzxh0wUc29WdM4MeI1KSDtUFXO4AveDrNlNlgO30hI3P?=
+ =?us-ascii?Q?mSVnw3bXtQOXuXcTSN/3taqB3BfoOYggeAu5d08J7W0MF/I7+3T96MV6/VaC?=
+ =?us-ascii?Q?Cd8HY5s6FY32uLvjK8op6fLr68PWr2UdrkOeJsnIpTfzYPSfaKi09nOZ7eY0?=
+ =?us-ascii?Q?BuinbFh+zVIckPEMAS8fm/HMkq+qEGxMwSfy39y+abbEsaL72gZ4gX7uAZEA?=
+ =?us-ascii?Q?Z5NBNqTJP3YQsHV3wh5mWR05loW7JoElXefj1kXY0DAbxGYM1u/4wpffNp0S?=
+ =?us-ascii?Q?l4KvL48+4+OEsvT5p1sN7lKGBx4VjyOY/Aeop+xlTjSRgYFKT1JRgF2+2+xE?=
+ =?us-ascii?Q?iVH29Mj+Lzu8Neb+i4U/dkL7/Xt6LapyFSNArTNzq5p9jVAtJGVj+a71oyHs?=
+ =?us-ascii?Q?TGGicCnVezCaHoD5psb5WT2P/20d88LPmwv8UTMtNGlNvfiSAHXn77iDXHAm?=
+ =?us-ascii?Q?PTIv9h+VeMYmWWgk/40RxzyKZo6TwtaXHHiPT6uEhzDwLa6kakiSilIsdiHO?=
+ =?us-ascii?Q?Y5q6bwsFy+nNd/p56XSE9rzgjGeBK59uXArDanDqozYMKWt6jD0Hxjp+81iy?=
+ =?us-ascii?Q?DBnUOtSVqtkOwxe8AYggZqU2x88yMGw3brXpJCQWvNkyPwgnA98PHH5a6mP6?=
+ =?us-ascii?Q?jmf1dwmPX9nzdpl6SJeGHHaYgr4MMMJL22k3KT6RrfEZ8sVJILrHpZR7hjxu?=
+ =?us-ascii?Q?vWyjSaU=3D?=
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700013)(376014)(1800799024);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(1800799024)(82310400026)(36860700013);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Oct 2024 02:03:15.6887
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Oct 2024 02:03:13.3762
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 66a6bdaf-5df8-44c5-f829-08dcf6f4af8f
+X-MS-Exchange-CrossTenant-Network-Message-Id: 10094992-ca0d-4b91-b990-08dcf6f4ae2c
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	BL02EPF00021F6F.namprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR12MB7337
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB7259
 
-From: Perry Yuan <perry.yuan@amd.com>
+Introduce the `amd_hfi` driver into the MAINTAINERS file.
+The driver will support AMD Heterogeneous Core design which provides
+hardware feedback to the OS scheduler.
 
-Introduces new MSR registers for AMD hardware feedback support.
-These registers enable the system to provide workload classification
-and configuration capabilities.
+Moving forward, Mario will be responsible for the maintenance
+and Perry will assist on review of patches related to this driver.
 
-Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
-Signed-off-by: Perry Yuan <perry.yuan@amd.com>
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
- arch/x86/include/asm/msr-index.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 3ae84c3b8e6db..0cd5ffe50f4a4 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -712,6 +712,11 @@
- #define MSR_AMD64_PERF_CNTR_GLOBAL_CTL		0xc0000301
- #define MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR	0xc0000302
+diff --git a/MAINTAINERS b/MAINTAINERS
+index c27f3190737f8..4554cbf3dfa16 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1083,6 +1083,15 @@ F:	arch/x86/include/asm/amd_hsmp.h
+ F:	arch/x86/include/uapi/asm/amd_hsmp.h
+ F:	drivers/platform/x86/amd/hsmp.c
  
-+/* AMD Hardware Feedback Support MSRs */
-+#define AMD_WORKLOAD_CLASS_CONFIG      0xc0000500
-+#define AMD_WORKLOAD_CLASS_ID          0xc0000501
-+#define AMD_WORKLOAD_HRST              0xc0000502
++AMD HETERO CORE HARDWARE FEEDBACK DRIVER
++M:	Mario Limonciello <mario.limonciello@amd.com>
++R:	Perry Yuan <perry.yuan@amd.com>
++L:	platform-driver-x86@vger.kernel.org
++S:	Supported
++B:	https://gitlab.freedesktop.org/drm/amd/-/issues
++F:	Documentation/arch/x86/amd-hfi.rst
++F:	drivers/platform/x86/amd/hfi/
 +
- /* AMD Last Branch Record MSRs */
- #define MSR_AMD64_LBR_SELECT			0xc000010e
- 
+ AMD IOMMU (AMD-VI)
+ M:	Joerg Roedel <joro@8bytes.org>
+ R:	Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 -- 
 2.43.0
 
