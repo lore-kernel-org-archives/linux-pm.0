@@ -1,167 +1,137 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f52.google.com (mail-io1-f52.google.com [209.85.166.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 769AF1D2796
-	for <linux-pm@vger.kernel.org>; Mon, 28 Oct 2024 21:22:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C2F61E00A0
+	for <linux-pm@vger.kernel.org>; Mon, 28 Oct 2024 21:33:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730150553; cv=none; b=OTNJrsrD/yqME7PbhCb3GmV+W+n7+jihw6+YJdnHAwvWRXbO9cyMrflrfabXj0uqL7xTZlXna6ZpwVyY9sxeq5XZqibMpCORyIZzZeuCyk/MzDB8LylU3ZGwkYghsIGZcDWUYsSHnjNh3/saSGAre604IQ6ZjnsLMOKYFmZ0SZQ=
+	t=1730151206; cv=none; b=fgVXYNna3u2NXefrbET0zAPiopItGA01Q8nvZ6zckKlgrjjr85NU52/lP5sWSnibLmz7yJW0Xe//fOcD3XILgKDJM7iVpZHJpJYUa77895+nqWqcQ23IiGQKQKwIiJ4fVUSEn9dPdSNCOnjEFpSGyG12JvQsOj5ksnZg/sFlP70=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730150553; c=relaxed/simple;
-	bh=tA26OVakOS/adYZniWL2Ukr7f1MGHO3o7Owvx6xjbgM=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=IwffIN2qQVjeR3/JxjTBnrp6VZuZZbRhH3ssjx+FIi0zNlTw5FvZp5+SBCmQNxamKsrfHkHW8dWbP85PM0t0G7gwyOd2t2OnC+pdVuLAGoJwQp4+udVzScumyNQ8ILbWMi7Qy1KwTT1kIqWc93dzSrEk3YVrinSN9C7oLKwVtXc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Jk2VjB4m; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1730151206; c=relaxed/simple;
+	bh=mWHqBO7ggUCFVDg3HGgCG/OeU8lRFkRHqMQJvFNQjcg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UC66v2xxDfEG+OCW1NZ0rj3sHF2e2+hke/G+LhDWgeZEDTbRdKV3XRYu/LDREoPswmyS6agd9RAY6jZw4/VbUYfNxdcMLmYd/sj2+D7gsiBfyoO6BD2da69OQQuVY+K9pAxXkYqe/e2BxrklZFvGHYhTv0eFcobH41DoJy10ESc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=arxxIELD; arc=none smtp.client-ip=209.85.166.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Jk2VjB4m"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 04793C4CECD
-	for <linux-pm@vger.kernel.org>; Mon, 28 Oct 2024 21:22:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1730150553;
-	bh=tA26OVakOS/adYZniWL2Ukr7f1MGHO3o7Owvx6xjbgM=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=Jk2VjB4m0SwE6YgfhX72hkZrn4iX3lBk5+drvrqhupSUSQhxHehMqfJW3mvAycpg2
-	 DX0tq5+qXbuCuL1AyXAOPe1S5u7dQV+A5RNXC762Kg+49s7IRmm+IKaIL667KbUueJ
-	 DU0NahGTfz1pSMD0hZX/xtECjEMVNvz7Ai3jmtwhhwlUrUyCHXg34FMVVcBBNRclHF
-	 fWEhXwVFVqiolnw3WzdDAoPiQF2OUS/808F/egE27jpwAW2lEZUeXSd93Ej3MCzed9
-	 LvPKMmqcxOx9PdhSc6qQkb2XTqbRoAo+EpvTfvklqJUBwpao46DFtNu8Tw33qo0Axh
-	 MqRupvBOqq3qg==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id EBDE3C53BC8; Mon, 28 Oct 2024 21:22:32 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 219431] [6.12] amd-pstate / Ryzen 5xxx (Zen 3, Vermeer): Could
- not retrieve highest performance (-19)
-Date: Mon, 28 Oct 2024 21:22:32 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: mario.limonciello@amd.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-219431-137361-017Y0xZOCm@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-219431-137361@https.bugzilla.kernel.org/>
-References: <bug-219431-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="arxxIELD"
+Received: by mail-io1-f52.google.com with SMTP id ca18e2360f4ac-83b430a4cfdso35791739f.2
+        for <linux-pm@vger.kernel.org>; Mon, 28 Oct 2024 14:33:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1730151203; x=1730756003; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=HFZKIzMwJccmjbRWz8hr4dF1BDbSPdCqeQ+MDKxNuD8=;
+        b=arxxIELDUmRedJxNm+wSBF8ShnNy6C2RIky9yytjv57uIeyEyIyOuhmOSzbhAJMttf
+         3+DMhk91nM/kB+/OKDhqBZnI6Nr4inDcF7eF5NKJZTh4+vAG2QsKSWaQZKNhPsNwWJSa
+         dUCcef7OZzrZXtVW2QMIFGr3YtAl7RzTQBn98=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1730151203; x=1730756003;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=HFZKIzMwJccmjbRWz8hr4dF1BDbSPdCqeQ+MDKxNuD8=;
+        b=vfc/TuRG/ExIhg+YKGEw8BzGccYjMxkXzTKQHshFWTWqpEizxb9ZpfnBBvgsOsO+OR
+         m4IUO6qYluzxf4YmlFO4oDLpgMWx6F0hOZSEeBum80Ay+vCBUM+zLPE3FMEdvf+TeAAJ
+         7RHdZt1JF6VmpWDNJBhWwU6flP+Y0UWiPYDdSXh/pjtIvWNCzqFaKCb8GiWahpzGk+KG
+         8CVTm1kVx3eJDW2KTCnRtBFo/YPfmBHTpvscZj/9Go0OijPDqswtDGwZKVRQYOWi19WI
+         OyPX6lZ9RUB2gLzPbNAarTjd/YGMv0B1v4rahLZi13ZwD7gEfeYaao/JoSWfIEZBavPE
+         02+w==
+X-Forwarded-Encrypted: i=1; AJvYcCV0izIfsB34wfhHRfs1HbfqcH5vxBZbjuUmyeHWFPCP8P6iTlgjPvw+QpcDLH8sxwP/yoodnqAK8A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyZDekHBQpChx5gFHybKeiCqZgIwUD+oq4AWIkGmLSbQ96yfRTR
+	LAFHsPVe482aQvN1/oUZfdoSI0o0uNyhKeUBj1JYF8hUhppxDpTaMRFiV9030EIY/xU23K9WmLn
+	jJEK+EXUII0eFM3Mt3GDcSwBmQN6EneKYxkpV
+X-Google-Smtp-Source: AGHT+IFRf7Qdfzoq2U9A+NIDwOGbIKY7nZWXffb09QD8AJkz3xy2j34ROShaH6Jj6HGBK3DfHA78bcGG4mf4sL65r5o=
+X-Received: by 2002:a05:6602:1686:b0:82a:2a67:9429 with SMTP id
+ ca18e2360f4ac-83b1c3e7abemr939673139f.5.1730151203568; Mon, 28 Oct 2024
+ 14:33:23 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+References: <20240827181717.187245-1-robdclark@gmail.com> <Zx97PU7cUEVCnpPl@google.com>
+In-Reply-To: <Zx97PU7cUEVCnpPl@google.com>
+From: Rob Clark <robdclark@chromium.org>
+Date: Mon, 28 Oct 2024 14:33:12 -0700
+Message-ID: <CAJs_Fx6EB=0GMqe4cZVdxptFSV3b63HHybfTOgiYVBudgAafsA@mail.gmail.com>
+Subject: Re: [PATCH v9 0/4] io-pgtable-arm + drm/msm: Extend iova fault debugging
+To: Mostafa Saleh <smostafa@google.com>
+Cc: Rob Clark <robdclark@gmail.com>, iommu@lists.linux.dev, 
+	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
+	Boris Brezillon <boris.brezillon@collabora.com>, 
+	"open list:DRM DRIVER for Qualcomm Adreno GPUs" <dri-devel@lists.freedesktop.org>, 
+	"open list:DRM DRIVER for Qualcomm Adreno GPUs" <freedreno@lists.freedesktop.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	Joao Martins <joao.m.martins@oracle.com>, Kevin Tian <kevin.tian@intel.com>, 
+	Konrad Dybcio <konrad.dybcio@linaro.org>, 
+	"moderated list:ARM SMMU DRIVERS" <linux-arm-kernel@lists.infradead.org>, 
+	"open list:DRM DRIVER for Qualcomm Adreno GPUs" <linux-arm-msm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, 
+	"open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, Marijn Suijten <marijn.suijten@somainline.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Sean Paul <sean@poorly.run>, Steven Price <steven.price@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D219431
+On Mon, Oct 28, 2024 at 4:53=E2=80=AFAM Mostafa Saleh <smostafa@google.com>=
+ wrote:
+>
+> Hi Rob,
+>
+> On Tue, Aug 27, 2024 at 11:17:08AM -0700, Rob Clark wrote:
+> > From: Rob Clark <robdclark@chromium.org>
+> >
+> > This series extends io-pgtable-arm with a method to retrieve the page
+> > table entries traversed in the process of address translation, and then
+> > beefs up drm/msm gpu devcore dump to include this (and additional info)
+> > in the devcore dump.
+> >
+> > This is a respin of https://patchwork.freedesktop.org/series/94968/
+> > (minus a patch that was already merged)
+> >
+> > v2: Fix an armv7/32b build error in the last patch
+> > v3: Incorperate Will Deacon's suggestion to make the interface
+> >     callback based.
+> > v4: Actually wire up the callback
+> > v5: Drop the callback approach
+> > v6: Make walk-data struct pgtable specific and rename
+> >     io_pgtable_walk_data to arm_lpae_io_pgtable_walk_data
+> > v7: Re-use the pgtable walker added for arm_lpae_read_and_clear_dirty()
+> > v8: Pass pte pointer to callback so it can modify the actual pte
+> > v9: Fix selftests_running case
+> >
+> > Rob Clark (4):
+> >   iommu/io-pgtable-arm: Make pgtable walker more generic
+> >   iommu/io-pgtable-arm: Re-use the pgtable walk for iova_to_phys
+> >   iommu/io-pgtable-arm: Add way to debug pgtable walk
+> >   drm/msm: Extend gpu devcore dumps with pgtbl info
+>
+> Do you have plans to post another version of this series, as I am
+> working on some patches, that would use some of the common page walk
+> logic, so it would be more convenient to have them upstream.
+> Otherwise, I can have your series as a dependency.
 
---- Comment #13 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
-> I suspect the answer is yes.
+Sorry, this had dropped off my radar, I'll post an updated iteration
+in a couple minutes.
 
-Actually; no it should be new, but it's because the frequency calculation w=
-as
-wrong before.
+BR,
+-R
 
-I found a system with shared mem and I have a theory what's going on is that
-frequency invariance is attempting to get setup before all CPUs have probed.
-
-Before the preferred cores code frequency invariance would be calculated fr=
-om
-the first CPU only as _CPC is probed.  But with preferred cores code in pla=
-ce
-you need ALL _CPC values present to know whether you have preferred cores or
-not.
-
-I added some dump stack calls to acpi_cppc_processor_probe when the struct =
-is
-parsed:
-
-ACPI CPPC: Parsed CPC struct for CPU: 0
-CPU: 0 UID: 0 PID: 23 Comm: cpuhp/0 Not tainted 6.12.0-rc5-00026-g0c7b88322=
-6dd
-#268
-Hardware name: LENOVO 30E1S68903/1046, BIOS S07KT5BA 01/26/2024
-Call Trace:
- <TASK>
- dump_stack_lvl+0x60/0x80
- acpi_cppc_processor_probe+0x9fc/0xe50
- acpi_soft_cpu_online+0x69/0x160
- ? __pfx_acpi_soft_cpu_online+0x10/0x10
- cpuhp_invoke_callback+0x308/0x4c0
- ? srso_return_thunk+0x5/0x5f
- ? __pfx_smpboot_thread_fn+0x10/0x10
- cpuhp_thread_fun+0x131/0x210
- smpboot_thread_fn+0x187/0x220
- kthread+0xdd/0x110
- ? __pfx_kthread+0x10/0x10
- ret_from_fork+0x30/0x50
- ? __pfx_kthread+0x10/0x10
- ret_from_fork_asm+0x1a/0x30
- </TASK>
-
-Then I added one to the error sequence.
-
-ACPI CPPC: No CPC descriptor for CPU:1
-CPU: 0 UID: 0 PID: 23 Comm: cpuhp/0 Not tainted 6.12.0-rc5-00026-g0c7b88322=
-6dd
-#268
-Hardware name: LENOVO 30E1S68903/1046, BIOS S07KT5BA 01/26/2024
-Call Trace:
- <TASK>
- dump_stack_lvl+0x60/0x80
- cppc_get_perf+0x127/0x1c0
- amd_get_highest_perf+0x5e/0x80
- amd_detect_prefcore+0x7a/0x130
- amd_get_boost_ratio_numerator+0x28/0x90
- init_freq_invariance_cppc+0xad/0x140
- acpi_cppc_processor_probe+0x7ce/0xe50
- acpi_soft_cpu_online+0x69/0x160
- ? __pfx_acpi_soft_cpu_online+0x10/0x10
- cpuhp_invoke_callback+0x308/0x4c0
- ? srso_return_thunk+0x5/0x5f
- ? __pfx_smpboot_thread_fn+0x10/0x10
- cpuhp_thread_fun+0x131/0x210
- smpboot_thread_fn+0x187/0x220
- kthread+0xdd/0x110
- ? __pfx_kthread+0x10/0x10
- ret_from_fork+0x30/0x50
- ? __pfx_kthread+0x10/0x10
- ret_from_fork_asm+0x1a/0x30
- </TASK>
-Could not retrieve highest performance (-19)
-
-You can see that in both cases the code runs on CPU0.  So it's trying to get
-values that won't be initialized until CPU1 is ready.
-
-I think this will help "prevent" the error from coming up:
-
-diff --git a/arch/x86/kernel/acpi/cppc.c b/arch/x86/kernel/acpi/cppc.c
-index 5e9325273a9fb..a21c26d1fe65a 100644
---- a/arch/x86/kernel/acpi/cppc.c
-+++ b/arch/x86/kernel/acpi/cppc.c
-@@ -190,7 +190,7 @@ int amd_detect_prefcore(bool *detected)
-                break;
-        }
-
--       for_each_present_cpu(cpu) {
-+       for_each_online_cpu(cpu) {
-                u32 tmp;
-                int ret;
-
-But it's going to probably break preferred cores detection, so it's not a
-correct solution.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
+> Thanks,
+> Mostafa
+>
+>
+> >
+> >  drivers/gpu/drm/msm/adreno/adreno_gpu.c |  10 ++
+> >  drivers/gpu/drm/msm/msm_gpu.c           |   9 ++
+> >  drivers/gpu/drm/msm/msm_gpu.h           |   8 ++
+> >  drivers/gpu/drm/msm/msm_iommu.c         |  22 ++++
+> >  drivers/gpu/drm/msm/msm_mmu.h           |   3 +-
+> >  drivers/iommu/io-pgtable-arm.c          | 149 +++++++++++++++---------
+> >  include/linux/io-pgtable.h              |  15 +++
+> >  7 files changed, 160 insertions(+), 56 deletions(-)
+> >
+> > --
+> > 2.46.0
+> >
