@@ -1,133 +1,76 @@
-Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D670A1DFE07
-	for <linux-pm@vger.kernel.org>; Mon, 28 Oct 2024 18:57:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE07E1DF269;
+	Mon, 28 Oct 2024 18:58:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.214.62.61
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730141878; cv=none; b=rqtYdCmoRaxb6U9nB3QbXDe7hRs/EWqqqJywHtgxTTWlaFdLT5uv1t6W10+Iu/llkj6oDeZN4xYpXZAE+3/3abXYpDq1i/cmff5RLAC67mGKmbyhLehW8Py1/neebTxZt5ZwGTzsK9U1TJm04Bhd3E0yV3zz5PEdyjfEBsz0u/c=
+	t=1730141941; cv=none; b=UE9kKO4ibte4gSAVebbJvCaML5DIH8Ld/5KrZWySIfePvBuovR2HdjGGDr5pSPrKXCrGnvexDhlYBopBVarRL6waQbdOvdZdz/9KbmvWSN8PFn4c5Rn47P+wTCB90W0+G0Zdu7dSkkvDgWUAjcRapY7Hi+6/dtK+moEmeDh9Yl8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730141878; c=relaxed/simple;
-	bh=ZqOIymdW7AOFGrkkZotyqe8mFhuss0YMD8c1cAdy6hM=;
-	h=MIME-Version:In-Reply-To:References:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Kei2n36CJrbPW+sl4oUz8dlj4wHomaeK7HzGHXT5MMgtRgiV8qm3lGNtNTzNTTW2RQRL2Hxp+Bt7p56YbwyzmvSBzBkE3YtbMgnSxKME/riPbr++ks4m1F/Q/moAlMlFN1ndfdW/zLolV3jHuQB6UGLxU9NGgXGkQZEb0OcklCQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=I5ndG5x8; arc=none smtp.client-ip=209.85.161.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	s=arc-20240116; t=1730141941; c=relaxed/simple;
+	bh=8WGafjVya077ILDXHhSSvM5YhVRBuyPpmORE/9ykOCg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=SEMPJarT87n3laO+EVN4NLvJHkyT5incRHpOt/Ri0eXW/j9xPihNrBobFTz2l3r3P9thguCNT/EOZ6vTbR3H1PkABsgDp4TB8TQLipVxQfG0M+qAL2tL77JsrRN6hhRjEF0Wvr/6LrTnW9WnHZYMDm/V/VvLyA0Bdgw6Wjg5NjU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=F6gb8mek; arc=none smtp.client-ip=85.214.62.61
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=denx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="I5ndG5x8"
-Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-5ebab72da05so2430296eaf.0
-        for <linux-pm@vger.kernel.org>; Mon, 28 Oct 2024 11:57:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1730141876; x=1730746676; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:user-agent:from:references
-         :in-reply-to:mime-version:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=d2LfEYca0SVAQ5XFZmx5kmUvCRKMJSdnjq6kZ9JePCA=;
-        b=I5ndG5x8bk8g9vlRPHBXSkKBj1M+LSvxp3YEpMcaC8MietUnPAMMrj5vUjWrpYXpVI
-         N84oWd0GRM8sbYxRJ1u8hnLavW4E0iAJws4k/Es5EiIR8FYbxot7OD1UmNE6PSV0Uv0+
-         T6wYH/alg+2mWvuv+fXcurNMPALq/rmUvJHOk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1730141876; x=1730746676;
-        h=cc:to:subject:message-id:date:user-agent:from:references
-         :in-reply-to:mime-version:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=d2LfEYca0SVAQ5XFZmx5kmUvCRKMJSdnjq6kZ9JePCA=;
-        b=I25dg5djB9X9hO4kxsQADGgxrk9aSY++FjiW2Tp/UNsO8HuDhsFrFGXAuThCWVEYAD
-         aoHyFinYNbJ7KzA8E833UgJuFkvCuKGomPBsQ6f8dCIfE4sKv1ElmLQ93XgDExiGQsVp
-         yfSkBdTMMLUCKWUCVLpbIodrb51UeJrFyn93yvTeTXSpZSwN/aS1AdOU4nkOdRm4z05y
-         9F+J/2lSCx4IG3tFQWoctCK8qbdpjIs+VKhcOLuU9/055AWzSNly9Kn0Do412t7K8ICY
-         jrkIuxuCpxaBWtXxyzidkA/P2a6ULEJ3Wu8xRBfTVGkz9NTc/kNtxZZGfvTuaBjrzp8D
-         XZSQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWjeAhKVhVg9uHsSvAqGw28keo7yf08FZaHaWHC+gtarlpRh+q2+Udc6vW6SF+4DpVLz9x33zBpSw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxqJGeiOStXdUgs4d07eRtL7i0XsZVM5nqcXHmCVmEeT2pfs551
-	Qm2uz/jN/dfBz/aafZ5q1r2sC2hZBmUqLY2yglOjdTQU/L7F0VCQKLBj+I+CG7n5HxOWoyl7Bra
-	JMD7Q349LB1nizL7+xTCfXoU1ny7xrIekx5w6
-X-Google-Smtp-Source: AGHT+IFvmYBtQn6VF/6ueDr0Mul6XafO9LMXlXZyFfebnMWZxAt0RxG3GM+9mJwqrZJNTpm99hm2yO6Tjm648OHps4A=
-X-Received: by 2002:a05:6358:41a1:b0:1c3:92d9:db9a with SMTP id
- e5c5f4694b2df-1c3f9dfc925mr362147255d.10.1730141875928; Mon, 28 Oct 2024
- 11:57:55 -0700 (PDT)
-Received: from 753933720722 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 28 Oct 2024 14:57:55 -0400
+	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="F6gb8mek"
+Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+	(No client certificate requested)
+	(Authenticated sender: marex@denx.de)
+	by phobos.denx.de (Postfix) with ESMTPSA id 358858910C;
+	Mon, 28 Oct 2024 19:58:51 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+	s=phobos-20191101; t=1730141931;
+	bh=xh/GaRY+S5pcuyrQRU2xRgm2fWL9H46nXW1L/svE3qQ=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=F6gb8mektYwkf0MT4BocRTHfT9GteUxFyFg3u8umCoJxO+nXwbbCZZTpRwZR3ZNbD
+	 ygxH1lt2tFgUhY8Qm9eMg3xgeZMFIAHa3bPlrI/ICmcn99WO8x8EVczGJJdrUjf2tZ
+	 C1HZ1wk0fYSs1XICEEY4XDyNbpdikHIVqxabPnkoCLsmxfjLFXsNPMyESJJZAPWbq4
+	 9HKd2Ru2lmtfsQLxpV/YXDw4BuOtw5Vwnztm5B8C7kI3d4u11ZYEYbHK2roS8+JeBG
+	 v34DEM5EvddxMBlWkYf2wwPErhPOEMNIuulQEUuiPoSvXaSWuG5pznyazHV96MCSeL
+	 /cWmJQfWPA5wQ==
+Message-ID: <6b47cc49-dd3b-4c4f-827d-f9b3a8719eb9@denx.de>
+Date: Mon, 28 Oct 2024 19:25:27 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20241028-arm-psci-system_reset2-vendor-reboots-v7-3-a4c40b0ebc54@quicinc.com>
-References: <20241028-arm-psci-system_reset2-vendor-reboots-v7-0-a4c40b0ebc54@quicinc.com>
- <20241028-arm-psci-system_reset2-vendor-reboots-v7-3-a4c40b0ebc54@quicinc.com>
-From: Stephen Boyd <swboyd@chromium.org>
-User-Agent: alot/0.10
-Date: Mon, 28 Oct 2024 14:57:55 -0400
-Message-ID: <CAE-0n52buO+oJfesc+025hogm7BygMp4dO6b2_6aAoXVKRBs7w@mail.gmail.com>
-Subject: Re: [PATCH v7 3/5] firmware: psci: Read and use vendor reset types
-To: Andy Yan <andy.yan@rock-chips.com>, Arnd Bergmann <arnd@arndb.de>, 
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, Bjorn Andersson <andersson@kernel.org>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Conor Dooley <conor+dt@kernel.org>, 
-	Elliot Berman <quic_eberman@quicinc.com>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, Olof Johansson <olof@lixom.net>, Rob Herring <robh@kernel.org>, 
-	Sebastian Reichel <sre@kernel.org>, Vinod Koul <vkoul@kernel.org>, Will Deacon <will@kernel.org>, 
-	cros-qcom-dts-watchers@chromium.org
-Cc: Satya Durga Srinivasu Prabhala <quic_satyap@quicinc.com>, Melody Olvera <quic_molvera@quicinc.com>, 
-	Shivendra Pratap <quic_spratap@quicinc.com>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	Florian Fainelli <florian.fainelli@broadcom.com>, linux-pm@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] [RFC] PCI/PM: Do not RPM suspend devices without drivers
+To: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>
+References: <20241012004857.218874-1-marex@denx.de>
+ <ZwupHAAwTo5mDyyA@wunner.de> <52b90ab1-2759-45e9-ae86-3d3073a0add0@denx.de>
+ <7ad59d82-8122-438e-9682-791816ab0366@intel.com>
+Content-Language: en-US
+From: Marek Vasut <marex@denx.de>
+In-Reply-To: <7ad59d82-8122-438e-9682-791816ab0366@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
 
-Quoting Elliot Berman (2024-10-28 11:44:57)
-> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-> index 2328ca58bba6..2d7b6efc8743 100644
-> --- a/drivers/firmware/psci/psci.c
-> +++ b/drivers/firmware/psci/psci.c
-> @@ -79,6 +79,14 @@ struct psci_0_1_function_ids get_psci_0_1_function_ids(void)
->  static u32 psci_cpu_suspend_feature;
->  static bool psci_system_reset2_supported;
->
-> +struct psci_reset_param {
-> +       const char *mode;
-> +       u32 reset_type;
-> +       u32 cookie;
-> +};
-> +static struct psci_reset_param *psci_reset_params;
-> +static size_t num_psci_reset_params;
-
-These two can be __ro_after_init
-
-> +
->  static inline bool psci_has_ext_power_state(void)
->  {
->         return psci_cpu_suspend_feature &
-> @@ -305,9 +313,38 @@ static int get_set_conduit_method(const struct device_node *np)
->         return 0;
->  }
->
-> +static void psci_vendor_system_reset2(unsigned long action, void *data)
-
-Can 'data' simply be 'const char *cmd' instead?
-
-And can 'action' be dropped? It isn't used in this function.
-
-> +{
-> +       const char *cmd = data;
-> +       unsigned long ret;
-> +       size_t i;
-> +
-> +       for (i = 0; i < num_psci_reset_params; i++) {
-> +               if (!strcmp(psci_reset_params[i].mode, cmd)) {
-> +                       ret = invoke_psci_fn(PSCI_FN_NATIVE(1_1, SYSTEM_RESET2),
-> +                                            psci_reset_params[i].reset_type,
-> +                                            psci_reset_params[i].cookie, 0);
-> +                       /*
-> +                        * if vendor reset fails, log it and fall back to
-> +                        * architecture reset types
-> +                        */
-> +                       pr_err("failed to perform reset \"%s\": %ld\n", cmd,
-> +                              (long)ret);
-
-			return?
-
-because we're not going to try another one, right?
+On 10/28/24 6:52 PM, Wysocki, Rafael J wrote:
+> On 10/26/2024 2:19 AM, Marek Vasut wrote:
+>> On 10/13/24 1:03 PM, Lukas Wunner wrote:
+>>> On Sat, Oct 12, 2024 at 02:48:48AM +0200, Marek Vasut wrote:
+>>>> The pci_host_probe() does reallocate BARs for devices which start up 
+>>>> with
+>>>> uninitialized BAR addresses set to 0 by calling 
+>>>> pci_bus_assign_resources(),
+>>>> which updates the device config space content.
+>>>>
+>>>> At the same time, pci_pm_runtime_suspend() triggers pci_save_state() 
+>>>> for
+>>>> all devices which do not have drivers assigned to them to store current
+>>>> content of their config space registers.
+> 
+> What exactly do you mean by "at the same time"?
+I mean these two blocks of code run in parallel and likely race each other.
