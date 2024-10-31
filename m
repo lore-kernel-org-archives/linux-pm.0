@@ -1,171 +1,245 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98AEA1CF5E0;
-	Wed, 30 Oct 2024 22:55:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4989D2FB;
+	Thu, 31 Oct 2024 01:19:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730328917; cv=none; b=G7lnIz97c0EV8Au12LdLmB/BeCdjAHid0psSSphYGWxRQNBLTcEK/nxigIS4Obh7WsnIFLUo1lvO6uLSeerwVPsYhmOfsCNtS23Bc1QO9Hg0fWjjhP3hyrGyUK0lMOnpCFfZx+B8w35RCBRCKyTfV5US+yxvLeb7EZgtgLqEatE=
+	t=1730337599; cv=none; b=NgAZSumKWS6k/MfLpsfjfEksp1fKgHMOuz7BAQr1KfgkYt9GxDuF2EVaN2Ep49s8Tbv2taDrFYFnD/vLzEjaiQMJ4zzFx/iikPP//pJUahpwzxRDpB9HE1Rtuwmiz71KoxW7jmAet38jRjkQdBpcWsxWY22ZOQsNp7FQKndiCkE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730328917; c=relaxed/simple;
-	bh=ApKRKkEuiqj4Fr3LVlwiC2tBnFMiDyBorKsWI/gS4rw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ci5J3ClxwWq4iG4+NYNjZKQOiyANUgAtio3VIdNkPik//fuHC1Rpo1B8UpCzFPgDuhEVgHe6/EttZ8w/8nA3xInkGGDq3zmfqi3iEckqmrF0ivj/yesU05K/s37yANS0hyTndj/8/F9AOwRTjP8ZYoJCF+bQkZg7r8vGw9Q2Heg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ML/yTSS2; arc=none smtp.client-ip=198.175.65.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1730337599; c=relaxed/simple;
+	bh=nKRAjGHplcBjSY8FGUHOTB8ghGJrx7beTyIEn7gCe/4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=QwcVbi23+yLEpAfzua6YZQMf4+XpyU+hHVWkP7ez8IAvLSPA9nBD8mWDkVRYomcOTx/Wj2qxVsNxZyGZ4pWgG1cQmlWGVnz/z3nDXgGCgaJtYZTq2SLvtI55s/HaHvhZvaoVk1HM8Tijm+Rc/wJnyS5MYX7iJyiolKWzSS9WaSI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=KLtygRBv; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ML/yTSS2"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1730328915; x=1761864915;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=ApKRKkEuiqj4Fr3LVlwiC2tBnFMiDyBorKsWI/gS4rw=;
-  b=ML/yTSS2n/6pWZvg36ktzMYFXpoVTWpWv4318hV5h1hD2wJezhoCCH4e
-   hiEgdQTKaW0eMUrfla496uMGYhsJhtTbIt6Lu5L1Bv9nKw7sqL6v13D/V
-   ovOC2NBdTgVX1uHzO2hsi9e0oGixmrz03y1MPKw6dycLZdXNzZ5cI7W8o
-   MEB3Uu+VZh8cVG61QLjT6pf/sRQhBYIAVlv1fEZ0JwXmv3lUagURo2NbA
-   64KvTzpoVL8xTE624RbjB0evPfEXQvXe1iBcZgGZZFbao4KN9VTTgE26x
-   kSnjOrN2aNMKzevxg2cdMXo/x/saECSYhdEu6KD1d89gdNRjlKWm2Q7Ln
-   g==;
-X-CSE-ConnectionGUID: 1k4R44jsR+OGmKXHh+Muyg==
-X-CSE-MsgGUID: ROp9ZDaXRMyH7phQNZDxnQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="30208303"
-X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; 
-   d="scan'208";a="30208303"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2024 15:55:14 -0700
-X-CSE-ConnectionGUID: k1WnlkV2T/e9lIC3edTOIQ==
-X-CSE-MsgGUID: XAAYTiaARbGSFmfCUN61hQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,246,1725346800"; 
-   d="scan'208";a="105777001"
-Received: from bjrankin-mobl3.amr.corp.intel.com (HELO [10.124.223.155]) ([10.124.223.155])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2024 15:55:13 -0700
-Message-ID: <63f7dbbc-831f-4c16-9f11-5cf2c36996d0@intel.com>
-Date: Wed, 30 Oct 2024 15:55:12 -0700
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="KLtygRBv"
+Received: from [192.168.0.162] (BC24936A.dsl.pool.telekom.hu [188.36.147.106])
+	by mail.mainlining.org (Postfix) with ESMTPSA id B37A7E45B9;
+	Thu, 31 Oct 2024 01:19:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mainlining.org;
+	s=psm; t=1730337592;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Olj9iYH7LcbphKshwr7qao2rM+CM/q0woKUYsmasCt4=;
+	b=KLtygRBvjM7NBuo9STN5vtaNcZ/6Pial8vWOAg072OGAnmcNY4XGnfYGKfnT8QTlHl+F5x
+	Sfuvj07EncyGTOJ+lNTOTsrD9bWdUmPlz+/zL9ZlKD9LHW7xzsfZCR6CHOiEzcCvvvq/uZ
+	3KdktVsmd5do3YQyzV3YzLh4pH4VOcMS+7LNHN/X+jGB4hgzAAPLoNSKedTB3e8Y3gYilC
+	RlGvVSOvGrhz/lyQmOT+AFY6FW0L7yi9FtFx+DNMl6fpAHpM58w0csU4IYeOsSmyk5iO62
+	p8VQ46/vMRXALaZXr1HL1EYyvyVmmVhH4iB8SuJklkeFKi4cGPvmCs5iLLiQ2w==
+From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
+Date: Thu, 31 Oct 2024 02:19:47 +0100
+Subject: [PATCH v2 06/15] dt-bindings: pinctrl: qcom: Add MSM8917 pinctrl
+ bindings
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/3] x86/smp: Allow forcing the mwait hint for play
- dead loop
-To: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>, x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- rafael.j.wysocki@intel.com, len.brown@intel.com,
- artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com
-References: <20241029101507.7188-1-patryk.wlazlyn@linux.intel.com>
- <20241029101507.7188-3-patryk.wlazlyn@linux.intel.com>
- <e332a243-5a98-49ed-81be-b6db305d5dc5@intel.com>
- <0a767d20-624d-494e-96b9-5e2a379550fc@linux.intel.com>
-Content-Language: en-US
-From: Dave Hansen <dave.hansen@intel.com>
-Autocrypt: addr=dave.hansen@intel.com; keydata=
- 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
-In-Reply-To: <0a767d20-624d-494e-96b9-5e2a379550fc@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Message-Id: <20241031-msm8917-v2-6-8a075faa89b1@mainlining.org>
+References: <20241031-msm8917-v2-0-8a075faa89b1@mainlining.org>
+In-Reply-To: <20241031-msm8917-v2-0-8a075faa89b1@mainlining.org>
+To: Bjorn Andersson <andersson@kernel.org>, 
+ Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+ Lee Jones <lee@kernel.org>, Amit Kucheria <amitk@kernel.org>, 
+ Thara Gopinath <thara.gopinath@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Joerg Roedel <joro@8bytes.org>, 
+ Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
+ Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
+ =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1730337585; l=6514;
+ i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
+ bh=nKRAjGHplcBjSY8FGUHOTB8ghGJrx7beTyIEn7gCe/4=;
+ b=x6HM8gqhgAjcaSrJLj/q14WVqE+C+/rziHJV7GCZhFXu4Vz3M2xze2opQDIDsMrSwL4amUG+Q
+ aKIa7jNAkoyBPJ9/FGZ0Fnh9a3th+tKkojFKhmwGWMxSElmBfpq71KK
+X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
+ pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-On 10/30/24 06:33, Patryk Wlazlyn wrote:
->>> +void smp_set_mwait_play_dead_hint(unsigned int hint)
->>> +{
->>> +    WRITE_ONCE(play_dead_mwait_hint, hint);
->>> +}
->>
->> This all feels a bit hacky and unstructured to me.
->>
->> Could we at least set up a few rules here?  Like, say what the hints
->> are, what values can they have?  Where do they come from?  Can this get
->> called more than once?  Does it _need_ to be set?  What's the behavior
->> when it is not set?  Who is responsible for calling this?
-> 
-> The other idea is to first check if currently loaded idle driver provides
-> enter_dead() callback first and leave the current, deepest mwait hint
-> computation code as a fallback.
-> 
-> Does that sound less hacky?
+Add device tree bindings documentation for Qualcomm MSM8917
+pinctrl driver.
 
-Yes.
+Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
+---
+ .../bindings/pinctrl/qcom,msm8917-pinctrl.yaml     | 155 +++++++++++++++++++++
+ 1 file changed, 155 insertions(+)
 
-> Unfortunately, it comes with a little problem. In case of kexec, we need to
-> have a way to exit from the mwait loop and enter hlt to prevent offlined CPU
-> from crashing when the old memory is being overwritten.
+diff --git a/Documentation/devicetree/bindings/pinctrl/qcom,msm8917-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/qcom,msm8917-pinctrl.yaml
+new file mode 100644
+index 0000000000000000000000000000000000000000..41349ce9898aaaf68a10f30ffe611dcedc1e9311
+--- /dev/null
++++ b/Documentation/devicetree/bindings/pinctrl/qcom,msm8917-pinctrl.yaml
+@@ -0,0 +1,155 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/pinctrl/qcom,msm8917-pinctrl.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm MSM8917 TLMM pin controller
++
++maintainers:
++  - Barnabas Czeman <barnabas.czeman@mainlining.org>
++
++description:
++  Top Level Mode Multiplexer pin controller in Qualcomm MSM8917 SoC.
++
++properties:
++  compatible:
++    const: qcom,msm8917-pinctrl
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  gpio-reserved-ranges: true
++
++patternProperties:
++  "-state$":
++    oneOf:
++      - $ref: "#/$defs/qcom-msm8917-tlmm-state"
++      - patternProperties:
++          "-pins$":
++            $ref: "#/$defs/qcom-msm8917-tlmm-state"
++        additionalProperties: false
++
++$defs:
++  qcom-msm8917-tlmm-state:
++    type: object
++    description:
++      Pinctrl node's client devices use subnodes for desired pin configuration.
++      Client device subnodes use below standard properties.
++    $ref: qcom,tlmm-common.yaml#/$defs/qcom-tlmm-state
++    unevaluatedProperties: false
++
++    properties:
++      pins:
++        description:
++          List of gpio pins affected by the properties specified in this
++          subnode.
++        items:
++          oneOf:
++            - pattern: "^gpio([0-9]|[1-9][0-9]|1[0-3][0-9]|14[01])$"
++            - enum: [ sdc1_clk, sdc1_cmd, sdc1_data, sdc1_rclk, sdc2_clk,
++                      sdc2_cmd, sdc2_data, qdsd_clk, qdsd_cmd, qdsd_data0,
++                      qdsd_data1, qdsd_data2, qdsd_data3 ]
++        minItems: 1
++        maxItems: 16
++
++      function:
++        description:
++          Specify the alternative function to be configured for the specified
++          pins.
++
++        enum: [ accel_int, adsp_ext, alsp_int, atest_bbrx0, atest_bbrx1,
++                atest_char, atest_char0, atest_char1, atest_char2,
++                atest_char3, atest_combodac_to_gpio_native,
++                atest_gpsadc_dtest0_native, atest_gpsadc_dtest1_native,
++                atest_tsens, atest_wlan0, atest_wlan1, audio_ref,
++                audio_reset, bimc_dte0, bimc_dte1, blsp6_spi, blsp8_spi,
++                blsp_i2c1, blsp_i2c2, blsp_i2c3, blsp_i2c4, blsp_i2c5,
++                blsp_i2c6, blsp_i2c7, blsp_i2c8, blsp_spi1, blsp_spi2,
++                blsp_spi3, blsp_spi4, blsp_spi5, blsp_spi6, blsp_spi7,
++                blsp_spi8, blsp_uart1, blsp_uart2, blsp_uart3, blsp_uart4,
++                blsp_uart5, blsp_uart6, blsp_uart7, blsp_uart8, cam0_ldo,
++                cam1_rst, cam1_standby, cam2_rst, cam2_standby, cam_mclk,
++                cci_async, cci_i2c, cci_timer0, cci_timer1, cdc_pdm0,
++                codec_int1, codec_int2, codec_mad, coex_uart, cri_trng,
++                cri_trng0, cri_trng1, dbg_out, dmic0_clk, dmic0_data,
++                ebi_cdc, ebi_ch0, ext_lpass, forced_usb, fp_gpio, fp_int,
++                gcc_gp1_clk_a, gcc_gp1_clk_b, gcc_gp2_clk_a, gcc_gp2_clk_b,
++                gcc_gp3_clk_a, gcc_gp3_clk_b, gcc_plltest, gcc_tlmm, gpio,
++                gsm0_tx, key_focus, key_snapshot, key_volp, ldo_en,
++                ldo_update, lpass_slimbus, lpass_slimbus0, lpass_slimbus1,
++                m_voc, mag_int, mdp_vsync, mipi_dsi0, modem_tsync, nav_pps,
++                nav_pps_in_a, nav_pps_in_b, nav_tsync, nfc_pwr, ov_ldo,
++                pa_indicator, pbs0, pbs1, pbs2, pri_mi2s, pri_mi2s_mclk_a,
++                pri_mi2s_mclk_b, pri_mi2s_ws, prng_rosc,
++                pwr_crypto_enabled_a, pwr_crypto_enabled_b,
++                pwr_modem_enabled_a, pwr_modem_enabled_b, pwr_nav_enabled_a,
++                pwr_nav_enabled_b, qdss_cti_trig_in_a0, qdss_cti_trig_in_a1,
++                qdss_cti_trig_in_b0, qdss_cti_trig_in_b1,
++                qdss_cti_trig_out_a0, qdss_cti_trig_out_a1,
++                qdss_cti_trig_out_b0, qdss_cti_trig_out_b1, qdss_traceclk_a,
++                qdss_traceclk_b, qdss_tracectl_a, qdss_tracectl_b,
++                qdss_tracedata_a, qdss_tracedata_b, sd_write, sdcard_det,
++                sec_mi2s, sec_mi2s_mclk_a, sec_mi2s_mclk_b, sensor_rst,
++                smb_int, ssbi_wtr1, ts_resout, ts_sample, uim1_clk,
++                uim1_data, uim1_present, uim1_reset, uim2_clk, uim2_data,
++                uim2_present, uim2_reset, uim_batt, us_emitter, us_euro,
++                wcss_bt, wcss_fm, wcss_wlan, wcss_wlan0, wcss_wlan1,
++                wcss_wlan2, webcam_rst, webcam_standby, wsa_io, wsa_irq ]
++
++    required:
++      - pins
++
++allOf:
++  - $ref: /schemas/pinctrl/qcom,tlmm-common.yaml#
++
++required:
++  - compatible
++  - reg
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++
++    tlmm: pinctrl@1000000 {
++        compatible = "qcom,msm8917-pinctrl";
++        reg = <0x01000000 0x300000>;
++        interrupts = <GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>;
++        gpio-controller;
++        gpio-ranges = <&tlmm 0 0 134>;
++        #gpio-cells = <2>;
++        interrupt-controller;
++        #interrupt-cells = <2>;
++
++        blsp1-uart2-sleep-state {
++            pins = "gpio4", "gpio5";
++            function = "gpio";
++
++            drive-strength = <2>;
++            bias-pull-down;
++        };
++
++        spi1-default-state {
++            spi-pins {
++                pins = "gpio0", "gpio1", "gpio3";
++                function = "blsp_spi1";
++
++                drive-strength = <12>;
++                bias-disable;
++            };
++
++            cs-pins {
++                pins = "gpio2";
++                function = "gpio";
++
++                drive-strength = <16>;
++                bias-disable;
++                output-high;
++            };
++        };
++    };
 
-Why is this a problem?  Like I mentioning to Rafael, just *call*
-mwait_play_dead() from the idle driver.
+-- 
+2.47.0
 
-mwait_play_dead() could probably also use some refactoring because it
-has 3 pieces:
-
-	1. Should the code run at all or defer to another play dead
-	   implementation?
-	2. Calculating the hint (obviously not needed in your new case)
-	3. Actually running mwait (including the kexec hack)
-
-The "should the code run?" bit is superfluous but harmless if called
-from the idle driver.  Ditto on the hint calculation, but you already
-factored it out.  That leaves the "actually run mwait" bit which you
-100% need.
-
-> I think, we can solve it by bringing the CPU back online before we proceed
-> with kexec, but I would appreciate some feedback from someone who is more
-> familiar with kexec, before merging that.
-> 
-> We may also signal that by touching the resched flag on which enter_dead()
-> code will monitor in case of mwait and enter hlt right after, but that's a
-> bit hackier IMO.
-
-That route is also fine with me, but I'm not sure it's necessary.
-
->> What good does the smp_ prefix do?  I don't think _callers_ care whether
->> this is getting optimized out or not.
-> 
-> The prefix makes it a little bit cleaner by not exporting new global symbol
-> with "set_mwait_play_dead_hint" name.
-
-I'm not following.
