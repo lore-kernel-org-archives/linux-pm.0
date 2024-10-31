@@ -1,103 +1,107 @@
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8A143FB8B;
-	Thu, 31 Oct 2024 01:29:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C7A45FB9C;
+	Thu, 31 Oct 2024 01:30:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730338188; cv=none; b=enxSiDfyvr3CTeCC2M+J8iHxESIlZHkozWQ9unBAHljkbp7q7SMHUvXW5r3+5NtZDf2ON6iG4rhNoceejVM3nWGmCHUWYsDsx0NSCAL4ekULsEFlMw99jov0HdllCZJ3eaxykEahBAXWgcK/7+JS3MJ0ZoUP5yZpqHWMCsxOidc=
+	t=1730338206; cv=none; b=ZdXWlnaxBxu7I+NCapHWtiug34IksjC297AKO11rtcz9hqFj2x0QxdwKw+Gz91lobqJK6rSQjpCqPWc5a0LnKshJr5tNnqPwEVQx8/AwUfD+IFNX1jkTwzp2eQq3qR2bxNSVr2H8wPSmusxIfCaBLJ9ZzAQ/CMUsarUxJyQGgPo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730338188; c=relaxed/simple;
-	bh=kANJbusz/1wsoZAzBf9MgUzpPoVv15jJLK4rJBNHHIw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=TCg/tAToobh9Y/tB+B0ykLXGOVu2QZBNFVoPBk+4qpzp2G8YPhMNij/8m9ebNOWa5ymf7xQzOqvxcQcLIooyvZ620qMtUIVN0xyanzkEnWjr0/tWrQmyExVm0gJNLqft8Lb6AdaFnvl4yC0+6d9vO+37rfLnCNsQMG5RfgrYwIo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=SuWuWr+s; arc=none smtp.client-ip=5.75.144.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
+	s=arc-20240116; t=1730338206; c=relaxed/simple;
+	bh=F3CW6MgCDGBSbZPQG4EYQBGr36Y639uygD33OcwKI7w=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=o1h9yj1DRu5munrQksMsq41CGFkMmYYL9ule+gfRz+rU/ITxjojgBdThkdvfepNCIHyC3IH8slZQLbzZ/heY5VznRbWMRiLLJOId57d0vVY0dyYIi47CPCpixI5Gngw0+ZnBBufEitMnnQZj9g8YelUe0DtjAaM1uUo4SV4/igs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XaFxrc0h; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="SuWuWr+s"
-Received: from [192.168.0.162] (BC24936A.dsl.pool.telekom.hu [188.36.147.106])
-	by mail.mainlining.org (Postfix) with ESMTPSA id E7457E45B6;
-	Thu, 31 Oct 2024 01:19:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mainlining.org;
-	s=psm; t=1730337589;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=PoFhgvV9a9kora5JIHDRkULnX8QqLWjcJwM1ZxNV22U=;
-	b=SuWuWr+s1nl8e/G/5hOfiFn0AugFje0ihAyQagTXaIu2qsUaPezQEeW1SM1Id2HLmYXTpf
-	/5eXWvPOm2Jx2vUXPT09f1EQwZR7JbOpqruYZfbmHB6O/ahj9oOk0tCfQ8nxWQmQnFTmEr
-	MD4znfe7Sy6Ik5969hln9t6ktPFRklYAimB2MOhYjfk1/V4Ao9xciEYn4gbwjP9l73FIxp
-	3yjvpPFHQnwWqJ5t7LE+xb7IQSbrW3l0JD1kFGgW+ROKcOMD+fBnB45uacowgFOCeBm/MT
-	ihQdimmVH5Maz11gOkdSUUPl4GFMvJqtho3xCCiScrNegEgglwlkm+RmBoms4g==
-From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Date: Thu, 31 Oct 2024 02:19:44 +0100
-Subject: [PATCH v2 03/15] dt-bindings: pinctrl: qcom,pmic-mpp: Document
- PM8937 compatible
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XaFxrc0h"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11CA7C4CED2;
+	Thu, 31 Oct 2024 01:30:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1730338206;
+	bh=F3CW6MgCDGBSbZPQG4EYQBGr36Y639uygD33OcwKI7w=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=XaFxrc0hQxfxAaTDwz22wAC7xgyqcXbewHasugJkhScj0LGN6soj3hIn70HVRoToJ
+	 qR0QJnEjIrlhxUTLJycz6po6DXlLs45ALEfjd0yR+IqoD3KWnexKLR+KfKp2E300G1
+	 TczsFcNwBr124tUPxwwYsuyUQH6T1P8v8I2ZcEOh0Q4Cxy8klpl2QbKDcQcVDMzY1V
+	 /d3/zNYrtYcWlSyGP2YjuTtXB2uFPy54vZJpm7eK4cXwhAEIbm+8BmSyPAf7Cfa92s
+	 ujlUa/iXD81Lya0g5DmeRQr4CvvHqDOeqUwuY5ESmNExPD5efiRw44C+HmOmyBBQlY
+	 JSnbJyxxg9qpQ==
+Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-539f58c68c5so763339e87.3;
+        Wed, 30 Oct 2024 18:30:05 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUvuocDyyeidIJ6PBFegZ1ttv7jiB+Ns197sq9gtFtZTTdDRbPTcbznDFEw07dmD9ybDb2/+IUBQ+ZO3F8=@vger.kernel.org, AJvYcCWkm4rSmNTTljFTcCc+pc05kIvNPg3FYwJ0zlGeAVnsY37pnjdugqDstGWRWJeymCXbOLUsAnR6uQc=@vger.kernel.org
+X-Gm-Message-State: AOJu0YznqG15rJSP+TP5OEp/HjYWpo+PGOYmJM9xNYlE6pZ3JVFMfz4p
+	npS5ntKe/Dow+CEvimXebwuUnx1P/dLk2TSKx/KFLqhUUg31if7YFZnT8Wb0oGnUyVQ6jHTf+QQ
+	fr7+Gg9blesar1DQKtWTwLUK2czE=
+X-Google-Smtp-Source: AGHT+IES1QEWCyXEfu2GgQIWkNKG5wwIdsKbTeplBpmPclxpxRZ8rjzg8Uh1GIdkLH+yO4jm648v1k5qv5FFrNoYWQg=
+X-Received: by 2002:a05:6512:3b97:b0:533:71f:3a3d with SMTP id
+ 2adb3069b0e04-53b348da746mr13964158e87.24.1730338204411; Wed, 30 Oct 2024
+ 18:30:04 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20241031-msm8917-v2-3-8a075faa89b1@mainlining.org>
-References: <20241031-msm8917-v2-0-8a075faa89b1@mainlining.org>
-In-Reply-To: <20241031-msm8917-v2-0-8a075faa89b1@mainlining.org>
-To: Bjorn Andersson <andersson@kernel.org>, 
- Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
- Lee Jones <lee@kernel.org>, Amit Kucheria <amitk@kernel.org>, 
- Thara Gopinath <thara.gopinath@gmail.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Joerg Roedel <joro@8bytes.org>, 
- Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
- Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
- =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1730337585; l=1209;
- i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=kANJbusz/1wsoZAzBf9MgUzpPoVv15jJLK4rJBNHHIw=;
- b=sEQAKn+ugy8i1FA5+ScQ/S6OSJQf20UU6xmt4G+TzlXYrUJ/8Dz9hmELfNhkxj44WMurhnLnm
- Ihn/g+uUf+2Bk01VcovDMA8qN17x9eY/RLF7qQGLzn3DLDQhdDiP/PV
-X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
- pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
+References: <20241030162930.2111255-1-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20241030162930.2111255-1-andriy.shevchenko@linux.intel.com>
+From: Huacai Chen <chenhuacai@kernel.org>
+Date: Thu, 31 Oct 2024 09:29:52 +0800
+X-Gmail-Original-Message-ID: <CAAhV-H6bOZLur8Eq2CyFaeQp7R1LwiRqf0ODqnftg6+zAbDoYg@mail.gmail.com>
+Message-ID: <CAAhV-H6bOZLur8Eq2CyFaeQp7R1LwiRqf0ODqnftg6+zAbDoYg@mail.gmail.com>
+Subject: Re: [PATCH v1 1/1] cpufreq: loongson: Check for error code from
+ devm_mutex_init() call
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, loongarch@lists.linux.dev, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	WANG Xuerui <kernel@xen0n.name>, "Rafael J. Wysocki" <rafael@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Document the Device Tree binding for PM8937 MPPs.
+Hi, Andy,
 
-Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
----
- Documentation/devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml | 2 ++
- 1 file changed, 2 insertions(+)
+On Thu, Oct 31, 2024 at 12:29=E2=80=AFAM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> Even if it's not critical, the avoidance of checking the error code
+> from devm_mutex_init() call today diminishes the point of using devm
+> variant of it. Tomorrow it may even leak something. Add the missed
+> check.
+>
+> Fixes: ccf51454145b ("cpufreq: Add Loongson-3 CPUFreq driver support")
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/cpufreq/loongson3_cpufreq.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/cpufreq/loongson3_cpufreq.c b/drivers/cpufreq/loongs=
+on3_cpufreq.c
+> index 61ebebf69455..bd34bf0fafa5 100644
+> --- a/drivers/cpufreq/loongson3_cpufreq.c
+> +++ b/drivers/cpufreq/loongson3_cpufreq.c
+> @@ -346,8 +346,11 @@ static int loongson3_cpufreq_probe(struct platform_d=
+evice *pdev)
+>  {
+>         int i, ret;
+>
+> -       for (i =3D 0; i < MAX_PACKAGES; i++)
+> -               devm_mutex_init(&pdev->dev, &cpufreq_mutex[i]);
+> +       for (i =3D 0; i < MAX_PACKAGES; i++) {
+> +               ret =3D devm_mutex_init(&pdev->dev, &cpufreq_mutex[i]);
+> +               if (ret)
+Good catch, but I think "if (ret < 0)" is better? Sometimes a positive
+return value is legal, even if not in this case.
 
-diff --git a/Documentation/devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml b/Documentation/devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml
-index 43146709e2044d9dead08a6786b98672ef766629..9364ae05f3e68f3a2f4dd78ba3c0f94b3ccc3c51 100644
---- a/Documentation/devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml
-+++ b/Documentation/devicetree/bindings/pinctrl/qcom,pmic-mpp.yaml
-@@ -22,6 +22,7 @@ properties:
-               - qcom,pm8226-mpp
-               - qcom,pm8841-mpp
-               - qcom,pm8916-mpp
-+              - qcom,pm8937-mpp
-               - qcom,pm8941-mpp
-               - qcom,pm8950-mpp
-               - qcom,pmi8950-mpp
-@@ -92,6 +93,7 @@ $defs:
-           this subnode.  Valid pins are
-                  - mpp1-mpp4 for pm8841
-                  - mpp1-mpp4 for pm8916
-+                 - mpp1-mpp4 for pm8937
-                  - mpp1-mpp8 for pm8941
-                  - mpp1-mpp4 for pm8950
-                  - mpp1-mpp4 for pmi8950
+And it is better to use loongson3 rather than loongson because there
+is another loongson2 driver.
 
--- 
-2.47.0
+Huacai
 
+> +                       return ret;
+> +       }
+>
+>         ret =3D do_service_request(0, 0, CMD_GET_VERSION, 0, 0);
+>         if (ret <=3D 0)
+> --
+> 2.43.0.rc1.1336.g36b5255a03ac
+>
+>
