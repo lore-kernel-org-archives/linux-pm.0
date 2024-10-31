@@ -1,128 +1,118 @@
-Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz [202.36.163.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5694B14264A
-	for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2024 18:57:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 980181CBEAE
+	for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2024 20:04:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.36.163.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730401025; cv=none; b=eNnqJ752SkHdbweb3d/kdkvKJB0/VltVSFE8OTWe97g6pPNJ1gBtO02pDrpJUqyn9XRew2PSM77US4be02+WzAw2lQaYREcDejc6Mpm4uWSVXhDPHYrB/FBY/d2pM8Chab3XPxaHDgE68w6koBLaLAbIvsR8W6W2IlwR3dEGmPA=
+	t=1730405046; cv=none; b=R7G9H9FMn7aukovWIRmuImoDcIakLF+E9b5zOJ8KhTHfiKxD/1Qs695NOPSsL1HyrelYykf6IfvPdbhC/Qwo3DUa8WiiwAlM5xq8RMmLl2RavwHCHjyi7asBzRtLroGtKoX2z+Ip7mS7Lgc935B9q3fDi4WeRAeXD9bQDzmGoFE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730401025; c=relaxed/simple;
-	bh=xMu6QWNdKFvJUqlA5KkzFsPtFC7j7Kqh7tHTVasaSCs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fgAk4dwrIAurugknzZYic/nlEeAGae0FgtpiEOJUqJaHfya1oBzeLQEBMPUjsxMUVrMG1mtRpxWLaAI4kt5rjNCgwhHZUn4rTjlEbZvERf0stZ4K1urdTAEBlPSVzHK2KbZw6Km35X5lSpIHGRU44aDK4uQHWuiWUHHE7RqvIFQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hIylKOPj; arc=none smtp.client-ip=209.85.167.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1730405046; c=relaxed/simple;
+	bh=JSEvZwWjK1/LoQ0uFWLyo74GABdj9hbu1mVQ26RoJ7o=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=tUx/62DFNEfJKJyOkgk5l5XNXFEE4Xb/HTzu/rDn5W2PATyLbtvpLZiys9jgC2y7buFvBneiibPSYB+12W/K0FWIRBue0EM+ajmW+u7ionxhTmclsRQ3xb6aKVKWSpYyufKNxlobps93lLRNOzMzUoPgS5zqJMlQtNTyS3gVDL0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz; spf=pass smtp.mailfrom=alliedtelesis.co.nz; dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b=H/6E6Sg+; arc=none smtp.client-ip=202.36.163.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alliedtelesis.co.nz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hIylKOPj"
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-539f4d8ef66so1692016e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2024 11:57:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1730401020; x=1731005820; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=pJND4kIqSn03jp/YKXMT+NaJTpO4BmVDS9cnPvfoOGE=;
-        b=hIylKOPjMMUBFiOJSj8y783Yg2DPFvs5g76aS3jivSGlZwOm0dND5rCzH9Aruwcjj+
-         D1C8gNq3igs6zdSPzqWyhMKcbKbKSmy97+6jWM3uRpIegomTE6MZ4cwU8vmMtwLMNOi9
-         8aYBWX2OKQd73gNkOJvyEDD167aXn4xdvEQH1yVoDFUeNisRJJ7sRNIR/dEYty0ou5VR
-         E2Q8OM22peXdCmtFNNXSD1ejr1W/6aeP8dSKvUMgBcfIt94Rmavnz9+tDrPvUtiPCUxE
-         93VaVqA8c0a+1ndHebgW1aq2HeUwrnnxn1IRKpWFXCctQ1y1PxAn/iiHvopFrc+z/OLF
-         1Q6g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1730401020; x=1731005820;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pJND4kIqSn03jp/YKXMT+NaJTpO4BmVDS9cnPvfoOGE=;
-        b=UGeOFun6JCxNrOep2NDSU/OFTDkuvk+1LCCpyNa70oiA43mEcYjz7bGt0MCbAlDcWI
-         UQIqsfvPb9AnyCpoQrcayce1QsieparLszEH1IvnLqNSlmICXhyV0uL1U3XFFTQFXsY3
-         nt2nGi+ISzg9CA1Sx8kQlEs1Pk4GtYeQcwsB9zFWN5SHiW3etdw7qYrvVkxgWsDi8Ibh
-         aW3Rslv8vfYLX0vNoWn+TOpP2Z1VwUZFCLQZcDc4r4RJYyOITgzLtdUKSkNg3BPhQJ+q
-         nRuHki5Znwy+mnGH/r3dbZ5ypeyKYEljF9lByq1VKUVcN6+HV8MeA+O78Jngv+IEz5Zi
-         bl3g==
-X-Forwarded-Encrypted: i=1; AJvYcCUblZAI7yCAEmkfv1ZIiG7LlCoiXLYnCjt0hMgATZ+6PLoJNjhIVSRuizluAAIF6WeJlIPWXxpxrQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyZhoKLJzYzTMuKoMnpYu8I2tJeReUcl31sZBn6zpGr2+073g1Z
-	GoV9JYqFk8wzobTWtp0T3SRStfnZCvzS3TCQVkkugi8JB74Yzjv8o8S/cO0gxjI=
-X-Google-Smtp-Source: AGHT+IHqyWCnz9PxeWHFvHwzUWmLNPQbCOVNeC8Xy/vaiXFFXbcvmZZ7cUBpzlpnQcRKUtVF/gMlcg==
-X-Received: by 2002:a05:6512:304e:b0:53b:1f90:576f with SMTP id 2adb3069b0e04-53b348fadbdmr11024344e87.22.1730401020413;
-        Thu, 31 Oct 2024 11:57:00 -0700 (PDT)
-Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--7a1.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::7a1])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-53c7bc96141sm298657e87.62.2024.10.31.11.56.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 31 Oct 2024 11:56:58 -0700 (PDT)
-Date: Thu, 31 Oct 2024 20:56:55 +0200
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
-Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Sibi Sankar <quic_sibis@quicinc.com>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Odelu Kukatla <quic_okukatla@quicinc.com>, Mike Tipton <quic_mdtipton@quicinc.com>
-Subject: Re: [PATCH V2 1/3] dt-bindings: interconnect: Add EPSS L3 compatible
- for SA8775P
-Message-ID: <vljb7wwqaaqgdcm6whf5ymhnh4jbtswyibto4qpqmbgwvshudy@unh3jhbyeac6>
-References: <20241026123058.28258-1-quic_rlaggysh@quicinc.com>
- <20241026123058.28258-2-quic_rlaggysh@quicinc.com>
- <7k2vnjop6xyshquqlbe22gm7o5empeluvsohfmq5ulnaas3keb@yzomhzi4w7vf>
- <2ac4604c-a765-48b1-84b2-8979f18c29a7@quicinc.com>
+	dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="H/6E6Sg+"
+Received: from svr-chch-seg1.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 627CA2C0525;
+	Fri,  1 Nov 2024 09:03:53 +1300 (NZDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
+	s=mail181024; t=1730405033;
+	bh=8ni5QRUCD5VvO4J50KmFVZvZeIdbtTq4nskuSxlH7vw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=H/6E6Sg+8w5UA0ewmPQBlddL49LFu929V47Q89AAiGRRv2mQ/kCe8+Jum9ZoaAbEh
+	 d2ZkSlUfLxhelXB7P64x4NtjURJdgYu4pIW2PUeF7bG8CyBfSsepxg+llQM/jV+8Cd
+	 dFs7VxoYNduLp20Lylz+wAOalXH7QUsgkTzVncAcAXT2klBSfKxIfH6SObsOFaOZ8D
+	 3htpMfPI0JyRR2BK+wyqY4kfcfZ/qIWo0dc3TlAgVVyo9x5eQVr66VegYrOAqd0YpR
+	 yNh3DirSiJmVX4I81cqbJMhnvZkpdd9Xjp4r1HYoRQEHGw3G33QmC5qy2AyLU3zfme
+	 xVNA00BEnyu9A==
+Received: from pat.atlnz.lc (Not Verified[10.32.16.33]) by svr-chch-seg1.atlnz.lc with Trustwave SEG (v8,2,6,11305)
+	id <B6723e2a80002>; Fri, 01 Nov 2024 09:03:52 +1300
+Received: from chrisp-dl.ws.atlnz.lc (chrisp-dl.ws.atlnz.lc [10.33.22.30])
+	by pat.atlnz.lc (Postfix) with ESMTP id D6D1413EE83;
+	Fri,  1 Nov 2024 09:03:52 +1300 (NZDT)
+Received: by chrisp-dl.ws.atlnz.lc (Postfix, from userid 1030)
+	id D1A5A2809DD; Fri,  1 Nov 2024 09:03:52 +1300 (NZDT)
+From: Chris Packham <chris.packham@alliedtelesis.co.nz>
+To: andi.shyti@kernel.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	lee@kernel.org,
+	sre@kernel.org,
+	tsbogend@alpha.franken.de
+Cc: linux-i2c@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-mips@vger.kernel.org,
+	Chris Packham <chris.packham@alliedtelesis.co.nz>
+Subject: [PATCH v8 2/7] power: reset: syscon-reboot: Accept reg property
+Date: Fri,  1 Nov 2024 09:03:45 +1300
+Message-ID: <20241031200350.274945-3-chris.packham@alliedtelesis.co.nz>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241031200350.274945-1-chris.packham@alliedtelesis.co.nz>
+References: <20241031200350.274945-1-chris.packham@alliedtelesis.co.nz>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2ac4604c-a765-48b1-84b2-8979f18c29a7@quicinc.com>
+Content-Transfer-Encoding: quoted-printable
+X-SEG-SpamProfiler-Analysis: v=2.4 cv=ca1xrWDM c=1 sm=1 tr=0 ts=6723e2a8 a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=VlfZXiiP6vEA:10 a=KKAkSRfTAAAA:8 a=GF1LeCK7rlvhbTvQy6cA:9 a=3ZKOabzyN94A:10 a=cvBusfyB2V15izCimMoJ:22
+X-SEG-SpamProfiler-Score: 0
+x-atlnz-ls: pat
 
-On Wed, Oct 30, 2024 at 12:23:57PM +0530, Raviteja Laggyshetty wrote:
-> 
-> 
-> On 10/26/2024 8:15 PM, Dmitry Baryshkov wrote:
-> > On Sat, Oct 26, 2024 at 12:30:56PM +0000, Raviteja Laggyshetty wrote:
-> >> Add Epoch Subsystem (EPSS) L3 interconnect provider binding on
-> >> SA8775P SoCs.
-> >>
-> >> Signed-off-by: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
-> >> ---
-> >>  .../devicetree/bindings/interconnect/qcom,osm-l3.yaml         | 4 ++++
-> >>  1 file changed, 4 insertions(+)
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-> >> index 21dae0b92819..042ca44c32ec 100644
-> >> --- a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-> >> +++ b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-> >> @@ -34,6 +34,10 @@ properties:
-> >>                - qcom,sm8250-epss-l3
-> >>                - qcom,sm8350-epss-l3
-> >>            - const: qcom,epss-l3
-> >> +      - items:
-> >> +          - enum:
-> >> +              - qcom,sa8775p-epss-l3
-> >> +          - const: qcom,epss-l3-perf
-> > 
-> > Why is it -perf? What's so different about it?
-> 
-> The EPSS instance in SA8775P uses PERF_STATE register instead of REG_L3_VOTE to scale L3 clocks.
-> So adding new generic compatible "qcom,epss-l3-perf" for PERF_STATE register based l3 scaling.
+For historical reasons syscon-reboot has used an 'offset' property. As a
+child on a MMIO bus having a 'reg' property is more appropriate. Accept
+'reg' as an alternative to 'offset'.
 
-Neither sm8250 nor sc7280 use this compatible, while they also use
-PERF_STATE register.
+Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
 
-> 
-> 
-> > 
-> >>  
-> >>    reg:
-> >>      maxItems: 1
-> >> -- 
-> >> 2.39.2
-> >>
-> > 
-> 
+Notes:
+    Changes in v8:
+    - None. This has been applied to by Sebastian, I've just kept it in t=
+he
+      series so that others can see the complete picture
+    Changes in v7:
+    - None. This has been applied to by Sebastian, I've just kept it in t=
+he
+      series so that others can see the complete picture
+    Changes in v6:
+    - Add r-by from Krzysztof
+    Changes in v5:
+    - New, making the driver accept the updated binding
 
--- 
-With best wishes
-Dmitry
+ drivers/power/reset/syscon-reboot.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/power/reset/syscon-reboot.c b/drivers/power/reset/sy=
+scon-reboot.c
+index 4d622c19bc48..d623d77e657e 100644
+--- a/drivers/power/reset/syscon-reboot.c
++++ b/drivers/power/reset/syscon-reboot.c
+@@ -61,7 +61,8 @@ static int syscon_reboot_probe(struct platform_device *=
+pdev)
+ 		priority =3D 192;
+=20
+ 	if (of_property_read_u32(pdev->dev.of_node, "offset", &ctx->offset))
+-		return -EINVAL;
++		if (of_property_read_u32(pdev->dev.of_node, "reg", &ctx->offset))
++			return -EINVAL;
+=20
+ 	value_err =3D of_property_read_u32(pdev->dev.of_node, "value", &ctx->va=
+lue);
+ 	mask_err =3D of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask=
+);
+--=20
+2.47.0
+
