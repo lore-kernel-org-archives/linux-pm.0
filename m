@@ -1,40 +1,39 @@
 Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D66D26F066;
-	Thu, 31 Oct 2024 01:19:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D48098121F;
+	Thu, 31 Oct 2024 01:20:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730337602; cv=none; b=kBRf01u/U6GdczujuyhLbd4X4LIvwUlqA3Orna4n1gBZFkUI6BG3zplPcltWgMPDpjxQrLfF6hv8tJglwdtdTUy6RACNgsX0ScLw1c9NhOTtAGZ7sxijNPEMdHiS3miqc7dqLvkTTEbCLfSai1FKP2q2YMeliN7vWDMyWW4wMtg=
+	t=1730337604; cv=none; b=oeCAd1Ij3jGMPM7/SzlyzsqQaQ6wgOO562b4GN4zGVjcPtOgZDsmBvkJejYut+M4v2iN4Ei6rQj/j6YT39ZVvDZe/vq4AqAvhIh6VJlDiTurhUYte41F0E+f6k4ZcIiiD6DWvUWZf/fBBuXYq/DVbzv9cjy7guN3GhdThOmHOh8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730337602; c=relaxed/simple;
-	bh=+auV2xbHnH8Ew5XeZexktMLe4HULByqQHcRGhcce8AI=;
+	s=arc-20240116; t=1730337604; c=relaxed/simple;
+	bh=6D5H41ec1nxegNJadqc+rZUly56/XsNie7MblnUEmvA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=txcyItztX8KSAKvDvw7sAEGMfV8Aml/hgDr/b6FWkozWsRptGVyoYJDtfLI+aD9P+eHkXKs/u6eiSHTZA/ueEoMhibEX5w4bgrGe+nZCKCpphQACy0RuAG5Arwl2grMwEQae8OoSkfCYIukmYyNbcVnPyyQT/Jg2S/n3TdzR6fI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=su6hr/kG; arc=none smtp.client-ip=5.75.144.95
+	 In-Reply-To:To:Cc; b=cAlXfdNEy+/zokbhCwu7skxzE+9t5iugRHWB5BiE5zrKSWCcQgFW4Kxcg/Dw+TSGAZS4FUePRnABUaiNaWS1MO7Y0plP32C7u3kau0je2i+SvqcaZn1b97sjHFhD+EjOmR33ka8OeQbYcX5oYdMw41NmO8tZahZOeRngRmTPTEM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=ZufDzBoh; arc=none smtp.client-ip=5.75.144.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="su6hr/kG"
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="ZufDzBoh"
 Received: from [192.168.0.162] (BC24936A.dsl.pool.telekom.hu [188.36.147.106])
-	by mail.mainlining.org (Postfix) with ESMTPSA id D401CE45BE;
-	Thu, 31 Oct 2024 01:19:55 +0000 (UTC)
+	by mail.mainlining.org (Postfix) with ESMTPSA id 01EECE45C1;
+	Thu, 31 Oct 2024 01:19:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mainlining.org;
-	s=psm; t=1730337596;
+	s=psm; t=1730337598;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=wSjtl8egN/7amHQK4rd+lA7Mo+LBp5UxTJkQiEalxxA=;
-	b=su6hr/kGUUxmz+I9XCScilK8EvHkXkK4nH0K5mJWBjQw0El7mxP2etcCuOiOVcTtOuAwtE
-	67roShL+UY8HBWbSaXIfQfWRHljDJBNrGbPlynPlGVp3/b3UlnXjYWR+Kh6+7/j/zNMMdg
-	km+dQ5d84MaAVaXn+DAGw0iRtODVvc85TxhaOGoZTBoCL9EYD/82RGoY96VEOTxaw/RRWo
-	ilSkl+p0UVKQOWbyENnDitsFF4e+ZsjA+IHyAAspogks2ckrWvwT9+8vwYKfim8c/a1tPz
-	OlJWivqoF/t3qnPIrOVMxWeWlMXX64mK9DGR22YMd1T2m8jgUkcDFszuRT6Qmw==
+	bh=y8IfF61PQu07hVmfK0WNYOSRAQysImCvF/TIxJswNzA=;
+	b=ZufDzBoheUX2GE+0mraN7biJwXKLhCd/5voVuZHRGqJoxtnw6WMjgS/xzqs9LVZFCumw3e
+	KkFG9ZNIdK0+H8Cg5Xub/igNhrrm+0mKGNhT/Gbq4ykjgX7J0YqYszh6/WDJj+MrABRj1Y
+	TUxCa1ZrjyESlKbStvjyFpFjvXzPjeIq/jPt7a60snhGrC2LfoWUeW799qrKkS0dyaN3/+
+	9bDwsWV3hF+65hoIyH8v/mggeD5maNWlK3gDZScbvdkdiVDAghOpqyia0bfe/auRacKI95
+	xiNkH76yIMgfL5CcWmrslYzoq1EzJWb8YKcOTJdjNu7j0HTn/amsy9ys+ZssjA==
 From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Date: Thu, 31 Oct 2024 02:19:52 +0100
-Subject: [PATCH v2 11/15] dt-bindings: iommu: qcom,iommu: Add MSM8917 IOMMU
- to SMMUv1 compatibles
+Date: Thu, 31 Oct 2024 02:19:55 +0100
+Subject: [PATCH v2 14/15] dt-bindings: arm: qcom: Add Xiaomi Redmi 5A
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -43,7 +42,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241031-msm8917-v2-11-8a075faa89b1@mainlining.org>
+Message-Id: <20241031-msm8917-v2-14-8a075faa89b1@mainlining.org>
 References: <20241031-msm8917-v2-0-8a075faa89b1@mainlining.org>
 In-Reply-To: <20241031-msm8917-v2-0-8a075faa89b1@mainlining.org>
 To: Bjorn Andersson <andersson@kernel.org>, 
@@ -62,35 +61,54 @@ Cc: linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org,
  linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
  =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1730337585; l=939;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1730337585; l=1278;
  i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=+auV2xbHnH8Ew5XeZexktMLe4HULByqQHcRGhcce8AI=;
- b=8inYbgSn8grWR0K/GfRPG9fnSC7k057pACS12fCl5gZqEHZN3MAYBjF5tp4ZD43tLfJPOg+/E
- Xh473sTPqtlArBkRv5YyuomamCAeFdRKztrCUt5dBWPYVsEQknOzxYl
+ bh=6D5H41ec1nxegNJadqc+rZUly56/XsNie7MblnUEmvA=;
+ b=FCOHqgjb6FhZ/VogC76To/Pnf6gwp2BmZEHQG2ZOxBf8eFUOU3NSjBvEySOZh397CDTC720ld
+ E54FcWVqJ+6AnJBoiUdMP6EiCO1f8P/jx0e67JYGo/LF9L2D5x0DFRB
 X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
  pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-Add MSM8917 compatible string with "qcom,msm-iommu-v1" as fallback
-for the MSM8917 IOMMU which is compatible with Qualcomm's secure
-fw "SMMU v1" implementation.
+Document Xiaomi Remi 5A (riva).
+Add qcom,msm8917 for msm-id, board-id allow-list.
 
 Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
- Documentation/devicetree/bindings/iommu/qcom,iommu.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ Documentation/devicetree/bindings/arm/qcom.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml b/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml
-index f8cebc9e8cd9d46b449cd297153dbebe5c84bf3f..5ae9a628261fd251c1e991a70662c6d37ef2c4e3 100644
---- a/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml
-+++ b/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml
-@@ -21,6 +21,7 @@ properties:
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index 0d451082570edef9f2f80e2c7544a953eebe9edc..0d545a1744662df6d3c17771ae3cee80c89fb281 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -31,6 +31,7 @@ description: |
+         mdm9615
+         msm8226
+         msm8916
++        msm8917
+         msm8939
+         msm8953
+         msm8956
+@@ -248,6 +249,11 @@ properties:
+               - yiming,uz801-v3
+           - const: qcom,msm8916
+ 
++      - items:
++          - enum:
++              - xiaomi,riva
++          - const: qcom,msm8917
++
        - items:
            - enum:
-               - qcom,msm8916-iommu
-+              - qcom,msm8917-iommu
-               - qcom,msm8953-iommu
-           - const: qcom,msm-iommu-v1
-       - items:
+               - motorola,potter
+@@ -1144,6 +1150,7 @@ allOf:
+               - qcom,apq8026
+               - qcom,apq8094
+               - qcom,apq8096
++              - qcom,msm8917
+               - qcom,msm8939
+               - qcom,msm8953
+               - qcom,msm8956
 
 -- 
 2.47.0
