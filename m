@@ -1,44 +1,43 @@
 Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz [202.36.163.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9168B1CBE94
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8AA891CB51F
 	for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2024 20:04:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.36.163.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730405047; cv=none; b=ghlslyQGQ3mJcSyC2onaOmrdMzonkQUgJVM9urRjqP9ecZcLSz9Ga+mLQVJRYlnepvv6gjitly07G0NlZL9Z6MuDeNgQ4n0mfmKiPxSZb0AegkZX1rEAaTUYA2EXMfQ/69ilcIn1+enHBYqsaYnP4rG68+reu0z1bIQ7ScsiClo=
+	t=1730405048; cv=none; b=cbCUmR0RAmJsXWksbh6GnryAL207Zvu/XK2qrgK6x9BfZHer5lAvjhrFPj0a1k9oiEojy8JTo1+k2dRUVhtwYbXBE8uDcXX1OeMQs7SGKlq4rAJ1+fL8E7pdMb4eKpacHdRYR7VQKpDZHEykeasmBxkxboZktu4GsWorxlzZBqw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730405047; c=relaxed/simple;
-	bh=vymfZDYu8mord0jv02IfQO4vP9ljC+O+1t4/Q47T0QA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=qA4KO5t9LxouGrskU1qVMYRNENE27ygOgKkksWN4FEbKy6KBRNT/q9boT8fChWRH38SHHCuwOC6utaAjPofqZPbXuSJBJFwNRBjGhV9E/O87KA/4tM8PZK0kchkjb3if0g76b06nE+9kqZq1ZPIYQ6oUzQ121cNAStZ8dmx5lrU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz; spf=pass smtp.mailfrom=alliedtelesis.co.nz; dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b=jWoEYC7C; arc=none smtp.client-ip=202.36.163.20
+	s=arc-20240116; t=1730405048; c=relaxed/simple;
+	bh=DeB184f4TFb79JnTdhyFsFvAi0f64OZa5QexDRja9ug=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gbj0tDY92wvv0rz4GHM0VBKvXFpeBH7OFQJ5u6gjJS8rxd6bZ6kpoh5PjRSrO9pykkZapMZEWjH+HzQeLjRWuEaUmFc+GvwBcdM87M05JWdGtGak2Z3vOogYPtV96zFEjOKArClUlCDSJGRprX5Yenw6Mmr6QWwgneDZS2uVgCI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz; spf=pass smtp.mailfrom=alliedtelesis.co.nz; dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b=rCGZ/gDy; arc=none smtp.client-ip=202.36.163.20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alliedtelesis.co.nz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="jWoEYC7C"
+	dkim=pass (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="rCGZ/gDy"
 Received: from svr-chch-seg1.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 7A1D32C0526;
+	by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 26D5D2C012B;
 	Fri,  1 Nov 2024 09:03:53 +1300 (NZDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
 	s=mail181024; t=1730405033;
-	bh=oppBd4w3EekvX+V8L144O4lFLlVDXZS0zRJys2fNpAA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=jWoEYC7CR2vYp9p6A0ywdB31MrQjt8zYSbkCxG5KR19+RdOxXWAEQgaWyOnulLbRj
-	 m5/aa187cWH++FSHRIoWtoBhHH4dGw/YWZPWbNWTrrkTMTmIeoSzdaldnnkBnjWBKE
-	 I+fmDv0gh2W9fyjeB3EabV1u6Cgzfa4K3J1MufVsLfd9OZjdKbOsmUT331oz6nO8rM
-	 xV6UfLEV9KLrPtM7szrBvwiCSJzrzUSUV7aIo8rJDjHbeSmdYSxcAC0hQiVOOuykoH
-	 YFdGWLH1lNgRNtIgHsDihv1n3HcMaICfAwFrfqYbCcABr4U6GPT0f/m8NV34k9TrWp
-	 OZ64ZaiBdikXg==
+	bh=Y2rVrxEzenf5xW4+rr7fG8RlWJBZNxoLoDtBnZKILFw=;
+	h=From:To:Cc:Subject:Date:From;
+	b=rCGZ/gDyeyHK0KGrod56Bhs/2FYIqUPQ0umGZEihgzt64oVlDbZlXBv0AsUKNRVqa
+	 3fmsfqJ5zclDE1krPa1rnacRhbqhiru1wF/93OOiBaHk6iQu8+bh7lxjgQTfUkmgFI
+	 vwr3U2WN3bK0S2CoVqVPN2rN1We2nPaeHGmlCWxhVp5IYfMnw3C46r7yr462Jn3Gvl
+	 XvvMcnJVis8GfPhSVwRTWEppDCTyGIEqbYftfoyjx+7GSoR2ksSFnnjXumqe12bK1L
+	 FoUV9BOj4ZzVR/f678Al7pOazMFcuitMAK8T9/ykDlfbSzBGFq1HnJvnVdWCkSjTd9
+	 ZyY1+sRqiOH/Q==
 Received: from pat.atlnz.lc (Not Verified[10.32.16.33]) by svr-chch-seg1.atlnz.lc with Trustwave SEG (v8,2,6,11305)
-	id <B6723e2a80003>; Fri, 01 Nov 2024 09:03:52 +1300
+	id <B6723e2a80000>; Fri, 01 Nov 2024 09:03:52 +1300
 Received: from chrisp-dl.ws.atlnz.lc (chrisp-dl.ws.atlnz.lc [10.33.22.30])
-	by pat.atlnz.lc (Postfix) with ESMTP id DD5F113EE32;
+	by pat.atlnz.lc (Postfix) with ESMTP id D308B13EE32;
 	Fri,  1 Nov 2024 09:03:52 +1300 (NZDT)
 Received: by chrisp-dl.ws.atlnz.lc (Postfix, from userid 1030)
-	id D72FB280964; Fri,  1 Nov 2024 09:03:52 +1300 (NZDT)
+	id CB832280964; Fri,  1 Nov 2024 09:03:52 +1300 (NZDT)
 From: Chris Packham <chris.packham@alliedtelesis.co.nz>
 To: andi.shyti@kernel.org,
 	robh@kernel.org,
@@ -53,12 +52,10 @@ Cc: linux-i2c@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-mips@vger.kernel.org,
 	Chris Packham <chris.packham@alliedtelesis.co.nz>
-Subject: [PATCH v8 3/7] dt-bindings: i2c: Add Realtek RTL I2C Controller
-Date: Fri,  1 Nov 2024 09:03:46 +1300
-Message-ID: <20241031200350.274945-4-chris.packham@alliedtelesis.co.nz>
+Subject: [PATCH v8 0/7] RTL9300 support for reboot and i2c
+Date: Fri,  1 Nov 2024 09:03:43 +1300
+Message-ID: <20241031200350.274945-1-chris.packham@alliedtelesis.co.nz>
 X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20241031200350.274945-1-chris.packham@alliedtelesis.co.nz>
-References: <20241031200350.274945-1-chris.packham@alliedtelesis.co.nz>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -66,108 +63,49 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-SEG-SpamProfiler-Analysis: v=2.4 cv=ca1xrWDM c=1 sm=1 tr=0 ts=6723e2a9 a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=VlfZXiiP6vEA:10 a=KKAkSRfTAAAA:8 a=gEfo2CItAAAA:8 a=LzV1YipphZs-ZdUuF_wA:9 a=3ZKOabzyN94A:10 a=cvBusfyB2V15izCimMoJ:22 a=sptkURWiP4Gy88Gu7hUp:22
+X-SEG-SpamProfiler-Analysis: v=2.4 cv=ca1xrWDM c=1 sm=1 tr=0 ts=6723e2a8 a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=VlfZXiiP6vEA:10 a=Ecff0wTpLh6po_UDYMwA:9 a=3ZKOabzyN94A:10
 X-SEG-SpamProfiler-Score: 0
 x-atlnz-ls: pat
 
-Add dt-schema for the I2C controller on the RTL9300 Ethernet switch
-with integrated SoC.
+The first two patches have already been applied by Sebastian (thanks),
+they're just included for context. At Lee's request I've split the
+binding patch so the mfd change can go via a different tree to the i2c
+one. As the mfd binding has a $ref to the i2c binding I've put the i2c
+patch first. They should apply cleanly but various automated checkers
+might complain until they land in the same tree. The mips dts and i2c
+driver itself haven't changed since v6 of this series.
 
-Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
+--
+2.46.1
 
-Notes:
-    Changes in v8:
-    - New(ish). At Lee's request I've moved the i2c binding into a separa=
-te
-      patch so the mfd change can be taken via Lee's tree. I've added a r=
--by
-      from Krzysztof from the v7 ov the combined patch, I hope that's OK.
+Chris Packham (7):
+  dt-bindings: reset: syscon-reboot: Add reg property
+  power: reset: syscon-reboot: Accept reg property
+  dt-bindings: i2c: Add Realtek RTL I2C Controller
+  dt-bindings: mfd: Add Realtek RTL9300 switch peripherals
+  mips: dts: realtek: Add syscon-reboot node
+  mips: dts: realtek: Add I2C controllers
+  i2c: Add driver for the RTL9300 I2C controller
 
- .../bindings/i2c/realtek,rtl9301-i2c.yaml     | 69 +++++++++++++++++++
- 1 file changed, 69 insertions(+)
+ .../bindings/i2c/realtek,rtl9301-i2c.yaml     |  69 +++
+ .../bindings/mfd/realtek,rtl9301-switch.yaml  | 114 +++++
+ .../bindings/power/reset/syscon-reboot.yaml   |  11 +-
+ MAINTAINERS                                   |   7 +
+ .../cameo-rtl9302c-2x-rtl8224-2xge.dts        |   2 +-
+ arch/mips/boot/dts/realtek/rtl9302c.dtsi      |  15 +
+ arch/mips/boot/dts/realtek/rtl930x.dtsi       |  29 ++
+ drivers/i2c/busses/Kconfig                    |  10 +
+ drivers/i2c/busses/Makefile                   |   1 +
+ drivers/i2c/busses/i2c-rtl9300.c              | 425 ++++++++++++++++++
+ drivers/power/reset/syscon-reboot.c           |   3 +-
+ 11 files changed, 683 insertions(+), 3 deletions(-)
  create mode 100644 Documentation/devicetree/bindings/i2c/realtek,rtl9301=
 -i2c.yaml
+ create mode 100644 Documentation/devicetree/bindings/mfd/realtek,rtl9301=
+-switch.yaml
+ create mode 100644 arch/mips/boot/dts/realtek/rtl9302c.dtsi
+ create mode 100644 drivers/i2c/busses/i2c-rtl9300.c
 
-diff --git a/Documentation/devicetree/bindings/i2c/realtek,rtl9301-i2c.ya=
-ml b/Documentation/devicetree/bindings/i2c/realtek,rtl9301-i2c.yaml
-new file mode 100644
-index 000000000000..eddfd329c67b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/i2c/realtek,rtl9301-i2c.yaml
-@@ -0,0 +1,69 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/i2c/realtek,rtl9301-i2c.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Realtek RTL I2C Controller
-+
-+maintainers:
-+  - Chris Packham <chris.packham@alliedtelesis.co.nz>
-+
-+description:
-+  The RTL9300 SoC has two I2C controllers. Each of these has an SCL line=
- (which
-+  if not-used for SCL can be a GPIO). There are 8 common SDA lines that =
-can be
-+  assigned to either I2C controller.
-+
-+properties:
-+  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - realtek,rtl9302b-i2c
-+              - realtek,rtl9302c-i2c
-+              - realtek,rtl9303-i2c
-+          - const: realtek,rtl9301-i2c
-+      - const: realtek,rtl9301-i2c
-+
-+  reg:
-+    description: Register offset and size this I2C controller.
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 0
-+
-+patternProperties:
-+  '^i2c@[0-7]$':
-+    $ref: /schemas/i2c/i2c-controller.yaml
-+    unevaluatedProperties: false
-+
-+    properties:
-+      reg:
-+        description: The SDA pin associated with the I2C bus.
-+        maxItems: 1
-+
-+    required:
-+      - reg
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    i2c@36c {
-+      compatible =3D "realtek,rtl9301-i2c";
-+      reg =3D <0x36c 0x14>;
-+      #address-cells =3D <1>;
-+      #size-cells =3D <0>;
-+
-+      i2c@2 {
-+        reg =3D <2>;
-+        #address-cells =3D <1>;
-+        #size-cells =3D <0>;
-+      };
-+    };
 --=20
 2.47.0
 
