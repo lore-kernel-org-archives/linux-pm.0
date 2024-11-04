@@ -1,140 +1,176 @@
-Received: from mail-m25477.xmail.ntesmail.com (mail-m25477.xmail.ntesmail.com [103.129.254.77])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C5851ABEDC;
-	Mon,  4 Nov 2024 09:55:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.129.254.77
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C8C018C020;
+	Mon,  4 Nov 2024 10:22:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730714114; cv=none; b=AYSqSBS+tmZZTunhzwkOtGhEwsCYcW6MPMuznMzJG8aVQITCc6yizC0RTtxob8CNLgHVjFz94R4ARzuJ/eWSZcLs/9kNO/E0+sVVLPQTL8fMRUtWsrMFFeFTCQLnKY0HiXnIpkb3DVIkpklkecJZyqd92WBu62CDTMwJuEo3/UI=
+	t=1730715739; cv=none; b=LliKT2JKw6mPNsmvVVMQubj460c2SXC5/iKCYzdSLVP3uIDnD20r+h3P7msaL+OmB/UcWbVWkSNoULMTpAtcrsWcha+wWRhpf62XyB3kJ9OoY14W0izLrXWyJeBrPShDDumlSmAUXqQz6T0dK/HYBdYcnZhy0AxpZtd8au95S+w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730714114; c=relaxed/simple;
-	bh=RHWO6iEQTDETJffGVpmIWYwT1WtB/IvuIvBOxzo+Osc=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=MCTGpf2/7e/vlgICiJnHdk1D63wSjvyUnp35taWyvA3wTcwHTuMQdvJBzSg26tTbwcLop1AzEt07c/d1/P88kkd84Fghh6pOY23L6rccSJ8Z6uhNFYpfOADnoSdeBPo1hOh3DiOMSmy19QPZuLQPxCcQCba8YY/3KgL+6GQ/uYs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=fyTzUEGq; arc=none smtp.client-ip=103.129.254.77
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+	s=arc-20240116; t=1730715739; c=relaxed/simple;
+	bh=kh5QtwjbRWBwwF0Hou4I7K9sJhsih+FO7clvh+maj8Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=Ab2uNGEJIe88DXklutj2zD7bKwhj9+q51Tm+FfagAMjGlw7K0zWktcX7LA02iJWFoHmQVecLOTOSHHZPjyXJJG/8dRhUQ6yT9ddwt013Z4ofgLLtqPVP/U+1Yi5MffLQmbqGI4rHBsEMRn1fGOu5jy3MSXrT9wHqMixTod9Obqk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=RDWvKhHz; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="fyTzUEGq"
-Received: from localhost.localdomain (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 1b5d898f;
-	Mon, 4 Nov 2024 15:32:37 +0800 (GMT+08:00)
-From: Shawn Lin <shawn.lin@rock-chips.com>
-To: Rob Herring <robh+dt@kernel.org>,
-	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Heiko Stuebner <heiko@sntech.de>,
-	"Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Avri Altman <avri.altman@wdc.com>,
-	Bart Van Assche <bvanassche@acm.org>,
-	YiFeng Zhao <zyf@rock-chips.com>,
-	Liang Chen <cl@rock-chips.com>,
-	linux-scsi@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	devicetree@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Shawn Lin <shawn.lin@rock-chips.com>
-Subject: [PATCH v4 1/7] scsi: ufs: core: Add UFSHCI_QUIRK_DME_RESET_ENABLE_AFTER_HCE
-Date: Mon,  4 Nov 2024 15:31:55 +0800
-Message-Id: <1730705521-23081-2-git-send-email-shawn.lin@rock-chips.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1730705521-23081-1-git-send-email-shawn.lin@rock-chips.com>
-References: <1730705521-23081-1-git-send-email-shawn.lin@rock-chips.com>
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQh9MTFZIS0xPHR0fTBpDTUpWFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-X-HM-Tid: 0a92f617072f09cckunm1b5d898f
-X-HM-MType: 1
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Myo6EBw*ITIaLDoKQys0CE0V
-	EQgwFA1VSlVKTEhLTEtOTk5DQktCVTMWGhIXVQgTGgwVVRcSFTsJFBgQVhgTEgsIVRgUFkVZV1kS
-	C1lBWU5DVUlJVUxVSkpPWVdZCAFZQUlKTU03Bg++
-DKIM-Signature:a=rsa-sha256;
-	b=fyTzUEGqpD7cOV/gtR7q6BW8ZrIP2F7Il0l0fRmIWbpntGqeRNaY0xD3go56SRvQDKFp6+9Vn8/QTcR8aBbVlulPDUK1DAXd+5Dc9IpmHP4w03liGg+JBkB6ZXLYqRd1As27+Q5dHci7nSbjEv4mCiQfdHPoDhHPShTxzJaej+w=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=H80kBB4v9HnGpTZXw3/vIrv2TnnmcgYDzbgw9IhYzgg=;
-	h=date:mime-version:subject:message-id:from;
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="RDWvKhHz"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4A3Mo2Uu031707;
+	Mon, 4 Nov 2024 10:21:54 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	0Nn0WorU6l2jJYLx45HO5FWgM6QDg3c9c5+U561I2mE=; b=RDWvKhHzcdxfC29i
+	u7+n1kB9lTQb9a3ubtALdFWRuNooLB6iEUyG+/ypJTobXgxaZ0Ix4bF6ZdFKByg8
+	0JrgxdWg8MJ7vePfg4XCYeDT6eKWURruL86VUA4mCklIikZGXldvbx6ZN/C9pj5o
+	6Sg1eqzTalNGfikgXXRKlbmYUAQQEHzK5Sls9TwpWlNba4HRN3kl/5dsZ80ur1Na
+	6D+38TPhKCu7NDv3ogFUu/WJ9MkKAVzQwdMn779iWcL7MwXf7M6+F7bOdh9FdKB8
+	Fu3WZjEG+Xh1iumKW3Ldfs6xVg222LKzHH75BbaxPKBthKKkOmAxFTxydRL4lrci
+	9B3v+g==
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 42nd1fkudw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 04 Nov 2024 10:21:54 +0000 (GMT)
+Received: from nalasex01b.na.qualcomm.com (nalasex01b.na.qualcomm.com [10.47.209.197])
+	by NALASPPMTA03.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 4A4ALro9001503
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 4 Nov 2024 10:21:53 GMT
+Received: from [10.217.217.28] (10.80.80.8) by nalasex01b.na.qualcomm.com
+ (10.47.209.197) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Mon, 4 Nov 2024
+ 02:21:45 -0800
+Message-ID: <16aaae04-4fe8-4227-9374-0919960a4ca2@quicinc.com>
+Date: Mon, 4 Nov 2024 15:51:36 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V4 1/4] dt-bindings: iio/adc: Move QCOM ADC bindings to
+ iio/adc folder
+To: "Rob Herring (Arm)" <robh@kernel.org>
+CC: <quic_skakitap@quicinc.com>, <daniel.lezcano@linaro.org>,
+        <andersson@kernel.org>, <lee@kernel.org>,
+        <cros-qcom-dts-watchers@chromium.org>, <linux-kernel@vger.kernel.org>,
+        <lars@metafoo.de>, <robh+dt@kernel.org>, <quic_subbaram@quicinc.com>,
+        <rafael@kernel.org>, <quic_kamalw@quicinc.com>, <agross@kernel.org>,
+        <amitk@kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-arm-msm@vger.kernel.org>, <dmitry.baryshkov@linaro.org>,
+        <quic_amelende@quicinc.com>, <neil.armstrong@linaro.org>,
+        <conor+dt@kernel.org>, <linux-iio@vger.kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <quic_collinsd@quicinc.com>,
+        <konrad.dybcio@linaro.org>, <jic23@kernel.org>,
+        <devicetree@vger.kernel.org>, <lukasz.luba@arm.com>,
+        <rui.zhang@intel.com>, <sboyd@kernel.org>
+References: <20241030185854.4015348-1-quic_jprakash@quicinc.com>
+ <20241030185854.4015348-2-quic_jprakash@quicinc.com>
+ <173031962644.1844672.11198879616520852521.robh@kernel.org>
+Content-Language: en-US
+From: Jishnu Prakash <quic_jprakash@quicinc.com>
+In-Reply-To: <173031962644.1844672.11198879616520852521.robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nalasex01b.na.qualcomm.com (10.47.209.197)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: nwFSCJpt7OlT4ZFwLopJb1OaMawAdfgn
+X-Proofpoint-ORIG-GUID: nwFSCJpt7OlT4ZFwLopJb1OaMawAdfgn
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 adultscore=0
+ impostorscore=0 bulkscore=0 mlxlogscore=999 spamscore=0 phishscore=0
+ malwarescore=0 mlxscore=0 clxscore=1015 lowpriorityscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2411040092
 
-HCE on Rockchip SoC is different from both of ufshcd_hba_execute_hce()
-and UFSHCI_QUIRK_BROKEN_HCE case. It need to do dme_reset and dme_enable
-after enabling HCE. So in order not to abuse UFSHCI_QUIRK_BROKEN_HCE, add
-a new quirk UFSHCI_QUIRK_DME_RESET_ENABLE_AFTER_HCE, to deal with that
-limitation.
+Hi Rob,
 
-Suggested-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
----
+On 10/31/2024 1:50 AM, Rob Herring (Arm) wrote:
+> 
+> On Thu, 31 Oct 2024 00:28:51 +0530, Jishnu Prakash wrote:
+>> There are several files containing QCOM ADC macros for channel names
+>> right now in the include/dt-bindings/iio folder. Since all of these
+>> are specifically for adc, move the files to the
+>> include/dt-bindings/iio/adc folder.
+>>
+>> Also update all affected devicetree and driver files to fix compilation
+>> errors seen with this move and update documentation files to fix
+>> dtbinding check errors for the same.
+>>
+>> Acked-by: Lee Jones <lee@kernel.org>
+>> Acked-by: Rob Herring <robh@kernel.org>
+>> Signed-off-by: Jishnu Prakash <quic_jprakash@quicinc.com>
+>> ---
+>> Changes since v3:
+>> - Updated files affected by adc file path change in /arch/arm, which
+>>   were missed earlier. Updated some more new devicetree files requiring
+>>   this change in /arch/arm64.
+>>
 
-Changes in v4:
-- fix typo
 
-Changes in v3: None
-Changes in v2: None
+>>  rename include/dt-bindings/iio/{ => adc}/qcom,spmi-adc7-smb139x.h (93%)
+>>  rename include/dt-bindings/iio/{ => adc}/qcom,spmi-vadc.h (100%)
+>>
+> 
+> My bot found errors running 'make dt_binding_check' on your patch:
+> 
+> yamllint warnings/errors:
+> 
+> dtschema/dtc warnings/errors:
+> In file included from Documentation/devicetree/bindings/iio/adc/qcom,spmi-vadc.example.dts:80:
+> ./scripts/dtc/include-prefixes/dt-bindings/iio/adc/qcom,spmi-adc7-pmk8350.h:13:10: fatal error: dt-bindings/iio/adc/qcom,spmi-vadc.h: No such file or directory
+>    13 | #include <dt-bindings/iio/adc/qcom,spmi-vadc.h>
+>       |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- drivers/ufs/core/ufshcd.c | 17 +++++++++++++++++
- include/ufs/ufshcd.h      |  6 ++++++
- 2 files changed, 23 insertions(+)
+I think there must be some mistake here because my patch does add the file include/dt-bindings/iio/adc/qcom,spmi-vadc.h, through a rename. This is seen at the very end of my patch:
 
-diff --git a/drivers/ufs/core/ufshcd.c b/drivers/ufs/core/ufshcd.c
-index 7cab1031..4084bf9 100644
---- a/drivers/ufs/core/ufshcd.c
-+++ b/drivers/ufs/core/ufshcd.c
-@@ -4819,6 +4819,7 @@ static int ufshcd_hba_execute_hce(struct ufs_hba *hba)
- {
- 	int retry_outer = 3;
- 	int retry_inner;
-+	int ret;
- 
- start:
- 	if (ufshcd_is_hba_active(hba))
-@@ -4865,6 +4866,22 @@ static int ufshcd_hba_execute_hce(struct ufs_hba *hba)
- 	/* enable UIC related interrupts */
- 	ufshcd_enable_intr(hba, UFSHCD_UIC_MASK);
- 
-+	/*
-+	 * Do dme_reset and dme_enable if a UFS host controller needs
-+	 * this procedure to actually finish HCE.
-+	 */
-+	if (hba->quirks & UFSHCI_QUIRK_DME_RESET_ENABLE_AFTER_HCE) {
-+		ret = ufshcd_dme_reset(hba);
-+		if (!ret) {
-+			ret = ufshcd_dme_enable(hba);
-+			if (ret)
-+				dev_err(hba->dev,
-+					"Failed to do dme_enable after HCE.\n");
-+		} else {
-+			dev_err(hba->dev, "Failed to do dme_reset after HCE.\n");
-+		}
-+	}
-+
- 	ufshcd_vops_hce_enable_notify(hba, POST_CHANGE);
- 
- 	return 0;
-diff --git a/include/ufs/ufshcd.h b/include/ufs/ufshcd.h
-index a95282b..e939af8 100644
---- a/include/ufs/ufshcd.h
-+++ b/include/ufs/ufshcd.h
-@@ -685,6 +685,12 @@ enum ufshcd_quirks {
- 	 * single doorbell mode.
- 	 */
- 	UFSHCD_QUIRK_BROKEN_LSDBS_CAP			= 1 << 25,
-+
-+	/*
-+	 * This quirk needs to be enabled if host controller need to
-+	 * do dme_reset and dme_enable after hce.
-+	 */
-+	UFSHCI_QUIRK_DME_RESET_ENABLE_AFTER_HCE		= 1 << 26,
- };
- 
- enum ufshcd_caps {
--- 
-2.7.4
+> diff --git a/include/dt-bindings/iio/qcom,spmi-vadc.h b/include/dt-bindings/iio/adc/qcom,spmi-vadc.h
+> similarity index 100%
+> rename from include/dt-bindings/iio/qcom,spmi-vadc.h
+> rename to include/dt-bindings/iio/adc/qcom,spmi-vadc.h
+
+This patch moves our ADC-related header files from 'include/dt-bindings/iio/' folder to 'include/dt-bindings/iio/adc' folder
+and fixes this path change in all affected files in the same patch....I think this should be expected to pass compilation.
+
+Is it possible something went wrong from your end in this case? I see that both the files mentioned in the above error, qcom,spmi-adc7-pmk8350.h and qcom,spmi-vadc.h
+are moved from 'include/dt-bindings/iio/' folder to 'include/dt-bindings/iio/adc' folder in my patch, could the tool be confused due to qcom,spmi-adc7-pmk8350.h
+containing the updated path of qcom,spmi-vadc.h?
+
+
+> compilation terminated.
+> make[2]: *** [scripts/Makefile.dtbs:129: Documentation/devicetree/bindings/iio/adc/qcom,spmi-vadc.example.dtb] Error 1
+> make[2]: *** Waiting for unfinished jobs....
+> make[1]: *** [/builds/robherring/dt-review-ci/linux/Makefile:1442: dt_binding_check] Error 2
+> make: *** [Makefile:224: __sub-make] Error 2
+> 
+> doc reference errors (make refcheckdocs):
+> 
+> See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20241030185854.4015348-2-quic_jprakash@quicinc.com
+> 
+> The base for the series is generally the latest rc1. A different dependency
+> should be noted in *this* patch.
+> 
+> If you already ran 'make dt_binding_check' and didn't see the above
+> error(s), then make sure 'yamllint' is installed and dt-schema is up to
+> date:
+> 
+> pip3 install dtschema --upgrade
+> 
+
+I have also followed the above instructions to update dt-schema and run 'make dt_binding_check' again and I did not see the above error.
+I'm also not getting any errors when building with this patch applied.
+
+Thanks,
+Jishnu
+
+> Please check and re-submit after running the above command yourself. Note
+> that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+> your schema. However, it must be unset to test all examples with your schema.
+> 
 
