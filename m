@@ -1,45 +1,46 @@
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2079.outbound.protection.outlook.com [40.107.236.79])
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2046.outbound.protection.outlook.com [40.107.244.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0006913D53B;
-	Mon,  4 Nov 2024 17:54:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.236.79
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9695C1C4A1F;
+	Mon,  4 Nov 2024 17:54:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.244.46
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730742884; cv=fail; b=lcIf5HamuHam51wgpXv/DvpxK8RX6o6fepB24xu+IaTH2pmXXpk8U5kaSFmyW0kCR+dKvn5Xoa97OlJLDc66JMBELAcTcTDbnrz6ltJfA6JuiqVEa7fZz/F0ozlyP+RG86pzjm9hzD5dQ0nZbjO7M3LJqCRnv6wOYuoSQgB/PIE=
+	t=1730742886; cv=fail; b=j0sXQ0tatVTAZdiFWTtskpRxWyM/nFJWdNRC8h1v8cX4kqdWAq4tiaH4G/IX3YuxsNcn9K8NcW9OUmkaNIGhJ1He4Dx3C+uRk6zvh+TqpzwwCXOJhH4smVQSPOkSbjwJfKjCJ03AOYBaYog1xo5DOTzFurpVLo3Lc3OA0Lgbgvc=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730742884; c=relaxed/simple;
-	bh=abKHVqcob6MsIVrzPFq/wVW672akzDEtsTRrcF6OSp4=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=RK5IYzjIDCnhoDxZIQmA6jgiMiMn/YsLamtSGYagJPkk9jshnL+OgUPEwIzx83jIrMEafeO42S909u1eurqQztiiRM+bvVsf7nzaQ0FNJgU1nSZfcqTg+r/pkFcZ6XFCdwByr9ptzx3KGtlPZCFWqRYbqASoDXclQ5EqkuS/yvo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=MGishXpx; arc=fail smtp.client-ip=40.107.236.79
+	s=arc-20240116; t=1730742886; c=relaxed/simple;
+	bh=QdHxzDBwqLPbjz8ikUa6cXymAnUz/qVkAinCUCshOe8=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=aXmW4rGsnNrECRNSFCylA97lbzc5sZ55/zIONmA6/wt3qOOVV543xsHhoSbW+lQBvnfXIyfCFQ3TX1Y7ICetZ9PMZO4WnXMJ+Vh2cMsCEAe4zaGCZQ2DY4bPXFeOcJD7g/4+bgrOrdzCHgpizf5BA3mtIi7l2GPKyaT8h5QRJEU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=KBzDDWcq; arc=fail smtp.client-ip=40.107.244.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="MGishXpx"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="KBzDDWcq"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=KOSbrAD8xM62Z/R3r3e5bw7IwH20wdXwyjZP/PDx44FQKbmO9LfOfu9D4NB8b0SQhWJDthBKv+nw5n2cBPCEW3uLmTMKP04qePSA5TgTYE6OjCVL8xIp6I6FefJceCKsNFp3aJiwnTztf5HvyuKInpEq4xusrDE99wlAWBIdsfeniRuibXGoAPK5J53X0cqFFXN6VpjDVxrqPun43owoCXgIUs4kcYMkMBrUCrCe4Jc51IhhbyID2JwRwRHMl034yXShZB8TsSLV4uBcYSkbsP1Cu8fsYS4yCggccrUgo4PtriN30kjwtiicJoWFUGz4QcmgrTMXoStQk6G0c3sGzQ==
+ b=hHGY1vqYOkng3ZtkpDNPC5VhuK3/coyYlPN8QSE3lzrWBHibjPfuGQ3oBrmK8VljW+Uy4W2mdtVNYa/eCKpEUJn0rypn78X/u6Q3mGRoPOyDvrgxIWmWh/TBY2gLW9OIn1BF5Bid4eN3dVr0nCEbTOV93y02lei+sO4bk4WCl77ieqSA3v6jX28OviO1nCXb+aK0ZCnOH+nLUF2MXWHK1UfgmiiOxa2mpu8TtkPJDhVKspAT+qcSnpK/6wt+g9G9WYlyVGFbpG43eIcksNqQHvNlDc1A9TQEsQXuadul8tFgnqG1sN5vLUPSNX+vsi3nrDhXaTc10p5AkZ8sgD8x6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vPEsvSbtO+aCrSCL56aEafSf0p+uCfEbbfU2zowipnU=;
- b=FLMq27fqeZ5ie77AK5/EcfGNr8CohwoeOipProRkWXwY7/Npxno50ijjU/E5ztHwC8qOCSLMy7bVxKVFVHqxitMH0AdFLII9IdXqnkn0ISfOG8WpRpP2Kk/dWMvlcPqwQb9cy1wQ8a1/oICa3/8ze9EhynhqCl4+Kz6SWKKS3SeUihzJucN0d8cQclgZHdB+mt9Jir//1N69fUrGrrsQM3knKwPPaeClOhLFWN6yRXXa23zLGXm5poPxaDZbpv195LHxB2TEIhOzJpWs2mz2QtMbxk9tsP/WlXH1D5dWPF1W6SwtzrdcpjvGgLFvzHAWB8LWWQgbzYknh01RFqH88w==
+ bh=lzfK7HBjuR0XVqwV0/ERsJPvnfHftLVOFwIxVzsvjJk=;
+ b=lbwL9cAESeYXX4ZqSBfiqs7mvGntnMR8/y1VSDVXPKEvUO7gIlYaBun6Z+Lv0QxjEbDRe+j0TNO0uz7wPDH5AFwOZ9Ol9c8vLyEgvsKs2D1Mt9JnkLxs2ThlGXbfV/J8uZ3j0ngUIQnsP4LjBui4gCcndddYCJZjAaE3+1/+Ud8/d/m90+hY2dGxAPybbpq/S9WbcvKcaheesrCJnXfMp9TF1XCKwlkkR+kpqSpAl+2HRhtW6ZmuaHl/m6FS2St5jhbq8uIeDi5NmJvivk+K5t+V8XlvTgACYHeUabOwnQbqwVFj3pfH9+ZCaX39sbCOiGKSjbZg3I62Ro0E+CTfLg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=alien8.de smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vPEsvSbtO+aCrSCL56aEafSf0p+uCfEbbfU2zowipnU=;
- b=MGishXpx2nAZItHiv+M5XcyVduTxKgOSLtp+O7MMSqGeSBNFMOrj0KuD1jtI/vXb/6Jw6Nz02ECub2dr+OndVtcv8dM6xylQHo89ED85wY3pXrhGpWqGdUXLv0yy12ni8ncViUtqaDMw/UI1QfwEkZsfLMkOwjEJ8ulbJK5n6gQ=
-Received: from BY3PR03CA0028.namprd03.prod.outlook.com (2603:10b6:a03:39a::33)
- by CH2PR12MB4294.namprd12.prod.outlook.com (2603:10b6:610:a9::11) with
+ bh=lzfK7HBjuR0XVqwV0/ERsJPvnfHftLVOFwIxVzsvjJk=;
+ b=KBzDDWcq2Z/WmlgIx5MNYtldfanouH5lxs1kOsGqF6x8neEgs1mE+nlN4r3zKgrTouzDsSqeL5qxxRnesI2GDq2qqBoXeHjF6APnCStTZbFdrtnoJuDSKaSDOjqhy0YYLOFwXWcMsf+ZSkj2yiuqQiMs83p2JlQy5uuxwKZFs2o=
+Received: from BY3PR03CA0001.namprd03.prod.outlook.com (2603:10b6:a03:39a::6)
+ by PH8PR12MB7422.namprd12.prod.outlook.com (2603:10b6:510:22a::12) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8114.31; Mon, 4 Nov
- 2024 17:54:40 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8114.30; Mon, 4 Nov
+ 2024 17:54:41 +0000
 Received: from SJ1PEPF00002312.namprd03.prod.outlook.com
- (2603:10b6:a03:39a:cafe::67) by BY3PR03CA0028.outlook.office365.com
- (2603:10b6:a03:39a::33) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10b6:a03:39a:cafe::49) by BY3PR03CA0001.outlook.office365.com
+ (2603:10b6:a03:39a::6) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8114.30 via Frontend
- Transport; Mon, 4 Nov 2024 17:54:39 +0000
+ Transport; Mon, 4 Nov 2024 17:54:41 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -49,11 +50,11 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  SJ1PEPF00002312.mail.protection.outlook.com (10.167.242.166) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.8137.17 via Frontend Transport; Mon, 4 Nov 2024 17:54:39 +0000
+ 15.20.8137.17 via Frontend Transport; Mon, 4 Nov 2024 17:54:41 +0000
 Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Mon, 4 Nov
- 2024 11:54:37 -0600
+ 2024 11:54:39 -0600
 From: Mario Limonciello <mario.limonciello@amd.com>
 To: Borislav Petkov <bp@alien8.de>, Hans de Goede <hdegoede@redhat.com>,
 	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
@@ -62,10 +63,12 @@ CC: <x86@kernel.org>, "Gautham R . Shenoy" <gautham.shenoy@amd.com>, "Mario
 	<linux-kernel@vger.kernel.org>, <linux-doc@vger.kernel.org>,
 	<linux-pm@vger.kernel.org>, <platform-driver-x86@vger.kernel.org>, "Shyam
  Sundar S K" <Shyam-sundar.S-k@amd.com>
-Subject: [PATCH v6 00/12] Add support for AMD hardware feedback interface
-Date: Mon, 4 Nov 2024 11:53:55 -0600
-Message-ID: <20241104175407.19546-1-mario.limonciello@amd.com>
+Subject: [PATCH v6 02/12] MAINTAINERS: Add maintainer entry for AMD Hardware Feedback Driver
+Date: Mon, 4 Nov 2024 11:53:57 -0600
+Message-ID: <20241104175407.19546-3-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20241104175407.19546-1-mario.limonciello@amd.com>
+References: <20241104175407.19546-1-mario.limonciello@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -78,129 +81,83 @@ X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF00002312:EE_|CH2PR12MB4294:EE_
-X-MS-Office365-Filtering-Correlation-Id: f55094fe-a8d0-43d1-9a67-08dcfcf9c0f0
+X-MS-TrafficTypeDiagnostic: SJ1PEPF00002312:EE_|PH8PR12MB7422:EE_
+X-MS-Office365-Filtering-Correlation-Id: ce65cd0e-be51-4d61-f14b-08dcfcf9c209
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|36860700013|82310400026;
+	BCL:0;ARA:13230040|36860700013|376014|82310400026|1800799024;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?+pjS2VuozRSfRuoKRc4x2Qvxihp8IXXEt0aBlIWeZwMSzrdgXgL839rcYM+L?=
- =?us-ascii?Q?iOJjYp8IfgX4SV9lRyI6b/kh6WF6JmY4RWT/UfRyws+THRfw6GL9FNJnOLPE?=
- =?us-ascii?Q?i/yDZJtm3nUZiOI/DUGQY8YynD+VlDIhIl1NZPIvMZxBCh9XqyjeOC8r8kjt?=
- =?us-ascii?Q?IhJ9KJi6r9J+E8JR7Tsl7XxJhNB7PCvnmfyOqW2tDH9yIw6MyVcrYnlKiYJg?=
- =?us-ascii?Q?Z0ypgs8AvrmTM9NkEAEotps2IXoaJdvxmoiW55KGeI1iNKSlqdqGDOuz07kI?=
- =?us-ascii?Q?ouSKrYJ8In2Qu7Q1bnz5OEDvu8q8/DqkKA7APEEH3Nbx0W5uMMJdEsdFBkoJ?=
- =?us-ascii?Q?mYxeSsIZMM7pu96M7SOBvrlX25QabYq/9mdlOlU/ACNfTYvkjQ+FgAIWFzFJ?=
- =?us-ascii?Q?emUlO75K1wXibYR3pfF8a/zj5+Ci8TWyAE5VaCfOyCILRpt1PLP0iMLzOxst?=
- =?us-ascii?Q?JjjcypPytxeOUrjV0yoCY1fYmJDxk/dF2lZ+DEAiLJff5UgIf7ZIhUhCm356?=
- =?us-ascii?Q?gK2iCJwaj7CezAKbJejv8AeZUBVSdGAMC3LRPdr27SCesnomhxG473kKKExN?=
- =?us-ascii?Q?WW0lEEtT1Q3OFu29RPLbvxwId/Pf6YbT38SMpnOy8spywSZ9z+80NCiA3UDp?=
- =?us-ascii?Q?EbUfuVoTF8eYNZa9Ya0+m413zAjqAImluULmDLbUMTeXTSkPCqWN8KRM5xyj?=
- =?us-ascii?Q?AOLAnlDSEa36k7mNtCE8x+ZxOmEEOvMst7wre4/5QaIE0ktiknHHgS6INl80?=
- =?us-ascii?Q?sTxihkBe+0haxyJTPEw/iAye+t3TbLT2YxZlz9xCrH6gIxQfmI2FbheWwrN7?=
- =?us-ascii?Q?W11ZhGdha3IQsDLB7dA/9rQqK73emuTBZ6uHlbgCXGBlcc987zp3Aq4LyYqx?=
- =?us-ascii?Q?7cDwj/1XdiZAso+lPpmFPBGbU/HnrPQ2oLAjlhFclWkEWYSroo5v7cn+ULtK?=
- =?us-ascii?Q?80E4V7kEgQHSedE4vEEZMuh7E1RBskDw/X9wMlAHQNHoFYxxhk/LkNXo+72w?=
- =?us-ascii?Q?L2g04WEDZD6V/rC+YcGSf7AHf4q6oRLJEbPYYMSpC8p/9amP9NISzTD+3szm?=
- =?us-ascii?Q?nCYn5yuH+hd0oqn4Ln+IK3yIxiDc7PLrGz+pHTxYvicwHT2Bfr5QKXpIK4PR?=
- =?us-ascii?Q?uPMTpJikyXNeIApFwQa6wupmdA9kBgMDK1jSb568j1fszx2vPF5tYApwAC9Y?=
- =?us-ascii?Q?/KlvfLopqxtWTDvONmDPT8EAKobBMiGDiGT2mEqeJe++dUPPGXAIL2vP/AoF?=
- =?us-ascii?Q?HyfBPoKRi37dk0Br5XOwhCVP3Y56vtE9N5sNt4fMXW1vNudmBpoVfpCB3Mxb?=
- =?us-ascii?Q?y2t34mAHFrUUta9dWY4LLYLeuxmVxl/RcgH0KVmBZvNziJ9xs7h9PBQeKu3p?=
- =?us-ascii?Q?darG2/kqbAJ3TvDqRZrRMVIwiDlYKpXMwFw8WDsN7jGpUhKeiw=3D=3D?=
+	=?us-ascii?Q?YmSgx5WRSigOrnNdVv5cfwk4Ww8JL6gO6F6a+xBgEXKYAuGVSuhnqS+qo8Uo?=
+ =?us-ascii?Q?kEVmk1dJKPr5x5JTFldJ8oapDZkoD5+XpYj62ua1rvGybEH8Ey03XyM87O0i?=
+ =?us-ascii?Q?9eJ/1LvpvWyfNYjVdMTjJfFNimfC041i9ydKm42J7vdUEZraMjRQImh2BzvQ?=
+ =?us-ascii?Q?gy/myBhrmFaKIw10HCi5i5zNwML5E6/tmNwFLPsQY7GUa1dz4AWaY3byVbYl?=
+ =?us-ascii?Q?s9ti+b6VAOXML1pGb958gBGTnt4Gwt92R6J2ZwzSZ+eNOcb06kT2WEG6aHTS?=
+ =?us-ascii?Q?4qFaj0D7yqcYaO7u9XNluBzyfr2wLwpQ5LggW57Zdwo0Jumwi9ppKX96n2yz?=
+ =?us-ascii?Q?Kc9GVYqcsrMBTId6q/2XT4nT/Vfm2qdL1tgK2vXVSRhgY3db2N5TgeWqiy68?=
+ =?us-ascii?Q?YAMPi6uMurPp8oj2yWIPI9T/WMBxUqTdvj0sDaKm0Dd2q4nscF8jtZaAoTir?=
+ =?us-ascii?Q?GuAzshJYqr9OcnOHjkhTEhc4Fo191KR5dRvTWkjQVD+mPVFpBUkfvzVy9znW?=
+ =?us-ascii?Q?wkq5GR2AtLMTUHsyQvwysjG+1F1ujQLC06iS7jMx3GnCXh1HB4rojeJQr2ws?=
+ =?us-ascii?Q?V0RCrczeHWX3chT4lMs73bxge+vmTFMUhQ5aJ+Ov8kPO5ZUN2zaEzeVu6UJG?=
+ =?us-ascii?Q?7T7yNx646C+8h+whnarXXKvd4TOJboSMvMJQHO0mf8MNwaBFwG2teaoAJBCG?=
+ =?us-ascii?Q?iTXVfYmLEVTEXi9kIpAM+V4gj1Biwn897XMME7DVVElCHu+dotIhufU+k9sN?=
+ =?us-ascii?Q?JTQTA7uGnq9GegWdL5CMgrH6hzuLxeIxKnCTn/boN6V0tAboSV84X6mNEimV?=
+ =?us-ascii?Q?t9/lF+Hn+/L0UUymEhOt0G8MRcvCIN1eZKwWYjsRXuC7kmlfC6S8PeT4ZUN8?=
+ =?us-ascii?Q?mO1Xcr4JhkR3p5IXQ3xuL5UpjS/CdKUMu7LO4Kut/LsH1G11WPvd9LVj9gp4?=
+ =?us-ascii?Q?34F/aOtmSR8gDn4ki/gn+hKvJ+X9fuSd+0+ZnC4VuabGBRBmGOhQEq+4A9CQ?=
+ =?us-ascii?Q?Hdk1J1TMJWtl9RL2k+yIZBhSTsXBzLbz1jq3iQ3n4/Tzz7s4LVyIFPxOQVdO?=
+ =?us-ascii?Q?HMkFbbNT7SJilZsRAFSNV4fyjpgLPyybxASLqQu7RZ787VvRkba8gpVAzO4u?=
+ =?us-ascii?Q?sAFyFN01RkwVxpIFcEvyQXOa4l4hCwH14cUMSrNgTKyJM/oEfwecV7+1WgzO?=
+ =?us-ascii?Q?1/pFT2nSAmZqIVWj6dLKlohZCjg7wdEKVkhQTJA3vwM5UBQ+2ozxCiJ6kKlm?=
+ =?us-ascii?Q?AZ1qkHqTe0sYuYeFeEc69rLwVidZzh/zUt/Aht5d+JPaqV3T08BsJeBdH0Na?=
+ =?us-ascii?Q?4b58jWd7hHRNStjk37AOUOYWQZji10WVXQlZwFgM8gCb0jhz6b1vGYIHmdRK?=
+ =?us-ascii?Q?5ThjGI0=3D?=
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(1800799024)(36860700013)(82310400026);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700013)(376014)(82310400026)(1800799024);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Nov 2024 17:54:39.2255
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Nov 2024 17:54:41.0693
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: f55094fe-a8d0-43d1-9a67-08dcfcf9c0f0
+X-MS-Exchange-CrossTenant-Network-Message-Id: ce65cd0e-be51-4d61-f14b-08dcfcf9c209
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	SJ1PEPF00002312.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR12MB4294
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR12MB7422
 
-The AMD Heterogeneous core design and Hardware Feedback Interface (HFI)
-provide behavioral classification and a dynamically updated ranking table
-for the scheduler to use when choosing cores for tasks.
+Introduce the `amd_hfi` driver into the MAINTAINERS file.
+The driver will support AMD Heterogeneous Core design which provides
+hardware feedback to the OS scheduler.
 
-Threads are classified during runtime into enumerated classes.
-Currently, the driver supports 3 classes (0 through 2). These classes
-represent thread performance/power characteristics that may benefit from
-special scheduling behaviors. The real-time thread classification is
-consumed by the operating system and is used to inform the scheduler of
-where the thread should be placed for optimal performance or energy efficiency.
+Moving forward, Mario will be responsible for the maintenance
+and Perry will assist on review of patches related to this driver.
 
-The thread classification helps to select CPU from a ranking table that describes
-an efficiency and performance ranking for each classification from two dimensions.
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-The ranking data provided by the ranking table are numbers ranging from 0 to 255,
-where a higher performance value indicates higher performance capability and a higher
-efficiency value indicates greater efficiency. All the CPU cores are ranked into
-different class IDs. Within each class ranking, the cores may have different ranking
-values. Therefore, picking from each classification ID will later allow the scheduler
-to select the best core while threads are classified into the specified workload class.
-
-This series was originally submitted by Perry Yuan [1] but he is now doing a different
-role and he asked me to take over.
-
-Link: https://lore.kernel.org/all/cover.1724748733.git.perry.yuan@amd.com/
-
-On applicable hardware this series has between a 2% and 5% improvement across various
-benchmarks.
-
-There is however a cost associated with clearing history on the process context switch.
-On average it increases the delay by 119ns, and also has a wider range in delays
-(the standard deviation is 25% greater).
-
-Although this series most prominently has changes to platform-x86 it is based
-off of tip x86/cpu due to changes queued up for 6.13-rc1 that are dependencies.
-
-v5->v6:
- * boot_cpu_has() -> cpu_feature_enabled()
- * Simplify process switch patch
- * Use managed resources
-
-Mario Limonciello (4):
-  MAINTAINERS: Add maintainer entry for AMD Hardware Feedback Driver
-  cpufreq/amd-pstate: Disable preferred cores on designs with workload
-    classification
-  platform/x86/amd: hfi: Set ITMT priority from ranking data
-  platform/x86/amd: hfi: Add debugfs support
-
-Perry Yuan (8):
-  Documentation: x86: Add AMD Hardware Feedback Interface documentation
-  x86/msr-index: define AMD heterogeneous CPU related MSR
-  platform/x86: hfi: Introduce AMD Hardware Feedback Interface Driver
-  platform/x86: hfi: parse CPU core ranking data from shared memory
-  platform/x86: hfi: init per-cpu scores for each class
-  platform/x86: hfi: add online and offline callback support
-  platform/x86: hfi: add power management callback
-  x86/process: Clear hardware feedback history for AMD processors
-
- Documentation/arch/x86/amd-hfi.rst    | 127 ++++++
- Documentation/arch/x86/index.rst      |   1 +
- MAINTAINERS                           |   9 +
- arch/x86/include/asm/msr-index.h      |   5 +
- arch/x86/kernel/process_32.c          |   3 +
- arch/x86/kernel/process_64.c          |   4 +
- drivers/cpufreq/amd-pstate.c          |   6 +
- drivers/platform/x86/amd/Kconfig      |   1 +
- drivers/platform/x86/amd/Makefile     |   1 +
- drivers/platform/x86/amd/hfi/Kconfig  |  19 +
- drivers/platform/x86/amd/hfi/Makefile |   7 +
- drivers/platform/x86/amd/hfi/hfi.c    | 546 ++++++++++++++++++++++++++
- 12 files changed, 729 insertions(+)
- create mode 100644 Documentation/arch/x86/amd-hfi.rst
- create mode 100644 drivers/platform/x86/amd/hfi/Kconfig
- create mode 100644 drivers/platform/x86/amd/hfi/Makefile
- create mode 100644 drivers/platform/x86/amd/hfi/hfi.c
-
-
-base-commit: 110213b8f0e7021819d4db273facb27701bc3381
+diff --git a/MAINTAINERS b/MAINTAINERS
+index c27f3190737f8..4554cbf3dfa16 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1083,6 +1083,15 @@ F:	arch/x86/include/asm/amd_hsmp.h
+ F:	arch/x86/include/uapi/asm/amd_hsmp.h
+ F:	drivers/platform/x86/amd/hsmp.c
+ 
++AMD HETERO CORE HARDWARE FEEDBACK DRIVER
++M:	Mario Limonciello <mario.limonciello@amd.com>
++R:	Perry Yuan <perry.yuan@amd.com>
++L:	platform-driver-x86@vger.kernel.org
++S:	Supported
++B:	https://gitlab.freedesktop.org/drm/amd/-/issues
++F:	Documentation/arch/x86/amd-hfi.rst
++F:	drivers/platform/x86/amd/hfi/
++
+ AMD IOMMU (AMD-VI)
+ M:	Joerg Roedel <joro@8bytes.org>
+ R:	Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 -- 
 2.43.0
 
