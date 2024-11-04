@@ -1,173 +1,139 @@
-Received: from mail-m25490.xmail.ntesmail.com (mail-m25490.xmail.ntesmail.com [103.129.254.90])
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C50AB171E70;
-	Mon,  4 Nov 2024 07:48:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.129.254.90
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E6D3199E8D
+	for <linux-pm@vger.kernel.org>; Mon,  4 Nov 2024 07:57:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730706532; cv=none; b=NdgBaR4j1KKvHiPhboVSxp2qJk3jRQr0LL3FcYb3/zB6rbelk08QclMwljNqGHrRbsIIz/S9lwcNbJBNImziutsmaOOY0sChTz+lQhQkZfyl2tePNDAE1tfFCCPdLNeSjEv9Q6vLkH1Y+rrk2AMI4KIydYSyx4ZEYyJc13HeMK0=
+	t=1730707045; cv=none; b=uHNeiBc3TeEDh0fqzgIoM2UdhcStYMi+YbW4O00vc56gYbpAJ1QIcKuDeWGqdUn0K0R8Ix/VkdUSB9r8dACi4FmDD22KdXhATf0pTd5cAsSSt7XZFaEHYBtX8gqs8lBb4fFbVsFuVDXFBUXPJcfMirXHyuQRzx0/CW2EuAKCn/k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730706532; c=relaxed/simple;
-	bh=WgIipT40jl4pYds/OTrMhKqy5XuoM0fRrS/McLLqCTY=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=o2Ot8dz1n4wnq0mvZ418bmfnKsvfEBEqZGHzO4O31rpYmy2n8yW8CtVnF4m0q5RPw8ZeZSjjhDQEBzgQ+FzXSyL5AyfCXDY9TjHjWvHxr32mXC9lSZ2Y3tNEdlNVZ8xUVM4GmCbPrMOvY25weJoHxAwwR1i1IfFIhdqSP7zjN8Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=knON+5fj; arc=none smtp.client-ip=103.129.254.90
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="knON+5fj"
-Received: from localhost.localdomain (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 1b5f864c;
-	Mon, 4 Nov 2024 15:33:23 +0800 (GMT+08:00)
-From: Shawn Lin <shawn.lin@rock-chips.com>
-To: Rob Herring <robh+dt@kernel.org>,
-	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Heiko Stuebner <heiko@sntech.de>,
-	"Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Avri Altman <avri.altman@wdc.com>,
-	Bart Van Assche <bvanassche@acm.org>,
-	YiFeng Zhao <zyf@rock-chips.com>,
-	Liang Chen <cl@rock-chips.com>,
-	linux-scsi@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	devicetree@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v4 4/7] pmdomain: core: Introduce dev_pm_genpd_rpm_always_on()
-Date: Mon,  4 Nov 2024 15:31:58 +0800
-Message-Id: <1730705521-23081-5-git-send-email-shawn.lin@rock-chips.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1730705521-23081-1-git-send-email-shawn.lin@rock-chips.com>
-References: <1730705521-23081-1-git-send-email-shawn.lin@rock-chips.com>
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGklDQlZNSUlJQ0IdTBlJQ0lWFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-X-HM-Tid: 0a92f617bc0309cckunm1b5f864c
-X-HM-MType: 1
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Kyo6Shw*SjIaQzoSQy0cNSET
-	DxgaCjpVSlVKTEhLTEtOTUtOS09OVTMWGhIXVQgTGgwVVRcSFTsJFBgQVhgTEgsIVRgUFkVZV1kS
-	C1lBWU5DVUlJVUxVSkpPWVdZCAFZQUhMSUo3Bg++
-DKIM-Signature:a=rsa-sha256;
-	b=knON+5fjAdt321L8ZYK83S/IHRfMBGfnppWO7IW1kNQsB2SXHHA35Li7L5Hw++Ec/GPNSpXbL9rkvZMlAkP3DMmbNGz9bUNhFUQqKZz1AHKri+fREBUp16I3kgcg+lPB3e08IMqCitqQ4c/p7MONNoi8hSGM3xqS3ozRPlyT0Go=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=0gxErG8feRCKrPWF5GLII5wJeK93Alo3YxFf9uFvuwk=;
-	h=date:mime-version:subject:message-id:from;
+	s=arc-20240116; t=1730707045; c=relaxed/simple;
+	bh=0d7bW0iYX686nfE5ti3ZdjwL8hzoJrz6AjCRfvcakDs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=tAfAMvpS4wbVWdMbCl2cYyjPRfTna5Jizk58v8qW9eiVlLuAM2wrg2S1COaihvndfBtGUeltjToNoad1VXLVt22Yg3huY4e64ehE0H4nGAylN1jigGm60Fsj6L44bNDfGzllFp3y/FVFHODxqDRZ1zSCCB9Xu+CwHISKdIaj7IE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.187
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.19.162.254])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4XhkK12wCmz10PWc;
+	Mon,  4 Nov 2024 15:55:01 +0800 (CST)
+Received: from kwepemg200008.china.huawei.com (unknown [7.202.181.35])
+	by mail.maildlp.com (Postfix) with ESMTPS id DFA21180106;
+	Mon,  4 Nov 2024 15:57:18 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ kwepemg200008.china.huawei.com (7.202.181.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Mon, 4 Nov 2024 15:57:18 +0800
+Message-ID: <ac7c7590-fb93-06cd-2f1e-cb5bf0c9deee@huawei.com>
+Date: Mon, 4 Nov 2024 15:57:17 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.0
+Subject: Re: [bug report] cpufreq: CPPC: Fix possible null-ptr-deref for
+ cppc_get_cpu_cost()
+Content-Language: en-US
+To: Dan Carpenter <dan.carpenter@linaro.org>
+CC: <linux-pm@vger.kernel.org>
+References: <c4765377-7830-44c2-84fa-706b6e304e10@stanley.mountain>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <c4765377-7830-44c2-84fa-706b6e304e10@stanley.mountain>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ kwepemg200008.china.huawei.com (7.202.181.35)
 
-From: Ulf Hansson <ulf.hansson@linaro.org>
 
-For some usecases a consumer driver requires its device to remain power-on
-from the PM domain perspective during runtime. Using dev PM qos along with
-the genpd governors, doesn't work for this case as would potentially
-prevent the device from being runtime suspended too.
 
-To support these usecases, let's introduce dev_pm_genpd_rpm_always_on() to
-allow consumers drivers to dynamically control the behaviour in genpd for a
-device that is attached to it.
+On 2024/11/1 19:23, Dan Carpenter wrote:
+> Hello Jinjie Ruan,
+> 
+> Commit 1a1374bb8c59 ("cpufreq: CPPC: Fix possible null-ptr-deref for
+> cppc_get_cpu_cost()") from Oct 30, 2024 (linux-next), leads to the
+> following Smatch static checker warning:
+> 
+> 	kernel/power/energy_model.c:254 em_compute_costs()
+> 	error: uninitialized symbol 'cost'.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+Thank you, will fix it.
 
-Changes in v4: None
-Changes in v3: None
-Changes in v2: None
-
- drivers/pmdomain/core.c   | 34 ++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h |  7 +++++++
- 2 files changed, 41 insertions(+)
-
-diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-index 5ede0f7..02bb5c8 100644
---- a/drivers/pmdomain/core.c
-+++ b/drivers/pmdomain/core.c
-@@ -692,6 +692,36 @@ bool dev_pm_genpd_get_hwmode(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(dev_pm_genpd_get_hwmode);
- 
-+/**
-+ * dev_pm_genpd_rpm_always_on() - Control if the PM domain can be powered off.
-+ *
-+ * @dev: Device for which the PM domain may need to stay on for.
-+ * @on: Value to set or unset for the condition.
-+ *
-+ * For some usecases a consumer driver requires its device to remain power-on
-+ * from the PM domain perspective during runtime. This function allows the
-+ * behaviour to be dynamically controlled for a device attached to a genpd.
-+ *
-+ * It is assumed that the users guarantee that the genpd wouldn't be detached
-+ * while this routine is getting called.
-+ *
-+ * Return: Returns 0 on success and negative error values on failures.
-+ */
-+int dev_pm_genpd_rpm_always_on(struct device *dev, bool on)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	genpd = dev_to_genpd_safe(dev);
-+	if (!genpd)
-+		return -ENODEV;
-+
-+	genpd_lock(genpd);
-+	dev_gpd_data(dev)->rpm_always_on = on;
-+	genpd_unlock(genpd);
-+
-+	return 0;
-+}
-+
- static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- {
- 	unsigned int state_idx = genpd->state_idx;
-@@ -863,6 +893,10 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
- 		if (!pm_runtime_suspended(pdd->dev) ||
- 			irq_safe_dev_in_sleep_domain(pdd->dev, genpd))
- 			not_suspended++;
-+
-+			/* The device may need its PM domain to stay powered on. */
-+			if (to_gpd_data(pdd)->rpm_always_on)
-+				return -EBUSY;
- 	}
- 
- 	if (not_suspended > 1 || (not_suspended == 1 && !one_dev_on))
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index b637ec1..30186ad 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -245,6 +245,7 @@ struct generic_pm_domain_data {
- 	unsigned int default_pstate;
- 	unsigned int rpm_pstate;
- 	bool hw_mode;
-+	bool rpm_always_on;
- 	void *data;
- };
- 
-@@ -277,6 +278,7 @@ ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev);
- void dev_pm_genpd_synced_poweroff(struct device *dev);
- int dev_pm_genpd_set_hwmode(struct device *dev, bool enable);
- bool dev_pm_genpd_get_hwmode(struct device *dev);
-+int dev_pm_genpd_rpm_always_on(struct device *dev, bool on);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -360,6 +362,11 @@ static inline bool dev_pm_genpd_get_hwmode(struct device *dev)
- 	return false;
- }
- 
-+static inline int dev_pm_genpd_rpm_always_on(struct device *dev, bool on)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
- #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
- #endif
--- 
-2.7.4
-
+> 
+> kernel/power/energy_model.c
+>     241 static int em_compute_costs(struct device *dev, struct em_perf_state *table,
+>     242                             struct em_data_callback *cb, int nr_states,
+>     243                             unsigned long flags)
+>     244 {
+>     245         unsigned long prev_cost = ULONG_MAX;
+>     246         int i, ret;
+>     247 
+>     248         /* Compute the cost of each performance state. */
+>     249         for (i = nr_states - 1; i >= 0; i--) {
+>     250                 unsigned long power_res, cost;
+>     251 
+>     252                 if ((flags & EM_PERF_DOMAIN_ARTIFICIAL) && cb->get_cost) {
+>     253                         ret = cb->get_cost(dev, table[i].frequency, &cost);
+> --> 254                         if (ret || !cost || cost > EM_MAX_POWER) {
+>                                             ^^^^
+> cost can be uninitialized.
+> 
+>     255                                 dev_err(dev, "EM: invalid cost %lu %d\n",
+>     256                                         cost, ret);
+>     257                                 return -EINVAL;
+>     258                         }
+>     259                 } else {
+>     260                         /* increase resolution of 'cost' precision */
+>     261                         power_res = table[i].power * 10;
+>     262                         cost = power_res / table[i].performance;
+>     263                 }
+>     264 
+>     265                 table[i].cost = cost;
+>     266 
+>     267                 if (table[i].cost >= prev_cost) {
+>     268                         table[i].flags = EM_PERF_STATE_INEFFICIENT;
+>     269                         dev_dbg(dev, "EM: OPP:%lu is inefficient\n",
+>     270                                 table[i].frequency);
+>     271                 } else {
+>     272                         prev_cost = table[i].cost;
+>     273                 }
+>     274         }
+>     275 
+>     276         return 0;
+>     277 }
+> 
+> The commit added a new success path:
+> 
+> commit 1a1374bb8c5926674973d849feed500bc61ad535
+> Author: Jinjie Ruan <ruanjinjie@huawei.com>
+> Date:   Wed Oct 30 16:24:49 2024 +0800
+> 
+>     cpufreq: CPPC: Fix possible null-ptr-deref for cppc_get_cpu_cost()
+>     
+>     cpufreq_cpu_get_raw() may return NULL if the cpu is not in
+>     policy->cpus cpu mask and it will cause null pointer dereference,
+>     so check NULL for cppc_get_cpu_cost().
+>     
+>     Fixes: 740fcdc2c20e ("cpufreq: CPPC: Register EM based on efficiency class information")
+>     Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+>     Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index 309cca11b239..956d672c6d57 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -474,6 +474,9 @@ static int cppc_get_cpu_cost(struct device *cpu_dev, unsigned long KHz,
+>  	int step;
+>  
+>  	policy = cpufreq_cpu_get_raw(cpu_dev->id);
+> +	if (!policy)
+> +		return 0;
+> +
+>  	cpu_data = policy->driver_data;
+>  	perf_caps = &cpu_data->perf_caps;
+>  	max_cap = arch_scale_cpu_capacity(cpu_dev->id);
+> 
+> regards,
+> dan carpenter
