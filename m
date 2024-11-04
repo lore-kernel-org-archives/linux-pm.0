@@ -1,52 +1,49 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D74B523A6;
-	Mon,  4 Nov 2024 19:54:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FA0F1CC165;
+	Mon,  4 Nov 2024 19:54:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730750066; cv=none; b=E8LPpYOPkobkmC/alC5KipYkYNhtve7CWNzuWBdX8hjaWOYm2y4IYStmj5dC8NwFKZutslE8I89yVajgLwjdULGeiRdnShT09Ic1NIPGwDfdZPcMmKd6kcoflETT3fMVK1F5xEkQylT9Sy29ENSPBfrPrPi/On61iIYXetmd49w=
+	t=1730750066; cv=none; b=BN06Nu+QDXENhKR25LB/XtyLMIW+8zalfwgWi9UIbmJ59XfbL8wdd4B1y8CWK2gop1RPtZ1peKUxw4Ul86jw1ClW1cnAxnFIpp+suhoL9lbuf7aQiRGwFM8qbLe9jXDElIkC+ZMc1ZGXOHy2uyUqcTmeT6VkB0lgK4j8jkzRkP0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1730750066; c=relaxed/simple;
-	bh=XcxlVyk2RSruormQ40uCAg2WHwIJC0YqvJ6x7wf5Hn4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=EsZOctPUQOo3hwsm3WG9dD+6KZ3vvwoGH7Uyv65Au8OWBQIR8j5MJcxiVviO1ymXHvvjONHOkA5eQXFeyVBYJySify5boicL2aJD5f4AsKwdYsZ3dfQRNTd8gyCtGp/jipxHhJOzwfJa0jKgaXh3evdrivXBXx8orU7OvM4EYjs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=i2R1XHVn reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	bh=9jIEwPXK2ds7y1zUY3VPEyiOqkJFA4itaC4tP+Cd+Wg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=nGdNTjMAx5f/w1ylgGbNOo7OZB7UUTwFByQxbuKkSBcdXOAwMT41f2ZBFywkyE//d8h+cHR9ooLbmK1zxi7Z5vLgVfdlYvHG4azPFoQ2zMI+xuoxCXvLkTceRQMOYF33vp3oFAA+zD1vpAFGbrauHh4RVbyT/+bH4rq1BY2C/Xo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=LJfC5Mhi reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="i2R1XHVn"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="LJfC5Mhi"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.0)
- id a55bd3338b64d975; Mon, 4 Nov 2024 19:54:21 +0100
+ id f15b92bcbaed4747; Mon, 4 Nov 2024 19:54:22 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 67113950B7B;
-	Mon,  4 Nov 2024 19:54:21 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 30D84950B7B;
+	Mon,  4 Nov 2024 19:54:22 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1730746461;
-	bh=XcxlVyk2RSruormQ40uCAg2WHwIJC0YqvJ6x7wf5Hn4=;
+	s=dkim; t=1730746462;
+	bh=9jIEwPXK2ds7y1zUY3VPEyiOqkJFA4itaC4tP+Cd+Wg=;
 	h=From:Subject:Date;
-	b=i2R1XHVn09jcoSQFG8ZGQWjuJgTJ346GBsHyMRds1+QsqQgHK632rI2OdI1p45iYn
-	 3Clstbbt6KBzK45OFhJEwPHae/wqVRXhEVt0ndVVeTLZiypAXbKXzu5SgtMcMhX9LN
-	 wUH+0ImaXQxIguYvbP116b7vGbtNk7d7rTlxLVBXaoPsy1XzV/2PCVj0934ZxeSveS
-	 MRUvHhNgNr6sJa7rEgO5pVG37JxJkWud4KMxAxky5of9xUQGkIapZpcG2IKMbrxhwz
-	 zOWqJX2QbigKA30Fd6OUhDbobfbAY8IUKitlRl9VuCT3lBIOjiSxOX7JC+XolXbUwD
-	 B3F+7dwynuEmA==
+	b=LJfC5MhiLrSwj3b0u4i7s9Mz1fPMjP+XjsvPuqUj6Sb47NrxV2GvPrtZ8ni5/i13X
+	 +WLHAy/D0ImXZQMVt5u2j6g6gVeEhqG82KSLLxvLEBJahio1kXA07fuoSBh7nUv3jq
+	 /IDaiGNlmk3TUCHk+ksOPdHDokHNyR++OkZbRLx67GhQfEPx5/MBC3v+2mRQvL33tm
+	 qdJOW/KZN0i7b3K/9UMgDKLyaA5KuIR9o8U33JgV10OlE3js9aCqwR6K4+8MWoX+R3
+	 3nRj1i3BYfBj3xglSsoPSGpoKMkCxtJgCSXQDCsp86n7KM+btkUF4lKAlbtugDTAK1
+	 MRgVIunK/w7Zg==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 Subject:
- [PATCH v1 2/2] cpufreq: intel_pstate: Update asym capacity for CPUs that were
+ [PATCH v1 0/2] cpufreq: intel_pstate: Compute capacity for CPUs that are
  offline initially
-Date: Mon, 04 Nov 2024 19:53:53 +0100
-Message-ID: <1913414.tdWV9SEqCh@rjwysocki.net>
-In-Reply-To: <12555220.O9o76ZdvQC@rjwysocki.net>
-References: <12555220.O9o76ZdvQC@rjwysocki.net>
+Date: Mon, 04 Nov 2024 19:46:03 +0100
+Message-ID: <12555220.O9o76ZdvQC@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -58,47 +55,20 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrvdeliedgudduiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeegpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehrihgtrghrughordhnvghrihdqtggrlhguvghrohhnsehlihhnuhigrdhinhhtvghlrdgtohhm
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeeftddrvdeliedgudduiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeffffffkefgheehffelteeiveeffeevhfelteejvddvieejjeelvdeiheeuveeuffenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeegpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehrihgtrghrughordhnvghrihdqtggrlhguvghrohhnsehlihhnuhigrdhinhhtvghlrdgtohhm
 X-DCC--Metrics: v370.home.net.pl 0; Body=4 Fuz1=4 Fuz2=4
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Everyone,
 
-Commit 929ebc93ccaa ("cpufreq: intel_pstate: Set asymmetric CPU
-capacity on hybrid systems") overlooked a corner case in which some
-CPUs may be offline to start with and brought back online later,
-after the intel_pstate driver has been registered, so their asymmetric
-capacity will not be set.
+The asymmetric CPU scaling support added earlier in this cycle
+does not cover the case when some CPUs are offline to start with
+and go online after initialization.
 
-Address this by calling hybrid_update_capacity() in the CPU
-initialization path that is executed instead of the online path
-for those CPUs.
+Patch [2/2] adds this missing support and patch [1/2] is preparatory.
 
-Note that this asymmetric capacity update will be skipped during
-driver initialization and mode switches because hybrid_max_perf_cpu
-is NULL in those cases.
+Please refer to the individual patch changelogs for details.
 
-Fixes: 929ebc93ccaa ("cpufreq: intel_pstate: Set asymmetric CPU capacity on hybrid systems")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2275,6 +2275,11 @@ static void intel_pstate_get_cpu_pstates
- 		} else {
- 			cpu->pstate.scaling = perf_ctl_scaling;
- 		}
-+		/*
-+		 * If the CPU is going online for the first time and it was
-+		 * offline initially, asym capacity scaling needs to be updated.
-+		 */
-+		hybrid_update_capacity(cpu);
- 	} else {
- 		cpu->pstate.scaling = perf_ctl_scaling;
- 		cpu->pstate.max_pstate = pstate_funcs.get_max(cpu->cpu);
+Thanks!
 
 
 
