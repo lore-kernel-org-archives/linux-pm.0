@@ -1,136 +1,176 @@
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com [209.85.128.176])
+Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 322D21B21A1
-	for <linux-pm@vger.kernel.org>; Mon,  4 Nov 2024 10:38:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 238DA1B85D1
+	for <linux-pm@vger.kernel.org>; Mon,  4 Nov 2024 10:58:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730716736; cv=none; b=R5+yN8r+ZFWQmPdvkZfdrD/G+Z9MglsjcbnsspsGO8QkMfmwH9XZmKBcb8NzJHzQsT+lKUhuutyTCe7gWKy+VdaPR725bH9esntYX0UqQjMK9q0gIBOOcnyE2AFx+7fus04btVlcQFwE4g8P6GEATysFj/SWWi74wnxzZ3TG7d8=
+	t=1730717917; cv=none; b=gjG/8pSeLVc1/aBXkVv2fU0rtPhmu6uIksa54tCmYOkXFCWUTBdz6bIEG6Vf76yDRzF/JtJNcn92sCnGIO1xcTqJdVnVx6i9sw4R00jAV7remHafTITmMjXCQZwS2JLwj2EP1eStBGLljbKu/Sq2jw0uh2GVH7umFA3PaiZ1oDw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730716736; c=relaxed/simple;
-	bh=51jGYEqZUKc37O1/8L+bDqAHylGHsKjpsXE/LC0WEuw=;
+	s=arc-20240116; t=1730717917; c=relaxed/simple;
+	bh=HXRqLnDDtJW6cTQrcmKnH1WqFgEaTawJdcXZ4z9WS+0=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hwIiqD3ig5brWYI26E5MqxxpDxnHKa2C8FrF6AoZyaCkFPJgntlHYzLUJ1llviy7XIYM9HCqx1gJ49p5rzw2AFzuwm8EJcLvifhxR6rTzAJ/HSUOtQ/+X0vDTs0c9nHA/N7fn6/A1eUUVMUAlJFxs8sxbIQomgfQE2B6DUwaWxs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Un0vtX8r; arc=none smtp.client-ip=209.85.128.176
+	 To:Cc:Content-Type; b=rIddieqcQBQeNi0YZOlepCaoUbQHyXIiricbUE2po/Pg66Bzbs+JULLG2cyVtj33VGNjcgZ6kwcfFMWio2e+0b672bq5iVGcON537qDj5JeS0e2lCAd4TaP2T/iAGHoFyR3jZ0uFlD6a5eQW5h9Al0CXxL/rr415el8S1KffOcA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hznSesPa; arc=none smtp.client-ip=209.85.128.179
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Un0vtX8r"
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-6ea85f7f445so11719007b3.0
-        for <linux-pm@vger.kernel.org>; Mon, 04 Nov 2024 02:38:55 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hznSesPa"
+Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-6e3c3da5bcdso36969217b3.2
+        for <linux-pm@vger.kernel.org>; Mon, 04 Nov 2024 02:58:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1730716734; x=1731321534; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1730717914; x=1731322714; darn=vger.kernel.org;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZN3UQU6if0WOIwavnpYZdgDUX74h839maXyGtWEijfg=;
-        b=Un0vtX8rg/bHDap+NrcOsAB2vMg4Z7qOGiN9reRgjX7vidxf6jpqGTqfpdMdf4wzRF
-         okXSi3wxoqBevvHNFv+fEP+yLLWxe7+8OK9rEtDXtuVj6Pf4NsGhW5NSzSWY6Wa17Z0G
-         LA7PzHg4i9xy6TZHZIHAxUQcjoJ8tTSWSkUWQNMpg/7ze/jwLgCWkx2QSfzjsccSoHCU
-         7uU41V/HE4rARlADwXuHIBUMJckKM0dDlUphTH4oHAcimEOq7Ioz4hCdJufmBRUr97yz
-         5ZGiZuCHe0hAJdsJ8hNtrRGObzNII0/tFeZ3gPaQO9LiAH//3GwPLF5zQYwMB5eW23n2
-         Dv4w==
+        bh=A8OEwwbndwQP7wHdh9ISRQA4yW5gd+UJ76JpEPhxfag=;
+        b=hznSesPaYJXF1pGvJjwrrVmxvphKVCUfNmrKb2iCfbiWWY5k3gS+xlD1zTSNmQZhj5
+         Pk9PA7sDOG/UE1Ou9ycYFMNrlsyfTz5oznWIQ3QspNTsKVf41Wn2ItSpo2Om9gaGAn0X
+         lgZWP3f/5M7FJs8hD2yo/MGEYG4HaPwOmmXe+2+R+uD1eg3a4ePmmPeV7f1DjrnylHyR
+         B/Spg3PXyEf5Ra53MRAPH/98LDyUQLEIUTkJXkCPrXVdRL6rTvFDsNDipxvHCVm87d5w
+         hvWnp7zqa0A5lyEfGjZrRTDc2dghK6Ef6s1Oj0dRDJskCmlW8+7QHk8MNZ1D+Iy1ZgT3
+         OYtA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1730716734; x=1731321534;
+        d=1e100.net; s=20230601; t=1730717914; x=1731322714;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=ZN3UQU6if0WOIwavnpYZdgDUX74h839maXyGtWEijfg=;
-        b=dJrvrDufBf9Sle/SF+kSrL6xUUFNe8zwbivpqQKuws3co4jId0VMdDmCo7znvMPXkA
-         nt1s3KNxAqeXl6UEhVeMeSt8P2kSuhp4OYyP4+z4HmZLNwKh4PndUL34ATWQGH8yf2cj
-         4CwHjCAAB6SeNaoU2+4n3UESd5V2r8abNwHil7kFmJGWUrJ0JpeidwmXbhNnSI5s4rDT
-         RXVGsb93SjqnfNqiIqAbfGBj8VFXbD6tQBdfK5obg7hNqfYBR2mVhEZPkUDpdGXqT17P
-         UzPe5NO9TmppiA+OjBIbaGDlpErsyhaXhwBWywkiZ6zlKSqXcbB7m/Je9P5qGNZzf1Xd
-         jxlg==
-X-Forwarded-Encrypted: i=1; AJvYcCWseIrVjb32Wn02RhSHvgPXkSAYUtxhtGSiCa/sO7lzYftKfKyuvftMiCiF5944IgE1I/spHV80jw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxNSbowusjmcI9UwFiKyPHw6gyge5EDzXnfqvW0XznARVsSWcUJ
-	PGhSAqOIMK5++RqQDChXBosCjx9kuWIVzQqlFtX7jSsQiCz2x/NAMPxFLP9GTZRf5zW3DOBsj3U
-	CbZMwO6/2O69Nj9jmgma4S3AC32s7YyqLGsWlfw==
-X-Google-Smtp-Source: AGHT+IFdRXydCGcijxNpGwkhtTu/Ey+5ZFUBDuy7gb/66fDYNrtaMYmwYk2H7LPNBv6Ol0r0lwRj2f4zoyALIvyZzV0=
-X-Received: by 2002:a05:690c:380f:b0:6e5:de2d:39b1 with SMTP id
- 00721157ae682-6ea523215demr144706667b3.5.1730716734041; Mon, 04 Nov 2024
- 02:38:54 -0800 (PST)
+        bh=A8OEwwbndwQP7wHdh9ISRQA4yW5gd+UJ76JpEPhxfag=;
+        b=fajVDyGG1t/wQY0HY99wc6scaaOxo852h6/UcRCRE50hhEIanv6O0TSMEUWmCSvjK5
+         qc8Pq4c2PleChHFR5OywBd2z/ACkK37DwlQStX/ukYu2FBlutm8sQMy8B7nt5VZc4Njk
+         R9r2Dy+fh8kjHXfZqYmz59Je6dl4/I5+PTy1t2+e7yZVVf8gmQwe6Gt/II+GKomtHXUM
+         Wid+9btTM7rdMF52mJtJCEVHc/p1j/Aa2CYQGOp1biIv4nn6SdltrmKTwQoTDymg+RYq
+         Zu/TPIR7vfQUuccjf+d7J4yfInsfCNjSwfAA4uDEtat5jkcVlMfPgMACc5Nf8IvmOFvr
+         7Svw==
+X-Forwarded-Encrypted: i=1; AJvYcCXeTtuVTuB60mYRRjMrQ/2U8FN1osVm7b/YlpYN9tpFAot4464zSXyclwHy71TMComIsb6XAz7hyA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy9OVyxnzGvR/Asokmhrly5z1jmbrj3w3fAE6hKD7PV0kZ5VOSj
+	ajRQ6nn6QH4Hj5PXdEYmk+/V33lbeXYgGvpubrT/LbbsSRJD0Hnu9PDWKxK8dQIcpkuusQAAdVB
+	aDs44U+KKZzdxjIe+YiDoIowpyREbhadNbqUr1Q==
+X-Google-Smtp-Source: AGHT+IHi7UAsQfjAiAGv3Fbp4VDCnNLJgrXpVXyVg0zWty3KS6vdc/17EwBBZWalLVopb7bNmLcxY/IvP/w/XllPp6g=
+X-Received: by 2002:a05:690c:3005:b0:6e7:e92d:6c0c with SMTP id
+ 00721157ae682-6ea3b8954cdmr141759517b3.10.1730717914161; Mon, 04 Nov 2024
+ 02:58:34 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241026123058.28258-1-quic_rlaggysh@quicinc.com>
- <20241026123058.28258-2-quic_rlaggysh@quicinc.com> <7k2vnjop6xyshquqlbe22gm7o5empeluvsohfmq5ulnaas3keb@yzomhzi4w7vf>
- <2ac4604c-a765-48b1-84b2-8979f18c29a7@quicinc.com> <vljb7wwqaaqgdcm6whf5ymhnh4jbtswyibto4qpqmbgwvshudy@unh3jhbyeac6>
- <00c9feac-722a-481a-9c57-36463fe0b3ff@quicinc.com> <925202f0-7fd1-4422-88fb-138c9027ac2c@oss.qualcomm.com>
-In-Reply-To: <925202f0-7fd1-4422-88fb-138c9027ac2c@oss.qualcomm.com>
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date: Mon, 4 Nov 2024 10:38:41 +0000
-Message-ID: <CAA8EJpqM0vQZR5yEbGeBBPbog4KoEiTp1kWRwrjuwO4wo_umaw@mail.gmail.com>
-Subject: Re: [PATCH V2 1/3] dt-bindings: interconnect: Add EPSS L3 compatible
- for SA8775P
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Cc: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>, Georgi Djakov <djakov@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Sibi Sankar <quic_sibis@quicinc.com>, linux-arm-msm@vger.kernel.org, 
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Odelu Kukatla <quic_okukatla@quicinc.com>, 
-	Mike Tipton <quic_mdtipton@quicinc.com>
+References: <1730705521-23081-1-git-send-email-shawn.lin@rock-chips.com> <1730705521-23081-8-git-send-email-shawn.lin@rock-chips.com>
+In-Reply-To: <1730705521-23081-8-git-send-email-shawn.lin@rock-chips.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Mon, 4 Nov 2024 11:57:58 +0100
+Message-ID: <CAPDyKFrig236e5xTSeOHfNR5Z3840o6u_h7LnoAG2P8Ck348WQ@mail.gmail.com>
+Subject: Re: [PATCH v4 7/7] scsi: ufs: rockchip: initial support for UFS
+To: Shawn Lin <shawn.lin@rock-chips.com>
+Cc: Rob Herring <robh+dt@kernel.org>, 
+	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	"Martin K . Petersen" <martin.petersen@oracle.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, 
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
+	Avri Altman <avri.altman@wdc.com>, Bart Van Assche <bvanassche@acm.org>, 
+	YiFeng Zhao <zyf@rock-chips.com>, Liang Chen <cl@rock-chips.com>, linux-scsi@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 
-On Mon, 4 Nov 2024 at 09:35, Konrad Dybcio
-<konrad.dybcio@oss.qualcomm.com> wrote:
+On Mon, 4 Nov 2024 at 08:34, Shawn Lin <shawn.lin@rock-chips.com> wrote:
 >
-> On 4.11.2024 7:40 AM, Raviteja Laggyshetty wrote:
-> >
-> >
-> > On 11/1/2024 12:26 AM, Dmitry Baryshkov wrote:
-> >> On Wed, Oct 30, 2024 at 12:23:57PM +0530, Raviteja Laggyshetty wrote:
-> >>>
-> >>>
-> >>> On 10/26/2024 8:15 PM, Dmitry Baryshkov wrote:
-> >>>> On Sat, Oct 26, 2024 at 12:30:56PM +0000, Raviteja Laggyshetty wrote:
-> >>>>> Add Epoch Subsystem (EPSS) L3 interconnect provider binding on
-> >>>>> SA8775P SoCs.
-> >>>>>
-> >>>>> Signed-off-by: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
-> >>>>> ---
-> >>>>>  .../devicetree/bindings/interconnect/qcom,osm-l3.yaml         | 4 ++++
-> >>>>>  1 file changed, 4 insertions(+)
-> >>>>>
-> >>>>> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-> >>>>> index 21dae0b92819..042ca44c32ec 100644
-> >>>>> --- a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-> >>>>> +++ b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-> >>>>> @@ -34,6 +34,10 @@ properties:
-> >>>>>                - qcom,sm8250-epss-l3
-> >>>>>                - qcom,sm8350-epss-l3
-> >>>>>            - const: qcom,epss-l3
-> >>>>> +      - items:
-> >>>>> +          - enum:
-> >>>>> +              - qcom,sa8775p-epss-l3
-> >>>>> +          - const: qcom,epss-l3-perf
-> >>>>
-> >>>> Why is it -perf? What's so different about it?
-> >>>
-> >>> The EPSS instance in SA8775P uses PERF_STATE register instead of REG_L3_VOTE to scale L3 clocks.
-> >>> So adding new generic compatible "qcom,epss-l3-perf" for PERF_STATE register based l3 scaling.
-> >>
-> >> Neither sm8250 nor sc7280 use this compatible, while they also use
-> >> PERF_STATE register.
-> >>
-> > That is correct, both sm8250 and sc7280 use perf state register.
-> > The intention for adding "qcom,epss-l3-perf" generic compatible is to use it for the chipsets which use perf state register for l3 scaling.
-> > Using generic compatible avoids the need for adding chipset specific compatible in match table.
+> RK3576 SoC contains a UFS controller, add initial support for it.
+> The features are:
+> (1) support UFS 2.0 features
+> (2) High speed up to HS-G3
+> (3) 2RX-2TX lanes
+> (4) auto H8 entry and exit
 >
-> That is exactly what bindings guidelines forbid.
+> Software limitation:
+> (1) HCE procedure: enable controller->enable intr->dme_reset->dme_enable
+> (2) disable unipro timeout values before power mode change
 >
-> You need a SoC-specific compatible so that you can address platform-
-> specific quirks that may arise in the future while keeping backwards
-> compatibility with older device trees
+> Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+> ---
+>
+> Changes in v4:
+> - deal with power domain of rpm and spm suggested by Ulf
+> - Fix typo and disable clks in ufs_rockchip_remove
+> - remove clk_disable_unprepare(host->ref_out_clk) from
+>   ufs_rockchip_remove
+>
 
-The proposed bindings have SoC-specific compat. If that's not against
-the current rules, I'd prefer to have qcom,epss-l3-perf to be added to
-sc7280 and sm8250 too.
+[...]
 
+> +#ifdef CONFIG_PM
+> +static int ufs_rockchip_runtime_suspend(struct device *dev)
+> +{
+> +       struct ufs_hba *hba = dev_get_drvdata(dev);
+> +       struct ufs_rockchip_host *host = ufshcd_get_variant(hba);
+> +
+> +       clk_disable_unprepare(host->ref_out_clk);
+> +
+> +       /* Shouldn't power down if rpm_lvl is less than level 5. */
+> +       dev_pm_genpd_rpm_always_on(dev, hba->rpm_lvl < UFS_PM_LVL_5 ? true : false);
+> +
+> +       return ufshcd_runtime_suspend(dev);
+> +}
+> +
+> +static int ufs_rockchip_runtime_resume(struct device *dev)
+> +{
+> +       struct ufs_hba *hba = dev_get_drvdata(dev);
+> +       struct ufs_rockchip_host *host = ufshcd_get_variant(hba);
+> +       int err;
+> +
+> +       err = clk_prepare_enable(host->ref_out_clk);
+> +       if (err) {
+> +               dev_err(hba->dev, "failed to enable ref out clock %d\n", err);
+> +               return err;
+> +       }
+> +
+> +       reset_control_assert(host->rst);
+> +       usleep_range(1, 2);
+> +       reset_control_deassert(host->rst);
+> +
+> +       return ufshcd_runtime_resume(dev);
+> +}
+> +#endif
+> +
+> +#ifdef CONFIG_PM_SLEEP
+> +static int ufs_rockchip_system_suspend(struct device *dev)
+> +{
+> +       struct ufs_hba *hba = dev_get_drvdata(dev);
+> +
+> +       if (hba->spm_lvl < 5)
+> +               device_set_wakeup_path(dev);
 
--- 
-With best wishes
-Dmitry
+Please use device_set_awake_path() instead.
+
+Ideally all users of device_set_wakeup_path() should convert into
+device_set_awake_path(), it's just that we haven't been able to
+complete the conversion yet.
+
+> +       else
+> +               device_clr_wakeup_path(dev);
+
+This isn't needed. The flag is getting cleared in device_prepare().
+
+> +
+> +       return ufshcd_system_suspend(dev);
+
+Don't you want to disable the clock during system suspend too? If the
+device is runtime resumed at this point, the clock will be left
+enabled, no?
+
+> +}
+> +#endif
+> +
+> +static const struct dev_pm_ops ufs_rockchip_pm_ops = {
+> +       SET_SYSTEM_SLEEP_PM_OPS(ufs_rockchip_system_suspend, ufshcd_system_resume)
+> +       SET_RUNTIME_PM_OPS(ufs_rockchip_runtime_suspend, ufs_rockchip_runtime_resume, NULL)
+> +       .prepare         = ufshcd_suspend_prepare,
+> +       .complete        = ufshcd_resume_complete,
+> +};
+> +
+
+[...]
+
+Kind regards
+Uffe
