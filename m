@@ -1,114 +1,271 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 040841993B7;
-	Fri,  8 Nov 2024 16:22:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A604513B29F;
+	Fri,  8 Nov 2024 16:46:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731082938; cv=none; b=QH5/bK2/y+Bu9TnMrefSfnBiYaBZELv4Gr2Yxfvtcl1lU8/0abjo533QVw4umUZW6L24t97pMkDT4wTNjKle9JuK4Prj45Pf/YSTZjuyZMNLkvMI3t7yHhVcacKj+2HKPUuxPseiqrgG3jOmMtedEs/rVLzwjUOMIZU/eVbqcdw=
+	t=1731084394; cv=none; b=D7gtQ5AtqNKJZWuRP6cIX4n5U4VWAPFDSLdWfikN1kxNvcLRw22i7nkLebNfoyD8uVKNyJntkwRIXnw0kp/rFFDq8+QHO+G863x8bTzzClE3eTFaot/LVmCPJxV0K5Mt8QQMYIMTzG/X30LKz0n0kd0qc9zqCBQKZiHzNNKOZXQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731082938; c=relaxed/simple;
-	bh=MvN04QM9skDe5fLRe4zUoBz6kMsWxDmnbsXGz359yRU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nSreRi3DUbwFdGkzk3o8SBRJ7V2Me/J1XxK4H6klpziZR5Vj8npWdXWvd6Lo70DaHz4ZoyvHMSi60DhGz6nFK1cahzJsKuUsm3TgoFDzTAW0kwx2Qx9seqwfoxUMuIDIJE7ZE+mvl7lyY53MG1Rr4YuS+x9sf1wdmeCX3I0btIU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fECEV4Pb; arc=none smtp.client-ip=192.198.163.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1731084394; c=relaxed/simple;
+	bh=j7p+8eYkmatrxwpdXfGxJJavtt0xbw5+drzotrnuAXQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=hkPiD5tpLeyOCBwKELmB9JDScYTBn0zwLi2HKitinZXQ8zIHN4aDptm8hKPkxMOCapIgq2iUDsAHbGNfyVWNId/HUwpGNomp4yp2Pu5kxK9y9SwvWNhcqGhv2WyrIjN1yg/EFRX33E5T0tmrNsqUEEPmTrdoR1YMUoeTj6kz2jk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=GFi6Drdo reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fECEV4Pb"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1731082937; x=1762618937;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=MvN04QM9skDe5fLRe4zUoBz6kMsWxDmnbsXGz359yRU=;
-  b=fECEV4PbydJYIjsjpCe0/W7eCBR4OhLItHknk5YUOUAnysPH/LeWPCh1
-   vc7og9Lxy4IyLbS21Pon0cLhsPbEyFICoWclH49aIjY9WZU6/wdE457Fi
-   Q4C1n2d6zh75DVUrdyuRcHzwXkcapHsCQGs1uvTCuIgS3Y8xBH2LiqOvd
-   rU4sTp7IEvF1qny59UrFqlmRTVrI+VgKnq04vdTO2WCE8bwpgM5nUSUBj
-   KOYYbNpHJMeMAvztKqh/IDjVKzYVdm1ZKuSH8PaSg3cUOzdZ5PikwVCWR
-   hxJlAaZZaXxSCDp3xMA8IqI38JdQV0ZdIRddsd4NFiFe3dOCwQay9OWDE
-   Q==;
-X-CSE-ConnectionGUID: Bqe/9HIuRG6iKOtB7M3PPg==
-X-CSE-MsgGUID: O2VEJNtQQeGGcFWAqWL6MQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11250"; a="30370521"
-X-IronPort-AV: E=Sophos;i="6.12,138,1728975600"; 
-   d="scan'208";a="30370521"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2024 08:22:09 -0800
-X-CSE-ConnectionGUID: 4T8HmKCiS3C27KH2kLY9iA==
-X-CSE-MsgGUID: Bd5G0RdaSxGfVViTmuwFHA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,138,1728975600"; 
-   d="scan'208";a="116492760"
-Received: from rfrazer-mobl3.amr.corp.intel.com (HELO [10.124.223.66]) ([10.124.223.66])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2024 08:22:09 -0800
-Message-ID: <548b2012-925a-4b06-9970-f10a59fbbba1@intel.com>
-Date: Fri, 8 Nov 2024 08:22:08 -0800
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="GFi6Drdo"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
+ id eab63553db22e5e7; Fri, 8 Nov 2024 17:46:23 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 4598E8384AE;
+	Fri,  8 Nov 2024 17:46:23 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1731084383;
+	bh=j7p+8eYkmatrxwpdXfGxJJavtt0xbw5+drzotrnuAXQ=;
+	h=From:Subject:Date;
+	b=GFi6DrdoBt35wiSU0ClHNrocWF1/GSQ2cq9ryJyd/CvrpestHEWl2RWvxGOwZBece
+	 G82x7T8kq6lirpymncOvhZ6AtbTnoPf77xGK6TZAqs63sdbsgv9NOMTyRMw5IEeC1A
+	 alMWbBN3O1wE8G+VMAIyngo6Ouj0NOMKpw8AiR2NjrB4Q6sAwaR0MJqcz9TPsl2l4g
+	 AWskBB2rw8M4EkZt3eI7shcaaVzoun+WJwjh3YaCC6B8lJHMGMNdipB+t2+wOsPscV
+	 xX3pQwxL/nmAPoMmO37Zc6AJuvxNf44uQiG3ERed6XvlzKDv/FslYsDnke9b9Wxbnd
+	 a18eqWAHXI+4A==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Len Brown <len.brown@intel.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Morten Rasmussen <morten.rasmussen@arm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Subject:
+ [RFC][PATCH v0.1 6/6] cpufreq: intel_pstate: Add basic EAS support on hybrid
+ platforms
+Date: Fri, 08 Nov 2024 17:46:13 +0100
+Message-ID: <115421572.nniJfEyVGO@rjwysocki.net>
+In-Reply-To: <3607404.iIbC2pHGDl@rjwysocki.net>
+References: <3607404.iIbC2pHGDl@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/3] SRF: Fix offline CPU preventing pc6 entry
-To: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>, x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- rafael.j.wysocki@intel.com, len.brown@intel.com,
- artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com
-References: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
-From: Dave Hansen <dave.hansen@intel.com>
-Content-Language: en-US
-Autocrypt: addr=dave.hansen@intel.com; keydata=
- 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
-In-Reply-To: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefuddrtdeigdeklecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopedutddprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthg
+X-DCC--Metrics: v370.home.net.pl 0; Body=10 Fuz1=10 Fuz2=10
 
-On 11/8/24 04:29, Patryk Wlazlyn wrote:
-> Applied suggestions from Dave and Rafael.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The basic approach here is looking pretty sound, so thanks for that
-Patryk.  I mostly have mechanical nits left.
+Modify intel_pstate to register stub EM perf domains for CPUs on
+hybrid platforms via em_dev_register_perf_domain() and to use
+em_dev_expand_perf_domain() introduced previously for adding new
+CPUs to existing EM perf domains when those CPUs become online for
+the first time after driver initialization.
+
+This change is targeting platforms (for example, Lunar Lake) where
+"small" CPUs (E-cores) are always more energy-efficient than the "big"
+or "performance" CPUs (P-cores) when run at the same HWP performance
+level, so it is sufficient to tell the EAS that E-cores are always
+preferred (so long as there is enough spare capacity on one of them
+to run the given task).
+
+Accordingly, the perf domains are registered per CPU type (that is,
+all P-cores belong to one perf domain and all E-cores belong to another
+perf domain) and they are registered only if asymmetric CPU capacity is
+enabled.  Each perf domain has a one-element states table and that
+element only contains the relative cost value (the other fields in
+it are not initialized, so they are all equal to zero), and the cost
+value for the E-core perf domain is lower.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |  110 ++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 104 insertions(+), 6 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -8,6 +8,7 @@
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
++#include <linux/energy_model.h>
+ #include <linux/kernel.h>
+ #include <linux/kernel_stat.h>
+ #include <linux/module.h>
+@@ -938,6 +939,12 @@ static struct freq_attr *hwp_cpufreq_att
+ 	NULL,
+ };
+ 
++enum hybrid_cpu_type {
++	HYBRID_PCORE = 0,
++	HYBRID_ECORE,
++	HYBRID_NR_TYPES
++};
++
+ static struct cpudata *hybrid_max_perf_cpu __read_mostly;
+ /*
+  * Protects hybrid_max_perf_cpu, the capacity_perf fields in struct cpudata,
+@@ -945,6 +952,86 @@ static struct cpudata *hybrid_max_perf_c
+  */
+ static DEFINE_MUTEX(hybrid_capacity_lock);
+ 
++#ifdef CONFIG_ENERGY_MODEL
++struct hybrid_em_perf_domain {
++	cpumask_t cpumask;
++	struct device *dev;
++	struct em_data_callback cb;
++};
++
++static int hybrid_pcore_cost(struct device *dev, unsigned long freq,
++			     unsigned long *cost)
++{
++	/*
++	 * The number used here needs to be higher than the analogous
++	 * one in hybrid_ecore_cost() below.  The units and the actual
++	 * values don't matter.
++	 */
++	*cost = 2;
++	return 0;
++}
++
++static int hybrid_ecore_cost(struct device *dev, unsigned long freq,
++			     unsigned long *cost)
++{
++	*cost = 1;
++	return 0;
++}
++
++static struct hybrid_em_perf_domain perf_domains[HYBRID_NR_TYPES] = {
++	[HYBRID_PCORE] = { .cb.get_cost = hybrid_pcore_cost, },
++	[HYBRID_ECORE] = { .cb.get_cost = hybrid_ecore_cost, }
++};
++
++static bool hybrid_register_perf_domain(struct hybrid_em_perf_domain *pd)
++{
++	/*
++	 * Registering EM perf domains without asymmetric CPU capacity
++	 * support enabled is wasteful, so don't do that.
++	 */
++	if (!hybrid_max_perf_cpu)
++		return false;
++
++	pd->dev = get_cpu_device(cpumask_first(&pd->cpumask));
++	if (!pd->dev)
++		return false;
++
++	if (em_dev_register_perf_domain(pd->dev, 1, &pd->cb, &pd->cpumask, false)) {
++		pd->dev = NULL;
++		return false;
++	}
++
++	return true;
++}
++
++static void hybrid_register_all_perf_domains(void)
++{
++	enum hybrid_cpu_type type;
++
++	for (type = HYBRID_PCORE; type < HYBRID_NR_TYPES; type++)
++		hybrid_register_perf_domain(&perf_domains[type]);
++}
++
++static void hybrid_add_to_perf_domain(int cpu, enum hybrid_cpu_type type)
++{
++	struct hybrid_em_perf_domain *pd = &perf_domains[type];
++
++	guard(mutex)(&hybrid_capacity_lock);
++
++	if (cpumask_test_cpu(cpu, &pd->cpumask))
++		return;
++
++	cpumask_set_cpu(cpu, &pd->cpumask);
++	if (pd->dev)
++		em_dev_expand_perf_domain(pd->dev, cpu);
++	else if (hybrid_register_perf_domain(pd))
++		em_rebuild_perf_domains();
++}
++#else /* CONFIG_ENERGY_MODEL */
++static inline void hybrid_register_all_perf_domains(void) {}
++static inline void hybrid_add_to_perf_domain(int cpu, enum hybrid_cpu_type type) {}
++#endif /* !CONFIG_ENERGY_MODEL */
++
+ static void hybrid_set_cpu_capacity(struct cpudata *cpu)
+ {
+ 	arch_set_cpu_capacity(cpu->cpu, cpu->capacity_perf,
+@@ -1034,11 +1121,14 @@ static void __hybrid_refresh_cpu_capacit
+ 	hybrid_update_cpu_capacity_scaling();
+ }
+ 
+-static void hybrid_refresh_cpu_capacity_scaling(void)
++static void hybrid_refresh_cpu_capacity_scaling(bool register_perf_domains)
+ {
+ 	guard(mutex)(&hybrid_capacity_lock);
+ 
+ 	__hybrid_refresh_cpu_capacity_scaling();
++
++	if (register_perf_domains)
++		hybrid_register_all_perf_domains();
+ }
+ 
+ static void hybrid_init_cpu_capacity_scaling(bool refresh)
+@@ -1049,7 +1139,7 @@ static void hybrid_init_cpu_capacity_sca
+ 	 * operation mode.
+ 	 */
+ 	if (refresh) {
+-		hybrid_refresh_cpu_capacity_scaling();
++		hybrid_refresh_cpu_capacity_scaling(false);
+ 		return;
+ 	}
+ 
+@@ -1059,10 +1149,14 @@ static void hybrid_init_cpu_capacity_sca
+ 	 * do not do that when SMT is in use.
+ 	 */
+ 	if (hwp_is_hybrid && !sched_smt_active() && arch_enable_hybrid_capacity_scale()) {
+-		hybrid_refresh_cpu_capacity_scaling();
++		/*
++		 * Perf domains are not registered before setting hybrid_max_perf_cpu,
++		 * so register them all after setting up CPU capacity scaling.
++		 */
++		hybrid_refresh_cpu_capacity_scaling(true);
+ 		/*
+ 		 * Disabling ITMT causes sched domains to be rebuilt to disable asym
+-		 * packing and enable asym capacity.
++		 * packing and enable asym capacity and EAS.
+ 		 */
+ 		sched_clear_itmt_support();
+ 	}
+@@ -2215,12 +2309,16 @@ static int hwp_get_cpu_scaling(int cpu)
+ 
+ 	smp_call_function_single(cpu, hybrid_get_type, &cpu_type, 1);
+ 	/* P-cores have a smaller perf level-to-freqency scaling factor. */
+-	if (cpu_type == 0x40)
++	if (cpu_type == 0x40) {
++		hybrid_add_to_perf_domain(cpu, HYBRID_PCORE);
+ 		return hybrid_scaling_factor;
++	}
+ 
+ 	/* Use default core scaling for E-cores */
+-	if (cpu_type == 0x20)
++	if (cpu_type == 0x20) {
++		hybrid_add_to_perf_domain(cpu, HYBRID_ECORE);
+ 		return core_get_scaling();
++	}
+ 
+ 	/*
+ 	 * If reached here, this system is either non-hybrid (like Tiger
+
+
+
