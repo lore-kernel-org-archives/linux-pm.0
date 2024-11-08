@@ -1,118 +1,63 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4BD019922F
-	for <linux-pm@vger.kernel.org>; Fri,  8 Nov 2024 23:24:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AD101E2600;
+	Fri,  8 Nov 2024 23:24:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731108288; cv=none; b=peAeUxC4KinUWOKz3kelA4ZXyBjJjDtKY51R2EVSArhFc8849PWHbSFHS40gf05FvJi6amR1uPqx19kqIVAHYqdzFVwn8BfxKU4ZoRv5tRDCuGMQzgem4AOV2X+V+ghccASQD1ScIf4nzVQoaSt+61CxWx4mFrrWqO1q8D+5/GY=
+	t=1731108291; cv=none; b=SKkYODcplFagczZauOY2U7R+fI9jZvNr4Cym5FYqcMUBH8NgZmoYC4HG/Y7OWbAckE6GnEKwmQrntRWov/ODbFJI66FN/NrWErTygKFVMaEkO8QyG4/per810P2SLG7hO5AXvBVIdcEn41pjB4C6vMFANpKDIFZOeaU8VYRc4l4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731108288; c=relaxed/simple;
-	bh=JGQ21j0vXHjPB9/DM90FB1eWnyMfsF8+Y87TlzmE5NY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iWatj2Mwy9C7FfOhjacfM/pEdc+Nnqjn2dbCp5OiwLD4gMQXaFQINnaBjQHGQS/p3H4gdm6zTOupLnSAupXl+rViFIQuP6j5pLeqxICS7TbSGxNRZyCUZZvacSsibBspoQYsZ0KzkS2ZrUAOoH5RsWwXCmQXy25dSmaSZpzKPB0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Hl1jtzM8; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1731108291; c=relaxed/simple;
+	bh=cu+Su9oxVuDTevOHwr8aLaICFzYSL67WwuYtQXgvTUc=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=G0Cru6BeyOVZ/oRNzLKWnkRbkj224yOq1y9jysfoJ3MC3Lbir68tJGdu2RZAh6grvqz9XP0LA7DIWHbpbXIah3XXAdIhScJRD2dAklJCeCKo9zn3MHmIZoAIyfGn34913rSACRexMIU7VH/ukmLA6sGwekX1sxQjVV5+ZGWiRGY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LUD/xa+q; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Hl1jtzM8"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1731108285;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=8J3TtrS4YtnHEjLzvBaPzDZcOYEHuT8U37iuS3l51QA=;
-	b=Hl1jtzM84TMJvkJxdBnvN6bfr+puqPIZzhhc69vhPlnVzwF9Ewouk+feR4UmIH4cPBQe5Q
-	khxuan/ZHoyomBDIcsBWR5AFsjGrrkp8rIizgJ+nrsTo2llQWN/3LwAmJ7UqEPxS3zDd3v
-	2RpOetg3dBgWh+G63tyncy5LUZv0Mn4=
-Received: from mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-440-BJA4yAt8NfKRaGxLHSwRzg-1; Fri,
- 08 Nov 2024 18:24:44 -0500
-X-MC-Unique: BJA4yAt8NfKRaGxLHSwRzg-1
-X-Mimecast-MFC-AGG-ID: BJA4yAt8NfKRaGxLHSwRzg
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 82F4319541BE;
-	Fri,  8 Nov 2024 23:24:42 +0000 (UTC)
-Received: from shalem.redhat.com (unknown [10.39.192.67])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 77982300019E;
-	Fri,  8 Nov 2024 23:24:39 +0000 (UTC)
-From: Hans de Goede <hdegoede@redhat.com>
-To: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>,
-	platform-driver-x86@vger.kernel.org,
-	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-	Jelle van der Waa <jelle@vdwaa.nl>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v2 0/4] power: supply: Add new "charge_types" property
-Date: Sat,  9 Nov 2024 00:24:34 +0100
-Message-ID: <20241108232438.269156-1-hdegoede@redhat.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LUD/xa+q"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B99A1C4CECD;
+	Fri,  8 Nov 2024 23:24:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731108290;
+	bh=cu+Su9oxVuDTevOHwr8aLaICFzYSL67WwuYtQXgvTUc=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=LUD/xa+q/G7sEeEINQAm/tjI+MfpRdtg41x/CPCXoEWhOVWMa7dqpWFyfZ4E8byZ9
+	 4nYiQPwX9ZOeeIs+1hCWqyr38NApcYmKmplWXeAvIn/4Ib+x8ENHwYuf6dgpdKTXkL
+	 C3sUOx9boT6ucngI8t/uNcOOd2rTLNeORRLamrTbnr2dvJO20TnRXOFhYl+J8mxST5
+	 ZRleTSuBUQNHFz/2GvSrRB9OFzsn7XViMHbGe6p/tg/wDroqUiJM9MuXXcAJvUkhfW
+	 aTnVGbn2SLVvvtSmq7fpAezQFtYUkmxUMcXm8zZoCr8EQmvRT0FBx/joF17X1RQzm4
+	 Cj/wdjqytRXvQ==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 7142E3809A80;
+	Fri,  8 Nov 2024 23:25:01 +0000 (UTC)
+Subject: Re: [GIT PULL] ACPI fix for v6.12-rc7
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0iiZQV=G_ZTomtK5isPEQFJXmD+wzztDSvumcx56uSw+g@mail.gmail.com>
+References: <CAJZ5v0iiZQV=G_ZTomtK5isPEQFJXmD+wzztDSvumcx56uSw+g@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0iiZQV=G_ZTomtK5isPEQFJXmD+wzztDSvumcx56uSw+g@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-6.12-rc7
+X-PR-Tracked-Commit-Id: b79276dcac9124a79c8cf7cc8fbdd3d4c3c9a7c7
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: c7a8f2a504c396f229e6025eca609c4e66f44c8b
+Message-Id: <173110830002.2790059.11358672066516785713.pr-tracker-bot@kernel.org>
+Date: Fri, 08 Nov 2024 23:25:00 +0000
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
 
-Hi,
+The pull request you sent on Fri, 8 Nov 2024 21:00:06 +0100:
 
-As first discussed here:
-https://lore.kernel.org/linux-pm/49993a42-aa91-46bf-acef-4a089db4c2db@redhat.com/
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-6.12-rc7
 
-Some power_supply devices have a writable charge_type property, but
-userspace cannot know which charge_type values are valid to write.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/c7a8f2a504c396f229e6025eca609c4e66f44c8b
 
-This series adds a new "charge_types" property, which is identical to
-"charge_type" but reading returns a list of supported charge-types with
-the currently active type surrounded by square brackets, e.g.:
-
-Fast [Standard] Long_Life
-
-this allows userspace to find out which charge-types are supported.
-
-Patch 1/4 does some prep work and patch 2/4 is the core implementation
-of "charge_types" property support.
-
-Patch 3/4 is a standard psy-driver user of the new "charge_types"
-property support. Patch 4/4 shows an ACPI battery extension driver
-with support for this property using the new show()/store() helpers.
-
-Changes in v2:
-- Replace spaces with '_' instead of surrounding the text-value by ""
-- Add "Check charge_types to get the values supported by the battery."
-  to Documentation/ABI/testing/sysfs-class-power
-- Add a note about labels with spaces having these replaced by '_'
-  in charge_types output to Documentation/ABI/testing/sysfs-class-power
-- Use power_supply_match_string() in power_supply_charge_types_parse()
-
-Regards,
-
-Hans
-
-
-Hans de Goede (4):
-  power: supply: power_supply_show_enum_with_available(): Replace spaces
-    with '_'
-  power: supply: core: Add new "charge_types" property
-  power: supply: bq24190_charger: Add support for "charge_types"
-    property
-  platform/x86: dell-laptop: Use power_supply_charge_types_show/_parse()
-    helpers
-
- Documentation/ABI/testing/sysfs-class-power | 20 ++++++
- drivers/platform/x86/dell/dell-laptop.c     | 54 ++++++++--------
- drivers/power/supply/bq24190_charger.c      |  7 ++
- drivers/power/supply/power_supply_sysfs.c   | 71 +++++++++++++++++++--
- include/linux/power_supply.h                | 23 ++++++-
- 5 files changed, 141 insertions(+), 34 deletions(-)
+Thank you!
 
 -- 
-2.47.0
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
