@@ -1,87 +1,95 @@
-Received: from cmccmta1.chinamobile.com (cmccmta6.chinamobile.com [111.22.67.139])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 243BBEBE;
-	Fri,  8 Nov 2024 06:39:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=111.22.67.139
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADD9A19DF64;
+	Fri,  8 Nov 2024 06:39:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.61.82.184
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731047975; cv=none; b=CB40j5S0JD1H2d0MvR00NCTbVhmD1hwH133JBb+XSh3DVm370ZChJ8L7B8Dz0zghS3ydV8dGtn0BWKVUX/flUBU+ODBJN3XpviOGc9cHNog/a1cs6Nu/Ie2RO4/mM8WPfOU7l2fZkuKMrP+xq5YGA68dmi4cUcfgha/M56+JCAE=
+	t=1731047996; cv=none; b=D17UxJEazEX12T8OG3iwkWuJo3yA8Ix4Gb2PIIUWktWnNEuK9DlSVzmOJU9e8+U64mRVSqlVs1RDTUN3xugZ898A/sMFxi2DbIN3gYocZdCNAW8TLAQdhSHxahSPtPiJYoAkdrs7IsrtoS1VVPZTAKHhBdBsqLnJzTCC9WRwVJc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731047975; c=relaxed/simple;
-	bh=Y267l0BUqqgJmxGvfXbT0PmHmIKaH+mSx4D3GnoS1zk=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=rX1L8DPV7AgYI1ZQTW4+JbASfCG7PSZRTslxU530bEGpYB5crcmN2onjupBVxEunwNLRPG1AaLETS+f9b+MvsPiUyuVnkGgokzdn9VPLE9CV5/8H8yvSAH4pL4l+UiveNyxbt15Q9FHQSV/HqJwfLUwO7DWzDS/R+z3r8c5lkTY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=cmss.chinamobile.com; spf=pass smtp.mailfrom=cmss.chinamobile.com; arc=none smtp.client-ip=111.22.67.139
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=cmss.chinamobile.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cmss.chinamobile.com
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from spf.mail.chinamobile.com (unknown[10.188.0.87])
-	by rmmx-syy-dmz-app01-12001 (RichMail) with SMTP id 2ee1672db21d641-bff53;
-	Fri, 08 Nov 2024 14:39:27 +0800 (CST)
-X-RM-TRANSID:2ee1672db21d641-bff53
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from localhost.localdomain (unknown[223.108.79.101])
-	by rmsmtp-syy-appsvr05-12005 (RichMail) with SMTP id 2ee5672db21ec48-8c35a;
-	Fri, 08 Nov 2024 14:39:26 +0800 (CST)
-X-RM-TRANSID:2ee5672db21ec48-8c35a
-From: zhangjiao2 <zhangjiao2@cmss.chinamobile.com>
-To: rafael@kernel.org
-Cc: daniel.lezcano@linaro.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	zhang jiao <zhangjiao2@cmss.chinamobile.com>
-Subject: [PATCH] tools/thermal: Fix common realloc mistake
-Date: Fri,  8 Nov 2024 12:47:00 +0800
-Message-Id: <20241108044700.37633-1-zhangjiao2@cmss.chinamobile.com>
-X-Mailer: git-send-email 2.33.0
+	s=arc-20240116; t=1731047996; c=relaxed/simple;
+	bh=ftHl8cvJxXClXUyb+pLcTha+k6Boj0naoJhKG2j7H5o=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=cJyq1OcL4qNeXdPbgW4ZA6JXGzMnc66VUp8UPJUjSO7xt0pCbZVjeAL7VlFsp5IY05ExqkXQl9jTY+fnkbHDhfr0VBw0AOL6Cv+rsfucCfXPQEb/tyithlpBw58O89PhlLXI8KVTHiPbZQ7TlXiOIsM662Ptx4j38dQU501RPvY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=SFKN9PIL; arc=none smtp.client-ip=210.61.82.184
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mediatek.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="SFKN9PIL"
+X-UUID: 40c6c8009d9c11efbd192953cf12861f-20241108
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+	h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=H7HqclB1EjyymZaIs5NdapuhMiQdBA7440+mZymKrGw=;
+	b=SFKN9PILuj6x0mTzrjvzbjhlD8L+4s8tG1q7/2CegJdy7IxLdCzgxmOLUtSvgxR8xpcdkN1LKXcnxZ3q1r+cJdxxoq/HTTpQvBljSaxJqXUy0irE/eI+Ju/tqMxhQ/roO5sjA3RuanOg9z0t7Wb8sXFEVNYZtqdGDzGwyHSGLcc=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.42,REQID:1bf7bd15-5486-4664-b691-87261006050c,IP:0,U
+	RL:0,TC:0,Content:18,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:18
+X-CID-META: VersionHash:b0fcdc3,CLOUDID:76ffb8ca-91e6-4060-9516-6ba489b4e2dc,B
+	ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:4,EDM:-3,IP:nil,U
+	RL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,
+	SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-UUID: 40c6c8009d9c11efbd192953cf12861f-20241108
+Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw02.mediatek.com
+	(envelope-from <chun-jen.tseng@mediatek.com>)
+	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+	with ESMTP id 1531420485; Fri, 08 Nov 2024 14:39:49 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.26; Fri, 8 Nov 2024 14:39:48 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
+ mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.1118.26 via Frontend Transport; Fri, 8 Nov 2024 14:39:48 +0800
+From: Mark Tseng <chun-jen.tseng@mediatek.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin
+ Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
+	<angelogioacchino.delregno@collabora.com>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-mediatek@lists.infradead.org>,
+	<Project_Global_Chrome_Upstream_Group@mediatek.com>,
+	<chun-jen.tseng@mediatek.com>
+Subject: [PATCH v2 1/4] cpufreq: mediatek: CCI support SoC , the transition_delay set to 10 ms
+Date: Fri, 8 Nov 2024 14:39:39 +0800
+Message-ID: <20241108063942.19744-2-chun-jen.tseng@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20241108063942.19744-1-chun-jen.tseng@mediatek.com>
+References: <20241108063942.19744-1-chun-jen.tseng@mediatek.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-From: zhang jiao <zhangjiao2@cmss.chinamobile.com>
+SoC with CCI architecture should set transition_delay to 10 ms because
+cpufreq need to call devfreq notifier in async mode. if delay less than
+10 ms, it may get wrong OPP-level in devfreq passive governor.
 
-Do not set thermometer->tz NULL when realloc failed.
-
-Signed-off-by: zhang jiao <zhangjiao2@cmss.chinamobile.com>
+Signed-off-by: Mark Tseng <chun-jen.tseng@mediatek.com>
 ---
- tools/thermal/thermometer/thermometer.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/cpufreq/mediatek-cpufreq.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/tools/thermal/thermometer/thermometer.c b/tools/thermal/thermometer/thermometer.c
-index 1a87a0a77f9f..e08291a97fd8 100644
---- a/tools/thermal/thermometer/thermometer.c
-+++ b/tools/thermal/thermometer/thermometer.c
-@@ -259,6 +259,7 @@ static int thermometer_add_tz(const char *path, const char *name, int polling,
- {
- 	int fd;
- 	char tz_path[PATH_MAX];
-+	void *tmp;
+diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+index 663f61565cf7..f63183154e9a 100644
+--- a/drivers/cpufreq/mediatek-cpufreq.c
++++ b/drivers/cpufreq/mediatek-cpufreq.c
+@@ -597,6 +597,9 @@ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->driver_data = info;
+ 	policy->clk = info->cpu_clk;
  
- 	sprintf(tz_path, CLASS_THERMAL"/%s/temp", path);
++	if (info->soc_data->ccifreq_supported)
++		policy->transition_delay_us = 10000;
++
+ 	return 0;
+ }
  
-@@ -268,12 +269,13 @@ static int thermometer_add_tz(const char *path, const char *name, int polling,
- 		return -1;
- 	}
- 
--	thermometer->tz = realloc(thermometer->tz,
-+	tmp = realloc(thermometer->tz,
- 				  sizeof(*thermometer->tz) * (thermometer->nr_tz + 1));
--	if (!thermometer->tz) {
-+	if (!tmp) {
- 		ERROR("Failed to allocate thermometer->tz\n");
- 		return -1;
- 	}
-+	thermometer->tz = tmp;
- 
- 	thermometer->tz[thermometer->nr_tz].fd_temp = fd;
- 	thermometer->tz[thermometer->nr_tz].name = strdup(name);
 -- 
-2.33.0
-
-
+2.45.2
 
