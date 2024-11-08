@@ -1,93 +1,117 @@
-Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com [209.85.208.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail-m254123.xmail.ntesmail.com (mail-m254123.xmail.ntesmail.com [103.129.254.123])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19C4328EB
-	for <linux-pm@vger.kernel.org>; Fri,  8 Nov 2024 08:09:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E5967DA95;
+	Fri,  8 Nov 2024 08:13:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.129.254.123
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731053349; cv=none; b=LDFr+qCVm+/ORJHdKl7Rcp6u3vbUTMGo/FEOSRbD6epCh+eagzfbLHri5mm5YLtcg+tkbCVRn7ERcdSxKH7Bq47URBvvlKcUWXpXuXX41iur5zOQXNwwhJHeoQDRBhsXUk2siIzEIVeKKv/4SUYU9fLUcB2Hc9yt9KhSGmcZ+7E=
+	t=1731053644; cv=none; b=L9rolxOLnc7VWdvnTwjh1Qy+Mf8YVYTO9/d87QvEbAB2tXHTd5UPqW4B5D7XCqrT4kYsg2aCTJKobkAVRW9DiUsJYZtn9h+yp2a+6EC54FegbdhGqkJHgRKmYAkrPaq65dPCjzTcXZxGAfHM0kLEec35MtbudUqlMlAFaxqAHAk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731053349; c=relaxed/simple;
-	bh=G9Z7xx9wUle37htzOFI0joTWlzfhv2aXAeez5YH7IZg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=jWq9raeVNx9XzX31rOoMesQvRzJV09lELrRbnOA6Gicq2+l08eaypx5oiQ//yTKi1sU296DW7HXNVESfR6b8Jp3lScogppAYCislduAIFBXiw0lIlO1Mx8xuvaZmSDm0X9SMblTigdDv+FKBLh4s5c3SNPwUI98UVmzoFB4mFGk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=gDfDMZsc; arc=none smtp.client-ip=209.85.208.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1731053644; c=relaxed/simple;
+	bh=NtDQUEz4omxEChqNNmk3HpSG/qVosikuT1gmlOmiBwI=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=ercRx0A1oRSv8OnZnf8gT9t6gmZBxtN83D6YPieP+zYevD7dlq2ejqxGTKG03F8TUjXaZjZSpnelVNW6ItX8EMiMKjKQRBnHm9wa98+UZX39VjOVlkeqcYGvQkJqEHh8ErVIpM2HakSwUU1xyFwm86sQvhfHpNPkJND5uIJDjRs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=SOAZL9Lv; arc=none smtp.client-ip=103.129.254.123
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gDfDMZsc"
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-2f7657f9f62so15593511fa.3
-        for <linux-pm@vger.kernel.org>; Fri, 08 Nov 2024 00:09:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1731053345; x=1731658145; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=G9Z7xx9wUle37htzOFI0joTWlzfhv2aXAeez5YH7IZg=;
-        b=gDfDMZsc/rmQTR8GkAm2GQjLPVA76RZd56HY1vbpuTZMFuKi0nPDy+5+rtTH7D6c4G
-         XclK8OpyFqfQ635pBPD1VA2y+w8PtyaPYe4kwXX8/LvlFdb+sgY0kMSX1JQzNhlDSX5O
-         AroVCYJKswjBwsztSgSF5yi7ERQeUMztNU89BM2YWcx/n7RJFKjG5v9nBEGSpVpMVG3L
-         FH85ljAM+UxhrNr4J3vh55MI99dqzaXWqIEanj0Mselsc//CjDkxAdbnP2ODus/5loCT
-         oXQUxZ1QGdyFb5sQkAAXia0SgYM4YCMN9ihtgzGfR8XqHkYe+p0tVlVJPC1PLNlghDAM
-         c+jg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731053345; x=1731658145;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=G9Z7xx9wUle37htzOFI0joTWlzfhv2aXAeez5YH7IZg=;
-        b=SWy8h2R0LVMxAGzJZo0G4912cIihF8eBKIKwQn9+GfifTaw6oj2b5clCYlMn5gtrJK
-         Ppo4VQed1afk73J7bPz2/M37iilubtIaosUBXyriVUtNkDc/+DSpmfsjVu3/8c3H8Pyr
-         5sepPSggg29wETG3WPBPJeUkW6UiO0YhMdetnRl66uWnYsNIjxSh+9e6agWs+eCLQPax
-         3xKWdj0BIJ93RzEdpiP797vnPuCDe9AG11aCEF+YAGRR4OeexMM4u1KJGFGkgYpQUI0d
-         nL8EaKCZ2MlNFZd0i1LJzS5B60gGM1Nz6iigHuXsvL4J1B6mfMbRv0L56lwd1O/Hm99K
-         3HsQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVwc2HRzaQdzPtT6xwwmT1ZBfkZ80xyPLFx5xKRW7Qz67rD8ZHBm5U0OWjYy6jpeCsoigPgTjV8ww==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw2wnhefIV1sMXa9cPyeOVi1S+JtV24IM+pEOX1peBfkfYG8JRA
-	pgeRpkjcO9GgVSWSXoBKp3eibeHqH33gF6Ga1gzVpar/GjW6vaUtPduKsOacs33qXq9jj8qK+MY
-	oNH5Dvjj4Xrrid4+Zbv/0XMaOUD/HtGdsLfF2rA==
-X-Google-Smtp-Source: AGHT+IF0UB7o0vuS6Bty4AeOnjqYdCjSMRlYLH8+QDSVbXDnav7cLaan9vUhNYyE5wm0llxN2dvFNKermU2/At8KL/Y=
-X-Received: by 2002:a05:651c:b06:b0:2fa:cc86:f217 with SMTP id
- 38308e7fff4ca-2ff20307f42mr8533711fa.35.1731053345351; Fri, 08 Nov 2024
- 00:09:05 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="SOAZL9Lv"
+Received: from localhost.localdomain (unknown [58.22.7.114])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 22d55d15;
+	Fri, 8 Nov 2024 14:58:13 +0800 (GMT+08:00)
+From: Shawn Lin <shawn.lin@rock-chips.com>
+To: Rob Herring <robh+dt@kernel.org>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Heiko Stuebner <heiko@sntech.de>,
+	"Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Avri Altman <avri.altman@wdc.com>,
+	Bart Van Assche <bvanassche@acm.org>,
+	YiFeng Zhao <zyf@rock-chips.com>,
+	Liang Chen <cl@rock-chips.com>,
+	linux-scsi@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	devicetree@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Shawn Lin <shawn.lin@rock-chips.com>
+Subject: [PATCH v5 7/7] arm64: dts: rockchip: Add UFS support for RK3576 SoC
+Date: Fri,  8 Nov 2024 14:56:26 +0800
+Message-Id: <1731048987-229149-8-git-send-email-shawn.lin@rock-chips.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1731048987-229149-1-git-send-email-shawn.lin@rock-chips.com>
+References: <1731048987-229149-1-git-send-email-shawn.lin@rock-chips.com>
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGh1PTVZDHRhOQkIdSUtPQk1WFRQJFh
+	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSUhCSE
+	NVSktLVUpCS0tZBg++
+X-HM-Tid: 0a930a90fb3409cckunm22d55d15
+X-HM-MType: 1
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6OUk6Fhw6CDItNCpWLhkcPxge
+	CwhPFB5VSlVKTEhKS09CS0JOT05DVTMWGhIXVQgTGgwVVRcSFTsJFBgQVhgTEgsIVRgUFkVZV1kS
+	C1lBWU5DVUlJVUxVSkpPWVdZCAFZQUpDT0w3Bg++
+DKIM-Signature:a=rsa-sha256;
+	b=SOAZL9LvJ+qDHchjTV5Q0IP7mKMmQAwIOjP7EVVWMsshbpPJ7i7qK5h6SI0DOxkH95848JUG1ZewWnnjfYLxs9Nbwx/1Rl7C/sTd3K1zDbgeSSm8jKNxfTpSGqCMFrwEkuUJQmoKkHz6Q42h44vJdlmxbiPqMSB0RpTeokzmVnY=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
+	bh=3H24NrQLEMfPWL1st4iL+1t7GW4sDnhpoxLzFNJ/4Qk=;
+	h=date:mime-version:subject:message-id:from;
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20241031-msm8917-v2-0-8a075faa89b1@mainlining.org> <20241031-msm8917-v2-4-8a075faa89b1@mainlining.org>
-In-Reply-To: <20241031-msm8917-v2-4-8a075faa89b1@mainlining.org>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 8 Nov 2024 09:08:54 +0100
-Message-ID: <CACRpkdZ8YFfpqmgoahXBk9b88CGKm6Ny0Am4vvUf1ekUz0bEng@mail.gmail.com>
-Subject: Re: [PATCH v2 04/15] pinctrl: qcom: spmi-mpp: Add PM8937 compatible
-To: =?UTF-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>
-Cc: Bjorn Andersson <andersson@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Lee Jones <lee@kernel.org>, 
-	Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
-	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, linux-arm-msm@vger.kernel.org, 
-	linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
-	Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 31, 2024 at 2:19=E2=80=AFAM Barnab=C3=A1s Cz=C3=A9m=C3=A1n
-<barnabas.czeman@mainlining.org> wrote:
+Add ufshc node to rk3576.dtsi, so the board using UFS could
+enable it.
 
-> The PM8937 provides 4 MPPs.
-> Add a compatible to support them.
->
-> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-> Signed-off-by: Barnab=C3=A1s Cz=C3=A9m=C3=A1n <barnabas.czeman@mainlining=
-.org>
+Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+---
 
-Patch applied for v6.13.
+Changes in v5: None
+Changes in v4: None
+Changes in v3: None
+Changes in v2: None
 
-Yours,
-Linus Walleij
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3576.dtsi b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
+index 436232f..32beda2 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3576.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
+@@ -1110,6 +1110,31 @@
+ 			};
+ 		};
+ 
++		ufshc: ufshc@2a2d0000 {
++			compatible = "rockchip,rk3576-ufshc";
++			reg = <0x0 0x2a2d0000 0 0x10000>, /* 0: HCI standard */
++			      <0x0 0x2b040000 0 0x10000>, /* 1: Mphy */
++			      <0x0 0x2601f000 0 0x1000>,  /* 2: HCI Vendor specified */
++			      <0x0 0x2603c000 0 0x1000>,  /* 3: Mphy Vendor specified */
++			      <0x0 0x2a2e0000 0 0x10000>; /* 4: HCI apb */
++			reg-names = "hci", "mphy", "hci_grf", "mphy_grf", "hci_apb";
++			clocks = <&cru ACLK_UFS_SYS>, <&cru PCLK_USB_ROOT>, <&cru PCLK_MPHY>,
++				 <&cru CLK_REF_UFS_CLKOUT>;
++			clock-names = "core", "pclk", "pclk_mphy", "ref_out";
++			assigned-clocks = <&cru CLK_REF_OSC_MPHY>;
++			assigned-clock-parents = <&cru CLK_REF_MPHY_26M>;
++			interrupts = <GIC_SPI 361 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&power RK3576_PD_USB>;
++			pinctrl-0 = <&ufs_refclk>;
++			pinctrl-names = "default";
++			resets = <&cru SRST_A_UFS_BIU>, <&cru SRST_A_UFS_SYS>,
++				 <&cru SRST_A_UFS>, <&cru SRST_P_UFS_GRF>;
++			reset-names = "biu", "sys", "ufs", "grf";
++			reset-gpios = <&gpio4 RK_PD0 GPIO_ACTIVE_LOW>;
++			status = "disabled";
++		};
++
+ 		sdmmc: mmc@2a310000 {
+ 			compatible = "rockchip,rk3576-dw-mshc";
+ 			reg = <0x0 0x2a310000 0x0 0x4000>;
+-- 
+2.7.4
+
