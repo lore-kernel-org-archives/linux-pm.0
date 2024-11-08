@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FF78197A8E;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D65E1974FA;
 	Fri,  8 Nov 2024 16:46:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731084395; cv=none; b=XO1thm97EA/N9793ggiD0X+AVMuA0OP8tb+uLz19f4Y3LtCe+ifGtyd/fMQNtqkualHbFA1mnZKKHDipDiUgMbhXp3ih/RnBelnD9cjRstcYh8BXPROaBickz1XLoe1nWoioEQE4K2LHjpmdg01GN1ANytObznsumzdm3QAbWP4=
+	t=1731084395; cv=none; b=kgViCzX/CvAys0mentgFMng3e60+2GuTqb9ZS3YZm9ix5STC/UVvhWt1M1FrKTCWJ0+NXrGF1X7eIg6ZbtHW0X8h5wUXkEnsQAl60jb29xUvk7QpDLYmNkqA0nOKnaAuOLDkbJyr2vmW/80bKk7KOBF6gUkyLUe67l0JAq65l7g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1731084395; c=relaxed/simple;
-	bh=EWHBWVq8c2xPlLQOEUYeio/FxqoJ8rmfYy1j7aExdLU=;
+	bh=TULGYlML1sIhPReD5NLf2WnpNAK3uqkDVsOXeFWx3Gw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=AS1O+BIEnPCBJGdbrWl7Bf8lF2BvEFsrzG4lkLPtY3HW2AgAKnNJ35GFPz9Rkvql7TsdH1ZrbahnbhrVJ9fhHIvfeHTQCIqK+s+oP9s1HxhS2sK+umcyr1aZqmbRhzY7bJhZesSRcFQVkrj+Ox9SuGI1DB5JhbyI6gjzOWtLNig=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=FEogs6sT reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=b1Ih4zFNYiY/NVC+u1ajGeV+Ag+kalY3kp60VPubUQ7vrCm6e5BmHtqE4pWWPjdzNxAsyDUxJKkZ1hbfd/EKnTyAAt1ssT9mFMxz3k044BZ6yqyowK9qkP/bFkcpyMgEeMi3djYD1H7MJ3S1WjUqVKHRihBYfAB+ODE3qViivjE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=L+uvjbMu reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="FEogs6sT"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="L+uvjbMu"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id db0b5c1feafc1978; Fri, 8 Nov 2024 17:46:25 +0100
+ id 816be685936a7f17; Fri, 8 Nov 2024 17:46:26 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 9B10D834811;
-	Fri,  8 Nov 2024 17:46:25 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 03B14834811;
+	Fri,  8 Nov 2024 17:46:26 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1731084385;
-	bh=EWHBWVq8c2xPlLQOEUYeio/FxqoJ8rmfYy1j7aExdLU=;
+	s=dkim; t=1731084386;
+	bh=TULGYlML1sIhPReD5NLf2WnpNAK3uqkDVsOXeFWx3Gw=;
 	h=From:Subject:Date;
-	b=FEogs6sT+okuG0ijr0ZDOsqFcaQXyBgl1+9sPqHe8qm9nODAw4KRdWHMJmTI8H3/s
-	 ap9aV4B5IQ2D/yVvH9fB36lfoSWu87YFr3RP1FZy4Uuzo7OynUGqGwJ6P62f4ml+WR
-	 SemZ35t6qa8fE44TNPOSpcsXss4bUXuY1BS+aYvJBGnAD1XJ83jzfB85iPiROFZ/8a
-	 RAN2PgjJpMSPXiaWoIdngtJ3lbRlueX0NrLCVSwzfH3sx27obZjifl3IleIW1+2ret
-	 AwC4Krb/xJfQfv9wWQKZziaIKvinx5NhCS3x7Il6izm8RsYco/UnwUGuEiQPa/uMJv
-	 YCk0ck++w1zNw==
+	b=L+uvjbMuK9pjUTo6SZn+P63DXXYsKpy5vMm98PaeSakg5NcIXCXdV9/Dz7Fapg+7b
+	 DdpGN0lubgwWrmn5VIq9sItWsVRHNFvPqE6Neq0wtrA/409/U5D+/cBTrAq40xxhG0
+	 mDCAsfXnLcpaDtiNNjSmLBh6u6ECh14P6sY5RPNmo8DirrNrV1JQl4nLAn0wUc87NJ
+	 qzVAayKKryPDRNi8880vXD58UbrE1Dk9zbz9CNn/sWc5Z8tpvSiH1SyZJktw9daz7B
+	 sqReUkXvtODBrQ8xz42OzKgMVHg2ySmeDw0gqxbEK9GkXIai2lyVgS5cyU2ucmWpiH
+	 +bp1hA6SHxUoA==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
@@ -45,10 +45,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Vincent Guittot <vincent.guittot@linaro.org>,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 Subject:
- [RFC][PATCH v0.1 2/6] PM: EM: Call em_compute_costs() from
- em_create_perf_table()
-Date: Fri, 08 Nov 2024 17:37:21 +0100
-Message-ID: <1821040.VLH7GnMWUR@rjwysocki.net>
+ [RFC][PATCH v0.1 1/6] PM: EM: Move perf rebuilding function from schedutil to
+ EM
+Date: Fri, 08 Nov 2024 17:36:29 +0100
+Message-ID: <3263759.5fSG56mABF@rjwysocki.net>
 In-Reply-To: <3607404.iIbC2pHGDl@rjwysocki.net>
 References: <3607404.iIbC2pHGDl@rjwysocki.net>
 Precedence: bulk
@@ -67,43 +67,129 @@ X-DCC--Metrics: v370.home.net.pl 0; Body=10 Fuz1=10 Fuz2=10
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In preparation for subsequent changes, move the em_compute_costs()
-invocation from em_create_perf_table() to em_create_pd() which is its
-only caller.
+The sugov_eas_rebuild_sd() function defined in the schedutil cpufreq
+governor implements generic functionality that may be useful in other
+places.  In particular, going forward it will be used in the intel_pstate
+driver.
+
+For this reason, move it from schedutil to the energy model code and
+rename it to em_rebuild_perf_domains().
+
+This also involves getting rid of some #ifdeffery in schedutil which
+is a plus.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/power/energy_model.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ include/linux/energy_model.h     |    2 ++
+ kernel/power/energy_model.c      |   17 +++++++++++++++++
+ kernel/sched/cpufreq_schedutil.c |   33 ++++++---------------------------
+ 3 files changed, 25 insertions(+), 27 deletions(-)
 
 Index: linux-pm/kernel/power/energy_model.c
 ===================================================================
 --- linux-pm.orig/kernel/power/energy_model.c
 +++ linux-pm/kernel/power/energy_model.c
-@@ -388,10 +388,6 @@ static int em_create_perf_table(struct d
- 
- 	em_init_performance(dev, pd, table, nr_states);
- 
--	ret = em_compute_costs(dev, table, cb, nr_states, flags);
--	if (ret)
--		return -EINVAL;
--
+@@ -908,3 +908,20 @@ int em_update_performance_limits(struct
  	return 0;
  }
- 
-@@ -434,6 +430,10 @@ static int em_create_pd(struct device *d
- 	if (ret)
- 		goto free_pd_table;
- 
-+	ret = em_compute_costs(dev, em_table->state, cb, nr_states, flags);
-+	if (ret)
-+		goto free_pd_table;
+ EXPORT_SYMBOL_GPL(em_update_performance_limits);
 +
- 	rcu_assign_pointer(pd->em_table, em_table);
++static void rebuild_sd_workfn(struct work_struct *work)
++{
++	rebuild_sched_domains_energy();
++}
++
++static DECLARE_WORK(rebuild_sd_work, rebuild_sd_workfn);
++
++void em_rebuild_perf_domains(void)
++{
++	/*
++	 * When called from the cpufreq_register_driver() path, the
++	 * cpu_hotplug_lock is already held, so use a work item to
++	 * avoid nested locking in rebuild_sched_domains().
++	 */
++	schedule_work(&rebuild_sd_work);
++}
+Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+===================================================================
+--- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
++++ linux-pm/kernel/sched/cpufreq_schedutil.c
+@@ -604,31 +604,6 @@ static const struct kobj_type sugov_tuna
  
- 	if (_is_cpu_device(dev))
+ /********************** cpufreq governor interface *********************/
+ 
+-#ifdef CONFIG_ENERGY_MODEL
+-static void rebuild_sd_workfn(struct work_struct *work)
+-{
+-	rebuild_sched_domains_energy();
+-}
+-
+-static DECLARE_WORK(rebuild_sd_work, rebuild_sd_workfn);
+-
+-/*
+- * EAS shouldn't be attempted without sugov, so rebuild the sched_domains
+- * on governor changes to make sure the scheduler knows about it.
+- */
+-static void sugov_eas_rebuild_sd(void)
+-{
+-	/*
+-	 * When called from the cpufreq_register_driver() path, the
+-	 * cpu_hotplug_lock is already held, so use a work item to
+-	 * avoid nested locking in rebuild_sched_domains().
+-	 */
+-	schedule_work(&rebuild_sd_work);
+-}
+-#else
+-static inline void sugov_eas_rebuild_sd(void) { };
+-#endif
+-
+ struct cpufreq_governor schedutil_gov;
+ 
+ static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
+@@ -783,7 +758,11 @@ static int sugov_init(struct cpufreq_pol
+ 	if (ret)
+ 		goto fail;
+ 
+-	sugov_eas_rebuild_sd();
++	/*
++	 * EAS shouldn't be attempted without sugov, so rebuild the sched_domains
++	 * on governor changes to make sure the scheduler knows about it.
++	 */
++	em_rebuild_perf_domains();
+ 
+ out:
+ 	mutex_unlock(&global_tunables_lock);
+@@ -827,7 +806,7 @@ static void sugov_exit(struct cpufreq_po
+ 	sugov_policy_free(sg_policy);
+ 	cpufreq_disable_fast_switch(policy);
+ 
+-	sugov_eas_rebuild_sd();
++	em_rebuild_perf_domains();
+ }
+ 
+ static int sugov_start(struct cpufreq_policy *policy)
+Index: linux-pm/include/linux/energy_model.h
+===================================================================
+--- linux-pm.orig/include/linux/energy_model.h
++++ linux-pm/include/linux/energy_model.h
+@@ -179,6 +179,7 @@ int em_dev_compute_costs(struct device *
+ int em_dev_update_chip_binning(struct device *dev);
+ int em_update_performance_limits(struct em_perf_domain *pd,
+ 		unsigned long freq_min_khz, unsigned long freq_max_khz);
++void em_rebuild_perf_domains(void);
+ 
+ /**
+  * em_pd_get_efficient_state() - Get an efficient performance state from the EM
+@@ -404,6 +405,7 @@ int em_update_performance_limits(struct
+ {
+ 	return -EINVAL;
+ }
++static inline void em_rebuild_perf_domains(void) {}
+ #endif
+ 
+ #endif
 
 
 
