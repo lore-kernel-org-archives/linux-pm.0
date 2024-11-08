@@ -1,50 +1,50 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0D83175D5E;
-	Fri,  8 Nov 2024 16:03:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B4811BD9E2;
+	Fri,  8 Nov 2024 16:14:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731081833; cv=none; b=sqPFZIv5KdSSuX0BkFxC+2UFUtnrvH2+7VjmYFJDZ/X2gFuyFE83xen3mTYG4zF+kU1++0WpVI47Py4UOTCDLBqIlLWOI7k3BN90uxWSBJ7KatEznL3hhkyoyZDGLXdl6MqAzfU6SXhaCxAzf54+bcYhjoLK2Q4Mxol0Hm0Mqtw=
+	t=1731082464; cv=none; b=YHm9mekWenoE4Il/gKcHTB3VBF2uDw65Rf/2SArh6mogwhMPaFBL2h8jURiWb/FHGVGKMOcd4bXm/UC2fjLGXZ6cNmhiW4wQlq35u6plu5DIll91y3oYrH98/lP/l5yJrEANB65g+g4H+P1LJy7upDaSMCULaaTk9BDOK6/mLyU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731081833; c=relaxed/simple;
-	bh=JiJxHReBqMK9UNZ2KYua6oCaKZ/5t/gQybxaVed8W50=;
+	s=arc-20240116; t=1731082464; c=relaxed/simple;
+	bh=43Ia+a7MU+429mSA3hhjnIzSQdrT7VEYniLDvOPEEvQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=POg7JJwTvKIlPVWWAiZiUCiCZ9JmkKB1n+PO+5/DX+GT3YrutX9RHOcJg4MBKGzcGnrb2ATuyhDi5KOEmQfKxAwjZnXncDOI9llr6IdqhBfqK1O/vlLrTPtaDH6sx2AwF2I644Mx1gZUh1XoS3jsZeV5EJ+wxaHte+ycKHPSXEY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Mz0MVSQh; arc=none smtp.client-ip=192.198.163.14
+	 In-Reply-To:Content-Type; b=esoPGeJwZXtmjxcXX0m0HNzMKLe4BT+XtePF5x8bo/3rMIE/4MVeDcFR381k4XyIAREfRfw1Pm5VN+wW9lzX56NYt/e4auczcCJyhEbt09rTaQTm9BcysMAhPpZhTbO4Zi2MCaIP/XMgdCQyJeV3QXQF31XiTn2DyaubIQTpopg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=RVyrzGRz; arc=none smtp.client-ip=192.198.163.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Mz0MVSQh"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="RVyrzGRz"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1731081832; x=1762617832;
+  t=1731082463; x=1762618463;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=JiJxHReBqMK9UNZ2KYua6oCaKZ/5t/gQybxaVed8W50=;
-  b=Mz0MVSQhdFX6TTqjZLrdc44Y7DRfTIpr71zQLbVXf5jGNn2acTAyX+CM
-   tlQGBKshHpRtDGOUJQ6nBn/Ykprb66jX3PDK6RpR8wtqvAxCHT6pqKf23
-   9kXfAjT3FViuLcG1HV8SlulmoDWGPKOEQxv2pFg3CiZBT7vfGxNYYnVDg
-   2MeR5qqhiBEItksQi086v+WR8fAR+jU2ouqdPus6MC1S4bxBGhNuBoczU
-   fffAV8MMrOBIb+b/2qqtI5SgfXuQMGUhwWbvdUH5VZlcROazpmYqkk8i4
-   AV3oEdejVvwQMh1DT559q4+26RfegS0kAYVC0W8kKrKVXIzf01nsxGHL1
+  bh=43Ia+a7MU+429mSA3hhjnIzSQdrT7VEYniLDvOPEEvQ=;
+  b=RVyrzGRzsWHg0ZZ7q2qc7TEcqGcVOYdSr3G658vSzS2P6i3WcRaJb/Ai
+   2OyeQp1iq2Ri65t2P/x76KfZD3v+L1yoeB5aXaJvgLD5f0ys1pb7YkqFq
+   T6y9p/l/HZfhf+7A1fMJEgiGtB+sbAVDWeMxZ4yKWhgJS9e/dS26yVgfY
+   h3O/eEG3u93MaXNaRAX5/UvuJ8zxpkonDlHkm8BUOAfoDRjGiUsFj6zaQ
+   sP87yn1CqLKcb4fR4cArdeCMsE+aZ0VyutZkvKQqlq42C+NuVsi/TY2zb
+   8J1gVF0mKqjcC53OhL8nNEpHzU2T0w0RRh11XXefUthRKGuQxLVodo6cz
    A==;
-X-CSE-ConnectionGUID: Ne+v9e1WQO63W/cpD3y1tg==
-X-CSE-MsgGUID: CTYEQwD8T66Z4CPFyROIFg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11250"; a="31198661"
+X-CSE-ConnectionGUID: fNR10v0gTNyblG/E44cq6w==
+X-CSE-MsgGUID: dctZwBp/QsqS3uiE1+Qaqg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11250"; a="30386537"
 X-IronPort-AV: E=Sophos;i="6.12,138,1728975600"; 
-   d="scan'208";a="31198661"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2024 08:03:51 -0800
-X-CSE-ConnectionGUID: IW9qaDxVTWmyqWP9kQGE2w==
-X-CSE-MsgGUID: IkfmL614Q2GyooaPT3FPaQ==
+   d="scan'208";a="30386537"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2024 08:14:23 -0800
+X-CSE-ConnectionGUID: Bjo465FrTj2bdIWxPHQZ6g==
+X-CSE-MsgGUID: Km6xKbgaRyi0l8MfaeqCiA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; 
-   d="scan'208";a="90440959"
+X-IronPort-AV: E=Sophos;i="6.12,138,1728975600"; 
+   d="scan'208";a="85773591"
 Received: from rfrazer-mobl3.amr.corp.intel.com (HELO [10.124.223.66]) ([10.124.223.66])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2024 08:03:51 -0800
-Message-ID: <dfe36107-1397-4401-b8fd-86cafe871866@intel.com>
-Date: Fri, 8 Nov 2024 08:03:49 -0800
+  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2024 08:14:22 -0800
+Message-ID: <394fa854-41a9-4ad1-880b-629108d52b41@intel.com>
+Date: Fri, 8 Nov 2024 08:14:21 -0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -52,14 +52,14 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/3] x86/smp: Allow calling mwait_play_dead with
- arbitrary hint
+Subject: Re: [PATCH v3 2/3] x86/smp native_play_dead: Prefer
+ cpuidle_play_dead() over mwait_play_dead()
 To: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>, x86@kernel.org
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
  rafael.j.wysocki@intel.com, len.brown@intel.com,
  artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com
 References: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
- <20241108122909.763663-2-patryk.wlazlyn@linux.intel.com>
+ <20241108122909.763663-3-patryk.wlazlyn@linux.intel.com>
 From: Dave Hansen <dave.hansen@intel.com>
 Content-Language: en-US
 Autocrypt: addr=dave.hansen@intel.com; keydata=
@@ -105,161 +105,54 @@ Autocrypt: addr=dave.hansen@intel.com; keydata=
  MTsCeQDdjpgHsj+P2ZDeEKCbma4m6Ez/YWs4+zDm1X8uZDkZcfQlD9NldbKDJEXLIjYWo1PH
  hYepSffIWPyvBMBTW2W5FRjJ4vLRrJSUoEfJuPQ3vW9Y73foyo/qFoURHO48AinGPZ7PC7TF
  vUaNOTjKedrqHkaOcqB185ahG2had0xnFsDPlx5y
-In-Reply-To: <20241108122909.763663-2-patryk.wlazlyn@linux.intel.com>
+In-Reply-To: <20241108122909.763663-3-patryk.wlazlyn@linux.intel.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 11/8/24 04:29, Patryk Wlazlyn wrote:
-> The current implementation for looking up the mwait hint for the deepest
-> cstate depends on them to be continuous in range [0, NUM_SUBSTATES-1].
-> While that is correct on most Intel x86 platforms, it is not documented
-> and may not result in reaching the most optimized idle state on some of
-> them.
-
-First, it is not clear what code this refers to.  It needs to be more clear.
-
-Second, this is not clear about the bug.  Start with being crystal clear
-about the problem and the impact:
-
-	MWAIT needs different hints on different CPUs to reach the most
-	efficient idle states. The hint calculation* works in practice
-	on current hardware, but it fails on newer ones. Those newer
-	CPUs' battery life really suffers when the system is suspended
-	like when a laptop lid is closed.
-
-	 * The current calculation is the for loop inspecting edx in
-	   mwait_play_dead()
-
-Then you can go into detail about what the bad implementation does.
-
-> For example Intel's Sierra Forest report two C6 substates in cpuid leaf 5:
->     C6S  (hint 0x22)
->     C6SP (hint 0x23)
+> The generic implementation, based on cpuid leaf 0x5, for looking up the
+> mwait hint for the deepest cstate, depends on them to be continuous in
+> range [0, NUM_SUBSTATES-1]. While that is correct on most Intel x86
+> platforms, it is not architectural and may not result in reaching the
+> most optimized idle state on some of them.
 > 
-> Hints 0x20 and 0x21 are skipped entirely,
+> Prefer cpuidle_play_dead() over the generic mwait_play_dead() loop and
+> fallback to the later in case of missing enter_dead() handler.
 
-Why does it start at 0x20?  Giving the example on new, broken hardware
-is also a bit weak without an example from old, fully functional hardware.
+I don't think the bug has anything to do with this patch, really.
+There's no need to rehash it here.
 
-> causing the current
-> implementation to compute the wrong hint, when looking for the deepest
-> cstate for offlined CPU to enter. As a result, package with an offlined
-> CPU can never reach PC6.
+The issue here is that the only way to call mwait today is via
+mwait_play_dead() directly, using its internally-calculated hint.
 
-I don't think the PC6 detail matters enough to mention here.
+What you want is for a cpuidle-driver-calculated hint to be used.  So,
+you're using the new hint function via the cpuidle driver.  But you just
+need the cpuidle driver to be called first, not the old
+mwait_play_dead()-calculated hint.  The new code will still do mwait,
+just via a different path and with a different hint.
 
-> Allow the idle driver to call mwait_play_dead() code with the forced
-> mwait hint, skipping the cpuid based computation.
-> 
-> Signed-off-by: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>
-> ---
->  arch/x86/include/asm/smp.h |  6 ++++++
->  arch/x86/kernel/smpboot.c  | 25 ++++++++++++++++++-------
->  2 files changed, 24 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-> index ca073f40698f..fbd275d6661a 100644
-> --- a/arch/x86/include/asm/smp.h
-> +++ b/arch/x86/include/asm/smp.h
-> @@ -114,6 +114,7 @@ void wbinvd_on_cpu(int cpu);
->  int wbinvd_on_all_cpus(void);
->  
->  void smp_kick_mwait_play_dead(void);
-> +int mwait_play_dead_with_hint(unsigned long hint);
->  
->  void native_smp_send_reschedule(int cpu);
->  void native_send_call_func_ipi(const struct cpumask *mask);
-> @@ -164,6 +165,11 @@ static inline struct cpumask *cpu_llc_shared_mask(int cpu)
->  {
->  	return (struct cpumask *)cpumask_of(0);
->  }
-> +
-> +static inline int mwait_play_dead_with_hint(unsigned long eax_hint)
-> +{
-> +	return 1;
-> +}
->  #endif /* CONFIG_SMP */
->  
->  #ifdef CONFIG_DEBUG_NMI_SELFTEST
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index 0c35207320cb..44c40781bad6 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -1270,13 +1270,14 @@ void play_dead_common(void)
->  	local_irq_disable();
->  }
->  
-> +int mwait_play_dead_with_hint(unsigned long eax_hint);
+The thing this doesn't mention is what the impact on everyone else is.
+I _think_ the ACPI cpuidle driver is the only worry.  Today, if there's
+a system that supports mwait and ACPI cpuidle, it'll use mwait.  After
+this patch, it'll use ACPI cpuidle.
 
-We generally prefer these get a declaration in a header or get moved
-around in the file, not declared like this.
+The changelog doesn't mention that behavior change or why that's OK.
+Also, looking at this:
 
->  /*
->   * We need to flush the caches before going to sleep, lest we have
->   * dirty data in our caches when we come back up.
->   */
-> -static inline void mwait_play_dead(void)
-> +static inline int mwait_play_dead(void)
->  {
-> -	struct mwait_cpu_dead *md = this_cpu_ptr(&mwait_cpu_dead);
->  	unsigned int eax, ebx, ecx, edx;
->  	unsigned int highest_cstate = 0;
->  	unsigned int highest_subcstate = 0;
-> @@ -1284,13 +1285,13 @@ static inline void mwait_play_dead(void)
->  
->  	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||
->  	    boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
-> -		return;
-> +		return 1;
->  	if (!this_cpu_has(X86_FEATURE_MWAIT))
-> -		return;
-> +		return 1;
->  	if (!this_cpu_has(X86_FEATURE_CLFLUSH))
-> -		return;
-> +		return 1;
->  	if (__this_cpu_read(cpu_info.cpuid_level) < CPUID_MWAIT_LEAF)
-> -		return;
-> +		return 1;
+> -	mwait_play_dead();
+>  	if (cpuidle_play_dead())
+> -		hlt_play_dead();
+> +		mwait_play_dead();
+> +	hlt_play_dead();
 
-If you're going to use an 'int' for a fail/nofail return type, please
-just use -ERRNO's. It makes it *MUCH* more clear that these are error
-returns and not something else.
+None of those return on success, right?
 
-That's what cpuidle_play_dead() does, for instance,  Please follow its lead.
+Is there any reason this couldn't just be:
 
->  	eax = CPUID_MWAIT_LEAF;
->  	ecx = 0;
-> @@ -1314,6 +1315,13 @@ static inline void mwait_play_dead(void)
->  			(highest_subcstate - 1);
->  	}
->  
-> +	return mwait_play_dead_with_hint(eax);
-> +}
-> +
-> +int mwait_play_dead_with_hint(unsigned long eax_hint)
-> +{
-> +	struct mwait_cpu_dead *md = this_cpu_ptr(&mwait_cpu_dead);
-> +
->  	/* Set up state for the kexec() hack below */
->  	md->status = CPUDEAD_MWAIT_WAIT;
->  	md->control = CPUDEAD_MWAIT_WAIT;
-> @@ -1333,7 +1341,7 @@ static inline void mwait_play_dead(void)
->  		mb();
->  		__monitor(md, 0, 0);
->  		mb();
-> -		__mwait(eax, 0);
-> +		__mwait(eax_hint, 0);
->  
->  		if (READ_ONCE(md->control) == CPUDEAD_MWAIT_KEXEC_HLT) {
->  			/*
-> @@ -1353,6 +1361,9 @@ static inline void mwait_play_dead(void)
->  				native_halt();
->  		}
->  	}
-> +
-> +	/* Never reached */
-> +	return 0;
->  }
+	/* The first successful play_dead() will not return: */
+	cpuidle_play_dead();
+	mwait_play_dead();
+	hlt_play_dead();
 
-I think the preferred way to do this is to add a __noreturn annotation.
-
+That has the added bonus of not needing to return anything from
+mwait_play_dead() and the resulting churn from the last patch.
