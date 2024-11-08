@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1773D192D66;
-	Fri,  8 Nov 2024 16:46:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E53BD19415E;
+	Fri,  8 Nov 2024 16:46:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731084394; cv=none; b=trnWbRPHwCmjecFCrStK4T7N7SBS/8nTw02DjjLzvsJwdnEA8vGiZDrdXfVkiUPLw1iwnSDtdKtsNOFYiufg2LkFLppU96iZMooqHpSBJgSwRLtd1vWsbj337FrshwkE5lymFqPBJnKgFO87fdWEjEBC7OZmt0jwmyPk5TELaM4=
+	t=1731084395; cv=none; b=jXNS46LC6+t+FTZ1EMDdt7chSU10m7BHp9N1ykGBl1rECSt5y3QtXJ5EbVNFJuSx0WbmDhJf/RuKDGmGdTob/csG4hMzCiC7ILd+Y1ESxDWMvJ9tJNPaPtURbLYy+FIvb4kGqWfo5SmIze3KbN15nk6AwVu3bCGaA/F8jqESlpo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731084394; c=relaxed/simple;
-	bh=cXtVfwFYXyFlu1k+EOgWZE3VZkVVkEP5zIbiuP7gwes=;
+	s=arc-20240116; t=1731084395; c=relaxed/simple;
+	bh=a6aZwa1LaDJUrUWhlEpL2OK9yCO3CgJqQ0flWFySIkE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=i+UXBn/az1/ZlVDjDPLXuktWhghAYCCBpqcXxYzqv4kTDHIp3vE0AgxrO3ia1D7NJAIHbIRhyVP7bQf9+rul4+quj2BQIuhtMvSe1W4mc10WJkISJ2boWDxYav2D7tYbstgltxO3lwMi7RRNIELkPeabiZY4IUjDIzilDb/aqj4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=p8U1bJIQ reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=ZR/Lw7j9vOVDMZt1tw7AmqgbOEY2n//pkUA+u8PRjLk0s0Y/GLCQvzY2ApuIO8FayABKyzVcxPiqv1YGLmqADKhnEAZ3HHeH2Dm9sudAODC5ugJneLPYp+Lm5RtwdKElLGy5+K4dibTp0bSeLDS+/RAY7fEjtsKeg2sChzTj3RY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=TcP8y+xZ; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="p8U1bJIQ"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="TcP8y+xZ"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id dbc142109ede4b49; Fri, 8 Nov 2024 17:46:24 +0100
+ id 2ee52bafb25240cc; Fri, 8 Nov 2024 17:46:25 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 61161834811;
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id C8A3B834811;
 	Fri,  8 Nov 2024 17:46:24 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
 	s=dkim; t=1731084384;
-	bh=cXtVfwFYXyFlu1k+EOgWZE3VZkVVkEP5zIbiuP7gwes=;
+	bh=a6aZwa1LaDJUrUWhlEpL2OK9yCO3CgJqQ0flWFySIkE=;
 	h=From:Subject:Date;
-	b=p8U1bJIQybDVQeK04Vd1xUPcQDDCOi4Vlb9UURclUy7kZHg2qmAMsnZafTJK6ro3J
-	 QSwjvOUlAOwR3AmUmjqROvC2R6v49YNfFYoKLp4+3c4xPGaSj+LIdaDhWd9XNsO7j2
-	 XnnkOnGtvC22TxRvHoC1BxGZSIlSs/DwwxNw8e4w3Hioe83CWwKAqX7mEYFqfC3SMO
-	 ZmIwsRdzzNd2YqO5YN61Dk3KCf/ElMmcIsFpDmuYVBcIkHT8q8wsc2rOtgShU0BO/0
-	 cVN7Q+RPv1bn1ZAuUkNnfm5wnqwiERtRtow8T5hKW/+Loa/BReL0lZruXa9orlyT91
-	 enf2Y6yA9iHYg==
+	b=TcP8y+xZec1zibPMd3rSHYuDZrlkkw3pqp22gJyG4t8AzPMAhO5YttS0FokY4iyAI
+	 h0sEXFDrNkhGw3TTA6al/g9Z/gGIx2qPrS6uzD7agOqZEAh7XtXyth+hE0TBmZc4AU
+	 y3kep/SXiz9d6nIjphUmgjdexJ1sG12AMos+QC/22jLuQR3dlpQUJDGxBSUsSKJuTv
+	 6ryWlReHX+tNnVOZPhSVW0xiM9Az3G404N1sdO3IZwr7AriyFe5cNuuLjqOt2JumOg
+	 ahPp5ce7usuea8t0RKcnvVQWpq8xeW+J3M81sOnKl/d3bGy/+ydjmvWGwiSSMfjMHH
+	 AIJCq4a9M0CVA==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
@@ -44,11 +44,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Morten Rasmussen <morten.rasmussen@arm.com>,
  Vincent Guittot <vincent.guittot@linaro.org>,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Subject:
- [RFC][PATCH v0.1 5/6] sched/topology: Allow .setpolicy() cpufreq drivers to
- enable EAS
-Date: Fri, 08 Nov 2024 17:41:22 +0100
-Message-ID: <1889415.atdPhlSkOF@rjwysocki.net>
+Subject: [RFC][PATCH v0.1 4/6] PM: EM: Introduce em_dev_expand_perf_domain()
+Date: Fri, 08 Nov 2024 17:40:53 +0100
+Message-ID: <2223963.Mh6RI2rZIc@rjwysocki.net>
 In-Reply-To: <3607404.iIbC2pHGDl@rjwysocki.net>
 References: <3607404.iIbC2pHGDl@rjwysocki.net>
 Precedence: bulk
@@ -67,52 +65,87 @@ X-DCC--Metrics: v370.home.net.pl 0; Body=10 Fuz1=10 Fuz2=10
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Some cpufreq drivers, like intel_pstate, have built-in governors that
-are used instead of regular cpufreq governors, schedutil in particular,
-but they can work with EAS just fine, so allow EAS to be used with
-those drivers.
+Introduce a helper function for adding a CPU to an existing EM perf
+domain.
 
-Also update the debug message printed when the cpufreq governor in
-use is not schedutil and the related comment, to better match the
-code after the change.
+Subsequently, this will be used by the intel_pstate driver to add new
+CPUs to existing perf domains when those CPUs go online for the first
+time after the initialization of the driver.
+
+No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ include/linux/energy_model.h |    5 +++++
+ kernel/power/energy_model.c  |   32 ++++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
 
-I'm not sure how much value there is in refusing to enable EAS without
-schedutil in general.  For instance, if there are no crossover points
-between the cost curves for different perf domains, EAS may as well be
-used with the performance and powersave governors AFAICS.
-
----
- kernel/sched/topology.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-pm/kernel/sched/topology.c
+Index: linux-pm/kernel/power/energy_model.c
 ===================================================================
---- linux-pm.orig/kernel/sched/topology.c
-+++ linux-pm/kernel/sched/topology.c
-@@ -251,7 +251,7 @@ static bool sched_is_eas_possible(const
- 		return false;
- 	}
+--- linux-pm.orig/kernel/power/energy_model.c
++++ linux-pm/kernel/power/energy_model.c
+@@ -696,6 +696,38 @@ void em_dev_unregister_perf_domain(struc
+ }
+ EXPORT_SYMBOL_GPL(em_dev_unregister_perf_domain);
  
--	/* Do not attempt EAS if schedutil is not being used. */
-+	/* Do not attempt EAS with a cpufreq governor other than schedutil. */
- 	for_each_cpu(i, cpu_mask) {
- 		policy = cpufreq_cpu_get(i);
- 		if (!policy) {
-@@ -263,9 +263,9 @@ static bool sched_is_eas_possible(const
- 		}
- 		gov = policy->governor;
- 		cpufreq_cpu_put(policy);
--		if (gov != &schedutil_gov) {
-+		if (gov && gov != &schedutil_gov) {
- 			if (sched_debug()) {
--				pr_info("rd %*pbl: Checking EAS, schedutil is mandatory\n",
-+				pr_info("rd %*pbl: Checking EAS, cpufreq governor is not schedutil\n",
- 					cpumask_pr_args(cpu_mask));
- 			}
- 			return false;
++/**
++ * em_dev_expand_perf_domain() - Expand CPU perf domain
++ * @dev: CPU device of a CPU in the perf domain.
++ * @new_cpu: CPU to add to the perf domain.
++ */
++int em_dev_expand_perf_domain(struct device *dev, int new_cpu)
++{
++	struct device *new_cpu_dev;
++	struct em_perf_domain *pd;
++
++	if (IS_ERR_OR_NULL(dev) || !_is_cpu_device(dev))
++		return -EINVAL;
++
++	new_cpu_dev = get_cpu_device(new_cpu);
++	if (!new_cpu_dev)
++		return -EINVAL;
++
++	guard(mutex)(&em_pd_mutex);
++
++	if (em_pd_get(new_cpu_dev))
++		return -EEXIST;
++
++	pd = em_pd_get(dev);
++	if (!pd)
++		return -EINVAL;
++
++	cpumask_set_cpu(new_cpu, em_span_cpus(pd));
++	new_cpu_dev->em_pd = pd;
++
++	return 0;
++}
++
+ static struct em_perf_table __rcu *em_table_dup(struct em_perf_domain *pd)
+ {
+ 	struct em_perf_table __rcu *em_table;
+Index: linux-pm/include/linux/energy_model.h
+===================================================================
+--- linux-pm.orig/include/linux/energy_model.h
++++ linux-pm/include/linux/energy_model.h
+@@ -172,6 +172,7 @@ int em_dev_register_perf_domain(struct d
+ 				struct em_data_callback *cb, cpumask_t *span,
+ 				bool microwatts);
+ void em_dev_unregister_perf_domain(struct device *dev);
++int em_dev_expand_perf_domain(struct device *dev, int new_cpu);
+ struct em_perf_table __rcu *em_table_alloc(struct em_perf_domain *pd);
+ void em_table_free(struct em_perf_table __rcu *table);
+ int em_dev_compute_costs(struct device *dev, struct em_perf_state *table,
+@@ -354,6 +355,10 @@ int em_dev_register_perf_domain(struct d
+ static inline void em_dev_unregister_perf_domain(struct device *dev)
+ {
+ }
++static inline int em_dev_expand_perf_domain(struct device *dev, int new_cpu)
++{
++	return -EINVAL;
++}
+ static inline struct em_perf_domain *em_cpu_get(int cpu)
+ {
+ 	return NULL;
 
 
 
