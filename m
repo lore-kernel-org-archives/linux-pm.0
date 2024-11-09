@@ -1,39 +1,39 @@
 Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9D7119925F;
-	Sat,  9 Nov 2024 12:08:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05E0419ABB7;
+	Sat,  9 Nov 2024 12:08:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731154106; cv=none; b=qTUXo3Bcx1hQjsfQtZxm4gNwmblrg+c06+GsbyNCDXPrvTNt4OaLpmqyuKWG41GWeLMi5R1oQ1l+3Y6BRzi1D6s9FenrAIKO/VzXNbEwIH8090o+Lg2R908o+oH9FKMagzFJVV2F9lW9b/CuRhTcNUWC8ReKxccIvEbfeAULOdo=
+	t=1731154109; cv=none; b=cI2jMuefO5kSP3T1vYRONwf4FK2WxKrgIWgz7CqJLhVDny5G6HmT9+n66qDFILf1c9GrSYLp5NKF8pePbKImAlnQG68L7IYGbsjUa6PW7134N3Gwp/opVg6HyBnm2UwF0iSfWc9CISbrr+AZ4HsTFfURHI+LxTNk8612MTAq7sU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731154106; c=relaxed/simple;
-	bh=oSFXD5koz0bnImj9AwyYkdxZ8tPIPU4UsWyonhEengo=;
+	s=arc-20240116; t=1731154109; c=relaxed/simple;
+	bh=xiFBtHsOaU6w5QYdlsV5ffTJLBo8Uh6SeJeMP9eWLsQ=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fzZimKK0A2x5/ZXC2ItOcBCRicfhyhFd9yDaBW0Hs/Z0RdM5W6Lade1mvjDeTednDArfnmYGnT4YdvRBXdGJlOufatRnkaLxOSwGyfi14LNHJQGlEUltqYjiQEhu4V9tPnU/UPP1d/vMLCdLcHvzjKa2MeqXw7J4uuYiHvxahqU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=AjeukKo8; arc=none smtp.client-ip=5.75.144.95
+	 In-Reply-To:To:Cc; b=kbY6+WWj6RNgYKbd38VBzqevc0iZ7kDEuuOaP9XS6h/3+C3tb84XkBuVGVxBHWSdMFMfZNrefuvq3cAus1+abRGo2Uq7rS/3E4zFQvHVGO9uhCPrQtLc3HeRmhGT4KWjgnWHB5v23dxAqoqI1QAkJuRYXf0RgwFK7ecVPsRbWFw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=YTloDeHf; arc=none smtp.client-ip=5.75.144.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="AjeukKo8"
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="YTloDeHf"
 Received: from [192.168.118.162] (254C229A.nat.pool.telekom.hu [37.76.34.154])
-	by mail.mainlining.org (Postfix) with ESMTPSA id DA416E45C8;
-	Sat,  9 Nov 2024 12:08:21 +0000 (UTC)
+	by mail.mainlining.org (Postfix) with ESMTPSA id 27F37E45C9;
+	Sat,  9 Nov 2024 12:08:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mainlining.org;
-	s=psm; t=1731154103;
+	s=psm; t=1731154106;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=J8Y4yxwqnDss/PAt3TvJTQZaFUiFNkqCyH+WUzWqZ+0=;
-	b=AjeukKo8ZaGdvOttiS70Zg2Z6JhSz9juxl+MpbfRzsR/jApz7GgnSdY9d/17cLrbn/FyeC
-	fJ8bqbwPzQ/s5sw7EuQeRejUJ215Viu12+2QK6pNdr801nk8eQxWf84qa9xt1OYkvkNeC5
-	QooLORF8LQpcsmUBjg0xY5wTJyQ5Aq/BJczQvwxM59Zt2mhsN/+2CjjBvVMnMZSiV87pbo
-	e8LIehInYWTRPpj8IIhXG3vuddn3V9QljqpJiylXH8w3xcgnjUr4FQt82bxUpuofRi3Jue
-	bB+mzjp8R+0VDJVDIxIbDlx38fjpg7naM6BNaG4kvZ5B2e6aNsZUv04fSGaV6Q==
+	bh=lpHmUFBIqJF78XKlVouHZG9P31kndu81nFICPCCAgP0=;
+	b=YTloDeHf28xOChqK5kIPI+nRvztKmGQmGe4e6FLu5PCm2ra5Kt4qAKEmr7rCoHgTbQcKsx
+	sNcVaM3sgZ75TBZ8is8m0rfRzKTYXpvQ+ANs4OLO+v4W9H3ZNVhcZz1Gp/x8X2noY/dA66
+	vtOox+8+CA9qURSI1pmc8wJ0x2gG3zSDcLQgsFalcLuSw/VPu8Pg5Qu20BBDNI16FD2Gib
+	1rOJ0Y5A3AbeegEDroAlu4tNaUODzIGWBm3Cz/Od/7adpD796cltVRBkOUcfO3WaAX1dzz
+	GqgZpxaus7o2tFeSp5azJtaX0yxrd9yvRDrNUu8/qm2IL6gfiqmQ+KwffKJAKg==
 From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Date: Sat, 09 Nov 2024 13:08:09 +0100
-Subject: [PATCH v4 07/10] dt-bindings: nvmem: Add compatible for MS8917
+Date: Sat, 09 Nov 2024 13:08:11 +0100
+Subject: [PATCH v4 09/10] dt-bindings: arm: qcom: Add Xiaomi Redmi 5A
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,7 +42,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241109-msm8917-v4-7-8be9904792ab@mainlining.org>
+Message-Id: <20241109-msm8917-v4-9-8be9904792ab@mainlining.org>
 References: <20241109-msm8917-v4-0-8be9904792ab@mainlining.org>
 In-Reply-To: <20241109-msm8917-v4-0-8be9904792ab@mainlining.org>
 To: Bjorn Andersson <andersson@kernel.org>, 
@@ -62,34 +62,55 @@ Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
  =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>, 
  Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1731154089; l=923;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1731154089; l=1345;
  i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=oSFXD5koz0bnImj9AwyYkdxZ8tPIPU4UsWyonhEengo=;
- b=as90N8yKeQfy6SKqpGuQpR20GPyoGCWPCYgek8vfT7c75FHV3FOIGlt7mzsQIbLSVIvDHdA5B
- bd9ElBtMXOeDQojXX7ti/6n54yP2XPZn3vvfgUljYoVR+RBhXML1Xd8
+ bh=xiFBtHsOaU6w5QYdlsV5ffTJLBo8Uh6SeJeMP9eWLsQ=;
+ b=ceR3qv2FpYKuZO9zdtIcPf4pgHjqqbUWMaY+9Odd3MyYQ+VWIAmelJlrSD60NAmz3017JUBWb
+ lHXdtGi6ES3D1uumcjRRaLbAXnHsVGYXlM6gJnn5nRUdc2neelZUs2a
 X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
  pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-Document the QFPROM block found on MSM8917.
+Document Xiaomi Remi 5A (riva).
+Add qcom,msm8917 for msm-id, board-id allow-list.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
- Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ Documentation/devicetree/bindings/arm/qcom.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml b/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml
-index 80845c722ae46611c722effeaaf014a0caf76e4a..4d81f98ed37a3a12f01d444dbfa77badcc09c22d 100644
---- a/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml
-+++ b/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml
-@@ -26,6 +26,7 @@ properties:
-           - qcom,ipq9574-qfprom
-           - qcom,msm8226-qfprom
-           - qcom,msm8916-qfprom
-+          - qcom,msm8917-qfprom
-           - qcom,msm8974-qfprom
-           - qcom,msm8976-qfprom
-           - qcom,msm8996-qfprom
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index 7c8c3a97506aa13a843d5e3408b247eae928a55c..0b4a8c8cdbf7d0b4191b1acdd10b9b83f2b09542 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -32,6 +32,7 @@ description: |
+         mdm9615
+         msm8226
+         msm8916
++        msm8917
+         msm8939
+         msm8953
+         msm8956
+@@ -252,6 +253,11 @@ properties:
+               - yiming,uz801-v3
+           - const: qcom,msm8916
+ 
++      - items:
++          - enum:
++              - xiaomi,riva
++          - const: qcom,msm8917
++
+       - items:
+           - enum:
+               - motorola,potter
+@@ -1177,6 +1183,7 @@ allOf:
+               - qcom,apq8026
+               - qcom,apq8094
+               - qcom,apq8096
++              - qcom,msm8917
+               - qcom,msm8939
+               - qcom,msm8953
+               - qcom,msm8956
 
 -- 
 2.47.0
