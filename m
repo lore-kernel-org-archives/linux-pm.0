@@ -1,184 +1,104 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CB6B1F26C3
-	for <linux-pm@vger.kernel.org>; Fri,  8 Nov 2024 23:25:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2123646BA
+	for <linux-pm@vger.kernel.org>; Sat,  9 Nov 2024 00:19:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731108302; cv=none; b=Zp87BVoiiGlRS9SxqPUfu67rQ4qD5vatAtaJZPsByvqz7wqsuLoyveN/Mv8hM+3RTX6ZVe8cxOkPoPU2S0H+cFLVjb8PkIlrZTWRFfiKMogJT0HiEesan+wB0COTyfvnkqJhUpzdc03Nk/the626Z+owMyPSSc3Hgscp27LdcIk=
+	t=1731111579; cv=none; b=WiHOxfxYnD5VSqgfOsYkBDjNqGtefNFGvSqd/0OxuqBilnpYYipH6f0eWyQ6Bb1103g15bzwxS5xNauY1wqLGe0uX/4v4F2IVyadIYwWAzBfC1j22Pzp3oWEHViF8bbXXFhXztQybsa49szf/Lmw4x1Z3/FcUHd9M0L/EmvpnvE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731108302; c=relaxed/simple;
-	bh=e9WXSKvrriRBu+n6tYpg7XdcsFeNBIs+URhwEsmQTuY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Qrx3PCyG5Kk4j2Ks4fRFHaxL+qT6rQ9x/qyinYlGHZmar7yxPnFl3tdYpcrmLz5hsNHoc0qMqX7qGUHZtRoj/sqsd3m7ARdUmPV6l0f92gToc0p3lf5Iz3+7RBZSKWu+Un+RQCCmpIui63Dc7tMgtqocrmQ3MWiBnSE7ec8qbVE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=bOgP/m1e; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1731111579; c=relaxed/simple;
+	bh=L6j9s89naB7opnvnY4tHu4vgTBs+UfFjAA+WV7TeqVw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nmZZr2mDjEaNO+3Q83IFy/0jds3O/q69wu9tzZz+M7I9BgirtSu2ADak/vrNiX37vwb40wXDZU7Qt5SgOfAoKkANy37b32246mKlRDEh/4Eo8hdxzRqynL9Nxc9VFauQtSBJf12k89Y2NbCuTykif6uUSdZoiUdGiOSLrMFxIcQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=nkZBKvvP; arc=none smtp.client-ip=209.85.167.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="bOgP/m1e"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1731108300;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=w6NelIKRrccaaskR88NhvpEIqQCtsdbNTXGd5vNul4Y=;
-	b=bOgP/m1eKMARVSE6BnpaTE161UTpDKTCVqOrrw+gHm+A3buWLv4UuNGQmwbIUO2K3aCXVU
-	GmaolhCgY/qI95/y8CrsSrd/ltClytLotFPmrqTbU+b7ihA2xSWWmiwwgJPmeQQijto8+b
-	BeA45qeexiGTdbLhIPC3z7ZIZtLLvm0=
-Received: from mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-647-uQOjuS5rO-6nqVcHVUPE3Q-1; Fri,
- 08 Nov 2024 18:24:57 -0500
-X-MC-Unique: uQOjuS5rO-6nqVcHVUPE3Q-1
-X-Mimecast-MFC-AGG-ID: uQOjuS5rO-6nqVcHVUPE3Q
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 7B13A1953945;
-	Fri,  8 Nov 2024 23:24:55 +0000 (UTC)
-Received: from shalem.redhat.com (unknown [10.39.192.67])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 4A7D9300019F;
-	Fri,  8 Nov 2024 23:24:53 +0000 (UTC)
-From: Hans de Goede <hdegoede@redhat.com>
-To: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>,
-	platform-driver-x86@vger.kernel.org,
-	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-	Jelle van der Waa <jelle@vdwaa.nl>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v2 4/4] platform/x86: dell-laptop: Use power_supply_charge_types_show/_parse() helpers
-Date: Sat,  9 Nov 2024 00:24:38 +0100
-Message-ID: <20241108232438.269156-5-hdegoede@redhat.com>
-In-Reply-To: <20241108232438.269156-1-hdegoede@redhat.com>
-References: <20241108232438.269156-1-hdegoede@redhat.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nkZBKvvP"
+Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-539f1292a9bso3537168e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 08 Nov 2024 16:19:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1731111576; x=1731716376; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=BXpnPSSpQgottu2Fv5+e3o4as2xRNwzcJf3h5d26SFI=;
+        b=nkZBKvvPjeYlHhjRFuigoDFZ9FHhWVfLXAYo8M8akoHWMCk+13Quuea19ZDRUrDyWl
+         ldtDECzfHbxaYx2Sv3wmz39RG4N3rPXgSY5/pRrbXBWMCL7DnCFJZmndpWCngxVimd/7
+         Pn1LEG0HYAGsFr+PVqXeamONqctyaoOU0oS+6vlwpofuNiv5o4g/Tu1Qr5+ss7KZnJpx
+         ITeRDsKv6EmrEHluV89EGIuf7O+xJ5jGCzQaOvHEHAQMqxjCN0i4zH1uyPdI949Nkmyb
+         UrbyoBJ2fsvcaZKz539LwW8Yrg8RndF/h6PV+TXUiwNE+NpdwcV7F/FDXBUtGBdEwk9f
+         H1ug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1731111576; x=1731716376;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=BXpnPSSpQgottu2Fv5+e3o4as2xRNwzcJf3h5d26SFI=;
+        b=IWkZbnr1fsLadjxfD6SaWXxYdMa+4PZWLP/WxjKWPjzvfkmDKhXP0lZGsqOyrkiKgH
+         tLlemS3ZU5xCchF4Ho+2/2OwTobaJcnzt2Dp6Qs4GRLIqK+qus3elTCqaoNsOtGZps5j
+         mZbWnUm3cnjB+dC1QOwKbctRip8zIiFsWqcAzfaIdAShsK5kdG5LCWXtCPKeBrcIp1Vi
+         SZlh68Z2BmU4ZxkWN5fXM/n8axnOWzrSk395fy4dAL3NqKcrVHcIZL9EYyu+fy0HKUCq
+         8xGE1dAKWImu1IH01HyVji5eMKvIN7De/ttD6wVpJrbnoG6qYuf9VCBBgADVshV7dZhJ
+         RFww==
+X-Forwarded-Encrypted: i=1; AJvYcCWdypGESyQoYLKbnrNSUq4S0k1y0PSZ9jvuRPyG1oxezmdf0uHEzuUiT7yMu/Wk88VD0dGYhy8RXQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxFGKqAZZf6N/6bqVh3FN6WjqUsff069Qrk911M1icW1ioQHn5a
+	gSrtPnpwMQdldMo6ysZRU02xS97X1njzjttCP2VBF2A4PH3VR6Pxf965XL3NmL8=
+X-Google-Smtp-Source: AGHT+IGy8JaWW53o7Nak3hWvpUBVz+q/19zh6rKz4u2hY6tZfCVQUBkESW5jVf0+ApmCehnOdBwEyA==
+X-Received: by 2002:a05:6512:238c:b0:52f:d0f0:e37e with SMTP id 2adb3069b0e04-53d862e4fc4mr2643346e87.42.1731111576019;
+        Fri, 08 Nov 2024 16:19:36 -0800 (PST)
+Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--7a1.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::7a1])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-53d826af0c6sm785132e87.277.2024.11.08.16.19.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 08 Nov 2024 16:19:34 -0800 (PST)
+Date: Sat, 9 Nov 2024 02:19:32 +0200
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To: =?utf-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>
+Cc: Bjorn Andersson <andersson@kernel.org>, 
+	Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Lee Jones <lee@kernel.org>, Amit Kucheria <amitk@kernel.org>, 
+	Thara Gopinath <thara.gopinath@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>, 
+	Robin Murphy <robin.murphy@arm.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, 
+	linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
+	Otto =?utf-8?Q?Pfl=C3=BCger?= <otto.pflueger@abscue.de>
+Subject: Re: [PATCH v3 07/14] pinctrl: qcom: Add MSM8917 tlmm pinctrl driver
+Message-ID: <ohznx4dt63gid324qqsmbb7iuqcpi5xxhftwmh5mfo2w26myrw@q4bfwrgw4mns>
+References: <20241107-msm8917-v3-0-6ddc5acd978b@mainlining.org>
+ <20241107-msm8917-v3-7-6ddc5acd978b@mainlining.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
+In-Reply-To: <20241107-msm8917-v3-7-6ddc5acd978b@mainlining.org>
 
-Make battery_modes a map between tokens and enum power_supply_charge_type
-values instead of between tokens and strings and use the new
-power_supply_charge_types_show/_parse() helpers for show()/store()
-to ensure that things are handled in the same way as in other drivers.
+On Thu, Nov 07, 2024 at 06:02:48PM +0100, Barnabás Czémán wrote:
+> From: Otto Pflüger <otto.pflueger@abscue.de>
+> 
+> It is based on MSM8916 driver with the pinctrl definitions from
+> Qualcomm's downstream MSM8917 driver.
+> 
+> Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
+> Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
+> ---
+>  drivers/pinctrl/qcom/Kconfig.msm       |    6 +
+>  drivers/pinctrl/qcom/Makefile          |    1 +
+>  drivers/pinctrl/qcom/pinctrl-msm8917.c | 1620 ++++++++++++++++++++++++++++++++
+>  3 files changed, 1627 insertions(+)
+> 
 
-This also changes battery_supported_modes to be a bitmap of charge-types
-(enum power_supply_charge_type values) rather then a bitmap of indices
-into battery_modes[].
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/platform/x86/dell/dell-laptop.c | 54 ++++++++++++-------------
- 1 file changed, 25 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/platform/x86/dell/dell-laptop.c b/drivers/platform/x86/dell/dell-laptop.c
-index 5671bd0deee7..9a4cfcb8bbe0 100644
---- a/drivers/platform/x86/dell/dell-laptop.c
-+++ b/drivers/platform/x86/dell/dell-laptop.c
-@@ -103,15 +103,15 @@ static bool mute_led_registered;
- 
- struct battery_mode_info {
- 	int token;
--	const char *label;
-+	enum power_supply_charge_type charge_type;
- };
- 
- static const struct battery_mode_info battery_modes[] = {
--	{ BAT_PRI_AC_MODE_TOKEN,   "Trickle" },
--	{ BAT_EXPRESS_MODE_TOKEN,  "Fast" },
--	{ BAT_STANDARD_MODE_TOKEN, "Standard" },
--	{ BAT_ADAPTIVE_MODE_TOKEN, "Adaptive" },
--	{ BAT_CUSTOM_MODE_TOKEN,   "Custom" },
-+	{ BAT_PRI_AC_MODE_TOKEN,   POWER_SUPPLY_CHARGE_TYPE_TRICKLE },
-+	{ BAT_EXPRESS_MODE_TOKEN,  POWER_SUPPLY_CHARGE_TYPE_FAST },
-+	{ BAT_STANDARD_MODE_TOKEN, POWER_SUPPLY_CHARGE_TYPE_STANDARD },
-+	{ BAT_ADAPTIVE_MODE_TOKEN, POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE },
-+	{ BAT_CUSTOM_MODE_TOKEN,   POWER_SUPPLY_CHARGE_TYPE_CUSTOM },
- };
- static u32 battery_supported_modes;
- 
-@@ -2261,46 +2261,42 @@ static ssize_t charge_types_show(struct device *dev,
- 		struct device_attribute *attr,
- 		char *buf)
- {
--	ssize_t count = 0;
-+	enum power_supply_charge_type charge_type;
- 	int i;
- 
- 	for (i = 0; i < ARRAY_SIZE(battery_modes); i++) {
--		bool active;
-+		charge_type = battery_modes[i].charge_type;
- 
--		if (!(battery_supported_modes & BIT(i)))
-+		if (!(battery_supported_modes & BIT(charge_type)))
- 			continue;
- 
--		active = dell_battery_mode_is_active(battery_modes[i].token);
--		count += sysfs_emit_at(buf, count, active ? "[%s] " : "%s ",
--				battery_modes[i].label);
-+		if (!dell_battery_mode_is_active(battery_modes[i].token))
-+			continue;
-+
-+		return power_supply_charge_types_show(dev, battery_supported_modes,
-+						      charge_type, buf);
- 	}
- 
--	/* convert the last space to a newline */
--	if (count > 0)
--		count--;
--	count += sysfs_emit_at(buf, count, "\n");
--
--	return count;
-+	/* No active mode found */
-+	return -EIO;
- }
- 
- static ssize_t charge_types_store(struct device *dev,
- 		struct device_attribute *attr,
- 		const char *buf, size_t size)
- {
--	bool matched = false;
--	int err, i;
-+	int charge_type, err, i;
-+
-+	charge_type = power_supply_charge_types_parse(battery_supported_modes, buf);
-+	if (charge_type < 0)
-+		return charge_type;
- 
- 	for (i = 0; i < ARRAY_SIZE(battery_modes); i++) {
--		if (!(battery_supported_modes & BIT(i)))
--			continue;
--
--		if (sysfs_streq(battery_modes[i].label, buf)) {
--			matched = true;
-+		if (battery_modes[i].charge_type == charge_type)
- 			break;
--		}
- 	}
--	if (!matched)
--		return -EINVAL;
-+	if (i == ARRAY_SIZE(battery_modes))
-+		return -EIO;
- 
- 	err = dell_battery_set_mode(battery_modes[i].token);
- 	if (err)
-@@ -2430,7 +2426,7 @@ static u32 __init battery_get_supported_modes(void)
- 
- 	for (i = 0; i < ARRAY_SIZE(battery_modes); i++) {
- 		if (dell_smbios_find_token(battery_modes[i].token))
--			modes |= BIT(i);
-+			modes |= BIT(battery_modes[i].charge_type);
- 	}
- 
- 	return modes;
 -- 
-2.47.0
-
+With best wishes
+Dmitry
