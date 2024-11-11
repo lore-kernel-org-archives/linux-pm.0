@@ -1,31 +1,32 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CCBC1BF7E0;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F4811B86F7;
 	Mon, 11 Nov 2024 21:40:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731361217; cv=none; b=Iv/6jF3kfinpI2+nM5ZMbiRjNa9yPK6KQbm0Ff2zJ3bM4B8nsQHw6Gj2NA2sPdgSXBuGRJXPxeemqJkCT+I6uSDZb6PBUKjGUp71JbRGM9IvpTouAfj/RZRtA/mGPTvaREg2zZTbLfAG0FTYEc1h850R121rs7hTirU1Puhre9Q=
+	t=1731361217; cv=none; b=tWDczyGwwuxHBzcyzk1/p8Pi4UHwnGfTZMXYpLMRkjTeVsOi6PbiK4+5D2Rs1i/Aax/JFOzDN4jwKCkiRiPJ6hasJIcEH1Q38RYRych/vMS+tZ6pviCYfsWWvTEyPyP7QxUxCPmb9pI4SBjdM6qh/F/lUH2v6YBwVJxvKL1E6Uk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1731361217; c=relaxed/simple;
-	bh=QYgcF01QtPE15FfXFZBgPtS96Bnv77IqVsOl66BIaxM=;
+	bh=z21J+OltFWwTkbmEn7wl0xG9/rhtTpo3QenCuL3bWPQ=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mAxdjLEJw53bTiIyZ8TDnz4Gm4T1SrfY72xou1xoq+0RJLP+pUHI0kAn7ygsuEltWr0uaI66EFO0UFLevvJbXVEL9g+HRsr9DX+UHSajK548DNqV6H+3T78IUye2nlBu3mqwKfVLH7zDwaSvaaLi/y1CjXq7TqPxTVh2H2ndfgI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=MxfNVAc/; arc=none smtp.client-ip=159.69.126.157
+	 In-Reply-To:To:Cc; b=CcbxV2ixLbovAxBQK0cD0b/yKL12BFXaVPrvZU3AXs1aGzGN7JP1BgcyUCKCTfWgE7SQ1un8+x9s+UOHoRkxjQ1oy5zg4LwQ2Np3VXMWwUMDtLjuiYyB/7HN26lFhxAJQDGclSY8JDgtNUSJgrFHzJ8wiez0CEOygV6Nx8x2PcY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=ZSZaTDSf; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="MxfNVAc/"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="ZSZaTDSf"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1731361209;
-	bh=QYgcF01QtPE15FfXFZBgPtS96Bnv77IqVsOl66BIaxM=;
+	bh=z21J+OltFWwTkbmEn7wl0xG9/rhtTpo3QenCuL3bWPQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=MxfNVAc/LOpZMDoBfMeRLIIt6TY0G81uJHjFXX8ZZZhK9TOD+o1QCD4T2iv/ICdiY
-	 w97KBNo4gKfsqbvZaRREaFON3Bor5Axk9o7mbfD9xZ20+xgTDyAvWaS1i3yzcfDe0a
-	 9pCbJeRI8EpMo+1s4ji5zF2EWBNBrnKwy00bmR9Y=
+	b=ZSZaTDSfsJTUjeoQybIKjg7qG5FtrOgL6DZtM/whHkNdZRxCPxIEV7ZgRcKIy7GCu
+	 GxKM4aMXsUjP1ZcdozNmY8rqNSt0EsJg20dN/JwOLc6bzRvTQmrDsKMSyjgHjyf9MP
+	 /DbxFN1ZBPGgZ9iWjdwodikjJiamPAF3XsTVW+8U=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Mon, 11 Nov 2024 22:40:08 +0100
-Subject: [PATCH v4 6/9] power: supply: sysfs: rework uevent property loop
+Date: Mon, 11 Nov 2024 22:40:11 +0100
+Subject: [PATCH v4 9/9] power: supply: cros_charge-control: use
+ power_supply extensions
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,7 +35,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241111-power-supply-extensions-v4-6-7240144daa8e@weissschuh.net>
+Message-Id: <20241111-power-supply-extensions-v4-9-7240144daa8e@weissschuh.net>
 References: <20241111-power-supply-extensions-v4-0-7240144daa8e@weissschuh.net>
 In-Reply-To: <20241111-power-supply-extensions-v4-0-7240144daa8e@weissschuh.net>
 To: Sebastian Reichel <sre@kernel.org>, Armin Wolf <W_Armin@gmx.de>, 
@@ -45,89 +46,302 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  chrome-platform@lists.linux.dev, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1731361208; l=3185;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1731361208; l=10701;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=QYgcF01QtPE15FfXFZBgPtS96Bnv77IqVsOl66BIaxM=;
- b=72BLc6lhhG3HHoRzUdq/8DihVQQ6vKjEh+bJHCAOXxq58XnBfX5SPlqkocCnNQnjyWA2TcuFA
- UAtII2hWZfKCGkqcXrY4278etmCj1t8mGTCzsIjgT9wEIWSntu8gINT
+ bh=z21J+OltFWwTkbmEn7wl0xG9/rhtTpo3QenCuL3bWPQ=;
+ b=Lguc2j8iuLKHKj0BxN9dqGPb67JZiqYrD9/hcKmWGI+wd/BW0f4Eamy2Y+Fo8WZoOGkfGRC7n
+ dqKbCZ6FIjVDox/A5Fy8c67L0FNsNaIVri53wxeOGW4C8IbwGACKAUK
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Instead of looping through all properties known to be supported by the
-psy, loop over all known properties and decide based on the return value
-of power_supply_get_property() whether the property existed.
-
-This makes the code shorter now and even more so when power supply
-extensions are added.
-It also simplifies the locking, as it can all happen inside
-power_supply_get_property().
+Power supply extensions provide an easier mechanism to implement
+additional properties for existing power supplies.
+Use that instead of reimplementing the sysfs attributes manually.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/power_supply_sysfs.c | 28 +++++-----------------------
- 1 file changed, 5 insertions(+), 23 deletions(-)
+ drivers/power/supply/cros_charge-control.c | 205 +++++++++++------------------
+ 1 file changed, 75 insertions(+), 130 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index bfe48fe01a8d03828c2e539e1e6e5e9fc5c60167..99bfe1f03eb8326d38c4e2831c9670313b42e425 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -289,7 +289,7 @@ static ssize_t power_supply_format_property(struct device *dev,
- 				dev_dbg_ratelimited(dev,
- 					"driver has no data for `%s' property\n",
- 					attr->attr.name);
--			else if (ret != -ENODEV && ret != -EAGAIN)
-+			else if (ret != -ENODEV && ret != -EAGAIN && ret != -EINVAL)
- 				dev_err_ratelimited(dev,
- 					"driver failed to report `%s' property: %zd\n",
- 					attr->attr.name, ret);
-@@ -441,7 +441,7 @@ static int add_prop_uevent(const struct device *dev, struct kobj_uevent_env *env
- 	dev_attr = &pwr_attr->dev_attr;
+diff --git a/drivers/power/supply/cros_charge-control.c b/drivers/power/supply/cros_charge-control.c
+index 17c53591ce197d08d97c94d3d4359a282026dd7d..f0933ac3f042c19e7c1dfdc9aff1ad03443ceb16 100644
+--- a/drivers/power/supply/cros_charge-control.c
++++ b/drivers/power/supply/cros_charge-control.c
+@@ -18,13 +18,6 @@
+ 					 BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE)   | \
+ 					 BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE))
  
- 	ret = power_supply_format_property((struct device *)dev, true, dev_attr, prop_buf);
--	if (ret == -ENODEV || ret == -ENODATA) {
-+	if (ret == -ENODEV || ret == -ENODATA || ret == -EINVAL) {
- 		/*
- 		 * When a battery is absent, we expect -ENODEV. Don't abort;
- 		 * send the uevent with at least the PRESENT=0 property
-@@ -462,11 +462,7 @@ static int add_prop_uevent(const struct device *dev, struct kobj_uevent_env *env
+-enum CROS_CHCTL_ATTR {
+-	CROS_CHCTL_ATTR_START_THRESHOLD,
+-	CROS_CHCTL_ATTR_END_THRESHOLD,
+-	CROS_CHCTL_ATTR_CHARGE_BEHAVIOUR,
+-	_CROS_CHCTL_ATTR_COUNT
+-};
+-
+ /*
+  * Semantics of data *returned* from the EC API and Linux sysfs differ
+  * slightly, also the v1 API can not return any data.
+@@ -41,13 +34,7 @@ struct cros_chctl_priv {
+ 	struct power_supply *hooked_battery;
+ 	u8 cmd_version;
  
- int power_supply_uevent(const struct device *dev, struct kobj_uevent_env *env)
+-	/* The callbacks need to access this priv structure.
+-	 * As neither the struct device nor power_supply are under the drivers
+-	 * control, embed the attributes within priv to use with container_of().
+-	 */
+-	struct device_attribute device_attrs[_CROS_CHCTL_ATTR_COUNT];
+-	struct attribute *attributes[_CROS_CHCTL_ATTR_COUNT];
+-	struct attribute_group group;
++	struct power_supply_ext psy_ext;
+ 
+ 	enum power_supply_charge_behaviour current_behaviour;
+ 	u8 current_start_threshold, current_end_threshold;
+@@ -114,123 +101,85 @@ static int cros_chctl_configure_ec(struct cros_chctl_priv *priv)
+ 	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version, &req);
+ }
+ 
+-static struct cros_chctl_priv *cros_chctl_attr_to_priv(struct attribute *attr,
+-						       enum CROS_CHCTL_ATTR idx)
+-{
+-	struct device_attribute *dev_attr = container_of(attr, struct device_attribute, attr);
+-
+-	return container_of(dev_attr, struct cros_chctl_priv, device_attrs[idx]);
+-}
++static const enum power_supply_property cros_chctl_psy_ext_props[] = {
++	POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR, /* has to be first */
++	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD,
++	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD,
++};
+ 
+-static ssize_t cros_chctl_store_threshold(struct device *dev, struct cros_chctl_priv *priv,
+-					  int is_end_threshold, const char *buf, size_t count)
++static int cros_chctl_psy_ext_get_prop(struct power_supply *psy,
++				       const struct power_supply_ext *ext,
++				       void *data,
++				       enum power_supply_property psp,
++				       union power_supply_propval *val)
  {
--	const struct power_supply *psy = dev_get_drvdata(dev);
--	const enum power_supply_property *battery_props =
--		power_supply_battery_info_properties;
--	unsigned long psy_drv_properties[POWER_SUPPLY_ATTR_CNT /
--					 sizeof(unsigned long) + 1] = {0};
-+	struct power_supply *psy = dev_get_drvdata(dev);
- 	int ret = 0, j;
- 	char *prop_buf;
+-	int ret, val;
++	struct cros_chctl_priv *priv = data;
  
-@@ -494,22 +490,8 @@ int power_supply_uevent(const struct device *dev, struct kobj_uevent_env *env)
- 	if (ret)
- 		goto out;
- 
--	for (j = 0; j < psy->desc->num_properties; j++) {
--		set_bit(psy->desc->properties[j], psy_drv_properties);
--		ret = add_prop_uevent(dev, env, psy->desc->properties[j],
--				      prop_buf);
--		if (ret)
--			goto out;
+-	ret = kstrtoint(buf, 10, &val);
+-	if (ret < 0)
+-		return ret;
+-	if (val < 0 || val > 100)
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD:
++		val->intval = priv->current_start_threshold;
++		return 0;
++	case POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD:
++		val->intval = priv->current_end_threshold;
++		return 0;
++	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
++		val->intval = priv->current_behaviour;
++		return 0;
++	default:
+ 		return -EINVAL;
+-
+-	if (is_end_threshold) {
+-		if (val <= priv->current_start_threshold)
+-			return -EINVAL;
+-		priv->current_end_threshold = val;
+-	} else {
+-		if (val >= priv->current_end_threshold)
+-			return -EINVAL;
+-		priv->current_start_threshold = val;
+ 	}
+-
+-	if (priv->current_behaviour == POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO) {
+-		ret = cros_chctl_configure_ec(priv);
+-		if (ret < 0)
+-			return ret;
 -	}
 -
--	for (j = 0; j < power_supply_battery_info_properties_size; j++) {
--		if (test_bit(battery_props[j], psy_drv_properties))
--			continue;
--		if (!power_supply_battery_info_has_prop(psy->battery_info,
--				battery_props[j]))
--			continue;
--		ret = add_prop_uevent(dev, env, battery_props[j],
--			      prop_buf);
-+	for (j = 0; j < POWER_SUPPLY_ATTR_CNT; j++) {
-+		ret = add_prop_uevent(dev, env, j, prop_buf);
- 		if (ret)
- 			goto out;
+-	return count;
+ }
+ 
+-static ssize_t charge_control_start_threshold_show(struct device *dev,
+-						   struct device_attribute *attr,
+-						   char *buf)
+-{
+-	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+-							       CROS_CHCTL_ATTR_START_THRESHOLD);
+ 
+-	return sysfs_emit(buf, "%u\n", (unsigned int)priv->current_start_threshold);
+-}
+-
+-static ssize_t charge_control_start_threshold_store(struct device *dev,
+-						    struct device_attribute *attr,
+-						    const char *buf, size_t count)
++static int cros_chctl_psy_ext_set_prop(struct power_supply *psy,
++				       const struct power_supply_ext *ext,
++				       void *data,
++				       enum power_supply_property psp,
++				       const union power_supply_propval *val)
+ {
+-	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+-							       CROS_CHCTL_ATTR_START_THRESHOLD);
+-
+-	return cros_chctl_store_threshold(dev, priv, 0, buf, count);
+-}
+-
+-static ssize_t charge_control_end_threshold_show(struct device *dev, struct device_attribute *attr,
+-						 char *buf)
+-{
+-	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+-							       CROS_CHCTL_ATTR_END_THRESHOLD);
+-
+-	return sysfs_emit(buf, "%u\n", (unsigned int)priv->current_end_threshold);
+-}
+-
+-static ssize_t charge_control_end_threshold_store(struct device *dev, struct device_attribute *attr,
+-						  const char *buf, size_t count)
+-{
+-	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+-							       CROS_CHCTL_ATTR_END_THRESHOLD);
+-
+-	return cros_chctl_store_threshold(dev, priv, 1, buf, count);
+-}
+-
+-static ssize_t charge_behaviour_show(struct device *dev, struct device_attribute *attr, char *buf)
+-{
+-	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+-							       CROS_CHCTL_ATTR_CHARGE_BEHAVIOUR);
+-
+-	return power_supply_charge_behaviour_show(dev, EC_CHARGE_CONTROL_BEHAVIOURS,
+-						  priv->current_behaviour, buf);
+-}
+-
+-static ssize_t charge_behaviour_store(struct device *dev, struct device_attribute *attr,
+-				      const char *buf, size_t count)
+-{
+-	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+-							       CROS_CHCTL_ATTR_CHARGE_BEHAVIOUR);
++	struct cros_chctl_priv *priv = data;
+ 	int ret;
+ 
+-	ret = power_supply_charge_behaviour_parse(EC_CHARGE_CONTROL_BEHAVIOURS, buf);
+-	if (ret < 0)
+-		return ret;
+-
+-	priv->current_behaviour = ret;
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD:
++	case POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD:
++		if (val->intval < 0 || val->intval > 100)
++			return -EINVAL;
+ 
+-	ret = cros_chctl_configure_ec(priv);
+-	if (ret < 0)
+-		return ret;
++		if (psp == POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD) {
++			if (val->intval <= priv->current_start_threshold)
++				return -EINVAL;
++			priv->current_end_threshold = val->intval;
++		} else {
++			if (val->intval >= priv->current_end_threshold)
++				return -EINVAL;
++			priv->current_start_threshold = val->intval;
++		}
++
++		if (priv->current_behaviour == POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO) {
++			ret = cros_chctl_configure_ec(priv);
++			if (ret < 0)
++				return ret;
++		}
+ 
+-	return count;
++		return 0;
++	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
++		priv->current_behaviour = val->intval;
++		ret = cros_chctl_configure_ec(priv);
++		if (ret < 0)
++			return ret;
++		return 0;
++	default:
++		return -EINVAL;
++	}
+ }
+ 
+-static umode_t cros_chtl_attr_is_visible(struct kobject *kobj, struct attribute *attr, int n)
++static int cros_chctl_psy_prop_is_writeable(struct power_supply *psy,
++					    const struct power_supply_ext *ext,
++					    void *data,
++					    enum power_supply_property psp)
+ {
+-	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(attr, n);
+-
+-	if (priv->cmd_version < 2) {
+-		if (n == CROS_CHCTL_ATTR_START_THRESHOLD)
+-			return 0;
+-		if (n == CROS_CHCTL_ATTR_END_THRESHOLD)
+-			return 0;
+-	}
+-
+-	return attr->mode;
++	return true;
+ }
+ 
+ static int cros_chctl_add_battery(struct power_supply *battery, struct acpi_battery_hook *hook)
+@@ -241,7 +190,7 @@ static int cros_chctl_add_battery(struct power_supply *battery, struct acpi_batt
+ 		return 0;
+ 
+ 	priv->hooked_battery = battery;
+-	return device_add_group(&battery->dev, &priv->group);
++	return power_supply_register_extension(battery, &priv->psy_ext, priv);
+ }
+ 
+ static int cros_chctl_remove_battery(struct power_supply *battery, struct acpi_battery_hook *hook)
+@@ -249,7 +198,7 @@ static int cros_chctl_remove_battery(struct power_supply *battery, struct acpi_b
+ 	struct cros_chctl_priv *priv = container_of(hook, struct cros_chctl_priv, battery_hook);
+ 
+ 	if (priv->hooked_battery == battery) {
+-		device_remove_group(&battery->dev, &priv->group);
++		power_supply_unregister_extension(battery, &priv->psy_ext);
+ 		priv->hooked_battery = NULL;
  	}
+ 
+@@ -275,7 +224,6 @@ static int cros_chctl_probe(struct platform_device *pdev)
+ 	struct cros_ec_dev *ec_dev = dev_get_drvdata(dev->parent);
+ 	struct cros_ec_device *cros_ec = ec_dev->ec_dev;
+ 	struct cros_chctl_priv *priv;
+-	size_t i;
+ 	int ret;
+ 
+ 	ret = cros_chctl_fwk_charge_control_versions(cros_ec);
+@@ -305,23 +253,20 @@ static int cros_chctl_probe(struct platform_device *pdev)
+ 	dev_dbg(dev, "Command version: %u\n", (unsigned int)priv->cmd_version);
+ 
+ 	priv->cros_ec = cros_ec;
+-	priv->device_attrs[CROS_CHCTL_ATTR_START_THRESHOLD] =
+-		(struct device_attribute)__ATTR_RW(charge_control_start_threshold);
+-	priv->device_attrs[CROS_CHCTL_ATTR_END_THRESHOLD] =
+-		(struct device_attribute)__ATTR_RW(charge_control_end_threshold);
+-	priv->device_attrs[CROS_CHCTL_ATTR_CHARGE_BEHAVIOUR] =
+-		(struct device_attribute)__ATTR_RW(charge_behaviour);
+-	for (i = 0; i < _CROS_CHCTL_ATTR_COUNT; i++) {
+-		sysfs_attr_init(&priv->device_attrs[i].attr);
+-		priv->attributes[i] = &priv->device_attrs[i].attr;
+-	}
+-	priv->group.is_visible = cros_chtl_attr_is_visible;
+-	priv->group.attrs = priv->attributes;
+ 
+ 	priv->battery_hook.name = dev_name(dev);
+ 	priv->battery_hook.add_battery = cros_chctl_add_battery;
+ 	priv->battery_hook.remove_battery = cros_chctl_remove_battery;
+ 
++	priv->psy_ext.properties = cros_chctl_psy_ext_props;
++	priv->psy_ext.num_properties = ARRAY_SIZE(cros_chctl_psy_ext_props);
++	if (priv->cmd_version == 1)
++		priv->psy_ext.num_properties = 1;
++	priv->psy_ext.charge_behaviours = EC_CHARGE_CONTROL_BEHAVIOURS;
++	priv->psy_ext.get_property = cros_chctl_psy_ext_get_prop;
++	priv->psy_ext.set_property = cros_chctl_psy_ext_set_prop;
++	priv->psy_ext.property_is_writeable = cros_chctl_psy_prop_is_writeable;
++
+ 	priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
+ 	priv->current_start_threshold = 0;
+ 	priv->current_end_threshold = 100;
 
 -- 
 2.47.0
