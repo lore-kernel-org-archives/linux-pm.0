@@ -1,49 +1,47 @@
 Received: from fw2.prolan.hu (fw2.prolan.hu [193.68.50.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C09F01552E7;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C09AB14F9FF;
 	Mon, 11 Nov 2024 07:47:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.68.50.107
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731311279; cv=none; b=jVJft9hUmC72ybk8044GcGI/ucmp0YDETSby6NxZ0F4bgihJEELT3jqpcsrNCowi1eE15iVSamlOioZM89QzP7Td6/CR3aTg8o30+ZnUH6Rryre0gtSLuJtXO579mftDDGclUrTZfhN9urfx8TsOBvLQRmMvAGYG9CZo6lZy+uA=
+	t=1731311279; cv=none; b=gkf0gRPVXtQpGHs9BVtXQsp0+bSkNkuAdORe4YHUxAX9qRQPS2xsPXzIEgWfbF2XznrXM/Vy7KXYkyGjUOSXg2+kuadhRM3N5Ji65NiiBX8j99WHB7855gpRj5jONi9Z9Bqg8ASKzB/leS4IAdP10Vs/UdaEd2QhgzDJJ3hVttc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1731311279; c=relaxed/simple;
-	bh=sK0kWk+8VYxo38aU63eiYOmeLS96q4K2u2uUzpGH55g=;
+	bh=8141MIeQteVO4xmHYABX+Gcz/sZ+OiBOCJf1oHf2DYI=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Pyu/QvZ0lKhJlKFjKyVNoJqz4F0e73uGXECO1ASABRyMmX+ZCeuWSVgfXKFVk+zC05Rkml36YvWWwcXcW2RPF00iaErka9xtcsUviylbxDh4UY7O8r37VOraifef9cfktXzF1c30QFHzidXdUDUaCo1kU7Oaht5ACSpDZ/JEs2I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu; spf=pass smtp.mailfrom=prolan.hu; dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b=hTmxkere; arc=none smtp.client-ip=193.68.50.107
+	 MIME-Version:Content-Type; b=n0GydFBJdAm4hWRSGdQU0xOkYhQc6VNrDIgz01yAnTehyAcpt2DOMuXTSHtIQtMJ1btjHvd0m/sGBCFw5VCbMgwUyv5qkwtNuDkV7OIC4Yf/BL5HM64M0ePSWDtDXXOF8baZETANPQdrWUDsh3Nl/yLMW5wDdZATjff9losbc50=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu; spf=pass smtp.mailfrom=prolan.hu; dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b=AfkLZFW+; arc=none smtp.client-ip=193.68.50.107
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=prolan.hu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b="hTmxkere"
+	dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b="AfkLZFW+"
 Received: from proxmox-mailgw.intranet.prolan.hu (localhost.localdomain [127.0.0.1])
-	by proxmox-mailgw.intranet.prolan.hu (Proxmox) with ESMTP id BA192A0331;
-	Mon, 11 Nov 2024 08:47:47 +0100 (CET)
+	by proxmox-mailgw.intranet.prolan.hu (Proxmox) with ESMTP id 13710A02C2;
+	Mon, 11 Nov 2024 08:47:49 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prolan.hu; h=cc
 	:cc:content-transfer-encoding:content-type:content-type:date
 	:from:from:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=mail; bh=270OS3AUGIEnFR7GA4rh
-	i6oZuXf4WByJ/XiZ6z+upJg=; b=hTmxkerenaYvai+eNShRpNfr9sLGUF/Rhxyw
-	SeJj8GiuK0I8IGosy9PrtF2Jwjkh5yf59cfFyjeRGQzipmRMmw5KEnuYOZ0gk+cx
-	Tyr6ifJnIAxh8FAxuQs6fM2h/plo4hbA2ZeLJbHiak5bG96O3QUS1n6/SoaS9ew9
-	fBHKozMt+ge9JlhvoBhO8FbNAie8IY7avfIosVF2URm7V48e+BdUgnTYReVTz5ik
-	nGw/s7lXXC9i5C0TunydNUTPFjwhfKbuxRjtmNBjESfxicMDmRql8ogGwP5xhsBR
-	WqbHes8GEYKb0zuWZI1thd5LglRQl/ozF5XmbKzvjDctEsCzzdnqd5nhBM/2W48Y
-	orTxJZvnZER6Ej+avlOA7Bkr7Jv8ZVeXoVwEN4KWzinGGmUBgU2UM7UHJIwqxB9N
-	bXifjkReTzLapXVSudMPcs8H8k5H4Hwg3c+V4zKZL4I2mlHSM6BizNygvJHSzYGi
-	bl3/WF1zVnLaLR8wWHWaH9ZgNbN9RjkyWsabbcLfuDxo9+d7K77VLMaw30cQPgBN
-	KEfRTvAefAETbymgIAKrAYf+sFLUbM7REQWhs28ZvE92t7B759TarlMHV5a/AktA
-	hBH05J1XLumIluavQU7GeHTLDvxXYhNdjwqoHkUv9HNiuWK/5ySb8KbV+wL59pAc
-	+5i/Y7Q=
+	:reply-to:subject:subject:to:to; s=mail; bh=2i3QQlreelCEdwCoTEZ1
+	tiG1QMbQutV9WlIx5Sv6tSM=; b=AfkLZFW+VP0uMQG8Z1k4NeZKT9xYbNv5GOSE
+	yc32X14mK7LzVh2H8RgTbGMFb5n/qM6jyqNNVvHqm5fgiYRBuY9vQ9ypJLCjRok8
+	ohP96toFlRFSIZTDmqZGYFV8N95xgZ6zL8/YwDRI4KffgoHA6ywxZMKaXapw0t2S
+	X2MHr51Nr3jmB3ZNoGy1M0KUgV1rMjWwobDQDs5O7syWTtKA5LIRyXvBE1BRJuNQ
+	s/ydof+KKVj+nOUn3QG/3M4tetZuOx8g+eXZ1tV/zQBLT7MQ1MX2hYcUUuFc4x54
+	65k9v+GqrJP9hA5YhbRju50mwW+2/URz2HwSuws27taQwtc9MWHEbhPPktxQY73w
+	5YARn5Qw1jAIxvS5PYiyR8+8v1c3ceJfRBEtCjsFDyn0BUGGpWMoECoLAO9o7bbY
+	ioxqzijoR4lffQ4SSZNENSsu/rUxpbYp78OoLx/7qyVekuuCKsUoSB8E5vXop1dK
+	k5hY1nYdcWVyJZBQQlKsalAOpVZ2voOAhrTsOMufkhWvcVwrHhZFbJm2U//HrRVV
+	Hj2yc9e/RfysvB8lwk/IoUQOr8iJOhaJzFhPMgUxVBOtPY0awrRz+a1Evqn3kM4L
+	SyqaMjWqF4jM2DCvSXkezwna9N54aG9ag8VVh+B10YS5Fj+JqcKMXdMv2nrE8Emv
+	UFXLLwA=
 From: =?UTF-8?q?Cs=C3=B3k=C3=A1s=2C=20Bence?= <csokas.bence@prolan.hu>
-To: Samuel Holland <samuel@sholland.org>, Sebastian Reichel
-	<sebastian.reichel@collabora.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-CC: =?UTF-8?q?Cs=C3=B3k=C3=A1s=2C=20Bence?= <csokas.bence@prolan.hu>,
-	Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH v4 2/7] power: ip5xxx_power: Fix return value on ADC read errors
-Date: Mon, 11 Nov 2024 08:47:15 +0100
-Message-ID: <20241111074720.1727163-2-csokas.bence@prolan.hu>
+To: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+CC: =?UTF-8?q?Cs=C3=B3k=C3=A1s=2C=20Bence?= <csokas.bence@prolan.hu>, "Samuel
+ Holland" <samuel@sholland.org>, Sebastian Reichel <sre@kernel.org>
+Subject: [PATCH v4 4/7] power: ip5xxx_power: Add battery type for 4.4V
+Date: Mon, 11 Nov 2024 08:47:17 +0100
+Message-ID: <20241111074720.1727163-4-csokas.bence@prolan.hu>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20241111074720.1727163-1-csokas.bence@prolan.hu>
 References: <20241111074720.1727163-1-csokas.bence@prolan.hu>
@@ -55,53 +53,51 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-ESET-AS: R=OK;S=0;OP=CALC;TIME=1731311267;VERSION=7980;MC=57183446;ID=287556;TRN=0;CRV=0;IPC=;SP=0;SIPS=0;PI=3;F=0
+X-ESET-AS: R=OK;S=0;OP=CALC;TIME=1731311268;VERSION=7980;MC=3195921940;ID=287558;TRN=0;CRV=0;IPC=;SP=0;SIPS=0;PI=3;F=0
 X-ESET-Antispam: OK
 X-EsetResult: clean, is OK
 X-EsetId: 37303A2980D9485561716B
 
-If ADC read returns an error, the return value was silently ignored,
-execution continued and an uninitialized value and a return code of 0
-was passed back to userspace. The only exception was
-POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT, which bailed out correctly.
-Fix returns for the other cases as well.
-
-Fixes: 75853406fa27 ("power: supply: Add a driver for Injoinic power bank ICs")
+IP53xx series supports 4.4V batteries. Add support for it
+to compatible parts (that have `vbat_max` set to >= 4.4 V).
 
 Signed-off-by: Csókás, Bence <csokas.bence@prolan.hu>
 ---
- drivers/power/supply/ip5xxx_power.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/power/supply/ip5xxx_power.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/power/supply/ip5xxx_power.c b/drivers/power/supply/ip5xxx_power.c
-index 2d4435881a9e..41d91504eb32 100644
+index a55441f87cc1..3a739a969dde 100644
 --- a/drivers/power/supply/ip5xxx_power.c
 +++ b/drivers/power/supply/ip5xxx_power.c
-@@ -395,18 +395,24 @@ static int ip5xxx_battery_get_property(struct power_supply *psy,
- 
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
- 		ret = ip5xxx_battery_read_adc(ip5xxx, &ip5xxx->regs.battery.adc.volt, &raw);
-+		if (ret)
-+			return ret;
- 
- 		val->intval = 2600000 + DIV_ROUND_CLOSEST(raw * 26855, 100);
- 		return 0;
- 
- 	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
- 		ret = ip5xxx_battery_read_adc(ip5xxx, &ip5xxx->regs.battery.adc.open_volt, &raw);
-+		if (ret)
-+			return ret;
- 
- 		val->intval = 2600000 + DIV_ROUND_CLOSEST(raw * 26855, 100);
- 		return 0;
- 
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 		ret = ip5xxx_battery_read_adc(ip5xxx, &ip5xxx->regs.battery.adc.curr, &raw);
-+		if (ret)
-+			return ret;
- 
- 		val->intval = DIV_ROUND_CLOSEST(raw * 149197, 200);
- 		return 0;
+@@ -10,6 +10,7 @@
+ #define IP5XXX_BAT_TYPE_4_2V			0x0
+ #define IP5XXX_BAT_TYPE_4_3V			0x1
+ #define IP5XXX_BAT_TYPE_4_35V			0x2
++#define IP5XXX_BAT_TYPE_4_4V			0x3
+ #define IP5XXX_CHG_STAT_IDLE			0x0
+ #define IP5XXX_CHG_STAT_TRICKLE		0x1
+ #define IP5XXX_CHG_STAT_CONST_VOLT		0x2
+@@ -363,6 +364,9 @@ static int ip5xxx_battery_get_voltage_max(struct ip5xxx *ip5xxx, int *val)
+ 	case IP5XXX_BAT_TYPE_4_35V:
+ 		*val = 4350000;
+ 		break;
++	case IP5XXX_BAT_TYPE_4_4V:
++		*val = 4400000;
++		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -490,6 +494,9 @@ static int ip5xxx_battery_set_voltage_max(struct ip5xxx *ip5xxx, int val)
+ 	case 4350000:
+ 		rval = IP5XXX_BAT_TYPE_4_35V;
+ 		break;
++	case 4400000:
++		rval = IP5XXX_BAT_TYPE_4_4V;
++		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
 -- 
 2.34.1
 
