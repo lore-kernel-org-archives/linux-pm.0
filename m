@@ -1,32 +1,32 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CB8B1BF328;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27EAC1BD9EB;
 	Mon, 11 Nov 2024 21:40:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731361216; cv=none; b=j1Vf3C29ph2GNMOrFrJoY6OBwb142fRP7hY8AMMBEHS5dj8jWNbQg9luBAk3Lorvdi9moqPZru1dJBkEpPcyn/7fjSgMeGvHOisNp2mJqUCmvajtMangj5zLrAUSvtHze9TVWLBUzRlPsW7eZS6j6XeVutbZn0AEWuW7Yj7G/hE=
+	t=1731361216; cv=none; b=aZ1+UuKZRhVCdHu4uQmLt5QV3KGYrpEGUYEecYQ496ISK9gvl0WUeBrgxq1ZOuan+hR3i1TLcEUrlT7J6VkVUQEDcv3Gp3GqKPbSNMCMpyz2Tw2RkLXMvDS1mhhypT9OAluwxdXrjgqoHhOLH6Pu3yPqdyH6QJmLpkVr4CpR4k8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1731361216; c=relaxed/simple;
-	bh=IK/x/Cq7ZA9U8RzTSdkN5gmLpQF3F49M1qwA6I2D3Ao=;
+	bh=4iqMRN7FLf79GTyhGQg8fs3vEjA1Cjx5IA5RBAJpeNE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=iAZU9uhVuIAa/i0BQ+x44fBUeyIBk2B7wwHxp5tE1CenjL4gayV3pqzfZl7DLTyp/+N3QMfPclrdlDVfhLer1N2ZJy8vj5ZbJbsi4KCtubDXQ5QfJkuVtHaDN6d2LoKrBgYMroOTqFWL7bx3C3yiMk7zfu8QqB2xLVaBZqgjF1U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=q1RVt5c5; arc=none smtp.client-ip=159.69.126.157
+	 In-Reply-To:To:Cc; b=h2XEp1aDqLwMt+kfvwjNdyWEuNx7csd71Udz/qfsFb52HE+EC+9E0pkmI+e7EnKRar8Hs38ZJj6zbviU4PHklu5rRc2XcvuOEyRAULp5HgBYqkGtFBzZYJevFaZtw6WwXa97AVI4f2SLpXfodDZfyHMFTQL8Pu8qVg1CDvRXEkg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=FAhjT9se; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="q1RVt5c5"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="FAhjT9se"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1731361209;
-	bh=IK/x/Cq7ZA9U8RzTSdkN5gmLpQF3F49M1qwA6I2D3Ao=;
+	bh=4iqMRN7FLf79GTyhGQg8fs3vEjA1Cjx5IA5RBAJpeNE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=q1RVt5c52o+1gNm1mnjwFrNl0iRlPy2NF6nGGOy7dth6Z5BkAm1JaxDgI3etvoA/H
-	 yScw65Ec9aLPGAaAPRZeRedU0U1YHxYguipFFnqRh+d+xEh7V3Sa3DT5pbj11BW3iv
-	 wvLx81i66POc6qLjqvQND97dPWrhVPEMqMvcxTOs=
+	b=FAhjT9seLAlGjv9MlySWrI6zADUyVqwPgt6HWlgLhrJa8vijAWtFnAHvN1NvV4xPH
+	 sB02gIMa2JpUe5inHQWXB6ZMYZd2YJGSI67VEpFlQG5mQ6GEMhupOyMLdk7ghigN+i
+	 Hu8fh87768RwbxUsk0JR5Z8O2Pov/NcXggJNkYdY=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Mon, 11 Nov 2024 22:40:07 +0100
-Subject: [PATCH v4 5/9] power: supply: sysfs: prepare for power supply
- extensions
+Date: Mon, 11 Nov 2024 22:40:10 +0100
+Subject: [PATCH v4 8/9] power: supply: test-power: implement a power supply
+ extension
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241111-power-supply-extensions-v4-5-7240144daa8e@weissschuh.net>
+Message-Id: <20241111-power-supply-extensions-v4-8-7240144daa8e@weissschuh.net>
 References: <20241111-power-supply-extensions-v4-0-7240144daa8e@weissschuh.net>
 In-Reply-To: <20241111-power-supply-extensions-v4-0-7240144daa8e@weissschuh.net>
 To: Sebastian Reichel <sre@kernel.org>, Armin Wolf <W_Armin@gmx.de>, 
@@ -44,65 +44,178 @@ To: Sebastian Reichel <sre@kernel.org>, Armin Wolf <W_Armin@gmx.de>,
  Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  chrome-platform@lists.linux.dev, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
- Sebastian Reichel <sebastian.reichel@collabora.com>
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1731361208; l=1743;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1731361208; l=5131;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=IK/x/Cq7ZA9U8RzTSdkN5gmLpQF3F49M1qwA6I2D3Ao=;
- b=OVmbweWyERIkD+3u/cQSsHiAvOSooJ6WsxKcE4WPWREU6O2jUviYpNAQsPOSciqiGJBS2HYWv
- ap6u6k8NtIwDEyFGLSmcgp6qAZ2iCL6hvv/fBayMuPV4A6LCxlfqFwL
+ bh=4iqMRN7FLf79GTyhGQg8fs3vEjA1Cjx5IA5RBAJpeNE=;
+ b=j+0NvPWfNwUgib4IBnuOML8UBCcjtjCQp7YlMLj0w6JjYY8Mc7us5tlUh0byu2FELhtpW8rhH
+ r7J3pl69Aw3AUogOXzuvteKz8EdrVDGKkUO3yEi81p0k5AK4GSJjhX6
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The upcoming extension API will add properties which are not part of the
-the power_supply_desc.
-Use power_supply_has_property() so the properties from extensions are
-also checked.
+Allow easy testing of the new power supply extension functionality.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/power_supply_sysfs.c | 17 ++++-------------
- 1 file changed, 4 insertions(+), 13 deletions(-)
+ drivers/power/supply/test_power.c | 102 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 102 insertions(+)
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index a7351b9c8fe34a464a4e69b1a1a4a4179c1a4b4f..bfe48fe01a8d03828c2e539e1e6e5e9fc5c60167 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -378,7 +378,6 @@ static umode_t power_supply_attr_is_visible(struct kobject *kobj,
- 	struct device *dev = kobj_to_dev(kobj);
- 	struct power_supply *psy = dev_get_drvdata(dev);
- 	umode_t mode = S_IRUSR | S_IRGRP | S_IROTH;
--	int i;
+diff --git a/drivers/power/supply/test_power.c b/drivers/power/supply/test_power.c
+index 442ceb7795e1d84e34da2801d228d53fb67e08d9..af05f3c5c292fd5702109df7dfa177d85c9d18c9 100644
+--- a/drivers/power/supply/test_power.c
++++ b/drivers/power/supply/test_power.c
+@@ -37,6 +37,7 @@ static int battery_charge_counter	= -1000;
+ static int battery_current		= -1600;
+ static enum power_supply_charge_behaviour battery_charge_behaviour =
+ 	POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
++static bool battery_hook;
  
- 	if (!power_supply_attrs[attrno].prop_name)
- 		return 0;
-@@ -386,19 +385,11 @@ static umode_t power_supply_attr_is_visible(struct kobject *kobj,
- 	if (attrno == POWER_SUPPLY_PROP_TYPE)
- 		return mode;
+ static bool module_initialized;
  
--	for (i = 0; i < psy->desc->num_properties; i++) {
--		int property = psy->desc->properties[i];
--
--		if (property == attrno) {
--			if (power_supply_property_is_writeable(psy, property) > 0)
--				mode |= S_IWUSR;
--
--			return mode;
--		}
--	}
--
--	if (power_supply_battery_info_has_prop(psy->battery_info, attrno))
-+	if (power_supply_has_property(psy, attrno)) {
-+		if (power_supply_property_is_writeable(psy, attrno) > 0)
-+			mode |= S_IWUSR;
- 		return mode;
+@@ -238,6 +239,80 @@ static const struct power_supply_config test_power_configs[] = {
+ 	},
+ };
+ 
++static int power_supply_ext_manufacture_year = 1234;
++static const enum power_supply_property power_supply_ext_props[] = {
++	POWER_SUPPLY_PROP_MANUFACTURE_YEAR,
++};
++
++static int power_supply_ext_get_property(struct power_supply *psy,
++					 const struct power_supply_ext *ext,
++					 void *ext_data,
++					 enum power_supply_property psp,
++					 union power_supply_propval *val)
++{
++	switch (psp) {
++	case POWER_SUPPLY_PROP_MANUFACTURE_YEAR:
++		val->intval = power_supply_ext_manufacture_year;
++		break;
++	default:
++		return -EINVAL;
 +	}
++	return 0;
++}
++
++static int power_supply_ext_set_property(struct power_supply *psy,
++					 const struct power_supply_ext *ext,
++					 void *ext_data,
++					 enum power_supply_property psp,
++					 const union power_supply_propval *val)
++{
++	switch (psp) {
++	case POWER_SUPPLY_PROP_MANUFACTURE_YEAR:
++		power_supply_ext_manufacture_year = val->intval;
++		break;
++	default:
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static int power_supply_ext_property_is_writeable(struct power_supply *psy,
++						  const struct power_supply_ext *ext,
++						  void *ext_data,
++						  enum power_supply_property psp)
++{
++	return true;
++}
++
++static const struct power_supply_ext power_supply_ext = {
++	.properties = power_supply_ext_props,
++	.num_properties = ARRAY_SIZE(power_supply_ext_props),
++	.get_property = power_supply_ext_get_property,
++	.set_property = power_supply_ext_set_property,
++	.property_is_writeable = power_supply_ext_property_is_writeable,
++};
++
++static void test_battery_configure_battery_hook(bool enable)
++{
++	struct power_supply *psy;
++
++	if (battery_hook == enable)
++		return;
++
++	psy = test_power_supplies[TEST_BATTERY];
++
++	if (enable) {
++		if (power_supply_register_extension(psy, &power_supply_ext, NULL)) {
++			pr_err("registering battery extension failed\n");
++			return;
++		}
++	} else {
++		power_supply_unregister_extension(psy, &power_supply_ext);
++	}
++
++	battery_hook = enable;
++}
++
+ static int __init test_power_init(void)
+ {
+ 	int i;
+@@ -258,6 +333,8 @@ static int __init test_power_init(void)
+ 		}
+ 	}
  
++	test_battery_configure_battery_hook(true);
++
+ 	module_initialized = true;
  	return 0;
- }
+ failed:
+@@ -524,6 +601,22 @@ static int param_set_battery_current(const char *key,
+ 
+ #define param_get_battery_current param_get_int
+ 
++static int param_set_battery_hook(const char *key,
++				  const struct kernel_param *kp)
++{
++	int tmp;
++
++	if (1 != sscanf(key, "%d", &tmp))
++		return -EINVAL;
++	if (tmp != 1 && tmp != 0)
++		return -EINVAL;
++
++	test_battery_configure_battery_hook(tmp);
++	return 0;
++}
++
++#define param_get_battery_hook param_get_int
++
+ static const struct kernel_param_ops param_ops_ac_online = {
+ 	.set = param_set_ac_online,
+ 	.get = param_get_ac_online,
+@@ -574,6 +667,11 @@ static const struct kernel_param_ops param_ops_battery_current = {
+ 	.get = param_get_battery_current,
+ };
+ 
++static const struct kernel_param_ops param_ops_battery_hook = {
++	.set = param_set_battery_hook,
++	.get = param_get_battery_hook,
++};
++
+ #define param_check_ac_online(name, p) __param_check(name, p, void);
+ #define param_check_usb_online(name, p) __param_check(name, p, void);
+ #define param_check_battery_status(name, p) __param_check(name, p, void);
+@@ -584,6 +682,7 @@ static const struct kernel_param_ops param_ops_battery_current = {
+ #define param_check_battery_voltage(name, p) __param_check(name, p, void);
+ #define param_check_battery_charge_counter(name, p) __param_check(name, p, void);
+ #define param_check_battery_current(name, p) __param_check(name, p, void);
++#define param_check_battery_hook(name, p) __param_check(name, p, void);
+ 
+ 
+ module_param(ac_online, ac_online, 0644);
+@@ -621,6 +720,9 @@ MODULE_PARM_DESC(battery_charge_counter,
+ module_param(battery_current, battery_current, 0644);
+ MODULE_PARM_DESC(battery_current, "battery current (milliampere)");
+ 
++module_param(battery_hook, battery_hook, 0644);
++MODULE_PARM_DESC(battery_hook, "battery hook");
++
+ MODULE_DESCRIPTION("Power supply driver for testing");
+ MODULE_AUTHOR("Anton Vorontsov <cbouatmailru@gmail.com>");
+ MODULE_LICENSE("GPL");
 
 -- 
 2.47.0
