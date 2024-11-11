@@ -1,28 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0B801BD000
-	for <linux-pm@vger.kernel.org>; Mon, 11 Nov 2024 22:13:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE3B71BCA1B;
+	Mon, 11 Nov 2024 22:13:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731363216; cv=none; b=PITDuXZUisxdh0WHgYNeR8f4gaO1VTKoV4V924tj/7fLXrVCRoOZ/ri83IIXnBNx0vUbfFP9iNRMAgNV09GiaHbW5jQIRS5N+UYxMBNnJZ2y1ganM4DmuLFxupfBLN4tBU6XevXUVhjZfqW85AZD2TN5y1GecPub9vmYI3NikuU=
+	t=1731363216; cv=none; b=L4zTfCe8iUTMC+Z234KiF/BHsMIPctx+ChYlZtx0gWOcn7HtT8RSF1VxiOIJjkGapM+rp2QAVMQSi/idwGebxjqRCycPwYRG9sDmzyDDamlW0+K+o7K31P/oqfXpNRUfoUT5jsRZQeEh6kn7foor6CEcfeA8VXL9CzX5i4w8Edk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1731363216; c=relaxed/simple;
-	bh=/5E3wiiXJBFA3HgqczhgvYKdTO35oKbo1smmmqcnU0Y=;
+	bh=G0IP/1mBHjwgIHglhgzCLdLRgrcOSY4gpelWcv3ZPrg=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=mat1G8hjKoPe+8GGF4ec8oz3mbQYMGv1l+vqGj/mpc/dYMrjYXadDy4xUsTGoXtKTf4BbMzuVIT2O3WnqAqOSfHvDg8TvqaAayNUmSoJHhuViMm9EZ5/Gmyz5ZVNVcIEDRspaCAii/yNfp0pLZWegyP8lUreBQTJcQkaCUsqjw0=
+	 MIME-Version:Content-Type; b=laSzghZFNeoGrlslRiB2dZ9ZuoleqLaAApscEyfwpyT36t1VpIq+EwQkOubdgM5Ou+AFjkVTAQxs0YfgomGRy8Ed1p59KU9K1FI5It8vBgbMra+e/zzqFHXf4pJSzp20XJIqhSGls91ykySb0Lc5Bx/ItivcHtj2lYWppI5h/kw=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C5F8C4CED7;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55F4FC4CECF;
 	Mon, 11 Nov 2024 22:13:36 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 488C910604BA; Mon, 11 Nov 2024 23:13:34 +0100 (CET)
+	id 44C0E10604B0; Mon, 11 Nov 2024 23:13:34 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: linux-pm@vger.kernel.org, Chris Morgan <macroalpha82@gmail.com>
-Cc: wens@csie.org, sre@kernel.org, Chris Morgan <macromorgan@hotmail.com>
-In-Reply-To: <20241023184800.109376-1-macroalpha82@gmail.com>
-References: <20241023184800.109376-1-macroalpha82@gmail.com>
-Subject: Re: [PATCH 0/2] Change axp20x power drivers to use iio scaled
-Message-Id: <173136321428.772650.11707529206182542140.b4-ty@collabora.com>
+To: sre@kernel.org, anish kumar <yesanishhere@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20241023061126.7896-1-yesanishhere@gmail.com>
+References: <20241023061126.7896-1-yesanishhere@gmail.com>
+Subject: Re: [PATCH] power: supply: generic-adc-battery: change my gmail
+Message-Id: <173136321427.772650.10722733892870416418.b4-ty@collabora.com>
 Date: Mon, 11 Nov 2024 23:13:34 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -35,25 +35,15 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Wed, 23 Oct 2024 13:47:58 -0500, Chris Morgan wrote:
-> From: Chris Morgan <macromorgan@hotmail.com>
+On Tue, 22 Oct 2024 23:11:26 -0700, anish kumar wrote:
+> change my contact in this driver.
 > 
-> Simplify the axp20x_battery and axp20x_usb_power to use
-> iio_read_channel_processed_scale() instead of reading the channel and
-> then applying the scaling factor in an additional step.
 > 
-> Chris Morgan (2):
->   power: supply: axp20x_usb_power: Use scaled iio_read_channel
->   power: supply: axp20x_battery: Use scaled iio_read_channel
-> 
-> [...]
 
 Applied, thanks!
 
-[1/2] power: supply: axp20x_usb_power: Use scaled iio_read_channel
-      commit: 9fdd97d63fe2be2ab890240cce0a5790e0ef9877
-[2/2] power: supply: axp20x_battery: Use scaled iio_read_channel
-      commit: 1d3db2d99fbaa5020543bd1dc4f365faeffae4ed
+[1/1] power: supply: generic-adc-battery: change my gmail
+      commit: c0f3a0124d3f1dfed700d2871f9d37f418999af2
 
 Best regards,
 -- 
