@@ -1,28 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE3B71BCA1B;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2FC31C1AB3;
 	Mon, 11 Nov 2024 22:13:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731363216; cv=none; b=L4zTfCe8iUTMC+Z234KiF/BHsMIPctx+ChYlZtx0gWOcn7HtT8RSF1VxiOIJjkGapM+rp2QAVMQSi/idwGebxjqRCycPwYRG9sDmzyDDamlW0+K+o7K31P/oqfXpNRUfoUT5jsRZQeEh6kn7foor6CEcfeA8VXL9CzX5i4w8Edk=
+	t=1731363217; cv=none; b=my8WYR2b6li9K+8NWlQfwI3hYHCBHbkaXZpHDjL7V87oUtMcuyiRVUvS8fLSjD1iU9YjLZn2BxEoyKdwKCmrsrOpQyKcPUepuiE6cuQ1uXYMmoDjV5uGPLpBm4qqy6v6K6YgxwIaTBh//xzR1Ijh9lF9Ythd1cRAUNTKd557xuM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731363216; c=relaxed/simple;
-	bh=G0IP/1mBHjwgIHglhgzCLdLRgrcOSY4gpelWcv3ZPrg=;
+	s=arc-20240116; t=1731363217; c=relaxed/simple;
+	bh=+7im0tskn1DzuhFQoK4yd9NE1oGNi4Q3McpYioL+P00=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=laSzghZFNeoGrlslRiB2dZ9ZuoleqLaAApscEyfwpyT36t1VpIq+EwQkOubdgM5Ou+AFjkVTAQxs0YfgomGRy8Ed1p59KU9K1FI5It8vBgbMra+e/zzqFHXf4pJSzp20XJIqhSGls91ykySb0Lc5Bx/ItivcHtj2lYWppI5h/kw=
+	 MIME-Version:Content-Type; b=lQy+6VDZ+W7mVki7/MR9qlmYawwCzGo0ARJxuUEfZ9Gxwmh2rvszIEnqIzIFZD+FXpYvrnnocr9Zm0cIGNa+564RBdOot3p9QjfS1l0TKMBowfTDs43nobIhmNunKlYZHSD256LjwLrX3j0Yp2nUTL7K3gj+PWBZf4ZTyLvwBmw=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55F4FC4CECF;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6ACBDC4AF0B;
 	Mon, 11 Nov 2024 22:13:36 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 44C0E10604B0; Mon, 11 Nov 2024 23:13:34 +0100 (CET)
+	id 4BD9B10604C7; Mon, 11 Nov 2024 23:13:34 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: sre@kernel.org, anish kumar <yesanishhere@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-In-Reply-To: <20241023061126.7896-1-yesanishhere@gmail.com>
-References: <20241023061126.7896-1-yesanishhere@gmail.com>
-Subject: Re: [PATCH] power: supply: generic-adc-battery: change my gmail
-Message-Id: <173136321427.772650.10722733892870416418.b4-ty@collabora.com>
+To: ssantosh@kernel.org, Ba Jing <bajing@cmss.chinamobile.com>
+Cc: sre@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20241025090659.33458-1-bajing@cmss.chinamobile.com>
+References: <20241025090659.33458-1-bajing@cmss.chinamobile.com>
+Subject: Re: [PATCH] reset: keystone-reset: remove unused macros
+Message-Id: <173136321430.772650.12511690217528216433.b4-ty@collabora.com>
 Date: Mon, 11 Nov 2024 23:13:34 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -35,15 +35,16 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Tue, 22 Oct 2024 23:11:26 -0700, anish kumar wrote:
-> change my contact in this driver.
+On Fri, 25 Oct 2024 17:06:59 +0800, Ba Jing wrote:
+> After reviewing the code, it was found that these macros are never
+> referenced in the code. Just remove them.
 > 
 > 
 
 Applied, thanks!
 
-[1/1] power: supply: generic-adc-battery: change my gmail
-      commit: c0f3a0124d3f1dfed700d2871f9d37f418999af2
+[1/1] reset: keystone-reset: remove unused macros
+      commit: 7263d7df054e8b7759727d8fde62eca648189cc5
 
 Best regards,
 -- 
