@@ -1,174 +1,103 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 145011FA829
-	for <linux-pm@vger.kernel.org>; Tue, 12 Nov 2024 11:03:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7D9F1FB745;
+	Tue, 12 Nov 2024 11:28:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731409424; cv=none; b=BQt7vLkiSb9nqYB0a4Zj07Ype7yBaAvbEFX9krsN7cCmDmKe9iGfB2y2R4e6dGZOmvQqjUqBFye6jXsPZW0335+u4+f1F1o+xVslHmQukRTdeZRIm2Zu+tfcocY8atXDd8vPsYO4r8l+3nkT4sZgtTwc4xC+SCyGlzD2X2CxlNI=
+	t=1731410911; cv=none; b=r3GapHeZ0WDHRZWBMA2tjfV/PQIdIur4B8QrhYqOyc2tV5AuJLeXGDTaJw5cGH6mv8u0cqb1AAzQQ3QnLpsFGxuSS/RTmIEyheL2L2Zij+kEv8ahNXql1Cg/S9JTidz40g4r8uw9OGCPY+vwBg9SowvtCGZxSovz28gJbELr5As=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731409424; c=relaxed/simple;
-	bh=G0Qe2OADcAQsfACZt2BcP1eMIcjortGkp4YDbkFFOYU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NxcAd0WxXFrRp1opP+aRP54PCuaFcNPfrGgbsHdGK2+kAUyF5PLPhpOw2fPCtVEpXlCEjjAUPa3R93rdx0TYLmzJH4RghiTex365q7tnJNE0/FCOS4eUQslzhIrhS3T0Th3Mvp+jRXGsWqGO+1wG6rh6gi+lJ4WP/cLwvoJ+Lv8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=fail smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Zf7Wpbgl; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1731410911; c=relaxed/simple;
+	bh=+rzAkXFKFxYH+EnmyNDNya6LAZlVy/3NQRETZ1zHyYk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=npt3/A2QNyOidSdU2eKTyw6WQdpulINju2vL3tHkW0cY0xCHpPb8P9ShZd+8ZMIQPRS1xvc5OwTlrzyoWcslY7XiHF+DtyojA+Y+OdceGTnetSOq6+AQoOIFzc4D4OV872Bqyd9+IkQh2tuF0NpyoT0QmAFTFjPE7O4Gr7GEJX8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fXu2u/OP; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Zf7Wpbgl"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4AC2oLMA009701
-	for <linux-pm@vger.kernel.org>; Tue, 12 Nov 2024 11:03:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	d7fGoZsQujJug+U+jHgYocLKquVR4HJgVH5ELiDsVtU=; b=Zf7WpbglOftzO5UU
-	RfZHbfYkITaFaGhwrV1yrBSs5M1xbbNUQsN9bUq3jv/mxRma5h2n9xa7b9OOge1p
-	JVBehQDw3O2+TXgrm2j/wjWhyvSmuEZLZah0sos6cURsHaY9x5d5sqcl3rRR72ez
-	1oE+dpjtDYrITI997+zOZhZnB3DapTO7XzzxaU2Z/sWCUmyxhvJJPycxes3QeMv0
-	hfBrCC7NEEDXIwTkRzAs6oobyqXTBHhY/gG60sXF778vhrVmr0cCm6jg06HYfQh/
-	Fd8p+aCBGwAnjzID8jAiY4GrYffP2HM527rmH+KATLNEctonMd76aFi/CJfPCvxg
-	L/KrcQ==
-Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com [209.85.219.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 42syax7218-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 12 Nov 2024 11:03:41 +0000 (GMT)
-Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-6d395f187f6so1583146d6.0
-        for <linux-pm@vger.kernel.org>; Tue, 12 Nov 2024 03:03:41 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731409421; x=1732014221;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=d7fGoZsQujJug+U+jHgYocLKquVR4HJgVH5ELiDsVtU=;
-        b=oFG9U2202jwGXUvgeSy55VX1nA4A+SmTRSl8IdZyT0WI9WSb4UG4COdhO0w/qD4MP3
-         GmnhHQNUehi8odv1QgCjgAafsaR6TEij2XyXOUpIpsYLuoiIBHeZ2cl3Gq9XA89wMc3q
-         EBl/zeL/ZVbj/gEwDtcERC3q2JZN/aFNrRMG7EpK/E/CaWZUblyqVcLTFA8y4hTBVg9e
-         z+LwM78GOdLemA4Sbkwkre7Mx2NrzakJKqqTZ13ds6s+/bWluxpmOR0RZsqJVwP4Ntne
-         OFKQJHV5vsDHS6vD2114z7MtehlpNp/c9EuKJHdkv9GMIKi5ErhM6rUE07CYeV+0/cQ1
-         kk2A==
-X-Forwarded-Encrypted: i=1; AJvYcCVu6WUYDJVrnjVrzUjvgwtC+6Ctc+1JxTUTcc6/8+mXdBl48AcBTeAnlFhcMXBFlTVR63LJtV3p0g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzRD6HsU1xEW1HuRh0YRSocaj/CODo+nkn5uHc1vMVJ6SlOs+QT
-	DQSO+u7az6F8w8p9KwGgW9OSWIqmtePDvxW/o1Bh1k5j7zzbuNDlShqvh0aCJqNQDJJQXcyuZJn
-	Hy3uXI4RJe65Hz/8eKyEREs+LhOBNbgyma8TtyuLK0qgywErR9BCm+qp9Nw==
-X-Received: by 2002:a05:620a:4441:b0:7b3:2107:397 with SMTP id af79cd13be357-7b331dc992cmr795518685a.15.1731409421130;
-        Tue, 12 Nov 2024 03:03:41 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IF1fhQJCIFJPwzZ+PR7cMWjAglUJ/e3/68X4A0MvFsQcnHnwg/lt4fE0sGY44qyhmK5ZwJw9g==
-X-Received: by 2002:a05:620a:4441:b0:7b3:2107:397 with SMTP id af79cd13be357-7b331dc992cmr795515285a.15.1731409420681;
-        Tue, 12 Nov 2024 03:03:40 -0800 (PST)
-Received: from [192.168.123.190] (public-gprs527294.centertel.pl. [31.61.178.255])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5cf1d2cf5c5sm3562974a12.31.2024.11.12.03.03.07
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 12 Nov 2024 03:03:40 -0800 (PST)
-Message-ID: <6565a4ec-6db6-4442-a07f-ace467c47395@oss.qualcomm.com>
-Date: Tue, 12 Nov 2024 12:02:49 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fXu2u/OP"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6EAFFC4CED5;
+	Tue, 12 Nov 2024 11:28:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731410911;
+	bh=+rzAkXFKFxYH+EnmyNDNya6LAZlVy/3NQRETZ1zHyYk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=fXu2u/OPjK5l0K+49bnnoFRlE737V3V1gZ/h6jU0Yon2lJEv5Patge6noxvncDZCH
+	 /X3qC16XU2oIwuCQqMno2qdEtgV7vgEsCNszr2mIPylyQBiiPr1+8l9erAhwzyvdSo
+	 tx/xnBHoSHwzBomOGRnoEmkBP0oFjt5ewG0fM8XmbbLnCV2VHbrfgOZmf67lsPOkUH
+	 6lya0PRHqXoGNvmoJuaTxKcb50uBe7eB0WBKHbl/o1igs9tczVMTCvquiwNLvyhVJa
+	 sZJEpXpDwJHFMHBZdLNJkAanxWrInIHtqzSP36ybp6AdNBUwV0Ve1hEYTcE54jccDS
+	 J/uMgsfGnsx1Q==
+Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-288a90e4394so2402584fac.0;
+        Tue, 12 Nov 2024 03:28:31 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCW/QU7fOftD/44dpU4c518cFpKDeo01XgdWSrM0vt4tTSRWZqZNXsky/NoKsadTgXM96JytWxsbr6Y=@vger.kernel.org, AJvYcCWE7ZycQ8VzsAqUalQ4ZjgxkTAefuCnhvlT7ieH7If9XwA8M/s3IYB9cuEla9o2cAIPY1ZfzAuufKIm+NI=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwFK0Z/iZVkaUs1kWN9Pr7FiTqLFw0G5y0WaWVQZnrOUkr8K63u
+	G6cb60UrzBaOZ1zdNl3jRX5/HVJ0P+JBL/tTe/SgwEilchYfR89GqXIMXhndkucyi98pmNCPzVQ
+	0+jiO3OG+P8XP6m0Z7M/CCSGdpBo=
+X-Google-Smtp-Source: AGHT+IFzIl81X9l1J1cMQQc0Xa4o3EgXz++fT9wjADyYD45hT5g2bIGGRbkEQwmly2Ab2PmaOzRgoiGFDBw9vh8W0a4=
+X-Received: by 2002:a05:6870:c153:b0:277:caf7:3631 with SMTP id
+ 586e51a60fabf-295ccf347e7mr2290421fac.5.1731410910755; Tue, 12 Nov 2024
+ 03:28:30 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 7/7] arm64: dts: qcom: ipq5424: Add thermal zone nodes
-To: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>,
-        Konrad Dybcio <konradybcio@gmail.com>, srinivas.kandagatla@linaro.org,
-        robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-        amitk@kernel.org, thara.gopinath@gmail.com, rafael@kernel.org,
-        daniel.lezcano@linaro.org, rui.zhang@intel.com, lukasz.luba@arm.com,
-        andersson@kernel.org, konradybcio@kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: quic_srichara@quicinc.com, quic_varada@quicinc.com
-References: <20241104124413.2012794-1-quic_mmanikan@quicinc.com>
- <20241104124413.2012794-8-quic_mmanikan@quicinc.com>
- <91ea0f03-9bbe-491d-9056-ebd9fdc73bfa@oss.qualcomm.com>
- <8cb665f5-4885-4853-804a-7313decc719c@quicinc.com>
- <2c7ece9d-95e8-4d01-a9da-c1d5d7388771@gmail.com>
- <fc676574-ffac-40d2-aa47-8d7cb61b5e3f@quicinc.com>
- <9bd3d4e2-aba1-423c-946a-f5c60da71497@oss.qualcomm.com>
- <f5ceee66-9d09-44f9-9217-3abd467d1086@quicinc.com>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <f5ceee66-9d09-44f9-9217-3abd467d1086@quicinc.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: 5QZ-APgKJ86aadiyDFJxhsslI2KlHFq1
-X-Proofpoint-GUID: 5QZ-APgKJ86aadiyDFJxhsslI2KlHFq1
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 adultscore=0
- bulkscore=0 malwarescore=0 spamscore=0 suspectscore=0 mlxlogscore=999
- lowpriorityscore=0 priorityscore=1501 clxscore=1015 phishscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2409260000 definitions=main-2411120090
+References: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
+ <20241108122909.763663-4-patryk.wlazlyn@linux.intel.com> <b6ab357c-1562-4035-ad3a-2159d2c8c1fa@intel.com>
+ <ee9b0a70-6f44-4203-bba9-c07d94444ad6@linux.intel.com>
+In-Reply-To: <ee9b0a70-6f44-4203-bba9-c07d94444ad6@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 12 Nov 2024 12:28:14 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gmg_6OnzR6BNm+3Mx0Wzsf2nPQEZDutYu_-Px-TsvX-w@mail.gmail.com>
+Message-ID: <CAJZ5v0gmg_6OnzR6BNm+3Mx0Wzsf2nPQEZDutYu_-Px-TsvX-w@mail.gmail.com>
+Subject: Re: [PATCH v3 3/3] intel_idle: Provide enter_dead() handler for SRF
+To: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>, Dave Hansen <dave.hansen@intel.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	rafael.j.wysocki@intel.com, len.brown@intel.com, 
+	artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, Nov 12, 2024 at 12:18=E2=80=AFPM Patryk Wlazlyn
+<patryk.wlazlyn@linux.intel.com> wrote:
+>
+> > This series has said multiple times how the old algorithm is wrong.  Bu=
+t
+> > it never actually _fixed_ the bad algorithm, only worked around it.
+> >
+> > Does mwait_play_dead() itself need to get fixed?
+>
+> I don't think so. The old algorithm gives fairly good heuristic for compu=
+ting
+> the mwait hint for the deepest cstate. Even though it's not guaranteed to=
+ work,
+> it does work on most of the platforms that don't early return. I think we=
+ should
+> leave it, but prefer idle_driver.
 
+IOW, as a fallback mechanism, it is as good as it gets.
 
-On 11-Nov-24 12:51, Manikanta Mylavarapu wrote:
-> 
-> 
-> On 11/7/2024 8:17 PM, Konrad Dybcio wrote:
->> On 6.11.2024 11:25 AM, Manikanta Mylavarapu wrote:
->>>
->>>
->>> On 11/6/2024 2:42 PM, Konrad Dybcio wrote:
->>>>
->>>>
->>>> On 11/6/24 09:47, Manikanta Mylavarapu wrote:
->>>>>
->>>>>
->>>>> On 11/4/2024 7:21 PM, Konrad Dybcio wrote:
->>>>>> On 4.11.2024 1:44 PM, Manikanta Mylavarapu wrote:
->>>>>>> Add thermal zone nodes for sensors present in IPQ5424.
->>>>>>>
->>>>>>> Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
->>>>>>> ---
->>>>>> [...]
->>>>>>
->>>>>>> +
->>>>>>> +        cpu3-thermal {
->>>>>>> +            polling-delay-passive = <0>;
->>>>>>> +            polling-delay = <0>;
->>>>>>> +            thermal-sensors = <&tsens 13>;
->>>>>>> +
->>>>>>> +            trips {
->>>>>>> +                cpu-critical {
->>>>>>> +                    temperature = <120000>;
->>>>>>> +                    hysteresis = <9000>;
->>>>>>> +                    type = "critical";
->>>>>>> +                };
->>>>>>> +
->>>>>>> +                cpu-passive {
->>>>>>> +                    temperature = <110000>;
->>>>>>> +                    hysteresis = <9000>;
->>>>>>> +                    type = "passive";
->>>>>>
->>>>>> You have a passive trip point without passive polling
->>>>>>
->>>>>
->>>>> Okay, will remove this.
->>>>
->>>> You most likely want to preserve it, while keeping a sensible
->>>> polling frequency, so that userspace will be aware of the current
->>>> CPU temperature. <100> sounds like a sensible value here.
->>>>
->>>> Konrad
->>>
->>> Temperature sensor's present in IPQ5424 supports interrupts.
->>
->> Correct.
->>
->>> Hence no need to configure polling frequency.
->>
->> No, that interrupt firing signifies crossing the temp threshold (meaning
->> no updates beyond that) or the tsens watchdog barking.
->>
->> Konrad
-> 
-> An interrupt fires when the temperature crosses a threshold.
+As the primary source of information though, not quite.
 
-Which means you can't monitor the temperature at runtime
-without polling..
-
-Konrad
+> >> Define the enter_dead() handler for SRF.
+> >
+> > This effectively gets the mwait hints from ______ instead of using the
+> > calculation in mwait_play_dead().
+>
+> Ok.
+>
+> >> +static __cpuidle int intel_idle_enter_dead(struct cpuidle_device *dev=
+,
+> >> +                       int index)
+> >> +{
+> >> +    struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
+> >> +    struct cpuidle_state *state =3D &drv->states[index];
+> >> +    unsigned long eax =3D flg2MWAIT(state->flags);
+> >> +
+> >> +    /* Retruns only in case of an error. */
+> >
+> >        ^ returns?
+>
+> Yup. Will fix.
+>
+>
