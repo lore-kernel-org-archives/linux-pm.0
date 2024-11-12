@@ -1,109 +1,125 @@
-Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com [209.85.208.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B67FA1FF619
-	for <linux-pm@vger.kernel.org>; Tue, 12 Nov 2024 14:55:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37A11200C85;
+	Tue, 12 Nov 2024 14:56:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731423316; cv=none; b=sfE6czxw5d29paw/wpSm8OeYqFXT0PxxzBKW8Ad9gJ1uPRoTPoTix1GdVfZ4LWpbU0cLFyIel9hKuxbD2c1RNbEeRXPRFub/Vsiw8VqpC9W07X7FZqMjfWwkM1mXS29xaPx9cGrEE+r2MxWITTKtyvIMCNEaRlazRiyBPB8oRA8=
+	t=1731423387; cv=none; b=HN9ylE59EXwaSJhr7FzR3tkEcEDVTi+T9jxoZrJyY7sY29uSK+oSHUcxfsN96qvXekB1hTDo3ssm/8ibfFHGM61DX+VILnIAcxz5pPwb9BeS54/I4ue6XFeHxlYnd8nOTAnVyiRm0tQv8QJIqRxOF995xBxQ0nyzeOgC28Rxp3Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731423316; c=relaxed/simple;
-	bh=7CgPmKR+pBqeOwpF5GsLSoRZ2dGeu8Y6nrW55fGI7Yw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZcPAaFBAFNlDFp7158zPCiQg6EiQHECfRoHpuilhCLGWSRInZ/Ak8RNFlGlv07MMrOsHaYzte6fCdu2cXkaaWQw020yaUSvEyV6xATifnZjzI0/oUl6hqf8gyLPZePeR3rGzOfEMhqfNqFHhJCsoJyK3cltq3imbSh0PsDxYw1k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=G3R61XRm; arc=none smtp.client-ip=209.85.208.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1731423387; c=relaxed/simple;
+	bh=Mde5nHBWqkDLtf+xBmnzxuSjwc8sFgr2SRF6Jm+LflQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=h7hNjCB9JdzbnBstI4ByHEyRQ3mqFusVMCJmkwAEtDpFFpfqVURiyQfhM7CyNLUaX55YnRo9q7A9MNV9RmvE575xUbojyC9vKAmKWKOBbEwC0x0vvHViYB3JdJwwoQFDww45zytXuZeElJyF7JsXkNnQBaD2VYNEq+Ww3VD6rew=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=TxcMSsES; arc=none smtp.client-ip=90.155.92.199
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="G3R61XRm"
-Received: by mail-ed1-f50.google.com with SMTP id 4fb4d7f45d1cf-5cec93719ccso7536674a12.2
-        for <linux-pm@vger.kernel.org>; Tue, 12 Nov 2024 06:55:14 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1731423313; x=1732028113; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=p7+ge7hJafVQtjpuuqP/E88xzOJBZSOXD8WkyCEkOXo=;
-        b=G3R61XRm5rYDD8As+RXwXivYnECFbBHJ+2lYJVBGqOMhLxGt1cwZ7wGknG0s43bZdB
-         SqOoJ0DFq1bqKUgQAveJJv57aLUDhOUnM7+NRuzwKBUmDFxABOZWh9RHA5uByfF/2NNk
-         CjYRea4wCOmJAtcUSlDwZWNV2rVjEdG6iRMslqrNLBRd7i3lxedJQjbN9hJ+QNGMxU9B
-         RdNy0mUyLHfqfgfpPA9DI4tLziB7zSTzsOof4Oh+l02QDACGs//4O5BwyAifAVNZR42F
-         cjoriRjH2i2l9bhAF4YSRpRxzmbyr6JPcviGXS7h3HeXj2UGnf5dlx8TvG+OvA/k83wZ
-         U89g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731423313; x=1732028113;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=p7+ge7hJafVQtjpuuqP/E88xzOJBZSOXD8WkyCEkOXo=;
-        b=NHRQQPpsSfiEAVm886xv0D7rHgGK/5LWu7Y/8QKLMbM0No0FECh66dJLFptK5aycCQ
-         pHRBMCQ00LDj7yLq1/5PyGOFfhjMpEm0LXMl/y23LMlsWFllcjb7haK61r2TgNs+8YzG
-         oFtKBtKHwxp1GT8cmDCvVTkthVJdBMoxg5pNx/7FhkfFwt1hHf8vIPdWqUKUiQk5gjYo
-         t8HuRRmcx2zXkMY1Md7D+YP6CDUbGbt4fiPYPwfI/AueSYW8XV+jltgJlKEl8LZL3Hhi
-         NUzZI68cpefaaIiNFR4rwuTkCWT1C/DcFFi/+nVoNnUhgLjJKHsEZB9MfVGMWcUQeUgU
-         zfRA==
-X-Forwarded-Encrypted: i=1; AJvYcCWtgxahPSLUVEUL1zq9E0aIghVyeX5Uxhw9GzbdD76D2uUhLkaIki8slLn3WS+TQJjO4tLsvKunEw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwniHc/xg4zEVG5p9htJE0VfYjz8le3qyC258spFuNE+IBaV8NO
-	EPXcBc+QhmshxnnPKGpUHSqkT3jFUkW1qlNzKJYEI0JB5nR1NI2QJmMbUtwthSkY8A9Jt/jIPQO
-	b26U8IoluZ8oeALx6GsamdRpoWObe3vAp17N5zw==
-X-Google-Smtp-Source: AGHT+IG5vgBt7SWz10m4bwHWl3WshDBGFWCRIXZLwIVJzAVLym8qK1LYVQnvPnJBn5988rv5zM1s0M0FA1lslSV8RBI=
-X-Received: by 2002:a05:6402:34cb:b0:5cf:a20:527b with SMTP id
- 4fb4d7f45d1cf-5cf4f3c018emr2916662a12.28.1731423313055; Tue, 12 Nov 2024
- 06:55:13 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="TxcMSsES"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Transfer-Encoding:
+	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Sender:Reply-To:Content-ID:Content-Description;
+	bh=ihScYvVrdqNdLsMzYkQ13Zw8VVF2lrSr479gXJJuxz8=; b=TxcMSsES+NIybXxgQ0v4Mt+l0L
+	dOX5d9BduXcdlo0mYXASMEti/MVrGlp64gyOjzh+jfwgnjp3RBogQO/vILQBXlx4/Si5uQIxa0aCs
+	qwWrPest4/n9DtRr9/NeMvHmexCXn1YrigwPFanYjxvSsmCCr6mdW8JaiJ7nOyOM6HFiMBsgM9BAO
+	WpGYs7yyVWBFeFG2fL8F/KLS+WmT8dmwGu+oSU6RLLfHZ/rFLw1nGkvzPHUMpzXIc427lp7Ug7ST/
+	EtiffHQoIQE2uTul9fhDvobYzcDZsrmA4zG+IIjQHCfM8df29Itu3S6xSrzS+cKq/qWZv31K/CiLh
+	Sk7ggUzQ==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
+	id 1tAsJX-0000000D5fl-1ZpJ;
+	Tue, 12 Nov 2024 14:56:19 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 85576300478; Tue, 12 Nov 2024 15:56:18 +0100 (CET)
+Date: Tue, 12 Nov 2024 15:56:18 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>, x86@kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	rafael.j.wysocki@intel.com, len.brown@intel.com,
+	artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com,
+	gautham.shenoy@amd.com
+Subject: Re: [PATCH v3 2/3] x86/smp native_play_dead: Prefer
+ cpuidle_play_dead() over mwait_play_dead()
+Message-ID: <20241112145618.GR22801@noisy.programming.kicks-ass.net>
+References: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
+ <20241108122909.763663-3-patryk.wlazlyn@linux.intel.com>
+ <20241112114743.GQ22801@noisy.programming.kicks-ass.net>
+ <CAJZ5v0hJ8NoFgjtnYce99+qjCZc3_ihBojyK1gRrcyU5Fp6inw@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <1731048987-229149-1-git-send-email-shawn.lin@rock-chips.com> <1731048987-229149-7-git-send-email-shawn.lin@rock-chips.com>
-In-Reply-To: <1731048987-229149-7-git-send-email-shawn.lin@rock-chips.com>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 12 Nov 2024 15:54:36 +0100
-Message-ID: <CAPDyKFray463L3NcG3QF6Qi7q0cz15Z7sO0gEH1OgB7EK5GcmQ@mail.gmail.com>
-Subject: Re: [PATCH v5 6/7] scsi: ufs: rockchip: initial support for UFS
-To: Shawn Lin <shawn.lin@rock-chips.com>
-Cc: Rob Herring <robh+dt@kernel.org>, 
-	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K . Petersen" <martin.petersen@oracle.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, 
-	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
-	Avri Altman <avri.altman@wdc.com>, Bart Van Assche <bvanassche@acm.org>, 
-	YiFeng Zhao <zyf@rock-chips.com>, Liang Chen <cl@rock-chips.com>, linux-scsi@vger.kernel.org, 
-	linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJZ5v0hJ8NoFgjtnYce99+qjCZc3_ihBojyK1gRrcyU5Fp6inw@mail.gmail.com>
 
-[...]
+On Tue, Nov 12, 2024 at 02:23:14PM +0100, Rafael J. Wysocki wrote:
+> On Tue, Nov 12, 2024 at 12:47 PM Peter Zijlstra <peterz@infradead.org> wrote:
+> >
+> > On Fri, Nov 08, 2024 at 01:29:08PM +0100, Patryk Wlazlyn wrote:
+> > > The generic implementation, based on cpuid leaf 0x5, for looking up the
+> > > mwait hint for the deepest cstate, depends on them to be continuous in
+> > > range [0, NUM_SUBSTATES-1]. While that is correct on most Intel x86
+> > > platforms, it is not architectural and may not result in reaching the
+> > > most optimized idle state on some of them.
+> > >
+> > > Prefer cpuidle_play_dead() over the generic mwait_play_dead() loop and
+> > > fallback to the later in case of missing enter_dead() handler.
+> > >
+> > > Signed-off-by: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>
+> > > ---
+> > >  arch/x86/kernel/smpboot.c | 4 ++--
+> > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > >
+> > > diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> > > index 44c40781bad6..721bb931181c 100644
+> > > --- a/arch/x86/kernel/smpboot.c
+> > > +++ b/arch/x86/kernel/smpboot.c
+> > > @@ -1416,9 +1416,9 @@ void native_play_dead(void)
+> > >       play_dead_common();
+> > >       tboot_shutdown(TB_SHUTDOWN_WFS);
+> > >
+> > > -     mwait_play_dead();
+> > >       if (cpuidle_play_dead())
+> > > -             hlt_play_dead();
+> > > +             mwait_play_dead();
+> > > +     hlt_play_dead();
+> > >  }
+> >
+> > Yeah, I don't think so. we don't want to accidentally hit
+> > acpi_idle_play_dead().
+> 
+> Having inspected the code once again, I'm not sure what your concern is.
+> 
+> :enter.dead() is set to acpi_idle_play_dead() for all states in ACPI
+> idle - see acpi_processor_setup_cstates() and the role of the type
+> check is to filter out bogus table entries (the "type" must be 1, 2,
+> or 3 as per the spec).
+> 
+> Then cpuidle_play_dead() calls drv->states[i].enter_dead() for the
+> deepest state where it is set and if this is FFH,
+> acpi_idle_play_dead() will return an error.  So after the change, the
+> code above will fall back to mwait_play_dead() then.
+> 
+> Or am I missing anything?
 
-> +
-> +#ifdef CONFIG_PM_SLEEP
-> +static int ufs_rockchip_system_suspend(struct device *dev)
-> +{
-> +       struct ufs_hba *hba = dev_get_drvdata(dev);
-> +       struct ufs_rockchip_host *host = ufshcd_get_variant(hba);
-> +       int err;
-> +
-> +       if (hba->spm_lvl < UFS_PM_LVL_5)
-> +               device_set_awake_path(dev);
-> +
-> +       err = ufshcd_system_suspend(dev);
-> +       if (err) {
-> +               dev_err(hba->dev, "system susped failed %d\n", err);
-> +               return err;
-> +       }
-> +
-> +       clk_disable_unprepare(host->ref_out_clk);
+So it relies on there being a C2/C3 state enumerated and that being FFh.
+Otherwise it will find a 'working' state and we're up a creek.
 
-I am not sure that the host is always runtime resumed at this point,
-or is there? If not, we need to call pm_runtime_get_sync() somewhere
-here and a corresponding pm_runtime_put* in the ->suspend() callback.
+Typically I expect C2/C3 FFh states will be there on Intel stuff, but it
+seems awefully random to rely on this hole. AMD might unwittinly change
+the ACPI driver (they're the main user) and then we'd be up a creek.
 
-Of course, if you could make use of pm_runtime_force_suspend|resume()
-that would be even better, but then probably need some additional
-re-work in the ufs-core layer first, to make this work, I think.
+Robustly we'd teach the ACPI driver about FFh and set enter_dead on
+every state -- but we'd have to double check that with AMD.
 
-[...]
+At the same time, intel_idle should then also set enter_dead on all
+states.
 
-Kind regards
-Uffe
+And then the mwait case is only ever reached if CPUIDLE=n.
+
