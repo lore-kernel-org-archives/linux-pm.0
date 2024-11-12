@@ -1,40 +1,40 @@
 Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C298204000;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C20E2038DD;
 	Tue, 12 Nov 2024 15:49:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731426591; cv=none; b=Mtr51Nj/p0Iacuop376mLXb/z5RvErS7F6kRvaP93g/cxmKI0nLo+m5N/UDFYjrW8ula+mn3rqidXPFEIIdVC4WumphcEjBNKX7+wMPD0Vl6Ka2la+wj61LzH/+yn/O53zPUWcDLgEcE+acTrnBQcibGYIALNOGHgaCpdkQZ528=
+	t=1731426591; cv=none; b=p9f6rFtEgHyFwSAUtCWszpPcY1nSEJSsVhSEFFQPdoIbHc2J3ZkzvDvJBwAMCaXJN9CP62JW8bFRU7tNDMNKZf2rhKFNOQKiFru6Ncj+GmyWDju/PMKx9iMMf1zChfQK+PWYm9dkRI1uQRvUvgMvFRam+yfdKVlEyNSOBXpstlI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1731426591; c=relaxed/simple;
-	bh=9EpBDn6+VrUhl6s9RDziNCH5FD1n12+IVb+sGxL5HO0=;
+	bh=Nrz9w5zBv/QnJ7uzu+/afmMrCtwXjWWUkRPBG4nE14g=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=nK2Lr0QmrSF4SLU8KljiThPp0frBXjTe/5rA/WxtOK8u4DZR3tcv7SJReZxiurGtJHBD+npSJQT/pbcZI/gB8mBeBayoTUnuEzPxWXDk9itfvDfm/dbSMY5MbmOd71rfUxsZXmBcsXTMy2QMbZyRdZXuaWGOd02Ei1c30i2bY88=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=kPn7md7K; arc=none smtp.client-ip=5.75.144.95
+	 In-Reply-To:To:Cc; b=QddKjeMDZaEfZhQeJCep15dLrpkqkP5+a8ZwK37pGH3x2bXrfhkDx06I5JM5YQvjFhpS6l1VhrSx4X9aAgvPTHNlbAq/SH2y3rgx06D0VnMtgMG/BDpifeDmPU+WrrNg54/vzy8SOYlSFzsnLwmoTJKBHEgYJ0FUxZUIc0EOa6g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=kc1Dor48; arc=none smtp.client-ip=5.75.144.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="kPn7md7K"
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="kc1Dor48"
 Received: from [192.168.93.162] (254C22F6.nat.pool.telekom.hu [37.76.34.246])
-	by mail.mainlining.org (Postfix) with ESMTPSA id E8DC6E45D3;
-	Tue, 12 Nov 2024 15:49:46 +0000 (UTC)
+	by mail.mainlining.org (Postfix) with ESMTPSA id 2B9D1E45D2;
+	Tue, 12 Nov 2024 15:49:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mainlining.org;
-	s=psm; t=1731426588;
+	s=psm; t=1731426586;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=kgTkMERpFtHVYtKjLiYY15MruMqcfI9oO4bj8B7L2VI=;
-	b=kPn7md7KBIgfpO4gpTYsanRs+K5bGEyEYiEHhYgtzqWxLo4T4teBiB1ZiNOTojNowcAnas
-	SckXrtpmtuEsWh4t3PH5P2eZLUcinsrKrSLyDSwriz4RxgSQhFeiHQUDz6weF1y8WBFKLV
-	0Y2vQHmGi3aHkBd7UF8jG5DwtU+66mVrVGyM67WX/e/mVaj9NwfXp1meutAXCmPYbjxuk1
-	3dpESs8txa1fUZ8OjsjFGz5DQMCNrE1Kc+aMG4vGJWW1MxNBoUd3J50p3/1Y7JMSHQ5o1t
-	q/g1e16oaIKo1hQxdRydBmJizVUt0T0yiaXSirZLZGyUtrNLpe0BJfMlWCy5uA==
+	bh=kbrXjZM+gi6Zbc2dB5/3D6eieJAq+E0T8kg8nHD8OLk=;
+	b=kc1Dor48iSjziWpiijLhK4aVpLtNc41OO8ZwCLOl/3vlCSOVr8M0+6Kqu/SaxX4+JbbvvQ
+	RBnHE6MG9bA5ebMf916sUBt7P12rTaRpYOnXhrY5N24R20w+SeK5hA1AlgSD+W6AZEWPAB
+	4dOkAGPAZkwAITleHp67nQGpAqYRpXkKJAQk4exQwJ4ZyHQHEndQBcYl4o/7P+Ao5Z7FFG
+	b3DhCZ7sJ+qn74W3cECUaYZGfipsk0MsTGsp8hSS0ib86kjoC8+r13ZlJYmBldY+Z3xY4R
+	HBJ+ErUyLv+EI1n8vnyM66euiA0ALH/J5RoroJlxaXIC6KhMMmHZbE8y2jx7Dw==
 From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Date: Tue, 12 Nov 2024 16:49:36 +0100
-Subject: [PATCH v5 06/10] dt-bindings: iommu: qcom,iommu: Add MSM8917 IOMMU
- to SMMUv1 compatibles
+Date: Tue, 12 Nov 2024 16:49:35 +0100
+Subject: [PATCH v5 05/10] thermal/drivers/qcom/tsens-v1: Add support for
+ MSM8937 tsens
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -43,7 +43,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241112-msm8917-v5-6-3ca34d33191b@mainlining.org>
+Message-Id: <20241112-msm8917-v5-5-3ca34d33191b@mainlining.org>
 References: <20241112-msm8917-v5-0-3ca34d33191b@mainlining.org>
 In-Reply-To: <20241112-msm8917-v5-0-3ca34d33191b@mainlining.org>
 To: Bjorn Andersson <andersson@kernel.org>, 
@@ -61,38 +61,101 @@ Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
  linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
  =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+ Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1731426576; l=1003;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1731426576; l=2992;
  i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=9EpBDn6+VrUhl6s9RDziNCH5FD1n12+IVb+sGxL5HO0=;
- b=I82ffqJ2HaD59hhVEMY7dxGLl0cR2kK3mB5xGEY75nSONRwQiSS15nOkiWf0pmOgiL84/uSIB
- iA3rZUH++OuCuyVCaVG08ZXoNFpaTLF13GuNQeD8tcFMIew3kPtQW7M
+ bh=Nrz9w5zBv/QnJ7uzu+/afmMrCtwXjWWUkRPBG4nE14g=;
+ b=GdR+2rw5Xe/7si9U21YsYu/znviD5y4z5k1W4AEZ7KuEr31dOAu5m6YyrCRG1N3OsEOqMQ6qT
+ rACzTehAo84DB4uPS125+DNxQcam6nXrIXVHAdbbnI2sGOs1lb5zQKR
 X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
  pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-Add MSM8917 compatible string with "qcom,msm-iommu-v1" as fallback
-for the MSM8917 IOMMU which is compatible with Qualcomm's secure
-fw "SMMU v1" implementation.
+Add support for tsens v1.4 block what can be found in
+MSM8937 and MSM8917.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
- Documentation/devicetree/bindings/iommu/qcom,iommu.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/qcom/tsens-v1.c | 21 ++++++++++++++-------
+ drivers/thermal/qcom/tsens.c    |  3 +++
+ drivers/thermal/qcom/tsens.h    |  2 +-
+ 3 files changed, 18 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml b/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml
-index f8cebc9e8cd9d46b449cd297153dbebe5c84bf3f..5ae9a628261fd251c1e991a70662c6d37ef2c4e3 100644
---- a/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml
-+++ b/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml
-@@ -21,6 +21,7 @@ properties:
-       - items:
-           - enum:
-               - qcom,msm8916-iommu
-+              - qcom,msm8917-iommu
-               - qcom,msm8953-iommu
-           - const: qcom,msm-iommu-v1
-       - items:
+diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
+index dc1c4ae2d8b01b42a0edbb7f12a5780b25d0c8ac..1a7874676f68e456749faa1f8b6064f5bd38b146 100644
+--- a/drivers/thermal/qcom/tsens-v1.c
++++ b/drivers/thermal/qcom/tsens-v1.c
+@@ -162,28 +162,35 @@ struct tsens_plat_data data_tsens_v1 = {
+ 	.fields	= tsens_v1_regfields,
+ };
+ 
+-static const struct tsens_ops ops_8956 = {
+-	.init		= init_8956,
++static const struct tsens_ops ops_common = {
++	.init		= init_common,
+ 	.calibrate	= tsens_calibrate_common,
+ 	.get_temp	= get_temp_tsens_valid,
+ };
+ 
+-struct tsens_plat_data data_8956 = {
++struct tsens_plat_data data_8937 = {
+ 	.num_sensors	= 11,
+-	.ops		= &ops_8956,
++	.ops		= &ops_common,
+ 	.feat		= &tsens_v1_feat,
+ 	.fields		= tsens_v1_regfields,
+ };
+ 
+-static const struct tsens_ops ops_8976 = {
+-	.init		= init_common,
++static const struct tsens_ops ops_8956 = {
++	.init		= init_8956,
+ 	.calibrate	= tsens_calibrate_common,
+ 	.get_temp	= get_temp_tsens_valid,
+ };
+ 
++struct tsens_plat_data data_8956 = {
++	.num_sensors	= 11,
++	.ops		= &ops_8956,
++	.feat		= &tsens_v1_feat,
++	.fields		= tsens_v1_regfields,
++};
++
+ struct tsens_plat_data data_8976 = {
+ 	.num_sensors	= 11,
+-	.ops		= &ops_8976,
++	.ops		= &ops_common,
+ 	.feat		= &tsens_v1_feat,
+ 	.fields		= tsens_v1_regfields,
+ };
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 0b4421bf478544dfa071c792dc812ffaedc9c635..d2db804692f01d300b555d491e8a1acc597b3819 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -1119,6 +1119,9 @@ static const struct of_device_id tsens_table[] = {
+ 	}, {
+ 		.compatible = "qcom,msm8916-tsens",
+ 		.data = &data_8916,
++	}, {
++		.compatible = "qcom,msm8937-tsens",
++		.data = &data_8937,
+ 	}, {
+ 		.compatible = "qcom,msm8939-tsens",
+ 		.data = &data_8939,
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index cab39de045b100030de6a1209c58bb09561a3224..7b36a0318fa6a078e73ce26dfe7387e4435148b4 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -647,7 +647,7 @@ extern struct tsens_plat_data data_8960;
+ extern struct tsens_plat_data data_8226, data_8909, data_8916, data_8939, data_8974, data_9607;
+ 
+ /* TSENS v1 targets */
+-extern struct tsens_plat_data data_tsens_v1, data_8976, data_8956;
++extern struct tsens_plat_data data_tsens_v1, data_8937, data_8976, data_8956;
+ 
+ /* TSENS v2 targets */
+ extern struct tsens_plat_data data_8996, data_ipq8074, data_tsens_v2;
 
 -- 
 2.47.0
