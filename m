@@ -1,125 +1,148 @@
-Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37A11200C85;
-	Tue, 12 Nov 2024 14:56:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86BF71FF5F9;
+	Tue, 12 Nov 2024 14:56:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731423387; cv=none; b=HN9ylE59EXwaSJhr7FzR3tkEcEDVTi+T9jxoZrJyY7sY29uSK+oSHUcxfsN96qvXekB1hTDo3ssm/8ibfFHGM61DX+VILnIAcxz5pPwb9BeS54/I4ue6XFeHxlYnd8nOTAnVyiRm0tQv8QJIqRxOF995xBxQ0nyzeOgC28Rxp3Y=
+	t=1731423394; cv=none; b=VOZ5BXR+nXzYyl8eiJB/6cf3gzPXzNRmOohUw4+0D20FRhB8TcrXXAmaTxM2LAqesFihRD9Uj/q5pbv3OIqzP/Rf9a6KCrSZj61Vsutzm6ciAHRurZ5f62o/LMFpVk2VGOJvrsJt6SskY7h1/HGObLp98M988rAsnzi7uy7o5MQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731423387; c=relaxed/simple;
-	bh=Mde5nHBWqkDLtf+xBmnzxuSjwc8sFgr2SRF6Jm+LflQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=h7hNjCB9JdzbnBstI4ByHEyRQ3mqFusVMCJmkwAEtDpFFpfqVURiyQfhM7CyNLUaX55YnRo9q7A9MNV9RmvE575xUbojyC9vKAmKWKOBbEwC0x0vvHViYB3JdJwwoQFDww45zytXuZeElJyF7JsXkNnQBaD2VYNEq+Ww3VD6rew=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=TxcMSsES; arc=none smtp.client-ip=90.155.92.199
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1731423394; c=relaxed/simple;
+	bh=qxIC4rld0FPHod8NdRU09jShd6X6EHSN5siQxzb9Gwc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Hm41J3zMkfmWyrxKIsNcddu24jcOnjMNsTVn0MZrV11FP9lyNfnGaXmeQMv/mwgxXIx5NIQs7dQ0roDIEM9S39sHcVgWjQnhFOGOqVNAxUyo5nRoJywwHLSbiC7nMxApzTGVInbz3AXfCGZz2M1VRJugibkpxpM/lQUZHIZgb0M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Kq3QO532; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="TxcMSsES"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=ihScYvVrdqNdLsMzYkQ13Zw8VVF2lrSr479gXJJuxz8=; b=TxcMSsES+NIybXxgQ0v4Mt+l0L
-	dOX5d9BduXcdlo0mYXASMEti/MVrGlp64gyOjzh+jfwgnjp3RBogQO/vILQBXlx4/Si5uQIxa0aCs
-	qwWrPest4/n9DtRr9/NeMvHmexCXn1YrigwPFanYjxvSsmCCr6mdW8JaiJ7nOyOM6HFiMBsgM9BAO
-	WpGYs7yyVWBFeFG2fL8F/KLS+WmT8dmwGu+oSU6RLLfHZ/rFLw1nGkvzPHUMpzXIc427lp7Ug7ST/
-	EtiffHQoIQE2uTul9fhDvobYzcDZsrmA4zG+IIjQHCfM8df29Itu3S6xSrzS+cKq/qWZv31K/CiLh
-	Sk7ggUzQ==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
-	id 1tAsJX-0000000D5fl-1ZpJ;
-	Tue, 12 Nov 2024 14:56:19 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id 85576300478; Tue, 12 Nov 2024 15:56:18 +0100 (CET)
-Date: Tue, 12 Nov 2024 15:56:18 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>, x86@kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	rafael.j.wysocki@intel.com, len.brown@intel.com,
-	artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com,
-	gautham.shenoy@amd.com
-Subject: Re: [PATCH v3 2/3] x86/smp native_play_dead: Prefer
- cpuidle_play_dead() over mwait_play_dead()
-Message-ID: <20241112145618.GR22801@noisy.programming.kicks-ass.net>
-References: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
- <20241108122909.763663-3-patryk.wlazlyn@linux.intel.com>
- <20241112114743.GQ22801@noisy.programming.kicks-ass.net>
- <CAJZ5v0hJ8NoFgjtnYce99+qjCZc3_ihBojyK1gRrcyU5Fp6inw@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Kq3QO532"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C4FCC4CECD;
+	Tue, 12 Nov 2024 14:56:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731423394;
+	bh=qxIC4rld0FPHod8NdRU09jShd6X6EHSN5siQxzb9Gwc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=Kq3QO532tbM3UkTnRLUmqiMDKu0ZnktPl7xepwAZXSAQGDaR+1+oYiHdBzNpbDa4n
+	 upEiqb8AAbUCMlQ3xKVRC43z90aGmxpB7eb5++jYrYA8/j0iOXbTkvOcdePnmdaxhS
+	 34CkXQU8r2fm5OaGQPVgg2Oe94kGycp8X5kxBbN1L3NXtku0bmUiJeot+HokJAn8tm
+	 HtOjsxJ91BY1sYkZipTXN9ii1pSTszdU49GwFramTfjjaJShD/57mMNCZaGn44BpbT
+	 dYKcs7J8yJZu4+NjkUOnLSIQ5UD/sC0njL5gxl4omXsLRZSBPE67JlZgQlRRdtyiw1
+	 n10f4QKHnes+w==
+Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-2884910c846so2597006fac.0;
+        Tue, 12 Nov 2024 06:56:34 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUT1nA5axh7v+9i/W2vPBwpaEtNwXrOpgJUZhUhS/+qER4TCBE4EJ3ZimmE8y0OXmUq7VXLiBabdOE=@vger.kernel.org, AJvYcCVuP2FUwHZt0KsfALkFY8FBQ+iEUMHAoekbff3+lExJ48RHXUQS7tTCNDuAUtgPMxiyGwqHFBkSdojXJTM=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyH17gDuM7Eiek7Z/hH6QOLm4VwGqhk0/Lt5g2QAdcwrs7/m8xm
+	B8qtveVE3yEp8oijzlVCZtOIwNUriHYRcUjfxypHl635LkY4pc+X/a3uqEvNdqWXABS9F0PMrf0
+	4IAmbj0drEMRmY14Q2KcTtqzJYvU=
+X-Google-Smtp-Source: AGHT+IHFAYWHqbxLaFbPkmTvierSbnGFzPUTt9hfFxEPChysSqgnLSYON2CyCbY9fGuxis/j/P0apQyLfG4eRPNHhDY=
+X-Received: by 2002:a05:6870:5589:b0:288:b902:1b6d with SMTP id
+ 586e51a60fabf-2956028130dmr13610046fac.26.1731423393453; Tue, 12 Nov 2024
+ 06:56:33 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0hJ8NoFgjtnYce99+qjCZc3_ihBojyK1gRrcyU5Fp6inw@mail.gmail.com>
+References: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
+ <20241108122909.763663-3-patryk.wlazlyn@linux.intel.com> <20241112114743.GQ22801@noisy.programming.kicks-ass.net>
+ <CAJZ5v0ivAk1xrcJgiJnDWnL3GdijSdsuV4K_4ORjnsjPUVAEnA@mail.gmail.com>
+ <20241112121843.GF6497@noisy.programming.kicks-ass.net> <CAJZ5v0iSP4Gh2FwKdkOw20N4hzwQ94+WmnT+3EY94QG3gORWzA@mail.gmail.com>
+ <20241112134959.GG6497@noisy.programming.kicks-ass.net>
+In-Reply-To: <20241112134959.GG6497@noisy.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 12 Nov 2024 15:56:22 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0iYYYpg7MDf8_UmoUuzyiPMoPdjgSJmdBXGYCxVc4icWw@mail.gmail.com>
+Message-ID: <CAJZ5v0iYYYpg7MDf8_UmoUuzyiPMoPdjgSJmdBXGYCxVc4icWw@mail.gmail.com>
+Subject: Re: [PATCH v3 2/3] x86/smp native_play_dead: Prefer
+ cpuidle_play_dead() over mwait_play_dead()
+To: Peter Zijlstra <peterz@infradead.org>, artem.bityutskiy@linux.intel.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>, x86@kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	rafael.j.wysocki@intel.com, len.brown@intel.com, dave.hansen@linux.intel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 12, 2024 at 02:23:14PM +0100, Rafael J. Wysocki wrote:
-> On Tue, Nov 12, 2024 at 12:47 PM Peter Zijlstra <peterz@infradead.org> wrote:
+On Tue, Nov 12, 2024 at 2:50=E2=80=AFPM Peter Zijlstra <peterz@infradead.or=
+g> wrote:
+>
+> On Tue, Nov 12, 2024 at 01:30:29PM +0100, Rafael J. Wysocki wrote:
+>
+> > > > Then we are back to the original approach though:
+> > > >
+> > > > https://lore.kernel.org/linux-pm/20241029101507.7188-3-patryk.wlazl=
+yn@linux.intel.com/
+> > >
+> > > Well, that won't be brilliant for hybrid systems where the available
+> > > states are different per CPU.
 > >
-> > On Fri, Nov 08, 2024 at 01:29:08PM +0100, Patryk Wlazlyn wrote:
-> > > The generic implementation, based on cpuid leaf 0x5, for looking up the
-> > > mwait hint for the deepest cstate, depends on them to be continuous in
-> > > range [0, NUM_SUBSTATES-1]. While that is correct on most Intel x86
-> > > platforms, it is not architectural and may not result in reaching the
-> > > most optimized idle state on some of them.
-> > >
-> > > Prefer cpuidle_play_dead() over the generic mwait_play_dead() loop and
-> > > fallback to the later in case of missing enter_dead() handler.
-> > >
-> > > Signed-off-by: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>
-> > > ---
-> > >  arch/x86/kernel/smpboot.c | 4 ++--
-> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> > > index 44c40781bad6..721bb931181c 100644
-> > > --- a/arch/x86/kernel/smpboot.c
-> > > +++ b/arch/x86/kernel/smpboot.c
-> > > @@ -1416,9 +1416,9 @@ void native_play_dead(void)
-> > >       play_dead_common();
-> > >       tboot_shutdown(TB_SHUTDOWN_WFS);
-> > >
-> > > -     mwait_play_dead();
-> > >       if (cpuidle_play_dead())
-> > > -             hlt_play_dead();
-> > > +             mwait_play_dead();
-> > > +     hlt_play_dead();
-> > >  }
+> > But they aren't.
 > >
-> > Yeah, I don't think so. we don't want to accidentally hit
-> > acpi_idle_play_dead().
-> 
-> Having inspected the code once again, I'm not sure what your concern is.
-> 
-> :enter.dead() is set to acpi_idle_play_dead() for all states in ACPI
-> idle - see acpi_processor_setup_cstates() and the role of the type
-> check is to filter out bogus table entries (the "type" must be 1, 2,
-> or 3 as per the spec).
-> 
-> Then cpuidle_play_dead() calls drv->states[i].enter_dead() for the
-> deepest state where it is set and if this is FFH,
-> acpi_idle_play_dead() will return an error.  So after the change, the
-> code above will fall back to mwait_play_dead() then.
-> 
-> Or am I missing anything?
+> > At least so far that has not been the case on any platform known to me
+> > and I'm not aware of any plans to make that happen (guess what, some
+> > other OSes may be unhappy).
+>
+> Well, that's something at least.
+>
+> > > Also, all of this is a bit of a trainwreck... AFAICT AMD wants IO bas=
+ed
+> > > idle (per the 2018 commit). So they want the ACPI thing.
+> >
+> > Yes.
+> >
+> > > But on Intel we really don't want HLT, and had that MWAIT, but that h=
+as
+> > > real problems with KEXEC. And I don't think we can rely on INTEL_IDLE=
+=3Dy.
+> >
+> > We could because it handles ACPI now and ACPI idle doesn't add any
+> > value on top of it except for the IO-based idle case.
+>
+> You're saying we can mandate INTEL_IDLE=3Dy? Because currently defconfig
+> doesn't even have it on.
 
-So it relies on there being a C2/C3 state enumerated and that being FFh.
-Otherwise it will find a 'working' state and we're up a creek.
+It is conceivable.
 
-Typically I expect C2/C3 FFh states will be there on Intel stuff, but it
-seems awefully random to rely on this hole. AMD might unwittinly change
-the ACPI driver (they're the main user) and then we'd be up a creek.
+> > > The ACPI thing doesn't support FFh states for it's enter_dead(), shou=
+ld it?
+> >
+> > It does AFAICS, but the FFH is still MWAIT.
+>
+> What I'm trying to say is that acpi_idle_play_dead() doesn't seem to
+> support FFh and as such won't ever use MWAIT.
 
-Robustly we'd teach the ACPI driver about FFh and set enter_dead on
-every state -- but we'd have to double check that with AMD.
+Right, but if it finds an FFH state deeper than C1, it will fall back
+to the next play_dead method.
 
-At the same time, intel_idle should then also set enter_dead on all
-states.
+> > > Anyway, ideally x86 would grow a new instruction to offline a CPU, bo=
+th
+> > > MWAIT and HLT have problems vs non-maskable interrupts.
+> > >
+> > > I really don't know what is best here, maybe moving that whole CPUID
+> > > loop to boot, store the value in a per-cpu mwait_play_dead_hint. Have
+> > > AMD explicitly clear the value, and avoid mwait when 0 -- hint 0 is
+> > > equal to HLT anyway.
+> > >
+> > > But as said, we need a new instruction.
+> >
+> > Before that, there is the problem with the MWAIT hint computation in
+> > mwait_play_dead() and in fact intel_idle does know what hint to use in
+> > there.
+>
+> But we need to deal witn INTEL_IDLE=3Dn.
 
-And then the mwait case is only ever reached if CPUIDLE=n.
+Then the code would do what it is doing today, as a matter of fallback.
 
+> Also, I don't see any MWAIT_LEAF
+> parsing in intel_idle.c. Yes, it requests the information, but then it
+> mostly ignores it -- it only consumes two ECX bits or so.
+>
+> I don't see it finding a max-cstate from mwait_substates anywhere.
+
+No, it gets this either from _CST or from a built-in table for the
+given processor model.
+
+> So given we don't have any such code, why can't we simply fix the cstate
+> parsing we have in mwait_play_dead() and call it a day?
+
+I'll leave this one to Artem, but there is at least one reason to
+avoid doing that I know about: There is no guarantee that whatever has
+been found was actually validated.
