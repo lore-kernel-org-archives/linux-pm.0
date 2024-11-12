@@ -1,184 +1,88 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E205D201249
-	for <linux-pm@vger.kernel.org>; Tue, 12 Nov 2024 18:49:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F5AC21832A;
+	Tue, 12 Nov 2024 19:18:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731437378; cv=none; b=lz6Hjx4aPrEGC7AlckOMuhH7CCWxpIlkucsWarkt1/VHDrik9w1luOIiFiz3qX4JdEYapuwQtkyXwYRNEiuuQ7oU09VFDY6WIO6jsh5ibjpwgGhgzxw7TJSSPPWs6o1CIlubgZic8MkpIwk7pjOwFw9kYGX+TWDKiPa3X2UJHmg=
+	t=1731439105; cv=none; b=Q8j5l7cPCpfQ2oL6xeOludjECZInJj/YbMeD+P4782MNEhiUr6G4M28nWydYNVCgO6iQ7UhhJAuHUWIFoL09cBHY0qTV8tPiK+vjf4I7FhRlDW+sC8WAhDMMBVWG50+oSX08NOMBKghmgMmXMhKNn4FRKINMbCujzkFPH4vD5QI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731437378; c=relaxed/simple;
-	bh=z7JRsFYW7tQ+7WpP2jcM/rU5Vh+/Y7+nyM7hGoMWZdk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=EEgqUFDvMdonyB0ytMsRGhMzXppxVzklXyeszY20Yb5LkhQRXN8RUiHuKVzS0g8pyFan3dZrlmU/uEIgFszL3opKI1cN2FfnW5uqig8Lb/GAJsGBX3lpQXcuDUOZQAE6qGIHdBheHicsq7q5/ozQSnK7P22K5O2VGGF8E6Rigb8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=C04m1N82; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1731439105; c=relaxed/simple;
+	bh=SmY1KzS3axMfMj/tXPwRqqwfIuiyQTcCq1Ie7N/f44g=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=U9kwkGe/e79vrSKb9QtFrfHq10g979RbrMDvB19WCh2q6P76rUYAVM3rZBwn1hkMMDf+kMehRDaXtESFs5MGH5reqmprSQRkhLR4xPXI0KrazRixKQgpDMej7e0UD7YSK0lYwlHWRvnq/KoFYTXiV1pCjZz4ZRLurnMDEC8Luk4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=FXI6k32c; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=JU2998mm; arc=none smtp.client-ip=193.142.43.55
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="C04m1N82"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C382C4CED8
-	for <linux-pm@vger.kernel.org>; Tue, 12 Nov 2024 18:49:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1731437377;
-	bh=z7JRsFYW7tQ+7WpP2jcM/rU5Vh+/Y7+nyM7hGoMWZdk=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=C04m1N82urfHHGsE5P2Z5RCyyX9BdaAiT0lf/J5oo27rpOvFv1P4UKj9Fr7V+MQg7
-	 HJMTf7vrdeeivh19qK1daR4QXEzdjlTE2w2Y6Y/LgDgOe76gseFkD11mX6h6jx6hMF
-	 jplx8Z/uTH7OulJ81h0B8dqmHy71NnsMQ3X9+DM6G4tKAbZTHqAl99/7EGCJZMJq11
-	 pC5zV68DIADuErGF938dkaSV+9BKyw9BxRXnTGZRLkq0gcSr8sig2mmRTw6lcuQgUv
-	 FvwSYRScEGt3YE9pGOi3xo2IWlAXOEPzx65g9AsfpqBge4JrwilhrYHF7WMFnTXU0g
-	 bYlsovWjdNJBg==
-Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-295cee3a962so668709fac.3
-        for <linux-pm@vger.kernel.org>; Tue, 12 Nov 2024 10:49:37 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCVD/P+sV6OFGmc7Gg9RhxM/eKwtANyk7bmbujtjoX5hVm3m57RsBbu0UaR1yF/b86DGKGx+COKjhA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwptXsBRaia5c5Xpern4SQujwKgqIjrDH4YMZnY4h2byvGXgPwc
-	B8yFqpfnW/8o1SmqJeO1CHrnlX2z5kduXuHZO5qqRxMi5gu5oy5CWH7V9GIb6mm4pK1LnDKV46e
-	WvFF53fu35gdsxHfTjyA3GmwZjR0=
-X-Google-Smtp-Source: AGHT+IFafCq/g6DWRhs/OJAND6AzIx5MGT/f2LUw81/pk2iR8GD5R/rjZ1vfWfWzDIyxmqTIF2r5lbhbgEyoWKGdCek=
-X-Received: by 2002:a05:6870:3b15:b0:270:184b:ccd9 with SMTP id
- 586e51a60fabf-29560309629mr14733495fac.39.1731437376745; Tue, 12 Nov 2024
- 10:49:36 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="FXI6k32c";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="JU2998mm"
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1731439098;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=X6X/c5pG+riV4PsRlWNGgbAkYRH6+PQq4M8cy3QLMUU=;
+	b=FXI6k32cEURH3FCDwZjEYalBH8Bf7VOicFp3XQkgvitdYM3blLK4sMw68n0x9xC3W5IyyG
+	y8ktr1ZvC4QKOE+WSAYE0NNkZ1I9qvDDReaACBzmN28PW6MlUnz+IuxD/miyyAi7OT92cB
+	eS6xRLZ0OsbpMPrtUnRtl0wVpjq56bwyW13jXj4QhLXOIRc0h/hB38wYIhY9VH6Tl6DOJB
+	60O8dcQY8TzxVQI+UGf5MBb1J9c8E7s5bBszcEr/Bsp0A21zpcpnYO/+71bLojUnsfZDNj
+	lCRXvjrnVUOIJEWF0PKyy07zGPLkbBbGgv3s5dj3Q7WDxDJazGfDxtfT5U5mhw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1731439098;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=X6X/c5pG+riV4PsRlWNGgbAkYRH6+PQq4M8cy3QLMUU=;
+	b=JU2998mm8QClY90vCpYupNEfxx88WcCi8+8byKxG5hqdOUrCZ47Xv3Vxh9pvCZp/La/UA7
+	8rS6CGvBsjc9ccCQ==
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Patryk Wlazlyn
+ <patryk.wlazlyn@linux.intel.com>, Dave Hansen <dave.hansen@intel.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ rafael.j.wysocki@intel.com, len.brown@intel.com,
+ artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com
+Subject: Re: [PATCH v3 3/3] intel_idle: Provide enter_dead() handler for SRF
+In-Reply-To: <CAJZ5v0gmg_6OnzR6BNm+3Mx0Wzsf2nPQEZDutYu_-Px-TsvX-w@mail.gmail.com>
+References: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
+ <20241108122909.763663-4-patryk.wlazlyn@linux.intel.com>
+ <b6ab357c-1562-4035-ad3a-2159d2c8c1fa@intel.com>
+ <ee9b0a70-6f44-4203-bba9-c07d94444ad6@linux.intel.com>
+ <CAJZ5v0gmg_6OnzR6BNm+3Mx0Wzsf2nPQEZDutYu_-Px-TsvX-w@mail.gmail.com>
+Date: Tue, 12 Nov 2024 20:17:54 +0100
+Message-ID: <87serwmfbx.ffs@tglx>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <SJ1PR11MB6129EDBF22F8A90FC3A3EDC8B9582@SJ1PR11MB6129.namprd11.prod.outlook.com>
- <CAJZ5v0gpg7sd3Qx25WFSbGxFN6-nptxK+QtkHZMMtXW-dnaozg@mail.gmail.com> <SJ1PR11MB6129A1C31D55C9ACE64D49F2B9592@SJ1PR11MB6129.namprd11.prod.outlook.com>
-In-Reply-To: <SJ1PR11MB6129A1C31D55C9ACE64D49F2B9592@SJ1PR11MB6129.namprd11.prod.outlook.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 12 Nov 2024 19:49:25 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0irM=4FCnqNLwzb75Dco143M_Tg7MFg+cUJiuXJpo1fDQ@mail.gmail.com>
-Message-ID: <CAJZ5v0irM=4FCnqNLwzb75Dco143M_Tg7MFg+cUJiuXJpo1fDQ@mail.gmail.com>
-Subject: Re: Regression on linux-next (next-20241106)
-To: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, 
-	"intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, 
-	"Kurmi, Suresh Kumar" <suresh.kumar.kurmi@intel.com>, "Saarinen, Jani" <jani.saarinen@intel.com>, 
-	"Nikula, Jani" <jani.nikula@intel.com>, 
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
-	"srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, 
-	"ricardo.neri-calderon@linux.intel.com" <ricardo.neri-calderon@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 12, 2024 at 6:14=E2=80=AFPM Borah, Chaitanya Kumar
-<chaitanya.kumar.borah@intel.com> wrote:
+On Tue, Nov 12 2024 at 12:28, Rafael J. Wysocki wrote:
+> On Tue, Nov 12, 2024 at 12:18=E2=80=AFPM Patryk Wlazlyn
+> <patryk.wlazlyn@linux.intel.com> wrote:
+>> I don't think so. The old algorithm gives fairly good heuristic for comp=
+uting
+>> the mwait hint for the deepest cstate. Even though it's not guaranteed t=
+o work,
+>> it does work on most of the platforms that don't early return. I think w=
+e should
+>> leave it, but prefer idle_driver.
 >
+> IOW, as a fallback mechanism, it is as good as it gets.
 >
->
-> > -----Original Message-----
-> > From: Rafael J. Wysocki <rafael@kernel.org>
-> > Sent: Monday, November 11, 2024 6:58 PM
-> > To: Borah, Chaitanya Kumar <chaitanya.kumar.borah@intel.com>
-> > Cc: Wysocki, Rafael J <rafael.j.wysocki@intel.com>; intel-
-> > gfx@lists.freedesktop.org; Kurmi, Suresh Kumar
-> > <suresh.kumar.kurmi@intel.com>; Saarinen, Jani <jani.saarinen@intel.com=
->;
-> > Nikula, Jani <jani.nikula@intel.com>; linux-pm@vger.kernel.org;
-> > srinivas.pandruvada@linux.intel.com; ricardo.neri-calderon@linux.intel.=
-com
-> > Subject: Re: Regression on linux-next (next-20241106)
-> >
-> > Hi Chaitanya,
-> >
-> > On Mon, Nov 11, 2024 at 6:41=E2=80=AFAM Borah, Chaitanya Kumar
-> > <chaitanya.kumar.borah@intel.com> wrote:
-> > >
-> > > Hello Rafael,
-> > >
-> > > Hope you are doing well. I am Chaitanya from the linux graphics team =
-in
-> > Intel.
-> > >
-> > > This mail is regarding a regression we are seeing in our CI runs[1] o=
-n linux-
-> > next repository.
-> > >
-> > > Since the version next-20241106 [2], we are seeing the following
-> > > regression
-> > >
-> > > `````````````````````````````````````````````````````````````````````=
-````````````
-> > > <4>[    7.246473] WARNING: possible circular locking dependency detec=
-ted
-> > > <4>[    7.246476] 6.12.0-rc6-next-20241106-next-20241106-g5b913f5d7d7=
-f+
-> > #1 Not tainted
-> > > <4>[    7.246479] ---------------------------------------------------=
----
-> > > <4>[    7.246481] swapper/0/1 is trying to acquire lock:
-> > > <4>[    7.246483] ffffffff8264aef0 (cpu_hotplug_lock){++++}-{0:0}, at=
-:
-> > static_key_enable+0xd/0x20
-> > > <4>[    7.246493]
-> > >                   but task is already holding lock:
-> > > <4>[    7.246495] ffffffff82832068 (hybrid_capacity_lock){+.+.}-{4:4}=
-, at:
-> > intel_pstate_register_driver+0xd3/0x1c0
-> > > `````````````````````````````````````````````````````````````````````=
-`
-> > > ```````````
-> > > Details log can be found in [3].
-> >
-> > Thanks for the report!
-> >
-> > > After bisecting the tree, the following patch [4] seems to be the fir=
-st "bad"
-> > > commit
-> > >
-> > > `````````````````````````````````````````````````````````````````````=
-`
-> > > ```````````````````````````````````
-> > > commit 92447aa5f6e7fbad9427a3fd1bb9e0679c403206
-> > > Author: Rafael J. Wysocki mailto:rafael.j.wysocki@intel.com
-> > > Date:   Mon Nov 4 19:53:53 2024 +0100
-> > >
-> > >     cpufreq: intel_pstate: Update asym capacity for CPUs that were
-> > > offline initially
-> > > `````````````````````````````````````````````````````````````````````=
-`
-> > > ```````````````````````````````````
-> > >
-> > > We also verified that if we revert the patch the issue is not seen.
-> > >
-> > > Could you please check why the patch causes this regression and provi=
-de a
-> > fix if necessary?
-> > >
-> > > [1] https://intel-gfx-ci.01.org/tree/linux-next/combined-alt.html?
-> > > [2]
-> > > https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/c=
-o
-> > > mmit/?h=3Dnext-20241106 [3]
-> > > https://intel-gfx-ci.01.org/tree/linux-next/next-20241106/bat-arls-1/=
-b
-> > > oot0.txt [4]
-> > > https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/c=
-o
-> > > mmit/?h=3Dnext-
-> > 20241106&id=3D92447aa5f6e7fbad9427a3fd1bb9e0679c403206
-> >
-> > The problem is that cpus_read_lock() should not be called under
-> > hybrid_capacity_lock because the latter is acquired in CPU online/offli=
-ne
-> > paths and this is exposed by the above commit, but if I'm not mistaken,=
- the
-> > issue is there regardless of it.
-> >
-> > A good news is that is should be addressed by a patch that has been pos=
-ted
-> > already:
-> >
-> > https://lore.kernel.org/linux-pm/12554508.O9o76ZdvQC@rjwysocki.net/
-> >
-> > so please let me know if it makes the splat go away.
-> >
-> > Even if its changelog says that it has no functional impact, this is no=
-t really the
-> > case.
-> >
-> > Thanks!
->
-> Thank you Rafael for the patch, we can confirm that it helps.
+> As the primary source of information though, not quite.
 
-Thanks for checking and letting me know, much appreciated!
+So we have at least 5 places in the kernel which evaluate CPUID leaf 0x5
+in different ways.
+
+Can we please have _ONE_ function which evaluates the leaf correctly
+once and provides the required information for all places ready to use?
+
+Thanks,
+
+        tglx
