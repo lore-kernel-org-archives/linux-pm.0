@@ -1,46 +1,39 @@
-Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B33E6230989;
-	Tue, 12 Nov 2024 11:45:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDF1C230998;
+	Tue, 12 Nov 2024 11:46:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731411950; cv=none; b=u6knIELUQPWpE4evFkqQS6alSWbnDatIWNbUVqv8XsmBKkuCS81+xJb6mPZGVRM3wRXdq0QK9ome13wS5c0eX3QNWT3PFKDJNbyXdU2IaaPda168CJWaLFUPr8hZ2Un3bp3+JSZrkwdC4hLxw7XC8BfIFLRASXo6rLVSzFBB/Do=
+	t=1731411994; cv=none; b=Nx9BxO2TMS9vtsR2UGXRSYu2OZf6PSvT+LGn6PMgrDkC00eBLPzwcKgnKLxKpUKb+BFB+MxwbVjAXEYOjdKI7taL4r1MmYpWhmpUiNJO2qtaDqRa20G/B+yju3/Ra3z4m38P3VDbfK9e6c9Nr9OzHO3GNB58j3k622y6TGU2Wg8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731411950; c=relaxed/simple;
-	bh=rwStpxnanly060PEUm3Ory3Ei/C3/hXuY2xfwxrCRZA=;
+	s=arc-20240116; t=1731411994; c=relaxed/simple;
+	bh=Xf440lkqcE3zW+jdHUvrHRRbPL78ZE5tuvE0WwDreQ4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YPr5QMR49WHUlWGsWfn77bVxyLTnsmivWXOItQgF+BgfUYKfkHWes2aQDsEQ/72uk2JQLJYm1PB6xqjoa30efWTtL2s1lLcE7yHOEVZB7TjmeFlAPHyPejEmKulTfPMK9m9zEsTpmCcs/M7zsw1CkguxjWuTvVwvPh/bFkMiz8A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=HAkHWhHq; arc=none smtp.client-ip=90.155.92.199
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=HdmZzoHvYRjBf7IjgMqPHvdbUQ0kdSLN8y00C6rw3+VD3+lqx+/DRtHo+DWgCSBa9hGEySypSY8zq6Stu+HYlXTw03KrspDaufwTiy0NThbCWN8eWMP5iuSeFfI817GG7G4eUYp8cMv19I2CJj9MlzbD8w6tqR6c1+ovy6k8JOE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=1NfC4brQ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="HAkHWhHq"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=rwStpxnanly060PEUm3Ory3Ei/C3/hXuY2xfwxrCRZA=; b=HAkHWhHqQmq0ysSeQcV2mDrJ48
-	q7nWiDT5YfVgVeDp+asNKOigehmNCDAMwbiyezP37Ho3nJ72/a/wS2rVc80QljLw+wY0vrS364kWC
-	q93IwzP8NNCM1I0dvYpEHycbjt67nsusczwxVOlZQLmxCMugvd8Ly6x90tVgQLcpfvlX4a8dmCd6x
-	QLn5r0mTSKkedro7OpxSBFQd4FGUeVbmnJiPb9vyHaoZkt3vnRuUzlteZc9eGWd5MFQjEWMi0llgI
-	rq+TA0kv6jBPtlzZ63tJ+noGKquaxLz/jWYO8U39FbdyOvTxl2t6/tV+hmAqwOZ7/K+rTCI/mpjCq
-	2/DhTcGg==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
-	id 1tApL6-0000000D3Rl-2Z0a;
-	Tue, 12 Nov 2024 11:45:44 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id 94D10300478; Tue, 12 Nov 2024 12:45:43 +0100 (CET)
-Date: Tue, 12 Nov 2024 12:45:43 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	rafael.j.wysocki@intel.com, len.brown@intel.com,
-	artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com
-Subject: Re: [PATCH v3 0/3] SRF: Fix offline CPU preventing pc6 entry
-Message-ID: <20241112114543.GP22801@noisy.programming.kicks-ass.net>
-References: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="1NfC4brQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0C74FC4CECD;
+	Tue, 12 Nov 2024 11:46:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1731411993;
+	bh=Xf440lkqcE3zW+jdHUvrHRRbPL78ZE5tuvE0WwDreQ4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=1NfC4brQQFHMQPpmYOuoGDtR1pDBhetDaEp8glJz8aHhr+aTsLOTOiidD0XoYguMb
+	 drlQBogXzm4VN8JmYDtlkWanyN4xEBwsisuiS7lPlzS//TWaqneO6lht2EBgoi2zFV
+	 ZjH8zJ9vk8ryQVkJewq+oFwWrRiHYieTsnWJAN3g=
+Date: Tue, 12 Nov 2024 12:46:30 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Zijun Hu <zijun_hu@icloud.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+	Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Zijun Hu <quic_zijuhu@quicinc.com>,
+	stable@vger.kernel.org
+Subject: Re: [PATCH RESEND] PM: domains: Fix return value of API
+ dev_pm_get_subsys_data()
+Message-ID: <2024111257-collide-finalist-7a0c@gregkh>
+References: <20241028-fix_dev_pm_get_subsys_data-v1-1-20385f4b1e17@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -49,14 +42,31 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
+In-Reply-To: <20241028-fix_dev_pm_get_subsys_data-v1-1-20385f4b1e17@quicinc.com>
 
-On Fri, Nov 08, 2024 at 01:29:06PM +0100, Patryk Wlazlyn wrote:
+On Mon, Oct 28, 2024 at 08:31:11PM +0800, Zijun Hu wrote:
+> From: Zijun Hu <quic_zijuhu@quicinc.com>
+> 
+> dev_pm_get_subsys_data() has below 2 issues under condition
+> (@dev->power.subsys_data != NULL):
+> 
+> - it will do unnecessary kzalloc() and kfree().
 
-> Removing the existing "kexec hack" by bringing all offlined CPUs back
-> online before proceeding with the kexec would make it even simpler, but
-> I am not sure we can do that. It looks kind of obvious to me, but for
-> some reason the hack exist.
+But that's ok, everything still works, right?
 
-There's a comment there that explains why this is done. If you don't
-understand this, then please don't touch this code.
+> - it will return -ENOMEM if the kzalloc() fails, that is wrong
+>   since the kzalloc() is not needed.
+
+But it's ok to return the proper error if the system is that broken.
+
+> 
+> Fixed by not doing kzalloc() and returning 0 for the condition.
+> 
+> Fixes: ef27bed1870d ("PM: Reference counting of power.subsys_data")
+> Cc: stable@vger.kernel.org
+
+Why is this relevant for stable kernels?
+
+thanks,
+
+greg k-h
