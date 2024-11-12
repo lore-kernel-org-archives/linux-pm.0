@@ -1,209 +1,286 @@
-Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 233C6208971;
-	Tue, 12 Nov 2024 02:14:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.191
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C97B519DF7A;
+	Tue, 12 Nov 2024 04:44:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731377678; cv=none; b=S5Rm4TpauD12zl0IdiGKZaGoCAmMM8CBZ6D7Ha7SQmuW9N84GXT1KZvhUQzzmDV2hfmJqHwyow0crxqTqLn6lmG3sN2ejcTDf+mWF8qS5clZYbEmdZeT3acva6FVqPguQ6dopDcrND+ajZbhYta+h1wsWjfAui93wjZyaYC7eHo=
+	t=1731386678; cv=none; b=NCvxgvMeQ4dTj9ZxDMT8Or242pnjBStXWYVwF/SxRLY/dYoldD0h/tGeLDpmcM7+/ZV8t65kes5jAdm9xAX5G1fhpOXqOgprkgxf3N8cCQoiv/3Pqpkjfxb6lZFB74R4ysmSAEyh981OnZwhkMzxBBlI7Or5YQ1O/yv3YAoRNxw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731377678; c=relaxed/simple;
-	bh=IDtzZOHG5JBqnfrcxS2T7mLOiushLLE+N5GaCFCFo+U=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HK/GABVFU6AUfhVOJY4bEIv5bRQiJ7HlXZrF6tWE9mTKLXrP9Q8fxKW0MhYQg4uI0ecZ5jwWyMOcGM8p/cRoIwVZzXgy1NvQ3UrpV73ymJQbnmbL7MobroiB2t5vwjMVwA216qUrEoU8FstggUTVi1tukf2HqHSvnu6jQxqJltI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.191
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.88.163])
-	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4XnVLN1DNwz1jxtv;
-	Tue, 12 Nov 2024 10:12:44 +0800 (CST)
-Received: from dggemv711-chm.china.huawei.com (unknown [10.1.198.66])
-	by mail.maildlp.com (Postfix) with ESMTPS id 45DB7180042;
-	Tue, 12 Nov 2024 10:14:32 +0800 (CST)
-Received: from kwepemn100009.china.huawei.com (7.202.194.112) by
- dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.39; Tue, 12 Nov 2024 10:14:32 +0800
-Received: from localhost.localdomain (10.28.79.22) by
- kwepemn100009.china.huawei.com (7.202.194.112) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Tue, 12 Nov 2024 10:14:31 +0800
-From: Huisong Li <lihuisong@huawei.com>
-To: <linux-pm@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-	<rafael@kernel.org>
-CC: <linux-kernel@vger.kernel.org>, <rui.zhang@intel.com>,
-	<liuyonglong@huawei.com>, <zhanjie9@hisilicon.com>, <lihuisong@huawei.com>
-Subject: [PATCH] ACPI: thermal: Support for linking devices associated with the thermal zone
-Date: Tue, 12 Nov 2024 10:03:27 +0800
-Message-ID: <20241112020327.17781-1-lihuisong@huawei.com>
-X-Mailer: git-send-email 2.22.0
+	s=arc-20240116; t=1731386678; c=relaxed/simple;
+	bh=g09Rc9huIxtXUuqlVkTkrlEaekFJpdP62UqhCN5juxo=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=WbeNit4JngJQoMa0D1jSXO2mMzd4BqXSOf0hJs4ru4aXh+tH/0ysG1FEaYp7IuYetiy1h39StEWEOBOWYgMtjXwEGILTVqwIw4bbm2hJfVCGfRUFFuUeKe8TWRa5U2Kc7dv3S/iIbWzE/YCN5T3ZuGsDBg5aV9AtQQWMgQW1x1Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=RIIs1dli; arc=none smtp.client-ip=198.175.65.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="RIIs1dli"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1731386677; x=1762922677;
+  h=date:from:to:cc:subject:message-id;
+  bh=g09Rc9huIxtXUuqlVkTkrlEaekFJpdP62UqhCN5juxo=;
+  b=RIIs1dli81ArqXRYW1JKKUZU8oDltzphL9II1uFWvbDywsVGnM7L7x3H
+   +5W+y/lD4esDSBvKHbOsP1xWfIKB8s0P3K17IKgAqUvXdHoWSXINdsNwO
+   vTckziI4PbHifoWaNU+RnX28PyRf0KSzEM01yXxRsgs0+UFXaCcA5x7iP
+   LXfd0G0GxemjHns2PR22gNZbmZhbMB6nIi3A2u7FiSB/O2emqOnfVjm1n
+   477a6JFL08XryOTTjOvg/+8spz9hzEp/QoxJj29x2TVp0TWVgUYRQiJ86
+   9W0e8OZFYvkesN68w/3x2RTMGQhZpkUlvvFVq8yOxvgh+43dj+pPLVcgC
+   g==;
+X-CSE-ConnectionGUID: WQq3g0/ARq6IPSSDhfYSzw==
+X-CSE-MsgGUID: 7rMWKb8eTU6dzXJLCbaUCg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="31062752"
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; 
+   d="scan'208";a="31062752"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Nov 2024 20:44:36 -0800
+X-CSE-ConnectionGUID: lgboQlAhR9uttLHjkSWoWw==
+X-CSE-MsgGUID: m7Zu82NMRFma8GuIuJ2Krg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,147,1728975600"; 
+   d="scan'208";a="88050722"
+Received: from lkp-server01.sh.intel.com (HELO bcfed0da017c) ([10.239.97.150])
+  by orviesa008.jf.intel.com with ESMTP; 11 Nov 2024 20:44:34 -0800
+Received: from kbuild by bcfed0da017c with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1tAilU-0000SP-19;
+	Tue, 12 Nov 2024 04:44:32 +0000
+Date: Tue, 12 Nov 2024 12:44:25 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, devel@acpica.org,
+ linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 8639cc442593c027abc496d3b5ca961ddb886e86
+Message-ID: <202411121219.ajgdDPpd-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemn100009.china.huawei.com (7.202.194.112)
 
-As ACPI spec said, '_TZD' evaluates to a package of device names.
-Each name corresponds to a device in the ACPI namespace that is
-associated with the thermal zone. The temperature reported by the
-thermal zone is roughly correspondent to that of each of the devices.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 8639cc442593c027abc496d3b5ca961ddb886e86  Merge branch 'pm-cpuidle' into bleeding-edge
 
-Signed-off-by: Huisong Li <lihuisong@huawei.com>
----
- drivers/acpi/thermal.c | 114 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 113 insertions(+), 1 deletion(-)
+elapsed time: 802m
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 78db38c7076e..398195a5d42f 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -119,6 +119,9 @@ struct acpi_thermal {
- 	struct work_struct thermal_check_work;
- 	struct mutex thermal_check_lock;
- 	refcount_t thermal_check_count;
-+	int num_domain_devices;
-+	struct acpi_device **domain_devices;
-+	struct kobject *holders_dir;
- };
- 
- /* --------------------------------------------------------------------------
-@@ -589,6 +592,103 @@ static const struct thermal_zone_device_ops acpi_thermal_zone_ops = {
- 	.critical = acpi_thermal_zone_device_critical,
- };
- 
-+static void acpi_thermal_remove_domain_devices(struct acpi_thermal *tz)
-+{
-+	int i;
-+
-+	if (!tz->num_domain_devices)
-+		return;
-+
-+	for (i = 0; i < tz->num_domain_devices; i++) {
-+		struct acpi_device *obj = tz->domain_devices[i];
-+
-+		if (!obj)
-+			continue;
-+
-+		sysfs_remove_link(tz->holders_dir,
-+				  kobject_name(&obj->dev.kobj));
-+		acpi_dev_put(obj);
-+	}
-+
-+	kfree(tz->domain_devices);
-+	kobject_put(tz->holders_dir);
-+	tz->num_domain_devices = 0;
-+}
-+
-+static int acpi_thermal_read_domain_devices(struct acpi_thermal *tz)
-+{
-+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+	union acpi_object *pss;
-+	acpi_status status;
-+	int ret = 0;
-+	int i;
-+
-+	status = acpi_evaluate_object(tz->device->handle, "_TZD", NULL,
-+				      &buffer);
-+	if (ACPI_FAILURE(status)) {
-+		acpi_evaluation_failure_warn(tz->device->handle, "_TZD",
-+					     status);
-+		return -ENODEV;
-+	}
-+
-+	pss = buffer.pointer;
-+	if (!pss ||
-+	    pss->type != ACPI_TYPE_PACKAGE) {
-+		dev_err(&tz->device->dev, "Thermal zone invalid _TZD data\n");
-+		ret = -EFAULT;
-+		goto end;
-+	}
-+
-+	if (!pss->package.count)
-+		goto end;
-+
-+	tz->domain_devices = kcalloc(pss->package.count,
-+				     sizeof(struct acpi_device *), GFP_KERNEL);
-+	if (!tz->domain_devices) {
-+		ret = -ENOMEM;
-+		goto end;
-+	}
-+
-+	tz->holders_dir = kobject_create_and_add("measures",
-+						 &tz->device->dev.kobj);
-+	if (!tz->holders_dir) {
-+		ret = -ENOMEM;
-+		goto exit_free;
-+	}
-+
-+	tz->num_domain_devices = pss->package.count;
-+	for (i = 0; i < pss->package.count; i++) {
-+		struct acpi_device *obj;
-+		union acpi_object *element = &pss->package.elements[i];
-+
-+		/* Refuse non-references */
-+		if (element->type != ACPI_TYPE_LOCAL_REFERENCE)
-+			continue;
-+
-+		/* Create a symlink to domain objects */
-+		obj = acpi_get_acpi_dev(element->reference.handle);
-+		tz->domain_devices[i] = obj;
-+		if (!obj)
-+			continue;
-+
-+		ret = sysfs_create_link(tz->holders_dir, &obj->dev.kobj,
-+					kobject_name(&obj->dev.kobj));
-+		if (ret) {
-+			acpi_dev_put(obj);
-+			tz->domain_devices[i] = NULL;
-+		}
-+	}
-+
-+	ret = 0;
-+	goto end;
-+
-+exit_free:
-+	kfree(tz->domain_devices);
-+end:
-+	kfree(buffer.pointer);
-+	return ret;
-+}
-+
- static int acpi_thermal_zone_sysfs_add(struct acpi_thermal *tz)
- {
- 	struct device *tzdev = thermal_zone_device(tz->thermal_zone);
-@@ -602,8 +702,19 @@ static int acpi_thermal_zone_sysfs_add(struct acpi_thermal *tz)
- 	ret = sysfs_create_link(&tzdev->kobj,
- 				   &tz->device->dev.kobj, "device");
- 	if (ret)
--		sysfs_remove_link(&tz->device->dev.kobj, "thermal_zone");
-+		goto remove_thermal_zone;
- 
-+	/* _TZD method is optional. */
-+	ret = acpi_thermal_read_domain_devices(tz);
-+	if (ret != -ENODEV)
-+		goto remove_device;
-+
-+	return 0;
-+
-+remove_device:
-+	sysfs_remove_link(&tz->device->dev.kobj, "device");
-+remove_thermal_zone:
-+	sysfs_remove_link(&tz->device->dev.kobj, "thermal_zone");
- 	return ret;
- }
- 
-@@ -611,6 +722,7 @@ static void acpi_thermal_zone_sysfs_remove(struct acpi_thermal *tz)
- {
- 	struct device *tzdev = thermal_zone_device(tz->thermal_zone);
- 
-+	acpi_thermal_remove_domain_devices(tz);
- 	sysfs_remove_link(&tz->device->dev.kobj, "thermal_zone");
- 	sysfs_remove_link(&tzdev->kobj, "device");
- }
--- 
-2.22.0
+configs tested: 208
+configs skipped: 6
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                             allnoconfig    gcc-14.2.0
+alpha                            allyesconfig    clang-20
+alpha                            allyesconfig    gcc-14.2.0
+alpha                               defconfig    gcc-14.2.0
+arc                              allmodconfig    clang-20
+arc                               allnoconfig    gcc-14.2.0
+arc                              allyesconfig    clang-20
+arc                          axs101_defconfig    clang-20
+arc                                 defconfig    gcc-14.2.0
+arc                            hsdk_defconfig    gcc-14.2.0
+arc                        nsim_700_defconfig    gcc-14.2.0
+arc                   randconfig-001-20241112    gcc-14.2.0
+arc                   randconfig-002-20241112    gcc-14.2.0
+arc                           tb10x_defconfig    gcc-14.2.0
+arm                              allmodconfig    clang-20
+arm                               allnoconfig    gcc-14.2.0
+arm                              allyesconfig    clang-20
+arm                          collie_defconfig    gcc-14.2.0
+arm                                 defconfig    gcc-14.2.0
+arm                            dove_defconfig    clang-20
+arm                            dove_defconfig    gcc-14.2.0
+arm                       imx_v6_v7_defconfig    gcc-14.2.0
+arm                      jornada720_defconfig    clang-20
+arm                        mvebu_v5_defconfig    gcc-14.2.0
+arm                        mvebu_v7_defconfig    gcc-14.2.0
+arm                       omap2plus_defconfig    gcc-14.2.0
+arm                          pxa168_defconfig    gcc-14.2.0
+arm                   randconfig-001-20241112    gcc-14.2.0
+arm                   randconfig-002-20241112    gcc-14.2.0
+arm                   randconfig-003-20241112    gcc-14.2.0
+arm                   randconfig-004-20241112    gcc-14.2.0
+arm                        realview_defconfig    gcc-14.2.0
+arm                         wpcm450_defconfig    gcc-14.2.0
+arm64                            allmodconfig    clang-20
+arm64                             allnoconfig    gcc-14.2.0
+arm64                               defconfig    gcc-14.2.0
+arm64                 randconfig-001-20241112    gcc-14.2.0
+arm64                 randconfig-002-20241112    gcc-14.2.0
+arm64                 randconfig-003-20241112    gcc-14.2.0
+arm64                 randconfig-004-20241112    gcc-14.2.0
+csky                             alldefconfig    clang-20
+csky                              allnoconfig    gcc-14.2.0
+csky                                defconfig    gcc-14.2.0
+csky                  randconfig-001-20241112    gcc-14.2.0
+csky                  randconfig-002-20241112    gcc-14.2.0
+hexagon                          allmodconfig    clang-20
+hexagon                           allnoconfig    gcc-14.2.0
+hexagon                          allyesconfig    clang-20
+hexagon                             defconfig    gcc-14.2.0
+hexagon               randconfig-001-20241112    gcc-14.2.0
+hexagon               randconfig-002-20241112    gcc-14.2.0
+i386                             allmodconfig    clang-19
+i386                              allnoconfig    clang-19
+i386                             allyesconfig    clang-19
+i386        buildonly-randconfig-001-20241112    clang-19
+i386        buildonly-randconfig-002-20241112    clang-19
+i386        buildonly-randconfig-003-20241112    clang-19
+i386        buildonly-randconfig-004-20241112    clang-19
+i386        buildonly-randconfig-005-20241112    clang-19
+i386        buildonly-randconfig-006-20241112    clang-19
+i386                                defconfig    clang-19
+i386                  randconfig-001-20241112    clang-19
+i386                  randconfig-002-20241112    clang-19
+i386                  randconfig-003-20241112    clang-19
+i386                  randconfig-004-20241112    clang-19
+i386                  randconfig-005-20241112    clang-19
+i386                  randconfig-006-20241112    clang-19
+i386                  randconfig-011-20241112    clang-19
+i386                  randconfig-012-20241112    clang-19
+i386                  randconfig-013-20241112    clang-19
+i386                  randconfig-014-20241112    clang-19
+i386                  randconfig-015-20241112    clang-19
+i386                  randconfig-016-20241112    clang-19
+loongarch                        allmodconfig    gcc-14.2.0
+loongarch                         allnoconfig    gcc-14.2.0
+loongarch                           defconfig    gcc-14.2.0
+loongarch             randconfig-001-20241112    gcc-14.2.0
+loongarch             randconfig-002-20241112    gcc-14.2.0
+m68k                             allmodconfig    gcc-14.2.0
+m68k                              allnoconfig    gcc-14.2.0
+m68k                             allyesconfig    gcc-14.2.0
+m68k                          amiga_defconfig    clang-20
+m68k                                defconfig    gcc-14.2.0
+m68k                            q40_defconfig    gcc-14.2.0
+microblaze                       allmodconfig    gcc-14.2.0
+microblaze                        allnoconfig    gcc-14.2.0
+microblaze                       allyesconfig    gcc-14.2.0
+microblaze                          defconfig    gcc-14.2.0
+mips                              allnoconfig    gcc-14.2.0
+mips                        bcm63xx_defconfig    gcc-14.2.0
+mips                           ip22_defconfig    clang-20
+mips                           ip32_defconfig    gcc-14.2.0
+mips                        qi_lb60_defconfig    clang-20
+mips                          rb532_defconfig    gcc-14.2.0
+nios2                             allnoconfig    gcc-14.2.0
+nios2                               defconfig    gcc-14.2.0
+nios2                 randconfig-001-20241112    gcc-14.2.0
+nios2                 randconfig-002-20241112    gcc-14.2.0
+openrisc                          allnoconfig    clang-20
+openrisc                         allyesconfig    gcc-14.2.0
+openrisc                            defconfig    gcc-12
+parisc                           allmodconfig    gcc-14.2.0
+parisc                            allnoconfig    clang-20
+parisc                           allyesconfig    gcc-14.2.0
+parisc                              defconfig    gcc-12
+parisc                randconfig-001-20241112    gcc-14.2.0
+parisc                randconfig-002-20241112    gcc-14.2.0
+parisc64                         alldefconfig    gcc-14.2.0
+parisc64                            defconfig    gcc-14.2.0
+powerpc                          allmodconfig    gcc-14.2.0
+powerpc                           allnoconfig    clang-20
+powerpc                          allyesconfig    clang-20
+powerpc                          allyesconfig    gcc-14.2.0
+powerpc                     asp8347_defconfig    clang-20
+powerpc                       eiger_defconfig    gcc-14.2.0
+powerpc                    gamecube_defconfig    gcc-14.2.0
+powerpc               mpc834x_itxgp_defconfig    clang-20
+powerpc               mpc834x_itxgp_defconfig    gcc-14.2.0
+powerpc                 mpc836x_rdk_defconfig    clang-20
+powerpc                     mpc83xx_defconfig    clang-20
+powerpc                       ppc64_defconfig    clang-20
+powerpc                       ppc64_defconfig    gcc-14.2.0
+powerpc               randconfig-001-20241112    gcc-14.2.0
+powerpc               randconfig-002-20241112    gcc-14.2.0
+powerpc               randconfig-003-20241112    gcc-14.2.0
+powerpc                     sequoia_defconfig    clang-20
+powerpc                     skiroot_defconfig    gcc-14.2.0
+powerpc64             randconfig-001-20241112    gcc-14.2.0
+powerpc64             randconfig-002-20241112    gcc-14.2.0
+powerpc64             randconfig-003-20241112    gcc-14.2.0
+riscv                            allmodconfig    clang-20
+riscv                            allmodconfig    gcc-14.2.0
+riscv                             allnoconfig    clang-20
+riscv                            allyesconfig    clang-20
+riscv                            allyesconfig    gcc-14.2.0
+riscv                               defconfig    gcc-12
+riscv                 randconfig-001-20241112    gcc-14.2.0
+riscv                 randconfig-002-20241112    gcc-14.2.0
+s390                             allmodconfig    clang-20
+s390                             allmodconfig    gcc-14.2.0
+s390                              allnoconfig    clang-20
+s390                             allyesconfig    gcc-14.2.0
+s390                                defconfig    gcc-12
+s390                  randconfig-001-20241112    gcc-14.2.0
+s390                  randconfig-002-20241112    gcc-14.2.0
+sh                               allmodconfig    gcc-14.2.0
+sh                                allnoconfig    gcc-14.2.0
+sh                               allyesconfig    gcc-14.2.0
+sh                                  defconfig    gcc-12
+sh                ecovec24-romimage_defconfig    clang-20
+sh                          landisk_defconfig    gcc-14.2.0
+sh                     magicpanelr2_defconfig    gcc-14.2.0
+sh                          polaris_defconfig    clang-20
+sh                    randconfig-001-20241112    gcc-14.2.0
+sh                    randconfig-002-20241112    gcc-14.2.0
+sh                          rsk7264_defconfig    gcc-14.2.0
+sh                           se7343_defconfig    clang-20
+sh                           se7721_defconfig    gcc-14.2.0
+sh                   secureedge5410_defconfig    gcc-14.2.0
+sh                     sh7710voipgw_defconfig    gcc-14.2.0
+sparc                            allmodconfig    gcc-14.2.0
+sparc64                             defconfig    gcc-12
+sparc64               randconfig-001-20241112    gcc-14.2.0
+sparc64               randconfig-002-20241112    gcc-14.2.0
+um                               allmodconfig    clang-20
+um                                allnoconfig    clang-20
+um                               allyesconfig    clang-20
+um                               allyesconfig    gcc-12
+um                                  defconfig    gcc-12
+um                             i386_defconfig    gcc-12
+um                    randconfig-001-20241112    gcc-14.2.0
+um                    randconfig-002-20241112    gcc-14.2.0
+um                           x86_64_defconfig    gcc-12
+x86_64                            allnoconfig    clang-19
+x86_64                           allyesconfig    clang-19
+x86_64      buildonly-randconfig-001-20241112    gcc-12
+x86_64      buildonly-randconfig-002-20241112    gcc-12
+x86_64      buildonly-randconfig-003-20241112    gcc-12
+x86_64      buildonly-randconfig-004-20241112    gcc-12
+x86_64      buildonly-randconfig-005-20241112    gcc-12
+x86_64      buildonly-randconfig-006-20241112    gcc-12
+x86_64                              defconfig    clang-19
+x86_64                                  kexec    clang-19
+x86_64                                  kexec    gcc-12
+x86_64                randconfig-001-20241112    gcc-12
+x86_64                randconfig-002-20241112    gcc-12
+x86_64                randconfig-003-20241112    gcc-12
+x86_64                randconfig-004-20241112    gcc-12
+x86_64                randconfig-005-20241112    gcc-12
+x86_64                randconfig-006-20241112    gcc-12
+x86_64                randconfig-011-20241112    gcc-12
+x86_64                randconfig-012-20241112    gcc-12
+x86_64                randconfig-013-20241112    gcc-12
+x86_64                randconfig-014-20241112    gcc-12
+x86_64                randconfig-015-20241112    gcc-12
+x86_64                randconfig-016-20241112    gcc-12
+x86_64                randconfig-071-20241112    gcc-12
+x86_64                randconfig-072-20241112    gcc-12
+x86_64                randconfig-073-20241112    gcc-12
+x86_64                randconfig-074-20241112    gcc-12
+x86_64                randconfig-075-20241112    gcc-12
+x86_64                randconfig-076-20241112    gcc-12
+x86_64                               rhel-8.3    gcc-12
+xtensa                            allnoconfig    gcc-14.2.0
+xtensa                generic_kc705_defconfig    gcc-14.2.0
+xtensa                          iss_defconfig    gcc-14.2.0
+xtensa                randconfig-001-20241112    gcc-14.2.0
+xtensa                randconfig-002-20241112    gcc-14.2.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
