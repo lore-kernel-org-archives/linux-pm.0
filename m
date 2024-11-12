@@ -1,132 +1,88 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FCF8202F6B;
-	Tue, 12 Nov 2024 16:07:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D628A205138;
+	Tue, 12 Nov 2024 16:24:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731427623; cv=none; b=Q25hIUytOIfKegd79Qt3166cxAHrGElJZew6xTd6BqcmRJJtBk++eOtn+5mkviEQE0Oy2dNNVeodBlyDgfOwTiiENsKcCZBKBQ0MJ0fcXT6r0HOqjqPCKrOmXaGISaI068tUBqdTcCj1Ns7nZW3Cls+rsyRFS4meyMn1y8k6+aU=
+	t=1731428659; cv=none; b=bkl0Pe/YW7HNbGiI3cIXYigL3pCsqMRIBQWgvPSFJI3EpnmuJO7x8jmVNTh5uYM60J+ONQZvp7gN4T6KgaLEaY49HdjwdnBZKUf5bPLYL8GY5u6HjnPDnH3U/hICUI15unf64uA3+9Ccle7ePN4hM/VAOW0Tv7TiFp45INd2ZKg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731427623; c=relaxed/simple;
-	bh=B99oMmFiVEDvZC74+kOpOariiQn2dYzwSKy2p7qg6H4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JmOtE8x/1qwohHeWc9Bt5ikycxwt6kVsMCQ2v2nzpSfBhKyy36W51YKPY8XhE/Q2jAKFfNCQhSa6L3JPYbiGU6FTfUFoQZPGVj1S8Zk6tBk7yIL58zhI4O0aQnJL1eqXsjDejKWEITz2H0+uWWKsVxHto4zaX15vzEGRkg9tDLc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jsBMJsog; arc=none smtp.client-ip=192.198.163.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1731428659; c=relaxed/simple;
+	bh=s95mfkrvbz5oPWBac8QWmV2twOt3oYg3Jze+97EpbQk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=HnkfpzeCq0MKkgXJGHe4BjKnB63qxdk+kZ26CKJjNWVPaTd6fNdAAt2zk1NY15xeZ9GcbNCG/ZIXQbWZraiyT629Wqssul2TPuFxk0RLhmRdJiND78wnItye5b6cJnDao5bUYlFT1GrQSpy1UInB2i4NUk8MleR5PVJgIzgSy2s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=q1F3bxuX; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jsBMJsog"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1731427622; x=1762963622;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=B99oMmFiVEDvZC74+kOpOariiQn2dYzwSKy2p7qg6H4=;
-  b=jsBMJsogT/A+BJXhk6XJ4jMNmYcvCN69slof0JhT12Kz14aenaLnvW5U
-   E5edtKJ3qcGxVXzgpc+v/agvww87qE3tTl4MGD5dxZ3G0cI+xWh00nCfG
-   VMsIR2vqHmYVEo2d0qewADORm1OQM/xxUTYI2Lpw0p+wqttuzjGkJB72w
-   fnvwK4nK29aVMxkElGgGBEIH6JDwa3VUFpPkEwo96EKzcj5kDLNJGboz4
-   N4JhbxiRZqSsocrG/aOpMrrCayOIxVZwdtPVRDM7AB1vi7bLbeKxNfDug
-   ECNVrlZXU/2sned7XDfgcd+1P+ZDQTD1qUuqycKFNt5oHQTqBKzcFYuxq
-   A==;
-X-CSE-ConnectionGUID: rQgGcg2JRaud1kSLo7VNAQ==
-X-CSE-MsgGUID: VUj3Hq6+ToqiSRJXfIRWgg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11254"; a="31365197"
-X-IronPort-AV: E=Sophos;i="6.12,148,1728975600"; 
-   d="scan'208";a="31365197"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Nov 2024 08:07:02 -0800
-X-CSE-ConnectionGUID: WO3DI8ygRfugoFqurMpmAA==
-X-CSE-MsgGUID: Dx5AQBfYTh2jr4aZXabf7g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,148,1728975600"; 
-   d="scan'208";a="87114344"
-Received: from jairdeje-mobl1.amr.corp.intel.com (HELO [10.124.220.61]) ([10.124.220.61])
-  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Nov 2024 08:07:01 -0800
-Message-ID: <e1f08d24-2896-418e-891a-d707d6ba50cf@intel.com>
-Date: Tue, 12 Nov 2024 08:07:00 -0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="q1F3bxuX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77DCEC4CED5;
+	Tue, 12 Nov 2024 16:24:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731428658;
+	bh=s95mfkrvbz5oPWBac8QWmV2twOt3oYg3Jze+97EpbQk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=q1F3bxuXwt9aUKuGmjhS7Mp3u7p+O1iHz466ZKZnlho8YT/A4+m21yPpl3yA4CKj5
+	 980okCRNMdeQOUgJWzWsI57X729uBj9mqlkvNcWCcKyPOueCvXLwDtdfYmmyiICceq
+	 rBDUu6K1zW2SG7K9zO53B9jeeQYPN2MrYbHiV0t4RngIM3+U9F8Y8iR9ddcLLngEjJ
+	 87BkKbptnSkq8EbLxCfq4jwUy9mq5J2Zrj1JOzpF3ztPdgsI4i4jCSMtZatohwQIWN
+	 ee8K6JCfoBfm9z5Nsu/PpAZ1QDb3T1XnzOkyI5LayKxQZUFD1Rc+JUiQN9Z9jpFYSR
+	 AOHGhn4LldeYA==
+Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-295cee3a962so545732fac.3;
+        Tue, 12 Nov 2024 08:24:18 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUVCM8chJXiSftVGgi+KmvTbuyAmB3eUBTNCT5ZoyIuuu4hI1a7cgDIsijTgAuvztrzSDxx9B5PlvvqInI=@vger.kernel.org, AJvYcCXTU2IJdJEWSDAST56VsSqq9l3CM6BqV8jSMCuPiTq2Nsk0YjO978448+yRD/f8AYeOyOAE0ZSvzx4=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwIWz4huROTwdw4HLfs9dIlY/+rRlbfZMX4oGUmWxDr5TrdX9Za
+	bxYcXCquJK569AaU8RaGehi732FwMCXNcpeJu977s5efMsve9lvXDG0pJU61IhZgUI307tuyCHY
+	cqk4BZlb8rIw8U180tnQpnTi4w3w=
+X-Google-Smtp-Source: AGHT+IG5ncNWe9E9kh3G8QBT2LnCSvsPqWHFHNXZX3LOhEgK776cpzGzZcqW3BUCEI09DsW/i/kR2tEl9XpBF3yaH4I=
+X-Received: by 2002:a05:6871:292:b0:277:c216:5273 with SMTP id
+ 586e51a60fabf-2956008f7a9mr13343199fac.18.1731428657717; Tue, 12 Nov 2024
+ 08:24:17 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/3] intel_idle: Provide enter_dead() handler for SRF
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
- Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- rafael.j.wysocki@intel.com, len.brown@intel.com,
- artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com
 References: <20241108122909.763663-1-patryk.wlazlyn@linux.intel.com>
- <20241108122909.763663-4-patryk.wlazlyn@linux.intel.com>
- <b6ab357c-1562-4035-ad3a-2159d2c8c1fa@intel.com>
- <ee9b0a70-6f44-4203-bba9-c07d94444ad6@linux.intel.com>
- <CAJZ5v0gmg_6OnzR6BNm+3Mx0Wzsf2nPQEZDutYu_-Px-TsvX-w@mail.gmail.com>
-Content-Language: en-US
-From: Dave Hansen <dave.hansen@intel.com>
-Autocrypt: addr=dave.hansen@intel.com; keydata=
- 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
-In-Reply-To: <CAJZ5v0gmg_6OnzR6BNm+3Mx0Wzsf2nPQEZDutYu_-Px-TsvX-w@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+ <20241108122909.763663-3-patryk.wlazlyn@linux.intel.com> <20241112114743.GQ22801@noisy.programming.kicks-ass.net>
+ <CAJZ5v0ivAk1xrcJgiJnDWnL3GdijSdsuV4K_4ORjnsjPUVAEnA@mail.gmail.com>
+ <20241112121843.GF6497@noisy.programming.kicks-ass.net> <CAJZ5v0iSP4Gh2FwKdkOw20N4hzwQ94+WmnT+3EY94QG3gORWzA@mail.gmail.com>
+ <20241112134959.GG6497@noisy.programming.kicks-ass.net> <CAJZ5v0iYYYpg7MDf8_UmoUuzyiPMoPdjgSJmdBXGYCxVc4icWw@mail.gmail.com>
+ <20241112150809.GK6497@noisy.programming.kicks-ass.net>
+In-Reply-To: <20241112150809.GK6497@noisy.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 12 Nov 2024 17:24:06 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gvTgR8Y5Rv+Vi2ORbeAGe9h-NxZNUCcn4JeUUsjg0Xyw@mail.gmail.com>
+Message-ID: <CAJZ5v0gvTgR8Y5Rv+Vi2ORbeAGe9h-NxZNUCcn4JeUUsjg0Xyw@mail.gmail.com>
+Subject: Re: [PATCH v3 2/3] x86/smp native_play_dead: Prefer
+ cpuidle_play_dead() over mwait_play_dead()
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, artem.bityutskiy@linux.intel.com, 
+	Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>, x86@kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	rafael.j.wysocki@intel.com, len.brown@intel.com, dave.hansen@linux.intel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 11/12/24 03:28, Rafael J. Wysocki wrote:
-> On Tue, Nov 12, 2024 at 12:18 PM Patryk Wlazlyn
-> <patryk.wlazlyn@linux.intel.com> wrote:
->>> This series has said multiple times how the old algorithm is wrong.  But
->>> it never actually _fixed_ the bad algorithm, only worked around it.
->>>
->>> Does mwait_play_dead() itself need to get fixed?
->> I don't think so. The old algorithm gives fairly good heuristic for computing
->> the mwait hint for the deepest cstate. Even though it's not guaranteed to work,
->> it does work on most of the platforms that don't early return. I think we should
->> leave it, but prefer idle_driver.
-> IOW, as a fallback mechanism, it is as good as it gets.
-> 
-> As the primary source of information though, not quite.
+On Tue, Nov 12, 2024 at 4:08=E2=80=AFPM Peter Zijlstra <peterz@infradead.or=
+g> wrote:
+>
+> On Tue, Nov 12, 2024 at 03:56:22PM +0100, Rafael J. Wysocki wrote:
+>
+> > > So given we don't have any such code, why can't we simply fix the cst=
+ate
+> > > parsing we have in mwait_play_dead() and call it a day?
+> >
+> > I'll leave this one to Artem, but there is at least one reason to
+> > avoid doing that I know about: There is no guarantee that whatever has
+> > been found was actually validated.
+>
+> It's a bit daft to explicitly advertise a state in CPUID that's not
+> validated. I realize that MSFT will likely only ever use the ACPI table,
 
-Could we also work to make this a bit more clear when it should be used
-and where the primary sources of information are?
+Right.
 
+> but at the same time, the CPUID bits and ACPI tables both come from the
+> same BIOS image, no?
+
+Yes, but the list of C-states advertised as supported in CPUID is
+usually longer than the _CST list size (at most 3) ...
