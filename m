@@ -1,64 +1,64 @@
 Received: from fhigh-a7-smtp.messagingengine.com (fhigh-a7-smtp.messagingengine.com [103.168.172.158])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84C1B20820A;
-	Tue, 12 Nov 2024 05:22:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1EF41A3BDE;
+	Tue, 12 Nov 2024 05:22:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.158
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731388938; cv=none; b=K92K0PK+s/7X2U5Z+mRe6OVQTwx6eDeYjlrAjgFP/pmu1xQTHias5EdzdrB2SoaNTyxrWgvwC8wlO4jmgNKn88zBaMVjy5oOBWyxM/4S+msTE/rxECGcbbDbBvrSwhqRk39y8/UzbWdWa3Fxp2X7ZCCD9GkOe0WoTTS8dW2Wwv8=
+	t=1731388938; cv=none; b=uMn7v3nmuqxLQyNeK1Ke5G/E1S6leRlBr2vJMAeE2VG9xWKklaP5ao5E2ztaJXAzLGnBKbHtvwsvWDqdAQsvgn4gVk3oEXkrorwEkc1twP4HBFGRatZv3o+RkSRhcUCwQJ/I6KqU3+FAWKTOzjlABoLojQ7dfJzS8V70w8A5PTA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1731388938; c=relaxed/simple;
-	bh=7vUZIpiGECxPt5UrdemGsd4XTl6f/2xvNaeQZbXn5bY=;
+	bh=1e+Tc2DW78hIcS81YoDcnInvTNlfYkBlO6mo88FyfgY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ruo/I8c+4HQfL0ee5qHH21qsTtH7Y/6t7mJ+nZL+JCglz2lMIRJZ+F3vD/1A7k+nsIosO2t03audVk0nz3AeF4HJAx1VB/vYuToUgshWM9ERjvK+3gAkmRwYaS+tQgLmyz1QKFURnflEULLhvJM+LKsCAV18X+nXzA4V8urgBgw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net; spf=pass smtp.mailfrom=fluxnic.net; dkim=pass (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b=2DKJiYYP; dkim=pass (2048-bit key) header.d=pobox.com header.i=@pobox.com header.b=TXcYxnI5; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=dZS5LbI1; arc=none smtp.client-ip=103.168.172.158
+	 MIME-Version; b=FWPTX2xyvcn4N+woF47Ummf57+BiiBhM/stpkR4oLT4CI41aM8eYv9mW2y4Ex3cih8mRS5s+FPFL0HneHG1Wd70Nqgw2TibfXwOiUzA70bHv6z2N5STKM8aX1CB9+4DV1rG83gA9HKbPgHDxDOrH6IoVYqUYvAtLXlzAhdVsrC0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net; spf=pass smtp.mailfrom=fluxnic.net; dkim=pass (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b=SAzbASsQ; dkim=pass (2048-bit key) header.d=pobox.com header.i=@pobox.com header.b=GMgjvh8i; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=n/ZqWwrM; arc=none smtp.client-ip=103.168.172.158
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fluxnic.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="2DKJiYYP";
-	dkim=pass (2048-bit key) header.d=pobox.com header.i=@pobox.com header.b="TXcYxnI5";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="dZS5LbI1"
-Received: from phl-compute-11.internal (phl-compute-11.phl.internal [10.202.2.51])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id B80A011401D5;
-	Tue, 12 Nov 2024 00:22:15 -0500 (EST)
+	dkim=pass (1024-bit key) header.d=fluxnic.net header.i=@fluxnic.net header.b="SAzbASsQ";
+	dkim=pass (2048-bit key) header.d=pobox.com header.i=@pobox.com header.b="GMgjvh8i";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="n/ZqWwrM"
+Received: from phl-compute-12.internal (phl-compute-12.phl.internal [10.202.2.52])
+	by mailfhigh.phl.internal (Postfix) with ESMTP id EAD1111401C7;
+	Tue, 12 Nov 2024 00:22:14 -0500 (EST)
 Received: from phl-frontend-01 ([10.202.2.160])
-  by phl-compute-11.internal (MEProxy); Tue, 12 Nov 2024 00:22:15 -0500
+  by phl-compute-12.internal (MEProxy); Tue, 12 Nov 2024 00:22:14 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=fluxnic.net; h=
 	cc:cc:content-transfer-encoding:content-type:date:date:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=2016-12.pbsmtp; t=1731388935;
-	 x=1731475335; bh=HLuQfhssIlYGR5o1gb9fHia6gSq18YEO9t8QMEHdmVg=; b=
-	2DKJiYYPGmrbtpRKl8RDvFwQ3fw9MeWuIE/dXFaImFBP/HrmwFRSR/Ae81dAJhqF
-	taCustXegIQgQKFU8YHksTUcyTz414JQJiC7DZcQefITVLlF8p8rlqpYmmZLeCdO
-	50tD1Z+3D8uUns7TbM8hPnTIBByk+RV9++I2iFf8Qgg=
+	:reply-to:subject:subject:to:to; s=2016-12.pbsmtp; t=1731388934;
+	 x=1731475334; bh=qo85hZPOEbaIqOSv3+i46F4vrPDjYiXGCZHA8L//gAc=; b=
+	SAzbASsQtvEGTn6mN69VvnE6mYNa2idz9BJ36JSbOGoY6pRs3YTbFvu/LIUym57+
+	rLN5aCO1Lj7j6JO06Ev4cQjQHd46NnJmoJpuzqw1VdY1dtBaZk2bbus0z0bDzMhP
+	FsxXL5p6r9NuVw3rkA2MoZLwJc+cZDhGEL2GkpExeWI=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pobox.com; h=cc
 	:cc:content-transfer-encoding:content-type:date:date:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1731388935; x=
-	1731475335; bh=HLuQfhssIlYGR5o1gb9fHia6gSq18YEO9t8QMEHdmVg=; b=T
-	XcYxnI5cthvzdcE/KZOjJqfoBSv4W1lBhsB9LDCiLpUSUOnpfnk8T2JU/1nCmZn2
-	AD8e/VrdiLyjApCs7XjivY/jJs96zRvw6NQY7NloTu/Fcv+fvHQdcuSsz7qMir1l
-	QPYMMKlLYYsOMJcoLj8Ziv9SR6WAKoS3IWysNzYObPWKa7xXyWaEXy5s6KLlOwVe
-	3nzsmh+OLP5MdVH/ixVxr/W2dMm55S0XIpthBZqCxeIMYIVZ5fd1YH+Iomk0sElo
-	jDhrfwOjncmysDtHNgu12sK82WLUUWXpgPhZTPj5O57txWiZX5TB8ZqoizUkApiG
-	gcL/H5ePXWgk1HfaYHuig==
+	:reply-to:subject:subject:to:to; s=fm2; t=1731388934; x=
+	1731475334; bh=qo85hZPOEbaIqOSv3+i46F4vrPDjYiXGCZHA8L//gAc=; b=G
+	Mgjvh8i/dJiXt5TOxJxFqezqkuz+VuhJEwt69MiwaRkwVSn9P3MfD9N77m7zleIL
+	QjiqCBVvxHITNIK1k3X7+bL+44xypePVF8uPGxb9fCOBC+Z+xbtPUSMoQnH8i8UL
+	ss0SkaYJoM181p31tRPdb5ixGQ155bEFRgNiNylrHkrWQSnDngArmLeztfrVg5bx
+	ZizoNV5sYv+cxw5+X3llWkWCD16cY3hCsYGrM9mm7ScJmb7e6hQON4rJl2ezK5gh
+	lXLVLybksha/oGVzpBzI3A7vU5CCkzYo+YIasHhtHc57nyeaS0ShZfOoOBTzgWJX
+	PZh4KHftSNZ3f2ciER+0g==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1731388935; x=1731475335; bh=H
-	LuQfhssIlYGR5o1gb9fHia6gSq18YEO9t8QMEHdmVg=; b=dZS5LbI1X8hk3kWl4
-	2gU5FChpYhO9T6WLBHFIQYVO1wNcqqeXtuqjOv0+2xaMz4IEmifWHkvlKs+q5qXZ
-	EHgTWekQDXOpSDyJbI8DKrIMDDl9ADYWTJuqJ4cIdcugjdCMw/lSLB+Ri+XIGse3
-	jAa2AZEn3VopOFs1fXMvr0UE+0O8CNjbVViR4LEcSl7rBStCWJyj1IsCBgH4UNlr
-	niUA4qBgmP5u0xm2hZx6jPhsbpbGmO/kAq+LBQEueydSF2pZRvHBl7WhoNMVLthd
-	DVLMJNuDC07lR0FCHy+iHXIDDt+yW/KWXEDLq8bv20o3WrKISHGDZJbXpUoVntS8
-	p0/LA==
-X-ME-Sender: <xms:B-YyZyLIB-HcBLC-mdBDF15TDeUmE1pbsVYE9d0PG-pKcPLUif4Zpg>
-    <xme:B-YyZ6LebBE7VOo4EfXrEwPWcJ1gcItds7Bke0s897znPS6Hgb1YOnLySUNXLo-NO
-    73Lsv9sFm0HkQq5U8s>
-X-ME-Received: <xmr:B-YyZyuvGOwJbvxysvMGDai6vMv4teBEb7krXYfXQdsrneYVAb5LQtP3G7sPAhXxI3Zn6VBv7t0iqetRG-e8oPVnYrjmg7eFcdRiG5-mu7E8DcCD3Q>
+	:x-me-sender:x-sasl-enc; s=fm3; t=1731388934; x=1731475334; bh=q
+	o85hZPOEbaIqOSv3+i46F4vrPDjYiXGCZHA8L//gAc=; b=n/ZqWwrMp0CBV09IW
+	Knoyc+AVPw31MPaBCdbKNuTVXoP5h39eXs40uOplBGTw2HgwndLsviord0vBWmw7
+	xGVOChqnropKn334GxbI7pB03jgpS2gs0kDoT3qcNEFAplj3XRsUOcxXLZ+mrsa8
+	6Z7BgkOiza72nRWN9GxH+nxmeK9e5ki7QQg3SADDTKnOXdbEREH/iwJgkELZhwY0
+	fBhIpnF8b2xGEAAdXx8ruyL0U6QjhjbFnJfTzmKUMVLZWlOQirtwlZpIE+JKA7+D
+	tbxGQz7Bik90xb6Eda3CRENKuBum8WoYGeucXzgccYMwQE91MimWIMRXT77eZmPj
+	kZBow==
+X-ME-Sender: <xms:BuYyZ_ZT3EDDkgetNlrV8hCHrZKlUMgb1Ik27MHm-ox0MZqwUfVpIw>
+    <xme:BuYyZ-bf_JM3WxgKSGGwejB8h1ll-4F9rW_gCnHx9jCIkLd2T1hgCJmuRhxo1-k01
+    Ms8rhmBmpsJnavBPe0>
+X-ME-Received: <xmr:BuYyZx9RPAexH7CwL7kbQJWavkk-MON5B8cPrtHm6lLlC4sdYIj2NI6I7lwj-Ux0ruE00NxqPQyFDxqUvmVhj8GIO0i6xqANyfIOYlf3X89fNu_JxQ>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefuddrudefgdekvdcutefuodetggdotefrodftvf
     curfhrohhfihhlvgemucfhrghsthforghilhdpggftfghnshhusghstghrihgsvgdpuffr
     tefokffrpgfnqfghnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnth
@@ -75,17 +75,17 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefuddrudefgdekvdcutefuodetggdote
     hopeguvghvihgtvghtrhgvvgesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthho
     pehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtth
     hopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
-X-ME-Proxy: <xmx:B-YyZ3ajar4TshDoxtJArRYiwBBem9KICO51ISolLRk7lgYwYeKiOg>
-    <xmx:B-YyZ5ZhTyMYwI75HNJ3JhslLZebVvyjupNQ_KcsbhcIXfz5djEEGw>
-    <xmx:B-YyZzDtp-Uf45ditY44WFt1xZYyBJpbW-qGaJ7JW-BxzaspSGRnTA>
-    <xmx:B-YyZ_audmJjjlvJmBnpF6hstOc-MVjlvVFbSp4SinVEa9VQmCne-A>
-    <xmx:B-YyZ7mN55x_kHHLgI_1qAowvGBGVA14JoVer6-hKSx2K89jYYxDIeiv>
+X-ME-Proxy: <xmx:BuYyZ1rQBzWwufkNanrhnfLO_jHFfm3Ib-98y838Z4Qp_8sSX3zLdA>
+    <xmx:BuYyZ6pWwPR6UYVWpbg4MS-PciSIFWAXmiKdHI4JZTiK2t84FNCbXw>
+    <xmx:BuYyZ7Q-YNUsiDc3bERo5ZYY7RNf5ZSx1xDp9X_0ltpJR74A7sHhoQ>
+    <xmx:BuYyZyr83apf_ub3mZKl-v4udrdJgRZ_QZTymWIhhXhmUYg3vVbQIA>
+    <xmx:BuYyZ527ecwBgpUEC2WrsD6YBOBdTa5SYsbJMn2cKuogUKTCXxbqKIuE>
 Feedback-ID: i58514971:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 12 Nov 2024 00:22:15 -0500 (EST)
+ 12 Nov 2024 00:22:14 -0500 (EST)
 Received: from xanadu.lan (OpenWrt.lan [192.168.1.1])
-	by yoda.fluxnic.net (Postfix) with ESMTPSA id 4AB00ECB803;
-	Tue, 12 Nov 2024 00:22:14 -0500 (EST)
+	by yoda.fluxnic.net (Postfix) with ESMTPSA id DA8FBECB7FE;
+	Tue, 12 Nov 2024 00:22:13 -0500 (EST)
 From: Nicolas Pitre <nico@fluxnic.net>
 To: Daniel Lezcano <daniel.lezcano@linaro.org>,
 	"Rafael J . Wysocki" <rafael@kernel.org>,
@@ -95,9 +95,9 @@ To: Daniel Lezcano <daniel.lezcano@linaro.org>,
 Cc: linux-kernel@vger.kernel.org,
 	Nicolas Pitre <npitre@baylibre.com>,
 	Alexandre Bailon <abailon@baylibre.com>
-Subject: [PATCH 5/5] ARM64: mt8195: Use thermal aggregation for big and little cpu
-Date: Tue, 12 Nov 2024 00:19:42 -0500
-Message-ID: <20241112052211.3087348-6-nico@fluxnic.net>
+Subject: [PATCH 1/5] thermal: of: properly parse coefficients with multiple thermal-sensors entries
+Date: Tue, 12 Nov 2024 00:19:38 -0500
+Message-ID: <20241112052211.3087348-2-nico@fluxnic.net>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241112052211.3087348-1-nico@fluxnic.net>
 References: <20241112052211.3087348-1-nico@fluxnic.net>
@@ -109,284 +109,171 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Alexandre Bailon <abailon@baylibre.com>
+From: Nicolas Pitre <npitre@baylibre.com>
 
-This uses the thermal aggregation for the mt8195 to get the maximal
-temperature of big and little cpu clusters.
+The thermal zone DT binding description says:
 
-Signed-off-by: Alexandre Bailon <abailon@baylibre.com>
+      coefficients:
+        $ref: /schemas/types.yaml#/definitions/uint32-array
+        description:
+          An array of integers containing the coefficients of a linear
+          equation that binds all the sensors listed in this thermal zone.
+
+          The linear equation used is as follows,
+            z = c0 * x0 + c1 * x1 + ... + c(n-1) * x(n-1) + cn
+          where c0, c1, .., cn are the coefficients.
+
+          Coefficients default to 1 in case this property is not
+          specified. The coefficients are ordered and are matched with
+          sensors by means of the sensor ID. Additional coefficients are
+          interpreted as constant offset.
+
+And the code says:
+
+        /*
+         * For now, the thermal framework supports only one sensor per
+         * thermal zone. Thus, we are considering only the first two
+         * values as slope and offset.
+         */
+
+Furthermore, only bcm2711_thermal, bcm2835_thermal and ti-soc-thermal
+use these values.
+
+It is not clear how the equation in the bindings documentation should be
+interpreted especially in the context of multiple sensors and sensor
+aggregation. Assuming x0..xn are temperature values, coefficients have
+to be fractional values otherwise the sum won't correspond to a
+temperature anymore. So this patch interprets those coefficients as
+per-sensor weight for determining the aggregated temperature value
+instead. Also, in that context, constant offsets make no sense so they're
+always set to 0. Because those weights are integer values, they must all be
+provided otherwise they all default to 1.
+
+To preserve backward compatibility, the current behavior is preserved
+when "thermal-sensors" contains only one entry. The alternative
+interpretation is applied only when "thermal-sensors" holds multiple
+entries (which never happened so far).
+
 Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
 ---
- arch/arm64/boot/dts/mediatek/mt8195.dtsi | 210 +++--------------------
- 1 file changed, 25 insertions(+), 185 deletions(-)
+ drivers/thermal/thermal_of.c | 63 +++++++++++++++++++++++++++---------
+ 1 file changed, 47 insertions(+), 16 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8195.dtsi b/arch/arm64/boot/dts/mediatek/mt8195.dtsi
-index e89ba384c4..a75a56f67e 100644
---- a/arch/arm64/boot/dts/mediatek/mt8195.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8195.dtsi
-@@ -3601,50 +3601,30 @@ dp_tx: dp-tx@1c600000 {
- 	};
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index 07e0989716..b8ddd41247 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -136,7 +136,8 @@ static struct thermal_trip *thermal_of_trips_init(struct device_node *np, int *n
+ 	return ERR_PTR(ret);
+ }
  
- 	thermal_zones: thermal-zones {
--		cpu0-thermal {
-+		cpu-little {
- 			polling-delay = <1000>;
--			polling-delay-passive = <250>;
--			thermal-sensors = <&lvts_mcu MT8195_MCU_LITTLE_CPU0>;
-+			polling-delay-passive = <100>;
-+			thermal-sensors = <&lvts_mcu MT8195_MCU_LITTLE_CPU0>,
-+					  <&lvts_mcu MT8195_MCU_LITTLE_CPU1>,
-+					  <&lvts_mcu MT8195_MCU_LITTLE_CPU2>,
-+					  <&lvts_mcu MT8195_MCU_LITTLE_CPU3>;
-+			sustainable-power = <1500>;
+-static struct device_node *of_thermal_zone_find(struct device_node *sensor, int id)
++static struct device_node *of_thermal_zone_find(struct device_node *sensor,
++						int id, int *index)
+ {
+ 	struct device_node *np, *tz;
+ 	struct of_phandle_args sensor_specs;
+@@ -179,6 +180,8 @@ static struct device_node *of_thermal_zone_find(struct device_node *sensor, int
+ 			if ((sensor == sensor_specs.np) && id == (sensor_specs.args_count ?
+ 								  sensor_specs.args[0] : 0)) {
+ 				pr_debug("sensor %pOFn id=%d belongs to %pOFn\n", sensor, id, child);
++				/* return index only if multiple entries exist */
++				*index = (count > 1) ? i : -1;
+ 				tz = no_free_ptr(child);
+ 				goto out;
+ 			}
+@@ -213,11 +216,10 @@ static int thermal_of_monitor_init(struct device_node *np, int *delay, int *pdel
+ 	return 0;
+ }
  
- 			trips {
--				cpu0_alert: trip-alert {
--					temperature = <85000>;
-+				cpu_little_threshold: trip-point {
-+					temperature = <68000>;
- 					hysteresis = <2000>;
- 					type = "passive";
- 				};
+-static void thermal_of_parameters_init(struct device_node *np,
++static void thermal_of_parameters_init(struct device_node *np, int index,
+ 				       struct thermal_zone_params *tzp)
+ {
+-	int coef[2];
+-	int ncoef = ARRAY_SIZE(coef);
++	int ncoef, count;
+ 	int prop, ret;
  
--				cpu0_crit: trip-crit {
--					temperature = <100000>;
--					hysteresis = <2000>;
--					type = "critical";
--				};
--			};
--
--			cooling-maps {
--				map0 {
--					trip = <&cpu0_alert>;
--					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
--				};
--			};
--		};
--
--		cpu1-thermal {
--			polling-delay = <1000>;
--			polling-delay-passive = <250>;
--			thermal-sensors = <&lvts_mcu MT8195_MCU_LITTLE_CPU1>;
--
--			trips {
--				cpu1_alert: trip-alert {
-+				cpu_little_target: target {
- 					temperature = <85000>;
- 					hysteresis = <2000>;
- 					type = "passive";
- 				};
+ 	tzp->no_hwmon = true;
+@@ -226,18 +228,46 @@ static void thermal_of_parameters_init(struct device_node *np,
+ 		tzp->sustainable_power = prop;
  
--				cpu1_crit: trip-crit {
--					temperature = <100000>;
-+				cpu_little_soc_max_crit: soc-max-crit {
-+					temperature = <115000>;
- 					hysteresis = <2000>;
- 					type = "critical";
- 				};
-@@ -3652,7 +3632,7 @@ cpu1_crit: trip-crit {
+ 	/*
+-	 * For now, the thermal framework supports only one sensor per
+-	 * thermal zone. Thus, we are considering only the first two
+-	 * values as slope and offset.
++	 * If only one sensor is specified in "thermal-sensors" (index == -1)
++	 * then only the first two "coefficients" values are considered, and
++	 * used as slope and offset (legacy interpretation).
++	 *
++	 * If /thermal-sensors" contains more than one sensor then index
++	 * contains a positive value indicating the "coefficients" value of
++	 * interest. The listed sensors are meant to be aggregated and the
++	 * provided coefficients represent the relative weight among those
++	 * sensors. The slope field is used for that purpose while the offset
++	 * is always 0.
+ 	 */
+-	ret = of_property_read_u32_array(np, "coefficients", coef, ncoef);
+-	if (ret) {
+-		coef[0] = 1;
+-		coef[1] = 0;
++	tzp->slope = 1;
++	tzp->offset = 0;
++	if (index == -1) {
++		int coef[2];
++
++		ncoef = ARRAY_SIZE(coef);
++		ret = of_property_read_u32_array(np, "coefficients", coef, ncoef);
++		if (!ret) {
++			tzp->slope = coef[0];
++			tzp->offset = coef[1];
++		}
++	} else {
++		ncoef = of_property_count_u32_elems(np, "coefficients");
++		if (ncoef > 0) {
++			count = of_count_phandle_with_args(np, "thermal-sensors",
++							   "#thermal-sensor-cells");
++			if (ncoef != count) {
++				pr_err("%pOFn: sensors and coefficients mismatch\n", np);
++			} else {
++				int *coef = kmalloc(sizeof(*coef) * (index + 1),
++						    GFP_KERNEL);
++				if (coef &&
++				    of_property_read_u32_array(np, "coefficients",
++							       coef, (index + 1)) == 0)
++					tzp->slope = coef[index];
++				kfree(coef);
++			}
++		}
+ 	}
+-
+-	tzp->slope = coef[0];
+-	tzp->offset = coef[1];
+ }
  
- 			cooling-maps {
- 				map0 {
--					trip = <&cpu1_alert>;
-+					trip = <&cpu_little_target>;
- 					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
- 								<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
- 								<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-@@ -3661,170 +3641,30 @@ map0 {
- 			};
- 		};
+ static struct device_node *thermal_of_zone_get_by_name(struct thermal_zone_device *tz)
+@@ -386,9 +416,10 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
+ 	const char *action;
+ 	int delay, pdelay;
+ 	int ntrips;
++	int index;
+ 	int ret;
  
--		cpu2-thermal {
-+		cpu-big {
- 			polling-delay = <1000>;
- 			polling-delay-passive = <250>;
--			thermal-sensors = <&lvts_mcu MT8195_MCU_LITTLE_CPU2>;
-+			thermal-sensors = <&lvts_mcu MT8195_MCU_BIG_CPU0>,
-+					  <&lvts_mcu MT8195_MCU_BIG_CPU1>,
-+					  <&lvts_mcu MT8195_MCU_BIG_CPU2>,
-+					  <&lvts_mcu MT8195_MCU_BIG_CPU3>;
-+			sustainable-power = <1500>;
+-	np = of_thermal_zone_find(sensor, id);
++	np = of_thermal_zone_find(sensor, id, &index);
+ 	if (IS_ERR(np)) {
+ 		if (PTR_ERR(np) != -ENODEV)
+ 			pr_err("Failed to find thermal zone for %pOFn id=%d\n", sensor, id);
+@@ -411,7 +442,7 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
+ 		goto out_kfree_trips;
+ 	}
  
- 			trips {
--				cpu2_alert: trip-alert {
--					temperature = <85000>;
-+				cpu_big_threshold: trip-point {
-+					temperature = <68000>;
- 					hysteresis = <2000>;
- 					type = "passive";
- 				};
+-	thermal_of_parameters_init(np, &tzp);
++	thermal_of_parameters_init(np, index, &tzp);
  
--				cpu2_crit: trip-crit {
--					temperature = <100000>;
--					hysteresis = <2000>;
--					type = "critical";
--				};
--			};
--
--			cooling-maps {
--				map0 {
--					trip = <&cpu2_alert>;
--					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
--				};
--			};
--		};
--
--		cpu3-thermal {
--			polling-delay = <1000>;
--			polling-delay-passive = <250>;
--			thermal-sensors = <&lvts_mcu MT8195_MCU_LITTLE_CPU3>;
--
--			trips {
--				cpu3_alert: trip-alert {
--					temperature = <85000>;
--					hysteresis = <2000>;
--					type = "passive";
--				};
--
--				cpu3_crit: trip-crit {
--					temperature = <100000>;
--					hysteresis = <2000>;
--					type = "critical";
--				};
--			};
--
--			cooling-maps {
--				map0 {
--					trip = <&cpu3_alert>;
--					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
--				};
--			};
--		};
--
--		cpu4-thermal {
--			polling-delay = <1000>;
--			polling-delay-passive = <250>;
--			thermal-sensors = <&lvts_mcu MT8195_MCU_BIG_CPU0>;
--
--			trips {
--				cpu4_alert: trip-alert {
-+				cpu_big_target: target {
- 					temperature = <85000>;
- 					hysteresis = <2000>;
- 					type = "passive";
- 				};
+ 	of_ops.should_bind = thermal_of_should_bind;
  
--				cpu4_crit: trip-crit {
--					temperature = <100000>;
--					hysteresis = <2000>;
--					type = "critical";
--				};
--			};
--
--			cooling-maps {
--				map0 {
--					trip = <&cpu4_alert>;
--					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
--				};
--			};
--		};
--
--		cpu5-thermal {
--			polling-delay = <1000>;
--			polling-delay-passive = <250>;
--			thermal-sensors = <&lvts_mcu MT8195_MCU_BIG_CPU1>;
--
--			trips {
--				cpu5_alert: trip-alert {
--					temperature = <85000>;
--					hysteresis = <2000>;
--					type = "passive";
--				};
--
--				cpu5_crit: trip-crit {
--					temperature = <100000>;
--					hysteresis = <2000>;
--					type = "critical";
--				};
--			};
--
--			cooling-maps {
--				map0 {
--					trip = <&cpu5_alert>;
--					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
--				};
--			};
--		};
--
--		cpu6-thermal {
--			polling-delay = <1000>;
--			polling-delay-passive = <250>;
--			thermal-sensors = <&lvts_mcu MT8195_MCU_BIG_CPU2>;
--
--			trips {
--				cpu6_alert: trip-alert {
--					temperature = <85000>;
--					hysteresis = <2000>;
--					type = "passive";
--				};
--
--				cpu6_crit: trip-crit {
--					temperature = <100000>;
--					hysteresis = <2000>;
--					type = "critical";
--				};
--			};
--
--			cooling-maps {
--				map0 {
--					trip = <&cpu6_alert>;
--					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--								<&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
--				};
--			};
--		};
--
--		cpu7-thermal {
--			polling-delay = <1000>;
--			polling-delay-passive = <250>;
--			thermal-sensors = <&lvts_mcu MT8195_MCU_BIG_CPU3>;
--
--			trips {
--				cpu7_alert: trip-alert {
--					temperature = <85000>;
--					hysteresis = <2000>;
--					type = "passive";
--				};
--
--				cpu7_crit: trip-crit {
--					temperature = <100000>;
-+				cpu_big_soc_max_crit: soc-max-crit {
-+					temperature = <115000>;
- 					hysteresis = <2000>;
- 					type = "critical";
- 				};
-@@ -3832,7 +3672,7 @@ cpu7_crit: trip-crit {
- 
- 			cooling-maps {
- 				map0 {
--					trip = <&cpu7_alert>;
-+					trip = <&cpu_big_target>;
- 					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
- 								<&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
- 								<&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
 -- 
 2.47.0
 
