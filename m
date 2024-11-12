@@ -1,89 +1,213 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C49CC5234;
-	Tue, 12 Nov 2024 01:07:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81DD3BE6C;
+	Tue, 12 Nov 2024 02:06:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731373665; cv=none; b=bS/c3qRLfKRdd85I8rZu+eWwhyTooD8pRwd26PNRHBmRWYL7QyWa2EZDxEBEFRWgAA9YuSJqp1CKJtpPVbTv11ce98j1OWjo8H7Auv0qgdafDdilSgmdzkRwUL1cflBd1K62Wovk2++/Qr8o0wLWNEcwFm4ESVjzSNG83KVr24A=
+	t=1731377188; cv=none; b=q/aloF+NCTK3l/2oO99SFIv7ftNhREqSffrjEMTOT1gZgi4bkGvGQu5f5P5N6jODbKdN4xtNDA+0Cq4gMMp7vTQRocnsGiBXPf2TQl4DGKvVTpdkLK/RzsQcCEUVev1ofDGDlB+iz5VDE9M3zBbY8Lg0M1UqfSnMAy8edubl4iI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731373665; c=relaxed/simple;
-	bh=NiT2v4KtxIZJPnmu+e9fr80tgReDlEnejBG+0hbQIRQ=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=VtHT3RHe0xcu8ZV87sOVmXfuP6CZ/PR0ylvsYotlJZ+Vseyph/nKIeK0Wk8C0ffhYesJyWvdrp/Kx1CmXmyVpeMvNxdrBmsJzO3QOS4A4n+mKH8xgrRb/PImwyLUPmJYKNNceQHWYl/lqdAXcPaE3xhy2cHXUPxFK1O907sQIYw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=NQrgGs8c; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=wZsYcMRK; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
+	s=arc-20240116; t=1731377188; c=relaxed/simple;
+	bh=le60pk5t+ql1d86bbmJN4sCll8pchLZj4uleZWk86Aw=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DvxO38kb6dwhY3a8jBwW2lk+xVqT6dYFw6GYqhgmwEDyDA8icVcT+PhRftuUtVIB0V05LJofaKAN+VoJRM6kUHJ6UGUxoyIy86XqrOVlCWWJxo5OA2QhCoKlCo0wF24+NkUybaZLKwC3OnZBhHWA0pFgj3djTPpIYl3tZBeS3Jo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=bZtLlYKI; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="NQrgGs8c";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="wZsYcMRK"
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1731373661;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=d5s/m46v24gtVwgvBpriXEpuPGkdMoQKTK4XbSOPcW0=;
-	b=NQrgGs8cbfXP1icrl/Q/tDfZ4FitRa0D40dfkQS46xkpmA8JpxTbKqFUOGxJve0B7CtTaX
-	uMw9rqrv/A3NdUJm9eTMXMaaXRXiO9BDhJbXshSIwSACg5IMFyTqV7yAEKRtv1HJ7EoIS7
-	Sa3vfadfL+Wn4OoYxYkDcfrkIssTyoNO5RwqHMordzHU+HAwHwwenle38s8iWW69PZdKM/
-	pw2Mn52nyRFZTMr58zGCMzi4dg6/v1tRWQtLh4Sqnr56FugYEMXBohLxB9KFAxb8fu37h+
-	/qKEgIH9SjHXWdRssjqsI11zXH40i1Xclbma7ckvqcb9pBwL+CUtZhx7D6RleA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1731373661;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=d5s/m46v24gtVwgvBpriXEpuPGkdMoQKTK4XbSOPcW0=;
-	b=wZsYcMRKaH6IYWLT6361xLxBJTLTZi6Yd3Jr63R1BT0K+f10LZUOCMik2bAsGOl5jkpse4
-	amiJtHAq0cX7ZnDw==
-To: Len Brown <lenb@kernel.org>, peterz@infradead.org, x86@kernel.org
-Cc: rafael@kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>,
- stable@vger.kernel.org
-Subject: Re: [PATCH backport to 6.10] x86/cpu: Add INTEL_FAM6_LUNARLAKE_M to
- X86_BUG_MONITOR
-In-Reply-To: <20241108135206.435793-2-lenb@kernel.org>
-References: <20241108135206.435793-1-lenb@kernel.org>
- <20241108135206.435793-2-lenb@kernel.org>
-Date: Tue, 12 Nov 2024 02:07:27 +0100
-Message-ID: <87h68dnttc.ffs@tglx>
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="bZtLlYKI"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4ABCqp6X018012;
+	Tue, 12 Nov 2024 02:05:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=5qaLcLQeV1PB7ymPPGtVOm0b
+	VLvm/RinEOKBQ/M+eNA=; b=bZtLlYKISIvK1G4XdFhDYMb22nBFQHqoQe/aWTNJ
+	qmNEokJJqJr16VKxDDJP/7SwTaW2E5wt4iSlLhl362bYJxbA83Y9tnVjQrUfz+fF
+	hpHYttmb7WeleAfDMlFkAxcImXYzYl+mJ9AqIuJ1oGx1eg2YSpfxYgo/cCxOMiet
+	JPquyCNX3EtEetfOFU9mGpIuyuFv8vv5uqnlVEQCj/IYBdh60+ff35DMKrj5MrJE
+	8ymOkQcaQtA4OXViWLfU1F3DmybV9UdGfm3J/5qE6sDlSS3HaQIq6TwKFx26v1MR
+	LlgZm/dsNmwei/jS3MtG8qOtfhBIf+Wa7p/jiRuKQPwvPg==
+Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 42syax5ugu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Nov 2024 02:05:51 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA03.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 4AC25oQ2019406
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Nov 2024 02:05:50 GMT
+Received: from hu-eberman-lv.qualcomm.com (10.49.16.6) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Mon, 11 Nov 2024 18:05:49 -0800
+Date: Mon, 11 Nov 2024 18:05:49 -0800
+From: Elliot Berman <quic_eberman@quicinc.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+        Sebastian Reichel
+	<sre@kernel.org>, Rob Herring <robh@kernel.org>,
+        Conor Dooley
+	<conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+        Andy Yan
+	<andy.yan@rock-chips.com>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        "Mark
+ Rutland" <mark.rutland@arm.com>,
+        Bartosz Golaszewski
+	<bartosz.golaszewski@linaro.org>,
+        Arnd Bergmann <arnd@arndb.de>, "Olof
+ Johansson" <olof@lixom.net>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        "Will
+ Deacon" <will@kernel.org>,
+        <cros-qcom-dts-watchers@chromium.org>,
+        "Krzysztof
+ Kozlowski" <krzk+dt@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+CC: Satya Durga Srinivasu Prabhala <quic_satyap@quicinc.com>,
+        Melody Olvera
+	<quic_molvera@quicinc.com>,
+        Shivendra Pratap <quic_spratap@quicinc.com>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        Florian Fainelli
+	<florian.fainelli@broadcom.com>,
+        Stephen Boyd <swboyd@chromium.org>, <linux-pm@vger.kernel.org>,
+        <linux-arm-msm@vger.kernel.org>
+Subject: Re: [PATCH v8 0/6] Implement vendor resets for PSCI SYSTEM_RESET2
+Message-ID: <20241111151958898-0800.eberman@hu-eberman-lv.qualcomm.com>
+References: <20241107-arm-psci-system_reset2-vendor-reboots-v8-0-e8715fa65cb5@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20241107-arm-psci-system_reset2-vendor-reboots-v8-0-e8715fa65cb5@quicinc.com>
+X-ClientProxiedBy: nalasex01b.na.qualcomm.com (10.47.209.197) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: QeGcJ48pikCpZg6Q21XjJza7qu7Q5-Np
+X-Proofpoint-GUID: QeGcJ48pikCpZg6Q21XjJza7qu7Q5-Np
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 adultscore=0
+ bulkscore=0 malwarescore=0 spamscore=0 suspectscore=0 mlxlogscore=999
+ lowpriorityscore=0 priorityscore=1501 clxscore=1015 phishscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2411120015
 
-On Fri, Nov 08 2024 at 08:49, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
->
-> Under some conditions, MONITOR wakeups on Lunar Lake processors
-> can be lost, resulting in significant user-visible delays.
->
-> Add LunarLake to X86_BUG_MONITOR so that wake_up_idle_cpu()
-> always sends an IPI, avoiding this potential delay.
-> Update the X86_BUG_MONITOR workaround to handle
-> the new smp_kick_mwait_play_dead() path.
->
-> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=219364
->
-> Cc: stable@vger.kernel.org # 6.10
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
-> This is a backport of the upstream patch to Linux-6.10 and earlier
+Hi Lorenzo,
 
-You either fail to understand or intentionally ignore the process for
-stable backports, which is in place since more than a decade.
-
-Documentation/process/* has plenty of information how that works and
-you're around long enough to know that already.
-
-I don't care about you wasting your time, but I very much care about you
-wasting my time to deal with pointless emails. I get plenty enough of
-them every day.
+I haven't seen response on our question about how reboot_mode enum and
+reboot command string are supposed to interact. Let's make a call
+ourselves and merge?
 
 Thanks,
+Elliot
 
-        tglx
+On Thu, Nov 07, 2024 at 03:38:24PM -0800, Elliot Berman wrote:
+> The PSCI SYSTEM_RESET2 call allows vendor firmware to define additional
+> reset types which could be mapped to the reboot argument.
+> 
+> Setting up reboot on Qualcomm devices can be inconsistent from chipset
+> to chipset. Generally, there is a PMIC register that gets written to
+> decide the reboot type. There is also sometimes a cookie that can be
+> written to indicate that the bootloader should behave differently than a
+> regular boot. These knobs evolve over product generations and require 
+> more drivers. Qualcomm firmwares are beginning to expose vendor
+> SYSTEM_RESET2 types to simplify driver requirements from Linux.
+> 
+> Add support in PSCI to statically wire reboot mode commands from
+> userspace to a vendor reset and cookie value using the device tree. The
+> DT bindings are similar to reboot mode framework except that 2
+> integers are accepted (the type and cookie). Also, reboot mode framework
+> is intended to program the cookies, but not actually reboot the host.
+> PSCI SYSTEM_RESET2 does both. I've not added support for reading ACPI
+> tables since I don't have any device which provides them + firmware that
+> supports vendor SYSTEM_RESET2 types.
+> 
+> Lorenzo and I are also looking for some feedback on whether it is safe
+> to perform a vendor SYSTEM_RESET2 irrespective of the enum reboot_mode:
+> 
+> https://lore.kernel.org/all/Zw5ffeYW5uRpsaG3@lpieralisi/
+> 
+> Previous discussions around SYSTEM_RESET2:
+> - https://lore.kernel.org/lkml/20230724223057.1208122-2-quic_eberman@quicinc.com/T/
+> - https://lore.kernel.org/all/4a679542-b48d-7e11-f33a-63535a5c68cb@quicinc.com/
+> 
+> Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
+> 
+> Changes in v8:
+> - Code style nits from Stephen
+> - Add rb3gen2
+> - Link to v7: https://lore.kernel.org/r/20241028-arm-psci-system_reset2-vendor-reboots-v7-0-a4c40b0ebc54@quicinc.com
+> 
+> Changes in v7:
+> - Code style nits from Stephen
+> - Dropped unnecessary hunk from the sa8775p-ride patch
+> - Link to v6: https://lore.kernel.org/r/20241018-arm-psci-system_reset2-vendor-reboots-v6-0-50cbe88b0a24@quicinc.com
+> 
+> Changes in v6:
+> - Rebase to v6.11 and fix trivial conflicts in qcm6490-idp
+> - Add sa8775p-ride support (same as qcm6490-idp)
+> - Link to v5: https://lore.kernel.org/r/20240617-arm-psci-system_reset2-vendor-reboots-v5-0-086950f650c8@quicinc.com
+> 
+> Changes in v5:
+> - Drop the nested "items" in prep for future dtschema tools
+> - Link to v4: https://lore.kernel.org/r/20240611-arm-psci-system_reset2-vendor-reboots-v4-0-98f55aa74ae8@quicinc.com
+> 
+> Changes in v4:
+> - Change mode- properties from uint32-matrix to uint32-array
+> - Restructure the reset-types node so only the restriction is in the
+>   if/then schemas and not the entire definition
+> - Link to v3: https://lore.kernel.org/r/20240515-arm-psci-system_reset2-vendor-reboots-v3-0-16dd4f9c0ab4@quicinc.com
+> 
+> Changes in v3:
+> - Limit outer number of items to 1 for mode-* properties
+> - Move the reboot-mode for psci under a subnode "reset-types"
+> - Fix the DT node in qcm6490-idp so it doesn't overwrite the one from
+>   sc7820.dtsi
+> - Link to v2: https://lore.kernel.org/r/20240414-arm-psci-system_reset2-vendor-reboots-v2-0-da9a055a648f@quicinc.com
+> 
+> Changes in v2:
+> - Fixes to schema as suggested by Rob and Krzysztof
+> - Add qcm6490 idp as first Qualcomm device to support
+> - Link to v1: https://lore.kernel.org/r/20231117-arm-psci-system_reset2-vendor-reboots-v1-0-03c4612153e2@quicinc.com
+> 
+> Changes in v1:
+> - Reference reboot-mode bindings as suggeted by Rob.
+> - Link to RFC: https://lore.kernel.org/r/20231030-arm-psci-system_reset2-vendor-reboots-v1-0-dcdd63352ad1@quicinc.com
+> 
+> ---
+> Elliot Berman (6):
+>       dt-bindings: power: reset: Convert mode-.* properties to array
+>       dt-bindings: arm: Document reboot mode magic
+>       firmware: psci: Read and use vendor reset types
+>       arm64: dts: qcom: qcm6490-idp: Add PSCI SYSTEM_RESET2 types
+>       arm64: dts: qcom: qcs6490-rb3gen2: Add PSCI SYSTEM_RESET2 types
+>       arm64: dts: qcom: sa8775p-ride: Add PSCI SYSTEM_RESET2 types
+> 
+>  Documentation/devicetree/bindings/arm/psci.yaml    |  43 +++++++++
+>  .../bindings/power/reset/nvmem-reboot-mode.yaml    |   4 +
+>  .../devicetree/bindings/power/reset/qcom,pon.yaml  |   7 ++
+>  .../bindings/power/reset/reboot-mode.yaml          |   4 +-
+>  .../bindings/power/reset/syscon-reboot-mode.yaml   |   4 +
+>  arch/arm64/boot/dts/qcom/qcm6490-idp.dts           |   7 ++
+>  arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts       |   7 ++
+>  arch/arm64/boot/dts/qcom/sa8775p-ride.dtsi         |   7 ++
+>  arch/arm64/boot/dts/qcom/sa8775p.dtsi              |   2 +-
+>  arch/arm64/boot/dts/qcom/sc7280.dtsi               |   2 +-
+>  drivers/firmware/psci/psci.c                       | 104 +++++++++++++++++++++
+>  11 files changed, 187 insertions(+), 4 deletions(-)
+> ---
+> base-commit: 98f7e32f20d28ec452afb208f9cffc08448a2652
+> change-id: 20231016-arm-psci-system_reset2-vendor-reboots-cc3ad456c070
+> 
+> Best regards,
+> -- 
+> Elliot Berman <quic_eberman@quicinc.com>
+> 
