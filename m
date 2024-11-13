@@ -1,78 +1,103 @@
-Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net [176.9.242.62])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77965185955;
-	Wed, 13 Nov 2024 08:44:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=176.9.242.62
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25E341AA792;
+	Wed, 13 Nov 2024 09:05:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731487458; cv=none; b=A71GWSw8qucvoB+PKdk4tfo44H5FqTVoqHA6i/AWqlBi1HYAwVIZDSZavQPWD7gDXaoAcciQ4k5HQcHuV8ByZfqGijvPc9Nvwp1OlcLKmu+/HmrD1WfWKRx9w7Hx4yiBWlJ9b0PbaBt4ZIMniY7A4Vqj+o0g9HLQ/C2kKRUQu44=
+	t=1731488714; cv=none; b=t28muTYyAwfrHZWaw8vwZd8mSBVSGhNR7ChafF0SQKrws6G0ggUg1jgkYymfa+au0VzuCP3IxTNPHUVD0j6XO3TShFJd0ti5GEMoxzQYjWOPWHJ4cYeQI4X8CFFp62hsayzNoJ6oLe6XINRzcInJlKMr/TTH1+GV39slX2TqwQk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731487458; c=relaxed/simple;
-	bh=02/dpSmbWQts+pjFlcYlfn4bGHtUtDohp05R4xagVy8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ExNqqVneZPi5Mo9AGSraU0U3IKPN3+jAOKGku0g/KEENd6lGohu50yeHhOHU+PnyY3KmiO9VH0FWhaa5V5OZMfK92aKsuCQnXXEO8ccEsd556k1Md0v/bIB+EPdvuErHdSpV3IMOp5n6e2x7CKZD+JHwKfrrhvHWL1FF6ecxoag=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=none smtp.mailfrom=h08.hostsharing.net; arc=none smtp.client-ip=176.9.242.62
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=h08.hostsharing.net
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
-	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
-	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
-	by bmailout3.hostsharing.net (Postfix) with ESMTPS id AF8E1102BCBBF;
-	Wed, 13 Nov 2024 09:44:05 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 72DDF21F84D; Wed, 13 Nov 2024 09:44:05 +0100 (CET)
-Date: Wed, 13 Nov 2024 09:44:05 +0100
-From: Lukas Wunner <lukas@wunner.de>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-	Rob Herring <robh@kernel.org>, Krzysztof Wilczy??ski <kw@linux.com>,
-	"Maciej W . Rozycki" <macro@orcam.me.uk>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	Alexandru Gagniuc <mr.nuke.me@gmail.com>,
-	Krishna chaitanya chundru <quic_krichai@quicinc.com>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-	Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	linux-kernel@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: Re: [PATCH v9 8/9] thermal: Add PCIe cooling driver
-Message-ID: <ZzRm1SJTwEMRsAr8@wunner.de>
-References: <20241018144755.7875-1-ilpo.jarvinen@linux.intel.com>
- <20241018144755.7875-9-ilpo.jarvinen@linux.intel.com>
+	s=arc-20240116; t=1731488714; c=relaxed/simple;
+	bh=W00M0mj4cJIl+1Ton9OydQMdPhzyCEMv2h5lPx7LI00=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JkIZkITMxWUPuKaThlKBvdY0t6eO9LvKzFX8w9vo1Kor8w1ZPUtZ4ot8YFnOpWx4Lt1dl+HKwgTUPPIZP48eqTM/gG+xG6GqYLaCMGCPy58Enrx/bEmuj2r9BRhBp4gub7f1x13uuUoO0Q0gndSlYIJnbLKV0ov9O+VZZsKb0Vo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R9LQZK4o; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R9LQZK4o"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F2F1C4CED8;
+	Wed, 13 Nov 2024 09:05:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731488713;
+	bh=W00M0mj4cJIl+1Ton9OydQMdPhzyCEMv2h5lPx7LI00=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=R9LQZK4ooTpWKWy4Us6NBb6veiQsS6Aq9mCWAFmAHrxlv0ktP+mofhnJCSZ/fA4FG
+	 07FF7puRZ/WzI3h8T8gyDbG93hrsptuiIrSyIfvqRDg+W3eZDkan5UTffEligh4SW7
+	 yeitrybX6sSJOWKxMH07EgQupF88mB3ZWwszySDZQo9lvpvsQNqlUCGQV+QhN6DkOO
+	 trIEmsPT6T8cWD0xkBWPobEjZB/FZEhVmBCeUqCUWCerkociHygK36/PFJt0m8vrJ+
+	 gMHDB93ANEyNydVKPxO68qqwJ0lKlB/pk2C/1ODqHovDrcjNdDPix3yr/dgUGF7NFt
+	 o2+3GZZmR844Q==
+Received: by mail-oo1-f54.google.com with SMTP id 006d021491bc7-5ee3e12b191so2715363eaf.0;
+        Wed, 13 Nov 2024 01:05:13 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCWWPZHKptkQQWx/D5G+yLgC99M9iMcjKK+f3P1Tji9qe2CTAGlBxxe9N47Iq/uhSCmuOy0u5NvO@vger.kernel.org, AJvYcCWhp4f9+WLCefqEwjkav9O1v1NPZoQy67HJlJGS1H+GdpbRm9jb0dnPFKU64UsDod+W+UK5fA9Obv8=@vger.kernel.org, AJvYcCWsEhdmQZOpDkk6wbT9MXOPSBVYR644fLO2paC/iJTnsjYs4XeA2Et6qSyOEwy+d0mXlJRVY+xUhgeC4fA=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxk6poIN8sVG2C94IikF6lOhpmpCmbX8qKwXSoXYZS2fxjQO3y0
+	+x8ku+xas5L8DtL+j5KZJLNoNtvut8GOQTBntP2MdZDyzRWVTkxyJK23+sLBGnxCFRX/0cTCanV
+	70rC418QVRmCBv+kD2jfUWE/b0A8=
+X-Google-Smtp-Source: AGHT+IHlr7mJZgg0FFV+zNCbZW3MEXnJeIs0/hgP3cdKe8S9pjQ6lzqSiKGj5MiEPQ3PK2Ayi3T92S192wFQCOjV+Jo=
+X-Received: by 2002:a05:6870:34e:b0:287:0:9ecc with SMTP id
+ 586e51a60fabf-2956036be18mr15912074fac.33.1731488712678; Wed, 13 Nov 2024
+ 01:05:12 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20241018144755.7875-9-ilpo.jarvinen@linux.intel.com>
+References: <a4aa8842a3c3bfdb7fe9807710eef159cbf0e705.1731463305.git.len.brown@intel.com>
+In-Reply-To: <a4aa8842a3c3bfdb7fe9807710eef159cbf0e705.1731463305.git.len.brown@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 13 Nov 2024 10:05:01 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0h5TfKkdbvhnPoM9fmBOMr+gCOzy-_zNdCGX=McF+Awqg@mail.gmail.com>
+Message-ID: <CAJZ5v0h5TfKkdbvhnPoM9fmBOMr+gCOzy-_zNdCGX=McF+Awqg@mail.gmail.com>
+Subject: Re: [PATCH v3] x86/cpu: Add INTEL_LUNARLAKE_M to X86_BUG_MONITOR
+To: Len Brown <lenb@kernel.org>
+Cc: peterz@infradead.org, tglx@linutronix.de, x86@kernel.org, 
+	rafael@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Len Brown <len.brown@intel.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Oct 18, 2024 at 05:47:54PM +0300, Ilpo Järvinen wrote:
->  static void pcie_bwnotif_remove(struct pcie_device *srv)
->  {
-> +	struct pcie_bwctrl_data *data = srv->port->link_bwctrl;
-> +
-> +	if (data->cdev)
-> +		pcie_cooling_device_unregister(data->cdev);
-> +
+On Wed, Nov 13, 2024 at 3:07=E2=80=AFAM Len Brown <lenb@kernel.org> wrote:
+>
+> From: Len Brown <len.brown@intel.com>
+>
+> Under some conditions, MONITOR wakeups on Lunar Lake processors
+> can be lost, resulting in significant user-visible delays.
+>
+> Add LunarLake to X86_BUG_MONITOR so that wake_up_idle_cpu()
+> always sends an IPI, avoiding this potential delay.
+>
+> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=3D219364
+>
+> Cc: stable@vger.kernel.org # 6.11
+> Signed-off-by: Len Brown <len.brown@intel.com>
 
-Just noting a minor nit here in what is now commit 7206400cda87
-on pci/bwctrl:  The NULL pointer check for data->cdev seems
-redundant as pcie_cooling_device_unregister() just calls
-thermal_cooling_device_unregister(), which in turn contains
-this at the top:
+Still
 
-	if (!cdev)
-		return;
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thanks,
-
-Lukas
+> ---
+> v3 syntax tweak
+> v2 leave smp_kick_mwait_play_dead() alone
+>
+>  arch/x86/kernel/cpu/intel.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+> index e7656cbef68d..4b5f3d052151 100644
+> --- a/arch/x86/kernel/cpu/intel.c
+> +++ b/arch/x86/kernel/cpu/intel.c
+> @@ -586,7 +586,9 @@ static void init_intel(struct cpuinfo_x86 *c)
+>              c->x86_vfm =3D=3D INTEL_WESTMERE_EX))
+>                 set_cpu_bug(c, X86_BUG_CLFLUSH_MONITOR);
+>
+> -       if (boot_cpu_has(X86_FEATURE_MWAIT) && c->x86_vfm =3D=3D INTEL_AT=
+OM_GOLDMONT)
+> +       if (boot_cpu_has(X86_FEATURE_MWAIT) &&
+> +           (c->x86_vfm =3D=3D INTEL_ATOM_GOLDMONT ||
+> +            c->x86_vfm =3D=3D INTEL_LUNARLAKE_M))
+>                 set_cpu_bug(c, X86_BUG_MONITOR);
+>
+>  #ifdef CONFIG_X86_64
+> --
+> 2.43.0
+>
