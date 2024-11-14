@@ -1,232 +1,138 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E1BC1F7068
-	for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2024 08:03:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F1C013CA99
+	for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2024 08:08:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731571414; cv=none; b=eVMndhQFYLjDoCZVk+ZXmC0ag4M1mYqxZ+tsGq79kRAOntsAWvGU6pktUlriqd3Bl11RpchBxXxPEnJXjDNgGcQeIFHRyoVqykiS0XCWvhvTWvxVSFpkEKAjm3NxHuiJiyLHzJR/tqay5b4CBysunB7Jx2eOcVDS8wXXIsX1j4Q=
+	t=1731571722; cv=none; b=JNzeacGN5hy98nLy98+2DQXbP/6GbVb0fnelnKo5JdwoJNHUbIyVtFncIsDq6yit9Gu1JKB7u1/S/oY1+tTDYQecAeJr9WMvA9hVzKOkLowwBEn+VxA+z3J/Ib4/1g+qKrGNIo7Qag0d1PApbocEIbFHFm79JjDl/t6vyCH6VSk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731571414; c=relaxed/simple;
-	bh=sgXWBLYxlK/aUQLaAro1Z7uGRzkbkMQ1MuooJ69i9wo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CW/QQ/B7Jp4egRobZuX3/z1RzI1oxE5GU3gyW+MSrSVRfGeJxkeZQBAQ2il3llShFiz2IP7tthBFCZPkeVhFc5Sji2TkNnhKojZWZzLOQlUVjhYiueo7HZwQzapRLalqRJyaZYWeGZgQb7Tdv79XVBZXUX4GTCT9Wli643ZfzLk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=d5URKj2x; arc=none smtp.client-ip=192.198.163.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1731571722; c=relaxed/simple;
+	bh=icAKHO3XdFjTPRQoSoY40/A30bW01Zctkb2EmkZvI00=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HcyLOIGsedgdELYx4/bnx3CFQ6n11tKNiS5ljwoE5xbXn2+h9sHg7sFK31MyTre2GDtKNNSyDlisVIJihNQlmmb2plKGmuCQ/84qYb/vBjx+catuBd3ajRyBa/d1QXkbcNURIHQgKOGnI0I/oLurI5F2+jhgKltrWn+qC6rcJYY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=VQEqZz4w; arc=none smtp.client-ip=209.85.128.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="d5URKj2x"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1731571413; x=1763107413;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=sgXWBLYxlK/aUQLaAro1Z7uGRzkbkMQ1MuooJ69i9wo=;
-  b=d5URKj2xBb08dIUCrDRdcntM+7kfig26aFJSqle8uqcFC4jJ8MzK+OLi
-   ND8uM3i2TpBNFqwIQL8/0tzj3wGiVVMl1xbc4koHL+6sJ792/qwCtG6NC
-   kdRUmhGOo72XgICt1x4g5LVzN2WlSuI7+BiNmh4wtFeAxifvg0H9fCubl
-   U2uBNFTgAtn6xZv0UgF0xb9o/FDB0MdRQF9fRbiq5mO8wn1W50uRdMdBM
-   4S+BuRFlDbkOag6Kcjo180X6y8Od7quoLzupzGpUydoQYOfZhQx7vlW46
-   xi9kYWQkQxVIZlvBZ+828MneHS6f68BGma86KKqzB3fHZV1cNjJSqY0Gu
-   w==;
-X-CSE-ConnectionGUID: aOR86Z/iTg+40d2JscoD6w==
-X-CSE-MsgGUID: eAjzahQmQQ6M1Z9O9q5pPg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11255"; a="31600455"
-X-IronPort-AV: E=Sophos;i="6.12,153,1728975600"; 
-   d="scan'208";a="31600455"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2024 00:03:26 -0800
-X-CSE-ConnectionGUID: IGdR2/HSSEKRCXDE0OQWHw==
-X-CSE-MsgGUID: pCmZpyuhSTSyLKd4MN6G4A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,153,1728975600"; 
-   d="scan'208";a="125627499"
-Received: from rzhang1-mobl.sh.intel.com ([10.239.158.59])
-  by orviesa001.jf.intel.com with ESMTP; 14 Nov 2024 00:03:24 -0800
-From: Zhang Rui <rui.zhang@intel.com>
-To: rafael.j.wysocki@intel.com,
-	len.brown@intel.com
-Cc: linux-pm@vger.kernel.org
-Subject: [PATCH 09/10] tools/power turbostat: Cache graphics sysfs file descriptors during probe
-Date: Thu, 14 Nov 2024 15:59:45 +0800
-Message-ID: <20241114075946.118577-10-rui.zhang@intel.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20241114075946.118577-1-rui.zhang@intel.com>
-References: <20241114075946.118577-1-rui.zhang@intel.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="VQEqZz4w"
+Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-43169902057so3097555e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2024 00:08:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1731571719; x=1732176519; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=t+O9kp15ulmkDsZL6FcyG0SNyoP+OGnZmJFKve5ejek=;
+        b=VQEqZz4wa4ShjonakVafS5dz/QQ3Egq4FbJJxMo4M/yLn0JPG01+uXx4drFElLI4Mw
+         gpLFbj+60CGRjkNxIUAvkt1/uneFKYf8Yb8Y5TsXFTGGl3Wq1AFEggga7ekpfu+GJP93
+         TJonO9pQxfKylQxwaPpd+AIjSOGPyazA5Ptptgj1r/k59BrXf5zH2Y6+FHMbsVQe3Ybf
+         zyVVpYCtvaQrhTYH9BupYGR9xZ7YmxE1JBDYTh8FTeKQ6TpBGce6WGlDlWGho2FrfXaq
+         Fr+3GYVNc2XnW4x+8NPcl+RWTnrCOGMYInkugSCrOQqHye049+ump9+pkgCaa0jxInCO
+         4CVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1731571719; x=1732176519;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=t+O9kp15ulmkDsZL6FcyG0SNyoP+OGnZmJFKve5ejek=;
+        b=S86B//m53WoumzGBZq5uSYLABXCuPgaePSe62kgwHOpvQiL2btv2Ig4jRaGoZEYy7u
+         urglPVHY6Z7Sw47wxYwOFoNsH8aHOTk1vG3x2Nwy6qhP6vYxKh+gvrcuQSZS9AN9lvPw
+         rU5KJXf4r7UF4Mb6INvSJDaDhNYgbjo6aG/uv5n2UFYcP3RqNkhcWO1BBhQnI/6GLtpN
+         N3egfTGv3fXbARsQNEFZkLLyTCTfIWIGt2tfAlpMWtei7iZ0qjXf9+rHmgkXAikC+Dt3
+         nLXsI/UMdsOPhW09uzqbBX5beiC8BuEfoY5p7lmflpPS9prtTRTK3oAV11txUDMBtAam
+         kQFw==
+X-Forwarded-Encrypted: i=1; AJvYcCWJg5p2JYRwuiM/VIY8f3ps+QjH5AlFrFQsHJ4VhL7grBLDS+BGR31DZddm2EmhDrBFzSkvVAaqjA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywr/8ybluF1YUXWBhMkO36Gfkoz7UEYqHE7CnfYeWov/Ze3W7Ay
+	Myt1TNqY/OPIQMmOemAq4nzIJGnbavS8IvNwWMqcQ+uFjxgrFbJFf4vjTvzc3w2yXJZUp2qQaCK
+	q
+X-Google-Smtp-Source: AGHT+IHyd6RzOZzyB9DdcPGem/cYcPNN7x7i0VssOkuKf2eJ37J7FH3H9T6y3I8gzSOnXFeEryo80g==
+X-Received: by 2002:a05:600c:5247:b0:42c:b63e:fe91 with SMTP id 5b1f17b1804b1-432cd474820mr77028005e9.24.1731571718928;
+        Thu, 14 Nov 2024 00:08:38 -0800 (PST)
+Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3821ae161e3sm753266f8f.64.2024.11.14.00.08.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 14 Nov 2024 00:08:38 -0800 (PST)
+Message-ID: <2c70b9c3-e0f0-4551-864d-5d5252fccf99@linaro.org>
+Date: Thu, 14 Nov 2024 09:08:37 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] tools/thermal: Fix common realloc mistake
+To: zhangjiao2 <zhangjiao2@cmss.chinamobile.com>, rafael@kernel.org
+Cc: rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20241108044700.37633-1-zhangjiao2@cmss.chinamobile.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <20241108044700.37633-1-zhangjiao2@cmss.chinamobile.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Snapshots of the graphics sysfs knobs are taken based on file
-descriptors. To optimize this process, open the files and cache the file
-descriptors during the graphics probe phase. As a result, the previously
-cached pathnames become redundant and are removed.
 
-This change aims to streamline the code without altering its functionality.
+Hi Zhang,
 
-No functional change intended.
+thanks for spotting the issue
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 82 +++++++++++----------------
- 1 file changed, 32 insertions(+), 50 deletions(-)
+On 08/11/2024 05:47, zhangjiao2 wrote:
+> From: zhang jiao <zhangjiao2@cmss.chinamobile.com>
+> 
+> Do not set thermometer->tz NULL when realloc failed.
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index aa0dab13d346..52b6ffc41bdf 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -370,7 +370,6 @@ enum gfx_sysfs_idx {
- };
- 
- struct gfx_sysfs_info {
--	const char *path;
- 	FILE *fp;
- 	unsigned int val;
- 	unsigned long long val_ull;
-@@ -5733,10 +5732,7 @@ int snapshot_graphics(int idx)
- {
- 	int retval;
- 
--	if (gfx_info[idx].fp == NULL)
--		gfx_info[idx].fp = fopen_or_die(gfx_info[idx].path, "r");
--	else
--		rewind(gfx_info[idx].fp);
-+	rewind(gfx_info[idx].fp);
- 
- 	switch (idx) {
- 	case GFX_rc6:
-@@ -6441,6 +6437,12 @@ static void probe_intel_uncore_frequency(void)
- 		probe_intel_uncore_frequency_legacy();
- }
- 
-+static void set_graphics_fp(char *path, int idx)
-+{
-+	if (!access(path, R_OK))
-+		gfx_info[idx].fp = fopen_or_die(path, "r");
-+}
-+
- static void probe_graphics(void)
- {
- 	/* Xe graphics sysfs knobs */
-@@ -6448,7 +6450,6 @@ static void probe_graphics(void)
- 		FILE *fp;
- 		char buf[8];
- 		bool gt0_is_gt;
--		int idx;
- 
- 		fp = fopen("/sys/class/drm/card0/device/tile0/gt0/gtidle/name", "r");
- 		if (!fp)
-@@ -6467,28 +6468,17 @@ static void probe_graphics(void)
- 		else
- 			goto next;
- 
--		idx = gt0_is_gt ? GFX_rc6 : SAM_mc6;
--		gfx_info[idx].path = "/sys/class/drm/card0/device/tile0/gt0/gtidle/idle_residency_ms";
-+		set_graphics_fp("/sys/class/drm/card0/device/tile0/gt0/gtidle/idle_residency_ms", gt0_is_gt ? GFX_rc6 : SAM_mc6);
- 
--		idx = gt0_is_gt ? GFX_MHz : SAM_MHz;
--		if (!access("/sys/class/drm/card0/device/tile0/gt0/freq0/cur_freq", R_OK))
--			gfx_info[idx].path = "/sys/class/drm/card0/device/tile0/gt0/freq0/cur_freq";
-+		set_graphics_fp("/sys/class/drm/card0/device/tile0/gt0/freq0/cur_freq", gt0_is_gt ? GFX_MHz : SAM_MHz);
- 
--		idx = gt0_is_gt ? GFX_ACTMHz : SAM_ACTMHz;
--		if (!access("/sys/class/drm/card0/device/tile0/gt0/freq0/act_freq", R_OK))
--			gfx_info[idx].path = "/sys/class/drm/card0/device/tile0/gt0/freq0/act_freq";
-+		set_graphics_fp("/sys/class/drm/card0/device/tile0/gt0/freq0/act_freq", gt0_is_gt ? GFX_ACTMHz : SAM_ACTMHz);
- 
--		idx = gt0_is_gt ? SAM_mc6 : GFX_rc6;
--		if (!access("/sys/class/drm/card0/device/tile0/gt1/gtidle/idle_residency_ms", R_OK))
--			gfx_info[idx].path = "/sys/class/drm/card0/device/tile0/gt1/gtidle/idle_residency_ms";
-+		set_graphics_fp("/sys/class/drm/card0/device/tile0/gt1/gtidle/idle_residency_ms", gt0_is_gt ? SAM_mc6 : GFX_rc6);
- 
--		idx = gt0_is_gt ? SAM_MHz : GFX_MHz;
--		if (!access("/sys/class/drm/card0/device/tile0/gt1/freq0/cur_freq", R_OK))
--			gfx_info[idx].path = "/sys/class/drm/card0/device/tile0/gt1/freq0/cur_freq";
-+		set_graphics_fp("/sys/class/drm/card0/device/tile0/gt1/freq0/cur_freq", gt0_is_gt ? SAM_MHz : GFX_MHz);
- 
--		idx = gt0_is_gt ? SAM_ACTMHz : GFX_ACTMHz;
--		if (!access("/sys/class/drm/card0/device/tile0/gt1/freq0/act_freq", R_OK))
--			gfx_info[idx].path = "/sys/class/drm/card0/device/tile0/gt1/freq0/act_freq";
-+		set_graphics_fp("/sys/class/drm/card0/device/tile0/gt1/freq0/act_freq", gt0_is_gt ? SAM_ACTMHz : GFX_ACTMHz);
- 
- 		goto end;
- 	}
-@@ -6496,52 +6486,44 @@ static void probe_graphics(void)
- next:
- 	/* New i915 graphics sysfs knobs */
- 	if (!access("/sys/class/drm/card0/gt/gt0/rc6_residency_ms", R_OK)) {
--		gfx_info[GFX_rc6].path = "/sys/class/drm/card0/gt/gt0/rc6_residency_ms";
-+		set_graphics_fp("/sys/class/drm/card0/gt/gt0/rc6_residency_ms", GFX_rc6);
- 
--		if (!access("/sys/class/drm/card0/gt/gt0/rps_cur_freq_mhz", R_OK))
--			gfx_info[GFX_MHz].path = "/sys/class/drm/card0/gt/gt0/rps_cur_freq_mhz";
-+		set_graphics_fp("/sys/class/drm/card0/gt/gt0/rps_cur_freq_mhz", GFX_MHz);
- 
--		if (!access("/sys/class/drm/card0/gt/gt0/rps_act_freq_mhz", R_OK))
--			gfx_info[GFX_ACTMHz].path = "/sys/class/drm/card0/gt/gt0/rps_act_freq_mhz";
-+		set_graphics_fp("/sys/class/drm/card0/gt/gt0/rps_act_freq_mhz", GFX_ACTMHz);
- 
--		if (!access("/sys/class/drm/card0/gt/gt1/rc6_residency_ms", R_OK))
--			gfx_info[SAM_mc6].path = "/sys/class/drm/card0/gt/gt1/rc6_residency_ms";
-+		set_graphics_fp("/sys/class/drm/card0/gt/gt1/rc6_residency_ms", SAM_mc6);
- 
--		if (!access("/sys/class/drm/card0/gt/gt1/rps_cur_freq_mhz", R_OK))
--			gfx_info[SAM_MHz].path = "/sys/class/drm/card0/gt/gt1/rps_cur_freq_mhz";
-+		set_graphics_fp("/sys/class/drm/card0/gt/gt1/rps_cur_freq_mhz", SAM_MHz);
- 
--		if (!access("/sys/class/drm/card0/gt/gt1/rps_act_freq_mhz", R_OK))
--			gfx_info[SAM_ACTMHz].path = "/sys/class/drm/card0/gt/gt1/rps_act_freq_mhz";
-+		set_graphics_fp("/sys/class/drm/card0/gt/gt1/rps_act_freq_mhz", SAM_ACTMHz);
- 
- 		goto end;
- 	}
- 
- 	/* Fall back to traditional i915 graphics sysfs knobs */
--	if (!access("/sys/class/drm/card0/power/rc6_residency_ms", R_OK))
--		gfx_info[GFX_rc6].path = "/sys/class/drm/card0/power/rc6_residency_ms";
-+	set_graphics_fp("/sys/class/drm/card0/power/rc6_residency_ms", GFX_rc6);
- 
--	if (!access("/sys/class/drm/card0/gt_cur_freq_mhz", R_OK))
--		gfx_info[GFX_MHz].path = "/sys/class/drm/card0/gt_cur_freq_mhz";
--	else if (!access("/sys/class/graphics/fb0/device/drm/card0/gt_cur_freq_mhz", R_OK))
--		gfx_info[GFX_MHz].path = "/sys/class/graphics/fb0/device/drm/card0/gt_cur_freq_mhz";
-+	set_graphics_fp("/sys/class/drm/card0/gt_cur_freq_mhz", GFX_MHz);
-+	if (!gfx_info[GFX_MHz].fp)
-+		set_graphics_fp("/sys/class/graphics/fb0/device/drm/card0/gt_cur_freq_mhz", GFX_MHz);
- 
--	if (!access("/sys/class/drm/card0/gt_act_freq_mhz", R_OK))
--		gfx_info[GFX_ACTMHz].path = "/sys/class/drm/card0/gt_act_freq_mhz";
--	else if (!access("/sys/class/graphics/fb0/device/drm/card0/gt_act_freq_mhz", R_OK))
--		gfx_info[GFX_ACTMHz].path = "/sys/class/graphics/fb0/device/drm/card0/gt_act_freq_mhz";
-+	set_graphics_fp("/sys/class/drm/card0/gt_act_freq_mhz", GFX_ACTMHz);
-+	if (!gfx_info[GFX_ACTMHz].fp)
-+		set_graphics_fp("/sys/class/graphics/fb0/device/drm/card0/gt_act_freq_mhz", GFX_ACTMHz);
- 
- end:
--	if (gfx_info[GFX_rc6].path)
-+	if (gfx_info[GFX_rc6].fp)
- 		BIC_PRESENT(BIC_GFX_rc6);
--	if (gfx_info[GFX_MHz].path)
-+	if (gfx_info[GFX_MHz].fp)
- 		BIC_PRESENT(BIC_GFXMHz);
--	if (gfx_info[GFX_ACTMHz].path)
-+	if (gfx_info[GFX_ACTMHz].fp)
- 		BIC_PRESENT(BIC_GFXACTMHz);
--	if (gfx_info[SAM_mc6].path)
-+	if (gfx_info[SAM_mc6].fp)
- 		BIC_PRESENT(BIC_SAM_mc6);
--	if (gfx_info[SAM_MHz].path)
-+	if (gfx_info[SAM_MHz].fp)
- 		BIC_PRESENT(BIC_SAMMHz);
--	if (gfx_info[SAM_ACTMHz].path)
-+	if (gfx_info[SAM_ACTMHz].fp)
- 		BIC_PRESENT(BIC_SAMACTMHz);
- }
- 
+You may describe a bit more the change.
+
+eg.
+
+If the 'realloc' fails, the thermal zones pointer is set to NULL. This 
+makes all thermal zones references which were previously successfully 
+initialized to be lost.
+
+> Signed-off-by: zhang jiao <zhangjiao2@cmss.chinamobile.com>
+> ---
+>   tools/thermal/thermometer/thermometer.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/tools/thermal/thermometer/thermometer.c b/tools/thermal/thermometer/thermometer.c
+> index 1a87a0a77f9f..e08291a97fd8 100644
+> --- a/tools/thermal/thermometer/thermometer.c
+> +++ b/tools/thermal/thermometer/thermometer.c
+> @@ -259,6 +259,7 @@ static int thermometer_add_tz(const char *path, const char *name, int polling,
+>   {
+>   	int fd;
+>   	char tz_path[PATH_MAX];
+> +	void *tmp;
+
+Please use right type:
+
+	struct tz *tz;
+
+>   	sprintf(tz_path, CLASS_THERMAL"/%s/temp", path);
+>   
+> @@ -268,12 +269,13 @@ static int thermometer_add_tz(const char *path, const char *name, int polling,
+>   		return -1;
+>   	}
+>   
+> -	thermometer->tz = realloc(thermometer->tz,
+> +	tmp = realloc(thermometer->tz,
+>   				  sizeof(*thermometer->tz) * (thermometer->nr_tz + 1));
+> -	if (!thermometer->tz) {
+> +	if (!tmp) {
+>   		ERROR("Failed to allocate thermometer->tz\n");
+>   		return -1;
+>   	}
+> +	thermometer->tz = tmp;
+>   
+>   	thermometer->tz[thermometer->nr_tz].fd_temp = fd;
+>   	thermometer->tz[thermometer->nr_tz].name = strdup(name);
+
+
 -- 
-2.43.0
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
