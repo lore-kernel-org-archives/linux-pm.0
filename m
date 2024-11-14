@@ -1,58 +1,55 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E29291E8857
-	for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2024 08:03:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88B811F472D
+	for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2024 08:03:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731571409; cv=none; b=dKeJH5FDssuFUVz+g7RF85jQZksfH/rbbq0xEOy2CL0TCscKftz0NFNI43hhJfaL5j74imbJ8eQD+dfBWSO/O7hRXZvIQiNURE7YIX9jrpHmMbbMYkE8jyCpOiy8xoHsEjfpxEUiXu6PsTK20e0TzyiaflZvI+oD+tPPkzxmzgs=
+	t=1731571410; cv=none; b=AoEkvbX8QRmQMCAT/QXInykI2fSy/RLD5e6ASjor7tYYUg3cneL/kuwr4bOdp6ndm4V8c8u2BFyaqwRoE3agc1PimrkXAv3nOYDxYHRZqV6fv4muI3e+KDNpeHuxNeOAk9HtlCn2CA4xg8Pdze4kAF/RjL//H77lINhOTUvHydk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731571409; c=relaxed/simple;
-	bh=IQjSfD8xjGG2y6k7Z3sum460fevHAohcPX5rFtkmUQw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JbRbWb/1OWxImt2xF8QqEE5rMyljKJih+xQ5i/plp2lerJh6Lt1Y7sk1N75JIkh0efERHe1PBYCWDk6Vjzj1Devu48lXFeAb+pjcn5GtP9o53RrgCtUrD9zzVHlXoqadIg5NpMJXxRmy5iEDne+c1L29HxQHrCX0GApHValfToo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=eevRHBWu; arc=none smtp.client-ip=192.198.163.15
+	s=arc-20240116; t=1731571410; c=relaxed/simple;
+	bh=GOCLKdncHdxnmohDO1t6GgVGXQThOeaTrP17w3aGSBo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QnjPvbmqt+PtnKQpJoufSqplr65uqanwHlTJyj2L5zMEBmMdQDsf8QSeYG3AMSgzZ4iOHW6TwquQxAHFxrlO8jbwoSvt79Iu0WAadgC8nfj/ImwsXN4H8A+SiIo6yVX6DNcMPJHAk/4JyWSYzTWGrLgxGrO++ORWCJHcSWGjQg8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=PdYQ8RmZ; arc=none smtp.client-ip=192.198.163.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="eevRHBWu"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="PdYQ8RmZ"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1731571408; x=1763107408;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=IQjSfD8xjGG2y6k7Z3sum460fevHAohcPX5rFtkmUQw=;
-  b=eevRHBWuN/cLiZWvnbTax8mm5L376e+WuVK6Vusw8ID1flDjrlh6/FAU
-   VX6BsLlB1SulCJ2SP7NTHxbgFIvNtwH+A9BVuki8iVxmBn1lf2m6kVnWM
-   Ufg6oUGNTM5QO6YTh5HOZ89CEIZPKgMeExgQjAT9/Ow7bhC4YlsTLfwnE
-   b2IPXUEJPPQ0XMjn1OJE8oyZea2w03W47eFT2uI3ll1JxaJd2Jk7HXU3+
-   DdgNbLDMX3OiXAYa+TV3YW0Wp/U8p/KA3dKpapgabHZhoBJIk6gjsnQR3
-   HdNerembGBxAXIws3JM8cvGmBTz5gW52lp/KUsBX8uy1mq/tR3EbnID6Q
+  t=1731571409; x=1763107409;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=GOCLKdncHdxnmohDO1t6GgVGXQThOeaTrP17w3aGSBo=;
+  b=PdYQ8RmZ+N2/Gsye0J1+RqEHv5GVsWuVs3RHmPJ9M2jiYB0SjCwbnbR9
+   QMAEkQknf1ZBh9GEFCltMAfiIX+TBV6GOAt6MQnFC9rbcKnK26/Ot+Uzm
+   1MMn6Bpauhkv9DTww0Dp1LgbZvsCCTY8vPys9pA0LMD4bi7jIIHVr39rj
+   8uSloZ0x38OzCgNhyAyI4G85GQQ3oGlYX5Y7R1mxHkPVW/KrI9adQjVj9
+   ZJ3HjDzIPRn6gQArReFkl7+aKgF6sRFQLpQi5OENYzugoX9MD2pOUmjtk
+   +BA9YDKs/ckvie9wUVmXkOrhm2CH5yuGJJx7DOUPoWufzuQxsENMUyQ7f
    g==;
-X-CSE-ConnectionGUID: brB03X7/TVy2XZpbNbuvSg==
-X-CSE-MsgGUID: ZVTYpCCETRmgbs9Nu+TnLw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11255"; a="31600437"
+X-CSE-ConnectionGUID: vscJDR9MROG491Pe52s9lg==
+X-CSE-MsgGUID: 0ZuqCCy8RWW5a3ONTBhWUw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11255"; a="31600430"
 X-IronPort-AV: E=Sophos;i="6.12,153,1728975600"; 
-   d="scan'208";a="31600437"
+   d="scan'208";a="31600430"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2024 00:03:19 -0800
-X-CSE-ConnectionGUID: gQ1k/PmrRkSdJmHudPPOfA==
-X-CSE-MsgGUID: FxZ5mvL+SIamuUa/7s/nuA==
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2024 00:03:15 -0800
+X-CSE-ConnectionGUID: u71eb2LwRFiZr44Qrqpz2A==
+X-CSE-MsgGUID: r+CivyTqT8mbWLzymtbN7w==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.12,153,1728975600"; 
-   d="scan'208";a="125627463"
+   d="scan'208";a="125627439"
 Received: from rzhang1-mobl.sh.intel.com ([10.239.158.59])
-  by orviesa001.jf.intel.com with ESMTP; 14 Nov 2024 00:03:18 -0800
+  by orviesa001.jf.intel.com with ESMTP; 14 Nov 2024 00:03:13 -0800
 From: Zhang Rui <rui.zhang@intel.com>
 To: rafael.j.wysocki@intel.com,
 	len.brown@intel.com
 Cc: linux-pm@vger.kernel.org
-Subject: [PATCH 04/10] tools/power turbostat: Remove PC3 support on Lunarlake
-Date: Thu, 14 Nov 2024 15:59:40 +0800
-Message-ID: <20241114075946.118577-5-rui.zhang@intel.com>
+Subject: [PATCH 00/10] tools/power turbostat: Fixes, enabling and enhancements
+Date: Thu, 14 Nov 2024 15:59:36 +0800
+Message-ID: <20241114075946.118577-1-rui.zhang@intel.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20241114075946.118577-1-rui.zhang@intel.com>
-References: <20241114075946.118577-1-rui.zhang@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,28 +58,31 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Lunarlake supports CC1/CC6/CC7/PC2/PC6/PC10.
+The patches in this patch series can be splitted into four parts, I sent
+them in one series for easier tracking and review.
 
-Remove PC3 support on Lunarlake.
+Patch 1/10 - 4/10	: Fix package cstate support for MTL/ARL/LNL.
+Patch 5/10		: Enable turbostat support for GNR-D.
+Patch 6/10		: Introduce a new approach to enhance platform
+			  divergence description.
+Patch 7/10 - 10/10	: Fix graphics support for some platforms that
+			  enumerate GFX device as /sys/class/drm/card1
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Zhang Rui (10):
+  tools/power turbostat: Remove PC7/PC9 support on MTL
+  tools/power turbostat: Add back PC8 support on Arrowlake
+  tools/power turbostat: Rename arl_features to lnl_features
+  tools/power turbostat: Remove PC3 support on Lunarlake
+  tools/power turbostat: Add initial support for GraniteRapids-D
+  tools/power turbostat: Enhance platform divergence description
+  tools/power turbostat: Remove unnecessary fflush() call
+  tools/power turbostat: Consolidate graphics sysfs access
+  tools/power turbostat: Cache graphics sysfs file descriptors during probe
+  tools/power turbostat: Add support for /sys/class/drm/card1
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 3d59718516df..9d76329e108f 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -752,7 +752,7 @@ static const struct platform_features lnl_features = {
- 	.has_nhm_msrs = 1,
- 	.has_config_tdp = 1,
- 	.bclk_freq = BCLK_100MHZ,
--	.supported_cstates = CC1 | CC6 | CC7 | PC2 | PC3 | PC6 | PC10,
-+	.supported_cstates = CC1 | CC6 | CC7 | PC2 | PC6 | PC10,
- 	.cst_limit = CST_LIMIT_HSW,
- 	.has_irtl_msrs = 1,
- 	.has_msr_core_c1_res = 1,
+ tools/power/x86/turbostat/turbostat.c | 189 +++++++++++++-------------
+ 1 file changed, 95 insertions(+), 94 deletions(-)
+
 -- 
 2.43.0
 
