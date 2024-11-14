@@ -1,55 +1,55 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30B9C1E8857
-	for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2024 08:03:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6840C1F6688
+	for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2024 08:03:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731571411; cv=none; b=ROjoAld1o/LAvwzl6cnIoClQ/fAgmHY4L2wXMK2tbizI4F1jIbQR8ev//Wgg8P57lG0Y3jzIE2S6wZNmzgRBVQwW40VJefwSBKCfXQUeNwIkqcm43IUowU3wNVVF9SRUoxSa+zY/wfacJo0JSduD6BH5zTBZSMOnGUrd4cB6ZCM=
+	t=1731571412; cv=none; b=kHVLDpVvd36mGTOz+28C/m21fLHsmIx+naKveHcJ9yjjH35/kBYGf6wE6tcFMCKDKjKig694v3eszrzMVmp6BeRK1nYcZH+VsJtflIgKCD1me03GTzPEw44Ly/BrFra40ZJ3iM8dGwXHw+wLOVzFq6emidVmzIsidv1w4EVIFRY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731571411; c=relaxed/simple;
-	bh=Irfwz6f+CCffVc4a2X3/8hjZ28G+Gyv2lmT80b3w2wY=;
+	s=arc-20240116; t=1731571412; c=relaxed/simple;
+	bh=8KjvoTA9FFiJrrMA6CJizb+VcL+FjT/zZx7w4ZnmG2w=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EPWY0srfhJbDvJmIwe+eP7A9vm2ZD7DvjFTrByfk0PXJJJw1R7zpdVNYu91FgwiAtS02LWprTZ4ADYXmNOIED5bXR9XOiN0stz2FdSHGvt5EFB3K0/dCPwX5HIDgr5aHK5XOf1a87EW/YrLpGAuXeauDRnscaSeRRgs8dWobpkY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Mpr56vOJ; arc=none smtp.client-ip=192.198.163.15
+	 MIME-Version; b=pu6HdD+Q11e7tL8d6hz3+ShhlRZdDEDBJQ1KJvbqc6kELCiTtUDmXLe4A7oj3T2F8IXdwhX6WGsdleUSofP23AuSzKNopXOexFxW5Vz3ADRiqFZyy7gJibYatOX/AlPIs8pXaG5XibOLyx47jiVYgxo2YQce1Ts37EVpUx9RljU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=E6tx49jP; arc=none smtp.client-ip=192.198.163.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Mpr56vOJ"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="E6tx49jP"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1731571410; x=1763107410;
+  t=1731571411; x=1763107411;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=Irfwz6f+CCffVc4a2X3/8hjZ28G+Gyv2lmT80b3w2wY=;
-  b=Mpr56vOJhRIoyY6xXbApaqmLYrMuKC7kDZT6NLD3Bki8Rv4jDJwrpITU
-   ljAJKr37oO3IyXxl957wJlf9znISHHvNRWmLwHjXws9C+7h5nKzCmRRyD
-   rSg7w/U8kjz31gsGc9DTryID4kZYE+LuQBlMKtT1IIbAr6dGjMp7uxg82
-   Shkfts9CQcMeOlJuV8lm1hZsVbvKy06RPy5xpr9T/JjC9VwwL0UR04MiC
-   nlOxp+TjgtHbBYpM2a8ylDVEWOndjeQhwqyK/J+I+e65q4emOnUfbHc5Y
-   3VuJvz3BGW1DpTBS4R6g0KlunEr4wbkcy0pRlhqw3c3OqNG7XdV+J9mtH
-   Q==;
-X-CSE-ConnectionGUID: TUU9aEM1QhKiZke7PjdqwQ==
-X-CSE-MsgGUID: mCOnnN/+QH2vHqzdF1bxlg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11255"; a="31600433"
+  bh=8KjvoTA9FFiJrrMA6CJizb+VcL+FjT/zZx7w4ZnmG2w=;
+  b=E6tx49jPLyZ7DVW6k1sDUnxRbN9m1CE90KO+qNn8i65Gt1hZFNQAXEG+
+   gVfnoS5ospQB23fWVdEjb7Ves9lQc9A9++idhXJcTwc2GTc5lQdBLQBJv
+   QpHuOiLTxD7Kx1U73wzwJeF1RrxdC8s0+Zzfv56+glSAnnsfpGof2r4o3
+   zyZH5vk7R6rpiTeBz//1vgWEwWPwzCEBRkoZYhLwjrSLbr9zwEI8N/br6
+   Q1LJFG5OZ1MWmIjfgQET0izB4GW2mndYZfFv+kInw1aw9nOqKouf0Fk5u
+   HOA/u+vtGGN6p1dnOcFtMjuOLgwHxCSL2RR6vrFQPIobfYvSR9Puh6P0g
+   A==;
+X-CSE-ConnectionGUID: t/3r41zlSqakePUgcp40AA==
+X-CSE-MsgGUID: V8BbbejBSCi+t3IXtSaMTg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11255"; a="31600444"
 X-IronPort-AV: E=Sophos;i="6.12,153,1728975600"; 
-   d="scan'208";a="31600433"
+   d="scan'208";a="31600444"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2024 00:03:16 -0800
-X-CSE-ConnectionGUID: 7/gel0/GT5GC+XtbEcU/2w==
-X-CSE-MsgGUID: k9A9jbp/R82MAmgSJf+4Ag==
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2024 00:03:23 -0800
+X-CSE-ConnectionGUID: HViRJhZJTPSXhJfgjk/dbg==
+X-CSE-MsgGUID: 9SsIddKeSsCktipUdGqWEg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.12,153,1728975600"; 
-   d="scan'208";a="125627444"
+   d="scan'208";a="125627480"
 Received: from rzhang1-mobl.sh.intel.com ([10.239.158.59])
-  by orviesa001.jf.intel.com with ESMTP; 14 Nov 2024 00:03:14 -0800
+  by orviesa001.jf.intel.com with ESMTP; 14 Nov 2024 00:03:22 -0800
 From: Zhang Rui <rui.zhang@intel.com>
 To: rafael.j.wysocki@intel.com,
 	len.brown@intel.com
 Cc: linux-pm@vger.kernel.org
-Subject: [PATCH 01/10] tools/power turbostat: Remove PC7/PC9 support on MTL
-Date: Thu, 14 Nov 2024 15:59:37 +0800
-Message-ID: <20241114075946.118577-2-rui.zhang@intel.com>
+Subject: [PATCH 07/10] tools/power turbostat: Remove unnecessary fflush() call
+Date: Thu, 14 Nov 2024 15:59:43 +0800
+Message-ID: <20241114075946.118577-8-rui.zhang@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20241114075946.118577-1-rui.zhang@intel.com>
 References: <20241114075946.118577-1-rui.zhang@intel.com>
@@ -61,30 +61,36 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Similar to ADL/RPL, MTL support CC1/CC6/CC7/PC2/PC3/PC6/PC8/CP10.
+The graphics sysfs knobs are read-only, making the use of fflush()
+before reading them redundant.
 
-Remove PC7/PC9 support on MTL.
+Remove the unnecessary fflush() call.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 089220aaa5c9..bf1b5fe1f00d 100644
+index 8a45b1c4c225..4956f4b837d1 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1003,8 +1003,8 @@ static const struct platform_data turbostat_pdata[] = {
- 	{ INTEL_RAPTORLAKE, &adl_features },
- 	{ INTEL_RAPTORLAKE_P, &adl_features },
- 	{ INTEL_RAPTORLAKE_S, &adl_features },
--	{ INTEL_METEORLAKE, &cnl_features },
--	{ INTEL_METEORLAKE_L, &cnl_features },
-+	{ INTEL_METEORLAKE, &adl_features },
-+	{ INTEL_METEORLAKE_L, &adl_features },
- 	{ INTEL_ARROWLAKE_H, &arl_features },
- 	{ INTEL_ARROWLAKE_U, &arl_features },
- 	{ INTEL_ARROWLAKE, &arl_features },
+@@ -5747,12 +5747,11 @@ int snapshot_graphics(int idx)
+ 	case GFX_ACTMHz:
+ 	case SAM_MHz:
+ 	case SAM_ACTMHz:
+-		if (gfx_info[idx].fp == NULL) {
++		if (gfx_info[idx].fp == NULL)
+ 			gfx_info[idx].fp = fopen_or_die(gfx_info[idx].path, "r");
+-		} else {
++		else
+ 			rewind(gfx_info[idx].fp);
+-			fflush(gfx_info[idx].fp);
+-		}
++
+ 		retval = fscanf(gfx_info[idx].fp, "%d", &gfx_info[idx].val);
+ 		if (retval != 1)
+ 			err(1, "MHz");
 -- 
 2.43.0
 
