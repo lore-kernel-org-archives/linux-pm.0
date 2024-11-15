@@ -1,78 +1,100 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA36812F585;
-	Fri, 15 Nov 2024 21:01:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7397318D63C;
+	Fri, 15 Nov 2024 21:44:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731704477; cv=none; b=urnCNRoCWMmAIgIV6hvAsM9as3X2JQ1Co5ZOVcaksb957Ieb7rXupQQFqaL5iv+3h36PAzdZOo/7gsvyvzxFzZV3jgmc8Czj/SECy3AIDBbzs975RhVff8WWAeBxhfyv3+6Vjn6++uUZ2Vg4U+boX3BQ047hGDx2AexGnhX8AO0=
+	t=1731707074; cv=none; b=muQugGTM+5cQXI206N8EGaXPt47GjFBNpYKjkGIWOX5/WpBVr0wGO0sJ6c6/A4x7Bq35deZTu7zRKrfaHIaUQmWBTGUqXjuYw9Takt/GsZG2U/cn1otcSjWot7PtLx8FhHPDDSg66hsPjtlRCwIxj317yqcaJfHCUtIKlV7bFts=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731704477; c=relaxed/simple;
-	bh=rsn+RwiG0Uq2EfiVehR0Bd4Q9j5Z+jOh9GWo9JKzu9w=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=p/YDcTrY4jaZ6inAsDWxFeCHkbnht2nP/VBNJU7mV3MkCAeNpk+FUMe4oKxyBsTZPsyY5caDg4nhcFyFHklFay+j2AdfaYRpo2rM1/lTgO/kY12ezil+kWhII1PhIGJdzw9nLdE49QfsMdVjMwLnB3Ag/55fobIzyGhDUefxB1c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=fail (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=RC+iVSn9 reason="signature verification failed"; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1731707074; c=relaxed/simple;
+	bh=7Gb7nd6YvJFNfQB+VrKVs9OlmLpsiuz+BohmKw3jZSM=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=F0XSPWMmuKrXMcMGG07wuOWuZQwjHwRLF1B64VuCcvj1KZBAZ0nTjBtbpBErsl+bbYic6flp5Kq6CqaesBuF+e8DpZecS3N/XwhL+6cAWOqZNZlS+6cPL8O61aGIkv+7+FJRsHk8U1qiGAkPTmIhQ3/0YnOEpScVRoQpk+vDK/M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kvwUwvJ7; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="RC+iVSn9"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id fb68522096ef80c5; Fri, 15 Nov 2024 22:01:06 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id A77EB851B10;
-	Fri, 15 Nov 2024 22:01:06 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1731704466;
-	bh=rsn+RwiG0Uq2EfiVehR0Bd4Q9j5Z+jOh9GWo9JKzu9w=;
-	h=From:Subject:Date;
-	b=RC+iVSn9FP6QblHtHIh0ohYq30KmyFXkknXYdM7ru2rZTMecRI7YA574xcdhp38BW
-	 XXMpm4RvxLCwlSCxnUpVAJqzWoysngdKvSJ0OQAp7Rxow9+xaZ+Ae52wNUKMdfJ6DC
-	 apWvPZIoSJeVqI1i8AfCxxHwtYVBzOKNw/6TdCIWeXMzbBuFjkBjX+zVcvI+S/NFYT
-	 sfjZpn4vz2i9LhNTu0fxuYZOe9d8bLg/o/fu2kBH8LIv2jtyRyfPhihP22dHKPLrDH
-	 e7LSYL1kMu6z0gNrGZ3MroI8aUa9nkjV9dkOQuWXUS+yDj/xh2R5NKgeqIiIY1C+dK
-	 LRWuP1FM/eJ9w==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86 Maintainers <x86@kernel.org>,
- Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>,
- "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- Mario Limonciello <mario.limonciello@amd.com>,
- Linux ACPI <linux-acpi@vger.kernel.org>
-Subject:
- [PATCH v2 0/2] cpuidle: Do not return from cpuidle_play_dead() on callback
- failures
-Date: Fri, 15 Nov 2024 21:57:41 +0100
-Message-ID: <13636465.uLZWGnKmhe@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kvwUwvJ7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB59AC4CECF;
+	Fri, 15 Nov 2024 21:44:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731707074;
+	bh=7Gb7nd6YvJFNfQB+VrKVs9OlmLpsiuz+BohmKw3jZSM=;
+	h=From:To:Cc:Subject:Date:From;
+	b=kvwUwvJ7FuiIP+hSH+SqJKpzTSa18sj2nnwAIRGFzM6mZ4+zDDt1YUo99VV1PLMQ0
+	 gRnp/x+/jlofQ8V0YkqzVCAF5O8oWhrwjArD+OyV17c6NFUFz/zO7ztZeAlp28caOY
+	 b0L5KNx3tCdq9zcjQZFC4b3kDqSFPmIi8epaatKCz4hAhwSWK8vGSJ95gALoQWkwuH
+	 ekBIaawZlDmDvRw0eNFwQnmbBp+K/2CYbIEsvDV87QCmF6vNRSkbqhDq8wOe56nmdi
+	 r4GsQr0Kg1j8vekruKdt8iZROIiyHIBo5uKvokCnac5A2kF3lk9CFeUMwG6GdPVEms
+	 7kvWlbb7koEVw==
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: linux-pci@vger.kernel.org
+Cc: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+	"Maciej W . Rozycki" <macro@orcam.me.uk>,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Lukas Wunner <lukas@wunner.de>,
+	Alexandru Gagniuc <mr.nuke.me@gmail.com>,
+	Krishna chaitanya chundru <quic_krichai@quicinc.com>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Amit Kucheria <amitk@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+	Amit Pundir <amit.pundir@linaro.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Caleb Connolly <caleb.connolly@linaro.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH 0/2] PCI/pwrctrl: Rename pwrctl to pwrctrl
+Date: Fri, 15 Nov 2024 15:44:26 -0600
+Message-Id: <20241115214428.2061153-1-helgaas@kernel.org>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefuddrvdeggddugeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeelpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepgiekieeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepphgrthhrhihkrdiflhgriihlhihnsehlihh
-X-DCC--Metrics: v370.home.net.pl 0; Body=9 Fuz1=9 Fuz2=9
+Content-Transfer-Encoding: 8bit
 
-Hi Everyone,
+From: Bjorn Helgaas <bhelgaas@google.com>
 
-This series of 2 patches supersedes
+I'm sorry to propose this, but it seems like ongoing confusion to have
+"pwrctl" and "bwctrl" (different ctl/ctrl suffixes).
 
-https://lore.kernel.org/linux-pm/4992010.31r3eYUQgx@rjwysocki.net/
-
-in order to address review feedback.
-
-Patch [1/2] modifies cpuidle_play_dead() as per the subject and patch [2/2]
-changes the :enter_dead() cpuidle state callback return type to void.
-
-Thanks!
+pwrctl was merged for v6.11, so I would propose changing bwctrl to match it
+except that we already have several "ctrl" files in PCI hotplug drivers,
+and in the wider kernel, the "ctrl" filename suffix outnumbers "ctl" by
+about two to one.
 
 
+Bjorn Helgaas (2):
+  PCI/pwrctrl: Rename pwrctl files to pwrctrl
+  PCI/pwrctrl: Rename pwrctrl functions and structures
+
+ MAINTAINERS                                   |  4 +-
+ drivers/pci/Kconfig                           |  2 +-
+ drivers/pci/Makefile                          |  2 +-
+ drivers/pci/pwrctl/Makefile                   |  6 --
+ drivers/pci/{pwrctl => pwrctrl}/Kconfig       |  0
+ drivers/pci/pwrctrl/Makefile                  |  6 ++
+ drivers/pci/{pwrctl => pwrctrl}/core.c        | 88 +++++++++----------
+ .../pci-pwrctrl-pwrseq.c}                     | 34 +++----
+ drivers/pci/remove.c                          |  4 +-
+ include/linux/{pci-pwrctl.h => pci-pwrctrl.h} | 22 ++---
+ 10 files changed, 84 insertions(+), 84 deletions(-)
+ delete mode 100644 drivers/pci/pwrctl/Makefile
+ rename drivers/pci/{pwrctl => pwrctrl}/Kconfig (100%)
+ create mode 100644 drivers/pci/pwrctrl/Makefile
+ rename drivers/pci/{pwrctl => pwrctrl}/core.c (50%)
+ rename drivers/pci/{pwrctl/pci-pwrctl-pwrseq.c => pwrctrl/pci-pwrctrl-pwrseq.c} (64%)
+ rename include/linux/{pci-pwrctl.h => pci-pwrctrl.h} (69%)
+
+-- 
+2.34.1
 
