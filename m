@@ -1,83 +1,130 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f173.google.com (mail-lj1-f173.google.com [209.85.208.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B2AF1D54E1;
-	Fri, 15 Nov 2024 16:40:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A9711D5145
+	for <linux-pm@vger.kernel.org>; Fri, 15 Nov 2024 16:44:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731688839; cv=none; b=d0xFr7X/bQZHuMUTi9Fd/p15PEBi6V3DEQO66moBh45tV/pwDdeZogqsYFC1KOjrrYFsXa+iuFHrW2wtwdWl5TJFUYNMe8DkbRWllQ2mKVgbEbdO/Yn/rNWo4ru3iPuLjbFfXYIzVY8Nfmc3ddf8gjdF8dhKMHpyBme5zlMYt0Y=
+	t=1731689081; cv=none; b=DpDByoYdNq+SUjx0zY19U0pkKANekSlt97xKMomrenuUCaaHyBKrhu8/KpfNUlmkE4vD3CQgyC0v7yztUtQ/lGv3QVlJiITwWX72l7G6AcyJ2BAh/auPzSnUaCWdEtfjkNiupL0hfYxMrW87io6t3sZjHJMe4+A7fLHyqAHHxBg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731688839; c=relaxed/simple;
-	bh=XJgwbJmJy1dij2tvJOcwOOlxmwxz8tQU72/Pm0EegoA=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=uvyqeW7vmbfqQ3y5InrKEsZDBmDMKurC/qTwevOqAq0lQAMT1Mhq8Bj8QxdrlMAQ9SvSivy9ZXTqtfZ4CGULohVm/YW7UpCafX2Lx3MmZJLG5PDTmch4oC0KPR32BZCC61PPxbzesII+lPQKxGyLeC66XSUUvAOudz7Q2u25iZc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=rk3hDSHL; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	s=arc-20240116; t=1731689081; c=relaxed/simple;
+	bh=w1FTAecBOFTmyqoMAH2DfbSi1/WWutIqszTuyzR8ob0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nFdfLQ7od2W/oDpL7Q46ihg46K18X8wPFL7bCi6UpN6d8FhRuNxi0s0b9blkBgwRC6EoaYLqDdunepkYQ8ORglGG6tHd3vu8tFbbq8yqv4OiJkybc3xoNgA8i+Xuz4mCE9vvcpsVHQpBXJcQLzqSdyZhmkpnKS11IDOF6nM3Kv0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hagLj4hw; arc=none smtp.client-ip=209.85.208.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="rk3hDSHL"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1731688833;
-	bh=XJgwbJmJy1dij2tvJOcwOOlxmwxz8tQU72/Pm0EegoA=;
-	h=From:Subject:Date:To:Cc:From;
-	b=rk3hDSHLR+Ep6ydphocv3aeZ30Fd16rSlDBYSX1ELszo2drVLuEYA6OxnqkS20sKs
-	 1z0MJJM0xNQ00cx9ktjL8zwXMis6e/oVbSZW3PwXlQMZYqJxaJs7J7jGFY0C+xxD+4
-	 L47Uz+98nYD27W4PzbDAw3fwz1iiB3xnyyT82kvA=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Subject: [PATCH v2 0/2] hwmon: (core) Avoid ifdef CONFIG_THERMAL in C
- source file
-Date: Fri, 15 Nov 2024 17:40:20 +0100
-Message-Id: <20241115-hwmon-thermal-v2-0-c96f0c0984b2@weissschuh.net>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hagLj4hw"
+Received: by mail-lj1-f173.google.com with SMTP id 38308e7fff4ca-2fb559b0b00so17591851fa.0
+        for <linux-pm@vger.kernel.org>; Fri, 15 Nov 2024 08:44:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1731689078; x=1732293878; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=tvSbr212wnBXWgkPqBMZFxm+xf5y5TiTLHopInfDcas=;
+        b=hagLj4hwjBJ6cOEPXcyzU57D7AXQkt4DTrdYQQn7J7uLCTgQWPCebeRWZ7eAdOuk1V
+         YqmBCj7e72NzazEGrmhIulvdZjuqZmCE9MUNv4knJp/1r3/gyu7EW2OWg9Fs9Q15DvAB
+         WLqYBLJgt2C1LsR5+pkkbEM4SbKREWKbXyhvjuUoYn4KycSQj9izrseEHoy1OWlZdwO8
+         sNCj4qsxz2QfIUBJMJCoydyo/ZHd3cllhElRTpdx+Z3e4sSpY3OAN0KBKCCFYexo2kpn
+         siQj6wGdeuXq5YPih8ctDScLwZz1HMt9FFF/te0pjPj5gIceh7/51a4LnYZN764pPLnF
+         dfyw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1731689078; x=1732293878;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=tvSbr212wnBXWgkPqBMZFxm+xf5y5TiTLHopInfDcas=;
+        b=uvRmtELy1QTWNpzlqP7NO5hoI8YoPO+EE1wsMyCWb5hmrYOgSalqwbw0enj1A1OI65
+         754JacDOH5qqN0+JVYKPbD74YDWV8LkXiNlYPB/IeAYq8XPb3v3jLjAFjtw+SpsQar0J
+         FA1gHmztAzf+iAT8K5sOWouTqD3aiBBuxZTMZvpmcqXNLyMBJbIrDOriqNmuzasG/Ey1
+         XA0iElnjR3aRaiQ1/TRXgbBeyON6QtmGDKqaYP/3Y77N0C1ZruOBAzGYg2XqYiIqpfYx
+         A/btG4Tr+A/zJRFuH96U54W821XKPSmapOiDupRKTTHBuT7hrgPTQqJT6H5G0Pb4pQVr
+         XZKg==
+X-Forwarded-Encrypted: i=1; AJvYcCU7q/gf8sGTSU/VX+FHLZUtTCJjDAWxa0BrD9myF1RQBTp/slMKUPaci8jjrJdiP9aBtj7t+PLY/w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw6CmfMMXoicwU0P0TKQTdZguOeUKQGCqaCepiHTjSa0nIulGHO
+	NbPk4tPgf9qzQfc9PtQgAIY/Fjvsjn+SYCCbtV1/GTzZ1M+B23Ro/Tdbiothwdk=
+X-Google-Smtp-Source: AGHT+IFgzXgQ4IjxGhewB1vh2xQBTf7ORjLEOV0LXbis36gnE75+Wti65ULJO+Xnk5bUahD0MBiHug==
+X-Received: by 2002:a2e:b8cf:0:b0:2fb:34dc:7beb with SMTP id 38308e7fff4ca-2ff6067407bmr19160471fa.12.1731689078308;
+        Fri, 15 Nov 2024 08:44:38 -0800 (PST)
+Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--7a1.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::7a1])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-2ff5988f321sm6038021fa.95.2024.11.15.08.44.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 15 Nov 2024 08:44:37 -0800 (PST)
+Date: Fri, 15 Nov 2024 18:44:34 +0200
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To: Jishnu Prakash <quic_jprakash@quicinc.com>
+Cc: jic23@kernel.org, robh+dt@kernel.org, 
+	krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org, agross@kernel.org, andersson@kernel.org, 
+	konrad.dybcio@linaro.org, daniel.lezcano@linaro.org, sboyd@kernel.org, 
+	quic_subbaram@quicinc.com, quic_collinsd@quicinc.com, quic_amelende@quicinc.com, 
+	quic_kamalw@quicinc.com, amitk@kernel.org, lee@kernel.org, rafael@kernel.org, 
+	rui.zhang@intel.com, lukasz.luba@arm.com, lars@metafoo.de, quic_skakitap@quicinc.com, 
+	neil.armstrong@linaro.org, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	cros-qcom-dts-watchers@chromium.org
+Subject: Re: [PATCH V4 2/4] dt-bindings: iio: adc: Add support for QCOM PMIC5
+ Gen3 ADC
+Message-ID: <i7opxhkgukcshdcc7j6ai6jt62egag3jgfiqsghakjhgt2ikg6@eap7l64amcci>
+References: <20241030185854.4015348-1-quic_jprakash@quicinc.com>
+ <20241030185854.4015348-3-quic_jprakash@quicinc.com>
+ <ag3wqsjdec7ujcba2jpvhzgcbbc5vnyjyes5ljyyf5b4edw7j3@rj23a25wvoyd>
+ <ee8f0b70-77a2-4a5e-85c8-715fd02d4437@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAHR5N2cC/3XMyw6CMBCF4Vchs7aGGS81rnwPw6LSwU4ixXSwa
- AjvbmXv8j/J+WZQTsIK52qGxFlUhliCNhW0wcU7G/GlgWraI+LOhKkfohkDp949DHny7nDCluw
- RyueZuJP36l2b0kF0HNJn5TP+1n9SRoPGItn6xrazji4Ti6q24RW2kUdolmX5AoHun+ivAAAA
-X-Change-ID: 20241113-hwmon-thermal-2d2da581c276
-To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1731688832; l=849;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=XJgwbJmJy1dij2tvJOcwOOlxmwxz8tQU72/Pm0EegoA=;
- b=jDhwvYH1RRBZYDcKyKhsKmJMFFTEW6KNBzi9NHeRqwg+sXj7dZEKy1K3u1yqSmbEN5cJOXOLx
- VPqxI1c6CcMDWFDjeS0B63gxickl07yDfaeXB86iKJIB6HcB0+tWYjI
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ee8f0b70-77a2-4a5e-85c8-715fd02d4437@quicinc.com>
 
-Replace some confusing ifdeffery with IS_ENABLED() conditionals.
-The ifdefs confused me while looking at the implementation of
-HWMON_C_REGISTER_TZ.
+On Wed, Nov 13, 2024 at 07:36:13PM +0530, Jishnu Prakash wrote:
+> Hi Dmitry,
+> 
+> On 10/31/2024 11:27 PM, Dmitry Baryshkov wrote:
+> > On Thu, Oct 31, 2024 at 12:28:52AM +0530, Jishnu Prakash wrote:
+> >> For the PMIC5-Gen3 type PMICs, ADC peripheral is present in HW for the
+> >> following PMICs: PMK8550, PM8550, PM8550B and PM8550VX PMICs.
+> >>
+> >> It is similar to PMIC5-Gen2, with SW communication to ADCs on all PMICs
+> >> going through PBS(Programmable Boot Sequence) firmware through a single
+> >> register interface. This interface is implemented on an SDAM (Shared
+> >> Direct Access Memory) peripheral on the master PMIC PMK8550 rather
+> >> than a dedicated ADC peripheral.
+> >>
+> >> Add documentation for PMIC5 Gen3 ADC and macro definitions for ADC
+> >> channels and virtual channels (combination of ADC channel number and
+> >> PMIC SID number) per PMIC, to be used by clients of this device.
+> >>
+> >> Co-developed-by: Anjelique Melendez <quic_amelende@quicinc.com>
+> >> Signed-off-by: Anjelique Melendez <quic_amelende@quicinc.com>
+> >> Signed-off-by: Jishnu Prakash <quic_jprakash@quicinc.com>
+> >> ---
+> >> Changes since v3:
+> >> - Added ADC5 Gen3 documentation changes in existing qcom,spmi-vadc.yaml file
+> >>   instead of adding separate file and updated top-level constraints in documentation
+> >>   file based on discussion with reviewers.
+> > 
+> > I think it has been better, when it was a separate file. Krzysztof asked
+> > for rationale, not for merging it back. Two different things.
+> 
+> Actually I made that change in a separate file due to a misunderstanding at that time - 
+> I thought a separate file was the only way to accommodate a change in the top-level 'reg' and 'interrupts'
+> constraints, but I realized later that they could be updated.
+> 
+> From our side, we would prefer to add ADC5 Gen3 documentation in the same file, as it is
+> mostly the same functionality which reuses all the existing properties present in this file.
 
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
-Changes in v2:
-- Add stub for thermal_zone_device_update()
-- Link to v1: https://lore.kernel.org/r/20241113-hwmon-thermal-v1-1-71270be7f7a2@weissschuh.net
+Export the existing properties and reuse them in the new file. Gen3 (in
+my opinion) changed the hardware too much. Having all the differences
+via conditionals bloats the schema and makes it significantly unreadable
+in my opinion.
 
----
-Thomas Weißschuh (2):
-      thermal: core: Add stub for thermal_zone_device_update()
-      hwmon: (core) Avoid ifdef CONFIG_THERMAL in C source file
+But please refer to DT maintainers (Rob/Krzysztof/Conor) for the final
+opinion.
 
- drivers/hwmon/hwmon.c   | 21 ++++++---------------
- include/linux/thermal.h |  4 ++++
- 2 files changed, 10 insertions(+), 15 deletions(-)
----
-base-commit: cfaaa7d010d1fc58f9717fcc8591201e741d2d49
-change-id: 20241113-hwmon-thermal-2d2da581c276
-
-Best regards,
 -- 
-Thomas Weißschuh <linux@weissschuh.net>
-
+With best wishes
+Dmitry
