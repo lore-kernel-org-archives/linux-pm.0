@@ -1,66 +1,57 @@
-Received: from mail-lj1-f182.google.com (mail-lj1-f182.google.com [209.85.208.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A6DF38DD8
-	for <linux-pm@vger.kernel.org>; Fri, 15 Nov 2024 10:40:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42B591B3942;
+	Fri, 15 Nov 2024 10:40:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731667240; cv=none; b=EEPRFfzHK/6CjjXIwoOxuo4tkAJZtYSgmrl9DvJoGkme/B2AWyUE9kLxO4psJ59h2JrFBsCUrf9s64UR8aa0hwMlgQ7K8Dr8PHDIQYi1vLI6RwVbMlpvMbDJEWaCasCGu5w46otBtimd3bP4ezMoCCBAzl3z6xg9w1ThKepYXKI=
+	t=1731667249; cv=none; b=S/zOiGOUk5alnxPOZa3hdx+BRWNlGkPB8kELy+U+rz90ggFND39biywowAYmWpYkknuJwG7srDf6j3fV5b8h0J/9tHjRo5OfCDFa2VK06Z201+4cs7/6wiyYs0L9Kmm+JeYUIaAz9KNa8zVGklLBMlG0gPTUVWNPHA8aSHzA5lY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731667240; c=relaxed/simple;
-	bh=ilGIpaaX54RTYzqtFywkuJv9jhWNTIMieNFKaKBDOHw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DgmF4ZPsTmGtTENw5TYVQvAta2Q0sjy3hi/nvr/trcdFSV3Rgx+9I8dvRH3WVEbHBqvQQSWvdWB8RLBq0MC0Upgx9OlWZxRthu7/2yWcP/kzSQPuNlIAfX3Qum3B1zCdcq+6kCT2W9PIV8t2DsmuBfGVrQgm6xrR5N+3u4hZdtU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=kGQzV+hM; arc=none smtp.client-ip=209.85.208.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1731667249; c=relaxed/simple;
+	bh=sdSKaH9VU78ClbKLHSeWsMUrS5nh/IeGXJdKOndwyfU=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=dGqWRfSvxICkoDExjzht+K+hHQOHV7LZzf53vw0ntSBTsjDHcFw87q6E/HP/yFDhEmW/wjGeE+jkqDt4840cha/GbLcf+M+06G33/4WlcITeVqxIl2H0K8dQ5euqsurQt/BHahsEFcq5vVC1YdVO59NgCwKIwqwK8QPptJgbnhw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=Qr2UBent; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kGQzV+hM"
-Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-2fb5111747cso5508481fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 15 Nov 2024 02:40:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1731667237; x=1732272037; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=+Z6LvJ/sPB+Dl1kFLmZv/mrYyYjioWG5VXi0FQmBtqQ=;
-        b=kGQzV+hM7h+DcWptLj5py2CSLh2d4JokTi2eou7qvm+pq5A5tJbBzKzJzGgFeaeMmi
-         bbhH2cUTCS/yqArL+Kkurrrw+ddcawsufneyJjoSIJvYJPgtAxwjeXUmBYi+Bem3b93L
-         B1i6ltMpMjTdeFcmpLa+bFLmVoCJpbCGi2XUbeV3taWYDE1SKsLTpJALjm0jHFgsQv5t
-         FH/KRRR/LfRfgJEld1p99b9ASmceO+FsKov8wRdqQkHBZcklMD3RRm7/fgycicovrQSu
-         RdVhCVzcZQyp0jrFziUDaqV5lyD1CRMiyCr+m4UqsXf3QLqnvA6y4NTOgQVYdNhwNAgF
-         iTEQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731667237; x=1732272037;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=+Z6LvJ/sPB+Dl1kFLmZv/mrYyYjioWG5VXi0FQmBtqQ=;
-        b=Stj4sSQj5GAJNWzMZpc+KoyxznDzx+/bYOfj7JWAUvPoTYhZ9e6Niz3w7QX61oAbsS
-         azKzjLRS2Ukg2T1/ZG6BPNTcoV0OIuJvHkEJiEV3eqaUzEQsU4IvvsRplTHH66Jgi6v0
-         l0BEcSiPOrUzLhxrJyzg5B/AbXJaLQsWmzOWByPk2BuZFB5yLY3NUDhGLRQb9QYv4Dps
-         5EC6swvqrweebsA9e3Aa0EVr32KqdslP5TnIa0GlgSihgRy3zH9BrpdL/NKlr8TNYTgc
-         sRmsXh1MsBnNRDypojDs73HhOKHCvq//Drn9KgOmceHyKylZn2z2jPt9/8S2x5DOkxap
-         prYQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUSfEFRJysRGLsE/KDTPfI8Uk6mMPbzWd4FdpNqxxFg2shTLDNJf90hFnaMS75bZkR4buQtfJ5LPA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyRuq/ZKmIokXFwunEpnJJW2FPHGDAYFgzp9mfsC0AVb7YgEb49
-	R8J7iBGFu9vx5gQwowYecsORRtNCd6pC5qk6mC6Tf3hrjaATuTobZNiiXFSTL7I=
-X-Google-Smtp-Source: AGHT+IHochvip3ndT36pY7JzUJ9o2k/DM6zBRNTgAKVEogfP3W6wLBEgo4qo8JTEtM7I1Em76KrM6g==
-X-Received: by 2002:a2e:a99c:0:b0:2fc:97a8:48f9 with SMTP id 38308e7fff4ca-2ff606900f0mr14332601fa.19.1731667236678;
-        Fri, 15 Nov 2024 02:40:36 -0800 (PST)
-Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-2ff597a067dsm5179361fa.65.2024.11.15.02.40.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 Nov 2024 02:40:35 -0800 (PST)
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Linus <torvalds@linux-foundation.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	linux-arm-kernel@lists.infradead.org
-Subject: [GIT PULL] pmdomain/arm_scmi fixes for v6.12-rc8
-Date: Fri, 15 Nov 2024 11:40:29 +0100
-Message-ID: <20241115104029.119226-1-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="Qr2UBent"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4AF8cdVv019874;
+	Fri, 15 Nov 2024 10:40:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=AWpE3/gjBEOlCTYc+Cu54q
+	ThrlhZRvxVay6e057n+rA=; b=Qr2UBentEf3u5Y0DuS+TUQ8PWYNjEnHebbI3Nf
+	bL+W6qVOtcwMHSGpZNOSiVX3hchzcaU4lZaV2xs/XsLG3pUnn52wj0+mz0HQ9cMJ
+	no+iLi0EA796kDLAOhNOgoJ2tvI12kenwbBcMZKBj7lq3Ei6iHSsKbEXlfqFUQ3q
+	gH0ErbePL29yt+F0pZV7qQeW+R0KPYTfL6QiTTYCvuASnIGUt0O4aGoTlChQpQ0+
+	9yRUMLHyc4lX7SxaCZDZhw3yrmfhpvgfABEMCrOBRwUnS9SLp7SnbhorizoeaKDq
+	9m1HZGcA8qPkpLr37IJOnb08Xk54JSXoFc2zHjvjNuTiV37w==
+Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 42v4kr3qgq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 15 Nov 2024 10:40:40 +0000 (GMT)
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+	by NALASPPMTA01.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 4AFAed3g014812
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 15 Nov 2024 10:40:39 GMT
+Received: from hu-mmanikan-blr.qualcomm.com (10.80.80.8) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Fri, 15 Nov 2024 02:40:33 -0800
+From: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
+To: <srinivas.kandagatla@linaro.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
+        <conor+dt@kernel.org>, <amitk@kernel.org>, <thara.gopinath@gmail.com>,
+        <rafael@kernel.org>, <daniel.lezcano@linaro.org>,
+        <rui.zhang@intel.com>, <lukasz.luba@arm.com>, <andersson@kernel.org>,
+        <konradybcio@kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>
+CC: <quic_srichara@quicinc.com>, <quic_varada@quicinc.com>
+Subject: [PATCH v8 0/7] Add TSENS support for IPQ5332, IPQ5424
+Date: Fri, 15 Nov 2024 16:09:50 +0530
+Message-ID: <20241115103957.1157495-1-quic_mmanikan@quicinc.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -68,60 +59,75 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: efcU5WldByi6W-qtspSGKh0NGkAx5mMi
+X-Proofpoint-GUID: efcU5WldByi6W-qtspSGKh0NGkAx5mMi
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 impostorscore=0
+ adultscore=0 priorityscore=1501 lowpriorityscore=0 phishscore=0
+ malwarescore=0 spamscore=0 clxscore=1015 mlxscore=0 mlxlogscore=756
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2411150090
 
-Hi Linus,
+IPQ5332 uses tsens v2.3.3 IP with combined interrupt for
+upper/lower and critical. IPQ5332 does not have RPM and
+kernel has to take care of TSENS enablement and calibration.
 
-Here's a PR with a couple of pmdomain and arm_scmi fixes intended for v6.12-rc8.
-Details about the highlights are as usual found in the signed tag.
+IPQ5424 also uses same tsens v2.3.3 IP and it's similar to IPQ5332
+(no RPM) hence add IPQ5424 support in this series itself.
 
-Please pull this in!
+This patch series adds the temperature sensor enablement,
+calibration support for IPQ5332 and IPQ5424.
 
-Kind regards
-Ulf Hansson
+Changes in V8:
+	- Fixed all review comments from Dmitry Baryshkov, Konrad Dybico
+	- Detailed change logs are added to the respective patches
+
+V7 can be found at:
+https://lore.kernel.org/linux-arm-msm/20241107140550.3260859-1-quic_mmanikan@quicinc.com/
+
+V6 can be found at:
+https://lore.kernel.org/linux-arm-msm/20241104124413.2012794-1-quic_mmanikan@quicinc.com/
+
+V5 can be found at:
+https://lore.kernel.org/linux-arm-msm/20230721054619.2366510-1-quic_ipkumar@quicinc.com/
+
+V4 can be found at:
+https://lore.kernel.org/linux-arm-msm/20230719104041.126718-1-quic_ipkumar@quicinc.com/
+
+V3 can be found at:
+https://lore.kernel.org/linux-arm-msm/20230713052732.787853-1-quic_ipkumar@quicinc.com/
+
+V2 can be found at:
+https://lore.kernel.org/linux-arm-msm/20230712113539.4029941-1-quic_ipkumar@quicinc.com/
 
 
-The following changes since commit 7738568885f2eaecfc10a3f530a2693e5f0ae3d0:
+Manikanta Mylavarapu (3):
+  dt-bindings: nvmem: Add compatible for IPQ5424
+  arm64: dts: qcom: ipq5424: Add tsens node
+  arm64: dts: qcom: ipq5424: Add thermal zone nodes
 
-  PM: domains: Fix alloc/free in dev_pm_domain_attach|detach_list() (2024-10-10 13:55:17 +0200)
+Praveenkumar I (4):
+  dt-bindings: thermal: tsens: Add ipq5332, ipq5424 compatible
+  thermal/drivers/tsens: Add TSENS enable and calibration support for V2
+  arm64: dts: qcom: ipq5332: Add tsens node
+  arm64: dts: qcom: ipq5332: Add thermal zone nodes
 
-are available in the Git repository at:
+ .../bindings/nvmem/qcom,qfprom.yaml           |   1 +
+ .../bindings/thermal/qcom-tsens.yaml          |  18 ++
+ arch/arm64/boot/dts/qcom/ipq5332.dtsi         | 135 ++++++++++++
+ arch/arm64/boot/dts/qcom/ipq5424.dtsi         | 201 ++++++++++++++++++
+ drivers/thermal/qcom/tsens-v2.c               | 176 +++++++++++++++
+ drivers/thermal/qcom/tsens.c                  |   8 +-
+ drivers/thermal/qcom/tsens.h                  |   4 +-
+ 7 files changed, 541 insertions(+), 2 deletions(-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v6.12-rc1-2
+-- 
+2.34.1
 
-for you to fetch changes up to d2fab3fc27cbca7ba65c539a2c5fc7f941231983:
-
-  mailbox: qcom-cpucp: Mark the irq with IRQF_NO_SUSPEND flag (2024-11-12 19:45:25 +0100)
-
-----------------------------------------------------------------
-pmdomain core:
- - Add GENPD_FLAG_DEV_NAME_FW flag to generate unique names
-
-pmdomain providers:
- - arm: Use FLAG_DEV_NAME_FW to ensure unique names
- - imx93-blk-ctrl: Fix the remove path
-
-arm_scmi/qcom-cpucp:
- - Report duplicate OPPs as firmware bugs for arm_scmi
- - Skip OPP duplicates for arm_scmi
- - Mark the qcom-cpucp mailbox irq with IRQF_NO_SUSPEND flag
-
-----------------------------------------------------------------
-Cristian Marussi (1):
-      firmware: arm_scmi: Skip opp duplicates
-
-Peng Fan (1):
-      pmdomain: imx93-blk-ctrl: correct remove path
-
-Sibi Sankar (4):
-      pmdomain: core: Add GENPD_FLAG_DEV_NAME_FW flag
-      pmdomain: arm: Use FLAG_DEV_NAME_FW to ensure unique names
-      firmware: arm_scmi: Report duplicate opps as firmware bugs
-      mailbox: qcom-cpucp: Mark the irq with IRQF_NO_SUSPEND flag
-
- drivers/firmware/arm_scmi/perf.c        | 44 +++++++++++++++++++++--------
- drivers/mailbox/qcom-cpucp-mbox.c       |  2 +-
- drivers/pmdomain/arm/scmi_perf_domain.c |  3 +-
- drivers/pmdomain/core.c                 | 49 +++++++++++++++++++++++----------
- drivers/pmdomain/imx/imx93-blk-ctrl.c   |  4 ++-
- include/linux/pm_domain.h               |  6 ++++
- 6 files changed, 78 insertions(+), 30 deletions(-)
