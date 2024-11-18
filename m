@@ -1,88 +1,150 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from mail.zeus03.de (zeus03.de [194.117.254.33])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D572F13AD2F;
-	Mon, 18 Nov 2024 06:16:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D402814BFA2
+	for <linux-pm@vger.kernel.org>; Mon, 18 Nov 2024 07:29:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.117.254.33
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731910568; cv=none; b=lG4XopcDJodagJw0+jR0US40f5uisLIiP1m1hgrMGL8V155RMa9ImX/K15A4zvcjHCfa3XkUsDhtr3vCpp2bAo89Z027WzZCcL5EZwmpOm+J1qZ2+EXJk9nUPSgSzzzr2f8lD9KLf+VYwENXvf67usNa1zZxYPA9tmhtNOp84XQ=
+	t=1731914988; cv=none; b=sCOMAFZ7Pa9T6WtVGiGafU1uBsrE4PXhMxxFnO9cNAO2WPAyfJDvuuzOjcRcWdMaZvn14iX6R/lMUmHzsMw+Pm7R2o2DT2SBbOismjCDEKyB0XWEMfTE7fpZjyZq9lK5dZlbJmMC6R7ZEj1Igy5HvfGphVF0LeXFd5WfOv5B83Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731910568; c=relaxed/simple;
-	bh=wwbsn1gz1zmNUJOUm/SsveOx12mGn+wDuAGKbxt50fU=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=ScRh1JUT9LGqSaUHlIkhfjI7zAerRpolE4HAWL4W1WcExfBSJs46udTDncSoegaNfoVcNKtTy4l+D9XTRo+xopnmI7XNibMXUZMxUkdxrlfWYzdggdfI0VAZG6zQl6WZZ4yZGJnu8NOomte8o+OjLpX/uVzjqJya1f2v2MRNYJk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=cZK+Gpur; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	s=arc-20240116; t=1731914988; c=relaxed/simple;
+	bh=H9LQQX3+errApdP89llWL2h0g9xMJY3eOit1C3k3VPc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=JGzeL/RlkGFrNDgZ2tnaKNRPvZTT49gFEy+8eWAjCAVPQtO29nib9fHrI/7FMxCPmMVrg7E8EOJqsOxBFm2KCMoL9+b/p4Yop6voApG8FTzUieSNukOsPiCj6rzKrfKs+gNrAcC/+YOrdJSTsmyg1iZcYBxo7TK+JFIMY3HTFOQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com; spf=pass smtp.mailfrom=sang-engineering.com; dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b=f3oZ9P4T; arc=none smtp.client-ip=194.117.254.33
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sang-engineering.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="cZK+Gpur"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1731910561;
-	bh=wwbsn1gz1zmNUJOUm/SsveOx12mGn+wDuAGKbxt50fU=;
-	h=From:Subject:Date:To:Cc:From;
-	b=cZK+Gpurd3QEqA7WuaVvRL+N2nobz3e0VgtZiG4RuWLdg2zDusSmURClcPIKFAUh2
-	 U52nyZ0cFNfiPN+jZ+FO0DkNmjqAh6OFERgjcNvGVgUw0YmbYGh4i7T+CVpyhG2KUE
-	 14wkpR6sQ6VDpZHsQuKheBTge2YWF+azWP7efM1c=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Subject: [PATCH v3 0/2] hwmon: (core) Avoid ifdef CONFIG_THERMAL in C
- source file
-Date: Mon, 18 Nov 2024 07:15:57 +0100
-Message-Id: <20241118-hwmon-thermal-v3-0-9c17973e7342@weissschuh.net>
+	dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b="f3oZ9P4T"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	sang-engineering.com; h=from:to:cc:subject:date:message-id
+	:mime-version:content-transfer-encoding; s=k1; bh=hpvNWCyCojrkvY
+	du6o2rWrPDcX4yyavTS3Qt2myCoUo=; b=f3oZ9P4TdOlRmdKNkheJwEcz4/4MKC
+	E+us1Y0Z5G/c0MS+Bz6Y92iZAVSu6gh8I2EHNZnsE4vvnM1IEBU4jw0BJ7jBK/23
+	ZOZQ4RJ2AcAdG3Fo/aXZB9caknqWoqjSSmuy/JraNtaDb8tIiDJKRDaiRhkY0XkA
+	7uTdsdNMuXZYeAsP3CdBbf4AhdYfGmUY5qgfm3fYIZ2/IzEDR4qK0/w+urqiJ5wP
+	VkQidxTC4V72CV9fMrJrQhUtcLb2vyrTsDKAGJ7/HUe7z6Sm4E5RVmqvrVAL3k93
+	lE86wQvmOS98Rttic76V8vKZ0HEY2F4KmUzwsfyyatEqffHmbpqiBuog==
+Received: (qmail 112200 invoked from network); 18 Nov 2024 08:29:34 +0100
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 18 Nov 2024 08:29:34 +0100
+X-UD-Smtp-Session: l3s3148p1@ykLZ4ConvNUujntT
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: linux-kernel@vger.kernel.org
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Armin Wolf <W_Armin@gmx.de>,
+	Benjamin Tissoires <bentiss@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Chandrashekar Devegowda <chandrashekar.devegowda@intel.com>,
+	Chen-Yu Tsai <wens@csie.org>,
+	coresight@lists.linaro.org,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Eric Dumazet <edumazet@google.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Hans de Goede <hdegoede@redhat.com>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	Heiner Kallweit <hkallweit1@gmail.com>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Jiri Kosina <jikos@kernel.org>,
+	Len Brown <len.brown@intel.com>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-input@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	linux-media@vger.kernel.org,
+	linux-mmc@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-rtc@vger.kernel.org,
+	linux-sunxi@lists.linux.dev,
+	linux-usb@vger.kernel.org,
+	Loic Poulain <loic.poulain@linaro.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	netdev@vger.kernel.org,
+	Paolo Abeni <pabeni@redhat.com>,
+	Pavel Machek <pavel@ucw.cz>,
+	platform-driver-x86@vger.kernel.org,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Samuel Holland <samuel@sholland.org>,
+	Sean Young <sean@mess.org>,
+	Sergey Ryazanov <ryazanov.s.a@gmail.com>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	x86@kernel.org
+Subject: [PATCH 00/15] treewide: don't include 'pm_wakeup.h' directly
+Date: Mon, 18 Nov 2024 08:28:59 +0100
+Message-Id: <20241118072917.3853-1-wsa+renesas@sang-engineering.com>
+X-Mailer: git-send-email 2.39.2
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAJ3bOmcC/3XMSw6CMBSF4a2Yjr2mvTwKjtyHcVDKxTaRYlosG
- sLeLYyMxuF/kvPNLJC3FNhxNzNP0QY7uBTZfse0Ue5KYNvUDDnmQogMzNQPDkZDvlc3wBZbVVR
- CoyxZ+tw9dfa5eedLamPDOPjXxkexrv+kKECAFCh5Q7KTCk8T2RCCNg9zcDSylYv4SRTfBAIHX
- Zcd17yu8uaXWJblDXldcxzyAAAA
-X-Change-ID: 20241113-hwmon-thermal-2d2da581c276
-To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1731910561; l=1080;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=wwbsn1gz1zmNUJOUm/SsveOx12mGn+wDuAGKbxt50fU=;
- b=1zdfUsJ1IyIH/OEZafiPGR1dqdanw89Is6p7+iwGMlWwm0mhKecJHS9j7deVt/7Yf99A72Vjj
- GQZMcjzPZSOCPnVoP5TM5pI9OyKbKKNe8uxXFJiDo3sOGpN3UYyNh8p
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Replace some confusing ifdeffery with IS_ENABLED() conditionals.
-The ifdefs confused me while looking at the implementation of
-HWMON_C_REGISTER_TZ.
+While working on the wakeup functionality of a RTC driver, I noticed
+that we have a few occasions where 'pm_wakeup.h' gets included directly
+despite the comment that it shouldn't be done. It doesn't build-break
+because these files also include 'device.h' either directly or via some
+indirection, mostly 'platform_device.h'. Still, respect the requirement
+that 'pm_wakeup.h' shall only be included in 'device.h' and not
+directly.
 
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
-Changes in v3:
-- Fix warning "omitting the parameter name in a function definition is a C23 extension [-Werror,-Wc23-extensions]"
-- Link to v2: https://lore.kernel.org/r/20241115-hwmon-thermal-v2-0-c96f0c0984b2@weissschuh.net
+Based on 6.12-rc7. Build-bot is happy and there are no dependencies. I
+suggest that each patch goes in via the relevant subsystem tree.
 
-Changes in v2:
-- Add stub for thermal_zone_device_update()
-- Link to v1: https://lore.kernel.org/r/20241113-hwmon-thermal-v1-1-71270be7f7a2@weissschuh.net
+Thanks and happy hacking,
 
----
-Thomas Weißschuh (2):
-      thermal: core: Add stub for thermal_zone_device_update()
-      hwmon: (core) Avoid ifdef CONFIG_THERMAL in C source file
+   Wolfram
 
- drivers/hwmon/hwmon.c   | 21 ++++++---------------
- include/linux/thermal.h |  4 ++++
- 2 files changed, 10 insertions(+), 15 deletions(-)
----
-base-commit: f66d6acccbc08b4146f4c2cf9445241f70f5517d
-change-id: 20241113-hwmon-thermal-2d2da581c276
 
-Best regards,
+Wolfram Sang (15):
+  x86/platform/olpc-xo1-sci: don't include 'pm_wakeup.h' directly
+  drivers core: don't include 'pm_wakeup.h' directly
+  HID: google: don't include 'pm_wakeup.h' directly
+  coresight: etm4x: don't include 'pm_wakeup.h' directly
+  Input: spear-keyboard - don't include 'pm_wakeup.h' directly
+  Input: sun4i-lradc-keys - don't include 'pm_wakeup.h' directly
+  media: mceusb: don't include 'pm_wakeup.h' directly
+  mmc: core: don't include 'pm_wakeup.h' directly
+  net: phy: broadcom: don't include 'pm_wakeup.h' directly
+  net: wwan: t7xx: don't include 'pm_wakeup.h' directly
+  PCI: don't include 'pm_wakeup.h' directly
+  platform/x86: quickstart: don't include 'pm_wakeup.h' directly
+  rtc: brcmstb-waketimer: don't include 'pm_wakeup.h' directly
+  usb: typec: tcpci_mt6370: don't include 'pm_wakeup.h' directly
+  PM / Sleep: don't include 'pm_wakeup.h' directly
+
+ arch/x86/platform/olpc/olpc-xo1-sci.c              | 1 -
+ drivers/base/power/sysfs.c                         | 1 -
+ drivers/hid/hid-google-hammer.c                    | 1 -
+ drivers/hwtracing/coresight/coresight-etm4x-core.c | 1 -
+ drivers/input/keyboard/spear-keyboard.c            | 1 -
+ drivers/input/keyboard/sun4i-lradc-keys.c          | 1 -
+ drivers/media/rc/mceusb.c                          | 1 -
+ drivers/mmc/core/core.c                            | 1 -
+ drivers/mmc/core/host.c                            | 1 -
+ drivers/net/phy/broadcom.c                         | 2 +-
+ drivers/net/wwan/t7xx/t7xx_pci.c                   | 1 -
+ drivers/pci/pci.c                                  | 1 -
+ drivers/platform/x86/quickstart.c                  | 1 -
+ drivers/rtc/rtc-brcmstb-waketimer.c                | 1 -
+ drivers/usb/typec/tcpm/tcpci_mt6370.c              | 1 -
+ kernel/power/autosleep.c                           | 1 -
+ 16 files changed, 1 insertion(+), 16 deletions(-)
+
 -- 
-Thomas Weißschuh <linux@weissschuh.net>
+2.39.2
 
