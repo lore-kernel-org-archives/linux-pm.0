@@ -1,100 +1,84 @@
-Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E3BF10E0
-	for <linux-pm@vger.kernel.org>; Mon, 18 Nov 2024 04:37:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D577113C661;
+	Mon, 18 Nov 2024 06:16:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731904633; cv=none; b=I8/v7ji5o3h+VpbNL0kevJyD+yKQzLKKiB9+SgGZvDUDt34JkUShoXDAWnJ2ZwEip51KZK0rdyPj1mes4/iBXZ/fPbwW1aEddYX10CTevJIhe/B5dg/L++tD7yOCchWZTg0Oq8qQ55fMc7aHZTU4i0ra3Vh2qUE0tr9qgMRTntU=
+	t=1731910567; cv=none; b=JRZQ55Vufy/eGNZo2BTh6h7xTPvQNMOry2K3JHe+hPX42tfdB8Csq6KVvrWn34lPxN7Er0bQzw9BAmmvu3QgYmNZ0F03DSdQ9e1IpS/XvbUTqmc9Qyx5+sSt+lOnH7o2hXob32pMqhERPbe/e/9czrTxwz0WWf7W5Kv4Uef0xrE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731904633; c=relaxed/simple;
-	bh=ipWzMcYsmExmp6Cb24PX2a7/swbbvnvtHsLC4tJRCs8=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=YllU8gMFr80m2/pQb1VzAIYtyU11XouqKhpDMxGZfMvbDpkpOKvWnLT1pFyXW13Dqyn1oT3IuRjXvR6AnPzG3Rz7D8CgDsTTTHKnd9IHMRcmgmZJeTQ1FLprGNMihnP6CMF+gGXNZ4im8Fzlk1c9CJo8r20TajDIlKnrcvOFF0E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=tVIzdsof; arc=none smtp.client-ip=209.85.216.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1731910567; c=relaxed/simple;
+	bh=8l9BbI5wmQ7Yg0khc+4YV+pJmUQSE6mzpNDquJJs/Iw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=jZyzKzsDI/X7e5jTnk1HTKZ5pAfkb9eEPnjrsUQQZn+Fa2BUHilaVG3bA1glT91EHXikl66Tss8hb4Z861m7wZD9i/Pf56Qpf305c4VRerVOJJ/nFELsjBX7Mwbfm3mgqcdGJ6L2HWVN99eslfLb/AEEx8zTInAWTKvxP8UKlMY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=tRsR6ChK; arc=none smtp.client-ip=159.69.126.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tVIzdsof"
-Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-2ea39f39666so889696a91.2
-        for <linux-pm@vger.kernel.org>; Sun, 17 Nov 2024 20:37:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1731904631; x=1732509431; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=TiZd0icOdBMLtEBzPPLyeh7ODHRIiPKLv7k0pCov9Gc=;
-        b=tVIzdsofJ7sYT/m3zsrIZrusI5a86CUf9R6Xq1DDNx5dpbrmhA2OM+3d4vWHVxhhtK
-         g91n3hvlHglCw1ZNWxRIK/PL6w/CuHkyhsn6lM+Z+GS0/fNNegUqo1co2gyoCn4W5M2C
-         NnEAD7luz6kj0PfUJGj0xjng24TUHN7Hnn8y2La09k3jE0Spf3E5vKieyGRTAhdHM/cG
-         dUpCsZ79/IecF+a/Vkn5MPo8B9o6OJdet8Qv8qNBo0wprgDbwY7iXRdwV4NAWuq/sO1H
-         rULE40mwehaObcY+oYCDeSoHj8V8FZqH1UNgVgrAA8Coon6tsrTGVF33xumjkRyCUQxx
-         59QA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731904631; x=1732509431;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=TiZd0icOdBMLtEBzPPLyeh7ODHRIiPKLv7k0pCov9Gc=;
-        b=bznky2OEZM+ozThYUF5es5/ow8tmzqKrgCeWZY8L0FsWz1uO0tMet7xtmcFUBv5zCa
-         dAGby6nqgyURjS6GgMduXqZoUBQLE7NSGGsOMH7txYUq0MFeNfzov36acd45IXhNZF7+
-         KwAF107U3tPno9NeTtMJXehSW55uDIL+Jf0VLGL/aXbOxRqJpx4nQ6Y+cH+VXznRqgyK
-         MMbyM6Vl4DmXCXZVUdUg7y1rtziVi5Iaw1EqE1f/ZT3QjIIQJPAf8bQG2UwcobH8kwsl
-         yGRmpjMB9AIL1gfRX5o/gHpnRZJfRRxcjbpifNmR3aoLXw1TqhfYt3Tqw7BzKKFjbblD
-         z+ag==
-X-Gm-Message-State: AOJu0YzraEcZwLP7TP9/3ZWBXBb5Xji+szYIbFr0SSe3dAHdtXN/pK6E
-	pamP+8sO2IsqYREuO+UbGkRd/0a/SHw52QmioUuSYfjYgsnD3nN40n7k2nDNQV8=
-X-Google-Smtp-Source: AGHT+IHOgsZfia14NTfAzjo0NSG1Z5Jj4e6vzMMpHmqPTgsj1zZIHtV9Rl1rb8HVGAPsM7GrDSlV0Q==
-X-Received: by 2002:a17:90b:35ca:b0:2ea:5083:6b6f with SMTP id 98e67ed59e1d1-2ea50836cc4mr5302540a91.22.1731904631451;
-        Sun, 17 Nov 2024 20:37:11 -0800 (PST)
-Received: from localhost ([122.172.86.146])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2ea06f1b1aasm6448293a91.17.2024.11.17.20.37.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 17 Nov 2024 20:37:10 -0800 (PST)
-Date: Mon, 18 Nov 2024 10:07:07 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>
-Subject: [GIT PULL] OPP updates for 6.13
-Message-ID: <20241118043707.zxyo5wl765dxypkm@vireshk-i7>
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="tRsR6ChK"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1731910561;
+	bh=8l9BbI5wmQ7Yg0khc+4YV+pJmUQSE6mzpNDquJJs/Iw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=tRsR6ChKaDQ5fmLTPv1Npm5C0+tIX36pWGXcALJxsSrn/HLK0ecLSCDteslIGXEdY
+	 Kb8BFOGFa85PXlQMAB90/hR7U6VyZdbIk7o7UO4bLNf146orWPKpUIFiAUvJBaRV4+
+	 3S+vcvwwWu9kYzufBf9femZulpoH4K7OzJ/qCLOw=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Mon, 18 Nov 2024 07:15:58 +0100
+Subject: [PATCH v3 1/2] thermal: core: Add stub for
+ thermal_zone_device_update()
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20241118-hwmon-thermal-v3-1-9c17973e7342@weissschuh.net>
+References: <20241118-hwmon-thermal-v3-0-9c17973e7342@weissschuh.net>
+In-Reply-To: <20241118-hwmon-thermal-v3-0-9c17973e7342@weissschuh.net>
+To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1731910561; l=1036;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=8l9BbI5wmQ7Yg0khc+4YV+pJmUQSE6mzpNDquJJs/Iw=;
+ b=8sUbc9kO+kGIUbDCUM8i2ThbUYCshpKkJ6FQovZGVJXeM66tYi+q7DHbSLr7UDLhLcqW1BpiM
+ y0s5vJq3nRTDcEl+KJcb/9GBjoM6z+1WR5wtCgaXOykk6XS+qPmz7yg
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Hi Rafael,
+To simplify the !CONFIG_THERMAL case in the hwmon core,
+add a !CONFIG_THERMAL stub for thermal_zone_device_update().
 
-The following changes since commit 9852d85ec9d492ebef56dc5f229416c925758edc:
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+---
+ include/linux/thermal.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-  Linux 6.12-rc1 (2024-09-29 15:06:19 -0700)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/opp-updates-6.13
-
-for you to fetch changes up to 53205a7903666d35709954d9fb7370a8150d5e0e:
-
-  dt-bindings: opp: operating-points-v2-ti-cpu: Describe opp-supported-hw (2024-10-01 14:57:08 +0530)
-
-----------------------------------------------------------------
-OPP Updates for 6.13
-
-- Describe opp-supported-hw property for ti-cpu (Dhruva Gole).
-
-- Remove unused declarations in header file (Zhang Zekun).
-
-----------------------------------------------------------------
-Dhruva Gole (1):
-      dt-bindings: opp: operating-points-v2-ti-cpu: Describe opp-supported-hw
-
-Zhang Zekun (1):
-      OPP: Remove unused declarations in header file
-
- Documentation/devicetree/bindings/opp/operating-points-v2-ti-cpu.yaml | 20 +++++++++++++++++++-
- drivers/opp/opp.h                                                     |  2 --
- 2 files changed, 19 insertions(+), 3 deletions(-)
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 25ea8fe2313e6d0a53192974a80d92f50f0ff03e..455e0814b9165dbb96d698e670f160136a017cc4 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -289,6 +289,10 @@ static inline struct thermal_zone_device *thermal_tripless_zone_device_register(
+ static inline void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ { }
+ 
++static inline void thermal_zone_device_update(struct thermal_zone_device *tz,
++					      enum thermal_notify_event event)
++{ }
++
+ static inline struct thermal_cooling_device *
+ thermal_cooling_device_register(const char *type, void *devdata,
+ 	const struct thermal_cooling_device_ops *ops)
 
 -- 
-viresh
+2.47.0
+
