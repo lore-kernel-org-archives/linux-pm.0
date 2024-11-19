@@ -1,197 +1,108 @@
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fw2.prolan.hu (fw2.prolan.hu [193.68.50.107])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F26E1D9595
-	for <linux-pm@vger.kernel.org>; Tue, 19 Nov 2024 17:57:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFD001CF7BE;
+	Tue, 19 Nov 2024 18:08:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.68.50.107
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732039023; cv=none; b=Dnkmb9ci1KS5J5uS+K/WGp2pPU2BbFAsCsBH7rbS/b1f3T/UnLBDbqWrjSPSgU4PNj1yi4/HUdOou2Lc7OtVQTa0Vmg0RdwhAqRJnw3/vx62HjsI9UXLfkpeYBWBfkMzGGnj2tpvbD+pgYVM0mADLR6NxXymrOY6bcURFoy7rfQ=
+	t=1732039734; cv=none; b=fAMoQ1R+cxtFLfsEy+zGDk8gjIVuV4YNj5QOdyZsXQnZka58uZSSF6UlOqNutBP/ft5a7T1/bHwiNCuTTtxkSgT5BZCILzKPzwt95TfMlFJQ8r70p0EhBL0jpoTNUBp7Rbv8Vm//Sdxy+58y15/jy/ThMteJjllC4oZbVLA9K8c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732039023; c=relaxed/simple;
-	bh=kMBG33vo/TOc40mVibFxMI9MiLmVj3cBO8HFx/GtxHk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fVItw+pIWXGIUY6//0N9iUzZS8eMoiX41fyVBcdnqz8mGjSZai7fRFvWWpTqBw5VkcU0SaAA4IOTSzSQmvS5iBNE9moPtSAHeXbsafpA9YBadDWAOxVor9c413p2v4gzJ1hHwgi6dGtCDJPZ54q20CVYA0Bo8KjXS/Io0gKteBY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=q6xG3nad; arc=none smtp.client-ip=209.85.128.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1732039734; c=relaxed/simple;
+	bh=sK0kWk+8VYxo38aU63eiYOmeLS96q4K2u2uUzpGH55g=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=PnNztlO4sLzJstFm3mGlX51akPFPsJ5Qxh9kV3+LHWBLlfZyG93La0xTYjccmQuyZICpqp6YIIdhhcrSfj+Z/ARPc2A9tZ9lqFPFo8jNV/ui8poqReLCbN4ot5/c9AdSwfvbnNgWbkps/jFP4u035P9qO6lJzEt+C0tZpoYl/fU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu; spf=pass smtp.mailfrom=prolan.hu; dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b=bc4gvqLz; arc=none smtp.client-ip=193.68.50.107
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=prolan.hu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="q6xG3nad"
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-43161c0068bso30816755e9.1
-        for <linux-pm@vger.kernel.org>; Tue, 19 Nov 2024 09:57:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1732039018; x=1732643818; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=gHpOD3kUgP0NZgNkpxEn7+M6CVhgca5HnhadSgnc1wM=;
-        b=q6xG3nadyd5V+SEMvb4T3EEI6lXl7JmViz1HK2dPPkDTSMPX1yh+wwHHmcfs4sX1ga
-         ravHF4jAYoVnFsGfw19Lg3MKHDZpu0wWQoNrV0/ples/GxdHplyAEwkemDUugkqGpJ38
-         Ufo9k6gJ7LWtonagMMxdtDQmn0JO6EYRwctTtM3dbzSP/pQ5ovJB/qPcg4Wbcqja72Gy
-         CJyyxXE43k7aZFEMIe8tXUBEroCEc01MvV3dRNuPlfaRhQpJtCZKHtao0+Dv6jvq1IY7
-         GCrfBJDJ1DUapaXb/HM+sAKNhttp2tmOPOlrV4/BVGvBPiJxqwVKH6vy100AAiyuTkct
-         nu4w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1732039018; x=1732643818;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=gHpOD3kUgP0NZgNkpxEn7+M6CVhgca5HnhadSgnc1wM=;
-        b=GQ0ByJiBFA1yI446q9s3a9X7gU4Yh+qqOVAHHtDlI+C5O2AC2GgVlbCrH/mYABBgg3
-         uoXLClmQkp+7GA2lyRgtR42aE8zpoyrSR2VCHtoFvlAA56ySMdthHqtYovuYgyKhJx6A
-         +7S2hRfkXHahCK9Kqmz+xWGP6qdA2fbGj+3gyhaixxfbKELJMkygKKjHFQDkcx2OuIkP
-         pFdmljpFBgNy94Nt/rzH7mMIp/gkTWcYXdBQcBlQaNa032c3s/sTij8Q3gN7tDXpLUVv
-         092/lNNPUe1VVhPzLDzDXH6pxExO+W+bVskk21xQ9D1hP9kdlhvRL5MTosQ5XkSVVsS+
-         JM7g==
-X-Forwarded-Encrypted: i=1; AJvYcCWhjNBvHH2oUS4EOrubqDfO91wlPHsigHZRiVvgJsbgI7X54lTQvwfy42gVr2n5KajCfa0kcJU9Ng==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx2iITZtzTx+g/csnwBwjyuoLTxdB63snh4sArwQ6fIbNeb8mPa
-	O1xs8rNQ2DEuiYgzRNGcta9dL/TTHqUSTIUxHImHc2iGsoNkNXQmmRmqkgn4BZ0=
-X-Google-Smtp-Source: AGHT+IFPDNX6KLXFLn/SU6zrsFO0OInhb1Q9wiuJ7LRR3o8jd+59g6Yz543jn9+v12PfjDHzMkSYog==
-X-Received: by 2002:a05:600c:3111:b0:431:5c7b:e937 with SMTP id 5b1f17b1804b1-432df74c8bdmr168114705e9.17.1732039018583;
-        Tue, 19 Nov 2024 09:56:58 -0800 (PST)
-Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:52eb:f6ff:feb3:451a])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-432da27fe68sm208302275e9.24.2024.11.19.09.56.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Nov 2024 09:56:58 -0800 (PST)
-From: Neil Armstrong <neil.armstrong@linaro.org>
-Date: Tue, 19 Nov 2024 18:56:46 +0100
-Subject: [PATCH v2 11/11] arm64: qcom: dts: sm8650: add interconnect and
- opp-peak-kBps for GPU
+	dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b="bc4gvqLz"
+Received: from proxmox-mailgw.intranet.prolan.hu (localhost.localdomain [127.0.0.1])
+	by proxmox-mailgw.intranet.prolan.hu (Proxmox) with ESMTP id C75BDA03A7;
+	Tue, 19 Nov 2024 19:08:42 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prolan.hu; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:from:from:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to; s=mail; bh=270OS3AUGIEnFR7GA4rh
+	i6oZuXf4WByJ/XiZ6z+upJg=; b=bc4gvqLzbVFWqe+IC4gS0BSPTyUDFM5IFyL9
+	YioQwbmm0yzLmIa+PPN+CAsM/eGIaPbdyhBCleLgvkJLp1XokLmcwHnrYtQh/uQO
+	PwgtPP6vtmj0WsLhPcyf3NKkd7ejeIXPSFcYaM+Vz5b06ke0Vin7R64Bb7O82ohF
+	QdOZVjdLwjUOLZMoSPxW8NoUKwoDXqOee7F2EeDoY21CIWCLqiEiClcx0yVSL52A
+	ROS5R2Ns2Ni/sPlQ9h7pcooZs07Dep6kVlWb7EN43/pM6nDi1hHv/Y95lksyZVTH
+	hfMKLYAs01kjuVUuINa9EOclCs+q6QEDsZY+yQkauDtymBPIoFYoAOphYgvmAaS8
+	wJ1bJeN+P/u4E7RXk21nTpqZaP2kTsT6BRAEfwE5mkBbx0NsCQwZw6icINmjULk+
+	3agx/SwRRrECMkKyL7w8HZrKwj2hvumeXYFjVdKeDVU6T2U6ALe1Y6RWMsyLINfw
+	4DehlzHllnN2T2gX03whnKdnd8x7apcAIU2sBk94jfoeCgqS2ECReUUUilP+gHl7
+	PvvMTKgKBaLwsJ/0e1/6qcW0IW9/Xp8wIg89kH92zBuM6HADYz1zUMa8eut83i3Q
+	RCTrB9BQ9UxuSvlOst5UrFtk06oO3/P/DZMixSsyI0vgFMwuawHfa+z+oGwgbcUr
+	upawQ+k=
+From: =?UTF-8?q?Cs=C3=B3k=C3=A1s=2C=20Bence?= <csokas.bence@prolan.hu>
+To: Sebastian Reichel <sebastian.reichel@collabora.com>, Samuel Holland
+	<samuel@sholland.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+CC: =?UTF-8?q?Cs=C3=B3k=C3=A1s=2C=20Bence?= <csokas.bence@prolan.hu>,
+	Sebastian Reichel <sre@kernel.org>
+Subject: [PATCH v5 2/8] power: ip5xxx_power: Fix return value on ADC read errors
+Date: Tue, 19 Nov 2024 19:07:34 +0100
+Message-ID: <20241119180741.2237692-2-csokas.bence@prolan.hu>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20241119180741.2237692-1-csokas.bence@prolan.hu>
+References: <20241119180741.2237692-1-csokas.bence@prolan.hu>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20241119-topic-sm8x50-gpu-bw-vote-v2-11-4deb87be2498@linaro.org>
-References: <20241119-topic-sm8x50-gpu-bw-vote-v2-0-4deb87be2498@linaro.org>
-In-Reply-To: <20241119-topic-sm8x50-gpu-bw-vote-v2-0-4deb87be2498@linaro.org>
-To: Akhil P Oommen <quic_akhilpo@quicinc.com>, 
- Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
- Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>, 
- Konrad Dybcio <konradybcio@kernel.org>, 
- Abhinav Kumar <quic_abhinavk@quicinc.com>, 
- Dmitry Baryshkov <dmitry.baryshkov@linaro.org>, 
- Marijn Suijten <marijn.suijten@somainline.org>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Bjorn Andersson <andersson@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: Connor Abbott <cwabbott0@gmail.com>, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, 
- devicetree@vger.kernel.org, Neil Armstrong <neil.armstrong@linaro.org>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2636;
- i=neil.armstrong@linaro.org; h=from:subject:message-id;
- bh=kMBG33vo/TOc40mVibFxMI9MiLmVj3cBO8HFx/GtxHk=;
- b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBnPNFbEK25BwtwTu1JMvsqoiBYwcvGuuHxuWkwKltH
- JiltqguJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZzzRWwAKCRB33NvayMhJ0SqJD/
- 9i9oT1zcWnuyY+2ojc3JgiG8RZ8/za1lypAPHpIoWVyEqom9FIhYIr5FQhaBl8JzvTyLgD5dWllI46
- xxzzMukeW1ktiB/KPRpfA/qz1LbqwExPkNQVl8ruAMbqBYXAUVPHxmlYxEkD0WuUga+D/CX9Xik71k
- EENR+lA4BtGV7oMNCM1bQ1ov1HNA2p3jmOY7Km2JYzI0lzXkuwskSHjiN1B6wDVtQgdBfU2SJK2gTS
- mxXzExfxB9VsQDtMgcy9ejIRVoidE9NeFJUYAbTflhXprqiPS08t6S6FoVv6lIA/l6cQPprydHYCGL
- Jj7gxQv6t1+boECssBZUnNCqepbKsacMzl+b4KJ8RPrOaE9xJMvVMIwvJWlBhyzSqCVCBVEU3dGnzk
- O/bOXlwFhF4bWgUR+Qu/VTw7QvCQ6JGkY66Mn9mp2Vyx646XSu/L/tCYvP5j70I8k7gg2RlPJKjSWq
- 4U0AX/V3yGRATzqzGJMvvWraXnglSRW0OVivH9GCNMsGpbdpz5oUWi3KOyHyE+l2p6anawxBOGxx2J
- ZhkTaJCDFFiNapDGgPEpDSsj+j0KXa3TIR/G5IL3zC7ZFigY3hFKs0q4+cvAg9LCE106xwAem7Qvd1
- UsfFkATgF/Hg9N4PH2GzIJYmYirtoOjIshEu/UTgSZhQiBWYSMcV0yqVUm3g==
-X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
- fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-ESET-AS: R=OK;S=0;OP=CALC;TIME=1732039722;VERSION=7980;MC=2672693322;ID=46207;TRN=0;CRV=0;IPC=;SP=0;SIPS=0;PI=3;F=0
+X-ESET-Antispam: OK
+X-EsetResult: clean, is OK
+X-EsetId: 37303A29ACD9485560766B
 
-Each GPU OPP requires a specific peak DDR bandwidth, let's add
-those to each OPP and also the related interconnect path.
+If ADC read returns an error, the return value was silently ignored,
+execution continued and an uninitialized value and a return code of 0
+was passed back to userspace. The only exception was
+POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT, which bailed out correctly.
+Fix returns for the other cases as well.
 
-Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+Fixes: 75853406fa27 ("power: supply: Add a driver for Injoinic power bank ICs")
+
+Signed-off-by: Csókás, Bence <csokas.bence@prolan.hu>
 ---
- arch/arm64/boot/dts/qcom/sm8650.dtsi | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/power/supply/ip5xxx_power.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8650.dtsi b/arch/arm64/boot/dts/qcom/sm8650.dtsi
-index 01ac3769ffa62ffb83c5c51878e2823e1982eb67..331c5140c16bf013190d6da136c0920009d2646b 100644
---- a/arch/arm64/boot/dts/qcom/sm8650.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8650.dtsi
-@@ -2636,6 +2636,9 @@ gpu: gpu@3d00000 {
- 			qcom,gmu = <&gmu>;
- 			#cooling-cells = <2>;
+diff --git a/drivers/power/supply/ip5xxx_power.c b/drivers/power/supply/ip5xxx_power.c
+index 2d4435881a9e..41d91504eb32 100644
+--- a/drivers/power/supply/ip5xxx_power.c
++++ b/drivers/power/supply/ip5xxx_power.c
+@@ -395,18 +395,24 @@ static int ip5xxx_battery_get_property(struct power_supply *psy,
  
-+			interconnects = <&gem_noc MASTER_GFX3D 0 &mc_virt SLAVE_EBI1 0>;
-+			interconnect-names = "gfx-mem";
-+
- 			status = "disabled";
+ 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+ 		ret = ip5xxx_battery_read_adc(ip5xxx, &ip5xxx->regs.battery.adc.volt, &raw);
++		if (ret)
++			return ret;
  
- 			zap-shader {
-@@ -2649,56 +2652,67 @@ gpu_opp_table: opp-table {
- 				opp-231000000 {
- 					opp-hz = /bits/ 64 <231000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS_D2>;
-+					opp-peak-kBps = <2136718>;
- 				};
+ 		val->intval = 2600000 + DIV_ROUND_CLOSEST(raw * 26855, 100);
+ 		return 0;
  
- 				opp-310000000 {
- 					opp-hz = /bits/ 64 <310000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS_D1>;
-+					opp-peak-kBps = <6074218>;
- 				};
+ 	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
+ 		ret = ip5xxx_battery_read_adc(ip5xxx, &ip5xxx->regs.battery.adc.open_volt, &raw);
++		if (ret)
++			return ret;
  
- 				opp-366000000 {
- 					opp-hz = /bits/ 64 <366000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS_D0>;
-+					opp-peak-kBps = <6074218>;
- 				};
+ 		val->intval = 2600000 + DIV_ROUND_CLOSEST(raw * 26855, 100);
+ 		return 0;
  
- 				opp-422000000 {
- 					opp-hz = /bits/ 64 <422000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
-+					opp-peak-kBps = <8171875>;
- 				};
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+ 		ret = ip5xxx_battery_read_adc(ip5xxx, &ip5xxx->regs.battery.adc.curr, &raw);
++		if (ret)
++			return ret;
  
- 				opp-500000000 {
- 					opp-hz = /bits/ 64 <500000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS_L1>;
-+					opp-peak-kBps = <8171875>;
- 				};
- 
- 				opp-578000000 {
- 					opp-hz = /bits/ 64 <578000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_SVS>;
-+					opp-peak-kBps = <12449218>;
- 				};
- 
- 				opp-629000000 {
- 					opp-hz = /bits/ 64 <629000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_SVS_L0>;
-+					opp-peak-kBps = <12449218>;
- 				};
- 
- 				opp-680000000 {
- 					opp-hz = /bits/ 64 <680000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_SVS_L1>;
-+					opp-peak-kBps = <16500000>;
- 				};
- 
- 				opp-720000000 {
- 					opp-hz = /bits/ 64 <720000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_SVS_L2>;
-+					opp-peak-kBps = <16500000>;
- 				};
- 
- 				opp-770000000 {
- 					opp-hz = /bits/ 64 <770000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_NOM>;
-+					opp-peak-kBps = <16500000>;
- 				};
- 
- 				opp-834000000 {
- 					opp-hz = /bits/ 64 <834000000>;
- 					opp-level = <RPMH_REGULATOR_LEVEL_NOM_L1>;
-+					opp-peak-kBps = <16500000>;
- 				};
- 			};
- 		};
-
+ 		val->intval = DIV_ROUND_CLOSEST(raw * 149197, 200);
+ 		return 0;
 -- 
 2.34.1
+
 
