@@ -1,122 +1,148 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f202.google.com (mail-yb1-f202.google.com [209.85.219.202])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C642F1DEFEC;
-	Thu, 21 Nov 2024 18:53:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D9C81DE4FD
+	for <linux-pm@vger.kernel.org>; Thu, 21 Nov 2024 18:53:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.202
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732215207; cv=none; b=WrgJFFXY+1jiYWRFEDnK7GoeW8++V/FvW0tYUD5Q8Ow9I4TZZT1cJP6WEV3riwqwsTUHRvbrjkNdSLbXWRDHipebBX6iflLs2f3h1fK9YJ0U8L3CZsLrTNBAWMBl02dG8Y7KyarAOtuAfLmIRYx4ajiG2Tio7gXTId5ZHJPPuuc=
+	t=1732215208; cv=none; b=OhYtYrQpME5Ld5TTO6h7Vy/nDzZrcxgi0otwNSg7TVndYgFlSW40vEA6CJYYgWFQvMjTJOqkfHhqeT0WtRHW7mgSkWo0dJ6oYBYQYtmrrZdmvWZ3cwIMZJe6WWhZ/DNnRiyxquSmOc3Dogh4hGngyt+c6EDrOd+YjXrQ4qAp3o8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732215207; c=relaxed/simple;
-	bh=ISjpz16tj0pMaPVTqGRXpMKXe6yrcURvmS2MCnWb4ak=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DrIfKvnriPKcBQl4A0bvrIDIBTvdlVeL3wuc5ZnleuA9Qh9nisJmdg9Cggus2DT1bDMi3rYA1N6MpJoi9I8bWc7mKPxCfaIxQXZ2vg+8FmzzMaX0s/PcmJI8RpiQCgGMqtB8NgKd9mAqD3SPwoR3Ukst/nF3uC/Olnrm1S/NkVI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Wl4dlbvG; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1732215208; c=relaxed/simple;
+	bh=3LJNuc0FG7aWLKpUxqt+8FC4Sp0enBCrekTBe7yW4mc=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=cb0y6eG+CGwCmEjbJ/o0PBsjLTDAQ9CE/aN8STHFAYFtP+khlE79yheRdR7UQEdzrssBuRd7TulkoMGR/K1B55mvBcNTtt9ypZuGKx3CQZaoUef1LA0Oa1oWwCitVJKxM/mUdQJHDauO00g0mX6cewT8KXDqLw3bvRpVa16+j/k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--mizhang.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=l64VzQCS; arc=none smtp.client-ip=209.85.219.202
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--mizhang.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Wl4dlbvG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A904C4CED9;
-	Thu, 21 Nov 2024 18:53:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1732215207;
-	bh=ISjpz16tj0pMaPVTqGRXpMKXe6yrcURvmS2MCnWb4ak=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Wl4dlbvGX2EJFcT1EWHmY5379pwIIfTV3DqZUSlbZ7j449cvDyfoD8MPEJqP7YjzR
-	 ufepeqa9dpnItOD5t0FS7Yy2GH0BsP7ALyk0/ZnlwK3K3KfGXOdAtUMvBgdtvaAqoY
-	 0QtWm7NahlsH7aqouRvFM5jLzwz8EZi6CuiQljXNnhom/9veYzAFDmfRBmTJ7A5znW
-	 Na/tMTCs84XE+ele45Ivc2OvU2jiSmk2fIE3sipT6Wk7pC0iTLBMeox5ZveOAfx5VA
-	 M4Y7fvkiLUz7Vqbd6XvtlSCIIphlRwFBMsiAGiI0Lc5KZBCR1WG5axt59NhI4tcHAd
-	 RElHNodDUMuGQ==
-Received: by mail-oa1-f51.google.com with SMTP id 586e51a60fabf-29645a83b1bso800435fac.1;
-        Thu, 21 Nov 2024 10:53:27 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUCPVgh0BVDFUqpsfr2IHRUKGRtGilRCBLxqZV6tzOhiDn3FM/+bZnZ3OPTIY+/Qd2TAyUR0XnaOkc=@vger.kernel.org, AJvYcCVsQ5c4OC0uDHE+ufMZqubU2dN2CV/ZzkJhmB0AtkbYMZvaas74ZuLCe64nZ77V0jLc1ZDZI1oaNIXq@vger.kernel.org, AJvYcCXQkJA0xvJQA5uroJZuUk06qaEm1CCGrmPIBkBWO2EL4cWW3HrV2CVpvLMj23zemZs6xYyu05X8hvf8FfzZ@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw3JQeCRGq5PWPFYfXiRBbUcrUuatSaTxO3hpnogH2yuUg44OBM
-	H8P3SuNPCDrmF9HY0/nVIFSS2WeF3eV25V0sZ6h1VLUzSdTc1MCSjoFVbhuyW8TqkeWdorTCLxd
-	nlRuT4CwO3mNfqBPUTd6VAbVlBzk=
-X-Google-Smtp-Source: AGHT+IH6JQQDAWOq0KJApgEVmyvmkM5BYck8OWF+z5HxxudO9rCrA2umFvpP9kP8iaqImRdQHBtzEOxj0VtzzlfZpi0=
-X-Received: by 2002:a05:6870:218d:b0:284:ff51:58ad with SMTP id
- 586e51a60fabf-296d9fb2cf8mr9632663fac.27.1732215206334; Thu, 21 Nov 2024
- 10:53:26 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="l64VzQCS"
+Received: by mail-yb1-f202.google.com with SMTP id 3f1490d57ef6-e3891f31330so2151908276.3
+        for <linux-pm@vger.kernel.org>; Thu, 21 Nov 2024 10:53:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1732215206; x=1732820006; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
+        bh=ldqdeENXrKnhWpzxrOZizNypt8qWrYQwaqWYe/ZI/p0=;
+        b=l64VzQCSX2OGlNkHidG4Pt0qBFrGyhfmGmqFscUPYgRZrBHVwS2wJBbjwAqfSJHbv4
+         7FMXsJQe7DBkkWaISjT4x+emou5wWjmt0KbUpdc+75o11v82JsUY2Neng/yY+aK2/ocK
+         Oiv41CxvMpdKI2YmThz9ONdy0ssCsYSlKW8+yu17WxX87ptRT8ELRSG2lTEiGoKW+VRF
+         uAfHfNsS7yPNWf41QnXtJUxHbZv6CWTWMmjmZoRcEdZrNE/K5alA+WvtZS/RXhxlhbDk
+         uSBj58D8fMVYim0FigXRUgoQ8SQAOz4C2ci/Q8vUOlfBrXWO+7nTgLQGHV2OEvSVwUH4
+         ngyw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1732215206; x=1732820006;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ldqdeENXrKnhWpzxrOZizNypt8qWrYQwaqWYe/ZI/p0=;
+        b=ERksTbexFbBqmoFJ6MuwhyEC1YwaIO9rvIAKP1xFUM1aMFsRUFCy+8jxjef3DOTk27
+         6PzPtnZOpVZu+EfEzeHIMTpEefk6dwyWgLLMXaDc7fBqiRgHAdlgUOOHopcXZTA9p7h6
+         VLFe+/0v7pbxP0x/EUTi85U7owbHoGW9WisHer2ECZo2saEvr/lNxspGZFW/3fblrCZC
+         jYLwTaZBfMSSAdV26uG105JM+5HcDXZDSKvIh+AwPurX24/Sy0NIJx2G42Slm2Nsc68v
+         yRoP2umlTFKsTax0i1MPJoa8EEdYV0ZLDUDiD2jHuMqPKYIgwCWafKCnkGi5CzJzBl0i
+         qo9g==
+X-Forwarded-Encrypted: i=1; AJvYcCWrpmYMKpDHxWNY9Wg1DjvsjSBUMbbOmBkSmW/wCE4OdxSPAoVcDr7fFcZRo6TS4pWKFU9kCfg6+Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx9QwDbjyZVBP+2J1Mw1YzhwwPH46PXzZ8oXAyXSpaq7Kcu9pJk
+	SjSHgs0c6KRJvycWOdMFdi4ae8FwEK5zriN9fUgJMszD3eYLWWRpVXeTm+cscG8JR6YdqYIUf6y
+	N5idDnw==
+X-Google-Smtp-Source: AGHT+IEvgJFcwcEy1VprydexSjluVe7GGGLSwDWQd6+6WjkEkzi4dzVs6HiLRuow03gjfWhDHnT4jtN61JUj
+X-Received: from mizhang-super.c.googlers.com ([35.247.89.60]) (user=mizhang
+ job=sendgmr) by 2002:a5b:9d2:0:b0:e28:f231:1aa8 with SMTP id
+ 3f1490d57ef6-e38cb546a8cmr7249276.2.1732215206128; Thu, 21 Nov 2024 10:53:26
+ -0800 (PST)
+Reply-To: Mingwei Zhang <mizhang@google.com>
+Date: Thu, 21 Nov 2024 18:52:57 +0000
+In-Reply-To: <20241121185315.3416855-1-mizhang@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <5839859.DvuYhMxLoT@rjwysocki.net> <c6315bb7-2943-4693-899b-da65cfecc7a6@redhat.com>
-In-Reply-To: <c6315bb7-2943-4693-899b-da65cfecc7a6@redhat.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 21 Nov 2024 19:53:15 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jvFD5ObM4iT7zT0G-VWZ7kR2_D0d=vmcBmausNv71hEA@mail.gmail.com>
-Message-ID: <CAJZ5v0jvFD5ObM4iT7zT0G-VWZ7kR2_D0d=vmcBmausNv71hEA@mail.gmail.com>
-Subject: Re: [RFC/RFT][PATCH v0.1] ACPI: OSL: Use usleep_range() in acpi_os_sleep()
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, 
-	Pierre Gondois <pierre.gondois@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
-	Mario Limonciello <mario.limonciello@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>
+Mime-Version: 1.0
+References: <20241121185315.3416855-1-mizhang@google.com>
+X-Mailer: git-send-email 2.47.0.371.ga323438b13-goog
+Message-ID: <20241121185315.3416855-6-mizhang@google.com>
+Subject: [RFC PATCH 05/22] KVM: x86: Introduce kvm_vcpu_make_runnable()
+From: Mingwei Zhang <mizhang@google.com>
+To: Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
+	Mario Limonciello <mario.limonciello@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Perry Yuan <perry.yuan@amd.com>, kvm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Jim Mattson <jmattson@google.com>, Mingwei Zhang <mizhang@google.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Nov 21, 2024 at 7:39=E2=80=AFPM Hans de Goede <hdegoede@redhat.com>=
- wrote:
->
-> Hi,
->
-> On 21-Nov-24 2:15 PM, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > As stated by Len in [1], the extra delay added by msleep() to the
-> > sleep time value passed to it can be significant, roughly between
-> > 1.5 ns on systems with HZ =3D 1000 and as much as 15 ms on systems with
-> > HZ =3D 100, which is hardly acceptable, at least for small sleep time
-> > values.
-> >
-> > Address this by using usleep_range() in acpi_os_sleep() instead of
-> > msleep().  For short sleep times this is a no-brainer, but even for
-> > long sleeps usleep_range() should be preferred because timer wheel
-> > timers are optimized for cancellation before they expire and this
-> > particular timer is not going to be canceled.
-> >
-> > Add at least 50 us on top of the requested sleep time in case the
-> > timer can be subject to coalescing, which is consistent with what's
-> > done in user space in this context [2], but for sleeps longer than 5 ms
-> > use 1% of the requested sleep time for this purpose.
-> >
-> > The rationale here is that longer sleeps don't need that much of a time=
-r
-> > precision as a rule and making the timer a more likely candidate for
-> > coalescing in these cases is generally desirable.  It starts at 5 ms so
-> > that the delta between the requested sleep time and the effective
-> > deadline is a contiuous function of the former.
-> >
-> > Link: https://lore.kernel.org/linux-pm/c7db7e804c453629c116d508558eaf46=
-477a2d73.1731708405.git.len.brown@intel.com/ [1]
-> > Link: https://lore.kernel.org/linux-pm/CAJvTdK=3DQ1kwWA6Wxn8Zcf0OicDEk6=
-cHYFAvQVizgA47mXu63+g@mail.gmail.com/ [2]
-> > Reported-by: Len Brown <lenb@kernel.org>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >
-> > This is a follow-up to the discussion started by [1] above and since
-> > the beginning of it I have changed my mind a bit, as you can see.
-> >
-> > Given Arjan's feedback, I've concluded that using usleep_range() for
-> > all sleep values is the right choice and that some slack should be
-> > used there.  I've taken 50 us as the minimum value of it because that's
-> > what is used in user space FWICT and I'm not convinced that shorter
-> > values would be suitable here.
-> >
-> > The other part, using 1% of the sleep time as the slack for longer
-> > sleeps, is likely more controversial.  It is roughly based on the
-> > observation that if one timer interrupt is sufficient for something,
-> > then using two of them will be wasteful even if this is just somewhat.
-> >
-> > Anyway, please let me know what you think.  I'd rather do whatever
-> > the majority of you are comfortable with.
->
-> I know it is a bit early for this, but the patch looks good to me, so:
->
-> Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+From: Jim Mattson <jmattson@google.com>
 
-Thank you!
+Factor out common code that handles the transition from
+HALTED/AP_RESET_HOLD to RUNNABLE state. In addition to changing
+mp_state, this transition has side effects (clearing pv_unhalted,
+apf.halted) which must be handled consistently across all code paths.
+
+As future patches add more side effects to this state transition, this
+helper ensures they will be applied uniformly at all transition
+points.
+
+No functional change intended.
+
+Signed-off-by: Jim Mattson <jmattson@google.com>
+Reviewed-by: Mingwei Zhang <mizhang@google.com>
+Signed-off-by: Mingwei Zhang <mizhang@google.com>
+---
+ arch/x86/include/asm/kvm_host.h |  2 ++
+ arch/x86/kvm/x86.c              | 16 +++++++++++-----
+ 2 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 6d9f763a7bb9d..04ef56d10cbb1 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -2283,6 +2283,8 @@ static inline bool kvm_is_supported_user_return_msr(u32 msr)
+ 	return kvm_find_user_return_msr(msr) >= 0;
+ }
+ 
++void kvm_vcpu_make_runnable(struct kvm_vcpu *vcpu);
++
+ u64 kvm_scale_tsc(u64 tsc, u64 ratio);
+ u64 kvm_read_l1_tsc(struct kvm_vcpu *vcpu, u64 host_tsc);
+ u64 kvm_calc_nested_tsc_offset(u64 l1_offset, u64 l2_offset, u64 l2_multiplier);
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 83fe0a78146fc..3c6b0ca91e5f5 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -11167,6 +11167,16 @@ int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
+ 	return kvm_vcpu_running(vcpu) || kvm_vcpu_has_events(vcpu);
+ }
+ 
++void kvm_vcpu_make_runnable(struct kvm_vcpu *vcpu)
++{
++	if (vcpu->arch.mp_state == KVM_MP_STATE_HALTED ||
++	    vcpu->arch.mp_state == KVM_MP_STATE_AP_RESET_HOLD)
++		vcpu->arch.pv.pv_unhalted = false;
++	vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
++	vcpu->arch.apf.halted = false;
++}
++EXPORT_SYMBOL_GPL(kvm_vcpu_make_runnable);
++
+ /* Called within kvm->srcu read side.  */
+ static inline int vcpu_block(struct kvm_vcpu *vcpu)
+ {
+@@ -11222,12 +11232,8 @@ static inline int vcpu_block(struct kvm_vcpu *vcpu)
+ 	switch(vcpu->arch.mp_state) {
+ 	case KVM_MP_STATE_HALTED:
+ 	case KVM_MP_STATE_AP_RESET_HOLD:
+-		vcpu->arch.pv.pv_unhalted = false;
+-		vcpu->arch.mp_state =
+-			KVM_MP_STATE_RUNNABLE;
+-		fallthrough;
+ 	case KVM_MP_STATE_RUNNABLE:
+-		vcpu->arch.apf.halted = false;
++		kvm_vcpu_make_runnable(vcpu);
+ 		break;
+ 	case KVM_MP_STATE_INIT_RECEIVED:
+ 		break;
+-- 
+2.47.0.371.ga323438b13-goog
+
