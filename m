@@ -1,122 +1,119 @@
-Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B940D1C304F;
-	Thu, 21 Nov 2024 17:28:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A5E21A3BDA;
+	Thu, 21 Nov 2024 17:39:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732210094; cv=none; b=uucumFNFBIEwDPbC9GzQlPu6Svgk4hbAYaAksC6vdhUvHyAqtom4IZ7cLmCeHDtqrOCYG9s5E4OoChEE/QMBiMMzFD2F2LtMw7//s3JECc39FgaWvkXRGuFlMavsPWKS8CPgf1vHjCVeqw3Sjy7IppIJz8+EwFI1FfbrULENQ4Y=
+	t=1732210777; cv=none; b=Wa/z7SnAY3+QdGn17/f6hiXyo+hJbZ4RgaJbY5ARftzRYybg1AsaDkiEF6E+FGiJX2XqTqja4NbCsn0HKajbzx/eLH51OGIYlZ9VRg1aJhfofq3QnyWdxyBGQKTeG3hHgU9KpIrYfVmOrLB64E75M8RTh9wG3YE8LoBeuOD+qpo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732210094; c=relaxed/simple;
-	bh=DkK6FKerYQ5Jj6C78QVHSiDhwQ1VrPm0mSRsM0u0Vzs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dvK7mfettNHQdGnq/jtkdjGhB0bcTDRvxw6DNqlrnCUq0/cU1sGWVQMkjyuLwcqkZJ+46UFoYc8FTsS5e2RklTunfLiP0AhNI8kR5UXtW123woWdIHUDnAwfI7GiWw6463Jmn9f6CAc6bTXslQARmuYSo2XS8rVOTd3otdoXOqM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=ROQ8fEeb; arc=none smtp.client-ip=185.138.42.100
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
+	s=arc-20240116; t=1732210777; c=relaxed/simple;
+	bh=8rQmx+MU88WP65XCIMFTnGToYXS/SMlvOL+qUX/tvKw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=RYfKFrwKaPxZ1nUjXMIyYd6Vho9vtaegqTkA5plqnxQniONayRVjNY8mE03pRDpx3AUBkJT9ywDHScoZs4QNhCouN5gR1Jwp8uM4GvdTUXJZmEG/nfhO7YnE/pqKDHIyEiLZrNxmMzDvNSXGnkYSkgf4Ud5y/fvZWNL7T1tcImI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lMko/tRi; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="ROQ8fEeb"
-Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:cbc0:999f:73ad:33bd])
-	by linux1587.grserver.gr (Postfix) with ESMTPSA id 173172E09589;
-	Thu, 21 Nov 2024 19:22:49 +0200 (EET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
-	s=default; t=1732209771;
-	bh=0YVrjraYiMF7JFRMsGzYGi+DLsnhBUH9lwvrGzQx40s=; h=From:To:Subject;
-	b=ROQ8fEeb/FgQIikIPcPmun/aLlgmlG34bO+t6bLBdiOpL6ZctiSfIAi2FS8iOqXM/
-	 yKOtdEBqwRB5pvdIb54XUmubFTnXqG18OM/Ln8ct/FIrZcLanIMujuoDsUeVPDv+ZW
-	 +d/+BSb87c/h9WXka00b/m8MR1ESpBOLQ5Fjkzuc=
-Authentication-Results: linux1587.grserver.gr;
-	spf=pass (sender IP is 2a05:f6c2:511b:0:cbc0:999f:73ad:33bd) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
-Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
-From: Antheas Kapenekakis <lkml@antheas.dev>
-To: linux-pm@vger.kernel.org
-Cc: platform-driver-x86@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Kyle Gospodnetich <me@kylegospodneti.ch>,
-	Antheas Kapenekakis <lkml@antheas.dev>
-Subject: [RFC 02/13] acpi/x86: s2idle: add support for Display Off and Display
- On callbacks
-Date: Thu, 21 Nov 2024 18:22:27 +0100
-Message-ID: <20241121172239.119590-3-lkml@antheas.dev>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20241121172239.119590-1-lkml@antheas.dev>
-References: <20241121172239.119590-1-lkml@antheas.dev>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lMko/tRi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31417C4CECC;
+	Thu, 21 Nov 2024 17:39:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1732210776;
+	bh=8rQmx+MU88WP65XCIMFTnGToYXS/SMlvOL+qUX/tvKw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=lMko/tRi/KmepU25C1EKLld531qo4AA7/UJzrzMNSlu1Z4QoF6YTgGW0B3pXK3Hqm
+	 l6h2D5lgslKaxkB1RnJYPM7eVESmj5QSkPS5G3/1goJwaqwbxEd93hez99ZedGLO56
+	 5p7Ql1KNeH6dOb0/JmJun6ujFtO87QLEcz7RVEtTrCTamp9Qv/NQOHEIOOus6PdFVX
+	 w0H4JP8+qbKKDboJTkNuSQq8x50INIQwzgYRpzvVZTxYAnu3vw6W36GFmNBMRtO3fI
+	 Oi9Pn2jGVIjQZiujA/bHn7iVrFgv8/DWj3Fg0x5FwVpp4zvdND6DiMkCAelVQ8Z04N
+	 hElEmyOnBiV6Q==
+Message-ID: <22828bf2-45a7-464d-ae30-8224056d9f0f@kernel.org>
+Date: Thu, 21 Nov 2024 18:39:30 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] dt-bindings: interconnect: qcom: drop QPIC_CORE IDs
+To: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>,
+ Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: Odelu Kukatla <quic_okukatla@quicinc.com>,
+ Mike Tipton <quic_mdtipton@quicinc.com>, linux-arm-msm@vger.kernel.org,
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20241121172737.255-1-quic_rlaggysh@quicinc.com>
+ <20241121172737.255-2-quic_rlaggysh@quicinc.com>
+Content-Language: en-US
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <20241121172737.255-2-quic_rlaggysh@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-PPP-Message-ID: 
- <173220977021.4257.7217008257458970692@linux1587.grserver.gr>
-X-PPP-Vhost: antheas.dev
-X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
-X-Virus-Status: Clean
 
-The Display Off and Display On firmware notifications are meant to signify
-the system entering a state where the user is not actively interacting
-with it (i.e., in Windows this state is called "Screen Off" and the
-system enters it once it turns the screen off e.g., due to inactivity).
+On 21/11/2024 18:27, Raviteja Laggyshetty wrote:
+> QPIC resources are modeled as clks, therefore remove corresponding
 
-Currently, these functions are called within the suspend sequence, which
-causes issues when these notifications interact with e.g., a USB device
-and makes them unable to be called as part of the screen turning off.
+s/clks/clocks/
 
-This patch adds a set of callbacks to allow calling the Display On/Off
-notifications outside of the suspend/resume path.
+> defines from the binding as they're unused.
 
-Co-developed-by: Mario Limonciello <mario.limonciello@amd.com>
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
-Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
----
- include/linux/suspend.h |  2 ++
- kernel/power/suspend.c  | 10 ++++++++++
- 2 files changed, 12 insertions(+)
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index da6ebca3ff77..57c083754e8b 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -132,6 +132,7 @@ struct platform_suspend_ops {
- };
- 
- struct platform_s2idle_ops {
-+	int (*display_off)(void);
- 	int (*begin)(void);
- 	int (*prepare)(void);
- 	int (*prepare_late)(void);
-@@ -140,6 +141,7 @@ struct platform_s2idle_ops {
- 	void (*restore_early)(void);
- 	void (*restore)(void);
- 	void (*end)(void);
-+	int (*display_on)(void);
- };
- 
- #ifdef CONFIG_SUSPEND
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 09f8397bae15..cded6b9b439b 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -254,6 +254,16 @@ static bool sleep_state_supported(suspend_state_t state)
- 	       (valid_state(state) && !cxl_mem_active());
- }
- 
-+static int platform_standby_display_off(void)
-+{
-+	return s2idle_ops && s2idle_ops->display_off ? s2idle_ops->display_off() : 0;
-+}
-+
-+static int platform_standby_display_on(void)
-+{
-+	return s2idle_ops && s2idle_ops->display_on ? s2idle_ops->display_on() : 0;
-+}
-+
- static int platform_suspend_prepare(suspend_state_t state)
- {
- 	return state != PM_SUSPEND_TO_IDLE && suspend_ops->prepare ?
--- 
-2.47.0
+As clocks where? Details are needed since you are affecting the ABI.
 
+> 
+> Signed-off-by: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+> ---
+>  include/dt-bindings/interconnect/qcom,sdx75.h | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+This does not build.
+
+../drivers/interconnect/qcom/sdx75.c:906:10: error: ‘MASTER_QPIC_CORE’
+undeclared here (not in a function); did you mean ‘MASTER_QPIC’?
+
+Best regards,
+Krzysztof
